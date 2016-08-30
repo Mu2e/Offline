@@ -28,7 +28,7 @@ namespace mu2e
 
 // struct to hold AGE sums
   struct SUMS {
-// weighted (s)ums of (c)osine and (s)in for points on (c)ircumference, (o)utside the median radius, or (i)nside the median radius
+// (s)ums of (c)osine and (s)in for points on (c)ircumference, (o)utside the median radius, or (i)nside the median radius
     double _scc, _ssc, _sco, _sso, _sci, _ssi;
     unsigned _nc, _no, _ni;
     SUMS() : _scc(0.0),_ssc(0.0),_sco(0.0),_sso(0.0),_sci(0.0),_ssi(0.0){}
@@ -57,9 +57,9 @@ namespace mu2e
 // utility function to resolve phi wrapping    
     static double deltaPhi(double phi1, double phi2);
 // find the Absolute Geometric Error.  Returns the median radius as well.
-    bool findCenterAGE(XYZPVector const& xyzp,CLHEP::Hep3Vector& center, double& rmed, double& age,bool useweights=false);
-    void findAGE(XYZPVector const& xyzp, CLHEP::Hep3Vector const& center,double& rmed, double& age,bool useweights=false);
-    void fillSums(XYZPVector const& xyzp, CLHEP::Hep3Vector const& center,double rmed,SUMS& sums,bool useweights=false);
+    bool findCenterAGE(XYZPVector const& xyzp,CLHEP::Hep3Vector& center, double& rmed, double& age);
+    void findAGE(XYZPVector const& xyzp, CLHEP::Hep3Vector const& center,double& rmed, double& age);
+    void fillSums(XYZPVector const& xyzp, CLHEP::Hep3Vector const& center,double rmed,SUMS& sums);
     void filterXY(XYZPVector& xyzp, CLHEP::Hep3Vector const& center,double rmed,bool& changed);
     void filterDist(XYZPVector& xyzp);
 // configuration parameters
@@ -80,7 +80,6 @@ namespace mu2e
     double _tdmin, _tdmax; // range of abs(tan(dip)
     double _sfactor; // stereo hit error factor
     bool _force; // force the fit values to be in range
-    bool _xyweights,_zweights; // weight points by estimated errors 
     bool _filterxy, _filterz; // filter hits
     bool _stereoinit; // require stereo hits to initialize
     bool _stereofit; // require stereo hits 

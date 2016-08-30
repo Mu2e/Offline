@@ -15,4 +15,6 @@
  <class name="mu2e::MCClusterInfo" />
  <class name="mu2e::TimeClusterHitInfo" />
  <class name="std::vector<mu2e::TimeClusterHitInfo>" />
+ <class name="mu2e::HitInfoMC" />
+ <class name="std::vector<mu2e::HitInfoMC>" />
 </lcgdict>

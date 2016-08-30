@@ -49,8 +49,8 @@ namespace mu2e {
 
       mu2e::GeomHandle<mu2e::TTracker> handle;
       const TTracker* t = handle.get();
-      const Straw* s1 = &t->getStraw(StrawIndex(h1._index));
-      const Straw* s2 = &t->getStraw(StrawIndex(h2._index));
+      const Straw* s1 = &t->getStraw(StrawIndex(h1));
+      const Straw* s2 = &t->getStraw(StrawIndex(h2));
 
       return s1->getMidPoint().z() < s2->getMidPoint().z();
     }
@@ -386,7 +386,7 @@ namespace mu2e {
 
     for (int i=0; i<shIndices; ++i){
       hIndex = &TPeak._index.at(i);
-      TrkSeed._timeCluster._strawHitIdxs.push_back( mu2e::hitIndex( hIndex->_index, hIndex->_ambig) );
+      TrkSeed._timeCluster._strawHitIdxs.push_back( mu2e::hitIndex( hIndex) );
     }
     
     const mu2e::CaloCluster *cluster = TPeak.Cluster();

@@ -52,8 +52,8 @@ namespace mu2e {
 
       mu2e::GeomHandle<mu2e::TTracker> handle;
       const TTracker* t = handle.get();
-      const Straw* s1 = &t->getStraw(StrawIndex(h1._index));
-      const Straw* s2 = &t->getStraw(StrawIndex(h2._index));
+      const Straw* s1 = &t->getStraw(StrawIndex(h1));
+      const Straw* s2 = &t->getStraw(StrawIndex(h2));
 
       return s1->getMidPoint().z() < s2->getMidPoint().z();
     }
@@ -387,7 +387,7 @@ namespace mu2e {
       std::sort(_hitIndices.begin(), _hitIndices.end(), [ ]( const mu2e::hitIndex& lhs,
 							     const mu2e::hitIndex& rhs )
 		{
-		  return lhs._index < rhs._index;
+		  return lhs < rhs;
 		} );
       
       _nindex = _hitIndices.size();
@@ -445,7 +445,7 @@ namespace mu2e {
 	  _nrescued = 0;
 
 	  for (int i=0; i< _nindex; ++i) {
-	    hit_index = _hitIndices[i]._index;
+	    hit_index = _hitIndices[i];
 	    sh        = &_shcol->at(hit_index);
 	    straw     = &_tracker->getStraw(sh->strawIndex());
 	    wpos      = &straw->getMidPoint();
@@ -559,7 +559,7 @@ namespace mu2e {
 	    TrkHitVector const& hot_l = _sfresult->_krep->hitVector();
 
 	    for (int i=0; i< _nindex; ++i){
-	      int hIndex             = _hitIndices[i]._index;
+	      int hIndex             = _hitIndices[i];
  	      StrawHit const*     sh = & _shcol->at(hIndex);//trkSeed->_strawHitPtrs[i].get();//_hitIndices[i]._strawhit;####
 	      Straw const&     straw = _tracker->getStraw(sh->strawIndex());
 	      CLHEP::Hep3Vector hpos = straw.getMidPoint();
@@ -577,7 +577,7 @@ namespace mu2e {
 		hit = static_cast<const mu2e::TrkStrawHit*> (*it);
 		if (!hit->isActive()) continue;
 		hit_index = hit->index();
-		if (int(_hitIndices[i]._index) == hit_index){
+		if (int(_hitIndices[i]) == hit_index){
 		  found = true;
 		  break;
 		}

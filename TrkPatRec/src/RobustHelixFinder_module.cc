@@ -120,7 +120,7 @@ namespace mu2e
     // loop over hits in this time cluster and select  hits with good 3-d position information
     std::vector<hitIndex> goodhits;
       for(auto const& ind : tclust._strawHitIdxs) {
-	if(_shfcol->at(ind._index).hasAnyProperty(_psel))
+	if(_shfcol->at(ind).hasAnyProperty(_psel))
 	  goodhits.push_back(ind);
       }
      // build a helix seed using these hits, but the original t0

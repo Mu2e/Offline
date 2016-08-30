@@ -17,7 +17,6 @@
 #include <boost/accumulators/statistics.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/median.hpp>
-#include <boost/accumulators/statistics/weighted_median.hpp>
 // root
 #include "TH1F.h"
 // C++
@@ -57,17 +56,14 @@ namespace mu2e
     _rmax(pset.get<double>("maxR",500.0)),
     _tdmin(pset.get<double>("minAbsTanDip",0.3)),
     _tdmax(pset.get<double>("maxAbsTanDip",2.0)),
-    _force(pset.get<bool>("forceP",false)),
-    _xyweights(pset.get<bool>("xyWeights",false)),
-    _zweights(pset.get<bool>("zWeights",false)),
     _filterxy(pset.get<bool>("filterxy",true)),
     _filterz(pset.get<bool>("filterz",true)),
     _stereoinit(pset.get<bool>("stereoinit",false)),
     _stereofit(pset.get<bool>("stereofit",false)),
     _targetinit(pset.get<bool>("targetinit",true)),
     _targetinter(pset.get<bool>("targetintersect",true)),
-    _targetradius(pset.get<double>("targetradius",75.0)),
-    _trackerradius(pset.get<double>("trackerradius",700.0)),
+    _targetradius(pset.get<double>("targetradius",75.0)), // target radius: include some buffer
+    _trackerradius(pset.get<double>("trackerradius",700.0)), // tracker out radius; include some buffer
     _helicity(pset.get<int>("Helicity",Helicity::unknown))
   {
     if(_helicity._value == Helicity::unknown){
@@ -121,15 +117,13 @@ namespace mu2e
     }
   }
 
-  bool
-    RobustHelixFit::findXY(XYZPVector& xyzp,RobustHelix& myhel) {
-      double rmed, age;
-      Hep3Vector center = myhel.center();
-      // then, refine that using weights
-      bool changed(true);
+  bool RobustHelixFit::findXY(XYZPVector& xyzp,RobustHelix& myhel) {
+    double rmed, age;
+    Hep3Vector center = myhel.center();
+    bool changed(true);
     unsigned niter(0);
     while(niter < _maxniter && changed){
-      findCenterAGE(xyzp,center,rmed,age,_xyweights);
+      findCenterAGE(xyzp,center,rmed,age);
       if(_filterxy)
 	filterXY(xyzp,center,rmed,changed);
       else
@@ -142,19 +136,19 @@ namespace mu2e
   }
 
   bool
-  RobustHelixFit::findCenterAGE(XYZPVector const& xyzp,Hep3Vector& center, double& rmed, double& age,bool useweights) {
+  RobustHelixFit::findCenterAGE(XYZPVector const& xyzp,Hep3Vector& center, double& rmed, double& age) {
 // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
 // initialize step
     double lambda = _lambda0;
 // find median and AGE for the initial center
-    findAGE(xyzp,center,rmed,age,useweights);
+    findAGE(xyzp,center,rmed,age);
 // loop while step is large
     unsigned niter(0);
     Hep3Vector descent(1.0,0.0,0.0);
     while(lambda*descent.mag() > _minlambda && niter < _maxniter){
 // fill the sums for computing the descent vector
       SUMS sums;
-      fillSums(xyzp,center,rmed,sums,useweights);
+      fillSums(xyzp,center,rmed,sums);
 // descent vector cases: if the inner vs outer difference is significant (compared to the median), damp using the median sums,
 // otherwise not.  These expressions take care of the undiferentiable condition on the boundary. 
       double dx(sums._sco-sums._sci);
@@ -167,7 +161,7 @@ namespace mu2e
 // compute error function, decreasing lambda until this is better than the previous
       double agenew;
       Hep3Vector cnew = center + lambda*descent;
-      findAGE(xyzp,cnew,rmed,agenew,useweights);
+      findAGE(xyzp,cnew,rmed,agenew);
 // if we've improved, increase the step size and iterate
       if(agenew < age){
         lambda *= (1.0+_lstep);
@@ -177,7 +171,7 @@ namespace mu2e
         while(agenew > age && miter < _maxniter && lambda*descent.mag() > _minlambda){
           lambda *= (1.0-_lstep);
           cnew = center + lambda*descent;
-          findAGE(xyzp,cnew,rmed,agenew,useweights);
+          findAGE(xyzp,cnew,rmed,agenew);
           ++miter;
         }
 // if this fails, reverse the descent drection and try again
@@ -185,7 +179,7 @@ namespace mu2e
 	  descent *= -1.0;
 	  lambda *= (1.0 +_lstep);
           cnew = center + lambda*descent;
-          findAGE(xyzp,cnew,rmed,agenew,useweights);
+          findAGE(xyzp,cnew,rmed,agenew);
         }
       }
 // prepare for next iteration
@@ -243,7 +237,7 @@ namespace mu2e
       }
     }
 // make initial estimate of dfdz using 'nearby' pairs
-    accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > accf;
+    accumulator_set<double, stats<tag::median(with_p_square_quantile)> > accf;
     for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
       for(unsigned jphi=iphi+1; jphi < finfo.size(); ++jphi){
 	double dz = finfo[jphi]._z - finfo[iphi]._z;
@@ -252,24 +246,17 @@ namespace mu2e
 	  if(fabs(dphi) > _mindphi && fabs(dphi) < _maxdphi){
 	    double slope = dphi/dz;
 	    if(slope > _smin && slope < _smax){ 
-	      double wt = _zweights ? dz/(finfo[iphi]._phi._err+finfo[jphi]._phi._err) : 1.0;
-	      accf(slope,weight=wt);
+	      accf(slope);
 	    }
 	  }
 	}
       }
     }
     if(count(accf) > _minnhit){
-      double  dfdz = extract_result<tag::weighted_median>(accf);
+      double  dfdz = extract_result<tag::median>(accf);
       //      double dfdztest = extract_result<tag::mean>(acctest);
       // if the sign of dfdz disagrees, abort
-      if( dfdz * _helicity._value < 0.0)
-	return false;
-      // if requested, restrict the range
-      if(_force)
-	dfdz = std::max(std::min(dfdz,_smax),_smin);
-      else
-	if(dfdz > _smax || dfdz < _smin) return false;
+      if( dfdz * _helicity._value < 0.0 || dfdz > _smax || dfdz < _smin) return false;
 // find phi at z intercept.  Use a histogram technique since phi looping
 // hasn't been resolved yet
       TH1F hphi("hphi","phi value",50,-1.1*pi,1.1*pi);
@@ -281,15 +268,6 @@ namespace mu2e
 	hphi.Fill(dphi+twopi);
       }
       double fz0 = hphi.GetBinCenter(hphi.GetMaximumBin());
-// refine this using the median.  Not sure this helps, needs to be tested
-//      accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > acci;
-//      for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
-//	double wt = _zweight ? 1.0/finfo[iphi]._phi._err : 1.0;
-//	double phiex = fz0 + finfo[iphi]._z*dfdz;
-//	double dphi = deltaPhi(phiex,finfo[iphi]._phi._val);
-//	acci(dphi, weight=wt);
-//      }
-//      fz0 += extract_result<tag::weighted_median>(acci);
       if(fz0>pi)fz0 -= twopi;
       if(fz0<-pi)fz0 += twopi;
 // reset for full search
@@ -318,8 +296,7 @@ namespace mu2e
 	  changed |= nloop != 0;
 	}
 	// make a long-range estimate of slope
-	accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > accf2;
-//	accumulator_set<double, stats<tag::mean > > acctest2;
+	accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accf2;
 	for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
 	  for(unsigned jphi=iphi+1; jphi < finfo.size(); ++jphi){
 	    double dz = finfo[jphi]._z -finfo[iphi]._z;
@@ -330,30 +307,21 @@ namespace mu2e
 	      if(!_filterz || fabs(dphi-dphiex) < _nsigma*ferr){
 		double slope = dphi/dz;
 		if(slope > _smin && slope < _smax){ 
-// limit the weight so as not to count more than 1 loop
-		  double wt = _zweights ? std::min(dz,_maxzsep)/ferr : 1.0;
-		  accf2(slope,weight=wt);
-//		  acctest2(slope);
+		  accf2(slope);
 		}
 	      }
 	    }
 	  }
 	}
-	dfdz = extract_result<tag::weighted_median>(accf2);
-//	dfdztest = extract_result<tag::mean>(acctest2);
-	// find phi at z intercept
-	accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > acci2;
-//	accumulator_set<double, stats<tag::mean>> acci2test;
+	dfdz = extract_result<tag::median>(accf2);
+	accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acci2;
 	for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
 	  double phiex = fz0+finfo[iphi]._z*dfdz;
 	  if(!_filterz || fabs(finfo[iphi]._phi._val-phiex) < _nsigma*finfo[iphi]._phi._err){
-	    double wt = _zweights ? 1.0/finfo[iphi]._phi._err : 1.0;
-	    acci2(finfo[iphi]._phi._val - finfo[iphi]._z*dfdz, weight=wt);
-//	    acci2test(finfo[iphi]._phi._val - finfo[iphi]._z*dfdz);
+	    acci2(finfo[iphi]._phi._val - finfo[iphi]._z*dfdz);
 	  }
 	}
-//	double fz0test = fmod(extract_result<tag::mean>(acci2test),twopi);
-	fz0 = fmod(extract_result<tag::weighted_median>(acci2),twopi);
+	fz0 = fmod(extract_result<tag::median>(acci2),twopi);
 	if(fz0>pi)fz0 -= twopi;
 	if(fz0<-pi)fz0 += twopi;
       }
@@ -391,15 +359,15 @@ namespace mu2e
 	pos.push_back(xyzp[ixyzp]._pos);
       }
     }
+    // loop over all triples
     size_t np = pos.size();
     for(size_t ip=0;ip<np;++ip){
       // pre-compute some values
-      double ri2 = pow(pos[ip].x(),2) + pow(pos[ip].y(),2);
+      double ri2 = pos[ip].perp2();
       for(size_t jp=ip+1;jp<np; ++jp){
 	if(pos[ip].perpPart().diff2(pos[jp].perpPart()) > mind2){
-	  double rj2 = pow(pos[jp].x(),2) + pow(pos[jp].y(),2);
+	  double rj2 = pos[jp].perp2();
 	  size_t mink = jp+1;
-  // we can force the initialization to use the target position in every triple
 	  for(size_t kp=mink;kp<np; ++kp){
 	    if(pos[ip].perpPart().diff2(pos[kp].perpPart()) > mind2 &&
 		pos[jp].perpPart().diff2(pos[kp].perpPart()) > mind2){
@@ -407,7 +375,7 @@ namespace mu2e
 	      double delta = (pos[kp].x() - pos[jp].x())*(pos[jp].y() - pos[ip].y()) - 
 		(pos[jp].x() - pos[ip].x())*(pos[kp].y() - pos[jp].y());
 	      if(fabs(delta) > _mindelta){
-		double rk2 = pow(pos[kp].x(),2) + pow(pos[kp].y(),2);
+		double rk2 = pos[kp].perp2();
 		// find circle center for this triple
 		double cx = 0.5* (
 		    (pos[kp].y() - pos[jp].y())*ri2 + 
@@ -423,7 +391,7 @@ namespace mu2e
 		double rmax = rc+rho;
 		// test circle parameters for this triple: should be inside the tracker,
 		// optionally consistent with the target
-		if(rho > _rmin && rho<_rmax && rmax < _trackerradius
+		if(rho > _rmin && rho< _rmax && rmax < _trackerradius
 		  && ( (!_targetinit) || rmin < _targetradius) ) {
 		  // accumulate 
 		  ++ntriple;
@@ -438,101 +406,75 @@ namespace mu2e
       }
     }
     if(ntriple > _minnhit){
+      retval = true;
       double centx = extract_result<tag::median>(accx);
       double centy = extract_result<tag::median>(accy);
       double rho = extract_result<tag::median>(accr);
       myhel.center() = CLHEP::Hep3Vector(centx,centy,0.0);
       myhel.radius() = rho;
-      if(_force){
-	myhel.radius() = std::max(std::min(myhel.radius(),_rmax),_rmin);
-	retval = true;
-      } else {
-	retval = myhel.radius() >= _rmin && myhel.radius() <= _rmax;
-      }
     }
     return retval;
   }
 
-  void
-    RobustHelixFit::findAGE(XYZPVector const& xyzp, Hep3Vector const& center,double& rmed, double& age,bool useweights) {
-      using namespace boost::accumulators;
-      // protection against empty data
-      if(xyzp.size() == 0)return;
-      // fill radial information for all points, given this center
-      std::vector<VALERR> radii;
-      unsigned nxyzp = xyzp.size();
-      double wtot(0.0);
-      for(unsigned ixyzp=0; ixyzp < nxyzp; ++ixyzp){
-	if(xyzp[ixyzp].use()){
+  void RobustHelixFit::findAGE(XYZPVector const& xyzp, Hep3Vector const& center,double& rmed, double& age) {
+    using namespace boost::accumulators;
+    // protection against empty data
+    if(xyzp.size() == 0)return;
+    // fill radial information for all points, given this center
+    std::vector<VALERR> radii;
+    unsigned nxyzp = xyzp.size();
+    for(unsigned ixyzp=0; ixyzp < nxyzp; ++ixyzp){
+      if(xyzp[ixyzp].use()){
 	// find radial information for this point
 	VALERR rad;
 	xyzp[ixyzp].rinfo(center,rad);
 	radii.push_back(rad);
 	// compute the normalization too
-	wtot += useweights ? 1.0/rad._err : 1.0;
       }
     }
-    // find the weighted median radius
-    accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > accr;
+    // find the median radius
+    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accr;
     for(unsigned irad=0;irad<radii.size();++irad){
-      double wt = useweights ? 1.0/radii[irad]._err : 1.0;
-      accr(radii[irad]._val, weight = wt); 
+      accr(radii[irad]._val); 
     }
-    rmed = extract_result<tag::weighted_median>(accr);
-    // if requested force radius into range
-    if(_force)
-      rmed = std::max(std::min(rmed,_rmax),_rmin);
+    rmed = extract_result<tag::median>(accr);
     // now compute the AGE (Absolute Geometric Error)
     age = 0.0;
     for(unsigned irad=0;irad<radii.size();++irad){
-      double wt = useweights ? 1.0/radii[irad]._err : 1.0;
-      age += wt*fabs(radii[irad]._val-rmed);
+      age += fabs(radii[irad]._val-rmed);
     }
-    // normalize
-    age *= radii.size()/wtot;
   }
 
   void
-  RobustHelixFit::fillSums(XYZPVector const& xyzp, Hep3Vector const& center,double rmed,SUMS& sums,bool useweights) {
+  RobustHelixFit::fillSums(XYZPVector const& xyzp, Hep3Vector const& center,double rmed,SUMS& sums) {
     // initialize sums
     sums.clear();
     // compute the transverse sums
-    double wtot(0.0);
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
       if(xyzp[ixyzp].use()){
 	// find radial information for this point
 	VALERR rad;
 	xyzp[ixyzp].rinfo(center,rad);
-	double wt = useweights ? 1.0/rad._err : 1.0;
-	wtot += wt;
 	// now x,y projections
 	double pcos = (xyzp[ixyzp]._pos.x()-center.x())/rad._val;
 	double psin = (xyzp[ixyzp]._pos.y()-center.y())/rad._val;
 	// 3 conditions: either the radius is inside the median, outside the median, or 'on' the median.  We define 'on'
 	// in terms of the error
 	if(fabs(rad._val -rmed) < rad._err ){
-	  sums._scc += wt*fabs(pcos);
-	  sums._ssc += wt*fabs(psin);
+	  sums._scc += fabs(pcos);
+	  sums._ssc += fabs(psin);
 	  ++sums._nc;
 	} else if (rad._val > rmed) {
-	  sums._sco += wt*pcos;
-	  sums._sso += wt*psin;
+	  sums._sco += pcos;
+	  sums._sso += psin;
 	  ++sums._no;
 	} else {
-	  sums._sci += wt*pcos;
-	  sums._ssi += wt*psin;        
+	  sums._sci += pcos;
+	  sums._ssi += psin;        
 	  ++sums._ni;
 	}
       }  
     }
-    // normalize to unit weight
-    unsigned nused = sums._nc + sums._no + sums._ni;
-    sums._scc *= nused/wtot;
-    sums._ssc *= nused/wtot;
-    sums._sco *= nused/wtot;
-    sums._sso *= nused/wtot;
-    sums._sci *= nused/wtot;
-    sums._ssi *= nused/wtot;
   }
 
   void

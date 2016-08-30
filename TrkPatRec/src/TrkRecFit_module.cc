@@ -282,7 +282,7 @@ namespace mu2e
     const vector<hitIndex>& indices = mydef.strawHitIndices();
     vector<hitIndex> goodhits;
     for(unsigned ihit=0;ihit<indices.size();++ihit){
-      StrawHit const& sh = _shcol->at(indices[ihit]._index);
+      StrawHit const& sh = _shcol->at(indices[ihit]);
       Straw const& straw = tracker.getStraw(sh.strawIndex());
       CLHEP::Hep3Vector hpos = straw.getMidPoint();
       CLHEP::Hep3Vector hdir = straw.getDirection();

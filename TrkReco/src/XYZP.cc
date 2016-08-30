@@ -85,14 +85,14 @@ namespace mu2e {
   }
 
   void XYZP::fillXYZP(StrawHitCollection const& shcol,
-    StrawHitPositionCollection const& shpcol, std::vector<hitIndex> hits, XYZPVector& xyzp) {
+    StrawHitPositionCollection const& shpcol, std::vector<size_t> hits, XYZPVector& xyzp) {
     const Tracker& tracker = getTrackerOrThrow();
     // loop over straw hits, and store their positions
     for(auto const& istr : hits) { 
-      StrawHit const& sh = shcol.at(istr._index);
+      StrawHit const& sh = shcol.at(istr);
       Straw const& straw= tracker.getStraw(sh.strawIndex());
-      StrawHitPosition const& shp = shpcol.at(istr._index);
-      XYZP pos(istr._index,sh,shp,straw);
+      StrawHitPosition const& shp = shpcol.at(istr);
+      XYZP pos(istr,sh,shp,straw);
       xyzp.push_back(pos);
     } 
   }

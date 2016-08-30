@@ -71,7 +71,7 @@ namespace mu2e {
   struct hitTimeSort : public binary_function<hitIndex, hitIndex, bool> {
     hitTimeSort(const StrawHitCollection* shcol) : _shcol(shcol){}
     bool operator() (hitIndex const& x, hitIndex const& y){
-      return _shcol->at(x._index).time() > _shcol->at(y._index).time();
+      return _shcol->at(x).time() > _shcol->at(y).time();
     }
     const StrawHitCollection* _shcol;
   };
@@ -200,7 +200,7 @@ namespace mu2e {
     // set the flag for all hits associated to a time peak
     for (auto tpc : *tccol.get()){
       for (auto shi : tpc._strawHitIdxs ) {
-	flags->at(shi._index).merge(StrawHitFlag::tclust);
+	flags->at(shi).merge(StrawHitFlag::tclust);
       }
     }
     // put collections into the event
@@ -280,7 +280,7 @@ namespace mu2e {
      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > zacc;
      unsigned nstrs = tclust._strawHitIdxs.size();
      for(unsigned istr=0; istr<nstrs;++istr){
-       unsigned ish = tclust._strawHitIdxs[istr]._index;
+       unsigned ish = tclust._strawHitIdxs[istr];
        if(goodHit(_shfcol->at(ish))){
 	 tmin(_shcol->at(ish).time());
 	 tmax(_shcol->at(ish).time());
@@ -307,7 +307,7 @@ namespace mu2e {
        size_t iworst =0;
        worstmva = 100.0;
        for(size_t ips=0;ips<tclust._strawHitIdxs.size();++ips){
-         unsigned ish = tclust._strawHitIdxs[ips]._index;
+         unsigned ish = tclust._strawHitIdxs[ips];
          double dt = _shcol->at(ish).time() - ptime;
          double rho = _shpcol->at(ish).pos().perp();
          double phi = _shpcol->at(ish).pos().phi();
@@ -331,7 +331,7 @@ namespace mu2e {
        accumulator_set<double, stats<tag::mean > > facc;
        accumulator_set<double, stats<tag::mean > > tacc;
        for(size_t ips=0;ips<tclust._strawHitIdxs.size();++ips){
-         unsigned ish = tclust._strawHitIdxs[ips]._index;
+         unsigned ish = tclust._strawHitIdxs[ips];
          double time = _shcol->at(ish).time();
          double phi = _shpcol->at(ish).pos().phi();
          Angles::deltaPhi(phi,pphi);
@@ -348,7 +348,7 @@ namespace mu2e {
      accumulator_set<double, stats<tag::mean > > racc;
      accumulator_set<double, stats<tag::mean > > zacc;
      for(size_t ips=0;ips<tclust._strawHitIdxs.size();++ips){
-       unsigned ish = tclust._strawHitIdxs[ips]._index;
+       unsigned ish = tclust._strawHitIdxs[ips];
        double dt = _shcol->at(ish).time() - ptime;
        double phi = _shpcol->at(ish).pos().phi();
        double rho = _shpcol->at(ish).pos().perp();

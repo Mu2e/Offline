@@ -22,14 +22,7 @@
 
 namespace mu2e {
   class CaloCluster;
-  struct hitIndex {
-    size_t _index; // index into the straw hit container
-    int _ambig; // hit ambiguity.  0 means no ambiguity
-    hitIndex() : _index(0),_ambig(0) {}
-    hitIndex(size_t index,int ambig=0) : _index(index),_ambig(ambig) {}
-    hitIndex& operator = (size_t index) { _index = index; return *this; }
-    bool operator == (hitIndex const& other) const { return _index == other._index; }
-  };
+  typedef size_t hitIndex;
  
   struct TimeCluster{
 

@@ -560,35 +560,6 @@ namespace mu2e
     return retval;
   }
 
-// map daughters onto parents within the context of an associated set of StepPointMCs (like from a StrawHit).
-  void KalDiag::findRelatives(PtrStepPointMCVector const& mcptr,map<SPPtr,SPPtr>& mdmap){
-    // loop over steps
-    for( size_t imc=0; imc< mcptr.size(); ++imc ) {
-      art::Ptr<SimParticle> spp = mcptr[imc]->simParticle();
-      if(mdmap.find(spp) == mdmap.end()){
-    // start with self-reference
-        mdmap[spp] = spp;
-      }
-    }
-    // loop over the steps again, trying to map particles to their parents
-    for( size_t imc=0; imc< mcptr.size(); ++imc ) {
-      art::Ptr<SimParticle> spp = mcptr[imc]->simParticle();		  
-      if(mdmap[spp] == spp && !spp.isNull()){
-    // move up through the genealogy till we find the highest-rank parent directly contributing
-    // to this strawhit
-        art::Ptr<SimParticle> sppp = spp->parent();
-        while(!sppp.isNull()){
-          map<SPPtr,SPPtr>::iterator ifnd = mdmap.find(sppp);
-          if(ifnd != mdmap.end())
-    // repoint this particle to its highest-level contributing parent
-            mdmap[spp] = sppp;
-    // move on to the parent's parent, as there can be gaps in the direct contribution
-          sppp = sppp->parent();
-        }
-      }
-    }
-  }
- 
   TTree*
   KalDiag::createTrkDiag(TTree* trkdiag,const char* branchprefix){
     string brapre(branchprefix);

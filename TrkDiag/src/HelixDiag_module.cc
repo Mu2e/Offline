@@ -14,9 +14,12 @@
 // mu2e
 #include "GeneralUtilities/inc/Angles.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
-// TrkDiag
+// diagnostics
 #include "TrkDiag/inc/TrkMCTools.hh"
 #include "TrkReco/inc/XYZP.hh"
+#include "TrkDiag/inc/HitInfoMC.hh"
+#include "TrkDiag/inc/TrkMCTools.hh"
+#include "MCDataProducts/inc/MCRelationship.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -41,6 +44,7 @@ using namespace std;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
+
   class HelixDiag : public art::EDAnalyzer {
     public:
       explicit HelixDiag(fhicl::ParameterSet const& pset);
@@ -73,11 +77,15 @@ namespace mu2e {
       bool conversion(size_t index);
       unsigned countCEHits(vector<hitIndex> const& hits );
       void setPhi(RobustHelix const& helix,	XYZPVector& xyzp);
+      void fillHitInfoMC(const art::Ptr<SimParticle>& pspp, StrawDigiMC const& digimc, HitInfoMC& hinfomc);
       // display functions
       void plotXY(XYZPVector const& xyzp, HelixSeed const& myseed);
       void plotZ(XYZPVector const& xyzp, HelixSeed const& myseed);
       // TTree and branch variables
       TTree *_hdiag;
+      RobustHelix _recoh;
+      Int_t _nhits, _nprimary;
+      std::vector<HitInfoMC> _hinfomc;
   };
 
   HelixDiag::~HelixDiag() {
@@ -99,6 +107,13 @@ namespace mu2e {
    {
     if(_diag > 0){
       art::ServiceHandle<art::TFileService> tfs;
+      _hdiag=tfs->make<TTree>("hdiag","Helix Finding diagnostics");
+      _hdiag->Branch("recoh",&_recoh);
+      _hdiag->Branch("nhits",&_nhits,"nhits/I");
+      if(_mcdiag){
+	_hdiag->Branch("nprimary",&_nprimary,"nprimary/I");
+	_hdiag->Branch("tshmc",&_hinfomc);
+      }
     }
   }
 
@@ -119,6 +134,20 @@ namespace mu2e {
 	// as used in the original fit
 	setPhi(myhel,xyzp);
 	// fill TTree branches
+	_recoh = myhel;
+	_nhits = hits.size();
+	art::Ptr<SimParticle> pspp;
+	TrkMCTools::primaryParticle(pspp,hits,_mcdigis);
+	for( auto hi : hits ) {
+	  StrawDigiMC const& digimc = _mcdigis->at(hi);
+	  HitInfoMC hinfomc;
+	  fillHitInfoMC(pspp,digimc,hinfomc);
+	  _hinfomc.push_back(hinfomc);
+	  
+	  
+	}
+	// fill the tree
+	_hdiag->Fill();
 
 	if(_plotxy || _plotz ) {
 	// cou(nt the # of conversion hits in this helix
@@ -139,6 +168,7 @@ namespace mu2e {
     _shpcol = 0;
     _shfcol = 0;
     _hscol = 0;
+    _mcdigis = 0;
 
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol = shH.product();
@@ -281,9 +311,9 @@ namespace mu2e {
       mct->SetMarkerColor(kMagenta);
 
       for(auto hit : hits ) {
-	StrawDigiMC const& mcdigi = _mcdigis->at(hit._index);
-	if (TrkMCTools::CEDigi(mcdigi)){
-	  art::Ptr<StepPointMC> const& spmcp = TrkMCTools::threshStep(mcdigi);
+	StrawDigiMC const& mcdigi = _mcdigis->at(hit);
+	art::Ptr<StepPointMC> spmcp;
+	if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && TrkMCTools::CEDigi(mcdigi)){
 	  mct->Fill(spmcp->position().x()-myhel.center().x(),spmcp->position().y()-myhel.center().y());
 	}
       }
@@ -395,9 +425,9 @@ namespace mu2e {
       mct->SetMarkerColor(kMagenta);
 
       for(auto& hit : hits ) {
-	StrawDigiMC const& mcdigi = _mcdigis->at(hit._index);
-	if (TrkMCTools::CEDigi(mcdigi)){
-	  art::Ptr<StepPointMC> const& spmcp = TrkMCTools::threshStep(mcdigi);
+	StrawDigiMC const& mcdigi = _mcdigis->at(hit);
+	art::Ptr<StepPointMC> spmcp;
+	if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && TrkMCTools::CEDigi(mcdigi)){
 	  mct->Fill(spmcp->position().z(),spmcp->position().phi());
 	}
       }
@@ -407,7 +437,7 @@ namespace mu2e {
   unsigned HelixDiag::countCEHits(vector<hitIndex> const& hitindexs ) {
     unsigned retval(0);
     for(auto hi : hitindexs ) {
-      if(conversion(static_cast<size_t>(hi._index)))++retval; 
+      if(conversion(static_cast<size_t>(hi)))++retval; 
     }
     return retval;
   }
@@ -420,14 +450,28 @@ namespace mu2e {
   void HelixDiag::setPhi(RobustHelix const& helix, XYZPVector& xyzpv){
 // compare expected phi position with actual, and adjust the phase to make these consistent
     for(auto& xyzp : xyzpv) {
+      // compute the expected phi from the z position of the straw
       double phiex = helix.fz0() + xyzp._pos.z()/helix.lambda();
-      // compute phi WRT the circle center
+      // compute phi WRT the circle center from the transverse position
       double phi = Hep3Vector(xyzp._pos - helix.center()).phi();
+      // minimize the phase within the 2pi ambiguity
       double dphi = Angles::deltaPhi(phi,phiex);
       if(fabs(dphi) > M_PI ) std::cout << "Failed to resolve phi" << std::endl;
       xyzp._phi = phi;
     }
 
+  }
+
+  void HelixDiag::fillHitInfoMC(const art::Ptr<SimParticle>& pspp, StrawDigiMC const& digimc, HitInfoMC& hinfomc) {
+    art::Ptr<SimParticle> spp;
+    hinfomc.reset();
+    if(TrkMCTools::simParticle(spp,digimc) > 0){
+      hinfomc._pdg = spp->pdgId();
+      hinfomc._proc = spp->realCreationCode();
+      if(spp->genParticle().isNonnull())
+	hinfomc._gen = spp->genParticle()->generatorId().id();
+      hinfomc._rel = MCRelationship::relationship(pspp,spp);
+    }
   }
 
 }

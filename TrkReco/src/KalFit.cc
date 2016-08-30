@@ -262,7 +262,7 @@ namespace mu2e
 // use the reference trajectory, as that's what all the existing hits do
       const TrkDifPieceTraj* reftraj = krep->referenceTraj();
       for(unsigned iind=0;iind<indices.size(); ++iind){
-        size_t istraw = indices[iind]._index;
+        size_t istraw = indices[iind];
         const StrawHit& strawhit(shcol->at(istraw));
         const Straw& straw = tracker.getStraw(strawhit.strawIndex());
 // estimate  initial flightlength
@@ -399,7 +399,7 @@ namespace mu2e
     double vflt = tdef.particle().beta(mom)*CLHEP::c_light;
     unsigned nind = tdef.strawHitIndices().size();
     for(unsigned iind=0;iind<nind;iind++){
-      size_t istraw = tdef.strawHitIndices()[iind]._index;
+      size_t istraw = tdef.strawHitIndices()[iind];
       const StrawHit& strawhit(shcol->at(istraw));
       const Straw& straw = tracker.getStraw(strawhit.strawIndex());
       double fltlen = tdef.helix().zFlight(straw.getMidPoint().z());
@@ -409,8 +409,8 @@ namespace mu2e
     // create the hit object.  Start with the 1st additional error for anealing
       TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fltlen,_herr.front(),_maxdriftpull);
       assert(trkhit != 0);
-    // set the initial ambiguity based on the input
-      trkhit->setAmbig(tdef.strawHitIndices()[iind]._ambig);
+    // set the initial ambiguity to null
+      trkhit->setAmbig(0);
     // refine the flightlength, as otherwise hits in the same plane are at exactly the same flt, which can cause problems
       TrkErrCode pstat = trkhit->updatePoca(&tdef.helix());
       if(pstat.failure()){
@@ -681,7 +681,7 @@ namespace mu2e
     static CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
     // loop over strawhits
     for(unsigned iind=0;iind<nind;iind++){
-      size_t istraw = tdef.strawHitIndices()[iind]._index;
+      size_t istraw = tdef.strawHitIndices()[iind];
       const StrawHit& strawhit(shcol->at(istraw));
       const Straw& straw = tracker.getStraw(strawhit.strawIndex());
       // compute the flightlength to this hit from z=0 (can be negative)

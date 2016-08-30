@@ -51,8 +51,8 @@ namespace mu2e {
 
       mu2e::GeomHandle<mu2e::TTracker> handle;
       const TTracker* t = handle.get();
-      const Straw* s1 = &t->getStraw(StrawIndex(h1._index));
-      const Straw* s2 = &t->getStraw(StrawIndex(h2._index));
+      const Straw* s1 = &t->getStraw(StrawIndex(h1));
+      const Straw* s2 = &t->getStraw(StrawIndex(h2));
 
       return s1->getMidPoint().z() < s2->getMidPoint().z();
     }
@@ -661,8 +661,8 @@ namespace mu2e {
         if (_debugLevel > 1) {
           for (int ih=0; ih<nhits; ih++) {
             hitIndex ind = tp->_index[ih];
-            hit  = &_shcol->at(ind._index);
-	    flag = _shfcol->at(ind._index);
+            hit  = &_shcol->at(ind);
+	    flag = _shfcol->at(ind);
             printf("index = %5i flag: %10s time=%10.3f energy = %10.3f\n",
                    hit->strawIndex().asInt(),flag.hex().data(), hit->time(),hit->energyDep());
           }
@@ -1337,7 +1337,7 @@ namespace mu2e {
     std::vector<hitIndex> goodhits;
 
     for(unsigned ihit=0;ihit<indices.size();++ihit){
-      StrawHit const& sh = hits->at(indices[ihit]._index);
+      StrawHit const& sh = hits->at(indices[ihit]);
       Straw const& straw = _tracker->getStraw(sh.strawIndex());
       CLHEP::Hep3Vector hpos = straw.getMidPoint();
       CLHEP::Hep3Vector hdir = straw.getDirection();

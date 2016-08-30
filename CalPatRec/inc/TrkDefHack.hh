@@ -41,7 +41,7 @@ namespace mu2e
     TrkDefHack& operator = (const TrkDefHack&);
     ~TrkDefHack();
   // append a straw hit to this track definition
-    void appendHit(size_t index,int ambig=0) { _timeCluster._strawHitIdxs.push_back(hitIndex(index,ambig)); }
+    void appendHit(size_t index) { _timeCluster._strawHitIdxs.push_back(index); }
   // accessors
     const std::vector<hitIndex>& strawHitIndices() const { return _timeCluster._strawHitIdxs;}
     const HelixTraj& helix() const { return _h0; }

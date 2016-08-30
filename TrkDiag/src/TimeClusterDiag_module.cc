@@ -234,7 +234,7 @@ namespace mu2e {
   void TimeClusterDiag::fillClusterHitInfo(TimeCluster const& tc) {
     for (auto const& idx : tc._strawHitIdxs) {
       TimeClusterHitInfo tchi;
-      size_t ish = idx._index;
+      size_t ish = idx;
       tchi._dt = _shcol->at(ish).time()-tc._t0._t0;
       Hep3Vector const& pos = _shpcol->at(ish).pos();
       double phi = pos.phi();
@@ -248,16 +248,13 @@ namespace mu2e {
       tchi._mva = _peakMVA.evalMVA(pars);
 // MC truth
       if(_mcdiag){
-	StrawDigiMC const& mcdigi = _mcdigis->at(idx._index);
-	art::Ptr<StepPointMC> const& spmc = TrkMCTools::threshStep(mcdigi);
-	if(spmc.isNonnull()){
-	  art::Ptr<SimParticle> const& sp = spmc->simParticle();
-	  if(sp.isNonnull()){
-	    tchi._mcpdg = sp->pdgId();
-	    tchi._mcproc = sp->creationCode();
-	    if(sp->genParticle().isNonnull())
-	      tchi._mcgen = sp->genParticle()->generatorId().id();
-	  }
+	StrawDigiMC const& mcdigi = _mcdigis->at(idx);
+	art::Ptr<SimParticle> sp;
+	if(TrkMCTools::simParticle(sp,mcdigi) > 0){
+	  tchi._mcpdg = sp->pdgId();
+	  tchi._mcproc = sp->creationCode();
+	  if(sp->genParticle().isNonnull())
+	    tchi._mcgen = sp->genParticle()->generatorId().id();
 	}
       }
       _tchinfo.push_back(tchi);
@@ -355,7 +352,7 @@ namespace mu2e {
     if(_mcdiag){
       for (auto const& idx : tp._strawHitIdxs) {
       // mc truth info
-	StrawDigiMC const& mcdigi = _mcdigis->at(idx._index);
+	StrawDigiMC const& mcdigi = _mcdigis->at(idx);
 	bool conversion = TrkMCTools::CEDigi(mcdigi);
 	if(conversion)++tcinfo._ncehits;
       }

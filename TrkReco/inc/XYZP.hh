@@ -12,7 +12,6 @@ namespace mu2e {
   class StrawHit;
   class StrawHitPosition;
   class Straw;
-  class hitIndex;
 // utility struct; value plus error
   struct VALERR {
     double _val;
@@ -30,7 +29,7 @@ namespace mu2e {
     int _ind;
 // position
     CLHEP::Hep3Vector _pos;
-// ambiguity-resolved phi angle
+// ambiguity-resolved azimuth WRT the center of the helix
     double _phi;
 // flag
     StrawHitFlag _flag;
@@ -58,7 +57,7 @@ namespace mu2e {
     static int _debug;
      // fill function; make it static to keep the namespace clean
     static void fillXYZP(StrawHitCollection const& shcol,
-	StrawHitPositionCollection const& shpos, std::vector<hitIndex>, XYZPVector& xyzp);
+	StrawHitPositionCollection const& shpos, std::vector<size_t>, XYZPVector& xyzp);
   };
 }
 

@@ -57,7 +57,7 @@ namespace mu2e {
     double             TMin     ()      const { return _tmin; }
     double             TMax     ()      const { return _tmax; }
     int                NHits    ()      const { return _index.size(); }
-    int                HitIndex (int I) const { return _index.at(I)._index ; }
+    int                HitIndex (int I) const { return _index.at(I); }
 
     void               SetCprIndex(int Index) { _cprIndex = Index; }
 

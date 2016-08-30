@@ -1164,7 +1164,7 @@ namespace mu2e {
       int loc;
       StrawHitFlag flag;
       for (int i=0; i<size; ++i) { 
-	loc                = shIndices[i]._index;
+	loc                = shIndices[i];
 	flag               = mytrk.strawHitFlagCollection()->at(loc);
 	StrawHit const& sh = mytrk.strawHitCollection()->at(loc);
 	Straw const& straw = tracker.getStraw(sh.strawIndex());
