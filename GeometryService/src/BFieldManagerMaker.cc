@@ -768,6 +768,8 @@ namespace mu2e {
       }
     }
 
+    close(fd);
+
   } // end BFieldManagerMaker::readG4BLBinary
 
   void BFieldManagerMaker::writeG4BLBinary(const BFMap& bf, const std::string& outputfile) {
