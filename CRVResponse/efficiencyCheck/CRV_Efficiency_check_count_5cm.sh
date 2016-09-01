@@ -1,6 +1,6 @@
 layerOffset=42
 moduleGap=5
-timeWindow=20
+timeWindow=10
 sides=2
 PEthreshold=10
 photonYield=4000

@@ -40,7 +40,7 @@ moduleGap=5
         echo "physics.producers.CrvPhotonArrivals.backgroundSampleFactor    : 2" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.maxBackgroundTimeShift    : 500" >> $fclfile
 
-        mu2eart --setup=./setup.sh --fcl=$fclfile --njobs=50 --events-per-job=20000 --jobname=CRV_efficiency5cm_top_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield --outstage=/pnfs/mu2e/scratch/outstage
+        mu2eart --setup=./setup.sh --fcl=$fclfile --njobs=10 --events-per-job=100000 --jobname=CRV_efficiency5cm_top_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield --outstage=/pnfs/mu2e/scratch/outstage
 
 #### for adjacentPulseTimeDifference = 10ns
 
@@ -56,7 +56,7 @@ moduleGap=5
         echo "physics.producers.CrvPhotonArrivals.backgroundSampleFactor    : 2" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.maxBackgroundTimeShift    : 500" >> $fclfile
 
-        mu2eart --setup=./setup.sh --fcl=$fclfile --njobs=50 --events-per-job=20000 --jobname=CRV_efficiency5cm10_top_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield --outstage=/pnfs/mu2e/scratch/outstage
+        mu2eart --setup=./setup.sh --fcl=$fclfile --njobs=10 --events-per-job=100000 --jobname=CRV_efficiency5cm10_top_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield --outstage=/pnfs/mu2e/scratch/outstage
 
       done
     done

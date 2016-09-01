@@ -202,7 +202,7 @@ physics :
 physics.producers.CrvPhotonArrivals.timeOffsets    : { inputs : [] }
 physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
 physics.producers.CrvPhotonArrivals.processNames   : ["*"]
-physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_6cm_4500"]
+physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["CRVConditions/v1_0/LookupTable_4500"]
 physics.producers.CrvPhotonArrivals.lookupTableCounterLengths : [4500]
 
 physics.producers.CrvCoincidencePE6T5.PEthresholds                    : [6]
