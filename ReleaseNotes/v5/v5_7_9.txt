@@ -2,6 +2,13 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_7_9
 
+4.  31 August 2016  kutschke
+    GeometryService/src/BFieldManagerMaker.cc
+      - in BFieldManagerMaker::readG4BLBinary the file descriptor
+        for the binary field map file was never closed.  This left
+        open file descriptors hanging around until the end of job.
+      - Fixed in this commit
+
 3.  29 August 2016  dnbrow01
     More geometry updates.  
     i)  Added "filler" material in the calorimeter mother volume, in the
