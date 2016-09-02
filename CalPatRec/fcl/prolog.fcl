@@ -62,7 +62,7 @@ CalPatRec : {
 	makeStrawHitModuleLabel                 : makeSH
 	debugLevel                              : 0
 	minnstraws                              : 10
-	maxiter                                 : 3
+	MaxIterations                           : 3
 	materialCorrection                      : false
 	seedsmear       			: 10000
 	maxhitchi                               : 5.0
