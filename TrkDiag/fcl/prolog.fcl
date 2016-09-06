@@ -34,14 +34,14 @@ BEGIN_PROLOG
     }
     MakeHits : [ MakeCaloReadoutHits ]
   }
-  CaloReco : {
-    producers : {
-      MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
-      MakeCaloProtoCluster : @local::MakeCaloProtoCluster
-      MakeCaloCluster      : @local::MakeCaloCluster
-    }
-    MakeClusters : [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
-  }
+  #CaloReco : {
+  #  producers : {
+  #    MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
+  #    MakeCaloProtoCluster : @local::MakeCaloProtoCluster
+  #    MakeCaloCluster      : @local::MakeCaloCluster
+  #  }
+  #  MakeClusters : [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
+  #}
   TrkCaloDiag : {
     PIDdt : {
       signalHypothesis: {
@@ -112,7 +112,7 @@ BEGIN_PROLOG
       @table::EventMixing.producers
       @table::Tracking.producers
       @table::CaloSim.producers
-      @table::CaloReco.producers
+     # @table::CaloReco.producers
       @table::TrackCaloMatching.producers
       @table::CrvResponsePackage.producers
   # DIO weighting for flat spectrum electrons

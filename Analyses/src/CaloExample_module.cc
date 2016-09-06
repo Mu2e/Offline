@@ -154,8 +154,8 @@ namespace mu2e {
        float _motTime[500000],_motEdep[16348],_motPosX[500000],_motPosY[500000],_motPosZ[500000];
 
        int   _nCluster,_nCluSim,_cluNcrys[16384];
-       float _cluEnergy[16384],_cluTime[16384],_cluCogX[16384],_cluCogY[16384],_cluCogZ[16384];
-       int   _cluConv[16384],_cluSimIdx[16384],_cluSimLen[16384];
+       float _cluEnergy[16384],_cluTime[16384],_cluCogX[16384],_cluCogY[16384],_cluCogZ[16384],_cluE1[16384],_cluE9[16384],_cluE25[16384],_cluSecMom[16384];
+       int   _cluSplit[16384],_cluConv[16384],_cluSimIdx[16384],_cluSimLen[16384];
        std::vector<std::vector<int> > _cluList;
 
        int   _clusimId[16384],_clusimPdgId[16384],_clusimGenIdx[16384],_clusimCrCode[16384];
@@ -168,6 +168,8 @@ namespace mu2e {
        float _trkDip[8192],_trkpt[8192],_trkcon[8192],_trkmomErr[8192];
 
        float _trkt0[8192],_trkMom[8192], _trkd0[8192],_trkz0[8192],_trkOmega[8192],_trkPhi0[8192],_trkt0Err[8192]; //rhb added
+
+
 
 
 
@@ -249,6 +251,7 @@ namespace mu2e {
        _Ntup->Branch("simEdep",      &_motEdep ,     "simEdep[nSim]/F");
        _Ntup->Branch("simGenIdx",    &_motGenIdx ,   "simGenIdx[nSim]/I");
 
+
        _Ntup->Branch("nCluster",     &_nCluster ,    "nCluster/I");
        _Ntup->Branch("cluEnergy",    &_cluEnergy ,   "cluEnergy[nCluster]/F");
        _Ntup->Branch("cluTime",      &_cluTime ,     "cluTime[nCluster]/F");
@@ -256,6 +259,11 @@ namespace mu2e {
        _Ntup->Branch("cluCogY",      &_cluCogY ,     "cluCogY[nCluster]/F");
        _Ntup->Branch("cluCogZ",      &_cluCogZ ,     "cluCogZ[nCluster]/F");
        _Ntup->Branch("cluNcrys",     &_cluNcrys ,    "cluNcrys[nCluster]/I");
+       _Ntup->Branch("cluE1",        &_cluE1 ,       "cluE1[nCluster]/F");
+       _Ntup->Branch("cluE9",        &_cluE9 ,       "cluE9[nCluster]/F");
+       _Ntup->Branch("cluE25",       &_cluE25 ,      "cluE25[nCluster]/F");
+       _Ntup->Branch("cluSecMom",    &_cluSecMom ,   "cluSecMom[nCluster]/F");
+       _Ntup->Branch("cluSplit",     &_cluSplit ,    "cluSplit[nCluster]/I");
        _Ntup->Branch("cluConv",      &_cluConv ,     "cluConv[nCluster]/I");
        _Ntup->Branch("cluSimIdx",    &_cluSimIdx ,   "cluSimIdx[nCluster]/I");
        _Ntup->Branch("cluSimLen",    &_cluSimLen ,   "cluSimLen[nCluster]/I");
@@ -510,6 +518,11 @@ namespace mu2e {
            _cluCogX[_nCluster]   = clusterIt->cog3Vector().x(); //in disk FF frame
            _cluCogY[_nCluster]   = clusterIt->cog3Vector().y();
            _cluCogZ[_nCluster]   = clusterIt->cog3Vector().z();
+           _cluE1[_nCluster]     = clusterIt->e1();
+           _cluE9[_nCluster]     = clusterIt->e9();
+           _cluE25[_nCluster]    = clusterIt->e25();
+           _cluSecMom[_nCluster] = clusterIt->secondMoment();
+           _cluSplit[_nCluster]  = clusterIt->isSplit();
            _cluConv[_nCluster]   = (contentMC.hasConversion() ? 1 : 0);
            _cluList.push_back(_list);
 

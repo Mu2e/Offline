@@ -14,8 +14,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
-#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -23,6 +21,9 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
+#include "MCDataProducts/inc/CaloShowerCollection.hh"
+#include "CaloMC/inc/CrystalContentMC.hh"
 #include "GeneralUtilities/inc/TwoLinePCA.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
@@ -66,6 +67,8 @@ namespace mu2e {
     virtual void analyze(const art::Event& e) override;
 
   private:
+ 
+    typedef std::vector< art::Handle<StepPointMCCollection> > HandleVector;
 
     // Start: run time parameters
 
@@ -84,12 +87,15 @@ namespace mu2e {
     // Name of the tracker StepPoint collection
     std::string _trackerStepPoints;
 
-    // Module which made the CaloHits
-    std::string _caloReadoutModuleLabel;
+    // Name of the calorimeter StepPoint collection
+    std::string _calorimeterStepPoints;
+
+    // Module which made the MC CaloShowers
+    std::string _caloShowerModuleLabel;
 
     // Module which made the CaloCrystalHits
     std::string _caloCrystalModuleLabel;
-
+        
     // Name of the stopping target StepPoint collection
     std::string _targetStepPoints;
 
@@ -130,20 +136,15 @@ namespace mu2e {
     TH1F* _hMomentumG4;
     TH1F* _hStepLength;
 
-    TH1F* _hEdep;
-    TH1F* _hEdepMC;
-    TH1F* _hNcrystal;
-    TH1F* _hNcrstep;
-    TH1F* _hNrostep;
-    TH1F* _hEdepROMC;
-
-    TH1F* _hRCEdep;
-    TH1F* _hRCTime;
-    TH1F* _hRCNCrystals;
-
-    TH1F* _hRCEdepMC;
-    TH1F* _hRCTimeMC;
-    TH1F* _hRCNCrystalsMC;
+    TH1F* _hCaStepEdep;
+    TH1F* _hCaStepNum;
+    TH1F* _hCaShowerEdep;
+    TH1F* _hCaShowerNum;
+    TH1F* _hCaTime;
+    TH1F* _hCaEdep;
+    TH2F* _hCaCrystalXY;
+    TH1F* _hCaEdepMC;
+    TH1F* _hCaNcrystal;
 
     TH1F* _hTargetEdep;
     TH1F* _hTargetPathLength;
@@ -187,8 +188,9 @@ namespace mu2e {
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-    _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel","CaloReadoutHitsMaker")),
-    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalHitsMaker")),
+    _calorimeterStepPoints(pset.get<string>("calorimeterStepPoints","calorimeter")),
+    _caloShowerModuleLabel(pset.get<string>("caloShowerModuleLabel","CaloShowerFromShowerStep")),
+    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalHitsFromHits")),
     _targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget")),
     _crvStepPoints(pset.get<string>("CRVStepPoints","CRV")),
     _minimumEnergy(pset.get<double>("minimumEnergy")),
@@ -213,18 +215,15 @@ namespace mu2e {
     _hCheckPointWireZ(0),
     _hMomentumG4(0),
     _hStepLength(0),
-    _hEdep(0),
-    _hEdepMC(0),
-    _hNcrystal(0),
-    _hNcrstep(0),
-    _hNrostep(0),
-    _hEdepROMC(0),
-    _hRCEdep(0),
-    _hRCTime(0),
-    _hRCNCrystals(0),
-    _hRCEdepMC(0),
-    _hRCTimeMC(0),
-    _hRCNCrystalsMC(0),
+    _hCaStepEdep(0),
+    _hCaStepNum(0),
+    _hCaShowerEdep(0),
+    _hCaShowerNum(0),
+    _hCaTime(0),
+    _hCaEdep(0),
+    _hCaCrystalXY(0),
+    _hCaEdepMC(0),
+    _hCaNcrystal(0),
     _hTargetEdep(0),
     _hTargetPathLength(0),
     _hTargetNfoils(0),
@@ -274,37 +273,23 @@ namespace mu2e {
     _hStepLength = tfs->make<TH1F>( "hStepLength",  "G4 Step Length in Sensitive Detector; (mm)",
                                     100, 0., 10. );
 
-    _hEdep     = tfs->make<TH1F>( "hEdep",     "Total energy deposition in calorimeter", 2400, 0., 2400. );
-    _hEdepMC   = tfs->make<TH1F>( "hEdepMC",   "True energy deposition in calorimeter",  240,  0., 240. );
-    _hNcrystal = tfs->make<TH1F>( "hNcrystal", "Total energy deposition in calorimeter",   50, 0.,   50. );
-    _hNcrstep  = tfs->make<TH1F>( "hNcrstep", "Number of G4 steps in crystal, per APD", 100, 0., 500. );
-    _hNrostep  = tfs->make<TH1F>( "hNrostep", "Number of G4 steps in APD, per APD", 10, 0., 10. );
-    _hEdepROMC = tfs->make<TH1F>( "hEdepROMC", "Direct energy deposition in the APD", 100, 0., 10. );
+    _hCaStepEdep =   tfs->make<TH1F>("hCaStepEdep",  "Total energy deposition from StepPt in each crystal", 
+                                     2000, 0., 2000. );
+    _hCaStepNum    = tfs->make<TH1F>("hCaStepNum",   "Total number of StepPt in each crystal", 
+                                     2000, 0., 2000. );
+    _hCaCrystalXY  = tfs->make<TH2F>("hCaCrystalXY", "calorimeter stepPt position in crystal frame", 
+                                     100,-50.,50.,  100,-50.,50. );
 
-
-    _hRCEdep    = tfs->make<TH1F>( "hRCEdep",
-                                   "Total energy deposition in calorimeter reconstructed from ROs",
-                                   2400, 0., 2400. );
-
-    _hRCTime    = tfs->make<TH1F>( "hRCTime",
-                                   "Hit time in calorimeter reconstructed from ROs",
-                                   2400, 0., 2400. );
-
-    _hRCNCrystals = tfs->make<TH1F>( "hRCNCrystals",
-                                     "Number of crystals reconstructed from ROs",
-                                     50, 0., 50. );
-
-    _hRCEdepMC  = tfs->make<TH1F>( "hRCEdepMC",
-                                   "Total energy deposition in calorimeter reconstructed from raw ROs MC",
-                                   240, 0., 240. );
-
-    _hRCTimeMC  = tfs->make<TH1F>( "hRCTimeMC",
-                                   "Hit time in calorimeter reconstructed from raw ROs MC",
-                                   2400, 0., 2400. );
-
-    _hRCNCrystalsMC = tfs->make<TH1F>( "hRCNCrystalsMC",
-                                       "Number of crystals reconstructed from raw ROs MC",
-                                       50, 0., 50. );
+    _hCaShowerEdep = tfs->make<TH1F>("hCaShowerEdep",  "Total energy deposition from StepPt in each crystal", 
+                                     2000, 0., 2000. );
+    _hCaShowerNum  = tfs->make<TH1F>("hCaShowerNum",   "Total number of StepPt in each crystal", 
+                                     2000, 0., 2000. );
+    _hCaTime       = tfs->make<TH1F>("hCaTime",   "Calorimeter hit time", 
+                                     2000, 0., 2000. );
+    _hCaEdep       = tfs->make<TH1F>("hCaEdep",      "Total energy deposition in calorimeter", 
+                                     200, 0., 200. );
+    _hCaNcrystal   = tfs->make<TH1F>("hCaNcrystal",    "Number of crystals hit",  
+                                     2000,  0., 2000. );
 
     // Stopping target histograms
 
@@ -377,7 +362,8 @@ namespace mu2e {
       doTTracker(event);
     }
 
-    doCalorimeter(event);
+
+    if (geom->hasElement<Calorimeter>() )doCalorimeter(event);
 
     doStoppingTarget(event);
 
@@ -389,226 +375,101 @@ namespace mu2e {
     doPointTrajectories( event );
 
   }
+  
+  void ReadBack::doCalorimeter(const art::Event& event)
+  {
 
-  void ReadBack::doCalorimeter(const art::Event& event) {
+     //Handle to the calorimeter
+     art::ServiceHandle<GeometryService> geom;
+     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
-    // Get handles to calorimeter collections
-    art::Handle<CaloHitCollection> caloHits;
-    art::Handle<CaloHitMCTruthCollection> caloMC;
-    event.getByLabel(_caloReadoutModuleLabel,caloHits);
-    event.getByLabel(_caloReadoutModuleLabel,caloMC);
 
-    // Find pointers to the original G4 steps
-    art::Handle<PtrStepPointMCVectorCollection> crystalPtr;
-    art::Handle<PtrStepPointMCVectorCollection> readoutPtr;
-    event.getByLabel(_caloReadoutModuleLabel,"CaloHitMCCrystalPtr",crystalPtr);
-    event.getByLabel(_caloReadoutModuleLabel,"CaloHitMCReadoutPtr",readoutPtr);
+     // These selectors will select data products with the given instance name, and ignore all other fields of the product ID.
+     art::ProductInstanceNameSelector getCrystalSteps(_calorimeterStepPoints);
+     HandleVector crystalStepsHandles;
+     event.getMany( getCrystalSteps, crystalStepsHandles);
 
-    // Find original G4 steps in the APDs
-    art::Handle<StepPointMCCollection> rohits;
-    event.getByLabel(_g4ModuleLabel,"calorimeterRO",rohits);
+     //Calorimeter shower MC
+     art::Handle<CaloShowerCollection> caloShowerHandle;
+     event.getByLabel(_caloShowerModuleLabel, caloShowerHandle);
+     const CaloShowerCollection& caloShowers(*caloShowerHandle);
 
-    bool haveCalo = ( caloHits.isValid() && caloMC.isValid() );
+     //Crystal hits (average from readouts)
+     art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
+     event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
+     CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
 
-    if( ! haveCalo) return;
 
-    art::ServiceHandle<GeometryService> geom;
-    if( ! geom->hasElement<Calorimeter>() ) return;
-    GeomHandle<Calorimeter> cg;
 
-    double totalEdep = 0.0;
-    double simEdep = 0.0;
-    map<int,int> hit_crystals;
 
-    for ( size_t i=0; i<caloHits->size(); ++i ) {
-      totalEdep += caloHits->at(i).energyDep();
-      simEdep += caloMC->at(i).energyDep();
+     //collect all StepPointMC in crystal
 
-      int roid = caloHits->at(i).id();
-      int cid = cg->crystalByRO(roid);
-      hit_crystals[cid] = 1;
-    }
+     map<int,double> stepPtMap;
+     map<int,int>    stepPtMap2;
+     for ( HandleVector::const_iterator i=crystalStepsHandles.begin(), e=crystalStepsHandles.end(); i != e; ++i )
+     {     
+          const art::Handle<StepPointMCCollection>& handle(*i);
+          const StepPointMCCollection& steps(*handle);
 
-    _hEdep->Fill(totalEdep);
-    _hEdepMC->Fill(simEdep);
-    _hNcrystal->Fill(hit_crystals.size());
+          for (const auto& step : steps )
+	  {
+	      stepPtMap[step.volumeId()] += step.totalEDep();
+	      ++stepPtMap2[step.volumeId()];
+	      
+	      
+              CLHEP::Hep3Vector hitPos  = cal.toCrystalFrame(step.volumeId(),step.position());
+	      _hCaCrystalXY->Fill(hitPos.x(),hitPos.y());
 
-    // Fill number of G4 steps in crystal and APD, per APD
-    if( crystalPtr.isValid() && readoutPtr.isValid() ) {
-      for ( size_t i=0; i<caloHits->size(); ++i ) {
-        _hNcrstep->Fill(crystalPtr->at(i).size());
-        _hNrostep->Fill(readoutPtr->at(i).size());
-      }
-    }
+              if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ) 
+        	cout << "Readback: Calo StepPointMC (" << step.volumeId() << "," << step.totalEDep() << ")";
+	  }   
+     }
 
-    // Calculate direct energy deposition in the APD
-    // This is an example how one can propagate back to the original
-    // G4 data
-    if( readoutPtr.isValid() && rohits.isValid() ) {
-      for ( size_t i=0; i<caloHits->size(); ++i ) {
-        // Get vector of pointer to G4 steps in APDs for calorimeter hit #i
-        const PtrStepPointMCVector & ptr = readoutPtr->at(i);
-        // Skip calorimeter hits without G4 step in APD (for these hit
-        // no charged particle crossed APD)
-        if( ptr.size()<=0 ) continue;
-        // Accumulator to count total energy deposition
-        double esum = 0;
-        // Loop over that vector, get each G4 step and accumulate energy deposition
-        for( size_t j=0; j<ptr.size(); j++ ) {
-          const StepPointMC & rohit = *ptr[j];
-          esum += rohit.eDep();
-        }
-        // Fill histogram
-        _hEdepROMC->Fill(esum);
-      }
-    }
+     for (const auto& iter : stepPtMap) _hCaStepEdep->Fill(iter.first,iter.second);
+     for (const auto& iter : stepPtMap2) _hCaStepNum->Fill(iter.first,iter.second);
 
-    if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ){
-      for ( size_t i=0; i<caloHits->size(); ++i ) {
-        CaloHit const & hit = (*caloHits).at(i);
-        cout << "Readback: " << hit << endl;
-      }
-    }
 
-    if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ){
-      for ( size_t i=0; i<caloMC->size(); ++i ) {
-        CaloHitMCTruth const & hit = (*caloMC).at(i);
 
-        // Ptrs to StepPointMCs in the crystals.
-        PtrStepPointMCVector const& xptr = crystalPtr->at(i);
+     //do the same with the CaloShowers
+     if (!caloShowerHandle.isValid()) return;
 
-        // Ptrs to StepPointMCs in the readout planes.
-        PtrStepPointMCVector const& rptr = readoutPtr->at(i);
+     map<int,double> showerMap;
+     map<int,int> showerMap2;
+     for (const auto& shower : caloShowers)
+     {
+         showerMap[shower.crystalId()] += shower.energy();
+         for (const auto& cst :shower.caloShowerSteps()) showerMap2[shower.crystalId()] += cst->nCompress();
+         _hCaTime->Fill(shower.time());
 
-        cout << "Readback: " << hit << " | " << rptr.size() << " " << xptr.size();
-        if ( !rptr.empty() ){
-          cout << " | ";
-          for ( size_t j=0; j<rptr.size(); ++j ){
-            art::Ptr<StepPointMC> const& p = rptr.at(j);
-            cout << " (" << p.id() << "," << p.key() << ")";
-          }
-        }
-        if ( !xptr.empty() ){
-          cout << " | ";
-          for ( size_t j=0; j<xptr.size(); ++j ){
-            art::Ptr<StepPointMC> const& p = xptr.at(j);
-            cout << " (" << p.id() << "," << p.key() << ")";
-          }
-        }
-        cout << endl;
-      }
-    }
+         if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ) 
+	   std::cout<<"Readback: caloshower in crystal "<< shower.crystalId()<<" eDep = "<<shower.energy()
+	            <<" time = "<<shower.time()<<std::endl;
+     }
 
-    // caloCrystalHits
-    art::Handle<CaloCrystalHitCollection>  caloCrystalHits;
+     for (const auto& iter : showerMap)  _hCaShowerEdep->Fill(iter.first,iter.second);
+     for (const auto& iter : showerMap2) _hCaShowerNum->Fill(iter.first,iter.second);
 
-    event.getByLabel(_caloCrystalModuleLabel,caloCrystalHits);
-    if (!caloCrystalHits.isValid()) {
-      _diagLevel > 0 && cout << __func__ << ": NO CaloCrystalHits" << endl;
-      return;
-    }
 
-    totalEdep = 0.0;
-    simEdep = 0.0;
+     //look at reconstructed hits
+     if (!caloCrystalHitsHandle.isValid()) return;
 
-    typedef multimap<int,size_t> hitCrystalsMultiMap;
-    hitCrystalsMultiMap hitCrystals;
+     double totalEdep = 0.0;
+     set<int> hit_crystals;
 
-    _diagLevel > 0 &&
-      cout << __func__ << ": caloCrystalHits->size() " << caloCrystalHits->size() << endl;
+     for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
+     {
+         const CaloCrystalHit &hit     = caloCrystalHits.at(ic);
 
-    for ( size_t i=0; i<caloCrystalHits->size(); ++i ) {
+         totalEdep += hit.energyDep();
+         hit_crystals.insert(hit.id());
 
-      CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
+	 if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ) 
+	   cout<<"Readback: caloHit id = "<<hit.id()<<" "<<"energy = "<<hit.energyDep()<<" time= "<<hit.time()<<endl;
+     }
 
-      totalEdep += hit.energyDep();
-      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalHits)[i].id(): "
-                             << hit.id() << endl;
+     _hCaEdep->Fill(totalEdep);
+     _hCaNcrystal->Fill(hit_crystals.size());
 
-      // check if the crystal is there already (it may be ok if the timing is different)
-
-      hitCrystalsMultiMap::const_iterator pos = hitCrystals.find(hit.id());
-
-      if ( pos != hitCrystals.end() ) {
-
-        //_diagLevel > 0 && cout << __func__ << ": Already saw "
-        //                       << (*caloCrystalHits).at(pos->second) << endl;
-
-      }
-
-      //_diagLevel > 0 && cout << __func__ << ": Inserting   " << hit << endl;
-
-      hitCrystals.insert(pair<int,size_t>(hit.id(),i));
-      _hRCTime->Fill(hit.time());
-
-    }
-
-    _diagLevel > 0 && cout << __func__ << ": hitCrystals.size()     "
-                           << hitCrystals.size() << endl;
-
-    _hRCEdep->Fill(totalEdep);
-    _hRCNCrystals->Fill(hitCrystals.size());
-
-    if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ){
-      for ( size_t i=0; i<caloCrystalHits->size(); ++i ) {
-        //CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
-        //cout << "Readback: " << hit << endl;
-      }
-    }
-
-    // MC truth at the per crystal level.
-    art::Handle<CaloCrystalOnlyHitCollection>  caloCrystalOnlyHits;
-    event.getByLabel(_caloReadoutModuleLabel,caloCrystalOnlyHits);
-    if (!caloCrystalOnlyHits.isValid()) {
-      _diagLevel > 0 && cout << __func__ << ": NO CaloCrystalOnlyHits" << endl;
-      return;
-    }
-
-    simEdep = 0.0;
-
-    hitCrystals.clear();
-
-    _diagLevel > 0 &&
-      cout << __func__ << ": caloCrystalOnlyHits->size() " << caloCrystalOnlyHits->size() << endl;
-
-    for ( size_t i=0; i<caloCrystalOnlyHits->size(); ++i ) {
-
-      CaloCrystalOnlyHit const & hit = (*caloCrystalOnlyHits).at(i);
-
-      simEdep += hit.energyDep();
-      _diagLevel > 0 && cout << __func__ << ": (*caloCrystalOnlyHits)[i].id(): "
-                             << hit.id() << endl;
-
-      // check if the crystal is there already (it may be ok if the timing is different)
-
-      hitCrystalsMultiMap::const_iterator pos = hitCrystals.find(hit.id());
-
-      if ( pos != hitCrystals.end() ) {
-
-        _diagLevel > 0 && cout << __func__ << ": Already saw "
-                               << (*caloCrystalOnlyHits).at(pos->second) << endl;
-
-      }
-
-      _diagLevel > 0 && cout << __func__ << ": Inserting   " << hit << endl;
-
-      hitCrystals.insert(pair<int,size_t>(hit.id(),i));
-      _hRCTimeMC->Fill(hit.time());
-
-    }
-
-    _diagLevel > 0 && cout << __func__ << ": hitCrystals.size()     "
-                           << hitCrystals.size() << endl;
-
-    _hRCEdepMC->Fill(simEdep);
-    _hRCNCrystalsMC->Fill(hitCrystals.size());
-
-    if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ){
-      for ( size_t i=0; i<caloCrystalOnlyHits->size(); ++i ) {
-        CaloCrystalOnlyHit const & hit = (*caloCrystalOnlyHits).at(i);
-        cout << "Readback: " << hit << endl;
-      }
-    }
 
   }
 

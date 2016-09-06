@@ -15,6 +15,7 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
+#include "CaloCluster/fcl/prolog.fcl"
 #include "Analyses/fcl/prolog.fcl"
 
 #------------------------------------------------------------------------------
@@ -24,14 +25,14 @@ BEGIN_PROLOG
 
 generatorSeq  : [ generate, g4run, @sequence::EventMixing.TimeMaps ]
 
-make_digis   : [ MakeCaloReadoutHits, @sequence::Tracking.DigiSim ]
+make_digis   : [ @sequence::CaloDigiMC.DigiSim, @sequence::Tracking.DigiSim ]
 
 # calorimeter cluster reconstruction
-calRecoSeq    : [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
+calRecoSeq    : [ @sequence::CaloReco.Reco,@sequence::CaloDigiMC.TruthMatch,@sequence::CaloCluster.Reco,@sequence::CaloCluster.TruthMatch ]
 
 # hit making for CalPatRec
 cprMakeHitSeq : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
-		    CalPatRecFlagStrawHits, CalPatRecFlagBkgHits ]
+		  CalPatRecFlagStrawHits, CalPatRecFlagBkgHits ]
 # 
 calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
 
@@ -150,8 +151,12 @@ physics : {
 #------------------------------------------------------------------------------
 	@table::Mu2eG4.producers
         @table::EventMixing.producers 
-	@table::HitMakers.producers
-	@table::CaloCluster.producers
+	@table::HitMakers.producers        
+	@table::CaloDigiMC.producers
+        @table::CaloReco.producers
+        @table::CaloDigiMC.producersMC
+        @table::CaloCluster.producers
+        @table::CaloCluster.producersMC
 	@table::Tracking.producers
 	@table::CalPatRec.producers
 	@table::TrackCaloMatching.producers

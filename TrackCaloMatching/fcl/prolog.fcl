@@ -56,7 +56,7 @@ TrackCaloMatching : { @table::TrackCaloMatching
 	    dtOffset                     : @local::TrackCaloMatching.DtOffset             # ns
 	
 	    trkToCaloExtrapolModuleLabel : TrackCaloIntersection
-	    caloClusterModuleLabel       : MakeCaloCluster
+	    caloClusterModuleLabel       : CaloClusterFromProtoCluster
 #------------------------------------------------------------------------------
 # track fitter has to be the same as used by TrackCaloIntersection
 #------------------------------------------------------------------------------
@@ -308,7 +308,7 @@ CaloMatching : {
     module_type                  : CaloMatching
     fitterModuleLabel            : KFFDeM
     trkToCaloExtrapolModuleLabel : TrkExtrapol
-    caloClusterModuleLabel       : MakeCaloCluster
+    caloClusterModuleLabel       : CaloClusterFromProtoCluster
     fitparticle                  : 11
     fitdirection                 : 0
     diagLevel                    : 0
