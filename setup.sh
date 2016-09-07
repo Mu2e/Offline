@@ -73,7 +73,7 @@ setup -B art v2_02_02a -q${MU2E_UPS_QUALIFIERS}
 #setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
 
 # Geant4 and its cross-section files.
-#setup -B geant4 v4_9_6_p04d -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
+setup -B geant4 v4_9_6_p04e -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
 
 # Other libraries we need.
 setup -B heppdt v3_04_01e -q${MU2E_UPS_QUALIFIERS}
