@@ -12,7 +12,6 @@
 <!-- <class name="mu2e::ExtMonFNAL::ExtMon"/> -->
  <class name="std::vector<cet::map_vector_key>"/>
  <class name="mu2e::CRSScintillatorBarIndex"/>
- <class name="art::Wrapper<mu2e::CRSScintillatorBarIndex>"/>
 
  <class name="std::vector<CLHEP::Hep2Vector>" />
 
