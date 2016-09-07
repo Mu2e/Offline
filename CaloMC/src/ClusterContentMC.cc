@@ -34,6 +34,8 @@ namespace mu2e {
 
        void ClusterContentMC::fillCluster(const Calorimeter& cal, const CaloClusterMCTruthAssns& caloClusterTruth, const CaloCluster& cluster)
        {           
+	    std::set<const CaloShower*> caloShowerSeen;
+	    
 	    for (auto i=caloClusterTruth.begin(), ie = caloClusterTruth.end(); i !=ie; ++i)
 	    {	       
 	        const auto& caloClusterPtr = i->first;
@@ -41,6 +43,8 @@ namespace mu2e {
 		const auto& caloShowerPtr = caloClusterTruth.data(i);	     
 
 		if (caloClusterPtr.get() != &cluster) continue;
+		if (caloShowerSeen.find(caloShowerPtr.get()) != caloShowerSeen.end()) continue;
+		caloShowerSeen.insert(caloShowerPtr.get());		
 		
 		double eDep = caloShowerPtr->energy();
 		double time = caloShowerPtr->time();

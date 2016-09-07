@@ -2,7 +2,11 @@
 // Utility to study the MC content of a calo cluster. Browser over SimParticles of each crystal, and keep only distinct
 // entries, updating the total energy, time and position
 //
-//
+// Now there is a trick here. The truch matching is between SimParticle and CaloHits with a data payload about the CaloShower.
+// This means there can be several caloShowers for a given SimParticle / CaloHit entry. BUT this also means there can be 
+// several caloShowers for a given CaloHit if several SimParticle contibutes to the Shower. In that case, there is a double-counting 
+// problem, prevented by the  caloShowerSeen set
+//  
 // Original author B. Echenard
 //
 
@@ -36,13 +40,17 @@ namespace mu2e {
        void CrystalContentMC::fillCrystal(const Calorimeter& cal, const CaloHitMCTruthAssns& caloHitTruth, const CaloCrystalHit& caloCrystalHit)
        {           
 	    
+	    std::set<const CaloShower*> caloShowerSeen;
+	    
 	    for (auto i=caloHitTruth.begin(), ie = caloHitTruth.end(); i !=ie; ++i)
 	    {	       
 	        const auto& caloCrystalHitPtr = i->first;
 		const auto& sim = i->second;
 		const auto& caloShowerPtr = caloHitTruth.data(i);	     
 
-		if (caloCrystalHitPtr.get() != &caloCrystalHit) continue;
+		if (caloCrystalHitPtr.get() != &caloCrystalHit) continue;		
+		if (caloShowerSeen.find(caloShowerPtr.get()) != caloShowerSeen.end()) continue;
+		caloShowerSeen.insert(caloShowerPtr.get());		
 		
 		double eDep = caloShowerPtr->energy();
 		double time = caloShowerPtr->time();

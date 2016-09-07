@@ -436,7 +436,6 @@ namespace mu2e {
        } else {_nGen=0;}
 
 
-
        //--------------------------  Do calorimeter hits --------------------------------
 
        _nHits = _nSim = 0;
