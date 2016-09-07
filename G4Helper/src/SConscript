@@ -17,6 +17,7 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeometryService',
                                   'canvas_Utilities',
                                   'CLHEP',
                                   'cetlib',
+                                  'Core',
                                   'boost_system'
                                   ] )
 
@@ -30,6 +31,7 @@ helper.make_plugins( [ mainlib,
                        'boost_filesystem',
                        'boost_regex',
                        'boost_system',
+                       'Core',
                        ] )
 
 # This tells emacs to view this file in python mode.
