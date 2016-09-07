@@ -119,8 +119,8 @@ env = Environment( CPPPATH=[ cpppath_frag,
                    BABARLIBS = [ babarlibs ]
                  )
 
-# Define the rule for building dictionaries.
-genreflex = Builder(action="./bin/genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\"")
+# Define and register the rule for building dictionaries.
+genreflex = Builder(action="./bin/genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\" $LIBNAME $DEBUG_LEVEL" )
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
 # Get the flag that controls compiler options. Check that it is legal.
@@ -143,13 +143,29 @@ env.Append( MU2EOPTS = [level, graphicssys] );
 
 # Set compile and link flags.
 SetOption('warn', 'no-fortran-cxx-mix')
-env.MergeFlags('-std=c++1y')
-env.MergeFlags('-rdynamic')
+env.MergeFlags('-std=c++14')
 env.MergeFlags('-Wall')
 env.MergeFlags('-Wno-unused-local-typedefs')
 env.MergeFlags('-g')
 env.MergeFlags('-Werror')
 env.MergeFlags('-Wl,--no-undefined')
+env.MergeFlags('-gdwarf-2')
+env.MergeFlags('-Werror=return-type')
+env.MergeFlags('-Winit-self')
+env.MergeFlags('-Woverloaded-virtual')
+#
+# Fixme: Recommend these once we scrub to the code to make them work,
+#env.MergeFlags('-pedantic')
+#env.MergeFlags('-Wextra')
+#
+# Likely need these if we specify -Wextra or -pedantic
+# (Because underlying packages do not bulid cleanly wiht
+#  -Wextra or -pedantic)
+#env.MergeFlags('-Wno-long-long')
+#env.MergeFlags('-Wno-ignored-qualifiers')
+#env.MergeFlags('-Wno-unused-parameter')
+#env.MergeFlags('-Wno-type-limits')
+
 if level == 'prof':
     env.MergeFlags('-O3')
     env.MergeFlags('-fno-omit-frame-pointer')
@@ -159,6 +175,7 @@ if level == 'debug':
     env.MergeFlags('-O0')
 
 # This comes from: root-config --cflags --glibs
+# Fixme: check with root 6
 # Then guess at the correct location of Spectrum and MLP.
 rootlibs = [ 'Core', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
              'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
@@ -239,14 +256,14 @@ class mu2e_helper:
 
     def dict_libname(self):
         relpath = os.path.relpath('.',self.sourceroot)
-        return self.libname() + '_dict'
+        return self.libname() + '_dict.so'
 
     def map_libname(self):
         relpath = os.path.relpath('.',self.sourceroot)
         return self.libname() + '_map'
 
     def prefixed_dict_libname(self):
-        return '#/lib/' + self.dict_libname()
+        return '#/lib/lib' + self.dict_libname()
 
     def prefixed_map_libname(self):
         return '#/lib/' + self.map_libname()
@@ -296,21 +313,21 @@ class mu2e_helper:
                                )
 
 #
-#   Make the dictionary and map plugins.
+#   Make the dictionary and rootmap plugins.
 #
     def make_dict_and_map( self, userlibs, pf_dict=[] ):
         if os.path.exists('classes.h'):
             if os.path.exists('classes_def.xml'):
-                env.DictionarySource([ self.dict_tmp_name(),
-                                       self.map_tmp_name() ],
-                                     [ 'classes.h', 'classes_def.xml'] )
+                decorated_libname= "lib/lib" + self.dict_libname()
+                # First two arguments to DictionarySource are target file, source file.
+                env.DictionarySource( self.dict_tmp_name(),
+                                      'classes.h',
+                                      LIBNAME=decorated_libname,
+                                      DEBUG_LEVEL=level )
                 env.SharedLibrary( self.prefixed_dict_libname(),
                                    self.dict_tmp_name(),
                                    LIBS=[ userlibs ],
                                    parse_flags=pf_dict
-                                   )
-                env.SharedLibrary( self.prefixed_map_libname(),
-                                   self.map_tmp_name()
                                    )
 
 # Export the class so that it can be used in the SConscript files
