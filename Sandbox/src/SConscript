@@ -56,6 +56,7 @@ helper.make_plugin( 'FooService_service.cc',
                       'fhiclcpp',
                       'boost_filesystem',
                       'boost_system',
+                      'Core'
                       ],
                     )
 
@@ -72,6 +73,7 @@ helper.make_plugin( 'BarService_service.cc',
                       'cetlib',
                       'boost_filesystem',
                       'boost_system',
+                      'Core'
                       ],
                     )
 
@@ -88,6 +90,7 @@ helper.make_plugin( 'XBarService_service.cc',
                       'cetlib',
                       'boost_filesystem',
                       'boost_system',
+                      'Core'
                       ],
                     )
 
@@ -103,6 +106,7 @@ helper.make_plugin( 'Bug01Service_service.cc',
                       'cetlib',
                       'boost_filesystem',
                       'boost_system',
+                      'Core'
                       ],
                     )
 
