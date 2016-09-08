@@ -32,6 +32,7 @@
  <class name="mu2e::StrawHitFlagCollection"/>
  <class name="mu2e::TrkFitFlag"/>
  <class name="TrkT0"/>
+ <class name="mu2e::HitT0"/>
  <class name="mu2e::TrkFitFlagDetail"/>
  <class name="mu2e::StrawCluster"/>
  <class name="mu2e::StrawClusterCollection"/>
@@ -64,6 +65,7 @@
  <class name="mu2e::TrackerHitByID" persistent="false"/>
  <class name="mu2e::RobustHelix"/>
  <class name="mu2e::HelixVal"/>
+ <class name="mu2e::HelixCov"/>
  <class name="mu2e::HelixSeed"/>
  <class name="mu2e::HelixSeedCollection" /> 
  <class name="mu2e::TrackSeed"/>
@@ -111,6 +113,7 @@
  <class name="std::vector<art::Ptr<mu2e::TimeCluster> >"/>
  <class name="std::multimap<unsigned long int, art::Ptr<mu2e::StrawHit> >"/>
  <class name="art::Ptr<mu2e::HelixVal>"/>
+ <class name="art::Ptr<mu2e::HelixCov>"/>
 <!--  <class name="std::vector<art::Ptr<mu2e::HelixVal> >"/> -->
  <class name="art::Ptr<mu2e::TrackSeed>"/>
  <class name="std::vector<art::Ptr<mu2e::TrackSeed> >"/>

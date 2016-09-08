@@ -98,6 +98,8 @@ template class std::vector<art::Ptr<mu2e::TimeCluster> >;
 template class art::Ptr<mu2e::RobustHelix>;
 template class art::Ptr<mu2e::HelixVal>;
 template class std::vector<art::Ptr<mu2e::HelixVal> >;
+template class art::Ptr<mu2e::HelixCov>;
+template class std::vector<art::Ptr<mu2e::HelixCov> >;
 template class std::multimap<unsigned long int, art::Ptr<mu2e::StrawHit> >;
 template class art::Ptr<mu2e::CaloCrystalHit>;
 template class std::vector<art::Ptr<mu2e::CaloCrystalHit> >;
