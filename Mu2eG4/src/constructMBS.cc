@@ -17,7 +17,12 @@
 // those components are reconciled
 
 // Update by D. No. Brown, Louisville, 30/10/2015.  Updated version is 
-// "Version 2"
+// "Version 2", based on v7 of Doc 1351.  In "Version 3", Anthony Palladino
+// widened the downstream beam exit for the STM design.
+// Version 4 adds pump-out holes in the bottom of the MBS to Version 2.
+// Version 5 does the same thing to Version 3.  
+// At the time of the latter modification, version 4 is default.  Once 
+// the design of the CRV and STM are finalized, version 5 will be default.
 
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -41,6 +46,7 @@
 
 // G4 includes
 #include "G4Material.hh"
+#include "G4Box.hh"
 #include "G4Color.hh"
 #include "G4VSolid.hh"
 #include "G4Tubs.hh"
@@ -49,6 +55,7 @@
 #include "G4SubtractionSolid.hh"
 #include "G4VPhysicalVolume.hh"
 
+#include <iostream>
 using namespace std;
 
 namespace mu2e {
@@ -80,6 +87,7 @@ namespace mu2e {
     bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
     bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
     bool const placePV             = true;
+
 
     // Access to the G4HelperService.
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
@@ -151,29 +159,96 @@ namespace mu2e {
     // now local offset in mother volume
     CLHEP::Hep3Vector BSTSOffset =  BSTSOffsetInMu2e - MBSMOffsetInMu2e;
 
-    // Use BSTS as mother volume for MBS
-    VolumeInfo BSTSInfo  = nestPolycone("BSTS",
-                                    pBSTSParams.getPolyconsParams(),
-                                    findMaterialOrThrow(pBSTSParams.materialName()),
-                                    0,
-                                    BSTSOffset,
-                                    //G4ThreeVector(0,0,0),
-                                    //detSolDownstreamVacInfo,
-                                    MBSMotherInfo,
-                                    0,
-                                    MBSisVisible,
-                                    G4Colour::Gray(),
-                                    MBSisSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    doSurfaceCheck
-                                    );
+
+    // Now build steel.  For versions 1-3, no holes.  For 4 and up, holes.
+    if ( MBSversion < 4 ) {
+      // Use BSTS as mother volume for MBS (DNB:  ??)
+      VolumeInfo BSTSInfo  = nestPolycone("BSTS",
+			       pBSTSParams.getPolyconsParams(),
+			       findMaterialOrThrow(pBSTSParams.materialName()),
+			       0,
+			       BSTSOffset,
+			       //G4ThreeVector(0,0,0),
+			       //detSolDownstreamVacInfo,
+			       MBSMotherInfo,
+			       0,
+			       MBSisVisible,
+			       G4Colour::Gray(),
+			       MBSisSolid,
+			       forceAuxEdgeVisible,
+			       placePV,
+			       doSurfaceCheck
+			       );
+    } else {
+      // Now we'll build the version with pump-out holes
+      // Get information for pump-out holes
+      double const BSTSHoleXDim     = mbsgh.getHoleXDimInSteel();
+      double const BSTSHoleYDim     = mbsgh.getHoleYDimInSteel();
+      double const BSTSHoleZDim     = mbsgh.getHoleZDimInSteel();
+      std::vector<CLHEP::Hep3Vector> BSTSHoleCenters 
+	= mbsgh.getHoleCentersInSteel();
+
+      // Make the steel
+      VolumeInfo BSTSInfo( "BSTS", BSTSOffset, MBSMotherInfo.centerInWorld );
+
+      G4Polycone * steel = new G4Polycone ( "BSTS",
+		   pBSTSParams.getPolyconsParams().phi0(),
+		   pBSTSParams.getPolyconsParams().phiTotal(),
+		   pBSTSParams.getPolyconsParams().numZPlanes(),
+		   &pBSTSParams.getPolyconsParams().zPlanes()[0],
+		   &pBSTSParams.getPolyconsParams().rInner()[0],
+		   &pBSTSParams.getPolyconsParams().rOuter()[0] );
+		   
+      
+      G4SubtractionSolid* aSolid = 0;
+      
+      // Now loop over the holes and make them.
+      for ( unsigned int jHole = 0; jHole < BSTSHoleCenters.size(); jHole++ ) {
+	std::ostringstream hname;
+	hname << "BSTSHole" << jHole+1;
+	G4Box* aHoleBox = new G4Box( hname.str(),
+				     BSTSHoleXDim/2.0*CLHEP::mm,
+				     BSTSHoleYDim/2.0*CLHEP::mm,
+				     BSTSHoleZDim/2.0*CLHEP::mm );
+
+	if ( 0 == aSolid ) {
+	  aSolid = new G4SubtractionSolid( "BSTS",
+					   steel, aHoleBox,
+					   0,
+					   BSTSHoleCenters[jHole] );
+	} else {
+	  G4SubtractionSolid * bSolid 
+	    = new G4SubtractionSolid ( "BSTS",
+				       aSolid, aHoleBox,
+				       0,
+				       BSTSHoleCenters[jHole] );
+	  aSolid = bSolid;
+	}
+      }
+
+      BSTSInfo.solid = aSolid;
+      finishNesting( BSTSInfo,
+		     findMaterialOrThrow(pBSTSParams.materialName()),
+		     0,
+		     BSTSInfo.centerInParent,
+		     MBSMotherInfo.logical,
+		     0,
+		     MBSisVisible,
+		     G4Colour::Gray(),
+		     MBSisSolid,
+		     forceAuxEdgeVisible,
+		     placePV,
+		     doSurfaceCheck
+		     );
+	       
+    }
+
 
     if ( MBSversion == 1 ) {
 
       // SPBSSup1
       // This one is placed directly into DS3Vacuum;
-      // Note that its radius is lager than theone of BSTS
+      // Note that its radius is lager than that of BSTS
 
       CLHEP::Hep3Vector SPBSSup1OffsetInMu2e = pSPBSSup1Params.originInMu2e();
 
@@ -209,7 +284,7 @@ namespace mu2e {
 
       // SPBSSup2
       // This one is placed directly into DS3Vacuum;
-      // Note that its radius is lager than theone of BSTS
+      // Note that its radius is lager than that of BSTS
 
       CLHEP::Hep3Vector SPBSSup2OffsetInMu2e = pSPBSSup2Params.originInMu2e();
 
@@ -246,7 +321,7 @@ namespace mu2e {
 
       // SPBSL
       // This one is placed directly into DS3Vacuum;
-      // Note that its radius is lager than theone of BSTS
+      // Note that its radius is lager than that of BSTS
 
       CLHEP::Hep3Vector SPBSLOffsetInMu2e = pSPBSLParams.originInMu2e();
 
@@ -283,7 +358,7 @@ namespace mu2e {
 
       // SPBSR
       // This one is placed directly into DS3Vacuum;
-      // Note that its radius is larger than the one of BSTS
+      // Note that its radius is larger than that of BSTS
 
       CLHEP::Hep3Vector SPBSROffsetInMu2e = pSPBSRParams.originInMu2e();
 
@@ -357,8 +432,9 @@ namespace mu2e {
         SPBSCOffsetInMu2eZ - zhl << ", " << SPBSCOffsetInMu2eZ + zhl << endl;
     }
 
-
-    // BSTC
+    // =========================
+    // BSTC - This is the upstream inner HDPE liner
+    // =========================
 
     CLHEP::Hep3Vector BSTCOffsetInMu2e = pBSTCParams.originInMu2e();
     // now local offset in mother volume
@@ -371,33 +447,103 @@ namespace mu2e {
     }
 
     G4Colour  orange  (.75, .55, .0);
-    VolumeInfo BSTCInfo  = nestPolycone("BSTC",
-                                    pBSTCParams.getPolyconsParams(),
-                                    findMaterialOrThrow(pBSTCParams.materialName()),
-                                    0,
-                                    BSTCOffset,
-                                    //detSolDownstreamVacInfo,
-                                    MBSMotherInfo,
-                                    0,
-                                    MBSisVisible,
-                                    orange,
-                                    MBSisSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    doSurfaceCheck
-                                    );
+    if ( MBSversion < 4 ) {
+      VolumeInfo BSTCInfo  = nestPolycone("BSTC",
+					  pBSTCParams.getPolyconsParams(),
+					  findMaterialOrThrow(pBSTCParams.materialName()),
+					  0,
+					  BSTCOffset,
+					  //detSolDownstreamVacInfo,
+					  MBSMotherInfo,
+					  0,
+					  MBSisVisible,
+					  orange,
+					  MBSisSolid,
+					  forceAuxEdgeVisible,
+					  placePV,
+					  doSurfaceCheck
+					  );
+      
+      
+      if ( verbosityLevel > 0) {
+	G4Polycone *tmpBSTCInfo  =  static_cast<G4Polycone*>(BSTCInfo.solid);
+	double zhl = tmpBSTCInfo->GetCorner(tmpBSTCInfo->GetNumRZCorner()-1).z-tmpBSTCInfo->GetCorner(0).z;
+	zhl*=0.5;
+	double BSTCOffsetInMu2eZ = BSTCOffsetInMu2e[CLHEP::Hep3Vector::Z];
+	cout << __func__ << " BSTC         Z extent in Mu2e    : " <<
+	  BSTCOffsetInMu2eZ - zhl << ", " << BSTCOffsetInMu2eZ + zhl << endl;
+      }
 
+    } else {
+      // Now we'll build the version with pump-out holes
+      // Get information for pump-out holes
+      double const BSTCHoleXDim   = mbsgh.getHoleXDimInUpPoly();
+      double const BSTCHoleYDim   = mbsgh.getHoleYDimInUpPoly();
+      double const BSTCHoleZDim   = mbsgh.getHoleZDimInUpPoly();
+      std::vector<CLHEP::Hep3Vector> BSTCHoleCenters 
+      	= mbsgh.getHoleCentersInUpstreamPoly();
 
-    if ( verbosityLevel > 0) {
-      G4Polycone *tmpBSTCInfo  =  static_cast<G4Polycone*>(BSTCInfo.solid);
-      double zhl = tmpBSTCInfo->GetCorner(tmpBSTCInfo->GetNumRZCorner()-1).z-tmpBSTCInfo->GetCorner(0).z;
-      zhl*=0.5;
-      double BSTCOffsetInMu2eZ = BSTCOffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " BSTC         Z extent in Mu2e    : " <<
-        BSTCOffsetInMu2eZ - zhl << ", " << BSTCOffsetInMu2eZ + zhl << endl;
+      // Make the steel
+      VolumeInfo BSTCInfo( "BSTC", BSTCOffset, MBSMotherInfo.centerInWorld );
+
+      G4Polycone * hdpe = new G4Polycone ( "BSTC",
+		   pBSTCParams.getPolyconsParams().phi0(),
+		   pBSTCParams.getPolyconsParams().phiTotal(),
+		   pBSTCParams.getPolyconsParams().numZPlanes(),
+		   &pBSTCParams.getPolyconsParams().zPlanes()[0],
+		   &pBSTCParams.getPolyconsParams().rInner()[0],
+		   &pBSTCParams.getPolyconsParams().rOuter()[0] );
+		   
+      
+      G4SubtractionSolid* aSolid = 0;
+      
+      // Now loop over the holes and make them.
+      for ( unsigned int jHole = 0; jHole < BSTCHoleCenters.size(); jHole++ ) {
+	std::ostringstream hname;
+	hname << "BSTCHole" << jHole+1;
+	G4Box* aHoleBox = new G4Box( hname.str(),
+				     BSTCHoleXDim/2.0*CLHEP::mm,
+				     BSTCHoleYDim/2.0*CLHEP::mm,
+				     BSTCHoleZDim/2.0*CLHEP::mm );
+
+	if ( 0 == aSolid ) {
+	  CLHEP::Hep3Vector realCenter = BSTCHoleCenters[jHole] - BSTCOffset;
+	  aSolid = new G4SubtractionSolid( "BSTC",
+	       			   hdpe, aHoleBox,
+       				   0,
+	       			   realCenter );
+	} else {
+	  CLHEP::Hep3Vector realCenter = BSTCHoleCenters[jHole] - BSTCOffset;
+	  G4SubtractionSolid * bSolid 
+	    = new G4SubtractionSolid ( "BSTC",
+				       aSolid, aHoleBox,
+				       0,
+				       realCenter );
+	  aSolid = bSolid;
+	}
+      }
+
+      BSTCInfo.solid = aSolid;
+      finishNesting( BSTCInfo,
+		     findMaterialOrThrow(pBSTCParams.materialName()),
+		     0,
+		     BSTCInfo.centerInParent,
+		     MBSMotherInfo.logical,
+		     0,
+		     MBSisVisible,
+		     G4Colour::Gray(),
+		     MBSisSolid,
+		     forceAuxEdgeVisible,
+		     placePV,
+		     doSurfaceCheck
+		     );
+	       
     }
 
-    // BSBS
+
+    // =========================
+    // BSBS - This is the downstream inner HDPE liner
+    // =========================
 
     CLHEP::Hep3Vector BSBSOffsetInMu2e = pBSBSParams.originInMu2e();
 
@@ -409,33 +555,100 @@ namespace mu2e {
       cout << __func__ << " BSBSOffsetInMu2e                 : " << BSBSOffsetInMu2e << endl;
       cout << __func__ << " BSBSOffsetInMBS                  : " << BSBSOffset << endl;
     }
+    if ( MBSversion < 4 ) {
+      VolumeInfo BSBSInfo  = nestPolycone("BSBS",
+					  pBSBSParams.getPolyconsParams(),
+					  findMaterialOrThrow(pBSBSParams.materialName()),
+					  0,
+					  BSBSOffset,
+					  //detSolDownstreamVacInfo,
+					  MBSMotherInfo,
+					  0,
+					  MBSisVisible,
+					  G4Colour::Yellow(),
+					  MBSisSolid,
+					  forceAuxEdgeVisible,
+					  placePV,
+					  doSurfaceCheck
+					  );
+      
+      if ( verbosityLevel > 0) {
+	G4Polycone *tmpBSBSInfo  =  static_cast<G4Polycone*>(BSBSInfo.solid);
+	double zhl = tmpBSBSInfo->GetCorner(tmpBSBSInfo->GetNumRZCorner()-1).z-tmpBSBSInfo->GetCorner(0).z;
+	zhl*=0.5;
+	double BSBSOffsetInMu2eZ = BSBSOffsetInMu2e[CLHEP::Hep3Vector::Z];
+	cout << __func__ << " BSBS         Z extent in Mu2e    : " <<
+	  BSBSOffsetInMu2eZ - zhl << ", " << BSBSOffsetInMu2eZ + zhl << endl;
+      }
+    } else { 
+      // Now we'll build the version with pump-out holes
+      // Get information for pump-out holes
+      double const BSBSHoleXDim = mbsgh.getHoleXDimInDownPoly();
+      double const BSBSHoleYDim = mbsgh.getHoleYDimInDownPoly();
+      double const BSBSHoleZDim = mbsgh.getHoleZDimInDownPoly();
+       std::vector<CLHEP::Hep3Vector> BSBSHoleCenters 
+	 = mbsgh.getHoleCentersInDownstreamPoly();
 
-    VolumeInfo BSBSInfo  = nestPolycone("BSBS",
-                                    pBSBSParams.getPolyconsParams(),
-                                    findMaterialOrThrow(pBSBSParams.materialName()),
-                                    0,
-                                    BSBSOffset,
-                                    //detSolDownstreamVacInfo,
-                                    MBSMotherInfo,
-                                    0,
-                                    MBSisVisible,
-                                    G4Colour::Yellow(),
-                                    MBSisSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    doSurfaceCheck
-                                    );
+      // Make the upstream HDPE
+      VolumeInfo BSBSInfo( "BSBS", BSBSOffset, MBSMotherInfo.centerInWorld );
 
-    if ( verbosityLevel > 0) {
-      G4Polycone *tmpBSBSInfo  =  static_cast<G4Polycone*>(BSBSInfo.solid);
-      double zhl = tmpBSBSInfo->GetCorner(tmpBSBSInfo->GetNumRZCorner()-1).z-tmpBSBSInfo->GetCorner(0).z;
-      zhl*=0.5;
-      double BSBSOffsetInMu2eZ = BSBSOffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " BSBS         Z extent in Mu2e    : " <<
-        BSBSOffsetInMu2eZ - zhl << ", " << BSBSOffsetInMu2eZ + zhl << endl;
+      G4Polycone * hdpe = new G4Polycone ( "BSBS",
+		   pBSBSParams.getPolyconsParams().phi0(),
+		   pBSBSParams.getPolyconsParams().phiTotal(),
+		   pBSBSParams.getPolyconsParams().numZPlanes(),
+		   &pBSBSParams.getPolyconsParams().zPlanes()[0],
+		   &pBSBSParams.getPolyconsParams().rInner()[0],
+		   &pBSBSParams.getPolyconsParams().rOuter()[0] );
+		   
+      
+      G4SubtractionSolid* aSolid = 0;
+      
+      // Now loop over the holes and make them.
+      for ( unsigned int jHole = 0; jHole < BSBSHoleCenters.size(); jHole++ ) {
+	CLHEP::Hep3Vector realCenter = BSBSHoleCenters[jHole] - BSBSOffset;
+	std::ostringstream hname;
+	hname << "BSBSHole" << jHole+1;
+	G4Box* aHoleBox = new G4Box( hname.str(),
+				     BSBSHoleXDim/2.0*CLHEP::mm,
+				     BSBSHoleYDim/2.0*CLHEP::mm,
+				     BSBSHoleZDim/2.0*CLHEP::mm );
+
+	if ( 0 == aSolid ) {
+	  aSolid = new G4SubtractionSolid( "BSBS",
+					   hdpe, aHoleBox,
+					   0,
+					   realCenter );
+	} else {
+	  G4SubtractionSolid * bSolid 
+	    = new G4SubtractionSolid ( "BSBS",
+				       aSolid, aHoleBox,
+				       0,
+				       realCenter );
+	  aSolid = bSolid;
+	}
+      }
+
+      BSBSInfo.solid = aSolid;
+      finishNesting( BSBSInfo,
+		     findMaterialOrThrow(pBSBSParams.materialName()),
+		     0,
+		     BSBSInfo.centerInParent,
+		     MBSMotherInfo.logical,
+		     0,
+		     MBSisVisible,
+		     G4Colour::Gray(),
+		     MBSisSolid,
+		     forceAuxEdgeVisible,
+		     placePV,
+		     doSurfaceCheck
+		     );
+	       
     }
 
-    // CLV2
+
+    // ==============================
+    // CLV2 - This is the end plug
+    // ==============================
 
     CLHEP::Hep3Vector CLV2OffsetInMu2e = pCLV2Params.originInMu2e();
 
@@ -475,7 +688,7 @@ namespace mu2e {
     }
     
 
-    if ( MBSversion == 3 ) {
+    if ( MBSversion == 3 || MBSversion == 5) {
 
       // CLV2 Absorber :  Variable thickness plug in MBS axial hole
       if (_config.getBool("mbs.CLV2.absorber.build",false)){

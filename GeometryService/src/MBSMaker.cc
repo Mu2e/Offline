@@ -351,12 +351,23 @@ namespace mu2e {
 		       _BSTSMaterialName ));
 
       // *****************************
-      //     Holes in the Steel
-      //    (Added in version 3)
+      //     Holes in the Steel and poly
+      //    (Added in version 4)
       // *****************************
 
-      if ( _MBSVersion >= 3 ) {
-
+      if ( _MBSVersion > 3 ) {
+	mbs._holeXDimInSteel     = _BSTSHoleXDim;
+	mbs._holeYDimInSteel     = _BSTSHoleYDim;
+	mbs._holeZDimInSteel     = _BSTSHoleZDim;
+	mbs._holeXDimInUpPoly    = _upPolyHoleXDim;
+	mbs._holeYDimInUpPoly    = _upPolyHoleYDim;
+	mbs._holeZDimInUpPoly    = _upPolyHoleZDim;
+	mbs._holeXDimInDownPoly  = _downPolyHoleXDim;
+	mbs._holeYDimInDownPoly  = _downPolyHoleYDim;
+	mbs._holeZDimInDownPoly  = _downPolyHoleZDim;
+	mbs._holeCentersInSteel  = _BSTSHoleCenters;
+	mbs._holeCentersInUpstreamPoly = _upPolyHoleCenters;
+	mbs._holeCentersInDownstreamPoly = _downPolyHoleCenters;
       }
 
       // ******************************
@@ -481,7 +492,7 @@ namespace mu2e {
                       _CLV2OffsetInMu2e,
                       _CLV2MaterialName));
 
-      if ( _MBSVersion == 3 ){  
+      if ( _MBSVersion == 3 || _MBSVersion >= 5 ){  
         CLHEP::Hep3Vector _CLV2AbsOffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.0,_CLV2Z+0.5*CLV2totLength-_CLV2AbsHLength);        
         mbs._pCLV2ABSParams = std::unique_ptr<Tube>
           (new Tube(_CLV2AbsMaterialName,
@@ -546,7 +557,7 @@ namespace mu2e {
       _SPBSRZ               = _config.getDouble("mbs.SPBRZrelCntr");
 
     }
-    // Following are common to Version 1 and 2
+    // Following are common to Version 1 and up
     // Outer HDPE
     _SPBSCInnerRadius     = _config.getDouble("mbs.SPBSCInnerRadius");
     _SPBSCOuterRadius     = _config.getDouble("mbs.SPBSCOuterRadius");
@@ -578,29 +589,45 @@ namespace mu2e {
     _CLV2AbsBuild         = _config.getBool("mbs.CLV2.absorber.build",false);
     _CLV2AbsMaterialName  = _config.getString("mbs.CLV2.absorber.MaterialName","Polyethylene096");
     _CLV2AbsHLength       = _config.getDouble("mbs.CLV2.absorber.halflength",0.0);
-    if ( _MBSVersion >= 3 ) {
-      _nHoles             = _config.getInt("mbs.nHoles",0);
+    if ( _MBSVersion > 3 ) {
+      _nHolesSt        = _config.getInt("mbs.nHolesSteel",0);
+      _nHolesUP        = _config.getInt("mbs.nHolesUpstreamPoly",0);
+      _nHolesDP        = _config.getInt("mbs.nHolesDownstreamPoly",0);
       _BSTSHoleXDim = _config.getDouble("mbs.steelHoleXDim",0.0);
       _BSTSHoleYDim = _config.getDouble("mbs.steelHoleYDim",0.0);
       _BSTSHoleZDim = _config.getDouble("mbs.steelHoleZDim",0.0);
-      _PolyHoleXDim = _config.getDouble("mbs.polyHoleXDim",0.0);
-      _PolyHoleYDim = _config.getDouble("mbs.polyHoleYDim",0.0);
-      _PolyHoleZDim = _config.getDouble("mbs.polyHoleZDim",0.0);
+      _upPolyHoleXDim = _config.getDouble("mbs.upPolyHoleXDim",0.0);
+      _upPolyHoleYDim = _config.getDouble("mbs.upPolyHoleYDim",0.0);
+      _upPolyHoleZDim = _config.getDouble("mbs.upPolyHoleZDim",0.0);
+      _downPolyHoleXDim = _config.getDouble("mbs.downPolyHoleXDim",0.0);
+      _downPolyHoleYDim = _config.getDouble("mbs.downPolyHoleYDim",0.0);
+      _downPolyHoleZDim = _config.getDouble("mbs.downPolyHoleZDim",0.0);
       CLHEP::Hep3Vector moveIt(0.0,0.0,-_BSTSHLength);
-      for ( int ihole = 0; ihole < _nHoles; ihole++ ) {
+      for ( int ihole = 0; ihole < _nHolesSt; ihole++ ) {
 	CLHEP::Hep3Vector tempLoc;
 	std::ostringstream sHoleName;
 	sHoleName << "mbs.steelHoleCenter" << ihole+1;
-	_config.getHep3Vector(sHoleName.str(),tempLoc);
+	tempLoc = _config.getHep3Vector(sHoleName.str());
+	cout << "DNB:  MBSMaker:  tempLoc is:  " << tempLoc << endl;
 	tempLoc+=moveIt;
+	cout << "DNB:  MBSMaker:  tempLoc moved is:  " << tempLoc << endl;
 	_BSTSHoleCenters.push_back(tempLoc);
-
+      }
+      for ( int ihole = 0; ihole < _nHolesUP; ihole++ ) {
+	CLHEP::Hep3Vector tempLoc;
 	std::ostringstream pHoleName;
-	pHoleName << "mbs.polyHoleCenter" << ihole+1;
-	_config.getHep3Vector(pHoleName.str(),tempLoc);
+	pHoleName << "mbs.upPolyHoleCenter" << ihole+1;
+	tempLoc = _config.getHep3Vector(pHoleName.str());
 	tempLoc+=moveIt;
-	_polyHoleCenters.push_back(tempLoc);
-
+	_upPolyHoleCenters.push_back(tempLoc);
+      }
+      for ( int ihole = 0; ihole < _nHolesDP; ihole++ ) {
+	CLHEP::Hep3Vector tempLoc;
+	std::ostringstream pHoleName;
+	pHoleName << "mbs.downPolyHoleCenter" << ihole+1;
+	tempLoc =_config.getHep3Vector(pHoleName.str());
+	tempLoc+=moveIt;
+	_downPolyHoleCenters.push_back(tempLoc);
       }
 
     }

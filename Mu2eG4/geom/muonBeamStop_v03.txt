@@ -9,7 +9,7 @@
 // This version will be known as Version 2.
 // the initial implementation is described in doc-1519
 
-int    mbs.Version            = 3;
+int    mbs.Version            = 5;
 
 double mbs.MBSCZ              = 15273.0;
 
@@ -71,13 +71,24 @@ double mbs.BSBSZrelCntr            =  737.5;
 
 
 // Pump-out holes 
-//int    mbs.nHoles = 3;
-//double mbs.steelHoleXDim = 615.0;
-//double mbs.steelHoleYDim = 164.4;
-//double mbs.steelHoleZDim = 300.0;
-//double mbs.polyHoleXDim = 490.0;
-//double mbs.polyHoleYDim = 164.4;
-//double mbs.polyHoleZDim = 250.0;
+int    mbs.nHolesSteel = 3;
+int    mbs.nHolesUpstreamPoly = 1;
+int    mbs.nHolesDownstreamPoly = 2;
+double mbs.steelHoleXDim = 615.0;
+double mbs.steelHoleYDim = 164.4;
+double mbs.steelHoleZDim = 300.0;
+double mbs.upPolyHoleXDim = 460.0;
+double mbs.upPolyHoleYDim = 209.0;
+double mbs.upPolyHoleZDim = 250.0;
+double mbs.downPolyHoleXDim = 490.0;
+double mbs.downPolyHoleYDim = 164.4;
+double mbs.downPolyHoleZDim = 250.0;
+vector<double> mbs.steelHoleCenter1 = {0.0, -393.4, 1340.0};
+vector<double> mbs.steelHoleCenter2 = {0.0, -393.4, 1960.0};
+vector<double> mbs.steelHoleCenter3 = {0.0, -393.4, 2580.0};
+vector<double> mbs.upPolyHoleCenter1 = {0.0, -333.0, 1340.0};
+vector<double> mbs.downPolyHoleCenter1 = {0.0, -393.4, 1960.0};
+vector<double> mbs.downPolyHoleCenter2 = {0.0, -393.4, 2580.0};
 
 
 
