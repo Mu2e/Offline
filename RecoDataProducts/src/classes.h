@@ -70,6 +70,8 @@
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "RecoDataProducts/inc/TrackCaloAssns.hh" 
+// BTrk Kalman fit persistence
+#include "RecoDataProducts/inc/KalSeedCollection.hh"
 
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
@@ -217,5 +219,11 @@ template class art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr, mu2e::TrackCaloMatc
 template class art::Wrapper<art::Assns<mu2e::KalRepPtr,mu2e::CaloCluster, mu2e::TrackCaloMatchInfo> >;
 template class art::Wrapper<art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr, mu2e::TrackCaloMatchInfo> >;
 
+// BTrk Kalman fit persistence
+template class std::vector<mu2e::TrkStrawHitSeed>;
+template class std::vector<mu2e::KalSegment>;
+template class art::Wrapper<mu2e::KalSeedCollection>;
+template class art::Ptr<mu2e::KalSeed>;
+template class art::Wrapper<mu2e::TrkStrawHitSeed>;
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

@@ -37,6 +37,8 @@ namespace mu2e {
       bitnames[std::string("CalorimeterSelection")] = bit_to_mask(calosel);
       bitnames[std::string("StrawXTalk")]	    = bit_to_mask(strawxtalk);
       bitnames[std::string("ElectronicsXTalk")]	    = bit_to_mask(elecxtalk);
+      bitnames[std::string("Active")]		    = bit_to_mask(active);
+      bitnames[std::string("GoodDOCA")]		    = bit_to_mask(doca);
       for(unsigned itrk=0;itrk<=_maxTrkId;++itrk){
 	bitnames[trackBitName(itrk)] = bit_to_mask(trackBit(itrk));
       }

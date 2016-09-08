@@ -8,9 +8,10 @@
 // BaBar
 #include "BTrk/BbrGeom/TrkLineTraj.hh"
 #include "BTrk/TrkBase/TrkHit.hh"
-#include "BTrk/TrkBase/TrkT0.hh"
+#include "RecoDataProducts/inc/HitT0.hh"
 // Mu2e
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/HitT0.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 // CLHEP
@@ -27,7 +28,7 @@ namespace mu2e
   // enum for hit flags
     enum TrkStrawHitFlag {weededHit=-5, driftFail=-3, updateFail=-1,addedHit=3,unweededHit=4};
     TrkStrawHit(const StrawHit& strawhit, const Straw& straw,unsigned istraw,
-    const TrkT0& trkt0, double fltlen, double exterr, double maxdriftpull);
+    const HitT0& trkt0, double fltlen, double exterr, double maxdriftpull);
     virtual ~TrkStrawHit();
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
@@ -50,8 +51,8 @@ namespace mu2e
     const CLHEP::Hep3Vector& wirePosition() const { return _wpos; }
     const CLHEP::Hep3Vector& wirePositionError() const { return _wpos_err; }
     void hitPosition(CLHEP::Hep3Vector& hpos) const;
-    TrkT0 const& hitT0() const { return _hitt0;}
-    void updateHitT0(TrkT0 const& t0) { _hitt0 = t0; }
+    HitT0 const& hitT0() const { return _hitt0;}
+    void updateHitT0(HitT0 const& t0) { _hitt0 = t0; }
     double signalTime() const { return _stime; } // time for signal to reach the end of the wire
 // external hit error (mm); the intrinsic error comes from the t2d calibration object
     double extErr() const { return _exterr; }
@@ -83,7 +84,7 @@ namespace mu2e
     TrkLineTraj* _hittraj;
     CLHEP::Hep3Vector _wpos;
     CLHEP::Hep3Vector _wpos_err;
-    TrkT0 _hitt0;
+    HitT0 _hitt0;
     double _stime;
     double _exterr,_penerr,_toterr;
     int _iamb;

@@ -64,16 +64,16 @@
 
 using namespace std;
 using CLHEP::Hep3Vector;
+using CLHEP::HepVector;
+using CLHEP::HepSymMatrix;
 
 namespace mu2e
 {
 // comparison functor for ordering hits
   struct fltlencomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
-    fltlencomp(TrkFitDirection::FitDirection fdir=TrkFitDirection::downstream) : _fdir(fdir) {}
-    bool operator()(TrkStrawHit* x, TrkStrawHit* y) {
-      return _fdir == TrkFitDirection::downstream ? x->fltLen() < y->fltLen() : y->fltLen() < x->fltLen() ;
+    bool operator()(TrkHit* x, TrkHit* y) {
+      return x->fltLen() < y->fltLen();
     }
-    TrkFitDirection::FitDirection _fdir;
   };
 
   struct timecomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
@@ -101,7 +101,7 @@ namespace mu2e
   };
 
 // construct from a parameter set
-  KalFit::KalFit(fhicl::ParameterSet const& pset, TrkFitDirection const& fitdir) :
+  KalFit::KalFit(fhicl::ParameterSet const& pset) :
 // KalFit parameters
     _debug(pset.get<int>("debugLevel",0)),
     _maxhitchi(pset.get<double>("maxhitchi",3.5)),
@@ -123,7 +123,6 @@ namespace mu2e
     _resolveAfterWeeding(pset.get<bool>("ResolveAfterWeeding",false)),
     _exup((extent)pset.get<int>("UpstreamExtent",noextension)),
     _exdown((extent)pset.get<int>("DownstreamExtent",noextension)),
-    _fdir(fitdir),
     _bfield(0)
   {
 // set KalContext parameters
@@ -209,8 +208,63 @@ namespace mu2e
   }
 
 //-----------------------------------------------------------------------------
-// create the track (KalRep) from the track definition. 
+// create the track (KalRep) from a track seed
 //-----------------------------------------------------------------------------
+  void KalFit::makeTrack(const StrawHitCollection* shcol, KalSeed const& kseed, KalRep*& krep) {
+// test if fitable
+    if(fitable(kseed)){
+      // find the segment at the 0 flight
+      double flt0 = kseed.flt0();
+      auto kseg = kseed.segments().end();
+      for(auto iseg= kseed.segments().begin(); iseg != kseed.segments().end(); ++iseg){
+	if(iseg->fmin() <= flt0 && iseg->fmax() > flt0){
+	  break;
+	}
+      }
+      if(kseg == kseed.segments().end()){
+	throw cet::exception("RECO")<<"mu2e::KalFit: no helix segment" << endl;
+      }
+      // create a trajectory from the seed. This shoudl be a general utility function that
+      // can work with multi-segment seeds FIXME!
+      // create CLHEP objects from seed native members.  This will
+      // go away when we switch to SMatrix FIXME!!!
+      HepVector pvec;
+      HepSymMatrix pcov;
+      kseg->helix().hepVector(pvec);
+      kseg->covar().symMatrix(pcov);
+      // Create the traj from these
+      HelixTraj htraj(pvec,pcov);
+      // create the hits
+      TrkStrawHitVector tshv;
+      makeHits(shcol, htraj, kseed.hits(), tshv);
+      // Create the BaBar hit list, and fill it with these hits.  The BaBar list takes ownership
+      // We should use the TrkHit vector everywhere, FIXME!
+      std::vector<TrkHit*> thv;
+      for(auto ihit = tshv.begin(); ihit != tshv.end(); ++ihit){
+        thv.push_back(*ihit);
+        if (_debug>2) { (*ihit)->print(std::cout); }
+      }
+// Find the wall and gas material description objects for these hits
+      std::vector<DetIntersection> detinter;
+      if(_matcorr)makeMaterials(tshv,htraj,detinter);
+// create Kalman rep
+      krep = new KalRep(htraj, thv, detinter, *this, kseed.particle());
+      assert(krep != 0);
+// initialize krep t0; eventually, this should be in the constructor, FIXME!!!
+      krep->setT0(kseed.t0(),kseed.flt0());
+// initialize history list
+      krep->addHistory(TrkErrCode(),"KalFit creation");
+// now fit
+      TrkErrCode fitstat = fitTrack(krep,tshv);
+      krep->addHistory(fitstat,"KalFit fit");
+// extend the fit
+      if(fitstat.success()){
+	fitstat = extendFit(krep);
+	krep->addHistory(fitstat,"KalFit extension");
+      }
+    }
+  }
+
   void KalFit::makeTrack(const StrawHitCollection* shcol, TrkDef& tdef, KalRep*& krep) {
 // test if fitable
     if(fitable(tdef)){
@@ -228,7 +282,9 @@ namespace mu2e
       }
 // Find the wall and gas material description objects for these hits
       std::vector<DetIntersection> detinter;
-      if(_matcorr)makeMaterials(tshv,tdef,detinter);
+      if(_matcorr)makeMaterials(tshv,tdef.helix(),detinter);
+      // create a trajectory from the seed. This shoudl be a general utility function that
+      // can work with multi-segment seeds FIXME!
 // create Kalman rep
       krep = new KalRep(tdef.helix(), thv, detinter, *this, tdef.particle());
       assert(krep != 0);
@@ -269,7 +325,6 @@ namespace mu2e
         double hflt(0.0);
         TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
 // find the bounding sites near this hit, and extrapolate to get the hit t0
-        std::sort(tshv.begin(),tshv.end(),fltlencomp(_fdir.fitDirection()));
         findBoundingHits(tshv,hflt,ilow,ihigh);
         const TrkStrawHit* nearhit;
         if(ihigh != tshv.end())
@@ -390,6 +445,37 @@ namespace mu2e
     return tdef.strawHitIndices().size() >= _minnstraws;
   }
 
+  bool
+  KalFit::fitable(KalSeed const& kseed){
+    return kseed.segments().size() > 0 && kseed.hits().size() >= _minnstraws;
+  }
+
+  void
+  KalFit::makeHits(const StrawHitCollection* shcol, HelixTraj const& htraj,
+    std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv ) {
+    const Tracker& tracker = getTrackerOrThrow();
+    // compute particle velocity to 
+    for(auto ths : hseeds ){
+      // create a TrkStrawHit from this seed.
+      size_t index = ths.index();
+      const StrawHit& strawhit(shcol->at(index));
+      const Straw& straw = tracker.getStraw(strawhit.strawIndex());
+      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,ths.index(),ths.t0(),ths.trkLen(),
+	_herr.front(),_maxdriftpull);
+      assert(trkhit != 0);
+      // set the initial ambiguity
+      trkhit->setAmbig(ths.ambig());
+      // refine the flightlength, as otherwise hits in the same plane are at exactly the same flt, which can cause problems
+      TrkErrCode pstat = trkhit->updatePoca(&htraj);
+      if(pstat.failure()){
+        trkhit->setActivity(false);
+      }
+      tshv.push_back(trkhit);
+    }
+ // sort the hits by flightlength
+    std::sort(tshv.begin(),tshv.end(),fltlencomp());
+  }
+
   void
   KalFit::makeHits(const StrawHitCollection* shcol, TrkDef const& tdef, TrkStrawHitVector& tshv ) {
     const Tracker& tracker = getTrackerOrThrow();
@@ -402,16 +488,18 @@ namespace mu2e
       size_t istraw = tdef.strawHitIndices()[iind];
       const StrawHit& strawhit(shcol->at(istraw));
       const Straw& straw = tracker.getStraw(strawhit.strawIndex());
+      // estimate the initial flightlen using the straw z position and the seed helix
+      // Note the seed helix knows about the fit direction
       double fltlen = tdef.helix().zFlight(straw.getMidPoint().z());
-    // estimate arrival time at the wire
+      // estimate arrival time at the wire
       TrkT0 hitt0(tdef.t0());
       hitt0._t0 += (fltlen-flt0)/vflt;
-    // create the hit object.  Start with the 1st additional error for anealing
+      // create the hit object.  Start with the 1st additional error for anealing
       TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fltlen,_herr.front(),_maxdriftpull);
       assert(trkhit != 0);
-    // set the initial ambiguity to null
+      // set the initial ambiguity to null
       trkhit->setAmbig(0);
-    // refine the flightlength, as otherwise hits in the same plane are at exactly the same flt, which can cause problems
+      // refine the flightlength, as otherwise hits in the same plane are at exactly the same flt, which can cause problems
       TrkErrCode pstat = trkhit->updatePoca(&tdef.helix());
       if(pstat.failure()){
         trkhit->setActivity(false);
@@ -419,11 +507,11 @@ namespace mu2e
       tshv.push_back(trkhit);
     }
  // sort the hits by flightlength
-    std::sort(tshv.begin(),tshv.end(),fltlencomp(_fdir.fitDirection()));
+    std::sort(tshv.begin(),tshv.end(),fltlencomp());
   }
 
   void
-  KalFit::makeMaterials(TrkStrawHitVector const& tshv, TrkDef const& tdef,std::vector<DetIntersection>& detinter) {
+  KalFit::makeMaterials(TrkStrawHitVector const& tshv, HelixTraj const& htraj,std::vector<DetIntersection>& detinter) {
   // fetcth the DetectorModel
     Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
     // loop over strawhits and extract the straws
@@ -436,7 +524,7 @@ namespace mu2e
       strawinter.pathlen = trkhit->fltLen();
       strawinter.thit = trkhit;
       // compute initial intersection: this gets updated each fit iteration
-      strawelem->reIntersect(&tdef.helix(),strawinter);
+      strawelem->reIntersect(&htraj,strawinter);
       detinter.push_back(strawinter);
     }
   }
@@ -804,13 +892,13 @@ namespace mu2e
   // compute the time the track came closest to the wire for each hit, starting from t0 and working out.
   // this function allows for momentum change along the track.
   // find the bounding hits on either side of this
-    std::sort(tshv.begin(),tshv.end(),fltlencomp(_fdir.fitDirection()));
+    std::sort(tshv.begin(),tshv.end(),fltlencomp());
     TrkStrawHitVector::iterator ihigh;
     TrkStrawHitVector::reverse_iterator ilow;
     findBoundingHits(tshv,krep->flt0(),ilow,ihigh);
     // reset all the hit times
-    double hflt = krep->flt0();
-    TrkT0 hitt0 = krep->t0();
+    double flt0 = krep->flt0();
+    HitT0 hitt0 = krep->t0();
     for(TrkStrawHitVector::iterator ihit= ihigh;ihit != tshv.end(); ++ihit){
       TrkStrawHit* hit = *ihit;
 // particle momentum at this point, using the full fit
@@ -818,25 +906,25 @@ namespace mu2e
 // relativistic velocity from that
       double beta = krep->particleType().beta(mom);
 // particle transit time to this hit from the reference
-      double tflt = (hit->fltLen()-hflt)/(beta*CLHEP::c_light);
+      double tflt = (hit->fltLen()-flt0)/(beta*CLHEP::c_light);
 // update the time in the TrkT0 object
       hitt0._t0 += tflt;
       (*ihit)->updateHitT0(hitt0);
 // update the reference flightlength
-      hflt = hit->fltLen();
+      flt0 = hit->fltLen();
     }
-// now the same, moving backwards
-    hflt = krep->flt0();
-    hitt0 = krep->t0();
-    for(TrkStrawHitVector::reverse_iterator ihit= ilow;ihit != tshv.rend(); ++ihit){
-      TrkStrawHit* hit = *ihit;
-      double mom = krep->momentum(hit->fltLen()).mag();
-      double beta = krep->particleType().beta(mom);
-      double tflt = (hit->fltLen()-hflt)/(beta*CLHEP::c_light);
-      hitt0._t0 += tflt;
-      (*ihit)->updateHitT0(hitt0);
-      hflt = hit->fltLen();
-    }
+// now the same, moving backwards.  This just overwrites the hit info it doesn't average or improve FIXME!
+//    flt0 = krep->flt0();
+//    hitt0 = krep->t0();
+//    for(TrkStrawHitVector::reverse_iterator ihit= ilow;ihit != tshv.rend(); ++ihit){
+//      TrkStrawHit* hit = *ihit;
+//      double mom = krep->momentum(hit->fltLen()).mag();
+//      double beta = krep->particleType().beta(mom);
+//      double tflt = (hit->fltLen()-flt0)/(beta*CLHEP::c_light);
+//      hitt0._t0 += tflt;
+//      (*ihit)->updateHitT0(hitt0);
+//      flt0 = hit->fltLen();
+//    }
   }
 
   void
@@ -907,6 +995,5 @@ namespace mu2e
     }
     return retval;
   }
+
 }
-
-

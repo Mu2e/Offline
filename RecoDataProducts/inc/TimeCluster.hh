@@ -30,6 +30,8 @@ namespace mu2e {
     TrkT0		     _t0; // t0 and associated error
     CLHEP::Hep3Vector        _pos; // position of the time cluster   
     art::Ptr<CaloCluster>    _caloCluster; // associated calorimeter cluster: can be null
+
+    TrkT0 const& t0() const { return _t0; }
   };
 
 } // namespace mu2e

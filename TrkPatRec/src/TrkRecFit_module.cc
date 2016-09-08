@@ -28,7 +28,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 // utiliites
 #include "GeneralUtilities/inc/Angles.hh"
-#include "TrkReco/inc/TrkHelixTools.hh"
+#include "TrkReco/inc/TrkUtilities.hh"
 // data
 #include "DataProducts/inc/Helicity.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -126,8 +126,8 @@ namespace mu2e
     _maxaddchi(pset.get<double>("MaxAddChi",4.0)),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet()),_fdir),
-    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet()),_fdir),
+    _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet())),
+    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
     _payloadSaver(pset)
   {
     produces<KalRepCollection>();
@@ -189,7 +189,7 @@ namespace mu2e
       HelixTraj htraj(TrkParams(HelixTraj::NHLXPRM));
       // convert the helix to a fit trajectory.  This accounts for the physical particle direction
       if(_helicity == hseed._helix.helicity() &&
-	  TrkHelixTools::RobustHelix2Traj(hseed._helix,htraj,_amsign)){
+	  TrkUtilities::RobustHelix2Traj(hseed._helix,htraj,_amsign)){
 	_cutflow->Fill(2.0);
 	if(_debug > 1) cout << "Using HelixTraj with parameters " << htraj.parameters()->parameter() << endl;
   // create the track definition

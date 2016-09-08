@@ -24,7 +24,7 @@ using CLHEP::Hep3Vector;
 namespace mu2e
 {
   TrkStrawHit::TrkStrawHit(const StrawHit& strawhit, const Straw& straw, unsigned istraw,
-    const TrkT0& trkt0,double fltlen,double exterr,double maxdriftpull) :
+    const HitT0& hitt0,double fltlen,double exterr,double maxdriftpull) :
     _strawhit(strawhit),
     _straw(straw),
     _istraw(istraw),
@@ -51,7 +51,7 @@ namespace mu2e
 // update electroncs signal time
     updateSignalTime();
 // compute initial hit t0 and drift
-    updateHitT0(trkt0);
+    updateHitT0(hitt0);
     setActivity(true);
 //    std::cout << "creating TrkStrawHit " << this << std::endl;
   }
@@ -192,7 +192,8 @@ namespace mu2e
     tshv.clear();
     tshv.reserve(thv.size());
     for(auto ith=thv.begin(); ith!=thv.end(); ++ith){
-      tshv.push_back(static_cast<TrkStrawHit*>(*ith));
+      TrkStrawHit* tsh = dynamic_cast<TrkStrawHit*>(*ith);
+      if(tsh != 0) tshv.push_back(tsh);
     }
   }
 

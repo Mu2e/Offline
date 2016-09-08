@@ -28,7 +28,7 @@
 #include "BTrk/TrkBase/TrkParticle.hh"
 // Mu2e objects
 #include "BTrkData/inc/TrkStrawHit.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 #include "TrkReco/inc/TrkDef.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
 //CLHEP
@@ -46,12 +46,14 @@ namespace mu2e
     enum extent {noextension=-1,target=0,ipa=1,tracker=2,calo=3};
 // parameter set should be passed in on construction
 #ifndef __GCCXML__
-    explicit KalFit(fhicl::ParameterSet const&, TrkFitDirection const& tdir);
+    explicit KalFit(fhicl::ParameterSet const&);
 #endif/*__GCCXML__*/
 
     virtual ~KalFit();
-// main function: given a track definition, create a fit object from it
+// create a fit object from a track definition
     virtual void makeTrack(const StrawHitCollection* shcol, TrkDef& tdef, KalRep*& kres);
+// create a fit object from  a track seed, 
+    virtual void makeTrack(const StrawHitCollection* shcol, KalSeed const& kseed, KalRep*& kres);
 // add a set of hits to an existing fit
     virtual void addHits(KalRep* kres,const StrawHitCollection* shcol, std::vector<hitIndex> indices, double maxchi);
 // add materials to a track
@@ -81,16 +83,16 @@ namespace mu2e
     bool _resolveAfterWeeding;
     extent _exup;
     extent _exdown;
-// state
-    TrkParticle _tpart;
-    TrkFitDirection _fdir;
 // relay access to BaBar field: this should come from conditions, FIXME!!!
     mutable BField* _bfield;
   // helper functions
     bool fitable(TrkDef const& tdef);
+    bool fitable(KalSeed const& kseed);
     void initT0(const StrawHitCollection* shcol, TrkDef& tdef );
     virtual void makeHits(const StrawHitCollection* shcol,TrkDef const& tdef, TrkStrawHitVector& tshv); 
-    virtual void makeMaterials(TrkStrawHitVector const&, TrkDef const& tdef, std::vector<DetIntersection>& dinter);
+    void makeHits(const StrawHitCollection* shcol, HelixTraj const& htraj,
+	std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv );
+    virtual void makeMaterials(TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
     unsigned addMaterial(KalRep* krep);
     bool weedHits(KalRep* kres, TrkStrawHitVector& tshv,size_t iter);
     bool unweedHits(KalRep* kres, TrkStrawHitVector& tshv, double maxchi);

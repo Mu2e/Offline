@@ -3,10 +3,16 @@
 //  Original Author Dave Brown (LBNL) 26 Aug. 2016
 //
 // Mu2e
+#include "TrkReco/inc/TrkUtilities.hh"
 #include "RecoDataProducts/inc/RobustHelix.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 #include "GeneralUtilities/inc/Angles.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 // BTrk
 #include "BTrk/TrkBase/HelixTraj.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -18,7 +24,7 @@ using CLHEP::HepSymMatrix;
 using CLHEP::HepVector;
 using namespace std;
 namespace mu2e {
-  namespace TrkHelixTools {
+  namespace TrkUtilities {
 
     bool RobustHelix2Traj (RobustHelix const& helix, HelixTraj &traj, float amsign) {
       bool retval(false);
@@ -55,7 +61,7 @@ namespace mu2e {
 	perr[HelixTraj::tanDipIndex] = 0.05;
 	perr[HelixTraj::z0Index]     = 15.0;
 
-	CLHEP::HepSymMatrix covar = vT_times_v(perr);
+	HepSymMatrix covar = vT_times_v(perr);
 	traj = HelixTraj(helParams,covar);
 	retval = true;
       }
@@ -82,5 +88,35 @@ namespace mu2e {
       Angles::deltaPhi(phi);
       helix.fz0() = phi;
     }
-  } // TrkHelixTools
+
+    void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr, KalSegment& kseg) {
+      kseg._fmin = htraj.lowRange();
+      kseg._fmax = htraj.hiRange();
+      kseg._helix = htraj.parameters()->parameter();
+      kseg._hcov = htraj.parameters()->covariance();
+      kseg._mom = momerr.mag();
+      Hep3Vector md = momerr.unit();
+      HepVector mdir(3);
+      for(size_t icor=0;icor<3;++icor) // CLHEP auto-conversion is broken, FIXME!!
+	mdir[icor] = md[icor];
+
+      kseg._momerr = sqrt(momerr.covMatrix().similarity(mdir));
+    }
+  
+    void fillHitSeeds(const KalRep* krep, std::vector<TrkStrawHitSeed>& hitseeds) {
+      // extract the TkrStrawHits from the KalRep
+      TrkStrawHitVector tshv;
+      convert(krep->hitVector(),tshv);
+      // loop over the TrkStrawHits and convert them
+      for(auto tsh : tshv ) {
+	// set the flag according to the status of this hit
+	StrawHitFlag hflag;
+	if(tsh->isActive())hflag.merge(StrawHitFlag::active);
+	if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
+	TrkStrawHitSeed seedhit(tsh->index(), tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
+	    tsh->driftRadius(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag);
+      }
+    }
+
+  } // TrkUtilities
 }// mu2e

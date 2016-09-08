@@ -116,7 +116,6 @@ namespace mu2e {
     
     for (size_t ish=0;ish<nsh;++ish){
       StrawHit const& sh = shcol->at(ish);
-      StrawHitFlag flag;
       const Straw& straw = tracker.getStraw( sh.strawIndex() );
       if (sh.energyDep() >= _ctE){
         for (size_t jsh=0;jsh<nsh;++jsh){

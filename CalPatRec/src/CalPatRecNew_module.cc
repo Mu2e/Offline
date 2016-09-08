@@ -419,11 +419,11 @@ namespace mu2e {
 				   art::Ptr<CaloCluster>                  ClusterPtr){
 
     //set helix parameters
-    TrkSeed._helix._d0     = SeedDef.helix().d0();
-    TrkSeed._helix._phi0   = SeedDef.helix().phi0();
-    TrkSeed._helix._omega  = SeedDef.helix().omega();
-    TrkSeed._helix._z0     = SeedDef.helix().z0();
-    TrkSeed._helix._tanDip = SeedDef.helix().tanDip();
+    TrkSeed._helix.d0()     = SeedDef.helix().d0();
+    TrkSeed._helix.phi0()   = SeedDef.helix().phi0();
+    TrkSeed._helix.omega()  = SeedDef.helix().omega();
+    TrkSeed._helix.z0()     = SeedDef.helix().z0();
+    TrkSeed._helix.tanDip() = SeedDef.helix().tanDip();
        
     int             shIndices = SeedDef.strawHitIndices().size();
     const mu2e::hitIndex *hIndex;

@@ -349,11 +349,11 @@ namespace mu2e {
       helix = &trkSeed->_helix;
 
       CLHEP::HepVector helParams(5);
-      helParams(1) = helix->_d0;
-      helParams(2) = helix->_phi0;
-      helParams(3) = helix->_omega;
-      helParams(4) = helix->_z0;
-      helParams(5) = helix->_tanDip;
+      helParams(1) = helix->d0();
+      helParams(2) = helix->phi0();
+      helParams(3) = helix->omega();
+      helParams(4) = helix->z0();
+      helParams(5) = helix->tanDip();
       
       CLHEP::HepSymMatrix conv(5,1);
       //      HelixTraj tmpHelix(helParams,conv);

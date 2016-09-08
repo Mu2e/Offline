@@ -23,7 +23,7 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
 #include "TrkDiag/inc/TrkMCTools.hh"
-#include "TrkReco/inc/TrkHelixTools.hh"
+#include "TrkReco/inc/TrkUtilities.hh"
 #include "TrkReco/inc/XYZP.hh"
 #include "TrkDiag/inc/HitInfoMC.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
@@ -550,7 +550,7 @@ namespace mu2e {
       _mcmom = jmc->momentum();
       Hep3Vector pos = det->toDetector(jmc->position());
       double charge = pdt->particle(pspp->pdgId()).ref().charge();
-      TrkHelixTools::RobustHelixFromMom(pos,_mcmom,charge,_bz0,_mch);
+      TrkUtilities::RobustHelixFromMom(pos,_mcmom,charge,_bz0,_mch);
     }
   }
 
