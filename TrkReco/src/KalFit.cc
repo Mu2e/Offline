@@ -69,17 +69,10 @@ using CLHEP::HepSymMatrix;
 
 namespace mu2e
 {
-// comparison functor for ordering hits
-  struct fltlencomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
-    bool operator()(TrkHit* x, TrkHit* y) {
-      return x->fltLen() < y->fltLen();
-    }
-  };
-
-  struct timecomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
-    timecomp() {}
+// comparison functor for ordering hits.  This should operate on TrkHit, FIXME!
+  struct fcomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
     bool operator()(TrkStrawHit* x, TrkStrawHit* y) {
-      return x->hitT0()._t0 < y->hitT0()._t0;
+      return x->fltLen() < y->fltLen();
     }
   };
 
@@ -473,7 +466,7 @@ namespace mu2e
       tshv.push_back(trkhit);
     }
  // sort the hits by flightlength
-    std::sort(tshv.begin(),tshv.end(),fltlencomp());
+    std::sort(tshv.begin(),tshv.end(),fcomp());
   }
 
   void
@@ -507,7 +500,7 @@ namespace mu2e
       tshv.push_back(trkhit);
     }
  // sort the hits by flightlength
-    std::sort(tshv.begin(),tshv.end(),fltlencomp());
+    std::sort(tshv.begin(),tshv.end(),fcomp());
   }
 
   void
@@ -892,7 +885,7 @@ namespace mu2e
   // compute the time the track came closest to the wire for each hit, starting from t0 and working out.
   // this function allows for momentum change along the track.
   // find the bounding hits on either side of this
-    std::sort(tshv.begin(),tshv.end(),fltlencomp());
+    std::sort(tshv.begin(),tshv.end(),fcomp());
     TrkStrawHitVector::iterator ihigh;
     TrkStrawHitVector::reverse_iterator ilow;
     findBoundingHits(tshv,krep->flt0(),ilow,ihigh);
