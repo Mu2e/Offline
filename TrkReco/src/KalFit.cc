@@ -216,7 +216,8 @@ namespace mu2e
 	}
       }
       if(kseg == kseed.segments().end()){
-	throw cet::exception("RECO")<<"mu2e::KalFit: no helix segment" << endl;
+	std::cout << "Helix segment range doesn't cover flt0" << std::endl;
+	kseg = kseed.segments().begin();
       }
       // create a trajectory from the seed. This shoudl be a general utility function that
       // can work with multi-segment seeds FIXME!
