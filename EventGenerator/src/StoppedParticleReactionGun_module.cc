@@ -185,7 +185,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector fourmom(p3, energy);
 
     output->emplace_back(pdgId_,
-                         GenId::StoppedParticlaeReactionGun,
+                         GenId::StoppedParticleReactionGun,
                          pos,
                          fourmom,
                          stop.t);
