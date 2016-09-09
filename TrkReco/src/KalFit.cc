@@ -211,6 +211,7 @@ namespace mu2e
       auto kseg = kseed.segments().end();
       for(auto iseg= kseed.segments().begin(); iseg != kseed.segments().end(); ++iseg){
 	if(iseg->fmin() <= flt0 && iseg->fmax() > flt0){
+	  kseg = iseg;
 	  break;
 	}
       }
@@ -221,8 +222,8 @@ namespace mu2e
       // can work with multi-segment seeds FIXME!
       // create CLHEP objects from seed native members.  This will
       // go away when we switch to SMatrix FIXME!!!
-      HepVector pvec;
-      HepSymMatrix pcov;
+      HepVector pvec(5,0);
+      HepSymMatrix pcov(5,0);
       kseg->helix().hepVector(pvec);
       kseg->covar().symMatrix(pcov);
       // Create the traj from these

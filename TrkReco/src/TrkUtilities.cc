@@ -115,6 +115,7 @@ namespace mu2e {
 	if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
 	TrkStrawHitSeed seedhit(tsh->index(), tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
 	    tsh->driftRadius(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag);
+	hitseeds.push_back(seedhit);
       }
     }
 

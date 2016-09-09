@@ -37,7 +37,6 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 // root
 #include "TGraph.h"
-#include "TH1F.h"
 #include "TH2F.h"
 #include "TF1.h"
 #include "TList.h"
@@ -66,7 +65,7 @@ namespace mu2e {
       bool _mcdiag;
       unsigned _minnce; // minimum # CE hits to make plots
       double _targetradius;
-      bool _plotxy, _plotz;
+      bool _plot;
       // event object tags      art::InputTag _shTag;
       art::InputTag _shTag;
       art::InputTag _shpTag;
@@ -95,10 +94,11 @@ namespace mu2e {
       void fillHitInfoMC(art::Ptr<SimParticle> const& pspp, StrawDigiMC const& digimc, HitInfoMC& hinfomc);
       void fillMCHelix(art::Ptr<SimParticle> const& pspp);
       // display functions
-      void plotXY(XYZPVector const& xyzp, HelixSeed const& myseed);
-      void plotZ(XYZPVector const& xyzp, HelixSeed const& myseed);
+      void plotXY(XYZPVector const& xyzp, HelixSeed const& myseed, unsigned ihel);
+      void plotZ(XYZPVector const& xyzp, HelixSeed const& myseed, unsigned ihel);
       // TTree and branch variables
       TTree *_hdiag;
+      Int_t _iev;
       RobustHelix _reh;
       Int_t _nhits, _nprimary;
       Int_t _pdg, _gen, _proc;
@@ -116,8 +116,7 @@ namespace mu2e {
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
     _minnce(pset.get<unsigned>("MinimumCEHits",10)),
     _targetradius(pset.get<double>("TargetRadius",75)),
-    _plotxy(pset.get<bool>("PlotXY",true)),
-    _plotz(pset.get<bool>("PlotZ",true)),
+    _plot(pset.get<bool>("PlotHelices",false)),
     _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
     _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
     _shfTag(pset.get<string>("StrawHitFlagCollectionTag","PosHelixFinder")),
@@ -129,6 +128,7 @@ namespace mu2e {
     if(_diag > 0){
       art::ServiceHandle<art::TFileService> tfs;
       _hdiag=tfs->make<TTree>("hdiag","Helix Finding diagnostics");
+      _hdiag->Branch("iev",&_iev,"iev/I");
       _hdiag->Branch("reh",&_reh);
       _hdiag->Branch("nhits",&_nhits,"nhits/I");
       if(_mcdiag){
@@ -157,9 +157,11 @@ namespace mu2e {
   }
 
   void HelixDiag::analyze(art::Event const& evt) {
+    _iev=evt.id().event();
 // find the data
     if(findData(evt)) {
     // loop over helices
+      unsigned ihel(0);
       for(auto hseed : *_hscol) {
 	RobustHelix const& myhel = hseed._helix;
 	vector<hitIndex> const& hits = hseed._timeCluster._strawHitIdxs; 
@@ -196,16 +198,17 @@ namespace mu2e {
 	}
 	  // fill the tree
 	_hdiag->Fill();
-
-	if(_plotxy || _plotz ) {
-	// cou(nt the # of conversion hits in this helix
+	// if requested, plot the hits and helices
+	if( _plot ) {
+	// count the # of conversion hits in this helix
 	  unsigned nce = countCEHits(hits);
 	  if (nce >= _minnce) {
 	    // fill graphs for display
-	    if(_plotxy)plotXY(xyzp,hseed);
-	    if(_plotz)plotZ(xyzp,hseed);
+	    plotXY(xyzp,hseed,ihel);
+	    plotZ(xyzp,hseed,ihel);
 	  }
 	}
+	++ihel;
       }
     } else
       cout << "HelixDiag_module can't find data" << endl;
@@ -241,7 +244,7 @@ namespace mu2e {
   }
 
 
-  void HelixDiag::plotXY(XYZPVector const& xyzp, HelixSeed const& hseed) {
+  void HelixDiag::plotXY(XYZPVector const& xyzp, HelixSeed const& hseed, unsigned ihel) {
     RobustHelix const& myhel = hseed._helix;
     vector<hitIndex> const& hits = hseed._timeCluster._strawHitIdxs; 
 
@@ -265,7 +268,7 @@ namespace mu2e {
     char bkg_notstereo_notused_name[100];
     snprintf(bkg_notstereo_notused_name,100,"bkg_notstereo_notused_shxy%i",igraph);
     char title[100];
-    snprintf(title,100,"StrawHit XY trk %i;mm;rad",igraph);
+    snprintf(title,100,"StrawHit XY evt %i hel %i;mm;rad",_iev,ihel);
     TH2F* ce_stereo_used = tfs->make<TH2F>(ce_stereo_used_name,title,100,-500,500,100,-500,500);
     TH2F* ce_stereo_notused = tfs->make<TH2F>(ce_stereo_notused_name,title,100,-500,500,100,-500,500);
     TH2F* ce_notstereo_used = tfs->make<TH2F>(ce_notstereo_used_name,title,100,-500,500,100,-500,500);
@@ -374,7 +377,7 @@ namespace mu2e {
     }
   }
 
-  void HelixDiag::plotZ(XYZPVector const& xyzp, HelixSeed const& hseed) {
+  void HelixDiag::plotZ(XYZPVector const& xyzp, HelixSeed const& hseed, unsigned ihel) {
     RobustHelix const& myhel = hseed._helix;
     vector<hitIndex> const& hits = hseed._timeCluster._strawHitIdxs; 
     static unsigned igraph = 0;
@@ -398,7 +401,7 @@ namespace mu2e {
     char bkg_notstereo_notused_name[100];
     snprintf(bkg_notstereo_notused_name,100,"bkg_notstereo_notused_shphiz%i",igraph);
     char title[100];
-    snprintf(title,100,"StrawHit #phi Z trk %i;mm;rad",igraph);
+    snprintf(title,100,"StrawHit #phi Z evt %i hel %i;mm;rad",_iev, ihel);
     TH2F* ce_stereo_used = tfs->make<TH2F>(ce_stereo_used_name,title,100,-1500,1500,100,-12.5,12.5);
     TH2F* ce_stereo_notused = tfs->make<TH2F>(ce_stereo_notused_name,title,100,-1500,1500,100,-12.5,12.5);
     TH2F* ce_notstereo_used = tfs->make<TH2F>(ce_notstereo_used_name,title,100,-1500,1500,100,-12.5,12.5);

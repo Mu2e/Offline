@@ -132,7 +132,6 @@ namespace mu2e {
   // initialize MVA: this is used just for diagnostics
     _peakMVA.initMVA();
     createDiagnostics();
-    _iev = 0;
   }
 
   void TimeClusterDiag::analyze(art::Event const& event ) {
@@ -362,7 +361,7 @@ namespace mu2e {
   void TimeClusterDiag::createDiagnostics() {
     art::ServiceHandle<art::TFileService> tfs;
    // time peak diagnostics
-    _tcdiag=tfs->make<TTree>("tpdiag","time peak diagnostics");
+    _tcdiag=tfs->make<TTree>("tcdiag","time cluster diagnostics");
     // event info should use the TrkAna struct, FIXME!!
     _tcdiag->Branch("iev",&_iev,"iev/I");
     _tcdiag->Branch("ntc",&_ntc,"ntc/I");

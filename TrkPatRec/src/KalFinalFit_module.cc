@@ -146,7 +146,7 @@ namespace mu2e
 	if(kseed.particle() != _tpart || kseed.fitDirection() != _fdir ) {
 	  throw cet::exception("RECO")<<"mu2e::KalFinalFit: wrong particle or direction"<< endl;
 	}
-	// seed should have at least segment
+	// seed should have at least 1 segment
 	if(kseed.segments().size() < 1){
 	  throw cet::exception("RECO")<<"mu2e::KalFinalFit: no segments"<< endl;
 	}
