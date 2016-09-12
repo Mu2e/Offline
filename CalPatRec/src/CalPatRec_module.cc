@@ -113,14 +113,12 @@ namespace mu2e {
                                         // tag the data product instance by the direction
                                         // and particle type found by this fitter
 
-    _iname      = _fdir.name() + _tpart.name();
-    _iname_seed = _iname + "seed";
-    produces<KalRepCollection>      (_iname);
-    produces<KalRepPtrCollection>   (_iname);
-    produces<AlgorithmIDCollection>  (_iname);
+    produces<KalRepCollection>      ();
+    produces<KalRepPtrCollection>   ();
+    produces<AlgorithmIDCollection> ();
 
-    produces<StrawHitFlagCollection>(_iname);
-    produces<CalTimePeakCollection> (_iname);
+    produces<StrawHitFlagCollection>();
+    produces<CalTimePeakCollection> ();
 
                                         // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
@@ -564,7 +562,7 @@ namespace mu2e {
     _flags = new StrawHitFlagCollection();
     unique_ptr<StrawHitFlagCollection> flags (_flags);
 
-    art::ProductID kalRepsID(getProductID<KalRepCollection>(event,_iname));
+    art::ProductID kalRepsID(getProductID<KalRepCollection>(event));
 
     double pEntrance(.0), step_time(-9999.);
     double time_threshold(500.);
@@ -1098,11 +1096,11 @@ namespace mu2e {
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
   END:;
-    event.put(std::move(tracks)   ,_iname);
-    event.put(std::move(trackPtrs),_iname);
-    event.put(std::move(algs     ),_iname);
-    event.put(std::move(flags )   ,_iname);
-    event.put(std::move(tpeaks)   ,_iname);
+    event.put(std::move(tracks)   );
+    event.put(std::move(trackPtrs));
+    event.put(std::move(algs     ));
+    event.put(std::move(flags )   );
+    event.put(std::move(tpeaks)   );
   }
 
 //-----------------------------------------------------------------------------

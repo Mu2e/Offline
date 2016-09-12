@@ -74,8 +74,6 @@ namespace mu2e {
     float            _minTrkQualA;
     float            _minTrkQualB;
 
-    std::string      _iname;	        // data instance name
-
     KalDiag*         _kalDiag;
   };
   
@@ -89,11 +87,9 @@ namespace mu2e {
     _minTrkQualA         (pset.get<float>("minTrkQualA")),
     _minTrkQualB         (pset.get<float>("minTrkQualB"))
   {
-    // tag the data product instance by the direction and particle type found by this module
-    _iname = _fdir.name() + _tpart.name();
 
-    produces<AlgorithmIDCollection>  (_iname);
-    produces<KalRepPtrCollection>    (_iname);
+    produces<AlgorithmIDCollection>  ();
+    produces<KalRepPtrCollection>    ();
     
     _kalDiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet()));
   }
@@ -123,8 +119,8 @@ namespace mu2e {
 
     if (_debugLevel > 0) ObjectDumpUtils::printEventHeader(&AnEvent,"MergePatRec::produce");
 
-    AnEvent.getByLabel(_trkPatRecModuleLabel,_iname,tpr_h);
-    AnEvent.getByLabel(_calPatRecModuleLabel,_iname,cpr_h);
+    AnEvent.getByLabel(_trkPatRecModuleLabel,tpr_h);
+    AnEvent.getByLabel(_calPatRecModuleLabel,cpr_h);
     
     if (tpr_h.isValid()) { 
       list_of_kreps_tpr = (mu2e::KalRepPtrCollection*) &(*tpr_h);
@@ -265,8 +261,8 @@ namespace mu2e {
 
     if (_debugLevel > 0) ObjectDumpUtils::printKalRepCollection(&AnEvent,trackPtrs.get(),1);
 
-    AnEvent.put(std::move(trackPtrs),_iname);
-    AnEvent.put(std::move(algs     ),_iname);
+    AnEvent.put(std::move(trackPtrs));
+    AnEvent.put(std::move(algs     ));
   }
 
 
