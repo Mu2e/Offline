@@ -636,8 +636,8 @@ namespace mu2e {
     double threshold = _randgauss.fire(_strawele->threshold(),_strawele->analogNoise(StrawElectronics::thresh));
     // iterate sequentially over hitlets inside the sequence.  Note we fold
     // the flash blanking to AFTER the end of the microbunch
-    while( wfx._time < _mbtime+_strawele->flashStart() &&
-        swf.crossesThreshold(threshold,wfx) ){
+    while( swf.crossesThreshold(threshold,wfx) && 
+	   wfx._time < _mbtime+_strawele->flashStart() ){
     // keep these in time-order
       auto iwfxl = xings.begin();
       while(iwfxl != xings.end() && iwfxl->_time < wfx._time)

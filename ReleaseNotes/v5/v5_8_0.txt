@@ -16,3 +16,10 @@ Still under construction
     modified:   Mu2eG4/geom/muonBeamStop_v02.txt
     modified:   Mu2eG4/geom/muonBeamStop_v03.txt
     modified:   Mu2eG4/src/constructMBS.cc
+
+2) edmonds / brownd 13 Sept 2016
+   Fixed a bug in the straw digi creation that was leaving us with two copies
+   of the same straw hit for hits at early times, t < 100 ns. This does not 
+   affect any of the CD3 simulations since we do not simulate any beam flash 
+   with t < 500 ns. Files touched:
+   modified:   TrackerMC/src/StrawDigisFromStepPointMCs_module.cc
