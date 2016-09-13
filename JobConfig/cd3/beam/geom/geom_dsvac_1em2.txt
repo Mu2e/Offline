@@ -1,0 +1,8 @@
+#include "JobConfig/cd3/geom_baseline.txt"
+
+double ds.vacuumPressure     = 1.e-2;      // torr
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
