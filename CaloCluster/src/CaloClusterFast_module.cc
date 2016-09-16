@@ -153,13 +153,19 @@ namespace mu2e {
 	     {
 		 CaloCrystalHit const* seed  = (*main.begin());
 		 double seed_time            = seed->time();
+		 double seed_timeErr         = seed->timeErr();
                  int seed_section   = cal.crystal(seed->id()).sectionId();
 		 std::vector<art::Ptr<CaloCrystalHit>> caloCrystalHitsPtrVector;
 
-		 double totalEnergy = 0;
-		 for (auto il = main.begin(); il !=main.end(); ++il)totalEnergy += (*il)->energyDep();
-                
-		 caloClusters.push_back(CaloCluster(seed_section,seed_time,totalEnergy,caloCrystalHitsPtrVector,0));
+		 double totalEnergy(0),totalEnergyErr(0);
+		 for (auto il = main.begin(); il !=main.end(); ++il)
+		 {
+		    totalEnergy += (*il)->energyDep();
+		    totalEnergyErr += (*il)->energyDepErr()*(*il)->energyDepErr();
+		 }   
+                 totalEnergyErr = sqrt(totalEnergyErr);
+		 
+		 caloClusters.push_back(CaloCluster(seed_section,seed_time,seed_timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,0));
 
 	     }
 

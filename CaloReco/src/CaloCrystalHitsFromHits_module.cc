@@ -73,10 +73,8 @@ namespace mu2e {
        void makeCaloHits(CaloCrystalHitCollection  &CaloHits, 
                          const art::Handle<CaloRecoDigiCollection> &recoCaloDigisHandle);
       
-       void fillBuffer(int crystalId, double time, double eDep, double eDepTot, int nRoid, 
-                       std::vector<CaloRecoDigiPtr>& buffer, CaloCrystalHitCollection  &CaloHits);
-      
-
+       void fillBuffer(int crystalId, int nRoid, double time, double timeErr, double eDep, double eDepErr,
+                       std::vector<CaloRecoDigiPtr>& buffer, CaloCrystalHitCollection& caloHits);
 
        
   };
@@ -152,7 +150,8 @@ namespace mu2e {
           auto endHit   = hits.begin();
 
           std::vector<CaloRecoDigiPtr> buffer;
-          double time(0),eDepTot(0);
+          double timeW(0);//,timeWtot(0);
+          double eDepTot(0),eDepTotErr(0);
           int nRoid(0);
 
           while (endHit != hits.end())
@@ -162,21 +161,33 @@ namespace mu2e {
              
 	     if (deltaTime > time4Merge_)
              {
-                 double eDep = eDepTot / nRoid;
-                 time /= nRoid;               
-                 fillBuffer(crystalId, time, eDep, eDepTot, nRoid, buffer, caloHits);
+                 //double time = timeW/timeWtot;
+		 //double timeErr = 1.0/sqrt(timeWtot);
+                 double time = timeW/nRoid;
+                 double timeErr = 0;
+                 
+		 fillBuffer(crystalId, nRoid, time, timeErr, eDepTot/nRoid, eDepTotErr/nRoid, buffer, caloHits);
 
                  buffer.clear();
-                 time     = 0;
-                 eDepTot  = 0;
-                 nRoid    = 0;
-                 startHit = endHit;              
+                 timeW      = 0.0;
+                 //timeWtot   = 0.0;
+                 eDepTot    = 0.0;
+                 eDepTotErr = 0.0;
+                 nRoid      = 0;
+                 startHit   = endHit;              
              }
              else
              {
-                 time += (*endHit)->time();
-                 eDepTot += (*endHit)->energyDep();
-                 ++nRoid;
+		 //double wt  = 1.0/(*endHit)->timeErr()/(*endHit)->timeErr();
+                 //timeWtot   += wt;
+		 //timeW      += wt*(*endHit)->time();
+		 
+		 timeW      += (*endHit)->time();
+                 
+		 eDepTot    += (*endHit)->energyDep();
+                 eDepTotErr += (*endHit)->energyDepErr() * (*endHit)->energyDepErr();
+                 
+		 ++nRoid;
 
                  size_t index = *endHit - base; 
                  buffer.push_back(art::Ptr<CaloRecoDigi>(recoCaloDigisHandle, index));
@@ -187,9 +198,13 @@ namespace mu2e {
           }
 
           //flush last buffer
-          double eDep = eDepTot / nRoid;
-          time /= nRoid;               
-          fillBuffer(crystalId, time, eDep, eDepTot, nRoid, buffer, caloHits);
+          
+	  //double time = timeW/timeWtot;
+ 	  //double timeErr = 1.0/sqrt(timeWtot);
+          double time = timeW/nRoid;
+          double timeErr = 0;
+
+          fillBuffer(crystalId, nRoid, time, timeErr, eDepTot/nRoid, eDepTotErr/nRoid, buffer, caloHits);
       }
 
       
@@ -203,10 +218,10 @@ namespace mu2e {
 
   
   //--------------------------------------------------------------------------------------------------------------
-  void CaloCrystalHitsFromHits::fillBuffer(int crystalId, double time, double eDep, double eDepTot, int nRoid, 
+  void CaloCrystalHitsFromHits::fillBuffer(int crystalId, int nRoid, double time, double timeErr, double eDep, double eDepErr,
                                                   std::vector<CaloRecoDigiPtr>& buffer, CaloCrystalHitCollection& caloHits)
   {
-       caloHits.emplace_back(CaloCrystalHit(crystalId, time, eDep, eDepTot, nRoid, buffer));
+       caloHits.emplace_back(CaloCrystalHit(crystalId, nRoid, time, timeErr, eDep, eDepErr, buffer));
        
        
        if (diagLevel_ > 1)

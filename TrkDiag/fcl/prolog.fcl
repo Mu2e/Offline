@@ -28,12 +28,12 @@ BEGIN_PROLOG
   KalDiagReadCD3Cosmics.SimParticleLabel    : cosmicFilter
 # prolog which should be elsewhere, FIXME
   pidPathBins: [ 0., 50., 100., 150., 200., 250., 300., 1.e12 ]
-  CaloSim : {
-    producers: {
-      MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
-    }
-    MakeHits : [ MakeCaloReadoutHits ]
-  }
+  #CaloSim : {
+  #  producers: {
+  #    MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
+  #  }
+  #  MakeHits : [ MakeCaloReadoutHits ]
+  #}
   #CaloReco : {
   #  producers : {
   #    MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
@@ -111,7 +111,7 @@ BEGIN_PROLOG
     producers : {
       @table::EventMixing.producers
       @table::Tracking.producers
-      @table::CaloSim.producers
+      #@table::CaloSim.producers
      # @table::CaloReco.producers
       @table::TrackCaloMatching.producers
       @table::CrvResponsePackage.producers

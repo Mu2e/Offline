@@ -34,13 +34,15 @@ namespace mu2e {
             typedef std::vector<CaloCrystalHitPtr>     CaloCrystalHitPtrVector;
 
 	    CaloCluster() : 
-	       _sectionId(-1),_time(-1),_energyDep(-1),_e1(-1),_e9(-1),_e25(-1),_secondMoment(-1),_angle(0),_cog3Vector(CLHEP::Hep3Vector(0,0,0)),
-	       _caloCrystalHitsPtrVector(),_isSplit(false)
+	       _sectionId(-1),_time(0.),_timeErr(0.0),_energyDep(0.),_energyDepErr(0.),_e1(0.),_e9(0.),_e25(0.),
+	       _secondMoment(0.),_angle(0),_cog3Vector(CLHEP::Hep3Vector(0,0,0)), _caloCrystalHitsPtrVector(),_isSplit(false)
 	    {}
 
-	    CaloCluster(int iSection, double time, double energy, CaloCrystalHitPtrVector caloCrystalHits, bool isSplit) : 
-	       _sectionId(iSection),_time(time),_energyDep(energy),_e1(-1),_e9(-1),_e25(-1),_secondMoment(-1),_angle(0),
-	       _cog3Vector(CLHEP::Hep3Vector(0,0,0)),_caloCrystalHitsPtrVector(caloCrystalHits),_isSplit(isSplit)
+	    CaloCluster(int iSection, double time, double timeErr, double energy, double energyErr, 
+	                CaloCrystalHitPtrVector caloCrystalHits, bool isSplit) : 
+	       _sectionId(iSection),_time(time),_timeErr(timeErr),_energyDep(energy),_energyDepErr(energyErr),_e1(0),_e9(0),
+	       _e25(0),_secondMoment(-1),_angle(0),_cog3Vector(CLHEP::Hep3Vector(0,0,0)),
+	       _caloCrystalHitsPtrVector(caloCrystalHits),_isSplit(isSplit)
 	    {}
 
 	    void print(std::ostream& ost = std::cout) const;
@@ -50,7 +52,9 @@ namespace mu2e {
 	    int                            sectionId()                const{return _sectionId;}       
 	    int                            size()                     const{return _caloCrystalHitsPtrVector.size();}
 	    double                         time()                     const{return _time;}            
+	    double                         timeErr()                  const{return _timeErr;}            
 	    double                         energyDep()                const{return _energyDep;}       
+	    double                         energyDepErr()             const{return _energyDepErr;}       
 	    double                         e1()                       const{return _e1;}       
 	    double                         e9()                       const{return _e9;}       
 	    double                         e25()                      const{return _e25;}       
@@ -73,7 +77,9 @@ namespace mu2e {
 	 
 	    int                      _sectionId;   
 	    double                   _time;       
+	    double                   _timeErr;       
 	    double                   _energyDep;
+	    double                   _energyDepErr;
 	    double                   _e1;
 	    double                   _e9;
 	    double                   _e25;	      

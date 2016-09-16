@@ -208,7 +208,8 @@ namespace mu2e {
                  }           
 
                  if (chi2/ndf > maxChi2Cut_) continue;
-                 recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,chi2,ndf,isPileUp));
+		 
+		 recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,chi2,ndf,isPileUp));
             }
 
       }

@@ -397,8 +397,8 @@ namespace mu2e {
            
            if (fabs(p1) < 1e-3) break;          
        }
-
-
+       
+ 
        if (nTry==10 || calcChi2(tmin,calcAlpha(tmin)) > 2)
        {
            tmin = parInit[1]; 
@@ -447,21 +447,24 @@ namespace mu2e {
        return t0;      
    }
     
+
+
+
     
    //--------------------------------------------
    double FixedFastProcessor::calcAlpha(double testTime)
    {
-
+       int idxMax = pulseCache_.cacheSize()-1;
+       
        double ytot(0),x2tot(0);
        for (unsigned int i : xindices_)
        {
-           int idx = int((xvec_[i]-testTime+pulseCache_.deltaT())/pulseCache_.step());         
+           int idx       = int((xvec_[i]-testTime+pulseCache_.deltaT())/pulseCache_.step());         	   
+	   bool idxValid = (idx >=0 && idx < idxMax); 
+	   double y      = idxValid ? (pulseCache_.cache()[idx+1]-pulseCache_.cache()[idx])/pulseCache_.step()*
+	                              (xvec_[i]-testTime+pulseCache_.deltaT()-idx*pulseCache_.step())+pulseCache_.cache()[idx] : 0;
 
-           if (idx < 0) continue;
-           if (idx > (pulseCache_.cacheSize()-2)) break;
-
-           double y = (pulseCache_.cache()[idx+1]-pulseCache_.cache()[idx])/pulseCache_.step()*(xvec_[i]-testTime+pulseCache_.deltaT()-idx*pulseCache_.step())+pulseCache_.cache()[idx];           
-           if ( yvec_[i]> 0 ) { ytot += y; x2tot += y*y/yvec_[i];}       
+           if ( yvec_[i]> 0 ) {ytot += y; x2tot += y*y/yvec_[i];}       
       }
 
       return (x2tot > 0) ? ytot/x2tot : 0;
@@ -470,16 +473,18 @@ namespace mu2e {
    //--------------------------------------------
    double FixedFastProcessor::calcChi2(double testTime, double alpha)
    {
+       
        if (alpha<1e-5) alpha = calcAlpha(testTime);
        
        double difference(0);
+       int idxMax = pulseCache_.cacheSize()-1;
        for (unsigned int i : xindices_)
        {
-           int idx = int((xvec_[i]-testTime+pulseCache_.deltaT())/pulseCache_.step());
-           if (idx < 0) continue;
-           if (idx > (pulseCache_.cacheSize()-2)) break;
+           int idx       = int((xvec_[i]-testTime+pulseCache_.deltaT())/pulseCache_.step());
+	   bool idxValid = (idx >=0 && idx < idxMax); 
+	   double y      = idxValid ? (pulseCache_.cache()[idx+1]-pulseCache_.cache()[idx])/pulseCache_.step()*
+	                              (xvec_[i]-testTime+pulseCache_.deltaT()-idx*pulseCache_.step())+pulseCache_.cache()[idx] : 0;
 
-           double y = (pulseCache_.cache()[idx+1]-pulseCache_.cache()[idx])/pulseCache_.step()*(xvec_[i]-testTime+pulseCache_.deltaT()-idx*pulseCache_.step())+pulseCache_.cache()[idx];
            if (yvec_[i] > 1e-5 ) difference += (yvec_[i]-alpha*y)*(yvec_[i]-alpha*y)/yvec_[i];     
        }
 

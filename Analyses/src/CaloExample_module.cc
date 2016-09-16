@@ -158,13 +158,14 @@ namespace mu2e {
        int   _cluSplit[16384],_cluConv[16384],_cluSimIdx[16384],_cluSimLen[16384];
        std::vector<std::vector<int> > _cluList;
 
-       int   _clusimId[16384],_clusimPdgId[16384],_clusimGenIdx[16384],_clusimCrCode[16384];
-       float _clusimMom[16384],_clusimMom2[16384],_clusimPosX[16384],_clusimPosY[16384],_clusimPosZ[16384],_clusimTime[16384],_clusimEdep[16384];
+       int   _clusimId[16384],_clusimPdgId[16384],_clusimGenId[16384],_clusimGenPdg[16384],_clusimCrCode[16384];
+       float _clusimMom[16384],_clusimMom2[16384],_clusimPosX[16384],_clusimPosY[16384],_clusimPosZ[16384],_clusimStartX[16384],
+             _clusimStartY[16384],_clusimStartZ[16384],_clusimTime[16384],_clusimEdep[16384];
 
        int   _nVd,_vdId[16384],_vdPdgId[16384],_vdenIdx[16384];
        float _vdTime[16384],_vdPosX[16384],_vdPosY[16384],_vdPosZ[16384],_vdMom[16384],_vdMomX[16384],_vdMomY[16384],_vdMomZ[16384];
 
-       int   _nTrkOk,_nTrk,_trkOk[8192],_trkstat[8192],_trknHit[8192];
+       int   _nTrk,_trkstat[8192],_trknHit[8192];
        float _trkDip[8192],_trkpt[8192],_trkcon[8192],_trkmomErr[8192];
 
        float _trkt0[8192],_trkMom[8192], _trkd0[8192],_trkz0[8192],_trkOmega[8192],_trkPhi0[8192],_trkt0Err[8192]; //rhb added
@@ -272,13 +273,17 @@ namespace mu2e {
        _Ntup->Branch("nCluSim",      &_nCluSim ,     "nCluSim/I");
        _Ntup->Branch("clusimId",     &_clusimId ,    "clusimId[nCluSim]/I");
        _Ntup->Branch("clusimPdgId",  &_clusimPdgId , "clusimPdgId[nCluSim]/I");
-       _Ntup->Branch("clusimGenIdx", &_clusimGenIdx ,"clusimGenIdx[nCluSim]/I");
+       _Ntup->Branch("clusimGenId",  &_clusimGenId , "clusimGenId[nCluSim]/I");
+       _Ntup->Branch("clusimGenPdg", &_clusimGenPdg, "clusimGenPdg[nCluSim]/I");
        _Ntup->Branch("clusimCrCode", &_clusimCrCode ,"clusimCrCode[nCluSim]/I");
        _Ntup->Branch("clusimMom",    &_clusimMom ,   "clusimMom[nCluSim]/F");
-       _Ntup->Branch("clusimMom2",    &_clusimMom2 ,   "clusimMom2[nCluSim]/F");
+       _Ntup->Branch("clusimMom2",   &_clusimMom2 ,  "clusimMom2[nCluSim]/F");
        _Ntup->Branch("clusimPosX",   &_clusimPosX ,  "clusimPosX[nCluSim]/F");
        _Ntup->Branch("clusimPosY",   &_clusimPosY ,  "clusimPosY[nCluSim]/F");
        _Ntup->Branch("clusimPosZ",   &_clusimPosZ ,  "clusimPosZ[nCluSim]/F");
+       _Ntup->Branch("clusimStartX", &_clusimStartX ,"clusimStartX[nCluSim]/F");
+       _Ntup->Branch("clusimStartY", &_clusimStartY ,"clusimStartY[nCluSim]/F");
+       _Ntup->Branch("clusimStartZ", &_clusimStartZ ,"clusimStartZ[nCluSim]/F");
        _Ntup->Branch("clusimTime",   &_clusimTime ,  "clusimTime[nCluSim]/F");
        _Ntup->Branch("clusimEdep",   &_clusimEdep ,  "clusimEdep[nCluSim]/F");
 
@@ -295,10 +300,8 @@ namespace mu2e {
        _Ntup->Branch("vdTime",   &_vdTime ,  "vdTime[nVd]/F");
        _Ntup->Branch("vdGenIdx", &_vdenIdx , "vdGenIdx[nVd]/I");
 
-       _Ntup->Branch("nTrkOk",       &_nTrkOk ,      "nTrkOk/I");
        _Ntup->Branch("nTrk",         &_nTrk ,        "nTrk/I");
        _Ntup->Branch("trkDip",       &_trkDip ,      "trkDip[nTrk]/F");
-       _Ntup->Branch("trkOk",        &_trkOk ,       "trkOk[nTrk]/I");
        _Ntup->Branch("trkpt",        &_trkpt ,       "trkpt[nTrk]/F");
        _Ntup->Branch("trkstat",      &_trkstat ,     "trkstat[nTrk]/I");
        _Ntup->Branch("trkcon",       &_trkcon ,      "trkcon[nTrk]/F");
@@ -534,10 +537,13 @@ namespace mu2e {
 	       CaloContentSim       data = contentMap.second;
 
 	       art::Ptr<SimParticle> smother(sim);
-               while (smother->hasParent()) smother = smother->parent();
-               int genIdx=-1;
-               if (smother->genParticle()) genIdx = smother->genParticle()->generatorId().id();
-               
+               while (smother->hasParent() && !smother->genParticle() ) smother = smother->parent();
+               int genId=-1;
+               if (smother->genParticle()) genId = smother->genParticle()->generatorId().id();
+               int genPdg=-1;
+               if (smother->genParticle()) genPdg = smother->genParticle()->pdgId();
+
+              
 	       double simMom(-1);
 	       CLHEP::Hep3Vector simPos(0,0,0);
 	       auto vdMapEntry = vdMap.find(sim);
@@ -549,15 +555,19 @@ namespace mu2e {
 
                _clusimId[_nCluSim]     = sim->id().asInt();
                _clusimPdgId[_nCluSim]  = sim->pdgId();
-               _clusimGenIdx[_nCluSim] = genIdx;
+               _clusimGenId[_nCluSim]  = genId;
+	       _clusimGenPdg[_nCluSim] = genPdg;
                _clusimCrCode[_nCluSim] = sim->creationCode();
                _clusimTime[_nCluSim]   = data.time();
                _clusimEdep[_nCluSim]   = data.edep();
-               _clusimMom[_nCluSim]    = data.mom();//simMom;
+               _clusimMom[_nCluSim]    = data.mom();
                _clusimMom2[_nCluSim]   = simMom;
                _clusimPosX[_nCluSim]   = simPos.x(); // in disk FF frame
                _clusimPosY[_nCluSim]   = simPos.y();
                _clusimPosZ[_nCluSim]   = simPos.z();  
+               _clusimStartX[_nCluSim] = sim->startPosition().x(); // in disk FF frame
+               _clusimStartY[_nCluSim] = sim->startPosition().y();
+               _clusimStartZ[_nCluSim] = sim->startPosition().z();  
 
                ++_nCluSim;
             }
@@ -640,7 +650,6 @@ namespace mu2e {
          double fitCon       = krep->chisqConsistency().significanceLevel();
          double trkt0Err     = krep->t0().t0Err();
          double fitmompt = p0.mag()*(1.0-p0.cosTheta()*p0.cosTheta());
-
 
           _trkDip[_nTrk] = tanDip;
           _trkpt[_nTrk]  = fitmompt;
