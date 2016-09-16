@@ -27,8 +27,8 @@ namespace mu2e {
 	    {}
 
 
-	    double                         timeErr()                  const {return _time;}            
-	    double                         time()                     const {return _timeErr;}            
+	    double                         time()                     const {return _time;}            
+	    double                         timeErr()                  const {return _timeErr;}            
 	    double                         energyDep()                const {return _energyDep;}       
 	    double                         energyDepErr()             const {return _energyDepErr;}       
 	    const CaloCrystalHitPtrVector& caloCrystalHitsPtrVector() const {return _caloCrystalHitsPtrVector;}

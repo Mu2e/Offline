@@ -54,6 +54,7 @@
 #include <memory>
 
 
+/*
 namespace
 {
    struct caloSeedCompare {
@@ -65,7 +66,7 @@ namespace
      }
    };
 }
-
+*/
 
 
 
@@ -245,8 +246,6 @@ namespace mu2e {
 
 		 bool isSplit(false);
 		 CaloCrystalHit const* seed = (*main.begin());
-		 double seed_time            = seed->time();
-		 double seed_timeErr         = seed->timeErr();
 
 		 //double timeW(0),timeWtot(0);
 		 double totalEnergy(0),totalEnergyErr(0);
@@ -267,13 +266,15 @@ namespace mu2e {
 		 }
                  
 		 totalEnergyErr = sqrt(totalEnergyErr);
+
                  //double time = timeW/timeWtot;
      	         //double timeErr = 1.0/sqrt(timeWtot);
+                 double time    = seed->time();
+     	         double timeErr = seed->timeErr();
 
-		 caloProtoClustersMain.push_back(CaloProtoCluster(seed_time,seed_timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,isSplit));
-		 //caloProtoClustersMain.push_back(CaloProtoCluster(time,timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,isSplit));
+		 caloProtoClustersMain.emplace_back(CaloProtoCluster(time,timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,isSplit));
 
-		 if (_diagLevel > 1) std::cout<<" with energy="<<totalEnergy<<" and time="<<seed_time<<std::endl;;
+		 if (_diagLevel > 1) std::cout<<" with energy="<<totalEnergy<<" and time="<<time<<std::endl;;
 	     }
 
 
@@ -286,8 +287,6 @@ namespace mu2e {
 		 bool isSplit(true);
 		 CaloCrystalList& thisList  = splitClusterList[i];
 		 CaloCrystalHit const* seed = (*thisList.begin());
-		 double seed_time           = seed->time();
-		 double seed_timeErr        = seed->timeErr();
 		 
 		 //double timeW(0),timeWtot(0);
 		 double totalEnergy(0), totalEnergyErr(0);
@@ -306,14 +305,17 @@ namespace mu2e {
 		     caloCrystalHitsPtrVector.push_back( art::Ptr<CaloCrystalHit>(CaloCrystalHitsHandle,idx) );
 	             if (_diagLevel > 2 ) std::cout<<(*il)->id()<<" "; 
 		 }
+
                  totalEnergyErr = sqrt(totalEnergyErr);
+
                  //double time = timeW/timeWtot;
      	         //double timeErr = 1.0/sqrt(timeWtot);
+                 double time    = seed->time();
+     	         double timeErr = seed->timeErr();
 
-		 caloProtoClustersSplit.push_back(CaloProtoCluster(seed_time,seed_timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,isSplit));
-		 //caloProtoClustersMain.push_back(CaloProtoCluster(time,timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,isSplit));
+		 caloProtoClustersMain.emplace_back(CaloProtoCluster(time,timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,isSplit));
 
-		 if (_diagLevel > 1) std::cout<<" with energy="<<totalEnergy<<" and time="<<seed_time<<std::endl;;
+		 if (_diagLevel > 1) std::cout<<" with energy="<<totalEnergy<<" and time="<<time<<std::endl;;
 	     }
 
 	     std::sort(caloProtoClustersMain.begin(),  caloProtoClustersMain.end(), [](CaloProtoCluster const& a, CaloProtoCluster const& b) {return a.time() < b.time();});

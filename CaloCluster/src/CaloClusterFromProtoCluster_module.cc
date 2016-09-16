@@ -161,15 +161,13 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
 	    bool isSplit(false);
             auto const& main = caloClustersMain.at(imain).caloCrystalHitsPtrVector();
             auto const& seed = **main.begin();
- 	    double seed_time            = seed.time();
-	    double seed_timeErr         = seed.timeErr();
 
 	    //double timeW(0),timeWtot(0);
 	    double totalEnergy(0),totalEnergyErr(0);
 
 
             //look at the main cluster
-            if (_diagLevel > 1) std::cout<<"Associated main cluster "<<imain <<" at time "<<seed_time<<" with id= ";
+            if (_diagLevel > 1) std::cout<<"Associated main cluster "<<imain <<" at time "<<caloClustersMain.at(imain).time()<<" with id= ";
 
             for (auto il = main.begin(); il !=main.end(); ++il)
             {
@@ -211,11 +209,10 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
 	    totalEnergyErr = sqrt(totalEnergyErr);
             //double time = timeW/timeWtot;
      	    //double timeErr = 1.0/sqrt(timeWtot);
-
-            CaloProtoCluster caloProtoCluster(seed_time,seed_timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,isSplit);
-            //CaloProtoCluster ccaloProtoCluster(time,timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,isSplit);
-
-            caloProtoClustersTemp.push_back(caloProtoCluster);
+ 	    double time    = seed.time();
+	    double timeErr = seed.timeErr();
+            	    
+            caloProtoClustersTemp.emplace_back(CaloProtoCluster(time,timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,isSplit));
 	}        
 
 
