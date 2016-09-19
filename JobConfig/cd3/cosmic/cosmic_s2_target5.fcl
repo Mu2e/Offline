@@ -1,0 +1,324 @@
+//
+// This file is the top fcl for cosmic target5 stage2
+// 
+// Ralf Ehrlich and Ray Culbertson 2016
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+draEventMixing: {
+   producers: {}
+   filters: {}
+   CD3Mixers: []
+}
+END_PROLOG
+#include "JobConfig/cd3/common/prolog.fcl"
+//@table::draTopLevelDefs
+
+BEGIN_PROLOG
+#----------------------------------------------------------------
+# Mu2eG4 cuts
+
+crvOuterBox: 
+{
+   type: union
+   pars: 
+   [
+      // Upstream plane
+      { type: plane normal: [  0, 0, -1 ] point : [ 0, 0, -2440 ] },
+
+      // Downstream plane
+      { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, 18910 ] },
+
+      // +x plane
+      { type: plane normal: [  1, 0, 0 ] point : [ 0, 0, 0 ] },
+
+      // -x plane (outside of cryo box)
+      { type: plane normal: [  -1, 0, 0 ] point : [ -7390, 0, 0 ] },
+
+      // +y plane
+      { type: plane normal: [  0, 1, 0 ] point : [ 0, 2760, 0 ] },
+
+      // -y plane
+      { type: plane normal: [  0, -1, 0 ] point : [ 0, -2100, 0 ] }
+   ]
+}
+
+cosmicKineticEnergyCuts: 
+{
+   type: union
+   pars:
+   [
+      {
+        type: intersection
+        pars: 
+        [ 
+          @local::crvOuterBox,
+          { type: kineticEnergy cut: 80.0 }, 
+          { type: pdgId pars: [ 22, 11, -11 ] }
+        ]
+      },
+      {
+        type: intersection
+        pars: 
+        [ 
+          @local::crvOuterBox,
+          { type: kineticEnergy cut: 3.4 }, 
+          { type: pdgId pars: [ 2212, 2112 ] }
+        ]
+      }
+   ]
+}
+#----------------------------------------------------------------
+END_PROLOG
+
+#================================================================
+# Give this job a name.
+process_name :  cosmics2
+
+source : 
+{
+   module_type : RootInput
+}
+
+services : 
+{
+   message               : @local::default_message
+   #message               : @local::mf_debugging
+   TFileService          : { }
+   RandomNumberGenerator : { }
+   BTrkHelper            : @local::BTrkHelperDefault
+
+   user : 
+   {
+      GeometryService        : { inputFile      : "JobConfig/cd3/cosmic/geom_cosmic.txt" }
+      ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+      GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+      G4Helper               : { }
+      SeedService            : @local::automaticSeeds
+   }
+}
+
+physics : 
+{
+   analyzers: 
+   {
+      genCountLogger: 
+      {
+         module_type: GenEventCountReader
+      }
+   }
+
+   producers: 
+   {
+      g4run : 
+      {
+         module_type: Mu2eG4
+         physics: @local::mu2eg4DefaultPhysics
+         ResourceLimits: @local::mu2eg4DefaultResourceLimits
+	 TrajectoryControl: @local::mu2eg4DefaultTrajectories 
+         debug:  @local::mu2eg4DefaultDebug
+         visualization: @local::mu2eg4NoVisualization
+
+	 MultiStageParameters : 
+         {
+            simParticleNumberOffset: 1000000
+            genInputHits: [ "cosmicFilter:crvStage1" ]
+            inputSimParticles: "cosmicFilter"
+	    inputMCTrajectories: "cosmicFilter"
+            inputPhysVolumeMultiInfo: "compressPV"
+	 }
+
+         SDConfig : 
+         {
+            enableSD: [ tracker, calorimeter, calorimeterRO, virtualdetector ]
+	    TimeVD: { times: [] }
+         }
+
+         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
+
+         Mu2eG4SteppingOnlyCut: {}
+
+         Mu2eG4CommonCut: 
+         {
+            type: union
+            pars: 
+            [
+               @local::cosmicKineticEnergyCuts,
+               {
+	          type: inVolume
+                  pars: [ worldDirtBottom, worldDirtNW, worldDirtSW, worldDirtSE, worldDirtNE ]
+               }
+            ]
+         }
+
+      } // end g4run
+
+
+      //@table::draEventMixing.producers
+      //@table::EventMixing.producers
+
+      // digitization
+      @table::caloDigiTable
+
+      // Track reco - multiple hypotheses
+      // includes digi
+      @table::Tracking.producers
+
+      // MergePatRec and friends
+      @table::CalPatRec.producers
+
+      // Calorimeter reco
+      @table::caloRecoTable
+
+      // PID inputs
+      @table::TrackCaloMatching.producers
+
+
+      compressPV : 
+      {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "detectorFilter" ]
+      }
+
+      compressPVFull : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "g4run" ]
+      }
+   } // end producers
+
+   filters: 
+   {
+      trackerStepPointFilter : 
+      {
+         module_type : TrackerStepPointFilter 
+      }
+
+      detectorFilter:
+      {
+         module_type: FilterG4Out
+         noInstanceName : true
+         mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
+         mcTrajectoryInputs : [ "g4run" ]
+         numSimParticleCollections : 1
+         vetoDaughters: []
+      }
+
+
+      TrkPatRecFilter:
+      {
+          module_type        : TrkPatRecFilter
+          fitterModuleLabels : [ "TRFDownstreameMinus" ]
+          trkPatRecInstances : [ "DownstreameMinus" ]
+          minMomentum        :  50.0
+          maxMomentum        : 200.0
+      }
+
+      //@table::draEventMixing.filters
+
+      cutAndCountFilter: 
+      {
+         module_type: CutAndCountFilter
+         @table::CutAndCountSettings
+         weight: {}
+         pmin: 100.0
+         pmax: 110.0
+      }
+
+      g4status: 
+      {
+         module_type: FilterStatusG4
+         input: "g4run"
+      }
+
+      g4consistent: 
+      {
+         module_type: FilterStatusG4
+         input: "g4run"
+         #  status 10 and above means StepPointMCCollection 
+         # may have non-dereferencable pointers
+         maxAcceptedStatus: 9
+      }
+   } // end filters
+
+
+   analyzers: {
+     // save normalization info to the histogram file
+      genCountLogger: { module_type: GenEventCountReader }
+
+      cutAndCountAnalyzer: {
+         module_type: CutAndCountAnalyzer
+         @table::CutAndCountSettings
+         weight: {}
+         SelectEvents: { SelectEvents: ["trigFilter"] }
+      }
+   } // end analyzers
+
+
+   // main path
+   trigFilter : 
+   [
+       g4run, 
+       g4consistent, 
+       trackerStepPointFilter, 
+       detectorFilter, 
+       @sequence::draTopLevelDefs.physics.draDigiTrigSeq,
+       @sequence::draTopLevelDefs.physics.draRecoTrigSeq,
+       TrkPatRecFilter,
+       cutAndCountFilter,
+       compressPV
+   ]
+
+
+   g4StatusFilter : [ g4run, "!g4status", compressPVFull ]
+   trigger_paths  : [ trigFilter, g4StatusFilter ]
+
+   outputs: [ filteredOutput ]
+   an: [ genCountLogger, cutAndCountAnalyzer ]
+   end_paths: [ outputs, an]
+}
+
+outputs: 
+{
+   filteredOutput : 
+   {
+      module_type : RootOutput
+      SelectEvents: { SelectEvents: ["trigFilter"] }
+      outputCommands:   
+      [ 
+         "keep *_*_*_*"
+      ]
+   }
+
+
+}
+
+physics.producers.g4run.physics.minRangeCut : 0.01 // mm
+physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
+
+// Limit the amount of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
+
+// We guarantee that our subruns are atomic. 
+//The following line is to not run out of memory.
+services.scheduler.fileMode: MERGE
+
+services.scheduler.wantSummary: true
+
+services.TFileService.fileName       : "nts.owner.cd3-cosmic-g4s2-target5.version.sequencer.root"
+outputs.filteredOutput.fileName      : "sim.owner.cd3-cosmic-g4s2-target5.version.sequencer.art"
+

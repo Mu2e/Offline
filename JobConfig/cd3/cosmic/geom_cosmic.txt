@@ -4,12 +4,20 @@
 // Keep using it for the subsequent stages.
 #include "Mu2eG4/geom/stoppingTarget_TDR.txt" // 17 foil tapered muon stopping target used for the TDR simulations
 
+// 9/2016 rlc, oksuzian
+// revert shielding to cd3 cosmic stage1 (v5_4_2)
+// for target5 study 
+#include "Mu2eG4/geom/ExtShieldUpstream_v01.txt"
+#include "Mu2eG4/geom/ExtShieldDownstream_v01.txt"
+
+
 double world.minimalMargin.xmin = 500000;
 double world.minimalMargin.xmax = 500000;
 double world.minimalMargin.zmin = 500000;
 double world.minimalMargin.zmax = 500000;
 
 string dirt.beamline.berm.material = "G4_AIR";
+
 
 //
 // This tells emacs to view this file in c++ mode.
