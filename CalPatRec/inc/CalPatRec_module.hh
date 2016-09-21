@@ -253,10 +253,6 @@ namespace mu2e {
     KalFitResult*                         _kfresult; // full fit result
 
     CalTimePeakCollection*                _tpeaks;   // cache of time peaks
-    std::string                           _iname;	// data instance name
-
-    std::string                          _iname_seed;// data instance name for the output 
-					 // of seed fit (used for diagnostics only)
 
     XYZPHackVector                        _index;
     int                                   _nindex;
