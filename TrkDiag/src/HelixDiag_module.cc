@@ -169,7 +169,8 @@ namespace mu2e {
 	XYZPVector xyzp;
 	XYZP::fillXYZP(*_shcol, *_shpcol, hits, xyzp);
 	// resolve the phi for these points.  Note that this isn't necessarily the same resolution
-	// as used in the original fit
+	// as used in the original fit.  This function also sets ths flags as they were for the
+	// helix fit
 	setPhi(myhel,xyzp);
 	// fill TTree branches; first the ones that don't depend on MC
 	_reh = myhel;

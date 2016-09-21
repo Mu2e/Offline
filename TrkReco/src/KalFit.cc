@@ -114,6 +114,7 @@ namespace mu2e
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
     _addmaterial(pset.get<vector<bool> >("AddMaterial")),
     _resolveAfterWeeding(pset.get<bool>("ResolveAfterWeeding",false)),
+    _unweed(pset.get<bool>("UnWeed",true)),
     _exup((extent)pset.get<int>("UpstreamExtent",noextension)),
     _exdown((extent)pset.get<int>("DownstreamExtent",noextension)),
     _bfield(0)
@@ -245,8 +246,18 @@ namespace mu2e
 // create Kalman rep
       krep = new KalRep(htraj, thv, detinter, *this, kseed.particle());
       assert(krep != 0);
+      // if requested, initialize t0
+      TrkT0 t0(kseed.t0());
+      if(_initt0){
+      // stupid translation, FIXME!
+	std::vector<hitIndex> indices;
+	for(auto hit : kseed.hits())
+	  indices.push_back(hit.index());
+        initT0(shcol,kseed.particle(),t0,indices,htraj);
+	flt0 = htraj.zFlight(0.0);
+      }
 // initialize krep t0; eventually, this should be in the constructor, FIXME!!!
-      krep->setT0(kseed.t0(),kseed.flt0());
+      krep->setT0(t0,flt0);
 // initialize history list
       krep->addHistory(TrkErrCode(),"KalFit creation");
 // now fit
@@ -265,7 +276,7 @@ namespace mu2e
     if(fitable(tdef)){
 // if requested, initialize t0
       if(_initt0)
-        initT0(shcol,tdef);
+        initT0(shcol,tdef.particle(),tdef.t0(),tdef.strawHitIndices(),tdef.helix());
 // create the hits
       TrkStrawHitVector tshv;
       makeHits(shcol, tdef, tshv);
@@ -296,6 +307,8 @@ namespace mu2e
 	fitstat = extendFit(krep);
 	krep->addHistory(fitstat,"KalFit extension");
       }
+    } else if(_debug > 0){
+      cout << "Helix not fitable " << endl;
     }
   }
 
@@ -384,9 +397,11 @@ namespace mu2e
     TrkErrCode fitstat;
     for(size_t iherr=0;iherr < _herr.size(); ++iherr) {
       fitstat = fitIteration(krep,tshv,iherr);
+      if(_debug > 0) cout << "Iteration " << iherr 
+      << " NDOF = " << krep->nDof() 
+      << " Fit Status = " <<  fitstat << endl;
       if(!fitstat.success())break;
     }
-    if(_debug > 0) cout << fitstat << endl;
     return fitstat;
   }
 
@@ -416,18 +431,25 @@ namespace mu2e
       if(_updatet0){
         updateT0(krep,tshv);
         changed |= fabs(krep->t0()._t0-oldt0) > _t0tol[iter];
-        oldt0 = krep->t0()._t0;
       }
       // drop outliers
       if(_weedhits[iter]){
         changed |= weedHits(krep,tshv,iter);
+	changed |=unweedHits(krep,tshv,_maxhitchi);
       }
       // find missing materials
-      if(_addmaterial[iter])
-        changed |= addMaterial(krep) > 0;
+      unsigned nmat(0);
+      if(_addmaterial[iter]){
+	nmat = addMaterial(krep);
+        changed |= nmat>0;
+      }
+      if(_debug > 1) std::cout << "Inner iteration " << niter << " changed = "
+	<< changed << " t0 old " << oldt0 << " new " << krep->t0()._t0 
+	<< " nmat = " << nmat << endl;
+      oldt0 = krep->t0()._t0;
     }
     if(_debug > 1)
-      std::cout << "Fit iteration " << iter << " stopped after "
+      std::cout << "Outer iteration " << iter << " stopped after "
       << niter << " iterations" << std::endl;
 // make sure the fit is current
     if(!krep->fitCurrent())
@@ -743,32 +765,33 @@ namespace mu2e
   }
 
   void
-  KalFit::initT0(const StrawHitCollection* shcol,TrkDef& tdef) {
-    TrkT0& t0 = tdef.t0();
+  KalFit::initT0(const StrawHitCollection* shcol,TrkParticle const& part,
+      TrkT0& t0,std::vector<hitIndex> const& hits,
+      HelixTraj const& htraj   ) {
     using namespace boost::accumulators;
 // make an array of all the hit times, correcting for propagation delay
     const Tracker& tracker = getTrackerOrThrow();
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    unsigned nind = tdef.strawHitIndices().size();
+    unsigned nind = hits.size();
     std::vector<double> times;
     times.reserve(nind);
     // get flight distance of z=0
-    double t0flt = tdef.helix().zFlight(0.0);
+    double t0flt = htraj.zFlight(0.0);
     // estimate the momentum at that point using the helix parameters.  This is
     // assumed constant for this crude estimate
-    double mom = TrkMomCalculator::vecMom(tdef.helix(),bField(),t0flt).mag();
+    double mom = TrkMomCalculator::vecMom(htraj,bField(),t0flt).mag();
     // compute the particle velocity
-    double vflt = tdef.particle().beta(mom)*CLHEP::c_light;
+    double vflt = part.beta(mom)*CLHEP::c_light;
     // for crude estimates, we only need 1 d2t function
     D2T d2t;
     static CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
     // loop over strawhits
     for(unsigned iind=0;iind<nind;iind++){
-      size_t istraw = tdef.strawHitIndices()[iind];
+      size_t istraw = hits[iind];
       const StrawHit& strawhit(shcol->at(istraw));
       const Straw& straw = tracker.getStraw(strawhit.strawIndex());
       // compute the flightlength to this hit from z=0 (can be negative)
-      double hflt = tdef.helix().zFlight(straw.getMidPoint().z()) - t0flt;
+      double hflt = htraj.zFlight(straw.getMidPoint().z()) - t0flt;
       // Use this to estimate the time for the track to reaches this hit from z=0
       double tprop = hflt/vflt;
       // estimate signal propagation time on the wire assuming the middle (average)
@@ -908,18 +931,18 @@ namespace mu2e
 // update the reference flightlength
       flt0 = hit->fltLen();
     }
-// now the same, moving backwards.  This just overwrites the hit info it doesn't average or improve FIXME!
-//    flt0 = krep->flt0();
-//    hitt0 = krep->t0();
-//    for(TrkStrawHitVector::reverse_iterator ihit= ilow;ihit != tshv.rend(); ++ihit){
-//      TrkStrawHit* hit = *ihit;
-//      double mom = krep->momentum(hit->fltLen()).mag();
-//      double beta = krep->particleType().beta(mom);
-//      double tflt = (hit->fltLen()-flt0)/(beta*CLHEP::c_light);
-//      hitt0._t0 += tflt;
-//      (*ihit)->updateHitT0(hitt0);
-//      flt0 = hit->fltLen();
-//    }
+// now the same, moving backwards.
+    flt0 = krep->flt0();
+    hitt0 = krep->t0();
+    for(TrkStrawHitVector::reverse_iterator ihit= ilow;ihit != tshv.rend(); ++ihit){
+      TrkStrawHit* hit = *ihit;
+      double mom = krep->momentum(hit->fltLen()).mag();
+      double beta = krep->particleType().beta(mom);
+      double tflt = (hit->fltLen()-flt0)/(beta*CLHEP::c_light);
+      hitt0._t0 += tflt;
+      (*ihit)->updateHitT0(hitt0);
+      flt0 = hit->fltLen();
+    }
   }
 
   void

@@ -51,7 +51,6 @@ namespace mu2e {
     bool stereo() const;
     void setOutlier();
     void setUse(bool use);
-    static double _efac;
 // flag bits to define use
     static StrawHitFlag _useflag, _dontuseflag;
     static int _debug;

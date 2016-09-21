@@ -46,6 +46,7 @@
 #include "TrkPatRec/inc/PayloadSaver.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
+#include "CLHEP/Matrix/SymMatrix.h"
 #include "CLHEP/Matrix/Vector.h"
 // root 
 #include "TH1F.h"
@@ -58,6 +59,7 @@
 #include <float.h>
 #include <vector>
 using namespace std; 
+using CLHEP::HepSymMatrix;
 using CLHEP::Hep3Vector;
 using CLHEP::HepVector;
 
@@ -186,13 +188,15 @@ namespace mu2e
     for (size_t iseed=0; iseed<_hscol->size(); ++iseed) {
     // convert the HelixSeed to a TrkDef
       HelixSeed const& hseed(_hscol->at(iseed));
-      HelixTraj htraj(TrkParams(HelixTraj::NHLXPRM));
+      HepVector hpvec(HelixTraj::NHLXPRM);
       // convert the helix to a fit trajectory.  This accounts for the physical particle direction
       if(_helicity == hseed._helix.helicity() &&
-	  TrkUtilities::RobustHelix2Traj(hseed._helix,htraj,_amsign)){
+	  TrkUtilities::RobustHelix2Traj(hseed._helix,hpvec,_amsign)){
 	_cutflow->Fill(2.0);
-	if(_debug > 1) cout << "Using HelixTraj with parameters " << htraj.parameters()->parameter() << endl;
   // create the track definition
+	HepSymMatrix hcovar(HelixTraj::NHLXPRM,1);
+	HelixTraj htraj(hpvec,hcovar);
+	if(_debug > 1) cout << "Using HelixTraj with parameters " << htraj.parameters()->parameter() << endl;
 	TrkDef seeddef(hseed._timeCluster,htraj,_tpart,_fdir);
   // filter outliers; this doesn't use drift information, just straw positions
 	filterOutliers(seeddef,_maxhelixdoca);

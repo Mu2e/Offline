@@ -6,6 +6,7 @@
 #ifndef TrkReco_TrkUtilities_HH
 #define TrkReco_TrkUtilities_HH
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Matrix/Vector.h"
 #include <vector>
 
 class HelixTraj;
@@ -18,7 +19,7 @@ namespace mu2e {
   namespace TrkUtilities {
   // convert the robust helix format into the BaBar format HelixTraj.  This requires
   // the sign of the angular momentum about the z axis, as the BaBar rep os semi-kinematic
-    bool RobustHelix2Traj (RobustHelix const& helix, HelixTraj &traj, float amsign);
+    bool RobustHelix2Traj (RobustHelix const& helix, CLHEP::HepVector& hpvec, float amsign);
   // create a robust helix from raw particle informaiton.  This is useful for MC comparison
     void RobustHelixFromMom(CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& mom, double charge, double Bz, RobustHelix& helix);
     // create a KalSegment (helix segment) from a HelixTraj

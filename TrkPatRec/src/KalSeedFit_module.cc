@@ -81,8 +81,10 @@ namespace mu2e
       double _maxdoca;      // outlier cut
       TrkParticle _tpart; // particle type being searched for
       TrkFitDirection _fdir;  // fit direction in search
+      vector<double> _perr; // diagonal parameter errors to use in the fit
       Helicity _helicity; // cached value of helicity expected for this fit
       double _amsign; // cached sign of angular momentum WRT the z axis 
+      HepSymMatrix _hcovar; // cache of parameter error covariance matrix
       // cache of event objects
       const StrawHitCollection* _shcol;
       const StrawHitFlagCollection* _shfcol;
@@ -105,9 +107,18 @@ namespace mu2e
     _maxdoca(pset.get<double>("MaxDoca",40.0)),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
+    _perr(pset.get<vector<double> >("ParameterErrors")),
     _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet()))
   {
     produces<KalSeedCollection>();
+    // check dimensions
+    if(_perr.size() != HelixTraj::NHLXPRM)
+      throw cet::exception("RECO")<<"mu2e::KalSeedFit: parameter error vector has wrong size"<< endl;
+    // mock covariance matrix, all diagonal
+    _hcovar = HepSymMatrix(HelixTraj::NHLXPRM,1);
+    for(size_t ipar = 0; ipar < HelixTraj::NHLXPRM; ++ipar){
+      _hcovar(ipar+1,ipar+1) = _perr[ipar]*_perr[ipar]; // clhep indexing starts a 1
+    }
   }
 
   KalSeedFit::~KalSeedFit(){}
@@ -141,25 +152,37 @@ namespace mu2e
     for (size_t iseed=0; iseed<_hscol->size(); ++iseed) {
     // convert the HelixSeed to a TrkDef
       HelixSeed const& hseed(_hscol->at(iseed));
-      HelixTraj hstraj(TrkParams(HelixTraj::NHLXPRM));
+      HepVector hpvec(HelixTraj::NHLXPRM);
       // verify the helicity.  This could be wrong due to FP effects, so don't treat it as an exception
       if(_helicity == hseed._helix.helicity() &&
       // convert the helix to a fit trajectory.  This accounts for the physical particle direction
-	  TrkUtilities::RobustHelix2Traj(hseed._helix,hstraj,_amsign)){
-	if(_debug > 1) cout << "Using HelixTraj with parameters " << hstraj.parameters()->parameter() << endl;
-  // create the track definition
+	  TrkUtilities::RobustHelix2Traj(hseed._helix,hpvec,_amsign)){
+	HelixTraj hstraj(hpvec,_hcovar);
+      // update the covariance matrix
+	if(_debug > 1)
+//	  hstraj.printAll(cout);
+	  cout << "Seed Fit HelixTraj parameters " << hstraj.parameters()->parameter()
+	  << "and covariance " << hstraj.parameters()->covariance() <<  endl;
+// create the track definition.  This shouldn't be necessary, it should be possible to
+// create a track directly from the helix seed FIXME!
 	TrkDef seeddef(hseed._timeCluster,hstraj,_tpart,_fdir);
-  // filter outliers; this doesn't use drift information, just straw positions
-  // This function should move to the helix fit FIXME!
+// filter outliers; this doesn't use drift information, just straw positions
 	filterOutliers(seeddef);
-      // now, fit the seed helix from the filtered hits
+    // now, fit the seed helix from the filtered hits
 	KalRep *seedrep(0);
 	_seedfit.makeTrack(_shcol,seeddef,seedrep);
+	if(_debug > 1){
+	  if(seedrep == 0)
+	    cout << "No Seed fit produced " << endl;
+	  else
+	    cout << "Seed Fit result " << seedrep->fitStatus()  << endl;
+	}
 	if(seedrep != 0 && seedrep->fitStatus().success()){
 	// convert the status into a FitFlag
 	  TrkFitFlag fitstat(TrkFitFlag::fitOK);
 	  // create a KalSeed object from this fit, recording the particle and fit direction
 	  KalSeed kseed(_tpart,_fdir,seedrep->t0(),seedrep->flt0(),fitstat);
+//	  KalSeed kseed(_tpart,_fdir,hseed._timeCluster.t0(),seedrep->flt0(),fitstat);
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
 	  TrkUtilities::fillHitSeeds(seedrep,kseed._hits);
 	  if(kseed._hits.size() >= _minnhits)kseed._status.merge(TrkFitFlag::hitsOK);
@@ -174,7 +197,15 @@ namespace mu2e
 	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
 	    kseed._segments.push_back(kseg);
 	    // push this seed into the collection
-	    seedfits->push_back(kseed); 
+	    seedfits->push_back(kseed);
+	    if(_debug > 1){
+	      cout << "Seed fit segment parameters " << endl;
+		for(size_t ipar=0;ipar<5;++ipar) cout << kseg.helix()._pars[ipar] << " ";
+	      cout << " covariance " << endl;
+	      for(size_t ipar=0;ipar<15;++ipar)
+		cout << kseg.covar()._cov[ipar] << " ";
+	      cout << endl;
+	    }
 	  } else {
 	    throw cet::exception("RECO")<<"mu2e::KalSeedFit: Can't extract helix traj from seed fit" << endl;
 	  }

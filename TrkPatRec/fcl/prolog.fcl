@@ -80,21 +80,24 @@ KFSeed : {
   ambiguityStrategy       	  : [ 0  , 0    ]
   t0Tolerance			  : [ 5.0, 5.0  ]
   weedhits			  : [ true, true ]
+  UnWeed			  : true
+  ResolveAfterWeeding		  : false
   AddMaterial			  : [ false, false ]
   initT0			  : true 
   updateT0			  : false
-  debugLevel                      : 0
 }
 
 # Kalman fit configuration for the final track fit.  This also runs the simulated annealing
 KFFinal : {
   materialCorrection          : true
   fieldCorrection	      : true
-  ResolveAfterWeeding	      : true
+  initT0		      : false
+  ResolveAfterWeeding	      : false
   hiterr                      : [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
   t0Tolerance                 : [ 2.0, 1.0, 1.0, 1.0 , 0.5  , 0.5 , 0.2, 0.2, 0.1]
 # specific choices for ambiguity resolution
   weedhits		      : @local::PanelAmbig.Weed
+  UnWeed		      : true
   AddMaterial		      : [ false, false, false, true, false, false, false, true, true ]
   PanelAmbigResolver          : @local::PanelAmbig.Resolver
   ambiguityStrategy           : @local::PanelAmbig.Strategy
@@ -106,6 +109,8 @@ KFFinal : {
 KalSeedFit : {
   module_type                 : KalSeedFit
   SeedFit		      : @local::KFSeed
+#  ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
+  ParameterErrors	      : [1.0,1.0,1.0,1.0,1.0]
 }
 # Final Kalman fit, including material and magnetic inhomogeneity effects
 KalFinalFit : {

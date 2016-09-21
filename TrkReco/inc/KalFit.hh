@@ -25,7 +25,6 @@
 #include "BTrk/KalmanTrack/KalContext.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/BField/BField.hh"
-#include "BTrk/TrkBase/TrkParticle.hh"
 // Mu2e objects
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
@@ -81,6 +80,7 @@ namespace mu2e
     std::vector<bool> _addmaterial; // look for additional materials along the track
     std::vector<AmbigResolver*> _ambigresolver;
     bool _resolveAfterWeeding;
+    bool _unweed;
     extent _exup;
     extent _exdown;
 // relay access to BaBar field: this should come from conditions, FIXME!!!
@@ -88,7 +88,8 @@ namespace mu2e
   // helper functions
     bool fitable(TrkDef const& tdef);
     bool fitable(KalSeed const& kseed);
-    void initT0(const StrawHitCollection* shcol, TrkDef& tdef );
+    void initT0(const StrawHitCollection* shcol, TrkParticle const& part,
+	TrkT0& t0,std::vector<hitIndex> const& hits, HelixTraj const& htraj   );
     virtual void makeHits(const StrawHitCollection* shcol,TrkDef const& tdef, TrkStrawHitVector& tshv); 
     void makeHits(const StrawHitCollection* shcol, HelixTraj const& htraj,
 	std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv );

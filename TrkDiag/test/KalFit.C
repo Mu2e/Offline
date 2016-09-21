@@ -1267,8 +1267,9 @@ void KalFit::NHits(){
   TH1F* ncha = new TH1F("ncha","Number of Conversion Electron Tracker Hits;N hits;N Conversion Tracks",100,-0.5,99.5);
   nch->SetStats(0);
   nch->SetStats(0);
-  _tdiag->Project("nch","mc.ndigigood",tmom+tpitch);
-  _tdiag->Project("ncha","mc.ngood",tmom+tpitch+"fit.status>0");
+  TCut goodmc("mcmid.t0%1695>550&&mcmid.mom>100");
+  _tdiag->Project("nch","mc.ndigigood",tmom+tpitch+goodmc);
+  _tdiag->Project("ncha","mc.ngood",tmom+tpitch+goodmc+"fit.status>0");
   nch->SetLineColor(kRed);
   ncha->SetLineColor(kBlue);
   TLegend* leg = new TLegend(0.6,0.7,0.9,0.9);

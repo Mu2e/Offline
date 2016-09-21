@@ -198,9 +198,17 @@ namespace mu2e {
     findPeaks(tccol.get());
 
     // set the flag for all hits associated to a time peak
+    if(_debug > 0) cout << "Found " << tccol->size() << " Time Clusters " << endl;
     for (auto tpc : *tccol.get()){
+      if(_debug > 1){
+	cout << "Time Cluster time = " << tpc.t0().t0() << " +- " << tpc.t0().t0Err()
+	<< " position = " << tpc._pos << endl;
+      }
       for (auto shi : tpc._strawHitIdxs ) {
 	flags->at(shi).merge(StrawHitFlag::tclust);
+	if(_debug > 2){
+	  cout << "Time Cluster hit at index " << shi << endl;
+	}
       }
     }
     // put collections into the event

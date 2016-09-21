@@ -44,12 +44,10 @@ namespace mu2e
     _lstep(pset.get<double>("lstep",0.2)),
     _minlambda(pset.get<double>("minlambda",0.01)),
     _maxniter(pset.get<unsigned>("maxniter",50)),
-    _nsigma(pset.get<double>("nsigma",5.0)),
     _minzsep(pset.get<double>("minzsep",100.0)),
     _maxzsep(pset.get<double>("maxzsep",700.0)),
     _mindphi(pset.get<double>("mindphi",0.25)),
     _maxdphi(pset.get<double>("maxdphi",2.5)),
-    _efac(pset.get<double>("ErrorFactor",1.0)),
     _mindist(pset.get<double>("mindist",50.0)),
     _maxdist(pset.get<double>("maxdist",500.0)),
     _rmin(pset.get<double>("minR",200.0)),
@@ -64,12 +62,14 @@ namespace mu2e
     _targetinter(pset.get<bool>("targetintersect",true)),
     _targetradius(pset.get<double>("targetradius",75.0)), // target radius: include some buffer
     _trackerradius(pset.get<double>("trackerradius",700.0)), // tracker out radius; include some buffer
+    _rwind(pset.get<double>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix
+    _rout(pset.get<double>("OutlierRadius",40.0)), 
+    _pout(pset.get<double>("OutlierDPhi",2.0)), 
     _helicity(pset.get<int>("Helicity",Helicity::unknown))
   {
     if(_helicity._value == Helicity::unknown){
       throw cet::exception("RECO")<<"mu2e::RobustHelix: Invalid Helicity specified"<< std::endl;
     }
-    XYZP::_efac = _efac;
     std::vector<std::string> bitnames;
     // these should be fcl parameters, FIXME!!!
     bitnames.push_back("Outlier");
@@ -303,8 +303,7 @@ namespace mu2e
 	    double dphi = finfo[jphi]._phi._val-finfo[iphi]._phi._val;
 	    if(dz > _minzsep && fabs(dphi) > _mindphi ){
 	      double dphiex = dz*dfdz;
-	      double ferr = finfo[iphi]._phi._err+finfo[jphi]._phi._err;
-	      if(!_filterz || fabs(dphi-dphiex) < _nsigma*ferr){
+	      if(!_filterz || fabs(dphi-dphiex) < _pout){
 		double slope = dphi/dz;
 		if(slope > _smin && slope < _smax){ 
 		  accf2(slope);
@@ -317,7 +316,7 @@ namespace mu2e
 	accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acci2;
 	for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
 	  double phiex = fz0+finfo[iphi]._z*dfdz;
-	  if(!_filterz || fabs(finfo[iphi]._phi._val-phiex) < _nsigma*finfo[iphi]._phi._err){
+	  if(!_filterz || fabs(finfo[iphi]._phi._val-phiex) < _pout ){
 	    acci2(finfo[iphi]._phi._val - finfo[iphi]._z*dfdz);
 	  }
 	}
@@ -335,7 +334,7 @@ namespace mu2e
 	xyzp[ixyzp].finfo(myhel.center(),fz._phi);
 	int nloop = (int)rint((phiex - fz._phi._val)/twopi);
 	xyzp[ixyzp]._phi = fz._phi._val + nloop*twopi;
-	if(_filterz && fabs(xyzp[ixyzp]._phi-phiex)> _nsigma*fz._phi._err) xyzp[ixyzp].setOutlier();
+	if(_filterz && fabs(xyzp[ixyzp]._phi-phiex)> _pout) xyzp[ixyzp].setOutlier();
       }
       return true;
     } else
@@ -459,12 +458,12 @@ namespace mu2e
 	double pcos = (xyzp[ixyzp]._pos.x()-center.x())/rad._val;
 	double psin = (xyzp[ixyzp]._pos.y()-center.y())/rad._val;
 	// 3 conditions: either the radius is inside the median, outside the median, or 'on' the median.  We define 'on'
-	// in terms of the error
-	if(fabs(rad._val -rmed) < rad._err ){
+	// in terms of a window
+	if(fabs(rmed - rad._val) < _rwind  ){
 	  sums._scc += fabs(pcos);
 	  sums._ssc += fabs(psin);
 	  ++sums._nc;
-	} else if (rad._val > rmed) {
+	} else if (rad._val > rmed  ) {
 	  sums._sco += pcos;
 	  sums._sso += psin;
 	  ++sums._no;
@@ -523,7 +522,7 @@ namespace mu2e
       xyzp[ixyzp].rinfo(center,rad);
       bool olduse = xyzp[ixyzp].use();
   // update the flag each iteration, until we've converged
-      if(fabs(rad._val -rmed) > _nsigma*rad._err)
+      if(fabs(rad._val -rmed) > _rout)
 	xyzp[ixyzp]._flag.merge(other);
       else
 	xyzp[ixyzp]._flag.clear(other);

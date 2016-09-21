@@ -10,14 +10,13 @@
 using CLHEP::Hep3Vector;
 namespace mu2e {
 // statics
-  double XYZP::_efac(1.0);
   StrawHitFlag XYZP::_useflag;
   StrawHitFlag XYZP::_dontuseflag;
   int XYZP::_debug(0);
 
   XYZP::XYZP(size_t index,StrawHit const& sh, StrawHitPosition const& shp,Straw const& straw) :
     _ind(index), _pos(shp.pos()), _phi(shp.pos().phi()), _flag(shp.flag()), _wdir(straw.getDirection()),
-    _perr(_efac*shp.posRes(StrawHitPosition::phi)),_rerr(_efac*shp.posRes(StrawHitPosition::rho))
+    _perr(shp.posRes(StrawHitPosition::phi)),_rerr(shp.posRes(StrawHitPosition::rho))
   {
     static const Hep3Vector _zdir(0.0,0.0,1.0);
     _sdir = _zdir.cross(_wdir);
@@ -32,7 +31,7 @@ namespace mu2e {
   XYZP::XYZP(size_t ind,Hep3Vector const& pos, Hep3Vector const& wdir,
       double werr, double serr) :
     _ind(ind),_pos(pos),_phi(_pos.phi()),_wdir(wdir),_sdir(wdir.y(),-wdir.x(),0.0),
-    _perr(_efac*werr),_rerr(_efac*serr){}
+    _perr(werr),_rerr(serr){}
 
  void
   XYZP::rinfo(Hep3Vector const& center,VALERR& rad) const {

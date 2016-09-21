@@ -69,7 +69,6 @@ namespace mu2e
     unsigned _minnstereo; // minimum # of stereo hits
     double _lambda0,_lstep,_minlambda; // parameters for AGE center determination
     unsigned _maxniter; // maxium # of iterations to global minimum
-    double _nsigma; // # of sigma for filtering outlyers
     double _minzsep, _maxzsep; // Z separation of points for pitch estimate
     double _mindphi, _maxdphi; // phi separation of points for pitch estimate
     double _rbias;  // robust fit parameter bias
@@ -88,6 +87,9 @@ namespace mu2e
     bool _targetinter; // require fit to intersect the target
     double _targetradius; // target size to use in constraint or init
     double _trackerradius; // tracker radius to use in init
+    double _rwind; // raidus window for defining points to be 'on' the helix
+    double _rout; // radius difference for a hit to be an xy outlier
+    double _pout; // phi difference for a hit to be a z outlier
     Helicity _helicity; // helicity value to look for.  This defines the sign of dphi/dz
     double _smin, _smax;
  };

@@ -152,7 +152,18 @@ namespace mu2e
 	}
 	// build a Kalman rep around this seed
 	KalRep *krep(0);
+
 	_kfit.makeTrack(_shcol,kseed,krep);
+	if(_debug > 1){
+	  if(krep == 0)
+	    cout << "No Final fit produced " << endl;
+	  else{
+	    cout << "Seed Fit HelixTraj parameters " << krep->seedTrajectory()->parameters()->parameter()
+	      << " covariance " << krep->seedTrajectory()->parameters()->covariance()
+	      << " NDOF = " << krep->nDof()
+	      << " Final Fit status " << krep->fitStatus()  << endl;
+	  }
+	}
 	// if successfull, try to add missing hits
 	if(_addhits && krep != 0 && krep->fitStatus().success()){
 	    // first, add back the hits on this track
@@ -162,6 +173,9 @@ namespace mu2e
 	  if(misshits.size() > 0){
 	    _kfit.addHits(krep,_shcol,misshits,_maxaddchi);
 	  }
+	  if(_debug > 1)
+	    cout << "AddHits Fit result " << krep->fitStatus()
+	    << " NDOF = " << krep->nDof() << endl;
 	}
 	// put successful fits into the event
 	if(krep != 0 && krep->fitStatus().success()){

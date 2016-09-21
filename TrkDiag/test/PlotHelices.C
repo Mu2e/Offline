@@ -29,8 +29,8 @@ void PlotHelices(TDirectory* tdir,unsigned nmax=20, int nps=3,const char* name=0
   char mctfzname[100];
 
   TCanvas* cans[100];
-  for(size_t ievt=0;ievt<10000;++ievt){
-    for(size_t itrk=0;itrk<100;++itrk){
+  for(size_t ievt=0;ievt<100;++ievt){
+    for(size_t itrk=0;itrk<2;++itrk){
       int jplot = 100*ievt + itrk;
       snprintf(ce_stereo_used_xyname,100,"ce_stereo_used_shxy%i",jplot);
       snprintf(ce_stereo_notused_xyname,100,"ce_stereo_notused_shxy%i",jplot);
