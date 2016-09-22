@@ -67,7 +67,7 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
 fi
 
 # Setup the framework and its dependent products
-setup -B art v2_02_02a -q${MU2E_UPS_QUALIFIERS}
+setup -B art v2_04_00a -q${MU2E_UPS_QUALIFIERS}
 
 # The interface to SAM - conflicts with ifdhc from the grid runtime environment
 #setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
@@ -77,7 +77,7 @@ setup -B geant4 v4_9_6_p04e -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER
 
 # Other libraries we need.
 setup -B heppdt v3_04_01e -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_01_02  -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_01_03  -q${MU2E_UPS_QUALIFIERS}
 setup xerces_c  v3_1_3    -q${MU2E_UPS_QUALIFIERS}
 setup tbb       v4_4_3a   -q${MU2E_UPS_QUALIFIERS}
 
