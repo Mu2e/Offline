@@ -21,7 +21,7 @@ namespace mu2e {
     Float_t _minhtime, _maxhtime; // min and max cluster hit time
     threevec _pos; // average position of cluster
     
-    void reset() { _tcindex = _nhits = _ncehits = -1; _time=0.0; _pos.reset(); }
+    void reset() { _tcindex = _nhits = _ncehits = 0; _time=0.0; _pos.reset(); }
     static std::string const& leafnames() { static const std::string leaves =
       std::string("clusterindex/I:nhits/I:ncehits/I:time/F:")+threevec::leafnames();
       return leaves;
@@ -48,7 +48,7 @@ namespace mu2e {
     Float_t	_maxdphi; // max dphi WRT average
     Float_t	_minrho; // min rho WRT average
     Float_t	_maxrho; // max rho WRT average
-    void reset() { _nce = _ncesel = _nceclust = -1; _time = _maxdphi = _maxrho = _minrho = 0.0; _pos.reset();}
+    void reset() { _nce = _ncesel = _nceclust = 0; _time = _maxdphi = _maxrho = _minrho = 0.0; _pos.reset();}
     static std::string const& leafnames() {
       static const std::string leaves =
 	std::string("nce/I:ncesel/I:nceclust/I:time/F:")

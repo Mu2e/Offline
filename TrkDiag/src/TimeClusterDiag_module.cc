@@ -137,8 +137,10 @@ namespace mu2e {
   void TimeClusterDiag::analyze(art::Event const& event ) {
     _iev=event.id().event();
     // find the data
-    if(!findData(event)){
-      throw cet::exception("RECO")<<"mu2e::TimeClusterDiag: data missing or incomplete"<< endl;
+    if(!findData(event) || _shcol->size() != _shfcol->size() 
+    || _shcol->size() != _shpcol->size()
+    || (_mcdigis !=0 && _shcol->size() == _mcdigis->size())){
+      throw cet::exception("RECO")<<"mu2e::TimeClusterDiag: data missing or inconsistent"<< endl;
       return;
     }
     _ntc = _tccol->size();
@@ -185,25 +187,25 @@ namespace mu2e {
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
       _mcdigis = mcdH.product();
     }
-
     return _shcol != 0 && _shfcol != 0 && _shpcol != 0 && _tccol != 0 && (_mcdigis != 0 || !_mcdiag);
   }
 
   void TimeClusterDiag::fillCECluster() {
-      _ceclust.reset();
+    _ceclust.reset();
   // loop over all straw hits 
     unsigned nstrs = _shcol->size();
     Hep3Vector cpos;
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawDigiMC const& mcdigi = _mcdigis->at(istr);
+      StrawHitFlag const& shflag =_shfcol->at(istr);
       if(TrkMCTools::CEDigi(mcdigi)){
 	++_ceclust._nce;
 	StrawDigi::TDCChannel itdc = StrawDigi::zero;
 	if(!mcdigi.hasTDC(itdc))itdc = StrawDigi::one;
 	cpos += mcdigi.clusterPosition(itdc).vect();
 	_ceclust._time += mcdigi.clusterPosition(itdc).t();
-	bool selected = _shfcol->at(istr).hasAllProperties(_hsel) && !_shfcol->at(istr).hasAnyProperty(_hbkg);
-	bool tclust = _shfcol->at(istr).hasAllProperties(_tcsel);
+	bool selected = shflag.hasAllProperties(_hsel) && !shflag.hasAnyProperty(_hbkg);
+	bool tclust = shflag.hasAllProperties(_tcsel);
 	if(selected)++_ceclust._ncesel;
 	if(tclust)++_ceclust._nceclust;
       }
