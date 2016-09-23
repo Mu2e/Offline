@@ -17,11 +17,14 @@
 //                that were displayed in the pdf file.
 //
 // Instructions:
-// 1) Edit the mychain->Add("filename") line to specify the right
+// 1) In the c'tor of TChain, the TDirectory element of the string
+//    is the module label of the module that ran ReadKalFits;
+//    edit if necessary.
+// 2) Edit the mychain->Add("filename") line to specify the right
 //    input filename.
-// 2) Add additional mychain->Add lines as needed.
-// 3) If desired, edit the names of the output files
-// 4) root -l ce>C
+// 3) Add additional mychain->Add lines as needed.
+// 4) If desired, edit the names of the output files
+// 5) To run: root -l ce>C
 //
 {
 
