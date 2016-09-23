@@ -1,5 +1,5 @@
 // Create two standard pdf files with tracking diagnostic plots
-// Version for use with root v5.
+// Version for use with root v6.
 //
 // This code reads a TTree made by the module:
 //    TrkDiag/src/ReadKalFits_module.cc
@@ -27,23 +27,22 @@
 // 5) To run: root -l ce>C
 //
 {
-
-  gROOT->Reset();
   gROOT->SetStyle("Plain");
   gStyle->SetOptStat("emruo");
 
   TChain* mychain = new TChain("RKFDownstreameMinus/trkdiag");
   mychain->Add("genReco.hist");
 
-  gROOT->LoadMacro("TrkDiag/test/KalFit.C+");
+#include "TrkDiag/test/KalFit.C+"
 
-  TFile* outFile = new TFile("save_ce.root","NEW");
+  TFile * outFile = new TFile("save_ce.root","NEW");
 
   KalFit fit(mychain);
   fit.Acc();
   fit.Res();
-  acan->Print("acan_ce.pdf");
-  rcan->Print("rcan_ce.pdf");
+
+  fit.acan->Print("acan_ce.pdf");
+  fit.rcan->Print("rcan_ce.pdf");
 
   outFile->cd();
   outFile->Write();
