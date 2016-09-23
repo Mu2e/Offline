@@ -1,5 +1,15 @@
 Steps taken to migrate from art v1_17_07 to art v2_04_00.
 
+The order of the steps below is not chronological. For example
+the changes to SConstruct were not done in a single step - they
+were done as issues were discovered.  For clarity they are written
+up as a single step.
+
+The migration started with art v2_02_02.  Part way through
+I switched to art v2_04_00.  Because the writeup is not
+chronological I have not recorded which step was done with
+which version of art.
+
 1) Preparation
    I cloned that art repo and built it in verbose mode.
    I did this for both art v1_17_7 and art v2_04_00
