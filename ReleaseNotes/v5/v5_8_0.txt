@@ -6,6 +6,8 @@ Still under construction
    TrkDiag/test/ce.C
      - New file to illustrate how to produce tracking quality
        control plots from the TTree created by ReadKalFits.
+   TrkDiag/test/KalFit.C
+     - Change a single % to %% where a single % is undefined behaviour.
 
 2) kutschke  22 Sept 2016
     Analyses/src/ReadBack_module.cc
