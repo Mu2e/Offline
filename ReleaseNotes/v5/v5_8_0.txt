@@ -2,6 +2,21 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_8_0
 
+2)  kutschke  22 Sept 2016
+    Analyses/src/ReadBack_module.cc
+      - Switch to use:  MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh
+        Instead of:     MCDataProducts/inc/PhysicalVolumeInfoCollection.hh
+      - This re-enables printout of SimParitlces.
+
+    HitMakers/src/ReadStrawHit_module.cc
+     - remove obsolete code
+     - it consumed random numbers and seeds; this meant that adding
+       and subtracting this analyzer module from and endpath
+       changed the behaviour of random numbers in other modules
+       (via changes to the seed sequence).
+
+    Analyses/test/readback.fcl .  Add back call to ReadStrawHit.
+
 1)  dnbrow01  08 Sept 2016
     Added pump-out holes to MBS.  Add two new versions:  version 4 = version 2
     plus holes; version 5 = version 3 plus holes.  As a reminder, version 3
