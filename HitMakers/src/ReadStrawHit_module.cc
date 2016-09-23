@@ -2,10 +2,6 @@
 // Plugin to test that I can read back the persistent data about straw hits.
 // Also tests the mechanisms to look back at the precursor StepPointMC objects.
 //
-// $Id: ReadStrawHit_module.cc,v 1.22 2014/01/09 03:58:32 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/09 03:58:32 $
-//
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by KLG
 //
@@ -33,9 +29,6 @@
 #include "TH1F.h"
 #include "TNtuple.h"
 
-// CLHEP includes.
-#include "CLHEP/Random/RandGaussQ.h"
-
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -48,12 +41,6 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
-
-#include "GlobalConstantsService/inc/MassCache.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "MCDataProducts/inc/StepPointMCStrawHit.hh"
-#include "HitMakers/inc/formStepPointMCStrawHit.hh"
-
 
 using namespace std;
 
@@ -87,8 +74,6 @@ namespace mu2e {
     // Some reconstruction related data
     double _minimumLength;
     double _enableFlightTimeCorrection;
-    // Random number distributions
-    CLHEP::RandGaussQ _gaussian;
 
     // Some diagnostic histograms.
     TH1F* _hHitTime;
@@ -120,7 +105,6 @@ namespace mu2e {
     _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
     _minimumLength(pset.get<double>("minimumLength",0.01)),   // mm
     _enableFlightTimeCorrection(pset.get<bool>("flightTimeCorrection",false)),
-    _gaussian( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
     _hHitTime(0),
     _hHitTime1(0),
     _hHitDeltaTime(0),
@@ -250,8 +234,8 @@ namespace mu2e {
 
     art::Handle<StrawHitCollection> pdataHandle;
     gblresult = evt.getByLabel(_makerModuleLabel,pdataHandle);
-    ( _diagLevel > 0 ) && 
-      std::cout 
+    ( _diagLevel > 0 ) &&
+      std::cout
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
       << " StrawHitCollection             _makerModuleLabel: " << _makerModuleLabel << ", "
       << ", " << gblresult << std::endl;
@@ -264,24 +248,24 @@ namespace mu2e {
     // fixme: we may templetize this
     art::Handle<StrawHitMCTruthCollection> truthHitMCHandle;
     bool gblSHresult = evt.getByLabel(_makerModuleLabel,truthHitMCHandle);
-    ( _diagLevel > 0 ) && 
-      std::cout 
+    ( _diagLevel > 0 ) &&
+      std::cout
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
       << " StrawHitMCTruthCollection      _makerModuleLabel: " << _makerModuleLabel << ", "
       << ", " << gblresult << std::endl;
 
-    StrawHitMCTruthCollection const& hits_SHtruth = gblSHresult ? 
+    StrawHitMCTruthCollection const& hits_SHtruth = gblSHresult ?
       *truthHitMCHandle : StrawHitMCTruthCollection();
 
     art::Handle<StrawDigiMCCollection>     truthDigiMCHandle;
     bool gblSDresult = evt.getByLabel(_makerModuleLabel,"StrawHitMC",truthDigiMCHandle);
-    ( _diagLevel > 0 ) && 
-      std::cout 
+    ( _diagLevel > 0 ) &&
+      std::cout
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
       << " StrawHitMCTruthCollection      _makerModuleLabel: " << _makerModuleLabel << ", StrawHitMC"
       << ", " << gblresult << std::endl;
 
-    StrawDigiMCCollection const& hits_SDtruth = gblSDresult ? 
+    StrawDigiMCCollection const& hits_SDtruth = gblSDresult ?
       *truthDigiMCHandle : StrawDigiMCCollection();
 
     if (!(gblSHresult||gblSDresult)) throw cet::exception("DATA") << " Missing data";
@@ -290,10 +274,10 @@ namespace mu2e {
     art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
     gblresult = evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
 
-    ( _diagLevel > 0 ) && 
-      std::cout 
+    ( _diagLevel > 0 ) &&
+      std::cout
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
-      << " PtrStepPointMCVectorCollection _makerModuleLabel: " << _makerModuleLabel << ", StrawHitMCPtr" 
+      << " PtrStepPointMCVectorCollection _makerModuleLabel: " << _makerModuleLabel << ", StrawHitMCPtr"
       << ", " << gblresult << std::endl;
 
     if (!gblresult) throw cet::exception("DATA") << " Missing data";
@@ -310,9 +294,6 @@ namespace mu2e {
     if ( _diagLevel > 2 ) {
       cout << "ReadStrawHit: Total number of straw hits = " << hits.size() << endl;
     }
-
-    // Cache of recently used masses from the particle data table.
-    MassCache cache;
 
     for ( size_t i=0; i<hits.size(); ++i ) {
 
@@ -369,39 +350,6 @@ namespace mu2e {
         }
       }
 
-      if ( ncalls < _maxFullPrint && _diagLevel > 3 ) {
-
-        //if we were to recalculate some of the quantities using
-        //formStepPointMCStrawHit and the first StepPointMC here is how:
-
-        std::unique_ptr<StepPointMCStrawHit> spmcshp = 
-          formStepPointMCStrawHit(
-                                  mcptr.at(0),
-                                  si,
-                                  _minimumLength,
-                                  _enableFlightTimeCorrection,
-                                  cache,
-                                  _gaussian,
-                                  tracker,
-                                  trackerCalibrations);
-        cout << "ReadStrawHit: StepPointMCStrawHit # (" << spmcshp->_ptr.id() << 
-          " " << spmcshp->_ptr.key() << ")"
-             << " DCA=" << spmcshp->_dca
-             << " driftTNonSm=" << spmcshp->_driftTimeNonSm
-             << " driftT=" << spmcshp->_driftTime
-             << " distToMid=" << spmcshp->_distanceToMid
-             << " fracDistToMid- " << fracDist
-             << " t1=" << spmcshp->_t1
-             << " t2=" << spmcshp->_t2
-             << " edep=" << spmcshp->_edep
-             << endl;
-
-        //       assert (spmcshp->_driftTNonSm == truth.driftTime());
-        //       assert (spmcshp->_dca == truth.driftDistance());
-        //       assert (spmcshp->_toMid == truth.distanceToMid());
-        
-      }
-
       // Use MC truth data
 
       if (gblSHresult) {
@@ -456,12 +404,12 @@ namespace mu2e {
       ++nhperwire[hit.strawIndex()];
 
       if ( int(evt.id().event()) < _maxFullPrint ) {
-        cout << "ReadStrawHit: " 
-             << evt.id().event()      << " #" 
+        cout << "ReadStrawHit: "
+             << evt.id().event()      << " #"
              << si                    << " "
              << sid                   << " "
-             << hit.time()            << " " 
-             << hit.dt()              << " " 
+             << hit.time()            << " "
+             << hit.dt()              << " "
              << hit.energyDep()       << " "
              << ( gblSHresult ? SHtruth.driftTime() : 0.0 ) << " "
              << ( gblSHresult ? SHtruth.driftDistance() : SDtruth.distanceToMid(itdc) ) << " |";
@@ -480,9 +428,9 @@ namespace mu2e {
 
             SimParticle sp = *mchit.simParticle();
 
-            cout << "ReadStrawHit: mchit.simParticle() id, pdgid, parent id, pdgid : " 
+            cout << "ReadStrawHit: mchit.simParticle() id, pdgid, parent id, pdgid : "
                  << sp.id() << ", " << sp.pdgId();
-            
+
             bool isSec = sp.isSecondary();
 
             if ( isSec ) {
@@ -491,9 +439,9 @@ namespace mu2e {
 
                 SimParticle parent = *sp.parent();
 
-                cout << " is a secondary of "  << parent.id() 
+                cout << " is a secondary of "  << parent.id()
                      << ", " << parent.pdgId();
-              
+
                 isSec = parent.isSecondary();
                 sp = parent;
 
