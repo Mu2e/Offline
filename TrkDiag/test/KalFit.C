@@ -702,11 +702,11 @@ void KalFit::Acc(int ngen) {
   acan->cd(1);
   TPad* tp = (TPad*)acan->cd(1);
   tp->SetBottomMargin(0.15);
-  acc->DrawCopy("histtext0");
+  acc->Draw("histtext0");
   acan->cd(2);
   tp = (TPad*)acan->cd(2);
   tp->SetBottomMargin(0.15);
-  racc->DrawCopy("histtext0");
+  racc->Draw("histtext0");
 }
 
 void KalFit::Res(unsigned mincut,unsigned maxcut) {
