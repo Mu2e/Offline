@@ -1,0 +1,8 @@
+#include "Mu2eG4/geom/geom_common_cd3_s4p2_backgroundSim.txt"
+
+double ds.vacuumPressure     = 1.;      // torr
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
