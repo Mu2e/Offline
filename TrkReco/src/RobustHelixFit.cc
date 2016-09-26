@@ -100,17 +100,13 @@ namespace mu2e
     if(_filterxy)filterDist(xyzp);
     if(xyzp.size() >= _minnhit){
       myseed._status.merge(TrkFitFlag::hitsOK);
-      // initialize the circle parameters if required.
-      if(myseed._status.hasAllProperties(TrkFitFlag::initialized) ||
-	  initCircle(xyzp,myhel)){
-	myseed._status.merge(TrkFitFlag::initialized);
 	// solve for the circle parameters
+      if(initCircle(xyzp,myhel)){
 	if(findXY(xyzp,myhel)){
-	  myseed._status.merge(TrkFitFlag::radiusOK);
+	  myseed._status.merge(TrkFitFlag::circleOK);
 	  if(findZ(xyzp,myhel)) {
 	    // set the success
-	    myseed._status.merge(TrkFitFlag::phizOK);
-	    myseed._status.merge(TrkFitFlag::fitOK);
+	    myseed._status.merge(TrkFitFlag::helixOK);
 	  }
 	}
       }

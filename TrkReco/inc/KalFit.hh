@@ -50,11 +50,11 @@ namespace mu2e
 
     virtual ~KalFit();
 // create a fit object from a track definition
-    virtual void makeTrack(const StrawHitCollection* shcol, TrkDef& tdef, KalRep*& kres);
+    void makeTrack(const StrawHitCollection* shcol, TrkDef& tdef, KalRep*& kres);
 // create a fit object from  a track seed, 
-    virtual void makeTrack(const StrawHitCollection* shcol, KalSeed const& kseed, KalRep*& kres);
+    void makeTrack(const StrawHitCollection* shcol, KalSeed const& kseed, KalRep*& kres);
 // add a set of hits to an existing fit
-    virtual void addHits(KalRep* kres,const StrawHitCollection* shcol, std::vector<hitIndex> indices, double maxchi);
+    void addHits(KalRep* kres,const StrawHitCollection* shcol, std::vector<hitIndex> indices, double maxchi);
 // add materials to a track
     bool unweedHits(KalRep* kres, double maxchi);
 // KalContext interface
@@ -90,10 +90,10 @@ namespace mu2e
     bool fitable(KalSeed const& kseed);
     void initT0(const StrawHitCollection* shcol, TrkParticle const& part,
 	TrkT0& t0,std::vector<hitIndex> const& hits, HelixTraj const& htraj   );
-    virtual void makeHits(const StrawHitCollection* shcol,TrkDef const& tdef, TrkStrawHitVector& tshv); 
+    void makeHits(const StrawHitCollection* shcol,TrkDef const& tdef, TrkStrawHitVector& tshv); 
     void makeHits(const StrawHitCollection* shcol, HelixTraj const& htraj,
 	std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv );
-    virtual void makeMaterials(TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
+    void makeMaterials(TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
     unsigned addMaterial(KalRep* krep);
     bool weedHits(KalRep* kres, TrkStrawHitVector& tshv,size_t iter);
     bool unweedHits(KalRep* kres, TrkStrawHitVector& tshv, double maxchi);

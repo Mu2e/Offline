@@ -116,7 +116,7 @@ KalSeedFit : {
 KalFinalFit : {
   module_type                 : KalFinalFit
   KalFit		      : @local::KFFinal
-  GoodKallSeedFitBits	      : ["HitsOK","FitOK"]
+  GoodKallSeedFitBits	      : ["SeedOK"]
   AddHitSelectionBits	      : []
   AddHitBackgroundBits	      : []
 }

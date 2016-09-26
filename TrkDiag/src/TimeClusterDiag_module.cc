@@ -139,7 +139,7 @@ namespace mu2e {
     // find the data
     if(!findData(event) || _shcol->size() != _shfcol->size() 
     || _shcol->size() != _shpcol->size()
-    || (_mcdigis !=0 && _shcol->size() == _mcdigis->size())){
+    || (_mcdigis !=0 && _shcol->size() != _mcdigis->size())){
       throw cet::exception("RECO")<<"mu2e::TimeClusterDiag: data missing or inconsistent"<< endl;
       return;
     }

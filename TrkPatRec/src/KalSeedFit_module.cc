@@ -179,9 +179,9 @@ namespace mu2e
 	}
 	if(seedrep != 0 && seedrep->fitStatus().success()){
 	// convert the status into a FitFlag
-	  TrkFitFlag fitstat(TrkFitFlag::fitOK);
+	  TrkFitFlag seedok(TrkFitFlag::seedOK);
 	  // create a KalSeed object from this fit, recording the particle and fit direction
-	  KalSeed kseed(_tpart,_fdir,seedrep->t0(),seedrep->flt0(),fitstat);
+	  KalSeed kseed(_tpart,_fdir,seedrep->t0(),seedrep->flt0(),seedok);
 //	  KalSeed kseed(_tpart,_fdir,hseed._timeCluster.t0(),seedrep->flt0(),fitstat);
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
 	  TrkUtilities::fillHitSeeds(seedrep,kseed._hits);

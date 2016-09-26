@@ -131,7 +131,7 @@ namespace mu2e
 
 // should iterate fit to include outlier removal using time + geometric information FIXME!
 
-      if((hseed._status.hasAllProperties(TrkFitFlag::fitOK) && _hfit.helicity() == hseed._helix.helicity()) || _saveall) {
+      if((hseed._status.hasAllProperties(TrkFitFlag::helixOK) && _hfit.helicity() == hseed._helix.helicity()) || _saveall) {
 	outseeds->push_back(hseed);
 	if(_debug > 1) cout << "Found helix with fit \n" << hseed._helix << endl;
       } else if (_debug > 1) cout << "Found helix without fit \n" << hseed._helix << endl;
