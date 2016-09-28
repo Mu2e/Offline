@@ -19,6 +19,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "GeometryService/inc/GeometryService.hh"

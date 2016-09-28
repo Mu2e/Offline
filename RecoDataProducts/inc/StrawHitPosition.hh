@@ -17,8 +17,6 @@ namespace mu2e {
   struct StrawHitPosition {
     enum edir {wire=0, trans };
     StrawHitPosition();
-    virtual ~StrawHitPosition();
-    StrawHitPosition& operator =(StrawHitPosition const& other);
     // accessors
     CLHEP::Hep3Vector const& pos() const { return _pos; }
     CLHEP::Hep3Vector const& wdir() const { return _wdir; }

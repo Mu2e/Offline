@@ -541,7 +541,7 @@ namespace mu2e
     shinfo._pos = shp.pos();
     shinfo._time = sh.time();
     shinfo._rho = shp.pos().perp();
-    shinfo._wres = shp.posRes(StrawHitPosition:::wire);
+    shinfo._wres = shp.posRes(StrawHitPosition::wire);
     shinfo._tres = shp.posRes(StrawHitPosition::trans);
     if(_stcol != 0 && shp.stereoHitIndex() >= 0){
       shinfo._chisq = _stcol->at(shp.stereoHitIndex()).chisq();

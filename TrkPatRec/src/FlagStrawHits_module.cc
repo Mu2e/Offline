@@ -14,6 +14,7 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"

@@ -60,7 +60,7 @@ namespace mu2e {
   private:
 
     // configuration
-    int _debugLevel;
+    int _debug;
     // event object Tags
     art::InputTag   _shTag;
     art::InputTag   _shpTag;
@@ -86,7 +86,7 @@ namespace mu2e {
     StereoMVA _vmva; // input variables to TMVA for stereo selection
     // for optimized Stereo Hit finding
     size_t _nsta; // number of stations
-    size_t _npnl; // number of panels in a station
+    size_t _npnl; // number of panels in a panel
     vector <vector<size_t> >_pover;            // list of panels overlapping a given panel
     void genMap();    // function to generate panel list from tracker geometry
     bool findData(art::Event& event);
@@ -94,7 +94,7 @@ namespace mu2e {
 
   MakeStereoHits::MakeStereoHits(fhicl::ParameterSet const& pset) :
     // Parameters
-    _debugLevel(pset.get<int>("debugLevel",0)),
+    _debug(pset.get<int>("debugLevel",0)),
     _shTag		(pset.get<art::InputTag>("StrawHitCollection","makeSH")),
     _shpTag		(pset.get<art::InputTag>("StrawHitPositionCollection","MakeStrawHitPositions")),
     _shsel(pset.get<vector<string> >("StrawHitSelectionBits",vector<string>{"EnergySelection","TimeSelection"} )),
@@ -119,7 +119,7 @@ namespace mu2e {
   void MakeStereoHits::beginJob(){
   // initialize MVA
     _mvatool.initMVA();
-    if(_debugLevel > 0){
+    if(_debug > 0){
       cout << "MakeStereoHits MVA parameters: " << endl;
       _mvatool.showMVA();
     }
@@ -135,8 +135,8 @@ namespace mu2e {
     const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
 
     // find event data
-    if( (!findData(event)) ||  _shpcol->size() != _shcol->size()){
-      throw cet::exception("RECO")<<"mu2e::MakeStereoHits: collection sizes don't match " << endl; 
+    if( !findData(event) ){
+      throw cet::exception("RECO")<<"mu2e::MakeStereoHits: collection missing or sizes don't match " << endl; 
     }
     
     // copy the input StrawHitPosition collection
@@ -145,18 +145,23 @@ namespace mu2e {
     StereoHitCollection stereohits;
     size_t nsh = _shcol->size();
     stereohits.reserve(3*nsh);
+    // setup counters to pick best stereo points for a given hit
     vector<double> maxMVA(nsh,-FLT_MAX);
     vector<int> minsep(nsh,PanelId::apart);
     vector<int> ibest(nsh,-1);
-
     // select and sort hits by panel
     size_t nres = max(size_t(32),nsh/10);
-    vector <vector<vector<size_t> > >stax(_nsta,vector<vector<size_t> >(_npnl));
-    for(vector<vector<size_t>> pstax : stax){
-      for(vector<size_t>  hpstax : pstax){
-        hpstax.reserve(nres);
-      }
-    }
+    typedef vector<size_t> PanelHits;
+    PanelHits hpstax;
+    hpstax.reserve(nres);
+    if(_debug > 2) cout << "Built PanelHits size = " << hpstax.size() << endl;
+    typedef vector<PanelHits> StationPanels;
+    StationPanels pstax(2*_npnl,hpstax);
+    if(_debug > 2) cout << "Built StationPanels size = " << pstax.size() << endl;
+    typedef vector< StationPanels > TrackerStations;
+    TrackerStations stax(_nsta,pstax);
+    if(_debug > 2) cout << "Built TrackerStations size = " << stax.size() << endl;
+  
     for(size_t ish=0;ish<nsh;++ish){
     // select hits based on flag
       if(shpcol->at(ish).flag().hasAllProperties(_shsel)
@@ -172,16 +177,16 @@ namespace mu2e {
 	  jpnl = ipnl + (iplane%2)*_npnl;
 	else
 	  jpnl = ipnl + (1-iplane%2)*_npnl;
+	if(_debug > 2) cout << "Inserting hit " << ish << " into station " << station << " panel " << jpnl << endl;
         stax[station][jpnl].push_back(ish);
       }
     }
-
     // loop over panel pairs in the same station
 
-    for(vector<vector<size_t>> pstax : stax){                                // loop over stations
-      for(vector<size_t>::size_type ipnl=0; ipnl!=pstax.size(); ipnl++){    // loop over panels in this station
+    for(StationPanels pstax : stax){                                // loop over stations
+      for(size_t ipnl = 0; ipnl < pstax.size(); ++ipnl) {   // loop over panels in this station
 	if( (!_pover[ipnl].empty()) && (!pstax[ipnl].empty()) ){
-	  for( size_t jpnl : _pover[ipnl]){                            // loop over overlapping panels
+	  for( size_t jpnl : _pover[ipnl]){                        // loop over overlapping panels
 	    if( !pstax[jpnl].empty()){
 	      for(size_t ish : pstax[ipnl]){                                    // loop over selected hits in the first panel
 		StrawHit const& sh1 = _shcol->at(ish);
@@ -292,8 +297,7 @@ namespace mu2e {
     const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
     // establish sizes
     _nsta = tt.nPlanes()/2;
-    size_t npnl = tt.getPlane(0).nPanels(); // number of panels in a plane
-    _npnl = 2*npnl;
+    _npnl = tt.getPlane(0).nPanels(); // number of panels in a plane
     // find the phi extent of the longest straw
     Straw const& straw = tt.getStraw(StrawId(0,0,0,0));
     double phi0 = (straw.getMidPoint()-straw.getHalfLength()*straw.getDirection()).phi();
@@ -304,19 +308,19 @@ namespace mu2e {
     if(phiwidth>M_PI)phiwidth =2*M_PI-phiwidth;
     // loop over stations and see whether the phi ranges of the straws overlap, giving
     // a possibility for stereo hits
-    std::vector<double> panphi(_npnl);
+    std::vector<double> panphi(2*_npnl);
 
     for(int ipla=0;ipla<2;++ipla){
       Plane const& plane = tt.getPlane(ipla);
       for(int ipan=0;ipan<plane.nPanels();++ipan){
 	Panel const& panel = plane.getPanel(ipan);
 	// expand to station-wide 'panel' number.  This changes sign with station
-	int jpan = ipan + (ipla%2)*npnl;
+	int jpan = ipan + (ipla%2)*_npnl;
 	panphi[jpan] = panel.straw0MidPoint().phi();
       }
     }
 
-    if(_debugLevel>0){
+    if(_debug>0){
       cout << "panel phi width = " << phiwidth;
       cout << "panel phi positions = ";
       for(auto pphi : panphi)
@@ -324,11 +328,11 @@ namespace mu2e {
       cout << endl;
     }
 
-    _pover = vector<vector<size_t>>(_npnl);
-    if(_debugLevel< 10){
-      for(size_t iphi = 0;iphi<_npnl;++iphi){
+    _pover = vector<vector<size_t>>(2*_npnl);
+    if(_debug< 10){
+      for(size_t iphi = 0;iphi<2*_npnl;++iphi){
 	double phi = panphi[iphi];
-	for(size_t jphi=iphi+1;jphi<_npnl;++jphi){
+	for(size_t jphi=iphi+1;jphi<2*_npnl;++jphi){
 	  double dphi = fabs(phi - panphi[jphi]);
 	  if(dphi > M_PI)dphi = 2*M_PI-dphi;
 	  if(dphi < phiwidth)_pover[iphi].push_back(jphi);
@@ -336,15 +340,15 @@ namespace mu2e {
       }
     } else {
       // for testing, assume every panel overlaps
-      for(size_t iphi = 0;iphi<_npnl;++iphi){
-	for(size_t jphi=iphi+1;jphi<_npnl;++jphi){
+      for(size_t iphi = 0;iphi<2*_npnl;++iphi){
+	for(size_t jphi=iphi+1;jphi<2*_npnl;++jphi){
 	  _pover[iphi].push_back(jphi);
 	}
       }
     }
 
-    if(_debugLevel >0){
-      for(size_t ipnl=0;ipnl<_npnl;++ipnl){
+    if(_debug >0){
+      for(size_t ipnl=0;ipnl<2*_npnl;++ipnl){
 	cout << "Panel " << ipnl << " Overlaps with panel ";
 	for(auto jpnl : _pover[ipnl]){
 	  cout << jpnl << " ";
@@ -360,7 +364,7 @@ namespace mu2e {
     _shcol = shH.product();
     auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
     _shpcol = shpH.product();
-    return _shcol != 0 && _shpcol != 0;
+    return _shcol != 0 && _shpcol != 0 && _shpcol->size() == _shcol->size();
   }
 
 
