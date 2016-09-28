@@ -177,15 +177,6 @@ physics :
       // PID inputs
       @table::TrackCaloMatching.producers
 
-
-      compressPV : 
-      {
-         module_type: CompressPhysicalVolumes
-         volumesInput : "g4run"
-         hitInputs : []
-         particleInputs : [ "detectorFilter" ]
-      }
-
       compressPVFull : {
          module_type: CompressPhysicalVolumes
          volumesInput : "g4run"
@@ -200,18 +191,6 @@ physics :
       {
          module_type : TrackerStepPointFilter 
       }
-
-      detectorFilter:
-      {
-         module_type: FilterG4Out
-         noInstanceName : true
-         mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO" ]
-         extraHitInputs : [ "g4run:virtualdetector" ]
-         mcTrajectoryInputs : [ "g4run" ]
-         numSimParticleCollections : 1
-         vetoDaughters: []
-      }
-
 
       TrkPatRecFilter:
       {
@@ -254,12 +233,6 @@ physics :
      // save normalization info to the histogram file
       genCountLogger: { module_type: GenEventCountReader }
 
-      cutAndCountAnalyzer: {
-         module_type: CutAndCountAnalyzer
-         @table::CutAndCountSettings
-         weight: {}
-         SelectEvents: { SelectEvents: ["trigFilter"] }
-      }
    } // end analyzers
 
 
@@ -269,12 +242,11 @@ physics :
        g4run, 
        g4consistent, 
        trackerStepPointFilter, 
-       detectorFilter, 
        @sequence::draTopLevelDefs.physics.draDigiTrigSeq,
        @sequence::draTopLevelDefs.physics.draRecoTrigSeq,
        TrkPatRecFilter,
        cutAndCountFilter,
-       compressPV
+       compressPVFull
    ]
 
 
@@ -282,7 +254,7 @@ physics :
    trigger_paths  : [ trigFilter, g4StatusFilter ]
 
    outputs: [ filteredOutput ]
-   an: [ genCountLogger, cutAndCountAnalyzer ]
+   an: [ genCountLogger ]
    end_paths: [ outputs, an]
 }
 
