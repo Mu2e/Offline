@@ -319,6 +319,7 @@ Tracking : {
     makeSD	    : @local::makeSD
     makeSH	    : @local::makeSHfromSD
     FSHPreStereo    : @local::FSHPreStereo
+    MakeStrawHitPositions  : @local::MakeStrawHitPositions
     MakeStereoHits  : @local::MakeStereoHits
     FlagStrawHits   : @local::FlagStrawHits
     FlagBkgHits	    : @local::FlagBkgHits
@@ -370,7 +371,7 @@ Tracking : {
 # simulation sequence to create digis.  Currently just one module, but that might change
   DigiSim : [ makeSD ]
 # production sequence to prepare hits for tracking
-  PrepareHits : [ makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
+  PrepareHits : [ makeSH, FSHPreStereo, MakeStrawHitPositions, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
 }
 # production sequences for tracking specific paricles; first electrons
 Tracking.TPRDeM  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, KSFDeM, KFFDeM ]

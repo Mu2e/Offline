@@ -5,56 +5,23 @@
 //
 // Mu2e includes
 #include "RecoDataProducts/inc/StrawHitPosition.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-
-namespace {
-  constexpr const double invsqrt12 = 1.0/sqrt(12.0);
-}
 
 namespace mu2e {
 
-  StrawHitPosition::StrawHitPosition(StrawHit const& hit,Straw const& straw ,SHInfo const& shinfo, StrawHitFlag flag ) : _pos(shinfo._pos),_wdist(shinfo._tddist),
-  _stindex(-1),_flag(flag) {
-    CLHEP::Hep3Vector rhat = _pos.perpPart().unit();
-    CLHEP::Hep3Vector phat(-rhat.y(),rhat.x(),0.0);
-    double sres = 2*invsqrt12*straw.getRadius();
-    double pcos = fabs(straw.getDirection().dot(phat));
-    double rcos = fabs(straw.getDirection().dot(rhat));
-    _pres = shinfo._tdres*pcos + sres*rcos;
-    _rres = sres*pcos + shinfo._tdres*rcos;
-    if(shinfo._tdiv)_flag.merge(StrawHitFlag::tdiv);
-  }
-
-  StrawHitPosition::StrawHitPosition(StrawHitPosition const& shpos, StrawHitFlag orflag) :
-    _pos(shpos._pos),_wdist(shpos._wdist),_pres(shpos._pres),_rres(shpos._rres),_stindex(shpos._stindex),_flag(shpos._flag)
-  {
-    _flag.merge(orflag);
-  }
-
-  StrawHitPosition::StrawHitPosition(StereoHitCollection const& sthits, size_t stindex, size_t shindex, StrawHitFlag orflag) :
-    _pos(sthits.at(stindex).pos()),
-    _pres(invsqrt12*sthits.at(stindex).dist()),
-    _rres(invsqrt12*sthits.at(stindex).dist()),_stindex(stindex),_flag(StrawHitFlag::stereo)
-  {
-    _wdist = (shindex==sthits.at(stindex).hitIndex1())? sthits.at(stindex).wdist1() : sthits.at(stindex).wdist2();
-    _flag.merge(orflag);
-  }
-
-  StrawHitPosition::StrawHitPosition() :_pres(-1.0),_rres(-1.0),_stindex(-1) {}
-
-  StrawHitPosition::~StrawHitPosition() {}
-
-  StrawHitPosition& StrawHitPosition::operator =(StrawHitPosition const& other) {
-    if(this != &other){
-      _pos = other._pos;
-      _wdist = other._wdist;
-      _pres = other._pres;
-      _rres = other._rres;
-      _stindex = other._stindex;
-      _flag = other._flag;
+  Float_t StrawHitPosition::posRes(edir dir) const {
+    switch ( dir ) {
+      case StrawHitPosition::wire : {
+	return _wres;
+      }
+      case StrawHitPosition::trans : {
+	return _tres;
+      }
+      default : {
+	return -1.0;
+      }
     }
-    return *this;
   }
+
+  StrawHitPosition::StrawHitPosition() : _wdist(0.0), _wres(-1.0),_tres(-1.0), _stindex(-1) {}
+
 }
-
-

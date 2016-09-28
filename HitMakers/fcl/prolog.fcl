@@ -63,6 +63,7 @@ makeDcH : {
 MakeStrawHitPositions : {
   module_type             : MakeStrawHitPositions
   StrawHitCollectionLabel : "makeSH"
+  StrawHitFlagCollectionLabel : "FSHPreStereo"
 }
 
 MakeStereoHits : {

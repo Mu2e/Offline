@@ -84,7 +84,7 @@ namespace mu2e
       Float_t _mctime, _mcptime;
       Int_t _esel,_rsel, _timesel,  _delta, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk;
       Int_t _plane, _panel, _layer, _straw;
-      Float_t _shpres, _shrres, _shchisq, _shdt, _shdist;
+      Float_t _shwres, _shtres, _shchisq, _shdt, _shdist;
       Bool_t _mcxtalk;
   };
 
@@ -119,8 +119,8 @@ namespace mu2e
     shinfo._pos = shp.pos();
     shinfo._time = sh.time();
     shinfo._rho = shp.pos().perp();
-    shinfo._pres = shp.posRes(StrawHitPosition::phi);
-    shinfo._rres = shp.posRes(StrawHitPosition::rho);
+    shinfo._wres = shp.posRes(StrawHitPosition::wire);
+    shinfo._tres = shp.posRes(StrawHitPosition::trans);
     // info depending on stereo hits
     if(_stcol != 0 && shp.stereoHitIndex() >= 0){
       shinfo._chisq = _stcol->at(shp.stereoHitIndex()).chisq();
@@ -245,14 +245,13 @@ namespace mu2e
     _shdiag->Branch("pdist",&_pdist,"pdist/F");
     _shdiag->Branch("pperp",&_pperp,"pperp/F");
     _shdiag->Branch("pmom",&_pmom,"pmom/F");
-    _shdiag->Branch("pres",&_shpres,"pres/F");
-    _shdiag->Branch("rres",&_shrres,"rres/F");
+    _shdiag->Branch("wres",&_shwres,"wres/F");
+    _shdiag->Branch("tres",&_shtres,"tres/F");
     _shdiag->Branch("shchisq",&_shchisq,"shchisq/F");
     _shdiag->Branch("shdt",&_shdt,"shdt/F");
     _shdiag->Branch("shdist",&_shdist,"shdist/F");
     _shdiag->Branch("mcxtalk",&_mcxtalk,"mcxtalk/B");
   }
-
 
   void StrawHitDiag::fillStrawHitDiag() {
     GeomHandle<DetectorSystem> det;
@@ -366,8 +365,8 @@ namespace mu2e
         _mcxtalk = spmcp->strawIndex() != sh.strawIndex();
 
       }
-      _shpres = _shpcol->at(istr).posRes(StrawHitPosition::phi);
-      _shrres = _shpcol->at(istr).posRes(StrawHitPosition::rho);
+      _shwres = _shpcol->at(istr).posRes(StrawHitPosition::wire);
+      _shtres = _shpcol->at(istr).posRes(StrawHitPosition::trans);
 //  Info depending on stereo hits
       if(_stcol != 0 && _shpcol->at(istr).stereoHitIndex() >= 0){
         _shchisq = _stcol->at(_shpcol->at(istr).stereoHitIndex()).chisq();

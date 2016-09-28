@@ -71,6 +71,7 @@ namespace mu2e {
   }
 
   double TrackerCalibrations::TimeDivisionResolution(StrawIndex , double znorm) const {
+  // this resolution function assumes all straws lengths have the same relative resolution FIXME!!
     double reso  = _tdresopar0 + _tdresopar1 * (znorm - 0.5) * (znorm - 0.5); //resolution in mm
     return reso;
 
@@ -100,7 +101,8 @@ namespace mu2e {
     } else {
 // There's no information if we're outside the physical limit: set the position to 0, increase the error, and flag
       shinfo._tddist = 0.0;
-      shinfo._tdres = shlen;
+      static const double invsqrt12 = 1.0/sqrt(12.0);
+      shinfo._tdres = shlen*invsqrt12;
       shinfo._tdiv = false;
     }
     shinfo._pos = straw.getMidPoint() + shinfo._tddist*straw.getDirection();

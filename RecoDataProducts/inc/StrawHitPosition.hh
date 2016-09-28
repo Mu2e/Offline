@@ -6,45 +6,33 @@
 // Original author David Brown
 //
 // Mu2e includes
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "ConditionsBase/inc/TrackerCalibrationStructs.hh"
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Units/PhysicalConstants.h"
+// root includes
+#include "Rtypes.h"
+
 namespace mu2e {
 
-  class StrawHitPosition {
-    public:
-#ifndef __GCCXML__
-// construct from a straw hit.  Calibration and other information must be provided from outside
-      StrawHitPosition(StrawHit const& hit, Straw const& straw, SHInfo const& shinfo, StrawHitFlag flag=StrawHitFlag() );
-// construct from another hit, optionally with additional flag bits (these will be ORed with the existing bits
-      StrawHitPosition(StrawHitPosition const& pos,StrawHitFlag orflag=StrawHitFlag() );
-// construct from a stereo hit
-      StrawHitPosition(StereoHitCollection const& sthits, size_t stindex, size_t shindex,StrawHitFlag orflag=StrawHitFlag());
-// null constructor for root
-#endif /* __GCCXML__ */
-      StrawHitPosition();
-      virtual ~StrawHitPosition();
-      StrawHitPosition& operator =(StrawHitPosition const& other);
-#ifndef __GCCXML__
-      enum edir {phi=0,rho=1};
-// accessors
-      CLHEP::Hep3Vector const& pos() const { return _pos; }
-      float wireDist() const { return _wdist; }
-      float posRes(edir dir) const { return dir==phi ? _pres : _rres; }
-      int stereoHitIndex() const { return _stindex; } // negative if there's no stereo hit
-      StrawHitFlag const& flag() const { return _flag; }
-#endif /* __GCCXML__ */
-    private:
-      CLHEP::Hep3Vector _pos; // pos() of the hit
-      float _wdist; // distance along the wire
-      float _pres; // pos resolution along phi
-      float _rres; // pos resolution perpendicular to the Z axis
-      int _stindex; // index into stereo hit collection (-1 if not based on stereo)
-      StrawHitFlag _flag; // bit flags for this hit
+  struct StrawHitPosition {
+    enum edir {wire=0, trans };
+    StrawHitPosition();
+    virtual ~StrawHitPosition();
+    StrawHitPosition& operator =(StrawHitPosition const& other);
+    // accessors
+    CLHEP::Hep3Vector const& pos() const { return _pos; }
+    CLHEP::Hep3Vector const& wdir() const { return _wdir; }
+    Float_t wireDist() const { return _wdist; }
+    Float_t posRes(edir dir) const;
+    Int_t stereoHitIndex() const { return _stindex; } // negative if there's no stereo hit
+    StrawHitFlag const& flag() const { return _flag; }
+    CLHEP::Hep3Vector _pos; // pos() of the hit.  This is on the wire
+    CLHEP::Hep3Vector _wdir; // wire direction at this position (unit vector)
+    Float_t _wdist; // distance along the wire from the center
+    Float_t _wres; // resolution along the wire
+    Float_t _tres; // resolution perpendicular to the wire (= straw radius)
+    Int_t _stindex; // index into stereo hit collection (-1 if not based on stereo)
+    StrawHitFlag _flag; // bit flags for this hit position
   };
 }
 #endif

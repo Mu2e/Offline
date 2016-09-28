@@ -16,7 +16,7 @@ namespace mu2e {
 
   XYZP::XYZP(size_t index,StrawHit const& sh, StrawHitPosition const& shp,Straw const& straw) :
     _ind(index), _pos(shp.pos()), _phi(shp.pos().phi()), _flag(shp.flag()), _wdir(straw.getDirection()),
-    _perr(shp.posRes(StrawHitPosition::phi)),_rerr(shp.posRes(StrawHitPosition::rho))
+    _perr(shp.posRes(StrawHitPosition::wire)),_rerr(shp.posRes(StrawHitPosition::trans))
   {
     static const Hep3Vector _zdir(0.0,0.0,1.0);
     _sdir = _zdir.cross(_wdir);
