@@ -89,7 +89,7 @@ namespace mu2e
       Bool_t _tdiv1, _tdiv2;
       Float_t _dc1, _dc2, _chi2, _ndof, _mvaout, _ddot;
       Float_t _schi2, _smvaout, _sddot, _sdist, _sdz;
-      Float_t _mcdist;
+      Float_t _mcdist, _mcperp;
       Int_t _stereo, _fs, _sfs, _mcr, _mcrel, _mcpdg, _mcgen, _mcproc;
       // helper functions
       void drawStations();
@@ -117,11 +117,11 @@ namespace mu2e
       _nhits = tfs->make<TH1F>("nhits","NHits",500,0,5000);
       _deltat = tfs->make<TH1F>("deltat","#Delta t;ns",100,-200.0,200.0);
       _deltaE = tfs->make<TH1F>("deltaE","#Delta E/#Sigma E;Ratio",100,-1.0,1.0);
-      _deltaz = tfs->make<TH1F>("deltaz","#Delta d;mm",120,0.0,120.0);
+      _deltaz = tfs->make<TH1F>("deltaz","#Delta d;mm",120,-120.0,120.0);
       _ddoth = tfs->make<TH1F>("ddot","#Delta drection;cos(#theta)",120,-3.15,3.15);
-      _dperph = tfs->make<TH1F>("dperp","#Delta #rho;mm",120,0.0,120.0);
+      _dperph = tfs->make<TH1F>("dperp","#Delta #rho;mm",120,0.0,200.0);
       _sep = tfs->make<TH1F>("sep","Face separation",6,-0.5,5.5);
-      _dL = tfs->make<TH1F>("dL","Length Difference;mm",100,-200.0,100.0);
+      _dL = tfs->make<TH1F>("dL","Length Difference;mm",100,0.0,700.0);
       _mva = tfs->make<TH1F>("mva","MVA output",100,-0.05,1.05);
       if( _diag > 1){
 	// detailed diagnostics
@@ -164,6 +164,7 @@ namespace mu2e
 	  _sdiag->Branch("ddot",&_ddot,"ddot/F");
 	  _sdiag->Branch("mcrel",&_mcrel,"mcrel/I");
 	  _sdiag->Branch("mcdist",&_mcdist,"mcdist/F");
+	  _sdiag->Branch("mcperp",&_mcperp,"mcperp/F");
 	}
       }
     }
@@ -219,15 +220,18 @@ namespace mu2e
 	_ndof = 0; if(_tdiv1)_ndof++; if(_tdiv2) _ndof++;
 	_mvaout = sth.mvaout();
 	_ddot = sth.wdot();
-	_mcdist = -1.0;
+	_mcdist = _mcperp = -1.0;
 	if(_mcdiag){
 	  StrawDigiMC const& mcd1 = _mcdigis->at(sth.hitIndex1());
 	  StrawDigiMC const& mcd2 = _mcdigis->at(sth.hitIndex2());
 	  _mcrel = MCRelationship::relationship(mcd1,mcd2);
 	  if(mcd1.stepPointMC(StrawDigi::zero).isNonnull() &&
-	      mcd2.stepPointMC(StrawDigi::zero).isNonnull() )
-	    _mcdist = (mcd1.stepPointMC(StrawDigi::zero)->position() -
-		mcd2.stepPointMC(StrawDigi::zero)->position()).mag();
+	      mcd2.stepPointMC(StrawDigi::zero).isNonnull() ){
+	    CLHEP::Hep3Vector mcsep = mcd1.stepPointMC(StrawDigi::zero)->position() -
+	      mcd2.stepPointMC(StrawDigi::zero)->position();
+	    _mcdist = mcsep.mag();
+	    _mcperp = mcsep.perp();
+	  }
 	}
 	_sdiag->Fill();
       }
@@ -340,4 +344,7 @@ namespace mu2e
   }
 }
 
+// Part of the magic that makes this class a module.
+using mu2e::StereoHitDiag;
+DEFINE_ART_MODULE(StereoHitDiag);
 

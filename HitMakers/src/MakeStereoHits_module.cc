@@ -80,6 +80,8 @@ namespace mu2e {
     double _maxChi; // maximum # of TimeDivision sigmas past the active edge of a wire to allow making stereo hits
     double _maxChisq; // maximum # of TimeDivision consistency chisquared to allow making stereo hits
     double _minMVA; // minimum MVA output
+    double _wres; // resolution to assign along the wire
+    bool _bestpair; // require both hits agree as to the best pair
     bool _writepairs; // write out the stereo pairs
     // MVA
     MVATools _mvatool;
@@ -88,7 +90,10 @@ namespace mu2e {
     size_t _nsta; // number of stations
     size_t _npnl; // number of panels in a panel
     vector <vector<size_t> >_pover;            // list of panels overlapping a given panel
+    // helper functions
     void genMap();    // function to generate panel list from tracker geometry
+    double longRes(StereoHit const& sthit) const; // longitudinal resolution
+    bool betterPair(StereoHit const& newpair, StereoHit const& oldpair) const;
     bool findData(art::Event& event);
  };
 
@@ -107,6 +112,8 @@ namespace mu2e {
     _minDL(pset.get<double>("minDL",-20.0)), // extent along straw
     _maxChisq(pset.get<double>("maxChisquared",80.0)), // position matching
     _minMVA(pset.get<double>("minMVA",0.6)), // MVA cut
+    _wres(pset.get<double>("LongitudinalResolution",20.0)), // estimated resolution of stereo reco
+    _bestpair(pset.get<bool>("BestStereoPair",false)),
     _writepairs(pset.get<bool>("WriteStereoPairs",false)),
     _mvatool(pset.get<fhicl::ParameterSet>("MVATool",fhicl::ParameterSet()))
   {
@@ -145,9 +152,7 @@ namespace mu2e {
     StereoHitCollection stereohits;
     size_t nsh = _shcol->size();
     stereohits.reserve(3*nsh);
-    // setup counters to pick best stereo points for a given hit
-    vector<double> maxMVA(nsh,-FLT_MAX);
-    vector<int> minsep(nsh,PanelId::apart);
+    // index to best stereo hit for a given straw hit
     vector<int> ibest(nsh,-1);
     // select and sort hits by panel
     size_t nres = max(size_t(32),nsh/10);
@@ -206,7 +211,6 @@ namespace mu2e {
 		  double dz = fabs(dp.z());
 		  double dt = fabs(sh1.time()-sh2.time());
 		  if( sep != PanelId::same && sep < PanelId::apart // hits are in the same station but not the same panel
-		      && (sep <= minsep[ish] || sep <= minsep[jsh]) // this separation is at least as good as the current best for one of the hits
 		      && ddot > _minDdot // negative crosings are in opposite quadrants
 		      && dt < _maxDt // hits are close in time
 		      && de < _maxDE   // deposited energy is roughly consistent (should compare dE/dx but have no path yet!)
@@ -229,8 +233,7 @@ namespace mu2e {
 			chi2 = (shp2.wireDist()-sth.wdist2())/shp2.posRes(StrawHitPosition::wire);
 			++ndof;
 		      }
-		      if(fabs(chi1) <_maxChi && fabs(chi2) < _maxChi)
-		      {
+		      if(fabs(chi1) <_maxChi && fabs(chi2) < _maxChi) {
 			// compute chisquared
 			double chisq = chi1*chi1+chi2*chi2; 
 			if(chisq < _maxChisq){
@@ -241,24 +244,16 @@ namespace mu2e {
 			  _vmva._rho = sth.pos().perp();
 			  _vmva._ndof = ndof;
 			  double mvaout = _mvatool.evalMVA(_vmva._pars);
-
-			  //double mvaout=0.;
 			  if(mvaout > _minMVA){
+			  // valid stereo pairing.  Record it
 			    sth.setMVAOut(mvaout);
 			    stereohits.push_back(sth);
-			    // choose the best pair as:
-			    // 1) take the pair with the minimum plane separation
-			    // 2) otherwise, take the pair with the maximum MVA output
-			    if(sep < minsep[ish] || (sep == minsep[ish] && mvaout > maxMVA[ish])){
-			      minsep[ish] = sep;
-			      maxMVA[ish] = mvaout;
-			      ibest[ish] = stereohits.size()-1;
-			    }
-			    if(sep < minsep[jsh] || (sep == minsep[jsh] && mvaout > maxMVA[jsh])){
-			      minsep[jsh] = sep;
-			      maxMVA[jsh] = mvaout;
-			      ibest[jsh] = stereohits.size()-1;
-			    } // smallest separation
+			    size_t isth = stereohits.size()-1;
+			   //  See if this is better than the existing pairs 
+			    if(ibest[ish] < 0 || betterPair(sth,stereohits.at(ibest[ish])))
+			      ibest[ish] = isth;
+			    if(ibest[jsh] < 0 || betterPair(sth,stereohits.at(ibest[jsh])))
+			      ibest[jsh] = isth;
 			  } // good MVA
 			} // good combined chisquared
 		      } // good individual chis
@@ -273,14 +268,16 @@ namespace mu2e {
     } // loop over stations : pstax
     // now, overwrite the positions for those hits which have stereo
     for(size_t ish=0; ish<nsh;++ish){
-      if(minsep[ish] < PanelId::apart){
-	StrawHitPosition& shpos = shpcol->at(ish);
-	shpos._flag.merge(StrawHitFlag::stereo);
-	shpos._stindex = ibest[ish];
+      if(ibest[ish] > 0){
 	StereoHit const& sthit = stereohits.at(ibest[ish]);
-	shpos._pos = sthit.pos();
-	static const double invsqrt12 = 1.0/sqrt(12.0);
-	shpos._wres = invsqrt12*sthit.dist(); // not clear this is the optimal error FIXME!
+	// optionally require this be the best pairing for both hits
+	if( (!_bestpair) || ibest[sthit.hitIndex1()] == ibest[sthit.hitIndex2()]){
+	  StrawHitPosition& shpos = shpcol->at(ish);
+	  shpos._flag.merge(StrawHitFlag::stereo);
+	  shpos._stindex = ibest[ish];
+	  shpos._pos = sthit.pos();
+	  shpos._wres = longRes(sthit);
+	}
       }
     }
     // if requested, put the stereo hits themselves into the event
@@ -290,6 +287,22 @@ namespace mu2e {
     }
     event.put(move(shpcol));
   } // end MakeStereoHits::produce.
+
+// estimate the resolution on the stereo hit position projection along a wire direction
+  double MakeStereoHits::longRes(StereoHit const& sthit) const {
+    return _wres; // this should be a real calculation FIXME!!!
+  }
+
+  bool MakeStereoHits::betterPair(StereoHit const& newpair, StereoHit const& oldpair) const {
+    // choose the best pair as:
+    // 1) take the pair with the minimum plane separation
+    // 2) otherwise, take the pair with the maximum MVA output
+    if(newpair.panelSeparation() == oldpair.panelSeparation() ) {
+      return newpair.mvaout() > oldpair.mvaout();
+    } else {
+      return newpair.panelSeparation() < oldpair.panelSeparation();
+    }
+  }
 
   void MakeStereoHits::genMap() {
     // setup panel map
