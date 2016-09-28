@@ -1,7 +1,7 @@
 //
 // Define a sensitive detector for calorimetric readout
 //
-// $Id: CaloReadoutSD.cc,v 1.22 2014/08/01 20:57:45 echenard Exp $
+// $Id: CaloReadoutCardSD.cc,v 1.22 2014/08/01 20:57:45 echenard Exp $
 // $Author: echenard $
 // $Date: 2014/08/01 20:57:45 $
 //
@@ -15,7 +15,7 @@
 #include "cetlib/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/CaloReadoutSD.hh"
+#include "Mu2eG4/inc/CaloReadoutCardSD.hh"
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
@@ -32,7 +32,7 @@
 
 namespace mu2e {
 
-    CaloReadoutSD::CaloReadoutSD(G4String name, SimpleConfig const & config ):
+    CaloReadoutCardSD::CaloReadoutCardSD(G4String name, SimpleConfig const & config ):
       Mu2eSensitiveDetector(name,config),_nro(0)
     {
 	GeomHandle<Calorimeter> cg;
@@ -41,7 +41,7 @@ namespace mu2e {
 
 
 
-    G4bool CaloReadoutSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
+    G4bool CaloReadoutCardSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
     {
 
 	 if( aStep->GetTrack()->GetDefinition()->GetPDGCharge() == 0 ) return false;
@@ -60,11 +60,10 @@ namespace mu2e {
 	 const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
 	 int idro = touchableHandle->GetCopyNumber(0) + touchableHandle->GetCopyNumber(2)*_nro;  //the idro is always Number(0) + _nro*number(X), make sure X is right
 
-
-	 //for diagnosis purposes only when playing with the geometry, uncomment next line
-	 //for (int i=0;i<8;++i) std::cout<<"RO Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "
+	 //uncomment for diagnosis purposes only when playing with the geometry
+	 //for (int i=0;i<8;++i) std::cout<<"Card Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "
 	 //                               <<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(aStep->GetPreStepPoint()->GetPosition())
-	 //				  <<"   "<<idro<<"   "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
+	 //			 	  <<"   "<<idro<<"   "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
 
 	 _collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                 	    idro,

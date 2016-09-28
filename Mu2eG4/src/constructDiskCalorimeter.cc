@@ -36,6 +36,7 @@
 #include "CalorimeterGeom/inc/Crystal.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
+#include "Mu2eG4/inc/CaloReadoutCardSD.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
@@ -219,7 +220,7 @@ namespace mu2e {
 	// --add sensitive detector    
 	//
 	G4VSensitiveDetector* ccSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal());
-	CrystalLog->SetSensitiveDetector(ccSD);
+	if (ccSD) CrystalLog->SetSensitiveDetector(ccSD);
 
 
 
@@ -228,23 +229,36 @@ namespace mu2e {
        
 	// -- define required solids, see comments above
 	//
-	G4double ROBoxZplanes[2] = {0,ROBoxDepth};
-	G4double ROBoxRinner[2]  = {0,0};
-	G4double ROBoxRouter[2]  = {crystalPolysize,crystalPolysize};
-	G4Polyhedra* ROBox       = new G4Polyhedra("ROBox",
+	G4double ROBoxThickness(0);
+	
+	G4double ROBoxInZplanes[2] = {0,ROBoxDepth-ROBoxThickness};
+	G4double ROBoxInRinner[2]  = {0,0};
+	G4double ROBoxInRouter[2]  = {crystalPolysize-ROBoxThickness,crystalPolysize-ROBoxThickness};
+	G4Polyhedra* ROBoxIn       = new G4Polyhedra("ROBoxIn",
                                        offsetAngle,CLHEP::twopi+offsetAngle, 
                                        crystalnEdges,2, 
-                                       ROBoxZplanes,ROBoxRinner,ROBoxRouter);
+                                       ROBoxInZplanes,ROBoxInRinner,ROBoxInRouter);
 
+	/*
+	When adding the RO box, make sure to correct the indices for the SD dfor RO and RO Card
+	G4double ROBoxOutZplanes[2] = {0,ROBoxDepth};
+	G4double ROBoxOutRinner[2]  = {0,0};
+	G4double ROBoxOutRouter[2]  = {crystalPolysize,crystalPolysize};
+	G4Polyhedra* ROBoxOut       = new G4Polyhedra("ROBoxIn",
+                                       offsetAngle,CLHEP::twopi+offsetAngle, 
+                                       crystalnEdges,2, 
+                                       ROBoxOutZplanes,ROBoxOutRinner,ROBoxOutRouter);
+        */
+	
 	G4Box *crystalRO     = new G4Box("CrystalRO",ROHalfTrans,ROHalfTrans,ROHalfThickness);
 	G4Box *electronicsRO = new G4Box("ElectronicsRO",ROElecHalfX,ROElecHalfY,ROElecHalfZ);
 
 
 	// -- define required logical volumes
 	//
-	G4LogicalVolume *ROBoxLog = new G4LogicalVolume(ROBox, vacuumMaterial, "ROBoxLog");   
-	ROBoxLog->SetVisAttributes(G4VisAttributes::Invisible);
-	//if (isCrystalVisible) ROBoxLog->SetVisAttributes(G4Color::Cyan());
+	G4LogicalVolume *ROBoxInLog = new G4LogicalVolume(ROBoxIn, vacuumMaterial, "ROBoxInLog");   
+	ROBoxInLog->SetVisAttributes(G4VisAttributes::Invisible);
+	//if (isCrystalVisible) ROBoxInLog->SetVisAttributes(G4Color::Cyan());
 
 	G4LogicalVolume *ROLog = new G4LogicalVolume(crystalRO, readMaterial, "CrystalROLog" );        
 	ROLog->SetVisAttributes(G4VisAttributes::Invisible);
@@ -255,7 +269,7 @@ namespace mu2e {
 	if (isCrystalVisible) ROElectronicsLog->SetVisAttributes(G4Color::Green());
 
 
-	// -- place components - reference point is base of polyhedra and ceter of RO chip/cards -> RO is on the base+halfsize, 
+	// -- place components - reference point is base of polyhedra and center of RO chip/cards -> RO is on the base+halfsize, 
 	//    cards are on top of RO. Card location must be consistent with size    
 	//
 	double R0disp = 0.5*crystalPolysize;
@@ -270,22 +284,25 @@ namespace mu2e {
 
 	for (unsigned int iro=0;iro < XposRO.size();++iro)
 	{
-            pv = new G4PVPlacement(0,G4ThreeVector(XposRO[iro],YposRO[iro],ROHalfThickness), ROLog,"ROPV", ROBoxLog, true,iro,false);
+            ostringstream ROPV; ROPV<<"ROPV_" <<iro;
+            pv = new G4PVPlacement(0,G4ThreeVector(XposRO[iro],YposRO[iro],ROHalfThickness), ROLog,ROPV.str(), ROBoxInLog, true,iro,false);
             doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 	}
 
-	//this should be the right position (vertical cards), otherwise invert X-Y and change X-Y size too.	
-	pv = new G4PVPlacement(0,G4ThreeVector(R0disp, 0, 2*ROHalfThickness+ROElecHalfZ),  ROElectronicsLog,"ROElectroPV", ROBoxLog, true,0,false);
+	//this should be the right position (vertical cards), otherwise invert X-Y and change X-Y size accordingly.	
+	pv = new G4PVPlacement(0,G4ThreeVector(R0disp, 0, 2*ROHalfThickness+ROElecHalfZ),  ROElectronicsLog,"ROElectroPV_0", ROBoxInLog, true,0,false);
 	doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
-	pv = new G4PVPlacement(0,G4ThreeVector(-R0disp, 0, 2*ROHalfThickness+ROElecHalfZ), ROElectronicsLog,"ROElectroPV", ROBoxLog, true,0,false);
+	pv = new G4PVPlacement(0,G4ThreeVector(-R0disp, 0, 2*ROHalfThickness+ROElecHalfZ), ROElectronicsLog,"ROElectroPV_1", ROBoxInLog, true,1,false);
 	doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 
 
 	// --add sensitive detector    
 	//
 	G4VSensitiveDetector* crSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadout());
-	ROLog->SetSensitiveDetector(crSD);
-	ROElectronicsLog->SetSensitiveDetector(crSD);
+	if (crSD) ROLog->SetSensitiveDetector(crSD);
+	
+	G4VSensitiveDetector* crCardSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadoutCard());
+	if (crCardSD) ROElectronicsLog->SetSensitiveDetector(crCardSD);
        
        
 
@@ -314,7 +331,7 @@ namespace mu2e {
 	pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,0.0),WrapLog,"CrysWrapPV",UnitLog,false,0,false);
 	doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 
-	pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,wrapDepth),ROBoxLog,"ROBoxPV",UnitLog,false,0,false);
+	pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,wrapDepth),ROBoxInLog,"ROBoxPV",UnitLog,false,0,false);
 	doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 
         // Note if we don't add the box around the electronics, we could place directly the RO and the Cards in the Unit, 
@@ -443,7 +460,10 @@ namespace mu2e {
         	   double z = -unitDepth/2.0; 	      
 
 		   G4int id = nTotCrystal+ic;
-		   pv       = new G4PVPlacement(0,G4ThreeVector(x,y,z),UnitLog,"CrysUnitPV",diskCaseInfo[idisk].logical,false,id,false);
+		   ostringstream cryPVName;      
+		   cryPVName<<"CrysUnitPV_" <<id;
+		   
+		   pv = new G4PVPlacement(0,G4ThreeVector(x,y,z),UnitLog,cryPVName.str(),diskCaseInfo[idisk].logical,false,id,false);
         	   doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 	      }
 

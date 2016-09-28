@@ -7,21 +7,10 @@ double calorimeter.caloMotherZ1                 = 13220;
 
 double calorimeter.calorimeterZFront            = 11843.0;     // front posiiton of calo section in mu2e coordinates 
                                                                // MUST be at least 1 mm larger than caloMotherZ0 for placing virtual detectors
-string calorimeter.calorimeterFillMaterial      = "DSVacuum";
-string calorimeter.calorimeterDiskMaterial      = "DSVacuum";
-double calorimeter.caseThickness                = 0;  // mm
-
-
-//vane description
-int    calorimeter.numberOfVanes                =  4;
-int    calorimeter.nCrystalXSlices              =  40;
-int    calorimeter.nCrystalYSlices              =  11;
-double calorimeter.rInscribed                   = 360.;
-
-string calorimeter.shieldMaterial               = "G4_Pb"; 
-string calorimeter.neutronAbsorberMaterial      = "Polyethylene092Li075d106";
-double calorimeter.shieldHalfThickness          = 2.0;
-double calorimeter.neutronAbsorberHalfThickness = 2.0;
+string calorimeter.vacuumMaterial               = "DSVacuum";
+string calorimeter.fillMaterial                 = "DSVacuum";
+string calorimeter.diskMaterial                 = "DSVacuum";
+double calorimeter.caseThickness                = 0;  
 
 
 
@@ -33,14 +22,6 @@ vector<double> calorimeter.diskOuterRadius     = {664.,664.}; //mm
 vector<double> calorimeter.diskRotationAngle   = {0.,0.};     //rad
 vector<double> calorimeter.diskSeparation      = {0.,700.};   //mm  separation w.r.t first disk
 
-// Readout crates
-int calorimeter.calorimeterCrateVersion = 2; 
-string calorimeter.calorimeterCrateMaterial    = "Electronics"; //"G10";       // calorimeter electronics material. NEED to refine
-double calorimeter.calorimeterCrateInnerRadius = 680;         // calorimeter electronics crates inner radius  //mm
-double calorimeter.calorimeterCrateOuterRadius = 810;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
-double calorimeter.calorimeterCrateExtendLen = 180.0;  // Lengthen crates to
-// get needed volume for material
-
 //crystal characteristics
 int    calorimeter.crystalNumEdges             = 4;
 bool   calorimeter.crystalShift                = false;
@@ -48,20 +29,25 @@ double calorimeter.crystalHalfTrans            = 16.5;
 double calorimeter.crystalHexsize              = 16.5;  //mm  half distance across flats of hex crystal
 double calorimeter.crystalHalfLong             = 100.0;
 string calorimeter.crystalMaterial             = "G4_BARIUM_FLUORIDE"; //"G4_PbWO4" "G4_BARIUM_FLUORIDE" "Lyso_01" "G4_CESIUM_IODIDE"
-
 string calorimeter.crystalWrapper              = "Polyethylene092";
 double calorimeter.crystalWrapperThickness     = 0.100; //mm
-double calorimeter.crystalShellThickness       = 0.0 ;
 
-string calorimeter.crystalReadoutMaterial      = "G4_Si";
-double calorimeter.crystalReadoutHalfTrans     = 5;
-double calorimeter.crystalReadoutHalfThickness = 1;
-int    calorimeter.crystalReadoutChannelCount  = 2; // APDs per crystal
+string calorimeter.readoutMaterial             = "G4_Si";
+double calorimeter.readoutHalfTrans            = 5;
+double calorimeter.readoutHalfThickness        = 1;
+int    calorimeter.readoutPerCrystal           = 2; 
 
-double calorimeter.crystalNonUniformity        = 0.0; // -2 to 2  (A(ro)-A(front))/A(middle)
-double calorimeter.timeGap                     = 5.0;  // ns
-double calorimeter.electronDepositionAPD       = 1000.0; // MeV
-double calorimeter.electronMinEnergyAPD        = 0.1;    // MeV
+double calorimeter.readoutElecHalfX            = 0.75;
+double calorimeter.readoutElecHalfY            = 15;
+double calorimeter.readoutElecHalfZ            = 27;
+
+// Electronics crate
+int calorimeter.crateVersion        = 2; 
+string calorimeter.crateMaterial    = "Electronics"; //"G10"  calorimeter electronics material. NEED to refine
+double calorimeter.crateInnerRadius = 680;       
+double calorimeter.crateOuterRadius = 810;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
+double calorimeter.crateExtendLen   = 180.0;  
+
 
 
 // calibrtion system

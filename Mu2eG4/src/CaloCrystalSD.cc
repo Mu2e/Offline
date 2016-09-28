@@ -36,7 +36,7 @@ namespace mu2e {
     G4bool CaloCrystalSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
     {
 	G4double edep = aStep->GetTotalEnergyDeposit();
-	if( edep<=0 ) return false;
+	if (edep < 1e-6) return false;
 
 
 	_currentSize += 1;
@@ -59,8 +59,8 @@ namespace mu2e {
 
 
 	//for diagnosis purposes only when playing with the geometry, uncomment next two line
-	//for (int i=0;i<9;++i) std::cout<<"Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "<<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(posWorld)<<std::endl;
-        //std::cout<<"Cpos "<<copyNo<<"  "<<touchableHandle->GetHistory()->GetTransform(0).TransformPoint(posWorld)-touchableHandle->GetHistory()->GetTransform(7).TransformPoint(posWorld)<<std::endl;
+	//for (int i=0;i<9;++i) std::cout<<"Cry Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "<<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(posWorld)
+	//                               <<"  "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
 
 
 	_collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
