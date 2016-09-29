@@ -426,12 +426,12 @@ namespace mu2e {
                         		    isDiskCaseVisible,G4Colour::Red(),isDiskCaseSolid,forceAuxEdgeVisible,
                         		    true,doSurfaceCheck );
 
-	     if ( crateVersion > 1 ) 
+	     if ( crateVersion > 1 )  // crateVersion 1 is No crates
 	     {
 		G4ThreeVector dposCrate(0.0,0.0,crateExtendLen/2.0);
 		G4ThreeVector posCrate = posDisk + dposCrate;
 
-		if ( idisk == 1 ) posCrate = posDisk - dposCrate;
+		//		if ( idisk == 1 ) posCrate = posDisk - dposCrate;
 		double diskpar2[5] = {crateRadIn, crateRadOut, caseDepth/2.0+crateExtendLen/2.0, 0., CLHEP::pi};
 
 		diskFEBInfo[idisk] = nestTubs(discname2.str(),

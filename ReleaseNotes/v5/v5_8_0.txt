@@ -1,6 +1,15 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v5_8_0
+4) dnbrow01  28 Sept 2016
+   Move the crate on top of the downstream calorimeter disk so it is oriented 
+   identically to the crate on top of the upstream calorimeter disk.  Make
+   the dimensions of the crates a bit more like the dimensions of the 
+   expected crates.
+   modified:   Mu2eG4/geom/calorimeter_CsI.txt
+   modified:   Mu2eG4/src/constructDiskCalorimeter.cc
+   modified:   ReleaseNotes/v5/v5_8_0.txt
+
 
 3) kutschke  23 Sept 2016
    TrkDiag/test/ce.C
