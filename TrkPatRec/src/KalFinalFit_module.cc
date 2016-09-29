@@ -89,7 +89,7 @@ namespace mu2e
       PayloadSaver _payloadSaver;
       // helper functions
       bool findData(const art::Event& e);
-      void findMissingHits(KalRep* krep, vector<hitIndex>& indices);
+      void findMissingHits(KalRep* krep, vector<StrawHitIndex>& indices);
 
       // flow diagnostic
   };
@@ -168,7 +168,7 @@ namespace mu2e
 	if(_addhits && krep != 0 && krep->fitStatus().success()){
 	    // first, add back the hits on this track
 	  _kfit.unweedHits(krep,_maxaddchi);
-	  vector<hitIndex> misshits;
+	  vector<StrawHitIndex> misshits;
 	  findMissingHits(krep,misshits);
 	  if(misshits.size() > 0){
 	    _kfit.addHits(krep,_shcol,misshits,_maxaddchi);
@@ -225,7 +225,7 @@ namespace mu2e
     return _shcol != 0 && _shfcol != 0 && _kscol != 0;
   }
 
-  void KalFinalFit::findMissingHits(KalRep* krep,vector<hitIndex>& misshits) {
+  void KalFinalFit::findMissingHits(KalRep* krep,vector<StrawHitIndex>& misshits) {
     const Tracker& tracker = getTrackerOrThrow();
     //  Trajectory info
     Hep3Vector tdir;

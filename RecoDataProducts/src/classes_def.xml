@@ -26,7 +26,9 @@
  <class name="mu2e::StereoHit"/>
  <class name="mu2e::StereoHitCollection"/>
  <class name="mu2e::StrawHitPosition"/>
+ <class name="mu2e::HelixHit"/>
  <class name="mu2e::StrawHitPositionCollection"/>
+ <class name="mu2e::HelixHitCollection"/>
  <class name="mu2e::StrawHitFlag"/>
  <class name="mu2e::StrawHitFlagDetail"/>
  <class name="mu2e::StrawHitFlagCollection"/>
@@ -106,7 +108,9 @@
  <class name="art::Ptr<mu2e::StereoHit>"/>
  <class name="std::vector<art::Ptr<mu2e::StereoHit> >"/>
  <class name="art::Ptr<mu2e::StrawHitPosition>"/>
+ <class name="art::Ptr<mu2e::HelixHit>"/>
  <class name="std::vector<art::Ptr<mu2e::StrawHitPosition> >"/>
+ <class name="std::vector<art::Ptr<mu2e::HelixHit> >"/>
  <class name="art::Ptr<mu2e::StrawHitFlag>"/>
  <class name="std::vector<art::Ptr<mu2e::StrawHitFlag> >"/>
  <class name="art::Ptr<mu2e::TimeCluster>"/>
@@ -139,6 +143,7 @@
  <class name="art::Wrapper<mu2e::RecoCaloDigiCollection>"/>
  <class name="art::Wrapper<mu2e::StereoHitCollection>"/>
  <class name="art::Wrapper<mu2e::StrawHitPositionCollection>"/>
+ <class name="art::Wrapper<mu2e::HelixHitCollection>"/>
  <class name="art::Wrapper<mu2e::StrawHitFlagCollection>"/>
  <class name="art::Wrapper<mu2e::StrawClusterCollection>"/>
  <class name="art::Wrapper<mu2e::CaloHitCollection>"/>

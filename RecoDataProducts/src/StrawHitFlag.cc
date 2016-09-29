@@ -25,6 +25,7 @@ namespace mu2e {
     static std::map<std::string,mask_type> bitnames;
     if(bitnames.size()==0){
       bitnames[std::string("Stereo")]               = bit_to_mask(stereo);
+      bitnames[std::string("ResolvedPhi")]          = bit_to_mask(resolvedphi);
       bitnames[std::string("TimeDivision")]         = bit_to_mask(tdiv);
       bitnames[std::string("EnergySelection")]      = bit_to_mask(energysel);
       bitnames[std::string("RadiusSelection")]      = bit_to_mask(radsel);

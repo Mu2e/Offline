@@ -106,7 +106,7 @@ namespace mu2e
       // helper functions
       bool findData(const art::Event& e);
       void filterOutliers(TrkDef& trkdef,double maxdoca);
-      void findMissingHits(KalRep* krep, vector<hitIndex>& indices);
+      void findMissingHits(KalRep* krep, vector<StrawHitIndex>& indices);
 
       // flow diagnostic
       TH1F* _cutflow;
@@ -197,7 +197,11 @@ namespace mu2e
 	HepSymMatrix hcovar(HelixTraj::NHLXPRM,1);
 	HelixTraj htraj(hpvec,hcovar);
 	if(_debug > 1) cout << "Using HelixTraj with parameters " << htraj.parameters()->parameter() << endl;
-	TrkDef seeddef(hseed._timeCluster,htraj,_tpart,_fdir);
+	TimeCluster tclust;
+	tclust._t0 = hseed._t0;
+	for(auto hhit : hseed._hhits)
+	  tclust._strawHitIdxs.push_back(hhit._shidx);
+	TrkDef seeddef(tclust,htraj,_tpart,_fdir);
   // filter outliers; this doesn't use drift information, just straw positions
 	filterOutliers(seeddef,_maxhelixdoca);
       // now, fit the seed helix from the filtered hits
@@ -221,7 +225,7 @@ namespace mu2e
 	    if(_addhits){
             // first, add back the hits on this track
 	      _kfit.unweedHits(krep,_maxaddchi);
-	      vector<hitIndex> misshits;
+	      vector<StrawHitIndex> misshits;
 	      findMissingHits(krep,misshits);
 	      if(misshits.size() > 0){
 		_kfit.addHits(krep,_shcol,misshits,_maxaddchi);
@@ -288,8 +292,8 @@ namespace mu2e
     // tracker and conditions
     const Tracker& tracker = getTrackerOrThrow();
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    const vector<hitIndex>& indices = mydef.strawHitIndices();
-    vector<hitIndex> goodhits;
+    const vector<StrawHitIndex>& indices = mydef.strawHitIndices();
+    vector<StrawHitIndex> goodhits;
     for(unsigned ihit=0;ihit<indices.size();++ihit){
       StrawHit const& sh = _shcol->at(indices[ihit]);
       Straw const& straw = tracker.getStraw(sh.strawIndex());
@@ -310,7 +314,7 @@ namespace mu2e
     mydef.strawHitIndices() = goodhits;
   }
 
-  void TrkRecFit::findMissingHits(KalRep* krep,vector<hitIndex>& misshits) {
+  void TrkRecFit::findMissingHits(KalRep* krep,vector<StrawHitIndex>& misshits) {
     const Tracker& tracker = getTrackerOrThrow();
     //  Trajectory info
     Hep3Vector tdir;

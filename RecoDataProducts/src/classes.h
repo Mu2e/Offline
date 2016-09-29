@@ -23,6 +23,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "RecoDataProducts/inc/HelixHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
@@ -90,6 +91,8 @@ template class art::Ptr<mu2e::StereoHit>;
 template class std::vector<art::Ptr<mu2e::StereoHit> >;
 template class art::Ptr<mu2e::StrawHitPosition>;
 template class std::vector<art::Ptr<mu2e::StrawHitPosition> >;
+template class art::Ptr<mu2e::HelixHit>;
+template class std::vector<art::Ptr<mu2e::HelixHit> >;
 template class art::Ptr<mu2e::TrkFitFlag>;
 template class art::Ptr<mu2e::StrawHitFlag>;
 template class std::vector<art::Ptr<mu2e::StrawHitFlag> >;
@@ -139,6 +142,7 @@ template class art::Wrapper<mu2e::RecoCaloDigi>;
 template class art::Wrapper<mu2e::RecoCaloDigiCollection>;
 template class art::Wrapper<mu2e::StereoHitCollection>;
 template class art::Wrapper<mu2e::StrawHitPositionCollection>;
+template class art::Wrapper<mu2e::HelixHitCollection>;
 template class art::Wrapper<mu2e::StrawHitFlagCollection>;
 template class art::Wrapper<mu2e::StrawClusterCollection>;
 template class art::Wrapper<mu2e::CaloHitCollection>;

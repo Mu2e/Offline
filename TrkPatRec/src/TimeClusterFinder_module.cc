@@ -68,9 +68,9 @@ namespace mu2e {
     }
   };
 // comparison functor for sorting hitIndices by time
-  struct hitTimeSort : public binary_function<hitIndex, hitIndex, bool> {
+  struct hitTimeSort : public binary_function<StrawHitIndex, StrawHitIndex, bool> {
     hitTimeSort(const StrawHitCollection* shcol) : _shcol(shcol){}
-    bool operator() (hitIndex const& x, hitIndex const& y){
+    bool operator() (StrawHitIndex const& x, StrawHitIndex const& y){
       return _shcol->at(x).time() > _shcol->at(y).time();
     }
     const StrawHitCollection* _shcol;
@@ -261,7 +261,7 @@ namespace mu2e {
            if(goodHit(_shfcol->at(istr))){
              double time = _shcol->at(istr).time();
              if(fabs(time-xp) < _maxdt){
-               tclust._strawHitIdxs.push_back(hitIndex(istr));
+               tclust._strawHitIdxs.push_back(StrawHitIndex(istr));
              }
            }
          }

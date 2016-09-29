@@ -26,7 +26,7 @@ class TrkDifPieceTraj;
 
 namespace mu2e 
 {
-
+  typedef size_t hitIndex;
   class TrkDefHack {
   public:
     TrkDefHack(TimeCluster const& tcluster, HelixTraj const& helix,

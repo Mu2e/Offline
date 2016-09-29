@@ -62,7 +62,6 @@ namespace mu2e
     bool				_saveall;
 
     // input object tags
-    art::InputTag			_shTag;
     art::InputTag			_shpTag;
     art::InputTag			_shfTag;
     art::InputTag			_tcTag;
@@ -73,7 +72,6 @@ namespace mu2e
     StrawHitFlag  _psel;
 
     // cache of event objects
-    const StrawHitCollection*          _shcol;
     const StrawHitPositionCollection*  _shpcol;
     const StrawHitFlagCollection*      _shfcol;
     const TimeClusterCollection*       _tccol;
@@ -91,7 +89,6 @@ namespace mu2e
     _debug       (pset.get<int>("debugLevel",0)),
     _printfreq   (pset.get<int>("printFrequency",101)),
     _saveall     (pset.get<bool>("SaveAllHelices",false)),
-    _shTag	 (pset.get<art::InputTag>("StrawHitCollection","makeSH")),
     _shpTag	 (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
     _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
     _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
@@ -118,16 +115,21 @@ namespace mu2e
     for(auto const& tclust: *_tccol) {
     // build an empty HelixSeed 
     // loop over hits in this time cluster and select  hits with good 3-d position information
-    std::vector<hitIndex> goodhits;
+    std::vector<StrawHitIndex> goodhits;
       for(auto const& ind : tclust._strawHitIdxs) {
 	if(_shfcol->at(ind).hasAnyProperty(_psel))
 	  goodhits.push_back(ind);
       }
      // build a helix seed using these hits, but the original t0
       HelixSeed hseed;
-      hseed._timeCluster = tclust;
-      hseed._timeCluster._strawHitIdxs = goodhits;
-      _hfit.findHelix(*_shcol, *_shpcol, hseed);
+      hseed._t0 = tclust._t0;
+      // create helix seed hits from the straw hit positions 
+      for(auto idx : goodhits ) {
+	HelixHit hhit(_shpcol->at(idx),idx);
+	hhit._flag.clear(StrawHitFlag::resolvedphi);
+	hseed._hhits.push_back(hhit);
+      }
+      _hfit.findHelix(hseed);
 
 // should iterate fit to include outlier removal using time + geometric information FIXME!
 
@@ -138,7 +140,7 @@ namespace mu2e
     }
 
     if (_debug>0 && (_iev%_printfreq)==0) {
-      cout<<"event "<<_iev<<" tot N hit "<<_shcol->size()<<" N tracks seed found "<<outseeds->size()
+      cout<<"event "<<_iev<<" tot N hit "<<_shfcol->size()<<" N tracks seed found "<<outseeds->size()
 	       <<" N time peaks "<<_tccol->size()<<endl;
     }
 
@@ -147,9 +149,7 @@ namespace mu2e
 
   // find the input data objects 
   bool RobustHelixFinder::findData(const art::Event& evt){
-    _shcol = 0; _shfcol = 0; _shpcol = 0; _tccol = 0; 
-    auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
-    _shcol = shH.product();
+    _shfcol = 0; _shpcol = 0; _tccol = 0; 
     auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
     _shpcol = shpH.product();
     auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
@@ -157,7 +157,7 @@ namespace mu2e
     auto tcH = evt.getValidHandle<TimeClusterCollection>(_tcTag);
     _tccol = tcH.product();
 
-    return _shcol != 0 && _shfcol != 0 && _shpcol != 0 && _tccol != 0;
+    return _shfcol != 0 && _shpcol != 0 && _tccol != 0;
   }
 
 }

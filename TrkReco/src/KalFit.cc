@@ -250,7 +250,7 @@ namespace mu2e
       TrkT0 t0(kseed.t0());
       if(_initt0){
       // stupid translation, FIXME!
-	std::vector<hitIndex> indices;
+	std::vector<StrawHitIndex> indices;
 	for(auto hit : kseed.hits())
 	  indices.push_back(hit.index());
         initT0(shcol,kseed.particle(),t0,indices,htraj);
@@ -312,7 +312,7 @@ namespace mu2e
     }
   }
 
-  void KalFit::addHits(KalRep* krep,const StrawHitCollection* shcol, std::vector<hitIndex> indices, double maxchi) {
+  void KalFit::addHits(KalRep* krep,const StrawHitCollection* shcol, std::vector<StrawHitIndex> indices, double maxchi) {
   // fetcth the DetectorModel
    Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
 // there must be a valid Kalman fit to add hits to
@@ -766,7 +766,7 @@ namespace mu2e
 
   void
   KalFit::initT0(const StrawHitCollection* shcol,TrkParticle const& part,
-      TrkT0& t0,std::vector<hitIndex> const& hits,
+      TrkT0& t0,std::vector<StrawHitIndex> const& hits,
       HelixTraj const& htraj   ) {
     using namespace boost::accumulators;
 // make an array of all the hit times, correcting for propagation delay

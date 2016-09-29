@@ -33,13 +33,13 @@ namespace mu2e
   // append a straw hit to this track definition
     void appendHit(size_t index) { _timeCluster._strawHitIdxs.push_back(index); }
   // accessors
-    std::vector<hitIndex> const& strawHitIndices() const { return _timeCluster._strawHitIdxs;}
+    std::vector<StrawHitIndex> const& strawHitIndices() const { return _timeCluster._strawHitIdxs;}
     HelixTraj const& helix() const { return _h0; }
     TrkT0 const& t0() const { return _timeCluster._t0; }
     TrkParticle const& particle() const { return _tpart; }
     TrkFitDirection const& fitdir() const { return _fdir; }
     //non-const accessors to allow updates
-    std::vector<hitIndex>& strawHitIndices() { return _timeCluster._strawHitIdxs;}
+    std::vector<StrawHitIndex>& strawHitIndices() { return _timeCluster._strawHitIdxs;}
     HelixTraj& helix() { return _h0; }
     TrkT0& t0() { return _timeCluster._t0; }
   private:

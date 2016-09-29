@@ -163,9 +163,13 @@ namespace mu2e
 //	  hstraj.printAll(cout);
 	  cout << "Seed Fit HelixTraj parameters " << hstraj.parameters()->parameter()
 	  << "and covariance " << hstraj.parameters()->covariance() <<  endl;
-// create the track definition.  This shouldn't be necessary, it should be possible to
-// create a track directly from the helix seed FIXME!
-	TrkDef seeddef(hseed._timeCluster,hstraj,_tpart,_fdir);
+// build a time cluster
+	TimeCluster tclust;
+	tclust._t0 = hseed._t0;
+	for(auto hhit : hseed._hhits)
+	  tclust._strawHitIdxs.push_back(hhit._shidx);
+// create a TrkDef; it should be possible to build a fit from the helix seed directly FIXME!
+	TrkDef seeddef(tclust,hstraj,_tpart,_fdir);
 // filter outliers; this doesn't use drift information, just straw positions
 	filterOutliers(seeddef);
     // now, fit the seed helix from the filtered hits
@@ -247,8 +251,8 @@ namespace mu2e
     mydef.helix().getInfo(flt0,tposp,tdir);
     // tracker and conditions
     const Tracker& tracker = getTrackerOrThrow();
-    const vector<hitIndex>& indices = mydef.strawHitIndices();
-    vector<hitIndex> goodhits;
+    const vector<StrawHitIndex>& indices = mydef.strawHitIndices();
+    vector<StrawHitIndex> goodhits;
     for(unsigned ihit=0;ihit<indices.size();++ihit){
       StrawHit const& sh = _shcol->at(indices[ihit]);
       Straw const& straw = tracker.getStraw(sh.strawIndex());

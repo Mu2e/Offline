@@ -6,14 +6,16 @@
 //
 
 // Mu2e includes
-#include "RecoDataProducts/inc/TimeCluster.hh"
+#include "BTrk/TrkBase/TrkT0.hh"
+#include "RecoDataProducts/inc/HelixHit.hh"
 #include "RecoDataProducts/inc/RobustHelix.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 
 namespace mu2e {
 
   struct HelixSeed {
-    TimeCluster        _timeCluster; // timing and hits associated with this helix
+    TrkT0	       _t0;	      // t0 for this helix
+    HelixHitCollection _hhits;	      // hits potentially used for this helix
     RobustHelix        _helix;	     // robust helix created from these hits
     TrkFitFlag	       _status;      // status of processes used to create this seed
   };

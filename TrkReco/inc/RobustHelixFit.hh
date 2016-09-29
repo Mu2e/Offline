@@ -13,9 +13,8 @@
 // data
 #include "DataProducts/inc/Helicity.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "RecoDataProducts/inc/HelixHit.hh"
 // HelixFit objects
-#include "TrkReco/inc/XYZP.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 // BaBar
 #include "BTrk/TrkBase/TrkErrCode.hh"
@@ -25,13 +24,22 @@ class TH1F;
 
 namespace mu2e 
 {
+// utility struct; value plus error
+  struct VALERR {
+    double _val;
+    double _err;
+  };
+  struct FZ {
+    VALERR _phi;
+    double _z;
+  };
 
 // struct to hold AGE sums
-  struct SUMS {
+  struct AGESums {
 // (s)ums of (c)osine and (s)in for points on (c)ircumference, (o)utside the median radius, or (i)nside the median radius
     double _scc, _ssc, _sco, _sso, _sci, _ssi;
     unsigned _nc, _no, _ni;
-    SUMS() : _scc(0.0),_ssc(0.0),_sco(0.0),_sso(0.0),_sci(0.0),_ssi(0.0){}
+    AGESums() : _scc(0.0),_ssc(0.0),_sco(0.0),_sso(0.0),_sci(0.0),_ssi(0.0){}
     void clear() { _scc = _ssc = _sco = _sso = _sci = _ssi = 0.0;
       _nc = _no = _ni = 0; }
   };
@@ -44,26 +52,35 @@ namespace mu2e
     virtual ~RobustHelixFit();
 // main function: given a helix seed and the hits, fill in the helix parameters.  Note
 // the HelixSeed object is both input and output
-    void findHelix(StrawHitCollection const& shcol,
-	StrawHitPositionCollection const& shpos, HelixSeed& myfit);
+    void findHelix(HelixSeed& myfit);
 // Helicity of this fit
     Helicity const& helicity() const { return _helicity; }
   protected:
 // utlity functions
-    bool findXY(XYZPVector& xyzp,RobustHelix& myhel);
-    bool findZ(XYZPVector& xyzp,RobustHelix& myhel);
-    bool initCircle(XYZPVector const& xyzp,RobustHelix& myhel);
+    bool findXY(HelixHitCollection& hhits,RobustHelix& myhel);
+    bool findZ(HelixHitCollection& hhits,RobustHelix& myhel);
+    bool initCircle(HelixHitCollection const& hhits,RobustHelix& myhel);
   private:
 // utility function to resolve phi wrapping    
     static double deltaPhi(double phi1, double phi2);
 // find the Absolute Geometric Error.  Returns the median radius as well.
-    bool findCenterAGE(XYZPVector const& xyzp,CLHEP::Hep3Vector& center, double& rmed, double& age);
-    void findAGE(XYZPVector const& xyzp, CLHEP::Hep3Vector const& center,double& rmed, double& age);
-    void fillSums(XYZPVector const& xyzp, CLHEP::Hep3Vector const& center,double rmed,SUMS& sums);
-    void filterXY(XYZPVector& xyzp, CLHEP::Hep3Vector const& center,double rmed,bool& changed);
-    void filterDist(XYZPVector& xyzp);
+    bool findCenterAGE(HelixHitCollection const& hhits,CLHEP::Hep3Vector& center, double& rmed, double& age);
+    void findAGE(HelixHitCollection const& hhits, CLHEP::Hep3Vector const& center,double& rmed, double& age);
+    void fillSums(HelixHitCollection const& hhits, CLHEP::Hep3Vector const& center,double rmed,AGESums& sums);
+    void filterXY(HelixHitCollection& hhits, CLHEP::Hep3Vector const& center,double rmed,bool& changed);
+    void filterDist(HelixHitCollection& hhits);
+    unsigned hitCount(HelixHitCollection const& hhits) const; // count good hits
+// interact with HelixHits
+    bool use(HelixHit const&) const;
+    bool stereo(HelixHit const&) const;
+    void setOutlier(HelixHit&) const;
+    void setResolvedPhi(HelixHit&) const;
+    void radInfo(CLHEP::Hep3Vector const& center, HelixHit const& hhit, VALERR& rad) const;
+    void phiInfo(CLHEP::Hep3Vector const& center, HelixHit const& hhit, VALERR& phi) const;
+
 // configuration parameters
     int _debug;
+    StrawHitFlag _useflag, _dontuseflag;
     double _mindelta; // minimum slope difference to use a triple in circle center initialization
     unsigned _minnhit; // minimum # of hits to work with
     unsigned _minnstereo; // minimum # of stereo hits
