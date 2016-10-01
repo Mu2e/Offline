@@ -47,32 +47,35 @@ namespace mu2e
 // parameter set should be passed in on construction
     explicit RobustHelixFit(fhicl::ParameterSet const&);
     virtual ~RobustHelixFit();
-// main function: given a helix seed and the hits, fill in the helix parameters.  Note
-// the HelixSeed object is both input and output
-    void findHelix(HelixSeed& myfit);
+// main function: given a helix seed, fit it.  Note
+// the HelixSeed object is both input and output.  This allows for iterative calling
+    void fitHelix(HelixSeed& myfit);
 // Helicity of this fit
     Helicity const& helicity() const { return _helicity; }
   private:
-// utlity functions
-    bool initCircle(HelixHitCollection const& hhits,RobustHelix& myhel);
-    bool findXY(HelixHitCollection& hhits,RobustHelix& myhel);
-    bool initZ(HelixHitCollection& hhits,RobustHelix& myhel);
-    bool findZ(HelixHitCollection& hhits,RobustHelix& myhel);
-// find the Absolute Geometric Error.  Returns the median radius as well.
-    bool findCenterAGE(HelixHitCollection const& hhits,CLHEP::Hep3Vector& center, double& rmed, double& age);
+// initialization, separate for the views
+    bool initXY(HelixHitCollection const& hhits,RobustHelix& myhel);
+    bool initFZ(HelixHitCollection& hhits,RobustHelix& myhel);
+    // fit functions
+    bool fitXY(HelixHitCollection& hhits,RobustHelix& myhel);
+    bool fitFZ(HelixHitCollection& hhits,RobustHelix& myhel);
+    // helper functions for robust circle fit
     void findAGE(HelixHitCollection const& hhits, CLHEP::Hep3Vector const& center,double& rmed, double& age);
     void fillSums(HelixHitCollection const& hhits, CLHEP::Hep3Vector const& center,double rmed,AGESums& sums);
+    // filter out hits based on position
     void filterSector(HelixHitCollection& hhits);
     unsigned hitCount(HelixHitCollection const& hhits) const; // count good hits
-// interact with HelixHits
+    // adjust the parameters to intersect the target (optional)
+    void forceTargetInter(CLHEP::Hep3Vector& center, double& radius);
+    // interact with HelixHits
     bool use(HelixHit const&) const;
     bool stereo(HelixHit const&) const;
     void setOutlier(HelixHit&) const;
-// utility functions to resolve phi wrapping    
+    // utility functions to resolve phi looping    
     static double deltaPhi(double phi1, double phi2);
     void initPhi(HelixHit& hh, RobustHelix const& myhel) const;
     bool resolvePhi(HelixHit& hh, RobustHelix const& myhel) const;
-// configuration parameters
+    // configuration parameters
     int _debug;
     StrawHitFlag _useflag, _dontuseflag;
     double _mindelta; // minimum slope difference to use a triple in circle center initialization
@@ -80,6 +83,7 @@ namespace mu2e
     double _maxphisep; // maximum separation in global azimuth of hits
     double _lambda0,_lstep,_minlambda; // parameters for AGE center determination
     unsigned _nphibins; // # of bins in histogram for phi at z intercept
+    unsigned _minnphi; // minimum # of entries in max bin of phi intercept histogram 
     unsigned _maxniter; // maxium # of iterations to global minimum
     double _minzsep, _maxzsep; // Z separation of points for pitch estimate
     double _mindphi, _maxdphi; // phi separation of points for pitch estimate

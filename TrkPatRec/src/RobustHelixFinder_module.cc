@@ -157,8 +157,8 @@ namespace mu2e
       bool changed(true);
       do {
 	++niter;
-	_hfit.findHelix(hseed);
-	changed =filterHits(hseed);
+	_hfit.fitHelix(hseed);
+	changed = filterHits(hseed);
 	if(changed)updateT0(hseed);
       } while(hseed._status.hasAllProperties(TrkFitFlag::helixOK)  && niter < _maxniter && changed);
       // final test

@@ -45,6 +45,7 @@ namespace mu2e
     _lstep(pset.get<double>("lstep",0.2)),
     _minlambda(pset.get<double>("minlambda",0.01)),
     _nphibins(pset.get<unsigned>("NPhiHistBins",30)),
+    _minnphi(pset.get<unsigned>("MinNPhi",3)),
     _maxniter(pset.get<unsigned>("maxniter",50)),
     _minzsep(pset.get<double>("minzsep",100.0)),
     _maxzsep(pset.get<double>("maxzsep",700.0)),
@@ -81,10 +82,10 @@ namespace mu2e
   {}
 
   void
-  RobustHelixFit::findHelix(HelixSeed& hseed) {
+  RobustHelixFit::fitHelix(HelixSeed& hseed) {
     RobustHelix& rhel = hseed._helix;
     HelixHitCollection& hhits = hseed._hhits;
-    // reset the fit status flag
+    // reset the fit status flags, in case this is called iteratively
     hseed._status.clear(TrkFitFlag::circleOK);
     hseed._status.clear(TrkFitFlag::phizOK);
     hseed._status.clear(TrkFitFlag::helixOK);
@@ -97,15 +98,18 @@ namespace mu2e
     if(hitCount(hhits) >= _minnhit){
       hseed._status.merge(TrkFitFlag::hitsOK);
 	// solve for the circle parameters.  Only init if necessary
-      if( (!needsinit) || initCircle(hhits,rhel)){
-	if(findXY(hhits,rhel)){
+      if( (!needsinit) || initXY(hhits,rhel)){
+	if(fitXY(hhits,rhel)){
 	  hseed._status.merge(TrkFitFlag::circleOK);
-	  if((!needsinit) || initZ(hhits,rhel)){
+	  if((!needsinit) || initFZ(hhits,rhel)){
 	    hseed._status.merge(TrkFitFlag::initOK);
-	    if(findZ(hhits,rhel)) {
+	    if(fitFZ(hhits,rhel)) {
 	      // set the success
 	      hseed._status.merge(TrkFitFlag::phizOK);
-	      hseed._status.merge(TrkFitFlag::helixOK);
+	      // final test
+	      if (rhel.lambda() > _lmin && rhel.lambda() < _lmax
+		  && rhel.radius() > _rmin && rhel.radius() < _rmax)
+		hseed._status.merge(TrkFitFlag::helixOK);
 	    }
 	  }
 	}
@@ -113,17 +117,12 @@ namespace mu2e
     }
   }
 
-  bool RobustHelixFit::findXY(HelixHitCollection& hhits,RobustHelix& rhel) {
-    double rmed, age;
-    Hep3Vector center = rhel.center();
-    findCenterAGE(hhits,center,rmed,age);
-    rhel.center() = center;
-    rhel.radius() = rmed;
-    return true;
-  }
-
-  bool RobustHelixFit::findCenterAGE(HelixHitCollection const& hhits,Hep3Vector& center, double& rmed, double& age) {
+  bool RobustHelixFit::fitXY(HelixHitCollection& hhits,RobustHelix& rhel) {
 // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
+// setup working variables
+    double age;
+    Hep3Vector center = rhel.center();
+    double rmed = rhel.radius();
 // initialize step
     double lambda = _lambda0;
 // find median and AGE for the initial center
@@ -181,32 +180,41 @@ namespace mu2e
       }
 // if we're constraining to intersect the target, adjust the center and radius if necessary
       if(_targetinter) {
-	double rperigee = center.perp()-rmed;
-	if(fabs(rperigee) > _targetradius){
-// adjust both center position and radius till they touch the target, holding phi constant.  This keeps the circle near the hits.  Sign matters!
-	  double dr;
-	  if(rperigee > 0)
-	    dr = 0.5*(rperigee - _targetradius);  // change is 1/2 the difference
-	  else
-	    dr = 0.5*(rperigee + _targetradius);
-	  rmed += dr;
-	  // direction radially outwards from origin to the center
-	  Hep3Vector pdir = Hep3Vector(center.x(),center.y(),0.0).unit();
-	  // the center moves opposite the radius
-	  center -= dr*pdir;
-	}
+	forceTargetInter(center,rmed);
       }
       ++niter;
     }
 // check for convergence
     if(_debug > 0 && niter > _maxniter ){
       std::cout << "AGE didn't converge!!! " << std::endl;
-//      return false;
     }
-    return true;
+    // update parameters
+    rhel.center() = center;
+    rhel.radius() = rmed;
+    // test parameters
+    return rmed > _rmin && rmed < _rmax;
   }
-  
-  bool RobustHelixFit::initZ(HelixHitCollection& hhits,RobustHelix& rhel) {
+
+  void RobustHelixFit::forceTargetInter(Hep3Vector& center, double& radius) {
+  // find the smallest radius
+    double rperigee = center.perp()-radius;
+    // if this is outside the target radius, adjust the parameters
+    if(fabs(rperigee) > _targetradius){
+      // adjust both center position and radius till they touch the target, holding phi constant.  This keeps the circle near the hits.  Sign matters!
+      double dr;
+      if(rperigee > 0)
+	dr = 0.5*(rperigee - _targetradius);  // change is 1/2 the difference
+      else
+	dr = 0.5*(rperigee + _targetradius);
+      radius += dr;
+      // direction radially outwards from origin to the center
+      Hep3Vector pdir = Hep3Vector(center.x(),center.y(),0.0).unit();
+      // the center moves opposite the radius
+      center -= dr*pdir;
+    }
+  }
+
+  bool RobustHelixFit::initFZ(HelixHitCollection& hhits,RobustHelix& rhel) {
     bool retval(false);
     // initialize z parameters
     rhel.lambda() = 1.0e12; //infinite slope for now
@@ -264,12 +272,9 @@ namespace mu2e
 	// extract the intercept as the maximum bin's center
 	unsigned nmax = (unsigned)(ceil(hphi.GetMaximum()));
 	double fz0 = hphi.GetBinCenter(hphi.GetMaximumBin());
-	if(nmax > 3) {
+	if(nmax > _minnphi) {
 	  // choose the intercept to have |fz0| < pi.  This is purely a convention
-	  if(fz0>CLHEP::pi)fz0 -= CLHEP::twopi;
-	  if(fz0<-CLHEP::pi)fz0 += CLHEP::twopi;
-	  // update the fit 
-	  rhel.fz0() = fz0;
+	  rhel.fz0() = deltaPhi(0.0,fz0);
 	  // update the hits to resolved phi looping with these parameters
 	  for(auto& hhit : hhits) {
 	    resolvePhi(hhit,rhel);
@@ -281,8 +286,8 @@ namespace mu2e
     return retval;
   }
 
-  bool RobustHelixFit::findZ(HelixHitCollection& hhits,RobustHelix& rhel) {
-    bool retval(true);
+  bool RobustHelixFit::fitFZ(HelixHitCollection& hhits,RobustHelix& rhel) {
+    bool retval(false);
   // iterate over lambda and loop resolution
     bool changed(true);
     unsigned niter(0);
@@ -309,7 +314,9 @@ namespace mu2e
       } // loop on 1st hit
       // extract slope
       rhel.lambda() = extract_result<tag::median>(accf2);
-      // now extract intercept
+//  test parameters for return value
+      retval = rhel.lambda() > _lmin && rhel.lambda() < _lmax;
+      // now extract intercept.  Here we solve for the difference WRT the previous value
       accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acci2;
       for(auto const& hhit : hhits) {
 	if(use(hhit)) {
@@ -327,7 +334,7 @@ namespace mu2e
     return retval;
   }
 
-  bool RobustHelixFit::initCircle(HelixHitCollection const& hhits,RobustHelix& rhel) {
+  bool RobustHelixFit::initXY(HelixHitCollection const& hhits,RobustHelix& rhel) {
     bool retval(false);
     static const double mind2 = _mindist*_mindist;
     using namespace boost::accumulators;
