@@ -23,8 +23,10 @@
 #include <vector>
 #include <string>
 #include <math.h>
+#include <cmath>
 using CLHEP::Hep3Vector;
 using namespace std;
+using namespace boost::accumulators;
 namespace mu2e 
 {
   // comparison functor for sorting by z
@@ -32,15 +34,17 @@ namespace mu2e
     bool operator()(HelixHit const& p1, HelixHit const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
 
-  
+
   RobustHelixFit::RobustHelixFit(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
-    _dontuseflag(pset.get<std::vector<std::string>>("UseFlag",vector<string>{"Outlier","OtherBackground"})),
+    _dontuseflag(pset.get<std::vector<std::string>>("UseFlag",vector<string>{"Outlier"})),
     _mindelta(pset.get<double>("minDelta",5000.0)),
     _minnhit(pset.get<unsigned>("minNHit",10)),
+    _maxphisep(pset.get<double>("MaxPhiHitSeparation",1.8)),
     _lambda0(pset.get<double>("lambda0",1.0)),
     _lstep(pset.get<double>("lstep",0.2)),
     _minlambda(pset.get<double>("minlambda",0.01)),
+    _nphibins(pset.get<unsigned>("NPhiHistBins",30)),
     _maxniter(pset.get<unsigned>("maxniter",50)),
     _minzsep(pset.get<double>("minzsep",100.0)),
     _maxzsep(pset.get<double>("maxzsep",700.0)),
@@ -50,10 +54,8 @@ namespace mu2e
     _maxdist(pset.get<double>("maxdist",500.0)),
     _rmin(pset.get<double>("minR",200.0)),
     _rmax(pset.get<double>("maxR",500.0)),
-    _tdmin(pset.get<double>("minAbsTanDip",0.3)),
-    _tdmax(pset.get<double>("maxAbsTanDip",2.0)),
-    _filterxy(pset.get<bool>("filterxy",true)),
-    _filterz(pset.get<bool>("filterz",true)),
+    _lmin(pset.get<double>("minAbsLambda",50.0)),
+    _lmax(pset.get<double>("maxAbsLambda",500.0)),
     _stereoinit(pset.get<bool>("stereoinit",false)),
     _stereofit(pset.get<bool>("stereofit",false)),
     _targetinit(pset.get<bool>("targetinit",true)),
@@ -69,12 +71,9 @@ namespace mu2e
       throw cet::exception("RECO")<<"mu2e::RobustHelix: Invalid Helicity specified"<< std::endl;
     }
     if(_stereofit)_useflag = StrawHitFlag(StrawHitFlag::stereo);
-    if(_helicity._value > 0){
-      _smin = 1.0/(_rmax*_tdmax);
-      _smax = 1.0/(_rmin*_tdmin);
-    } else {
-      _smax = -1.0/(_rmax*_tdmax);
-      _smin = -1.0/(_rmin*_tdmin);
+    if(_helicity._value < 0){
+      _lmin *= -1.0;
+      _lmax *= -1.0;
     }
   }
 
@@ -82,59 +81,60 @@ namespace mu2e
   {}
 
   void
-  RobustHelixFit::findHelix(HelixSeed& myseed) {
-    RobustHelix& myhel = myseed._helix;
-// Convert the hit positions to what we need for helix finding
-    HelixHitCollection& hhits = myseed._hhits;
-// filter by geometry
-    if(_filterxy)filterDist(hhits);
+  RobustHelixFit::findHelix(HelixSeed& hseed) {
+    RobustHelix& rhel = hseed._helix;
+    HelixHitCollection& hhits = hseed._hhits;
+    // reset the fit status flag
+    hseed._status.clear(TrkFitFlag::circleOK);
+    hseed._status.clear(TrkFitFlag::phizOK);
+    hseed._status.clear(TrkFitFlag::helixOK);
+    // see if the fit needs init
+    bool needsinit = !hseed._status.hasAllProperties(TrkFitFlag::initOK);
+    // filter out hits in the wrong hemisphere
+    if(needsinit)
+      filterSector(hhits);
+    // count what's left
     if(hitCount(hhits) >= _minnhit){
-      myseed._status.merge(TrkFitFlag::hitsOK);
-	// solve for the circle parameters
-      if(initCircle(hhits,myhel)){
-	if(findXY(hhits,myhel)){
-	  myseed._status.merge(TrkFitFlag::circleOK);
-	  if(findZ(hhits,myhel)) {
-	    // set the success
-	    myseed._status.merge(TrkFitFlag::helixOK);
+      hseed._status.merge(TrkFitFlag::hitsOK);
+	// solve for the circle parameters.  Only init if necessary
+      if( (!needsinit) || initCircle(hhits,rhel)){
+	if(findXY(hhits,rhel)){
+	  hseed._status.merge(TrkFitFlag::circleOK);
+	  if((!needsinit) || initZ(hhits,rhel)){
+	    hseed._status.merge(TrkFitFlag::initOK);
+	    if(findZ(hhits,rhel)) {
+	      // set the success
+	      hseed._status.merge(TrkFitFlag::phizOK);
+	      hseed._status.merge(TrkFitFlag::helixOK);
+	    }
 	  }
 	}
       }
     }
   }
 
-  bool RobustHelixFit::findXY(HelixHitCollection& hhits,RobustHelix& myhel) {
+  bool RobustHelixFit::findXY(HelixHitCollection& hhits,RobustHelix& rhel) {
     double rmed, age;
-    Hep3Vector center = myhel.center();
-    bool changed(true);
-    unsigned niter(0);
-    while(niter < _maxniter && changed && hitCount(hhits) > _minnhit){
-      findCenterAGE(hhits,center,rmed,age);
-      if(_filterxy)
-	filterXY(hhits,center,rmed,changed);
-      else
-	changed = false;
-      niter++;
-    }
-    myhel.center() = center;
-    myhel.radius() = rmed;
+    Hep3Vector center = rhel.center();
+    findCenterAGE(hhits,center,rmed,age);
+    rhel.center() = center;
+    rhel.radius() = rmed;
     return true;
   }
 
-  bool
-  RobustHelixFit::findCenterAGE(HelixHitCollection const& hhit,Hep3Vector& center, double& rmed, double& age) {
+  bool RobustHelixFit::findCenterAGE(HelixHitCollection const& hhits,Hep3Vector& center, double& rmed, double& age) {
 // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
 // initialize step
     double lambda = _lambda0;
 // find median and AGE for the initial center
-    findAGE(hhit,center,rmed,age);
+    findAGE(hhits,center,rmed,age);
 // loop while step is large
     unsigned niter(0);
     Hep3Vector descent(1.0,0.0,0.0);
     while(lambda*descent.mag() > _minlambda && niter < _maxniter){
 // fill the sums for computing the descent vector
       AGESums sums;
-      fillSums(hhit,center,rmed,sums);
+      fillSums(hhits,center,rmed,sums);
 // descent vector cases: if the inner vs outer difference is significant (compared to the median), damp using the median sums,
 // otherwise not.  These expressions take care of the undiferentiable condition on the boundary. 
       double dx(sums._sco-sums._sci);
@@ -147,7 +147,7 @@ namespace mu2e
 // compute error function, decreasing lambda until this is better than the previous
       double agenew;
       Hep3Vector cnew = center + lambda*descent;
-      findAGE(hhit,cnew,rmed,agenew);
+      findAGE(hhits,cnew,rmed,agenew);
 // if we've improved, increase the step size and iterate
       if(agenew < age){
         lambda *= (1.0+_lstep);
@@ -157,7 +157,7 @@ namespace mu2e
         while(agenew > age && miter < _maxniter && lambda*descent.mag() > _minlambda){
           lambda *= (1.0-_lstep);
           cnew = center + lambda*descent;
-          findAGE(hhit,cnew,rmed,agenew);
+          findAGE(hhits,cnew,rmed,agenew);
           ++miter;
         }
 // if this fails, reverse the descent drection and try again
@@ -165,7 +165,7 @@ namespace mu2e
 	  descent *= -1.0;
 	  lambda *= (1.0 +_lstep);
           cnew = center + lambda*descent;
-          findAGE(hhit,cnew,rmed,agenew);
+          findAGE(hhits,cnew,rmed,agenew);
         }
       }
 // prepare for next iteration
@@ -206,139 +206,137 @@ namespace mu2e
     return true;
   }
   
-  bool
-  RobustHelixFit::findZ(HelixHitCollection& hhits,RobustHelix& myhel) {
-    using namespace boost::accumulators;
-// sort points by z
+  bool RobustHelixFit::initZ(HelixHitCollection& hhits,RobustHelix& rhel) {
+    bool retval(false);
+    // initialize z parameters
+    rhel.lambda() = 1.0e12; //infinite slope for now
+    rhel.fz0() = 0.0;
+    static TrkFitFlag circleOK(TrkFitFlag::circleOK);
+    static TrkFitFlag helixOK(TrkFitFlag::helixOK);
+    // sort points by z
     std::sort(hhits.begin(),hhits.end(),zcomp());
-// find phi information
-    std::vector<FZ> finfo;
-    finfo.reserve(hhits.size());
-    for(auto hhit : hhits) {
-      if(use(hhit) && (stereo(hhit) || (!_stereoinit)) ){
-	FZ fz;
-	phiInfo(myhel.center(),hhit,fz._phi);
-	fz._z = hhit._pos.z();
-	finfo.push_back(fz);
-      }
+    // initialize phi for this center (without resolving loop);
+    for(auto& hhit : hhits){
+      initPhi(hhit,rhel);
     }
-// make initial estimate of dfdz using 'nearby' pairs
+    // make initial estimate of dfdz using 'nearby' pairs.  This insures they are
+    // on the same loop
     accumulator_set<double, stats<tag::median(with_p_square_quantile)> > accf;
-    for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
-      for(unsigned jphi=iphi+1; jphi < finfo.size(); ++jphi){
-	double dz = finfo[jphi]._z - finfo[iphi]._z;
-	if(dz > _minzsep && dz < _maxzsep){
-	  double dphi = deltaPhi(finfo[iphi]._phi._val,finfo[jphi]._phi._val);
-	  if(fabs(dphi) > _mindphi && fabs(dphi) < _maxdphi){
-	    double slope = dphi/dz;
-	    if(slope > _smin && slope < _smax){ 
-	      accf(slope);
-	    }
-	  }
-	}
-      }
-    }
+    for(auto ihit=hhits.begin(); ihit != std::prev(hhits.end()); ++ihit) {
+      if(use(*ihit) && ( (!_stereoinit) || stereo(*ihit))) {
+	for(auto jhit = std::next(ihit); jhit != hhits.end(); ++jhit) {
+	  if(use(*jhit) && ( (!_stereoinit) || stereo(*jhit))) {
+	    double dz = jhit->_pos.z() - ihit->_pos.z();
+	    if(dz > _minzsep && dz < _maxzsep){
+	      double dphi = fabs(deltaPhi(ihit->_phi,jhit->_phi));
+	      if(dphi > _mindphi && dphi < _maxdphi){
+		// compute the slope for this pair of hits
+		double lambda = dz/dphi;
+		if(lambda > _lmin && lambda < _lmax){ 
+		  accf(lambda);
+		} // lambda in range
+	      } // good phi separation
+	    } // good z separation
+	  } // good 2nd hit 
+	} // loop over 2nd hit
+      } // good first hit
+    } // loop over first hit
+    // extract the lambda
     if(boost::accumulators::extract::count(accf) > _minnhit){
-      double  dfdz = extract_result<tag::median>(accf);
-      //      double dfdztest = extract_result<tag::mean>(acctest);
-      // if the sign of dfdz disagrees, abort
-      if( dfdz * _helicity._value < 0.0 || dfdz > _smax || dfdz < _smin) return false;
-// find phi at z intercept.  Use a histogram technique since phi looping
-// hasn't been resolved yet
-      TH1F hphi("hphi","phi value",50,-1.1*CLHEP::pi,1.1*CLHEP::pi);
-      for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
-      	double phiex = finfo[iphi]._z*dfdz;
-	double dphi = deltaPhi(phiex,finfo[iphi]._phi._val);
-	hphi.Fill(dphi);
-	hphi.Fill(dphi-CLHEP::twopi);
-	hphi.Fill(dphi+CLHEP::twopi);
-      }
-      double fz0 = hphi.GetBinCenter(hphi.GetMaximumBin());
-      if(fz0>CLHEP::pi)fz0 -= CLHEP::twopi;
-      if(fz0<-CLHEP::pi)fz0 += CLHEP::twopi;
-// reset for full search
-      if(_stereoinit){
-	finfo.clear();
-	for(auto hhit : hhits) {
-	  if(use(hhit)){
-	    FZ fz;
-	    phiInfo(myhel.center(),hhit,fz._phi);
-	    fz._z = hhit._pos.z();
-	    finfo.push_back(fz);
+      double lambda = extract_result<tag::median>(accf);
+      // check the range 
+      if( lambda < _lmax && lambda > _lmin) {
+	// update helix
+	rhel.lambda() = lambda;
+	// find phi at z intercept.  Use a histogram technique since phi looping
+	// hasn't been resolved yet
+	TH1F hphi("hphi","phi value",_nphibins,-1.1*CLHEP::pi,1.1*CLHEP::pi);
+	for(auto const& hhit : hhits) {
+	  if(use(hhit) && ( (!_stereoinit) || stereo(hhit))) {
+	    double phiex = rhel.circleAzimuth(hhit._pos.z());
+	    double dphi = deltaPhi(phiex,hhit._phi);
+	    hphi.Fill(dphi);
+	    // make sure to cover the edges
+	    hphi.Fill(dphi-CLHEP::twopi);
+	    hphi.Fill(dphi+CLHEP::twopi);
 	  }
 	}
-      }
-  // iterate over slope and ambiguity resolution
-      bool changed(true);
-      unsigned niter(0);
-      while(changed && niter < _maxniter){
-  // resolve phi over the full z range using the initial slope and intercept
-	changed = false;
-	++niter;
-	for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
-	  double phiex = fz0 + finfo[iphi]._z*dfdz;
-	  int nloop = (int)rint((phiex-finfo[iphi]._phi._val)/CLHEP::twopi);
-	  finfo[iphi]._phi._val += nloop*CLHEP::twopi;
-	  changed |= nloop != 0;
-	}
-	// make a long-range estimate of slope
-	accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accf2;
-	for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
-	  for(unsigned jphi=iphi+1; jphi < finfo.size(); ++jphi){
-	    double dz = finfo[jphi]._z -finfo[iphi]._z;
-	    double dphi = finfo[jphi]._phi._val-finfo[iphi]._phi._val;
-	    if(dz > _minzsep && fabs(dphi) > _mindphi ){
-	      double dphiex = dz*dfdz;
-	      if(!_filterz || fabs(dphi-dphiex) < _pout){
-		double slope = dphi/dz;
-		if(slope > _smin && slope < _smax){ 
-		  accf2(slope);
-		}
-	      }
-	    }
+	// extract the intercept as the maximum bin's center
+	unsigned nmax = (unsigned)(ceil(hphi.GetMaximum()));
+	double fz0 = hphi.GetBinCenter(hphi.GetMaximumBin());
+	if(nmax > 3) {
+	  // choose the intercept to have |fz0| < pi.  This is purely a convention
+	  if(fz0>CLHEP::pi)fz0 -= CLHEP::twopi;
+	  if(fz0<-CLHEP::pi)fz0 += CLHEP::twopi;
+	  // update the fit 
+	  rhel.fz0() = fz0;
+	  // update the hits to resolved phi looping with these parameters
+	  for(auto& hhit : hhits) {
+	    resolvePhi(hhit,rhel);
 	  }
-	}
-	dfdz = extract_result<tag::median>(accf2);
-	accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acci2;
-	for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
-	  double phiex = fz0+finfo[iphi]._z*dfdz;
-	  if(!_filterz || fabs(finfo[iphi]._phi._val-phiex) < _pout ){
-	    acci2(finfo[iphi]._phi._val - finfo[iphi]._z*dfdz);
-	  }
-	}
-	fz0 = fmod(extract_result<tag::median>(acci2),CLHEP::twopi);
-	if(fz0>CLHEP::pi)fz0 -= CLHEP::twopi;
-	if(fz0<-CLHEP::pi)fz0 += CLHEP::twopi;
-      }
-      // inverse convention: should solve directly for lambda, FIXME!
-      myhel.lambda() = 1.0/dfdz;
-      myhel.fz0() = fz0;
-      // fix the phi for the hit points
-      for(auto hhit : hhits) {
-	double phiex = myhel.fz0() + hhit._pos.z()/myhel.lambda();
-	FZ fz;
-	phiInfo(myhel.center(),hhit,fz._phi);
-	int nloop = (int)rint((phiex - fz._phi._val)/CLHEP::twopi);
-	hhit._phi = fz._phi._val + nloop*CLHEP::twopi;
-	if(_filterz && fabs(hhit._phi-phiex)> _pout) setOutlier(hhit);
-      }
-      return true;
-    } else
-      return false;
+	  retval = true;
+	} // good # for fz0
+      } // good slope
+    } // good # of hits
+    return retval;
   }
 
+  bool RobustHelixFit::findZ(HelixHitCollection& hhits,RobustHelix& rhel) {
+    bool retval(true);
+  // iterate over lambda and loop resolution
+    bool changed(true);
+    unsigned niter(0);
+    while(changed && niter < _maxniter){
+      changed = false;
+      ++niter;
+      // make a long-range estimate of slope
+      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accf2;
+      for(auto ihit=hhits.begin(); ihit != std::prev(hhits.end()); ++ihit) {
+	if(use(*ihit)) {
+	  for(auto jhit = std::next(ihit); jhit != hhits.end(); ++jhit) {
+	    if(use(*jhit)) {
+	      double dz = jhit->_pos.z() - ihit->_pos.z();
+	      double dphi = jhit->_phi-ihit->_phi; // includes loop determination
+	      if(dz > _minzsep && fabs(dphi) > _mindphi){
+		double lambda = dz/dphi;
+		if(lambda > _lmin && lambda < _lmax){ 
+		  accf2(lambda);
+		} // good slope
+	      } // minimum hit separation
+	    } // good 2nd hit 
+	  } // loop on 2nd hit
+	} // good 1st hit
+      } // loop on 1st hit
+      // extract slope
+      rhel.lambda() = extract_result<tag::median>(accf2);
+      // now extract intercept
+      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acci2;
+      for(auto const& hhit : hhits) {
+	if(use(hhit)) {
+	  double phiex = rhel.circleAzimuth(hhit._pos.z());
+	  double dphi = deltaPhi(phiex,hhit._phi);
+	  acci2(dphi);// accumulate the difference WRT the current intercept
+	}
+      }
+      double dphi = extract_result<tag::median>(acci2);
+      rhel.fz0() += dphi;
+      // resolve the hit loops again
+      for(auto& hhit : hhits)
+	changed |= resolvePhi(hhit,rhel);
+    }
+    return retval;
+  }
 
-  bool
-  RobustHelixFit::initCircle(HelixHitCollection const& hhits,RobustHelix& myhel) {
+  bool RobustHelixFit::initCircle(HelixHitCollection const& hhits,RobustHelix& rhel) {
     bool retval(false);
     static const double mind2 = _mindist*_mindist;
     using namespace boost::accumulators;
     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx, accy, accr;
-    // form all triples, and compute the circle center for unaligned hits.  I can aford to be choosy
+    // pick out a subset of hits.  I can aford to be choosy
     unsigned ntriple(0);
     std::vector<CLHEP::Hep3Vector> pos;
     pos.reserve(hhits.size());
-    for(auto hhit : hhits) {
+    for(auto const& hhit : hhits) {
       if(use(hhit) && (stereo(hhit) || (!_stereoinit)) ){
 	pos.push_back(hhit._pos);
       }
@@ -369,85 +367,82 @@ namespace mu2e
 		    (pos[kp].x() - pos[jp].x())*ri2 + 
 		    (pos[ip].x() - pos[kp].x())*rj2 + 
 		    (pos[jp].x() - pos[ip].x())*rk2 ) / delta;
-		double rho = sqrt(pow(pos[ip].x()-cx,2)+pow(pos[ip].y()-cy,2));
+		double rho = sqrt(std::pow(pos[ip].x()-cx,(int)2)+std::pow(pos[ip].y()-cy,(int)2));
 		double rc = sqrt(cx*cx + cy*cy);
 		double rmin = fabs(rc-rho);
 		double rmax = rc+rho;
 		// test circle parameters for this triple: should be inside the tracker,
 		// optionally consistent with the target
 		if(rho > _rmin && rho< _rmax && rmax < _trackerradius
-		  && ( (!_targetinit) || rmin < _targetradius) ) {
+		    && ( (!_targetinit) || rmin < _targetradius) ) {
 		  // accumulate 
 		  ++ntriple;
 		  accx(cx);
 		  accy(cy);
 		  accr(rho);
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }
+		} // radius meets requirements
+	      } // slope is not the same
+	    } // points 1 and 3 and 2 and 3 are separated
+	  } // 3rd point
+	} // points 1 and 2 are separated
+      } // second point
+    } // first point
+    // median calculation needs a reasonable number of points to function
     if(ntriple > _minnhit){
       retval = true;
       double centx = extract_result<tag::median>(accx);
       double centy = extract_result<tag::median>(accy);
       double rho = extract_result<tag::median>(accr);
-      myhel.center() = CLHEP::Hep3Vector(centx,centy,0.0);
-      myhel.radius() = rho;
+      rhel.center() = CLHEP::Hep3Vector(centx,centy,0.0);
+      rhel.radius() = rho;
     }
     return retval;
   }
 
   void RobustHelixFit::findAGE(HelixHitCollection const& hhits, Hep3Vector const& center,double& rmed, double& age) {
     using namespace boost::accumulators;
-    // protection against empty data
-    if(hhits.size() == 0)return;
-    // fill radial information for all points, given this center
-    std::vector<VALERR> radii;
-    for(auto hhit : hhits) {
+  // fill radial information for all points, given this center
+    std::vector<double> radii;
+    for(auto const& hhit : hhits) {
       if(use(hhit)){
 	// find radial information for this point
-	VALERR rad;
-	radInfo(center,hhit,rad);
+	double rad = Hep3Vector(hhit._pos - center).perp();
 	radii.push_back(rad);
-	// compute the normalization too
       }
     }
-    // find the median radius
-    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accr;
-    for(unsigned irad=0;irad<radii.size();++irad){
-      accr(radii[irad]._val); 
-    }
-    rmed = extract_result<tag::median>(accr);
-    // now compute the AGE (Absolute Geometric Error)
-    age = 0.0;
-    for(unsigned irad=0;irad<radii.size();++irad){
-      age += fabs(radii[irad]._val-rmed);
+    if(radii.size() > _minnhit){
+      // find the median radius
+      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accr;
+      for(unsigned irad=0;irad<radii.size();++irad){
+	accr(radii[irad]); 
+      }
+      rmed = extract_result<tag::median>(accr);
+      // now compute the AGE (Absolute Geometric Error)
+      age = 0.0;
+      for(unsigned irad=0;irad<radii.size();++irad){
+	age += fabs(radii[irad]-rmed);
+      }
     }
   }
 
-  void
-  RobustHelixFit::fillSums(HelixHitCollection const& hhits, Hep3Vector const& center,double rmed,AGESums& sums) {
+  void RobustHelixFit::fillSums(HelixHitCollection const& hhits, Hep3Vector const& center,double rmed,AGESums& sums) {
     // initialize sums
     sums.clear();
     // compute the transverse sums
-    for(auto hhit : hhits) {
+    for(auto const& hhit : hhits) {
       if(use(hhit)){
 	// find radial information for this point
-	VALERR rad;
-	radInfo(center,hhit,rad);
+	double rad = Hep3Vector(hhit._pos - center).perp();
 	// now x,y projections
-	double pcos = (hhit._pos.x()-center.x())/rad._val;
-	double psin = (hhit._pos.y()-center.y())/rad._val;
+	double pcos = (hhit._pos.x()-center.x())/rad;
+	double psin = (hhit._pos.y()-center.y())/rad;
 	// 3 conditions: either the radius is inside the median, outside the median, or 'on' the median.  We define 'on'
 	// in terms of a window
-	if(fabs(rmed - rad._val) < _rwind  ){
+	if(fabs(rmed - rad) < _rwind  ){
 	  sums._scc += fabs(pcos);
 	  sums._ssc += fabs(psin);
 	  ++sums._nc;
-	} else if (rad._val > rmed  ) {
+	} else if (rad > rmed  ) {
 	  sums._sco += pcos;
 	  sums._sso += psin;
 	  ++sums._no;
@@ -460,104 +455,26 @@ namespace mu2e
     }
   }
 
-  void
-  RobustHelixFit::filterDist(HelixHitCollection& hhits) {
-    using namespace boost::accumulators;
-    // first, resolve phi.   Use the average X and Y to define the initial
-    // phi value, to avoid looping issues
-    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx;
-    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accy;
-    for(auto hhit : hhits ) {
-      if(use(hhit)){
-	accx(hhit._pos.x());
-	accy(hhit._pos.y());
-      }
-    }
-    double mx = extract_result<tag::median>(accx);
-    double my = extract_result<tag::median>(accy);
-    double mphi = atan2(my,mx);
-    for(auto hhit : hhits) {
-      if(use(hhit)){
-	double dphi = hhit._phi - mphi;
-	if(fabs(dphi) > CLHEP::pi){
-	  if(dphi > 0)
-	    hhit._phi -= CLHEP::twopi;
-	  else
-	    hhit._phi += CLHEP::twopi;
-	}
-	setResolvedPhi(hhit);
-      }
-    }
-    // now cut
-    CLHEP::Hep3Vector mh(mx,my,0.0);
-    for(auto hhit : hhits) {
-      double dist = sqrt(hhit._pos.perpPart().diff2(mh));
-      if(dist > _maxdist)setOutlier(hhit);
-    }
-  }
-
-  void
-  RobustHelixFit::filterXY(HelixHitCollection& hhits, Hep3Vector const& center,double rmed,bool& changed) {
-    static StrawHitFlag other(StrawHitFlag::other);
-    changed = false;
-    for(auto hhit : hhits) {
-      VALERR rad;
-      radInfo(center,hhit,rad);
-      bool olduse = use(hhit);
-  // update the flag each iteration, until we've converged
-      if(fabs(rad._val -rmed) > _rout)
-	hhit._flag.merge(other);
-      else
-	hhit._flag.clear(other);
-      changed |= olduse != use(hhit);
-    }
-  }
-
-  double
-  RobustHelixFit::deltaPhi(double phi1, double phi2){
+  double RobustHelixFit::deltaPhi(double phi1, double phi2){
     double dphi = fmod(phi2-phi1,CLHEP::twopi);
     if(dphi>CLHEP::pi)dphi -= CLHEP::twopi;
     if(dphi<-CLHEP::pi)dphi += CLHEP::twopi;
     return dphi;
   }
 
-  bool
-  RobustHelixFit::use(HelixHit const& hhit) const {
+  bool RobustHelixFit::use(HelixHit const& hhit) const {
      return (!hhit._flag.hasAnyProperty(_dontuseflag))
       && (hhit._flag.hasAllProperties(_useflag) || _useflag.empty());
   }
 
-  bool
-  RobustHelixFit::stereo(HelixHit const& hhit) const {
+  bool RobustHelixFit::stereo(HelixHit const& hhit) const {
     static StrawHitFlag stereo(StrawHitFlag::stereo);
     return hhit._flag.hasAllProperties(stereo);
-  }
-
-  void RobustHelixFit::setResolvedPhi(HelixHit& hhit) const {
-    static StrawHitFlag resphi(StrawHitFlag::resolvedphi);
-    hhit._flag.merge(resphi);
   }
 
   void RobustHelixFit::setOutlier(HelixHit& hhit) const {
     static StrawHitFlag outlier(StrawHitFlag::outlier);
     hhit._flag.merge(outlier);
-  }
-
- void
-  RobustHelixFit::radInfo(Hep3Vector const& center,HelixHit const& hhit, VALERR& rad) const {
-    double rvec = Hep3Vector(hhit._pos - center).perp();
-    rad._val = rvec;
-    rad._err = hhit._wres; // should take the projection FIXME!
-    if(_debug > 3)std::cout << "radInfo : r = " << rad._val << " rerr = " << rad._err  << std::endl;
-  }
-
-  void
-  RobustHelixFit::phiInfo(Hep3Vector const& center, HelixHit const& hhit, VALERR& phi) const {
-    CLHEP::Hep3Vector rad = hhit._pos - center;
-    double phi0 = rad.phi();
-    phi._val = phi0;
-    phi._err = hhit._wres/rad.mag(); // should take the projection FIXME!
-    if(_debug > 3)std::cout << "phiInfo : phi = " << phi._val << " ferr = " << phi._err << std::endl;
   }
 
   unsigned RobustHelixFit::hitCount(HelixHitCollection const& hhits) const {
@@ -566,6 +483,44 @@ namespace mu2e
       if(use(hhit))++retval;
     return retval;
   }
- 
+
+  void RobustHelixFit::initPhi(HelixHit& hhit, RobustHelix const& rhel) const {
+  // ray from the circle center to the point
+    hhit._phi = Hep3Vector(hhit._pos - rhel.center()).phi();
+  }
+
+  void RobustHelixFit::filterSector(HelixHitCollection& hhits) {
+    // Use the average X and Y to define the average phi of the hits
+    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx;
+    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accy;
+    for(auto const& hhit : hhits ) {
+      if(use(hhit)){
+	accx(hhit._pos.x());
+	accy(hhit._pos.y());
+      }
+    }
+    double mx = extract_result<tag::median>(accx);
+    double my = extract_result<tag::median>(accy);
+    double mphi = atan2(my,mx);
+    // require the hits be within a maximum of this global azimuth
+    for(auto& hhit : hhits) {
+      if(use(hhit)){
+	double dphi = fabs(deltaPhi(hhit.pos().phi(),mphi));
+	if(dphi > _maxphisep)setOutlier(hhit);
+      }
+    }
+  }
+
+  bool RobustHelixFit::resolvePhi(HelixHit& hhit, RobustHelix const& rhel) const {
+    // find phi expected
+    double phiex = rhel.circleAzimuth(hhit._pos.z());
+    int nloop = (int)rint((phiex-hhit._phi)/CLHEP::twopi);
+    hhit._phi += nloop*CLHEP::twopi;
+    // now update the flag
+    static StrawHitFlag resphi(StrawHitFlag::resolvedphi);
+    hhit._flag.merge(resphi);
+    return nloop != 0;
+  }
+
 }
 

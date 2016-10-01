@@ -24,7 +24,9 @@ namespace mu2e {
     static std::map<std::string,mask_type> bitnames;
     if(bitnames.size()==0){
       bitnames[std::string("HitsOK")]             = bit_to_mask(hitsOK);
+      bitnames[std::string("InitOK")]           = bit_to_mask(initOK);
       bitnames[std::string("CircleOK")]           = bit_to_mask(circleOK);
+      bitnames[std::string("PhiZOK")]           = bit_to_mask(phizOK);
       bitnames[std::string("HelixOK")]              = bit_to_mask(helixOK);
       bitnames[std::string("SeedOK")]              = bit_to_mask(seedOK);
       bitnames[std::string("KalmanOK")]              = bit_to_mask(kalmanOK);

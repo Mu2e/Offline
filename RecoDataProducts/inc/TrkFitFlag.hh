@@ -19,7 +19,7 @@ namespace mu2e {
     // I need 32 bits for this class
     typedef unsigned mask_type;
     // The first 16 describe various success conditions, the last 16 various failure modes
-    enum bit_type {hitsOK=0,circleOK=1,helixOK=2,seedOK=3,kalmanOK=4};
+    enum bit_type {hitsOK=0,initOK,circleOK,phizOK,helixOK,seedOK,kalmanOK};
     // functions needed for the BitMap template
     static std::string const& typeName();
     static std::map<std::string,mask_type> const& bitNames();

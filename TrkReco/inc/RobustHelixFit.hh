@@ -24,14 +24,11 @@ class TH1F;
 
 namespace mu2e 
 {
-// utility struct; value plus error
-  struct VALERR {
-    double _val;
-    double _err;
-  };
+// simple struct to keep track of azimuth/radius projection
   struct FZ {
-    VALERR _phi;
+    double _phi;
     double _z;
+    FZ(CLHEP::Hep3Vector const& hpos, CLHEP::Hep3Vector const& center);
   };
 
 // struct to hold AGE sums
@@ -55,36 +52,34 @@ namespace mu2e
     void findHelix(HelixSeed& myfit);
 // Helicity of this fit
     Helicity const& helicity() const { return _helicity; }
-  protected:
-// utlity functions
-    bool findXY(HelixHitCollection& hhits,RobustHelix& myhel);
-    bool findZ(HelixHitCollection& hhits,RobustHelix& myhel);
-    bool initCircle(HelixHitCollection const& hhits,RobustHelix& myhel);
   private:
-// utility function to resolve phi wrapping    
-    static double deltaPhi(double phi1, double phi2);
+// utlity functions
+    bool initCircle(HelixHitCollection const& hhits,RobustHelix& myhel);
+    bool findXY(HelixHitCollection& hhits,RobustHelix& myhel);
+    bool initZ(HelixHitCollection& hhits,RobustHelix& myhel);
+    bool findZ(HelixHitCollection& hhits,RobustHelix& myhel);
 // find the Absolute Geometric Error.  Returns the median radius as well.
     bool findCenterAGE(HelixHitCollection const& hhits,CLHEP::Hep3Vector& center, double& rmed, double& age);
     void findAGE(HelixHitCollection const& hhits, CLHEP::Hep3Vector const& center,double& rmed, double& age);
     void fillSums(HelixHitCollection const& hhits, CLHEP::Hep3Vector const& center,double rmed,AGESums& sums);
-    void filterXY(HelixHitCollection& hhits, CLHEP::Hep3Vector const& center,double rmed,bool& changed);
-    void filterDist(HelixHitCollection& hhits);
+    void filterSector(HelixHitCollection& hhits);
     unsigned hitCount(HelixHitCollection const& hhits) const; // count good hits
 // interact with HelixHits
     bool use(HelixHit const&) const;
     bool stereo(HelixHit const&) const;
     void setOutlier(HelixHit&) const;
-    void setResolvedPhi(HelixHit&) const;
-    void radInfo(CLHEP::Hep3Vector const& center, HelixHit const& hhit, VALERR& rad) const;
-    void phiInfo(CLHEP::Hep3Vector const& center, HelixHit const& hhit, VALERR& phi) const;
-
+// utility functions to resolve phi wrapping    
+    static double deltaPhi(double phi1, double phi2);
+    void initPhi(HelixHit& hh, RobustHelix const& myhel) const;
+    bool resolvePhi(HelixHit& hh, RobustHelix const& myhel) const;
 // configuration parameters
     int _debug;
     StrawHitFlag _useflag, _dontuseflag;
     double _mindelta; // minimum slope difference to use a triple in circle center initialization
     unsigned _minnhit; // minimum # of hits to work with
-    unsigned _minnstereo; // minimum # of stereo hits
+    double _maxphisep; // maximum separation in global azimuth of hits
     double _lambda0,_lstep,_minlambda; // parameters for AGE center determination
+    unsigned _nphibins; // # of bins in histogram for phi at z intercept
     unsigned _maxniter; // maxium # of iterations to global minimum
     double _minzsep, _maxzsep; // Z separation of points for pitch estimate
     double _mindphi, _maxdphi; // phi separation of points for pitch estimate
@@ -93,10 +88,9 @@ namespace mu2e
     double _mindist; // minimum distance between points used in circle initialization
     double _maxdist; // maximum distance in hits
     double _rmin,_rmax; // circle radius range
-    double _tdmin, _tdmax; // range of abs(tan(dip)
+    double _lmin, _lmax; // range of lambda = dz/dphi
     double _sfactor; // stereo hit error factor
     bool _force; // force the fit values to be in range
-    bool _filterxy, _filterz; // filter hits
     bool _stereoinit; // require stereo hits to initialize
     bool _stereofit; // require stereo hits 
     bool _targetpoint; // use target as a point in the circle fit
@@ -108,7 +102,6 @@ namespace mu2e
     double _rout; // radius difference for a hit to be an xy outlier
     double _pout; // phi difference for a hit to be a z outlier
     Helicity _helicity; // helicity value to look for.  This defines the sign of dphi/dz
-    double _smin, _smax;
  };
 }
 #endif

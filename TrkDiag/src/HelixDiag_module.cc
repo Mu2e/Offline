@@ -101,7 +101,11 @@ namespace mu2e {
        // TTree and branch variables
       TTree *_hdiag;
       Int_t _iev;
-      RobustHelix _reh;
+      RobustHelix _rhel;
+      Bool_t _outlier, _stereo, _tdiv, _resphi;
+      Float_t _hhphi, _hphi;
+      Float_t _werr, _terr, _dt;
+      Hep3Vector _hhpos, _hpos, _mchpos;
       Int_t _nhits, _nprimary;
       Int_t _pdg, _gen, _proc;
       std::vector<HitInfoMC> _hinfomc;
@@ -132,7 +136,7 @@ namespace mu2e {
       art::ServiceHandle<art::TFileService> tfs;
       _hdiag=tfs->make<TTree>("hdiag","Helix Finding diagnostics");
       _hdiag->Branch("iev",&_iev,"iev/I");
-      _hdiag->Branch("reh",&_reh);
+      _hdiag->Branch("rhel",&_rhel);
       _hdiag->Branch("nhits",&_nhits,"nhits/I");
       if(_mcdiag){
 	_hdiag->Branch("mch",&_mch);
@@ -141,7 +145,21 @@ namespace mu2e {
 	_hdiag->Branch("pdg",&_pdg,"pdg/I");
 	_hdiag->Branch("gen",&_gen,"gen/I");
 	_hdiag->Branch("proc",&_proc,"proc/I");
-	if(_diag > 1){
+      }
+      if(_diag > 1){
+	_hdiag->Branch("outlier",&_outlier,"outlier/B");
+	_hdiag->Branch("stereo",&_stereo,"stereo/B");
+	_hdiag->Branch("tdiv",&_tdiv,"tdiv/B");
+	_hdiag->Branch("resphi",&_resphi,"resphi/B");
+	_hdiag->Branch("hhphi",&_hhphi,"hhphi/F");
+	_hdiag->Branch("hphi",&_hphi,"hphi/F");
+	_hdiag->Branch("werr",&_werr,"werr/F");
+	_hdiag->Branch("terr",&_terr,"terr/F");
+	_hdiag->Branch("dt",&_dt,"dt/F");
+	_hdiag->Branch("hhpos",&_hhpos);
+	_hdiag->Branch("hpos",&_hpos);
+	if(_mcdiag){
+	  _hdiag->Branch("mchpos",&_mchpos);
 	  _hdiag->Branch("tshmc",&_hinfomc);
 	}
       }
@@ -165,18 +183,16 @@ namespace mu2e {
     if(findData(evt)) {
      // loop over helices
       unsigned ihel(0);
-      for(auto hseed : *_hscol) {
-	RobustHelix const& myhel = hseed._helix;
-	HelixHitCollection& hhits = hseed._hhits;
+      for(auto const& hseed : *_hscol) {
+	RobustHelix const& rhel = hseed._helix;
+	HelixHitCollection const& hhits = hseed._hhits;
+	_rhel = rhel;
 	std::vector<StrawHitIndex> hits;
-	for(auto hhit : hhits) {
+	art::Ptr<SimParticle> pspp;
+	for(auto const& hhit : hhits) 
 	  hits.push_back(hhit._shidx);
-	}
-	// fill TTree branches; first the ones that don't depend on MC
-	_reh = myhel;
 	if(_mcdiag) {
 	  // get information about the primary particle (produced most hits)
-	  art::Ptr<SimParticle> pspp;
 	  _nprimary = TrkMCTools::primaryParticle(pspp,hits,_mcdigis);
 	  _pdg = pspp->pdgId();
 	  _proc = pspp->realCreationCode();
@@ -186,19 +202,7 @@ namespace mu2e {
 	    _gen = -1;
 	  // fill MC true helix parameters
 	  fillMCHelix(pspp);
-	  if(_diag > 1){
-	// fill information about individual hits
-	    for( auto hi : hits ) {
-	      StrawDigiMC const& digimc = _mcdigis->at(hi);
-	      HitInfoMC hinfomc;
-	      fillHitInfoMC(pspp,digimc,hinfomc);
-	      _hinfomc.push_back(hinfomc);
-	    }
-	  }
-	}
-	  // fill the tree
-	_hdiag->Fill();
-	// if requested, plot the hits and helices
+	}	
 	if( _plot ) {
 	// count the # of conversion hits in this helix
 	  unsigned nce = countCEHits(hits);
@@ -208,6 +212,34 @@ namespace mu2e {
 	    plotZ(hseed,ihel);
 	  }
 	}
+	
+	for(auto const& hhit : hhits) {
+	  if(_diag > 1){
+	    _outlier = hhit._flag.hasAnyProperty(StrawHitFlag::outlier);
+	    _stereo = hhit._flag.hasAnyProperty(StrawHitFlag::stereo);
+	    _tdiv = hhit._flag.hasAnyProperty(StrawHitFlag::tdiv);
+	    _resphi = hhit._flag.hasAnyProperty(StrawHitFlag::resolvedphi);
+	    _hhphi = hhit._phi;
+	    _hhpos = hhit.pos();
+	    _werr = hhit.posRes(StrawHitPosition::wire);
+	    _terr = hhit.posRes(StrawHitPosition::trans);
+	    _dt = _shcol->at(hhit._shidx).time() - hseed._t0.t0();
+	    _hpos = _hhpos; // this sets the z to the correct value
+	    rhel.position(_hpos);
+	    _hphi = rhel.circleAzimuth(_hpos.z());
+	    if(_mcdiag){
+	      _mchpos = _hhpos;
+	      _mch.position(_mchpos);
+	      StrawDigiMC const& digimc = _mcdigis->at(hhit._shidx);
+	      HitInfoMC hinfomc;
+	      fillHitInfoMC(pspp,digimc,hinfomc);
+	      _hinfomc.push_back(hinfomc);
+	    }
+	  }
+	}
+	  // fill the tree
+	_hdiag->Fill();
+	// if requested, plot the hits and helices
 	++ihel;
       }
     } else
@@ -245,7 +277,7 @@ namespace mu2e {
 
 
   void HelixDiag::plotXY(HelixSeed const& hseed, unsigned ihel) {
-    RobustHelix const& myhel = hseed._helix;
+    RobustHelix const& rhel = hseed._helix;
     HelixHitCollection const& hhits = hseed._hhits;
 
     static unsigned igraph = 0;
@@ -295,61 +327,61 @@ namespace mu2e {
     bkg_notstereo_notused->SetMarkerStyle(kOpenCircle);
     bkg_notstereo_notused->SetMarkerColor(kGreen);
 
-    for(auto hhit : hhits ) {
+    for(auto const& hhit : hhits ) {
       if(conversion(hhit._shidx)){
 	if (use(hhit) ) {
 	  if (stereo(hhit)) {
-	    ce_stereo_used->Fill(hhit._pos.x()-myhel.center().x(),hhit._pos.y()-myhel.center().y());
+	    ce_stereo_used->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
 	  }
 	  else {
-	    ce_notstereo_used->Fill(hhit._pos.x()-myhel.center().x(),hhit._pos.y()-myhel.center().y());
+	    ce_notstereo_used->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
 	  }	      
 	}
 	else {
 	  if (stereo(hhit)) {
-	    ce_stereo_notused->Fill(hhit._pos.x()-myhel.center().x(),hhit._pos.y()-myhel.center().y());
+	    ce_stereo_notused->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
 	  }
 	  else {
-	    ce_notstereo_notused->Fill(hhit._pos.x()-myhel.center().x(),hhit._pos.y()-myhel.center().y());
+	    ce_notstereo_notused->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
 	  }
 	}
       }
       else {
 	if (use(hhit)) {
 	  if (stereo(hhit)) {
-	    bkg_stereo_used->Fill(hhit._pos.x()-myhel.center().x(),hhit._pos.y()-myhel.center().y());
+	    bkg_stereo_used->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
 	  }
 	  else {
-	    bkg_notstereo_used->Fill(hhit._pos.x()-myhel.center().x(),hhit._pos.y()-myhel.center().y());
+	    bkg_notstereo_used->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
 	  }	      
 	}
 	else {
 	  if (stereo(hhit)) {
-	    bkg_stereo_notused->Fill(hhit._pos.x()-myhel.center().x(),hhit._pos.y()-myhel.center().y());
+	    bkg_stereo_notused->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
 	  }
 	  else {
-	    bkg_notstereo_notused->Fill(hhit._pos.x()-myhel.center().x(),hhit._pos.y()-myhel.center().y());
+	    bkg_notstereo_notused->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
 	  }
 	}
       }
     }
 
 
-    TArc* fitarc = new TArc(0.0,0.0,myhel.radius());
+    TArc* fitarc = new TArc(0.0,0.0,rhel.radius());
     fitarc->SetLineColor(kRed);
     fitarc->SetLineWidth(2);
     fitarc->SetFillStyle(0);
     // draw the detector boundaries
     static double innerrad(380.0);
     static double outerrad(680.0);
-    TArc* indet = new TArc(-myhel.center().x(),-myhel.center().y(),innerrad);
-    TArc* outdet = new TArc(-myhel.center().x(),-myhel.center().y(),outerrad);
+    TArc* indet = new TArc(-rhel.center().x(),-rhel.center().y(),innerrad);
+    TArc* outdet = new TArc(-rhel.center().x(),-rhel.center().y(),outerrad);
     indet->SetLineColor(kBlue);
     indet->SetFillStyle(0);
     outdet->SetLineColor(kBlue);
     outdet->SetFillStyle(0);
 
-    TArc* target = new TArc(-myhel.center().x(),-myhel.center().y(),_targetradius);
+    TArc* target = new TArc(-rhel.center().x(),-rhel.center().y(),_targetradius);
     target->SetLineColor(kBlack);
     target->SetFillStyle(0);
     // add these to the plot
@@ -367,18 +399,18 @@ namespace mu2e {
       mct->SetMarkerStyle(5);
       mct->SetMarkerColor(kMagenta);
 
-      for(auto hhit : hhits ) {
+      for(auto const& hhit : hhits ) {
 	StrawDigiMC const& mcdigi = _mcdigis->at(hhit._shidx);
 	art::Ptr<StepPointMC> spmcp;
 	if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && TrkMCTools::CEDigi(mcdigi)){
-	  mct->Fill(spmcp->position().x()-myhel.center().x(),spmcp->position().y()-myhel.center().y());
+	  mct->Fill(spmcp->position().x()-rhel.center().x(),spmcp->position().y()-rhel.center().y());
 	}
       }
     }
   }
 
   void HelixDiag::plotZ(HelixSeed const& hseed, unsigned ihel) {
-    RobustHelix const& myhel = hseed._helix;
+    RobustHelix const& rhel = hseed._helix;
     HelixHitCollection const& hhits = hseed._hhits;
 
     static unsigned igraph = 0;
@@ -429,7 +461,7 @@ namespace mu2e {
     bkg_notstereo_notused->SetMarkerStyle(kOpenCircle);
     bkg_notstereo_notused->SetMarkerColor(kGreen);
 
-    for(auto hhit : hhits) {
+    for(auto const& hhit : hhits) {
       if(conversion(hhit._shidx)){
 	if (use(hhit)) {
 	  if (stereo(hhit)) {
@@ -468,8 +500,8 @@ namespace mu2e {
       }
     }
     TF1* line = new TF1("line","[0]+[1]*x",-1500,1500);
-    line->SetParameter(0,myhel.fz0());
-    line->SetParameter(1,1.0/myhel.lambda());
+    line->SetParameter(0,rhel.fz0());
+    line->SetParameter(1,1.0/rhel.lambda());
     line->SetLineColor(kRed);
     TList* flist = ce_stereo_used->GetListOfFunctions();
     flist->Add(line);
