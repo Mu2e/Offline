@@ -106,6 +106,7 @@ namespace mu2e {
       TTree *_hdiag;
       Int_t _iev;
       Bool_t _hitsOK, _initOK, _circleOK, _phizOK, _helixOK, _mchelixOK;
+      Bool_t _circleConverged, _phizConverged;
       RobustHelix _rhel;
       Int_t _nhits, _nused, _nprimary;
       Int_t _pdg, _gen, _proc;
@@ -148,6 +149,8 @@ namespace mu2e {
       _hdiag->Branch("phizOK",&_phizOK,"phizOK/B");
       _hdiag->Branch("helixOK",&_helixOK,"helixOK/B");
       _hdiag->Branch("mchelixOK",&_mchelixOK,"mchelixOK/B");
+      _hdiag->Branch("circleConverged",&_circleConverged,"circleConverged/B");
+      _hdiag->Branch("phizConverged",&_phizConverged,"phizConverged/B");
       _hdiag->Branch("rhel",&_rhel);
       _hdiag->Branch("nhits",&_nhits,"nhits/I");
       _hdiag->Branch("nused",&_nused,"nused/I");
@@ -196,6 +199,8 @@ namespace mu2e {
 	_circleOK = status.hasAllProperties(TrkFitFlag::circleOK);
 	_phizOK = status.hasAllProperties(TrkFitFlag::phizOK);
 	_helixOK = status.hasAllProperties(TrkFitFlag::helixOK);
+	_circleConverged = status.hasAllProperties(TrkFitFlag::circleConverged);
+	_phizConverged = status.hasAllProperties(TrkFitFlag::phizConverged);
 	std::vector<StrawHitIndex> hits;
 	art::Ptr<SimParticle> pspp;
 	_nused = 0;
