@@ -25,7 +25,7 @@
 #include "TrkDiag/inc/TrkMCTools.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "RecoDataProducts/inc/HelixHit.hh"
-#include "TrkDiag/inc/HitInfoMC.hh"
+#include "TrkDiag/inc/HelixHitInfo.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
 // data
@@ -67,6 +67,10 @@ namespace mu2e {
       unsigned _minnce; // minimum # CE hits to make plots
       double _targetradius;
       bool _plot;
+      double				_cradres; // average center resolution along center position (mm)
+      double				_cperpres; // average center resolution perp to center position (mm)
+      double				_radres; // average radial resolution for circle fit (mm)
+      double				_phires; // average azimuthal resolution on circle (rad)
       // event object tags      art::InputTag _shTag;
       art::InputTag _shTag;
       art::InputTag _shpTag;
@@ -92,7 +96,7 @@ namespace mu2e {
       bool conversion(size_t index);
       unsigned countCEHits(vector<StrawHitIndex> const& hits );
       void fillHitInfoMC(art::Ptr<SimParticle> const& pspp, StrawDigiMC const& digimc, HitInfoMC& hinfomc);
-      void fillMCHelix(art::Ptr<SimParticle> const& pspp);
+      bool fillMCHelix(art::Ptr<SimParticle> const& pspp);
       // display functions
       void plotXY(HelixSeed const& myseed, unsigned ihel);
       void plotZ(HelixSeed const& myseed, unsigned ihel);
@@ -101,14 +105,12 @@ namespace mu2e {
        // TTree and branch variables
       TTree *_hdiag;
       Int_t _iev;
+      Bool_t _hitsOK, _initOK, _circleOK, _phizOK, _helixOK, _mchelixOK;
       RobustHelix _rhel;
-      Bool_t _outlier, _stereo, _tdiv, _resphi;
-      Float_t _hhphi, _hphi;
-      Float_t _werr, _terr, _dt;
-      Hep3Vector _hhpos, _hpos, _mchpos;
-      Int_t _nhits, _nprimary;
+      Int_t _nhits, _nused, _nprimary;
       Int_t _pdg, _gen, _proc;
-      std::vector<HitInfoMC> _hinfomc;
+      std::vector<HelixHitInfo> _hhinfo;
+      std::vector<HelixHitInfoMC> _hhinfomc;
       RobustHelix _mch;
       Hep3Vector _mcmom;
   };
@@ -124,6 +126,10 @@ namespace mu2e {
     _minnce(pset.get<unsigned>("MinimumCEHits",10)),
     _targetradius(pset.get<double>("TargetRadius",75)),
     _plot(pset.get<bool>("PlotHelices",false)),
+    _cradres	 (pset.get<double>("CenterRadialResolution",10.0)),
+    _cperpres	 (pset.get<double>("CenterPerpResolution",10.0)),
+    _radres	 (pset.get<double>("RadiusResolution",10.0)),
+    _phires	 (pset.get<double>("AzimuthREsolution",0.1)),
     _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
     _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
     _shfTag(pset.get<string>("StrawHitFlagCollectionTag","PosHelixFinder")),
@@ -136,8 +142,15 @@ namespace mu2e {
       art::ServiceHandle<art::TFileService> tfs;
       _hdiag=tfs->make<TTree>("hdiag","Helix Finding diagnostics");
       _hdiag->Branch("iev",&_iev,"iev/I");
+      _hdiag->Branch("hitsOK",&_hitsOK,"hitsOK/B");
+      _hdiag->Branch("initOK",&_initOK,"initOK/B");
+      _hdiag->Branch("circleOK",&_circleOK,"circleOK/B");
+      _hdiag->Branch("phizOK",&_phizOK,"phizOK/B");
+      _hdiag->Branch("helixOK",&_helixOK,"helixOK/B");
+      _hdiag->Branch("mchelixOK",&_mchelixOK,"mchelixOK/B");
       _hdiag->Branch("rhel",&_rhel);
       _hdiag->Branch("nhits",&_nhits,"nhits/I");
+      _hdiag->Branch("nused",&_nused,"nused/I");
       if(_mcdiag){
 	_hdiag->Branch("mch",&_mch);
 	_hdiag->Branch("mcmom",&_mcmom);
@@ -147,20 +160,9 @@ namespace mu2e {
 	_hdiag->Branch("proc",&_proc,"proc/I");
       }
       if(_diag > 1){
-	_hdiag->Branch("outlier",&_outlier,"outlier/B");
-	_hdiag->Branch("stereo",&_stereo,"stereo/B");
-	_hdiag->Branch("tdiv",&_tdiv,"tdiv/B");
-	_hdiag->Branch("resphi",&_resphi,"resphi/B");
-	_hdiag->Branch("hhphi",&_hhphi,"hhphi/F");
-	_hdiag->Branch("hphi",&_hphi,"hphi/F");
-	_hdiag->Branch("werr",&_werr,"werr/F");
-	_hdiag->Branch("terr",&_terr,"terr/F");
-	_hdiag->Branch("dt",&_dt,"dt/F");
-	_hdiag->Branch("hhpos",&_hhpos);
-	_hdiag->Branch("hpos",&_hpos);
+	_hdiag->Branch("hh",&_hhinfo);
 	if(_mcdiag){
-	  _hdiag->Branch("mchpos",&_mchpos);
-	  _hdiag->Branch("tshmc",&_hinfomc);
+	  _hdiag->Branch("hhmc",&_hhinfomc);
 	}
       }
     }
@@ -186,11 +188,21 @@ namespace mu2e {
       for(auto const& hseed : *_hscol) {
 	RobustHelix const& rhel = hseed._helix;
 	HelixHitCollection const& hhits = hseed._hhits;
+	_nhits = hhits.size();
+	TrkFitFlag const& status = hseed._status;
 	_rhel = rhel;
+	_hitsOK = status.hasAllProperties(TrkFitFlag::hitsOK);
+	_initOK = status.hasAllProperties(TrkFitFlag::initOK);
+	_circleOK = status.hasAllProperties(TrkFitFlag::circleOK);
+	_phizOK = status.hasAllProperties(TrkFitFlag::phizOK);
+	_helixOK = status.hasAllProperties(TrkFitFlag::helixOK);
 	std::vector<StrawHitIndex> hits;
 	art::Ptr<SimParticle> pspp;
-	for(auto const& hhit : hhits) 
+	_nused = 0;
+	for(auto const& hhit : hhits){
 	  hits.push_back(hhit._shidx);
+	  if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))++_nused;
+	}
 	if(_mcdiag) {
 	  // get information about the primary particle (produced most hits)
 	  _nprimary = TrkMCTools::primaryParticle(pspp,hits,_mcdigis);
@@ -201,7 +213,7 @@ namespace mu2e {
 	  else
 	    _gen = -1;
 	  // fill MC true helix parameters
-	  fillMCHelix(pspp);
+	  _mchelixOK = fillMCHelix(pspp);
 	}	
 	if( _plot ) {
 	// count the # of conversion hits in this helix
@@ -215,25 +227,56 @@ namespace mu2e {
 	
 	for(auto const& hhit : hhits) {
 	  if(_diag > 1){
-	    _outlier = hhit._flag.hasAnyProperty(StrawHitFlag::outlier);
-	    _stereo = hhit._flag.hasAnyProperty(StrawHitFlag::stereo);
-	    _tdiv = hhit._flag.hasAnyProperty(StrawHitFlag::tdiv);
-	    _resphi = hhit._flag.hasAnyProperty(StrawHitFlag::resolvedphi);
-	    _hhphi = hhit._phi;
-	    _hhpos = hhit.pos();
-	    _werr = hhit.posRes(StrawHitPosition::wire);
-	    _terr = hhit.posRes(StrawHitPosition::trans);
-	    _dt = _shcol->at(hhit._shidx).time() - hseed._t0.t0();
-	    _hpos = _hhpos; // this sets the z to the correct value
-	    rhel.position(_hpos);
-	    _hphi = rhel.circleAzimuth(_hpos.z());
+	    HelixHitInfo hhinfo;
+	    hhinfo._outlier = hhit._flag.hasAnyProperty(StrawHitFlag::outlier);
+	    hhinfo._stereo = hhit._flag.hasAnyProperty(StrawHitFlag::stereo);
+	    hhinfo._tdiv = hhit._flag.hasAnyProperty(StrawHitFlag::tdiv);
+	    hhinfo._resphi = hhit._flag.hasAnyProperty(StrawHitFlag::resolvedphi);
+	    hhinfo._hhphi = hhit._phi;
+	    hhinfo._hhpos = hhit.pos();
+	    hhinfo._werr = hhit.posRes(StrawHitPosition::wire);
+	    hhinfo._terr = hhit.posRes(StrawHitPosition::trans);
+	    hhinfo._dt = _shcol->at(hhit._shidx).time() - hseed._t0.t0();
+	    Hep3Vector hpos = hhit.pos(); // this sets the z to the correct value
+	    rhel.position(hpos);
+	    hhinfo._hpos = hpos;
+	    hhinfo._hphi = rhel.circleAzimuth(hhit.pos().z());
+// compute the chisquared componentes for this hit
+	    Hep3Vector dh = hhit.pos() - hpos;
+	    double dwire = dh.dot(hhit.wdir()); // projection along wire direction
+	    static Hep3Vector zaxis(0.0,0.0,1.0); // unit in z direction
+	    Hep3Vector wtdir = zaxis.cross(hhit.wdir()); // transverse direction to the wire
+	    double dtrans = dh.dot(wtdir); // transverse projection
+	    Hep3Vector cdir = (hhit.pos() - rhel.center()).perpPart().unit(); // direction from the circle center to the hit
+	    Hep3Vector cperp = zaxis.cross(cdir); // direction perp to the radius
+	    double wres2 = std::pow(hhit.posRes(StrawHitPosition::wire),(int)2) +
+	      std::pow(_cradres*cdir.dot(hhit.wdir()),(int)2) +
+	      std::pow(_cperpres*cperp.dot(hhit.wdir()),(int)2);
+	    double wtres2 = std::pow(hhit.posRes(StrawHitPosition::trans),(int)2) +
+	      std::pow(_cradres*cdir.dot(wtdir),(int)2) +
+	      std::pow(_cperpres*cperp.dot(wtdir),(int)2);
+
+	    hhinfo._dwire = dwire;
+	    hhinfo._dtrans = dtrans;
+	    hhinfo._wres = sqrt(wres2);
+	    hhinfo._wtres = sqrt(wtres2);
+	    hhinfo._chisq = sqrt( dwire*dwire/wres2 + dtrans*dtrans/wtres2 );
+
+	    _hhinfo.push_back(hhinfo);
 	    if(_mcdiag){
-	      _mchpos = _hhpos;
-	      _mch.position(_mchpos);
+	      HelixHitInfoMC hhinfomc;
+	      Hep3Vector mchpos = hhit.pos(); // sets z position
+	      _mch.position(mchpos);
+	      hhinfomc._hpos = mchpos;
+	      hhinfomc._hphi = _mch.circleAzimuth(hhit.pos().z());
+ 
+	      Hep3Vector mcdh = hhit.pos() - mchpos;
+	      hhinfomc._dwire = mcdh.dot(hhit.wdir());
+	      hhinfomc._dtrans = mcdh.dot(wtdir);
+
 	      StrawDigiMC const& digimc = _mcdigis->at(hhit._shidx);
-	      HitInfoMC hinfomc;
-	      fillHitInfoMC(pspp,digimc,hinfomc);
-	      _hinfomc.push_back(hinfomc);
+	      fillHitInfoMC(pspp,digimc,hhinfomc);
+	      _hhinfomc.push_back(hhinfomc);
 	    }
 	  }
 	}
@@ -551,7 +594,8 @@ namespace mu2e {
     }
   }
 
-  void HelixDiag::fillMCHelix(art::Ptr<SimParticle> const& pspp) {
+  bool HelixDiag::fillMCHelix(art::Ptr<SimParticle> const& pspp) {
+    bool retval(false);
     GeomHandle<DetectorSystem> det;
     GlobalConstantsHandle<ParticleDataTable> pdt;
   // find the earliest step associated with this particle passing the tracker midplane
@@ -572,7 +616,9 @@ namespace mu2e {
       Hep3Vector pos = det->toDetector(jmc->position());
       double charge = pdt->particle(pspp->pdgId()).ref().charge();
       TrkUtilities::RobustHelixFromMom(pos,_mcmom,charge,_bz0,_mch);
+      retval = true;
     }
+    return retval;
   }
 
   bool

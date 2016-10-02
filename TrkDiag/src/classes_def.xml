@@ -17,4 +17,8 @@
  <class name="std::vector<mu2e::TimeClusterHitInfo>" />
  <class name="mu2e::HitInfoMC" />
  <class name="std::vector<mu2e::HitInfoMC>" />
+ <class name="mu2e::HelixHitInfo" />
+ <class name="std::vector<mu2e::HelixHitInfo>" />
+ <class name="mu2e::HelixHitInfoMC" />
+ <class name="std::vector<mu2e::HelixHitInfoMC>" />
 </lcgdict>

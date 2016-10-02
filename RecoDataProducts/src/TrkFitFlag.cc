@@ -30,6 +30,10 @@ namespace mu2e {
       bitnames[std::string("HelixOK")]              = bit_to_mask(helixOK);
       bitnames[std::string("SeedOK")]              = bit_to_mask(seedOK);
       bitnames[std::string("KalmanOK")]              = bit_to_mask(kalmanOK);
+      bitnames[std::string("CircleConverged")]           = bit_to_mask(circleConverged);
+      bitnames[std::string("PhiZConverged")]           = bit_to_mask(phizConverged);
+      bitnames[std::string("SeedConverged")]              = bit_to_mask(seedConverged);
+      bitnames[std::string("KalmanConverged")]              = bit_to_mask(kalmanConverged);
     }
     return bitnames;
   }

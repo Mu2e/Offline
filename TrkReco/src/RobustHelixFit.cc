@@ -34,7 +34,6 @@ namespace mu2e
     bool operator()(HelixHit const& p1, HelixHit const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
 
-
   RobustHelixFit::RobustHelixFit(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
     _dontuseflag(pset.get<std::vector<std::string>>("UseFlag",vector<string>{"Outlier"})),
@@ -81,43 +80,40 @@ namespace mu2e
   RobustHelixFit::~RobustHelixFit()
   {}
 
-  void
-  RobustHelixFit::fitHelix(HelixSeed& hseed) {
-    RobustHelix& rhel = hseed._helix;
-    HelixHitCollection& hhits = hseed._hhits;
+  void RobustHelixFit::fitHelix(HelixSeed& hseed) {
     // reset the fit status flags, in case this is called iteratively
     hseed._status.clear(TrkFitFlag::circleOK);
     hseed._status.clear(TrkFitFlag::phizOK);
     hseed._status.clear(TrkFitFlag::helixOK);
-    // see if the fit needs init
-    bool needsinit = !hseed._status.hasAllProperties(TrkFitFlag::initOK);
-    // filter out hits in the wrong hemisphere
-    if(needsinit)
-      filterSector(hhits);
+    // gross outlier removal on init
+    if(!hseed._status.hasAllProperties(TrkFitFlag::initOK))
+      filterSector(hseed._hhits);
     // count what's left
-    if(hitCount(hhits) >= _minnhit){
+    if(hitCount(hseed._hhits) >= _minnhit){
       hseed._status.merge(TrkFitFlag::hitsOK);
-	// solve for the circle parameters.  Only init if necessary
-      if( (!needsinit) || initXY(hhits,rhel)){
-	if(fitXY(hhits,rhel)){
-	  hseed._status.merge(TrkFitFlag::circleOK);
-	  if((!needsinit) || initFZ(hhits,rhel)){
-	    hseed._status.merge(TrkFitFlag::initOK);
-	    if(fitFZ(hhits,rhel)) {
-	      // set the success
-	      hseed._status.merge(TrkFitFlag::phizOK);
-	      // final test
-	      if (rhel.lambda() > _lmin && rhel.lambda() < _lmax
-		  && rhel.radius() > _rmin && rhel.radius() < _rmax)
-		hseed._status.merge(TrkFitFlag::helixOK);
-	    }
+      // solve for the circle parameters
+      fitXY(hseed);
+      if(hseed._status.hasAnyProperty(TrkFitFlag::circleOK)){
+	// solve for the longitudinal parameters
+	fitFZ(hseed);
+	if(hseed._status.hasAnyProperty(TrkFitFlag::phizOK)){
+	  // final test
+	  if (goodHelix(hseed._helix)){
+	    hseed._status.merge(TrkFitFlag::helixOK);
 	  }
 	}
       }
     }
   }
 
-  bool RobustHelixFit::fitXY(HelixHitCollection& hhits,RobustHelix& rhel) {
+  void RobustHelixFit::fitXY(HelixSeed& hseed) {
+    HelixHitCollection& hhits = hseed._hhits;
+    RobustHelix& rhel = hseed._helix;
+    // if needed, initialize
+    if(!hseed._status.hasAllProperties(TrkFitFlag::initOK)){
+      if(!initXY(hhits,rhel))
+	return;
+    }
 // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
 // setup working variables
     double age;
@@ -191,8 +187,11 @@ namespace mu2e
     // update parameters
     rhel.center() = center;
     rhel.radius() = rmed;
-    // test parameters
-    return rmed > _rmin && rmed < _rmax;
+    // update flag
+    if(goodCircle(rhel))
+      hseed._status.merge(TrkFitFlag::circleOK);
+    if(niter < _maxniter)
+      hseed._status.merge(TrkFitFlag::circleConverged);
   }
 
   void RobustHelixFit::forceTargetInter(Hep3Vector& center, double& radius) {
@@ -286,8 +285,16 @@ namespace mu2e
     return retval;
   }
 
-  bool RobustHelixFit::fitFZ(HelixHitCollection& hhits,RobustHelix& rhel) {
-    bool retval(false);
+  void RobustHelixFit::fitFZ(HelixSeed& hseed) {
+    HelixHitCollection& hhits = hseed._hhits;
+    RobustHelix& rhel = hseed._helix;
+    // if required, initialize
+    if(!hseed._status.hasAllProperties(TrkFitFlag::initOK)){
+      if(initFZ(hhits,rhel))
+	hseed._status.merge(TrkFitFlag::initOK);
+      else
+	return;
+    }
   // iterate over lambda and loop resolution
     bool changed(true);
     unsigned niter(0);
@@ -315,7 +322,6 @@ namespace mu2e
       // extract slope
       rhel.lambda() = extract_result<tag::median>(accf2);
 //  test parameters for return value
-      retval = rhel.lambda() > _lmin && rhel.lambda() < _lmax;
       // now extract intercept.  Here we solve for the difference WRT the previous value
       accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acci2;
       for(auto const& hhit : hhits) {
@@ -331,13 +337,16 @@ namespace mu2e
       for(auto& hhit : hhits)
 	changed |= resolvePhi(hhit,rhel);
     }
-    return retval;
+    // set the flags
+    if(goodFZ(rhel))
+      hseed._status.merge(TrkFitFlag::phizOK);
+    if(niter < _maxniter)
+      hseed._status.merge(TrkFitFlag::phizConverged);
   }
 
   bool RobustHelixFit::initXY(HelixHitCollection const& hhits,RobustHelix& rhel) {
     bool retval(false);
     static const double mind2 = _mindist*_mindist;
-    using namespace boost::accumulators;
     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx, accy, accr;
     // pick out a subset of hits.  I can aford to be choosy
     unsigned ntriple(0);
@@ -407,7 +416,6 @@ namespace mu2e
   }
 
   void RobustHelixFit::findAGE(HelixHitCollection const& hhits, Hep3Vector const& center,double& rmed, double& age) {
-    using namespace boost::accumulators;
   // fill radial information for all points, given this center
     std::vector<double> radii;
     for(auto const& hhit : hhits) {
@@ -529,5 +537,16 @@ namespace mu2e
     return nloop != 0;
   }
 
+  bool RobustHelixFit::goodFZ(RobustHelix const& rhel) {
+    return rhel.lambda() > _lmin && rhel.lambda() < _lmax;
+  }
+
+  bool RobustHelixFit::goodCircle(RobustHelix const& rhel) {
+    return rhel.radius() > _rmin && rhel.radius() < _rmax;
+  }
+
+  bool RobustHelixFit::goodHelix(RobustHelix const& rhel) {
+    return goodCircle(rhel) && goodFZ(rhel);
+  }
 }
 

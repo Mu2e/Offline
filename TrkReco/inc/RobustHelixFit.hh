@@ -53,15 +53,19 @@ namespace mu2e
 // Helicity of this fit
     Helicity const& helicity() const { return _helicity; }
   private:
+    // fit functions for the separate views
+    void fitXY(HelixSeed& hseed);
+    void fitFZ(HelixSeed& hseed);
 // initialization, separate for the views
     bool initXY(HelixHitCollection const& hhits,RobustHelix& myhel);
     bool initFZ(HelixHitCollection& hhits,RobustHelix& myhel);
-    // fit functions
-    bool fitXY(HelixHitCollection& hhits,RobustHelix& myhel);
-    bool fitFZ(HelixHitCollection& hhits,RobustHelix& myhel);
     // helper functions for robust circle fit
     void findAGE(HelixHitCollection const& hhits, CLHEP::Hep3Vector const& center,double& rmed, double& age);
     void fillSums(HelixHitCollection const& hhits, CLHEP::Hep3Vector const& center,double rmed,AGESums& sums);
+    // test result
+    bool goodCircle(RobustHelix const& rhel);
+    bool goodFZ(RobustHelix const& rhel);
+    bool goodHelix(RobustHelix const& rhel);
     // filter out hits based on position
     void filterSector(HelixHitCollection& hhits);
     unsigned hitCount(HelixHitCollection const& hhits) const; // count good hits

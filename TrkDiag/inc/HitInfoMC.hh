@@ -1,4 +1,3 @@
-
 #ifndef TrkDiag_HitInfoMC_HH
 #define TrkDiag_HitInfoMC_HH
 #include "Rtypes.h"
