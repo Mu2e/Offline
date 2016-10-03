@@ -102,12 +102,12 @@ namespace mu2e
     _debug       (pset.get<int>("debugLevel",0)),
     _printfreq   (pset.get<int>("printFrequency",101)),
     _saveall     (pset.get<bool>("SaveAllHelices",false)),
-    _maxniter    (pset.get<unsigned>("MaxIterations",10)), // iterations over outlier removal
-    _cradres	 (pset.get<double>("CenterRadialResolution",10.0)),
-    _cperpres	 (pset.get<double>("CenterPerpResolution",10.0)),
+    _maxniter    (pset.get<unsigned>("MaxIterations",0)), // iterations over outlier removal
+    _cradres	 (pset.get<double>("CenterRadialResolution",12.0)),
+    _cperpres	 (pset.get<double>("CenterPerpResolution",12.0)),
     _radres	 (pset.get<double>("RadiusResolution",10.0)),
     _phires	 (pset.get<double>("AzimuthREsolution",0.1)),
-    _maxdwire    (pset.get<double>("MaxWireDistance",100.0)), // max distance along wire
+    _maxdwire    (pset.get<double>("MaxWireDistance",200.0)), // max distance along wire
     _maxdtrans   (pset.get<double>("MaxTransDistance",100.0)), // max distance perp to wire (and z)
     _maxchisq    (pset.get<double>("MaxChisquared",100.0)), // max chisquared
     _shTag	 (pset.get<art::InputTag>("StrawHitCollection","makeSH")),
@@ -115,7 +115,7 @@ namespace mu2e
     _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
     _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
     _trackseed   (pset.get<string>("HelixSeedCollectionLabel","TimeClusterFinder")),
-    _psel        (pset.get<std::vector<std::string> >("PositionSelectionBits")),
+    _psel        (pset.get<std::vector<std::string> >("HitSelectionBits")),
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet()))
   {
     produces<HelixSeedCollection>();
@@ -161,6 +161,7 @@ namespace mu2e
 	changed = filterHits(hseed);
 	if(changed)updateT0(hseed);
       } while(hseed._status.hasAllProperties(TrkFitFlag::helixOK)  && niter < _maxniter && changed);
+      if(niter < _maxniter)hseed._status.merge(TrkFitFlag::helixConverged);
       // final test
       if((hseed._status.hasAllProperties(TrkFitFlag::helixOK) && _hfit.helicity() == hseed._helix.helicity()) || _saveall) {
 	outseeds->push_back(hseed);
@@ -186,20 +187,22 @@ namespace mu2e
     for(auto& hhit : hhits) {
       bool oldout = !hhit._flag.hasAnyProperty(outlier);
       // compute spatial distance and chisquiared
-      // first, find the expected helix position for this hit's z position
-      Hep3Vector hpos;
-      hpos.setZ(hhit.pos().z());
-      helix.position(hpos);
-      Hep3Vector dh = hhit.pos() - hpos;
-      double dwire = dh.dot(hhit.wdir()); // projection along wire direction
-      Hep3Vector wtdir = zaxis.cross(hhit.wdir()); // transverse direction to the wire
+      // directions
+      Hep3Vector const& wdir = hhit.wdir();
+      Hep3Vector wtdir = zaxis.cross(wdir); // transverse direction to the wire
       Hep3Vector cdir = (hhit.pos() - helix.center()).perpPart().unit(); // direction from the circle center to the hit
       Hep3Vector cperp = zaxis.cross(cdir); // direction perp to the radius
+      // positions
+      Hep3Vector hpos = hhit.pos(); // this sets the z position to the hit z
+      helix.position(hpos); // this computes the helix expectation at that z
+      Hep3Vector dh = hhit.pos() - hpos; // this is the vector between them
+      double dwire = dh.dot(wdir); // projection along wire direction
       double dtrans = dh.dot(wtdir); // transverse projection
-      // compute the total resolution including hit and helix parameters
+      // compute the total resolution including hit and helix parameters first along the wire
       double wres2 = std::pow(hhit.posRes(StrawHitPosition::wire),(int)2) +
-	std::pow(_cradres*cdir.dot(hhit.wdir()),(int)2) +
-	std::pow(_cperpres*cperp.dot(hhit.wdir()),(int)2);
+	std::pow(_cradres*cdir.dot(wdir),(int)2) +
+	std::pow(_cperpres*cperp.dot(wdir),(int)2);
+      // transverse to the wires
       double wtres2 = std::pow(hhit.posRes(StrawHitPosition::trans),(int)2) +
 	std::pow(_cradres*cdir.dot(wtdir),(int)2) +
 	std::pow(_cperpres*cperp.dot(wtdir),(int)2);
@@ -216,9 +219,7 @@ namespace mu2e
 	hhit._flag.clear(outlier);
       }
       changed |= oldout != hhit._flag.hasAnyProperty(outlier);
- 
     }
-
     return changed;
   }
 

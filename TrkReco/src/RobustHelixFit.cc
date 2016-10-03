@@ -37,34 +37,34 @@ namespace mu2e
   RobustHelixFit::RobustHelixFit(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
     _dontuseflag(pset.get<std::vector<std::string>>("UseFlag",vector<string>{"Outlier"})),
-    _mindelta(pset.get<double>("minDelta",5000.0)),
-    _minnhit(pset.get<unsigned>("minNHit",10)),
-    _maxphisep(pset.get<double>("MaxPhiHitSeparation",1.8)),
-    _lambda0(pset.get<double>("lambda0",1.0)),
-    _lstep(pset.get<double>("lstep",0.2)),
-    _minlambda(pset.get<double>("minlambda",0.01)),
-    _nphibins(pset.get<unsigned>("NPhiHistBins",30)),
-    _minnphi(pset.get<unsigned>("MinNPhi",3)),
-    _maxniter(pset.get<unsigned>("maxniter",50)),
+    _minnhit(pset.get<unsigned>("minNHit",5)),
+    _maxphisep(pset.get<double>("MaxPhiHitSeparation",1.0)),
+    _lambda0(pset.get<double>("lambda0",0.1)),
+    _lstep(pset.get<double>("lstep",0.01)),
+    _minlambda(pset.get<double>("minlambda",0.001)),
+    _nphibins(pset.get<unsigned>("NPhiHistBins",25)),
+    _phifactor(pset.get<double>("PhiHistRangeFactor",1.2)),
+    _minnphi(pset.get<unsigned>("MinNPhi",5)),
+    _maxniter(pset.get<unsigned>("maxniter",100)),
     _minzsep(pset.get<double>("minzsep",100.0)),
-    _maxzsep(pset.get<double>("maxzsep",700.0)),
-    _mindphi(pset.get<double>("mindphi",0.25)),
+    _maxzsep(pset.get<double>("maxzsep",500.0)),
+    _mindphi(pset.get<double>("mindphi",0.5)),
     _maxdphi(pset.get<double>("maxdphi",2.5)),
     _mindist(pset.get<double>("mindist",50.0)),
     _maxdist(pset.get<double>("maxdist",500.0)),
-    _rmin(pset.get<double>("minR",200.0)),
-    _rmax(pset.get<double>("maxR",500.0)),
-    _lmin(pset.get<double>("minAbsLambda",50.0)),
-    _lmax(pset.get<double>("maxAbsLambda",500.0)),
+    _rmin(pset.get<double>("minR",150.0)),
+    _rmax(pset.get<double>("maxR",400.0)),
+    _mindelta(pset.get<double>("minDelta",500.0)),
+    _lmin(pset.get<double>("minAbsLambda",100.0)),
+    _lmax(pset.get<double>("maxAbsLambda",400.0)),
+    _agefit(pset.get<bool>("AGEfit",false)),
     _stereoinit(pset.get<bool>("stereoinit",false)),
     _stereofit(pset.get<bool>("stereofit",false)),
     _targetinit(pset.get<bool>("targetinit",true)),
-    _targetinter(pset.get<bool>("targetintersect",true)),
+    _targetinter(pset.get<bool>("targetintersect",false)),
     _targetradius(pset.get<double>("targetradius",75.0)), // target radius: include some buffer
-    _trackerradius(pset.get<double>("trackerradius",700.0)), // tracker out radius; include some buffer
+    _trackerradius(pset.get<double>("trackerradius",750.0)), // tracker out radius; include some buffer
     _rwind(pset.get<double>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix
-    _rout(pset.get<double>("OutlierRadius",40.0)), 
-    _pout(pset.get<double>("OutlierDPhi",2.0)), 
     _helicity(pset.get<int>("Helicity",Helicity::unknown))
   {
     if(_helicity._value == Helicity::unknown){
@@ -72,8 +72,10 @@ namespace mu2e
     }
     if(_stereofit)_useflag = StrawHitFlag(StrawHitFlag::stereo);
     if(_helicity._value < 0){
-      _lmin *= -1.0;
-      _lmax *= -1.0;
+    // swap order and sign!
+	double lmin = -1.0*_lmax;
+      _lmax = -1.0*_lmin;
+      _lmin = lmin;
     }
   }
 
@@ -114,79 +116,81 @@ namespace mu2e
       if(!initXY(hhits,rhel))
 	return;
     }
-// this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
-// setup working variables
-    double age;
-    Hep3Vector center = rhel.center();
-    double rmed = rhel.radius();
-// initialize step
-    double lambda = _lambda0;
-// find median and AGE for the initial center
-    findAGE(hhits,center,rmed,age);
-// loop while step is large
     unsigned niter(0);
-    Hep3Vector descent(1.0,0.0,0.0);
-    while(lambda*descent.mag() > _minlambda && niter < _maxniter){
-// fill the sums for computing the descent vector
-      AGESums sums;
-      fillSums(hhits,center,rmed,sums);
-// descent vector cases: if the inner vs outer difference is significant (compared to the median), damp using the median sums,
-// otherwise not.  These expressions take care of the undiferentiable condition on the boundary. 
-      double dx(sums._sco-sums._sci);
-      double dy(sums._sso-sums._ssi);
-      if(fabs(dx) < sums._scc)
-        dx += (sums._sco < sums._sci) ? -sums._scc : sums._scc;
-      if(fabs(dy) < sums._ssc)
-        dy += (sums._sso < sums._ssi) ? -sums._ssc : sums._ssc;
-      descent = Hep3Vector(dx,dy,0.0);
-// compute error function, decreasing lambda until this is better than the previous
-      double agenew;
-      Hep3Vector cnew = center + lambda*descent;
-      findAGE(hhits,cnew,rmed,agenew);
-// if we've improved, increase the step size and iterate
-      if(agenew < age){
-        lambda *= (1.0+_lstep);
-      } else {
-// if we haven't improved, keep reducing the step till we do
-        unsigned miter(0);
-        while(agenew > age && miter < _maxniter && lambda*descent.mag() > _minlambda){
-          lambda *= (1.0-_lstep);
-          cnew = center + lambda*descent;
-          findAGE(hhits,cnew,rmed,agenew);
-          ++miter;
-        }
-// if this fails, reverse the descent drection and try again
-        if(agenew > age){
-	  descent *= -1.0;
-	  lambda *= (1.0 +_lstep);
-          cnew = center + lambda*descent;
-          findAGE(hhits,cnew,rmed,agenew);
-        }
+    if(_agefit) {
+      // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
+      // setup working variables
+      double age;
+      Hep3Vector center = rhel.center();
+      double rmed = rhel.radius();
+      // initialize step
+      double lambda = _lambda0;
+      // find median and AGE for the initial center
+      findAGE(hhits,center,rmed,age);
+      // loop while step is large
+      Hep3Vector descent(1.0,0.0,0.0);
+      while(lambda*descent.mag() > _minlambda && niter < _maxniter){
+	// fill the sums for computing the descent vector
+	AGESums sums;
+	fillSums(hhits,center,rmed,sums);
+	// descent vector cases: if the inner vs outer difference is significant (compared to the median), damp using the median sums,
+	// otherwise not.  These expressions take care of the undiferentiable condition on the boundary. 
+	double dx(sums._sco-sums._sci);
+	double dy(sums._sso-sums._ssi);
+	if(fabs(dx) < sums._scc)
+	  dx += (sums._sco < sums._sci) ? -sums._scc : sums._scc;
+	if(fabs(dy) < sums._ssc)
+	  dy += (sums._sso < sums._ssi) ? -sums._ssc : sums._ssc;
+	descent = Hep3Vector(dx,dy,0.0);
+	// compute error function, decreasing lambda until this is better than the previous
+	double agenew;
+	Hep3Vector cnew = center + lambda*descent;
+	findAGE(hhits,cnew,rmed,agenew);
+	// if we've improved, increase the step size and iterate
+	if(agenew < age){
+	  lambda *= (1.0+_lstep);
+	} else {
+	  // if we haven't improved, keep reducing the step till we do
+	  unsigned miter(0);
+	  while(agenew > age && miter < _maxniter && lambda*descent.mag() > _minlambda){
+	    lambda *= (1.0-_lstep);
+	    cnew = center + lambda*descent;
+	    findAGE(hhits,cnew,rmed,agenew);
+	    ++miter;
+	  }
+	  // if this fails, reverse the descent drection and try again
+	  if(agenew > age){
+	    descent *= -1.0;
+	    lambda *= (1.0 +_lstep);
+	    cnew = center + lambda*descent;
+	    findAGE(hhits,cnew,rmed,agenew);
+	  }
+	}
+	// prepare for next iteration
+	if(agenew < age){
+	  center = cnew;
+	  age = agenew;
+	} else {
+	  static const double minage(0.1);
+	  if(_debug > 0 && agenew-age>minage)
+	    std::cout << "iteration did not improve AGE!!! lambda = " 
+	      << lambda  << " age = " << age << " agenew = " << agenew << std::endl;
+	  break;
+	}
+	// if we're constraining to intersect the target, adjust the center and radius if necessary
+	if(_targetinter) {
+	  forceTargetInter(center,rmed);
+	}
+	++niter;
       }
-// prepare for next iteration
-      if(agenew < age){
-        center = cnew;
-        age = agenew;
-      } else {
-	static const double minage(0.1);
-	if(_debug > 0 && agenew-age>minage)
-	  std::cout << "iteration did not improve AGE!!! lambda = " 
-	  << lambda  << " age = " << age << " agenew = " << agenew << std::endl;
-	break;
+      // check for convergence
+      if(_debug > 0 && niter > _maxniter ){
+	std::cout << "AGE didn't converge!!! " << std::endl;
       }
-// if we're constraining to intersect the target, adjust the center and radius if necessary
-      if(_targetinter) {
-	forceTargetInter(center,rmed);
-      }
-      ++niter;
+      // update parameters
+      rhel.center() = center;
+      rhel.radius() = rmed;
     }
-// check for convergence
-    if(_debug > 0 && niter > _maxniter ){
-      std::cout << "AGE didn't converge!!! " << std::endl;
-    }
-    // update parameters
-    rhel.center() = center;
-    rhel.radius() = rmed;
     // update flag
     if(goodCircle(rhel))
       hseed._status.merge(TrkFitFlag::circleOK);
@@ -195,7 +199,7 @@ namespace mu2e
   }
 
   void RobustHelixFit::forceTargetInter(Hep3Vector& center, double& radius) {
-  // find the smallest radius
+    // find the smallest radius
     double rperigee = center.perp()-radius;
     // if this is outside the target radius, adjust the parameters
     if(fabs(rperigee) > _targetradius){
@@ -256,8 +260,9 @@ namespace mu2e
 	// update helix
 	rhel.lambda() = lambda;
 	// find phi at z intercept.  Use a histogram technique since phi looping
-	// hasn't been resolved yet
-	TH1F hphi("hphi","phi value",_nphibins,-1.1*CLHEP::pi,1.1*CLHEP::pi);
+	// hasn't been resolved yet, and to avoid inefficiency at the phi wrapping edge
+	static TH1F hphi("hphi","phi value",_nphibins,-_phifactor*CLHEP::pi,_phifactor*CLHEP::pi);
+	hphi.Reset();
 	for(auto const& hhit : hhits) {
 	  if(use(hhit) && ( (!_stereoinit) || stereo(hhit))) {
 	    double phiex = rhel.circleAzimuth(hhit._pos.z());
@@ -268,10 +273,17 @@ namespace mu2e
 	    hphi.Fill(dphi+CLHEP::twopi);
 	  }
 	}
-	// extract the intercept as the maximum bin's center
-	unsigned nmax = (unsigned)(ceil(hphi.GetMaximum()));
-	double fz0 = hphi.GetBinCenter(hphi.GetMaximumBin());
-	if(nmax > _minnphi) {
+	// take the average of the maximum bin +- 1
+	int imax = hphi.GetMaximumBin();
+	double count(0.0);
+	double fz0(0.0);
+	for(int ibin=std::max((int)0,imax-1); ibin <= std::min((int)imax+1,(int)_nphibins); ++ibin){
+	  double binc = hphi.GetBinContent(ibin);
+	  count += binc;
+	  fz0 += binc*hphi.GetBinCenter(ibin);
+	}
+	if(count > _minnphi) {
+	  fz0 /= count;
 	  // choose the intercept to have |fz0| < pi.  This is purely a convention
 	  rhel.fz0() = deltaPhi(0.0,fz0);
 	  // update the hits to resolved phi looping with these parameters
@@ -346,7 +358,8 @@ namespace mu2e
 
   bool RobustHelixFit::initXY(HelixHitCollection const& hhits,RobustHelix& rhel) {
     bool retval(false);
-    static const double mind2 = _mindist*_mindist;
+    const double mind2 = _mindist*_mindist;
+    const double maxd2 = _maxdist*_maxdist;
     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx, accy, accr;
     // pick out a subset of hits.  I can aford to be choosy
     unsigned ntriple(0);
@@ -354,7 +367,8 @@ namespace mu2e
     pos.reserve(hhits.size());
     for(auto const& hhit : hhits) {
       if(use(hhit) && (stereo(hhit) || (!_stereoinit)) ){
-	pos.push_back(hhit._pos);
+      // extract just xy part of these positions
+	pos.push_back(hhit._pos.perpPart());
       }
     }
     // loop over all triples
@@ -363,12 +377,16 @@ namespace mu2e
       // pre-compute some values
       double ri2 = pos[ip].perp2();
       for(size_t jp=ip+1;jp<np; ++jp){
-	if(pos[ip].perpPart().diff2(pos[jp].perpPart()) > mind2){
+      // compute the transverse separation of these
+	double dist2ij = pos[ip].diff2(pos[jp]);
+	if(dist2ij > mind2 && dist2ij < maxd2){
 	  double rj2 = pos[jp].perp2();
 	  size_t mink = jp+1;
 	  for(size_t kp=mink;kp<np; ++kp){
-	    if(pos[ip].perpPart().diff2(pos[kp].perpPart()) > mind2 &&
-		pos[jp].perpPart().diff2(pos[kp].perpPart()) > mind2){
+	    double dist2ik = pos[ip].diff2(pos[kp]); 
+	    double dist2jk = pos[jp].diff2(pos[kp]); 
+	    if( dist2ik > mind2 &&  dist2jk > mind2 &&
+		dist2ik < maxd2 &&  dist2jk < maxd2) {
 	      // this effectively measures the slope difference
 	      double delta = (pos[kp].x() - pos[jp].x())*(pos[jp].y() - pos[ip].y()) - 
 		(pos[jp].x() - pos[ip].x())*(pos[kp].y() - pos[jp].y());

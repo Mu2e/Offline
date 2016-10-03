@@ -82,23 +82,21 @@ namespace mu2e
     // configuration parameters
     int _debug;
     StrawHitFlag _useflag, _dontuseflag;
-    double _mindelta; // minimum slope difference to use a triple in circle center initialization
     unsigned _minnhit; // minimum # of hits to work with
     double _maxphisep; // maximum separation in global azimuth of hits
     double _lambda0,_lstep,_minlambda; // parameters for AGE center determination
     unsigned _nphibins; // # of bins in histogram for phi at z intercept
+    double _phifactor; // range factr for phi z intercept histogram 
     unsigned _minnphi; // minimum # of entries in max bin of phi intercept histogram 
     unsigned _maxniter; // maxium # of iterations to global minimum
     double _minzsep, _maxzsep; // Z separation of points for pitch estimate
     double _mindphi, _maxdphi; // phi separation of points for pitch estimate
-    double _rbias;  // robust fit parameter bias
-    double _efac; // error factor
     double _mindist; // minimum distance between points used in circle initialization
     double _maxdist; // maximum distance in hits
     double _rmin,_rmax; // circle radius range
+    double _mindelta; // minimum slope difference to use a triple in circle center initialization
     double _lmin, _lmax; // range of lambda = dz/dphi
-    double _sfactor; // stereo hit error factor
-    bool _force; // force the fit values to be in range
+    bool _agefit; // fit circle using AGE method
     bool _stereoinit; // require stereo hits to initialize
     bool _stereofit; // require stereo hits 
     bool _targetpoint; // use target as a point in the circle fit
@@ -107,8 +105,6 @@ namespace mu2e
     double _targetradius; // target size to use in constraint or init
     double _trackerradius; // tracker radius to use in init
     double _rwind; // raidus window for defining points to be 'on' the helix
-    double _rout; // radius difference for a hit to be an xy outlier
-    double _pout; // phi difference for a hit to be a z outlier
     Helicity _helicity; // helicity value to look for.  This defines the sign of dphi/dz
  };
 }

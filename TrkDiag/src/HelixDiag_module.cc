@@ -106,14 +106,14 @@ namespace mu2e {
       TTree *_hdiag;
       Int_t _iev;
       Bool_t _hitsOK, _initOK, _circleOK, _phizOK, _helixOK, _mchelixOK;
-      Bool_t _circleConverged, _phizConverged;
+      Bool_t _circleConverged, _phizConverged, _helixConverged;
       RobustHelix _rhel;
       Int_t _nhits, _nused, _nprimary;
       Int_t _pdg, _gen, _proc;
       std::vector<HelixHitInfo> _hhinfo;
       std::vector<HelixHitInfoMC> _hhinfomc;
       RobustHelix _mch;
-      Hep3Vector _mcmom;
+      Float_t _mcmom, _mcpz;
   };
 
   HelixDiag::~HelixDiag() {
@@ -127,8 +127,8 @@ namespace mu2e {
     _minnce(pset.get<unsigned>("MinimumCEHits",10)),
     _targetradius(pset.get<double>("TargetRadius",75)),
     _plot(pset.get<bool>("PlotHelices",false)),
-    _cradres	 (pset.get<double>("CenterRadialResolution",10.0)),
-    _cperpres	 (pset.get<double>("CenterPerpResolution",10.0)),
+    _cradres	 (pset.get<double>("CenterRadialResolution",12.0)),
+    _cperpres	 (pset.get<double>("CenterPerpResolution",12.0)),
     _radres	 (pset.get<double>("RadiusResolution",10.0)),
     _phires	 (pset.get<double>("AzimuthREsolution",0.1)),
     _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
@@ -151,12 +151,14 @@ namespace mu2e {
       _hdiag->Branch("mchelixOK",&_mchelixOK,"mchelixOK/B");
       _hdiag->Branch("circleConverged",&_circleConverged,"circleConverged/B");
       _hdiag->Branch("phizConverged",&_phizConverged,"phizConverged/B");
+      _hdiag->Branch("helixConverged",&_helixConverged,"helixConverged/B");
       _hdiag->Branch("rhel",&_rhel);
       _hdiag->Branch("nhits",&_nhits,"nhits/I");
       _hdiag->Branch("nused",&_nused,"nused/I");
       if(_mcdiag){
 	_hdiag->Branch("mch",&_mch);
-	_hdiag->Branch("mcmom",&_mcmom);
+	_hdiag->Branch("mcmom",&_mcmom,"mcmom/F");
+	_hdiag->Branch("mcpz",&_mcpz,"mcpz/F");
 	_hdiag->Branch("nprimary",&_nprimary,"nprimary/I");
 	_hdiag->Branch("pdg",&_pdg,"pdg/I");
 	_hdiag->Branch("gen",&_gen,"gen/I");
@@ -201,6 +203,7 @@ namespace mu2e {
 	_helixOK = status.hasAllProperties(TrkFitFlag::helixOK);
 	_circleConverged = status.hasAllProperties(TrkFitFlag::circleConverged);
 	_phizConverged = status.hasAllProperties(TrkFitFlag::phizConverged);
+	_helixConverged = status.hasAllProperties(TrkFitFlag::helixConverged);
 	std::vector<StrawHitIndex> hits;
 	art::Ptr<SimParticle> pspp;
 	_nused = 0;
@@ -247,16 +250,19 @@ namespace mu2e {
 	    hhinfo._hpos = hpos;
 	    hhinfo._hphi = rhel.circleAzimuth(hhit.pos().z());
 // compute the chisquared componentes for this hit
-	    Hep3Vector dh = hhit.pos() - hpos;
-	    double dwire = dh.dot(hhit.wdir()); // projection along wire direction
 	    static Hep3Vector zaxis(0.0,0.0,1.0); // unit in z direction
-	    Hep3Vector wtdir = zaxis.cross(hhit.wdir()); // transverse direction to the wire
-	    double dtrans = dh.dot(wtdir); // transverse projection
+	    Hep3Vector const& wdir = hhit.wdir();
+	    Hep3Vector wtdir = zaxis.cross(wdir); // transverse direction to the wire
 	    Hep3Vector cdir = (hhit.pos() - rhel.center()).perpPart().unit(); // direction from the circle center to the hit
 	    Hep3Vector cperp = zaxis.cross(cdir); // direction perp to the radius
+	    // positions
+	    Hep3Vector dh = hhit.pos() - hpos;
+	    double dwire = dh.dot(wdir); // projection along wire direction
+	    double dtrans = dh.dot(wtdir); // transverse projection
+
 	    double wres2 = std::pow(hhit.posRes(StrawHitPosition::wire),(int)2) +
-	      std::pow(_cradres*cdir.dot(hhit.wdir()),(int)2) +
-	      std::pow(_cperpres*cperp.dot(hhit.wdir()),(int)2);
+	      std::pow(_cradres*cdir.dot(wdir),(int)2) +
+	      std::pow(_cperpres*cperp.dot(wdir),(int)2);
 	    double wtres2 = std::pow(hhit.posRes(StrawHitPosition::trans),(int)2) +
 	      std::pow(_cradres*cdir.dot(wtdir),(int)2) +
 	      std::pow(_cperpres*cperp.dot(wtdir),(int)2);
@@ -617,10 +623,11 @@ namespace mu2e {
     }
     if(jmc != _vdmcsteps->end()){
       // get momentum and position from this point
-      _mcmom = jmc->momentum();
+      _mcmom = jmc->momentum().mag();
+      _mcpz = jmc->momentum().z();
       Hep3Vector pos = det->toDetector(jmc->position());
       double charge = pdt->particle(pspp->pdgId()).ref().charge();
-      TrkUtilities::RobustHelixFromMom(pos,_mcmom,charge,_bz0,_mch);
+      TrkUtilities::RobustHelixFromMom(pos,jmc->momentum(),charge,_bz0,_mch);
       retval = true;
     }
     return retval;

@@ -20,7 +20,7 @@ namespace mu2e {
     typedef unsigned mask_type;
     // The first 16 describe various success conditions, the last 16 various failure modes
     enum bit_type {hitsOK=0,initOK,circleOK,phizOK,helixOK,seedOK,kalmanOK,
-    circleConverged=15,phizConverged,seedConverged,kalmanConverged};
+    circleConverged=15,phizConverged,helixConverged,seedConverged,kalmanConverged};
     // functions needed for the BitMap template
     static std::string const& typeName();
     static std::map<std::string,mask_type> const& bitNames();
