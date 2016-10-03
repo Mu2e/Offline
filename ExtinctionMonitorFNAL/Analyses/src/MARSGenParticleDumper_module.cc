@@ -23,9 +23,9 @@
 #include "art/Framework/Principal/Provenance.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Core/FindOne.h"
+#include "canvas/Persistency/Common/FindOne.h"
 #include "art/Framework/Principal/SelectorBase.h"
-#include "art/Persistency/Provenance/BranchDescription.h"
+#include "canvas/Persistency/Provenance/BranchDescription.h"
 
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"

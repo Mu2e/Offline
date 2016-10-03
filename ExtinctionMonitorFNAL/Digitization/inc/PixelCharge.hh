@@ -7,7 +7,7 @@
 #include <map>
 #include <queue>
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"
 

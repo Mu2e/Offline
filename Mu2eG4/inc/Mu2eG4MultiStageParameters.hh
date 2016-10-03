@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 
 namespace fhicl { class ParameterSet; }
 

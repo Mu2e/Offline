@@ -43,7 +43,7 @@
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
 
 // Framework includes
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
 

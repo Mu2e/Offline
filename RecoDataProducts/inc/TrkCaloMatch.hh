@@ -14,7 +14,7 @@
 
 
 // Mu2e includes:
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 
 //tracker includes

@@ -19,7 +19,7 @@
 #include "G4VSensitiveDetector.hh"
 
 // Art includes
-#include "art/Persistency/Provenance/ProductID.h"
+#include "canvas/Persistency/Provenance/ProductID.h"
 #include "art/Framework/Principal/Event.h"
 
 class G4Step;

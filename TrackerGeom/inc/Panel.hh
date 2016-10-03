@@ -63,11 +63,11 @@ namespace mu2e {
       return _layers.at(strid.getLayer()).getStraw(strid);
     }
 
-    // Mid-point position of the average (over the layers) of the primary 
+    // Mid-point position of the average (over the layers) of the primary
     // straws, and (collective) straw direction.
-    // (The primary straw of each layer is the straw used to establish position. 
-    //  In the TTracker the primary straw is the innermost straw.) 
-    // *** In a multi-layer geometry, the straw0MidPoint *** 
+    // (The primary straw of each layer is the straw used to establish position.
+    //  In the TTracker the primary straw is the innermost straw.)
+    // *** In a multi-layer geometry, the straw0MidPoint ***
     // ***        need not lie on any actaul straw       ***
     CLHEP::Hep3Vector straw0MidPoint()  const { return _straw0MidPoint;  }
     CLHEP::Hep3Vector straw0Direction() const { return _straw0Direction; }
@@ -94,7 +94,7 @@ namespace mu2e {
     void fillPointers ( const Tracker& tracker ) const;
 
 #ifndef __CINT__
-
+    /*
     template <class F>
     void for_each_layer( F f) const{
       std::for_each ( _layers.begin(),
@@ -106,6 +106,7 @@ namespace mu2e {
     void for_each_straw( F f) const {
       for_each_layer( boost::bind( Layer::for_each<F>, _1, f));
     }
+    */
 
     // Loop over all straws and call F.
     // F can be a class with an operator() or a free function.
@@ -124,7 +125,6 @@ namespace mu2e {
         f(*i);
       }
     }
-
 
 #endif
 
@@ -152,7 +152,7 @@ namespace mu2e {
     double _boxRzAngle;
     CLHEP::Hep3Vector _boxOffset;
 
-    // Position (in tracker coordinates) of the midpoint, and direction 
+    // Position (in tracker coordinates) of the midpoint, and direction
     // of the average of the primary straw.  Mutable because these are set
     // by fillPointers.
     // TODO -- there is clearly a way to design this such that these mutable
@@ -160,7 +160,7 @@ namespace mu2e {
     mutable CLHEP::Hep3Vector _straw0MidPoint;
     mutable CLHEP::Hep3Vector _straw0Direction;
 
- 
+
   };
 
 }  //namespace mu2e

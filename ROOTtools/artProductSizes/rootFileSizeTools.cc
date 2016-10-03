@@ -42,6 +42,8 @@ The branch "event" takes 3760313 bytes on disk
 
 #include "rootFileSizeTools.hh"
 
+using namespace std;
+
 Long64_t mu2e::GetBasketSize(TObjArray * branches, bool ondisk, bool inclusive) {
    Long64_t result = 0;
    size_t n = branches->GetEntries();

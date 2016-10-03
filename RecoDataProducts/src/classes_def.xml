@@ -200,8 +200,6 @@
  <class name="mu2e::CrvRecoPulses::CrvSingleRecoPulse" />
  <class name="std::vector<mu2e::CrvRecoPulses::CrvSingleRecoPulse>" />
 
- <class name="mu2e::CRSScintillatorBarIndex" />
-
  <class name="mu2e::CrvRecoPulses" />
  <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvRecoPulses>" />
  <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvRecoPulses>" />

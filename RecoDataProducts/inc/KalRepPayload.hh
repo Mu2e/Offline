@@ -30,7 +30,7 @@
 #include "RecoDataProducts/inc/LocalHelixPayload.hh"
 #include "RecoDataProducts/inc/HOTPayload.hh"
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
   class KalRep;
 

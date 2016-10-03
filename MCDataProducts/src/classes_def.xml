@@ -25,7 +25,6 @@
  <class name="mu2e::PhysicalVolumeInfoMultiCollection"/>
  <class name="mu2e::ProcessCode"/>
  <class name="mu2e::PDGCode"/>
- <class name="art::ProductID"/>
  <class name="mu2e::GenId"/>
  <class name="mu2e::GenParticle"/>
  <class name="mu2e::GenParticleCollection"/>
@@ -71,8 +70,6 @@
  <class name="std::vector<std::vector<size_t> >"/>
  <class name="std::vector<mu2e::StatusG4>"/>
  <class name="mu2e::MixingSummary"/>
- <class name="art::RNGsnapshot"/>
- <class name="std::vector<art::RNGsnapshot>"/>
  <class name="std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>"/>
  <class name="mu2e::GenElHitData"/>
  <class name="std::map<unsigned long,mu2e::GenElHitData>"/>
@@ -103,7 +100,6 @@
  <class name="art::Wrapper<mu2e::StatusG4>"/>
  <class name="art::Wrapper<mu2e::PtrStepPointMCVectorCollection>"/>
  <class name="art::Wrapper<mu2e::MixingSummary>"/>
- <class name="art::Wrapper<std::vector<art::RNGsnapshot> >"/>
 
 <!-- <class name="art::Wrapper<mu2e::GenElHitData>"/> -->
  <class name="art::Wrapper<mu2e::VisibleGenElTrackCollection>"/>
@@ -200,8 +196,6 @@
  <class name="art::Assns<mu2e::SimParticleTrackerHitSummary,mu2e::SimParticle,void>" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::SimParticleTrackerHitSummary,void> >" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticleTrackerHitSummary,mu2e::SimParticle,void> >" />
-
- <class name="mu2e::CRSScintillatorBarIndex" />
 
  <class name="mu2e::CrvPhotonArrivals" />
  <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvPhotonArrivals>" />

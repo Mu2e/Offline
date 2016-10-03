@@ -2,7 +2,7 @@
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
 // $Id: materailsPropStudy_module.cc,v 1.2 2013/10/21 21:01:23 kutschke Exp $
-// $Author: kutschke $ 
+// $Author: kutschke $
 // $Date: 2013/10/21 21:01:23 $
 //
 
@@ -75,7 +75,7 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 
-namespace mu2e 
+namespace mu2e
 {
   class materailsPropStudy : public art::EDAnalyzer
   {
@@ -83,7 +83,7 @@ namespace mu2e
     explicit materailsPropStudy(fhicl::ParameterSet const&);
     virtual ~materailsPropStudy() { }
     virtual void beginJob();
-    virtual void beginRun(art::Run&);
+    virtual void beginRun(art::Run const&) override;
     void endJob();
     //void produce(art::Event& e);
     void analyze(art::Event const&);
@@ -141,7 +141,7 @@ namespace mu2e
           _directory = gDirectory;
   }
 
-  void materailsPropStudy::beginRun(art::Run&){
+  void materailsPropStudy::beginRun(art::Run const&){
     //std::cout<<"init dchdetector"<<std::endl;
     //DchGDchP gdch(_materialdb,_kfit.useDetailedWrSuppDescr(),_kfit.useSingleCellDescr());
     //dchdet=new DchDetector(gdch,true);

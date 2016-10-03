@@ -5,7 +5,7 @@
 #ifndef EXTMONFNALPLANE_HH
 #define EXTMONFNALPLANE_HH
 
-#include "art/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Wrapper.h"
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"

@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+#
+# Make the changes to the SConscript link lists that are needed
+# for the art v1 to art v2 transition.
+#
+# Cribbed from:
+#   /products/canvas/v1_04_04/tools/canvas_refactor/fix_cmake_art.pl
+#
+# To use this script:
+#   perl -wapi\~ -f fix_link_lists <file>
+#
+#  <file> will be modified in place.  The script will also
+#  create a backup file named <file>~ that contains a copy of the
+#  original file.
+#
+use strict;
+use warnings;
+use vars qw(%dir_list);
+
+# All of the changes to the link list that need to be made:
+#   key   = library name that needs to be changed
+#   value = names of libraries to substitute for the old library
+BEGIN { %dir_list = (
+        "art_Persistency_Common" => "art_Persistency_Common canvas_Persistency_Common",
+        "art_Persistency_Provenance" => "art_Persistency_Provenance canvas_Persistency_Provenance",
+        "art_Persistency_Common_dict" => "canvas_Persistency_Common_dict",
+        "art_Persistency_StdDictionaries" => "canvas_Persistency_StdDictionaries",
+        "art_Persistency_StdDictionaries_dict" => "canvas_Persistency_StdDictionaries_dict",
+        "art_Persistency_WrappedStdDictionaries" => "canvas_Persistency_WrappedStdDictionaries",
+        "art_Persistency_WrappedStdDictionaries_dict" => "canvas_Persistency_WrappedStdDictionaries_dict",
+        "art_Utilities" => "art_Utilities canvas_Utilities"
+            ); }
+
+# Main program starts here - it processes a single line.
+
+# If the line contains a library name to be replaced, then replace it.
+# If the replacement value is more than one library name, then add the
+# additional library names on new lines.
+# In all cases, preserve alignment.
+foreach my $lib (sort keys %dir_list){
+    if ( $_ =~ /^\s*'$lib',\s*$/ ){
+        my $len = index( $_, "'" );
+        my $pad = ' ' x $len;
+        $_ = "";
+        foreach my $replace (split ( ' ', "$dir_list{$lib}" ) ){
+             $_ = $_ .  "$pad'$replace',\n";
+        }
+        last;
+    }
+}

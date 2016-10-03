@@ -12,7 +12,7 @@
 
 #include <vector>
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"

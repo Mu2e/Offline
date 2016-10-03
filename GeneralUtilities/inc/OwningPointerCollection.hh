@@ -27,7 +27,7 @@
 #include <vector>
 #include <memory>
 
-#include "art/Persistency/Common/detail/maybeCastObj.h"
+#include "canvas/Persistency/Common/detail/maybeCastObj.h"
 
 namespace mu2e {
 
@@ -142,7 +142,7 @@ namespace mu2e {
 //
 #ifndef __GCCXML__
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 namespace art {
   namespace detail {

@@ -34,8 +34,11 @@ mainlib = helper.make_mainlib ( [
     'art_Framework_Services_Optional_TFileService_service',
     'art_Framework_Services_Optional',
     'art_Persistency_Provenance',
+    'canvas_Persistency_Provenance',
     'art_Persistency_Common',
+    'canvas_Persistency_Common',
     'art_Utilities',
+    'canvas_Utilities',
     'fhiclcpp',
     'cetlib',
     rootlibs,
@@ -70,8 +73,11 @@ helper.make_plugins( [
    'art_Framework_Services_Optional_TFileService_service',
    'art_Framework_Services_Optional_RandomNumberGenerator_service',
    'art_Persistency_Common',
+   'canvas_Persistency_Common',
    'art_Persistency_Provenance',
+   'canvas_Persistency_Provenance',
    'art_Utilities',
+   'canvas_Utilities',
    'MF_MessageLogger',
    'fhiclcpp',
    'cetlib',
@@ -88,10 +94,12 @@ helper.make_dict_and_map( [
         mainlib,
         babarlibs,
         'art_Persistency_Common',
+        'canvas_Persistency_Common',
         'art_Utilities',
+        'canvas_Utilities',
         'cetlib',
         'CLHEP',
-        'Reflex'
+        'Core'
     ] )
 
 

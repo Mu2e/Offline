@@ -10,7 +10,7 @@
 #include <ostream>
 
 #include "Mu2eInterfaces/inc/Detector.hh"
-#include "art/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Wrapper.h"
 
 namespace mu2e {
 

@@ -10,7 +10,7 @@
 #include <ostream>
 
 // Framework includes.
-#include "art/Persistency/Provenance/ProductID.h"
+#include "canvas/Persistency/Provenance/ProductID.h"
 
 // Mu2e includes
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"

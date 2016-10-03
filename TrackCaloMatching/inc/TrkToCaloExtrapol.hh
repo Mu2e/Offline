@@ -13,7 +13,7 @@
 #define TrackCaloMatching_TrkToCaloExtrapol_hh
 
 // Mu2e includes:
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Vector/TwoVector.h"

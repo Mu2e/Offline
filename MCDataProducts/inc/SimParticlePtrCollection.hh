@@ -2,7 +2,7 @@
 #define MCDataProducts_SimParticlePtrCollection_hh
 
 #include <vector>
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 
 namespace mu2e {

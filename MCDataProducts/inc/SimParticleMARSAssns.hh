@@ -3,7 +3,7 @@
 #ifndef SimParticleMARSAssns_hh
 #define SimParticleMARSAssns_hh
 
-#include "art/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Assns.h"
 
 namespace mu2e {
   class SimParticle;

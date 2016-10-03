@@ -1,3 +1,4 @@
+
 #include "TH1F.h"
 #include "TF1.h"
 #include "TTree.h"
@@ -21,6 +22,8 @@
 class KalFit {
   public:
   TTree* _tdiag;
+  TCanvas* rcan;
+  TCanvas* acan;
   double tdlow;
   double tdhigh;
   double t0min,t0max;
@@ -633,6 +636,7 @@ void KalFit::AccPlots() {
 void KalFit::Acc(int ngen) {
   unsigned nbins(8);
   double bmax = nbins-0.5;
+
   TH1F* acc = new TH1F("acc","CE Acceptance #times Efficiency;;Cummulative a#times#epsilon",nbins,-0.5,bmax);
   TH1F* racc = new TH1F("racc","CE Acceptance #times Efficiency;;Relative a#times#epsilon",nbins,-0.5,bmax);
 //  acc->Sumw2();
@@ -692,7 +696,7 @@ void KalFit::Acc(int ngen) {
   racc->GetYaxis()->SetTitleSize(0.05);
 
   gStyle->SetPaintTextFormat("5.4f");
-  TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
+  acan = new TCanvas("acan","Acceptance",1200,800);
   acan->Clear();
   acan->Divide(1,2);
   acan->cd(1);
@@ -750,7 +754,7 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
 //  _tdiag->Project("effnorm","mcent.mom");
   _tdiag->Project("effnorm","mcent.mom","evtwt"*mcsel);
 
-  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
+  rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
   rcan->Clear();
   unsigned ncan = maxcut-mincut+1;
   if(ncan==1)
@@ -1879,4 +1883,3 @@ KalFit::StrawMat() {
   mleg->AddEntry(hifracres,"N_{added}/N>0.1","L");
   mleg->Draw();
 }
-

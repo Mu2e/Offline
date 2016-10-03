@@ -14,8 +14,8 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/FindMany.h"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/FindMany.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include <iostream>
 #include <string>

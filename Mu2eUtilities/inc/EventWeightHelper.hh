@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 
 namespace fhicl { class ParameterSet; }

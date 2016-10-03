@@ -12,14 +12,17 @@ helper=mu2e_helper();
 mainlib = helper.make_mainlib ( [ 'mu2e_GeomPrimitives',
                                   'mu2e_Mu2eInterfaces',
                                   'CLHEP',
+                                  'Core'
                                 ] )
 
 helper.make_dict_and_map( [ mainlib,
                             'mu2e_Mu2eInterfaces',
                             'art_Persistency_Common',
+                            'canvas_Persistency_Common',
                             'art_Utilities',
+                            'canvas_Utilities',
                             'cetlib',
-                            'Reflex',
+                            'Core'
                           ] )
 
 # This tells emacs to view this file in python mode.
