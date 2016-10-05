@@ -29,7 +29,7 @@ namespace mu2e {
 	     enum cogtype {Linear,LinearMod,Sqrt,Logarithm};
              
 	     ClusterMoments(Calorimeter const& cal, CaloCluster const& caloCluster, int iSection) : 
-	       _cal(cal), _caloCluster(caloCluster),_iSection(iSection),_cog(),_secondMoment(0),_angle(0) 
+	       cal_(cal), caloCluster_(caloCluster),iSection_(iSection),cog_(CLHEP::Hep3Vector(0,0,0)),secondMoment_(0),angle_(0) 
 	     {};
 
              ~ClusterMoments(){};
@@ -38,22 +38,21 @@ namespace mu2e {
 	     void calculate(cogtype mode = Linear); 
 
 
-             CLHEP::Hep3Vector const& cog()     const {return _cog;}
-             double            secondMoment()   const {return _secondMoment;}
-             double            angle()          const {return _angle;}
+             CLHEP::Hep3Vector const& cog()     const {return cog_;}
+             double            secondMoment()   const {return secondMoment_;}
+             double            angle()          const {return angle_;}
 
 
 
 	 private:
 
-             Calorimeter const&  _cal;
-	     CaloCluster const&  _caloCluster;
-	     int                 _iSection;
-             double              _offset;
+             Calorimeter const&  cal_;
+	     CaloCluster const&  caloCluster_;
+	     int                 iSection_;
 	     
-	     CLHEP::Hep3Vector   _cog;
-	     double              _secondMoment;
-	     double              _angle;
+	     CLHEP::Hep3Vector   cog_;
+	     double              secondMoment_;
+	     double              angle_;
 	     
 	     
 	     

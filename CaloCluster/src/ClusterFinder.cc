@@ -22,9 +22,9 @@
 namespace mu2e {
 
 
-       ClusterFinder::ClusterFinder(Calorimeter const& cal, CaloCrystalHit const* crystalSeed, double deltaTimePlus, double deltaTimeMinus, double ExpandCut) : 
-          _cal(&cal), _crystalSeed(crystalSeed),_seedTime(crystalSeed->time()), _clusterList(), _crystalToVisit(), _isVisited(cal.nCrystal()),
-	  _deltaTimePlus(deltaTimePlus), _deltaTimeMinus(deltaTimeMinus), _ExpandCut(ExpandCut)
+       ClusterFinder::ClusterFinder(Calorimeter const& cal, CaloCrystalHit const* crystalSeed, double deltaTime, double ExpandCut) : 
+          cal_(&cal), crystalSeed_(crystalSeed),seedTime_(crystalSeed->time()), clusterList_(), crystalToVisit_(), isVisited_(cal.nCrystal()),
+          deltaTime_(deltaTime), ExpandCut_(ExpandCut)
        {}
        
        
@@ -33,50 +33,49 @@ namespace mu2e {
        void ClusterFinder::formCluster(std::vector<CaloCrystalList>& idHitVec)  
        { 
 
-	    _clusterList.clear();	    
-	    _clusterList.push_front(_crystalSeed);
-	    _crystalToVisit.push(_crystalSeed->id());  
+            clusterList_.clear();            
+            clusterList_.push_front(crystalSeed_);
+            crystalToVisit_.push(crystalSeed_->id());  
 
-	    	    
-	    CaloCrystalList& liste = idHitVec[_crystalSeed->id()];
-	    liste.erase(std::find(liste.begin(), liste.end(), _crystalSeed));
-
-
-	    while (!_crystalToVisit.empty())
-	    {            
-        	 int visitId         = _crystalToVisit.front();
-		 _isVisited[visitId] = 1;
-
-		 std::vector<int> const& neighborsId = _cal->crystal(visitId).neighbors();
-         	 for (auto& iId : neighborsId)
-        	 {               
-		     if (_isVisited[iId]) continue;
-		     _isVisited[iId]=1;
+                        
+            CaloCrystalList& liste = idHitVec[crystalSeed_->id()];
+            liste.erase(std::find(liste.begin(), liste.end(), crystalSeed_));
 
 
-		     CaloCrystalList& list = idHitVec[iId];
-		     for (auto it=list.begin(); it != list.end(); ++it)
-		     {
-		         CaloCrystalHit const* hit = *it;
+            while (!crystalToVisit_.empty())
+            {            
+                 int visitId         = crystalToVisit_.front();
+                 isVisited_[visitId] = 1;
 
-			 if (hit->time() - _seedTime > _deltaTimePlus)  continue; 
-			 if (_seedTime - hit->time() > _deltaTimeMinus) continue;
+                 std::vector<int> const& neighborsId = cal_->crystal(visitId).neighbors();
+                 for (auto& iId : neighborsId)
+                 {               
+                     if (isVisited_[iId]) continue;
+                     isVisited_[iId]=1;
 
-         		 if (hit->energyDep() > _ExpandCut) _crystalToVisit.push(iId);
-                         _clusterList.push_front(hit);
-			 list.erase(it--);   //do not change it--
-			 
-		     } 
-		     
-		 }
-		 		      
-		 _crystalToVisit.pop();		 
-	    }
-	    
-	   // keep sorting proto-clustres, even if they are sorted in the cluster module, in case somebody 
-	   // uses the proto-clusters instead of clusters he will get the same behaviour
-	   _clusterList.sort([] (CaloCrystalHit const* lhs, CaloCrystalHit const* rhs) {return lhs->energyDep() > rhs->energyDep();} );
-	    	    
+
+                     CaloCrystalList& list = idHitVec[iId];
+                     for (auto it=list.begin(); it != list.end(); ++it)
+                     {
+                         CaloCrystalHit const* hit = *it;
+
+                         if (std::abs(hit->time() - seedTime_) > deltaTime_)  continue; 
+
+                         if (hit->energyDep() > ExpandCut_) crystalToVisit_.push(iId);
+                         clusterList_.push_front(hit);
+                         list.erase(it--);   
+                         
+                     } 
+                     
+                 }
+                                       
+                 crystalToVisit_.pop();                 
+            }
+            
+           // sort proto-clustres, even if they are sorted in the cluster module, in case somebody 
+           // uses the proto-clusters instead of clusters he will get the same behaviour
+           clusterList_.sort([] (CaloCrystalHit const* lhs, CaloCrystalHit const* rhs) {return lhs->energyDep() > rhs->energyDep();} );
+                        
        } 
 
 }

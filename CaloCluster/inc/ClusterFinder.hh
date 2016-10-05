@@ -24,35 +24,34 @@ namespace mu2e {
     class ClusterFinder {
 
 
-	 public:
+         public:
              
-	     typedef std::list<CaloCrystalHit const*>    CaloCrystalList;
-	     typedef std::vector<CaloCrystalHit const*>  CaloCrystalVec;
+             typedef std::list<CaloCrystalHit const*>    CaloCrystalList;
+             typedef std::vector<CaloCrystalHit const*>  CaloCrystalVec;
 
 
-	     ClusterFinder(Calorimeter const& cal, CaloCrystalHit const* crystalSeed, double deltaTimePlus, double deltaTimeMinus, double ExpandCut);              
-	     ~ClusterFinder(){};
-	     
-	     
-	     CaloCrystalList const& clusterList()  const {return _clusterList;}
-	     
+             ClusterFinder(Calorimeter const& cal, CaloCrystalHit const* crystalSeed, double deltaTime, double ExpandCut);              
+             ~ClusterFinder(){};
+             
+             
+             CaloCrystalList const& clusterList()  const {return clusterList_;}
+             
              void formCluster(std::vector<CaloCrystalList>& idHitVec);
 
 
 
-	 private:
+         private:
              
-             Calorimeter const*     _cal;
-	     CaloCrystalHit const*  _crystalSeed;
-	     double                 _seedTime;
+             Calorimeter const*     cal_;
+             CaloCrystalHit const*  crystalSeed_;
+             double                 seedTime_;
 
-	     CaloCrystalList        _clusterList;
-	     std::queue<int>        _crystalToVisit;
-             std::vector<bool>      _isVisited; 
+             CaloCrystalList        clusterList_;
+             std::queue<int>        crystalToVisit_;
+             std::vector<bool>      isVisited_; 
 
-	     double                 _deltaTimePlus; 
-	     double                 _deltaTimeMinus; 
-	     double                 _ExpandCut;
+             double                 deltaTime_; 
+             double                 ExpandCut_;
 
     };
 

@@ -57,17 +57,18 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
      public:
 
              explicit CaloClusterFromProtoCluster(fhicl::ParameterSet const& pset) :
-             _diagLevel(pset.get<int>("diagLevel",0)),
-             _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
-             _producerNameMain(pset.get<std::string>("mainClusterCollName")),
-             _producerNameSplit(pset.get<std::string>("splitClusterCollName")),
-             _deltaTimePlus(pset.get<double>("deltaTimePlus")),    
-             _deltaTimeMinus(pset.get<double>("deltaTimeMinus")),  
-             _maxDistSplit(pset.get<double>("maxDistSplit")),                
-             _maxDistMain(pset.get<double>("maxDistMain")),                
-             _cogTypeName(pset.get<std::string>("cogTypeName")),
-             _cogType(ClusterMoments::Linear),                
-             _messageCategory("CLUSTER")
+	     
+               caloClusterModuleLabel_(pset.get<std::string>("caloClusterModuleLabel")),
+               producerNameMain_(pset.get<std::string>("mainClusterCollName")),
+               producerNameSplit_(pset.get<std::string>("splitClusterCollName")),
+               deltaTime_(pset.get<double>("deltaTime")),    
+               maxDistSplit_(pset.get<double>("maxDistSplit")),                
+               maxDistMain_(pset.get<double>("maxDistMain")),                
+               cogTypeName_(pset.get<std::string>("cogTypeName")),
+               cogType_(ClusterMoments::Linear),                
+               strategy_(pset.get<int>("strategy",0)),
+               diagLevel_(pset.get<int>("diagLevel",0)),
+               messageCategory_("CLUSTER")
              {
                  produces<CaloClusterCollection>();
              }
@@ -79,60 +80,59 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
 
      private:
 
-             int                _diagLevel;
-             std::string        _caloClusterModuleLabel;
-             std::string        _producerNameMain;
-             std::string        _producerNameSplit;
-             double             _deltaTimePlus;
-             double             _deltaTimeMinus;
-             double             _maxDistSplit;
-             double             _maxDistMain;
-             std::string        _cogTypeName;             
-             ClusterMoments::cogtype _cogType;
-             const std::string  _messageCategory;
+             std::string             caloClusterModuleLabel_;
+             std::string             producerNameMain_;
+             std::string             producerNameSplit_;
+             double                  deltaTime_;
+             double                  maxDistSplit_;
+             double                  maxDistMain_;
+             std::string             cogTypeName_;             
+             ClusterMoments::cogtype cogType_;
+	     int                     strategy_;
+             int                     diagLevel_;
+             const std::string       messageCategory_;
             
              void makeCaloClusters(CaloClusterCollection& caloClusters, 
-                                   CaloProtoClusterCollection const& caloClustersMain, 
-                                   CaloProtoClusterCollection const& caloClustersSplit);
+                                   const CaloProtoClusterCollection& caloClustersMain, 
+                                   const CaloProtoClusterCollection& caloClustersSplit);
      
-             std::tuple<double,double,double> CalcEnergyLayer(Calorimeter const & cal, 
-                                              std::vector<art::Ptr<CaloCrystalHit>> const& caloCrystalHitsPtrVector);
+             std::array<double,3> calcEnergyLayer(const Calorimeter& cal, 
+                                                  const std::vector<art::Ptr<CaloCrystalHit>>& caloCrystalHitsPtrVector);
      
+             std::array<double,4> clusterTimeEnergy(const std::vector<art::Ptr<CaloCrystalHit>>& hits); 
      };
 
 
 
      void CaloClusterFromProtoCluster::beginJob()
      {
-         if (_cogTypeName.compare("Linear"))    _cogType = ClusterMoments::Linear;         
-         if (_cogTypeName.compare("Logarithm")) _cogType = ClusterMoments::Logarithm;         
+         if (cogTypeName_.compare("Linear"))    cogType_ = ClusterMoments::Linear;         
+         if (cogTypeName_.compare("Logarithm")) cogType_ = ClusterMoments::Logarithm;         
      }
 
 
 
 
-     void CaloClusterFromProtoCluster::produce(art::Event& event) {
-
-
+     void CaloClusterFromProtoCluster::produce(art::Event& event)
+     {
          // Check that calorimeter geometry description exists
          art::ServiceHandle<GeometryService> geom;
          if( !(geom->hasElement<Calorimeter>()) ) return;
 
          //Get calo cluster
          art::Handle<CaloProtoClusterCollection> caloClustersMainHandle;
-         event.getByLabel(_caloClusterModuleLabel, _producerNameMain, caloClustersMainHandle);
-         CaloProtoClusterCollection const& caloClustersMain(*caloClustersMainHandle);
+         event.getByLabel(caloClusterModuleLabel_, producerNameMain_, caloClustersMainHandle);
+         const CaloProtoClusterCollection& caloClustersMain(*caloClustersMainHandle);
 
          art::Handle<CaloProtoClusterCollection> caloClustersSplitHandle;
-         event.getByLabel(_caloClusterModuleLabel, _producerNameSplit, caloClustersSplitHandle);
-         CaloProtoClusterCollection const& caloClustersSplit(*caloClustersSplitHandle);
+         event.getByLabel(caloClusterModuleLabel_, producerNameSplit_, caloClustersSplitHandle);
+         const CaloProtoClusterCollection& caloClustersSplit(*caloClustersSplitHandle);
 
          //Create a new CaloCluster collection and fill it
          std::unique_ptr<CaloClusterCollection> caloClusters(new CaloClusterCollection);
          makeCaloClusters(*caloClusters, caloClustersMain, caloClustersSplit);
 
          event.put(std::move(caloClusters));
-
      }
 
 
@@ -140,153 +140,106 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
 
 
      void CaloClusterFromProtoCluster::makeCaloClusters(CaloClusterCollection& caloClusters, 
-                                       CaloProtoClusterCollection const& caloClustersMain, 
-                                       CaloProtoClusterCollection const& caloClustersSplit)
+                                       const CaloProtoClusterCollection& caloClustersMain, 
+                                       const CaloProtoClusterCollection& caloClustersSplit)
      {
 
-	Calorimeter const & cal = *(GeomHandle<Calorimeter>());
-
-	// intermediate buffer for storing main clusters + split offs
-	CaloProtoClusterCollection caloProtoClustersTemp;
-
-	ClusterAssociator associator(cal);
-	associator.associateSplitOff(caloClustersMain, caloClustersSplit, _deltaTimePlus, _deltaTimeMinus,_maxDistSplit);
+        const Calorimeter& cal = *(GeomHandle<Calorimeter>());
 
 
-	// associate split-off to main cluster
-	for (unsigned int imain=0;imain<caloClustersMain.size();++imain)
-	{ 
-            std::vector<art::Ptr<CaloCrystalHit>> caloCrystalHitsPtrVector;
-            
-	    bool isSplit(false);
-            auto const& main = caloClustersMain.at(imain).caloCrystalHitsPtrVector();
-            auto const& seed = **main.begin();
-
-	    //double timeW(0),timeWtot(0);
-	    double totalEnergy(0),totalEnergyErr(0);
+        ClusterAssociator associator(cal);
+        associator.associateSplitOff(caloClustersMain, caloClustersSplit, deltaTime_,maxDistSplit_);
 
 
-            //look at the main cluster
-            if (_diagLevel > 1) std::cout<<"Associated main cluster "<<imain <<" at time "<<caloClustersMain.at(imain).time()<<" with id= ";
 
-            for (auto il = main.begin(); il !=main.end(); ++il)
-            {
-		//double weight = 1.0/(*il)->timeErr()/(*il)->timeErr(); 
-	        //timeW   += weight*(*il)->time(); 
-	        //timeWtot += weight;
+        //-- First, associate split-off to main cluster into intermediate buffer 
+        CaloProtoClusterCollection caloProtoClustersTemp;
 
-		totalEnergy += (*il)->energyDep();
-		totalEnergyErr += (*il)->energyDepErr()*(*il)->energyDepErr();
-                
-		caloCrystalHitsPtrVector.push_back(*il);
-        	if (_diagLevel > 1 ) std::cout<<(*il)->id()<<" "; 
-            }
+        for (unsigned int imain(0); imain<caloClustersMain.size(); ++imain)
+        { 
+
+            bool isSplit(false);
+            std::vector<art::Ptr<CaloCrystalHit>> caloCrystalHitsPtrVector = caloClustersMain.at(imain).caloCrystalHitsPtrVector();
 
 
-            //adding split-off here                  
+            //search split-offs and add their hits into the main cluster                 
             for (unsigned int isplit=0;isplit<caloClustersSplit.size();++isplit)
             {                    
-        	if (associator.associatedSplitId(isplit) != imain) continue;
-        	isSplit = true;
+                if (associator.associatedSplitId(isplit) != imain) continue;
+                isSplit = true;
 
-        	if (_diagLevel > 1) std::cout<<"with split-off with id= ";
-        	auto const& split = caloClustersSplit.at(isplit).caloCrystalHitsPtrVector();
-        	for (auto il = split.begin(); il !=split.end(); ++il)
-        	{
-		    //double weight = 1.0/(*il)->timeErr()/(*il)->timeErr(); 
-	            //timeW   += weight*(*il)->time(); 
-	            //timeWtot += weight;
+                caloCrystalHitsPtrVector.insert(caloCrystalHitsPtrVector.end(), 
+                                                caloClustersSplit.at(isplit).caloCrystalHitsPtrVector().begin(), 
+                                                caloClustersSplit.at(isplit).caloCrystalHitsPtrVector().end());
 
-		    totalEnergy += (*il)->energyDep();
-		    totalEnergyErr += (*il)->energyDepErr()*(*il)->energyDepErr();
-
-                    caloCrystalHitsPtrVector.push_back(*il);
-                    if (_diagLevel > 2 ) std::cout<<(*il)->id()<<" "; 
-        	}
+                if (diagLevel_ > 1) std::cout<<"Associated main cluster "<<imain <<" with split cluster "<<isplit<<std::endl;
             }
-            if (_diagLevel > 1) std::cout<<std::endl;
-
-	    totalEnergyErr = sqrt(totalEnergyErr);
-            //double time = timeW/timeWtot;
-     	    //double timeErr = 1.0/sqrt(timeWtot);
- 	    double time    = seed.time();
-	    double timeErr = seed.timeErr();
-            	    
-            caloProtoClustersTemp.emplace_back(CaloProtoCluster(time,timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,isSplit));
-	}        
+                        
+            auto timeEnergy = clusterTimeEnergy(caloCrystalHitsPtrVector); 
+            caloProtoClustersTemp.emplace_back(CaloProtoCluster(timeEnergy[0],timeEnergy[1],timeEnergy[2],timeEnergy[3],caloCrystalHitsPtrVector,isSplit));
+        }        
 
 
 
-
-	// combine main clusters together (split-off included in main clusters at this point)
-	associator.associateMain(caloProtoClustersTemp, _deltaTimePlus, _maxDistMain);
+        // combine main clusters together (split-off included in main clusters at this point)
+        associator.associateMain(caloProtoClustersTemp, deltaTime_, maxDistMain_, strategy_);
 
 
 
 
-	//finally, form final clusters
-	std::vector<int> flagProto(caloClustersMain.size(),0);
-	for (unsigned int iproto=0;iproto<caloProtoClustersTemp.size();++iproto)
-	{ 
+        //finally, form final clusters
+        std::vector<int> flagProto(caloClustersMain.size(),0);
+        for (unsigned int iproto=0;iproto<caloProtoClustersTemp.size();++iproto)
+        { 
              if (flagProto[iproto]) continue;                                    
 
              auto        caloCrystalHitsPtrVector = caloProtoClustersTemp.at(iproto).caloCrystalHitsPtrVector();
              bool        isSplit                  = caloProtoClustersTemp.at(iproto).isSplit();
-             double      totalEnergy              = caloProtoClustersTemp.at(iproto).energyDep();
-             double      totalEnergyErr           = caloProtoClustersTemp.at(iproto).energyDepErr() * caloProtoClustersTemp.at(iproto).energyDepErr();
              const auto& seed                     = **caloCrystalHitsPtrVector.begin();
-             int         sectionId                = cal.crystal(seed.id()).sectionId();	     
-	     double      time                     = caloProtoClustersTemp.at(iproto).time();
-	     double      timeErr                  = caloProtoClustersTemp.at(iproto).timeErr();
+             int         sectionId                = cal.crystal(seed.id()).sectionId();             
+            
+             for (int iassoc : associator.associatedMainId(iproto))
+             {                 
+                 flagProto[iassoc] = 1;
+                 isSplit           = true;
 
-             
-	     for (int iassoc : associator.associatedMainId(iproto))
-             {
-        	 if (_diagLevel > 1) std::cout<<"Associated to main cluster id="<<iproto<<"   main split="<<iassoc<<std::endl;
-        	 
-		 flagProto[iassoc] = 1;
-        	 isSplit           = true;
-        	 totalEnergy      += caloProtoClustersTemp.at(iassoc).energyDep();
-        	 totalEnergyErr   += caloProtoClustersTemp.at(iassoc).energyDepErr() * caloProtoClustersTemp.at(iassoc).energyDepErr();
-
-        	 caloCrystalHitsPtrVector.insert(caloCrystalHitsPtrVector.end(), 
-                                        	caloProtoClustersTemp.at(iassoc).caloCrystalHitsPtrVector().begin(), 
-                                        	caloProtoClustersTemp.at(iassoc).caloCrystalHitsPtrVector().end());
+                 caloCrystalHitsPtrVector.insert(caloCrystalHitsPtrVector.end(), 
+                                                caloProtoClustersTemp.at(iassoc).caloCrystalHitsPtrVector().begin(), 
+                                                caloProtoClustersTemp.at(iassoc).caloCrystalHitsPtrVector().end());
+                 
+                 if (diagLevel_ > 1) std::cout<<"Associated to main cluster id="<<iproto<<"   main split="<<iassoc<<std::endl;
              }
 
-             totalEnergyErr = sqrt(totalEnergyErr);
-             //double time = timeW/timeWtot;
-     	     //double timeErr = 1.0/sqrt(timeWtot);
-	     
-	     //sort the crystal by energy
+             //sort the crystal by energy
              std::sort(caloCrystalHitsPtrVector.begin(),caloCrystalHitsPtrVector.end(),
-                       [](const art::Ptr<CaloCrystalHit>& lhs,const art::Ptr<CaloCrystalHit>& rhs) 
-		       {return lhs->energyDep() > rhs->energyDep();} );
-
-             if (_diagLevel > 2)
-             {
-        	 std::cout<<"Making a new cluster with id= ";
-        	 for (auto il = caloCrystalHitsPtrVector.begin(); il !=caloCrystalHitsPtrVector.end(); ++il) std::cout<<(*il)->id()<<" "; 
-             }
+                       [](const art::Ptr<CaloCrystalHit>& lhs,const art::Ptr<CaloCrystalHit>& rhs) {return lhs->energyDep() > rhs->energyDep();} );
 
 
-             CaloCluster caloCluster(sectionId,time,timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,isSplit);              
+             auto timeEnergy = clusterTimeEnergy(caloCrystalHitsPtrVector); 
+             CaloCluster caloCluster(sectionId,timeEnergy[0],timeEnergy[1],timeEnergy[2],timeEnergy[3],caloCrystalHitsPtrVector,isSplit);              
 
+             //calculate a lot of fancy useful things
+             auto EnerLayer = calcEnergyLayer(cal,caloCrystalHitsPtrVector);                
              ClusterMoments cogCalculator(cal,caloCluster,sectionId);
-             cogCalculator.calculate(_cogType);
+             cogCalculator.calculate(cogType_);
              caloCluster.cog3Vector(cogCalculator.cog());
              caloCluster.secondMoment(cogCalculator.secondMoment());
              caloCluster.angle(cogCalculator.angle());
+             caloCluster.energyRing(EnerLayer[0],EnerLayer[1],EnerLayer[2]);
 
-             auto EnerLayer = CalcEnergyLayer(cal,caloCrystalHitsPtrVector);                
-             caloCluster.energyRing(std::get<0>(EnerLayer),std::get<1>(EnerLayer),std::get<2>(EnerLayer));
-
+             
              caloClusters.push_back(caloCluster);
-	}
+
+             if (diagLevel_ > 2)
+             {
+                 std::cout<<"Making a new cluster with id= ";
+                 for (auto il = caloCrystalHitsPtrVector.begin(); il !=caloCrystalHitsPtrVector.end(); ++il) std::cout<<(*il)->id()<<" "; 
+             }
+        }
      
     
         //finally, sort clusters by energy
-	std::sort(caloClusters.begin(),caloClusters.end(),[](CaloCluster& lhs, CaloCluster& rhs) {return lhs.energyDep() > rhs.energyDep();} );
+        std::sort(caloClusters.begin(),caloClusters.end(),[](CaloCluster& lhs, CaloCluster& rhs) {return lhs.energyDep() > rhs.energyDep();} );
      
      
      }
@@ -295,8 +248,8 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
 
 
      //----------------------------------------------------------------------------------------------------
-     std::tuple<double,double,double> CaloClusterFromProtoCluster::CalcEnergyLayer(Calorimeter const & cal, 
-                                      std::vector<art::Ptr<CaloCrystalHit>> const& caloCrystalHitsPtrVector) 
+     std::array<double,3> CaloClusterFromProtoCluster::calcEnergyLayer(const Calorimeter& cal, 
+                                                                       const std::vector<art::Ptr<CaloCrystalHit>>& caloCrystalHitsPtrVector) 
      {
          int seedId              = caloCrystalHitsPtrVector[0]->id();
          double seedEnergy       = caloCrystalHitsPtrVector[0]->energyDep();
@@ -304,17 +257,38 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
          auto const nneighborsId = cal.crystal(seedId).nextNeighbors();
          
          double e1(seedEnergy),e9(seedEnergy),e25(seedEnergy);
-         for (auto const& il : caloCrystalHitsPtrVector)
+         for (const auto& il : caloCrystalHitsPtrVector)
          {
             int crid = il->id();
-            for (auto const& it : neighborsId)  if (it==crid) {e9 += il->energyDep(); e25 += il->energyDep(); break;}
-            for (auto const& it : nneighborsId) if (it==crid) {e25 += il->energyDep(); break;}
+            for (const auto& it : neighborsId)  if (it==crid) {e9 += il->energyDep(); e25 += il->energyDep(); break;}
+            for (const auto& it : nneighborsId) if (it==crid) {e25 += il->energyDep(); break;}
          }
-         std::tuple<double,double,double> res(e1,e9,e25);
-         return res;
+         
+         return std::array<double,3> {e1,e9,e25};
      }
 
 
+
+     //----------------------------------------------------------------------------------------------------
+     std::array<double,4> CaloClusterFromProtoCluster::clusterTimeEnergy(const std::vector<art::Ptr<CaloCrystalHit>>& hits) 
+     {
+            
+         double totalEnergy(0),totalEnergyErr(0);
+
+         for (auto hit : hits)
+         {
+             totalEnergy += hit->energyDep();
+             totalEnergyErr += hit->energyDepErr()*hit->energyDepErr();                
+         }
+
+         totalEnergyErr = sqrt(totalEnergyErr);
+
+         const auto& seed = *hits.begin();
+         double time      = seed->time();
+         double timeErr   = seed->timeErr();
+
+         return std::array<double,4>{time,timeErr,totalEnergy,totalEnergyErr};
+     }
 
 
 
@@ -328,3 +302,15 @@ DEFINE_ART_MODULE(CaloClusterFromProtoCluster);
 
 
 
+/*
+  To calculate clsuter time with weighted mean
+
+  for (auto hit : hits)
+  {
+     double weight = 1.0/hit->timeErr()/hit->timeErr(); 
+     timeW    += weight*hit->time(); 
+     timeWtot += weight;
+  }
+  double time = timeW/timeWtot;
+  double timeErr = 1.0/sqrt(timeWtot);
+*/

@@ -102,16 +102,18 @@ namespace mu2e {
        peakFactor_ = 1.0/logn(dummy[1],dummy);
 
 
-       art::ServiceHandle<art::TFileService> tfs;
-       art::TFileDirectory tfdir = tfs->mkdir("LogNormalDiag");
-       _hTime     = tfdir.make<TH1F>("hTime",    "time",                  100, 0., 2000);
-       _hTimeErr  = tfdir.make<TH1F>("hTimeErr", "time error",            100, 0.,   10);
-       _hEner     = tfdir.make<TH1F>("hEner",    "Amplitude",             100, 0., 5000);
-       _hEnerErr  = tfdir.make<TH1F>("hEnerErr", "Amplitude error",       100, 0.,  100);
-       _hChi2     = tfdir.make<TH1F>("hChi2",    "Chi2/ndf",              100, 0.,   20);
-       _hNpeak    = tfdir.make<TH1F>("hNpeak",   "Number of peak fitted",  10, 0.,   10);
-       _hDelta    = tfdir.make<TH1F>("hDelta",   "Delta t",               100, -50.,   50);
-
+       if (diagLevel_ > 2)
+       {
+          art::ServiceHandle<art::TFileService> tfs;
+          art::TFileDirectory tfdir = tfs->mkdir("LogNormalDiag");
+          _hTime     = tfdir.make<TH1F>("hTime",    "time",                  100, 0., 2000);
+          _hTimeErr  = tfdir.make<TH1F>("hTimeErr", "time error",            100, 0.,   10);
+          _hEner     = tfdir.make<TH1F>("hEner",    "Amplitude",             100, 0., 5000);
+          _hEnerErr  = tfdir.make<TH1F>("hEnerErr", "Amplitude error",       100, 0.,  100);
+          _hChi2     = tfdir.make<TH1F>("hChi2",    "Chi2/ndf",              100, 0.,   20);
+          _hNpeak    = tfdir.make<TH1F>("hNpeak",   "Number of peak fitted",  10, 0.,   10);
+          _hDelta    = tfdir.make<TH1F>("hDelta",   "Delta t",               100, -50.,   50);
+       }
    }       
 
    //---------------------------

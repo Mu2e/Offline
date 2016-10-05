@@ -25,35 +25,35 @@ namespace mu2e {
     class ClusterAssociator {
 
 
-	 public:
+         public:
 
- 	     typedef art::Ptr<CaloCrystalHit>        CaloCrystalHitPtr;                     
- 	     typedef std::vector<CaloCrystalHitPtr > CaloCrystalHitPtrVector;                     
+             typedef art::Ptr<CaloCrystalHit>        CaloCrystalHitPtr;                     
+             typedef std::vector<CaloCrystalHitPtr > CaloCrystalHitPtrVector;                     
 
-	     
-	     
-	     ClusterAssociator(Calorimeter const& cal): _cal(cal), _associatedSplitId(), _associatedMainId() {};              
-	     ~ClusterAssociator(){};
-	     	     
+             
+             
+             ClusterAssociator(Calorimeter const& cal): cal_(cal), associatedSplitId_(), associatedMainId_() {};              
+             ~ClusterAssociator(){};
+                          
 
              void      associateSplitOff(CaloProtoClusterCollection const& mainClusterColl, 
-	                                 CaloProtoClusterCollection const& splitClusterColl, 
-	                                 double deltaTimePlus, double deltaTimeMinus,double maxDist);
-             void      associateMain(CaloProtoClusterCollection const& clusterColl, double deltaTime, double maxDist);  
-					 
-	     double    closestDistance(CaloCrystalHitPtrVector const& cluster, CaloCrystalHitPtrVector const& cluster2);
+                                         CaloProtoClusterCollection const& splitClusterColl, 
+                                         double deltaTime,double maxDist);
+             void      associateMain(CaloProtoClusterCollection const& clusterColl, double deltaTime, double maxDist, int strategy);  
+                                         
+             double    closestDistance(CaloCrystalHitPtrVector const& cluster, CaloCrystalHitPtrVector const& cluster2);
 
-             std::vector<unsigned int> const& associatedMainId(unsigned int i)  const {return _associatedMainId.find(i)->second;}
-             unsigned                         associatedSplitId(unsigned int i) const {return _associatedSplitId.find(i)->second;}
-	     
-
-	 private:
+             std::vector<unsigned int> const& associatedMainId(unsigned int i)  const {return associatedMainId_.find(i)->second;}
+             unsigned                         associatedSplitId(unsigned int i) const {return associatedSplitId_.find(i)->second;}
              
-	     Calorimeter const& _cal;
-	     
-	     std::unordered_map<unsigned int, unsigned int>               _associatedSplitId;
-	     std::unordered_map<unsigned int,std::vector<unsigned int> >  _associatedMainId;
-	     
+
+         private:
+             
+             Calorimeter const& cal_;
+             
+             std::unordered_map<unsigned int, unsigned int>               associatedSplitId_;
+             std::unordered_map<unsigned int,std::vector<unsigned int> >  associatedMainId_;
+             
     };
 
 

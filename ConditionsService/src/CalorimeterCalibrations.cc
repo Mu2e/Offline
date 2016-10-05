@@ -26,6 +26,9 @@ namespace mu2e {
 
         // Here we should eventually interface to some database
         _LRUpar0 = config.getDouble("CrystalNonUniformity_0");
+ 
+        // Here we should eventually interface to some database
+        _BirkCorrHadron = config.getDouble("BirkCorrHadron");
 
         //RO photo-statistic number
         _peMeV = config.getDouble("ROphotostatistic");//p.e. / MeV

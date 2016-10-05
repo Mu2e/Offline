@@ -60,10 +60,20 @@ namespace mu2e {
          cacheSize_      = cache_.size();
          deltaT_         = posMax - posMin; 
          step_           = pshape->GetBinWidth(1);
-         factor_         = 1.0/funcMax;         
+         factor_         = 1.0/funcMax;
           
        pulseFile.Close();   
 
    }
+   
+   double CaloPulseCache::evaluate(double x)
+   {
+       int idx = int( (x+deltaT_)/step_ );
+       if (idx < 0 || idx > cacheSize_-2) return 0;     
+       return (cache_[idx+1]-cache_[idx])/step_*(x+deltaT_ - idx*step_) + cache_[idx];        
+   }
+
+   
+   
 
 }

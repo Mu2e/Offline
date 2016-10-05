@@ -25,7 +25,7 @@ namespace mu2e {
        void ClusterMoments::calculate(cogtype mode)
        {
 
-           auto const& main = _caloCluster.caloCrystalHitsPtrVector();
+           auto const& main = caloCluster_.caloCrystalHitsPtrVector();
 
 
            //calculate first and second moments in one pass
@@ -35,11 +35,11 @@ namespace mu2e {
                 int    crId((*it)->id());
                 double energy((*it)->energyDep());
 
-                if (_cal.crystal(crId).sectionId() != _iSection) continue;
+                if (cal_.crystal(crId).sectionId() != iSection_) continue;
 
-                double xCrystal = _cal.crystal(crId).position().x();
-                double yCrystal = _cal.crystal(crId).position().y();
-                double zCrystal = _cal.crystal(crId).position().z();
+                double xCrystal = cal_.crystal(crId).position().x();
+                double yCrystal = cal_.crystal(crId).position().y();
+                double zCrystal = cal_.crystal(crId).position().z();
 
                 double weight = energy;
                 if (mode == LinearMod)   weight = 1.01*energy - 6.25;
@@ -58,14 +58,14 @@ namespace mu2e {
 
 
           CLHEP::Hep3Vector cogMu2eFrame(sxi/swi,syi/swi,szi/swi);
-          _cog = _cal.toSectionFrameFF(_iSection,cogMu2eFrame);
+          cog_ = cal_.toSectionFrameFF(iSection_,cogMu2eFrame);
 
-          _secondMoment = sxi2 -sxi*sxi/swi + syi2 -syi*syi/swi;
+          secondMoment_ = sxi2 -sxi*sxi/swi + syi2 -syi*syi/swi;
 
 
           double beta  = (sxyi - sxi*syi/swi)/(sxi2-sxi*sxi/swi);
-          _angle = atan(beta);
-          if (_angle < 0) _angle += CLHEP::pi;
+          angle_ = atan(beta);
+          if (angle_ < 0) angle_ += CLHEP::pi;
 
        }
 

@@ -42,6 +42,9 @@ double extMonFNAL.biasVoltage = -150; // Volts
 // Longitudinal non-uniformity response, see Mu2e doc ... 
 double CrystalNonUniformity_0 = 1.05; 
 
+//Birks correction for neutrons
+double BirkCorrHadron = 4.0;
+
 //APD photo-statistic number
 double ROphotostatistic = 30.0;//p.e / MeV
 

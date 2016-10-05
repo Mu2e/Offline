@@ -14,8 +14,7 @@ CaloProtoClusterFromCrystalHit :
   ExpandCut              : 1.0
   EnoiseCut              : 1.0
   timeCut                : 500
-  deltaTimePlus          : 2
-  deltaTimeMinus         : 2
+  deltaTime              : 2
   diagLevel              : 0
 }  
 
@@ -27,8 +26,7 @@ CaloClusterFromProtoCluster :
   caloClusterModuleLabel : CaloProtoClusterFromCrystalHit
   mainClusterCollName    : mainCluster
   splitClusterCollName   : splitCluster
-  deltaTimePlus          : 2
-  deltaTimeMinus         : 2
+  deltaTime              : 2
   maxDistSplit           : 150
   maxDistMain            : 150
   cogTypeName            : Linear

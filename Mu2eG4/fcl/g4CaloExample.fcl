@@ -21,12 +21,11 @@ services : {
     RandomNumberGenerator: { }
     
     user: {
-        GeometryService        : { inputFile      : "Mu2eG4/test/geom_cd3.txt" }
+        GeometryService        : { inputFile      : "Mu2eG4/test/geom_common_cd3_s4p2.txt" }
         ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
         GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
         SeedService: @local::automaticSeeds
         G4Helper               : { }
-        //Timing                 : { }
         BTrkHelper             : @local::BTrkHelperDefault  
     }
 }
@@ -44,26 +43,26 @@ physics: {
         
         @table::Tracking.producers
 
-	MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
-        MakeCaloCrystalHits  : @local::MakeCaloCrystalHits      
-	MakeCaloProtoCluster : @local::MakeCaloProtoCluster
-	MakeCaloCluster      : @local::MakeCaloCluster
-	
+	@table::CaloDigiMC.producers
+	@table::CaloReco.producers
+	@table::CaloDigiMC.producersMC
+	@table::CaloCluster.producers
+	@table::CaloCluster.producersMC	
    }
 
 
     analyzers: {
         
-	CaloExample: 
-	{
+        CaloExample: {
             module_type                : CaloExample
             g4ModuleLabel              : g4run
-	    generatorModuleLabel       : generate
-	    simParticleTag             : g4run
-            caloReadoutModuleLabel     : MakeCaloReadoutHits
-            caloCrystalModuleLabel     : MakeCaloCrystalHits
-	    caloClusterModuleLabel     : MakeCaloCluster
-	    virtualDetectorName        : virtualdetector
+            generatorModuleLabel       : generate
+            simParticleTag             : g4run
+            caloCrystalModuleLabel     : CaloCrystalHitsFromHits
+            caloClusterModuleLabel     : CaloClusterFromProtoCluster
+            caloClusterTruthModuleLabel: CaloClusterTruthMatch
+            caloHitTruthModuleLabel    : CaloHitsTruthMatch
+            virtualDetectorName        : virtualdetector
             stepPointMCLabel           : g4run
   	    trkPatRecModuleLabel       : TRFDeM
 	    fitparticle                : 11
@@ -74,8 +73,13 @@ physics: {
     }
 
 
-    p1: [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM, 
-          MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster]
+    p1: [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM,           
+         @sequence::CaloDigiMC.DigiSim,
+         @sequence::CaloReco.Reco,	 
+	 @sequence::CaloDigiMC.TruthMatch,
+	 @sequence::CaloCluster.Reco, 
+	 @sequence::CaloCluster.TruthMatch 	 
+       ]
 
     e1: [CaloExample]
 
@@ -85,5 +89,3 @@ physics: {
 
 services.user.SeedService.baseSeed         :  99
 services.user.SeedService.maxUniqueEngines :  20
-
-physics.producers.MakeCaloReadoutHits.fillDetailedHit : true

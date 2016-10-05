@@ -138,8 +138,8 @@ namespace mu2e {
          TH1F*                   hBiCorr_;
 
          void   makeCalorimeterHits(const HandleVector& crystalStepsHandles, CaloShowerCollection &caloShowers);
-         double LRUCorrection(double normalizedPosZ, double energy,int crystalId, ConditionsHandle<CalorimeterCalibrations>&);
-         double BirkesCorrection(int pdgId, double energy);
+         double LRUCorrection(double normalizedPosZ, double energy,int crystalId, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
+         double BirkesCorrection(int pdgId, double energy, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
 
 
 
@@ -149,10 +149,13 @@ namespace mu2e {
   //-----------------------------------------------
   void CaloShowerFromStepPt::beginJob()
   {
-      art::ServiceHandle<art::TFileService> tfs;
-      hEner_      = tfs->make<TH1F>("hEner",   "energy deposited / hit",     200,    0,  20);
-      hLRUCorr_   = tfs->make<TH2F>("hLRUCorr","LRU correction",             100,    0, 200, 100, -0.5, 0.5);
-      hBiCorr_    = tfs->make<TH1F>("hBiCorr", "Birkes stat correction",     100,    0,   1);
+      if (diagLevel_ > 2)
+      {
+         art::ServiceHandle<art::TFileService> tfs;
+         hEner_      = tfs->make<TH1F>("hEner",   "energy deposited / hit",     200,    0,  20);
+         hLRUCorr_   = tfs->make<TH2F>("hLRUCorr","LRU correction",             100,    0, 200, 100, -0.5, 0.5);
+         hBiCorr_    = tfs->make<TH1F>("hBiCorr", "Birkes stat correction",     100,    0,   1);
+      }
   }
 
 
@@ -236,14 +239,14 @@ namespace mu2e {
                        edep_corr = LRUCorrection(posZ/cryhalflength, edep_corr, crystalId, calorimeterCalibrations);
 
         	  if (caloBirkesCorrection_)
-                       edep_corr = BirkesCorrection(pdgId,edep_corr);
+                       edep_corr = BirkesCorrection(pdgId,edep_corr, calorimeterCalibrations);
 
 
         	  if (diagLevel_ > 2)
         	  {
                       double edep_init = step.eDep();
                       hLRUCorr_->Fill(posZ,LRUCorrection(posZ/cryhalflength, edep_init, crystalId, calorimeterCalibrations)/edep_init-1);
-                      hBiCorr_->Fill(BirkesCorrection(pdgId,edep_init)/edep_init);    
+                      hBiCorr_->Fill(BirkesCorrection(pdgId,edep_init,calorimeterCalibrations)/edep_init);    
         	  } 
 
 
@@ -346,11 +349,12 @@ namespace mu2e {
 
 
 
-  //-----------------------------------------------------------------------------
-  double CaloShowerFromStepPt::BirkesCorrection(int particleCode, double energy)
+  //----------------------------------------------------------------------------------------------------------------
+  double CaloShowerFromStepPt::BirkesCorrection(int particleCode, double energy, 
+                                                ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {
-      double edep(energy);
-      if (particleCode==2212 || particleCode == 2112) edep /= 4.0;
+      double edep(energy);      
+      if (particleCode==2212 || particleCode == 2112) edep /= calorimeterCalibrations->BirkCorrHadron();      
       return edep;    
   }
 

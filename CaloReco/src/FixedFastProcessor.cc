@@ -43,16 +43,7 @@ namespace {
    mu2e::CaloPulseCache*     pulseCachePtr_;
    
    //-----------------------------------------------
-   double logn(double x, double *par)
-   {        
-        int idx = int((x-par[1]+pulseCachePtr_->deltaT())/pulseCachePtr_->step());
-        if (idx < 0 || idx > (pulseCachePtr_->cacheSize()-2)) return 0;
-     
-        double dcache = pulseCachePtr_->cache(idx+1)-pulseCachePtr_->cache(idx);
-	double step   = pulseCachePtr_->step();
-	return par[0]*(dcache/step*(x-par[1]+pulseCachePtr_->deltaT()-idx*step)+pulseCachePtr_->cache(idx));
-   }
-
+   double logn(double x, double *par) { return par[0]*pulseCachePtr_->evaluate(x-par[1]); }
 
    //------------------------------------------------------
    double fitfunction(double x, double *par)
@@ -117,16 +108,19 @@ namespace mu2e {
        nparFcn_ = 2;
        pulseCachePtr_ = &pulseCache_;
 	          
-       art::ServiceHandle<art::TFileService> tfs;
-       art::TFileDirectory tfdir = tfs->mkdir("FastFixedDiag");
-       _hTime    = tfdir.make<TH1F>("hTime",    "time",                  100, 0., 2000);
-       _hTimeErr = tfdir.make<TH1F>("hTimeErr", "time error",            100, 0.,   10);
-       _hEner    = tfdir.make<TH1F>("hEner",    "Amplitude",             100, 0., 5000);
-       _hEnerErr = tfdir.make<TH1F>("hEnerErr", "Amplitude error",       100, 0.,  100);
-       _hChi2    = tfdir.make<TH1F>("hChi2",    "Chi2/ndf",              100, 0.,   20);
-       _hNpeak   = tfdir.make<TH1F>("hNpeak",   "Number of peak fitted",  10, 0.,   10);
-       _hchi2Amp = tfdir.make<TH2F>("hchi2Amp", "Amp vs chi2/ndf",        50, 0.,   20, 100, 0, 5000);
-       _hDelta   = tfdir.make<TH1F>("hDelta",   "Delta t",               100, 0.,   20);
+       if (diagLevel_ > 2)
+       {
+	  art::ServiceHandle<art::TFileService> tfs;
+	  art::TFileDirectory tfdir = tfs->mkdir("FastFixedDiag");
+	  _hTime    = tfdir.make<TH1F>("hTime",    "time",                  100, 0., 2000);
+	  _hTimeErr = tfdir.make<TH1F>("hTimeErr", "time error",            100, 0.,   10);
+	  _hEner    = tfdir.make<TH1F>("hEner",    "Amplitude",             100, 0., 5000);
+	  _hEnerErr = tfdir.make<TH1F>("hEnerErr", "Amplitude error",       100, 0.,  100);
+	  _hChi2    = tfdir.make<TH1F>("hChi2",    "Chi2/ndf",              100, 0.,   20);
+	  _hNpeak   = tfdir.make<TH1F>("hNpeak",   "Number of peak fitted",  10, 0.,   10);
+	  _hchi2Amp = tfdir.make<TH2F>("hchi2Amp", "Amp vs chi2/ndf",        50, 0.,   20, 100, 0, 5000);
+	  _hDelta   = tfdir.make<TH1F>("hDelta",   "Delta t",               100, 0.,   20);
+       }
    }       
 
 
@@ -194,8 +188,11 @@ namespace mu2e {
        ndf_ = xindices_.size() - nparFcn_*nPeaks_;
        
 
-       if (diagLevel_ > 2) _hChi2->Fill(chi2/float(ndf_)); 
-       if (diagLevel_ > 2) for (auto amp : resAmp_) _hchi2Amp->Fill(chi2/float(ndf_),amp);          
+       if (diagLevel_ > 2)
+       {
+          _hChi2->Fill(chi2/float(ndf_)); 
+          for (auto amp : resAmp_) _hchi2Amp->Fill(chi2/float(ndf_),amp);
+       }          
        
        return;
    }
@@ -231,7 +228,7 @@ namespace mu2e {
         for (unsigned int i=windowPeak_;i<xvec_.size()-windowPeak_;++i)
         {
              auto maxp = std::max_element(&yvec_[i-windowPeak_],&yvec_[i+windowPeak_+1]);
-             if (maxp != &yvec_[i] || yvec_[i] < minPeakAmplitude_) continue;
+             if (maxp != &yvec_[i] || yvec_[i] < minPeakAmplitude_|| yvec_[i-1] < minPeakAmplitude_|| yvec_[i+1] < minPeakAmplitude_) continue;
 	     peakLocationInit.push_back(i);
 	     peakLocation.push_back(i);
         }
@@ -269,7 +266,8 @@ namespace mu2e {
              auto maxp = std::max_element(&residual[i-windowPeak_],&residual[i+windowPeak_+1]);
 	     double psd = residual[i]/yvec_[i];
 	     
-             if (maxp != &residual[i] || residual[i] < minPeakAmplitude_ || psd < psdThreshold_) continue;
+             if (maxp != &residual[i] || residual[i] < minPeakAmplitude_ || residual[i-1] < minPeakAmplitude_ || 
+	         residual[i+1] < minPeakAmplitude_ || psd < psdThreshold_) continue;
 	     peakLocationRes.push_back(i);
 	     peakLocation.push_back(i);
         }
@@ -299,8 +297,7 @@ namespace mu2e {
    //----------------------------------------------------------------------------------------------------------------------
    void FixedFastProcessor::doFit(double* parInit, double *sfpar, double *errsfpar, double& chi2)
    {
-        
-        
+
         chi2 = 999.0;
         int ierr(0),nvpar(999), nparx(999), istat(999);
         double arglist[2]={0,0},edm(999), errdef(999);
@@ -453,21 +450,15 @@ namespace mu2e {
     
    //--------------------------------------------
    double FixedFastProcessor::calcAlpha(double testTime)
-   {
-       int idxMax = pulseCache_.cacheSize()-1;
-       
+   {       
        double ytot(0),x2tot(0);
        for (unsigned int i : xindices_)
        {
-           int idx       = int((xvec_[i]-testTime+pulseCache_.deltaT())/pulseCache_.step());         	   
-	   bool idxValid = (idx >=0 && idx < idxMax); 
-	   double y      = idxValid ? (pulseCache_.cache()[idx+1]-pulseCache_.cache()[idx])/pulseCache_.step()*
-	                              (xvec_[i]-testTime+pulseCache_.deltaT()-idx*pulseCache_.step())+pulseCache_.cache()[idx] : 0;
-
+	   double y = pulseCachePtr_->evaluate(xvec_[i]-testTime);
            if ( yvec_[i]> 0 ) {ytot += y; x2tot += y*y/yvec_[i];}       
-      }
+       }
 
-      return (x2tot > 0) ? ytot/x2tot : 0;
+       return (x2tot > 0) ? ytot/x2tot : 0;
    }
 
    //--------------------------------------------
@@ -477,14 +468,9 @@ namespace mu2e {
        if (alpha<1e-5) alpha = calcAlpha(testTime);
        
        double difference(0);
-       int idxMax = pulseCache_.cacheSize()-1;
        for (unsigned int i : xindices_)
        {
-           int idx       = int((xvec_[i]-testTime+pulseCache_.deltaT())/pulseCache_.step());
-	   bool idxValid = (idx >=0 && idx < idxMax); 
-	   double y      = idxValid ? (pulseCache_.cache()[idx+1]-pulseCache_.cache()[idx])/pulseCache_.step()*
-	                              (xvec_[i]-testTime+pulseCache_.deltaT()-idx*pulseCache_.step())+pulseCache_.cache()[idx] : 0;
-
+	   double y = pulseCachePtr_->evaluate(xvec_[i]-testTime);
            if (yvec_[i] > 1e-5 ) difference += (yvec_[i]-alpha*y)*(yvec_[i]-alpha*y)/yvec_[i];     
        }
 
@@ -582,7 +568,9 @@ namespace mu2e {
    //---------------------------------------
    void FixedFastProcessor::plot(std::string pname)
    {
-       TH1F h("test","Amplitude vs time",xvec_.size(),xvec_.front()-2.5,xvec_.back()+2.5);
+       double dx = xvec_[1]-xvec_[0];
+       
+       TH1F h("test","Amplitude vs time",xvec_.size(),xvec_.front()-0.5*dx,xvec_.back()+0.5*dx);
        h.GetXaxis()->SetTitle("Time (ns)");
        h.GetYaxis()->SetTitle("Amplitude");
        for (unsigned int i=0;i<xvec_.size();++i) h.SetBinContent(i+1,yvec_[i]);

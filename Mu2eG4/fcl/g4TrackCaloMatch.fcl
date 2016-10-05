@@ -19,12 +19,11 @@ services : {
     RandomNumberGenerator: { }
     
     user: {
-        GeometryService        : { inputFile      : "Mu2eG4/test/geom_cd3.txt" }
+        GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common_cd3_s4p2.txt" }
         ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
         GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
         SeedService: @local::automaticSeeds
         G4Helper               : { }
-        //Timing                 : { }
         BTrkHelper             : @local::BTrkHelperDefault  
     }
 }
@@ -41,10 +40,11 @@ physics: {
         
         @table::Tracking.producers
 
-	MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
-        MakeCaloCrystalHits  : @local::MakeCaloCrystalHits      
-	MakeCaloProtoCluster : @local::MakeCaloProtoCluster
-	MakeCaloCluster      : @local::MakeCaloCluster	
+        @table::CaloDigiMC.producers
+        @table::CaloReco.producers
+        @table::CaloDigiMC.producersMC
+        @table::CaloCluster.producers
+        @table::CaloCluster.producersMC
 
 	TrackCaloIntersection :
 	{
@@ -62,7 +62,7 @@ physics: {
 	TrkCaloMatcherBis :
 	{
 	  module_type             : TrackCaloMatchingBis
-	  caloClusterModuleLabel  : MakeCaloCluster
+	  caloClusterModuleLabel  : CaloClusterFromProtoCluster
 	  trkIntersectModuleLabel : TrackCaloIntersection
 	  fitterModuleLabel       : TRFDeM
 	  fitparticle             : 11
@@ -82,17 +82,16 @@ physics: {
 
     analyzers: {
 
-	CaloExample: 
-	{
+        CaloExample: {
             module_type                : CaloExample
             g4ModuleLabel              : g4run
-	    generatorModuleLabel       : generate
-	    simParticleTag             : g4run
-            caloReadoutModuleLabel     : MakeCaloReadoutHits
-            caloCrystalModuleLabel     : MakeCaloCrystalHits
-            calorimeterHitMCCrystalPtr : CaloHitMCCrystalPtr
-	    caloClusterModuleLabel     : MakeCaloCluster
-	    virtualDetectorName        : virtualdetector
+            generatorModuleLabel       : generate
+            simParticleTag             : g4run
+            caloCrystalModuleLabel     : CaloCrystalHitsFromHits
+            caloClusterModuleLabel     : CaloClusterFromProtoCluster
+            caloClusterTruthModuleLabel: CaloClusterTruthMatch
+            caloHitTruthModuleLabel    : CaloHitsTruthMatch
+            virtualDetectorName        : virtualdetector
             stepPointMCLabel           : g4run
   	    trkPatRecModuleLabel       : TRFDeM
 	    fitparticle                : 11
@@ -102,8 +101,10 @@ physics: {
 	ReadTrackCaloMatching: 
 	{
             module_type             : ReadTrackCaloMatchingBis
-	    caloCrystalModuleLabel  : MakeCaloCrystalHits
-	    caloClusterModuleLabel  : MakeCaloCluster
+            caloCrystalModuleLabel  : CaloCrystalHitsFromHits
+            caloClusterModuleLabel  : CaloClusterFromProtoCluster
+            caloReadoutModuleLabel  : CaloCrystalHitsFromHits
+            caloClusterTruthModuleLabel: CaloClusterTruthMatch
 	    trkIntersectModuleLabel : TrackCaloIntersection
 	    trkCaloMatchModuleLabel : TrkCaloMatcherBis
   	    fitterModuleLabel       : TRFDeM
@@ -119,9 +120,9 @@ physics: {
   	    fitterModuleLabel       : TRFDeM
 	    fitparticle             : 11
 	    fitdirection            : 0 
-	    caloClusterModuleLabel  : MakeCaloCluster
+            caloClusterModuleLabel  : CaloClusterFromProtoCluster
 	    trkCaloMatchModuleLabel : TrkCaloMatcherBis
-	    caloCrystalModuleLabel  : MakeCaloCrystalHits
+            caloCrystalModuleLabel  : CaloCrystalHitsFromHits
 	    maxChi2Match            : 100    
 	    g4ModuleLabel           : g4run
 	    virtualDetectorName     : virtualdetector	    
@@ -129,9 +130,14 @@ physics: {
 
    }
 
-    p1: [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM, 
-          MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster, 
-	  TrackCaloIntersection, TrkCaloMatcherBis]
+    p1: [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM,          
+          @sequence::CaloDigiMC.DigiSim,
+          @sequence::CaloReco.Reco,       
+          @sequence::CaloDigiMC.TruthMatch,
+          @sequence::CaloCluster.Reco, 
+          @sequence::CaloCluster.TruthMatch, 
+	  TrackCaloIntersection, 
+	  TrkCaloMatcherBis]
 
     trigger_paths: [p1]
 
@@ -144,6 +150,4 @@ physics: {
 services.user.SeedService.baseSeed         :  99
 services.user.SeedService.maxUniqueEngines :  20
 
-//needed for CaloExample
-physics.producers.MakeCaloReadoutHits.fillDetailedHit : true
 

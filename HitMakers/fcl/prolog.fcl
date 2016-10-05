@@ -2,15 +2,6 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
-BEGIN_PROLOG
-HitMakerTimeFoldingBuffer    : 100. # ns
-HitMakerBlindTime            : 500. # ns
-#HitMakerBlindTime            : 0. # ns
-HitMakerDigiSampling         : 5    # ns
-HitMakerAcquisitionEndTime   : 0 # ns
-#HitMakerTimeOffsets          : { inputs : [  ] } 
-HitMakerTimeOffsets          : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-END_PROLOG
 
 BEGIN_PROLOG
 

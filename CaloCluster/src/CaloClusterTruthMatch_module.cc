@@ -46,9 +46,9 @@ namespace mu2e {
 
 	explicit CaloClusterTruthMatch(fhicl::ParameterSet const& pset) :
 	
-	  _caloClusterModuleLabel  (pset.get<std::string>("caloClusterModuleLabel")), 
-          _caloHitTruthModuleLabel (pset.get<std::string>("caloHitTruthModuleLabel")),
-	  _diagLevel               (pset.get<int>        ("diagLevel",0))		  
+	  caloClusterModuleLabel_  (pset.get<std::string>("caloClusterModuleLabel")), 
+          caloHitTruthModuleLabel_ (pset.get<std::string>("caloHitTruthModuleLabel")),
+	  diagLevel_               (pset.get<int>        ("diagLevel",0))		  
 	{  
 
 	  produces<CaloClusterMCTruthAssns>();    
@@ -69,13 +69,13 @@ namespace mu2e {
 	typedef art::Ptr<CaloCrystalHit> CaloCrystalHitPtr;
 	typedef art::Ptr<CaloCluster>    CaloClusterPtr;
 
-	std::string  _caloClusterModuleLabel;   
-        std::string  _caloHitTruthModuleLabel;
-	int          _diagLevel;
+	std::string  caloClusterModuleLabel_;   
+        std::string  caloHitTruthModuleLabel_;
+	int          diagLevel_;
 
-        TH1F*  _hGenId;
-        TH1F*  _hEner0;
-        TH1F*  _hEner;
+        TH1F*  hGenId_;
+        TH1F*  hEner0_;
+        TH1F*  hEner_;
 	
 	
 	void makeTruthMatch(CaloClusterMCTruthAssns &caloClusterTruthMatch, 
@@ -89,10 +89,13 @@ namespace mu2e {
   //--------------------------------------------------------------------
   void CaloClusterTruthMatch::beginJob()
   {
-       art::ServiceHandle<art::TFileService> tfs;
-       _hGenId    = tfs->make<TH1F>("hSimId",    "Sim gen Id",            150,    -10,  140);
-       _hEner0    = tfs->make<TH1F>("hEner0",    "Signal cluster energy", 150,      0,  150);
-       _hEner     = tfs->make<TH1F>("hEner",     "Signal cluster energy", 150,      0,  150);
+     if (diagLevel_ > 2)
+     {
+        art::ServiceHandle<art::TFileService> tfs;
+        hGenId_    = tfs->make<TH1F>("hSimId",    "Sim gen Id",            150,    -10,  140);
+        hEner0_    = tfs->make<TH1F>("hEner0",    "Signal cluster energy", 150,      0,  150);
+        hEner_     = tfs->make<TH1F>("hEner",     "Signal cluster energy", 150,      0,  150);
+     }
   }
 
 
@@ -103,10 +106,10 @@ namespace mu2e {
   {
    
       art::Handle<CaloClusterCollection> caloClusterHandle;
-      event.getByLabel(_caloClusterModuleLabel, caloClusterHandle);
+      event.getByLabel(caloClusterModuleLabel_, caloClusterHandle);
  
       art::Handle<CaloHitMCTruthAssns> caloHitTruthHandle;
-      event.getByLabel(_caloHitTruthModuleLabel, caloHitTruthHandle);
+      event.getByLabel(caloHitTruthModuleLabel_, caloHitTruthHandle);
       const CaloHitMCTruthAssns& caloHitTruth(*caloHitTruthHandle);
 
       std::unique_ptr<CaloClusterMCTruthAssns> caloClusterTruth(new CaloClusterMCTruthAssns);
@@ -149,31 +152,25 @@ namespace mu2e {
 	    const auto& caloShowerPtr = caloHitTruth.data(i);
 	    caloClusterTruth.addSingle(clusterPtr, sim, caloShowerPtr);
 
-	    /*
-	    if (_diagLevel > 0) 
-	    {
-	        _hEner0->Fill(thisCaloCluster->energyDep());
-	       if (sim->genParticle()) _hGenId->Fill(sim->genParticle()->generatorId().id());
-	       if (sim->genParticle() && sim->genParticle()->generatorId().id()==2) _hEner->Fill(thisCaloCluster->energyDep());
-	       
-	    }
-	    */
             
-	    if (_diagLevel > 2) std::cout<<"[CaloClusterTruthMatch]  matched crystal  id/time/Edep= "<<caloShowerPtr->crystalId()<<" / "<<caloShowerPtr->time()<<" / "<<caloShowerPtr->energy()
+	    if (diagLevel_ > 2) std::cout<<"[CaloClusterTruthMatch]  matched crystal  id/time/Edep= "<<caloShowerPtr->crystalId()<<" / "<<caloShowerPtr->time()<<" / "<<caloShowerPtr->energy()
 		                          <<"\t    hit in cluster id/time/Edep= "<<i->first->id()<<" / "<<i->first->time()<<" / "<<i->first->energyDep()<<std::endl;
        }
        
        
-       if (_diagLevel > 0)
+       if (diagLevel_ > 0)
        {
            for (auto i=caloClusterTruth.begin(), ie = caloClusterTruth.end(); i !=ie; ++i)
 	   {
 	         const auto& cluster = i->first;
 		 const auto& sim = i->second;
 		 
-	        _hEner0->Fill(cluster->energyDep());
-	        if (sim->genParticle()) _hGenId->Fill(sim->genParticle()->generatorId().id());
-	        if (sim->genParticle() && sim->genParticle()->generatorId().id()==2) _hEner->Fill(cluster->energyDep());
+	         if (diagLevel_ > 2)
+		 {
+		    hEner0_->Fill(cluster->energyDep());
+	            if (sim->genParticle()) hGenId_->Fill(sim->genParticle()->generatorId().id());
+	            if (sim->genParticle() && sim->genParticle()->generatorId().id()==2) hEner_->Fill(cluster->energyDep());
+	         }
 	   }
        }
                       

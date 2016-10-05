@@ -144,8 +144,8 @@ namespace mu2e {
          TH1F*                   hBiCorr_;
 
          void   makeCalorimeterHits (const art::Handle<CaloShowerStepCollection>&, CaloShowerCollection &);
-         double LRUCorrection(double normalizedPosZ, double energy,int crystalId, const ConditionsHandle<CalorimeterCalibrations>&);
-         double BirkesCorrection(int pdgId, double energy);
+         double LRUCorrection(double normalizedPosZ, double energy,int crystalId, const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
+         double BirkesCorrection(int particleCode, double energy, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
 
 
 
@@ -154,12 +154,15 @@ namespace mu2e {
   //----------------------------------------
   void CaloShowerFromShowerStep::beginJob()
   {
-      art::ServiceHandle<art::TFileService> tfs;
-      hEner_      = tfs->make<TH1F>("hEner",   "energy deposited / hit",        200,    0,  20);
-      hinit_      = tfs->make<TH1F>("hInit",   "Initial number of calo showers", 25,    0,  25);
-      hfinal_     = tfs->make<TH1F>("hFinal",  "Final number of calo showers",   25,    0,  25);
-      hLRUCorr_   = tfs->make<TH2F>("hLRUCorr","LRU correction",                100,    0, 200, 100, -0.5, 0.5);
-      hBiCorr_    = tfs->make<TH1F>("hBiCorr", "Birkes stat correction",        100,    0,   1);
+      if (diagLevel_ > 2)
+      {
+         art::ServiceHandle<art::TFileService> tfs;
+         hEner_      = tfs->make<TH1F>("hEner",   "energy deposited / hit",        200,    0,  20);
+         hinit_      = tfs->make<TH1F>("hInit",   "Initial number of calo showers", 25,    0,  25);
+         hfinal_     = tfs->make<TH1F>("hFinal",  "Final number of calo showers",   25,    0,  25);
+         hLRUCorr_   = tfs->make<TH2F>("hLRUCorr","LRU correction",                100,    0, 200, 100, -0.5, 0.5);
+         hBiCorr_    = tfs->make<TH1F>("hBiCorr", "Birkes stat correction",        100,    0,   1);
+      }
  }
 
 
@@ -245,14 +248,14 @@ namespace mu2e {
                  edep_corr = LRUCorrection(posZ/cryhalflength, edep_corr, crystalId, calorimeterCalibrations);
 
             if (caloBirkesCorrection_)
-                 edep_corr = BirkesCorrection(pdgId,edep_corr);
+                 edep_corr = BirkesCorrection(pdgId,edep_corr, calorimeterCalibrations);
 
 
             if (diagLevel_ > 2)
             {
                 double edep_init = step.energyMC();
                 hLRUCorr_->Fill(posZ,LRUCorrection(posZ/cryhalflength, edep_init, crystalId, calorimeterCalibrations)/edep_init-1);
-                hBiCorr_->Fill(BirkesCorrection(pdgId,edep_init)/edep_init);    
+                hBiCorr_->Fill(BirkesCorrection(pdgId,edep_init, calorimeterCalibrations)/edep_init);    
             } 
 
 
@@ -270,7 +273,7 @@ namespace mu2e {
 
 
        if (diagLevel_ > 0) std::cout<<"CaloShowerFromShowerStep found energy (energy corr) / nStepsMC / nCORHit "
-                                   <<totalEdep<<" ("<<totalEdepCorr<<") / "<<totalSteps<<" / "<<totalCORHit<<std::endl;
+                                    <<totalEdep<<" ("<<totalEdepCorr<<") / "<<totalSteps<<" / "<<totalCORHit<<std::endl;
 
 
 
@@ -320,11 +323,11 @@ namespace mu2e {
            {
                eDepCorrTot += h_edep;
                nCorrTot += h_sims.size();
-               hinit_->Fill(caloShowerBuild.size());
-               numpreFilter += caloShowerBuild.size();
-           }
-
-           
+               numpreFilter += caloShowerBuild.size(); 
+	       if (diagLevel_ > 2) hinit_->Fill(caloShowerBuild.size());              
+           }           
+          
+	   
            //now a little bit of pre-filtering, remove low-energy isolated hits
            if (filterEnergy_ > 1e-3)
            {
@@ -399,11 +402,13 @@ namespace mu2e {
 
 
 
-  //---------------------------------------------------------------------------------------
-  double CaloShowerFromShowerStep::BirkesCorrection(int particleCode, double energy)
+  //-----------------------------------------------------------------------------
+  double CaloShowerFromShowerStep::BirkesCorrection(int particleCode, double energy, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {
       double edep(energy);
-      if (particleCode==2212 || particleCode == 2112) edep /= 4.0;
+      
+      if (particleCode==2212 || particleCode == 2112) edep /= calorimeterCalibrations->BirkCorrHadron();      
+
       return edep;    
   }
 

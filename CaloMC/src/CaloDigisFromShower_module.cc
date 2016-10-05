@@ -174,20 +174,24 @@ namespace mu2e {
   
   void CaloDigisFromShower::beginJob()
   {
-       art::ServiceHandle<art::TFileService> tfs;
-       hEdep_          = tfs->make<TH1F>("hEdep","Hit energy deposition",            100,    0.,     50);
-       hTime_          = tfs->make<TH1F>("hTime","Hit time ",                       4000,    0.,   2000);
-       hPECorr_        = tfs->make<TH2F>("hPECorr", "PE stat correction",            100,    0., 50, 100,    0,  50);
-       hPECorr2_       = tfs->make<TH1F>("hPECorr2","PE stat correction",            100,  -0.5,    0.5);
-       hNSamples_VsIro = tfs->make<TH1F>("hNSamplesVsIro","Number of samples /ro",  2000,     0,   2000);
-       hWFLength_      = tfs->make<TH1F>("hWFLength","wavefrom length",              100,     0,    100);
-       hWFLength_VsAmp = tfs->make<TH2F>("hWFLengthVsAmp","wavefrom length vs amp", 1000,     0, 100,2000, 0, 2000);        
+       if ( diagLevel_ > 2)
+       {
+           art::ServiceHandle<art::TFileService> tfs;
+           hEdep_          = tfs->make<TH1F>("hEdep","Hit energy deposition",            100,    0.,     50);
+           hTime_          = tfs->make<TH1F>("hTime","Hit time ",                       4000,    0.,   2000);
+           hPECorr_        = tfs->make<TH2F>("hPECorr", "PE stat correction",            100,    0., 50, 100,    0,  50);
+           hPECorr2_       = tfs->make<TH1F>("hPECorr2","PE stat correction",            100,  -0.5,    0.5);
+           hNSamples_VsIro = tfs->make<TH1F>("hNSamplesVsIro","Number of samples /ro",  2000,     0,   2000);
+           hWFLength_      = tfs->make<TH1F>("hWFLength","wavefrom length",              100,     0,    100);
+           hWFLength_VsAmp = tfs->make<TH2F>("hWFLengthVsAmp","wavefrom length vs amp", 1000,     0, 100,2000, 0, 2000);
+       }        
   }
 
   //-----------------------------------------------------------------------------
   void CaloDigisFromShower::beginRun(art::Run& aRun)
   {
-      pulseShape_.buildShapes(); 
+      pulseShape_.buildShapes();
+      if ( diagLevel_ > 3) pulseShape_.printShape();
   }
 
 
@@ -408,7 +412,7 @@ namespace mu2e {
        std::vector<int>  output; 
        std::vector<int>  &itWave = waveforms_.at(iRO);
 
-       if (diagLevel_ > 1)
+       if (diagLevel_ > 3)
        {
            std::cout<<"CaloDigisFromShower::buildOutputDigi] Waveform content for readout "<<iRO<<std::endl; 
            for (const auto  &v : itWave) std::cout<<v<<" "; 

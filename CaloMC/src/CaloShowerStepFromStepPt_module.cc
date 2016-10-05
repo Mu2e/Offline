@@ -211,15 +211,18 @@ namespace mu2e {
         procCodes_[2112].insert( {2,16,17,21,23,29,40,49,58,74} ); // neutron
         procCodes_[2212].insert( {16,17,21,23,29,40,45,49,58} );   // proton      
 
-        art::ServiceHandle<art::TFileService> tfs;
-        hStartPos_  = tfs->make<TH2F>("hStartPos", "Sim start position",  1000,  5000, 15000, 200, 0, 1000);
-        hStopPos_   = tfs->make<TH2F>("hStopPos",  "Sim stop position",   1000,  5000, 15000, 200, 0, 1000);
-        hStartPos2_ = tfs->make<TH1F>("hStartPos2","Sim stop position",   1000, 10000, 13000);
-        hStopPos2_  = tfs->make<TH1F>("hStopPos2", "Sim stop position",   1000, 10000, 13000);
-        hZpos_      = tfs->make<TH1F>("hZpos",     "Step z pos",            20,     0,    20);
-        hZpos2_     = tfs->make<TH2F>("hZpos2",    "Step z pos",            20,     0,    20, 100, 0, 5);
-        hEtot_      = tfs->make<TH1F>("hEtot",     "Sim stop position",    150,     0,   150);
-        hGenId_     = tfs->make<TH1F>("hSimId",    "Gen Id",               150,    -10,  140);   
+        if (diagLevel_ > 2)
+	{
+	   art::ServiceHandle<art::TFileService> tfs;
+           hStartPos_  = tfs->make<TH2F>("hStartPos", "Sim start position",  1000,  5000, 15000, 200, 0, 1000);
+           hStopPos_   = tfs->make<TH2F>("hStopPos",  "Sim stop position",   1000,  5000, 15000, 200, 0, 1000);
+           hStartPos2_ = tfs->make<TH1F>("hStartPos2","Sim stop position",   1000, 10000, 13000);
+           hStopPos2_  = tfs->make<TH1F>("hStopPos2", "Sim stop position",   1000, 10000, 13000);
+           hZpos_      = tfs->make<TH1F>("hZpos",     "Step z pos",            20,     0,    20);
+           hZpos2_     = tfs->make<TH2F>("hZpos2",    "Step z pos",            20,     0,    20, 100, 0, 5);
+           hEtot_      = tfs->make<TH1F>("hEtot",     "Sim stop position",    150,     0,   150);
+           hGenId_     = tfs->make<TH1F>("hSimId",    "Gen Id",               150,    -10,  140);
+	}   
     }
 
     void CaloShowerStepFromStepPt::beginSubRun(art::SubRun& sr) 
@@ -251,7 +254,7 @@ namespace mu2e {
         totalEdep_=0.0;
         totalStep_=0;
         
-        if ( diagLevel_ > 0 ) std::cout << "CaloShowerStepFromStepPt: produce() begin" << std::endl;
+        if ( diagLevel_ > 0) std::cout << "CaloShowerStepFromStepPt: produce() begin" << std::endl;
 
         // Check that calorimeter geometry description exists
         art::ServiceHandle<GeometryService> geom;    
@@ -279,8 +282,8 @@ namespace mu2e {
         event.put(std::move(caloROShowerStepMCs),"calorimeterRO");
         event.put(std::move(simsToKeep));
 
-        if ( diagLevel_ > 0 ) std::cout << "Total energy deposited / number of stepPointMC: " <<totalEdep_<<" / "<<totalStep_<<std::endl;
-        if ( diagLevel_ > 0 ) std::cout << "CaloShowerStepFromStepPt: produce() end" << std::endl;
+        if ( diagLevel_ > 0) std::cout << "Total energy deposited / number of stepPointMC: " <<totalEdep_<<" / "<<totalStep_<<std::endl;
+        if ( diagLevel_ > 0) std::cout << "CaloShowerStepFromStepPt: produce() end" << std::endl;
 
     } 
 

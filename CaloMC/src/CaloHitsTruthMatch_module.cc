@@ -109,14 +109,17 @@ namespace mu2e {
   //--------------------------------------------------------------------
   void CaloHitsTruthMatch::beginJob()
   {
-       art::ServiceHandle<art::TFileService> tfs;
-       hTime_     = tfs->make<TH1F>("hTime",    "delta Time",   2000, -20., 180);
-       hTime2_    = tfs->make<TH1F>("hTime2",   "delta Time",   2000, -20., 180);
-       hTime2d_   = tfs->make<TH2F>("hTime2d",  "Reco vs Gen time",  200,500,1700, 200,500,1700);
-       hEner2d_   = tfs->make<TH2F>("hEner2d",  "Reco vs gen Ener",  200,0,40,  200,0.,40);
-       hEnerTime_ = tfs->make<TH2F>("hTimeEner","delta Time vs Ener",500,0,100, 300,-50.,250);
-       hdEdT_     = tfs->make<TH2F>("hdEdt",    "delta Time vs delta Ener",100,-10,70, 170,-10.,160);
-       hChi2_     = tfs->make<TH1F>("hChi2",    "chi2 large dE",     50, 0., 10);
+       if ( diagLevel_ > 2)
+       {
+	  art::ServiceHandle<art::TFileService> tfs;
+	  hTime_     = tfs->make<TH1F>("hTime",    "delta Time",   2000, -20., 180);
+	  hTime2_    = tfs->make<TH1F>("hTime2",   "delta Time",   2000, -20., 180);
+	  hTime2d_   = tfs->make<TH2F>("hTime2d",  "Reco vs Gen time",  200,500,1700, 200,500,1700);
+	  hEner2d_   = tfs->make<TH2F>("hEner2d",  "Reco vs gen Ener",  200,0,40,  200,0.,40);
+	  hEnerTime_ = tfs->make<TH2F>("hTimeEner","delta Time vs Ener",500,0,100, 300,-50.,250);
+	  hdEdT_     = tfs->make<TH2F>("hdEdt",    "delta Time vs delta Ener",100,-10,70, 170,-10.,160);
+	  hChi2_     = tfs->make<TH1F>("hChi2",    "chi2 large dE",     50, 0., 10);
+       }
   }
 
 

@@ -84,15 +84,18 @@ namespace mu2e {
   //--------------------------------------------
   void CaloCrystalHitsFromHits::beginJob()
   {
-     art::ServiceHandle<art::TFileService> tfs;     
-     hEdep_     = tfs->make<TH1F>("hEdep",   "Hit energy deposition",        200,   0.,  500);
-     hTime_     = tfs->make<TH1F>("hTime",   "Hit time ",                  12000,   0., 2000);
-     hNRo_      = tfs->make<TH1F>("hNRo",    "Number RO ",                    10,   0.,   10);
-     hEdep_Cry_ = tfs->make<TH1F>("hEdepCry","Energy deposited per crystal",2000,   0., 2000);     
-     hDelta_    = tfs->make<TH1F>("hDelta",  "Hit time difference",          200, -20,    20);
-     hNRo2_     = tfs->make<TH2F>("hNRo2",   "Number RO ",                    5,    0., 5, 50, 0, 50);
-     hEdep1_    = tfs->make<TH1F>("hEdep1",  "Hit energy deposition",        200,   0.,  100);
-     hEdep2_    = tfs->make<TH1F>("hEdep2",  "Hit energy deposition",        200,   0.,  100);
+     if (diagLevel_ > 2)
+     {
+        art::ServiceHandle<art::TFileService> tfs;     
+        hEdep_     = tfs->make<TH1F>("hEdep",   "Hit energy deposition",        200,   0.,  500);
+        hTime_     = tfs->make<TH1F>("hTime",   "Hit time ",                  12000,   0., 2000);
+        hNRo_      = tfs->make<TH1F>("hNRo",    "Number RO ",                    10,   0.,   10);
+        hEdep_Cry_ = tfs->make<TH1F>("hEdepCry","Energy deposited per crystal",2000,   0., 2000);     
+        hDelta_    = tfs->make<TH1F>("hDelta",  "Hit time difference",          200, -20,    20);
+        hNRo2_     = tfs->make<TH2F>("hNRo2",   "Number RO ",                    5,    0., 5, 50, 0, 50);
+        hEdep1_    = tfs->make<TH1F>("hEdep1",  "Hit energy deposition",        200,   0.,  100);
+        hEdep2_    = tfs->make<TH1F>("hEdep2",  "Hit energy deposition",        200,   0.,  100);
+     }
   }
 
   
@@ -157,16 +160,16 @@ namespace mu2e {
           while (endHit != hits.end())
           {
              double deltaTime = (*endHit)->time()-(*startHit)->time();                      
-	     if (diagLevel_ > 2) hDelta_->Fill(deltaTime);  
+             if (diagLevel_ > 2) hDelta_->Fill(deltaTime);  
              
-	     if (deltaTime > time4Merge_)
+             if (deltaTime > time4Merge_)
              {
                  //double time = timeW/timeWtot;
-		 //double timeErr = 1.0/sqrt(timeWtot);
+                 //double timeErr = 1.0/sqrt(timeWtot);
                  double time = timeW/nRoid;
                  double timeErr = 0;
                  
-		 fillBuffer(crystalId, nRoid, time, timeErr, eDepTot/nRoid, eDepTotErr/nRoid, buffer, caloHits);
+                 fillBuffer(crystalId, nRoid, time, timeErr, eDepTot/nRoid, eDepTotErr/nRoid, buffer, caloHits);
 
                  buffer.clear();
                  timeW      = 0.0;
@@ -178,16 +181,16 @@ namespace mu2e {
              }
              else
              {
-		 //double wt  = 1.0/(*endHit)->timeErr()/(*endHit)->timeErr();
+                 //double wt  = 1.0/(*endHit)->timeErr()/(*endHit)->timeErr();
                  //timeWtot   += wt;
-		 //timeW      += wt*(*endHit)->time();
-		 
-		 timeW      += (*endHit)->time();
+                 //timeW      += wt*(*endHit)->time();
                  
-		 eDepTot    += (*endHit)->energyDep();
+                 timeW      += (*endHit)->time();
+                 
+                 eDepTot    += (*endHit)->energyDep();
                  eDepTotErr += (*endHit)->energyDepErr() * (*endHit)->energyDepErr();
                  
-		 ++nRoid;
+                 ++nRoid;
 
                  size_t index = *endHit - base; 
                  buffer.push_back(art::Ptr<CaloRecoDigi>(recoCaloDigisHandle, index));
@@ -199,8 +202,8 @@ namespace mu2e {
 
           //flush last buffer
           
-	  //double time = timeW/timeWtot;
- 	  //double timeErr = 1.0/sqrt(timeWtot);
+          //double time = timeW/timeWtot;
+           //double timeErr = 1.0/sqrt(timeWtot);
           double time = timeW/nRoid;
           double timeErr = 0;
 
@@ -228,15 +231,15 @@ namespace mu2e {
        {
            std::cout<<"[CaloCrystalHitsFromHits] created hit in crystal id="<<crystalId<<"\t with time="<<time<<"\t eDep="<<eDep<<"\t  from "<<nRoid<<" RO"<<std::endl;
 
-	   if (diagLevel_ > 2)
+           if (diagLevel_ > 2)
            {
                 hTime_->Fill(time);
                 hEdep_->Fill(eDep);
                 hNRo_->Fill(nRoid);
                 hEdep_Cry_->Fill(crystalId,eDep);
                 hNRo2_->Fill(nRoid,eDep);
-	        if (nRoid==1) hEdep1_->Fill(eDep);
-	        if (nRoid==2) hEdep2_->Fill(eDep);
+                if (nRoid==1) hEdep1_->Fill(eDep);
+                if (nRoid==2) hEdep2_->Fill(eDep);
            }
        }
   }

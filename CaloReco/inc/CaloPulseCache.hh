@@ -16,7 +16,8 @@ namespace mu2e {
           CaloPulseCache();
           ~CaloPulseCache() {};
 
-	  virtual void                 initialize();
+	  void   initialize();
+          double evaluate(double x);
 
           const std::vector<double>&   cache()      {return cache_;}
           double                       cache(int i) {return cache_.at(i);}
