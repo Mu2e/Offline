@@ -15,7 +15,7 @@ namespace mu2e
     helixpar _fitparerr;
     TrkFitInfo() { reset(); }
     void reset() { _fitmom=_fitmomerr=_fltlen=-1000.0; _fitpar.reset(); _fitparerr.reset(); }
-    static std::string const& leafnames() { static const std::string leaves =
+    static std::string leafnames() { static std::string leaves; leaves = 
       std::string("mom/F:momerr/F:fltlen/F:")+helixpar::leafnames()+std::string(":d0err/F:p0err/F:omerr/F:z0err/F:tderr/F");
       return leaves;
     }
@@ -48,7 +48,7 @@ namespace mu2e
       _trkqual=-1000.0;
       _ent.reset();
     }
-    static std::string const& leafnames() { static const std::string leaves =
+    static std::string leafnames() { static std::string leaves; leaves =
     std::string("status/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:nnullambig/I:nmat/I:nmatactive/I:nbend/I:t0/F:t0err/F:chisq/F:con/F:radlen/F:firstflt/F:lastflt/F:startvalid/F:endvalid/F:seedmom/F:trkqual/F:")+TrkFitInfo::leafnames();
      return leaves;
     }
@@ -63,7 +63,7 @@ namespace mu2e
     Float_t _pmom;
     TrkInfoMC() { reset(); }
     void reset() { _ndigi = _ndigigood = _nactive = _nhits = _ngood = _nambig = _pdg = _gen  = _proc = _ppdg = _pgen = _pproc = -1; _pmom=-1.0; }
-    static std::string const& leafnames() { static const std::string leaves =
+    static std::string leafnames() { static std::string leaves; leaves =
       std::string("ndigi/I:ndigigood/I:nhits/I:nactive/I:ngood/I:nambig/I:pdg/I:gen/I:proc/I:ppdg/I:pgen/I:pproc/I:pmom/F");
       return leaves;
     }
@@ -76,7 +76,7 @@ namespace mu2e
     helixpar _hpar;
     TrkInfoMCStep() { reset(); }
     void reset() { _time = _mom = -1; _pos.reset(); _hpar.reset(); }
-    static std::string const& leafnames() { static const std::string leaves =
+    static std::string leafnames() { static std::string leaves; leaves =
       std::string("t0/F:mom/F:")+threevec::leafnames() +std::string(":")+helixpar::leafnames();
       return leaves;
     }

@@ -5,8 +5,8 @@
 // $Author: brownd $ 
 // $Date: 2014/07/10 14:47:26 $
 //
-#ifndef HelixFit_HH
-#define HelixFit_HH
+#ifndef TrkReco_RobustHelixFit_HH
+#define TrkReco_RobustHelixFit_HH
 
 // framework
 #include "fhiclcpp/ParameterSet.h"
@@ -44,6 +44,8 @@ namespace mu2e
   class RobustHelixFit
   {
   public:
+  // circle fit types
+    enum CircleFit {median=0,AGE=1, chisq=2 };
 // parameter set should be passed in on construction
     explicit RobustHelixFit(fhicl::ParameterSet const&);
     virtual ~RobustHelixFit();
@@ -54,10 +56,10 @@ namespace mu2e
     Helicity const& helicity() const { return _helicity; }
   private:
     // fit functions for the separate views
-    void fitXY(HelixSeed& hseed);
+    void fitCircle(HelixSeed& hseed);
+    void fitCircleMedian(HelixSeed& hseed);
+    void fitCircleAGE(HelixSeed& hseed);
     void fitFZ(HelixSeed& hseed);
-// initialization, separate for the views
-    bool initXY(HelixHitCollection const& hhits,RobustHelix& myhel);
     bool initFZ(HelixHitCollection& hhits,RobustHelix& myhel);
     // helper functions for robust circle fit
     void findAGE(HelixHitCollection const& hhits, CLHEP::Hep3Vector const& center,double& rmed, double& age);
@@ -81,6 +83,7 @@ namespace mu2e
     bool resolvePhi(HelixHit& hh, RobustHelix const& myhel) const;
     // configuration parameters
     int _debug;
+    CircleFit _cfit; // type of circle fit
     StrawHitFlag _useflag, _dontuseflag;
     unsigned _minnhit; // minimum # of hits to work with
     double _maxphisep; // maximum separation in global azimuth of hits
@@ -96,7 +99,6 @@ namespace mu2e
     double _rmin,_rmax; // circle radius range
     double _mindelta; // minimum slope difference to use a triple in circle center initialization
     double _lmin, _lmax; // range of lambda = dz/dphi
-    bool _agefit; // fit circle using AGE method
     bool _stereoinit; // require stereo hits to initialize
     bool _stereofit; // require stereo hits 
     bool _targetpoint; // use target as a point in the circle fit

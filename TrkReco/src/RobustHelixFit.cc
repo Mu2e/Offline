@@ -36,7 +36,8 @@ namespace mu2e
 
   RobustHelixFit::RobustHelixFit(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
-    _dontuseflag(pset.get<std::vector<std::string>>("UseFlag",vector<string>{"Outlier"})),
+    _cfit(static_cast<CircleFit>(pset.get<int>("CircleFitType",median))),
+    _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier"})),
     _minnhit(pset.get<unsigned>("minNHit",5)),
     _maxphisep(pset.get<double>("MaxPhiHitSeparation",1.0)),
     _lambda0(pset.get<double>("lambda0",0.1)),
@@ -57,7 +58,6 @@ namespace mu2e
     _mindelta(pset.get<double>("minDelta",500.0)),
     _lmin(pset.get<double>("minAbsLambda",100.0)),
     _lmax(pset.get<double>("maxAbsLambda",400.0)),
-    _agefit(pset.get<bool>("AGEfit",false)),
     _stereoinit(pset.get<bool>("stereoinit",false)),
     _stereofit(pset.get<bool>("stereofit",false)),
     _targetinit(pset.get<bool>("targetinit",true)),
@@ -68,7 +68,7 @@ namespace mu2e
     _helicity(pset.get<int>("Helicity",Helicity::unknown))
   {
     if(_helicity._value == Helicity::unknown){
-      throw cet::exception("RECO")<<"mu2e::RobustHelix: Invalid Helicity specified"<< std::endl;
+      throw cet::exception("RECO")<<"mu2e::RobustHelixFit: Invalid Helicity specified"<< std::endl;
     }
     if(_stereofit)_useflag = StrawHitFlag(StrawHitFlag::stereo);
     if(_helicity._value < 0){
@@ -88,13 +88,13 @@ namespace mu2e
     hseed._status.clear(TrkFitFlag::phizOK);
     hseed._status.clear(TrkFitFlag::helixOK);
     // gross outlier removal on init
-    if(!hseed._status.hasAllProperties(TrkFitFlag::initOK))
+    if(!hseed._status.hasAllProperties(TrkFitFlag::hitsOK))
       filterSector(hseed._hhits);
     // count what's left
     if(hitCount(hseed._hhits) >= _minnhit){
       hseed._status.merge(TrkFitFlag::hitsOK);
       // solve for the circle parameters
-      fitXY(hseed);
+      fitCircle(hseed);
       if(hseed._status.hasAnyProperty(TrkFitFlag::circleOK)){
 	// solve for the longitudinal parameters
 	fitFZ(hseed);
@@ -108,18 +108,31 @@ namespace mu2e
     }
   }
 
-  void RobustHelixFit::fitXY(HelixSeed& hseed) {
-    HelixHitCollection& hhits = hseed._hhits;
-    RobustHelix& rhel = hseed._helix;
-    // if needed, initialize
-    if(!hseed._status.hasAllProperties(TrkFitFlag::initOK)){
-      if(!initXY(hhits,rhel))
-	return;
+  void RobustHelixFit::fitCircle(HelixSeed& hseed) {
+    switch ( _cfit ) {
+      case median : default :
+	fitCircleMedian(hseed);
+	break;
+      case AGE :
+	fitCircleAGE(hseed);
+	break;
+      case chisq :
+	throw cet::exception("Reco") << "mu2e::RobustHelixFit: Chisq fit not yet implemented " << std::endl;
+	break;
     }
-    unsigned niter(0);
-    if(_agefit) {
-      // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
-      // setup working variables
+  }
+
+  void RobustHelixFit::fitCircleAGE(HelixSeed& hseed) {
+    // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
+    // This algorithm requires a reasonable initial estimate: use the median fit
+    if(!hseed._status.hasAllProperties(TrkFitFlag::circleInit)){
+      fitCircleMedian(hseed);
+    }
+    if(hseed._status.hasAllProperties(TrkFitFlag::circleInit)){
+      HelixHitCollection& hhits = hseed._hhits;
+      RobustHelix& rhel = hseed._helix;
+
+      unsigned niter(0);
       double age;
       Hep3Vector center = rhel.center();
       double rmed = rhel.radius();
@@ -188,14 +201,15 @@ namespace mu2e
 	std::cout << "AGE didn't converge!!! " << std::endl;
       }
       // update parameters
-      rhel.center() = center;
-      rhel.radius() = rmed;
+      rhel._rcent = center.perp();
+      rhel._fcent = center.phi();
+      rhel._radius = rmed;
+      // update flag
+      if(goodCircle(rhel))
+	hseed._status.merge(TrkFitFlag::circleOK);
+      if(niter < _maxniter)
+	hseed._status.merge(TrkFitFlag::circleConverged);
     }
-    // update flag
-    if(goodCircle(rhel))
-      hseed._status.merge(TrkFitFlag::circleOK);
-    if(niter < _maxniter)
-      hseed._status.merge(TrkFitFlag::circleConverged);
   }
 
   void RobustHelixFit::forceTargetInter(Hep3Vector& center, double& radius) {
@@ -220,8 +234,8 @@ namespace mu2e
   bool RobustHelixFit::initFZ(HelixHitCollection& hhits,RobustHelix& rhel) {
     bool retval(false);
     // initialize z parameters
-    rhel.lambda() = 1.0e12; //infinite slope for now
-    rhel.fz0() = 0.0;
+    rhel._lambda = 1.0e12; //infinite slope for now
+    rhel._fz0 = 0.0;
     static TrkFitFlag circleOK(TrkFitFlag::circleOK);
     static TrkFitFlag helixOK(TrkFitFlag::helixOK);
     // sort points by z
@@ -258,7 +272,7 @@ namespace mu2e
       // check the range 
       if( lambda < _lmax && lambda > _lmin) {
 	// update helix
-	rhel.lambda() = lambda;
+	rhel._lambda = lambda;
 	// find phi at z intercept.  Use a histogram technique since phi looping
 	// hasn't been resolved yet, and to avoid inefficiency at the phi wrapping edge
 	static TH1F hphi("hphi","phi value",_nphibins,-_phifactor*CLHEP::pi,_phifactor*CLHEP::pi);
@@ -285,7 +299,7 @@ namespace mu2e
 	if(count > _minnphi) {
 	  fz0 /= count;
 	  // choose the intercept to have |fz0| < pi.  This is purely a convention
-	  rhel.fz0() = deltaPhi(0.0,fz0);
+	  rhel._fz0 = deltaPhi(0.0,fz0);
 	  // update the hits to resolved phi looping with these parameters
 	  for(auto& hhit : hhits) {
 	    resolvePhi(hhit,rhel);
@@ -301,9 +315,9 @@ namespace mu2e
     HelixHitCollection& hhits = hseed._hhits;
     RobustHelix& rhel = hseed._helix;
     // if required, initialize
-    if(!hseed._status.hasAllProperties(TrkFitFlag::initOK)){
+    if(!hseed._status.hasAllProperties(TrkFitFlag::phizInit)){
       if(initFZ(hhits,rhel))
-	hseed._status.merge(TrkFitFlag::initOK);
+	hseed._status.merge(TrkFitFlag::phizInit);
       else
 	return;
     }
@@ -332,7 +346,7 @@ namespace mu2e
 	} // good 1st hit
       } // loop on 1st hit
       // extract slope
-      rhel.lambda() = extract_result<tag::median>(accf2);
+      rhel._lambda = extract_result<tag::median>(accf2);
 //  test parameters for return value
       // now extract intercept.  Here we solve for the difference WRT the previous value
       accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acci2;
@@ -344,7 +358,8 @@ namespace mu2e
 	}
       }
       double dphi = extract_result<tag::median>(acci2);
-      rhel.fz0() += dphi;
+      // enforce convention on azimuth phase
+      rhel._fz0 = deltaPhi(0.0,rhel.fz0()+ dphi);
       // resolve the hit loops again
       for(auto& hhit : hhits)
 	changed |= resolvePhi(hhit,rhel);
@@ -356,8 +371,10 @@ namespace mu2e
       hseed._status.merge(TrkFitFlag::phizConverged);
   }
 
-  bool RobustHelixFit::initXY(HelixHitCollection const& hhits,RobustHelix& rhel) {
-    bool retval(false);
+  // simple median fit.  No initialization required
+  void RobustHelixFit::fitCircleMedian(HelixSeed& hseed) {
+    HelixHitCollection& hhits = hseed._hhits;
+    RobustHelix& rhel = hseed._helix;
     const double mind2 = _mindist*_mindist;
     const double maxd2 = _maxdist*_maxdist;
     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx, accy, accr;
@@ -423,18 +440,24 @@ namespace mu2e
     } // first point
     // median calculation needs a reasonable number of points to function
     if(ntriple > _minnhit){
-      retval = true;
       double centx = extract_result<tag::median>(accx);
       double centy = extract_result<tag::median>(accy);
       double rho = extract_result<tag::median>(accr);
-      rhel.center() = CLHEP::Hep3Vector(centx,centy,0.0);
-      rhel.radius() = rho;
+      CLHEP::Hep3Vector center(centx,centy,0.0);
+      rhel._rcent = center.perp();
+      rhel._fcent = center.phi();
+      rhel._radius = rho;
+      // update flag
+      hseed._status.merge(TrkFitFlag::circleInit);
+      if(goodCircle(rhel)){
+	hseed._status.merge(TrkFitFlag::circleOK);
+	hseed._status.merge(TrkFitFlag::circleConverged);
+      }
     }
-    return retval;
   }
 
   void RobustHelixFit::findAGE(HelixHitCollection const& hhits, Hep3Vector const& center,double& rmed, double& age) {
-  // fill radial information for all points, given this center
+    // fill radial information for all points, given this center
     std::vector<double> radii;
     for(auto const& hhit : hhits) {
       if(use(hhit)){
@@ -523,23 +546,40 @@ namespace mu2e
   }
 
   void RobustHelixFit::filterSector(HelixHitCollection& hhits) {
-    // Use the average X and Y to define the average phi of the hits
-    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx;
-    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accy;
-    for(auto const& hhit : hhits ) {
-      if(use(hhit)){
-	accx(hhit._pos.x());
-	accy(hhit._pos.y());
+    // Iteratively use the average X and Y to define the average phi of the hits
+    bool changed(true);
+    size_t nhit = hhits.size();
+    while(changed && nhit > _minnhit){
+      nhit = 0;
+      changed = false;
+      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx;
+      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accy;
+      for(auto const& hhit : hhits ) {
+	if(use(hhit)){
+	  accx(hhit._pos.x());
+	  accy(hhit._pos.y());
+	  nhit++;
+	}
       }
-    }
-    double mx = extract_result<tag::median>(accx);
-    double my = extract_result<tag::median>(accy);
-    double mphi = atan2(my,mx);
-    // require the hits be within a maximum of this global azimuth
-    for(auto& hhit : hhits) {
-      if(use(hhit)){
-	double dphi = fabs(deltaPhi(hhit.pos().phi(),mphi));
-	if(dphi > _maxphisep)setOutlier(hhit);
+      // compute median phi
+      double mx = extract_result<tag::median>(accx);
+      double my = extract_result<tag::median>(accy);
+      double mphi = atan2(my,mx);
+      // find the worst hit
+      double maxdphi =0.0;
+      auto worsthit = hhits.end();
+      for(auto ihit = hhits.begin(); ihit != hhits.end(); ++ihit) {
+	if(use(*ihit)){
+	  double dphi = fabs(deltaPhi(ihit->pos().phi(),mphi));
+	  if(dphi > maxdphi){
+	    maxdphi = dphi;
+	    worsthit = ihit;
+	  }
+	}
+      }
+      if(maxdphi > _maxphisep){
+	setOutlier(*worsthit);
+	changed = true;
       }
     }
   }

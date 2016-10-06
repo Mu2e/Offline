@@ -36,11 +36,11 @@ namespace mu2e {
 	// phi0 is the azimuthal angle of the particle velocity vector at the point
 	// of closest approach to the origin.  It's sign also depends on the angular
 	// momentum.  To translate from the center, we need to reverse coordinates
-	hpvec[HelixTraj::phi0Index] = atan2(-amsign*helix.center().x(),amsign*helix.center().y());
+	hpvec[HelixTraj::phi0Index] = atan2(-amsign*helix.centerx(),amsign*helix.centery());
 	// d0 describes the distance to the origin at closest approach.
 	// It is signed by the particle angular momentum WRT the origin.
 	// The Helix fit radial bias is anti-correlated with d0; correct for it here.
-	hpvec[HelixTraj::d0Index] = amsign*(helix.center().perp() - helix.radius());
+	hpvec[HelixTraj::d0Index] = amsign*(helix.rcent() - helix.radius());
 	// the dip angle is measured WRT the perpendicular, signed by the z component of linear momentum
 	hpvec[HelixTraj::tanDipIndex] = amsign*helix.lambda()/helix.radius();
 	// must change conventions here: fz0 is the phi at z=0, z0 is defined at the point of closest approach
@@ -63,17 +63,18 @@ namespace mu2e {
       // compute some simple useful parameters
       double pt = mom.perp();
       // transverse radius of the helix
-      helix.radius() = fabs(pt*momToRad);
+      helix._radius = fabs(pt*momToRad);
       //longitudinal wavelength; sign convention goes with angular rotation
-      helix.lambda() = -mom.z()*momToRad;
+      helix._lambda = -mom.z()*momToRad;
       // circle center
-      helix.center() = Hep3Vector(pos.x() + mom.y()*momToRad,
-	  pos.y() - mom.x()*momToRad, 0.0);
+      Hep3Vector center = Hep3Vector(pos.x() + mom.y()*momToRad, pos.y() - mom.x()*momToRad, 0.0);
+      helix._rcent = center.perp();
+      helix._fcent = center.phi();
       // phi at z=0
-      double phi = (pos - helix.center()).phi() - pos.z()/helix.lambda();
+      double phi = (pos - center).phi() - pos.z()/helix.lambda();
       // reset to be close to 0
       Angles::deltaPhi(phi);
-      helix.fz0() = phi;
+      helix._fz0 = phi;
     }
 
     void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr, KalSegment& kseg) {

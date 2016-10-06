@@ -67,6 +67,8 @@ namespace mu2e {
       unsigned _minnce; // minimum # CE hits to make plots
       double _targetradius;
       bool _plot;
+      TrkFitFlag _plotinc; // inclusive conditions for plotting
+      TrkFitFlag _plotexc; // exclusive conditions for plotting
       double				_cradres; // average center resolution along center position (mm)
       double				_cperpres; // average center resolution perp to center position (mm)
       double				_radres; // average radial resolution for circle fit (mm)
@@ -88,7 +90,7 @@ namespace mu2e {
       // time offsets
       SimParticleTimeOffset _toff;
       // Virtual Detector IDs
-      std::vector<int> _midvids;
+      vector<int> _midvids;
       // cache of BField at 0,0,0
       double _bz0;
       // helper functions
@@ -105,13 +107,13 @@ namespace mu2e {
        // TTree and branch variables
       TTree *_hdiag;
       Int_t _iev;
-      Bool_t _hitsOK, _initOK, _circleOK, _phizOK, _helixOK, _mchelixOK;
+      Bool_t _hitsOK, _circleInit, _phizInit, _circleOK, _phizOK, _helixOK, _mchelixOK;
       Bool_t _circleConverged, _phizConverged, _helixConverged;
       RobustHelix _rhel;
       Int_t _nhits, _nused, _nprimary;
       Int_t _pdg, _gen, _proc;
-      std::vector<HelixHitInfo> _hhinfo;
-      std::vector<HelixHitInfoMC> _hhinfomc;
+      vector<HelixHitInfo> _hhinfo;
+      vector<HelixHitInfoMC> _hhinfomc;
       RobustHelix _mch;
       Float_t _mcmom, _mcpz;
   };
@@ -122,11 +124,13 @@ namespace mu2e {
   HelixDiag::HelixDiag(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
     _diag(pset.get<int>("DiagLevel",1)),
-    _dontuseflag(pset.get<std::vector<std::string>>("UseFlag",vector<string>{"Outlier","OtherBackground"})),
+    _dontuseflag(pset.get<vector<string>>("UseFlag",vector<string>{"Outlier"})),
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
     _minnce(pset.get<unsigned>("MinimumCEHits",10)),
     _targetradius(pset.get<double>("TargetRadius",75)),
     _plot(pset.get<bool>("PlotHelices",false)),
+    _plotinc              (pset.get<vector<string> >("InclusivePlotFlagBits",vector<string>{"HitsOK"})),
+    _plotexc              (pset.get<vector<string> >("ExclusivePlotFlagBits",vector<string>{"HelixOK"})),
     _cradres	 (pset.get<double>("CenterRadialResolution",12.0)),
     _cperpres	 (pset.get<double>("CenterPerpResolution",12.0)),
     _radres	 (pset.get<double>("RadiusResolution",10.0)),
@@ -144,7 +148,8 @@ namespace mu2e {
       _hdiag=tfs->make<TTree>("hdiag","Helix Finding diagnostics");
       _hdiag->Branch("iev",&_iev,"iev/I");
       _hdiag->Branch("hitsOK",&_hitsOK,"hitsOK/B");
-      _hdiag->Branch("initOK",&_initOK,"initOK/B");
+      _hdiag->Branch("circleInit",&_circleInit,"circleInit/B");
+      _hdiag->Branch("phizInit",&_phizInit,"phizInit/B");
       _hdiag->Branch("circleOK",&_circleOK,"circleOK/B");
       _hdiag->Branch("phizOK",&_phizOK,"phizOK/B");
       _hdiag->Branch("helixOK",&_helixOK,"helixOK/B");
@@ -197,14 +202,15 @@ namespace mu2e {
 	TrkFitFlag const& status = hseed._status;
 	_rhel = rhel;
 	_hitsOK = status.hasAllProperties(TrkFitFlag::hitsOK);
-	_initOK = status.hasAllProperties(TrkFitFlag::initOK);
+	_circleInit = status.hasAllProperties(TrkFitFlag::circleInit);
+	_phizInit = status.hasAllProperties(TrkFitFlag::phizInit);
 	_circleOK = status.hasAllProperties(TrkFitFlag::circleOK);
 	_phizOK = status.hasAllProperties(TrkFitFlag::phizOK);
 	_helixOK = status.hasAllProperties(TrkFitFlag::helixOK);
 	_circleConverged = status.hasAllProperties(TrkFitFlag::circleConverged);
 	_phizConverged = status.hasAllProperties(TrkFitFlag::phizConverged);
 	_helixConverged = status.hasAllProperties(TrkFitFlag::helixConverged);
-	std::vector<StrawHitIndex> hits;
+	vector<StrawHitIndex> hits;
 	art::Ptr<SimParticle> pspp;
 	_nused = 0;
 	for(auto const& hhit : hhits){
@@ -223,7 +229,9 @@ namespace mu2e {
 	  // fill MC true helix parameters
 	  _mchelixOK = fillMCHelix(pspp);
 	}	
-	if( _plot ) {
+	// plot if requested and the fit satisfies the requirements
+	if( _plot && hseed._status.hasAllProperties(_plotinc) &&
+	    (!hseed._status.hasAnyProperty(_plotexc)) ) {
 	// count the # of conversion hits in this helix
 	  unsigned nce = countCEHits(hits);
 	  if (nce >= _minnce) {
@@ -385,42 +393,42 @@ namespace mu2e {
       if(conversion(hhit._shidx)){
 	if (use(hhit) ) {
 	  if (stereo(hhit)) {
-	    ce_stereo_used->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
+	    ce_stereo_used->Fill(hhit._pos.x()-rhel.centerx(),hhit._pos.y()-rhel.centery());
 	  }
 	  else {
-	    ce_notstereo_used->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
+	    ce_notstereo_used->Fill(hhit._pos.x()-rhel.centerx(),hhit._pos.y()-rhel.centery());
 	  }	      
 	}
 	else {
 	  if (stereo(hhit)) {
-	    ce_stereo_notused->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
+	    ce_stereo_notused->Fill(hhit._pos.x()-rhel.centerx(),hhit._pos.y()-rhel.centery());
 	  }
 	  else {
-	    ce_notstereo_notused->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
+	    ce_notstereo_notused->Fill(hhit._pos.x()-rhel.centerx(),hhit._pos.y()-rhel.centery());
 	  }
 	}
       }
       else {
 	if (use(hhit)) {
 	  if (stereo(hhit)) {
-	    bkg_stereo_used->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
+	    bkg_stereo_used->Fill(hhit._pos.x()-rhel.centerx(),hhit._pos.y()-rhel.centery());
 	  }
 	  else {
-	    bkg_notstereo_used->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
+	    bkg_notstereo_used->Fill(hhit._pos.x()-rhel.centerx(),hhit._pos.y()-rhel.centery());
 	  }	      
 	}
 	else {
 	  if (stereo(hhit)) {
-	    bkg_stereo_notused->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
+	    bkg_stereo_notused->Fill(hhit._pos.x()-rhel.centerx(),hhit._pos.y()-rhel.centery());
 	  }
 	  else {
-	    bkg_notstereo_notused->Fill(hhit._pos.x()-rhel.center().x(),hhit._pos.y()-rhel.center().y());
+	    bkg_notstereo_notused->Fill(hhit._pos.x()-rhel.centerx(),hhit._pos.y()-rhel.centery());
 	  }
 	}
       }
     }
 
-
+  // fit
     TArc* fitarc = new TArc(0.0,0.0,rhel.radius());
     fitarc->SetLineColor(kRed);
     fitarc->SetLineWidth(2);
@@ -428,14 +436,14 @@ namespace mu2e {
     // draw the detector boundaries
     static double innerrad(380.0);
     static double outerrad(680.0);
-    TArc* indet = new TArc(-rhel.center().x(),-rhel.center().y(),innerrad);
-    TArc* outdet = new TArc(-rhel.center().x(),-rhel.center().y(),outerrad);
+    TArc* indet = new TArc(-rhel.centerx(),-rhel.centery(),innerrad);
+    TArc* outdet = new TArc(-rhel.centerx(),-rhel.centery(),outerrad);
     indet->SetLineColor(kBlue);
     indet->SetFillStyle(0);
     outdet->SetLineColor(kBlue);
     outdet->SetFillStyle(0);
 
-    TArc* target = new TArc(-rhel.center().x(),-rhel.center().y(),_targetradius);
+    TArc* target = new TArc(-rhel.centerx(),-rhel.centery(),_targetradius);
     target->SetLineColor(kBlack);
     target->SetFillStyle(0);
     // add these to the plot
@@ -446,6 +454,12 @@ namespace mu2e {
     flist->Add(target);
 
     if (_mcdiag) {
+      // mc truth
+      TArc* mcarc = new TArc(_mch.centerx()-rhel.centerx(),_mch.centery()-rhel.centery(),_mch.radius());
+      mcarc->SetLineColor(kBlue);
+      mcarc->SetLineWidth(2);
+      mcarc->SetFillStyle(0);
+      flist->Add(mcarc);
       // Plot the MC true CE hit positions
       char mctruth_name[100];
       snprintf(mctruth_name,100,"mctshxy%i",igraph);
@@ -457,7 +471,7 @@ namespace mu2e {
 	StrawDigiMC const& mcdigi = _mcdigis->at(hhit._shidx);
 	art::Ptr<StepPointMC> spmcp;
 	if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && TrkMCTools::CEDigi(mcdigi)){
-	  mct->Fill(spmcp->position().x()-rhel.center().x(),spmcp->position().y()-rhel.center().y());
+	  mct->Fill(spmcp->position().x()-rhel.centerx(),spmcp->position().y()-rhel.centery());
 	}
       }
     }
@@ -553,14 +567,20 @@ namespace mu2e {
 	}
       }
     }
-    TF1* line = new TF1("line","[0]+[1]*x",-1500,1500);
-    line->SetParameter(0,rhel.fz0());
-    line->SetParameter(1,1.0/rhel.lambda());
-    line->SetLineColor(kRed);
+    TF1* fitline = new TF1("fitline","[0]+[1]*x",-1500,1500);
+    fitline->SetParameter(0,rhel.fz0());
+    fitline->SetParameter(1,1.0/rhel.lambda());
+    fitline->SetLineColor(kRed);
     TList* flist = ce_stereo_used->GetListOfFunctions();
-    flist->Add(line);
+    flist->Add(fitline);
 
     if (_mcdiag) {
+      TF1* mcline = new TF1("mcline","[0]+[1]*x",-1500,1500);
+      mcline->SetParameter(0,_mch.fz0());
+      mcline->SetParameter(1,1.0/_mch.lambda());
+      mcline->SetLineColor(kBlue);
+      TList* flist = ce_stereo_used->GetListOfFunctions();
+      flist->Add(mcline);
       // Plot the MC true CE hits
       char mctruth_name[100];
       snprintf(mctruth_name,100,"mctshphiz%i",igraph);

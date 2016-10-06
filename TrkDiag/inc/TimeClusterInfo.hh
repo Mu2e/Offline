@@ -18,12 +18,19 @@ namespace mu2e {
     Int_t _nhits; // # of hits in this cluster
     Int_t _ncehits; // # of CE hits in this cluster
     Float_t _time; // cluster time
+    Float_t _terr; // cluster time error
     Float_t _minhtime, _maxhtime; // min and max cluster hit time
     threevec _pos; // average position of cluster
+    Float_t _ecalo; // calo cluster energy
+    Float_t _tcalo; // calo cluster time
+    threevec _cog; // calo cluster position
     
-    void reset() { _tcindex = _nhits = _ncehits = 0; _time=0.0; _pos.reset(); }
-    static std::string const& leafnames() { static const std::string leaves =
-      std::string("clusterindex/I:nhits/I:ncehits/I:time/F:")+threevec::leafnames();
+    void reset() { _tcindex = -1; _nhits = _ncehits = 0; _time = _terr = _ecalo = _tcalo = 0.0; _pos.reset(); _cog.reset(); }
+    static std::string leafnames() { 
+      static std::string leaves; leaves =
+      std::string("tcindex/I:nhits/I:ncehits/I:time/F:terr/F:minhtime/F:maxhtime/F:") 
+      + threevec::leafnames("pos") + std::string(":ecalo/F:tcalo/F:")
+      + threevec::leafnames("cog"); 
       return leaves;
     } 
   };
@@ -48,11 +55,11 @@ namespace mu2e {
     Float_t	_maxdphi; // max dphi WRT average
     Float_t	_minrho; // min rho WRT average
     Float_t	_maxrho; // max rho WRT average
-    void reset() { _nce = _ncesel = _nceclust = 0; _time = _maxdphi = _maxrho = _minrho = 0.0; _pos.reset();}
-    static std::string const& leafnames() {
-      static const std::string leaves =
+    void reset() { _nce = _ncesel = _nceclust = 0; _time = _maxdphi = _maxrho = 0.0; _minrho = 1000.0; _pos.reset();}
+    static std::string leafnames() {
+      static std::string leaves; leaves =
 	std::string("nce/I:ncesel/I:nceclust/I:time/F:")
-	+threevec::leafnames()
+	+threevec::leafnames("pos")
 	+std::string(":maxdphi/F:minrho/F:maxrho/F");
       return leaves;
     } 

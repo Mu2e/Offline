@@ -23,8 +23,9 @@ namespace mu2e {
   std::map<std::string,TrkFitFlagDetail::mask_type> const& TrkFitFlagDetail::bitNames() {
     static std::map<std::string,mask_type> bitnames;
     if(bitnames.size()==0){
+      bitnames[std::string("CircleInit")]           = bit_to_mask(circleInit);
+      bitnames[std::string("PhiZInit")]           = bit_to_mask(phizInit);
       bitnames[std::string("HitsOK")]             = bit_to_mask(hitsOK);
-      bitnames[std::string("InitOK")]           = bit_to_mask(initOK);
       bitnames[std::string("CircleOK")]           = bit_to_mask(circleOK);
       bitnames[std::string("PhiZOK")]           = bit_to_mask(phizOK);
       bitnames[std::string("HelixOK")]              = bit_to_mask(helixOK);
