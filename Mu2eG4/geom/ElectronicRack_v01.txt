@@ -3,27 +3,32 @@
 // George Ginther
 
 // Sort boxes into "types"
-int ElectronicRack.numberOfRackTypes = 1;
+int ElectronicRack.numberOfRackTypes = 2;
 
 // How many of each type box to make
 int ElectronicRack.nRackType1 = 2;  // Relay Racks in alcove
+int ElectronicRack.nRackType2 = 1;  // Electronics "board" for STM
 
 // Dimensions in u, v, w for each type of box.  Dimensions should be in mm.
 vector<double> ElectronicRack.dimsType1 = {610,2130,762};
+vector<double> ElectronicRack.dimsType2 = {400,120,50};
 
 
-// Materials for each type of box.  Here, Barite and regular concrete.
+// Materials for each type of rack
 string ElectronicRack.materialType1   = "RackElectronics";
+string ElectronicRack.materialType2   = "RackElectronics";
 
 
 // The center of the boxes in Mu2e Offline coordinates
 vector<double> ElectronicRack.centerType1Rack1 = {-9000,-1240,15000};// 
 vector<double> ElectronicRack.centerType1Rack2 = {-9612,-1240,15000};//
+vector<double> ElectronicRack.centerType2Rack1 = {-3904,-1200,40350};// 
 
 
 // The orientation of each detector.  See docdb xxx for details.
 string ElectronicRack.orientationType1Rack1 = "000";
 string ElectronicRack.orientationType1Rack2 = "000";
+string ElectronicRack.orientationType2Rack1 = "000";
 
 
 bool  ElectronicRack.visible = true;
