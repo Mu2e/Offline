@@ -25,6 +25,8 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
+// tracking
+#include "TrkReco/inc/TrkT0Calculator.hh"
 // root
 #include "TH1F.h"
 // boost
@@ -37,12 +39,13 @@
 #include <boost/accumulators/statistics/error_of_mean.hpp>
 #include <boost/accumulators/statistics/max.hpp>
 #include <boost/accumulators/statistics/min.hpp>
+#include <boost/accumulators/statistics/weighted_mean.hpp>
 // C++
 #include <memory>
 #include <algorithm>
 using namespace std; 
 using namespace boost::accumulators;
-
+using CLHEP::Hep3Vector;
 
 namespace mu2e {
 // struct to run MVA
@@ -58,14 +61,6 @@ namespace mu2e {
     bool operator()(TimeCluster const& x, TimeCluster const& y) {
       return x._strawHitIdxs.size() > y._strawHitIdxs.size();
     }
-  };
-// comparison functor for sorting hitIndices by time
-  struct hitTimeSort : public binary_function<StrawHitIndex, StrawHitIndex, bool> {
-    hitTimeSort(const StrawHitCollection* shcol) : _shcol(shcol){}
-    bool operator() (StrawHitIndex const& x, StrawHitIndex const& y){
-      return _shcol->at(x).time() > _shcol->at(y).time();
-    }
-    const StrawHitCollection* _shcol;
   };
 
   class TimeClusterFinder : public art::EDProducer {
@@ -102,8 +97,7 @@ namespace mu2e {
     unsigned      _nbins;
     double        _ymin;
     bool	  _usecc;
-    unsigned	  _ccwt;
-    double	  _cctoff, _ccmine;
+    double	  _ccmine;
 
     // cache of event objects
     const StrawHitCollection*             _shcol;
@@ -113,6 +107,9 @@ namespace mu2e {
     // need the calo handle to so I can make a ptr later
     MVATools                              _peakMVA; // MVA for peak cleaning
     TimePeakMVA                           _pmva; // input variables to TMVA for peak cleaning
+
+    // T0 calcuator
+    TrkT0Calculator _t0calc;
 
     art::Handle<mu2e::StrawHitCollection> _strawhitsH;
 
@@ -125,6 +122,8 @@ namespace mu2e {
     double countHits(TH1F const& tspect,double time);
     bool goodHit(StrawHitFlag const& flag) const;
     bool goodCaloCluster(CaloCluster const& cc) const;
+    double hitTime(size_t ish) const;
+    double caloClusterTime(CaloCluster const& cc) const;
 
   };
 
@@ -150,10 +149,9 @@ namespace mu2e {
     _tbin              (pset.get<double>("tbin",15.0)),
     _ymin              (pset.get<double>("ymin",5.0)),
     _usecc	       (pset.get<bool>("UseCaloCluster",false)),
-    _ccwt	       (pset.get<unsigned>("CaloClusterWeight",5)), // count each good cluster as this many hits
-    _cctoff            (pset.get<double>("CaloClusterTimeOffset",-7.0)), // TimeOffset WRT track t0 (ns)
     _ccmine            (pset.get<double>("CaloClusterMinE",50.0)), // minimum energy to call a cluster 'good' (MeV)
-    _peakMVA           (pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet()))
+    _peakMVA           (pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet())),
+    _t0calc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet()))
   {
     // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
@@ -234,7 +232,7 @@ namespace mu2e {
     unsigned nstrs = _shcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
       if(goodHit(_shfcol->at(istr))) {
-	double time = _shcol->at(istr).time();
+	double time = hitTime(istr);
 	timespec.Fill(time);
       }
     }
@@ -242,8 +240,10 @@ namespace mu2e {
     if(_usecc && _cccol != 0){
       for(auto icc = _cccol->begin();icc != _cccol->end(); ++icc){
 	if(goodCaloCluster(*icc)){
-	  double time = icc->time() + _cctoff; // must account for time offsets.  This should be centralized FIXME!
-	  timespec.Fill(time,_ccwt); // clusters are weighted WRT hits
+	  double time = caloClusterTime(*icc);
+	  // weight the cluster WRT hits inversely by the resolution
+	  double wt = _t0calc.strawHitTimeErr()/_t0calc.caloClusterTimeErr(icc->sectionId());
+	  timespec.Fill(time, wt);
 	}
       }
     }
@@ -265,7 +265,7 @@ namespace mu2e {
      // associate all hits in the time window with this peak
       for(size_t istr=0; istr<nstrs;++istr){
 	if(goodHit(_shfcol->at(istr))){
-	  double time = _shcol->at(istr).time();
+	  double time = hitTime(istr);
 	  if(fabs(time-tctime) < _maxdt){
 	    tclust._strawHitIdxs.push_back(StrawHitIndex(istr));
 	  }
@@ -276,7 +276,7 @@ namespace mu2e {
 	auto bestcc = _cccol->end();
 	for(auto icc = _cccol->begin();icc != _cccol->end(); ++icc){
 	  if(goodCaloCluster(*icc)){
-	    double time = icc->time() + _cctoff; // must account for time offsets.  This should be centralized FIXME!
+	    double time = caloClusterTime(*icc);
 	    if(fabs(tctime-time) < _maxdt) {
 	      if(bestcc == _cccol->end() || icc->energyDep() > bestcc->energyDep())
 		bestcc = icc;
@@ -305,33 +305,37 @@ namespace mu2e {
     // use medians to initialize robustly
     accumulator_set<double, stats<tag::min > > tmin;
     accumulator_set<double, stats<tag::max > > tmax;
-    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > tacc;
+    accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > tacc;
     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > xacc;
     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > yacc;
     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > zacc;
     unsigned nstrs = tclust._strawHitIdxs.size();
-    for(unsigned istr=0; istr<nstrs;++istr){
-      unsigned ish = tclust._strawHitIdxs[istr];
+    for(auto ish :tclust._strawHitIdxs) { 
       if(goodHit(_shfcol->at(ish))){
-	tmin(_shcol->at(ish).time());
-	tmax(_shcol->at(ish).time());
-	tacc(_shcol->at(ish).time());
-	xacc(_shpcol->at(ish).pos().x());
-	yacc(_shpcol->at(ish).pos().y());
-	zacc(_shpcol->at(ish).pos().z());
+      // compute the corrected hit time
+	Hep3Vector const& pos = _shpcol->at(ish).pos();
+	double htime = hitTime(ish);
+	// weight inversely by the hit time resolution
+	double wt = 1.0/_t0calc.strawHitTimeErr();
+	tmin(htime);
+	tmax(htime);
+	tacc(htime,weight=wt);
+	xacc(pos.x());
+	yacc(pos.y());
+	zacc(pos.z());
       }
     }
-    // add cluster time.  Crude incrementatio
+    // add cluster time
     if(tclust._caloCluster.isNonnull()){
-      double time = tclust._caloCluster->time();
-      for(unsigned iwt=0;iwt < _ccwt; ++iwt)
-	tacc(time);
+      double ctime = caloClusterTime(*tclust._caloCluster);
+      double wt = 1.0/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId());
+      tacc(ctime,weight=wt);
     }
     // set peak info
     static double invsqrt12(1.0/sqrt(12.0));
-    tclust._t0._t0 = median(tacc);
+    tclust._t0._t0 = extract_result<tag::weighted_median>(tacc);
     tclust._t0._t0err = ( boost::accumulators::extract::max(tmax)-boost::accumulators::extract::min(tmin))*invsqrt12/sqrt(nstrs);
-    tclust._pos = CLHEP::Hep3Vector(median(xacc),median(yacc),median(zacc));
+    tclust._pos = Hep3Vector(median(xacc),median(yacc),median(zacc));
   }
 
   void TimeClusterFinder::refineCluster(TimeCluster& tclust) {
@@ -345,7 +349,7 @@ namespace mu2e {
       worstmva = 100.0;
       for(size_t ips=0;ips<tclust._strawHitIdxs.size();++ips){
 	unsigned ish = tclust._strawHitIdxs[ips];
-	double dt = _shcol->at(ish).time() - ptime;
+	double dt = hitTime(ish) - ptime;
 	double rho = _shpcol->at(ish).pos().perp();
 	double phi = _shpcol->at(ish).pos().phi();
 	double dphi = Angles::deltaPhi(phi,pphi);
@@ -366,38 +370,43 @@ namespace mu2e {
       }
       // re-compute the average phi and range
       accumulator_set<double, stats<tag::mean > > facc;
-      accumulator_set<double, stats<tag::mean > > tacc;
+      accumulator_set<double, stats<tag::weighted_mean >, double > tacc;
       for(size_t ips=0;ips<tclust._strawHitIdxs.size();++ips){
 	unsigned ish = tclust._strawHitIdxs[ips];
-	double time = _shcol->at(ish).time();
+	double time = hitTime(ish);
+	double wt = 1.0/_t0calc.strawHitTimeErr();
 	double phi = _shpcol->at(ish).pos().phi();
 	Angles::deltaPhi(phi,pphi);
-	tacc(time);
+	tacc(time,weight=wt);
 	facc(phi);
       }
       // add cluster time.  Crude incrementatio
       if(tclust._caloCluster.isNonnull()){
-	double time = tclust._caloCluster->time();
-	for(unsigned iwt=0;iwt < _ccwt; ++iwt)
-	  tacc(time);
+	double time = caloClusterTime(*tclust._caloCluster);
+	double wt = 1.0/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId());
+	tacc(time,weight=wt);
       }
       pphi = extract_result<tag::mean>(facc);
-      ptime = extract_result<tag::mean>(tacc);
+      ptime = extract_result<tag::weighted_mean>(tacc);
     } while(tclust._strawHitIdxs.size() >= _minnhits && worstmva < _minpeakmva);
     // final pass: hard cut on dt and dphi
     vector<size_t> toremove;
     accumulator_set<double, stats<tag::mean > > facc;
-    accumulator_set<double, stats<tag::error_of<tag::mean> > > tacc;
+    accumulator_set<double, stats<tag::weighted_mean >, double > tacc;
+    // boost weighted mean can't also compute error: do that by hand
+    accumulator_set<double, stats<tag::error_of<tag::mean> > > terr;
     accumulator_set<double, stats<tag::mean > > racc;
     accumulator_set<double, stats<tag::mean > > zacc;
     for(size_t ips=0;ips<tclust._strawHitIdxs.size();++ips){
       unsigned ish = tclust._strawHitIdxs[ips];
-      double dt = _shcol->at(ish).time() - ptime;
+      double dt = hitTime(ish) - ptime;
+      double wt = 1.0/_t0calc.strawHitTimeErr();
       double phi = _shpcol->at(ish).pos().phi();
       double rho = _shpcol->at(ish).pos().perp();
       double dphi = Angles::deltaPhi(phi,pphi);
       if(fabs(dt) < _maxpeakdt && fabs(dphi) < _maxpeakdphi){
-	tacc(_shcol->at(ish).time());
+	tacc(hitTime(ish),weight=wt);
+	terr(hitTime(ish));
 	facc(phi);
 	racc(rho);
 	zacc(_shpcol->at(ish).pos().z());
@@ -407,9 +416,11 @@ namespace mu2e {
     }
     // add cluster time.  Crude incrementatio
     if(tclust._caloCluster.isNonnull()){
-      double time = tclust._caloCluster->time();
-      for(unsigned iwt=0;iwt < _ccwt; ++iwt)
-	tacc(time);
+      double time = caloClusterTime(*tclust._caloCluster);
+      double wt = 1.0/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId());
+      tacc(time,weight=wt);
+      for(int ihit =0; ihit < int(ceil(_t0calc.strawHitTimeErr()/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId())));++ihit)
+	terr(time);
     }
     // actually remove the hits; must start from the back
     std::sort(toremove.begin(),toremove.end(),std::greater<size_t>());
@@ -418,13 +429,13 @@ namespace mu2e {
       tclust._strawHitIdxs.pop_back();
     }
     // update peak properties
-    tclust._t0._t0 = extract_result<tag::mean>(tacc);
-    tclust._t0._t0err = error_of<tag::mean>(tacc);
+    tclust._t0._t0 = extract_result<tag::weighted_mean>(tacc);
+    tclust._t0._t0err = error_of<tag::mean>(terr);
     pphi = extract_result<tag::mean>(facc);
     double prho = extract_result<tag::mean>(racc);
     double zpos = extract_result<tag::mean>(zacc);
     // update position
-    tclust._pos = CLHEP::Hep3Vector(prho*cos(pphi),prho*sin(pphi),zpos);
+    tclust._pos = Hep3Vector(prho*cos(pphi),prho*sin(pphi),zpos);
   }
 
   void TimeClusterFinder::findPeaks( TH1F const& tspect,std::vector<double>& tctimes) {
@@ -486,6 +497,14 @@ namespace mu2e {
 
   bool TimeClusterFinder::goodHit(StrawHitFlag const& flag) const {
     return flag.hasAllProperties(_hsel) && !flag.hasAnyProperty(_hbkg);
+  }
+
+  double TimeClusterFinder::hitTime(size_t ish) const {
+    return _shcol->at(ish).time() - _t0calc.strawHitTimeOffset(_shpcol->at(ish).pos().z());
+  }
+
+  double TimeClusterFinder::caloClusterTime(CaloCluster const& cc) const {
+    return cc.time() - _t0calc.caloClusterTimeOffset(cc.sectionId());
   }
 
   bool TimeClusterFinder::goodCaloCluster(CaloCluster const& cc) const {

@@ -31,19 +31,50 @@ namespace mu2e
 
   TrkT0Calculator::TrkT0Calculator(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
-    _useflag(pset.get<std::vector<std::string>>("UseFlag")),
-    _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier","DeltaRay","Isolated"}))
-    {} 
+//    _useflag(pset.get<std::vector<std::string>>("UseFlag")),
+//    _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier","DeltaRay","Isolated"})),
+    _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
+    _shOffset(pset.get<double>("StrawHitTimeOffset",25.5)),
+    _shSlope(pset.get<double>("StrawHitTimeSlope",4.7e-3)),// ns/mm
+    _shErr(pset.get<double>("StrawHitTimeErr",9.7)) // ns
+  {
+    _caloT0Offset[0] = pset.get<double>("Disk0TimeOffset",9.7); // nanoseconds
+    _caloT0Offset[1] = pset.get<double>("Disk1TimeOffset",12.2); // nanoseconds
+    _caloT0Err[0] = pset.get<double>("Disk0TimeErr",0.8); // nanoseconds
+    _caloT0Err[1] = pset.get<double>("Disk1TimeErr",1.7); // nanoseconds
+  } 
 
   TrkT0Calculator::~TrkT0Calculator() {}
 
-  void TrkT0Calculator::updateT0(TimeCluster& tc, StrawHitCollection const& shcol, TrkFitDirection const& fdir){
+  void TrkT0Calculator::updateT0(TimeCluster& tc, StrawHitCollection const& shcol){
 
 
   }
-  void TrkT0Calculator::updateT0(HelixSeed& hs, StrawHitCollection const& shcol, TrkFitDirection const& fdir) {
+  void TrkT0Calculator::updateT0(HelixSeed& hs, StrawHitCollection const& shcol) {
 
+  }
+
+  double TrkT0Calculator::strawHitTimeOffset(double hitz) const {
+    double retval = _shOffset + hitz*_shSlope;
+    if(_fdir != TrkFitDirection::downstream)// change sign for upstream
+      retval *= -1.0;
+    return retval;
+  }
+
+  double TrkT0Calculator::caloClusterTimeOffset(int sectionId) const {
+    double retval(0.0);
+    if(sectionId > -1 && sectionId < 2)
+      retval = _caloT0Offset[sectionId];
+    if(_fdir != TrkFitDirection::downstream)
+      retval *= -1.0;
+    return retval;
+  }
+
+  double TrkT0Calculator::caloClusterTimeErr(int sectionId) const {
+    double retval(1e10);
+    if(sectionId > -1 && sectionId < 2)
+      retval = _caloT0Err[sectionId];
+    return retval;
   }
 
 }
- 

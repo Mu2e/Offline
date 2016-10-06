@@ -16,6 +16,9 @@
 #include "Mu2eUtilities/inc/MVATools.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+// tracking
+#include "TrkReco/inc/TrkT0Calculator.hh"
 // TrkDiag
 #include "TrkDiag/inc/TimeClusterInfo.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
@@ -96,7 +99,11 @@ namespace mu2e {
     MCClusterInfo		  _ceclust; // info about 'cluster' of MC CE hits
     vector<TimeClusterHitInfo>	  _tchinfo; // info about hits of best time cluster
     vector<TimeClusterInfo>	  _alltc; // info about all TimeClusters in the event, sorted by # CE
-    // helper functions
+    // time offsets
+    SimParticleTimeOffset _toff;
+    //t0 calculator
+    TrkT0Calculator _t0calc;
+// helper functions
     void createDiagnostics();
     bool findData(art::Event const& evt);
     void plotTimeSpectra ();
@@ -104,7 +111,8 @@ namespace mu2e {
     void fillClusterInfo (TimeCluster const& tc,TimeClusterInfo& tcinfo);
     void fillClusterHitInfo (TimeCluster const& besttc); 
     void fillCECluster();
-
+    double hitTime(size_t ish) const;
+    double caloClusterTime(CaloCluster const& cc) const;
   };
 
   TimeClusterDiag::~TimeClusterDiag() {
@@ -127,8 +135,10 @@ namespace mu2e {
     _peakMVA		(pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet())),
     _tmin		(pset.get<double>("tmin",500.0)),
     _tmax		(pset.get<double>("tmax",1700.0)),
-    _tbin		(pset.get<double>("tbin",15.0))
-  {
+    _tbin		(pset.get<double>("tbin",15.0)),
+    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
+    _t0calc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet()))
+    {
     // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
     _tcsel = StrawHitFlag(StrawHitFlag::tclust); 
@@ -192,6 +202,7 @@ namespace mu2e {
     if(_mcdiag){
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
       _mcdigis = mcdH.product();
+      _toff.updateMap(evt);
     }
     // calorimeter data may or may not be present
     art::Handle<CaloClusterCollection> ccH;
@@ -248,11 +259,13 @@ namespace mu2e {
     for (auto const& idx : tc._strawHitIdxs) {
       TimeClusterHitInfo tchi;
       size_t ish = idx;
-      tchi._dt = _shcol->at(ish).time()-tc._t0._t0;
+      tchi._time = _shcol->at(ish).time();
+      tchi._dt = hitTime(ish) -tc._t0._t0;
       Hep3Vector const& pos = _shpcol->at(ish).pos();
       double phi = pos.phi();
       tchi._dphi = Angles::deltaPhi(phi,tc._pos.phi());
       tchi._rho = pos.perp();
+      tchi._z = pos.z();
 // compute MVA
       std::vector<Double_t> pars(3);
       pars[0] = tchi._dt;
@@ -262,6 +275,10 @@ namespace mu2e {
 // MC truth
       if(_mcdiag){
 	StrawDigiMC const& mcdigi = _mcdigis->at(idx);
+	StrawDigi::TDCChannel itdc = StrawDigi::zero;
+	if(!mcdigi.hasTDC(itdc))itdc= StrawDigi::one;
+	tchi._mctime = _toff.timeWithOffsetsApplied( *mcdigi.stepPointMC(itdc));
+	tchi._mcmom = mcdigi.stepPointMC(itdc)->momentum().mag();
 	art::Ptr<SimParticle> sp;
 	if(TrkMCTools::simParticle(sp,mcdigi) > 0){
 	  tchi._mcpdg = sp->pdgId();
@@ -313,7 +330,7 @@ namespace mu2e {
 
     unsigned nstrs = _shcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
-      double time = _shcol->at(istr).time();
+      double time = hitTime(istr);
       bool conversion(false);
       if(_mcdigis != 0) {
 	StrawDigiMC const& mcdigi = _mcdigis->at(istr);
@@ -334,7 +351,7 @@ namespace mu2e {
     // clusters if available
     if(_cccol != 0){
       for(auto cc : *_cccol) {
-	catsp->Fill(cc.time(),cc.energyDep()/20.0);
+	catsp->Fill( caloClusterTime(cc),_t0calc.strawHitTimeErr()/_t0calc.caloClusterTimeErr(cc.sectionId()));
       }
     }
     // plot time cluster times
@@ -378,10 +395,10 @@ namespace mu2e {
     if(tp._caloCluster.isNonnull()){
       tcinfo._ecalo = tp._caloCluster->energyDep();
       tcinfo._tcalo = tp._caloCluster->time();
+      tcinfo._dtcalo = caloClusterTime(*tp._caloCluster) - tp._t0._t0;
       // calculate the cluster position.  Currently the Z is in disk coordinates and must be translated, FIXME!
       Hep3Vector cog = calo->toTrackerFrame(calo->fromSectionFrameFF(tp._caloCluster->sectionId(),tp._caloCluster->cog3Vector()));
       tcinfo._cog = cog;
-      cout << "cluster position " << cog << endl;
     }
     // hit summary
     tcinfo._minhtime = 1.0e9;
@@ -389,8 +406,9 @@ namespace mu2e {
     tcinfo._ncehits = 0;
     // count CE hits 
     for (auto const& idx : tp._strawHitIdxs) {
-      tcinfo._maxhtime = std::max( _shcol->at(idx).time(), tcinfo._maxhtime);
-      tcinfo._minhtime = std::min( _shcol->at(idx).time(), tcinfo._minhtime);
+      float ht = hitTime(idx);
+      tcinfo._maxhtime = std::max( ht , tcinfo._maxhtime);
+      tcinfo._minhtime = std::min( ht , tcinfo._minhtime);
       if(_mcdiag){
       // mc truth info
 	StrawDigiMC const& mcdigi = _mcdigis->at(idx);
@@ -413,6 +431,15 @@ namespace mu2e {
     }
     if(_diag > 1) _tcdiag->Branch("tchinfo",&_tchinfo);
     if(_diag > 2) _tcdiag->Branch("alltc",&_alltc);
+  }
+
+
+  double TimeClusterDiag::hitTime(size_t ish) const {
+    return _shcol->at(ish).time() - _t0calc.strawHitTimeOffset(_shpcol->at(ish).pos().z());
+  }
+
+  double TimeClusterDiag::caloClusterTime(CaloCluster const& cc) const {
+    return cc.time() - _t0calc.caloClusterTimeOffset(cc.sectionId());
   }
 
 

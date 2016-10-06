@@ -23,13 +23,14 @@ namespace mu2e {
     threevec _pos; // average position of cluster
     Float_t _ecalo; // calo cluster energy
     Float_t _tcalo; // calo cluster time
+    Float_t _dtcalo; // calo cluster time
     threevec _cog; // calo cluster position
     
-    void reset() { _tcindex = -1; _nhits = _ncehits = 0; _time = _terr = _ecalo = _tcalo = 0.0; _pos.reset(); _cog.reset(); }
+    void reset() { _tcindex = -1; _nhits = _ncehits = 0; _time = _terr = _ecalo = _tcalo = _dtcalo = 0.0; _pos.reset(); _cog.reset(); }
     static std::string leafnames() { 
       static std::string leaves; leaves =
       std::string("tcindex/I:nhits/I:ncehits/I:time/F:terr/F:minhtime/F:maxhtime/F:") 
-      + threevec::leafnames("pos") + std::string(":ecalo/F:tcalo/F:")
+      + threevec::leafnames("pos") + std::string(":ecalo/F:tcalo/F:dtcalo/F:")
       + threevec::leafnames("cog"); 
       return leaves;
     } 
@@ -37,12 +38,15 @@ namespace mu2e {
 
   struct TimeClusterHitInfo {
     TimeClusterHitInfo() { reset(); }
+    Float_t _time; // hit time
     Float_t _dt; // time relative to the cluster
     Float_t _dphi; // resolved phi relative to the cluster
     Float_t _rho; // transverse radius of this hit
+    Float_t _z; // z of this hit
     Float_t _mva; // cluster MVA output
     Int_t _mcpdg, _mcgen, _mcproc; // MC truth info for this hit
-    void reset() { _dt = _dphi = _rho = _mva = -1000.0; _mcpdg = _mcgen = _mcproc = 0; }
+    Float_t _mctime, _mcmom;
+    void reset() { _time = _dt = _dphi = _rho = _z = _mva = _mctime = _mcmom = -1000.0; _mcpdg = _mcgen = _mcproc = 0; }
   };
     
   struct MCClusterInfo {  

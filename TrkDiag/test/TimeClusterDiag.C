@@ -20,24 +20,29 @@
 class TimeClusterDiag  {
   public:
     TimeClusterDiag(TTree* tcdiag) : _tcdiag(tcdiag),
-    _goodCENHits("ceclust.nce > 10"),
+    _goodCENHits("ceclust.nce > 14"),
     _goodCETime("ceclust.time > 500.0"),
-    _goodReco("besttc.nhits > 0 ")
+    _goodReco("besttc.nhits > 0 "),
+    _goodCalo("besttc.ecalo>50.0"),
+    _disk1("besttc.cogz<2000.0"),
+    _disk2("besttc.cogz>2000.0"),
+    _cehit("tchinfo._mcproc==56")
   {
     _goodCE = _goodCENHits+_goodCETime;
     _goodCEReco = _goodReco +TCut("besttc.ncehits/besttc.nhits>0.5");
   }
 
     TTree* _tcdiag;
-    TCut _goodCENHits;
-    TCut _goodCETime;
-    TCut _goodCE;
-    TCut _goodReco;
-    TCut _goodCEReco;
+    TCut _goodCENHits, _goodCETime, _goodCE;
+    TCut _goodReco, _goodCEReco;
+    TCut _goodCalo, _disk1, _disk2;
+    TCut _cehit;
 
     void Efficiency();
     void BestTC();
     void CE();
+    void time();
+    void ctime();
 };
 
 void TimeClusterDiag::Efficiency() {
@@ -125,3 +130,64 @@ void TimeClusterDiag::CE(){
   rmaxce->Draw();
 }
 
+void TimeClusterDiag::time() {
+  TH1F* calodt1 = new TH1F("calodt1","Calo Cluster time - CE time, Disk 1;#Delta t (ns)",100,0.0,25.0);
+  TH1F* calodt2 = new TH1F("calodt2","Calo Cluster time - CE time, Disk 2;#Delta t (ns)",100,0.0,25.0);
+  _tcdiag->Project("calodt1","besttc.tcalo-ceclust.time",_goodCE+_goodReco+_goodCalo+_disk1);
+  _tcdiag->Project("calodt2","besttc.tcalo-ceclust.time",_goodCE+_goodReco+_goodCalo+_disk2);
+
+  calodt1->Fit("gaus","qO");
+  calodt2->Fit("gaus","qO");
+  
+  TProfile* hdtzp = new TProfile("hdtzp","Hit time - CE time vs z;z (mm);#Delta t (ns)",50,-1600,1600,-25,75);
+  hdtzp->SetStats(1);
+  TH2F* hdtz = new TH2F("hdtz","Hit time - CE time vs z;z (mm);#Delta t (ns)",50,-1600,1600,50,-25,75);
+  hdtz->SetStats(0);
+  _tcdiag->Project("hdtz","tchinfo._time - ceclust.time:tchinfo._z",_goodCE+_goodReco+_cehit);
+  _tcdiag->Project("hdtzp","tchinfo._time - ceclust.time:tchinfo._z",_goodCE+_goodReco+_cehit);
+  hdtzp->SetMarkerStyle(20);
+  hdtzp->SetMarkerColor(kBlack);
+
+  TH1F* htres = new TH1F("htres","Hit time - CE time;#Delta t (ns)",100,-30,30);
+  TH1F* chtres = new TH1F("chtres","Hit time - CE time;#Delta t (ns)",100,-30,30);
+  htres->SetLineColor(kGreen);
+//  htres->SetStats(0);
+  chtres->SetLineColor(kBlue);
+  _tcdiag->Project("htres","tchinfo._time -25.5 -ceclust.time",_goodCE+_goodReco+_cehit);
+  _tcdiag->Project("chtres","tchinfo._time -25.5 - tchinfo._z*0.0047 -ceclust.time",_goodCE+_goodReco+_cehit);
+
+  TCanvas* tcan = new TCanvas("tcan","Time",800,800);
+  tcan->Divide(2,2);
+  tcan->cd(1);
+  calodt1->Draw();
+  tcan->cd(2);
+  calodt2->Draw();
+  tcan->cd(3);
+  hdtz->Draw("colorz");
+  hdtzp->Fit("pol1","+","sames");
+  tcan->cd(4);
+  chtres->Draw();
+  htres->Draw("sames");
+  TLegend* hleg = new TLegend(0.5,0.2,0.9,0.5);
+  hleg->AddEntry(htres,"Straw Hit Times","L");
+  hleg->AddEntry(chtres,"Corrected Straw Hit Times","L");
+  hleg->Draw();
+}
+
+void TimeClusterDiag::ctime() {
+  TH1F* tcdt = new TH1F("tcdt","Time Cluster time - CE time",100,-20,20);
+  TH1F* tcdtc = new TH1F("tcdtc","Time Cluster time - CE time",100,-20,20);
+  tcdt->SetLineColor(kGreen);
+  tcdtc->SetLineColor(kBlue);
+  _tcdiag->Project("tcdt","besttc.time-ceclust.time",_goodCE+_goodReco+(!_goodCalo));
+  _tcdiag->Project("tcdtc","besttc.time-ceclust.time",_goodCE+_goodReco+_goodCalo);
+
+
+  TCanvas* ctcan = new TCanvas("ctcan","Cluster Time",800,800);
+  tcdtc->Draw();
+  tcdt->Draw("same");
+  TLegend* tcleg = new TLegend(0.1,0.5,0.4,0.9);
+  tcleg->AddEntry(tcdtc,"Trk Hits + Calo Cluster","L");
+  tcleg->AddEntry(tcdt,"Trk Hits only","L");
+  tcleg->Draw();
+}
