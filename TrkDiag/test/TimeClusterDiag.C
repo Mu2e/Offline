@@ -184,8 +184,8 @@ void TimeClusterDiag::ctime() {
 
 
   TCanvas* ctcan = new TCanvas("ctcan","Cluster Time",800,800);
-  tcdtc->Draw();
-  tcdt->Draw("same");
+  tcdtc->Fit("gaus");
+  tcdt->Fit("gaus","","same");
   TLegend* tcleg = new TLegend(0.1,0.5,0.4,0.9);
   tcleg->AddEntry(tcdtc,"Trk Hits + Calo Cluster","L");
   tcleg->AddEntry(tcdt,"Trk Hits only","L");

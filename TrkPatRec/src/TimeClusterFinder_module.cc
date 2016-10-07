@@ -242,7 +242,7 @@ namespace mu2e {
 	if(goodCaloCluster(*icc)){
 	  double time = caloClusterTime(*icc);
 	  // weight the cluster WRT hits inversely by the resolution
-	  double wt = _t0calc.strawHitTimeErr()/_t0calc.caloClusterTimeErr(icc->sectionId());
+	  double wt = std::pow(_t0calc.strawHitTimeErr()/_t0calc.caloClusterTimeErr(icc->sectionId()),2);
 	  timespec.Fill(time, wt);
 	}
       }
@@ -316,7 +316,7 @@ namespace mu2e {
 	Hep3Vector const& pos = _shpcol->at(ish).pos();
 	double htime = hitTime(ish);
 	// weight inversely by the hit time resolution
-	double wt = 1.0/_t0calc.strawHitTimeErr();
+	double wt = std::pow(1.0/_t0calc.strawHitTimeErr(),2);
 	tmin(htime);
 	tmax(htime);
 	tacc(htime,weight=wt);
@@ -328,7 +328,7 @@ namespace mu2e {
     // add cluster time
     if(tclust._caloCluster.isNonnull()){
       double ctime = caloClusterTime(*tclust._caloCluster);
-      double wt = 1.0/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId());
+      double wt = std::pow(1.0/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
       tacc(ctime,weight=wt);
     }
     // set peak info
@@ -374,7 +374,7 @@ namespace mu2e {
       for(size_t ips=0;ips<tclust._strawHitIdxs.size();++ips){
 	unsigned ish = tclust._strawHitIdxs[ips];
 	double time = hitTime(ish);
-	double wt = 1.0/_t0calc.strawHitTimeErr();
+	double wt = std::pow(1.0/_t0calc.strawHitTimeErr(),2);
 	double phi = _shpcol->at(ish).pos().phi();
 	Angles::deltaPhi(phi,pphi);
 	tacc(time,weight=wt);
@@ -383,7 +383,7 @@ namespace mu2e {
       // add cluster time.  Crude incrementatio
       if(tclust._caloCluster.isNonnull()){
 	double time = caloClusterTime(*tclust._caloCluster);
-	double wt = 1.0/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId());
+	double wt = std::pow(1.0/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
 	tacc(time,weight=wt);
       }
       pphi = extract_result<tag::mean>(facc);
@@ -400,7 +400,7 @@ namespace mu2e {
     for(size_t ips=0;ips<tclust._strawHitIdxs.size();++ips){
       unsigned ish = tclust._strawHitIdxs[ips];
       double dt = hitTime(ish) - ptime;
-      double wt = 1.0/_t0calc.strawHitTimeErr();
+      double wt = std::pow(1.0/_t0calc.strawHitTimeErr(),2);
       double phi = _shpcol->at(ish).pos().phi();
       double rho = _shpcol->at(ish).pos().perp();
       double dphi = Angles::deltaPhi(phi,pphi);
@@ -417,7 +417,7 @@ namespace mu2e {
     // add cluster time.  Crude incrementatio
     if(tclust._caloCluster.isNonnull()){
       double time = caloClusterTime(*tclust._caloCluster);
-      double wt = 1.0/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId());
+      double wt = std::pow(1.0/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
       tacc(time,weight=wt);
       for(int ihit =0; ihit < int(ceil(_t0calc.strawHitTimeErr()/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId())));++ihit)
 	terr(time);

@@ -77,7 +77,7 @@ setup -B geant4 v4_9_6_p04d -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER
 
 # Other libraries we need.
 setup -B heppdt v3_04_01d -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_02_00 -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_01_01 -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_4_0
