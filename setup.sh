@@ -78,7 +78,7 @@ export ROOT_INCLUDE_PATH=`dropit -s -p$ROOT_INCLUDE_PATH $MU2E_BASE_RELEASE`
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
-  setup -B geant4 v4_9_6_p04e -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
+  setup -B geant4 v4_10_2_p03 -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
 fi
 
 # Get access to raw data formats.
