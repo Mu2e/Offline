@@ -152,7 +152,7 @@ namespace mu2e {
        
        if (diagLevel_ > 2)_hNpeak->Fill(nPeak);       
 
-       
+
        double chi2(999),fpar[99]={0},errfpar[99]={0}; 
        if (nPeak==1) doNewton(parInit, fpar, errfpar, chi2);
        else          doFit(   parInit, fpar, errfpar, chi2);           
@@ -227,8 +227,11 @@ namespace mu2e {
         //find location of potential peaks: max element in the range i-window; i+window
         for (unsigned int i=windowPeak_;i<xvec_.size()-windowPeak_;++i)
         {
-             auto maxp = std::max_element(&yvec_[i-windowPeak_],&yvec_[i+windowPeak_+1]);
-             if (maxp != &yvec_[i] || yvec_[i] < minPeakAmplitude_|| yvec_[i-1] < minPeakAmplitude_|| yvec_[i+1] < minPeakAmplitude_) continue;
+             if (std::max_element(&yvec_[i-windowPeak_],&yvec_[i+windowPeak_+1]) != &yvec_[i]) continue;
+	     int imin = std::min(std::min(yvec_[i-1],yvec_[i+1]),yvec_[i]);
+
+             if (imin < minPeakAmplitude_) continue;
+             //if (yvec_[i] < minPeakAmplitude_) continue;
 	     peakLocationInit.push_back(i);
 	     peakLocation.push_back(i);
         }
@@ -260,14 +263,16 @@ namespace mu2e {
              residual.push_back(val); 
         }
 
+
         //find secondat peaks (my best guess so far...)
         for (unsigned int i=windowPeak_;i<xvec_.size()-windowPeak_;++i)
         {
-             auto maxp = std::max_element(&residual[i-windowPeak_],&residual[i+windowPeak_+1]);
+             if (std::max_element(&residual[i-windowPeak_],&residual[i+windowPeak_+1]) != &residual[i]) continue;
+             
+	     //int imin   = std::min(std::min(residual[i-1],residual[i+1]),residual[i]);
 	     double psd = residual[i]/yvec_[i];
 	     
-             if (maxp != &residual[i] || residual[i] < minPeakAmplitude_ || residual[i-1] < minPeakAmplitude_ || 
-	         residual[i+1] < minPeakAmplitude_ || psd < psdThreshold_) continue;
+             if (residual[i] < minPeakAmplitude_ || psd < psdThreshold_) continue;
 	     peakLocationRes.push_back(i);
 	     peakLocation.push_back(i);
         }
@@ -376,6 +381,9 @@ namespace mu2e {
    }
    
 
+   
+   
+   
    //------------------------------------------------------------------------------
    //Quasi-Newtonian method to find the minimum - please improve when you have time
    void FixedFastProcessor::doNewton(double* parInit, double *sfpar, double *errsfpar, double& chi2)
@@ -386,8 +394,8 @@ namespace mu2e {
 
        for (;nTry<10;++nTry)
        {
-           double p1   = (calcChi2(tmin+1e-4)-calcChi2(tmin-1e-4))/2e-4;
-           double p2   = (calcChi2(tmin+1e-4)-2*calcChi2(tmin)+calcChi2(tmin-1e-4))/1e-4/1e-4;
+           double p1 = (calcChi2(tmin+1e-4)-calcChi2(tmin-1e-4))/2e-4;
+           double p2 = (calcChi2(tmin+1e-4)-2*calcChi2(tmin)+calcChi2(tmin-1e-4))/1e-4/1e-4;
            
            if (fabs(p2) < 1e-8) p2 = (p2>0) ? 1e-8 : -1e-8;
            tmin = tmin - p1/p2;            
@@ -443,24 +451,7 @@ namespace mu2e {
        
        return t0;      
    }
-    
-
-
-
-    
-   //--------------------------------------------
-   double FixedFastProcessor::calcAlpha(double testTime)
-   {       
-       double ytot(0),x2tot(0);
-       for (unsigned int i : xindices_)
-       {
-	   double y = pulseCachePtr_->evaluate(xvec_[i]-testTime);
-           if ( yvec_[i]> 0 ) {ytot += y; x2tot += y*y/yvec_[i];}       
-       }
-
-       return (x2tot > 0) ? ytot/x2tot : 0;
-   }
-
+   
    //--------------------------------------------
    double FixedFastProcessor::calcChi2(double testTime, double alpha)
    {
@@ -476,8 +467,21 @@ namespace mu2e {
 
        return difference;
    }
+
+   //--------------------------------------------
+   double FixedFastProcessor::calcAlpha(double testTime)
+   {       
+       double ytot(0),x2tot(0);
+       for (unsigned int i : xindices_)
+       {
+	   double y = pulseCachePtr_->evaluate(xvec_[i]-testTime);
+           if ( yvec_[i]> 0 ) {ytot += y; x2tot += y*y/yvec_[i];}       
+       }
+
+       return (x2tot > 0) ? ytot/x2tot : 0;
+   }
     
-    //--------------------------------------------
+   //--------------------------------------------
    double FixedFastProcessor::refitTime(double tmin, double alpha)
    {
 
@@ -529,6 +533,8 @@ namespace mu2e {
     
     
     
+
+
     
     
     
