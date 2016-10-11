@@ -20,12 +20,13 @@
 
 usage(){
  echo " "
- echo "Usage: genreflex.sh path_to_classes.h path_to_dict.cpp include_list"
+ echo "Usage: genreflex.sh path_to_classes.h path_to_dict.cpp \\"
+ echo "                     include_list lib_name prof_or_debug"
  echo " "
 }
 
 if [ "$#" != "5" ]; then
-  echo "Illegal arguments to genreflex.sh: there must be exactly four arguments"
+  echo "Illegal arguments to genreflex.sh: there must be exactly five arguments"
   usage
   exit 2
 fi
