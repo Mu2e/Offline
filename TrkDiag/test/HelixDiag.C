@@ -50,9 +50,9 @@ void HelixDiag::CenterRes() {
   TH1F* cfres = new TH1F("cfres","Center Radius #Phi Resolution;#Delta #phi",100,-0.4,0.4);
 
   _hdiag->Project("crcomp","mch._rcent:rhel._rcent",_helixOK&&_mchelixOK);
-  _hdiag->Project("crres","mch._rcent:rhel._rcent",_helixOK&&_mchelixOK);
+  _hdiag->Project("crres","mch._rcent-rhel._rcent",_helixOK&&_mchelixOK);
   _hdiag->Project("cfcomp","mch._fcent:rhel._fcent",_helixOK&&_mchelixOK);
-  _hdiag->Project("cfres","mch._fcent:rhel._fcent",_helixOK&&_mchelixOK);
+  _hdiag->Project("cfres","mch._fcent-rhel._fcent",_helixOK&&_mchelixOK);
 
   TCanvas* crcan = new TCanvas("crcan","Center Resolution",800,800);
   crcan->Divide(2,2);
@@ -72,9 +72,9 @@ void HelixDiag::CenterPos() {
   TH2F* xcomp = new TH2F("xcomp","Reco vs true Center x;Reco Center x (mm);MC Center x (mm)",50,-450.0,450.0,50,-450.0,450.0);
   TH2F* ycomp = new TH2F("ycomp","Reco vs true Center y;Reco Center y (mm);MC Center y (mm)",50,-450.0,450.0,50,-450.0,450.0);
   _hdiag->Project("rcpos","rhel._rcent*sin(rhel._fcent):rhel._rcent*cos(rhel._fcent)",_helixOK&&_mchelixOK);
-  _hdiag->Project("mccpos","mch._center.dy:mch._center.dx",_helixOK&&_mchelixOK);
-  _hdiag->Project("xcomp","rhel._rcent*cos(rhel._fcent):mch._center.dx",_helixOK&&_mchelixOK);
-  _hdiag->Project("ycomp","rhel._rcent*sin(rhel._fcent):mch._center.dy",_helixOK&&_mchelixOK);
+  _hdiag->Project("mccpos","mch._rcent*sin(mch._fcent):mch._rcent*cos(mch._fcent)",_helixOK&&_mchelixOK);
+  _hdiag->Project("xcomp","rhel._rcent*cos(rhel._fcent):mch._rcent*cos(mch._fcent)",_helixOK&&_mchelixOK);
+  _hdiag->Project("ycomp","rhel._rcent*sin(rhel._fcent):mch._rcent*sin(mch._fcent)",_helixOK&&_mchelixOK);
 
   TCanvas* cpcan = new TCanvas("cpcan","Center Position",800,800);
   cpcan->Divide(2,2);
