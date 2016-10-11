@@ -44,6 +44,7 @@ namespace art {
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "CalPatRec/inc/CalTimePeak.hh"
@@ -189,6 +190,7 @@ namespace mu2e {
 // event object labels
 //-----------------------------------------------------------------------------
     std::string      _shLabel ; // MakeStrawHit label (makeSH)
+    std::string      _shDigiLabel ;
     std::string      _shpLabel;
     std::string      _shfLabel;
     std::string      _ccmLabel; // caloClusterModuleLabel
@@ -309,7 +311,7 @@ namespace mu2e {
     void findDoublets     (KalRep* krep, DoubletCollection *dcol);//search doublets in a giventimepeak
     void findLoopApex     (){}//search the straw hits src/closer to the apexes of the helix loops
 
-    void findMissingHits  (KalFitResult& kalfit, std::vector<hitIndex>& indices);
+    void findMissingHits  (KalFitResult& kalfit, std::vector<StrawHitIndex>& indices);
     void bookHistograms   ();
     void fillStrawDiag    ();
     void fillTimeDiag     ();

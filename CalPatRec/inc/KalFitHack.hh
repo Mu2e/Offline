@@ -30,6 +30,7 @@
 
 #include "CalPatRec/inc/CalTimePeak.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 
 //ROOT
 #include "TStopwatch.h"
@@ -128,7 +129,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     virtual void addHits(KalFitResult&             kres   , 
 			 const StrawHitCollection* straws , 
-			 std::vector<hitIndex>     indices, 
+			 std::vector<StrawHitIndex>     indices, 
 			 double                    maxchi ,
 			 CalTimePeak*              TPeak=NULL );
 

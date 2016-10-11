@@ -106,7 +106,6 @@ namespace mu2e {
 	     _trkdiag(0)
 	   {
 
-        	 _trkfitInstanceName  = _fdir.name() + _tpart.name();
 	         _downstream          = (_fdir.dzdt() > 0 ) ? true : false;
 		 
         	 produces<TrkCaloIntersectCollection>();
@@ -144,7 +143,6 @@ namespace mu2e {
 	   std::string                   _trkterModuleLabel;
 	   TrkParticle                   _tpart;
 	   TrkFitDirection               _fdir;
-	   std::string                   _trkfitInstanceName;
 	   bool                          _downstream;
 	   int                           _diagLevel;
 	   double                        _pathStep;
@@ -224,7 +222,7 @@ namespace mu2e {
 
 	//get tracks
 	art::Handle<KalRepPtrCollection> trksHandle;
-	evt.getByLabel(_trkterModuleLabel,_trkfitInstanceName,trksHandle);
+	evt.getByLabel(_trkterModuleLabel, trksHandle);
 	KalRepPtrCollection const& trksPtrColl = *trksHandle.product();
 
 	//output of Extrapolated tracks

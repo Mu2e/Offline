@@ -50,7 +50,7 @@ physics :
 # if you are reading files.
       RKFDownstreameMinus: {
          module_type : ReadKalFits
-         fitterModuleLabel : TRFDownstreameMinus
+         fitterModuleLabel : KFFDeM
 	 KalDiag : @local::KalDiagDirect # configure KalDiag to look for directly (inline) generated data products
       }
    }
@@ -58,7 +58,7 @@ physics :
 p1: [ generate, g4run, genCounter,
       @sequence::EventMixing.TimeMaps,
       @sequence::Tracking.DigiSim,
-      @sequence::Tracking.TPRDownstreameMinus ]
+      @sequence::Tracking.TPRDeM ]
 # end path
   e1 : [RKFDownstreameMinus, genCountLogger]
   

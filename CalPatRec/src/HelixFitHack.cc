@@ -21,6 +21,7 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -1156,7 +1157,7 @@ namespace mu2e {
     
     const Tracker& tracker = getTrackerOrThrow();
     
-    const std::vector<hitIndex> shIndices = mytrk.strawHitIndices();
+    const std::vector<StrawHitIndex> shIndices = mytrk.strawHitIndices();
     
     int size = shIndices.size();
 

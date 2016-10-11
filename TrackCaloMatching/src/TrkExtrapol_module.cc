@@ -140,7 +140,6 @@ namespace mu2e {
       produces<TrkToCaloExtrapolCollection>();
 	  
       // construct the data product instance name
-      _iname  = _fdir.name() + _tpart.name();
       _fitDir = _fdir.fitDirection(); 
 
     }
@@ -178,8 +177,6 @@ namespace mu2e {
     TrkFitDirection _fdir;
   
     TrkFitDirection::FitDirection _fitDir;
-        
-    std::string _iname;
         
     // diagnostic of Kalman fit
 
@@ -492,7 +489,7 @@ namespace mu2e {
     TrkToCaloExtrapolCollection tmpExtrapolatedTracks;
   
     art::Handle<KalRepPtrCollection> trksHandle;
-    evt.getByLabel(_fitterModuleLabel,_iname,trksHandle);
+    evt.getByLabel(_fitterModuleLabel,trksHandle);
     const KalRepPtrCollection* trks = trksHandle.product();
   
     ntrk = trks->size();

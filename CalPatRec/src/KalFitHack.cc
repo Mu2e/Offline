@@ -341,7 +341,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
   void KalFitHack::addHits(KalFitResult&              kres   ,
                            const StrawHitCollection*  straws ,
-                           std::vector<hitIndex>      indices,
+                           std::vector<StrawHitIndex>      indices,
                            double                     maxchi ,
                            CalTimePeak*               TPeak  ) {
 
@@ -742,7 +742,7 @@ namespace mu2e
     double vflt = tdef.particle().beta(mom)*CLHEP::c_light;
     unsigned nind = tdef.strawHitIndices().size();
     for(unsigned iind=0;iind<nind;iind++){
-      size_t istraw = tdef.strawHitIndices()[iind];
+      size_t istraw = tdef.strawHitIndices().at(iind);//[iind];
       const StrawHit& strawhit(tdef.strawHitCollection()->at(istraw));
       const Straw& straw = _tracker->getStraw(strawhit.strawIndex());
       double fltlen = tdef.helix().zFlight(straw.getMidPoint().z());
