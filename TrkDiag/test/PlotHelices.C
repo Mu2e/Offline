@@ -72,7 +72,7 @@ void PlotHelices(TDirectory* tdir,unsigned nmax=20, int nps=3,const char* name=0
     if(divide.rem == 0){
       ++ican;
       char cname[50];
-      snprintf(cname,20,"can_%i",ican);
+      snprintf(cname,20,"hcan_%i",ican);
       cans[ican] = new TCanvas(cname,cname,400*nps,800);
       cans[ican]->Clear();
       cans[ican]->Divide(nps,2);

@@ -7,7 +7,7 @@
 //
 // the following has to come before other BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
-#include "TrkReco/inc/TrkT0Calculator.hh"
+#include "TrkReco/inc/TrkTimeCalculator.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // boost
@@ -29,7 +29,7 @@ using namespace boost::accumulators;
 namespace mu2e 
 {
 
-  TrkT0Calculator::TrkT0Calculator(fhicl::ParameterSet const& pset) :
+  TrkTimeCalculator::TrkTimeCalculator(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
 //    _useflag(pset.get<std::vector<std::string>>("UseFlag")),
 //    _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier","DeltaRay","Isolated"})),
@@ -44,24 +44,24 @@ namespace mu2e
     _caloT0Err[1] = pset.get<double>("Disk1TimeErr",1.7); // nanoseconds
   } 
 
-  TrkT0Calculator::~TrkT0Calculator() {}
+  TrkTimeCalculator::~TrkTimeCalculator() {}
 
-  void TrkT0Calculator::updateT0(TimeCluster& tc, StrawHitCollection const& shcol){
+  void TrkTimeCalculator::updateT0(TimeCluster& tc, StrawHitCollection const& shcol){
 
-
-  }
-  void TrkT0Calculator::updateT0(HelixSeed& hs, StrawHitCollection const& shcol) {
 
   }
+  void TrkTimeCalculator::updateT0(HelixSeed& hs, StrawHitCollection const& shcol) {
 
-  double TrkT0Calculator::strawHitTimeOffset(double hitz) const {
+  }
+
+  double TrkTimeCalculator::strawHitTimeOffset(double hitz) const {
     double retval = _shOffset + hitz*_shSlope;
     if(_fdir != TrkFitDirection::downstream)// change sign for upstream
       retval *= -1.0;
     return retval;
   }
 
-  double TrkT0Calculator::caloClusterTimeOffset(int sectionId) const {
+  double TrkTimeCalculator::caloClusterTimeOffset(int sectionId) const {
     double retval(0.0);
     if(sectionId > -1 && sectionId < 2)
       retval = _caloT0Offset[sectionId];
@@ -70,11 +70,19 @@ namespace mu2e
     return retval;
   }
 
-  double TrkT0Calculator::caloClusterTimeErr(int sectionId) const {
+  double TrkTimeCalculator::caloClusterTimeErr(int sectionId) const {
     double retval(1e10);
     if(sectionId > -1 && sectionId < 2)
       retval = _caloT0Err[sectionId];
     return retval;
+  }
+
+  double TrkTimeCalculator::strawHitTime(StrawHit const& sh, StrawHitPosition const& shp) {
+    return sh.time() - strawHitTimeOffset(shp.pos().z());
+  }
+
+  double TrkTimeCalculator::caloClusterTime(CaloCluster const& cc) const {
+    return cc.time() - caloClusterTimeOffset(cc.sectionId());
   }
 
 }

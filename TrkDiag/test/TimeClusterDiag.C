@@ -180,23 +180,38 @@ void TimeClusterDiag::time() {
   hleg->AddEntry(htres,"Straw Hit Times","L");
   hleg->AddEntry(chtres,"Corrected Straw Hit Times","L");
   hleg->Draw();
+
 }
 
 void TimeClusterDiag::ctime() {
-  TH1F* tcdt = new TH1F("tcdt","Time Cluster time - CE time",100,-20,20);
-  TH1F* tcdtc = new TH1F("tcdtc","Time Cluster time - CE time",100,-20,20);
+  TH1F* tcdt = new TH1F("tcdt","Time Cluster time - CE time;#Delta t (ns)",100,-20,20);
+  TH1F* tcdtc = new TH1F("tcdtc","Time Cluster time - CE time;#Delta t (ns)",100,-20,20);
   tcdt->SetLineColor(kGreen);
   tcdtc->SetLineColor(kBlue);
   _tcdiag->Project("tcdt","besttc.time-ceclust.time",_goodCE+_goodReco+(!_goodCalo));
   _tcdiag->Project("tcdtc","besttc.time-ceclust.time",_goodCE+_goodReco+_goodCalo);
 
+  TH1F* tcdtp = new TH1F("tcdtp","Time Cluster time - CE time pull",100,-20,20);
+  TH1F* tcdtpc = new TH1F("tcdtpc","Time Cluster time - CE timepull",100,-20,20);
+  tcdt->SetLineColor(kGreen);
+  tcdtc->SetLineColor(kBlue);
+  _tcdiag->Project("tcdtp","(besttc.time-ceclust.time)/besttc.terr",_goodCE+_goodReco+(!_goodCalo));
+  _tcdiag->Project("tcdtpc","(besttc.time-ceclust.time)/besttc.terr",_goodCE+_goodReco+_goodCalo);
+
   _ctcan = new TCanvas("ctcan","Cluster Time",800,800);
+  _ctcan->Divide(2,2);
+  _ctcan->cd(1);
   tcdtc->Fit("gaus");
-  tcdt->Fit("gaus","","same");
+  _ctcan->cd(2);
+  tcdt->Fit("gaus");
   TLegend* tcleg = new TLegend(0.1,0.5,0.4,0.9);
   tcleg->AddEntry(tcdtc,"Trk Hits + Calo Cluster","L");
   tcleg->AddEntry(tcdt,"Trk Hits only","L");
   tcleg->Draw();
+  _ctcan->cd(3);
+  tcdtpc->Fit("gaus");
+  _ctcan->cd(4);
+  tcdtp->Fit("gaus");
 }
   
 void TimeClusterDiag::save(const char* suffix) {

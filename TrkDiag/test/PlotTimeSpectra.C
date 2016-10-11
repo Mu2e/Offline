@@ -39,11 +39,12 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
     TH1F* ph = (TH1F*)tdir->Get(pname);
     TH1F* ca = (TH1F*)tdir->Get(caname);
     if(rh != 0 && th != 0 &&lh != 0 && ch != 0 && ph != 0){
+      if(ch->GetEntries() < 15)break;
       div_t divide = div(iplot,nps*nps);
       //      std::cout << "divide " << iplot << " by " << nps << " gives  quot " << divide.quot << " rem " << divide.rem << std::endl;
       if(divide.rem == 0){
 	++ican;
-	snprintf(canname,20,"can_%i",ican);
+	snprintf(canname,20,"tcan_%i",ican);
 	cans[ican] = new TCanvas(canname,canname,1200,1000);
 	cans[ican]->Clear();
 	cans[ican]->Divide(nps,nps);
@@ -58,25 +59,29 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
 //
       char title[100];
       snprintf(title,100,"Time Spectrum event %lu",ievt);
-      rh->SetTitle(title);
-      rh->GetXaxis()->SetTitle("nsec");
-      rh->GetYaxis()->SetTitle("# hits/20 nsec");
+      lh->SetTitle(title);
+      lh->GetXaxis()->SetTitle("nsec");
+      lh->GetYaxis()->SetTitle("# hits/20 nsec");
  //     rh->SetFillColor(kGreen);
-      rh->Draw();
+//      rh->Draw();
+      //        th->SetLineWidth(2);
+      ch->SetLineStyle(1);
+      ch->SetLineWidth(2);
+      ch->SetFillColor(0);
+      ch->SetLineColor(kRed);
+      double maxe = max(ch->GetMaximum(), lh->GetMaximum());
+      ch->SetMaximum(maxe);
+      lh->SetMaximum(maxe);
+      lh->SetFillColor(kYellow);
+      lh->SetLineColor(kYellow);
+      lh->Draw();
+      ch->Draw("same");
       th->SetTitle(title);
       th->GetXaxis()->SetTitle("nsec");
       th->GetYaxis()->SetTitle("# hits/20 nsec");
       th->SetFillColor(kGreen);
       th->Draw("same");
-      //        th->SetLineWidth(2);
-//      lh->SetFillColor(kYellow);
-//      lh->Draw("same");
-//      rh->Draw("same");
-      ch->SetLineStyle(1);
-      ch->SetLineWidth(2);
-      ch->SetFillColor(0);
-      ch->SetLineColor(kRed);
-      ch->Draw("same");
+//      th->Draw();
       ph->Draw("same");
       if(ca != 0){
 	ca->SetFillStyle(3001);
@@ -86,7 +91,7 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
       TLegend* leg(0);
       if(ipave==1){
 	leg = new TLegend(0.1,0.7,0.4,0.9);
-	leg->AddEntry(rh,"All hits","l");
+//	leg->AddEntry(rh,"All hits","l");
 	leg->AddEntry(lh,"Selected e^{-} hits","F");
 	leg->AddEntry(th,"Clustered hits","F");
 	leg->AddEntry(ch,"All CE hits","LF");
