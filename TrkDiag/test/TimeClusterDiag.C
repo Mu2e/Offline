@@ -16,7 +16,8 @@
 #include "TDirectory.h"
 #include "Math/Math.h"
 #include "THStack.h"
-
+#include <string>
+using std::string;
 class TimeClusterDiag  {
   public:
     TimeClusterDiag(TTree* tcdiag) : _tcdiag(tcdiag),
@@ -26,7 +27,8 @@ class TimeClusterDiag  {
     _goodCalo("besttc.ecalo>50.0"),
     _disk1("besttc.cogz<2000.0"),
     _disk2("besttc.cogz>2000.0"),
-    _cehit("tchinfo._mcproc==56")
+    _cehit("tchinfo._mcproc==56"),
+    _effcan(0), _btccan(0), _cecan(0), _tcan(0), _ctcan(0)
   {
     _goodCE = _goodCENHits+_goodCETime;
     _goodCEReco = _goodReco +TCut("besttc.ncehits/besttc.nhits>0.5");
@@ -37,12 +39,14 @@ class TimeClusterDiag  {
     TCut _goodReco, _goodCEReco;
     TCut _goodCalo, _disk1, _disk2;
     TCut _cehit;
+    TCanvas *_effcan, *_btccan, *_cecan, *_tcan, *_ctcan;
 
     void Efficiency();
     void BestTC();
     void CE();
     void time();
     void ctime();
+    void save(const char* suffix=".png");
 };
 
 void TimeClusterDiag::Efficiency() {
@@ -75,11 +79,11 @@ void TimeClusterDiag::Efficiency() {
       tcne->SetBinError(ibin,sqrt(nu*nr/pow(nu+nr,3)));
     }
   }
-  TCanvas* effcan = new TCanvas("effcan","Efficiency",800,600);
-  effcan->Divide(2,1);
-  effcan->cd(1);
+  _effcan = new TCanvas("effcan","Efficiency",800,600);
+  _effcan->Divide(2,1);
+  _effcan->cd(1);
   tcte->Draw();
-  effcan->cd(2);
+  _effcan->cd(2);
   tcne->Draw();
 
 
@@ -89,20 +93,24 @@ void TimeClusterDiag::BestTC(){
   TH1F* nhit = new TH1F("nhit","BestTC N hits",100,-0.5,99.5);
   TH1F* ncehit = new TH1F("ncehit","BestTC N CE hits",100,-0.5,99.5);
   TH1F* hpur = new TH1F("hpur","BestTC CE Hit Fraction",100,0,1.0001);
+  TH1F* ecalo = new TH1F("ecalo","BestTC Calo Cluster Energy;E_{Calo} (MeV)",100,0,120.0);
 
   TH1F* time = new TH1F("time","BestTC Time;Average Cluster Time (ns)",100,0.0,1695.0);
   _tcdiag->Project("time","besttc.time",_goodReco);
   _tcdiag->Project("nhit","besttc.nhits",_goodReco);
   _tcdiag->Project("ncehit","besttc.ncehits",_goodReco);
   _tcdiag->Project("hpur","besttc.ncehits/besttc.nhits",_goodReco);
-  TCanvas* btccan = new TCanvas("btccan","BestTC",800,800);
-  btccan->Divide(2,2);
-  btccan->cd(1);
+  _tcdiag->Project("ecalo","besttc.ecalo",_goodReco);
+  _btccan = new TCanvas("btccan","BestTC",800,800);
+  _btccan->Divide(2,2);
+  _btccan->cd(1);
   nhit->Draw();
-  btccan->cd(2);
+  _btccan->cd(2);
   hpur->Draw();
-  btccan->cd(3);
+  _btccan->cd(3);
   time->Draw();
+  _btccan->cd(4);
+  ecalo->Draw();
 }
 
 void TimeClusterDiag::CE(){
@@ -116,17 +124,17 @@ void TimeClusterDiag::CE(){
   _tcdiag->Project("dphice","ceclust.maxdphi",_goodCE);
   _tcdiag->Project("rmaxce","ceclust.maxrho",_goodCE);
   _tcdiag->Project("rmince","ceclust.minrho",_goodCE);
-  TCanvas* cecan = new TCanvas("cecan","CE",1000,800);
-  cecan->Divide(3,2);
-  cecan->cd(1);
+  _cecan = new TCanvas("cecan","CE",1000,800);
+  _cecan->Divide(3,2);
+  _cecan->cd(1);
   nhitce->Draw();
-  cecan->cd(2);
+  _cecan->cd(2);
   timece->Draw();
-  cecan->cd(3);
+  _cecan->cd(3);
   dphice->Draw();
-  cecan->cd(4);
+  _cecan->cd(4);
   rmince->Draw();
-  cecan->cd(5);
+  _cecan->cd(5);
   rmaxce->Draw();
 }
 
@@ -156,16 +164,16 @@ void TimeClusterDiag::time() {
   _tcdiag->Project("htres","tchinfo._time -25.5 -ceclust.time",_goodCE+_goodReco+_cehit);
   _tcdiag->Project("chtres","tchinfo._time -25.5 - tchinfo._z*0.0047 -ceclust.time",_goodCE+_goodReco+_cehit);
 
-  TCanvas* tcan = new TCanvas("tcan","Time",800,800);
-  tcan->Divide(2,2);
-  tcan->cd(1);
+  _tcan = new TCanvas("tcan","Time",800,800);
+  _tcan->Divide(2,2);
+  _tcan->cd(1);
   calodt1->Draw();
-  tcan->cd(2);
+  _tcan->cd(2);
   calodt2->Draw();
-  tcan->cd(3);
+  _tcan->cd(3);
   hdtz->Draw("colorz");
   hdtzp->Fit("pol1","+","sames");
-  tcan->cd(4);
+  _tcan->cd(4);
   chtres->Draw();
   htres->Draw("sames");
   TLegend* hleg = new TLegend(0.5,0.2,0.9,0.5);
@@ -182,12 +190,36 @@ void TimeClusterDiag::ctime() {
   _tcdiag->Project("tcdt","besttc.time-ceclust.time",_goodCE+_goodReco+(!_goodCalo));
   _tcdiag->Project("tcdtc","besttc.time-ceclust.time",_goodCE+_goodReco+_goodCalo);
 
-
-  TCanvas* ctcan = new TCanvas("ctcan","Cluster Time",800,800);
+  _ctcan = new TCanvas("ctcan","Cluster Time",800,800);
   tcdtc->Fit("gaus");
   tcdt->Fit("gaus","","same");
   TLegend* tcleg = new TLegend(0.1,0.5,0.4,0.9);
   tcleg->AddEntry(tcdtc,"Trk Hits + Calo Cluster","L");
   tcleg->AddEntry(tcdt,"Trk Hits only","L");
   tcleg->Draw();
+}
+  
+void TimeClusterDiag::save(const char* suffix) {
+  string ss(suffix);
+  string cfname;
+  if(_effcan){
+    cfname = string(_effcan->GetName())+ss;
+    _effcan->SaveAs(cfname.c_str());
+  }
+  if(_btccan){
+    cfname = string(_btccan->GetName())+ss;
+    _btccan->SaveAs(cfname.c_str());
+  }
+  if(_cecan){
+    cfname = string(_cecan->GetName())+ss;
+    _cecan->SaveAs(cfname.c_str());
+  }
+  if(_tcan){
+    cfname = string(_tcan->GetName())+ss;
+    _tcan->SaveAs(cfname.c_str());
+  }
+  if(_ctcan){
+    cfname = string(_ctcan->GetName())+ss;
+    _ctcan->SaveAs(cfname.c_str());
+  }
 }
