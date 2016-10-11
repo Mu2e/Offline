@@ -28,11 +28,17 @@ namespace mu2e {
   public:
 
     explicit RunEventSubRun(fhicl::ParameterSet const& );
+    void beginRun   ( art::Run const& run ) override;
     void beginSubRun( art::SubRun const& subRun ) override;
     void analyze    ( art::Event const&  event  ) override;
     void endJob () override;
 
   private:
+
+    bool _printSam;
+    bool _printRun;
+    bool _printSubrun;
+    bool _printEvent;
 
     // keep a list of subruns
     typedef std::vector<art::SubRunID> subvec;
@@ -46,7 +52,9 @@ namespace mu2e {
     art::RunNumber_t _min_run_e;
     art::EventNumber_t _max_evt;
     art::EventNumber_t _min_evt;
-    int _count;   // event count
+    int _runCount;   // event count
+    int _subrunCount;   // event count
+    int _eventCount;   // event count
 
   };
 
@@ -54,15 +62,35 @@ namespace mu2e {
 
 mu2e::RunEventSubRun::RunEventSubRun(fhicl::ParameterSet const& pset ):
   art::EDAnalyzer(pset),
+  _printSam(pset.get<bool>("printSam",true)),
+  _printRun(pset.get<bool>("printRun",false)),
+  _printSubrun(pset.get<bool>("printSubrun",false)),
+  _printEvent(pset.get<bool>("printEvent",false)),
   _max_run_s(0),_min_run_s(-1), // -1 is maxint for a unsigned int
   _max_sub(0),_min_sub(-1),
   _max_run_e(0),_min_run_e(-1),
   _max_evt(0),_min_evt(-1),
-  _count(0){
+  _runCount(0),_subrunCount(0),_eventCount(0) {
+}
+
+void
+mu2e::RunEventSubRun::beginRun( art::Run const& run ){
+
+  _runCount++;
+
+  if(_printRun)    printf("Run    %10u\n",run.run());
+
 }
 
 void
 mu2e::RunEventSubRun::beginSubRun( art::SubRun const& subRun ){
+
+  _subrunCount++;
+
+  if(_printSubrun) printf("Subrun %10u %10u\n",
+			  subRun.run(),subRun.subRun());
+
+  if(!_printSam) return;
 
   // add this subrun to the list, if it is not already there
   art::SubRunID id = subRun.id();
@@ -95,7 +123,12 @@ mu2e::RunEventSubRun::beginSubRun( art::SubRun const& subRun ){
 void
 mu2e::RunEventSubRun::analyze(art::Event const& event){
 
-  _count++;
+  _eventCount++;
+
+  if(_printEvent)  printf("Event  %10u %10u %10u\n",
+			 event.run(),event.subRun(),event.event());
+
+  if(!_printSam) return;
 
   // min event
   if(event.run() < _min_run_e) {
@@ -121,12 +154,18 @@ mu2e::RunEventSubRun::analyze(art::Event const& event){
 
 void mu2e::RunEventSubRun::endJob () {
 
+  printf("%6d BeginRun records found\n",_runCount);
+  printf("%6d Subrun records found\n",_subrunCount);
+  printf("%6d Event records found\n",_eventCount);
+
+  if(!_printSam) return;
+
   //order the subruns
   std::sort(_subruns.begin(),_subruns.end());
 
   std::cout << "start RunEventSubRun::endJob summary" << std::endl;
   std::cout << "{" << std::endl;
-  std::cout << "  \"event_count\"      : " << _count     << "," << std::endl;
+  std::cout << "  \"event_count\"      : " << _eventCount   << "," << std::endl;
   std::cout << "  \"dh.first_run_subrun\" : " << _min_run_s << "," << std::endl;
   std::cout << "  \"dh.first_subrun\"     : " << _min_sub   << "," << std::endl;
   std::cout << "  \"dh.first_run_event\"  : " << _min_run_e << "," << std::endl;

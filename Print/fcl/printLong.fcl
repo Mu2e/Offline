@@ -1,0 +1,99 @@
+#
+# print products in a verbose form
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : print
+
+services : {
+    message : @local::mf_production
+}
+
+physics :{
+  analyzers: {
+
+    printModule : {
+      module_type : PrintModule
+
+      GenParticlePrinter : {
+        verbose: 1  # only 1 necessary
+	#inputTags : [ "mothersFilter" ] # select instances
+      }
+
+      SimParticlePrinter : {
+        verbose: 2   # 0, 1, 2
+	#inputTags : [ "mothersFilter" ] # select instances
+        #pCut : 10.0          # cut on all particles
+        #emPCut : -1.0       # cut on +/-11,22
+        #primaryOnly : true  # only first particles
+      }
+      StepPointMCPrinter : {
+        verbose: 2   # 0, 1, 2
+	#inputTags : [ "mothersFilter", "virtualdetector" ] # select instances
+        #pCut : 10.0          # cut on all particles
+      }
+      MCTrajectoryPrinter : {
+        verbose: 2   # 0, 1, 2
+	#inputTags : [ "g4run" ] # select instances
+      }
+      CaloHitPrinter : {
+        verbose: 1   # 0, 1
+        #eCut : 10.0          # cut on hits
+	#inputTags : [ "MakeCaloReadoutHits" ] # select instances
+      }
+      CaloCrystalHitPrinter : {
+        verbose: 1   # 0, 1
+        #eCut : 10.0          # cut on hits
+	#inputTags : [ "MakeCaloCrystalHits" ] # select instances
+      }
+      CaloClusterPrinter : {
+        verbose: 1   # 0, 1
+        eCut : -10.0          # cut on hits
+	#inputTags : [ "MakeCaloCrystalHits" ] # select instances
+      }
+
+      StrawDigiPrinter : {
+        verbose: 1   # 0, 1
+	#inputTags : [ "MakeSD" ] # select instances
+      }
+      StrawHitPrinter : {
+        verbose: 1   # 0, 1
+        eCut : -1.0          # cut, typically 0.002
+	#inputTags : [ "MakeSH" ] # select instances
+      }
+
+      TrackClusterMatchPrinter : {
+        verbose: 2   # 0, 1, 2
+	#inputTags : [ "TrackCaloMatchingDem" ] # select instances
+      }
+      TrkCaloIntersectPrinter : {
+        verbose: 1   # 0, 1
+	#inputTags : [ "TrackCaloIntersectionDem" ] # select instances
+      }
+
+      TrackSummaryPrinter : {
+        verbose: 4   # 0 - 4
+	#inputTags : [ "TrackSummaryMaker" ] # select instances
+      }
+
+      KalRepPrinter : {
+        verbose: 4   # 0 - 5 (5 is KalRep printAll)
+	#inputTags : [ "TRFDownstreameMinus" ] # select instances
+      }
+
+    }
+
+  } # analyzers
+
+  ana       : [ printModule, printProductList ]
+  end_paths : [ ana ]
+
+} # physics
+
+outputs: {
+  printProductList : {
+    module_type : DataProductDump
+  }
+}
+
