@@ -18,7 +18,7 @@
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // tracking
-#include "TrkReco/inc/TrkT0Calculator.hh"
+#include "TrkReco/inc/TrkTimeCalculator.hh"
 // TrkDiag
 #include "TrkDiag/inc/TimeClusterInfo.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
@@ -65,6 +65,8 @@ namespace mu2e {
     bool	  _mcdiag;
     bool	  _plotts;
     unsigned _minnce; // minimum # CE hits to make plots
+    double _ccmine; // min calo cluster energy to plot
+    double _ccwt;
 
     // event object Tags
     art::InputTag   _shTag;
@@ -102,7 +104,7 @@ namespace mu2e {
     // time offsets
     SimParticleTimeOffset _toff;
     //t0 calculator
-    TrkT0Calculator _t0calc;
+    TrkTimeCalculator _ttcalc;
 // helper functions
     void createDiagnostics();
     bool findData(art::Event const& evt);
@@ -111,8 +113,6 @@ namespace mu2e {
     void fillClusterInfo (TimeCluster const& tc,TimeClusterInfo& tcinfo);
     void fillClusterHitInfo (TimeCluster const& besttc); 
     void fillCECluster();
-    double hitTime(size_t ish) const;
-    double caloClusterTime(CaloCluster const& cc) const;
   };
 
   TimeClusterDiag::~TimeClusterDiag() {
@@ -124,20 +124,22 @@ namespace mu2e {
     _mcdiag		(pset.get<bool>("MCdiag",true)),
     _plotts		(pset.get<bool>("PlotTimeSpectra",false)),
     _minnce		(pset.get<unsigned>("MinimumCEHits",15)),
+    _ccmine		(pset.get<double>("CaloClusteriMinE",50.0)),
+    _ccwt		(pset.get<double>("CaloClusterWeight",10.0)),
     _shTag		(pset.get<art::InputTag>("StrawHitCollection","makeSH")),
     _shpTag		(pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
     _shfTag		(pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
     _tcTag		(pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
     _ccTag              (pset.get<art::InputTag>("caloClusterModuleLabel","MakeCaloCluster")),
     _mcdigisTag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH")),
-    _hsel		(pset.get<std::vector<std::string> >("HitSelectionBits")),
+    _hsel		(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
     _hbkg		(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _peakMVA		(pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet())),
     _tmin		(pset.get<double>("tmin",500.0)),
     _tmax		(pset.get<double>("tmax",1700.0)),
-    _tbin		(pset.get<double>("tbin",15.0)),
+   _tbin		(pset.get<double>("tbin",15.0)),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
-    _t0calc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet()))
+    _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet()))
     {
     // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
@@ -260,7 +262,7 @@ namespace mu2e {
       TimeClusterHitInfo tchi;
       size_t ish = idx;
       tchi._time = _shcol->at(ish).time();
-      tchi._dt = hitTime(ish) -tc._t0._t0;
+      tchi._dt = _ttcalc.strawHitTime(_shcol->at(ish),_shpcol->at(ish)) -tc._t0._t0;
       Hep3Vector const& pos = _shpcol->at(ish).pos();
       double phi = pos.phi();
       tchi._dphi = Angles::deltaPhi(phi,tc._pos.phi());
@@ -330,7 +332,7 @@ namespace mu2e {
 
     unsigned nstrs = _shcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
-      double time = hitTime(istr);
+      double time = _ttcalc.strawHitTime(_shcol->at(istr),_shpcol->at(istr));
       bool conversion(false);
       if(_mcdigis != 0) {
 	StrawDigiMC const& mcdigi = _mcdigis->at(istr);
@@ -351,7 +353,8 @@ namespace mu2e {
     // clusters if available
     if(_cccol != 0){
       for(auto cc : *_cccol) {
-	catsp->Fill( caloClusterTime(cc),_t0calc.strawHitTimeErr()/_t0calc.caloClusterTimeErr(cc.sectionId()));
+	if(cc.energyDep() > _ccmine)
+	  catsp->Fill( _ttcalc.caloClusterTime(cc),_ccwt);
       }
     }
     // plot time cluster times
@@ -360,7 +363,7 @@ namespace mu2e {
     // change marker if calo cluster is present
       int imark = 23;
       if(itclust->_caloCluster.isNonnull()) imark = 34;
-      TMarker* smark = new TMarker(itclust->_t0._t0,ctsp->GetMaximum(),imark);
+      TMarker* smark = new TMarker(itclust->_t0._t0,ctsp->GetBinContent(ctsp->FindBin(itclust->_t0._t0)),imark);
       smark->SetMarkerColor(kRed);
       smark->SetMarkerSize(1.5);
       flist->Add(smark);
@@ -395,7 +398,7 @@ namespace mu2e {
     if(tp._caloCluster.isNonnull()){
       tcinfo._ecalo = tp._caloCluster->energyDep();
       tcinfo._tcalo = tp._caloCluster->time();
-      tcinfo._dtcalo = caloClusterTime(*tp._caloCluster) - tp._t0._t0;
+      tcinfo._dtcalo = _ttcalc.caloClusterTime(*tp._caloCluster) - tp._t0._t0;
       // calculate the cluster position.  Currently the Z is in disk coordinates and must be translated, FIXME!
       Hep3Vector cog = calo->toTrackerFrame(calo->fromSectionFrameFF(tp._caloCluster->sectionId(),tp._caloCluster->cog3Vector()));
       tcinfo._cog = cog;
@@ -406,7 +409,7 @@ namespace mu2e {
     tcinfo._ncehits = 0;
     // count CE hits 
     for (auto const& idx : tp._strawHitIdxs) {
-      float ht = hitTime(idx);
+      float ht = _ttcalc.strawHitTime(_shcol->at(idx),_shpcol->at(idx));
       tcinfo._maxhtime = std::max( ht , tcinfo._maxhtime);
       tcinfo._minhtime = std::min( ht , tcinfo._minhtime);
       if(_mcdiag){
@@ -434,13 +437,6 @@ namespace mu2e {
   }
 
 
-  double TimeClusterDiag::hitTime(size_t ish) const {
-    return _shcol->at(ish).time() - _t0calc.strawHitTimeOffset(_shpcol->at(ish).pos().z());
-  }
-
-  double TimeClusterDiag::caloClusterTime(CaloCluster const& cc) const {
-    return cc.time() - _t0calc.caloClusterTimeOffset(cc.sectionId());
-  }
 
 
 }  // end namespace mu2e

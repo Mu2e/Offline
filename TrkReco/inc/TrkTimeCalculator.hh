@@ -6,13 +6,15 @@
 // $Author: brownd $ 
 // $Date: 2014/07/10 14:47:26 $
 //
-#ifndef TrkReco_TrkT0Calculator_HH
-#define TrkReco_TrkT0Calculator_HH
+#ifndef TrkReco_TrkTimeCalculator_HH
+#define TrkReco_TrkTimeCalculator_HH
 
 // framework
 #include "fhiclcpp/ParameterSet.h"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/HelixSeedCollection.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
@@ -26,11 +28,11 @@ class TH1F;
 
 namespace mu2e 
 {
-  class TrkT0Calculator {
+  class TrkTimeCalculator {
     public:
       // parameter set must be passed in on construction
-      explicit TrkT0Calculator(fhicl::ParameterSet const&);
-      virtual ~TrkT0Calculator();
+      explicit TrkTimeCalculator(fhicl::ParameterSet const&);
+      virtual ~TrkTimeCalculator();
       // update the t0 value inside a TimeCluster
       void updateT0(TimeCluster& tc, StrawHitCollection const& shcol);
       // same, taking a HelixSeed.  This uses the pitch to make a more
@@ -41,6 +43,10 @@ namespace mu2e
       double strawHitTimeErr() const { return _shErr; }
       double caloClusterTimeOffset(int sectionId) const; // depends on which 
       double caloClusterTimeErr(int sectionId) const; // depends on which 
+      // calculate the t0 for a straw hit. This assumes an average drift time
+      double strawHitTime(StrawHit const& sh, StrawHitPosition const& shp);
+      // calculate the t0 for a calo cluster.
+      double caloClusterTime(CaloCluster const& cc) const;
     private:
     // helper functions
       int _debug;

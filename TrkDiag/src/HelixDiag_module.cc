@@ -130,7 +130,7 @@ namespace mu2e {
     _targetradius(pset.get<double>("TargetRadius",75)),
     _plot(pset.get<bool>("PlotHelices",false)),
     _plotinc              (pset.get<vector<string> >("InclusivePlotFlagBits",vector<string>{"HitsOK"})),
-    _plotexc              (pset.get<vector<string> >("ExclusivePlotFlagBits",vector<string>{"HelixOK"})),
+    _plotexc              (pset.get<vector<string> >("ExclusivePlotFlagBits",vector<string>{})),
     _cradres	 (pset.get<double>("CenterRadialResolution",12.0)),
     _cperpres	 (pset.get<double>("CenterPerpResolution",12.0)),
     _radres	 (pset.get<double>("RadiusResolution",10.0)),
@@ -196,6 +196,10 @@ namespace mu2e {
      // loop over helices
       unsigned ihel(0);
       for(auto const& hseed : *_hscol) {
+	// reset
+	_hhinfo.clear();
+	_hhinfomc.clear();
+
 	RobustHelix const& rhel = hseed._helix;
 	HelixHitCollection const& hhits = hseed._hhits;
 	_nhits = hhits.size();

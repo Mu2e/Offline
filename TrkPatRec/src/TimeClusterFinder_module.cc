@@ -26,7 +26,7 @@
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 // tracking
-#include "TrkReco/inc/TrkT0Calculator.hh"
+#include "TrkReco/inc/TrkTimeCalculator.hh"
 // root
 #include "TH1F.h"
 // boost
@@ -36,30 +36,33 @@
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/moment.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/error_of_mean.hpp>
 #include <boost/accumulators/statistics/max.hpp>
 #include <boost/accumulators/statistics/min.hpp>
 #include <boost/accumulators/statistics/weighted_mean.hpp>
+#include <boost/accumulators/statistics/weighted_variance.hpp>
 // C++
 #include <memory>
 #include <algorithm>
+#include <utility>
 using namespace std; 
 using namespace boost::accumulators;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
 // struct to run MVA
-   struct TimePeakMVA {
+  struct TimePeakMVA {
     vector<Double_t> _pars;
     Double_t& _dt;
     Double_t& _dphi;
     Double_t& _rho;
     TimePeakMVA() : _pars(3,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]) {}
   };
-// comparison functor for sorting peaks
-  struct PeakSort : public binary_function<TimeCluster, TimeCluster, bool> {
-    bool operator()(TimeCluster const& x, TimeCluster const& y) {
-      return x._strawHitIdxs.size() > y._strawHitIdxs.size();
+
+  // structs to facilitate peak finding
+  typedef pair<Float_t,int> BinContent;
+  struct BCComp : public binary_function<BinContent, BinContent, bool> {
+     bool operator()(BinContent const& x, BinContent const& y) {
+       return x.first > y.first; // sort descending
     }
   };
 
@@ -76,6 +79,7 @@ namespace mu2e {
 
   private:
 // configuration parameters
+    int		  _iev;
     int           _debug;
     int           _printfreq;
     ClusterAlgorithm _algo;
@@ -96,8 +100,10 @@ namespace mu2e {
     double        _tbin;
     unsigned      _nbins;
     double        _ymin;
+    bool          _refine;
     bool	  _usecc;
-    double	  _ccmine;
+    double	  _ccmine, _ccwt;
+    double	  _maxover;
 
     // cache of event objects
     const StrawHitCollection*             _shcol;
@@ -109,21 +115,20 @@ namespace mu2e {
     TimePeakMVA                           _pmva; // input variables to TMVA for peak cleaning
 
     // T0 calcuator
-    TrkT0Calculator _t0calc;
+    TrkTimeCalculator _ttcalc;
 
     art::Handle<mu2e::StrawHitCollection> _strawhitsH;
-
+// helper functions
     void initCluster	  (TimeCluster& tp); // fill peak information from the list of hits
     void refineCluster	  (TimeCluster& tp); // refine the peak information and hit list
     bool findData         (const art::Event& evt);
     void findClusters    (TimeClusterCollection*, art::Event const& evt);
     void findPeaks    (TH1F const& tspect, std::vector<double>& tctimes);
     void scanPeaks    (TH1F const& tspect, std::vector<double>& tctimes);
-    double countHits(TH1F const& tspect,double time);
     bool goodHit(StrawHitFlag const& flag) const;
     bool goodCaloCluster(CaloCluster const& cc) const;
-    double hitTime(size_t ish) const;
-    double caloClusterTime(CaloCluster const& cc) const;
+    double overlap(TimeCluster const& tc1, TimeCluster const& tc2) const;
+    double clusterWeight(TimeCluster const& tc) const;
 
   };
 
@@ -133,11 +138,12 @@ namespace mu2e {
   TimeClusterFinder::TimeClusterFinder(fhicl::ParameterSet const& pset) :
     _debug             (pset.get<int>("debugLevel",0)),
     _printfreq         (pset.get<int>("printFrequency",101)),
+    _algo	       (static_cast<ClusterAlgorithm>(pset.get<int>("ClusterAlgorithm",peak))),
     _shTag	       (pset.get<art::InputTag>("StrawHitCollection","makeSH")),
     _shpTag	       (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
     _shfTag	       (pset.get<art::InputTag>("StrawHitFlagCollection","FlagBkgHits")),
     _ccTag             (pset.get<art::InputTag>("caloClusterModuleLabel","MakeCaloCluster")),
-    _hsel              (pset.get<vector<string> >("HitSelectionBits")),
+    _hsel		(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
     _hbkg              (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _maxdt             (pset.get<double>("DtMax",30.0)),
     _minnhits          (pset.get<unsigned>("MinNHits",10)),
@@ -148,10 +154,13 @@ namespace mu2e {
     _tmax              (pset.get<double>("tmax",1700.0)),
     _tbin              (pset.get<double>("tbin",15.0)),
     _ymin              (pset.get<double>("ymin",5.0)),
+    _refine	       (pset.get<bool>("RefineClusters",true)), // refine content of clusters
     _usecc	       (pset.get<bool>("UseCaloCluster",false)),
     _ccmine            (pset.get<double>("CaloClusterMinE",50.0)), // minimum energy to call a cluster 'good' (MeV)
+    _ccwt              (pset.get<double>("CaloClusterWeight",10.0)), // Cluster weight in units of hits
+    _maxover           (pset.get<double>("MaxOverlap",0.5)), // Maximum hit overlap to consider clusters as different
     _peakMVA           (pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet())),
-    _t0calc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet()))
+    _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet()))
   {
     // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
@@ -171,8 +180,8 @@ namespace mu2e {
 
   void TimeClusterFinder::produce(art::Event & event ) {
     // debug printout
-    unsigned iev=event.id().event();
-    if(_debug > 0 && (iev%_printfreq)==0)cout<<"TimeClusterFinder: event="<<iev<<endl;
+    _iev=event.id().event();
+    if(_debug > 0 && (_iev%_printfreq)==0)cout<<"TimeClusterFinder: event="<<_iev<<endl;
     // find the data
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::TimeClusterFinder: data missing or incomplete"<< endl;
@@ -193,7 +202,7 @@ namespace mu2e {
       }
       for (auto shi : tpc._strawHitIdxs ) {
 	flags->at(shi).merge(StrawHitFlag::tclust);
-	if(_debug > 2){
+	if(_debug > 3){
 	  cout << "Time Cluster hit at index " << shi << endl;
 	}
       }
@@ -232,7 +241,7 @@ namespace mu2e {
     unsigned nstrs = _shcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
       if(goodHit(_shfcol->at(istr))) {
-	double time = hitTime(istr);
+	double time = _ttcalc.strawHitTime(_shcol->at(istr),_shpcol->at(istr));
 	timespec.Fill(time);
       }
     }
@@ -240,10 +249,9 @@ namespace mu2e {
     if(_usecc && _cccol != 0){
       for(auto icc = _cccol->begin();icc != _cccol->end(); ++icc){
 	if(goodCaloCluster(*icc)){
-	  double time = caloClusterTime(*icc);
-	  // weight the cluster WRT hits inversely by the resolution
-	  double wt = std::pow(_t0calc.strawHitTimeErr()/_t0calc.caloClusterTimeErr(icc->sectionId()),2);
-	  timespec.Fill(time, wt);
+	  double time = _ttcalc.caloClusterTime(*icc);
+	  // weight the cluster WRT hits by an ad-hoc value.  This is more about signal/noise than resolution
+	  timespec.Fill(time, _ccwt);
 	}
       }
     }
@@ -259,13 +267,15 @@ namespace mu2e {
     }
 // loop over the seeds and create time clusters from them
     for(auto tctime: tctimes) {
+      if(_debug > 1)
+	cout << "Peak Time " << tctime  << endl;
       TimeCluster tclust;
       // initial t0 is the peak position
       tclust._t0 = TrkT0(tctime,1.0);
      // associate all hits in the time window with this peak
       for(size_t istr=0; istr<nstrs;++istr){
 	if(goodHit(_shfcol->at(istr))){
-	  double time = hitTime(istr);
+	  double time = _ttcalc.strawHitTime(_shcol->at(istr),_shpcol->at(istr));
 	  if(fabs(time-tctime) < _maxdt){
 	    tclust._strawHitIdxs.push_back(StrawHitIndex(istr));
 	  }
@@ -276,7 +286,7 @@ namespace mu2e {
 	auto bestcc = _cccol->end();
 	for(auto icc = _cccol->begin();icc != _cccol->end(); ++icc){
 	  if(goodCaloCluster(*icc)){
-	    double time = caloClusterTime(*icc);
+	    double time = _ttcalc.caloClusterTime(*icc);
 	    if(fabs(tctime-time) < _maxdt) {
 	      if(bestcc == _cccol->end() || icc->energyDep() > bestcc->energyDep())
 		bestcc = icc;
@@ -292,13 +302,36 @@ namespace mu2e {
       // initialize
       initCluster(tclust);
       // refine
-      refineCluster(tclust);
-      // final check
-      if(tclust._strawHitIdxs.size() >= _minnhits)tclusts->push_back(tclust);
-     }
-    // sort the peaks so that the largest comes first.  Not sure if this is really necessary
-    static PeakSort psort;
-    sort(tclusts->begin(),tclusts->end(),psort);
+      if(_refine)refineCluster(tclust);
+      // final check on # of hits
+      if(tclust._strawHitIdxs.size() >= _minnhits){
+	bool overl(false);
+	// compare this to the previous cluster: if they overlap too much, just take the best one
+	for(auto itclust = tclusts->begin(); itclust < tclusts->end(); ++itclust) {
+	  if(overlap(tclust,*itclust) > _maxover){
+	    if(clusterWeight(tclust) > clusterWeight(*itclust)){ // new cluster is 'better', erase the old
+	      tclusts->erase(itclust);
+	      break;
+	    } else {
+	    // otherwise mark this cluster as overlapping and stop
+	      overl = true;
+	      break;
+	    }
+	  }
+	}
+	if(!overl)tclusts->push_back(tclust);
+      }
+    }
+    // debug test of histogram
+    if(_debug > 2){
+      art::ServiceHandle<art::TFileService> tfs;
+      TH1F* tspec = tfs->make<TH1F>(timespec);
+      char name[40];
+      char title[100];
+      snprintf(name,40,"tspec_%i",_iev);
+      snprintf(title,100,"time spectrum event %i;nsec",_iev);
+      tspec->SetNameTitle(name,title);
+    }
   }
 
   void TimeClusterFinder::initCluster(TimeCluster& tclust) {
@@ -314,9 +347,9 @@ namespace mu2e {
       if(goodHit(_shfcol->at(ish))){
       // compute the corrected hit time
 	Hep3Vector const& pos = _shpcol->at(ish).pos();
-	double htime = hitTime(ish);
+	double htime = _ttcalc.strawHitTime(_shcol->at(ish),_shpcol->at(ish));
 	// weight inversely by the hit time resolution
-	double wt = std::pow(1.0/_t0calc.strawHitTimeErr(),2);
+	double wt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
 	tmin(htime);
 	tmax(htime);
 	tacc(htime,weight=wt);
@@ -327,8 +360,8 @@ namespace mu2e {
     }
     // add cluster time
     if(tclust._caloCluster.isNonnull()){
-      double ctime = caloClusterTime(*tclust._caloCluster);
-      double wt = std::pow(1.0/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
+      double ctime = _ttcalc.caloClusterTime(*tclust._caloCluster);
+      double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
       tacc(ctime,weight=wt);
     }
     // set peak info
@@ -349,7 +382,7 @@ namespace mu2e {
       worstmva = 100.0;
       for(size_t ips=0;ips<tclust._strawHitIdxs.size();++ips){
 	unsigned ish = tclust._strawHitIdxs[ips];
-	double dt = hitTime(ish) - ptime;
+	double dt = _ttcalc.strawHitTime(_shcol->at(ish),_shpcol->at(ish)) - ptime;
 	double rho = _shpcol->at(ish).pos().perp();
 	double phi = _shpcol->at(ish).pos().phi();
 	double dphi = Angles::deltaPhi(phi,pphi);
@@ -373,8 +406,8 @@ namespace mu2e {
       accumulator_set<double, stats<tag::weighted_mean >, double > tacc;
       for(size_t ips=0;ips<tclust._strawHitIdxs.size();++ips){
 	unsigned ish = tclust._strawHitIdxs[ips];
-	double time = hitTime(ish);
-	double wt = std::pow(1.0/_t0calc.strawHitTimeErr(),2);
+	double time = _ttcalc.strawHitTime(_shcol->at(ish),_shpcol->at(ish));
+	double wt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
 	double phi = _shpcol->at(ish).pos().phi();
 	Angles::deltaPhi(phi,pphi);
 	tacc(time,weight=wt);
@@ -382,8 +415,8 @@ namespace mu2e {
       }
       // add cluster time.  Crude incrementatio
       if(tclust._caloCluster.isNonnull()){
-	double time = caloClusterTime(*tclust._caloCluster);
-	double wt = std::pow(1.0/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
+	double time = _ttcalc.caloClusterTime(*tclust._caloCluster);
+	double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
 	tacc(time,weight=wt);
       }
       pphi = extract_result<tag::mean>(facc);
@@ -392,21 +425,18 @@ namespace mu2e {
     // final pass: hard cut on dt and dphi
     vector<size_t> toremove;
     accumulator_set<double, stats<tag::mean > > facc;
-    accumulator_set<double, stats<tag::weighted_mean >, double > tacc;
-    // boost weighted mean can't also compute error: do that by hand
-    accumulator_set<double, stats<tag::error_of<tag::mean> > > terr;
+    accumulator_set<double, stats<tag::weighted_variance(lazy)>, double > terr;
     accumulator_set<double, stats<tag::mean > > racc;
     accumulator_set<double, stats<tag::mean > > zacc;
     for(size_t ips=0;ips<tclust._strawHitIdxs.size();++ips){
       unsigned ish = tclust._strawHitIdxs[ips];
-      double dt = hitTime(ish) - ptime;
-      double wt = std::pow(1.0/_t0calc.strawHitTimeErr(),2);
+      double dt = _ttcalc.strawHitTime(_shcol->at(ish),_shpcol->at(ish)) - ptime;
+      double wt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
       double phi = _shpcol->at(ish).pos().phi();
       double rho = _shpcol->at(ish).pos().perp();
       double dphi = Angles::deltaPhi(phi,pphi);
       if(fabs(dt) < _maxpeakdt && fabs(dphi) < _maxpeakdphi){
-	tacc(hitTime(ish),weight=wt);
-	terr(hitTime(ish));
+	terr(_ttcalc.strawHitTime(_shcol->at(ish),_shpcol->at(ish)),weight=wt);
 	facc(phi);
 	racc(rho);
 	zacc(_shpcol->at(ish).pos().z());
@@ -416,11 +446,9 @@ namespace mu2e {
     }
     // add cluster time.  Crude incrementatio
     if(tclust._caloCluster.isNonnull()){
-      double time = caloClusterTime(*tclust._caloCluster);
-      double wt = std::pow(1.0/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
-      tacc(time,weight=wt);
-      for(int ihit =0; ihit < int(ceil(_t0calc.strawHitTimeErr()/_t0calc.caloClusterTimeErr(tclust._caloCluster->sectionId())));++ihit)
-	terr(time);
+      double time = _ttcalc.caloClusterTime(*tclust._caloCluster);
+      double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
+      terr(time,weight=wt);
     }
     // actually remove the hits; must start from the back
     std::sort(toremove.begin(),toremove.end(),std::greater<size_t>());
@@ -429,8 +457,8 @@ namespace mu2e {
       tclust._strawHitIdxs.pop_back();
     }
     // update peak properties
-    tclust._t0._t0 = extract_result<tag::weighted_mean>(tacc);
-    tclust._t0._t0err = error_of<tag::mean>(terr);
+    tclust._t0._t0 = extract_result<tag::weighted_mean>(terr);
+    tclust._t0._t0err = sqrt(std::max(0.0,extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
     pphi = extract_result<tag::mean>(facc);
     double prho = extract_result<tag::mean>(racc);
     double zpos = extract_result<tag::mean>(zacc);
@@ -439,56 +467,35 @@ namespace mu2e {
   }
 
   void TimeClusterFinder::findPeaks( TH1F const& tspect,std::vector<double>& tctimes) {
-    int ibin(1); // root starts bin numbers at 1
-    int nbins = tspect.GetNbinsX();
-    while(ibin < nbins+1){
-      double y = tspect.GetBinContent(ibin);
-      if(y >= _ymin){
-	double ymax = y;
-	double yprev = y;
-	// find contiguous bins above threshold
-	int jbin = ibin+1;
-	bool descending(false);
-	while(jbin < nbins+1 && tspect.GetBinContent(jbin) >= _ymin){
-	  y =tspect.GetBinContent(jbin);
-	  descending |= yprev-y > sqrt(yprev);
-	  // don't follow next maximum
-	  if(descending && y-yprev > sqrt(y)){
-	    break;
-	  } else {
-	    if(y > ymax){
-	      ymax = y;
-	    }
-	    yprev = y;
-	    ibin = jbin;
-	    ++jbin;
-	  }
-	}
-	//local maximum.  Make a parabolic fit with +-1 bin
+    tctimes.clear();
+    // repack the histogram into bin,content
+    vector<BinContent> bcv;
+    int nbins = tspect.GetNbinsX()+1;
+    vector<bool> used(nbins,false);
+    for(int ibin=1;ibin < nbins; ++ibin)
+      bcv.push_back(make_pair(tspect.GetBinContent(ibin),ibin));
+// sort by bin contents
+    sort(bcv.begin(),bcv.end(),BCComp());
+// loop over sorted contents
+    for(auto const& bc : bcv){
+      if((!used[bc.second]) && bc.first >= _ymin){
+	//local maximum.  Average around a few bins
 	double tctime(0.0);
 	double norm(0.0);
-	for(int kbin = std::max(1,ibin-1);kbin < std::min(nbins,ibin+2); ++kbin){
-	  norm += tspect.GetBinContent(kbin);
-	  tctime += tspect.GetBinCenter(kbin)*tspect.GetBinContent(kbin);
+	for(int ibin = std::max(1,bc.second-2);ibin < std::min(nbins,bc.second+3); ++ibin){
+	  if(fabs(tspect.GetBinCenter(bc.second)-tspect.GetBinCenter(ibin)) < _maxdt ){
+	    norm += tspect.GetBinContent(ibin);
+	    tctime += tspect.GetBinCenter(ibin)*tspect.GetBinContent(ibin);
+	    // mark these bins as used
+	    used[ibin] = true;
+	  }
 	}
 	tctime /= norm;
-	// count the hits in a window around this local maximum: if it's above threshold, call it a cluster
-	double hc = countHits(tspect, tctime);
-	if(hc > _minnhits) {
-	  tctimes.push_back(tctime); 
-	}
+// check if sum is above threshold
+	if(norm > _minnhits)
+	  tctimes.push_back(tctime);
       }
-      ++ibin;
     }
-  }
-
-  double TimeClusterFinder::countHits(TH1F const& tspect, double tctime) {
-    Float_t retval(0.0);
-    for(int ibin=1; ibin <= tspect.GetNbinsX(); ++ibin){
-      if(fabs(tctime-tspect.GetBinCenter(ibin) < _maxdt) )
-	retval += tspect.GetBinContent(ibin);
-    }
-    return retval;
   }
 
   void TimeClusterFinder::scanPeaks( TH1F const& tspect,std::vector<double>& tctimes) {
@@ -499,16 +506,35 @@ namespace mu2e {
     return flag.hasAllProperties(_hsel) && !flag.hasAnyProperty(_hbkg);
   }
 
-  double TimeClusterFinder::hitTime(size_t ish) const {
-    return _shcol->at(ish).time() - _t0calc.strawHitTimeOffset(_shpcol->at(ish).pos().z());
-  }
-
-  double TimeClusterFinder::caloClusterTime(CaloCluster const& cc) const {
-    return cc.time() - _t0calc.caloClusterTimeOffset(cc.sectionId());
-  }
-
   bool TimeClusterFinder::goodCaloCluster(CaloCluster const& cc) const {
     return cc.energyDep() > _ccmine;
+  }
+
+ // compute the overlap between 2 clusters 
+  double TimeClusterFinder::overlap(TimeCluster const& tc1, TimeCluster const& tc2) const {
+    double over(0.0);
+    double norm = std::min(tc1._strawHitIdxs.size(),tc2._strawHitIdxs.size());
+    // only examine nearby clusters
+    if(fabs(tc1._t0._t0 -tc2._t0._t0) < 2*_maxpeakdt){
+    // count the overlapping hits
+      for(auto ih1 = tc1._strawHitIdxs.begin(); ih1 !=tc1._strawHitIdxs.end(); ++ih1){ 
+	for(auto ih2 = tc2._strawHitIdxs.begin(); ih2 !=tc2._strawHitIdxs.end(); ++ih2){
+	  if(*ih1 == *ih2)
+	    over +=1.0;
+	}
+      }
+      if(tc1._caloCluster.isNonnull() && tc1._caloCluster == tc2._caloCluster){
+	over += _ccwt;
+	norm += _ccwt;
+      }
+    }
+    return over/norm;  }
+  
+  // give a weight to a time cluster for comparison purposes.
+  double TimeClusterFinder::clusterWeight(TimeCluster const& tc) const {
+    double wt = tc._strawHitIdxs.size();
+    if(tc._caloCluster.isNonnull())wt += _ccwt;
+    return wt;
   }
 
 }  // end namespace mu2e
