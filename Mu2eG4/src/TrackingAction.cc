@@ -387,7 +387,7 @@ namespace mu2e {
 
       int excLevel = ppdgId%10;
 
-      if ( (excLevel > 1) && (trackingVerbosityLevel > -1) ) {
+      if ( (excLevel > 1) && (trackingVerbosityLevel > 0) ) {
 
         const G4ParticleDefinition* pDef = trk->GetDefinition();
 
