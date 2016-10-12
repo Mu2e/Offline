@@ -83,7 +83,7 @@ KFSeed : {
   UnWeed			  : true
   ResolveAfterWeeding		  : false
   AddMaterial			  : [ false, false ]
-  initT0			  : true 
+  initT0			  : false
   updateT0			  : false
 }
 

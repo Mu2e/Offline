@@ -21,7 +21,8 @@ class HelixDiag  {
   public:
     HelixDiag(TTree* hdiag) : _hdiag(hdiag), _helixOK("helixOK"), _mchelixOK("mchelixOK"),
     _outlier("hh._outlier"), _stereo("hh._stereo"), _tdiv("hh._tdiv"),
-    _tdivonly("hh._tdiv && !hh._stereo"), _resphi("hh._resphi"), _nowire("!(hh._stereo||hh._tdiv)")
+    _tdivonly("hh._tdiv && !hh._stereo"), _resphi("hh._resphi"), _nowire("!(hh._stereo||hh._tdiv)"),
+    _crcan(0), _cpcan(0), _rcan(0), _fzcan(0), _corrcan(0), _hpcan1(0), _hpcan2(0), _hdcan(0)
     {}
 
     void CenterRes();
@@ -31,6 +32,7 @@ class HelixDiag  {
     void Correlations();
     void HitPos();
     void HitDist();
+    void save(const char* suffix=".png");
 
     TTree* _hdiag;
     TCut _helixOK;
@@ -41,6 +43,8 @@ class HelixDiag  {
     TCut _tdivonly;
     TCut _resphi;
     TCut _nowire;
+
+    TCanvas *_crcan, *_cpcan, *_rcan, *_fzcan, *_corrcan, *_hpcan1, *_hpcan2, *_hdcan;
 };
 
 void HelixDiag::CenterRes() {
@@ -54,15 +58,15 @@ void HelixDiag::CenterRes() {
   _hdiag->Project("cfcomp","mch._fcent:rhel._fcent",_helixOK&&_mchelixOK);
   _hdiag->Project("cfres","mch._fcent-rhel._fcent",_helixOK&&_mchelixOK);
 
-  TCanvas* crcan = new TCanvas("crcan","Center Resolution",800,800);
-  crcan->Divide(2,2);
-  crcan->cd(1);
+  _crcan = new TCanvas("crcan","Center Resolution",800,800);
+  _crcan->Divide(2,2);
+  _crcan->cd(1);
   crcomp->Draw();
-  crcan->cd(2);
+  _crcan->cd(2);
   crres->Draw();
-  crcan->cd(3);
+  _crcan->cd(3);
   cfcomp->Draw();
-  crcan->cd(4);
+  _crcan->cd(4);
   cfres->Draw();
 }
 
@@ -76,15 +80,15 @@ void HelixDiag::CenterPos() {
   _hdiag->Project("xcomp","rhel._rcent*cos(rhel._fcent):mch._rcent*cos(mch._fcent)",_helixOK&&_mchelixOK);
   _hdiag->Project("ycomp","rhel._rcent*sin(rhel._fcent):mch._rcent*sin(mch._fcent)",_helixOK&&_mchelixOK);
 
-  TCanvas* cpcan = new TCanvas("cpcan","Center Position",800,800);
-  cpcan->Divide(2,2);
-  cpcan->cd(1);
+  _cpcan = new TCanvas("cpcan","Center Position",800,800);
+  _cpcan->Divide(2,2);
+  _cpcan->cd(1);
   rcpos->Draw();
-  cpcan->cd(2);
+  _cpcan->cd(2);
   mccpos->Draw();
-  cpcan->cd(3);
+  _cpcan->cd(3);
   xcomp->Draw();
-  cpcan->cd(4);
+  _cpcan->cd(4);
   ycomp->Draw();
 }
 
@@ -93,11 +97,11 @@ void HelixDiag::Radius() {
   TH1F* rres = new TH1F("rres","Radius resolution;reco - MC radius (mm)",100,-100,100);
   _hdiag->Project("rcomp","rhel._radius:mch._radius",_helixOK&&_mchelixOK);
   _hdiag->Project("rres","rhel._radius-mch._radius",_helixOK&&_mchelixOK);
-  TCanvas* rcan = new TCanvas("rcan","Radius",800,600);
-  rcan->Divide(2,1);
-  rcan->cd(1);
+  _rcan = new TCanvas("rcan","Radius",800,600);
+  _rcan->Divide(2,1);
+  _rcan->cd(1);
   rcomp->Draw();
-  rcan->cd(2);
+  _rcan->cd(2);
   rres->Draw();
 }
 
@@ -110,15 +114,15 @@ void HelixDiag::PhiZ() {
   TH1F* fres = new TH1F("fres","#phiz0 resolution;Reco - MC fz0 (rad)",100,-0.4,0.4);
   _hdiag->Project("fcomp","rhel._fz0:mch._fz0",_helixOK&&_mchelixOK);
   _hdiag->Project("fres","rhel._fz0-mch._fz0",_helixOK&&_mchelixOK);
-  TCanvas* fzcan = new TCanvas("fzcan","Center Position",800,800);
-  fzcan->Divide(2,2);
-  fzcan->cd(1);
+  _fzcan = new TCanvas("fzcan","Center Position",800,800);
+  _fzcan->Divide(2,2);
+  _fzcan->cd(1);
   lcomp->Draw();
-  fzcan->cd(2);
+  _fzcan->cd(2);
   lres->Draw();
-  fzcan->cd(3);
+  _fzcan->cd(3);
   fcomp->Draw();
-  fzcan->cd(4);
+  _fzcan->cd(4);
   fres->Draw();
 }
 
@@ -132,15 +136,15 @@ void HelixDiag::Correlations() {
   _hdiag->Project("cffcorr","rhel._fcent-mch._fcent:rhel._fz0-mch._fz0",_helixOK&&_mchelixOK);
   _hdiag->Project("crlcorr","rhel._rcent-mch._rcent:rhel._lambda-mch._lambda",_helixOK&&_mchelixOK);
 
- TCanvas* corrcan = new TCanvas("corrcan","Correlations",800,800);
-  corrcan->Divide(2,2);
-  corrcan->cd(1);
+ _corrcan = new TCanvas("corrcan","Correlations",800,800);
+  _corrcan->Divide(2,2);
+  _corrcan->cd(1);
   lrcorr->Draw();
-  corrcan->cd(2);
+  _corrcan->cd(2);
   crrcorr->Draw();
-  corrcan->cd(3);
+  _corrcan->cd(3);
   crlcorr->Draw();
-  corrcan->cd(4);
+  _corrcan->cd(4);
   cffcorr->Draw();
 
 }
@@ -155,15 +159,15 @@ void HelixDiag::HitPos() {
   _hdiag->Project("hercomp","sqrt(hh._hpos.dy^2+hh._hpos.dx^2):sqrt(hhmc._hpos.dy^2+hhmc._hpos.dx^2)",_helixOK&&_mchelixOK&&!_outlier);
   _hdiag->Project("hefcomp","atan2(hh._hpos.dy,hh._hpos.dx):atan2(hhmc._hpos.dy,hhmc._hpos.dx)",_helixOK&&_mchelixOK&&!_outlier);
 
- TCanvas* hpcan1 = new TCanvas("hpcan1","Hiti Positions",800,800);
-  hpcan1->Divide(2,2);
-  hpcan1->cd(1);
+ _hpcan1 = new TCanvas("hpcan1","Hiti Positions",800,800);
+  _hpcan1->Divide(2,2);
+  _hpcan1->cd(1);
   hrcomp->Draw("colorz");
-  hpcan1->cd(2);
+  _hpcan1->cd(2);
   hfcomp->Draw("colorz");
-  hpcan1->cd(3);
+  _hpcan1->cd(3);
   hercomp->Draw("colorz");
-  hpcan1->cd(4);
+  _hpcan1->cd(4);
   hefcomp->Draw("colorz");
 
   TH1F* hrres = new TH1F("hrres","Reco vs true Hit radius",100,-100.0,100.0);
@@ -175,15 +179,15 @@ void HelixDiag::HitPos() {
   _hdiag->Project("herres","sqrt(hh._hpos.dy^2+hh._hpos.dx^2)-sqrt(hhmc._hpos.dy^2+hhmc._hpos.dx^2)",_helixOK&&_mchelixOK&&!_outlier);
   _hdiag->Project("hefres","atan2(hh._hpos.dy,hh._hpos.dx)-atan2(hhmc._hpos.dy,hhmc._hpos.dx)",_helixOK&&_mchelixOK&&!_outlier);
 
- TCanvas* hpcan2 = new TCanvas("hpcan2","Hit Position Resolution",800,800);
-  hpcan2->Divide(2,2);
-  hpcan2->cd(1);
+ _hpcan2 = new TCanvas("hpcan2","Hit Position Resolution",800,800);
+  _hpcan2->Divide(2,2);
+  _hpcan2->cd(1);
   hrres->Draw();
-  hpcan2->cd(2);
+  _hpcan2->cd(2);
   hfres->Draw();
-  hpcan2->cd(3);
+  _hpcan2->cd(3);
   herres->Draw();
-  hpcan2->cd(4);
+  _hpcan2->cd(4);
   hefres->Draw();
 
 }
@@ -237,16 +241,16 @@ void HelixDiag::HitDist() {
   dleg->AddEntry(hdwiren,"No WireInfo Hits","L");
   dleg->AddEntry(hdwireo,"Outlier Hits","L");
   dleg->AddEntry(hdwiref,"Failed Fit","L");
-  TCanvas* hdcan = new TCanvas("hdcan","Hit Dists",800,800);
-  hdcan->Divide(2,2);
-  hdcan->cd(1);
+  _hdcan = new TCanvas("hdcan","Hit Dists",800,800);
+  _hdcan->Divide(2,2);
+  _hdcan->cd(1);
   hdwires->Draw();
   hdwiret->Draw("same");
   hdwiren->Draw("same");
   hdwireo->Draw("same");
   hdwiref->Draw("same");
   dleg->Draw();
-  hdcan->cd(2);
+  _hdcan->cd(2);
   hdtranss->Draw();
   hdtranst->Draw("same");
   hdtransn->Draw("same");
@@ -254,3 +258,41 @@ void HelixDiag::HitDist() {
   hdtransf->Draw("same");
  
 }
+
+void HelixDiag::save(const char* suffix) {
+  string ss(suffix);
+  string cfname;
+  if(_crcan){
+    cfname = string(_crcan->GetName())+ss;
+    _crcan->SaveAs(cfname.c_str());
+  }
+  if(_cpcan){
+    cfname = string(_cpcan->GetName())+ss;
+    _cpcan->SaveAs(cfname.c_str());
+  }
+  if(_rcan){
+    cfname = string(_rcan->GetName())+ss;
+    _rcan->SaveAs(cfname.c_str());
+  }
+  if(_fzcan){
+    cfname = string(_fzcan->GetName())+ss;
+    _fzcan->SaveAs(cfname.c_str());
+  }
+  if(_corrcan){
+    cfname = string(_corrcan->GetName())+ss;
+    _corrcan->SaveAs(cfname.c_str());
+  }
+  if(_hpcan1){
+    cfname = string(_hpcan1->GetName())+ss;
+    _hpcan1->SaveAs(cfname.c_str());
+  }
+  if(_hpcan2){
+    cfname = string(_hpcan2->GetName())+ss;
+    _hpcan2->SaveAs(cfname.c_str());
+  }
+  if(_hdcan){
+    cfname = string(_hdcan->GetName())+ss;
+    _hdcan->SaveAs(cfname.c_str());
+  }
+}
+

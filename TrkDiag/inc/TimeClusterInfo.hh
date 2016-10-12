@@ -20,16 +20,17 @@ namespace mu2e {
     Float_t _time; // cluster time
     Float_t _terr; // cluster time error
     Float_t _minhtime, _maxhtime; // min and max cluster hit time
+    Float_t _maxover; // max overlap with another time cluster this event
     threevec _pos; // average position of cluster
     Float_t _ecalo; // calo cluster energy
     Float_t _tcalo; // calo cluster time
     Float_t _dtcalo; // calo cluster time
     threevec _cog; // calo cluster position
     
-    void reset() { _tcindex = -1; _nhits = _ncehits = 0; _time = _terr = _ecalo = _tcalo = _dtcalo = 0.0; _pos.reset(); _cog.reset(); }
+    void reset() { _tcindex = -1; _nhits = _ncehits = 0; _time = _terr = _maxover = _ecalo = _tcalo = _dtcalo = 0.0; _pos.reset(); _cog.reset(); }
     static std::string leafnames() { 
       static std::string leaves; leaves =
-      std::string("tcindex/I:nhits/I:ncehits/I:time/F:terr/F:minhtime/F:maxhtime/F:") 
+      std::string("tcindex/I:nhits/I:ncehits/I:time/F:terr/F:minhtime/F:maxhtime/F:maxover/F:") 
       + threevec::leafnames("pos") + std::string(":ecalo/F:tcalo/F:dtcalo/F:")
       + threevec::leafnames("cog"); 
       return leaves;

@@ -19,6 +19,7 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // tracking
 #include "TrkReco/inc/TrkTimeCalculator.hh"
+#include "TrkReco/inc/TrkUtilities.hh"
 // TrkDiag
 #include "TrkDiag/inc/TimeClusterInfo.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
@@ -418,6 +419,11 @@ namespace mu2e {
 	bool conversion = TrkMCTools::CEDigi(mcdigi);
 	if(conversion)++tcinfo._ncehits;
       }
+    }
+    // look for overlaps
+    for(size_t ic = 0;ic< _tccol->size(); ++ ic){
+      if((int)ic != tcinfo._tcindex) // don't count myself
+	tcinfo._maxover = max(tcinfo._maxover,(Float_t)TrkUtilities::overlap(tp,_tccol->at(ic)));
     }
   }
 

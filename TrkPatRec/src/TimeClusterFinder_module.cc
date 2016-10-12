@@ -26,6 +26,7 @@
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 // tracking
+#include "TrkReco/inc/TrkUtilities.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 // root
 #include "TH1F.h"
@@ -127,7 +128,6 @@ namespace mu2e {
     void scanPeaks    (TH1F const& tspect, std::vector<double>& tctimes);
     bool goodHit(StrawHitFlag const& flag) const;
     bool goodCaloCluster(CaloCluster const& cc) const;
-    double overlap(TimeCluster const& tc1, TimeCluster const& tc2) const;
     double clusterWeight(TimeCluster const& tc) const;
 
   };
@@ -158,7 +158,7 @@ namespace mu2e {
     _usecc	       (pset.get<bool>("UseCaloCluster",false)),
     _ccmine            (pset.get<double>("CaloClusterMinE",50.0)), // minimum energy to call a cluster 'good' (MeV)
     _ccwt              (pset.get<double>("CaloClusterWeight",10.0)), // Cluster weight in units of hits
-    _maxover           (pset.get<double>("MaxOverlap",0.5)), // Maximum hit overlap to consider clusters as different
+    _maxover           (pset.get<double>("MaxOverlap",0.3)), // Maximum hit overlap to consider clusters as different
     _peakMVA           (pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet())),
     _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet()))
   {
@@ -308,7 +308,7 @@ namespace mu2e {
 	bool overl(false);
 	// compare this to the previous cluster: if they overlap too much, just take the best one
 	for(auto itclust = tclusts->begin(); itclust < tclusts->end(); ++itclust) {
-	  if(overlap(tclust,*itclust) > _maxover){
+	  if(TrkUtilities::overlap(tclust,*itclust) > _maxover){
 	    if(clusterWeight(tclust) > clusterWeight(*itclust)){ // new cluster is 'better', erase the old
 	      tclusts->erase(itclust);
 	      break;
@@ -510,26 +510,6 @@ namespace mu2e {
     return cc.energyDep() > _ccmine;
   }
 
- // compute the overlap between 2 clusters 
-  double TimeClusterFinder::overlap(TimeCluster const& tc1, TimeCluster const& tc2) const {
-    double over(0.0);
-    double norm = std::min(tc1._strawHitIdxs.size(),tc2._strawHitIdxs.size());
-    // only examine nearby clusters
-    if(fabs(tc1._t0._t0 -tc2._t0._t0) < 2*_maxpeakdt){
-    // count the overlapping hits
-      for(auto ih1 = tc1._strawHitIdxs.begin(); ih1 !=tc1._strawHitIdxs.end(); ++ih1){ 
-	for(auto ih2 = tc2._strawHitIdxs.begin(); ih2 !=tc2._strawHitIdxs.end(); ++ih2){
-	  if(*ih1 == *ih2)
-	    over +=1.0;
-	}
-      }
-      if(tc1._caloCluster.isNonnull() && tc1._caloCluster == tc2._caloCluster){
-	over += _ccwt;
-	norm += _ccwt;
-      }
-    }
-    return over/norm;  }
-  
   // give a weight to a time cluster for comparison purposes.
   double TimeClusterFinder::clusterWeight(TimeCluster const& tc) const {
     double wt = tc._strawHitIdxs.size();

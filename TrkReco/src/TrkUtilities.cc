@@ -8,6 +8,7 @@
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "GeneralUtilities/inc/Angles.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
 // BTrk
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
@@ -106,6 +107,25 @@ namespace mu2e {
 	hitseeds.push_back(seedhit);
       }
     }
-
+ // compute the overlap between 2 clusters 
+    double overlap(TimeCluster const& tc1, TimeCluster const& tc2) {
+      double over(0.0);
+      double norm = std::min(tc1._strawHitIdxs.size(),tc2._strawHitIdxs.size());
+      // count the overlapping hits
+      for(auto ih1 = tc1._strawHitIdxs.begin(); ih1 !=tc1._strawHitIdxs.end(); ++ih1){ 
+	for(auto ih2 = tc2._strawHitIdxs.begin(); ih2 !=tc2._strawHitIdxs.end(); ++ih2){
+	  if(*ih1 == *ih2)
+	    over +=1.0;
+	    break;
+	}
+      }
+      // add in CaloCluster; count is as much as all the hits
+      if(tc1._caloCluster.isNonnull() && tc2._caloCluster.isNonnull()) {
+	if(tc1._caloCluster == tc2._caloCluster)
+	  over += norm;
+	norm *= 2.0;
+      }
+      return over/norm;
+    }
   } // TrkUtilities
 }// mu2e

@@ -12,6 +12,7 @@
 class HelixTraj;
 class BbrVectorErr;
 class KalRep;
+class TimeCluster;
 namespace mu2e {
   class RobustHelix;
   class KalSegment;
@@ -26,6 +27,8 @@ namespace mu2e {
     void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr, KalSegment& kseg);
     // create HitSeeds from the TrkStrawHits in a KalRep
     void fillHitSeeds(const KalRep* krep, std::vector<TrkStrawHitSeed>& hitseeds);
+    // compute overlap between 2 time clusters
+    double overlap(TimeCluster const& tc1, TimeCluster const& tc2);
   }
 }
 #endif
