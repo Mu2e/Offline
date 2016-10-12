@@ -47,8 +47,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // comparison functor for sorting by Z(wire)
 //-----------------------------------------------------------------------------
-  struct straw_zcomp : public binary_function<hitIndex,hitIndex,bool> {
-    bool operator()(hitIndex const& h1, hitIndex const& h2) {
+  struct straw_zcomp : public binary_function<StrawHitIndex,StrawHitIndex,bool> {
+    bool operator()(StrawHitIndex const& h1, StrawHitIndex const& h2) {
 
       mu2e::GeomHandle<mu2e::TTracker> handle;
       const TTracker* t = handle.get();
@@ -381,11 +381,11 @@ namespace mu2e {
       // P.Murat: here hits are ordered by index - WHY?
       // the Kalman fitter needs them ordered in Z(straw)
       //-----------------------------------------------------------------------------
-      std::vector<hitIndex> goodhits;
+      std::vector<StrawHitIndex> goodhits;
       _hitIndices = trkSeed->_timeCluster._strawHitIdxs;
       
-      std::sort(_hitIndices.begin(), _hitIndices.end(), [ ]( const mu2e::hitIndex& lhs,
-							     const mu2e::hitIndex& rhs )
+      std::sort(_hitIndices.begin(), _hitIndices.end(), [ ]( const StrawHitIndex& lhs,
+							     const StrawHitIndex& rhs )
 		{
 		  return lhs < rhs;
 		} );
@@ -525,7 +525,7 @@ namespace mu2e {
 	      _kfit.unweedHits(*_kfresult,_maxaddchi);
 	      if (_debugLevel > 0) _kfit.printHits(*_kfresult,"CalTrkFit::produce after unweedHits");
 	      
-	      std::vector<hitIndex> misshits;
+	      std::vector<StrawHitIndex> misshits;
 	      findMissingHits(*_kfresult,misshits);
 	      //-----------------------------------------------------------------------------
 	      // if new hits have been added, add then and refit the track.
@@ -718,7 +718,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  void CalTrkFit::findMissingHits(KalFitResult& kalfit,std::vector<hitIndex>& misshits) {
+  void CalTrkFit::findMissingHits(KalFitResult& kalfit,std::vector<StrawHitIndex>& misshits) {
                                         //  Trajectory info
     Hep3Vector tdir;
     HepPoint   tpos;

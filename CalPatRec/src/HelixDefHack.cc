@@ -12,6 +12,21 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
+// copy contructor
+//-----------------------------------------------------------------------------
+  HelixDefHack::HelixDefHack(const HelixDefHack& other){
+    _shpos  = other.strawHitPositionCollection();
+    _shfcol = other.strawHitFlagCollection();
+    
+    //parameters from TrkDefHack
+    _shcol       = other.strawHitCollection();
+    _timeCluster = other._timeCluster;
+    _h0          = other._h0;
+    _tpart       = other._tpart;
+    _fdir        = other._fdir;
+  }
+
+//-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
   HelixDefHack::HelixDefHack(TrkDefHack const& tdef) : 
@@ -28,7 +43,7 @@ namespace mu2e {
   HelixDefHack::HelixDefHack(const StrawHitCollection*         StrawCollection ,
 			     const StrawHitPositionCollection* ShposCollection , 
 			     const StrawHitFlagCollection*     ShFlagCollection, 
-			     const std::vector<hitIndex>&      StrawHits       ,
+			     const std::vector<StrawHitIndex>&      StrawHits       ,
 			     TrkParticle const&                tpart           ,
 			     TrkFitDirection const&            fdir            ) : 
     TrkDefHack(StrawCollection,StrawHits,tpart,fdir) 

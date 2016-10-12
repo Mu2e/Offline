@@ -32,8 +32,8 @@
 
  <class name="art::Wrapper<mu2e::CalTimePeakCollection>"/>
 
-<class name="mu2e::hitIndex"/>
-<class name="std::vector<mu2e::hitIndex>"/>
+<!--- <class name="mu2e::hitIndex"/> -->
+<!--- <class name="std::vector<mu2e::hitIndex>"/> -->
 
 
 <!-- <class name="mu2e::hitIndex"/> -->

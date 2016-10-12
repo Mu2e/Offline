@@ -34,7 +34,7 @@ template class art::Ptr<mu2e::CalTimePeak>;
 template class std::vector<art::Ptr<mu2e::CalTimePeak> >;
 template class art::Wrapper<mu2e::CalTimePeakCollection>;
 
-template class std::vector<mu2e::hitIndex>;
+// template class std::vector<mu2e::hitIndex>;
 template class std::vector<mu2e::XYZPHack>;
 
 // template class art::Ptr<mu2e::hitIndex>;

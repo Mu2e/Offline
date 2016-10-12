@@ -25,6 +25,7 @@
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "CalPatRec/inc/KalFitResult.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
@@ -44,8 +45,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // comparison functor for sorting by Z(wire)
 //-----------------------------------------------------------------------------
-  struct straw_zcomp : public binary_function<hitIndex,hitIndex,bool> {
-    bool operator()(hitIndex const& h1, hitIndex const& h2) {
+  struct straw_zcomp : public binary_function<StrawHitIndex,StrawHitIndex,bool> {
+    bool operator()(StrawHitIndex const& h1, StrawHitIndex const& h2) {
 
       mu2e::GeomHandle<mu2e::TTracker> handle;
       const TTracker* t = handle.get();
@@ -304,7 +305,7 @@ namespace mu2e {
 // P.Murat: here hits are ordered by index - WHY?
 // the Kalman fitter needs them ordered in Z(straw)
 //-----------------------------------------------------------------------------
-        std::vector<hitIndex> goodhits;
+        std::vector<StrawHitIndex> goodhits;
 
         _index = _hfit._xyzp;
 
@@ -426,11 +427,11 @@ namespace mu2e {
     TrkSeed._helix.tanDip() = SeedDef.helix().tanDip();
        
     int             shIndices = SeedDef.strawHitIndices().size();
-    const mu2e::hitIndex *hIndex;
+    const StrawHitIndex *hIndex;
 
     for (int i=0; i<shIndices; ++i){
       hIndex = &SeedDef.strawHitIndices().at(i);
-      TrkSeed._timeCluster._strawHitIdxs.push_back( mu2e::hitIndex( hIndex) );
+      TrkSeed._timeCluster._strawHitIdxs.push_back( StrawHitIndex( hIndex) );
     }
     
     const mu2e::CaloCluster *cluster = TPeak->Cluster();

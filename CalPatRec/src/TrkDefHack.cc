@@ -25,7 +25,7 @@ namespace mu2e
     _timeCluster(tclust),_h0(helix),_tpart(tpart),_fdir(fdir)
   {}
 
-  TrkDefHack::TrkDefHack(const StrawHitCollection* shcol, std::vector<mu2e::hitIndex> const& hits,
+  TrkDefHack::TrkDefHack(const StrawHitCollection* shcol, std::vector<StrawHitIndex> const& hits,
       HelixTraj const& htraj,
       TrkParticle const& tpart, TrkFitDirection const& fdir) : _shcol(shcol),
   _h0(htraj), _tpart(tpart),_fdir(fdir)
@@ -33,7 +33,7 @@ namespace mu2e
     setIndices(hits);
   }
 
-  TrkDefHack::TrkDefHack(const StrawHitCollection* shcol, std::vector<mu2e::hitIndex> const& hits,
+  TrkDefHack::TrkDefHack(const StrawHitCollection* shcol, std::vector<StrawHitIndex> const& hits,
       TrkParticle const& tpart, TrkFitDirection const& fdir) : _shcol(shcol),
   _h0(_dpar,_dcov), _tpart(tpart),_fdir(fdir)
   {
@@ -45,6 +45,7 @@ namespace mu2e
   {}
   
   TrkDefHack::TrkDefHack(const TrkDefHack& other ) : 
+    _shcol(other._shcol),
     _timeCluster(other._timeCluster),
     _h0(other._h0), _tpart(other._tpart),
     _fdir(other._fdir)
@@ -53,6 +54,7 @@ namespace mu2e
   TrkDefHack&
   TrkDefHack::operator = (const TrkDefHack& other) {
     if(this != &other){
+      _shcol = other._shcol;
       _timeCluster = other._timeCluster;
       _h0 = other._h0;
       _tpart = other._tpart;
