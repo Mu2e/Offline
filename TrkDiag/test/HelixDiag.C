@@ -93,7 +93,7 @@ void HelixDiag::CenterPos() {
 }
 
 void HelixDiag::Radius() {
-  TH2F* rcomp = new TH2F("rcomp","Reco vs true Radius:MC radius (mm); Reco radius (mm)",50,200.0,350.0,50,200.0,350.0);
+  TH2F* rcomp = new TH2F("rcomp","Reco vs true Radius;MC radius (mm); Reco radius (mm)",50,200.0,350.0,50,200.0,350.0);
   TH1F* rres = new TH1F("rres","Radius resolution;reco - MC radius (mm)",100,-100,100);
   _hdiag->Project("rcomp","rhel._radius:mch._radius",_helixOK&&_mchelixOK);
   _hdiag->Project("rres","rhel._radius-mch._radius",_helixOK&&_mchelixOK);
