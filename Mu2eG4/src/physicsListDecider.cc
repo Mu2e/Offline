@@ -65,6 +65,15 @@ namespace mu2e{
     std::string getPhysicsListName(const fhicl::ParameterSet& pset) {
       return pset.get<std::string>("physics.physicsListName");
     }
+
+    bool turnOffRadioactiveDecay(const SimpleConfig& config) {
+      return config.getBool("g4.turnOffRadioactiveDecay",false);
+    }
+
+    bool turnOffRadioactiveDecay(const fhicl::ParameterSet& pset) {
+      return pset.get<bool>("physics.turnOffRadioactiveDecay",false);
+    }
+
   }
 
 
@@ -160,6 +169,10 @@ namespace mu2e{
         << "Unable to load physics list named: "
         << name
         << "\n";
+    }
+
+    if (turnOffRadioactiveDecay(config)) {
+      (dynamic_cast<G4VModularPhysicsList*>(physicsList))->RemovePhysics("G4RadioactiveDecay");
     }
 
     return physicsList;

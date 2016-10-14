@@ -127,3 +127,4 @@ physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
 physics.producers.CaloCrystalHitsMaker.diagLevel : 0
 physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
+#physics.producers.g4run.physics.turnOffRadioactiveDecay: true
