@@ -16,6 +16,7 @@ mu2eg4DefaultPhysics: {
     useNewMuMinusAtomicCapture: false
     minRangeCut: 0.010 // mm
     physicsListName:  "ShieldingM"
+    turnOffRadioactiveDecay:  false
 
     // current G4 stepper choices in Mu2eWorld.cc are shown below
     // G4ClassicalRK4
