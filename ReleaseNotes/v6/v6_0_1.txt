@@ -1,5 +1,3 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v6_0_1
 
 1)  dnbrow01  06 Oct 2016
@@ -8,7 +6,7 @@ Still under construction
     modified:   Mu2eG4/geom/ElectronicRack_v01.txt
     modified:   ReleaseNotes/v6/v6_0_1.txt
 
-2)  oksuzian  15 Oct 2016
+2)  oksuzian  15 Oct 2016 - IGNORE this tag. Consist an overlap between CRV and shielding pipe.
     Added 1 cm poly-liner on the inner part of STM shielding: pipe, magnet and FOV collimator.
     Poly-liner thickness is set: 
     double stm.shield.widthLiner           = 10.0;
@@ -21,3 +19,4 @@ Still under construction
     modified:   Mu2eG4/src/constructSTM.cc
     modified:   ReleaseNotes/v6/v6_0_1.txt
     modified:   STMGeom/inc/ShieldPipe.hh
+
