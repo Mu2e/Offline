@@ -27,6 +27,7 @@
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
 // Mu2e BaBar
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/KalFit.hh"
@@ -64,7 +65,8 @@ namespace mu2e
       // configuration parameters
       int _debug;
       int _printfreq;
-      bool _addhits; 
+      bool _saveall,_addhits; 
+      vector<double> _zsave;
       art::Handle<mu2e::StrawHitCollection> _strawhitsH;
       art::Handle<KalSeedCollection> _trksSeedH;
       // event object tags
@@ -97,7 +99,9 @@ namespace mu2e
   KalFinalFit::KalFinalFit(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
+    _saveall(pset.get<bool>("saveall",false)),
     _addhits(pset.get<bool>("addhits",true)),
+    _zsave(pset.get<vector<double> >("ZSavePositions",vector<double>{-1522.0,0.0,1522.0})), // front, middle and back of the tracker
     _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makeSH")),
     _shfTag(pset.get<art::InputTag>("StrawHitFlagCollectionTag","FlagBkgHits")),
     _ksTag(pset.get<art::InputTag>("SeedCollectionTag","KalSeedFit")),
@@ -178,23 +182,45 @@ namespace mu2e
 	    << " NDOF = " << krep->nDof() << endl;
 	}
 	// put successful fits into the event
-	if(krep != 0 && krep->fitStatus().success()){
+	if(krep != 0 && (krep->fitStatus().success() || _saveall)){
 	  // warning about 'fit current': this is not an error
 	  if(!krep->fitCurrent()){
 	    cout << "Fit not current! " << endl;
 	  }
-	  // save successful kalman fits in the event
-	  krcol->push_back(krep);
-	  int index = krcol->size()-1;
-	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
-	  // convert successful fits into 'seeds' for persistence
-	  // FIXME!
-	  // flag the hits used in this track. 
+	  // flg all hits as belonging to this track
+	  // // this is probably obsolete, FIXME!
 	  if(iseed<StrawHitFlag::_maxTrkId){
 	    for(auto ihit=krep->hitVector().begin();ihit != krep->hitVector().end();++ihit){
 	      if((*ihit)->isActive())shfcol->at(static_cast<TrkStrawHit*>(*ihit)->index()).merge(StrawHitFlag::trackBit(iseed));
 	    }
 	  }
+	  // save successful kalman fits in the event
+	  krcol->push_back(krep);
+	  int index = krcol->size()-1;
+	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
+	  // convert successful fits into 'seeds' for persistence.  Start with the input
+	  KalSeed fseed(kseed);
+	  fseed._t0 = krep->t0();
+	  fseed._flt0 = krep->flt0();
+	  fseed._status.merge(TrkFitFlag::kalmanOK);
+	  if(krep->fitStatus().success()==1) fseed._status.merge(TrkFitFlag::kalmanConverged);
+	  TrkUtilities::fillHitSeeds(krep,kseed._hits);
+	  // sample the fit at the requested z positions.  This should
+	  // be in terms of known positions (front of tracker, ...) FIXME!
+	  for(auto zpos : _zsave) {
+	    // compute the flightlength for this z
+	    double fltlen = TrkUtilities::zFlight(krep->pieceTraj(),zpos);
+	    // sample the momentum at this flight.  This belongs in a separate utility FIXME
+	    BbrVectorErr momerr = krep->momentumErr(fltlen);
+	    // sample the helix
+	    double locflt(0.0);
+	    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(fltlen,locflt));
+	    // fill the segment
+	    KalSegment kseg;
+	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
+	    fseed._segments.push_back(kseg);
+	  }
+	  kscol->push_back(fseed);
 	} else // fit failure
 	  delete krep;
       }

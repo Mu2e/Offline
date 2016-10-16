@@ -6,15 +6,13 @@
 // $Author: tassiell $
 // $Date: 2014/08/22 16:10:41 $
 //
-
-// the following has to come before other BaBar includes
-#include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/KalFit.hh"
 #include "TrkReco/inc/PanelAmbigResolver.hh"
 #include "TrkReco/inc/PocaAmbigResolver.hh"
 #include "TrkReco/inc/HitAmbigResolver.hh"
 #include "TrkReco/inc/FixedAmbigResolver.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
+#include "TrkReco/inc/TrkUtilities.hh"
 #include "Mu2eBTrk/inc/BaBarMu2eField.hh"
 #include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 //geometry
@@ -568,7 +566,7 @@ namespace mu2e
       Hep3Vector sn = plane.getPanel(0).getLayer(1).getStraw(2*plane.getPanel(0).getLayer(1).nStraws()-1).getMidPoint();
       double pz = 0.5*(s0.z() + sn.z());
 // find the transverse position at this z using the reference trajectory
-      double flt = zFlight(krep,pz);
+      double flt = TrkUtilities::zFlight(*krep->referenceTraj(),pz);
       HepPoint pos = krep->referenceTraj()->position(flt);
       Hep3Vector posv(pos.x(),pos.y(),pos.z());
 // see if this position is in the active region.  Double the straw radius to be generous
@@ -955,25 +953,6 @@ namespace mu2e
     while(ihigh != hits.end() && (*ihigh)->fltLen() < flt0 )++ihigh;
   }
 
-  // this function belongs in TrkDifTraj, FIXME!!!!
-  double KalFit::zFlight(KalRep* krep,double pz) {
-// get the helix at the middle of the track
-    double loclen;
-    double fltlen(0.0);
-    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->referenceTraj()->localTrajectory(fltlen,loclen));
-// Iterate
-    const HelixTraj* oldtraj;
-    unsigned iter(0);
-    do {
-// remember old traj
-      oldtraj = htraj;
-// correct the global fltlen for this difference in local trajectory fltlen at this Z position
-      fltlen += (htraj->zFlight(pz)-loclen);
-      htraj = dynamic_cast<const HelixTraj*>(krep->referenceTraj()->localTrajectory(fltlen,loclen));
-    } while(oldtraj != htraj && iter++<10);
-    return fltlen;
-  }
-
 // attempt to extend the fit to the specified location
   TrkErrCode KalFit::extendFit(KalRep* krep) {
     TrkErrCode retval;
@@ -981,14 +960,14 @@ namespace mu2e
     if(_exdown != noextension){
       double downz = extendZ(_exdown);
     // convert to flightlength using the fit trajectory
-      double downflt = zFlight(krep,downz);
+      double downflt = TrkUtilities::zFlight(krep->pieceTraj(),downz);
     // actually extend the track
       retval = krep->extendThrough(downflt);
     }
     // same for upstream extension
     if(retval.success() && _exup != noextension){
       double upz = extendZ(_exup);
-      double upflt = zFlight(krep,upz);
+      double upflt = TrkUtilities::zFlight(krep->pieceTraj(),upz);
       retval = krep->extendThrough(upflt);
     }
     return retval;

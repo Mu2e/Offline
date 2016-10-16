@@ -13,6 +13,7 @@
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
+#include "BTrk/TrkBase/TrkDifPieceTraj.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
@@ -128,5 +129,25 @@ namespace mu2e {
       }
       return over/norm;
     }
+
+  // this function belongs in TrkDifTraj, FIXME!!!!
+    double zFlight(TrkDifPieceTraj const& ptraj, double pz) {
+      // get the helix at the middle of the track
+      double loclen;
+      double fltlen(0.0);
+      const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(ptraj.localTrajectory(fltlen,loclen));
+      // Iterate
+      const HelixTraj* oldtraj;
+      unsigned iter(0);
+      do {
+	// remember old traj
+	oldtraj = htraj;
+	// correct the global fltlen for this difference in local trajectory fltlen at this Z position
+	fltlen += (htraj->zFlight(pz)-loclen);
+	htraj = dynamic_cast<const HelixTraj*>(ptraj.localTrajectory(fltlen,loclen));
+      } while(oldtraj != htraj && iter++<10);
+      return fltlen;
+    }
+
   } // TrkUtilities
 }// mu2e

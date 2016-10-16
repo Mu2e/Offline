@@ -99,7 +99,7 @@ namespace mu2e {
     double        _tmin;
     double        _tmax;
     double        _tbin;
-    unsigned      _nbins;
+    TH1F	  _timespec;
     double        _ymin;
     bool          _refine;
     bool	  _usecc;
@@ -124,8 +124,10 @@ namespace mu2e {
     void refineCluster	  (TimeCluster& tp); // refine the peak information and hit list
     bool findData         (const art::Event& evt);
     void findClusters    (TimeClusterCollection*, art::Event const& evt);
-    void findPeaks    (TH1F const& tspect, std::vector<double>& tctimes);
-    void scanPeaks    (TH1F const& tspect, std::vector<double>& tctimes);
+    void findPeaks    (std::vector<double>& tctimes);
+    void scanPeaks    (std::vector<double>& tctimes);
+    void fillTimeSpectrum();
+    void addCaloCluster(TimeCluster& tc,art::Event const& e);
     bool goodHit(StrawHitFlag const& flag) const;
     bool goodCaloCluster(CaloCluster const& cc) const;
     double clusterWeight(TimeCluster const& tc) const;
@@ -163,7 +165,8 @@ namespace mu2e {
     _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet()))
   {
     // set # bins for time spectrum plot
-    _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
+    unsigned nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
+    _timespec = TH1F("timespec","time spectrum",nbins,_tmin,_tmax);
     // Tell the framework what we make.
     produces<TimeClusterCollection>();
     produces<StrawHitFlagCollection>();
@@ -234,35 +237,16 @@ namespace mu2e {
   }
 
   void TimeClusterFinder::findClusters(TimeClusterCollection* tclusts,art::Event const& evt) {
-    // first, fill a histogram
-    static TH1F timespec("timespec","time spectrum",_nbins,_tmin,_tmax);
-    timespec.Reset();
-    // loop over straws hits and fill time spectrum plot for selected hits
-    unsigned nstrs = _shcol->size();
-    for(unsigned istr=0; istr<nstrs;++istr){
-      if(goodHit(_shfcol->at(istr))) {
-	double time = _ttcalc.strawHitTime(_shcol->at(istr),_shpcol->at(istr));
-	timespec.Fill(time);
-      }
-    }
-    // if we're using the calorimeter clusters, put those in too
-    if(_usecc && _cccol != 0){
-      for(auto icc = _cccol->begin();icc != _cccol->end(); ++icc){
-	if(goodCaloCluster(*icc)){
-	  double time = _ttcalc.caloClusterTime(*icc);
-	  // weight the cluster WRT hits by an ad-hoc value.  This is more about signal/noise than resolution
-	  timespec.Fill(time, _ccwt);
-	}
-      }
-    }
-  // find cluster seeds
+    // first, fill a histogram with all the hit times
+    fillTimeSpectrum();
+  // find cluster seeds instead this spectrum
     vector<double> tctimes;
     switch (_algo ) {
       case peak : default:
-	findPeaks(timespec,tctimes);
+	findPeaks(tctimes);
 	break;
       case scan :
-	scanPeaks(timespec,tctimes);
+	scanPeaks(tctimes);
 	break;
     }
 // loop over the seeds and create time clusters from them
@@ -273,7 +257,7 @@ namespace mu2e {
       // initial t0 is the peak position
       tclust._t0 = TrkT0(tctime,1.0);
      // associate all hits in the time window with this peak
-      for(size_t istr=0; istr<nstrs;++istr){
+      for(size_t istr=0; istr<_shcol->size(); ++istr){
 	if(goodHit(_shfcol->at(istr))){
 	  double time = _ttcalc.strawHitTime(_shcol->at(istr),_shpcol->at(istr));
 	  if(fabs(time-tctime) < _maxdt){
@@ -281,27 +265,11 @@ namespace mu2e {
 	  }
 	}
       }
-      // take the highest-energy cluster that's consistent with this time
-      if(_usecc && _cccol != 0){
-	auto bestcc = _cccol->end();
-	for(auto icc = _cccol->begin();icc != _cccol->end(); ++icc){
-	  if(goodCaloCluster(*icc)){
-	    double time = _ttcalc.caloClusterTime(*icc);
-	    if(fabs(tctime-time) < _maxdt) {
-	      if(bestcc == _cccol->end() || icc->energyDep() > bestcc->energyDep())
-		bestcc = icc;
-	    }
-	  }
-	}
-	if(bestcc != _cccol->end()){
-	  size_t index = std::distance(_cccol->begin(),bestcc);
-	  auto ccH = evt.getValidHandle<CaloClusterCollection>(_ccTag);
-	  tclust._caloCluster = art::Ptr<CaloCluster>(ccH,index);
-	}
-      }
-      // initialize
+      // if we're using the calo clusters, associate those too
+      if(_usecc) addCaloCluster(tclust,evt);
+      // initialize the t0 value using these hits
       initCluster(tclust);
-      // refine
+      // refine the hit content and t0 value
       if(_refine)refineCluster(tclust);
       // final check on # of hits
       if(tclust._strawHitIdxs.size() >= _minnhits){
@@ -325,7 +293,7 @@ namespace mu2e {
     // debug test of histogram
     if(_debug > 2){
       art::ServiceHandle<art::TFileService> tfs;
-      TH1F* tspec = tfs->make<TH1F>(timespec);
+      TH1F* tspec = tfs->make<TH1F>(_timespec);
       char name[40];
       char title[100];
       snprintf(name,40,"tspec_%i",_iev);
@@ -466,27 +434,27 @@ namespace mu2e {
     tclust._pos = Hep3Vector(prho*cos(pphi),prho*sin(pphi),zpos);
   }
 
-  void TimeClusterFinder::findPeaks( TH1F const& tspect,std::vector<double>& tctimes) {
+  void TimeClusterFinder::findPeaks(std::vector<double>& tctimes) {
     tctimes.clear();
     // repack the histogram into bin,content
     vector<BinContent> bcv;
-    int nbins = tspect.GetNbinsX()+1;
+    int nbins = _timespec.GetNbinsX()+1;
     vector<bool> used(nbins,false);
     for(int ibin=1;ibin < nbins; ++ibin)
-      bcv.push_back(make_pair(tspect.GetBinContent(ibin),ibin));
+      bcv.push_back(make_pair(_timespec.GetBinContent(ibin),ibin));
 // sort by bin contents
     sort(bcv.begin(),bcv.end(),BCComp());
-// loop over sorted contents
+// loop over sorted contents; this starts with the highest bins and works down
     for(auto const& bc : bcv){
       if((!used[bc.second]) && bc.first >= _ymin){
 	//local maximum.  Average around a few bins
 	double tctime(0.0);
 	double norm(0.0);
 	for(int ibin = std::max(1,bc.second-2);ibin < std::min(nbins,bc.second+3); ++ibin){
-	  if(fabs(tspect.GetBinCenter(bc.second)-tspect.GetBinCenter(ibin)) < _maxdt ){
-	    norm += tspect.GetBinContent(ibin);
-	    tctime += tspect.GetBinCenter(ibin)*tspect.GetBinContent(ibin);
-	    // mark these bins as used
+	  if(fabs(_timespec.GetBinCenter(bc.second)-_timespec.GetBinCenter(ibin)) < _maxdt ){
+	    norm += _timespec.GetBinContent(ibin);
+	    tctime += _timespec.GetBinCenter(ibin)*_timespec.GetBinContent(ibin);
+	    // mark these bins as used so they aren't found as separate peaks
 	    used[ibin] = true;
 	  }
 	}
@@ -498,7 +466,7 @@ namespace mu2e {
     }
   }
 
-  void TimeClusterFinder::scanPeaks( TH1F const& tspect,std::vector<double>& tctimes) {
+  void TimeClusterFinder::scanPeaks(std::vector<double>& tctimes) {
     // implement this FIXME!!
   }
 
@@ -515,6 +483,49 @@ namespace mu2e {
     double wt = tc._strawHitIdxs.size();
     if(tc._caloCluster.isNonnull())wt += _ccwt;
     return wt;
+  }
+  
+  void TimeClusterFinder::fillTimeSpectrum() {
+    _timespec.Reset();
+    // loop over straws hits and fill time spectrum plot for selected hits
+    unsigned nstrs = _shcol->size();
+    for(unsigned istr=0; istr<nstrs;++istr){
+      if(goodHit(_shfcol->at(istr))) {
+	double time = _ttcalc.strawHitTime(_shcol->at(istr),_shpcol->at(istr));
+	_timespec.Fill(time);
+      }
+    }
+    // if we're using the calorimeter clusters, put those in too
+    if(_usecc && _cccol != 0){
+      for(auto icc = _cccol->begin();icc != _cccol->end(); ++icc){
+	if(goodCaloCluster(*icc)){
+	  double time = _ttcalc.caloClusterTime(*icc);
+	  // weight the cluster WRT hits by an ad-hoc value.  This is more about signal/noise than resolution
+	  _timespec.Fill(time, _ccwt);
+	}
+      }
+    }
+  }
+
+  void TimeClusterFinder::addCaloCluster(TimeCluster& tc,art::Event const& evt) {
+    // take the highest-energy cluster that's consistent with this time
+    if(_cccol != 0){
+      auto bestcc = _cccol->end();
+      for(auto icc = _cccol->begin();icc != _cccol->end(); ++icc){
+	if(goodCaloCluster(*icc)){
+	  double time = _ttcalc.caloClusterTime(*icc);
+	  if(fabs(tc._t0._t0-time) < _maxdt) {
+	    if(bestcc == _cccol->end() || icc->energyDep() > bestcc->energyDep())
+	      bestcc = icc;
+	  }
+	}
+      }
+      if(bestcc != _cccol->end()){
+	size_t index = std::distance(_cccol->begin(),bestcc);
+	auto ccH = evt.getValidHandle<CaloClusterCollection>(_ccTag);
+	tc._caloCluster = art::Ptr<CaloCluster>(ccH,index);
+      }
+    }
   }
 
 }  // end namespace mu2e

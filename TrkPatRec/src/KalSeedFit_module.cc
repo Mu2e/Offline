@@ -73,6 +73,7 @@ namespace mu2e
       // configuration parameters
       int _debug;
       int _printfreq;
+      bool _saveall;
       // event object tags
       art::InputTag _shTag;
       art::InputTag _shfTag;
@@ -100,6 +101,7 @@ namespace mu2e
   KalSeedFit::KalSeedFit(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
+    _saveall(pset.get<bool>("saveall",false)),
     _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makeSH")),
     _shfTag(pset.get<art::InputTag>("StrawHitFlagCollectionTag","FlagBkgHits")),
     _hsTag(pset.get<art::InputTag>("SeedCollectionTag","RobustHelixFinder")),
@@ -139,7 +141,7 @@ namespace mu2e
 
   void KalSeedFit::produce(art::Event& event ) {
     // create output collection
-    unique_ptr<KalSeedCollection> seedfits(new KalSeedCollection());
+    unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
     // event printout
     _iev=event.id().event();
     if(_debug > 0 && (_iev%_printfreq)==0)cout<<"KalSeedFit: event="<<_iev<<endl;
@@ -181,7 +183,7 @@ namespace mu2e
 	  else
 	    cout << "Seed Fit result " << seedrep->fitStatus()  << endl;
 	}
-	if(seedrep != 0 && seedrep->fitStatus().success()){
+	if(seedrep != 0 && (seedrep->fitStatus().success() || _saveall)){
 	// convert the status into a FitFlag
 	  TrkFitFlag seedok(TrkFitFlag::seedOK);
 	  // create a KalSeed object from this fit, recording the particle and fit direction
@@ -201,7 +203,7 @@ namespace mu2e
 	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
 	    kseed._segments.push_back(kseg);
 	    // push this seed into the collection
-	    seedfits->push_back(kseed);
+	    kscol->push_back(kseed);
 	    if(_debug > 1){
 	      cout << "Seed fit segment parameters " << endl;
 		for(size_t ipar=0;ipar<5;++ipar) cout << kseg.helix()._pars[ipar] << " ";
@@ -222,7 +224,7 @@ namespace mu2e
       }
     }
     // put the tracks into the event
-    event.put(move(seedfits));
+    event.put(move(kscol));
   }
 
 

@@ -13,6 +13,7 @@ class HelixTraj;
 class BbrVectorErr;
 class KalRep;
 class TimeCluster;
+class TrkDifPieceTraj;
 namespace mu2e {
   class RobustHelix;
   class KalSegment;
@@ -29,6 +30,8 @@ namespace mu2e {
     void fillHitSeeds(const KalRep* krep, std::vector<TrkStrawHitSeed>& hitseeds);
     // compute overlap between 2 time clusters
     double overlap(TimeCluster const& tc1, TimeCluster const& tc2);
+    // compute the flightlength for a given z position
+    double zFlight(TrkDifPieceTraj const& ptraj, double pz);
   }
 }
 #endif
