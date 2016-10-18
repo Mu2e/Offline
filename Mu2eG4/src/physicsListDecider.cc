@@ -34,6 +34,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/physicsListDecider.hh"
+#include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -72,6 +73,22 @@ namespace mu2e{
 
     bool turnOffRadioactiveDecay(const fhicl::ParameterSet& pset) {
       return pset.get<bool>("physics.turnOffRadioactiveDecay",false);
+    }
+
+    int getDiagLevel(const SimpleConfig& config) {
+      return config.getInt("g4.diagLevel");
+    }
+
+    int getDiagLevel(const fhicl::ParameterSet& pset) {
+      return pset.get<int>("debug.diagLevel");
+    }
+
+    std::string getStepperName(const SimpleConfig& config) {
+       return config.getString("g4.stepper");
+    }
+
+    std::string getStepperName(const fhicl::ParameterSet& pset) {
+      return pset.get<std::string>("physics.stepper");
     }
 
   }
@@ -173,6 +190,20 @@ namespace mu2e{
 
     if (turnOffRadioactiveDecay(config)) {
       (dynamic_cast<G4VModularPhysicsList*>(physicsList))->RemovePhysics("G4RadioactiveDecay");
+    }
+
+    // Muon Spin and Radiative decays plus pion muons with spin
+    if ( getDecayMuonsWithSpin(config) ) {
+
+      // requires spin tracking: G4ClassicalRK4WSpin
+      if ( getStepperName(config) !=  "G4ClassicalRK4WSpin") {
+        mf::LogError("Config") << "Inconsistent config";
+        G4cout << "Error: DecayMuonsWithSpin requires G4ClassicalRK4WSpin stepper" << G4endl;
+        throw cet::exception("BADINPUT")<<" DecayMuonsWithSpin requires G4ClassicalRK4WSpin stepper\n";
+      }
+
+      (dynamic_cast<G4VModularPhysicsList*>(physicsList))->
+        RegisterPhysics( new DecayMuonsWithSpin(getDiagLevel(config)));
     }
 
     return physicsList;

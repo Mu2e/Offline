@@ -235,5 +235,5 @@ bool getDecayMuonsWithSpin(const mu2e::SimpleConfig& config) {
 }
 
 bool getDecayMuonsWithSpin(const fhicl::ParameterSet& pset) {
-  return pset.get<bool>( "decayMuonsWithSpin", false);
+  return pset.get<bool>( "physics.decayMuonsWithSpin", false);
 }
