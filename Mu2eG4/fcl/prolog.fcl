@@ -20,6 +20,7 @@ mu2eg4DefaultPhysics: {
 
     // current G4 stepper choices in Mu2eWorld.cc are shown below
     // G4ClassicalRK4
+    // G4ClassicalRK4WSpin
     // G4ImplicitEuler
     // G4ExplicitEuler
     // G4SimpleRunge
