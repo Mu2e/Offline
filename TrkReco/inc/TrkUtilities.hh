@@ -7,17 +7,21 @@
 #define TrkReco_TrkUtilities_HH
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Vector.h"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include <vector>
 
 class HelixTraj;
 class BbrVectorErr;
 class KalRep;
-class TimeCluster;
 class TrkDifPieceTraj;
 namespace mu2e {
   class RobustHelix;
   class KalSegment;
+  class KalSeed;
+  class HelixSeed;
   class TrkStrawHitSeed;
+  class TimeCluster;
+  typedef std::vector<StrawHitIndex> SHIV;
   namespace TrkUtilities {
   // convert the robust helix format into the BaBar format HelixTraj.  This requires
   // the sign of the angular momentum about the z axis, as the BaBar rep os semi-kinematic
@@ -30,6 +34,10 @@ namespace mu2e {
     void fillHitSeeds(const KalRep* krep, std::vector<TrkStrawHitSeed>& hitseeds);
     // compute overlap between 2 time clusters
     double overlap(TimeCluster const& tc1, TimeCluster const& tc2);
+    double overlap(KalSeed const& ks1, KalSeed const& ks2);
+    double overlap(KalSeed const& ks, HelixSeed const& hs);
+    double overlap(HelixSeed const& hs,TimeCluster const& tc);
+    double overlap(SHIV const& shiv1, SHIV const& shiv2); 
     // compute the flightlength for a given z position
     double zFlight(TrkDifPieceTraj const& ptraj, double pz);
   }

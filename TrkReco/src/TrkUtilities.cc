@@ -6,6 +6,7 @@
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "RecoDataProducts/inc/RobustHelix.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/HelixSeed.hh"
 #include "GeneralUtilities/inc/Angles.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
@@ -109,21 +110,93 @@ namespace mu2e {
       }
     }
  // compute the overlap between 2 clusters 
-    double overlap(TimeCluster const& tc1, TimeCluster const& tc2) {
+    double overlap(SHIV const& shiv1, SHIV const& shiv2) {
       double over(0.0);
-      double norm = std::min(tc1._strawHitIdxs.size(),tc2._strawHitIdxs.size());
+      double norm = std::min(shiv1.size(),shiv2.size());
       // count the overlapping hits
-      for(auto h1 : tc1._strawHitIdxs){
-	for(auto h2 : tc2._strawHitIdxs){
+      for(auto h1 : shiv1){
+	for(auto h2 : shiv2){
 	  if(h1 == h2){
 	    over +=1.0;
 	    break;
 	  }
 	}
       }
+      return over/norm;
+    }
+
+    double overlap(TimeCluster const& tc1, TimeCluster const& tc2) {
+      double hover = overlap(tc1._strawHitIdxs,tc2._strawHitIdxs);
+      double norm = std::min(tc1.hits().size(),tc2.hits().size());
+      double over = norm*hover;
       // add in CaloCluster; count is as much as all the hits
       if(tc1._caloCluster.isNonnull() && tc2._caloCluster.isNonnull()) {
 	if(tc1._caloCluster == tc2._caloCluster)
+	  over += norm;
+	norm *= 2;
+      }
+      return over/norm;
+    }
+
+    double overlap(KalSeed const& ks1, KalSeed const& ks2) {
+  // translate hit info into a simple index array.  Only count active hits
+      SHIV shiv1, shiv2;
+      for(auto tshs : ks1.hits()){
+	if(tshs.flag().hasAllProperties(StrawHitFlag::active))
+	  shiv1.push_back(tshs.index());
+      }
+      for(auto tshs : ks2.hits()){
+	if(tshs.flag().hasAllProperties(StrawHitFlag::active))
+	  shiv2.push_back(tshs.index());
+      }
+      double hover = overlap(shiv1,shiv2);
+      double norm = std::min(shiv1.size(),shiv2.size());
+      double over = norm*hover;
+      // add in CaloCluster; count is as much as all the hits
+      if(ks1.caloCluster().isNonnull() && ks2.caloCluster().isNonnull()) {
+	if(ks1.caloCluster() == ks2.caloCluster())
+	  over += norm;
+	norm *= 2;
+      }
+      return over/norm;
+    }
+
+    double overlap(KalSeed const& ks, HelixSeed const& hs){
+      SHIV shiv1, shiv2;
+      for(auto tshs : ks.hits()){
+	if(tshs.flag().hasAllProperties(StrawHitFlag::active))
+	  shiv1.push_back(tshs.index());
+      }
+      for(auto hh : hs.hits()){
+      // exclude outliers
+	if(!hh.flag().hasAnyProperty(StrawHitFlag::outlier))
+	  shiv2.push_back(hh.index());
+      }
+      double hover = overlap(shiv1,shiv2);
+      double norm = std::min(shiv1.size(),shiv2.size());
+      double over = norm*hover;
+      // add in CaloCluster; count is as much as all the hits
+      if(ks.caloCluster().isNonnull() && hs.caloCluster().isNonnull()) {
+	if(ks.caloCluster() == hs.caloCluster())
+	  over += norm;
+	norm *= 2;
+      }
+      return over/norm;
+    }
+
+    double overlap(HelixSeed const& hs,TimeCluster const& tc) {
+      SHIV shiv;
+      for(auto hh : hs.hits()){
+      // exclude outliers
+	if(!hh.flag().hasAnyProperty(StrawHitFlag::outlier))
+	  shiv.push_back(hh.index());
+      }
+      double hover = overlap(shiv,tc.hits());
+      double norm = std::min(shiv.size(),tc.hits().size());
+      double over = norm*hover;
+      // add in CaloCluster; count is as much as all the hits
+      if(tc.caloCluster().isNonnull() && hs.caloCluster().isNonnull()) {
+	if(tc.caloCluster() == hs.caloCluster())
 	  over += norm;
 	norm *= 2;
       }
