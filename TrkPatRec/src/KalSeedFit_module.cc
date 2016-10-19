@@ -188,6 +188,8 @@ namespace mu2e
 	  TrkFitFlag seedok(TrkFitFlag::seedOK);
 	  // create a KalSeed object from this fit, recording the particle and fit direction
 	  KalSeed kseed(_tpart,_fdir,seedrep->t0(),seedrep->flt0(),seedok);
+	  // calo cluser ptr from Helix Seed
+	  kseed._caloCluster = hseed._caloCluster; 
 //	  KalSeed kseed(_tpart,_fdir,hseed._timeCluster.t0(),seedrep->flt0(),fitstat);
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
 	  TrkUtilities::fillHitSeeds(seedrep,kseed._hits);
