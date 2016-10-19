@@ -7,16 +7,17 @@
 #define RecoDataProducts_TrkHitSeed_HH
 #include "RecoDataProducts/inc/HitT0.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include <Rtypes.h>
 namespace mu2e {
   struct TrkStrawHitSeed {
     TrkStrawHitSeed() : _index(0), _trklen(0), _hitlen(0), _rdrift(0), _wdoca(0), _rerr(0), _ambig(0) {}
     // construct from the information
-    TrkStrawHitSeed(UInt_t index, HitT0 const& t0, Float_t trklen, Float_t hitlen, Float_t rdrift,
+    TrkStrawHitSeed(StrawHitIndex index, HitT0 const& t0, Float_t trklen, Float_t hitlen, Float_t rdrift,
 	Float_t wdoca, Int_t ambig, Float_t rerr, StrawHitFlag const& flag) : _index(index), _t0(t0), _trklen(trklen),
 	_hitlen(hitlen), _rdrift(rdrift), _wdoca(wdoca), _rerr(rerr), _ambig(ambig), _flag(flag)  {}
     // accessors
-    UInt_t	index() const { return _index; }
+    StrawHitIndex	index() const { return _index; }
     HitT0 const&  t0() const { return _t0; }
     Float_t	trkLen() const { return _trklen; }
     Float_t	hitLen() const { return _hitlen; }
@@ -24,9 +25,9 @@ namespace mu2e {
     Float_t	wireDOCA() const { return _wdoca; }
     Float_t	radialErr() const { return _rerr; }
     Int_t	ambig() const { return _ambig; }
-    StrawHitFlag const& fitFlag() const { return _flag; }
+    StrawHitFlag const& flag() const { return _flag; }
     //
-    UInt_t	    _index;	  // index into the primary StrawHit (and StrawHitPosition, StrawHitFlag, ..) collection
+    StrawHitIndex	    _index;	  // index into the primary StrawHit (and StrawHitPosition, StrawHitFlag, ..) collection
     HitT0	    _t0;	  // time origin for this hit
     Float_t	    _trklen;	  // Length from the nominal track start to the POCA of this hit
     Float_t	    _hitlen;	  // Length from the straw center to the POCA of this hit

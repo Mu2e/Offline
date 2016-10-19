@@ -17,6 +17,10 @@ namespace mu2e {
   struct HelixHit : public StrawHitPosition {
     HelixHit() : _shidx(0), _phi(0.0) {}
     HelixHit(StrawHitPosition const& shp, StrawHitIndex shidx=0, Float_t phi=0.0) : StrawHitPosition(shp), _shidx(shidx), _phi(phi) {}
+
+    StrawHitIndex index() const { return _shidx; }
+    Float_t phi() const { return _phi; }
+
     StrawHitIndex _shidx; // index to the straw hit
     Float_t _phi; // resolved azimuth of this hit WRT the helix axis (circle center)
   };
