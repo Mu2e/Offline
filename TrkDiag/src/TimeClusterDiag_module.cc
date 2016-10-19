@@ -34,17 +34,11 @@
 #include "TH1F.h"
 #include "TTree.h"
 #include "TMarker.h"
-// boost
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/moment.hpp>
-#include <boost/accumulators/statistics/mean.hpp>
 // C++
 #include <functional>
 #include <iostream>
 #include <algorithm>
 using namespace std; 
-using namespace boost::accumulators;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {

@@ -46,7 +46,7 @@ namespace mu2e {
       return conversion;
     }
 
-    unsigned primaryParticle(art::Ptr<SimParticle>& pspp, std::vector<size_t> const& hits, const StrawDigiMCCollection* mcdigis) {
+    unsigned primaryParticle(art::Ptr<SimParticle>& pspp, std::vector<StrawHitIndex> const& hits, const StrawDigiMCCollection* mcdigis) {
       unsigned retval(0);
       std::map<art::Ptr<SimParticle>, unsigned> spmap;
 
