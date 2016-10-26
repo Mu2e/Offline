@@ -8,14 +8,16 @@
 
 #include <string>
 
-#include "art/Framework/Core/FindMany.h"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/FindMany.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include "boost/noncopyable.hpp"
 
 #include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"
+
+#include "art/Framework/Principal/Handle.h"
 
 class TH1D;
 class TH2D;

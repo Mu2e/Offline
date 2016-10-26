@@ -13,7 +13,7 @@
 #include <vector>
 
 // Framework includes
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 // Mu2e includes
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"

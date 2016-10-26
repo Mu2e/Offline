@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "art/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Wrapper.h"
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"

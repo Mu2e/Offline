@@ -4,9 +4,9 @@
 #include "art/Framework/IO/ProductMix/MixHelper.h"
 #include "art/Framework/Core/PtrRemapper.h"
 #include "art/Persistency/Common/CollectionUtilities.h"
-#include "art/Persistency/Common/PtrVector.h"
+#include "canvas/Persistency/Common/PtrVector.h"
 #include "cetlib/map_vector.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 
 #include "boost/noncopyable.hpp"
 

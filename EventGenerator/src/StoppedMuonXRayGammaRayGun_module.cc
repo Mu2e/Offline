@@ -145,17 +145,20 @@ namespace mu2e {
     
     int nphotons = 0;
     vector<double> photonEnergy;
+    vector<double> photonTime;
     
     // create X Rays and Gamma Rays:
     double prob = _randFlat.fire();
     if (_do66 && prob < 0.625){  // 3d-2p line
       ++nphotons;
       photonEnergy.push_back(0.0661);
+      photonTime.push_back(time);
     }
     prob = _randFlat.fire();
     if (_do347 && prob < 0.798){  // 2p-1s line
       ++nphotons;
       photonEnergy.push_back(0.3468);
+      photonTime.push_back(time);
     }
     prob = _randFlat.fire();
     if (_do844 && prob < 0.040){  // 
@@ -163,7 +166,8 @@ namespace mu2e {
       photonEnergy.push_back(0.844);
       //Note: This is a delayed gamma, need to add delay time
       double meanLifetime844 = 822.0*CLHEP::second; //822 second lifetime (same as 9.5min(570s) halflife)
-      time += _randExp.fire(meanLifetime844);
+      photonTime.push_back(time + _randExp.fire(meanLifetime844));
+      
     }
     prob = _randFlat.fire();
     if (_do1809 && prob < 0.300){  //
@@ -171,7 +175,7 @@ namespace mu2e {
       photonEnergy.push_back(1.809);
       //Note: This is a semi-prompt gamma, need to add delay time
       double meanLifetime1809 = 864.0*CLHEP::ns; //864ns, same lifetime as muonic Aluminum
-      time += _randExp.fire(meanLifetime1809);
+      photonTime.push_back(time + _randExp.fire(meanLifetime1809));
     }
     
     for (int ithphoton=0; ithphoton < nphotons; ++ithphoton){
@@ -185,9 +189,12 @@ namespace mu2e {
       // Set four-momentum
       CLHEP::HepLorentzVector mom(p3, e);
       
+      //time for this photon
+      double timephoton = photonTime[ithphoton];
+      
       // Add the particle(s) to  the list.
       output->push_back( GenParticle( PDGCode::gamma, 
-                                     GenId::StoppedMuonXRayGammaRayGun, pos, mom, time));
+                                     GenId::StoppedMuonXRayGammaRayGun, pos, mom, timephoton));
       
       // Fill histograms 
       if (_doHistograms){
@@ -197,7 +204,7 @@ namespace mu2e {
           _hmomentum->Fill(_p);
           _hradius->Fill( genRadius );
           //_hzPos->Fill(stop.z);
-          _htime->Fill(time);
+          _htime->Fill(timephoton);
           _hxyPos->Fill( stop.x+3904.0, stop.y   );
           //_hrzPos->Fill( stop.z, genRadius );
       }

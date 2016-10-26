@@ -15,8 +15,8 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Event.h"
-#include "art/Utilities/InputTag.h"
-#include "art/Framework/Core/FindOne.h"
+#include "canvas/Utilities/InputTag.h"
+#include "canvas/Persistency/Common/FindOne.h"
 
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/MARSInfo.hh"

@@ -9,7 +9,7 @@
 #ifndef RecoDataProducts_ExtMonFNALPatRecTruthAssns_hh
 #define RecoDataProducts_ExtMonFNALPatRecTruthAssns_hh
 
-#include "art/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Assns.h"
 
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"

@@ -22,7 +22,7 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "SeedService/inc/SeedService.hh"
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -57,6 +57,7 @@ namespace mu2e
     std::vector<std::string> _g4ModuleLabels;
     std::vector<std::string> _processNames;
 
+    ConfigFileLookupPolicy                                               _resolveFullPath;
     std::vector<std::string>                                             _lookupTableFileNames;
     std::vector<double>                                                  _lookupTableCounterLengths;
     std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> > _makeCrvPhotonArrivals;
@@ -131,7 +132,7 @@ namespace mu2e
       double counterLength = _lookupTableCounterLengths[i];
       _makeCrvPhotonArrivals.emplace(counterLength, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat)));
       std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
-      iterCPA->second->LoadLookupTable(_lookupTableFileNames[i].c_str());
+      iterCPA->second->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
       iterCPA->second->SetScintillationYield(_scintillationYield);
       iterCPA->second->SetScintillatorBirksConstant(_scintillatorBirksConstant);
       iterCPA->second->SetScintillatorRatioFastSlow(_scintillatorRatioFastSlow);

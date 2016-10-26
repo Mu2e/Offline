@@ -11,7 +11,7 @@
 
 #include "GeneralUtilities/inc/Binning.hh"
 
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 
 //-----------------------------------------------------------------
 // std::vector<std::string> ====> std::vector<art::InputTag>

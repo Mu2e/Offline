@@ -18,7 +18,7 @@
 // using namespace CLHEP:
 
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include <vector>
 
 namespace mu2e {

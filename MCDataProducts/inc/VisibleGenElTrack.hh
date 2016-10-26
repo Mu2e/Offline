@@ -21,7 +21,7 @@
 // Mu2e includes.
 #include "MCDataProducts/inc/GenElHitData.hh"
 //#include "MCDataProducts/inc/SimParticle.hh"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 
 // CLHEP includes.

@@ -1,6 +1,4 @@
-void ValidateTrkQual(char* filename="TrkQual.root"){
-  TString curMacroPath(gROOT->GetMacroPath());
-  gROOT->SetMacroPath(curMacroPath+":./:$ROOT_DIR/source/root/tmva/test/:");
-  gROOT->LoadMacro("$ROOT_DIR/source/root/tmva/test/TMVAGui.C+");
-  TMVAGui(filename);
+#include <string>
+void ValidateTrkQual(std::string filename="TrkQual.root"){
+  TMVA::TMVAGui(filename.c_str());
 }

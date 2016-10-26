@@ -34,6 +34,10 @@ namespace mu2e {
       return StepInstanceName::name(StepInstanceName::calorimeterRO).c_str();
     }
 
+    static char const * CaloReadoutCard(){
+      return StepInstanceName::name(StepInstanceName::calorimeterROCard).c_str();
+    }
+
     static char const * ExtMonFNAL(){
       return "ExtMonFNAL";
     }

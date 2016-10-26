@@ -7,7 +7,7 @@
 
 #include <ostream>
 
-#include "art/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Assns.h"
 
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "RecoDataProducts/inc/TrackSummary.hh"

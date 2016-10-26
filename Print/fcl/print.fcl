@@ -1,0 +1,74 @@
+#
+#  print products with a moderate amount of output - includes cuts on energy
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : print
+
+services : {
+    message : @local::mf_production
+}
+
+physics :{
+  analyzers: {
+
+    printModule : {
+      module_type : PrintModule
+
+      SimParticlePrinter : {
+        pCut : 10.0
+      }
+      StepPointMCPrinter : {
+        pCut : 10.0
+      }
+      CaloHitPrinter : {
+        verbose: 0
+      }
+      CaloCrystalHitPrinter : {
+        verbose: 0
+      }
+      CaloClusterPrinter : {
+        eCut :  10.0
+      }
+
+      StrawDigiPrinter : {
+        verbose: 0
+      }
+      StrawHitPrinter : {
+        verbose: 0
+      }
+
+      TrackClusterMatchPrinter : {
+        verbose: 0
+      }
+      TrkCaloIntersectPrinter : {
+        verbose: 0
+      }
+
+      TrackSummaryPrinter : {
+        verbose: 3
+      }
+      KalRepPrinter : {
+        verbose: 3
+      }
+
+    } # printModule
+
+
+  }  # analyzers
+
+  ana       : [ printModule, printProductList ]
+  end_paths : [ ana ]
+
+}
+
+outputs: {
+  printProductList : {
+    module_type : DataProductDump
+  }
+}
+
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : -1
+services.message.destinations.log.categories.ArtReport.timespan : 0

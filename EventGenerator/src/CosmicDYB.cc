@@ -89,6 +89,8 @@ namespace mu2e
   , _muEMax    ( config.getDouble("cosmicDYB.muEMax") )   //in MeV
   , _muCosThMin( config.getDouble("cosmicDYB.muCosThMin") )
   , _muCosThMax( config.getDouble("cosmicDYB.muCosThMax") )
+  , _muPhiMin(0)
+  , _muPhiMax(2.0*M_PI)
 
   , _dx(config.getDouble("cosmicDYB.dx"))
   , _dy(0)
@@ -137,16 +139,25 @@ namespace mu2e
       const std::string directionChoice = config.getString("cosmicDYB.directionChoice");
       log << "cosmicDYB.directionChoice = " << directionChoice << "\n";
       if(directionChoice=="All") _directionChoice=ALL;
-      else if(directionChoice=="Positive_x") _directionChoice=POSITIVE_X;
-      else if(directionChoice=="Negative_x") _directionChoice=NEGATIVE_X;
-      else if(directionChoice=="Positive_z") _directionChoice=POSITIVE_Z;
-      else if(directionChoice=="Negative_z") _directionChoice=NEGATIVE_Z;
+      else if(directionChoice=="Positive_x") {_directionChoice=POSITIVE_X; _muPhiMin=-M_PI/2.0; _muPhiMax=M_PI/2.0;}
+      else if(directionChoice=="Negative_x") {_directionChoice=NEGATIVE_X; _muPhiMin=M_PI/2.0;  _muPhiMax=3*M_PI/2.0;}
+      else if(directionChoice=="Positive_z") {_directionChoice=POSITIVE_Z; _muPhiMin=0.0;       _muPhiMax=M_PI;}
+      else if(directionChoice=="Negative_z") {_directionChoice=NEGATIVE_Z; _muPhiMin=M_PI;      _muPhiMax=2.0*M_PI;}
+      else if(directionChoice=="Phi_Range") 
+      {
+        _directionChoice=PHI_RANGE;
+        _muPhiMin = config.getDouble("cosmicDYB.muPhiMin");
+        _muPhiMax = config.getDouble("cosmicDYB.muPhiMax");
+        if(_muPhiMax-_muPhiMin>2.0*M_PI) throw cet::exception("Configuration")<<"Phi range can't be more than 2*pi\n";
+      }
       else throw cet::exception("Configuration")<<"Unknown cosmicDYB.directionChoice\n";
     }
     else 
     {
       throw cet::exception("Configuration") << "Unknown CosmicDYB.refPointChoice\n";
     }
+
+    log << "Phi range: " << _muPhiMin << " ... " << _muPhiMax << "\n";
 
     _vertical = config.getBool("cosmicDYB.vertical", false);
     if(_vertical)
@@ -157,6 +168,18 @@ namespace mu2e
       if(_dx==0 && _dz==0) throw cet::exception("Configuration")<<"Vertical production planes cannot have both cosmicDYB.dx:0 and cosmicDYB.dz:0 \n";
       if((_directionChoice==POSITIVE_X || _directionChoice==NEGATIVE_X) && _dx!=0) throw cet::exception("Configuration")<<"Orientation of the production plane doesn't match cosmicDYB.directionChoice\n";
       if((_directionChoice==POSITIVE_Z || _directionChoice==NEGATIVE_Z) && _dz!=0) throw cet::exception("Configuration")<<"Orientation of the production plane doesn't match cosmicDYB.directionChoice\n";
+      if(_directionChoice==PHI_RANGE && _dz==0)
+      {
+        if(_muPhiMin<0.0) throw cet::exception("Configuration")<<"muPhiMin can't be less than 0 for this plane orientation\n";
+        if(_muPhiMax>2.0*M_PI) throw cet::exception("Configuration")<<"muPhiMax can't be more than 2 pi for this plane orientation\n";
+        if(_muPhiMin<M_PI && _muPhiMax>M_PI) throw cet::exception("Configuration")<<"muPhiMax can't be more than pi, if muPhiMin<pi for this plane orientation\n";
+      }
+      if(_directionChoice==PHI_RANGE && _dx==0)
+      {
+        if(_muPhiMin<-M_PI/2.0) throw cet::exception("Configuration")<<"muPhiMin can't be less than -1/2 pi for this plane orientation\n";
+        if(_muPhiMax>3.0*M_PI/2.0) throw cet::exception("Configuration")<<"muPhiMax can't be more than 3/2 pi for this plane orientation\n";
+        if(_muPhiMin<M_PI/2.0 && _muPhiMax>M_PI/2.0) throw cet::exception("Configuration")<<"muPhiMax can't be more than pi/2, if muPhiMin<pi/2 for this plane orientation\n";
+      }
       _dy=config.getDouble("cosmicDYB.dy");
     }
 
@@ -195,6 +218,10 @@ namespace mu2e
     _tmin = config.getDouble("cosmicDYB.tMin", _tmin);
     _tmax = config.getDouble("cosmicDYB.tMax", _tmax);
 
+    //tmin and tmax can be overriden by a constant time
+    _tmin = config.getDouble("cosmicDYB.constTime", _tmin);
+    _tmax = config.getDouble("cosmicDYB.constTime", _tmax);
+
     _dt   = _tmax - _tmin;
 
 
@@ -219,7 +246,7 @@ namespace mu2e
     // dim_sum has the unit s^-1 * cm^-2
     // I(theta,E) is the intensity from the modified Gaisser formula
     //
-    // the rate is 
+    // the rate is (assuming no user defined phi range) 
     // - for horizontal planes: 2*pi*area*integral
     // - for vertical planes: 2*area*integral (only tracks from one direction through the plane are considered)
     //
@@ -229,15 +256,19 @@ namespace mu2e
     //
     // the unit is in mm^2 (needs to be multiplied by 0.01 to get it to cm^2 [like in dim_sum])
     // 
-    double tRate = dim_sum*M_PI*0.08*_dx*_dz;
-    if(!_vertical && _directionChoice!=ALL) tRate = dim_sum*M_PI*0.04*_dx*_dz; // (half the value, since only half of the azimuth angles are considered)
-    if(_vertical && _dx!=0) tRate = dim_sum*0.08*_dx*_dy;
-    if(_vertical && _dz!=0) tRate = dim_sum*0.08*_dz*_dy;
+    double tRate = dim_sum*(_muPhiMax-_muPhiMin)*0.04*_dx*_dz;   //for horizontal planes
+    if(_vertical)
+    {
+      if(_dz==0) tRate = dim_sum*fabs(cos(_muPhiMax)-cos(_muPhiMin))*0.04*_dx*_dy;
+      if(_dx==0) tRate = dim_sum*fabs(sin(_muPhiMax)-sin(_muPhiMin))*0.04*_dz*_dy;
+    }
     log << "Total cosmic rate = " << tRate << " Hz\n";
 
     if(_directionChoice!=ALL)
-    log << "NOTE: The rate above takes into account that only half of the azimuth angles are considered.\n";
-
+    {
+      if(_directionChoice!=PHI_RANGE) log << "NOTE: The rate above takes into account that only half of the azimuth angles are considered.\n";
+      else log << "NOTE: The rate above takes into account that only the azimuth angles between "<<_muPhiMin<<" and "<<_muPhiMax<<" are considered.\n";
+    }
     if(_doHistograms)
     {
       art::ServiceHandle<art::TFileService> tfs;
@@ -319,20 +350,19 @@ namespace mu2e
       double cy = cosTh;
       double sy = safeSqrt(1. - cosTh*cosTh);
 
-      double phi = 2.*M_PI*_randFlat.fire();
-      if(_vertical && _dz==0) phi = acos(1-2*_randFlat.fire());             //0...pi
-      if(_vertical && _dx==0) phi = acos(1-2*_randFlat.fire()) - M_PI/2.0;  //-pi/2...pi/2
+      double phi = _randFlat.fire(_muPhiMin,_muPhiMax);                     //0...2pi for full range
+      if(_vertical && _dz==0) 
+      {
+        phi = acos(cos(_muPhiMin)+(cos(_muPhiMax)-cos(_muPhiMin))*_randFlat.fire());   //0...pi
+        if(_muPhiMin>=M_PI) phi = 2.0*M_PI - phi;                                      //pi...2*pi
+      }
+      if(_vertical && _dx==0) 
+      {
+        phi = M_PI/2.0 - acos(sin(_muPhiMin)+(sin(_muPhiMax)-sin(_muPhiMin))*_randFlat.fire());   //-pi/2...pi/2
+        if(_muPhiMin>=M_PI/2.0) phi = M_PI - phi;                                                 //pi/2...-3*pi/2
+      }
 
       CLHEP::HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), E);
-
-      switch (_directionChoice)
-      {
-        case ALL:        break;
-        case POSITIVE_X: if(mom.x()<0) mom.setX(-mom.x()); break;
-        case NEGATIVE_X: if(mom.x()>0) mom.setX(-mom.x()); break;
-        case POSITIVE_Z: if(mom.z()<0) mom.setZ(-mom.z()); break;
-        case NEGATIVE_Z: if(mom.z()>0) mom.setZ(-mom.z()); break;
-      }
 
       // Position in reference plane
       double x = (1.-2.*_randFlat.fire())*_dx;
@@ -398,7 +428,8 @@ namespace mu2e
       if(_verbose>1) std::cout << "starting position = " << pos << std::endl;
 
       // pick a random starting time, unless a constant time was set
-      double time = _tmin + _dt*_randFlat.fire();
+      double time = _tmin;
+      if(_dt>0) time += _dt*_randFlat.fire();
 
       // Pick a random charge.
       // implement a rough charge asymmetry

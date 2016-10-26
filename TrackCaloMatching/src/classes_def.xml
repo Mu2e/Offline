@@ -23,7 +23,6 @@
 
     <class name="art::Ptr<mu2e::TrkToCaloExtrapol>"/>
 
-    <class name="mu2e::CaloCluster" />
 <!--       <class name="art::Ptr<CaloCluster>"/>  -->
 
     <class name="mu2e::TrackClusterMatch" />

@@ -132,27 +132,17 @@ namespace mu2e{
         _calo->_absorberHalfThickness = config.getDouble("calorimeter.neutronAbsorberHalfThickness");
 
         //Fill the Common Calo Data
-        _calo->_caloGeomInfo.nROPerCrystal(      config.getInt("calorimeter.crystalReadoutChannelCount"));
         _calo->_caloGeomInfo.crystalHalfTrans(   config.getDouble("calorimeter.crystalHalfTrans") );
         _calo->_caloGeomInfo.crystalHalfLength(  config.getDouble("calorimeter.crystalHalfLong") );
         _calo->_caloGeomInfo.wrapperThickness(   config.getDouble("calorimeter.crystalWrapperThickness") );
+        _calo->_caloGeomInfo.nROPerCrystal(      config.getInt("calorimeter.crystalReadoutChannelCount"));
         _calo->_caloGeomInfo.roHalfTrans(        config.getDouble("calorimeter.crystalReadoutHalfTrans") );
         _calo->_caloGeomInfo.roHalfThickness(    config.getDouble("calorimeter.crystalReadoutHalfThickness") );
         _calo->_caloGeomInfo.caseThickness(      config.getDouble("calorimeter.caseThickness") );
-        _calo->_caloGeomInfo.envelopeInRadius(  config.getDouble("calorimeter.caloMotherInRadius") );
-        _calo->_caloGeomInfo.envelopeOutRadius( config.getDouble("calorimeter.caloMotherOutRadius") );
-        _calo->_caloGeomInfo.envelopeZ0(        config.getDouble("calorimeter.caloMotherZ0") );
-        _calo->_caloGeomInfo.envelopeZ1(        config.getDouble("calorimeter.caloMotherZ1") );
-
-        _calo->_caloGeomInfo.apdMeanNoise(       config.getDouble("calorimeter.meanNoiseAPD", 0.0) );
-        _calo->_caloGeomInfo.apdSigmaNoise(      config.getDouble("calorimeter.sigmaNoiseAPD", 0.03) );
-        _calo->_caloGeomInfo.lysoLightYield(     config.getDouble("calorimeter.lysoLightYield", 2000.0) );
-        _calo->_caloGeomInfo.apdQuantumEff(      config.getDouble("calorimeter.quantumEffAPD", 0.68) );
-        _calo->_caloGeomInfo.apdCollectEff(      config.getDouble("calorimeter.lightCollectEffAPD", 0.11));
-        _calo->_caloGeomInfo.nonUniformity(      config.getDouble("calorimeter.crystalNonUniformity",0.0) );
-        _calo->_caloGeomInfo.timeGap(            config.getDouble("calorimeter.timeGap",100.0) );
-        _calo->_caloGeomInfo.electronEdep(       config.getDouble("calorimeter.electronDepositionAPD",1000.0) );
-        _calo->_caloGeomInfo.electronEmin(       config.getDouble("calorimeter.electronMinEnergyAPD",0.1) );
+        _calo->_caloGeomInfo.envelopeInRadius(   config.getDouble("calorimeter.caloMotherInRadius") );
+        _calo->_caloGeomInfo.envelopeOutRadius(  config.getDouble("calorimeter.caloMotherOutRadius") );
+        _calo->_caloGeomInfo.envelopeZ0(         config.getDouble("calorimeter.caloMotherZ0") );
+        _calo->_caloGeomInfo.envelopeZ1(         config.getDouble("calorimeter.caloMotherZ1") );
 
         _calo->_caloGeomInfo.nPipes(             config.getInt("calorimeter.nPipes",0));
         _calo->_caloGeomInfo.pipeRadius(         config.getDouble("calorimeter.pipeRadius",5) );

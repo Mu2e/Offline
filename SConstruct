@@ -29,6 +29,8 @@ if envopts != fsopts:
 # Extract information from the shell environment.
 art_inc       = os.environ['ART_INC']
 art_lib       = os.environ['ART_LIB']
+canvas_inc    = os.environ['CANVAS_INC']
+canvas_lib    = os.environ['CANVAS_LIB']
 btrk_inc      = os.environ['BTRK_INC']
 btrk_lib      = os.environ['BTRK_LIB']
 boost_lib     = os.environ['BOOST_LIB']
@@ -36,7 +38,6 @@ boost_inc     = os.environ['BOOST_INC']
 clhep_inc     = os.environ['CLHEP_INC']
 clhep_lib     = os.environ['CLHEP_LIB_DIR']
 cppunit_dir   = os.environ['CPPUNIT_DIR']
-gccxml_dir    = os.environ['GCCXML_DIR']
 heppdt_lib    = os.environ['HEPPDT_LIB']
 heppdt_inc    = os.environ['HEPPDT_INC']
 root_inc      = os.environ['ROOT_INC']
@@ -45,14 +46,14 @@ fhicl_inc     = os.environ['FHICLCPP_INC']
 fhicl_lib     = os.environ['FHICLCPP_LIB']
 sqlite_inc     = os.environ['SQLITE_INC']
 sqlite_lib     = os.environ['SQLITE_LIB']
-cpp0x_inc     = os.environ['CPP0X_INC']
-cpp0x_lib     = os.environ['CPP0X_LIB']
 mesfac_inc     = os.environ['MESSAGEFACILITY_INC']
 mesfac_lib     = os.environ['MESSAGEFACILITY_LIB']
 cetlib_inc     = os.environ['CETLIB_INC']
 cetlib_lib     = os.environ['CETLIB_LIB']
 xercesc_inc    = os.environ['XERCES_C_INC']
 xercesc_root   = os.environ['XERCESCROOT']
+tbb_inc     = os.environ['TBB_INC']
+tbb_lib     = os.environ['TBB_LIB']
 
 # If we are working in a satellite release, extract more information from the environment.
 if os.environ.has_key('MU2E_SATELLITE_RELEASE'):
@@ -80,44 +81,46 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              base,
                              base+'//include',
                              art_inc,
+                             canvas_inc,
                              btrk_inc,
                              btrk_inc,
                              mesfac_inc,
                              fhicl_inc,
                              sqlite_inc,
                              cetlib_inc,
-                             cpp0x_inc,
                              boost_inc,
                              clhep_inc,
                              cppunit_dir+'/include',
                              heppdt_inc,
                              root_inc,
                              xercesc_inc,
+                             tbb_inc,
                            ],
                    LIBPATH=[ libpath_frag,
                              base+'/lib',
                              art_lib,
+                             canvas_lib,
                              btrk_lib,
                              mesfac_lib,
                              fhicl_lib,
                              sqlite_lib,
                              cetlib_lib,
-                             cpp0x_lib,
                              boost_lib,
                              clhep_lib,
                              cppunit_dir+'/lib',
                              heppdt_lib,
                              root_sys+'/lib',
-                             '/lib', '/usr/X11R6/lib',
                              xercesc_root+'/lib',
+                             tbb_lib,
+                             '/lib', '/usr/X11R6/lib',
                            ],
                    ENV=osenv,
                    FORTRAN = 'gfortran',
                    BABARLIBS = [ babarlibs ]
                  )
 
-# Define the rule for building dictionaries.
-genreflex = Builder(action="./bin/genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\"")
+# Define and register the rule for building dictionaries.
+genreflex = Builder(action="./bin/genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\" $LIBNAME $DEBUG_LEVEL" )
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
 # Get the flag that controls compiler options. Check that it is legal.
@@ -140,13 +143,29 @@ env.Append( MU2EOPTS = [level, graphicssys] );
 
 # Set compile and link flags.
 SetOption('warn', 'no-fortran-cxx-mix')
-env.MergeFlags('-std=c++1y')
-env.MergeFlags('-rdynamic')
+env.MergeFlags('-std=c++14')
 env.MergeFlags('-Wall')
 env.MergeFlags('-Wno-unused-local-typedefs')
 env.MergeFlags('-g')
 env.MergeFlags('-Werror')
 env.MergeFlags('-Wl,--no-undefined')
+env.MergeFlags('-gdwarf-2')
+env.MergeFlags('-Werror=return-type')
+env.MergeFlags('-Winit-self')
+env.MergeFlags('-Woverloaded-virtual')
+#
+# Fixme: Recommend these once we scrub to the code to make them work,
+#env.MergeFlags('-pedantic')
+#env.MergeFlags('-Wextra')
+#
+# Likely need these if we specify -Wextra or -pedantic
+# (Because underlying packages do not bulid cleanly wiht
+#  -Wextra or -pedantic)
+#env.MergeFlags('-Wno-long-long')
+#env.MergeFlags('-Wno-ignored-qualifiers')
+#env.MergeFlags('-Wno-unused-parameter')
+#env.MergeFlags('-Wno-type-limits')
+
 if level == 'prof':
     env.MergeFlags('-O3')
     env.MergeFlags('-fno-omit-frame-pointer')
@@ -156,8 +175,9 @@ if level == 'debug':
     env.MergeFlags('-O0')
 
 # This comes from: root-config --cflags --glibs
+# Fixme: check with root 6
 # Then guess at the correct location of Spectrum and MLP.
-rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
+rootlibs = [ 'Core', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
              'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
 env.Append( ROOTLIBS = rootlibs )
 
@@ -236,14 +256,14 @@ class mu2e_helper:
 
     def dict_libname(self):
         relpath = os.path.relpath('.',self.sourceroot)
-        return self.libname() + '_dict'
+        return self.libname() + '_dict.so'
 
     def map_libname(self):
         relpath = os.path.relpath('.',self.sourceroot)
         return self.libname() + '_map'
 
     def prefixed_dict_libname(self):
-        return '#/lib/' + self.dict_libname()
+        return '#/lib/lib' + self.dict_libname()
 
     def prefixed_map_libname(self):
         return '#/lib/' + self.map_libname()
@@ -293,21 +313,21 @@ class mu2e_helper:
                                )
 
 #
-#   Make the dictionary and map plugins.
+#   Make the dictionary and rootmap plugins.
 #
     def make_dict_and_map( self, userlibs, pf_dict=[] ):
         if os.path.exists('classes.h'):
             if os.path.exists('classes_def.xml'):
-                env.DictionarySource([ self.dict_tmp_name(),
-                                       self.map_tmp_name() ],
-                                     [ 'classes.h', 'classes_def.xml'] )
+                decorated_libname= "lib/lib" + self.dict_libname()
+                # First two arguments to DictionarySource are target file, source file.
+                env.DictionarySource( self.dict_tmp_name(),
+                                      'classes.h',
+                                      LIBNAME=decorated_libname,
+                                      DEBUG_LEVEL=level )
                 env.SharedLibrary( self.prefixed_dict_libname(),
                                    self.dict_tmp_name(),
                                    LIBS=[ userlibs ],
                                    parse_flags=pf_dict
-                                   )
-                env.SharedLibrary( self.prefixed_map_libname(),
-                                   self.map_tmp_name()
                                    )
 
 # Export the class so that it can be used in the SConscript files

@@ -26,7 +26,7 @@
 #include "G4ThreeVector.hh"
 
 // Art includes
-#include "art/Persistency/Provenance/ProductID.h"
+#include "canvas/Persistency/Provenance/ProductID.h"
 #include "art/Framework/Principal/Event.h"
 
 // Forward declarations outside of mu2e namespace.

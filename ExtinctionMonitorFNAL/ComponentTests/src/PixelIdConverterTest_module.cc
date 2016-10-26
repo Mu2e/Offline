@@ -13,8 +13,8 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/FindManyP.h"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/FindManyP.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include "CLHEP/Random/RandFlat.h"
 

@@ -20,7 +20,7 @@
 #include "MCDataProducts/inc/CrvWaveformsCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"

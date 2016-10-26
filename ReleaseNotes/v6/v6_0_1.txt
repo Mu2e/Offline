@@ -1,0 +1,22 @@
+           Release notes for Mu2e Offline software, v6_0_1
+
+1)  dnbrow01  06 Oct 2016
+    Added an electronics board representation for the STM, per request by
+    Jim Miller.  
+    modified:   Mu2eG4/geom/ElectronicRack_v01.txt
+    modified:   ReleaseNotes/v6/v6_0_1.txt
+
+2)  oksuzian  15 Oct 2016 - IGNORE this tag. Consist an overlap between CRV and shielding pipe.
+    Added 1 cm poly-liner on the inner part of STM shielding: pipe, magnet and FOV collimator.
+    Poly-liner thickness is set: 
+    double stm.shield.widthLiner           = 10.0;
+    Increased the thickess of vacuum window to 1 cm.
+    Reduced the thickness of FOV poly absorber to 1 cm
+    modified:   GeometryService/inc/STMMaker.hh
+    modified:   GeometryService/src/STMMaker.cc
+    modified:   Mu2eG4/geom/DSShielding_v01.txt
+    modified:   Mu2eG4/geom/geom_common_cd3_s4p2.txt
+    modified:   Mu2eG4/src/constructSTM.cc
+    modified:   ReleaseNotes/v6/v6_0_1.txt
+    modified:   STMGeom/inc/ShieldPipe.hh
+

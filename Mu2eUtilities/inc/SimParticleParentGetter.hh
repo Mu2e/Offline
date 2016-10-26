@@ -37,7 +37,7 @@
 
 #include <map>
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/SimParticle.hh"

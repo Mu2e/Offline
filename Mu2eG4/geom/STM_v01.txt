@@ -13,25 +13,25 @@ bool   stm.solid   = false;
 
 // build virtual detectors throughout the MSTM area
 int    vd.verbosityLevel = 0;
-bool   vd.STMUpStr.build     = true; //VD86 Rectangle in x-y plane, same size as the CRV (1mm dnStr of CRV)
-bool   vd.STMMagDnStr.build  = true; //VD87 Rectangle in x-y plane, same size as the CRV
-bool   vd.STMSSCollUpStr.build = true; //VD101 Disk upstream of Spot-Size collimator
+bool   vd.STMUpStr.build     = false; //VD86 Rectangle in x-y plane, same size as the CRV (1mm dnStr of CRV)
+bool   vd.STMMagDnStr.build  = false; //VD87 Rectangle in x-y plane, same size as the CRV
+bool   vd.STMSSCollUpStr.build = false; //VD101 Disk upstream of Spot-Size collimator
 double vd.STMSSCollUpStr.r     = 200.0;// r=20cm 
-bool   vd.STMCollDnStr.build = true; //VD88 Disk downstream of Spot-Size collimator
+bool   vd.STMCollDnStr.build = false; //VD88 Disk downstream of Spot-Size collimator
 double vd.STMCollDnStr.r     = 200.0;// r=20cm 
-bool   vd.STMDet1UpStr.build = true; //VD89 Disk in x-y plane, same size as the Ge detector 1
-bool   vd.STMDet2UpStr.build = true; //VD90 Disk in x-y plane, same size as the Ge detector 2
-bool   vd.STMFieldOfViewCollDnStr.build = true; //VD100
+bool   vd.STMDet1UpStr.build = false; //VD89 Disk in x-y plane, same size as the Ge detector 1
+bool   vd.STMDet2UpStr.build = false; //VD90 Disk in x-y plane, same size as the Ge detector 2
+bool   vd.STMFieldOfViewCollDnStr.build = false; //VD100
 // build virtual detector inside DS Neutron Shielding
-bool   vd.DSNeutronShieldExit.build = true; //VD81
-double vd.DSNeutronShieldExit.r     =  100.0;//Must be the same as the following 2 values,
-                                             //which in turn must be greater than "stm.pipe.rOut"
+bool   vd.DSNeutronShieldExit.build = false; //VD81
+double vd.DSNeutronShieldExit.r     =  110.0;//Must be the same as the following 2 values,
 
 //External (Neutron) Shielding radius and VD81 radius
-double ExtShieldDownstream.holeRadiusType11Box4Hole1 =  102.0;
-double ExtShieldDownstream.detecHoleRadius           =  102.0;
+//These should be modified only in ExtShieldDownstream_v??.txt
+//double ExtShieldDownstream.holeRadiusType11Box4Hole1 =  110.0;
+//double ExtShieldDownstream.detecHoleRadius           =  110.0;
 
-//Absorber in the MBS endplug hole
+//DEPRECATED: Absorber in the MBS endplug hole. This causes too much brem photons for the STM (too high rate)
 //bool   mbs.CLV2.absorber.build          = true;
 //string mbs.CLV2.absorber.MaterialName   = "Polyethylene096";  
 //double mbs.CLV2.absorber.halfLength     = 15.0;//mm
@@ -110,8 +110,8 @@ double stm.FOVcollimator.liner.halfWidth        =  100.0; //
 double stm.FOVcollimator.liner.halfHeight       =  100.0; // 
 double stm.FOVcollimator.liner.halfLength       =   75.0; // 
 double stm.FOVcollimator.hole1.xoffset          =    0.0; // 
-double stm.FOVcollimator.hole1.radiusUpStr      =   68.0; // Use 68.mm
-double stm.FOVcollimator.hole1.radiusDnStr      =   68.0; // Use 68.mm
+double stm.FOVcollimator.hole1.radiusUpStr      =   71.0; // Use 68.mm
+double stm.FOVcollimator.hole1.radiusDnStr      =   71.0; // Use 68.mm
 bool   stm.FOVcollimator.hole1.liner.build      =  false; // liner along the length of the hole itself
 double stm.FOVcollimator.hole1.liner.thickness  =    0.0; // no liner
 bool   stm.FOVcollimator.hole2.build            =  false; // has a second collimation hole?
@@ -171,14 +171,17 @@ double stm.detector.stand.legRadius      =  50.0;
 
 //shield pipe to reduce CRV deadtime
 bool   stm.shield.build                = true;
-double stm.shield.rIn                  = 102.0;
-double stm.shield.rOut                 = 128.0;
+double stm.shield.rIn                  = 110.0;
+double stm.shield.rOut                 = 130.0;//WARNING: should be 160
 double stm.shield.pipe.halfLength      = 209.5;
-string stm.shield.material             = "G4_Pb";
+string stm.shield.material             = "StainlessSteel";
 double stm.shield.UpStrSpace           =  10.0;
 double stm.shield.DnStrSpace           =   1.0;
 double stm.shield.DnStrWall.halfLength =  50.0;
 
+//NOTE: uncomment the next two lines if you want to test the STM design as documented in docDB-XXXX with the thicker CRV shield
+//int crs.nModulesD4 = 0;
+//double stm.shield.rOut = 160.0;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

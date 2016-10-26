@@ -5,12 +5,12 @@ BEGIN_PROLOG
       module_type               : CrvPhotonArrivalsGenerator
       g4ModuleLabels            : ["*"]
       processNames              : ["*"]
-      lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_6600",
-                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_5600",
-                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_4500",
-                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_3000",
-                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_2300",
-                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_900"]
+      lookupTableFileNames      : ["CRVConditions/v1_0/LookupTable_6600",
+                                   "CRVConditions/v1_0/LookupTable_5600",
+                                   "CRVConditions/v1_0/LookupTable_4500",
+                                   "CRVConditions/v1_0/LookupTable_3000",
+                                   "CRVConditions/v1_0/LookupTable_2300",
+                                   "CRVConditions/v1_0/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
       scintillationYield        : 5000.0   //5000.0 photons per MeV (corresponds to 38.6 PE/SiPM)
       scintillationYieldTolerance :  0.0   //0%

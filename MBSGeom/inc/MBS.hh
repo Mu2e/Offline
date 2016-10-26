@@ -11,6 +11,9 @@
 //
 // Modified 2015/10/30 by dnbrow01 to reflect current design of MBS
 // as found in docdb-1351 v7.  Call this Version 2.
+// 2016/08/05 dnbrow01:  Add holes for services access.  Call this version 3
+// C++ includes
+#include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "GeomPrimitives/inc/Tube.hh"
@@ -54,6 +57,23 @@ namespace mu2e {
     double getEnvelopeRmin() const { return _rMin; }
     double getEnvelopeTLng() const { return _totLength; }
 
+    std::vector<CLHEP::Hep3Vector> getHoleCentersInSteel() const 
+    { return _holeCentersInSteel; }
+    std::vector<CLHEP::Hep3Vector> getHoleCentersInUpstreamPoly() const
+    { return _holeCentersInUpstreamPoly; }
+    std::vector<CLHEP::Hep3Vector> getHoleCentersInDownstreamPoly() const
+    { return _holeCentersInDownstreamPoly; }
+    double getHoleXDimInSteel()    const { return _holeXDimInSteel; }
+    double getHoleYDimInSteel()    const { return _holeYDimInSteel; }
+    double getHoleZDimInSteel()    const { return _holeZDimInSteel; }
+    double getHoleXDimInUpPoly()   const { return _holeXDimInUpPoly; }
+    double getHoleYDimInUpPoly()   const { return _holeYDimInUpPoly; }
+    double getHoleZDimInUpPoly()   const { return _holeZDimInUpPoly; }
+    double getHoleXDimInDownPoly() const { return _holeXDimInDownPoly; }
+    double getHoleYDimInDownPoly() const { return _holeYDimInDownPoly; }
+    double getHoleZDimInDownPoly() const { return _holeZDimInDownPoly; }
+
+
   private:
 
     friend class MBSMaker;
@@ -87,6 +107,19 @@ namespace mu2e {
     CLHEP::Hep3Vector   _originInMu2e;
 
     int    _Version;  // added DNo Brown
+    std::vector<CLHEP::Hep3Vector> _holeCentersInSteel;
+    std::vector<CLHEP::Hep3Vector> _holeCentersInUpstreamPoly;
+    std::vector<CLHEP::Hep3Vector> _holeCentersInDownstreamPoly;
+    double _holeXDimInSteel;
+    double _holeYDimInSteel;
+    double _holeZDimInSteel;
+    double _holeXDimInUpPoly;
+    double _holeYDimInUpPoly;
+    double _holeZDimInUpPoly;
+    double _holeXDimInDownPoly;
+    double _holeYDimInDownPoly;
+    double _holeZDimInDownPoly;
+
   };
 
 }

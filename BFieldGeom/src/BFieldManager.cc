@@ -10,7 +10,6 @@
 #include <iostream>
 
 // Framework includes
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
 
 // Includes from Mu2e

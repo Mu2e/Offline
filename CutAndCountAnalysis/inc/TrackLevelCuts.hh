@@ -38,7 +38,7 @@
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"

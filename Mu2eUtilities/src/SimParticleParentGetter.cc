@@ -2,8 +2,8 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "art/Framework/Core/FindOne.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Persistency/Common/FindOne.h"
+#include "canvas/Utilities/InputTag.h"
 
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"

@@ -15,16 +15,18 @@ namespace mu2e {
 
   class ShieldPipe {
   public:
-    ShieldPipe(bool build, double radiusIn, double radiusOut, double pipeHalfLength, 
-               std::string material, 
+    ShieldPipe(bool build, double radiusIn, double linerWidth, double radiusOut, double pipeHalfLength,
+               std::string materialLiner, std::string material,
                double upStrSpace, double dnStrSpace, 
                double dnStrWallHalflength,
                CLHEP::Hep3Vector originInMu2e, CLHEP::HepRotation rotation
               ) :
       _build( build ),   
       _radiusIn( radiusIn ),
+      _linerWidth( linerWidth ),
       _radiusOut( radiusOut ),
       _pipeHalfLength( pipeHalfLength ),
+      _materialLiner( materialLiner ),
       _material( material ),
       _upStrSpace( upStrSpace ),
       _dnStrSpace( dnStrSpace ),
@@ -35,8 +37,10 @@ namespace mu2e {
 
     bool   build()                            const { return _build; }
     double radiusIn()                         const { return _radiusIn; }
+    double linerWidth()                       const { return _linerWidth; }
     double radiusOut()                        const { return _radiusOut; }
     double pipeHalfLength()                   const { return _pipeHalfLength; }
+    std::string const & materialLiner()       const { return _materialLiner; }
     std::string const & material()            const { return _material; }      
     double upStrSpace()                       const { return _upStrSpace; }
     double dnStrSpace()                       const { return _dnStrSpace; }
@@ -52,8 +56,10 @@ namespace mu2e {
 
     bool               _build;
     double             _radiusIn;
+    double             _linerWidth;
     double             _radiusOut;
     double             _pipeHalfLength;
+    std::string        _materialLiner;
     std::string        _material;
     double             _upStrSpace;
     double             _dnStrSpace;

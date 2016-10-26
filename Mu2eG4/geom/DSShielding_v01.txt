@@ -43,15 +43,16 @@ double ifb.endseal.rOut       = 1080.;
 double ifb.endseal.halfLength = 55.;
 
 double ifb.endplug.z          = 3232.;
-double ifb.endplug.rIn        = 92.; //Should be >= ifb.endwindow.rOut
+double ifb.endplug.rIn        = 97.; //Should be >= ifb.endwindow.rOut
 double ifb.endplug.rOut       = 550.;
 double ifb.endplug.halfLength = 50.;
 
 string ifb.endwindow.material   = "G4_MYLAR";
 double ifb.endwindow.z          = 3182.;
 double ifb.endwindow.rIn        = 0.;
-double ifb.endwindow.rOut       = 92.;
-double ifb.endwindow.halfLength = 0.100659;//Mylar window with r=92 should have halflength of 0.100659 mm
+double ifb.endwindow.rOut       = 97.;
+//double ifb.endwindow.halfLength = 0.125;//Mylar window with r=97 should have halflength of 0.125 mm (0.25mm thickness)
+double ifb.endwindow.halfLength = 5.0;//Mylar window with r=97 should have halflength of 0.125 mm (0.25mm thickness)
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

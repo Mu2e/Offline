@@ -1,0 +1,13 @@
+//
+// Redirection to the current Mu2e top level geometry file.
+// The file that is included will be time dependent.
+//
+
+#include "Mu2eG4/geom/geom_common.txt"
+int crs.nModulesD4 = 0;  //removes the lowest portion of the CRV-D
+double stm.shield.rOut = 160.0; //which allows the STM to have the correct rOut
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

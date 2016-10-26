@@ -57,6 +57,8 @@ namespace mu2e {
     double _muEMax;
     double _muCosThMin; // min and max zenith angles
     double _muCosThMax;
+    double _muPhiMin;
+    double _muPhiMax;
 
     // half area to generate events (cm)
     double _dx;
@@ -84,7 +86,7 @@ namespace mu2e {
     bool _createdProductionPlane;
 
     enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL, CALO, CUSTOMIZED};
-    enum DirectionChoice {ALL, POSITIVE_X, NEGATIVE_X, POSITIVE_Z, NEGATIVE_Z};
+    enum DirectionChoice {ALL, POSITIVE_X, NEGATIVE_X, POSITIVE_Z, NEGATIVE_Z, PHI_RANGE};
     RefPointChoice    _choice;
     DirectionChoice   _directionChoice;
     CLHEP::Hep3Vector _cosmicReferencePointInMu2e;

@@ -107,7 +107,7 @@
 #include "art/Framework/Core/PtrRemapper.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Persistency/Common/CollectionUtilities.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 
 // Includes from the art tool chain.
 #include "cetlib/map_vector.h"

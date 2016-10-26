@@ -55,6 +55,7 @@ namespace mu2e {
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( _config, "DS"         , "ds"          );
     geomOptions->loadEntry( _config, "DSCoil"     , "dsCoil"      );
+    geomOptions->loadEntry( _config, "DSSpacer"   , "dsSpacer"    );
     geomOptions->loadEntry( _config, "DSSupport"  , "dsSupport"   );
     geomOptions->loadEntry( _config, "DSThShield" , "dsThShield"  );
     geomOptions->loadEntry( _config, "DSVacuum"   , "dsVacuum"    );
@@ -182,12 +183,17 @@ namespace mu2e {
     // DUE TO INCONSISTENCY IN DRAWINGS!
 
     // DS coils
-    G4Material* dsCoilMaterial = findMaterialOrThrow( ds->coil_material() );
-    
+    G4Material* dsCoilMaterial;
     for ( int i(0); i < ds->nCoils() ; i++ ) {
       TubsParams coilParams( ds->coil_rIn(), 
                              ds->coil_rOut().at(i),
                              ds->coil_zLength().at(i)*0.5 );
+      if ( ds->coilVersion() == 1 ) {
+	dsCoilMaterial = findMaterialOrThrow( ds->coil_material() );
+      } else {
+	dsCoilMaterial = findMaterialOrThrow( ds->coil_materials().at(i) );
+      }
+
       G4ThreeVector coilPosition( dsP.x(), dsP.y(), 
                                   ds->coil_zPosition().at(i) + coilParams.zHalfLength()); 
 
@@ -205,6 +211,35 @@ namespace mu2e {
 		"DSCoil"
                 );
     }
+
+    // DS coil spacers
+    if ( ds->coilVersion() > 1 ) {  // spacers added to version 2 and up
+      G4Material* dsSpacerMaterial = findMaterialOrThrow( ds->spacer_material() );
+      for ( int i(0); i < ds->nSpacers() ; i++ ) {
+	TubsParams spacerParams( ds->spacer_rIn(), 
+				 ds->spacer_rOut().at(i),
+				 ds->spacer_zLength().at(i)*0.5 );
+
+	G4ThreeVector spacerPosition( dsP.x(), dsP.y(), 
+				      ds->spacer_zPosition().at(i) 
+				      + spacerParams.zHalfLength()); 
+
+	ostringstream spacername;
+	spacername << "DSSpacer_" << i+1;
+	
+	nestTubs( spacername.str(),
+		  spacerParams,
+		  dsSpacerMaterial,
+		  0,
+		  spacerPosition-_hallOriginInMu2e,
+		  parent,
+		  0,
+		  G4Color::Green(),
+		  "DSSpacer"
+		  );
+      }
+    }
+
 
     // DS coils support system
     G4Material*   dsSupportMaterial = findMaterialOrThrow( ds->support_material() );

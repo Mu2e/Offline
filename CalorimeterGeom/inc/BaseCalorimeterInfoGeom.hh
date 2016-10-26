@@ -13,9 +13,7 @@
 // Original author B. Echenard
 //
 
-
 #include <vector>
-
 
 namespace mu2e {
 
@@ -26,34 +24,59 @@ namespace mu2e {
 
        public:
 
-           BaseCalorimeterInfoGeom()  {}
+           BaseCalorimeterInfoGeom(): 
+	      _crystalNumEdges(0),_crystalShift(0),_crystalHalfTrans(0),_crystalHalfLength(0),_crystalVolume(0),_wrapperThickness(0),
+	      _nROPerCrystal(0),_roHalfTrans(0),_roHalfThickness(0),_roElecHalfX(0),_roElecHalfY(0),_roElecHalfZ(0),
+	      _crateRadiusIn(0),_crateRadiusOut(0),_crateExtendLen(0),
+	      _caseThickness(0),_envelopeInRadius(0),_envelopeOutRadius(0),_envelopeZ0(0),_envelopeZ1(0),
+	      _nPipes(0),_pipeRadius(0),_pipeThickness(0),_pipeTorRadius()	      
+	   {}
+	     
            virtual ~BaseCalorimeterInfoGeom() {}
 
            void crystalNedges(int value)           {_crystalNumEdges = value;}
            void crystalShift(bool value)           {_crystalShift = value;}
-           void nROPerCrystal(int value)           {_nROPerCrystal = value;}
            void crystalHalfLength(double value)    {_crystalHalfLength = value;}
            void crystalHalfTrans(double value)     {_crystalHalfTrans = value;}
            void crystalVolume(double value)        {_crystalVolume = value;}
 	   void wrapperThickness(double value)     {_wrapperThickness = value;}
-           void caseThickness(double value)        {_caseThickness = value;}
+           
+	   void nROPerCrystal(int value)           {_nROPerCrystal = value;}
            void roHalfTrans(double value)          {_roHalfTrans = value;}
            void roHalfThickness(double value)      {_roHalfThickness = value;}
+           void roElecHalfX(double value)          {_roElecHalfX = value;}
+           void roElecHalfY(double value)          {_roElecHalfY = value;}
+           void roElecHalfZ(double value)          {_roElecHalfZ = value;}
+           void crateRadiusIn(double value)        {_crateRadiusIn = value;}
+           void crateRadiusOut(double value)       {_crateRadiusOut = value;}
+           void crateExtendLen(double value)       {_crateExtendLen = value;}
+          
+	   void caseThickness(double value)        {_caseThickness = value;}
            void envelopeInRadius(double value)     {_envelopeInRadius = value;}
            void envelopeOutRadius(double value)    {_envelopeOutRadius = value;}
            void envelopeZ0(double value)           {_envelopeZ0 = value;}
            void envelopeZ1(double value)           {_envelopeZ1 = value;} 
 
-           int    crystalNedges()       const      {return _crystalNumEdges;}
+           
+	   
+	   int    crystalNedges()       const      {return _crystalNumEdges;}
            bool   crystalShift()        const      {return _crystalShift;}
-           int    nROPerCrystal()       const      {return _nROPerCrystal;}
            double crystalHalfLength()   const      {return _crystalHalfLength;}
            double crystalHalfTrans()    const      {return _crystalHalfTrans;}
            double crystalVolume()       const      {return _crystalVolume;}
            double wrapperThickness()    const      {return _wrapperThickness;}
-           double caseThickness()       const      {return _caseThickness;}
+           
+	   int    nROPerCrystal()       const      {return _nROPerCrystal;}
            double roHalfTrans()         const      {return _roHalfTrans;}
            double roHalfThickness()     const      {return _roHalfThickness;}
+           double roElecHalfX()         const      {return _roElecHalfX;}
+           double roElecHalfY()         const      {return _roElecHalfY;}
+           double roElecHalfZ()         const      {return _roElecHalfZ;}
+           double crateRadiusIn()       const      {return _crateRadiusIn;}
+           double crateRadiusOut()      const      {return _crateRadiusOut;}
+           double crateExtendLen()      const      {return _crateExtendLen;}
+           
+	   double caseThickness()       const      {return _caseThickness;}
            double envelopeInRadius()    const      {return _envelopeInRadius;}
            double envelopeOutRadius()   const      {return _envelopeOutRadius;}
            double envelopeZ0()          const      {return _envelopeZ0;}
@@ -61,25 +84,6 @@ namespace mu2e {
            
 	   
 	   
-	   void nonUniformity(double value)        {_nonUniformity = value;}
-	   void timeGap(double value)              {_timeGap = value;}
-	   void electronEdep(double value)         {_electronEdep = value;}
-	   void electronEmin(double value)         {_electronEmin = value;}
-	   void apdMeanNoise(double value)         {_apdMeanNoise = value;}
-	   void apdSigmaNoise(double value)        {_apdSigmaNoise = value;}
-	   void lysoLightYield(double value)       {_lysoLightYield = value;}
-	   void apdQuantumEff(double value)        {_apdQuantumEff = value;}
-	   void apdCollectEff(double value)        {_apdCollectEff = value;}
-           
-	   double nonUniformity()       const      {return _nonUniformity; }
-	   double timeGap()             const      {return _timeGap; }
-	   double electronEdep()        const      {return _electronEdep; }
-	   double electronEmin()        const      {return _electronEmin; }
-	   double apdMeanNoise()        const      {return _apdMeanNoise;}
-	   double apdSigmaNoise()       const      {return _apdSigmaNoise;}
-	   double lysoLightYield()      const      {return _lysoLightYield;}
-	   double apdQuantumEff()       const      {return _apdQuantumEff;}
-	   double apdCollectEff()       const      {return _apdCollectEff;}
 
 
 
@@ -99,31 +103,28 @@ namespace mu2e {
 
           int    _crystalNumEdges;
           bool   _crystalShift;
-          int    _nROPerCrystal;
 	  double _crystalHalfTrans;
 	  double _crystalHalfLength;
 	  double _crystalVolume;
           double _wrapperThickness;
+
+          int    _nROPerCrystal;
           double _roHalfTrans;
           double _roHalfThickness;
-          double _caseThickness;
+          double _roElecHalfX;
+          double _roElecHalfY;
+          double _roElecHalfZ;
+	  
+	  double _crateRadiusIn;
+	  double _crateRadiusOut;
+	  double _crateExtendLen;
 
+          double _caseThickness;
           double _envelopeInRadius;
           double _envelopeOutRadius;
           double _envelopeZ0;
           double _envelopeZ1;
 	   
-          double _nonUniformity;
-          double _timeGap;
-          double _electronEdep; // energy deposition of charged particle crossing APD
-          double _electronEmin; // minimum energy deposition of charged particle crossing APD
-
-          double _apdMeanNoise; //MeV
-          double _apdSigmaNoise;//MeV
-
-          double _lysoLightYield;
-          double _apdQuantumEff;//quantum efficiency for Hamamatsu S8664-1010 for a radiation wavelenght of 402nm (typical of lyso)
-          double _apdCollectEff;//light collection efficiency for  30 mm2 area of the crystal efficiency for Hamamatsu S8664-1010
 
 	  unsigned int         _nPipes;
 	  double               _pipeRadius;

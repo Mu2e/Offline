@@ -10,7 +10,6 @@
 // Original author Rob Kutschke
 //
 
-#include <deque>
 #include <vector>
 
 #include "TrackerGeom/inc/StrawDetail.hh"

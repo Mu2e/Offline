@@ -11,7 +11,7 @@
 //  calibration system (pipes) in front of the crystals
 //  pipes + casing form a disk
 //
-//  cross section in z:      pipes - wrapper - crystal - readout - wrapper
+//  cross section in z:      pipes - wrapper - crystal - readout - readout card
 //  cross section in radius: casing - wrapper - crystal - wrapper - crystal - ... - wrapper - casing
 
 
@@ -35,15 +35,15 @@
 //
 //           - crystal:
 //                      origin:      base of the crystal
-//                      orientation: crystal oriented along the z direction (direction fron face - back face)
-//                                   the front (back) face is at z=0 (z=crysdtal length), see above about polyhedra.
+//                      orientation: crystal oriented along the z direction (direction front face - back face)
+//                                   the front (back) face is at z=0 (z=crystal length), see above about polyhedra.
 //           - disk:
 //                      origin:      center of the disk
 //                      orientation: along the z axis
 //                      other:       extra coordinate system placed at the front of the crystal - used for track-calo matching
 //
 //           - calorimeter:
-//                      origin:      center of front face, point closest to the traclker along z
+//                      origin:      center of front face, point closest to the tracker along z
 //
 //         Note: the "disk" is defined as whatever volume containing the crystal is rotated in G4. For example, if
 //               the crystal + calibration systems are rotated/placed as a single volume, then this is the disk.
@@ -55,7 +55,7 @@
 //
 //         The position of the crystals in the disks (see disk.cc) = the position of the crystal w.r.t disk origin, given by
 //         diskOriginToCrystalOrigin:
-//              diskOriginToCrystalOrigin(0,0,pipeRadius - crystalHalfLength - roHalfThickness);
+//              diskOriginToCrystalOrigin(0,0,pipeRadius - crystalHalfLength - roHalfThickness - roElecHalfZ);
 
 
 // There is a git tag (ef94504f51edbbfeb54a5e63651856bdf5c0a60d) that has the code for a generic placement of the disk origin.
@@ -105,31 +105,29 @@ namespace mu2e {
 
 
           //Fill the Common Calo Data
-          _calo->_caloGeomInfo.crystalNedges(      config.getInt("calorimeter.crystalNumEdges"));
-          _calo->_caloGeomInfo.crystalShift(       config.getBool("calorimeter.crystalShift"));
-          _calo->_caloGeomInfo.nROPerCrystal(      config.getInt("calorimeter.crystalReadoutChannelCount"));
+          _calo->_caloGeomInfo.crystalNedges(      config.getInt(   "calorimeter.crystalNumEdges"));
+          _calo->_caloGeomInfo.crystalShift(       config.getBool(  "calorimeter.crystalShift"));
           _calo->_caloGeomInfo.crystalHalfTrans(   config.getDouble("calorimeter.crystalHalfTrans") );
           _calo->_caloGeomInfo.crystalHalfLength(  config.getDouble("calorimeter.crystalHalfLong") );
           _calo->_caloGeomInfo.wrapperThickness(   config.getDouble("calorimeter.crystalWrapperThickness") );
-          _calo->_caloGeomInfo.roHalfTrans(        config.getDouble("calorimeter.crystalReadoutHalfTrans") );
-          _calo->_caloGeomInfo.roHalfThickness(    config.getDouble("calorimeter.crystalReadoutHalfThickness") );
-          _calo->_caloGeomInfo.caseThickness(      config.getDouble("calorimeter.caseThickness") );
-          _calo->_caloGeomInfo.envelopeInRadius(  config.getDouble("calorimeter.caloMotherInRadius") );
-          _calo->_caloGeomInfo.envelopeOutRadius( config.getDouble("calorimeter.caloMotherOutRadius") );
-          _calo->_caloGeomInfo.envelopeZ0(        config.getDouble("calorimeter.caloMotherZ0") );
-          _calo->_caloGeomInfo.envelopeZ1(        config.getDouble("calorimeter.caloMotherZ1") );
+          
+	  _calo->_caloGeomInfo.nROPerCrystal(      config.getInt(   "calorimeter.readoutPerCrystal"));
+          _calo->_caloGeomInfo.roHalfTrans(        config.getDouble("calorimeter.readoutHalfTrans") );
+          _calo->_caloGeomInfo.roHalfThickness(    config.getDouble("calorimeter.readoutHalfThickness") );
+          _calo->_caloGeomInfo.roElecHalfX(        config.getDouble("calorimeter.readoutElecHalfX") );
+          _calo->_caloGeomInfo.roElecHalfY(        config.getDouble("calorimeter.readoutElecHalfY") );
+          _calo->_caloGeomInfo.roElecHalfZ(        config.getDouble("calorimeter.readoutElecHalfZ") );
+	  _calo->_caloGeomInfo.crateRadiusIn(      config.getDouble("calorimeter.crateInnerRadius"));
+	  _calo->_caloGeomInfo.crateRadiusOut(     config.getDouble("calorimeter.crateOuterRadius"));
+ 	  _calo->_caloGeomInfo.crateExtendLen(     config.getDouble("calorimeter.crateExtendLen"));
+         
+	  _calo->_caloGeomInfo.caseThickness(      config.getDouble("calorimeter.caseThickness") );
+          _calo->_caloGeomInfo.envelopeInRadius(   config.getDouble("calorimeter.caloMotherInRadius") );
+          _calo->_caloGeomInfo.envelopeOutRadius(  config.getDouble("calorimeter.caloMotherOutRadius") );
+          _calo->_caloGeomInfo.envelopeZ0(         config.getDouble("calorimeter.caloMotherZ0") );
+          _calo->_caloGeomInfo.envelopeZ1(         config.getDouble("calorimeter.caloMotherZ1") );
 
-          _calo->_caloGeomInfo.apdMeanNoise(       config.getDouble("calorimeter.meanNoiseAPD", 0.0) );
-          _calo->_caloGeomInfo.apdSigmaNoise(      config.getDouble("calorimeter.sigmaNoiseAPD", 0.03) );
-          _calo->_caloGeomInfo.lysoLightYield(     config.getDouble("calorimeter.lysoLightYield", 2000.0) );
-          _calo->_caloGeomInfo.apdQuantumEff(      config.getDouble("calorimeter.quantumEffAPD", 0.68) );
-          _calo->_caloGeomInfo.apdCollectEff(      config.getDouble("calorimeter.lightCollectEffAPD", 0.11));
-          _calo->_caloGeomInfo.nonUniformity(      config.getDouble("calorimeter.crystalNonUniformity",0.0) );
-          _calo->_caloGeomInfo.timeGap(            config.getDouble("calorimeter.timeGap",100.0) );
-          _calo->_caloGeomInfo.electronEdep(       config.getDouble("calorimeter.electronDepositionAPD",1000.0) );
-          _calo->_caloGeomInfo.electronEmin(       config.getDouble("calorimeter.electronMinEnergyAPD",0.1) );
-
-          _calo->_caloGeomInfo.nPipes(             config.getInt("calorimeter.nPipes",0));
+          _calo->_caloGeomInfo.nPipes(             config.getInt(   "calorimeter.nPipes",0));
           _calo->_caloGeomInfo.pipeRadius(         config.getDouble("calorimeter.pipeRadius",5) );
           _calo->_caloGeomInfo.pipeThickness(      config.getDouble("calorimeter.pipeThickness",0.5) );
 
@@ -179,18 +177,19 @@ namespace mu2e {
         double crystalHalfLength  = _calo->_caloGeomInfo.crystalHalfLength();
         double crystalHalfTrans   = _calo->_caloGeomInfo.crystalHalfTrans();
         double roHalfThickness    = _calo->_caloGeomInfo.roHalfThickness();
+        double roElecHalfZ        = _calo->_caloGeomInfo.roElecHalfZ();
         double caseThickness      = _calo->_caloGeomInfo.caseThickness();
         double wrapperThickness   = _calo->_caloGeomInfo.wrapperThickness();
         double pipeRadius         = _calo->_caloGeomInfo.pipeRadius();
 
 
-        double diskHalfZLength    = crystalHalfLength + roHalfThickness + wrapperThickness + pipeRadius;
+        double diskHalfZLength    = crystalHalfLength + roHalfThickness + roElecHalfZ + 0.5*wrapperThickness + pipeRadius;
         double crystalCellRadius  = crystalHalfTrans  + wrapperThickness;
 
 
         // This is where the offsets between the different coordinate systems are set, see Note for full explanation
         // Seriously, read the note at the top before changing this! Really!
-        CLHEP::Hep3Vector diskOriginToCrystalOrigin(0,0,pipeRadius - crystalHalfLength - roHalfThickness);
+        CLHEP::Hep3Vector diskOriginToCrystalOrigin(0,0,pipeRadius - crystalHalfLength - roHalfThickness - roElecHalfZ);
 
 
 

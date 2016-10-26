@@ -10,11 +10,11 @@
 #include <utility>
 
 // Framework include files
-#include "art/Persistency/Provenance/ModuleDescription.h"
-#include "art/Persistency/Provenance/EventID.h"
-#include "art/Persistency/Provenance/Timestamp.h"
-#include "art/Persistency/Provenance/SubRunID.h"
-#include "art/Persistency/Provenance/RunID.h"
+#include "canvas/Persistency/Provenance/ModuleDescription.h"
+#include "canvas/Persistency/Provenance/EventID.h"
+#include "canvas/Persistency/Provenance/Timestamp.h"
+#include "canvas/Persistency/Provenance/SubRunID.h"
+#include "canvas/Persistency/Provenance/RunID.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e include files

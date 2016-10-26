@@ -3,40 +3,214 @@
 // See Mu2e docdb #4678 for more details on parameters
 
 // Sort boxes into "types"
-int Pipe.numberOfPipeTypes = 1;
+int Pipe.numberOfPipeTypes = 22;
 
 // How many of each type box to make, and how many components in each.
-int Pipe.nPipeType1 = 2;  // long straight pipe sections in West wall relief
-//int Pipe.nPipeType2 = 1;  // test only - bend section
-int Pipe.nComponentsInType1 = 10; //lN2 and lHe supply and return lines in west
+int Pipe.nPipeType1 = 0;  // long straight pipe sections in West wall relief
+int Pipe.nComponentsInType1 = 0;
+int Pipe.nPipeType2 = 1;  // 11 in PS-TS_Sheild.txt   
+int Pipe.nComponentsInType2 = 1;
+int Pipe.nPipeType3 = 1;  // 12 in PS-TS_Shield.txt    
+int Pipe.nComponentsInType3 = 1;
+int Pipe.nPipeType4 = 1;  // 13 in PS-TS_Sheild.txt
+int Pipe.nComponentsInType4 = 1;
+int Pipe.nPipeType5 = 1;  // 21 in PS-TS_Sheild.txt 
+int Pipe.nComponentsInType5 = 1;
+int Pipe.nPipeType6 = 1;  // 22 in PS-TS_Sheild.txt 
+int Pipe.nComponentsInType6 = 1;
+int Pipe.nPipeType7 = 1;  // 23 in PS-TS_Sheild.txt 
+int Pipe.nComponentsInType7 = 1;
+int Pipe.nPipeType8 = 1;  // 24 in PS-TS_Sheild.txt 
+int Pipe.nComponentsInType8 = 1;
+int Pipe.nPipeType9 = 1;  // 25 in PS-TS_Sheild.txt 
+int Pipe.nComponentsInType9 = 1;
+int Pipe.nPipeType10 = 1; // 26 in PS-TS_Sheild.txt 
+int Pipe.nComponentsInType10 = 1;
+int Pipe.nPipeType11 = 1; // 31 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType11 = 1;
+int Pipe.nPipeType12 = 1; // 32 in PS-TS_Sheild.txt                    
+int Pipe.nComponentsInType12 = 1;
+int Pipe.nPipeType13 = 1; // 33 in PS-TS_Sheild.txt                    
+int Pipe.nComponentsInType13 = 1;
+int Pipe.nPipeType14 = 1; // 34 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType14 = 1;
+int Pipe.nPipeType15 = 1; // 35 in PS-TS_Sheild.txt                    
+int Pipe.nComponentsInType15 = 1;
+int Pipe.nPipeType16 = 1; // 36 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType16 = 1;
+int Pipe.nPipeType17 = 1; // 37 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType17 = 1;
+int Pipe.nPipeType18 = 1; // 41 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType18 = 1;
+int Pipe.nPipeType19 = 1; // 42 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType19 = 1;
+int Pipe.nPipeType20 = 1; // 43 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType20 = 1;
+int Pipe.nPipeType21 = 1; // 44 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType21 = 1;
+int Pipe.nPipeType22 = 16; //bend that connects pipes 
+int Pipe.nComponentsInType22 = 1;
+ //lN2 and lHe supply and return lines in west
          // wall relief
-//int Pipe.nComponentsInType2 = 10; // test only - Match the type1 pipes
 
-// Lengths in w dimension for straight type of pipe.  
-// For pipe bends, this is the bend radius.  Dimensions should be in mm.
-double Pipe.lengthType1 = 12721.18; // long straight pipe sections in West wall relief
-// double Pipe.lengthType2 = 1000; // test only - bend sections
+// Lengths in w dimension for each type of pipe.  Dimensions should be in mm.
+double Pipe.lengthType1 = 11875;
+double Pipe.lengthType2 = 3632.48; // 4254.48;
+double Pipe.lengthType3 = 12721.18;
+double Pipe.lengthType4 = 745.98;
+double Pipe.lengthType5 = 2438.68; //3060.68;
+double Pipe.lengthType6 = 2387.58;
+double Pipe.lengthType7 = 965.18;
+double Pipe.lengthType8 = 10861.58;
+double Pipe.lengthType9 = 1849.48;
+double Pipe.lengthType10 = 939.78;
+double Pipe.lengthType11 = 3632.48; //4254.48;
+double Pipe.lengthType12 = 2317.58;
+double Pipe.lengthType13 = 14274.78;
+double Pipe.lengthType14 = 1339.98;
+double Pipe.lengthType15 = 965.18;
+double Pipe.lengthType16 = 812.78;
+double Pipe.lengthType17 = 2893.38;
+double Pipe.lengthType18 = 7772.68; // 8394.68;
+double Pipe.lengthType19 = 4851.38;
+double Pipe.lengthType20 = 1491.88;
+double Pipe.lengthType21 = 2178.18;
+double Pipe.lengthType22 = 127.01; //radius of torus
+
+// long straight pipe sections in West wall relief
 
 // Flavor of the type.  Here, flavor means "straight" (default) or "bend".
 string Pipe.flavorType1 = "straight";
-//string Pipe.flavorType2 = "bend";  // test only
+string Pipe.flavorType2 = "straight";
+string Pipe.flavorType3 = "straight";
+string Pipe.flavorType4 = "straight";
+string Pipe.flavorType5 = "straight";
+string Pipe.flavorType6 = "straight";
+string Pipe.flavorType7 = "straight";
+string Pipe.flavorType8 = "straight";
+string Pipe.flavorType9 = "straight";
+string Pipe.flavorType10 = "straight";
+string Pipe.flavorType11 = "straight";
+string Pipe.flavorType12 = "straight";
+string Pipe.flavorType13 = "straight";
+string Pipe.flavorType14 = "straight";
+string Pipe.flavorType15 = "straight";
+string Pipe.flavorType16 = "straight";
+string Pipe.flavorType17 = "straight";
+string Pipe.flavorType18 = "straight";
+string Pipe.flavorType19 = "straight";
+string Pipe.flavorType20 = "straight";
+string Pipe.flavorType21 = "straight";
+string Pipe.flavorType22 = "bend";
 
 // Fill material of the type
 string Pipe.fillMaterialType1 = "G10Lite";
-//string Pipe.fillMaterialType2 = "G10Lite"; // test only
+string Pipe.fillMaterialType2 = "G10Lite";
+string Pipe.fillMaterialType3 = "G10Lite";
+string Pipe.fillMaterialType4 = "G10Lite";
+string Pipe.fillMaterialType5 = "G10Lite";
+string Pipe.fillMaterialType6 = "G10Lite";
+string Pipe.fillMaterialType7 = "G10Lite";
+string Pipe.fillMaterialType8 = "G10Lite";
+string Pipe.fillMaterialType9 = "G10Lite";
+string Pipe.fillMaterialType10 = "G10Lite";
+string Pipe.fillMaterialType11 = "G10Lite";
+string Pipe.fillMaterialType12 = "G10Lite";
+string Pipe.fillMaterialType13 = "G10Lite";
+string Pipe.fillMaterialType14 = "G10Lite";
+string Pipe.fillMaterialType15 = "G10Lite";
+string Pipe.fillMaterialType16 = "G10Lite";
+string Pipe.fillMaterialType17 = "G10Lite";
+string Pipe.fillMaterialType18 = "G10Lite";
+string Pipe.fillMaterialType19 = "G10Lite";
+string Pipe.fillMaterialType20 = "G10Lite";
+string Pipe.fillMaterialType21 = "G10Lite";
+string Pipe.fillMaterialType22 = "G10Lite";
 
 // The position of the piece in Mu2e Offline coordinates
 
-vector<double> Pipe.centerType1Pipe1 = {-3588.6,2488.13,-3911.6}; // straight pipe,
+vector<double> Pipe.centerType1Pipe1 = {-4390,2488.13,-3911.6}; // straight pipe,
 // West wall relief, top
-vector<double> Pipe.centerType1Pipe2 = {-3588.6,1294.43,-3911.6}; // straight pipe,
+vector<double> Pipe.centerType1Pipe2 = {-4390,1294.43,-3911.6}; // straight pipe,
 // West wall relief, bottom
-//vector<double> Pipe.centerType2Pipe1 = {2700.0, 2000.0, -3911.6}; // test only - bend 
+// Pipes added from PS-TS_Shield.txt
+vector<double> Pipe.centerType2Pipe1 = {-10076.2,3237.68,-3911.6};//{-10076.2,3548.68,-3911.6};
+vector<double> Pipe.centerType3Pipe1 = {-3588.6,1294.43,-3911.6};
+vector<double> Pipe.centerType4Pipe1 = {2899,1294.43,-4411.6};
+vector<double> Pipe.centerType5Pipe1 = {-10076.2,3834.48,-2692.4};//{-10076.2,4145.48,-2692.4};
+vector<double> Pipe.centerType6Pipe1 = {-8755.4,2488.13,-2692.4};
+vector<double> Pipe.centerType7Pipe1 = {-7434.6,2488.13,-3302};
+vector<double> Pipe.centerType8Pipe1 = {-1876.8,2488.13,-3911.6};
+vector<double> Pipe.centerType9Pipe1 = {3681,2488.13,-2859.85};
+vector<double> Pipe.centerType10Pipe1 = {3681,1891.23,-1808.1};
+vector<double> Pipe.centerType11Pipe1 = {-10076.2,3237.68,-1473.2};//{-10076.2,3548.68,-1473.2};
+vector<double> Pipe.centerType12Pipe1 = {-8790.4,1294.43,-1473.2};
+vector<double> Pipe.centerType13Pipe1 = {-7504.6,1294.43,5791.2};
+vector<double> Pipe.centerType14Pipe1 = {-6707.6,1294.43,13055.6};
+vector<double> Pipe.centerType15Pipe1 = {-5910.6,1294.43,12446};
+vector<double> Pipe.centerType16Pipe1 = {-5377.2,1294.43,11836.4};
+vector<double> Pipe.centerType17Pipe1 = {-4843.8,1294.43,10262.7};
+vector<double> Pipe.centerType18Pipe1 = {-10076.2,1167.58,-254.0};//{-10076.2,1478.58,-254.0};
+vector<double> Pipe.centerType19Pipe1 = {-7523.5,-2845.77,-254.0};
+vector<double> Pipe.centerType20Pipe1 = {-4970.8,-1972.82,-254.0};
+vector<double> Pipe.centerType21Pipe1 = {-4326.02,-1099.87,777.13};
+vector<double> Pipe.centerType22Pipe1 = {-6037.61,1294.43,12928.59};
+vector<double> Pipe.centerType22Pipe2 = {-5783.59,1294.43,11963.41};
+vector<double> Pipe.centerType22Pipe3 = {-4970.81,1294.43,11709.39};
+vector<double> Pipe.centerType22Pipe4 = {-7377.59,1294.43,12928.59};
+vector<double> Pipe.centerType22Pipe5 = {-7631.61,1294.43,-1346.19};
+vector<double> Pipe.centerType22Pipe6 = {-9949.19,1421.44,-1473.2};
+vector<double> Pipe.centerType22Pipe7 = {-5097.81,-2718.76,-254.0};
+vector<double> Pipe.centerType22Pipe8 = {-9949.19,-2718.76,-254.0};
+vector<double> Pipe.centerType22Pipe9 = {-9949.19,2615.14,-2692.4};
+vector<double> Pipe.centerType22Pipe10 = {-9949.19,1421.44,-3911.6};
+vector<double> Pipe.centerType22Pipe11 = {-7561.61,2488.13,-2819.41};
+vector<double> Pipe.centerType22Pipe12 = {-7307.59,2488.13,-3784.59};
+vector<double> Pipe.centerType22Pipe13 = {2771.99,1294.43,-4038.61};
+vector<double> Pipe.centerType22Pipe14 = {3553.99,2488.13,-3784.59};
+vector<double> Pipe.centerType22Pipe15 = {3681,2361.12,-1935.11};
+vector<double> Pipe.centerType22Pipe16 = {-4903.2,-1226.88,-146.5};
+
 
 // The orientation of the box.  See docdb xxxx for details.
 string Pipe.orientationType1Pipe1 = "030";
 string Pipe.orientationType1Pipe2 = "030";
-//string Pipe.orientationType2Pipe1 = "003"; // test only
+string Pipe.orientationType2Pipe1 = "100";
+string Pipe.orientationType3Pipe1 = "010";
+string Pipe.orientationType4Pipe1 = "000";
+string Pipe.orientationType5Pipe1 = "100";
+string Pipe.orientationType6Pipe1 = "010";
+string Pipe.orientationType7Pipe1 = "000";
+string Pipe.orientationType8Pipe1 = "010";
+string Pipe.orientationType9Pipe1 = "000";
+string Pipe.orientationType10Pipe1 = "100";
+string Pipe.orientationType11Pipe1 = "100";
+string Pipe.orientationType12Pipe1 = "010";
+string Pipe.orientationType13Pipe1 = "000";
+string Pipe.orientationType14Pipe1 = "010";
+string Pipe.orientationType15Pipe1 = "000";
+string Pipe.orientationType16Pipe1 = "010";
+string Pipe.orientationType17Pipe1 = "000";
+string Pipe.orientationType18Pipe1 = "100";
+string Pipe.orientationType19Pipe1 = "010";
+string Pipe.orientationType20Pipe1 = "100";
+string Pipe.orientationType21Pipe1 = "060";
+string Pipe.orientationType22Pipe1 = "100";
+string Pipe.orientationType22Pipe2 = "320";
+string Pipe.orientationType22Pipe3 = "100";
+string Pipe.orientationType22Pipe4 = "120";
+string Pipe.orientationType22Pipe5 = "300";
+string Pipe.orientationType22Pipe6 = "002";
+string Pipe.orientationType22Pipe7 = "003";
+string Pipe.orientationType22Pipe8 = "002";
+string Pipe.orientationType22Pipe9 = "002";
+string Pipe.orientationType22Pipe10 = "002";
+string Pipe.orientationType22Pipe11 = "100";
+string Pipe.orientationType22Pipe12 = "320";
+string Pipe.orientationType22Pipe13 = "100";
+string Pipe.orientationType22Pipe14 = "300";
+string Pipe.orientationType22Pipe15 = "030";
+string Pipe.orientationType22Pipe16 = "0b0";
 
 // Now the component information
 
@@ -53,6 +227,28 @@ double Pipe.rInType1Comp8 = 14.224;
 double Pipe.rInType1Comp9 = 9.464; 
 double Pipe.rInType1Comp10 = 9.464; 
 
+double Pipe.rInType2Comp1 = 124.23;
+double Pipe.rInType3Comp1 = 124.23;
+double Pipe.rInType4Comp1 = 124.23;
+double Pipe.rInType5Comp1 = 124.23;
+double Pipe.rInType6Comp1 = 124.23;
+double Pipe.rInType7Comp1 = 124.23;
+double Pipe.rInType8Comp1 = 124.23;
+double Pipe.rInType9Comp1 = 124.23;
+double Pipe.rInType10Comp1 = 124.23;
+double Pipe.rInType11Comp1 = 124.23;
+double Pipe.rInType12Comp1 = 124.23;
+double Pipe.rInType13Comp1 = 124.23;
+double Pipe.rInType14Comp1 = 124.23;
+double Pipe.rInType15Comp1 = 124.23;
+double Pipe.rInType16Comp1 = 124.23;
+double Pipe.rInType17Comp1 = 124.23;
+double Pipe.rInType18Comp1 = 124.23;
+double Pipe.rInType19Comp1 = 124.23;
+double Pipe.rInType20Comp1 = 124.23;
+double Pipe.rInType21Comp1 = 124.23;
+double Pipe.rInType22Comp1 = 124.23;
+
 // next, outer radii
 double Pipe.rOutType1Comp1 = 127.0; 
 double Pipe.rOutType1Comp2 = 103.19; 
@@ -65,29 +261,27 @@ double Pipe.rOutType1Comp8 = 15.875;
 double Pipe.rOutType1Comp9 = 11.115; 
 double Pipe.rOutType1Comp10 = 11.115; 
 
-// // Pipe Type 2 is a bend section - test only
-// double Pipe.rInType2Comp1 = 124.23; 
-// double Pipe.rInType2Comp2 = 100.015; 
-// double Pipe.rInType2Comp3 = 11.05; 
-// double Pipe.rInType2Comp4 = 11.05; 
-// double Pipe.rInType2Comp5 = 11.05; 
-// double Pipe.rInType2Comp6 = 11.05; 
-// double Pipe.rInType2Comp7 = 17.4; 
-// double Pipe.rInType2Comp8 = 14.224; 
-// double Pipe.rInType2Comp9 = 9.464; 
-// double Pipe.rInType2Comp10 = 9.464; 
-
-// // next, outer radii
-// double Pipe.rOutType2Comp1 = 127.0; 
-// double Pipe.rOutType2Comp2 = 103.19; 
-// double Pipe.rOutType2Comp3 = 12.7; 
-// double Pipe.rOutType2Comp4 = 12.7; 
-// double Pipe.rOutType2Comp5 = 12.7; 
-// double Pipe.rOutType2Comp6 = 12.7; 
-// double Pipe.rOutType2Comp7 = 19.05; 
-// double Pipe.rOutType2Comp8 = 15.875; 
-// double Pipe.rOutType2Comp9 = 11.115; 
-// double Pipe.rOutType2Comp10 = 11.115; 
+double Pipe.rOutType2Comp1 = 127.0;
+double Pipe.rOutType3Comp1 = 127.0;
+double Pipe.rOutType4Comp1 = 127.0;
+double Pipe.rOutType5Comp1 = 127.0;
+double Pipe.rOutType6Comp1 = 127.0;
+double Pipe.rOutType7Comp1 = 127.0;
+double Pipe.rOutType8Comp1 = 127.0;
+double Pipe.rOutType9Comp1 = 127.0;
+double Pipe.rOutType10Comp1 = 127.0;
+double Pipe.rOutType11Comp1 = 127.0;
+double Pipe.rOutType12Comp1 = 127.0;
+double Pipe.rOutType13Comp1 = 127.0;
+double Pipe.rOutType14Comp1 = 127.0;
+double Pipe.rOutType15Comp1 = 127.0;
+double Pipe.rOutType16Comp1 = 127.0;
+double Pipe.rOutType17Comp1 = 127.0;
+double Pipe.rOutType18Comp1 = 127.0;
+double Pipe.rOutType19Comp1 = 127.0;
+double Pipe.rOutType20Comp1 = 127.0;
+double Pipe.rOutType21Comp1 = 127.0;
+double Pipe.rOutType22Comp1 = 127.0;
 
 // Materials for each type of component pipe.  
 string Pipe.materialType1Comp1   = "StainlessSteel";
@@ -101,17 +295,27 @@ string Pipe.materialType1Comp8   = "G4_Al";
 string Pipe.materialType1Comp9   = "G4_Al";
 string Pipe.materialType1Comp10   = "G4_Al";
 
-// // Materials for each type of component pipe.  test only for bend section
-// string Pipe.materialType2Comp1   = "StainlessSteel";
-// string Pipe.materialType2Comp2   = "G4_Al";
-// string Pipe.materialType2Comp3   = "G4_Al";
-// string Pipe.materialType2Comp4   = "G4_Al";
-// string Pipe.materialType2Comp5   = "G4_Al";
-// string Pipe.materialType2Comp6   = "G4_Al";
-// string Pipe.materialType2Comp7   = "G4_Al";
-// string Pipe.materialType2Comp8   = "G4_Al";
-// string Pipe.materialType2Comp9   = "G4_Al";
-// string Pipe.materialType2Comp10   = "G4_Al";
+string Pipe.materialType2Comp1 = "StainlessSteel";
+string Pipe.materialType3Comp1 = "StainlessSteel";
+string Pipe.materialType4Comp1 = "StainlessSteel";
+string Pipe.materialType5Comp1 = "StainlessSteel";
+string Pipe.materialType6Comp1 = "StainlessSteel";
+string Pipe.materialType7Comp1 = "StainlessSteel";
+string Pipe.materialType8Comp1 = "StainlessSteel";
+string Pipe.materialType9Comp1 = "StainlessSteel";
+string Pipe.materialType10Comp1 = "StainlessSteel";
+string Pipe.materialType11Comp1 = "StainlessSteel";
+string Pipe.materialType12Comp1 = "StainlessSteel";
+string Pipe.materialType13Comp1 = "StainlessSteel";
+string Pipe.materialType14Comp1 = "StainlessSteel";
+string Pipe.materialType15Comp1 = "StainlessSteel";
+string Pipe.materialType16Comp1 = "StainlessSteel";
+string Pipe.materialType17Comp1 = "StainlessSteel";
+string Pipe.materialType18Comp1 = "StainlessSteel";
+string Pipe.materialType19Comp1 = "StainlessSteel";
+string Pipe.materialType20Comp1 = "StainlessSteel";
+string Pipe.materialType21Comp1 = "StainlessSteel";
+string Pipe.materialType22Comp1 = "StainlessSteel";
 
 // Now the offsets, defining the positions of the components relative
 // to the mother pipe
@@ -126,6 +330,28 @@ double Pipe.uOffsetType1Comp8  = 0.0;
 double Pipe.uOffsetType1Comp9  = 0.0;
 double Pipe.uOffsetType1Comp10  = 63.5;
 
+double Pipe.uOffsetType2Comp1 = 0.0;
+double Pipe.uOffsetType3Comp1 = 0.0;
+double Pipe.uOffsetType4Comp1 = 0.0;
+double Pipe.uOffsetType5Comp1 = 0.0;
+double Pipe.uOffsetType6Comp1 = 0.0;
+double Pipe.uOffsetType7Comp1 = 0.0;
+double Pipe.uOffsetType8Comp1 = 0.0;
+double Pipe.uOffsetType9Comp1 = 0.0;
+double Pipe.uOffsetType10Comp1 = 0.0;
+double Pipe.uOffsetType11Comp1 = 0.0;
+double Pipe.uOffsetType12Comp1 = 0.0;
+double Pipe.uOffsetType13Comp1 = 0.0;
+double Pipe.uOffsetType14Comp1 = 0.0;
+double Pipe.uOffsetType15Comp1 = 0.0;
+double Pipe.uOffsetType16Comp1 = 0.0;
+double Pipe.uOffsetType17Comp1 = 0.0;
+double Pipe.uOffsetType18Comp1 = 0.0;
+double Pipe.uOffsetType19Comp1 = 0.0;
+double Pipe.uOffsetType20Comp1 = 0.0;
+double Pipe.uOffsetType21Comp1 = 0.0;
+double Pipe.uOffsetType22Comp1 = 0.0;
+
 // in v
 double Pipe.vOffsetType1Comp1  = 0.0;
 double Pipe.vOffsetType1Comp2  = 0.0;
@@ -138,30 +364,27 @@ double Pipe.vOffsetType1Comp8  = -58.74;
 double Pipe.vOffsetType1Comp9  = 0.0;
 double Pipe.vOffsetType1Comp10  = 0.0;
 
-// // And for the test only pipe bend
-// double Pipe.uOffsetType2Comp1  = 0.0;
-// double Pipe.uOffsetType2Comp2  = 0.0;
-// double Pipe.uOffsetType2Comp3  = 60.0;
-// double Pipe.uOffsetType2Comp4  = -60.0;
-// double Pipe.uOffsetType2Comp5  = 60.0;
-// double Pipe.uOffsetType2Comp6  = -60.0;
-// double Pipe.uOffsetType2Comp7  = 0.0;
-// double Pipe.uOffsetType2Comp8  = 0.0;
-// double Pipe.uOffsetType2Comp9  = 0.0;
-// double Pipe.uOffsetType2Comp10  = 63.5;
-
-// // in v
-// double Pipe.vOffsetType2Comp1  = 0.0;
-// double Pipe.vOffsetType2Comp2  = 0.0;
-// double Pipe.vOffsetType2Comp3  = -58.74;
-// double Pipe.vOffsetType2Comp4  = -58.74;
-// double Pipe.vOffsetType2Comp5  = 58.74;
-// double Pipe.vOffsetType2Comp6  = 58.74;
-// double Pipe.vOffsetType2Comp7  = 55.56;
-// double Pipe.vOffsetType2Comp8  = -58.74;
-// double Pipe.vOffsetType2Comp9  = 0.0;
-// double Pipe.vOffsetType2Comp10  = 0.0;
-
+double Pipe.vOffsetType2Comp1 = 0.0;
+double Pipe.vOffsetType3Comp1 = 0.0;
+double Pipe.vOffsetType4Comp1 = 0.0;
+double Pipe.vOffsetType5Comp1 = 0.0;
+double Pipe.vOffsetType6Comp1 = 0.0;
+double Pipe.vOffsetType7Comp1 = 0.0;
+double Pipe.vOffsetType8Comp1 = 0.0;
+double Pipe.vOffsetType9Comp1 = 0.0;
+double Pipe.vOffsetType10Comp1 = 0.0;
+double Pipe.vOffsetType11Comp1 = 0.0;
+double Pipe.vOffsetType12Comp1 = 0.0;
+double Pipe.vOffsetType13Comp1 = 0.0;
+double Pipe.vOffsetType14Comp1 = 0.0;
+double Pipe.vOffsetType15Comp1 = 0.0;
+double Pipe.vOffsetType16Comp1 = 0.0;
+double Pipe.vOffsetType17Comp1 = 0.0;
+double Pipe.vOffsetType18Comp1 = 0.0;
+double Pipe.vOffsetType19Comp1 = 0.0;
+double Pipe.vOffsetType20Comp1 = 0.0;
+double Pipe.vOffsetType21Comp1 = 0.0;
+double Pipe.vOffsetType22Comp1 = 0.0;
 
 // Global stuff
 

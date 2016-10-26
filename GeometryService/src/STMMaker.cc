@@ -277,8 +277,10 @@ namespace mu2e {
       stm._pSTMShieldPipeParams = std::unique_ptr<ShieldPipe>
         (new ShieldPipe(_shieldBuild,
                         _shieldRadiusIn,
+                        _shieldLinerWidth,
                         _shieldRadiusOut,
                         _shieldPipeHalfLength,
+                        _shieldMaterialLiner,
                         _shieldMaterial,
                         _shieldUpStrSpace,
                         _shieldDnStrSpace,
@@ -417,8 +419,10 @@ namespace mu2e {
     
     _shieldBuild                = _config.getBool(  "stm.shield.build",false);
     _shieldRadiusIn             = _config.getDouble("stm.shield.rIn");
+    _shieldLinerWidth           = _config.getDouble("stm.shield.widthLiner");
     _shieldRadiusOut            = _config.getDouble("stm.shield.rOut");
     _shieldPipeHalfLength       = _config.getDouble("stm.shield.pipe.halfLength");
+    _shieldMaterialLiner        = _config.getString("stm.shield.materialLiner");
     _shieldMaterial             = _config.getString("stm.shield.material"); 
     _shieldUpStrSpace           = _config.getDouble("stm.shield.UpStrSpace");
     _shieldDnStrSpace           = _config.getDouble("stm.shield.DnStrSpace");

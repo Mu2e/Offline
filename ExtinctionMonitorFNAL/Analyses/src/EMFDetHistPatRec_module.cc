@@ -15,7 +15,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 
 #include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"

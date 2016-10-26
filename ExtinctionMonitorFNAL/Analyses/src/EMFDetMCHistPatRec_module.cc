@@ -12,8 +12,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/FindMany.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Persistency/Common/FindMany.h"
+#include "canvas/Utilities/InputTag.h"
 
 #include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"

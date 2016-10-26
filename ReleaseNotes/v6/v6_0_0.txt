@@ -1,0 +1,8 @@
+           Release notes for Mu2e Offline software, v6_0_0
+
+2) kutschke Oct 3, 2016
+   Mu2eG4/inc/CaloReadoutCardSD.hh
+     - fix header path for ProductID, which is now in canvas, not art.
+
+1) kutschke Oct 3, 2016
+   Merge remotes/origin/art-v2-migration-branch

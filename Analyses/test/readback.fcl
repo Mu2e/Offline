@@ -66,9 +66,15 @@ physics :
       maxFullPrint           : 201
     }
 
-  } 
+    readStrawHits: {
+      module_type      : ReadStrawHit
+      makerModuleLabel : makeSH
+      diagLevel        : 3
+      maxFullPrint     : 100
+    }
+  }
 
-  e1 : [checkhits]
+  e1 : [checkhits, readStrawHits]
 
   end_paths      : [e1]
 

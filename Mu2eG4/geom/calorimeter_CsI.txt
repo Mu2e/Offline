@@ -7,9 +7,20 @@ double calorimeter.caloMotherZ1                 = 13220;
 
 double calorimeter.calorimeterZFront            = 11843.0;     // front posiiton of calo section in mu2e coordinates 
                                                                // MUST be at least 1 mm larger than caloMotherZ0 for placing virtual detectors
-string calorimeter.calorimeterFillMaterial      = "DSVacuum";
-string calorimeter.calorimeterDiskMaterial      = "DSVacuum";
-double calorimeter.caseThickness                = 0;  // mm
+string calorimeter.vacuumMaterial               = "DSVacuum";
+string calorimeter.fillMaterial                 = "DSVacuum";
+string calorimeter.diskMaterial                 = "DSVacuum";
+double calorimeter.caseThickness                = 0;  
+
+// This is some filler material added for trapped particle studies as a place-
+// holder for material yet to come.
+bool   calorimeter.useFiller			= false;
+string calorimeter.fillerMaterialName		= "Polyethylene096";
+double calorimeter.fillerInnerRadius		= 400.0; // mm
+double calorimeter.fillerOuterRadius		= 410.0; // mm
+double calorimeter.fillerFullLength		= 400.0; // mm
+double calorimeter.fillerZCenter		= 13010.0; // mm (Cannot cut into disk or MBS)
+
 
 
 
@@ -21,36 +32,37 @@ vector<double> calorimeter.diskRotationAngle   = {0.,0.};     //rad
 vector<double> calorimeter.diskSeparation      = {0.,700.};   //mm  separation w.r.t first disk
 
 
-// Readout crates
-int calorimeter.calorimeterCrateVersion        = 2; 
-string calorimeter.calorimeterCrateMaterial    = "Electronics"; //"G10"  calorimeter electronics material. NEED to refine
-double calorimeter.calorimeterCrateInnerRadius = 680;       
-double calorimeter.calorimeterCrateOuterRadius = 810;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
-double calorimeter.calorimeterCrateExtendLen   = 180.0;  
-// get needed volume for material
-
 
 //crystal characteristics
 int    calorimeter.crystalNumEdges             = 4;
 bool   calorimeter.crystalShift                = true;
 double calorimeter.crystalHalfTrans            = 17.0;
-double calorimeter.crystalHexsize              = 17.0;  //mm  half distance across flats of hex crystal
+double calorimeter.crystalHexsize              = 17.0;  //mm  half distance across flats of crystal
 double calorimeter.crystalHalfLong             = 100.0;
 string calorimeter.crystalMaterial             = "G4_CESIUM_IODIDE"; 
-
+double calorimeter.refractiveIndex             = 1.8;
 string calorimeter.crystalWrapper              = "Polyethylene092";
 double calorimeter.crystalWrapperThickness     = 0.150; //mm
-double calorimeter.crystalShellThickness       = 0.0 ;
 
-string calorimeter.crystalReadoutMaterial      = "G4_Si";
-double calorimeter.crystalReadoutHalfTrans     = 5;
-double calorimeter.crystalReadoutHalfThickness = 1;
-int    calorimeter.crystalReadoutChannelCount  = 2; // APDs per crystal
 
-double calorimeter.crystalNonUniformity        = 0.0; // -2 to 2  (A(ro)-A(front))/A(middle)
-double calorimeter.timeGap                     = 5.0;  // ns
-double calorimeter.electronDepositionAPD       = 1000.0; // MeV
-double calorimeter.electronMinEnergyAPD        = 0.1;    // MeV
+//crystal readouts
+string calorimeter.readoutMaterial             = "G4_Si";
+double calorimeter.readoutHalfTrans            = 5;
+double calorimeter.readoutHalfThickness        = 1;
+int    calorimeter.readoutPerCrystal           = 2; 
+
+double calorimeter.readoutElecHalfX            = 0.75;
+double calorimeter.readoutElecHalfY            = 15;
+double calorimeter.readoutElecHalfZ            = 27;
+
+
+// Electronics crate
+int calorimeter.crateVersion        = 2; 
+string calorimeter.crateMaterial    = "Electronics"; 
+double calorimeter.crateInnerRadius = 670;       
+double calorimeter.crateOuterRadius = 815;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
+double calorimeter.crateExtendLen   = 175.0;  
+
 
 
 // calibrtion system
@@ -68,7 +80,7 @@ bool calorimeter.calorimeterVisible           = false;
 bool calorimeter.calorimeterSolid             = false;
 bool calorimeter.boxVisible                   = true;
 bool calorimeter.boxSolid                     = false;
-bool calorimeter.caseVisible                  = false;
+bool calorimeter.caseVisible                  = true;
 bool calorimeter.caseSolid                    = false;
 bool calorimeter.pipeVisible                  = false;
 bool calorimeter.pipeSolid                    = false;
@@ -77,4 +89,6 @@ bool calorimeter.crystalSolid                 = false;
 bool calorimeter.absorberBoxVisible           = false;
 bool calorimeter.absorberBoxSolid             = false;
 
-int  calorimeter.verbosityLevel               = 0;
+int  calorimeter.verbosityLevel               = 1;
+
+

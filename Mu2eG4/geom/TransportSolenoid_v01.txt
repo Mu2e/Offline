@@ -113,8 +113,10 @@ string pbar.coll1Out.material1Name = "G4_C";
 double pbar.coll1Out.halfLength = 100.0;
 double pbar.coll1Out.rIn = 120.0;
 double pbar.coll1Out.z = -3154.0;
-double pbar.coll1Out.phiBegin = 200.0;
-double pbar.coll1Out.phiDelta = 140.0;
+//double pbar.coll1Out.phiBegin = 200.0; // Old, incorrect values 
+//double pbar.coll1Out.phiDelta = 140.0;
+double pbar.coll1Out.phiBegin = 210.0;
+double pbar.coll1Out.phiDelta = 120.0;
 
 // A test piece pbar absorber in front of TS3 collimator 1
 bool   pbar.coll31In.build = false;

@@ -1,3 +1,4 @@
+
 #include "TH1F.h"
 #include "TF1.h"
 #include "TTree.h"
@@ -18,9 +19,11 @@
 #include "THStack.h"
 
 // basic parameters
-class KalFit {  
+class KalFit {
   public:
   TTree* _tdiag;
+  TCanvas* rcan;
+  TCanvas* acan;
   double tdlow;
   double tdhigh;
   double t0min,t0max;
@@ -107,7 +110,7 @@ void KalFit::Cuts() {
   livegate = TCut(ctext);
   snprintf(ctext,80,"mcent.td>%4.3f&&mcent.td<%4.3f",tdlow-0.02,tdhigh+0.02);
   tpitch = TCut(ctext);
-  snprintf(ctext,80,"mcmid.t0%1695>%f",500.);
+  snprintf(ctext,80,"mcmid.t0%%1695>%f",500.);
   tt0 = TCut(ctext);
   tmom = TCut("mcent.mom>100.0");
   snprintf(ctext,80,"mc.ndigigood>=%i",minnhits);
@@ -227,7 +230,7 @@ void KalFit::Hit() {
   TH1F* arpull = new TH1F("arpull","residual pull",100,-10,10);
   TH1F* irpull = new TH1F("irpull","residual pull",100,-10,10);
 
-  
+
 //  THStack* resid = new THStack("resid","TrkStrawHit Residual;mm");
   aresid->SetFillColor(kRed);
   aresid->SetStats(1);
@@ -249,14 +252,14 @@ void KalFit::Hit() {
 
   _tdiag->Project("irpull","_resid/_residerr",goodhit+!active);
   _tdiag->Project("arpull","_resid/_residerr",goodhit+active);
-  
+
   dcan->Clear();
   dcan->Divide(2,1);
   dcan->cd(1);
   dres->Fit("gaus","","",-0.3,0.18);
   dcan->cd(2);
   dpull->Fit("gaus","","",-3,1.5);
-  
+
 
   TLegend* rleg = new TLegend(0.1,0.8,0.4,0.9);
   rleg->AddEntry(aresid,"Active Hits","f");
@@ -395,9 +398,9 @@ void KalFit::T2d(){
   TCanvas* t2dcan = new TCanvas("t2dcan","t2dcan",1200,800);
   t2dcan->Divide(2,2);
   t2dcan->cd(1);
-  rt2d->Draw(); 
+  rt2d->Draw();
   t2dcan->cd(2);
-  tt2d->Draw(); 
+  tt2d->Draw();
   t2dcan->cd(3);
   rt2dp->Fit("pol1","","",0,43);
   t2dcan->cd(4);
@@ -418,7 +421,7 @@ void KalFit::T2d(){
   t2drcan->cd(2);
   tt2d_2->Draw();
 
- 
+
 }
 
 void KalFit::Trk () {
@@ -437,8 +440,8 @@ void KalFit::Trk () {
   t0res->Fit("gaus");
   tcan->cd(4);
   t0pull->Fit("gaus");
-  
-  
+
+
   TCanvas* pcan = new TCanvas("pullcan","pullcan",1200,800);
   TH1F* d0pull = new TH1F("d0pull","d0 pull",100,-10,10);
   TH1F* p0pull = new TH1F("p0pull","#phi0 pull",100,-10,10);
@@ -488,7 +491,7 @@ void KalFit::AccPlots() {
 
   TH1F* nmc = new TH1F("nmc","N Straw Hits from CE;N straws",81,-0.5,80.5);
   TH1F* mcmom = new TH1F("mcmom","CE true momentum at tracker;CE momentum (MeV/c)",57,49,106);
-  
+
   TH1F* fitcon = new TH1F("fitcon","log_{10} fit consistency",101,-8,0);
   TH1F* momerr = new TH1F("momerr","Fit momentum error;momentum error (MeV/c)",100,0,0.5);
   TH1F* t0err = new TH1F("t0err","Fit t_{0} error; t_{0} error (ns)",100,0,2.0);
@@ -503,7 +506,7 @@ void KalFit::AccPlots() {
 
   _tdiag->Project("nmc","mc.ngood");
   _tdiag->Project("mcmom","mcent.mom",tnhits);
-  
+
   _tdiag->Project("fitcon","log10(fit.con)",reco+tnhits+tmom);
   _tdiag->Project("momerr","fit.momerr",reco+tnhits+tmom);
   _tdiag->Project("t0err","t0err",reco+tnhits+tmom);
@@ -564,7 +567,7 @@ void KalFit::AccPlots() {
   t0errcut->SetLineStyle(2);
   t0errcut->SetLineWidth(2);
   t0errcut->Draw();
-  
+
   fcan->cd(4);
   momerr->Draw();
   TLine* momerrcut = new TLine(maxmomerr[icut],0.0,maxmomerr[icut],momerr->GetMaximum());
@@ -595,7 +598,7 @@ void KalFit::AccPlots() {
   tdcut_h->SetLineStyle(2);
   tdcut_h->SetLineWidth(2);
   tdcut_h->Draw();
-  
+
   tcan->cd(3);
   d0->Draw();
   TLine* d0cut = new TLine(105,0.0,105,d0->GetMaximum());
@@ -611,7 +614,7 @@ void KalFit::AccPlots() {
   rmaxcut->SetLineStyle(2);
   rmaxcut->SetLineWidth(2);
   rmaxcut->Draw();
- 
+
   TCanvas* mcan = new TCanvas("mcan","momentum",800,600);
   mcan->Divide(1,1);
   mcan->cd(1);
@@ -626,13 +629,14 @@ void KalFit::AccPlots() {
   fitmomcut_h->SetLineStyle(2);
   fitmomcut_h->SetLineWidth(2);
   fitmomcut_h->Draw();
- 
 
-} 
+
+}
 
 void KalFit::Acc(int ngen) {
   unsigned nbins(8);
   double bmax = nbins-0.5;
+
   TH1F* acc = new TH1F("acc","CE Acceptance #times Efficiency;;Cummulative a#times#epsilon",nbins,-0.5,bmax);
   TH1F* racc = new TH1F("racc","CE Acceptance #times Efficiency;;Relative a#times#epsilon",nbins,-0.5,bmax);
 //  acc->Sumw2();
@@ -657,7 +661,7 @@ void KalFit::Acc(int ngen) {
   racc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
   racc->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection");
   racc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
-  
+
   ibin = 0;
   const char* binnames[11] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0"};
   _tdiag->Project("acc",binnames[ibin++],"evtwt");
@@ -692,7 +696,7 @@ void KalFit::Acc(int ngen) {
   racc->GetYaxis()->SetTitleSize(0.05);
 
   gStyle->SetPaintTextFormat("5.4f");
-  TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
+  acan = new TCanvas("acan","Acceptance",1200,800);
   acan->Clear();
   acan->Divide(1,2);
   acan->cd(1);
@@ -749,8 +753,8 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
 //  _tdiag->Project("effnorm","mcent.mom");
   _tdiag->Project("effnorm","mcent.mom","evtwt"*mcsel);
- 
-  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
+
+  rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
   rcan->Clear();
   unsigned ncan = maxcut-mincut+1;
   if(ncan==1)
@@ -795,15 +799,15 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
     TLine* zero = new TLine(0.0,0.0,0.0,momres[ires]->GetBinContent(momres[ires]->GetMaximumBin()));
     zero->SetLineStyle(2);
     zero->Draw();
-  
+
     double keff = momres[ires]->GetEntries()/effnorm->GetEntries();
-//    TPaveText* ttext = new TPaveText(0.1,0.75,0.4,0.9,"NDC");  
+//    TPaveText* ttext = new TPaveText(0.1,0.75,0.4,0.9,"NDC");
 //    ttext->AddText("Truth Cuts");
 //    ttext->AddText(tnhits.GetTitle());
 //    ttext->AddText(tmom.GetTitle());
 //    ttext->AddText(tpitch.GetTitle());
 //    ttext->Draw();
- 
+
     TPaveText* rtext = new TPaveText(0.1,0.5,0.4,0.9,"NDC");
     rtext->AddText("Reco Cuts");
     char line[40];
@@ -826,7 +830,7 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
     sprintf(line,"Eff=%4.4f",keff);
     rtext->AddText(line);
     rtext->Draw();
- 
+
   }
   rcan->cd(0);
 }
@@ -891,7 +895,7 @@ void KalFit::Res2(int ires) {
 
 void KalFit::Ambig(int acut) {
   gStyle->SetOptStat(1111);
-  
+
   TCut ghit("tshmc._rel==0");
   TCut delta("tshmc._rel>0");
   TCut bkg("tshmc._rel<0");
@@ -950,7 +954,7 @@ void KalFit::Ambig(int acut) {
   TH1F* rdgr = new TH1F(*rdg);
   TH1F* rdnr = new TH1F(*rdn);
   TH1F* rdbr = new TH1F(*rdb);
-  rdgr->Divide(rda);  
+  rdgr->Divide(rda);
   rdnr->Divide(rda);
   rdbr->Divide(rda);
 
@@ -1216,10 +1220,10 @@ void KalFit::Error(){
     TCut final = (reco+mcsel);
     TH1F* momres1 = new TH1F("momres1","momentum resolution at start of tracker;MeV/c",151,-2.5,2.5);
     TH1F* momres2 = new TH1F("momres2","momentum resolution at start of tracker;MeV/c",151,-2.5,2.5);
-   
+
     _tdiag->Project("momres1","fit.mom-mcent.mom",final+"fit.momerr<0.15");
     _tdiag->Project("momres2","fit.mom-mcent.mom",final+"fit.momerr>0.2");
-    
+
     double integral = momres1->GetEntries()*momres1->GetBinWidth(1);
     sgau->SetParameters(integral,0.0,momres1->GetRMS(),momres1->GetRMS(),0.01,2*momres1->GetRMS(),2*momres1->GetRMS());
     sgau->SetParLimits(5,1.0*momres1->GetRMS(),1.0);
@@ -1445,7 +1449,7 @@ void KalFit::Mom() {
   double tmean = cemomte->GetFunction("gaus")->GetParameter(1);
   double tshift = tmean - emax;
   cout << "True shift = " << tshift << endl;
- 
+
   TArrow* tfsa = new TArrow(tmean,tmax,emax,tmax,0.02,"<-|");
   tfsa->SetLineColor(kBlue);
   tfsa->SetLineWidth(2);
@@ -1460,7 +1464,7 @@ void KalFit::Mom() {
   rfsa->SetLineWidth(2);
   rfsa->SetFillColor(kRed);
   rfsa->Draw();
-  
+
   TLegend* cemleg = new TLegend(0.1,0.6,0.6,0.9);
   cemleg->AddEntry(cemomtp,"CE Momentum at Production","F");
   char line[50];
@@ -1479,11 +1483,11 @@ void KalFit::Rad() {
   TH1F* rmaxm = new TH1F("rmaxm","Track R_{max}, B *= 0.95;d_{0}+2/(0.95#times#omega) (mm)",100,300,900);
   rmax->SetStats(0);
   rmaxm->SetStats(0);
-  
+
   _tdiag->Project("rmax","d0+2.0/om",reco+tnhits+tmom+goodfit[icut]+livegate);
   _tdiag->Project("rmaxm","d0+2.0/(0.95*om)",reco+tnhits+tmom+goodfit[icut]+livegate);
 
-  
+
   TCanvas* radcan = new TCanvas("radcan","radcan",800,800);
   radcan->Divide(1,2);
   radcan->cd(1);
@@ -1635,7 +1639,7 @@ void KalFit::MomTails(int iwt) {
   TH1F* tmchitfrac = new TH1F("tmchitfrac","MC Hit Fraction",100,0.5,1.01);
   cmchitfrac->SetLineColor(kBlue);
   tmchitfrac->SetLineColor(kRed);
-  
+
   _tdiag->Project("cnact","nactive",core*weight);
   _tdiag->Project("tnact","nactive",tail*weight);
 
@@ -1696,7 +1700,7 @@ void KalFit::MomTails(int iwt) {
   tmcdp->Scale(factor);
   tmcdt0->Scale(factor);
   tmchitfrac->Scale(factor);
-  
+
   TLegend* leg = new TLegend(0.5,0.7,0.9,0.9);
   leg->AddEntry(cnact,"Res. Core","L");
   leg->AddEntry(tnact,"Res. Tail (scaled)","L");
@@ -1825,7 +1829,7 @@ KalFit::StrawMat() {
   hifracres->SetStats(0);
   lofracres->SetLineColor(kRed);
   hifracres->SetLineColor(kBlack);
-  
+
   TH1F* hitdoca = new TH1F("hitdoca","DOCA to Wire;DOCA (mm)",100,-0.05,2.65);
   TH1F* adddoca = new TH1F("adddoca","DOCA to Wire;DOCA (mm)",100,-0.05,2.65);
   hitdoca->SetStats(0);
@@ -1879,4 +1883,3 @@ KalFit::StrawMat() {
   mleg->AddEntry(hifracres,"N_{added}/N>0.1","L");
   mleg->Draw();
 }
-

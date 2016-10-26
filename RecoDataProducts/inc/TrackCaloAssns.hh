@@ -4,8 +4,8 @@
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "art/Persistency/Common/Ptr.h"
-#include "art/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Assns.h"
 
 namespace mu2e {
   class TrackCaloMatchInfo {
