@@ -8,7 +8,7 @@ process_name: TrackCaloMatchProd
 
 source: { 
   module_type: EmptyEvent
-  maxEvents : 1000
+  maxEvents : 50000
  }
 
 services : {

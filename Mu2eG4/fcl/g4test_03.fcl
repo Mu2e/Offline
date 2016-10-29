@@ -50,18 +50,14 @@ physics : {
     protonTimeMap        : { module_type : GenerateProtonTimes }
     muonTimeMap          : { module_type : GenerateMuonLife }
 
-    # Form StrawHits (SH).
-    makeSD               : @local::makeSD
-    makeSH               : @local::makeSHfromSD
+    @table::Tracking.producers
 
-    # Calorimeter hitmaker and reco
-    
-    CaloShowerStepFromStepPt : @local::CaloShowerStepFromStepPt
-    CaloShowerFromShowerStep : @local::CaloShowerFromShowerStep
-    CaloDigisFromShower      : @local::CaloDigisFromShower
-    CaloDigiUnpackFromDigis  : @local::CaloDigiUnpackFromDigis
-    CaloRecoDigiFromUnpacked : @local::CaloRecoDigiFromUnpacked
-    CaloCrystalHitsFromHits  : @local::CaloCrystalHitsFromHits
+    # Calorimeter sequence    
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
+    @table::CaloDigiMC.producersMC
+    @table::CaloCluster.producers
+    @table::CaloCluster.producersMC	
  
     # Save state of the random number engines.
     randomsaver : @local::randomsaver
@@ -84,19 +80,35 @@ physics : {
       maxFullPrint           : 201
     }
 
-    readStrawHits: {
-      module_type      : ReadStrawHit
-      makerModuleLabel : makeSH
-      diagLevel        : 3
-      maxFullPrint     : 100
-    }
 
+    CaloExample: {
+        module_type                : CaloExample
+        g4ModuleLabel              : g4run
+        generatorModuleLabel       : generate
+        simParticleTag             : g4run
+        caloCrystalModuleLabel     : CaloCrystalHitsFromHits
+        caloClusterModuleLabel     : CaloClusterFromProtoCluster
+        caloClusterTruthModuleLabel: CaloClusterTruthMatch
+        caloHitTruthModuleLabel    : CaloHitsTruthMatch
+        virtualDetectorName        : virtualdetector
+        stepPointMCLabel           : g4run
+        trkPatRecModuleLabel       : TRFDownstreameMinus
+        fitparticle                : 11
+        fitdirection               : 0 
+        TimeOffsets                :  { inputs : [ "protonTimeMap", "muonTimeMap" ] } 
+    }
 
   }
 
-  p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSD, makeSH, CaloShowerStepFromStepPt, CaloShowerFromShowerStep, 
-        CaloDigisFromShower, CaloDigiUnpackFromDigis, CaloRecoDigiFromUnpacked, CaloCrystalHitsFromHits, randomsaver]
-  e1 : [readGens, checkhits, readStrawHits, outfile]
+  p1 : [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.DigiSim,
+	 @sequence::Tracking.TPRDownstreameMinus,
+         @sequence::CaloDigiMC.DigiSim,
+         @sequence::CaloReco.Reco,	 
+	 @sequence::CaloDigiMC.TruthMatch,
+	 @sequence::CaloCluster.Reco, 
+	 @sequence::CaloCluster.TruthMatch,
+	 randomsaver]
+  e1 : [readGens, checkhits, CaloExample, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
