@@ -5,7 +5,7 @@
 #
 
 if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
-    echo "You should be sourcing this file, not executing it."
+    echo "You should be sourcing this file, not executing it." >&2
     exit 1
 fi
 
@@ -21,23 +21,23 @@ EOF
 fi
 
 if [ "${MU2E}" = '' ];then
-    echo "The environment variable MU2E is not set."
-    echo "You must setup the local Mu2e environment before sourcing this script."
+    echo "The environment variable MU2E is not set." >&2
+    echo "You must setup the local Mu2e environment before sourcing this script." >&2
     return 1
 fi
 
 # Protect against multiple invocation.
 if [ "${MU2E_BASE_RELEASE}" != '' ];then
-    echo "A base release has already been setup.  Hope that's OK."
-    echo "The base release is: " ${MU2E_BASE_RELEASE}
+    echo "A base release has already been setup.  Hope that's OK." >&2
+    echo "The base release is: " ${MU2E_BASE_RELEASE} >&2
     return 1
 fi
 
 # A very ill-defined state.  We have  a satellite release but no base release!
 if [ "${MU2E_SATELLITE_RELEASE}" != '' ];then
-    echo "ERROR: A satellite release has already been setup but there is no base release."
-    echo "Suggest that you log out, log in and restart from the beginning."
-    echo "The satellite release is: " ${MU2E_SATELLITE_RELEASE}
+    echo "ERROR: A satellite release has already been setup but there is no base release." >&2
+    echo "Suggest that you log out, log in and restart from the beginning." >&2
+    echo "The satellite release is: " ${MU2E_SATELLITE_RELEASE} >&2
     return 1
 fi
 
