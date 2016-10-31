@@ -79,14 +79,14 @@ setup -B geant4 v4_10_2_p02b -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIE
 # Other libraries we need.
 setup -B heppdt v3_04_01e -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_01_04  -q${MU2E_UPS_QUALIFIERS}
-setup xerces_c  v3_1_3    -q${MU2E_UPS_QUALIFIERS}
-setup tbb       v4_4_3a   -q${MU2E_UPS_QUALIFIERS}
+setup -B xerces_c  v3_1_3    -q${MU2E_UPS_QUALIFIERS}
+setup -B tbb       v4_4_3a   -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_5_0
 
 # The debugger
-setup gdb v7_10_1
+setup -B gdb v7_10_1
 
 # Search path for fcl files
 export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
