@@ -69,6 +69,9 @@ fi
 # Setup the framework and its dependent products
 setup -B art v2_04_00a -q${MU2E_UPS_QUALIFIERS}
 
+# root6 needs a path to include files to prevent some runtime warnings
+export ROOT_INCLUDE_PATH=`dropit -s -p$ROOT_INCLUDE_PATH $MU2E_BASE_RELEASE`
+
 # The interface to SAM - conflicts with ifdhc from the grid runtime environment
 #setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
 
@@ -101,10 +104,3 @@ fi
 # Environment variables used by the test build system.
 export PACKAGE_SOURCE=${MU2E_BASE_RELEASE}
 export BUILD_BASE=${MU2E_BASE_RELEASE}
-
-# Tell SConstruct where to find helpers.py
-if [ "${PYTHONPATH}" = '' ];then
- export PYTHONPATH=${PACKAGE_SOURCE}/python
-else
- export PYTHONPATH=${PYTHONPATH}:${PACKAGE_SOURCE}/python
-fi
