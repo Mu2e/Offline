@@ -586,7 +586,7 @@ namespace mu2e {
       cout << "Enter a character to go to the next event" << endl;
       cout << "q quits, s enters G4 interactive session, g enters a GUI session (if available)"
            << endl;
-      cout << "Once in G4 interactive session to quit it type \"exit\" "
+      cout << "Once in G4 interactive session to quit it type \"exit\" or use File menu"
            << endl;
 
       string userinput;
@@ -630,7 +630,7 @@ namespace mu2e {
               _UI->ApplyCommand( command );
 
               cout << "In GUI interactive session use the \"Start Here\" menu "
-                   << "followed by the Viewer commands"
+                   << "followed by the Viewer commands or redisplaying event"
                    << endl;
 
             } else {
