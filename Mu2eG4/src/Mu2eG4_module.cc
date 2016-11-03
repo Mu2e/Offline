@@ -629,8 +629,8 @@ namespace mu2e {
               command += visPath(_visGUIMacro);
               _UI->ApplyCommand( command );
 
-              cout << "In GUI interactive session use the \"Draw Current Event\" "
-                   << "button in the Vis menu"
+              cout << "In GUI interactive session use the \"Start Here\" menu "
+                   << "followed by the Viewer commands"
                    << endl;
 
             } else {
