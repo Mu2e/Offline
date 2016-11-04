@@ -49,12 +49,14 @@ namespace mu2e
       void fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const;
       void fillStrawHitDiag();
       bool findData(const art::Event& e);
-      // event object labels
-      string _shLabel;
-      string _shpLabel;
-      string _shfLabel;
-      string _stLabel;
-      std::string _mcdigislabel;
+      // control flags
+      bool _mcdiag;
+  // data tags
+      art::InputTag _shTag;
+      art::InputTag _shpTag;
+      art::InputTag _shfTag;
+      art::InputTag _stTag;
+      art::InputTag _mcdigisTag;
       // cache of event objects
       const StrawHitCollection* _shcol;
       const StrawHitPositionCollection* _shpcol;
@@ -91,11 +93,12 @@ namespace mu2e
 
   StrawHitDiag::StrawHitDiag(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
-    _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
-    _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
-    _shfLabel(pset.get<string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
-    _stLabel(pset.get<string>("StereoHitCollectionLabel","MakeStereoHits")),
-    _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")),
+    _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
+    _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
+    _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
+    _shfTag(pset.get<string>("StrawHitFlagCollectionTag","PosHelixFinder")),
+    _stTag(pset.get<string>("StereoHitCollectionTag","MakeStereoHits")),
+    _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {}
 
@@ -166,30 +169,29 @@ namespace mu2e
     }
   }
 
-  bool StrawHitDiag::findData(const art::Event& evt){
+   bool StrawHitDiag::findData(const art::Event& evt){
     _shcol = 0;
     _shpcol = 0;
     _shfcol = 0;
     _stcol = 0;
     _mcdigis = 0;
-
-    art::Handle<mu2e::StrawHitCollection> strawhitsH;
-    if(evt.getByLabel(_shLabel,strawhitsH))
-      _shcol = strawhitsH.product();
-    art::Handle<mu2e::StrawHitPositionCollection> shposH;
-    if(evt.getByLabel(_shpLabel,shposH))
-      _shpcol = shposH.product();
-    art::Handle<mu2e::StrawHitFlagCollection> shflagH;
-    if(evt.getByLabel(_shfLabel,shflagH))
-      _shfcol = shflagH.product();
-    art::Handle<mu2e::StereoHitCollection> stH;
-    if(evt.getByLabel(_stLabel,stH))
-      _stcol = stH.product();
-    art::Handle<StrawDigiMCCollection> mcdigisHandle;
-    if(evt.getByLabel(_mcdigislabel,"StrawHitMC",mcdigisHandle))
-      _mcdigis = mcdigisHandle.product();
-// don't require stereo hits or MC
-    return _shcol != 0 && _shpcol != 0&& _shfcol != 0;
+// nb: getValidHandle does the protection (exception) on handle validity so I don't have to
+    auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
+    _shcol = shH.product();
+    auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
+    _shpcol = shpH.product();
+    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+    _shfcol = shfH.product();
+    auto hsH = evt.getValidHandle<StereoHitCollection>(_stTag);
+    _stcol = hsH.product();
+    if(_mcdiag){
+      auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
+      _mcdigis = mcdH.product();
+      // update time offsets
+      _toff.updateMap(evt);
+    }
+    return _shcol != 0 && _shpcol != 0 && _shfcol != 0 
+      && (_mcdigis != 0  || !_mcdiag);
   }
 
   void StrawHitDiag::beginJob(){
