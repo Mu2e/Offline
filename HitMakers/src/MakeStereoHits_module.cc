@@ -148,6 +148,7 @@ namespace mu2e {
     
     // copy the input StrawHitPosition collection
     unique_ptr<StrawHitPositionCollection> shpcol(new StrawHitPositionCollection(*_shpcol));
+ 
     // create the stereo hits
     StereoHitCollection stereohits;
     size_t nsh = _shcol->size();
@@ -168,6 +169,8 @@ namespace mu2e {
     if(_debug > 2) cout << "Built TrackerStations size = " << stax.size() << endl;
   
     for(size_t ish=0;ish<nsh;++ish){
+    // temporary hack: unset the esel bit
+      shpcol->at(ish)._flag.clear(StrawHitFlag::energysel);
     // select hits based on flag
       if(shpcol->at(ish).flag().hasAllProperties(_shsel)
 	  && (!shpcol->at(ish).flag().hasAnyProperty(_shmask)) ){
