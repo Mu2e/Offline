@@ -16,9 +16,9 @@
 //    to G4, which takes ownership of the physics list object.
 //    The G4 interface requires a bare pointer.
 //
-// 3) There are two special names:
+// 3) There are same special names:
 //     Minimal - the original Mu2e minimal physics list
-//     N02     - the physics list copied from the G4 novice example N02.
+//     *_MU2E* Mu2e custom lists
 //
 // 4) All other names are presumed to be valid names for physics lists that
 //    can be created by the PhysListFactory.  At this writing ( April 2010),
@@ -97,99 +97,84 @@ namespace mu2e{
   template<class Config>
   G4VUserPhysicsList* physicsListDecider (const Config& config){
 
-    G4VUserPhysicsList* physicsList(0);
+    G4VModularPhysicsList* tmpPL(nullptr);
 
     const string name = getPhysicsListName(config);
 
-    // Two special cases
+    // special cases
     if ( name  == "Minimal" ) {
-      physicsList = dynamic_cast<G4VUserPhysicsList*>(new MinimalPhysicsList );
+      tmpPL = new MinimalPhysicsList;
     }
 
 #if G4VERSION<4099
     else if ( name == "QGSP" ){
-      G4VModularPhysicsList* tmp = new QGSP();
-      tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
-      physicsList = tmp;
+      tmpPL = new QGSP();
     }
 #endif
 
     else if ( name == "QGSP_BERT_MU2E00" ){
-      G4VModularPhysicsList* tmp = new QGSP_BERT_MU2E00();
-      tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
+      tmpPL = new QGSP_BERT_MU2E00();
       mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified";
       G4cout << "Warning: This Mu2e Physics List has not been certified" << G4endl;
-      physicsList = tmp;
     }
 
     else if ( name == "QGSP_BERT_HP_MU2E00" ){
-      G4VModularPhysicsList* tmp = new TQGSP_BERT_HP_MU2E00<G4VModularPhysicsList,Config>(config);
+      tmpPL = new TQGSP_BERT_HP_MU2E00<G4VModularPhysicsList,Config>(config);
       mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified";
       G4cout << "Warning: This Mu2e Physics List has not been certified" << G4endl;
-      tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
-      physicsList = tmp;
     }
 
     else if ( name == "Shielding_MU2E00" ){
-      G4VModularPhysicsList* tmp = new Shielding_MU2E00();
+      tmpPL = new Shielding_MU2E00();
 #if G4VERSION>4099
       mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
       G4cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << G4endl;
 #endif
-      tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
-      physicsList = tmp;
     }
 
     else if ( name == "Shielding_MU2E01" ){
-      G4VModularPhysicsList* tmp = new TShielding_MU2E01<G4VModularPhysicsList,Config>(config);
+      tmpPL = new TShielding_MU2E01<G4VModularPhysicsList,Config>(config);
 #if G4VERSION>4099
       mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
       cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
 #endif
-      tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
-      physicsList = tmp;
     }
 
     else if ( name == "Shielding_MU2E02" ){
-      G4VModularPhysicsList* tmp = new TShielding_MU2E02<G4VModularPhysicsList,Config>(config);
+      tmpPL = new TShielding_MU2E02<G4VModularPhysicsList,Config>(config);
 #if G4VERSION>4099
       mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
       cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
 #endif
-      tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
-      physicsList = tmp;
     }
 
     else if ( name == "FTFP_BERT_PBAR_MU2E02" ){
-      G4VModularPhysicsList* tmp = new TFTFP_BERT_PBAR_MU2E02<G4VModularPhysicsList>;
+      tmpPL = new TFTFP_BERT_PBAR_MU2E02<G4VModularPhysicsList>;
 #if G4VERSION>4099
       mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
       cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
 #endif
-      tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
-      physicsList = tmp;
     }
 
     // General case
     else {
       G4PhysListFactory physListFactory;
-      G4VModularPhysicsList* tmp = physListFactory.GetReferencePhysList(name);
+      tmpPL = physListFactory.GetReferencePhysList(name);
 
-      // The modular physics list takes ownership of the StepLimiterPhysConstructor.
-      tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
-
-      physicsList = tmp;
     }
 
-    if ( !physicsList ){
+    if ( !tmpPL ){
       throw cet::exception("G4CONTROL")
         << "Unable to load physics list named: "
         << name
         << "\n";
     }
 
+    // The modular physics list takes ownership of the StepLimiterPhysConstructor.
+    if ( name != "Minimal" ) tmpPL->RegisterPhysics( new StepLimiterPhysConstructor() );
+
     if (turnOffRadioactiveDecay(config)) {
-      (dynamic_cast<G4VModularPhysicsList*>(physicsList))->RemovePhysics("G4RadioactiveDecay");
+      tmpPL->RemovePhysics("G4RadioactiveDecay");
     }
 
     // Muon Spin and Radiative decays plus pion muons with spin
@@ -202,11 +187,10 @@ namespace mu2e{
         throw cet::exception("BADINPUT")<<" DecayMuonsWithSpin requires G4ClassicalRK4WSpin stepper\n";
       }
 
-      (dynamic_cast<G4VModularPhysicsList*>(physicsList))->
-        RegisterPhysics( new DecayMuonsWithSpin(getDiagLevel(config)));
+      tmpPL-> RegisterPhysics( new DecayMuonsWithSpin(getDiagLevel(config)));
     }
 
-    return physicsList;
+    return dynamic_cast<G4VUserPhysicsList*>(tmpPL);
 
   }
 
