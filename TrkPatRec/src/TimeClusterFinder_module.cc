@@ -167,10 +167,9 @@ namespace mu2e {
     // set # bins for time spectrum plot
     unsigned nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
     _timespec = TH1F("timespec","time spectrum",nbins,_tmin,_tmax);
-    // Tell the framework what we make.
+    // Tell the framework what we make
     produces<TimeClusterCollection>();
     produces<StrawHitFlagCollection>();
-
   }
 
   void TimeClusterFinder::beginJob(){
