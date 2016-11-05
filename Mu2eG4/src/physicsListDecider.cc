@@ -37,6 +37,7 @@
 #include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
+#include "Mu2eG4/inc/setMinimumRangeCut.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -189,6 +190,8 @@ namespace mu2e{
 
       tmpPL-> RegisterPhysics( new DecayMuonsWithSpin(getDiagLevel(config)));
     }
+
+    setMinimumRangeCut(config,tmpPL);
 
     return dynamic_cast<G4VUserPhysicsList*>(tmpPL);
 

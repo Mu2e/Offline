@@ -11,12 +11,14 @@
 
 namespace fhicl { class ParameterSet; }
 
+class G4VModularPhysicsList;
+
 namespace mu2e{
 
   class SimpleConfig;
 
-  void setMinimumRangeCut( SimpleConfig const& config );
-  void setMinimumRangeCut(const fhicl::ParameterSet& pset);
+  void setMinimumRangeCut( SimpleConfig const& config, G4VModularPhysicsList* mPL );
+  void setMinimumRangeCut(const fhicl::ParameterSet& pset, G4VModularPhysicsList* mPL);
 
 }  // end namespace mu2e
 
