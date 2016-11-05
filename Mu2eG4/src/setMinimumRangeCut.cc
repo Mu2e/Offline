@@ -12,33 +12,27 @@
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "G4UImanager.hh"
-
-#include <string>
-#include <sstream>
+#include "G4VModularPhysicsList.hh"
 
 namespace mu2e{
 
-  void setMinimumRangeCut(double minRangeCut){
-    std::ostringstream out;
-    out << "/run/setCut " << minRangeCut << " mm ";
-    G4UImanager* UI = G4UImanager::GetUIpointer();
-    UI->ApplyCommand(out.str().c_str());
+  void setMinimumRangeCut(double minRangeCut,G4VModularPhysicsList* mPL ){
     mf::LogInfo("GEOM")
       << "Setting minRange cut to " << minRangeCut << " mm\n";
+    mPL->SetDefaultCutValue(minRangeCut);
   }
 
-  void setMinimumRangeCut( SimpleConfig const& config ){
+  void setMinimumRangeCut( SimpleConfig const& config, G4VModularPhysicsList* mPL ){
     // If this parameter is absent, leave the default from G4 unchanged.
     std::string name("g4.minRangeCut");
     if ( config.hasName(name) ){
       double minRangeCut = config.getDouble(name);
-      setMinimumRangeCut(minRangeCut);
+      setMinimumRangeCut(minRangeCut, mPL);
     }
   }
 
-  void setMinimumRangeCut(const fhicl::ParameterSet& pset){
-    setMinimumRangeCut(pset.get<double>("physics.minRangeCut"));
+  void setMinimumRangeCut(const fhicl::ParameterSet& pset, G4VModularPhysicsList* mPL){
+    setMinimumRangeCut(pset.get<double>("physics.minRangeCut"), mPL);
   }
 
 }  // end namespace mu2e

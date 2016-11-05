@@ -30,7 +30,7 @@ namespace mu2e{
     switchDecayOff(config);
 
     // If requested, change the minimum range cut.
-    setMinimumRangeCut(config);
+    //    setMinimumRangeCut(config); moved to physicsListDecider
   }
 
   template void postG4InitializeTasks(const SimpleConfig&);
