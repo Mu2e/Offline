@@ -14,7 +14,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-// conditions
+// utilities
+#include "GeneralUtilities/inc/Angles.hh"
 /// data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -31,6 +32,11 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
+// boost
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics.hpp>
+#include <boost/accumulators/statistics/median.hpp>
 // C++
 #include <iostream>
 #include <fstream>
@@ -45,6 +51,7 @@ using namespace std;
 using CLHEP::Hep3Vector;
 using CLHEP::HepVector;
 using CLHEP::HepSymMatrix;
+using namespace boost::accumulators;
 
 namespace mu2e 
 {
@@ -58,10 +65,12 @@ namespace mu2e
     unsigned                           _iev;
 
     // configuration parameters
-    int                                _diag,_debug;
-    int                                _printfreq;
-    bool				_saveall;
-    unsigned				_maxniter;
+    int                                 _diag,_debug;
+    int                                 _printfreq;
+    bool				_prefilter; // prefilter hits based on sector
+    double				_maxphisep; // maximum separation in global azimuth of hits
+    bool				_saveall; // write out all helices regardless of fit success
+    unsigned				_maxniter;  // maximum # of iterations over outlier filtering + fitting
     double				_cradres; // average center resolution along center position (mm)
     double				_cperpres; // average center resolution perp to center position (mm)
     double				_radres; // average radial resolution for circle fit (mm)
@@ -89,11 +98,15 @@ namespace mu2e
 
     // robust helix fitter
     RobustHelixFit                     _hfit;
+    bool			      _parcor; // correct the parameters
+    double _rccorr[2], _rcorr[2]; // corrections for center radius and radius
 
     // helper functions
     bool findData           (const art::Event& e);
+    void prefilterHits(HelixSeed& hseed); // rough filtering based on hits being in 1/2 the detector
     bool filterHits(HelixSeed& hseed); // return value tells if any hits changed state
     void updateT0(HelixSeed& hseed); // update T0 value based on current good hits
+    void correctParameters(RobustHelix& helix);// correct the helix parameters to MC truth using linear relations and correlations
  
   };
 
@@ -101,6 +114,8 @@ namespace mu2e
     _diag        (pset.get<int>("diagLevel",0)),
     _debug       (pset.get<int>("debugLevel",0)),
     _printfreq   (pset.get<int>("printFrequency",101)),
+    _prefilter   (pset.get<bool>("PrefilterHits",true)),
+    _maxphisep(pset.get<double>("MaxPhiHitSeparation",1.0)),
     _saveall     (pset.get<bool>("SaveAllHelices",false)),
     _maxniter    (pset.get<unsigned>("MaxIterations",0)), // iterations over outlier removal
     _cradres	 (pset.get<double>("CenterRadialResolution",12.0)),
@@ -116,8 +131,16 @@ namespace mu2e
     _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
     _trackseed   (pset.get<string>("HelixSeedCollectionLabel","TimeClusterFinder")),
     _psel        (pset.get<std::vector<std::string> >("HitSelectionBits")),
-    _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet()))
+    _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet())),
+    _parcor      (pset.get<bool>("CorrectHelixParameters",false))
   {
+    _rccorr[0] = pset.get<double>("CenterRadiusOffset",118.0); // mm
+    _rccorr[1] = pset.get<double>("CenterRadiusSlope",0.57); // RC_reco = _rccorr[0] + _rccorr[1]*RC_MC
+    _rcorr[0] = pset.get<double>("RadiusOffset",74.0); // mm
+    _rcorr[1] = pset.get<double>("RadiusSlope",0.73); // R_reco = _rcorr[0] + _rcorr[1]*R_MC
+
+
+
     produces<HelixSeedCollection>();
   }
 
@@ -152,6 +175,8 @@ namespace mu2e
 	hhit._flag.clear(StrawHitFlag::resolvedphi);
 	hseed._hhits.push_back(hhit);
       }
+      // prefilter hits
+      if(_prefilter)prefilterHits(hseed);
       // iteratively fit the helix and filter outliers in space and time
       unsigned niter(0);
       bool changed(true);
@@ -164,6 +189,9 @@ namespace mu2e
       if(niter < _maxniter)hseed._status.merge(TrkFitFlag::helixConverged);
       // final test
       if((hseed._status.hasAllProperties(TrkFitFlag::helixOK) && _hfit.helicity() == hseed._helix.helicity()) || _saveall) {
+// correct the parameters if requested
+	if(_parcor)correctParameters(hseed._helix);
+// save this helix
 	outseeds->push_back(hseed);
 	if(_debug > 1) cout << "Found helix with fit \n" << hseed._helix << endl;
       } else if (_debug > 1) cout << "Found helix without fit \n" << hseed._helix << endl;
@@ -178,7 +206,7 @@ namespace mu2e
   }
 
   bool RobustHelixFinder::filterHits(HelixSeed& hseed) {
-    RobustHelix& helix = hseed. _helix;
+    RobustHelix& helix = hseed._helix;
     HelixHitCollection& hhits = hseed._hhits;
     bool changed(false);
     static StrawHitFlag outlier(StrawHitFlag::outlier);
@@ -186,6 +214,9 @@ namespace mu2e
 // loop over hits
     for(auto& hhit : hhits) {
       bool oldout = !hhit._flag.hasAnyProperty(outlier);
+      // first compare detector azimuth with the circle center
+      double hphi = hhit.pos().phi(); 
+      double dphi = fabs(Angles::deltaPhi(hphi,helix.fcent()));
       // compute spatial distance and chisquiared
       // directions
       Hep3Vector const& wdir = hhit.wdir();
@@ -211,7 +242,7 @@ namespace mu2e
 //      double dt = _shcol->at(hhit._shidx).time() - hseed._t0.t0();
       // need to add time information FIXME!
       // need to put all these variables in an MVA FIXME!!
-      if(fabs(dwire) > _maxdwire || fabs(dtrans) > _maxdtrans || chisq > _maxchisq) {
+      if(dphi > _maxphisep || fabs(dwire) > _maxdwire || fabs(dtrans) > _maxdtrans || chisq > _maxchisq) {
 	// outlier hit flag it
 	hhit._flag.merge(outlier);
       } else {
@@ -223,7 +254,6 @@ namespace mu2e
     return changed;
   }
 
-  // find the input data objects 
   bool RobustHelixFinder::findData(const art::Event& evt){
     _shcol = 0; _shfcol = 0; _shpcol = 0; _tccol = 0; 
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
@@ -238,10 +268,57 @@ namespace mu2e
     return _shcol != 0 && _shfcol != 0 && _shpcol != 0 && _tccol != 0;
   }
 
+  void RobustHelixFinder::prefilterHits(HelixSeed& hseed ) {
+    static StrawHitFlag outlier(StrawHitFlag::outlier);
+    HelixHitCollection& hhits = hseed._hhits;
+    // Iteratively use the average X and Y to define the average phi of the hits
+    bool changed(true);
+    size_t nhit = hhits.size();
+    while(changed && nhit > 0){
+      nhit = 0;
+      changed = false;
+      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx;
+      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accy;
+      for(auto const& hhit : hhits ) {
+	if(!hhit._flag.hasAnyProperty(outlier)){
+	  accx(hhit._pos.x());
+	  accy(hhit._pos.y());
+	  nhit++;
+	}
+      }
+      // compute median phi
+      double mx = extract_result<tag::median>(accx);
+      double my = extract_result<tag::median>(accy);
+      double mphi = atan2(my,mx);
+      // find the worst hit
+      double maxdphi =0.0;
+      auto worsthit = hhits.end();
+      for(auto ihit = hhits.begin(); ihit != hhits.end(); ++ihit) {
+	if(!ihit->_flag.hasAnyProperty(outlier)){
+	  double phi = ihit->pos().phi();
+	  double dphi = fabs(Angles::deltaPhi(phi,mphi));
+	  if(dphi > maxdphi){
+	    maxdphi = dphi;
+	    worsthit = ihit;
+	  }
+	}
+      }
+      if(maxdphi > _maxphisep){
+	worsthit->_flag.merge(outlier);
+	changed = true;
+      }
+    }
+  }
+
   void RobustHelixFinder::updateT0(HelixSeed& hseed) {
     // need an explicit t0 finder here to update T0 FIXME!
   }
 
+  void RobustHelixFinder::correctParameters(RobustHelix& helix) {
+  // invert the parameters, since we want the best match with truth
+    helix._radius = (helix._radius - _rcorr[0])/_rcorr[1];
+    helix._rcent = (helix._rcent - _rccorr[0])/_rccorr[1];
+  }
 }
 using mu2e::RobustHelixFinder;
 DEFINE_ART_MODULE(RobustHelixFinder);
