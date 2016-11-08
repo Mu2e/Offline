@@ -68,8 +68,6 @@ namespace mu2e
     bool goodCircle(RobustHelix const& rhel);
     bool goodFZ(RobustHelix const& rhel);
     bool goodHelix(RobustHelix const& rhel);
-    // filter out hits based on position
-    void filterSector(HelixHitCollection& hhits);
     unsigned hitCount(HelixHitCollection const& hhits) const; // count good hits
     // adjust the parameters to intersect the target (optional)
     void forceTargetInter(CLHEP::Hep3Vector& center, double& radius);
@@ -86,7 +84,6 @@ namespace mu2e
     CircleFit _cfit; // type of circle fit
     StrawHitFlag _useflag, _dontuseflag;
     unsigned _minnhit; // minimum # of hits to work with
-    double _maxphisep; // maximum separation in global azimuth of hits
     double _lambda0,_lstep,_minlambda; // parameters for AGE center determination
     unsigned _nphibins; // # of bins in histogram for phi at z intercept
     double _phifactor; // range factr for phi z intercept histogram 

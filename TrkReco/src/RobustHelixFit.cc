@@ -39,7 +39,6 @@ namespace mu2e
     _cfit(static_cast<CircleFit>(pset.get<int>("CircleFitType",median))),
     _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier"})),
     _minnhit(pset.get<unsigned>("minNHit",5)),
-    _maxphisep(pset.get<double>("MaxPhiHitSeparation",1.0)),
     _lambda0(pset.get<double>("lambda0",0.1)),
     _lstep(pset.get<double>("lstep",0.01)),
     _minlambda(pset.get<double>("minlambda",0.001)),
@@ -51,10 +50,10 @@ namespace mu2e
     _maxzsep(pset.get<double>("maxzsep",500.0)),
     _mindphi(pset.get<double>("mindphi",0.5)),
     _maxdphi(pset.get<double>("maxdphi",2.5)),
-    _mindist(pset.get<double>("mindist",50.0)),
-    _maxdist(pset.get<double>("maxdist",500.0)),
-    _rmin(pset.get<double>("minR",150.0)),
-    _rmax(pset.get<double>("maxR",400.0)),
+    _mindist(pset.get<double>("mindist",50.0)), // mm
+    _maxdist(pset.get<double>("maxdist",500.0)), // mm
+    _rmin(pset.get<double>("minR",150.0)), // mm
+    _rmax(pset.get<double>("maxR",400.0)), // mm
     _mindelta(pset.get<double>("minDelta",500.0)),
     _lmin(pset.get<double>("minAbsLambda",100.0)),
     _lmax(pset.get<double>("maxAbsLambda",400.0)),
@@ -62,9 +61,9 @@ namespace mu2e
     _stereofit(pset.get<bool>("stereofit",false)),
     _targetinit(pset.get<bool>("targetinit",true)),
     _targetinter(pset.get<bool>("targetintersect",false)),
-    _targetradius(pset.get<double>("targetradius",75.0)), // target radius: include some buffer
-    _trackerradius(pset.get<double>("trackerradius",750.0)), // tracker out radius; include some buffer
-    _rwind(pset.get<double>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix
+    _targetradius(pset.get<double>("targetradius",75.0)), // target radius: include some buffer (mm)
+    _trackerradius(pset.get<double>("trackerradius",750.0)), // tracker out radius; include some buffer (mm)
+    _rwind(pset.get<double>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix (mm)
     _helicity(pset.get<int>("Helicity",Helicity::unknown))
   {
     if(_helicity._value == Helicity::unknown){
@@ -87,10 +86,7 @@ namespace mu2e
     hseed._status.clear(TrkFitFlag::circleOK);
     hseed._status.clear(TrkFitFlag::phizOK);
     hseed._status.clear(TrkFitFlag::helixOK);
-    // gross outlier removal on init
-    if(!hseed._status.hasAllProperties(TrkFitFlag::hitsOK))
-      filterSector(hseed._hhits);
-    // count what's left
+    // check we have enough hits
     if(hitCount(hseed._hhits) >= _minnhit){
       hseed._status.merge(TrkFitFlag::hitsOK);
       // solve for the circle parameters
@@ -543,45 +539,6 @@ namespace mu2e
   void RobustHelixFit::initPhi(HelixHit& hhit, RobustHelix const& rhel) const {
   // ray from the circle center to the point
     hhit._phi = Hep3Vector(hhit._pos - rhel.center()).phi();
-  }
-
-  void RobustHelixFit::filterSector(HelixHitCollection& hhits) {
-    // Iteratively use the average X and Y to define the average phi of the hits
-    bool changed(true);
-    size_t nhit = hhits.size();
-    while(changed && nhit > _minnhit){
-      nhit = 0;
-      changed = false;
-      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx;
-      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accy;
-      for(auto const& hhit : hhits ) {
-	if(use(hhit)){
-	  accx(hhit._pos.x());
-	  accy(hhit._pos.y());
-	  nhit++;
-	}
-      }
-      // compute median phi
-      double mx = extract_result<tag::median>(accx);
-      double my = extract_result<tag::median>(accy);
-      double mphi = atan2(my,mx);
-      // find the worst hit
-      double maxdphi =0.0;
-      auto worsthit = hhits.end();
-      for(auto ihit = hhits.begin(); ihit != hhits.end(); ++ihit) {
-	if(use(*ihit)){
-	  double dphi = fabs(deltaPhi(ihit->pos().phi(),mphi));
-	  if(dphi > maxdphi){
-	    maxdphi = dphi;
-	    worsthit = ihit;
-	  }
-	}
-      }
-      if(maxdphi > _maxphisep){
-	setOutlier(*worsthit);
-	changed = true;
-      }
-    }
   }
 
   bool RobustHelixFit::resolvePhi(HelixHit& hhit, RobustHelix const& rhel) const {
