@@ -70,6 +70,17 @@ namespace mu2e {
      return retval;
     }
 
+    unsigned countDigis(art::Ptr<SimParticle> const& pspp, const StrawDigiMCCollection* mcdigis) {
+      unsigned retval(0);
+      for( auto mcdigi : *mcdigis ) {
+	art::Ptr<SimParticle> spp;
+	if(simParticle(spp,mcdigi) > 0 && spp == pspp) {
+	  ++retval;
+	}
+      }
+      return retval;
+    }
+
     unsigned simParticle(art::Ptr<SimParticle>& spp, StrawDigiMC const& mcdigi) {
       unsigned retval(0);
       if(mcdigi.hasTDC(StrawDigi::zero) &&
