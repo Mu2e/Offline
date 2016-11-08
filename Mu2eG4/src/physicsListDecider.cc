@@ -47,8 +47,9 @@
 #include "Mu2eG4/inc/Shielding_MU2E00.hh"
 #include "Mu2eG4/inc/Shielding_MU2E01.hh"
 #include "Mu2eG4/inc/Shielding_MU2E02.hh"
+#if G4VERSION<4099
 #include "Mu2eG4/inc/FTFP_BERT_PBAR_MU2E02.hh"
-
+#endif
 // G4 includes
 #include "G4PhysListFactory.hh"
 #include "G4VUserPhysicsList.hh"
@@ -150,9 +151,11 @@ namespace mu2e{
     }
 
     else if ( name == "FTFP_BERT_PBAR_MU2E02" ){
+#if G4VERSION<4099
       tmpPL = new TFTFP_BERT_PBAR_MU2E02<G4VModularPhysicsList>;
+#endif
 #if G4VERSION>4099
-      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
+      mf::LogError("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
       cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
 #endif
     }
