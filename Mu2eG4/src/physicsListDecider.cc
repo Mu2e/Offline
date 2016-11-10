@@ -53,6 +53,8 @@
 // G4 includes
 #include "G4PhysListFactory.hh"
 #include "G4VUserPhysicsList.hh"
+#include "G4VUserPhysicsList.hh"
+#include "G4RadioactiveDecayPhysics.hh"
 #if G4VERSION<4099
 #include "QGSP.hh"
 #endif
@@ -75,6 +77,14 @@ namespace mu2e{
 
     bool turnOffRadioactiveDecay(const fhicl::ParameterSet& pset) {
       return pset.get<bool>("physics.turnOffRadioactiveDecay",false);
+    }
+
+    bool turnOnRadioactiveDecay(const SimpleConfig& config) {
+      return config.getBool("g4.turnOnRadioactiveDecay",false);
+    }
+
+    bool turnOnRadioactiveDecay(const fhicl::ParameterSet& pset) {
+      return pset.get<bool>("physics.turnOnRadioactiveDecay",false);
     }
 
     int getDiagLevel(const SimpleConfig& config) {
@@ -179,6 +189,16 @@ namespace mu2e{
 
     if (turnOffRadioactiveDecay(config)) {
       tmpPL->RemovePhysics("G4RadioactiveDecay");
+    }
+
+    if ( turnOffRadioactiveDecay(config) && turnOnRadioactiveDecay(config) ) {
+      mf::LogError("Config") << "Inconsistent config";
+      G4cout << "Error: turnOnRadioactiveDecay & turnOffRadioactiveDecay on" << G4endl;
+      throw cet::exception("BADINPUT")<<" decide on turnOn/OffRadioactiveDecay\n";
+    }
+
+    if (turnOnRadioactiveDecay(config)) {
+      tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(getDiagLevel(config)));
     }
 
     // Muon Spin and Radiative decays plus pion muons with spin
