@@ -33,6 +33,9 @@
 //      History: first implementation, Maxim Komogorov, 1-Jul-1998
 //               redesign  Gunter Folger, August/September 2001
 // -----------------------------------------------------------------------------
+
+#if G4VERSION<4099
+
 #include "Mu2eG4/inc/PBARVLongitudinalStringDecay.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
@@ -641,3 +644,4 @@ void PBARVLongitudinalStringDecay::SetStringTensionParameter(G4double aValue)// 
 }	
 //**************************************************************************************
 
+#endif

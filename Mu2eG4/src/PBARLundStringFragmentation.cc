@@ -33,6 +33,9 @@
 //      History: first implementation, Maxim Komogorov, 10-Jul-1998
 // Modified: KLG added Zhengyun's pbar related modifications (on the top of 9.6.p04)
 // -----------------------------------------------------------------------------
+
+#if G4VERSION<4099
+
 #include "Mu2eG4/inc/PBARLundStringFragmentation.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
@@ -1371,3 +1374,4 @@ G4int PBARLundStringFragmentation::SampleState(void)
 	return indexPosition;
 }
 
+#endif

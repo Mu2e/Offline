@@ -26,6 +26,8 @@
 // Historic fragment from M.Komogorov; clean-up still necessary @@@
 // Modified: KLG added Zhengyun's pbar related modifications (on the top of 9.6.p04)
 
+#if G4VERSION<4099
+
 #include "Mu2eG4/inc/PBARExcitedStringDecay.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4KineticTrack.hh"
@@ -249,3 +251,5 @@ G4bool PBARExcitedStringDecay::EnergyAndMomentumCorrector
 
     return success;
   }
+
+#endif
