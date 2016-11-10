@@ -36,7 +36,7 @@ G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
                '-DG4VIS_USE_HEPREPFILE', '-DG4VIS_USE_RAYTRACER',
                '-DG4VIS_USE_VRMLFILE',   '-DG4VIS_USE_ASCIITREE',
                '-DG4VIS_USE_GAGTREE',    '-DG4VIS_USE',
-               '-DG4VERSION='+g4_version,'-DG4MULTITHREADED'
+               '-DG4VERSION='+g4_version
             ]
 
 # Compiler switches if we want to build G4 with OPENGL and possibly Qt
