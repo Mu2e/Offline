@@ -20,11 +20,12 @@
 
 class HelixDiag  {
   public:
-    HelixDiag(TTree* hdiag,TCut* mcsel=0) : _hdiag(hdiag), _helixOK("helixOK"), _mchelixOK("mchelixOK"),
+    HelixDiag(TTree* hdiag) : _hdiag(hdiag), _helixOK("helixOK"), _mchelixOK("mchelixOK"),
     _outlier("hh._outlier"), _stereo("hh._stereo"), _tdiv("hh._tdiv"),
     _tdivonly("hh._tdiv && !hh._stereo"), _resphi("hh._resphi"), _nowire("!(hh._stereo||hh._tdiv)"),
-    _crcan(0), _cpcan(0), _rcan(0), _fzcan(0), _corrcan(0), _hpcan1(0), _hpcan2(0), _hdcan(0)
-    { if(mcsel != 0)_mcsel = *mcsel;}
+    _thit("hhmc._rel==0"),_bkghit("hhmc._rel!=0"),
+    _crcan(0), _cpcan(0), _rcan(0), _fzcan(0), _corrcan(0), _hpcan1(0), _hpcan2(0), _hdcan(0), _t0can(0)
+    { }
 
     void CenterRes();
     void CenterPos();
@@ -33,10 +34,10 @@ class HelixDiag  {
     void Correlations();
     void HitPos();
     void HitDist();
+    void time();
     void save(const char* suffix=".png");
 
     TTree* _hdiag;
-    TCut _mcsel;
     TCut _helixOK;
     TCut _mchelixOK;
     TCut _outlier;
@@ -45,8 +46,10 @@ class HelixDiag  {
     TCut _tdivonly;
     TCut _resphi;
     TCut _nowire;
+    TCut _thit;
+    TCut _bkghit;
 
-    TCanvas *_crcan, *_cpcan, *_rcan, *_fzcan, *_corrcan, *_hpcan1, *_hpcan2, *_hdcan;
+    TCanvas *_crcan, *_cpcan, *_rcan, *_fzcan, *_corrcan, *_hpcan1, *_hpcan2, *_hdcan, *_t0can;
 };
 
 void HelixDiag::CenterRes() {
@@ -55,10 +58,10 @@ void HelixDiag::CenterRes() {
   TH2F* cfcomp = new TH2F("cfcomp","Reco vs true Center #Phi;MC Center #phi;Reco Center #phi",50,-3.15,3.15,50,-3.15,3.15);
   TH1F* cfres = new TH1F("cfres","Center Radius #Phi Resolution;#Delta #phi",100,-0.4,0.4);
 
-  _hdiag->Project("crcomp","rhel._rcent:mch._rcent",_helixOK&&_mcsel&&_mchelixOK);
-  _hdiag->Project("crres","rhel._rcent-mch._rcent",_helixOK&&_mcsel&&_mchelixOK);
-  _hdiag->Project("cfcomp","rhel._fcent:mch._fcent",_helixOK&&_mcsel&&_mchelixOK);
-  _hdiag->Project("cfres","rhel._fcent-mch._fcent",_helixOK&&_mcsel&&_mchelixOK);
+  _hdiag->Project("crcomp","rhel._rcent:mch._rcent",_helixOK&&_mchelixOK);
+  _hdiag->Project("crres","rhel._rcent-mch._rcent",_helixOK&&_mchelixOK);
+  _hdiag->Project("cfcomp","rhel._fcent:mch._fcent",_helixOK&&_mchelixOK);
+  _hdiag->Project("cfres","rhel._fcent-mch._fcent",_helixOK&&_mchelixOK);
 
   crcomp->FitSlicesY(0,0,-1,10);
   TH1D *crcomp_1 = (TH1D*)gDirectory->Get("crcomp_1");
@@ -91,14 +94,14 @@ void HelixDiag::CenterRes() {
 }
 
 void HelixDiag::CenterPos() {
-  TH2F* rcpos = new TH2F("rcpos","Reco Center Position; x(mm) y (mm)",50,-450.0,450.0,50,-450.0,450.0);
-  TH2F* mccpos = new TH2F("mccpos","MC Center Position; x(mm) y (mm)",50,-450.0,450.0,50,-450.0,450.0);
-  TH2F* xcomp = new TH2F("xcomp","Reco vs true Center x;Reco Center x (mm);MC Center x (mm)",50,-450.0,450.0,50,-450.0,450.0);
-  TH2F* ycomp = new TH2F("ycomp","Reco vs true Center y;Reco Center y (mm);MC Center y (mm)",50,-450.0,450.0,50,-450.0,450.0);
-  _hdiag->Project("rcpos","rhel._rcent*sin(rhel._fcent):rhel._rcent*cos(rhel._fcent)",_helixOK&&_mcsel&&_mchelixOK);
-  _hdiag->Project("mccpos","mch._rcent*sin(mch._fcent):mch._rcent*cos(mch._fcent)",_helixOK&&_mcsel&&_mchelixOK);
-  _hdiag->Project("xcomp","rhel._rcent*cos(rhel._fcent):mch._rcent*cos(mch._fcent)",_helixOK&&_mcsel&&_mchelixOK);
-  _hdiag->Project("ycomp","rhel._rcent*sin(rhel._fcent):mch._rcent*sin(mch._fcent)",_helixOK&&_mcsel&&_mchelixOK);
+  TH2F* rcpos = new TH2F("rcpos","Reco Center Position; x(mm); y (mm)",50,-450.0,450.0,50,-450.0,450.0);
+  TH2F* mccpos = new TH2F("mccpos","MC Center Position; x(mm); y (mm)",50,-450.0,450.0,50,-450.0,450.0);
+  TH2F* xcomp = new TH2F("xcomp","Reco vs true Center x;MC Center x (mm);Reco Center x (mm)",50,-450.0,450.0,50,-450.0,450.0);
+  TH2F* ycomp = new TH2F("ycomp","Reco vs true Center y;MC Center y (mm);Reco Center y (mm)",50,-450.0,450.0,50,-450.0,450.0);
+  _hdiag->Project("rcpos","rhel._rcent*sin(rhel._fcent):rhel._rcent*cos(rhel._fcent)",_helixOK&&_mchelixOK);
+  _hdiag->Project("mccpos","mch._rcent*sin(mch._fcent):mch._rcent*cos(mch._fcent)",_helixOK&&_mchelixOK);
+  _hdiag->Project("xcomp","rhel._rcent*cos(rhel._fcent):mch._rcent*cos(mch._fcent)",_helixOK&&_mchelixOK);
+  _hdiag->Project("ycomp","rhel._rcent*sin(rhel._fcent):mch._rcent*sin(mch._fcent)",_helixOK&&_mchelixOK);
 
   _cpcan = new TCanvas("cpcan","Center Position",800,800);
   _cpcan->Divide(2,2);
@@ -115,8 +118,8 @@ void HelixDiag::CenterPos() {
 void HelixDiag::Radius() {
   TH2F* rcomp = new TH2F("rcomp","Reco vs true Radius;MC radius (mm); Reco radius (mm)",50,200.0,350.0,50,200.0,350.0);
   TH1F* rres = new TH1F("rres","Radius resolution;reco - MC radius (mm)",100,-100,100);
-  _hdiag->Project("rcomp","rhel._radius:mch._radius",_helixOK&&_mcsel&&_mchelixOK);
-  _hdiag->Project("rres","rhel._radius-mch._radius",_helixOK&&_mcsel&&_mchelixOK);
+  _hdiag->Project("rcomp","rhel._radius:mch._radius",_helixOK&&_mchelixOK);
+  _hdiag->Project("rres","rhel._radius-mch._radius",_helixOK&&_mchelixOK);
   
   rcomp->FitSlicesY(0,0,-1,10);
   TH1D *rcomp_1 = (TH1D*)gDirectory->Get("rcomp_1");
@@ -152,10 +155,10 @@ void HelixDiag::PhiZ() {
   TH2F* fcomp = new TH2F("fcomp","Reco vs true #phiz0;MC #phiz0 (rad);Reco #fz0 (rad)",50,-3.15,3.15,50,-3.15,3.15);
   TH1F* fres = new TH1F("fres","#phiz0 resolution;Reco - MC fz0 (rad)",100,-0.4,0.4);
 
-  _hdiag->Project("lcomp","rhel._lambda:mch._lambda",_helixOK&&_mcsel&&_mchelixOK);
-  _hdiag->Project("lres","rhel._lambda-mch._lambda",_helixOK&&_mcsel&&_mchelixOK);
-  _hdiag->Project("fcomp","rhel._fz0:mch._fz0",_helixOK&&_mcsel&&_mchelixOK);
-  _hdiag->Project("fres","rhel._fz0-mch._fz0",_helixOK&&_mcsel&&_mchelixOK);
+  _hdiag->Project("lcomp","rhel._lambda:mch._lambda",_helixOK&&_mchelixOK);
+  _hdiag->Project("lres","rhel._lambda-mch._lambda",_helixOK&&_mchelixOK);
+  _hdiag->Project("fcomp","rhel._fz0:mch._fz0",_helixOK&&_mchelixOK);
+  _hdiag->Project("fres","rhel._fz0-mch._fz0",_helixOK&&_mchelixOK);
 
   _fzcan = new TCanvas("fzcan","Center Position",800,800);
   _fzcan->Divide(2,2);
@@ -174,10 +177,10 @@ void HelixDiag::Correlations() {
   TH2F* crrcorr = new TH2F("crrcorr","Reco - MC Center Radius vs Radius;#Delta R (mm);#Delta RC (mm)",50,-100.0,100.0,50,-100.0,100.0);
   TH2F* crlcorr = new TH2F("crlcorr","Reco - MC Center Radius vs Lambda;#Delta #Lambda (mm);#Delta RC (mm)",50,-100.0,100.0,50,-100.0,100.0);
   TH2F* cffcorr = new TH2F("cffcorr","Reco vs true center #phi vs #phiz0;#Delta #phi_{z0};#Delta #phi_{C}",50,-0.4,0.4,50,-0.4,0.4);
-  _hdiag->Project("lrcorr","rhel._lambda-mch._lambda:rhel._radius-mch._radius",_helixOK&&_mcsel&&_mchelixOK);
-  _hdiag->Project("crrcorr","rhel._rcent-mch._rcent:rhel._radius-mch._radius",_helixOK&&_mcsel&&_mchelixOK);
-  _hdiag->Project("crlcorr","rhel._rcent-mch._rcent:rhel._lambda-mch._lambda",_helixOK&&_mcsel&&_mchelixOK);
-  _hdiag->Project("cffcorr","rhel._fcent-mch._fcent:rhel._fz0-mch._fz0",_helixOK&&_mcsel&&_mchelixOK);
+  _hdiag->Project("lrcorr","rhel._lambda-mch._lambda:rhel._radius-mch._radius",_helixOK&&_mchelixOK);
+  _hdiag->Project("crrcorr","rhel._rcent-mch._rcent:rhel._radius-mch._radius",_helixOK&&_mchelixOK);
+  _hdiag->Project("crlcorr","rhel._rcent-mch._rcent:rhel._lambda-mch._lambda",_helixOK&&_mchelixOK);
+  _hdiag->Project("cffcorr","rhel._fcent-mch._fcent:rhel._fz0-mch._fz0",_helixOK&&_mchelixOK);
 
   crrcorr->FitSlicesY(0,0,-1,10);
   TH1D *crrcorr_1 = (TH1D*)gDirectory->Get("crrcorr_1");
@@ -215,10 +218,10 @@ void HelixDiag::HitPos() {
   TH2F* hfcomp = new TH2F("hfcomp","Reco vs true Hit #phi",100,-3.15,3.15,100,-3.15,3.15);
   TH2F* hercomp = new TH2F("hercomp","Expected vs true Hit radius",100,350.0,700.0,100,350.0,700.0);
   TH2F* hefcomp = new TH2F("hefcomp","Expected vs true Hit #phi",100,-3.15,3.15,100,-3.15,3.15);
-  _hdiag->Project("hrcomp","sqrt(hh._hhpos.dy^2+hh._hhpos.dx^2):sqrt(hhmc._hpos.dy^2+hhmc._hpos.dx^2)",_helixOK&&_mcsel&&_mchelixOK&&!_outlier);
-  _hdiag->Project("hfcomp","atan2(hh._hhpos.dy,hh._hhpos.dx):atan2(hhmc._hpos.dy,hhmc._hpos.dx)",_helixOK&&_mcsel&&_mchelixOK&&!_outlier);
-  _hdiag->Project("hercomp","sqrt(hh._hpos.dy^2+hh._hpos.dx^2):sqrt(hhmc._hpos.dy^2+hhmc._hpos.dx^2)",_helixOK&&_mcsel&&_mchelixOK&&!_outlier);
-  _hdiag->Project("hefcomp","atan2(hh._hpos.dy,hh._hpos.dx):atan2(hhmc._hpos.dy,hhmc._hpos.dx)",_helixOK&&_mcsel&&_mchelixOK&&!_outlier);
+  _hdiag->Project("hrcomp","sqrt(hh._hhpos.dy^2+hh._hhpos.dx^2):sqrt(hhmc._hpos.dy^2+hhmc._hpos.dx^2)",_helixOK&&_mchelixOK&&!_outlier);
+  _hdiag->Project("hfcomp","atan2(hh._hhpos.dy,hh._hhpos.dx):atan2(hhmc._hpos.dy,hhmc._hpos.dx)",_helixOK&&_mchelixOK&&!_outlier);
+  _hdiag->Project("hercomp","sqrt(hh._hpos.dy^2+hh._hpos.dx^2):sqrt(hhmc._hpos.dy^2+hhmc._hpos.dx^2)",_helixOK&&_mchelixOK&&!_outlier);
+  _hdiag->Project("hefcomp","atan2(hh._hpos.dy,hh._hpos.dx):atan2(hhmc._hpos.dy,hhmc._hpos.dx)",_helixOK&&_mchelixOK&&!_outlier);
 
  _hpcan1 = new TCanvas("hpcan1","Hiti Positions",800,800);
   _hpcan1->Divide(2,2);
@@ -235,10 +238,10 @@ void HelixDiag::HitPos() {
   TH1F* hfres = new TH1F("hfres","Reco vs true Hit #phi",100,-0.4,0.4);
   TH1F* herres = new TH1F("herres","Expected vs true Hit radius",100,-100.0,100.0);
   TH1F* hefres = new TH1F("hefres","Expected vs true Hit #phi",100,-0.4,0.4);
-  _hdiag->Project("hrres","sqrt(hh._hhpos.dy^2+hh._hhpos.dx^2)-sqrt(hhmc._hpos.dy^2+hhmc._hpos.dx^2)",_helixOK&&_mcsel&&_mchelixOK&&!_outlier);
-  _hdiag->Project("hfres","atan2(hh._hhpos.dy,hh._hhpos.dx)-atan2(hhmc._hpos.dy,hhmc._hpos.dx)",_helixOK&&_mcsel&&_mchelixOK&&!_outlier);
-  _hdiag->Project("herres","sqrt(hh._hpos.dy^2+hh._hpos.dx^2)-sqrt(hhmc._hpos.dy^2+hhmc._hpos.dx^2)",_helixOK&&_mcsel&&_mchelixOK&&!_outlier);
-  _hdiag->Project("hefres","atan2(hh._hpos.dy,hh._hpos.dx)-atan2(hhmc._hpos.dy,hhmc._hpos.dx)",_helixOK&&_mcsel&&_mchelixOK&&!_outlier);
+  _hdiag->Project("hrres","sqrt(hh._hhpos.dy^2+hh._hhpos.dx^2)-sqrt(hhmc._hpos.dy^2+hhmc._hpos.dx^2)",_helixOK&&_mchelixOK&&!_outlier);
+  _hdiag->Project("hfres","atan2(hh._hhpos.dy,hh._hhpos.dx)-atan2(hhmc._hpos.dy,hhmc._hpos.dx)",_helixOK&&_mchelixOK&&!_outlier);
+  _hdiag->Project("herres","sqrt(hh._hpos.dy^2+hh._hpos.dx^2)-sqrt(hhmc._hpos.dy^2+hhmc._hpos.dx^2)",_helixOK&&_mchelixOK&&!_outlier);
+  _hdiag->Project("hefres","atan2(hh._hpos.dy,hh._hpos.dx)-atan2(hhmc._hpos.dy,hhmc._hpos.dx)",_helixOK&&_mchelixOK&&!_outlier);
 
  _hpcan2 = new TCanvas("hpcan2","Hit Position Resolution",800,800);
   _hpcan2->Divide(2,2);
@@ -256,68 +259,77 @@ void HelixDiag::HitPos() {
 void HelixDiag::HitDist() {
   TH1F* hdwires = new TH1F("hdwires","Hit Wire Dist to Helix Center;D_{wire} (mm)",100,-500.0,500.0);
   TH1F* hdwiret = new TH1F("hdwiret","Hit Wire Dist to Helix Center;D_{wire} (mm)",100,-500.0,500.0);
-  TH1F* hdwiren = new TH1F("hdwiren","Hit Wire Dist to Helix Center;D_{wire} (mm)",100,-500.0,500.0);
   TH1F* hdwireo = new TH1F("hdwireo","Hit Wire Dist to Helix Center;D_{wire} (mm)",100,-500.0,500.0);
-  TH1F* hdwiref = new TH1F("hdwiref","Hit Wire Dist to Helix Center;D_{wire} (mm)",100,-500.0,500.0);
   hdwires->SetLineColor(kBlue);
   hdwiret->SetLineColor(kGreen);
-  hdwiren->SetLineColor(kRed);
   hdwireo->SetLineColor(kBlack);
-  hdwiref->SetLineColor(kCyan);
   hdwires->SetStats(0);
   hdwiret->SetStats(0);
-  hdwiren->SetStats(0);
   hdwireo->SetStats(0);
-  hdwiref->SetStats(0);
-  _hdiag->Project("hdwires","hh._dwire",_helixOK&&_mcsel&&_mchelixOK&&(!_outlier)&&_stereo);
-  _hdiag->Project("hdwiret","hh._dwire",_helixOK&&_mcsel&&_mchelixOK&&(!_outlier)&&_tdivonly);
-  _hdiag->Project("hdwiren","hh._dwire",_helixOK&&_mcsel&&_mchelixOK&&(!_outlier)&&(!_tdiv)&&(!_stereo));
-  _hdiag->Project("hdwireo","hh._dwire",_helixOK&&_mcsel&&_mchelixOK&&_outlier);
-  _hdiag->Project("hdwiref","hh._dwire",!_helixOK&&_mcsel&&_mchelixOK&&!_outlier);
+  _hdiag->Project("hdwires","hh._dwire",_helixOK&&_mchelixOK&&_thit&&(!_outlier)&&_stereo);
+  _hdiag->Project("hdwiret","hh._dwire",_helixOK&&_mchelixOK&&_thit&&(!_outlier)&&_tdivonly);
+  _hdiag->Project("hdwireo","hh._dwire",_helixOK&&_mchelixOK&&_thit&&_outlier);
 
   TH1F* hdtranss = new TH1F("hdtranss","Hit Trans Dist to Helix Center;D_{trans} (mm)",100,-250.0,250.0);
   TH1F* hdtranst = new TH1F("hdtranst","Hit Trans Dist to Helix Center;D_{trans} (mm)",100,-250.0,250.0);
-  TH1F* hdtransn = new TH1F("hdtransn","Hit Trans Dist to Helix Center;D_{trans} (mm)",100,-250.0,250.0);
   TH1F* hdtranso = new TH1F("hdtranso","Hit Trans Dist to Helix Center;D_{trans} (mm)",100,-250.0,250.0);
-  TH1F* hdtransf = new TH1F("hdtransf","Hit Trans Dist to Helix Center;D_{trans} (mm)",100,-250.0,250.0);
   hdtranss->SetLineColor(kBlue);
   hdtranst->SetLineColor(kGreen);
-  hdtransn->SetLineColor(kRed);
   hdtranso->SetLineColor(kBlack);
-  hdtransf->SetLineColor(kCyan);
   hdtranss->SetStats(0);
   hdtranst->SetStats(0);
-  hdtransn->SetStats(0);
   hdtranso->SetStats(0);
-  hdtransf->SetStats(0);
-  _hdiag->Project("hdtranss","hh._dtrans",_helixOK&&_mcsel&&_mchelixOK&&(!_outlier)&&_stereo);
-  _hdiag->Project("hdtranst","hh._dtrans",_helixOK&&_mcsel&&_mchelixOK&&(!_outlier)&&_tdivonly);
-  _hdiag->Project("hdtransn","hh._dtrans",_helixOK&&_mcsel&&_mchelixOK&&(!_outlier)&&(!_tdiv)&&(!_stereo));
-  _hdiag->Project("hdtranso","hh._dtrans",_helixOK&&_mcsel&&_mchelixOK&&_outlier);
-  _hdiag->Project("hdtransf","hh._dtrans",!_helixOK&&_mcsel&&_mchelixOK&&!_outlier);
+  _hdiag->Project("hdtranss","hh._dtrans",_helixOK&&_mchelixOK&&_thit&&(!_outlier)&&_stereo);
+  _hdiag->Project("hdtranst","hh._dtrans",_helixOK&&_mchelixOK&&_thit&&(!_outlier)&&_tdivonly);
+  _hdiag->Project("hdtranso","hh._dtrans",_helixOK&&_mchelixOK&&_thit&&_outlier);
 
   TLegend* dleg = new TLegend(0.6,0.7,0.9,0.9);
   dleg->AddEntry(hdwires,"Stereo Hits","L");
   dleg->AddEntry(hdwiret,"TimeDiv Hits","L");
-  dleg->AddEntry(hdwiren,"No WireInfo Hits","L");
   dleg->AddEntry(hdwireo,"Outlier Hits","L");
-  dleg->AddEntry(hdwiref,"Failed Fit","L");
   _hdcan = new TCanvas("hdcan","Hit Dists",800,800);
   _hdcan->Divide(2,2);
   _hdcan->cd(1);
   hdwires->Draw();
   hdwiret->Draw("same");
-  hdwiren->Draw("same");
   hdwireo->Draw("same");
-  hdwiref->Draw("same");
   dleg->Draw();
   _hdcan->cd(2);
   hdtranss->Draw();
   hdtranst->Draw("same");
-  hdtransn->Draw("same");
   hdtranso->Draw("same");
-  hdtransf->Draw("same");
- 
+}
+
+void HelixDiag::time() {
+  TH1F* tct0 = new TH1F("tct0","T0 Resolution;t0_{reco}-t0_{MC} (ns)",100,-20,20);
+  TH1F* ht0 = new TH1F("ht0","T0 Resolution;t0_{reco}-t0_{MC} (ns)",100,-20,20);
+  tct0->SetLineColor(kBlue);
+  ht0->SetLineColor(kRed);
+  _hdiag->Project("tct0","tct0-mct0%1695",_helixOK&&_mchelixOK);
+  _hdiag->Project("ht0","ht0-mct0%1695",_helixOK&&_mchelixOK);
+
+  TH1F* thdt = new TH1F("thdt","Hit #Delta t;t_{hit}-t0",100,-25,75);
+  TH1F* bhdt = new TH1F("bhdt","Hit #Delta t;t_{hit}-t0",100,-25,75);
+  _hdiag->Project("thdt","hh._dt",_helixOK&&_mchelixOK&&_thit);
+  _hdiag->Project("bhdt","hh._dt",_helixOK&&_mchelixOK&&_bkghit);
+  thdt->SetLineColor(kGreen);
+  bhdt->SetLineColor(kCyan);
+
+  _t0can = new TCanvas("t0can","T0",600,600);
+  _t0can->Divide(2,2);
+  _t0can->cd(1);
+  ht0->Draw();
+  tct0->Draw("same");
+  TLegend* t0leg = new TLegend(0.1,0.6,0.3,0.9);
+  t0leg->AddEntry(tct0,"Time Cluster","L");
+  t0leg->AddEntry(ht0,"Helix","L");
+  t0leg->Draw();
+  _t0can->cd(2);
+  thdt->Draw();
+  bhdt->Draw("same");
+
+
+
 }
 
 void HelixDiag::save(const char* suffix) {
