@@ -14,6 +14,7 @@
 
 namespace mu2e {
   class CaloCluster;
+  class TimeCluster;
 
   struct HelixSeed {
 
@@ -22,12 +23,14 @@ namespace mu2e {
     RobustHelix const& helix() const { return _helix; }
     TrkFitFlag const& status() const { return _status; }
     art::Ptr<CaloCluster> const& caloCluster() const { return _caloCluster; }
+    art::Ptr<TimeCluster> const& timeCluster() const { return _timeCluster; }
 
     TrkT0	       _t0;	      // t0 for this helix
     HelixHitCollection _hhits;	      // hits potentially used for this helix
     RobustHelix        _helix;	     // robust helix created from these hits
     TrkFitFlag	       _status;      // status of processes used to create this seed
     art::Ptr<CaloCluster>    _caloCluster; // associated calorimeter cluster: can be null
+    art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
   };
 
 } // namespace mu2e
