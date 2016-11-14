@@ -34,6 +34,7 @@
 #include "RecoDataProducts/inc/HelixSeedCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
 // root
 #include "TGraph.h"
 #include "TH2F.h"
@@ -108,7 +109,7 @@ namespace mu2e {
       Bool_t _hitsOK, _circleInit, _phizInit, _circleOK, _phizOK, _helixOK, _mchelixOK;
       Float_t _mct0;
       Bool_t _circleConverged, _phizConverged, _helixConverged;
-      Float_t _ht0, _ht0err;
+      Float_t _tct0, _tct0err, _ht0, _ht0err;
       RobustHelix _rhel;
       Int_t _nhits, _nused, _nprimary, _npused, _nptot;
       Int_t _pdg, _gen, _proc;
@@ -158,6 +159,8 @@ namespace mu2e {
       _hdiag->Branch("circleConverged",&_circleConverged,"circleConverged/B");
       _hdiag->Branch("phizConverged",&_phizConverged,"phizConverged/B");
       _hdiag->Branch("helixConverged",&_helixConverged,"helixConverged/B");
+      _hdiag->Branch("tct0",&_tct0,"tct0/F");
+      _hdiag->Branch("tct0err",&_tct0err,"tct0err/F");
       _hdiag->Branch("ht0",&_ht0,"ht0/F");
       _hdiag->Branch("ht0err",&_ht0err,"ht0err/F");
       _hdiag->Branch("rhel",&_rhel);
@@ -211,6 +214,8 @@ namespace mu2e {
 	_nhits = hhits.size();
 	TrkFitFlag const& status = hseed._status;
 	_rhel = rhel;
+	_tct0 = hseed.timeCluster()->t0().t0();
+	_tct0err = hseed.timeCluster()->t0().t0Err();
 	_ht0 = hseed._t0.t0();
 	_ht0err = hseed._t0.t0Err();
 	_hitsOK = status.hasAllProperties(TrkFitFlag::hitsOK);
@@ -287,6 +292,8 @@ namespace mu2e {
 	    hhinfo._outlier = hhit._flag.hasAnyProperty(StrawHitFlag::outlier);
 	    hhinfo._stereo = hhit._flag.hasAnyProperty(StrawHitFlag::stereo);
 	    hhinfo._tdiv = hhit._flag.hasAnyProperty(StrawHitFlag::tdiv);
+	    hhinfo._delta = hhit._flag.hasAnyProperty(StrawHitFlag::delta);
+	    hhinfo._esel = hhit._flag.hasAnyProperty(StrawHitFlag::energysel);
 	    hhinfo._resphi = hhit._flag.hasAnyProperty(StrawHitFlag::resolvedphi);
 	    hhinfo._hhphi = hhit._phi;
 	    hhinfo._hhpos = hhit.pos();

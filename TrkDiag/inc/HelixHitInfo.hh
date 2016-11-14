@@ -5,7 +5,7 @@
 #include "Rtypes.h"
 namespace mu2e {
   struct HelixHitInfo {
-    Bool_t _outlier, _stereo, _tdiv, _resphi;
+    Bool_t _outlier, _stereo, _tdiv, _resphi, _delta, _esel;
     CLHEP::Hep3Vector _hhpos, _hpos;
     Float_t _hhphi, _hphi;
     Float_t _werr, _terr, _dt;
