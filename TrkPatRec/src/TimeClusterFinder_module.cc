@@ -95,7 +95,7 @@ namespace mu2e {
 
     // time spectrum parameters
     unsigned      _minnhits;
-    double        _minpeakmva, _maxpeakdt, _maxpeakdphi;
+    double        _minpeakmva, _maxpeakdt;
     double        _tmin;
     double        _tmax;
     double        _tbin;
@@ -151,7 +151,6 @@ namespace mu2e {
     _minnhits          (pset.get<unsigned>("MinNHits",10)),
     _minpeakmva        (pset.get<double>("MinTimePeakMVA",0.2)),
     _maxpeakdt         (pset.get<double>("MaxTimePeakDeltat",25.0)),
-    _maxpeakdphi       (pset.get<double>("MaxTimePeakDeltaPhi",1.0)),
     _tmin              (pset.get<double>("tmin",500.0)),
     _tmax              (pset.get<double>("tmax",1700.0)),
     _tbin              (pset.get<double>("tbin",15.0)),
@@ -380,7 +379,7 @@ namespace mu2e {
 	tacc(time,weight=wt);
 	facc(phi);
       }
-      // add cluster time.  Crude incrementatio
+      // add cluster time. 
       if(tclust._caloCluster.isNonnull()){
 	double time = _ttcalc.caloClusterTime(*tclust._caloCluster);
 	double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
@@ -389,7 +388,7 @@ namespace mu2e {
       pphi = extract_result<tag::mean>(facc);
       ptime = extract_result<tag::weighted_mean>(tacc);
     } while(tclust._strawHitIdxs.size() >= _minnhits && worstmva < _minpeakmva);
-    // final pass: hard cut on dt and dphi
+    // final pass: hard cut on dt 
     vector<size_t> toremove;
     accumulator_set<double, stats<tag::mean > > facc;
     accumulator_set<double, stats<tag::weighted_variance(lazy)>, double > terr;
@@ -401,8 +400,8 @@ namespace mu2e {
       double wt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
       double phi = _shpcol->at(ish).pos().phi();
       double rho = _shpcol->at(ish).pos().perp();
-      double dphi = Angles::deltaPhi(phi,pphi);
-      if(fabs(dt) < _maxpeakdt && fabs(dphi) < _maxpeakdphi){
+      Angles::deltaPhi(phi,pphi);
+      if(fabs(dt) < _maxpeakdt){
 	terr(_ttcalc.strawHitTime(_shcol->at(ish),_shpcol->at(ish)),weight=wt);
 	facc(phi);
 	racc(rho);
@@ -411,7 +410,7 @@ namespace mu2e {
 	toremove.push_back(ips);
       }
     }
-    // add cluster time.  Crude incrementatio
+    // add cluster time
     if(tclust._caloCluster.isNonnull()){
       double time = _ttcalc.caloClusterTime(*tclust._caloCluster);
       double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
