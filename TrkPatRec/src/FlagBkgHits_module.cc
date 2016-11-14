@@ -250,9 +250,6 @@ namespace mu2e
   void FlagBkgHits::beginRun(art::Run& ){}
 
   void FlagBkgHits::produce(art::Event& event ) {
-    // create output
-    unique_ptr<StrawHitFlagCollection> bkgfcol(new StrawHitFlagCollection);
-    _bkgfcol = bkgfcol.get();
     // event printout
     _iev=event.id().event();
     if(_debug > 0 && (_iev%_printfreq)==0)cout<<"FlagBkgHits: event="<<_iev<<endl;
@@ -260,13 +257,9 @@ namespace mu2e
     if(!findData(event)){
       throw cet::exception("RECO")<< "Missing input collection" << endl;
     }
-    // merge the input flags
-    size_t nsh = _shcol->size();
-    for(size_t ish=0;ish<nsh;++ish){
-      StrawHitFlag flag(_shfcol->at(ish));;
-      flag.merge(_shpcol->at(ish).flag());
-      bkgfcol->push_back(flag);
-    }
+    // create output flag collection, copying in input
+    unique_ptr<StrawHitFlagCollection> bkgfcol(new StrawHitFlagCollection(*_shfcol));
+    _bkgfcol = bkgfcol.get();
 // find clusters in time/phi/rho space
     std::vector<DeltaInfo> dinfo;
 // test of new straw hit clustering
