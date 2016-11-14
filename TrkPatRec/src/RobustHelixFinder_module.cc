@@ -23,6 +23,8 @@
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/HelixSeedCollection.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
+// tracking
+#include "TrkReco/inc/TrkTimeCalculator.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/TrkDef.hh"
@@ -42,6 +44,7 @@
 #include <fstream>
 #include <string>
 #include <memory>
+#include <utility>
 #include <functional>
 #include <float.h>
 #include <vector>
@@ -88,7 +91,7 @@ namespace mu2e
     std::string                        _trackseed;
 
     // hit selection
-    StrawHitFlag  _psel;
+    StrawHitFlag  _hsel, _hbkg;
 
     // cache of event objects
     const StrawHitCollection*  _shcol;
@@ -98,6 +101,7 @@ namespace mu2e
 
     // robust helix fitter
     RobustHelixFit                     _hfit;
+    TrkTimeCalculator			_ttcalc;
     bool			      _parcor; // correct the parameters
     double _rccorr[2], _rcorr[2]; // corrections for center radius and radius
 
@@ -130,8 +134,10 @@ namespace mu2e
     _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
     _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
     _trackseed   (pset.get<string>("HelixSeedCollectionLabel","TimeClusterFinder")),
-    _psel        (pset.get<std::vector<std::string> >("HitSelectionBits")),
+    _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits")),
+    _hbkg        (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet())),
+    _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
     _parcor      (pset.get<bool>("CorrectHelixParameters",false))
   {
     _rccorr[0] = pset.get<double>("CenterRadiusOffset",118.0); // mm
@@ -157,22 +163,29 @@ namespace mu2e
       throw cet::exception("RECO")<<"mu2e::RobustHelixFinder: data missing or incomplete"<< endl;
     }
 
-    for(auto const& tclust: *_tccol) {
+    for(auto itclust=_tccol->begin(); itclust != _tccol->end(); ++ itclust) {
+      auto const& tclust = *itclust;
     // build an empty HelixSeed 
       HelixSeed hseed;
       // copy in the t0 and cluster
       hseed._t0 = tclust._t0;
       hseed._caloCluster = tclust._caloCluster;
+      // create a ptr to the time cluster
+      size_t index = std::distance(_tccol->begin(),itclust);
+      auto tcH = event.getValidHandle<TimeClusterCollection>(_tcTag);
+      hseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
     // loop over hits in this time cluster and select  hits with good 3-d position information
       std::vector<StrawHitIndex> goodhits;
       for(auto const& ind : tclust._strawHitIdxs) {
-	if(_shfcol->at(ind).hasAnyProperty(_psel))
+	if(_shfcol->at(ind).hasAnyProperty(_hsel) && !_shfcol->at(ind).hasAnyProperty(_hbkg))
 	  goodhits.push_back(ind);
       }
       // create helix seed hits from the straw hit positions 
       for(auto idx : goodhits ) {
 	HelixHit hhit(_shpcol->at(idx),idx);
 	hhit._flag.clear(StrawHitFlag::resolvedphi);
+	// merge in the other flags
+	hhit._flag.merge(_shfcol->at(idx));
 	hseed._hhits.push_back(hhit);
       }
       // prefilter hits
@@ -311,11 +324,30 @@ namespace mu2e
   }
 
   void RobustHelixFinder::updateT0(HelixSeed& hseed) {
-    // need an explicit t0 finder here to update T0 FIXME!
+    static StrawHitFlag outlier(StrawHitFlag::outlier); // make this a class member FIXME!
+  // this code should be stanardized and moved to TrkTimeCalculator FIXME!
+    auto const& hhits = hseed.hits();
+    accumulator_set<double, stats<tag::weighted_variance(lazy)>, double > terr;
+    for(auto const& hhit : hhits) {
+      if(!hhit._flag.hasAnyProperty(outlier)){
+	// weight inversely by the hit time resolution
+	double wt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
+	StrawHitIndex ind = hhit.index();
+	terr(_ttcalc.strawHitTime(_shcol->at(ind),_shpcol->at(ind)),weight=wt);
+      }
+    }
+    // add cluster time 
+    if(hseed.caloCluster().isNonnull()){
+      double time = _ttcalc.caloClusterTime(*hseed.caloCluster());
+      double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(hseed.caloCluster()->sectionId()),2);
+      terr(time,weight=wt);
+    }
+    hseed._t0._t0 = extract_result<tag::weighted_mean>(terr);
+    hseed._t0._t0err = sqrt(std::max(0.0,extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
   }
 
   void RobustHelixFinder::correctParameters(RobustHelix& helix) {
-  // invert the parameters, since we want the best match with truth
+    // invert the parameters, since we want the best match with truth
     helix._radius = (helix._radius - _rcorr[0])/_rcorr[1];
     helix._rcent = (helix._rcent - _rccorr[0])/_rccorr[1];
   }
