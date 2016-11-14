@@ -68,6 +68,7 @@ namespace mu2e {
     // input event collection cache
     const StrawHitCollection*             _shcol;
     const StrawHitPositionCollection*     _shpcol;
+    const StrawHitFlagCollection*	  _shfcol;
     // Parameters
     StrawHitFlag _shsel; // flag selection
     StrawHitFlag _shmask; // flag anti-selection 
@@ -102,6 +103,7 @@ namespace mu2e {
     _debug(pset.get<int>("debugLevel",0)),
     _shTag		(pset.get<art::InputTag>("StrawHitCollection","makeSH")),
     _shpTag		(pset.get<art::InputTag>("StrawHitPositionCollection","MakeStrawHitPositions")),
+    _shfTag	       (pset.get<art::InputTag>("StrawHitFlagCollection","FSHPreStereo")),
     _shsel(pset.get<vector<string> >("StrawHitSelectionBits",vector<string>{"EnergySelection","TimeSelection"} )),
     _shmask(pset.get<vector<string> >("StrawHitMaskBits",vector<string>{} )),
     _maxDt(pset.get<double>("maxDt",40.0)), // nsec
@@ -169,11 +171,11 @@ namespace mu2e {
     if(_debug > 2) cout << "Built TrackerStations size = " << stax.size() << endl;
   
     for(size_t ish=0;ish<nsh;++ish){
-    // temporary hack: unset the esel bit
-      shpcol->at(ish)._flag.clear(StrawHitFlag::energysel);
+      // merge the flags
+      StrawHitFlag shf = _shfcol->at(ish);
+      shf.merge(shpcol->at(ish).flag());
     // select hits based on flag
-      if(shpcol->at(ish).flag().hasAllProperties(_shsel)
-	  && (!shpcol->at(ish).flag().hasAnyProperty(_shmask)) ){
+      if(shf.hasAllProperties(_shsel) && (!shf.hasAnyProperty(_shmask)) ){
 	StrawHit const& hit = _shcol->at(ish);
 	Straw const& straw = tt.getStraw(hit.strawIndex());
         size_t iplane = straw.id().getPlane();
@@ -375,11 +377,13 @@ namespace mu2e {
   }
 
   bool MakeStereoHits::findData(art::Event& evt){
-    _shcol = 0; _shpcol = 0; 
+    _shcol = 0; _shpcol = 0;  _shfcol = 0;
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol = shH.product();
     auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
     _shpcol = shpH.product();
+    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+    _shfcol = shfH.product();
     return _shcol != 0 && _shpcol != 0 && _shpcol->size() == _shcol->size();
   }
 

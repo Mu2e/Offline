@@ -78,7 +78,6 @@ namespace mu2e {
     int _printHits;
     // Name of the StrawHit collection
     string _shLabel;
-    string _shfLabel;
     //    THackData* fHackData;
   };
 
@@ -87,8 +86,7 @@ namespace mu2e {
     // Parameters
     _debugLevel(pset.get<int>("debugLevel",0)),
     _printHits(pset.get<int>("printHits",0)),
-    _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
-    _shfLabel(pset.get<string>("StrawHitFlagCollectionLabel","FSHPreStereo"))
+    _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH"))
  {
     // Tell the framework what we make.
     produces<StrawHitPositionCollection>();
@@ -145,13 +143,6 @@ namespace mu2e {
    // Handle to the conditions service
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
 
-    const StrawHitFlagCollection *_shfcol;
-    art::Handle<mu2e::StrawHitFlagCollection> shflagH;
-    if(event.getByLabel(_shfLabel,shflagH))
-      _shfcol = shflagH.product();
-    else 
-      _shfcol = 0;
-
     art::Handle<mu2e::StrawHitCollection> strawhitsH; 
     const StrawHitCollection* strawhits(0);
     if(event.getByLabel(_shLabel,strawhitsH))
@@ -180,7 +171,6 @@ namespace mu2e {
       shp._wdist = shinfo._tddist;
       shp._wres = shinfo._tdres;
       shp._tres = straw.getRadius()*invsqrt12;
-      shp._flag = _shfcol->at(ish);
 // if time division worked, flag the position accordingly
       if(shinfo._tdiv)
 	shp._flag.merge(StrawHitFlag::tdiv); 
