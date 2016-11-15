@@ -18,26 +18,28 @@
 #include "DataProducts/inc/StrawIndex.hh"
 
 namespace mu2e {
-  typedef std::list<StrawCluster> ClusterList;
-  class StrawClusterSequence {
-    public:
-// constructors
-      StrawClusterSequence();
-      StrawClusterSequence(StrawCluster const& clust);
-      StrawClusterSequence(StrawIndex const& index, StrawEnd end);
-      StrawClusterSequence(StrawClusterSequence const& other);
-      StrawClusterSequence& operator =(StrawClusterSequence const& other);
-      // accessors: just hand over the list!
-      ClusterList const& clustList() const { return _clist; }
-      // insert a new clust, in time order.
-      ClusterList::iterator insert(StrawCluster const& clust);
-      StrawIndex strawIndex() const { return _strawIndex; }
-      StrawEnd strawEnd() const { return _end; }
-    private:
-      StrawIndex _strawIndex;
-      StrawEnd _end;
-      ClusterList _clist; // time-ordered sequence of clusts
-  };
+  namespace TrackerMC {
+    typedef std::list<StrawCluster> ClusterList;
+    class StrawClusterSequence {
+      public:
+	// constructors
+	StrawClusterSequence();
+	StrawClusterSequence(StrawCluster const& clust);
+	StrawClusterSequence(StrawIndex const& index, StrawEnd end);
+	StrawClusterSequence(StrawClusterSequence const& other);
+	StrawClusterSequence& operator =(StrawClusterSequence const& other);
+	// accessors: just hand over the list!
+	ClusterList const& clustList() const { return _clist; }
+	// insert a new clust, in time order.
+	ClusterList::iterator insert(StrawCluster const& clust);
+	StrawIndex strawIndex() const { return _strawIndex; }
+	StrawEnd strawEnd() const { return _end; }
+      private:
+	StrawIndex _strawIndex;
+	StrawEnd _end;
+	ClusterList _clist; // time-ordered sequence of clusts
+    };
+  }
 }
 #endif
 

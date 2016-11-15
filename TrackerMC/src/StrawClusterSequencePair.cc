@@ -11,38 +11,39 @@
 #include "TrackerMC/inc/StrawClusterSequencePair.hh"
 #include "cetlib/exception.h"
 
-namespace mu2e {  
-  StrawClusterSequencePair::StrawClusterSequencePair() {}
-  StrawClusterSequencePair::StrawClusterSequencePair(StrawIndex index) : 
-    _plus(index,StrawEnd::plus),
-    _minus(index,StrawEnd::minus)
-  {}
+namespace mu2e {
+  namespace TrackerMC {
+    StrawClusterSequencePair::StrawClusterSequencePair() {}
+    StrawClusterSequencePair::StrawClusterSequencePair(StrawIndex index) : 
+      _plus(index,StrawEnd::plus),
+      _minus(index,StrawEnd::minus)
+    {}
 
-  StrawClusterSequencePair::StrawClusterSequencePair(StrawClusterSequencePair const& other) :
-  _plus(other._plus), _minus(other._minus)
-  {}
+    StrawClusterSequencePair::StrawClusterSequencePair(StrawClusterSequencePair const& other) :
+      _plus(other._plus), _minus(other._minus)
+    {}
 
-  StrawClusterSequencePair& StrawClusterSequencePair::operator =(StrawClusterSequencePair const& other) {
-    if(&other != this){
-      _plus = other._plus;
-      _minus = other._minus;
+    StrawClusterSequencePair& StrawClusterSequencePair::operator =(StrawClusterSequencePair const& other) {
+      if(&other != this){
+	_plus = other._plus;
+	_minus = other._minus;
+      }
+      return *this;
     }
-    return *this;
-  }
 
-  void StrawClusterSequencePair::insert(StrawClusterPair const& hpair) {
-    if(hpair[0].strawEnd() != StrawEnd::minus || 
-	hpair[1].strawEnd() != StrawEnd::plus ||
-	hpair[0].strawIndex() != hpair[1].strawIndex())	
+    void StrawClusterSequencePair::insert(StrawClusterPair const& hpair) {
+      if(hpair[0].strawEnd() != StrawEnd::minus || 
+	  hpair[1].strawEnd() != StrawEnd::plus ||
+	  hpair[0].strawIndex() != hpair[1].strawIndex())	
 
-      throw cet::exception("SIM") 
-	<< "mu2e::StrawClusterSequence: tried to add inconsistent clust pair to sequence";
+	throw cet::exception("SIM") 
+	  << "mu2e::StrawClusterSequence: tried to add inconsistent clust pair to sequence";
 
-// maybe could use move symanatics here?  FIXME!!
-    _minus = hpair[0];
-    _plus = hpair[1];
+      // maybe could use move symanatics here?  FIXME!!
+      _minus = hpair[0];
+      _plus = hpair[1];
 
-  }
-  
+    }
+  }  
 }
 
