@@ -331,6 +331,7 @@ namespace mu2e {
 	    hhinfo._wres = sqrt(wres2);
 	    hhinfo._wtres = sqrt(wtres2);
 	    hhinfo._chisq = sqrt( dwire*dwire/wres2 + dtrans*dtrans/wtres2 );
+	    hhinfo._hqual = hhit._hqual;
 
 	    _hhinfo.push_back(hhinfo);
 	  }
