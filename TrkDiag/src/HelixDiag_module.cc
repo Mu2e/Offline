@@ -308,8 +308,12 @@ namespace mu2e {
 	    static Hep3Vector zaxis(0.0,0.0,1.0); // unit in z direction
 	    Hep3Vector const& wdir = hhit.wdir();
 	    Hep3Vector wtdir = zaxis.cross(wdir); // transverse direction to the wire
-	    Hep3Vector cdir = (hhit.pos() - rhel.center()).perpPart().unit(); // direction from the circle center to the hit
+	    Hep3Vector cvec = (hhit.pos() - rhel.center()).perpPart(); // vector from the circle center to the hit
+	    Hep3Vector cdir = cvec.unit(); // direction from the circle center to the hit
 	    Hep3Vector cperp = zaxis.cross(cdir); // direction perp to the radius
+	    hhinfo._whdot = wdir.dot(cperp); // compare wire and circle tangent directions
+	    hhinfo._hrho = cvec.mag(); // radius of this hit WRT the circle center
+
 	    // positions
 	    Hep3Vector dh = hhit.pos() - hpos;
 	    double dwire = dh.dot(wdir); // projection along wire direction

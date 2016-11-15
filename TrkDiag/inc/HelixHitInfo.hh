@@ -9,6 +9,7 @@ namespace mu2e {
     CLHEP::Hep3Vector _hhpos, _hpos;
     Float_t _hhphi, _hphi;
     Float_t _werr, _terr, _dt;
+    Float_t _whdot, _hrho;
     Float_t _dwire, _dtrans, _wres, _wtres, _chisq;
   };
 
