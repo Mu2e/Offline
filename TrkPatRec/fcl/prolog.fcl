@@ -50,22 +50,28 @@ TimeClusterFinder : {
   PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
   StrawHitFlagCollection    : "FlagBkgHits"
 }
+
+RobustHelixFinder : {
+  module_type		: RobustHelixFinder
+  # Input hits are reqiured to have at least one of these
+  HitSelectionBits	    : ["Stereo","TimeDivision"]
+  # MVA parameters for outlier filtering
+  HelixHitMVA : { MVAWeights : "TrkPatRec/test/HelixHitMVA.weights.xml" }
+}
+
 # we need both positive and negative helicity helix finders
 PosHelixFinder : {
-  module_type		: RobustHelixFinder
+  @table::RobustHelixFinder
   RobustHelixFit : {
     Helicity		: 1
   }
-  # Hits are reqiured to have at least one of these
-  HitSelectionBits	    : ["Stereo","TimeDivision"]
 }
 
 NegHelixFinder : {
-  module_type		: RobustHelixFinder
+  @table::RobustHelixFinder
   RobustHelixFit : {
     Helicity		: -1
   }
-  HitSelectionBits	    : ["Stereo","TimeDivision"]
 }
 
 # pattern recognition internals

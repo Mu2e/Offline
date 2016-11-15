@@ -165,11 +165,13 @@ namespace mu2e
 //	  hstraj.printAll(cout);
 	  cout << "Seed Fit HelixTraj parameters " << hstraj.parameters()->parameter()
 	  << "and covariance " << hstraj.parameters()->covariance() <<  endl;
-// build a time cluster
+// build a time cluster: exclude the outlier hits
 	TimeCluster tclust;
 	tclust._t0 = hseed._t0;
-	for(auto hhit : hseed._hhits)
-	  tclust._strawHitIdxs.push_back(hhit._shidx);
+	for(auto hhit : hseed._hhits){
+	  if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))	
+	    tclust._strawHitIdxs.push_back(hhit._shidx);
+	}
 // create a TrkDef; it should be possible to build a fit from the helix seed directly FIXME!
 	TrkDef seeddef(tclust,hstraj,_tpart,_fdir);
 // filter outliers; this doesn't use drift information, just straw positions
