@@ -152,9 +152,9 @@ namespace mu2e
     _phires	 (pset.get<double>("AzimuthREsolution",0.1)),
     _maxdwire    (pset.get<double>("MaxWireDistance",200.0)), // max distance along wire
     _maxdtrans   (pset.get<double>("MaxTransDistance",100.0)), // max distance perp to wire (and z)
-    _maxchisq    (pset.get<double>("MaxChisquared",9.0)), // max chisquared (3 sigma)
+    _maxchisq    (pset.get<double>("MaxChisquared",9.0)), // max chisquared
     _usemva      (pset.get<bool>("UseMVAHitSelection",true)),
-    _minmva      (pset.get<double>("MinMVA",0.2)), // min MVA output
+    _minmva      (pset.get<double>("MinMVA",0.05)), // min MVA output
     _shTag	 (pset.get<art::InputTag>("StrawHitCollection","makeSH")),
     _shpTag	 (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
     _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
@@ -282,9 +282,9 @@ namespace mu2e
       _vmva._dwire = dh.dot(wdir); // projection along wire direction
       _vmva._drho = cvec.mag() - helix.radius(); // radius difference
       _vmva._whdot = wdir.dot(cperp); // cosine of angle between wire and helix tangent 
-      _vmva._dphi = hhit._phi - helix.circleAzimuth(hhit.pos().z()); // azimuth difference
-      _vmva._hhrho = cvec.mag(); // hit transverse radius
-      _vmva._hrho = hpos.perp();
+      _vmva._dphi = hhit._phi - helix.circleAzimuth(hhit.pos().z()); // azimuth difference WRT circle center
+      _vmva._hhrho = cvec.mag(); // hit transverse radius WRT circle center
+      _vmva._hrho = hpos.perp();  // hit detector transverse radius
       // compute the total resolution including hit and helix parameters first along the wire
       double wres2 = std::pow(hhit.posRes(StrawHitPosition::wire),(int)2) +
 	std::pow(_cradres*cdir.dot(wdir),(int)2) +
@@ -297,18 +297,11 @@ namespace mu2e
       _vmva._chisq = sqrt( _vmva._dwire*_vmva._dwire/wres2 + _vmva._dtrans*_vmva._dtrans/wtres2 );
       // time difference
       _vmva._dt = _shcol->at(hhit._shidx).time() - hseed._t0.t0();
-      bool isoutlier(false);
-      if(_usemva){
       // compute the MVA
-	double mvaout = _mvatool.evalMVA(_vmva._pars);
-	// update the hit
-	hhit._hqual = mvaout;
-	isoutlier = mvaout < _minmva;
-      } else {
-	isoutlier = dphi > _maxphisep || fabs(_vmva._dwire) > _maxdwire || fabs(_vmva._dtrans) > _maxdtrans || _vmva._chisq > _maxchisq;
-      }
-      // flag outlier hits
-      if(isoutlier){
+      double mvaout = _mvatool.evalMVA(_vmva._pars);
+      // update the hit
+      hhit._hqual = mvaout;
+      if( dphi > _maxphisep || fabs(_vmva._dwire) > _maxdwire || fabs(_vmva._dtrans) > _maxdtrans || _vmva._chisq > _maxchisq || mvaout < _minmva) {
 	// outlier hit flag it
 	hhit._flag.merge(outlier);
       } else {
