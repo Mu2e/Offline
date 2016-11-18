@@ -107,7 +107,7 @@ namespace mu2e {
                                             1, 0., 0., 900, 0, 9000.);
       pbarParentMomentum_->SetOption("colz");
 
-      pbarParentPDG_ = tfs->make<TH1D>("pbarParentPDG", "pbar parend PDG Id", 1, 0., 0.);
+      pbarParentPDG_ = tfs->make<TH1D>("pbarParentPDG", "pbar parent PDG Id", 1, 0., 0.);
     }
   }
 
