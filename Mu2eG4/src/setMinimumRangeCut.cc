@@ -12,17 +12,22 @@
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "G4VModularPhysicsList.hh"
+#include "G4VUserPhysicsList.hh"
 
 namespace mu2e{
 
-  void setMinimumRangeCut(double minRangeCut,G4VModularPhysicsList* mPL ){
+  void setMinimumRangeCut(double minRangeCut,G4VUserPhysicsList* mPL ){
     mf::LogInfo("GEOM")
       << "Setting minRange cut to " << minRangeCut << " mm\n";
+    //setCutCmd equivalent:
     mPL->SetDefaultCutValue(minRangeCut);
+    mPL->SetCuts(); // does not work for proton production cut when
+                    // called during pre_init or after initialization;
+                    // the selective SetCutValue does work
+
   }
 
-  void setMinimumRangeCut( SimpleConfig const& config, G4VModularPhysicsList* mPL ){
+  void setMinimumRangeCut( SimpleConfig const& config, G4VUserPhysicsList* mPL ){
     // If this parameter is absent, leave the default from G4 unchanged.
     std::string name("g4.minRangeCut");
     if ( config.hasName(name) ){
@@ -31,7 +36,7 @@ namespace mu2e{
     }
   }
 
-  void setMinimumRangeCut(const fhicl::ParameterSet& pset, G4VModularPhysicsList* mPL){
+  void setMinimumRangeCut(const fhicl::ParameterSet& pset, G4VUserPhysicsList* mPL){
     setMinimumRangeCut(pset.get<double>("physics.minRangeCut"), mPL);
   }
 

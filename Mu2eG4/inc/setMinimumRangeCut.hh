@@ -1,5 +1,5 @@
-#ifndef Mu2eG4_setMinimumRangeangeCut_hh
-#define Mu2eG4_setMinimumRangeangeCut_hh
+#ifndef Mu2eG4_setMinimumRangeCut_hh
+#define Mu2eG4_setMinimumRangeCut_hh
 //
 // Set the G4 minimum range cut as specified in the geometry file.
 //
@@ -11,15 +11,15 @@
 
 namespace fhicl { class ParameterSet; }
 
-class G4VModularPhysicsList;
+class G4VUserPhysicsList;
 
 namespace mu2e{
 
   class SimpleConfig;
 
-  void setMinimumRangeCut( SimpleConfig const& config, G4VModularPhysicsList* mPL );
-  void setMinimumRangeCut(const fhicl::ParameterSet& pset, G4VModularPhysicsList* mPL);
+  void setMinimumRangeCut( SimpleConfig const& config, G4VUserPhysicsList* mPL );
+  void setMinimumRangeCut(const fhicl::ParameterSet& pset, G4VUserPhysicsList* mPL);
 
 }  // end namespace mu2e
 
-#endif /* Mu2eG4_setMinimumRangeangeCut_hh */
+#endif /* Mu2eG4_setMinimumRangeCut_hh */

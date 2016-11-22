@@ -341,7 +341,7 @@ namespace mu2e {
     // that is derived from the G4 geometry or physics processes.
 
     // Mu2e specific customizations that must be done after the call to Initialize.
-    postG4InitializeTasks(config);
+    postG4InitializeTasks(config,pL);
 
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
     // Setup the graphics if requested.

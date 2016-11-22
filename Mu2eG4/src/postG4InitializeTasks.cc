@@ -17,11 +17,14 @@
 #include "Mu2eG4/inc/customizeChargedPionDecay.hh"
 #include "Mu2eG4/inc/toggleProcesses.hh"
 #include "Mu2eG4/inc/setMinimumRangeCut.hh"
+#include "Mu2eG4/inc/setParticleCut.hh"
+
+#include "G4VUserPhysicsList.hh"
 
 namespace mu2e{
 
-  template<class Config>
-  void postG4InitializeTasks(const Config& config) {
+ template<class Config>
+  void postG4InitializeTasks(const Config& config, G4VUserPhysicsList* pL) {
 
     // G4 does not include pi+ -> e+ nu + cc. Fix that in one of several ways.
     customizeChargedPionDecay(config);
@@ -29,11 +32,16 @@ namespace mu2e{
     // Switch off the decay of some particles
     switchDecayOff(config);
 
-    // If requested, change the minimum range cut.
-    //    setMinimumRangeCut(config); moved to physicsListDecider
+    // Set the range cut for e+,e-,gamma (& proton but see below)
+    setMinimumRangeCut(config, pL);
+
+    // set the proton production cut which is special
+    std::string pName("proton");
+    setParticleCut(config, pName, pL);
+
   }
 
-  template void postG4InitializeTasks(const SimpleConfig&);
-  template void postG4InitializeTasks(const fhicl::ParameterSet&);
+  template void postG4InitializeTasks(const SimpleConfig&, G4VUserPhysicsList* pL);
+  template void postG4InitializeTasks(const fhicl::ParameterSet&, G4VUserPhysicsList* pL);
 
 }  // end namespace mu2e

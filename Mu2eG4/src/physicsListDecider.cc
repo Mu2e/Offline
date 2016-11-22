@@ -53,7 +53,6 @@
 // G4 includes
 #include "G4PhysListFactory.hh"
 #include "G4VUserPhysicsList.hh"
-#include "G4VUserPhysicsList.hh"
 #include "G4RadioactiveDecayPhysics.hh"
 #if G4VERSION<4099
 #include "QGSP.hh"
@@ -214,7 +213,7 @@ namespace mu2e{
       tmpPL-> RegisterPhysics( new DecayMuonsWithSpin(getDiagLevel(config)));
     }
 
-    setMinimumRangeCut(config,tmpPL);
+    if (getDiagLevel(config) > 0) tmpPL->DumpCutValuesTable();
 
     return dynamic_cast<G4VUserPhysicsList*>(tmpPL);
 
