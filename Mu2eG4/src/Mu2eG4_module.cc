@@ -420,7 +420,7 @@ namespace mu2e {
     // that is derived from the G4 geometry or physics processes.
 
     // Mu2e specific customizations that must be done after the call to Initialize.
-    postG4InitializeTasks(pset_);
+    postG4InitializeTasks(pset_,pL);
     _sensitiveDetectorHelper.registerSensitiveDetectors();
     if (standardMu2eDetector_) _extMonFNALPixelSD =
                                  dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
