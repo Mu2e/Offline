@@ -35,6 +35,7 @@
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
+#include "TrkReco/inc/TrkTimeCalculator.hh"
 // root
 #include "TGraph.h"
 #include "TH2F.h"
@@ -87,7 +88,9 @@ namespace mu2e {
       const HelixSeedCollection* _hscol;
       const StrawDigiMCCollection* _mcdigis;
       const StepPointMCCollection* _vdmcsteps;
-      // time offsets
+      // reco offsets
+      TrkTimeCalculator			_ttcalc;
+      // mc time offsets
       SimParticleTimeOffset _toff;
       // Virtual Detector IDs
       vector<int> _midvids;
@@ -142,6 +145,7 @@ namespace mu2e {
     _hsTag(pset.get<string>("HelixSeedCollectionTag","PosHelixFinder")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
+    _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {
     if(_diag > 0){
@@ -299,7 +303,7 @@ namespace mu2e {
 	    hhinfo._hhpos = hhit.pos();
 	    hhinfo._werr = hhit.posRes(StrawHitPosition::wire);
 	    hhinfo._terr = hhit.posRes(StrawHitPosition::trans);
-	    hhinfo._dt = _shcol->at(hhit._shidx).time() - hseed._t0.t0();
+	    hhinfo._dt = _shcol->at(hhit._shidx).time() - hseed._t0.t0() -_ttcalc.strawHitTimeOffset(hhit.pos().z());
 	    Hep3Vector hpos = hhit.pos(); // this sets the z to the correct value
 	    rhel.position(hpos);
 	    hhinfo._hpos = hpos;
