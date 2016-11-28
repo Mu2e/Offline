@@ -14,6 +14,7 @@
 #include "TMath.h"
 #include "TProfile.h"
 #include "TDirectory.h"
+#include "TFitResult.h"
 #include "Math/Math.h"
 #include "THStack.h"
 #include "TGraphErrors.h"
@@ -24,12 +25,13 @@ class HelixDiag  {
     _outlier("hh._outlier"), _stereo("hh._stereo"), _tdiv("hh._tdiv"),
     _tdivonly("hh._tdiv && !hh._stereo"), _resphi("hh._resphi"), _nowire("!(hh._stereo||hh._tdiv)"),
     _thit("hhmc._rel==0"),_bkghit("hhmc._rel!=0"),
-    _crcan(0), _cpcan(0), _rcan(0), _fzcan(0), _corrcan(0), _hpcan1(0), _hpcan2(0), _hdcan(0), _t0can(0)
+    _crcan(0), _cpcan(0), _rcan(0), _fzcan(0), _corrcan(0), _hpcan1(0), _hpcan2(0), _hdcan(0), _t0can(0), _rsum(0)
     { }
 
     void CenterRes();
     void CenterPos();
     void Radius();
+    void RadiusSum();
     void PhiZ();
     void Correlations();
     void HitPos();
@@ -49,16 +51,19 @@ class HelixDiag  {
     TCut _thit;
     TCut _bkghit;
 
-    TCanvas *_crcan, *_cpcan, *_rcan, *_fzcan, *_corrcan, *_hpcan1, *_hpcan2, *_hdcan, *_t0can;
+    TCanvas *_crcan, *_cpcan, *_rcan, *_fzcan, *_corrcan, *_hpcan1, *_hpcan2, *_hdcan, *_t0can, *_rsum;
 };
 
 void HelixDiag::CenterRes() {
-  TH2F* crcomp = new TH2F("crcomp","Reco vs true Center Radius;MC Center Radius(mm);Reco Center Radius(mm)",50,150.0,450.0,50,150.0,450.0);
+  TH2F* crcomp = new TH2F("crcomp","True Center Radius vs Reco;Reco Center Radius(mm);MC Center Radius(mm)",50,150.0,450.0,50,150.0,450.0);
   TH1F* crres = new TH1F("crres","Center Radius Resolution;#Delta R (mm)",100,-150.0,150.0);
+  TH1F* ccrres = new TH1F("ccrres","Center Radius Resolution;#Delta R (mm)",100,-150.0,150.0);
   TH2F* cfcomp = new TH2F("cfcomp","Reco vs true Center #Phi;MC Center #phi;Reco Center #phi",50,-3.15,3.15,50,-3.15,3.15);
   TH1F* cfres = new TH1F("cfres","Center Radius #Phi Resolution;#Delta #phi",100,-0.4,0.4);
+  crres->SetLineColor(kBlue);
+  ccrres->SetLineColor(kRed);
 
-  _hdiag->Project("crcomp","rhel._rcent:mch._rcent",_helixOK&&_mchelixOK);
+  _hdiag->Project("crcomp","mch._rcent:rhel._rcent",_helixOK&&_mchelixOK);
   _hdiag->Project("crres","rhel._rcent-mch._rcent",_helixOK&&_mchelixOK);
   _hdiag->Project("cfcomp","rhel._fcent:mch._fcent",_helixOK&&_mchelixOK);
   _hdiag->Project("cfres","rhel._fcent-mch._fcent",_helixOK&&_mchelixOK);
@@ -70,23 +75,35 @@ void HelixDiag::CenterRes() {
   std::vector<Double_t> rreco, rmc, rerr;
   for(size_t ibin=0;ibin<50;++ibin){
     if(crcomp_0->GetBinContent(ibin+1)>0){
-      rmc.push_back(crcomp_1->GetBinCenter(ibin+1));
-      rreco.push_back(crcomp_1->GetBinContent(ibin+1));
+      rreco.push_back(crcomp_1->GetBinCenter(ibin+1));
+      rmc.push_back(crcomp_1->GetBinContent(ibin+1));
       rerr.push_back(crcomp_2->GetBinContent(ibin+1)/sqrt(crcomp_0->GetBinContent(ibin+1)));
     }
   }
-  TGraphErrors* me = new TGraphErrors(rmc.size(),rmc.data(),rreco.data(),0,rerr.data());
-  me->SetMarkerStyle(22);
-  me->SetMarkerColor(kGreen);
+  TGraphErrors* me = new TGraphErrors(rmc.size(),rreco.data(),rmc.data(),rerr.data(),0);
+  me->SetMarkerStyle(20);
+  me->SetMarkerColor(kBlue);
+  me->SetLineColor(kBlue);
+  me->SetMarkerSize(0.5);
 
-  _crcan = new TCanvas("crcan","Center Resolution",800,800);
+  _crcan = new TCanvas("crcan","Center Resolution",700,700);
   _crcan->Divide(2,2);
   _crcan->cd(1);
   crcomp->Draw();
-  me->Draw("same");
-  me->Fit("pol1","","same");
+  me->Draw("LP");
+//  TF1* rf = new TF1("rf","[0]+(x>[0]?[1]:[2])*(x-[0])");
+//  rf->SetParameters(260.0,1.2,0.8);
+  TF1* crf = new TF1("crf","[0]+[1]*x");
+  crf->SetParameters(-100,1.5);
+  TFitResultPtr crfit = me->Fit(crf,"S","same");
+  char rcorr[100];
+//  snprintf(rcorr,100,"%f+(rhel._rcent>%f?%f:%f)*(rhel._rcent-%f)-mch._rcent",crfit->Parameter(0),crfit->Parameter(0),crfit->Parameter(1),crfit->Parameter(2),crfit->Parameter(0));
+  snprintf(rcorr,100,"%f+rhel._rcent*%f-mch._rcent",crfit->Parameter(0),crfit->Parameter(1));
+  cout << "projection = " << rcorr << endl;
+  _hdiag->Project("ccrres",rcorr,_helixOK&&_mchelixOK);
   _crcan->cd(2);
-  crres->Draw();
+  ccrres->Draw();
+  crres->Draw("same");
   _crcan->cd(3);
   cfcomp->Draw();
   _crcan->cd(4);
@@ -116,37 +133,57 @@ void HelixDiag::CenterPos() {
 }
 
 void HelixDiag::Radius() {
-  TH2F* rcomp = new TH2F("rcomp","Reco vs true Radius;MC radius (mm); Reco radius (mm)",50,200.0,350.0,50,200.0,350.0);
+  TH2F* rcomp = new TH2F("rcomp","True vs Reco Radius;Reco radius (mm); MC radius (mm)",50,200.0,350.0,50,180.0,320.0);
   TH1F* rres = new TH1F("rres","Radius resolution;reco - MC radius (mm)",100,-100,100);
-  _hdiag->Project("rcomp","rhel._radius:mch._radius",_helixOK&&_mchelixOK);
+  TH1F* rresc = new TH1F("rresc","Radius resolution;reco - MC radius (mm)",100,-100,100);
+  rres->SetLineColor(kBlue);
+  rresc->SetLineColor(kRed);
+  _hdiag->Project("rcomp","mch._radius:rhel._radius",_helixOK&&_mchelixOK);
   _hdiag->Project("rres","rhel._radius-mch._radius",_helixOK&&_mchelixOK);
   
-  rcomp->FitSlicesY(0,0,-1,10);
+  rcomp->FitSlicesY(0,0,-1,20);
   TH1D *rcomp_1 = (TH1D*)gDirectory->Get("rcomp_1");
   TH1D *rcomp_2 = (TH1D*)gDirectory->Get("rcomp_2");
   TH1D *rcomp_0 = (TH1D*)gDirectory->Get("rcomp_0");
   std::vector<Double_t> rreco, rmc, rerr;
   for(size_t ibin=0;ibin<50;++ibin){
     if(rcomp_0->GetBinContent(ibin+1)>0){
-      rmc.push_back(rcomp_1->GetBinCenter(ibin+1));
-      rreco.push_back(rcomp_1->GetBinContent(ibin+1));
+      rreco.push_back(rcomp_1->GetBinCenter(ibin+1));
+      rmc.push_back(rcomp_1->GetBinContent(ibin+1));
       rerr.push_back(rcomp_2->GetBinContent(ibin+1)/sqrt(rcomp_0->GetBinContent(ibin+1)));
     }
   }
-  TGraphErrors* re = new TGraphErrors(rmc.size(),rmc.data(),rreco.data(),0,rerr.data());
-  re->SetMarkerStyle(22);
-  re->SetMarkerColor(kGreen);
+  TGraphErrors* re = new TGraphErrors(rmc.size(),rreco.data(),rmc.data(),0,rerr.data());
+  re->SetMarkerStyle(20);
+  re->SetMarkerColor(kBlue);
+  re->SetMarkerSize(0.5);
+  re->SetLineColor(kBlue);
 
-  _rcan = new TCanvas("rcan","Radius",800,600);
+  _rcan = new TCanvas("rcan","Radius",1000,500);
   _rcan->Divide(2,1);
   _rcan->cd(1);
   rcomp->Draw();
-  re->Draw("same");
-  re->Fit("pol1","","same");
+  re->Draw("LP");
+//  TF1* rf = new TF1("rf","[3]+(x>[0]?[1]:[2])*(x-[0])");
+//  rf->SetParameters(240.0,0.4,0.8,290.0);
+//  TF1* rf = new TF1("rf","[0]+[1]*x+[2]*x*x");
+//  rf->SetParameters(0.0,5.0,-0.0001);
+  TF1* rf = new TF1("rf","[1]*(x-[0]) + pow(1.0+[1]*[1],1.5)*[2]*(x-[0])*(x-[0])+[3]");
+  rf->SetParameters(260.0,1.0,-0.0001,260.0);
+  TFitResultPtr rfit = re->Fit(rf,"S","same");
+  char rcorr[120];
+//  snprintf(rcorr,100,"%f+(rhel._radius>%f?%f:%f)*(rhel._radius-%f)-mch._radius",rfit->Parameter(3),rfit->Parameter(0),rfit->Parameter(1),rfit->Parameter(2),rfit->Parameter(0));
+//  snprintf(rcorr,100,"%f+(rhel._radius-%f)*((rhel._radius>%f)?%f:%f)-mch._radius",rfit->Parameter(0),rfit->Parameter(0),rfit->Parameter(0),rfit->Parameter(1),rfit->Parameter(2));
+  snprintf(rcorr,120,"%f+%f*(rhel._radius-%f)+pow(1.0+%f^2,1.5)*%f*(rhel._radius-%f)^2-mch._radius",rfit->Parameter(3),rfit->Parameter(1),rfit->Parameter(0),rfit->Parameter(1),rfit->Parameter(2),rfit->Parameter(0));
+  cout << "projection = " << rcorr << endl;
+  _hdiag->Project("rresc",rcorr,_helixOK&&_mchelixOK);
   _rcan->cd(2);
-  rres->Draw();
-
-
+  rresc->Draw();
+  rres->Draw("same");
+  TLegend* rrleg = new TLegend(0.6,0.7,0.9,0.9);
+  rrleg->AddEntry(rres,"Uncorrectoed","L");
+  rrleg->AddEntry(rresc,"Corrected","L");
+  rrleg->Draw();
 }
 
 void HelixDiag::PhiZ() {
@@ -327,9 +364,54 @@ void HelixDiag::time() {
   _t0can->cd(2);
   thdt->Draw();
   bhdt->Draw("same");
+}
 
+void HelixDiag::RadiusSum() {
+  TH2F* drcomp = new TH2F("drcomp","Reco vs True Radius Diff;MC #Delta (mm);Reco #Delta R (mm)",50,-150.0,150.0,50,-150.0,150.0);
+  TH2F* srcomp = new TH2F("srcomp","Reco vs True Radius Sum;MC #Sigma (mm);Reco #Sigma R (mm)",50,400.0,700.0,50,400.0,700.0);
 
+  TH1F* drres = new TH1F("drres","Radius Diff Resolution;#Delta R (mm)",100,-150.0,150.0);
+  TH1F* srres = new TH1F("srres","Radius Sum Resolution;#Delta R (mm)",100,-150.0,150.0);
 
+  _hdiag->Project("drcomp","rhel._radius-rhel._rcent:mch._radius-mch._rcent",_helixOK&&_mchelixOK);
+  _hdiag->Project("drres","(rhel._radius-rhel._rcent)-(mch._radius-mch._rcent)",_helixOK&&_mchelixOK);
+
+  _hdiag->Project("srcomp","rhel._radius+rhel._rcent:mch._radius+mch._rcent",_helixOK&&_mchelixOK);
+  _hdiag->Project("srres","(rhel._radius+rhel._rcent)-(mch._radius+mch._rcent)",_helixOK&&_mchelixOK);
+
+  srcomp->FitSlicesX(0,0,-1,10);
+  TH1D *srcomp_1 = (TH1D*)gDirectory->Get("srcomp_1");
+  TH1D *srcomp_2 = (TH1D*)gDirectory->Get("srcomp_2");
+  TH1D *srcomp_0 = (TH1D*)gDirectory->Get("srcomp_0");
+  std::vector<Double_t> rreco, rmc, rerr;
+  for(size_t ibin=0;ibin<50;++ibin){
+    if(srcomp_0->GetBinContent(ibin+1)>0){
+      rmc.push_back(srcomp_1->GetBinCenter(ibin+1));
+      rreco.push_back(srcomp_1->GetBinContent(ibin+1));
+      rerr.push_back(srcomp_2->GetBinContent(ibin+1)/sqrt(srcomp_0->GetBinContent(ibin+1)));
+    }
+  }
+  TGraphErrors* me = new TGraphErrors(rmc.size(),rmc.data(),rreco.data(),0,rerr.data());
+  me->SetMarkerStyle(20);
+  me->SetMarkerColor(kBlue);
+  me->SetLineColor(kBlue);
+  me->SetMarkerSize(0.5);
+  TF1* crf = new TF1("crf","[0]+[1]*x");
+  crf->SetParameters(-100,1.5);
+  TFitResultPtr crfit = me->Fit(crf,"S","same");
+
+  _rsum = new TCanvas("rsum","rsum",700,700);
+  _rsum->Divide(2,2);
+  _rsum->cd(1);
+  drcomp->Draw();
+  _rsum->cd(2);
+  drres->Draw();
+  _rsum->cd(3);
+  srcomp->Draw();
+  me->Draw("PL");
+
+  _rsum->cd(4);
+  srres->Draw();
 }
 
 void HelixDiag::save(const char* suffix) {
