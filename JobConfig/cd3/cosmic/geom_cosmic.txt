@@ -29,8 +29,8 @@ string dirt.beamline.berm.material = "G4_AIR";
 // Comment out to include additional shielding blocks
 //string ExtShieldUpstream.materialType13    = "G4_AIR";   // Block 1
 //string ExtShieldDownstream.materialType26  = "G4_AIR";   // Block 2
-string ExtShieldUpstream.materialType14    = "G4_AIR";   // Block 3
-string ExtShieldUpstream.materialType15    = "G4_AIR";   // Block 5
+//string ExtShieldUpstream.materialType14    = "G4_AIR";   // Block 3
+//string ExtShieldUpstream.materialType15    = "G4_AIR";   // Block 5
 
 //
 // This tells emacs to view this file in c++ mode.
