@@ -1,0 +1,46 @@
+// Original author David Norvil Brown, University of Louisville
+// Numbers based on George's email on 12/01/2016
+
+// Add more 3 more blocks. This overwrite the value (12) in ExtShieldUpstream_v02
+int ExtShieldUpstream.numberOfBoxTypes = 15;
+
+int ExtShieldUpstream.nBoxType13 = 1;   // special block "1" for shielding CR muons
+int ExtShieldUpstream.nBoxType14 = 1;   // special block "3" for shielding CR muons
+int ExtShieldUpstream.nBoxType15 = 1;   // special block "5" for shielding CR muons
+
+// Special block to shield CR muons
+vector<double> ExtShieldUpstream.dimsType13 = {406.4,3850.8,1016};
+vector<double> ExtShieldUpstream.dimsType14 = {711.2,3850.8,304.8};
+vector<double> ExtShieldUpstream.dimsType15 = {711.2,3850.8,279.4};
+
+vector<double> ExtShieldUpstream.tolsType13 = {-10,-10,-10};
+vector<double> ExtShieldUpstream.tolsType14 = {-10,-10,-10};
+vector<double> ExtShieldUpstream.tolsType15 = {-10,-10,-10};
+
+string ExtShieldUpstream.materialType13  = "BARITE";
+string ExtShieldUpstream.materialType14  = "BARITE";
+string ExtShieldUpstream.materialType15  = "BARITE";
+
+vector<double> ExtShieldUpstream.centerType13Box1 = {-2552.8,-381.4, 2413.0};
+vector<double> ExtShieldUpstream.centerType14Box1 = {-1473.2,-381.4, 1222.4};
+vector<double> ExtShieldUpstream.centerType15Box1 = {0.0,-381.4, -1186.1};
+
+// Add triangle block. This overwrite the value (25) in ExtShieldDownstream_v02
+int ExtShieldDownstream.numberOfBoxTypes = 26;
+int ExtShieldDownstream.nBoxType26 = 1;  // Borated Barite in NE corner 
+int ExtShieldDownstream.nVertType26 = 3;
+
+vector<double> ExtShieldDownstream.outlineType26UVerts = {315.7, -315.7, 315.7};
+vector<double> ExtShieldDownstream.outlineType26VVerts = {130.8, 130.8, -130.8};
+
+double ExtShieldDownstream.lengthType26 = 3851.0;
+vector<double> ExtShieldDownstream.tolsType26 = {-10,-10,-10}; //Wall
+string ExtShieldDownstream.materialType26  = "BARITE";
+vector<double> ExtShieldDownstream.centerType26Box1 = {-2886.8,-381.4, 2220.7};
+string ExtShieldDownstream.orientationType26Box1 = "103";
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -4,16 +4,17 @@
 // Keep using it for the subsequent stages.
 #include "Mu2eG4/geom/stoppingTarget_TDR.txt" // 17 foil tapered muon stopping target used for the TDR simulations
 
-//
-// 11/2016 rlc, oksuzian
-// test of extending shielding blocks on west side of TS3 towards TS3
-// to degrade cosmics passing from TS3 to TS5 in target5 study 
+// 12/2 definitions for blocks 1,2,3,5 for George proposals
+#include "Mu2eG4/geom/CosmicPassiveShield_v01.txt"
+
+//int Pipe.nPipeType16 = 0;
+//int Pipe.nPipeType22 = 0; //bend that connects pipes 
+
+// this is the extended shielding in region of corner (GG1)
 vector<double> ExtShieldDownstream.outlineType15UVerts = {680.8,680.8,223.6,223.6,-479.4,-479.4,-1343,-885.8};
 vector<double> ExtShieldDownstream.outlineType21VVerts = {-452.2,-5,-5,858.6,858.6,-452.2};
 vector<double> ExtShieldDownstream.outlineType25VVerts = {-858.6,-5,-5,452.2,452.2,-5,-5,-856.6};
 string ExtShieldDownstream.materialType15  = "BARITE";
-
-
 
 double world.minimalMargin.xmin = 500000;
 double world.minimalMargin.xmax = 500000;
@@ -22,6 +23,14 @@ double world.minimalMargin.zmax = 500000;
 
 string dirt.beamline.berm.material = "G4_AIR";
 
+// Col5 material. Comment out to default to Poly.
+// string ts.coll5.material1Name = "G4_Cu";
+
+// Comment out to include additional shielding blocks
+//string ExtShieldUpstream.materialType13    = "G4_AIR";   // Block 1
+//string ExtShieldDownstream.materialType26  = "G4_AIR";   // Block 2
+string ExtShieldUpstream.materialType14    = "G4_AIR";   // Block 3
+string ExtShieldUpstream.materialType15    = "G4_AIR";   // Block 5
 
 //
 // This tells emacs to view this file in c++ mode.
