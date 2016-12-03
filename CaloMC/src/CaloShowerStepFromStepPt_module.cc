@@ -27,17 +27,6 @@
 // See doc-db XXXX for more details
 //
 
-
-// C++ includes.
-#include <iostream>
-#include <string>
-#include <cmath>
-#include <map>
-#include <vector>
-#include <unordered_set>
-#include <utility>
-
-// Framework includes.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
@@ -51,8 +40,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-
-// Mu2e includes.
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -69,6 +56,13 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "TH2F.h"
 
+#include <iostream>
+#include <string>
+#include <cmath>
+#include <map>
+#include <vector>
+#include <unordered_set>
+#include <utility>
 
 
 
@@ -254,7 +248,7 @@ namespace mu2e {
         totalEdep_=0.0;
         totalStep_=0;
         
-        if ( diagLevel_ > 0) std::cout << "CaloShowerStepFromStepPt: produce() begin" << std::endl;
+        if ( diagLevel_ > 0) std::cout << "[CaloShowerStepFromStepPt::produce] begin" << std::endl;
 
         // Check that calorimeter geometry description exists
         art::ServiceHandle<GeometryService> geom;    
@@ -282,8 +276,8 @@ namespace mu2e {
         event.put(std::move(caloROShowerStepMCs),"calorimeterRO");
         event.put(std::move(simsToKeep));
 
-        if ( diagLevel_ > 0) std::cout << "Total energy deposited / number of stepPointMC: " <<totalEdep_<<" / "<<totalStep_<<std::endl;
-        if ( diagLevel_ > 0) std::cout << "CaloShowerStepFromStepPt: produce() end" << std::endl;
+        if ( diagLevel_ > 0) std::cout << "[CaloShowerStepFromStepPt::produce] Total energy deposited / number of stepPointMC: " <<totalEdep_<<" / "<<totalStep_<<std::endl;
+        if ( diagLevel_ > 0) std::cout << "[CaloShowerStepFromStepPt::produce] end" << std::endl;
 
     } 
 
@@ -382,9 +376,9 @@ namespace mu2e {
 
               for (const auto& iterCrystal : crystalMap)
               {
-                   int roid = iterCrystal.first;
+                   int ROID = iterCrystal.first;
                    std::vector<const StepPointMC*> steps = iterCrystal.second;                                 
-                   compressSteps(cal, caloROShowerStepMCs, false, roid, sim, steps);
+                   compressSteps(cal, caloROShowerStepMCs, false, ROID, sim, steps);
               }   
          }
          
@@ -392,8 +386,8 @@ namespace mu2e {
          if (diagLevel_ > 2) hEtot_->Fill(totalEdep_);
          
          //Final statistics
-         if (diagLevel_ > 1) std::cout<<"CaloShowerStepFromStepPt compressed "<<nCompress<<" / "<<nCompressAll<<" incoming SimParticles"<<std::endl;
-         if (diagLevel_ > 1) std::cout<<"CaloShowerStepFromStepPt keeping "<<simsToKeep.size()<<" CaloShowerSteps"<<std::endl;
+         if (diagLevel_ > 1) std::cout<<"[CaloShowerStepFromStepPt::makeCompressedHits] compressed "<<nCompress<<" / "<<nCompressAll<<" incoming SimParticles"<<std::endl;
+         if (diagLevel_ > 1) std::cout<<"[CaloShowerStepFromStepPt::makeCompressedHits] keeping "<<simsToKeep.size()<<" CaloShowerSteps"<<std::endl;
 
     } 
 
@@ -500,7 +494,7 @@ namespace mu2e {
                       if (sim->genParticle()) hGenId_->Fill(sim->genParticle()->generatorId().id());
                          else hGenId_->Fill(-1);
                       
-                      if (diagLevel_ > 3) {std::cout<<"CaloShowerStepFromStepPt  inserted     "; buffer.printBucket(idx);}                      
+                      if (diagLevel_ > 3) {std::cout<<"[CaloShowerStepFromStepPt::compressSteps] inserted     "; buffer.printBucket(idx);}                      
                   }    
                   
                   
@@ -527,7 +521,7 @@ namespace mu2e {
                   if (sim->genParticle()) hGenId_->Fill(sim->genParticle()->generatorId().id()); 
                   else hGenId_->Fill(-1);
                   
-                  if (diagLevel_ > 3) {std::cout<<"CaloShowerStepFromStepPt  inserted     ";  buffer.printBucket(i);}
+                  if (diagLevel_ > 3) {std::cout<<"[CaloShowerStepFromStepPt::compressSteps] inserted     ";  buffer.printBucket(i);}
               }    
          }                           
     }

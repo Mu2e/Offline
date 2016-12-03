@@ -217,7 +217,7 @@ namespace mu2e {
       _daughterSims.insert( _daughterSims.begin(), ptr.begin(), ptr.end() );
       _daughterIds.clear();
       _daughterIds.reserve(ptr.size());
-      for ( size_t i=0; i != ptr.size(); ++i){
+      for ( std::size_t i=0; i != ptr.size(); ++i){
         _daughterIds.push_back( key_type( ptr[i].key() ) );
       }
     }

@@ -3,11 +3,6 @@
 // nTotWords - nWords_roID - roiID - nWord_roID_ihit - time_roID_ihit - Data_roID_ihit - ...
 //
 
-// C++ includes.
-#include <iostream>
-#include <string>
-
-// Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -21,24 +16,23 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Utilities/InputTag.h"
 
-
 #include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-
-// Mu2e includes.
-#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloDigiPackedCollection.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
-#include "MCDataProducts/inc/CaloShowerCollection.hh"
+#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
 
 #include "TH2F.h"
 #include "TFile.h"
 
+#include <iostream>
+#include <string>
 
 
 namespace mu2e {
@@ -58,10 +52,10 @@ namespace mu2e {
 
 
     private:
-       typedef std::vector<const CaloShower*> CaloShowerVec;
+       typedef std::vector<const CaloShowerSim*> CaloShowerSimVec;
 
        std::string  _caloDigiModuleLabel; 
-       std::string  _caloShowerModuleLabel; 
+       std::string  _caloShowerSimModuleLabel; 
        double       _digiSampling;
        int          _minDigiHitLength;
 
@@ -76,10 +70,10 @@ namespace mu2e {
        TH1F*  _secondDTNo;
        TH1F*  _secondDTOk;
 
-       std::map<int, std::vector<const CaloShower*>> _caloShowersMap;
+       std::map<int, std::vector<const CaloShowerSim*>> _caloShowerSimsMap;
     
-       void   extractAmplitude(int roId, int crystalId, std::vector<int> &waveform, double adc2MeV, CaloShowerVec& caloShowers);
-       void   findPeak(const std::vector<double>& x, const std::vector<double>& y, CaloShowerVec& caloShowers);
+       void   extractAmplitude(int roId, int crystalId, std::vector<int> &waveform, double adc2MeV, CaloShowerSimVec& caloShowerSims);
+       void   findPeak(const std::vector<double>& x, const std::vector<double>& y, CaloShowerSimVec& caloShowerSims);
        double fitfunction(double x, double *par, int nparTot, int nparFcn);
        double logn(double x, double *par);
        double meanParabol(double x1, double x2, double x3, double y1, double y2, double y3);
@@ -91,10 +85,10 @@ namespace mu2e {
   
      CaloHitFinderInspect::CaloHitFinderInspect(fhicl::ParameterSet const& pset) :
       art::EDAnalyzer(pset),
-      _caloDigiModuleLabel   (pset.get<std::string> ("caloDigiModuleLabel")),
-      _caloShowerModuleLabel (pset.get<std::string> ("caloShowerModuleLabel")),
-      _digiSampling          (pset.get<double>      ("digiSampling")),
-      _minDigiHitLength      (pset.get<int>         ("minDigiHitLength"))
+      _caloDigiModuleLabel     (pset.get<std::string> ("caloDigiModuleLabel")),
+      _caloShowerSimModuleLabel(pset.get<std::string> ("caloShowerSimModuleLabel")),
+      _digiSampling            (pset.get<double>      ("digiSampling")),
+      _minDigiHitLength        (pset.get<int>         ("minDigiHitLength"))
    {}
 
 
@@ -131,12 +125,12 @@ namespace mu2e {
       event.getByLabel(_caloDigiModuleLabel, caloDigisHandle);
       CaloDigiPackedCollection const& caloDigisColl(*caloDigisHandle);
     
-      art::Handle<CaloShowerCollection> caloShowerHandle;
-      event.getByLabel(_caloShowerModuleLabel, caloShowerHandle);
-      CaloShowerCollection const& caloShowers(*caloShowerHandle);
+      art::Handle<CaloShowerSimCollection> caloShowerSimHandle;
+      event.getByLabel(_caloShowerSimModuleLabel, caloShowerSimHandle);
+      CaloShowerSimCollection const& caloShowerSims(*caloShowerSimHandle);
 
-      std::map<int, std::vector<const CaloShower*>>  caloShowersMap;
-      for (auto const& caloShower: caloShowers) caloShowersMap[caloShower.crystalId()].push_back(&caloShower);
+      std::map<int, std::vector<const CaloShowerSim*>>  caloShowerSimsMap;
+      for (auto const& caloShowerSim: caloShowerSims) caloShowerSimsMap[caloShowerSim.crystalId()].push_back(&caloShowerSim);
       
       
       for (const auto& caloDigis : caloDigisColl)
@@ -147,11 +141,11 @@ namespace mu2e {
 	 int index(1); 
 	 while ( index < caloFromDigiSize )
 	 {	
-	      int    digitizedHitLength  = caloFromDigi.at(index);
-	      int    roId                = caloFromDigi.at(index+1);
-              int    crystalId           = cal.crystalByRO(roId);
-	      double adc2MeV             = calorimeterCalibrations->ADC2MeV(roId);
-              CaloShowerVec& caloShowers = caloShowersMap[crystalId];
+	      int    digitizedHitLength     = caloFromDigi.at(index);
+	      int    roId                   = caloFromDigi.at(index+1);
+              int    crystalId              = cal.crystalByRO(roId);
+	      double adc2MeV                = calorimeterCalibrations->ADC2MeV(roId);
+              CaloShowerSimVec& caloShowers = caloShowerSimsMap[crystalId];
 
 	      if (digitizedHitLength > _minDigiHitLength) 
 	      {	       
@@ -175,7 +169,7 @@ namespace mu2e {
 
 
   void CaloHitFinderInspect::extractAmplitude(int roId, int crystalId, std::vector<int>& waveform, 
-                                              double adc2MeV, CaloShowerVec& caloShowers)
+                                              double adc2MeV, CaloShowerSimVec& caloShowerSims)
   {
       
       std::vector<double> x,y;
@@ -196,7 +190,7 @@ namespace mu2e {
 	      y.push_back(waveform.at(wfindex+i));	    
 	  }
   
-	  findPeak(x,y,caloShowers);
+	  findPeak(x,y,caloShowerSims);
 
 	  index += size;
       }
@@ -204,7 +198,7 @@ namespace mu2e {
    }
 
 
-  void CaloHitFinderInspect::findPeak(const std::vector<double>& x, const std::vector<double>& y, CaloShowerVec& caloShowers)
+  void CaloHitFinderInspect::findPeak(const std::vector<double>& x, const std::vector<double>& y, CaloShowerSimVec& caloShowerSims)
   {
   
 	  int nparTot(0);
@@ -226,7 +220,7 @@ namespace mu2e {
 	       
 	       
                bool peakFound(false);
-	       for (const auto & shower : caloShowers) if (std::abs(shower->time()+20.0-x[i]) < 5.0) {peakFound=true; break;}
+	       for (const auto & showerSim : caloShowerSims) if (std::abs(showerSim->time()+20.0-x[i]) < 5.0) {peakFound=true; break;}
 	       
 	       if (peakFound) _firstAmpOk->Fill(y[i]);
 	       else           _firstAmpNo->Fill(y[i]);
@@ -261,7 +255,7 @@ namespace mu2e {
 	       if (maxp != &residual[i]) continue;
 	       	       
 	       bool peakFound(false);
-	       for (const auto & shower : caloShowers) if (std::abs(shower->time()+20-x[i]) < 20) {peakFound=true; break;}
+	       for (const auto & showerSim : caloShowerSims) if (std::abs(showerSim->time()+20-x[i]) < 20) {peakFound=true; break;}
 	       	       
 	       if (peakFound) _secondAmpOk->Fill(residual[i]);
 	       else           _secondAmpNo->Fill(residual[i]);

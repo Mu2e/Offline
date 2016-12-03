@@ -20,7 +20,6 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 
-#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"

@@ -4,13 +4,13 @@
 
 #include "art/Persistency/Common/Assns.h"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "MCDataProducts/inc/CaloShower.hh"
+#include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 
 
 namespace mu2e
 {
-    typedef art::Assns<CaloCluster, SimParticle, art::Ptr<CaloShower> > CaloClusterMCTruthAssns;
+    typedef art::Assns<CaloCluster, SimParticle, art::Ptr<CaloShowerSim> > CaloClusterMCTruthAssns;
 }
 
 #endif

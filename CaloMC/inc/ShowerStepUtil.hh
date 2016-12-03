@@ -1,16 +1,13 @@
 //
 // Utility to summarize information from StepPointMCs into CaloShower objects.
 //
-// Original author B. Echenard
-//
-
 
 #ifndef CaloMC_ShowerStepUtil_hh
 #define CaloMC_ShowerStepUtil_hh
 
-#include <vector>
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
+#include <vector>
 
 
 namespace mu2e {
@@ -33,19 +30,18 @@ namespace mu2e {
 	       {};
 
 
-
                void add(int i, double edep, double time, double momentum, CLHEP::Hep3Vector& pos);
                void init(int i, double time, double momentum, const CLHEP::Hep3Vector& posIn);
                void reset(int i);
 	       void printBucket(int i);
 	       
-	       int                  nBuckets()       const {return imax_;}
-	       int                  entries(int i)   const {return n_.at(i);}
-	       double               energyDep(int i) const {return edep_.at(i);}
-	       double               t0(int i)        const {return t0_.at(i);}
-               double               pIn(int i)       const {return pIn_.at(i);}
-               double               time(int i)      const {return time_.at(i) / w_.at(i);}
-               const CLHEP::Hep3Vector&   posIn(int i)     const {return posIn_.at(i);}     
+	       int                  nBuckets()         const {return imax_;}
+	       int                  entries(int i)     const {return n_.at(i);}
+	       double               energyDep(int i)   const {return edep_.at(i);}
+	       double               t0(int i)          const {return t0_.at(i);}
+               double               pIn(int i)         const {return pIn_.at(i);}
+               double               time(int i)        const {return time_.at(i) / w_.at(i);}
+               const CLHEP::Hep3Vector&   posIn(int i) const {return posIn_.at(i);}     
                CLHEP::Hep3Vector&   pos(int i);     
 	       CLHEP::HepSymMatrix& covPos(int i);
 

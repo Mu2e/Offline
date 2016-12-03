@@ -147,7 +147,7 @@ namespace mu2e {
     const static char* _name[];
 
     // Number of valid codes, not including lastEnum, but including "unknown".
-    static size_t size(){
+    static std::size_t size(){
       return lastEnum;
     }
 

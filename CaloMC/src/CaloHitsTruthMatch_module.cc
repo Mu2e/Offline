@@ -11,20 +11,6 @@
 // So we match the CaloCrystalHit to the caloShower (both time are folded), then extract the generated info 
 // from caloShowerStepMC and SimParticles
 
-
-// C++ includes.
-#include <iostream>
-#include <string>
-#include <cmath>
-#include <map>
-#include <vector>
-
-// ROOT includes
-#include "TH2F.h"
-#include "TFile.h"
-
-
-// Framework includes.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
@@ -35,15 +21,20 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 
-
-// Mu2e includes.
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStepCollection.hh"
-#include "MCDataProducts/inc/CaloShowerCollection.hh"
+#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthAssn.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 
+#include "TH2F.h"
+#include "TFile.h"
 
+#include <iostream>
+#include <string>
+#include <cmath>
+#include <map>
+#include <vector>
 
 
 namespace mu2e {
@@ -56,7 +47,7 @@ namespace mu2e {
         explicit CaloHitsTruthMatch(fhicl::ParameterSet const& pset) :
 
           // Parameters
-          caloShowerModuleLabel_     (pset.get<std::string>("caloShowerModuleLabel")), 
+          caloShowerSimModuleLabel_  (pset.get<std::string>("caloShowerSimModuleLabel")), 
           caloCrystalHitModuleLabel_ (pset.get<std::string>("caloCrystalHitModuleLabel")), 
           deltaTimeMinus_            (pset.get<double>     ("deltaTimeMinus")),  
           deltaTimePlus_             (pset.get<double>     ("deltaTimePlus")),   
@@ -77,7 +68,7 @@ namespace mu2e {
 
      private:
 
-        std::string       caloShowerModuleLabel_;   
+        std::string       caloShowerSimModuleLabel_;   
         std::string       caloCrystalHitModuleLabel_;   
         double            deltaTimeMinus_;
         double            deltaTimePlus_;
@@ -94,7 +85,7 @@ namespace mu2e {
         TH1F*  hChi2_;
 
 
-        void makeTruthMatch(const art::Handle<CaloShowerCollection> &caloShowerHandle, 
+        void makeTruthMatch(const art::Handle<CaloShowerSimCollection> &caloShowerSimHandle, 
                             const art::Handle<CaloCrystalHitCollection> &CaloCrystalHitHandle,
                             CaloHitMCTruthAssns &caloTruthMatch);
 
@@ -128,8 +119,8 @@ namespace mu2e {
   void CaloHitsTruthMatch::produce(art::Event& event)
   {
    
-      art::Handle<CaloShowerCollection> caloShowerHandle;
-      event.getByLabel(caloShowerModuleLabel_, caloShowerHandle);
+      art::Handle<CaloShowerSimCollection> caloShowerSimHandle;
+      event.getByLabel(caloShowerSimModuleLabel_, caloShowerSimHandle);
 
       art::Handle<CaloCrystalHitCollection> CaloCrystalHitHandle;
       event.getByLabel(caloCrystalHitModuleLabel_, CaloCrystalHitHandle);
@@ -137,7 +128,7 @@ namespace mu2e {
       std::unique_ptr<CaloHitMCTruthAssns> caloHitMCTruth(new CaloHitMCTruthAssns);
 
 
-      makeTruthMatch(caloShowerHandle,CaloCrystalHitHandle,*caloHitMCTruth);
+      makeTruthMatch(caloShowerSimHandle,CaloCrystalHitHandle,*caloHitMCTruth);
 
 
       event.put(std::move(caloHitMCTruth));
@@ -152,20 +143,20 @@ namespace mu2e {
   //   MCtime must not already be in the window of the next hit, in which case it is associate to this one
   //
   //--------------------------------------------------------------------
-  void CaloHitsTruthMatch::makeTruthMatch(const art::Handle<CaloShowerCollection> &caloShowerHandle, 
+  void CaloHitsTruthMatch::makeTruthMatch(const art::Handle<CaloShowerSimCollection> &caloShowerSimHandle, 
                                              const art::Handle<CaloCrystalHitCollection> &caloCrystalHitHandle,
                                              CaloHitMCTruthAssns &caloTruthMatch)
   {
         
-      const CaloShowerCollection&     caloShowers(*caloShowerHandle);
+      const CaloShowerSimCollection&  caloShowerSims(*caloShowerSimHandle);
       const CaloCrystalHitCollection& caloCrystalHits(*caloCrystalHitHandle);
  
       const CaloCrystalHit* caloCrystalHitBase = &caloCrystalHits.front();
-      const CaloShower*     caloShowerBase     = &caloShowers.front();
+      const CaloShowerSim*  caloShowerSimBase  = &caloShowerSims.front();
 
            
-      std::map<int, std::vector<const CaloShower*>> caloShowersMap;
-      for (auto const& caloShower: caloShowers) caloShowersMap[caloShower.crystalId()].push_back(&caloShower);
+      std::map<int, std::vector<const CaloShowerSim*>> caloShowerSimsMap;
+      for (auto const& caloShowerSim: caloShowerSims) caloShowerSimsMap[caloShowerSim.crystalId()].push_back(&caloShowerSim);
       
       std::map<int, std::vector<const CaloCrystalHit*>> caloHitMap;
       for (auto const& CaloCrystalHit: caloCrystalHits) caloHitMap[CaloCrystalHit.id()].push_back(&CaloCrystalHit);
@@ -180,11 +171,11 @@ namespace mu2e {
           if (!caloHits.size()) continue;
           std::sort(caloHits.begin(),caloHits.end(), [](auto const a, auto const b){return a->time() < b->time();});
           
-          std::vector<const CaloShower*>& caloShowers = caloShowersMap[crystalId];
-          std::sort(caloShowers.begin(),caloShowers.end(), [](auto const a, auto const b){return a->time() < b->time();});
+          std::vector<const CaloShowerSim*>& caloShowerSims = caloShowerSimsMap[crystalId];
+          std::sort(caloShowerSims.begin(),caloShowerSims.end(), [](auto const a, auto const b){return a->time() < b->time();});
           
-          auto showerIt    = caloShowers.begin();
-          auto showerItEnd = caloShowers.end();
+          auto showerIt    = caloShowerSims.begin();
+          auto showerItEnd = caloShowerSims.end();
           auto hitIt       = caloHits.begin();
           auto hitItEnd    = caloHits.end();
 
@@ -207,33 +198,31 @@ namespace mu2e {
                  
                  if (diagLevel_ > 2)
                  {
-		    hTime_->Fill((*showerIt)->time()-(*hitIt)->time());
-                    hEnerTime_->Fill((*showerIt)->energy(),(*showerIt)->time()-(*hitIt)->time());
-                    hTime2d_->Fill((*showerIt)->time(),(*hitIt)->time());
-                    hEner2d_->Fill((*showerIt)->energy(),(*hitIt)->energyDep());
-		    hdEdT_->Fill((*hitIt)->energyDep()-(*showerIt)->energy(),(*showerIt)->time()-(*hitIt)->time());
+		     hTime_->Fill((*showerIt)->time()-(*hitIt)->time());
+                     hEnerTime_->Fill((*showerIt)->energy(),(*showerIt)->time()-(*hitIt)->time());
+                     hTime2d_->Fill((*showerIt)->time(),(*hitIt)->time());
+                     hEner2d_->Fill((*showerIt)->energy(),(*hitIt)->energyDep());
+		     hdEdT_->Fill((*hitIt)->energyDep()-(*showerIt)->energy(),(*showerIt)->time()-(*hitIt)->time());
 		    
-		    if ((*showerIt)->energy() > 5) hTime2_->Fill((*showerIt)->time()-(*hitIt)->time()); 
+		     if ((*showerIt)->energy() > 5) hTime2_->Fill((*showerIt)->time()-(*hitIt)->time()); 
 		    
-		    double deltaE = std::abs((*showerIt)->energy()-(*hitIt)->energyDep());
-		    if (deltaE > 5 && (*showerIt)->energy() > 5)
-		    hChi2_->Fill((*hitIt)->recoCaloDigis().at(0)->chi2()/(*hitIt)->recoCaloDigis().at(0)->ndf());
-		 
+		     double deltaE = std::abs((*showerIt)->energy()-(*hitIt)->energyDep());
+		     if (deltaE > 5 && (*showerIt)->energy() > 5)
+		     hChi2_->Fill((*hitIt)->recoCaloDigis().at(0)->chi2()/(*hitIt)->recoCaloDigis().at(0)->ndf());		 
 		 }
                  
                  // add shower to the match
-                 const CaloCrystalHit* hit = *hitIt;
-                 const CaloShower* shower  = *showerIt;
-                 size_t idxHit             = (hit - caloCrystalHitBase);
-                 size_t idxShower          = (shower - caloShowerBase);               
-                 auto hitPtr               = art::Ptr<CaloCrystalHit>(caloCrystalHitHandle,idxHit);               
-                 auto  ShowerPtr           = art::Ptr<CaloShower>(caloShowerHandle,idxShower);
+                 const CaloCrystalHit* hit      = *hitIt;
+                 const CaloShowerSim* showerSim = *showerIt;
+                 size_t idxHit                  = (hit - caloCrystalHitBase);
+                 size_t idxShower               = (showerSim - caloShowerSimBase);               
+                 auto hitPtr                    = art::Ptr<CaloCrystalHit>(caloCrystalHitHandle,idxHit);               
+                 auto  ShowerSimPtr             = art::Ptr<CaloShowerSim>(caloShowerSimHandle,idxShower);
+                 
+		 caloTruthMatch.addSingle(hitPtr, showerSim->sim(), ShowerSimPtr);
 
-                 std::set<art::Ptr<SimParticle>> sims;
-                 for (auto const& step : shower->caloShowerSteps()) sims.insert(step->simParticle());
-                 for (auto &sim : sims) caloTruthMatch.addSingle(hitPtr, sim, ShowerPtr);
-
-                 if (diagLevel_ > 3) std::cout<<"[CaloHitsTruthMatch]  matched shower id/time/energyDep()= "<<shower->crystalId()<<" / "<<shower->time()<<" / "<<shower->energy()
+                 if (diagLevel_ > 3) std::cout<<"[CaloHitsTruthMatch]  matched shower id/time/energyDep()= "<<showerSim->crystalId()
+                                              <<" / "<<showerSim->time()<<" / "<<showerSim->energy()
                                               <<"\t    hit  id/time/energyDep()= "<<hit->id()<<" / "<<hit->time()<<" / "<<hit->energyDep()<<std::endl;
 
                  ++showerIt;                

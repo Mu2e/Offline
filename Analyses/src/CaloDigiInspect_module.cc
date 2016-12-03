@@ -15,7 +15,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/CaloShowerCollection.hh"
+#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthAssn.hh"
@@ -64,9 +64,9 @@ namespace mu2e {
 
       private:
          
-	 typedef  art::Ptr<CaloShower> CaloShowerPtr;
+	 typedef  art::Ptr<CaloShowerSim> CaloShowerSimPtr;
 	  
-         std::string _caloShowerModuleLabel;
+         std::string _caloShowerSimModuleLabel;
          std::string _caloCrystalHitModuleLabel;
          std::string _caloHitTruthModuleLabel;
          int _diagLevel;
@@ -82,7 +82,7 @@ namespace mu2e {
 
    CaloDigiInspect::CaloDigiInspect(fhicl::ParameterSet const& pset) :
       art::EDAnalyzer(pset),
-      _caloShowerModuleLabel(pset.get<std::string>("caloShowerModuleLabel")),
+      _caloShowerSimModuleLabel(pset.get<std::string>("caloShowerSimModuleLabel")),
       _caloCrystalHitModuleLabel(pset.get<std::string>("caloCrystalHitModuleLabel")),
       _caloHitTruthModuleLabel(pset.get<std::string>("caloHitTruthModuleLabel")),
       _diagLevel(pset.get<int>("diagLevel",0))
@@ -126,9 +126,9 @@ namespace mu2e {
        if( ! geom->hasElement<Calorimeter>() ) return;
        Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
-       art::Handle<CaloShowerCollection> caloShowerHandle;
-       event.getByLabel(_caloShowerModuleLabel, caloShowerHandle);
-       const CaloShowerCollection& caloShowers(*caloShowerHandle);      
+       art::Handle<CaloShowerSimCollection> caloShowerSimHandle;
+       event.getByLabel(_caloShowerSimModuleLabel, caloShowerSimHandle);
+       const CaloShowerSimCollection& caloShowerSims(*caloShowerSimHandle);      
 
        art::Handle<CaloCrystalHitCollection> CaloCrystalHitHandle;
        event.getByLabel(_caloCrystalHitModuleLabel, CaloCrystalHitHandle);
@@ -143,7 +143,7 @@ namespace mu2e {
 
 
        std::set<const CaloCrystalHit*> hitSet;
-       std::set<const CaloShower*> showerSet;
+       std::set<const CaloShowerSim*> showerSimSet;
        std::vector<int> nShower(cal.nCrystal(),0);
        std::vector<int> nShowerReco(cal.nCrystal(),0);
        std::vector<int> nHit(cal.nCrystal(),0);
@@ -157,44 +157,44 @@ namespace mu2e {
        {       
              const auto& crystalHitPtr = i->first;
             //const auto& sim = i->second;
-	     const CaloShowerPtr& caloShowerPtr = caloHitTruth.data(i);	     
+	     const CaloShowerSimPtr& caloShowerSimPtr = caloHitTruth.data(i);	     
 	     
 	     hitSet.insert(crystalHitPtr.get());
-	     showerSet.insert(caloShowerPtr.get());
+	     showerSimSet.insert(caloShowerSimPtr.get());
              
-	     _hDeltaT->Fill(caloShowerPtr->time()-crystalHitPtr->time());
-	     _hDeltaTE->Fill(caloShowerPtr->time()-crystalHitPtr->time(),caloShowerPtr->energy());
+	     _hDeltaT->Fill(caloShowerSimPtr->time()-crystalHitPtr->time());
+	     _hDeltaTE->Fill(caloShowerSimPtr->time()-crystalHitPtr->time(),caloShowerSimPtr->energy());
 	     
-	     if (caloShowerPtr->time()-crystalHitPtr->time()>10) _hEpileUp->Fill(caloShowerPtr->energy());
+	     if (caloShowerSimPtr->time()-crystalHitPtr->time()>10) _hEpileUp->Fill(caloShowerSimPtr->energy());
 	     
-	     if (caloShowerPtr->energy() > 1 && caloShowerPtr->time()-crystalHitPtr->time()<5)
+	     if (caloShowerSimPtr->energy() > 1 && caloShowerSimPtr->time()-crystalHitPtr->time()<5)
 	     {
-	        _hresolE->Fill(1.0-crystalHitPtr->energyDep()/caloShowerPtr->energy());
-	        _hresolT->Fill(caloShowerPtr->time()-crystalHitPtr->time());
-	        if (caloShowerPtr->energy() > 10) _hresolT2->Fill(caloShowerPtr->time()-crystalHitPtr->time());
+	        _hresolE->Fill(1.0-crystalHitPtr->energyDep()/caloShowerSimPtr->energy());
+	        _hresolT->Fill(caloShowerSimPtr->time()-crystalHitPtr->time());
+	        if (caloShowerSimPtr->energy() > 10) _hresolT2->Fill(caloShowerSimPtr->time()-crystalHitPtr->time());
 		
 	     }
        }
        
        
        //analyze the MC showers
-       for (const auto& caloShower : caloShowers)
+       for (const auto& caloShowerSim : caloShowerSims)
        {             
-	    if (caloShower.time() < 500) continue;
+	    if (caloShowerSim.time() < 500) continue;
 	    
-	    nShower[caloShower.crystalId()] +=1;	     
+	    nShower[caloShowerSim.crystalId()] +=1;	     
 	    ++nShowers;     
 	    
-	    if (showerSet.find(&caloShower) != showerSet.end())
+	    if (showerSimSet.find(&caloShowerSim) != showerSimSet.end())
 	    {
-	        _hShowerE->Fill(caloShower.energy());
-	        _hShowerT->Fill(caloShower.time());
-		nShowerReco[caloShower.crystalId()] +=1;
+	        _hShowerE->Fill(caloShowerSim.energy());
+	        _hShowerT->Fill(caloShowerSim.time());
+		nShowerReco[caloShowerSim.crystalId()] +=1;
 	    }
 	    else
 	    {
-	        _hShowerNoE->Fill(caloShower.energy());
-	        _hShowerNoT->Fill(caloShower.time());
+	        _hShowerNoE->Fill(caloShowerSim.energy());
+	        _hShowerNoT->Fill(caloShowerSim.time());
 	    }
 	    
 	    

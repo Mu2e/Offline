@@ -40,7 +40,7 @@ namespace mu2e {
          if (!pshape) throw cet::exception("CATEGORY")<<"CaloPulseShape:: Hitsogram "<<histName.c_str()
 	                                              <<" from file "<<fileName.c_str()<<" does not exist";        
 
-          double  pulseBinWidth = pshape->GetBinWidth(1);
+          double  pulseBinWidth = pshape->GetBinWidth(2);
           int     nBinTimeStamp = digiSampling_ / pulseBinWidth; 
           int     integralStep  = digiSampling_ / pulseBinWidth / pulseIntegralSteps_;
 
@@ -49,7 +49,6 @@ namespace mu2e {
           for (; ilast > 0                 ; --ilast) {if (pshape->GetBinContent(ilast)  > 1e-3) break; pshape->SetBinContent(ilast,0);}
 
           int  nTimeStamps = int((ilast-ifirst)*pulseBinWidth/digiSampling_) + 1;
-
 
           for (int i=0; i<pulseIntegralSteps_; ++i)
           {        
@@ -74,9 +73,14 @@ namespace mu2e {
    //----------------------------------------------------------------------------------------------------------------------
    const void CaloPulseShape::printShape() const
    {
+       int ip(0);
        std::cout<<"[CaloPulseShape] Pulse "<<std::endl;
        for (const auto& pulseDigi : pulseDigitized_)
-	  for (const auto& pulse : pulseDigi) std::cout<<pulse<<" "; std::cout<<std::endl;       
+       {
+	  std::cout<<"Pulse "<<ip<<std::endl;
+          for (const auto& pulse : pulseDigi) std::cout<<pulse<<" "; std::cout<<std::endl;       
+          ++ip;
+       }
    }
    
    

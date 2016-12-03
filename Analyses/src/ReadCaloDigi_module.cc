@@ -65,7 +65,6 @@
 #include "MCDataProducts/inc/CaloDigiMC.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 
-#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
 #include "DataProducts/inc/PDGCode.hh"
 

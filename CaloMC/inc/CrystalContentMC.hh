@@ -1,22 +1,13 @@
-//
-// Original author B.Echenard
-//
-
 #ifndef CaloCluster_CrystalContentMC_HH_
 #define CaloCluster_CrystalContentMC_HH_
 
 
-// Mu2e includes
+#include "CaloMC/inc/CaloContentSim.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "MCDataProducts/inc/CaloShower.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthAssn.hh"
-#include "CaloMC/inc/CaloContentSim.hh"
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 
-
-
-// C++ includes
 #include <map>
 #include <iostream>
 
@@ -35,10 +26,10 @@ namespace mu2e {
              ~CrystalContentMC(){};
 	     	     
 
-       	     const SimContentMap& simContentMap() const {return _simContentMap;}
-	     const bool           hasConversion() const {return _hasConversion;} 
-	     const double         eDepTot()       const {return _eDepTot;}
-	     const double         time()          const {return _time;}
+       	     const SimContentMap& simContentMap() const {return simContentMap_;}
+	     const bool           hasConversion() const {return hasConversion_;} 
+	     const double         eDepTot()       const {return eDepTot_;}
+	     const double         time()          const {return time_;}
 	     
 
 
@@ -46,10 +37,10 @@ namespace mu2e {
 
              void fillCrystal(const Calorimeter& cal, const CaloHitMCTruthAssns& caloHitTruth, const CaloCrystalHit& caloCrystalHit);
 	     
-	     SimContentMap _simContentMap;
-	     bool          _hasConversion;
-	     double        _eDepTot;
-	     double        _time;
+	     SimContentMap simContentMap_;
+	     bool          hasConversion_;
+	     double        eDepTot_;
+	     double        time_;
 
     };
 

@@ -139,11 +139,13 @@ namespace mu2e{
         _calo->_caloGeomInfo.roHalfTrans(        config.getDouble("calorimeter.crystalReadoutHalfTrans") );
         _calo->_caloGeomInfo.roHalfThickness(    config.getDouble("calorimeter.crystalReadoutHalfThickness") );
         _calo->_caloGeomInfo.caseThickness(      config.getDouble("calorimeter.caseThickness") );
-
         _calo->_caloGeomInfo.envelopeInRadius(   config.getDouble("calorimeter.caloMotherInRadius") );
         _calo->_caloGeomInfo.envelopeOutRadius(  config.getDouble("calorimeter.caloMotherOutRadius") );
         _calo->_caloGeomInfo.envelopeZ0(         config.getDouble("calorimeter.caloMotherZ0") );
         _calo->_caloGeomInfo.envelopeZ1(         config.getDouble("calorimeter.caloMotherZ1") );
+        _calo->_caloGeomInfo.refractiveIndex(    config.getDouble("calorimeter.refractiveIndex") );
+        _calo->_caloGeomInfo.crystalDecayTime(   config.getDouble("calorimeter.crystalDecayTime") );
+
 
         _calo->_caloGeomInfo.nPipes(             config.getInt("calorimeter.nPipes",0));
         _calo->_caloGeomInfo.pipeRadius(         config.getDouble("calorimeter.pipeRadius",5) );

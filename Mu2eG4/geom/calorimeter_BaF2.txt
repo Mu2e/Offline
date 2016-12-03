@@ -30,6 +30,7 @@ double calorimeter.crystalHexsize              = 16.5;  //mm  half distance acro
 double calorimeter.crystalHalfLong             = 100.0;
 string calorimeter.crystalMaterial             = "G4_BARIUM_FLUORIDE"; //"G4_PbWO4" "G4_BARIUM_FLUORIDE" "Lyso_01" "G4_CESIUM_IODIDE"
 double calorimeter.refractiveIndex             = 1.47;
+double calorimeter.crystalDecayTime            = 0.9;
 
 string calorimeter.crystalWrapper              = "Polyethylene092";
 double calorimeter.crystalWrapperThickness     = 0.100; //mm

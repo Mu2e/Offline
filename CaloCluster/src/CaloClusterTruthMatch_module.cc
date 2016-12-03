@@ -3,7 +3,7 @@
 //
 // Original author B. Echenard
 //
-// We match the CaloCluster to the caloShower (both time are folded), then extract the Simparticles
+// We match the CaloCluster to the CaloShowerSim (both time are folded), then extract the Simparticles
 //
 
 // Framework includes.
@@ -21,7 +21,7 @@
 // Mu2e includes.
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStepCollection.hh"
-#include "MCDataProducts/inc/CaloShowerCollection.hh"
+#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
 #include "MCDataProducts/inc/CaloClusterMCTruthAssn.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthAssn.hh"
@@ -149,11 +149,11 @@ namespace mu2e {
 	    art::Ptr<CaloCluster> clusterPtr = art::Ptr<CaloCluster>(CaloClusterHandle,idx);
 
 	    const auto& sim = i->second;
-	    const auto& caloShowerPtr = caloHitTruth.data(i);
-	    caloClusterTruth.addSingle(clusterPtr, sim, caloShowerPtr);
+	    const auto& CaloShowerSimPtr = caloHitTruth.data(i);
+	    caloClusterTruth.addSingle(clusterPtr, sim, CaloShowerSimPtr);
 
             
-	    if (diagLevel_ > 2) std::cout<<"[CaloClusterTruthMatch]  matched crystal  id/time/Edep= "<<caloShowerPtr->crystalId()<<" / "<<caloShowerPtr->time()<<" / "<<caloShowerPtr->energy()
+	    if (diagLevel_ > 2) std::cout<<"[CaloClusterTruthMatch]  matched crystal  id/time/Edep= "<<CaloShowerSimPtr->crystalId()<<" / "<<CaloShowerSimPtr->time()<<" / "<<CaloShowerSimPtr->energy()
 		                          <<"\t    hit in cluster id/time/Edep= "<<i->first->id()<<" / "<<i->first->time()<<" / "<<i->first->energyDep()<<std::endl;
        }
        

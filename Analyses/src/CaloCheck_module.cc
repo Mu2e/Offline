@@ -25,7 +25,6 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 
-#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"

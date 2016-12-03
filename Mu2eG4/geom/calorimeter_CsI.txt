@@ -41,6 +41,8 @@ double calorimeter.crystalHexsize              = 17.0;  //mm  half distance acro
 double calorimeter.crystalHalfLong             = 100.0;
 string calorimeter.crystalMaterial             = "G4_CESIUM_IODIDE"; 
 double calorimeter.refractiveIndex             = 1.8;
+//double calorimeter.crystalDecayTime            = 30.0;
+double calorimeter.crystalDecayTime            = 0.1;
 
 string calorimeter.crystalWrapper              = "Polyethylene092";
 double calorimeter.crystalWrapperThickness     = 0.150; //mm

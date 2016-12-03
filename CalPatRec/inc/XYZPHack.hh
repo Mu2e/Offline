@@ -14,7 +14,7 @@ namespace mu2e {
 // utility struct
 //-----------------------------------------------------------------------------
   struct XYZPHack {
-    size_t             _ind;		// straw hit index
+    std::size_t        _ind;		// straw hit index
     CLHEP::Hep3Vector  _pos;		// position
     double             _phi;	        // ambiguity-resolved phi angle
     StrawHitFlag       _flag;		// flag
@@ -34,9 +34,9 @@ namespace mu2e {
     XYZPHack():_phi(0.0) {
     }
 
-    XYZPHack(size_t ind, StrawHit const& sh, StrawHitPosition const& shp, Straw const& straw, StrawHitFlag const& flag);
+    XYZPHack(std::size_t ind, StrawHit const& sh, StrawHitPosition const& shp, Straw const& straw, StrawHitFlag const& flag);
 
-    XYZPHack(size_t ind, CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& wdir, double werr, double serr);
+    XYZPHack(std::size_t ind, CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& wdir, double werr, double serr);
  
 // radial position information
 //     virtual void rinfo     (CLHEP::Hep3Vector const& center, VALERR& rad) const;

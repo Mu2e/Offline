@@ -1,12 +1,8 @@
 #ifndef CalorimeterGeom_BaseCalorimeterInfoGeom_hh
 #define CalorimeterGeom_BaseCalorimeterInfoGeom_hh
 //
-// $Id: BaseCalorimeterInfoGeom.hh,v 1.1 2014/08/01 21:49:38 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 21:49:38 $
 //
-// Contains data for the BaseCalorimeter class, much of it will be moved into the calibration 
-// in the future
+// Contains data for the BaseCalorimeter class
 //
 // Might consider to have a class for the calibration system and pipes later (or might not...)
 //
@@ -56,6 +52,8 @@ namespace mu2e {
            void envelopeOutRadius(double value)    {_envelopeOutRadius = value;}
            void envelopeZ0(double value)           {_envelopeZ0 = value;}
            void envelopeZ1(double value)           {_envelopeZ1 = value;} 
+	   void refractiveIndex(double value)      {_refractiveIndex = value;}
+	   void crystalDecayTime(double value)     {_crystalDecayTime = value;}
 
            
 	   
@@ -81,7 +79,10 @@ namespace mu2e {
            double envelopeOutRadius()   const      {return _envelopeOutRadius;}
            double envelopeZ0()          const      {return _envelopeZ0;}
            double envelopeZ1()          const      {return _envelopeZ1;}
-           
+	   double refractiveIndex()     const      {return _refractiveIndex; }
+	   double crystalDecayTime()    const      {return _crystalDecayTime; }
+
+
            void nPipes(int value)                  {_nPipes = value;}
            void pipeRadius(double value)           {_pipeRadius = value;}
            void pipeThickness(double value)        {_pipeThickness = value;}           
@@ -120,6 +121,9 @@ namespace mu2e {
           double _envelopeZ0;
           double _envelopeZ1;
 	   
+          double _refractiveIndex;
+          double _crystalDecayTime;
+
 	  unsigned int         _nPipes;
 	  double               _pipeRadius;
 	  double               _pipeThickness;

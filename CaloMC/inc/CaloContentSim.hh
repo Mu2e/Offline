@@ -1,6 +1,8 @@
 #ifndef CaloCluster_CaloContentSim_HH_
 #define CaloCluster_CaloContentSim_HH_
 
+#include <algorithm>
+
 namespace mu2e {
 
 

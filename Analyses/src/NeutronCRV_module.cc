@@ -45,7 +45,6 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"

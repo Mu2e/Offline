@@ -22,7 +22,7 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStepCollection.hh"
-#include "MCDataProducts/inc/CaloShowerCollection.hh"
+#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
 #include "CaloMC/inc/CrystalContentMC.hh"
 #include "GeneralUtilities/inc/TwoLinePCA.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -91,7 +91,7 @@ namespace mu2e {
     std::string _calorimeterStepPoints;
 
     // Module which made the MC CaloShowers
-    std::string _caloShowerModuleLabel;
+    std::string _caloShowerSimModuleLabel;
 
     // Module which made the CaloCrystalHits
     std::string _caloCrystalModuleLabel;
@@ -189,7 +189,7 @@ namespace mu2e {
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _calorimeterStepPoints(pset.get<string>("calorimeterStepPoints","calorimeter")),
-    _caloShowerModuleLabel(pset.get<string>("caloShowerModuleLabel","CaloShowerFromShowerStep")),
+    _caloShowerSimModuleLabel(pset.get<string>("caloShowerSimModuleLabel","CaloShowerStepROFromShowerStep")),
     _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalHitsFromHits")),
     _targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget")),
     _crvStepPoints(pset.get<string>("CRVStepPoints","CRV")),
@@ -390,9 +390,9 @@ namespace mu2e {
      event.getMany( getCrystalSteps, crystalStepsHandles);
 
      //Calorimeter shower MC
-     art::Handle<CaloShowerCollection> caloShowerHandle;
-     event.getByLabel(_caloShowerModuleLabel, caloShowerHandle);
-     const CaloShowerCollection& caloShowers(*caloShowerHandle);
+     art::Handle<CaloShowerSimCollection> caloShowerSimHandle;
+     event.getByLabel(_caloShowerSimModuleLabel, caloShowerSimHandle);
+     const CaloShowerSimCollection& caloShowerSims(*caloShowerSimHandle);
 
      //Crystal hits (average from readouts)
      art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
@@ -431,19 +431,19 @@ namespace mu2e {
 
 
      //do the same with the CaloShowers
-     if (!caloShowerHandle.isValid()) return;
+     if (!caloShowerSimHandle.isValid()) return;
 
      map<int,double> showerMap;
      map<int,int> showerMap2;
-     for (const auto& shower : caloShowers)
+     for (const auto& showerSim : caloShowerSims)
      {
-         showerMap[shower.crystalId()] += shower.energy();
-         for (const auto& cst :shower.caloShowerSteps()) showerMap2[shower.crystalId()] += cst->nCompress();
-         _hCaTime->Fill(shower.time());
+         showerMap[showerSim.crystalId()] += showerSim.energy();
+         for (const auto& step : showerSim.caloShowerSteps()) showerMap2[showerSim.crystalId()] += step->nCompress();
+         _hCaTime->Fill(showerSim.time());
 
          if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ) 
-	   std::cout<<"Readback: caloshower in crystal "<< shower.crystalId()<<" eDep = "<<shower.energy()
-	            <<" time = "<<shower.time()<<std::endl;
+	   std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalId()<<" eDep = "<<showerSim.energy()
+	            <<" time = "<<showerSim.time()<<std::endl;
      }
 
      for (const auto& iter : showerMap)  _hCaShowerEdep->Fill(iter.first,iter.second);

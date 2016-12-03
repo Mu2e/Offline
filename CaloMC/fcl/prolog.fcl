@@ -15,30 +15,28 @@ BEGIN_PROLOG
 
 CaloShowerStepFromStepPt  : 
 {
-   module_type             : CaloShowerStepFromStepPt
-   numZSlices              : 20
-   deltaTime               : 0.2
-   calorimeterStepPoints   : calorimeter
-   calorimeterROStepPoints : calorimeterRO
-   physVolInfoInput        : "g4run"
-   caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092"]
-   diagLevel               : 0
+    module_type             : CaloShowerStepFromStepPt
+    numZSlices              : 20
+    deltaTime               : 0.2
+    calorimeterStepPoints   : calorimeter
+    calorimeterROStepPoints : calorimeterRO
+    physVolInfoInput        : "g4run"
+    caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092"]
+    diagLevel               : 0
 }
 
 
- CaloShowerFromShowerStep : 
- {
-    module_type                 : CaloShowerFromShowerStep
+CaloShowerStepROFromShowerStep : 
+{
+    module_type                 : CaloShowerStepROFromShowerStep
     caloShowerStepMCModuleLabel : CaloShowerStepFromStepPt
     caloShowerMCName            : calorimeter
     TimeOffsets                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
     blindTime                   : 0
-    timeGap                     : 0.5
-    filterEnergy                : 0.0
-    filterDeltaT                : 150.
     caloLRUcorrection           : true
-    caloBirkesCorrection        : true
-
+    caloBirksCorrection         : true
+    caloPEStatcorrection        : true
+    addTravelTime               : true	    
     diagLevel                   : 0
 }
 
@@ -46,10 +44,9 @@ CaloShowerStepFromStepPt  :
 CaloDigisFromShower : 
 {
     module_type           : CaloDigisFromShower
-    caloShowerModuleLabel : CaloShowerFromShowerStep
+    caloShowerModuleLabel : CaloShowerStepROFromShowerStep
 
     blindTime             : @local::HitMakerBlindTime
-    caloPEStatcorrection  : true
     addNoise              : true
     noise                 : 2       # mV equivalent to 150 keV of Noise               
 
@@ -70,7 +67,7 @@ CaloDigisFromShower :
 CaloHitsTruthMatch:
 {
     module_type               : CaloHitsTruthMatch
-    caloShowerModuleLabel     : CaloShowerFromShowerStep
+    caloShowerSimModuleLabel  : CaloShowerStepROFromShowerStep
     caloCrystalHitModuleLabel : CaloCrystalHitsFromHits
     deltaTimeMinus            : 4.0    #ns
     deltaTimePlus             : 150.0  #ns
@@ -80,14 +77,14 @@ CaloHitsTruthMatch:
 CaloDigiMC : 
 {
    producers : {
-     CaloShowerStepFromStepPt : @local::CaloShowerStepFromStepPt
-     CaloShowerFromShowerStep : @local::CaloShowerFromShowerStep
-     CaloDigisFromShower      : @local::CaloDigisFromShower
+     CaloShowerStepFromStepPt       : @local::CaloShowerStepFromStepPt
+     CaloShowerStepROFromShowerStep : @local::CaloShowerStepROFromShowerStep
+     CaloDigisFromShower            : @local::CaloDigisFromShower
    }
    producersMC : {
      CaloHitsTruthMatch : @local::CaloHitsTruthMatch
    }
-   DigiSim    : [ CaloShowerStepFromStepPt, CaloShowerFromShowerStep, CaloDigisFromShower]
+   DigiSim    : [ CaloShowerStepFromStepPt, CaloShowerStepROFromShowerStep, CaloDigisFromShower]
    TruthMatch : [ CaloHitsTruthMatch ]
 }
 

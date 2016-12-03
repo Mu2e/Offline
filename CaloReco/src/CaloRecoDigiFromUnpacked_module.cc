@@ -123,7 +123,7 @@ namespace mu2e {
   void CaloRecoDigiFromUnpacked::produce(art::Event& event) 
   {
 
-       if (diagLevel_ > 3) printf("[CaloRecoDigiFromUnpacked::produce] event %i\n", event.id().event());
+       if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromUnpacked::produce] begin"<<std::endl;
 
        //Get handles to calorimeter RO (aka APD) collection
        art::Handle<CaloDigiCollection> caloDigisHandle;
@@ -141,6 +141,8 @@ namespace mu2e {
        }
 
        event.put(std::move(recoCaloDigiColl));
+       
+       if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromUnpacked::produce] end"<<std::endl;
 
        return;
   }
@@ -185,7 +187,7 @@ namespace mu2e {
 
             if (diagLevel_ > 3)
             {
-                std::cout<<"CaloRecoDigiFromUnpacked::extractAmplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
+                std::cout<<"[CaloRecoDigiFromUnpacked::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
                 for (auto const& val : waveform) std::cout<< val<<" "; std::cout<<std::endl;
             }
             
@@ -204,7 +206,7 @@ namespace mu2e {
 
                  if (diagLevel_ > 1)
                  {
-                     std::cout<<"CaloRecoDigiFromUnpacked::extractAmplitude "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;                   
+                     std::cout<<"[CaloRecoDigiFromUnpacked::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;                   
                  }           
 
                  if (chi2/ndf > maxChi2Cut_) continue;

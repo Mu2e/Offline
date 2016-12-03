@@ -26,7 +26,7 @@ namespace mu2e {
     // required for persistence
       StereoHit();
 // construct from specified straw hits.  The collection and tracker are required
-      StereoHit(StrawHitCollection const& strawhits,Tracker const& tracker, size_t ind1, size_t ind2);
+      StereoHit(StrawHitCollection const& strawhits,Tracker const& tracker, std::size_t ind1, std::size_t ind2);
 // accessors
       StrawHit const& sh1(StrawHitCollection const& strawhits) const { return strawhits[_hind1]; }
       StrawHit const& sh2(StrawHitCollection const& strawhits) const { return strawhits[_hind2]; }
@@ -43,14 +43,14 @@ namespace mu2e {
       float wdist1() const { return _wd1; }
       float wdist2() const { return _wd2; }
       float wdot() const { return _wdot; }
-      size_t hitIndex1() const { return _hind1; }
-      size_t hitIndex2() const { return _hind2; }
+      std::size_t hitIndex1() const { return _hind1; }
+      std::size_t hitIndex2() const { return _hind2; }
       float chisq() const { return _chisq; }
       float mvaout() const { return _mvaout; }
       void setChisquared(double chisq) { _chisq = chisq; }
       void setMVAOut(double mvaout) { _mvaout = mvaout; }
     private:
-      size_t _hind1, _hind2; // indices into the straw hit container for the 2 hits making up this stereo hit
+      std::size_t _hind1, _hind2; // indices into the straw hit container for the 2 hits making up this stereo hit
       CLHEP::Hep3Vector _pos; // position in tracker coordinates
       float _dist; // transverse separation between the 2 hit wires at their POCA
       PanelId::isep _isep; // separation of measurement planes
