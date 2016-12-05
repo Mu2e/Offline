@@ -16,7 +16,7 @@ mu2eg4DefaultPhysics: {
     BirksConsts : {} // e.g. { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV}
     useNewMuMinusAtomicCapture: false
     minRangeCut: 0.010 // mm
-    protonProductionCut: 1.0 // mm
+    protonProductionCut: 0.0 // mm
     physicsListName:  "ShieldingM"
     turnOffRadioactiveDecay:  false
     turnOnRadioactiveDecay:  false
