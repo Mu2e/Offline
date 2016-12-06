@@ -80,6 +80,8 @@ namespace mu2e
       art::InputTag _hsTag;
       unsigned _minnhits; // minimum # of hits
       double _maxdoca;      // outlier cut
+      bool _foutliers; // filter hits far from the helix
+      bool _fhoutliers; // filter hits found flagged as outliers in the helix fit
       TrkParticle _tpart; // particle type being searched for
       TrkFitDirection _fdir;  // fit direction in search
       vector<double> _perr; // diagonal parameter errors to use in the fit
@@ -107,6 +109,8 @@ namespace mu2e
     _hsTag(pset.get<art::InputTag>("SeedCollectionTag","RobustHelixFinder")),
     _minnhits(pset.get<unsigned>("MinNHits",10)),
     _maxdoca(pset.get<double>("MaxDoca",40.0)),
+    _foutliers(pset.get<bool>("FilterOutliers",true)),
+    _fhoutliers(pset.get<bool>("FilterHelixOutliers",false)),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _perr(pset.get<vector<double> >("ParameterErrors")),
@@ -169,13 +173,13 @@ namespace mu2e
 	TimeCluster tclust;
 	tclust._t0 = hseed._t0;
 	for(auto hhit : hseed._hhits){
-	  if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))	
+	  if((!_fhoutliers) || (!hhit._flag.hasAnyProperty(StrawHitFlag::outlier)))	
 	    tclust._strawHitIdxs.push_back(hhit._shidx);
 	}
 // create a TrkDef; it should be possible to build a fit from the helix seed directly FIXME!
 	TrkDef seeddef(tclust,hstraj,_tpart,_fdir);
 // filter outliers; this doesn't use drift information, just straw positions
-	filterOutliers(seeddef);
+	if(_foutliers)filterOutliers(seeddef);
     // now, fit the seed helix from the filtered hits
 	KalRep *seedrep(0);
 	_seedfit.makeTrack(_shcol,seeddef,seedrep);
@@ -190,9 +194,11 @@ namespace mu2e
 	  TrkFitFlag seedok(TrkFitFlag::seedOK);
 	  // create a KalSeed object from this fit, recording the particle and fit direction
 	  KalSeed kseed(_tpart,_fdir,seedrep->t0(),seedrep->flt0(),seedok);
+	  // fill ptr to the helix seed
+	  auto hsH = event.getValidHandle<HelixSeedCollection>(_hsTag);
+	  kseed._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	  // calo cluser ptr from Helix Seed
 	  kseed._caloCluster = hseed._caloCluster; 
-//	  KalSeed kseed(_tpart,_fdir,hseed._timeCluster.t0(),seedrep->flt0(),fitstat);
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
 	  TrkUtilities::fillHitSeeds(seedrep,kseed._hits);
 	  if(kseed._hits.size() >= _minnhits)kseed._status.merge(TrkFitFlag::hitsOK);

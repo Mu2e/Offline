@@ -143,6 +143,7 @@ namespace mu2e
     art::ProductID kalRepsID(getProductID<KalRepCollection>(event));
     // loop over the seed fits
     unsigned iseed(0);
+    size_t ikseed(0);
     for (auto kseed : *_kscol) {
     // only process fits which meet the requirements
       if(kseed.status().hasAllProperties(_goodseed)) {
@@ -200,6 +201,10 @@ namespace mu2e
 	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	  // convert successful fits into 'seeds' for persistence.  Start with the input
 	  KalSeed fseed(kseed);
+	  // reference the seed fit in this fit
+	  auto ksH = event.getValidHandle<KalSeedCollection>(_ksTag);
+	  fseed._kal = art::Ptr<KalSeed>(ksH,ikseed);
+	  // fill other information
 	  fseed._t0 = krep->t0();
 	  fseed._flt0 = krep->flt0();
 	  fseed._status.merge(TrkFitFlag::kalmanOK);
@@ -225,6 +230,7 @@ namespace mu2e
 	  delete krep;
       }
       ++iseed;
+      ++ikseed;
     }
     // put the output products into the event
     art::ProductID krcolID(getProductID<KalRepPayloadCollection>(event));
