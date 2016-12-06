@@ -20,7 +20,7 @@ namespace mu2e {
 
     StrawHitIndex index() const { return _shidx; }
     Float_t phi() const { return _phi; }
-
+    Float_t hitQuality() const { return _hqual; }
     StrawHitIndex _shidx; // index to the straw hit
     Float_t _phi; // resolved azimuth of this hit WRT the helix axis (circle center)
     Float_t _hqual; // hit quality: currently this is an MVA output

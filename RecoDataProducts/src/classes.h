@@ -156,6 +156,7 @@ template class art::Wrapper<mu2e::KalRepExtensionPayloadCollection>;
 template class art::Wrapper<mu2e::KalRepPtrCollection>;
 template class art::Wrapper<mu2e::TimeCluster>;
 template class art::Wrapper<mu2e::TimeClusterCollection>;
+template class art::Ptr<mu2e::HelixSeed>;
 template class art::Wrapper<mu2e::HelixSeed>;
 template class art::Wrapper<mu2e::HelixSeedCollection>;
 

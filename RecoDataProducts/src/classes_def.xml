@@ -70,6 +70,8 @@
  <class name="mu2e::HelixCov"/>
  <class name="mu2e::HelixSeed"/>
  <class name="mu2e::HelixSeedCollection" /> 
+ <class name="art::Ptr<mu2e::HelixSeed>"/>
+
  <class name="mu2e::TrackSeed"/>
  <class name="mu2e::TrackSeedCollection" /> <!-- persistent="false"/> -->
  <class name="mu2e::TrkExtTrajPoint" />
