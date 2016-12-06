@@ -64,8 +64,9 @@ namespace mu2e {
 // config parameters
       int _diag;
       StrawHitFlag _dontuseflag;
-      bool _mcdiag;
+      bool _mcdiag, _mcsel;
       int _minnprimary; // minimum # Primary hits to make plots
+      int _mcgen; // MC generator code of primary
       double _targetradius;
       bool _plot;
       TrkFitFlag _plotinc; // inclusive conditions for plotting
@@ -130,7 +131,9 @@ namespace mu2e {
     _diag(pset.get<int>("DiagLevel",1)),
     _dontuseflag(pset.get<vector<string>>("UseFlag",vector<string>{"Outlier"})),
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
+    _mcsel(pset.get<bool>("MonteCarloSelection",true)),
     _minnprimary(pset.get<int>("MinimumPrimaryHits",10)),
+    _mcgen(pset.get<int>("MCGeneratorCode",2)),
     _targetradius(pset.get<double>("TargetRadius",75)),
     _plot(pset.get<bool>("PlotHelices",false)),
     _plotinc              (pset.get<vector<string> >("InclusivePlotFlagBits",vector<string>{"HitsOK"})),
@@ -284,7 +287,7 @@ namespace mu2e {
 	// plot if requested and the fit satisfies the requirements
 	if( _plot && hseed._status.hasAllProperties(_plotinc) &&
 	    (!hseed._status.hasAnyProperty(_plotexc))  &&
-	    _nprimary >= _minnprimary) {
+	    _nprimary >= _minnprimary && _mcgen == _gen) {
 	    // fill graphs for display
 	    plotXY(pspp,hseed,ihel);
 	    plotZ(pspp,hseed,ihel);
@@ -341,8 +344,8 @@ namespace mu2e {
 	  }
 	}
 	  // fill the tree
-	_hdiag->Fill();
-	// if requested, plot the hits and helices
+	if( (!_mcsel) || ( _nprimary >= _minnprimary && _mcgen == _gen))
+	  _hdiag->Fill();
 	++ihel;
       }
     } else
@@ -675,6 +678,9 @@ namespace mu2e {
       double charge = pdt->particle(pspp->pdgId()).ref().charge();
       TrkUtilities::RobustHelixFromMom(pos,jmc->momentum(),charge,_bz0,_mch);
       retval = true;
+    } else {
+      _mcmom = _mcpz = -1.0;
+      _mch = RobustHelix();
     }
     return retval;
   }
