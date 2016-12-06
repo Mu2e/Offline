@@ -5,10 +5,11 @@
 // $Author: brownd $ 
 // $Date: 2014/07/10 14:47:26 $
 //
-//
-// the following has to come before other BaBar includes
-#include "BTrk/BaBar/BaBar.hh"
+// mu2e
 #include "TrkReco/inc/RobustHelixFit.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // boost
@@ -17,10 +18,12 @@
 #include <boost/accumulators/statistics.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/median.hpp>
+#include <boost/accumulators/statistics/weighted_median.hpp>
 // root
 #include "TH1F.h"
 // C++
 #include <vector>
+#include <utility>
 #include <string>
 #include <math.h>
 #include <cmath>
@@ -33,6 +36,16 @@ namespace mu2e
   struct zcomp : public std::binary_function<HelixHit,HelixHit,bool> {
     bool operator()(HelixHit const& p1, HelixHit const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
+  // struct for weighted positions
+  class WPos : public Hep3Vector {
+    public :
+      WPos(Hep3Vector pos,double weight=1.0) : Hep3Vector(pos), _weight(weight) {}
+      double weight() const { return _weight; }
+    private :
+      Hep3Vector _pos; //position
+      double _weight; // weight for this position
+  };
+  typedef std::pair<double,double> WVal;
 
   RobustHelixFit::RobustHelixFit(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
@@ -61,9 +74,13 @@ namespace mu2e
     _stereofit(pset.get<bool>("stereofit",false)),
     _targetinit(pset.get<bool>("targetinit",true)),
     _targetinter(pset.get<bool>("targetintersect",false)),
-    _targetradius(pset.get<double>("targetradius",75.0)), // target radius: include some buffer (mm)
+    _usecc(pset.get<bool>("UseCaloCluster",false)),
+    _ccwt(pset.get<double>("CaloClusterWeight",10.0)), // Cluster weight in units of non-stereo hits
+    _stwt(pset.get<double>("StereoHitWeight",1.5)), // Stereo hit weight in units of non-stereo hits
+    _hqwt(pset.get<bool>("HitQualityWeight",false)), // weight hits by 'quality' = MVA value
+    _targetradius(pset.get<double>("targetradius",75.0)), // effective target radius (mm)
     _trackerradius(pset.get<double>("trackerradius",750.0)), // tracker out radius; include some buffer (mm)
-    _rwind(pset.get<double>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix (mm)
+    _rwind(pset.get<double>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix in the AGG fit (mm)
     _helicity(pset.get<int>("Helicity",Helicity::unknown))
   {
     if(_helicity._value == Helicity::unknown){
@@ -87,7 +104,7 @@ namespace mu2e
     hseed._status.clear(TrkFitFlag::phizOK);
     hseed._status.clear(TrkFitFlag::helixOK);
     // check we have enough hits
-    if(hitCount(hseed._hhits) >= _minnhit){
+    if(hitCount(hseed) >= _minnhit){
       hseed._status.merge(TrkFitFlag::hitsOK);
       // solve for the circle parameters
       fitCircle(hseed);
@@ -121,11 +138,11 @@ namespace mu2e
   void RobustHelixFit::fitCircleAGE(HelixSeed& hseed) {
     // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
     // This algorithm requires a reasonable initial estimate: use the median fit
+    // this algorithm needs extension to use the calorimeter cluster position FIXME!
     if(!hseed._status.hasAllProperties(TrkFitFlag::circleInit)){
       fitCircleMedian(hseed);
     }
     if(hseed._status.hasAllProperties(TrkFitFlag::circleInit)){
-      HelixHitCollection& hhits = hseed._hhits;
       RobustHelix& rhel = hseed._helix;
 
       unsigned niter(0);
@@ -135,13 +152,13 @@ namespace mu2e
       // initialize step
       double lambda = _lambda0;
       // find median and AGE for the initial center
-      findAGE(hhits,center,rmed,age);
+      findAGE(hseed,center,rmed,age);
       // loop while step is large
       Hep3Vector descent(1.0,0.0,0.0);
       while(lambda*descent.mag() > _minlambda && niter < _maxniter){
 	// fill the sums for computing the descent vector
 	AGESums sums;
-	fillSums(hhits,center,rmed,sums);
+	fillSums(hseed,center,rmed,sums);
 	// descent vector cases: if the inner vs outer difference is significant (compared to the median), damp using the median sums,
 	// otherwise not.  These expressions take care of the undiferentiable condition on the boundary. 
 	double dx(sums._sco-sums._sci);
@@ -154,7 +171,7 @@ namespace mu2e
 	// compute error function, decreasing lambda until this is better than the previous
 	double agenew;
 	Hep3Vector cnew = center + lambda*descent;
-	findAGE(hhits,cnew,rmed,agenew);
+	findAGE(hseed,cnew,rmed,agenew);
 	// if we've improved, increase the step size and iterate
 	if(agenew < age){
 	  lambda *= (1.0+_lstep);
@@ -164,7 +181,7 @@ namespace mu2e
 	  while(agenew > age && miter < _maxniter && lambda*descent.mag() > _minlambda){
 	    lambda *= (1.0-_lstep);
 	    cnew = center + lambda*descent;
-	    findAGE(hhits,cnew,rmed,agenew);
+	    findAGE(hseed,cnew,rmed,agenew);
 	    ++miter;
 	  }
 	  // if this fails, reverse the descent drection and try again
@@ -172,7 +189,7 @@ namespace mu2e
 	    descent *= -1.0;
 	    lambda *= (1.0 +_lstep);
 	    cnew = center + lambda*descent;
-	    findAGE(hhits,cnew,rmed,agenew);
+	    findAGE(hseed,cnew,rmed,agenew);
 	  }
 	}
 	// prepare for next iteration
@@ -242,7 +259,7 @@ namespace mu2e
     }
     // make initial estimate of dfdz using 'nearby' pairs.  This insures they are
     // on the same loop
-    accumulator_set<double, stats<tag::median(with_p_square_quantile)> > accf;
+    accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > accf;
     for(auto ihit=hhits.begin(); ihit != std::prev(hhits.end()); ++ihit) {
       if(use(*ihit) && ( (!_stereoinit) || stereo(*ihit))) {
 	for(auto jhit = std::next(ihit); jhit != hhits.end(); ++jhit) {
@@ -253,8 +270,9 @@ namespace mu2e
 	      if(dphi > _mindphi && dphi < _maxdphi){
 		// compute the slope for this pair of hits
 		double lambda = dz/dphi;
-		if(lambda > _lmin && lambda < _lmax){ 
-		  accf(lambda);
+		if(lambda > _lmin && lambda < _lmax){
+		  double wt = hitWeight(*ihit)*hitWeight(*jhit);
+		  accf(lambda,weight = wt);
 		} // lambda in range
 	      } // good phi separation
 	    } // good z separation
@@ -264,7 +282,7 @@ namespace mu2e
     } // loop over first hit
     // extract the lambda
     if(boost::accumulators::extract::count(accf) > _minnhit){
-      double lambda = extract_result<tag::median>(accf);
+      double lambda = extract_result<tag::weighted_median>(accf);
       // check the range 
       if( lambda < _lmax && lambda > _lmin) {
 	// update helix
@@ -324,7 +342,7 @@ namespace mu2e
       changed = false;
       ++niter;
       // make a long-range estimate of slope
-      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accf2;
+    accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > accf;
       for(auto ihit=hhits.begin(); ihit != std::prev(hhits.end()); ++ihit) {
 	if(use(*ihit)) {
 	  for(auto jhit = std::next(ihit); jhit != hhits.end(); ++jhit) {
@@ -333,8 +351,9 @@ namespace mu2e
 	      double dphi = jhit->_phi-ihit->_phi; // includes loop determination
 	      if(dz > _minzsep && fabs(dphi) > _mindphi){
 		double lambda = dz/dphi;
-		if(lambda > _lmin && lambda < _lmax){ 
-		  accf2(lambda);
+		if(lambda > _lmin && lambda < _lmax){
+		  double wt = hitWeight(*ihit)*hitWeight(*jhit);
+		  accf(lambda, weight=wt);
 		} // good slope
 	      } // minimum hit separation
 	    } // good 2nd hit 
@@ -342,18 +361,19 @@ namespace mu2e
 	} // good 1st hit
       } // loop on 1st hit
       // extract slope
-      rhel._lambda = extract_result<tag::median>(accf2);
+      rhel._lambda = extract_result<tag::weighted_median>(accf);
 //  test parameters for return value
       // now extract intercept.  Here we solve for the difference WRT the previous value
-      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acci2;
+      accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > acci;
       for(auto const& hhit : hhits) {
 	if(use(hhit)) {
 	  double phiex = rhel.circleAzimuth(hhit._pos.z());
 	  double dphi = deltaPhi(phiex,hhit._phi);
-	  acci2(dphi);// accumulate the difference WRT the current intercept
+	  double wt = hitWeight(hhit);
+	  acci(dphi,weight = wt);// accumulate the difference WRT the current intercept
 	}
       }
-      double dphi = extract_result<tag::median>(acci2);
+      double dphi = extract_result<tag::weighted_median>(acci);
       // enforce convention on azimuth phase
       rhel._fz0 = deltaPhi(0.0,rhel.fz0()+ dphi);
       // resolve the hit loops again
@@ -373,16 +393,23 @@ namespace mu2e
     RobustHelix& rhel = hseed._helix;
     const double mind2 = _mindist*_mindist;
     const double maxd2 = _maxdist*_maxdist;
-    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx, accy, accr;
+    accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > accx, accy, accr;
     // pick out a subset of hits.  I can aford to be choosy
     unsigned ntriple(0);
-    std::vector<CLHEP::Hep3Vector> pos;
+    std::vector<WPos> pos;
     pos.reserve(hhits.size());
     for(auto const& hhit : hhits) {
       if(use(hhit) && (stereo(hhit) || (!_stereoinit)) ){
       // extract just xy part of these positions
-	pos.push_back(hhit._pos.perpPart());
+	pos.push_back(WPos(hhit._pos.perpPart(),hitWeight(hhit)));
       }
+    }
+    if(_usecc && hseed._caloCluster.isNonnull()){
+      mu2e::GeomHandle<mu2e::Calorimeter> ch;
+      const Calorimeter* calo = ch.get();
+    // cluster position in detector coordinates
+      Hep3Vector cog = calo->toTrackerFrame(calo->fromSectionFrameFF(hseed._caloCluster->sectionId(),hseed._caloCluster->cog3Vector())); 
+      pos.push_back(WPos(cog.perpPart(),_ccwt));
     }
     // loop over all triples
     size_t np = pos.size();
@@ -424,9 +451,10 @@ namespace mu2e
 		    && ( (!_targetinit) || rmin < _targetradius) ) {
 		  // accumulate 
 		  ++ntriple;
-		  accx(cx);
-		  accy(cy);
-		  accr(rho);
+		  double wt = pos[ip].weight()*pos[jp].weight()*pos[kp].weight();
+		  accx(cx,weight = wt); 
+		  accy(cy,weight = wt);
+		  accr(rho,weight = wt);
 		} // radius meets requirements
 	      } // slope is not the same
 	    } // points 1 and 3 and 2 and 3 are separated
@@ -436,9 +464,9 @@ namespace mu2e
     } // first point
     // median calculation needs a reasonable number of points to function
     if(ntriple > _minnhit){
-      double centx = extract_result<tag::median>(accx);
-      double centy = extract_result<tag::median>(accy);
-      double rho = extract_result<tag::median>(accr);
+      double centx = extract_result<tag::weighted_median>(accx);
+      double centy = extract_result<tag::weighted_median>(accy);
+      double rho = extract_result<tag::weighted_median>(accr);
       CLHEP::Hep3Vector center(centx,centy,0.0);
       rhel._rcent = center.perp();
       rhel._fcent = center.phi();
@@ -452,59 +480,87 @@ namespace mu2e
     }
   }
 
-  void RobustHelixFit::findAGE(HelixHitCollection const& hhits, Hep3Vector const& center,double& rmed, double& age) {
+  void RobustHelixFit::findAGE(HelixSeed const& hseed, Hep3Vector const& center,double& rmed, double& age) {
+    HelixHitCollection const& hhits = hseed._hhits;
     // fill radial information for all points, given this center
-    std::vector<double> radii;
+    std::vector<WVal> radii;
+    double wtot(0.0);
     for(auto const& hhit : hhits) {
       if(use(hhit)){
 	// find radial information for this point
 	double rad = Hep3Vector(hhit._pos - center).perp();
-	radii.push_back(rad);
+	double wt = hitWeight(hhit);
+	radii.push_back(make_pair(rad,wt));
+	wtot += wt;
       }
     }
+    // optionally add calo cluster
+    if(_usecc && hseed._caloCluster.isNonnull()){
+      mu2e::GeomHandle<mu2e::Calorimeter> ch;
+      const Calorimeter* calo = ch.get();
+    // cluster position in detector coordinates
+      Hep3Vector cog = calo->toTrackerFrame(calo->fromSectionFrameFF(hseed._caloCluster->sectionId(),hseed._caloCluster->cog3Vector()));
+      double rad = Hep3Vector(cog - center).perp();
+      radii.push_back(make_pair(rad,_ccwt));
+    }
+    // compute AGE
     if(radii.size() > _minnhit){
       // find the median radius
-      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accr;
+      accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > accr;
       for(unsigned irad=0;irad<radii.size();++irad){
-	accr(radii[irad]); 
+	accr(radii[irad].first, weight = radii[irad].second); 
       }
-      rmed = extract_result<tag::median>(accr);
+      rmed = extract_result<tag::weighted_median>(accr);
       // now compute the AGE (Absolute Geometric Error)
       age = 0.0;
       for(unsigned irad=0;irad<radii.size();++irad){
-	age += fabs(radii[irad]-rmed);
+	age += radii[irad].second*abs(radii[irad].first-rmed);
       }
+      // normalize
+      age *= radii.size()/wtot;
     }
   }
 
-  void RobustHelixFit::fillSums(HelixHitCollection const& hhits, Hep3Vector const& center,double rmed,AGESums& sums) {
+  void RobustHelixFit::fillSums(HelixSeed const& hseed, Hep3Vector const& center,double rmed,AGESums& sums) {
+  HelixHitCollection const& hhits = hseed._hhits;
     // initialize sums
     sums.clear();
     // compute the transverse sums
+    double wtot(0.0);
     for(auto const& hhit : hhits) {
       if(use(hhit)){
 	// find radial information for this point
 	double rad = Hep3Vector(hhit._pos - center).perp();
+	double wt = hitWeight(hhit);
 	// now x,y projections
 	double pcos = (hhit._pos.x()-center.x())/rad;
 	double psin = (hhit._pos.y()-center.y())/rad;
 	// 3 conditions: either the radius is inside the median, outside the median, or 'on' the median.  We define 'on'
 	// in terms of a window
 	if(fabs(rmed - rad) < _rwind  ){
-	  sums._scc += fabs(pcos);
-	  sums._ssc += fabs(psin);
+	  sums._scc += wt*fabs(pcos);
+	  sums._ssc += wt*fabs(psin);
 	  ++sums._nc;
 	} else if (rad > rmed  ) {
-	  sums._sco += pcos;
-	  sums._sso += psin;
+	  sums._sco += wt*pcos;
+	  sums._sso += wt*psin;
 	  ++sums._no;
 	} else {
-	  sums._sci += pcos;
-	  sums._ssi += psin;        
+	  sums._sci += wt*pcos;
+	  sums._ssi += wt*psin;        
 	  ++sums._ni;
 	}
-      }  
+	wtot += wt;
+      }
     }
+    // normalize to unit weight
+    unsigned nused = sums._nc + sums._no + sums._ni;
+    sums._scc *= nused/wtot;
+    sums._ssc *= nused/wtot;
+    sums._sco *= nused/wtot;
+    sums._sso *= nused/wtot;
+    sums._sci *= nused/wtot;
+    sums._ssi *= nused/wtot;
   }
 
   double RobustHelixFit::deltaPhi(double phi1, double phi2){
@@ -529,10 +585,13 @@ namespace mu2e
     hhit._flag.merge(outlier);
   }
 
-  unsigned RobustHelixFit::hitCount(HelixHitCollection const& hhits) const {
+  unsigned RobustHelixFit::hitCount(HelixSeed const& hseed) {
+    HelixHitCollection const& hhits = hseed._hhits;
     unsigned retval(0);
     for(auto hhit : hhits)
       if(use(hhit))++retval;
+    if(_usecc && hseed._caloCluster.isNonnull())
+      retval += (unsigned)ceil(_ccwt);
     return retval;
   }
 
@@ -563,5 +622,15 @@ namespace mu2e
   bool RobustHelixFit::goodHelix(RobustHelix const& rhel) {
     return goodCircle(rhel) && goodFZ(rhel);
   }
+
+  double RobustHelixFit::hitWeight(HelixHit const& hhit) const {
+    double retval(1.0);
+    if(hhit.flag().hasAnyProperty(StrawHitFlag::stereo))
+      retval = _stwt;
+    if(_hqwt) retval*= std::max(0.0,(double)hhit._hqual);
+    return retval;
+  }
+
+
 }
 

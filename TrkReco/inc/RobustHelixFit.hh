@@ -62,13 +62,13 @@ namespace mu2e
     void fitFZ(HelixSeed& hseed);
     bool initFZ(HelixHitCollection& hhits,RobustHelix& myhel);
     // helper functions for robust circle fit
-    void findAGE(HelixHitCollection const& hhits, CLHEP::Hep3Vector const& center,double& rmed, double& age);
-    void fillSums(HelixHitCollection const& hhits, CLHEP::Hep3Vector const& center,double rmed,AGESums& sums);
+    void findAGE(HelixSeed const& hseed, CLHEP::Hep3Vector const& center,double& rmed, double& age);
+    void fillSums(HelixSeed const& hseed, CLHEP::Hep3Vector const& center,double rmed,AGESums& sums);
     // test result
     bool goodCircle(RobustHelix const& rhel);
     bool goodFZ(RobustHelix const& rhel);
     bool goodHelix(RobustHelix const& rhel);
-    unsigned hitCount(HelixHitCollection const& hhits) const; // count good hits
+    unsigned hitCount(HelixSeed const& rhel); // count good hits
     // adjust the parameters to intersect the target (optional)
     void forceTargetInter(CLHEP::Hep3Vector& center, double& radius);
     // interact with HelixHits
@@ -79,6 +79,8 @@ namespace mu2e
     static double deltaPhi(double phi1, double phi2);
     void initPhi(HelixHit& hh, RobustHelix const& myhel) const;
     bool resolvePhi(HelixHit& hh, RobustHelix const& myhel) const;
+    double hitWeight(HelixHit const& hhit) const;
+
     // configuration parameters
     int _debug;
     CircleFit _cfit; // type of circle fit
@@ -101,6 +103,10 @@ namespace mu2e
     bool _targetpoint; // use target as a point in the circle fit
     bool _targetinit; // require consistency with target when initializing circle
     bool _targetinter; // require fit to intersect the target
+    bool _usecc; // use the calorimeter cluster in the fit (transverse only)
+    double _ccwt; // weight of a calorimeter cluster in non-stereo hit units
+    double _stwt; // weight of a stereo hit (wrt non-stereo)
+    bool _hqwt; // weight hits by 'quality'
     double _targetradius; // target size to use in constraint or init
     double _trackerradius; // tracker radius to use in init
     double _rwind; // raidus window for defining points to be 'on' the helix
