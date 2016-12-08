@@ -112,7 +112,7 @@ namespace mu2e {
       Int_t _iev;
       Float_t _beamwt;
       TrkFitFlag _kff, _ksf, _hsf; // fit flags
-      HelixVal _kfh, _ksh; // helces at first segment
+      HelixVal _kfh, _ksh; // helces at tracker entrance and exit
       Float_t _kft0, _kft0err, _kst0, _kst0err, _hst0, _hst0err, _tct0, _tct0err; // t0
       Float_t _kfm, _ksm, _kfmerr, _ksmerr; // momentum
       Int_t _kfn, _kfna, _ksn, _ksna, _hsn, _hsna, _tcn; // hit counts

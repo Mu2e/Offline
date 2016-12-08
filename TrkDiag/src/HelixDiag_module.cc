@@ -318,7 +318,7 @@ namespace mu2e {
 	    Hep3Vector cvec = (hhit.pos() - rhel.center()).perpPart(); // vector from the circle center to the hit
 	    Hep3Vector cdir = cvec.unit(); // direction from the circle center to the hit
 	    Hep3Vector cperp = zaxis.cross(cdir); // direction perp to the radius
-	    hhinfo._whdot = wdir.dot(cperp); // compare wire and circle tangent directions
+	    hhinfo._whdot = wdir.dot(cdir); // compare wire and circle radius direction
 	    hhinfo._hrho = cvec.mag(); // radius of this hit WRT the circle center
 
 	    // positions
