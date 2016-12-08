@@ -269,10 +269,10 @@ namespace mu2e
 	    ++niter;
 	  }
 	  if(_diag > 0)_nitermva->Fill(niter);
-	}
-      } else 
-      // simply fill the MVA information for diagnostics
-	fillMVA(hseed);
+	} else 
+	  // simply fill the MVA information for diagnostics
+	  fillMVA(hseed);
+      }
       // test fit status
       if(hseed.status().hasAllProperties(_saveflag)){
 	if(niter < _maxniter)hseed._status.merge(TrkFitFlag::helixConverged);
