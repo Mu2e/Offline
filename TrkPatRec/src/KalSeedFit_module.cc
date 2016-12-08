@@ -32,6 +32,7 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/HelixSeedCollection.hh"
 #include "RecoDataProducts/inc/KalSeedCollection.hh"
+#include "RecoDataProducts/inc/TrkFitFlag.hh"
 // BaBar
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
@@ -78,7 +79,8 @@ namespace mu2e
       art::InputTag _shTag;
       art::InputTag _shfTag;
       art::InputTag _hsTag;
-      unsigned _minnhits; // minimum # of hits
+      TrkFitFlag _seedflag; // helix fit flag
+  unsigned _minnhits; // minimum # of hits
       double _maxdoca;      // outlier cut
       bool _foutliers; // filter hits far from the helix
       bool _fhoutliers; // filter hits found flagged as outliers in the helix fit
@@ -107,6 +109,7 @@ namespace mu2e
     _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makeSH")),
     _shfTag(pset.get<art::InputTag>("StrawHitFlagCollectionTag","FlagBkgHits")),
     _hsTag(pset.get<art::InputTag>("SeedCollectionTag","RobustHelixFinder")),
+    _seedflag(pset.get<vector<string> >("HelixFitFlag",vector<string>{"HelixOK"})),
     _minnhits(pset.get<unsigned>("MinNHits",10)),
     _maxdoca(pset.get<double>("MaxDoca",40.0)),
     _foutliers(pset.get<bool>("FilterOutliers",true)),
@@ -159,9 +162,11 @@ namespace mu2e
     // convert the HelixSeed to a TrkDef
       HelixSeed const& hseed(_hscol->at(iseed));
       HepVector hpvec(HelixTraj::NHLXPRM);
-      // verify the helicity.  This could be wrong due to FP effects, so don't treat it as an exception
-      if(_helicity == hseed._helix.helicity() &&
-      // convert the helix to a fit trajectory.  This accounts for the physical particle direction
+      // verify the fit meets requirements and can be translated
+      // to a fit trajectory.  This accounts for the physical particle direction
+      // helicity.  This could be wrong due to FP effects, so don't treat it as an exception
+      if(hseed.status().hasAllProperties(_seedflag) &&
+	  _helicity == hseed.helix().helicity() &&
 	  TrkUtilities::RobustHelix2Traj(hseed._helix,hpvec,_amsign)){
 	HelixTraj hstraj(hpvec,_hcovar);
       // update the covariance matrix
@@ -229,8 +234,6 @@ namespace mu2e
       // cleanup the seed fit KalRep.  Optimally the seedrep should be a data member of this module
       // and get reused to avoid thrashing memory, but the BTrk code doesn't support that, FIXME!
 	delete seedrep;
-      } else {
-	throw cet::exception("RECO")<<"mu2e::KalSeedFit: HelixSeed with wrong helicity found ! " << endl;
       }
     }
     // put the tracks into the event
