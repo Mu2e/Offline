@@ -76,7 +76,7 @@ namespace mu2e
     _targetinter(pset.get<bool>("targetintersect",false)),
     _usecc(pset.get<bool>("UseCaloCluster",false)),
     _ccwt(pset.get<double>("CaloClusterWeight",10.0)), // Cluster weight in units of non-stereo hits
-    _stwt(pset.get<double>("StereoHitWeight",1.5)), // Stereo hit weight in units of non-stereo hits
+    _stwt(pset.get<double>("StereoHitWeight",1.0)), // Stereo hit weight in units of non-stereo hits
     _hqwt(pset.get<bool>("HitQualityWeight",false)), // weight hits by 'quality' = MVA value
     _targetradius(pset.get<double>("targetradius",75.0)), // effective target radius (mm)
     _trackerradius(pset.get<double>("trackerradius",750.0)), // tracker out radius; include some buffer (mm)
@@ -100,28 +100,21 @@ namespace mu2e
 
   void RobustHelixFit::fitHelix(HelixSeed& hseed) {
     // reset the fit status flags, in case this is called iteratively
-    hseed._status.clear(TrkFitFlag::circleOK);
-    hseed._status.clear(TrkFitFlag::phizOK);
     hseed._status.clear(TrkFitFlag::helixOK);
-    // check we have enough hits
-    if(hitCount(hseed) >= _minnhit){
-      hseed._status.merge(TrkFitFlag::hitsOK);
       // solve for the circle parameters
-      fitCircle(hseed);
-      if(hseed._status.hasAnyProperty(TrkFitFlag::circleOK)){
+    fitCircle(hseed);
+    if(hseed._status.hasAnyProperty(TrkFitFlag::circleOK)){
 	// solve for the longitudinal parameters
-	fitFZ(hseed);
-	if(hseed._status.hasAnyProperty(TrkFitFlag::phizOK)){
-	  // final test
-	  if (goodHelix(hseed._helix)){
-	    hseed._status.merge(TrkFitFlag::helixOK);
-	  }
-	}
+      fitFZ(hseed);
+	// final test
+      if (goodHelix(hseed._helix)){
+	hseed._status.merge(TrkFitFlag::helixOK);
       }
     }
   }
 
   void RobustHelixFit::fitCircle(HelixSeed& hseed) {
+    hseed._status.clear(TrkFitFlag::circleOK);
     switch ( _cfit ) {
       case median : default :
 	fitCircleMedian(hseed);
@@ -133,7 +126,7 @@ namespace mu2e
 	throw cet::exception("Reco") << "mu2e::RobustHelixFit: Chisq fit not yet implemented " << std::endl;
 	break;
     }
-  }
+}
 
   void RobustHelixFit::fitCircleAGE(HelixSeed& hseed) {
     // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
@@ -218,10 +211,7 @@ namespace mu2e
       rhel._fcent = center.phi();
       rhel._radius = rmed;
       // update flag
-      if(goodCircle(rhel))
-	hseed._status.merge(TrkFitFlag::circleOK);
-      if(niter < _maxniter)
-	hseed._status.merge(TrkFitFlag::circleConverged);
+      if(goodCircle(rhel)) hseed._status.merge(TrkFitFlag::circleOK);
     }
   }
 
@@ -326,6 +316,7 @@ namespace mu2e
   }
 
   void RobustHelixFit::fitFZ(HelixSeed& hseed) {
+    hseed._status.clear(TrkFitFlag::phizOK);
     HelixHitCollection& hhits = hseed._hhits;
     RobustHelix& rhel = hseed._helix;
     // if required, initialize
@@ -381,10 +372,7 @@ namespace mu2e
 	changed |= resolvePhi(hhit,rhel);
     }
     // set the flags
-    if(goodFZ(rhel))
-      hseed._status.merge(TrkFitFlag::phizOK);
-    if(niter < _maxniter)
-      hseed._status.merge(TrkFitFlag::phizConverged);
+    if(goodFZ(rhel)) hseed._status.merge(TrkFitFlag::phizOK);
   }
 
   // simple median fit.  No initialization required
@@ -475,7 +463,6 @@ namespace mu2e
       hseed._status.merge(TrkFitFlag::circleInit);
       if(goodCircle(rhel)){
 	hseed._status.merge(TrkFitFlag::circleOK);
-	hseed._status.merge(TrkFitFlag::circleConverged);
       }
     }
   }
@@ -585,16 +572,6 @@ namespace mu2e
     hhit._flag.merge(outlier);
   }
 
-  unsigned RobustHelixFit::hitCount(HelixSeed const& hseed) {
-    HelixHitCollection const& hhits = hseed._hhits;
-    unsigned retval(0);
-    for(auto hhit : hhits)
-      if(use(hhit))++retval;
-    if(_usecc && hseed._caloCluster.isNonnull())
-      retval += (unsigned)ceil(_ccwt);
-    return retval;
-  }
-
   void RobustHelixFit::initPhi(HelixHit& hhit, RobustHelix const& rhel) const {
   // ray from the circle center to the point
     hhit._phi = Hep3Vector(hhit._pos - rhel.center()).phi();
@@ -620,7 +597,7 @@ namespace mu2e
   }
 
   bool RobustHelixFit::goodHelix(RobustHelix const& rhel) {
-    return goodCircle(rhel) && goodFZ(rhel);
+    return goodCircle(rhel) && goodFZ(rhel) && rhel.helicity() == _helicity;
   }
 
   double RobustHelixFit::hitWeight(HelixHit const& hhit) const {

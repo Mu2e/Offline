@@ -52,14 +52,17 @@ namespace mu2e
 // main function: given a helix seed, fit it.  Note
 // the HelixSeed object is both input and output.  This allows for iterative calling
     void fitHelix(HelixSeed& myfit);
+    // alternatively, user can fit the two views separately to allow hit cleaning between
+    void fitCircle(HelixSeed& hseed);
+    void fitFZ(HelixSeed& hseed);
+    // check the helix
+    bool goodHelix(RobustHelix const& rhel);
 // Helicity of this fit
     Helicity const& helicity() const { return _helicity; }
   private:
     // fit functions for the separate views
-    void fitCircle(HelixSeed& hseed);
     void fitCircleMedian(HelixSeed& hseed);
     void fitCircleAGE(HelixSeed& hseed);
-    void fitFZ(HelixSeed& hseed);
     bool initFZ(HelixHitCollection& hhits,RobustHelix& myhel);
     // helper functions for robust circle fit
     void findAGE(HelixSeed const& hseed, CLHEP::Hep3Vector const& center,double& rmed, double& age);
@@ -67,8 +70,6 @@ namespace mu2e
     // test result
     bool goodCircle(RobustHelix const& rhel);
     bool goodFZ(RobustHelix const& rhel);
-    bool goodHelix(RobustHelix const& rhel);
-    unsigned hitCount(HelixSeed const& rhel); // count good hits
     // adjust the parameters to intersect the target (optional)
     void forceTargetInter(CLHEP::Hep3Vector& center, double& radius);
     // interact with HelixHits
