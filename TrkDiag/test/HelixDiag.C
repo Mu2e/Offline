@@ -80,30 +80,32 @@ void HelixDiag::CenterRes() {
       rerr.push_back(crcomp_2->GetBinContent(ibin+1)/sqrt(crcomp_0->GetBinContent(ibin+1)));
     }
   }
-  TGraphErrors* me = new TGraphErrors(rmc.size(),rreco.data(),rmc.data(),rerr.data(),0);
-  me->SetMarkerStyle(20);
-  me->SetMarkerColor(kBlue);
-  me->SetLineColor(kBlue);
-  me->SetMarkerSize(0.5);
-
+  TGraphErrors* me(0);
+  if(rmc.size() > 2){
+    me = new TGraphErrors(rmc.size(),rreco.data(),rmc.data(),rerr.data(),0);
+    me->SetMarkerStyle(20);
+    me->SetMarkerColor(kBlue);
+    me->SetLineColor(kBlue);
+    me->SetMarkerSize(0.5);
+    //  rf->SetParameters(260.0,1.2,0.8);
+    TF1* crf = new TF1("crf","[0]+[1]*x");
+    crf->SetParameters(-100,1.5);
+    TFitResultPtr crfit = me->Fit(crf,"S","same");
+    char rcorr[100];
+    //  snprintf(rcorr,100,"%f+(rhel._rcent>%f?%f:%f)*(rhel._rcent-%f)-mch._rcent",crfit->Parameter(0),crfit->Parameter(0),crfit->Parameter(1),crfit->Parameter(2),crfit->Parameter(0));
+    snprintf(rcorr,100,"%f+rhel._rcent*%f-mch._rcent",crfit->Parameter(0),crfit->Parameter(1));
+    cout << "projection = " << rcorr << endl;
+    _hdiag->Project("ccrres",rcorr,_helixOK&&_mchelixOK);
+  }
   _crcan = new TCanvas("crcan","Center Resolution",700,700);
   _crcan->Divide(2,2);
   _crcan->cd(1);
   crcomp->Draw();
-  me->Draw("LP");
+  if(me != 0)me->Draw("LP");
 //  TF1* rf = new TF1("rf","[0]+(x>[0]?[1]:[2])*(x-[0])");
-//  rf->SetParameters(260.0,1.2,0.8);
-  TF1* crf = new TF1("crf","[0]+[1]*x");
-  crf->SetParameters(-100,1.5);
-  TFitResultPtr crfit = me->Fit(crf,"S","same");
-  char rcorr[100];
-//  snprintf(rcorr,100,"%f+(rhel._rcent>%f?%f:%f)*(rhel._rcent-%f)-mch._rcent",crfit->Parameter(0),crfit->Parameter(0),crfit->Parameter(1),crfit->Parameter(2),crfit->Parameter(0));
-  snprintf(rcorr,100,"%f+rhel._rcent*%f-mch._rcent",crfit->Parameter(0),crfit->Parameter(1));
-  cout << "projection = " << rcorr << endl;
-  _hdiag->Project("ccrres",rcorr,_helixOK&&_mchelixOK);
   _crcan->cd(2);
-  ccrres->Draw();
-  crres->Draw("same");
+  crres->Draw();
+  ccrres->Draw("same");
   _crcan->cd(3);
   cfcomp->Draw();
   _crcan->cd(4);
@@ -153,33 +155,35 @@ void HelixDiag::Radius() {
       rerr.push_back(rcomp_2->GetBinContent(ibin+1)/sqrt(rcomp_0->GetBinContent(ibin+1)));
     }
   }
-  TGraphErrors* re = new TGraphErrors(rmc.size(),rreco.data(),rmc.data(),0,rerr.data());
-  re->SetMarkerStyle(20);
-  re->SetMarkerColor(kBlue);
-  re->SetMarkerSize(0.5);
-  re->SetLineColor(kBlue);
-
+  TGraphErrors* re(0);
+  if(rmc.size() > 2){
+    re = new TGraphErrors(rmc.size(),rreco.data(),rmc.data(),0,rerr.data());
+    re->SetMarkerStyle(20);
+    re->SetMarkerColor(kBlue);
+    re->SetMarkerSize(0.5);
+    re->SetLineColor(kBlue);
+    //  rf->SetParameters(0.0,5.0,-0.0001);
+    TF1* rf = new TF1("rf","[1]*(x-[0]) + pow(1.0+[1]*[1],1.5)*[2]*(x-[0])*(x-[0])+[3]");
+    rf->SetParameters(260.0,1.0,-0.0001,260.0);
+    TFitResultPtr rfit = re->Fit(rf,"S","same");
+    char rcorr[120];
+    //  snprintf(rcorr,100,"%f+(rhel._radius>%f?%f:%f)*(rhel._radius-%f)-mch._radius",rfit->Parameter(3),rfit->Parameter(0),rfit->Parameter(1),rfit->Parameter(2),rfit->Parameter(0));
+    //  snprintf(rcorr,100,"%f+(rhel._radius-%f)*((rhel._radius>%f)?%f:%f)-mch._radius",rfit->Parameter(0),rfit->Parameter(0),rfit->Parameter(0),rfit->Parameter(1),rfit->Parameter(2));
+    snprintf(rcorr,120,"%f+%f*(rhel._radius-%f)+pow(1.0+%f^2,1.5)*%f*(rhel._radius-%f)^2-mch._radius",rfit->Parameter(3),rfit->Parameter(1),rfit->Parameter(0),rfit->Parameter(1),rfit->Parameter(2),rfit->Parameter(0));
+    cout << "projection = " << rcorr << endl;
+    _hdiag->Project("rresc",rcorr,_helixOK&&_mchelixOK);
+  }
   _rcan = new TCanvas("rcan","Radius",1000,500);
   _rcan->Divide(2,1);
   _rcan->cd(1);
   rcomp->Draw();
-  re->Draw("LP");
-//  TF1* rf = new TF1("rf","[3]+(x>[0]?[1]:[2])*(x-[0])");
-//  rf->SetParameters(240.0,0.4,0.8,290.0);
-//  TF1* rf = new TF1("rf","[0]+[1]*x+[2]*x*x");
-//  rf->SetParameters(0.0,5.0,-0.0001);
-  TF1* rf = new TF1("rf","[1]*(x-[0]) + pow(1.0+[1]*[1],1.5)*[2]*(x-[0])*(x-[0])+[3]");
-  rf->SetParameters(260.0,1.0,-0.0001,260.0);
-  TFitResultPtr rfit = re->Fit(rf,"S","same");
-  char rcorr[120];
-//  snprintf(rcorr,100,"%f+(rhel._radius>%f?%f:%f)*(rhel._radius-%f)-mch._radius",rfit->Parameter(3),rfit->Parameter(0),rfit->Parameter(1),rfit->Parameter(2),rfit->Parameter(0));
-//  snprintf(rcorr,100,"%f+(rhel._radius-%f)*((rhel._radius>%f)?%f:%f)-mch._radius",rfit->Parameter(0),rfit->Parameter(0),rfit->Parameter(0),rfit->Parameter(1),rfit->Parameter(2));
-  snprintf(rcorr,120,"%f+%f*(rhel._radius-%f)+pow(1.0+%f^2,1.5)*%f*(rhel._radius-%f)^2-mch._radius",rfit->Parameter(3),rfit->Parameter(1),rfit->Parameter(0),rfit->Parameter(1),rfit->Parameter(2),rfit->Parameter(0));
-  cout << "projection = " << rcorr << endl;
-  _hdiag->Project("rresc",rcorr,_helixOK&&_mchelixOK);
+  if(re != 0)re->Draw("LP");
+  //  TF1* rf = new TF1("rf","[3]+(x>[0]?[1]:[2])*(x-[0])");
+  //  rf->SetParameters(240.0,0.4,0.8,290.0);
+  //  TF1* rf = new TF1("rf","[0]+[1]*x+[2]*x*x");
   _rcan->cd(2);
-  rresc->Draw();
-  rres->Draw("same");
+  rres->Draw();
+  rresc->Draw("same");
   TLegend* rrleg = new TLegend(0.6,0.7,0.9,0.9);
   rrleg->AddEntry(rres,"Uncorrectoed","L");
   rrleg->AddEntry(rresc,"Corrected","L");
