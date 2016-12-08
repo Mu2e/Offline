@@ -187,7 +187,7 @@ TrainHelixMVA(TTree* mytree,char* tname = "TrainHelixMVA",int hittype=0)
   factory->AddVariable("abs(hh._dt-25.5)","DT","ns",'F');
   factory->AddVariable("abs(hh._hrho-rhel._radius)","DeltaRho","mm",'F');
   factory->AddVariable("abs(hh._hhphi-hh._hphi)","DeltaPhi","rad",'F');
-  factory->AddVariable("sqrt(1.0 - hh._whdot*hh._whdot)","WRDot",'F');
+  factory->AddVariable("hh._whdot","WRDot",'F');
 //  factory->AddVariable("hh._stereo","Stereo",'F');
 
 //  factory->AddVariable("sqrt(hh._hpos.dx^2+hh._hpos.dy^2)","HelixRho","mm",'F');
