@@ -93,9 +93,12 @@ namespace mu2e
     int                                 _diag,_debug;
     int                                 _printfreq;
     bool				_prefilter; // prefilter hits based on sector
+    unsigned				_minnhit; // minimum # of hits to work with
+    double				_maxdr; // maximum hit-helix radius difference
+    double				_maxrpull; // maximum hit-helix radius difference pull
     double				_maxphisep; // maximum separation in global azimuth of hits
-    bool				_saveall; // write out all helices regardless of fit success
-    int					_maxniter;  // maximum # of iterations over outlier filtering + fitting
+    TrkFitFlag				_saveflag; // write out all helices that satisfy these flags
+    unsigned				_maxniter;  // maximum # of iterations over outlier filtering + fitting
     double				_cradres; // average center resolution along center position (mm)
     double				_cperpres; // average center resolution perp to center position (mm)
     double				_radres; // average radial resolution for circle fit (mm)
@@ -107,7 +110,6 @@ namespace mu2e
     
     bool				_usemva; // use MVA to cut outliers
     double				_minmva; // outlier cut on MVA
-    double				_maxmvadiff; // convergence cut on MVA weighting/filtering
 
     // input object tags
     art::InputTag			_shTag;
@@ -135,15 +137,20 @@ namespace mu2e
     // robust helix fitter
     RobustHelixFit                     _hfit;
     TrkTimeCalculator			_ttcalc;
+    double _t0shift;   // adhoc t0 shift
     bool			      _parcor; // correct the parameters
     std::vector<double> _crcorr, _rcorr; // corrections for center radius and radius
     // helper functions
     bool findData           (const art::Event& e);
     void prefilterHits(HelixSeed& hseed); // rough filtering based on hits being in 1/2 the detector
+    bool filterCircleHits(HelixSeed& hseed); // return value tells if any hits changed state
     bool filterHits(HelixSeed& hseed); // return value tells if any hits changed state
+    void fillMVA(HelixSeed& hseed); // return value tells if any hits changed state
     bool filterHitsMVA(HelixSeed& hseed); // return value tells if any hits changed state
     void updateT0(HelixSeed& hseed); // update T0 value based on current good hits
     void correctParameters(RobustHelix& helix);// correct the helix parameters to MC truth using linear relations and correlations
+    unsigned hitCount(HelixSeed const& hseed);
+    void fitHelix(HelixSeed& hseed);
  
   };
 
@@ -152,9 +159,12 @@ namespace mu2e
     _debug       (pset.get<int>("debugLevel",0)),
     _printfreq   (pset.get<int>("printFrequency",101)),
     _prefilter   (pset.get<bool>("PrefilterHits",true)),
-    _maxphisep(pset.get<double>("MaxPhiHitSeparation",1.0)),
-    _saveall     (pset.get<bool>("SaveAllHelices",false)),
-    _maxniter    (pset.get<int>("MaxIterations",0)), // iterations over outlier removal
+    _minnhit	 (pset.get<unsigned>("minNHit",5)),
+    _maxdr	 (pset.get<double>("MaxRadiusDiff",40.0)), // mm
+    _maxrpull	 (pset.get<double>("MaxRPull",10.0)), // unitless
+    _maxphisep	 (pset.get<double>("MaxPhiHitSeparation",1.0)),
+    _saveflag    (pset.get<vector<string> >("SaveHelixFlag",vector<string>{"HelixOK"})),
+    _maxniter    (pset.get<unsigned>("MaxIterations",10)), // iterations over outlier removal
     _cradres	 (pset.get<double>("CenterRadialResolution",12.0)),
     _cperpres	 (pset.get<double>("CenterPerpResolution",12.0)),
     _radres	 (pset.get<double>("RadiusResolution",10.0)),
@@ -164,7 +174,6 @@ namespace mu2e
     _maxchisq    (pset.get<double>("MaxChisquared",100.0)), // max chisquared
     _usemva      (pset.get<bool>("UseHitMVA",false)),
     _minmva      (pset.get<double> ("MinMVA",0.2)), // min MVA output to define an outlier
-    _maxmvadiff  (pset.get<double> ("MaxMVADiff",1.0)), // convergence test of MVA sum
     _shTag	 (pset.get<art::InputTag>("StrawHitCollection","makeSH")),
     _shpTag	 (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
     _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
@@ -175,6 +184,7 @@ namespace mu2e
     _mvatool     (pset.get<fhicl::ParameterSet>("HelixHitMVA",fhicl::ParameterSet())),
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet())),
     _ttcalc      (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
+    _t0shift     (pset.get<double>("T0Shift",0.0)),
     _parcor      (pset.get<bool>("CorrectHelixParameters",false)),
     _crcorr      (pset.get<vector<double> >("CenterRadiusCorrection")),
     _rcorr       (pset.get<vector<double> >("RadiusCorrection"))
@@ -188,12 +198,10 @@ namespace mu2e
 
   void RobustHelixFinder::beginJob() {
   // initialize MVA
-    if(_usemva) {
-      _mvatool.initMVA();
-      if(_debug > 0){
-	cout << "RobustHeilxFinder MVA parameters: " << endl;
-	_mvatool.showMVA();
-      }
+    _mvatool.initMVA();
+    if(_debug > 0){
+      cout << "RobustHeilxFinder MVA parameters: " << endl;
+      _mvatool.showMVA();
     }
     if(_diag > 0){
       art::ServiceHandle<art::TFileService> tfs;
@@ -224,7 +232,8 @@ namespace mu2e
       size_t index = std::distance(_tccol->begin(),itclust);
       auto tcH = event.getValidHandle<TimeClusterCollection>(_tcTag);
       hseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
-    // loop over hits in this time cluster and select  hits with good 3-d position information
+      unsigned niter(0);
+      // loop over hits in this time cluster and select  hits with good 3-d position information
       std::vector<StrawHitIndex> goodhits;
       for(auto const& ind : tclust._strawHitIdxs) {
 	if(_shfcol->at(ind).hasAnyProperty(_hsel) && !_shfcol->at(ind).hasAnyProperty(_hbkg))
@@ -240,33 +249,37 @@ namespace mu2e
       }
       // prefilter hits
       if(_prefilter)prefilterHits(hseed);
-      // iteratively fit the helix and filter outliers in space and time
-      int niter(0);
-      bool changed(true);
-      do {
-	_hfit.fitHelix(hseed);
-	changed = filterHits(hseed);
-	if(changed)updateT0(hseed);
-	++niter;
-      } while(hseed._status.hasAllProperties(TrkFitFlag::helixOK)  && niter < _maxniter && changed);
-      if(_diag > 0)_niter->Fill(niter);
-      if(_usemva){
+      // check we have enough hits
+      if(hitCount(hseed) >= _minnhit){
+	hseed._status.merge(TrkFitFlag::hitsOK);
+	// fit the helix with simple hit filtering
+      	fitHelix(hseed);
+	if(_usemva) {
       // repeat, using MVA filtering
-	changed = filterHitsMVA(hseed);
-	niter = 0;
-	while(hseed._status.hasAllProperties(TrkFitFlag::helixOK)  && niter < _maxniter && changed) {
-	  _hfit.fitHelix(hseed);
-	  changed = filterHitsMVA(hseed);
-	  if(changed)updateT0(hseed);
-	  ++niter;
+	  niter = 0;
+	  bool changed = true;
+	  while(hseed._status.hasAllProperties(TrkFitFlag::helixOK)  && niter < _maxniter && changed) {
+	    // fill hit MVA information
+	    fillMVA(hseed);
+	    // MVA filtering is sensitive to both radial and phi-Z
+	    changed = filterHitsMVA(hseed);
+	    _hfit.fitHelix(hseed);
+	    // update t0 as that's part of the MVA
+	    if(changed)updateT0(hseed);
+	    ++niter;
+	  }
+	  if(_diag > 0)_nitermva->Fill(niter);
 	}
-	if(_diag > 0)_nitermva->Fill(niter);
-      }
-      if(niter < _maxniter)hseed._status.merge(TrkFitFlag::helixConverged);
-      // final test
-      if((hseed._status.hasAllProperties(TrkFitFlag::helixOK) && _hfit.helicity() == hseed._helix.helicity()) || _saveall) {
+      } else 
+      // simply fill the MVA information for diagnostics
+	fillMVA(hseed);
+      // test fit status
+      if(hseed.status().hasAllProperties(_saveflag)){
+	if(niter < _maxniter)hseed._status.merge(TrkFitFlag::helixConverged);
 // correct the parameters if requested
 	if(_parcor)correctParameters(hseed._helix);
+// update t0
+	updateT0(hseed);
 // save this helix
 	outseeds->push_back(hseed);
 	if(_debug > 1) cout << "Found helix with fit \n" << hseed._helix << endl;
@@ -281,18 +294,12 @@ namespace mu2e
     event.put(std::move(outseeds));
   }
 
-  bool RobustHelixFinder::filterHitsMVA(HelixSeed& hseed) {
+  void RobustHelixFinder::fillMVA(HelixSeed& hseed) {
     RobustHelix& helix = hseed._helix;
     HelixHitCollection& hhits = hseed._hhits;
-    bool changed(false);
-    static StrawHitFlag outlier(StrawHitFlag::outlier);
     static Hep3Vector zaxis(0.0,0.0,1.0); // unit in z direction
 // loop over hits
-    double hqsum(0.0);
-    double oldhqsum(0.0);
     for(auto& hhit : hhits) {
-      bool oldout = !hhit._flag.hasAnyProperty(outlier);
-      oldhqsum += hhit._hqual;
       // directions
       Hep3Vector const& wdir = hhit.wdir();
       Hep3Vector wtdir = zaxis.cross(wdir); // transverse direction to the wire
@@ -323,9 +330,18 @@ namespace mu2e
       _vmva._chisq = sqrt( _vmva._dwire*_vmva._dwire/wres2 + _vmva._dtrans*_vmva._dtrans/wtres2 );
       // time difference
       _vmva._dt = _shcol->at(hhit._shidx).time() - hseed._t0.t0();
-      // compute the MVA
+      // compute the MVA and store it
       hhit._hqual = _mvatool.evalMVA(_vmva._pars);
-      hqsum += hhit._hqual;
+    }
+  }
+  
+  bool RobustHelixFinder::filterHitsMVA(HelixSeed& hseed) {
+    HelixHitCollection& hhits = hseed._hhits;
+    bool changed(false);
+    static StrawHitFlag outlier(StrawHitFlag::outlier);
+// loop over hits
+    for(auto& hhit : hhits) {
+      bool oldout = !hhit._flag.hasAnyProperty(outlier);
       if(hhit._hqual < _minmva ) {
 	// outlier hit flag it
 	hhit._flag.merge(outlier);
@@ -335,12 +351,10 @@ namespace mu2e
       }
       changed |= oldout != hhit._flag.hasAnyProperty(outlier);
     }
-    // also define convergence in terms of the change in the MVA values
-    changed |= fabs(hqsum - oldhqsum) > _maxmvadiff;
     return changed;
   }
 
-  bool RobustHelixFinder::filterHits(HelixSeed& hseed) {
+  bool RobustHelixFinder::filterCircleHits(HelixSeed& hseed) {
     RobustHelix& helix = hseed._helix;
     HelixHitCollection& hhits = hseed._hhits;
     bool changed(false);
@@ -349,36 +363,20 @@ namespace mu2e
 // loop over hits
     for(auto& hhit : hhits) {
       bool oldout = !hhit._flag.hasAnyProperty(outlier);
-      // first compare detector azimuth with the circle center
-      double hphi = hhit.pos().phi(); 
-      double dphi = fabs(Angles::deltaPhi(hphi,helix.fcent()));
-      // compute spatial distance and chisquiared
       // directions
       Hep3Vector const& wdir = hhit.wdir();
-      Hep3Vector wtdir = zaxis.cross(wdir); // transverse direction to the wire
       Hep3Vector cvec = (hhit.pos() - helix.center()).perpPart(); // direction from the circle center to the hit
       Hep3Vector cdir = cvec.unit(); // direction from the circle center to the hit
-      Hep3Vector cperp = zaxis.cross(cdir); // direction perp to the radius
-      // positions
-      Hep3Vector hpos = hhit.pos(); // this sets the z position to the hit z
-      helix.position(hpos); // this computes the helix expectation at that z
-      Hep3Vector dh = hhit.pos() - hpos; // this is the vector between them
-      double dtrans = fabs(dh.dot(wtdir)); // transverse projection
-      double dwire = fabs(dh.dot(wdir)); // projection along wire direction
-      // compute the total resolution including hit and helix parameters first along the wire
-      double wres2 = std::pow(hhit.posRes(StrawHitPosition::wire),(int)2) +
-	std::pow(_cradres*cdir.dot(wdir),(int)2) +
-	std::pow(_cperpres*cperp.dot(wdir),(int)2);
-      // transverse to the wires
-      double wtres2 = std::pow(hhit.posRes(StrawHitPosition::trans),(int)2) +
-	std::pow(_cradres*cdir.dot(wtdir),(int)2) +
-	std::pow(_cperpres*cperp.dot(wtdir),(int)2);
-      // create a chisquared from these
-      double chisq = sqrt( dwire*dwire/wres2 + dtrans*dtrans/wtres2 );
       double rwdot = wdir.dot(cdir); // compare directions of radius and wire
+      // compute radial difference and pull
+      double dr = cvec.mag()-helix.radius();
+      double werr = hhit.posRes(StrawHitPosition::wire);
+      // the resolution is dominated
+      double rres = pow(werr*rwdot,2);
+      double rpull = dr/rres;
       unsigned ist = hhit._flag.hasAnyProperty(StrawHitFlag::stereo) ? 0 : 1;
       // cut
-      if( dphi > _maxphisep || fabs(dwire) > _maxdwire || fabs(dtrans) > _maxdtrans || chisq > _maxchisq || fabs(rwdot) > _maxrwdot[ist] ) {
+      if( fabs(dr) > _maxdr || fabs(rpull) > _maxrpull || rwdot > _maxrwdot[ist]){
 	// outlier hit flag it
 	hhit._flag.merge(outlier);
       } else {
@@ -386,6 +384,54 @@ namespace mu2e
 	hhit._flag.clear(outlier);
       }
       changed |= oldout != hhit._flag.hasAnyProperty(outlier);
+    }
+    return changed;
+  }
+
+  bool RobustHelixFinder::filterHits(HelixSeed& hseed) {
+  // 3d selection on top of radial selection
+    RobustHelix& helix = hseed._helix;
+    HelixHitCollection& hhits = hseed._hhits;
+    bool changed(false);
+    static StrawHitFlag outlier(StrawHitFlag::outlier);
+    static Hep3Vector zaxis(0.0,0.0,1.0); // unit in z direction
+// loop over hits
+    for(auto& hhit : hhits) {
+    // only remove hits, never add
+      if(!hhit._flag.hasAnyProperty(outlier)) {
+	// first compare detector azimuth with the circle center
+	double hphi = hhit.pos().phi(); 
+	double dphi = fabs(Angles::deltaPhi(hphi,helix.fcent()));
+	// compute spatial distance and chisquiared
+	// directions
+	Hep3Vector const& wdir = hhit.wdir();
+	Hep3Vector wtdir = zaxis.cross(wdir); // transverse direction to the wire
+	Hep3Vector cvec = (hhit.pos() - helix.center()).perpPart(); // direction from the circle center to the hit
+	Hep3Vector cdir = cvec.unit(); // direction from the circle center to the hit
+	Hep3Vector cperp = zaxis.cross(cdir); // direction perp to the radius
+	// positions
+	Hep3Vector hpos = hhit.pos(); // this sets the z position to the hit z
+	helix.position(hpos); // this computes the helix expectation at that z
+	Hep3Vector dh = hhit.pos() - hpos; // this is the vector between them
+	double dtrans = fabs(dh.dot(wtdir)); // transverse projection
+	double dwire = fabs(dh.dot(wdir)); // projection along wire direction
+	// compute the total resolution including hit and helix parameters first along the wire
+	double wres2 = std::pow(hhit.posRes(StrawHitPosition::wire),(int)2) +
+	  std::pow(_cradres*cdir.dot(wdir),(int)2) +
+	  std::pow(_cperpres*cperp.dot(wdir),(int)2);
+	// transverse to the wires
+	double wtres2 = std::pow(hhit.posRes(StrawHitPosition::trans),(int)2) +
+	  std::pow(_cradres*cdir.dot(wtdir),(int)2) +
+	  std::pow(_cperpres*cperp.dot(wtdir),(int)2);
+	// create a chisquared from these
+	double chisq = sqrt( dwire*dwire/wres2 + dtrans*dtrans/wtres2 );
+	// cut
+	if( dphi > _maxphisep || fabs(dwire) > _maxdwire || fabs(dtrans) > _maxdtrans || chisq > _maxchisq) {
+	  // outlier hit flag it.  But don't clear if it's not an outlier
+	  hhit._flag.merge(outlier);
+	  changed = true;
+	}
+      }
     }
     return changed;
   }
@@ -465,7 +511,7 @@ namespace mu2e
       double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(hseed.caloCluster()->sectionId()),2);
       terr(time,weight=wt);
     }
-    hseed._t0._t0 = extract_result<tag::weighted_mean>(terr);
+    hseed._t0._t0 = extract_result<tag::weighted_mean>(terr) + _t0shift; // ad-hoc correction FIXME!!
     hseed._t0._t0err = sqrt(std::max(0.0,extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
   }
 
@@ -481,6 +527,45 @@ namespace mu2e
     helix._rcent = crcorr;
     helix._radius = rcorr;
   }
+
+  void RobustHelixFinder::fitHelix(HelixSeed& hseed) {
+    // iteratively fit the circle
+    unsigned niter(0);
+    bool changed(true);
+    do {
+      _hfit.fitCircle(hseed);
+      changed = filterCircleHits(hseed);
+      ++niter;
+    } while(hseed._status.hasAllProperties(TrkFitFlag::circleOK)  && niter < _maxniter && changed);
+    // then fit phi-Z
+    if(hseed._status.hasAnyProperty(TrkFitFlag::circleOK)){
+      if(niter < _maxniter) hseed._status.merge(TrkFitFlag::circleConverged);
+      // solve for the longitudinal parameters
+      niter = 0;
+      changed = false;
+      do {
+	_hfit.fitFZ(hseed);
+	changed = filterHits(hseed);
+	++niter;
+      } while(hseed._status.hasAllProperties(TrkFitFlag::phizOK)  && niter < _maxniter && changed);
+      if(hseed._status.hasAnyProperty(TrkFitFlag::phizOK)){
+	if(niter < _maxniter) hseed._status.merge(TrkFitFlag::phizConverged);
+	// final test
+	if (_hfit.goodHelix(hseed.helix()))hseed._status.merge(TrkFitFlag::helixOK);
+	if(_diag > 0)_niter->Fill(niter);
+      }
+    }
+  }
+
+  unsigned RobustHelixFinder::hitCount(HelixSeed const& hseed) {
+    static StrawHitFlag outlier(StrawHitFlag::outlier);
+    HelixHitCollection const& hhits = hseed._hhits;
+    unsigned retval(0);
+    for(auto hhit : hhits)
+      if(!hhit._flag.hasAnyProperty(outlier))++retval;
+    return retval;
+  }
+
 }
 using mu2e::RobustHelixFinder;
 DEFINE_ART_MODULE(RobustHelixFinder);
