@@ -101,12 +101,11 @@ namespace mu2e
     unsigned				_maxniter;  // maximum # of iterations over outlier filtering + fitting
     double				_cradres; // average center resolution along center position (mm)
     double				_cperpres; // average center resolution perp to center position (mm)
-    double				_radres; // average radial resolution for circle fit (mm)
-    double				_phires; // average azimuthal resolution on circle (rad)
     double				_maxdwire; // outlier cut on distance between hit and helix along wire
     double				_maxdtrans; // outlier cut on distance between hit and helix perp to wire
     double				_maxchisq; // outlier cut on chisquared
     double				_maxrwdot[2]; // outlier cut on angle between radial direction and wire: smaller is better
+    double				_minrerr; // minimum radius error
     
     bool				_usemva; // use MVA to cut outliers
     double				_minmva; // outlier cut on MVA
@@ -123,7 +122,7 @@ namespace mu2e
     StrawHitFlag  _hsel, _hbkg;
 
   // MVA for iteratively cleaning hits from the helix
-    MVATools _mvatool;
+    MVATools _stmva, _nsmva;
     HelixHitMVA _vmva; // input variables to TMVA for filtering hits
     // Histograms
     TH1F* _niter, *_nitermva;
@@ -160,20 +159,19 @@ namespace mu2e
     _printfreq   (pset.get<int>("printFrequency",101)),
     _prefilter   (pset.get<bool>("PrefilterHits",true)),
     _minnhit	 (pset.get<unsigned>("minNHit",5)),
-    _maxdr	 (pset.get<double>("MaxRadiusDiff",40.0)), // mm
-    _maxrpull	 (pset.get<double>("MaxRPull",10.0)), // unitless
+    _maxdr	 (pset.get<double>("MaxRadiusDiff",100.0)), // mm
+    _maxrpull	 (pset.get<double>("MaxRPull",5.0)), // unitless
     _maxphisep	 (pset.get<double>("MaxPhiHitSeparation",1.0)),
     _saveflag    (pset.get<vector<string> >("SaveHelixFlag",vector<string>{"HelixOK"})),
     _maxniter    (pset.get<unsigned>("MaxIterations",10)), // iterations over outlier removal
-    _cradres	 (pset.get<double>("CenterRadialResolution",12.0)),
+    _cradres	 (pset.get<double>("CenterRadialResolution",20.0)),
     _cperpres	 (pset.get<double>("CenterPerpResolution",12.0)),
-    _radres	 (pset.get<double>("RadiusResolution",10.0)),
-    _phires	 (pset.get<double>("AzimuthREsolution",0.1)),
     _maxdwire    (pset.get<double>("MaxWireDistance",200.0)), // max distance along wire
-    _maxdtrans   (pset.get<double>("MaxTransDistance",100.0)), // max distance perp to wire (and z)
+    _maxdtrans   (pset.get<double>("MaxTransDistance",80.0)), // max distance perp to wire (and z)
     _maxchisq    (pset.get<double>("MaxChisquared",100.0)), // max chisquared
-    _usemva      (pset.get<bool>("UseHitMVA",false)),
-    _minmva      (pset.get<double> ("MinMVA",0.2)), // min MVA output to define an outlier
+    _minrerr     (pset.get<double>("MinRadiusErr",20.0)), // mm
+    _usemva      (pset.get<bool>("UseHitMVA",true)),
+    _minmva      (pset.get<double> ("MinMVA",0.1)), // min MVA output to define an outlier
     _shTag	 (pset.get<art::InputTag>("StrawHitCollection","makeSH")),
     _shpTag	 (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
     _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
@@ -181,16 +179,17 @@ namespace mu2e
     _trackseed   (pset.get<string>("HelixSeedCollectionLabel","TimeClusterFinder")),
     _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits")),
     _hbkg        (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
-    _mvatool     (pset.get<fhicl::ParameterSet>("HelixHitMVA",fhicl::ParameterSet())),
+    _stmva       (pset.get<fhicl::ParameterSet>("HelixStereoHitMVA",fhicl::ParameterSet())),
+    _nsmva       (pset.get<fhicl::ParameterSet>("HelixNonStereoHitMVA",fhicl::ParameterSet())),
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet())),
     _ttcalc      (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
-    _t0shift     (pset.get<double>("T0Shift",0.0)),
+    _t0shift     (pset.get<double>("T0Shift",4.0)),
     _parcor      (pset.get<bool>("CorrectHelixParameters",false)),
     _crcorr      (pset.get<vector<double> >("CenterRadiusCorrection")),
     _rcorr       (pset.get<vector<double> >("RadiusCorrection"))
   {
     _maxrwdot[0] = pset.get<double>("MaxStereoRWDot",1.0);
-    _maxrwdot[1] = pset.get<double>("MaxNonStereoRWDot",0.9);
+    _maxrwdot[1] = pset.get<double>("MaxNonStereoRWDot",1.0);
     produces<HelixSeedCollection>();
   }
 
@@ -198,10 +197,13 @@ namespace mu2e
 
   void RobustHelixFinder::beginJob() {
   // initialize MVA
-    _mvatool.initMVA();
+    _stmva.initMVA();
+    _nsmva.initMVA();
     if(_debug > 0){
-      cout << "RobustHeilxFinder MVA parameters: " << endl;
-      _mvatool.showMVA();
+      cout << "RobustHeilxFinder Stereo Hit MVA parameters: " << endl;
+      _stmva.showMVA();
+      cout << "RobustHeilxFinder Non-Stereo Hit MVA parameters: " << endl;
+      _nsmva.showMVA();
     }
     if(_diag > 0){
       art::ServiceHandle<art::TFileService> tfs;
@@ -331,7 +333,11 @@ namespace mu2e
       // time difference
       _vmva._dt = _shcol->at(hhit._shidx).time() - hseed._t0.t0();
       // compute the MVA and store it
-      hhit._hqual = _mvatool.evalMVA(_vmva._pars);
+      if(hhit._flag.hasAnyProperty(StrawHitFlag::stereo)){
+	hhit._hqual = _stmva.evalMVA(_vmva._pars);
+      } else {
+	hhit._hqual = _nsmva.evalMVA(_vmva._pars);
+      }
     }
   }
   
@@ -368,11 +374,13 @@ namespace mu2e
       Hep3Vector cvec = (hhit.pos() - helix.center()).perpPart(); // direction from the circle center to the hit
       Hep3Vector cdir = cvec.unit(); // direction from the circle center to the hit
       double rwdot = wdir.dot(cdir); // compare directions of radius and wire
+      double rwdot2 = rwdot*rwdot;
       // compute radial difference and pull
       double dr = cvec.mag()-helix.radius();
       double werr = hhit.posRes(StrawHitPosition::wire);
-      // the resolution is dominated
-      double rres = pow(werr*rwdot,2);
+      double terr = hhit.posRes(StrawHitPosition::trans);
+      // the resolution is dominated the resolution along the wire
+      double rres = std::max(sqrt(werr*werr*rwdot2 + terr*terr*(1.0-rwdot2)),_minrerr);
       double rpull = dr/rres;
       unsigned ist = hhit._flag.hasAnyProperty(StrawHitFlag::stereo) ? 0 : 1;
       // cut
@@ -424,7 +432,7 @@ namespace mu2e
 	  std::pow(_cradres*cdir.dot(wtdir),(int)2) +
 	  std::pow(_cperpres*cperp.dot(wtdir),(int)2);
 	// create a chisquared from these
-	double chisq = sqrt( dwire*dwire/wres2 + dtrans*dtrans/wtres2 );
+	double chisq = dwire*dwire/wres2 + dtrans*dtrans/wtres2; 
 	// cut
 	if( dphi > _maxphisep || fabs(dwire) > _maxdwire || fabs(dtrans) > _maxdtrans || chisq > _maxchisq) {
 	  // outlier hit flag it.  But don't clear if it's not an outlier
@@ -511,8 +519,10 @@ namespace mu2e
       double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(hseed.caloCluster()->sectionId()),2);
       terr(time,weight=wt);
     }
-    hseed._t0._t0 = extract_result<tag::weighted_mean>(terr) + _t0shift; // ad-hoc correction FIXME!!
-    hseed._t0._t0err = sqrt(std::max(0.0,extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
+    if(sum_of_weights(terr) > 0.0){
+      hseed._t0._t0 = extract_result<tag::weighted_mean>(terr) + _t0shift; // ad-hoc correction FIXME!!
+      hseed._t0._t0err = sqrt(std::max(0.0,extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
+    }
   }
 
   void RobustHelixFinder::correctParameters(RobustHelix& helix) {
