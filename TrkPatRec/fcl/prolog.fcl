@@ -56,10 +56,10 @@ RobustHelixFinder : {
   # Input hits are reqiured to have at least one of these
   HitSelectionBits	    : ["Stereo","TimeDivision"]
   # MVA parameters for outlier filtering
-  HelixHitMVA : { MVAWeights : "TrkPatRec/test/HelixHitMVA.weights.xml" }
-  MinMVA : [-1.0,0.0,0.1,0.2] # fade in the MVA cuts
-  CenterRadiusCorrection : [-108.6,1.42]
-  RadiusCorrection : [256.8,0.571,-0.002617,264.2]
+  HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
+  HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
+  CenterRadiusCorrection : []
+  RadiusCorrection : []
 }
 
 # we need both positive and negative helicity helix finders
