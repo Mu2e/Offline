@@ -73,8 +73,6 @@ namespace mu2e {
       TrkFitFlag _plotexc; // exclusive conditions for plotting
       double				_cradres; // average center resolution along center position (mm)
       double				_cperpres; // average center resolution perp to center position (mm)
-      double				_radres; // average radial resolution for circle fit (mm)
-      double				_phires; // average azimuthal resolution on circle (rad)
       // event object tags      art::InputTag _shTag;
       art::InputTag _shTag;
       art::InputTag _shpTag;
@@ -138,10 +136,8 @@ namespace mu2e {
     _plot(pset.get<bool>("PlotHelices",false)),
     _plotinc              (pset.get<vector<string> >("InclusivePlotFlagBits",vector<string>{"HitsOK"})),
     _plotexc              (pset.get<vector<string> >("ExclusivePlotFlagBits",vector<string>{})),
-    _cradres	 (pset.get<double>("CenterRadialResolution",12.0)),
+    _cradres	 (pset.get<double>("CenterRadialResolution",20.0)),
     _cperpres	 (pset.get<double>("CenterPerpResolution",12.0)),
-    _radres	 (pset.get<double>("RadiusResolution",10.0)),
-    _phires	 (pset.get<double>("AzimuthREsolution",0.1)),
     _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
     _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
     _shfTag(pset.get<string>("StrawHitFlagCollectionTag","PosHelixFinder")),
@@ -337,7 +333,7 @@ namespace mu2e {
 	    hhinfo._dtrans = dtrans;
 	    hhinfo._wres = sqrt(wres2);
 	    hhinfo._wtres = sqrt(wtres2);
-	    hhinfo._chisq = sqrt( dwire*dwire/wres2 + dtrans*dtrans/wtres2 );
+	    hhinfo._chisq = dwire*dwire/wres2 + dtrans*dtrans/wtres2;
 	    hhinfo._hqual = hhit._hqual;
 
 	    _hhinfo.push_back(hhinfo);
