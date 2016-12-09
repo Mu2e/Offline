@@ -124,7 +124,7 @@ namespace mu2e
     if(_perr.size() != HelixTraj::NHLXPRM)
       throw cet::exception("RECO")<<"mu2e::KalSeedFit: parameter error vector has wrong size"<< endl;
     // mock covariance matrix, all diagonal
-    _hcovar = HepSymMatrix(HelixTraj::NHLXPRM,1);
+    _hcovar = HepSymMatrix(HelixTraj::NHLXPRM,0);
     for(size_t ipar = 0; ipar < HelixTraj::NHLXPRM; ++ipar){
       _hcovar(ipar+1,ipar+1) = _perr[ipar]*_perr[ipar]; // clhep indexing starts a 1
     }
