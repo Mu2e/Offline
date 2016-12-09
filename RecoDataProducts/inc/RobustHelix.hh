@@ -30,7 +30,7 @@ namespace mu2e {
     double centery() const { return _rcent*sin(_fcent); }
     CLHEP::Hep3Vector center() const { return CLHEP::Hep3Vector(centerx(),centery(),0.0); }
     // azimuth wrt the circle center expected for a given z position
-    Float_t circleAzimuth( double zpos) const { return _fz0 + zpos/_lambda; }
+    Float_t circleAzimuth( double zpos) const { return _lambda != 0.0 ? _fz0 + zpos/_lambda : 0.0; }
     // position in space given the Z position of the input vector
     void position(CLHEP::Hep3Vector& pos) const {
       pos.setX(centerx() + _radius*cos(circleAzimuth(pos.z())));
