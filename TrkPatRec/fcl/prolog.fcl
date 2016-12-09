@@ -119,8 +119,8 @@ KFFinal : {
 KalSeedFit : {
   module_type                 : KalSeedFit
   SeedFit		      : @local::KFSeed
-#  ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
-  ParameterErrors	      : [1.0,1.0,1.0,1.0,1.0]
+  ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
+#  ParameterErrors	      : [1.0,1.0,1.0,1.0,1.0]
 }
 # Final Kalman fit, including material and magnetic inhomogeneity effects
 KalFinalFit : {
