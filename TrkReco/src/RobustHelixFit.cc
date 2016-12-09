@@ -78,7 +78,7 @@ namespace mu2e
     _ccwt(pset.get<double>("CaloClusterWeight",10.0)), // Cluster weight in units of non-stereo hits
     _stwt(pset.get<double>("StereoHitWeight",1.0)), // Stereo hit weight in units of non-stereo hits
     _hqwt(pset.get<bool>("HitQualityWeight",false)), // weight hits by 'quality' = MVA value
-    _targetradius(pset.get<double>("targetradius",75.0)), // effective target radius (mm)
+    _targetradius(pset.get<double>("targetradius",150.0)), // effective target radius (mm)
     _trackerradius(pset.get<double>("trackerradius",750.0)), // tracker out radius; include some buffer (mm)
     _rwind(pset.get<double>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix in the AGG fit (mm)
     _helicity(pset.get<int>("Helicity",Helicity::unknown))
