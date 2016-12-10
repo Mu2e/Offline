@@ -5,7 +5,7 @@
 #
 
 if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
-    echo "You should be sourcing this file, not executing it."
+    echo "You should be sourcing this file, not executing it." >&2
     exit 1
 fi
 
@@ -21,23 +21,23 @@ EOF
 fi
 
 if [ "${MU2E}" = '' ];then
-    echo "The environment variable MU2E is not set."
-    echo "You must setup the local Mu2e environment before sourcing this script."
+    echo "The environment variable MU2E is not set." >&2
+    echo "You must setup the local Mu2e environment before sourcing this script." >&2
     return 1
 fi
 
 # Protect against multiple invocation.
 if [ "${MU2E_BASE_RELEASE}" != '' ];then
-    echo "A base release has already been setup.  Hope that's OK."
-    echo "The base release is: " ${MU2E_BASE_RELEASE}
+    echo "A base release has already been setup.  Hope that's OK." >&2
+    echo "The base release is: " ${MU2E_BASE_RELEASE} >&2
     return 1
 fi
 
 # A very ill-defined state.  We have  a satellite release but no base release!
 if [ "${MU2E_SATELLITE_RELEASE}" != '' ];then
-    echo "ERROR: A satellite release has already been setup but there is no base release."
-    echo "Suggest that you log out, log in and restart from the beginning."
-    echo "The satellite release is: " ${MU2E_SATELLITE_RELEASE}
+    echo "ERROR: A satellite release has already been setup but there is no base release." >&2
+    echo "Suggest that you log out, log in and restart from the beginning." >&2
+    echo "The satellite release is: " ${MU2E_SATELLITE_RELEASE} >&2
     return 1
 fi
 
@@ -69,6 +69,9 @@ fi
 # Setup the framework and its dependent products
 setup -B art v2_04_00a -q${MU2E_UPS_QUALIFIERS}
 
+# root6 needs a path to include files to prevent some runtime warnings
+export ROOT_INCLUDE_PATH=`dropit -s -p$ROOT_INCLUDE_PATH $MU2E_BASE_RELEASE`
+
 # The interface to SAM - conflicts with ifdhc from the grid runtime environment
 #setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
 
@@ -78,14 +81,14 @@ setup -B geant4 v4_9_6_p04e -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER
 # Other libraries we need.
 setup -B heppdt v3_04_01e -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_01_03  -q${MU2E_UPS_QUALIFIERS}
-setup xerces_c  v3_1_3    -q${MU2E_UPS_QUALIFIERS}
-setup tbb       v4_4_3a   -q${MU2E_UPS_QUALIFIERS}
+setup -B xerces_c  v3_1_3    -q${MU2E_UPS_QUALIFIERS}
+setup -B tbb       v4_4_3a   -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_5_0
 
 # The debugger
-setup gdb v7_10_1
+setup -B gdb v7_10_1
 
 # Search path for fcl files
 export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
@@ -101,10 +104,3 @@ fi
 # Environment variables used by the test build system.
 export PACKAGE_SOURCE=${MU2E_BASE_RELEASE}
 export BUILD_BASE=${MU2E_BASE_RELEASE}
-
-# Tell SConstruct where to find helpers.py
-if [ "${PYTHONPATH}" = '' ];then
- export PYTHONPATH=${PACKAGE_SOURCE}/python
-else
- export PYTHONPATH=${PYTHONPATH}:${PACKAGE_SOURCE}/python
-fi
