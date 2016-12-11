@@ -10,7 +10,7 @@
 #include "RecoDataProducts/inc/KalSegment.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 // BTrk
 #include "BTrk/TrkBase/TrkParticle.hh"
 // Root

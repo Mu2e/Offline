@@ -1,3 +1,6 @@
+# this file depends on analysis through KalDiag and so needs the following
+# This depedency is deprecated and should be removed FIXME!!
+#include "TrkDiag/fcl/KalDiag.fcl"
 # -*- mode: tcl -*-
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
@@ -299,64 +302,64 @@ CalPatRec : { @table::CalPatRec
 	MergePatRecTpr : { @table::CalPatRec.producers.MergePatRec 
 	    trkPatRecModuleLabel : KFFDeM
 	    calPatRecModuleLabel : none
-	    fitparticle          : @local::Tracking.producers.TRFDownstreameMinus.fitparticle
-	    fitdirection         : @local::Tracking.producers.TRFDownstreameMinus.fitdirection
+	    fitparticle          : @local::Tracking.producers.KFFDeM.fitparticle
+	    fitdirection         : @local::Tracking.producers.KFFDeM.fitdirection
 	}
 
 	MergePatRecDem : { @table::CalPatRec.producers.MergePatRec 
 	    trkPatRecModuleLabel : KFFDeM
 	    calPatRecModuleLabel : CalPatRecDem
-	    fitparticle          : @local::Tracking.producers.TRFDownstreameMinus.fitparticle
-	    fitdirection         : @local::Tracking.producers.TRFDownstreameMinus.fitdirection
+	    fitparticle          : @local::Tracking.producers.KFFDeM.fitparticle
+	    fitdirection         : @local::Tracking.producers.KFFDeM.fitdirection
 	}
 
 	MergePatRecDmm : { @table::CalPatRec.producers.MergePatRec 
 	    trkPatRecModuleLabel : KFFDmuM
 	    calPatRecModuleLabel : CalPatRecDmm
-	    fitparticle          : @local::Tracking.producers.TRFDownstreammuMinus.fitparticle  # 11:electron, -11:positron, 13:mu-, -13: mu+
-	    fitdirection         : @local::Tracking.producers.TRFDownstreammuMinus.fitdirection # 0:downstream, 1:upstream
+	    fitparticle          : @local::Tracking.producers.KFFDmuM.fitparticle  # 11:electron, -11:positron, 13:mu-, -13: mu+
+	    fitdirection         : @local::Tracking.producers.KFFDmuM.fitdirection # 0:downstream, 1:upstream
 	}
 
 	MergePatRecDep : { @table::CalPatRec.producers.MergePatRec 
 	    trkPatRecModuleLabel : KFFDeP
 	    calPatRecModuleLabel : none
-	    fitparticle          : @local::Tracking.producers.TRFDownstreamePlus.fitparticle
-	    fitdirection         : @local::Tracking.producers.TRFDownstreamePlus.fitdirection
+	    fitparticle          : @local::Tracking.producers.KFFDeP.fitparticle
+	    fitdirection         : @local::Tracking.producers.KFFDeP.fitdirection
 	}
 
 	MergePatRecDmp : { @table::CalPatRec.producers.MergePatRec 
 	    trkPatRecModuleLabel : KFFDmuP
 	    calPatRecModuleLabel : none
-	    fitparticle          : @local::Tracking.producers.TRFDownstreammuPlus.fitparticle  # 11:electron, -11:positron, 13:mu-, -13: mu+
-	    fitdirection         : @local::Tracking.producers.TRFDownstreammuPlus.fitdirection # 0:downstream, 1:upstream
+	    fitparticle          : @local::Tracking.producers.KFFDmuP.fitparticle  # 11:electron, -11:positron, 13:mu-, -13: mu+
+	    fitdirection         : @local::Tracking.producers.KFFDmuP.fitdirection # 0:downstream, 1:upstream
 	}
 
 	MergePatRecUem : { @table::CalPatRec.producers.MergePatRec 
 	    trkPatRecModuleLabel : KFFUeM
 	    calPatRecModuleLabel : none
-	    fitparticle          : @local::Tracking.producers.TRFUpstreameMinus.fitparticle
-	    fitdirection         : @local::Tracking.producers.TRFUpstreameMinus.fitdirection
+	    fitparticle          : @local::Tracking.producers.KFFUeM.fitparticle
+	    fitdirection         : @local::Tracking.producers.KFFUeM.fitdirection
 	}
 
 	MergePatRecUmm : { @table::CalPatRec.producers.MergePatRec 
 	    trkPatRecModuleLabel : KFFUmuM
 	    calPatRecModuleLabel : none
-	    fitparticle          : @local::Tracking.producers.TRFUpstreammuMinus.fitparticle
-	    fitdirection         : @local::Tracking.producers.TRFUpstreammuMinus.fitdirection
+	    fitparticle          : @local::Tracking.producers.KFFUmuM.fitparticle
+	    fitdirection         : @local::Tracking.producers.KFFUmuM.fitdirection
 	}
 
 	MergePatRecUep : { @table::CalPatRec.producers.MergePatRec 
 	    trkPatRecModuleLabel : KFFUeP
 	    calPatRecModuleLabel : none
-	    fitparticle          : @local::Tracking.producers.TRFUpstreamePlus.fitparticle
-	    fitdirection         : @local::Tracking.producers.TRFUpstreamePlus.fitdirection
+	    fitparticle          : @local::Tracking.producers.KFFUeP.fitparticle
+	    fitdirection         : @local::Tracking.producers.KFFUeP.fitdirection
 	}
 
 	MergePatRecUmp : { @table::CalPatRec.producers.MergePatRec 
 	    trkPatRecModuleLabel : KFFUmuP
 	    calPatRecModuleLabel : none
-	    fitparticle          : @local::Tracking.producers.TRFUpstreammuPlus.fitparticle
-	    fitdirection         : @local::Tracking.producers.TRFUpstreammuPlus.fitdirection
+	    fitparticle          : @local::Tracking.producers.KFFUmuP.fitparticle
+	    fitdirection         : @local::Tracking.producers.KFFUmuP.fitdirection
 	}
 
     }

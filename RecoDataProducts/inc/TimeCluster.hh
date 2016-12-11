@@ -13,7 +13,7 @@
 // C++ includes
 #include <vector>
 // art includes
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 // Mu2e includes
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "CLHEP/Vector/ThreeVector.h"

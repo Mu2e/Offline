@@ -4,7 +4,6 @@
 #------------------------------------------------------------------------------
 #include "TrkPatRec/fcl/Particle.fcl"
 #include "TrkPatRec/fcl/PanelAmbigResolver.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
@@ -255,68 +254,6 @@ KFFUpiP.SeedCollectionTag     : "KSFUpiP"
 KFFUpiP.fitparticle	      : @local::Particle.piplus
 KFFUpiP.fitdirection	      : @local::FitDir.upstream
 
-# Combined TrkRecFit.  these are DEPRECATED
-#  First, downstream electrons
-TrkRecFitDownstreameMinus			      : @local::TrkRecFit
-TrkRecFitDownstreameMinus.SeedCollectionTag	      : "PosHelixFinder"
-TrkRecFitDownstreameMinus.fitparticle		      : @local::Particle.eminus
-TrkRecFitDownstreameMinus.fitdirection		      : @local::FitDir.downstream 
-# upstream electrons
-TrkRecFitUpstreameMinus				      : @local::TrkRecFit
-TrkRecFitUpstreameMinus.SeedCollectionTag	      : "NegHelixFinder"
-TrkRecFitUpstreameMinus.fitparticle		      : @local::Particle.eminus
-TrkRecFitUpstreameMinus.fitdirection		      : @local::FitDir.upstream 
-#  downstream positrons
-TrkRecFitDownstreamePlus			      : @local::TrkRecFit
-TrkRecFitDownstreamePlus.SeedCollectionTag	      : "NegHelixFinder"
-TrkRecFitDownstreamePlus.fitparticle		      : @local::Particle.eplus
-TrkRecFitDownstreamePlus.fitdirection		      : @local::FitDir.downstream 
-# upstream positrons
-TrkRecFitUpstreamePlus				      : @local::TrkRecFit
-TrkRecFitUpstreamePlus.SeedCollectionTag	      : "PosHelixFinder"
-TrkRecFitUpstreamePlus.fitparticle		      : @local::Particle.eplus
-TrkRecFitUpstreamePlus.fitdirection		      : @local::FitDir.upstream 
-# downstream mu minus
-TrkRecFitDownstreammuMinus			      : @local::TrkRecFit
-TrkRecFitDownstreammuMinus.SeedCollectionTag	      : "PosHelixFinder"
-TrkRecFitDownstreammuMinus.fitparticle		      : @local::Particle.muminus
-TrkRecFitDownstreammuMinus.fitdirection		      : @local::FitDir.downstream 
-# upstream mu minus
-TrkRecFitUpstreammuMinus			      : @local::TrkRecFit
-TrkRecFitUpstreammuMinus.SeedCollectionTag	      : "NegHelixFinder"
-TrkRecFitUpstreammuMinus.fitparticle		      : @local::Particle.muminus
-TrkRecFitUpstreammuMinus.fitdirection		      : @local::FitDir.upstream 
-# downstream mu plus
-TrkRecFitDownstreammuPlus			      : @local::TrkRecFit
-TrkRecFitDownstreammuPlus.SeedCollectionTag	      : "NegHelixFinder"
-TrkRecFitDownstreammuPlus.fitparticle		      : @local::Particle.muplus
-TrkRecFitDownstreammuPlus.fitdirection		      : @local::FitDir.downstream 
-# upstream mu plus
-TrkRecFitUpstreammuPlus				      : @local::TrkRecFit
-TrkRecFitUpstreammuPlus.SeedCollectionTag	      : "PosHelixFinder"
-TrkRecFitUpstreammuPlus.fitparticle		      : @local::Particle.muplus
-TrkRecFitUpstreammuPlus.fitdirection		      : @local::FitDir.upstream 
-# downstream pi minus
-TrkRecFitDownstreampiMinus			      : @local::TrkRecFit
-TrkRecFitDownstreampiMinus.SeedCollectionTag	      : "PosHelixFinder"
-TrkRecFitDownstreampiMinus.fitparticle		      : @local::Particle.piminus
-TrkRecFitDownstreampiMinus.fitdirection		      : @local::FitDir.downstream 
-# upstream pi minus
-TrkRecFitUpstreampiMinus			      : @local::TrkRecFit
-TrkRecFitUpstreampiMinus.SeedCollectionTag	      : "NegHelixFinder"
-TrkRecFitUpstreampiMinus.fitparticle		      : @local::Particle.piminus
-TrkRecFitUpstreampiMinus.fitdirection		      : @local::FitDir.upstream 
-# downstream pi plus
-TrkRecFitDownstreampiPlus			      : @local::TrkRecFit
-TrkRecFitDownstreampiPlus.SeedCollectionTag	      : "NegHelixFinder"
-TrkRecFitDownstreampiPlus.fitparticle		      : @local::Particle.piplus
-TrkRecFitDownstreampiPlus.fitdirection		      : @local::FitDir.downstream 
-# upstream pi plus
-TrkRecFitUpstreampiPlus				      : @local::TrkRecFit
-TrkRecFitUpstreampiPlus.SeedCollectionTag	      : "PosHelixFinder"
-TrkRecFitUpstreampiPlus.fitparticle		      : @local::Particle.piplus
-TrkRecFitUpstreampiPlus.fitdirection		      : @local::FitDir.upstream
-#
 # Declare a table with all the modules needed for track reconstruction
 Tracking : {
   producers : {
@@ -357,20 +294,6 @@ Tracking : {
     KFFUpiM	  : @local::KFFUpiM
     KFFDpiP	  : @local::KFFDpiP
     KFFUpiP	  : @local::KFFUpiP
-# Integrated seed and final fit: these are DEPRECATED 
-    TRFDownstreameMinus	  : @local::TrkRecFitDownstreameMinus
-    TRFUpstreameMinus	  : @local::TrkRecFitUpstreameMinus
-    TRFDownstreamePlus	  : @local::TrkRecFitDownstreamePlus
-    TRFUpstreamePlus	  : @local::TrkRecFitUpstreamePlus
-    TRFDownstreammuMinus  : @local::TrkRecFitDownstreammuMinus
-    TRFUpstreammuMinus	  : @local::TrkRecFitUpstreammuMinus
-    TRFDownstreammuPlus	  : @local::TrkRecFitDownstreammuPlus
-    TRFUpstreammuPlus	  : @local::TrkRecFitUpstreammuPlus
-    TRFDownstreampiMinus  : @local::TrkRecFitDownstreampiMinus
-    TRFUpstreampiMinus	  : @local::TrkRecFitUpstreampiMinus
-    TRFDownstreampiPlus	  : @local::TrkRecFitDownstreampiPlus
-    TRFUpstreampiPlus	  : @local::TrkRecFitUpstreampiPlus
- #
   }
 # simulation sequence to create digis.  Currently just one module, but that might change
   DigiSim : [ makeSD ]

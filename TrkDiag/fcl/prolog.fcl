@@ -1,8 +1,30 @@
-#include "standardProducers.fcl"
-# the following should be included in this file, but the use of KalDiag in reco introduces
-# a dependency loop, FIXME!
-#include "TrkDiag/fcl/KalDiag.fcl"
 BEGIN_PROLOG
+# Note that KalDiag must be configured differently depending on whether you are
+# reading data generated inline, or are reading data output through Read
+  KalDiag : {
+    MCPtrLabel	      : makeSH
+    StrawHitMCLabel     : makeSH
+    TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+  }
+# If running KalDiag directly on G4 use KalDiagDirect
+  KalDiagDirect			  : @local::KalDiag
+  KalDiagDirect.MCStepsLabel        : g4run
+  KalDiagDirect.SimParticleLabel    : g4run
+  KalDiagDirect.SimParticleInstance : "" 
+# Production samples use Read, which requires the following setup
+  KalDiagRead			  : @local::KalDiag
+  KalDiagRead.MCStepsLabel        : detectorFilter
+  KalDiagRead.SimParticleLabel    : detectorFilter
+# TDR samples gave an instance name to the sim particle collection, CD3 and beyond won't
+  KalDiagReadTDR : @local::KalDiagRead
+  KalDiagReadTDR.SimParticleInstance : "s0"
+# CD3 beam data have no instance labels
+  KalDiagReadCD3 : @local::KalDiagRead
+  KalDiagReadCD3.SimParticleInstance : ""
+# CD3 Cosmic data have different filter module labels
+  KalDiagReadCD3Cosmics			  : @local::KalDiagReadCD3
+  KalDiagReadCD3Cosmics.MCStepsLabel        : cosmicFilter
+  KalDiagReadCD3Cosmics.SimParticleLabel    : cosmicFilter
 # prolog which should be elsewhere, FIXME
   pidPathBins: [ 0., 50., 100., 150., 200., 250., 300., 1.e12 ]
   CaloSim : {
@@ -54,9 +76,6 @@ BEGIN_PROLOG
 # Prototype track analysis config.
   TrackAnalysis : {
     module_type : TrackAnalysis
-    DownstreameMinusTrackTag : "TRFDownstreameMinus:DownstreameMinus" # instance key needed for CD3
-    UpstreameMinusTrackTag : "TRFUpstreameMinus:UpstreameMinus" # instance key needed for CD3
-    DownstreammuMinusTrackTag : "TRFDownstreammuMinus:DownstreammuMinus" # instance key needed for CD3
     KalDiag : @local::KalDiagReadCD3 # configure KalDiag to read CD3 data files
     TrkCaloDiag : @local::TrkCaloDiag
     eventWeightModules : [ ]
@@ -66,10 +85,10 @@ BEGIN_PROLOG
   TrackCaloMatching : { @table::TrackCaloMatching 
     producers : { @table::TrackCaloMatching.producers 
       TrackCaloIntersectionTRFDem : { @table::TrackCaloMatching.producers.TrackCaloIntersectionDem
-	fitterModuleLabel : TRFDownstreameMinus
+	fitterModuleLabel : TRFDeM
       }
       TrackCaloMatchingTRFDem : { @table::TrackCaloMatching.producers.TrackCaloMatchingDem
-	fitterModuleLabel : TRFDownstreameMinus
+	fitterModuleLabel : TRFDeM
 	trkToCaloExtrapolModuleLabel: TrackCaloIntersectionTRFDem
       }
     }
@@ -112,9 +131,9 @@ BEGIN_PROLOG
 		    @sequence::Tracking.DigiSim,
 		    @sequence::CaloSim.MakeHits ]
     RecoSequence : [ @sequence::CaloReco.MakeClusters,
-		     @sequence::Tracking.TPRDownstreameMinus,
-		     @sequence::Tracking.TPRUpstreameMinus,
-		     @sequence::Tracking.TPRDownstreammuMinus,
+		     @sequence::Tracking.TPRDeM,
+		     @sequence::Tracking.TPRUeM,
+		     @sequence::Tracking.TPRDmuM,
 		     @sequence::TrackCaloMatching.matching_dem_TRF ]
     EndSequence : [ TrkAna, genCountLogger ]
 

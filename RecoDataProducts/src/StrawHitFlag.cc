@@ -37,6 +37,7 @@ namespace mu2e {
       bitnames[std::string("TimeCluster")]	    = bit_to_mask(tclust);
       bitnames[std::string("CalorimeterSelection")] = bit_to_mask(calosel);
       bitnames[std::string("StrawXTalk")]	    = bit_to_mask(strawxtalk);
+      bitnames[std::string("TrackerSelection")]     = bit_to_mask(trksel);
       bitnames[std::string("ElectronicsXTalk")]	    = bit_to_mask(elecxtalk);
       bitnames[std::string("Active")]		    = bit_to_mask(active);
       bitnames[std::string("GoodDOCA")]		    = bit_to_mask(doca);

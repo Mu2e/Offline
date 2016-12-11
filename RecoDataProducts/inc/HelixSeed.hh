@@ -10,7 +10,7 @@
 #include "RecoDataProducts/inc/HelixHit.hh"
 #include "RecoDataProducts/inc/RobustHelix.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 namespace mu2e {
   class CaloCluster;

@@ -22,7 +22,7 @@
 #include "RecoDataProducts/inc/StrawEnd.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 // toolkit includes
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "CLHEP/Vector/LorentzVector.h"
 
 namespace mu2e {
