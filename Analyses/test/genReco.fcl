@@ -222,5 +222,5 @@ services.scheduler.wantSummary: true
 
 # Apply the time offsets at the digitization stage
 
-physics.analyzers.RKFDownstreameMinus.KalDiag.MCStepsLabel     : "g4run"
-physics.analyzers.RKFDownstreameMinus.KalDiag.SimParticleLabel : "g4run"
+physics.analyzers.RKFDeM.KalDiag.MCStepsLabel     : "g4run"
+physics.analyzers.RKFDeM.KalDiag.SimParticleLabel : "g4run"
