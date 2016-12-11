@@ -14,7 +14,7 @@
 #include <stdio.h>
 
 namespace mu2e {
-  unsigned StrawHitFlagDetail::_maxTrkId(15);
+  unsigned StrawHitFlagDetail::_maxTrkId(7);
 
   std::string const& StrawHitFlagDetail::typeName() {
     static std::string type("StrawHitFlag");
@@ -25,6 +25,7 @@ namespace mu2e {
     static std::map<std::string,mask_type> bitnames;
     if(bitnames.size()==0){
       bitnames[std::string("Stereo")]               = bit_to_mask(stereo);
+      bitnames[std::string("ResolvedPhi")]          = bit_to_mask(resolvedphi);
       bitnames[std::string("TimeDivision")]         = bit_to_mask(tdiv);
       bitnames[std::string("EnergySelection")]      = bit_to_mask(energysel);
       bitnames[std::string("RadiusSelection")]      = bit_to_mask(radsel);
@@ -33,10 +34,12 @@ namespace mu2e {
       bitnames[std::string("Isolated")]             = bit_to_mask(isolated);
       bitnames[std::string("Outlier")]              = bit_to_mask(outlier);
       bitnames[std::string("OtherBackground")]      = bit_to_mask(other);
-      bitnames[std::string("TrackerSelection")]	    = bit_to_mask(trksel);
+      bitnames[std::string("TimeCluster")]	    = bit_to_mask(tclust);
       bitnames[std::string("CalorimeterSelection")] = bit_to_mask(calosel);
       bitnames[std::string("StrawXTalk")]	    = bit_to_mask(strawxtalk);
       bitnames[std::string("ElectronicsXTalk")]	    = bit_to_mask(elecxtalk);
+      bitnames[std::string("Active")]		    = bit_to_mask(active);
+      bitnames[std::string("GoodDOCA")]		    = bit_to_mask(doca);
       for(unsigned itrk=0;itrk<=_maxTrkId;++itrk){
 	bitnames[trackBitName(itrk)] = bit_to_mask(trackBit(itrk));
       }

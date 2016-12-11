@@ -211,7 +211,7 @@ namespace mu2e
   double MVATools::evalMVA(vector<double>const &v){
 
     // Normalize
-    for(vector<double>::size_type i = 0; i != v.size(); ++i){
+    for(vector<double>::size_type i = 0; i != _wn.size(); ++i){
       _x[i] = ((v[i]-_wn[i][0])/_wnr2[i]) - 1.;
     }
 

@@ -13,4 +13,15 @@
  <class name="mu2e::EventInfo" />
  <class name="mu2e::HitCount" />
  <class name="mu2e::TrkCount" />
+ <class name="mu2e::TimeClusterInfo" />
+ <class name="std::vector<mu2e::TimeClusterInfo>" />
+ <class name="mu2e::MCClusterInfo" />
+ <class name="mu2e::TimeClusterHitInfo" />
+ <class name="std::vector<mu2e::TimeClusterHitInfo>" />
+ <class name="mu2e::HitInfoMC" />
+ <class name="std::vector<mu2e::HitInfoMC>" />
+ <class name="mu2e::HelixHitInfo" />
+ <class name="std::vector<mu2e::HelixHitInfo>" />
+ <class name="mu2e::HelixHitInfoMC" />
+ <class name="std::vector<mu2e::HelixHitInfoMC>" />
 </lcgdict>

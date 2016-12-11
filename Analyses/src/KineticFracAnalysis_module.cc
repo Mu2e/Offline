@@ -17,6 +17,7 @@
 #include "ConditionsService/inc/CalorimeterPhysicalConstants.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
+#include "TTrackerGeom/inc/TTracker.hh"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"

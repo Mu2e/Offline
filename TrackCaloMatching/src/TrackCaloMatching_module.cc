@@ -73,7 +73,6 @@ namespace mu2e {
     TrkParticle     _tpart;
     
     TrkFitDirection _fdir;
-    std::string     _iname;
 					// Diagnostic level
     int             _debugLevel;
 
@@ -124,7 +123,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // Tell the framework what we make.
 //-----------------------------------------------------------------------------
-      _iname = _fdir.name() + _tpart.name();
       produces<TrackClusterMatchCollection>();
     }
 
@@ -209,7 +207,7 @@ namespace mu2e {
     GeomHandle<Calorimeter> cg;
   
     art::Handle<KalRepPtrCollection> trksHandle;
-    evt.getByLabel(_fitterModuleLabel,_iname,trksHandle);
+    evt.getByLabel(_fitterModuleLabel,trksHandle);
     const KalRepPtrCollection* trks = trksHandle.product();
     ntracks = trks->size();
   

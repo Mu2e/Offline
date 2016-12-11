@@ -1,0 +1,88 @@
+//
+// Object to calculate t0
+//
+// $Id: HelixFit.cc,v 1.12 2014/07/10 14:47:26 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2014/07/10 14:47:26 $
+//
+// the following has to come before other BaBar includes
+#include "BTrk/BaBar/BaBar.hh"
+#include "TrkReco/inc/TrkTimeCalculator.hh"
+//CLHEP
+#include "CLHEP/Units/PhysicalConstants.h"
+// boost
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/median.hpp>
+// root
+#include "TH1F.h"
+// C++
+#include <vector>
+#include <string>
+#include <math.h>
+#include <cmath>
+using CLHEP::Hep3Vector;
+using namespace std;
+using namespace boost::accumulators;
+namespace mu2e 
+{
+
+  TrkTimeCalculator::TrkTimeCalculator(fhicl::ParameterSet const& pset) :
+    _debug(pset.get<int>("debugLevel",0)),
+//    _useflag(pset.get<std::vector<std::string>>("UseFlag")),
+//    _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier","DeltaRay","Isolated"})),
+    _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
+    _shOffset(pset.get<double>("StrawHitTimeOffset",25.5)),
+    _shSlope(pset.get<double>("StrawHitTimeSlope",4.7e-3)),// ns/mm
+    _shErr(pset.get<double>("StrawHitTimeErr",9.7)) // ns
+  {
+    _caloT0Offset[0] = pset.get<double>("Disk0TimeOffset",9.7); // nanoseconds
+    _caloT0Offset[1] = pset.get<double>("Disk1TimeOffset",12.2); // nanoseconds
+    _caloT0Err[0] = pset.get<double>("Disk0TimeErr",0.8); // nanoseconds
+    _caloT0Err[1] = pset.get<double>("Disk1TimeErr",1.7); // nanoseconds
+  } 
+
+  TrkTimeCalculator::~TrkTimeCalculator() {}
+
+  void TrkTimeCalculator::updateT0(TimeCluster& tc, StrawHitCollection const& shcol){
+
+
+  }
+  void TrkTimeCalculator::updateT0(HelixSeed& hs, StrawHitCollection const& shcol) {
+
+  }
+
+  double TrkTimeCalculator::strawHitTimeOffset(double hitz) const {
+    double retval = _shOffset + hitz*_shSlope;
+    if(_fdir != TrkFitDirection::downstream)// change sign for upstream
+      retval *= -1.0;
+    return retval;
+  }
+
+  double TrkTimeCalculator::caloClusterTimeOffset(int sectionId) const {
+    double retval(0.0);
+    if(sectionId > -1 && sectionId < 2)
+      retval = _caloT0Offset[sectionId];
+    if(_fdir != TrkFitDirection::downstream)
+      retval *= -1.0;
+    return retval;
+  }
+
+  double TrkTimeCalculator::caloClusterTimeErr(int sectionId) const {
+    double retval(1e10);
+    if(sectionId > -1 && sectionId < 2)
+      retval = _caloT0Err[sectionId];
+    return retval;
+  }
+
+  double TrkTimeCalculator::strawHitTime(StrawHit const& sh, StrawHitPosition const& shp) {
+    return sh.time() - strawHitTimeOffset(shp.pos().z());
+  }
+
+  double TrkTimeCalculator::caloClusterTime(CaloCluster const& cc) const {
+    return cc.time() - caloClusterTimeOffset(cc.sectionId());
+  }
+
+}

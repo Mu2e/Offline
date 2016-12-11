@@ -4,8 +4,8 @@
 // $Author: brownd $ 
 // $Date: 2014/09/20 14:34:22 $
 //
-#ifndef KalDiag_HH
-#define KalDiag_HH
+#ifndef TrkDiag_KalDiag_HH
+#define TrkDiag_KalDiag_HH
 // structs
 #include "TrkDiag/inc/MCEvtData.hh"
 #include "TrkDiag/inc/helixpar.hh"
@@ -117,7 +117,6 @@ namespace mu2e
 // time offsets
     SimParticleTimeOffset _toff;
 // helper functions
-    static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
     void fillTrkInfoMCStep(CLHEP::Hep3Vector const& mom, CLHEP::Hep3Vector const& pos, double charge, TrkInfoMCStep& einfo) const;
     void countHits(const KalRep* krep, TrkInfo& tinfo) const;
     void fillTrkQual(TrkInfo& trkinfo) const;

@@ -14,7 +14,7 @@ namespace mu2e {
   struct StrawHitInfo {
     CLHEP::Hep3Vector _pos;
     Float_t _edep, _time, _rho;
-    Float_t _pres, _rres, _chisq, _stdt, _dist;
+    Float_t _wres, _tres, _chisq, _stdt, _dist;
     Int_t _plane, _panel, _layer, _straw;
     Bool_t _esel, _rsel, _delta, _stereo, _tdiv, _strawxtalk, _elecxtalk;
     Int_t _relation;

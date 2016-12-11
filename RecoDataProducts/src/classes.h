@@ -16,6 +16,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "RecoDataProducts/inc/HelixHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
@@ -28,13 +29,16 @@
 #include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "RecoDataProducts/inc/ExtMonUCITofHitCollection.hh"
 #include "RecoDataProducts/inc/SubEventCollection.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
+#include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/HelixVal.hh"
+#include "RecoDataProducts/inc/RobustHelix.hh"
+#include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "RecoDataProducts/inc/ZRotStrawHitMapCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitByID.hh"
 #include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrackSeedCollection.hh"
+#include "RecoDataProducts/inc/HelixSeedCollection.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
@@ -58,7 +62,8 @@
 #include "RecoDataProducts/inc/TrackSummary.hh"
 
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
-
-#include "RecoDataProducts/inc/TrackCaloAssns.hh"
+#include "RecoDataProducts/inc/TrackCaloAssns.hh" 
+// BTrk Kalman fit persistence
+#include "RecoDataProducts/inc/KalSeedCollection.hh"
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

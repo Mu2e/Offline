@@ -26,10 +26,16 @@
  <class name="mu2e::StereoHit"/>
  <class name="mu2e::StereoHitCollection"/>
  <class name="mu2e::StrawHitPosition"/>
+ <class name="mu2e::HelixHit"/>
  <class name="mu2e::StrawHitPositionCollection"/>
+ <class name="mu2e::HelixHitCollection"/>
  <class name="mu2e::StrawHitFlag"/>
  <class name="mu2e::StrawHitFlagDetail"/>
  <class name="mu2e::StrawHitFlagCollection"/>
+ <class name="mu2e::TrkFitFlag"/>
+ <class name="TrkT0"/>
+ <class name="mu2e::HitT0"/>
+ <class name="mu2e::TrkFitFlagDetail"/>
  <class name="mu2e::StrawCluster"/>
  <class name="mu2e::StrawClusterCollection"/>
  <class name="mu2e::CaloHit"/>
@@ -55,10 +61,17 @@
  <class name="mu2e::ExtMonUCITofHitCollection"/>
  <class name="mu2e::SubEventCollection" persistent="false"/>
  <class name="mu2e::TimeCluster"/>
+ <class name="mu2e::TimeClusterCollection"/>
  <class name="mu2e::ZRotStrawHitMap"/>
  <class name="mu2e::ZRotStrawHitMapCollection" persistent="false"/>
  <class name="mu2e::TrackerHitByID" persistent="false"/>
+ <class name="mu2e::RobustHelix"/>
  <class name="mu2e::HelixVal"/>
+ <class name="mu2e::HelixCov"/>
+ <class name="mu2e::HelixSeed"/>
+ <class name="mu2e::HelixSeedCollection" /> 
+ <class name="art::Ptr<mu2e::HelixSeed>"/>
+
  <class name="mu2e::TrackSeed"/>
  <class name="mu2e::TrackSeedCollection" /> <!-- persistent="false"/> -->
  <class name="mu2e::TrkExtTrajPoint" />
@@ -97,13 +110,16 @@
  <class name="art::Ptr<mu2e::StereoHit>"/>
  <class name="std::vector<art::Ptr<mu2e::StereoHit> >"/>
  <class name="art::Ptr<mu2e::StrawHitPosition>"/>
+ <class name="art::Ptr<mu2e::HelixHit>"/>
  <class name="std::vector<art::Ptr<mu2e::StrawHitPosition> >"/>
+ <class name="std::vector<art::Ptr<mu2e::HelixHit> >"/>
  <class name="art::Ptr<mu2e::StrawHitFlag>"/>
  <class name="std::vector<art::Ptr<mu2e::StrawHitFlag> >"/>
  <class name="art::Ptr<mu2e::TimeCluster>"/>
  <class name="std::vector<art::Ptr<mu2e::TimeCluster> >"/>
  <class name="std::multimap<unsigned long int, art::Ptr<mu2e::StrawHit> >"/>
  <class name="art::Ptr<mu2e::HelixVal>"/>
+ <class name="art::Ptr<mu2e::HelixCov>"/>
 <!--  <class name="std::vector<art::Ptr<mu2e::HelixVal> >"/> -->
  <class name="art::Ptr<mu2e::TrackSeed>"/>
  <class name="std::vector<art::Ptr<mu2e::TrackSeed> >"/>
@@ -129,6 +145,7 @@
  <class name="art::Wrapper<mu2e::RecoCaloDigiCollection>"/>
  <class name="art::Wrapper<mu2e::StereoHitCollection>"/>
  <class name="art::Wrapper<mu2e::StrawHitPositionCollection>"/>
+ <class name="art::Wrapper<mu2e::HelixHitCollection>"/>
  <class name="art::Wrapper<mu2e::StrawHitFlagCollection>"/>
  <class name="art::Wrapper<mu2e::StrawClusterCollection>"/>
  <class name="art::Wrapper<mu2e::CaloHitCollection>"/>
@@ -139,6 +156,8 @@
  <class name="art::Wrapper<mu2e::TrkCaloMatchCollection>"/>
  <class name="art::Wrapper<mu2e::KalRepPayloadCollection>"/>
  <class name="art::Wrapper<mu2e::KalRepExtensionPayloadCollection>"/>
+ <class name="art::Wrapper<mu2e::TimeClusterCollection>"/>
+ <class name="art::Wrapper<mu2e::HelixSeedCollection>"/>
 
  <class name="art::Wrapper<mu2e::ExtMonUCITofHitCollection>"/>
  <class name="art::Wrapper<mu2e::SubEventCollection>"/>
@@ -236,5 +255,15 @@
  <class name="art::Wrapper<art::Assns<mu2e::KalRepPtr,mu2e::CaloCluster, mu2e::TrackCaloMatchInfo> >" />
  <class name="art::Wrapper<art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr, mu2e::TrackCaloMatchInfo> >" />
 
+ <class name="mu2e::KalSeed"/>
+ <class name="mu2e::TrkFitDirection"/>
+ <class name="TrkParticle"/>
+ <class name="mu2e::TrkStrawHitSeed"/>
+ <class name="mu2e::KalSegment"/>
+ <class name="std::vector<mu2e::TrkStrawHitSeed>"/>
+ <class name="std::vector<mu2e::KalSegment>"/>
+ <class name="mu2e::KalSeedCollection"/>
+ <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
+ <class name="art::Ptr<mu2e::KalSeed>"/>
 
 </lcgdict>

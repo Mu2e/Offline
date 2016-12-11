@@ -15,8 +15,8 @@ namespace mu2e
     threevec(const CLHEP::Hep3Vector& vec) : _x(vec.x()),_y(vec.y()),_z(vec.z()) {}
     threevec& operator = (const CLHEP::Hep3Vector& vec){ _x =vec.x(); _y =vec.y(); _z= vec.z(); return *this; }
     void reset() { _x = _y = _z = 0.0; }
-    static std::string const& leafnames(const char* vname = "") { 
-      static const std::string leaves = std::string(vname) + std::string("x/F:") +
+    static std::string leafnames(const char* vname = "") { 
+      static std::string leaves; leaves = std::string(vname) + std::string("x/F:") +
       std::string(vname) + std::string("y/F:") + std::string(vname) + std::string("z/F");
       return leaves;
     }

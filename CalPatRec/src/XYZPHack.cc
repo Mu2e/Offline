@@ -25,8 +25,8 @@ namespace mu2e {
     _wdir(straw.getDirection()),
     _straw(&straw),
     _strawhit(&sh),
-    _perr(_efac*shp.posRes(StrawHitPosition::phi)),
-    _rerr(_efac*shp.posRes(StrawHitPosition::rho))
+    _perr(_efac*shp.posRes(StrawHitPosition::wire)),
+    _rerr(_efac*shp.posRes(StrawHitPosition::trans))
   {
     static const CLHEP::Hep3Vector _zdir(0.0,0.0,1.0);
     _sdir = _zdir.cross(_wdir);

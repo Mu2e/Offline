@@ -12,28 +12,31 @@
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 
 // #include "RecoDataProducts/inc/StrawHitFlag.hh"
 
-#include "TrkReco/inc/TrkDef.hh"
+#include "CalPatRec/inc/TrkDefHack.hh"
 
 namespace mu2e {
-					// add the StrawHitPosition collection to TrkDef
-  class HelixDefHack : public TrkDef {
+					// add the StrawHitPosition collection to TrkDefHack
+  class HelixDefHack : public TrkDefHack {
   private:
     const StrawHitPositionCollection* _shpos;
     const StrawHitFlagCollection*     _shfcol;
 
   public:
 
-    HelixDefHack(TrkDef const& tdef);
+    HelixDefHack(TrkDefHack const& tdef);
 
     HelixDefHack(const StrawHitCollection*         strawcollection,
 		 const StrawHitPositionCollection* shposcollection, 
 		 const StrawHitFlagCollection*     ShFlagCollection, 
-		 const std::vector<hitIndex>&      strawhits,
+		 const std::vector<StrawHitIndex>&      strawhits,
 		 TrkParticle const&                tpart = _eminus, 
 		 TrkFitDirection const&            fdir  = _downstream);
+
+    HelixDefHack(const HelixDefHack& Copy);
 
     HelixDefHack();
 

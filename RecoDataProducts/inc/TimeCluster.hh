@@ -1,7 +1,7 @@
 #ifndef RecoDataProducts_TimeCluster_hh
 #define RecoDataProducts_TimeCluster_hh
 //
-// out data of the time peak algorithm for pattern recognition
+// Defin a 
 //
 // $Id: $
 // $Author: $
@@ -12,30 +12,27 @@
 
 // C++ includes
 #include <vector>
-#include <ostream>
-
+// art includes
+#include "art/Persistency/Common/Ptr.h"
 // Mu2e includes
-#include "TrkReco/inc/TrkDef.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
+#include "CLHEP/Vector/ThreeVector.h"
+// BTrk includes
+#include "BTrk/TrkBase/TrkT0.hh"
 
 namespace mu2e {
-
-
+  class CaloCluster;
+ 
   struct TimeCluster{
+    std::vector<StrawHitIndex> const& hits() const { return _strawHitIdxs;}
+    TrkT0 const& t0() const { return _t0; }
+    CLHEP::Hep3Vector const& position() const { return _pos; }
+    art::Ptr<CaloCluster> const& caloCluster() const { return _caloCluster; }
 
-    std::vector<hitIndex>    _strawHitIdxs;
-    double                   _t0;   //time at z=z0
-    double                   _errt0;//error asssociated to t0 (in case of CalPatRec is by default set to 1 ns)
-    double                   _z0;     
-    art::Ptr<CaloCluster>    _caloCluster;
-
-  public:
-
-    TimeCluster():
-     _t0   (0),
-     _errt0(0),
-     _z0   (0){ }
-
+    std::vector<StrawHitIndex>    _strawHitIdxs; // associated straw hits: can be empty
+    TrkT0		     _t0; // t0 and associated error
+    CLHEP::Hep3Vector        _pos; // position of the time cluster   
+    art::Ptr<CaloCluster>    _caloCluster; // associated calorimeter cluster: can be null
   };
 
 } // namespace mu2e

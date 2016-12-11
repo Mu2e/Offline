@@ -38,12 +38,13 @@ namespace art {
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
-#include "TrkReco/inc/TrkDef.hh"
+#include "CalPatRec/inc/TrkDefHack.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "CalPatRec/inc/CalTimePeak.hh"
@@ -189,6 +190,7 @@ namespace mu2e {
 // event object labels
 //-----------------------------------------------------------------------------
     std::string      _shLabel ; // MakeStrawHit label (makeSH)
+    std::string      _shDigiLabel ;
     std::string      _shpLabel;
     std::string      _shfLabel;
     std::string      _ccmLabel; // caloClusterModuleLabel
@@ -253,10 +255,6 @@ namespace mu2e {
     KalFitResult*                         _kfresult; // full fit result
 
     CalTimePeakCollection*                _tpeaks;   // cache of time peaks
-    std::string                           _iname;	// data instance name
-
-    std::string                          _iname_seed;// data instance name for the output 
-					 // of seed fit (used for diagnostics only)
 
     XYZPHackVector                        _index;
     int                                   _nindex;
@@ -306,14 +304,14 @@ namespace mu2e {
     bool findData         (const art::Event& e);
     void findTimePeaks    (CalTimePeakCollection* TimePeakColl);
     void createTimePeak   (CalTimePeakCollection* TimePeakColl);
-    void filterOutliers   (TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
+    void filterOutliers   (TrkDefHack& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
 //----------------------------------------------------------------------
 // 2015 - 02 - 16 Gianipez added the two following functions
 //----------------------------------------------------------------------
     void findDoublets     (KalRep* krep, DoubletCollection *dcol);//search doublets in a giventimepeak
     void findLoopApex     (){}//search the straw hits src/closer to the apexes of the helix loops
 
-    void findMissingHits  (KalFitResult& kalfit, std::vector<hitIndex>& indices);
+    void findMissingHits  (KalFitResult& kalfit, std::vector<StrawHitIndex>& indices);
     void bookHistograms   ();
     void fillStrawDiag    ();
     void fillTimeDiag     ();
@@ -325,7 +323,7 @@ namespace mu2e {
 
     void fillSeedFitHistograms(KalFitResult& SFResult);
 
-    void init             (KalFitResult*&  KRes, TrkDef* TDef);
+    void init             (KalFitResult*&  KRes, TrkDefHack* TDef);
 
   };
 }

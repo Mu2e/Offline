@@ -38,14 +38,14 @@ calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
 #------------------------------------------------------------------------------
 # downstream electron and downstream muon reconstruction - needed for particle ID
 #------------------------------------------------------------------------------
-trkPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, 
-			  @sequence::Tracking.TPRDownstreammuMinus,
+trkPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDeM, 
+			  @sequence::Tracking.TPRDmuM,
 			  MergePatRecDem, MergePatRecDmm ]
 
 calPatRecDemDmmSeq  : [ @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm, MergePatRecDem, MergePatRecDmm ]
 
-allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, 
-			@sequence::Tracking.TPRDownstreammuMinus,
+allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDeM, 
+			@sequence::Tracking.TPRDmuM,
 			@sequence::cprMakeHitSeq, 
 			CalPatRecDem, CalPatRecDmm,
 			MergePatRecDem, MergePatRecDmm ]
@@ -160,7 +160,7 @@ physics : {
 # track summary maker
 #------------------------------------------------------------------------------
 	TrackSummaryMaker:    { @table::TrackSummaryMaker
-	    trackInput : "MergePatRecDem:DownstreameMinus"
+	    trackInput : "MergePatRecDem"
 	}
     }
 
@@ -182,9 +182,11 @@ physics : {
     analyzers: {
 
 #     Read the TrkPatRec output and make diagnostic ntuples.
-      RKFDownstreameMinus: {
+      RKFDeM: {
          @table::ReadKalFits
          addCalo : true
+         fitterModuleLabel    : MergePatRecDem
+         KalDiag              : @local::KalDiagDirect
       }
     }
 
@@ -193,7 +195,7 @@ physics : {
 #------------------------------------------------------------------------------
     @table::paths
 
-    e1 : [ RKFDownstreameMinus ]
+    e1 : [ RKFDeM ]
 #     e1 : [  ]				
 #------------------------------------------------------------------------------
 # 1. generation part only

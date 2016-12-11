@@ -6,3 +6,6 @@
 #include "TrkDiag/inc/EventInfo.hh"
 #include "TrkDiag/inc/HitCount.hh"
 #include "TrkDiag/inc/TrkCount.hh"
+#include "TrkDiag/inc/TimeClusterInfo.hh"
+#include "TrkDiag/inc/HitInfoMC.hh"
+#include "TrkDiag/inc/HelixHitInfo.hh"

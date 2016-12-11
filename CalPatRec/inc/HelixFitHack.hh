@@ -17,7 +17,7 @@
 #include "TrackerGeom/inc/Straw.hh"
 
 // HelixFitHack objects
-#include "TrkReco/inc/TrkDef.hh"
+#include "CalPatRec/inc/TrkDefHack.hh"
 // BaBar
 #include "BTrk/TrkBase/TrkErrCode.hh"
 //CLHEP

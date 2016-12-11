@@ -802,8 +802,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // new default, hit position errors come from StrawHitPositionCollection
 //-----------------------------------------------------------------------------
-	  sigv  = hitpos->posRes(StrawHitPosition::phi); 
-	  sigr  = hitpos->posRes(StrawHitPosition::rho); 
+	  sigv  = hitpos->posRes(StrawHitPosition::wire); 
+	  sigr  = hitpos->posRes(StrawHitPosition::trans); 
 	}
 	else {
 //-----------------------------------------------------------------------------

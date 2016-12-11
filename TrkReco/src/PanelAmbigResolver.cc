@@ -148,7 +148,7 @@ namespace mu2e {
 	if( _diag > 1 ) {
 	  _nuhits = _nrhits = pinfo._uinfo.size();
 	  _nactive = 0;
-	  for(auto ishi : pinfo._uinfo) {
+	  for(auto const& ishi : pinfo._uinfo) {
 	    if(ishi._active)++_nactive;
 	  }
 	  _nres = results.size();

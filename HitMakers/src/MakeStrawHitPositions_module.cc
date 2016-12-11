@@ -74,67 +74,40 @@ namespace mu2e {
   private:
 
     // Diagnostics level.
-    int _diagLevel;
+    int _debugLevel;
     int _printHits;
     // Name of the StrawHit collection
     string _shLabel;
-    string _shfLabel;
-    // diagnostics
-    TH1F* _nhits;
-    TH1F* _deltat;
-    TH1F* _deltaE;
-    TH1F* _dperp;
-    TH1F* _sep;
-    TH1F* _dTD;
-    TH1F* _chisq;
-    std::vector<TH2F*> _stations;
-
-    const Tracker* _tracker;
-    void drawStations(); 
-
     //    THackData* fHackData;
   };
 
   MakeStrawHitPositions::MakeStrawHitPositions(fhicl::ParameterSet const& pset) :
 
     // Parameters
-    _diagLevel(pset.get<int>("diagLevel",0)),
+    _debugLevel(pset.get<int>("debugLevel",0)),
     _printHits(pset.get<int>("printHits",0)),
-    _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
-    _shfLabel(pset.get<string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
-    _nhits(0),_deltat(0),_deltaE(0),_dperp(0),_sep(0),_dTD(0),_chisq(0)
+    _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH"))
  {
     // Tell the framework what we make.
     produces<StrawHitPositionCollection>();
-
-    //    fHackData = new THackData("HackData","Hack Data");
-    //    gROOT->GetRootFolder()->Add(fHackData);
- 
   }
 
    void MakeStrawHitPositions::beginJob(){
     // create diagnostics if requested
-    if(_diagLevel > 0){
+    if(_debugLevel > 0){
       art::ServiceHandle<art::TFileService> tfs;
-      _nhits = tfs->make<TH1F>("nhits","NHits",500,0,5000);
-      _deltat = tfs->make<TH1F>("deltat","#Delta t;ns",100,-200.0,200.0);
-      _deltaE = tfs->make<TH1F>("deltaE","#Delta E;MeV",100,0.0,0.05);
-      _dperp = tfs->make<TH1F>("dperp","#Delta d;mm",100,0.0,500.0);
-      _sep = tfs->make<TH1F>("sep","Face separation",6,-0.5,5.5);
-      _dTD = tfs->make<TH1F>("dTD","#Delta Time Difference;mm",100,-100.0,100.0);
-      _chisq = tfs->make<TH1F>("chisq","Chisquared",100,-1.0,50.0);
     }
 
   }
 
   void MakeStrawHitPositions::beginRun(art::Run& Run) {
-    _tracker = &getTrackerOrThrow();
   }
 
   void MakeStrawHitPositions::printHits(const StrawHit& Hit, StrawHitPosition& Pos, int &banner) {
     double x,y,z;
+    Tracker const& tracker = getTrackerOrThrow();
 
-    Straw const& straw = _tracker->getStraw(Hit.strawIndex());
+    Straw const& straw = tracker.getStraw(Hit.strawIndex());
     x = Pos.pos().x();
     y = Pos.pos().y();
     z = Pos.pos().z();
@@ -163,25 +136,12 @@ namespace mu2e {
   }
 
   void MakeStrawHitPositions::produce(art::Event& event) {
+    Tracker const& tracker = getTrackerOrThrow();
 
-    if ( _diagLevel > 0 ) cout << "MakeStrawHitPositions: produce() begin; event " << event.id().event() << endl;
-
-
-    static bool first(true);
-    if(_diagLevel >1 && first){
-      first = false;
-      drawStations();
-   }
+    if ( _debugLevel > 0 ) cout << "MakeStrawHitPositions: produce() begin; event " << event.id().event() << endl;
 
    // Handle to the conditions service
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
-
-    const StrawHitFlagCollection *_shfcol;
-    art::Handle<mu2e::StrawHitFlagCollection> shflagH;
-    if(event.getByLabel(_shfLabel,shflagH))
-      _shfcol = shflagH.product();
-    else 
-      _shfcol = 0;
 
     art::Handle<mu2e::StrawHitCollection> strawhitsH; 
     const StrawHitCollection* strawhits(0);
@@ -192,75 +152,39 @@ namespace mu2e {
     }
     // create a collection of StrawHitPosition, and intialize them using the time division
     size_t nsh = strawhits->size();
-    if(_diagLevel > 0)_nhits->Fill(nsh);
-
-    unique_ptr<StrawHitPositionCollection> shpos(new StrawHitPositionCollection);
-    shpos->reserve(2*nsh);
-
+    unique_ptr<StrawHitPositionCollection> shpcol(new StrawHitPositionCollection);
+    shpcol->reserve(nsh);
 
  //01 - 13 - 2014 gianipez added some printout
     int banner(0);
     SHInfo shinfo;
+    static const double invsqrt12 = 1.0/sqrt(12.0);
 
     for(size_t ish=0;ish<nsh;++ish){
       StrawHit const& hit = strawhits->at(ish);
-      Straw const& straw = _tracker->getStraw(hit.strawIndex());
+      Straw const& straw = tracker.getStraw(hit.strawIndex());
       tcal->StrawHitInfo(straw,hit,shinfo);
-      StrawHitFlag shflag = _shfcol->at(ish);
-      StrawHitPosition shp(hit,straw,shinfo,shflag);
+// create and fill the position struct
+      StrawHitPosition shp;
+      shp._pos = shinfo._pos;
+      shp._wdir = straw.getDirection();
+      shp._wdist = shinfo._tddist;
+      shp._wres = shinfo._tdres;
+      shp._tres = straw.getRadius()*invsqrt12;
+// if time division worked, flag the position accordingly
+      if(shinfo._tdiv)
+	shp._flag.merge(StrawHitFlag::tdiv); 
 
       if (_printHits>0) {
 	printHits(hit,shp, banner);
 	banner=1;
       }
 
-      shpos->push_back(shp);
+      shpcol->push_back(shp);
     }
 
-    event.put(std::move(shpos));
+    event.put(std::move(shpcol));
   } // end MakeStrawHitPositions::produce.
-
-  void MakeStrawHitPositions::drawStations() {
-    // Get a reference to one of the L or T trackers.
-    // Throw exception if not successful.
-    const TTracker& tt = dynamic_cast<const TTracker&>(*_tracker);
-    art::ServiceHandle<art::TFileService> tfs;
-    int nsta = tt.nPlanes()/2;
-    for(int ista=0;ista<nsta;++ista){
-      char name[100];
-      snprintf(name,100,"station%i",ista);
-      _stations.push_back( tfs->make<TH2F>(name,name,100,-700,700,100,-700,700));
-      _stations[ista]->SetStats(false);
-      TList* flist = _stations[ista]->GetListOfFunctions();
-      TLegend* sleg = new TLegend(0.1,0.6,0.3,0.9);
-      flist->Add(sleg);
-      for(int iplane=0;iplane<2;++iplane){
-	const Plane& pln = tt.getPlane(2*ista+iplane);
-	const std::vector<Panel>& panels = pln.getPanels();
-	for(size_t ipnl=0;ipnl<panels.size();++ipnl){
-	  int iface = ipnl%2;
-	  const Panel& pnl = panels[ipnl];
-	  CLHEP::Hep3Vector spos = pnl.straw0MidPoint();
-	  CLHEP::Hep3Vector sdir = pnl.straw0Direction();
-	  CLHEP::Hep3Vector end0 = spos - 100.0*sdir;
-	  CLHEP::Hep3Vector end1 = spos + 100.0*sdir;
-	  TLine* sline = new TLine(end0.x(),end0.y(),end1.x(),end1.y());
-	  sline->SetLineColor(ipnl+1);
-	  sline->SetLineStyle(2*iplane+iface+1);
-	  flist->Add(sline);
-	  TMarker* smark = new TMarker(end0.x(),end0.y(),8);
-	  smark->SetMarkerColor(ipnl+1);
-	  smark->SetMarkerSize(2);
-	  flist->Add(smark);
-	  char label[80];
-	  double phi = spos.phi();
-	  if(phi<0)phi+= 2*M_PI;
-	  snprintf(label,80,"pln %i pnl %i phi= %f",iplane,(int)ipnl,180*phi/M_PI);
-	  sleg->AddEntry(sline,label,"l");
-	}
-      }
-    }
-  }
 } // end namespace mu2e
 
 using mu2e::MakeStrawHitPositions;

@@ -24,7 +24,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "KalmanTests/inc/KalFitResult.hh"
+#include "CalPatRec/inc/KalFitResult.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
@@ -47,13 +47,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // comparison functor for sorting by Z(wire)
 //-----------------------------------------------------------------------------
-  struct straw_zcomp : public binary_function<hitIndex,hitIndex,bool> {
-    bool operator()(hitIndex const& h1, hitIndex const& h2) {
+  struct straw_zcomp : public binary_function<StrawHitIndex,StrawHitIndex,bool> {
+    bool operator()(StrawHitIndex const& h1, StrawHitIndex const& h2) {
 
       mu2e::GeomHandle<mu2e::TTracker> handle;
       const TTracker* t = handle.get();
-      const Straw* s1 = &t->getStraw(StrawIndex(h1._index));
-      const Straw* s2 = &t->getStraw(StrawIndex(h2._index));
+      const Straw* s1 = &t->getStraw(StrawIndex(h1));
+      const Straw* s2 = &t->getStraw(StrawIndex(h2));
 
       return s1->getMidPoint().z() < s2->getMidPoint().z();
     }
@@ -258,7 +258,7 @@ namespace mu2e {
 
     ::KalRep*                 krep;
     // dummy objects
-    static TrkDef             dummydef;
+    static TrkDefHack             dummydef;
     static HelixDefHack       dummyhdef;
 
     static HelixFitHackResult dummyhfit(dummyhdef);
@@ -349,11 +349,11 @@ namespace mu2e {
       helix = &trkSeed->_helix;
 
       CLHEP::HepVector helParams(5);
-      helParams(1) = helix->_d0;
-      helParams(2) = helix->_phi0;
-      helParams(3) = helix->_omega;
-      helParams(4) = helix->_z0;
-      helParams(5) = helix->_tanDip;
+      helParams(1) = helix->d0();
+      helParams(2) = helix->phi0();
+      helParams(3) = helix->omega();
+      helParams(4) = helix->z0();
+      helParams(5) = helix->tanDip();
       
       CLHEP::HepSymMatrix conv(5,1);
       //      HelixTraj tmpHelix(helParams,conv);
@@ -367,8 +367,8 @@ namespace mu2e {
    
       //      _helTraj =  &tmpHelix;
 
-      TrkDef             seeddef(_shcol, trkSeed->_timeCluster._strawHitIdxs, *_helTraj, _tpart, _fdir);
-      TrkDef             kaldef (seeddef);
+      TrkDefHack             seeddef(_shcol, trkSeed->_timeCluster._strawHitIdxs, *_helTraj, _tpart, _fdir);
+      TrkDefHack             kaldef (seeddef);
      
       seeddef.setHelix(*_helTraj); 
       // track fitting objects for this track candidate
@@ -381,13 +381,13 @@ namespace mu2e {
       // P.Murat: here hits are ordered by index - WHY?
       // the Kalman fitter needs them ordered in Z(straw)
       //-----------------------------------------------------------------------------
-      std::vector<hitIndex> goodhits;
+      std::vector<StrawHitIndex> goodhits;
       _hitIndices = trkSeed->_timeCluster._strawHitIdxs;
       
-      std::sort(_hitIndices.begin(), _hitIndices.end(), [ ]( const mu2e::hitIndex& lhs,
-							     const mu2e::hitIndex& rhs )
+      std::sort(_hitIndices.begin(), _hitIndices.end(), [ ]( const StrawHitIndex& lhs,
+							     const StrawHitIndex& rhs )
 		{
-		  return lhs._index < rhs._index;
+		  return lhs < rhs;
 		} );
       
       _nindex = _hitIndices.size();
@@ -445,7 +445,7 @@ namespace mu2e {
 	  _nrescued = 0;
 
 	  for (int i=0; i< _nindex; ++i) {
-	    hit_index = _hitIndices[i]._index;
+	    hit_index = _hitIndices[i];
 	    sh        = &_shcol->at(hit_index);
 	    straw     = &_tracker->getStraw(sh->strawIndex());
 	    wpos      = &straw->getMidPoint();
@@ -525,7 +525,7 @@ namespace mu2e {
 	      _kfit.unweedHits(*_kfresult,_maxaddchi);
 	      if (_debugLevel > 0) _kfit.printHits(*_kfresult,"CalTrkFit::produce after unweedHits");
 	      
-	      std::vector<hitIndex> misshits;
+	      std::vector<StrawHitIndex> misshits;
 	      findMissingHits(*_kfresult,misshits);
 	      //-----------------------------------------------------------------------------
 	      // if new hits have been added, add then and refit the track.
@@ -559,7 +559,7 @@ namespace mu2e {
 	    TrkHitVector const& hot_l = _sfresult->_krep->hitVector();
 
 	    for (int i=0; i< _nindex; ++i){
-	      int hIndex             = _hitIndices[i]._index;
+	      int hIndex             = _hitIndices[i];
  	      StrawHit const*     sh = & _shcol->at(hIndex);//trkSeed->_strawHitPtrs[i].get();//_hitIndices[i]._strawhit;####
 	      Straw const&     straw = _tracker->getStraw(sh->strawIndex());
 	      CLHEP::Hep3Vector hpos = straw.getMidPoint();
@@ -577,7 +577,7 @@ namespace mu2e {
 		hit = static_cast<const mu2e::TrkStrawHit*> (*it);
 		if (!hit->isActive()) continue;
 		hit_index = hit->index();
-		if (int(_hitIndices[i]._index) == hit_index){
+		if (int(_hitIndices[i]) == hit_index){
 		  found = true;
 		  break;
 		}
@@ -718,7 +718,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  void CalTrkFit::findMissingHits(KalFitResult& kalfit,std::vector<hitIndex>& misshits) {
+  void CalTrkFit::findMissingHits(KalFitResult& kalfit,std::vector<StrawHitIndex>& misshits) {
                                         //  Trajectory info
     Hep3Vector tdir;
     HepPoint   tpos;
@@ -779,7 +779,7 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-  void CalTrkFit::init(KalFitResult*& KRes, TrkDef* TDef) {
+  void CalTrkFit::init(KalFitResult*& KRes, TrkDefHack* TDef) {
 
     if (KRes != 0) {
       KRes->deleteTrack();

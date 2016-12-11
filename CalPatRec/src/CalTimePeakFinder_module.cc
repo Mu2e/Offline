@@ -24,7 +24,8 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "KalmanTests/inc/KalFitResult.hh"
+#include "CalPatRec/inc/KalFitResult.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
@@ -44,13 +45,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // comparison functor for sorting by Z(wire)
 //-----------------------------------------------------------------------------
-  struct straw_zcomp : public binary_function<hitIndex,hitIndex,bool> {
-    bool operator()(hitIndex const& h1, hitIndex const& h2) {
+  struct straw_zcomp : public binary_function<StrawHitIndex,StrawHitIndex,bool> {
+    bool operator()(StrawHitIndex const& h1, StrawHitIndex const& h2) {
 
       mu2e::GeomHandle<mu2e::TTracker> handle;
       const TTracker* t = handle.get();
-      const Straw* s1 = &t->getStraw(StrawIndex(h1._index));
-      const Straw* s2 = &t->getStraw(StrawIndex(h2._index));
+      const Straw* s1 = &t->getStraw(StrawIndex(h1));
+      const Straw* s2 = &t->getStraw(StrawIndex(h2));
 
       return s1->getMidPoint().z() < s2->getMidPoint().z();
     }
@@ -382,27 +383,27 @@ namespace mu2e {
 					int                                   &ClusterIndex){
     
     int             shIndices = TPeak.NHits();
-    const mu2e::hitIndex *hIndex;
+    const StrawHitIndex *hIndex;
 
     for (int i=0; i<shIndices; ++i){
       hIndex = &TPeak._index.at(i);
-      TrkSeed._timeCluster._strawHitIdxs.push_back( mu2e::hitIndex( hIndex->_index, hIndex->_ambig) );
+      TrkSeed._timeCluster._strawHitIdxs.push_back( StrawHitIndex( hIndex) );
     }
     
     const mu2e::CaloCluster *cluster = TPeak.Cluster();
     
                                 //do we need to propagate the cluster time at z=0 at this stage?
-    TrkSeed._timeCluster._t0  = cluster->time(); 
+    TrkSeed._timeCluster._t0._t0  = cluster->time(); 
 
     int               idisk   = cluster->sectionId();
     CLHEP::Hep3Vector cp_mu2e = _calorimeter->fromSectionFrame(idisk, cluster->cog3Vector());
     CLHEP::Hep3Vector cp_st   = _calorimeter->toTrackerFrame(cp_mu2e);
     
     
-    TrkSeed._timeCluster._z0          = cp_st.z();
+    TrkSeed._timeCluster._pos          = cp_st;
     
                                 //dummy value for errT0
-    TrkSeed._timeCluster._errt0       = 0.1;
+    TrkSeed._timeCluster._t0._t0err       = 0.1;
     
     TrkSeed._timeCluster._caloCluster = art::Ptr<mu2e::CaloCluster>(_ccH, ClusterIndex);
   }

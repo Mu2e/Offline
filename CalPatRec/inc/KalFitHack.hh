@@ -17,8 +17,8 @@
 #include "BTrk/BaBar/BaBar.hh"
 // KalFitHack objects
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
-#include "TrkReco/inc/TrkDef.hh"
-#include "KalmanTests/inc/KalFitResult.hh"
+#include "CalPatRec/inc/TrkDefHack.hh"
+#include "CalPatRec/inc/KalFitResult.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
 #include "BTrk/KalmanTrack/KalContext.hh"
@@ -30,6 +30,7 @@
 
 #include "CalPatRec/inc/CalTimePeak.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 
 //ROOT
 #include "TStopwatch.h"
@@ -128,7 +129,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     virtual void addHits(KalFitResult&             kres   , 
 			 const StrawHitCollection* straws , 
-			 std::vector<hitIndex>     indices, 
+			 std::vector<StrawHitIndex>     indices, 
 			 double                    maxchi ,
 			 CalTimePeak*              TPeak=NULL );
 
@@ -137,11 +138,11 @@ namespace mu2e {
 			  std::vector<TrkStrawHit*>::reverse_iterator& ilow ,
 			  std::vector<TrkStrawHit*>::iterator&         ihigh);
 
-    bool fitable     (TrkDef const& tdef);
+    bool fitable     (TrkDefHack const& tdef);
     void fitIteration(KalFitResult& kres , int Iteration, CalTimePeak* TPeak);
     void fitTrack    (KalFitResult& kres , CalTimePeak* TPeak=NULL);
-    void initCaloT0  (CalTimePeak*  TPeak, TrkDef const& tdef, TrkT0& t0);
-    void initT0      (TrkDef const& tdef , TrkT0& t0);
+    void initCaloT0  (CalTimePeak*  TPeak, TrkDefHack const& tdef, TrkT0& t0);
+    void initT0      (TrkDefHack const& tdef , TrkT0& t0);
 //-----------------------------------------------------------------------------
 // main function: given a track definition, create a fit object from it
 //-----------------------------------------------------------------------------

@@ -14,6 +14,7 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -116,7 +117,6 @@ namespace mu2e {
     
     for (size_t ish=0;ish<nsh;++ish){
       StrawHit const& sh = shcol->at(ish);
-      StrawHitFlag flag;
       const Straw& straw = tracker.getStraw( sh.strawIndex() );
       if (sh.energyDep() >= _ctE){
         for (size_t jsh=0;jsh<nsh;++jsh){
@@ -134,14 +134,14 @@ namespace mu2e {
     for(size_t ish=0;ish<nsh;++ish){
       StrawHit const& sh = shcol->at(ish);
       StrawHitFlag flag;
+      // merge with the position flag if that's present
+      if(shpcol != 0)flag.merge(shpcol->at(ish).flag());
       if(sh.energyDep() > _minE && sh.energyDep() < _maxE)
         flag.merge(StrawHitFlag::energysel);
-
       if (find(ct_straws_neighbor.begin(),ct_straws_neighbor.end(),sh.strawIndex()) != ct_straws_neighbor.end())
         flag.merge(StrawHitFlag::strawxtalk);
       if (find(ct_straws_preamp.begin(),ct_straws_preamp.end(),sh.strawIndex()) != ct_straws_preamp.end())
         flag.merge(StrawHitFlag::elecxtalk);
-
       if(sh.time() > _minT && sh.time() < _maxT)
         flag.merge(StrawHitFlag::timesel);
       if(shpcol != 0){

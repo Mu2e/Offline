@@ -341,7 +341,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
   void KalFitHack::addHits(KalFitResult&              kres   ,
                            const StrawHitCollection*  straws ,
-                           std::vector<hitIndex>      indices,
+                           std::vector<StrawHitIndex>      indices,
                            double                     maxchi ,
                            CalTimePeak*               TPeak  ) {
 
@@ -371,7 +371,7 @@ namespace mu2e
       TrkStrawHit*       trkhit;
 
       for (unsigned i=0; i<indices.size(); i++) {
-        size_t istraw = indices[i]._index;
+        size_t istraw = indices[i];
         const StrawHit& strawhit(straws->at(istraw));
         const Straw& straw = _tracker->getStraw(strawhit.strawIndex());
 //-----------------------------------------------------------------------------
@@ -729,20 +729,20 @@ namespace mu2e
   }
 
 //-----------------------------------------------------------------------------
-  bool KalFitHack::fitable(TrkDef const& tdef){
+  bool KalFitHack::fitable(TrkDefHack const& tdef){
     return tdef.strawHitIndices().size() >= _minnstraws;
   }
 
 //-----------------------------------------------------------------------------
   void KalFitHack::makeHits(KalFitResult& KRes, TrkT0 const& t0) {
-    TrkDef const& tdef = *KRes._tdef;
+    TrkDefHack const& tdef = *KRes._tdef;
 // compute the propagaion velocity
     double flt0 = tdef.helix().zFlight(0.0);
     double mom = TrkMomCalculator::vecMom(tdef.helix(),bField(),flt0).mag();
     double vflt = tdef.particle().beta(mom)*CLHEP::c_light;
     unsigned nind = tdef.strawHitIndices().size();
     for(unsigned iind=0;iind<nind;iind++){
-      size_t istraw = tdef.strawHitIndices()[iind]._index;
+      size_t istraw = tdef.strawHitIndices().at(iind);//[iind];
       const StrawHit& strawhit(tdef.strawHitCollection()->at(istraw));
       const Straw& straw = _tracker->getStraw(strawhit.strawIndex());
       double fltlen = tdef.helix().zFlight(straw.getMidPoint().z());
@@ -752,8 +752,8 @@ namespace mu2e
     // create the hit object.  Start with the 1st additional error for anealing
       TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fltlen,_hiterr.front(),_maxdriftpull);
       assert(trkhit != 0);
-    // set the initial ambiguity based on the input
-      trkhit->setAmbig(tdef.strawHitIndices()[iind]._ambig);
+    // set the initial ambiguity to null
+      trkhit->setAmbig(0);
     // refine the flightlength, as otherwise hits in the same plane are at exactly the same flt, which can cause problems
       TrkErrCode pstat = trkhit->updatePoca(&tdef.helix());
       if(pstat.failure()){
@@ -958,7 +958,7 @@ namespace mu2e
   // fetcth the DetectorModel
     Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
 
-    TrkDef const& tdef = *KRes._tdef;
+    TrkDefHack const& tdef = *KRes._tdef;
     for(std::vector<TrkStrawHit*>::iterator ihit=KRes._hits.begin();ihit!=KRes._hits.end();ihit++){
       TrkStrawHit* trkhit = *ihit;
       const DetStrawElem* strawelem = detmodel.strawElem(trkhit->straw());
@@ -1092,7 +1092,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // time initialization
 //-----------------------------------------------------------------------------
-  void KalFitHack::initCaloT0(CalTimePeak* TPeak, TrkDef const& tdef, TrkT0& t0) {
+  void KalFitHack::initCaloT0(CalTimePeak* TPeak, TrkDefHack const& tdef, TrkT0& t0) {
 //    2014-11-24 gianipez and Pasha removed time offset between caloriemter and tracker
 
     // get flight distance of z=0
@@ -1116,7 +1116,7 @@ namespace mu2e
 
 
 //-----------------------------------------------------------------------------
-  void KalFitHack::initT0(TrkDef const& tdef, TrkT0& t0) {
+  void KalFitHack::initT0(TrkDefHack const& tdef, TrkT0& t0) {
     using namespace boost::accumulators;
 // make an array of all the hit times, correcting for propagation delay
     unsigned nind = tdef.strawHitIndices().size();
@@ -1134,7 +1134,7 @@ namespace mu2e
     static CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
     // loop over strawhits
     for(unsigned iind=0;iind<nind;iind++){
-      size_t istraw = tdef.strawHitIndices()[iind]._index;
+      size_t istraw = tdef.strawHitIndices()[iind];
       const StrawHit& strawhit(tdef.strawHitCollection()->at(istraw));
       const Straw& straw = _tracker->getStraw(strawhit.strawIndex());
       // compute the flightlength to this hit from z=0 (can be negative)

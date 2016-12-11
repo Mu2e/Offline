@@ -16,7 +16,7 @@
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 
 namespace mu2e {
-   typedef std::vector<mu2e::StrawHitFlag> StrawHitFlagCollection;
+  typedef std::vector<mu2e::StrawHitFlag> StrawHitFlagCollection;
 }
 
 #endif /* RecoDataProducts_StrawHitFlagCollection_hh */

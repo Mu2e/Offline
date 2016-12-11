@@ -45,6 +45,7 @@ namespace mu2e {
       double _lambda;
       double _offset;
       double _slope;
+      int _debug;
   };
 }
 #endif

@@ -19,7 +19,9 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -1155,7 +1157,7 @@ namespace mu2e {
     
     const Tracker& tracker = getTrackerOrThrow();
     
-    const std::vector<hitIndex> shIndices = mytrk.strawHitIndices();
+    const std::vector<StrawHitIndex> shIndices = mytrk.strawHitIndices();
     
     int size = shIndices.size();
 
@@ -1164,7 +1166,7 @@ namespace mu2e {
       int loc;
       StrawHitFlag flag;
       for (int i=0; i<size; ++i) { 
-	loc                = shIndices[i]._index;
+	loc                = shIndices[i];
 	flag               = mytrk.strawHitFlagCollection()->at(loc);
 	StrawHit const& sh = mytrk.strawHitCollection()->at(loc);
 	Straw const& straw = tracker.getStraw(sh.strawIndex());

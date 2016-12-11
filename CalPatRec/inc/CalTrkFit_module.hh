@@ -27,6 +27,7 @@ namespace art {
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/TrackSeed.hh"
 #include "RecoDataProducts/inc/TrackSeedCollection.hh"
 
@@ -41,7 +42,7 @@ namespace art {
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
-#include "TrkReco/inc/TrkDef.hh"
+#include "CalPatRec/inc/TrkDefHack.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
@@ -177,7 +178,7 @@ namespace mu2e {
     std::string                           _iname_seed;// data instance name for the output 
 					              // of seed fit (used for diagnostics only)
 
-    std::vector<hitIndex>                 _hitIndices;
+    std::vector<StrawHitIndex>                 _hitIndices;
     int                                   _nindex;
     int                                   _nrescued;    // by the seed fit
 
@@ -224,10 +225,10 @@ namespace mu2e {
     void findDoublets     (KalRep* krep, DoubletCollection *dcol);//search doublets in a giventimepeak
     void findLoopApex     (){}//search the straw hits src/closer to the apexes of the helix loops
 
-    void findMissingHits  (KalFitResult& kalfit, std::vector<hitIndex>& indices);
+    void findMissingHits  (KalFitResult& kalfit, std::vector<StrawHitIndex>& indices);
     void bookHistograms   ();
 
-    void init             (KalFitResult*&  KRes, TrkDef* TDef);
+    void init             (KalFitResult*&  KRes, TrkDefHack* TDef);
 
   };
 }

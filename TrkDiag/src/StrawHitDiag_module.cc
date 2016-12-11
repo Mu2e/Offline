@@ -49,12 +49,14 @@ namespace mu2e
       void fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const;
       void fillStrawHitDiag();
       bool findData(const art::Event& e);
-      // event object labels
-      string _shLabel;
-      string _shpLabel;
-      string _shfLabel;
-      string _stLabel;
-      std::string _mcdigislabel;
+      // control flags
+      bool _mcdiag;
+  // data tags
+      art::InputTag _shTag;
+      art::InputTag _shpTag;
+      art::InputTag _shfTag;
+      art::InputTag _stTag;
+      art::InputTag _mcdigisTag;
       // cache of event objects
       const StrawHitCollection* _shcol;
       const StrawHitPositionCollection* _shpcol;
@@ -84,18 +86,19 @@ namespace mu2e
       Float_t _mctime, _mcptime;
       Int_t _esel,_rsel, _timesel,  _delta, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk;
       Int_t _plane, _panel, _layer, _straw;
-      Float_t _shpres, _shrres, _shchisq, _shdt, _shdist;
+      Float_t _shwres, _shtres, _shchisq, _shdt, _shdist;
       Bool_t _mcxtalk;
   };
 
 
   StrawHitDiag::StrawHitDiag(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
-    _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
-    _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
-    _shfLabel(pset.get<string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
-    _stLabel(pset.get<string>("StereoHitCollectionLabel","MakeStereoHits")),
-    _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")),
+    _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
+    _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
+    _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
+    _shfTag(pset.get<string>("StrawHitFlagCollectionTag","FlagBkgHits")),
+    _stTag(pset.get<string>("StereoHitCollectionTag","MakeStereoHits")),
+    _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {}
 
@@ -119,8 +122,8 @@ namespace mu2e
     shinfo._pos = shp.pos();
     shinfo._time = sh.time();
     shinfo._rho = shp.pos().perp();
-    shinfo._pres = shp.posRes(StrawHitPosition::phi);
-    shinfo._rres = shp.posRes(StrawHitPosition::rho);
+    shinfo._wres = shp.posRes(StrawHitPosition::wire);
+    shinfo._tres = shp.posRes(StrawHitPosition::trans);
     // info depending on stereo hits
     if(_stcol != 0 && shp.stereoHitIndex() >= 0){
       shinfo._chisq = _stcol->at(shp.stereoHitIndex()).chisq();
@@ -166,30 +169,29 @@ namespace mu2e
     }
   }
 
-  bool StrawHitDiag::findData(const art::Event& evt){
+   bool StrawHitDiag::findData(const art::Event& evt){
     _shcol = 0;
     _shpcol = 0;
     _shfcol = 0;
     _stcol = 0;
     _mcdigis = 0;
-
-    art::Handle<mu2e::StrawHitCollection> strawhitsH;
-    if(evt.getByLabel(_shLabel,strawhitsH))
-      _shcol = strawhitsH.product();
-    art::Handle<mu2e::StrawHitPositionCollection> shposH;
-    if(evt.getByLabel(_shpLabel,shposH))
-      _shpcol = shposH.product();
-    art::Handle<mu2e::StrawHitFlagCollection> shflagH;
-    if(evt.getByLabel(_shfLabel,shflagH))
-      _shfcol = shflagH.product();
-    art::Handle<mu2e::StereoHitCollection> stH;
-    if(evt.getByLabel(_stLabel,stH))
-      _stcol = stH.product();
-    art::Handle<StrawDigiMCCollection> mcdigisHandle;
-    if(evt.getByLabel(_mcdigislabel,"StrawHitMC",mcdigisHandle))
-      _mcdigis = mcdigisHandle.product();
-// don't require stereo hits or MC
-    return _shcol != 0 && _shpcol != 0&& _shfcol != 0;
+// nb: getValidHandle does the protection (exception) on handle validity so I don't have to
+    auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
+    _shcol = shH.product();
+    auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
+    _shpcol = shpH.product();
+    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+    _shfcol = shfH.product();
+    auto hsH = evt.getValidHandle<StereoHitCollection>(_stTag);
+    _stcol = hsH.product();
+    if(_mcdiag){
+      auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
+      _mcdigis = mcdH.product();
+      // update time offsets
+      _toff.updateMap(evt);
+    }
+    return _shcol != 0 && _shpcol != 0 && _shfcol != 0 
+      && (_mcdigis != 0  || !_mcdiag);
   }
 
   void StrawHitDiag::beginJob(){
@@ -245,14 +247,13 @@ namespace mu2e
     _shdiag->Branch("pdist",&_pdist,"pdist/F");
     _shdiag->Branch("pperp",&_pperp,"pperp/F");
     _shdiag->Branch("pmom",&_pmom,"pmom/F");
-    _shdiag->Branch("pres",&_shpres,"pres/F");
-    _shdiag->Branch("rres",&_shrres,"rres/F");
+    _shdiag->Branch("wres",&_shwres,"wres/F");
+    _shdiag->Branch("tres",&_shtres,"tres/F");
     _shdiag->Branch("shchisq",&_shchisq,"shchisq/F");
     _shdiag->Branch("shdt",&_shdt,"shdt/F");
     _shdiag->Branch("shdist",&_shdist,"shdist/F");
     _shdiag->Branch("mcxtalk",&_mcxtalk,"mcxtalk/B");
   }
-
 
   void StrawHitDiag::fillStrawHitDiag() {
     GeomHandle<DetectorSystem> det;
@@ -314,7 +315,7 @@ namespace mu2e
         StrawDigiMC const& mcdigi = _mcdigis->at(istr);
         // use TDC channel 0 to define the MC match
         StrawDigi::TDCChannel itdc = StrawDigi::zero;
-        if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+        if(!mcdigi.hasTDC(StrawDigi::zero)) itdc = StrawDigi::one;
         art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
         art::Ptr<SimParticle> const& spp = spmcp->simParticle();
         CLHEP::Hep3Vector dprod = spmcp->position()-det->toDetector(spp->startPosition());
@@ -366,8 +367,8 @@ namespace mu2e
         _mcxtalk = spmcp->strawIndex() != sh.strawIndex();
 
       }
-      _shpres = _shpcol->at(istr).posRes(StrawHitPosition::phi);
-      _shrres = _shpcol->at(istr).posRes(StrawHitPosition::rho);
+      _shwres = _shpcol->at(istr).posRes(StrawHitPosition::wire);
+      _shtres = _shpcol->at(istr).posRes(StrawHitPosition::trans);
 //  Info depending on stereo hits
       if(_stcol != 0 && _shpcol->at(istr).stereoHitIndex() >= 0){
         _shchisq = _stcol->at(_shpcol->at(istr).stereoHitIndex()).chisq();

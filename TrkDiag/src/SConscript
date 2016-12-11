@@ -51,6 +51,7 @@ mainlib = helper.make_mainlib ( [
     'HepPDT',
     'HepPID',
     'xerces-c',
+    'boost_filesystem',
     'boost_system',
     ] )
 

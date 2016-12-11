@@ -19,7 +19,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
-#include "TrkReco/inc/TrkDef.hh"
+#include "CalPatRec/inc/TrkDefHack.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
@@ -125,8 +125,6 @@ namespace mu2e {
     float            _minCprQual;
     std::string      _calPatRecMVAHist ;  // in .tab format
 
-    std::string      _iname;	        // data instance name
-
     KalDiag*         _kalDiag;
     MVATools*        _calPatRecQualMVA;
 
@@ -144,11 +142,9 @@ namespace mu2e {
     _trkPatRecModuleLabel   (pset.get<std::string>("trkPatRecModuleLabel"   )),
     _calPatRecModuleLabel   (pset.get<std::string>("calPatRecModuleLabel"   ))
   {
-    // tag the data product instance by the direction and particle type found by this module
-    _iname = _fdir.name() + _tpart.name();
 
-    produces<AlgorithmIDCollection>  (_iname);
-    produces<KalRepPtrCollection>    (_iname);
+    produces<AlgorithmIDCollection>  ();
+    produces<KalRepPtrCollection>    ();
     
     _kalDiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet()));
     _dar     = new DoubletAmbigResolver (pset.get<fhicl::ParameterSet>("DoubletAmbigResolver"),0.,0,0);
@@ -240,8 +236,8 @@ namespace mu2e {
 
     if (_debugLevel > 0) ObjectDumpUtils::printEventHeader(&AnEvent,"MergePatRec::produce");
 
-    AnEvent.getByLabel(_trkPatRecModuleLabel,_iname,tpr_h);
-    AnEvent.getByLabel(_calPatRecModuleLabel,_iname,cpr_h);
+    AnEvent.getByLabel(_trkPatRecModuleLabel,tpr_h);
+    AnEvent.getByLabel(_calPatRecModuleLabel,cpr_h);
     
     if (tpr_h.isValid()) { 
       list_of_kreps_tpr = (mu2e::KalRepPtrCollection*) &(*tpr_h);
@@ -489,8 +485,8 @@ namespace mu2e {
 
     if (_debugLevel > 0) ObjectDumpUtils::printKalRepCollection(&AnEvent,trackPtrs.get(),1);
 
-    AnEvent.put(std::move(trackPtrs),_iname);
-    AnEvent.put(std::move(algs     ),_iname);
+    AnEvent.put(std::move(trackPtrs));
+    AnEvent.put(std::move(algs     ));
   }
 
 

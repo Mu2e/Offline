@@ -1,10 +1,6 @@
 //
 // Define a track; this provides the transfer between pat. rec. and fitting
 //
-// $Id: TrkDef.hh,v 1.18 2014/08/30 12:19:38 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2014/08/30 12:19:38 $
-//
 // Original author David Brown, LBNL
 //
 #ifndef TrkDef_HH
@@ -12,7 +8,8 @@
 // Mu2e
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
-// BaBar
+#include "RecoDataProducts/inc/TimeCluster.hh"
+// BTrk includes
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
@@ -26,59 +23,30 @@ class TrkDifPieceTraj;
 namespace mu2e 
 {
 
-  struct hitIndex {
-    size_t _index; // index into the straw hit container
-    int _ambig; // hit ambiguity.  0 means compute from track
-    hitIndex() : _index(0),_ambig(0) {}
-    hitIndex(size_t index,int ambig=0) : _index(index),_ambig(ambig) {}
-    hitIndex& operator = (size_t index) { _index = index; return *this; }
-    bool operator == (hitIndex const& other) const { return _index == other._index; }
-  };
-  
   class TrkDef {
   public:
-    TrkDef(const StrawHitCollection* strawcollection, const std::vector<hitIndex>& strawhits,
-      const HelixTraj& helix, TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
-    TrkDef(const StrawHitCollection* strawcollection, const std::vector<hitIndex>& strawhits,
-      const CLHEP::HepVector& parvec, const CLHEP::HepSymMatrix& covar,
-      TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
-    TrkDef(const StrawHitCollection* strawcollection, const std::vector<hitIndex>& strawhits,
-      TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
-    TrkDef(const StrawHitCollection* strawcollection,
-    TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
-    TrkDef(TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
+    TrkDef(TimeCluster const& tcluster, HelixTraj const& helix,
+      TrkParticle const& tpart, TrkFitDirection const& fdir);
     TrkDef(const TrkDef&);
     TrkDef& operator = (const TrkDef&);
     ~TrkDef();
   // append a straw hit to this track definition
-    void appendHit(size_t index,int ambig=0) { _indices.push_back(hitIndex(index,ambig)); }
+    void appendHit(size_t index) { _timeCluster._strawHitIdxs.push_back(index); }
   // accessors
-    const StrawHitCollection* strawHitCollection() const { return _straws; }
-    const std::vector<hitIndex>& strawHitIndices() const { return _indices;}
-    const HelixTraj& helix() const { return _h0; }
-    const CLHEP::HepSymMatrix &helixCovMatr() const { return _h0.parameters()->covariance(); }
-    const CLHEP::HepSymMatrix &covMatr() const { return _dcov; }
+    std::vector<StrawHitIndex> const& strawHitIndices() const { return _timeCluster._strawHitIdxs;}
+    HelixTraj const& helix() const { return _h0; }
+    TrkT0 const& t0() const { return _timeCluster._t0; }
     TrkParticle const& particle() const { return _tpart; }
     TrkFitDirection const& fitdir() const { return _fdir; }
-    void setHelix(HelixTraj const& helix) { _h0 = helix; }
-    void setIndices(std::vector<hitIndex> const& indices ) { _indices = indices; }
-    TrkT0 const& t0() const { return _t0; }
-    void setT0( TrkT0 const& t0) { _t0 = t0; }
-  protected:
-    const StrawHitCollection* _straws; // straw hit collection
-    std::vector<hitIndex> _indices; // indices to straw hits in the collection to use for this track
+    //non-const accessors to allow updates
+    std::vector<StrawHitIndex>& strawHitIndices() { return _timeCluster._strawHitIdxs;}
+    HelixTraj& helix() { return _h0; }
+    TrkT0& t0() { return _timeCluster._t0; }
+  private:
+    TimeCluster _timeCluster; // t0 and hit indices
     HelixTraj _h0; // helix estimate, valid in the region around z=0
-// particle type.  Note this defines both the charge and the mass
-    TrkParticle _tpart;
-// fit direction
-    TrkFitDirection _fdir;
-// initial t0
-    TrkT0 _t0;
-// dummy variables
-    static CLHEP::HepVector _dpar;
-    static CLHEP::HepSymMatrix _dcov;
-    static TrkParticle _eminus;
-    static TrkFitDirection _downstream;
+    TrkParticle _tpart; // particle type.  Note this defines both the charge and the mass
+    TrkFitDirection _fdir; // fit direction
   };
 }
 

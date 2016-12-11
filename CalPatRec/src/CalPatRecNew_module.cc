@@ -24,7 +24,8 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "KalmanTests/inc/KalFitResult.hh"
+#include "CalPatRec/inc/KalFitResult.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
@@ -44,13 +45,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // comparison functor for sorting by Z(wire)
 //-----------------------------------------------------------------------------
-  struct straw_zcomp : public binary_function<hitIndex,hitIndex,bool> {
-    bool operator()(hitIndex const& h1, hitIndex const& h2) {
+  struct straw_zcomp : public binary_function<StrawHitIndex,StrawHitIndex,bool> {
+    bool operator()(StrawHitIndex const& h1, StrawHitIndex const& h2) {
 
       mu2e::GeomHandle<mu2e::TTracker> handle;
       const TTracker* t = handle.get();
-      const Straw* s1 = &t->getStraw(StrawIndex(h1._index));
-      const Straw* s2 = &t->getStraw(StrawIndex(h2._index));
+      const Straw* s1 = &t->getStraw(StrawIndex(h1));
+      const Straw* s2 = &t->getStraw(StrawIndex(h2));
 
       return s1->getMidPoint().z() < s2->getMidPoint().z();
     }
@@ -233,7 +234,7 @@ namespace mu2e {
     const char*               oname = "CalPatRecNew::filter";
     int                       npeaks;
 
-    static TrkDef             dummydef;
+    static TrkDefHack             dummydef;
     static HelixDefHack       dummyhdef;
 
     static HelixFitHackResult dummyhfit(dummyhdef);
@@ -268,7 +269,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       HelixDefHack helixdef(_shcol, _shpcol, _shfcol, tp->_index, _tpart, _fdir);
 
-      TrkDef       seeddef (helixdef);
+      TrkDefHack       seeddef (helixdef);
 
                                         // track fitting objects for this peak
 
@@ -304,7 +305,7 @@ namespace mu2e {
 // P.Murat: here hits are ordered by index - WHY?
 // the Kalman fitter needs them ordered in Z(straw)
 //-----------------------------------------------------------------------------
-        std::vector<hitIndex> goodhits;
+        std::vector<StrawHitIndex> goodhits;
 
         _index = _hfit._xyzp;
 
@@ -413,34 +414,34 @@ namespace mu2e {
 
 //--------------------------------------------------------------------------------
   void CalPatRecNew::initTrackSeed(TrackSeed                             &TrkSeed, 
-				   TrkDef                                &SeedDef  , 
+				   TrkDefHack                                &SeedDef  , 
 				   HelixFitHackResult                    &HfResult ,
 				   const CalTimePeak                     *TPeak    , 
 				   art::Ptr<CaloCluster>                  ClusterPtr){
 
     //set helix parameters
-    TrkSeed._helix._d0     = SeedDef.helix().d0();
-    TrkSeed._helix._phi0   = SeedDef.helix().phi0();
-    TrkSeed._helix._omega  = SeedDef.helix().omega();
-    TrkSeed._helix._z0     = SeedDef.helix().z0();
-    TrkSeed._helix._tanDip = SeedDef.helix().tanDip();
+    TrkSeed._helix.d0()     = SeedDef.helix().d0();
+    TrkSeed._helix.phi0()   = SeedDef.helix().phi0();
+    TrkSeed._helix.omega()  = SeedDef.helix().omega();
+    TrkSeed._helix.z0()     = SeedDef.helix().z0();
+    TrkSeed._helix.tanDip() = SeedDef.helix().tanDip();
        
     int             shIndices = SeedDef.strawHitIndices().size();
-    const mu2e::hitIndex *hIndex;
+    const StrawHitIndex *hIndex;
 
     for (int i=0; i<shIndices; ++i){
       hIndex = &SeedDef.strawHitIndices().at(i);
-      TrkSeed._timeCluster._strawHitIdxs.push_back( mu2e::hitIndex( hIndex->_index, hIndex->_ambig) );
+      TrkSeed._timeCluster._strawHitIdxs.push_back( StrawHitIndex( hIndex) );
     }
     
     const mu2e::CaloCluster *cluster = TPeak->Cluster();
     
-    TrkSeed._timeCluster._t0          = cluster->time(); 
+    TrkSeed._timeCluster._t0._t0          = cluster->time(); 
     Hep3Vector                   gpos = _calorimeter->fromSectionFrameFF(cluster->sectionId(), cluster->cog3Vector());
     Hep3Vector                   tpos = _calorimeter->toTrackerFrame(gpos);
-    TrkSeed._timeCluster._z0          = tpos.z();
+    TrkSeed._timeCluster._pos          = tpos;
 
-    TrkSeed._timeCluster._errt0       = 1;
+    TrkSeed._timeCluster._t0._t0err       = 1;
     TrkSeed._timeCluster._caloCluster = ClusterPtr;
     
 

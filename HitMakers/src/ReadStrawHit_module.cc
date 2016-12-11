@@ -258,9 +258,9 @@ namespace mu2e {
       *truthHitMCHandle : StrawHitMCTruthCollection();
 
     art::Handle<StrawDigiMCCollection>     truthDigiMCHandle;
-    bool gblSDresult = evt.getByLabel(_makerModuleLabel,"StrawHitMC",truthDigiMCHandle);
-    ( _diagLevel > 0 ) &&
-      std::cout
+    bool gblSDresult = evt.getByLabel(_makerModuleLabel,truthDigiMCHandle);
+    ( _diagLevel > 0 ) && 
+      std::cout 
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
       << " StrawHitMCTruthCollection      _makerModuleLabel: " << _makerModuleLabel << ", StrawHitMC"
       << ", " << gblresult << std::endl;
@@ -272,7 +272,7 @@ namespace mu2e {
 
     // Get the persistent data about pointers to StepPointMCs
     art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
-    gblresult = evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
+    gblresult = evt.getByLabel(_makerModuleLabel,mcptrHandle);
 
     ( _diagLevel > 0 ) &&
       std::cout

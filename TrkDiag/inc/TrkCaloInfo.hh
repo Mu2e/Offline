@@ -33,8 +33,9 @@ namespace mu2e
     threevec _tpos; // extrapolated track position near calorimeter cluster
     threevec _tdir; // extrapolated track position near calorimeter cluster
     Float_t _ttrk; // track time at intersection point
-    static string const& leafnames() { 
-      static const string leaves =
+    static string leafnames() { 
+      static string leaves;
+      leaves = 
       string("dt/F:du/F:dv/F:ds/F:ep/F:uvchisq/F:tchisq/F:dtllr/F:epllr/F:") + // matching info
       string("eclust/F:tclust/F:section/I:") + // cluster information
       threevec::leafnames("cpos").c_str() + string(":") +

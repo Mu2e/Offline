@@ -46,7 +46,9 @@ namespace mu2e {
       size_t hitIndex1() const { return _hind1; }
       size_t hitIndex2() const { return _hind2; }
       float chisq() const { return _chisq; }
+      float mvaout() const { return _mvaout; }
       void setChisquared(double chisq) { _chisq = chisq; }
+      void setMVAOut(double mvaout) { _mvaout = mvaout; }
     private:
       size_t _hind1, _hind2; // indices into the straw hit container for the 2 hits making up this stereo hit
       CLHEP::Hep3Vector _pos; // position in tracker coordinates
@@ -58,6 +60,7 @@ namespace mu2e {
       float _wd1, _wd2; // distance along the wire of the POCA for the two hits
       float _chisq; // chisquared of the difference between the stereo position and the time division measurement
       float _wdot; // dot product of the angle between the 2 wire directions
+      float _mvaout; // output of the MVA
     };
 }
 #endif
