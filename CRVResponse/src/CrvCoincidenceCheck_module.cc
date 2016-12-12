@@ -241,6 +241,7 @@ namespace mu2e
           //get one reco pulse
           const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector[i];
           int PEs=pulse._PEs;
+//          double time=pulse._peakTime;  //TODO
           double time=pulse._leadingEdge;
           if(_verboseLevel>4)
           {

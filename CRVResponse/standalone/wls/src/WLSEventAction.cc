@@ -43,7 +43,7 @@ WLSEventAction::WLSEventAction(int mode, int numberOfPhotons, int simType, int m
   if(simType==0 && minBin==0) _storeConstants=true;
   _fgInstance = this;
 
-  if(_mode==0)
+  if(_mode==0 || _mode==1)
   {
     for(int SiPM=0; SiPM<4; SiPM++)
     {
@@ -83,26 +83,13 @@ WLSEventAction::WLSEventAction(int mode, int numberOfPhotons, int simType, int m
       _histPE[SiPM]->SetLineColor(1);
     }
 
-    _photonsVsIntegral = new TH2D("PhotonsVsIntegral","PhotonsVsIntegral", 200,0,2.0, 100,0,100);
-    _photonsVsIntegral->SetYTitle("Photons");
-    _photonsVsIntegral->SetXTitle("Integral");
-    _photonsVsPulseHeight = new TH2D("PhotonsVsPulseHeight","PhotonVsPulseHeight", 200,0,0.5, 100,0,100);
-    _photonsVsPulseHeight->SetYTitle("Photons");
-    _photonsVsPulseHeight->SetXTitle("PulseHeight [mV]");
-    _PEsVsIntegral = new TH2D("PEsVsIntegral","PEsVsIntegral", 200,0,2.0, 100,0,100);
-    _PEsVsIntegral->SetYTitle("PEs");
-    _PEsVsIntegral->SetXTitle("Integral");
-    _PEsVsPulseHeight = new TH2D("PEsVsPulseHeight","PEsVsPulseHeight", 200,0,0.5, 100,0,100);
-    _PEsVsPulseHeight->SetYTitle("PEs");
-    _PEsVsPulseHeight->SetXTitle("PulseHeight [mV]");
-
-    _ntuple = new TNtuple("CRVNtuple","CRVNtuple","SiPM:photons:PEs:integral:pulseHeight");
+    _ntuple = new TNtuple("CRVNtuple","CRVNtuple","SiPM:photons:PEs:integral:pulseHeight:TOT:recoPEs");
   }
 }
 
 WLSEventAction::~WLSEventAction()
 {
-  if(_mode==0)
+  if(_mode==0 || _mode==1)
   {
     for(int SiPM=0; SiPM<4; SiPM++)
     {
@@ -113,9 +100,6 @@ WLSEventAction::~WLSEventAction()
       delete _histPE[SiPM];
     }
   
-    delete _photonsVsIntegral;
-    delete _photonsVsPulseHeight;
-
     _ntuple->SaveAs("CRVNtuple.root");
     delete _ntuple;
   }
@@ -131,6 +115,7 @@ void WLSEventAction::BeginOfEventAction(const G4Event* evt)
 
 void WLSEventAction::EndOfEventAction(const G4Event* evt)
 {
+  //create entry in lookup tables
   if(_mode==-1)
   {
     G4Material *fiber = G4Material::GetMaterial("PMMA",true); //fiber
@@ -249,17 +234,17 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
     bin.Write(filename.str());
   }
 
-  if(_mode==0)
+  //fill histograms if a simulation is run
+  if(_mode==0 || _mode==1)
   {
-    for(int SiPM=0; SiPM<4; SiPM++)
+    for(int m=0; m<=_mode; m++)
     {
-      _histP[0][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM).size());
-      _histP[1][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM).size());
-
-      const std::vector<double> &arrivalTimes0 = WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM);
-      const std::vector<double> &arrivalTimes1 = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
-      for(size_t i=0; i<arrivalTimes0.size(); i++) _histT[0][SiPM]->Fill(arrivalTimes0[i]);
-      for(size_t i=0; i<arrivalTimes1.size(); i++) _histT[1][SiPM]->Fill(arrivalTimes1[i]);
+      for(int SiPM=0; SiPM<4; SiPM++)
+      {
+        _histP[m][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimes(m,SiPM).size());
+        const std::vector<double> &arrivalTimes = WLSSteppingAction::Instance()->GetArrivalTimes(m,SiPM);
+        for(size_t i=0; i<arrivalTimes.size(); i++) _histT[m][SiPM]->Fill(arrivalTimes[i]);
+      }
     }
 
     Draw(evt);
@@ -276,16 +261,16 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
   }
 }
 
-void WLSEventAction::Draw(const G4Event* evt) const
+void WLSEventAction::Draw(const G4Event* evt) 
 {
   mu2eCrv::MakeCrvSiPMResponses::ProbabilitiesStruct probabilities;
   probabilities._constGeigerProbCoef = 1;
   probabilities._constGeigerProbVoltScale = 5.5;
-  probabilities._constTrapType0Prob = 0.14;  
-  probabilities._constTrapType1Prob = 0.06;
+  probabilities._constTrapType0Prob = 0.0;  
+  probabilities._constTrapType1Prob = 0.0;
   probabilities._constTrapType0Lifetime = 5;
   probabilities._constTrapType1Lifetime = 50;
-  probabilities._constThermalProb = 6.31e-7; 
+  probabilities._constThermalProb = 2.9e-3; 
   probabilities._constPhotonProduction = 0.136; 
 
   probabilities._constTrapType0Prob = 0;  
@@ -302,17 +287,17 @@ void WLSEventAction::Draw(const G4Event* evt) const
   mu2eCrv::MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
   double digitizationInterval = 12.5; //ns
   double digitizationInterval2 = 1.0; //ns
-  gStyle->SetOptStat(0);
-  makeCrvWaveform.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 100);
-  makeCrvWaveform2.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 100);
+  makeCrvWaveform.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform.txt", 1.0, 100);
+  makeCrvWaveform2.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform.txt", 1.0, 100);
+
+  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(0.005,0.2, 0.0,147.0);
 
   double startTime=-G4UniformRand()*digitizationInterval;
   std::vector<double> siPMtimes[4], siPMcharges[4];
   std::vector<double> waveform[4], waveform2[4];
   for(int SiPM=0; SiPM<4; SiPM++)
   {
-    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);  //from lookup tables
-//    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM);  //from full GEANT
+    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(_mode,SiPM);
 
     std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
     sim.Simulate(photonTimes, SiPMresponseVector);
@@ -349,8 +334,8 @@ void WLSEventAction::Draw(const G4Event* evt) const
     std::ostringstream s2, s3;
     s2<<"Photons_"<<evt->GetEventID()<<"__"<<SiPM;
     s3<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
-    hist[SiPM]=new TH1D(s2.str().c_str(),s3.str().c_str(),100,0,200);
-    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
+    hist[SiPM]=new TH1D(s2.str().c_str(),s3.str().c_str(),100,0,300);
+    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(_mode,SiPM);
     for(unsigned int i=0; i<photonTimes.size(); i++)
     {
       hist[SiPM]->Fill(photonTimes[i]);
@@ -366,9 +351,9 @@ void WLSEventAction::Draw(const G4Event* evt) const
     hist[SiPM]->Draw();
 
 //SiPM response
-    double scaleSiPMResponse = 0.25;
+    double scaleSiPMResponse = 0.5;
     double totalPEs=0;
-    histSiPMResponse[SiPM]=new TH1D((s2.str()+"SiPMResponse").c_str(),"",100,0,200);
+    histSiPMResponse[SiPM]=new TH1D((s2.str()+"SiPMResponse").c_str(),"",100,0,300);
     for(unsigned int j=0; j<siPMtimes[SiPM].size(); j++)
     {
       histSiPMResponse[SiPM]->Fill(siPMtimes[SiPM][j], siPMcharges[SiPM][j]*scaleSiPMResponse);
@@ -428,8 +413,8 @@ void WLSEventAction::Draw(const G4Event* evt) const
     {
       double tI=startTime+j*digitizationInterval;
       double vI=waveform[SiPM][j];
-      if(tI>200) break;
-      if(vI<=0.015) continue;
+      if(tI>300) break;
+      if(vI<=0.005) continue;  //below threshold for integral
       TMarker *marker = new TMarker(tI, vI*scale, markerVector.size());
       markerVector.push_back(marker);
       marker->SetMarkerStyle(20);
@@ -439,7 +424,6 @@ void WLSEventAction::Draw(const G4Event* evt) const
     }
 
 //Landau fit
-    mu2eCrv::MakeCrvRecoPulses makeRecoPulses(0.022,0.2, 0.0,159.0);
     makeRecoPulses.SetWaveform(waveform[SiPM], startTime, digitizationInterval);
     unsigned int nPulse = makeRecoPulses.GetNPulses();
     for(unsigned int pulse=0; pulse<nPulse; pulse++)
@@ -470,7 +454,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
       }
 
       double leadingEdge=makeRecoPulses.GetLeadingEdge(pulse);
-      if(!isnan(leadingEdge) && leadingEdge<200.0)
+      if(!isnan(leadingEdge) && leadingEdge<300.0)
       {
         TMarker *marker = new TMarker(leadingEdge,
                                       0.2*makeRecoPulses.GetPulseHeight(pulse)*scale,
@@ -485,32 +469,35 @@ void WLSEventAction::Draw(const G4Event* evt) const
       delete[] vL;
     }
 
-    if(makeRecoPulses.GetNPulses()==1)
+    if(makeRecoPulses.GetNPulses()>0) 
     {
       int photons = photonTimes.size();
       double integral = makeRecoPulses.GetIntegral(0);
       double pulseHeight = makeRecoPulses.GetPulseHeight(0);
-      std::cout<<"SiPM: "<<SiPM<<"  integral: "<<integral<<std::endl;
-      std::cout<<"Photons/integral: "<<photons/integral<<"         ";
-      std::cout<<"Photons/maxBin: "<<photons/pulseHeight<<std::endl;
-      _photonsVsIntegral->Fill(integral,photons);
-      _photonsVsPulseHeight->Fill(pulseHeight,photons);
+      double recoPEs = makeRecoPulses.GetPEs(0);
       double PEs=0;
       double leadingEdge=makeRecoPulses.GetLeadingEdge(0);
       double TOT=makeRecoPulses.GetTimeOverThreshold(0);
-      for(unsigned int j=0; j<siPMtimes[SiPM].size(); j++) 
+      for(size_t j=0; j<siPMtimes[SiPM].size(); j++) 
       {
-        if(siPMtimes[SiPM][j]<leadingEdge+TOT-40.0 && siPMtimes[SiPM][j]>leadingEdge-40.0) PEs+=siPMcharges[SiPM][j];
+        if(siPMtimes[SiPM][j]<leadingEdge+TOT-30.0 && siPMtimes[SiPM][j]>leadingEdge-40.0) PEs+=siPMcharges[SiPM][j];
       } 
-      std::cout<<"PEs/integral: "<<PEs/integral<<"         ";
-      std::cout<<"PEs/maxBin: "<<PEs/pulseHeight<<std::endl;
-      _PEsVsIntegral->Fill(integral,PEs);
-      _PEsVsPulseHeight->Fill(pulseHeight,PEs);
 
-      _ntuple->Fill(SiPM,photons,PEs,integral,pulseHeight);
+      _ntuple->Fill(SiPM,photons,PEs,integral,pulseHeight,TOT,recoPEs);
+      _PEs[SiPM].push_back(PEs);
+      double avgPEs=0;
+      for(size_t j=0; j<_PEs[SiPM].size(); j++) {avgPEs+=_PEs[SiPM][j];}
+      avgPEs/=_PEs[SiPM].size();
+      std::cout<<"SiPM: "<<SiPM<<" PEs: "<<PEs<<"   average: "<<avgPEs<<std::endl;
+    }
+    else 
+    {
+      std::cout<<"SiPM: "<<SiPM<<" "<<makeRecoPulses.GetNPulses()<<" reco pulses: ";
+      for(size_t j=0; j<makeRecoPulses.GetNPulses(); j++) std::cout<<makeRecoPulses.GetLeadingEdge(j)<<" ";
+      std::cout<<std::endl;
     }
 
-    TGaxis *axis = new TGaxis(170.0,0,170.0,histMax,0,histMax/scale,10,"+L");
+    TGaxis *axis = new TGaxis(270.0,0,270.0,histMax,0,histMax/scale,10,"+L");
     axisVector.push_back(axis);
     axis->SetTitle("voltage [V]");
     axis->SetTitleOffset(-0.5);
@@ -519,7 +506,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
     axis->SetLabelColor(kRed);
     axis->Draw("same");
 
-    TGaxis *axisSiPMResponse = new TGaxis(200.0,0,200.0,histMax,0,histMax/scaleSiPMResponse,10,"+L");
+    TGaxis *axisSiPMResponse = new TGaxis(300.0,0,300.0,histMax,0,histMax/scaleSiPMResponse,10,"+L");
     axisVector.push_back(axisSiPMResponse);
     axisSiPMResponse->SetTitle("SiPM output [PE]");
     axisSiPMResponse->SetTitleOffset(-0.5);
@@ -551,11 +538,6 @@ void WLSEventAction::Draw(const G4Event* evt) const
     landauText2->Draw("same");
   }
   if(evt->GetEventID()<20) c.SaveAs((s1.str()+".C").c_str());
-  _photonsVsIntegral->SaveAs("PhotonsVsIntegral.C");
-  _photonsVsPulseHeight->SaveAs("PhotonsVsPulseHeight.C");
-  _PEsVsIntegral->SaveAs("PEsVsIntegral.C");
-  _PEsVsPulseHeight->SaveAs("PEsVsPulseHeight.C");
-
 
   gStyle->SetOptStat(1111);
   TCanvas c1("Photons","Photons",1000,1000);

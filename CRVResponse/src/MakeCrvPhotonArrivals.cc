@@ -252,9 +252,10 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
           }
 
           //add additional time delay due to the photons bouncing around
-          arrivalTime+=GetRandomTime(theBin,SiPM);
+          bool overflow=false;
+          arrivalTime+=GetRandomTime(theBin,SiPM,overflow);
 
-          _arrivalTimes[SiPM].push_back(arrivalTime);
+          if(!overflow) _arrivalTimes[SiPM].push_back(arrivalTime); //don't include photons which arrive very late. they are spread out, and can be ignored
 
         }// if a photon was created
       }//loop over all SiPMs
@@ -288,7 +289,7 @@ int MakeCrvPhotonArrivals::IsInsideFiber(const CLHEP::Hep3Vector &p, double &r)
   return -1;
 }
 
-double MakeCrvPhotonArrivals::GetRandomTime(const LookupBin &theBin, int SiPM)
+double MakeCrvPhotonArrivals::GetRandomTime(const LookupBin &theBin, int SiPM, bool &overflow)
 {
   double rand=_randFlat.fire()*LookupBin::probabilityScale;
   double sumProb=0;
@@ -298,6 +299,7 @@ double MakeCrvPhotonArrivals::GetRandomTime(const LookupBin &theBin, int SiPM)
     sumProb+=theBin.timeDelays[SiPM][timeDelay];
     if(rand<=sumProb) break;
   }
+  if(timeDelay>=LookupBin::nTimeDelays-1) overflow=true; else overflow=false;
 
   return timeDelay;
 }

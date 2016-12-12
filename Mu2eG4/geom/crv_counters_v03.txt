@@ -210,7 +210,7 @@ double crs.CMBHalfThickness =  5.0;
 string crs.CMBMaterialName  = "ElectronicsCMB";
 
 // information about the SiPMs 
-double crs.fiberSeparation = 20.0; //mm
+double crs.fiberSeparation = 26.0; //mm
 
 // side 0 is the negative side of the counter, i.e. the -x side of a CRV-T counter, or the -y side of a CRV-R counter
 bool crs.sipmsAtSide0R1  = true;  //0

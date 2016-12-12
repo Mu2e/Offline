@@ -150,16 +150,17 @@ namespace mu2e
           unsigned int n = _makeCrvRecoPulses->GetNPulses();
           for(unsigned int i=0; i<n; i++)
           {
-            double time=_makeCrvRecoPulses->GetLeadingEdge(i);
+            double LE=_makeCrvRecoPulses->GetLeadingEdge(i);
+            double time=_makeCrvRecoPulses->GetPeakTimeLandau(i);
             if(time<0) continue;
             if(time>_microBunchPeriod) continue;
             int PEs = _makeCrvRecoPulses->GetPEs(i);
-            double height = _makeCrvRecoPulses->GetPulseHeight(i);
+            if(PEs<_minPEs) continue; 
+            double height = _makeCrvRecoPulses->GetPulseHeight(i);  //don't use GetPulseHeightLandau(i), since this wasn't used in the test beam
             double length = _makeCrvRecoPulses->GetTimeOverThreshold(i);
             double integral = _makeCrvRecoPulses->GetIntegral(i);
-            if(PEs<_minPEs) continue; 
 //            _hRecoPulses->Fill(length);
-            crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, time,height,length,integral);
+            crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, LE,time,height,length,integral);
           }
         }
 

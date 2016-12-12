@@ -23,16 +23,18 @@ namespace mu2e
     {
       int    _PEs;
       double _leadingEdge;
+      double _peakTime;
       double _pulseHeight;
       double _pulseLength;
       double _integral;
-      CrvSingleRecoPulse(int PEs, double leadingEdge, double pulseHeight, double pulseLength, double integral) : 
+      CrvSingleRecoPulse(int PEs, double leadingEdge, double peakTime, double pulseHeight, double pulseLength, double integral) : 
                                                                             _PEs(PEs), 
                                                                             _leadingEdge(leadingEdge), 
+                                                                            _peakTime(peakTime), 
                                                                             _pulseHeight(pulseHeight),
                                                                             _pulseLength(pulseLength),
                                                                             _integral(integral) {}
-      CrvSingleRecoPulse() : _PEs(0), _leadingEdge(NAN), _pulseHeight(NAN), 
+      CrvSingleRecoPulse() : _PEs(0), _leadingEdge(NAN), _peakTime(NAN), _pulseHeight(NAN), 
                              _pulseLength(NAN), _integral(NAN) {}  //to make ROOT happy
     };
 

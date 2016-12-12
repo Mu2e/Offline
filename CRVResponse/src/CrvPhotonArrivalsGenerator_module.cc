@@ -76,28 +76,6 @@ namespace mu2e
                                         //to account for the travel time of the photons inside the CRV bar.
                                         //Default is 0.
 
-    std::string                           _backgroundSampleFileName;
-    int                                   _countersInBackgroundSample;
-    int                                   _backgroundSampleFactor;
-    double                                _maxBackgroundTimeShift;
-
-    struct Background
-    {
-      CLHEP::Hep3Vector _p1Local;
-      CLHEP::Hep3Vector _p2Local;
-      double            _t1, _t2;
-      double            _beta, _charge, _totalE, _nonIonizingE;
-      int               _PDGcode;
-      Background(double t1, double x1, double y1, double z1,
-                 double t2, double x2, double y2, double z2,
-                 double beta, double charge, double totalE, double nonIonizingE, int PDGcode) :
-                 _p1Local(x1,y1,z1), _p2Local(x2,y2,z2), _t1(t1), _t2(t2), 
-                 _beta(beta), _charge(charge), _totalE(totalE), _nonIonizingE(nonIonizingE), _PDGcode(PDGcode) {}
-    };
-
-    std::vector<std::vector<std::vector<Background> > > _backgroundEvents;
-    std::vector<std::vector<std::vector<Background> > >::const_iterator _currentBackgroundEvent;
-
     CLHEP::RandFlat       _randFlat;
     CLHEP::RandGaussQ     _randGaussQ;
 
@@ -113,14 +91,10 @@ namespace mu2e
     _scintillationYieldTolerance(pset.get<double>("scintillationYieldTolerance")),    //0.0%
     _scintillatorBirksConstant(pset.get<double>("scintillatorBirksConstant")), //0.126 mm/MeV
     _scintillatorRatioFastSlow(pset.get<double>("scintillatorRatioFastSlow")), //1.0
-    _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast")), //10.0 ns, includes WLS components in the scintillator
+    _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast")), //3.0 ns, includes WLS components in the scintillator
     _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow")), //100.0 ns, unknown, not used
     _fiberDecayTime(pset.get<double>("fiberDecayTime")),     //7.4 ns
     _startTime(pset.get<double>("startTime")),               //0.0 ns
-    _backgroundSampleFileName(pset.get<std::string>("backgroundSampleFileName","")),
-    _countersInBackgroundSample(pset.get<int>("countersInBackgroundSample",0)),
-    _backgroundSampleFactor(pset.get<int>("backgroundSampleFactor",0)),
-    _maxBackgroundTimeShift(pset.get<double>("maxBackgroundTimeShift",0)),
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
@@ -132,75 +106,14 @@ namespace mu2e
       double counterLength = _lookupTableCounterLengths[i];
       _makeCrvPhotonArrivals.emplace(counterLength, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat)));
       std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
-      iterCPA->second->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
+//      iterCPA->second->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
+      iterCPA->second->LoadLookupTable(_lookupTableFileNames[i]);    //FIXME: temporary solution
       iterCPA->second->SetScintillationYield(_scintillationYield);
       iterCPA->second->SetScintillatorBirksConstant(_scintillatorBirksConstant);
       iterCPA->second->SetScintillatorRatioFastSlow(_scintillatorRatioFastSlow);
       iterCPA->second->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
       iterCPA->second->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
       iterCPA->second->SetFiberDecayTime(_fiberDecayTime);
-    }
-
-    if(_backgroundSampleFileName!="" && _countersInBackgroundSample!=0 && _backgroundSampleFactor!=0)
-    {
-      std::cout<<"CRVResponse uses a background overlay ("<<_backgroundSampleFileName<<")"<<std::endl;
-
-      TDirectory *directory = gDirectory;
-
-      TFile *backgroundFile = TFile::Open(_backgroundSampleFileName.c_str());
-      gDirectory->cd("background/background");
-      TTree *tree = dynamic_cast<TTree*>(gDirectory->FindObjectAny("background"));
-
-      ULong64_t     eventNumber, volumeId;
-      double        t1, x1, y1, z1;
-      double        t2, x2, y2, z2;
-      double        beta, charge, totalE, nonIonizingE;
-      int           PDGcode;
-      tree->SetBranchAddress("eventNumber",&eventNumber);
-      tree->SetBranchAddress("volumeId",&volumeId);
-      tree->SetBranchAddress("t1", &t1);
-      tree->SetBranchAddress("x1", &x1);
-      tree->SetBranchAddress("y1", &y1);
-      tree->SetBranchAddress("z1", &z1);
-      tree->SetBranchAddress("t2", &t2);
-      tree->SetBranchAddress("x2", &x2);
-      tree->SetBranchAddress("y2", &y2);
-      tree->SetBranchAddress("z2", &z2);
-      tree->SetBranchAddress("beta", &beta);
-      tree->SetBranchAddress("charge", &charge);
-      tree->SetBranchAddress("totalE", &totalE);
-      tree->SetBranchAddress("nonIonizingE", &nonIonizingE);
-      tree->SetBranchAddress("PDGcode", &PDGcode);
-
-      int n = tree->GetEntries();
-
-      std::map<unsigned long, std::map<unsigned long, std::vector<Background> > > backgroundMap;
-      for(int i=0; i<n; i++)
-      {
-        tree->GetEntry(i);
-        std::map<unsigned long, std::vector<Background> > &backgroundEvent = backgroundMap[eventNumber];
-        std::vector<Background> &backgroundVector = backgroundEvent[volumeId];
-        backgroundVector.emplace_back(t1, x1, y1, z1, t2, x2, y2, z2, beta, charge, totalE, nonIonizingE, PDGcode);
-      }
-      backgroundFile->Close();
-
-      //convert maps into vectors to decrease the access times (the actual event number and volume Id is not needed)
-      std::map<unsigned long, std::map<unsigned long, std::vector<Background> > >::const_iterator backgroundIter;
-      for(backgroundIter=backgroundMap.begin(); backgroundIter!=backgroundMap.end(); backgroundIter++)
-      {
-        _backgroundEvents.resize(_backgroundEvents.size()+1);
-
-        std::map<unsigned long, std::vector<Background> >::const_iterator backgroundIter2;
-        for(backgroundIter2=backgroundIter->second.begin(); backgroundIter2!=backgroundIter->second.end(); backgroundIter2++)
-        {
-          const std::vector<Background> &backgroundVector = backgroundIter2->second;
-          _backgroundEvents.back().push_back(backgroundVector);
-        }
-      }
-
-      _currentBackgroundEvent = _backgroundEvents.begin();
-
-      directory->cd();
     }
 
     produces<CrvPhotonArrivalsCollection>();
@@ -325,60 +238,6 @@ namespace mu2e
         } //loop over StepPointMCs in the StepPointMC collection
       } //loop over all StepPointMC collections
     } //loop over all module labels / process names from the fcl file
-
-/* overlay background */
-/* should only be used if background samples and actual "detector" use only one counter length */
-
-   
-    if(_backgroundSampleFileName!="" && _countersInBackgroundSample!=0 && _backgroundSampleFactor!=0)
-    {
-      const std::vector<std::vector<Background> > &backgroundSampleCounters = *_currentBackgroundEvent;
-      const std::vector<std::shared_ptr<CRSScintillatorBar> > &actualCounters = CRS->getAllCRSScintillatorBars();
-      for(int i=0; i<_backgroundSampleFactor; i++)
-      {
-        for(size_t j=0; j<actualCounters.size(); j++)
-        {
-          CRSScintillatorBarIndex jj(j);
-          if(_scintillationYieldAdjustments.find(jj)==_scintillationYieldAdjustments.end())
-          {
-            double adjustment = _randGaussQ.fire(0, _scintillationYield*_scintillationYieldTolerance);
-            _scintillationYieldAdjustments[jj] = adjustment;
-          }
-          double scintillationYieldAdjustment = _scintillationYieldAdjustments[jj];
-
-          double counterLength = actualCounters[j]->getHalfLength()*2.0;
-          std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
-
-          if(iterCPA!=_makeCrvPhotonArrivals.end())
-          {
-            unsigned int backgroundCounter = _randFlat.fire(_countersInBackgroundSample);
-            if(backgroundCounter<backgroundSampleCounters.size())
-            {
-              const std::vector<Background> &backgroundVector = backgroundSampleCounters[backgroundCounter];
-              double timeShift = _randFlat.fire(_maxBackgroundTimeShift);
-              for(size_t k=0; k<backgroundVector.size(); k++)
-              {
-                const Background &b=backgroundVector[k];
-                iterCPA->second->MakePhotons(b._p1Local, b._p2Local, b._t1-timeShift, b._t2-timeShift,  
-                                             b._PDGcode, b._beta, b._charge,
-                                             b._totalE, b._nonIonizingE,
-                                             scintillationYieldAdjustment);
-
-                CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[jj];
-                for(int SiPM=0; SiPM<4; SiPM++)
-                {
-                  const std::vector<double> &times=iterCPA->second->GetArrivalTimes(SiPM);
-                  crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).end(),times.begin(),times.end());
-                }
-              }
-            }
-          }
-        }
-      }
-
-      _currentBackgroundEvent++;
-      if(_currentBackgroundEvent==_backgroundEvents.end()) _currentBackgroundEvent = _backgroundEvents.begin();
-    }
 
 /* photnns into the event */
 
