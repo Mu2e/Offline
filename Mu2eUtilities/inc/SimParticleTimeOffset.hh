@@ -9,8 +9,8 @@
 #include <vector>
 #include <string>
 
-#include "art/Utilities/InputTag.h"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Utilities/InputTag.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
 

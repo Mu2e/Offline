@@ -4,7 +4,7 @@
 // Original author Gianantonio Pezzullo
 #include <ostream>
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "RecoDataProducts/inc/TrkCaloIntersect.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 

@@ -14,7 +14,7 @@
 
 #include <vector>
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Principal/Handle.h"
 
 #include "MCDataProducts/inc/GenParticle.hh"

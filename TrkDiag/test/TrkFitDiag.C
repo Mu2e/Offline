@@ -63,7 +63,7 @@ void TrkFitDiag(TFile* tfile,std::vector<TH1*>& plots) {
   t0errcut = TCut(cutstring);
   snprintf(cutstring,100,"fit.momerr<%f",maxmomerr);
   momerrcut = TCut(cutstring);
-  snprintf(cutstring,100,"fitcon>%f",minfitcon);
+  snprintf(cutstring,100,"fit.con>%f",minfitcon);
   fitconcut = TCut(cutstring);
 
   snprintf(cutstring,100,"td>%4.3f&&td<%4.3f",tdlow,tdhigh);
@@ -73,7 +73,7 @@ void TrkFitDiag(TFile* tfile,std::vector<TH1*>& plots) {
   snprintf(cutstring,100,"mcent.td>%4.3f&&mcent.td<%4.3f",tdlow-0.02,tdhigh+0.02);
   tpitch = TCut(cutstring);
   tmom = TCut("mcent.mom>100");
-  snprintf(cutstring,100,"nchits>=%i",minnhits);
+  snprintf(cutstring,100,"mc.ndigigood>=%i",minnhits);
   nmch = TCut(cutstring);
   reco = TCut("fit.status>0");
   cosmic = TCut("abs(d0)<105 && d0+2/om>450 && d0+2/om<680");
@@ -111,13 +111,13 @@ void TrkFitDiag(TFile* tfile,std::vector<TH1*>& plots) {
 
   trks->Project("fitstatus","fit.status");
   trks->Project("chisq","chisq/ndof");
-  trks->Project("fitcon","fitcon",goodmc);
-  trks->Project("fitconl","log10(fitcon)",goodmc);
+  trks->Project("fitcon","fit.con",goodmc);
+  trks->Project("fitconl","log10(fit.con)",goodmc);
   trks->Project("t0","t0",goodmc+goodfit);
   trks->Project("t0err","t0err",goodmc);
   trks->Project("nh","nhits",goodmc);
   trks->Project("na","nactive",goodmc);
-  trks->Project("nmc","nchits");
+  trks->Project("nmc","mc.ndigigood");
 
   //  cout << "first plots done" << endl;
 

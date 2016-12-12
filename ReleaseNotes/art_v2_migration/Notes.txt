@@ -1,0 +1,185 @@
+Steps taken to migrate from art v1_17_07 to art v2_04_00.
+
+The order of the steps below is not chronological. For example
+the changes to SConstruct were not done in a single step - they
+were done as issues were discovered.  For clarity they are written
+up as a single step.
+
+The migration started with art v2_02_02.  Part way through
+I switched to art v2_04_00.  Because the writeup is not
+chronological I have not recorded which step was done with
+which version of art.
+
+1) Preparation
+   I cloned that art repo and built it in verbose mode.
+   I did this for both art v1_17_7 and art v2_04_00
+   Noted the changs in the build flags and changes to
+   how genreflex is used.
+
+2)
+From head of master:
+ git checkout -b art_v2_migration
+
+3) setup.sh:
+Update ups product versions and qualifiers.
+
+Add setups for xerces_c and tbb.  These used to come for free with art.
+We now need to do them by hand.
+
+The version of geant (v4_9_6_p04e) is a special build
+just for us.  It is the same as v4_9_6_p04d but is built
+with the e10 compiler, not e9:
+
+4) SConstruct
+ - add definitions of inc and lib for canvas and tbb
+ - remove gccxml, cpp0x
+ - modify build flags; see 1) above.
+ - remove 'Cint' from the definition of rootlibs
+ - Tweaks to the genreflex part of build; match what art
+   does; see 1) above.
+
+5)
+Modify include directives for files that moved from
+art to canvas.  This is done with a script provided by art:
+
+cd to Offline top directory
+setup -B art v2_04_00 -q+e10:+prof
+$CANVAS_DIR/tools/canvas_refactor/update_for_art.sh
+
+This script must be exec'ed, not sourced.
+
+The script can be run more than once.
+
+This script also makes changes to classes_def.xml files
+for out-of-class enum-types.  All of our enum-types
+are in-class.  So these are irrelevant for us.  The
+action we do not need was append ::type in certain places.
+If you encounter this in your own code, contact
+Chris Green for details.
+If we used cetbuildtools for our build system then
+the above script would have also modified the link lists.
+But we do not so we have an our own version in the next
+step.
+
+6)
+Update link lists for the art->canvas evolution.
+In most cases the art_ prefix is changed to canvas_.
+In a few cases there is both a canvas_xx library
+and an art_xx library.
+
+This step was done using fix_link_lists, found in this directory.
+When I used it, it was in the Offline top directory.
+For each SConscript file in the hierarchy:
+
+   perl -wapi\~ -f fix_link_lists <file>
+
+This makes a copy of each file SConscript~ and then
+modfies each SConscript in place.
+
+The dictionary of changes to make was cribbed from:
+
+  $CANVAS_DIR/tools/canvas_refactor/fix_cmake_art.pl
+
+which is the code that updates link lists for
+
+Other steps done by hand:
+  - Remove all references to 'Reflex' from link lists
+  - Add 'Core' to all link lists for dictionaries.
+  - Some, but not all, main libraries required 'Core' in
+    the link lists - I did not track down why.
+
+7)
+Hand edit all classes.h files
+ - Remove all template instantions.  They are no longer needed.
+ - If they are present, everything will still work but the build will be
+   much slower and the dictionaries will be much bigger, both on disk and
+   in memory.
+ - Remove the CVS comments.
+ - Remove all commented out lines.
+
+8)
+   DataProducts/src/classes_def.xml
+   Remove these lines:
+     - <class name="CLHEP::Hep2Vector"/>
+     - <class name="CLHEP::Hep3Vector"/>
+     - <class name="CLHEP::HepVector"/>
+     - <class name="CLHEP::HepMatrix"/>
+     - <class name="CLHEP::HepSymMatrix"/>
+   These are defined to root in dictionaries maintained by art.
+
+   Similarly for many classes declared in:
+     MCDataProducts/src/classes_def.xml
+     RecoDataProducts/src/classes_def.xml
+     TrackCaloMatching/src/classes_def.xml
+
+
+   One of the new behaviours is that if a class appears in two
+   dictionaries then root will issue a run-time error and stop.
+
+9)
+There were some missing includes.  In the old art these includes
+had come along with some other include but not in the new art.
+So we need to provide them explicitly.  One example:
+
+ExtinctionMonitorFNAL/Analyses/inc/EMFPatRecFakeHistograms.hh
+needed to add:
+#include "art/Framework/Principal/Handle.h
+
+10)
+  TrkDiag/test/KalFit.C
+   - mods to work with root v6.
+   - see comments in commit d41f7dc7 on Thu Sep 22 21:14:21 2016 -0500.
+   - This was the rate limiting step; both root5 and root 6 delegate
+     compilation to real compilers.  They behaved differently on code
+     that had undefined behaviour.  When this was fixed the tests compared
+     cleanly.
+
+  TrkDiag/test/ce.C
+   - mods to work with root v6.
+
+11) Miscellanceous.
+ a) Needed to add fully qualified std:: to cout, cerr and endl
+    or add using namespace std; in a few places.
+ b) Commentted out the for_each templates in
+     - TrackerGeom/inc/Layer.hh
+     - TrackerGeom/inc/Panel.hh
+ c) Compiler caught some missing const and override keywords.
+    Fixed these. I believe, but am not sure, that the new
+    compiler flags caused these warnings.
+    All were on obsolete code or on member functions with an
+    empty body - so these errors did no harm in the past.
+ d) Added missing BTrk libraries to link lists in
+      RecoDataProducts/src/SConscript
+ e) Make function signatures correct in: bin/browse.cint
+
+12)
+After the port was done I ran 200 events of Mu2eG4/fcl/g4test_03.fcl.
+The two log files diff'ed cleanly.
+
+13)
+After the above ports were done I ran genReco.fcl for 2000 events.
+The new code ran in 82% of the time taken by the old code:
+
+art v2_04_00:
+real	15m6.397s
+user	14m44.422s
+sys	0m6.492s
+
+art v1_17_07:
+real	18m16.983s
+user	18m4.455s
+sys	0m5.789s
+
+The files sizes of the two .art files were almost identical
+  - sub part per thousand difference
+
+
+7) Ick. ./MCDataProducts/src/classes_def.xml has
+   <class name="std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>"/>
+   This should almost certainly be struct with members position and momentum
+   (actually 4 momentum).
+   No change at this time - need to fix later.
+
+11) Tried to remove mu2e_MCDataProducts from HelloWorld link list.
+    It did not work because it is used for HelloProducer.  Maybe move this
+    to Sandbox?

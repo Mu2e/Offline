@@ -91,7 +91,7 @@ namespace mu2e {
     double             fraction()  const { return fraction_; }
     Records_t const&   contents()  const { return contents_; }
 
-    void print ( ostream& os, double minimumFraction ) const;
+    void print ( std::ostream& os, double minimumFraction ) const;
 
   private:
 

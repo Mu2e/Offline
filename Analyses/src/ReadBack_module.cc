@@ -17,7 +17,7 @@
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -35,6 +35,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
@@ -628,15 +629,18 @@ namespace mu2e {
     event.getByLabel(_g4ModuleLabel,simParticles);
 
     // Handle to information about G4 physical volumes.
-    art::Handle<PhysicalVolumeInfoCollection> volumes;
-    event.getRun().getByLabel(_g4ModuleLabel,volumes);
+    art::Handle<PhysicalVolumeInfoMultiCollection> volsHandle;
+    event.getSubRun().getByLabel(_g4ModuleLabel,volsHandle);
 
     // Some files might not have the SimParticle and volume information.
-    bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
+    bool haveSimPart = ( simParticles.isValid() && volsHandle.isValid() );
+
+    PhysicalVolumeInfoSingleStage const* vols = (volsHandle.isValid() && !volsHandle->empty()) ?
+      &volsHandle->at(0).second : nullptr;
 
     // Other files might have empty collections.
     if ( haveSimPart ){
-      haveSimPart = !(simParticles->empty() || volumes->empty());
+      haveSimPart = !(simParticles->empty() || volsHandle->empty());
     }
 
     // Fill histogram with number of hits per event.
@@ -841,7 +845,6 @@ namespace mu2e {
 
     } // end loop over hits.
 
-
     // Additional printout and histograms about the simulated particles.
     if ( haveSimPart && (_nAnalyzed < _maxFullPrint) ){
 
@@ -870,8 +873,8 @@ namespace mu2e {
           GenId genId(gen.generatorId());
 
           // Physical volume in which this track started.
-          PhysicalVolumeInfo const& volInfo = volumes->at(sim.startVolumeIndex());
-          PhysicalVolumeInfo const& endInfo = volumes->at(sim.endVolumeIndex());
+          PhysicalVolumeInfo const& volInfo = vols->at(cet::map_vector_key(sim.startVolumeIndex()));
+          PhysicalVolumeInfo const& endInfo = vols->at(cet::map_vector_key(sim.endVolumeIndex()));
 
           cerr << "Readback"
                << " Simulated Particle: "
@@ -1032,16 +1035,12 @@ namespace mu2e {
     art::Handle<SimParticleCollection> simParticles;
     event.getByLabel(_g4ModuleLabel,simParticles);
 
-    // Handle to information about G4 physical volumes.
-    art::Handle<PhysicalVolumeInfoCollection> volumes;
-    event.getRun().getByLabel(_g4ModuleLabel,volumes);
-
     // Some files might not have the SimParticle and volume information.
-    bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
+    bool haveSimPart = ( simParticles.isValid() );
 
     // Other files might have empty collections.
     if ( haveSimPart ){
-      haveSimPart = !(simParticles->empty() || volumes->empty());
+      haveSimPart = !(simParticles->empty() );
     }
 
     // A silly example just to show that we have a messsage logger.

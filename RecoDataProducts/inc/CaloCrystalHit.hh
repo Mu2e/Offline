@@ -17,7 +17,7 @@
 #include "RecoDataProducts/inc/RecoCaloDigi.hh"
 #include "RecoDataProducts/inc/RecoCaloDigiCollection.hh"
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 namespace mu2e {
 

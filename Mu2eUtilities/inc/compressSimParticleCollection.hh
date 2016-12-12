@@ -49,8 +49,8 @@
 
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 
-#include "art/Persistency/Provenance/ProductID.h"
-#include "art/Persistency/Common/EDProductGetter.h"
+#include "canvas/Persistency/Provenance/ProductID.h"
+#include "canvas/Persistency/Common/EDProductGetter.h"
 
 namespace mu2e {
 

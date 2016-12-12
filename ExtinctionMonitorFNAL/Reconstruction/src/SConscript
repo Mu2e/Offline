@@ -13,10 +13,14 @@ my_libs=['mu2e_ExtinctionMonitorFNAL_Geometry',
          'mu2e_RecoDataProducts',
          'mu2e_DataProducts',
          'art_Persistency_Common',
+         'canvas_Persistency_Common',
          'art_Persistency_Provenance',
+         'canvas_Persistency_Provenance',
          'art_Utilities',
+         'canvas_Utilities',
          'CLHEP',
-         'cetlib'
+         'cetlib',
+         'Core'
          ]
 
 mainlib = helper.make_mainlib ( my_libs )

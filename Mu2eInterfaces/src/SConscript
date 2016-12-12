@@ -14,8 +14,10 @@ mainlib = helper.make_mainlib ( [] )
 
 helper.make_dict_and_map( [ mainlib,
                             'art_Persistency_Common',
+                            'canvas_Persistency_Common',
                             'art_Utilities',
-                            'Reflex'
+                            'canvas_Utilities',
+                            'Core'
                             ] )
 
 # This tells emacs to view this file in python mode.

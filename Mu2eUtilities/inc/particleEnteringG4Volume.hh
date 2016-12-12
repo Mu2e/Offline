@@ -8,7 +8,7 @@
 #ifndef Mu2eUtilities_inc_particleEnteringG4Volume_hh
 #define Mu2eUtilities_inc_particleEnteringG4Volume_hh
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 

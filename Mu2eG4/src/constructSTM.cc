@@ -126,11 +126,20 @@ namespace mu2e {
     const double stmMagnetHoleHalfLengths[3] = {pSTMMagnetParams.xHoleHalfLength(), 
                                                 pSTMMagnetParams.yHoleHalfLength(), 
                                                 pSTMMagnetParams.zHalfLength()     };
-    G4Box* boxMagnetHole = new G4Box("boxMagnetHole", stmMagnetHoleHalfLengths[0], stmMagnetHoleHalfLengths[1], stmMagnetHoleHalfLengths[2]+1.0);
-    
+    G4Box* boxMagnetHole = new G4Box("boxMagnetHole", stmMagnetHoleHalfLengths[0]+pSTMShieldPipeParams.linerWidth(), stmMagnetHoleHalfLengths[1]+pSTMShieldPipeParams.linerWidth(), stmMagnetHoleHalfLengths[2]+1.0);
     VolumeInfo stmMagnet;
     stmMagnet.name = "stmMagnet";    
     stmMagnet.solid = new G4SubtractionSolid(stmMagnet.name,boxMagnet,boxMagnetHole,0,zeroVector);
+
+    // Make the poly-liner
+    G4Box* boxMagnetPLine = new G4Box("boxMagnetPLine", stmMagnetHoleHalfLengths[0]+pSTMShieldPipeParams.linerWidth(), stmMagnetHoleHalfLengths[1]+pSTMShieldPipeParams.linerWidth(), pSTMMagnetParams.zHalfLength()-pSTMShieldPipeParams.linerWidth());
+    G4Box* boxPolyHole = new G4Box("boxPolyHole", stmMagnetHoleHalfLengths[0], stmMagnetHoleHalfLengths[1], stmMagnetHoleHalfLengths[2]+1.0);
+
+    VolumeInfo stmMagnetPLine;
+    stmMagnetPLine.name = "stmMagnetPLine";    
+    stmMagnetPLine.solid = new G4SubtractionSolid(stmMagnetPLine.name,boxMagnetPLine,boxPolyHole,0,zeroVector);
+
+
     
     if (pSTMMagnetParams.build()){
       finishNesting(stmMagnet,
@@ -145,6 +154,21 @@ namespace mu2e {
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck);
+
+      finishNesting(stmMagnetPLine,
+                    findMaterialOrThrow(pSTMShieldPipeParams.materialLiner()),
+                    0,
+                    stmMagnetPositionInParent, //mstmMagnetPositionInMother, 
+                    parentInfo.logical, //parentInfo.logical, //mstmMotherInfo.logical,
+                    0,
+                    STMisVisible,
+                    G4Colour::Gray(),
+                    STMisSolid,
+                    forceAuxEdgeVisible,
+                    placePV,
+                    doSurfaceCheck);
+
+
     }
 
     if ( verbosityLevel > 0) {
@@ -209,15 +233,16 @@ namespace mu2e {
 
     //make the region of pipe that will contain the magnetic field
     G4Tubs* aPipeCenterTub = new G4Tubs("aPipeCenterTub", 
-                                        pSTMTransportPipeParams.radiusIn(),  //inner radius
-                                        pSTMTransportPipeParams.radiusOut(), //outer radius
-                                        stmMagnetHoleHalfLengths[2],
-                                        0.0,
-                                        CLHEP::twopi);
+					pSTMTransportPipeParams.radiusIn(),  //inner radius
+					pSTMTransportPipeParams.radiusOut(), //outer radius
+					stmMagnetHoleHalfLengths[2],
+					0.0,
+					CLHEP::twopi);
+
     VolumeInfo pipeCenterTubInfo;
     pipeCenterTubInfo.name = "pipeCenterTub";
     pipeCenterTubInfo.solid = aPipeCenterTub;
-    
+
     //make the gas that goes inside the region of pipe that contains the magnetic field
     G4Tubs* aPipeCenterGasTub = new G4Tubs("aPipeCenterGasTub", 
                                            0.0, //inner radius of gas
@@ -461,16 +486,20 @@ namespace mu2e {
     //Note the local values for the stepper etc...
     //Geant4 should take ownership of the objects created here
 
+    const double stmMagnetFieldHalfLengths[3] = {pSTMMagnetParams.xHoleHalfLength(), 
+                                                pSTMMagnetParams.yHoleHalfLength(),
+                                                pSTMMagnetParams.zHalfLength()-pSTMShieldPipeParams.linerWidth()};
+
     VolumeInfo stmMagneticFieldBoxInfo;
     stmMagneticFieldBoxInfo.name = "stmMagneticField";
     
     // Make another rectangular volume for the magnetic field
-    G4Box* boxField  = new G4Box("boxField",stmMagnetHoleHalfLengths[0],stmMagnetHoleHalfLengths[1],stmMagnetHoleHalfLengths[2]);    
+    G4Box* boxField  = new G4Box("boxField",stmMagnetFieldHalfLengths[0],stmMagnetFieldHalfLengths[1],stmMagnetFieldHalfLengths[2]);
 
     G4Tubs* aPipeCenterTubSubt = new G4Tubs( "aPipeCenterTubSubt", 
                                  0.0, //inner radius 0.0 to subtract also the gas region
                                  pSTMTransportPipeParams.radiusOut()+0.01, //outer radius
-                                 stmMagnetHoleHalfLengths[2]+1.0,// make the subtraction slightly larger to avoid edge effects
+                                 stmMagnetFieldHalfLengths[2]+1.0,// make the subtraction slightly larger to avoid edge effects
                                  0.0,
                                  CLHEP::twopi);    
     
@@ -494,7 +523,7 @@ namespace mu2e {
           
       } else {
           stmMagneticFieldBoxInfo = nestBox("stmMagneticField",
-                                            stmMagnetHoleHalfLengths,
+                                            stmMagnetFieldHalfLengths,
                                             findMaterialOrThrow(_config.getString("hall.insideMaterialName")),
                                             0x0,
                                             stmMagnetPositionInParent,
@@ -566,6 +595,18 @@ namespace mu2e {
     collimatorFOVliner.name = "collimatorFOVliner";
     collimatorFOVliner.solid = new G4SubtractionSolid(collimatorFOVliner.name,boxFOVCollLiner,tubFOVCollLiner1,0,G4ThreeVector(0.0,0.0,0.0));    
 
+    // Liner sheets to cover the upstream corner of FOV collimator
+    VolumeInfo FOVlinerH;
+    FOVlinerH.name = "FOVlinerH";
+    FOVlinerH.solid = new G4Box(FOVlinerH.name,stmFOVCollHalfWidth2, pSTMShieldPipeParams.linerWidth()/2.0, pSTMFOVCollimatorParams.linerCutOutHalfLength()-stmFOVCollHalfLength2);
+    G4ThreeVector stmFOVCollPositionInParent3 = stmFOVCollPositionInParent1 + G4ThreeVector(0.0,-stmFOVCollHalfHeight2+pSTMShieldPipeParams.linerWidth()/2.0, -2*stmFOVCollHalfLength2);
+
+    VolumeInfo FOVlinerW;
+    FOVlinerW.name = "FOVlinerW";
+    double cornerHeight = (stmFOVCollHalfLength1-stmFOVCollHalfLength2)/2.0;
+    FOVlinerW.solid = new G4Box(FOVlinerW.name,stmFOVCollHalfWidth2, cornerHeight/2.0, pSTMShieldPipeParams.linerWidth()/2.0);
+    G4ThreeVector stmFOVCollPositionInParent4 = stmFOVCollPositionInParent1 + G4ThreeVector(0.0,-stmFOVCollHalfHeight2-cornerHeight/2.0, -stmFOVCollHalfLength1-pSTMShieldPipeParams.linerWidth()/2.0);
+
     if (pSTMFOVCollimatorParams.build()){
       finishNesting(collimatorFOV,
                     findMaterialOrThrow(pSTMFOVCollimatorParams.material()),
@@ -591,6 +632,32 @@ namespace mu2e {
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck);
+      finishNesting(FOVlinerH,
+                    findMaterialOrThrow(pSTMFOVCollimatorParams.linerMaterial()),
+                    0,
+                    stmFOVCollPositionInParent3,
+                    parentInfo.logical,
+                    0,
+                    true,
+                    G4Colour::Magenta(),
+                    false,
+                    forceAuxEdgeVisible,
+                    placePV,
+                    doSurfaceCheck);
+
+      finishNesting(FOVlinerW,
+                    findMaterialOrThrow(pSTMFOVCollimatorParams.linerMaterial()),
+                    0,
+                    stmFOVCollPositionInParent4,
+                    parentInfo.logical,
+                    0,
+                    true,
+                    G4Colour::Magenta(),
+                    false,
+                    forceAuxEdgeVisible,
+                    placePV,
+                    doSurfaceCheck);
+
     } 
     
     G4Tubs *tubFOVCollAbsorber = new G4Tubs("tubFOVCollAbsorber", 0.0, pSTMFOVCollimatorParams.hole1RadiusUpStr()-0.01, _config.getDouble("stm.FOVcollimator.absorber.halfLength"), 0.0, CLHEP::twopi );
@@ -1230,7 +1297,7 @@ namespace mu2e {
     // Make the box for the collimator wall
     G4Box* crvShieldBox = new G4Box("crvShieldBox",mstmCRVShieldHalfWidth,mstmCRVShieldHalfHeight,mstmCRVShieldHalfLength);
     //Make the tube for the hole
-    G4Tubs *crvShieldHole = new G4Tubs( "crvShieldHole", 0.0, pSTMShieldPipeParams.radiusIn(), mstmCRVShieldHalfLength+1.0, 0.0, CLHEP::twopi );
+    G4Tubs *crvShieldHole = new G4Tubs( "crvShieldHole", 0.0, pSTMShieldPipeParams.radiusIn()+pSTMShieldPipeParams.linerWidth(), mstmCRVShieldHalfLength+1.0, 0.0, CLHEP::twopi );
 
     // create wall with hole
     VolumeInfo crvshield;
@@ -1239,19 +1306,24 @@ namespace mu2e {
 
     //Make the tube to shield CRV
     const double crvShieldTubeHalfLength = pSTMShieldPipeParams.pipeHalfLength();
-    G4Tubs *crvShieldTubeTemp = new G4Tubs( "crvShieldTubeTemp", pSTMShieldPipeParams.radiusIn(),  pSTMShieldPipeParams.radiusOut(), crvShieldTubeHalfLength, 0.0, CLHEP::twopi );    
+    G4Tubs *crvShieldTubeTemp = new G4Tubs( "crvShieldTubeTemp", pSTMShieldPipeParams.radiusIn(), pSTMShieldPipeParams.radiusIn()+pSTMShieldPipeParams.linerWidth(), crvShieldTubeHalfLength+mstmCRVShieldHalfLength, 0.0, CLHEP::twopi );
     
-    G4ThreeVector mstmCRVShieldTubePositionInMu2e   = mstmCRVShieldPositionInMu2e + G4ThreeVector(0.0,0.0,-mstmCRVShieldHalfLength-crvShieldTubeHalfLength-0.1);
-    G4ThreeVector mstmCRVShieldTubePositionInParent = mstmCRVShieldPositionInParent + G4ThreeVector(0.0,0.0,-mstmCRVShieldHalfLength-crvShieldTubeHalfLength-0.1);
+    G4ThreeVector mstmCRVShieldTubePositionInMu2e      = mstmCRVShieldPositionInMu2e + G4ThreeVector(0.0,0.0,-mstmCRVShieldHalfLength-crvShieldTubeHalfLength-0.1);
+    G4ThreeVector mstmCRVShieldTubeInPositionInParent  = mstmCRVShieldPositionInParent + G4ThreeVector(0.0,0.0,-crvShieldTubeHalfLength-0.1);
+    G4ThreeVector mstmCRVShieldTubePositionInParent    = mstmCRVShieldPositionInParent + G4ThreeVector(0.0,0.0,-mstmCRVShieldHalfLength-crvShieldTubeHalfLength-0.1);
     
     CLHEP::Hep3Vector vdSTM_UpStrPositionWRTcrvShieldTube           = vdSTM_UpStrPositionInMu2e           - mstmCRVShieldTubePositionInMu2e;
     CLHEP::Hep3Vector vdDSNeutronShieldExitPositionWRTcrvShieldTube = vdDSNeutronShieldExitPositionInMu2e - mstmCRVShieldTubePositionInMu2e;
     
     G4SubtractionSolid *crvShieldTubeTemp2 = new G4SubtractionSolid("crvShieldTubeTemp2",crvShieldTubeTemp, aDiskVDDSNeutronShieldExitTub, 0, vdDSNeutronShieldExitPositionWRTcrvShieldTube);    
     
-    VolumeInfo crvshieldtube;
-    crvshieldtube.name = "crvshieldtube";
-    crvshieldtube.solid = new G4SubtractionSolid(crvshieldtube.name,crvShieldTubeTemp2, aDiskVDSTM_UpStrTub, 0, vdSTM_UpStrPositionWRTcrvShieldTube);    
+    VolumeInfo crvlinershieldtube;
+    crvlinershieldtube.name = "crvlinershieldtube";
+    crvlinershieldtube.solid = new G4SubtractionSolid(crvlinershieldtube.name,crvShieldTubeTemp2, aDiskVDSTM_UpStrTub, 0, vdSTM_UpStrPositionWRTcrvShieldTube);
+
+    VolumeInfo crvsteelshieldtube;
+    crvsteelshieldtube.name = "crvsteelshieldtube";
+    crvsteelshieldtube.solid = new G4Tubs(crvsteelshieldtube.name , pSTMShieldPipeParams.radiusIn()+pSTMShieldPipeParams.linerWidth(),  pSTMShieldPipeParams.radiusOut(), crvShieldTubeHalfLength, 0.0, CLHEP::twopi );
     
     if (pSTMShieldPipeParams.build()){
       finishNesting(crvshield,
@@ -1266,7 +1338,19 @@ namespace mu2e {
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck);
-      finishNesting(crvshieldtube,
+      finishNesting(crvlinershieldtube,
+                    findMaterialOrThrow(pSTMShieldPipeParams.materialLiner()),
+                    0,
+                    mstmCRVShieldTubeInPositionInParent,
+                    parentInfo.logical,
+                    0,
+                    STMisVisible,
+                    G4Colour::Magenta(),
+                    STMisSolid,
+                    forceAuxEdgeVisible,
+                    placePV,
+                    doSurfaceCheck);   
+      finishNesting(crvsteelshieldtube,
                     findMaterialOrThrow(pSTMShieldPipeParams.material()),
                     0,
                     mstmCRVShieldTubePositionInParent, 
@@ -1277,7 +1361,7 @@ namespace mu2e {
                     STMisSolid,
                     forceAuxEdgeVisible,
                     placePV,
-                    doSurfaceCheck);      
+                    doSurfaceCheck); 
     }
     
     

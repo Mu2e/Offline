@@ -11,7 +11,7 @@
 //
 
 // Framework includes
-#include "art/Utilities/Exception.h"
+#include "canvas/Utilities/Exception.h"
 
 // Mu2e includes
 #include "ConfigTools/inc/checkForStale.hh"

@@ -33,7 +33,7 @@
 namespace mu2e {
 
     CaloReadoutSD::CaloReadoutSD(G4String name, SimpleConfig const & config ):
-      Mu2eSensitiveDetector(name,config),_nro(0),_minE(0.0)
+      Mu2eSensitiveDetector(name,config),_nro(0)
     {
 	GeomHandle<Calorimeter> cg;
 	_nro  = cg->caloGeomInfo().nROPerCrystal();
@@ -45,6 +45,7 @@ namespace mu2e {
     {
 
 	 if( aStep->GetTrack()->GetDefinition()->GetPDGCharge() == 0 ) return false;
+         if( aStep->GetTotalEnergyDeposit() < 1e-6 ) return false;
 
 	 _currentSize += 1;
 	 if( _sizeLimit>0 && _currentSize>_sizeLimit && (_currentSize - _sizeLimit)==1) 
@@ -57,11 +58,13 @@ namespace mu2e {
 	 ProcessCode endCode(_processInfo->findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
 	 const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
-	 int idro = touchableHandle->GetCopyNumber(0) + touchableHandle->GetCopyNumber(1)*_nro;  //make sure readout id is correctly calculated
+	 int idro = touchableHandle->GetCopyNumber(0) + touchableHandle->GetCopyNumber(2)*_nro;  //the idro is always Number(0) + _nro*number(X), make sure X is right
 
 
 	 //for diagnosis purposes only when playing with the geometry, uncomment next line
-	 //for (int i=0;i<8;++i) std::cout<<"Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "<<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(aStep->GetPreStepPoint()->GetPosition())<<"   "<<idro<<std::endl;
+	 //for (int i=0;i<8;++i) std::cout<<"RO Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "
+	 //                               <<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(aStep->GetPreStepPoint()->GetPosition())
+	 //				  <<"   "<<idro<<"   "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
 
 	 _collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                 	    idro,

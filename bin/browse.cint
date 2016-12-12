@@ -21,7 +21,7 @@
 
 using namespace std;
 
-void browse ( char * f ){
+void browse ( char const * f ){
 
   // Get rid of grey background (ugly for print out).
   gROOT->SetStyle("Plain");

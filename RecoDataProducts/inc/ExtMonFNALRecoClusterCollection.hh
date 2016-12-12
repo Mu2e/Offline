@@ -12,7 +12,7 @@
 
 #include <vector>
 
-#include "art/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Wrapper.h"
 
 #include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
 

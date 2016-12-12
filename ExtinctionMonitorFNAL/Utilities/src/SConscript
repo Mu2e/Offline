@@ -17,11 +17,13 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ExtinctionMonitorFNAL_Geometry',
                                   'art_Framework_Services_Registry',
                                   'art_Framework_Services_Optional',
                                   'art_Utilities',
+                                  'canvas_Utilities',
                                   'fhiclcpp',
                                   'cetlib',
                                   'CLHEP',
                                   'HepPDT',
                                   'HepPID',
+                                  'Core',
                                   'boost_system'
                                   ] )
 

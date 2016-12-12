@@ -30,7 +30,7 @@
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "DataProducts/inc/PDGCode.hh"
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include "cetlib/map_vector.h"
 

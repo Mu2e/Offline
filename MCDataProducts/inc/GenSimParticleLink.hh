@@ -8,7 +8,7 @@
 #ifndef GenSimParticleLink_hh
 #define GenSimParticleLink_hh
 
-#include "art/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Assns.h"
 
 namespace mu2e {
   class GenParticle;

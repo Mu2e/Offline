@@ -63,12 +63,15 @@ namespace mu2e {
     { return _holeCentersInUpstreamPoly; }
     std::vector<CLHEP::Hep3Vector> getHoleCentersInDownstreamPoly() const
     { return _holeCentersInDownstreamPoly; }
-    double getHoleXDimInSteel() const { return _holeXDimInSteel; }
-    double getHoleYDimInSteel() const { return _holeYDimInSteel; }
-    double getHoleZDimInSteel() const { return _holeZDimInSteel; }
-    double getHoleXDimInPoly() const { return _holeXDimInPoly; }
-    double getHoleYDimInPoly() const { return _holeYDimInPoly; }
-    double getHoleZDimInPoly() const { return _holeZDimInPoly; }
+    double getHoleXDimInSteel()    const { return _holeXDimInSteel; }
+    double getHoleYDimInSteel()    const { return _holeYDimInSteel; }
+    double getHoleZDimInSteel()    const { return _holeZDimInSteel; }
+    double getHoleXDimInUpPoly()   const { return _holeXDimInUpPoly; }
+    double getHoleYDimInUpPoly()   const { return _holeYDimInUpPoly; }
+    double getHoleZDimInUpPoly()   const { return _holeZDimInUpPoly; }
+    double getHoleXDimInDownPoly() const { return _holeXDimInDownPoly; }
+    double getHoleYDimInDownPoly() const { return _holeYDimInDownPoly; }
+    double getHoleZDimInDownPoly() const { return _holeZDimInDownPoly; }
 
 
   private:
@@ -110,9 +113,12 @@ namespace mu2e {
     double _holeXDimInSteel;
     double _holeYDimInSteel;
     double _holeZDimInSteel;
-    double _holeXDimInPoly;
-    double _holeYDimInPoly;
-    double _holeZDimInPoly;
+    double _holeXDimInUpPoly;
+    double _holeYDimInUpPoly;
+    double _holeZDimInUpPoly;
+    double _holeXDimInDownPoly;
+    double _holeYDimInDownPoly;
+    double _holeZDimInDownPoly;
 
   };
 

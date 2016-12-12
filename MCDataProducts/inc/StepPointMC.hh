@@ -15,7 +15,7 @@
 // Original author Rob Kutschke
 //
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "cetlib/map_vector.h"
 
 #include "MCDataProducts/inc/ProcessCode.hh"

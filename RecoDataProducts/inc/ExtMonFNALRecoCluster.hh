@@ -16,7 +16,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "art/Persistency/Common/PtrVector.h"
+#include "canvas/Persistency/Common/PtrVector.h"
 
 #include "RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
 

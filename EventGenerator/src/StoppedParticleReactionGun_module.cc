@@ -47,7 +47,7 @@ namespace mu2e {
     PDGCode::type pdgId_;
     double mass_;
 
-    enum SpectrumVar { TOTAL_ENERGY, KINETIC_ENERY };
+    enum SpectrumVar { TOTAL_ENERGY, KINETIC_ENERY, MOMENTUM };
     SpectrumVar spectrumVariable_;
     static SpectrumVar parseSpectrumVar(const std::string& name);
 
@@ -120,6 +120,7 @@ namespace mu2e {
   StoppedParticleReactionGun::parseSpectrumVar(const std::string& name) {
     if(name == "totalEnergy")  return TOTAL_ENERGY;
     if(name == "kineticEnergy")  return KINETIC_ENERY;
+    if(name == "momentum")  return MOMENTUM;
     throw cet::exception("BADCONFIG")<<"StoppedParticleReactionGun: unknown spectrum variable "<<name<<"\n";
   }
 
@@ -198,6 +199,7 @@ namespace mu2e {
     switch(spectrumVariable_) {
     case TOTAL_ENERGY: break;
     case KINETIC_ENERY: res += mass_; break;
+    case MOMENTUM     : res = sqrt(res*res+mass_*mass_); break;
     }
     return res;
   }

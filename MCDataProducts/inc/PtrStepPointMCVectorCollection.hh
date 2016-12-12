@@ -7,7 +7,7 @@
 //
 
 #include "MCDataProducts/inc/PtrStepPointMCVector.hh"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include <vector>
 

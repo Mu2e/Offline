@@ -166,8 +166,10 @@ namespace mu2e {
     
     bool         _shieldBuild;
     double       _shieldRadiusIn;
+    double       _shieldLinerWidth;
     double       _shieldRadiusOut;
     double       _shieldPipeHalfLength;
+    std::string  _shieldMaterialLiner;
     std::string  _shieldMaterial;
     double       _shieldUpStrSpace;
     double       _shieldDnStrSpace;

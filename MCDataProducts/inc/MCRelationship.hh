@@ -5,7 +5,7 @@
 #ifndef MCRelationship_HH
 #define MCRelationship_HH
 // art
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 // MC data
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"

@@ -75,6 +75,28 @@ vector<double> mbs.CLV2Lengths     =   {  50.0, 102.4};
 string mbs.CLV2MaterialName   = "Polyethylene096";
 double mbs.CLV2ZrelCntr            =  1959.2;
 
+// Pump-out holes 
+int    mbs.nHolesSteel = 3;
+int    mbs.nHolesUpstreamPoly = 1;
+int    mbs.nHolesDownstreamPoly = 2;
+double mbs.steelHoleXDim = 615.0;
+double mbs.steelHoleYDim = 164.4;
+double mbs.steelHoleZDim = 300.0;
+double mbs.upPolyHoleXDim = 460.0;
+double mbs.upPolyHoleYDim = 209.0;
+double mbs.upPolyHoleZDim = 250.0;
+double mbs.downPolyHoleXDim = 490.0;
+double mbs.downPolyHoleYDim = 164.4;
+double mbs.downPolyHoleZDim = 250.0;
+vector<double> mbs.steelHoleCenter1 = {0.0, -393.4, 1340.0};
+vector<double> mbs.steelHoleCenter2 = {0.0, -393.4, 1960.0};
+vector<double> mbs.steelHoleCenter3 = {0.0, -393.4, 2580.0};
+vector<double> mbs.upPolyHoleCenter1 = {0.0, -333.0, 1340.0};
+vector<double> mbs.downPolyHoleCenter1 = {0.0, -393.4, 1960.0};
+vector<double> mbs.downPolyHoleCenter2 = {0.0, -393.4, 2580.0};
+
+
+
 int    mbs.verbosityLevel = 0;
 bool   mbs.visible      = true;
 bool   mbs.solid        = false;

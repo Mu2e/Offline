@@ -1,0 +1,29 @@
+#
+# print run, event subrun summaries for a file
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : runEventSubrun
+
+services : {
+  message : @local::mf_production
+}
+
+physics :{
+  analyzers: {
+    res : {
+      module_type : RunEventSubRun
+      printSam    : false
+      printRun    : false
+      printSubrun : false
+      printEvent  : false
+    }
+  }
+
+  e1        : [ res ]
+  end_paths : [ e1 ]
+
+}
+
+source.readParameterSets: false

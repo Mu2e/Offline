@@ -19,7 +19,7 @@
 #include "art/Framework/IO/ProductMix/MixHelper.h"
 #include "art/Framework/Core/PtrRemapper.h"
 #include "art/Persistency/Common/CollectionUtilities.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 
 // Other third party includes
 #include "boost/noncopyable.hpp"
