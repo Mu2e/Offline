@@ -117,6 +117,7 @@ namespace mu2e {
       Float_t _kfm, _ksm, _kfmerr, _ksmerr; // momentum
       Int_t _kfn, _kfna, _ksn, _ksna, _hsn, _hsna, _tcn; // hit counts
       Int_t _kfnap, _ksnap, _hsnap, _kfnp, _ksnp, _hsnp, _tcnp; // primary particle hit counts
+      Float_t _kftrkqual; // track fit quality
       RobustHelix _hsh;
       Float_t _mcgenmom;
       Float_t _mcentmom, _mcmidmom, _mcxitmom;
@@ -198,6 +199,7 @@ namespace mu2e {
       _trdiag->Branch("kfmerr",&_kfmerr,"kfmerr/F");
       _trdiag->Branch("kfn",&_kfn,"kfn/I");
       _trdiag->Branch("kfna",&_kfna,"kfna/I");
+      _trdiag->Branch("kfinfo",&_trkinfo,TrkInfo::leafnames().c_str());
       if(_mcdiag){
 	_trdiag->Branch("beamwt",&_beamwt,"beamwt/F");
 	_trdiag->Branch("ndigitot",&_ndigitot,"ndigitot/i");
@@ -224,7 +226,7 @@ namespace mu2e {
 	_trdiag->Branch("kfnap",&_kfnap,"kfnap/I");
 	_trdiag->Branch("ksnp",&_ksnp,"ksnp/I");
 	_trdiag->Branch("ksnap",&_ksnap,"ksnap/I");
-      	_trdiag->Branch("hsnp",&_hsnp,"hsnp/I");
+	_trdiag->Branch("hsnp",&_hsnp,"hsnp/I");
 	_trdiag->Branch("hsnap",&_hsnap,"hsnap/I");
 	_trdiag->Branch("tcnp",&_tcnp,"tcnp/I");
       }
@@ -241,7 +243,7 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
     _bz0 = bfmgr->getBField(vpoint_mu2e).z();
-  // multiple VIDs for the tracker midplane: can we ever fix this??
+    // multiple VIDs for the tracker midplane: can we ever fix this??
     _midvids.push_back(VirtualDetectorId::TT_Mid);
     _midvids.push_back(VirtualDetectorId::TT_MidInner);
     _entvids.push_back(VirtualDetectorId::TT_FrontHollow);
@@ -257,7 +259,7 @@ namespace mu2e {
       // find the MC particle
       SPP bestpart;
       if(_mcdiag){
-      // basic event information
+	// basic event information
 	_ndigitot = _mcdigis->size();
 	art::Handle<EventWeight> beamWtHandle;
 	evt.getByLabel(_beamWtModule, beamWtHandle);
@@ -452,14 +454,14 @@ namespace mu2e {
   }
 
   void TrkRecoDiag::resetTTree() {
-  // mc truth
+    // mc truth
     _beamwt = 1.0;
     _mcgenmom = _mcentmom = _mcentpz = _mcentt0 = -1.0;
     _mcmidmom = _mcmidpz = _mcmidt0 = _mcxitmom = _mcxitpz = _mcxitt0 = -1.0;
     _pdg = _gen = _proc = -1;
     _ndigitot = _ndigi = _nkfprimary = _nksprimary = _nhsprimary = _ntcprimary = 0;
     _mch = RobustHelix();
-      // reset
+    // reset
     _kff = TrkFitFlag();
     _kfh = HelixVal();
     _kft0 = _kft0err = 0.0;
@@ -479,6 +481,7 @@ namespace mu2e {
     // reset
     _tct0 = _tct0err = 0.0;
     _tcn = _tcnp = 0;
+    _trkinfo.reset();
   }
 
   void TrkRecoDiag::fillKalFinal(SPP const& spp,KalSeed const& kf) {
@@ -504,6 +507,7 @@ namespace mu2e {
 	}
       }
     }
+    _kftrkqual = kf.trkQual();
     // follow down the reco chain
     auto ksP = kf.kalSeed();
     if(ksP.isNonnull()){
