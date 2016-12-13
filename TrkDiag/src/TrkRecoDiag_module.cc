@@ -117,7 +117,6 @@ namespace mu2e {
       Float_t _kfm, _ksm, _kfmerr, _ksmerr; // momentum
       Int_t _kfn, _kfna, _ksn, _ksna, _hsn, _hsna, _tcn; // hit counts
       Int_t _kfnap, _ksnap, _hsnap, _kfnp, _ksnp, _hsnp, _tcnp; // primary particle hit counts
-      Float_t _kftrkqual; // track fit quality
       RobustHelix _hsh;
       Float_t _mcgenmom;
       Float_t _mcentmom, _mcmidmom, _mcxitmom;
@@ -177,29 +176,28 @@ namespace mu2e {
       _trdiag->Branch("tct0",&_tct0,"tct0/F");
       _trdiag->Branch("tct0err",&_tct0err,"tct0err/F");
       _trdiag->Branch("tcn",&_tcn,"tcn/I");
-      _trdiag->Branch("hsf",&_hsf);
-      _trdiag->Branch("hsh",&_hsh);
+      _trdiag->Branch("hsf.",&_hsf);
+      _trdiag->Branch("hsh.",&_hsh);
       _trdiag->Branch("hst0",&_hst0,"hst0/F");
       _trdiag->Branch("hst0err",&_hst0err,"hst0err/F");
       _trdiag->Branch("hsn",&_hsn,"hsn/I");
       _trdiag->Branch("hsna",&_hsna,"hsna/I");
-      _trdiag->Branch("ksf",&_ksf);
-      _trdiag->Branch("ksh",&_ksh);
+      _trdiag->Branch("ksf.",&_ksf);
+      _trdiag->Branch("ksh.",&_ksh);
       _trdiag->Branch("kst0",&_kst0,"kst0/F");
       _trdiag->Branch("kst0err",&_kst0err,"kst0err/F");
       _trdiag->Branch("ksm",&_ksm,"ksm/F");
       _trdiag->Branch("ksmerr",&_ksmerr,"ksmerr/F");
       _trdiag->Branch("ksn",&_ksn,"ksn/I");
       _trdiag->Branch("ksna",&_ksna,"ksna/I");
-      _trdiag->Branch("kff",&_kff);
-      _trdiag->Branch("kfh",&_kfh);
+      _trdiag->Branch("kff.",&_kff);
+      _trdiag->Branch("kfh.",&_kfh);
       _trdiag->Branch("kft0",&_kft0,"kft0/F");
       _trdiag->Branch("kft0err",&_kft0err,"kft0err/F");
       _trdiag->Branch("kfm",&_kfm,"kfm/F");
       _trdiag->Branch("kfmerr",&_kfmerr,"kfmerr/F");
       _trdiag->Branch("kfn",&_kfn,"kfn/I");
       _trdiag->Branch("kfna",&_kfna,"kfna/I");
-      _trdiag->Branch("kfinfo",&_trkinfo,TrkInfo::leafnames().c_str());
       if(_mcdiag){
 	_trdiag->Branch("beamwt",&_beamwt,"beamwt/F");
 	_trdiag->Branch("ndigitot",&_ndigitot,"ndigitot/i");
@@ -213,7 +211,7 @@ namespace mu2e {
 	_trdiag->Branch("mcxitmom",&_mcxitmom,"mcxitmom/F");
 	_trdiag->Branch("mcxitpz",&_mcxitpz,"mcxitpz/F");
 	_trdiag->Branch("mcxitt0",&_mcxitt0,"mcxitt0/F");
-	_trdiag->Branch("mch",&_mch);
+	_trdiag->Branch("mch.",&_mch);
 	_trdiag->Branch("pdg",&_pdg,"pdg/I");
 	_trdiag->Branch("gen",&_gen,"gen/I");
 	_trdiag->Branch("proc",&_proc,"proc/I");
@@ -481,7 +479,6 @@ namespace mu2e {
     // reset
     _tct0 = _tct0err = 0.0;
     _tcn = _tcnp = 0;
-    _trkinfo.reset();
   }
 
   void TrkRecoDiag::fillKalFinal(SPP const& spp,KalSeed const& kf) {
@@ -507,7 +504,6 @@ namespace mu2e {
 	}
       }
     }
-    _kftrkqual = kf.trkQual();
     // follow down the reco chain
     auto ksP = kf.kalSeed();
     if(ksP.isNonnull()){
