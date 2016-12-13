@@ -320,7 +320,7 @@ void WLSMaterials::CreateMaterials()
   G4MaterialPropertiesTable* MPTPolystyrene = new G4MaterialPropertiesTable();
   MPTPolystyrene->AddProperty("RINDEX",PhotonEnergy,RefractiveIndexPS,nEntries);
   MPTPolystyrene->AddProperty("ABSLENGTH",PhotonEnergy,AbsPS,nEntries);
-  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",15000./MeV); 
+  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",8500./MeV); 
   MPTPolystyrene->AddProperty("FASTCOMPONENT",PhotonEnergy, ScintilFast,nEntries); 
   MPTPolystyrene->AddProperty("SLOWCOMPONENT",PhotonEnergy, ScintilFast,nEntries);  //assumed to be delayed flourescence with same spectrum, not used
   MPTPolystyrene->AddConstProperty("RESOLUTIONSCALE",1.0);

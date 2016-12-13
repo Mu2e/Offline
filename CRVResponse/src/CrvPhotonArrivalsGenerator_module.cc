@@ -106,8 +106,7 @@ namespace mu2e
       double counterLength = _lookupTableCounterLengths[i];
       _makeCrvPhotonArrivals.emplace(counterLength, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat)));
       std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
-//      iterCPA->second->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
-      iterCPA->second->LoadLookupTable(_lookupTableFileNames[i]);    //FIXME: temporary solution
+      iterCPA->second->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
       iterCPA->second->SetScintillationYield(_scintillationYield);
       iterCPA->second->SetScintillatorBirksConstant(_scintillatorBirksConstant);
       iterCPA->second->SetScintillatorRatioFastSlow(_scintillatorRatioFastSlow);

@@ -290,7 +290,7 @@ void WLSEventAction::Draw(const G4Event* evt)
   makeCrvWaveform.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform.txt", 1.0, 100);
   makeCrvWaveform2.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform.txt", 1.0, 100);
 
-  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(0.005,0.2, 0.0,147.0);
+  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(0.005,0.2, 0.0,162.0);
 
   double startTime=-G4UniformRand()*digitizationInterval;
   std::vector<double> siPMtimes[4], siPMcharges[4];

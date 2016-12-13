@@ -13,7 +13,7 @@ double particleGun.tmin  =  800.0;
 double particleGun.tmax  =  800.0;
 
 // position
-vector<double> particleGun.point = {-4404., 2600.6, 10200.0}; //counter is centered at x=-3904 
+vector<double> particleGun.point = {-4404., 2610.6, 10200.0}; //counter is centered at x=-3904 
 
 vector<double> particleGun.halfLength = { 0., 0., 0. };
 
