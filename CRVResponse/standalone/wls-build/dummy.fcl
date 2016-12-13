@@ -1,0 +1,19 @@
+#include "standardProducers.fcl"
+
+process_name : Dummy
+
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : 1
+}
+
+services :
+{
+}
+
+physics :
+{
+}
+
+

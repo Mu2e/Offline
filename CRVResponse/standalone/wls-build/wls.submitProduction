@@ -1,0 +1,49 @@
+#!/bin/bash
+
+echo "********************************************************************"
+echo "*    Did you copy the updated version of wls to wls_production?    *"
+echo "********************************************************************"
+
+S1='source /mu2e/app/users/ehrlich/work_08302015/Offline/setup.sh'
+S2='export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build'
+
+for length in "900" "2300" "3000" "4500" "5600" "6600" "7100" "7600" 
+do
+  mkdir submitProduction$length
+
+  i=0
+  for simType in {0..3}
+  do
+    minBin=0
+    upperLimit=60000
+    photons=40000
+    if [ $simType -ge 2 ]; then
+      upperLimit=110000
+      photons=1000
+    fi
+
+    while [ $minBin -lt $upperLimit ]
+    do
+      maxBin=$(($minBin+199))
+      setupfile=submitProduction$length/wls'_'setup'_'$i.sh
+      echo $S1 >| $setupfile
+      echo $S2 >> $setupfile
+
+      S3="/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/wlsProduction -c -t $simType -l $length -m $minBin -M $maxBin -n $photons"
+      echo $S3 >> $setupfile
+
+      jobname=NewLookupTable'_'$length'_'$i
+
+      echo "========================================================================================================================"
+      echo "submitting length $length simtype $simType with bins $minBin ... $maxBin  (job $i) using $photons photons :"
+      echo "------------------------------------------------------------------------------------------------------------------------"
+      mu2eart --setup=$setupfile --fcl=dummy.fcl --njobs=1 --events-per-job=1 --jobname=$jobname --outstage=/pnfs/mu2e/scratch/outstage --expected-lifetime=48h
+      echo "========================================================================================================================"
+
+      minBin=$(($maxBin+1))
+      (( i++ ))
+    done
+  done
+done
+echo "DONE!"
+

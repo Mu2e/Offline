@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#for length in "900" "2300" "3000" "4500" "5600" "6600" "7100" "7600" 
+for length in "5600" 
+do
+
+  echo "Length "$length
+
+  S1=LookupTable'_'$length
+
+  rm $S1
+
+  i=0
+  for simType in {0..3}
+  do
+    minBin=0
+    upperLimit=60000
+    if [ $simType -ge 2 ]; then
+      upperLimit=110000
+    fi
+
+    while [ $minBin -lt $upperLimit ]
+    do
+      maxBin=$(($minBin+199))
+
+      S2=/pnfs/mu2e/scratch/outstage/ehrlich/NewLookupTable'_'$length'_'$i".*/*/LookupTable_*"
+
+      ls -l $S2
+
+      cat $S2 >> $S1
+
+      minBin=$(($maxBin+1))
+      (( i++ ))
+    done
+  done
+
+  mv $S1 /pnfs/mu2e/scratch/outstage/ehrlich/LookupTables/.
+
+done
+echo "DONE!"
+

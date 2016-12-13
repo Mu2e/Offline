@@ -67,7 +67,7 @@ namespace mu2e_eventdisplay
 
     void setText(const unsigned int lineNumber, const char *newText)
     {
-      if(lineNumber<0 || lineNumber>=_text.size()) return; //TODO throw exception
+      if(lineNumber>=_text.size()) return; //TODO throw exception
       _text[lineNumber]->SetTitle(newText);
     }
 
@@ -78,7 +78,7 @@ namespace mu2e_eventdisplay
       // const on pass-by-value is meaningless in an argument list.
       expandLine(unsigned int lineNumber, NUMERIC_TYPE newNumber, const char *unit)
     {
-      if(lineNumber<0 || lineNumber>=_text.size()) return;  //TODO throw exception
+      if(lineNumber>=_text.size()) return;  //TODO throw exception
       const char *oldLine = _text[lineNumber]->GetTitle();
       if(oldLine!=nullptr)
       {
@@ -92,7 +92,7 @@ namespace mu2e_eventdisplay
 
     void removeLine(const unsigned int lineNumber)
     {
-      if(lineNumber<0 || lineNumber>=_text.size()) return;  //TODO throw exception
+      if(lineNumber>=_text.size()) return;  //TODO throw exception
       _text[lineNumber]->SetTitle("");
     }
 
@@ -137,7 +137,7 @@ namespace mu2e_eventdisplay
 
     void showHist(unsigned int i) const
     {
-      if(i>=0 && i<_hist.size())
+      if(i<_hist.size())
       {
         gStyle->SetOptTitle(0);
         TGraph *g = dynamic_cast<TGraph*>(_hist[i].get());
