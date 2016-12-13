@@ -12,7 +12,7 @@ BEGIN_PROLOG
                                    "CRVConditions/v2_0/LookupTable_2300",
                                    "CRVConditions/v2_0/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
-      scintillationYield        : 8500.0   //8500.0 photons per MeV (corresponds to 55.6 PE/SiPM @ 1m away from counter)
+      scintillationYield        : 8500.0   //8500.0 photons per MeV (corresponds to 53.0 PE/SiPM @ 1m away from counter)
       scintillationYieldTolerance :  0.0   //0%
       scintillatorBirksConstant : 0.126    //0.126 mm/Mev
       scintillatorRatioFastSlow : 1.0      //100% fast
