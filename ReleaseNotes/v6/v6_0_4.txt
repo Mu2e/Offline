@@ -2,3 +2,12 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_0_4
 
+1) brownd 13 Dec 2016
+  Merge development branch 'trktime' in with master.  This includes >100 individual commands and >100 individual
+  file changes.  These changes are mostly structural in the track reconstruction, providing more granular reconstruction,
+  better separation of reconstruction and diagnostics, improved data products, and improved diagnostics.  Some algorithms
+  have changed, notably those where bugs were found in the unupdated version.  There is also some consolidation and
+  simplification of redundant existing code and data products.  Data product secondary keys have been removed and module
+  instance labels in tracking simplified and standardized.  These changes should be transparent to users using
+  the tracking fcl sequences, but they do change the TTree directories of diagnostics output and so analysis macros
+  may need revision.
