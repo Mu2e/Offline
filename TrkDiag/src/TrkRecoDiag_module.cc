@@ -176,22 +176,22 @@ namespace mu2e {
       _trdiag->Branch("tct0",&_tct0,"tct0/F");
       _trdiag->Branch("tct0err",&_tct0err,"tct0err/F");
       _trdiag->Branch("tcn",&_tcn,"tcn/I");
-      _trdiag->Branch("hsf",&_hsf);
-      _trdiag->Branch("hsh",&_hsh);
+      _trdiag->Branch("hsf.",&_hsf);
+      _trdiag->Branch("hsh.",&_hsh);
       _trdiag->Branch("hst0",&_hst0,"hst0/F");
       _trdiag->Branch("hst0err",&_hst0err,"hst0err/F");
       _trdiag->Branch("hsn",&_hsn,"hsn/I");
       _trdiag->Branch("hsna",&_hsna,"hsna/I");
-      _trdiag->Branch("ksf",&_ksf);
-      _trdiag->Branch("ksh",&_ksh);
+      _trdiag->Branch("ksf.",&_ksf);
+      _trdiag->Branch("ksh.",&_ksh);
       _trdiag->Branch("kst0",&_kst0,"kst0/F");
       _trdiag->Branch("kst0err",&_kst0err,"kst0err/F");
       _trdiag->Branch("ksm",&_ksm,"ksm/F");
       _trdiag->Branch("ksmerr",&_ksmerr,"ksmerr/F");
       _trdiag->Branch("ksn",&_ksn,"ksn/I");
       _trdiag->Branch("ksna",&_ksna,"ksna/I");
-      _trdiag->Branch("kff",&_kff);
-      _trdiag->Branch("kfh",&_kfh);
+      _trdiag->Branch("kff.",&_kff);
+      _trdiag->Branch("kfh.",&_kfh);
       _trdiag->Branch("kft0",&_kft0,"kft0/F");
       _trdiag->Branch("kft0err",&_kft0err,"kft0err/F");
       _trdiag->Branch("kfm",&_kfm,"kfm/F");
@@ -211,7 +211,7 @@ namespace mu2e {
 	_trdiag->Branch("mcxitmom",&_mcxitmom,"mcxitmom/F");
 	_trdiag->Branch("mcxitpz",&_mcxitpz,"mcxitpz/F");
 	_trdiag->Branch("mcxitt0",&_mcxitt0,"mcxitt0/F");
-	_trdiag->Branch("mch",&_mch);
+	_trdiag->Branch("mch.",&_mch);
 	_trdiag->Branch("pdg",&_pdg,"pdg/I");
 	_trdiag->Branch("gen",&_gen,"gen/I");
 	_trdiag->Branch("proc",&_proc,"proc/I");
@@ -224,7 +224,7 @@ namespace mu2e {
 	_trdiag->Branch("kfnap",&_kfnap,"kfnap/I");
 	_trdiag->Branch("ksnp",&_ksnp,"ksnp/I");
 	_trdiag->Branch("ksnap",&_ksnap,"ksnap/I");
-      	_trdiag->Branch("hsnp",&_hsnp,"hsnp/I");
+	_trdiag->Branch("hsnp",&_hsnp,"hsnp/I");
 	_trdiag->Branch("hsnap",&_hsnap,"hsnap/I");
 	_trdiag->Branch("tcnp",&_tcnp,"tcnp/I");
       }
@@ -241,7 +241,7 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
     _bz0 = bfmgr->getBField(vpoint_mu2e).z();
-  // multiple VIDs for the tracker midplane: can we ever fix this??
+    // multiple VIDs for the tracker midplane: can we ever fix this??
     _midvids.push_back(VirtualDetectorId::TT_Mid);
     _midvids.push_back(VirtualDetectorId::TT_MidInner);
     _entvids.push_back(VirtualDetectorId::TT_FrontHollow);
@@ -257,7 +257,7 @@ namespace mu2e {
       // find the MC particle
       SPP bestpart;
       if(_mcdiag){
-      // basic event information
+	// basic event information
 	_ndigitot = _mcdigis->size();
 	art::Handle<EventWeight> beamWtHandle;
 	evt.getByLabel(_beamWtModule, beamWtHandle);
@@ -452,14 +452,14 @@ namespace mu2e {
   }
 
   void TrkRecoDiag::resetTTree() {
-  // mc truth
+    // mc truth
     _beamwt = 1.0;
     _mcgenmom = _mcentmom = _mcentpz = _mcentt0 = -1.0;
     _mcmidmom = _mcmidpz = _mcmidt0 = _mcxitmom = _mcxitpz = _mcxitt0 = -1.0;
     _pdg = _gen = _proc = -1;
     _ndigitot = _ndigi = _nkfprimary = _nksprimary = _nhsprimary = _ntcprimary = 0;
     _mch = RobustHelix();
-      // reset
+    // reset
     _kff = TrkFitFlag();
     _kfh = HelixVal();
     _kft0 = _kft0err = 0.0;

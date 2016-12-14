@@ -639,25 +639,25 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     cetime->SetFillColor(kRed);
 
     double scale = 0.1/nevents;
-    hits->Project("cetime","mctime",conv+timecut);
+    hits->Project("cetime","time",conv+timecut);
     cetime->Scale(scale);
     origin->Add(cetime);
-     hits->Project("dtime","mctime",dioorigin+timecut);
+    hits->Project("dtime","time",dioorigin+timecut);
     dtime->Scale(scale);
     origin->Add(dtime);
-    hits->Project("mtime","mctime",ootmuonorigin+timecut);
+    hits->Project("mtime","time",ootmuonorigin+timecut);
     mtime->Scale(scale);
     origin->Add(mtime);
-    hits->Project("ntime","mctime",norigin+timecut);
+    hits->Project("ntime","time",norigin+timecut);
     ntime->Scale(scale);
     origin->Add(ntime);
-    hits->Project("gtime","mctime",porigin+timecut);
+    hits->Project("gtime","time",porigin+timecut);
     gtime->Scale(scale);
     origin->Add(gtime);
-    hits->Project("stptime","mctime",stpprotonorigin+timecut);
+    hits->Project("stptime","time",stpprotonorigin+timecut);
     stptime->Scale(scale);
     origin->Add(stptime);
-    hits->Project("pptime","mctime",pprotonorigin+timecut);
+    hits->Project("pptime","time",pprotonorigin+timecut);
     pptime->Scale(scale);
     origin->Add(pptime);
 
