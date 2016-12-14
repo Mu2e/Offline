@@ -35,7 +35,8 @@ WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName
 {
   _fgInstance = this;
 
-  if(_mode==0)
+  //load lookup tables
+  if(_mode==1)
   {
     _crvPhotonArrivals = std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat));
     _crvPhotonArrivals->LoadLookupTable(lookupFileName);
@@ -95,6 +96,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
      }
   }
 
+  //creating a list of fiber photons and their parents to find the number of re-emissions, while lookup tables are created
   if(_mode==-1)
   {
      if(theStep->GetTrack()->GetCreatorProcess()!=NULL)
@@ -108,7 +110,8 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
      }
   }
 
-  if(_mode==0)
+  //if a lookup table is used
+  if(_mode==1)
   {
     const G4ThreeVector &p1 = theStep->GetPreStepPoint()->GetPosition();
     const G4ThreeVector &p2 = theStep->GetPostStepPoint()->GetPosition();

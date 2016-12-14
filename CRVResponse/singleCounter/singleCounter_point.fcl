@@ -34,7 +34,7 @@ physics :
     generate: 
     {
        module_type          : EventGenerator
-       inputfile            : "CRVResponse/singleCounter/genconfig.txt"
+       inputfile            : "CRVResponse/singleCounter/genconfig_point.txt"
     }
 
     g4run : 

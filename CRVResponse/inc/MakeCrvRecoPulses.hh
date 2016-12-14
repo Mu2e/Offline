@@ -19,6 +19,9 @@ class MakeCrvRecoPulses
   double       GetLeadingEdge(int pulse);
   double       GetTimeOverThreshold(int pulse);
   double       GetPulseHeight(int pulse);
+  double       GetPulseHeightLandau(int pulse);
+  double       GetPeakTime(int pulse);
+  double       GetPeakTimeLandau(int pulse);
   double       GetIntegral(int pulse);
   double       GetLandauParam0(int pulse);
   double       GetLandauParam1(int pulse);
@@ -33,7 +36,8 @@ class MakeCrvRecoPulses
 
   std::vector<int>    _PEs;
   std::vector<double> _leadingEdges;
-  std::vector<double> _pulseHeights;
+  std::vector<double> _pulseHeights, _pulseHeightsLandau;
+  std::vector<double> _peakTimes, _peakTimesLandau;
   std::vector<double> _integrals, _landauParams0, _landauParams1, _landauParams2, _T1s, _T2s, _TOTs;
 };
 

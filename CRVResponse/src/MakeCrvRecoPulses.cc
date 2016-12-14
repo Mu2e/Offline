@@ -23,7 +23,9 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
   _PEs.clear();
   _leadingEdges.clear();
   _pulseHeights.clear();
-
+  _pulseHeightsLandau.clear();
+  _peakTimes.clear();
+  _peakTimesLandau.clear();
   _integrals.clear();
   _landauParams0.clear();
   _landauParams1.clear();
@@ -40,11 +42,15 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
     if(voltage>_pulseThreshold)
     {
       TGraph g, gFull;
-      double T1 = time;
-      double T2 = NAN;
-      double TOTstart = time;
+      double T1 = time;  //start of Landau fit (one bin before 1st bin over threshold)
+      double T2 = NAN;   //end of Landau fit (one bin after 1st maximum)
+      double TOTstart = time; //start of pulse (1st bin over threshold)
+      double TOTend = NAN;
       double integral = 0;
-      double maxVoltage = NAN;
+      double maxVoltage = NAN;  //global maximum
+      double maxVoltageLandau = NAN; //maximum for Landau fit (1st peak)
+      double peakTime = NAN;  //global maximum
+      double peakTimeLandau = NAN; //maximum for Landau fit (1st peak)
       bool   insideFitInterval = true;
 
       //add one more fit point before the waveform crosses the threshold
@@ -64,7 +70,11 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
 
         integral += voltage;
         if(insideFitInterval) g.SetPoint(g.GetN(),time,voltage);
-        if(voltage>maxVoltage || isnan(maxVoltage)) maxVoltage=voltage;
+        if(voltage>maxVoltage || isnan(maxVoltage)) 
+        {
+          maxVoltage=voltage;
+          peakTime=time;
+        }
         else
         {
           insideFitInterval=false;  //the first local maximum (and possibly the global maximum) of this pulse 
@@ -73,12 +83,11 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
                                     //and the pulse height
         }
       }
+      TOTend=time-binWidth;
       if(isnan(T2)) T2=time;    //if T2 hasn't been found yet, take the last time
                                 //this can happen e.g. if the voltage drops below the pulse threshold
                                 //right after the maximum
 
-//      int PEs = static_cast<int>(integral*_param1+_param0+0.5);  //the 0.5 is used to properly round the doubles
-      int PEs = static_cast<int>(maxVoltage*_param1+_param0+0.5);  //the 0.5 is used to properly round the doubles
       double leadingEdge = T1;
 
       TF1 f("","landau");
@@ -88,20 +97,26 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
       {
 //if fit is successfull, walk through the Landau graph to find where it becomes 
 //20% (_leadingEdgeThreshold) of the maximum.
-//this will replace the leading edge
+//this will replace the leading edge and max voltage
         double param0 = fr->Parameter(0);
         double param1 = fr->Parameter(1);
         double param2 = fr->Parameter(2);
         _landauParams0.push_back(param0);
         _landauParams1.push_back(param1);
         _landauParams2.push_back(param2);
+        bool foundLeadingEdge=false;
         for(double t=T1; t<T2; t+=1.0)
         {
           double v = param0*TMath::Landau(t, param1, param2);
-          if(v>=_leadingEdgeThreshold*maxVoltage)
+          if(v>=maxVoltageLandau || isnan(maxVoltageLandau)) 
+          {
+            maxVoltageLandau=v;
+            peakTimeLandau=t;
+          }
+          if(v>=_leadingEdgeThreshold*maxVoltageLandau && !foundLeadingEdge)
           {
             leadingEdge=t;
-            break;
+            foundLeadingEdge=true;
           }
         }
       }
@@ -112,13 +127,20 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
         _landauParams2.push_back(NAN);
       }  
 
+//      int PEs = static_cast<int>(integral*_param1+_param0+0.5);  //the 0.5 is used to properly round the doubles
+//      int PEs = static_cast<int>(maxVoltageLandau*_param1+_param0+0.5);  //the 0.5 is used to properly round the doubles
+      int PEs = static_cast<int>(maxVoltage*_param1+_param0+0.5);  //the 0.5 is used to properly round the doubles  <-- that's what's currently done with the test beam data
+
       _PEs.push_back(PEs);
       _leadingEdges.push_back(leadingEdge);
+      _pulseHeightsLandau.push_back(maxVoltageLandau);
       _pulseHeights.push_back(maxVoltage);
+      _peakTimesLandau.push_back(peakTimeLandau);
+      _peakTimes.push_back(peakTime);
       _integrals.push_back(integral);
       _T1s.push_back(T1);
       _T2s.push_back(T2);
-      _TOTs.push_back((time-binWidth)-TOTstart);
+      _TOTs.push_back(TOTend-TOTstart);
     }
   }
 }
@@ -147,6 +169,27 @@ double MakeCrvRecoPulses::GetPulseHeight(int pulse)
   int n = _pulseHeights.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
   return _pulseHeights[pulse];
+}
+
+double MakeCrvRecoPulses::GetPulseHeightLandau(int pulse)
+{
+  int n = _pulseHeightsLandau.size();
+  if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
+  return _pulseHeightsLandau[pulse];
+}
+
+double MakeCrvRecoPulses::GetPeakTime(int pulse)
+{
+  int n = _peakTimes.size();
+  if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
+  return _peakTimes[pulse];
+}
+
+double MakeCrvRecoPulses::GetPeakTimeLandau(int pulse)
+{
+  int n = _peakTimesLandau.size();
+  if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
+  return _peakTimesLandau[pulse];
 }
 
 double MakeCrvRecoPulses::GetIntegral(int pulse)

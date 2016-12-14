@@ -218,20 +218,21 @@ void WLSMaterials::CreateMaterials()
 
   G4double AbsWLSfiber[nEntries] =
   {24.0*m, 7.0*m, 7.0*m,20.0*m,25.0*m,25.0*m,22.0*m,21.5*m,21.0*m,19.0*m,  //these photons are lost, i.e. no wavelength shifting
-   16.0*m,12.0*m,10.5*m, 9.5*m, 6.5*m, 4.5*m, 3.0*m, 0.5*m, 0.1*m, 1.*km,  //...
-    1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km,  //these photons are not lost - they will be wavelength shifted (see below)
-    1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km,
-    1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km,
-    1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km};
-  for(int i=0; i<nEntries; i++) AbsWLSfiber[i]*=1.4;    //override the original values
+   16.0*m,12.0*m,10.5*m, 9.5*m, 6.5*m, 4.5*m, 3.0*m, 1.0*m, 1.0*m, 1.0*m,  //...
+    1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m,  //these photons are not lost - they will be wavelength shifted (see below)
+    1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m,
+    1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m,
+    1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m, 1.0*m};
+  for(int i=0; i<16; i++) AbsWLSfiber[i]*=20.0;           //after tuning it to the test beam data
+  for(int i=16; i<nEntries; i++) AbsWLSfiber[i]=50.0*cm;  //after tuning it to the test beam data
 
   G4double AbsWLSfiberWLS[nEntries] =
   { 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km,  //no wavelength shifting in these photons - they will be lost (see above)
-    1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*mm,  //...
-    1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm,  //these photons will be wavelength shifted
-    1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm,  //...
-    1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm,
-    1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm};
+    1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, 1.*km, .1*mm, .1*mm,  //...
+    .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm,  //these photons will be wavelength shifted
+    .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm,  //...
+    .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm,
+    .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm, .1*mm}; //photon yield is proportional to surface --> short WLS absorption length
 
   G4double EmissionFib[nEntries] =
   { 0.00, 0.50, 0.75, 0.75, 0.75, 1.00, 1.50, 2.00, 3.00, 4.00,
@@ -252,7 +253,7 @@ void WLSMaterials::CreateMaterials()
 
   //--------------------------------------------------
   //  Polyethylene
-  //--------------------------------------------------
+
 
   G4double RefractiveIndexClad1[nEntries] =
   { 1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49,
@@ -262,17 +263,9 @@ void WLSMaterials::CreateMaterials()
     1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49,
     1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49, 1.49};
 
-  G4double AbsClad[nEntries] =
-  {20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,
-   20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,
-   20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,
-   20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,
-   20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,
-   20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m,20.0*m};
-
   G4MaterialPropertiesTable* MPTClad1 = new G4MaterialPropertiesTable();
   MPTClad1->AddProperty("RINDEX",PhotonEnergy,RefractiveIndexClad1,nEntries);
-  MPTClad1->AddProperty("ABSLENGTH",PhotonEnergy,AbsClad,nEntries);
+  MPTClad1->AddProperty("ABSLENGTH",PhotonEnergy,AbsWLSfiber,nEntries);  
 
   Pethylene->SetMaterialPropertiesTable(MPTClad1);
 
@@ -291,7 +284,7 @@ void WLSMaterials::CreateMaterials()
   // Add entries into properties table
   G4MaterialPropertiesTable* MPTClad2 = new G4MaterialPropertiesTable();
   MPTClad2->AddProperty("RINDEX",PhotonEnergy,RefractiveIndexClad2,nEntries);
-  MPTClad2->AddProperty("ABSLENGTH",PhotonEnergy,AbsClad,nEntries);
+  MPTClad2->AddProperty("ABSLENGTH",PhotonEnergy,AbsWLSfiber,nEntries); 
 
   FPethylene->SetMaterialPropertiesTable(MPTClad2);
 
@@ -311,10 +304,10 @@ void WLSMaterials::CreateMaterials()
   {50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,
    50.*cm,40.*cm,33.*cm,33.*cm,33.*cm,33.*cm,33.*cm,33.*cm,33.*cm,28.*cm,
    28.*cm,28.*cm,25.*cm,25.*cm,22.*cm,22.*cm,20.*cm,20.*cm,18.*cm,16.*cm,
-   15.*cm,12.*cm,8.6*cm,5.4*cm,2.8*cm,1.3*cm,0.3*cm,0.2*cm,0.2*cm,0.2*cm,
-   0.2*cm,0.2*cm,0.2*cm,0.2*cm,0.2*cm,0.2*cm,0.2*cm,0.2*cm,0.2*cm,0.2*cm,
-   0.2*cm,0.2*cm,0.2*cm,0.2*cm,0.2*cm,0.2*cm,0.2*cm,0.2*cm,0.2*cm,0.2*cm};
-  for(int i=36; i<nEntries; i++) AbsPS[i]=0.;  //(the original values lead to probabilities which do not agree with the test beam data)
+   15.*cm,12.*cm,8.6*cm,5.4*cm,2.8*cm,1.3*cm,0.3*cm,0.1*cm,0.1*cm,0.1*cm,
+   0.1*cm,0.1*cm,0.1*cm,0.1*cm,0.1*cm,0.1*cm,0.1*cm,0.1*cm,0.1*cm,0.1*cm,
+   0.1*cm,0.1*cm,0.1*cm,0.1*cm,0.1*cm,0.1*cm,0.1*cm,0.1*cm,0.1*cm,0.1*cm};
+  for(int i=0; i<37; i++) AbsPS[i]*=10.0;    //after tuning to test beam data
 
   G4double ScintilFast[nEntries] =
   {   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -327,10 +320,9 @@ void WLSMaterials::CreateMaterials()
   G4MaterialPropertiesTable* MPTPolystyrene = new G4MaterialPropertiesTable();
   MPTPolystyrene->AddProperty("RINDEX",PhotonEnergy,RefractiveIndexPS,nEntries);
   MPTPolystyrene->AddProperty("ABSLENGTH",PhotonEnergy,AbsPS,nEntries);
-//no need to to simulate the entire emission spectrum, if all photons with i>=36 are absorbed
-  MPTPolystyrene->AddProperty("FASTCOMPONENT",PhotonEnergy, ScintilFast,36);
-  MPTPolystyrene->AddProperty("SLOWCOMPONENT",PhotonEnergy, ScintilFast,36);  //assumed to be delayed flourescence with same spectrum, not used
-  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",4000./MeV);
+  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",8500./MeV); 
+  MPTPolystyrene->AddProperty("FASTCOMPONENT",PhotonEnergy, ScintilFast,nEntries); 
+  MPTPolystyrene->AddProperty("SLOWCOMPONENT",PhotonEnergy, ScintilFast,nEntries);  //assumed to be delayed flourescence with same spectrum, not used
   MPTPolystyrene->AddConstProperty("RESOLUTIONSCALE",1.0);
   MPTPolystyrene->AddConstProperty("FASTTIMECONSTANT", 3.*ns);    //includes WLS components in the scintillator
   MPTPolystyrene->AddConstProperty("SLOWTIMECONSTANT", 100.*ns);  //unknown, not used

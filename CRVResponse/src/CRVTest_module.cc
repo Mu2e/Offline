@@ -103,8 +103,10 @@ namespace mu2e
 
         int    nRecoPulses=0;
         int    recoPEs=0;
-        double recoPulseHeights=0;
-        double recoPulseIntegrals=0;
+        double recoPulseHeight=0;
+        double recoPulseIntegral=0;
+        double recoPulseTOT=0;
+        double recoPulseTime=0;
         double MCPEs=0;
 
         if(iterRecoPulses!=crvRecoPulsesCollection->end()) 
@@ -116,8 +118,10 @@ namespace mu2e
           if(singlePulses.size()>0)
           {
             recoPEs            = singlePulses[0]._PEs;
-            recoPulseHeights   = singlePulses[0]._pulseHeight;
-            recoPulseIntegrals = singlePulses[0]._integral;
+            recoPulseHeight    = singlePulses[0]._pulseHeight;
+            recoPulseIntegral  = singlePulses[0]._integral;
+            recoPulseTOT       = singlePulses[0]._pulseLength;
+            recoPulseTime      = singlePulses[0]._leadingEdge;
           }
         }
 
@@ -126,10 +130,15 @@ namespace mu2e
           const CrvSiPMResponses &crvSiPMResponses = iterSiPMResponses->second;
 
           const std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &singleSiPMResponses = crvSiPMResponses.GetSiPMResponses(SiPM);
-          for(size_t i=0; i<singleSiPMResponses.size(); i++) MCPEs += singleSiPMResponses[i]._charge;
+          for(size_t i=0; i<singleSiPMResponses.size(); i++) 
+          {
+            double time   = singleSiPMResponses[i]._time;
+            double charge = singleSiPMResponses[i]._charge;
+            if(time>recoPulseTime-40.0 && time<recoPulseTime+recoPulseTOT-30.0) MCPEs+=charge;
+          }
         }
 
-        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeights,recoPulseIntegrals,MCPEs);
+        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseIntegral,MCPEs);
       }
     }
 

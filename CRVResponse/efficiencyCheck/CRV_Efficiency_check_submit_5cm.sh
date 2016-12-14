@@ -1,8 +1,8 @@
 i=0
 layerOffset=42
-moduleGap=5
-#  for moduleGap in {2..5}
-#  do
+moduleGap=3
+  for moduleGap in {1..5}
+  do
 
     dz=$((822+$moduleGap))
 
@@ -23,6 +23,8 @@ moduleGap=5
 
         geomfile=CRVResponse/efficiencyCheck/submit/geom_5cm'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/geom_5cm.txt\"" >| $geomfile
+        echo "double crs.gapLarge = 1.0;" >> $geomfile
+        echo "double crs.gapSmall = 0.5;" >> $geomfile
         echo "double crs.gapBetweenModules = $moduleGap;" >> $geomfile
         echo "double crs.layerOffset       = $layerOffset;" >> $geomfile
 
@@ -60,4 +62,4 @@ moduleGap=5
 
       done
     done
-#  done
+  done

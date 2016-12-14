@@ -47,10 +47,10 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
   _mppcReflectivity = 0.;
 
   _mirrorPolish = 1.;
-  _mirrorReflectivity = 0.50;
+  _mirrorReflectivity = 0.80;
 
   _extrusionPolish = 1.;
-  _extrusionReflectivity = 0.95;
+  _extrusionReflectivity = 0.90;
 
   _manifoldPolish = 1.;
   _manifoldReflectivity = 0.;
@@ -59,13 +59,7 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
  
   _barWidth         = 5.*cm;
   _barThickness     = 2.*cm;
-  _fiberSeparation  = 2.*cm;
-#ifdef sixcm
-#pragma message("USING 6 CM WIDE COUNTERS!")
-  _barWidth         = 5.931*cm;
-  _barThickness     = 1.93*cm;
-  _fiberSeparation  = 2.836*cm;
-#endif
+  _fiberSeparation  = 2.6*cm;
   _holeRadius       = 1.30*mm;
   _coatingThickness = 0.25*mm;
   _fiberRadius      = 0.70*mm - 0.021*mm - 0.021*mm;
@@ -75,19 +69,30 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
   _sipmRadius       = 0.70*mm;
 
   double xbinsTmp[17] = {-10.0, -8.5, -5.5, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 5.5, 8.5, 10.0};
-#ifndef sixcm
   double ybinsTmp[36] = {-25.0, -23.5, -22.0, -17.0, -12.5, -12.0, -11.5, -11.0, -10.5, -10.0, -9.5, -9.0, -8.5, -8.0, -7.5, -6.0, -4.5, -1.5, 1.5, 4.5, 6.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 17.0, 22.0, 23.5, 25.0};
-#else
-  double ybinsTmp[36] = {-30.0, -28.5, -27.0, -21.5, -16.5, -16.0, -15.5, -15.0, -14.5, -14.18, -13.5, -13.0, -12.5, -12.0, -11.5, -9.0, -6.0, -2.0, 2.0, 6.0, 9.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.18, 14.5, 15.0, 15.5, 16.0, 16.5, 21.5, 27.0, 28.5, 30.0};
-#endif
-
 
   for(int i=0; i<17; i++) _xbins.push_back(xbinsTmp[i]*mm); //16 bins
   for(int i=0; i<36; i++) _ybins.push_back(ybinsTmp[i]*mm); //35 bins
 
   switch(_lengthOption)
   {
-    case 0: _barLength        = 660.*cm;
+    case 7600: _barLength        = 760.*cm;
+            //100 bins
+            for(int i=0; i<6; i++)   _zbins.push_back(-3800.0*mm+10.0*mm*i);       // -3800 ... -3750
+            for(int i=6; i<16; i++)  _zbins.push_back(-3750.0*mm+25.0*mm*(i-5));   // -3725 ... -3500
+            for(int i=16; i<85; i++) _zbins.push_back(-3500.0*mm+100.0*mm*(i-15)); // -3400 ...  3400
+            for(int i=85; i<95; i++) _zbins.push_back(3475.0*mm+25.0*mm*(i-84));   //  3500 ...  3725
+            for(int i=95; i<101; i++) _zbins.push_back(3740.0*mm+10.0*mm*(i-94));  //  3750 ...  3800
+            break;
+    case 7100: _barLength        = 710.*cm;
+            //95 bins
+            for(int i=0; i<6; i++)   _zbins.push_back(-3550.0*mm+10.0*mm*i);       // -3550 ... -3500
+            for(int i=6; i<16; i++)  _zbins.push_back(-3500.0*mm+25.0*mm*(i-5));   // -3475 ... -3250
+            for(int i=16; i<80; i++) _zbins.push_back(-3250.0*mm+100.0*mm*(i-15)); // -3150 ...  3150
+            for(int i=80; i<90; i++) _zbins.push_back(3225.0*mm+25.0*mm*(i-79));   //  3250 ...  3475
+            for(int i=90; i<96; i++) _zbins.push_back(3490.0*mm+10.0*mm*(i-89));   //  3500 ...  3550
+            break;
+    case 6600: _barLength        = 660.*cm;
             //90 bins
             for(int i=0; i<6; i++)   _zbins.push_back(-3300.0*mm+10.0*mm*i);       // -3300 ... -3250
             for(int i=6; i<16; i++)  _zbins.push_back(-3250.0*mm+25.0*mm*(i-5));   // -3225 ... -3000
@@ -95,7 +100,7 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
             for(int i=75; i<85; i++) _zbins.push_back(2975.0*mm+25.0*mm*(i-74));   //  3000 ...  3225
             for(int i=85; i<91; i++) _zbins.push_back(3240.0*mm+10.0*mm*(i-84));   //  3250 ...  3300
             break;
-    case 1: _barLength        = 560.*cm;
+    case 5600: _barLength        = 560.*cm;
             //80 bins
             for(int i=0; i<6; i++)   _zbins.push_back(-2800.0*mm+10.0*mm*i);       // -2800 ... -2750
             for(int i=6; i<16; i++)  _zbins.push_back(-2750.0*mm+25.0*mm*(i-5));   // -2725 ... -2500
@@ -103,7 +108,7 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
             for(int i=65; i<75; i++) _zbins.push_back(2475.0*mm+25.0*mm*(i-64));   //  2500 ...  2725
             for(int i=75; i<81; i++) _zbins.push_back(2740.0*mm+10.0*mm*(i-74));   //  2750 ...  2800
             break;
-    case 2: _barLength        = 450.*cm;
+    case 4500: _barLength        = 450.*cm;
             //69 bins
             for(int i=0; i<6; i++)   _zbins.push_back(-2250.0*mm+10.0*mm*i);       // -2250 ... -2200
             for(int i=6; i<16; i++)  _zbins.push_back(-2200.0*mm+25.0*mm*(i-5));   // -2175 ... -1950
@@ -111,7 +116,7 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
             for(int i=54; i<64; i++) _zbins.push_back(1925.0*mm+25.0*mm*(i-53));   //  1950 ...  2175
             for(int i=64; i<70; i++) _zbins.push_back(2190.0*mm+10.0*mm*(i-63));   //  2200 ...  2250
             break;
-    case 3: _barLength        = 300.*cm;  //test beam
+    case 3000: _barLength        = 300.*cm;  //test beam
             //54 bins
             for(int i=0; i<6; i++)   _zbins.push_back(-1500.0*mm+10.0*mm*i);       // -1500 ... -1450
             for(int i=6; i<16; i++)  _zbins.push_back(-1450.0*mm+25.0*mm*(i-5));   // -1425 ... -1200
@@ -119,7 +124,7 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
             for(int i=39; i<49; i++) _zbins.push_back(1175.0*mm+25.0*mm*(i-38));   //  1200 ...  1425
             for(int i=49; i<55; i++) _zbins.push_back(1440.0*mm+10.0*mm*(i-48));   //  1450 ...  1500
             break;
-    case 4: _barLength        = 230.*cm;
+    case 2300: _barLength        = 230.*cm;
             //47 bins
             for(int i=0; i<6; i++)   _zbins.push_back(-1150.0*mm+10.0*mm*i);       // -1150 ... -1100
             for(int i=6; i<16; i++)  _zbins.push_back(-1100.0*mm+25.0*mm*(i-5));   // -1075 ...  -850
@@ -127,7 +132,7 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
             for(int i=32; i<42; i++) _zbins.push_back(825.0*mm+25.0*mm*(i-31));    //   850 ...  1075
             for(int i=42; i<48; i++) _zbins.push_back(1090.0*mm+10.0*mm*(i-41));   //  1100 ...  1150
             break;
-    case 5: _barLength        = 90.*cm;
+    case 900: _barLength        = 90.*cm;
             //33 bins
             for(int i=0; i<6; i++)   _zbins.push_back(-450.0*mm+10.0*mm*i);        //  -450 ...  -400
             for(int i=6; i<16; i++)  _zbins.push_back(-400.0*mm+25.0*mm*(i-5));    //  -375 ...  -150
@@ -199,12 +204,12 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
 
   G4MaterialPropertiesTable* TiO2SurfaceProperty = new G4MaterialPropertiesTable();
 
-  G4double p_TiO2[2] = {2.00*eV, 3.47*eV};
-  G4double refl_TiO2[2] = {_extrusionReflectivity,_extrusionReflectivity};
-  G4double effi_TiO2[2] = {0, 0};
+  G4double p_TiO2[11] =    {2.00*eV, 2.75*eV, 2.88*eV, 2.95*eV, 3.02*eV, 3.10*eV, 3.18*eV, 3.26*eV, 3.35*eV, 3.44*eV, 3.47*eV};
+  G4double refl_TiO2[11] = {0.91,    0.91,    0.90,    0.85,    0.69,    0.44,    0.27,    0.13,    0.08,    0.07,    0.07};
+  G4double effi_TiO2[11] = {0,       0 ,      0,       0,       0,       0,       0,       0,       0,       0,       0};
 
-  TiO2SurfaceProperty -> AddProperty("REFLECTIVITY",p_TiO2,refl_TiO2,2);
-  TiO2SurfaceProperty -> AddProperty("EFFICIENCY",p_TiO2,effi_TiO2,2);
+  TiO2SurfaceProperty -> AddProperty("REFLECTIVITY",p_TiO2,refl_TiO2,11);
+  TiO2SurfaceProperty -> AddProperty("EFFICIENCY",p_TiO2,effi_TiO2,11);
 
   TiO2Surface -> SetMaterialPropertiesTable(TiO2SurfaceProperty);
 
@@ -470,8 +475,8 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                     0);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, -_fiberSeparation/2.0, 0.0),
-                    _lengthOption==0?logicMirror:logicPhotonDet,
-                    _lengthOption==0?"Mirror":"PhotonDet",
+                    _lengthOption>=6600?logicMirror:logicPhotonDet,
+                    _lengthOption>=6600?"Mirror":"PhotonDet",
                     logicManifold1,
                     _checkOverlaps,
                     1);
@@ -484,8 +489,8 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                     2);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, _fiberSeparation/2.0, 0.0),
-                    _lengthOption==0?logicMirror:logicPhotonDet,
-                    _lengthOption==0?"Mirror":"PhotonDet",
+                    _lengthOption>=6600?logicMirror:logicPhotonDet,
+                    _lengthOption>=6600?"Mirror":"PhotonDet",
                     logicManifold1,
                     _checkOverlaps,
                     3);

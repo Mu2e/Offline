@@ -7,6 +7,7 @@
 
 #include "Randomize.hh"
 
+#include "WLSMaterials.hh"
 #include "WLSPhysicsList.hh"
 #include "WLSDetectorConstruction.hh"
 #include "WLSPrimaryGeneratorAction.hh"
@@ -76,6 +77,26 @@ bool findArgs(int argc, char** argv, const char* c, int &value)
   }
   return false; 
 }
+bool findArgs(int argc, char** argv, const char* c, double &value)
+{
+  for(int i=1; i<argc; i++)
+  {
+    if(strcmp(argv[i],c)==0)
+    {
+      if(i+1<argc)
+      {
+        if(argv[i+1][0]!='-')
+        {
+          value=atof(argv[i+1]);
+          return true;
+        } 
+      }
+      std::cout<<"The argument "<<c<<" requires a value"<<std::endl;
+      return false; 
+    }
+  }
+  return false; 
+}
 
 void DrawHistograms(const std::string &lookupFilename)
 {
@@ -107,7 +128,8 @@ int main(int argc, char** argv)
     std::cout<<"-v           Verbose"<<std::endl;
     std::cout<<"-h           Help"<<std::endl;
     std::cout<<"-c           Create lookup table"<<std::endl;
-    std::cout<<"-s           Run a simulation with GEANT and lookup table as comparison"<<std::endl;
+    std::cout<<"-s           Run a simulation with full GEANT"<<std::endl;
+    std::cout<<"-S           Run a simulation with lookup table"<<std::endl;
     std::cout<<"-d           Draw histograms of lookup table"<<std::endl;
     std::cout<<std::endl;
     std::cout<<"Options for creating the lookup table:"<<std::endl;
@@ -117,27 +139,35 @@ int main(int argc, char** argv)
     std::cout<<"                  2  cerenkov in fiber 0"<<std::endl;
     std::cout<<"                  3  cerenkov in fiber 1"<<std::endl;
     std::cout<<"-l length option  Length of the scintillator counter:"<<std::endl;
-    std::cout<<"                  0  6600 mm"<<std::endl;
-    std::cout<<"                  1  5600 mm"<<std::endl;
-    std::cout<<"                  2  4500 mm"<<std::endl;
-    std::cout<<"                  3  3000 mm"<<std::endl;
-    std::cout<<"                  4  2300 mm"<<std::endl;
-    std::cout<<"                  5   900 mm"<<std::endl;
+    std::cout<<"                  7600  7600 mm"<<std::endl;
+    std::cout<<"                  7350  7350 mm"<<std::endl;
+    std::cout<<"                  7100  7100 mm"<<std::endl;
+    std::cout<<"                  6600  6600 mm"<<std::endl;
+    std::cout<<"                  5600  5600 mm"<<std::endl;
+    std::cout<<"                  4500  4500 mm"<<std::endl;
+    std::cout<<"                  3000  3000 mm"<<std::endl;
+    std::cout<<"                  2300  2300 mm"<<std::endl;
+    std::cout<<"                   900   900 mm"<<std::endl;
     std::cout<<"-m minbin         Minimum bin in lookup table (default is 0)."<<std::endl;
     std::cout<<"-M maxbin         Maximum bin in lookup table (default is"<<std::endl;
     std::cout<<"                  the maximum number of bins for this simulation type)."<<std::endl;
     std::cout<<"-n photons        Number of photons to simulate for each bin (default 1000)."<<std::endl;
     std::cout<<std::endl;
     std::cout<<"Options for running the simulation:"<<std::endl;
-    std::cout<<"-f filename  File with lookup table used for running a simulation"<<std::endl;
     std::cout<<"-l length option  Length of the scintillator counter:"<<std::endl;
-    std::cout<<"                  0  6600 mm"<<std::endl;
-    std::cout<<"                  1  5600 mm"<<std::endl;
-    std::cout<<"                  2  4500 mm"<<std::endl;
-    std::cout<<"                  3  3000 mm"<<std::endl;
-    std::cout<<"                  4  2300 mm"<<std::endl;
-    std::cout<<"                  5   900 mm"<<std::endl;
+    std::cout<<"                  7600  7600 mm"<<std::endl;
+    std::cout<<"                  7350  7350 mm"<<std::endl;
+    std::cout<<"                  7100  7100 mm"<<std::endl;
+    std::cout<<"                  6600  6600 mm"<<std::endl;
+    std::cout<<"                  5600  5600 mm"<<std::endl;
+    std::cout<<"                  4500  4500 mm"<<std::endl;
+    std::cout<<"                  3000  3000 mm"<<std::endl;
+    std::cout<<"                  2300  2300 mm"<<std::endl;
+    std::cout<<"                   900   900 mm"<<std::endl;
     std::cout<<"-n events    Number of events to simulate (default 1000)."<<std::endl;
+    std::cout<<std::endl;
+    std::cout<<"Options for running the simulation with lookup table:"<<std::endl;
+    std::cout<<"-f filename  File with lookup table used for running a simulation"<<std::endl;
     std::cout<<std::endl;
     std::cout<<"Options for drawing histograms of the lookup table:"<<std::endl;
     std::cout<<"-f filename  File with lookup table used for running a simulation"<<std::endl;
@@ -145,7 +175,14 @@ int main(int argc, char** argv)
     return 0;
   }
 
-  if(findArgs(argc, argv, "-d"))
+  if(findArgs(argc, argv, "-c")+findArgs(argc, argv, "-s")+findArgs(argc, argv, "-S")+findArgs(argc, argv, "-d")!=1)
+  {
+    std::cout<<"Need to specify exactly one of the following options: -c, -s, -S, or -d."<<std::endl;
+    std::cout<<"Use -h for help."<<std::endl;
+    return -1;
+  }
+
+  if(findArgs(argc, argv, "-S") || findArgs(argc, argv, "-d"))
   {
     if(!findArgs(argc, argv, "-f", lookupFilename))
     {
@@ -153,24 +190,17 @@ int main(int argc, char** argv)
       std::cout<<"Use -h for help"<<std::endl;
       return -1;
     }
+  }
+
+  if(findArgs(argc, argv, "-d"))
+  {
     DrawHistograms(lookupFilename);
     return 0;
   }
 
   if(findArgs(argc, argv, "-c")) mode=-1;
   if(findArgs(argc, argv, "-s")) mode=0;
-  if(findArgs(argc, argv, "-c") && findArgs(argc, argv, "-s"))
-  {
-    std::cout<<"-s and -c cannot be used at the same time."<<std::endl;
-    std::cout<<"Use -h for help."<<std::endl;
-    return -1;
-  }
-  if(mode==-2)
-  {
-    std::cout<<"Specify either -s and -c."<<std::endl;
-    std::cout<<"Use -h for help."<<std::endl;
-    return -1;
-  }
+  if(findArgs(argc, argv, "-S")) mode=1;
 
   if(mode==-1)
   {
@@ -185,14 +215,8 @@ int main(int argc, char** argv)
     findArgs(argc, argv, "-n", n);
   }
 
-  if(mode==0)
+  if(mode==0 || mode==1)
   {
-    if(!findArgs(argc, argv, "-f", lookupFilename))
-    {
-      std::cout<<"Filename for lookup table needs to be specified"<<std::endl;
-      std::cout<<"Use -h for help"<<std::endl;
-      return -1;
-    }
     findArgs(argc, argv, "-n", n);
   }
 
@@ -204,14 +228,21 @@ int main(int argc, char** argv)
   }
   else
   {
-    if(lengthOption<0 || lengthOption>6)
+    if(lengthOption!=900 && 
+       lengthOption!=2300 &&
+       lengthOption!=3000 &&
+       lengthOption!=4500 &&
+       lengthOption!=5600 &&
+       lengthOption!=6600 &&
+       lengthOption!=7100 &&
+       lengthOption!=7350 &&
+       lengthOption!=7600)
     {
-      std::cout<<"Option for scintillator counter length needs to between 0 and 5"<<std::endl;
+      std::cout<<"Invalid option for scintillator counter length"<<std::endl;
       std::cout<<"Use -h for help"<<std::endl;
       return -1;
     }
   }
-
 
   G4String physName = "QGSP_BERT_EMV";
 //  G4String physName = "QGSP_BERT_HP";  //for neutrons
@@ -222,13 +253,14 @@ int main(int argc, char** argv)
 
   G4RunManager *runManager = new G4RunManager;
 
+  WLSMaterials::GetInstance();
   runManager->SetUserInitialization(new WLSDetectorConstruction(lengthOption));
   runManager->SetUserInitialization(new WLSPhysicsList(physName));
 
-  WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose);   //n,simType,minBin not needed in mode 0
+  WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose);   //n,simType,minBin not needed in modes 0,1
   WLSRunAction* runAction = new WLSRunAction();
   WLSEventAction* eventAction = new WLSEventAction(mode, n, simType, minBin, verbose); 
-  WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename);  //filename not needed in mode -1
+  WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename);  //filename not needed in modes -1,0
 
   runManager->SetUserAction(generator);
   runManager->SetUserAction(runAction);
@@ -312,7 +344,7 @@ int main(int argc, char** argv)
       lookupfile.close();
     }
   }
-  else if(mode==0)
+  else if(mode==0 || mode==1)
   {
     runManager->BeamOn(n);
   }

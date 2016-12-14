@@ -44,7 +44,7 @@ WLSPrimaryGeneratorAction::WLSPrimaryGeneratorAction(int mode, int numberOfPhoto
     G4ParticleDefinition* particle = particleTable->FindParticle("opticalphoton");
     _particleGun->SetParticleDefinition(particle);
   }
-  if(_mode==0)
+  if(_mode==0 || _mode==1)
   {
 //    G4ParticleDefinition* particle = particleTable->FindParticle("proton");
 //    G4ParticleDefinition* particle = particleTable->FindParticle("neutron");
@@ -52,7 +52,6 @@ WLSPrimaryGeneratorAction::WLSPrimaryGeneratorAction(int mode, int numberOfPhoto
     G4ParticleDefinition* particle = particleTable->FindParticle("mu-");
     _particleGun->SetParticleDefinition(particle);
     _particleGun->SetParticleMomentumDirection(G4ThreeVector(1., 0., 0.));
-//    _particleGun->SetParticleMomentumDirection(G4ThreeVector(1.0, -0.9, -5.0));
     _particleGun->SetParticleEnergy(120.*GeV);
     _particleGun->SetParticleTime(0);
   }  
@@ -390,7 +389,7 @@ void WLSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     }
   }
 
-  if(_mode==0)
+  if(_mode==0 || _mode==1)
   {
 //    double beamsize=2.0*mm;
 //    double beamsize=1.0*mm;
@@ -403,16 +402,10 @@ void WLSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 //    double z0 = G4RandGauss::shoot(_randomEngine,-140.0*cm,beamsize);  //10cm from left side
 //    double z0 = G4RandGauss::shoot(_randomEngine,-130.0*cm,beamsize);  //20cm from left side
 //    double z0 = G4RandGauss::shoot(_randomEngine,-125.0*cm,beamsize);  //25cm from left side
-//    double z0 = G4RandGauss::shoot(_randomEngine,-50.0*cm,beamsize);  //100cm from left side
+//    double z0 = G4RandGauss::shoot(_randomEngine,-100.0*cm,beamsize);  //50cm from left side
+    double z0 = G4RandGauss::shoot(_randomEngine,-50.0*cm,beamsize);  //100cm from left side
 //    double z0 = G4RandGauss::shoot(_randomEngine,0.0*cm,beamsize);  //150cm from left side (center)
 
-    double z0 = G4RandGauss::shoot(_randomEngine,-180.0*cm,beamsize);  //100cm from left side of 5.6m counter
-//    double z0 = G4RandGauss::shoot(_randomEngine,-255.0*cm,beamsize);  //25cm from left side of 5.6m counter
-//    double z0 = G4RandGauss::shoot(_randomEngine,-260.0*cm,beamsize);  //20cm from left side of 5.6m counter
-//    double z0 = G4RandGauss::shoot(_randomEngine,-265.0*cm,beamsize);  //15cm from left side of 5.6m counter
-//    double z0 = G4RandGauss::shoot(_randomEngine,-275.0*cm,beamsize);  //5cm from left side of 5.6m counter
-//    double z0 = G4RandGauss::shoot(_randomEngine,-279.0*cm,beamsize);  //1cm from left side of 5.6m counter
-  
     _particleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
     _particleGun->GeneratePrimaryVertex(anEvent);
   }

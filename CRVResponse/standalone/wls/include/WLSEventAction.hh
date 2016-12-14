@@ -45,10 +45,9 @@ class WLSEventAction : public G4UserEventAction
     bool                    _storeConstants;
     double                  _startZ;
 
-    void                    Draw(const G4Event* evt) const;
+    void                    Draw(const G4Event* evt);
 
-    TH2D                    *_photonsVsIntegral, *_photonsVsPulseHeight;
-    TH2D                    *_PEsVsIntegral, *_PEsVsPulseHeight;
+    std::vector<double>     _PEs[4];
 };
 
 #endif
