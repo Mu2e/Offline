@@ -250,8 +250,8 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
   //--------------------------------------------------
 
   G4VSolid* solidManifold = new G4Box("Manifold",
-                                      _scintillatorHalfThickness,
-                                      _scintillatorHalfWidth,
+                                      _barThickness/2.0,
+                                      _barWidth/2.0,
                                       _sipmLength/2.0);
 
   G4LogicalVolume* logicManifold0 =  new G4LogicalVolume(solidManifold,
