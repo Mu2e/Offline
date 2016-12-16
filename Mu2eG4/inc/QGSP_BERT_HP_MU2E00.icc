@@ -101,7 +101,7 @@ template<class T, class Config> TQGSP_BERT_HP_MU2E00<T,Config>::TQGSP_BERT_HP_MU
   throw cet::exception("BADINPUT")<<"This Mu2e Physics List has not been certified for use with Geant4 v10+ consider QGSP_BERT_HP_EMY.\n";
 #endif
 
-  this->defaultCutValue = 0.7*mm;
+  this->defaultCutValue = 0.7*CLHEP::mm;
   this->SetVerboseLevel(ver);
 
   // EM Physics
