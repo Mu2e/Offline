@@ -351,14 +351,16 @@ namespace mu2e {
     if(_mcdiag){
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
       _mcdigis = mcdH.product();
-      auto mcstepsH = evt.getValidHandle<StepPointMCCollection>(_vdmcstepsTag);
-      _vdmcsteps = mcstepsH.product();
       // update time offsets
       _toff.updateMap(evt);
+      if(_mcgen > 0){
+	auto mcstepsH = evt.getValidHandle<StepPointMCCollection>(_vdmcstepsTag);
+	_vdmcsteps = mcstepsH.product();
+      }
     }
 
     return _shcol != 0 && _shpcol != 0 && _shfcol != 0 && _hscol != 0 && _kscol!= 0 && _kfcol != 0
-      && ((_mcdigis != 0 && _vdmcsteps != 0 ) || !_mcdiag);
+      && ((_mcdigis != 0 && (_vdmcsteps != 0 || _mcgen < 0) ) || !_mcdiag);
   }
 
   KSI TrkRecoDiag::findMCMatch(SPP const& bestspp,KalSeedCollection const& ksc,unsigned& nprimary) {
@@ -619,64 +621,65 @@ namespace mu2e {
 
   bool TrkRecoDiag::fillMCInfo(art::Ptr<SimParticle> const& pspp) {
     bool retval(false);
-    GeomHandle<DetectorSystem> det;
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-  // find the earliest step associated with this particle passing the tracker midplane
-    cet::map_vector_key trkid = pspp->id();
-    auto jmc = _vdmcsteps->end();
-    for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
-    // find matching steps
-      if(  imc->trackId() == trkid &&
-	  (find(_midvids.begin(),_midvids.end(),imc->volumeId()) != _midvids.end()) ) {
-//	  cout << "Found matching step " << *imc << endl;
+    if(pspp.isNonnull() && _vdmcsteps != 0){
+      GeomHandle<DetectorSystem> det;
+      GlobalConstantsHandle<ParticleDataTable> pdt;
+      // find the earliest step associated with this particle passing the tracker midplane
+      cet::map_vector_key trkid = pspp->id();
+      auto jmc = _vdmcsteps->end();
+      for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
+	// find matching steps
+	if(  imc->trackId() == trkid &&
+	    (find(_midvids.begin(),_midvids.end(),imc->volumeId()) != _midvids.end()) ) {
+	  //	  cout << "Found matching step " << *imc << endl;
 	  if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
 	    jmc = imc;
+	}
       }
-    }
-    if(jmc != _vdmcsteps->end()){
-      // get momentum and position from this point
-      _mcmidmom = jmc->momentum().mag();
-      _mcmidpz = jmc->momentum().z();
-      _mcmidt0 = _toff.timeWithOffsetsApplied(*jmc);
-      Hep3Vector pos = det->toDetector(jmc->position());
-      double charge = pdt->particle(pspp->pdgId()).ref().charge();
-      TrkUtilities::RobustHelixFromMom(pos,jmc->momentum(),charge,_bz0,_mch);
-      retval = true;
-    }
-    // look for entrance and exit as well
-    jmc = _vdmcsteps->end();
-    for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
-    // find matching steps
-      if(  imc->trackId() == trkid &&
-	  (find(_entvids.begin(),_entvids.end(),imc->volumeId()) != _entvids.end()) ) {
-//	  cout << "Found matching step " << *imc << endl;
+      if(jmc != _vdmcsteps->end()){
+	// get momentum and position from this point
+	_mcmidmom = jmc->momentum().mag();
+	_mcmidpz = jmc->momentum().z();
+	_mcmidt0 = _toff.timeWithOffsetsApplied(*jmc);
+	Hep3Vector pos = det->toDetector(jmc->position());
+	double charge = pdt->particle(pspp->pdgId()).ref().charge();
+	TrkUtilities::RobustHelixFromMom(pos,jmc->momentum(),charge,_bz0,_mch);
+	retval = true;
+      }
+      // look for entrance and exit as well
+      jmc = _vdmcsteps->end();
+      for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
+	// find matching steps
+	if(  imc->trackId() == trkid &&
+	    (find(_entvids.begin(),_entvids.end(),imc->volumeId()) != _entvids.end()) ) {
+	  //	  cout << "Found matching step " << *imc << endl;
 	  if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
 	    jmc = imc;
+	}
       }
-    }
-    if(jmc != _vdmcsteps->end()){
-      // get momentum and position from this point
-      _mcentmom = jmc->momentum().mag();
-      _mcentpz = jmc->momentum().z();
-      _mcentt0 = _toff.timeWithOffsetsApplied(*jmc);
-    }
-    jmc = _vdmcsteps->end();
-    for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
-    // find matching steps
-      if(  imc->trackId() == trkid &&
-	  (find(_xitvids.begin(),_xitvids.end(),imc->volumeId()) != _xitvids.end()) ) {
-//	  cout << "Found matching step " << *imc << endl;
+      if(jmc != _vdmcsteps->end()){
+	// get momentum and position from this point
+	_mcentmom = jmc->momentum().mag();
+	_mcentpz = jmc->momentum().z();
+	_mcentt0 = _toff.timeWithOffsetsApplied(*jmc);
+      }
+      jmc = _vdmcsteps->end();
+      for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
+	// find matching steps
+	if(  imc->trackId() == trkid &&
+	    (find(_xitvids.begin(),_xitvids.end(),imc->volumeId()) != _xitvids.end()) ) {
+	  //	  cout << "Found matching step " << *imc << endl;
 	  if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
 	    jmc = imc;
+	}
+      }
+      if(jmc != _vdmcsteps->end()){
+	// get momentum and position from this point
+	_mcxitmom = jmc->momentum().mag();
+	_mcxitpz = jmc->momentum().z();
+	_mcxitt0 = _toff.timeWithOffsetsApplied(*jmc);
       }
     }
-    if(jmc != _vdmcsteps->end()){
-      // get momentum and position from this point
-      _mcxitmom = jmc->momentum().mag();
-      _mcxitpz = jmc->momentum().z();
-      _mcxitt0 = _toff.timeWithOffsetsApplied(*jmc);
-    }
-
     return retval;
   }
 }
