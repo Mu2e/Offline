@@ -24,4 +24,8 @@
  <class name="std::vector<mu2e::HelixHitInfo>" />
  <class name="mu2e::HelixHitInfoMC" />
  <class name="std::vector<mu2e::HelixHitInfoMC>" />
+ <class name="mu2e::CrvHitInfoMC" />
+ <class name="std::vector<mu2e::CrvHitInfoMC>" />
+ <class name="mu2e::CrvHitInfoReco" />
+ <class name="std::vector<mu2e::CrvHitInfoReco>" />
 </lcgdict>

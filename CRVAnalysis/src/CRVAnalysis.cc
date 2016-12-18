@@ -9,25 +9,19 @@
 
 namespace mu2e
 {
-  CRVAnalysis::CRVAnalysis(const std::string &crvCoincidenceModuleLabel, double leadingTime, double trailingTime) : 
-                           _crvCoincidenceModuleLabel(crvCoincidenceModuleLabel),
-                           _leadingTime(leadingTime),
-                           _trailingTime(trailingTime)
-  {
-  }
-
-  void CRVAnalysis::FillCRVHitsCollections(const art::Event& event, CRVHitsRecoCollection &recoInfo, CRVHitsMCCollection &MCInfo)
+  void CRVAnalysis::FillCrvHitInfoCollections(const std::string &crvCoincidenceModuleLabel,
+                                              const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo)
   {
     GeomHandle<CosmicRayShield> CRS;
 
-    std::vector<art::Handle<mu2e::StepPointMCCollection> > CRVStepsVector;
+    std::vector<art::Handle<mu2e::StepPointMCCollection> > CrvStepsVector;
     art::Selector selector(art::ProductInstanceNameSelector("CRV") && 
                            art::ProcessNameSelector("*"));
-    event.getMany(selector, CRVStepsVector);
+    event.getMany(selector, CrvStepsVector);
 
     std::string crvCoincidenceInstanceName="";
     art::Handle<CrvCoincidenceCheckResult> crvCoincidenceCheckResult;
-    event.getByLabel(_crvCoincidenceModuleLabel,crvCoincidenceInstanceName,crvCoincidenceCheckResult);
+    event.getByLabel(crvCoincidenceModuleLabel,crvCoincidenceInstanceName,crvCoincidenceCheckResult);
 
     if(crvCoincidenceCheckResult.product()==NULL) return;
 
@@ -73,17 +67,17 @@ namespace mu2e
         int nCoincidenceHits=1;
         int PEs=h->_PEs;
         CLHEP::Hep3Vector pos=CRS->getBar(h->_counter).getPosition();
-        double startTime = h->_time - _leadingTime;
-        double endTime = h->_time + _trailingTime;
+        double startTime = h->_time;
+        double endTime = h->_time;
 
         std::vector<const CrvCoincidenceCheckResult::CoincidenceHit*> cluster;
         cluster.push_back(&(*h));
 
         while(++h != crvHits.end())  //go to next (time ordered) hit
         {
-          if(endTime >= h->_time - _leadingTime)  //the veto time window of this next hit overlaps the time window of the previous hit
+          if(endTime >= h->_time - _overlapTime)  //the veto time window of this next hit overlaps the time window of the previous hit
           {                                       //so it can be added to the cluster
-            endTime = h->_time + _trailingTime;
+            endTime = h->_time;
             nCoincidenceHits++;
             PEs+=h->_PEs;
             pos+=CRS->getBar(h->_counter).getPosition();
@@ -99,16 +93,16 @@ namespace mu2e
         recoInfo.emplace_back(crvSectorType, pos, startTime, endTime, PEs, nCoincidenceHits);
 
         //fill the MC collection
-        FillCRVHitsMCCollection(cluster, CRVStepsVector, MCInfo);
+        FillCrvHitInfoMCCollection(cluster, CrvStepsVector, MCInfo);
 
       }//loop through all hits
     }//loop through all sector types
   }//FillCrvInfoStructure
 
   //fill the MC collection
-  void CRVAnalysis::FillCRVHitsMCCollection(const std::vector<const CrvCoincidenceCheckResult::CoincidenceHit*> &cluster,
-                                            const std::vector<art::Handle<mu2e::StepPointMCCollection> > &CRVStepsVector,
-                                            CRVHitsMCCollection &MCInfo) 
+  void CRVAnalysis::FillCrvHitInfoMCCollection(const std::vector<const CrvCoincidenceCheckResult::CoincidenceHit*> &cluster,
+                                            const std::vector<art::Handle<mu2e::StepPointMCCollection> > &CrvStepsVector,
+                                            CrvHitInfoMCCollection &MCInfo) 
   {
 
     struct trackInfo
@@ -124,11 +118,11 @@ namespace mu2e
     std::map<cet::map_vector_key, trackInfo>::iterator iterTrack, theTrack;
 
     //find all step points for the cluster
-    for(size_t i=0; i<CRVStepsVector.size(); i++)  //vector will be empty for non-MC events
+    for(size_t i=0; i<CrvStepsVector.size(); i++)  //vector will be empty for non-MC events
     {
-      const art::Handle<StepPointMCCollection> &CRVStepsCollection = CRVStepsVector[i];
+      const art::Handle<StepPointMCCollection> &CrvStepsCollection = CrvStepsVector[i];
       StepPointMCCollection::const_iterator iterStepPoint;
-      for(iterStepPoint=CRVStepsCollection->begin(); iterStepPoint!=CRVStepsCollection->end(); iterStepPoint++)
+      for(iterStepPoint=CrvStepsCollection->begin(); iterStepPoint!=CrvStepsCollection->end(); iterStepPoint++)
       {
         const StepPointMC &step = *iterStepPoint;
         for(size_t j=0; j<cluster.size(); j++)
@@ -148,8 +142,11 @@ namespace mu2e
               t.pos=step.position();
               t.momentum=step.momentum();
               t.pdgId=step.simParticle()->pdgId();
-              t.primaryPdgId=step.simParticle()->genParticle()->pdgId();
-              t.generator=step.simParticle()->genParticle()->generatorId().name();
+//FIXME
+t.primaryPdgId=0;
+t.generator="";
+//              t.primaryPdgId=step.simParticle()->genParticle()->pdgId();
+//              t.generator=step.simParticle()->genParticle()->generatorId().name();
               tracks[trackID]=t;
             }
             else
@@ -189,9 +186,9 @@ namespace mu2e
                           theTrack->second.momentum, 
                           theTrack->second.earliestTime, 
                           depositedEnergy);
-    else MCInfo.emplace_back(false, 0, 0, "", CLHEP::Hep3Vector(), CLHEP::Hep3Vector(), 0, 0);
+    else MCInfo.emplace_back(CrvHitInfoMC());
 
-  }//FillCRVHitsMCCollection 
+  }//FillCrvHitInfoMCCollection 
 
 }
 

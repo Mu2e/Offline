@@ -1,0 +1,2 @@
+#include "TrkDiag/test/TrkAna.fcl"
+physics.analyzers.TrkAna.KalDiag : @local::KalDiagReadCD3Cosmics

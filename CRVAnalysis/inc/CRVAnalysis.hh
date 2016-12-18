@@ -2,7 +2,8 @@
 #include <map>
 #include <string>
 
-#include "CRVAnalysis/inc/CRVAnalysisInfo.hh"
+#include "CRVAnalysis/inc/CrvHitInfoReco.hh"
+#include "CRVAnalysis/inc/CrvHitInfoMC.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
@@ -14,19 +15,17 @@ namespace mu2e
   {
     public:
 
-    CRVAnalysis(const std::string &crvCoincidenceModuleLabel, double leadingTime, double trailingTime);
+    CRVAnalysis() {}
 
-    void FillCRVHitsCollections(const art::Event& event, CRVHitsRecoCollection &recoInfo, CRVHitsMCCollection &MCInfo);
+    static void FillCrvHitInfoCollections(const std::string &crvCoincidenceModuleLabel,
+                                          const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo);
 
     private:
 
-    std::string _crvCoincidenceModuleLabel;
-    double      _leadingTime;
-    double      _trailingTime;
-
-    void FillCRVHitsMCCollection(const std::vector<const CrvCoincidenceCheckResult::CoincidenceHit*> &cluster,
-                                 const std::vector<art::Handle<mu2e::StepPointMCCollection> > &CRVStepsVector,
-                                 CRVHitsMCCollection &MCInfo);
+    static constexpr double _overlapTime = 20.0; //ns
+    static void FillCrvHitInfoMCCollection(const std::vector<const CrvCoincidenceCheckResult::CoincidenceHit*> &cluster,
+                                           const std::vector<art::Handle<mu2e::StepPointMCCollection> > &CrvStepsVector,
+                                           CrvHitInfoMCCollection &MCCInfo);
 
   };
 

@@ -44,6 +44,9 @@
 #include "TrkDiag/inc/TrkCaloDiag.hh"
 #include "TrkDiag/inc/EventInfo.hh"
 #include "TrkDiag/inc/TrkHitShare.hh"
+// CRV info
+#include "CRVAnalysis/inc/CRVAnalysis.hh"
+
 // C++ includes.
 #include <iostream>
 #include <string>
@@ -80,6 +83,8 @@ namespace mu2e {
     art::InputTag _genWttag;
     art::InputTag _beamWttag;
     art::InputTag _PBItag;
+    // CRV info
+    std::string _crvCoincidenceModuleLabel;
     // analysis options
     bool _fillmc, _pempty;
     int _diag;
@@ -125,6 +130,9 @@ namespace mu2e {
     // define signal direction and particle
     static TrkFitDirection _sdir;
     static TrkParticle _spart;
+    // CRV info
+    std::vector<CrvHitInfoReco> _crvinfo;
+    std::vector<CrvHitInfoMC> _crvinfomc;
   };
 // instantiate statics
   TrkFitDirection TrackAnalysis::_sdir(TrkFitDirection::downstream);
@@ -137,6 +145,7 @@ namespace mu2e {
     _dmmtag(pset.get<art::InputTag>("DownstreammuMinusTrackTag",art::InputTag()) ),
     _genWttag( pset.get<art::InputTag>("generatorWeightTag",art::InputTag()) ),
     _beamWttag( pset.get<art::InputTag>("beamWeightTag",art::InputTag()) ),
+    _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
     _fillmc(pset.get<bool>("FillMCInfo",true)),
     _pempty(pset.get<bool>("ProcessEmptyEvents",true)),
     _diag(pset.get<int>("diagLevel",1)),
@@ -169,11 +178,14 @@ namespace mu2e {
     _trkana->Branch("dmm",&_dmmti,TrkInfo::leafnames().c_str());
 // calorimeter information for the downstream electron track
     _trkana->Branch("demc",&_demc,TrkCaloInfo::leafnames().c_str());
+// CRV info
+    _trkana->Branch("crvinfo",&_crvinfo);
 // optionally add MC truth branches
     if(_fillmc){
       _trkana->Branch("demmc",&_demmc,TrkInfoMC::leafnames().c_str());
       _trkana->Branch("demmcgen",&_demmcgen,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch("demmcent",&_demmcent,TrkInfoMCStep::leafnames().c_str());
+      _trkana->Branch("crvinfomc",&_crvinfomc);
       if(_diag > 1)_trkana->Branch("demtshmc",&_demtshmc);
     }
 
@@ -230,6 +242,10 @@ namespace mu2e {
       }
       // fill mC info associated with this track
       if(_fillmc) fillMCInfo(demK);
+
+      // fill CRV info
+      CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, event, _crvinfo, _crvinfomc);
+
       // fill this row in the TTree
       _trkana->Fill();
     }
@@ -403,6 +419,8 @@ namespace mu2e {
     _demtsh.clear();
     _demtsm.clear();
     _demtshmc.clear();
+    _crvinfo.clear();
+    _crvinfomc.clear();
   }
 }  // end namespace mu2e
 
