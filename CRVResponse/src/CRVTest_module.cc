@@ -115,13 +115,16 @@ namespace mu2e
 
           const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &singlePulses = crvRecoPulses.GetRecoPulses(SiPM);
           nRecoPulses = singlePulses.size();
-          if(singlePulses.size()>0)
+          for(size_t i=0; i<singlePulses.size(); i++)
           {
-            recoPEs            = singlePulses[0]._PEs;
-            recoPulseHeight    = singlePulses[0]._pulseHeight;
-            recoPulseIntegral  = singlePulses[0]._integral;
-            recoPulseTOT       = singlePulses[0]._pulseLength;
-            recoPulseTime      = singlePulses[0]._leadingEdge;
+            if(recoPEs<singlePulses[i]._PEs)  //record the largest pulse to remove noise hits, after pulses, ...
+            {
+              recoPEs            = singlePulses[i]._PEs;
+              recoPulseHeight    = singlePulses[i]._pulseHeight;
+              recoPulseIntegral  = singlePulses[i]._integral;
+              recoPulseTOT       = singlePulses[i]._pulseLength;
+              recoPulseTime      = singlePulses[i]._leadingEdge;
+            }
           }
         }
 
