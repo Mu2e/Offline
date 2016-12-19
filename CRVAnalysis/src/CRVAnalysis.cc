@@ -112,7 +112,7 @@ namespace mu2e
       CLHEP::Hep3Vector pos;
       CLHEP::Hep3Vector momentum;
       int pdgId, primaryPdgId;
-      std::string generator;
+      int generator;
     };
     std::map<cet::map_vector_key, trackInfo> tracks; 
     std::map<cet::map_vector_key, trackInfo>::iterator iterTrack, theTrack;
@@ -134,22 +134,32 @@ namespace mu2e
             cet::map_vector_key trackID=step.trackId();
 
             iterTrack = tracks.find(trackID);
-            if(iterTrack==tracks.end())
+            if(iterTrack==tracks.end())  //this is a new track
             {
               trackInfo t;
               t.totalEnergy=step.totalEDep();
               t.earliestTime=step.time();
               t.pos=step.position();
               t.momentum=step.momentum();
+
+              art::Ptr<SimParticle> simparticle = step.simParticle();
               t.pdgId=step.simParticle()->pdgId();
-//FIXME
-t.primaryPdgId=0;
-t.generator="";
-//              t.primaryPdgId=step.simParticle()->genParticle()->pdgId();
-//              t.generator=step.simParticle()->genParticle()->generatorId().name();
+
+              //trying to find the primary
+              while(simparticle->isSecondary()) simparticle=simparticle->parent();
+              if(simparticle->isPrimary())
+              {
+                t.primaryPdgId=simparticle->genParticle()->pdgId();
+                t.generator=simparticle->genParticle()->generatorId().id();
+              }
+              else
+              {
+                t.primaryPdgId=0;
+                t.generator=0;
+              }
               tracks[trackID]=t;
             }
-            else
+            else  //this track has already been collected; just update the deposited energy, and the earliest hit time
             {
               iterTrack->second.totalEnergy+=step.totalEDep();
               if(iterTrack->second.earliestTime>step.time())
