@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+#
+#
+
+import os, re
+Import('env')
+
+Import('mu2e_helper')
+
+helper=mu2e_helper()
+
+rootlibs = env['ROOTLIBS']
+mu2eopts = env['MU2EOPTS'];
+level = mu2eopts[0];
+
+# Unroll some code from SConstruct here
+# in order to link dict, map and code in one lib.
+# This is necessary because dict causes a circular dependence
+# when loading the libraries interactively.
+# Also has a nice feature of making one lib to load in root 
+# for interactive use.
+
+userlibs = [ rootlibs ]
+non_plugin_cc = helper.non_plugin_cc()
+decorated_libname= "lib/lib" + helper.dict_libname()
+
+env.DictionarySource( helper.dict_tmp_name(),
+                     'classes.h', 
+                      LIBNAME=decorated_libname, 
+                      DEBUG_LEVEL=level )
+
+non_plugin_cc.append(helper.dict_tmp_name())
+
+env.SharedLibrary( helper.prefixed_libname(),
+                   non_plugin_cc,
+                   LIBS=[ userlibs ] )
+
+# this tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:

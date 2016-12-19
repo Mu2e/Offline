@@ -1,0 +1,6 @@
+#include "Validation/inc/TValPar.hh"
+#include "Validation/inc/TValHist.hh"
+#include "Validation/inc/TValHistH.hh"
+#include "Validation/inc/TValHistP.hh"
+#include "Validation/inc/TValHistE.hh"
+#include "Validation/inc/TValCompare.hh"
