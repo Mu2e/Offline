@@ -2,6 +2,10 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_0_4
 
+2) kutschke Dec 20, 2016
+   Add Sandbox/src/PSetViewer_module.cc and Sandbox/test/viewPSet.fcl
+    - Illustrate what is in the parameter set registry and the process history registry
+
 1) brownd 13 Dec 2016
   Merge development branch 'trktime' in with master.  This includes >100 individual commands and >100 individual
   file changes.  These changes are mostly structural in the track reconstruction, providing more granular reconstruction,
