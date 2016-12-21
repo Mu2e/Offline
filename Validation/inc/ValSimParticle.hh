@@ -3,6 +3,8 @@
 #define ValSimParticle_HH_
 
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
+#include "canvas/Utilities/InputTag.h"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "Validation/inc/ValId.hh"
 #include "Validation/inc/ValPosition.hh"
@@ -20,6 +22,7 @@ namespace mu2e {
     std::string& name() { return _name; }
 
   private:
+
     std::string _name;
     
     TH1D* _hVer;
@@ -33,6 +36,12 @@ namespace mu2e {
     ValId _idh;
     TH1D* _hscodeh;
     TH1D* _hecodeh;
+    ValPosition _stopPos;
+    TH1D* _tgtmux;
+    TH1D* _tgtmuy;
+    TH1D* _tgtmuz;
+
+
   };
 }
 

@@ -15,7 +15,8 @@ namespace mu2e {
   class ValPosition {
 
   public:
-    int declare( art::TFileDirectory tfs);
+    int declare( art::TFileDirectory tfs, 
+		 std::string name="", std::string title="");
     int fill(CLHEP::Hep3Vector const& position);
     double fold(double x) { return x - 1000.0*floor(x/1000.0); }
 
