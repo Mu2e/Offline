@@ -28,8 +28,8 @@ namespace art {
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "RecoDataProducts/inc/TrackSeed.hh"
-#include "RecoDataProducts/inc/TrackSeedCollection.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/KalSeedCollection.hh"
 
 
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -112,16 +112,13 @@ namespace mu2e {
 
   class CalTrkFit : public art::EDFilter {
   public:
-    struct SeedFitHist_t {
+
+    struct Hist_t {
       TH1F*  nhits;           // number of hits on a htrack candidate
       TH1F*  chi2[2];
       TH1F*  p [2];
-    };
-
-    struct Hist_t {
-      SeedFitHist_t  seedFit;  // helix fit histograms
-
-      TH1F*          ntracks[2];
+      TH1F*  ntracks[2];
+      TH1F*  kaldoca[2];
     };
 
     Ref*    _ref;
@@ -137,8 +134,8 @@ namespace mu2e {
     int              _diagLevel; 
     int              _debugLevel;
     int              _printfreq;
+    int              _useAsFilter; //allows to use the module as a produer or as a filter
     bool             _addhits; 
-    bool             _doKalmanFit;
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
@@ -152,6 +149,8 @@ namespace mu2e {
 					// outlier cuts
     double           _maxadddoca;
     double           _maxaddchi;
+    TrkFitFlag       _goodseed;
+    
     TrkParticle      _tpart;	        // particle type being searched for
     TrkFitDirection  _fdir;		// fit direction in search
 
@@ -164,21 +163,16 @@ namespace mu2e {
     const StrawHitPositionCollection*     _shpcol;
     const PtrStepPointMCVectorCollection* _listOfMCStrawHits;
 
-    const TrackSeedCollection*            _trkseeds;
+    const KalSeedCollection*              _trkseeds;
     const CalTimePeakCollection*          _tpeaks;
 
-    KalFitHack                            _seedfit;  // Kalman filter config for the Seed fit ( fit using hit wires)
     KalFitHack                            _kfit;     // full-blown src/Kalman filter
 
-    KalFitResult*                         _sfresult; // seed fit result
     KalFitResult*                         _kfresult; // full fit result
 
-    std::string                           _iname;	// data instance name
+    mu2e::PayloadSaver                          _payloadSaver;
 
-    std::string                           _iname_seed;// data instance name for the output 
-					              // of seed fit (used for diagnostics only)
-
-    std::vector<StrawHitIndex>                 _hitIndices;
+    std::vector<StrawHitIndex>            _hitIndices;
     int                                   _nindex;
     int                                   _nrescued;    // by the seed fit
 

@@ -21,27 +21,30 @@ namespace mu2e
   TrkFitDirection TrkDefHack::_downstream(TrkFitDirection::downstream);
 
   TrkDefHack::TrkDefHack(TimeCluster const& tclust, const HelixTraj& helix,
-      TrkParticle const& tpart, TrkFitDirection const& fdir) : _shcol(0),
+      TrkParticle const& tpart, TrkFitDirection const& fdir) : 
+    _shcol(0),
     _timeCluster(tclust),_h0(helix),_tpart(tpart),_fdir(fdir)
   {}
 
   TrkDefHack::TrkDefHack(const StrawHitCollection* shcol, std::vector<StrawHitIndex> const& hits,
       HelixTraj const& htraj,
-      TrkParticle const& tpart, TrkFitDirection const& fdir) : _shcol(shcol),
-  _h0(htraj), _tpart(tpart),_fdir(fdir)
+      TrkParticle const& tpart, TrkFitDirection const& fdir) : 
+    _shcol(shcol),
+    _h0(htraj), _tpart(tpart),_fdir(fdir)
   {
     setIndices(hits);
   }
 
   TrkDefHack::TrkDefHack(const StrawHitCollection* shcol, std::vector<StrawHitIndex> const& hits,
-      TrkParticle const& tpart, TrkFitDirection const& fdir) : _shcol(shcol),
-  _h0(_dpar,_dcov), _tpart(tpart),_fdir(fdir)
+      TrkParticle const& tpart, TrkFitDirection const& fdir) : 
+    _shcol(shcol),
+    _h0(_dpar,_dcov), _tpart(tpart),_fdir(fdir)
   {
     setIndices(hits);
   }
-
+  
   TrkDefHack::TrkDefHack(TrkParticle const& tpart, TrkFitDirection const& fdir) :
-   _h0(_dpar,_dcov),_tpart(tpart),_fdir(fdir)
+    _h0(_dpar,_dcov),_tpart(tpart),_fdir(fdir)
   {}
   
   TrkDefHack::TrkDefHack(const TrkDefHack& other ) : 

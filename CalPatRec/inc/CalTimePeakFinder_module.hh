@@ -23,8 +23,8 @@ namespace art {
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/HelixVal.hh"
-#include "RecoDataProducts/inc/TrackSeed.hh"
-#include "RecoDataProducts/inc/TrackSeedCollection.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
+#include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -145,6 +145,7 @@ namespace mu2e {
     int              _diagLevel; 
     int              _debugLevel;
     int              _printfreq;
+    int              _useAsFilter; //allows to use the module as a produer or as a filter
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
@@ -208,13 +209,14 @@ namespace mu2e {
 // helper functions
 //-----------------------------------------------------------------------------
     bool findData         (const art::Event& e);
-    void findTimePeaks    (CalTimePeakCollection* TimePeakColl, TrackSeedCollection& OutSeeds);
+    void findTimePeaks    (CalTimePeakCollection* TimePeakColl,
+			   TimeClusterCollection& OutSeeds);
 
     void bookHistograms   ();
-    void initTrackSeed    (TrackSeed   &TrackSeed   , 
-			   CalTimePeak &TPeak       ,
-			   int         &ClusterIndex);
-
+    void initTimeCluster    (TimeCluster   &TrackSeed   , 
+			     CalTimePeak &TPeak       ,
+			     int         &ClusterIndex);
+    
   };
 }
 #endif

@@ -26,6 +26,7 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "CalPatRec/inc/KalFitResult.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
@@ -64,6 +65,7 @@ namespace mu2e {
     _diagLevel       (pset.get<int>            ("diagLevel"                      )),
     _debugLevel      (pset.get<int>            ("debugLevel"                     )),
     _printfreq       (pset.get<int>            ("printFrequency"                 )),
+    _useAsFilter     (pset.get<int>            ("useAsFitler"                    )),    
     _shLabel         (pset.get<string>         ("StrawHitCollectionLabel"        )),
     _shfLabel        (pset.get<string>         ("StrawHitFlagCollectionLabel"    )),
     _ccmLabel        (pset.get<string>         ("caloClusterModuleLabel"         )),
@@ -78,7 +80,7 @@ namespace mu2e {
     _pitchAngle      (pset.get<double>         ("pitchAngle"                     )),
     _dtoffset        (pset.get<double>         ("dtOffset"                       ))
   {
-    produces<TrackSeedCollection>();
+    produces<TimeClusterCollection>();
     produces<CalTimePeakCollection>();
 
   }
@@ -186,7 +188,7 @@ namespace mu2e {
 
     _tpeaks = new CalTimePeakCollection;
     
-    unique_ptr<TrackSeedCollection>    outseeds(new TrackSeedCollection);
+    unique_ptr<TimeClusterCollection>  outseeds(new TimeClusterCollection);
     unique_ptr<CalTimePeakCollection>  tpeaks  (_tpeaks);
 
     
@@ -211,16 +213,16 @@ namespace mu2e {
       
       double                     clTime(0), clEnergy(0), nseedsCut0(0);
       int                        nhits(0);
-      TrackSeed                 *tmpseed;
+      TimeCluster               *tmpseed;
       const      CaloCluster    *cluster;
       
       for (int i=0; i<nseeds; ++i){
 	tmpseed    = &outseeds->at(i);
-	cluster    = tmpseed->_timeCluster._caloCluster.get();
+	cluster    = tmpseed->caloCluster().get();
 
 	clTime     = cluster->time();
 	clEnergy   = cluster->energyDep();
-	nhits      = tmpseed->_timeCluster._strawHitIdxs.size();
+	nhits      = tmpseed->hits().size();
 
 	if (nhits >= 15) {
 	  ++nseedsCut0;
@@ -251,10 +253,14 @@ namespace mu2e {
     event.put(std::move(outseeds));
     event.put(std::move(tpeaks));
     
-    if (nseeds > 0) {
+    if (_useAsFilter == 1) {
+      if (nseeds > 0) {
+	return true;
+      } else{
+	return false;
+      }
+    } else {
       return true;
-    } else{
-      return false;
     }
 
 
@@ -268,7 +274,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  void CalTimePeakFinder::findTimePeaks(CalTimePeakCollection* TimePeakColl, TrackSeedCollection& OutSeeds) {
+  void CalTimePeakFinder::findTimePeaks(CalTimePeakCollection* TimePeakColl, TimeClusterCollection& OutSeeds) {
 
     int                 ncl, nsh;
     double              time, dt, tof, zstraw, cl_time, stime;
@@ -368,8 +374,8 @@ namespace mu2e {
 	    TimePeakColl->push_back(tpeak);
 
 	    //fill seed information
-	    TrackSeed      tmpseed;
-	    initTrackSeed(tmpseed, tpeak, ic);
+	    TimeCluster    tmpseed;
+	    initTimeCluster(tmpseed, tpeak, ic);
 	    OutSeeds.push_back(tmpseed);
           }
         }
@@ -378,34 +384,30 @@ namespace mu2e {
   }
 
 //--------------------------------------------------------------------------------
-  void CalTimePeakFinder::initTrackSeed(TrackSeed                             &TrkSeed     , 
-					CalTimePeak                           &TPeak       , 
-					int                                   &ClusterIndex){
+  void CalTimePeakFinder::initTimeCluster(TimeCluster                           &TrkSeed     , 
+					  CalTimePeak                           &TPeak       , 
+					  int                                   &ClusterIndex){
     
     int             shIndices = TPeak.NHits();
     const StrawHitIndex *hIndex;
 
     for (int i=0; i<shIndices; ++i){
       hIndex = &TPeak._index.at(i);
-      TrkSeed._timeCluster._strawHitIdxs.push_back( StrawHitIndex( hIndex) );
+      TrkSeed._strawHitIdxs.push_back( StrawHitIndex( hIndex) );
     }
     
     const mu2e::CaloCluster *cluster = TPeak.Cluster();
     
                                 //do we need to propagate the cluster time at z=0 at this stage?
-    TrkSeed._timeCluster._t0._t0  = cluster->time(); 
-
+    TrkSeed._t0               = TrkT0(cluster->time(), 0.1); //dummy value for errT0
+    
     int               idisk   = cluster->sectionId();
     CLHEP::Hep3Vector cp_mu2e = _calorimeter->fromSectionFrame(idisk, cluster->cog3Vector());
     CLHEP::Hep3Vector cp_st   = _calorimeter->toTrackerFrame(cp_mu2e);
     
     
-    TrkSeed._timeCluster._pos          = cp_st;
-    
-                                //dummy value for errT0
-    TrkSeed._timeCluster._t0._t0err       = 0.1;
-    
-    TrkSeed._timeCluster._caloCluster = art::Ptr<mu2e::CaloCluster>(_ccH, ClusterIndex);
+    TrkSeed._pos              = cp_st;
+    TrkSeed._caloCluster      = art::Ptr<mu2e::CaloCluster>(_ccH, ClusterIndex);
   }
 
 

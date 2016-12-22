@@ -22,9 +22,11 @@ namespace art {
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/HelixVal.hh"
-#include "RecoDataProducts/inc/TrackSeed.hh"
-#include "RecoDataProducts/inc/TrackSeedCollection.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
+#include "RecoDataProducts/inc/TimeClusterCollection.hh"
+#include "RecoDataProducts/inc/HelixSeed.hh"
+#include "RecoDataProducts/inc/HelixSeedCollection.hh"
+
 
 
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -147,13 +149,14 @@ namespace mu2e {
     int                                   _diagLevel; 
     int                                   _debugLevel;
     int                                   _printfreq;
+    int                                   _useAsFilter; //allows to use the module as a produer or as a filter
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
     std::string                           _shLabel ; // MakeStrawHit label (makeSH)
     std::string                           _shpLabel;
     std::string                           _shfLabel;
-    std::string                           _trkseedLabel;
+    std::string                           _timeclLabel;
 
     TrkParticle                           _tpart;	        // particle type being searched for
     TrkFitDirection                       _fdir;		// fit direction in search
@@ -161,12 +164,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // cache of event objects
 //-----------------------------------------------------------------------------
-    art::Handle<mu2e::StrawHitCollection> _strawhitsH;
+    art::Handle<mu2e::StrawHitCollection>    _strawhitsH;
+    art::Handle<mu2e::TimeClusterCollection> _timeclcolH;
 
     const StrawHitCollection*             _shcol;
     const StrawHitFlagCollection*         _shfcol;
     const StrawHitPositionCollection*     _shpcol;
-    const TrackSeedCollection*            _trkSeeds;
+    const TimeClusterCollection*          _timeclcol;
     const CalTimePeakCollection*          _tpeaks;
 
     HelixFitHack                          _hfit;	
@@ -213,11 +217,10 @@ namespace mu2e {
 //----------------------------------------------------------------------
 
     void bookHistograms   ();
-    void initTrackSeed    (TrackSeed                             &TrackSeed , 
-			   TrkDefHack                                &Seeddef   ,
+    void initHelixSeed    (HelixSeed                             &TrackSeed , 
+			   TrkDefHack                            &Seeddef   ,
 			   HelixFitHackResult                    &HfResult  ,
-			   const CalTimePeak                     *TPeak     ,
-			   art::Ptr<CaloCluster>                  ClusterPtr);
+			   art::Ptr<TimeCluster>                 &TPeak     );
 
   };
 }

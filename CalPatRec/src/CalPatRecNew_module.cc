@@ -64,15 +64,16 @@ namespace mu2e {
     _diagLevel   (pset.get<int>   ("diagLevel"                      )),
     _debugLevel  (pset.get<int>   ("debugLevel"                     )),
     _printfreq   (pset.get<int>   ("printFrequency"                 )),
+    _useAsFilter (pset.get<int>   ("useAsFitler"                    )),    
     _shLabel     (pset.get<string>("StrawHitCollectionLabel"        )),
     _shpLabel    (pset.get<string>("StrawHitPositionCollectionLabel")),
     _shfLabel    (pset.get<string>("StrawHitFlagCollectionLabel"    )),
-    _trkseedLabel(pset.get<string>("TrackSeedCollectionLabel"       )),
+    _timeclLabel (pset.get<string>("TimeClusterCollectionLabel"       )),
     _tpart       ((TrkParticle::type)(pset.get<int>("fitparticle"))),
     _fdir        ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
     _hfit        (pset.get<fhicl::ParameterSet>("HelixFitHack",fhicl::ParameterSet()))
   {
-    produces<TrackSeedCollection>();
+    produces<HelixSeedCollection>();
 
     fHackData = new THackData("HackData","Hack Data");
     gROOT->GetRootFolder()->Add(fHackData);
@@ -188,24 +189,23 @@ namespace mu2e {
              _shfLabel.data());
     }
 
-    art::Handle<mu2e::TrackSeedCollection> trkseedsH;
-    if (evt.getByLabel(_trkseedLabel, trkseedsH)) {
-      _trkSeeds = trkseedsH.product();
+    if (evt.getByLabel(_timeclLabel, _timeclcolH)) {
+      _timeclcol = _timeclcolH.product();
     }
     else {
-      _trkSeeds = 0;
-      printf(" >>> ERROR in CalPatRecNew::findData: TrackSeedCollection with label=%s not found.\n",
-             _trkseedLabel.data());
+      _timeclcol = 0;
+      printf(" >>> ERROR in CalPatRecNew::findData: TimeClusterCollection with label=%s not found.\n",
+             _timeclLabel.data());
     }
 
     art::Handle<mu2e::CalTimePeakCollection> caltimepeaksH;
-    if (evt.getByLabel(_trkseedLabel, caltimepeaksH)) {
+    if (evt.getByLabel(_timeclLabel, caltimepeaksH)) {
       _tpeaks = caltimepeaksH.product();
     }
     else {
       _tpeaks = 0;
       printf(" >>> ERROR in CalPatRecNew::findData: CaltimepeakCollection with label=%s not found.\n",
-             _trkseedLabel.data());
+             _timeclLabel.data());
     }
     
 // //-----------------------------------------------------------------------------
@@ -224,7 +224,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // done
 //-----------------------------------------------------------------------------
-    return (_shcol != 0) && (_shfcol != 0) && (_shpcol != 0) && (_trkSeeds != 0) && (_tpeaks != 0);
+    return (_shcol != 0) && (_shfcol != 0) && (_shpcol != 0) && (_timeclcol != 0) && (_tpeaks != 0);
   }
 
 //-----------------------------------------------------------------------------
@@ -245,7 +245,7 @@ namespace mu2e {
 
     if ((_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 
-    unique_ptr<TrackSeedCollection>    outseeds(new TrackSeedCollection);
+    unique_ptr<HelixSeedCollection>    outseeds(new HelixSeedCollection);
     //    unique_ptr<CalTimePeakCollection>  tpeaks(_tpeaks);
                                         // find the data
     if (!findData(event)) {
@@ -324,11 +324,11 @@ namespace mu2e {
         seeddef.setIndices (goodhits);
   
 	//fill seed information
-	TrackSeed      tmpseed;
+	HelixSeed      tmpseed;
 	
-	art::Ptr<CaloCluster> clusterPtr = _trkSeeds->at(ipeak)._timeCluster._caloCluster;
-
-	initTrackSeed(tmpseed, seeddef, hf_result, tp, clusterPtr);
+	art::Ptr<TimeCluster> timeClusterPtr = art::Ptr<mu2e::TimeCluster>(_timeclcolH, ipeak);
+	
+	initHelixSeed(tmpseed, seeddef, hf_result, timeClusterPtr);
 
 	outseeds->push_back(tmpseed);
       }
@@ -347,17 +347,17 @@ namespace mu2e {
       
       double          radius(0), nhits(0), pT(0), p(0), chi2XY(0), chi2ZPhi(0);
       int             nseedsCut0(0), nhitsMin(15);
-      TrackSeed      *tmpseed;
+      HelixSeed      *tmphelix;
       double          mm2MeV = 3./10.;
 
       for (int i=0; i<nseeds; ++i){
-	tmpseed  = &outseeds->at(i);
+	tmphelix  = &outseeds->at(i);
 
-	radius   = 1./fabs(tmpseed->omega());
-	nhits    = tmpseed->_timeCluster._strawHitIdxs.size();
+	radius   = tmphelix->helix().radius();
+	nhits    = tmphelix->_hhits.size();
 
 	pT       = mm2MeV*radius;
-	p        = pT/std::cos( std::atan(tmpseed->tanDip()));
+	p        = pT/std::cos( std::atan(tmphelix->helix().lambda()/radius));
 
 	chi2XY   = fHackData->trkSeedChi2XY  (i);
 	chi2ZPhi = fHackData->trkSeedChi2ZPhi(i);
@@ -396,10 +396,14 @@ namespace mu2e {
     int    nseeds = outseeds->size();
     event.put(std::move(outseeds));
     
-    if (nseeds > 0) {
-      return true;
+    if (_useAsFilter == 1) {
+      if (nseeds > 0) {
+	return true;
+      }else {
+	return false;
+      }
     }else {
-      return false;
+      return true;
     }
 
   }
@@ -410,39 +414,52 @@ namespace mu2e {
   void CalPatRecNew::endJob(){
     // does this cause the file to close?
     art::ServiceHandle<art::TFileService> tfs;
-  }
-
+  
+}
 //--------------------------------------------------------------------------------
-  void CalPatRecNew::initTrackSeed(TrackSeed                             &TrkSeed, 
-				   TrkDefHack                                &SeedDef  , 
+  void CalPatRecNew::initHelixSeed(HelixSeed                             &HelSeed, 
+				   TrkDefHack                            &SeedDef  , 
 				   HelixFitHackResult                    &HfResult ,
-				   const CalTimePeak                     *TPeak    , 
-				   art::Ptr<CaloCluster>                  ClusterPtr){
+				   art::Ptr<TimeCluster>                 &TPeak    ){
 
     //set helix parameters
-    TrkSeed._helix.d0()     = SeedDef.helix().d0();
-    TrkSeed._helix.phi0()   = SeedDef.helix().phi0();
-    TrkSeed._helix.omega()  = SeedDef.helix().omega();
-    TrkSeed._helix.z0()     = SeedDef.helix().z0();
-    TrkSeed._helix.tanDip() = SeedDef.helix().tanDip();
-       
-    int             shIndices = SeedDef.strawHitIndices().size();
-    const StrawHitIndex *hIndex;
+    double   helixRadius   = 1./fabs(SeedDef.helix().omega());
+    double   impactParam   = SeedDef.helix().d0();
+    double   phi0          = SeedDef.helix().phi0();
+    double   x0            = -(helixRadius + impactParam)*sin(phi0);
+    double   y0            =  (helixRadius + impactParam)*cos(phi0);
+    double   dfdz          = 1./SeedDef.helix().tanDip()/helixRadius;
 
+    //center of the helix in the transverse plane
+    Hep3Vector center(x0, y0, 0);
+    
+    //deifne the parameters of the reocnstructed helix
+    HelSeed._helix._rcent  = center.perp();
+    HelSeed._helix._fcent  = center.phi();
+    HelSeed._helix._radius = helixRadius;
+    HelSeed._helix._lambda = 1./dfdz;
+    HelSeed._helix._fz0    = phi0;
+    
+    //use the cluster time to define the helix T0
+    HelSeed._t0            = TrkT0(TPeak->caloCluster()->time(), 0.1); //dummy error on T0
+    
+    //inherit the TimeCluster that origineted the Helix
+    HelSeed._timeCluster   = TPeak;
+    
+    //set the CaloCluster associated to the Helix
+    HelSeed._caloCluster   = TPeak->caloCluster();
+
+    //cluster all the hits assigned to the reconsturcted Helix
+    int          shIndices = SeedDef.strawHitIndices().size();
+    const StrawHitIndex *hIndex;
     for (int i=0; i<shIndices; ++i){
-      hIndex = &SeedDef.strawHitIndices().at(i);
-      TrkSeed._timeCluster._strawHitIdxs.push_back( StrawHitIndex( hIndex) );
+      hIndex                 = &SeedDef.strawHitIndices().at(i);
+      StrawHitPosition shpos =  _shpcol->at(*hIndex);
+      double           shphi = shpos.pos().z()*dfdz + phi0;
+      
+      HelSeed._hhits.push_back(HelixHit(shpos, StrawHitIndex(hIndex), shphi));//hitQuality no yet assigned
     }
     
-    const mu2e::CaloCluster *cluster = TPeak->Cluster();
-    
-    TrkSeed._timeCluster._t0._t0          = cluster->time(); 
-    Hep3Vector                   gpos = _calorimeter->fromSectionFrameFF(cluster->sectionId(), cluster->cog3Vector());
-    Hep3Vector                   tpos = _calorimeter->toTrackerFrame(gpos);
-    TrkSeed._timeCluster._pos          = tpos;
-
-    TrkSeed._timeCluster._t0._t0err       = 1;
-    TrkSeed._timeCluster._caloCluster = ClusterPtr;
     
 
     //increase the counter of the track candidates by 1
