@@ -29,6 +29,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "CalPatRec/inc/CalTimePeak.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 
@@ -131,7 +132,7 @@ namespace mu2e {
 			 const StrawHitCollection* straws , 
 			 std::vector<StrawHitIndex>     indices, 
 			 double                    maxchi ,
-			 CalTimePeak*              TPeak=NULL );
+			 const CaloCluster*              CCluster=NULL );
 
     void findBoundingHits(std::vector<TrkStrawHit*>&                   hits, 
 			  double                                       flt0,
@@ -139,21 +140,21 @@ namespace mu2e {
 			  std::vector<TrkStrawHit*>::iterator&         ihigh);
 
     bool fitable     (TrkDefHack const& tdef);
-    void fitIteration(KalFitResult& kres , int Iteration, CalTimePeak* TPeak);
-    void fitTrack    (KalFitResult& kres , CalTimePeak* TPeak=NULL);
-    void initCaloT0  (CalTimePeak*  TPeak, TrkDefHack const& tdef, TrkT0& t0);
+    void fitIteration(KalFitResult& kres , int Iteration, const CaloCluster* CCluster);
+    void fitTrack    (KalFitResult& kres , const CaloCluster* CCluster=NULL);
+    void initCaloT0  (const CaloCluster*  CCluster, TrkDefHack const& tdef, TrkT0& t0);
     void initT0      (TrkDefHack const& tdef , TrkT0& t0);
 //-----------------------------------------------------------------------------
 // main function: given a track definition, create a fit object from it
 //-----------------------------------------------------------------------------
-    virtual void makeTrack      (KalFitResult& kRes, CalTimePeak* TPeak=NULL);
+    virtual void makeTrack      (KalFitResult& kRes, const CaloCluster* CCluster=NULL);
 //---------------------------------------------------------------------------------------------
 // 2014-11-24 gianipez added the following function for printing the hits included in the track
 //----------------------------------------------------------------------------------------------
     void printHits       (KalFitResult& kres, const char* Caller);
 
     bool unweedHits      (KalFitResult& kres, double maxchi);
-    void updateCalT0     (KalFitResult& kres, CalTimePeak* TPeak);
+    void updateCalT0     (KalFitResult& kres, const CaloCluster* CCluster);
     void updateHitTimes  (KalFitResult& kres);
     bool updateT0        (KalFitResult& kres);
     bool weedHits        (KalFitResult& kres, int Iteration);

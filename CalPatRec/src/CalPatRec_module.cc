@@ -814,7 +814,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // seed fit - fit through the wires of found hits, not using the drift times
 //-----------------------------------------------------------------------------
-        _seedfit.makeTrack(*_sfresult, tp);
+        _seedfit.makeTrack(*_sfresult, tp->Cluster());
 //--------------------------------------------------------------------------------
 // 2014-11-24 gianipez added the following diagnnostic
 //--------------------------------------------------------------------------------
@@ -927,7 +927,7 @@ namespace mu2e {
           kaldef.setIndices(goodhits);
           if (_debugLevel > 0) printf("CalPatRec::produce] calling _kfit.makeTrack\n");
 
-          _kfit.makeTrack(*_kfresult,tp);
+          _kfit.makeTrack(*_kfresult,tp->Cluster());
 
           if (_debugLevel > 0) {
             printf("[CalPatRec::produce] kalfit status = %i\n", _kfresult->_fit.success());
@@ -958,10 +958,10 @@ namespace mu2e {
 // in both cases
 //-----------------------------------------------------------------------------
 	      if (misshits.size() > 0) {
-		_kfit.addHits(*_kfresult,_shcol,misshits, _maxaddchi, tp);
+		_kfit.addHits(*_kfresult,_shcol,misshits, _maxaddchi, tp->Cluster());
 	      }
 	      else {
-		_kfit.fitIteration(*_kfresult,last_iteration,tp);
+		_kfit.fitIteration(*_kfresult,last_iteration,tp->Cluster());
 	      }
 
 	      if (_debugLevel > 0) _kfit.printHits(*_kfresult,"CalPatRec::produce after addHits");

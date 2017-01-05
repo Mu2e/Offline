@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Calorimeter-driven track finding
-// Pattern recognition only, passes results to CalTrkFit
+// Search for clusters of strahits using the calorimeter cluster
+// It passes TimeClusters to CalPatRecNew
 // P.Murat, G.Pezzullo
 // try to order routines alphabetically
 ///////////////////////////////////////////////////////////////////////////////
@@ -65,7 +66,7 @@ namespace mu2e {
     _diagLevel       (pset.get<int>            ("diagLevel"                      )),
     _debugLevel      (pset.get<int>            ("debugLevel"                     )),
     _printfreq       (pset.get<int>            ("printFrequency"                 )),
-    _useAsFilter     (pset.get<int>            ("useAsFitler"                    )),    
+    _useAsFilter     (pset.get<int>            ("useAsFilter"                    )),    
     _shLabel         (pset.get<string>         ("StrawHitCollectionLabel"        )),
     _shfLabel        (pset.get<string>         ("StrawHitFlagCollectionLabel"    )),
     _ccmLabel        (pset.get<string>         ("caloClusterModuleLabel"         )),
@@ -389,10 +390,9 @@ namespace mu2e {
 					  int                                   &ClusterIndex){
     
     int             shIndices = TPeak.NHits();
-    const StrawHitIndex *hIndex;
 
     for (int i=0; i<shIndices; ++i){
-      hIndex = &TPeak._index.at(i);
+      size_t   hIndex = TPeak._index.at(i);
       TrkSeed._strawHitIdxs.push_back( StrawHitIndex( hIndex) );
     }
     

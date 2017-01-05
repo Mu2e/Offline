@@ -9,6 +9,7 @@
 #include "BTrk/TrkBase/TrkT0.hh"
 #include "RecoDataProducts/inc/HelixHit.hh"
 #include "RecoDataProducts/inc/RobustHelix.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 
@@ -22,14 +23,13 @@ namespace mu2e {
     HelixHitCollection const& hits() const { return _hhits; }
     RobustHelix const& helix() const { return _helix; }
     TrkFitFlag const& status() const { return _status; }
-    art::Ptr<CaloCluster> const& caloCluster() const { return _caloCluster; }
+    art::Ptr<CaloCluster> const& caloCluster() const { return _timeCluster->caloCluster(); }
     art::Ptr<TimeCluster> const& timeCluster() const { return _timeCluster; }
 
-    TrkT0	       _t0;	      // t0 for this helix
-    HelixHitCollection _hhits;	      // hits potentially used for this helix
-    RobustHelix        _helix;	     // robust helix created from these hits
-    TrkFitFlag	       _status;      // status of processes used to create this seed
-    art::Ptr<CaloCluster>    _caloCluster; // associated calorimeter cluster: can be null
+    TrkT0	             _t0;	      // t0 for this helix
+    HelixHitCollection       _hhits;	      // hits potentially used for this helix
+    RobustHelix              _helix;	     // robust helix created from these hits
+    TrkFitFlag	             _status;      // status of processes used to create this seed
     art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
   };
 

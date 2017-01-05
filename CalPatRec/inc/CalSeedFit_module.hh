@@ -53,7 +53,7 @@ namespace art {
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
-#include "CalPatRec/inc/CalTimePeak.hh"
+//#include "CalPatRec/inc/CalTimePeak.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
 
 #include "TROOT.h"
@@ -67,6 +67,8 @@ namespace art {
 #include "TrkPatRec/inc/PayloadSaver.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "DataProducts/inc/Helicity.hh"
+
 
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -143,22 +145,22 @@ namespace mu2e {
     int              _printfreq;
     int              _useAsFilter; //allows to use the module as a produer or as a filter
     int              _rescueHits;
-    bool             _addhits; 
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
     std::string      _shLabel ; // MakeStrawHit label (makeSH)
+    std::string      _shDigiLabel;
     std::string      _shpLabel;
     std::string      _shfLabel;
     std::string      _helixSeedLabel;
-    std::string      _tpeaksLabel;
 
     double           _maxdtmiss;
 					// outlier cuts
     double           _maxadddoca;
-    double           _maxaddchi;
     TrkParticle      _tpart;	        // particle type being searched for
     TrkFitDirection  _fdir;		// fit direction in search
+    std::vector<double>                   _perr; // diagonal parameter errors to use in the fit
+
 
     int              _nhits_from_gen;
 //-----------------------------------------------------------------------------
@@ -170,7 +172,6 @@ namespace mu2e {
     const PtrStepPointMCVectorCollection* _listOfMCStrawHits;
 
     const HelixSeedCollection*            _helixSeeds;
-    const CalTimePeakCollection*          _tpeaks;
 
     art::Handle<HelixSeedCollection>      _helixSeedsHandle;
 
@@ -203,6 +204,10 @@ namespace mu2e {
     SimParticleTimeOffset*                fgTimeOffsets;
 
     HelixTraj*                            _helTraj;
+    Helicity                              _helicity; // cached value of helicity expected for this fit
+    double                                _amsign;   // cached sign of angular momentum WRT the z axis 
+    CLHEP::HepSymMatrix                   _hcovar; // cache of parameter error covariance matrix
+
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------

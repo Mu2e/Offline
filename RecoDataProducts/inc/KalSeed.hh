@@ -32,7 +32,7 @@ namespace mu2e {
     TrkFitFlag const& status() const { return _status; }
     Float_t flt0() const { return _flt0; }
     TrkT0 const& t0() const { return _t0; }
-    art::Ptr<CaloCluster> const& caloCluster() const { return _caloCluster; }
+    art::Ptr<CaloCluster> const& caloCluster() const { return _helix->caloCluster(); }
     art::Ptr<HelixSeed> const& helix() const { return _helix; }
     art::Ptr<KalSeed> const& kalSeed() const { return _kal; }
 
@@ -44,9 +44,8 @@ namespace mu2e {
     std::vector<KalSegment>	    _segments; // segments of the Kalman filter fit result
     TrkFitFlag			    _status; // status of this fit
     // eventually add fit quality information FIXME!
-    art::Ptr<CaloCluster>    _caloCluster; // associated calorimeter cluster: can be null
-    art::Ptr<HelixSeed>    _helix; // associated Helix Seed (for seed fits); can be null
-    art::Ptr<KalSeed>    _kal; // associated Kalman Seed (for final fits); can be null
+    art::Ptr<HelixSeed>             _helix; // associated Helix Seed (for seed fits); can be null
+    art::Ptr<KalSeed>               _kal; // associated Kalman Seed (for final fits); can be null
 
   };
 }

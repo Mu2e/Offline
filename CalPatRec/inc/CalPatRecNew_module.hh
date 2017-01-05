@@ -55,7 +55,6 @@ namespace art {
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
-#include "CalPatRec/inc/CalTimePeak.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
 #include "RecoDataProducts/inc/KalRepCollection.hh"
@@ -171,7 +170,6 @@ namespace mu2e {
     const StrawHitFlagCollection*         _shfcol;
     const StrawHitPositionCollection*     _shpcol;
     const TimeClusterCollection*          _timeclcol;
-    const CalTimePeakCollection*          _tpeaks;
 
     HelixFitHack                          _hfit;	
 

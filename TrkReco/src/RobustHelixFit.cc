@@ -392,11 +392,11 @@ namespace mu2e
 	pos.push_back(WPos(hhit._pos.perpPart(),hitWeight(hhit)));
       }
     }
-    if(_usecc && hseed._caloCluster.isNonnull()){
+    if(_usecc && hseed.caloCluster().isNonnull()){
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
       const Calorimeter* calo = ch.get();
     // cluster position in detector coordinates
-      Hep3Vector cog = calo->toTrackerFrame(calo->fromSectionFrameFF(hseed._caloCluster->sectionId(),hseed._caloCluster->cog3Vector())); 
+      Hep3Vector cog = calo->toTrackerFrame(calo->fromSectionFrameFF(hseed.caloCluster()->sectionId(),hseed.caloCluster()->cog3Vector())); 
       pos.push_back(WPos(cog.perpPart(),_ccwt));
     }
     // loop over all triples
@@ -482,11 +482,11 @@ namespace mu2e
       }
     }
     // optionally add calo cluster
-    if(_usecc && hseed._caloCluster.isNonnull()){
+    if(_usecc && hseed.caloCluster().isNonnull()){
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
       const Calorimeter* calo = ch.get();
     // cluster position in detector coordinates
-      Hep3Vector cog = calo->toTrackerFrame(calo->fromSectionFrameFF(hseed._caloCluster->sectionId(),hseed._caloCluster->cog3Vector()));
+      Hep3Vector cog = calo->toTrackerFrame(calo->fromSectionFrameFF(hseed.caloCluster()->sectionId(),hseed.caloCluster()->cog3Vector()));
       double rad = Hep3Vector(cog - center).perp();
       radii.push_back(make_pair(rad,_ccwt));
     }

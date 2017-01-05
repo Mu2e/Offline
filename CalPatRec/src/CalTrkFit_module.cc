@@ -31,6 +31,8 @@
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 
+//TrkReco
+#include "TrkReco/inc/TrkUtilities.hh"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
@@ -69,13 +71,15 @@ namespace mu2e {
     _diagLevel       (pset.get<int>                ("diagLevel"                      )),
     _debugLevel      (pset.get<int>                ("debugLevel"                     )),
     _printfreq       (pset.get<int>                ("printFrequency"                 )),
-    _useAsFilter     (pset.get<int>                ("useAsFitler"                    )),    
+    _useAsFilter     (pset.get<int>                ("useAsFilter"                    )),    
     _addhits         (pset.get<bool>               ("addhits"                        )),
+    _zsave           (pset.get<vector<double> >("ZSavePositions",
+						vector<double>{-1522.0,0.0,1522.0}   )), // front, middle and back of the tracker
     _shLabel         (pset.get<string>             ("StrawHitCollectionLabel"        )),
+    _shDigiLabel     (pset.get<string>             ("StrawDigiCollectionLabel"       )),
     _shpLabel        (pset.get<string>             ("StrawHitPositionCollectionLabel")),
     _shfLabel        (pset.get<string>             ("StrawHitFlagCollectionLabel"    )),
     _trkseedLabel    (pset.get<string>             ("TrackSeedModuleLabel"           )),
-    _tpeaksLabel     (pset.get<string>             ("CalTimePeakModuleLabel"         )),
     _maxdtmiss       (pset.get<double>             ("MaxDtMiss"                      )),
     _maxadddoca      (pset.get<double>             ("MaxAddDoca"                     )),
     _maxaddchi       (pset.get<double>             ("MaxAddChi"                      )),
@@ -91,12 +95,12 @@ namespace mu2e {
     // tag the data product instance by the direction
     // and particle type found by this fitter
 
-    produces<KalRepCollection>        ();
-    produces<KalRepPtrCollection>     ();
-    produces<KalRepPayloadCollection> ();
-    produces<AlgorithmIDCollection>   ();
-
-    //    produces<StrawHitFlagCollection>(_iname);
+    produces<KalRepCollection       >();
+    produces<KalRepPtrCollection    >();
+    produces<KalRepPayloadCollection>();
+    produces<AlgorithmIDCollection  >();
+    produces<StrawHitFlagCollection >();
+    produces<KalSeedCollection      >();
 
     _minNMCHits = 25;
 
@@ -218,7 +222,7 @@ namespace mu2e {
     // find list of MC hits - for debugging only
     //-----------------------------------------------------------------------------
     art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
-    evt.getByLabel(_shLabel,"StrawHitMCPtr",mcptrHandle);
+    evt.getByLabel(_shDigiLabel,mcptrHandle);
     if (mcptrHandle.isValid()) {
       _listOfMCStrawHits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
     }
@@ -233,17 +237,10 @@ namespace mu2e {
       _trkseeds = 0;
     }
     
-    art::Handle<CalTimePeakCollection> tpeaksHandle;
-    if (evt.getByLabel(_tpeaksLabel, tpeaksHandle)){
-      _tpeaks = tpeaksHandle.product();
-    }else {
-      _tpeaks = 0;
-    }
-
     //-----------------------------------------------------------------------------
     // done
     //-----------------------------------------------------------------------------
-    return (_shcol != 0) && (_shfcol != 0) && (_shpcol != 0) && (_trkseeds != 0) && (_tpeaks != 0);
+    return (_shcol != 0) && (_shfcol != 0) && (_shpcol != 0) && (_trkseeds != 0);
   }
 
   //-----------------------------------------------------------------------------
@@ -276,11 +273,19 @@ namespace mu2e {
 
     if ((_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 
-    unique_ptr<KalRepCollection>       tracks   (new KalRepCollection     );
-    unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection  );
-    unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection);
-    // copy in the existing flags
-    unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(*_shfcol));
+
+    if (!findData(event)) {
+      printf("%s ERROR: No straw hits found, RETURN\n",oname);
+      return false;
+    }
+
+    unique_ptr<KalRepCollection>       tracks   (new KalRepCollection                );
+    unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection             );
+    unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection           );
+    unique_ptr<StrawHitFlagCollection> shfcol   (new StrawHitFlagCollection(*_shfcol));
+    unique_ptr<KalSeedCollection>      kscol    (new KalSeedCollection()             );
+
+    // find the data
  
     art::ProductID kalRepsID(getProductID<KalRepCollection>(event));
 
@@ -288,13 +293,8 @@ namespace mu2e {
     double time_threshold(500.);
 
     const KalSeed*   trkSeed(0);
-    CalTimePeak* tp(0);
-
-    // find the data
-    if (!findData(event)) {
-      printf("%s ERROR: No straw hits found, RETURN\n",oname);
-      goto END;
-    }
+    
+ 
     //-----------------------------------------------------------------------------
     // count the number of MC straw hits generated by the CE
     //-----------------------------------------------------------------------------
@@ -335,7 +335,6 @@ namespace mu2e {
     
     for (int ipeak=0; ipeak<ntrkcandidates; ipeak++) {
       trkSeed = &_trkseeds->at(ipeak);
-      tp      = (CalTimePeak*)&_tpeaks  ->at(ipeak);
 
       //create the list of std::vector<StrawHitIndex> from  TrkStrawHitSeed
       _nindex = trkSeed->hits().size();
@@ -351,6 +350,32 @@ namespace mu2e {
       // track fitting objects for this track candidate
       init(_kfresult, &kaldef );
 
+// find the segment at the 0 flight
+      double flt0 = trkSeed->flt0();
+      auto kseg = trkSeed->segments().end();
+      for(auto iseg= trkSeed->segments().begin(); iseg != trkSeed->segments().end(); ++iseg){
+	if(iseg->fmin() <= flt0 && iseg->fmax() > flt0){
+	  kseg = iseg;
+	  break;
+	}
+      }
+      if(kseg == trkSeed->segments().end()){
+	std::cout << "Helix segment range doesn't cover flt0" << std::endl;
+	kseg = trkSeed->segments().begin();
+      }
+      // create a trajectory from the seed. This shoudl be a general utility function that
+      // can work with multi-segment seeds FIXME!
+      // create CLHEP objects from seed native members.  This will
+      // go away when we switch to SMatrix FIXME!!!
+      HepVector    pvec(5,0);
+      HepSymMatrix pcov(5,0);
+      kseg->helix().hepVector(pvec);
+      kseg->covar().symMatrix(pcov);
+      // Create the traj from these
+      if (_helTraj == 0)  _helTraj = new HelixTraj(pvec, pcov);
+      else               *_helTraj = HelixTraj(pvec, pcov);
+      kaldef.setHelix(*_helTraj);
+      
       //--------------------------------------------------------------------------------
       // 2015-03-23 G. Pezzu: fill info about the doca
       //--------------------------------------------------------------------------------
@@ -366,7 +391,7 @@ namespace mu2e {
 
 	if (_debugLevel > 0) printf("CalTrkFit::produce] calling _kfit.makeTrack\n");
 
-	_kfit.makeTrack(*_kfresult, tp);
+	_kfit.makeTrack(*_kfresult, trkSeed->caloCluster().get());
 
 	if (_debugLevel > 0) {
 	  printf("[CalTrkFit::produce] kalfit status = %i\n", _kfresult->_fit.success());
@@ -397,10 +422,10 @@ namespace mu2e {
 	    // in both cases
 	    //-----------------------------------------------------------------------------
 	    if (misshits.size() > 0) {
-	      _kfit.addHits(*_kfresult,_shcol,misshits, _maxaddchi, tp);
+	      _kfit.addHits(*_kfresult,_shcol,misshits, _maxaddchi, trkSeed->caloCluster().get());
 	    }
 	    else {
-	      _kfit.fitIteration(*_kfresult,last_iteration,tp);
+	      _kfit.fitIteration(*_kfresult,last_iteration, trkSeed->caloCluster().get());
 	    }
 
 	    if (_debugLevel > 0) _kfit.printHits(*_kfresult,"CalTrkFit::produce after addHits");
@@ -420,43 +445,45 @@ namespace mu2e {
 	  //-----------------------------------------------------------------------------
 	  // done, fill debug histograms
 	  //-----------------------------------------------------------------------------
-	  TrkHitVector const& hot_l = _kfresult->_krep->hitVector();
-          const mu2e::TrkStrawHit* hit;
-          int                      hit_index;
-	  Hep3Vector               tdir;
-          HepPoint                 tpos;
+	  if (_diagLevel > 0) {
+	    TrkHitVector const& hot_l = _kfresult->_krep->hitVector();
+	    const mu2e::TrkStrawHit* hit;
+	    int                      hit_index;
+	    Hep3Vector               tdir;
+	    HepPoint                 tpos;
 
-          _kfresult->_krep->traj().getInfo(0.0,tpos,tdir);
+	    _kfresult->_krep->traj().getInfo(0.0,tpos,tdir);
 
-	  for (int i=0; i< _nindex; ++i){
-	    int               hIndex= _hitIndices[i];
-	    StrawHit const*   sh    = & _shcol->at(hIndex);
-	    Straw const&      straw = _tracker->getStraw(sh->strawIndex());
-	    CLHEP::Hep3Vector hpos  = straw.getMidPoint();
-	    CLHEP::Hep3Vector hdir  = straw.getDirection();
-	    bool              found = false;
+	    for (int i=0; i< _nindex; ++i){
+	      int               hIndex= hits_kf[i];
+	      StrawHit const*   sh    = & _shcol->at(hIndex);
+	      Straw const&      straw = _tracker->getStraw(sh->strawIndex());
+	      CLHEP::Hep3Vector hpos  = straw.getMidPoint();
+	      CLHEP::Hep3Vector hdir  = straw.getDirection();
+	      bool              found = false;
 
-	    // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
-	    HepPoint          spt(hpos.x(),hpos.y(),hpos.z());
-	    TrkLineTraj       htraj(spt,hdir,-20,20);
-	    // estimate flightlength along track.  This assumes a constant BField!!!
-	    double           fltlen = (hpos.z()-tpos.z())/tdir.z();
-	    TrkPoca          hitpoca(_kfresult->_krep->traj(),fltlen,htraj,0.0);
+	      // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
+	      HepPoint          spt(hpos.x(),hpos.y(),hpos.z());
+	      TrkLineTraj       htraj(spt,hdir,-20,20);
+	      // estimate flightlength along track.  This assumes a constant BField!!!
+	      double           fltlen = (hpos.z()-tpos.z())/tdir.z();
+	      TrkPoca          hitpoca(_kfresult->_krep->traj(),fltlen,htraj,0.0);
 
-	    double           doca   = hitpoca.doca();
-	    for(auto it=hot_l.begin(); it<hot_l.end(); it++) {
-	      hit = static_cast<const mu2e::TrkStrawHit*> (*it);
-	      if (!hit->isActive()) continue;
-	      hit_index = hit->index();
-	      if (int(_hitIndices[i]) == hit_index){
-		found = true;
-		break;
+	      double           doca   = hitpoca.doca();
+	      for(auto it=hot_l.begin(); it<hot_l.end(); it++) {
+		hit = static_cast<const mu2e::TrkStrawHit*> (*it);
+		if (!hit->isActive()) continue;
+		hit_index = hit->index();
+		if (int(hits_kf[i]) == hit_index){
+		  found = true;
+		  break;
+		}
 	      }
-	    }
 
-	    if (_diagLevel > 0) {
+	  
 	      if (found) _hist.kaldoca[0]->Fill(doca);
 	      else       _hist.kaldoca[1]->Fill(doca);
+	    
 	    }
 	  }
 	}
@@ -483,13 +510,41 @@ namespace mu2e {
         tracks->push_back(krep);
         int index = tracks->size()-1;
         trackPtrs->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
-        tp->SetCprIndex(tracks->size());
+	//        tp->SetCprIndex(tracks->size());
 
 	int best = AlgorithmID::CalPatRecBit;
 	int mask = 1 << AlgorithmID::CalPatRecBit;
 
 	algs->push_back(AlgorithmID(best,mask));
-	
+
+	// convert successful fits into 'seeds' for persistence.  Start with the input
+	KalSeed fseed(*trkSeed);
+	// reference the seed fit in this fit
+	art::Handle<KalSeedCollection> ksH;
+	event.getByLabel(_trkseedLabel, ksH);
+	fseed._kal = art::Ptr<KalSeed>(ksH, ipeak);
+	// fill other information
+	fseed._t0 = krep->t0();
+	fseed._flt0 = krep->flt0();
+	fseed._status.merge(TrkFitFlag::kalmanOK);
+	if(krep->fitStatus().success()==1) fseed._status.merge(TrkFitFlag::kalmanConverged);
+	TrkUtilities::fillHitSeeds(krep, fseed._hits);
+	// sample the fit at the requested z positions.  This should
+	// be in terms of known positions (front of tracker, ...) FIXME!
+	for(auto zpos : _zsave) {
+	  // compute the flightlength for this z
+	  double fltlen = TrkUtilities::zFlight(krep->pieceTraj(),zpos);
+	  // sample the momentum at this flight.  This belongs in a separate utility FIXME
+	  BbrVectorErr momerr = krep->momentumErr(fltlen);
+	    // sample the helix
+	  double locflt(0.0);
+	  const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(fltlen,locflt));
+	  // fill the segment
+	  KalSegment kseg;
+	  TrkUtilities::fillSegment(*htraj,momerr,kseg);
+	  fseed._segments.push_back(kseg);
+	}
+	kscol->push_back(fseed);
       }
       else {
 	//-----------------------------------------------------------------------------
@@ -504,11 +559,11 @@ namespace mu2e {
 
       if (_debugLevel > 0) {
 	if (_nhits_from_gen >= _minNMCHits) {
-	  if (tp->_tmin > 400.){
+	  //	  if (tp->_tmin > 400.){
 	    if (!findkal) {
 	      printf("[CalTrkFit::produce] LOOK AT: more than 25 MC hits and findKal not converged! event = %i\n", _iev);
 	    }
-	  }
+	    //	  }
 	}
       }
     }
@@ -520,7 +575,7 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     // put reconstructed tracks into the event record
     //-----------------------------------------------------------------------------
-  END:;
+    //  END:;
     int     ntracks = tracks->size();
 
     art::ProductID krcolID(getProductID<KalRepPayloadCollection>(event));
@@ -528,7 +583,8 @@ namespace mu2e {
     event.put(std::move(tracks)   );
     event.put(std::move(trackPtrs));
     event.put(std::move(algs     ));
-    event.put(move(shfcol));
+    event.put(std::move(shfcol   ));
+    event.put(std::move(kscol    ));
 
     if (_useAsFilter == 1) {
       if (ntracks > 0){

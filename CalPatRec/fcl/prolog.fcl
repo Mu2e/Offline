@@ -404,27 +404,47 @@ CalPatRec : { @table::CalPatRec
 	    HelixFitHack   : { @table::CalPatRec.HelixFitHack }
 	}
 
+	CalSeedFit : { module_type:CalSeedFit
+	    diagLevel                                   : 0
+	    debugLevel                                  : 0
+	    printFrequency                              : 100
+	    useAsFilter                                 : 0
+	    RescueHits                                  : 1
+	    StrawHitCollectionLabel                     : makeSH			 
+	    StrawDigiCollectionLabel                    : makeSD
+	    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions	 
+	    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits 
+	    HelixSeedModuleLabel                        : CalPatRecNew
+	    CalTimePeakModuleLabel                      : CalTimePeakFinder
+	    MaxDtMiss                                   : 55.
+	    MaxAddDoca                                  : 7.    # mm
+	    fitparticle                                 : 11    # 11:electron, -11:positron, 13:mu-, -13: mu+
+	    fitdirection                                : 0     # 0:downstream, 1:upstream
+	    SeedFitHack                                 : { @table::CalPatRec.KalFitHack  }
+	    TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	    ParameterErrors                             : [10.0,0.05,0.001,10.0,0.05]
+	}
+
 	CalTrkFit : { module_type:CalTrkFit
 	    diagLevel                                   : 0
 	    debugLevel                                  : 0
 	    printFrequency                              : 100
 	    useAsFilter                                 : 0
 	    addhits                                     : true
-	    TimeOffsets                                 :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	    doKalmanFit                                 : false
-	    StrawHitCollectionLabel                     : makeSH			 
+	    StrawHitCollectionLabel                     : makeSH
+	    StrawDigiCollectionLabel                    : makeSD
 	    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions	 
 	    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits 
-	    TrackSeedModuleLabel                        : CalPatRecNew
+	    TrackSeedModuleLabel                        : CalSeedFit
 	    CalTimePeakModuleLabel                      : CalTimePeakFinder
 	    MaxDtMiss                                   : 55.
 	    MaxAddDoca                                  : 7.    # mm
 	    MaxAddChi                                   : 3.5   #
+	    GoodKalSeedFitBits                          : ["SeedOK"]
 	    fitparticle                                 : 11    # 11:electron, -11:positron, 13:mu-, -13: mu+
 	    fitdirection                                : 0     # 0:downstream, 1:upstream
-
-	    SeedFitHack                                 : { @table::CalPatRec.SeedFitHack }
 	    KalFitHack                                  : { @table::CalPatRec.KalFitHack  }
+	    TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	}
     }
 }
@@ -435,9 +455,10 @@ CalPatRecMakeStereoHits        : { @table::CalPatRec.producers.CalPatRecMakeSter
 CalPatRecFlagStrawHits         : { @table::CalPatRec.producers.CalPatRecFlagStrawHits         }
 CalPatRecFlagBkgHits           : { @table::CalPatRec.producers.CalPatRecFlagBkgHits           }
 
-CalTimePeakFinder              : { @table::CalPatRec.filters.CalTimePeakFinder              }
-CalPatRecNew                   : { @table::CalPatRec.filters.CalPatRecNew   }
-CalTrkFit                      : { @table::CalPatRec.filters.CalTrkFit      }
+CalTimePeakFinder              : { @table::CalPatRec.filters.CalTimePeakFinder                }
+CalPatRecNew                   : { @table::CalPatRec.filters.CalPatRecNew                     }
+CalSeedFit                     : { @table::CalPatRec.filters.CalSeedFit                       }
+CalTrkFit                      : { @table::CalPatRec.filters.CalTrkFit                        }
 #------------------------------------------------------------------------------
 # CalPatRec makes sense only in the downstream versions
 #------------------------------------------------------------------------------
@@ -458,6 +479,10 @@ MergePatRecUmp  : { @table::CalPatRec.producers.MergePatRecUmp }
 
 CalPatRec.reco     : [makeSH, CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
 		      CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRec ]
+
+CalPatRecNew.reco  : [makeSH, CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
+		      CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, 
+		      CalTimePeakFinder, CalPatRecNew, CalSeedFit,  CalTrkFit]
 
 CalPatRec.dem_reco : [makeSH, CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
 		      CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDem ]

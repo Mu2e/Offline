@@ -229,7 +229,7 @@ namespace mu2e
       HelixSeed hseed;
       // copy in the t0 and cluster
       hseed._t0 = tclust._t0;
-      hseed._caloCluster = tclust._caloCluster;
+      //      hseed._caloCluster = tclust._caloCluster;
       // create a ptr to the time cluster
       size_t index = std::distance(_tccol->begin(),itclust);
       auto tcH = event.getValidHandle<TimeClusterCollection>(_tcTag);

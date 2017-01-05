@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Calorimeter-driven track finding
-// Pattern recognition only, passes results to CalTrkFit
+// Pattern recognition only, passes results to CalSeedFit
 // P.Murat, G.Pezzullo
 // try to order routines alphabetically
 ///////////////////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ namespace mu2e {
     _diagLevel   (pset.get<int>   ("diagLevel"                      )),
     _debugLevel  (pset.get<int>   ("debugLevel"                     )),
     _printfreq   (pset.get<int>   ("printFrequency"                 )),
-    _useAsFilter (pset.get<int>   ("useAsFitler"                    )),    
+    _useAsFilter (pset.get<int>   ("useAsFilter"                    )),    
     _shLabel     (pset.get<string>("StrawHitCollectionLabel"        )),
     _shpLabel    (pset.get<string>("StrawHitPositionCollectionLabel")),
     _shfLabel    (pset.get<string>("StrawHitFlagCollectionLabel"    )),
@@ -198,15 +198,6 @@ namespace mu2e {
              _timeclLabel.data());
     }
 
-    art::Handle<mu2e::CalTimePeakCollection> caltimepeaksH;
-    if (evt.getByLabel(_timeclLabel, caltimepeaksH)) {
-      _tpeaks = caltimepeaksH.product();
-    }
-    else {
-      _tpeaks = 0;
-      printf(" >>> ERROR in CalPatRecNew::findData: CaltimepeakCollection with label=%s not found.\n",
-             _timeclLabel.data());
-    }
     
 // //-----------------------------------------------------------------------------
 // // find list of MC hits - for debugging only
@@ -224,7 +215,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // done
 //-----------------------------------------------------------------------------
-    return (_shcol != 0) && (_shfcol != 0) && (_shpcol != 0) && (_timeclcol != 0) && (_tpeaks != 0);
+    return (_shcol != 0) && (_shfcol != 0) && (_shpcol != 0) && (_timeclcol != 0);
   }
 
 //-----------------------------------------------------------------------------
@@ -246,7 +237,6 @@ namespace mu2e {
     if ((_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 
     unique_ptr<HelixSeedCollection>    outseeds(new HelixSeedCollection);
-    //    unique_ptr<CalTimePeakCollection>  tpeaks(_tpeaks);
                                         // find the data
     if (!findData(event)) {
       printf("%s ERROR: No straw hits found, RETURN\n", oname);
@@ -256,18 +246,18 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // loop over found time peaks - for us, - "eligible" calorimeter clusters
 //-----------------------------------------------------------------------------
-    npeaks = _tpeaks->size();
+    npeaks = _timeclcol->size();
 
     //reset the counter of the track candidates
     fHackData->fData[20] = 0;
 
     for (int ipeak=0; ipeak<npeaks; ipeak++) {
-      const CalTimePeak* tp = &_tpeaks->at(ipeak);
+      const TimeCluster* tp = &_timeclcol->at(ipeak);
 
 //-----------------------------------------------------------------------------
 // create track definitions for the helix fit from this initial information
 //-----------------------------------------------------------------------------
-      HelixDefHack helixdef(_shcol, _shpcol, _shfcol, tp->_index, _tpart, _fdir);
+      HelixDefHack     helixdef(_shcol, _shpcol, _shfcol, tp->hits(), _tpart, _fdir);
 
       TrkDefHack       seeddef (helixdef);
 
@@ -429,7 +419,7 @@ namespace mu2e {
     double   x0            = -(helixRadius + impactParam)*sin(phi0);
     double   y0            =  (helixRadius + impactParam)*cos(phi0);
     double   dfdz          = 1./SeedDef.helix().tanDip()/helixRadius;
-
+    double   z0            = SeedDef.helix().z0();
     //center of the helix in the transverse plane
     Hep3Vector center(x0, y0, 0);
     
@@ -438,7 +428,7 @@ namespace mu2e {
     HelSeed._helix._fcent  = center.phi();
     HelSeed._helix._radius = helixRadius;
     HelSeed._helix._lambda = 1./dfdz;
-    HelSeed._helix._fz0    = phi0;
+    HelSeed._helix._fz0    = -z0*dfdz + phi0 - M_PI/2.;
     
     //use the cluster time to define the helix T0
     HelSeed._t0            = TrkT0(TPeak->caloCluster()->time(), 0.1); //dummy error on T0
@@ -447,17 +437,22 @@ namespace mu2e {
     HelSeed._timeCluster   = TPeak;
     
     //set the CaloCluster associated to the Helix
-    HelSeed._caloCluster   = TPeak->caloCluster();
+    //    HelSeed._caloCluster   = TPeak->caloCluster();
 
     //cluster all the hits assigned to the reconsturcted Helix
     int          shIndices = SeedDef.strawHitIndices().size();
-    const StrawHitIndex *hIndex;
+    //    const StrawHitIndex *hIndex;
     for (int i=0; i<shIndices; ++i){
-      hIndex                 = &SeedDef.strawHitIndices().at(i);
-      StrawHitPosition shpos =  _shpcol->at(*hIndex);
-      double           shphi = shpos.pos().z()*dfdz + phi0;
+      const StrawHitIndex hIndex = SeedDef.strawHitIndices().at(i);
+      StrawHitPosition    shpos  = _shpcol->at(hIndex);
+      double              shphi  = shpos.pos().z()*dfdz + phi0;
+      HelixHit            hhit(shpos, StrawHitIndex(hIndex), shphi);
       
-      HelSeed._hhits.push_back(HelixHit(shpos, StrawHitIndex(hIndex), shphi));//hitQuality no yet assigned
+      hhit._flag.clear(StrawHitFlag::resolvedphi);
+      // merge in the other flags
+      hhit._flag.merge(_shfcol->at(hIndex));
+      
+      HelSeed._hhits.push_back(hhit);//hitQuality no yet assigned
     }
     
     
@@ -475,6 +470,7 @@ namespace mu2e {
 
 
 }
+
 
 using mu2e::CalPatRecNew;
 DEFINE_ART_MODULE(CalPatRecNew);

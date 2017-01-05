@@ -52,7 +52,7 @@ namespace art {
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
-#include "CalPatRec/inc/CalTimePeak.hh"
+//#include "CalPatRec/inc/CalTimePeak.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
 
 #include "TROOT.h"
@@ -129,32 +129,35 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     //    TStopwatch*   fStopwatch;
 
-    unsigned         _iev;
-					// configuration parameters
-    int              _diagLevel; 
-    int              _debugLevel;
-    int              _printfreq;
-    int              _useAsFilter; //allows to use the module as a produer or as a filter
-    bool             _addhits; 
+    unsigned            _iev;
+	    	  	  			// configuration parameters
+    int                 _diagLevel; 
+    int                 _debugLevel;
+    int                 _printfreq;
+    int                 _useAsFilter; //allows to use the module as a produer or as a filter
+    bool                _addhits; 
+    std::vector<double> _zsave;
+
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
-    std::string      _shLabel ; // MakeStrawHit label (makeSH)
-    std::string      _shpLabel;
-    std::string      _shfLabel;
-    std::string      _trkseedLabel;
-    std::string      _tpeaksLabel;
+    std::string         _shLabel ; // MakeStrawHit label (makeSH)
+    std::string         _shDigiLabel;
+    std::string         _shpLabel;
+    std::string         _shfLabel;
+    std::string         _trkseedLabel;
+    std::string         _tpeaksLabel;
 
-    double           _maxdtmiss;
+    double              _maxdtmiss;
 					// outlier cuts
-    double           _maxadddoca;
-    double           _maxaddchi;
-    TrkFitFlag       _goodseed;
+    double              _maxadddoca;
+    double              _maxaddchi;
+    TrkFitFlag          _goodseed;
     
-    TrkParticle      _tpart;	        // particle type being searched for
-    TrkFitDirection  _fdir;		// fit direction in search
+    TrkParticle         _tpart;	        // particle type being searched for
+    TrkFitDirection     _fdir;		// fit direction in search
 
-    int              _nhits_from_gen;
+    int                 _nhits_from_gen;
 //-----------------------------------------------------------------------------
 // cache of event objects
 //-----------------------------------------------------------------------------
@@ -164,13 +167,12 @@ namespace mu2e {
     const PtrStepPointMCVectorCollection* _listOfMCStrawHits;
 
     const KalSeedCollection*              _trkseeds;
-    const CalTimePeakCollection*          _tpeaks;
 
     KalFitHack                            _kfit;     // full-blown src/Kalman filter
 
     KalFitResult*                         _kfresult; // full fit result
 
-    mu2e::PayloadSaver                          _payloadSaver;
+    mu2e::PayloadSaver                    _payloadSaver;
 
     std::vector<StrawHitIndex>            _hitIndices;
     int                                   _nindex;

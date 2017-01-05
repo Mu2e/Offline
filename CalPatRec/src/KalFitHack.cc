@@ -38,6 +38,7 @@
 // #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 // BaBar
 #include "BTrk/KalmanTrack/KalHit.hh"
@@ -262,7 +263,7 @@ namespace mu2e
 //------------------------------------------------------------------------------------------
 // called once per event from CalPatRec_module::produce
 //-----------------------------------------------------------------------------
-  void KalFitHack::makeTrack(KalFitResult& kres, CalTimePeak* TPeak) {
+  void KalFitHack::makeTrack(KalFitResult& kres, const CaloCluster* CCluster) {
 
     kres._fit = TrkErrCode(TrkErrCode::fail);
 
@@ -273,7 +274,8 @@ namespace mu2e
 //-----------------------------------------------------------------------------
     TrkT0 t0;
     bool caloInitCond(false);
-    if (TPeak->Cluster() != NULL) {
+    if (CCluster != NULL) {
+      //    if (TPeak->Cluster() != NULL) {
       caloInitCond = true;
     }
 
@@ -282,7 +284,7 @@ namespace mu2e
         initT0(*kres._tdef, t0);
       }
       else {
-        initCaloT0(TPeak, *kres._tdef, t0);
+        initCaloT0(CCluster, *kres._tdef, t0);
       }
     }
     else {
@@ -326,7 +328,7 @@ namespace mu2e
 // include the calorimeter information when it is avaiable
 //-----------------------------------------------------------------------------
     if ((_daveMode == 0) && caloInitCond) {
-      fitTrack(kres,TPeak);
+      fitTrack(kres,CCluster);
     }
     else {
       fitTrack(kres,NULL);
@@ -343,7 +345,7 @@ namespace mu2e
                            const StrawHitCollection*  straws ,
                            std::vector<StrawHitIndex>      indices,
                            double                     maxchi ,
-                           CalTimePeak*               TPeak  ) {
+                           const CaloCluster*               CCluster  ) {
 
                                         // there must be a valid Kalman fit to add hits to
     int  activity(0);
@@ -452,7 +454,7 @@ namespace mu2e
 //---------------------------------------------------------------------------
 // refit the track one more time with minimal external errors
 //---------------------------------------------------------------------------
-      if ((_daveMode == 0) && TPeak) {
+      if ((_daveMode == 0) && CCluster) {
 //------------------------------------------------------------------------------------------
 // 2015 - 03 - 09 Gainipez added the following line for forcing the fiITeration procedure
 // to use findAndUseDoublets
@@ -461,7 +463,7 @@ namespace mu2e
 //                     in different cases - Giani?
 // 2015-04-10        : perform one iteration, -1 means 'use the smallest external error defined'
 //------------------------------------------------------------------------------------------
-        fitIteration(kres, -1, TPeak);
+        fitIteration(kres, -1, CCluster);
       }
       else {
         fitIteration(kres,-1,NULL);
@@ -482,12 +484,12 @@ namespace mu2e
 //      =0                 means 'reduce external hit error down to zero only for hits which 
 //                                drift direction is well defined'
 //-----------------------------------------------------------------------------
-  void KalFitHack::fitTrack(KalFitResult& KRes, CalTimePeak* TPeak) {
+  void KalFitHack::fitTrack(KalFitResult& KRes, const CaloCluster* CCluster) {
     //    int not_final(0);
 
     int n = _hiterr.size();
     for (int i=0; i<n; ++i) {
-      fitIteration(KRes,i,TPeak);
+      fitIteration(KRes,i,CCluster);
 
       if (! KRes._fit.success()) break; //commented by gianipez
      }
@@ -499,7 +501,7 @@ namespace mu2e
 // one step of the track fit
 // update external hit errors.  This isn't strictly necessary on the 1st iteration.
 //-----------------------------------------------------------------------------
-  void KalFitHack::fitIteration(KalFitResult& KRes, int Iteration, CalTimePeak* TPeak) {
+  void KalFitHack::fitIteration(KalFitResult& KRes, int Iteration, const CaloCluster* CCluster) {
 
     double       oldt0 = KRes._krep->t0()._t0;
     unsigned     niter(0);
@@ -565,7 +567,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // update T0 mode = 0: when iterating, use the cluster T0 if available
 //-----------------------------------------------------------------------------
-        if (TPeak != NULL)  updateCalT0(KRes,TPeak);
+        if (CCluster != NULL)  updateCalT0(KRes,CCluster);
         else                updateT0   (KRes);
       }
       else if (_updateT0Mode == 1) {
@@ -1092,7 +1094,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // time initialization
 //-----------------------------------------------------------------------------
-  void KalFitHack::initCaloT0(CalTimePeak* TPeak, TrkDefHack const& tdef, TrkT0& t0) {
+  void KalFitHack::initCaloT0(const CaloCluster* CCluster, TrkDefHack const& tdef, TrkT0& t0) {
 //    2014-11-24 gianipez and Pasha removed time offset between caloriemter and tracker
 
     // get flight distance of z=0
@@ -1104,11 +1106,17 @@ namespace mu2e
     double vflt = tdef.particle().beta(mom)*CLHEP::c_light;
 //-----------------------------------------------------------------------------
 // Calculate the path length of the particle from the middle of the Tracker to the
-// calorimeter, TPeak->Z() is calculated wrt the tracker center
+// calorimeter, CCluster->Z() is calculated wrt the tracker center
 //-----------------------------------------------------------------------------
-    double path = TPeak->ClusterZ()/tdef.helix().sinDip();
+    mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    const mu2e::Calorimeter*     calorimeter = ch.get();
+    Hep3Vector                   gpos        = calorimeter->fromSectionFrameFF(CCluster->sectionId(),
+									       CCluster->cog3Vector());
+    Hep3Vector                   tpos        = calorimeter->toTrackerFrame(gpos);
+    
+    double path = tpos.z()/tdef.helix().sinDip();//TPeak->ClusterZ()/tdef.helix().sinDip();
 
-    t0._t0 = TPeak->ClusterT0() + _dtoffset - path/vflt;
+    t0._t0 = CCluster->time() + _dtoffset - path/vflt;//TPeak->ClusterT0() + _dtoffset - path/vflt;
 
     //Set dummy error value
     t0._t0err = 1.;
@@ -1168,7 +1176,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  void KalFitHack::updateCalT0(KalFitResult& KRes, CalTimePeak* TPeak) {
+  void KalFitHack::updateCalT0(KalFitResult& KRes, const CaloCluster* CCluster) {
 //    2014-11-24 gianipez and Pasha removed time offset between caloriemter and tracker
 
     TrkT0 t0;
@@ -1193,8 +1201,14 @@ namespace mu2e
 // path length of the particle from the middle of the Tracker to the  calorimeter
 // set dummy error value
 //-----------------------------------------------------------------------------
-      path      = TPeak->ClusterZ()/trkHel.sinDip();
-      t0._t0    = TPeak->ClusterT0() + _dtoffset - path/vflt;
+      mu2e::GeomHandle<mu2e::Calorimeter> ch;
+      const mu2e::Calorimeter*     calorimeter = ch.get();
+      Hep3Vector                   gpos        = calorimeter->fromSectionFrameFF(CCluster->sectionId(),
+										 CCluster->cog3Vector());
+      Hep3Vector                   tpos        = calorimeter->toTrackerFrame(gpos);
+
+      path      = tpos.z()/trkHel.sinDip(); ;//TPeak->ClusterZ()/trkHel.sinDip();
+      t0._t0    = CCluster->time() + _dtoffset - path/vflt;//TPeak->ClusterT0() + _dtoffset - path/vflt;
       t0._t0err = 1.;
 
       KRes._krep->setT0(t0,flt0);

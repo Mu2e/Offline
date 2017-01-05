@@ -43,7 +43,7 @@ namespace mu2e {
   HelixDefHack::HelixDefHack(const StrawHitCollection*         StrawCollection ,
 			     const StrawHitPositionCollection* ShposCollection , 
 			     const StrawHitFlagCollection*     ShFlagCollection, 
-			     const std::vector<StrawHitIndex>&      StrawHits       ,
+			     const std::vector<StrawHitIndex>& StrawHits       ,
 			     TrkParticle const&                tpart           ,
 			     TrkFitDirection const&            fdir            ) : 
     TrkDefHack(StrawCollection,StrawHits,tpart,fdir) 

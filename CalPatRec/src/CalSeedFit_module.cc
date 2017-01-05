@@ -20,6 +20,7 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -66,24 +67,23 @@ namespace mu2e {
 // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
 //-----------------------------------------------------------------------------
   CalSeedFit::CalSeedFit(fhicl::ParameterSet const& pset) :
-    _diagLevel       (pset.get<int>                ("diagLevel"                      )),
-    _debugLevel      (pset.get<int>                ("debugLevel"                     )),
-    _printfreq       (pset.get<int>                ("printFrequency"                 )),
-    _useAsFilter     (pset.get<int>                ("useAsFitler"                    )),    
-    _rescueHits      (pset.get<int>                ("RescueHits"                     )),    
-    _addhits         (pset.get<bool>               ("addhits"                        )),
-    _shLabel         (pset.get<string>             ("StrawHitCollectionLabel"        )),
-    _shpLabel        (pset.get<string>             ("StrawHitPositionCollectionLabel")),
-    _shfLabel        (pset.get<string>             ("StrawHitFlagCollectionLabel"    )),
-    _helixSeedLabel    (pset.get<string>           ("HelixSeedModuleLabel"           )),
-    _tpeaksLabel     (pset.get<string>             ("CalTimePeakModuleLabel"         )),
-    _maxdtmiss       (pset.get<double>             ("MaxDtMiss"                      )),
-    _maxadddoca      (pset.get<double>             ("MaxAddDoca"                     )),
-    _maxaddchi       (pset.get<double>             ("MaxAddChi"                      )),
-    _tpart           ((TrkParticle::type)(pset.get<int>("fitparticle"               ))),
-    _fdir            ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
+    _diagLevel       (pset.get<int>                ("diagLevel"                       )),
+    _debugLevel      (pset.get<int>                ("debugLevel"                      )),
+    _printfreq       (pset.get<int>                ("printFrequency"                  )),
+    _useAsFilter     (pset.get<int>                ("useAsFilter"                     )),    
+    _rescueHits      (pset.get<int>                ("RescueHits"                      )),    
+    _shLabel         (pset.get<string>             ("StrawHitCollectionLabel"         )),
+    _shDigiLabel     (pset.get<string>             ("StrawDigiCollectionLabel"        )),
+    _shpLabel        (pset.get<string>             ("StrawHitPositionCollectionLabel" )),
+    _shfLabel        (pset.get<string>             ("StrawHitFlagCollectionLabel"     )),
+    _helixSeedLabel  (pset.get<string>             ("HelixSeedModuleLabel"            )),
+    _maxdtmiss       (pset.get<double>             ("MaxDtMiss"                       )),
+    _maxadddoca      (pset.get<double>             ("MaxAddDoca"                      )),
+    _tpart           ((TrkParticle::type)(pset.get<int>("fitparticle"                 ))),
+    _fdir            ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"    ))),
+    _perr            (pset.get<vector<double> >("ParameterErrors")),
     _seedfit         (pset.get<fhicl::ParameterSet>("SeedFitHack",fhicl::ParameterSet())),
-    _sfresult(0)
+    _sfresult        (0)
   {
     //    fStopwatch = new TStopwatch();
 
@@ -94,6 +94,10 @@ namespace mu2e {
     produces<AlgorithmIDCollection> ();
 
     //    produces<StrawHitFlagCollection>(_iname);
+    _hcovar = HepSymMatrix(HelixTraj::NHLXPRM,0);
+    for(size_t ipar = 0; ipar < HelixTraj::NHLXPRM; ++ipar){
+      _hcovar(ipar+1,ipar+1) = _perr[ipar]*_perr[ipar]; // clhep indexing starts a 1
+    }
 
     _minNMCHits = 25;
 
@@ -138,6 +142,18 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   bool CalSeedFit::beginRun(art::Run& ) {
+    // calculate the helicity
+    GeomHandle<BFieldManager>  bfmgr;
+    GeomHandle<DetectorSystem> det;
+    // change coordinates to mu2e
+    CLHEP::Hep3Vector vpoint(0.0,0.0,0.0);
+    CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(vpoint);
+    CLHEP::Hep3Vector field       = bfmgr->getBField(vpoint_mu2e);
+    // helicity is a purely geometric quantity, however it's easiest
+    // to determine it from the kinematics (angular momentum and Z momentum)
+    _amsign   = copysign(1.0,-_tpart.charge()*field.z());
+    _helicity = Helicity(static_cast<float>(_fdir.dzdt()*_amsign));
+    
     mu2e::GeomHandle<mu2e::TTracker> th;
     _tracker = th.get();
 
@@ -219,7 +235,7 @@ namespace mu2e {
     // find list of MC hits - for debugging only
     //-----------------------------------------------------------------------------
     art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
-    evt.getByLabel(_shLabel,"StrawHitMCPtr",mcptrHandle);
+    evt.getByLabel(_shDigiLabel,mcptrHandle);
     if (mcptrHandle.isValid()) {
       _listOfMCStrawHits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
     }
@@ -233,17 +249,10 @@ namespace mu2e {
       _helixSeeds = 0;
     }
     
-    art::Handle<CalTimePeakCollection> tpeaksHandle;
-    if (evt.getByLabel(_tpeaksLabel, tpeaksHandle)){
-      _tpeaks = tpeaksHandle.product();
-    }else {
-      _tpeaks = 0;
-    }
-
     //-----------------------------------------------------------------------------
     // done
     //-----------------------------------------------------------------------------
-    return (_shcol != 0) && (_shfcol != 0) && (_shpcol != 0) && (_helixSeeds != 0) && (_tpeaks != 0);
+    return (_shcol != 0) && (_shfcol != 0) && (_shpcol != 0) && (_helixSeeds != 0);
   }
 
   //-----------------------------------------------------------------------------
@@ -282,7 +291,7 @@ namespace mu2e {
     double time_threshold(500.);
 
     const HelixSeed*   helixSeed(0);
-    CalTimePeak* tp(0);
+    const HelixHit*    hhit(0);
 
     // find the data
     if (!findData(event)) {
@@ -329,12 +338,54 @@ namespace mu2e {
     
     for (int ipeak=0; ipeak<ntrkcandidates; ipeak++) {
       helixSeed = &_helixSeeds->at(ipeak);
-      tp      = (CalTimePeak*)&_tpeaks  ->at(ipeak);
 
-      TrkDefHack             seeddef(_shcol, helixSeed->timeCluster()->hits(), _tpart, _fdir);
+      //get the collection of the StrawHitIndices
+      std::vector<StrawHitIndex>     idxs;
+      int                            nHits = helixSeed->hits().size();
+      for (int i=0; i<nHits; ++i){
+	hhit = &helixSeed->hits().at(i);
+	if (!hhit->_flag.hasAnyProperty(StrawHitFlag::outlier)){
+	  idxs.push_back(hhit->index());
+	}
+      }
+      
+
+      TrkDefHack                      seeddef(_shcol, idxs, _tpart, _fdir);
 
       // track fitting objects for this track candidate
       init(_sfresult, &seeddef);
+      
+      HepVector hpvec(HelixTraj::NHLXPRM);
+      TrkUtilities::RobustHelix2Traj(helixSeed->helix(), hpvec, _amsign);
+      HelixTraj hstraj(hpvec,_hcovar);    
+      // HepVector hpar(5,0);
+      // double    lambda  = helixSeed->helix().lambda();
+      // double    radius  = helixSeed->helix().radius();
+      // double    centerx = helixSeed->helix().centerx();
+      // double    centery = helixSeed->helix().centery();
+
+      // hpar[HelixTraj::omegaIndex ] = 1/radius;
+      // hpar[HelixTraj::phi0Index  ] = std::atan2(centery, -centerx);
+      // hpar[HelixTraj::d0Index    ] = helixSeed->helix().rcent() - radius;
+      // hpar[HelixTraj::tanDipIndex] = lambda/radius;
+      // hpar[HelixTraj::z0Index    ] = lambda*(helixSeed->helix().fz0() - hpar[HelixTraj::phi0Index] + M_PI/2.);
+      
+      // HepVector hparerr(5,0);
+      // hparerr[HelixTraj::d0Index    ] = 34.0;
+      // hparerr[HelixTraj::phi0Index  ] = 0.02;
+      // hparerr[HelixTraj::omegaIndex ] = 0.0002;
+      // hparerr[HelixTraj::tanDipIndex] = 0.05;
+      // hparerr[HelixTraj::z0Index    ] = 15.0;
+      
+      // HepSymMatrix hcov = vT_times_v(hparerr);
+//----------------------------------------------------------------------------------------
+// work around missing default constructor
+//-----------------------------------------------------------------------------
+      // if (_helTraj == 0)  _helTraj = new HelixTraj(hpar,hcov);
+      // else               *_helTraj = HelixTraj(hpar,hcov);
+      
+      seeddef.setHelix(hstraj);
+
 
       findhelix = true;
 
@@ -342,7 +393,7 @@ namespace mu2e {
       // P.Murat: here hits are ordered by index - WHY?
       // the Kalman fitter needs them ordered in Z(straw)
       //-----------------------------------------------------------------------------
-      _hitIndices = helixSeed->timeCluster()->hits();
+      _hitIndices = idxs;
       
       std::sort(_hitIndices.begin(), _hitIndices.end(), [ ]( const StrawHitIndex& lhs,
 							     const StrawHitIndex& rhs )
@@ -357,7 +408,7 @@ namespace mu2e {
       //-----------------------------------------------------------------------------
       // seed fit - fit through the wires of found hits, not using the drift times
       //-----------------------------------------------------------------------------
-      _seedfit.makeTrack(*_sfresult, tp);
+      _seedfit.makeTrack(*_sfresult, helixSeed->caloCluster().get());
 
       //--------------------------------------------------------------------------------
       // 2014-11-24 gianipez added the following diagnnostic
@@ -475,11 +526,11 @@ namespace mu2e {
           seeddef.setIndices(_goodhits);
           if (_debugLevel > 0) printf("CalPatRec::produce] calling _kfit.makeTrack\n");
 
-          if (_nrescued > 0) _seedfit.makeTrack(*_sfresult, tp);//repeat the fit only if new hits have been found
+          if (_nrescued > 0) _seedfit.makeTrack(*_sfresult,  helixSeed->caloCluster().get());//repeat the fit only if new hits have been found
 	  
 	  if ( !(_sfresult->_fit.success()) ){//if adding the new hits the fit does not converge, return to the previous case
 	    seeddef.setIndices (_hitIndices);
-	    _seedfit.makeTrack(*_sfresult, tp);
+	    _seedfit.makeTrack(*_sfresult,  helixSeed->caloCluster().get());
 	  }
 	  
 	  if (_diagLevel > 0) fillSeedFitHistograms(*_sfresult);
@@ -522,10 +573,8 @@ namespace mu2e {
 	KalSeed    kseed (_tpart, _fdir, krep->t0(), krep->flt0(), seedok);
 	// fill ptr to the helix seed
 	kseed._helix = art::Ptr<HelixSeed>(_helixSeedsHandle, ipeak);
-	// calo cluser ptr from Helix Seed
-	kseed._caloCluster = helixSeed->caloCluster(); 
 	// extract the hits from the rep and put the hitseeds into the KalSeed
-	TrkUtilities::fillHitSeeds(krep,kseed._hits);
+	TrkUtilities::fillHitSeeds(krep, kseed._hits);
 	kseed._status.merge(TrkFitFlag::hitsOK);
 
 	// extract the helix trajectory from the fit (there is just 1)
@@ -553,7 +602,7 @@ namespace mu2e {
 	  throw cet::exception("RECO")<<"mu2e::KalSeedFit: Can't extract helix traj from seed fit" << endl;
 	}
 	
-	tp->SetCprIndex(tracks->size());
+	//	tp->SetCprIndex(tracks->size());
 	    
 	int best = AlgorithmID::CalPatRecBit;
 	int mask = 1 << AlgorithmID::CalPatRecBit;
@@ -571,17 +620,17 @@ namespace mu2e {
 
       if (_debugLevel > 0) {
 	if (_nhits_from_gen >= _minNMCHits) {
-	  if (tp->_tmin > 400.){
-	    if (!findhelix) {
-	      printf("[CalSeedFit::produce] LOOK AT: more than 25 MC hits and findHelix not converged! event = %i\n", _iev);
-	    }
-	    if (findhelix && !findseed){
-	      printf("[CalSeedFit::produce] LOOK AT: findhelix converged and findseed not! event = %i\n", _iev);
-	    }
-	    if (findseed && !findkal){
-	      printf("[CalSeedFit::produce] LOOK AT: findseed converged and findkal not! event = %i\n", _iev);
-	    }
+	  //	  if (tp->_tmin > 400.){
+	  if (!findhelix) {
+	    printf("[CalSeedFit::produce] LOOK AT: more than 25 MC hits and findHelix not converged! event = %i\n", _iev);
 	  }
+	  if (findhelix && !findseed){
+	    printf("[CalSeedFit::produce] LOOK AT: findhelix converged and findseed not! event = %i\n", _iev);
+	  }
+	  if (findseed && !findkal){
+	    printf("[CalSeedFit::produce] LOOK AT: findseed converged and findkal not! event = %i\n", _iev);
+	  }
+	    //	  }
 	}
       }
     }

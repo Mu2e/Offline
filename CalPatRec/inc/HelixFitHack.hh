@@ -12,6 +12,8 @@
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
+
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -49,6 +51,13 @@ namespace mu2e {
 // data members
 //-----------------------------------------------------------------------------
     const CalTimePeak*   fTimePeak;
+    const TimeCluster*   fTimeCluster; //needed for debugging
+    
+    double               fCaloTime;
+    double               fCaloX;   
+    double               fCaloY;   
+    double               fCaloZ;   
+    
     XYZPHackVector       _xyzp;        // normally includes only hits from the time peak
 //-----------------------------------------------------------------------------
 // for diagnostics purposes save several states of _xyzp (only if _diag > 0)
@@ -228,6 +237,7 @@ namespace mu2e {
     void filterUsingPatternRecognition(HelixFitHackResult&  mytrk);
     bool findHelix                    (HelixFitHackResult& Helix);
     bool findHelix                    (HelixFitHackResult& Helix, const CalTimePeak* TimePeak );
+    bool findHelix                    (HelixFitHackResult& Helix, const TimeCluster* TimePeak );
     int  findDfDz                     (HelixFitHackResult& Helix, int SeedIndex, int *indexVec);
     void findTrack                    (int                  seedIndex,
 			               double&              chi2,

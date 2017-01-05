@@ -203,7 +203,7 @@ namespace mu2e
 	  auto hsH = event.getValidHandle<HelixSeedCollection>(_hsTag);
 	  kseed._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	  // calo cluser ptr from Helix Seed
-	  kseed._caloCluster = hseed._caloCluster; 
+	  //	  kseed._caloCluster = hseed._caloCluster; 
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
 	  TrkUtilities::fillHitSeeds(seedrep,kseed._hits);
 	  if(kseed._hits.size() >= _minnhits)kseed._status.merge(TrkFitFlag::hitsOK);

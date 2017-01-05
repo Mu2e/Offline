@@ -19,6 +19,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
@@ -234,10 +235,90 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
 //
+//2016-12-26 gianipez added the following function to make HelixFitHack compatible with TimeCluster obj
+  bool HelixFitHack::findHelix(HelixFitHackResult& Helix, const TimeCluster* TimePeak ){
+
+    fTimeCluster = TimePeak;
+    //check presence of a cluster
+    const CaloCluster* cl = TimePeak->caloCluster().get();
+    if (cl == NULL)   return false;
+    
+    //fill the calorimeter cluster info
+    mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    const mu2e::Calorimeter*     calorimeter = ch.get();
+    Hep3Vector                   gpos        = calorimeter->fromSectionFrameFF(cl->sectionId(),
+									       cl->cog3Vector());
+    Hep3Vector                   tpos        = calorimeter->toTrackerFrame(gpos);
+    fCaloTime = cl->time();
+    fCaloX    = tpos.x();   
+    fCaloY    = tpos.y();   
+    fCaloZ    = tpos.z();   
+
+    HelixDefHack const& mytrk = Helix._hdef;
+//-----------------------------------------------------------------------------
+//  compute the allowed radial range for this fit
+//-----------------------------------------------------------------------------
+    double pb = fabs((CLHEP::c_light*1e-3)/(bz()*mytrk.particle().charge()));
+    _rmin = _pmin/(pb*sqrt(1.0+_tdmax*_tdmax));
+    _rmax = _pmax/(pb*sqrt(1.0+_tdmin*_tdmin));
+//-----------------------------------------------------------------------------
+//  particle charge, field, and direction affect the pitch range
+//-----------------------------------------------------------------------------
+    _dfdzsign = copysign(1.0,-mytrk.particle().charge()*mytrk.fitdir().dzdt()*bz());
+
+    if(_dfdzsign > 0.0){
+      _smin = 1.0/(_rmax*_tdmax);
+      _smax = 1.0/(_rmin*_tdmin);
+    } else {
+      _smax = -1.0/(_rmax*_tdmax);
+      _smin = -1.0/(_rmin*_tdmin);
+    }
+//-----------------------------------------------------------------------------
+// initialize internal array of hits, print if requested
+//-----------------------------------------------------------------------------
+    fillXYZP(mytrk);
+				        // 2013-10-18 P.Murat: print 
+    int n = _xyzp.size();
+
+    XYZPHack* pt;
+    if (_debug > 0) {
+      printf("[HelixFitHack::findHelix] x0 = %12.5f y0 = %12.5f r = %12.5f chi2 = %12.5g\n",
+	     0.,0.,0.,-1.);
+    }
+    int banner_printed(0);
+    for(int i=0; i<n; ++i) {
+      pt = &_xyzp[i];
+
+      if (_debug > 0) {
+	if (banner_printed == 0) {
+	  printf("[HelixFitHack::findHelix] flag    Used  X       Y       Z      _debug: %i5\n",_debug);
+	  printf("[HelixFitHack::findHelix] -------------------------------------\n");
+	  banner_printed = 1;
+	}
+	printf("[HelixFitHack::findHelix] %08x %2i %12.5f %12.5f %12.5f \n",
+	       *((int*) &pt->_flag), pt->use(), pt->_pos.x(), pt->_pos.y(), pt->_pos.z()
+	       );
+      }
+    }
+//-----------------------------------------------------------------------------
+// call down
+//-----------------------------------------------------------------------------
+    bool retval = findHelix(Helix);
+
+    return retval;
+  }
+
+
+
 //-----------------------------------------------------------------------------
   bool HelixFitHack::findHelix(HelixFitHackResult& Helix, const CalTimePeak* TimePeak) {
 
     fTimePeak = TimePeak;
+    //fill the calorimeter cluster info
+    fCaloTime = TimePeak->ClusterT0();
+    fCaloX    = TimePeak->ClusterX();   
+    fCaloY    = TimePeak->ClusterY();   
+    fCaloZ    = TimePeak->ClusterZ();   
 
     HelixDefHack const& mytrk = Helix._hdef;
 //-----------------------------------------------------------------------------
@@ -464,10 +545,10 @@ namespace mu2e {
     int i0(-1), first_point(1);
 
     //add the cluster phi
-    double zCl   = fTimePeak->ClusterZ();
-    pos          = Hep3Vector(fTimePeak->ClusterX(), 
-			      fTimePeak->ClusterY(), 
-			      fTimePeak->ClusterZ());
+    double zCl   = fCaloZ;//fTimePeak->ClusterZ();
+    pos          =  Hep3Vector(fCaloX, fCaloY, fCaloZ);// Hep3Vector(fTimePeak->ClusterX(), 
+                                                       // 	      fTimePeak->ClusterY(), 
+                                                       // 	      fTimePeak->ClusterZ());
     double phiCl = CLHEP::Hep3Vector(pos - center).phi();
     phiCl = TVector2::Phi_0_2pi(phiCl);//if (phiCl<0.0) phiCl +=twopi;
     
@@ -831,10 +912,10 @@ namespace mu2e {
     dfdz = Helix._dfdz;
     double phi0 = Helix._fz0;
     
-    double zCl   = fTimePeak->ClusterZ();
-    pos          = Hep3Vector(fTimePeak->ClusterX(), 
-			      fTimePeak->ClusterY(), 
-			      fTimePeak->ClusterZ());
+    double zCl   = fCaloZ;//fTimePeak->ClusterZ();
+    pos          =  Hep3Vector(fCaloX, fCaloY, fCaloZ);// Hep3Vector(fTimePeak->ClusterX(), 
+		   // 	      fTimePeak->ClusterY(), 
+		   // 	      fTimePeak->ClusterZ());
     double phiCl = CLHEP::Hep3Vector(pos - center).phi();
     phiCl = TVector2::Phi_0_2pi(phiCl);//if (phiCl<0.0) phiCl +=twopi;
 
@@ -1420,8 +1501,8 @@ namespace mu2e {
 
     double mphi(-9999.);
 
-    if (fTimePeak->ClusterT0() > 0.) {
-      mphi = atan2(fTimePeak->ClusterY(),fTimePeak->ClusterX());
+    if (fCaloTime > 0){ //if (fTimePeak->ClusterT0() > 0.) {
+      mphi = atan2(fCaloY, fCaloX);//atan2(fTimePeak->ClusterY(),fTimePeak->ClusterX());
     }
     
     if (_debug > 0) {
@@ -1788,7 +1869,7 @@ namespace mu2e {
     // add cluster with a position error of 10 mm => wt = 1/100
     //-----------------------------------------------------------------------------
     TrkSxy.clear();
-    TrkSxy.addPoint(fTimePeak->ClusterX(), fTimePeak->ClusterY(), 1./100.);
+    TrkSxy.addPoint(fCaloX, fCaloY, 1./100.);  //TrkSxy.addPoint(fTimePeak->ClusterX(), fTimePeak->ClusterY(), 1./100.);
 
     //-------------------------------------------------------------------------------
     // add stopping target center with a position error of 100 mm / sqrt(12) ~ 30mm
@@ -2335,7 +2416,7 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 
     p1 = Hep3Vector(0., 0., 0.);   //5971. - 10200.
     p2 = _xyzp[SeedIndex]._pos;
-    p3 = Hep3Vector(fTimePeak->ClusterX(),fTimePeak->ClusterY(), fTimePeak->ClusterZ());
+    p3 =  Hep3Vector(fCaloX, fCaloY, fCaloZ); //Hep3Vector(fTimePeak->ClusterX(),fTimePeak->ClusterY(), fTimePeak->ClusterZ());
 
     //    double radius,phi0,tanLambda;
     
