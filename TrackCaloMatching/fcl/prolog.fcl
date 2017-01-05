@@ -16,7 +16,7 @@ TrackCaloMatching : {  @table::TrackCaloMatching  # general namespace for everyt
 #------------------------------------------------------------------------------
 	TrackCaloIntersection : { module_type:TrackCaloIntersection
 	    diagLevel                    : 0
-	    fitterModuleLabel            :         MergePatRec
+	    fitterModuleLabel            : MergePatRec
 	    fitparticle                  : @local::CalPatRec.producers.MergePatRec.fitparticle  # electron
 	    fitdirection                 : @local::CalPatRec.producers.MergePatRec.fitdirection # downstream
 	    pathStep                     : 20.              # mm
@@ -46,10 +46,13 @@ TrackCaloMatching : { @table::TrackCaloMatching
 	    sigmaV                       : 10.             # mm
 #------------------------------------------------------------------------------
 # not a guess any more, but the number by Alex
+# 2017-01-05: change to 53 mm for CsI (electrons), the corresponding muon number is 19 mm
+#------------------------------------------------------------------------------
+	    meanInteractionDepth         : 53.             # mm (electrons, see mu2e-8439
+#------------------------------------------------------------------------------
 # 2014-08-08: set dtOffset to 1.4 to avoid DT corrections in other places
 # 2015-02-07: dtOffset set in fcl/standardProducers.fcl to 1.2 ns
-#------------------------------------------------------------------------------
-	    meanInteractionDepth         : 59.             # mm
+#------------------------------------------------------------------------------	    
 	    dtOffset                     : @local::TrackCaloMatching.DtOffset             # ns
 	
 	    trkToCaloExtrapolModuleLabel : TrackCaloIntersection
@@ -80,6 +83,7 @@ TrackCaloMatching : { @table::TrackCaloMatching
 	    fitterModuleLabel    : MergePatRecDmm
 	    fitparticle          : @local::CalPatRec.producers.MergePatRecDmm.fitparticle  # muon
 	    fitdirection         : @local::CalPatRec.producers.MergePatRecDmm.fitdirection # downstream
+	    meanInteractionDepth : 19.             # mm
 	}
 
 	TrackCaloIntersectionDep : { @table::TrackCaloMatching.producers.TrackCaloIntersection
@@ -92,6 +96,7 @@ TrackCaloMatching : { @table::TrackCaloMatching
 	    fitterModuleLabel    : MergePatRecDmp
 	    fitparticle          : @local::CalPatRec.producers.MergePatRecDmp.fitparticle  # muon
 	    fitdirection         : @local::CalPatRec.producers.MergePatRecDmp.fitdirection # downstream
+	    meanInteractionDepth : 19.             # mm
 	}
 	
 	TrackCaloIntersectionUem : { @table::TrackCaloMatching.producers.TrackCaloIntersection
