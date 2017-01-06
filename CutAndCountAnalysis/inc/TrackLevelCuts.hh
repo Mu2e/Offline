@@ -158,6 +158,12 @@ namespace mu2e {
     TH1 *pidVariable_;
     TH1 *momentum_;
 
+    // Extra distributions: inputs to the likelihood PID
+    TH1 *trackCalo_dt_;
+    TH1 *pidVariable_dt_;
+    TH2 *trackCalo_eop_vs_ds_; // follow ConditionsService/data/v5_7_2/pid_ele_ep_vs_path.tbl that puts E/p on the Y axis
+    TH1 *pidVariable_ep_;
+
     std::ofstream trackLevelDebugStream_;
 
     CutAndCount::TrkCutNumber processTrack(const art::Ptr<KalRep>& trk, const art::Event& evt, const KalDiag& kdiag, const EventWeightHelper& wh);

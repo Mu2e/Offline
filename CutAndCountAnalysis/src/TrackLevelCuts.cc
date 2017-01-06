@@ -94,6 +94,11 @@ namespace mu2e {
     , caloClusterEnergy_{tf.make<TH1D>("caloClusterEnergy", "Calo cluster energy before cut", 150, 0., 150.)}
     , pidVariable_{tf.make<TH1D>("particleID", "PID variable before cut", 1000, -50., 50.)}
     , momentum_{tf.make<TH1D>("momentum", "Track momentum  before cut", 1000, 98., 108.)}
+
+    , trackCalo_dt_{tf.make<TH1D>("trackCalo_dt", "track-calo dt before PID cut", 400, -20., 20.)}
+    , pidVariable_dt_{tf.make<TH1D>("pid_dt", "dt-based PID variable before cut", 1000, -50., 50.)}
+    , trackCalo_eop_vs_ds_{tf.make<TH2D>("trackCalo_eop_vs_ds", "E/p vs path before PID cut", 50, 0., 500., 150, 0., 1.5)}
+    , pidVariable_ep_{tf.make<TH1D>("pid_ep", "E/p-based PID variable before cut", 1000, -50., 50.)}
   {
     using CutAndCount::TrkCutNumber;
     using CutAndCount::set_cut_bin_labels;
@@ -125,6 +130,13 @@ namespace mu2e {
     caloClusterEnergy_->Sumw2();
     pidVariable_->Sumw2();
     momentum_->Sumw2();
+
+    trackCalo_dt_->Sumw2();
+    pidVariable_dt_->Sumw2();
+    trackCalo_eop_vs_ds_->Sumw2();
+    pidVariable_ep_->Sumw2();
+
+    trackCalo_eop_vs_ds_->SetOption("colz");
 
     if(!pc.trackCutDebugFileName().empty()) {
       trackLevelDebugStream_.open(pc.trackCutDebugFileName());
@@ -222,17 +234,19 @@ namespace mu2e {
         return TrkCutNumber::caloClusterEnergy;
       }
 
-      double pidvar = pid_dt_->value(cm->dt());
+
+      trackCalo_dt_->Fill(cm->dt(), wh.weight());
+      trackCalo_eop_vs_ds_->Fill(cm->ds(), cm->ep(), wh.weight());
+
+      const double pidvar_dt = pid_dt_->value(cm->dt());
+      const double pidvar_ep = pid_ep_->value(cm->ep(), cm->ds());
+
+      pidVariable_dt_->Fill(pidvar_dt, wh.weight());
+      pidVariable_ep_->Fill(pidvar_ep, wh.weight());
+
       // value at cutoff() means the inputs are not consistent with signal
-      if(pidvar > pid_dt_->cutoff()) {
-        const double pidvar_ep = pid_ep_->value(cm->ep(), cm->ds());
-        if(pidvar_ep > pid_ep_->cutoff()) {
-          pidvar += pidvar_ep;
-        }
-        else {
-          pidvar = pid_ep_->cutoff();
-        }
-      }
+      const double pidvar = ((pidvar_dt > pid_dt_->cutoff()) && (pidvar_ep > pid_ep_->cutoff())) ?
+        pidvar_dt + pidvar_ep : pid_dt_->cutoff();
 
       pidVariable_->Fill(pidvar, wh.weight());
       if(pidvar < ccuts.pidCut()) {
