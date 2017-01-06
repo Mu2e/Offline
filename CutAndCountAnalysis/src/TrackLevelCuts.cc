@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <stdexcept>
 
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -47,6 +48,15 @@ namespace mu2e {
         TRACK_LEVEL_CUTS
 #undef X
           }
+
+      std::string cutName(TrkCutNumber c) {
+#define X(entry) case TrkCutNumber::entry : return #entry; break;
+        switch(c) {
+          default: throw std::runtime_error("Internal error: cutName() in " __FILE__ );
+          TRACK_LEVEL_CUTS
+        }
+#undef X
+      }
     }
 
 #undef TRACK_LEVEL_CUTS
@@ -115,6 +125,11 @@ namespace mu2e {
     caloClusterEnergy_->Sumw2();
     pidVariable_->Sumw2();
     momentum_->Sumw2();
+
+    if(!pc.trackCutDebugFileName().empty()) {
+      trackLevelDebugStream_.open(pc.trackCutDebugFileName());
+    }
+
   }
 
   //================================================================
@@ -128,6 +143,10 @@ namespace mu2e {
     for(int cut=0; cut<=int(c); cut++) {
       h_cuts_p_->Fill(cut);
       w_cuts_p_->Fill(cut, wh.weight());
+    }
+
+    if(trackLevelDebugStream_.is_open()) {
+      trackLevelDebugStream_<<event.id()<<"\t"<<cutName(c)<<std::endl;
     }
 
     return c==TrkCutNumber::accepted;
