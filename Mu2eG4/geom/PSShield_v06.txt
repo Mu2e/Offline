@@ -1,0 +1,69 @@
+// PS heat and radiation shield: Final version
+// Taking numbers from Docdb-3926-v3
+//
+// Original author: Andrei Gaponenko
+// Modified for final version specifics by David N Brown (Louisville)
+
+// The shield consists of a number of nested polycones
+int PSShield.nShells = 4; // stainless steel, bronze, water, stainless
+
+// Reference Z planes for all polycones
+vector<double> PSShield.zPlane = { 1210., 2404.6, 2990., 3490.2, 4955.1};
+
+// Define the n+1 boundaries, starting from the innermost
+vector<double> PSShield.r1 = { 650., 200., 200., 200., 200. };
+string PSShield.material1 = "StainlessSteel";
+vector<double> PSShield.color1 = { 0.1, 0.1, 0.1};
+
+// HRS_Bronze
+vector<double> PSShield.r2 = { 677.13, 225.4, 225.4, 225.4, 225.4 };
+string PSShield.material2 = "HRSBronze";
+vector<double> PSShield.color2 = { 1., 0.5, 0.};
+
+// HRS_Water_out
+vector<double> PSShield.r3 = { 700., 700., 700., 493., 493. };
+string PSShield.material3 = "G4_WATER";
+vector<double> PSShield.color3 = { 0., 0., 1};
+
+// Stainless cylindrical shell
+vector<double> PSShield.r4 = { 723.9, 723.9, 723.9, 723.9, 723.9 };
+string PSShield.material4 = "StainlessSteel";
+vector<double> PSShield.color4 = { 0.1, 0.1, 0.1};
+
+// Outer boundary - outer surface of stainless
+vector<double> PSShield.r5 = { 736.6, 736.6, 736.6, 736.6, 736.6 };
+
+
+// Information for the proton beam pipe inlet.  David Norvil Brown, March 2015
+string PSShield.inlet.materialName = "G4_Al";
+double PSShield.inlet.innerR = 60.25;
+double PSShield.inlet.outerR = 63.5;
+double PSShield.inlet.length = 1800; // Keeps hitting vacuum
+double PSShield.inlet.angleY = -13.62;  // degrees
+double PSShield.inlet.angleX = 2.30;   // degrees
+//vector<double> PSShield.inlet.center = {4127.1, 39.0, -5250.0};
+vector<double> PSShield.inlet.center = {4424.4, 91., -4031.5};
+
+// Each groove is a cylinder of the given dimensions, with the center
+// at the given reference point and rotated by the given angles, which
+// is subtracted from the polycone above.
+int PSShield.nGrooves = 0;
+
+// The shield is positioned on the PS axis.
+// To fix its Z position we specify the offset w.r.t. to the production target center
+// of the PSShield point at the most negative z.
+//
+// From Peter Kasper's e-mail May 17, 2012, + updates from V. Pronskikh:
+//     HRS downstream end z = -7858.0
+//     Target center      z = -6164.5
+double PSShield.zOffsetFromProductionTarget = -1693.5;
+
+bool PSShield.isVisible = true;
+bool PSShield.isSolid = false;
+
+int PSShield.verbosityLevel = 0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

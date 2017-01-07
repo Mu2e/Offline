@@ -365,6 +365,17 @@ namespace mu2e {
       RackSteel->AddMaterial(findMaterialOrThrow("G4_C"), 0.015);
     }
 
+    // Bronze used in the HRS.  Formally, Bronze C63200.
+    mat = uniqueMaterialOrThrow( "HRSBronze" );
+    {
+      G4Material* HRSBronze = new G4Material( mat.name, 7.64*CLHEP::g/CLHEP::cm3, 4);
+      HRSBronze->AddMaterial(findMaterialOrThrow("G4_Cu"),0.820);
+      HRSBronze->AddMaterial(findMaterialOrThrow("G4_Al"),0.090);
+      HRSBronze->AddMaterial(findMaterialOrThrow("G4_Fe"),0.040);
+      HRSBronze->AddMaterial(findMaterialOrThrow("G4_Ni"),0.050);
+    }
+
+
     // Construction Aluminum
     //http://asm.matweb.com/search/SpecificMaterial.asp?bassnum=MA5083O
     //http://ppd-docdb.fnal.gov/cgi-bin/RetrieveFile?docid=1112;filename=MD-ENG-109.pdf;version=1
