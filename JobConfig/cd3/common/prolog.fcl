@@ -64,12 +64,12 @@ signalTrackCuts: {
 
       pidCut: 1.5
       PIDdt: {
-	 signalHypothesis: {inputFile: "ConditionsService/data/v5_7_2/pid_ele_dt.tbl"}
-	 backgroundHypothesis: {inputFile: "ConditionsService/data/v5_7_2/pid_muo_dt.tbl"}
+	 signalHypothesis: {inputFile: "ConditionsService/data/v5_7_9/pid_ele_dt.tbl"}
+	 backgroundHypothesis: {inputFile: "ConditionsService/data/v5_7_9/pid_muo_dt.tbl"}
       }
       PIDEp: {
-	 signalHypothesis: {inputFile: "ConditionsService/data/v5_7_2/pid_ele_ep_vs_path.tbl" pathBinBoundaries: @local::pidPathBins}
-	 backgroundHypothesis: {inputFile: "ConditionsService/data/v5_7_2/pid_muo_ep_vs_path.tbl" pathBinBoundaries: @local::pidPathBins}
+	 signalHypothesis: {inputFile: "ConditionsService/data/v5_7_9/pid_ele_ep_vs_path.tbl" pathBinBoundaries: @local::pidPathBins}
+	 backgroundHypothesis: {inputFile: "ConditionsService/data/v5_7_9/pid_muo_ep_vs_path.tbl" pathBinBoundaries: @local::pidPathBins}
       }
    }
 }
