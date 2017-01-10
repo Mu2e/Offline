@@ -29,6 +29,9 @@ namespace mu2e {
 
     static double cutoff() { return LogL::cutoff(); }
 
+    const LogL& signalLogLikelihood() const { return signalHypothesis_; }
+    const LogL& backgroundLogLikelihood() const { return backgroundHypothesis_; }
+
     struct Config {
       fhicl::Table<typename LogL::Config> signalHypothesis{fhicl::Name("signalHypothesis"),
           fhicl::Comment("Distribution for signal hypothesis")
