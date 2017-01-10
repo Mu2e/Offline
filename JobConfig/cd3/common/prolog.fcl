@@ -73,11 +73,11 @@ vetoTrackCuts: {
 
 CutAndCountSettings: {
    // Dowstream e- track input
-   signalTrackInput: "TRFDownstreameMinus:DownstreameMinus" // FIXME: instance name should not be used
+   signalTrackInput: "TRFDeM"
    signalTrackCuts: @local::signalTrackCuts
 
    trackVetoes: [
-      [ "uemVeto", "TRFUpstreameMinus:UpstreameMinus", @local::vetoTrackCuts ]
+      [ "uemVeto", "TRFUeM", @local::vetoTrackCuts ]
    ]
 
    weight: @nil
@@ -158,8 +158,8 @@ draTopLevelDefs: {
       ]
 
       draRecoTrigSeq : [
-	 , @sequence::Tracking.TPRDownstreameMinus
-	 , @sequence::Tracking.TPRUpstreameMinus
+	 , @sequence::Tracking.TPRDeM
+	 , @sequence::Tracking.TPRUeM
 
 	 // MergePatRec simply copies TPRUpstreameMinus tracks
 	 // because CalPatRec is not in a trigger_path.
