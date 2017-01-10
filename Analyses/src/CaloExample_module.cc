@@ -78,12 +78,6 @@
 
 
 
-using namespace std;
-using CLHEP::Hep3Vector;
-using CLHEP::HepVector;
-using CLHEP::keV;
-
-
 
 namespace mu2e {
 
@@ -188,15 +182,15 @@ namespace mu2e {
     _diagLevel(pset.get<int>("diagLevel",0)),
     _doGenerated(pset.get<bool>("doGenerated",false)),
     _nProcess(0),
-    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
-    _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
-    _simParticleTag(pset.get<string>("simParticleTag")),
-    _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel")),
-    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel")),
+    _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
+    _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel")),
+    _simParticleTag(pset.get<std::string>("simParticleTag")),
+    _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel")),
+    _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel")),
     _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
-    _virtualDetectorLabel(pset.get<string>("virtualDetectorName")),
-    _stepPointMCLabel(pset.get<string>("stepPointMCLabel")),
-    _trkPatRecModuleLabel(pset.get<string>("trkPatRecModuleLabel")),
+    _virtualDetectorLabel(pset.get<std::string>("virtualDetectorName")),
+    _stepPointMCLabel(pset.get<std::string>("stepPointMCLabel")),
+    _trkPatRecModuleLabel(pset.get<std::string>("trkPatRecModuleLabel")),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),

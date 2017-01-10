@@ -44,7 +44,6 @@ namespace mu2e {
     G4bool CaloReadoutCardSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
     {
 
-	 if( aStep->GetTrack()->GetDefinition()->GetPDGCharge() == 0 ) return false;
          if( aStep->GetTotalEnergyDeposit() < 1e-6 ) return false;
 
 	 _currentSize += 1;
@@ -63,7 +62,7 @@ namespace mu2e {
 	 //uncomment for diagnosis purposes only when playing with the geometry
 	 //for (int i=0;i<8;++i) std::cout<<"Card Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "
 	 //                               <<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(aStep->GetPreStepPoint()->GetPosition())
-	 //			 	  <<"   "<<idro<<"   "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
+	 // 			 	  <<"   "<<idro<<"   "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
 
 	 _collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                 	    idro,

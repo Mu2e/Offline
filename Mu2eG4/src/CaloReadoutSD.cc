@@ -64,7 +64,7 @@ namespace mu2e {
 	 //for diagnosis purposes only when playing with the geometry, uncomment next line
 	 //for (int i=0;i<8;++i) std::cout<<"RO Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "
 	 //                               <<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(aStep->GetPreStepPoint()->GetPosition())
-	 //				  <<"   "<<idro<<"   "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
+	 // 				  <<"   "<<idro<<"   "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
 
 	 _collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                 	    idro,

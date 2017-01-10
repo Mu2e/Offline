@@ -53,6 +53,7 @@
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/CaloReadoutCardSD.hh"
+#include "Mu2eG4/inc/CaloCrateSD.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "Mu2eG4/inc/TrackerWireSD.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
@@ -614,6 +615,12 @@ namespace mu2e {
         CaloReadoutCardSD* crCardSD  =
           new CaloReadoutCardSD(      SensitiveDetectorName::CaloReadoutCard(),     _config);
         SDman->AddNewDetector(crCardSD);
+      }
+      
+      if(sdHelper_->enabled(StepInstanceName::calorimeterCrate)) {
+        CaloCrateSD* cCrateSD  =
+          new CaloCrateSD(      SensitiveDetectorName::CaloCrate(),     _config);
+        SDman->AddNewDetector(cCrateSD);
       }
 
     }

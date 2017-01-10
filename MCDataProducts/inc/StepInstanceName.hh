@@ -37,20 +37,20 @@ namespace mu2e {
     // Need to keep the enum and the following MACRO in sync.
     enum enum_type {
       unknown,
-      tracker,        virtualdetector,   timeVD,            stoppingtarget,   CRV, 
-      calorimeter,    calorimeterRO,     calorimeterROCard, ExtMonUCITof,     ttrackerDS,
-      protonabsorber, PSVacuum,          stepper,           trackerSWires,    itrackerFWires,   
-      trackerWalls,   STMDet,          
+      tracker,        virtualdetector,   timeVD,            stoppingtarget,    CRV, 
+      calorimeter,    calorimeterRO,     calorimeterROCard, calorimeterCrate,  ExtMonUCITof,     
+      ttrackerDS,     protonabsorber,    PSVacuum,          stepper,           trackerSWires,     
+      itrackerFWires, trackerWalls,   STMDet,          
       lastEnum
     };
 
     // Keep this in sync with the enum. Used in StepInstanceName.cc
 #define STEPINSTANCENAME_NAMES \
       "unknown", \
-      "tracker",       "virtualdetector", "timeVD",            "stoppingtarget", "CRV",            \
-      "calorimeter",   "calorimeterRO",   "calorimeterROCard", "ExtMonUCITof",   "ttrackerDS",     \
-      "protonabsorber","PSVacuum",        "stepper",           "trackerSWires",  "itrackerFWires", \
-      "trackerWalls",  "STMDet"     
+      "tracker",       "virtualdetector", "timeVD",            "stoppingtarget",   "CRV",            \
+      "calorimeter",   "calorimeterRO",   "calorimeterROCard", "calorimeterCrate", "ExtMonUCITof",   \
+      "ttrackerDS",    "protonabsorber",  "PSVacuum",          "stepper",          "trackerSWires",  \
+      "itrackerFWires", "trackerWalls",  "STMDet"     
 
   public:
 

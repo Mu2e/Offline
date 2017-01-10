@@ -17,6 +17,8 @@
 
 #include <array>
 #include <iostream>
+#include <iomanip>
+
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -37,6 +39,7 @@
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/CaloReadoutCardSD.hh"
+#include "Mu2eG4/inc/CaloCrateSD.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
@@ -326,7 +329,7 @@ namespace mu2e {
 	UnitLog->SetVisAttributes(G4VisAttributes::Invisible);
 	//UnitLog->SetVisAttributes(G4Color::Yellow());
 
-	// -- place components - reference point is base of polyhedra/ wrapper at base, R0Box at WrapDepth
+	// -- place components - reference point is base of polyhedra / wrapper at base, R0Box at WrapDepth
 	//
 	pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,0.0),WrapLog,"CrysWrapPV",UnitLog,false,0,false);
 	doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
@@ -396,6 +399,9 @@ namespace mu2e {
        VolumeInfo diskCaseInfo[nDisks];
        VolumeInfo diskFEBInfo[nDisks];
        int nTotCrystal(0);
+       
+       
+       G4VSensitiveDetector* crCrateSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrate());
 
        for (unsigned int idisk=0;idisk<nDisks;++idisk)
        {
@@ -440,6 +446,7 @@ namespace mu2e {
 					     idisk,
 					     isDiskCaseVisible,G4Colour::Green(),isDiskCaseSolid,forceAuxEdgeVisible,					     
 					     true,doSurfaceCheck );
+	        if (crCrateSD) diskFEBInfo[idisk].logical->SetSensitiveDetector(crCrateSD);
 	     }
 
 	     if ( verbosityLevel > 0) 
