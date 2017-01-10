@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <fstream>
 
 #include "boost/noncopyable.hpp"
 
@@ -117,6 +118,12 @@ namespace mu2e {
 
       fhicl::Atom<double> pmin{Name("pmin"), Comment("Low cut on signal track momentum")};
       fhicl::Atom<double> pmax{Name("pmax"), Comment("High cut on signal track momentum")};
+
+      fhicl::Atom<std::string> trackCutDebugFileName{ Name("trackCutDebugFileName"),
+          Comment("A non-emtpy value will enable per-track printouts into the given file"),
+          ""
+          };
+
     };
 
     explicit TrackLevelCuts(const PhysicsCuts& pc, art::TFileDirectory tfdir, const std::string histdir);
@@ -150,6 +157,14 @@ namespace mu2e {
     TH1 *caloClusterEnergy_;
     TH1 *pidVariable_;
     TH1 *momentum_;
+
+    // Extra distributions: inputs to the likelihood PID
+    TH1 *trackCalo_dt_;
+    TH1 *pidVariable_dt_;
+    TH2 *trackCalo_eop_vs_ds_; // follow ConditionsService/data/v5_7_2/pid_ele_ep_vs_path.tbl that puts E/p on the Y axis
+    TH1 *pidVariable_ep_;
+
+    std::ofstream trackLevelDebugStream_;
 
     CutAndCount::TrkCutNumber processTrack(const art::Ptr<KalRep>& trk, const art::Event& evt, const KalDiag& kdiag, const EventWeightHelper& wh);
     const TrackClusterMatch* findCaloMatch(const art::Ptr<KalRep>& trk, const art::Event& evt);
