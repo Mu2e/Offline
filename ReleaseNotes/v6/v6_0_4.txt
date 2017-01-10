@@ -2,6 +2,9 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_0_4
 
+5) Echenard, 9 Jan 2017
+   Added TriggerInfo data product classes
+
 4) dnbrow01  07 Jan 2017
    Updated t0 cut definitions for RPC background cutAndCount studies.
    Updated this release note (first *documented* update of the year!)

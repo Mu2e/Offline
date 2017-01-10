@@ -135,6 +135,13 @@
  <class name="art::Ptr<mu2e::AvikPIDProduct>" />
  <class name="art::Ptr<mu2e::AvikPIDNewProduct>" />
 
+ <class name="mu2e::TriggerFlagDetail"/>
+ <class name="mu2e::TriggerFlag"/>
+ <class name="mu2e::TriggerInfo"/>
+ <class name="mu2e::TriggerInfoCollection" /> 
+
+ <class name="art::Wrapper<mu2e::TRiggerCollection>"/>
+
 <!--  see if we need 2nd declaration of the same thing <class name="std::vector<mu2e::PIDProduct>" /> -->
 
  <class name="std::vector<std::pair<unsigned int, unsigned int> >"/>

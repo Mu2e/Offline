@@ -66,4 +66,7 @@
 // BTrk Kalman fit persistence
 #include "RecoDataProducts/inc/KalSeedCollection.hh"
 
+#include "RecoDataProducts/inc/TriggerFlag.hh"
+#include "RecoDataProducts/inc/TriggerInfoCollection.hh"
+
 #undef ENABLE_MU2E_GENREFLEX_HACKS
