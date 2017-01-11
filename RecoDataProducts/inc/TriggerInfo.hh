@@ -10,12 +10,15 @@ namespace mu2e {
 
   class TriggerInfo
   {
-      const TriggerFlag&            triggerBits() const { return _triggerBits; }
-      const art::Ptr<CaloCluster>&  caloCluster() const { return _caloCluster; }
+     
+      public:
+              TriggerFlag&            triggerBits() { return _triggerBits; }
+        const art::Ptr<CaloCluster>&  caloCluster() const { return _caloCluster; }
 
+      private:
+        TriggerFlag	       _triggerBits; 
+        art::Ptr<CaloCluster>  _caloCluster; 
 
-      TriggerFlag	       _triggerBits; 
-      art::Ptr<CaloCluster>    _caloCluster; 
   };
 
 } 

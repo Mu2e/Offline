@@ -10,7 +10,7 @@ namespace mu2e {
 
    struct TriggerFlagDetail 
    {
-       typedef unsigned mask_type;
+       typedef unsigned int mask_type;
 
        enum bit_type {prescaleRandom=0, helixTrkOk=1, caloClusterOk=2, AnotherTrigger=3};
 
