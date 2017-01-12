@@ -7,7 +7,7 @@
 
 namespace mu2e {
 
-  // genreflex perstency requires default ctr
+  // genreflex persistency requires default ctr
   PSShield::Groove::Groove() : theta_(), phi_(), r_(), halfLength_() {}
 
   PSShield::Groove::Groove(const CLHEP::Hep3Vector& ref, double theta, double phi, double r, double hl)
@@ -19,8 +19,8 @@ namespace mu2e {
     , halfLength_(hl)
   {}
 
-  // genreflex perstency requires default ctr
-  PSShield::PSShield() : shells_() {}
+  // genreflex persistency requires default ctr
+  PSShield::PSShield() : shells_(), version_(), endRings_() {}
 
   std::ostream& operator<<(std::ostream& os, const PSShield::Groove& g) {
     return os<<"Groove("

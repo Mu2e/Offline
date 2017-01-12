@@ -21,6 +21,7 @@
 
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
+#include "Mu2eG4/inc/nestPolycone.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 
 #include "ProductionSolenoidGeom/inc/PSShield.hh"
@@ -50,6 +51,9 @@ namespace mu2e {
     const bool isVisible           = geomOptions->isVisible          ( "PSShield" );
     const bool isSolid             = geomOptions->isSolid            ( "PSShield" );
 
+
+    const int version              = hrs->version();
+
     // -----------------------------
     // Put in beam pipe inlet.  David Norvil Brown, Louisville, March 2015
 
@@ -76,7 +80,7 @@ namespace mu2e {
 
 
     // ------------------------------------------------------------
-    // place the polycone shells
+    // place the polycone shells for the HRS proper
     for(unsigned ishell=0; ishell < hrs->shells().size(); ++ishell) {
       std::ostringstream osnum;
       osnum << ishell + 1;
@@ -121,6 +125,58 @@ namespace mu2e {
                     );
     }
 
+    // Insert the endRings if this is version 2 or higher
+    if ( version > 1 ) {
+      for(unsigned iER=0; iER < hrs->endRings().size(); ++iER) {
+	std::ostringstream osnum;
+	osnum << iER + 1;
+
+	const Polycone& eRing = hrs->endRings()[iER];
+	G4VSolid *psersolid = new G4Polycone("PSShieldEndRing"+osnum.str(),
+					    0, 2*M_PI,
+					    eRing.numZPlanes(),
+					    &eRing.zPlanes()[0],
+					    &eRing.rInner()[0],
+					    &eRing.rOuter()[0]
+					    );
+
+	VolumeInfo pser("PSShieldEndRing"+osnum.str(),
+		       eRing.originInMu2e() - parent.centerInMu2e(),
+		       parent.centerInWorld);
+	
+	G4VSolid *aSolid = 0;
+	if ( 1 == iER ) {
+	  // downstream - beam inlet tube penetrates
+	  aSolid = new G4SubtractionSolid ( pser.name,
+					    psersolid,
+					    beamPassTub,
+					    turn,
+					    place-eRing.originInMu2e());
+	} else {
+	  // upstream - beam inlet tube does not penetrate
+	  aSolid = psersolid;
+	}
+
+	pser.solid = aSolid;
+	pser.solid->SetName(pser.name);
+
+	finishNesting(pser,
+		      findMaterialOrThrow(eRing.materialName()),
+		      0,
+		      pser.centerInParent,
+		      parent.logical,
+		      0,
+		      isVisible,
+		      G4Colour(config.getHep3Vector("PSShield.endRing.color")),
+		      isSolid,
+		      forceAuxEdgeVisible,
+		      placePV,
+		      doSurfaceCheck
+		      );
+      }
+	    
+    } // end if ( version > 1)...  (putting in endRings)
+
 
 //FIXME: *** the following piece of code needs to become
 //FIXME: *** a double loop over shells and grooves
@@ -147,6 +203,9 @@ namespace mu2e {
     if(hrs->nGrooves() > 0) {
       throw cet::exception("GEOM")<<"in constructPSShield(): only nGrooves==0 is implemented at the moment.  Can't build the requested geometry with nGrooves = "<<hrs->nGrooves()<<"\n";
     }
+
+
+
 
   } // end Mu2eWorld::constructPSShield
 }
