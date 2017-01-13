@@ -58,9 +58,9 @@ physics :
   analyzers :
   {
       genCountLogger: { module_type: GenEventCountReader }
-      RKFDownstreameMinus: {
+      RKFDeM: {
          module_type: ReadKalFits
-	 fitterModuleLabel: TRFDownstreameMinus
+	 fitterModuleLabel: TRFDeM
 	 KalDiag : @local::KalDiagReadCD3 # configure KalDiag to read CD3 data files
 	 PIDdt : {
 	    signalHypothesis: {
@@ -86,22 +86,22 @@ physics :
 
 services.TFileService : { fileName : "RKFCalo.root" }
 
-physics.e2 : [RKFDownstreameMinus, genCountLogger ]
+physics.e2 : [RKFDeM, genCountLogger ]
 physics.end_paths : [e2]
 physics.p2: [ protonTimeMap, muonTimeMap,
 @sequence::Tracking.DigiSim,
 @sequence::CaloSim.MakeHits,
 @sequence::CaloReco.MakeClusters,
-@sequence::Tracking.TPRDownstreameMinus,
+@sequence::Tracking.TPRDeM,
 @sequence::TrackCaloMatching.matching_dem ]
 physics.trigger_paths  : [p2]
 
-physics.analyzers.RKFDownstreameMinus.eventWeightModules : [ ]
-physics.analyzers.RKFDownstreameMinus.KalDiag.diagLevel : 2
-physics.analyzers.RKFDownstreameMinus.addCalo : true
+physics.analyzers.RKFDeM.eventWeightModules : [ ]
+physics.analyzers.RKFDeM.KalDiag.diagLevel : 2
+physics.analyzers.RKFDeM.addCalo : true
 # TrkCaloIntersection by default looks for merged tracks
-physics.producers.TrackCaloIntersectionDem.fitterModuleLabel : TRFDownstreameMinus
-physics.producers.TrackCaloMatchingDem.fitterModuleLabel : TRFDownstreameMinus
+physics.producers.TrackCaloIntersectionDem.fitterModuleLabel : TRFDeM
+physics.producers.TrackCaloMatchingDem.fitterModuleLabel : TRFDeM
 
 # the following are needed for interactive running.  They will be overwritten if you submit this job
 # on the grid with mu2eart and do not need to be removed.

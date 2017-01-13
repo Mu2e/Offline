@@ -21,8 +21,8 @@ physics.producers.muonTimeMap: { module_type : GenerateMuonLife }
 # ...third, need to add the Tracking.producers so we can call them later
 physics.producers : { @table::physics.producers  @table::Tracking.producers }
 physics.producers.makeSH.diagLevel : 3
-physics.producers.TRFDownstreameMinus.diagLevel : 3
-physics.producers.TRFDownstreameMinus.KalDiag : { MCPtrLabel : "makeSH" 
+physics.producers.TRFDeM.diagLevel : 3
+physics.producers.TRFDeM.KalDiag : { MCPtrLabel : "makeSH" 
 					      	  MCStepsLabel : "g4run"
 						  SimParticleLabel : "g4run"
 						  SimParticleInstance : ""
@@ -31,9 +31,9 @@ physics.producers.TRFDownstreameMinus.KalDiag : { MCPtrLabel : "makeSH"
 						  diagLevel : 3
 						}
 
-physics.analyzers.RKFDownstreameMinus: {
+physics.analyzers.RKFDeM: {
          module_type: ReadKalFits
-	 fitterModuleLabel: TRFDownstreameMinus
+	 fitterModuleLabel: TRFDeM
 	 KalDiag : { MCPtrLabel : "makeSH" 
 	 	     MCStepsLabel : "g4run"
 		     SimParticleLabel : "g4run"
@@ -47,7 +47,7 @@ physics.analyzers.RKFDownstreameMinus: {
       }
 
 # ...now we can add everything to the detPath
-physics.myPath : [ generate, genCounter, g4run, g4consistent, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDownstreameMinus ]
+physics.myPath : [ generate, genCounter, g4run, g4consistent, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM ]
 physics.trigger_paths : [ myPath ]
 
 # ...add any analyzer modules we want...
@@ -56,5 +56,5 @@ physics.analyzers.dumpGen : { module_type : GenParticlesAnalyzer
 			    }
 
 # ...and append them to the end_paths
-physics.extrapaths : [ dumpGen, RKFDownstreameMinus ]
+physics.extrapaths : [ dumpGen, RKFDeM ]
 physics.end_paths : [ extrapaths ]

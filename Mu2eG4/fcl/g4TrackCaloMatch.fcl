@@ -49,7 +49,7 @@ physics: {
 	TrackCaloIntersection :
 	{
 	  module_type            : TrackCaloIntersection
-	  fitterModuleLabel      : TRFDownstreameMinus
+	  fitterModuleLabel      : TRFDeM
 	  fitparticle            : 11
 	  fitdirection           : 0 
 	  checkExit              : true
@@ -64,7 +64,7 @@ physics: {
 	  module_type             : TrackCaloMatchingBis
 	  caloClusterModuleLabel  : MakeCaloCluster
 	  trkIntersectModuleLabel : TrackCaloIntersection
-	  fitterModuleLabel       : TRFDownstreameMinus
+	  fitterModuleLabel       : TRFDeM
 	  fitparticle             : 11
 	  fitdirection            : 0 
 	  diagLevel               : 0
@@ -94,7 +94,7 @@ physics: {
 	    caloClusterModuleLabel     : MakeCaloCluster
 	    virtualDetectorName        : virtualdetector
             stepPointMCLabel           : g4run
-  	    trkPatRecModuleLabel       : TRFDownstreameMinus
+  	    trkPatRecModuleLabel       : TRFDeM
 	    fitparticle                : 11
 	    fitdirection               : 0 
 	}
@@ -106,7 +106,7 @@ physics: {
 	    caloClusterModuleLabel  : MakeCaloCluster
 	    trkIntersectModuleLabel : TrackCaloIntersection
 	    trkCaloMatchModuleLabel : TrkCaloMatcherBis
-  	    fitterModuleLabel       : TRFDownstreameMinus
+  	    fitterModuleLabel       : TRFDeM
 	    fitparticle             : 11
 	    fitdirection            : 0 
 	    g4ModuleLabel           : g4run
@@ -116,7 +116,7 @@ physics: {
 	CaloTrackMatchExample: 
 	{
             module_type             : CaloTrackMatchExample
-  	    fitterModuleLabel       : TRFDownstreameMinus
+  	    fitterModuleLabel       : TRFDeM
 	    fitparticle             : 11
 	    fitdirection            : 0 
 	    caloClusterModuleLabel  : MakeCaloCluster
@@ -129,7 +129,7 @@ physics: {
 
    }
 
-    p1: [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDownstreameMinus, 
+    p1: [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM, 
           MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster, 
 	  TrackCaloIntersection, TrkCaloMatcherBis]
 

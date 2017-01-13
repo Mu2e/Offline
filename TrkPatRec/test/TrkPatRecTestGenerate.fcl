@@ -45,10 +45,10 @@ physics :
   analyzers : {
 # count generated events
       genCountLogger : { module_type: GenEventCountReader }
-# read Kalman fit DownstreameMinus tracks and create default KalDiag TTree
+# read Kalman fit DeM tracks and create default KalDiag TTree
 # Note that the module labels and keys for the data products may be different
 # if you are reading files.
-      RKFDownstreameMinus: {
+      RKFDeM: {
          module_type : ReadKalFits
          fitterModuleLabel : KFFDeM
 	 KalDiag : @local::KalDiagDirect # configure KalDiag to look for directly (inline) generated data products
@@ -60,7 +60,7 @@ p1: [ generate, g4run, genCounter,
       @sequence::Tracking.DigiSim,
       @sequence::Tracking.TPRDeM ]
 # end path
-  e1 : [RKFDownstreameMinus, genCountLogger]
+  e1 : [RKFDeM, genCountLogger]
   
   trigger_paths  : [p1]
   end_paths      : [e1]

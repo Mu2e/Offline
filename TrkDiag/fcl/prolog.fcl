@@ -77,9 +77,9 @@ BEGIN_PROLOG
 # Prototype track analysis config.
   TrackAnalysis : {
     module_type : TrackAnalysis
-    DownstreameMinusTrackTag : "KFFDeM"
-    UpstreameMinusTrackTag : "KFFUeM"
-    DownstreammuMinusTrackTag : "KFFDmuM"
+    DeMTrackTag : "KFFDeM"
+    UeMTrackTag : "KFFUeM"
+    DmuMTrackTag : "KFFDmuM"
     KalDiag : @local::KalDiagReadCD3 # configure KalDiag to read CD3 Beam Sim Particles
     # change this if reading cosmic data or generating inline
     TrkCaloDiag : @local::TrkCaloDiag

@@ -58,7 +58,7 @@ physics : {
     @table::HitMakers.producers
     @table::CaloCluster.producers
     @table::Tracking.producers
-    TRFDownstreameMinus	  : @local::TrkRecFitDownstreameMinus
+    TRFDeM	  : @local::TrkRecFitDeM
 
    }
 
@@ -81,11 +81,11 @@ physics : {
       maxFullPrint     : 5
     }
 
-    RKFDownstreameMinus :
+    RKFDeM :
     {
       module_type    : ReadKalFits
       KalDiag : @local::KalDiagDirect
-      fitterModuleLabel : TRFDownstreameMinus
+      fitterModuleLabel : TRFDeM
       fitparticle : 11
       fitdirection : 0
     }
@@ -97,10 +97,10 @@ physics : {
 	  @sequence::calDigiSeq,
           @sequence::calRecoSeq,
           @sequence::Tracking.DigiSim, 
-          @sequence::Tracking.TPRDownstreameMinus
+          @sequence::Tracking.TPRDeM
        ]
 
-  e1 : [ checkhits, readStrawHits, RKFDownstreameMinus ]
+  e1 : [ checkhits, readStrawHits, RKFDeM ]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -108,7 +108,7 @@ physics : {
 }
 
 # needed to fill the diagnostic histograms
-physics.analyzers.RKFDownstreameMinus.KalFitMC.diaglLevel : 2
+physics.analyzers.RKFDeM.KalFitMC.diaglLevel : 2
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.user.SeedService.baseSeed         :  0

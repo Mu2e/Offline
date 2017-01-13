@@ -29,8 +29,8 @@ services.user.ConditionsService.StrawElectronics.FlashEnd : 1
 physics.producers.FSHPreStereo.minimumTime : 1
 physics.producers.FlagStrawHits.minimumTime : 1
 
-physics.producers.TRFDownstreameMinus.diagLevel : 3
-physics.producers.TRFDownstreameMinus.KalDiag : { MCPtrLabel : "makeSH" 
+physics.producers.TRFDeM.diagLevel : 3
+physics.producers.TRFDeM.KalDiag : { MCPtrLabel : "makeSH" 
 					      	  MCStepsLabel : "detectorFilter"
 						  SimParticleLabel : "detectorFilter"
 						  SimParticleInstance : ""
@@ -41,7 +41,7 @@ physics.producers.TRFDownstreameMinus.KalDiag : { MCPtrLabel : "makeSH"
 
 
 # ...now we can add everything to the detPath
-physics.myPath : [ protonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDownstreameMinus ]
+physics.myPath : [ protonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM ]
 physics.trigger_paths : [ myPath ]
 
 # ...add any analyzer modules we want...

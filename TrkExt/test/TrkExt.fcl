@@ -57,10 +57,10 @@ physics :
     MakeStereoHits : @local::MakeStereoHits 
     FlagStrawHits :@local::FlagStrawHits 
     FlagBkgHits : @local::FlagBkgHits
-    tprDem : @local::TrkPatRecDownstreameMinus
-    tprDep : @local::TrkPatRecDownstreamePlus
-    tprUem : @local::TrkPatRecUpstreameMinus
-    tprUep : @local::TrkPatRecUpstreamePlus
+    tprDem : @local::TrkPatRecDeM
+    tprDep : @local::TrkPatRecDeP
+    tprUem : @local::TrkPatRecUeM
+    tprUep : @local::TrkPatRecUeP
 
 
     # extrapolation producer module
