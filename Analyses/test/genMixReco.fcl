@@ -99,7 +99,7 @@ physics : {
 	MakeStereoHits       : @local::MakeStereoHits
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
-	TrkPatRec            : @local::TrkPatRecDownstreameMinus
+	TrkPatRec            : @local::TrkPatRecDeM
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
@@ -133,7 +133,7 @@ physics : {
     analyzers: {
 
 #     Read the TrkPatRec output and make diagnostic ntuples.
-      RKFDownstreameMinus: {
+      RKFDeM: {
          module_type: ReadKalFits
          fitterModuleLabel: TrkPatRec
          KalDiag : {
@@ -151,7 +151,7 @@ physics : {
 # paths
 # write out ntuple only, so don't need compression modules...
 #------------------------------------------------------------------------------
-    e1 : [ RKFDownstreameMinus ]
+    e1 : [ RKFDeM ]
 
     p1 : [generate, g4run
 	  , protonTimeMap, muonTimeMap 

@@ -47,7 +47,7 @@ services : {
 
 physics : {
   producers: {
-    trkPatRec : @local::TrkPatRecDownstreameMinus
+    trkPatRec : @local::TrkPatRecDeM
   }
 
   filters: { 

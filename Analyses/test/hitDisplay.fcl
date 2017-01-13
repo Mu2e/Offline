@@ -60,10 +60,10 @@ physics : {
     FlagStrawHits  : @local::FlagStrawHits
     FlagBkgHits    : @local::FlagBkgHits
 
-    trkPatRec1     : @local::TrkPatRecDownstreameMinus
-    trkPatRec2     : @local::TrkPatRecUpstreamePlus
-    trkPatRec3     : @local::TrkPatRecDownstreammuMinus
-    trkPatRec4     : @local::TrkPatRecUpstreammuPlus
+    trkPatRec1     : @local::TrkPatRecDeM
+    trkPatRec2     : @local::TrkPatRecUeP
+    trkPatRec3     : @local::TrkPatRecDmuM
+    trkPatRec4     : @local::TrkPatRecUmuP
 
     makeCaloCluster: {
       module_type           : MakeCaloClusterNew

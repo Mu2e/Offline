@@ -156,7 +156,7 @@ physics : {
 	    maxFullPrint           : 201
 	}
 
-	trkPatRec   : @local::TrkPatRecDownstreameMinus
+	trkPatRec   : @local::TrkPatRecDeM
 
 	mergePatRec :{
 	    module_type                  : MergePatRec

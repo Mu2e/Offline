@@ -18,7 +18,7 @@ BEGIN_PROLOG
 
   hitMakerSeq   : [ MakeCaloReadoutHits, MakeCaloCrystalHits, @sequence::Tracking.DigiSim ]
 
-  allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus ]
+  allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDeM ]
 END_PROLOG
 
 process_name : GenReco
