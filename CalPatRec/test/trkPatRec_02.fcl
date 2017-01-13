@@ -72,7 +72,7 @@ physics : {
 	makeSD : @local::makeSD
 	makeSH : @local::makeSHfromSD
 
-	trkPatRec   : @local::TrkPatRecDownstreameMinus
+	trkPatRec   : @local::TrkPatRecDeM
 	
 	makeSHnew: {
 	    module_type             : MakeStrawHitsNew

@@ -34,7 +34,7 @@ physics : {
                   FlagBkgHits          : @local::FlagBkgHits
                   CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
                   CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
-                  TrkPatRec            : @local::TrkPatRecDownstreameMinus
+                  TrkPatRec            : @local::TrkPatRecDeM
     }
 
     filters: {
@@ -42,7 +42,7 @@ physics : {
                   {
                      module_type : TrkPatRecFilter
                      fitterModuleLabels : [ "TrkPatRec" ]
-                     trkPatRecInstances : [ "DownstreameMinus" ]
+                     trkPatRecInstances : [ "DeM" ]
                      minMomentum :  50.0
                      maxMomentum : 200.0
                   }

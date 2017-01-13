@@ -24,14 +24,14 @@ physics : {
     MakeStereoHits : @local::MakeStereoHits
     FlagStrawHits  : @local::FlagStrawHits
     FlagBkgHits    : @local::FlagBkgHits
-    TPRDownstreameMinus : @local::TrkPatRecDownstreameMinus
+    TPRDeM : @local::TrkPatRecDeM
   }
 
   analyzers:{
     genCountLogger: { module_type: GenEventCountReader }
-    RKFDownstreameMinus : {
+    RKFDeM : {
       module_type       : ReadKalFits
-      fitterModuleLabel : TPRDownstreameMinus
+      fitterModuleLabel : TPRDeM
       KalDiag : { 
 	MCPtrLabel : "makeSH"
 	MCStepsLabel : "detectorFilter"
@@ -43,9 +43,9 @@ physics : {
     }
   }
 
-  p1 : [FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDownstreameMinus ]
+  p1 : [FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDeM ]
   trigger_paths  : [p1]
 
-  e1 : [genCountLogger, RKFDownstreameMinus]
+  e1 : [genCountLogger, RKFDeM]
   end_paths      : [e1]
 }

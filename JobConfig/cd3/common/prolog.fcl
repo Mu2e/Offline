@@ -161,7 +161,7 @@ draTopLevelDefs: {
 	 , @sequence::Tracking.TPRDeM
 	 , @sequence::Tracking.TPRUeM
 
-	 // MergePatRec simply copies TPRUpstreameMinus tracks
+	 // MergePatRec simply copies TPRUeM tracks
 	 // because CalPatRec is not in a trigger_path.
 	 , MergePatRecDem
 

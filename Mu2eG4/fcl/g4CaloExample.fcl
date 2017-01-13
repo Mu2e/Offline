@@ -65,7 +65,7 @@ physics: {
 	    caloClusterModuleLabel     : MakeCaloCluster
 	    virtualDetectorName        : virtualdetector
             stepPointMCLabel           : g4run
-  	    trkPatRecModuleLabel       : TRFDownstreameMinus
+  	    trkPatRecModuleLabel       : TRFDeM
 	    fitparticle                : 11
 	    fitdirection               : 0 
 	    TimeOffsets                :  { inputs : [ "protonTimeMap", "muonTimeMap" ] } 
@@ -74,7 +74,7 @@ physics: {
     }
 
 
-    p1: [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDownstreameMinus, 
+    p1: [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM, 
           MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster]
 
     e1: [CaloExample]

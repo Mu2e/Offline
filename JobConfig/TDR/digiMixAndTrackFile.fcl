@@ -82,7 +82,7 @@ physics: {
             "flashMixer:virtualdetector", "ootMixer:virtualdetector", "dioMixer:virtualdetector",
             "neutronMixer:virtualdetector", "photonMixer:virtualdetector", "protonMixer:virtualdetector"
          ]
-         mainSPPtrInputs: [ "TSTMDownstreameMinusTmp", "TSTMUpstreameMinusTmp" ]
+         mainSPPtrInputs: [ "TSTMDeMTmp", "TSTMUeMTmp" ]
          vetoDaughters: []
          compressGenParticles: true
 
@@ -108,40 +108,40 @@ physics: {
       FlagStrawHits: @local::FlagStrawHits
       FlagBkgHits: @local::FlagBkgHits
 
-      TPRDownstreameMinus: @local::TrkPatRecDownstreameMinus
-      TSMDownstreameMinus: {
+      TPRDeM: @local::TrkPatRecDeM
+      TSMDeM: {
          module_type: TrackSummaryMaker
-         trackInput: "TPRDownstreameMinus:DownstreameMinus"
+         trackInput: "TPRDeM:DeM"
       }
-      TSTMDownstreameMinusTmp: {
+      TSTMDeMTmp: {
          module_type: TrackSummaryTruthMaker
-         recoMapInput: "TSMDownstreameMinus"
+         recoMapInput: "TSMDeM"
          strawHitDigiMCInput: "makeSH:StrawHitMC"
          minPrincipalHits : 1
          minAllHits: 2
       }
-      TSTMDownstreameMinus: {
+      TSTMDeM: {
          module_type: TrackSummaryTruthUpdater
          remapping: simParticleFilter
-         inputTST: TSTMDownstreameMinusTmp
+         inputTST: TSTMDeMTmp
       }
 
-      TPRUpstreameMinus: @local::TrkPatRecUpstreameMinus
-      TSMUpstreameMinus: {
+      TPRUeM: @local::TrkPatRecUeM
+      TSMUeM: {
          module_type: TrackSummaryMaker
-         trackInput: "TPRUpstreameMinus:UpstreameMinus"
+         trackInput: "TPRUeM:UeM"
       }
-      TSTMUpstreameMinusTmp: {
+      TSTMUeMTmp: {
          module_type: TrackSummaryTruthMaker
-         recoMapInput: "TSMUpstreameMinus"
+         recoMapInput: "TSMUeM"
          strawHitDigiMCInput: "makeSH:StrawHitMC"
          minPrincipalHits : 1
          minAllHits: 2
       }
-      TSTMUpstreameMinus: {
+      TSTMUeM: {
          module_type: TrackSummaryTruthUpdater
          remapping: simParticleFilter
-         inputTST: TSTMUpstreameMinusTmp
+         inputTST: TSTMUeMTmp
       }
 
       protonTimeMapCompressed: {
@@ -160,9 +160,9 @@ physics: {
 
    analyzers: {
       genCountLogger: { module_type: GenEventCountReader }
-      RKFDownstreameMinus: {
+      RKFDeM: {
          module_type: ReadKalFits
-         fitterModuleLabel: TPRDownstreameMinus
+         fitterModuleLabel: TPRDeM
 	 KalDiag : { 
 	  MCPtrLabel : "makeSH"
 	  MCStepsLabel : "detectorFilter"
@@ -178,16 +178,16 @@ physics: {
       dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer,
       protonTimeMap, muonTimeMap, makeSD, makeSH, FSHPreStereo,
       MakeStereoHits, FlagStrawHits, FlagBkgHits,
-      TPRDownstreameMinus, TSMDownstreameMinus, TSTMDownstreameMinusTmp,
-      TPRUpstreameMinus, TSMUpstreameMinus, TSTMUpstreameMinusTmp,
+      TPRDeM, TSMDeM, TSTMDeMTmp,
+      TPRUeM, TSMUeM, TSTMUeMTmp,
       simParticleFilter,
       protonTimeMapCompressed, muonTimeMapCompressed,
-      TSTMDownstreameMinus, TSTMUpstreameMinus
+      TSTMDeM, TSTMUeM
    ]
 
    trigger_paths: [p1]
 
-   e1: [ genCountLogger, RKFDownstreameMinus]
+   e1: [ genCountLogger, RKFDeM]
    out: [summaryOutput]
    end_paths      : [e1, out]
 }
@@ -206,8 +206,8 @@ outputs: {
          "keep mu2e::*_simParticleFilter_*_*",
          "keep *_protonTimeMapCompressed_*_*",
          "keep *_muonTimeMapCompressed_*_*",
-         "keep *_TSTMDownstreameMinus_*_*",
-         "keep *_TSTMUpstreameMinus_*_*"
+         "keep *_TSTMDeM_*_*",
+         "keep *_TSTMUeM_*_*"
       ]
    }
 }

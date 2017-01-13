@@ -53,10 +53,10 @@ physics :
   {
 # count generated events
       genCountLogger: { module_type: GenEventCountReader }
-# read Kalman fit DownstreameMinus tracks
-      RKFDownstreameMinus: {
+# read Kalman fit DeM tracks
+      RKFDeM: {
          module_type: ReadKalFits
-	 fitterModuleLabel: TRFDownstreameMinus
+	 fitterModuleLabel: TRFDeM
 	 KalDiag : @local::KalDiagReadCD3 # configure KalDiag to read CD3 data files
 # Weight track analysis by the proton intensity
 	 eventWeightModules : [ protonBunchSummarizer  ]
@@ -69,11 +69,11 @@ physics :
 	@sequence::EventMixing.CD3Mixers,
 	@sequence::EventMixing.TimeMaps,
 	@sequence::Tracking.DigiSim,
-	@sequence::Tracking.TPRDownstreameMinus
+	@sequence::Tracking.TPRDeM
        ] 
 
 # end path, including standard track analysis
-  e1 : [RKFDownstreameMinus, genCountLogger ]
+  e1 : [RKFDeM, genCountLogger ]
   
   trigger_paths  : [p1]
   end_paths      : [e1]

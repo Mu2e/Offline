@@ -18,9 +18,9 @@ services: {
 
 physics: {
    producers: {
-      TSTSDownstreameMinus: {
+      TSTSDeM: {
          module_type: TrackSummaryTruthRFSelector
-	 TrackTruthInput: TSTMDownstreameMinus
+	 TrackTruthInput: TSTMDeM
 	 cutMinCommonFraction: 0.8
       }
    }
@@ -30,16 +30,16 @@ physics: {
 
       TrackSummaryDataAnalyzer: {
          module_type: TrackSummaryDataAnalyzer
-         trackInput: "TSMDownstreameMinus"
+         trackInput: "TSMDeM"
          cuts : @local::cutSetC
       }
 
       TrackSummaryMCAnalyzer: {
          module_type: TrackSummaryMCAnalyzer
-         trackInput: "TSMDownstreameMinus"
+         trackInput: "TSMDeM"
          cuts : @local::cutSetC
 
-	 truthMapInput: "TSTSDownstreameMinus"
+	 truthMapInput: "TSTSDeM"
 	 signalSimParticleCollection: "simParticleFilter:signal"
 	 eventWeights : []
 	 physVolInfoInput: "compressPVDetector"
@@ -47,7 +47,7 @@ physics: {
 
    }
 
-   p1: [TSTSDownstreameMinus]
+   p1: [TSTSDeM]
    trigger_paths: [p1]
 
    e1 : [ genCountLogger, TrackSummaryDataAnalyzer, TrackSummaryMCAnalyzer]

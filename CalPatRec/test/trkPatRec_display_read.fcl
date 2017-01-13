@@ -75,7 +75,7 @@ physics : {
 	MakeStereoHits       : @local::MakeStereoHits
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
-	TrkPatRec            : @local::TrkPatRecDownstreameMinus
+	TrkPatRec            : @local::TrkPatRecDeM
 
 	CaloMatching         : @local::TrackCaloMatching
 	TrkExtrapol          : @local::TrkExtrapol

@@ -44,13 +44,13 @@ physics : {
     MakeStereoHits       : @local::MakeStereoHits
     FlagStrawHits        : @local::FlagStrawHits
     FlagBkgHits          : @local::FlagBkgHits
-    TPRDeM               : @local::TrkPatRecDownstreameMinus
+    TPRDeM               : @local::TrkPatRecDeM
 
   }
 
   analyzers:  {
 
-    RKFDownstreameMinus : {
+    RKFDeM : {
       module_type    : ReadKalFits
       fitterModuleLabel : TPRDeM
       eventWeightModules : [ generate ]
@@ -65,7 +65,7 @@ physics : {
   }
 
   p1 : [protonTimeMap, muonTimeMap, makeSD, makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDeM ]
-  e1 : [RKFDownstreameMinus, GenEventReader ]
+  e1 : [RKFDeM, GenEventReader ]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
