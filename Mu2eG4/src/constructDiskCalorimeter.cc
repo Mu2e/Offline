@@ -449,8 +449,7 @@ namespace mu2e {
 
 
 	     // fill this disk with crystal units defined above
-	     for(int ic=0; ic < 1; ++ic)
-	     //for(int ic=0; ic <cal.disk(idisk).nCrystals(); ++ic)
+	     for(int ic=0; ic <cal.disk(idisk).nCrystals(); ++ic)
 	     {	      
         	   CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).localPosition();
         	   double x = unitPosition.x();
