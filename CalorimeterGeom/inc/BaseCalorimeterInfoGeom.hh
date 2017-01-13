@@ -27,7 +27,7 @@ namespace mu2e {
            BaseCalorimeterInfoGeom(): 
 	      _crystalNumEdges(0),_crystalShift(0),_crystalHalfTrans(0),_crystalHalfLength(0),_crystalVolume(0),_wrapperThickness(0),
 	      _nROPerCrystal(0),_roHalfTrans(0),_roHalfThickness(0),_roElecHalfX(0),_roElecHalfY(0),_roElecHalfZ(0),
-	      _crateRadiusIn(0),_crateRadiusOut(0),_crateExtendLen(0),
+	      _crateRadiusIn(0),_crateRadiusOut(0),_crateHalfLength(0),
 	      _caseThickness(0),_envelopeInRadius(0),_envelopeOutRadius(0),_envelopeZ0(0),_envelopeZ1(0),
 	      _nPipes(0),_pipeRadius(0),_pipeThickness(0),_pipeTorRadius()	      
 	   {}
@@ -49,7 +49,7 @@ namespace mu2e {
            void roElecHalfZ(double value)          {_roElecHalfZ = value;}
            void crateRadiusIn(double value)        {_crateRadiusIn = value;}
            void crateRadiusOut(double value)       {_crateRadiusOut = value;}
-           void crateExtendLen(double value)       {_crateExtendLen = value;}
+           void crateHalfLength(double value)      {_crateHalfLength = value;}
           
 	   void caseThickness(double value)        {_caseThickness = value;}
            void envelopeInRadius(double value)     {_envelopeInRadius = value;}
@@ -74,7 +74,7 @@ namespace mu2e {
            double roElecHalfZ()         const      {return _roElecHalfZ;}
            double crateRadiusIn()       const      {return _crateRadiusIn;}
            double crateRadiusOut()      const      {return _crateRadiusOut;}
-           double crateExtendLen()      const      {return _crateExtendLen;}
+           double crateHalfLength()     const      {return _crateHalfLength;}
            
 	   double caseThickness()       const      {return _caseThickness;}
            double envelopeInRadius()    const      {return _envelopeInRadius;}
@@ -117,7 +117,7 @@ namespace mu2e {
 	  
 	  double _crateRadiusIn;
 	  double _crateRadiusOut;
-	  double _crateExtendLen;
+          double _crateHalfLength;
 
           double _caseThickness;
           double _envelopeInRadius;

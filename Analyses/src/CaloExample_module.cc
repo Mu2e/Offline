@@ -373,11 +373,13 @@ namespace mu2e {
       art::Handle<StepPointMCCollection> vdhits;
       event.getByLabel(_g4ModuleLabel,_virtualDetectorLabel,vdhits);
 
+
+/*
       //Get tracks
       art::Handle<KalRepCollection> krepsHandle;
       event.getByLabel(_trkPatRecModuleLabel,_instanceName,krepsHandle);
       KalRepCollection const& kreps = *krepsHandle;
-
+*/
 
       //Utility to match  cloHits with MCtruth, simParticles and StepPoints
       CaloHitMCNavigator caloHitNavigator(caloHits, caloHitsMCTruth, caloHitSimPartMC);
@@ -580,6 +582,11 @@ namespace mu2e {
            for (auto iter=vdhits->begin(), ie=vdhits->end(); iter!=ie; ++iter)
              {
                const StepPointMC& hit = *iter;
+               if (hit.volumeId() >= VirtualDetectorId::EMC_FEB_0_SurfIn) {
+               std::cout<<hit.volumeId()<<" "<<hit.simParticle()->pdgId()<<" "<<hit.momentum()<<std::endl;
+               } 
+               
+               
                if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
 
                double hitTimeUnfolded = _toff.timeWithOffsetsApplied(hit);
@@ -599,10 +606,14 @@ namespace mu2e {
                _vdenIdx[_nVd] = hit.simParticle()->generatorIndex();
                ++_nVd;
              }
+             
+             
+             
          }
 
 
        //--------------------------  Do tracks  --------------------------------
+       /*
        _nTrkOk = 0;
        _nTrk = 0;
 
@@ -657,6 +668,7 @@ namespace mu2e {
 
           if (cutC)  ++_nTrkOk;
         }
+        */
 
         _Ntup->Fill();
 

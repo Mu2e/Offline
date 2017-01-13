@@ -21,6 +21,7 @@ namespace mu2e {
       _nSections(0),
       _sections(),
       _origin(),
+      _center(),
       _trackerCenter(),
       _caloGeomInfo(),
       _fullCrystalList()  

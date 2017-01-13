@@ -61,7 +61,7 @@ int calorimeter.crateVersion        = 2;
 string calorimeter.crateMaterial    = "Electronics"; 
 double calorimeter.crateInnerRadius = 670;       
 double calorimeter.crateOuterRadius = 815;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
-double calorimeter.crateExtendLen   = 175.0;  
+double calorimeter.crateHalfLength  = 215.575;
 
 
 

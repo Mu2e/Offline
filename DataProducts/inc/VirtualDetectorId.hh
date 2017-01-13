@@ -81,6 +81,8 @@ namespace mu2e {
       CRV_R, CRV_L, CRV_T, CRV_D, CRV_U, // 93, 94, 95, 96, 97: virtual detectors next to the major CRV sectors
       TS2_Bend, TS4_Bend, // 98, 99: Virtual detectors requested by Mau for testing magnetic field effects - in the bends of TS
       STM_FieldOfViewCollDnStr, STM_SpotSizeCollUpStr, // 100,101: inside STM area
+      EMC_FEB_0_SurfIn, EMC_FEB_0_SurfOut, EMC_FEB_1_SurfIn, EMC_FEB_1_SurfOut,// 102,103,104,105
+      EMC_FEB_0_EdgeIn, EMC_FEB_0_EdgeOut, EMC_FEB_1_EdgeIn, EMC_FEB_1_EdgeOut,// 106,107,108,109      
       lastEnum
     };
 
@@ -125,7 +127,9 @@ namespace mu2e {
       "PSPbarIn", "PSPbarOut",  \
       "CRV_R", "CRV_L", "CRV_T", "CRV_D", "CRV_U", \
       "TS2_Bend", "TS4_Bend", \
-      "STM_FieldOfViewCollDnStr", "STM_SpotSizeCollUpStr"
+      "STM_FieldOfViewCollDnStr", "STM_SpotSizeCollUpStr",\
+      "EMC_FEB_0_SurfIn", "EMC_FEB_0_SurfOut","EMC_FEB_1_SurfIn", "EMC_FEB_1_SurfOut", \
+      "EMC_FEB_0_EdgeIn", "EMC_FEB_0_EdgeOut","EMC_FEB_1_EdgeIn", "EMC_FEB_1_EdgeOut"
 
   public:
 
@@ -194,6 +198,14 @@ namespace mu2e {
 
     bool isDiskCalorimeter1() const{
       return ( _id == EMC_Disk_1_SurfIn || _id == EMC_Disk_1_SurfOut || _id == EMC_Disk_1_EdgeIn || _id == EMC_Disk_1_EdgeOut);
+    }
+
+    bool isFEBCalorimeter0() const{
+      return (_id == EMC_FEB_0_SurfIn || _id == EMC_FEB_0_SurfOut || _id == EMC_FEB_0_EdgeIn || _id == EMC_FEB_0_EdgeOut);
+    }
+
+    bool isFEBCalorimeter1() const{
+      return (_id == EMC_FEB_1_SurfIn || _id == EMC_FEB_1_SurfOut || _id == EMC_FEB_1_EdgeIn || _id == EMC_FEB_1_EdgeOut);
     }
 
     bool isPSTargetSurf() const{

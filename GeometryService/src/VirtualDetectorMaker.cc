@@ -525,51 +525,84 @@ namespace mu2e {
       if (c.getBool("hasDiskCalorimeter",true)){
 	GeomHandle<DiskCalorimeter> cg;
 	
-	int vdIdSurf = VirtualDetectorId::EMC_Disk_0_SurfIn;
-	int vdIdEdge = VirtualDetectorId::EMC_Disk_0_EdgeIn;
+	int vdIdDiskSurf = VirtualDetectorId::EMC_Disk_0_SurfIn;
+	int vdIdDiskEdge = VirtualDetectorId::EMC_Disk_0_EdgeIn;
+        int vdIdFEBEdge  = VirtualDetectorId::EMC_FEB_0_EdgeIn;
+        int vdIdFEBSurf  = VirtualDetectorId::EMC_FEB_0_SurfIn;
 
-	Hep3Vector EdgeOffset(0.0, 0.0, 0.0);
-	const Hep3Vector OffsetOut(0.0, 0.0, (cg->disk(0).size().z() + vdHL) );
-	const Hep3Vector OffsetIn(0.0, 0.0,  -(cg->disk(0).size().z() + vdHL) );
-	
-	for(size_t i=0; i<cg->nDisk(); ++i){
+        double crateHalfLength = cg->caloGeomInfo().crateHalfLength();           
+	double delta           = 2*vdHL+0.02;
+        
+        CLHEP::Hep3Vector parentInMu2e = cg->center();
+
+	for(size_t i=0; i<cg->nDisk(); ++i)
+        {	 
+           const CLHEP::Hep3Vector& sizeDisk = cg->disk(i).size();
+           CLHEP::Hep3Vector posDiskLocal  = cg->disk(i).origin() - cg->center();
+           CLHEP::Hep3Vector posCrateLocal = posDiskLocal + CLHEP::Hep3Vector(0.0,0.0,cg->disk(i).crateDeltaZ());
+
+           CLHEP::Hep3Vector  posFrontDisk = posDiskLocal - CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0+delta);
+           CLHEP::Hep3Vector  posBackDisk  = posDiskLocal + CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0+delta);
+           CLHEP::Hep3Vector  posInnerDisk = posDiskLocal;
+
+           CLHEP::Hep3Vector  posFrontFEB  = posCrateLocal - CLHEP::Hep3Vector (0,0,crateHalfLength+delta);
+           CLHEP::Hep3Vector  posBackFEB   = posCrateLocal + CLHEP::Hep3Vector (0,0,crateHalfLength+delta);
+           CLHEP::Hep3Vector  posInnerFEB  = posCrateLocal;
+
+          vd->addVirtualDetector( vdIdDiskSurf,
+				  parentInMu2e,
+				  0,
+				  posFrontDisk);
+	  ++vdIdDiskSurf;
 	 
-	 
+	  vd->addVirtualDetector( vdIdDiskSurf,
+				  parentInMu2e,
+				  0,
+				  posBackDisk);
+	  ++vdIdDiskSurf;
 	
-// 	  cout<<"disk origin ("<<i<<") = "<<cg->disk(i).origin() <<endl;
-// 	  cout<<"vdIdSurf = "<<vdIdSurf<<endl;	  
 	  
-	  vd->addVirtualDetector( vdIdSurf,
-				  cg->disk(i).origin(),
+	  vd->addVirtualDetector( vdIdDiskEdge,
+				  parentInMu2e,
 				  0,
-				  OffsetIn);
-	  ++vdIdSurf;
+				  posInnerDisk);
+	  ++vdIdDiskEdge;
 
-	  // cout<<"vdIdSurf = "<<vdIdSurf<<endl;	  
-	 
-	  vd->addVirtualDetector( vdIdSurf,
-				  cg->disk(i).origin(),
+	  vd->addVirtualDetector( vdIdDiskEdge,
+				  parentInMu2e,
 				  0,
-				  OffsetOut);
-	  ++vdIdSurf;
+				  posInnerDisk);
+	  ++vdIdDiskEdge;
 	
-	//   cout<<"disk origin ("<<i<<") = "<<cg->disk(i).origin() <<endl;
-// 	  cout<<"vdIdEdge = "<<vdIdEdge<<endl;	  
-	  
-	  vd->addVirtualDetector( vdIdEdge,
-				  cg->disk(i).origin(),
-				  0,
-				  EdgeOffset);
-	  ++vdIdEdge;
 
-	  //	  cout<<"vdIdEdge = "<<vdIdEdge<<endl;
 
-	  vd->addVirtualDetector( vdIdEdge,
-				  cg->disk(i).origin(),
+	  vd->addVirtualDetector( vdIdFEBSurf,
+				  parentInMu2e,
 				  0,
-				  EdgeOffset);
-	  ++vdIdEdge;
-	}
+				  posFrontFEB);
+	  ++vdIdFEBSurf;
+
+	  vd->addVirtualDetector( vdIdFEBSurf,
+				  parentInMu2e,
+				  0,
+				  posBackFEB);
+	  ++vdIdFEBSurf;
+        
+        
+ 	  vd->addVirtualDetector( vdIdFEBEdge,
+				  parentInMu2e,
+				  0,
+				  posInnerFEB);
+	  ++vdIdFEBEdge;
+
+	  vd->addVirtualDetector( vdIdFEBEdge,
+				  parentInMu2e,
+				  0,
+				  posInnerFEB);
+	  ++vdIdFEBEdge;
+       
+        
+        }
 	    
       }
 

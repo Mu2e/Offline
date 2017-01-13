@@ -17,8 +17,6 @@
 
 #include <array>
 #include <iostream>
-#include <iomanip>
-
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -39,7 +37,6 @@
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/CaloReadoutCardSD.hh"
-#include "Mu2eG4/inc/CaloCrateSD.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
@@ -158,7 +155,7 @@ namespace mu2e {
     //calorimeter electronics crates
     G4double crateRadIn               = cal.caloGeomInfo().crateRadiusIn();
     G4double crateRadOut              = cal.caloGeomInfo().crateRadiusOut();
-    G4double crateExtendLen           = cal.caloGeomInfo().crateExtendLen();
+    G4double crateHalfLength          = cal.caloGeomInfo().crateHalfLength();
 
 
     //disk properties
@@ -329,7 +326,7 @@ namespace mu2e {
 	UnitLog->SetVisAttributes(G4VisAttributes::Invisible);
 	//UnitLog->SetVisAttributes(G4Color::Yellow());
 
-	// -- place components - reference point is base of polyhedra / wrapper at base, R0Box at WrapDepth
+	// -- place components - reference point is base of polyhedra/ wrapper at base, R0Box at WrapDepth
 	//
 	pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,0.0),WrapLog,"CrysWrapPV",UnitLog,false,0,false);
 	doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
@@ -399,15 +396,12 @@ namespace mu2e {
        VolumeInfo diskCaseInfo[nDisks];
        VolumeInfo diskFEBInfo[nDisks];
        int nTotCrystal(0);
-       
-       
-       G4VSensitiveDetector* crCrateSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrate());
 
        for (unsigned int idisk=0;idisk<nDisks;++idisk)
        {
 	     ostringstream discname0;      discname0<<"DiskCalorimeter_" <<idisk;
 	     ostringstream discname1;      discname1<<"DiskCase_" <<idisk;
-	     ostringstream discname2;      discname2<<"DiskFEB_" <<idisk;
+	     ostringstream cratename;      cratename<<"DiskFEB_" <<idisk;
 
 	     double radiusIn       = cal.disk(idisk).innerRadius()-caseThickness;
 	     double radiusOut      = cal.disk(idisk).outerRadius()+caseThickness;
@@ -434,19 +428,15 @@ namespace mu2e {
 
 	     if ( crateVersion > 1 )  // crateVersion 1 is No crates
 	     {
-		G4ThreeVector dposCrate(0.0,0.0,crateExtendLen/2.0);
-		G4ThreeVector posCrate = posDisk + dposCrate;
+		G4ThreeVector posCrate = posDisk + CLHEP::Hep3Vector(0.0,0.0,cal.disk(idisk).crateDeltaZ());
+                double cratepar[5] = {crateRadIn, crateRadOut, crateHalfLength, 0., CLHEP::pi};
 
-		//		if ( idisk == 1 ) posCrate = posDisk - dposCrate;
-		double diskpar2[5] = {crateRadIn, crateRadOut, caseDepth/2.0+crateExtendLen/2.0, 0., CLHEP::pi};
-
-		diskFEBInfo[idisk] = nestTubs(discname2.str(),
-					     diskpar2,crateMaterial,&cal.disk(idisk).rotation(),posCrate,
+		diskFEBInfo[idisk] = nestTubs(cratename.str(),
+					     cratepar,crateMaterial,&cal.disk(idisk).rotation(),posCrate,
 					     calorimeterInfo,
 					     idisk,
 					     isDiskCaseVisible,G4Colour::Green(),isDiskCaseSolid,forceAuxEdgeVisible,					     
 					     true,doSurfaceCheck );
-	        if (crCrateSD) diskFEBInfo[idisk].logical->SetSensitiveDetector(crCrateSD);
 	     }
 
 	     if ( verbosityLevel > 0) 
@@ -459,7 +449,8 @@ namespace mu2e {
 
 
 	     // fill this disk with crystal units defined above
-	     for(int ic=0; ic <cal.disk(idisk).nCrystals(); ++ic)
+	     for(int ic=0; ic < 1; ++ic)
+	     //for(int ic=0; ic <cal.disk(idisk).nCrystals(); ++ic)
 	     {	      
         	   CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).localPosition();
         	   double x = unitPosition.x();

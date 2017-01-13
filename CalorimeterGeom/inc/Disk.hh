@@ -43,8 +43,10 @@ namespace mu2e {
 	   
 	   double                          innerRadius()                                const {return _radiusIn;}
            double                          outerRadius()                                const {return _radiusOut;}
-	   double                          estimateEmptySpace()                         const;
-           
+	   double                          crateDeltaZ()                                const {return _crateDeltaZ;}
+ 	   void                            setCrateDeltaZ(double val)                         {_crateDeltaZ = val;}
+ 	   double                          estimateEmptySpace()                         const;
+                    
 	   int                             idxFromPosition(double x, double y)          const;           
 	   std::vector<int>                findLocalNeighbors(int crystalId, int level) const;            
 
@@ -64,6 +66,7 @@ namespace mu2e {
 
            std::vector<int>                _mapToCrystal;
 	   std::vector<int>                _crystalToMap;
+           double                          _crateDeltaZ;
 
     };
 }

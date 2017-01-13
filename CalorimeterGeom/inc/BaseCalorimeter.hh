@@ -58,6 +58,7 @@ namespace mu2e {
             // "to" methods  : from Mu2e  to XXX     
 
 	    virtual const CLHEP::Hep3Vector&  origin()  const  {return _origin;}
+            virtual const CLHEP::Hep3Vector&  center()  const  {return _center;}
 	    virtual CLHEP::Hep3Vector toCrystalFrame(  int crystalId, const CLHEP::Hep3Vector &pos)   const;
 	    virtual CLHEP::Hep3Vector toSectionFrame(  int sectionId, const CLHEP::Hep3Vector &pos)   const;	    
 	    virtual CLHEP::Hep3Vector toSectionFrameFF(int sectionId, const CLHEP::Hep3Vector &pos)   const;	    
@@ -100,6 +101,7 @@ namespace mu2e {
 	    unsigned int                  _nSections;
 	    std::vector<CaloSectionPtr >  _sections;
 	    CLHEP::Hep3Vector             _origin;
+            CLHEP::Hep3Vector             _center;
 	    CLHEP::Hep3Vector             _trackerCenter;
 
 	    BaseCalorimeterInfoGeom       _caloGeomInfo;

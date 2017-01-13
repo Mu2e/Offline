@@ -31,7 +31,8 @@ namespace mu2e {
 	 _radiusOut(rout),
 	 _cellSize(cellSize),
 	 _mapToCrystal(),
-	 _crystalToMap()
+	 _crystalToMap(),
+         _crateDeltaZ(0)
       { 
 	   if (crystalNedges==6) _crystalMap = std::shared_ptr<CrystalMapper>(new HexMapper());  
 	   else

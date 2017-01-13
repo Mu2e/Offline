@@ -119,7 +119,7 @@ namespace mu2e {
           _calo->_caloGeomInfo.roElecHalfZ(        config.getDouble("calorimeter.readoutElecHalfZ") );
 	  _calo->_caloGeomInfo.crateRadiusIn(      config.getDouble("calorimeter.crateInnerRadius"));
 	  _calo->_caloGeomInfo.crateRadiusOut(     config.getDouble("calorimeter.crateOuterRadius"));
- 	  _calo->_caloGeomInfo.crateExtendLen(     config.getDouble("calorimeter.crateExtendLen"));
+ 	  _calo->_caloGeomInfo.crateHalfLength(    config.getDouble("calorimeter.crateHalfLength"));
          
 	  _calo->_caloGeomInfo.caseThickness(      config.getDouble("calorimeter.caseThickness") );
           _calo->_caloGeomInfo.envelopeInRadius(   config.getDouble("calorimeter.caloMotherInRadius") );
@@ -138,12 +138,18 @@ namespace mu2e {
 
 
           //THE CALORIMETER ORIGIN IS TAKEN AS THE POINT CLOSEST TO THE TRACKER IN MU2E COORDINATES
+          double zTrackerCenter  = config.getDouble("mu2e.detectorSystemZ0");
           double xOrigin         = -config.getDouble("mu2e.solenoidOffset");
           double zCaloFront      = config.getDouble("calorimeter.calorimeterZFront");
-          double zTrackerCenter  = config.getDouble("mu2e.detectorSystemZ0");
+          double zCaloStart      = config.getDouble("calorimeter.caloMotherZ0");
+          double zCaloEnd        = config.getDouble("calorimeter.caloMotherZ1");
           _calo->_origin         = CLHEP::Hep3Vector(xOrigin,0,zCaloFront);
+          _calo->_center         = CLHEP::Hep3Vector(xOrigin,0,0.5*(zCaloStart+zCaloEnd));
+          
           _calo->_trackerCenter  = CLHEP::Hep3Vector(xOrigin,0,zTrackerCenter);
 
+          
+          
           //Get the volume of the solid with hexagonal / rectangular base
           double hl              = _calo->_caloGeomInfo.crystalHalfLength();
           double ht              = _calo->_caloGeomInfo.crystalHalfTrans();
@@ -181,6 +187,7 @@ namespace mu2e {
         double caseThickness      = _calo->_caloGeomInfo.caseThickness();
         double wrapperThickness   = _calo->_caloGeomInfo.wrapperThickness();
         double pipeRadius         = _calo->_caloGeomInfo.pipeRadius();
+        double crateHalfLength    = _calo->_caloGeomInfo.crateHalfLength();
 
 
         double diskHalfZLength    = crystalHalfLength + roHalfThickness + roElecHalfZ + 0.5*wrapperThickness + pipeRadius;
@@ -204,8 +211,7 @@ namespace mu2e {
             
 	    CLHEP::Hep3Vector frontFaceCenter = _calo->origin() + originLocal + diskOriginToCrystalOrigin;
             CLHEP::Hep3Vector backFaceCenter  = frontFaceCenter + CLHEP::Hep3Vector(0,0,2.0*(diskHalfZLength-pipeRadius));
-	    
-	    
+
 	    std::shared_ptr<Disk> thisDisk( new Disk(idisk,_calo->_diskInnerRadius[idisk], _calo->_diskOuterRadius[idisk], size,
                                                      2.0*crystalCellRadius,crystalNedges, crystalShift, crystalHalfLength, diskOriginToCrystalOrigin) );
             _calo->_sections.push_back(thisDisk);
@@ -215,7 +221,7 @@ namespace mu2e {
             thisDisk->setRotation(CLHEP::HepRotation::IDENTITY*CLHEP::HepRotationZ(_calo->_diskRotAngle[idisk]) );
             thisDisk->setFrontFaceCenter(frontFaceCenter);
             thisDisk->setBackFaceCenter(backFaceCenter);
-            	    
+            thisDisk->setCrateDeltaZ(crateHalfLength - diskHalfZLength + pipeRadius);            	    
 	    thisDisk->setEnvelopeRad(dR1,dR2);
 
 
