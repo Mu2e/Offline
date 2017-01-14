@@ -1,6 +1,6 @@
 //
 //  Persistent representation of the BTrk Kalman filter fit (KalRep)
-//  Oiriginal author: Dave Brown (LBNL) 31 Aug 2016
+//  Original author: Dave Brown (LBNL) 31 Aug 2016
 //
 #ifndef RecoDataProducts_KalSeed_HH
 #define RecoDataProducts_KalSeed_HH
