@@ -199,19 +199,22 @@ namespace mu2e
 	  krcol->push_back(krep);
 	  int index = krcol->size()-1;
 	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
-	  // convert successful fits into 'seeds' for persistence.  Start with the input
-	  KalSeed fseed(kseed);
+	  // convert successful fits into 'seeds' for persistence
+	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
 	  // reference the seed fit in this fit
 	  auto ksH = event.getValidHandle<KalSeedCollection>(_ksTag);
 	  fseed._kal = art::Ptr<KalSeed>(ksH,ikseed);
-	  // fill other information
+	  // redundant but possibly useful
+	  fseed._helix = kseed.helix();
+	  // fill with new information
 	  fseed._t0 = krep->t0();
 	  fseed._flt0 = krep->flt0();
 	  fseed._status.merge(TrkFitFlag::kalmanOK);
+	  TrkUtilities::fillHitSeeds(krep,fseed._hits);
 	  if(krep->fitStatus().success()==1) fseed._status.merge(TrkFitFlag::kalmanConverged);
 	  TrkUtilities::fillHitSeeds(krep,kseed._hits);
-	  // sample the fit at the requested z positions.  This should
-	  // be in terms of known positions (front of tracker, ...) FIXME!
+	  // sample the fit at the requested z positions.  Need options here to define a set of
+	  // standard points, or to sample each unique segment on the fit FIXME!
 	  for(auto zpos : _zsave) {
 	    // compute the flightlength for this z
 	    double fltlen = TrkUtilities::zFlight(krep->pieceTraj(),zpos);
