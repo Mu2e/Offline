@@ -1,11 +1,9 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v6_0_4
 
 7) dnbrow01  13 Jan 2017
    Script-assisted change to particle type names throughout Offline.
    Name changes such as XXXDownstreameMinus -> XXXDeM, etc.
-   See https://mu2e-hnews.fnal.gov/HyperNews/Mu2e/get/Sim/219/1/1/1/1/3.html 
+   See https://mu2e-hnews.fnal.gov/HyperNews/Mu2e/get/Sim/219/1/1/1/1/3.html
    for more detail.
    modified:   Analyses/fcl/prolog.fcl
    modified:   Analyses/test/cosmicFilter.fcl
