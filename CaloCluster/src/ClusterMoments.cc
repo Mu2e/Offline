@@ -10,13 +10,11 @@
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
-#include "CLHEP/Units/SystemOfUnits.h"
+//#include "CLHEP/Units/SystemOfUnits.h"
 
-// C++ includes
 #include <iostream>
 #include <list>
 
-using CLHEP::Hep3Vector;
 
 
 namespace mu2e {

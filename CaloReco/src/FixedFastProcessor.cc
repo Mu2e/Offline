@@ -13,7 +13,6 @@
 #include "art/Framework/Services/Optional/TFileDirectory.h" 
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/ConditionsService.hh"
 
 
 #include "TFile.h"
@@ -21,14 +20,11 @@
 #include "TH2.h"
 #include "TF1.h"
 #include "TCanvas.h"
-#include "CLHEP/Matrix/Vector.h"
-#include "CLHEP/Matrix/Matrix.h"
 
 #include <algorithm>
 #include <string> 
 #include <iostream>
 #include <vector>
-#include <iterator>
 
 
 
@@ -504,6 +500,9 @@ namespace mu2e {
        
        
        /*
+       #include "CLHEP/Matrix/Vector.h"
+       #include "CLHEP/Matrix/Matrix.h"
+
        //this one does a second order polynomial fit, pick your poison!
        while(imax-imin <3) ++imax;
               

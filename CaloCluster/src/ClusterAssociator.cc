@@ -8,13 +8,10 @@
 // Original author B. Echenard
 //
 
-// Mu2e includes
 #include "CaloCluster/inc/ClusterAssociator.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
 
-
-// C++ includes
 #include <iostream>
 
 

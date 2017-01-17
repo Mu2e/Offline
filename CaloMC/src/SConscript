@@ -21,13 +21,12 @@ rootlibs = env['ROOTLIBS']
 mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   'mu2e_GeometryService',
                                   'mu2e_MCDataProducts',
-                                  'mu2e_RecoDataProducts',
                                   'mu2e_CalorimeterGeom',
-                                  'mu2e_TrackerGeom',
                                   'mu2e_GlobalConstantsService',
 				  'mu2e_Mu2eInterfaces',
                                   'mu2e_DataProducts',
                                   'mu2e_GeneralUtilities',
+                                  'art_Utilities',
                                   'art_Persistency_Common',
                                   'art_Persistency_Provenance',
                                   'canvas_Persistency_Provenance',
@@ -39,31 +38,23 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   'art_Framework_Services_Optional',
                                   'art_Framework_Principal',
                                   'art_Framework_Core',
-                                  'art_Utilities',
                                   'fhiclcpp',
                                   'cetlib',
                                   'CLHEP',
                                   rootlibs,
-                                  'boost_system',
-                                  'Minuit'
+                                  'boost_system'
                                 ] )
 
 helper.make_plugins( [ mainlib,
-                       'mu2e_Mu2eBTrk',
 		       'mu2e_Mu2eUtilities',
                        'mu2e_ConditionsService',
-                       'mu2e_TrackerConditions',
                        'mu2e_GeometryService',
                        'mu2e_SeedService_SeedService_service',
-                       'mu2e_BFieldGeom',
                        'mu2e_CalorimeterGeom',
-                       'mu2e_TrackerGeom',
                        'mu2e_MCDataProducts',
-                       'mu2e_RecoDataProducts',
                        'mu2e_GlobalConstantsService',
                        'mu2e_DataProducts',
                        'mu2e_Mu2eInterfaces',
-                       'mu2e_GeneralUtilities',
                        'art_Framework_Core',
                        'art_Framework_Principal',
                        'art_Framework_Services_Registry',
@@ -76,34 +67,24 @@ helper.make_plugins( [ mainlib,
                        'canvas_Persistency_Provenance',
                        'art_Utilities',
                        'canvas_Utilities',
-                       'MF_MessageLogger',
                        'fhiclcpp',
                        'cetlib',
                        'CLHEP',
                        'HepPDT',
                        'boost_filesystem',
                        'boost_system',
-                       rootlibs,
-                       'xerces-c', # only needed for MakeStereoHits_module.cc
-                       'Minuit'  # Needed for BetaTauPitch_module.cc and ReadStrawCluster_module.cc
-                                 # See the Fixme at the top of the file.
+                       rootlibs
                      ],
                      )
 
 helper.make_dict_and_map( [
     mainlib,
-    'mu2e_RecoDataProducts',
-    'art_Persistency_Provenance',
-    'canvas_Persistency_Provenance',
+    'art_Utilities',
     'art_Persistency_Common',
     'canvas_Persistency_Common',
-    'art_Utilities',
     'canvas_Utilities',
-    'CLHEP',
-    'cetlib',
     'Core'
     ] )
-
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

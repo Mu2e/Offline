@@ -3,7 +3,6 @@
 #include "art/Framework/Services/Optional/TFileDirectory.h" 
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/ConditionsService.hh"
 
 
 #include "TMinuit.h"

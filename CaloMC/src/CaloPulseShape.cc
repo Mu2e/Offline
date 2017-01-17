@@ -3,8 +3,6 @@
 //
 
 #include "CaloMC/inc/CaloPulseShape.hh"
-#include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Principal/Handle.h"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
@@ -13,8 +11,8 @@
 #include <iostream>
 #include <algorithm> 
 
-#include "TH2F.h"
 #include "TFile.h"
+#include "TH2F.h"
 
 
 namespace mu2e {

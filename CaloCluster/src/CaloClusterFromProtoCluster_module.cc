@@ -10,31 +10,22 @@
 // Original author: B. Echenard
 
 
-// Framework includes.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Principal/Handle.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib/exception.h"
 
 
-// Mu2e includes.
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CaloCluster/inc/ClusterAssociator.hh"
 #include "CaloCluster/inc/ClusterMoments.hh"
-#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
 
-// Other includes.
-#include "cetlib/exception.h"
 
 #include "TH1D.h"
 #include <iostream>

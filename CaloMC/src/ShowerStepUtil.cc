@@ -1,10 +1,10 @@
 #include "CaloMC/inc/ShowerStepUtil.hh"
 
+#include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Matrix/SymMatrix.h"
 #include <vector>
 #include <iostream>
 #include <algorithm>
-#include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Matrix/SymMatrix.h"
 
 
 namespace mu2e {

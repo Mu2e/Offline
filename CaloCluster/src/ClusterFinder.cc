@@ -7,13 +7,11 @@
 //       the performance gain is so low that it outweighs the risk of forgeting to time order the crystal hits.
 //       
 
-// Mu2e includes
 #include "CaloCluster/inc/ClusterFinder.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 
-// C++ includes
 #include <iostream>
 #include <vector>
 #include <algorithm>

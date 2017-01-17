@@ -3,26 +3,17 @@
 // nTotWords - nWords_roID - roiID - nWord_roID_ihit - time_roID_ihit - Data_roID_ihit - ...
 //
 
-// C++ includes.
-#include <iostream>
-#include <string>
-
-// Framework includes.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 #include "RecoDataProducts/inc/CaloDigiPackedCollection.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
 
+#include <iostream>
+#include <string>
 
 
 namespace mu2e {

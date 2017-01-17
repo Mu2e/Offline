@@ -7,12 +7,8 @@
 #include "CaloMC/inc/CaloContentSim.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "MCDataProducts/inc/CaloShowerSimCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
 #include "MCDataProducts/inc/CaloClusterMCTruthAssn.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-
-#include "CLHEP/Vector/ThreeVector.h"
 
 #include <map>
 #include<iostream>

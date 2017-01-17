@@ -4,7 +4,6 @@
 #include "CaloReco/inc/CaloPulseCache.hh"
 
 #include "cetlib/exception.h"
-#include "art/Framework/Principal/Handle.h"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
  

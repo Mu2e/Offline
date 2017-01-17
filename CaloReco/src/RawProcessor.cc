@@ -5,9 +5,7 @@
 #include "art/Framework/Services/Optional/TFileDirectory.h" 
 #include "art/Framework/Services/Optional/TFileService.h"
 
-#include "TMinuit.h"
 #include "TH1.h"
-#include "TF1.h"
 #include "TCanvas.h"
 
 #include <algorithm>

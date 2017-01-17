@@ -30,13 +30,10 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Principal/Handle.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "cetlib/exception.h"
 
 #include "CaloCluster/inc/ClusterFinder.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
@@ -46,7 +43,6 @@
 #include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
 
 // Other includes.
-#include "cetlib/exception.h"
 #include <iostream>
 #include <string>
 #include <list>
