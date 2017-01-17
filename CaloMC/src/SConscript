@@ -18,8 +18,7 @@ helper=mu2e_helper();
 
 rootlibs = env['ROOTLIBS']
 
-mainlib = helper.make_mainlib ( [ 'mu2e_TrkDiag',
-				  'mu2e_ConditionsService',
+mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   'mu2e_GeometryService',
                                   'mu2e_MCDataProducts',
                                   'mu2e_RecoDataProducts',
@@ -29,8 +28,11 @@ mainlib = helper.make_mainlib ( [ 'mu2e_TrkDiag',
 				  'mu2e_Mu2eInterfaces',
                                   'mu2e_DataProducts',
                                   'mu2e_GeneralUtilities',
-                                  'art_Persistency_Provenance',
                                   'art_Persistency_Common',
+                                  'art_Persistency_Provenance',
+                                  'canvas_Persistency_Provenance',
+                                  'canvas_Persistency_Common',
+                                  'canvas_Utilities',
                                   'art_Framework_Services_Optional_RandomNumberGenerator_service',
                                   'art_Framework_Services_Optional_TFileService_service',
                                   'art_Framework_Services_Registry',
@@ -47,7 +49,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_TrkDiag',
                                 ] )
 
 helper.make_plugins( [ mainlib,
-                       'mu2e_TrkDiag',
                        'mu2e_Mu2eBTrk',
 		       'mu2e_Mu2eUtilities',
                        'mu2e_ConditionsService',
@@ -71,7 +72,10 @@ helper.make_plugins( [ mainlib,
                        'art_Framework_Services_Optional_RandomNumberGenerator_service',
                        'art_Persistency_Common',
                        'art_Persistency_Provenance',
+                       'canvas_Persistency_Common',
+                       'canvas_Persistency_Provenance',
                        'art_Utilities',
+                       'canvas_Utilities',
                        'MF_MessageLogger',
                        'fhiclcpp',
                        'cetlib',
@@ -85,6 +89,21 @@ helper.make_plugins( [ mainlib,
                                  # See the Fixme at the top of the file.
                      ],
                      )
+
+helper.make_dict_and_map( [
+    mainlib,
+    'mu2e_RecoDataProducts',
+    'art_Persistency_Provenance',
+    'canvas_Persistency_Provenance',
+    'art_Persistency_Common',
+    'canvas_Persistency_Common',
+    'art_Utilities',
+    'canvas_Utilities',
+    'CLHEP',
+    'cetlib',
+    'Core'
+    ] )
+
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

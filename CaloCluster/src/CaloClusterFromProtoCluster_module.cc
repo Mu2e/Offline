@@ -234,6 +234,7 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
              {
                  std::cout<<"Making a new cluster with id= ";
                  for (auto il = caloCrystalHitsPtrVector.begin(); il !=caloCrystalHitsPtrVector.end(); ++il) std::cout<<(*il)->id()<<" "; 
+                 std::cout<<std::endl;
              }
         }
      

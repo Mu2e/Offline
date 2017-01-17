@@ -3,7 +3,7 @@
 
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include <vector>
 

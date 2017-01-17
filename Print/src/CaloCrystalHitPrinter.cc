@@ -73,8 +73,6 @@ mu2e::CaloCrystalHitPrinter::Print(const mu2e::CaloCrystalHit& obj, int ind, std
     << " " 
     << " " << std::setw(8) << std::setprecision(1) << obj.time()
     << " " << std::setw(8) << std::setprecision(1) << obj.energyDep()
-    << " " << std::setw(8) << std::setprecision(1) << obj.energyDepTotal()
-    << " " << std::setw(5) << obj.numberOfROIdsUsed()
     << std::endl;
 
 }

@@ -3,9 +3,9 @@
 // entries, updating the total energy, time and position
 //
 // Now there is a trick here. The truch matching is between SimParticle and CaloHits with a data payload about the CaloShower.
-// This means there can be several caloShowers for a given SimParticle / CaloHit entry. BUT this also means there can be 
+// This means that there can be several caloShowers for a given SimParticle / CaloHit entry. BUT this also means there can be 
 // several caloShowers for a given CaloHit if several SimParticle contibutes to the Shower. In that case, there is a double-counting 
-// problem, prevented by the  caloShowerSeen set
+// problem, prevented by the  caloShowerSeen flag
 //  
 
 #include "CaloMC/inc/CrystalContentMC.hh"

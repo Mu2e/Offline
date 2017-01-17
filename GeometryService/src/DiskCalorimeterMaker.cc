@@ -200,7 +200,7 @@ namespace mu2e {
 
         // This is where the offsets between the different coordinate systems are set, see Note for full explanation
         // Seriously, read the note at the top before changing this! Really!
-        CLHEP::Hep3Vector diskOriginToCrystalOrigin(0,0,pipeRadius - crystalHalfLength - roHalfThickness - roElecHalfZ);
+        CLHEP::Hep3Vector diskOriginToCrystalOrigin(0,0,pipeRadius - crystalHalfLength - roHalfThickness - roElecHalfZ + 0.5*wrapperThickness);
 
 
 

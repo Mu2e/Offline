@@ -80,6 +80,7 @@ namespace mu2e {
            maxADCCounts_ =  1 << nBits_;
            ADCTomV_      = dynamicRange_/maxADCCounts_;
            mVToADC_      = maxADCCounts_/dynamicRange_;
+           nROperCard_   = 40;
 
       }
 
@@ -121,7 +122,7 @@ namespace mu2e {
        double                  ADCTomV_;
        double                  mVToADC_;
        const Calorimeter*      calorimeter_; 
-
+       int                     nROperCard_;
 
        std::vector< std::vector<double> > pulseDigitized_;
        std::vector< std::vector<double> > waveforms_;
@@ -283,7 +284,7 @@ namespace mu2e {
   void CaloDigisFromShower::buildOutputDigi(CaloDigiPackedCollection& CaloDigis)
   {
         
-      unsigned int Noutput(80);
+      const unsigned int Noutput(2*nROperCard_);
       std::vector<int> nTotWords(Noutput,0);
       std::vector<std::vector<int>> caloDigiOutputs; 
       for (unsigned int i=0;i< Noutput;++i) caloDigiOutputs.push_back(std::vector<int>(1,0)); 
@@ -409,7 +410,7 @@ namespace mu2e {
   //----------------------------------------------
   int CaloDigisFromShower::findROCardIdx(int iRO)
   {
-      return iRO / 40;
+      return iRO / nROperCard_;
   }
 
 

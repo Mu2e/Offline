@@ -331,12 +331,20 @@ namespace mu2e {
                 if (diagLevel_ > 3) std::cout<<"   "<<step.simParticle()->startPosition()<<" "<<step.simParticle()->endPosition()<<" "<<  step.simParticle()->pdgId()<<std::endl; 	    
            }	            
        }
-
+       
+       if (diagLevel_ > 2)
+       {
+           std::cout<<"[CaloShowerStepROFromShowerStep::produce] caloShowerStepROs summary"<<std::endl;
+           for (const auto cst: caloShowerStepROs) std::cout<<cst.ROID()<<" "<<cst.energy()<<" "<<cst.time()<<std::endl;
+       } 
+       
+       
 
        
        //-----------------------------------------------------------------------
-       // Produce the CaloShowerSim from the simEntriesMap
-       
+       // Produce the CaloShowerSim from the simEntriesMap       
+       if (diagLevel_ > 2) std::cout<<"[CaloShowerStepROFromShowerStep::produce] CaloShowerSim summary"<<std::endl;
+      
        for (auto& kv : simEntriesMap)
        {	   
 	   int crystalID = kv.first;
@@ -354,12 +362,13 @@ namespace mu2e {
 	   }
 
 	   // create the CaloShowerSim entries	   
-	   for (auto& kv2 : simSumMap)
+           for (auto& kv2 : simSumMap)
 	   {
 	       auto simPtr  = kv2.first;
 	       auto summary = kv2.second;
 	       caloShowerSims.push_back(CaloShowerSim(crystalID,simPtr,summary.steps_, summary.time_,summary.edepCorr_,summary.edepInit_, summary.pIn_));
-	   }
+	       if (diagLevel_ > 2) std::cout<<crystalID<<" "<<summary.edepInit_<<std::endl;
+           }
 	   
        }
          
@@ -444,7 +453,7 @@ DEFINE_ART_MODULE(CaloShowerStepROFromShowerStep);
 
 
 /*
-//little snipper I kept for convenience
+//little snipper I kept in case it will be needed...
 
 double crystalDecayTime = cal.caloGeomInfo().crystalDecayTime();
 

@@ -60,5 +60,4 @@ CaloReco :
    Reco : [ CaloDigiUnpackFromDigis,CaloRecoDigiFromUnpacked ,CaloCrystalHitsFromHits ]
 }
 
-
 END_PROLOG

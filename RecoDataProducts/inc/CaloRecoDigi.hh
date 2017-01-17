@@ -1,7 +1,7 @@
 #ifndef RecoDataProducts_CaloRecoDigi_hh
 #define RecoDataProducts_CaloRecoDigi_hh
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include <vector>
 

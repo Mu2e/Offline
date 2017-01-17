@@ -78,25 +78,25 @@ namespace mu2e {
 
              public:
 
-                 CaloCompressUtil() : _steps(), _sims(), _procs() {}
+                 CaloCompressUtil() : steps_(), sims_(), procs_() {}
 
-                 const std::vector<const StepPointMC* >&     steps()        const {return _steps;}
-                 const std::vector<art::Ptr<SimParticle> >&  sims()         const {return _sims;}
-                 const std::unordered_set<int>&              processCodes() const {return _procs;}
+                 const std::vector<const StepPointMC* >&     steps()        const {return steps_;}
+                 const std::vector<art::Ptr<SimParticle> >&  sims()         const {return sims_;}
+                 const std::unordered_set<int>&              processCodes() const {return procs_;}
 
                  void fill(StepPointMC const* step, std::vector<art::Ptr<SimParticle> > sims)
                  {
-                     _steps.push_back(step);
-                     _procs.insert(step->endProcessCode());               
-                     for (const auto& sim: sims) _sims.push_back(sim); 
+                     steps_.push_back(step);
+                     procs_.insert(step->endProcessCode());               
+                     for (const auto& sim: sims) sims_.push_back(sim); 
                  }
                  
                
               private:
               
-                 std::vector<const StepPointMC* >     _steps;
-                 std::vector<art::Ptr<SimParticle> >  _sims;
-                 std::unordered_set<int>              _procs;                              
+                 std::vector<const StepPointMC* >     steps_;
+                 std::vector<art::Ptr<SimParticle> >  sims_;
+                 std::unordered_set<int>              procs_;                              
          }; 
     } 
 
@@ -385,6 +385,12 @@ namespace mu2e {
          
          if (diagLevel_ > 2) hEtot_->Fill(totalEdep_);
          
+         if (diagLevel_ > 2)
+         { 
+            std::cout<<"CaloShowerStepFromStepPt summary"<<std::endl;
+            for (auto caloShowerStepMC : caloShowerStepMCs) std::cout<<caloShowerStepMC.volumeId()<<" "<<caloShowerStepMC.nCompress()<<"  "<<caloShowerStepMC.energyMC()<<std::endl;
+         }
+         
          //Final statistics
          if (diagLevel_ > 1) std::cout<<"[CaloShowerStepFromStepPt::makeCompressedHits] compressed "<<nCompress<<" / "<<nCompressAll<<" incoming SimParticles"<<std::endl;
          if (diagLevel_ > 1) std::cout<<"[CaloShowerStepFromStepPt::makeCompressedHits] keeping "<<simsToKeep.size()<<" CaloShowerSteps"<<std::endl;
@@ -448,10 +454,6 @@ namespace mu2e {
     bool CaloShowerStepFromStepPt::isInsideCalorimeter(const PhysicalVolumeMultiHelper& vi, const art::Ptr<SimParticle>& thisSimPtr)
     {        
         return mapPhysVol_.find(&vi.startVolume(*thisSimPtr)) != mapPhysVol_.end();
-        
-        //const std::string material = vi.startVolume(*thisSimPtr).materialName();
-        //for (std::string const& caloMaterial : caloMaterial_) if (material== caloMaterial) return true;
-        //return false;
     }
 
 
@@ -479,9 +481,10 @@ namespace mu2e {
 
           ShowerStepUtil buffer(numZSlices_,ShowerStepUtil::weight_type::energy );        
           for (const StepPointMC* step : steps)
-          {
+          {               
                CLHEP::Hep3Vector pos  = (isCrystal) ? cal.toCrystalFrame(volId,step->position()) : cal.toCrystalFrame(cal.crystalByRO(volId),step->position());
-               int               idx  = (isCrystal) ? int(pos.z()/zSliceSize_) : 0;
+               int               idx  = (isCrystal) ? int(std::max(1e-6,pos.z())/zSliceSize_) : 0;
+               
 
                if (buffer.entries(idx) == 0) buffer.init(idx,step->time(),step->momentum().mag(),pos); 
 

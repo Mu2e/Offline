@@ -2,6 +2,7 @@
 // Utility to study the MC content of a calo cluster. Browser over SimParticles of each crystal, and keep only distinct
 // entries, updating the total energy, time and position
 //
+
 #include "CaloMC/inc/ClusterContentMC.hh"
 #include "CaloMC/inc/CaloContentSim.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"

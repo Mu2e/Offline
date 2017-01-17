@@ -24,7 +24,7 @@ namespace mu2e {
 
         n_.at(i)    += 1;
         edep_.at(i) += edep;
-        pIn_.at(i) = std::max(pIn_.at(i),momentum);
+        pIn_.at(i)  = std::max(pIn_.at(i),momentum);
 
         time_.at(i) += time*weight;             
         x_.at(i)    += pos.x()*weight;             

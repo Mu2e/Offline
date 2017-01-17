@@ -136,8 +136,9 @@ BEGIN_PROLOG
     # separate out the sime and reco parts of the sequence
     SimSequence	: [ @sequence::EventMixing.TimeMaps,
 		    @sequence::Tracking.DigiSim,
-		    @sequence::CaloSim.MakeHits,
-                    @sequence::CrvResponsePackage.CrvResponseSequence ]
+		    @sequence::CaloSim.MakeHits
+                    #,@sequence::CrvResponsePackage.CrvResponseSequence 
+]
     RecoSequence : [ @sequence::CaloReco.MakeClusters,
 		     @sequence::Tracking.TPRDeM,
 		     @sequence::Tracking.TPRUeM,

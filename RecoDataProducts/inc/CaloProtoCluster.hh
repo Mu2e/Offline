@@ -1,7 +1,7 @@
 #ifndef RecoDataProducts_CaloProtoCluster_hh
 #define RecoDataProducts_CaloProtoCluster_hh
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include <vector>

@@ -2,7 +2,7 @@
 #define MCDataProducts_CaloHitMCTruthAssn_hh
 
 
-#include "art/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Assns.h"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "MCDataProducts/inc/SimParticle.hh"

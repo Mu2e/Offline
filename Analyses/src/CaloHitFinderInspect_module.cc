@@ -14,7 +14,6 @@
 #include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Utilities/InputTag.h"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"

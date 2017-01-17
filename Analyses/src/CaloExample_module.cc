@@ -1,4 +1,4 @@
- //
+//
 // An EDAnalyzer module that reads back the hits created by the calorimeter and produces an ntuple
 //
 // $Id: CaloExample_module.cc,v 1.4 2014/08/01 20:57:44 echenard Exp $
@@ -380,9 +380,9 @@ namespace mu2e {
       event.getByLabel(_caloHitTruthModuleLabel, caloHitTruthHandle);
       const CaloHitMCTruthAssns& caloHitTruth(*caloHitTruthHandle);
 
-      art::Handle<KalRepPtrCollection> trksHandle;
-      event.getByLabel(_trkPatRecModuleLabel,_instanceName, trksHandle);
-      const KalRepPtrCollection& trks = *trksHandle;
+      //art::Handle<KalRepPtrCollection> trksHandle;
+      //event.getByLabel(_trkPatRecModuleLabel,_instanceName, trksHandle);
+      //const KalRepPtrCollection& trks = *trksHandle;
 
 
 
@@ -593,10 +593,6 @@ namespace mu2e {
            for (auto iter=vdhits->begin(), ie=vdhits->end(); iter!=ie; ++iter)
              {
                const StepPointMC& hit = *iter;
-               if (hit.volumeId() >= VirtualDetectorId::EMC_FEB_0_SurfIn) {
-               std::cout<<hit.volumeId()<<" "<<hit.simParticle()->pdgId()<<" "<<hit.momentum()<<std::endl;
-               } 
-               
                
                if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
 

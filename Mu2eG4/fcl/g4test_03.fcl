@@ -50,8 +50,6 @@ physics : {
     protonTimeMap        : { module_type : GenerateProtonTimes }
     muonTimeMap          : { module_type : GenerateMuonLife }
 
-    @table::Tracking.producers
-
     # Calorimeter sequence    
     @table::CaloDigiMC.producers
     @table::CaloReco.producers
@@ -101,7 +99,6 @@ physics : {
   }
 
   p1 : [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.DigiSim,
-	 @sequence::Tracking.TPRDownstreameMinus,
          @sequence::CaloDigiMC.DigiSim,
          @sequence::CaloReco.Reco,	 
 	 @sequence::CaloDigiMC.TruthMatch,
