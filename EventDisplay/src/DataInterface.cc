@@ -802,7 +802,7 @@ void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
     {
       int color=TMath::FloorNint(20.0*(time-mint)/(maxt-mint));
       if(color>=20) color=19;
-      if(color<=0 || isnan(color)) color=0;
+      if(color<=0 || std::isnan(color)) color=0;
       color+=2000;
       (*hit)->setColor(color);
     }
@@ -816,7 +816,7 @@ void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
     {
       int color=TMath::FloorNint(20.0*(time-mint)/(maxt-mint));
       if(color>=20) color=19;
-      if(color<=0 || isnan(color)) color=0;
+      if(color<=0 || std::isnan(color)) color=0;
       color+=2000;
       (*crystalhit)->setColor(color);
     }
@@ -830,7 +830,7 @@ void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
     {
       int color=TMath::FloorNint(20.0*(time-mint)/(maxt-mint));
       if(color>=20) color=19;
-      if(color<=0 || isnan(color)) color=0;
+      if(color<=0 || std::isnan(color)) color=0;
       color+=2000;
       (*driftradius)->setColor(color);
     }
@@ -892,29 +892,29 @@ DataInterface::spaceminmax DataInterface::getSpaceBoundary(bool useTarget, bool 
     findBoundaryP(m, _tracksMinmax.maxx, _tracksMinmax.maxy, _tracksMinmax.maxz);
   }
 
-  if(isnan(m.minx)) m.minx=-1000;
-  if(isnan(m.miny)) m.miny=-1000;
-  if(isnan(m.minz)) m.minz=-1000;
-  if(isnan(m.maxx)) m.maxx=1000;
-  if(isnan(m.maxy)) m.maxy=1000;
-  if(isnan(m.maxz)) m.maxz=1000;
+  if(std::isnan(m.minx)) m.minx=-1000;
+  if(std::isnan(m.miny)) m.miny=-1000;
+  if(std::isnan(m.minz)) m.minz=-1000;
+  if(std::isnan(m.maxx)) m.maxx=1000;
+  if(std::isnan(m.maxy)) m.maxy=1000;
+  if(std::isnan(m.maxz)) m.maxz=1000;
   return m;
 }
 
 void DataInterface::findBoundaryT(timeminmax &m, double t)
 {
-  if(isnan(m.mint) || t<m.mint) m.mint=t;
-  if(isnan(m.maxt) || t>m.maxt) m.maxt=t;
+  if(std::isnan(m.mint) || t<m.mint) m.mint=t;
+  if(std::isnan(m.maxt) || t>m.maxt) m.maxt=t;
 }
 
 void DataInterface::findBoundaryP(spaceminmax &m, double x, double y, double z)
 {
-  if(isnan(m.minx) || x<m.minx) m.minx=x;
-  if(isnan(m.miny) || y<m.miny) m.miny=y;
-  if(isnan(m.minz) || z<m.minz) m.minz=z;
-  if(isnan(m.maxx) || x>m.maxx) m.maxx=x;
-  if(isnan(m.maxy) || y>m.maxy) m.maxy=y;
-  if(isnan(m.maxz) || z>m.maxz) m.maxz=z;
+  if(std::isnan(m.minx) || x<m.minx) m.minx=x;
+  if(std::isnan(m.miny) || y<m.miny) m.miny=y;
+  if(std::isnan(m.minz) || z<m.minz) m.minz=z;
+  if(std::isnan(m.maxx) || x>m.maxx) m.maxx=x;
+  if(std::isnan(m.maxy) || y>m.maxy) m.maxy=y;
+  if(std::isnan(m.maxz) || z>m.maxz) m.maxz=z;
 }
 
 void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector)
@@ -940,10 +940,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       double time = hit.time();
       double energy = hit.eDep();
       std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(strawindex);
-      if(straw!=_straws.end() && !isnan(time))
+      if(straw!=_straws.end() && !std::isnan(time))
       {
         double previousStartTime=straw->second->getStartTime();
-        if(isnan(previousStartTime))
+        if(std::isnan(previousStartTime))
         {
           findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
           straw->second->setStartTime(time);
@@ -980,10 +980,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       double dt = hit.dt();
       double energy = hit.energyDep();
       std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(strawindex);
-      if(straw!=_straws.end() && !isnan(time))
+      if(straw!=_straws.end() && !std::isnan(time))
       {
         double previousStartTime=straw->second->getStartTime();
-        if(isnan(previousStartTime))
+        if(std::isnan(previousStartTime))
         {
           findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
           straw->second->setStartTime(time);
@@ -1046,10 +1046,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
             }
 
             std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(strawindex);
-            if(straw!=_straws.end() && !isnan(time))
+            if(straw!=_straws.end() && !std::isnan(time))
             {
               double previousStartTime=straw->second->getStartTime();
-              if(isnan(previousStartTime))
+              if(std::isnan(previousStartTime))
               {
                 findBoundaryT(_hitsTimeMinmax, hitT0);  //is it Ok to exclude all following hits from the time window?
                 straw->second->setStartTime(hitT0);
@@ -1108,10 +1108,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       double time = calohit.time();
       double energy = calohit.eDep();
       std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
-      if(crystal!=_crystals.end() && !isnan(time))
+      if(crystal!=_crystals.end() && !std::isnan(time))
       {
         double previousStartTime=crystal->second->getStartTime();
-        if(isnan(previousStartTime))
+        if(std::isnan(previousStartTime))
         {
           findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
           crystal->second->setStartTime(time);
@@ -1146,10 +1146,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       double time = calohit.time();
       double energy = calohit.energyDep();
       std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
-      if(crystal!=_crystals.end() && !isnan(time))
+      if(crystal!=_crystals.end() && !std::isnan(time))
       {
         double previousStartTime=crystal->second->getStartTime();
-        if(isnan(previousStartTime))
+        if(std::isnan(previousStartTime))
         {
           findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
           crystal->second->setStartTime(time);
@@ -1194,10 +1194,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       double time = calohit.time();
       double energy = calohit.energyDep();
       std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
-      if(crystal!=_crystals.end() && !isnan(time))
+      if(crystal!=_crystals.end() && !std::isnan(time))
       {
         double previousStartTime=crystal->second->getStartTime();
-        if(isnan(previousStartTime))
+        if(std::isnan(previousStartTime))
         {
           findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
           crystal->second->setStartTime(time);

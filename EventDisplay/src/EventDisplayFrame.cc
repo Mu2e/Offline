@@ -502,7 +502,7 @@ void EventDisplayFrame::changeSetup(bool whiteBackground, bool useHitColors, boo
      _dataInterface->makeMecoStyleProtonAbsorberVisible(showProtonAbsorber);
   }  
 
-  if(isnan(_timeCurrent) || redraw) drawEverything();
+  if(std::isnan(_timeCurrent) || redraw) drawEverything();
   else drawSituation();
 }
 
@@ -1037,7 +1037,7 @@ void EventDisplayFrame::prepareAnimation()
   _timeStart=atof(_timeIntervalField1->GetText());
   _timeStop=atof(_timeIntervalField2->GetText());
 
-  if(isnan(_timeStart) || isnan(_timeStop) || (_timeStop-_timeStart)<=0.0) return;
+  if(std::isnan(_timeStart) || std::isnan(_timeStop) || (_timeStop-_timeStart)<=0.0) return;
 
   if(_saveAnim && _saveAnimRoot) _rootFileManagerAnim->setFile(_saveAnimFile.c_str());
   double diff=_timeStop-_timeStart;

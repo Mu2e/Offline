@@ -196,7 +196,7 @@ class Track: public VirtualShape
     for(unsigned int i=1; i<_pVec.size(); i++)
     {
       _line->SetLineColor(getColor());
-      if(time>_pVec[i].t || isnan(time))
+      if(time>_pVec[i].t || std::isnan(time))
       {
         _line->SetPoint(i,_pVec[i].x,_pVec[i].y,_pVec[i].z);
       }
