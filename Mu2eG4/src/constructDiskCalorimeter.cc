@@ -437,6 +437,9 @@ namespace mu2e {
 					     idisk,
 					     isDiskCaseVisible,G4Colour::Green(),isDiskCaseSolid,forceAuxEdgeVisible,					     
 					     true,doSurfaceCheck );
+	        G4VSensitiveDetector* crCrate = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrate());
+	        if (crCrate) diskFEBInfo[idisk].logical->SetSensitiveDetector(crCrate);
+
 	     }
 
 	     if ( verbosityLevel > 0) 

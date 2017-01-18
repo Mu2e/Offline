@@ -41,7 +41,7 @@ namespace mu2e {
     G4bool CaloCrateSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
     {
 
-         if( aStep->GetTotalEnergyDeposit() < 1e-6 ) return false;
+         //if( aStep->GetTotalEnergyDeposit() < 1e-6 ) return false;
 
 	 _currentSize += 1;
 	 if( _sizeLimit>0 && _currentSize>_sizeLimit && (_currentSize - _sizeLimit)==1) 
