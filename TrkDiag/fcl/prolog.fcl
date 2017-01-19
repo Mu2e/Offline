@@ -73,13 +73,36 @@ BEGIN_PROLOG
   ReadKalFitsMix : @local::ReadKalFits
   ReadKalFitsMix.eventWeightModules : [ protonBunchSummarizer  ]
   ReadKalFitsMix.beamWeightModule : protonBunchSummarizer
+# Diagnostic modules    
+  TimeClusterDiag : {
+	module_type : TimeClusterDiag
+	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
+	HitBackgroundBits	    : ["DeltaRay"]
+	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
+  }
+
+  HelixDiag : {
+	module_type : HelixDiag
+	MinimumCEHits : 10
+	HelixSeedCollectionTag : "PosHelixFinder"
+	StrawHitFlagCollectionTag : "TimeClusterFinder"
+	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+  }
+
+  StrawHitDiag : {
+	module_type : StrawHitDiag
+	TimeOffsets : {
+	  inputs : [ "protonTimeMap", "muonTimeMap" ] 
+	}
+  }
 
 # Prototype track analysis config.
   TrackAnalysis : {
     module_type : TrackAnalysis
-    DeMTrackTag : "KFFDeM"
-    UeMTrackTag : "KFFUeM"
-    DmuMTrackTag : "KFFDmuM"
+    DownstreameMinusTrackTag : "KFFDeM"
+    UpstreameMinusTrackTag : "KFFUeM"
+    DownstreammuMinusTrackTag : "KFFDmuM"
     KalDiag : @local::KalDiagReadCD3 # configure KalDiag to read CD3 Beam Sim Particles
     # change this if reading cosmic data or generating inline
     TrkCaloDiag : @local::TrkCaloDiag
@@ -102,7 +125,16 @@ BEGIN_PROLOG
   }
   
   TrackCaloMatching.matching_dem_TRF : [ TrackCaloIntersectionTRFDem, TrackCaloMatchingTRFDem ]
- 
+
+
+  TrkDiag : {
+    analyzers : {
+      TimeClusterDiag : @local::TimeClusterDiag
+      StrawHitDiag : @local::StrawHitDiag
+      HelixDiag : @local::HelixDiag
+    }
+  }
+
 # aggregate the prolog to produce the stanard analysis chain
   TrkAna : {
 
@@ -117,7 +149,6 @@ BEGIN_PROLOG
       @table::CaloCluster.producers
       @table::TrackCaloMatching.producers
       @table::CrvResponsePackage.producers
-
   # DIO weighting for flat spectrum electrons
       DIOWeight: {
 	module_type: DecayInOrbitWeight
@@ -139,11 +170,10 @@ BEGIN_PROLOG
     # separate out the sime and reco parts of the sequence
     SimSequence	: [ @sequence::EventMixing.TimeMaps,
 		    @sequence::Tracking.DigiSim,
-		    @sequence::CaloDigiMC.DigiSim
-                    #,@sequence::CrvResponsePackage.CrvResponseSequence 
-]
+		    @sequence::CaloDigiMC.DigiSim,
+                    @sequence::CrvResponsePackage.CrvResponseSequence ]
     RecoSequence : [ @sequence::CaloReco.Reco,
-                     @sequence::CaloCluster.Reco, 
+	             @sequence::CaloCluster.Reco, 
 		     @sequence::Tracking.TPRDeM,
 		     @sequence::Tracking.TPRUeM,
 		     @sequence::Tracking.TPRDmuM,
@@ -155,5 +185,6 @@ BEGIN_PROLOG
   TrkAna.SimAndRecoSequence : [ @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
   TrkAna.SimAndRecoMixSequence : [ @sequence::EventMixing.CD3Mixers,
                                    @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
+
 
 END_PROLOG

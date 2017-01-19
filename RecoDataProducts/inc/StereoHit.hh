@@ -36,7 +36,7 @@ namespace mu2e {
 	{ return tracker.getStraw(sh2(strawhits).strawIndex()); }
       CLHEP::Hep3Vector const& pos() const { return _pos; }
       float dist() const { return _dist; }
-      PanelId::isep panelSeparation() const { return _isep; }
+      PanelId::isep panelSeparation() const { return static_cast<PanelId::isep>(_isep); }
       float time() const { return _time; }
       float dt() const { return _dt; } // signed t2 -t1
       float energy() const { return _edep; }
@@ -53,7 +53,7 @@ namespace mu2e {
       std::size_t _hind1, _hind2; // indices into the straw hit container for the 2 hits making up this stereo hit
       CLHEP::Hep3Vector _pos; // position in tracker coordinates
       float _dist; // transverse separation between the 2 hit wires at their POCA
-      PanelId::isep _isep; // separation of measurement planes
+      int _isep; // separation of measurement planes
       float _time; // average time of the 2 hits
       float _dt; // time separation of the 2 hits
       float _edep; // average energy deposition of the 2 hits
