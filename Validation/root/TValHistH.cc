@@ -180,7 +180,8 @@ void TValHistH::Draw(Option_t* Opt) {
     fHist1->SetMinimum(xl/TMath::Power(xh/xl,0.05));
   } else {
     //gPad->SetLogy(0);
-    fHist1->SetMaximum(xmax*1.14);
+    float xh = (xmax>1.0e-20 ? xmax : 1.0 );
+    fHist1->SetMaximum(xh*1.14);
     fHist1->SetMinimum(0.0);
   }
 
