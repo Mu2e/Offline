@@ -20,13 +20,12 @@ vector<double> building.remote.handling.ceiling.xPositions = {
   3708.4,   // R4
   3708.4,   // R5
   -12319,   // r8
-  -12319,   // e1
   -12319,   // R9
   -3022.61,  // DNB Add 1
   -3022.61,  // DNB Add 2
   -2108.2,   // DNB Add 3
   -2108.2,   // DNB Add 4
-  941.32,   // S0 mod DNB was 1468.12
+  941.30,   // S0 mod DNB was 1468.12
   2463.8   // S2  mod DNB was 3251.2
 };
 //  2463.8,   // S1  mod DNB was 3251.2
@@ -40,7 +39,6 @@ vector<double> building.remote.handling.ceiling.yPositions = {
   13512.8,   // R4
   16611.6,   // R5
   16611.6,   // r8
-  7086.6,   // e1
   6858,   // R9
   6858,   // Add DNB 1
   7467.6, // Add DNB 2
