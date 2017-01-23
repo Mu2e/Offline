@@ -28,9 +28,8 @@ process_name: drap
 
 @table::draTopLevelDefs
 
-// We guarantee that our subruns are atomic. The following line is
-// supposed to prevent excessive memory use.
-services.scheduler.fileMode: MERGE
+// override a setting from CaloMC/fcl/prolog.fcl
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput: "compressPVDetector"
 
 // Limit the amount of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1

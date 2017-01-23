@@ -1,26 +1,7 @@
 BEGIN_PROLOG
 
-caloDigiTable: {
-   protonTimeMap        : @local::protonTimeMap
-   muonTimeMap          : @local::muonTimeMap
-   MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
-}
-
-caloDigiSeq:  [protonTimeMap, muonTimeMap, MakeCaloReadoutHits ]
-
-// FIXME: Tracking.DigiSim should include time maps in addition to other stuff
-digitizationSeq: [ @sequence::caloDigiSeq, @sequence::Tracking.DigiSim ]
-
 //----------------------------------------------------------------
-// Calorimeter cluster reconstruction
-caloRecoTable: {
-   MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
-   MakeCaloProtoCluster : @local::MakeCaloProtoCluster
-   MakeCaloCluster      : @local::MakeCaloCluster
-}
-
-caloRecoSeq: [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
-
+// for E/p PID
 pidPathBins: [ 0., 50., 100., 150., 200., 250., 300., 1.e12 ]
 
 // Analysis
@@ -73,11 +54,11 @@ vetoTrackCuts: {
 
 CutAndCountSettings: {
    // Dowstream e- track input
-   signalTrackInput: "TRFDeM"
+   signalTrackInput: "KFFDeM"
    signalTrackCuts: @local::signalTrackCuts
 
    trackVetoes: [
-      [ "uemVeto", "TRFUeM", @local::vetoTrackCuts ]
+      [ "uemVeto", "KFFUeM", @local::vetoTrackCuts ]
    ]
 
    weight: @nil
@@ -108,18 +89,21 @@ draTopLevelDefs: {
 
 	 //------------------------------------------------------------------------------
 	 // digitization
-	 @table::caloDigiTable
-	 // FIXME: Tracking.producers below defines digi in addition to defining reco
+
+         protonTimeMap: @local::protonTimeMap
+         muonTimeMap: @local::muonTimeMap
+
+         //----------------------------------------------------------------
+         // calorimeter
+         @table::CaloDigiMC.producers     // calo MC digi
+         @table::CaloReco.producers       // calo digi reconstruction
+         @table::CaloCluster.producers    // cluster reconstruction
 
 	 //------------------------------------------------------------------------------
 	 // Track reco - multiple hypotheses
 	 @table::Tracking.producers
 
-	 // MergePatRec and friends
-	 @table::CalPatRec.producers
-
-	 // Calorimeter reco
-	 @table::caloRecoTable
+	 MergePatRecDem: { @table::MergePatRecDem }
 
 	 // PID inputs
 	 @table::TrackCaloMatching.producers
@@ -154,7 +138,10 @@ draTopLevelDefs: {
       //==============================================================================
       draDigiTrigSeq : [
 	 @sequence::draEventMixing.CD3Mixers
-	 , @sequence::digitizationSeq
+	 , protonTimeMap
+	 , muonTimeMap
+	 , @sequence::CaloDigiMC.DigiSim
+	 , @sequence::Tracking.DigiSim
       ]
 
       draRecoTrigSeq : [
@@ -165,8 +152,11 @@ draTopLevelDefs: {
 	 // because CalPatRec is not in a trigger_path.
 	 , MergePatRecDem
 
-	 , @sequence::caloRecoSeq
-	 , TrackCaloIntersectionDem, TrackCaloMatchingDem
+	 , @sequence::CaloReco.Reco
+	 , @sequence::CaloCluster.Reco
+
+	 , TrackCaloIntersectionDem
+	 , TrackCaloMatchingDem
       ]
 
       trigger_paths: @nil
@@ -191,6 +181,7 @@ draTopLevelDefs.physics.draCommonTrigSeq: [
 ]
 
 draTopLevelDefs.physics.draCutAndCountTrigSeq: [
+   @sequence::draTopLevelDefs.physics.draDigiTrigSeq,
    @sequence::draTopLevelDefs.physics.draRecoTrigSeq,
    cutAndCountFilter
 ]
