@@ -10,7 +10,6 @@ bool hasTarget          = true;
 bool hasProtonAbsorber  = true;
 bool hasTSdA           = true;
 bool hasExternalShielding = true;
-bool hasVaneCalorimeter = false;
 bool hasDiskCalorimeter = true;
 bool hasBFieldManager   = true;
 bool hasBeamline        = true;

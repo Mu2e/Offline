@@ -334,7 +334,7 @@ namespace mu2e {
 	
 	trjVec = fromTrkToMu2eFrame(trjVec);
 	
-	if( cg->isInsideSection(jSection,trjVec ) ){
+	if( cg->geomUtil().isInsideSection(jSection,trjVec ) ){
 	  if(!isInside[jSection]){
 	    if(diagLevel>4){
 	      cout<<"Event Number : "<< evtNumber<< endl;
@@ -475,8 +475,8 @@ namespace mu2e {
     _solenoidOffSetX = geom->config().getDouble("mu2e.solenoidOffset");//3904.;//[mm]
     _solenoidOffSetZ = -geom->config().getDouble("mu2e.detectorSystemZ0");//-10200.;
     
-    _ZfrontFaceCalo = cg->origin().z() + _solenoidOffSetZ;
-    _ZbackFaceCalo = cg->origin().z() + _solenoidOffSetZ;
+    _ZfrontFaceCalo = cg->geomInfo().origin().z() + _solenoidOffSetZ;
+    _ZbackFaceCalo = cg->geomInfo().origin().z() + _solenoidOffSetZ;
 
 
     const char* oname = "TrkExtrapol::doExtrapolation";

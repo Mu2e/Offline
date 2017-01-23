@@ -22,7 +22,6 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 //#include <boost/shared_ptr.hpp>
 #include "fhiclcpp/ParameterSet.h"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"

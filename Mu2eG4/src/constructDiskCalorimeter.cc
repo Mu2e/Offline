@@ -13,16 +13,6 @@
 //  4. Disk holds the wrapped crystals, but the casing is only for the inner / outer radii (no front/back casing yet), so z wrapping = wrapdepth/2.0
 //  5. Calibration pipes go in front
 
-
-
-#include <array>
-#include <iostream>
-
-// CLHEP includes
-#include "CLHEP/Units/SystemOfUnits.h"
-#include "CLHEP/Vector/TwoVector.h"
-
-// Mu2e includes.
 #include "Mu2eG4/inc/constructDiskCalorimeter.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
@@ -39,7 +29,6 @@
 #include "Mu2eG4/inc/CaloReadoutCardSD.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 
-// G4 includes
 #include "G4Box.hh"
 #include "G4Polyhedra.hh"
 #include "G4Tubs.hh"
@@ -52,14 +41,18 @@
 #include "G4SDManager.hh"
 #include "G4UnitsTable.hh"
 
+#include "CLHEP/Units/SystemOfUnits.h"
+#include "CLHEP/Vector/TwoVector.h"
+
+#include <array>
+#include <iostream>
+#include <sstream>
 
 
-
-using namespace std;
 
 namespace mu2e {
 
-  VolumeInfo constructDiskCalorimeter( VolumeInfo const &  mother, SimpleConfig const& config )
+  VolumeInfo constructDiskCalorimeter( const VolumeInfo&  mother, const SimpleConfig& config )
   {
 
 
@@ -92,7 +85,6 @@ namespace mu2e {
     G4Material* vacuumMaterial  = materialFinder.get("calorimeter.vacuumMaterial");
 
     G4Material* ROelectMaterial = materialFinder.get("calorimeter.readoutMaterial");
-
     G4Material* tempFillerMaterial = materialFinder.get("calorimeter.fillerMaterialName");
 
     
@@ -106,10 +98,10 @@ namespace mu2e {
     DiskCalorimeter const & cal       = *(GeomHandle<DiskCalorimeter>());
 
     //calorimeter mother envelope
-    G4double mother_inRadius          = cal.caloGeomInfo().envelopeInRadius();
-    G4double mother_outRadius         = cal.caloGeomInfo().envelopeOutRadius();
-    G4double mother_z0                = cal.caloGeomInfo().envelopeZ0();
-    G4double mother_z1                = cal.caloGeomInfo().envelopeZ1();
+    G4double mother_inRadius          = cal.caloInfo().envelopeInRadius();
+    G4double mother_outRadius         = cal.caloInfo().envelopeOutRadius();
+    G4double mother_z0                = cal.caloInfo().envelopeZ0();
+    G4double mother_z1                = cal.caloInfo().envelopeZ1();
 
     // ***************    
     //Temp filler material for particle trapping study
@@ -121,22 +113,22 @@ namespace mu2e {
     // ***************
 
     //crystal properties
-    G4int    crystalnEdges            = cal.caloGeomInfo().crystalNedges();
-    G4double crystalPolysize          = cal.caloGeomInfo().crystalHalfTrans();
-    G4double crystalDepth             = 2.0*cal.caloGeomInfo().crystalHalfLength();
+    G4int    crystalnEdges            = 4;
+    G4double crystalPolysize          = cal.caloInfo().crystalHalfTrans();
+    G4double crystalDepth             = 2.0*cal.caloInfo().crystalHalfLength();
 
-    G4double wrapThickness            = cal.caloGeomInfo().wrapperThickness();
+    G4double wrapThickness            = cal.caloInfo().wrapperThickness();
     G4double wrapPolysize             = crystalPolysize + wrapThickness;
     G4double wrapDepth                = crystalDepth + wrapThickness; 
     
     
     //readout box properties    
-    G4int    nRO                      = cal.caloGeomInfo().nROPerCrystal();
-    G4double ROHalfThickness          = cal.caloGeomInfo().roHalfThickness();
-    G4double ROHalfTrans              = cal.caloGeomInfo().roHalfTrans();    
-    G4double ROElecHalfX              = cal.caloGeomInfo().roElecHalfX();
-    G4double ROElecHalfY              = cal.caloGeomInfo().roElecHalfY();
-    G4double ROElecHalfZ              = cal.caloGeomInfo().roElecHalfZ();
+    G4int    nRO                      = cal.caloInfo().nROPerCrystal();
+    G4double ROHalfThickness          = cal.caloInfo().roHalfThickness();
+    G4double ROHalfTrans              = cal.caloInfo().roHalfTrans();    
+    G4double ROElecHalfX              = cal.caloInfo().roElecHalfX();
+    G4double ROElecHalfY              = cal.caloInfo().roElecHalfY();
+    G4double ROElecHalfZ              = cal.caloInfo().roElecHalfZ();
     G4double ROBoxDepth               = 2*ROHalfThickness +2*ROElecHalfZ;
 
     
@@ -146,21 +138,21 @@ namespace mu2e {
    
 
     //calorimeter calibration system
-    G4int nPipes                      = cal.caloGeomInfo().nPipes();      
-    G4double pipeRadius               = cal.caloGeomInfo().pipeRadius();
-    G4double pipeThickness            = cal.caloGeomInfo().pipeThickness();
-    std::vector<double> pipeTorRadius = cal.caloGeomInfo().pipeTorRadius();
+    G4int nPipes                      = cal.caloInfo().nPipes();      
+    G4double pipeRadius               = cal.caloInfo().pipeRadius();
+    G4double pipeThickness            = cal.caloInfo().pipeThickness();
+    std::vector<double> pipeTorRadius = cal.caloInfo().pipeTorRadius();
 
 
     //calorimeter electronics crates
-    G4double crateRadIn               = cal.caloGeomInfo().crateRadiusIn();
-    G4double crateRadOut              = cal.caloGeomInfo().crateRadiusOut();
-    G4double crateHalfLength          = cal.caloGeomInfo().crateHalfLength();
+    G4double crateRadIn               = cal.caloInfo().crateRadiusIn();
+    G4double crateRadOut              = cal.caloInfo().crateRadiusOut();
+    G4double crateHalfLength          = cal.caloInfo().crateHalfLength();
 
 
     //disk properties
     const unsigned int nDisks         = cal.nDisk();
-    G4double caseThickness            = cal.caloGeomInfo().caseThickness();
+    G4double caseThickness            = cal.caloInfo().caseThickness();
     G4double caseDepth                = unitDepth + 2.0*caseThickness;
     G4double diskDepth                = caseDepth + 2.0*pipeRadius;
 
@@ -284,7 +276,7 @@ namespace mu2e {
 
 	for (unsigned int iro=0;iro < XposRO.size();++iro)
 	{
-            ostringstream ROPV; ROPV<<"ROPV_" <<iro;
+            std::ostringstream ROPV; ROPV<<"ROPV_" <<iro;
             pv = new G4PVPlacement(0,G4ThreeVector(XposRO[iro],YposRO[iro],ROHalfThickness), ROLog,ROPV.str(), ROBoxInLog, true,iro,false);
             doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 	}
@@ -368,8 +360,8 @@ namespace mu2e {
        {
             double zhl = static_cast<G4Tubs*>(calorimeterInfo.solid)->GetZHalfLength();
 	    double CalorimeterOffsetInMu2eZ = calorimeterInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
-	    cout << __func__ << " Calorimeter mother center in Mu2e   : " << calorimeterInfo.centerInMu2e() << endl;
-	    cout << __func__ << " Calorimeter mother Z extent in Mu2e : " << CalorimeterOffsetInMu2eZ - zhl << ", " << CalorimeterOffsetInMu2eZ + zhl << endl;
+	    std::cout << __func__ << " Calorimeter mother center in Mu2e   : " << calorimeterInfo.centerInMu2e() << std::endl;
+	    std::cout << __func__ << " Calorimeter mother Z extent in Mu2e : " << CalorimeterOffsetInMu2eZ - zhl << ", " << CalorimeterOffsetInMu2eZ + zhl << std::endl;
        }
 
 
@@ -399,9 +391,9 @@ namespace mu2e {
 
        for (unsigned int idisk=0;idisk<nDisks;++idisk)
        {
-	     ostringstream discname0;      discname0<<"DiskCalorimeter_" <<idisk;
-	     ostringstream discname1;      discname1<<"DiskCase_" <<idisk;
-	     ostringstream cratename;      cratename<<"DiskFEB_" <<idisk;
+	     std::ostringstream discname0;      discname0<<"DiskCalorimeter_" <<idisk;
+	     std::ostringstream discname1;      discname1<<"DiskCase_" <<idisk;
+	     std::ostringstream cratename;      cratename<<"DiskFEB_" <<idisk;
 
 	     double radiusIn       = cal.disk(idisk).innerRadius()-caseThickness;
 	     double radiusOut      = cal.disk(idisk).outerRadius()+caseThickness;
@@ -410,10 +402,10 @@ namespace mu2e {
 
 
 	     //origin gives the position of the center of the disk, irrespective of the coordinate origin set in the calo description
-	     G4ThreeVector posDisk = cal.disk(idisk).origin() - posCaloMother;
+	     G4ThreeVector posDisk = cal.disk(idisk).geomInfo().origin() - posCaloMother;
 
 	     diskBoxInfo[idisk] =  nestTubs(discname0.str(),
-                        		    diskpar0,fillMaterial,&cal.disk(idisk).rotation(),posDisk,
+                        		    diskpar0,fillMaterial,&cal.disk(idisk).geomInfo().rotation(),posDisk,
                         		    calorimeterInfo,
                         		    idisk,
                         		    isDiskCaseVisible,G4Colour::Green(),isDiskCaseSolid,forceAuxEdgeVisible,
@@ -428,11 +420,11 @@ namespace mu2e {
 
 	     if ( crateVersion > 1 )  // crateVersion 1 is No crates
 	     {
-		G4ThreeVector posCrate = posDisk + CLHEP::Hep3Vector(0.0,0.0,cal.disk(idisk).crateDeltaZ());
+		G4ThreeVector posCrate = posDisk + CLHEP::Hep3Vector(0.0,0.0,cal.disk(idisk).geomInfo().crateDeltaZ());
                 double cratepar[5] = {crateRadIn, crateRadOut, crateHalfLength, 0., CLHEP::pi};
 
 		diskFEBInfo[idisk] = nestTubs(cratename.str(),
-					     cratepar,crateMaterial,&cal.disk(idisk).rotation(),posCrate,
+					     cratepar,crateMaterial,&cal.disk(idisk).geomInfo().rotation(),posCrate,
 					     calorimeterInfo,
 					     idisk,
 					     isDiskCaseVisible,G4Colour::Green(),isDiskCaseSolid,forceAuxEdgeVisible,					     
@@ -444,10 +436,10 @@ namespace mu2e {
 
 	     if ( verbosityLevel > 0) 
 	     {
-		 cout << __func__ << " CalorimeterDisk center in Mu2e    : " << diskBoxInfo[idisk].centerInMu2e() << endl;
-		 cout << __func__ << " CalorimeterDisk Z extent in Mu2e  : " << diskBoxInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - diskDepth/2.0 << ", " << diskBoxInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] + diskDepth/2.0 << endl;
-		 cout << __func__ << " CalorimeterCase center in Mu2e    : " << diskCaseInfo[idisk].centerInMu2e() << endl;
-		 cout << __func__ << " CalorimeterCase Z extent in Mu2e  : " << diskCaseInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - caseDepth/2.0 << ", " << diskCaseInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] + caseDepth/2.0 << endl;
+		 std::cout << __func__ << " CalorimeterDisk center in Mu2e    : " << diskBoxInfo[idisk].centerInMu2e() << std::endl;
+		 std::cout << __func__ << " CalorimeterDisk Z extent in Mu2e  : " << diskBoxInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - diskDepth/2.0 << ", " << diskBoxInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] + diskDepth/2.0 << std::endl;
+		 std::cout << __func__ << " CalorimeterCase center in Mu2e    : " << diskCaseInfo[idisk].centerInMu2e() << std::endl;
+		 std::cout << __func__ << " CalorimeterCase Z extent in Mu2e  : " << diskCaseInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - caseDepth/2.0 << ", " << diskCaseInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] + caseDepth/2.0 << std::endl;
 	     }
 
 
@@ -460,7 +452,7 @@ namespace mu2e {
         	   double z = -unitDepth/2.0; 	      
 
 		   G4int id = nTotCrystal+ic;
-		   ostringstream cryPVName;      
+		   std::ostringstream cryPVName;      
 		   cryPVName<<"CrysUnitPV_" <<id;
 		   
 		   pv = new G4PVPlacement(0,G4ThreeVector(x,y,z),UnitLog,cryPVName.str(),diskCaseInfo[idisk].logical,false,id,false);
@@ -486,7 +478,7 @@ namespace mu2e {
 		  VolumeInfo caloPipe[nPipes];	
 		  for (int ipipe=0;ipipe<nPipes;++ipipe)
 		  {
-		       ostringstream pipename;  pipename<<"CaloPipe" <<idisk<<"_"<<ipipe;
+		       std::ostringstream pipename;  pipename<<"CaloPipe" <<idisk<<"_"<<ipipe;
         	       std::array<double,5> pipeParam { {pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe], 0., CLHEP::twopi } };
 
 		       caloPipe[ipipe] = nestTorus(pipename.str(),

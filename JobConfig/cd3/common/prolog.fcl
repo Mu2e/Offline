@@ -89,7 +89,7 @@ draTopLevelDefs: {
 
 	 //------------------------------------------------------------------------------
 	 // digitization
-
+         
          protonTimeMap: @local::protonTimeMap
          muonTimeMap: @local::muonTimeMap
 
@@ -189,3 +189,5 @@ draTopLevelDefs.physics.draCutAndCountTrigSeq: [
 #----------------------------------------------------------------
 
 END_PROLOG
+
+

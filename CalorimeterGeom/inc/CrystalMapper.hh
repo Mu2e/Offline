@@ -6,23 +6,20 @@
 // Original author B. Echenard
 //
 
-
 #include "CLHEP/Vector/TwoVector.h"
 #include <vector>
-
 
 namespace mu2e {
     
 
     class CrystalMapper {
 
-
 	public:
 
 	   //no constructor for this interface
 	   virtual ~CrystalMapper() {};
 
-           virtual int                nCrystalMax(int maxRing) = 0;
+           virtual int                nCrystalMax(int maxRing)                     const = 0;
 
            virtual int                nApex()                                      const = 0;
            virtual double             apexX(int i)                                 const = 0;

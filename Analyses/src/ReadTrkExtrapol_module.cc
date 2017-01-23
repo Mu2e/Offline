@@ -204,7 +204,7 @@ namespace mu2e {
 //       KalRepPtr const& trkPtr = trkExt->trk();
 //       const KalRep* trk = trkPtr.get();
       
-      _caloSec[i]    = trkExt->sectionId();
+      _caloSec[i]    = trkExt->diskId();
       _trkId[i]      = trkExt->trackNumber();
       _trkTime[i]    = trkExt->time();
       _trkTimeErr[i] = trkExt->timeErr(); 

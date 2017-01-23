@@ -387,7 +387,7 @@ namespace mu2e {
 
 
       const double CrDensity = 4.9*(CLHEP::g/CLHEP::cm3);
-      const double CrMass    = CrDensity*cal.caloGeomInfo().crystalVolume();
+      const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
 
 
       std::map<art::Ptr<SimParticle>, const StepPointMC*> vdMap;
@@ -447,7 +447,7 @@ namespace mu2e {
        for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
        {
            const CaloCrystalHit &hit     = caloCrystalHits.at(ic);
-	   int sectionId                 = cal.crystal(hit.id()).sectionId();
+	   int diskId                    = cal.crystal(hit.id()).diskId();
            CLHEP::Hep3Vector crystalPos  = cal.crystal(hit.id()).localPositionFF();  //in disk FF frame
  
            CrystalContentMC contentMC(cal, caloHitTruth, hit);
@@ -460,7 +460,7 @@ namespace mu2e {
            _cryPosY[_nHits]      = crystalPos.y();
            _cryPosZ[_nHits]      = crystalPos.z();
            _cryId[_nHits]        = hit.id();
-           _crySectionId[_nHits] = sectionId;
+           _crySectionId[_nHits] = diskId;
 
            _crySimIdx[_nCluster] = _nCluSim;
            _crySimLen[_nCluster] = contentMC.simContentMap().size();
@@ -550,7 +550,7 @@ namespace mu2e {
 	       if (vdMapEntry != vdMap.end())
 	       {
 	          simMom = vdMapEntry->second->momentum().mag();
-		  CLHEP::Hep3Vector simPos = cal.toSectionFrameFF(clusterIt->sectionId(), vdMapEntry->second->position());		  
+		  CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(clusterIt->diskId(), vdMapEntry->second->position());		  
 	       } 
 
                _clusimId[_nCluSim]     = sim->id().asInt();
@@ -599,7 +599,7 @@ namespace mu2e {
                double hitTimeUnfolded = _toff.timeWithOffsetsApplied(hit);
    	       double hitTime         = fmod(hitTimeUnfolded,_mbtime);
 
-               CLHEP::Hep3Vector VDPos = cal.toTrackerFrame(hit.position());
+               CLHEP::Hep3Vector VDPos = cal.geomUtil().mu2eToTracker(hit.position());
 
                _vdId[_nVd]    = hit.volumeId();
                _vdPdgId[_nVd] = hit.simParticle()->pdgId();

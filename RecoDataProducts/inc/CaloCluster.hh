@@ -1,28 +1,22 @@
 #ifndef RecoDataProducts_CaloCluster_hh
 #define RecoDataProducts_CaloCluster_hh
+
 //
-// Calorimeter's data cluster container
+// Calorimeter cluster information
 //
-// $Id: CaloCluster.hh,v 1.6 2013/03/08 01:22:32 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/03/08 01:22:32 $
-//
-// Original author G. Pezzullo & G. Tassielli
 //
 
-// Mu2e includes:
 #include "canvas/Persistency/Common/Ptr.h"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 
-// C++ includes
-#include <vector>
-#include <ostream>
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
+#include <vector>
+#include <ostream>
+
 
 namespace mu2e {
-
 
 
    class CaloCluster {
@@ -34,63 +28,63 @@ namespace mu2e {
             typedef std::vector<CaloCrystalHitPtr>     CaloCrystalHitPtrVector;
 
 	    CaloCluster() : 
-	       _sectionId(-1),_time(0.),_timeErr(0.0),_energyDep(0.),_energyDepErr(0.),_e1(0.),_e9(0.),_e25(0.),
-	       _secondMoment(0.),_angle(0),_cog3Vector(CLHEP::Hep3Vector(0,0,0)), _caloCrystalHitsPtrVector(),_isSplit(false)
+	       diskId_(-1),time_(0.),timeErr_(0.0),energyDep_(0.),energyDepErr_(0.),e1_(0.),e9_(0.),e25_(0.),
+	       secondMoment_(0.),angle_(0),cog3Vector_(CLHEP::Hep3Vector(0,0,0)), caloCrystalHitsPtrVector_(),isSplit_(false)
 	    {}
 
 	    CaloCluster(int iSection, double time, double timeErr, double energy, double energyErr, 
 	                CaloCrystalHitPtrVector caloCrystalHits, bool isSplit) : 
-	       _sectionId(iSection),_time(time),_timeErr(timeErr),_energyDep(energy),_energyDepErr(energyErr),_e1(0),_e9(0),
-	       _e25(0),_secondMoment(-1),_angle(0),_cog3Vector(CLHEP::Hep3Vector(0,0,0)),
-	       _caloCrystalHitsPtrVector(caloCrystalHits),_isSplit(isSplit)
+	       diskId_(iSection),time_(time),timeErr_(timeErr),energyDep_(energy),energyDepErr_(energyErr),e1_(0),e9_(0),
+	       e25_(0),secondMoment_(-1),angle_(0),cog3Vector_(CLHEP::Hep3Vector(0,0,0)),
+	       caloCrystalHitsPtrVector_(caloCrystalHits),isSplit_(isSplit)
 	    {}
 
 	    void print(std::ostream& ost = std::cout) const;
 
 
 	    //Accessors
-	    int                            sectionId()                const{return _sectionId;}       
-	    int                            size()                     const{return _caloCrystalHitsPtrVector.size();}
-	    double                         time()                     const{return _time;}            
-	    double                         timeErr()                  const{return _timeErr;}            
-	    double                         energyDep()                const{return _energyDep;}       
-	    double                         energyDepErr()             const{return _energyDepErr;}       
-	    double                         e1()                       const{return _e1;}       
-	    double                         e9()                       const{return _e9;}       
-	    double                         e25()                      const{return _e25;}       
-	    double                         secondMoment()             const{return _secondMoment;}       
-	    double                         angle()                    const{return _angle;}       
-	    const CLHEP::Hep3Vector&       cog3Vector()               const{return _cog3Vector;}      
-	    const CaloCrystalHitPtrVector& caloCrystalHitsPtrVector() const{return _caloCrystalHitsPtrVector;}
-	    bool                           isSplit()                  const{return _isSplit;} 
+	    int                            diskId()                   const{return diskId_;}       
+	    int                            size()                     const{return caloCrystalHitsPtrVector_.size();}
+	    double                         time()                     const{return time_;}            
+	    double                         timeErr()                  const{return timeErr_;}            
+	    double                         energyDep()                const{return energyDep_;}       
+	    double                         energyDepErr()             const{return energyDepErr_;}       
+	    double                         e1()                       const{return e1_;}       
+	    double                         e9()                       const{return e9_;}       
+	    double                         e25()                      const{return e25_;}       
+	    double                         secondMoment()             const{return secondMoment_;}       
+	    double                         angle()                    const{return angle_;}       
+	    const CLHEP::Hep3Vector&       cog3Vector()               const{return cog3Vector_;}      
+	    const CaloCrystalHitPtrVector& caloCrystalHitsPtrVector() const{return caloCrystalHitsPtrVector_;}
+	    bool                           isSplit()                  const{return isSplit_;} 
 
 
 	    //Setting parameters
-	    void cog3Vector(CLHEP::Hep3Vector cog3Vector)      {_cog3Vector = cog3Vector;}
-	    void energyRing(double e1, double e9, double e25)  {_e1 = e1;_e9 = e9;_e25 = e25;}
-	    void secondMoment(double second)                   {_secondMoment = second;}
-	    void angle(double angle)                           {_angle = angle;}
+	    void cog3Vector(CLHEP::Hep3Vector cog3Vector)      {cog3Vector_ = cog3Vector;}
+	    void energyRing(double e1, double e9, double e25)  {e1_ = e1;e9_ = e9;e25_ = e25;}
+	    void secondMoment(double second)                   {secondMoment_ = second;}
+	    void angle(double angle)                           {angle_ = angle;}
          
 
 
 	 private:
 	 
-	    int                      _sectionId;   
-	    double                   _time;       
-	    double                   _timeErr;       
-	    double                   _energyDep;
-	    double                   _energyDepErr;
-	    double                   _e1;
-	    double                   _e9;
-	    double                   _e25;	      
-	    double                   _secondMoment;	      
-	    double                   _angle;	      
-	    CLHEP::Hep3Vector        _cog3Vector; 
-	    CaloCrystalHitPtrVector  _caloCrystalHitsPtrVector;
-	    bool                     _isSplit;    
+	    int                      diskId_;   
+	    double                   time_;       
+	    double                   timeErr_;       
+	    double                   energyDep_;
+	    double                   energyDepErr_;
+	    double                   e1_;
+	    double                   e9_;
+	    double                   e25_;	      
+	    double                   secondMoment_;	      
+	    double                   angle_;	      
+	    CLHEP::Hep3Vector        cog3Vector_; 
+	    CaloCrystalHitPtrVector  caloCrystalHitsPtrVector_;
+	    bool                     isSplit_;    
 
    };
 
 } 
 
-#endif /* RecoDataProducts_CaloCluster_hh */
+#endif 

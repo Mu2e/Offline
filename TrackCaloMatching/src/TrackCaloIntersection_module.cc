@@ -240,7 +240,7 @@ namespace mu2e {
     void TrackCaloIntersection::doExtrapolation(TrkCaloIntersectCollection& extrapolatedTracks, KalRepPtrCollection const& trksPtrColl)
     {
 	 Calorimeter const&  cal = *(GeomHandle<Calorimeter>());
-	 CLHEP::Hep3Vector   endCalTracker = cal.toTrackerFrame( CLHEP::Hep3Vector(cal.origin().x(),cal.origin().y(),cal.caloGeomInfo().envelopeZ1()) );
+	 CLHEP::Hep3Vector   endCalTracker = cal.geomUtil().mu2eToTracker( CLHEP::Hep3Vector(cal.geomInfo().origin().x(),cal.geomInfo().origin().y(),cal.caloInfo().envelopeZ1()) );
 	 
 	 
 	 for (unsigned int itrk=0; itrk< trksPtrColl.size(); ++itrk )
@@ -261,7 +261,7 @@ namespace mu2e {
 
 	      TrkDifTraj const& traj = krep->traj();
               
-	      for(unsigned int iSec=0; iSec<cal.nSection(); ++iSec ) findIntersectSection(cal,traj,trkHel,iSec, intersectVec);  
+	      for(unsigned int iSec=0; iSec<cal.nDisk(); ++iSec ) findIntersectSection(cal,traj,trkHel,iSec, intersectVec);  
 	      if (_downstream) std::sort(intersectVec.begin(),intersectVec.end(),[](const TrkCaloInter& a, const TrkCaloInter& b ){ return a.fSEntr < b.fSEntr;});
 	      else             std::sort(intersectVec.begin(),intersectVec.end(),[](const TrkCaloInter& a, const TrkCaloInter& b ){ return a.fSEntr > b.fSEntr;});
 	      
@@ -286,8 +286,8 @@ namespace mu2e {
                                            HelixTraj const& trkHel, unsigned int iSection, std::vector<TrkCaloInter>& intersect)
     {
 	 	 	 
-	 CLHEP::Hep3Vector frontFaceInTracker = cal.toTrackerFrame(cal.section(iSection).frontFaceCenter());
-	 CLHEP::Hep3Vector backFaceInTracker  = cal.toTrackerFrame(cal.section(iSection).backFaceCenter());
+	 CLHEP::Hep3Vector frontFaceInTracker = cal.geomUtil().mu2eToTracker(cal.disk(iSection).geomInfo().frontFaceCenter());
+	 CLHEP::Hep3Vector backFaceInTracker  = cal.geomUtil().mu2eToTracker(cal.disk(iSection).geomInfo().backFaceCenter());
 	 
 	 double zStart       = (_downstream) ? frontFaceInTracker.z() : backFaceInTracker.z();
 	 double zEnd         = (_downstream) ? backFaceInTracker.z()  : frontFaceInTracker.z() ;	 	 
@@ -343,8 +343,8 @@ namespace mu2e {
 	 
 
 
-	 if (initRadius < cal.section(iSection).innerEnvelopeR())  rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).innerEnvelopeR());	 
-	 if (initRadius > cal.section(iSection).outerEnvelopeR()) rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).outerEnvelopeR()); 
+	 if (initRadius < cal.disk(iSection).geomInfo().innerEnvelopeR())  rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.disk(iSection).geomInfo().innerEnvelopeR());	 
+	 if (initRadius > cal.disk(iSection).geomInfo().outerEnvelopeR()) rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.disk(iSection).geomInfo().outerEnvelopeR()); 
 
 	 if (rangeStart > rangeEnd) return rangeEnd+1e-4;
 
@@ -354,9 +354,9 @@ namespace mu2e {
 	 updateTrjVec(cal,traj,rangeStart,trjVec);
 	 
 	 double rangeIn(rangeStart),rangeOut(rangeStart);
-	 if ( cal.isInsideSection(iSection,trjVec))
+	 if ( cal.geomUtil().isInsideSection(iSection,trjVec))
 	 {
-	      while (cal.isInsideSection(iSection,trjVec))
+	      while (cal.geomUtil().isInsideSection(iSection,trjVec))
 	      {
 		 rangeIn = rangeOut; 
 		 rangeOut -= _pathStep;
@@ -366,7 +366,7 @@ namespace mu2e {
 
 	 } else {
 	 
-	      while ( !cal.isInsideSection(iSection,trjVec) )
+	      while ( !cal.geomUtil().isInsideSection(iSection,trjVec) )
 	      {
 		 rangeOut = rangeIn; 
 		 rangeIn += _pathStep;
@@ -392,7 +392,7 @@ namespace mu2e {
 	 CLHEP::Hep3Vector trjVec;
 	 updateTrjVec(cal,traj,range,trjVec);
 
-         while ( cal.isInsideSection(iSection,trjVec) )
+         while ( cal.geomUtil().isInsideSection(iSection,trjVec) )
 	 {         	    
 	    range += _pathStep;
 	    updateTrjVec(cal,traj,range,trjVec);
@@ -415,7 +415,7 @@ namespace mu2e {
 	     updateTrjVec(cal,traj,range,trjVec);
 	     if (_diagLevel>2) std::cout<<"TrackExtrpol position scan Binary "<<trjVec<<"  for currentRange="<<range<<std::endl;
 	     
-	     if (cal.isInsideSection(iSection,trjVec)) rangeIn=range;
+	     if (cal.geomUtil().isInsideSection(iSection,trjVec)) rangeIn=range;
 	     else                                      rangeOut=range;
 	     range = 0.5*(rangeOut+rangeIn);	     
 	 }
@@ -434,7 +434,7 @@ namespace mu2e {
     {
        HepPoint trjPoint = traj.position(range);
        trjVec.set(trjPoint.x(),trjPoint.y(),trjPoint.z());
-       trjVec = cal.fromTrackerFrame(trjVec);    
+       trjVec = cal.geomUtil().trackerToMu2e(trjVec);    
     }
 
 
@@ -510,8 +510,8 @@ double TrackCaloIntersection::scanOutDisk(Calorimeter const& cal, TrkDifTraj con
 {         
 
      double rangeForward(0);
-     double caloRadiusIn  = cal.section(iSection).innerEnvelopeR() + 4*cal.caloGeomInfo().crystalHalfTrans();
-     double caloRadiusOut = cal.section(iSection).outerEnvelopeR() - 4*cal.caloGeomInfo().crystalHalfTrans();
+     double caloRadiusIn  = cal.disk(iSection).innerEnvelopeR() + 4*cal.diskInfo().crystalHalfTrans();
+     double caloRadiusOut = cal.disk(iSection).outerEnvelopeR() - 4*cal.diskInfo().crystalHalfTrans();
 
      double range(rangeStart);
 

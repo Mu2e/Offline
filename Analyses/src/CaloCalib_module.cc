@@ -292,7 +292,7 @@ namespace mu2e {
    
 
       //const double CrDensity = 4.9e-6;  // in kg/mm3 to be consistent with volume units!
-      //const double CrMass    = CrDensity*cal.caloGeomInfo().crystalVolume();
+      //const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
 	   
 
 
@@ -328,7 +328,7 @@ namespace mu2e {
        for (unsigned int ic=0; ic<caloCrystalHits.size();++ic) 
        {	   
 	   CaloCrystalHit const& hit      = caloCrystalHits.at(ic);
-	   int sectionId                  = cal.crystal(hit.id()).sectionId();
+	   int diskId                     = cal.crystal(hit.id()).diskId();
            CLHEP::Hep3Vector crystalPos   = cal.crystal(hit.id()).localPositionFF();  //in disk FF frame
            CaloHit const& caloHit         = *(hit.readouts().at(0));
 
@@ -345,7 +345,7 @@ namespace mu2e {
 	   _cryPosY[_nHits]      = crystalPos.y();
 	   _cryPosZ[_nHits]      = crystalPos.z();
 	   _cryId[_nHits]        = hit.id();
-	   _crySectionId[_nHits] = cal.crystal(hit.id()).sectionId();
+	   _crySectionId[_nHits] = cal.crystal(hit.id()).diskId();
            _crySimIdx[_nHits]    = _nSim;   	              
            _crySimLen[_nHits]    = nPartInside;
 
@@ -358,7 +358,7 @@ namespace mu2e {
              while (grandMother->hasParent()) grandMother = grandMother->parent();
 	     GenParticle const* generated = grandMother->genParticle() ? grandMother->genParticle().get() : 0;
 
-             CLHEP::Hep3Vector hitSimPos = cal.toSectionFrameFF(sectionId,hitSim.position().at(ip)); //in disk FF frame
+             CLHEP::Hep3Vector hitSimPos = cal.geomUtil().mu2eToDiskFF(diskId,hitSim.position().at(ip)); //in disk FF frame
              
 	     _motId[_nSim]      = mother->id().asInt();
 	     _motPdgId[_nSim]   = mother->pdgId();

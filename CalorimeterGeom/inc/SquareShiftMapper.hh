@@ -14,14 +14,13 @@ namespace mu2e {
 
          public:
 
-            SquShiftLK()             : _l(0),_k(0) {}
-	    SquShiftLK(int l, int k) : _l(l),_k(k) {}
+            SquShiftLK()             : l_(0),k_(0) {}
+	    SquShiftLK(int l, int k) : l_(l),k_(k) {}
 
-            void add(const SquShiftLK &x) {_l+=x._l;_k+=x._k;}
+            void add(const SquShiftLK &x) {l_+=x.l_;k_+=x.k_;}
 
-            int _l; 
-	    int _k;                    
-            
+            int l_; 
+	    int k_;                                
     };
     
     
@@ -35,17 +34,17 @@ namespace mu2e {
 	public:
 
 	    SquareShiftMapper();
+            virtual ~SquareShiftMapper() {};
 
-            int               nCrystalMax(int maxRing)        {return 3*maxRing*(maxRing+1)+1;}
-            int               nApex()                   const {return _apexX.size();}
-            double            apexX(int i)              const {return _apexX.at(i);}
-            double            apexY(int i)              const {return _apexY.at(i);}
+            virtual int               nCrystalMax(int maxRing)              const {return 3*maxRing*(maxRing+1)+1;}
+            virtual int               nApex()                               const {return apexX_.size();}
+            virtual double            apexX(int i)                          const {return apexX_.at(i);}
+            virtual double            apexY(int i)                          const {return apexY_.at(i);}
 
-	    CLHEP::Hep2Vector xyFromIndex(int thisIndex)       const;
-            int               indexFromXY(double x, double y)  const;
+	    virtual CLHEP::Hep2Vector xyFromIndex(int thisIndex)            const;
+            virtual int               indexFromXY(double x, double y)       const;
 
-	    std::vector<int>  neighbors(int thisIndex, unsigned int level=1) const;
-
+	    virtual std::vector<int>  neighbors(int thisIndex, unsigned int level=1) const;
 
 
 	private:
@@ -54,9 +53,9 @@ namespace mu2e {
 	    int index(SquShiftLK const &lk) const;
 	    int ring(SquShiftLK const &lk)  const;
 
-	    std::vector<SquShiftLK>   _step;
-	    std::vector<double>       _apexX;
-	    std::vector<double>       _apexY;
+	    std::vector<SquShiftLK>   step_;
+	    std::vector<double>       apexX_;
+	    std::vector<double>       apexY_;
     };
 }
 

@@ -53,7 +53,7 @@ namespace mu2e {
                if ( std::abs(time-caloCrystalHitPtr->time()) < std::abs(time_-caloCrystalHitPtr->time()) ) time_ = time; 
 
                auto parent(sim);
-               while ( parent->hasParent() && cal.isInsideCalorimeter(parent->startPosition()) ) parent = parent->parent();                     
+               while ( parent->hasParent() && cal.geomUtil().isInsideCalorimeter(parent->startPosition()) ) parent = parent->parent();                     
 
                auto mfind = simContentMap_.find(parent);                     
                if (mfind != simContentMap_.end()) mfind->second.update(eDep,time,pIn);

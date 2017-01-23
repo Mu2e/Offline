@@ -1110,9 +1110,9 @@ namespace mu2e
 //-----------------------------------------------------------------------------
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     const mu2e::Calorimeter*     calorimeter = ch.get();
-    Hep3Vector                   gpos        = calorimeter->fromSectionFrameFF(CCluster->sectionId(),
+    Hep3Vector                   gpos        = calorimeter->geomUtil().mu2eToDiskFF(CCluster->diskId(),
 									       CCluster->cog3Vector());
-    Hep3Vector                   tpos        = calorimeter->toTrackerFrame(gpos);
+    Hep3Vector                   tpos        = calorimeter->geomUtil().mu2eToTracker(gpos);
     
     double path = tpos.z()/tdef.helix().sinDip();//TPeak->ClusterZ()/tdef.helix().sinDip();
 
@@ -1203,9 +1203,9 @@ namespace mu2e
 //-----------------------------------------------------------------------------
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
       const mu2e::Calorimeter*     calorimeter = ch.get();
-      Hep3Vector                   gpos        = calorimeter->fromSectionFrameFF(CCluster->sectionId(),
+      Hep3Vector                   gpos        = calorimeter->geomUtil().mu2eToDiskFF(CCluster->diskId(),
 										 CCluster->cog3Vector());
-      Hep3Vector                   tpos        = calorimeter->toTrackerFrame(gpos);
+      Hep3Vector                   tpos        = calorimeter->geomUtil().mu2eToTracker(gpos);
 
       path      = tpos.z()/trkHel.sinDip(); ;//TPeak->ClusterZ()/trkHel.sinDip();
       t0._t0    = CCluster->time() + _dtoffset - path/vflt;//TPeak->ClusterT0() + _dtoffset - path/vflt;

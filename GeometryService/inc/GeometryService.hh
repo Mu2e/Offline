@@ -94,7 +94,6 @@ private:
     // Check the configuration.
     void checkConfig();
     void checkTrackerConfig();
-    void checkCalorimeterConfig();
 
     typedef boost::shared_ptr<Detector> DetectorPtr;
     typedef std::map<std::string,DetectorPtr> DetMap;

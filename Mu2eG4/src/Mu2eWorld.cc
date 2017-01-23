@@ -72,7 +72,6 @@
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
@@ -83,7 +82,6 @@
 #include "Mu2eG4/inc/constructDummyTracker.hh"
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
 #include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
-#include "Mu2eG4/inc/constructVaneCalorimeter.hh"
 #include "Mu2eG4/inc/constructDiskCalorimeter.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
@@ -541,12 +539,9 @@ namespace mu2e {
 
         // Construct one of the calorimeters.
         VolumeInfo calorimeterInfo;
-        if ( _config.getBool("hasVaneCalorimeter",false) ) {
-       calorimeterInfo = constructVaneCalorimeter( detSolDownstreamVacInfo,_config );
-    }
-    if ( _config.getBool("hasDiskCalorimeter",false) ) {
-       calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config );
-    }
+        if ( _config.getBool("hasDiskCalorimeter",false) ) {
+           calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config );
+        }
 
     return calorimeterInfo;
 

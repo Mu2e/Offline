@@ -61,19 +61,19 @@ namespace mu2e
     return retval;
   }
 
-  double TrkTimeCalculator::caloClusterTimeOffset(int sectionId) const {
+  double TrkTimeCalculator::caloClusterTimeOffset(int diskId) const {
     double retval(0.0);
-    if(sectionId > -1 && sectionId < 2)
-      retval = _caloT0Offset[sectionId];
+    if(diskId > -1 && diskId < 2)
+      retval = _caloT0Offset[diskId];
     if(_fdir != TrkFitDirection::downstream)
       retval *= -1.0;
     return retval;
   }
 
-  double TrkTimeCalculator::caloClusterTimeErr(int sectionId) const {
+  double TrkTimeCalculator::caloClusterTimeErr(int diskId) const {
     double retval(1e10);
-    if(sectionId > -1 && sectionId < 2)
-      retval = _caloT0Err[sectionId];
+    if(diskId > -1 && diskId < 2)
+      retval = _caloT0Err[diskId];
     return retval;
   }
 
@@ -82,7 +82,7 @@ namespace mu2e
   }
 
   double TrkTimeCalculator::caloClusterTime(CaloCluster const& cc) const {
-    return cc.time() - caloClusterTimeOffset(cc.sectionId());
+    return cc.time() - caloClusterTimeOffset(cc.diskId());
   }
 
 }

@@ -727,8 +727,8 @@ namespace mu2e {
     if( ! geom->hasElement<Calorimeter>() ) return;
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
-    _firstDiskZ  = cal.toTrackerFrame(cal.section(0).frontFaceCenter()).z();
-    _secondDiskZ = cal.toTrackerFrame(cal.section(1).frontFaceCenter()).z();
+    _firstDiskZ  = cal.geomUtil().mu2eToTracker(cal.disk(0).geomInfo().frontFaceCenter()).z();
+    _secondDiskZ = cal.geomUtil().mu2eToTracker(cal.disk(1).geomInfo().frontFaceCenter()).z();
 
     if (_diagLevel > 2){   std::cout << "checking disk locations " << _firstDiskZ << " " <<  _secondDiskZ << std::endl;}
 
@@ -789,7 +789,7 @@ namespace mu2e {
     
 
     //      const double CrDensity = 4.9*(CLHEP::g/CLHEP::cm3);
-    //const double CrMass    = CrDensity*cal.caloGeomInfo().crystalVolume();
+    //const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
 
     double numberOfTracks = 0;
     double numberOfClusters = 0;
@@ -812,7 +812,7 @@ namespace mu2e {
     for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
     {
         const CaloCrystalHit &hit     = caloCrystalHits.at(ic);
-	int sectionId                 = cal.crystal(hit.id()).sectionId();
+	int diskId                    = cal.crystal(hit.id()).diskId();
         CLHEP::Hep3Vector crystalPos  = cal.crystal(hit.id()).localPositionFF();  //in disk FF frame
 
         CrystalContentMC contentMC(cal, caloHitTruth, hit);
@@ -824,7 +824,7 @@ namespace mu2e {
         _cryPosY[_nHits]      = crystalPos.y();
         _cryPosZ[_nHits]      = crystalPos.z();
         _cryId[_nHits]        = hit.id();
-        _crySectionId[_nHits] = sectionId;
+        _crySectionId[_nHits] = diskId;
 
         _crySimIdx[_nCluster] = _nCluSim;
         _crySimLen[_nCluster] = contentMC.simContentMap().size();

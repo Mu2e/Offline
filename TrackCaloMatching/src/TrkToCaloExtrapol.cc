@@ -11,8 +11,6 @@
 
 // Mu2e includes
 #include "TrackCaloMatching/inc/TrkToCaloExtrapol.hh"
-#include "CalorimeterGeom/inc/Vane.hh"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BTrk/BbrGeom/BbrPointErr.hh"
@@ -36,14 +34,14 @@ namespace mu2e {
 
   bool TrkToCaloExtrapol::operator == (const TrkToCaloExtrapol & other) const{
     bool res = true;
-    res &= (_sectionId == other._sectionId);
+    res &= (_diskId == other._diskId);
     res &= (_pathLengthEntrance == other._pathLengthEntrance);
     res &= (_pathLengthExit == other._pathLengthExit);
     res &= (_trk == other._trk);
     return res;
   }
-  int TrkToCaloExtrapol::sectionId() const{
-    return _sectionId;
+  int TrkToCaloExtrapol::diskId() const{
+    return _diskId;
   }
 
   double TrkToCaloExtrapol::time() const{
@@ -84,12 +82,6 @@ namespace mu2e {
     Hep3Vector Waxes(0.0, 0.0, 1.0);
 
     Hep3Vector momentumRotUnit = TrkToCaloExtrapol::momentum().unit();
-    if( geom->hasElement<VaneCalorimeter>()){
-      GeomHandle<VaneCalorimeter> cg;
-      Vane const &v = cg->vane(_sectionId);
-      Waxes = (v.rotation())*(Waxes);
-      momentumRotUnit =(v.rotation())*TrkToCaloExtrapol::momentum().unit();
-    }//FIXME
 	
         
     double thetaW = std::atan(-1.0*momentumRotUnit.getZ() / momentumRotUnit.getX() ) ;
@@ -200,7 +192,7 @@ namespace mu2e {
   void TrkToCaloExtrapol::print( ostream& ost, bool doEndl ) const {
 
     ost << "TrkToCaloExtrapol :   "
-	<< " section: "          << _sectionId
+	<< " section: "          << _diskId
 	<< " time: "          << TrkToCaloExtrapol::time();
 
 

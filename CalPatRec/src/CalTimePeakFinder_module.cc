@@ -308,8 +308,8 @@ namespace mu2e {
 // convert cluster coordinates defined in the disk frame to the detector
 // coordinate system
 //-----------------------------------------------------------------------------
-          gpos = _calorimeter->fromSectionFrameFF(cl->sectionId(),cl->cog3Vector());
-          tpos = _calorimeter->toTrackerFrame(gpos);
+          gpos = _calorimeter->geomUtil().mu2eToDiskFF(cl->diskId(),cl->cog3Vector());
+          tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
 
           xcl     = tpos.x();
           ycl     = tpos.y();
@@ -401,9 +401,9 @@ namespace mu2e {
                                 //do we need to propagate the cluster time at z=0 at this stage?
     TrkSeed._t0               = TrkT0(cluster->time(), 0.1); //dummy value for errT0
     
-    int               idisk   = cluster->sectionId();
-    CLHEP::Hep3Vector cp_mu2e = _calorimeter->fromSectionFrame(idisk, cluster->cog3Vector());
-    CLHEP::Hep3Vector cp_st   = _calorimeter->toTrackerFrame(cp_mu2e);
+    int               idisk   = cluster->diskId();
+    CLHEP::Hep3Vector cp_mu2e = _calorimeter->geomUtil().diskToMu2e(idisk, cluster->cog3Vector());
+    CLHEP::Hep3Vector cp_st   = _calorimeter->geomUtil().mu2eToTracker(cp_mu2e);
     
     
     TrkSeed._pos              = cp_st;
