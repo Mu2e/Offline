@@ -83,7 +83,7 @@ mu2eg4DefaultDebug: {
     diagLevel : 0
     trackingVerbosityLevel : 0
     checkFieldMap : 0
-    writeGDML : true
+    writeGDML : false
     GDMLFileName : "mu2e.gdml"
 }
 #----------------
