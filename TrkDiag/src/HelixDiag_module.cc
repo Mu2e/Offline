@@ -157,8 +157,6 @@ namespace mu2e {
       _hdiag->Branch("circleOK",&_circleOK,"circleOK/B");
       _hdiag->Branch("phizOK",&_phizOK,"phizOK/B");
       _hdiag->Branch("helixOK",&_helixOK,"helixOK/B");
-      _hdiag->Branch("mchelixOK",&_mchelixOK,"mchelixOK/B");
-      _hdiag->Branch("mct0",&_mct0,"mct0/F");
       _hdiag->Branch("circleConverged",&_circleConverged,"circleConverged/B");
       _hdiag->Branch("phizConverged",&_phizConverged,"phizConverged/B");
       _hdiag->Branch("helixConverged",&_helixConverged,"helixConverged/B");
@@ -170,6 +168,8 @@ namespace mu2e {
       _hdiag->Branch("nhits",&_nhits,"nhits/I");
       _hdiag->Branch("nused",&_nused,"nused/I");
       if(_mcdiag){
+	_hdiag->Branch("mchelixOK",&_mchelixOK,"mchelixOK/B");
+	_hdiag->Branch("mct0",&_mct0,"mct0/F");
 	_hdiag->Branch("mch",&_mch);
 	_hdiag->Branch("mcmom",&_mcmom,"mcmom/F");
 	_hdiag->Branch("mcpz",&_mcpz,"mcpz/F");
