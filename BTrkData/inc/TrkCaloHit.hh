@@ -21,11 +21,10 @@ namespace mu2e
   class TrkCaloHit : public TrkHit {
   public:
     enum TrkStrawHitFlag {weededHit=-5, driftFail=-3, updateFail=-1,addedHit=3,unweededHit=4};
-    TrkCaloHit(const CaloCluster& caloCluster, const HitT0& trkt0, double fltlen, double exterr);
+    TrkCaloHit(const CaloCluster& caloCluster, const HitT0& trkt0, double fltlen);
     virtual ~TrkCaloHit();
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
-    virtual int ambig() const { return _iamb; }
 //    virtual void invert();
 
     double hitRMS() const { return _hitRMS;}
@@ -36,16 +35,8 @@ namespace mu2e
     void hitPosition(CLHEP::Hep3Vector& hpos) const;
     HitT0 const& hitT0() const { return _hitt0;}
     void updateHitT0(HitT0 const& t0) { _hitt0 = t0; }
-// external hit error (mm); 
-    double extErr() const { return _exterr; }
-// error ON RDrift and residual coming from hit t0 error
-    double t0Err() const { return _hitt0._t0err;}
-// total error
-    double totalErr() const { return _toterr; }
 // intrinsic hit error (mm)
     double hitErr() const { return _hitErr; }
-// changing the extneral hit error invalidates the cache, it should invalidate the fit, FIXME!!!!
-    void setExtErr(double exterr) { _exterr = exterr; }
 // logical operators to allow searching for CaloHits
     // bool operator == (CaloCluster const& cluster) const { return _caloCluster == cluster; }
     // bool operator != (CaloCluster const& cluster) const { return !operator==(cluster); }
@@ -56,10 +47,6 @@ namespace mu2e
     const CaloCluster& _caloCluster;
     TrkLineTraj*       _hittraj;
     HitT0              _hitt0;
-    double             _exterr, _toterr;
-    int                _iamb;
-    double             _tddist;
-    double             _tddist_err;
     double             _hitRMS, _hitErr;
     CLHEP::Hep3Vector  _caloClusterPos;
   };
