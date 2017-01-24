@@ -161,23 +161,23 @@ namespace mu2e {
 // create TTree
     _trkana=tfs->make<TTree>("trkana","track analysis");
 // add event info branch
-    _trkana->Branch("evtinfo",&_einfo,EventInfo::leafnames().c_str());
+    _trkana->Branch("evtinfo.",&_einfo,EventInfo::leafnames().c_str());
 // hit counting branch
-    _trkana->Branch("hcnt",&_hcnt,HitCount::leafnames().c_str());
+    _trkana->Branch("hcnt.",&_hcnt,HitCount::leafnames().c_str());
 // track counting branch
-    _trkana->Branch("tcnt",&_tcnt,TrkCount::leafnames().c_str());
+    _trkana->Branch("tcnt.",&_tcnt,TrkCount::leafnames().c_str());
 // add primary track (downstream electron) branch
-    _trkana->Branch("dem",&_demti,TrkInfo::leafnames().c_str());
+    _trkana->Branch("dem.",&_demti,TrkInfo::leafnames().c_str());
 // optionally add detailed branches
     if(_diag > 1){
       _trkana->Branch("demtsh",&_demtsh);
       _trkana->Branch("demtsm",&_demtsm);
     }
 // add branches for other tracks
-    _trkana->Branch("uem",&_uemti,TrkInfo::leafnames().c_str());
-    _trkana->Branch("dmm",&_dmmti,TrkInfo::leafnames().c_str());
+    _trkana->Branch("uem.",&_uemti,TrkInfo::leafnames().c_str());
+    _trkana->Branch("dmm.",&_dmmti,TrkInfo::leafnames().c_str());
 // calorimeter information for the downstream electron track
-    _trkana->Branch("demc",&_demc,TrkCaloInfo::leafnames().c_str());
+    _trkana->Branch("demc.",&_demc,TrkCaloInfo::leafnames().c_str());
 // CRV info
     _trkana->Branch("crvinfo",&_crvinfo);
 // optionally add MC truth branches
