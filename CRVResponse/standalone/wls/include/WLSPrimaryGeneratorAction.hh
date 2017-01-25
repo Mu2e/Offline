@@ -16,8 +16,8 @@ class WLSPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
   public:
 
-    WLSPrimaryGeneratorAction(int mode, int numberOfPhotons=-1, int simType=-1, int startBin=-1, bool verbose=false);
-    ~WLSPrimaryGeneratorAction();
+    WLSPrimaryGeneratorAction(int mode, int numberOfPhotons=-1, int simType=-1, int startBin=-1, bool verbose=false, double posY=0.0, double posZ=0.0);
+    ~WLSPrimaryGeneratorAction();                                                                   //posY and posZ only used for mode 0 and 1
 
     void BuildEmissionSpectrum();
     bool SetNextBins();
@@ -42,6 +42,8 @@ class WLSPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     double                     _minBinX, _minBinY, _minBinZ, _minBinBeta, _minBinTheta, _minBinPhi, _minBinR;
     double                     _maxBinX, _maxBinY, _maxBinZ, _maxBinBeta, _maxBinTheta, _maxBinPhi, _maxBinR;
+
+    double                     _posY, _posZ;  //only used for mode 0 and 1
 };
 
 #endif

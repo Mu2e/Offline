@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "********************************************************************"
-echo "*    Did you copy the updated version of wls to wls_production?    *"
+echo "*    Did you copy the updated version of wls to wlsProduction?    *"
 echo "********************************************************************"
 
 S1='source /mu2e/app/users/ehrlich/work_08302015/Offline/setup.sh'
@@ -32,7 +32,7 @@ do
       S3="/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/wlsProduction -c -t $simType -l $length -m $minBin -M $maxBin -n $photons"
       echo $S3 >> $setupfile
 
-      jobname=NewLookupTable'_'$length'_'$i
+      jobname=LookupTable'_'$length'_'$i
 
       echo "========================================================================================================================"
       echo "submitting length $length simtype $simType with bins $minBin ... $maxBin  (job $i) using $photons photons :"

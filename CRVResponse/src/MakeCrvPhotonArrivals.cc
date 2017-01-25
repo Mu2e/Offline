@@ -135,6 +135,8 @@ void MakeCrvPhotonArrivals::LoadLookupTable(const std::string &filename)
   if(!lookupfile.good()) throw std::logic_error("Could not open lookup table file."+filename);
 
   _LC.Read(lookupfile);
+  if(_LC.version1<3) throw std::logic_error("This version of Offline expects a lookup table version 3.0 or higher.");
+
   _LBD.Read(lookupfile);
 
   unsigned int nScintillatorBins = _LBD.getNScintillatorBins();
@@ -269,10 +271,17 @@ bool MakeCrvPhotonArrivals::IsInsideScintillator(const CLHEP::Hep3Vector &p)
   if(fabs(p.y())>=_LC.halfWidth) return false;
   if(fabs(p.z())>=_LC.halfLength) return false;
 
-  CLHEP::Hep2Vector p2D(fabs(p.x()), fabs(p.y()));
-  CLHEP::Hep2Vector fiberHole2D(0.0, _LC.fiberSeparation/2.0);
-  double distance=(p2D-fiberHole2D).mag();
-  if(distance<_LC.holeRadius) return false;
+  CLHEP::Hep2Vector pos2D(fabs(p.x()), fabs(p.y()));
+  CLHEP::Hep2Vector fiberPos2D(0.0, _LC.fiberSeparation/2.0);
+  CLHEP::Hep2Vector fiberRadius2D(_LC.holeRadiusX, _LC.holeRadiusY);
+
+  double ellipseSum=0;
+  for(int i=0; i<2; i++)
+  {
+    double tmp=(pos2D[i]-fiberPos2D[i])/fiberRadius2D[i];
+    ellipseSum+=tmp*tmp;
+  } 
+  if(ellipseSum<1) return false; // <1 means inside ellipse, i.e. inside fiber hole. ellipse formula: (x-P_x)^2 / r_x^2 + (y-P_y)^2 / r_y^2 = 1
 
   return true;
 }

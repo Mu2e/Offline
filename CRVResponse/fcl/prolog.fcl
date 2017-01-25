@@ -5,14 +5,14 @@ BEGIN_PROLOG
       module_type               : CrvPhotonArrivalsGenerator
       g4ModuleLabels            : ["*"]
       processNames              : ["*"]
-      lookupTableFileNames      : ["CRVConditions/v2_0/LookupTable_6600",
-                                   "CRVConditions/v2_0/LookupTable_5600",
-                                   "CRVConditions/v2_0/LookupTable_4500",
-                                   "CRVConditions/v2_0/LookupTable_3000",
-                                   "CRVConditions/v2_0/LookupTable_2300",
-                                   "CRVConditions/v2_0/LookupTable_900"]
+      lookupTableFileNames      : ["CRVConditions/v3_0/LookupTable_6600",
+                                   "CRVConditions/v3_0/LookupTable_5600",
+                                   "CRVConditions/v3_0/LookupTable_4500",
+                                   "CRVConditions/v3_0/LookupTable_3000",
+                                   "CRVConditions/v3_0/LookupTable_2300",
+                                   "CRVConditions/v3_0/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
-      scintillationYield        : 8500.0   //8500.0 photons per MeV (corresponds to 53.0 PE/SiPM @ 1m away from counter)
+      scintillationYield        : 4500.0   //4500.0 photons per MeV (corresponds to 54.8 PE/SiPM @ 1m away from counter)
       scintillationYieldTolerance :  0.0   //0%
       scintillatorBirksConstant : 0.126    //0.126 mm/Mev
       scintillatorRatioFastSlow : 1.0      //100% fast
@@ -68,8 +68,8 @@ BEGIN_PROLOG
     {
       module_type               : CrvRecoPulsesFinder
       crvWaveformsModuleLabel   : "CrvWaveforms"
-      param0                    : 0.0      //0.0
-      param1                    : 162.0    //162.0  (would be about 100.0 if all PEs arrived at the same time)
+      param0                    : 0.       //0.
+      param1                    : 159.     //159.  (would be about 100. if all PEs arrived at the same time)
       pulseThreshold            : 0.005    //5mV  //for integral
       leadingEdgeThreshold      : 0.2      //20% of the maximum bin
       minPEs                    : 4        //4 PEs

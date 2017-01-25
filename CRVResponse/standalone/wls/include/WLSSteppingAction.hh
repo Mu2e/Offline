@@ -10,6 +10,8 @@
 
 class TFile;
 class TH3D;
+class TNtuple;
+
 namespace mu2eCrv
 {
   class MakeCrvPhotonArrivals;
@@ -42,6 +44,8 @@ class WLSSteppingAction : public G4UserSteppingAction
     CLHEP::RandFlat           _randFlat;
 
     void                      Test(const G4Step *theStep, int PDGcode);
+
+    TNtuple*                  _ntuple;  //WLS fiber test
 };
 
 #endif

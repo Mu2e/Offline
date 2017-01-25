@@ -42,11 +42,14 @@ WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName
     _crvPhotonArrivals->LoadLookupTable(lookupFileName);
   }
 
+  _ntuple = new TNtuple("CRVPhotons","CRVPhotons","SiPM:Energy:Length:StartZ"); //WLS fiber test
   Reset();
 }
 
 WLSSteppingAction::~WLSSteppingAction()
 {
+  _ntuple->SaveAs("CRVPhotons.root");  //WLS fiber test
+  delete _ntuple;
 }
 
 void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
@@ -75,6 +78,10 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
      {
          if(thePostPV->GetName()=="PhotonDet")
          {
+           _ntuple->Fill((float)(thePostPV->GetCopyNo()),
+                                 theStep->GetTrack()->GetTotalEnergy(),
+                                 theStep->GetTrack()->GetTrackLength(),
+                                 theStep->GetTrack()->GetVertexPosition().z()); //WLS fiber test
            _arrivalTimes[0][thePostPV->GetCopyNo()].push_back(theStep->GetPostStepPoint()->GetGlobalTime());
            if(_mode==-1)
            {
