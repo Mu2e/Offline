@@ -14,13 +14,6 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-BEGIN_PROLOG
-# calorimeter cluster reconstruction
-calDigiSeq    :  [ MakeCaloReadoutHits ]
-
-calRecoSeq    : [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
-END_PROLOG
-
 
 # Give this job a name.
 process_name : G4Validate01
@@ -56,6 +49,8 @@ physics : {
     g4run : @local::g4run
     @table::EventMixing.producers 
     @table::HitMakers.producers
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
     @table::CaloCluster.producers
     @table::Tracking.producers
     TRFDeM	  : @local::TrkRecFitDeM
@@ -68,7 +63,7 @@ physics : {
       module_type            : ReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
-      caloReadoutModuleLabel : MakeCaloReadoutHits
+      caloReadoutModuleLabel : CaloShowerStepROFromShowerStep
       diagLevel              : 0
       minimumEnergy          : 0.000
       maxFullPrint           : 5
@@ -94,8 +89,8 @@ physics : {
 
   p1 : [generate, g4run, 
           @sequence::EventMixing.TimeMaps,
-	  @sequence::calDigiSeq,
-          @sequence::calRecoSeq,
+	  @sequence::CaloDigiMC.DigiSim,
+          @sequence::CaloReco.Reco,
           @sequence::Tracking.DigiSim, 
           @sequence::Tracking.TPRDeM
        ]

@@ -40,8 +40,8 @@ physics : {
     generate             : @local::generate
     g4run                : @local::g4run
     makeSH               : @local::makeSH
-    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
     randomsaver          : @local::randomsaver
 
   }
@@ -54,7 +54,7 @@ physics : {
       generatorModuleLabel : "generate"
       g4ModuleLabel        : "g4run"
       strawHitMakerLabel   : "makeSH"
-      crystalHitMakerLabel : "CaloCrystalHitsMaker"
+      crystalHitMakerLabel : "CaloCrystalHitsFromHits"
     }
 
   }
@@ -65,7 +65,7 @@ physics : {
       module_type            : ReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
-      caloReadoutModuleLabel : CaloReadoutHitsMaker
+      caloReadoutModuleLabel : CaloShowerStepROFromShowerStep
       minimumEnergy          : 0.000
       maxFullPrint           : 0
     }
@@ -80,7 +80,7 @@ physics : {
 
   }
 
-  p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker,
+  p1 : [generate , g4run , makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco,
         randomsaver, removeEmpty ]
   e1 : [checkhits, readStrawHits, outfile]
 

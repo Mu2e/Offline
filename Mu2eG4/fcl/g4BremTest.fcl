@@ -62,11 +62,8 @@ physics : {
     # Form StrawHits (SH).
     makeSH : @local::makeSH
 
-    # Form CaloHits (APD hits)
-    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-
-    # Form CaloCrystalHits (reconstruct crystals from APDs)
-    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
 
     # Save state of the random number engines.
     randomsaver : @local::randomsaver
@@ -87,7 +84,7 @@ physics : {
       module_type            : ReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
-      caloReadoutModuleLabel : CaloReadoutHitsMaker
+      caloReadoutModuleLabel : CaloShowerStepROFromShowerStep
       diagLevel              : 0
       minimumEnergy          : 0.000
       maxFullPrint           : 201
@@ -102,7 +99,7 @@ physics : {
 
   }
 
-  p1 : [g4run, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
+  p1 : [g4run, makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
   e1 : [checkhits, readStrawHits, readvd, outfile]
 
   trigger_paths  : [p1]

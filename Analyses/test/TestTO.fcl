@@ -66,8 +66,8 @@ physics :
     makeDcH : @local::makeDcH
     makeDcHWTO : @local::makeDcHWTOff
 
-    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
     randomsaver : @local::randomsaver
 
   }
@@ -90,8 +90,8 @@ physics :
        , g4run
        , makeDcH
        , makeDcHWTO
-       , CaloReadoutHitsMaker
-       , CaloCrystalHitsMaker
+       , @sequence::CaloDigiMC.DigiSim
+       ,  @sequence::CaloReco.Reco	 
        ]
   e1 : [
 TurnOffTest, 

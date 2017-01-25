@@ -35,8 +35,8 @@ services : {
 physics : {
 
   producers:  {
-    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
   }
 
   filters: {
@@ -55,7 +55,7 @@ physics : {
     }
   }
 
-  t1 : [ CaloReadoutHitsMaker, CaloCrystalHitsMaker, interesting]
+  t1 : [ @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, interesting]
   e1 : [ eventdisplay ]
 
   trigger_paths : [t1]

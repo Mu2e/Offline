@@ -39,8 +39,8 @@ physics : {
     muonTimeMap          : @local::muonTimeMap
     makeSD               : @local::makeSD
     makeSH               : @local::makeSHfromSD
-    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-    CaloCrystalHitsMaker : @local::MakeCaloCrystalHitsNew
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
 
   }
 
@@ -50,7 +50,7 @@ physics : {
       module_type            : ReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
-      caloReadoutModuleLabel : CaloReadoutHitsMaker
+      caloReadoutModuleLabel : CaloCrystalHitsFromHits
       diagLevel              : 0
       minimumEnergy          : 0.000
       maxFullPrint           : 201
@@ -66,7 +66,7 @@ physics : {
   }
 
 
-  p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSD, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker ]
+  p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco]
   e1 : [checkhits, readStrawHits ]
 
   trigger_paths  : [p1]
@@ -81,7 +81,3 @@ physics.producers.g4run.SDConfig.enableSD : [tracker, calorimeter, calorimeterRO
 
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5
-physics.producers.CaloReadoutHitsMaker.diagLevel : 0
-physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
-physics.producers.CaloCrystalHitsMaker.diagLevel : 0
-physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
