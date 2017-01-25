@@ -26,7 +26,6 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 
 // Root includes.
 #include "TH1F.h"
@@ -123,30 +122,6 @@ namespace mu2e {
 
   void ReadBack0::doCalorimeter(const art::Event& event) {
 
-    art::ServiceHandle<GeometryService> geom;
-    if( ! geom->hasElement<VaneCalorimeter>() ) return;
-
-    // Get handle to calorimeter hit collection.
-    art::Handle<CaloHitCollection> caloHitsHandle;
-    event.getByLabel("g4run",caloHitsHandle);
-    CaloHitCollection const& caloHits = *caloHitsHandle;
-
-    // Get handle to the calorimeter geometry.
-    GeomHandle<VaneCalorimeter> calGeom;
-
-    double totalEdep = 0;
-    set<int> hit_crystals;
-
-    for ( size_t i=0; i<caloHits.size(); ++i ) {
-      totalEdep += caloHits[i].energyDep();
-
-      int roid = caloHits[i].id();
-      int cid = calGeom->crystalByRO(roid);
-      hit_crystals.insert(cid);
-    }
-
-    _hCrystalEDep->Fill(totalEdep);
-    _hNcrystal->Fill(hit_crystals.size());
   }
 
   void ReadBack0::doTTracker(const art::Event& event){

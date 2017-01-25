@@ -36,7 +36,7 @@ namespace mu2e {
       Mu2eSensitiveDetector(name,config),_nro(0)
     {
 	GeomHandle<Calorimeter> cg;
-	_nro  = cg->caloGeomInfo().nROPerCrystal();
+	_nro  = cg->caloInfo().nROPerCrystal();
     }
 
 

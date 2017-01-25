@@ -16,6 +16,7 @@ namespace mu2eCrv
 
 struct LookupConstants
 {
+  int    version1, version2;
   double halfThickness, halfWidth, halfLength;
   double speedOfLightFiber;
   double rindexScintillator;
@@ -25,7 +26,7 @@ struct LookupConstants
   double ratioFastSlow;    //not used
   double scintillatorDensity;
   double scintillatorBirksConstant;   //not used
-  double fiberSeparation, holeRadius, fiberRadius;
+  double fiberSeparation, holeRadiusX, holeRadiusY, fiberRadius;
   void Write(const std::string &filename);
   void Read(std::ifstream &lookupfile);
 };

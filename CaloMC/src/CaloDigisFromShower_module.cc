@@ -50,6 +50,7 @@ namespace mu2e {
 
         // Parameters
         caloShowerModuleLabel_ (pset.get<std::string>("caloShowerModuleLabel")), 
+        blindTime_             (pset.get<double>     ("blindTime")),
         addNoise_              (pset.get<bool>       ("addNoise")),           //flag for adding or not Gaussian noise
         noise_                 (pset.get<double>     ("noise")),           // mV 
         thresholdVoltage_      (pset.get<double>     ("thresholdVoltage")), // mV 
@@ -204,7 +205,7 @@ namespace mu2e {
   //-------------------------------------------------
   void CaloDigisFromShower::resetWaveforms()
   {
-      unsigned int nWaveforms   = calorimeter_->nCrystal()*calorimeter_->caloGeomInfo().nROPerCrystal();
+      unsigned int nWaveforms   = calorimeter_->nCrystal()*calorimeter_->caloInfo().nROPerCrystal();
       unsigned int waveformSize = (mbtime_ - blindTime_ + endTimeBuffer_) / digiSampling_;  
 
       if (waveforms_.size() < nWaveforms || (waveforms_.size() && waveforms_[0].size() < waveformSize))
@@ -238,7 +239,7 @@ namespace mu2e {
       }
             
       if (diagLevel_ > 1) std::cout<<"[CaloDigisFromShower::fillWaveforms] total energy processed "
-                                   <<totalEdep/calorimeter_->caloGeomInfo().nROPerCrystal()<<std::endl;      
+                                   <<totalEdep/calorimeter_->caloInfo().nROPerCrystal()<<std::endl;      
    }
 
 
@@ -252,7 +253,7 @@ namespace mu2e {
       std::vector<double>&       waveform       = waveforms_.at(ROID);
       const std::vector<double>& pulse          = pulseShape_.pulseDigitized(precisionIndex);
       int                        stopSample     = std::min(startSample+pulse.size(), waveform.size());
-     
+
       for (int timeSample = startSample; timeSample < stopSample; ++timeSample)
       {
           int     funcIdx   = timeSample - startSample;

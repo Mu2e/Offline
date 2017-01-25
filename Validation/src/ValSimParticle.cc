@@ -19,7 +19,7 @@ int mu2e::ValSimParticle::declare(art::TFileDirectory tfs) {
   _stopPos.declare(tfs,"stop","stopped particle");
   _tgtmux = tfs.make<TH1D>( "tgtmux", "target stopped mu x", 50, -4000.0, -3800.0);
   _tgtmuy = tfs.make<TH1D>( "tgtmuy", "target stopped mu y", 50, -100.0, 100.0);
-  _tgtmuz = tfs.make<TH1D>( "tgtmuz", "target stopped mu z", 100, -5400.0, -6350.0);
+  _tgtmuz = tfs.make<TH1D>( "tgtmuz", "target stopped mu z", 100, -6350.0, -5400.0);
 
   return 0;
 }

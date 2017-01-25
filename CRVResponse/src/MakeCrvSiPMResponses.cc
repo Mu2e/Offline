@@ -133,7 +133,7 @@ void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<double> &photons)
   std::vector<double>::const_iterator iter;
   for(iter=photons.begin(); iter!=photons.end(); iter++)
   {
-    int cellid = _randFlat.fireInt(_numberPixelsAtFiber);
+    int cellid = _randFlat.fireInt(_numberPixelsAtFiber);  //only pixels at fiber
     _scheduledCharges.emplace(cellid, *iter);  //constructs ScheduledCharge(cellid, *iter)
   }
 
@@ -142,7 +142,7 @@ void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<double> &photons)
   int numberThermalCharges = _randPoissonQ.fire(_probabilities._constThermalProb * timeWindow);
   for(int i=0; i<numberThermalCharges; i++)
   {
-    double cellid = _numberPixels * _randFlat.fire();
+    int cellid = _randFlat.fireInt(_numberPixels);  //all pixels
     double time = _blindTime + timeWindow * _randFlat.fire();
     _scheduledCharges.emplace(cellid, time); //constructs ScheduledCharge(cellid, time)
   }

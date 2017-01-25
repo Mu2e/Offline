@@ -229,3 +229,4 @@ services.scheduler.wantSummary: true
 
 physics.analyzers.RKFDeM.KalDiag.MCStepsLabel     : "g4run"
 physics.analyzers.RKFDeM.KalDiag.SimParticleLabel : "g4run"
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"

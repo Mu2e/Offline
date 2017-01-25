@@ -199,6 +199,8 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
       G4MaterialPropertyVector *rindexScintillator = scintillatorPropertiesTable->GetProperty("RINDEX");
 
       mu2eCrv::LookupConstants LC;
+      LC.version1           = 3;
+      LC.version2           = 0;
       LC.halfThickness      = detector->GetScintillatorHalfThickness(),
       LC.halfWidth          = detector->GetScintillatorHalfWidth(), 
       LC.halfLength         = detector->GetScintillatorHalfLength(),
@@ -215,7 +217,8 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
       LC.scintillatorDensity       = scintillator->GetDensity();
       LC.scintillatorBirksConstant = scintillator->GetIonisation()->GetBirksConstant();  //will not be used later
       LC.fiberSeparation = detector->GetFiberSeparation(),
-      LC.holeRadius      = detector->GetHoleRadius(),
+      LC.holeRadiusX     = detector->GetHoleRadiusX(),
+      LC.holeRadiusY     = detector->GetHoleRadiusY(),
       LC.fiberRadius     = detector->GetClad2Radius();
       LC.Write(filename.str());
 
@@ -456,14 +459,19 @@ void WLSEventAction::Draw(const G4Event* evt)
       double leadingEdge=makeRecoPulses.GetLeadingEdge(pulse);
       if(!isnan(leadingEdge) && leadingEdge<300.0)
       {
-        TMarker *marker = new TMarker(leadingEdge,
-                                      0.2*makeRecoPulses.GetPulseHeight(pulse)*scale,
-                                      markerVector.size());
-        markerVector.push_back(marker);
-        marker->SetMarkerStyle(21);
-        marker->SetMarkerSize(1.5);
-        marker->SetMarkerColor(kGreen);
-        marker->Draw("same");
+        for(int iL=0; iL<nL; iL++)
+        {
+          if(tL[iL]>=leadingEdge)
+          {
+            TMarker *marker = new TMarker(tL[iL], vL[iL], markerVector.size());
+            markerVector.push_back(marker);
+            marker->SetMarkerStyle(21);
+            marker->SetMarkerSize(1.5);
+            marker->SetMarkerColor(kGreen);
+            marker->Draw("same");
+            break;
+          }
+        }
       }
       delete[] tL;
       delete[] vL;

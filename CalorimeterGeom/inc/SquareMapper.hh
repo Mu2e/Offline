@@ -15,13 +15,13 @@ namespace mu2e {
 
          public:
 
-            SquLK()             : _l(0),_k(0) {}
-            SquLK(int l, int k) : _l(l),_k(k) {}
+            SquLK()             : l_(0),k_(0) {}
+            SquLK(int l, int k) : l_(l),k_(k) {}
 
-            void add(const SquLK &x) {_l+=x._l;_k+=x._k;}
+            void add(const SquLK &x) {l_+=x.l_;k_+=x.k_;}
 
-            int _l; 
-	    int _k;                    
+            int l_; 
+	    int k_;                    
     };
 
 
@@ -29,20 +29,20 @@ namespace mu2e {
 
     class SquareMapper : public CrystalMapper {
 
-
 	public:
 
 	    SquareMapper();
+            virtual ~SquareMapper() {};
 
-            int               nCrystalMax(int maxRing)                    {return (2*maxRing+1)*(2*maxRing+1);}
-            int               nApex()                               const {return _apexX.size();}
-            double            apexX(int i)                          const {return _apexX.at(i);}
-            double            apexY(int i)                          const {return _apexY.at(i);}
+            virtual int               nCrystalMax(int maxRing)              const {return (2*maxRing+1)*(2*maxRing+1);}
+            virtual int               nApex()                               const {return apexX_.size();}
+            virtual double            apexX(int i)                          const {return apexX_.at(i);}
+            virtual double            apexY(int i)                          const {return apexY_.at(i);}
 
-	    CLHEP::Hep2Vector xyFromIndex(int thisIndex)            const;
-            int               indexFromXY(double x, double y)       const;
+	    virtual CLHEP::Hep2Vector xyFromIndex(int thisIndex)            const;
+            virtual int               indexFromXY(double x, double y)       const;
 
-	    std::vector<int>  neighbors(int thisIndex, unsigned int level=1) const;
+	    virtual std::vector<int>  neighbors(int thisIndex, unsigned int level=1) const;
 
 
 	private:
@@ -51,9 +51,9 @@ namespace mu2e {
 	    int index(const SquLK &lk) const;
 	    int ring(const  SquLK &lk) const;
 
-	    std::vector<SquLK>   _step;
-	    std::vector<double>  _apexX;
-	    std::vector<double>  _apexY;
+	    std::vector<SquLK>   step_;
+	    std::vector<double>  apexX_;
+	    std::vector<double>  apexY_;
     };
 }
 

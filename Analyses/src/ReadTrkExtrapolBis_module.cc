@@ -159,7 +159,7 @@ namespace mu2e {
 	for (auto const& extrapol: trkExtrapols)
 	{
 	    double pathLength       = extrapol.pathLengthEntrance();
-	    _caloSec[it]            = extrapol.sectionId();
+	    _caloSec[it]            = extrapol.diskId();
 	    _trkTime[it]            = extrapol.trk()->arrivalTime(pathLength);
 	    _trkPathLenghtIn[it]    = extrapol.pathLengthEntrance(); 
 	    _trkPathLenghtInErr[it] = extrapol.pathLenghtEntranceErr(); 

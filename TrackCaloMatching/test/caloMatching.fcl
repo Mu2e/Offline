@@ -58,29 +58,11 @@ physics :
 
     # test module for Kalman fit: the 
     
-    # Form CaloHits (APD hits)
-    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-
-    # Form CaloCrystalHits (reconstruct crystals from APDs)
-    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
+    @table::CaloCluster.producers
     
     makeCaloCluster:
-    {
-      module_type            : MakeCaloCluster
-      diagLevel              : 1
-     generatorModuleLabel   : generate
-     caloCrystalModuleLabel  : CaloCrystalHitsMaker
-     g4ModuleLabel          : g4run
-     #caloReadoutModuleLabel : CaloReadoutHitsMaker
-     caloClusterAlgorithm    : closest
-     caloClusterSeeding     : energy
-     #caloClusterSeeding      : time
-     deltaTime              : 100.0 #ns
-     nCryPerCrystal         : 1
-     EnoiseCut              : 0.00 #MeV
-     EclusterCut            : 0.00 #MeV  
-     maxFullPrint           : 201
-    }
 
     TrkPatRec : @local::TrkPatRec
  
@@ -98,17 +80,17 @@ physics :
  
     }
     
-     CaloMatching :
-    {
-        module_type                : CaloMatching
-      fitterModuleLabel            : TrkPatRec
-      diagLevel                    : 1
-      outPutNtup                   : 0
-      caloClusterModuleLabel       : makeCaloCluster
-      caloClusterAlgorithm         : closest
-      caloClusterSeeding           : energy
-      trkToCaloExtrapolModuleLabel : TrkExtrapol
-    }
+   #  CaloMatching :
+   # {
+   #     module_type                : CaloMatching
+   #   fitterModuleLabel            : TrkPatRec
+   #   diagLevel                    : 1
+   #   outPutNtup                   : 0
+   #   caloClusterModuleLabel       : makeCaloCluster
+   #   caloClusterAlgorithm         : closest
+   #   caloClusterSeeding           : energy
+   #   trkToCaloExtrapolModuleLabel : TrkExtrapol
+   # }
     
    }
     analyzers : {
@@ -124,12 +106,12 @@ physics :
   p1 : [generate 
         , g4run
         , makeSH
-        , CaloReadoutHitsMaker
-        , CaloCrystalHitsMaker 
-        , makeCaloCluster
+        , @sequence::CaloDigiMC.DigiSim
+        , @sequence::CaloReco.Reco 
+        , @sequence::CaloCluster.Reco
         , TrkPatRec
         , TrkExtrapol
-        , CaloMatching 
+       # , CaloMatching 
         ]
   e1 : [outfile]
 

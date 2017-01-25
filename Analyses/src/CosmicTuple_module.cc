@@ -9,7 +9,6 @@
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -145,9 +144,10 @@ namespace mu2e {
     }
 
     // ntuple buffer.
-    float ntT[_ntupTrk->GetNvar()];
+    //float ntT[_ntupTrk->GetNvar()];
 
     bool    pass     = false;
+    /*
     bool    isSh     = false;
     double  calEne   = 0.;
     double  calEind  = 0.;
@@ -169,12 +169,14 @@ namespace mu2e {
     unsigned trEVolume = 0;
     unsigned prSVolume = 0;
     unsigned prEVolume = 0;
+    */
 
     map<int,int> hit_crystals;
     map<int,int> hit_apds;
 
     art::ServiceHandle<GeometryService> geom;
-    if( ! geom->hasElement<VaneCalorimeter>() ) return pass;
+    return pass;
+    /*
     GeomHandle<VaneCalorimeter> cg;
 
       // Fill some histograms
@@ -384,9 +386,11 @@ namespace mu2e {
       ntT[48] = calEind;
 
       _ntupTrk->Fill(ntT);
+      
 
     } // end loop over hits.
 
+    */
     return pass;
 
   } // end filter

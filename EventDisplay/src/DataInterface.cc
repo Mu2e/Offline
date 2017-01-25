@@ -9,7 +9,6 @@
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
@@ -377,17 +376,17 @@ void DataInterface::fillGeometry()
   if(geom->hasElement<mu2e::DiskCalorimeter>())
   {
     mu2e::GeomHandle<mu2e::DiskCalorimeter> calo;
-    double rmax = calo->caloGeomInfo().crystalHalfTrans();
-    double crystalHalflength = calo->caloGeomInfo().crystalHalfLength();
+    double rmax = calo->caloInfo().crystalHalfTrans();
+    double crystalHalflength = calo->caloInfo().crystalHalfLength();
 
 
     int crystalIdOffset=0;
     for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++)
     {
-      const CLHEP::Hep3Vector &diskPos = calo->disk(idisk).origin() - _detSysOrigin;
-      double innerRadius = calo->disk(idisk).size()[0];
-      double outerRadius = calo->disk(idisk).size()[1];
-      double diskHalflength = calo->disk(idisk).size()[2];
+      const CLHEP::Hep3Vector& diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
+      double innerRadius = calo->disk(idisk).geomInfo().size()[0];
+      double outerRadius = calo->disk(idisk).geomInfo().size()[1];
+      double diskHalflength = calo->disk(idisk).geomInfo().size()[2];
 
       findBoundaryP(_calorimeterMinmax, diskPos.x()+outerRadius, diskPos.y()+innerRadius, diskPos.z()+diskHalflength);
       findBoundaryP(_calorimeterMinmax, diskPos.x()-outerRadius, diskPos.y()-outerRadius, diskPos.z()-diskHalflength);
@@ -432,105 +431,9 @@ void DataInterface::fillGeometry()
       }
       crystalIdOffset +=nCrystalInThisDisk;
     }
-  } else if(geom->hasElement<mu2e::VaneCalorimeter>())
-  {
-    mu2e::GeomHandle<mu2e::VaneCalorimeter> calo;
-    unsigned int n=calo->nVane();
-    for(unsigned int i=0; i<n; i++)
-    {
-      const mu2e::Vane &v=calo->vane(i);
-      double x=v.origin().x() - _detSysOrigin.x();
-      double y=v.origin().y() - _detSysOrigin.y();
-      double z=v.origin().z() - _detSysOrigin.z();
-      int    id=v.id();
-      double sx=v.size().x();
-      double sy=v.size().y();
-      double sz=v.size().z();
-      double phi=v.rotation().phi();
-      double theta=v.rotation().theta();
-      double psi=v.rotation().psi();
-
-      findBoundaryP(_calorimeterMinmax, x+sx, y+sy, z+sz);
-      findBoundaryP(_calorimeterMinmax, x-sx, y-sy, z-sz);
-
-      char c[200];
-      boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-      sprintf(c,"Vane %i",id);
-      info->setName(c);
-      info->setText(0,c);
-      sprintf(c,"Dimension  ?x: %.f mm, ?y: %.f mm, ?z: %.f mm",sx/CLHEP::mm,sy/CLHEP::mm,sz/CLHEP::mm);
-      info->setText(1,c);
-      sprintf(c,"Rotation phi: %.f °, theta: %.f °, psi: %.f °",phi/CLHEP::deg,theta/CLHEP::deg,psi/CLHEP::deg);
-      info->setText(2,c);
-      sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",x/CLHEP::mm,y/CLHEP::mm,z/CLHEP::mm);
-      info->setText(3,c);
-      boost::shared_ptr<Cube> shape(new Cube(x,y,z,  sx,sy,sz,  phi,theta,psi,   NAN,
-                                        _geometrymanager, _topvolume, _mainframe, info, true));
-      shape->makeGeometryVisible(true);
-      _components.push_back(shape);
-      _supportstructures.push_back(shape);
-    }
-
-    unsigned int roPerCrystal=calo->caloGeomInfo().nROPerCrystal();
-    unsigned int nro=calo->nRO();
-    for(unsigned int i=0; i<nro; i+=roPerCrystal)
-    {
-      int crystalid=calo->crystalByRO(i);
-      int vaneid=calo->vaneId(crystalid);
-      int rPos=calo->crystalY(crystalid);
-      int zPos=calo->crystalX(crystalid);
-      double crystalHalfTrans=calo->caloGeomInfo().crystalHalfTrans();
-
-      const mu2e::Vane &v=calo->vane(vaneid);
-      double x=v.origin().x() - _detSysOrigin.x();
-      double y=v.origin().y() - _detSysOrigin.y();
-      double z=v.origin().z() - _detSysOrigin.z();
-      double theta=v.rotation().theta();
-      double phi=v.rotation().phi();
-      double psi=v.rotation().psi();
-      double sx=v.size().x();
-      double sy=v.size().y();
-      double sz=v.size().z();
-
-      //Start with an unrotated vane centered at (0,0,0).
-      //Before the rotation, the vector from the center of the vane
-      //to the center of a crystal is (crystalX,crystalY,crystalZ).
-      double crystalX=0;
-      double crystalY=-sy+crystalHalfTrans*(2.0*rPos+1.0);
-      double crystalZ=-sz+crystalHalfTrans*(2.0*zPos+1.0);
-
-      double st=sin(theta);
-      double ct=cos(theta);
-      double sp=sin(phi);
-      double cp=cos(phi);
-      double ss=sin(psi);
-      double cs=cos(psi);
-
-      //After the rotation of the vane, the vector from the center of the vane
-      //to the center of a crystal is (rotatedX,rotatedY,rotatedZ).
-      double rotatedX,rotatedY,rotatedZ;
-      VirtualShape::rotate(crystalX,crystalY,crystalZ,  rotatedX,rotatedY,rotatedZ,  sp,cp,st,ct,ss,cs);
-
-      //After the vane gets shifted from (0,0,0) to (x,y,z),
-      //the crystal centers need to be shifted to (x+rotatedX,y+rotatedY,z+rotatedZ).
-      char c[200];
-      boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-      sprintf(c,"Vane %i, Crystal %i",vaneid,crystalid);
-      info->setName(c);
-      info->setText(0,c);
-      sprintf(c,"Center at x: %.f mm, y: %.f mm, z: %.f mm",(x+rotatedX)/CLHEP::mm,(y+rotatedY)/CLHEP::mm,(z+rotatedZ)/CLHEP::mm);
-      info->setText(1,c);
-      sprintf(c,"Dimension  ?x: %.f mm, ?y: %.f mm, ?z: %.f mm",sx/CLHEP::mm,crystalHalfTrans/CLHEP::mm,crystalHalfTrans/CLHEP::mm);
-      info->setText(2,c);
-      sprintf(c,"Rotation phi: %.f °, theta: %.f °, psi: %.f °",phi/CLHEP::deg,theta/CLHEP::deg,psi/CLHEP::deg);
-      info->setText(3,c);
-      boost::shared_ptr<Cube> shape(new Cube(x+rotatedX,y+rotatedY,z+rotatedZ,  sx,crystalHalfTrans,crystalHalfTrans,
-                                        phi,theta,psi,  NAN,
-                                        _geometrymanager, _topvolume, _mainframe, info, true));
-      _components.push_back(shape);
-      _crystals[crystalid]=shape;
-    }
-  }
+  } 
+  
+  
   //MBS
 /*
   if(config.getBool("hasMBS", false)) {
@@ -1171,8 +1074,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
   const mu2e::CaloHitCollection *calohits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloHitCollection>();
   art::ServiceHandle<mu2e::GeometryService> geoservice;
-  if(calohits!=nullptr &&
-     (geoservice->hasElement<mu2e::VaneCalorimeter>() || geoservice->hasElement<mu2e::DiskCalorimeter>()))
+  if(calohits!=nullptr && (geoservice->hasElement<mu2e::DiskCalorimeter>()))
   {
     _numberCrystalHits=calohits->size();  //this is not accurate since the return value gives the RO hits
     std::vector<mu2e::CaloHit>::const_iterator iter;
@@ -1181,11 +1083,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       const mu2e::CaloHit& calohit = *iter;
       int roid = calohit.id();
       int crystalid=0;
-      if(geoservice->hasElement<mu2e::VaneCalorimeter>())
-      {
-        mu2e::GeomHandle<mu2e::VaneCalorimeter> vaneCalo;
-        crystalid=vaneCalo->crystalByRO(roid);
-      }
+
       if(geoservice->hasElement<mu2e::DiskCalorimeter>())
       {
         mu2e::GeomHandle<mu2e::DiskCalorimeter> diskCalo;

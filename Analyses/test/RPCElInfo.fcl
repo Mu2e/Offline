@@ -77,11 +77,8 @@ physics :
     # Form StrawHits (SH).
     makeSH : @local::makeSH
 
-    # Form CaloHits (APD hits)
-  #  CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-
-    # Form CaloCrystalHits (reconstruct crystals from APDs)
-  #  CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+	@table::CaloDigiMC.producers
+	@table::CaloReco.producers
 
     randomsaver : @local::randomsaver
 
@@ -117,8 +114,8 @@ physics :
 #       generate
 #       , g4run
 #       , makeSH
-#       , CaloReadoutHitsMaker
-#       , CaloCrystalHitsMaker
+#       , @sequence::CaloDigiMC.DigiSim
+#       , @sequence::CaloReco.Reco
 #       , filterEmpty
        ]
   e1 : [CE 
@@ -148,8 +145,4 @@ outputs:
 
 physics.producers.makeSH.diagLevel : -1
 physics.producers.makeSH.maxFullPrint : 0
-#physics.producers.CaloReadoutHitsMaker.diagLevel : -1
-#physics.producers.CaloReadoutHitsMaker.maxFullPrint : 0
-#physics.producers.CaloCrystalHitsMaker.diagLevel : -1
-#physics.producers.CaloCrystalHitsMaker.maxFullPrint : 0
 physics.producers.generate.inputfile : "Analyses/test/rpcInternalTestConfig.txt"

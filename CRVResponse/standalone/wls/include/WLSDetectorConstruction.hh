@@ -40,7 +40,8 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
     void SetBarWidth              (double barWidth) {_barWidth=barWidth;}
     void SetBarThickness          (double barThickness) {_barThickness=barThickness;}
     void SetFiberSeparation       (double fiberSeparation) {_fiberSeparation=fiberSeparation;}
-    void SetHoleRadius            (double holeRadius) {_holeRadius=holeRadius;}
+    void SetHoleRadiusX           (double holeRadius) {_holeRadiusX=holeRadius;}
+    void SetHoleRadiusY           (double holeRadius) {_holeRadiusY=holeRadius;}
     void SetCoatingThickness      (double coatingThickness) {_coatingThickness=coatingThickness;}
     void SetFiberRadius           (double fiberRadius) {_fiberRadius=fiberRadius;}
     void SetClad1Radius           (double clad1Radius) {_clad1Radius=clad1Radius;}
@@ -52,7 +53,8 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
     double GetBarWidth()         {return _barWidth;}
     double GetBarThickness()     {return _barThickness;}
     double GetFiberSeparation()  {return _fiberSeparation;}
-    double GetHoleRadius()       {return _holeRadius;}
+    double GetHoleRadiusX()      {return _holeRadiusX;}
+    double GetHoleRadiusY()      {return _holeRadiusY;}
     double GetCoatingThickness() {return _coatingThickness;}
     double GetFiberRadius()      {return _fiberRadius;}
     double GetClad1Radius()      {return _clad1Radius;}
@@ -92,15 +94,14 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
     double _mirrorPolish;
     double _mirrorReflectivity;
     double _extrusionPolish;
-    double _extrusionReflectivity;
-    double _manifoldPolish;
-    double _manifoldReflectivity;
-    double _surfaceRoughness;
+    double _fiberGuideBarPolish;
+    double _fiberGuideBarReflectivity;
+    double _holePolish;
 
     double _barLength, _barWidth, _barThickness;
     double _fiberSeparation;
     double _coatingThickness;
-    double _holeRadius;
+    double _holeRadiusX, _holeRadiusY;
     double _fiberRadius, _clad1Radius, _clad2Radius;
     double _sipmRadius, _sipmLength;
 

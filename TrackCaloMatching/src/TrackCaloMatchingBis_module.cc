@@ -197,7 +197,7 @@ namespace mu2e {
 	       HepPoint          point       = extrapol.trk()->position(pathLength);
 
 	       CLHEP::Hep3Vector posTrkInTracker(point.x(),point.y(),point.z());	     
-	       CLHEP::Hep3Vector posTrkInSectionFF = cal.toSectionFrameFF(extrapol.sectionId(),cal.fromTrackerFrame(posTrkInTracker));
+	       CLHEP::Hep3Vector posTrkInSectionFF = cal.geomUtil().mu2eToDiskFF(extrapol.diskId(),cal.geomUtil().trackerToMu2e(posTrkInTracker));
 
 
 	       HelixTraj trkHel(extrapol.trk()->helix(pathLength).params(),extrapol.trk()->helix(pathLength).covariance());

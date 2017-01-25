@@ -15,7 +15,6 @@
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
 
 #include "BeamlineGeom/inc/Beamline.hh"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
@@ -1362,171 +1361,6 @@ namespace mu2e {
       }
     }
 
-    // placing virtual detector around the calorimeter vanes
-
-    if ( _config.getBool("hasVaneCalorimeter",true) )
-    {
-
-      int vdIdFront = VirtualDetectorId::EMC_0_FrontIn;
-      int vdIdEdge  = VirtualDetectorId::EMC_0_EdgeIn;
-      int vdIdSurf  = VirtualDetectorId::EMC_0_SurfIn;
-
-      VaneCalorimeter const& cal = *(GeomHandle<VaneCalorimeter>());
-
-      VolumeInfo const& parent = _helper->locateVolInfo("CalorimeterMother");
-      CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
-
-      for (int iv = 0; iv < cal.nVane(); iv++)
-      {
-
-          const CLHEP::Hep3Vector & size = cal.vane(iv).size();
-          G4ThreeVector posVane          = cal.origin() + cal.vane(iv).originLocal();
-          double deltax                  = size.x()+2.0*vdg->getHalfLength()+0.02;
-          double deltay                  = size.y()+2.0*vdg->getHalfLength()+0.02;
-
-          //Front = small side facing the beam, closest to tracker
-          //Edge  = small face closest to z-axis (r_in / r_out)
-          //Surf  = largest side (hit by electrons)
-
-          G4ThreeVector posFront1 = posVane - G4ThreeVector(0,0,size.z()+2.0*vdg->getHalfLength()+0.02) - parentInMu2e;
-          G4ThreeVector posFront2 = posVane + G4ThreeVector(0,0,size.z()+2.0*vdg->getHalfLength()+0.02) - parentInMu2e;
-          G4ThreeVector posEdge1  = posVane + cal.vane(iv).rotation().inverse()*CLHEP::Hep3Vector(0,deltay,0) - parentInMu2e;
-          G4ThreeVector posEdge2  = posVane + cal.vane(iv).rotation().inverse()*CLHEP::Hep3Vector(0,-deltay,0) - parentInMu2e;
-          G4ThreeVector posSurf1  = posVane + cal.vane(iv).rotation().inverse()*CLHEP::Hep3Vector(deltax,0,0) - parentInMu2e;
-          G4ThreeVector posSurf2  = posVane + cal.vane(iv).rotation().inverse()*CLHEP::Hep3Vector(-deltax,0,0) - parentInMu2e;
-
-          double dimVDFront[3] = {size.x(),    size.y(),    vdg->getHalfLength()};
-          double dimVDSurf[3]  = {vdg->getHalfLength(), size.y(),    size.z()};
-          double dimVDEdge[3]  = {size.x(),    vdg->getHalfLength(), size.z()};
-
-
-          if( vdg->exist(vdIdFront) )
-          {
-              VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdIdFront),
-                                          dimVDFront,
-                                          downstreamVacuumMaterial,
-                                          &cal.vane(iv).rotation(),
-                                          posFront1,
-                                          parent,
-                                          vdIdFront,
-                                          vdIsVisible,
-                                          G4Color::Red(),
-                                          vdIsSolid,
-                                          forceAuxEdgeVisible,
-                                          placePV,
-                                          false
-                                          );
-              ++vdIdFront;
-
-              VolumeInfo vdInfo2 = nestBox(VirtualDetector::volumeName(vdIdFront),
-                                          dimVDFront,
-                                          downstreamVacuumMaterial,
-                                          &cal.vane(iv).rotation(),
-                                          posFront2,
-                                          parent,
-                                          vdIdFront,
-                                          vdIsVisible,
-                                          G4Color::Red(),
-                                          vdIsSolid,
-                                          forceAuxEdgeVisible,
-                                          placePV,
-                                          false
-                                          );
-              ++vdIdFront;
-
-              doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-              doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
-              vdInfo.logical->SetSensitiveDetector(vdSD);
-              vdInfo2.logical->SetSensitiveDetector(vdSD);
-
-          }
-
-          if( vdg->exist(vdIdEdge) )
-          {
-              VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdIdEdge),
-                                          dimVDEdge,
-                                          downstreamVacuumMaterial,
-                                          &cal.vane(iv).rotation(),
-                                          posEdge1,
-                                          parent,
-                                          vdIdEdge,
-                                          vdIsVisible,
-                                          G4Color::Red(),
-                                          vdIsSolid,
-                                          forceAuxEdgeVisible,
-                                          placePV,
-                                          false
-                                          );
-              ++vdIdEdge;
-
-              VolumeInfo vdInfo2 = nestBox(VirtualDetector::volumeName(vdIdEdge),
-                                          dimVDEdge,
-                                          downstreamVacuumMaterial,
-                                          &cal.vane(iv).rotation(),
-                                          posEdge2,
-                                          parent,
-                                          vdIdEdge,
-                                          vdIsVisible,
-                                          G4Color::Red(),
-                                          vdIsSolid,
-                                          forceAuxEdgeVisible,
-                                          placePV,
-                                          false
-                                          );
-              ++vdIdEdge;
-
-              doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-              doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
-              vdInfo.logical->SetSensitiveDetector(vdSD);
-              vdInfo2.logical->SetSensitiveDetector(vdSD);
-          }
-
-          if( vdg->exist(vdIdSurf) )
-          {
-              VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdIdSurf),
-                                          dimVDSurf,
-                                          downstreamVacuumMaterial,
-                                          &cal.vane(iv).rotation(),
-                                          posSurf1,
-                                          parent,
-                                          vdIdSurf,
-                                          vdIsVisible,//vdIsVisible,
-                                          G4Color::Red(),
-                                          vdIsSolid,
-                                          forceAuxEdgeVisible,
-                                          placePV,
-                                          false
-                                          );
-
-             ++vdIdSurf;
-
-              VolumeInfo vdInfo2 = nestBox(VirtualDetector::volumeName(vdIdSurf),
-                                          dimVDSurf,
-                                          downstreamVacuumMaterial,
-                                          &cal.vane(iv).rotation(),
-                                          posSurf2,
-                                          parent,
-                                          vdIdSurf,
-                                          vdIsVisible,//vdIsVisible,
-                                          G4Color::Red(),
-                                          vdIsSolid,
-                                          forceAuxEdgeVisible,
-                                          placePV,
-                                          false
-                                          );
-
-              ++vdIdSurf;
-
-              doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-              doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
-              vdInfo.logical->SetSensitiveDetector(vdSD);
-              vdInfo2.logical->SetSensitiveDetector(vdSD);
-          }
-
-      }//end vane loop
-    }//end if VaneCalorimeter
-
-
 
 
 
@@ -1546,12 +1380,12 @@ namespace mu2e {
 
       for (size_t id = 0; id < cal.nDisk(); id++)
       {
-           const CLHEP::Hep3Vector & sizeDisk = cal.disk(id).size();
-           G4ThreeVector posDisk              = cal.origin() + cal.disk(id).originLocal();
-	   G4ThreeVector posCrate             = posDisk + CLHEP::Hep3Vector(0.0,0.0,cal.disk(id).crateDeltaZ());
-           G4double crateRadIn                = cal.caloGeomInfo().crateRadiusIn();
-           G4double crateRadOut               = cal.caloGeomInfo().crateRadiusOut();
-           G4double crateHalfLength           = cal.caloGeomInfo().crateHalfLength();           
+           const CLHEP::Hep3Vector & sizeDisk = cal.disk(id).geomInfo().size();
+           G4ThreeVector posDisk              = cal.geomInfo().origin() + cal.disk(id).geomInfo().originLocal();
+	   G4ThreeVector posCrate             = posDisk + CLHEP::Hep3Vector(0.0,0.0,cal.disk(id).geomInfo().crateDeltaZ());
+           G4double crateRadIn                = cal.caloInfo().crateRadiusIn();
+           G4double crateRadOut               = cal.caloInfo().crateRadiusOut();
+           G4double crateHalfLength           = cal.caloInfo().crateHalfLength();           
                       
            TubsParams  vdParamsFrontDisk(sizeDisk[0]-delta,   sizeDisk[1]+delta,   vdg->getHalfLength());
            TubsParams  vdParamsInnerDisk(sizeDisk[0]-2*delta, sizeDisk[0]-delta,   sizeDisk[2]/2.0);

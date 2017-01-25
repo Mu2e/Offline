@@ -87,7 +87,7 @@ namespace mu2e {
                    CaloCrystalHitPtrVector const& SecondHitsPtr = clusterColl[j].caloCrystalHitsPtrVector();             
                    double dist        = closestDistance(FirstHitsPtr,SecondHitsPtr);
 		   double estimatedDt = dist / 300;
-		   bool   sameDisk    = cal_.crystal(FirstHitsPtr[0]->id()).sectionId() == cal_.crystal(SecondHitsPtr[0]->id()).sectionId();
+		   bool   sameDisk    = cal_.crystal(FirstHitsPtr[0]->id()).diskId() == cal_.crystal(SecondHitsPtr[0]->id()).diskId();
  		   
 		   
 		   if (strategy == 2 && std::abs(estimatedDt-dtime) > deltaTime) continue;

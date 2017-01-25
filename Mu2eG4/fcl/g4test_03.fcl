@@ -121,3 +121,4 @@ physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimet
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"

@@ -72,7 +72,7 @@ mu2e::CaloClusterPrinter::Print(const mu2e::CaloCluster& obj, int ind, std::ostr
 
   if(verbose()==1) {
     os 
-      << " " << std::setw(5) << obj.sectionId()
+      << " " << std::setw(5) << obj.diskId()
       << " " << std::setw(5) << obj.size()
       << " " 
       << " " << std::setw(8) << std::setprecision(1) << obj.time()
@@ -84,7 +84,7 @@ mu2e::CaloClusterPrinter::Print(const mu2e::CaloCluster& obj, int ind, std::ostr
       << std::endl;
   } else if(verbose()==2) {
      os 
-       << "  secId: " << std::setw(8) << obj.sectionId()
+       << "  secId: " << std::setw(8) << obj.diskId()
        << "  size: " << std::setw(4) << obj.size()
        << "  time: " << std::setw(8) << std::setprecision(1) << obj.time()
        << "  eDep: " << std::setw(8) << std::setprecision(1) << obj.energyDep() << "\n";

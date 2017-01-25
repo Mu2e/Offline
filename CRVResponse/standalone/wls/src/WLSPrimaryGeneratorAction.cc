@@ -27,13 +27,14 @@
 
 #include <stdexcept>
 
-WLSPrimaryGeneratorAction::WLSPrimaryGeneratorAction(int mode, int numberOfPhotons, int simType, int startBin, bool verbose) : 
+WLSPrimaryGeneratorAction::WLSPrimaryGeneratorAction(int mode, int numberOfPhotons, int simType, int startBin, bool verbose, double posY, double posZ) : 
                                                                                             _mode(mode), 
                                                                                             _numberOfPhotons(numberOfPhotons),
                                                                                             _simType(simType),
                                                                                             _currentBin(startBin-1), 
                                                                                             _verbose(verbose),
-                                                                                            _first(true)
+                                                                                            _first(true),
+                                                                                            _posY(posY), _posZ(posZ)
 {
   _randomEngine = CLHEP::HepRandom::getTheEngine();
   _particleGun  = new G4ParticleGun(1);
@@ -49,10 +50,12 @@ WLSPrimaryGeneratorAction::WLSPrimaryGeneratorAction(int mode, int numberOfPhoto
 //    G4ParticleDefinition* particle = particleTable->FindParticle("proton");
 //    G4ParticleDefinition* particle = particleTable->FindParticle("neutron");
 //    G4ParticleDefinition* particle = particleTable->FindParticle("gamma");
-    G4ParticleDefinition* particle = particleTable->FindParticle("mu-");
+    G4ParticleDefinition* particle = particleTable->FindParticle("mu-"); 
+//    G4ParticleDefinition* particle = particleTable->FindParticle("opticalphoton");  //WLS fiber test
     _particleGun->SetParticleDefinition(particle);
     _particleGun->SetParticleMomentumDirection(G4ThreeVector(1., 0., 0.));
     _particleGun->SetParticleEnergy(120.*GeV);
+//    _particleGun->SetParticleEnergy(3.7*eV);  //WLS fiber test
     _particleGun->SetParticleTime(0);
   }  
 }
@@ -140,12 +143,12 @@ bool WLSPrimaryGeneratorAction::SetNextBins()
               int xbin = (_currentBin / (nZBins*nYBins)) % nXBins;
               int ybin = (_currentBin / nZBins) % nYBins;
               int zbin = _currentBin % nZBins;
-              _minBinX=xBins[xbin];
-              _minBinY=yBins[ybin];
-              _minBinZ=zBins[zbin];
-              _maxBinX=xBins[xbin+1];
-              _maxBinY=yBins[ybin+1];
-              _maxBinZ=zBins[zbin+1];
+              _minBinX=xBins[xbin]/mm;
+              _minBinY=yBins[ybin]/mm;
+              _minBinZ=zBins[zbin]/mm;
+              _maxBinX=xBins[xbin+1]/mm;
+              _maxBinY=yBins[ybin+1]/mm;
+              _maxBinZ=zBins[zbin+1]/mm;
               if(_verbose)
               {
                 std::cout<<"X: "<<_minBinX<<" ... "<<_maxBinX<<"    bin# "<<xbin<<"/"<<nXBins<<std::endl;
@@ -167,13 +170,13 @@ bool WLSPrimaryGeneratorAction::SetNextBins()
               _minBinBeta=betaBins[betabin];
               _minBinTheta=thetaBins[thetabin];
               _minBinPhi=phiBins[phibin];
-              _minBinR=rBins[rbin];
-              _minBinZ=zBins[zbin];
+              _minBinR=rBins[rbin]/mm;
+              _minBinZ=zBins[zbin]/mm;
               _maxBinBeta=betaBins[betabin+1];
               _maxBinTheta=thetaBins[thetabin+1];
               _maxBinPhi=phiBins[phibin+1];
-              _maxBinR=rBins[rbin+1];
-              _maxBinZ=zBins[zbin+1];
+              _maxBinR=rBins[rbin+1]/mm;
+              _maxBinZ=zBins[zbin+1]/mm;
               if(_verbose)
               {
                 std::cout<<"Beta: "<<_minBinBeta<<" ... "<<_maxBinBeta<<std::endl;
@@ -186,7 +189,7 @@ bool WLSPrimaryGeneratorAction::SetNextBins()
             break;
   }
 
-  WLSEventAction::Instance()->SetStartZ((_maxBinZ+_minBinZ)/2.0);
+  WLSEventAction::Instance()->SetStartZ(((_maxBinZ+_minBinZ)/2.0)*mm);
   return(true);
 }
 
@@ -281,7 +284,7 @@ int WLSPrimaryGeneratorAction::GenerateCerenkovPhotonsInFiber(G4Event *anEvent, 
 
   if(_maxBinBeta*_maxRIndexFiber<=1.0) return 0;  //Cerenkov photons can't be produced 
 
-  double fiberSeparation = WLSDetectorConstruction::Instance()->GetFiberSeparation();
+  double fiberSeparation = WLSDetectorConstruction::Instance()->GetFiberSeparation()/mm;
   G4ThreeVector startPosition(_minBinR,_simType==2?-fiberSeparation/2.0:fiberSeparation/2.0,_minBinZ);
   double dR = _maxBinR - _minBinR;
   double dZ = _maxBinZ - _minBinZ;
@@ -394,20 +397,38 @@ void WLSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 //    double beamsize=2.0*mm;
 //    double beamsize=1.0*mm;
     double beamsize=0.0*mm;
-    double x0 = -1.0*cm;
-    double y0 = G4RandGauss::shoot(_randomEngine,0.0*cm,beamsize);    //center
-//    double y0 = G4RandGauss::shoot(_randomEngine,-1.0*cm,beamsize);    //at fiber 0
-
-//    double z0 = G4RandGauss::shoot(_randomEngine,-149.0*cm,beamsize);  //1cm from left side
-//    double z0 = G4RandGauss::shoot(_randomEngine,-140.0*cm,beamsize);  //10cm from left side
-//    double z0 = G4RandGauss::shoot(_randomEngine,-130.0*cm,beamsize);  //20cm from left side
-//    double z0 = G4RandGauss::shoot(_randomEngine,-125.0*cm,beamsize);  //25cm from left side
-//    double z0 = G4RandGauss::shoot(_randomEngine,-100.0*cm,beamsize);  //50cm from left side
-    double z0 = G4RandGauss::shoot(_randomEngine,-50.0*cm,beamsize);  //100cm from left side
-//    double z0 = G4RandGauss::shoot(_randomEngine,0.0*cm,beamsize);  //150cm from left side (center)
-
+    double x0 = -10*mm;
+    double y0 = G4RandGauss::shoot(_randomEngine,_posY*mm,beamsize);    //0 is at center //-13mm is at fiber 0
+    double barlength = WLSDetectorConstruction::Instance()->GetBarLength()/mm;
+    double z0 = G4RandGauss::shoot(_randomEngine,(-barlength/2.0+_posZ)*mm,beamsize);  //pos mm from left side of counter
     _particleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
-    _particleGun->GeneratePrimaryVertex(anEvent);
+
+    _particleGun->GeneratePrimaryVertex(anEvent);  //not used for WLS fiber test
+
+// for WLS fiber test
+/*
+    for(int ii=0; ii<1000; ii++) 
+    {
+      double cost = 1. - 2.*G4UniformRand();
+      double sint = std::sqrt((1.-cost)*(1.+cost));
+      double phi = twopi*G4UniformRand();
+      double sinp = std::sin(phi);
+      double cosp = std::cos(phi);
+      double sx = cost*cosp;
+      double sy = cost*sinp; 
+      double sz = -sint;
+      G4ThreeVector photonPolarization(sx, sy, sz);
+      G4ThreeVector photonMomentum = _particleGun->GetParticleMomentumDirection();
+      G4ThreeVector perp = photonMomentum.cross(photonPolarization);
+      phi = twopi*G4UniformRand();
+      sinp = std::sin(phi);
+      cosp = std::cos(phi);
+      photonPolarization = cosp * photonPolarization + sinp * perp;
+      photonPolarization = photonPolarization.unit();
+      _particleGun->SetParticlePolarization(photonPolarization);
+      _particleGun->GeneratePrimaryVertex(anEvent);
+    }
+*/
   }
 }
 

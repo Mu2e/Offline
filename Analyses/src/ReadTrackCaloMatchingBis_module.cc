@@ -334,7 +334,7 @@ namespace mu2e {
 
               HepPoint point = trk.position(pathLength);
               CLHEP::Hep3Vector posTrkInTracker(point.x(),point.y(),point.z());
-              CLHEP::Hep3Vector posTrkInSectionFF = cal.toSectionFrameFF(intersect.sectionId(),cal.fromTrackerFrame(posTrkInTracker));
+              CLHEP::Hep3Vector posTrkInSectionFF = cal.geomUtil().mu2eToDiskFF(intersect.diskId(),cal.geomUtil().trackerToMu2e(posTrkInTracker));
 
               HelixTraj trkHel(trk.helix(pathLength).params(),trk.helix(pathLength).covariance());
 
@@ -407,7 +407,7 @@ namespace mu2e {
 		   if (vdMapEntry != vdMap.end())
 		   {
 	              //simMom = vdMapEntry->second->momentum().mag();
-		      CLHEP::Hep3Vector simPos = cal.toSectionFrameFF(clusterIt->sectionId(), vdMapEntry->second->position());		  
+		      CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(clusterIt->diskId(), vdMapEntry->second->position());		  
 		   } 
 
         	   _clusimId[_nCluSim]     = sim->id().asInt();
@@ -433,7 +433,7 @@ namespace mu2e {
            for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
            {
                CaloCrystalHit const& hit    = caloCrystalHits.at(ic);
-               CLHEP::Hep3Vector crystalPos = cal.toSectionFrameFF(cal.crystal(hit.id()).sectionId(), cal.crystal(hit.id()).position());
+               CLHEP::Hep3Vector crystalPos = cal.geomUtil().mu2eToDiskFF(cal.crystal(hit.id()).diskId(), cal.crystal(hit.id()).position());
 
                _cryTime[_nHits]      = hit.time();
                _cryEdep[_nHits]      = hit.energyDep();
@@ -441,7 +441,7 @@ namespace mu2e {
                _cryPosY[_nHits]      = crystalPos.y();
                _cryPosZ[_nHits]      = crystalPos.z();
                _cryId[_nHits]        = hit.id();
-               _crySecId[_nHits]     = cal.crystal(hit.id()).sectionId();
+               _crySecId[_nHits]     = cal.crystal(hit.id()).diskId();
 
                ++_nHits;
            }

@@ -516,7 +516,7 @@ namespace mu2e
     // add cluster time 
     if(hseed.caloCluster().isNonnull()){
       double time = _ttcalc.caloClusterTime(*hseed.caloCluster());
-      double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(hseed.caloCluster()->sectionId()),2);
+      double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(hseed.caloCluster()->diskId()),2);
       terr(time,weight=wt);
     }
     if(sum_of_weights(terr) > 0.0){

@@ -99,11 +99,8 @@ physics :
     #       But it is configured exactly as the standard makeSH
     makeSH: @local::makeSH        
 
-    # Form CaloCrystalHits (reconstruct crystals from APDs)
-    CaloCrystalHitsMaker: @local::CaloCrystalHitsMaker
-
-    # Form CaloROHits (APD hits)
-    CaloReadoutHitsMaker: @local::MakeCaloReadoutHits
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
 
     # Save state of random numbers to the event.
     randomsaver : @local::randomsaver
@@ -163,7 +160,3 @@ outputs:
 
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5
-physics.producers.CaloReadoutHitsMaker.diagLevel : 0
-physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
-physics.producers.CaloCrystalHitsMaker.diagLevel : 0
-physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201

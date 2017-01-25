@@ -1,9 +1,9 @@
 
-#ifndef ValCaloHit_HH_
-#define ValCaloHit_HH_
+#ifndef ValCaloCrystalHit_HH_
+#define ValCaloCrystalHit_HH_
 
 #include "art/Framework/Principal/Event.h"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "Validation/inc/ValId.hh"
 #include "Validation/inc/ValPosition.hh"
 #include "TH1D.h"
@@ -11,12 +11,12 @@
 
 namespace mu2e {
 
-  class ValCaloHit {
+  class ValCaloCrystalHit {
 
   public:
-    ValCaloHit(std::string name):_name(name){}
+    ValCaloCrystalHit(std::string name):_name(name){}
     int declare( art::TFileDirectory tfs);
-    int fill(const CaloHitCollection & coll, art::Event const& event);
+    int fill(const CaloCrystalHitCollection & coll, art::Event const& event);
     std::string& name() { return _name; }
 
   private:

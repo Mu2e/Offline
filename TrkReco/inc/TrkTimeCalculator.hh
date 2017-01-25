@@ -41,8 +41,8 @@ namespace mu2e
       // access the offsets
       double strawHitTimeOffset(double hitz) const; // z position in the tracker frame!!!
       double strawHitTimeErr() const { return _shErr; }
-      double caloClusterTimeOffset(int sectionId) const; // depends on which 
-      double caloClusterTimeErr(int sectionId) const; // depends on which 
+      double caloClusterTimeOffset(int diskId) const; // depends on which 
+      double caloClusterTimeErr(int diskId) const; // depends on which 
       // calculate the t0 for a straw hit. This assumes an average drift time
       double strawHitTime(StrawHit const& sh, StrawHitPosition const& shp);
       // calculate the t0 for a calo cluster.

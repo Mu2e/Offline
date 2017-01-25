@@ -1161,8 +1161,8 @@ namespace mu2e {
 // convert cluster coordinates defined in the disk frame to the detector
 // coordinate system
 //-----------------------------------------------------------------------------
-          gpos = _calorimeter->fromSectionFrameFF(cl->sectionId(),cl->cog3Vector());
-          tpos = _calorimeter->toTrackerFrame(gpos);
+          gpos = _calorimeter->geomUtil().mu2eToDiskFF(cl->diskId(),cl->cog3Vector());
+          tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
 
           xcl     = tpos.x();
           ycl     = tpos.y();

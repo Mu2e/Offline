@@ -487,7 +487,7 @@ namespace mu2e {
     if( ! geom->hasElement<Calorimeter>() ) return;
 
     GeomHandle<Calorimeter> cg;
-    double CrMass  = CrDensity*cg->caloGeomInfo().crystalVolume();
+    double CrMass  = CrDensity*cg->caloInfo().crystalVolume();
 
 
     // Get handles to calorimeter collections
@@ -562,7 +562,7 @@ namespace mu2e {
 
       int crystalId = cg->crystalByRO(thehit.id());
       CLHEP::Hep3Vector cryCenter =  cg->crystal(crystalId).position();
-      int sectionId = cg->crystal(crystalId).sectionId();
+      int diskId = cg->crystal(crystalId).diskId();
 
 
 
@@ -573,7 +573,7 @@ namespace mu2e {
       double dose = hit.energyDep() / CrMass / (CLHEP::joule/CLHEP::kg);
       cntpArray[idx++] = dose;
       cntpArray[idx++] = crystalId;
-      cntpArray[idx++] = sectionId;
+      cntpArray[idx++] = diskId;
       cntpArray[idx++] = cryCenter.getX() + 3904.;  //value used to shift in tracker coordinate system
       cntpArray[idx++] = cryCenter.getY();
       cntpArray[idx++] = cryCenter.getZ() - 10200;  //value used to shift in tracker coordinate system
