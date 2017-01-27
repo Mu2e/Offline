@@ -165,7 +165,6 @@ namespace mu2e
       for(size_t i=0; i<CRVStepsVector.size(); i++)
       {
         const art::Handle<StepPointMCCollection> &CRVSteps = CRVStepsVector[i];
-
         for(StepPointMCCollection::const_iterator iter=CRVSteps->begin(); iter!=CRVSteps->end(); iter++)
         {
           StepPointMC const& step(*iter);

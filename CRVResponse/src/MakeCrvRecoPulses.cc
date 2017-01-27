@@ -71,12 +71,12 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
       //will be used, if fit does not succeed or is not possible.
       double pulseTime=startTime+pulseMaxBin*binWidth;
       double pulseHeight=waveform[pulseMaxBin];
-      double pulseWidth=binWidth;
+      double pulseWidth=NAN;
       double fitParam0=NAN;
       double fitParam1=NAN;
       double fitParam2=NAN;
-      double t1=pulseTime;
-      double t2=pulseTime;
+      double t1=NAN;
+      double t2=NAN;
 
       if(pulseStartBin!=pulseMaxBin && pulseEndBin!=pulseMaxBin &&  //pulse maximum is not at the ends of the waveform
          (_useFittedPulseHeight || _useFittedPulseTime))   //only do a fit, if at least one of the fitted values is needed

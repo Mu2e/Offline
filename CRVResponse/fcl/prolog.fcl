@@ -62,7 +62,7 @@ BEGIN_PROLOG
       digitizationPrecision        : 12.5   //12.5 ns (digitizer sampling rate)
       digitizationPoints           : 8      //8 points
       FEBtimeSpread                : 2.0    //2.0 ns
-      minVoltage                   : 0.022  //22mV (corresponds to 3.5PE)
+      minVoltage                   : 0.033  //33mV (corresponds to 5.5PE)
     }
     CrvRecoPulses:
     {
@@ -71,7 +71,7 @@ BEGIN_PROLOG
       scale                     : 169.     //169. PEs/V  (would be about 100. if all PEs arrived at the same time)
       useFittedPulseHeight      : false    //not used in test beam analysis
       useFittedPulseTime        : true
-      minPEs                    : 4        //4 PEs
+      minPEs                    : 5        //5 PEs
     }
     CrvCoincidence:
     {
