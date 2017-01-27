@@ -13,7 +13,7 @@ double          crs.scintillatorBarLengthTest    =  6600;
 
 double          crs.scintillatorBarThickness     =  20.0; //mm   //is actually only 19.8mm, while the lookup tables have 20.0mm
 double          crs.scintillatorBarWidth         =  50.0; //mm   //current Offline has 49.5mm, while the lookup tables have 50.0mm
-double          crs.layerOffset                  =  10;   //mm
+double          crs.layerOffset                  =  42;   //mm
 double          crs.gapLarge                     =   2;   //mm
 double          crs.gapSmall                     =   1;   //mm
 double          crs.gapBetweenModules            =   5;   //mm

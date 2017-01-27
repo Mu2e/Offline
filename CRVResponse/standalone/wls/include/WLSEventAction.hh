@@ -48,6 +48,7 @@ class WLSEventAction : public G4UserEventAction
     void                    Draw(const G4Event* evt);
 
     std::vector<double>     _PEs[4];
+    std::vector<double>     _recoPEs[4];
 };
 
 #endif

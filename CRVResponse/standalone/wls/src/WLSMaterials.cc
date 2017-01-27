@@ -308,7 +308,7 @@ void WLSMaterials::CreateMaterials()
 //  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",15000./MeV); 
 //  MPTPolystyrene->AddProperty("FASTCOMPONENT",PhotonEnergy60, ScintilFast,nEntries60); 
 //  MPTPolystyrene->AddProperty("SLOWCOMPONENT",PhotonEnergy60, ScintilFast,nEntries60);  //assumed to be delayed flourescence, not used
-  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",8000./MeV); 
+  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",4000./MeV); 
   MPTPolystyrene->AddProperty("FASTCOMPONENT",PhotonEnergy60, ScintilFast,36); 
   MPTPolystyrene->AddProperty("SLOWCOMPONENT",PhotonEnergy60, ScintilFast,36);  //assumed to be delayed flourescence, not used
   MPTPolystyrene->AddConstProperty("RESOLUTIONSCALE",1.0);

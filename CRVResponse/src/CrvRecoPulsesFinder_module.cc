@@ -55,30 +55,23 @@ namespace mu2e
     boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> _makeCrvRecoPulses;
 
     std::string _crvWaveformsModuleLabel;
-    double      _param0;
-    double      _param1;
-    double      _pulseThreshold;
-    double      _leadingEdgeThreshold;
-    double      _microBunchPeriod;
+    double      _scale;
+    bool        _useFittedPulseHeight, _useFittedPulseTime;
     int         _minPEs;
+    double      _microBunchPeriod;
 
 //    TH1F        *_hRecoPulses;
   };
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
-    _param0(pset.get<double>("param0")),   //needs to be 0
-    _param1(pset.get<double>("param1")),   //51.0
-    _pulseThreshold(pset.get<double>("pulseThreshold")),  //0.015
-    _leadingEdgeThreshold(pset.get<double>("leadingEdgeThreshold")),   //0.2
-    _minPEs(pset.get<int>("minPEs"))   //3
+    _scale(pset.get<double>("scale")),   //159 PEs/V
+    _useFittedPulseHeight(pset.get<bool>("useFittedPulseHeight")),   //false, since the test beam analysis didn't use it either
+    _useFittedPulseTime(pset.get<bool>("useFittedPulseTime")),   //true
+    _minPEs(pset.get<int>("minPEs"))     //3 PEs
   {
     produces<CrvRecoPulsesCollection>();
-    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_pulseThreshold, _leadingEdgeThreshold, _param0, _param1));
-
-//    art::ServiceHandle<art::TFileService> tfs;
-//    art::TFileDirectory tfdir = tfs->mkdir("RecoPulses");
-//    _hRecoPulses = tfdir.make<TH1F>( "recoPulses", "recoPulses", 500, 0, 500);
+    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_scale, _useFittedPulseHeight, _useFittedPulseTime));
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -122,7 +115,7 @@ namespace mu2e
           if(!allVoltages.empty())
           {
             //difference between the time of the last digitization point and the next start time
-            double lastTime = allStartTimes.back()+allVoltages.back().size()*digitizationPrecision;
+            double lastTime = allStartTimes.back()+(allVoltages.back().size()-1)*digitizationPrecision;
             double timeDiff = singleWaveforms[i]._startTime - lastTime;
             if(timeDiff<digitizationPrecision*1.1) appendWaveform=true;   //the next start time seems to be just 
                                                                           //one digitization point (12.5ns) away
@@ -150,17 +143,14 @@ namespace mu2e
           unsigned int n = _makeCrvRecoPulses->GetNPulses();
           for(unsigned int i=0; i<n; i++)
           {
-            double LE=_makeCrvRecoPulses->GetLeadingEdge(i);
-            double time=_makeCrvRecoPulses->GetPeakTimeLandau(i);
-            if(time<0) continue;
-            if(time>_microBunchPeriod) continue;
-            int PEs = _makeCrvRecoPulses->GetPEs(i);
+            double pulseTime   = _makeCrvRecoPulses->GetPulseTime(i);
+            int    PEs         = _makeCrvRecoPulses->GetPEs(i);
+            double pulseHeight = _makeCrvRecoPulses->GetPulseHeight(i); 
+            double pulseWidth  = _makeCrvRecoPulses->GetPulseWidth(i);
+            if(pulseTime<0) continue;
+            if(pulseTime>_microBunchPeriod) continue;
             if(PEs<_minPEs) continue; 
-            double height = _makeCrvRecoPulses->GetPulseHeight(i);  //don't use GetPulseHeightLandau(i), since this wasn't used in the test beam
-            double length = _makeCrvRecoPulses->GetTimeOverThreshold(i);
-            double integral = _makeCrvRecoPulses->GetIntegral(i);
-//            _hRecoPulses->Fill(length);
-            crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, LE,time,height,length,integral);
+            crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, pulseTime, pulseHeight, pulseWidth);
           }
         }
 

@@ -12,33 +12,26 @@ class MakeCrvRecoPulses
   MakeCrvRecoPulses();
 
   public:
-  MakeCrvRecoPulses(double pulseThreshold, double leadingEdgeThreshold, double param0, double param1);
+  MakeCrvRecoPulses(double scale, bool useFittedPulseHeight, bool useFittedPulseTime);
   void         SetWaveform(const std::vector<double> &waveform, double startTime, double binWidth);
   unsigned int GetNPulses();
   int          GetPEs(int pulse);
-  double       GetLeadingEdge(int pulse);
-  double       GetTimeOverThreshold(int pulse);
+  double       GetPulseTime(int pulse);
   double       GetPulseHeight(int pulse);
-  double       GetPulseHeightLandau(int pulse);
-  double       GetPeakTime(int pulse);
-  double       GetPeakTimeLandau(int pulse);
-  double       GetIntegral(int pulse);
-  double       GetLandauParam0(int pulse);
-  double       GetLandauParam1(int pulse);
-  double       GetLandauParam2(int pulse);
+  double       GetPulseWidth(int pulse);
+  double       GetFitParam0(int pulse);
+  double       GetFitParam1(int pulse);
+  double       GetFitParam2(int pulse);
   double       GetT1(int pulse);
   double       GetT2(int pulse);
 
   private:
-  double _pulseThreshold;
-  double _leadingEdgeThreshold;
-  double _param0, _param1;
+  double _scale;
+  bool   _useFittedPulseHeight, _useFittedPulseTime;
 
   std::vector<int>    _PEs;
-  std::vector<double> _leadingEdges;
-  std::vector<double> _pulseHeights, _pulseHeightsLandau;
-  std::vector<double> _peakTimes, _peakTimesLandau;
-  std::vector<double> _integrals, _landauParams0, _landauParams1, _landauParams2, _T1s, _T2s, _TOTs;
+  std::vector<double> _pulseTimes, _pulseHeights, _pulseWidths;
+  std::vector<double> _fitParams0, _fitParams1, _fitParams2, _t1s, _t2s;
 };
 
 }
