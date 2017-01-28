@@ -68,8 +68,8 @@ using CLHEP::HepSymMatrix;
 namespace mu2e
 {
 // comparison functor for ordering hits.  This should operate on TrkHit, FIXME!
-  struct fcomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
-    bool operator()(TrkStrawHit* x, TrkStrawHit* y) {
+  struct fcomp : public binary_function<TrkHit*, TrkHit*, bool> {
+    bool operator()(TrkHit* x, TrkHit* y) {
       return x->fltLen() < y->fltLen();
     }
   };
@@ -230,7 +230,7 @@ namespace mu2e
       HelixTraj htraj(pvec,pcov);
       // create the hits
       TrkStrawHitVector tshv;
-      makeHits(shcol, htraj, kseed.hits(), tshv);
+      makeTrkStrawHits(shcol, htraj, kseed.hits(), tshv);
       // Create the BaBar hit list, and fill it with these hits.  The BaBar list takes ownership
       // We should use the TrkHit vector everywhere, FIXME!
       std::vector<TrkHit*> thv;
@@ -277,7 +277,7 @@ namespace mu2e
         initT0(shcol,tdef.particle(),tdef.t0(),tdef.strawHitIndices(),tdef.helix());
 // create the hits
       TrkStrawHitVector tshv;
-      makeHits(shcol, tdef, tshv);
+      makeTrkStrawHits(shcol, tdef, tshv);
 // Create the BaBar hit list, and fill it with these hits.  The BaBar list takes ownership
       std::vector<TrkHit*> thv;
       for(auto ihit = tshv.begin(); ihit != tshv.end(); ++ihit){
@@ -466,7 +466,7 @@ namespace mu2e
   }
 
   void
-  KalFit::makeHits(const StrawHitCollection* shcol, HelixTraj const& htraj,
+  KalFit::makeTrkStrawHits(const StrawHitCollection* shcol, HelixTraj const& htraj,
     std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv ) {
     const Tracker& tracker = getTrackerOrThrow();
     // compute particle velocity to 
@@ -492,7 +492,7 @@ namespace mu2e
   }
 
   void
-  KalFit::makeHits(const StrawHitCollection* shcol, TrkDef const& tdef, TrkStrawHitVector& tshv ) {
+  KalFit::makeTrkStrawHits(const StrawHitCollection* shcol, TrkDef const& tdef, TrkStrawHitVector& tshv ) {
     const Tracker& tracker = getTrackerOrThrow();
 // compute the propagaion velocity
     double flt0 = tdef.helix().zFlight(0.0);

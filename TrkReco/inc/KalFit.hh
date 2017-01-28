@@ -90,8 +90,8 @@ namespace mu2e
     bool fitable(KalSeed const& kseed);
     void initT0(const StrawHitCollection* shcol, TrkParticle const& part,
 	TrkT0& t0,std::vector<StrawHitIndex> const& hits, HelixTraj const& htraj   );
-    void makeHits(const StrawHitCollection* shcol,TrkDef const& tdef, TrkStrawHitVector& tshv); 
-    void makeHits(const StrawHitCollection* shcol, HelixTraj const& htraj,
+    void makeTrkStrawHits(const StrawHitCollection* shcol,TrkDef const& tdef, TrkStrawHitVector& tshv); 
+    void makeTrkStrawHits(const StrawHitCollection* shcol, HelixTraj const& htraj,
 	std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv );
     void makeMaterials(TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
     unsigned addMaterial(KalRep* krep);
