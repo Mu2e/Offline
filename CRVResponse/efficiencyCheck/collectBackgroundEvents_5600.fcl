@@ -12,7 +12,7 @@ source :
 services :
 {
   RandomNumberGenerator: { }
-  TFileService : { fileName : "background.root" }
+  TFileService : { fileName : "background_5600.root" }
   user :
   {
     GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
@@ -31,9 +31,8 @@ physics :
       module_type               : CrvBackgroundCollector
       g4ModuleLabels            : ["*"]
       processNames              : ["*"]
-      CRVSectorNames            : ["CRV_T1"]
-#      CRVSectorNames            : ["CRV_D1"]
-#      CRVSectorNames            : ["CRV_T2","CRV_T3","CRV_T4"]
+      volumeIdStart             : 3328  //start of T2
+      volumeIdEnd               : 3455  //end of 2nd module in T2
       startTime                 : 400.0
     }
   }
