@@ -18,21 +18,16 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e
 {
-  TrkCaloHit::TrkCaloHit(const CaloCluster& caloCluster, const HitT0& hitt0,double fltlen) :
+  TrkCaloHit::TrkCaloHit(const CaloCluster& caloCluster, Hep3Vector &caloClusterPos, 
+			 double crystalHalfLength, Hep3Vector const& clusterAxis,
+			 const HitT0& hitt0,double fltlen) :
     _caloCluster(caloCluster)
   {
-// is there an efficiency issue fetching the crystal half length?
-    double crystalHalfLength(100);
-    Hep3Vector const& clusterAxis = Hep3Vector(0, 0, 1);//_straw.getDirection();
 
-//checkif cog is in the correct reference system!
-    Hep3Vector const& cog = _caloCluster.cog3Vector();//_straw.getMidPoint();
-    _caloClusterPos.setX(cog.x());
-    _caloClusterPos.setY(cog.y());
-    _caloClusterPos.setZ(cog.z() + crystalHalfLength);
+    caloClusterPos.setZ(caloClusterPos.z() + crystalHalfLength);
 
 // the hit trajectory is defined as a line segment directed along the wire direction starting from the wire center
-    _hittraj = new TrkLineTraj(HepPoint(_caloClusterPos.x(),_caloClusterPos.y(),_caloClusterPos.z()),
+    _hittraj = new TrkLineTraj(HepPoint(caloClusterPos.x(), caloClusterPos.y(), caloClusterPos.z()),
 			       clusterAxis, -crystalHalfLength, crystalHalfLength);
     setHitLen(crystalHalfLength);
     setFltLen(fltlen);
@@ -76,7 +71,8 @@ namespace mu2e
 
   void
   TrkCaloHit::hitPosition(Hep3Vector& hpos) const{
-      hpos = _caloClusterPos;
+    hitTraj()->position(hitLen());
+    //hpos = _caloClusterPos;
   }
 
 

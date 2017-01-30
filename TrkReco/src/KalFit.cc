@@ -25,6 +25,7 @@
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
@@ -99,11 +100,13 @@ namespace mu2e
     _maxdriftpull(pset.get<double>("maxDriftPull",10)),
     // t0 parameters
     _initt0(pset.get<bool>("initT0",true)),
+    _useTrkCaloHit(pset.get<bool>("useTrkCaloHit",false)),
     _updatet0(pset.get<bool>("updateT0",true)),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _mint0doca(pset.get<double>("minT0DOCA",-0.2)),
     _t0nsig(pset.get<double>("t0window",2.5)),
+    _dtoffset(pset.get<double>("dtOffset")),
     //
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
     _maxmatfltdiff(pset.get<double>("MaximumMaterialFlightDifference",1000.0)), // mm separation in flightlength
@@ -231,12 +234,19 @@ namespace mu2e
       // create the hits
       TrkStrawHitVector tshv;
       makeTrkStrawHits(shcol, htraj, kseed.hits(), tshv);
+      //create the TrkCaloHit
+      TrkCaloHit* tch(0);
+      makeTrkCaloHit(kseed, tch);
       // Create the BaBar hit list, and fill it with these hits.  The BaBar list takes ownership
       // We should use the TrkHit vector everywhere, FIXME!
-      std::vector<TrkHit*> thv;
+      std::vector<TrkHit*> thv(0);
       for(auto ihit = tshv.begin(); ihit != tshv.end(); ++ihit){
         thv.push_back(*ihit);
         if (_debug>2) { (*ihit)->print(std::cout); }
+      }
+      //add the TrkCaloHit if found
+      if (tch != 0){
+	thv.push_back(tch);
       }
 // Find the wall and gas material description objects for these hits
       std::vector<DetIntersection> detinter;
@@ -248,10 +258,14 @@ namespace mu2e
       TrkT0 t0(kseed.t0());
       if(_initt0){
       // stupid translation, FIXME!
-	std::vector<StrawHitIndex> indices;
-	for(auto hit : kseed.hits())
-	  indices.push_back(hit.index());
-        initT0(shcol,kseed.particle(),t0,indices,htraj);
+	if (!_useTrkCaloHit || (tch ==0)){
+	  std::vector<StrawHitIndex> indices;
+	  for(auto hit : kseed.hits())
+	    indices.push_back(hit.index());
+	  initT0(shcol,kseed.particle(),t0,indices,htraj);
+	}else {
+	  initTrkCaloT0(tch, kseed.particle(), t0, htraj);
+	}
 	flt0 = htraj.zFlight(0.0);
       }
 // initialize krep t0; eventually, this should be in the constructor, FIXME!!!
@@ -426,8 +440,16 @@ namespace mu2e
       retval = krep->fit();
       if(! retval.success())break;
       // updates
+      //get the TrkCaloHit
+      TrkCaloHit* tch(0);
+      findTrkCaloHit(krep, tch);
+      
       if(_updatet0){
-        updateT0(krep,tshv);
+	if (!_useTrkCaloHit || (tch == 0)){
+	  updateT0(krep,tshv);
+	}else {
+	  updateTrkCaloT0(krep, tch, tshv);
+	}
         changed |= fabs(krep->t0()._t0-oldt0) > _t0tol[iter];
       }
       // drop outliers
@@ -467,7 +489,7 @@ namespace mu2e
 
   void
   KalFit::makeTrkStrawHits(const StrawHitCollection* shcol, HelixTraj const& htraj,
-    std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv ) {
+			   std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv ) {
     const Tracker& tracker = getTrackerOrThrow();
     // compute particle velocity to 
     for(auto ths : hseeds ){
@@ -524,6 +546,25 @@ namespace mu2e
  // sort the hits by flightlength
     std::sort(tshv.begin(),tshv.end(),fcomp());
   }
+
+  void 
+  KalFit::makeTrkCaloHit  (KalSeed const& kseed, TrkCaloHit *tch){
+    if (kseed.caloCluster().get() != 0){
+      HitT0 ht0;
+      ht0._t0    = kseed.caloCluster()->time();
+      ht0._t0err = 0.5;//dummy error FIXME!
+      
+      double fltlen(0);//dummy error FIXME!
+      mu2e::GeomHandle<mu2e::Calorimeter> ch;
+      const Calorimeter* calo = ch.get();
+      Hep3Vector          cog = calo->toTrackerFrame(calo->fromSectionFrameFF(kseed.caloCluster()->sectionId(),
+									      kseed.caloCluster()->cog3Vector())); 
+      Hep3Vector const& clusterAxis = Hep3Vector(0, 0, 1);//FIX ME!
+      double      crystalHalfLength = calo->caloGeomInfo().crystalHalfLength();
+      tch = new TrkCaloHit(*kseed.caloCluster().get(), cog, crystalHalfLength,  clusterAxis, ht0, fltlen);
+    }
+  }
+
 
   void
   KalFit::makeMaterials(TrkStrawHitVector const& tshv, HelixTraj const& htraj,std::vector<DetIntersection>& detinter) {
@@ -764,10 +805,10 @@ namespace mu2e
 
   void
   KalFit::initT0(const StrawHitCollection* shcol,TrkParticle const& part,
-      TrkT0& t0,std::vector<StrawHitIndex> const& hits,
-      HelixTraj const& htraj   ) {
+		 TrkT0& t0,std::vector<StrawHitIndex> const& hits,
+		 HelixTraj const& htraj   ) {
     using namespace boost::accumulators;
-// make an array of all the hit times, correcting for propagation delay
+    // make an array of all the hit times, correcting for propagation delay
     const Tracker& tracker = getTrackerOrThrow();
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     unsigned nind = hits.size();
@@ -815,6 +856,47 @@ namespace mu2e
     // estimate the error using the range
     t0._t0err = (tmax-tmin)/sqrt(12*nind);
   }
+
+  
+  void
+  KalFit::updateTrkCaloT0(KalRep* krep, TrkCaloHit*tch, TrkStrawHitVector& tshv) {
+//    2014-11-24 gianipez and Pasha removed time offset between caloriemter and tracker
+
+    TrkT0 t0;
+    double mom, vflt, path, t0flt, flt0(0.0);
+    bool converged = TrkHelixUtils::findZFltlen(krep->traj(),0.0,flt0);
+
+    //get helix from kalrep
+    HelixTraj trkHel(krep->helix(flt0).params(),krep->helix(flt0).covariance());
+
+                                        // get flight distance of z=0
+    t0flt = trkHel.zFlight(0.0);
+
+    if (converged) {
+//-----------------------------------------------------------------------------
+// estimate the momentum at that point using the helix parameters.
+// This is assumed constant for this crude estimate
+// compute the particle velocity
+//-----------------------------------------------------------------------------
+      mom  = TrkMomCalculator::vecMom(trkHel,bField(),t0flt).mag();
+      vflt = krep->particleType().beta(mom)*CLHEP::c_light;
+//-----------------------------------------------------------------------------
+// path length of the particle from the middle of the Tracker to the  calorimeter
+// set dummy error value
+//-----------------------------------------------------------------------------
+      Hep3Vector                   tpos;
+      tch->hitPosition(tpos);
+      double sindip = 1./sqrt(1+1/(trkHel.tanDip()*trkHel.tanDip()));
+      path          = tpos.z()/sindip;
+      t0._t0        = tch->time() + _dtoffset - path/vflt;
+      t0._t0err     = 1.;
+
+      krep->setT0(t0,flt0);
+      updateHitTimes(krep, tshv);
+    }
+  }
+
+
 
   bool
   KalFit::updateT0(KalRep* krep,TrkStrawHitVector& tshv){
@@ -901,6 +983,31 @@ namespace mu2e
       }
     }
     return retval;
+  }
+  
+  void KalFit::initTrkCaloT0(TrkCaloHit* tch, TrkParticle const& part, TrkT0& t0, HelixTraj const& htraj) {
+//    2014-11-24 gianipez and Pasha removed time offset between caloriemter and tracker
+
+    // get flight distance of z=0
+    double t0flt = htraj.zFlight(0.0);
+    // estimate the momentum at that point using the helix parameters.  This is
+    // assumed constant for this crude estimate
+    double mom = TrkMomCalculator::vecMom(htraj,bField(),t0flt).mag();
+    // compute the particle velocity
+    double vflt = part.beta(mom)*CLHEP::c_light;
+//-----------------------------------------------------------------------------
+// Calculate the path length of the particle from the middle of the Tracker to the
+// calorimeter, CCluster->Z() is calculated wrt the tracker center
+//-----------------------------------------------------------------------------
+    Hep3Vector                   tpos;
+    tch->hitPosition(tpos);
+    double sindip = 1./sqrt(1+1/(htraj.tanDip()*htraj.tanDip()));
+    double path   = tpos.z()/sindip;
+
+    t0._t0 = tch->time() + _dtoffset - path/vflt;//TPeak->ClusterT0() + _dtoffset - path/vflt;
+
+    //Set dummy error value
+    t0._t0err = .5;
   }
 
   void
@@ -992,5 +1099,17 @@ namespace mu2e
     }
     return retval;
   }
+
+  void KalFit::findTrkCaloHit(KalRep*krep, TrkCaloHit*tch){
+    for(auto ith=krep->hitVector().begin(); ith!=krep->hitVector().end(); ++ith){
+      TrkCaloHit* tsh = dynamic_cast<TrkCaloHit*>(*ith);
+      if(tsh != 0) {
+	tch = tsh;
+	break;
+      }
+    }
+
+  }
+  
 
 }

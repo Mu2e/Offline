@@ -27,6 +27,7 @@
 #include "BTrk/BField/BField.hh"
 // Mu2e objects
 #include "BTrkData/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkCaloHit.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "TrkReco/inc/TrkDef.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
@@ -66,11 +67,13 @@ namespace mu2e
     double _maxhitchi;	    // maximum hit chi when adding or weeding
     double _maxdriftpull;   // maximum drift pull in TrkStrawHit 
     bool _initt0;	    // initialize t0?
+    bool _useTrkCaloHit;    //use the TrkCaloHit to initialize the t0?
     bool _updatet0;	    // update t0 ieach iteration?
     std::vector<double> _t0tol;  // convergence tolerance for t0
     double _t0errfac;	    // fudge factor for the calculated t0 error
     double _mint0doca;	    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
     double _t0nsig;	    // # of sigma to include when selecting hits for t0
+    double _dtoffset;
     unsigned _minnstraws;   // minimum # staws for fit
     double _maxmatfltdiff; // maximum difference in track flightlength to separate to intersections of the same material
     // iteration-dependent configuration parameters
@@ -89,15 +92,21 @@ namespace mu2e
     bool fitable(TrkDef const& tdef);
     bool fitable(KalSeed const& kseed);
     void initT0(const StrawHitCollection* shcol, TrkParticle const& part,
-	TrkT0& t0,std::vector<StrawHitIndex> const& hits, HelixTraj const& htraj   );
-    void makeTrkStrawHits(const StrawHitCollection* shcol,TrkDef const& tdef, TrkStrawHitVector& tshv); 
+		TrkT0& t0,std::vector<StrawHitIndex> const& hits, HelixTraj const& htraj   );
+    
+    void initTrkCaloT0(TrkCaloHit*tch, TrkParticle const& part, TrkT0& t0,HelixTraj const& htraj   );
+    
+    void makeTrkStrawHits(const StrawHitCollection* shcol,TrkDef const& tdef, 
+			  TrkStrawHitVector& tshv); 
     void makeTrkStrawHits(const StrawHitCollection* shcol, HelixTraj const& htraj,
-	std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv );
+			  std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv );
+    void makeTrkCaloHit  (KalSeed const& kseed, TrkCaloHit *tch);
     void makeMaterials(TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
     unsigned addMaterial(KalRep* krep);
     bool weedHits(KalRep* kres, TrkStrawHitVector& tshv,size_t iter);
     bool unweedHits(KalRep* kres, TrkStrawHitVector& tshv, double maxchi);
     bool updateT0(KalRep* kres, TrkStrawHitVector& tshv);
+    void updateTrkCaloT0(KalRep*krep, TrkCaloHit*tch, TrkStrawHitVector& tshv);
     TrkErrCode fitTrack(KalRep* kres, TrkStrawHitVector& tshv);
     TrkErrCode fitIteration(KalRep* kres,TrkStrawHitVector& tshv,size_t iter); 
     void updateHitTimes(KalRep* kres, TrkStrawHitVector& tshv); 
@@ -106,8 +115,10 @@ namespace mu2e
     TrkErrCode extendFit(KalRep* krep);
 
     void findBoundingHits(TrkStrawHitVector& hits, double flt0,
-	TrkStrawHitVector::reverse_iterator& ilow,
-	TrkStrawHitVector::iterator& ihigh);
+			  TrkStrawHitVector::reverse_iterator& ilow,
+			  TrkStrawHitVector::iterator& ihigh);
+    
+    void findTrkCaloHit(KalRep*krep, TrkCaloHit*tch);
   };
 }
 #endif

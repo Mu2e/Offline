@@ -21,7 +21,9 @@ namespace mu2e
   class TrkCaloHit : public TrkHit {
   public:
     enum TrkStrawHitFlag {weededHit=-5, driftFail=-3, updateFail=-1,addedHit=3,unweededHit=4};
-    TrkCaloHit(const CaloCluster& caloCluster, const HitT0& trkt0, double fltlen);
+    TrkCaloHit(const CaloCluster& caloCluster, CLHEP::Hep3Vector &caloClusterPos, 
+	       double crystalHalfLength,  CLHEP::Hep3Vector const& clusterAxis,
+	       const HitT0& trkt0, double fltlen);
     virtual ~TrkCaloHit();
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
@@ -48,7 +50,7 @@ namespace mu2e
     TrkLineTraj*       _hittraj;
     HitT0              _hitt0;
     double             _hitRMS, _hitErr;
-    CLHEP::Hep3Vector  _caloClusterPos;
+    //    CLHEP::Hep3Vector  _caloClusterPos;
   };
 /// / unary functor to select TrkStrawHit from a given hit
  //  struct FindTrkCaloHit {
