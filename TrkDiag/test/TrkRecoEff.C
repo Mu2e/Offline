@@ -1,12 +1,12 @@
-#define TrkRecoDiag_cxx
-#include "TrkRecoDiag.h"
+#define TrkRecoEff_cxx
+#include "TrkRecoEff.h"
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
 #include <iostream>
 using namespace std;
 
-TrkRecoDiag::TrkRecoDiag(TTree *tree, double norm) : fChain(0) ,_tffval(32,0), _norm(norm),
+TrkRecoEff::TrkRecoEff(TTree *tree, double norm) : fChain(0) ,_tffval(32,0), _norm(norm),
 _eff(0), _rej(0), _cuts(0)
 {
 // build branches 
@@ -22,7 +22,7 @@ _eff(0), _rej(0), _cuts(0)
 }
 
 
-void TrkRecoDiag::Loop()
+void TrkRecoEff::Loop()
 {
    if (fChain == 0) return;
 
@@ -90,7 +90,7 @@ void TrkRecoDiag::Loop()
    _rej->Scale(1.0/nentries);
 }
 
-void TrkRecoDiag::drawHistos(){
+void TrkRecoEff::drawHistos(){
   if(_cuts == 0)
     _cuts =new TCanvas("cuts","Cut Values",1200,800);
   _cuts->Clear();
@@ -107,7 +107,7 @@ void TrkRecoDiag::drawHistos(){
 
 }
 
-void TrkRecoDiag::createHistos() {
+void TrkRecoEff::createHistos() {
   cout << "in createHistos" << endl;
   // define the bin labels for efficiency plot
   std::vector<string> effbins, rejbins;

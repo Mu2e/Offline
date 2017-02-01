@@ -1,11 +1,11 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
 // Thu Dec 15 20:34:36 2016 by ROOT version 6.08/02
-// from TChain TrkRecoDiag/trdiag/
+// from TChain TrkRecoTrig/trdiag/
 //////////////////////////////////////////////////////////
 
-#ifndef TrkRecoDiag_h
-#define TrkRecoDiag_h
+#ifndef TrkRecoTrig_h
+#define TrkRecoTrig_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -16,7 +16,7 @@
 
 // Header file for the classes stored in the TTree if any.
 
-class TrkRecoDiag {
+class TrkRecoTrig {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
@@ -165,8 +165,8 @@ public :
    TBranch        *b_hsnap;   //!
    TBranch        *b_tcnp;   //!
 
-   TrkRecoDiag(TTree *tree,double norm=-1.0);
-   virtual ~TrkRecoDiag();
+   TrkRecoTrig(TTree *tree,double norm=-1.0);
+   virtual ~TrkRecoTrig();
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
@@ -194,20 +194,20 @@ public :
 
 #endif
 
-#ifdef TrkRecoDiag_cxx
-TrkRecoDiag::~TrkRecoDiag()
+#ifdef TrkRecoTrig_cxx
+TrkRecoTrig::~TrkRecoTrig()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-Int_t TrkRecoDiag::GetEntry(Long64_t entry)
+Int_t TrkRecoTrig::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t TrkRecoDiag::LoadTree(Long64_t entry)
+Long64_t TrkRecoTrig::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -220,7 +220,7 @@ Long64_t TrkRecoDiag::LoadTree(Long64_t entry)
    return centry;
 }
 
-void TrkRecoDiag::Init(TTree *tree)
+void TrkRecoTrig::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -301,7 +301,7 @@ void TrkRecoDiag::Init(TTree *tree)
    Notify();
 }
 
-Bool_t TrkRecoDiag::Notify()
+Bool_t TrkRecoTrig::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -312,11 +312,11 @@ Bool_t TrkRecoDiag::Notify()
    return kTRUE;
 }
 
-void TrkRecoDiag::Show(Long64_t entry)
+void TrkRecoTrig::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-#endif // #ifdef TrkRecoDiag_cxx
+#endif // #ifdef TrkRecoTrig_cxx
