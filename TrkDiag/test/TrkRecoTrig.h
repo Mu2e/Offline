@@ -165,7 +165,7 @@ public :
    TBranch        *b_hsnap;   //!
    TBranch        *b_tcnp;   //!
 
-   TrkRecoTrig(TTree *tree,double norm=-1.0);
+   TrkRecoTrig(TTree *tree);
    virtual ~TrkRecoTrig();
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -178,15 +178,13 @@ public :
   enum bit_type {hitsOK=0,circleOK,phizOK,helixOK,seedOK,kalmanOK,circleInit,phizInit,
     circleConverged,phizConverged,helixConverged,seedConverged,kalmanConverged,ntffbits};
   std::vector<unsigned> _tffval;
-  double _norm; // normalization: if < 0, calculated from input
-  TH1F* _eff; // signal efficiency histogram
   TH1F* _rej; // background rejection histogram: same as above, with no MC truth selection
 // trigger study distributions
   TH1F *_hn, *_hna, *_hd0, *_hrad, *_hlam, *_hmom;
   TH1F *_shn, *_shna, *_shd0, *_shrad, *_shlam, *_shmom, *_sksm, *_sksna;
   TH1F *_fhn, *_fhna, *_fhd0, *_fhrad, *_fhlam, *_fhmom, *_fksm, *_fksna;
 
-  TCanvas* _cuts;
+  TCanvas* _trigcan;
 
   void createHistos();
   void drawHistos();

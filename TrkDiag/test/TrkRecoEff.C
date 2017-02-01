@@ -7,7 +7,7 @@
 using namespace std;
 
 TrkRecoEff::TrkRecoEff(TTree *tree, double norm) : fChain(0) ,_tffval(32,0), _norm(norm),
-_eff(0), _rej(0), _cuts(0)
+_eff(0), _effcan(0)
 {
 // build branches 
    Init(tree);
@@ -33,8 +33,8 @@ void TrkRecoEff::Loop()
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
-      std::vector<bool> effcuts, rejcuts;
-      effcuts.push_back(true); rejcuts.push_back(effcuts.back());// 0 bin counts number of events
+      std::vector<bool> effcuts;
+      effcuts.push_back(true); // 0 bin counts number of events
       effcuts.push_back(ndigi >= 15); // events with at least 15 digis from the primary particle
       // take time modulo MB period
       float mctime = fmod(mcmidt0,1695.0);
@@ -42,11 +42,11 @@ void TrkRecoEff::Loop()
       float  mccost = mcmidpz/mcmidmom;
       static float highcost = 1.0/sqrt(2.0)+0.05;
       effcuts.push_back(mccost > 0.45 && mccost < highcost ); // track direction (with buffer)
-      effcuts.push_back(tcn > 10 ); rejcuts.push_back(effcuts.back());// reconstructed time cluster associated with primary track
+      effcuts.push_back(tcn > 10 ); // reconstructed time cluster associated with primary track
       effcuts.push_back((hsf__value&_tffval[circleOK])>0);
-      effcuts.push_back((hsf__value&_tffval[helixOK])>0);rejcuts.push_back(effcuts.back());
-      effcuts.push_back((ksf__value&_tffval[seedOK])>0);rejcuts.push_back(effcuts.back());
-      effcuts.push_back((kff__value&_tffval[kalmanOK])>0);rejcuts.push_back(effcuts.back());
+      effcuts.push_back((hsf__value&_tffval[helixOK])>0);
+      effcuts.push_back((ksf__value&_tffval[seedOK])>0);
+      effcuts.push_back((kff__value&_tffval[kalmanOK])>0);
 
       // effcuts are cumulative
       for(unsigned icut=0;icut< effcuts.size(); ++icut){
@@ -56,14 +56,6 @@ void TrkRecoEff::Loop()
 	else
 	  break;
       }
-      // as are rejection cuts
-      for(unsigned icut=0;icut< rejcuts.size(); ++icut){
-	Float_t fcut = (Float_t)icut;
-	if(rejcuts[icut])
-	  _rej->Fill(fcut);
-	else
-	  break;
-      } 
       // histogram values that pass final Kalman fit
       bool helixfit = (hsf__value&_tffval[helixOK])>0;
       bool seedfit = (ksf__value&_tffval[seedOK])>0;
@@ -86,20 +78,18 @@ void TrkRecoEff::Loop()
      _norm = _eff->GetBinContent(1);
    cout << "Normalizing efficiency to " << _norm << endl;
    _eff->Scale(1.0/_norm);
-   cout << "Normalizing rejection to " << nentries << endl;
-   _rej->Scale(1.0/nentries);
 }
 
 void TrkRecoEff::drawHistos(){
-  if(_cuts == 0)
-    _cuts =new TCanvas("cuts","Cut Values",1200,800);
-  _cuts->Clear();
-  _cuts->Divide(2,2);
-  _cuts->cd(1);
+  if(_effcan == 0)
+    _effcan =new TCanvas("eff","Efficiency",1200,800);
+  _effcan->Clear();
+  _effcan->Divide(2,2);
+  _effcan->cd(1);
   _hn->Draw();
   _shn->Draw("same");
   _fhn->Draw("same");
-  _cuts->cd(2);
+  _effcan->cd(2);
   _hna->Draw();
   _shna->Draw("same");
   _fhna->Draw("same");
@@ -126,17 +116,9 @@ void TrkRecoEff::createHistos() {
     _eff->GetXaxis()->SetBinLabel(ibin+1,effbins[ibin].c_str());
   }
 
-  _rej = new TH1F("rej","Rejection",rejbins.size(),-0.5,rejbins.size()-0.5);
-  for(unsigned ibin=0; ibin< rejbins.size(); ++ibin){
-    _rej->GetXaxis()->SetBinLabel(ibin+1,rejbins[ibin].c_str());
-  }
-
   _eff->SetStats(0);
-  _rej->SetStats(0);
   _eff->SetMarkerStyle(20);
-  _rej->SetMarkerStyle(20);
   _eff->Sumw2();
-  _rej->Sumw2();
 
   _hn = new TH1F("hn","N Helix Hits",101,-0.5,100.5);
   _shn = new TH1F("shn","N Helix Hits",101,-0.5,100.5);
