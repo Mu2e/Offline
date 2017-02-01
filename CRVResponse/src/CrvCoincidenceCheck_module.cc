@@ -241,8 +241,7 @@ namespace mu2e
           //get one reco pulse
           const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector[i];
           int PEs=pulse._PEs;
-          double time=pulse._peakTime;
-//          double time=pulse._leadingEdge;
+          double time=pulse._pulseTime;
           if(_verboseLevel>4)
           {
             std::cout<<"sector: "<<sectorNumber<<"  module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  counter: "<<counterNumber<<"  SiPM: "<<SiPM<<"      ";

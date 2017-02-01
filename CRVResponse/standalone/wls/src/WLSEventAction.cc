@@ -83,7 +83,7 @@ WLSEventAction::WLSEventAction(int mode, int numberOfPhotons, int simType, int m
       _histPE[SiPM]->SetLineColor(1);
     }
 
-    _ntuple = new TNtuple("CRVNtuple","CRVNtuple","SiPM:photons:PEs:integral:pulseHeight:TOT:recoPEs");
+    _ntuple = new TNtuple("CRVNtuple","CRVNtuple","SiPM:photons:PEs:pulseHeight:pulseWidth:recoPEs");
   }
 }
 
@@ -266,6 +266,8 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
 
 void WLSEventAction::Draw(const G4Event* evt) 
 {
+  double maxTime=200.0;
+
   mu2eCrv::MakeCrvSiPMResponses::ProbabilitiesStruct probabilities;
   probabilities._constGeigerProbCoef = 1;
   probabilities._constGeigerProbVoltScale = 5.5;
@@ -293,7 +295,7 @@ void WLSEventAction::Draw(const G4Event* evt)
   makeCrvWaveform.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform.txt", 1.0, 100);
   makeCrvWaveform2.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform.txt", 1.0, 100);
 
-  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(0.005,0.2, 0.0,162.0);
+  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(169.0, false, true);
 
   double startTime=-G4UniformRand()*digitizationInterval;
   std::vector<double> siPMtimes[4], siPMcharges[4];
@@ -326,8 +328,6 @@ void WLSEventAction::Draw(const G4Event* evt)
   std::vector<TGraph*> graphVector;
   std::vector<TMarker*> markerVector;
   std::vector<TGaxis*> axisVector;
-  std::vector<TLine*> lineVector;
-  std::vector<TText*> textVector;
 
   for(int SiPM=0; SiPM<4; SiPM++)
   {
@@ -337,7 +337,7 @@ void WLSEventAction::Draw(const G4Event* evt)
     std::ostringstream s2, s3;
     s2<<"Photons_"<<evt->GetEventID()<<"__"<<SiPM;
     s3<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
-    hist[SiPM]=new TH1D(s2.str().c_str(),s3.str().c_str(),100,0,300);
+    hist[SiPM]=new TH1D(s2.str().c_str(),s3.str().c_str(),100,0,maxTime);
     const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(_mode,SiPM);
     for(unsigned int i=0; i<photonTimes.size(); i++)
     {
@@ -356,7 +356,7 @@ void WLSEventAction::Draw(const G4Event* evt)
 //SiPM response
     double scaleSiPMResponse = 0.5;
     double totalPEs=0;
-    histSiPMResponse[SiPM]=new TH1D((s2.str()+"SiPMResponse").c_str(),"",100,0,300);
+    histSiPMResponse[SiPM]=new TH1D((s2.str()+"SiPMResponse").c_str(),"",100,0,maxTime);
     for(unsigned int j=0; j<siPMtimes[SiPM].size(); j++)
     {
       histSiPMResponse[SiPM]->Fill(siPMtimes[SiPM][j], siPMcharges[SiPM][j]*scaleSiPMResponse);
@@ -416,7 +416,7 @@ void WLSEventAction::Draw(const G4Event* evt)
     {
       double tI=startTime+j*digitizationInterval;
       double vI=waveform[SiPM][j];
-      if(tI>300) break;
+      if(tI>maxTime) break;
       if(vI<=0.005) continue;  //below threshold for integral
       TMarker *marker = new TMarker(tI, vI*scale, markerVector.size());
       markerVector.push_back(marker);
@@ -426,86 +426,74 @@ void WLSEventAction::Draw(const G4Event* evt)
       marker->Draw("same");
     }
 
-//Landau fit
+//fit
     makeRecoPulses.SetWaveform(waveform[SiPM], startTime, digitizationInterval);
     unsigned int nPulse = makeRecoPulses.GetNPulses();
     for(unsigned int pulse=0; pulse<nPulse; pulse++)
     {
-      double tL1=makeRecoPulses.GetT1(pulse);
-      double tL2=makeRecoPulses.GetT2(pulse);
-      int nL=(tL2-tL1)/1.0 + 1;
-      double *tL = new double[nL];
-      double *vL = new double[nL];
-      for(int iL=0; iL<nL; iL++)
+      double tF1=makeRecoPulses.GetT1(pulse);
+      double tF2=makeRecoPulses.GetT2(pulse);
+      int nF=(tF2-tF1)/1.0 + 1;
+      double *tF = new double[nF];
+      double *vF = new double[nF];
+      for(int iF=0; iF<nF; iF++)
       {
-        double p0 = makeRecoPulses.GetLandauParam0(pulse);
-        double p1 = makeRecoPulses.GetLandauParam1(pulse);
-        double p2 = makeRecoPulses.GetLandauParam2(pulse);
-        tL[iL] = tL1 + iL*1.0;
-        vL[iL] = p0*TMath::Landau(tL[iL], p1, p2);
-        vL[iL]*=scale;
-        if(isnan(vL[iL])) nL=0;
+        double p0 = makeRecoPulses.GetFitParam0(pulse);
+        double p1 = makeRecoPulses.GetFitParam1(pulse);
+        double p2 = makeRecoPulses.GetFitParam2(pulse);
+        tF[iF] = tF1 + iF*1.0;
+        vF[iF] = p0*TMath::Exp(-(tF[iF]-p1)/p2-TMath::Exp(-(tF[iF]-p1)/p2));
+        vF[iF]*=scale;
+        if(isnan(vF[iF])) nF=0;
       }
-      if(nL>0)
+      if(nF>0)
       {
-        TGraph *graphL=new TGraph();
-        graphVector.push_back(graphL);
-        graphL->SetTitle("");
-        graphL->SetLineWidth(2);
-        graphL->SetLineColor(kGreen);
-        graphL->DrawGraph(nL,tL,vL,"same");
+        TGraph *graphF=new TGraph();
+        graphVector.push_back(graphF);
+        graphF->SetTitle("");
+        graphF->SetLineWidth(2);
+        graphF->SetLineColor(kGreen);
+        graphF->DrawGraph(nF,tF,vF,"same");
       }
 
-      double leadingEdge=makeRecoPulses.GetLeadingEdge(pulse);
-      if(!isnan(leadingEdge) && leadingEdge<300.0)
-      {
-        for(int iL=0; iL<nL; iL++)
-        {
-          if(tL[iL]>=leadingEdge)
-          {
-            TMarker *marker = new TMarker(tL[iL], vL[iL], markerVector.size());
-            markerVector.push_back(marker);
-            marker->SetMarkerStyle(21);
-            marker->SetMarkerSize(1.5);
-            marker->SetMarkerColor(kGreen);
-            marker->Draw("same");
-            break;
-          }
-        }
-      }
-      delete[] tL;
-      delete[] vL;
+      delete[] tF;
+      delete[] vF;
     }
 
     if(makeRecoPulses.GetNPulses()>0) 
     {
       int photons = photonTimes.size();
-      double integral = makeRecoPulses.GetIntegral(0);
-      double pulseHeight = makeRecoPulses.GetPulseHeight(0);
-      double recoPEs = makeRecoPulses.GetPEs(0);
+
       double PEs=0;
-      double leadingEdge=makeRecoPulses.GetLeadingEdge(0);
-      double TOT=makeRecoPulses.GetTimeOverThreshold(0);
-      for(size_t j=0; j<siPMtimes[SiPM].size(); j++) 
+      for(size_t j=0; j<siPMtimes[SiPM].size(); j++) PEs+=siPMcharges[SiPM][j];
+
+      double pulseHeight=0;
+      double recoPEs= 0;
+      double pulseWidth=0;
+      for(size_t j=0; j<makeRecoPulses.GetNPulses(); j++)
       {
-        if(siPMtimes[SiPM][j]<leadingEdge+TOT-30.0 && siPMtimes[SiPM][j]>leadingEdge-40.0) PEs+=siPMcharges[SiPM][j];
-      } 
+         double recoPEsTmp = makeRecoPulses.GetPEs(j);
+         if(recoPEsTmp>recoPEs)
+         {
+           recoPEs=recoPEsTmp;
+           pulseHeight = makeRecoPulses.GetPulseHeight(j);
+           pulseWidth=makeRecoPulses.GetPulseWidth(j);
+         }
+      }
 
-      _ntuple->Fill(SiPM,photons,PEs,integral,pulseHeight,TOT,recoPEs);
+      _ntuple->Fill(SiPM,photons,PEs,pulseHeight,pulseWidth,recoPEs);
       _PEs[SiPM].push_back(PEs);
+      _recoPEs[SiPM].push_back(recoPEs);
       double avgPEs=0;
+      double avgrecoPEs=0;
       for(size_t j=0; j<_PEs[SiPM].size(); j++) {avgPEs+=_PEs[SiPM][j];}
+      for(size_t j=0; j<_recoPEs[SiPM].size(); j++) {avgrecoPEs+=_recoPEs[SiPM][j];}
       avgPEs/=_PEs[SiPM].size();
-      std::cout<<"SiPM: "<<SiPM<<" PEs: "<<PEs<<"   average: "<<avgPEs<<std::endl;
-    }
-    else 
-    {
-      std::cout<<"SiPM: "<<SiPM<<" "<<makeRecoPulses.GetNPulses()<<" reco pulses: ";
-      for(size_t j=0; j<makeRecoPulses.GetNPulses(); j++) std::cout<<makeRecoPulses.GetLeadingEdge(j)<<" ";
-      std::cout<<std::endl;
+      avgrecoPEs/=_recoPEs[SiPM].size();
+      std::cout<<"SiPM: "<<SiPM<<" PEs: "<<PEs<<"   average: "<<avgPEs<<"     recoPEs: "<<recoPEs<<"   average: "<<avgrecoPEs<<std::endl;
     }
 
-    TGaxis *axis = new TGaxis(270.0,0,270.0,histMax,0,histMax/scale,10,"+L");
+    TGaxis *axis = new TGaxis(maxTime*0.9,0,maxTime*0.9,histMax,0,histMax/scale,10,"+L");
     axisVector.push_back(axis);
     axis->SetTitle("voltage [V]");
     axis->SetTitleOffset(-0.5);
@@ -514,36 +502,14 @@ void WLSEventAction::Draw(const G4Event* evt)
     axis->SetLabelColor(kRed);
     axis->Draw("same");
 
-    TGaxis *axisSiPMResponse = new TGaxis(300.0,0,300.0,histMax,0,histMax/scaleSiPMResponse,10,"+L");
+    TGaxis *axisSiPMResponse = new TGaxis(maxTime,0,maxTime,histMax,0,histMax/scaleSiPMResponse,10,"+L");
     axisVector.push_back(axisSiPMResponse);
     axisSiPMResponse->SetTitle("SiPM output [PE]");
-    axisSiPMResponse->SetTitleOffset(-0.5);
+    axisSiPMResponse->SetTitleOffset(1.0);
     axisSiPMResponse->SetTitleColor(kOrange);
     axisSiPMResponse->SetLineColor(kOrange);
     axisSiPMResponse->SetLabelColor(kOrange);
     axisSiPMResponse->Draw("same");
-
-    TLine *landauLine = new TLine(100, histMax*0.9, 130, histMax*0.9);
-    lineVector.push_back(landauLine);
-    landauLine->SetLineWidth(2);
-    landauLine->SetLineColor(kGreen);
-    landauLine->Draw("same");
-    TMarker *landauMarker = new TMarker(110, histMax*0.9, markerVector.size());
-    markerVector.push_back(landauMarker);
-    landauMarker->SetMarkerStyle(21);
-    landauMarker->SetMarkerSize(1.5);
-    landauMarker->SetMarkerColor(kGreen);
-    landauMarker->Draw("same");
-    TText *landauText1 = new TText(100, histMax*0.82, "Landau fit with");
-    TText *landauText2 = new TText(100, histMax*0.76, "leading edge");
-    textVector.push_back(landauText1);
-    textVector.push_back(landauText2);
-    landauText1->SetTextSize(0.03);
-    landauText2->SetTextSize(0.03);
-    landauText1->SetTextColor(kGreen);
-    landauText2->SetTextColor(kGreen);
-    landauText1->Draw("same");
-    landauText2->Draw("same");
   }
   if(evt->GetEventID()<20) c.SaveAs((s1.str()+".C").c_str());
 
@@ -626,7 +592,5 @@ void WLSEventAction::Draw(const G4Event* evt)
   for(size_t i=0; i<graphVector.size(); i++) delete graphVector[i];
   for(size_t i=0; i<markerVector.size(); i++) delete markerVector[i];
   for(size_t i=0; i<axisVector.size(); i++) delete axisVector[i];
-  for(size_t i=0; i<textVector.size(); i++) delete textVector[i];
-  for(size_t i=0; i<lineVector.size(); i++) delete lineVector[i];
 }
 

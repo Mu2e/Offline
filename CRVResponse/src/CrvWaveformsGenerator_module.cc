@@ -183,11 +183,11 @@ namespace mu2e
 
   bool CrvWaveformsGenerator::SingleWaveformStart(std::vector<double> &fullWaveform, size_t i)
   {
-    if(fullWaveform[i]>_minVoltage) return true;  //assumes that fullWaveform[i] is valid
+    if(fullWaveform[i]>_minVoltage) return true;  //this point is above the threshold --> start recording
 
     if(i+1<fullWaveform.size())
     {
-      if(fullWaveform[i+1]>_minVoltage) return true;
+      if(fullWaveform[i+1]>_minVoltage) return true;  //the following point is above the threshold --> start recording
     }
 
     return false;

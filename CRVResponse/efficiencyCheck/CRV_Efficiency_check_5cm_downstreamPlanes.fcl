@@ -131,6 +131,13 @@ physics :
        }
     }
 
+    backgroundOverlay :
+    {
+       module_type   : CrvBackgroundOverlay
+       backgroundFile: "CRVResponse/efficiencyCheck/background_5600.root"
+       overlayFactor : 2
+    }
+
     CrvPhotonArrivals: @local::CrvPhotonArrivals
     CrvSiPMResponses : @local::CrvSiPMResponses
     CrvWaveforms     : @local::CrvWaveforms
@@ -173,7 +180,7 @@ physics :
   }
 
 
-  trig : [generate, g4run, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, belowCrvFilter,
+  trig : [generate, g4run, belowCrvFilter, backgroundOverlay, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses,
           CrvCoincidencePE6T5,
           CrvCoincidencePE8T5,
           CrvCoincidencePE10T5,

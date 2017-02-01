@@ -12,7 +12,7 @@ BEGIN_PROLOG
                                    "CRVConditions/v3_0/LookupTable_2300",
                                    "CRVConditions/v3_0/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
-      scintillationYield        : 4500.0   //4500.0 photons per MeV (corresponds to 54.8 PE/SiPM @ 1m away from counter)
+      scintillationYield        : 4000.0   //4000.0 photons per MeV (corresponds to 52.0 PE/SiPM @ 1m away from counter)
       scintillationYieldTolerance :  0.0   //0%
       scintillatorBirksConstant : 0.126    //0.126 mm/Mev
       scintillatorRatioFastSlow : 1.0      //100% fast
@@ -62,17 +62,16 @@ BEGIN_PROLOG
       digitizationPrecision        : 12.5   //12.5 ns (digitizer sampling rate)
       digitizationPoints           : 8      //8 points
       FEBtimeSpread                : 2.0    //2.0 ns
-      minVoltage                   : 0.022  //22mV (corresponds to 3.5PE)
+      minVoltage                   : 0.033  //33mV (corresponds to 5.5PE)
     }
     CrvRecoPulses:
     {
       module_type               : CrvRecoPulsesFinder
       crvWaveformsModuleLabel   : "CrvWaveforms"
-      param0                    : 0.       //0.
-      param1                    : 159.     //159.  (would be about 100. if all PEs arrived at the same time)
-      pulseThreshold            : 0.005    //5mV  //for integral
-      leadingEdgeThreshold      : 0.2      //20% of the maximum bin
-      minPEs                    : 4        //4 PEs
+      scale                     : 169.     //169. PEs/V  (would be about 100. if all PEs arrived at the same time)
+      useFittedPulseHeight      : false    //not used in test beam analysis
+      useFittedPulseTime        : true
+      minPEs                    : 5        //5 PEs
     }
     CrvCoincidence:
     {
