@@ -1,15 +1,148 @@
 #include "TrkDiag/test/FillChain.C+"
-#include "TrkDiag/test/TrkRecoEff.C"
-#include "TrkDiag/test/TrkRecoTrig.C"
+#include "TrkDiag/test/TrkRecoDiag.C+"
 void TRD() {
-  TChain* mtce(0);
-  FillChain(mtce,"cemix.txt","TrkRecoDiag/trdiag");
-  TChain* mtbk(0);
-  FillChain(mtbk,"bkgonly.txt","TrkRecoDiag/trdiag");
-  TrkRecoEff trdce(mtce,1e5);
+  TChain* mtce = new TChain("TrkRecoDiag/trdiag");
+  FillChain(mtce,"cemix.txt");
+  mtce->SetTitle("Sig ");
+  mtce->SetLineColor(kRed);
+  TChain* mtbk = new TChain("TrkRecoDiag/trdiag");
+  FillChain(mtbk,"bkgonly.txt");
+  mtbk->SetTitle("Bkg ");
+  mtbk->SetLineColor(kBlue);
+  TrkRecoDiag trdce(mtce,1e5);
   trdce.Loop();
-  trdce.drawHistos();
-  TrkRecoTrig trdbk(mtbk);
+//  trdce.drawHistos();
+  TrkRecoDiag trdbk(mtbk,mtbk->GetEntries());
   trdbk.Loop();
-  trdbk.drawHistos();
+//  trdbk.drawHistos();
+  TCanvas* acc = new TCanvas("acc","Acceptance",1000,1000);
+  acc->Divide(1,2);
+  acc->cd(1);
+  trdce._acc->SetMaximum(1.0); // why is this necessary???
+  trdce._acc->SetLabelSize(0.075);
+  trdce._acc->SetMarkerSize(0.075);
+  
+  trdce._acc->Draw("PETEXT0");
+  acc->cd(2);
+  gPad->SetLogy();
+  trdbk._acc->SetLabelSize(0.075);
+  trdbk._acc->SetMarkerSize(0.075);
+  trdbk._acc->Draw("PETEXT0");
+
+// helix plots
+  TLegend* hleg = new TLegend(0.6,0.7,0.8,0.9);
+  hleg->AddEntry(trdce._hn,"Helix Fit","L");
+  hleg->AddEntry(trdce._shn,"Chisq Fit","L");
+  hleg->AddEntry(trdce._fhn,"Kalman Fit","L");
+  TCanvas* hel2 = new TCanvas("hel2","Helix",1000,1000);
+  hel2->Divide(2,2);
+  hel2->cd(1);
+  trdce._hna->Draw();
+  trdce._shna->Draw("same");
+  trdce._fhna->Draw("same");
+  hleg->Draw();
+  hel2->cd(2);
+  trdce._hmom->Draw();
+  trdce._shmom->Draw("same");
+  trdce._fhmom->Draw("same");
+  hel2->cd(3);
+  gPad->SetLogy();
+  trdbk._hna->Draw();
+  trdbk._shna->Draw("same");
+  trdbk._fhna->Draw("same");
+  hel2->cd(4);
+  gPad->SetLogy();
+  trdbk._hmom->Draw();
+  trdbk._shmom->Draw("same");
+  trdbk._fhmom->Draw("same");
+
+  TCanvas* hel = new TCanvas("hel","Helix",1000,1000);
+  hel->Divide(7,2);
+  hel->cd(1);
+  trdce._hn->Draw();
+  trdce._shn->Draw("same");
+  trdce._fhn->Draw("same");
+  hel->cd(2);
+  trdce._hna->Draw();
+  trdce._shna->Draw("same");
+  trdce._fhna->Draw("same");
+  hleg->Draw();
+  hel->cd(3);
+  trdce._hd0->Draw();
+  trdce._shd0->Draw("same");
+  trdce._fhd0->Draw("same");
+  hel->cd(4);
+  trdce._hrmax->Draw();
+  trdce._shrmax->Draw("same");
+  trdce._fhrmax->Draw("same");
+  hel->cd(5);
+  trdce._hrad->Draw();
+  trdce._shrad->Draw("same");
+  trdce._fhrad->Draw("same");
+  hel->cd(6);
+  trdce._hlam->Draw();
+  trdce._shlam->Draw("same");
+  trdce._fhlam->Draw("same");
+  hel->cd(7);
+  trdce._hmom->Draw();
+  trdce._shmom->Draw("same");
+  trdce._fhmom->Draw("same");
+  hel->cd(8);
+  gPad->SetLogy();
+  trdbk._hn->Draw();
+  trdbk._shn->Draw("same");
+  trdbk._fhn->Draw("same");
+  hel->cd(9);
+  gPad->SetLogy();
+  trdbk._hna->Draw();
+  trdbk._shna->Draw("same");
+  trdbk._fhna->Draw("same");
+  hel->cd(10);
+  gPad->SetLogy();
+  trdbk._hd0->Draw();
+  trdbk._shd0->Draw("same");
+  trdbk._fhd0->Draw("same");
+  hel->cd(11);
+  gPad->SetLogy();
+  trdbk._hrmax->Draw();
+  trdbk._shrmax->Draw("same");
+  trdbk._fhrmax->Draw("same");
+  hel->cd(12);
+  gPad->SetLogy();
+  trdbk._hrad->Draw();
+  trdbk._shrad->Draw("same");
+  trdbk._fhrad->Draw("same");
+  hel->cd(13);
+  gPad->SetLogy();
+  trdbk._hlam->Draw();
+  trdbk._shlam->Draw("same");
+  trdbk._fhlam->Draw("same");
+  hel->cd(14);
+  gPad->SetLogy();
+  trdbk._hmom->Draw();
+  trdbk._shmom->Draw("same");
+  trdbk._fhmom->Draw("same");
+// seed fit plots
+  TLegend* sleg = new TLegend(0.6,0.7,0.8,0.9);
+  sleg->AddEntry(trdce._ssna,"Chisq Fit","L");
+  sleg->AddEntry(trdce._fsna,"Kalman Fit","L");
+  TCanvas* seed = new TCanvas("seed","Seed",1000,1000);
+  seed->Divide(2,2);
+  seed->cd(1);
+  trdce._ssna->Draw();
+  trdce._fsna->Draw("same");
+  sleg->Draw();
+  seed->cd(2);
+  trdce._ssmom->Draw();
+  trdce._fsmom->Draw("same");
+  seed->cd(3);
+  gPad->SetLogy();
+  trdbk._ssna->Draw();
+  trdbk._fsna->Draw("same");
+  seed->cd(4);
+  gPad->SetLogy();
+  trdbk._ssmom->Draw();
+  trdbk._fsmom->Draw("same");
+
+ 
 }
