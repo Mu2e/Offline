@@ -10,6 +10,7 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
@@ -31,6 +32,7 @@
 
 #include <TDirectory.h>
 #include <TFile.h>
+#include <TSystem.h>
 #include <TTree.h>
 #include <TVector2.h>
 
@@ -72,6 +74,9 @@ namespace mu2e
     _backgroundFile(pset.get<std::string>("backgroundFile")),
     _overlayFactor(pset.get<int>("overlayFactor"))
   {
+    ConfigFileLookupPolicy configFile;
+    _backgroundFile = configFile(_backgroundFile);
+
     TDirectory *directory = gDirectory;
     _file = TFile::Open(_backgroundFile.c_str());
     gDirectory->cd("background/background");

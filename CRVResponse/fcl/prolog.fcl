@@ -12,7 +12,7 @@ BEGIN_PROLOG
                                    "CRVConditions/v3_0/LookupTable_2300",
                                    "CRVConditions/v3_0/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
-      scintillationYield        : 4000.0   //4000.0 photons per MeV (corresponds to 52.0 PE/SiPM @ 1m away from counter)
+      scintillationYield        : 6500.0   //6500.0 photons per MeV (corresponds to 51.2 PE/SiPM @ 1m away from counter) using dark current calibration
       scintillationYieldTolerance :  0.0   //0%
       scintillatorBirksConstant : 0.126    //0.126 mm/Mev
       scintillatorRatioFastSlow : 1.0      //100% fast
@@ -56,19 +56,19 @@ BEGIN_PROLOG
     {
       module_type                  : CrvWaveformsGenerator
       crvSiPMResponsesModuleLabel  : "CrvSiPMResponses"
-      singlePEWaveformFileName     : "CRVResponse/fcl/singlePEWaveform.txt"
+      singlePEWaveformFileName     : "CRVResponse/fcl/singlePEWaveform_v2.txt"
       singlePEWaveformPrecision    : 0.5    //0.5 ns
       singlePEWaveformMaxTime      : 100    //100 ns
       digitizationPrecision        : 12.5   //12.5 ns (digitizer sampling rate)
       digitizationPoints           : 8      //8 points
       FEBtimeSpread                : 2.0    //2.0 ns
-      minVoltage                   : 0.033  //33mV (corresponds to 5.5PE)
+      minVoltage                   : 0.0316 //31.6mV (corresponds to 5.5PE) using dark current calibration
     }
     CrvRecoPulses:
     {
       module_type               : CrvRecoPulsesFinder
       crvWaveformsModuleLabel   : "CrvWaveforms"
-      scale                     : 169.     //169. PEs/V  (would be about 100. if all PEs arrived at the same time)
+      scale                     : 174.     //174 PEs/V  using dark current calibration, where all PEs arrive at the same time
       useFittedPulseHeight      : false    //not used in test beam analysis
       useFittedPulseTime        : true
       minPEs                    : 5        //5 PEs
@@ -85,8 +85,8 @@ BEGIN_PROLOG
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
       maxSlopeDifference            : 2.0    //
       acceptThreeAdjacentCounters   : false  //use hits in three adjacent counters in one layer to form a coincidence
-      timeWindowStart               : 550    //ns
-      timeWindowEnd                 : 1750   //1695ns  //if timeWindowEnd > microbunch period (1695), then the time window loops back to the begining (0)
+      timeWindowStart               : 500    //ns
+      timeWindowEnd                 : 1750   //ns
       leadingVetoTime               : 0      //the time window before the first hit time of the coincidence triplet (only used to print out the results)
       trailingVetoTime              : 125    //the time window after the last hit time of the coincidence triplet (only used to print out the results)
     }

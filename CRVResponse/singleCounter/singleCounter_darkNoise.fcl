@@ -1,0 +1,82 @@
+#include "minimalMessageService.fcl"
+#include "standardServices.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+process_name : CRVEfficiency
+
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : @nil
+}
+
+services :
+{
+  message               : @local::default_message
+  TFileService          : { fileName : "hist.root" }
+  RandomNumberGenerator : { }
+
+  user :
+  {
+    GeometryService        : { inputFile      : "CRVResponse/singleCounter/geom.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+    G4Helper               : { }
+    SeedService            : @local::automaticSeeds
+  }
+}
+
+physics :
+{
+  producers:
+  {
+    generate: #not needed, but CRVTest wants to see a genParticleCollection 
+    {
+       module_type          : EventGenerator
+       inputfile            : "CRVResponse/singleCounter/genconfig.txt"
+    }
+
+    CrvPhotonArrivals: @local::CrvPhotonArrivals
+    CrvSiPMResponses : @local::CrvSiPMResponses
+    CrvWaveforms     : @local::CrvWaveforms
+    CrvRecoPulses    : @local::CrvRecoPulses
+  }
+
+  analyzers:
+  {
+    CrvTest : 
+    {
+      module_type                 : CRVTest
+      crvSiPMResponsesModuleLabel : "CrvSiPMResponses"
+      crvRecoPulsesModuleLabel    : "CrvRecoPulses"
+      genParticleModuleLabel      : "generate" 
+    }
+  }
+
+  trig : [generate, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses]
+  trigger_paths  : [trig]
+
+#  out: [CrvTest, Output]
+  out: [CrvTest]
+  end_paths: [out]
+}
+
+outputs: 
+{
+    Output : 
+    {
+        module_type : RootOutput
+        fileName    : "data_crv.root"
+    }
+}
+
+physics.producers.CrvPhotonArrivals.g4ModuleLabels      : []   #emtpy so that the module doesn't expect any StepPointMCs
+physics.producers.CrvPhotonArrivals.processNames        : []   #the module needs to be present so that an empty PhotonArrivalsCollection is produced
+physics.producers.CrvSiPMResponses.deadSiPMProbability  : 0.0
+physics.producers.CrvWaveforms.minVoltage               : 0.0
+physics.producers.CrvRecoPulses.minPEs                  : 0
+
+services.user.SeedService.baseSeed         :  773651
+services.user.SeedService.maxUniqueEngines :  20
+

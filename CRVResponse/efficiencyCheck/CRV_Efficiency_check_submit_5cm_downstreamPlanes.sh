@@ -1,21 +1,19 @@
 i=0
-layerOffset=42
-moduleGap=5
-#  for moduleGap in {2..5}
+layerOffset=10
+moduleGap=3
+#  for moduleGap in {1..5}
 #  do
 
-    dy=$((822+$moduleGap))
+    dy=$((811+$moduleGap))
 
     for layerOffset in {0..62..2}
     do
-      for photonYield in {2500,3000,3500,4000,4500,5000,5500,6000,6500}  # 20,24,27,31,35,39,42,46,50 PE/SiPM for 5cm wide / 5.6m long counter
+      for photonYield in {3047,3555,4063,4570}  # 24,28,32,36 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
       do
 
         ((i++));
 
-        scintTolerance="0"
-        backgroundFileName="/mu2e/app/users/ehrlich/work_08302015/Offline/background_D1.root"
-        backgroundFileName=""
+        scintTolerance="0.2"
 
         genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig_5cm_downstreamPlanes'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/genconfig_5cm_downstreamPlanes.txt\"" >| $genconfigfile
@@ -34,13 +32,9 @@ moduleGap=5
         echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.scintillationYield  : $photonYield" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.scintillationYieldTolerance  : $scintTolerance" >> $fclfile
-        echo "physics.producers.CrvSiPMResponses.ThermalProb          : 0" >> $fclfile
-        echo "physics.producers.CrvPhotonArrivals.backgroundSampleFileName  : \"$backgroundFileName\"" >> $fclfile
-        echo "physics.producers.CrvPhotonArrivals.countersInBackgroundSample: 192" >> $fclfile
-        echo "physics.producers.CrvPhotonArrivals.backgroundSampleFactor    : 2" >> $fclfile
-        echo "physics.producers.CrvPhotonArrivals.maxBackgroundTimeShift    : 500" >> $fclfile
+#        echo "physics.producers.CrvSiPMResponses.ThermalProb          : 0" >> $fclfile
 
-        mu2eart --setup=./setup.sh --fcl=$fclfile --njobs=50 --events-per-job=10000 --jobname=CRV_efficiency5cm_downstream_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield --outstage=/pnfs/mu2e/scratch/outstage
+        mu2eart --setup=./setup.sh --fcl=$fclfile --njobs=50 --events-per-job=20000 --jobname=CRV_efficiency5cm_downstream_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield --outstage=/pnfs/mu2e/scratch/outstage
 
       done
     done

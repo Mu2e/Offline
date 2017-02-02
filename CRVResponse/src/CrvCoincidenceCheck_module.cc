@@ -15,6 +15,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
 
@@ -68,6 +69,11 @@ namespace mu2e
     std::string _moduleLabel;  //for this instance of the CrvCoincidenceCheck module
                                //to distinguish the output from other instances of this module, if there are more than one instances
 
+    // these variables are used for efficiency checks with overlayed background, where the coincidence is accepted only, if it happens around the time of the muon
+    bool        _muonsOnly;  
+    double      _muonMinTime, _muonMaxTime;
+    std::string _genParticleModuleLabel;
+
     struct CrvHit
     {
       double                        _time;
@@ -120,13 +126,20 @@ namespace mu2e
     _timeWindowStart(pset.get<double>("timeWindowStart")),
     _timeWindowEnd(pset.get<double>("timeWindowEnd")),
     _leadingVetoTime(pset.get<double>("leadingVetoTime")),
-    _trailingVetoTime(pset.get<double>("trailingVetoTime"))
+    _trailingVetoTime(pset.get<double>("trailingVetoTime")),
+    _muonsOnly(pset.get<bool>("muonsOnly",false))
   {
     produces<CrvCoincidenceCheckResult>();
     _totalTime=0;
     _totalDeadTime=0;
     _totalEvents=0;
     _totalEventsCoincidence=0;
+    if(_muonsOnly)
+    {
+      _muonMinTime=pset.get<double>("muonMinTime");
+      _muonMaxTime=pset.get<double>("muonMaxTime");
+      _genParticleModuleLabel=pset.get<std::string>("genParticleModuleLabel");
+    }
   }
 
   void CrvCoincidenceCheck::beginJob()
@@ -257,7 +270,8 @@ namespace mu2e
             if(_verboseLevel==4) crvHits[sectorType].back().Print(sectorType);
           }
 
-          //allow coincidences between consecutive microbunches (if the time window extends over the microbunch end)
+/*
+          //allow coincidences between consecutive microbunches (if the time window extends over the microbunch end) - not needed, since the microbunches are separated by blind times of at least 500ns
           time+=_microBunchPeriod;
           if(time>=_timeWindowStart && time<=_timeWindowEnd)
           {
@@ -265,6 +279,7 @@ namespace mu2e
             crvHits[sectorType].emplace_back(time,PEs,barIndex,layerNumber,counterNumber,SiPM, x,y, PEthreshold, adjacentPulseTimeDifference, maxTimeDifference);
             if(_verboseLevel==4) crvHits[sectorType].back().Print(sectorType);
           }
+*/
         }
       }//loop over SiPM
     }//loop over reco pulse collection (=loop over counters)
@@ -390,6 +405,14 @@ namespace mu2e
             bool coincidenceFound=true;
             if(counters.size()<3) coincidenceFound=false;
             if(*counters.rbegin()-*counters.begin()!=2) coincidenceFound=false;
+
+            if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens with 20ns and 120ns
+            {
+              art::Handle<GenParticleCollection> genParticleCollection;
+              event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
+              double genTime = genParticleCollection->at(0).time();
+              if(timeMax>genTime+_muonMaxTime || timeMin<genTime+_muonMinTime) coincidenceFound=false;
+            }
 
             if(coincidenceFound) AddCoincidence(crvCoincidenceCheckResult,iterHitMap->first,*i1,*i2,*i3);
           }

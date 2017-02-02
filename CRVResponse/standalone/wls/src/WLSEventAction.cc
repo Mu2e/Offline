@@ -292,10 +292,10 @@ void WLSEventAction::Draw(const G4Event* evt)
   mu2eCrv::MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
   double digitizationInterval = 12.5; //ns
   double digitizationInterval2 = 1.0; //ns
-  makeCrvWaveform.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform.txt", 1.0, 100);
-  makeCrvWaveform2.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform.txt", 1.0, 100);
+  makeCrvWaveform.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v2.txt", 1.0, 100);
+  makeCrvWaveform2.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v2.txt", 1.0, 100);
 
-  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(169.0, false, true);
+  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(174.0, false, true);
 
   double startTime=-G4UniformRand()*digitizationInterval;
   std::vector<double> siPMtimes[4], siPMcharges[4];
@@ -431,6 +431,7 @@ void WLSEventAction::Draw(const G4Event* evt)
     unsigned int nPulse = makeRecoPulses.GetNPulses();
     for(unsigned int pulse=0; pulse<nPulse; pulse++)
     {
+      if(isnan(makeRecoPulses.GetPulseWidth(pulse))) continue;
       double tF1=makeRecoPulses.GetT1(pulse);
       double tF2=makeRecoPulses.GetT2(pulse);
       int nF=(tF2-tF1)/1.0 + 1;

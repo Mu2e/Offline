@@ -169,7 +169,7 @@ namespace mu2e
         {
           StepPointMC const& step(*iter);
 
-          double t1 = step.time();
+          double t1 = step.time();      //FIXME: Do we need to use the time profile here?
           if(t1<_startTime) continue;   //Ignore this StepPoint to reduce computation time.
 
           const CLHEP::Hep3Vector &p1 = step.position();
