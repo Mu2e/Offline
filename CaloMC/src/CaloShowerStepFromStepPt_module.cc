@@ -419,7 +419,8 @@ namespace mu2e {
                     SimPtr sim = step.simParticle();
 
                     SimParticlePtrCollection inspectedSims;              
-                    while (sim->hasParent() && isInsideCalorimeter(vi,sim) )  
+                    //while (sim->hasParent() && isInsideCalorimeter(vi,sim) )  
+                    while (sim->hasParent() && cal.geomUtil().isInsideCalorimeter(sim->startPosition()) )  
                     {
                         //simparticle starting in one section and ending in another one see note above
                         if (!cal.geomUtil().isContainedSection(sim->startPosition(),sim->endPosition()) ) break; 
