@@ -94,6 +94,7 @@ KFSeed : {
   AddMaterial			  : [ false, false ]
   initT0			  : false
   updateT0			  : false
+  dtOffset                        : @local::TrackCaloMatching.DtOffset
 }
 
 # Kalman fit configuration for the final track fit.  This also runs the simulated annealing
@@ -112,6 +113,7 @@ KFFinal : {
   ambiguityStrategy           : @local::PanelAmbig.Strategy
 # Extend downstream to the calorimeter by default
   DownstreamExtent	      : 3
+  dtOffset                    : @local::TrackCaloMatching.DtOffset
 }
 
 # Seed fit; this is really a least-squares fit, but uses the Kalman infrastructure
