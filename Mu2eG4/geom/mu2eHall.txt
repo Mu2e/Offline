@@ -49,6 +49,9 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Mu2eG4/geom/bldg/extMon.txt"
 #include "Mu2eG4/geom/bldg/extMonCeiling.txt"
 #include "Mu2eG4/geom/bldg/extMonUpper.txt"
+#include "Mu2eG4/geom/bldg/exteriorWallE.txt"
+#include "Mu2eG4/geom/bldg/exteriorWallN.txt"
+#include "Mu2eG4/geom/bldg/exteriorWallS.txt"
 #include "Mu2eG4/geom/bldg/firstFloorWall.txt"
 #include "Mu2eG4/geom/bldg/firstFloorWallExtension.txt"
 #include "Mu2eG4/geom/bldg/floorN.txt"
@@ -149,6 +152,9 @@ vector<string> bldg.prefix.list = {
    "building.extMon",
    "building.extMon.ceiling",
    "building.extMon.upper",
+   "building.exteriorWall.E",
+   "building.exteriorWall.N",
+   "building.exteriorWall.S",
    "building.firstFloor.wall",
    "building.firstFloor.wall.extension",
    "building.floor.N",

@@ -1,0 +1,95 @@
+// more realistic PS based on doc-2066-v5
+
+// PS placement in Mu2e:
+//
+//      X is determined by mu2e.solenoidOffset
+//      Y is zero at the center
+//      need to specify Z
+//
+// We use two different Z reference points: one to position
+// superconducting coils, and another to position the cryostat.
+//
+// The coils/cold mass reference point defines coils position
+// per PS_coils_12302011.pdf in docdb-2066.  We must put the coils
+// in the same place as used for magnetic field map computation.
+//
+double PS.coilRefZ  = -7929;
+//
+// Once the coils are placed, there is some freedom in
+// placing the cryostat around them.  We fix cryostat
+// position by specifying the Z coordinate of the outside
+// surface of the non-TS end plate.  This is the same reference
+// coordinate as used for placing the PS enclosure.
+// Per Mu2e-Solenoid-Main-Assembly-2012-01-31.pdf and PSE-Layout_JSB_16-Feb-12.pdf
+// in docdb-2066, confirmed by e-mail from Tom Page 2012-03-27
+double PS.cryostatRefZ  = -7943;
+
+int    PS.verbosityLevel      = 0;
+bool   PS.isVisible           = true;
+bool   PS.isSolid             = false;
+
+double PS.VacVessel.rIn            =  753.75;  // Per Rick Coleman, Dec 2017
+double PS.VacVessel.rOut           = 1300.;
+double PS.VacVessel.WallThickness  = 20.;
+// e-mail 2012-03-27 from Tom Page, and PS-solenoid-magnet-assembly-2012-02-15.PDF in docdb-2066
+double PS.VacVessel.EndPlateHalfThickness = 40.;
+double PS.VacVessel.HalfLength     = 2250.;
+string PS.VacVessel.materialName   = "StainlessSteel";
+string PS.vacuumMaterialName       = "PSVacuum";
+bool   PS.Vacuum.Sensitive         = false;
+
+// Properties of the G4Material PSVacuum.
+// This is a reduced density version of an existing gass.
+double PS.vacuumPressure      = 4.e-5;       // torr
+string PS.vacuumG4Material    = "G4_Ar";     // name of the G4Material for the existing gas.
+
+// Information for Rings.  David Norvil Brown, March 2015
+double PS.ring.length = 439.8;
+double PS.ring.rIn = 1300.1;
+double PS.ring.rOut = 1350;
+double PS.ring.Z1 = -4243;
+double PS.ring.Z2 = -7143;
+string PS.ring.materialName = "StainlessSteel";
+
+
+// the three coils are done "together"
+// all have the same inner radius
+double PS.Coil.rIn                 =    850.;
+
+string PS.Coil.materialName       = "SCCable";
+
+// This number together with PS.coilRefZ determines Z position of the first coil.
+// The lengths of the coils and the gaps between them then allow to
+// determine Z positions of other coils.
+double PS.Coil1.zOffset            =    260.;
+double PS.Coil1.rOut               =    946.;
+double PS.Coil1.Length             =   1710.;
+
+// offset from coil1
+double PS.Coil2.zGap               =     40.;
+double PS.Coil2.rOut               =    914.;
+double PS.Coil2.Length             =   1332.;
+
+// offset from coil2
+double PS.Coil3.zGap               =    120.;
+double PS.Coil3.rOut               =    914.;
+double PS.Coil3.Length             =    750.;
+
+// Coil "outer shell" - the stabilizer around the superconductor
+// We use a polycone that approximates the shape
+// shown in docdb-2066-v5 file PS_Dec2011.pdf
+// The radii from the plot are used directly.  The Z coordinates
+// w.r.t. the coils/cold mass ref point are computed from the plot.
+//
+// the step in rOut is at z = 220 + 40 + 1710 + 40 = 2010
+// zmax = 220 + 4017 = 4237
+//
+vector<double> PS.CoilShell.zPlane = {  220., 2010., 2010., 4237. };
+vector<double> PS.CoilShell.rIn =    {  850.,  850.,  850.,  850. };
+vector<double> PS.CoilShell.rOut =   { 1031., 1031.,  956.,  956. };
+string PS.CoilShell.materialName  =    "A95083";
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
