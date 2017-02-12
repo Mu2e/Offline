@@ -449,6 +449,8 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                     G4ThreeVector(0.0, -_fiberSeparation/2.0, 0.0),
                     _lengthOption>=6600?logicMirror:logicPhotonDet,
                     _lengthOption>=6600?"Mirror":"PhotonDet",
+//                    (_lengthOption>=6600 || _lengthOption==4500)?logicMirror:logicPhotonDet,
+//                    (_lengthOption>=6600 || _lengthOption==4500)?"Mirror":"PhotonDet",
                     logicFiberGuideBar1,
                     _checkOverlaps,
                     1);
@@ -463,6 +465,8 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                     G4ThreeVector(0.0, _fiberSeparation/2.0, 0.0),
                     _lengthOption>=6600?logicMirror:logicPhotonDet,
                     _lengthOption>=6600?"Mirror":"PhotonDet",
+//                    (_lengthOption>=6600 || _lengthOption==4500)?logicMirror:logicPhotonDet,
+//                    (_lengthOption>=6600 || _lengthOption==4500)?"Mirror":"PhotonDet",
                     logicFiberGuideBar1,
                     _checkOverlaps,
                     3);

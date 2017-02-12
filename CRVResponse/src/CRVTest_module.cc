@@ -62,7 +62,7 @@ namespace mu2e
   {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("CrvSingleCounter");
-    _recoPulses = tfdir.make<TNtuple>("RecoPulses", "RecoPulses", "event:startX:startY:startZ:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseWidth:MCPEs");
+    _recoPulses = tfdir.make<TNtuple>("RecoPulses", "RecoPulses", "event:startX:startY:startZ:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseWidth:recoPulseTime:recoLEtime:MCPEs");
   }
 
   void CRVTest::beginJob()
@@ -104,6 +104,8 @@ namespace mu2e
         int    recoPEs=0;
         double recoPulseHeight=0;
         double recoPulseWidth=0;
+        double recoPulseTime=0;
+        double recoLEtime=0;
         double MCPEs=0;
 
         if(iterRecoPulses!=crvRecoPulsesCollection->end()) 
@@ -119,6 +121,8 @@ namespace mu2e
               recoPEs            = singlePulses[i]._PEs;
               recoPulseHeight    = singlePulses[i]._pulseHeight;
               recoPulseWidth     = singlePulses[i]._pulseWidth;
+              recoPulseTime      = singlePulses[i]._pulseTime;
+              recoLEtime         = singlePulses[i]._LEtime;
             }
           }
         }
@@ -135,7 +139,7 @@ namespace mu2e
           }
         }
 
-        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseWidth,MCPEs);
+        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseWidth,recoPulseTime,recoLEtime,MCPEs);
       }
     }
 

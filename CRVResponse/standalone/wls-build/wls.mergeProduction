@@ -33,7 +33,7 @@ do
     done
   done
 
-  mv $S1 /pnfs/mu2e/scratch/outstage/ehrlich/LookupTables_v3.0/.
+  mv $S1 /pnfs/mu2e/scratch/outstage/ehrlich/LookupTables_v3_0/.
 
 done
 echo "DONE!"

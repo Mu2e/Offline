@@ -68,10 +68,11 @@ BEGIN_PROLOG
     {
       module_type               : CrvRecoPulsesFinder
       crvWaveformsModuleLabel   : "CrvWaveforms"
-      scale                     : 174.     //174 PEs/V  using dark current calibration, where all PEs arrive at the same time
+      scale                     : 174.2    //174.2 PEs/V  using dark current calibration, where all PEs arrive at the same time
       useFittedPulseHeight      : false    //not used in test beam analysis
       useFittedPulseTime        : true
-      minPEs                    : 5        //5 PEs
+      doLEfit                   : true
+      minPEs                    : 6        //6 PEs
     }
     CrvCoincidence:
     {

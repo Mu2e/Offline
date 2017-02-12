@@ -83,7 +83,7 @@ WLSEventAction::WLSEventAction(int mode, int numberOfPhotons, int simType, int m
       _histPE[SiPM]->SetLineColor(1);
     }
 
-    _ntuple = new TNtuple("CRVNtuple","CRVNtuple","SiPM:photons:PEs:pulseHeight:pulseWidth:recoPEs");
+    _ntuple = new TNtuple("CRVNtuple","CRVNtuple","SiPM:photons:PEs:pulseHeight:pulseWidth:recoPEs:pulseTime:LEtime");
   }
 }
 
@@ -295,7 +295,7 @@ void WLSEventAction::Draw(const G4Event* evt)
   makeCrvWaveform.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v2.txt", 1.0, 100);
   makeCrvWaveform2.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v2.txt", 1.0, 100);
 
-  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(174.0, false, true);
+  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(174.0, false, true, true);
 
   double startTime=-G4UniformRand()*digitizationInterval;
   std::vector<double> siPMtimes[4], siPMcharges[4];
@@ -471,6 +471,8 @@ void WLSEventAction::Draw(const G4Event* evt)
       double pulseHeight=0;
       double recoPEs= 0;
       double pulseWidth=0;
+      double pulseTime=0;
+      double LEtime=0;
       for(size_t j=0; j<makeRecoPulses.GetNPulses(); j++)
       {
          double recoPEsTmp = makeRecoPulses.GetPEs(j);
@@ -478,11 +480,13 @@ void WLSEventAction::Draw(const G4Event* evt)
          {
            recoPEs=recoPEsTmp;
            pulseHeight = makeRecoPulses.GetPulseHeight(j);
-           pulseWidth=makeRecoPulses.GetPulseWidth(j);
+           pulseWidth = makeRecoPulses.GetPulseWidth(j);
+           pulseTime = makeRecoPulses.GetPulseTime(j);
+           LEtime = makeRecoPulses.GetLEtime(j);
          }
       }
 
-      _ntuple->Fill(SiPM,photons,PEs,pulseHeight,pulseWidth,recoPEs);
+      _ntuple->Fill(SiPM,photons,PEs,pulseHeight,pulseWidth,recoPEs,pulseTime,LEtime);
       _PEs[SiPM].push_back(PEs);
       _recoPEs[SiPM].push_back(recoPEs);
       double avgPEs=0;
@@ -491,7 +495,7 @@ void WLSEventAction::Draw(const G4Event* evt)
       for(size_t j=0; j<_recoPEs[SiPM].size(); j++) {avgrecoPEs+=_recoPEs[SiPM][j];}
       avgPEs/=_PEs[SiPM].size();
       avgrecoPEs/=_recoPEs[SiPM].size();
-      std::cout<<"SiPM: "<<SiPM<<" PEs: "<<PEs<<"   average: "<<avgPEs<<"     recoPEs: "<<recoPEs<<"   average: "<<avgrecoPEs<<std::endl;
+      std::cout<<"SiPM: "<<SiPM<<" PEs: "<<PEs<<"   average: "<<avgPEs<<"     recoPEs: "<<recoPEs<<"   average: "<<avgrecoPEs<<"      time: "<<pulseTime<<std::endl;
     }
 
     TGaxis *axis = new TGaxis(maxTime*0.9,0,maxTime*0.9,histMax,0,histMax/scale,10,"+L");

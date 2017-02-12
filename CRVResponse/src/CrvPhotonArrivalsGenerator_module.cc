@@ -78,6 +78,7 @@ namespace mu2e
 
     CLHEP::RandFlat       _randFlat;
     CLHEP::RandGaussQ     _randGaussQ;
+    CLHEP::RandPoissonQ   _randPoissonQ;
 
     std::map<CRSScintillatorBarIndex,double>  _scintillationYieldAdjustments;
   };
@@ -96,7 +97,8 @@ namespace mu2e
     _fiberDecayTime(pset.get<double>("fiberDecayTime")),     //7.4 ns
     _startTime(pset.get<double>("startTime")),               //0.0 ns
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
-    _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
+    _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine()),
+    _randPoissonQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
     if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (g4ModuleLabels/processNames)");
 
@@ -104,7 +106,7 @@ namespace mu2e
     for(unsigned int i=0; i<_lookupTableFileNames.size(); i++)
     {
       double counterLength = _lookupTableCounterLengths[i];
-      _makeCrvPhotonArrivals.emplace(counterLength, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat)));
+      _makeCrvPhotonArrivals.emplace(counterLength, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat, _randGaussQ, _randPoissonQ)));
       std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
       iterCPA->second->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
       iterCPA->second->SetScintillationYield(_scintillationYield);

@@ -4,10 +4,10 @@ sides=2
 PEthreshold=12
 moduleGap=3
 
-    for photonYield in {3047,3555,4063}  # 24,28,32 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
+for PEthreshold in {10..20..2}
+do
+    for photonYield in {3047,3301,3555,3809,4063,4316,4570,4824,5078,5332,5586,5840,6094,6348}  # 24,26,28,30,32,34,36,38,40,42,44,46,48,50 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
     do
-      for layerOffset in {0..62..2}
-      do
 
               files=`ls /pnfs/mu2e/scratch/outstage/ehrlich/CRV_efficiency5cm_top_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield.*/*/mu2e.log`
 #              files=`ls /pnfs/mu2e/scratch/outstage/ehrlich/CRV_efficiency5cm10_top_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield.*/*/mu2e.log`
@@ -42,5 +42,5 @@ moduleGap=3
               efficiency=`echo "$eventsCoincidence/$events" | bc -l`
               echo modulegap:$moduleGap layerOffset:$layerOffset photonYield:$photonYield PEThreshold:$PEthreshold timeWindow:$timeWindow sidesChecked:$sides eventsCoincidence:$eventsCoincidence eventsTotal:$events efficiency:$efficiency
 
-      done
     done
+done

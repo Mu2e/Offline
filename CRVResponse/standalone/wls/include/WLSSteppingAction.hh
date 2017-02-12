@@ -42,6 +42,8 @@ class WLSSteppingAction : public G4UserSteppingAction
 
     CLHEP::HepJamesRandom     _engine;
     CLHEP::RandFlat           _randFlat;
+    CLHEP::RandGaussQ         _randGaussQ;
+    CLHEP::RandPoissonQ       _randPoissonQ;
 
     void                      Test(const G4Step *theStep, int PDGcode);
 

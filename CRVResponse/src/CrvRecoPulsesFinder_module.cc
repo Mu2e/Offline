@@ -56,7 +56,7 @@ namespace mu2e
 
     std::string _crvWaveformsModuleLabel;
     double      _scale;
-    bool        _useFittedPulseHeight, _useFittedPulseTime;
+    bool        _useFittedPulseHeight, _useFittedPulseTime, _doLEfit;
     int         _minPEs;
     double      _microBunchPeriod;
 
@@ -68,10 +68,11 @@ namespace mu2e
     _scale(pset.get<double>("scale")),   //159 PEs/V
     _useFittedPulseHeight(pset.get<bool>("useFittedPulseHeight")),   //false, since the test beam analysis didn't use it either
     _useFittedPulseTime(pset.get<bool>("useFittedPulseTime")),   //true
-    _minPEs(pset.get<int>("minPEs"))     //3 PEs
+    _doLEfit(pset.get<bool>("doLEfit")),   //true
+    _minPEs(pset.get<int>("minPEs"))     //6 PEs
   {
     produces<CrvRecoPulsesCollection>();
-    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_scale, _useFittedPulseHeight, _useFittedPulseTime));
+    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_scale, _useFittedPulseHeight, _useFittedPulseTime, _doLEfit));
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -147,10 +148,13 @@ namespace mu2e
             int    PEs         = _makeCrvRecoPulses->GetPEs(i);
             double pulseHeight = _makeCrvRecoPulses->GetPulseHeight(i); 
             double pulseWidth  = _makeCrvRecoPulses->GetPulseWidth(i);
+            double pulseFitChi2= _makeCrvRecoPulses->GetPulseFitChi2(i);
+            double LEtime      = _makeCrvRecoPulses->GetLEtime(i);
+            double LEfitChi2   = _makeCrvRecoPulses->GetLEfitChi2(i);
             if(pulseTime<0) continue;
             if(pulseTime>_microBunchPeriod) continue;
             if(PEs<_minPEs) continue; 
-            crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, pulseTime, pulseHeight, pulseWidth);
+            crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, pulseTime, pulseHeight, pulseWidth, pulseFitChi2, LEtime, LEfitChi2);
           }
         }
 

@@ -72,7 +72,8 @@ class MakeCrvPhotonArrivals
 {
   public:
 
-    MakeCrvPhotonArrivals(CLHEP::RandFlat &randFlat) : _actualHalfLength(NAN), _randFlat(randFlat) {}
+    MakeCrvPhotonArrivals(CLHEP::RandFlat &randFlat, CLHEP::RandGaussQ &randGaussQ, CLHEP::RandPoissonQ &randPoissonQ) : 
+                                                      _randFlat(randFlat), _randGaussQ(randGaussQ), _randPoissonQ(randPoissonQ) {}
 
     ~MakeCrvPhotonArrivals();
 
@@ -93,8 +94,6 @@ class MakeCrvPhotonArrivals
     void                      SetScintillatorDecayTimeSlow(double decayTime) {_scintillatorDecayTimeSlow=decayTime;}
     void                      SetFiberDecayTime(double decayTime) {_fiberDecayTime=decayTime;}
 
-    void                      SetActualHalfLength(double actualHalfLength) {_actualHalfLength=actualHalfLength;}
-
   private:
 
     std::vector<double>       _arrivalTimes[4];
@@ -105,20 +104,20 @@ class MakeCrvPhotonArrivals
     double                    _scintillatorDecayTimeSlow; 
     double                    _fiberDecayTime;
 
-    double                    _actualHalfLength;
-
     LookupConstants           _LC;
     LookupBinDefinitions      _LBD;
     std::vector<LookupBin>    _bins[4];
 
     CLHEP::RandFlat           &_randFlat;
+    CLHEP::RandGaussQ         &_randGaussQ;
+    CLHEP::RandPoissonQ       &_randPoissonQ;
 
     bool   IsInsideScintillator(const CLHEP::Hep3Vector &p);
     int    IsInsideFiber(const CLHEP::Hep3Vector &p, double &r);
     double GetRandomTime(const LookupBin &theBin, int SiPM, bool &overflow);
     int    GetRandomFiberEmissions(const LookupBin &theBin, int SiPM);
     double GetAverageNumberOfCerenkovPhotons(double beta, double charge, double rindex, double cerenkovEnergyInterval);
-    void   AdjustPosition(CLHEP::Hep3Vector &p, int SiPM);
+    int    GetNumberOfPhotonsFromAverage(double average);
     double VisibleEnergyDeposition(int PDGcode, double stepLength,
                                    double energyDepositedTotal,
                                    double energyDepositedNonIonizing);

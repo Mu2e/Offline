@@ -112,6 +112,9 @@ outputs:
     }
 }
 
+physics.producers.CrvSiPMResponses.deadSiPMProbability  : 0.0
+physics.producers.CrvWaveforms.FEBtimeSpread            : 0.0
+
 services.user.SeedService.baseSeed         :  773651
 services.user.SeedService.maxUniqueEngines :  20
 

@@ -31,14 +31,14 @@
 
 WLSSteppingAction* WLSSteppingAction::_fgInstance = NULL;
 
-WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName) : _mode(mode), _engine(0), _randFlat(_engine)
+WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName) : _mode(mode), _engine(0), _randFlat(_engine), _randGaussQ(_engine), _randPoissonQ(_engine)
 {
   _fgInstance = this;
 
   //load lookup tables
   if(_mode==1)
   {
-    _crvPhotonArrivals = std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat));
+    _crvPhotonArrivals = std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat, _randGaussQ, _randPoissonQ));
     _crvPhotonArrivals->LoadLookupTable(lookupFileName);
   }
 

@@ -200,12 +200,15 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
     int nPhotonsCerenkov=0;
     if(isInScintillator)
     {
-      nPhotonsScintillation = static_cast<int>((_scintillationYield+scintillationYieldAdjustment)*energyPortion+0.5);
-      nPhotonsCerenkov = static_cast<int>(GetAverageNumberOfCerenkovPhotons(beta, charge, _LC.rindexScintillator, _LC.cerenkovEnergyIntervalScintillator)*precision+0.5);
+      double averageNumberOfPhotonsScintillation = (_scintillationYield+scintillationYieldAdjustment)*energyPortion;
+      double averageNumberOfPhotonsCerenkov = GetAverageNumberOfCerenkovPhotons(beta, charge, _LC.rindexScintillator, _LC.cerenkovEnergyIntervalScintillator)*precision;
+      nPhotonsScintillation = GetNumberOfPhotonsFromAverage(averageNumberOfPhotonsScintillation);
+      nPhotonsCerenkov = GetNumberOfPhotonsFromAverage(averageNumberOfPhotonsCerenkov);
     } 
-    if(fiber>0) //this implies not in scintillator
+    if(fiber>0) //this implies that the muon is in the fiber and not in the scintillator
     {
-      nPhotonsCerenkov = static_cast<int>(GetAverageNumberOfCerenkovPhotons(beta, charge, _LC.rindexFiber, _LC.cerenkovEnergyIntervalFiber)*precision+0.5);
+      double averageNumberOfPhotonsCerenkov = GetAverageNumberOfCerenkovPhotons(beta, charge, _LC.rindexFiber, _LC.cerenkovEnergyIntervalFiber)*precision;
+      nPhotonsCerenkov = GetNumberOfPhotonsFromAverage(averageNumberOfPhotonsCerenkov);
     } 
     int nPhotons = nPhotonsScintillation + nPhotonsCerenkov;
 
@@ -327,19 +330,19 @@ int MakeCrvPhotonArrivals::GetRandomFiberEmissions(const LookupBin &theBin, int 
   return emissions;
 }
 
-//we have several CRV bars with different lengths
-//in order to avoid different lookup tables, an adjusted position for side 1 is used for shorter CRV bars
-//(moving it closer to the SiPM for side 1) 
-//NOT USED ANYMORE. WE USE DIFFERENT LOOKUP TABLES FOR DIFFERENT LENGTHS
-void MakeCrvPhotonArrivals::AdjustPosition(CLHEP::Hep3Vector &p, int SiPM) 
+int MakeCrvPhotonArrivals::GetNumberOfPhotonsFromAverage(double average)  //from G4Scintillation
 {
-  if(isnan(_actualHalfLength)) return; //no adjustment
-  if(_actualHalfLength>_LC.halfLength) 
-    throw std::logic_error("Actual bar half length is larger than the half length of the lookup table.");
-
-  double difference = _LC.halfLength - _actualHalfLength;
-  if(SiPM%2==0) p.setZ(p.z()-difference);
-  else p.setZ(p.z()+difference);
+  int nPhotons;
+  if(average>10.0)
+  {
+    double sigma = std::sqrt(average);
+    nPhotons = int(_randGaussQ.fire(average,sigma)+0.5);
+  }
+  else
+  {
+    nPhotons = int(_randPoissonQ.fire(average));
+  }
+  return nPhotons;
 }
 
 int MakeCrvPhotonArrivals::GetNumberOfPhotons(int SiPM)
