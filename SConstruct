@@ -120,7 +120,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                  )
 
 # Define and register the rule for building dictionaries.
-genreflex = Builder(action="./bin/genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\" $LIBNAME $DEBUG_LEVEL" )
+genreflex = Builder(action="mu2e_genreflex $SOURCE $TARGET  \"$_CPPINCFLAGS\" $LIBNAME $DEBUG_LEVEL" )
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
 # Get the flag that controls compiler options. Check that it is legal.
