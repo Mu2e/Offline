@@ -76,7 +76,9 @@ export ROOT_INCLUDE_PATH=`dropit -s -p$ROOT_INCLUDE_PATH $MU2E_BASE_RELEASE`
 #setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
 
 # Geant4 and its cross-section files.
-setup -B geant4 v4_9_6_p04e -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
+if [[ $($MU2E_BASE_RELEASE/buildopts --triggerStrip) == "off" ]]; then
+  setup -B geant4 v4_9_6_p04e -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
+fi
 
 # Other libraries we need.
 setup -B heppdt v3_04_01e -q${MU2E_UPS_QUALIFIERS}
