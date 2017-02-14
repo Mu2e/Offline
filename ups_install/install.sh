@@ -88,13 +88,13 @@ fi
 # Copy the required parts of the source directory to the installation area:
 
 # Header files:
-rsync -ar --exclude-from  ${PACKAGE_SOURCE}/etc/tar_exclude_for_include.txt \
+rsync -ar --exclude-from  ${PACKAGE_SOURCE}/ups_install/tar_exclude_for_include.txt \
     ${PACKAGE_SOURCE}  ${proddir}/include
 
 # UPS table file
 ${PACKAGE_SOURCE}/bin/installTableFile.sh ${upsdir}/${PACKAGE_NAME}.table
 
-rsync -ar --exclude-from  ${PACKAGE_SOURCE}/etc/tar_exclude_for_config.txt \
+rsync -ar --exclude-from  ${PACKAGE_SOURCE}/ups_install/tar_exclude_for_config.txt \
     ${PACKAGE_SOURCE}  ${cfgdir}
 
 # Libaries and binaries
@@ -102,7 +102,7 @@ rsync -ar lib ${libdir}
 rsync -ar bin ${libdir}
 
 # A copy of the full source
-rsync -ar --exclude-from  ${PACKAGE_SOURCE}/etc/tar_exclude_for_source.txt \
+rsync -ar --exclude-from  ${PACKAGE_SOURCE}/ups_install/tar_exclude_for_source.txt \
   ${PACKAGE_SOURCE}  ${proddir}/source
 
 # Create the ups fq file.
