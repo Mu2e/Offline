@@ -209,9 +209,10 @@ if [[ "\$retstat" != "0" ]]; then
   return \$retstat;
 fi
 
-# Add the satellite release to the two important path variables.
+# Add the satellite release to three important path variables.
 export PATH="\`pwd\`/bin/:\${PATH}"
 export LD_LIBRARY_PATH="\`pwd\`/lib/:\${LD_LIBRARY_PATH}"
+export ROOT_INCLUDE_PATH=\${MU2E_SATELLITE_RELEASE}:\${ROOT_INCLUDE_PATH}
 
 EOF
 }
