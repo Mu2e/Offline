@@ -84,7 +84,6 @@ fi
 setup -B heppdt v3_04_01e -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_01_03  -q${MU2E_UPS_QUALIFIERS}
 setup -B xerces_c  v3_1_3    -q${MU2E_UPS_QUALIFIERS}
-setup -B tbb       v4_4_3a   -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_5_0
