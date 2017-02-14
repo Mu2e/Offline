@@ -92,7 +92,7 @@ rsync -ar --exclude-from  ${PACKAGE_SOURCE}/ups_install/tar_exclude_for_include.
     ${PACKAGE_SOURCE}  ${proddir}/include
 
 # UPS table file
-${PACKAGE_SOURCE}/bin/installTableFile.sh ${upsdir}/${PACKAGE_NAME}.table
+${PACKAGE_SOURCE}/ups_install/installTableFile.sh ${upsdir}/${PACKAGE_NAME}.table
 
 rsync -ar --exclude-from  ${PACKAGE_SOURCE}/ups_install/tar_exclude_for_config.txt \
     ${PACKAGE_SOURCE}  ${cfgdir}
