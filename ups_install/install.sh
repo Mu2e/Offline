@@ -8,7 +8,7 @@
 
 export COMPILER_CODE=e10
 export DEBUG_LEVEL=prof
-export PACKAGE_NAME=Offline
+export PACKAGE_NAME=offline
 export PACKAGE_SOURCE=${MU2E_BASE_RELEASE}
 export PACKAGE_VERSION=v6_0_6
 
