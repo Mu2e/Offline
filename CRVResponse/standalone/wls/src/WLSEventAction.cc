@@ -35,10 +35,14 @@
 
 WLSEventAction* WLSEventAction::_fgInstance = NULL;
 
-WLSEventAction::WLSEventAction(int mode, int numberOfPhotons, int simType, int minBin, bool verbose) : 
-                                                                                         _mode(mode), _numberOfPhotons(numberOfPhotons), 
-                                                                                         _simType(simType), _minBin(minBin), 
-                                                                                         _verbose(verbose), _storeConstants(false)
+WLSEventAction::WLSEventAction(int mode, const std::string &singlePEWaveformFilename, int numberOfPhotons, int simType, int minBin, bool verbose) : 
+                                                                                         _mode(mode), 
+                                                                                         _numberOfPhotons(numberOfPhotons), 
+                                                                                         _simType(simType), 
+                                                                                         _minBin(minBin), 
+                                                                                         _singlePEWaveformFilename(singlePEWaveformFilename), 
+                                                                                         _verbose(verbose),
+                                                                                         _storeConstants(false)
 {
   if(simType==0 && minBin==0) _storeConstants=true;
   _fgInstance = this;

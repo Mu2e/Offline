@@ -63,7 +63,8 @@ namespace mu2e
     std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> > _makeCrvPhotonArrivals;
 
     double      _scintillationYield;
-    double      _scintillationYieldTolerance;
+    double      _scintillationYieldVariation;
+    double      _scintillationYieldVariationCutoff;
     double      _scintillatorBirksConstant;
     double      _scintillatorRatioFastSlow;
     double      _scintillatorDecayTimeFast;
@@ -75,6 +76,10 @@ namespace mu2e
                                         //This time should be at least 100ns before the end of the SiPM's blind time
                                         //to account for the travel time of the photons inside the CRV bar.
                                         //Default is 0.
+
+    std::string _visibleEnergyAdjustmentFileName;
+
+    SimParticleTimeOffset _timeOffsets;
 
     CLHEP::RandFlat       _randFlat;
     CLHEP::RandGaussQ     _randGaussQ;
@@ -89,18 +94,24 @@ namespace mu2e
     _lookupTableFileNames(pset.get<std::vector<std::string> >("lookupTableFileNames")),
     _lookupTableCounterLengths(pset.get<std::vector<double> >("lookupTableCounterLengths")),
     _scintillationYield(pset.get<double>("scintillationYield")),    //5000.0 photons per MeV
-    _scintillationYieldTolerance(pset.get<double>("scintillationYieldTolerance")),    //0.0%
+    _scintillationYieldVariation(pset.get<double>("scintillationYieldVariation")),    //20.0%
+    _scintillationYieldVariationCutoff(pset.get<double>("scintillationYieldVariationCutoff")),    //20.0%
     _scintillatorBirksConstant(pset.get<double>("scintillatorBirksConstant")), //0.126 mm/MeV
     _scintillatorRatioFastSlow(pset.get<double>("scintillatorRatioFastSlow")), //1.0
     _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast")), //3.0 ns, includes WLS components in the scintillator
     _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow")), //100.0 ns, unknown, not used
     _fiberDecayTime(pset.get<double>("fiberDecayTime")),     //7.4 ns
     _startTime(pset.get<double>("startTime")),               //0.0 ns
+    _visibleEnergyAdjustmentFileName(pset.get<std::string>("visibleEnergyAdjustmentFileName")),
+    _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets", fhicl::ParameterSet())),
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine()),
     _randPoissonQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
     if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (g4ModuleLabels/processNames)");
+
+    ConfigFileLookupPolicy configFile;
+    _visibleEnergyAdjustmentFileName = configFile(_visibleEnergyAdjustmentFileName);
 
     if(_lookupTableFileNames.size()!=_lookupTableCounterLengths.size()) throw std::logic_error("ERROR: mismatch between specified lookup tables (lookupTableFileNames/lookupTableCounterLengths)");
     for(unsigned int i=0; i<_lookupTableFileNames.size(); i++)
@@ -115,6 +126,7 @@ namespace mu2e
       iterCPA->second->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
       iterCPA->second->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
       iterCPA->second->SetFiberDecayTime(_fiberDecayTime);
+      iterCPA->second->LoadVisibleEnergyAdjustmentTable(_visibleEnergyAdjustmentFileName);
     }
 
     produces<CrvPhotonArrivalsCollection>();
@@ -144,6 +156,8 @@ namespace mu2e
 
   void CrvPhotonArrivalsGenerator::produce(art::Event& event) 
   {
+    _timeOffsets.updateMap(event);
+
     _scintillationYieldAdjustments.clear();
 
     std::unique_ptr<CrvPhotonArrivalsCollection> crvPhotonArrivalsCollection(new CrvPhotonArrivalsCollection);
@@ -171,11 +185,11 @@ namespace mu2e
         {
           StepPointMC const& step(*iter);
 
-          double t1 = step.time();      //FIXME: Do we need to use the time profile here?
+          double t1 = _timeOffsets.timeWithOffsetsApplied(step); 
           if(t1<_startTime) continue;   //Ignore this StepPoint to reduce computation time.
 
           const CLHEP::Hep3Vector &p1 = step.position();
-          CLHEP::Hep3Vector p2 = p1 + step.momentum().unit()*step.stepLength();
+          CLHEP::Hep3Vector p2 = p1 + step.momentum().unit()*step.stepLength();    //this stepLength does not necessarily take us to the right p2 due to scattering
           double energyDepositedTotal= step.totalEDep();
           double energyDepositedNonIonizing = step.nonIonizingEDep();
 
@@ -211,7 +225,11 @@ namespace mu2e
 
           if(_scintillationYieldAdjustments.find(step.barIndex())==_scintillationYieldAdjustments.end())
           {
-            double adjustment = _randGaussQ.fire(0, _scintillationYield*_scintillationYieldTolerance);
+            double adjustment=0;
+            do
+            {
+              adjustment=_randGaussQ.fire(0, _scintillationYield*_scintillationYieldVariation);
+            } while(adjustment<-_scintillationYield*_scintillationYieldVariationCutoff);
             _scintillationYieldAdjustments[step.barIndex()] = adjustment;
           }
           double scintillationYieldAdjustment = _scintillationYieldAdjustments[step.barIndex()];
@@ -224,6 +242,7 @@ namespace mu2e
                                         PDGcode, beta, charge,
                                         energyDepositedTotal,
                                         energyDepositedNonIonizing,
+                                        step.stepLength(),
                                         scintillationYieldAdjustment);
 
             CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];

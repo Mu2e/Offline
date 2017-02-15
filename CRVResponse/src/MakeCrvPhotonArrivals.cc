@@ -132,7 +132,7 @@ void LookupBin::Read(std::ifstream &lookupfile)
 void MakeCrvPhotonArrivals::LoadLookupTable(const std::string &filename)
 {
   std::ifstream lookupfile(filename,std::ios::binary);
-  if(!lookupfile.good()) throw std::logic_error("Could not open lookup table file."+filename);
+  if(!lookupfile.good()) throw std::logic_error("Could not open lookup table file "+filename);
 
   _LC.Read(lookupfile);
   if(_LC.version1<3) throw std::logic_error("This version of Offline expects a lookup table version 3.0 or higher.");
@@ -168,6 +168,8 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
                           int PDGcode, double beta, double charge,
                           double energyDepositedTotal,
                           double energyDepositedNonIonizing,
+                          double trueStepLength,   //may be longer than stepEnd-stepStart due to scattering 
+                                                   //is needed for the visible energy adjustment, and for the Cerenkov photons
                           double scintillationYieldAdjustment)
 {
   for(int SiPM=0; SiPM<4; SiPM++) _arrivalTimes[SiPM].clear();
@@ -178,7 +180,7 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
   double phi = distanceVector.phi();      //-pi...+pi
   double r=0;  //distance from fiber center for fiber tables
 
-  double energy = VisibleEnergyDeposition(PDGcode, stepLength, energyDepositedTotal, energyDepositedNonIonizing);
+  double energy = VisibleEnergyDeposition(PDGcode, trueStepLength, energyDepositedTotal, energyDepositedNonIonizing);
 
   double precision=0.1; //mm
   int    steps=static_cast<int>(stepLength/precision);
@@ -202,12 +204,14 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
     {
       double averageNumberOfPhotonsScintillation = (_scintillationYield+scintillationYieldAdjustment)*energyPortion;
       double averageNumberOfPhotonsCerenkov = GetAverageNumberOfCerenkovPhotons(beta, charge, _LC.rindexScintillator, _LC.cerenkovEnergyIntervalScintillator)*precision;
+      averageNumberOfPhotonsCerenkov*=trueStepLength/stepLength;  //the true path may be longer due to scattering
       nPhotonsScintillation = GetNumberOfPhotonsFromAverage(averageNumberOfPhotonsScintillation);
       nPhotonsCerenkov = GetNumberOfPhotonsFromAverage(averageNumberOfPhotonsCerenkov);
     } 
     if(fiber>0) //this implies that the muon is in the fiber and not in the scintillator
     {
       double averageNumberOfPhotonsCerenkov = GetAverageNumberOfCerenkovPhotons(beta, charge, _LC.rindexFiber, _LC.cerenkovEnergyIntervalFiber)*precision;
+      averageNumberOfPhotonsCerenkov*=trueStepLength/stepLength;  //the true path may be longer due to scattering
       nPhotonsCerenkov = GetNumberOfPhotonsFromAverage(averageNumberOfPhotonsCerenkov);
     } 
     int nPhotons = nPhotonsScintillation + nPhotonsCerenkov;
@@ -369,9 +373,8 @@ double MakeCrvPhotonArrivals::GetAverageNumberOfCerenkovPhotons(double beta, dou
 }
 
 //this mimics G4EmSaturation::VisibleEnergyDeposition
-//but approximates the proton range as very large
-//and uses a fit for the electron range which was obtained specifically for Polystyrene
-//the error seems to be less than 1%
+//but assumes that nloss/(protonRange/chargesq) is small enough so that it can be approximated as 0
+//and uses a lookup table for the energyDepositedTotal/electronRange values obtained specifically for Polystyrene
 double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLength,
                                             double energyDepositedTotal,
                                             double energyDepositedNonIonizing)
@@ -384,8 +387,8 @@ double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLe
   {
     if(evis>0)
     {
-      double eDepOverElectronRange = 27.0*exp(-0.247*pow(fabs(log(evis)+8.2),1.6))+0.177;
-      evis /= (1.0 + _scintillatorBirksConstant*eDepOverElectronRange);
+      double correctionFactor=FindVisibleEnergyAdjustmentFactor(energyDepositedTotal);
+      evis /= (1.0 + _scintillatorBirksConstant*correctionFactor);
     }
   }
   else 
@@ -403,13 +406,64 @@ double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLe
     }
 
     // continues energy loss
-    if(eloss > 0.0) { eloss /= (1.0 + _scintillatorBirksConstant*eloss/stepLength); }
- 
+    if(eloss > 0.0) 
+    { 
+      eloss /= (1.0 + _scintillatorBirksConstant*eloss/stepLength); 
+    }
+
     evis = eloss + nloss;
   }
 
-//  std::cout<<"Original/Visible Energy Deposition (manual): "<<energyDepositedTotal<<"/"<<evis<<"   PDGcode: "<<PDGcode<<std::endl;
+/*
+  std::cout<<"PDGcode: "<<PDGcode<<std::endl;
+  std::cout<<"Original Energy Deposition (manual): "<<energyDepositedTotal<<std::endl;
+  std::cout<<"Original Nonionizing Energy Deposition (manual): "<<energyDepositedNonIonizing<<std::endl;
+  std::cout<<"Visible Energy Deposition (manual): "<<evis<<std::endl;
+*/
+
   return evis;
+}
+
+void MakeCrvPhotonArrivals::LoadVisibleEnergyAdjustmentTable(const std::string &filename)
+{
+  std::ifstream visibleEnergyAdjustmentFile(filename);
+  if(!visibleEnergyAdjustmentFile.good()) throw std::logic_error("Could not open visible energy correction table file "+filename);
+  double lnEnergy, factor;
+  while(visibleEnergyAdjustmentFile >> lnEnergy >> factor)
+  {
+    _visibleEnergyAdjustmentTable[lnEnergy]=factor;
+  } 
+  visibleEnergyAdjustmentFile.close();
+}
+
+double MakeCrvPhotonArrivals::FindVisibleEnergyAdjustmentFactor(double energy)
+{
+  if(_visibleEnergyAdjustmentTable.size()==0) throw std::logic_error("Found no visible energy correction table.");
+
+  double lnEnergy=log(energy);
+  double correctionFactor=(--_visibleEnergyAdjustmentTable.end())->second;
+
+  std::map<double,double>::const_iterator iter=_visibleEnergyAdjustmentTable.begin();
+  if(lnEnergy<iter->first) correctionFactor=iter->second;
+  else
+  {
+    double prevLnEnergy=iter->first;
+    double prevFactor=iter->second;
+    iter++;
+    for(; iter!=_visibleEnergyAdjustmentTable.end(); iter++)
+    {
+      if(lnEnergy<iter->first)
+      {
+        double r=(lnEnergy-prevLnEnergy)/(iter->first-prevLnEnergy);
+        correctionFactor=(iter->second-prevFactor)*r + prevFactor;
+        break;
+      } 
+      prevLnEnergy=iter->first;
+      prevFactor=iter->second;
+    }
+  }
+
+  return correctionFactor;
 }
 
 } //namespace mu2e

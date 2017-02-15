@@ -37,6 +37,9 @@ physics :
        inputfile            : "CRVResponse/singleCounter/genconfig.txt"
     }
 
+    protonTimeMap: { module_type : GenerateProtonTimes }
+    muonTimeMap: { module_type : GenerateMuonLife }
+
     CrvPhotonArrivals: @local::CrvPhotonArrivals
     CrvSiPMResponses : @local::CrvSiPMResponses
     CrvWaveforms     : @local::CrvWaveforms
@@ -54,7 +57,7 @@ physics :
     }
   }
 
-  trig : [generate, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses]
+  trig : [generate, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses]
   trigger_paths  : [trig]
 
 #  out: [CrvTest, Output]

@@ -13,13 +13,16 @@ BEGIN_PROLOG
                                    "CRVConditions/v3_0/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
       scintillationYield        : 6500.0   //6500.0 photons per MeV (corresponds to 51.2 PE/SiPM @ 1m away from counter) using dark current calibration
-      scintillationYieldTolerance :  0.0   //0%
+      scintillationYieldVariation       : 0.2   //gaussian distribution with sigma equal to 20% of the mean
+      scintillationYieldVariationCutoff : 0.2   //the scintillation yield variation is cut off at 20% below the mean
       scintillatorBirksConstant : 0.126    //0.126 mm/Mev
       scintillatorRatioFastSlow : 1.0      //100% fast
       scintillatorDecayTimeFast : 3.0      //3.0 ns   //includes WLS component in the scintillator
       scintillatorDecayTimeSlow : 100.0    //100.0 ns  //unknown, not used
       fiberDecayTime            : 7.4      //7.4 ns
       startTime                 : 400.0    //0.0 ns
+      visibleEnergyAdjustmentFileName : "CRVResponse/fcl/visibleEnergyAdjustment.txt"
+      timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
     }
     CrvSiPMResponses:
     {

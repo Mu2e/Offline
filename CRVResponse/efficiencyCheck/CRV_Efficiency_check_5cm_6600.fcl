@@ -132,6 +132,9 @@ physics :
        overlayFactor : 2
     }
 
+    protonTimeMap: { module_type : GenerateProtonTimes }
+    muonTimeMap: { module_type : GenerateMuonLife }
+
     CrvPhotonArrivals: @local::CrvPhotonArrivals
     CrvSiPMResponses : @local::CrvSiPMResponses
     CrvWaveforms     : @local::CrvWaveforms
@@ -192,7 +195,7 @@ physics :
   }
 
 
-  trig : [generate, g4run, belowCrvFilter, backgroundOverlay, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses,
+  trig : [generate, g4run, belowCrvFilter, backgroundOverlay, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses,
           CrvCoincidencePE10T5,
           CrvCoincidencePE12T5,
           CrvCoincidencePE14T5,

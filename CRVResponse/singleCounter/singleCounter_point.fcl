@@ -78,6 +78,9 @@ physics :
        }
     }
 
+    protonTimeMap: { module_type : GenerateProtonTimes }
+    muonTimeMap: { module_type : GenerateMuonLife }
+
     CrvPhotonArrivals: @local::CrvPhotonArrivals
     CrvSiPMResponses : @local::CrvSiPMResponses
     CrvWaveforms     : @local::CrvWaveforms
@@ -95,7 +98,7 @@ physics :
     }
   }
 
-  trig : [generate, g4run, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses ]
+  trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses ]
   trigger_paths  : [trig]
 
 #  out: [CrvTest, Output]
@@ -112,6 +115,7 @@ outputs:
     }
 }
 
+physics.producers.CrvPhotonArrivals.scintillationYieldVariation  : 0.0
 physics.producers.CrvSiPMResponses.deadSiPMProbability  : 0.0
 physics.producers.CrvWaveforms.FEBtimeSpread            : 0.0
 

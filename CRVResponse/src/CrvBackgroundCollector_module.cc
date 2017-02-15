@@ -16,6 +16,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -51,6 +52,8 @@ namespace mu2e
     size_t                   _volumeIdStart, _volumeIdEnd;
     double                   _startTime;
 
+    SimParticleTimeOffset    _timeOffsets;
+
     TTree                   *_tree;
     ULong64_t                _eventId;
     //StepPointMC information
@@ -74,7 +77,8 @@ namespace mu2e
     _processNames(pset.get<std::vector<std::string> >("processNames")),
     _volumeIdStart(pset.get<size_t>("volumeIdStart")),
     _volumeIdEnd(pset.get<size_t>("volumeIdEnd")),
-    _startTime(pset.get<double>("startTime"))
+    _startTime(pset.get<double>("startTime")),
+    _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets", fhicl::ParameterSet()))
   {
     if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (g4ModuleLabels/processNames)");
 
@@ -103,6 +107,8 @@ namespace mu2e
 
   void CrvBackgroundCollector::analyze(const art::Event& event) 
   {
+    _timeOffsets.updateMap(event);
+
     GeomHandle<CosmicRayShield> CRS;
 
     std::vector<art::Handle<StepPointMCCollection> > CRVStepsVector;
@@ -127,7 +133,7 @@ namespace mu2e
         {
           StepPointMC const& step(*iter);
 
-          _time            = step.time();
+          _time            = _timeOffsets.timeWithOffsetsApplied(step); 
           _volumeId        = step.barIndex().asInt();
           if(_time<_startTime) continue;
           if(_volumeId<_volumeIdStart || _volumeId>_volumeIdEnd) continue;

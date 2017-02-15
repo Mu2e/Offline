@@ -272,8 +272,10 @@ int main(int argc, char** argv)
   WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose, posY, posZ);   //n,simType,minBin not needed in modes 0,1
                                                                                                                          //posY, posZ has no effect in mode -1
   WLSRunAction* runAction = new WLSRunAction();
-  WLSEventAction* eventAction = new WLSEventAction(mode, n, simType, minBin, verbose); 
-  WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename);  //filename not needed in modes -1,0
+  std::string singlePEWaveformFilename="/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v2.txt";
+  std::string visibleEnergyAdjustmentFilename="/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/visibleEnergyAdjustment.txt";
+  WLSEventAction* eventAction = new WLSEventAction(mode, singlePEWaveformFilename, n, simType, minBin, verbose); 
+  WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename, visibleEnergyAdjustmentFilename);  //filename not needed in modes -1,0
 
   runManager->SetUserAction(generator);
   runManager->SetUserAction(runAction);

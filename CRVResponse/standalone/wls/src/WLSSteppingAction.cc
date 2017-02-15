@@ -31,7 +31,8 @@
 
 WLSSteppingAction* WLSSteppingAction::_fgInstance = NULL;
 
-WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName) : _mode(mode), _engine(0), _randFlat(_engine), _randGaussQ(_engine), _randPoissonQ(_engine)
+WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName, const std::string &visibleEnergyAdjustmentFileName) : 
+                                                                       _mode(mode), _engine(0), _randFlat(_engine), _randGaussQ(_engine), _randPoissonQ(_engine)
 {
   _fgInstance = this;
 
@@ -40,6 +41,7 @@ WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName
   {
     _crvPhotonArrivals = std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat, _randGaussQ, _randPoissonQ));
     _crvPhotonArrivals->LoadLookupTable(lookupFileName);
+    _crvPhotonArrivals->LoadVisibleEnergyAdjustmentTable(visibleEnergyAdjustmentFileName);
   }
 
   _ntuple = new TNtuple("CRVPhotons","CRVPhotons","SiPM:Energy:Length:StartZ"); //WLS fiber test
@@ -129,15 +131,19 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
     double charge = theStep->GetTrack()->GetParticleDefinition()->GetPDGCharge();
     double energyDepositedTotal= theStep->GetTotalEnergyDeposit();
     double energyDepositedNonIonizing = theStep->GetNonIonizingEnergyDeposit();
+    double trueStepLength = theStep->GetStepLength();  //may be longer than (p1-p2).mag() due to scattering
 
     static bool first=true;
     if(first)
     {
       first=false;
 
+      //these constances are extracted from the G4Material
+      //in a real run, they would be provided by the fcl file
       G4Material* scintillator = G4Material::GetMaterial("Polystyrene",true);
       G4MaterialPropertiesTable* scintillatorPropertiesTable = scintillator->GetMaterialPropertiesTable();
       double scintillationYield = scintillatorPropertiesTable->GetConstProperty("SCINTILLATIONYIELD");
+      double scintillatorBirksConstant = scintillator->GetIonisation()->GetBirksConstant();
       double scintillatorRatioFastSlow = scintillatorPropertiesTable->GetConstProperty("YIELDRATIO");
       double scintillatorDecayTimeFast = scintillatorPropertiesTable->GetConstProperty("FASTTIMECONSTANT");
       double scintillatorDecayTimeSlow = scintillatorPropertiesTable->GetConstProperty("SLOWTIMECONSTANT");
@@ -147,6 +153,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
       double fiberDecayTime = fiberPropertiesTable->GetConstProperty("WLSTIMECONSTANT");
 
       _crvPhotonArrivals->SetScintillationYield(scintillationYield);
+      _crvPhotonArrivals->SetScintillatorBirksConstant(scintillatorBirksConstant);
       _crvPhotonArrivals->SetScintillatorRatioFastSlow(scintillatorRatioFastSlow);
       _crvPhotonArrivals->SetScintillatorDecayTimeFast(scintillatorDecayTimeFast);
       _crvPhotonArrivals->SetScintillatorDecayTimeSlow(scintillatorDecayTimeSlow);
@@ -158,17 +165,19 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
       _crvPhotonArrivals->MakePhotons(p1, p2, t1, t2,  
                             PDGcode, beta, charge,
                             energyDepositedTotal,
-                            energyDepositedNonIonizing);
+                            energyDepositedNonIonizing,
+                            trueStepLength);
  
       for(int SiPM=0; SiPM<4; SiPM++)
       {
         std::vector<double> times=_crvPhotonArrivals->GetArrivalTimes(SiPM);
         _arrivalTimes[1][SiPM].insert(_arrivalTimes[1][SiPM].end(),times.begin(),times.end());
       }
-//      Test(theStep, PDGcode);
     }
-
   }
+
+//  ShowVisibleEnergyTable(theStep);
+
 }
 
 const std::vector<double> &WLSSteppingAction::GetArrivalTimes(int i, int SiPM)
@@ -198,21 +207,30 @@ void WLSSteppingAction::Reset()
   _wlsTracks.clear();
 }
 
-void WLSSteppingAction::Test(const G4Step *theStep, int PDGcode)
+void WLSSteppingAction::ShowVisibleEnergyTable(const G4Step *theStep)
 {
-  std::cout<<"Original/Visible Energy Deposition (G4): "<<theStep->GetTotalEnergyDeposit()<<"/"<<G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDeposition(theStep)<<"   PDGcode: "<<PDGcode<<std::endl;
+  if(theStep->GetTotalEnergyDeposit()==0) return;
 
-  G4Material* Polystyrene = G4Material::GetMaterial("Polystyrene",true);
-  double BirksConstant = Polystyrene->GetIonisation()->GetBirksConstant();
+  G4Material* material = const_cast<G4Material*>(theStep->GetTrack()->GetMaterialCutsCouple()->GetMaterial());
+  double BirksConstant = material->GetIonisation()->GetBirksConstant();
+  std::cout<<material->GetName()<<"  Birks Constant: "<<BirksConstant<<std::endl;
+
+  std::cout<<"PDGcode: "<<theStep->GetTrack()->GetParticleDefinition()->GetPDGEncoding()<<std::endl;
+  std::cout<<"Original Energy Deposition (G4): "<<theStep->GetTotalEnergyDeposit()<<std::endl;
+  std::cout<<"Original Nonionizting Energy Deposition (G4): "<<theStep->GetNonIonizingEnergyDeposit()<<std::endl;
+  std::cout<<"Visible Energy Deposition (G4): "<<G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDeposition(theStep)<<std::endl;
+  std::cout<<"Step Length: "<<theStep->GetStepLength()<<std::endl;
+  const G4ThreeVector &p1 = theStep->GetPreStepPoint()->GetPosition();
+  const G4ThreeVector &p2 = theStep->GetPostStepPoint()->GetPosition();
+  std::cout<<"             "<<(p1-p2).mag()<<std::endl;
 
   std::cout<<"ELECTRON RANGE"<<std::endl;
-  for(double e=0.001*eV; e<100.0*TeV; e*=1.5)
+  for(double e=0.001*eV; e<1.0*TeV; e*=1.2)
   {
-    std::cout<<theStep->GetTrack()->GetMaterialCutsCouple()->GetMaterial()->GetName();
+    std::cout<<material->GetName();
     std::cout<<"  Energy: "<<e;
     std::cout<<"  Range: "<<G4LossTableManager::Instance()->GetRange(G4Electron::Electron(), e, theStep->GetTrack()->GetMaterialCutsCouple());
-    std::cout<<"  Error: "<<BirksConstant*e/G4LossTableManager::Instance()->GetRange(G4Electron::Electron(), e, theStep->GetTrack()->GetMaterialCutsCouple());
-    std::cout<<"  Fit: "<<BirksConstant*(27.0*exp(-0.247*pow(fabs(log(e)+8.2),1.6))+0.177);
+    std::cout<<"  Energy/Range: "<<e/G4LossTableManager::Instance()->GetRange(G4Electron::Electron(), e, theStep->GetTrack()->GetMaterialCutsCouple());
     std::cout<<std::endl;
   }
 
@@ -220,9 +238,9 @@ void WLSSteppingAction::Test(const G4Step *theStep, int PDGcode)
   double ratio = 0;
   double chargeSq = 0; 
   double norm = 0.0;
-  const G4ElementVector* theElementVector = Polystyrene->GetElementVector();
-  const double* theAtomNumDensityVector = Polystyrene->GetVecNbOfAtomsPerVolume();
-  size_t nelm = Polystyrene->GetNumberOfElements();
+  const G4ElementVector* theElementVector = material->GetElementVector();
+  const double* theAtomNumDensityVector = material->GetVecNbOfAtomsPerVolume();
+  size_t nelm = material->GetNumberOfElements();
   for(size_t i=0; i<nelm; ++i) 
   {
     const G4Element* elm = (*theElementVector)[i];
@@ -234,12 +252,12 @@ void WLSSteppingAction::Test(const G4Step *theStep, int PDGcode)
   }
   ratio *= CLHEP::proton_mass_c2/norm;
   chargeSq /= norm;
-  for(double e=1.0*eV; e<1.0*TeV; e*=2.0)
+  for(double e=0.001*eV; e<1.0*TeV; e*=1.2)
   {
-    std::cout<<theStep->GetTrack()->GetMaterialCutsCouple()->GetMaterial()->GetName();
+    std::cout<<material->GetName();
     std::cout<<"  Energy: "<<e;
     std::cout<<"  Range: "<<G4LossTableManager::Instance()->GetRange(G4Proton::Proton(), e*ratio, theStep->GetTrack()->GetMaterialCutsCouple());
-    std::cout<<"  Error: "<<BirksConstant*e/(G4LossTableManager::Instance()->GetRange(G4Proton::Proton(), e*ratio, theStep->GetTrack()->GetMaterialCutsCouple())/chargeSq);
+    std::cout<<"  Energy/(Range/chargeSq): "<<e/(G4LossTableManager::Instance()->GetRange(G4Proton::Proton(), e*ratio, theStep->GetTrack()->GetMaterialCutsCouple())/chargeSq);
     std::cout<<std::endl;
   }
 }

@@ -24,6 +24,12 @@ services :
 
 physics :
 {
+  producers:
+  {
+    protonTimeMap: { module_type : GenerateProtonTimes }
+    muonTimeMap: { module_type : GenerateMuonLife }
+  }
+
   analyzers:
   {
     background:
@@ -37,8 +43,8 @@ physics :
     }
   }
 
-  an : [background]
-  out: []
+  an : [protonTimeMap, muonTimeMap]
+  out: [background]
 
   end_paths: [an, out]
 }

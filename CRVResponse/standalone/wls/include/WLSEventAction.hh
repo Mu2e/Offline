@@ -17,7 +17,8 @@ class WLSEventAction : public G4UserEventAction
 
   public:
 
-    WLSEventAction(int mode, int numberOfPhotons=-1, int simType=-1, int minBin=-1, bool verbose=false);  //numberOfPhotons, simType, minBin, verbose is only needed for mode -1
+    WLSEventAction(int mode, const std::string &singlePEWaveformFilename, int numberOfPhotons=-1, int simType=-1, int minBin=-1, bool verbose=false);  
+                                                                                                                 //numberOfPhotons, simType, minBin, verbose is only needed for mode -1
     ~WLSEventAction();
 
   public:
@@ -41,6 +42,7 @@ class WLSEventAction : public G4UserEventAction
     TNtuple*                _ntuple;
     int                     _generatedPhotons;
     int                     _mode, _numberOfPhotons, _simType, _minBin;
+    std::string             _singlePEWaveformFilename;
     bool                    _verbose;
     bool                    _storeConstants;
     double                  _startZ;

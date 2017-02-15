@@ -21,7 +21,7 @@ class WLSSteppingAction : public G4UserSteppingAction
 {
   public:
 
-    WLSSteppingAction(int mode, const std::string &lookupFileName = "");
+    WLSSteppingAction(int mode, const std::string &lookupFileName = "", const std::string &visibleEnergyAdjustmentFileName = "");
     ~WLSSteppingAction();
 
     void                      UserSteppingAction(const G4Step*);
@@ -45,7 +45,7 @@ class WLSSteppingAction : public G4UserSteppingAction
     CLHEP::RandGaussQ         _randGaussQ;
     CLHEP::RandPoissonQ       _randPoissonQ;
 
-    void                      Test(const G4Step *theStep, int PDGcode);
+    void                      ShowVisibleEnergyTable(const G4Step *theStep);
 
     TNtuple*                  _ntuple;  //WLS fiber test
 };

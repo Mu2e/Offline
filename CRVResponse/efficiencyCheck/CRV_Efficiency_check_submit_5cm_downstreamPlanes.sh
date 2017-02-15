@@ -14,7 +14,6 @@ moduleGap=3
 
         ((i++));
 
-        scintTolerance="0.1"
         overlayFactor="0"
 
         genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig_5cm_downstreamPlanes'_'$i.txt
@@ -33,8 +32,6 @@ moduleGap=3
         echo "services.user.GeometryService.inputFile                 : \"$geomfile\"" >> $fclfile
         echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.scintillationYield  : $photonYield" >> $fclfile
-        echo "physics.producers.CrvPhotonArrivals.scintillationYieldTolerance  : $scintTolerance" >> $fclfile
-#        echo "physics.producers.CrvSiPMResponses.ThermalProb          : 0" >> $fclfile
         echo "physics.producers.backgroundOverlay.overlayFactor       : $overlayFactor" >> $fclfile
 
         mu2eart --setup=./setup.sh --fcl=$fclfile --njobs=50 --events-per-job=20000 --jobname=CRV_efficiency5cm_downstream_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield --outstage=/pnfs/mu2e/scratch/outstage
