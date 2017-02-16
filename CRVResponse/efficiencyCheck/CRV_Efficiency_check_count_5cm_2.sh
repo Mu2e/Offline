@@ -4,17 +4,18 @@ sides=2
 PEthreshold=12
 moduleGap=3
 
-for PEthreshold in {10..20..2}
+for PEthreshold in {10..24..2}
 do
-    for photonYield in {3047,3301,3555,3809,4063,4316,4570,4824,5078,5332,5586,5840,6094,6348}  # 24,26,28,30,32,34,36,38,40,42,44,46,48,50 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
+    for photonYield in {2575,2865,3156,3447,3738,4029,4320,4611,4901,5192,5483,5774,6065,6356,6646,6937,7228,7519,7810}  # 20,22,...,56 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
     do
 
-              files=`ls /pnfs/mu2e/scratch/outstage/ehrlich/CRV_efficiency5cm_top_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield.*/*/mu2e.log`
-#              files=`ls /pnfs/mu2e/scratch/outstage/ehrlich/CRV_efficiency5cm10_top_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield.*/*/mu2e.log`
-#              files=`ls /pnfs/mu2e/scratch/outstage/ehrlich/CRV_efficiency5cm_top6600_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield.*/*/mu2e.log`
-#              files=`ls /pnfs/mu2e/scratch/outstage/ehrlich/CRV_efficiency5cm10_top6600_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield.*/*/mu2e.log`
-#              files=`ls /pnfs/mu2e/scratch/outstage/ehrlich/CRV_efficiency5cm_side_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield.*/*/mu2e.log`
-#              files=`ls /pnfs/mu2e/scratch/outstage/ehrlich/CRV_efficiency5cm_downstream_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield.*/*/mu2e.log`
+              directory=/pnfs/mu2e/scratch/users/ehrlich/workflow
+              files=`ls $directory/CRV_Efficiency_check_5cm/outstage/*.CRV_efficiency5cm_top_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log`
+#              files=`ls $directory/CRV_Efficiency_check_5cm10/outstage/*.CRV_efficiency5cm10_top_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log`
+#              files=`ls $directory/CRV_Efficiency_check_5cm_6600/outstage/*.CRV_efficiency5cm_top6600_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log`
+#              files=`ls $directory/CRV_Efficiency_check_5cm10_6600/outstage/*.CRV_efficiency5cm10_top6600_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log`
+#              files=`ls $directory/CRV_Efficiency_check_5cm_verticalPlanes/outstage/*.CRV_efficiency5cm_side_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log`
+#              files=`ls $directory/CRV_Efficiency_check_5cm_downstreamPlanes/outstage/*.CRV_efficiency5cm_downstream_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log`
 
               events=0
               eventsCoincidence=0
@@ -23,8 +24,8 @@ do
               do
 
                 searchString="SUMMARY CrvCoincidencePE$PEthreshold""T$timeWindow"
-                searchCommand="grep '$searchString' $file"
-#                searchCommand="tail -n 70 $file | grep '$searchString'"
+#                searchCommand="grep '$searchString' $file"
+                searchCommand="tail -n 100 $file | grep '$searchString'"
                 searchResult=`eval $searchCommand`
                 if [ $? -ne 0 ]; then
                   continue
