@@ -289,6 +289,7 @@ void WLSEventAction::Draw(const G4Event* evt)
 
   static CLHEP::HepJamesRandom engine(1);
   static CLHEP::RandFlat randFlat(engine);
+  static CLHEP::RandGaussQ randGaussQ(engine);
   static CLHEP::RandPoissonQ randPoissonQ(engine);
   mu2eCrv::MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
   sim.SetSiPMConstants(1584, 615, 2.4, 0, 1695, 0.08, probabilities);
@@ -296,10 +297,11 @@ void WLSEventAction::Draw(const G4Event* evt)
   mu2eCrv::MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
   double digitizationInterval = 12.5; //ns
   double digitizationInterval2 = 1.0; //ns
+  double noise = 4.0e-4;
   makeCrvWaveform.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v2.txt", 1.0, 100);
   makeCrvWaveform2.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v2.txt", 1.0, 100);
 
-  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(174.0, false, true, true);
+  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(0.0056, 0.0, false, true, true);
 
   double startTime=-G4UniformRand()*digitizationInterval;
   std::vector<double> siPMtimes[4], siPMcharges[4];
@@ -318,6 +320,8 @@ void WLSEventAction::Draw(const G4Event* evt)
 
     makeCrvWaveform.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform[SiPM], startTime, digitizationInterval);
     makeCrvWaveform2.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform2[SiPM], startTime, digitizationInterval2);
+    makeCrvWaveform.AddElectronicNoise(waveform[SiPM], noise, randGaussQ);
+    makeCrvWaveform2.AddElectronicNoise(waveform2[SiPM], noise, randGaussQ);
   }
 
   std::ostringstream s1;
@@ -406,29 +410,13 @@ void WLSEventAction::Draw(const G4Event* evt)
     }
     graph[SiPM]=new TGraph(n,t,v);
     graph[SiPM]->SetTitle("");
-    graph[SiPM]->SetMarkerStyle(24);
+    graph[SiPM]->SetMarkerStyle(20);
     graph[SiPM]->SetMarkerSize(1.5);
     graph[SiPM]->SetMarkerColor(kRed);
     graph[SiPM]->Draw("sameP");
 
     delete[] t;
     delete[] v;
-
-//waveforms with 12.5 ns bin width for points above the threshold
-//used for the integral
-    for(unsigned int j=0; j<n; j++)
-    {
-      double tI=startTime+j*digitizationInterval;
-      double vI=waveform[SiPM][j];
-      if(tI>maxTime) break;
-      if(vI<=0.005) continue;  //below threshold for integral
-      TMarker *marker = new TMarker(tI, vI*scale, markerVector.size());
-      markerVector.push_back(marker);
-      marker->SetMarkerStyle(20);
-      marker->SetMarkerSize(1.5);
-      marker->SetMarkerColor(kRed);
-      marker->Draw("same");
-    }
 
 //fit
     makeRecoPulses.SetWaveform(waveform[SiPM], startTime, digitizationInterval);

@@ -55,7 +55,7 @@ namespace mu2e
     boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> _makeCrvRecoPulses;
 
     std::string _crvWaveformsModuleLabel;
-    double      _scale;
+    double      _scale, _offset;
     bool        _useFittedPulseHeight, _useFittedPulseTime, _doLEfit;
     int         _minPEs;
     double      _microBunchPeriod;
@@ -65,14 +65,15 @@ namespace mu2e
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
-    _scale(pset.get<double>("scale")),   //159 PEs/V
+    _scale(pset.get<double>("scale")),   //0.0056 V/PE
+    _offset(pset.get<double>("offset")),   //0 V
     _useFittedPulseHeight(pset.get<bool>("useFittedPulseHeight")),   //false, since the test beam analysis didn't use it either
     _useFittedPulseTime(pset.get<bool>("useFittedPulseTime")),   //true
     _doLEfit(pset.get<bool>("doLEfit")),   //true
     _minPEs(pset.get<int>("minPEs"))     //6 PEs
   {
     produces<CrvRecoPulsesCollection>();
-    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_scale, _useFittedPulseHeight, _useFittedPulseTime, _doLEfit));
+    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_scale, _offset, _useFittedPulseHeight, _useFittedPulseTime, _doLEfit));
   }
 
   void CrvRecoPulsesFinder::beginJob()

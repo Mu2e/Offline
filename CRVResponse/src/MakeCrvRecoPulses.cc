@@ -8,8 +8,8 @@
 namespace mu2eCrv
 {
 
-MakeCrvRecoPulses::MakeCrvRecoPulses(double scale, bool useFittedPulseHeight, bool useFittedPulseTime, bool doLEfit) : 
-                                     _scale(scale),             //conversion between pulse height and PE
+MakeCrvRecoPulses::MakeCrvRecoPulses(double scale, double offset, bool useFittedPulseHeight, bool useFittedPulseTime, bool doLEfit) : 
+                                     _scale(scale), _offset(offset),            //conversion between pulse height and PE
                                      _useFittedPulseHeight(useFittedPulseHeight),
                                      _useFittedPulseTime(useFittedPulseTime),
                                      _doLEfit(doLEfit)
@@ -171,7 +171,8 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
       _LEtimes.push_back(LEtime);
       _LEfitChi2s.push_back(LEfitChi2);
 
-      int PE = static_cast<int>(pulseHeight*_scale+0.5);  //the 0.5 is used to properly round the doubles
+      //from dark current calibration: pulse height = scale * PE + offset
+      int PE = static_cast<int>((pulseHeight-_offset)/_scale+0.5);  //the 0.5 is used to properly round the doubles
       _PEs.push_back(PE);
 
       doFit=false;

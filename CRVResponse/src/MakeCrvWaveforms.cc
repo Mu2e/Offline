@@ -76,4 +76,14 @@ void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times,
   }
 }
 
+void MakeCrvWaveforms::AddElectronicNoise(std::vector<double> &waveform, double noise, CLHEP::RandGaussQ &randGaussQ)
+{
+  std::vector<double>::iterator iter;
+  for(iter=waveform.begin(); iter!=waveform.end(); iter++)
+  {
+    double n = randGaussQ.fire(0, noise);
+    *iter+=n;
+  }
+}
+
 }

@@ -55,6 +55,7 @@ namespace mu2e
     int                                 _digitizationPoints;
     double                              _FEBtimeSpread;
     double                              _minVoltage;
+    double                              _noise;
 
     CLHEP::RandFlat                     _randFlat;
     CLHEP::RandGaussQ                   _randGaussQ;
@@ -71,6 +72,7 @@ namespace mu2e
     _digitizationPoints(pset.get<int>("digitizationPoints")),  //8 points for every single waveform
     _FEBtimeSpread(pset.get<double>("FEBtimeSpread")),         //2.0 ns (due to cable lengths differences, etc.)
     _minVoltage(pset.get<double>("minVoltage")),               //0.022V (corresponds to 3.5PE)
+    _noise(pset.get<double>("noise")),
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
@@ -151,6 +153,7 @@ namespace mu2e
         //first create the full waveform
         std::vector<double> fullWaveform;
         _makeCrvWaveforms->MakeWaveform(times, charges, fullWaveform, startTime, _digitizationPrecision);
+        _makeCrvWaveforms->AddElectronicNoise(fullWaveform, _noise, _randGaussQ);
 
         //break the waveform apart into short pieces (_digitizationPoints)
         //and apply the zero suppression, i.e. set all waveform digi points to zero which are below the minimum voltage, 
