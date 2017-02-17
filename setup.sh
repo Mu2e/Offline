@@ -60,6 +60,7 @@ build=$($MU2E_BASE_RELEASE/buildopts --build)
 # and is therefore different from the value shown in
 # SETUP_<productname> environment vars, or by the "ups active" command.
 export MU2E_UPS_QUALIFIERS=+e10:+${build}
+export MU2E_ART_SQUALIFIER=s41
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
 if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
@@ -80,10 +81,13 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --triggerStrip) == "off" ]]; then
   setup -B geant4 v4_9_6_p04e -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
 fi
 
+# Get access to raw data formats.
+setup -B mu2e_artdaq_core v1_01_00 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
+
 # Other libraries we need.
 setup -B heppdt v3_04_01e -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_01_03a  -q${MU2E_UPS_QUALIFIERS}
-setup -B xerces_c  v3_1_3    -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_01_03a -q${MU2E_UPS_QUALIFIERS}
+setup -B xerces_c  v3_1_3 -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_5_0
