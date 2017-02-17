@@ -278,7 +278,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // apparently, ntupling stuff was mixed in, almost removed
 //-----------------------------------------------------------------------------
-      idisk  = extrk->sectionId();
+      idisk  = extrk->diskId();
 					// assume Z(middle of the disk)
 
       s1       = extrk->pathLengthEntrance();
@@ -313,7 +313,7 @@ namespace mu2e {
       if (_debugLevel > 2){
       }
 
-      tp_disk = cg->toSectionFrame(idisk,tp_mu2e);
+      tp_disk = cg->geomUtil().mu2eToDisk(idisk,tp_mu2e);
       trk_x   = tp_disk.x();
       trk_y   = tp_disk.y();
 
@@ -368,7 +368,7 @@ namespace mu2e {
 					            // move peak to zero
 	dt      = trk_time-cl_time-_dtOffset;
 
-	if (cl->sectionId() != idisk           )            goto NEXT_CLUSTER;
+	if (cl->diskId() != idisk           )            goto NEXT_CLUSTER;
 	if (cl->energyDep() < _minClusterEnergy)            goto NEXT_CLUSTER;
 	if (std::fabs(dt)   > _maxDeltaT       )            goto NEXT_CLUSTER;
 //------------------------------------------------------------------------------
@@ -392,8 +392,8 @@ namespace mu2e {
 // point closest to the cluster in 2D (XY) - want to understand coordinate and 
 // angle resolutions
 //-----------------------------------------------------------------------------
-	cp_mu2e = cg->fromSectionFrame(idisk,cl->cog3Vector());
-	cp_st   = cg->toTrackerFrame(cp_mu2e);
+	cp_mu2e = cg->geomUtil().diskToMu2e(idisk,cl->cog3Vector());
+	cp_st   = cg->geomUtil().mu2eToTracker(cp_mu2e);
 
 	cp_dx   = cp_st.x()-trk_x0;
 	cp_dy   = cp_st.y()-trk_y0;

@@ -43,7 +43,6 @@
 #include "TrkDiag/inc/TrkCount.hh"
 #include "TrkDiag/inc/TrkCaloDiag.hh"
 #include "TrkDiag/inc/EventInfo.hh"
-#include "TrkDiag/inc/TrkHitShare.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
 

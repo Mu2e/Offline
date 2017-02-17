@@ -68,7 +68,7 @@ source :
 services :
 {
   message               : @local::default_message
-  TFileService          : { fileName : "hist.root" }
+  TFileService          : { fileName : "nts.owner.crv_efficiency.ver.seq.root" }
   RandomNumberGenerator : { }
 
   user :
@@ -125,35 +125,53 @@ physics :
        }
     }
 
+    backgroundOverlay :
+    {
+       module_type   : CrvBackgroundOverlay
+       backgroundFile: "CRVResponse/efficiencyCheck/background_5600.root"
+       overlayFactor : 2
+    }
+
+    protonTimeMap: { module_type : GenerateProtonTimes }
+    muonTimeMap: { module_type : GenerateMuonLife }
+
     CrvPhotonArrivals: @local::CrvPhotonArrivals
     CrvSiPMResponses : @local::CrvSiPMResponses
     CrvWaveforms     : @local::CrvWaveforms
     CrvRecoPulses    : @local::CrvRecoPulses
 
-    CrvCoincidencePE6T5  : @local::CrvCoincidence
-    CrvCoincidencePE8T5  : @local::CrvCoincidence
     CrvCoincidencePE10T5  : @local::CrvCoincidence
     CrvCoincidencePE12T5  : @local::CrvCoincidence
     CrvCoincidencePE14T5  : @local::CrvCoincidence
     CrvCoincidencePE16T5  : @local::CrvCoincidence
-    CrvCoincidencePE6T10  : @local::CrvCoincidence
-    CrvCoincidencePE8T10  : @local::CrvCoincidence
+    CrvCoincidencePE18T5  : @local::CrvCoincidence
+    CrvCoincidencePE20T5  : @local::CrvCoincidence
+    CrvCoincidencePE22T5  : @local::CrvCoincidence
+    CrvCoincidencePE24T5  : @local::CrvCoincidence
     CrvCoincidencePE10T10  : @local::CrvCoincidence
     CrvCoincidencePE12T10  : @local::CrvCoincidence
     CrvCoincidencePE14T10  : @local::CrvCoincidence
     CrvCoincidencePE16T10  : @local::CrvCoincidence
-    CrvCoincidencePE6T15  : @local::CrvCoincidence
-    CrvCoincidencePE8T15  : @local::CrvCoincidence
+    CrvCoincidencePE18T10  : @local::CrvCoincidence
+    CrvCoincidencePE20T10  : @local::CrvCoincidence
+    CrvCoincidencePE22T10  : @local::CrvCoincidence
+    CrvCoincidencePE24T10  : @local::CrvCoincidence
     CrvCoincidencePE10T15  : @local::CrvCoincidence
     CrvCoincidencePE12T15  : @local::CrvCoincidence
     CrvCoincidencePE14T15  : @local::CrvCoincidence
     CrvCoincidencePE16T15  : @local::CrvCoincidence
-    CrvCoincidencePE6T20  : @local::CrvCoincidence
-    CrvCoincidencePE8T20  : @local::CrvCoincidence
+    CrvCoincidencePE18T15  : @local::CrvCoincidence
+    CrvCoincidencePE20T15  : @local::CrvCoincidence
+    CrvCoincidencePE22T15  : @local::CrvCoincidence
+    CrvCoincidencePE24T15  : @local::CrvCoincidence
     CrvCoincidencePE10T20  : @local::CrvCoincidence
     CrvCoincidencePE12T20  : @local::CrvCoincidence
     CrvCoincidencePE14T20  : @local::CrvCoincidence
     CrvCoincidencePE16T20  : @local::CrvCoincidence
+    CrvCoincidencePE18T20  : @local::CrvCoincidence
+    CrvCoincidencePE20T20  : @local::CrvCoincidence
+    CrvCoincidencePE22T20  : @local::CrvCoincidence
+    CrvCoincidencePE24T20  : @local::CrvCoincidence
   }
 
   filters: 
@@ -167,31 +185,39 @@ physics :
   }
 
 
-  trig : [generate, g4run, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, belowCrvFilter,
-          CrvCoincidencePE6T5,
-          CrvCoincidencePE8T5,
+  trig : [generate, g4run, belowCrvFilter, backgroundOverlay, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses,
           CrvCoincidencePE10T5,
           CrvCoincidencePE12T5,
           CrvCoincidencePE14T5,
           CrvCoincidencePE16T5,
-          CrvCoincidencePE6T10,
-          CrvCoincidencePE8T10,
+          CrvCoincidencePE18T5,
+          CrvCoincidencePE20T5,
+          CrvCoincidencePE22T5,
+          CrvCoincidencePE24T5,
           CrvCoincidencePE10T10,
           CrvCoincidencePE12T10,
           CrvCoincidencePE14T10,
           CrvCoincidencePE16T10,
-          CrvCoincidencePE6T15,
-          CrvCoincidencePE8T15,
+          CrvCoincidencePE18T10,
+          CrvCoincidencePE20T10,
+          CrvCoincidencePE22T10,
+          CrvCoincidencePE24T10,
           CrvCoincidencePE10T15,
           CrvCoincidencePE12T15,
           CrvCoincidencePE14T15,
           CrvCoincidencePE16T15,
-          CrvCoincidencePE6T20,
-          CrvCoincidencePE8T20,
+          CrvCoincidencePE18T15,
+          CrvCoincidencePE20T15,
+          CrvCoincidencePE22T15,
+          CrvCoincidencePE24T15,
           CrvCoincidencePE10T20,
           CrvCoincidencePE12T20,
           CrvCoincidencePE14T20,
-          CrvCoincidencePE16T20
+          CrvCoincidencePE16T20,
+          CrvCoincidencePE18T20,
+          CrvCoincidencePE20T20,
+          CrvCoincidencePE22T20,
+          CrvCoincidencePE24T20
          ]  
 
   trigger_paths  : [trig]
@@ -202,14 +228,8 @@ physics :
 physics.producers.CrvPhotonArrivals.timeOffsets    : { inputs : [] }
 physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
 physics.producers.CrvPhotonArrivals.processNames   : ["*"]
-physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["CRVConditions/v1_0/LookupTable_5600"]
+physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["CRVConditions/v3_0/LookupTable_5600"]
 physics.producers.CrvPhotonArrivals.lookupTableCounterLengths : [5600]
-
-physics.producers.CrvCoincidencePE6T5.PEthresholds                    : [6]
-physics.producers.CrvCoincidencePE6T5.maxTimeDifferences              : [5]
-
-physics.producers.CrvCoincidencePE8T5.PEthresholds                    : [8]
-physics.producers.CrvCoincidencePE8T5.maxTimeDifferences              : [5]
 
 physics.producers.CrvCoincidencePE10T5.PEthresholds                   : [10]
 physics.producers.CrvCoincidencePE10T5.maxTimeDifferences             : [5]
@@ -223,11 +243,17 @@ physics.producers.CrvCoincidencePE14T5.maxTimeDifferences             : [5]
 physics.producers.CrvCoincidencePE16T5.PEthresholds                   : [16]
 physics.producers.CrvCoincidencePE16T5.maxTimeDifferences             : [5]
 
-physics.producers.CrvCoincidencePE6T10.PEthresholds                   : [6]
-physics.producers.CrvCoincidencePE6T10.maxTimeDifferences             : [10]
+physics.producers.CrvCoincidencePE18T5.PEthresholds                   : [18]
+physics.producers.CrvCoincidencePE18T5.maxTimeDifferences             : [5]
 
-physics.producers.CrvCoincidencePE8T10.PEthresholds                   : [8]
-physics.producers.CrvCoincidencePE8T10.maxTimeDifferences             : [10]
+physics.producers.CrvCoincidencePE20T5.PEthresholds                   : [20]
+physics.producers.CrvCoincidencePE20T5.maxTimeDifferences             : [5]
+
+physics.producers.CrvCoincidencePE22T5.PEthresholds                   : [22]
+physics.producers.CrvCoincidencePE22T5.maxTimeDifferences             : [5]
+
+physics.producers.CrvCoincidencePE24T5.PEthresholds                   : [24]
+physics.producers.CrvCoincidencePE24T5.maxTimeDifferences             : [5]
 
 physics.producers.CrvCoincidencePE10T10.PEthresholds                  : [10]
 physics.producers.CrvCoincidencePE10T10.maxTimeDifferences            : [10]
@@ -241,11 +267,17 @@ physics.producers.CrvCoincidencePE14T10.maxTimeDifferences            : [10]
 physics.producers.CrvCoincidencePE16T10.PEthresholds                  : [16]
 physics.producers.CrvCoincidencePE16T10.maxTimeDifferences            : [10]
 
-physics.producers.CrvCoincidencePE6T15.PEthresholds                   : [6]
-physics.producers.CrvCoincidencePE6T15.maxTimeDifferences             : [15]
+physics.producers.CrvCoincidencePE18T10.PEthresholds                  : [18]
+physics.producers.CrvCoincidencePE18T10.maxTimeDifferences            : [10]
 
-physics.producers.CrvCoincidencePE8T15.PEthresholds                   : [8]
-physics.producers.CrvCoincidencePE8T15.maxTimeDifferences             : [15]
+physics.producers.CrvCoincidencePE20T10.PEthresholds                  : [20]
+physics.producers.CrvCoincidencePE20T10.maxTimeDifferences            : [10]
+
+physics.producers.CrvCoincidencePE22T10.PEthresholds                  : [22]
+physics.producers.CrvCoincidencePE22T10.maxTimeDifferences            : [10]
+
+physics.producers.CrvCoincidencePE24T10.PEthresholds                  : [24]
+physics.producers.CrvCoincidencePE24T10.maxTimeDifferences            : [10]
 
 physics.producers.CrvCoincidencePE10T15.PEthresholds                  : [10]
 physics.producers.CrvCoincidencePE10T15.maxTimeDifferences            : [15]
@@ -259,11 +291,17 @@ physics.producers.CrvCoincidencePE14T15.maxTimeDifferences            : [15]
 physics.producers.CrvCoincidencePE16T15.PEthresholds                  : [16]
 physics.producers.CrvCoincidencePE16T15.maxTimeDifferences            : [15]
 
-physics.producers.CrvCoincidencePE6T20.PEthresholds                   : [6]
-physics.producers.CrvCoincidencePE6T20.maxTimeDifferences             : [20]
+physics.producers.CrvCoincidencePE18T15.PEthresholds                  : [18]
+physics.producers.CrvCoincidencePE18T15.maxTimeDifferences            : [15]
 
-physics.producers.CrvCoincidencePE8T20.PEthresholds                   : [8]
-physics.producers.CrvCoincidencePE8T20.maxTimeDifferences             : [20]
+physics.producers.CrvCoincidencePE20T15.PEthresholds                  : [20]
+physics.producers.CrvCoincidencePE20T15.maxTimeDifferences            : [15]
+
+physics.producers.CrvCoincidencePE22T15.PEthresholds                  : [22]
+physics.producers.CrvCoincidencePE22T15.maxTimeDifferences            : [15]
+
+physics.producers.CrvCoincidencePE24T15.PEthresholds                  : [24]
+physics.producers.CrvCoincidencePE24T15.maxTimeDifferences            : [15]
 
 physics.producers.CrvCoincidencePE10T20.PEthresholds                  : [10]
 physics.producers.CrvCoincidencePE10T20.maxTimeDifferences            : [20]
@@ -276,6 +314,18 @@ physics.producers.CrvCoincidencePE14T20.maxTimeDifferences            : [20]
 
 physics.producers.CrvCoincidencePE16T20.PEthresholds                  : [16]
 physics.producers.CrvCoincidencePE16T20.maxTimeDifferences            : [20]
+
+physics.producers.CrvCoincidencePE18T20.PEthresholds                  : [18]
+physics.producers.CrvCoincidencePE18T20.maxTimeDifferences            : [20]
+
+physics.producers.CrvCoincidencePE20T20.PEthresholds                  : [20]
+physics.producers.CrvCoincidencePE20T20.maxTimeDifferences            : [20]
+
+physics.producers.CrvCoincidencePE22T20.PEthresholds                  : [22]
+physics.producers.CrvCoincidencePE22T20.maxTimeDifferences            : [20]
+
+physics.producers.CrvCoincidencePE24T20.PEthresholds                  : [24]
+physics.producers.CrvCoincidencePE24T20.maxTimeDifferences            : [20]
 
 services.user.SeedService.baseSeed         :  773651
 services.user.SeedService.maxUniqueEngines :  20

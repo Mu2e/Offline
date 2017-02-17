@@ -63,15 +63,12 @@ physics: {
     # Form StrawHits (SH).
     makeSH2 : @local::makeSH
 
-    # Form CaloHits (APD hits)
-    CaloReadoutHitsMaker2 : @local::MakeCaloReadoutHits
-
-    # Form CaloCrystalHits (reconstruct crystals from APDs)
-    CaloCrystalHitsMaker2 : @local::CaloCrystalHitsMaker
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
 
 }
 
-    p1: [SPEP, g4run2, makeSH2, CaloReadoutHitsMaker2, CaloCrystalHitsMaker2]
+    p1: [SPEP, g4run2, makeSH2, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco]
     e1: [outfile2]
 
 	trigger_paths  :  [p1]
@@ -99,6 +96,4 @@ outputs:
 services.user.SeedService.baseSeed         :  0
 services.user.SeedService.maxUniqueEngines :  20
 physics.producers.makeSH2.g4ModuleLabel    :  g4run2
-physics.producers.CaloReadoutHitsMaker2.g4ModuleLabel    :  g4run2
-physics.producers.CaloCrystalHitsMaker2.g4ModuleLabel    :  g4run2
 physics.producers.g4run2.generatorModuleLabel   :  SPEP

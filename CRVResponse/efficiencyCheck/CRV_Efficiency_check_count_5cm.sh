@@ -1,19 +1,21 @@
 layerOffset=42
 timeWindow=10
 sides=2
-PEthreshold=10
-  for moduleGap in {1..5}
-  do
-    for photonYield in {3000,3500,4000}  # 24,27,31PE/SiPM for 5cm wide / 5.6m long counter
+PEthreshold=12
+moduleGap=3
+
+    for photonYield in {3156,3738,4320}  # 24,28,32 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
     do
       for layerOffset in {0..62..2}
       do
 
-#       for PEthreshold in {6..16..2}
-#       do
-
-
-              files=`ls /pnfs/mu2e/scratch/outstage/ehrlich/CRV_efficiency5cm_top_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield.*/*/mu2e.log`
+              directory=/pnfs/mu2e/scratch/users/ehrlich/workflow
+              files=`ls $directory/CRV_Efficiency_check_5cm/outstage/*.CRV_efficiency5cm_top_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log`
+#              files=`ls $directory/CRV_Efficiency_check_5cm10/outstage/*.CRV_efficiency5cm10_top_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log`
+#              files=`ls $directory/CRV_Efficiency_check_5cm_6600/outstage/*.CRV_efficiency5cm_top6600_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log`
+#              files=`ls $directory/CRV_Efficiency_check_5cm10_6600/outstage/*.CRV_efficiency5cm10_top6600_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log`
+#              files=`ls $directory/CRV_Efficiency_check_5cm_verticalPlanes/outstage/*.CRV_efficiency5cm_side_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log`
+#              files=`ls $directory/CRV_Efficiency_check_5cm_downstreamPlanes/outstage/*.CRV_efficiency5cm_downstream_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log`
 
               events=0
               eventsCoincidence=0
@@ -38,10 +40,8 @@ PEthreshold=10
 
               done
 
-              inefficiency=`echo "$eventsCoincidence/$events" | bc -l`
-              echo modulegap:$moduleGap layerOffset:$layerOffset photonYield:$photonYield PEThreshold:$PEthreshold timeWindow:$timeWindow sidesChecked:$sides eventsCoincidence:$eventsCoincidence eventsTotal:$events inefficiency:$inefficiency
+              efficiency=`echo "$eventsCoincidence/$events" | bc -l`
+              echo modulegap:$moduleGap layerOffset:$layerOffset photonYield:$photonYield PEThreshold:$PEthreshold timeWindow:$timeWindow sidesChecked:$sides eventsCoincidence:$eventsCoincidence eventsTotal:$events efficiency:$efficiency
 
-#       done
       done
     done
- done

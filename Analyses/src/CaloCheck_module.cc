@@ -220,7 +220,8 @@ namespace mu2e {
 	  {	      	      
 	       for (auto const& crystalIncluster : clusterIt.caloCrystalHitsPtrVector()) 
 	       {
-		    if (cal.crystal(hit.id()).sectionId() != cal.crystal(crystalIncluster->id()).sectionId()) break;
+		    if (cal.crystal(hit.id()).diskId() !=
+                    cal.crystal(crystalIncluster->id()).diskId()) break;
 
 		    if (&(*crystalIncluster) == &hit) ++nCr;
                     if (nCr > 1) std::cout<<"Warning, crystal associated to more than one cluster "<<hit.id()<<" for cluster "<<nClu<<std::endl;

@@ -239,9 +239,9 @@ namespace mu2e {
        ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
        const Calorimeter& cal  = *(GeomHandle<Calorimeter>());
-       int    nROs             = cal.caloGeomInfo().nROPerCrystal();
-       double cryhalflength    = cal.caloGeomInfo().crystalHalfLength();
-       double refractiveIndex  = cal.caloGeomInfo().refractiveIndex();
+       int    nROs             = cal.caloInfo().nROPerCrystal();
+       double cryhalflength    = cal.caloInfo().crystalHalfLength();
+       double refractiveIndex  = cal.caloInfo().refractiveIndex();
        double lightSpeed       = 300; // mm/ns
 
 
@@ -447,7 +447,7 @@ DEFINE_ART_MODULE(CaloShowerStepROFromShowerStep);
 /*
 //little snipper I kept in case it will be needed...
 
-double crystalDecayTime = cal.caloGeomInfo().crystalDecayTime();
+double crystalDecayTime = cal.caloInfo().crystalDecayTime();
 
 ////generate each photon hitting the readout, correcting time for scintillator decay time - get crackin'
 //int nPhot            = std::max(int(edep_corr_RO*NpePerMeV),1);

@@ -56,7 +56,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
@@ -336,14 +335,13 @@ namespace mu2e {
     TString opt = Opt;
 
     art::ServiceHandle<GeometryService> geom;
-    //if(! geom->hasElement<VaneCalorimeter>() ) return;
     GeomHandle<Calorimeter> cg;
 
     printf("[%s] >>> ERROR : yet to learn how to print the crystal indices in case of disks\n", oname);
 
     if ((opt == "") || (opt.Index("banner") >= 0)) {
       printf("-----------------------------------------------------------------------\n");
-      printf("VaneID       Time   Row   Col   Energy       X          Y        Z     \n");
+      printf("DISKID       Time   Row   Col   Energy       X          Y        Z     \n");
       printf("-----------------------------------------------------------------------\n");
     }
     
@@ -354,7 +352,7 @@ namespace mu2e {
       int nh = caloClusterHits.size();
       Hep3Vector pos;
       //-----------------------------------------------------------------------------
-      // print individual crystals in local vane coordinate system
+      // print individual crystals in local disk coordinate system
       //-----------------------------------------------------------------------------
       for (int i=0; i<nh; i++) {
 	const CaloCrystalHit* hit = &(*caloClusterHits.at(i));
@@ -362,14 +360,10 @@ namespace mu2e {
 
 	pos = cg->crystal(id).localPosition();
 
-	if(geom->hasElement<mu2e::VaneCalorimeter>() ){
-	  GeomHandle<VaneCalorimeter> cgvane;
-	  iz  = cgvane->nCrystalX();
-	  ir  = cgvane->nCrystalY();
-	}else{
- 	  iz = -1;
-	  ir = -1;
-	}
+
+ 	iz = -1;
+	ir = -1;
+	
 
 	
 	
@@ -484,7 +478,6 @@ namespace mu2e {
 
     const KalRep*       trk;
     const CaloCluster*  cl;
-    //    int             vane_id;
     double xl, yl,      event_time(-9999.);
     TString             opt; 
 
@@ -618,52 +611,16 @@ namespace mu2e {
     arc->DrawArc( tmid->xc(), tmid->yc(), tmid->rho());
     arc->SetLineColor(kRed);
     //-----------------------------------------------------------------------------
-    // draw vanes or disks
+    // draw disks
     //-----------------------------------------------------------------------------
-    int nv(0);// = vc->nVane();
-    if( geom->hasElement<mu2e::VaneCalorimeter>() ){
-      mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
-      nv = vc->nVane();
-    }else if( geom->hasElement<mu2e::DiskCalorimeter>() ){
+    int nv(0);
+    if( geom->hasElement<mu2e::DiskCalorimeter>() ){
       mu2e::GeomHandle<mu2e::DiskCalorimeter> dc;
       nv = dc->nDisk();
     }
-    //mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
-    double rmin, rmax, x1(-1.),y1(-1.),x2(-1.),y2(-1.);
-    if( geom->hasElement<mu2e::VaneCalorimeter>() ){
-      mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
-      for (int iv=0; iv<nv; iv++) {
-	const Vane* vane = &vc->vane(iv);
-	rmin = vane->innerRadius();
-	rmax = vane->outerRadius();
-	if(iv == 3) {			// top
-	  x1 = -50;
-	  y1 = rmin;
-	  x2 = 50;
-	  y2 = rmax;
-	}
-	else if (iv == 0) { // left
-	  x1 = -rmax;;
-	  y1 = -50;
-	  x2 = -rmin;
-	  y2 = +50;
-	}
-	else if (iv == 1) {		// bottom
-	  x1 = -50;
-	  y1 = -rmax;
-	  x2 = +50;
-	  y2 = -rmin;
-	}
-	else if (iv == 2) {		// right
-	  x1 = rmin;
-	  y1 = -50;
-	  x2 = rmax;
-	  y2 = +50;
-	}
-	box->DrawBox(x1,y1,x2,y2);
-      }
-    }
-    else if(geom->hasElement<mu2e::DiskCalorimeter>()) {
+
+    double rmin, rmax; //x1(-1.),y1(-1.),x2(-1.),y2(-1.);
+    if(geom->hasElement<mu2e::DiskCalorimeter>()) {
       
       mu2e::GeomHandle<mu2e::DiskCalorimeter> dc;
       // Draw the inner and outer arc of calorimeter
@@ -711,16 +668,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	if (cl->energyDep() > 5.) {
 	  // poor-man's translation
-	  //	  vane_id = cl->vaneId();
 	  xl      = cl->cog3Vector().x()+3904.1;
 	  yl      = cl->cog3Vector().y();
 	  
 	  e = new TEllipse(xl,yl,50.*cl->energyDep()/100.);
 	  e->SetFillStyle(3001);
-	  if( geom->hasElement<mu2e::VaneCalorimeter>() ){
-	    color = 2;
-	  }else if(geom->hasElement<mu2e::DiskCalorimeter>()){
-	    color = module_color[cl->sectionId()];
+	  if(geom->hasElement<mu2e::DiskCalorimeter>()){
+	    color = module_color[cl->diskId()];
 	  }
 	  e->SetFillColor(color);
 	  e->SetLineColor(color);

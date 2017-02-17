@@ -90,3 +90,4 @@ physics: {
 
 services.user.SeedService.baseSeed         :  99
 services.user.SeedService.maxUniqueEngines :  20
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"

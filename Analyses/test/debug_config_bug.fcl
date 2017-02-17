@@ -16,7 +16,7 @@
 BEGIN_PROLOG
   generatorSeq  : [ generate, g4run, protonTimeMap, muonTimeMap ]
 
-  hitMakerSeq   : [ MakeCaloReadoutHits, MakeCaloCrystalHits, @sequence::Tracking.DigiSim ]
+  hitMakerSeq   : [ @sequence::CaloDigiMC.DigiSim, @sequence::CaloReco.Reco, @sequence::Tracking.DigiSim ]
 
   allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDeM ]
 END_PROLOG

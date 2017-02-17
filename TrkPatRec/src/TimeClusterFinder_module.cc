@@ -327,7 +327,7 @@ namespace mu2e {
     // add cluster time
     if(tclust._caloCluster.isNonnull()){
       double ctime = _ttcalc.caloClusterTime(*tclust._caloCluster);
-      double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
+      double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tclust._caloCluster->diskId()),2);
       tacc(ctime,weight=wt);
     }
     // set peak info
@@ -382,7 +382,7 @@ namespace mu2e {
       // add cluster time. 
       if(tclust._caloCluster.isNonnull()){
 	double time = _ttcalc.caloClusterTime(*tclust._caloCluster);
-	double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
+	double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tclust._caloCluster->diskId()),2);
 	tacc(time,weight=wt);
       }
       pphi = extract_result<tag::mean>(facc);
@@ -413,7 +413,7 @@ namespace mu2e {
     // add cluster time
     if(tclust._caloCluster.isNonnull()){
       double time = _ttcalc.caloClusterTime(*tclust._caloCluster);
-      double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tclust._caloCluster->sectionId()),2);
+      double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tclust._caloCluster->diskId()),2);
       terr(time,weight=wt);
     }
     // actually remove the hits; must start from the back

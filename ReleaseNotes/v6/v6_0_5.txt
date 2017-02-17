@@ -1,7 +1,19 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v6_0_5
 
+5)  dnbrow01  24 Jan 2017
+    Added a conf file for geometry testing (runs a simple event and produces
+    a mu2e.gdml file) so one doesn't need to change Mu2eG4/fcl/prolog.fcl
+    and then accidentally commit it...
+    Modified the first floor south of the main building to more correctly 
+    reflect as-built construction.
+    modified:   Mu2eG4/geom/bldg/dirtDsAreaFirstFloorS.txt
+    modified:   Mu2eG4/geom/bldg/dsAreaFirstFloorS.txt
+    modified:   ReleaseNotes/v6/v6_0_5.txt
+    new file:   Mu2eG4/gcl/geomTest_01.fcl
+
+4)  dnbrow01  23 Jan 2017
+    Undid my accidental change to Mu2eG4/fcl/prolog.fcl yesterday.
+   
 3)  dnbrow01  22 Jan 2017
     Small modification to a vertex to fix a minuscule overlap that 
     was just exposed in recent releases.

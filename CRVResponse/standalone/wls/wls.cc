@@ -103,7 +103,9 @@ void DrawHistograms(const std::string &lookupFilename)
   std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals> crvPhotonArrivals;
   CLHEP::HepJamesRandom  engine(0);
   CLHEP::RandFlat randFlat(engine);
-  crvPhotonArrivals = std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(randFlat));
+  CLHEP::RandGaussQ randGausQ(engine);
+  CLHEP::RandPoissonQ randPoissonQ(engine);
+  crvPhotonArrivals = std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(randFlat, randGausQ, randPoissonQ));
   crvPhotonArrivals->LoadLookupTable(lookupFilename);
   crvPhotonArrivals->DrawHistograms();
 }
@@ -165,6 +167,9 @@ int main(int argc, char** argv)
     std::cout<<"                  2300  2300 mm"<<std::endl;
     std::cout<<"                   900   900 mm"<<std::endl;
     std::cout<<"-n events    Number of events to simulate (default 1000)."<<std::endl;
+    std::cout<<"-r seed      seed for random number generator (default: 0)."<<std::endl;
+    std::cout<<"-y pos       y coordinate of starting point (default: 0 = center between fibers)."<<std::endl;
+    std::cout<<"-z pos       z coordinate of starting point (default: 1000 = 1m away from left side of counter)."<<std::endl;
     std::cout<<std::endl;
     std::cout<<"Options for running the simulation with lookup table:"<<std::endl;
     std::cout<<"-f filename  File with lookup table used for running a simulation"<<std::endl;
@@ -244,9 +249,16 @@ int main(int argc, char** argv)
     }
   }
 
+  double posY=0;
+  double posZ=1000;
+  int r=0;
+  findArgs(argc, argv, "-y", posY);
+  findArgs(argc, argv, "-z", posZ);
+  findArgs(argc, argv, "-r", r);
+
   G4String physName = "QGSP_BERT_EMV";
 //  G4String physName = "QGSP_BERT_HP";  //for neutrons
-  G4int seed = 0;
+  G4int seed = r;
 
   CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
   CLHEP::HepRandom::setTheSeed(seed);
@@ -257,10 +269,13 @@ int main(int argc, char** argv)
   runManager->SetUserInitialization(new WLSDetectorConstruction(lengthOption));
   runManager->SetUserInitialization(new WLSPhysicsList(physName));
 
-  WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose);   //n,simType,minBin not needed in modes 0,1
+  WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose, posY, posZ);   //n,simType,minBin not needed in modes 0,1
+                                                                                                                         //posY, posZ has no effect in mode -1
   WLSRunAction* runAction = new WLSRunAction();
-  WLSEventAction* eventAction = new WLSEventAction(mode, n, simType, minBin, verbose); 
-  WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename);  //filename not needed in modes -1,0
+  std::string singlePEWaveformFilename="/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v2.txt";
+  std::string visibleEnergyAdjustmentFilename="/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/visibleEnergyAdjustment.txt";
+  WLSEventAction* eventAction = new WLSEventAction(mode, singlePEWaveformFilename, n, simType, minBin, verbose); 
+  WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename, visibleEnergyAdjustmentFilename);  //filename not needed in modes -1,0
 
   runManager->SetUserAction(generator);
   runManager->SetUserAction(runAction);

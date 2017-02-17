@@ -38,15 +38,15 @@ namespace mu2e{
       ~DiskCalorimeterMaker();
 
       // Accessor and unique_ptr to calorimeter needed by GeometryService.
-      std::unique_ptr<DiskCalorimeter> _calo;
-      std::unique_ptr<DiskCalorimeter> calorimeterPtr() { return std::move(_calo); }
+      std::unique_ptr<DiskCalorimeter> calo_;
+      std::unique_ptr<DiskCalorimeter> calorimeterPtr() { return std::move(calo_); }
 
     private:
 
       void MakeDisks(void);
       void CheckIt(void);
 
-      int _verbosityLevel;
+      int verbosityLevel_;
 
     };
 

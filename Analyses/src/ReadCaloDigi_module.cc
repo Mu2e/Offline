@@ -493,8 +493,8 @@ namespace mu2e {
     _evt          = event.id().event();
     _run          = event.run();
     _caloCrystals = _calorimeter->nCrystal();
-    _caloDisk0Crystals = _calorimeter->section(0).nCrystals();
-    _caloDisk1Crystals = _calorimeter->section(1).nCrystals();
+    _caloDisk0Crystals = _calorimeter->disk(0).nCrystals();
+    _caloDisk1Crystals = _calorimeter->disk(1).nCrystals();
     _nTrkGood          = 0;
 
     //--------------------------------------------------------------------------------
@@ -686,7 +686,7 @@ namespace mu2e {
       //amplitude  = recoDigi->amplitude()*ADC2mV;
       roId       = recoDigi->ROid();
       crystalId  = _calorimeter->crystalByRO(roId);
-      diskId     = _calorimeter->crystal(crystalId).sectionId();
+      diskId     = _calorimeter->crystal(crystalId).diskId();
 
       crystalPos = _calorimeter->crystal(crystalId).localPositionFF();
       radius     = sqrt(crystalPos.x()*crystalPos.x() + crystalPos.y()*crystalPos.y());
@@ -786,7 +786,7 @@ namespace mu2e {
       _cryPosZ[_nHits]      = crystalPos.z();
       _cryPosR[_nHits]      = sqrt( _cryPosX[_nHits]*_cryPosX[_nHits] + crystalPos.y()*crystalPos.y() );
       _cryId[_nHits]        = hit.id();
-      _crySectionId[_nHits] = _calorimeter->crystal(hit.id()).sectionId();
+      _crySectionId[_nHits] = _calorimeter->crystal(hit.id()).diskId();
 
       int    indexMC, nParticles(0);
       int    isConversion(0);
@@ -805,7 +805,7 @@ namespace mu2e {
           //    if ( sim->fromGenerator() ){
           const CLHEP::Hep3Vector genPos = sim->startPosition();
 
-          if (!_calorimeter->isInsideCalorimeter(genPos)){
+          if (!_calorimeter->geomUtil().isInsideCalorimeter(genPos)){
             ++nParticles;
 
             int        pdgId       = sim->pdgId();
@@ -909,7 +909,7 @@ namespace mu2e {
       _cluCogX      [i]     = cluster->cog3Vector().x();
       _cluCogY      [i]     = cluster->cog3Vector().y();
       _cluCogR      [i]     = sqrt(_cluCogX[i]*_cluCogX[i] + _cluCogY[i]*_cluCogY[i]);
-      _cluCogZ      [i]     = cluster->sectionId();//cog3Vector().z();
+      _cluCogZ      [i]     = cluster->diskId();//cog3Vector().z();
       _cluConv      [i]     = isConversion;
 
     }//end filling calo clusters info

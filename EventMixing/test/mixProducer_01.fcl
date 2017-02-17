@@ -54,11 +54,8 @@ physics :
     # Form StrawHits (SH).
     makeSH : @local::makeSH
 
-    # Form CaloHits (APD hits)
-    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-
-    # Form CaloCrystalHits (reconstruct crystals from APDs)
-    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
 
     randomsaver : @local::randomsaver
 
@@ -72,7 +69,7 @@ physics :
       module_type            : ReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
-      caloReadoutModuleLabel : CaloReadoutHitsMaker
+      caloReadoutModuleLabel : CaloShowerStepROFromShowerStep
       diagLevel              : 0
       minimumEnergy          : 0.000
       maxFullPrint           : 201
@@ -88,7 +85,7 @@ physics :
 
   }
 
-  p1 : [generate , g4run , makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
+  p1 : [generate , g4run , makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
   e1 : [checkhits, readStrawHits, outfile]
 
   trigger_paths  : [p1]
@@ -111,8 +108,4 @@ outputs:
 
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5
-physics.producers.CaloReadoutHitsMaker.diagLevel : 0
-physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
-physics.producers.CaloCrystalHitsMaker.diagLevel : 0
-physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
 physics.producers.generate.inputfile : "Mu2eG4/test/genconfig_01.txt"

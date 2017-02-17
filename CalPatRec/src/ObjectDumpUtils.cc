@@ -10,7 +10,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
@@ -132,7 +131,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
   
   if (opt.Index("hits") >= 0) {
 //-----------------------------------------------------------------------------
-// print individual crystals in local vane coordinate system
+// print individual crystals in local disk coordinate system
 //-----------------------------------------------------------------------------
     for (int i=0; i<nh; i++) {
       const mu2e::CaloCrystalHit* hit = &(*caloClusterHits.at(i));
@@ -143,15 +142,8 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
       cr  = &cal->crystal(id);
       pos = &cr->localPosition();
 
-      if (geom->hasElement<mu2e::VaneCalorimeter>()) {
-	mu2e::GeomHandle<mu2e::VaneCalorimeter> cgvane;
-	iz  = cgvane->nCrystalX();
-	ir  = cgvane->nCrystalY();
-      }
-      else {
-	iz = -1;
-	ir = -1;
-      }
+      iz = -1;
+      ir = -1;
       
       printf("%6i     %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f %10.3f\n",
 	     id,

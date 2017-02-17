@@ -246,9 +246,9 @@ namespace mu2e {
     //fill the calorimeter cluster info
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     const mu2e::Calorimeter*     calorimeter = ch.get();
-    Hep3Vector                   gpos        = calorimeter->fromSectionFrameFF(cl->sectionId(),
+    Hep3Vector                   gpos        = calorimeter->geomUtil().mu2eToDiskFF(cl->diskId(),
 									       cl->cog3Vector());
-    Hep3Vector                   tpos        = calorimeter->toTrackerFrame(gpos);
+    Hep3Vector                   tpos        = calorimeter->geomUtil().mu2eToTracker(gpos);
     fCaloTime = cl->time();
     fCaloX    = tpos.x();   
     fCaloY    = tpos.y();   

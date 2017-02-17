@@ -40,17 +40,17 @@ physics :{
       CaloHitPrinter : {
         verbose: 1   # 0, 1
         #eCut : 10.0          # cut on hits
-	#inputTags : [ "MakeCaloReadoutHits" ] # select instances
+	#inputTags : [ "CaloShowerStepROFromShowerStep" ] # select instances
       }
       CaloCrystalHitPrinter : {
         verbose: 1   # 0, 1
         #eCut : 10.0          # cut on hits
-	#inputTags : [ "MakeCaloCrystalHits" ] # select instances
+	#inputTags : [ "CaloCrystalHitsFromHits" ] # select instances
       }
       CaloClusterPrinter : {
         verbose: 1   # 0, 1
         eCut : -10.0          # cut on hits
-	#inputTags : [ "MakeCaloCrystalHits" ] # select instances
+	#inputTags : [ "CaloClusterFromProtoCluster" ] # select instances
       }
 
       StrawDigiPrinter : {

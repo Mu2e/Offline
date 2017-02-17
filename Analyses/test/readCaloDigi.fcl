@@ -46,24 +46,13 @@ physics : {
 #------------------------------------------------------------------------------
         protonTimeMap             : { @table::protonTimeMap }
         muonTimeMap               : { @table::muonTimeMap }
-
-	MakeCaloReadoutHits       : @local::MakeCaloReadoutHits
-	MakeCaloCrystalHits       : @local::MakeCaloCrystalHitsNew
-	
-	MakeCaloCompressedHits    : @local::MakeCaloCompressedHits
+	@table::CaloDigiMC.producers
 
 #------------------------------------------------------------------------------
-# Calorimeter digitization
+# Calorimeter digitization and clustering
 #------------------------------------------------------------------------------
-	CaloDigisFromStepPointMCs   :{ @table::CaloDigisFromStepPointMCs}
-	CaloHitsFromCaloDigis       :{ @table::CaloHitsFromCaloDigis}
-	CaloCrystalHitsFromCaloHits :{ @table::CaloCrystalHitsFromCaloHits}
-
-#------------------------------------------------------------------------------
-# Calorimeter clustering modules
-#------------------------------------------------------------------------------
-	MakeCaloProtoCluster            : @local::MakeCaloProtoCluster
-	MakeCaloCluster                 : @local::MakeCaloCluster
+	@table::CaloReco.producers
+	@table::CaloCluster.producers
     }
 
     filters: {
@@ -122,13 +111,9 @@ physics : {
 #	   , detectorFilter 
 	   , protonTimeMap, muonTimeMap
 	   #
-	   , MakeCaloCompressedHits
-	   , CaloDigisFromStepPointMCs
-	   , CaloHitsFromCaloDigis
-	   , CaloCrystalHitsFromCaloHits
-           , MakeCaloProtoCluster
-	   , MakeCaloCluster
-	   # 
+          , @sequence::CaloDigiMC.DigiSim
+          , @sequence::CaloReco.Reco	 
+	  , @sequence::CaloCluster.Reco 
 
 	 ]
 

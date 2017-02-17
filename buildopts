@@ -11,16 +11,19 @@ fi
 
 #================================================================
 # known keywords
-kkw=(build g4vis)
+kkw=(build g4vis triggerStrip)
 # a list of allowed values, the first one is the default
 opts_build() {
     echo prof debug
 }
-# a list of allowed values, the first one is the defaultg
+# a list of allowed values, the first one is the default
 opts_g4vis() {
     echo ogl qt none
 }
-
+# a list of allowed values, the first one is the default
+opts_triggerStrip(){
+    echo off on
+}
 #================================================================
 # the --help option overrides everything else on the command line
 help=0

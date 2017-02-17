@@ -265,7 +265,7 @@ namespace mu2e {
 	   _cryPosY[_nHits]      = crystalPos.y();
 	   _cryPosZ[_nHits]      = crystalPos.z();
 	   _cryId[_nHits]        = hit.id();
-	   _crySectionId[_nHits] = cal.crystal(hit.id()).sectionId();
+	   _crySectionId[_nHits] = cal.crystal(hit.id()).diskId();
            ++_nHits;
        }
       

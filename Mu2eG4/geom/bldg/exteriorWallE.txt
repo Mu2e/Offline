@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_exteriorWallE.ccl
+
+string building.exteriorWall.E.name     = "exteriorWallE";
+
+string building.exteriorWall.E.material = "CONCRETE_MARS";
+
+double building.exteriorWall.E.offsetFromMu2eOrigin.x   = 947.4;
+double building.exteriorWall.E.offsetFromFloorSurface.y = 12725.4;
+double building.exteriorWall.E.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.exteriorWall.E.yHalfThickness           = 4953;
+
+vector<double> building.exteriorWall.E.xPositions = {
+  45669.2,   // q1
+  45669.2,   // q2
+  37985.7,   // q3
+  37985.7,   // q4
+  45262.8,   // q5
+  45262.8   // q6
+};
+
+vector<double> building.exteriorWall.E.yPositions = {
+  1955.8,   // q1
+  -10541,   // q2
+  -10541,   // q3
+  -10134.6,   // q4
+  -10134.6,   // q5
+  1955.8   // q6
+};
+
+// Local Variables:
+// mode:c++
+// End:

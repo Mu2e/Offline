@@ -80,8 +80,8 @@ physics : {
         muonTimeMap          : { module_type : GenerateMuonLife }
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
-	CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+	@table::CaloDigiMC.producers
+	@table::CaloReco.producers
 #------------------------------------------------------------------------------
 #  default tracking
 #------------------------------------------------------------------------------
@@ -93,7 +93,7 @@ physics : {
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
-	MakeCaloCluster      : @local::MakeCaloCluster
+	@table::CaloCluster.producers
 	MakeStrawHitPositions: @local::MakeStrawHitPositions
 	CalPatRec            : @local::CalPatRec
 	MergePatRec          : @local::MergePatRec
@@ -147,8 +147,9 @@ physics : {
 	  , FilterStepPointMomentum
 	  , protonTimeMap, muonTimeMap 
 	  , makeSD, makeSH
-	  , CaloReadoutHitsMaker, CaloCrystalHitsMaker
-	  , MakeCaloCluster
+          , @sequence::CaloDigiMC.DigiSim
+          , @sequence::CaloReco.Reco		  
+          , @sequence::CaloCluster.Reco
 # 
 	  , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec 
 #

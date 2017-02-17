@@ -5,21 +5,26 @@ BEGIN_PROLOG
       module_type               : CrvPhotonArrivalsGenerator
       g4ModuleLabels            : ["*"]
       processNames              : ["*"]
-      lookupTableFileNames      : ["CRVConditions/v2_0/LookupTable_6600",
-                                   "CRVConditions/v2_0/LookupTable_5600",
-                                   "CRVConditions/v2_0/LookupTable_4500",
-                                   "CRVConditions/v2_0/LookupTable_3000",
-                                   "CRVConditions/v2_0/LookupTable_2300",
-                                   "CRVConditions/v2_0/LookupTable_900"]
+      lookupTableFileNames      : ["CRVConditions/v3_0/LookupTable_6600",
+                                   "CRVConditions/v3_0/LookupTable_5600",
+                                   "CRVConditions/v3_0/LookupTable_4500",
+                                   "CRVConditions/v3_0/LookupTable_3000",
+                                   "CRVConditions/v3_0/LookupTable_2300",
+                                   "CRVConditions/v3_0/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
-      scintillationYield        : 8500.0   //8500.0 photons per MeV (corresponds to 53.0 PE/SiPM @ 1m away from counter)
-      scintillationYieldTolerance :  0.0   //0%
+      scintillationYield        : 6000.0   //6000.0 photons per MeV corresponds to 85.53 PEs for both SiPMs combined @ 1m away from SiPMs
+                                           //scintillation yield = 72.712 photons/MeV * PE - 333.86 photons/MeV, 
+                                           //where PE is the PE yield for both SiPMs combined @ 1m away from SiPMs
+      scintillationYieldVariation       : 0.2   //gaussian distribution with sigma equal to 20% of the mean
+      scintillationYieldVariationCutoff : 0.4   //the scintillation yield variation is cut off at 40% below the mean
       scintillatorBirksConstant : 0.126    //0.126 mm/Mev
       scintillatorRatioFastSlow : 1.0      //100% fast
       scintillatorDecayTimeFast : 3.0      //3.0 ns   //includes WLS component in the scintillator
       scintillatorDecayTimeSlow : 100.0    //100.0 ns  //unknown, not used
       fiberDecayTime            : 7.4      //7.4 ns
       startTime                 : 400.0    //0.0 ns
+      visibleEnergyAdjustmentFileName : "CRVResponse/fcl/visibleEnergyAdjustment.txt"
+      timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
     }
     CrvSiPMResponses:
     {
@@ -56,23 +61,25 @@ BEGIN_PROLOG
     {
       module_type                  : CrvWaveformsGenerator
       crvSiPMResponsesModuleLabel  : "CrvSiPMResponses"
-      singlePEWaveformFileName     : "CRVResponse/fcl/singlePEWaveform.txt"
+      singlePEWaveformFileName     : "CRVResponse/fcl/singlePEWaveform_v2.txt"
       singlePEWaveformPrecision    : 0.5    //0.5 ns
       singlePEWaveformMaxTime      : 100    //100 ns
       digitizationPrecision        : 12.5   //12.5 ns (digitizer sampling rate)
       digitizationPoints           : 8      //8 points
       FEBtimeSpread                : 2.0    //2.0 ns
-      minVoltage                   : 0.022  //22mV (corresponds to 3.5PE)
+      minVoltage                   : 0.0316 //31.6mV (corresponds to 5.5PE) using dark current calibration
+      noise                        : 4.0e-4 //0.4mV
     }
     CrvRecoPulses:
     {
       module_type               : CrvRecoPulsesFinder
       crvWaveformsModuleLabel   : "CrvWaveforms"
-      param0                    : 0.0      //0.0
-      param1                    : 162.0    //162.0  (would be about 100.0 if all PEs arrived at the same time)
-      pulseThreshold            : 0.005    //5mV  //for integral
-      leadingEdgeThreshold      : 0.2      //20% of the maximum bin
-      minPEs                    : 4        //4 PEs
+      scale                     : 0.0056   //0.0056 V/PE
+      offset                    : 0.0      //0 V   //from dark current calibration: pulse height = scale * PE + offset
+      useFittedPulseHeight      : false    //not used in test beam analysis
+      useFittedPulseTime        : true
+      doLEfit                   : true
+      minPEs                    : 6        //6 PEs
     }
     CrvCoincidence:
     {
@@ -86,8 +93,8 @@ BEGIN_PROLOG
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
       maxSlopeDifference            : 2.0    //
       acceptThreeAdjacentCounters   : false  //use hits in three adjacent counters in one layer to form a coincidence
-      timeWindowStart               : 550    //ns
-      timeWindowEnd                 : 1750   //1695ns  //if timeWindowEnd > microbunch period (1695), then the time window loops back to the begining (0)
+      timeWindowStart               : 500    //ns
+      timeWindowEnd                 : 1750   //ns
       leadingVetoTime               : 0      //the time window before the first hit time of the coincidence triplet (only used to print out the results)
       trailingVetoTime              : 125    //the time window after the last hit time of the coincidence triplet (only used to print out the results)
     }

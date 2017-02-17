@@ -120,7 +120,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                  )
 
 # Define and register the rule for building dictionaries.
-genreflex = Builder(action="./bin/genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\" $LIBNAME $DEBUG_LEVEL" )
+genreflex = Builder(action="mu2e_genreflex $SOURCE $TARGET  \"$_CPPINCFLAGS\" $LIBNAME $DEBUG_LEVEL" )
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
 # Get the flag that controls compiler options. Check that it is legal.
@@ -194,6 +194,13 @@ for root,dirs,files in os.walk('.'):
         if file == 'SConscript': ss.append('%s/%s'%(root[2:],file))
         pass
     pass
+
+# If we are making a build for the trigger, do not build everything.
+triggerStrip = subprocess.check_output([bopt, '--triggerStrip']).strip()
+if triggerStrip == 'on':
+    ss.remove('Mu2eG4/src/SConscript')
+    ss.remove('CRVResponse/src/SConscript')
+    ss.remove('Sandbox/src/SConscript')
 
 # Define a helper class to construct names of .so libaries. Make an
 # instance of it available to the SConscript files.

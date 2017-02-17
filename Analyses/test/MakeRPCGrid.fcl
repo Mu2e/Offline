@@ -88,11 +88,8 @@ physics :
     # Form StrawHits (SH).
     makeSH : @local::makeSH
 
-    # Form CaloHits (APD hits)
-    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-
-    # Form CaloCrystalHits (reconstruct crystals from APDs)
-    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
 
     randomsaver : @local::randomsaver
 
@@ -111,12 +108,12 @@ physics :
 
 
   p1 : [generate, g4run,
-        makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker,
+        makeSH, @sequence::CaloDigiMC.DigiSim, @sequence::CaloReco.Reco,
         randomsaver]
   e1 : [outfile]
 # mode0 is a path name, which is a collection of module labels (filters is a collection of module parameter sets)
 mode0: [generate, g4run,
-        makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker,
+        makeSH, @sequence::CaloDigiMC.DigiSim, @sequence::CaloReco.Reco,
         randomsaver, selectMode0 ]
 # trigger paths can only be a collection of path names, not a mixture
 # of path names and module labels!! key intellectual point
@@ -143,7 +140,3 @@ outputs:
 physics.producers.generate.inputfile : "Analyses/test/rpcInternalTestConfig.txt"
 #physics.producers.makeSH.diagLevel : 0
 #physics.producers.makeSH.maxFullPrint : 5
-#physics.producers.CaloReadoutHitsMaker.diagLevel : 0
-#physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
-#physics.producers.CaloCrystalHitsMaker.diagLevel : 0
-#physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201

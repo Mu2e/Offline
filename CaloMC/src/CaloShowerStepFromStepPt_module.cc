@@ -285,7 +285,7 @@ namespace mu2e {
          PhysicalVolumeMultiHelper vi(*vols_);
 
          const Calorimeter& cal = *(GeomHandle<Calorimeter>());
-         zSliceSize_             = (2.0*cal.caloGeomInfo().crystalHalfLength()+0.01)/float(numZSlices_);
+         zSliceSize_             = (2.0*cal.caloInfo().crystalHalfLength()+0.01)/float(numZSlices_);
 
 
          // Collect the StepPointMC's produced by each SimParticle Ancestor
@@ -293,7 +293,6 @@ namespace mu2e {
 
          std::map<SimPtr,CaloCompressUtil> crystalAncestorsMap; 
          collectStepBySimAncestor(cal,vi,crystalStepsHandles,crystalAncestorsMap);
-
 
 
          //Loop over ancestor simParticles, check if they are compressible, and produce the corresponding caloShowerStepMC
@@ -322,8 +321,8 @@ namespace mu2e {
 
                         if (diagLevel_ > 2)
                         {
-                            CLHEP::Hep3Vector startSection = cal.toSectionFrame(0,sim->startPosition());
-                            CLHEP::Hep3Vector endSection   = cal.toSectionFrame(0,sim->endPosition());
+                            CLHEP::Hep3Vector startSection = cal.geomUtil().mu2eToDisk(0,sim->startPosition());
+                            CLHEP::Hep3Vector endSection   = cal.geomUtil().mu2eToDisk(0,sim->endPosition());
                             double rStart = sqrt(startSection.x()*startSection.x()+startSection.y()*startSection.y());
                             double rEnd   = sqrt(endSection.x()*endSection.x()+endSection.y()*endSection.y());
                             
@@ -420,10 +419,11 @@ namespace mu2e {
                     SimPtr sim = step.simParticle();
 
                     SimParticlePtrCollection inspectedSims;              
-                    while (sim->hasParent() && isInsideCalorimeter(vi,sim) )  
+                    //while (sim->hasParent() && isInsideCalorimeter(vi,sim) )  
+                    while (sim->hasParent() && cal.geomUtil().isInsideCalorimeter(sim->startPosition()) )  
                     {
                         //simparticle starting in one section and ending in another one see note above
-                        if (!cal.isContainedSection(sim->startPosition(),sim->endPosition()) ) break; 
+                        if (!cal.geomUtil().isContainedSection(sim->startPosition(),sim->endPosition()) ) break; 
                         
                         auto const alreadyInspected = simToAncestorMap.find(sim);
                         if (alreadyInspected != simToAncestorMap.end()) {sim = alreadyInspected->second; break;}
@@ -474,7 +474,7 @@ namespace mu2e {
           ShowerStepUtil buffer(numZSlices_,ShowerStepUtil::weight_type::energy );        
           for (const StepPointMC* step : steps)
           {               
-               CLHEP::Hep3Vector pos  = (isCrystal) ? cal.toCrystalFrame(volId,step->position()) : cal.toCrystalFrame(cal.crystalByRO(volId),step->position());
+               CLHEP::Hep3Vector pos  = (isCrystal) ? cal.geomUtil().mu2eToCrystal(volId,step->position()) : cal.geomUtil().mu2eToCrystal(cal.crystalByRO(volId),step->position());
                int               idx  = (isCrystal) ? int(std::max(1e-6,pos.z())/zSliceSize_) : 0;
                
 

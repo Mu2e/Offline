@@ -55,6 +55,7 @@ namespace mu2e
     int                                 _digitizationPoints;
     double                              _FEBtimeSpread;
     double                              _minVoltage;
+    double                              _noise;
 
     CLHEP::RandFlat                     _randFlat;
     CLHEP::RandGaussQ                   _randGaussQ;
@@ -71,6 +72,7 @@ namespace mu2e
     _digitizationPoints(pset.get<int>("digitizationPoints")),  //8 points for every single waveform
     _FEBtimeSpread(pset.get<double>("FEBtimeSpread")),         //2.0 ns (due to cable lengths differences, etc.)
     _minVoltage(pset.get<double>("minVoltage")),               //0.022V (corresponds to 3.5PE)
+    _noise(pset.get<double>("noise")),
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
@@ -100,16 +102,15 @@ namespace mu2e
 
     double samplingPointShift = _randFlat.fire()*_digitizationPrecision;
 
-    if(_timeShiftFEBsSide0.empty())
+    GeomHandle<CosmicRayShield> CRS;
+    _timeShiftFEBsSide0.clear();
+    _timeShiftFEBsSide1.clear();
+    unsigned int nCounters = CRS->getAllCRSScintillatorBars().size();
+    unsigned int nFEBs = ceil(nCounters/32.0);
+    for(unsigned int i=0; i<nFEBs; i++)    
     {
-      GeomHandle<CosmicRayShield> CRS;
-      unsigned int nCounters = CRS->getAllCRSScintillatorBars().size();
-      unsigned int nFEBs = ceil(nCounters/32.0);
-      for(unsigned int i=0; i<nFEBs; i++)    
-      {
-        _timeShiftFEBsSide0.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
-        _timeShiftFEBsSide1.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
-      }
+      _timeShiftFEBsSide0.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
+      _timeShiftFEBsSide1.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
     }
 
     for(CrvSiPMResponsesCollection::const_iterator iter=crvSiPMResponsesCollection->begin(); 
@@ -152,6 +153,7 @@ namespace mu2e
         //first create the full waveform
         std::vector<double> fullWaveform;
         _makeCrvWaveforms->MakeWaveform(times, charges, fullWaveform, startTime, _digitizationPrecision);
+        _makeCrvWaveforms->AddElectronicNoise(fullWaveform, _noise, _randGaussQ);
 
         //break the waveform apart into short pieces (_digitizationPoints)
         //and apply the zero suppression, i.e. set all waveform digi points to zero which are below the minimum voltage, 
@@ -183,11 +185,27 @@ namespace mu2e
 
   bool CrvWaveformsGenerator::SingleWaveformStart(std::vector<double> &fullWaveform, size_t i)
   {
-    if(fullWaveform[i]>_minVoltage) return true;  //assumes that fullWaveform[i] is valid
+    if(fullWaveform[i]>_minVoltage) return true;  //this point is above the threshold --> start recording
+
+    //record at least two points before and after a point above the zero suppression threshold to help with the peak reconstruction
+    if(i+2<fullWaveform.size())
+    {
+      if(fullWaveform[i+2]>_minVoltage) return true;  //the point following the next point is above the threshold --> start recording
+    }
 
     if(i+1<fullWaveform.size())
     {
-      if(fullWaveform[i+1]>_minVoltage) return true;
+      if(fullWaveform[i+1]>_minVoltage) return true;  //the following point is above the threshold --> start recording
+    }
+
+    if(i-1>=0)
+    {
+      if(fullWaveform[i-1]>_minVoltage) return true;  //the previous point was above the threshold --> continue recording
+    }
+
+    if(i-2>=0)
+    {
+      if(fullWaveform[i-2]>_minVoltage) return true;  //the point before the previous point was above the threshold --> continue recording
     }
 
     return false;

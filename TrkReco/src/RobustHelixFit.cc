@@ -9,7 +9,7 @@
 #include "TrkReco/inc/RobustHelixFit.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // boost
@@ -396,7 +396,7 @@ namespace mu2e
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
       const Calorimeter* calo = ch.get();
     // cluster position in detector coordinates
-      Hep3Vector cog = calo->toTrackerFrame(calo->fromSectionFrameFF(hseed.caloCluster()->sectionId(),hseed.caloCluster()->cog3Vector())); 
+      Hep3Vector cog = calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector())); 
       pos.push_back(WPos(cog.perpPart(),_ccwt));
     }
     // loop over all triples
@@ -486,7 +486,7 @@ namespace mu2e
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
       const Calorimeter* calo = ch.get();
     // cluster position in detector coordinates
-      Hep3Vector cog = calo->toTrackerFrame(calo->fromSectionFrameFF(hseed.caloCluster()->sectionId(),hseed.caloCluster()->cog3Vector()));
+      Hep3Vector cog = calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector()));
       double rad = Hep3Vector(cog - center).perp();
       radii.push_back(make_pair(rad,_ccwt));
     }

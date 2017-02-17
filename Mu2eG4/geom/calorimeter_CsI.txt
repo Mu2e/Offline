@@ -9,6 +9,11 @@ double calorimeter.calorimeterZFront            = 11843.0;     // front posiiton
                                                                // MUST be at least 1 mm larger than caloMotherZ0 for placing virtual detectors
 string calorimeter.vacuumMaterial               = "DSVacuum";
 string calorimeter.fillMaterial                 = "DSVacuum";
+string calorimeter.innerRingMaterial            = "CarbonFiber";
+string calorimeter.outerRingMaterial            = "G4_Al";
+string calorimeter.outerRingEdgeMaterial        = "G4_Al";
+// string calorimeter.stepsMaterial                = "Polyetheretherketone";
+string calorimeter.stepsMaterial                = "G4_Al";
 string calorimeter.diskMaterial                 = "DSVacuum";
 double calorimeter.caseThickness                = 0;  
 
@@ -21,8 +26,14 @@ double calorimeter.fillerOuterRadius		= 410.0; // mm
 double calorimeter.fillerFullLength		= 400.0; // mm
 double calorimeter.fillerZCenter		= 13010.0; // mm (Cannot cut into disk or MBS)
 
+double calorimeter.caseThicknessIn     = 5.;  
+double calorimeter.caseThicknessOut    = 10.;
 
+double calorimeter.stepsRadiusIn       = 351.;
+double calorimeter.stepsRadiusOut      = 660.;
 
+double calorimeter.outerRingEdgeDepth     = 30.;
+double calorimeter.outerRingEdgeThickness = 48.;    
 
 //disk description
 int    calorimeter.numberOfDisks               =  2;
@@ -30,6 +41,8 @@ vector<double> calorimeter.diskInnerRadius     = {374.,374.}; //mm
 vector<double> calorimeter.diskOuterRadius     = {660.,660.}; //mm
 vector<double> calorimeter.diskRotationAngle   = {0.,0.};     //rad
 vector<double> calorimeter.diskSeparation      = {0.,700.};   //mm  separation w.r.t first disk
+
+
 
 
 
@@ -61,11 +74,35 @@ double calorimeter.readoutElecHalfZ            = 27;
 
 // Electronics crate
 int calorimeter.crateVersion        = 2; 
-string calorimeter.crateMaterial    = "Electronics"; 
+int calorimeter.numberOfCrates      = 10;
+int calorimeter.numberOfBoards      = 9;
+
+double calorimeter.crateHalfX = 95.;
+double calorimeter.crateHalfY = 91.5;
+double calorimeter.crateHalfZ = 175.;
+
+double calorimeter.crateTopHalfY    = 2.5;
+double calorimeter.crateBottomHalfY = 4.;
+double calorimeter.crateSideHalfY   = 85.;
+double calorimeter.crateSideHalfX   = 10.;
+
+string calorimeter.crateMaterial    = "G4_Al"; 
 double calorimeter.crateInnerRadius = 670;       
-double calorimeter.crateOuterRadius = 815;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
+double calorimeter.crateOuterRadius = 930;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
 double calorimeter.crateHalfLength  = 215.575;
 
+string calorimeter.shieldMaterial   = "G4_W";
+
+// Crate components
+string calorimeter.radiatorMaterial    = "G4_Al";
+string calorimeter.activeStripMaterial = "Electronics"; // need to be changed with a mixed material (combination of Copper, Plexiglass and Silicon)
+
+double calorimeter.boardHalfY       = 3.;
+double calorimeter.radiatorHalfY    = 1.5;
+double calorimeter.activeStripHalfY = 1.3;
+
+// string calorimeter.copperPlaneMaterial    = "G4_Cu";
+// string calorimeter.substrateMaterial      = "G4_PLEXIGLASS";
 
 
 // calibrtion system
@@ -81,15 +118,16 @@ string calorimeter.pipeMaterial                = "G4_Al";
 
 bool calorimeter.calorimeterVisible           = false;
 bool calorimeter.calorimeterSolid             = false;
-bool calorimeter.boxVisible                   = true;
+bool calorimeter.boxVisible                   = false;
 bool calorimeter.boxSolid                     = false;
 bool calorimeter.caseVisible                  = true;
 bool calorimeter.caseSolid                    = false;
-bool calorimeter.pipeVisible                  = false;
+bool calorimeter.pipeVisible                  = true;
 bool calorimeter.pipeSolid                    = false;
 bool calorimeter.crystalVisible               = true;
 bool calorimeter.crystalSolid                 = false;
 bool calorimeter.absorberBoxVisible           = false;
 bool calorimeter.absorberBoxSolid             = false;
+bool calorimeter.shieldSolid                  = true;
 
 int  calorimeter.verbosityLevel               = 1;

@@ -6,8 +6,8 @@
 #include <iostream>
 using namespace std;
 
-TrkRecoDiag::TrkRecoDiag(TTree *tree, double norm) : fChain(0) ,_tffval(32,0), _norm(norm),
-_eff(0), _rej(0)
+TrkRecoDiag::TrkRecoDiag(TTree *tree, double norm) : _chain(0) ,_tffval(32,0), _norm(norm),
+_eff(0), _acc(0), _effcan(0)
 {
 // build branches 
    Init(tree);
@@ -24,91 +24,202 @@ _eff(0), _rej(0)
 
 void TrkRecoDiag::Loop()
 {
-   if (fChain == 0) return;
+   if (_chain == 0) return;
 
-   Long64_t nentries = fChain->GetEntriesFast();
+   Long64_t nentries = _chain->GetEntries();
 
    Long64_t nbytes = 0, nb = 0;
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
-      nb = fChain->GetEntry(jentry);   nbytes += nb;
-      std::vector<bool> effcuts, rejcuts;
-      effcuts.push_back(true); rejcuts.push_back(effcuts.back());// 0 bin counts number of events
+      nb = _chain->GetEntry(jentry);   nbytes += nb;
+      std::vector<bool> effcuts, acccuts;
+      effcuts.push_back(true); acccuts.push_back(effcuts.back());// 0 bin counts number of events
       effcuts.push_back(ndigi >= 15); // events with at least 15 digis from the primary particle
       // take time modulo MB period
       float mctime = fmod(mcmidt0,1695.0);
       effcuts.push_back(mctime > 500.0 ); // primary track passed the tracker during 
       float  mccost = mcmidpz/mcmidmom;
       static float highcost = 1.0/sqrt(2.0)+0.05;
+      float hd0 = hsh__rcent - hsh__radius;
+      float hrmax  = hsh__rcent + hsh__radius;
+      float hmom = sqrt(hsh__radius*hsh__radius + hsh__lambda*hsh__lambda);
       effcuts.push_back(mccost > 0.45 && mccost < highcost ); // track direction (with buffer)
-      effcuts.push_back(tcn > 10 ); rejcuts.push_back(effcuts.back());// reconstructed time cluster associated with primary track
-      effcuts.push_back((hsf__value&_tffval[hitsOK])>0);rejcuts.push_back(effcuts.back());
-      effcuts.push_back((hsf__value&_tffval[circleOK])>0);rejcuts.push_back(effcuts.back());
-      effcuts.push_back((hsf__value&_tffval[phizOK])>0);rejcuts.push_back(effcuts.back());
-      effcuts.push_back((hsf__value&_tffval[helixOK])>0);rejcuts.push_back(effcuts.back());
-      effcuts.push_back((ksf__value&_tffval[hitsOK])>0);rejcuts.push_back(effcuts.back());
-      effcuts.push_back((ksf__value&_tffval[seedOK])>0);rejcuts.push_back(effcuts.back());
-      effcuts.push_back((kff__value&_tffval[hitsOK])>0);rejcuts.push_back(effcuts.back());
-      effcuts.push_back((kff__value&_tffval[kalmanOK])>0);rejcuts.push_back(effcuts.back());
+      effcuts.push_back(tcn > 10 ); acccuts.push_back(effcuts.back());// reconstructed time cluster associated with primary track
+      effcuts.push_back((hsf__value&_tffval[circleOK])>0);
+      effcuts.push_back((hsf__value&_tffval[helixOK])>0);acccuts.push_back(effcuts.back());
+      effcuts.push_back(hsna > 10 && hmom > 270.0 && hmom < 390.0);acccuts.push_back(effcuts.back());
+      effcuts.push_back((ksf__value&_tffval[seedOK])>0);acccuts.push_back(effcuts.back());
+      effcuts.push_back(ksm>85.0 && ksm < 110.0);acccuts.push_back(effcuts.back());
+      effcuts.push_back((kff__value&_tffval[kalmanOK])>0);acccuts.push_back(effcuts.back());
 
-      // effcuts are cumulative
+      // efficiency 
+      if((int)effcuts.size() != _eff->GetNbinsX())
+	cout << "Error: Efficiency cuts size " << effcuts.size() << " != " << _eff->GetNbinsX() << endl;
       for(unsigned icut=0;icut< effcuts.size(); ++icut){
-	Float_t fcut = (Float_t)icut;
 	if(effcuts[icut])
-	  _eff->Fill(fcut);
+	  _eff->Fill((Float_t)icut);
 	else
 	  break;
       }
-      // as are rejection cuts
-      for(unsigned icut=0;icut< rejcuts.size(); ++icut){
-	Float_t fcut = (Float_t)icut;
-	if(rejcuts[icut])
-	  _rej->Fill(fcut);
+      // acceptance
+      if((int)acccuts.size() != _acc->GetNbinsX())
+	cout << "Error: Acceptance cuts size " << acccuts.size() << " != " << _acc->GetNbinsX() << endl;
+      for(unsigned icut=0;icut< acccuts.size(); ++icut){
+	if(acccuts[icut])
+	  _acc->Fill((Float_t)icut);
 	else
 	  break;
-      } 
+      }
+
+      // histogram values that pass final Kalman fit
+      bool helixfit = (hsf__value&_tffval[helixOK])>0;
+      bool seedfit = (ksf__value&_tffval[seedOK])>0;
+      bool kalfit = (kff__value&_tffval[kalmanOK])>0;
+      if(helixfit){
+	_hn->Fill(hsn);
+	_hna->Fill(hsna);
+	_hd0->Fill(hd0);
+	_hrmax->Fill(hrmax);
+	_hmom->Fill(hmom);
+	_hrad->Fill(hsh__radius);
+	_hlam->Fill(hsh__lambda);
+	if(seedfit){
+	  _shn->Fill(hsn);
+	  _shna->Fill(hsna);
+	  _shd0->Fill(hd0);
+	  _shrmax->Fill(hrmax);
+	  _shmom->Fill(hmom);
+	  _shrad->Fill(hsh__radius);
+	  _shlam->Fill(hsh__lambda);
+	  _ssna->Fill(ksna);
+	  _ssmom->Fill(ksm);
+	  if(kalfit){
+	    _fhn->Fill(hsn);
+	    _fhna->Fill(hsna);
+	    _fhd0->Fill(hd0);
+	    _fhrmax->Fill(hrmax);
+	    _fhmom->Fill(hmom);
+	    _fhrad->Fill(hsh__radius);
+	    _fhlam->Fill(hsh__lambda);
+	    _fsna->Fill(ksna);
+	    _fsmom->Fill(ksm);
+	  }
+	}
+      }
    }
    // normalize
-   if(_norm <= 0.0 )
-     _norm = _eff->GetBinContent(1);
-   cout << "NOrmalizeing histograms to " << _norm << endl;
+   cout << "Normalizing efficiency to " << _norm << endl;
    _eff->Scale(1.0/_norm);
-   _rej->Scale(1.0/_norm);
+   _acc->Scale(1.0/_norm);
 }
 
 void TrkRecoDiag::createHistos() {
-  cout << "in createHistos" << endl;
   // define the bin labels for efficiency plot
-  std::vector<string> effbins, rejbins;
-  effbins.push_back("All Events");rejbins.push_back(effbins.back());
+  std::vector<string> effbins, accbins;
+  effbins.push_back("All Events");accbins.push_back(effbins.back());
   effbins.push_back("MC NDigis");
   effbins.push_back("MC t0");
   effbins.push_back("MC Pitch");
-  effbins.push_back("Time Cluster");rejbins.push_back(effbins.back());
-  effbins.push_back("Helix NHits");rejbins.push_back(effbins.back());
-  effbins.push_back("Helix Circle Fit");rejbins.push_back(effbins.back());
-  effbins.push_back("Helix #phiZ Fit");rejbins.push_back(effbins.back());
-  effbins.push_back("Helix Fit");rejbins.push_back(effbins.back());
-   effbins.push_back("Seed NHits");rejbins.push_back(effbins.back());
-   effbins.push_back("Seed Fit");rejbins.push_back(effbins.back());
-   effbins.push_back("Kalman NHits");rejbins.push_back(effbins.back());
-   effbins.push_back("Kalman Fit");rejbins.push_back(effbins.back());
+  effbins.push_back("Time Cluster");accbins.push_back(effbins.back());
+  effbins.push_back("Circle Fit");
+  effbins.push_back("Helix Fit");accbins.push_back(effbins.back());
+  effbins.push_back("Helix Cuts");accbins.push_back(effbins.back());
+  effbins.push_back("Seed Fit");accbins.push_back(effbins.back());
+  effbins.push_back("Seed Cuts");accbins.push_back(effbins.back());
+  effbins.push_back("Kalman Fit");accbins.push_back(effbins.back());
 
-   _eff = new TH1F("eff","Efficiency",effbins.size(),-0.5,effbins.size()-0.5);
-   for(unsigned ibin=0; ibin< effbins.size(); ++ibin){
-     _eff->GetXaxis()->SetBinLabel(ibin+1,effbins[ibin].c_str());
-    }
+  _eff = new TH1F("eff",title("Efficiency"),effbins.size(),-0.5,effbins.size()-0.5);
+  _acc = new TH1F("acc",title("Acceptance"),accbins.size(),-0.5,accbins.size()-0.5);
+  for(unsigned ibin=0; ibin< effbins.size(); ++ibin){
+    _eff->GetXaxis()->SetBinLabel(ibin+1,effbins[ibin].c_str());
+  }
+  _eff->SetStats(0);
+  _eff->SetMarkerStyle(20);
+  _eff->Sumw2();
+  _eff->SetMaximum(1.0);
+  _eff->SetLineColor(_chain->GetLineColor());
+  _eff->SetMarkerColor(_chain->GetLineColor());
 
-   _rej = new TH1F("rej","Rejection",rejbins.size(),-0.5,rejbins.size()-0.5);
-   for(unsigned ibin=0; ibin< rejbins.size(); ++ibin){
-     _rej->GetXaxis()->SetBinLabel(ibin+1,rejbins[ibin].c_str());
-   }
+  for(unsigned ibin=0; ibin< accbins.size(); ++ibin){
+    _acc->GetXaxis()->SetBinLabel(ibin+1,accbins[ibin].c_str());
+  }
+  _acc->SetStats(0);
+  _acc->SetMarkerStyle(20);
+  _acc->Sumw2();
+  _acc->SetMaximum(1.0);
+  _acc->SetLineColor(_chain->GetLineColor());
+  _acc->SetMarkerColor(_chain->GetLineColor());
 
-   _eff->SetStats(0);
-   _rej->SetStats(0);
-   _eff->SetMarkerStyle(20);
-   _rej->SetMarkerStyle(20);
-   _eff->Sumw2();
-   _rej->Sumw2();
+  _hn = new TH1F("hn",title("Helix NHits"),81,-0.5,80.5);
+  _shn = new TH1F("shn",title("Helix NHits"),81,-0.5,80.5);
+  _fhn = new TH1F("fhn",title("Helix NHits"),81,-0.5,80.5);
+
+  _hna = new TH1F("hna",title("Helix NActive"),61,-0.5,60.5);
+  _shna = new TH1F("shna",title("Helix NActive"),61,-0.5,60.5);
+  _fhna = new TH1F("fhna",title("Helix NActive"),61,-0.5,60.5);
+
+  _hd0 = new TH1F("hd0",title("Helix d0;mm"),101,-150.0,250.0);
+  _shd0 = new TH1F("shd0",title("Helix d0;mm"),101,-150.0,250.0);
+  _fhd0 = new TH1F("fhd0",title("Helix d0;mm"),101,-150.0,250.0);
+
+  _hrmax = new TH1F("hrmax",title("Helix rmax;mm"),101,400.0,700.0);
+  _shrmax = new TH1F("shrmax",title("Helix rmax;mm"),101,400.0,700.0);
+  _fhrmax = new TH1F("fhrmax",title("Helix rmax;mm"),101,400.0,700.0);
+
+  _hrad = new TH1F("hrad",title("Helix rad;mm"),101,100.0,400.0);
+  _shrad = new TH1F("shrad",title("Helix rad;mm"),101,100.0,400.0);
+  _fhrad = new TH1F("fhrad",title("Helix rad;mm"),101,100.0,400.0);
+
+  _hlam = new TH1F("hlambda",title("Helix lambda;mm"),101,100.0,400.0);
+  _shlam = new TH1F("shlambda",title("Helix lambda;mm"),101,100.0,400.0);
+  _fhlam = new TH1F("fhlambda",title("Helix lambda;mm"),101,100.0,400.0);
+
+  _hmom = new TH1F("hmom",title("Helix mom;mm"),101,200.0,500.0);
+  _shmom = new TH1F("shmom",title("Helix mom;mm"),101,200.0,500.0);
+  _fhmom = new TH1F("fhmom",title("Helix mom;mm"),101,200.0,500.0);
+
+  _hn->SetLineColor(kBlack);
+  _hna->SetLineColor(kBlack);
+  _hd0->SetLineColor(kBlack);
+  _hrmax->SetLineColor(kBlack);
+  _hrad->SetLineColor(kBlack);
+  _hlam->SetLineColor(kBlack);
+  _hmom->SetLineColor(kBlack);
+
+  _shn->SetLineColor(kBlue);
+  _shna->SetLineColor(kBlue);
+  _shd0->SetLineColor(kBlue);
+  _shrmax->SetLineColor(kBlue);
+  _shrad->SetLineColor(kBlue);
+  _shlam->SetLineColor(kBlue);
+  _shmom->SetLineColor(kBlue);
+
+  _fhn->SetLineColor(kRed);
+  _fhna->SetLineColor(kRed);
+  _fhd0->SetLineColor(kRed);
+  _fhrmax->SetLineColor(kRed);
+  _fhrad->SetLineColor(kRed);
+  _fhlam->SetLineColor(kRed);
+  _fhmom->SetLineColor(kRed);
+  
+
+  _ssna = new TH1F("ssna",title("Seed NActive"),61,-0.5,60.5);
+  _fsna = new TH1F("fsna",title("Seed NActive"),61,-0.5,60.5);
+
+  _ssmom = new TH1F("ssmom",title("Seed mom;MeV/c"),101,50.0,150.0);
+  _fsmom = new TH1F("fsmom",title("Seed mom;MeV/c"),101,50.0,150.0);
+
+  _ssna->SetLineColor(kBlue);
+  _ssmom->SetLineColor(kBlue);
+
+  _fsna->SetLineColor(kRed);
+  _fsmom->SetLineColor(kRed);
+}
+
+const char* TrkRecoDiag::title(const char* titl) {
+  static string stitle;
+  stitle = string(_chain->GetTitle());
+  stitle += string(titl);
+  return stitle.c_str();
 }

@@ -61,8 +61,6 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/DiskCalorimeterMaker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "GeometryService/inc/VaneCalorimeterMaker.hh"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "GeometryService/inc/BFieldConfigMaker.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
@@ -243,11 +241,6 @@ namespace mu2e {
       addDetector( mbs.getMBSPtr() );
     }
 
-    if(_config->getBool("hasVaneCalorimeter",false)){
-      VaneCalorimeterMaker calorm( *_config, beamline.solenoidOffset() );
-      addDetector( calorm.calorimeterPtr() );
-      addDetectorAliasToBaseClass<Calorimeter>( calorm.calorimeterPtr() );  //add an alias to detector list
-    }
 
     if(_config->getBool("hasDiskCalorimeter",false)){
       DiskCalorimeterMaker calorm( *_config, beamline.solenoidOffset() );
@@ -307,7 +300,6 @@ namespace mu2e {
   // Check that the configuration is self consistent.
   void GeometryService::checkConfig(){
     checkTrackerConfig();
-    checkCalorimeterConfig();
   }
 
   // Check that the Tracker configuration is self consistent.
@@ -327,26 +319,6 @@ namespace mu2e {
 
   }
 
-  // Check that the Tracker configuration is self consistent.
-  void GeometryService::checkCalorimeterConfig(){
-    int nCalorimeters(0);
-    string allCalorimeters;
-    if ( _config->getBool("hasVaneCalorimeter",false) ) {
-      allCalorimeters += " VaneCalorimeter";
-      ++nCalorimeters;
-    }
-    if ( _config->getBool("hasDiskCalorimeter",false) ) {
-      allCalorimeters += " DiskCalorimeter";
-      ++nCalorimeters;
-    }
-    if ( nCalorimeters > 1 ){
-      throw cet::exception("GEOM")
-        << "This configuration has more than one calorimeter: "
-        << allCalorimeters
-        << "\n";
-    }
-
-  }
 
   // WorldG4 could be added along with all the other detectors in preBeginRun().
   // However we don't want to make WorldG4 available in non-Geant jobs.

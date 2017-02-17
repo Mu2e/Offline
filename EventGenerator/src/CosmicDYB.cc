@@ -305,7 +305,7 @@ namespace mu2e
         case CALO:      
 	  {
 	    GeomHandle<Calorimeter> calorimeter;
-	    _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(), _y0, calorimeter->section(0).origin().z());
+	    _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(), _y0, calorimeter->disk(0).geomInfo().origin().z());
 	  }
                         
                          break;

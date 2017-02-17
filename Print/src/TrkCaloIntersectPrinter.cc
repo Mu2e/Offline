@@ -71,7 +71,7 @@ mu2e::TrkCaloIntersectPrinter::Print(const mu2e::TrkCaloIntersect& obj, int ind,
   if(tptr.isNonnull()) tkey = tptr.key();
 
   os 
-    << " " << std::setw(5) << obj.sectionId()
+    << " " << std::setw(5) << obj.diskId()
     << " " << std::setw(6) << tkey
     << " " << std::setw(7) << obj.trkId()
     << "  "

@@ -158,7 +158,8 @@ namespace mu2e
           responsesOneSiPM.emplace_back(time, charge);
 //std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<time<<std::endl;
 
-          //make ghost hits - see doc-db 3425 page 9
+/*
+          //make ghost hits - see doc-db 3425 page 9 - not needed, since all microbunches are separated by a blind time of at least 500ns
           double deltaT=100;  //TODO: Is the additional time window Ok?
           double wrappedTimePrevPeriod=time-_microBunchPeriod;
           double wrappedTimeNextPeriod=time+_microBunchPeriod;
@@ -172,6 +173,7 @@ namespace mu2e
             responsesOneSiPM.emplace_back(wrappedTimeNextPeriod, charge);
 //std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<wrappedTimeNextPeriod<<"  next period"<<std::endl;
           }
+*/
         }
 
       }

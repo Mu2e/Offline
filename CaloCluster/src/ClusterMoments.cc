@@ -33,7 +33,7 @@ namespace mu2e {
                 int    crId((*it)->id());
                 double energy((*it)->energyDep());
 
-                if (cal_.crystal(crId).sectionId() != iSection_) continue;
+                if (cal_.crystal(crId).diskId() != iSection_) continue;
 
                 double xCrystal = cal_.crystal(crId).position().x();
                 double yCrystal = cal_.crystal(crId).position().y();
@@ -56,7 +56,7 @@ namespace mu2e {
 
 
           CLHEP::Hep3Vector cogMu2eFrame(sxi/swi,syi/swi,szi/swi);
-          cog_ = cal_.toSectionFrameFF(iSection_,cogMu2eFrame);
+          cog_ = cal_.geomUtil().mu2eToDiskFF(iSection_,cogMu2eFrame);
 
           secondMoment_ = sxi2 -sxi*sxi/swi + syi2 -syi*syi/swi;
 

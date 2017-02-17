@@ -10,6 +10,8 @@
 
 class TFile;
 class TH3D;
+class TNtuple;
+
 namespace mu2eCrv
 {
   class MakeCrvPhotonArrivals;
@@ -19,7 +21,7 @@ class WLSSteppingAction : public G4UserSteppingAction
 {
   public:
 
-    WLSSteppingAction(int mode, const std::string &lookupFileName = "");
+    WLSSteppingAction(int mode, const std::string &lookupFileName = "", const std::string &visibleEnergyAdjustmentFileName = "");
     ~WLSSteppingAction();
 
     void                      UserSteppingAction(const G4Step*);
@@ -40,8 +42,12 @@ class WLSSteppingAction : public G4UserSteppingAction
 
     CLHEP::HepJamesRandom     _engine;
     CLHEP::RandFlat           _randFlat;
+    CLHEP::RandGaussQ         _randGaussQ;
+    CLHEP::RandPoissonQ       _randPoissonQ;
 
-    void                      Test(const G4Step *theStep, int PDGcode);
+    void                      ShowVisibleEnergyTable(const G4Step *theStep);
+
+    TNtuple*                  _ntuple;  //WLS fiber test
 };
 
 #endif

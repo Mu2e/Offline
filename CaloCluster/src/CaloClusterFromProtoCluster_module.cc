@@ -187,7 +187,7 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
              auto        caloCrystalHitsPtrVector = caloProtoClustersTemp.at(iproto).caloCrystalHitsPtrVector();
              bool        isSplit                  = caloProtoClustersTemp.at(iproto).isSplit();
              const auto& seed                     = **caloCrystalHitsPtrVector.begin();
-             int         sectionId                = cal.crystal(seed.id()).sectionId();             
+             int         diskId                = cal.crystal(seed.id()).diskId();             
             
              for (int iassoc : associator.associatedMainId(iproto))
              {                 
@@ -207,11 +207,11 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
 
 
              auto timeEnergy = clusterTimeEnergy(caloCrystalHitsPtrVector); 
-             CaloCluster caloCluster(sectionId,timeEnergy[0],timeEnergy[1],timeEnergy[2],timeEnergy[3],caloCrystalHitsPtrVector,isSplit);              
+             CaloCluster caloCluster(diskId,timeEnergy[0],timeEnergy[1],timeEnergy[2],timeEnergy[3],caloCrystalHitsPtrVector,isSplit);              
 
              //calculate a lot of fancy useful things
              auto EnerLayer = calcEnergyLayer(cal,caloCrystalHitsPtrVector);                
-             ClusterMoments cogCalculator(cal,caloCluster,sectionId);
+             ClusterMoments cogCalculator(cal,caloCluster,diskId);
              cogCalculator.calculate(cogType_);
              caloCluster.cog3Vector(cogCalculator.cog());
              caloCluster.secondMoment(cogCalculator.secondMoment());

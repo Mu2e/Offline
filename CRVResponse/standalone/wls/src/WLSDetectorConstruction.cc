@@ -2,6 +2,7 @@
 #include "globals.hh"
 
 #include "G4Box.hh"
+#include "G4EllipticalTube.hh"
 #include "G4Tubs.hh"
 
 #include "G4LogicalVolume.hh"
@@ -44,23 +45,23 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
   _physiWorld = NULL;
 
   _mppcPolish = 1.;
-  _mppcReflectivity = 0.;
+  _mppcReflectivity = 0.16;   //set to 0 for WLS fiber test
 
   _mirrorPolish = 1.;
   _mirrorReflectivity = 0.80;
 
-  _extrusionPolish = 1.;
-  _extrusionReflectivity = 0.90;
+  _extrusionPolish = 0.3;
 
-  _manifoldPolish = 1.;
-  _manifoldReflectivity = 0.;
+  _fiberGuideBarPolish = 1.;
+  _fiberGuideBarReflectivity = 0.;
 
-  _surfaceRoughness = 1;
+  _holePolish = 1.;
  
   _barWidth         = 5.*cm;
   _barThickness     = 2.*cm;
   _fiberSeparation  = 2.6*cm;
-  _holeRadius       = 1.30*mm;
+  _holeRadiusX      = 2.00*mm;
+  _holeRadiusY      = 1.00*mm;
   _coatingThickness = 0.25*mm;
   _fiberRadius      = 0.70*mm - 0.021*mm - 0.021*mm;
   _clad1Radius      = 0.70*mm - 0.021*mm;
@@ -194,7 +195,20 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
 
   G4LogicalVolume* logicExtrusion = new G4LogicalVolume(solidExtrusion,
                                                         FindMaterial("Coating"),
+//                                                        FindMaterial("G4_AIR"),  //WLS fiber test
                                                         "Extrusion");
+
+  G4VPhysicalVolume *physiExtrusion = new G4PVPlacement(0,
+                                                        G4ThreeVector(),
+                                                        logicExtrusion,
+                                                        "Extrusion",
+                                                        logicWorld,
+                                                        _checkOverlaps,
+                                                        0);
+
+  //--------------------------------------------------
+  // Extrusion (TiO2 Coating) Surface
+  //--------------------------------------------------
 
   G4OpticalSurface* TiO2Surface = new G4OpticalSurface("TiO2Surface",
                                                        glisur,
@@ -204,24 +218,15 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
 
   G4MaterialPropertiesTable* TiO2SurfaceProperty = new G4MaterialPropertiesTable();
 
-  G4double p_TiO2[11] =    {2.00*eV, 2.75*eV, 2.88*eV, 2.95*eV, 3.02*eV, 3.10*eV, 3.18*eV, 3.26*eV, 3.35*eV, 3.44*eV, 3.47*eV};
-  G4double refl_TiO2[11] = {0.91,    0.91,    0.90,    0.85,    0.69,    0.44,    0.27,    0.13,    0.08,    0.07,    0.07};
+  G4double p_TiO2[11] =    {2.00*eV, 2.75*eV, 2.88*eV, 2.95*eV, 3.02*eV, 3.10*eV, 3.18*eV, 3.26*eV, 3.35*eV, 3.44*eV, 3.77*eV};
+  G4double refl_TiO2[11] = {0.91,    0.91,    0.90,    0.85,    0.69,    0.44,    0.27,    0.13,    0.08,    0.07,    0.07}; 
+//  G4double refl_TiO2[11] = {0,       0 ,      0,       0,       0,       0,       0,       0,       0,       0,       0};  //WLS fiber test
   G4double effi_TiO2[11] = {0,       0 ,      0,       0,       0,       0,       0,       0,       0,       0,       0};
 
   TiO2SurfaceProperty -> AddProperty("REFLECTIVITY",p_TiO2,refl_TiO2,11);
   TiO2SurfaceProperty -> AddProperty("EFFICIENCY",p_TiO2,effi_TiO2,11);
 
   TiO2Surface -> SetMaterialPropertiesTable(TiO2SurfaceProperty);
-
-  new G4PVPlacement(0,
-                    G4ThreeVector(),
-                    logicExtrusion,
-                    "Extrusion",
-                    logicWorld,
-                    _checkOverlaps,
-                    0);
-
-  new G4LogicalSkinSurface("TiO2Surface",logicExtrusion,TiO2Surface);
 
   //--------------------------------------------------
   // Scintillator
@@ -234,6 +239,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
 
   G4LogicalVolume* logicScintillator = new G4LogicalVolume(solidScintillator,
                                                            FindMaterial("Polystyrene"),
+//                                                           FindMaterial("G4_AIR"),  //WLS fiber test
                                                            "Scintillator");
 
   _physiScintillator = new G4PVPlacement(0,
@@ -244,35 +250,39 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                                          _checkOverlaps,
                                          0);
 
+  new G4LogicalBorderSurface("TiO2Surface",           //remove for WLS fiber test
+                             _physiScintillator,
+                             physiExtrusion,
+                             TiO2Surface);
 
   //--------------------------------------------------
-  // Plastic Manifold
+  // Plastic Fiber Guide Bar
   //--------------------------------------------------
 
-  G4VSolid* solidManifold = new G4Box("Manifold",
+  G4VSolid* solidFiberGuideBar = new G4Box("FiberGuideBar",
                                       _barThickness/2.0,
                                       _barWidth/2.0,
                                       _sipmLength/2.0);
 
-  G4LogicalVolume* logicManifold0 =  new G4LogicalVolume(solidManifold,
+  G4LogicalVolume* logicFiberGuideBar0 =  new G4LogicalVolume(solidFiberGuideBar,
                                                          FindMaterial("G4_POLYVINYL_CHLORIDE"),
-                                                         "Manifold0");
-  G4LogicalVolume* logicManifold1 =  new G4LogicalVolume(solidManifold,                          //the nested volumes may be different (sipm vs. mirror)
-                                                         FindMaterial("G4_POLYVINYL_CHLORIDE"),  //that's why we need to different logically volumes
-                                                         "Manifold1");
+                                                         "FiberGuideBar0");
+  G4LogicalVolume* logicFiberGuideBar1 =  new G4LogicalVolume(solidFiberGuideBar,                //the nested volumes may be different (sipm vs. mirror)
+                                                         FindMaterial("G4_POLYVINYL_CHLORIDE"),  //that's why we need different logically volumes
+                                                         "FiberGuideBar1");
 
-  G4VPhysicalVolume *physiManifold0 = new G4PVPlacement(0,
+  G4VPhysicalVolume *physiFiberGuideBar0 = new G4PVPlacement(0,
                                                         G4ThreeVector(0.0, 0.0, -_barLength/2.0-_sipmLength/2.0),
-                                                        logicManifold0,
-                                                        "Manifold0",
+                                                        logicFiberGuideBar0,
+                                                        "FiberGuideBar0",
                                                         logicWorld,
                                                         _checkOverlaps,
                                                         0);
 
-  G4VPhysicalVolume *physiManifold1 = new G4PVPlacement(0,
+  G4VPhysicalVolume *physiFiberGuideBar1 = new G4PVPlacement(0,
                                                         G4ThreeVector(0.0, 0.0, _barLength/2.0+_sipmLength/2.0),
-                                                        logicManifold1,
-                                                        "Manifold1",
+                                                        logicFiberGuideBar1,
+                                                        "FiberGuideBar1",
                                                         logicWorld,
                                                         _checkOverlaps,
                                                         0);
@@ -280,75 +290,86 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
 
   //surface
 
-  G4OpticalSurface* ManifoldSurface = new G4OpticalSurface("ManifoldSurface",
+  G4OpticalSurface* FiberGuideBarSurface = new G4OpticalSurface("FiberGuideBarSurface",
                                                            glisur,
                                                            ground,
                                                            dielectric_metal,
-                                                           _manifoldPolish);
+                                                           _fiberGuideBarPolish);
 
-  G4MaterialPropertiesTable* ManifoldSurfaceProperty = new G4MaterialPropertiesTable();
+  G4MaterialPropertiesTable* FiberGuideBarSurfaceProperty = new G4MaterialPropertiesTable();
 
-  G4double p_Manifold[2] = {2.00*eV, 3.47*eV};
-  G4double refl_Manifold[2] = {_manifoldReflectivity,_manifoldReflectivity};
-  G4double effi_Manifold[2] = {0, 0};
+  G4double p_FiberGuideBar[2] = {2.00*eV, 3.77*eV};
+  G4double refl_FiberGuideBar[2] = {_fiberGuideBarReflectivity,_fiberGuideBarReflectivity};
+  G4double effi_FiberGuideBar[2] = {0, 0};
 
-  ManifoldSurfaceProperty -> AddProperty("REFLECTIVITY",p_Manifold,refl_Manifold,2);
-  ManifoldSurfaceProperty -> AddProperty("EFFICIENCY",p_Manifold,effi_Manifold,2);
+  FiberGuideBarSurfaceProperty -> AddProperty("REFLECTIVITY",p_FiberGuideBar,refl_FiberGuideBar,2);
+  FiberGuideBarSurfaceProperty -> AddProperty("EFFICIENCY",p_FiberGuideBar,effi_FiberGuideBar,2);
 
-  ManifoldSurface -> SetMaterialPropertiesTable(ManifoldSurfaceProperty);
+  FiberGuideBarSurface -> SetMaterialPropertiesTable(FiberGuideBarSurfaceProperty);
 
-  new G4LogicalBorderSurface("surfaceScintillatorManifold0",
+  new G4LogicalBorderSurface("surfaceScintillatorFiberGuideBar0",
                              _physiScintillator,
-                             physiManifold0,
-                             ManifoldSurface);
-  new G4LogicalBorderSurface("surfaceScintillatorManifold1",
+                             physiFiberGuideBar0,
+                             FiberGuideBarSurface);
+  new G4LogicalBorderSurface("surfaceScintillatorFiberGuideBar1",
                              _physiScintillator,
-                             physiManifold1,
-                             ManifoldSurface);
+                             physiFiberGuideBar1,
+                             FiberGuideBarSurface);
 
 
   //--------------------------------------------------
   // Fiber Holes
   //--------------------------------------------------
 
-  G4VSolid* solidHole = new G4Tubs("Hole",
-                                   0,
-                                   _holeRadius,
-                                   _barLength/2.0,
-                                   0.*deg,
-                                   360.*deg);
+  G4VSolid* solidHole = new G4EllipticalTube("Hole",
+                                   _holeRadiusX,
+                                   _holeRadiusY,
+                                   _barLength/2.0);
   G4LogicalVolume *logicHole = new G4LogicalVolume(solidHole,
                                                    FindMaterial("G4_AIR"),
                                                    "Hole");
 
-  G4VPhysicalVolume *physiHole1 = new G4PVPlacement(0,
-                                                    G4ThreeVector(0.0, -_fiberSeparation/2.0, 0.0),
-                                                    logicHole,
-                                                    "Hole",
-                                                    logicScintillator,
-                                                    _checkOverlaps,
-                                                    0);
-  G4VPhysicalVolume *physiHole2 = new G4PVPlacement(0,
-                                                    G4ThreeVector(0.0, _fiberSeparation/2.0, 0.0),
-                                                    logicHole,
-                                                    "Hole",
-                                                    logicScintillator,
-                                                    _checkOverlaps,
-                                                    1);
+  new G4PVPlacement(0,
+                    G4ThreeVector(0.0, -_fiberSeparation/2.0, 0.0),
+                    logicHole,
+                    "Hole",
+                    logicScintillator,
+                    _checkOverlaps,
+                    0);
+  new G4PVPlacement(0,
+                    G4ThreeVector(0.0, _fiberSeparation/2.0, 0.0),
+                    logicHole,
+                    "Hole",
+                    logicScintillator,
+                    _checkOverlaps,
+                    1);
   //--------------------------------------------------
-  // Fiber Construction
-  //-------------------------------------------------- 
-
-  // Boundary Surface Properties
-  G4OpticalSurface* OpSurface = NULL;
- 
-  if(_surfaceRoughness < 1.)
-     OpSurface = new G4OpticalSurface("RoughSurface",          // Surface Name
+  // Fiber Holes Surface
+  //--------------------------------------------------
+/*
+  G4OpticalSurface *HoleSurface = new G4OpticalSurface("HoleSurface",          // Surface Name
                                       glisur,                  // SetModel
                                       ground,                  // SetFinish
                                       dielectric_dielectric,   // SetType
-                                      _surfaceRoughness);      // SetPolish
+                                      _holePolish);            // SetPolish
 
+  new G4LogicalBorderSurface("surfaceHole1In",
+                             _physiScintillator,
+                             physiHole1,
+                             HoleSurface);
+  new G4LogicalBorderSurface("surfaceHole1Out",
+                             physiHole1,
+                             _physiScintillator,
+                             HoleSurface);
+  new G4LogicalBorderSurface("surfaceHole2In",
+                             _physiScintillator,
+                             physiHole2,
+                             HoleSurface);
+  new G4LogicalBorderSurface("surfaceHole2Out",
+                             physiHole2,
+                             _physiScintillator,
+                             HoleSurface);
+*/
   //--------------------------------------------------
   // Cladding 2
   //--------------------------------------------------
@@ -359,37 +380,13 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                                                      FindMaterial("FPethylene"),
                                                      "Clad2");
 
-  G4VPhysicalVolume* physiClad2 = new G4PVPlacement(0,
-                                                    G4ThreeVector(),
-                                                    logicClad2,
-                                                    "Clad2",
-                                                    logicHole,
-                                                    _checkOverlaps,
-                                                    0);
-
-  // Place the rough surface only if needed
-  if(OpSurface) 
-  {
-       new G4LogicalBorderSurface("surfaceFiber1Clad2Out",
-                                  physiClad2,
-                                  physiHole1,
-                                  OpSurface);
-       new G4LogicalBorderSurface("surfaceFiber1Clad2In",
-                                  physiHole1,
-                                  physiClad2,
-                                  OpSurface);
-  }
-  if(OpSurface) 
-  {
-       new G4LogicalBorderSurface("surfaceFiber2Clad2Out",
-                                  physiClad2,
-                                  physiHole2,
-                                  OpSurface);
-       new G4LogicalBorderSurface("surfaceFiber2Clad2In",
-                                  physiHole2,
-                                  physiClad2,
-                                  OpSurface);
-  }
+  new G4PVPlacement(0,
+                    G4ThreeVector(),
+                    logicClad2,
+                    "Clad2",
+                    logicHole,
+                    _checkOverlaps,
+                    0);
 
   //--------------------------------------------------
   // Cladding 1
@@ -401,26 +398,13 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                                                     FindMaterial("Pethylene"),
                                                     "Clad1");
 
-  G4VPhysicalVolume* physiClad1 = new G4PVPlacement(0,
-                                                   G4ThreeVector(),
-                                                   logicClad1,
-                                                   "Clad1",
-                                                   logicClad2,
-                                                   _checkOverlaps,
-                                                   0);
-
-  // Place the rough surface only if needed
-  if(OpSurface) 
-  {
-       new G4LogicalBorderSurface("surfaceClad1Out",
-                                  physiClad1,
-                                  physiClad2,
-                                  OpSurface);
-       new G4LogicalBorderSurface("surfaceClad1In",
-                                  physiClad2,
-                                  physiClad1,
-                                  OpSurface);
-  }
+  new G4PVPlacement(0,
+                    G4ThreeVector(),
+                    logicClad1,
+                    "Clad1",
+                    logicClad2,
+                    _checkOverlaps,
+                    0);
 
   //--------------------------------------------------
   // WLS Fiber
@@ -432,25 +416,13 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                                                        FindMaterial("PMMA"),
                                                        "WLSFiber");
 
-  G4VPhysicalVolume* physiWLSfiber = new G4PVPlacement(0,
-                                                      G4ThreeVector(),
-                                                      logicWLSfiber,
-                                                      "WLSFiber",
-                                                      logicClad1,
-                                                      _checkOverlaps,
-                                                      0);
-
-  // Place the rough surface only if needed
-  if (OpSurface) {
-       new G4LogicalBorderSurface("surfaceWLSOut",
-                                  physiWLSfiber,
-                                  physiClad1,
-                                  OpSurface);
-       new G4LogicalBorderSurface("surfaceWLSIn",
-                                  physiClad1,
-                                  physiWLSfiber,
-                                  OpSurface);
-  }
+  new G4PVPlacement(0,
+                    G4ThreeVector(),
+                    logicWLSfiber,
+                    "WLSFiber",
+                    logicClad1,
+                    _checkOverlaps,
+                    0);
 
   //--------------------------------------------------
   // PhotonDet (Sensitive Detector) Or Mirror
@@ -460,7 +432,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
   G4VSolid* solidPhotonDet = new G4Tubs("PhotonDet",0.,_sipmRadius,_sipmLength/2.0,0.0*rad,twopi*rad);
 
   G4LogicalVolume* logicPhotonDet = new G4LogicalVolume(solidPhotonDet,
-                                                        FindMaterial("G4_Al"),
+                                                        FindMaterial("G4_Si"),
                                                         "PhotonDet");
   G4LogicalVolume* logicMirror = new G4LogicalVolume(solidPhotonDet,
                                                      FindMaterial("G4_Al"),
@@ -470,28 +442,32 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                     G4ThreeVector(0.0, -_fiberSeparation/2.0, 0.0),
                     logicPhotonDet,
                     "PhotonDet",
-                    logicManifold0,
+                    logicFiberGuideBar0,
                     _checkOverlaps,
                     0);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, -_fiberSeparation/2.0, 0.0),
                     _lengthOption>=6600?logicMirror:logicPhotonDet,
                     _lengthOption>=6600?"Mirror":"PhotonDet",
-                    logicManifold1,
+//                    (_lengthOption>=6600 || _lengthOption==4500)?logicMirror:logicPhotonDet,
+//                    (_lengthOption>=6600 || _lengthOption==4500)?"Mirror":"PhotonDet",
+                    logicFiberGuideBar1,
                     _checkOverlaps,
                     1);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, _fiberSeparation/2.0, 0.0),
                     logicPhotonDet,
                     "PhotonDet",
-                    logicManifold0,
+                    logicFiberGuideBar0,
                     _checkOverlaps,
                     2);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, _fiberSeparation/2.0, 0.0),
                     _lengthOption>=6600?logicMirror:logicPhotonDet,
                     _lengthOption>=6600?"Mirror":"PhotonDet",
-                    logicManifold1,
+//                    (_lengthOption>=6600 || _lengthOption==4500)?logicMirror:logicPhotonDet,
+//                    (_lengthOption>=6600 || _lengthOption==4500)?"Mirror":"PhotonDet",
+                    logicFiberGuideBar1,
                     _checkOverlaps,
                     3);
 
@@ -504,11 +480,12 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
 
   G4MaterialPropertiesTable* PhotonDetSurfaceProperty = new G4MaterialPropertiesTable();
 
-  G4double p_mppc[2] = {2.00*eV, 3.47*eV};
+  G4double p_mppc[2] = {2.00*eV, 3.77*eV};
   G4double refl_mppc[2] = {_mppcReflectivity,_mppcReflectivity};
   G4double effi_mppc[2] = {1.0, 1.0};   //if a photon gets absorbed at a surface, 
                                         //it gets "detected" with the probability EFFICIENCY
                                         //(the status will be Detection) - see G4OpBoundaryProcess::DoAbsorption()
+                                        //the probability to produce a PE is done by the SiPM simulation
 
   PhotonDetSurfaceProperty -> AddProperty("REFLECTIVITY",p_mppc,refl_mppc,2);
   PhotonDetSurfaceProperty -> AddProperty("EFFICIENCY",p_mppc,effi_mppc,2);
@@ -526,7 +503,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
 
   G4MaterialPropertiesTable* MirrorSurfaceProperty = new G4MaterialPropertiesTable();
 
-  G4double p_mirror[2] = {2.00*eV, 3.47*eV};
+  G4double p_mirror[2] = {2.00*eV, 3.77*eV};
   G4double refl_mirror[2] = {_mirrorReflectivity,_mirrorReflectivity};
   G4double effi_mirror[2] = {0.0, 0.0};  
   

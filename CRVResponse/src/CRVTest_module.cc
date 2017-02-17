@@ -50,9 +50,8 @@ namespace mu2e
     std::string _crvSiPMResponsesModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
     std::string _genParticleModuleLabel;
-    std::string _simParticleModuleLabel;
 
-    TNtuple  *_recoPulses, *_leadingEdgesGlobal, *_leadingEdgesCounter;
+    TNtuple  *_recoPulses;
   };
 
   CRVTest::CRVTest(fhicl::ParameterSet const& pset) :
@@ -63,7 +62,7 @@ namespace mu2e
   {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("CrvSingleCounter");
-    _recoPulses = tfdir.make<TNtuple>( "RecoPulses",    "RecoPulses",  "event:startX:startY:startZ:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseIntegral:MCPEs" );
+    _recoPulses = tfdir.make<TNtuple>("RecoPulses", "RecoPulses", "event:startX:startY:startZ:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseWidth:recoPulseTime:recoLEtime:MCPEs");
   }
 
   void CRVTest::beginJob()
@@ -104,9 +103,9 @@ namespace mu2e
         int    nRecoPulses=0;
         int    recoPEs=0;
         double recoPulseHeight=0;
-        double recoPulseIntegral=0;
-        double recoPulseTOT=0;
+        double recoPulseWidth=0;
         double recoPulseTime=0;
+        double recoLEtime=0;
         double MCPEs=0;
 
         if(iterRecoPulses!=crvRecoPulsesCollection->end()) 
@@ -121,9 +120,9 @@ namespace mu2e
             {
               recoPEs            = singlePulses[i]._PEs;
               recoPulseHeight    = singlePulses[i]._pulseHeight;
-              recoPulseIntegral  = singlePulses[i]._integral;
-              recoPulseTOT       = singlePulses[i]._pulseLength;
-              recoPulseTime      = singlePulses[i]._leadingEdge;
+              recoPulseWidth     = singlePulses[i]._pulseWidth;
+              recoPulseTime      = singlePulses[i]._pulseTime;
+              recoLEtime         = singlePulses[i]._LEtime;
             }
           }
         }
@@ -135,13 +134,12 @@ namespace mu2e
           const std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &singleSiPMResponses = crvSiPMResponses.GetSiPMResponses(SiPM);
           for(size_t i=0; i<singleSiPMResponses.size(); i++) 
           {
-            double time   = singleSiPMResponses[i]._time;
             double charge = singleSiPMResponses[i]._charge;
-            if(time>recoPulseTime-40.0 && time<recoPulseTime+recoPulseTOT-30.0) MCPEs+=charge;
+            MCPEs+=charge; 
           }
         }
 
-        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseIntegral,MCPEs);
+        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseWidth,recoPulseTime,recoLEtime,MCPEs);
       }
     }
 

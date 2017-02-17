@@ -1,73 +1,93 @@
 #ifndef CalorimeterGeom_DiskCalorimeter_hh
 #define CalorimeterGeom_DiskCalorimeter_hh
 //
-// $Id: DiskCalorimeter.hh,v 1.7 2014/08/01 20:57:44 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:44 $
-//
-// Hold all geometry and identifier information about
-// a Disk Calorimeter. In order to insulate this class from
-// knowledge of databases etc, this class can not know
-// how to make itself.
-//
-//
-// Look at Mu2eG4/inc/constructDiskCalorimeter.cc for definition of geometry
+// Hold informations about the disk calorimeter 
 //
 // Original author B. Echenard
+//
+// Note 1: conversion of crystal <-> readout id
+//         readout_id = crystal_id*nRoPerCrystal ... crystal_id*nRoPerCrystal + nRoPerCrystal-1		 
 
-
-#include "CalorimeterGeom/inc/BaseCalorimeter.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/CaloGeomInfo.hh"
+#include "CalorimeterGeom/inc/CaloGeomUtil.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
+#include "CalorimeterGeom/inc/Crystal.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include <vector>
+#include <memory>
 
 
 
 namespace mu2e {
+    
+
+    class DiskCalorimeter: public Calorimeter {
 
 
-    class DiskCalorimeter: public BaseCalorimeter {
+	friend class DiskCalorimeterMaker;
 
-       
-       friend class DiskCalorimeterMaker;
+	
+        public:
 
-       public:
-
-
-          DiskCalorimeter()  {}
-          ~DiskCalorimeter() {}
-
-	  
-	  
-	  //disk components
-	  unsigned int nDisk()                  const  {return _nSections;}
-	  Disk const&  disk(int i)              const  {return static_cast<Disk const&>(section(i));}
-	  double       diskSeparation(int i)    const  {return _diskSeparation.at(i);}
-
-	  
-	  //geometry components
-	  virtual bool              isInsideCalorimeter(const CLHEP::Hep3Vector &pos)                                 const;       	 	 
-          virtual bool              isInsideSection(int iSection, const CLHEP::Hep3Vector &pos)                       const;
-	  virtual bool              isContainedSection(const CLHEP::Hep3Vector &front, const CLHEP::Hep3Vector &back) const;
-
-	  
-	  //crystal id and neighbors component
-	  virtual int               crystalIdxFromPosition(const CLHEP::Hep3Vector &pos)                    const;
-          virtual std::vector<int>  neighborsByLevel(int crystalId, int level)                              const; 
-	  virtual void              print(std::ostream &os = std::cout)                                     const;
+            DiskCalorimeter();
+            virtual ~DiskCalorimeter() {}
 
 
+            // calo sections
+	    virtual unsigned int              nDisk()     const  {return nDisks_;}
+            virtual unsigned int              nCrate()    const  {return nCrates_;}
+            virtual unsigned int              nBoard()    const  {return nBoards_;}
+	    virtual const Disk&               disk(int i) const  {return *disks_.at(i);}
 
-        private:
+            	    
+  	    // crystal / readout section
+            virtual unsigned int              nCrystal()     const  {return fullCrystalList_.size();}
+	    virtual unsigned int              nRO()          const  {return fullCrystalList_.size()*caloInfo_.nROPerCrystal();}
+            virtual const Crystal&            crystal(int i) const  {return *fullCrystalList_.at(i);}
+	            
+	    virtual int                       crystalByRO(int roid)          const  {return (roid/caloInfo_.nROPerCrystal());}
+	    virtual int                       ROBaseByCrystal(int crystalId) const  {return (crystalId*caloInfo_.nROPerCrystal());}
 
-	   std::vector<double> _diskInnerRadius;
-	   std::vector<double> _diskOuterRadius;
-	   std::vector<double> _diskSeparation;
-	   std::vector<double> _diskRotAngle;  
 
-    };
+             // calorimeter geometry information 
+	    virtual const CaloInfo&           caloInfo() const  {return caloInfo_;} 
+	    virtual const CaloGeomInfo&       geomInfo() const  {return geomInfo_;} 	    
+	    virtual const CaloGeomUtil&       geomUtil() const  {return geomUtil_;} 
+	                  CaloInfo&           caloInfo() {return caloInfo_;} 
+	                  CaloGeomInfo&       geomInfo() {return geomInfo_;} 	    
+	                  CaloGeomUtil&       geomUtil() {return geomUtil_;} 
+           
+
+
+  	    // neighbors, indexing 
+            virtual const std::vector<int>&  neighbors(int crystalId)     const  {return fullCrystalList_.at(crystalId)->neighbors();}	  
+            virtual const std::vector<int>&  nextNeighbors(int crystalId) const  {return fullCrystalList_.at(crystalId)->nextNeighbors();}	  
+            
+            virtual       std::vector<int>   neighborsByLevel(int crystalId, int level)           const; 
+            virtual int                      crystalIdxFromPosition(const CLHEP::Hep3Vector &pos) const;
+
+
+            // get to know me!
+            virtual void                     print(std::ostream &os = std::cout)          const;
+
+            
+
+	private:
+
+	    typedef std::shared_ptr<Disk> DiskPtr;
+	    int                           nDisks_;
+            int                           nCrates_;
+            int                           nBoards_;
+	    std::vector<DiskPtr>          disks_;
+            
+            CaloInfo                      caloInfo_;
+	    CaloGeomInfo                  geomInfo_;
+	    std::vector<Crystal const*>   fullCrystalList_; //crystal non-owning pointers
+	    CaloGeomUtil                  geomUtil_;
+     };
 
 }    
 
