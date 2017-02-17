@@ -16,7 +16,7 @@ art_ver=`ups active | awk '$1 == "art" {print $2}'`
 heppdt_ver=`ups active | awk '$1 == "heppdt" {print $2}'`
 btrk_ver=`ups active | awk '$1 == "BTrk" {print $2}'`
 xerces_ver=`ups active | awk '$1 == "xerces_c" {print $2}'`
-scons_ver=`ups active | awk '$1 == "scons" {print $2}'`
+mu2e_artdaq_core_ver=`ups active | awk '$1 == "mu2e_artdaq_core" {print $2}'`
 
 # A table file needs the qualifiers string in three formats:
 #   - colon delimited
@@ -58,6 +58,7 @@ Qualifiers = "${colon_qualifiers}:debug"
       setupRequired( BTrk  ${btrk_ver} -q +${plus_qualifiers}:+debug )
       setupRequired( heppdt  ${heppdt_ver} -q +${plus_qualifiers}:+debug )
       setupRequired( xerces_c  ${xerces_ver} -q +${plus_qualifiers}:+debug )
+      setupRequired( mu2e_artdaq_core ${mu2e_artdaq_core_ver} -q ${plus_qualifiers}:+s41:+debug )
 
 Flavor     = ANY
 Qualifiers = "${colon_qualifiers}:prof"
@@ -72,20 +73,20 @@ Qualifiers = "${colon_qualifiers}:prof"
       setupRequired( BTrk  ${btrk_ver} -q +${plus_qualifiers}:+prof )
       setupRequired( heppdt  ${heppdt_ver} -q +${plus_qualifiers}:+prof )
       setupRequired( xerces_c  ${xerces_ver} -q +${plus_qualifiers}:+prof )
+      setupRequired( mu2e_artdaq_core ${mu2e_artdaq_core_ver} -q ${plus_qualifiers}:+s41:+prof )
 
 Common:
   Action = setup
     prodDir()
     setupEnv()
-    envSet (OFFLINE_INC, \${OFFLINE_DIR}/include )
+    envSet (OFFLINE_INC, \${OFFLINE_DIR}/include/Offline )
     envSet (MU2E_BASE_RELEASE, \${OFFLINE_DIR} )
     envSet (MU2E_SEARCH_PATH, \${OFFLINE_DIR}/config/Offline:\${MU2E_DATA_PATH} )
     envSet (FHICL_FILE_PATH, \${OFFLINE_DIR}/config/Offline:\${OFFLINE_DIR}/config/Offline/fcl )
+    envSet (OFFLINE_VERSION, \${UPS_PROD_VERSION} )
 
     exeActionRequired(GetFQDir)
     envSet (OFFLINE_LIB, \${OFFLINE_DIR}/\${OFFLINE_FQ}/lib )
-
-    setupRequired( scons ${scons_ver} )
 
     if ( test \`uname\` = "Darwin" )
       pathPrepend(DYLD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})
@@ -102,5 +103,4 @@ unset art_ver
 unset heppdt_ver
 unset btrk_ver
 unset xerces_ver
-unset scons_ver
-unset scons_ver
+unset mu2e_artdaq_core_ver
