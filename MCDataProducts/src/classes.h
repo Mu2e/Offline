@@ -24,7 +24,7 @@
 #include "MCDataProducts/inc/CaloShowerStepROCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStepCollection.hh"
 #include "MCDataProducts/inc/CaloShowerSimCollection.hh"
-#include "RecoDataProducts/inc/CaloDigiPackedCollection.hh"
+#include "RecoDataProducts/inc/CaloDigiCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/CaloDigiMCCollection.hh"
 #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
