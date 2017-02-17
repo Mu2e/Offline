@@ -87,10 +87,10 @@ physics: {
             g4ModuleLabel              : g4run
             generatorModuleLabel       : generate
             simParticleTag             : g4run
-            caloCrystalModuleLabel     : CaloCrystalHitsFromHits
+            caloCrystalModuleLabel     : CaloCrystalHitFromHit
             caloClusterModuleLabel     : CaloClusterFromProtoCluster
             caloClusterTruthModuleLabel: CaloClusterTruthMatch
-            caloHitTruthModuleLabel    : CaloHitsTruthMatch
+            caloHitTruthModuleLabel    : CaloHitTruthMatch
             virtualDetectorName        : virtualdetector
             stepPointMCLabel           : g4run
   	    trkPatRecModuleLabel       : TRFDeM
@@ -101,9 +101,9 @@ physics: {
 	ReadTrackCaloMatching: 
 	{
             module_type             : ReadTrackCaloMatchingBis
-            caloCrystalModuleLabel  : CaloCrystalHitsFromHits
+            caloCrystalModuleLabel  : CaloCrystalHitFromHit
             caloClusterModuleLabel  : CaloClusterFromProtoCluster
-            caloReadoutModuleLabel  : CaloCrystalHitsFromHits
+            caloReadoutModuleLabel  : CaloCrystalHitFromHit
             caloClusterTruthModuleLabel: CaloClusterTruthMatch
 	    trkIntersectModuleLabel : TrackCaloIntersection
 	    trkCaloMatchModuleLabel : TrkCaloMatcherBis
@@ -122,7 +122,7 @@ physics: {
 	    fitdirection            : 0 
             caloClusterModuleLabel  : CaloClusterFromProtoCluster
 	    trkCaloMatchModuleLabel : TrkCaloMatcherBis
-            caloCrystalModuleLabel  : CaloCrystalHitsFromHits
+            caloCrystalModuleLabel  : CaloCrystalHitFromHit
 	    maxChi2Match            : 100    
 	    g4ModuleLabel           : g4run
 	    virtualDetectorName     : virtualdetector	    

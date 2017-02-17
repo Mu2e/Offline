@@ -58,10 +58,10 @@ physics: {
             g4ModuleLabel              : g4run
             generatorModuleLabel       : generate
             simParticleTag             : g4run
-            caloCrystalModuleLabel     : CaloCrystalHitsFromHits
+            caloCrystalModuleLabel     : CaloCrystalHitFromHit
             caloClusterModuleLabel     : CaloClusterFromProtoCluster
             caloClusterTruthModuleLabel: CaloClusterTruthMatch
-            caloHitTruthModuleLabel    : CaloHitsTruthMatch
+            caloHitTruthModuleLabel    : CaloHitTruthMatch
             virtualDetectorName        : virtualdetector
             stepPointMCLabel           : g4run
   	    trkPatRecModuleLabel       : TRFDeM

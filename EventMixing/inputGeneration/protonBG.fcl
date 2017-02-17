@@ -54,7 +54,7 @@ physics : {
       generatorModuleLabel : "generate"
       g4ModuleLabel        : "g4run"
       strawHitMakerLabel   : "makeSH"
-      crystalHitMakerLabel : "CaloCrystalHitsFromHits"
+      crystalHitMakerLabel : "CaloCrystalHitFromHit"
     }
 
   }

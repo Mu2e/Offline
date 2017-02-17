@@ -42,11 +42,11 @@
 namespace mu2e {
 
 
-  class CaloDigisFromShower : public art::EDProducer {
+  class CaloDigiFromShower : public art::EDProducer {
   
     public:
 
-      explicit CaloDigisFromShower(fhicl::ParameterSet const& pset) :
+      explicit CaloDigiFromShower(fhicl::ParameterSet const& pset) :
 
         // Parameters
         caloShowerModuleLabel_ (pset.get<std::string>("caloShowerModuleLabel")), 
@@ -77,7 +77,7 @@ namespace mu2e {
 
       }
 
-      virtual ~CaloDigisFromShower() { }
+      virtual ~CaloDigiFromShower() { }
 
       virtual void produce(art::Event& e);
       virtual void beginRun(art::Run& aRun);
@@ -134,7 +134,7 @@ namespace mu2e {
 
  
   //-----------------------------------------------------------------------------
-  void CaloDigisFromShower::beginRun(art::Run& aRun)
+  void CaloDigiFromShower::beginRun(art::Run& aRun)
   {
       pulseShape_.buildShapes();
       if ( diagLevel_ > 3) pulseShape_.printShape();
@@ -143,9 +143,9 @@ namespace mu2e {
 
 
   //---------------------------------------------------------
-  void CaloDigisFromShower::produce(art::Event& event)
+  void CaloDigiFromShower::produce(art::Event& event)
   {   
-      if ( diagLevel_ > 0 ) std::cout<<"[CaloDigisFromShower::produce] begin" << std::endl;
+      if ( diagLevel_ > 0 ) std::cout<<"[CaloDigiFromShower::produce] begin" << std::endl;
 
       //update condition cache
       ConditionsHandle<AcceleratorParams> accPar("ignored");
@@ -161,13 +161,13 @@ namespace mu2e {
             
       event.put(std::move(caloDigiColl));
 
-      if ( diagLevel_ > 0 ) std::cout<<"[CaloDigisFromShower::produce] end" << std::endl;
+      if ( diagLevel_ > 0 ) std::cout<<"[CaloDigiFromShower::produce] end" << std::endl;
   } 
 
   
   
   //-------------------------------------------------------------------------------------------------------------
-  void CaloDigisFromShower::makeDigitization(const CaloShowerStepROCollection& caloShowerStepROs,CaloDigiCollection& caloDigiColl)
+  void CaloDigiFromShower::makeDigitization(const CaloShowerStepROCollection& caloShowerStepROs,CaloDigiCollection& caloDigiColl)
   {
        mu2e::GeomHandle<mu2e::Calorimeter> ch;
        calorimeter_ = ch.get();                       
@@ -180,7 +180,7 @@ namespace mu2e {
 
 
   //-------------------------------------------------
-  void CaloDigisFromShower::resetWaveforms()
+  void CaloDigiFromShower::resetWaveforms()
   {
       unsigned int nWaveforms   = calorimeter_->nCrystal()*calorimeter_->caloInfo().nROPerCrystal();
       unsigned int waveformSize = (mbtime_ - blindTime_ + endTimeBuffer_) / digiSampling_;  
@@ -205,7 +205,7 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------
-  void CaloDigisFromShower::fillWaveforms(const CaloShowerStepROCollection& caloShowerStepROs)
+  void CaloDigiFromShower::fillWaveforms(const CaloShowerStepROCollection& caloShowerStepROs)
   {          
       double totalEdep(0);
       
@@ -215,13 +215,13 @@ namespace mu2e {
           if (diagLevel_ > 0) totalEdep +=  caloShowerStepRO.energy();
       }
             
-      if (diagLevel_ > 1) std::cout<<"[CaloDigisFromShower::fillWaveforms] total energy processed "
+      if (diagLevel_ > 1) std::cout<<"[CaloDigiFromShower::fillWaveforms] total energy processed "
                                    <<totalEdep/calorimeter_->caloInfo().nROPerCrystal()<<std::endl;      
    }
 
 
   //-----------------------------------------------------------------------------------------
-  void CaloDigisFromShower::readoutResponse(int ROID, double energyCorr, double time)
+  void CaloDigiFromShower::readoutResponse(int ROID, double energyCorr, double time)
   {          
       double                     pulseAmp       = energyCorr*energyScale_;          
       double                     timeCorr       = time - blindTime_;          
@@ -250,7 +250,7 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------
-  void CaloDigisFromShower::buildOutputDigi(CaloDigiCollection& caloDigiColl)
+  void CaloDigiFromShower::buildOutputDigi(CaloDigiCollection& caloDigiColl)
   {
         
       for (unsigned int iRO=0; iRO<waveforms_.size(); ++iRO)
@@ -309,15 +309,15 @@ namespace mu2e {
   
   
   
-  void CaloDigisFromShower::diag0(int iRO,std::vector<double>& itWave )
+  void CaloDigiFromShower::diag0(int iRO,std::vector<double>& itWave )
   {
       if (*std::max_element(itWave.begin(),itWave.end())<1) return;
-      std::cout<<"CaloDigisFromShower::fillOutoutRO] Waveform content for readout "<<iRO<<std::endl; 
+      std::cout<<"CaloDigiFromShower::fillOutoutRO] Waveform content for readout "<<iRO<<std::endl; 
       for (const auto  &v : itWave) std::cout<<v<<" "; 
       std::cout<<std::endl;
   }
 
-  void CaloDigisFromShower::diag1(int iRO, double time, std::vector<int>& wf )
+  void CaloDigiFromShower::diag1(int iRO, double time, std::vector<int>& wf )
   {
       std::cout<<"Created caloDigi with roID = "<<iRO<<"  time="<<time<<" and content ";
       for (const auto  &v : wf) std::cout<<v<<" ";
@@ -333,5 +333,5 @@ namespace mu2e {
 
 }
 
-using mu2e::CaloDigisFromShower;
-DEFINE_ART_MODULE(CaloDigisFromShower);
+using mu2e::CaloDigiFromShower;
+DEFINE_ART_MODULE(CaloDigiFromShower);

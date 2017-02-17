@@ -6,11 +6,11 @@
 BEGIN_PROLOG
 
 
-CaloRecoDigiFromDigis :
+CaloRecoDigiFromDigi :
 { 
 
-    module_type           : CaloRecoDigiFromDigis
-    caloDigiModuleLabel   : CaloDigisFromShower
+    module_type           : CaloRecoDigiFromDigi
+    caloDigiModuleLabel   : CaloDigiFromShower
     processorStrategy     : "FixedFast"     
     digiSampling          : @local::HitMakerDigiSampling
     maxChi2Cut            : 10
@@ -33,10 +33,10 @@ CaloRecoDigiFromDigis :
 }
 
 
-CaloCrystalHitsFromHits:
+CaloCrystalHitFromHit:
 {
-    module_type           : CaloCrystalHitsFromHits
-    caloDigisModuleLabel  : CaloRecoDigiFromDigis	    	    
+    module_type           : CaloCrystalHitFromHit
+    caloDigisModuleLabel  : CaloRecoDigiFromDigi	    	    
     time4Merge            : 4.0   #ns
     diagLevel             : 0
 }
@@ -45,10 +45,10 @@ CaloCrystalHitsFromHits:
 CaloReco : 
 {
    producers : {
-     CaloRecoDigiFromDigis    : @local::CaloRecoDigiFromDigis
-     CaloCrystalHitsFromHits  : @local::CaloCrystalHitsFromHits
+     CaloRecoDigiFromDigi    : @local::CaloRecoDigiFromDigi
+     CaloCrystalHitFromHit  : @local::CaloCrystalHitFromHit
    }
-   Reco : [ CaloRecoDigiFromDigis ,CaloCrystalHitsFromHits ]
+   Reco : [ CaloRecoDigiFromDigi ,CaloCrystalHitFromHit ]
 }
 
 END_PROLOG

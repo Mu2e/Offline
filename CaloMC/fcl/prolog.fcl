@@ -41,9 +41,9 @@ CaloShowerStepROFromShowerStep :
 }
 
 
-CaloDigisFromShower : 
+CaloDigiFromShower : 
 {
-    module_type           : CaloDigisFromShower
+    module_type           : CaloDigiFromShower
     caloShowerModuleLabel : CaloShowerStepROFromShowerStep
 
     blindTime             : @local::HitMakerBlindTime
@@ -64,11 +64,11 @@ CaloDigisFromShower :
 }
 
 
-CaloHitsTruthMatch:
+CaloHitTruthMatch:
 {
-    module_type               : CaloHitsTruthMatch
+    module_type               : CaloHitTruthMatch
     caloShowerSimModuleLabel  : CaloShowerStepROFromShowerStep
-    caloCrystalHitModuleLabel : CaloCrystalHitsFromHits
+    caloCrystalHitModuleLabel : CaloCrystalHitFromHit
     deltaTimeMinus            : 4.0    #ns
     deltaTimePlus             : 150.0  #ns
     diagLevel                 : 0
@@ -79,13 +79,13 @@ CaloDigiMC :
    producers : {
      CaloShowerStepFromStepPt       : @local::CaloShowerStepFromStepPt
      CaloShowerStepROFromShowerStep : @local::CaloShowerStepROFromShowerStep
-     CaloDigisFromShower            : @local::CaloDigisFromShower
+     CaloDigiFromShower            : @local::CaloDigiFromShower
    }
    producersMC : {
-     CaloHitsTruthMatch : @local::CaloHitsTruthMatch
+     CaloHitTruthMatch : @local::CaloHitTruthMatch
    }
-   DigiSim    : [ CaloShowerStepFromStepPt, CaloShowerStepROFromShowerStep, CaloDigisFromShower]
-   TruthMatch : [ CaloHitsTruthMatch ]
+   DigiSim    : [ CaloShowerStepFromStepPt, CaloShowerStepROFromShowerStep, CaloDigiFromShower]
+   TruthMatch : [ CaloHitTruthMatch ]
 }
 
 END_PROLOG

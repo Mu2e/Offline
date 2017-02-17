@@ -36,11 +36,11 @@
 namespace mu2e {
 
 
-  class CaloHitsTruthMatch : public art::EDProducer {
+  class CaloHitTruthMatch : public art::EDProducer {
   
      public:
 
-        explicit CaloHitsTruthMatch(fhicl::ParameterSet const& pset) :
+        explicit CaloHitTruthMatch(fhicl::ParameterSet const& pset) :
 
           // Parameters
           caloShowerSimModuleLabel_  (pset.get<std::string>("caloShowerSimModuleLabel")), 
@@ -54,7 +54,7 @@ namespace mu2e {
 
         }
 
-        virtual ~CaloHitsTruthMatch() { }
+        virtual ~CaloHitTruthMatch() { }
         virtual void beginJob();
 
         void produce(art::Event& e);
@@ -94,7 +94,7 @@ namespace mu2e {
 
 
   //--------------------------------------------------------------------
-  void CaloHitsTruthMatch::beginJob()
+  void CaloHitTruthMatch::beginJob()
   {
        if ( diagLevel_ > 2)
        {
@@ -112,7 +112,7 @@ namespace mu2e {
 
 
   //--------------------------------------------------------------------
-  void CaloHitsTruthMatch::produce(art::Event& event)
+  void CaloHitTruthMatch::produce(art::Event& event)
   {
    
       art::Handle<CaloShowerSimCollection> caloShowerSimHandle;
@@ -139,7 +139,7 @@ namespace mu2e {
   //   MCtime must not already be in the window of the next hit, in which case it is associate to this one
   //
   //--------------------------------------------------------------------
-  void CaloHitsTruthMatch::makeTruthMatch(const art::Handle<CaloShowerSimCollection> &caloShowerSimHandle, 
+  void CaloHitTruthMatch::makeTruthMatch(const art::Handle<CaloShowerSimCollection> &caloShowerSimHandle, 
                                              const art::Handle<CaloCrystalHitCollection> &caloCrystalHitHandle,
                                              CaloHitMCTruthAssns &caloTruthMatch)
   {
@@ -217,7 +217,7 @@ namespace mu2e {
                  
 		 caloTruthMatch.addSingle(hitPtr, showerSim->sim(), ShowerSimPtr);
 
-                 if (diagLevel_ > 3) std::cout<<"[CaloHitsTruthMatch]  matched shower id/time/energyDep()= "<<showerSim->crystalId()
+                 if (diagLevel_ > 3) std::cout<<"[CaloHitTruthMatch]  matched shower id/time/energyDep()= "<<showerSim->crystalId()
                                               <<" / "<<showerSim->time()<<" / "<<showerSim->energy()
                                               <<"\t    hit  id/time/energyDep()= "<<hit->id()<<" / "<<hit->time()<<" / "<<hit->energyDep()<<std::endl;
 
@@ -229,7 +229,7 @@ namespace mu2e {
           }      
       }      
       
-      if (diagLevel_ > 0) std::cout<<"[CaloHitsTruthMatch]  total particles / energy matched = "<<nMatched<<" / "<<totalEnergyMatched<<std::endl;
+      if (diagLevel_ > 0) std::cout<<"[CaloHitTruthMatch]  total particles / energy matched = "<<nMatched<<" / "<<totalEnergyMatched<<std::endl;
 
   } 
 
@@ -238,8 +238,8 @@ namespace mu2e {
 
 }
 
-using mu2e::CaloHitsTruthMatch;
-DEFINE_ART_MODULE(CaloHitsTruthMatch);
+using mu2e::CaloHitTruthMatch;
+DEFINE_ART_MODULE(CaloHitTruthMatch);
 
 
 

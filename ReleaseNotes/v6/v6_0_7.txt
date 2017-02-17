@@ -2,6 +2,10 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_0_7
 
+7) Feb 17, 2017 echenard
+   Removed unnecessary packing / unpacking in calorimeter digitization chain, removinh unneeded module and data product
+   Renamed Calorimeter production module all singular (yes, these few scattered 's' were bothering me...)
+   
 6) Feb 13, 2017 kutschke
    Remove tbb from ups packages we setup.  It was needed temporarily
    because of an oversight in the art table file - that has since been fixed.
