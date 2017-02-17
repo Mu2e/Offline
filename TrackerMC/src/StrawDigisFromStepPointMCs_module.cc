@@ -424,7 +424,7 @@ namespace mu2e {
 	// Get all of the tracker StepPointMC collections from the event:
 	typedef vector< art::Handle<StepPointMCCollection> > HandleVector;
 	// This selector will select only data products with the given instance name.
-	art::ProductInstanceNameSelector selector("tracker");
+	art::ProductInstanceNameSelector selector(_trackerStepPoints);
 	HandleVector stepsHandles;
 	event.getMany( selector, stepsHandles);
 	// Informational message on the first event.
