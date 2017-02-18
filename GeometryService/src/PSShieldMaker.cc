@@ -1,6 +1,6 @@
 //
 // Original author Andrei Gaponenko
-
+// Extensive modifications by David N. Brown, Louisville, 2017
 #include <algorithm>
 #include <sstream>
 
@@ -92,7 +92,7 @@ namespace mu2e {
     // DNB, Louisville, Jan 2017
     // There are two ends, so there are two end rings.  Each is a polycone
     if ( myVersion > 1 ) {
-      res->endRings_.reserve(2);
+      res->endRings_.reserve(4);
 
       // First do upstream ("front") end ring
       std::vector<double> zPf; 
@@ -119,6 +119,33 @@ namespace mu2e {
       const std::string materialb = c.getString("PSShield.backRing.material");
 
       res->endRings_.emplace_back(zPb, rIb, rOb, shieldOriginInMu2e, materialb );
+
+      // Now the water ring
+      std::vector<double> zPw; 
+      c.getVectorDouble("PSShield.waterRing.zPlane", zPw);
+      if(!std::is_sorted(zPw.begin(), zPw.end())) {
+	throw cet::exception("GEOM")<<"PSShieldMaker::make(): coordinates in the waterRing zPlane vector must be non-decreasing\n";
+      }
+      std::vector<double> rIw, rOw;
+      c.getVectorDouble("PSShield.waterRing.rIn", rIw, zPw.size());
+      c.getVectorDouble("PSShield.waterRing.rOut", rOw, zPw.size());
+      const std::string materialw = c.getString("PSShield.waterRing.material");
+
+      res->endRings_.emplace_back(zPw, rIw, rOw, shieldOriginInMu2e, materialw );
+
+      // And the extension of the sheath around the HRS proper
+      std::vector<double> zPs; 
+      c.getVectorDouble("PSShield.sheathRing.zPlane", zPs);
+      if(!std::is_sorted(zPs.begin(), zPs.end())) {
+	throw cet::exception("GEOM")<<"PSShieldMaker::make(): coordinates in the sheathRing zPlane vector must be non-decreasing\n";
+      }
+      std::vector<double> rIs, rOs;
+      c.getVectorDouble("PSShield.sheathRing.rIn", rIs, zPs.size());
+      c.getVectorDouble("PSShield.sheathRing.rOut", rOs, zPs.size());
+      const std::string materials = c.getString("PSShield.sheathRing.material");
+
+      res->endRings_.emplace_back(zPs, rIs, rOs, shieldOriginInMu2e, materials );
+
     } // If version > 1
   
     //----------------------------------------------------------------

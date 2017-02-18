@@ -126,6 +126,7 @@ namespace mu2e {
     }
 
     // Insert the endRings if this is version 2 or higher
+    // Treat the extra water and stainless sheath as end rings.
     if ( version > 1 ) {
       for(unsigned iER=0; iER < hrs->endRings().size(); ++iER) {
 	std::ostringstream osnum;
@@ -154,6 +155,7 @@ namespace mu2e {
 					    place-eRing.originInMu2e());
 	} else {
 	  // upstream - beam inlet tube does not penetrate
+	  // Same for extra water and stainless sheath.
 	  aSolid = psersolid;
 	}
 

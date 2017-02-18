@@ -47,6 +47,7 @@ namespace mu2e {
     ps._psEndRefPoint = CLHEP::Hep3Vector(solenoidOffset, 0, _config.getDouble("PS.cryostatRefZ"));
 
     CLHEP::Hep3Vector psCryoMu2eOffset = ps._psEndRefPoint + CLHEP::Hep3Vector(0, 0, _psVacVesselHalfLength );
+    CLHEP::Hep3Vector psCryoInnerExtOffset(0, 0, -_psVacVesselInHalfExt);
 
     const double psCoilRefZ = _config.getDouble("PS.coilRefZ");
 
@@ -56,10 +57,10 @@ namespace mu2e {
 
     ps._psVacVesselInnerParams = std::unique_ptr<Tube>
       (new Tube(_psVacVesselMaterialName,
-                psCryoMu2eOffset,
+                psCryoMu2eOffset+psCryoInnerExtOffset,
                  _psVacVesselrIn,
                 _psVacVesselrIn +_psVacVesselWallThickness,
-                _psVacVesselHalfLength));
+                _psVacVesselHalfLength+_psVacVesselInHalfExt ));
 
     ps._psVacVesselOuterParams = std::unique_ptr<Tube>
       (new Tube(_psVacVesselMaterialName,
@@ -166,6 +167,7 @@ namespace mu2e {
     _psVacVesselHalfLength            = _config.getDouble("PS.VacVessel.HalfLength");
     _psVacVesselEndPlateHalfThickness = _config.getDouble("PS.VacVessel.EndPlateHalfThickness");
     _psVacVesselMaterialName          = _config.getString("PS.VacVessel.materialName");
+    _psVacVesselInHalfExt             = _config.getDouble("PS.VacVessel.InnerExtension",0.0)/2.0;
 
     // Rings added by David Norvil Brown, March 2015
     _psRingMaterialName = _config.getString("PS.ring.materialName");

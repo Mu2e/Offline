@@ -34,12 +34,13 @@ double PS.VacVessel.WallThickness  = 20.;
 // e-mail 2012-03-27 from Tom Page, and PS-solenoid-magnet-assembly-2012-02-15.PDF in docdb-2066
 double PS.VacVessel.EndPlateHalfThickness = 40.;
 double PS.VacVessel.HalfLength     = 2250.;
+double PS.VacVessel.InnerExtension = 101.4;
 string PS.VacVessel.materialName   = "StainlessSteel";
 string PS.vacuumMaterialName       = "PSVacuum";
 bool   PS.Vacuum.Sensitive         = false;
 
 // Properties of the G4Material PSVacuum.
-// This is a reduced density version of an existing gass.
+// This is a reduced density version of an existing gas.
 double PS.vacuumPressure      = 4.e-5;       // torr
 string PS.vacuumG4Material    = "G4_Ar";     // name of the G4Material for the existing gas.
 

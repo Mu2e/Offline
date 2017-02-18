@@ -52,6 +52,7 @@ namespace mu2e {
     double _psVacVesselWallThickness;
     double _psVacVesselEndPlateHalfThickness;
     double _psVacVesselHalfLength;
+    double _psVacVesselInHalfExt;
     std::string _psVacVesselMaterialName;
 
     // Rings

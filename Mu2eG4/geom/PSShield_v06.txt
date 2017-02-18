@@ -3,7 +3,7 @@
 //
 // Original author: Andrei Gaponenko
 // Modified for final version specifics by David N Brown (Louisville)
-
+// 
 int PSShield.version = 2;
 
 // The shield consists of a number of nested polycones
@@ -13,7 +13,7 @@ int PSShield.nShells = 4; // stainless steel, bronze, water, stainless
 vector<double> PSShield.zPlane = { 1210., 2404.6, 2990., 3490.2, 4955.1};
 
 // Define the n+1 boundaries, starting from the innermost
-vector<double> PSShield.r1 = { 650., 200., 200., 200., 200. };
+vector<double> PSShield.r1 = {  650., 200., 200., 200., 200. };
 string PSShield.material1 = "StainlessSteel";
 vector<double> PSShield.color1 = { 0.1, 0.1, 0.1};
 
@@ -36,16 +36,27 @@ vector<double> PSShield.color4 = { 0.1, 0.1, 0.1};
 vector<double> PSShield.r5 = { 736.6, 736.6, 736.6, 736.6, 736.6 };
 
 // The endRings for the HRS.  
-vector<double> PSShield.frontRing.zPlane = { 1023.4,1074.2, 1149.1, 1210.0 };
-vector<double> PSShield.frontRing.rIn =    { 725.6, 705.0, 674.7, 650.0 };
-vector<double> PSShield.frontRing.rOut =   { 770.0, 770.0, 700.0, 700.0 }; 
+vector<double> PSShield.frontRing.zPlane = { 1023.5 ,1074.2, 1074.2, 1083.7, 1086.8, 1086.8, 1120.0, 1120.0, 1124.0, 1124.0, 1150.0, 1210.0 };
+vector<double> PSShield.frontRing.rIn =    { 719.9, 700.9, 700.9, 697.36, 696.2, 696.2, 683.75, 683.75, 682.25, 682.25, 672.5, 650.0 };
+vector<double> PSShield.frontRing.rOut =   { 753.69, 753.69, 750., 750., 746.3, 736.6, 736.6, 723.5, 723.5, 709., 700.0, 700.0 }; 
 string PSShield.frontRing.material = "StainlessSteel";
 vector<double> PSShield.backRing.zPlane = { 4955.1, 4983.68, 4983.7,4990.1  };
 vector<double> PSShield.backRing.rIn =    { 250.8, 225.4, 225.4, 225.4 };
 vector<double> PSShield.backRing.rOut =   { 736.6, 736.6, 723.9, 723.9 }; 
 string PSShield.backRing.material = "StainlessSteel";
+vector<double> PSShield.waterRing.zPlane = { 1124.01, 1150., 1210.  };
+vector<double> PSShield.waterRing.rIn =    { 709.01, 700.01, 700.01 };
+vector<double> PSShield.waterRing.rOut =   { 723.5, 723.5, 723.5 }; 
+string PSShield.waterRing.material = "G4_WATER";
+vector<double> PSShield.sheathRing.zPlane = { 1120.0, 1210.0  };
+vector<double> PSShield.sheathRing.rIn =    { 723.9, 723.9 };
+vector<double> PSShield.sheathRing.rOut =   { 736.6, 736.6 }; 
+string PSShield.sheathRing.material = "StainlessSteel";
 
 vector<double> PSShield.endRing.color = { 0.1, 0.1, 0.1 };
+
+
+
 
 // Information for the proton beam pipe inlet.  David Norvil Brown, March 2015
 string PSShield.inlet.materialName = "G4_Al";
