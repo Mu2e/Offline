@@ -7,7 +7,7 @@ BEGIN_PROLOG
 CaloProtoClusterFromCrystalHit :
 {
   module_type            : CaloProtoClusterFromCrystalHit
-  caloCrystalModuleLabel : CaloCrystalHitsFromHits
+  caloCrystalModuleLabel : CaloCrystalHitFromHit
   mainClusterCollName    : mainCluster
   splitClusterCollName   : splitCluster
   EminSeed               : 10
@@ -37,7 +37,7 @@ CaloClusterTruthMatch:
 {
     module_type               : CaloClusterTruthMatch
     caloClusterModuleLabel    : CaloClusterFromProtoCluster
-    caloHitTruthModuleLabel   : CaloHitsTruthMatch
+    caloHitTruthModuleLabel   : CaloHitTruthMatch
     diagLevel                 : 0
 }
 

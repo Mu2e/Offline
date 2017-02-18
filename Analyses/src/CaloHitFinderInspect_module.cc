@@ -22,7 +22,6 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloDigiPackedCollection.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
 #include "MCDataProducts/inc/CaloShowerSimCollection.hh"
@@ -114,15 +113,16 @@ namespace mu2e {
   void CaloHitFinderInspect::analyze(const art::Event& event) 
   {
 
+      /*
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
       art::ServiceHandle<GeometryService> geom;
       if( ! geom->hasElement<Calorimeter>() ) return;
       Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
-      art::Handle<CaloDigiPackedCollection> caloDigisHandle;
+      art::Handle<CaloDigiCollection> caloDigisHandle;
       event.getByLabel(_caloDigiModuleLabel, caloDigisHandle);
-      CaloDigiPackedCollection const& caloDigisColl(*caloDigisHandle);
+      CaloDigiCollection const& caloDigisColl(*caloDigisHandle);
     
       art::Handle<CaloShowerSimCollection> caloShowerSimHandle;
       event.getByLabel(_caloShowerSimModuleLabel, caloShowerSimHandle);
@@ -159,7 +159,7 @@ namespace mu2e {
 
 	 }
       }
-      
+      */
 
       return; 
   }	  
@@ -170,6 +170,7 @@ namespace mu2e {
   void CaloHitFinderInspect::extractAmplitude(int roId, int crystalId, std::vector<int>& waveform, 
                                               double adc2MeV, CaloShowerSimVec& caloShowerSims)
   {
+      
       
       std::vector<double> x,y;
       unsigned int index(0);      
@@ -265,12 +266,7 @@ namespace mu2e {
 	       if (peakFound) _second2dOk->Fill(residual[i],residual[i]/y[i]);
 	       else           _second2dNo->Fill(residual[i],residual[i]/y[i]);
 	  }
-         
-
-
-
-
-  
+           
   }
 
 

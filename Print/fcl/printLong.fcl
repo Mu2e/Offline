@@ -45,7 +45,7 @@ physics :{
       CaloCrystalHitPrinter : {
         verbose: 1   # 0, 1
         #eCut : 10.0          # cut on hits
-	#inputTags : [ "CaloCrystalHitsFromHits" ] # select instances
+	#inputTags : [ "CaloCrystalHitFromHit" ] # select instances
       }
       CaloClusterPrinter : {
         verbose: 1   # 0, 1

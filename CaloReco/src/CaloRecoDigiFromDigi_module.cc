@@ -1,8 +1,3 @@
-//
-// Recall, the caloFigiColl structure is the following:
-// nTotWords - nWords_roID - roiID - nWord_roID_ihit - time_roID_ihit - Data_roID_ihit - ...
-//
-
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -16,9 +11,9 @@
 
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloDigiPacked.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
 
 #include <iostream>
@@ -29,18 +24,18 @@ namespace mu2e {
 
 
 
-  class CaloRecoDigiFromUnpacked : public art::EDProducer {
+  class CaloRecoDigiFromDigi : public art::EDProducer {
 
     public:
 
         enum processorStrategy {NoChoice, RawExtract, LogNormalFit, FixedFast};
 
-        explicit CaloRecoDigiFromUnpacked(fhicl::ParameterSet const& pset) :
-          caloDigiUnpackModuleLabel_ (pset.get<std::string>("caloDigiUnpackModuleLabel")),
-          processorStrategy_         (pset.get<std::string>("processorStrategy")),
-          digiSampling_              (pset.get<double>     ("digiSampling")),
-          maxChi2Cut_                (pset.get<double>     ("maxChi2Cut")),
-          diagLevel_                 (pset.get<int>        ("diagLevel",0)),
+        explicit CaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
+          caloDigiModuleLabel_ (pset.get<std::string>("caloDigiModuleLabel")),
+          processorStrategy_   (pset.get<std::string>("processorStrategy")),
+          digiSampling_        (pset.get<double>     ("digiSampling")),
+          maxChi2Cut_          (pset.get<double>     ("maxChi2Cut")),
+          diagLevel_           (pset.get<int>        ("diagLevel",0)),
 	  nplot_(0)
         {
 
@@ -81,7 +76,7 @@ namespace mu2e {
             }
         }
 
-        virtual ~CaloRecoDigiFromUnpacked() {}
+        virtual ~CaloRecoDigiFromDigi() {}
         
         virtual void beginRun(art::Run& aRun);
 	virtual void produce(art::Event& e);
@@ -91,7 +86,7 @@ namespace mu2e {
 
     private:
 
-       std::string  caloDigiUnpackModuleLabel_; 
+       std::string  caloDigiModuleLabel_; 
        std::string  processorStrategy_;
        double       digiSampling_;
        double       maxChi2Cut_;
@@ -110,14 +105,14 @@ namespace mu2e {
 
 
   //-------------------------------------------------------
-  void CaloRecoDigiFromUnpacked::produce(art::Event& event) 
+  void CaloRecoDigiFromDigi::produce(art::Event& event) 
   {
 
-       if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromUnpacked::produce] begin"<<std::endl;
+       if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromDigi::produce] begin"<<std::endl;
 
-       //Get handles to calorimeter RO (aka APD) collection
+       //Get the calorimeter Digis
        art::Handle<CaloDigiCollection> caloDigisHandle;
-       event.getByLabel(caloDigiUnpackModuleLabel_, caloDigisHandle);
+       event.getByLabel(caloDigiModuleLabel_, caloDigisHandle);
 
 
        std::unique_ptr<CaloRecoDigiCollection> recoCaloDigiColl(new CaloRecoDigiCollection);
@@ -126,26 +121,26 @@ namespace mu2e {
 
        if ( diagLevel_ > 3 )
        {
-           printf("[CaloRecoDigiFromUnpacked::produce] produced RecoCrystalHits ");
+           printf("[CaloRecoDigiFromDigi::produce] produced RecoCrystalHits ");
            printf(", recoCaloDigiColl size  = %i \n", int(recoCaloDigiColl->size()));
        }
 
        event.put(std::move(recoCaloDigiColl));
        
-       if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromUnpacked::produce] end"<<std::endl;
+       if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromDigi::produce] end"<<std::endl;
 
        return;
   }
   
   //-----------------------------------------------------------------------------
-  void CaloRecoDigiFromUnpacked::beginRun(art::Run& aRun)
+  void CaloRecoDigiFromDigi::beginRun(art::Run& aRun)
   {
       waveformProcessor_->initialize(); 
   }
 
     
   //--------------------------------------------------------------------------------------
-  void CaloRecoDigiFromUnpacked::extractRecoDigi(const art::Handle<CaloDigiCollection>& caloDigisHandle, 
+  void CaloRecoDigiFromDigi::extractRecoDigi(const art::Handle<CaloDigiCollection>& caloDigisHandle, 
                                             CaloRecoDigiCollection &recoCaloHits)
   {
       
@@ -177,7 +172,7 @@ namespace mu2e {
 
             if (diagLevel_ > 3)
             {
-                std::cout<<"[CaloRecoDigiFromUnpacked::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
+                std::cout<<"[CaloRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
                 for (auto const& val : waveform) std::cout<< val<<" "; std::cout<<std::endl;
             }
             
@@ -196,7 +191,7 @@ namespace mu2e {
 
                  if (diagLevel_ > 1)
                  {
-                     std::cout<<"[CaloRecoDigiFromUnpacked::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;                   
+                     std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;                   
                  }           
 
                  if (chi2/ndf > maxChi2Cut_) continue;
@@ -210,8 +205,8 @@ namespace mu2e {
 
 }
 
-using mu2e::CaloRecoDigiFromUnpacked;
-DEFINE_ART_MODULE(CaloRecoDigiFromUnpacked);
+using mu2e::CaloRecoDigiFromDigi;
+DEFINE_ART_MODULE(CaloRecoDigiFromDigi);
 
 
  /*
