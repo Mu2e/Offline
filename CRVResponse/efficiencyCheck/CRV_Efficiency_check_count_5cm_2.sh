@@ -25,7 +25,7 @@ do
 
                 searchString="SUMMARY CrvCoincidencePE$PEthreshold""T$timeWindow"
 #                searchCommand="grep '$searchString' $file"
-                searchCommand="tail -n 100 $file | grep '$searchString'"
+                searchCommand="tail -n 150 $file | grep '$searchString'"
                 searchResult=`eval $searchCommand`
                 if [ $? -ne 0 ]; then
                   continue

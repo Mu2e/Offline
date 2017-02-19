@@ -27,7 +27,7 @@ moduleGap=3
 
 #### for adjacentPulseTimeDifference = 5ns
 
-        name=CRV_Efficiency_check_5cm_6000
+        name=CRV_Efficiency_check_5cm_6600
         fclfile=CRVResponse/efficiencyCheck/submit/$name'_'$i.fcl
         fcllist=CRVResponse/efficiencyCheck/submit/$name'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm_6600.fcl\"" >| $fclfile
@@ -43,7 +43,7 @@ moduleGap=3
 
 #### for adjacentPulseTimeDifference = 10ns
 
-        name=CRV_Efficiency_check_5cm10_6000
+        name=CRV_Efficiency_check_5cm10_6600
         fclfile=CRVResponse/efficiencyCheck/submit/$name'_'$i.fcl
         fcllist=CRVResponse/efficiencyCheck/submit/$name'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm10_6600.fcl\"" >| $fclfile

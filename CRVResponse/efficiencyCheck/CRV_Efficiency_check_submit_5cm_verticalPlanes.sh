@@ -6,8 +6,8 @@ moduleGap=3
 
     dz=$((811+$moduleGap))
 
-    for layerOffset in {0..62..2}
-    do
+#    for layerOffset in {0..62..2}
+#    do
 #      for photonYield in {3156,3738,4320}  # 24,28,32 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
       for photonYield in {2575,2865,3156,3447,3738,4029,4320,4611,4901,5192,5483,5774,6065,6356,6646,6937,7228,7519,7810}  # 20,22,...,56 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
       do
@@ -40,5 +40,5 @@ moduleGap=3
         mu2eprodsys --setup=./setup.sh --fcllist=$fcllist --clustername=$clustername --dsconf=$i --wfproject=$name
 
       done
-    done
+#    done
 #  done
