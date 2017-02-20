@@ -14,7 +14,7 @@ source : {
 services : {
 
   message               : @local::default_message
-  TFileService          : { fileName : "strawHit.root" }
+  TFileService          : { fileName : "strawDigi.root" }
 
 }
 
