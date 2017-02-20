@@ -77,12 +77,15 @@ export ROOT_INCLUDE_PATH=`dropit -s -p$ROOT_INCLUDE_PATH $MU2E_BASE_RELEASE`
 #setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
 
 # Geant4 and its cross-section files.
-if [[ $($MU2E_BASE_RELEASE/buildopts --triggerStrip) == "off" ]]; then
+if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
   setup -B geant4 v4_9_6_p04e -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_01_00 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
+# For now this is not generally available; once it is we can remove the conditional.
+if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "on" ]]; then
+  setup -B mu2e_artdaq_core v1_01_00 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
+if
 
 # Other libraries we need.
 setup -B heppdt v3_04_01e -q${MU2E_UPS_QUALIFIERS}

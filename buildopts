@@ -11,7 +11,7 @@ fi
 
 #================================================================
 # known keywords
-kkw=(build g4vis triggerStrip)
+kkw=(build g4vis trigger)
 # a list of allowed values, the first one is the default
 opts_build() {
     echo prof debug
@@ -21,7 +21,7 @@ opts_g4vis() {
     echo ogl qt none
 }
 # a list of allowed values, the first one is the default
-opts_triggerStrip(){
+opts_trigger(){
     echo off on
 }
 #================================================================

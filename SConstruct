@@ -196,8 +196,8 @@ for root,dirs,files in os.walk('.'):
     pass
 
 # If we are making a build for the trigger, do not build everything.
-triggerStrip = subprocess.check_output([bopt, '--triggerStrip']).strip()
-if triggerStrip == 'on':
+trigger = subprocess.check_output([bopt, '--trigger']).strip()
+if trigger == 'on':
     ss.remove('Mu2eG4/src/SConscript')
     ss.remove('CRVResponse/src/SConscript')
     ss.remove('Sandbox/src/SConscript')
