@@ -1382,18 +1382,21 @@ namespace mu2e {
       {
            const CLHEP::Hep3Vector & sizeDisk = cal.disk(id).geomInfo().size();
            G4ThreeVector posDisk              = cal.geomInfo().origin() + cal.disk(id).geomInfo().originLocal();
-	   G4ThreeVector posCrate             = posDisk + CLHEP::Hep3Vector(0.0,0.0,cal.disk(id).geomInfo().crateDeltaZ());
+      	   G4ThreeVector posCrate             = posDisk + CLHEP::Hep3Vector(0.0,0.0,cal.disk(id).geomInfo().crateDeltaZ());
+	   G4double diskRadIn                 = cal.caloInfo().stepsRadiusIn()  - cal.caloInfo().caseThicknessIn();
+	   G4double diskRadOut                = cal.caloInfo().stepsRadiusOut() + cal.caloInfo().caseThicknessOut();
            G4double crateRadIn                = cal.caloInfo().crateRadiusIn();
            G4double crateRadOut               = cal.caloInfo().crateRadiusOut();
-           G4double crateHalfLength           = cal.caloInfo().crateHalfLength();           
-                      
-           TubsParams  vdParamsFrontDisk(sizeDisk[0]-delta,   sizeDisk[1]+delta,   vdg->getHalfLength());
-           TubsParams  vdParamsInnerDisk(sizeDisk[0]-2*delta, sizeDisk[0]-delta,   sizeDisk[2]/2.0);
-           TubsParams  vdParamsOuterDisk(sizeDisk[1]+delta,   sizeDisk[1]+2*delta, sizeDisk[2]/2.0);
+           G4double crateHalfLength           = cal.caloInfo().crateHalfLength();
+      	   G4double phi0Crate                 = (10./360.)*2*CLHEP::pi;                      
+
+	   TubsParams  vdParamsFrontDisk(diskRadIn-delta,   diskRadOut+delta,   vdg->getHalfLength());
+           TubsParams  vdParamsInnerDisk(diskRadIn-2*delta, diskRadIn-delta,   sizeDisk[2]/2.0);
+           // TubsParams  vdParamsOuterDisk(diskRadOut+delta, diskRadOut+2*delta, sizeDisk[2]/2.0);
  
            TubsParams  vdParamsFrontFEB(crateRadIn-delta,   crateRadOut+delta,    vdg->getHalfLength(),0,CLHEP::pi);
-           TubsParams  vdParamsInnerFEB(crateRadIn-2*delta, crateRadIn-delta,     crateHalfLength,-0.01,CLHEP::pi+0.01);
-           TubsParams  vdParamsOuterFEB(crateRadOut+delta,  crateRadOut+2*delta,  crateHalfLength,-0.01,CLHEP::pi+0.01);
+           // TubsParams  vdParamsInnerFEB(crateRadIn-2*delta, crateRadIn-delta,     crateHalfLength,     -phi0Crate-0.01,CLHEP::pi+phi0Crate+0.01);
+           TubsParams  vdParamsOuterFEB(crateRadOut+delta,  crateRadOut+2*delta,  crateHalfLength,     -phi0Crate-0.01,CLHEP::pi+phi0Crate+0.01);
 
            G4ThreeVector posFrontDisk = posDisk - parentInMu2e - G4ThreeVector(0,0,sizeDisk.z()/2.0+delta);
            G4ThreeVector posBackDisk  = posDisk - parentInMu2e + G4ThreeVector(0,0,sizeDisk.z()/2.0+delta);
@@ -1460,25 +1463,25 @@ namespace mu2e {
                                             false);
                ++vdIdDiskEdge;
 
-               VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdDiskEdge),
-                                            vdParamsOuterDisk,
-                                            downstreamVacuumMaterial,
-                                            0,
-                                            posInnerDisk,
-                                            parent,
-                                            vdIdDiskEdge,
-                                            vdIsVisible,
-                                            G4Color::Red(),
-                                            vdIsSolid,
-                                            forceAuxEdgeVisible,
-                                            placePV,
-                                            false);
-               ++vdIdDiskEdge;
+               // VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdDiskEdge),
+               //                              vdParamsOuterDisk,
+               //                              downstreamVacuumMaterial,
+               //                              0,
+               //                              posInnerDisk,
+               //                              parent,
+               //                              vdIdDiskEdge,
+               //                              vdIsVisible,
+               //                              G4Color::Red(),
+               //                              vdIsSolid,
+               //                              forceAuxEdgeVisible,
+               //                              placePV,
+               //                              false);
+               // ++vdIdDiskEdge;
 
                doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-               doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
+               // doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
                vdInfo.logical->SetSensitiveDetector(vdSD);
-               vdInfo2.logical->SetSensitiveDetector(vdSD);
+               // vdInfo2.logical->SetSensitiveDetector(vdSD);
            }
            
            if( vdg->exist(vdIdFEBSurf) )
@@ -1521,20 +1524,20 @@ namespace mu2e {
            
            if( vdg->exist(vdIdFEBEdge) )
            {
-               VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdFEBEdge),
-                                            vdParamsInnerFEB,
-                                            downstreamVacuumMaterial,
-                                            0,
-                                            posInnerFEB,
-                                            parent,
-                                            vdIdFEBEdge,
-                                            vdIsVisible,
-                                            G4Color::Red(),
-                                            vdIsSolid,
-                                            forceAuxEdgeVisible,
-                                            placePV,
-                                            false);
-               ++vdIdFEBEdge;
+               // VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdFEBEdge),
+               //                              vdParamsInnerFEB,
+               //                              downstreamVacuumMaterial,
+               //                              0,
+               //                              posInnerFEB,
+               //                              parent,
+               //                              vdIdFEBEdge,
+               //                              vdIsVisible,
+               //                              G4Color::Red(),
+               //                              vdIsSolid,
+               //                              forceAuxEdgeVisible,
+               //                              placePV,
+               //                              false);
+               // ++vdIdFEBEdge;
 
                VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdFEBEdge),
                                             vdParamsOuterFEB,
@@ -1551,13 +1554,13 @@ namespace mu2e {
                                             false);
                ++vdIdFEBEdge;
 
-               doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+               // doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
                doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
-               vdInfo.logical->SetSensitiveDetector(vdSD);
+               // vdInfo.logical->SetSensitiveDetector(vdSD);
                vdInfo2.logical->SetSensitiveDetector(vdSD);
            }
 
-      }// end loop on disks
+       }// end loop on disks
     }//hasDiskCalorimeter
 
     //-----------------------------------------------------------------------------------------------------------------------------
