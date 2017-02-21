@@ -154,7 +154,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
           double t1LE=startTime+fitStartBin*binWidth;
           double t2LE=startTime+fitEndBin*binWidth;
           double maximumTime=f.GetMaximumX(t1LE,t2LE);
-          LEtime=f.GetX(0.01/_scale,maximumTime-50,maximumTime);   //i.e. at 1% of the pulse height of 1PE
+          LEtime=f.GetX(0.01*_scale,maximumTime-50,maximumTime);   //i.e. at 1% of the pulse height of 1PE
           LEfitChi2=fr->Chi2();
         }
       }

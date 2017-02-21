@@ -8,8 +8,8 @@ moduleGap=3
 
 #    for layerOffset in {0..62..2}
 #    do
-#      for photonYield in {3156,3738,4320}  # 24,28,32 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
-      for photonYield in {2575,2865,3156,3447,3738,4029,4320,4611,4901,5192,5483,5774,6065,6356,6646,6937,7228,7519,7810}  # 20,22,...,56 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
+#      for photonYield in {3189,3781,4359}  # 24,28,32 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
+      for photonYield in {2604,2897,3189,3481,3774,4066,4359,4651,4943,5236,5528,5820,6113,6405,6697,6990,7282,7574,7867}  # 20,22,...,56 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
       do
 
         ((i++));

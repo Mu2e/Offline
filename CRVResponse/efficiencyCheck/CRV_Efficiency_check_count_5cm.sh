@@ -4,7 +4,7 @@ sides=2
 PEthreshold=12
 moduleGap=3
 
-    for photonYield in {3156,3738,4320}  # 24,28,32 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
+    for photonYield in {3189,3781,4359}  # 24,28,32 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
     do
       for layerOffset in {0..62..2}
       do

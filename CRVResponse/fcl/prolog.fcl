@@ -12,9 +12,9 @@ BEGIN_PROLOG
                                    "CRVConditions/v3_0/LookupTable_2300",
                                    "CRVConditions/v3_0/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
-      scintillationYield        : 6000.0   //6000.0 photons per MeV corresponds to 85.53 PEs for both SiPMs combined @ 1m away from SiPMs
-                                           //scintillation yield = 72.712 photons/MeV * PE - 333.86 photons/MeV, 
-                                           //where PE is the PE yield for both SiPMs combined @ 1m away from SiPMs
+      scintillationYield        : 6697.354 //6697.354 photons per MeV corresponds to a PE yield of 48 PEs/cm @ 1m away from SiPMs
+                                           //scintillation yield = 146.178 (photons/MeV)/(PEs/cm) * PE yield - 319.19 photons/MeV, 
+                                           //where PE yield is the number of PEs per cm @ 1m away from SiPMs
       scintillationYieldVariation       : 0.2   //gaussian distribution with sigma equal to 20% of the mean
       scintillationYieldVariationCutoff : 0.4   //the scintillation yield variation is cut off at 40% below the mean
       scintillatorBirksConstant : 0.126    //0.126 mm/Mev
@@ -67,15 +67,15 @@ BEGIN_PROLOG
       digitizationPrecision        : 12.5   //12.5 ns (digitizer sampling rate)
       digitizationPoints           : 8      //8 points
       FEBtimeSpread                : 2.0    //2.0 ns
-      minVoltage                   : 0.0316 //31.6mV (corresponds to 5.5PE) using dark current calibration
+      minVoltage                   : 0.03123 //31.23mV (corresponds to 5.5PE) using dark current calibration
       noise                        : 4.0e-4 //0.4mV
     }
     CrvRecoPulses:
     {
       module_type               : CrvRecoPulsesFinder
       crvWaveformsModuleLabel   : "CrvWaveforms"
-      scale                     : 0.0056   //0.0056 V/PE
-      offset                    : 0.0      //0 V   //from dark current calibration: pulse height = scale * PE + offset
+      scale                     : 0.00564   //0.00564 V/PE
+      offset                    : 0.00021   //0.00021 V      //from dark current calibration: pulse height = scale * PE + offset
       useFittedPulseHeight      : false    //not used in test beam analysis
       useFittedPulseTime        : true
       doLEfit                   : true
