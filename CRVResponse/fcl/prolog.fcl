@@ -12,9 +12,11 @@ BEGIN_PROLOG
                                    "CRVConditions/v3_0/LookupTable_2300",
                                    "CRVConditions/v3_0/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
-      scintillationYield        : 6697.354 //6697.354 photons per MeV corresponds to a PE yield of 48 PEs/cm @ 1m away from SiPMs
+      scintillationYield        : 6697     //6697 photons per MeV corresponds to a PE yield of 48 PEs/cm @ 1m away from SiPMs
                                            //scintillation yield = 146.178 (photons/MeV)/(PEs/cm) * PE yield - 319.19 photons/MeV, 
                                            //where PE yield is the number of PEs per cm @ 1m away from SiPMs
+//      scintillationYield        : 5820     //beam on (42 PEs/cm) without safety factor
+//      scintillationYield        : 4797     //end of run (35 PEs/cm) without safety factor
       scintillationYieldVariation       : 0.2   //gaussian distribution with sigma equal to 20% of the mean
       scintillationYieldVariationCutoff : 0.4   //the scintillation yield variation is cut off at 40% below the mean
       scintillatorBirksConstant : 0.126    //0.126 mm/Mev
@@ -87,9 +89,10 @@ BEGIN_PROLOG
       verboseLevel                  : 1
       crvRecoPulsesModuleLabel      : "CrvRecoPulses"
       CRVSectors                    : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","D1","U" ,"C1","C2","C3","D2","D3","D4"] //used only to match the vector entries below
-      PEthresholds                  : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 ]
+      PEthresholds                  : [ 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 16 , 18 , 18 , 18 , 22 , 16 , 18 , 18 , 18 , 22 , 22 , 22 ] //beam on
+//      PEthresholds                  : [ 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 12 , 14 , 14 , 14 , 18 , 12 , 14 , 14 , 14 , 18 , 18 , 18 ] //end of run
       adjacentPulseTimeDifferences  : [  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 ,  5 ,  5 ,  5 ,  5 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ] //ns
-      maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 50 , 10 , 10 , 10 , 10 , 50 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
+      maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 10 , 10 , 10 , 10 , 20 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
       maxSlopeDifference            : 2.0    //
       acceptThreeAdjacentCounters   : false  //use hits in three adjacent counters in one layer to form a coincidence
