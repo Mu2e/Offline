@@ -49,7 +49,7 @@
 // C++ includes.
 #include <iostream>
 #include <string>
-
+#include <cmath>
 // This is fragile and needs to be last until CLHEP is
 // properly qualified and included in the BaBar classes.
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
@@ -113,9 +113,10 @@ namespace mu2e {
     TrkInfoMC _demmc, _uemmc, _dmmmc;
     // detailed MC truth for the signal candidate
     TrkInfoMCStep _demmcgen;
-    TrkInfoMCStep _demmcent;
+    TrkInfoMCStep _demmcent, _demmcmid, _demmcxit;
     std::vector<TrkStrawHitInfoMC> _demtshmc;
     // helper functions
+    void fillMCSteps(KalDiag::TRACKERPOS tpos, TrkFitDirection const& fdir, SimParticle::key_type id, TrkInfoMCStep& tmcs);
     void fillEventInfo(const art::Event& event);
     void countHits(StrawHitFlagCollection const& shfC);
     const KalRep* findBestTrack(KalRepPtrCollection const& kcol);
@@ -184,6 +185,8 @@ namespace mu2e {
       _trkana->Branch("demmc",&_demmc,TrkInfoMC::leafnames().c_str());
       _trkana->Branch("demmcgen",&_demmcgen,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch("demmcent",&_demmcent,TrkInfoMCStep::leafnames().c_str());
+      _trkana->Branch("demmcmid",&_demmcmid,TrkInfoMCStep::leafnames().c_str());
+      _trkana->Branch("demmcxit",&_demmcxit,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch("crvinfomc",&_crvinfomc);
       if(_diag > 1)_trkana->Branch("demtshmc",&_demtshmc);
     }
@@ -220,6 +223,10 @@ namespace mu2e {
       // fill the standard diagnostics
       if(demK != 0){
 	_kdiag.fillTrkInfo(demK,_demti);
+	if(_diag > 1){
+	  _kdiag.fillHitInfo(demK, _demtsh);
+	  _kdiag.fillMatInfo(demK, _demtsm);
+	}
 	// fill calorimeter information. First find the best matching cluster
 	if(_cdiag.caloMatchHandle().isValid()){
 	  TrackClusterMatchCollection const& tcmc = *_cdiag.caloMatchHandle();
@@ -312,10 +319,11 @@ namespace mu2e {
   }
 
   void TrackAnalysis::fillMCInfo(const KalRep* demK) {
+  // for now MC truth is only for the DEM track.  Maybe we need MC truth on other tracks too?  FIXME!
     art::Ptr<SimParticle> demSP;
     if(demK != 0) {
       _kdiag.findMCTrk(demK,demSP);
-     } else if(_kdiag.mcData()._simparts != 0) { 
+    } else if(_kdiag.mcData()._simparts != 0) { 
       // assume the 1st primary particle is the CE.  FIXME!!!
       for ( auto isp = _kdiag.mcData()._simparts->begin(); isp != _kdiag.mcData()._simparts->end(); ++isp ){
 	if(isp->second.isPrimary()){
@@ -323,19 +331,33 @@ namespace mu2e {
 	  break;
 	}
       }
-     }
+    }
     if(demSP.isNonnull()){
       _kdiag.fillTrkInfoMC(demSP,demK,_demmc);
       _kdiag.fillTrkInfoMCStep(demSP,_demmcgen);
-      // find where the particle crosses the tracker entranc
-      std::vector<MCStepItr> steps;
-      _kdiag.findMCSteps(_kdiag.mcData()._mcvdsteps,demSP->id(),_kdiag.VDids(KalDiag::trackerEnt),steps);
-      // if there are 2 crossings, take the 2nd
-      if(steps.size() >=2 )
-	_kdiag.fillTrkInfoMCStep(steps[1],_demmcent);
-      else if(steps.size() > 0)
-	_kdiag.fillTrkInfoMCStep(steps[0],_demmcent);
+      // find virtual detector steps where the particle crosses the tracker at fixed points
+      static TrkFitDirection downstream;
+      fillMCSteps(KalDiag::trackerEnt, downstream, demSP->id(), _demmcent);
+      fillMCSteps(KalDiag::trackerMid, downstream, demSP->id(), _demmcmid);
+      fillMCSteps(KalDiag::trackerExit, downstream, demSP->id(), _demmcxit);
+      if(_diag > 1 && demK != 0) {
+// MC truth hit information
+	_kdiag.fillHitInfoMC(demSP, demK, _demtshmc);
+      }
     } 
+  }
+
+  void TrackAnalysis::fillMCSteps(KalDiag::TRACKERPOS tpos, TrkFitDirection const& fdir,
+  SimParticle::key_type id, TrkInfoMCStep& tmcs) {
+    std::vector<MCStepItr> steps;
+    _kdiag.findMCSteps(_kdiag.mcData()._mcvdsteps,id,_kdiag.VDids(tpos),steps);
+    // if there are more than 1 crossing take the last one pointing in the specified direction
+    for(auto istep = steps.rbegin(); istep != steps.rend();++istep){
+      if(std::signbit((*istep)->momentum().z()) == std::signbit(fdir.dzdt())){
+	_kdiag.fillTrkInfoMCStep(*istep,tmcs);
+	break;
+      }
+    }
   }
 
   void TrackAnalysis::fillEventInfo( const art::Event& event) {
@@ -414,6 +436,8 @@ namespace mu2e {
     _dmmmc.reset();
     _demmcgen.reset();
     _demmcent.reset();
+    _demmcmid.reset();
+    _demmcxit.reset();
     // clear vectors
     _demtsh.clear();
     _demtsm.clear();
