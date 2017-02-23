@@ -186,7 +186,7 @@ namespace mu2e {
 
     G4double crateDYTop    = cal.caloInfo().crateTopHalfY();
     G4double crateDXSide   = cal.caloInfo().crateSideHalfX();
-    G4double crateDYSide   = cal.caloInfo().crateSideHalfY()-delta;
+    G4double crateDYSide   = cal.caloInfo().crateSideHalfY()-2*delta;
     G4double crateDYBottom = cal.caloInfo().crateBottomHalfY();
 
     G4double crateRadIn      = cal.caloInfo().crateRadiusIn();
@@ -211,10 +211,10 @@ namespace mu2e {
     
     
     // crate coordinates
-    G4double crateTopPosY    = crateDY-crateDYTop+delta;
+    G4double crateTopPosY    = 2*shieldDYBottom+crateDY-crateDYTop+delta;
     G4double crateTopPosZ    = crateFShieldDistanceDZ;      
     G4double crateSidePosX   = crateDX-crateDXSide;
-    G4double crateSidePosY   = crateDY-2*crateDYTop-crateDYSide+delta;
+    G4double crateSidePosY   = 2*shieldDYBottom+crateDY-2*crateDYTop-crateDYSide+delta;
     G4double crateSidePosZ   = crateFShieldDistanceDZ;    
     G4double crateBottomPosY = 2*shieldDYBottom+crateDYBottom-crateDY+delta;
     G4double crateBottomPosZ = crateFShieldDistanceDZ;
@@ -226,7 +226,7 @@ namespace mu2e {
     
     G4double boardDX    = crateDX-2.*crateDXSide-2*delta;    
     G4double boardDZ    = crateDZ;
-    G4double boardDispY = 2*(crateDY-crateDYTop-crateDYBottom-shieldDYBottom)/nBoards;
+    G4double boardDispY = 2*(crateDY-crateDYTop-crateDYBottom)/nBoards;
     G4double boardPosY  = crateBottomPosY+crateDYBottom+boardDispY/2.;
     G4double boardPosZ  = crateFShieldDistanceDZ;    
     G4double radiatorPosY = boardDY-radiatorDY;   
@@ -530,7 +530,7 @@ namespace mu2e {
 	     if ( crateVersion > 1 )  // crateVersion 1 is No crates
 	     {
 	       // define the crate box
-	       G4Box *crateBox     = new G4Box("CrateBox",crateDX+delta,crateDY+delta,crateDZ+shieldDispZBottom+shieldDZFront+delta);
+	       G4Box *crateBox     = new G4Box("CrateBox",crateDX+delta,crateDY+shieldDYBottom+delta,crateDZ+shieldDispZBottom+shieldDZFront+delta);
 	       G4LogicalVolume *crateBoxLog = new G4LogicalVolume(crateBox, vacuumMaterial, "crateBoxLog");   
 	       crateBoxLog->SetVisAttributes(G4Color::Black());
 
@@ -546,9 +546,9 @@ namespace mu2e {
 	       
 	       G4LogicalVolume *crateSideLog = new G4LogicalVolume(crateSide, crateMaterial, "crateSideLog");   
 	       crateSideLog->SetVisAttributes(G4Color::Black());
-	       pv = new G4PVPlacement(0,G4ThreeVector(crateSidePosX,crateSidePosY,crateSidePosZ),crateSideLog,"crateSidePV_0",crateBoxLog,false,0,false);
+	       pv = new G4PVPlacement(0,G4ThreeVector(crateSidePosX,crateSidePosY,crateSidePosZ),crateSideLog,"crateTopPV",crateBoxLog,false,0,false);
 	       doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
-	       pv = new G4PVPlacement(0,G4ThreeVector(-crateSidePosX,crateSidePosY,crateSidePosZ),crateSideLog,"crateSidePV_1",crateBoxLog,false,1,false);
+	       pv = new G4PVPlacement(0,G4ThreeVector(-crateSidePosX,crateSidePosY,crateSidePosZ),crateSideLog,"crateTopPV",crateBoxLog,false,1,false);
 	       doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
 
 	       G4LogicalVolume *crateBottomLog = new G4LogicalVolume(crateBottom, crateMaterial, "crateBottomLog");   
@@ -609,14 +609,14 @@ namespace mu2e {
 	       
 	       // put crates onto the calorimeter disks
 	       G4double cratePosY     = outerRingEdgeRadius+crateDY+delta;
-	       // G4double phi0Crate     = (10./360.)*2*CLHEP::pi;
+	       G4double phi0Crate     = (10./360.)*2*CLHEP::pi;
 	       G4double deltaPhiCrate = (16./360.)*2*CLHEP::pi;
 	       G4double phiCrate(0);
 
 		G4int numberOfCratesBeforeFSpace = 3;
 
 		G4ThreeVector cratePosZ = posDisk + CLHEP::Hep3Vector(0.0,0.0,cal.disk(idisk).geomInfo().crateDeltaZ());
-                double cratepar[5] = {crateRadIn+delta, crateRadOut, crateHalfLength, 0, CLHEP::twopi};
+                double cratepar[5] = {crateRadIn+delta, crateRadOut, crateHalfLength, -phi0Crate, CLHEP::pi+phi0Crate};
 
 		diskFEBInfo[idisk] = nestTubs(cratename.str(),
 					     cratepar,crateMaterial,&cal.disk(idisk).geomInfo().rotation(),cratePosZ,
