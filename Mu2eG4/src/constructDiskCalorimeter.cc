@@ -613,7 +613,7 @@ namespace mu2e {
 	     
 		G4double cratePosY     = outerRingEdgeRadius+crateDY;	
 		G4double deltaPhiCrate = (16./360.)*2*CLHEP::pi;
-		G4double phiCrate(0);
+		G4double phiCrate;
 
 		G4int numberOfCratesBeforeFSpace = 3;
 
