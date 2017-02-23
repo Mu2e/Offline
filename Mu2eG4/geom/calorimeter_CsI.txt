@@ -1,12 +1,9 @@
 // Crystal calorimeter
 
-double calorimeter.caloMotherInRadius           = 340;   
-double calorimeter.caloMotherOutRadius          = 830; // 765;   
+double calorimeter.caloMotherInRadius           = 349;   
+double calorimeter.caloMotherOutRadius          = 818; // 765;   
 double calorimeter.caloMotherZ0                 = 11842;   
 double calorimeter.caloMotherZ1                 = 13220;   
-
-// double calorimeter.caloMotherOutRadius          = 856;	      
-
 
 double calorimeter.calorimeterZFront            = 11843.0;     // front posiiton of calo section in mu2e coordinates 
                                                                // MUST be at least 1 mm larger than caloMotherZ0 for placing virtual detectors
@@ -81,20 +78,18 @@ int calorimeter.numberOfCrates      = 10;
 int calorimeter.numberOfBoards      = 9;
 
 double calorimeter.crateHalfX = 95.;
+double calorimeter.crateHalfY = 91.5;
 double calorimeter.crateHalfZ = 175.;
-// double calorimeter.crateHalfY = 91.5;
-double calorimeter.crateHalfY = 54.5;	
 
 double calorimeter.crateTopHalfY    = 2.5;
 double calorimeter.crateBottomHalfY = 4.;
-// double calorimeter.crateSideHalfY   = 85.;
-double calorimeter.crateSideHalfY   = 48;
+double calorimeter.crateSideHalfY   = 85.;
 double calorimeter.crateSideHalfX   = 10.;
 
 string calorimeter.crateMaterial    = "G4_Al"; 
-double calorimeter.crateInnerRadius = 718;       
-double calorimeter.crateOuterRadius = 829.5;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
-double calorimeter.crateHalfLength  = 210.;
+double calorimeter.crateInnerRadius = 670;       
+double calorimeter.crateOuterRadius = 930;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
+double calorimeter.crateHalfLength  = 215.575;
 
 string calorimeter.shieldMaterial   = "G4_W";
 
@@ -106,8 +101,11 @@ double calorimeter.boardHalfY       = 3.;
 double calorimeter.radiatorHalfY    = 1.5;
 double calorimeter.activeStripHalfY = 1.3;
 
+// string calorimeter.copperPlaneMaterial    = "G4_Cu";
+// string calorimeter.substrateMaterial      = "G4_PLEXIGLASS";
 
-// calibration system
+
+// calibrtion system
 int    calorimeter.nPipes                      = 6;   // claibration pipe radius
 vector<double> calorimeter.pipeTorRadius       = {390,420,490,520,590,640}; //mm
 double calorimeter.pipeRadius                  = 5;    // claibration pipe radius //mm
@@ -132,4 +130,4 @@ bool calorimeter.absorberBoxVisible           = false;
 bool calorimeter.absorberBoxSolid             = false;
 bool calorimeter.shieldSolid                  = true;
 
-int  calorimeter.verbosityLevel               = 0;
+int  calorimeter.verbosityLevel               = 1;

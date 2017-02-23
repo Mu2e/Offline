@@ -59,7 +59,7 @@ namespace mu2e {
 
 
     //-- Read parameters from config file
-    int const verbosityLevel        = config.getInt("calorimeter.verbosityLevel",1);
+    int const verbosityLevel        = config.getInt("calorimeter.verbosityLevel",0);
     bool const isCalorimeterVisible = config.getBool("calorimeter.calorimeterVisible",false);
     bool const isCalorimeterSolid   = config.getBool("calorimeter.calorimeterSolid",false);
     bool const isDiskCaseVisible    = config.getBool("calorimeter.caseVisible",false);
@@ -92,7 +92,7 @@ namespace mu2e {
     G4Material* innerRingMaterial     = materialFinder.get("calorimeter.innerRingMaterial");
     G4Material* outerRingMaterial     = materialFinder.get("calorimeter.outerRingMaterial");
     G4Material* outerRingEdgeMaterial = materialFinder.get("calorimeter.outerRingEdgeMaterial");
-    // G4Material* stepsMaterial         = materialFinder.get("calorimeter.stepsMaterial");
+    G4Material* stepsMaterial         = materialFinder.get("calorimeter.stepsMaterial");
     G4Material* vacuumMaterial        = materialFinder.get("calorimeter.vacuumMaterial");
 
     G4Material* ROelectMaterial = materialFinder.get("calorimeter.readoutMaterial");
@@ -169,7 +169,6 @@ namespace mu2e {
     G4double innerRingRadius          = stepsInnerRadius - caseInnerThickness;
     G4double outerRingRadius          = stepsOuterRadius + caseOuterThickness;   
     G4double outerRingEdgeRadius      = outerRingRadius + outerRingEdgeThickness;
-    G4double delta                    = 0.01;
 
 
     //z position of the inner and the outer ring
@@ -186,7 +185,7 @@ namespace mu2e {
 
     G4double crateDYTop    = cal.caloInfo().crateTopHalfY();
     G4double crateDXSide   = cal.caloInfo().crateSideHalfX();
-    G4double crateDYSide   = cal.caloInfo().crateSideHalfY()-2*delta;
+    G4double crateDYSide   = cal.caloInfo().crateSideHalfY();
     G4double crateDYBottom = cal.caloInfo().crateBottomHalfY();
 
     G4double crateRadIn      = cal.caloInfo().crateRadiusIn();
@@ -195,28 +194,23 @@ namespace mu2e {
 
     // shielding properties   
     G4double crateFShieldDistanceDZ  = 0.;
-    G4double shieldDYBottom    = 4.; 
-    // G4double shieldDispZBottom = 36.5; 
-    G4double shieldDispZBottom = 26.5; 
-    G4double shieldDZFront     = 4.; 
-    if (!(isShieldSolid)) shieldDYBottom   = 0.;
-    
-    G4double shieldDYFront   = crateDY - shieldDYBottom;    
+    G4double              shieldDYBottom   = 4.;   
+    if (!(isShieldSolid)) shieldDYBottom   = 0.;     
+    G4double shieldDZBottom   = crateDZ;
     G4double shieldPosYBottom = shieldDYBottom - crateDY;
+    G4double shieldPosZBottom = -37.5;
+    G4double shieldDYFront   = crateDY - shieldDYBottom;    
+    G4double shieldDZFront   = 4.;
     G4double shieldPosYFront = shieldPosYBottom + shieldDYBottom + shieldDYFront;
-    
-        
-    G4double shieldDZBottom   = crateDZ - shieldDZFront;   
-    G4double shieldPosZFront = shieldDZFront - shieldDispZBottom - shieldDZBottom;
-    
+    G4double shieldPosZFront = shieldDZFront + shieldPosZBottom - shieldDZBottom;
     
     // crate coordinates
-    G4double crateTopPosY    = 2*shieldDYBottom+crateDY-crateDYTop+delta;
+    G4double crateTopPosY    = shieldDYBottom+crateDY-crateDYTop;
     G4double crateTopPosZ    = crateFShieldDistanceDZ;      
     G4double crateSidePosX   = crateDX-crateDXSide;
-    G4double crateSidePosY   = 2*shieldDYBottom+crateDY-2*crateDYTop-crateDYSide+delta;
+    G4double crateSidePosY   = shieldDYBottom+crateDY-2*crateDYTop-crateDYSide;
     G4double crateSidePosZ   = crateFShieldDistanceDZ;    
-    G4double crateBottomPosY = 2*shieldDYBottom+crateDYBottom-crateDY+delta;
+    G4double crateBottomPosY = shieldDYBottom+crateDYBottom-crateDY;
     G4double crateBottomPosZ = crateFShieldDistanceDZ;
 
     // boards properties
@@ -224,7 +218,7 @@ namespace mu2e {
     G4double radiatorDY    = cal.caloInfo().radiatorHalfY();
     G4double activeStripDY = cal.caloInfo().activeStripHalfY();
     
-    G4double boardDX    = crateDX-2.*crateDXSide-2*delta;    
+    G4double boardDX    = crateDX-2.*crateDXSide;    
     G4double boardDZ    = crateDZ;
     G4double boardDispY = 2*(crateDY-crateDYTop-crateDYBottom)/nBoards;
     G4double boardPosY  = crateBottomPosY+crateDYBottom+boardDispY/2.;
@@ -447,7 +441,7 @@ namespace mu2e {
        VolumeInfo diskCaseInfo[nDisks];
        VolumeInfo diskInnerRingInfo[nDisks];
        VolumeInfo diskOuterRingInfo[nDisks];
-       // VolumeInfo diskStepsInfo[nDisks];
+       VolumeInfo diskStepsInfo[nDisks];
        VolumeInfo diskFEBInfo[nDisks];
        VolumeInfo diskOuterRingFstEdgeInfo[nDisks];
        VolumeInfo diskOuterRingSndEdgeInfo[nDisks];
@@ -458,7 +452,7 @@ namespace mu2e {
 	     std::ostringstream discname0;      discname0<<"DiskCalorimeter_" <<idisk;
 	     std::ostringstream discname1;      discname1<<"DiskCase_" <<idisk;
 	     std::ostringstream discname2;      discname2<<"DiskOuterRing_" <<idisk;
-	     // std::ostringstream discname3;      discname3<<"DiskSteps_" <<idisk;
+	     std::ostringstream discname3;      discname3<<"DiskSteps_" <<idisk;
 	     std::ostringstream discname4;      discname4<<"DiskInnerRing_" <<idisk;
 	     std::ostringstream discname5;      discname5<<"DiskOuterRingFstEdge_" <<idisk;
 	     std::ostringstream discname6;      discname6<<"DiskOuterRingSndEdge_" <<idisk;
@@ -467,13 +461,13 @@ namespace mu2e {
 	     double radiusIn       = cal.disk(idisk).innerRadius()-caseThickness;
 	     double radiusOut      = cal.disk(idisk).outerRadius()+caseThickness;
 	     
-	     double diskpar0[5]    = {innerRingRadius-delta,outerRingEdgeRadius+delta, diskDepth/2.0, 0., CLHEP::twopi};
+	     double diskpar0[5]    = {radiusIn,radiusOut, diskDepth/2.0, 0., CLHEP::twopi};
 	     double diskpar1[5]    = {radiusIn,radiusOut, caseDepth/2.0, 0., CLHEP::twopi};
 	     double diskpar2[5]    = {innerRingRadius,stepsInnerRadius, ringDepth/2.0, 0., CLHEP::twopi};
-	     // double diskpar3[5]    = {stepsInnerRadius+delta,stepsOuterRadius, ringDepth/2.0, 0., CLHEP::twopi};
+	     double diskpar3[5]    = {stepsInnerRadius,stepsOuterRadius, ringDepth/2.0, 0., CLHEP::twopi};
 	     double diskpar4[5]    = {stepsOuterRadius,outerRingRadius, ringDepth/2.0, 0., CLHEP::twopi};
-	     double diskpar5[5]    = {outerRingRadius+delta,outerRingEdgeRadius, outerRingEdgeDepth/2.0, 0., CLHEP::twopi};
-	     double diskpar6[5]    = {outerRingRadius+delta,outerRingEdgeRadius, outerRingEdgeDepth/2.0, 0., CLHEP::twopi};
+	     double diskpar5[5]    = {outerRingRadius,outerRingEdgeRadius, outerRingEdgeDepth/2.0, 0., CLHEP::twopi};
+	     double diskpar6[5]    = {outerRingRadius,outerRingEdgeRadius, outerRingEdgeDepth/2.0, 0., CLHEP::twopi};
 
 	     //origin gives the position of the center of the disk, irrespective of the coordinate origin set in the calo description
 	     G4ThreeVector posDisk = cal.disk(idisk).geomInfo().origin() - posCaloMother;
@@ -499,12 +493,12 @@ namespace mu2e {
 						 isDiskCaseVisible,G4Colour::Blue(),isDiskCaseSolid,forceAuxEdgeVisible,
 						 true,doSurfaceCheck );
 
-	     // diskStepsInfo[idisk] = nestTubs(discname3.str(),
-	     // 				     diskpar3,stepsMaterial,0,G4ThreeVector(0.0,0.0,ZposRing),
-	     // 				     diskBoxInfo[idisk],
-	     // 				     idisk,
-	     // 				     isDiskCaseVisible,G4Colour::Black(),isDiskCaseSolid,forceAuxEdgeVisible,
-	     // 				     true,doSurfaceCheck );
+	     diskStepsInfo[idisk] = nestTubs(discname3.str(),
+					     diskpar3,stepsMaterial,0,G4ThreeVector(0.0,0.0,ZposRing),
+					     diskBoxInfo[idisk],
+					     idisk,
+					     isDiskCaseVisible,G4Colour::Black(),isDiskCaseSolid,forceAuxEdgeVisible,
+					     true,doSurfaceCheck );
 	     
 	     diskInnerRingInfo[idisk] = nestTubs(discname4.str(),
 						 diskpar4,innerRingMaterial,0,G4ThreeVector(0.0,0.0,ZposRing),
@@ -514,30 +508,30 @@ namespace mu2e {
 						 true,doSurfaceCheck );
 	     
 	     diskOuterRingFstEdgeInfo[idisk] = nestTubs(discname5.str(),
-	     						diskpar5,outerRingEdgeMaterial,0,G4ThreeVector(0.0,0.0,ZposEdge),
-	     						diskBoxInfo[idisk],
-	     						idisk,
-	     						isDiskCaseVisible,G4Colour::Cyan(),isDiskCaseSolid,forceAuxEdgeVisible,
-	     						true,doSurfaceCheck);
+							diskpar5,outerRingEdgeMaterial,0,G4ThreeVector(0.0,0.0,ZposEdge),
+							diskBoxInfo[idisk],
+							idisk,
+							isDiskCaseVisible,G4Colour::Cyan(),isDiskCaseSolid,forceAuxEdgeVisible,
+							true,doSurfaceCheck);
 
 	     diskOuterRingSndEdgeInfo[idisk] = nestTubs(discname6.str(),
-	     						diskpar6,outerRingEdgeMaterial,0,G4ThreeVector(0.0,0.0,-ZposEdge-(outerRingEdgeDepth+ROBoxDepth)/2.0),
-	     						 diskBoxInfo[idisk],
-	     						 idisk,
-	     						 isDiskCaseVisible,G4Colour::Cyan(),isDiskCaseSolid,forceAuxEdgeVisible,
-	     						 true,doSurfaceCheck);
+							diskpar6,outerRingEdgeMaterial,0,G4ThreeVector(0.0,0.0,-ZposEdge-(outerRingEdgeDepth+ROBoxDepth)/2.0),
+							 diskBoxInfo[idisk],
+							 idisk,
+							 isDiskCaseVisible,G4Colour::Cyan(),isDiskCaseSolid,forceAuxEdgeVisible,
+							 true,doSurfaceCheck);
 
 	     if ( crateVersion > 1 )  // crateVersion 1 is No crates
 	     {
 	       // define the crate box
-	       G4Box *crateBox     = new G4Box("CrateBox",crateDX+delta,crateDY+shieldDYBottom+delta,crateDZ+shieldDispZBottom+shieldDZFront+delta);
+	       G4Box *crateBox     = new G4Box("CrateBox",crateDX,crateDY,crateDZ+shieldDZBottom);
 	       G4LogicalVolume *crateBoxLog = new G4LogicalVolume(crateBox, vacuumMaterial, "crateBoxLog");   
 	       crateBoxLog->SetVisAttributes(G4Color::Black());
 
 	       // define the crate walls
 	       G4Box *crateTop     = new G4Box("CrateTop",crateDX,crateDYTop,crateDZ);
 	       G4Box *crateSide    = new G4Box("CrateSide",crateDXSide,crateDYSide,crateDZ);
-	       G4Box *crateBottom  = new G4Box("CrateBottom",crateDX-delta,crateDYBottom,crateDZ);
+	       G4Box *crateBottom  = new G4Box("CrateBottom",crateDX,crateDYBottom,crateDZ);
 	       
 	       G4LogicalVolume *crateTopLog = new G4LogicalVolume(crateTop, crateMaterial, "crateTopLog");   
 	       crateTopLog->SetVisAttributes(G4Color::Black());
@@ -576,7 +570,7 @@ namespace mu2e {
 	       doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
 
 	       // put boards in a single crate
-	       boardPosY  = crateBottomPosY+crateDYBottom+boardDispY/2.;
+	       boardPosY = crateBottomPosY+crateDYBottom+boardDispY/2.;
 
 	       for (G4int ibrd=0;ibrd < nBoards;++ibrd)
 		 {
@@ -601,28 +595,27 @@ namespace mu2e {
 		   shieldCrateFrontLog->SetVisAttributes(G4Color::Black());
 		   
 		   // put shielding around crates
-		   pv = new G4PVPlacement(0,G4ThreeVector(0.0,shieldPosYBottom,-shieldDispZBottom),shieldCrateBottomLog,"shieldCrateBottomPV",crateBoxLog,false,0,false);
+		   pv = new G4PVPlacement(0,G4ThreeVector(0.0,shieldPosYBottom,shieldPosZBottom),shieldCrateBottomLog,"shieldCrateBottomPV",crateBoxLog,false,0,false);
 		   doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
 		   pv = new G4PVPlacement(0,G4ThreeVector(0.0,shieldPosYFront,shieldPosZFront),shieldCrateFrontLog,"shieldCrateBottomPV",crateBoxLog,false,0,false);
 		   doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
 		 }		  
 	       
 	       // put crates onto the calorimeter disks
-	       G4double cratePosY     = outerRingEdgeRadius+crateDY+delta;
-	       G4double phi0Crate     = (10./360.)*2*CLHEP::pi;
-	       G4double deltaPhiCrate = (16./360.)*2*CLHEP::pi;
-	       G4double phiCrate(0);
-
-		G4int numberOfCratesBeforeFSpace = 3;
-
 		G4ThreeVector cratePosZ = posDisk + CLHEP::Hep3Vector(0.0,0.0,cal.disk(idisk).geomInfo().crateDeltaZ());
-                double cratepar[5] = {crateRadIn+delta, crateRadOut, crateHalfLength, -phi0Crate, CLHEP::pi+phi0Crate};
+                double cratepar[5] = {crateRadIn, crateRadOut, crateHalfLength, 0., 1.5*CLHEP::pi};
 
 		diskFEBInfo[idisk] = nestTubs(cratename.str(),
 					     cratepar,crateMaterial,&cal.disk(idisk).geomInfo().rotation(),cratePosZ,
 					     calorimeterInfo,
 					     idisk,
 					     isDiskCaseVisible,G4Colour::Green(),isDiskCaseSolid,forceAuxEdgeVisible,true,doSurfaceCheck);		
+	     
+		G4double cratePosY     = outerRingEdgeRadius+crateDY;	
+		G4double deltaPhiCrate = (16./360.)*2*CLHEP::pi;
+		G4double phiCrate(0);
+
+		G4int numberOfCratesBeforeFSpace = 3;
 
 		G4RotationMatrix rotCrate = G4RotationMatrix();
 		
