@@ -18,12 +18,10 @@ namespace mu2e {
            CaloInfo(): 
 	      crystalShift_(0),crystalHalfTrans_(0),crystalHalfLength_(0),crystalVolume_(0),wrapperThickness_(0),
 	      nROPerCrystal_(0),roHalfTrans_(0),roHalfThickness_(0),roElecHalfX_(0),roElecHalfY_(0),roElecHalfZ_(0),
-	      crateRadiusIn_(0),crateRadiusOut_(0),crateHalfLength_(0),crateHalfX_(0),crateHalfY_(0),crateHalfZ_(0),crateTopHalfY_(0),
-	      crateBottomHalfY_(0),crateSideHalfY_(0),crateSideHalfX_(0),stepsRadiusIn_(0),stepsRadiusOut_(0),outerRingEdgeDepth_(0),
-	      outerRingEdgeThickness_(0),caseThickness_(0),caseThicknessIn_(0),caseThicknessOut_(0),envelopeInRadius_(0),envelopeOutRadius_(0),
-	      envelopeZ0_(0),envelopeZ1_(0),boardHalfY_(0),radiatorHalfY_(0),activeStripHalfY_(0),nPipes_(0),pipeRadius_(0),
-	      pipeThickness_(0),pipeTorRadius_()
-           {}
+	      crateRadiusIn_(0),crateRadiusOut_(0),crateHalfLength_(0),
+	      caseThickness_(0),envelopeInRadius_(0),envelopeOutRadius_(0),envelopeZ0_(0),envelopeZ1_(0),
+	      nPipes_(0),pipeRadius_(0),pipeThickness_(0),pipeTorRadius_()   	      
+	   {}
 	     
            ~CaloInfo() {}
 
@@ -42,30 +40,14 @@ namespace mu2e {
            void crateRadiusIn(double value)        {crateRadiusIn_ = value;}
            void crateRadiusOut(double value)       {crateRadiusOut_ = value;}
            void crateHalfLength(double value)      {crateHalfLength_ = value;}
-           void crateHalfX(double value)           {crateHalfX_ = value;}
-           void crateHalfY(double value)           {crateHalfY_ = value;}
-           void crateHalfZ(double value)           {crateHalfZ_ = value;}
-           void crateTopHalfY(double value)        {crateTopHalfY_ = value;}
-           void crateBottomHalfY(double value)     {crateBottomHalfY_ = value;}
-           void crateSideHalfY(double value)       {crateSideHalfY_ = value;}
-           void crateSideHalfX(double value)       {crateSideHalfX_ = value;}
           
-           void stepsRadiusIn(double value)          {stepsRadiusIn_ = value;}
-           void stepsRadiusOut(double value)         {stepsRadiusOut_ = value;}
-           void outerRingEdgeDepth(double value)     {outerRingEdgeDepth_ = value;}
-           void outerRingEdgeThickness(double value) {outerRingEdgeThickness_ = value;}
-	   void caseThickness(double value)          {caseThickness_ = value;}
-           void caseThicknessIn(double value)        {caseThicknessIn_ = value;}
-           void caseThicknessOut(double value)       {caseThicknessOut_ = value;}
-           void envelopeInRadius(double value)       {envelopeInRadius_ = value;}
-           void envelopeOutRadius(double value)      {envelopeOutRadius_ = value;}
-           void envelopeZ0(double value)             {envelopeZ0_ = value;}
-           void envelopeZ1(double value)             {envelopeZ1_ = value;} 
-           void boardHalfY(double value)             {boardHalfY_ = value;}
-           void radiatorHalfY(double value)          {radiatorHalfY_ = value;}
-           void activeStripHalfY(double value)       {activeStripHalfY_ = value;}
-	   void refractiveIndex(double value)        {refractiveIndex_ = value;}
-	   void crystalDecayTime(double value)       {crystalDecayTime_ = value;}
+	   void caseThickness(double value)        {caseThickness_ = value;}
+           void envelopeInRadius(double value)     {envelopeInRadius_ = value;}
+           void envelopeOutRadius(double value)    {envelopeOutRadius_ = value;}
+           void envelopeZ0(double value)           {envelopeZ0_ = value;}
+           void envelopeZ1(double value)           {envelopeZ1_ = value;} 
+	   void refractiveIndex(double value)      {refractiveIndex_ = value;}
+	   void crystalDecayTime(double value)     {crystalDecayTime_ = value;}
 
            
 	   
@@ -84,30 +66,17 @@ namespace mu2e {
            double crateRadiusIn()       const      {return crateRadiusIn_;}
            double crateRadiusOut()      const      {return crateRadiusOut_;}
            double crateHalfLength()     const      {return crateHalfLength_;}
-           double crateHalfX()          const      {return crateHalfX_;}
-	   double crateHalfY()          const      {return crateHalfY_;}
-	   double crateHalfZ()          const      {return crateHalfZ_;}
-	   double crateTopHalfY()       const      {return crateTopHalfY_;}
-           double crateBottomHalfY()    const      {return crateBottomHalfY_;}
-           double crateSideHalfY()      const      {return crateSideHalfY_;}
-           double crateSideHalfX()      const      {return crateSideHalfX_;}         
-         
-           double stepsRadiusIn()          const      {return stepsRadiusIn_;}
-           double stepsRadiusOut()         const      {return stepsRadiusOut_;}
-           double outerRingEdgeDepth()     const      {return outerRingEdgeDepth_;}
-           double outerRingEdgeThickness() const      {return outerRingEdgeThickness_;}
-	   double caseThickness()          const      {return caseThickness_;}
-           double caseThicknessIn()        const      {return caseThicknessIn_;}
-           double caseThicknessOut()       const      {return caseThicknessOut_;}
-           double envelopeInRadius()       const      {return envelopeInRadius_;}
-           double envelopeOutRadius()      const      {return envelopeOutRadius_;}
-           double envelopeZ0()             const      {return envelopeZ0_;}
-           double envelopeZ1()             const      {return envelopeZ1_;}
-           double boardHalfY()             const      {return boardHalfY_;}
-           double radiatorHalfY()          const      {return radiatorHalfY_;}
-           double activeStripHalfY()       const      {return activeStripHalfY_;}
-	   double refractiveIndex()        const      {return refractiveIndex_; }
-	   double crystalDecayTime()       const      {return crystalDecayTime_; }
+           
+	   double caseThickness()       const      {return caseThickness_;}
+           double envelopeInRadius()    const      {return envelopeInRadius_;}
+           double envelopeOutRadius()   const      {return envelopeOutRadius_;}
+           double envelopeZ0()          const      {return envelopeZ0_;}
+           double envelopeZ1()          const      {return envelopeZ1_;}
+	   double refractiveIndex()     const      {return refractiveIndex_; }
+	   double crystalDecayTime()    const      {return crystalDecayTime_; }
+
+
+
 
            void nPipes(int value)                         {nPipes_ = value;}
            void pipeRadius(double value)                  {pipeRadius_ = value;}
@@ -139,28 +108,12 @@ namespace mu2e {
 	  double crateRadiusIn_;
 	  double crateRadiusOut_;
           double crateHalfLength_;
-          double crateHalfX_;
-          double crateHalfY_;
-          double crateHalfZ_;
-          double crateTopHalfY_;
-          double crateBottomHalfY_;
-          double crateSideHalfY_;
-          double crateSideHalfX_;
 
-          double stepsRadiusIn_;
-	  double stepsRadiusOut_;
-          double outerRingEdgeDepth_;
-          double outerRingEdgeThickness_;
           double caseThickness_;
-          double caseThicknessIn_;
-          double caseThicknessOut_;
           double envelopeInRadius_;
           double envelopeOutRadius_;
           double envelopeZ0_;
           double envelopeZ1_;
-          double boardHalfY_;
-          double radiatorHalfY_;
-          double activeStripHalfY_;
 	   
           double refractiveIndex_;
           double crystalDecayTime_;

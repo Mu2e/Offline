@@ -104,36 +104,16 @@ namespace mu2e {
           calo_->caloInfo_.roElecHalfX(        config.getDouble("calorimeter.readoutElecHalfX") );
           calo_->caloInfo_.roElecHalfY(        config.getDouble("calorimeter.readoutElecHalfY") );
           calo_->caloInfo_.roElecHalfZ(        config.getDouble("calorimeter.readoutElecHalfZ") );
-	  
 	  calo_->caloInfo_.crateRadiusIn(      config.getDouble("calorimeter.crateInnerRadius"));
 	  calo_->caloInfo_.crateRadiusOut(     config.getDouble("calorimeter.crateOuterRadius"));
  	  calo_->caloInfo_.crateHalfLength(    config.getDouble("calorimeter.crateHalfLength"));
-	  calo_->caloInfo_.crateHalfX(         config.getDouble("calorimeter.crateHalfX"));
-	  calo_->caloInfo_.crateHalfY(         config.getDouble("calorimeter.crateHalfY"));
-	  calo_->caloInfo_.crateHalfZ(         config.getDouble("calorimeter.crateHalfZ"));
-	  calo_->caloInfo_.crateTopHalfY(      config.getDouble("calorimeter.crateTopHalfY"));
-	  calo_->caloInfo_.crateBottomHalfY(   config.getDouble("calorimeter.crateBottomHalfY"));
-	  calo_->caloInfo_.crateSideHalfY(     config.getDouble("calorimeter.crateSideHalfY"));
-	  calo_->caloInfo_.crateSideHalfX(     config.getDouble("calorimeter.crateSideHalfX"));
          
-	  calo_->caloInfo_.caseThickness(          config.getDouble("calorimeter.caseThickness") );
-	  calo_->caloInfo_.caseThicknessIn(        config.getDouble("calorimeter.caseThicknessIn") );
-	  calo_->caloInfo_.caseThicknessOut(       config.getDouble("calorimeter.caseThicknessOut") );
-	  calo_->caloInfo_.stepsRadiusIn(          config.getDouble("calorimeter.stepsRadiusIn") );
-	  calo_->caloInfo_.stepsRadiusOut(         config.getDouble("calorimeter.stepsRadiusOut") );
-	  calo_->caloInfo_.outerRingEdgeDepth(     config.getDouble("calorimeter.outerRingEdgeDepth") );
-	  calo_->caloInfo_.outerRingEdgeThickness( config.getDouble("calorimeter.outerRingEdgeThickness") );
-	  
-	  calo_->nCrates_      = config.getInt("calorimeter.numberOfCrates");
-	  calo_->nBoards_      = config.getInt("calorimeter.numberOfBoards");
-	  
+	  calo_->caloInfo_.caseThickness(      config.getDouble("calorimeter.caseThickness") );
+
           calo_->caloInfo_.envelopeInRadius(   config.getDouble("calorimeter.caloMotherInRadius") );
           calo_->caloInfo_.envelopeOutRadius(  config.getDouble("calorimeter.caloMotherOutRadius") );
           calo_->caloInfo_.envelopeZ0(         config.getDouble("calorimeter.caloMotherZ0") );
           calo_->caloInfo_.envelopeZ1(         config.getDouble("calorimeter.caloMotherZ1") );
-	  calo_->caloInfo_.boardHalfY(         config.getDouble("calorimeter.boardHalfY") );
-	  calo_->caloInfo_.radiatorHalfY(      config.getDouble("calorimeter.radiatorHalfY") );
-	  calo_->caloInfo_.activeStripHalfY(   config.getDouble("calorimeter.activeStripHalfY") );
           calo_->caloInfo_.refractiveIndex(    config.getDouble("calorimeter.refractiveIndex") );
           calo_->caloInfo_.crystalDecayTime(   config.getDouble("calorimeter.crystalDecayTime") );
 
