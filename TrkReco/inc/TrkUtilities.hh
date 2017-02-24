@@ -20,6 +20,7 @@ namespace mu2e {
   class KalSeed;
   class HelixSeed;
   class TrkStrawHitSeed;
+  class TrkStraw;
   class TimeCluster;
   typedef std::vector<StrawHitIndex> SHIV;
   namespace TrkUtilities {
@@ -32,6 +33,7 @@ namespace mu2e {
     void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr, KalSegment& kseg);
     // create HitSeeds from the TrkStrawHits in a KalRep
     void fillHitSeeds(const KalRep* krep, std::vector<TrkStrawHitSeed>& hitseeds);
+    void fillStraws(const KalRep* krep, std::vector<TrkStraw>& straws);
     // compute overlap between 2 time clusters
     double overlap(TimeCluster const& tc1, TimeCluster const& tc2);
     double overlap(KalSeed const& ks1, KalSeed const& ks2);

@@ -58,7 +58,7 @@ namespace mu2e {
 	CLHEP::Hep3Vector tdir = traj->direction(dinter.pathlen);
 	double dpath = gasPath(fabs(poca.doca()),tdir);
 	dinter.pathlen = poca.flt1() + _stype->offset();
-	dinter.dist = fabs(poca.doca());
+	dinter.dist = poca.doca(); // NB: this can be negative!
 	dinter.pathrange[0] = dinter.pathlen-dpath;
 	dinter.pathrange[1] = dinter.pathlen+dpath;
       }
@@ -95,7 +95,7 @@ namespace mu2e {
     double radius = _straw->getRadius();
     double hlen = _straw->getHalfLength();
 // if the POCA distance is outside or too close the outside of the straw, force it inside
-    pdist = std::min(pdist,_stype->maxRadiusFraction()*radius);
+    pdist = std::min(fabs(pdist),_stype->maxRadiusFraction()*radius);
     double gaspath = sqrt( (radius+pdist)*(radius-pdist) );
 // scale for the other dimension.  Maximum path is a fraction of the straw length
     double cost = tdir.dot(_straw->getDirection());
@@ -115,7 +115,7 @@ namespace mu2e {
     double radius = _straw->getRadius();
     double inRadius = radius - thick;
 // if the POCA distance is outside or too close the outside of the straw, force it inside
-    pdist = std::min(pdist,_stype->maxRadiusFraction()*inRadius);
+    pdist = std::min(fabs(pdist),_stype->maxRadiusFraction()*inRadius);
     double wallpath =  (sqrt( (radius+pdist)*(radius-pdist) ) -
 	sqrt( (inRadius+pdist)*(inRadius-pdist) ));
     // scale for the other dimension

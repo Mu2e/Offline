@@ -29,7 +29,6 @@ namespace art {
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/KalSeedCollection.hh"
 
 
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"

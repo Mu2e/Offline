@@ -31,7 +31,6 @@ namespace art {
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/HelixSeedCollection.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/KalSeedCollection.hh"
 
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"

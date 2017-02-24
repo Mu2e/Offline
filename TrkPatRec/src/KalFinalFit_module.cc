@@ -23,18 +23,18 @@
 #include "DataProducts/inc/Helicity.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/KalSeedCollection.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/TrkQual.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
 // Mu2e BaBar
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/KalFit.hh"
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
-#include "TrkPatRec/inc/PayloadSaver.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -67,8 +67,6 @@ namespace mu2e
       int _printfreq;
       bool _saveall,_addhits; 
       vector<double> _zsave;
-      art::Handle<mu2e::StrawHitCollection> _strawhitsH;
-      art::Handle<KalSeedCollection> _trksSeedH;
       // event object tags
       art::InputTag _shTag;
       art::InputTag _shfTag;
@@ -88,7 +86,6 @@ namespace mu2e
       const KalSeedCollection * _kscol;
       // Kalman fitter
       KalFit _kfit;
-      PayloadSaver _payloadSaver;
       // helper functions
       bool findData(const art::Event& e);
       void findMissingHits(KalRep* krep, vector<StrawHitIndex>& indices);
@@ -113,14 +110,13 @@ namespace mu2e
     _maxaddchi(pset.get<double>("MaxAddChi",4.0)),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
-    _payloadSaver(pset)
+    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet()))
   {
     produces<KalRepCollection>();
     produces<KalRepPtrCollection>();
-    produces<KalRepPayloadCollection>();
     produces<StrawHitFlagCollection>();
     produces<KalSeedCollection>();
+    produces<TrkQualCollection>();
   }
 
   KalFinalFit::~KalFinalFit(){}
@@ -137,6 +133,8 @@ namespace mu2e
     unique_ptr<KalRepCollection>    krcol(new KalRepCollection );
     unique_ptr<KalRepPtrCollection> krPtrcol(new KalRepPtrCollection );
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
+    unique_ptr<TrkQualCollection> tqcol(new TrkQualCollection());
+    
     // copy in the existing flags
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(*_shfcol));
     // lookup productID for payload saver
@@ -210,9 +208,14 @@ namespace mu2e
 	  fseed._t0 = krep->t0();
 	  fseed._flt0 = krep->flt0();
 	  fseed._status.merge(TrkFitFlag::kalmanOK);
+	  // global fit information
+	  fseed._chisq = krep->chisq();
+	  // compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
+	  fseed._fitcon =  ChisqConsistency(krep->chisq(),krep->nDof()-1).significanceLevel();
 	  TrkUtilities::fillHitSeeds(krep,fseed._hits);
 	  if(krep->fitStatus().success()==1) fseed._status.merge(TrkFitFlag::kalmanConverged);
 	  TrkUtilities::fillHitSeeds(krep,kseed._hits);
+	  TrkUtilities::fillStraws(krep,kseed._straws);
 	  // sample the fit at the requested z positions.  Need options here to define a set of
 	  // standard points, or to sample each unique segment on the fit FIXME!
 	  for(auto zpos : _zsave) {
@@ -228,7 +231,9 @@ namespace mu2e
 	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
 	    fseed._segments.push_back(kseg);
 	  }
+	  // save KalSeed for this track
 	  kscol->push_back(fseed);
+	  // compute TrkQual for this track and save it
 	} else // fit failure
 	  delete krep;
       }
@@ -236,12 +241,11 @@ namespace mu2e
       ++ikseed;
     }
     // put the output products into the event
-    art::ProductID krcolID(getProductID<KalRepPayloadCollection>(event));
-    _payloadSaver.put(*krcol, krcolID, event);
     event.put(move(krcol));
     event.put(move(krPtrcol));
     event.put(move(kscol));
     event.put(move(shfcol));
+    event.put(move(tqcol));
   }
 
   // find the input data objects 

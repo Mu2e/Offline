@@ -34,7 +34,7 @@
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/HelixSeedCollection.hh"
-#include "RecoDataProducts/inc/KalSeedCollection.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/EventWeight.hh"

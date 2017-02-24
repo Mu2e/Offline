@@ -136,7 +136,6 @@ namespace mu2e
     TTree *_trkdiag;
 // track quality computation
     std::unique_ptr<MVATools> _trkqualmva;
-    std::string _trkqualweights;
 // struct for track info
     TrkInfo _trkinfo;
 // hit information

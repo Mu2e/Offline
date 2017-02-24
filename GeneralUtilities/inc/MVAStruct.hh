@@ -37,8 +37,8 @@ namespace mu2e {
 
     typedef typename DETAIL::MVA_varindex MVA_varindex;
     typedef typename DETAIL::map_type map_type;
-//    typedef std::array<double,DETAIL::n_vars> vcon_type;
-    typedef std::vector<double> vcon_type;
+//    typedef std::array<double,DETAIL::n_vars> vcoll_type;
+    typedef std::vector<double> vcoll_type;
 
     enum MVA_status {unset=0,calculated,failed}; 
     // default Constructor 
@@ -68,7 +68,7 @@ namespace mu2e {
     }
 
     // struct accessor
-    const vcon_type& values() const { return _values; }
+    const vcoll_type& values() const { return _values; }
     // output accessor
     double MVAOutput() const { return _mvaout; }
     MVA_status status() const { return _status; }
@@ -95,7 +95,7 @@ namespace mu2e {
 
   private:
     // array of MVA input values, indexed as appropriate
-    vcon_type _values;
+    vcoll_type _values;
     // flag whether the variable is used in the MVA calculation or not.  Needed?  FIXME!
 //    std::array<bool,DETAIL::n_vars> _used;
     // MVA output

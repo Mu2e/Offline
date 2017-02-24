@@ -3,8 +3,8 @@
 //  persistent representation of the BTrk Kalman Fit
 //  Original author: Dave Brown (LBNL) 31 Aug 2016
 //
-#ifndef RecoDataProducts_TrkHitSeed_HH
-#define RecoDataProducts_TrkHitSeed_HH
+#ifndef RecoDataProducts_TrkStrawHitSeed_HH
+#define RecoDataProducts_TrkStrawHitSeed_HH
 #include "RecoDataProducts/inc/HitT0.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"

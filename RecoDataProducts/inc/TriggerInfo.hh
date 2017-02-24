@@ -7,6 +7,7 @@
 namespace mu2e {
 
   class CaloCluster;
+  class KalSeed;
 
   class TriggerInfo
   {
@@ -14,11 +15,12 @@ namespace mu2e {
       public:
               TriggerFlag&            triggerBits() { return _triggerBits; }
         const art::Ptr<CaloCluster>&  caloCluster() const { return _caloCluster; }
+        const art::Ptr<KalSeed>&  trigerTrack() const { return _triggerTrack; }
 
       private:
         TriggerFlag	       _triggerBits; 
         art::Ptr<CaloCluster>  _caloCluster; 
-
+	art::Ptr<KalSeed> _triggerTrack; // associated track
   };
 
 } 

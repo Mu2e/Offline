@@ -62,9 +62,11 @@
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "RecoDataProducts/inc/TrackCaloAssns.hh" 
 // BTrk Kalman fit persistence
-#include "RecoDataProducts/inc/KalSeedCollection.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 
 #include "RecoDataProducts/inc/TriggerFlag.hh"
 #include "RecoDataProducts/inc/TriggerInfoCollection.hh"
+
+#include "RecoDataProducts/inc/TrkQual.hh"
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS
