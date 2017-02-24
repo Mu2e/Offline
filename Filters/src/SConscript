@@ -42,30 +42,19 @@ helper.make_plugins( [
     'art_Framework_Services_Registry',
     'art_Framework_Services_Optional',
     'art_Framework_Services_Optional_TFileService_service',
-#    'art_Framework_Services_Optional_RandomNumberGenerator_service',
     'art_Persistency_Common',
-    'canvas_Persistency_Common',
     'art_Persistency_Provenance',
-    'canvas_Persistency_Provenance',
     'art_Utilities',
-    'canvas_Utilities',
+    'canvas',
     'MF_MessageLogger',
     'fhiclcpp',
     'cetlib',
+    'cetlib_except',
     'CLHEP',
     'HepPDT',
     rootlibs,
-#    extrarootlibs,
-#    'xerces-c',
     'boost_filesystem',
     'boost_system',
-
-
-    #'art_Framework_IO_ProductMix',
-    #'mu2e_GlobalConstantsService_GlobalConstantsService_service',
-    #'mu2e_MCDataProducts',
-    #'mu2e_RecoDataProducts',
-    #'mu2e_GeneralUtilities',
     ] )
 
 #helper.make_dict_and_map( [

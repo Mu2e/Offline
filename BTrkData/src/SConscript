@@ -19,8 +19,9 @@ mainlib = helper.make_mainlib ( [
     babarlibs,
     'art_Framework_Services_Registry',
     'art_Utilities',
-    'canvas_Utilities',
+    'canvas',
     'cetlib',
+    'cetlib_except',
     'CLHEP',
     'boost_system',
     ] )
@@ -30,10 +31,10 @@ helper.make_dict_and_map( [
         mainlib,
         babarlibs,
         'art_Persistency_Common',
-        'canvas_Persistency_Common',
         'art_Utilities',
-        'canvas_Utilities',
+        'canvas',
         'cetlib',
+        'cetlib_except',
         'CLHEP',
     ] )
 

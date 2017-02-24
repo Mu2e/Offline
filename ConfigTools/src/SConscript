@@ -15,6 +15,7 @@ mainlib = helper.make_mainlib ( [ 'art_Utilities',
                                   'mu2e_GeneralUtilities',
                                   'MF_MessageLogger',
                                   'cetlib',
+                                  'cetlib_except',
                                   'CLHEP',
                                 ] )
 

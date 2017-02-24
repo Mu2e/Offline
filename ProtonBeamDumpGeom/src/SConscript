@@ -18,10 +18,10 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeomPrimitives',
 helper.make_dict_and_map( [ mainlib,
                             'mu2e_Mu2eInterfaces',
                             'art_Persistency_Common',
-                            'canvas_Persistency_Common',
                             'art_Utilities',
-                            'canvas_Utilities',
+                            'canvas',
                             'cetlib',
+                            'cetlib_except',
                             'Core'
                           ] )
 

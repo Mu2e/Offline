@@ -14,9 +14,8 @@ mainlib = helper.make_mainlib ( [] )
 
 helper.make_dict_and_map( [ mainlib,
                             'art_Persistency_Common',
-                            'canvas_Persistency_Common',
                             'art_Utilities',
-                            'canvas_Utilities',
+                            'canvas',
                             'Core'
                             ] )
 

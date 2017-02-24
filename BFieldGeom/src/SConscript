@@ -13,6 +13,7 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeomPrimitives',
                                   'mu2e_Mu2eInterfaces',
                                   'MF_MessageLogger',
                                   'cetlib',
+                                  'cetlib_except',
                                   'CLHEP',
                                   'boost_iostreams',
                                   ] )
