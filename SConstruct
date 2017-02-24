@@ -50,6 +50,8 @@ mesfac_inc     = os.environ['MESSAGEFACILITY_INC']
 mesfac_lib     = os.environ['MESSAGEFACILITY_LIB']
 cetlib_inc     = os.environ['CETLIB_INC']
 cetlib_lib     = os.environ['CETLIB_LIB']
+cetlib_except_inc = os.environ['CETLIB_EXCEPT_INC']
+cetlib_except_lib = os.environ['CETLIB_EXCEPT_LIB']
 xercesc_inc    = os.environ['XERCES_C_INC']
 xercesc_root   = os.environ['XERCESCROOT']
 tbb_inc     = os.environ['TBB_INC']
@@ -88,6 +90,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              fhicl_inc,
                              sqlite_inc,
                              cetlib_inc,
+                             cetlib_except_inc,
                              boost_inc,
                              clhep_inc,
                              cppunit_dir+'/include',
@@ -105,6 +108,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              fhicl_lib,
                              sqlite_lib,
                              cetlib_lib,
+                             cetlib_except_lib,
                              boost_lib,
                              clhep_lib,
                              cppunit_dir+'/lib',
