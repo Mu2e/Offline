@@ -8,7 +8,7 @@
 
 #include <cmath>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "ExtinctionMonitorFNAL/Reconstruction/inc/Tracklet.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"

@@ -9,7 +9,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Include each ServicesGeom element here...
 #include "ServicesGeom/inc/Pipe.hh"

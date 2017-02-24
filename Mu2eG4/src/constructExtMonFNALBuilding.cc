@@ -30,7 +30,7 @@
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"

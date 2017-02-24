@@ -6,7 +6,7 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "boost/range/algorithm_ext/is_sorted.hpp"
 
 #include "CLHEP/Units/SystemOfUnits.h"

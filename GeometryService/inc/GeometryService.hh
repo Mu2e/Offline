@@ -16,7 +16,7 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eInterfaces/inc/Detector.hh"

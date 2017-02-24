@@ -10,7 +10,7 @@
 #include "ConfigTools/src/SimpleConfigRecord.hh"
 #include "GeneralUtilities/inc/trimInPlace.hh"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include <iostream>
 #include <iomanip>

@@ -28,7 +28,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/StackingAction.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "DataProducts/inc/PDGCode.hh"
 
 // G4 includes

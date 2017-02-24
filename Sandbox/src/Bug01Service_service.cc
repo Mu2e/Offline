@@ -12,7 +12,7 @@
 #include "canvas/Persistency/Provenance/RunID.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include <iostream>
 

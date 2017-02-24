@@ -10,7 +10,7 @@
 #include <iostream>
 
 // Framework includes
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Includes from Mu2e
 #include "BFieldGeom/inc/BFieldManager.hh"

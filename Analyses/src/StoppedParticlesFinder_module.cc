@@ -10,7 +10,7 @@
 #include <iostream>
 #include <limits>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

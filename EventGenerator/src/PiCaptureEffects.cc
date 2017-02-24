@@ -11,7 +11,7 @@
 #include <iostream>
 
 // Framework includes
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "EventGenerator/inc/PiCaptureEffects.hh"

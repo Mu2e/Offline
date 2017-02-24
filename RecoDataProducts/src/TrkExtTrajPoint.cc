@@ -14,7 +14,7 @@
 #include <sstream>
 
 // Framework includes.
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Matrix.h"
 #include "RecoDataProducts/inc/TrkExtTrajPoint.hh"

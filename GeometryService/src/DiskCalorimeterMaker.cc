@@ -61,7 +61,7 @@
 // There is a git tag (ef94504f51edbbfeb54a5e63651856bdf5c0a60d) that has the code for a generic placement of the disk origin.
 // This is however more complicated, and I think this choice is the best at the moment.
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/Disk.hh"

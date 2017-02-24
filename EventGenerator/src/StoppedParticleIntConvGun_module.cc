@@ -8,7 +8,7 @@
 #include <algorithm>
 
 // cetlib includes
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"

@@ -15,7 +15,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"

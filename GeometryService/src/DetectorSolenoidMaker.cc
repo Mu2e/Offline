@@ -6,7 +6,7 @@
 #include "GeometryService/inc/DetectorSolenoidMaker.hh"
 
 // Framework includes
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"

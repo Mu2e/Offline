@@ -12,7 +12,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "TH1D.h"
 #include "TH2D.h"

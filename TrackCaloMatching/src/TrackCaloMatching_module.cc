@@ -37,7 +37,7 @@
 #include "BTrk/TrkBase/HelixParams.hh"
 
 // Other includes.
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 //root includes
 #include "TFile.h"

@@ -19,7 +19,7 @@
 #include <iostream>
 
 // Framework include files
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // CLHEP include files
 #include "CLHEP/Units/SystemOfUnits.h"

@@ -13,7 +13,7 @@
 #include <typeinfo>
 #include <cassert>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 

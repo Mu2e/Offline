@@ -2,7 +2,7 @@
 
 #include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 namespace mu2e {
   PhysicalVolumeMultiHelper::PhysicalVolumeMultiHelper(const PhysicalVolumeInfoMultiCollection& coll)

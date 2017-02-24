@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 // art includes
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 // Mu2e includes
 #include "DataProducts/inc/StrawId.hh"
 #include "GeneralUtilities/inc/splitLine.hh"

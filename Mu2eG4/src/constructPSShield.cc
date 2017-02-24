@@ -6,7 +6,7 @@
 
 #include "Mu2eG4/inc/constructPSShield.hh"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "G4Tubs.hh"

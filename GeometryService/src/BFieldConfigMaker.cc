@@ -4,7 +4,7 @@
 #include <iostream>
 #include <set>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 

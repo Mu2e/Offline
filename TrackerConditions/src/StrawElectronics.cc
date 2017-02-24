@@ -9,7 +9,7 @@
 // Original author David Brown, LBNL
 //
 #include "TrackerConditions/inc/StrawElectronics.hh"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "TMath.h"
 #include <math.h>
 #include <algorithm>

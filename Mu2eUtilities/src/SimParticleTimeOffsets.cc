@@ -1,6 +1,6 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"

@@ -8,7 +8,7 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include <cmath>
 #include <algorithm>

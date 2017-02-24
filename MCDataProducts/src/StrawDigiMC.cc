@@ -9,7 +9,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 // Framework includes.
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 // C++ includes
 #include <ostream>
 

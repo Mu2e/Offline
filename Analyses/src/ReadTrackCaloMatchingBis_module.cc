@@ -55,7 +55,7 @@
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 
 // Other includes.
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 
 //root includes

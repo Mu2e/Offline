@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 namespace mu2e {
   ExtMonFNALBuilding::ExtMonFNALBuilding()

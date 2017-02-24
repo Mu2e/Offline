@@ -26,7 +26,7 @@
 
 // Supporting library include files
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // C++ include files
 #include <iostream>

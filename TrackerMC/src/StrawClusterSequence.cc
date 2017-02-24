@@ -9,7 +9,7 @@
 //
 // mu2e includes
 #include "TrackerMC/inc/StrawClusterSequence.hh"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 using namespace std;
 

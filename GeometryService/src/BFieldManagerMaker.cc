@@ -29,7 +29,7 @@
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Utilities/Exception.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Includes from Mu2e
 #include "BFieldGeom/inc/BFInterpolationStyle.hh"

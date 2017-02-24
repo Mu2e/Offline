@@ -44,7 +44,7 @@
 #include "BTrk/BbrGeom/HepPoint.h"
 
 // Other includes.
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include <cmath>
 #include <iostream>

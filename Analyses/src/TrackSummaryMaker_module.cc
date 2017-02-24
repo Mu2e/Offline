@@ -5,7 +5,7 @@
 #include <memory>
 #include <iostream>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "CLHEP/Vector/ThreeVector.h"
 

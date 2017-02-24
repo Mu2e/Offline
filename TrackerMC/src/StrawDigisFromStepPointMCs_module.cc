@@ -18,7 +18,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "SeedService/inc/SeedService.hh"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"

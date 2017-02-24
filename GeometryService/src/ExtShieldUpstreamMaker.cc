@@ -5,7 +5,7 @@
 // It builds the ExtShieldUpstream using SimpleConfig.
 
 #include <string>
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/SystemOfUnits.h"

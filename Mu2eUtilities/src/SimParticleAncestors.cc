@@ -12,7 +12,7 @@
 #include "Mu2eUtilities/inc/SimParticleAncestors.hh"
 
 // Framework includes
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 using namespace std;
 

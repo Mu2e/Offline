@@ -31,7 +31,7 @@
 
 // Framework include files.
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e include files
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"

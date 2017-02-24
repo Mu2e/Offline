@@ -49,7 +49,7 @@
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
 
 // Other includes.
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"

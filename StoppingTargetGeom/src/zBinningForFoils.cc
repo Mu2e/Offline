@@ -12,7 +12,7 @@
 // Original author Rob Kutschke
 //
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "StoppingTargetGeom/inc/zBinningForFoils.hh"

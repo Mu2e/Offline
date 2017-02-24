@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <iterator>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 using namespace std;
 

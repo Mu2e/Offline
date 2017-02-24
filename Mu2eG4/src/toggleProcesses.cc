@@ -26,7 +26,7 @@
 #include "G4ProcessManager.hh"
 
 // Framework includes
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "ConfigTools/inc/SimpleConfig.hh"

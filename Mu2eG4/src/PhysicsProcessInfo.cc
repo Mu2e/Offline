@@ -23,7 +23,7 @@
 #include <utility>
 
 // Framework
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"

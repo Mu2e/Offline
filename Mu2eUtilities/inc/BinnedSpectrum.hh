@@ -19,7 +19,7 @@
 #include <utility>
 #include <vector>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "Mu2eUtilities/inc/Table.hh"
 

@@ -7,7 +7,7 @@
 #include <memory>
 #include <iostream>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"

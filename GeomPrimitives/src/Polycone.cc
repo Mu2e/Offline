@@ -13,7 +13,7 @@
 #include <iterator>
 #include <algorithm>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 namespace mu2e {
 

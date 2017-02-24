@@ -43,7 +43,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "TTree.h"
 #include "TFile.h"
