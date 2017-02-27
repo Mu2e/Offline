@@ -9,6 +9,7 @@ process_name : CRVAnalysis
 source :
 {
   module_type : RootInput
+  inputCommands: ["keep *", "drop *CaloCrystalOnlyHit*_*_*_*"]
 }
 
 services :
@@ -40,10 +41,10 @@ physics :
     cosmicAnalysis: 
     { 
       module_type               : CosmicAnalysis
-      fitterModuleLabel         : "TRFDownstreameMinus"
-      fitterModuleInstance      : "DownstreameMinus"
+      fitterModuleLabel         : "KFFDeM"
+      fitterModuleInstance      : ""
       hitmakerModuleLabel       : "makeSH"
-      hitmakerModuleInstance    : "StrawHitMCPtr"
+      hitmakerModuleInstance    : ""
       g4ModuleLabel             : "detectorFilter"
       generatorModuleLabel      : "generate"
       crvCoincidenceModuleLabel : "CrvCoincidence"
@@ -55,15 +56,13 @@ physics :
 
   # Tracking was run in s4.  Here we only need to re-run the one
   # producer whose outputs are not persistable.
-  p1: [TRFDownstreameMinus,
+  p1: [@sequence::Tracking.TPRDeM,
        @sequence::CrvResponsePackage.CrvResponseSequence]
   trigger_paths  : [p1]
 
   e1: [genCountLogger, cosmicAnalysis]
   end_paths      : [e1]
 }
-
-physics.producers.CrvSiPMResponses.ThermalProb : 0
 
 // Limit the amount of "Begin processing the ... record" messages
 

@@ -52,7 +52,7 @@ namespace mu2eCrv
     double _bias;             //in V above breakdown
     double _blindTime;        //in ns
     double _microBunchPeriod; //in ns
-    double _scaleFactor;      //based on a time step of 1.0ns
+    double _timeConstant;     //in ns
 
     double _time;             //in ns
 
@@ -88,7 +88,7 @@ namespace mu2eCrv
                          _randFlat(randFlat), _randPoissonQ(randPoissonQ) {}
 
     void SetSiPMConstants(int numberPixels, int numberPixelsAtFiber, double bias, 
-                          double blindTime, double microBunchPeriod, double scaleFactor, 
+                          double blindTime, double microBunchPeriod, double timeConstant, 
                           ProbabilitiesStruct probabilities);
     void Simulate(const std::vector<double> &photons, 
                   std::vector<SiPMresponse> &SiPMresponseVector);

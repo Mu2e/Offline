@@ -36,7 +36,7 @@ BEGIN_PROLOG
       numberPixels                 : 1584
       numberPixelsAtFiber          : 615
       bias                         : 2.4        //V
-      scaleFactor                  : 0.08
+      timeConstant                 : 12.0       //ns
       blindTime                    : 500.0      //ns
 
       GeigerProbCoef               : 1.0        // = pc

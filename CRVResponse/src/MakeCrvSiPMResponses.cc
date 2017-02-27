@@ -82,13 +82,7 @@ void MakeCrvSiPMResponses::RechargeCell(Pixel &pixel)
   if(v < _bias)
   {
     double timeStep = _time - pixel._t;
-    v = pow(1-_scaleFactor, timeStep) * (v-_bias) + _bias;
-// formula is based on the following iterative sequence 
-// which gets called at every _timeStep = 1.0ns = const
-//
-// double rechargeCurrent = (SiPM._bias - _v) * SiPM._scaleFactor;
-// _v += SiPM._timeStep * rechargeCurrent;
-
+    v = exp(-timeStep/_timeConstant) * (v-_bias) + _bias;
     if(v > _bias) { v = _bias; }
 
     pixel._v=v;
@@ -97,7 +91,7 @@ void MakeCrvSiPMResponses::RechargeCell(Pixel &pixel)
 }
 
 void MakeCrvSiPMResponses::SetSiPMConstants(int numberPixels, int numberPixelsAtFiber, double bias,  
-                                            double blindTime, double microBunchPeriod, double scaleFactor, 
+                                            double blindTime, double microBunchPeriod, double timeConstant, 
                                             ProbabilitiesStruct probabilities)
 {
   _numberPixels = numberPixels;
@@ -105,7 +99,7 @@ void MakeCrvSiPMResponses::SetSiPMConstants(int numberPixels, int numberPixelsAt
   _bias = bias;
   _blindTime = blindTime;
   _microBunchPeriod = microBunchPeriod;
-  _scaleFactor = scaleFactor;
+  _timeConstant = timeConstant;
   _probabilities = probabilities;
 }
 

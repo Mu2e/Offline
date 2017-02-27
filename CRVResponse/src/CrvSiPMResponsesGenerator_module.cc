@@ -54,7 +54,7 @@ namespace mu2e
     int         _numberPixels;
     int         _numberPixelsAtFiber;
     double      _bias;
-    double      _scaleFactor;
+    double      _timeConstant;
     double      _blindTime;             //time window during which the SiPM is blind
     double      _microBunchPeriod;
 
@@ -72,7 +72,7 @@ namespace mu2e
     _numberPixels(pset.get<int>("numberPixels")),   //1584
     _numberPixelsAtFiber(pset.get<int>("numberPixelsAtFiber")),   //615
     _bias(pset.get<double>("bias")),                //2.5V
-    _scaleFactor(pset.get<double>("scaleFactor")),  //0.08 (based on a time step of 1.0ns)
+    _timeConstant(pset.get<double>("timeConstant")), //12.0ns
     _blindTime(pset.get<double>("blindTime")),      //500ns
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randPoissonQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
@@ -98,7 +98,7 @@ namespace mu2e
     _microBunchPeriod = accPar->deBuncherPeriod;
     _makeCrvSiPMResponses = boost::shared_ptr<mu2eCrv::MakeCrvSiPMResponses>(new mu2eCrv::MakeCrvSiPMResponses(_randFlat, _randPoissonQ));
     _makeCrvSiPMResponses->SetSiPMConstants(_numberPixels, _numberPixelsAtFiber, _bias, _blindTime, _microBunchPeriod, 
-                                            _scaleFactor, _probabilities);
+                                            _timeConstant, _probabilities);
   }
 
   void CrvSiPMResponsesGenerator::endJob()

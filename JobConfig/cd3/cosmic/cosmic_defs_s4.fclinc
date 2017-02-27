@@ -4,6 +4,9 @@
 
 #include "JobConfig/cd3/common/dra_pure_defs.fcl"
 
+source.inputCommands: ["keep *", "drop *CaloCrystalOnlyHit*_*_*_*"]
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput: "compressPV"
+
 physics.trigger_paths: [ draCutAndCountTrigSeq ]
 physics.filteredOutput: [ filteredOutput ]
 physics.end_paths: [ draCommonEndSeq, filteredOutput ]

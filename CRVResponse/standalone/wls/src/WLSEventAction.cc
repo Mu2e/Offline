@@ -292,7 +292,7 @@ void WLSEventAction::Draw(const G4Event* evt)
   static CLHEP::RandGaussQ randGaussQ(engine);
   static CLHEP::RandPoissonQ randPoissonQ(engine);
   mu2eCrv::MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
-  sim.SetSiPMConstants(1584, 615, 2.4, 0, 1695, 0.08, probabilities);
+  sim.SetSiPMConstants(1584, 615, 2.4, 0, 1695, 12.0, probabilities);
 
   mu2eCrv::MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
   double digitizationInterval = 12.5; //ns
