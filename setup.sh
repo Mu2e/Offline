@@ -68,7 +68,7 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
 fi
 
 # Setup the framework and its dependent products
-setup -B art v2_06_01a -q${MU2E_UPS_QUALIFIERS}
+setup -B art v2_06_02a -q${MU2E_UPS_QUALIFIERS}
 
 # root6 needs a path to include files to prevent some runtime warnings
 export ROOT_INCLUDE_PATH=`dropit -s -p$ROOT_INCLUDE_PATH $MU2E_BASE_RELEASE`
@@ -89,7 +89,7 @@ fi
 
 # Other libraries we need.
 setup -B heppdt v3_04_01f -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_01_06a -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_01_08  -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_5_1 -q p2713b
