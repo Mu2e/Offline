@@ -17,7 +17,6 @@
 //    it points is only guaranteed to be defined during a run.  The implementation
 //    protects against trying to use this object outside of a run.
 
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Mu2eG4/inc/VolMapType.hh"
 
@@ -41,11 +40,6 @@ namespace mu2e {
     // Clear information at end of run.
     void endRun();
 
-    // Accessors:
-    const PhysicalVolumeInfoCollection& persistentInfo() const{
-      return _persistentInfo;
-    }
-
     const PhysicalVolumeInfoSingleStage& persistentSingleStageInfo() const{
       return _pSingleStage;
     }
@@ -59,8 +53,7 @@ namespace mu2e {
   private:
 
     // The persistent info about each volume.
-    PhysicalVolumeInfoCollection _persistentInfo; // legacy format
-    PhysicalVolumeInfoSingleStage _pSingleStage;  // same info formatted for PhysicalVolumeInfoMultiCollection
+    PhysicalVolumeInfoSingleStage _pSingleStage;
 
     // Map used to look up persistent index of each physical volume.
     VolMapType _volumeMap;

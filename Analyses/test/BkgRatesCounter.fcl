@@ -30,41 +30,36 @@ source :
 
 services :
 {
-  message : @local::default_message
+   message : @local::default_message
 
-  # Adjust configuration of message logger:
-  # Load the standard message logger configuration:
-  # Threshold=Info (from using mf_interactive). 
-  # Limit of 5 per category; then exponential backoff.
-  # message.destinations.log.default.limit : 5
+   # Adjust configuration of message logger:
+   # Load the standard message logger configuration:
+   # Threshold=Info (from using mf_interactive). 
+   # Limit of 5 per category; then exponential backoff.
+   # message.destinations.log.default.limit : 5
    
-  TFileService :
-  {
-    fileName      : "BkgRates.root"
-  }
+   TFileService :
+   {
+      fileName      : "BkgRates.root"
+   }
 
-  RandomNumberGenerator : { }
+   RandomNumberGenerator : { }
 
-  user :
-  {
-    GeometryService :
-    {
+   GeometryService :
+   {
       inputFile : "Mu2eG4/test/geom_01.txt"
-    }
+   }
 
-    ConditionsService :
-    {
+   ConditionsService :
+   {
       conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }
+   }
 
-    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
 
-    G4Helper : { }
+   G4Helper : { }
 
-    SeedService: @local::automaticSeeds
-
-
-  }
+   SeedService: @local::automaticSeeds
 
 } # close of services block
 

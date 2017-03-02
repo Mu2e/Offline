@@ -46,10 +46,7 @@ services :
    message : @local::default_message
    TFileService : { fileName : "nts.owner.cd3-detmix-cut.version.sequencer.root" }
    RandomNumberGenerator: { }
-   user :
-   {
-      SeedService: @local::automaticSeeds
-   }
+   SeedService: @local::automaticSeeds
 }
 
 physics :

@@ -18,11 +18,8 @@ services : {
     message : @local::default_message
     scheduler: { defaultExceptions : false }
     RandomNumberGenerator : {}
-
-    user : {
-        GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_s2EMFTwoGrooves.txt" }
-        SeedService       : @local::automaticSeeds
-    }
+    GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_s2EMFTwoGrooves.txt" }
+    SeedService       : @local::automaticSeeds
 }
 
 physics : {

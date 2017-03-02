@@ -16,10 +16,8 @@ services: {
     message: @local::default_message
     scheduler: { defaultExceptions : false }
     RandomNumberGenerator : {}
-    user : {
-        GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-        SeedService       : @local::automaticSeeds
-    }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    SeedService       : @local::automaticSeeds
 }
 
 physics.producers.generate : {

@@ -11,17 +11,15 @@ source : { module_type : EmptyEvent maxEvents : @nil }
 
 services : {
 
-    message               : @local::default_message
-    TFileService          : { fileName : "histMuonTransportSingleStage.root" }
-    RandomNumberGenerator : { }
+   message               : @local::default_message
+   TFileService          : { fileName : "histMuonTransportSingleStage.root" }
+   RandomNumberGenerator : { }
 
-    user : {
-        GeometryService        : { inputFile      : "JobConfig/test/MuonTransport/geom_MuonTransportSingleStage.txt" }
-        ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-        GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-        G4Helper               : { }
-        SeedService            : @local::automaticSeeds
-    }
+   GeometryService        : { inputFile      : "JobConfig/test/MuonTransport/geom_MuonTransportSingleStage.txt" }
+   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+   G4Helper               : { }
+   SeedService            : @local::automaticSeeds
 }
 
 physics : {

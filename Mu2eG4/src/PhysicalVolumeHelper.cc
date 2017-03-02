@@ -45,7 +45,6 @@ using namespace std;
 namespace mu2e {
 
   PhysicalVolumeHelper::PhysicalVolumeHelper():
-    _persistentInfo(),
     _volumeMap(){
   }
 
@@ -91,7 +90,6 @@ namespace mu2e {
   void PhysicalVolumeHelper::beginRun(){
 
     _volumeMap.clear();
-    _persistentInfo.clear();
     _pSingleStage.clear();
 
     // Loop over physical volume store.
@@ -111,12 +109,12 @@ namespace mu2e {
       }
 
       // Add volume to the persistent info.
-      _persistentInfo.emplace_back(vpv->GetName(),
-                                   vpv->GetCopyNo(),
-                                   vpv->GetLogicalVolume()->GetMaterial()->GetName()
-                                   );
-
-      _pSingleStage[cet::map_vector_key(_persistentInfo.size()-1)] = _persistentInfo.back();
+      _pSingleStage[cet::map_vector_key(_persistentInfo.size()-1)] =
+        PhysicalVolumeInfo(
+                           vpv->GetName(),
+                           vpv->GetCopyNo(),
+                           vpv->GetLogicalVolume()->GetMaterial()->GetName()
+                           );
     }
 
   }
@@ -124,7 +122,6 @@ namespace mu2e {
   // Clear information at the end of a run.
   void PhysicalVolumeHelper::endRun(){
     _volumeMap.clear();
-    _persistentInfo.clear();
   }
 
 }

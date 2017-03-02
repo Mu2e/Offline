@@ -8,13 +8,11 @@ mu2e.services.cd3simServices: {
    message: @local::default_message
    TFileService: { fileName: @nil }
    RandomNumberGenerator: { }
-   user: {
-      GeometryService: { inputFile: "JobConfig/cd3/geom_baseline.txt" }
-      ConditionsService: { conditionsfile: "Mu2eG4/test/conditions_01.txt" }
-      GlobalConstantsService: { inputFile: "Mu2eG4/test/globalConstants_01.txt" }
-      G4Helper: {}
-      SeedService: @local::automaticSeeds
-   }
+   GeometryService: { inputFile: "JobConfig/cd3/geom_baseline.txt" }
+   ConditionsService: { conditionsfile: "Mu2eG4/test/conditions_01.txt" }
+   GlobalConstantsService: { inputFile: "Mu2eG4/test/globalConstants_01.txt" }
+   G4Helper: {}
+   SeedService: @local::automaticSeeds
 }
 
 // Default seeding of random engines - the seed will be overwritten in grid jobs

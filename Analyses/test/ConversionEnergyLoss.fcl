@@ -26,37 +26,35 @@ source :
 
 services :
 {
-  message : @local::mf_interactive
+   message : @local::mf_interactive
 
-  # Adjust configuration of message logger:
-  # Enable debug printout from the module instance "hitinspect",
-  # and Print unlimited messages with categories ToyHitInfo, GEOM, g4run
-  message.debugModules : [hitinspect]
-  message.categories.ToyHitInfo.limit : -1
-  message.categories.GEOM.limit       : -1
-  message.categories.g4run.limit      : -1
-        
-  TFileService :
-  {
-    fileName      : "conversionEnergyLoss.root"
-  }
+   # Adjust configuration of message logger:
+   # Enable debug printout from the module instance "hitinspect",
+   # and Print unlimited messages with categories ToyHitInfo, GEOM, g4run
+   message.debugModules : [hitinspect]
+   message.categories.ToyHitInfo.limit : -1
+   message.categories.GEOM.limit       : -1
+   message.categories.g4run.limit      : -1
+   
+   TFileService :
+   {
+      fileName      : "conversionEnergyLoss.root"
+   }
 
-  RandomNumberGenerator : { }
+   RandomNumberGenerator : { }
 
-  user :
-  {
-    GeometryService :
-    {
+   GeometryService :
+   {
       inputFile : "Mu2eG4/test/geom_01.txt"
-    }
+   }
 
-    ConditionsService :
-    {
+   ConditionsService :
+   {
       conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }
+   }
 
-    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-  }
+   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+
 
 } # close of services block
 
