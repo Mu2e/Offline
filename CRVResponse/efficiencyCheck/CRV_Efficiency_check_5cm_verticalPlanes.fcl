@@ -71,14 +71,11 @@ services :
   TFileService          : { fileName : "nts.owner.crv_efficiency.ver.seq.root" }
   RandomNumberGenerator : { }
 
-  user :
-  {
-    GeometryService        : { inputFile      : "CRVResponse/efficiencyCheck/geom_5cm_verticalPlanes.txt" }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-    G4Helper               : { }
-    SeedService            : @local::automaticSeeds
-  }
+  GeometryService        : { inputFile      : "CRVResponse/efficiencyCheck/geom_5cm_verticalPlanes.txt" }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+  G4Helper               : { }
+  SeedService            : @local::automaticSeeds
 }
 
 physics :

@@ -29,21 +29,15 @@ services :
 
   RandomNumberGenerator : { }
 
-  user :
-  {
+  GeometryService   : { inputFile : "Analyses/test/geom_transportOnly.txt" }
 
-    GeometryService   : { inputFile : "Analyses/test/geom_transportOnly.txt" }
+  ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
 
-    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
 
-    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  G4Helper : { }
 
-    G4Helper : { }
-
-    SeedService: @local::automaticSeeds
-
-
-  }
+  SeedService: @local::automaticSeeds
 
 } # close of services block
 
