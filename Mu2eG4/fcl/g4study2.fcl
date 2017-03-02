@@ -1,4 +1,3 @@
-# -*- mode: tcl -*-
 #
 # fcl config file to perform Geant4 studies using the Mu2e framework infrastructure and simple geometry
 #
@@ -32,13 +31,11 @@ services : {
   TFileService          : { fileName : "g4study2.root" }
   RandomNumberGenerator : { }
 
-  user : {
-    GeometryService        : { inputFile      : "Mu2eG4/test/g4study2Geom.txt"  }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-    G4Helper               : { }
-    SeedService            : @local::automaticSeeds
-  }
+  GeometryService        : { inputFile      : "Mu2eG4/test/g4study2Geom.txt"  }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+  G4Helper               : { }
+  SeedService            : @local::automaticSeeds
 
 }
 

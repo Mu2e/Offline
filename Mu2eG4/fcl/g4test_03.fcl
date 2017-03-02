@@ -1,4 +1,3 @@
-# -*- mode: tcl -*-
 # Configuration file for G4Test03
 #
 #  - Generate 200 events including one conversion electron plus

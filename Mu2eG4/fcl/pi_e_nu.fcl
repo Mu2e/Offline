@@ -28,23 +28,19 @@ services :
 
   RandomNumberGeneratorService : { }
 
-  user :
+  GeometryService :
   {
-    GeometryService :
-    {
-      inputFile : "Mu2eG4/test/pi_e_nu_geom.txt"
-    }
-
-    ConditionsService :
-    {
-      conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }
-
-    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-
-    G4Helper : { }
-
+    inputFile : "Mu2eG4/test/pi_e_nu_geom.txt"
   }
+
+  ConditionsService :
+  {
+    conditionsfile : "Mu2eG4/test/conditions_01.txt"
+  }
+
+  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+
+  G4Helper : { }
 
 }
 
