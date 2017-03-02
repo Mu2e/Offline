@@ -140,8 +140,8 @@ outputs: {
 #     services.Timing: { }
 source.firstRun                            :  1 
 services.scheduler.wantSummary             : true # print timing summary
-services.user.SeedService.baseSeed         :  1
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  1
+services.SeedService.maxUniqueEngines :  20
 #------------------------------------------------------------------------------
 # event generation,simulation and digitization
 #------------------------------------------------------------------------------

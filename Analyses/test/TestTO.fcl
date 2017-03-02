@@ -119,5 +119,5 @@ outputs:
 physics.producers.generate.inputfile : "EventGenerator/defaultConfigs/conversionGun.txt"
 physics.producers.makeDcHWTO.diagLevel : 1
 physics.producers.makeDcHWTO.cellsToTurnOff : 10
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

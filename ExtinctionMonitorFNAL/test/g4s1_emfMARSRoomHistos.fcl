@@ -65,11 +65,11 @@ physics.end_paths: [an]
 //----------------------------------------------------------------
 process_name : g4s1EMFMARSRoomHist
 
-services.user.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_s1EMFMARSRoom.txt"
+services.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_s1EMFMARSRoom.txt"
 services.TFileService.fileName : "s1EMFMARSRoomHistos.root"
 
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
 
 //services.Timing : {}
 //----------------------------------------------------------------

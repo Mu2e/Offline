@@ -116,5 +116,5 @@ outputs:
 physics.producers.generate.inputfile : "EventGenerator/defaultConfigs/primaryProtonGun.txt"
 //physics.producers.g4run.diagLevel : 2
 //physics.producers.g4run.visMacro: "Mu2eG4/test/visVols.mac"
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

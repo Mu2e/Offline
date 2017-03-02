@@ -73,5 +73,5 @@ physics :
 }
 
 # Override some of the default values.
-services.user.SeedService.baseSeed         :  1
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  1
+services.SeedService.maxUniqueEngines :  20

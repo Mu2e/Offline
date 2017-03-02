@@ -80,6 +80,6 @@ physics.producers.CrvSiPMResponses.deadSiPMProbability  : 0.0
 physics.producers.CrvWaveforms.minVoltage               : 0.0
 physics.producers.CrvRecoPulses.minPEs                  : 0
 
-services.user.SeedService.baseSeed         :  773651
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
 

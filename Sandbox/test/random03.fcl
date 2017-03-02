@@ -37,5 +37,5 @@ physics : {
 
 }
 
-services.user.SeedService.baseSeed         :  40
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  40
+services.SeedService.maxUniqueEngines :  20

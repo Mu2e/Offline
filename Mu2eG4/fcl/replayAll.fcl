@@ -87,8 +87,8 @@ outputs: {
 
 }
 
-services.user.SeedService.baseSeed         :  100
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  100
+services.SeedService.maxUniqueEngines :  20
 
 physics.producers.makeSH.diagLevel    : 0
 physics.producers.makeSH.maxFullPrint : 5

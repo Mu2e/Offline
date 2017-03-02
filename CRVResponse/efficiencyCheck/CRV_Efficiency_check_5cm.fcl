@@ -327,5 +327,5 @@ physics.producers.CrvCoincidencePE22T20.maxTimeDifferences            : [20]
 physics.producers.CrvCoincidencePE24T20.PEthresholds                  : [24]
 physics.producers.CrvCoincidencePE24T20.maxTimeDifferences            : [20]
 
-services.user.SeedService.baseSeed         :  773651
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20

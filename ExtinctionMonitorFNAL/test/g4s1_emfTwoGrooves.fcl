@@ -3,12 +3,12 @@
 
 process_name : g4s1EMFTwoGrooves
 
-services.user.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_s1EMFTwoGrooves.txt"
+services.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_s1EMFTwoGrooves.txt"
 services.TFileService.fileName : "hg4s1EMFTwoGrooves.root"
 outputs.outVDFiltered.fileName : "vdg4s1EMFTwoGrooves.root"
 
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
 
 // This tells emacs to view this file in the JavaScript mode.
 // Local Variables:

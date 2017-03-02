@@ -19,7 +19,7 @@ outputs: { @table::mu2e.outputs.g4s4Defs }
 services.scheduler.fileMode: MERGE
 
 // The 20-station tracker
-services.user.GeometryService.inputFile: "Mu2eG4/geom/geom_common_cd3_s4p2_backgroundSim.txt"
+services.GeometryService.inputFile: "Mu2eG4/geom/geom_common_cd3_s4p2_backgroundSim.txt"
 
 services.TFileService.fileName: "nts.owner.cd3-beam-g4s4-flash.version.sequencer.root"
 outputs.detectorOutput.fileName: "sim.owner.cd3-beam-g4s4-detflash.version.sequencer.art"

@@ -214,8 +214,8 @@ services.scheduler.wantSummary: true
 #------------------------------------------------------------------------------
 # services.scheduler.wantSummary: true
 source.firstRun                            :  1 
-services.user.SeedService.baseSeed         :  1
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  1
+services.SeedService.maxUniqueEngines :  20
 
 physics.producers.generate.inputfile  : "Mu2eG4/test/genconfig_DownstreameMinus.txt"
 

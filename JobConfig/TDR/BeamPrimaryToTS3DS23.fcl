@@ -126,5 +126,5 @@ outputs: {
 //physics.producers.g4run.visMacro : "JobConfig/TDR/vis_muonTransport.mac"
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

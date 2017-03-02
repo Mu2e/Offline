@@ -18,8 +18,8 @@ mu2e.services.cd3simServices: {
 }
 
 // Default seeding of random engines - the seed will be overwritten in grid jobs
-mu2e.services.cd3simServices.user.SeedService.baseSeed:  0
-mu2e.services.cd3simServices.user.SeedService.maxUniqueEngines:  20
+mu2e.services.cd3simServices.SeedService.baseSeed:  0
+mu2e.services.cd3simServices.SeedService.maxUniqueEngines:  20
 
 // Limit the amount of "Begin processing the ... record" messages
 mu2e.services.cd3simServices.message.destinations.log.categories.ArtReport.reportEvery: 1

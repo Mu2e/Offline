@@ -13,14 +13,14 @@ source :
 
 services.message : @local::default_message
 services.TFileService.fileName : "nts.beam-test-sims-neutron_analysis-only.root"
-services.user.GeometryService.inputFile : "JobConfig/cd3/geom_baseline.txt"
-services.user.ConditionsService: { conditionsfile: "Mu2eG4/test/conditions_01.txt" }
-services.user.GlobalConstantsService: { inputFile: "Mu2eG4/test/globalConstants_01.txt" }
-services.user.G4Helper: {}
-services.user.SeedService: @local::automaticSeeds
-services.user.SeedService.baseSeed : 0
-services.user.SeedService.maxUniqueEngines : 20
-services.user.BTrkHelper : @local::BTrkHelperDefault
+services.GeometryService.inputFile : "JobConfig/cd3/geom_baseline.txt"
+services.ConditionsService: { conditionsfile: "Mu2eG4/test/conditions_01.txt" }
+services.GlobalConstantsService: { inputFile: "Mu2eG4/test/globalConstants_01.txt" }
+services.G4Helper: {}
+services.SeedService: @local::automaticSeeds
+services.SeedService.baseSeed : 0
+services.SeedService.maxUniqueEngines : 20
+services.BTrkHelper : @local::BTrkHelperDefault
 
 physics.analyzers.beamTestAnalysis : { module_type : BeamTestAnalysis }
 physics.onlyAnalysis : [ beamTestAnalysis ]

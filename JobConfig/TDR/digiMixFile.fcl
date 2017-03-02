@@ -111,5 +111,5 @@ physics.filters.neutronMixer.detail.g4ModuleLabel :  neutronMixer
 physics.filters.photonMixer.detail.g4ModuleLabel  :  photonMixer
 physics.filters.protonMixer.detail.g4ModuleLabel  :  protonMixer
 
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

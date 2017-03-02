@@ -19,12 +19,12 @@ physics.filters.fvd35.acceptedVids: [35]
 physics.gm : [geoms2]
 physics.trigFilter : [ randomsaver, g4run, fvd35 ]
 
-services.user.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_marsTwoGrooves.txt"
+services.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_marsTwoGrooves.txt"
 services.TFileService.fileName : "hg4smarsTwoGrooves.root"
 outputs.outVDFiltered.fileName : "vdg4smarsTwoGrooves.root"
 
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
 
 // This tells emacs to view this file in the JavaScript mode.
 // Local Variables:

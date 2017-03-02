@@ -110,8 +110,8 @@ outputs: {
 physics.producers.g4run.physics.physicsListName: "QGSP_BERT"
 
 //----------------------------------------------------------------
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
 
 // somewhat reduce the amount of "volatile" printouts
 services.message.destinations.log.noTimeStamps : true

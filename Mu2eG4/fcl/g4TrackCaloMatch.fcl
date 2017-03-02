@@ -147,7 +147,7 @@ physics: {
 
 
 
-services.user.SeedService.baseSeed         :  99
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  99
+services.SeedService.maxUniqueEngines :  20
 
 

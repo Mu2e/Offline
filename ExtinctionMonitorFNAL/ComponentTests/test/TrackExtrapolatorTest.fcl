@@ -40,8 +40,8 @@ physics : {
 }
 
 //----------------------------------------------------------------
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
 
 // This tells emacs to view this file in the JavaScript mode.
 // Local Variables:

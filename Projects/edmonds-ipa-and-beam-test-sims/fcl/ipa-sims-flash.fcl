@@ -14,7 +14,7 @@ outputs.truncatedEvtsOutput.fileName: "sim.ipa-sims-flash.truncatedOutput.art"
 
 # ...add the new TrkPatRec module, but...
 # ...first, need the BTrkHelper service
-services.user.BTrkHelper : @local::BTrkHelperDefault
+services.BTrkHelper : @local::BTrkHelperDefault
 # ...second, need to be able to add times due to the primary protons and the stopped muons
 physics.producers.protonTimeMap: { module_type : GenerateProtonTimes }
 #physics.producers.muonTimeMap: { module_type : GenerateMuonLife }
@@ -25,7 +25,7 @@ physics.producers.makeSH.diagLevel : 3
 physics.producers.makeSD.TimeOffsets : { inputs : [ ] }
 
 # make sure we get all the flash hits
-services.user.ConditionsService.StrawElectronics.FlashEnd : 1
+services.ConditionsService.StrawElectronics.FlashEnd : 1
 physics.producers.FSHPreStereo.minimumTime : 1
 physics.producers.FlagStrawHits.minimumTime : 1
 

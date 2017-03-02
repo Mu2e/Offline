@@ -111,13 +111,13 @@ outputs:
 # Override some of the default values.
 #physics.producers.generate.inputfile  : "Scripts/genconfig_Conversion.txt"
 physics.producers.generate.inputfile  : "CaloCluster/test/genconfig_giani.txt"
-#services.user.GeometryService.inputFile : "Scripts/geom_nohp.txt"
-services.user.GeometryService.inputFile : "Mu2eG4/test/geom_01.txt"
+#services.GeometryService.inputFile : "Scripts/geom_nohp.txt"
+services.GeometryService.inputFile : "Mu2eG4/test/geom_01.txt"
 physics.producers.makeSH.diagLevel    : 0
 physics.producers.makeSH.maxFullPrint : 2
 source.firstRun                            :  1 
-services.user.SeedService.baseSeed         :  1
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  1
+services.SeedService.maxUniqueEngines :  20
 physics.producers.KalFitTest.KalFit.RemoveFailedFits : false
 physics.producers.KalFitTest.KalFitMC.pureHits : false
 #

@@ -34,5 +34,5 @@ physics : {
   end_paths : [ e1 ]
 
 }
-services.user.SeedService.baseSeed         :  20
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  20
+services.SeedService.maxUniqueEngines :  20

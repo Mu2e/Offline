@@ -13,7 +13,7 @@ outputs.truncatedEvtsOutput.fileName: "sim.ipa-sims-conversion.truncatedOutput.a
 
 # ...add the new TrkPatRec module, but...
 # ...first, need the BTrkHelper service
-services.user.BTrkHelper : @local::BTrkHelperDefault
+services.BTrkHelper : @local::BTrkHelperDefault
 # ...second, need to be able to add times due to the primary protons and the stopped muons
 physics.producers.protonTimeMap: { module_type : GenerateProtonTimes }
 physics.producers.muonTimeMap: { module_type : GenerateMuonLife }
