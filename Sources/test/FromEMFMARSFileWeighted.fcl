@@ -23,10 +23,9 @@ services: {
 
     TFileService : { fileName : "ntEMFRoomWeightedAll.root" }
 
-    user : {
-        GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-        GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_emfMARS.txt" }
-    }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_emfMARS.txt" }
+
 }
 
 physics: {

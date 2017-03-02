@@ -25,11 +25,6 @@ services :
 {
   message : @local::mf_debugging
 
-  user :
-  {
-
-  }
-
 } # close of services block
 
 physics :

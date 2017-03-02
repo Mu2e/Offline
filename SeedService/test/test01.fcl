@@ -21,16 +21,14 @@ services :
 {
   message : @local::mf_errorsOnly
 
-  user : {
-     SeedService: {
+   SeedService: {
       policy            : "autoIncrement"
       baseSeed          :   123
       maxUniqueEngines  :    20
       checkRange        :  true
       verbosity         :     2
       endOfJobSummary   :  false
-     }
-  }
+   }
 
 }
 

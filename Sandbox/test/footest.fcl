@@ -14,9 +14,8 @@ source : {
 services : {
   message      : @local::default_message
 
-  user : {
-    FooService : {}
-  }
+  FooService : {}
+
 }
 
 physics : {

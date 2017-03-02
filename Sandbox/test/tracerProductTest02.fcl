@@ -23,7 +23,7 @@ services :
 #  This must be commented out or some of the messages from the 
 #  TracerProduct d'tor are lost!
 #  message : @local::default_message 
-  user : { }
+
 }
 
 physics :

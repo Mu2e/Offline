@@ -24,7 +24,6 @@ source :
 services :
 {
   message : @local::default_message
-  user : { }
 }
 
 physics :

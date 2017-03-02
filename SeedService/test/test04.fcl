@@ -22,8 +22,7 @@ services :
 {
   message : @local::mf_errorsOnly
 
-  user : {
-     SeedService: {
+   SeedService: {
       policy            : "preDefinedOffset"
       baseSeed          :     1
       maxUniqueEngines  :    20
@@ -40,8 +39,7 @@ services :
          a : 6
          c : 2
       }
-     }
-  }
+   }
 
 }
 

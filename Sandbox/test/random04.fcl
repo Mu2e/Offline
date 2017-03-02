@@ -15,9 +15,8 @@ services : {
   message               : @local::default_message
   RandomNumberGenerator : {}
 
-  user : {
-     SeedService : @local::automaticSeeds
-  }
+  SeedService : @local::automaticSeeds
+
 }
 
 physics : {

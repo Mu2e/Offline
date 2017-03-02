@@ -18,10 +18,9 @@ source : {
 services : {
   message      : @local::default_message
 
-  user : {
-    FooService : {}
-    BarService : { pokeFoo : true }
-  }
+  FooService : {}
+  BarService : { pokeFoo : true }
+
 }
 
 physics : {
