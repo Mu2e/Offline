@@ -28,6 +28,8 @@ namespace mu2e {
    void CaloPulseCache::initialize()
    {   
       
+       cache_.clear();
+       
        ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
        std::string fileName = calorimeterCalibrations->pulseFileName();
        std::string histName = calorimeterCalibrations->pulseHistName();
