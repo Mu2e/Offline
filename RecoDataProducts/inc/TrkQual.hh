@@ -28,10 +28,10 @@ namespace mu2e {
     typedef std::map<std::string,MVA_varindex> map_type;
     static std::string const& typeName();
     static std::map<std::string,MVA_varindex> const& varNames();
-
+    static std::string varName(MVA_varindex vindex);
   };
+  // define the types
   typedef MVAStruct<TrkQualDetail> TrkQual;
-
   typedef std::vector<TrkQual> TrkQualCollection;
 }
 #endif

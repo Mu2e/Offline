@@ -12,7 +12,7 @@
 #include "RecoDataProducts/inc/TrkQual.hh"
 
 namespace mu2e {
-  class TrkInter;
+  class KalSeed;
 
   class TrkQualInter {
     public:
@@ -20,9 +20,9 @@ namespace mu2e {
     explicit TrkQualInter(fhicl::ParameterSet const&);
 // compute the MVA value in the input/output struct.  This will
 // OVERWRITE any existing MVA value
-    void fillMVA(TrkQual& trkqual) const;
-// fill the MVA input struct and compute the MVA value given an interface to a track
-    void fillAll(TrkInter const& tinter, TrkQual& trkqual) const;
+    void computeMVA(TrkQual& trkqual) const;
+// fill the MVA input struct and compute the MVA value given a track
+    void fillInput(KalSeed const& kseed,TrkQual& trkqual) const;
     private:
 // configuration data
     int _debug;

@@ -97,7 +97,7 @@ namespace mu2e
       const HelixSeedCollection * _hscol;
       // ouptut collections
       // Kalman fitter.  This will be configured for a least-squares fit (no material or BField corrections).
-      KalFit _seedfit;
+      KalFit _kfit;
       // helper functions
       bool findData(const art::Event& e);
       void filterOutliers(TrkDef& trkdef);
@@ -118,7 +118,7 @@ namespace mu2e
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _perr(pset.get<vector<double> >("ParameterErrors")),
-    _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet()))
+    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet()))
   {
     produces<KalSeedCollection>();
     // check dimensions
@@ -188,7 +188,7 @@ namespace mu2e
 	if(_foutliers)filterOutliers(seeddef);
     // now, fit the seed helix from the filtered hits
 	KalRep *krep(0);
-	_seedfit.makeTrack(_shcol,seeddef,krep);
+	_kfit.makeTrack(_shcol,seeddef,krep);
 	if(_debug > 1){
 	  if(krep == 0)
 	    cout << "No Seed fit produced " << endl;

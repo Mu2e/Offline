@@ -27,20 +27,18 @@
 #include <stdexcept>
 #include <iostream>
 #include <iomanip>
-
+#include <Rtypes.h>
 namespace mu2e {
 
-// why is inheritence needed? to provide access to protected members?
   template < class DETAIL > class MVAStruct : public DETAIL {
-
   public:
 
     typedef typename DETAIL::MVA_varindex MVA_varindex;
     typedef typename DETAIL::map_type map_type;
 //    typedef std::array<double,DETAIL::n_vars> vcoll_type;
-    typedef std::vector<double> vcoll_type;
+    typedef std::vector<Double_t> vcoll_type;
 
-    enum MVA_status {unset=0,calculated,failed}; 
+    enum MVA_status {unset=0,filled,calculated,failed}; 
     // default Constructor 
     explicit MVAStruct() : _values(DETAIL::n_vars,0.0){
       reset();
@@ -60,27 +58,30 @@ namespace mu2e {
       MVA_varindex vind = findIndexByNameOrThrow(vname);
       return varValue(vind);
     }
-    double operator [] (size_t index) const {
-      return _values[index];
+    double operator [] (MVA_varindex vindex) const {
+      return _values[vindex];
     }
-    double& operator [] (size_t index) {
-      return _values[index];
-    }
-
     // struct accessor
     const vcoll_type& values() const { return _values; }
     // output accessor
-    double MVAOutput() const { return _mvaout; }
+    Double_t MVAOutput() const { return _mvaout; }
     MVA_status status() const { return _status; }
-    // allow setting values.  This should really be in a dedicated
-    // interface associated with running the MVA FIXME!!
+    // The number of input variables
+    static size_t size(){ return DETAIL::varNames().size(); }
+    // repeat the DETAIL static functions as they are not inherited
+    static map_type const& varNames() { return DETAIL::varNames(); }
+    static std::string varName(MVA_varindex vindex) { return DETAIL::varName(vindex); }
+    // allow setting values
     void setValue(MVA_varindex vind,double val) { _values[vind] = val; }
     void setValue(std::string vname,double val) {
       MVA_varindex vind = findIndexByNameOrThrow(vname);
       setValue(vind,val);
     }
+    double& operator [] (MVA_varindex vindex) {
+      return _values[vindex];
+    }
     void setMVAValue(double value) { _mvaout = value; }
-
+    void setMVAStatus(MVA_status status) { _status = status; }
     void reset(){
       for(size_t ivar=0;ivar < DETAIL::n_vars; ++ivar)
 	_values[ivar] = 0.0;
@@ -88,18 +89,13 @@ namespace mu2e {
       _status = unset;
     }
 
-    // The number of input variables
-    static size_t size(){ return DETAIL::varNames().size(); }
-
-   static map_type const& varNames() { return DETAIL::varNames(); }
-
   private:
     // array of MVA input values, indexed as appropriate
     vcoll_type _values;
     // flag whether the variable is used in the MVA calculation or not.  Needed?  FIXME!
 //    std::array<bool,DETAIL::n_vars> _used;
     // MVA output
-    double _mvaout;
+    Double_t _mvaout;
     MVA_status _status; // status of MVA calclulation
 
     MVA_varindex findIndexByNameOrThrow( std::string const& name ) const {

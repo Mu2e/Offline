@@ -34,6 +34,7 @@
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/HelixSeedCollection.hh"
+#include "RecoDataProducts/inc/TrkQual.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -84,6 +85,7 @@ namespace mu2e {
       art::InputTag _hsTag;
       art::InputTag _ksTag;
       art::InputTag _kfTag;
+      art::InputTag _tqTag;
       art::InputTag _tcTag;
       art::InputTag _mcdigisTag;
       art::InputTag _vdmcstepsTag;
@@ -98,6 +100,7 @@ namespace mu2e {
       const TimeClusterCollection* _tccol;
       const StrawDigiMCCollection* _mcdigis;
       const StepPointMCCollection* _vdmcsteps;
+      const TrkQualCollection* _tqcol;
       // time offsets
       SimParticleTimeOffset _toff;
       // Virtual Detector IDs
@@ -115,7 +118,10 @@ namespace mu2e {
       HelixVal _kfh, _ksh; // helces at tracker entrance and exit
       Float_t _kft0, _kft0err, _kst0, _kst0err, _hst0, _hst0err, _tct0, _tct0err; // t0
       Float_t _kfm, _ksm, _kfmerr, _ksmerr; // momentum
+      Float_t _kschisq, _kfchisq, _kscon, _kfcon; //chisquared and consistency
       Int_t _kfn, _kfna, _ksn, _ksna, _hsn, _hsna, _tcn; // hit counts
+      Int_t _kfns; // straw counts
+      Float_t _kftq; // track quality MVA
       Int_t _kfnap, _ksnap, _hsnap, _kfnp, _ksnp, _hsnp, _tcnp; // primary particle hit counts
       RobustHelix _hsh;
       Float_t _mcgenmom;
@@ -135,8 +141,8 @@ namespace mu2e {
       KSI findBestReco(KalSeedCollection const& ksc, TrkFitFlag const& goodreco);
       HSI findBestReco(HelixSeedCollection const& ksc, TrkFitFlag const& goodreco);
       TCI findBestReco(TimeClusterCollection const& tcc, TrkFitFlag const& goodreco);
+      void fillKalFinal(SPP const& spp,KSI const& kfi);
       void fillKalSeed(SPP const& spp,KalSeed const& ks);
-      void fillKalFinal(SPP const& spp,KalSeed const& kf);
       void fillHelixSeed(SPP const& spp,HelixSeed const& hs);
       void fillTimeCluster(SPP const& spp,TimeCluster const& tc);
       bool fillMCInfo(SPP const& pspp); 
@@ -163,6 +169,7 @@ namespace mu2e {
     _hsTag(pset.get<art::InputTag>("HelixSeedCollectionTag","PosHelixFinder")),
     _ksTag(pset.get<art::InputTag>("KalSeedFitCollectionTag","KSFDeM")),
     _kfTag(pset.get<art::InputTag>("KalFinalFitCollectionTag","KFFDeM")),
+    _tqTag(pset.get<art::InputTag>("TrkQualTag","KFFDeM")),
     _tcTag(pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
@@ -188,6 +195,8 @@ namespace mu2e {
       _trdiag->Branch("kst0err",&_kst0err,"kst0err/F");
       _trdiag->Branch("ksm",&_ksm,"ksm/F");
       _trdiag->Branch("ksmerr",&_ksmerr,"ksmerr/F");
+      _trdiag->Branch("kschisq",&_kschisq,"kschisq/F");
+      _trdiag->Branch("kscon",&_kscon,"kscon/F");
       _trdiag->Branch("ksn",&_ksn,"ksn/I");
       _trdiag->Branch("ksna",&_ksna,"ksna/I");
       _trdiag->Branch("kff.",&_kff);
@@ -196,8 +205,12 @@ namespace mu2e {
       _trdiag->Branch("kft0err",&_kft0err,"kft0err/F");
       _trdiag->Branch("kfm",&_kfm,"kfm/F");
       _trdiag->Branch("kfmerr",&_kfmerr,"kfmerr/F");
+      _trdiag->Branch("kfchisq",&_kfchisq,"kfchisq/F");
+      _trdiag->Branch("kfcon",&_kfcon,"kfcon/F");
+      _trdiag->Branch("kftq",&_kftq,"kftq/F");
       _trdiag->Branch("kfn",&_kfn,"kfn/I");
       _trdiag->Branch("kfna",&_kfna,"kfna/I");
+      _trdiag->Branch("kfns",&_kfns,"kfns/I");
       if(_mcdiag){
 	_trdiag->Branch("beamwt",&_beamwt,"beamwt/F");
 	_trdiag->Branch("ndigitot",&_ndigitot,"ndigitot/i");
@@ -276,7 +289,7 @@ namespace mu2e {
 	  // find the best reco matches to this particle.
 	  auto bestkf = findMCMatch(bestpart,*_kfcol, _nkfprimary);
 	  if(bestkf != _kfcol->end()){
-	    fillKalFinal(bestpart,*bestkf);
+	    fillKalFinal(bestpart,bestkf);
 	  } else {
 	    auto bestks = findMCMatch(bestpart,*_kscol, _nksprimary);
 	    if(bestks != _kscol->end()){
@@ -299,7 +312,7 @@ namespace mu2e {
       if(bestpart.isNull()){
 	auto ikf = findBestReco(*_kfcol,_goodkf);
 	if(ikf != _kfcol->end()){
-	  fillKalFinal(bestpart,*ikf);
+	  fillKalFinal(bestpart,ikf);
 	} else {
 	  auto iks = findBestReco(*_kscol,_goodks);
 	  if(iks != _kscol->end()){
@@ -342,6 +355,8 @@ namespace mu2e {
     _shfcol = shfH.product();
     auto tcH = evt.getValidHandle<TimeClusterCollection>(_tcTag);
     _tccol = tcH.product();
+    auto tqH = evt.getValidHandle<TrkQualCollection>(_tqTag);
+    _tqcol = tqH.product();
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     _hscol = hsH.product();
     auto ksH = evt.getValidHandle<KalSeedCollection>(_ksTag);
@@ -359,7 +374,7 @@ namespace mu2e {
       }
     }
 
-    return _shcol != 0 && _shpcol != 0 && _shfcol != 0 && _hscol != 0 && _kscol!= 0 && _kfcol != 0
+    return _shcol != 0 && _shpcol != 0 && _shfcol != 0 && _hscol != 0 && _kscol!= 0 && _kfcol != 0 && _tccol != 0 && _tqcol != 0
       && ((_mcdigis != 0 && (_vdmcsteps != 0 || _mcgen < 0) ) || !_mcdiag);
   }
 
@@ -465,12 +480,14 @@ namespace mu2e {
     _kff = TrkFitFlag();
     _kfh = HelixVal();
     _kft0 = _kft0err = 0.0;
+    _kfchisq = _kfcon = _kftq -1.0;
     _kfm = _kfmerr = 0.0;
-    _kfn = _kfna = _kfnp = _kfnap = 0;
+    _kfn = _kfna = _kfnp = _kfnap = _kfns = 0;
     // reset
     _ksf = TrkFitFlag();
     _ksh = HelixVal();
     _kst0 = _kst0err = 0.0;
+    _kschisq = _kscon = -1.0;
     _ksm = _ksmerr = 0.0;
     _ksn = _ksna = _ksnp = _ksnap = 0;
     // reset
@@ -483,11 +500,19 @@ namespace mu2e {
     _tcn = _tcnp = 0;
   }
 
-  void TrkRecoDiag::fillKalFinal(SPP const& spp,KalSeed const& kf) {
+  void TrkRecoDiag::fillKalFinal(SPP const& spp,KSI const& kfi) {
+    KalSeed const& kf = *kfi;
+    // find the corresponding TrkQual
+    size_t index = std::distance(_kfcol->begin(), kfi );
+    if(index < 0 || index >= _tqcol->size())
+      throw cet::exception("DIAG")<<"mu2e::TrkRecoDiag: FinalFit data inconsistent"<< endl;
     // fill branches
     _kff = kf.status();
     _kft0 = kf.t0().t0();
     _kft0err = kf.t0().t0Err();
+    _kfchisq = kf.chisquared();
+    _kfcon = kf.fitConsistency();
+    _kftq = _tqcol->at(index).MVAOutput();
     KalSegment const& fseg = kf.segments().front();
     _kfh = fseg.helix();
     _kfm = fseg.mom();
@@ -506,6 +531,8 @@ namespace mu2e {
 	}
       }
     }
+    // count straws
+    _kfns = kf.straws().size();
     // follow down the reco chain
     auto ksP = kf.kalSeed();
     if(ksP.isNonnull()){
@@ -519,6 +546,8 @@ namespace mu2e {
     _ksf = ks.status();
     _kst0 = ks.t0().t0();
     _kst0err = ks.t0().t0Err();
+    _kschisq = ks.chisquared();
+    _kscon = ks.fitConsistency();
     KalSegment const& fseg = ks.segments().front();
     _ksh = fseg.helix();
     _ksm = fseg.mom();

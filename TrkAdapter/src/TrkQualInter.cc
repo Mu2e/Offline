@@ -3,7 +3,7 @@
 // Original author: Dave Brown LBNL Feb 2017
 //
 #include "TrkAdapter/inc/TrkQualInter.hh"
-#include "TrkAdapter/inc/TrkFitInter.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 #include <string>
 using std::string;
 namespace mu2e {
@@ -19,13 +19,12 @@ namespace mu2e {
   }
 
 
-  void TrkQualInter::fillMVA(TrkQual& trkqual) const {
-
-
+  void TrkQualInter::computeMVA(TrkQual& trkqual) const {
+    trkqual.setMVAValue(_trkqualmva->evalMVA(trkqual.values()));
   }
 
-  void TrkQualInter::fillAll(TrkInter const& tinter, TrkQual& trkqual) const {
-
+  void TrkQualInter::fillInput(KalSeed const& kseed, TrkQual& trkqual) const {
+    
   }
 
 }

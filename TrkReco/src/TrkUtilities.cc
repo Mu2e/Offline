@@ -133,8 +133,10 @@ namespace mu2e {
 	StrawHitFlag hflag;
 	if(tsh->isActive())hflag.merge(StrawHitFlag::active);
 	if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
-	TrkStrawHitSeed seedhit(tsh->index(), tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
-	    tsh->driftRadius(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag);
+	TrkStrawHitSeed seedhit(tsh->index(), tsh->straw().id(),
+	    tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
+	    tsh->driftRadius(), tsh->poca().doca(),
+	    tsh->ambig(),tsh->driftRadiusErr(), hflag);
 	hitseeds.push_back(seedhit);
       }
     }
