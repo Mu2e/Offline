@@ -58,6 +58,10 @@
  <class name="mu2e::CaloClusterContentMC"/>
  <class name="mu2e::CaloHitSimPartMC"/>
  <class name="mu2e::CaloHitSimPartMCCollection"/>
+ <class name="art::Ptr<mu2e::CaloDigi>"/>
+ <class name="std::vector<art::Ptr<mu2e::CaloDigi> >"/>
+ <class name="art::Wrapper<mu2e::CaloDigi>"/>
+
  <class name="mu2e::ExtMonUCITofHitMCTruth"/>
  <class name="mu2e::ExtMonUCITofHitMCTruthCollection"/>
  <class name="mu2e::SimParticle"/>
@@ -208,19 +212,31 @@
 
  <class name="art::Assns<mu2e::CaloCrystalHit,mu2e::SimParticle,art::Ptr<mu2e::CaloShowerSim> >" />
  <class name="art::Assns<mu2e::CaloCrystalHit,mu2e::SimParticle,void >" />
+ <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,void >" />
  <class name="art::Wrapper< art::Assns<mu2e::CaloCrystalHit,mu2e::SimParticle,art::Ptr<mu2e::CaloShowerSim> > >" /> 
+ <class name="art::Wrapper< art::Assns<mu2e::CaloCrystalHit,mu2e::SimParticle,void > >" /> 
+ <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,void > >" /> 
+
  <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,art::Ptr<mu2e::CaloShowerSim> >" />
  <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,void >" />
+ <class name="art::Assns<mu2e::CaloCrystalHit,mu2e::SimParticle,void >" />
  <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,art::Ptr<mu2e::CaloShowerSim> > >" /> 
+ <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,void > >" /> 
+ <class name="art::Wrapper< mu2e::CaloCrystalHit,art::Assns<mu2e::SimParticle,void > >" /> 
+
  <class name="art::Assns<mu2e::CaloCluster,mu2e::SimParticle,art::Ptr<mu2e::CaloShowerSim> >" />
  <class name="art::Assns<mu2e::CaloCluster,mu2e::SimParticle,void >" />
+ <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCluster,void >" />
  <class name="art::Wrapper< art::Assns<mu2e::CaloCluster,mu2e::SimParticle,art::Ptr<mu2e::CaloShowerSim> > >" />
+ <class name="art::Wrapper< art::Assns<mu2e::CaloCluster,mu2e::SimParticle,void > >" />
+ <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCluster,void > >" />
+
  <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCluster,art::Ptr<mu2e::CaloShowerSim> >" />
  <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCluster,void >" />
+ <class name="art::Assns<mu2e::CaloCluster,mu2e::SimParticle,void >" />
  <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCluster,art::Ptr<mu2e::CaloShowerSim> > >" />
- <class name="art::Ptr<mu2e::CaloDigi>"/>
- <class name="std::vector<art::Ptr<mu2e::CaloDigi> >"/>
- <class name="art::Wrapper<mu2e::CaloDigi>"/>
+ <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCluster,void > >" />
+ <class name="art::Wrapper< art::Assns<mu2e::CaloCluster,mu2e::SimParticle,void > >" />
 
  <class name="mu2e::CrvPhotonArrivals" />
  <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvPhotonArrivals>" />
