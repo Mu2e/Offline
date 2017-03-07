@@ -6,7 +6,7 @@
 #include <iostream>
 using namespace std;
 
-TrkRecoDiag::TrkRecoDiag(TTree *tree, double norm) : _chain(0) ,_tffval(32,0), _norm(norm),
+TrkRecoDiag::TrkRecoDiag(TTree *tree, double norm) : fChain(0) ,_tffval(32,0), _norm(norm),
 _eff(0), _acc(0), _effcan(0)
 {
 // build branches 
@@ -24,15 +24,15 @@ _eff(0), _acc(0), _effcan(0)
 
 void TrkRecoDiag::Loop()
 {
-   if (_chain == 0) return;
+   if (fChain == 0) return;
 
-   Long64_t nentries = _chain->GetEntries();
+   Long64_t nentries = fChain->GetEntries();
 
    Long64_t nbytes = 0, nb = 0;
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
-      nb = _chain->GetEntry(jentry);   nbytes += nb;
+      nb = fChain->GetEntry(jentry);   nbytes += nb;
       std::vector<bool> effcuts, acccuts;
       effcuts.push_back(true); acccuts.push_back(effcuts.back());// 0 bin counts number of events
       effcuts.push_back(ndigi >= 15); // events with at least 15 digis from the primary particle
@@ -50,7 +50,7 @@ void TrkRecoDiag::Loop()
       effcuts.push_back((hsf__value&_tffval[helixOK])>0);acccuts.push_back(effcuts.back());
       effcuts.push_back(hsna > 10 && hmom > 270.0 && hmom < 390.0);acccuts.push_back(effcuts.back());
       effcuts.push_back((ksf__value&_tffval[seedOK])>0);acccuts.push_back(effcuts.back());
-      effcuts.push_back(ksm>85.0 && ksm < 110.0);acccuts.push_back(effcuts.back());
+      effcuts.push_back(ksm>85.0 && ksm < 110.0 && ksmerr < 1.5 && kschisq/(ksna-5)<10);acccuts.push_back(effcuts.back());
       effcuts.push_back((kff__value&_tffval[kalmanOK])>0);acccuts.push_back(effcuts.back());
 
       // efficiency 
@@ -94,6 +94,8 @@ void TrkRecoDiag::Loop()
 	  _shlam->Fill(hsh__lambda);
 	  _ssna->Fill(ksna);
 	  _ssmom->Fill(ksm);
+	  _ssmerr->Fill(ksmerr);
+	  _sschisq->Fill(kschisq/(ksna-5));
 	  if(kalfit){
 	    _fhn->Fill(hsn);
 	    _fhna->Fill(hsna);
@@ -104,6 +106,8 @@ void TrkRecoDiag::Loop()
 	    _fhlam->Fill(hsh__lambda);
 	    _fsna->Fill(ksna);
 	    _fsmom->Fill(ksm);
+	    _fsmerr->Fill(ksmerr);
+	    _fschisq->Fill(kschisq/(ksna-5));
 	  }
 	}
       }
@@ -138,8 +142,8 @@ void TrkRecoDiag::createHistos() {
   _eff->SetMarkerStyle(20);
   _eff->Sumw2();
   _eff->SetMaximum(1.0);
-  _eff->SetLineColor(_chain->GetLineColor());
-  _eff->SetMarkerColor(_chain->GetLineColor());
+  _eff->SetLineColor(fChain->GetLineColor());
+  _eff->SetMarkerColor(fChain->GetLineColor());
 
   for(unsigned ibin=0; ibin< accbins.size(); ++ibin){
     _acc->GetXaxis()->SetBinLabel(ibin+1,accbins[ibin].c_str());
@@ -148,8 +152,8 @@ void TrkRecoDiag::createHistos() {
   _acc->SetMarkerStyle(20);
   _acc->Sumw2();
   _acc->SetMaximum(1.0);
-  _acc->SetLineColor(_chain->GetLineColor());
-  _acc->SetMarkerColor(_chain->GetLineColor());
+  _acc->SetLineColor(fChain->GetLineColor());
+  _acc->SetMarkerColor(fChain->GetLineColor());
 
   _hn = new TH1F("hn",title("Helix NHits"),81,-0.5,80.5);
   _shn = new TH1F("shn",title("Helix NHits"),81,-0.5,80.5);
@@ -202,7 +206,6 @@ void TrkRecoDiag::createHistos() {
   _fhrad->SetLineColor(kRed);
   _fhlam->SetLineColor(kRed);
   _fhmom->SetLineColor(kRed);
-  
 
   _ssna = new TH1F("ssna",title("Seed NActive"),61,-0.5,60.5);
   _fsna = new TH1F("fsna",title("Seed NActive"),61,-0.5,60.5);
@@ -210,16 +213,27 @@ void TrkRecoDiag::createHistos() {
   _ssmom = new TH1F("ssmom",title("Seed mom;MeV/c"),101,50.0,150.0);
   _fsmom = new TH1F("fsmom",title("Seed mom;MeV/c"),101,50.0,150.0);
 
+  _ssmerr = new TH1F("ssmerr",title("Seed mom err;MeV/c"),101,0.0,10.0);
+  _fsmerr = new TH1F("fsmerr",title("Seed mom err;MeV/c"),101,0.0,10.0);
+
+  _sschisq = new TH1F("sschisq",title("Seed chisq/dof"),101,0.0,25.0);
+  _fschisq = new TH1F("fschisq",title("Seed chisq/dof"),101,0.0,25.0);
+  
   _ssna->SetLineColor(kBlue);
   _ssmom->SetLineColor(kBlue);
+  _ssmerr->SetLineColor(kBlue);
+  _sschisq->SetLineColor(kBlue);
 
   _fsna->SetLineColor(kRed);
   _fsmom->SetLineColor(kRed);
+  _fsmerr->SetLineColor(kRed);
+  _fschisq->SetLineColor(kRed);
+
 }
 
 const char* TrkRecoDiag::title(const char* titl) {
   static string stitle;
-  stitle = string(_chain->GetTitle());
+  stitle = string(fChain->GetTitle());
   stitle += string(titl);
   return stitle.c_str();
 }
