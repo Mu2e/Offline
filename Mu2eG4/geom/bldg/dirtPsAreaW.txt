@@ -22,11 +22,11 @@ vector<double> dirt.psArea.W.xPositions = {
 };
 
 vector<double> dirt.psArea.W.yPositions = {
-  6858,   // p8
-  3338.73,   // p9
+  7086.59,   // p8
+  2839,   // p9
   1704.22,   // q4
   1704.22,   // q4_to_W
-  6858   // p8_to_W
+  7086.59   // p8_to_W
 };
 
 // Local Variables:

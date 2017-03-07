@@ -22,7 +22,11 @@ vector<double> dirt.psArea.upper2.N.xPositions = {
   -17500.7,   // h3
   -50000,   // h3_to_W
   -50000,   // NWcorner
-  -2006.6   // h0_to_N
+  -2006.6,   // h0_to_N
+  -2006.6,   // To NRetWall
+  -12319,    // NW corner NRetWall
+  -12319,    // SW corner WextWall
+  -2006.6     // along NRetWall S face
 };
 
 vector<int>    dirt.psArea.upper2.N.yreplace   = { 5, 6 }; 
@@ -33,7 +37,11 @@ vector<double> dirt.psArea.upper2.N.yPositions = {
   2083.23,   // h3
   2083.23,   // h3_to_W
   50000,   // NWcorner
-  50000   // h0_to_N
+  50000,   // h0_to_N
+  10312.41, // To NRetWall
+  10312.41, // NW corner NRetWall
+  9702.79,  // SW corner NRetWall
+  9702.79   // last point on NRetWall S face
 };
 
 // Local Variables:

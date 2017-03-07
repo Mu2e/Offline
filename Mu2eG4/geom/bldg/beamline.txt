@@ -13,7 +13,7 @@ double building.beamline.offsetFromMu2eOrigin.z   = -3581.4;
 double building.beamline.yHalfThickness           = 2667;
 
 vector<double> building.beamline.xPositions = {
-  2787.8,   // J
+  9312.51,   // J 
   15158.4,   // K
   15086.3,   // L
   25744.7,   // M
@@ -25,14 +25,11 @@ vector<double> building.beamline.xPositions = {
   25934,   // o4
   14485.9,   // o5
   14558,   // o6
-  3074.63,   // o7dirt
-  3073.39,   // O7
-  2463.81,   // O8
-  2463.79   // O9
+  8712.11   // o7dirt
 };
 
 vector<double> building.beamline.yPositions = {
-  7842.4,   // J
+  9436.97,   // J
   10853.4,   // K
   11149.6,   // L
   13743.9,   // M
@@ -44,10 +41,7 @@ vector<double> building.beamline.yPositions = {
   14469.7,   // o4
   11683.1,   // o5
   11387,   // o6
-  8591.89,   // o7dirt
-  8591.59,   // O7
-  8443.22,   // O8
-  8166.4   // O9
+  9970.57   // o7dirt
 };
 
 // Local Variables:
