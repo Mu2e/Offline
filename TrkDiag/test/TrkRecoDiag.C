@@ -7,7 +7,10 @@
 using namespace std;
 
 TrkRecoDiag::TrkRecoDiag(TTree *tree, double norm) : fChain(0) ,_tffval(32,0), _norm(norm),
-_eff(0), _acc(0), _effcan(0)
+  _eff(0), _acc(0), _effcan(0), _tcseln(10), 
+  _hseln(10), _hselminm(270.0),_hselmaxm(390.0),
+  _sselminm(95.0), _sselmaxm(110.0), _sselmerr(1.5), _sselchi2(10.0), 
+  _pseltq(0.4), _pselminm(95.0), _pselmaxm(110.0)
 {
 // build branches 
    Init(tree);
@@ -45,13 +48,14 @@ void TrkRecoDiag::Loop()
       float hrmax  = hsh__rcent + hsh__radius;
       float hmom = sqrt(hsh__radius*hsh__radius + hsh__lambda*hsh__lambda);
       effcuts.push_back(mccost > 0.45 && mccost < highcost ); // track direction (with buffer)
-      effcuts.push_back(tcn > 10 ); acccuts.push_back(effcuts.back());// reconstructed time cluster associated with primary track
+      effcuts.push_back(tcn>_tcseln); acccuts.push_back(effcuts.back());// reconstructed time cluster associated with primary track
       effcuts.push_back((hsf__value&_tffval[circleOK])>0);
       effcuts.push_back((hsf__value&_tffval[helixOK])>0);acccuts.push_back(effcuts.back());
-      effcuts.push_back(hsna > 10 && hmom > 270.0 && hmom < 390.0);acccuts.push_back(effcuts.back());
+      effcuts.push_back(hsna>_hseln && hmom < _hselmaxm && hmom > _hselminm);acccuts.push_back(effcuts.back());
       effcuts.push_back((ksf__value&_tffval[seedOK])>0);acccuts.push_back(effcuts.back());
-      effcuts.push_back(ksm>85.0 && ksm < 110.0 && ksmerr < 1.5 && kschisq/(ksna-5)<10);acccuts.push_back(effcuts.back());
+      effcuts.push_back(ksm > _sselminm && ksm < _sselmaxm && kschisq/(ksna-5)<_sselchi2);acccuts.push_back(effcuts.back());
       effcuts.push_back((kff__value&_tffval[kalmanOK])>0);acccuts.push_back(effcuts.back());
+      effcuts.push_back(kfm > _pselminm && kfm < _pselmaxm && kftq > _pseltq);acccuts.push_back(effcuts.back());
 
       // efficiency 
       if((int)effcuts.size() != _eff->GetNbinsX())
@@ -76,6 +80,8 @@ void TrkRecoDiag::Loop()
       bool helixfit = (hsf__value&_tffval[helixOK])>0;
       bool seedfit = (ksf__value&_tffval[seedOK])>0;
       bool kalfit = (kff__value&_tffval[kalmanOK])>0;
+      double kndf = kschisq/(ksna-5);
+      bool psel = kfm > _pselminm && kfm < _pselmaxm && kftq > _pseltq;
       if(helixfit){
 	_hn->Fill(hsn);
 	_hna->Fill(hsna);
@@ -95,7 +101,7 @@ void TrkRecoDiag::Loop()
 	  _ssna->Fill(ksna);
 	  _ssmom->Fill(ksm);
 	  _ssmerr->Fill(ksmerr);
-	  _sschisq->Fill(kschisq/(ksna-5));
+	  _sschisq->Fill(kndf);
 	  if(kalfit){
 	    _fhn->Fill(hsn);
 	    _fhna->Fill(hsna);
@@ -107,7 +113,20 @@ void TrkRecoDiag::Loop()
 	    _fsna->Fill(ksna);
 	    _fsmom->Fill(ksm);
 	    _fsmerr->Fill(ksmerr);
-	    _fschisq->Fill(kschisq/(ksna-5));
+	    _fschisq->Fill(kndf);
+	    if(psel){
+	      _phn->Fill(hsn);
+	      _phna->Fill(hsna);
+	      _phd0->Fill(hd0);
+	      _phrmax->Fill(hrmax);
+	      _phmom->Fill(hmom);
+	      _phrad->Fill(hsh__radius);
+	      _phlam->Fill(hsh__lambda);
+	      _psna->Fill(ksna);
+	      _psmom->Fill(ksm);
+	      _psmerr->Fill(ksmerr);
+	      _pschisq->Fill(kndf);
+	    }
 	  }
 	}
       }
@@ -132,6 +151,7 @@ void TrkRecoDiag::createHistos() {
   effbins.push_back("Seed Fit");accbins.push_back(effbins.back());
   effbins.push_back("Seed Cuts");accbins.push_back(effbins.back());
   effbins.push_back("Kalman Fit");accbins.push_back(effbins.back());
+  effbins.push_back("Physics Sel");accbins.push_back(effbins.back());
 
   _eff = new TH1F("eff",title("Efficiency"),effbins.size(),-0.5,effbins.size()-0.5);
   _acc = new TH1F("acc",title("Acceptance"),accbins.size(),-0.5,accbins.size()-0.5);
@@ -158,30 +178,37 @@ void TrkRecoDiag::createHistos() {
   _hn = new TH1F("hn",title("Helix NHits"),81,-0.5,80.5);
   _shn = new TH1F("shn",title("Helix NHits"),81,-0.5,80.5);
   _fhn = new TH1F("fhn",title("Helix NHits"),81,-0.5,80.5);
+  _phn = new TH1F("phn",title("Helix NHits"),81,-0.5,80.5);
 
   _hna = new TH1F("hna",title("Helix NActive"),61,-0.5,60.5);
   _shna = new TH1F("shna",title("Helix NActive"),61,-0.5,60.5);
   _fhna = new TH1F("fhna",title("Helix NActive"),61,-0.5,60.5);
+  _phna = new TH1F("phna",title("Helix NActive"),61,-0.5,60.5);
 
   _hd0 = new TH1F("hd0",title("Helix d0;mm"),101,-150.0,250.0);
   _shd0 = new TH1F("shd0",title("Helix d0;mm"),101,-150.0,250.0);
   _fhd0 = new TH1F("fhd0",title("Helix d0;mm"),101,-150.0,250.0);
+  _phd0 = new TH1F("phd0",title("Helix d0;mm"),101,-150.0,250.0);
 
   _hrmax = new TH1F("hrmax",title("Helix rmax;mm"),101,400.0,700.0);
   _shrmax = new TH1F("shrmax",title("Helix rmax;mm"),101,400.0,700.0);
   _fhrmax = new TH1F("fhrmax",title("Helix rmax;mm"),101,400.0,700.0);
+  _phrmax = new TH1F("phrmax",title("Helix rmax;mm"),101,400.0,700.0);
 
   _hrad = new TH1F("hrad",title("Helix rad;mm"),101,100.0,400.0);
   _shrad = new TH1F("shrad",title("Helix rad;mm"),101,100.0,400.0);
   _fhrad = new TH1F("fhrad",title("Helix rad;mm"),101,100.0,400.0);
+  _phrad = new TH1F("phrad",title("Helix rad;mm"),101,100.0,400.0);
 
   _hlam = new TH1F("hlambda",title("Helix lambda;mm"),101,100.0,400.0);
   _shlam = new TH1F("shlambda",title("Helix lambda;mm"),101,100.0,400.0);
   _fhlam = new TH1F("fhlambda",title("Helix lambda;mm"),101,100.0,400.0);
+  _phlam = new TH1F("phlambda",title("Helix lambda;mm"),101,100.0,400.0);
 
   _hmom = new TH1F("hmom",title("Helix mom;mm"),101,200.0,500.0);
   _shmom = new TH1F("shmom",title("Helix mom;mm"),101,200.0,500.0);
   _fhmom = new TH1F("fhmom",title("Helix mom;mm"),101,200.0,500.0);
+  _phmom = new TH1F("phmom",title("Helix mom;mm"),101,200.0,500.0);
 
   _hn->SetLineColor(kBlack);
   _hna->SetLineColor(kBlack);
@@ -207,17 +234,29 @@ void TrkRecoDiag::createHistos() {
   _fhlam->SetLineColor(kRed);
   _fhmom->SetLineColor(kRed);
 
+  _phn->SetLineColor(kGreen);
+  _phna->SetLineColor(kGreen);
+  _phd0->SetLineColor(kGreen);
+  _phrmax->SetLineColor(kGreen);
+  _phrad->SetLineColor(kGreen);
+  _phlam->SetLineColor(kGreen);
+  _phmom->SetLineColor(kGreen);
+
   _ssna = new TH1F("ssna",title("Seed NActive"),61,-0.5,60.5);
   _fsna = new TH1F("fsna",title("Seed NActive"),61,-0.5,60.5);
+  _psna = new TH1F("psna",title("Seed NActive"),61,-0.5,60.5);
 
   _ssmom = new TH1F("ssmom",title("Seed mom;MeV/c"),101,50.0,150.0);
   _fsmom = new TH1F("fsmom",title("Seed mom;MeV/c"),101,50.0,150.0);
+  _psmom = new TH1F("psmom",title("Seed mom;MeV/c"),101,50.0,150.0);
 
   _ssmerr = new TH1F("ssmerr",title("Seed mom err;MeV/c"),101,0.0,10.0);
   _fsmerr = new TH1F("fsmerr",title("Seed mom err;MeV/c"),101,0.0,10.0);
+  _psmerr = new TH1F("psmerr",title("Seed mom err;MeV/c"),101,0.0,10.0);
 
   _sschisq = new TH1F("sschisq",title("Seed chisq/dof"),101,0.0,25.0);
   _fschisq = new TH1F("fschisq",title("Seed chisq/dof"),101,0.0,25.0);
+  _pschisq = new TH1F("pschisq",title("Seed chisq/dop"),101,0.0,25.0);
   
   _ssna->SetLineColor(kBlue);
   _ssmom->SetLineColor(kBlue);
@@ -228,6 +267,11 @@ void TrkRecoDiag::createHistos() {
   _fsmom->SetLineColor(kRed);
   _fsmerr->SetLineColor(kRed);
   _fschisq->SetLineColor(kRed);
+
+  _psna->SetLineColor(kGreen);
+  _psmom->SetLineColor(kGreen);
+  _psmerr->SetLineColor(kGreen);
+  _pschisq->SetLineColor(kGreen);
 
 }
 

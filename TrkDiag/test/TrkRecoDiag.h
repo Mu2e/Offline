@@ -195,12 +195,21 @@ public :
   TH1F *_eff, *_acc; // signal efficiency , acceptance
 // trigger study distributions
   TH1F *_hn, *_hna, *_hd0, *_hrmax, *_hrad, *_hlam, *_hmom;
-  TH1F *_shn, *_shna, *_shd0, *_shrmax, *_shrad, *_shlam, *_shmom, *_ssmom, *_ssna;
-  TH1F *_fhn, *_fhna, *_fhd0, *_fhrmax, *_fhrad, *_fhlam, *_fhmom, *_fsmom, *_fsna;
-  TH1F *_sschisq, *_ssmerr;
-  TH1F *_fschisq, *_fsmerr;
+  TH1F *_shn, *_shna, *_shd0, *_shrmax, *_shrad, *_shlam, *_shmom;
+  TH1F *_fhn, *_fhna, *_fhd0, *_fhrmax, *_fhrad, *_fhlam, *_fhmom;
+  TH1F *_phn, *_phna, *_phd0, *_phrmax, *_phrad, *_phlam, *_phmom;
+  TH1F *_ssmom, *_ssna, *_sschisq, *_ssmerr;
+  TH1F *_fsmom, *_fsna, *_fschisq, *_fsmerr; 
+  TH1F *_psmom, *_psna, *_pschisq, *_psmerr; 
   
   TCanvas* _effcan;
+
+  // cuts for defining 'trigger' selections
+  int _tcseln;
+  int _hseln;
+  double _hselminm, _hselmaxm;
+  double _sselminm, _sselmaxm, _sselmerr, _sselchi2;
+  double _pseltq, _pselminm, _pselmaxm;
 
   void createHistos();
   const char* title(const char*);
