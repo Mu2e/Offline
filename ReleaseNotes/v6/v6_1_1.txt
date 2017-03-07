@@ -2,6 +2,35 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_1_1
 
+3) dnbrow01 7 March 2017
+   Include Aaron Hill's additions of the North Retaining Wall, extension, 
+   and footer, and the remote handling room's hatch, lid, shielding block,
+   etc.  Modify dirt to avoid overlaps with new objects.
+   new file:   Mu2eG4/geom/bldg/NRetainingWallAboveRH.txt
+   new file:   Mu2eG4/geom/bldg/NRetainingWallExtensionFoot1.txt
+   new file:   Mu2eG4/geom/bldg/NRetainingWallWExtension.txt
+   modified:   Mu2eG4/geom/bldg/beamline.txt
+   modified:   Mu2eG4/geom/bldg/dirtBeamlineBerm.txt
+   modified:   Mu2eG4/geom/bldg/dirtBeamlineSlab.txt
+   modified:   Mu2eG4/geom/bldg/dirtBeamlineSlab2N.txt
+   modified:   Mu2eG4/geom/bldg/dirtBeamlineUpper.txt
+   modified:   Mu2eG4/geom/bldg/dirtExtMonCeiling.txt
+   modified:   Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2N.txt
+   new file:   Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2NBeyond.txt
+   modified:   Mu2eG4/geom/bldg/dirtPsAreaDirtSlabN.txt
+   modified:   Mu2eG4/geom/bldg/dirtPsAreaUpper2N.txt
+   modified:   Mu2eG4/geom/bldg/dirtPsAreaUpperN.txt
+   modified:   Mu2eG4/geom/bldg/dirtPsAreaW.txt
+   modified:   Mu2eG4/geom/bldg/dirtTsDsAreaFirstFloorEdgeN.txt
+   modified:   Mu2eG4/geom/bldg/dirtUpToGradeLevelW.txt
+   new file:   Mu2eG4/geom/bldg/dirtWallFill1.txt
+   new file:   Mu2eG4/geom/bldg/dirtWallFill2.txt
+   new file:   Mu2eG4/geom/bldg/remoteHandlingHatchBlock.txt
+   new file:   Mu2eG4/geom/bldg/remoteHandlingHatchLid.txt
+   new file:   Mu2eG4/geom/bldg/remoteHandlingHatchLower.txt
+   new file:   Mu2eG4/geom/bldg/remoteHandlingHatchUpper.txt
+   modified:   Mu2eG4/geom/mu2eHall.txt
+
 2) genser, rlc, gandr March 2, 2017
    Remove the long deprecated "user" block from services.
 

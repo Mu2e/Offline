@@ -12,7 +12,7 @@ double dirt.beamline.berm.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.beamline.berm.yHalfThickness           = 1244.6;
 
-vector<int>    dirt.beamline.berm.xreplace   = { 8, 9, 11, 12 }; 
+vector<int>    dirt.beamline.berm.xreplace   = { 8, 9, 25, 26 }; 
 vector<double> dirt.beamline.berm.xPositions = {
   45745.4,   // a
   -2921,   // b
@@ -24,12 +24,26 @@ vector<double> dirt.beamline.berm.xPositions = {
   -18196.8,   // p5
   -50000,   // p5_to_W
   -50000,   // NWcorner
-  -2921,   // b_to_N
+  -20482.51,   // P2 from WextWall
+  -20398.21,   // P3 from WextWall
+  -14706.6,   // P4 from WextWall
+  -12319,   // P5    from WextWall
+  -12319,   // from NRetWall
+  3708.4,   // from NRetWall
+  3708.4,   // from NRetWall
+  3403.6,   // even with wall of remote hatch
+  3403.6,   // rem hatch corner SW
+  9550.5,   // SE corner rem hatch
+  9550.5,   // NE corner rem hatch
+  3403.6,   // NW corner rem hatch
+  3403.5,   // Back against wall
+  -2000.0,  // Follow Wall back
+  -2000.0,  // arbitrary
   50000,   // NEcorner
   50000   // a_to_E
 };
 
-vector<int>    dirt.beamline.berm.yreplace   = { 9, 10, 11 }; 
+vector<int>    dirt.beamline.berm.yreplace   = { 9, 25 }; 
 vector<double> dirt.beamline.berm.yPositions = {
   2438.4,   // a
   2438.4,   // b
@@ -41,7 +55,21 @@ vector<double> dirt.beamline.berm.yPositions = {
   -7505.7,   // p5
   -7505.7,   // p5_to_W
   50000,   // NWcorner
-  50000,   // b_to_N
+  8877.43,   // P2 from WextWall
+  8532.0,   // P3 from WextWall
+  9956.8,   // P4  from WextWall
+  9956.8,   // P5   from WextWall
+  9702.8,   // from NRetWall
+  9702.8,   // from NRetWall
+  10312.4,  // from NRetWall
+  10312.4,  // same
+  13055.6,  // SW corner rem hatch
+  13055.6,  // SE corner rem hatch
+  16459.2,  // NE corner rem hatch
+  16459.2,  // NW corner rem hatch
+  10312.5,  // back to wall
+  10312.5,  // follow wall back
+  20000.0,  // arbitrary
   50000,   // NEcorner
   2438.4   // a_to_E
 };

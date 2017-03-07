@@ -40,10 +40,20 @@ vector<double> dirt.beamline.slab.xPositions = {
   45745.4,   // y4
   50000,   // y4_to_E
   50000,   // NEcorner
-  -2006.6   // h1_to_N
+  9550.51, // E wall of rem hatch
+  9550.51, // SE corner rem hatch
+  3403.59, // SW corner rem hatch
+  3403.59, // NW corner rem hatch
+  9550.5,  // NE corner rem hatch
+  9550.5,  // rem hatch to N
+  -2006.6,   // h1_to_N
+  -2006.6,   // to NRetWall
+  3708.41,  // NE corner NRetWall
+  3708.41,  // SE corner NRetWall
+  -2006.6
 };
 
-vector<int>    dirt.beamline.slab.yreplace   = { 25, 26 }; 
+vector<int>    dirt.beamline.slab.yreplace   = { 25, 26, 31, 32 }; 
 vector<double> dirt.beamline.slab.yPositions = {
   6502.4,   // h1
   2438.4,   // h2
@@ -71,7 +81,17 @@ vector<double> dirt.beamline.slab.yPositions = {
   2616.2,   // y4
   2616.2,   // y4_to_E
   50000,   // NEcorner
-  50000   // h1_to_N
+  50000,   // N of rem hatch E wall
+  13055.59, // SE corner rem hatch
+  13055.59, // SW corner rem hatch
+  16459.21, // NW corner rem hatch
+  16459.21, // NE corner rem hatch
+  50000,    // NE corner to N
+  50000,   // h1_to_N
+  10312.5,  // down to wall
+  10312.5,  // NE corner NRetWall
+  9702.79,  // SE corner NRetWall
+  9702.79   // last point
 };
 
 // Local Variables:

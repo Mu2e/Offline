@@ -17,18 +17,24 @@ vector<double> dirt.psArea.dirtSlab2.N.xPositions = {
   -6251.7,   // DNB add
   -16032.1,   // e6
   -17108.7,   // e7
-  -17108.7,   // e7_to_N
+  -17108.7,   // up to WextWallFoot
+  -14503.4,   // To elbow of WextWallFoot
+  -12319,     // To end of WextWallFoot
+  -12319,     // SW corner NRetWall
   -1270   // c_to_N
 };
 
-vector<int>    dirt.psArea.dirtSlab2.N.yreplace   = { 4, 5 }; 
+//vector<int>    dirt.psArea.dirtSlab2.N.yreplace   = { 4, 5 }; 
 vector<double> dirt.psArea.dirtSlab2.N.yPositions = {
   0,   // c
   0, // DNB add
   -2683.4,   // e6
   1760.03,   // e7
-  50000,   // e7_to_N
-  50000   // c_to_N
+  6599.68,   // up to WextWallFoot
+  7264.39,   // To elbow of WextWallFoot
+  7264.39,   // To end of WextWallFoot
+  9702.79,   // SW corner NRetWall
+  9702.79   // c_to_N
 };
 
 // Local Variables:

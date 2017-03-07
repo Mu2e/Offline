@@ -12,22 +12,42 @@ double dirt.tsDsArea.firstFloorEdge.N.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.tsDsArea.firstFloorEdge.N.yHalfThickness           = 203.2;
 
-vector<int>    dirt.tsDsArea.firstFloorEdge.N.xreplace   = { 4, 5 }; 
+vector<int>    dirt.tsDsArea.firstFloorEdge.N.xreplace   = { 14, 15 }; 
 vector<double> dirt.tsDsArea.firstFloorEdge.N.xPositions = {
   45745.4,   // f2
   45745.4,   // g1
   -2921,   // g
+  -2921,   // N to NRetWall
+  3708.41, // SE corner NRetWall
+  3708.41, // NE corner NRetWall
+  -2921,   // Back along NRetWall
   -2921,   // g_to_N
+  9550.5,  // N of NE corner rem hatch
+  9550.5,  // NE corner rem hatch
+  3403.59, // NW corner rem hatch
+  3403.59, // SW corner rem hatch
+  9550.51, // SE corner rem hatch
+  9550.51, // N of rem hatch E wall
   50000,   // NEcorner
   50000   // f2_to_E
 };
 
-vector<int>    dirt.tsDsArea.firstFloorEdge.N.yreplace   = { 3, 4 }; 
+vector<int>    dirt.tsDsArea.firstFloorEdge.N.yreplace   = { 7, 8, 13, 14 }; 
 vector<double> dirt.tsDsArea.firstFloorEdge.N.yPositions = {
   -8661.4,   // f2
   2438.4,   // g1
   2438.4,   // g
+  9702.79,  // N to NRetWall
+  9702.79,  // SE corner NRetWall
+  10312.5,  // NE corner NRetWall
+  10312.5,  // Ball along NRetWall
   50000,   // g_to_N
+  50000,   // N or NE corner rem hatch
+  16459.21, // NE corner rem hatch
+  16459.21, // NW corner rem hatch
+  13055.59, // SW corner rem hatch
+  13055.59, // SE corner rem hatch
+  50000,   // N of E wall rem hatch
   50000,   // NEcorner
   -8661.4   // f2_to_E
 };

@@ -93,6 +93,10 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Mu2eG4/geom/bldg/remoteHandlingCeiling.txt"
 #include "Mu2eG4/geom/bldg/remoteHandlingCeilingSliver.txt"
 #include "Mu2eG4/geom/bldg/remoteHandlingDoorFrame.txt"
+#include "Mu2eG4/geom/bldg/remoteHandlingHatchBlock.txt"
+#include "Mu2eG4/geom/bldg/remoteHandlingHatchLower.txt"
+#include "Mu2eG4/geom/bldg/remoteHandlingHatchUpper.txt"
+#include "Mu2eG4/geom/bldg/remoteHandlingHatchLid.txt"
 #include "Mu2eG4/geom/bldg/tsAreaAlcoveLowerRoof.txt"
 #include "Mu2eG4/geom/bldg/tsAreaAlcoveVerticalN.txt"
 #include "Mu2eG4/geom/bldg/tsAreaAlcoveVerticalS.txt"
@@ -109,6 +113,9 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Mu2eG4/geom/bldg/WTSareaCF2.txt"
 #include "Mu2eG4/geom/bldg/WTSareaCF2notch.txt"
 #include "Mu2eG4/geom/bldg/WTSareaCFbeam.txt"
+#include "Mu2eG4/geom/bldg/NRetainingWallAboveRH.txt"
+#include "Mu2eG4/geom/bldg/NRetainingWallWExtension.txt"
+#include "Mu2eG4/geom/bldg/NRetainingWallExtensionFoot1.txt"
 #include "Mu2eG4/geom/bldg/SRetainingWall.txt"
 #include "Mu2eG4/geom/bldg/SRetainingWallFoot.txt"
 
@@ -195,6 +202,10 @@ vector<string> bldg.prefix.list = {
    "building.remote.handling.ceiling",
    "building.remote.handling.ceiling.Sliver",
    "building.remote.handling.door.frame",
+   "building.remote.handling.hatch.block",
+   "building.remote.handling.Hatch.Lower",
+   "building.remote.handling.Hatch.Upper",
+   "building.remote.handling.Hatch.Lid",
    "building.tsArea.W",
    "building.tsArea.alcove.lowerRoof",
    "building.tsArea.alcove.vertical.N",
@@ -211,6 +222,9 @@ vector<string> bldg.prefix.list = {
    "building.W.TSareaCF2",
    "building.W.TSareaCF2notch",
    "building.W.TSareaCFbeam",
+   "building.N.retaining.Wall.aboveRH",
+   "building.N.retaining.Wall.W.extension",
+   "building.N.retaining.Wall.extension.foot.1",
    "building.S.retaining.Wall",
    "building.S.retaining.Wall.Foot"
 };
@@ -257,6 +271,7 @@ vector<string> bldg.prefix.list = {
 #include "Mu2eG4/geom/bldg/dirtPassageE.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsArea.txt"
 #include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2N.txt"
+#include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2NBeyond.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2S.txt"
 #include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlabN.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlabS.txt"
@@ -286,6 +301,8 @@ vector<string> bldg.prefix.list = {
 #include "Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaRWallFootLevel.txt"
 #include "Mu2eG4/geom/bldg/dirtTempSofRetWallTop.txt"
 #include "Mu2eG4/geom/bldg/dirtSRetainingWallFoot.txt"
+#include "Mu2eG4/geom/bldg/dirtWallFill1.txt"
+#include "Mu2eG4/geom/bldg/dirtWallFill2.txt"
 
 vector<string> dirt.prefix.list = { 
   "dirt.beamline",
@@ -324,6 +341,7 @@ vector<string> dirt.prefix.list = {
   "dirt.psArea.W",
   "dirt.psArea.dirtSlab.N",
   "dirt.psArea.dirtSlab2.N",
+  "dirt.psArea.dirtSlab2.N.Beyond",
   "dirt.psArea.upper.N",
   "dirt.psArea.upper2.N",
   "dirt.psArea.upper2.sliver.N",
@@ -345,7 +363,9 @@ vector<string> dirt.prefix.list = {
   "dirt.tempDirt.backfill.psArea.Lower",
   "dirt.tempDirt.backfill.psArea.RWallFootLevel",
   "dirt.Temp.SofRetWallTop",
-  "dirt.S.retaining.Wall.Foot"
+  "dirt.S.retaining.Wall.Foot",
+  "dirt.WallFill.1",
+  "dirt.WallFill.2"
 };
 
   //  "dirt.extMon.upper",
