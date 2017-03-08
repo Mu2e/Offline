@@ -30,7 +30,7 @@
 #include "DataProducts/inc/Helicity.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/HelixSeedCollection.hh"
+#include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 // BaBar
@@ -40,10 +40,6 @@
 // Mu2e BaBar
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/KalFit.hh"
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
-#include "TrkPatRec/inc/PayloadSaver.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"

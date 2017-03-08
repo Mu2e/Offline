@@ -29,11 +29,11 @@
 #include "TrkDiag/inc/TrkMCTools.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
 // data
-#include "RecoDataProducts/inc/TimeClusterCollection.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/HelixSeedCollection.hh"
+#include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
@@ -77,7 +77,7 @@ namespace mu2e {
       int _diag;
       bool _mcdiag;
       int _mcgen, _mcproc, _mcpdg; // targets for MC match
-      TrkFitFlag _goodkf, _goodks, _goodhs, _goodtc; // define a good track
+      TrkFitFlag _goodkf, _goodks, _goodhs; // define a good track
      // event object tags
       art::InputTag _shTag;
       art::InputTag _shpTag;
@@ -140,7 +140,7 @@ namespace mu2e {
       TCI findMCMatch(SPP const& spp,TimeClusterCollection const& tcc,unsigned& nprimary);
       KSI findBestReco(KalSeedCollection const& ksc, TrkFitFlag const& goodreco);
       HSI findBestReco(HelixSeedCollection const& ksc, TrkFitFlag const& goodreco);
-      TCI findBestReco(TimeClusterCollection const& tcc, TrkFitFlag const& goodreco);
+      TCI findBestReco(TimeClusterCollection const& tcc);
       void fillKalFinal(SPP const& spp,KSI const& kfi);
       void fillKalSeed(SPP const& spp,KalSeed const& ks);
       void fillHelixSeed(SPP const& spp,HelixSeed const& hs);
@@ -162,7 +162,6 @@ namespace mu2e {
     _goodkf(pset.get<vector<string> >("GoodKalFinalFlag",vector<string>{"KalmanOK"})),
     _goodks(pset.get<vector<string> >("GoodKalSeedFlag",vector<string>{"SeedOK"})),
     _goodhs(pset.get<vector<string> >("GoodHelixFlag",vector<string>{"HelixOK"})),
-    _goodtc(pset.get<vector<string> >("GoodTimeClusterFlag",vector<string>{"HitsOK"})),
     _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makeSH")),
     _shpTag(pset.get<art::InputTag>("StrawHitPositionCollectionTag","MakeStereoHits")),
     _shfTag(pset.get<art::InputTag>("StrawHitFlagCollectionTag","FlagBkgHits")),
@@ -322,7 +321,7 @@ namespace mu2e {
 	    if(ihs != _hscol->end()){
 	      fillHelixSeed(bestpart,*ihs);
 	    } else {
-	      auto itc = findBestReco(*_tccol,_goodtc);
+	      auto itc = findBestReco(*_tccol);
 	      if(itc != _tccol->end()){
 		fillTimeCluster(bestpart,*itc);
 	      }
@@ -455,7 +454,7 @@ namespace mu2e {
     return retval;
   }
 
-  TCI TrkRecoDiag::findBestReco(TimeClusterCollection const& tcc, TrkFitFlag const& goodreco) {
+  TCI TrkRecoDiag::findBestReco(TimeClusterCollection const& tcc) {
     auto retval = tcc.end();
     // take the cluster with the most hits.  Should add quality later?
     unsigned maxnhits(0);

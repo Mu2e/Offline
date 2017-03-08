@@ -29,7 +29,6 @@ namespace art {
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
-#include "RecoDataProducts/inc/HelixSeedCollection.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -62,8 +61,6 @@ namespace art {
 #include "CalPatRec/inc/THackData.hh"
 
 // Mu2e
-#include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
-#include "TrkPatRec/inc/PayloadSaver.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "DataProducts/inc/Helicity.hh"

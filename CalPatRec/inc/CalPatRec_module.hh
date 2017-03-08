@@ -57,8 +57,6 @@ namespace art {
 #include "CalPatRec/inc/THackData.hh"
 
 // Mu2e
-#include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
-#include "TrkPatRec/inc/PayloadSaver.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"

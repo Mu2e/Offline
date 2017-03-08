@@ -61,8 +61,6 @@ namespace art {
 #include "CalPatRec/inc/THackData.hh"
 
 // Mu2e
-#include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
-#include "TrkPatRec/inc/PayloadSaver.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 
@@ -170,8 +168,6 @@ namespace mu2e {
     KalFitHack                            _kfit;     // full-blown src/Kalman filter
 
     KalFitResult*                         _kfresult; // full fit result
-
-    mu2e::PayloadSaver                    _payloadSaver;
 
     std::vector<StrawHitIndex>            _hitIndices;
     int                                   _nindex;
