@@ -2,8 +2,8 @@
 //  Base clase for physics interface to track fit event objects
 //  Dave Brown (LBNL) 2/12/17
 //
-#ifndef TrkAdapter_TrkFitInter_hh
-#define TrkAdapter_TrkFitInter_hh
+#ifndef TrkAdapter_TrkInter_hh
+#define TrkAdapter_TrkInter_hh
 #include "DataProducts/inc/PDGCode.hh"
 // data
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
@@ -13,9 +13,9 @@
 #include "BTrk/TrkBase/TrkParticle.hh"
 
 namespace mu2e {
-  class TrkFitInter {
-    TrkFitInter() {};
-    virtual ~TrkFitInter() = 0;
+  class TrkInter {
+    TrkInter() {};
+    virtual ~TrkInter() = 0;
 // basic description of the particle interpretation of this track
 // particle type used in the physics interpretation.  For now, include
 // both sim and reco interfaces, we should standardize FIXME!

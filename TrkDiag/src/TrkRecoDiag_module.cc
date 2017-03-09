@@ -24,10 +24,6 @@
 // diagnostics
 #include "TrkDiag/inc/TrkMCTools.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
-#include "RecoDataProducts/inc/HelixHit.hh"
-#include "TrkDiag/inc/HelixHitInfo.hh"
-#include "TrkDiag/inc/TrkMCTools.hh"
-#include "MCDataProducts/inc/MCRelationship.hh"
 // data
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
