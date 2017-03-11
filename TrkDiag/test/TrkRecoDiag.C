@@ -8,8 +8,8 @@ using namespace std;
 
 TrkRecoDiag::TrkRecoDiag(TTree *tree, double norm) : fChain(0) ,_tffval(32,0), _norm(norm),
   _eff(0), _acc(0), _effcan(0), _tcseln(10), 
-  _hseln(10), _hselminm(270.0),_hselmaxm(390.0),
-  _sselminm(95.0), _sselmaxm(110.0), _sselmerr(1.5), _sselchi2(10.0), 
+  _hseln(10), _hselminm(280.0),_hselmaxm(380.0),
+  _sselminm(95.0), _sselmaxm(110.0), _sselmerr(1.2), _sselchi2(9.0), 
   _pseltq(0.4), _pselminm(95.0), _pselmaxm(110.0)
 {
 // build branches 
@@ -53,7 +53,7 @@ void TrkRecoDiag::Loop()
       effcuts.push_back((hsf__value&_tffval[helixOK])>0);acccuts.push_back(effcuts.back());
       effcuts.push_back(hsna>_hseln && hmom < _hselmaxm && hmom > _hselminm);acccuts.push_back(effcuts.back());
       effcuts.push_back((ksf__value&_tffval[seedOK])>0);acccuts.push_back(effcuts.back());
-      effcuts.push_back(ksm > _sselminm && ksm < _sselmaxm && kschisq/(ksna-5)<_sselchi2);acccuts.push_back(effcuts.back());
+      effcuts.push_back(ksm > _sselminm && ksm < _sselmaxm && kschisq/(ksna-5)<_sselchi2 && ksmerr < _sselmerr);acccuts.push_back(effcuts.back());
       effcuts.push_back((kff__value&_tffval[kalmanOK])>0);acccuts.push_back(effcuts.back());
       effcuts.push_back(kfm > _pselminm && kfm < _pselmaxm && kftq > _pseltq);acccuts.push_back(effcuts.back());
 
