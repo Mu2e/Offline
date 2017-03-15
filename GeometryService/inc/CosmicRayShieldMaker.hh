@@ -56,6 +56,7 @@ namespace mu2e
     std::vector<std::string> _crvSectorNames;
     std::vector<double>      _gapBetweenLayers;
     double                   _aluminumSheetThickness;
+    double                   _strongBackThickness;
 
     //vector size is _nSectors
     std::vector<double>             _counterLength;        
