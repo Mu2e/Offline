@@ -191,8 +191,8 @@ namespace mu2e
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<DetectorSystem> det;
     if(krep != 0 && krep->fitCurrent()){
-      trkinfo._fitstatus = krep->fitStatus().success();
-      trkinfo._fitpart = krep->particleType().particleType();
+      trkinfo._status = krep->fitStatus().success();
+      trkinfo._pdg = krep->particleType().particleType();
       trkinfo._t0 = krep->t0().t0();
       trkinfo._t0err = krep->t0().t0Err();
       trkinfo._nhits = krep->hitVector().size();
@@ -235,7 +235,7 @@ namespace mu2e
       fillTrkQual(trkinfo); 
     } else {
       // failed fit
-      trkinfo._fitstatus = -krep->fitStatus().failure();
+      trkinfo._status = -krep->fitStatus().failure();
     }
   } 
 
@@ -401,9 +401,12 @@ namespace mu2e
     tshinfo._hlen = tsh->hitLen();
     Hep3Vector tdir = tsh->trkTraj()->direction(tshinfo._trklen);
     tshinfo._wdot = tdir.dot(tsh->straw().getDirection());
+    // for now approximate the local bfield direction as the z axis FIXME!!
+    tshinfo._bdot = tdir.z();
     tshinfo._t0 = tsh->hitT0()._t0;
     // include signal propagation time correction
     tshinfo._ht = tsh->time()-tsh->signalTime();
+    tshinfo._dt = tsh->strawHit().dt();
     tshinfo._tddist = tsh->timeDiffDist();
     tshinfo._tdderr = tsh->timeDiffDistErr();
     tshinfo._ambig = tsh->ambig();
