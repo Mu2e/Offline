@@ -68,8 +68,6 @@ namespace mu2e {
 	    _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
 	    _trkIntersectModuleLabel(pset.get<std::string>("trkIntersectModuleLabel")),
 	    _trkFitterModuleLabel(pset.get<std::string>("fitterModuleLabel")),
-	    _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
-	    _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
 	    _diagLevel             (pset.get<int>   ("diagLevel",0)),
 	    _minClusterEnergy      (pset.get<double>("minClusterEnergy")),  
 	    _maxDeltaT             (pset.get<double>("maxDeltaT")),  
@@ -81,7 +79,6 @@ namespace mu2e {
 	    _saveBestOnly          (pset.get<bool>("saveBestOnly")),  
 	    _hXY(0),_hT(0)
 	  {
-              _trkfitInstanceName = _fdir.name() + _tpart.name();
               produces<TrkCaloMatchCollection>();
 	  }
 
@@ -108,8 +105,6 @@ namespace mu2e {
 	  std::string      _trkIntersectModuleLabel;
 	  std::string      _trkFitterModuleLabel;
 	  std::string      _trkfitInstanceName;
-	  TrkParticle      _tpart;
-	  TrkFitDirection  _fdir;
 
 	  int              _diagLevel;
 	  double           _minClusterEnergy;  
@@ -146,7 +141,7 @@ namespace mu2e {
   {
 	
 	art::Handle<KalRepPtrCollection> trksHandle;
-	event.getByLabel(_trkFitterModuleLabel,_trkfitInstanceName,trksHandle);
+	event.getByLabel(_trkFitterModuleLabel,trksHandle);
 	KalRepPtrCollection const& trksPtrColl(*trksHandle);
 
 	art::Handle<CaloClusterCollection> caloClustersHandle;

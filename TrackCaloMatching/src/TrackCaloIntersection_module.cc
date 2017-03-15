@@ -96,8 +96,7 @@ namespace mu2e {
 
 	   explicit TrackCaloIntersection(fhicl::ParameterSet const& pset):
 	     _trkterModuleLabel(pset.get<std::string>("fitterModuleLabel")),
-	     _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
-	     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
+	     _downstream(pset.get<bool>("downstream")),
 	     _diagLevel(pset.get<int>("diagLevel",0)),
 	     _pathStep(pset.get<double>("pathStep")),
 	     _tolerance(pset.get<double>("tolerance")),
@@ -105,11 +104,7 @@ namespace mu2e {
 	     _outputNtup(pset.get<bool>("outputNtup")),
 	     _trkdiag(0)
 	   {
-
-	         _downstream          = (_fdir.dzdt() > 0 ) ? true : false;
-		 
-        	 produces<TrkCaloIntersectCollection>();
-		 
+               produces<TrkCaloIntersectCollection>();               
 	   }
 
 
@@ -140,15 +135,13 @@ namespace mu2e {
 	   double radiusAtRange(TrkDifTraj const& traj, double range);
 	   
 
-	   std::string                   _trkterModuleLabel;
-	   TrkParticle                   _tpart;
-	   TrkFitDirection               _fdir;
-	   bool                          _downstream;
-	   int                           _diagLevel;
-	   double                        _pathStep;
-	   double                        _tolerance;
-	   bool                          _checkExit;
-	   bool                          _outputNtup;
+	   std::string  _trkterModuleLabel;
+	   bool         _downstream;
+	   int          _diagLevel;
+	   double       _pathStep;
+	   double       _tolerance;
+	   bool         _checkExit;
+	   bool         _outputNtup;
 
 
 
@@ -230,7 +223,7 @@ namespace mu2e {
 
 	if (_diagLevel) std::cout<<"Event Number : "<< evt.event()<<"\nStart TrackCaloIntersection  with ntrk = "<<trksPtrColl.size()<<std::endl;
 
-	doExtrapolation(*extrapolatedTracks, trksPtrColl);   
+	doExtrapolation(*extrapolatedTracks, trksPtrColl);           
 	evt.put(std::move(extrapolatedTracks));
 
     } 
@@ -242,7 +235,7 @@ namespace mu2e {
 	 Calorimeter const&  cal = *(GeomHandle<Calorimeter>());
 	 CLHEP::Hep3Vector   endCalTracker = cal.geomUtil().mu2eToTracker( CLHEP::Hep3Vector(cal.geomInfo().origin().x(),cal.geomInfo().origin().y(),cal.caloInfo().envelopeZ1()) );
 	 
-	 
+         	 
 	 for (unsigned int itrk=0; itrk< trksPtrColl.size(); ++itrk )
 	 {
 	      std::vector<TrkCaloInter> intersectVec;
@@ -294,6 +287,7 @@ namespace mu2e {
 	 double rangeStart   = trkHel.zFlight(zStart);
 	 double rangeEnd     = trkHel.zFlight(zEnd);
          
+                  
 	 //apply first order correction to the helix model to match the trajDif model, add buffer to endRange to be on the safe side
 	 //D. Brown will add a zFlight() method for TrajDifTraj in the future, rewrite code when available	 
 	 double sinDip         = sqrt(1.0-trkHel.cosDip()*trkHel.cosDip());

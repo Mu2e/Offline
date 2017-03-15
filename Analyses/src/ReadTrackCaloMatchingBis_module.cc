@@ -90,13 +90,10 @@ namespace mu2e {
             _trkCaloMatchModuleLabel(pset.get<std::string>("trkCaloMatchModuleLabel")),
             _trkIntersectModuleLabel(pset.get<std::string>("trkIntersectModuleLabel")),
             _trkFitterModuleLabel(pset.get<std::string>("fitterModuleLabel")),
-            _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
-            _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
-            _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
+           _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
             _virtualDetectorLabel(pset.get<std::string>("virtualDetectorName")),
             _Ntup(0)
           {
-             _trkfitInstanceName = _fdir.name() + _tpart.name();
           }
 
           virtual ~ReadTrackCaloMatchingBis() {}
@@ -121,8 +118,6 @@ namespace mu2e {
           std::string      _trkIntersectModuleLabel;
           std::string      _trkFitterModuleLabel;
           std::string      _trkfitInstanceName;
-          TrkParticle      _tpart;
-          TrkFitDirection  _fdir;
           std::string      _g4ModuleLabel;
           std::string      _virtualDetectorLabel;
 
@@ -260,7 +255,7 @@ namespace mu2e {
         Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
         art::Handle<KalRepPtrCollection> trksHandle;
-        event.getByLabel(_trkFitterModuleLabel,_trkfitInstanceName,trksHandle);
+        event.getByLabel(_trkFitterModuleLabel,trksHandle);
 
         art::Handle<CaloClusterCollection> caloClustersHandle;
         event.getByLabel(_caloClusterModuleLabel, caloClustersHandle);
@@ -298,7 +293,6 @@ namespace mu2e {
 	      vdMap[hit.simParticle()] = &hit;
 	   }
 	}
-
 
 
         _evt = event.id().event();
@@ -459,7 +453,7 @@ namespace mu2e {
                 _vdId[_nVd]     = hit.volumeId();
                 _vdPdgId[_nVd]  = hit.simParticle()->pdgId();
                 _vdTime[_nVd]   = hit.time();
-                _vdPosX[_nVd]   = hit.position().x();
+                _vdPosX[_nVd]   = hit.position().x()+3904;
                 _vdPosY[_nVd]   = hit.position().y();
                 _vdPosZ[_nVd]   = hit.position().z();
                 _vdMom[_nVd]    = hit.momentum().mag();

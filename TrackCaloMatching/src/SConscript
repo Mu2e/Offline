@@ -9,6 +9,7 @@ Import('mu2e_helper')
 
 helper=mu2e_helper()
 
+extrarootlibs = ['TMVA']
 rootlibs  = env['ROOTLIBS']
 babarlibs = env['BABARLIBS']
 
@@ -21,6 +22,7 @@ mainlib = helper.make_mainlib ( [
     'mu2e_Mu2eInterfaces',
     'mu2e_RecoDataProducts',
     babarlibs,
+    rootlibs,
     'art_Framework_Services_Registry',
     'art_Persistency_Provenance',
     'art_Persistency_Common',
@@ -29,7 +31,7 @@ mainlib = helper.make_mainlib ( [
     'CLHEP',
     'cetlib',
     'cetlib_except',
-    'boost_system',
+    'boost_system'    
     ] )
 
 helper.make_plugins( [
@@ -59,6 +61,7 @@ helper.make_plugins( [
     'cetlib_except',
     'CLHEP',
     rootlibs,
+    extrarootlibs,
     'boost_filesystem',
    'boost_system',
     ] )

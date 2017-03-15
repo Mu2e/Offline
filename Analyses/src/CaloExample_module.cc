@@ -127,9 +127,6 @@ namespace mu2e {
        std::string _virtualDetectorLabel;
        std::string _stepPointMCLabel;
        std::string _trkPatRecModuleLabel;
-       std::string _instanceName;
-       TrkParticle _tpart;
-       TrkFitDirection _fdir;
        SimParticleTimeOffset _toff;  // time offset smearing
 
 
@@ -192,13 +189,10 @@ namespace mu2e {
     _virtualDetectorLabel(pset.get<std::string>("virtualDetectorName")),
     _stepPointMCLabel(pset.get<std::string>("stepPointMCLabel")),
     _trkPatRecModuleLabel(pset.get<std::string>("trkPatRecModuleLabel")),
-    _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
-    _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _Ntup(0)
 
   {
-    _instanceName = _fdir.name() + _tpart.name();
   }
 
   void CaloExample::beginJob(){
@@ -344,7 +338,7 @@ namespace mu2e {
   void CaloExample::analyze(const art::Event& event) {
 
       ++_nProcess;
-      if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from CaloExample =  "<<_nProcess << " with instance name " << _instanceName <<std::endl;
+      if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from CaloExample =  "<<_nProcess <<std::endl;
 
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       double _mbtime = accPar->deBuncherPeriod;
@@ -381,7 +375,7 @@ namespace mu2e {
       const CaloHitMCTruthAssns& caloHitTruth(*caloHitTruthHandle);
 
       //art::Handle<KalRepPtrCollection> trksHandle;
-      //event.getByLabel(_trkPatRecModuleLabel,_instanceName, trksHandle);
+      //event.getByLabel(_trkPatRecModuleLabel, trksHandle);
       //const KalRepPtrCollection& trks = *trksHandle;
 
 
@@ -412,7 +406,7 @@ namespace mu2e {
        _evt = event.id().event();
        _run = event.run();
 
-       if (_diagLevel == 3){std::cout << "processing event in calo_example " << _nProcess << " run and event  = " << _run << " " << _evt << " with instance name = " << _instanceName << std::endl;}
+       if (_diagLevel == 3){std::cout << "processing event in calo_example " << _nProcess << " run and event  = " << _run << " " << _evt << std::endl;}
 
 
        if (_doGenerated)
