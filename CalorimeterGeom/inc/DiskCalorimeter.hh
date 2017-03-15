@@ -38,6 +38,8 @@ namespace mu2e {
 
             // calo sections
 	    virtual unsigned int              nDisk()     const  {return nDisks_;}
+            virtual unsigned int              nCrate()    const  {return nCrates_;}
+            virtual unsigned int              nBoard()    const  {return nBoards_;}
 	    virtual const Disk&               disk(int i) const  {return *disks_.at(i);}
 
             	    
@@ -77,6 +79,8 @@ namespace mu2e {
 
 	    typedef std::shared_ptr<Disk> DiskPtr;
 	    int                           nDisks_;
+            int                           nCrates_;
+            int                           nBoards_;
 	    std::vector<DiskPtr>          disks_;
             
             CaloInfo                      caloInfo_;
