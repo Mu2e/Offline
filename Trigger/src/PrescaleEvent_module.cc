@@ -16,14 +16,15 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "RecoDataProducts/inc/TriggerInfo.hh"
 
 #include <memory>
+#include <iostream>
 
+namespace mu2e
+{
 
-class PrescaleEvent;
-
-
-class PrescaleEvent : public art::EDFilter {
+  class PrescaleEvent : public art::EDFilter {
 
     public:
 
@@ -39,20 +40,42 @@ class PrescaleEvent : public art::EDFilter {
       PrescaleEvent & operator = (PrescaleEvent &&) = delete;
 
       bool filter(art::Event & e) override;
+      virtual bool endRun(art::Run& run ) override;
 
     private:
 
       uint32_t nPrescale_;
+      unsigned _nevt, _npass;
 
-};
+  };
 
-PrescaleEvent::PrescaleEvent(fhicl::ParameterSet const & p)
-  : nPrescale_(p.get<uint32_t>("nPrescale"))
-{}
+  PrescaleEvent::PrescaleEvent(fhicl::ParameterSet const & p)
+    : nPrescale_(p.get<uint32_t>("nPrescale")), _nevt(0), _npass(0)
+  {
+    produces<TriggerInfo>();
+  }
 
-inline bool PrescaleEvent::filter(art::Event & e)
-{
-   return e.event() % nPrescale_ == 0 ? true : false;
+  inline bool PrescaleEvent::filter(art::Event & e)
+  {
+    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    ++_nevt;
+    bool retval(false);
+    if(e.event() % nPrescale_ == 0) {
+      ++_npass;
+      triginfo->_triggerBits.merge(TriggerFlag::prescaleRandom);
+      retval = true;
+    }
+    e.put(std::move(triginfo));
+    return retval;
+  }
+
+  bool PrescaleEvent::endRun( art::Run& run ) {
+    if(_nevt > 0){
+      std::cout << *currentContext()->moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
+    }
+    return true;
+  }
+
 }
-
+using mu2e::PrescaleEvent;
 DEFINE_ART_MODULE(PrescaleEvent)

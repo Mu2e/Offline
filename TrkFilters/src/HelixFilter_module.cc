@@ -8,6 +8,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "RecoDataProducts/inc/TriggerInfo.hh"
 #include "fhiclcpp/ParameterSet.h"
 // mu2e
 // data
@@ -17,6 +18,7 @@ using namespace CLHEP;
 #include <string>
 #include <vector>
 #include <iostream>
+#include <memory>
 
 using namespace std;
 
@@ -27,7 +29,7 @@ namespace mu2e
     public:
       explicit HelixFilter(fhicl::ParameterSet const& pset);
       virtual bool filter(art::Event& event) override;
-      virtual void endJob() override;
+      virtual bool endRun( art::Run& run ) override;
 
     private:
       art::InputTag _hsTag;
@@ -48,16 +50,20 @@ namespace mu2e
     _goodh(pset.get<vector<string> >("HelixFitFlag",vector<string>{"HelixOK"})),
     _nevt(0), _npass(0)
   {
+    produces<TriggerInfo>();
   }
 
   bool HelixFilter::filter(art::Event& evt){
+  // create output
+    unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     bool retval(false); // preset to fail
 // find the collection
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     const HelixSeedCollection* hscol = hsH.product();
 // loop over the collection: if any pass the selection, pass this event
-    for(auto const& hs : *hscol ) {
+    for(auto ihs = hscol->begin();ihs != hscol->end(); ++ihs) {
+      auto const& hs = *ihs;
     // compute the helix momentum.  Note this is in units of mm!!!
       float hmom = sqrt(hs.helix().radius()*hs.helix().radius() + hs.helix().lambda()*hs.helix().lambda());
  
@@ -67,17 +73,25 @@ namespace mu2e
 	  hmom > _minmom && hmom < _maxmom) {
 	retval = true;
 	++_npass;
-// should create a trigger product output FIXME
+	// Fill the trigger info object
+	triginfo->_triggerBits.merge(TriggerFlag::helix);
+	// associate to the helix which triggers.  Note there may be other helices which also pass the filter
+	// but filtering is by event!
+	size_t index = std::distance(hscol->begin(),ihs);
+	triginfo->_helix = art::Ptr<HelixSeed>(hsH,index);
 	break;
       }
     }
+    evt.put(std::move(triginfo));
     return retval;
   }
 
-  void HelixFilter::endJob() {
+  bool HelixFilter::endRun( art::Run& run ) {
     if(_nevt > 0){
-      cout << "HelixFilter passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      cout << *currentContext()->moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
     }
-
+    return true;
   }
 }
+using mu2e::HelixFilter;
+DEFINE_ART_MODULE(HelixFilter);

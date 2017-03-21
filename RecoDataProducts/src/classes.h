@@ -63,7 +63,7 @@
 #include "RecoDataProducts/inc/KalSeed.hh"
 
 #include "RecoDataProducts/inc/TriggerFlag.hh"
-#include "RecoDataProducts/inc/TriggerInfoCollection.hh"
+#include "RecoDataProducts/inc/TriggerInfo.hh"
 
 #include "RecoDataProducts/inc/TrkQual.hh"
 

@@ -136,8 +136,8 @@
  <class name="mu2e::TriggerFlag"/>
  <class name="mu2e::TriggerInfo"/>
  <class name="mu2e::TriggerInfoCollection" /> 
-
- <class name="art::Wrapper<mu2e::TRiggerCollection>"/>
+ <class name="art::Wrapper<mu2e::TriggerInfo>"/>
+ <class name="art::Wrapper<mu2e::TriggerInfoCollection>"/>
 
 <!--  see if we need 2nd declaration of the same thing <class name="std::vector<mu2e::PIDProduct>" /> -->
 
