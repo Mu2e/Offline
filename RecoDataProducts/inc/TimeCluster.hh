@@ -19,7 +19,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 // BTrk includes
 #include "BTrk/TrkBase/TrkT0.hh"
-
+// c++
+#include <vector>
 namespace mu2e {
   class CaloCluster;
  
@@ -34,6 +35,7 @@ namespace mu2e {
     CLHEP::Hep3Vector        _pos; // position of the time cluster   
     art::Ptr<CaloCluster>    _caloCluster; // associated calorimeter cluster: can be null
   };
+   typedef std::vector<mu2e::TimeCluster> TimeClusterCollection;
 
 } // namespace mu2e
 

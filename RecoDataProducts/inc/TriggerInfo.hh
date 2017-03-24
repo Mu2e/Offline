@@ -7,20 +7,26 @@
 namespace mu2e {
 
   class CaloCluster;
+  class KalSeed;
+  class HelixSeed;
+  class TimeCluster;
 
-  class TriggerInfo
+  struct TriggerInfo
   {
      
-      public:
-              TriggerFlag&            triggerBits() { return _triggerBits; }
-        const art::Ptr<CaloCluster>&  caloCluster() const { return _caloCluster; }
+    const TriggerFlag&            triggerBits() const { return _triggerBits; }
+    const art::Ptr<CaloCluster>&  caloCluster() const { return _caloCluster; }
+    const art::Ptr<KalSeed>&  track() const { return _track; }
+    const art::Ptr<HelixSeed>&  helix() const { return _helix; }
+    const art::Ptr<TimeCluster>&  hitCluster() const { return _hitCluster; }
 
-      private:
-        TriggerFlag	       _triggerBits; 
-        art::Ptr<CaloCluster>  _caloCluster; 
-
+    TriggerFlag	       _triggerBits; 
+    art::Ptr<CaloCluster>  _caloCluster; 
+    art::Ptr<KalSeed> _track; // associated track
+    art::Ptr<HelixSeed> _helix; // associated helix
+    art::Ptr<TimeCluster> _hitCluster; // associated time cluster
   };
-
+  typedef std::vector<mu2e::TriggerInfo> TriggerInfoCollection;
 } 
 
 #endif

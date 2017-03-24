@@ -30,19 +30,16 @@
 #include "DataProducts/inc/Helicity.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/HelixSeedCollection.hh"
-#include "RecoDataProducts/inc/KalSeedCollection.hh"
+#include "RecoDataProducts/inc/HelixSeed.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 // BaBar
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
 // Mu2e BaBar
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/KalFit.hh"
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
-#include "TrkPatRec/inc/PayloadSaver.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -96,7 +93,7 @@ namespace mu2e
       const HelixSeedCollection * _hscol;
       // ouptut collections
       // Kalman fitter.  This will be configured for a least-squares fit (no material or BField corrections).
-      KalFit _seedfit;
+      KalFit _kfit;
       // helper functions
       bool findData(const art::Event& e);
       void filterOutliers(TrkDef& trkdef);
@@ -117,7 +114,7 @@ namespace mu2e
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _perr(pset.get<vector<double> >("ParameterErrors")),
-    _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet()))
+    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet()))
   {
     produces<KalSeedCollection>();
     // check dimensions
@@ -186,35 +183,38 @@ namespace mu2e
 // filter outliers; this doesn't use drift information, just straw positions
 	if(_foutliers)filterOutliers(seeddef);
     // now, fit the seed helix from the filtered hits
-	KalRep *seedrep(0);
-	_seedfit.makeTrack(_shcol,seeddef,seedrep);
+	KalRep *krep(0);
+	_kfit.makeTrack(_shcol,seeddef,krep);
 	if(_debug > 1){
-	  if(seedrep == 0)
+	  if(krep == 0)
 	    cout << "No Seed fit produced " << endl;
 	  else
-	    cout << "Seed Fit result " << seedrep->fitStatus()  << endl;
+	    cout << "Seed Fit result " << krep->fitStatus()  << endl;
 	}
-	if(seedrep != 0 && (seedrep->fitStatus().success() || _saveall)){
+	if(krep != 0 && (krep->fitStatus().success() || _saveall)){
 	// convert the status into a FitFlag
 	  TrkFitFlag seedok(TrkFitFlag::seedOK);
 	  // create a KalSeed object from this fit, recording the particle and fit direction
-	  KalSeed kseed(_tpart,_fdir,seedrep->t0(),seedrep->flt0(),seedok);
+	  KalSeed kseed(_tpart,_fdir,krep->t0(),krep->flt0(),seedok);
 	  // fill ptr to the helix seed
 	  auto hsH = event.getValidHandle<HelixSeedCollection>(_hsTag);
 	  kseed._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	  // calo cluser ptr from Helix Seed
 	  //	  kseed._caloCluster = hseed._caloCluster; 
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
-	  TrkUtilities::fillHitSeeds(seedrep,kseed._hits);
+	  TrkUtilities::fillHitSeeds(krep,kseed._hits);
 	  if(kseed._hits.size() >= _minnhits)kseed._status.merge(TrkFitFlag::hitsOK);
-	  // extract the helix trajectory from the fit (there is just 1)
+	  kseed._chisq = krep->chisq();
+	  // use the default consistency calculation, as t0 is not fit here
+	  kseed._fitcon = krep->chisqConsistency().significanceLevel();
+// extract the helix trajectory from the fit (there is just 1)
 	  double locflt;
-	  const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(seedrep->localTrajectory(seedrep->flt0(),locflt));
+	  const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(krep->flt0(),locflt));
 	  // use this to create segment.  This will be the only segment in this track
 	  if(htraj != 0){
 	    KalSegment kseg;
 	    // sample the momentum at this point
-	    BbrVectorErr momerr = seedrep->momentumErr(seedrep->flt0());
+	    BbrVectorErr momerr = krep->momentumErr(krep->flt0());
 	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
 	    kseed._segments.push_back(kseg);
 	    // push this seed into the collection
@@ -231,9 +231,9 @@ namespace mu2e
 	    throw cet::exception("RECO")<<"mu2e::KalSeedFit: Can't extract helix traj from seed fit" << endl;
 	  }
 	}
-      // cleanup the seed fit KalRep.  Optimally the seedrep should be a data member of this module
+      // cleanup the seed fit KalRep.  Optimally the krep should be a data member of this module
       // and get reused to avoid thrashing memory, but the BTrk code doesn't support that, FIXME!
-	delete seedrep;
+	delete krep;
       }
     }
     // put the tracks into the event

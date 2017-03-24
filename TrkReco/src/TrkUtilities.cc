@@ -10,12 +10,17 @@
 #include "GeneralUtilities/inc/Angles.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
+#include "RecoDataProducts/inc/TrkStraw.hh"
+#include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
 // BTrk
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalMaterial.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkDifPieceTraj.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
+#include "Mu2eBTrk/inc/DetStrawElem.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -94,6 +99,30 @@ namespace mu2e {
       kseg._momerr = sqrt(momerr.covMatrix().similarity(mdir));
     }
   
+    void fillStraws(const KalRep* krep, std::vector<TrkStraw>& tstraws) {
+      tstraws.clear();
+      // get material sites from the KalRep
+      for(auto isite : krep->siteList()){
+	if(isite->isActive()  && isite->kalMaterial() != 0) {
+	  const KalMaterial* kmat = isite->kalMaterial();
+	  const DetStrawElem* detstraw = dynamic_cast<const DetStrawElem*>(kmat->detElem());
+	  if(detstraw != 0){
+	    // found a straw: create a TrkStraw object from it
+	    // i must recompute POCA since the KalMaterial doesn't cache the hit flight FIXME!
+	    TrkPoca poca(krep->traj(),kmat->detIntersection().pathlen,detstraw->wireTraj(),0);
+	    TrkStraw tstraw(detstraw->straw()->id(),
+	      kmat->detIntersection().dist, //poca.doca(),
+	      kmat->detIntersection().pathlen, // poca.flt1(),
+	      poca.flt2(),  // not stored in KalMaterial, FIXME!
+	      kmat->detIntersection().pathLength(),
+	      kmat->radiationFraction(),
+	      kmat->momFraction());
+	    tstraws.push_back(tstraw);
+	  }
+	}
+      }
+    }
+
     void fillHitSeeds(const KalRep* krep, std::vector<TrkStrawHitSeed>& hitseeds) {
       // extract the TkrStrawHits from the KalRep
       TrkStrawHitVector tshv;
@@ -104,8 +133,10 @@ namespace mu2e {
 	StrawHitFlag hflag;
 	if(tsh->isActive())hflag.merge(StrawHitFlag::active);
 	if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
-	TrkStrawHitSeed seedhit(tsh->index(), tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
-	    tsh->driftRadius(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag);
+	TrkStrawHitSeed seedhit(tsh->index(), tsh->straw().id(),
+	    tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
+	    tsh->driftRadius(), tsh->poca().doca(),
+	    tsh->ambig(),tsh->driftRadiusErr(), hflag);
 	hitseeds.push_back(seedhit);
       }
     }

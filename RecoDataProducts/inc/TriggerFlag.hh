@@ -12,7 +12,7 @@ namespace mu2e {
    {
        typedef unsigned int mask_type;
 
-       enum bit_type {prescaleRandom=0, helixTrkOk=1, caloClusterOk=2, AnotherTrigger=3};
+       enum bit_type {prescaleRandom=0, hitCluster, helix, track,  caloCluster=12, AnotherTrigger};
 
        static const std::string& typeName();
        static const std::map<std::string,mask_type>& bitNames();

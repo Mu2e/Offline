@@ -87,8 +87,7 @@ namespace mu2e {
     _tpart           ((TrkParticle::type)(pset.get<int>("fitparticle"               ))),
     _fdir            ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
     _kfit            (pset.get<fhicl::ParameterSet>("KalFitHack",fhicl::ParameterSet())),
-    _kfresult        (0),
-    _payloadSaver    (pset)
+    _kfresult        (0)
   {
     //    fStopwatch = new TStopwatch();
 
@@ -97,7 +96,6 @@ namespace mu2e {
 
     produces<KalRepCollection       >();
     produces<KalRepPtrCollection    >();
-    produces<KalRepPayloadCollection>();
     produces<AlgorithmIDCollection  >();
     produces<StrawHitFlagCollection >();
     produces<KalSeedCollection      >();
@@ -578,8 +576,6 @@ namespace mu2e {
     //  END:;
     int     ntracks = tracks->size();
 
-    art::ProductID krcolID(getProductID<KalRepPayloadCollection>(event));
-    _payloadSaver.put(*tracks, krcolID, event);
     event.put(std::move(tracks)   );
     event.put(std::move(trackPtrs));
     event.put(std::move(algs     ));

@@ -132,8 +132,8 @@
  <class name="mu2e::TriggerFlag"/>
  <class name="mu2e::TriggerInfo"/>
  <class name="mu2e::TriggerInfoCollection" /> 
-
- <class name="art::Wrapper<mu2e::TRiggerCollection>"/>
+ <class name="art::Wrapper<mu2e::TriggerInfo>"/>
+ <class name="art::Wrapper<mu2e::TriggerInfoCollection>"/>
 
 <!--  see if we need 2nd declaration of the same thing <class name="std::vector<mu2e::PIDProduct>" /> -->
 
@@ -256,11 +256,18 @@
  <class name="mu2e::TrkFitDirection"/>
  <class name="TrkParticle"/>
  <class name="mu2e::TrkStrawHitSeed"/>
+ <class name="mu2e::TrkStraw"/>
  <class name="mu2e::KalSegment"/>
  <class name="std::vector<mu2e::TrkStrawHitSeed>"/>
+ <class name="std::vector<mu2e::TrkStraw>"/>
  <class name="std::vector<mu2e::KalSegment>"/>
  <class name="mu2e::KalSeedCollection"/>
  <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
  <class name="art::Ptr<mu2e::KalSeed>"/>
+
+ <class name="mu2e::TrkQual"/>
+ <class name="mu2e::TrkQualCollection"/>
+ <class name="mu2e::TrkQualDetail"/>
+ <class name="art::Wrapper<mu2e::TrkQualCollection>"/>
 
 </lcgdict>
