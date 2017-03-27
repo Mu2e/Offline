@@ -83,13 +83,14 @@ fi
 
 # Get access to raw data formats.
 # For now this is not generally available; once it is we can remove the conditional.
-if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "on" ]]; then
-  setup -B mu2e_artdaq_core v1_00_06 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
-fi
+#if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "on" ]]; then
+#  setup -B mu2e_artdaq_core v1_00_06 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
+#fi
 
 # Other libraries we need.
 setup -B heppdt v3_04_01f -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_01_08  -q${MU2E_UPS_QUALIFIERS}
+setup -B xerces_c v3_1_3 -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_5_1 -q p2713b
