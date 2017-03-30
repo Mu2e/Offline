@@ -655,6 +655,12 @@ namespace mu2e {
       SDman->AddNewDetector(STMDetSD);
     }
 
+    if(sdHelper_->enabled(StepInstanceName::panelEBKey)) {
+      Mu2eSensitiveDetector* EBKeySD =
+        new Mu2eSensitiveDetector(    SensitiveDetectorName::panelEBKey(),  _config);
+      SDman->AddNewDetector(EBKeySD);
+    }
+
   } // instantiateSensitiveDetectors
 
 } // end namespace mu2e

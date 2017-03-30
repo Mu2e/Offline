@@ -216,6 +216,20 @@ namespace mu2e {
       _channelMaterial          = config.getString( "ttrackerSupport.channel.material"           );
       _electronicsSpaceMaterial = config.getString( "ttrackerSupport.electronicsSpace.material"  );
 
+      _EBKeyHalfLength         = config.getDouble("ttrackerSupport.electronics.key.halfLength");
+      _EBKeyShieldHalfLength   = config.getDouble("ttrackerSupport.electronics.key.shieldHalfLength");
+      _EBKeyInnerRadius        = config.getDouble("ttrackerSupport.electronics.key.innerRadius");
+      _EBKeyOuterRadius        = config.getDouble("ttrackerSupport.electronics.key.outerRadius");
+      _EBKeyShiftFromPanelFace = config.getDouble("ttrackerSupport.electronics.key.shiftFromPanelFace");
+      _EBKeyVisible            = config.getBool(  "ttrackerSupport.electronics.key.visible");
+      _EBKeySolid              = config.getBool(  "ttrackerSupport.electronics.key.solid");
+      _EBKeyShieldVisible      = config.getBool(  "ttrackerSupport.electronics.key.shieldVisible");
+      _EBKeyShieldSolid        = config.getBool(  "ttrackerSupport.electronics.key.shieldSolid");
+      _EBKeyMaterial           = config.getString("ttrackerSupport.electronics.key.material");
+      _EBKeyShieldMaterial     = config.getString("ttrackerSupport.electronics.key.shieldMaterial");
+      _EBKeyPhiRange           = config.getDouble("ttrackerSupport.electronics.key.phiRange")*CLHEP::degree;
+      _EBKeyPhiExtraRotation   = config.getDouble("ttrackerSupport.electronics.key.phiExtraRotation")*CLHEP::degree;
+
       _wallOuterMetalThickness  = config.getDouble("ttracker.straw.wallOuterMetal.thickness")*CLHEP::mm;
       _wallInnerMetal1Thickness = config.getDouble("ttracker.straw.wallInnerMetal1.thickness")*CLHEP::mm;
       _wallInnerMetal2Thickness = config.getDouble("ttracker.straw.wallInnerMetal2.thickness")*CLHEP::mm;
@@ -660,6 +674,37 @@ namespace mu2e {
 
     // calculate/make a panel envelope
     computePanelBoxParams(panel, plane);
+
+    // make EBkey
+
+    // need to decide how to apply the rotation; it seems it is deferred to ConstructTTrackerTDR
+    // let's do it the same way it is done for the panels
+
+    // panel._EBKeys = PlacedTubs("EBKey",
+    //                            TubsParams(_EBKeyInnerRadius,
+    //                                       _EBKeyOuterRadius,
+    //                                       _EBKeyHalfLength,
+    //                                       0.,
+    //                                       _EBKeyPhiRange),
+    //                            EBKeyPosition,
+    //                            EBKeyRotation,
+    //                            _EBKeyMaterial);
+
+    panel._EBKey       = TubsParams(_EBKeyInnerRadius,
+                                    _EBKeyOuterRadius,
+                                    _EBKeyHalfLength,
+                                    0.,
+                                    _EBKeyPhiRange);
+
+    panel._EBKeyShield = TubsParams(_EBKeyInnerRadius,
+                                    _EBKeyOuterRadius,
+                                    _EBKeyShieldHalfLength,
+                                    0.,
+                                    _EBKeyPhiRange);
+
+    panel._EBKeyMaterial         = _EBKeyMaterial;
+    panel._EBKeyShieldMaterial   = _EBKeyShieldMaterial;
+    panel._EBKeyPhiExtraRotation = _EBKeyPhiExtraRotation;
 
 //std::cout << "<-<-<- makePanel\n";
   }  // makePanel
@@ -1456,23 +1501,25 @@ namespace mu2e {
 
       // the top beam is different
 
-      size_t ibeam(0);
+      // size_t ibeam(0);
+
+      // top beam is no longer there
 
       std::ostringstream bos("TTrackerSupportBeam_",std::ios_base::ate); // to write at the end
-      bos << std::setfill('0') << std::setw(2) << ibeam;
+      bos << std::setfill('0') << std::setw(2);
 
-      supportBeamParams.insert(std::pair<std::string,
-                               TubsParams>(bos.str(),
-                                           TubsParams(_beam0_innerRadius,
-                                                      _beam0_outerRadius,
-                                                      zHalf,
-                                                      _beam0_phiRange[0]*CLHEP::degree,
-                                                      (_beam0_phiRange[1]- _beam0_phiRange[0])*CLHEP::degree)));
+      // supportBeamParams.insert(std::pair<std::string,
+      //                          TubsParams>(bos.str(),
+      //                                      TubsParams(_beam0_innerRadius,
+      //                                                 _beam0_outerRadius,
+      //                                                 zHalf,
+      //                                                 _beam0_phiRange[0]*CLHEP::degree,
+      //                                                 (_beam0_phiRange[1]- _beam0_phiRange[0])*CLHEP::degree)));
 
-      sup._beamBody.push_back( PlacedTubs( bos.str(),
-                                           supportBeamParams.at(bos.str()), // to make sure it exists
-                                           CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff),
-                                           _beam0_material) );
+      // sup._beamBody.push_back( PlacedTubs( bos.str(),
+      //                                      supportBeamParams.at(bos.str()), // to make sure it exists
+      //                                      CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff),
+      //                                      _beam0_material) );
 
       // make the first support beam (1) , the other one (2) is a mirror reflection
       // phi0 can be negative, deltaPhi must not
@@ -2102,5 +2149,10 @@ namespace mu2e {
     double sign = ( jplane == 0 || jplane == 3) ? -1. : 1.;
     return sign*_panelZSide.at(ipanel);
   }
+
+  // made inside the panel
+  // void
+  // TTrackerMaker::makePanelEBKey(int ipanel, int iplane) {
+  // }
 
 } // namespace mu2e
