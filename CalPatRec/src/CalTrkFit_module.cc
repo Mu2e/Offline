@@ -517,7 +517,7 @@ namespace mu2e {
       if (fabs(dt) < _maxdtmiss) {
 
 					// make sure we haven't already used this hit
-	TrkStrawHit  *tsh, *closest;
+	TrkStrawHit  *tsh, *closest(NULL);
 	bool found = false;
 
 	Straw const&      straw = _tracker->getStraw(sh.strawIndex());
