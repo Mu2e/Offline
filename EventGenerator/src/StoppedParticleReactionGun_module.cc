@@ -157,9 +157,10 @@ namespace mu2e {
       res.initialize<EjectedProtonSpectrum>(*elow, *ehi, spectrumRes);
     }
     else if (spectrumShape == "tabulated") {
+      // assume that tabulated are the bin centers
       res.initialize(loadTable<2>( ConfigFileLookupPolicy()( psphys.get<std::string>("spectrumFileName"))) );
-      *elow = res.getAbscissa(0);
-      *ehi = res.getAbscissa(res.getNbins()-1);
+      *elow = res.getAbscissa(0)-res.getBinWidth()/2;
+      *ehi  = res.getAbscissa(res.getNbins()-1)+res.getBinWidth()/2;
     }
     else {
       throw cet::exception("BADCONFIG")
