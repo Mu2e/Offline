@@ -11,16 +11,22 @@ BEGIN_PROLOG
 TrkReco: {
     DoubletAmbigResolver : {
 	debugLevel                          : 0
-	HitAmbigPenalty 		    : false
 	HitMinDrift			    : 0.2
 	ZeroDriftPenalty 		    : 0.05
-	scaleErrDoublet                     : 5.   # external error scale factor
-	maxDoubletChi2                      : 10.  # to account for 1+4+4, not quite rigorous mathematically 
-	sigmaSlope                          : 0.025
+	HitAmbigPenalty 		    : false
+#------------------------------------------------------------------------------
+# the following parameters are used for making decisions, but not for 
+# the doublet reconstruction
+#------------------------------------------------------------------------------
+#	sigmaSlope                          : 0.025
+	sigmaSlope                          : 0.05
+	maxDoubletChi2                      : 20.   # to account 3**2 + 3**2, not quite rigorous mathematically 
+	scaleErrDoublet                     : 5.    # external error scale factor
 	minDriftDoublet                     : 0.3
 	deltaDriftDoublet                   : 0.3
 	excludeBothHits                     : 1
-	minChi2Ratio                        : 0.1
+	minChi2Ratio                        : 0.2
+	maxHitChi                           : 5.    # 
     }
 }
 END_PROLOG
