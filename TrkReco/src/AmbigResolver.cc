@@ -34,6 +34,7 @@ namespace mu2e {
     convert(krep->hitVector(),tshv);
     for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
       (*itsh)->setExtErr(_extErr);
+      (*itsh)->setPenalty(0);
     }
   }
 
