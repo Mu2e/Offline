@@ -298,8 +298,9 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
 // find MC truth DOCA in a given straw
 // start from finding the right vector of StepPointMC's
 //-----------------------------------------------------------------------------
-      int vol_id;
-      int nstraws = _ListOfMCStrawHits->size();
+      int vol_id, nstraws(0);
+
+      if (_ListOfMCStrawHits) nstraws = _ListOfMCStrawHits->size();
 
       const mu2e::StepPointMC* step(0);
 
@@ -403,7 +404,7 @@ void ObjectDumpUtils::printKalRepCollection(const art::Event* Event        ,
 
   art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
 
-  Event->getByLabel("makeSH","StrawHitMCPtr",mcptrHandle);
+  Event->getByLabel("makeSH","",mcptrHandle);
   if (mcptrHandle.isValid()) {
     _ListOfMCStrawHits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
   }
@@ -431,4 +432,3 @@ void ObjectDumpUtils::printKalRepCollection(const art::Event* Event        ,
 
 
 }
-

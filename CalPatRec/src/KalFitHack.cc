@@ -281,7 +281,7 @@ namespace mu2e
 
     if (_initt0) {
       if (!caloInitCond) {
-        initT0(*kres._tdef, t0);
+        initT0(kres, t0);
       }
       else {
         initCaloT0(CCluster, *kres._tdef, t0);
@@ -745,7 +745,7 @@ namespace mu2e
     unsigned nind = tdef.strawHitIndices().size();
     for(unsigned iind=0;iind<nind;iind++){
       size_t istraw = tdef.strawHitIndices().at(iind);//[iind];
-      const StrawHit& strawhit(tdef.strawHitCollection()->at(istraw));
+      const StrawHit& strawhit(KRes.shcol()->at(istraw));
       const Straw& straw = _tracker->getStraw(strawhit.strawIndex());
       double fltlen = tdef.helix().zFlight(straw.getMidPoint().z());
     // estimate arrival time at the wire
@@ -1056,7 +1056,6 @@ namespace mu2e
 // also - from addHits
 // here we call fitter not invoking the fitIteration
 //-----------------------------------------------------------------------------
-//      KRes._decisionMode = _decisionMode;
       _ambigresolver[last_iteration]->resolveTrk(KRes._krep);
 
       KRes.fit();
@@ -1124,29 +1123,30 @@ namespace mu2e
 
 
 //-----------------------------------------------------------------------------
-  void KalFitHack::initT0(TrkDefHack const& tdef, TrkT0& t0) {
+  void KalFitHack::initT0(KalFitResult& KRes, TrkT0& t0) {
     using namespace boost::accumulators;
 // make an array of all the hit times, correcting for propagation delay
-    unsigned nind = tdef.strawHitIndices().size();
+    const TrkDefHack* tdef = KRes._tdef;
+    unsigned nind = tdef->strawHitIndices().size();
     std::vector<double> times;
     times.reserve(nind);
     // get flight distance of z=0
-    double t0flt = tdef.helix().zFlight(0.0);
+    double t0flt = tdef->helix().zFlight(0.0);
     // estimate the momentum at that point using the helix parameters.  This is
     // assumed constant for this crude estimate
-    double mom = TrkMomCalculator::vecMom(tdef.helix(),bField(),t0flt).mag();
+    double mom = TrkMomCalculator::vecMom(tdef->helix(),bField(),t0flt).mag();
     // compute the particle velocity
-    double vflt = tdef.particle().beta(mom)*CLHEP::c_light;
+    double vflt = tdef->particle().beta(mom)*CLHEP::c_light;
     // for crude estimates, we only need 1 d2t function
     D2T d2t;
     static CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
     // loop over strawhits
-    for(unsigned iind=0;iind<nind;iind++){
-      size_t istraw = tdef.strawHitIndices()[iind];
-      const StrawHit& strawhit(tdef.strawHitCollection()->at(istraw));
+    for (unsigned iind=0; iind<nind; iind++) {
+      size_t istraw = tdef->strawHitIndices()[iind];
+      const StrawHit& strawhit(KRes.shcol()->at(istraw));
       const Straw& straw = _tracker->getStraw(strawhit.strawIndex());
       // compute the flightlength to this hit from z=0 (can be negative)
-      double hflt = tdef.helix().zFlight(straw.getMidPoint().z()) - t0flt;
+      double hflt = tdef->helix().zFlight(straw.getMidPoint().z()) - t0flt;
       // Use this to estimate the time for the track to reaches this hit from z=0
       double tprop = hflt/vflt;
       // estimate signal propagation time on the wire assuming the middle (average)

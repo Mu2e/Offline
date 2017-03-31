@@ -17,8 +17,6 @@
 #include "BTrk/BaBar/BaBar.hh"
 // KalFitHack objects
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
-#include "CalPatRec/inc/TrkDefHack.hh"
-#include "CalPatRec/inc/KalFitResult.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
 #include "BTrk/KalmanTrack/KalContext.hh"
@@ -29,6 +27,9 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "CalPatRec/inc/CalTimePeak.hh"
+#include "CalPatRec/inc/TrkDefHack.hh"
+#include "CalPatRec/inc/KalFitResult.hh"
+
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
@@ -143,7 +144,7 @@ namespace mu2e {
     void fitIteration(KalFitResult& kres , int Iteration, const CaloCluster* CCluster);
     void fitTrack    (KalFitResult& kres , const CaloCluster* CCluster=NULL);
     void initCaloT0  (const CaloCluster*  CCluster, TrkDefHack const& tdef, TrkT0& t0);
-    void initT0      (TrkDefHack const& tdef , TrkT0& t0);
+    void initT0      (KalFitResult& KRes , TrkT0& t0);
 //-----------------------------------------------------------------------------
 // main function: given a track definition, create a fit object from it
 //-----------------------------------------------------------------------------

@@ -20,7 +20,7 @@
 
 // HelixFitHack objects
 #include "CalPatRec/inc/TrkDefHack.hh"
-// BaBar
+
 #include "BTrk/TrkBase/TrkErrCode.hh"
 //CLHEP
 //root
@@ -28,7 +28,7 @@
 
 #include "LsqSums4.hh"
 
-#include "CalPatRec/inc/HelixDefHack.hh"
+// #include "CalPatRec/inc/HelixDefHack.hh"
 #include "CalPatRec/inc/CalTimePeak.hh"
 #include "CalPatRec/inc/XYZPHack.hh"
 #include "CalPatRec/inc/HelixFitHackResult.hh"
@@ -232,7 +232,7 @@ namespace mu2e {
 
     int   isHitUsed(int index);
 
-    void fillXYZP                     (HelixDefHack const& mytrk);
+    void fillXYZP                     (TrkDefHack const& mytrk);
     void filterDist                   ();
     void filterUsingPatternRecognition(HelixFitHackResult&  mytrk);
     bool findHelix                    (HelixFitHackResult& Helix);

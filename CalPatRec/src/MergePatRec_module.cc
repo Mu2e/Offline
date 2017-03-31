@@ -337,22 +337,22 @@ namespace mu2e {
 
 					// calculate number of doublets 
 
-	std::vector<mu2e::Doublet> list_of_doublets;
-	_dar->findDoublets  (krep_cpr,&list_of_doublets);
+	vector<mu2e::Doublet> list_of_doublets;
+	_dar->findDoublets(krep_cpr,&list_of_doublets);
 
-	int nd = list_of_doublets.size();
 //-----------------------------------------------------------------------------
 // counting only 2+ hit doublets
 //-----------------------------------------------------------------------------
 	mu2e::Doublet*                     d;
-	mu2e::DoubletAmbigResolver::Data_t r;
+	//	mu2e::DoubletAmbigResolver::Data_t r;
 	
 	int   nd_tot(0), nd_os(0), nd_ss(0), ns;
 
 	int nad(0);                     // number of doublets with at least one hit active
 	
+	int nd = list_of_doublets.size();
 	for (int i=0; i<nd; i++) {
-	  d  = &list_of_doublets.at(i);
+	  d  = (mu2e::Doublet*) &list_of_doublets.at(i);
 	  ns = d->fNStrawHits;
 	  
 	  if (ns > 1) { 

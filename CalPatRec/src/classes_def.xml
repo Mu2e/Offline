@@ -32,19 +32,9 @@
 
  <class name="art::Wrapper<mu2e::CalTimePeakCollection>"/>
 
-<!--- <class name="mu2e::hitIndex"/> -->
-<!--- <class name="std::vector<mu2e::hitIndex>"/> -->
-
-
-<!-- <class name="mu2e::hitIndex"/> -->
-<!-- <class name="mu2e::hitIndexCollection"/> -->
-<!-- <class name="art::Ptr<mu2e::hitIndex>"/> -->
-<!-- <class name="std::vector<art::Ptr<mu2e::hitIndex> >"/> -->
-<!-- <class name="art::Wrapper<mu2e::hitIndexCollection>"/> -->
 
  <class name="LsqSums4"/>
  <class name="mu2e::KalFitHack"/>
-<!--  <class name="Ref"/> -->
 
 <class name="mu2e::HelixFitHack"/>
 <class name="mu2e::HelixFitHackResult" />
