@@ -1092,8 +1092,6 @@ namespace mu2e {
     Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
     art::Handle<mu2e::KalRepPtrCollection> eleHandle, muoHandle;
 
-    vector<Doublet>       ele_listOfDoublets, muo_listOfDoublets;
-
     double         firsthitfltlen, lasthitfltlen, entlen;
     double         path, eprob, muprob;
 
@@ -1102,11 +1100,12 @@ namespace mu2e {
     int            found, ele_nhits, muo_nhits, ncommon;
 
     const mu2e::StrawHit               *esh, *msh;
-    //    mu2e::Doublet                      *d;
-    mu2e::DoubletAmbigResolver::Data_t r;
+    //    mu2e::DoubletAmbigResolver::Data_t r;
 
     vector<double>         gaspaths;
     vector<double>         edeps;
+
+    vector<Doublet>        ele_listOfDoublets, muo_listOfDoublets;
 
     const KalRep            *ele_Trk, *muo_Trk;
 

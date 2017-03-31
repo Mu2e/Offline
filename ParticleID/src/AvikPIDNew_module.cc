@@ -866,25 +866,22 @@ namespace mu2e {
     Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
 
     art::Handle<mu2e::KalRepPtrCollection> handle;
-    vector<Doublet>                        listOfDoublets;
 
     double         firsthitfltlen, lasthitfltlen, entlen;
     double         path, dedx_prob_ele, dedx_prob_muo;
 
     int const      max_ntrk(100);
-    int            n_trk; // , unique[max_ntrk];
-    //    int            /*found, */ nhits;
+    int            n_trk; 
 
-    //    const mu2e::StrawHit  *esh, *msh;
-    //    mu2e::Doublet                      *d;
-    mu2e::DoubletAmbigResolver::Data_t r;
+    vector<Doublet>                    listOfDoublets;
 
     vector<double>         gaspaths;
     vector<double>         edeps;
     const KalRep            *trk;
 
     TrkHitVector            hots;
-    const mu2e::TrkStrawHit *hit ; // , *ehit;
+    const mu2e::TrkStrawHit *hit ;
+
 
     _evtid = event.id().event();
 
@@ -932,7 +929,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // track hit doublets
 //-----------------------------------------------------------------------------
-      _dar->findDoublets  (trk,&listOfDoublets);
+      _dar->findDoublets(trk,&listOfDoublets);
 //-----------------------------------------------------------------------------
 // dE/dX: use only 'active' hits
 // calculate dE/dX, clear vectors, start forming a list of hits from the track
