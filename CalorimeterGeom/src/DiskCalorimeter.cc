@@ -21,15 +21,17 @@ namespace mu2e {
 
 
 
-    std::vector<int> DiskCalorimeter::neighborsByLevel(int crystalId, int level)  const
+    std::vector<int> DiskCalorimeter::neighborsByLevel(int crystalId, int level, bool rawMap)  const
     {
         int iv = fullCrystalList_.at(crystalId)->diskId();
 
 	int offset(0);
 	for (int i=0;i<iv;++i) offset += disk(i).nCrystals();
 
-	std::vector<int> list = disk(iv).findLocalNeighbors( fullCrystalList_.at(crystalId)->localId() ,level);
-	transform(list.begin(), list.end(), list.begin(),bind2nd(std::plus<int>(), offset));  
+        std::vector<int> list = disk(iv).findLocalNeighbors(fullCrystalList_.at(crystalId)->localId(),level,rawMap);
+	if (rawMap) transform(list.begin(), list.end(), list.begin(), [=](int i){return i>-1? i+offset :-1;});
+       // else     transform(list.begin(), list.end(), list.begin(),bind2nd(std::plus<int>(), offset));  
+        else     transform(list.begin(), list.end(), list.begin(),[=](int i){return i+offset;});  
 
 	return list;
     }

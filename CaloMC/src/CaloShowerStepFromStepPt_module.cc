@@ -158,6 +158,7 @@ namespace mu2e {
           TH1F*  hStopPos2_;
           TH1F*  hStartPos2_;
           TH1F*  hZpos_;
+          TH1F*  hEdep_;
           TH1F*  hEtot_;
           TH2F*  hZpos2_;
           TH1F*  hGenId_;
@@ -207,6 +208,7 @@ namespace mu2e {
            hZpos_      = tfs->make<TH1F>("hZpos",     "Step z pos",            20,     0,    20);
            hZpos2_     = tfs->make<TH2F>("hZpos2",    "Step z pos",            20,     0,    20, 100, 0, 5);
            hEtot_      = tfs->make<TH1F>("hEtot",     "Sim stop position",    150,     0,   150);
+           hEdep_      = tfs->make<TH1F>("hEdep",     "Sim stop position",    150,     0,   15);
            hGenId_     = tfs->make<TH1F>("hSimId",    "Gen Id",               150,    -10,  140);
 	}   
     }
@@ -486,6 +488,7 @@ namespace mu2e {
                   {
                       hZpos_->Fill(idx);
 		      hZpos2_->Fill(idx,buffer.energyDep(idx));
+                      hEdep_->Fill(buffer.energyDep(idx));
                       if (sim->genParticle()) hGenId_->Fill(sim->genParticle()->generatorId().id());
                          else hGenId_->Fill(-1);
                       
@@ -513,6 +516,8 @@ namespace mu2e {
               if (diagLevel_ > 2) 
               {
                   hZpos_->Fill(i);
+                  hZpos2_->Fill(i,buffer.energyDep(i));
+                  hEdep_->Fill(buffer.energyDep(i));
                   if (sim->genParticle()) hGenId_->Fill(sim->genParticle()->generatorId().id()); 
                   else hGenId_->Fill(-1);
                   

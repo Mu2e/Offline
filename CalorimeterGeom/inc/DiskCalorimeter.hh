@@ -63,10 +63,10 @@ namespace mu2e {
 
 
   	    // neighbors, indexing 
-            virtual const std::vector<int>&  neighbors(int crystalId)     const  {return fullCrystalList_.at(crystalId)->neighbors();}	  
-            virtual const std::vector<int>&  nextNeighbors(int crystalId) const  {return fullCrystalList_.at(crystalId)->nextNeighbors();}	  
-            
-            virtual       std::vector<int>   neighborsByLevel(int crystalId, int level)           const; 
+            virtual const std::vector<int>&  neighbors(int crystalId, bool rawMap)     const  {return fullCrystalList_.at(crystalId)->neighbors(rawMap);}	  
+            virtual const std::vector<int>&  nextNeighbors(int crystalId, bool rawMap) const  {return fullCrystalList_.at(crystalId)->nextNeighbors(rawMap);}	  
+                        
+            virtual       std::vector<int>   neighborsByLevel(int crystalId, int level, bool rawMap) const; 
             virtual int                      crystalIdxFromPosition(const CLHEP::Hep3Vector &pos) const;
 
 

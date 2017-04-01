@@ -41,6 +41,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <numeric>
 
 #include "TH1D.h"
 #include "TMVA/Reader.h"
@@ -52,8 +53,8 @@ namespace {
 
    struct BDTinput
    {   
-      float e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,e12,e13,e14,e15,e16,e17,e18,e19,e20,e21,e22,e23;
-      float t0,t1,r0;
+      float e0,e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,e12,e13,e14,e15,e16,e17,e18,e19,e20,e21,e22,e23;
+      float t0,t1,r0,z0;
       float sp0,sp1,sp2,sp3;
    };
 }
@@ -128,7 +129,7 @@ namespace mu2e {
 
        art::ServiceHandle<art::TFileService> tfs;
        _hXY       = tfs->make<TH1F>("XY_diff","Clu - TRK X-Y dist",100,-100,100.);
-       _hT        = tfs ->make<TH1F>("T_diff","Clu - TRK Time dist",100,-10,10.);
+       _hT        = tfs->make<TH1F>("T_diff","Clu - TRK Time dist",100,-10,10.);
        _hChi2     = tfs->make<TH1F>("Chi2",    "Chi2",200,0,400.);
        _hChi2Time = tfs->make<TH1F>("Chi2Pos", "Chi2",200,0,400.);
        _hChi2Pos  = tfs->make<TH1F>("Chi2Time","Chi2",200,0,400.);
@@ -258,7 +259,7 @@ namespace mu2e {
    
    }
 
-
+   /*
    double TrackCaloMatchingMVA::calcChi2Pos(const Calorimeter& cal, const CaloCluster& cluster, 
                                             const CLHEP::Hep3Vector& trkMomentum, const CLHEP::Hep3Vector& posTrkMatch, 
                                             double trkTime, double cellsize)
@@ -266,7 +267,6 @@ namespace mu2e {
   
         const auto& hit0 = cluster.caloCrystalHitsPtrVector().at(0);
         CLHEP::Hep3Vector center = cal.geomUtil().mu2eToDiskFF(cal.crystal(hit0->id()).diskId(), cal.crystal(hit0->id()).position());
-	  
 
         std::vector<double> matrixX,matrixY,matrixE;                
         for (const auto& hit : cluster.caloCrystalHitsPtrVector() )
@@ -309,14 +309,14 @@ namespace mu2e {
             std::cout<<"[TrackCaloMatchingMVA::calcChi2Pos]"<<val1<<" "<<val2<<std::endl;
         }
                 
-	_hXY->Fill(valX-posTrkMatch.x());
-	_hXY->Fill(valY-posTrkMatch.y());
+	if (diagLevel_ > 2) _hXY->Fill(valX-posTrkMatch.x());
+	if (diagLevel_ > 2) _hXY->Fill(valY-posTrkMatch.y());
         
         return chi2;
         
     }
-
- 
+    
+    
     void TrackCaloMatchingMVA::setReader(TMVA::Reader& reader, std::string filename)
     {
         reader.AddVariable( "e2", &input_.e2);
@@ -344,6 +344,126 @@ namespace mu2e {
         reader.AddVariable( "t0", &input_.t0);
         reader.AddVariable( "t1", &input_.t1);
         reader.AddVariable( "r0", &input_.r0);
+        reader.AddSpectator( "cogX:=c0",  &input_.sp0);
+        reader.AddSpectator( "cogY:=c1",  &input_.sp1);
+        reader.AddSpectator( "VDX:=c2",  &input_.sp2);
+        reader.AddSpectator( "VDY:=c3",  &input_.sp3); 
+        reader.BookMVA("BDTG method", filename ); 
+    }   
+    
+    
+    */
+   
+   
+   double TrackCaloMatchingMVA::calcChi2Pos(const Calorimeter& cal, const CaloCluster& cluster, 
+                                            const CLHEP::Hep3Vector& trkMomentum, const CLHEP::Hep3Vector& posTrkMatch, 
+                                            double trkTime, double cellsize)
+   {
+  
+        const auto& hit0 = cluster.caloCrystalHitsPtrVector().at(0);
+        CLHEP::Hep3Vector center = cal.geomUtil().mu2eToDiskFF(cal.crystal(hit0->id()).diskId(), cal.crystal(hit0->id()).position());
+        
+        std::vector<int> neighbors1 = cal.neighbors(hit0->id(),true);
+        std::vector<int> neighbors2 = cal.nextNeighbors(hit0->id(),true);
+        neighbors1.insert(neighbors1.end(), neighbors2.begin(), neighbors2.end());
+            
+        double eCells(0);
+        std::vector<double> evec;
+        evec.push_back(hit0->energyDep());
+
+        for (auto& in : neighbors1)
+        {
+           if (in == -1){evec.push_back(-1);continue;}
+
+           double eCell(0);
+           for (const auto& hit : cluster.caloCrystalHitsPtrVector() )                 
+               if (hit->id()==in) eCell=hit->energyDep();
+
+           evec.push_back(eCell);
+           eCells += eCell;           
+        }
+        
+        input_.e0 = evec[0];
+        input_.e1 = evec[1];
+        input_.e2 = evec[2];
+        input_.e3 = evec[3];
+        input_.e4 = evec[4];
+        input_.e5 = evec[5];
+        input_.e6 = evec[6];
+        input_.e7 = evec[7];
+        input_.e8 = evec[8];
+        input_.e9 = evec[9];
+        input_.e10 = evec[10];
+        input_.e11 = evec[11];
+        input_.e12 = evec[12];
+        input_.e13 = evec[13];
+        input_.e14 = evec[14];
+        input_.e15 = evec[15];
+        input_.e16 = evec[16];
+        input_.e17 = evec[17];
+        input_.e18 = evec[18];
+        input_.e19 = evec[19];
+        input_.e20 = cluster.energyDep()-eCells;
+                    
+        input_.t0  = trkMomentum.phi();
+        input_.t1  = trkMomentum.theta();
+        input_.r0  = sqrt(center.x()*center.x()+center.y()*center.y())/1000;
+        input_.z0  = posTrkMatch.z()/200;
+        
+        
+        double val1 = (readerX_.EvaluateRegression("BDTG method"))[0];
+        double val2 = (readerY_.EvaluateRegression("BDTG method"))[0];       
+        double valX = cellsize*val1+center.x();
+        double valY = cellsize*val2+center.y();       
+        double chi2 = ( (valX-posTrkMatch.x())*(valX-posTrkMatch.x()) + 
+                        (valY-posTrkMatch.y())*(valY-posTrkMatch.y())   )/sigmaXY_/sigmaXY_;
+                
+        if (diagLevel_ >3)
+        {
+            std::cout<<"[TrackCaloMatchingMVA::calcChi2Pos] center"<<center<<std::endl;
+            std::cout<<"[TrackCaloMatchingMVA::calcChi2Pos]"<<input_.e2<<" "<<input_.e3<<" "<<input_.e4<<" "<<input_.e5
+                     <<input_.e6<<" "<<input_.e7<<" "<<input_.e8<<" "<<input_.e9<<" "<<input_.e10<<" "<<input_.e11<<" "<<input_.e12
+                     <<" "<<input_.e13<<" "<<input_.e14<<" "<<input_.e15<<" "<<input_.e16<<" "<<input_.e17<<" "<<input_.e18
+                     <<" "<<input_.e19<<" "<<input_.e20<<" "<<input_.e21<<" "<<input_.e22<<"    "
+                     <<input_.t1<<" "<<input_.t1<<" "<<input_.r0<<std::endl;
+            std::cout<<"[TrackCaloMatchingMVA::calcChi2Pos]"<<val1<<" "<<val2<<std::endl;
+        }
+                
+	if (diagLevel_ > 2) _hXY->Fill(valX-posTrkMatch.x());
+	if (diagLevel_ > 2) _hXY->Fill(valY-posTrkMatch.y());
+        
+        return chi2;
+        
+    }
+
+ 
+    void TrackCaloMatchingMVA::setReader(TMVA::Reader& reader, std::string filename)
+    {
+        reader.AddVariable( "e0", &input_.e0);
+        reader.AddVariable( "e1", &input_.e1);
+        reader.AddVariable( "e2", &input_.e2);
+        reader.AddVariable( "e3", &input_.e3);
+        reader.AddVariable( "e4", &input_.e4);
+        reader.AddVariable( "e5", &input_.e5);
+        reader.AddVariable( "e6", &input_.e6);
+        reader.AddVariable( "e7", &input_.e7);
+        reader.AddVariable( "e8", &input_.e8);
+        reader.AddVariable( "e9", &input_.e9);
+        reader.AddVariable( "e10", &input_.e10);
+        reader.AddVariable( "e11", &input_.e11);
+        reader.AddVariable( "e12", &input_.e12);
+        reader.AddVariable( "e13", &input_.e13);
+        reader.AddVariable( "e14", &input_.e14);
+        reader.AddVariable( "e15", &input_.e15);
+        reader.AddVariable( "e16", &input_.e16);
+        reader.AddVariable( "e17", &input_.e17);
+        reader.AddVariable( "e18", &input_.e18);
+        reader.AddVariable( "e19", &input_.e19);
+        reader.AddVariable( "e20", &input_.e20);
+        reader.AddVariable( "t0", &input_.t0);
+        reader.AddVariable( "t1", &input_.t1);
+        reader.AddVariable( "r0", &input_.r0);
+        reader.AddVariable( "z0", &input_.z0);
         reader.AddSpectator( "cogX:=c0",  &input_.sp0);
         reader.AddSpectator( "cogY:=c1",  &input_.sp1);
         reader.AddSpectator( "VDX:=c2",  &input_.sp2);

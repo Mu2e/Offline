@@ -103,18 +103,19 @@ namespace mu2e {
 
 
       //find the local indexes of the crystal neighbors for a given level (level = number of rings away)
-      std::vector<int> Disk::findLocalNeighbors(int crystalId, int level) const
+      std::vector<int> Disk::findLocalNeighbors(int crystalId, int level, bool raw) const
       {
-	   std::vector<int> list; 
+           std::vector<int> list; 
 	   std::vector<int> temp(crystalMap_->neighbors(crystalToMap_.at(crystalId),level));
-
-	   for (unsigned int i=0;i<temp.size();++i)
-	     if (mapToCrystal_.at(temp[i])>-1) list.push_back(mapToCrystal_.at(temp[i]));
+                      	   
+           for (unsigned int i=0;i<temp.size();++i)
+           {
+	      if (raw) {list.push_back(mapToCrystal_.at(temp[i]));}
+              else {if (mapToCrystal_.at(temp[i])>-1) list.push_back(mapToCrystal_.at(temp[i]));}	      
+           } 
 	   
-	   return list;
-      }
-
-      
+           return list;
+      }      
       
       //Slightly inefficient but robust integration. Divide the area between the disk and 
       //the first few crystals into tiny squares, and sum square surface in the empty space
