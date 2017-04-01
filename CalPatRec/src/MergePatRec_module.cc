@@ -137,8 +137,6 @@ namespace mu2e {
   MergePatRec::MergePatRec(fhicl::ParameterSet const& pset) :
     _diag                   (pset.get<int>("diagLevel" )),
     _debugLevel             (pset.get<int>("debugLevel")),
-    _tpart                  ((TrkParticle::type)(pset.get<int>("fitparticle"))),
-    _fdir                   ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
     _trkPatRecModuleLabel   (pset.get<std::string>("trkPatRecModuleLabel"   )),
     _calPatRecModuleLabel   (pset.get<std::string>("calPatRecModuleLabel"   ))
   {

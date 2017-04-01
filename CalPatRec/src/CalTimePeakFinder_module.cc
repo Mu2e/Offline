@@ -4,6 +4,7 @@
 // It passes TimeClusters to CalPatRecNew
 // P.Murat, G.Pezzullo
 // try to order routines alphabetically
+// *FIXME* : need to use the assumed particle velocity instead of the speed of light
 ///////////////////////////////////////////////////////////////////////////////
 #include "fhiclcpp/ParameterSet.h"
 
@@ -313,6 +314,7 @@ namespace mu2e {
             zstraw = straw->getMidPoint().z();
 //-----------------------------------------------------------------------------
 // estimate time-of-flight and calculate residual between the predicted and the hit times
+// 2017-03-31 P.M.: this assumes electron (e^- or e^+), not muon
 //-----------------------------------------------------------------------------
             tof = (zcl-zstraw)/sin(_pitchAngle)/CLHEP::c_light;
             dt  = cl_time-(time+tof-meanDriftTime);

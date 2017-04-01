@@ -266,11 +266,11 @@ namespace mu2e {
 // at least one segment
 //-----------------------------------------------------------------------------
       if(kalSeed->particle() != _tpart || kalSeed->fitDirection() != _fdir ) {
-	throw cet::exception("RECO")<<"mu2e::KalFinalFit: wrong particle or direction"<< endl;
+	throw cet::exception("RECO")<<"mu2e::CalTrkFit::filter wrong particle or direction"<< endl;
       }
 
       if(kalSeed->segments().size() < 1) {
-	throw cet::exception("RECO")<<"mu2e::KalFinalFit: no segments"<< endl;
+	throw cet::exception("RECO")<<"mu2e::CalTrkFit::filter no segments"<< endl;
       }
 //-----------------------------------------------------------------------------
 // find the segment at the 0 flight
