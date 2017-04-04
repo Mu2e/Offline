@@ -162,9 +162,13 @@ namespace mu2e {
           TH1F*  hEtot_;
           TH2F*  hZpos2_;
           TH1F*  hGenId_;
+          TH1F*  hVolId_;
+          TH1F*  hTime_;
           double totalEdep_;
           int    totalStep_;
 
+          TH1F*  hEdep2_;
+          TH1F*  hPdgId_;
 
 
          void makeCompressedHits(const HandleVector&, const HandleVector&, CaloShowerStepCollection&,  
@@ -208,8 +212,12 @@ namespace mu2e {
            hZpos_      = tfs->make<TH1F>("hZpos",     "Step z pos",            20,     0,    20);
            hZpos2_     = tfs->make<TH2F>("hZpos2",    "Step z pos",            20,     0,    20, 100, 0, 5);
            hEtot_      = tfs->make<TH1F>("hEtot",     "Sim stop position",    150,     0,   150);
-           hEdep_      = tfs->make<TH1F>("hEdep",     "Sim stop position",    150,     0,   15);
+           hEdep_      = tfs->make<TH1F>("hEdep",     "Sim stop position",    500,     0,   100);
+           hEdep2_     = tfs->make<TH1F>("hEdep2",    "Sim stop position",    500,     0,   10000);
+           hPdgId_     = tfs->make<TH1F>("hPdgId",    "Pdg Id",               200,   -200,  200);
            hGenId_     = tfs->make<TH1F>("hSimId",    "Gen Id",               150,    -10,  140);
+           hVolId_     = tfs->make<TH1F>("hVolId",    "Vol Id",               2000,     0, 2000);
+           hTime_      = tfs->make<TH1F>("hTime",     "Time",                 2000,     0, 2000);
 	}   
     }
 
@@ -489,6 +497,10 @@ namespace mu2e {
                       hZpos_->Fill(idx);
 		      hZpos2_->Fill(idx,buffer.energyDep(idx));
                       hEdep_->Fill(buffer.energyDep(idx));
+                      hEdep2_->Fill(buffer.energyDep(idx));
+                      hVolId_->Fill(volId);
+                      hTime_->Fill(buffer.time(idx));
+                      hPdgId_->Fill(sim->pdgId());
                       if (sim->genParticle()) hGenId_->Fill(sim->genParticle()->generatorId().id());
                          else hGenId_->Fill(-1);
                       
@@ -518,6 +530,10 @@ namespace mu2e {
                   hZpos_->Fill(i);
                   hZpos2_->Fill(i,buffer.energyDep(i));
                   hEdep_->Fill(buffer.energyDep(i));
+                  hEdep2_->Fill(buffer.energyDep(i));
+                  hVolId_->Fill(volId);
+                  hPdgId_->Fill(sim->pdgId());
+                  hTime_->Fill(buffer.time(i));
                   if (sim->genParticle()) hGenId_->Fill(sim->genParticle()->generatorId().id()); 
                   else hGenId_->Fill(-1);
                   
