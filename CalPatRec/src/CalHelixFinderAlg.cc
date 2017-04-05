@@ -85,12 +85,11 @@ namespace mu2e {
 
     static const double pi(M_PI), halfpi(pi/2.0);
 
-    HepVector pvec, perr;
+    HepVector pvec(5,0), perr(5,0);
 
     // the helix fit introduces a radial bias due to an asymmetry in the detector (more phase space for
     // noise hits outside the circle than inside.  correct for it.
     double radius = Helix._radius + _rbias;
-    pvec          = HepVector(5,0);
     // omega is the inverse transverse radius of the particle's circular motion.  
     // It is signed by the particle angular momentum about the cirle center.
     // This CANNOT be deduced geometrically, so must be supplied as an ad-hoc assumption
@@ -112,7 +111,6 @@ namespace mu2e {
     // choose z0 (which loop) so that f=0 is as close to z=0 as possible
     pvec[HelixTraj::z0Index] = dphi*pvec[HelixTraj::tanDipIndex]/pvec[HelixTraj::omegaIndex];
     // estimated covariance based on average performance.  These should be parameters, FIXME!!!
-    perr = HepVector(5,0);
     perr[HelixTraj::d0Index]     = 34.0;
     perr[HelixTraj::phi0Index]   = 0.02;
     perr[HelixTraj::omegaIndex]  = 0.0002;
@@ -121,8 +119,9 @@ namespace mu2e {
 
     HepSymMatrix hcov = vT_times_v(perr);
 
-    if (Helix._helix == NULL) Helix._helix = new HelixTraj(pvec,hcov);
-    else                     *Helix._helix =     HelixTraj(pvec,hcov);
+    HelixTraj ht(pvec,hcov);
+
+    Helix._helix = ht.clone();
   }
 
 //-------------------------------------------------------------------------//
