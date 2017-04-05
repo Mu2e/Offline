@@ -32,6 +32,7 @@ namespace mu2e
       bool _hascc; // Calo Cluster
       unsigned _minnhits;
       double _mintime, _maxtime;
+      int _debug;
       // counters
       unsigned _nevt, _npass;
   };
@@ -42,6 +43,7 @@ namespace mu2e
     _minnhits(pset.get<unsigned>("MinNHits",11)),
     _mintime(pset.get<double>("MinTime",500.0)),
     _maxtime(pset.get<double>("MaxTime",1695.0)) ,
+    _debug(pset.get<int>("debugLevel",1)),
     _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
@@ -69,6 +71,9 @@ namespace mu2e
 	// but filtering is by event!
 	size_t index = std::distance(tccol->begin(),itc);
 	triginfo->_hitCluster = art::Ptr<TimeCluster>(tcH,index);
+	if(_debug > 1){
+	  cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
+	}
 	break;
       }
     }
@@ -77,7 +82,7 @@ namespace mu2e
   }
 
   bool TimeClusterFilter::endRun( art::Run& run ) {
-    if(_nevt > 0){
+    if(_debug > 0 && _nevt > 0){
       cout << *currentContext()->moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
     }
     return true;

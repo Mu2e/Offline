@@ -37,7 +37,8 @@ namespace mu2e
       unsigned _minnhits;
       double _minmom, _maxmom, _maxchi2dof, _maxmomerr;
       TrkFitFlag _goods; // helix fit flag
-      // counters
+      int _debug;
+  // counters
       unsigned _nevt, _npass;
   };
 
@@ -50,6 +51,7 @@ namespace mu2e
     _maxchi2dof(pset.get<double>("MaxChi2DOF",10.0)),
     _maxmomerr(pset.get<double>("MaxMomErr",1.5)),
     _goods(pset.get<vector<string> >("SeedFitFlag",vector<string>{"SeedOK"})),
+    _debug(pset.get<int>("debugLevel",1)),
     _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
@@ -85,6 +87,9 @@ namespace mu2e
 	// but filtering is by event!
 	size_t index = std::distance(kscol->begin(),iks);
 	triginfo->_track = art::Ptr<KalSeed>(ksH,index);
+	if(_debug > 1){
+	  cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
+	}
 	break;
       }
     }
@@ -93,8 +98,8 @@ namespace mu2e
   }
 
   bool SeedFilter::endRun( art::Run& run ) {
-    if(_nevt > 0){
-      cout << *currentContext()->moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+    if(_debug > 0 && _nevt > 0){
+      cout << *currentContext()->moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
     }
     return true;
   }
