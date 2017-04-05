@@ -109,7 +109,7 @@ namespace mu2e {
     CalHelixFinderData();
     ~CalHelixFinderData();
 
-    // CalHelixFinderData(const CalHelixFinderData& hfitRes);
+    CalHelixFinderData(const CalHelixFinderData& Data);
 
     // CalHelixFinderData& operator =(CalHelixFinderData const& other);
 

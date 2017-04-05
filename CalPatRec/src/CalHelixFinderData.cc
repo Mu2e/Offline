@@ -4,6 +4,9 @@
 #include "CalPatRec/inc/CalHelixFinderData.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 
+using CLHEP::HepVector;
+using CLHEP::HepSymMatrix;
+
 namespace mu2e {
 
 //-----------------------------------------------------------------------------
@@ -11,6 +14,35 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   CalHelixFinderData::CalHelixFinderData() {
     _helix = NULL;
+  }
+
+//-----------------------------------------------------------------------------
+  CalHelixFinderData::CalHelixFinderData(const CalHelixFinderData& Data) {
+    _timeCluster    = Data._timeCluster;
+    _timeClusterPtr = Data._timeClusterPtr;
+					// the only pointer owned 
+    if (Data._helix) _helix = Data._helix->clone();
+    else             _helix = NULL;
+
+    _goodhits       = Data._goodhits;
+    _tpart          = Data._tpart;
+    _fdir           = Data._fdir;
+    _shcol          = Data._shcol;
+    _shpos          = Data._shpos;
+    _shfcol         = Data._shfcol;
+    _fit            = Data._fit;
+    _sxy            = Data._sxy;
+    _srphi          = Data._srphi;
+    _center         = Data._center;
+    _radius         = Data._radius;
+    _chi2           = Data._chi2;
+    _sxyw           = Data._sxyw;
+    _cw             = Data._cw;
+    _rw             = Data._rw;
+    _chi2w          = Data._chi2w;
+    _dfdz           = Data._dfdz;
+    _fz0            = Data._fz0;
+    _diag           = Data._diag;
   }
 
 //-----------------------------------------------------------------------------
