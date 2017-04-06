@@ -1,0 +1,47 @@
+# Run AggregateDAQOutput module to combine DataBlocks from
+# specified input root files
+# Usage: mu2e -c DAQ/test/aggregateOutput.fcl -s <input root files> -n '-1'
+#
+#
+# Contact person Tomonari Miyashita
+
+process_name : FileDumper
+
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+  maxEvents   : 5
+}
+
+physics : {
+
+  analyzers : {
+    binaryOutput: {
+      module_type     : AggregateDAQOutput
+      diagLevel       : 2
+      maxFullPrint    : 0
+
+      includeTracker : 1
+      includeCalorimeter : 1
+      includeCosmicRayVeto: 0
+      # Cosmic ray veto module is currently incomplete
+
+      generateTimestampTable : 1
+      
+      outputFile      : "DTC_packets.bin"
+      maxDMABlockSize : 32000
+      bufferSize      : 1000
+    }
+  }
+
+  e1        : [binaryOutput]
+  end_paths : [e1]
+}
+
+outputs:  {
+
+}
+
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300

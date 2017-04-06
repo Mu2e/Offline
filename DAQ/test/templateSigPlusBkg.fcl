@@ -1,0 +1,45 @@
+#
+# Example fcl file for creating the necessary inputs to run a grid job that generates DTC packets
+# based on a signal + background simulation.
+#
+# Example for running five grid jobs:
+# setup mu2etools
+# setup mu2efiletools
+# head -n5 DAQ/test/conversion-pass2.txt > inputs.txt
+# 
+# generate_fcl --desc=my-reco-test \
+#              --dsconf=v0 \
+#              --merge=1 \
+#              --inputs=inputs.txt \
+#              --aux=1:@bgHitFiles:<path to DAQ/test/mixp2-tmplist-cut.txt> \
+#              DAQ/test/templateSigPlusBkg.fcl
+#
+# setup mu2efiletools
+# mkdir /pnfs/mu2e/scratch/users/<your username>/FCL
+# cp -R 000 /pnfs/mu2e/scratch/users/<your username>/FCL
+# ls /pnfs/mu2e/scratch/users/<your username>/FCL/$1/*.fcl > tempList.txt
+# mu2eprodsys --transfer-all-files \
+#             --fcllist=tempList.txt \
+#             --setup=<path to your Offline/setup.sh> \
+#             --wfproject=DTC_DIGI \
+#             --dsconf=myOffline \
+#             --expected=2h
+
+BEGIN_PROLOG
+bgHitFiles : @nil
+END_PROLOG
+
+#include "DAQ/test/SignalPlusBackground.fcl"
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+
+services.TFileService.fileName: "nts.owner.my-ce-reco.ver.seq.root"
+outputs.outfile.fileName: "nts.owner.my-ce-reco.ver.hit_data.art"
+
+# Uncomment the following line if you want to keep all DataProducts and
+# not just DataBlocks (useful for troubleshooting)
+# outputs.outfile.outputCommands: [ "keep *" ]
+
+# source.maxEvents : 10
+
+# source.module_type : EmptyEvent

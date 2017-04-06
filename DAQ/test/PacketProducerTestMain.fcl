@@ -1,0 +1,212 @@
+# -*- mode: tcl -*-
+#
+#  This script is an example of how to configure the TrkPacketProducer, CalPacketProducer, and CrvPacketProducer
+#  modules to generate simulated DTC packets.
+#
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+#include "TrkDiag/fcl/KalDiag.fcl"
+
+process_name : PacketProducerTestMain
+
+source :
+{
+  module_type : RootInput
+}
+
+services :
+{
+  message : @local::default_message
+  TFileService : { fileName : "PacketProducerTest.root" }
+  RandomNumberGenerator: { }
+
+#  GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
+  GeometryService        : { inputFile : "Mu2eG4/geom/geom_common_cd3_s4p2.txt" }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+  G4Helper               : { }
+  BTrkHelper : @local::BTrkHelperDefault
+  SeedService: @local::automaticSeeds
+}
+
+#------------------------------------------------------------------------------
+# reconstruction and analysis modules
+#------------------------------------------------------------------------------
+
+physics :
+{
+  producers :
+  {
+    generate             : @local::generate
+    g4run                : @local::g4run    
+    protonTimeMap        : @local::protonTimeMap
+    muonTimeMap          : @local::muonTimeMap
+
+    @table::EventMixing.producers
+    @table::Tracking.producers
+    
+    @table::CaloDigiMC.producers
+
+#    CrvPhotonArrivals:
+#    {
+#      module_type               : CrvPhotonArrivalsGenerator
+#      g4ModuleLabels            : ["*"]
+#      processNames              : ["*"]
+#      lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_6600",
+#                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_5600",
+#                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_4500",
+#                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_3000",
+#                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_2300",
+#                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_900"]
+#      lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
+#      scintillationYield        : 5000.0   //5000.0 photons per MeV (corresponds to 38.6 PE/SiPM)
+#      scintillationYieldTolerance :  0.0   //0%
+#      scintillatorBirksConstant : 0.126    //0.126 mm/Mev
+#      scintillatorRatioFastSlow : 1.0      //100% fast
+#      scintillatorDecayTimeFast : 3.0      //3.0 ns   //includes WLS component in the scintillator
+#      scintillatorDecayTimeSlow : 100.0    //100.0 ns  //unknown, not used
+#      fiberDecayTime            : 7.4      //7.4 ns
+#      startTime                 : 400.0    //0.0 ns
+#    }
+#    CrvSiPMResponses:
+#    {
+#      module_type                  : CrvSiPMResponsesGenerator
+#      crvPhotonArrivalsModuleLabel : "CrvPhotonArrivals"
+#      deadSiPMProbability          : 0.01
+#      numberPixels                 : 1584
+#      numberPixelsAtFiber          : 615
+#      bias                         : 2.4        //V
+#      scaleFactor                  : 0.08
+#      blindTime                    : 500.0      //ns
+#
+#      GeigerProbCoef               : 1.0        // = pc
+#      GeigerProbVoltScale          : 5.5        // = vs
+#                                                //from the SiPM specs:
+#                                                //Geiger probability at over voltage v = 2.4V (bias voltage): 
+#                                                //0.35 = 1 - exp(-pow(v,pc)/vs)
+#                                                //Geiger probability at over voltage v = 1.0V: 
+#                                                //0.17 = 1 - exp(-pow(v,pc)/vs)
+#
+#      TrapType0Prob                : 0.0        //0.14       //trap_prob*trap_type0_prob=0.2*0.7
+#      TrapType1Prob                : 0.0        //0.06       //trap_prob*trap_type1_prob=0.2*0.3
+#      TrapType0Lifetime            : 5.0        //ns
+#      TrapType1Lifetime            : 50.0       //ns
+#
+#      ThermalProb                  : 2.9e-3     //ns^-1     1MHz/GeigerProb at SiPM --> 2.9e6 s^-1 = 2.9e-3 ns^-1 
+#
+#      PhotonProduction             : 0.136      // = p (photon probability with every charge release)
+#                                                //total cross talk probability cp:
+#                                                //use probability to release a charge r = 0.35 (Geiger probability)
+#                                                //cp = p*r + (p*r)^2 + (p*r)^3 + ... = 0.05
+#    }
+#    CrvWaveforms:
+#    {
+#      module_type                  : CrvWaveformsGenerator
+#      crvSiPMResponsesModuleLabel  : "CrvSiPMResponses"
+#      singlePEWaveformFileName     : "CRVResponse/fcl/singlePEWaveform.txt"
+#      singlePEWaveformPrecision    : 0.5    //0.5 ns
+#      singlePEWaveformMaxTime      : 100    //100 ns
+#      digitizationPrecision        : 12.5   //12.5 ns (digitizer sampling rate)
+#      digitizationPoints           : 8      //8 points
+#      FEBtimeSpread                : 2.0    //2.0 ns
+#      minVoltage                   : 0.022  //22mV (corresponds to 3.5PE)
+#    }
+
+    CalorimeterPacketProducer: {
+      module_type      : CaloPacketProducer
+      makerModuleLabel : CaloDigiFromShower
+      diagLevel        : 0
+      maxFullPrint     : 0
+      generateTextFile : 1
+    }
+
+    TrackerPacketProducer: {
+      module_type      : TrkPacketProducer
+      makerModuleLabel : makeSD
+      diagLevel        : 0
+      maxFullPrint     : 0
+      generateTextFile : 1
+    }
+#
+#    CosmicRayVetoPacketProducer: {
+#      module_type      : CrvPacketProducer
+#      makerModuleLabel : CrvWaveforms
+#      diagLevel        : 0
+#      maxFullPrint     : 0
+#      generateTextFile : 1
+#    }
+
+  }
+
+  filters :
+  {
+    @table::EventMixing.filters
+  }
+
+  analyzers :
+  {
+      genCountLogger: { module_type: GenEventCountReader }
+
+      Info: {
+        module_type: ViewAllProvenances
+      }
+
+   }
+
+  p1 : [
+        generate, 
+        g4run, 
+	@sequence::EventMixing.CD3Mixers,
+	@sequence::EventMixing.TimeMaps,
+	protonTimeMap, muonTimeMap,
+	@sequence::Tracking.DigiSim,
+	@sequence::CaloDigiMC.DigiSim,
+	
+#	CrvPhotonArrivals,
+#	CrvSiPMResponses,
+#	CrvWaveforms,
+
+	CalorimeterPacketProducer,
+	TrackerPacketProducer
+#	CosmicRayVetoPacketProducer
+       ] 
+
+   e1 : [ outfile ]
+  
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+
+outputs: {
+
+  outfile :  {
+    module_type   :   RootOutput
+    fileName      :   "hit_data.root"
+
+    outputCommands: [ "drop *",
+		      "keep mu2e::StrawDigis_makeSD_*_*",
+                      "keep mu2e::DataBlocks_TrackerPacketProducer_*_*",
+                      "keep mu2e::DataBlocks_CalorimeterPacketProducer_*_*"
+#                      "keep mu2e::DataBlocks_CosmicRayVetoPacketProducer_*_*"
+                     ]
+  }
+
+}
+
+# specify the time offset maps when building straw digis
+physics.producers.makeSD.TimeOffsets.inputs : [ "protonTimeMap", "muonTimeMap" ] 
+
+# patch Calo
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
+
+# specify background frame files: these must be define outside this script, before it is included
+physics.filters.flashMixer.fileNames : @local::bgHitFiles
+physics.filters.ootMixer.fileNames : @local::bgHitFiles
+physics.filters.dioMixer.fileNames : @local::bgHitFiles
+physics.filters.neutronMixer.fileNames : @local::bgHitFiles
+physics.filters.photonMixer.fileNames : @local::bgHitFiles
+physics.filters.protonMixer.fileNames : @local::bgHitFiles
+physics.filters.deuteronMixer.fileNames : @local::bgHitFiles
