@@ -70,9 +70,9 @@ namespace mu2e {
   protected:
 
     std::string     _fitterModuleLabel;
-    TrkParticle     _tpart;
+    //    TrkParticle     _tpart;
     
-    TrkFitDirection _fdir;
+    //    TrkFitDirection _fdir;
 					// Diagnostic level
     int             _debugLevel;
 
@@ -105,8 +105,8 @@ namespace mu2e {
 
     explicit TrackCaloMatching(fhicl::ParameterSet const& pset):
       _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
-      _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
-      _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
+      // _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
+      // _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
       _debugLevel             (pset.get<int>   ("debugLevel"     )),
       _minClusterEnergy      (pset.get<double>("minClusterEnergy")),    
       _maxDeltaT             (pset.get<double>("maxDeltaT"       )),

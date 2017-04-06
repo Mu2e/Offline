@@ -1,0 +1,12 @@
+           Release notes for Mu2e Offline software, v6_1_4
+
+1) 2017-03-30 P.Murat
+   merge back development on calpatrec branch:
+
+   - CalPatRec split into 4 modules: CalTimePeakFinder, CalHelixFinder, CalSeedFit, CalTrkFit
+   - diagnostics histogramming implemented using art 'tools' - module-loadable plugins
+   - update SConstruct to handle *_tool.cc files as 'tools'
+   - tune DoubletAmbigResolver
+   - zero penalty errors in AmbigResolver in the beginning of iteration
+   - fix half-bin issue in handling tabulated spectra in StoppedParticleReactionGun
+   - use std::isnan in EventDisplay code

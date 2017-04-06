@@ -80,9 +80,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void HelixFitHack::helixParams(HelixFitHackResult const& helix,
 				 CLHEP::HepVector&         pvec,
-				 CLHEP::HepVector&         perr) const 
-  {
-    HelixDefHack const& mytrk = helix._hdef;
+				 CLHEP::HepVector&         perr) const {
+    TrkDefHack const& mytrk = helix._hdef;
     static const double pi(M_PI);
     //    static const double twopi(2*pi);
     static const double halfpi(pi/2.0);
@@ -117,7 +116,6 @@ namespace mu2e {
     perr[HelixTraj::omegaIndex]  = 0.0002;
     perr[HelixTraj::tanDipIndex] = 0.05;
     perr[HelixTraj::z0Index]     = 15.0;
-
   }
 
 //-------------------------------------------------------------------------//
@@ -254,7 +252,7 @@ namespace mu2e {
     fCaloY    = tpos.y();   
     fCaloZ    = tpos.z();   
 
-    HelixDefHack const& mytrk = Helix._hdef;
+    TrkDefHack const& mytrk = Helix._hdef;
 //-----------------------------------------------------------------------------
 //  compute the allowed radial range for this fit
 //-----------------------------------------------------------------------------
@@ -320,7 +318,7 @@ namespace mu2e {
     fCaloY    = TimePeak->ClusterY();   
     fCaloZ    = TimePeak->ClusterZ();   
 
-    HelixDefHack const& mytrk = Helix._hdef;
+    TrkDefHack const& mytrk = Helix._hdef;
 //-----------------------------------------------------------------------------
 //  compute the allowed radial range for this fit
 //-----------------------------------------------------------------------------
@@ -850,16 +848,7 @@ namespace mu2e {
     if ( (nentries - overflows) == 0) _hdfdz = _mpDfDz;
 
     return 1;
-    // if ( (nentries - overflows) > 8 ) {
-//       return 1;
-//     } else {
-//       _hdfdz = _mpDfDz;
-//       return 0;
-//     }
   }
-    
-
-
 
 //-----------------------------------------------------------------------------
 //
@@ -1231,27 +1220,26 @@ namespace mu2e {
 // 12-09-2013 gianipez modified this procedure to avoid the doubling of the 
 // same stereohitposition 
 //-------------------------------------------------------------------------
-  void HelixFitHack::fillXYZP(HelixDefHack const& mytrk){
+  void HelixFitHack::fillXYZP(TrkDefHack const& Helix){
       
     //clear xyzp vector
     _xyzp.clear();
     
     const Tracker& tracker = getTrackerOrThrow();
     
-    const std::vector<StrawHitIndex> shIndices = mytrk.strawHitIndices();
+    const std::vector<StrawHitIndex> shIndices = Helix.strawHitIndices();
     
     int size = shIndices.size();
-
-    //--------------------------------------------------------------------------------
-    if (mytrk.strawHitPositionCollection() != 0) {
+//--------------------------------------------------------------------------------
+    if (Helix.shpos() != 0) {
       int loc;
       StrawHitFlag flag;
       for (int i=0; i<size; ++i) { 
 	loc                = shIndices[i];
-	flag               = mytrk.strawHitFlagCollection()->at(loc);
-	StrawHit const& sh = mytrk.strawHitCollection()->at(loc);
+	flag               = Helix.shfcol()->at(loc);
+	StrawHit const& sh = Helix.shcol()->at(loc);
 	Straw const& straw = tracker.getStraw(sh.strawIndex());
-	StrawHitPosition const& shp = mytrk.strawHitPositionCollection()->at(loc);
+	StrawHitPosition const& shp = Helix.shpos()->at(loc);
 //-----------------------------------------------------------------------------
 // don't reuse straw hits 
 //-----------------------------------------------------------------------------
@@ -1281,9 +1269,7 @@ namespace mu2e {
 	      } );
   }
 
-
-  
-
+ 
 //----------------------------------------------------------------------------
 //2015-01-17 G. Pezzullo: the following procedure looks the hit with 
 // z-coordinate smaller then the seeding one and calculates distance from
@@ -3082,17 +3068,6 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 //
 //-----------------------------------------------------------------------------
 void HelixFitHack::plotXY(int ISet) {
-  //  TFolder* fol;
-
-//   fol = (TFolder*) gROOT->GetRootFolder()->FindObject("Mu2e/CalPatRec");
-
-//   if (fol == NULL) {
-//     printf(" fol is not defined, exit\n");
-//     return;
-//   }
-
-//   Ref* ref = (Ref*) fol->FindObject("Ref");
-//   mu2e::HelixFitHack* hfit = ref->fHelixFit;
 
   std::vector<mu2e::XYZPHack>* xyzp;
   HelixFitHackResult*          helx;

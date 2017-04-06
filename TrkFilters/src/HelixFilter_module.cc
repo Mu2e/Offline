@@ -37,6 +37,7 @@ namespace mu2e
       unsigned _minnhits;
       double _minmom, _maxmom;
       TrkFitFlag _goodh; // helix fit flag
+      int _debug;
       // counters
       unsigned _nevt, _npass;
   };
@@ -48,6 +49,7 @@ namespace mu2e
     _minmom(pset.get<double>("MinMomentum",280.0)),
     _maxmom(pset.get<double>("MaxMomentum",380.0)) ,
     _goodh(pset.get<vector<string> >("HelixFitFlag",vector<string>{"HelixOK"})),
+    _debug(pset.get<int>("debugLevel",1)),
     _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
@@ -66,7 +68,9 @@ namespace mu2e
       auto const& hs = *ihs;
     // compute the helix momentum.  Note this is in units of mm!!!
       float hmom = sqrt(hs.helix().radius()*hs.helix().radius() + hs.helix().lambda()*hs.helix().lambda());
- 
+      if(_debug > 2){
+	cout << *currentContext()->moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << endl;
+      }
       if( hs.status().hasAllProperties(_goodh) &&
 	  (!_hascc || hs.caloCluster().isNonnull()) &&
 	  hs.hits().size() >= _minnhits &&
@@ -79,6 +83,9 @@ namespace mu2e
 	// but filtering is by event!
 	size_t index = std::distance(hscol->begin(),ihs);
 	triginfo->_helix = art::Ptr<HelixSeed>(hsH,index);
+	if(_debug > 1){
+	  cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
+	}
 	break;
       }
     }
@@ -87,7 +94,7 @@ namespace mu2e
   }
 
   bool HelixFilter::endRun( art::Run& run ) {
-    if(_nevt > 0){
+    if(_debug > 0 && _nevt > 0){
       cout << *currentContext()->moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
     }
     return true;

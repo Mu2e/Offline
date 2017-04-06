@@ -92,7 +92,6 @@ namespace art {
 #include <set>
 #include <map>
 
-class Ref;
 class THackData;
 
 namespace fhicl {
@@ -169,14 +168,10 @@ namespace mu2e {
       TH1F   *ctsp, *rtsp, *ttsp, *ltsp, *tdtsp;
     };
 
-    Ref*    _ref;
-
   protected:
 //-----------------------------------------------------------------------------
 // data members
 //-----------------------------------------------------------------------------
-    //    TStopwatch*   fStopwatch;
-
     unsigned     _iev;
 					// configuration parameters
     int          _diagLevel; 
@@ -193,8 +188,6 @@ namespace mu2e {
     std::string      _ccmLabel; // caloClusterModuleLabel
     std::string      _crmLabel;
     std::string      _chmccpLabel;
-
-    //    std::string      _dtspecpar;
 
     StrawHitFlag     _tsel, _hsel, _addsel, _ksel;
     StrawHitFlag     _bkgsel, _addbkg;

@@ -13,6 +13,7 @@ namespace art {
 #else
 #  include "art/Framework/Core/EDFilter.h"
 #  include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 #endif
 
 // data
@@ -41,7 +42,6 @@ namespace art {
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
-#include "CalPatRec/inc/TrkDefHack.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
@@ -51,14 +51,17 @@ namespace art {
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
-//#include "CalPatRec/inc/CalTimePeak.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
+
+#include "TrkReco/inc/DoubletAmbigResolver.hh"
 
 #include "TROOT.h"
 #include "TFolder.h"
-#include "CalPatRec/inc/KalFitHack.hh"
-#include "CalPatRec/inc/HelixFitHack.hh"
-#include "CalPatRec/inc/THackData.hh"
+#include "CalPatRec/inc/KalFitHackNew.hh"
+#include "CalPatRec/inc/CalTrkFit_types.hh"
+#include "CalPatRec/inc/CprModuleHistBase.hh"
+
+//#include "CalPatRec/inc/THackData.hh"
 
 // Mu2e
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -78,11 +81,6 @@ namespace art {
 #include "TTree.h"
 #include "TFolder.h"
 
-//#include "TStopwatch.h"
-// #include "TSpectrum.h"
-// #include "TSpectrum2.h"
-// #include "TSpectrum3.h"
-// #include "TMVA/Reader.h"
 // boost
 // C++
 #include <iostream>
@@ -95,7 +93,6 @@ namespace art {
 #include <set>
 #include <map>
 
-class Ref;
 class THackData;
 
 namespace fhicl {
@@ -108,37 +105,22 @@ namespace mu2e {
   class TTracker;
 
   class CalTrkFit : public art::EDFilter {
-  public:
-
-    struct Hist_t {
-      TH1F*  nhits;           // number of hits on a htrack candidate
-      TH1F*  chi2[2];
-      TH1F*  p [2];
-      TH1F*  ntracks[2];
-      TH1F*  kaldoca[2];
-    };
-
-    Ref*    _ref;
-
   protected:
 //-----------------------------------------------------------------------------
 // data members
 //-----------------------------------------------------------------------------
-    //    TStopwatch*   fStopwatch;
-
     unsigned            _iev;
-	    	  	  			// configuration parameters
+	    	  	  		// configuration parameters
     int                 _diagLevel; 
     int                 _debugLevel;
     int                 _printfreq;
-    int                 _useAsFilter; //allows to use the module as a produer or as a filter
+    int                 _useAsFilter;   // allows to use the module as a produer or as a filter
     bool                _addhits; 
     std::vector<double> _zsave;
-
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
-    std::string         _shLabel ; // MakeStrawHit label (makeSH)
+    std::string         _shLabel ;      // MakeStrawHit label (makeSH)
     std::string         _shDigiLabel;
     std::string         _shpLabel;
     std::string         _shfLabel;
@@ -153,21 +135,18 @@ namespace mu2e {
     
     TrkParticle         _tpart;	        // particle type being searched for
     TrkFitDirection     _fdir;		// fit direction in search
-
-    int                 _nhits_from_gen;
 //-----------------------------------------------------------------------------
 // cache of event objects
 //-----------------------------------------------------------------------------
     const StrawHitCollection*             _shcol;
     const StrawHitFlagCollection*         _shfcol;
     const StrawHitPositionCollection*     _shpcol;
-    const PtrStepPointMCVectorCollection* _listOfMCStrawHits;
 
     const KalSeedCollection*              _trkseeds;
 
-    KalFitHack                            _kfit;     // full-blown src/Kalman filter
+    KalFitHackNew                         _fitter;    // full-blown src/Kalman filter
 
-    KalFitResult*                         _kfresult; // full fit result
+    KalFitResultNew                       _result; // full fit result
 
     std::vector<StrawHitIndex>            _hitIndices;
     int                                   _nindex;
@@ -184,16 +163,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // diagnostics histograms
 //-----------------------------------------------------------------------------
-    Hist_t                                _hist;
+    CalTrkFit_Data_t                      _data;
+    CalTrkFit_Hist_t                      _hist;
+    std::unique_ptr<CprModuleHistBase>    _hmanager;
+    DoubletAmbigResolver*                 _dar;
+    vector<Doublet>*                      _listOfDoublets;
 
-    THackData*                            fHackData;
-
-    int                                   _minNMCHits;
-
-    double                                _mbtime;               // period of 1 microbunch
-    SimParticleTimeOffset*                fgTimeOffsets;
-
-    HelixTraj*                            _helTraj;
+    double                                _mbtime;    // period of 1 microbunch
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -210,17 +186,7 @@ namespace mu2e {
 // helper functions
 //-----------------------------------------------------------------------------
     bool findData         (const art::Event& e);
-//----------------------------------------------------------------------
-// 2015 - 02 - 16 Gianipez added the two following functions
-//----------------------------------------------------------------------
-    void findDoublets     (KalRep* krep, DoubletCollection *dcol);//search doublets in a giventimepeak
-    void findLoopApex     (){}//search the straw hits src/closer to the apexes of the helix loops
-
-    void findMissingHits  (KalFitResult& kalfit, std::vector<StrawHitIndex>& indices);
-    void bookHistograms   ();
-
-    void init             (KalFitResult*&  KRes, TrkDefHack* TDef);
-
+    void findMissingHits  (KalFitResultNew&  KRes);
   };
 }
 #endif

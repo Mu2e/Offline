@@ -11,6 +11,8 @@
 #define TrkDefHack_HH
 // Mu2e
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
@@ -23,58 +25,95 @@
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 
-class TrkDifPieceTraj;
-
-namespace mu2e 
-{
-  //  typedef size_t hitIndex;
+namespace mu2e  {
+  
+  class CalTimePeak;
+  class HelixSeed;
+  class KalSeed;
+  
   class TrkDefHack {
   public:
-    TrkDefHack(TimeCluster const& tcluster, HelixTraj const& helix,
-      TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
-    // TrkDefHack(const StrawHitCollection* shcol, std::vector<mu2e::hitIndex> const& hits, 
-    //   HelixTraj const& htraj,
-    //   TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
-    // TrkDefHack(const StrawHitCollection* shcol, std::vector<mu2e::hitIndex> const& hits, 
-    //   TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
-    TrkDefHack(const StrawHitCollection* shcol, std::vector<StrawHitIndex> const& hits, 
-      HelixTraj const& htraj,
-      TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
-    TrkDefHack(const StrawHitCollection* shcol, std::vector<StrawHitIndex> const& hits, 
-      TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
-    TrkDefHack(TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
-    TrkDefHack(const TrkDefHack&);
-    TrkDefHack& operator = (const TrkDefHack&);
-    ~TrkDefHack();
-  // append a straw hit to this track definition
-    void appendHit(size_t index) { _timeCluster._strawHitIdxs.push_back(index); }
-  // accessors
-    //    const std::vector<hitIndex>& strawHitIndices() const { return _timeCluster._strawHitIdxs;}
-    const std::vector<StrawHitIndex>& strawHitIndices() const { return _timeCluster._strawHitIdxs;}
-    const HelixTraj& helix() const { return _h0; }
-    const CLHEP::HepSymMatrix &helixCovMatr() const { return _h0.parameters()->covariance(); }
-    const CLHEP::HepSymMatrix &covMatr() const { return _dcov; }
-    TrkParticle const& particle() const { return _tpart; }
-    TrkFitDirection const& fitdir() const { return _fdir; }
-    void setHelix(HelixTraj const& helix) { _h0 = helix; }
-    //    void setIndices(std::vector<hitIndex> const& indices ) { _timeCluster._strawHitIdxs = indices; }
-    void setIndices(std::vector<StrawHitIndex> const& indices ) { _timeCluster._strawHitIdxs = indices; }
-    TrkT0 const& t0() const { return _timeCluster._t0; }
-    void setT0( TrkT0 const& t0) { _timeCluster._t0 = t0; }
-    const StrawHitCollection* strawHitCollection() const { return _shcol ; }
-  protected:
-    const StrawHitCollection* _shcol;
-    TimeCluster _timeCluster; // t0 and hit indices
-    HelixTraj _h0; // helix estimate, valid in the region around z=0
-// particle type.  Note this defines both the charge and the mass
-    TrkParticle _tpart;
-// fit direction
-    TrkFitDirection _fdir;
-// dummy variables
-    static CLHEP::HepVector _dpar;
+    HelixTraj                  _h0;          // helix estimate, valid in the region around z=0
+    TimeCluster                _timeCluster; // t0 and hit indices
+    TrkParticle                _tpart;       // particle type. Defines both the charge and the mass
+    TrkFitDirection            _fdir;        // fit direction
+
+    const StrawHitCollection*         _shcol;
+    const StrawHitPositionCollection* _shpos;
+    const StrawHitFlagCollection*     _shfcol;
+
+    // dummy variables
+
+    static CLHEP::HepVector    _dpar;
     static CLHEP::HepSymMatrix _dcov;
-    static TrkParticle _eminus;
-    static TrkFitDirection _downstream;
+    static TrkParticle         _eminus;
+    static TrkFitDirection     _downstream;
+
+  public:
+
+    TrkDefHack(const KalSeed*                     Seed                   ,
+	       const StrawHitCollection*          StrawCollection  = NULL,
+	       const StrawHitPositionCollection*  ShPosCollection  = NULL, 
+	       const StrawHitFlagCollection*      ShFlagCollection = NULL, 
+	       TrkParticle     const&             tpart = _eminus    ,
+	       TrkFitDirection const&             fdir  = _downstream);
+
+    TrkDefHack(const HelixSeed*                   Seed                   ,
+	       const StrawHitCollection*          StrawCollection  = NULL,
+	       const StrawHitPositionCollection*  ShPosCollection  = NULL, 
+	       const StrawHitFlagCollection*      ShFlagCollection = NULL, 
+	       TrkParticle     const&             tpart = _eminus    ,
+	       TrkFitDirection const&             fdir  = _downstream);
+
+    TrkDefHack(const CalTimePeak*                 TimePeak               ,
+	       const StrawHitCollection*          StrawCollection  = NULL,
+	       const StrawHitPositionCollection*  ShPosCollection  = NULL, 
+	       const StrawHitFlagCollection*      ShFlagCollection = NULL, 
+	       TrkParticle     const&             tpart = _eminus    ,
+	       TrkFitDirection const&             fdir  = _downstream);
+
+    TrkDefHack(const TimeCluster*                 TCluster         = NULL,
+	       const StrawHitCollection*          StrawCollection  = NULL,
+	       const StrawHitPositionCollection*  ShPosCollection  = NULL, 
+	       const StrawHitFlagCollection*      ShFlagCollection = NULL, 
+	       TrkParticle     const&             tpart = _eminus    ,
+	       TrkFitDirection const&             fdir  = _downstream);
+
+    TrkDefHack(HelixTraj       const&             Helix	      ,
+	       const TimeCluster*                 TCluster         = NULL,
+	       const StrawHitCollection*          StrawCollection  = NULL,
+	       const StrawHitPositionCollection*  ShPosCollection  = NULL, 
+	       const StrawHitFlagCollection*      ShFlagCollection = NULL, 
+	       TrkParticle     const&             tpart = _eminus    ,
+	       TrkFitDirection const&             fdir  = _downstream);
+
+    ~TrkDefHack();
+
+    // accessors
+
+    const std::vector<StrawHitIndex>& strawHitIndices() const { return _timeCluster._strawHitIdxs;}
+    const HelixTraj&            helix       () const { return _h0; }
+    const CLHEP::HepSymMatrix&  helixCovMatr() const { return _h0.parameters()->covariance(); }
+    const CLHEP::HepSymMatrix&  covMatr     () const { return _dcov; }
+    TrkParticle const&          particle    () const { return _tpart; }
+    TrkFitDirection const&      fitdir      () const { return _fdir; }
+    TrkT0 const&                t0          () const { return _timeCluster._t0; }
+    
+    void setT0     (TrkT0     const& t0   ) { _timeCluster._t0 = t0; }
+    void setHelix  (HelixTraj const& helix) { _h0 = helix; }
+
+    // this is a vector copy by value - why ?  
+    void setIndices(std::vector<StrawHitIndex> const& indices ) { _timeCluster._strawHitIdxs = indices; }
+    int  hitIndex(int I) { return _timeCluster._strawHitIdxs[I]; }
+
+    // append a straw hit to this track definition
+    void appendHit(size_t index) { _timeCluster._strawHitIdxs.push_back(index); }
+    
+    const StrawHitPositionCollection* shpos () const { return _shpos ; }
+    const StrawHitFlagCollection*     shfcol() const { return _shfcol; }
+    const StrawHitCollection*         shcol () const { return _shcol;  }
+
+    void init();
   };
 }
 

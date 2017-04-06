@@ -40,22 +40,22 @@ calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
 # downstream electron and downstream muon reconstruction - needed for particle ID
 #------------------------------------------------------------------------------
 trkPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDeM, 
-			  @sequence::Tracking.TPRDmuM,
-			  MergePatRecDem, MergePatRecDmm ]
+			@sequence::Tracking.TPRDmuM,
+			MergePatRecDem, MergePatRecDmm ]
 
-calPatRecDemDmmSeq  : [ @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm, MergePatRecDem, MergePatRecDmm ]
+calPatRecDemDmmSeq  : [ @sequence::CalPatRec.dem_reco, @sequence::CalPatRec.dmm_reco, MergePatRecDem, MergePatRecDmm ]
 
 allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDeM, 
 			@sequence::Tracking.TPRDmuM,
 			@sequence::cprMakeHitSeq, 
-			CalPatRecDem, CalPatRecDmm,
+			@sequence::CalPatRec.dem_reco, @sequence::CalPatRec.dmm_reco, 
 			MergePatRecDem, MergePatRecDmm ]
 
 # particle identification
 
 vadimPidSeq         : [ @sequence::TrackCaloMatching.matching, ParticleID ]
 avikPidSeq          : [ @sequence::TrackCaloMatching.matching_dem,
-			  @sequence::TrackCaloMatching.matching_dmm,
+			@sequence::TrackCaloMatching.matching_dmm,
 			AvikPID ]
 
 #-----------------------------------------------------------------------------
@@ -175,6 +175,7 @@ physics : {
 # Reject events with no hits from signal-like tracks in the detectors.
 # The filter does not look at the background hits from mixed events.
 #------------------------------------------------------------------------------
+	@table::CalPatRec.filters
 	FilterStepPointMomentum: {
             module_type    : FilterStepPointMomentum
             inputs         : [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]

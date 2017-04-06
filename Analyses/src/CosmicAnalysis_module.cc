@@ -243,7 +243,7 @@ namespace mu2e
   void CosmicAnalysis::findCrossingDetails(const std::vector<CLHEP::HepLorentzVector> &trajectoryPoints, int dim, double crossingPos,
                                            double *crossingPoint, double *crossingDirection)
   {
-    if(!isnan(crossingPoint[0])) return;  //point already found
+    if(!std::isnan(crossingPoint[0])) return;  //point already found
     for(unsigned int i=1; i<trajectoryPoints.size(); i++)
     {
       CLHEP::Hep3Vector point1=trajectoryPoints[i-1]-_detSysOrigin;
@@ -397,7 +397,7 @@ namespace mu2e
           for(size_t k=0; k<kalReps->size(); k++)
           {
             double momentumDifference=fabs(kalReps->at(k).momentum(0).mag()-104.375);
-            if(momentumDifference<minMomentumDifference || isnan(minMomentumDifference)) selectedTrack=k;
+            if(momentumDifference<minMomentumDifference || std::isnan(minMomentumDifference)) selectedTrack=k;
           }
           
           const KalRep &particle = kalReps->at(selectedTrack); 
@@ -512,14 +512,14 @@ namespace mu2e
           barIndex=coincidenceCombinations[i]._counters[j];
           CLHEP::Hep3Vector pos = CRS->getBar(barIndex).getPosition()-_detSysOrigin;
 
-          if(isnan(_eventinfo.firstCoincidenceHitTime) || t<_eventinfo.firstCoincidenceHitTime)
+          if(std::isnan(_eventinfo.firstCoincidenceHitTime) || t<_eventinfo.firstCoincidenceHitTime)
           {
             _eventinfo.firstCoincidenceHitTime=t;
             _eventinfo.firstCoincidenceHitSectorType=sectorType;
             for(int k=0; k<3; k++) _eventinfo.firstCoincidenceHitPos[k]=pos[k];
           }
 
-          if(isnan(_eventinfo.CRVvetoTime[sectorType]) || t<_eventinfo.CRVvetoTime[sectorType])
+          if(std::isnan(_eventinfo.CRVvetoTime[sectorType]) || t<_eventinfo.CRVvetoTime[sectorType])
           {
             _eventinfo.CRVvetoTime[sectorType]=t;
             for(int k=0; k<3; k++) _eventinfo.CRVvetoPos[sectorType][k]=pos[k];
@@ -564,7 +564,7 @@ namespace mu2e
 
         _eventinfo.CRVhit_allSectors =true;
         _eventinfo.CRVhit[sectorType]=true;
-        if(_eventinfo.CRVhitTime[sectorType]>t || isnan(_eventinfo.CRVhitTime[sectorType]))
+        if(_eventinfo.CRVhitTime[sectorType]>t || std::isnan(_eventinfo.CRVhitTime[sectorType]))
         {
           _eventinfo.CRVhitTime[sectorType]=t;
           for(int j=0; j<3; j++)
