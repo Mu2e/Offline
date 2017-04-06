@@ -60,6 +60,9 @@ namespace mu2e
 // loop over the collection: if any pass the selection, pass this event
     for(auto itc = tccol->begin();itc != tccol->end(); ++itc) {
       auto const& tc = *itc;
+      if(_debug > 2){
+	cout << *currentContext()->moduleLabel() << " nhits = " << tc.hits().size() << " t0 = " << tc.t0().t0() << endl;
+      }
       if( (!_hascc || tc.caloCluster().isNonnull()) &&
 	  tc.hits().size() >= _minnhits &&
 	  tc.t0().t0() > _mintime && tc.t0().t0() < _maxtime) {

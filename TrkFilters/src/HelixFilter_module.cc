@@ -68,7 +68,9 @@ namespace mu2e
       auto const& hs = *ihs;
     // compute the helix momentum.  Note this is in units of mm!!!
       float hmom = sqrt(hs.helix().radius()*hs.helix().radius() + hs.helix().lambda()*hs.helix().lambda());
- 
+      if(_debug > 2){
+	cout << *currentContext()->moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << endl;
+      }
       if( hs.status().hasAllProperties(_goodh) &&
 	  (!_hascc || hs.caloCluster().isNonnull()) &&
 	  hs.hits().size() >= _minnhits &&

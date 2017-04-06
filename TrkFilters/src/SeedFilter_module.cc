@@ -74,6 +74,9 @@ namespace mu2e
       float ndof = max(1.0,nactive - 5.0);
     // get the first segment
       KalSegment const& fseg = ks.segments().front();
+      if(_debug > 2){
+	cout << *currentContext()->moduleLabel() << "status = " << ks.status() << " nactive = " << nactive << " mom = " << fseg.mom() << " chisq/dof = " << ks.chisquared()/ndof << endl;
+      }
       if( ks.status().hasAllProperties(_goods) &&
 	  (!_hascc || ks.caloCluster().isNonnull()) &&
 	  nactive >= _minnhits &&
