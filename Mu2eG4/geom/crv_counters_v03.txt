@@ -55,6 +55,7 @@ double          crs.gapSmall                     =   1;   //mm
 double          crs.gapBetweenModules            =   5;   //mm
 vector<double>  crs.gapBetweenLayers             =   {9.525, 12.7, 9.525}; //mm
 double          crs.aluminumSheetThickness       =  1.29; //mm
+double          crs.strongBackThickness          =  12.7; //mm
 
 int             crs.nModulesR1                   =  18;  //0
 int             crs.nModulesR2                   =   1;  //1

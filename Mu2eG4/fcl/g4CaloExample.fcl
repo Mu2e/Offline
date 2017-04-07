@@ -63,7 +63,7 @@ physics: {
             caloHitTruthModuleLabel    : CaloHitTruthMatch
             virtualDetectorName        : virtualdetector
             stepPointMCLabel           : g4run
-  	    trkPatRecModuleLabel       : TRFDeM
+  	    trkPatRecModuleLabel       : KFFDeM
 	    fitparticle                : 11
 	    fitdirection               : 0 
 	    TimeOffsets                :  { inputs : [ "protonTimeMap", "muonTimeMap" ] } 

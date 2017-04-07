@@ -69,10 +69,11 @@ namespace mu2e {
     double _deltaDriftDoublet;
     int    _excludeBothHits;            // when calculating residuals to choose the drift signs 
     double _minChi2Ratio;               // if chi2(best)/chi2(next) < _minChi2Ratio, doublet is "well measured"
+    double _maxHitChi;
 
     int    _sign[4][2];
-    int    _iter; // iteration
-    int	   _Final; // final iteration
+    int    _iter;                       // iteration
+    int	   _Final;                      // final iteration
 //-----------------------------------------------------------------------------
 // constructors and destructor
 //-----------------------------------------------------------------------------
@@ -86,17 +87,18 @@ namespace mu2e {
     void defineHitDriftSign        (mu2e::TrkStrawHit* Hit, int I, Data_t* R) const ;
 
     void findLines                 (CLHEP::Hep3Vector* Pos, double* R, double* Slopes) const ;
-    void findDoublets              (const KalRep* KRep    , vector<Doublet>*   DCol  ) const ;
-
-					// three functions below update hit drift directions
-
+    void findDoublets              (const KalRep* KRep, vector<Doublet>* ListOfDoublets) const ;
+//-----------------------------------------------------------------------------
+// three functions below modify KRes - update hit drift directions and assign penalty errors
+//-----------------------------------------------------------------------------
     void markDoublet               (KalRep* KRes, Doublet *HitDoublet, int Index0, int Index1) const;
-    void markMultiplets            (KalRep* Kres, vector<Doublet>* dcol) const;
+    void markMultiplets            (KalRep* Kres, vector<Doublet>* ListOfDoublets) const ;
     void resolveSingleHit          (KalRep* Kres, mu2e::TrkStrawHit* Hit) const ;
-    
-					// resolve a track.  Depending on the configuration, this might
-					// penalty function depends on the drift radius
-
+//-----------------------------------------------------------------------------
+// overloaded functions of the base class
+// resolve a track.  Depending on the configuration, this might
+// make penalty error virtual ? penalty function depends on the drift radius
+//-----------------------------------------------------------------------------
     double penaltyError(double rdrift) const;
 					// update the hit state and the t0 value.
     virtual bool resolveTrk(KalRep* KRes) const;

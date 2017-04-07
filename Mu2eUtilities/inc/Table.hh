@@ -107,7 +107,7 @@ namespace mu2e {
   }
 
   template <const unsigned N> void Table<N>::printRow( unsigned i ) const {
-    std::cout << rawTable.at(i).first << " " ;
+    std::cout << rawTable_.at(i).first << " " ;
     for ( auto const & val : rawTable_.at(i).second )
       std::cout << val << " " ;
     std::cout << std::endl;

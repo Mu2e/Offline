@@ -22,8 +22,8 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/TimeClusterCollection.hh"
-#include "RecoDataProducts/inc/HelixSeedCollection.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
+#include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 // tracking
 #include "TrkReco/inc/TrkTimeCalculator.hh"

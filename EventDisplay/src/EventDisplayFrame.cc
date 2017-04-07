@@ -19,7 +19,7 @@
 #include <TText.h>
 #include <TTimer.h>
 #include <TView3D.h>
-
+using namespace std;
 #include "EventDisplay/src/TrackColorSelector.h"
 #include "EventDisplay/src/ContentSelector.h"
 #include "EventDisplay/src/SaveDialogManager.h"

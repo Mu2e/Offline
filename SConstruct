@@ -244,7 +244,9 @@ class mu2e_helper:
 #   Build a list of plugins to be biult.
 #
     def plugin_cc(self):
-        return Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
+        return Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) \
+            +  Glob('*_source.cc', strings=True) + Glob('*_utils.cc',strings=True)    \
+            +  Glob('*_tool.cc',strings=True);
 #
 #   Build a list of .cc files that are not plugings; these go into the
 #   library named after the directory.

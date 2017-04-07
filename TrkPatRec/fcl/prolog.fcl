@@ -117,7 +117,7 @@ KFFinal : {
 # Seed fit; this is really a least-squares fit, but uses the Kalman infrastructure
 KalSeedFit : {
   module_type                 : KalSeedFit
-  SeedFit		      : @local::KFSeed
+  KalFit		      : @local::KFSeed
   ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
 #  ParameterErrors	      : [1.0,1.0,1.0,1.0,1.0]
 }
@@ -299,6 +299,25 @@ Tracking : {
   DigiSim : [ makeSD ]
 # production sequence to prepare hits for tracking
   PrepareHits : [ makeSH, FSHPreStereo, MakeStrawHitPositions, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
+# define standard outputs 
+  Output : {
+    Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
+	 "keep mu2e::StrawHitPositions_MakeStereoHits_*_*",
+	"keep mu2e::StrawDigis_*_*_*",
+	  "keep mu2e::StrawHits_*_*_*"	]
+
+    Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_*_*_*",
+	  "keep mu2e::TrkQualDetailmu2e::MVAStructs_*_*_*",
+	  "keep mu2e::KalSeeds_*_*_*",
+	   "keep mu2e::HelixSeeds_*_*_*",
+	    "keep mu2e::TimeClusters_*_*_*" ]
+
+    MCTracks : ["keep mu2e::GenParticles_*_*_*",
+		"keep mu2e::SimParticlesmv_*_*_*" ]
+    MCHits : ["keep mu2e::StrawDigiMCs_makeSH_*_*",
+	      "keep mu2e::StepPointMCs_detectorFilter_virtualdetector_*"]
+
+  }
 }
 # production sequences for tracking specific paricles; first electrons
 Tracking.TPRDeM  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, KSFDeM, KFFDeM ]

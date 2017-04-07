@@ -1,0 +1,84 @@
+#
+# Test running and writing results from track trigger sequences.  Dave Brown (LBNL) 3/15/2017
+#
+#  > mu2e --config TrkFilters/fcl/TTWrite.fcl --source-list (your files) --TFile TTWrite.root --nevts=100
+#
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+#include "TrkFilters/fcl/prolog.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : TTWrite
+
+source :
+{
+  module_type : RootInput
+}
+
+services : @local::Services.SimAndReco
+physics :
+{
+  producers : {
+    @table::EventMixing.producers
+    @table::Tracking.producers
+  }
+  filters : {
+    @table::Tracking.filters
+  }
+  analyzers : {
+    TrkRecoDiag : @local::TrkRecoDiag
+    TrkTriggerDiag : {
+      module_type : TrkTriggerDiag
+#      debugLevel : 1
+    }
+  }
+}
+#define output module
+outputs: {
+  TTWriteOut : {
+    module_type: RootOutput
+#    outputCommands: [ "drop *_*_*_*",
+#    @table::Tracking.Output.Hits ]
+#    @table::Tracking.Output.Tracks,
+#    @table::Tracking.Output.MCTracks,
+#    @table::Tracking.Output.MCHits ]
+  }
+}
+
+# create a trigger test path.  Note that physics.trigger_paths and physics.end_paths are not used, art will
+# create those automatically from all the defined paths
+
+physics.TCTrigPath : [ @sequence::EventMixing.TimeMaps, 
+		   @sequence::Tracking.DigiSim,
+		   @sequence::Tracking.Trigger.TCFilterSequence ]
+
+physics.PHTrigPath : [ @sequence::EventMixing.TimeMaps, 
+		   @sequence::Tracking.DigiSim,
+		   @sequence::Tracking.Trigger.PosHelixFilterSequence ]
+
+physics.DeMSeedTrigPath : [ @sequence::EventMixing.TimeMaps, 
+		   @sequence::Tracking.DigiSim,
+		   @sequence::Tracking.Trigger.DeMSeedFilterSequence ]
+
+physics.DeMKalTrigPath : [ @sequence::EventMixing.TimeMaps, 
+		   @sequence::Tracking.DigiSim,
+		   @sequence::Tracking.Trigger.DeMKalFilterSequence ]
+
+# analysis path: this is for monitoring only
+#
+#physics.TTWriteEndPath : [ TrkRecoDiag, TTWriteOut ]
+#physics.TTWriteEndPath : [ TrkRecoDiag ]
+#physics.TTWriteEndPath : [ TrkTriggerDiag ]
+physics.TTWriteEndPath : [ TrkTriggerDiag , TTWriteOut ]
+# finish output configuration: this needs to be done after the path exists
+outputs.TTWriteOut.fileName: "TTWrite.art"
+# for testing, set low prescale values
+physics.filters.TCPrescale.nPrescale : 10
+physics.filters.PosHelixPrescale.nPrescale : 5
+# assign all the paths to the same output stream.  This could be changed in future
+outputs.TTWriteOut.SelectEvents : [TCTrigPath, PHTrigPath, DeMSeedTrigPath, DeMKalTrigPath ]
+# the following are needed for interactive running
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+

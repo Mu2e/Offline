@@ -3,7 +3,7 @@
 #define HelixFitHackResult_HH
 
 #include "CalPatRec/inc/LsqSums4.hh"
-#include "CalPatRec/inc/HelixDefHack.hh"
+#include "CalPatRec/inc/TrkDefHack.hh"
 #include "BTrk/TrkBase/TrkErrCode.hh"
 
 namespace mu2e {
@@ -11,7 +11,7 @@ namespace mu2e {
 // output struct
 //-----------------------------------------------------------------------------
   struct HelixFitHackResult {
-    HelixDefHack       _hdef;         // must copy by value as references can't be re-assigned
+    TrkDefHack         _hdef;         // must copy by value as references can't be re-assigned
     TrkErrCode         _fit;	      // fit status code from last fit
     int                _nGoodPoints;  // number of not-rejected points
 //-----------------------------------------------------------------------------
@@ -45,14 +45,6 @@ namespace mu2e {
 
     HelixFitHackResult(TrkDefHack const& tdef) : 
       _hdef(tdef),  
-      _fit(TrkErrCode::fail),
-      _radius(-1.0),
-      _dfdz(0.0),
-      _fz0(0.0) {
-    }
-
-    HelixFitHackResult(HelixDefHack const& hdef) : 
-      _hdef(hdef),  
       _fit(TrkErrCode::fail),
       _radius(-1.0),
       _dfdz(0.0),

@@ -351,8 +351,8 @@ namespace mu2e {
   SimParticle::key_type id, TrkInfoMCStep& tmcs) {
     std::vector<MCStepItr> steps;
     _kdiag.findMCSteps(_kdiag.mcData()._mcvdsteps,id,_kdiag.VDids(tpos),steps);
-    // if there are more than 1 crossing take the last one pointing in the specified direction
-    for(auto istep = steps.rbegin(); istep != steps.rend();++istep){
+    // if there are more than 1 crossing take the first one pointing in the specified direction
+    for(auto istep = steps.begin(); istep != steps.end();++istep){
       if(std::signbit((*istep)->momentum().z()) == std::signbit(fdir.dzdt())){
 	_kdiag.fillTrkInfoMCStep(*istep,tmcs);
 	break;

@@ -14,7 +14,10 @@ namespace mu2e {
 // utility struct
 //-----------------------------------------------------------------------------
   struct XYZPHack {
-    std::size_t        _ind;		// straw hit index
+    static double       _efac;
+    static StrawHitFlag _useflag;	// flag bits to define use
+
+    size_t             _ind;		// straw hit index
     CLHEP::Hep3Vector  _pos;		// position
     double             _phi;	        // ambiguity-resolved phi angle
     StrawHitFlag       _flag;		// flag
@@ -31,16 +34,12 @@ namespace mu2e {
 // functions
 //-----------------------------------------------------------------------------
 					// initialize some variables on construction
-    XYZPHack():_phi(0.0) {
-    }
+    XYZPHack():_phi(0.0) {}
 
-    XYZPHack(std::size_t ind, StrawHit const& sh, StrawHitPosition const& shp, Straw const& straw, StrawHitFlag const& flag);
+    XYZPHack(size_t ind, const StrawHit& sh, const StrawHitPosition& shp, const Straw& straw, const StrawHitFlag& flag);
 
-    XYZPHack(std::size_t ind, CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& wdir, double werr, double serr);
+    XYZPHack(size_t ind, const CLHEP::Hep3Vector& pos, const CLHEP::Hep3Vector& wdir, double werr, double serr);
  
-// radial position information
-//     virtual void rinfo     (CLHEP::Hep3Vector const& center, VALERR& rad) const;
-//     virtual void finfo     (CLHEP::Hep3Vector const& center, VALERR& phi) const;
     bool         use       () const;
     int          isUsed    () { return _used;}
     bool         stereo    () const;
@@ -48,9 +47,6 @@ namespace mu2e {
     bool         isCalosel () const;
     void         setOutlier();
     void         setUse    (bool use);
-
-    static double       _efac;
-    static StrawHitFlag _useflag;	// flag bits to define use
   };
 
   typedef std::vector<XYZPHack> XYZPHackVector;

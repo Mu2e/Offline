@@ -24,8 +24,6 @@ namespace art {
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/HelixVal.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/TimeClusterCollection.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
 
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -47,13 +45,11 @@ namespace art {
 #include "Mu2eBTrk/inc/BaBarMu2eField.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
-#include "CalPatRec/inc/TrkDefHack.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
-#include "CalPatRec/inc/CalTimePeak.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
 #include "RecoDataProducts/inc/KalRepCollection.hh"
@@ -62,13 +58,14 @@ namespace art {
 
 #include "TROOT.h"
 #include "TFolder.h"
-#include "CalPatRec/inc/KalFitHack.hh"
-#include "CalPatRec/inc/HelixFitHack.hh"
-#include "CalPatRec/inc/THackData.hh"
+
+#include "CalPatRec/inc/CalTimePeakFinder_types.hh"
+#include "CalPatRec/inc/CalTimePeak.hh"
+#include "CalPatRec/inc/CprModuleHistBase.hh"
+
+// #include "CalPatRec/inc/THackData.hh"
 
 // Mu2e
-#include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
-#include "TrkPatRec/inc/PayloadSaver.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 
@@ -87,10 +84,7 @@ namespace art {
 #include "TFolder.h"
 
 //#include "TStopwatch.h"
-// #include "TSpectrum.h"
-// #include "TSpectrum2.h"
-// #include "TSpectrum3.h"
-// #include "TMVA/Reader.h"
+
 // boost
 // C++
 #include <iostream>
@@ -103,14 +97,11 @@ namespace art {
 #include <set>
 #include <map>
 
-class Ref;
-class THackData;
+// class THackData;
 
 namespace fhicl {
   class ParameterSet;
 }
-
-
 
 namespace mu2e {  
   class Calorimeter;
@@ -133,13 +124,10 @@ namespace mu2e {
       TH1F* nseeds[2];
     };
 
-
   protected:
 //-----------------------------------------------------------------------------
 // data members
 //-----------------------------------------------------------------------------
-    //    TStopwatch*   fStopwatch;
-
     unsigned         _iev;
 					// configuration parameters
     int              _diagLevel; 
@@ -161,7 +149,7 @@ namespace mu2e {
     double           _mindt;
     double           _maxdt;
 					// time spectrum parameters
-    int              _minnhits;
+    int              _minNHits;
 
     double           _minClusterEnergy;	// min seed energy
     int              _minClusterSize;   // min size of the seeding cluster
@@ -187,12 +175,13 @@ namespace mu2e {
     const Calorimeter*                    _calorimeter; // cached pointer to the calorimeter geometry
 
     const TrackerCalibrations*            _trackerCalib;
-
 //-----------------------------------------------------------------------------
-// diagnostics histograms
+// diagnostics 
 //-----------------------------------------------------------------------------
-    Hist_t                                _hist;
+    CalTimePeakFinder_Hist_t              _hist;
+    CalTimePeakFinder_Data_t              _data;
 
+    std::unique_ptr<CprModuleHistBase>    _hmanager;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -212,10 +201,9 @@ namespace mu2e {
     void findTimePeaks    (CalTimePeakCollection* TimePeakColl,
 			   TimeClusterCollection& OutSeeds);
 
-    void bookHistograms   ();
-    void initTimeCluster    (TimeCluster   &TrackSeed   , 
-			     CalTimePeak &TPeak       ,
-			     int         &ClusterIndex);
+    void initTimeCluster  (TimeCluster   &TrackSeed   , 
+			   CalTimePeak &TPeak       ,
+			   int         &ClusterIndex);
     
   };
 }

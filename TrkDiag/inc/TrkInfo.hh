@@ -26,8 +26,8 @@ namespace mu2e
 
 // general information about a track
   struct TrkInfo {
-    Int_t _fitstatus; // Kalman fit status
-    Int_t _fitpart;   // PDG code of particle assumed in fit
+    Int_t _status; // Kalman fit status
+    Int_t _pdg;   // PDG code of particle assumed in fit
     Int_t _nhits;     // # hits associated to this track
     Int_t _ndof;      // number of degrees of freedom in the fit
     Int_t _nactive;   // number of active hits (actually used in the fit)
@@ -46,7 +46,8 @@ namespace mu2e
     TrkFitInfo _ent;  // fit information at tracker entrance
     TrkInfo() { reset(); }
     void reset() { 
-      _fitstatus = -1000;
+      _status = -1000;
+      _pdg = 0;
       _nhits = _nactive = _ndouble = _ndactive = _nnullambig = _nmat = _nmatactive = _nbend = _ndof = -1;
       _t0 = _t0err = _chisq = _fitcon = _radlen = _firstflt = _lastflt = -1.0;
       _trkqual=-1000.0;

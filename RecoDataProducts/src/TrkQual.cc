@@ -1,5 +1,4 @@
-// Detail class used to implement the MVAStruct for TrkQual, the track quality
-// measure
+// Detail class used to implement the MVAStruct for TrkQual, a track quality measure
 // D. Brown, LBNL 1/30/2017
 #include "RecoDataProducts/inc/TrkQual.hh"
 #include <stdexcept>
@@ -28,4 +27,14 @@ namespace mu2e {
     return varnames;
   }
 
+  std::string TrkQualDetail::varName(MVA_varindex vindex) {
+    static std::string nullret("Unknown");
+    std::map<std::string,TrkQualDetail::MVA_varindex> const& varnames = varNames();
+    for(const auto& ivar : varnames) {
+      if(ivar.second == vindex){
+	return ivar.first;
+      }
+    }
+    return nullret;
+  }
 }

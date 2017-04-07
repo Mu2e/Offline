@@ -8,26 +8,14 @@
 import os
 Import('env')
 Import('mu2e_helper')
+# Import('calpatrec_helper')
 
 babarlibs     = env['BABARLIBS']
 rootlibs      = env['ROOTLIBS']
 extrarootlibs = ['Spectrum', 'TMVA' , 'Minuit' , 'XMLIO' ]
 
 helper=mu2e_helper();
-
-#
-# At this time, there is a linkage loop between the package library
-# (mu2e_CalPatRec.so) and the dictionary library.  The solution is
-# to do ROOT "old style" dictionaries.  That is,
-#  a) there is no mu2e_CalPatRec.so
-#  b) Code that would normally go into mu2e_CalPatRec.so goes into
-#     mu2e_CalPatRec_dict.so
-#  c) Code that normally would like against mu2e_CalPatRec.so instead
-#     links against mu2e_CalPatRec_dict.so
-#
-# Only the classes that inherit from TNamed cause this problem. I believe
-# that we could put all of the other classes in mu2e_CalPatRec.so and
-# only those that inherit from TNamed in mu2e_CalPatRec_dict.so
+# helper=calpatrec_helper();
 
 mainlib = helper.make_mainlib( [ 'mu2e_TrkDiag',
                                  'mu2e_CaloCluster',
@@ -67,7 +55,7 @@ mainlib = helper.make_mainlib( [ 'mu2e_TrkDiag',
                                  ] )
 
 helper.make_plugins( [ mainlib,
-		       'mu2e_TrkDiag',
+                       'mu2e_TrkDiag',
                        'mu2e_TrkPatRec',
                        'mu2e_TrkReco',
                        'mu2e_BTrkData',

@@ -23,7 +23,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/TrkQual.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -191,8 +190,8 @@ namespace mu2e
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<DetectorSystem> det;
     if(krep != 0 && krep->fitCurrent()){
-      trkinfo._fitstatus = krep->fitStatus().success();
-      trkinfo._fitpart = krep->particleType().particleType();
+      trkinfo._status = krep->fitStatus().success();
+      trkinfo._pdg = krep->particleType().particleType();
       trkinfo._t0 = krep->t0().t0();
       trkinfo._t0err = krep->t0().t0Err();
       trkinfo._nhits = krep->hitVector().size();
@@ -235,7 +234,7 @@ namespace mu2e
       fillTrkQual(trkinfo); 
     } else {
       // failed fit
-      trkinfo._fitstatus = -krep->fitStatus().failure();
+      trkinfo._status = -krep->fitStatus().failure();
     }
   } 
 
@@ -401,9 +400,12 @@ namespace mu2e
     tshinfo._hlen = tsh->hitLen();
     Hep3Vector tdir = tsh->trkTraj()->direction(tshinfo._trklen);
     tshinfo._wdot = tdir.dot(tsh->straw().getDirection());
+    // for now approximate the local bfield direction as the z axis FIXME!!
+    tshinfo._bdot = tdir.z();
     tshinfo._t0 = tsh->hitT0()._t0;
     // include signal propagation time correction
     tshinfo._ht = tsh->time()-tsh->signalTime();
+    tshinfo._dt = tsh->strawHit().dt();
     tshinfo._tddist = tsh->timeDiffDist();
     tshinfo._tdderr = tsh->timeDiffDistErr();
     tshinfo._ambig = tsh->ambig();
@@ -687,16 +689,16 @@ namespace mu2e
     TrkQual trkqual;
 //    static std::vector<double> trkqualvec; // input variables for TrkQual computation
 //    trkqualvec.resize(10);
-    trkqual[0] = trkinfo._nactive; // # of active hits
-    trkqual[1] = (float)trkinfo._nactive/(float)trkinfo._nhits;  // Fraction of active hits
-    trkqual[2] = trkinfo._fitcon > 0.0 ? log10(trkinfo._fitcon) : -50.0; // fit chisquared consistency
-    trkqual[3] = trkinfo._ent._fitmomerr; // estimated momentum error
-    trkqual[4] = trkinfo._t0err;  // estimated t0 error
-    trkqual[5] = trkinfo._ent._fitpar._d0; // d0 value
-    trkqual[6] = trkinfo._ent._fitpar._d0+2.0/trkinfo._ent._fitpar._om; // maximum radius of fit
-    trkqual[7] = (float)trkinfo._ndactive/(float)trkinfo._nactive;  // fraction of double hits (2 or more in 1 panel)
-    trkqual[8] = (float)trkinfo._nnullambig/(float)trkinfo._nactive;  // fraction of hits with null ambiguity
-    trkqual[9] = (float)trkinfo._nmatactive/(float)trkinfo._nactive;  // fraction of straws to hits
+    trkqual[TrkQual::nactive] = trkinfo._nactive; // # of active hits
+    trkqual[TrkQual::factive] = (float)trkinfo._nactive/(float)trkinfo._nhits;  // Fraction of active hits
+    trkqual[TrkQual::log10fitcon] = trkinfo._fitcon > 0.0 ? log10(trkinfo._fitcon) : -50.0; // fit chisquared consistency
+    trkqual[TrkQual::momerr] = trkinfo._ent._fitmomerr; // estimated momentum error
+    trkqual[TrkQual::t0err] = trkinfo._t0err;  // estimated t0 error
+    trkqual[TrkQual::d0] = trkinfo._ent._fitpar._d0; // d0 value
+    trkqual[TrkQual::rmax] = trkinfo._ent._fitpar._d0+2.0/trkinfo._ent._fitpar._om; // maximum radius of fit
+    trkqual[TrkQual::fdouble] = (float)trkinfo._ndactive/(float)trkinfo._nactive;  // fraction of double hits (2 or more in 1 panel)
+    trkqual[TrkQual::fnullambig] = (float)trkinfo._nnullambig/(float)trkinfo._nactive;  // fraction of hits with null ambiguity
+    trkqual[TrkQual::fstraws] = (float)trkinfo._nmatactive/(float)trkinfo._nactive;  // fraction of straws to hits
     trkinfo._trkqual = _trkqualmva->evalMVA(trkqual.values());
   }
   

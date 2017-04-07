@@ -3,7 +3,7 @@
 // $Author: ehrlich $
 // $Date: 2014/09/10 07:40:38 $
 //
-
+using namespace std;
 #include "DataInterface.h"
 
 #include "CLHEP/Vector/LorentzVector.h"

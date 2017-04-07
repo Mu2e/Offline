@@ -15,7 +15,6 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 
-#include "CalPatRec/inc/TrkDefHack.hh"
 // C++
 #include <vector>
 
@@ -31,7 +30,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // data members
 //-----------------------------------------------------------------------------
-    const CaloCluster*         _cluster;	// cached, not owned
+    const CaloCluster*         _cluster;     // cached, not owned
     int                        _cprIndex;    // CalPatRec track index or -1, if no track
     double                     _x;           // cluster X coordinate in the detector system
     double                     _y;		// cluster Y coordinate in the detector system

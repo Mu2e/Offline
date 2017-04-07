@@ -195,6 +195,7 @@ namespace mu2e {
       _strawele->tdcTimes(digi.TDC(),times);
 // hit wants primary time and dt.  Check if both ends digitized, or if
 // this is a single-end digitization
+// This algorithm is intrinsically biased due to the preference of times[0] vs times[1]. FIXME!!!
       double time(times[0]);
       double dt = times[1]-times[0];
       bool makehit(true);

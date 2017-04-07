@@ -36,6 +36,7 @@ namespace mu2e {
     int                 fPanelId;
     CLHEP::Hep3Vector   fShDir;
     int                 fNStrawHits;
+    int                 fOldAmbig  [kMaxNHits];
     int                 fStrawAmbig[kMaxNHits];
     CLHEP::Hep3Vector   fTrkDir    [kMaxNHits];
     CLHEP::Hep3Vector   fTrkPos    [kMaxNHits];

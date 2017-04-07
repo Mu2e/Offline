@@ -313,6 +313,14 @@ namespace mu2e {
       Polyethylene092Li075d106->AddMaterial(findMaterialOrThrow("G4_Li")          , LiPercentage*CLHEP::perCent);
     }
 
+    mat = uniqueMaterialOrThrow( "Polyetheretherketone");
+    {
+      G4Material* Polyetheretherketone = new G4Material(mat.name, 1.32*CLHEP::g/CLHEP::cm3, 3);
+      Polyetheretherketone->AddMaterial(findMaterialOrThrow("G4_C"), 0.513514);
+      Polyetheretherketone->AddMaterial(findMaterialOrThrow("G4_H"), 0.405405);
+      Polyetheretherketone->AddMaterial(findMaterialOrThrow("G4_O"), 0.081081);
+    }
+
     // Stainless Steel (Medical Physics, Vol 25, No 10, Oct 1998) based on brachytherapy example
     // FIXME is there a better reference?
     mat = uniqueMaterialOrThrow( "StainlessSteel");
@@ -1028,6 +1036,18 @@ namespace mu2e {
         new G4Material(mat.name, density = 1.8*CLHEP::g/CLHEP::cm3, 2);
       G10_FR4->AddMaterial(findMaterialOrThrow("EGlass"), 0.60);
       G10_FR4->AddMaterial(findMaterialOrThrow("Epotek301"), 0.40);
+    }
+
+
+    mat = uniqueMaterialOrThrow( "Electronics2" );
+    {
+      // This material represents the passive part of the board in the Calorimeter crates
+     G4double density;
+
+      G4Material* Electronics2 =
+        new G4Material(mat.name, density = 4.52*CLHEP::g/CLHEP::cm3, 2);
+      Electronics2->AddMaterial(findMaterialOrThrow("G10_FR4"), 0.26);
+      Electronics2->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.74);
     }
 
     mat = uniqueMaterialOrThrow( "PolypropyleneFoam");

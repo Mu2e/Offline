@@ -1,0 +1,60 @@
+# -*- mode: tcl -*-
+#include "TrkPatRec/fcl/prolog.fcl"
+#
+# Define sequences for track based triggers.  The sequences for hit preparation
+# and the tracking modules configuration must preceede these and are defined elsewhere
+# original author: Dave Brown (LBNL) Mar. 7 2017
+#
+BEGIN_PROLOG
+# define the filter modules used for track-based trigger
+# filter to require a minimum # of hits in a time slot
+Tracking.filters : {
+# filters for track hit clustering
+  TCFilter : {
+    module_type : TimeClusterFilter
+    TimeClusterCollection : "TimeClusterFinder"
+  }
+# filters for either positive or negative helicity tracks near the CE energy
+  PosHelixFilter : {
+    module_type : HelixFilter
+    HelixSeedCollection : "PosHelixFinder"
+  }
+  NegHelixFilter : {
+    module_type : HelixFilter
+    HelixSeedCollection : "NegHelixFinder"
+  }
+# filters for CE candidates (downstream eminus near 100 MeV/c)
+  DeMSeedFilter : {
+    module_type : SeedFilter
+    KalSeedCollection : "KSFDeM"
+  }
+  DeMKalFilter : {
+    module_type : SeedFilter
+    KalSeedCollection : "KFFDeM"
+  }
+# Other filters FIXME!!
+# filters for  upstream-going negative electrons near the CE energy
+# calibration filters
+# reflecting cosmic filters
+# low-momentum electron filters
+#low-field running filters
+#  Prescaling filters
+  TCPrescale : {
+    module_type : PrescaleEvent
+    nPrescale : 1000
+  }
+  PosHelixPrescale : {
+    module_type : PrescaleEvent
+    nPrescale : 300
+  }
+#
+}
+# sequences for different trigger paths.  Early triggers are prescaled
+Tracking.Trigger : {
+  TCFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter,  TCPrescale  ]
+  PosHelixFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, PosHelixFinder, PosHelixFilter, PosHelixPrescale   ]
+  DeMSeedFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, PosHelixFinder, PosHelixFilter, KSFDeM, DeMSeedFilter ]
+  DeMKalFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, PosHelixFinder, PosHelixFilter, KSFDeM, DeMSeedFilter, KFFDeM, DeMKalFilter ]
+# add sequences for upstream, calibration, ...  FIXME!
+}
+END_PROLOG

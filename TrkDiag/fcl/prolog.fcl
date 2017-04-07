@@ -96,6 +96,13 @@ BEGIN_PROLOG
 	  inputs : [ "protonTimeMap", "muonTimeMap" ] 
 	}
   }
+  
+  TrkRecoDiag : {
+    module_type : TrkRecoDiag
+    TimeOffsets : {
+      inputs : [ "protonTimeMap", "muonTimeMap" ] 
+    }
+  }
 
 # Prototype track analysis config.
   TrackAnalysis : {

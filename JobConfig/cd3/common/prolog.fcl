@@ -103,7 +103,7 @@ draTopLevelDefs: {
 	 // Track reco - multiple hypotheses
 	 @table::Tracking.producers
 
-	 MergePatRecDem: { @table::MergePatRecDem }
+	 MergePatRecDem: { @table::CalPatRec.producers.MergePatRecDem }
 
 	 // PID inputs
 	 @table::TrackCaloMatching.producers

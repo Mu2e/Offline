@@ -12,6 +12,7 @@
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "canvas/Persistency/Common/Ptr.h"
+#include <vector>
 
 namespace mu2e {
   class CaloCluster;
@@ -32,7 +33,7 @@ namespace mu2e {
     TrkFitFlag	             _status;      // status of processes used to create this seed
     art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
   };
-
+   typedef std::vector<mu2e::HelixSeed> HelixSeedCollection;
 } // namespace mu2e
 
 #endif /* RecoDataProducts_HelixSeed_hh */

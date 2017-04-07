@@ -101,6 +101,7 @@ namespace mu2e
 
     config.getVectorDouble("crs.gapBetweenLayers",_gapBetweenLayers,_nLayers-1);
     _aluminumSheetThickness = config.getDouble("crs.aluminumSheetThickness");
+    _strongBackThickness    = config.getDouble("crs.strongBackThickness");
 
     _scintillatorBarMaterialName  = config.getString("crs.scintillatorBarMaterialName");
     _absorberMaterialName         = config.getString("crs.absorberMaterialName");
@@ -214,8 +215,21 @@ namespace mu2e
           absorberLayer._halfLengths[thicknessDirection]=0.5*_gapBetweenLayers[ilayer];
         }
 
-        //Thin aluminum sheets
-        if(ilayer==0 || ilayer==_nLayers-1)
+        //Strong back
+        if(ilayer==0)
+        {
+          module._aluminumSheets.push_back(CRSAluminumSheet());
+          CRSAluminumSheet &aluminumSheet = module._aluminumSheets.back();
+
+          aluminumSheet._position = layer._position;
+          aluminumSheet._halfLengths = layer._halfLengths;
+          double shift=-0.5*(_counterThickness+_strongBackThickness)*_layerDirection[isector][thicknessDirection];
+          aluminumSheet._position[thicknessDirection]+=shift;
+          aluminumSheet._halfLengths[thicknessDirection]=0.5*_strongBackThickness;
+        }
+
+        //Thin aluminum sheet
+        if(ilayer==_nLayers-1)
         {
           module._aluminumSheets.push_back(CRSAluminumSheet());
           CRSAluminumSheet &aluminumSheet = module._aluminumSheets.back();
@@ -223,7 +237,6 @@ namespace mu2e
           aluminumSheet._position = layer._position;
           aluminumSheet._halfLengths = layer._halfLengths;
           double shift=0.5*(_counterThickness+_aluminumSheetThickness)*_layerDirection[isector][thicknessDirection];
-          if(ilayer==0) shift*=-1;
           aluminumSheet._position[thicknessDirection]+=shift;
           aluminumSheet._halfLengths[thicknessDirection]=0.5*_aluminumSheetThickness;
         }

@@ -15,8 +15,8 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "RecoDataProducts/inc/TimeClusterCollection.hh"
-#include "RecoDataProducts/inc/HelixSeedCollection.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
+#include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 // HelixFit objects
 #include "RecoDataProducts/inc/HelixSeed.hh"

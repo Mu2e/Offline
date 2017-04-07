@@ -17,6 +17,7 @@
 #include "art/Framework/Principal/fwd.h"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/TrkQual.hh"
 // Utilities
 #include "Mu2eUtilities/inc/MVATools.hh"
 // MC data
@@ -136,7 +137,6 @@ namespace mu2e
     TTree *_trkdiag;
 // track quality computation
     std::unique_ptr<MVATools> _trkqualmva;
-    std::string _trkqualweights;
 // struct for track info
     TrkInfo _trkinfo;
 // hit information

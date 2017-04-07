@@ -50,6 +50,7 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <cmath>
 
 namespace mu2e {
 
@@ -151,21 +152,103 @@ namespace mu2e {
 	double dv = tolsDS[i][1];
 	double dw = tolsDS[i][2];
 	double hlen = lengDS[i];
+	double xCnt[vertices.size()];
+	double yCnt[vertices.size()];
+	double epsilon = 1.0e-4;
 
 	for ( unsigned int idim = 0; idim < vertices.size(); idim++ ) {
-	  if ( vertices[idim][0] > -10.0 * CLHEP::mm) {
-	    vertices[idim][0] += du;
-	  } else {
-	    vertices[idim][0] -= du;
+	  // Decide how to apply tolerances by looking where other vertices
+	  // lie relative to this vertex.
+	  xCnt[idim] = 0.0;
+	  yCnt[idim] = 0.0;
+	  bool Q1, Q2, Q3, Q4;  // The four quadrants on the Cartesian plane
+	  Q1 = Q2 = Q3 = Q4 = false;
+	  bool N, S, E, W;      // and the cardinal directions
+	  N = S = E = W = false;     
+	  for ( unsigned int j = 0; j < vertices.size(); j++ ) {
+	    if ( j != idim ) {
+	      // Here we figure out where other vertices are relative to
+	      // This vertex.
+	      double xDiff = vertices[j][0] - vertices[idim][0];
+	      double yDiff = vertices[j][1] - vertices[idim][1];
+	      if ( xDiff > epsilon ) { // Must be Q1 or Q4 or E
+		if ( yDiff > epsilon ) {
+		  Q1 = true;
+		} else if ( yDiff < -epsilon ) {
+		  Q4 = true;
+		} else { 
+		  E = true; 
+		}
+	      } else if ( xDiff < -epsilon ) { // Must be Q2 or Q3 or W
+		if ( yDiff > epsilon ) {
+		  Q2 = true;
+		} else if ( yDiff < -epsilon ) {
+		  Q3 = true;
+		} else { 
+		  W = true; 
+		}
+	      } else { // Must be North or South
+		if ( yDiff > epsilon ) {
+		  N = true;
+		} else if ( yDiff < epsilon ) {
+		  S = true;
+		} // There should never be an else case since I test for j!=idim	
+	      }
+	    } // endif j != idim
+	  } // end for loop over all other vertices
+	  // Now for idim, decide how to apply tols.
+
+	  if ( ( !Q1 && !Q4 && !E ) || ( Q2 && Q3 && W && !(Q1 && Q4 && E)) 
+	       || ( W && !E ) || ( N && E && !Q1 ) || (S && E && !Q4) ) {
+	    xCnt[idim] = 1.0;
+	  } else if ( ( !Q2 && !Q3 && !W ) 
+		      || ( Q1 && Q4 && E && !(Q2 && Q3 && W)) || ( E && !W )
+		      || ( N && W && !Q2 ) || ( S && W && !Q3 ) ) {
+	    xCnt[idim] = -1.0;
 	  }
-	  if (vertices[idim][1] > -10.0 * CLHEP::mm ) {
-	    vertices[idim][1] += dv;
-	  } else {
-	    vertices[idim][1] -= dv;
+	  if ( ( !Q1 && !Q2 && !N ) || ( ((S && W) || (N && E)) && Q3 && !Q1 ) 
+	       || ( ((S && E) || (N && W)) && Q4 && !Q2) || ( S && !N ) ) {
+	    yCnt[idim] = 1.0;
+	  } else if ( ( !Q3 && !Q4 && !S ) // Along bottom edge 
+		      || ( ((S && W) || (N && E)) && Q1 && !Q3 ) // mid corner
+		      || ( ((S && E) || (N && W)) && Q2 && !Q4 ) // int corner
+		      || ( N && !S )) {
+	    yCnt[idim] = -1.0;
 	  }
+	  if ( fabs(xCnt[idim]) < epsilon ) { // Special vertex - check
+	    unsigned int neighbor1 = idim + 1;
+	    if ( idim == vertices.size() ) neighbor1 = 0;
+	    unsigned int neighbor2 = idim - 1;
+	    if ( idim == 0 ) neighbor2 = vertices.size() - 1;
+	    double xC = (vertices[neighbor1][0] + vertices[neighbor2][0])/2.0;
+	    if ( xC < vertices[idim][0] ) {
+	      xCnt[idim] = 1.0;
+	    } else if ( xC > vertices[idim][0] ) {
+	      xCnt[idim] = -1.0;
+	    }
+	  }
+	  if ( fabs(yCnt[idim]) < epsilon ) { // Special vertex - check
+	    unsigned int neighbor1 = idim + 1;
+	    if ( idim == vertices.size() ) neighbor1 = 0;
+	    unsigned int neighbor2 = idim - 1;
+	    if ( idim == 0 ) neighbor2 = vertices.size();
+	    double yC = (vertices[neighbor1][1] + vertices[neighbor2][1])/2.0;
+	    if ( yC < vertices[idim][1] ) {
+	      yCnt[idim] = 1.0;
+	    } else if ( yC > vertices[idim][1] ) {
+	      yCnt[idim] = -1.0;
+	    }
+	  }
+
+	} // loop over all vertices to find xCnt and yCnt
+
+	for ( unsigned int idim = 0; idim < vertices.size(); idim++ ) {
+	  vertices[idim][0] += xCnt[idim] * du;
+	  vertices[idim][1] += yCnt[idim] * dv;
+
 	  G4TwoVector vertex( vertices[idim][0], vertices[idim][1] );
 	  itsOutline.push_back(vertex);
-	}
+	} // modified all the vertices appropriately
 	hlen += dw;
 
 	//  Make the name of the box
