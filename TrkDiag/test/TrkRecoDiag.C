@@ -246,17 +246,17 @@ void TrkRecoDiag::createHistos() {
   _fsna = new TH1F("fsna",title("Seed NActive"),61,-0.5,60.5);
   _psna = new TH1F("psna",title("Seed NActive"),61,-0.5,60.5);
 
-  _ssmom = new TH1F("ssmom",title("Seed mom;MeV/c"),101,50.0,150.0);
-  _fsmom = new TH1F("fsmom",title("Seed mom;MeV/c"),101,50.0,150.0);
-  _psmom = new TH1F("psmom",title("Seed mom;MeV/c"),101,50.0,150.0);
+  _ssmom = new TH1F("ssmom",title("Seed mom;MeV/c"),101,85.0,120.0);
+  _fsmom = new TH1F("fsmom",title("Seed mom;MeV/c"),101,85.0,120.0);
+  _psmom = new TH1F("psmom",title("Seed mom;MeV/c"),101,85.0,120.0);
 
-  _ssmerr = new TH1F("ssmerr",title("Seed mom err;MeV/c"),101,0.0,10.0);
-  _fsmerr = new TH1F("fsmerr",title("Seed mom err;MeV/c"),101,0.0,10.0);
-  _psmerr = new TH1F("psmerr",title("Seed mom err;MeV/c"),101,0.0,10.0);
+  _ssmerr = new TH1F("ssmerr",title("Seed mom err;MeV/c"),101,0.0,2.0);
+  _fsmerr = new TH1F("fsmerr",title("Seed mom err;MeV/c"),101,0.0,2.0);
+  _psmerr = new TH1F("psmerr",title("Seed mom err;MeV/c"),101,0.0,2.0);
 
-  _sschisq = new TH1F("sschisq",title("Seed chisq/dof"),101,0.0,25.0);
-  _fschisq = new TH1F("fschisq",title("Seed chisq/dof"),101,0.0,25.0);
-  _pschisq = new TH1F("pschisq",title("Seed chisq/dop"),101,0.0,25.0);
+  _sschisq = new TH1F("sschisq",title("Seed chisq/dof"),101,0.0,15.0);
+  _fschisq = new TH1F("fschisq",title("Seed chisq/dof"),101,0.0,15.0);
+  _pschisq = new TH1F("pschisq",title("Seed chisq/dop"),101,0.0,15.0);
   
   _ssna->SetLineColor(kBlue);
   _ssmom->SetLineColor(kBlue);
