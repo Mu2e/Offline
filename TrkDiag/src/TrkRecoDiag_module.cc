@@ -276,7 +276,7 @@ namespace mu2e {
 	if(bestpart.isNonnull()){
 	  _mcgenmom = bestpart->startMomentum().mag(); // momentum at production
 	  _pdg = bestpart->pdgId();
-	  _proc = bestpart->realCreationCode();
+	  _proc = bestpart->originParticle().creationCode();
 	  if(bestpart->genParticle().isNonnull() )
 	    _gen = bestpart->genParticle()->generatorId().id();
 	  _ndigi = TrkMCTools::countDigis(bestpart,_mcdigis);
@@ -624,7 +624,7 @@ namespace mu2e {
       if(sp.isNonnull() &&
 	  sp->genParticle().isNonnull() &&
 	  sp->genParticle()->generatorId().id() == _mcgen &&
-	  sp->realCreationCode() == _mcproc &&
+	  sp->originParticle().creationCode() == _mcproc &&
 	  sp->pdgId() == _mcpdg){
 	auto ifnd = spmap.find(sp);
 	if(ifnd == spmap.end())

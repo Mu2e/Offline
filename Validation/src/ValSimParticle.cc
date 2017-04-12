@@ -50,12 +50,12 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
     _id.fill(part.pdgId());
     _hp->Fill(part.startMomentum().vect().mag()); 
     _pos.fill(part.endPosition());
-    _hscode->Fill(part.realCreationCode().id());
+    _hscode->Fill(part.originParticle().creationCode().id());
     _hecode->Fill(part.stoppingCode().id());
     
     if(pstart>10.0) {
       _idh.fill(part.pdgId()); 
-      _hscodeh->Fill(part.realCreationCode().id());
+      _hscodeh->Fill(part.originParticle().creationCode().id());
       _hecodeh->Fill(part.stoppingCode().id());
     }
 

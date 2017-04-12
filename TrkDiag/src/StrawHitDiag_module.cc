@@ -151,14 +151,15 @@ namespace mu2e
       if(!mcdigi.hasTDC(StrawDigi::zero)) itdc = StrawDigi::one;
       art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+      SimParticle const& osp = spp->originParticle();
       shinfo._mct0 = _toff.timeWithOffsetsApplied(*spmcp);
       shinfo._mcht = mcdigi.wireEndTime(itdc);
-      shinfo._mcpdg = spp->pdgId();
-      shinfo._mcproc = spp->creationCode();
+      shinfo._mcpdg = osp.pdgId();
+      shinfo._mcproc = osp.creationCode();
       shinfo._mcedep = mcdigi.energySum();
       shinfo._mcgen = -1;
-      if(spp->genParticle().isNonnull())
-	shinfo._mcgen = spp->genParticle()->generatorId().id();
+      if(osp.genParticle().isNonnull())
+	shinfo._mcgen = osp.genParticle()->generatorId().id();
 
       shinfo._mcpos = spmcp->position();
       shinfo._mctime = shinfo._mct0;
@@ -318,8 +319,9 @@ namespace mu2e
         if(!mcdigi.hasTDC(StrawDigi::zero)) itdc = StrawDigi::one;
         art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
         art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-        CLHEP::Hep3Vector dprod = spmcp->position()-det->toDetector(spp->startPosition());
-        static CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
+	SimParticle const& osp = spp->originParticle();
+	CLHEP::Hep3Vector dprod = spmcp->position()-det->toDetector(osp.startPosition());
+	static CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
         _pdist = dprod.mag();
         _pperp = dprod.perp(zdir);
         _pmom = spmcp->momentum().mag();
@@ -327,27 +329,28 @@ namespace mu2e
         // compute energy sum
         _mcedep = mcdigi.energySum();
         _mcnmax = mcdigi.stepPointMCs().size();
-        _mcpdg = spp->pdgId();
-        _mcproc = spp->creationCode();
+        _mcpdg = osp.pdgId();
+        _mcproc = osp.creationCode();
         _mcgen = -1;
-        if(spp->genParticle().isNonnull())
-          _mcgen = spp->genParticle()->generatorId().id();
+        if(osp.genParticle().isNonnull())
+          _mcgen = osp.genParticle()->generatorId().id();
         _mctime = _toff.timeWithOffsetsApplied(*spmcp);
         _mcshp = spmcp->position();
-        _mcop = det->toDetector(spp->startPosition());
-        _mcoe = spp->startMomentum().e();
-        _mcom = spp->startMomentum().vect().mag();
+        _mcop = det->toDetector(osp.startPosition());
+        _mcoe = osp.startMomentum().e();
+        _mcom = osp.startMomentum().vect().mag();
         _mcshlen = (spmcp->position()-straw.getMidPoint()).dot(straw.getDirection());
         _mcshd = (spmcp->position()-straw.getMidPoint()).dot(straw.getDirection().cross(spmcp->momentum().unit()));
   // immediate parent information
-        if(spp.isNonnull() && spp->parent().isNonnull()){
-          const art::Ptr<SimParticle>& psp = spp->parent();
-          _mcppdg = psp->pdgId();
-          _mcpproc = psp->creationCode();
+	art::Ptr<SimParticle> psp = osp.parent();
+	if(psp.isNonnull()){
+	  SimParticle const& posp =psp->originParticle();
+          _mcppdg = posp.pdgId();
+          _mcpproc = posp.creationCode();
           _mcptime = _toff.totalTimeOffset(psp) + psp->startGlobalTime();
-          _mcpop = det->toDetector(psp->startPosition());
-          _mcpoe = psp->startMomentum().e();
-          _mcpom = psp->startMomentum().vect().mag();
+          _mcpop = det->toDetector(posp.startPosition());
+          _mcpoe = posp.startMomentum().e();
+          _mcpom = posp.startMomentum().vect().mag();
         }
 // generator information
         if(spp.isNonnull()){

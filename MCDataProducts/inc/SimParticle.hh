@@ -150,14 +150,13 @@ namespace mu2e {
     art::Ptr<SimParticle> const& parent() const { return _parentSim; }
     art::Ptr<SimParticle>&       parent()       { return _parentSim; }
 
-    // Similar to the above, but follow the genealogy back to the non-trivial parent
-    // This 'bridges' the gaps created in staged MC production, where particles
-    // are stopped at a detector volume.  In that case, the 'parent' is the particle
-    // itself, and the process code is given as 'primary'
-    art::Ptr<SimParticle> const& realParent() const {
-      return selfParent() ? parent()->realParent() : parent();
+    // work back through the genealogy to find the earliest representation of this
+    // physical particle. This bridges the gaps created in staged MC production, where particles
+    // are stopped at a detector volume.
+    SimParticle const& originParticle() const {
+      return selfParent() ? parent()->originParticle() : *this;
     }
-    
+
     // The genparticle corresponding to this track; may be null.
     art::Ptr<GenParticle> const& genParticle() const { return _genParticle;}
     art::Ptr<GenParticle>&       genParticle()       { return _genParticle;}
@@ -185,9 +184,6 @@ namespace mu2e {
     unsigned    startVolumeIndex() const { return _startVolumeIndex;}
     unsigned    startG4Status()    const { return _startG4Status;}
     ProcessCode creationCode()      const { return _creationCode;  }
-    ProcessCode realCreationCode()      const {
-      return selfParent() ? parent()->realCreationCode() : creationCode();
-    }
 
     // Information at the end of the track.
     CLHEP::Hep3Vector const& endPosition() const { return _endPosition;}

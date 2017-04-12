@@ -301,9 +301,9 @@ Tracking : {
   PrepareHits : [ makeSH, FSHPreStereo, MakeStrawHitPositions, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
 # define standard outputs 
   Output : {
+    Digis : [ "keep mu2e::StrawDigis_*_*_*" ]
     Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
 	 "keep mu2e::StrawHitPositions_MakeStereoHits_*_*",
-	"keep mu2e::StrawDigis_*_*_*",
 	  "keep mu2e::StrawHits_*_*_*"	]
 
     Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_*_*_*",
@@ -314,7 +314,9 @@ Tracking : {
 
     MCTracks : ["keep mu2e::GenParticles_*_*_*",
 		"keep mu2e::SimParticlesmv_*_*_*" ]
+    MCDigis : ["keep mu2e::StrawDigiMCs_makeSD_*_*"]
     MCHits : ["keep mu2e::StrawDigiMCs_makeSH_*_*",
+	      "keep mu2e::StepPointMCs_detectorFilter_tracker_*",
 	      "keep mu2e::StepPointMCs_detectorFilter_virtualdetector_*"]
 
   }

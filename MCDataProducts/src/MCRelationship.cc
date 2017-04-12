@@ -24,8 +24,8 @@ namespace mu2e
   MCRelationship::relation MCRelationship::relationship(SPPtr const& sppi,SPPtr const& sppj) {
     if(sppi.isNull() || sppj.isNull()) return none;
     if(sppi == sppj)return same;
-    SPPtr pi = sppi->realParent();
-    SPPtr pj = sppj->realParent();
+    SPPtr pi = sppi->originParticle().parent();
+    SPPtr pj = sppj->originParticle().parent();
 
     if(pi.isNonnull() && pi == sppj)return daughter;
     if(pj.isNonnull() && pj == sppi)return mother;
@@ -36,11 +36,11 @@ namespace mu2e
       pvj.push_back(sppj);
       while(pi.isNonnull()){
 	pvi.push_back(pi);
-	pi = pi->realParent();
+	pi = pi->originParticle().parent();
       }
       while(pj.isNonnull()){
 	pvj.push_back(pj);
-	pj = pj->realParent();
+	pj = pj->originParticle().parent();
       }
       vector<art::Ptr<SimParticle> >::iterator ifnd;
       ifnd = find(pvi.begin(),pvi.end(),sppj);

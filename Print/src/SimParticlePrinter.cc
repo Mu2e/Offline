@@ -68,7 +68,7 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind, std::ostr
       obj.startMomentum().vect().mag() < _emPCut ) return;
   if( _primaryOnly && (!obj.isPrimary()) ) return;
 
-  art::Ptr<SimParticle> const& pptr = obj.realParent();
+  art::Ptr<SimParticle> const& pptr = obj.originParticle().parent();
   long unsigned int pkey = 0;
   if(pptr.isNonnull()) pkey = pptr->id().asUint();
 
@@ -114,7 +114,7 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind, std::ostr
        << "  Start  creationCode: " << std::setiosflags(std::ios::left)
            << obj.creationCode().name()
        << "    realCreationCode: " << std::setiosflags(std::ios::left)
-           << obj.realCreationCode().name() << "\n";
+           << obj.originParticle().creationCode().name() << "\n";
      os
        << "  Start pos: " << std::setw(8) << std::setprecision(1) << obj.startPosition().x()
        << " " << std::setw(8) << std::setprecision(1) << obj.startPosition().y()
