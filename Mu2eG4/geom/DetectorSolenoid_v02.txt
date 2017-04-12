@@ -138,10 +138,19 @@ string ds.BBlockMaterialType = "StainlessSteel";
 int ds.nBBlocks = 20;
 vector<double> ds.xCentersBBlock = { 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500};//, 500, -500, 500, -500 };
 vector<double> ds.yCentersBBlock = { -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705}; //, -705, -705, -705, -705 };
-vector<double> ds.zCentersBBlock = { 4605, 4605, 5492,5492, 5821, 5821, 6121, 6121, 6976, 6976, 8028, 8028, 12025, 12025, 12725, 12725, 13355, 13355, 13655, 13655 };
+vector<double> ds.zCentersBBlock = { 4789, 4789, 5850,5850, 6100, 6100, 6350, 6350, 6976, 6976, 8028, 8028, 12025, 12025, 12725, 12725, 13355, 13355, 13655, 13655 };
 
 				     //9397, 9397, 10953, 10953, 
 // Temporarily discard Bearing blocks under tracker
+
+// Spherical support for the upstream end of the MBS.  (DNB, April 2017)
+bool ds.hasMBSSupport = true;
+int ds.MBSSupport.nVertices = 8;
+double ds.MBSSupport.length = 500.0; // mm
+vector<double> ds.MBSSupport.outlineU = {550., 550., 451., 451., -451., -451.,-550., -550. };
+vector<double> ds.MBSSupport.outlineV = {0., 350., 350., 234., 234., 350.,350., 0. };
+vector<double> ds.MBSSupport.location   = { 0, -685., 13505. };
+string   ds.MBSSupport.material   = "MBSSupportMix";
 
 
 // Vacuum volumes inside DS

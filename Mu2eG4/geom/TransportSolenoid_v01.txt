@@ -82,28 +82,29 @@ double pbarwedge.dz1 = 1.1;  // This makes total thickness changing
 bool   pbar.coll1In.build = true;
 double pbar.coll1In.halfLength = 0.125;
 double pbar.coll1In.rOut = 160.0;
-double pbar.coll1In.offset = -100.02;       // distance to the TS1 entrance on +z
+double pbar.coll1In.offset = -140.02;       // distance to the TS1 entrance on +z.  It is implemented as distance to COL1, which shifted 40 mm, so shifted this as well.
 double pbar.coll1In.material1Name = "G4_Al";
 double pbar.coll1In.rOutRecord = 200.0;
 // Support structure for the upstream Pbar window in front of TS1 entrance
 int    pbar.coll1In.Version = 2; // 1 for just the window. 2 adds supports
-double pbar.coll1In.supportRIn = 152.4;    // support dimensions also apply
-double pbar.coll1In.supportROut = 168.275; // to frames
+double pbar.coll1In.supportRIn = 158.75;    // support dimensions also apply
+double pbar.coll1In.supportROut = 174.625; // to frames
 double pbar.coll1In.supportHLen = 3.175;
 string pbar.coll1In.supportMaterialName = "StainlessSteel";
 double pbar.coll1In.supportOffsetZ = 12.5;
-string pbar.coll1In.frameMaterialName = "G4_Al";
+string pbar.coll1In.frameMaterialName = "StainlessSteel";
 double pbar.coll1In.frameOffsetZ = 3.695;
-vector<double> pbar.coll1In.tabDims = {25.4,12.7,6.35};
+vector<double> pbar.coll1In.tabDims = { 20.4, 11., 9.2};// {25.4,12.7,6.35};
 string pbar.coll1In.tabMaterialName = "StainlessSteel";
-double pbar.coll1In.tabOffsetZ = 6.36; // from support ring
-double pbar.coll1In.tabOffsetR = 185.5; // from center of ring/window
+double pbar.coll1In.tabOffsetZ = 7.25; // from support ring
+double pbar.coll1In.tabOffsetR = 186.0; // from center of ring/window
 vector<double> pbar.coll1In.pegInnerRadii = {0,0,0,0,0,0,0};
 vector<double> pbar.coll1In.pegOuterRadii = {4.5,6.35,6.35,3.175,3.175,6.35,6.35};
 vector<double> pbar.coll1In.pegZPlanes = {0,1,2,2,10.7,10.7,12.7};
-string pbar.coll1In.pegMaterialName = "G4_Al";
+string pbar.coll1In.pegMaterialName = "StainlessSteel";
 double pbar.coll1In.pegOffsetZ = 19.65;
-double pbar.coll1In.pegRadialPosition = 160.34;
+double pbar.coll1In.pegRadialPosition = 166.7; // midway between inner and
+// outer radii of frame/support
 
 
 
@@ -112,7 +113,7 @@ bool   pbar.coll1Out.build = true;
 string pbar.coll1Out.material1Name = "G4_C";
 double pbar.coll1Out.halfLength = 100.0;
 double pbar.coll1Out.rIn = 120.0;
-double pbar.coll1Out.z = -3154.0;
+double pbar.coll1Out.z = -3144.5;
 //double pbar.coll1Out.phiBegin = 200.0; // Old, incorrect values 
 //double pbar.coll1Out.phiDelta = 140.0;
 double pbar.coll1Out.phiBegin = 210.0;
@@ -129,7 +130,7 @@ bool   ts.coll.isSolid          = false;
 int    ts.coll.verbosityLevel = 0;
 
 // Offsets of collimators wrt parent volumes (TS straight sections)
-double ts.coll1.sOffset       =  -77.5;
+double ts.coll1.sOffset       =  -37.5;  // Was -77.5, added 40
 double ts.coll31.sOffset      =    0. ;
 double ts.coll32.sOffset      =    0. ;
 double ts.coll5.sOffset       = -124.0;
@@ -143,11 +144,11 @@ double ts.coll1.innerRadius3 = 160.0;
 // r3 is outer cylinder inner radius; set it and r2 to 170mm and r1==150mm
 // and both materials to G4_Cu to get the previous setup
 string ts.coll1.material1Name = "G4_C";
-string ts.coll1.material2Name = "G4_Cu";
+string ts.coll1.material2Name = "CollCu";
 
 double ts.coll3.halfLength       = 400.0;
 double ts.coll3.hole             = 50.0;
-string ts.coll3.materialName     = "G4_Cu";
+string ts.coll3.materialName     = "CollCu";
 double ts.coll3.rotationAngle    = 0.0;
 double ts.coll3.holeRadius       = 150.0;
 double ts.coll3.holeHalfHeight   = 100.0;

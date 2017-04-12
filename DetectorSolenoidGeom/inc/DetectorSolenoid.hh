@@ -113,6 +113,14 @@ namespace mu2e {
     std::vector<CLHEP::Hep3Vector> BBlockCenters3() const {
       return _BBlockCenters3; }
 
+    // MBS Spherical Support outline
+    bool hasMBSS() const { return _hasMBSS; }
+    double  lengthMBSS()               const { return _lengthMBSS; }
+    std::vector<double> uOutlineMBSS() const { return _uOutlineMBSS; }
+    std::vector<double> vOutlineMBSS() const { return _vOutlineMBSS; }
+    CLHEP::Hep3Vector MBSSlocation()   const { return _locationMBSS; }
+    std::string MBSSmaterial()         const { return _materialMBSS; }
+
 
     // Vacuum volumes inside DS
     //
@@ -209,6 +217,14 @@ namespace mu2e {
     double                             _lengthBBlock3;
     std::vector<CLHEP::Hep3Vector>     _BBlockCenters2;
     std::vector<CLHEP::Hep3Vector>     _BBlockCenters3;
+
+    // MBS spherical support structure
+    bool                _hasMBSS;
+    double              _lengthMBSS;
+    std::vector<double> _uOutlineMBSS;
+    std::vector<double> _vOutlineMBSS;
+    CLHEP::Hep3Vector   _locationMBSS;
+    std::string         _materialMBSS;
 
 
     // Vacuum volumes inside DS

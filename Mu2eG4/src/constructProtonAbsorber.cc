@@ -12,6 +12,9 @@
 
 // C++ includes
 #include <iostream>
+#include <string>
+#include <sstream>
+#include <vector>
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -24,21 +27,29 @@
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "G4Helper/inc/G4Helper.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
+#include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestCons.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/HelicalProtonAbsorber.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 
+#include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/Rotation.h"
+#include "CLHEP/Units/SystemOfUnits.h"
+
 // G4 includes
 #include "G4Material.hh"
 #include "G4Color.hh"
 #include "G4Box.hh"
 #include "G4Cons.hh"
+#include "G4Tubs.hh"
 #include "G4BooleanSolid.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4SDManager.hh"
@@ -539,6 +550,191 @@ namespace mu2e {
         if ( verbosityLevel > 0 ) cout << __func__ << " outer protonabs2 disabled" << endl;
       }
 
+      //***************************
+      // Now build the support rings for the OPA
+      //***************************
+
+      if ( pabs->oPAnSupports() > 0 ) {
+	G4Material* oPAsupportMaterial = 
+	  findMaterialOrThrow( pabs->oPAsupportMaterial() );
+	double pabs1EndInMu2eZ = ds->vac_zLocDs23Split();
+       
+	for (int iSup = 0; iSup < pabs->oPAnSupports(); iSup++ ) {
+	  double zm = pabs->oPAsupportZMidpoint().at(iSup);
+	  double rin= pabs->oPAsupportInnerRadii().at(iSup);
+	  double rou= pabs->oPAsupportOuterRadii().at(iSup);
+	  double hl = pabs->oPAsupportHalflength().at(iSup);
+	  bool hasExtra = (pabs->oPAsupportExtra().at(iSup) > 0.0 );
+	  double xRad = 0.0;
+	  double dPhiX = 0.0;
+	  if ( hasExtra ) {
+	    xRad = pabs->oPAsupportXRad().at(iSup);
+	    dPhiX = pabs->oPAsupportDPhiX().at(iSup);
+	  }
+
+	  CLHEP::Hep3Vector location(-3904.0,0.0,zm);
+	  ostringstream myName;
+	  myName << "OPAsupport_" << iSup+1;
+	  ostringstream myName2;
+	  myName2 << "OPAsupportExtra_" << iSup+1;
+
+	  if ( zm < pabs1EndInMu2eZ ) {
+	    nestTubs( myName.str(),
+		      TubsParams( rin, rou, hl ),
+		      oPAsupportMaterial,
+		      0,
+		      location - parent1Info.centerInMu2e(),
+		      parent1Info,
+		      0,
+		      pabsIsVisible,
+		      G4Color::Blue(),
+		      pabsIsSolid,
+		      forceAuxEdgeVisible,
+		      placePV,
+		      doSurfaceCheck );
+	    if ( hasExtra ) {
+	    nestTubs( myName2.str(),
+		      TubsParams( rou, rou+xRad, hl, (270-dPhiX/2.)*CLHEP::deg,
+				  dPhiX*CLHEP::deg),
+		      oPAsupportMaterial,
+		      0,
+		      location - parent1Info.centerInMu2e(),
+		      parent1Info,
+		      0,
+		      pabsIsVisible,
+		      G4Color::Blue(),
+		      pabsIsSolid,
+		      forceAuxEdgeVisible,
+		      placePV,
+		      doSurfaceCheck );	      
+	    }
+	  } else {
+	    nestTubs( myName.str(),
+		      TubsParams( rin, rou, hl ),
+		      oPAsupportMaterial,
+		      0,
+		      location - parent2Info.centerInMu2e(),
+		      parent2Info,
+		      0,
+		      pabsIsVisible,
+		      G4Color::Blue(),
+		      pabsIsSolid,
+		      forceAuxEdgeVisible,
+		      placePV,
+		      doSurfaceCheck );
+	  } // end of if for placing in DS2Vac or DS3Vac
+	}// end for loop over OPA supports
+
+      } // end if nSupports > 0 for OPA
+
+
+      //***************************
+      // Now build the Degrader if requested
+      //***************************
+
+      if ( pabs->degraderBuild() ) {
+	CLHEP::HepRotation* degraderRot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	degraderRot->rotateZ(pabs->degraderRotation()*CLHEP::degree);
+	
+	// Make Frame
+	std::vector<double> frameDims = pabs->degraderFrameDims();
+	std::vector<double> filterDims = pabs->degraderFilterDims();
+	std::vector<double> counterDims = pabs->degraderCounterwtDims();
+	std::vector<double> rodDims = pabs->degraderRodDims();
+	CLHEP::Hep3Vector locationInMu2e (-3904.0-frameDims.at(3), 0.0, 
+					  pabs->degraderZ0() 
+					  + counterDims.at(2) );
+
+	// Make mother volume for degrader
+	std::string motherName("Degrader");
+	VolumeInfo degraderMother ( motherName,
+				    locationInMu2e - parent1Info.centerInMu2e(), parent1Info.centerInWorld);
+
+	// Make box for degrader mother volume.
+	G4Box* motherBox = new G4Box ( "degraderOutline", 
+	 			       frameDims.at(1)+frameDims.at(3),
+	 			       frameDims.at(1),
+	 			       counterDims.at(2) );
+	degraderMother.solid = motherBox;
+
+	// Now put degraderMother in DS2Vacuum
+	finishNesting ( degraderMother,
+			findMaterialOrThrow("DSVacuum"),
+			degraderRot, degraderMother.centerInParent,
+			parent1Info.logical, 0, false, G4Colour::Red(),
+			false,
+			forceAuxEdgeVisible,
+			placePV,
+			doSurfaceCheck );
+
+	// Start cobbling pieces together by putting frame in mother
+	CLHEP::Hep3Vector trans1(frameDims.at(3),0,frameDims.at(2) -
+	 			 counterDims.at(2));
+	nestTubs("degraderFrame",
+	 	 TubsParams(frameDims.at(0),frameDims.at(1),frameDims.at(2)),
+		 findMaterialOrThrow(pabs->degraderFrameMaterial()),
+	 	 0, trans1, degraderMother,
+	 	 0, pabsIsVisible, G4Color::Red(),
+	 	 pabsIsSolid,
+	 	 forceAuxEdgeVisible,
+		 placePV,
+	 	 doSurfaceCheck );
+	// G4Tubs * frame = new G4Tubs( "degraderFrameTubs",
+	// 			     frameDims.at(0),
+	// 			     frameDims.at(1),
+	// 			     frameDims.at(2) );
+
+	// Now put filter in mother
+	CLHEP::Hep3Vector trans1b(frameDims.at(3),0,2.0 * frameDims.at(2) +
+	 			  filterDims.at(2) - counterDims.at(2));
+	nestTubs("degraderFilter",
+	 	 TubsParams(filterDims.at(0),filterDims.at(1),filterDims.at(2)),
+	 	 findMaterialOrThrow(pabs->degraderFilterMaterial()),
+	 	 0, trans1b, degraderMother,
+	 	 0, pabsIsVisible, G4Color::Red(),
+	 	 pabsIsSolid,
+		 forceAuxEdgeVisible,
+		 placePV,
+		 doSurfaceCheck );
+	// G4Tubs * filter = new G4Tubs( "degraderFilterTubs",
+	// 			      filterDims.at(0),
+	// 			      filterDims.at(1),
+	// 			      filterDims.at(2) );
+
+
+	// Now put counterweight in mother
+	CLHEP::Hep3Vector trans2( -counterDims.at(3), 0.0, 0.0);
+	nestTubs("degraderCounterweight",
+		 TubsParams(counterDims.at(0),counterDims.at(1),counterDims.at(2)),
+		 findMaterialOrThrow(pabs->degraderCountwtMaterial()),
+		 0, trans2, degraderMother,
+		 0, pabsIsVisible, G4Color::Red(),
+		 pabsIsSolid,
+		 forceAuxEdgeVisible,
+		 placePV,
+		 doSurfaceCheck );
+
+	// Creat rod rep
+	double lenRod = frameDims.at(3) + counterDims.at(3) - frameDims.at(1) 
+	  - counterDims.at(1) - 0.1;
+	std::vector<double> lwhs = {lenRod/2.0,rodDims.at(0)/2.0,rodDims.at(1)/2.0};
+	// Now put rod in mother volume
+	CLHEP::Hep3Vector trans3( (frameDims.at(3)-counterDims.at(3)
+				   + counterDims.at(1) - frameDims.at(1))/2.0, 
+				  0.0, rodDims.at(1)/2.0 - counterDims.at(2));
+	nestBox ("degraderRod",
+		 lwhs,
+		 findMaterialOrThrow(pabs->degraderRodMaterial()),
+		 0, trans3, degraderMother,
+		 0, pabsIsVisible, G4Color::Red(),
+		 pabsIsSolid,
+		 forceAuxEdgeVisible,
+		 placePV,
+		 doSurfaceCheck );
+
+
+
+      }// end if degraderBuild
 
       
       if ( pabs->buildSupports() ) {

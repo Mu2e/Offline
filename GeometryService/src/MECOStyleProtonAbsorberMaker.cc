@@ -262,6 +262,22 @@ namespace mu2e {
     (_pabs->_oPAthickness) = oPAthick;
 
     ////////////////////////
+    // Support Structure for OPA
+    ////////////////////////
+    (_pabs->_oPASupportMaterialName) = _config.getString("protonabsorber.oPASupportMaterialName");
+    (_pabs->_oPAnSupports) = _config.getInt("protonabsorber.oPASupportNSupportRing",0);
+    if ( _pabs->_oPAnSupports > 0 ) {
+      _config.getVectorDouble("protonabsorber.oPASupportInnerRadii",_pabs->_oPASupportIR,(_pabs->_oPAnSupports));
+      _config.getVectorDouble("protonabsorber.oPASupportOuterRadii",_pabs->_oPASupportOR,(_pabs->_oPAnSupports));
+      _config.getVectorDouble("protonabsorber.oPASupportHalflength",_pabs->_oPASupportHL,(_pabs->_oPAnSupports));
+      _config.getVectorDouble("protonabsorber.oPASupportZMidpoints",_pabs->_oPASupportZM,(_pabs->_oPAnSupports));
+      _config.getVectorDouble("protonabsorber.oPASupportHasExtra",_pabs->_oPASupportHE,(_pabs->_oPAnSupports));
+      _config.getVectorDouble("protonabsorber.oPASupportExtraRad",_pabs->_oPASupportXR,(_pabs->_oPAnSupports));
+      _config.getVectorDouble("protonabsorber.oPASupportExtraDPhi",_pabs->_oPASupportPH,(_pabs->_oPAnSupports));
+    }
+
+
+    ////////////////////////
     // Support Structure for IPA
     ////////////////////////
 
@@ -288,6 +304,52 @@ namespace mu2e {
     // Will be used for v2 only
     const double wireRotation = _config.getDouble("protonabsorber.ipa.wireRotationToVertical", 45);
     const double wire_rotation_from_vertical = wireRotation*CLHEP::rad;
+
+    //******************
+    // Degrader
+    //******************
+
+    (_pabs->_degraderBuild) = _config.getBool("degrader.build",false);
+    if ( _pabs->_degraderBuild ) {
+      _pabs->_degraderRot = _config.getDouble("degrader.rotation");
+      _pabs->_degraderZ0 =  _config.getDouble("degrader.upstreamEdge.z");
+      _pabs->_degraderFiltMaterial = 
+	_config.getString("degrader.filter.materialName");
+      _pabs->_degraderFramMaterial =
+	_config.getString("degrader.frame.materialName");
+      _pabs->_degraderCowtMaterial = 
+	_config.getString("degrader.counterweight.materialName");
+      _pabs->_degraderRodMaterial =
+	_config.getString("degrader.rod.materialName");
+      double rin = _config.getDouble("degrader.frame.rIn");
+      _pabs->_degraderFrameDims.push_back(rin);
+      double rout = _config.getDouble("degrader.frame.rOut");
+      _pabs->_degraderFrameDims.push_back(rout);
+      double hl  = _config.getDouble("degrader.frame.halfLength");
+      _pabs->_degraderFrameDims.push_back(hl);
+      double coffs = _config.getDouble("degrader.frame.centerOffFromPivot");
+      _pabs->_degraderFrameDims.push_back(coffs);
+      rin = _config.getDouble("degrader.filter.rIn");
+      _pabs->_degraderFilterDims.push_back(rin);
+      rout = _config.getDouble("degrader.filter.rOut");
+      _pabs->_degraderFilterDims.push_back(rout);
+      hl  = _config.getDouble("degrader.filter.halfLength");
+      _pabs->_degraderFilterDims.push_back(hl);
+      _pabs->_degraderFilterDims.push_back(coffs);
+      rin = _config.getDouble("degrader.counterweight.rIn");
+      _pabs->_degraderCounterDims.push_back(rin);
+      rout = _config.getDouble("degrader.counterweight.rOut");
+      _pabs->_degraderCounterDims.push_back(rout);
+      hl  = _config.getDouble("degrader.counterweight.halfLength");
+      _pabs->_degraderCounterDims.push_back(hl);
+      coffs = _config.getDouble("degrader.counterweight.centerOffFromPivot");
+      _pabs->_degraderCounterDims.push_back(coffs);
+      double width = _config.getDouble("degrader.rod.width");
+      _pabs->_degraderRodDims.push_back(width);
+      double depth = _config.getDouble("degrader.rod.depth");
+      _pabs->_degraderRodDims.push_back(depth);
+    }
+
 
     ////////////////////
     // End Rings for IPA

@@ -537,6 +537,20 @@ namespace mu2e {
 
 
      //************* End of Rails and Bearing Blocks ************
+     //************* Begin MBS Support block *****************
+     if ( ds->hasMBSS() ) {
+       std::vector<double> uOutlineMBSS = ds->uOutlineMBSS();
+       std::vector<double> vOutlineMBSS = ds->vOutlineMBSS();
+       VolumeInfo MBSS = nestExtrudedSolid
+	 ( "MBSSphericalSupport", ds->lengthMBSS()/2.0*CLHEP::mm,
+	   uOutlineMBSS, vOutlineMBSS, 
+	   findMaterialOrThrow(ds->MBSSmaterial()),
+	   0, ds->MBSSlocation(),
+	   dsShieldParent, 0, _config.getBool("ds.visible"),
+	   G4Colour::Blue(), _config.getBool("ds.solid"),
+	   forceAuxEdgeVisible, placePV, doSurfaceCheck );
+     }
+
      //************** Begin pion Degrader code *************
 
 

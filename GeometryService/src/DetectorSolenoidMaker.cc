@@ -118,6 +118,19 @@ namespace mu2e {
       }
     }
 
+    // MBS spherical support structure
+    ds->_hasMBSS = c.getBool("ds.hasMBSSupport",false);
+    if ( ds->_hasMBSS ) {
+      ds->_lengthMBSS = c.getDouble("ds.MBSSupport.length");
+      int nPtMBSS = c.getInt("ds.MBSSupport.nVertices");
+      c.getVectorDouble("ds.MBSSupport.outlineU",ds->_uOutlineMBSS, nPtMBSS );
+      c.getVectorDouble("ds.MBSSupport.outlineV",ds->_vOutlineMBSS, nPtMBSS );
+      ds->_locationMBSS = c.getHep3Vector("ds.MBSSupport.location");
+      ds->_materialMBSS = c.getString("ds.MBSSupport.material");
+    }
+
+
+
     // Vacuum volumes
     ds->_vacuumMaterialName = c.getString("ds.vacuumMaterialName");
     ds->_vacuumPressure     = c.getDouble("ds.vacuumPressure");

@@ -384,6 +384,14 @@ namespace mu2e {
     }
 
 
+    // A mix made to represent the MBS spherical support
+    mat = uniqueMaterialOrThrow( "MBSSupportMix" );
+    {
+      G4Material* MBSSupportMix = new G4Material(mat.name, 1.26*CLHEP::g/CLHEP::cm3, 2);
+      MBSSupportMix->AddMaterial(findMaterialOrThrow("StainlessSteel"),0.8);
+      MBSSupportMix->AddMaterial(findMaterialOrThrow("HRSBronze"),0.2);
+    }
+
     // Construction Aluminum
     //http://asm.matweb.com/search/SpecificMaterial.asp?bassnum=MA5083O
     //http://ppd-docdb.fnal.gov/cgi-bin/RetrieveFile?docid=1112;filename=MD-ENG-109.pdf;version=1
@@ -563,7 +571,6 @@ namespace mu2e {
     }
 
 
-
     // Superconducting Cable Insulation
     mat = uniqueMaterialOrThrow( "SCCableInsulation");
     {
@@ -585,6 +592,18 @@ namespace mu2e {
       SCCable->AddMaterial(findMaterialOrThrow("AL999Ni001"),        0.43);
       SCCable->AddMaterial(findMaterialOrThrow("NbTiCu"),            0.53);
     }
+
+
+    // TS Collimator Cu mix (includes fiberglass and poly wrap/fill,
+    // assumed about 2%)
+    mat = uniqueMaterialOrThrow( "CollCu" );
+    {
+      G4Material* CollCu = new G4Material( mat.name, 8.815*CLHEP::g/CLHEP::cm3, 2);
+      CollCu->AddMaterial( findMaterialOrThrow("G4_Cu"),0.98 );
+      CollCu->AddMaterial( findMaterialOrThrow("G10"),  0.02 );
+    }
+
+
 
     mat = uniqueMaterialOrThrow( "IsoButane");
     {

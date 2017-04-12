@@ -8,9 +8,9 @@
 
 double TSdA.rFactorForVDs        = 650.; // Just for virtual detector build
 
-double tsda.r4		 = 447; // outer radius, inner radius is TS5
+double tsda.r4		 = 525; // outer radius, inner radius is TS5
 double tsda.halfLength4  = 25.0;
-double tsda.z0           = 5871.;
+double tsda.z0           = 5871.; // Why this value?
 string tsda.materialName = "Polyethylene096";
 
 int    tsda.verbosityLevel = 0;
