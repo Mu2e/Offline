@@ -1,7 +1,8 @@
 #
-# Create and write digis (only!)
+# Create and write digis (only!)  This job is configured without inputs (background only), it can
+# be trivially modified to process signal+bkg by switching the input module.  For bkg only, run as:
 #
-#  > mu2e --config TrkFilters/fcl/TTWrite.fcl --source-list (your files) --TFile TTWrite.root --nevts=100
+#  > mu2e --config TrkFilters/fcl/WriteDigis.fcl --TFile TTWrite.root --nevts=100
 #
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -32,12 +33,14 @@ physics :
   }
 }
 #define output module
+# NB: Calorimeter digis currently have a provenance (?) problem and cannot be written out
 outputs: {
   WriteDigis : {
     module_type: RootOutput
     outputCommands: [ "drop *_*_*_*",
-    @sequence::Tracking.Output.Digis,
-   "keep mu2e::CaloDigis_*_*_*" ]
+    @sequence::Tracking.Output.Digis
+#   "keep mu2e::CaloDigis_*_*_*" 
+    ]
   }
 }
 
@@ -46,12 +49,13 @@ outputs: {
 
 physics.WriteDigisTrigPath : [   @sequence::EventMixing.CD3Mixers,
   @sequence::EventMixing.TimeMaps, 
-  @sequence::Tracking.DigiSim, 
-  @sequence::CaloDigiMC.DigiSim ]
+  @sequence::Tracking.DigiSim
+#  @sequence::CaloDigiMC.DigiSim 
+  ]
 physics.WriteDigisEndPath : [ WriteDigis ]
 
 # finish output configuration: this needs to be done after the path exists
-outputs.WriteDigis.fileName: "TrkCaloDigis.art"
+outputs.WriteDigis.fileName: "TrkDigis.art"
 # setup mixers
 physics.producers.makeSD.TimeOffsets.inputs : [ "protonTimeMap", "muonTimeMap" ] 
 physics.filters.flashMixer.fileNames : @local::bgHitFiles
