@@ -353,7 +353,7 @@ namespace mu2e {
     chordFinder->SetDeltaChord(config.getDouble("extMonFNAL."+volNameSuffix+".magnet.deltaChord", deltaOld));
     AGDEBUG("chordFinder: using deltaChord = "<<chordFinder->GetDeltaChord()<<" (default = "<<deltaOld<<")");
 
-    G4FieldManager *manager = reg.add(new G4FieldManager(field, chordFinder));
+    G4FieldManager *manager = new G4FieldManager(field, chordFinder);
 
     AGDEBUG("orig: manager epsMin = "<<manager->GetMinimumEpsilonStep()
             <<", epsMax = "<<manager->GetMaximumEpsilonStep()
