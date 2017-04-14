@@ -23,9 +23,12 @@ namespace mu2e{
     _code(),
     _preLastStepKE(-1),
     _nSteps(0),
-    _muCapCode(){
-  }
+    _muCapCode(),
+    _endCode(ProcessCode::unknown),
+    _preLastStepMom(0.,0.,0.),
+    _lastStepPosition(0.,0.,0.){ 
 
+  }
   UserTrackInformation::~UserTrackInformation(){
   }
 
