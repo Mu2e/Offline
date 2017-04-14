@@ -155,6 +155,30 @@ namespace mu2e {
 
     tinfo->setStepInfo(preStepEK, numTrackSteps_);
 
+   //
+    // here's information to add for that will eventually go into the SimParticle class (rhb)
+    // then we will have access to pdgid and lots of other useful things, so this is a hack
+    // for my antiproton studies. the position of the last step, and the momentum just before the
+    // stop, will be output and used as input for a generator gun
+    //
+    // only make these non-trivial if this was the primary proton stopped by inelastic proton interaction
+    // Which process caused this step to end?
+    ProcessCode endCode(_processInfo->
+                        findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(step)));
+
+    //   std::cout << "hello from UserSteppingAction pdg and process " << track->GetDefinition()->GetPDGEncoding() << " " << endCode << std::endl;
+    if (track->GetDefinition()->GetPDGEncoding() == PDGCode::proton && endCode == ProcessCode::ProtonInelastic)
+      {
+	//	std::cout << "got here! "  << endCode << std::endl;
+	//
+	// we want to record the momentum and position here
+	tinfo->setLastStepPosition(postpt->GetPosition());
+	tinfo->setPreLastStepMomentum(prept->GetMomentum());
+	//	std::cout << "position, momentum = " << postpt->GetPosition() << " " << prept->GetMomentum() << std::endl;
+      }
+
+ 
+
     // Save hits in time virtual detector
     for( unsigned int i=0; i<tvd_time_.size(); ++i ) {
       if( prept->GetGlobalTime()<=tvd_time_[i] && postpt->GetGlobalTime()>tvd_time_[i] ) {
@@ -176,6 +200,13 @@ namespace mu2e {
 
     // Get information about this track.
     G4int id = track->GetTrackID();
+
+
+    //
+    // only look at primary track
+    if (track->GetParentID() != 0) return;
+    //
+    // also check creation code and stopping code (want primaries and to end in a proton inelastic)
 
     // If no tracks are listed, then printout for all tracks.
     // If some tracks are listed, then printout only for those tracks.
