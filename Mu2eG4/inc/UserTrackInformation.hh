@@ -12,12 +12,9 @@
 
 // Mu2e includes
 #include "MCDataProducts/inc/ProcessCode.hh"
-#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 
 // Geant4 includes
 #include "G4VUserTrackInformation.hh"
-
-#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e{
 
@@ -41,25 +38,12 @@ namespace mu2e{
       _nSteps = nSteps;
     }
 
-    void setPreLastStepMomentum(CLHEP::Hep3Vector preLastStepMom){
-    _preLastStepMom = preLastStepMom;
-    }
+    bool         isForced() const { return _forcedStop; }
+    ProcessCode  code()    const { return _code; }
+    double       preLastStepKE() const { return _preLastStepKE; }
+    int          nSteps() const { return _nSteps; }
+    ProcessCode  muCapCode() const { return _muCapCode; }
 
-    void setLastStepPosition(CLHEP::Hep3Vector lastStepPosition){
-    _lastStepPosition = lastStepPosition;
-    }
-    void setEndCode(ProcessCode endCode){
-    _endCode = endCode;
-    }
-
-    bool               isForced() const { return _forcedStop; }
-    ProcessCode        code()    const { return _code; }
-    double             preLastStepKE() const { return _preLastStepKE; }
-    int                nSteps() const { return _nSteps; }
-    ProcessCode        muCapCode() const { return _muCapCode; }
-    ProcessCode        endCode() const { return _endCode; }
-    CLHEP::Hep3Vector  preLastStepMom() const {return _preLastStepMom;}
-    CLHEP::Hep3Vector  lastStepPosition() const {return _lastStepPosition;}
     virtual void Print() const;
 
   private:
@@ -76,21 +60,9 @@ namespace mu2e{
     // Number of G4 steps the track if made of
     int _nSteps;
 
-    // Label of muMinusCaptureAtRest daughter particles (if any)
+    // Label of muMinusCaptureAtRest daugter particles (if any)
 
     ProcessCode _muCapCode;
-
-    ProcessCode _endCode;
-
-    // momentum just before last step.  This is needed, for example, in
-    // modeling antiproton production with non-G4 model.
-    CLHEP::Hep3Vector _preLastStepMom;
-    //
-    // position at last step. When this and the above are incorporated into the SimParticle class these can go away
-    CLHEP::Hep3Vector _lastStepPosition;
-    //
-    // place to write the output
-    std::string _fileSave;
 
   };
 
