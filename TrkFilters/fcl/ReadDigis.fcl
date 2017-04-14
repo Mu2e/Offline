@@ -17,6 +17,13 @@ source :
 }
 # we don't need any simulation services for this job
 services : @local::Services.Reco
+# timing information
+services.TimeTracker : {
+  dbOutput : {
+    filename : "ReadDigis.db"
+    overwrite : true
+    }
+}
 # setup modules needed to filter tracks
 physics :
 {
