@@ -44,6 +44,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstddef>
+#include <cmath>
 
 using namespace std;
 
@@ -181,7 +182,8 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
   for ( auto const& ring : sup.stiffRings() ){
 
     if ( _verbosityLevel > 0 ) {
-      cout << "Support ring position: "
+      cout << __func__
+           << " Support ring position: "
            << ring.name()     << " "
            << ring.position() << " "
            << _motherInfo.centerInWorld << " "
@@ -213,12 +215,16 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 
     if ( _verbosityLevel > 0 ) {
       cout  << __func__
-            << "Support Beam Position: "
+            << " Support Beam Position: "
             << sbeam.name()               << " "
             << sbeam.position()           << " "
             << _motherInfo.centerInWorld  << " "
             << sbeam.position()-_motherInfo.centerInWorld << " "
             << sbeam.tubsParams()
+            << ", phi range : "
+            << sbeam.phi0()/M_PI*180.
+            << ", "
+            << sbeam.phiMax()/M_PI*180.
             << endl;
     }
 
@@ -261,7 +267,8 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
              << sbeam.position()           << " "
              << _motherInfo.centerInWorld  << " "
              << sbeam.position()-ttSSE.centerInWorld << " "
-             << sbeam.tubsParams();
+             << sbeam.tubsParams()
+             << endl;
       }
 
       serviceVI =
@@ -377,14 +384,18 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 
 // Construct all stations and place them in the mother volume.
 // We do not yet represent stations as G4 objects.  Each station is representated
-// in G4 as two independent planes (planes).
+// in G4 as two independent planes.
 void
 mu2e::ConstructTTrackerTDR::constructStations(){
 
   int plnDraw(_config.getInt("ttracker.plnDraw",-1));
 
-  // Build logical volume heirarchy for a single panel (panel).
+  // Build logical volume heirarchy for a single panel.
   VolumeInfo basePanel = preparePanel();
+
+  // Build the electronic board aka key
+  VolumeInfo baseEBKey       = prepareEBKey(true);   // key itself
+  VolumeInfo baseEBKeyShield = prepareEBKey(false);  // key shield
 
   // Build logical volume heirarchy for all elements of the support structure that live
   // inside each plane envelope.
@@ -452,7 +463,8 @@ mu2e::ConstructTTrackerTDR::constructStations(){
 
     addPlaneSupports( baseSupports, ipln, plnInfo );
 
-    addPanels ( basePanel, ipln, plnInfo.logical, dPhiPanel );
+    addPanelsAndEBKeys( basePanel, ipln, plnInfo, baseEBKey, baseEBKeyShield,
+                        _motherInfo, dPhiPanel );
 
   } // end loop over planes
 
@@ -466,7 +478,7 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
 
   // Panels are identical other than placement - so get required properties from plane 0, panel 0.
   Plane const& plane(_ttracker.getPlane(PlaneId(0)));
-  Panel const& sec00(_ttracker.getPanel(PanelId(0,0)));
+  Panel const& panel(_ttracker.getPanel(PanelId(0,0)));
 
   bool panelEnvelopeVisible = _config.getBool("ttracker.panelEnvelopeVisible",false);
   bool panelEnvelopeSolid   = _config.getBool("ttracker.panelEnvelopeSolid",true);
@@ -481,22 +493,49 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
   double panelCenterPhi = panelHalfAzimuth();
   double phiMax          = 2.*panelCenterPhi;
 
+  if (_verbosityLevel>1) {
+    cout << __func__
+         << " preparing panel: "
+         << " panelCenterPhi "
+         << panelCenterPhi/M_PI*180.
+         << " panel center from the maker "
+         << panel.boxRzAngle()/M_PI*180.
+         << endl;
+  }
+
   // Get information about the channel position and depth.
   PlacedTubs const& chanUp(sup.innerChannelUpstream());
 
   // Internally all panel envelopes are the same.
   // Create one logical panel envelope but, for now, do not place it.
   // Fill it with straws and then place it multiple times.
-  TubsParams secEnvParams(planeEnvelopeParams.innerRadius(),
+  TubsParams panEnvParams(planeEnvelopeParams.innerRadius(),
                           sup.innerChannelUpstream().tubsParams().outerRadius(),
                           chanUp.tubsParams().zHalfLength(),
                           0.,
                           phiMax);
 
+
+  if (_verbosityLevel>1) {
+    cout << __func__
+         << " preparing panel: "
+         << " panel envelope panEnvParams: "
+         << panEnvParams.innerRadius()
+         << ", "
+         << panEnvParams.outerRadius()
+         << ", "
+         << panEnvParams.zHalfLength()
+         << ", "
+         << panEnvParams.phi0()/M_PI*180.
+         << ", "
+         << panEnvParams.phiMax()/M_PI*180.
+         << endl;
+  }
+
   G4Material* envelopeMaterial = findMaterialOrThrow(_ttracker.envelopeMaterial());
 
-  VolumeInfo sec0Info = nestTubs( "PanelEnvelope",
-                                  secEnvParams,
+  VolumeInfo pnl0Info = nestTubs( "PanelEnvelope",
+                                  panEnvParams,
                                   envelopeMaterial,
                                   noRotation,
                                   zeroVector,
@@ -517,19 +556,19 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
   // within the TTracker class.  For straws on the downstream side of the support, the z axis of the straw
   // volume is positive when going counter-clockwise.  This won't be important since we never work
   // in the straw-local coordiates within G4.
-  CLHEP::HepRotationZ secRz(-panelCenterPhi);
-  CLHEP::HepRotationX secRx(M_PI/2.);
-  G4RotationMatrix* sec00Rotation = _reg.add(G4RotationMatrix(secRx*secRz));
+  CLHEP::HepRotationZ pnlRz(-panelCenterPhi);
+  CLHEP::HepRotationX pnlRx(M_PI/2.);
+  G4RotationMatrix* panelRotation = _reg.add(G4RotationMatrix(pnlRx*pnlRz));
 
   // The z of the center of the placed panel envelope, in Mu2e coordinates.
   // This carries a sign, depending on upstream/downstream.
   double zPanel(0.);
-  for ( int i=0; i<sec00.nLayers(); ++i){
-    zPanel += sec00.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
+  for ( int i=0; i<panel.nLayers(); ++i){
+    zPanel += panel.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
   }
-  zPanel /= sec00.nLayers();
+  zPanel /= panel.nLayers();
 
-  // Is sector 0 on the upstream(+1) or downstream(-z) side of the plane.
+  // Is panel 0 on the upstream(+1) or downstream(-z) side of the plane.
   double side = (zPanel-plane.origin().z()) > 0. ? -1. : 1.;
 
   // A unit vector in the direction from the origin to the wire center within the panel envelope.
@@ -553,7 +592,7 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
     FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
 
   // Place the straws into the panel envelope.
-  for ( std::vector<Layer>::const_iterator i=sec00.getLayers().begin(); i != sec00.getLayers().end(); ++i ){
+  for ( std::vector<Layer>::const_iterator i=panel.getLayers().begin(); i != panel.getLayers().end(); ++i ){
 
     Layer const& lay(*i);
 
@@ -606,9 +645,9 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
       VolumeInfo strawVol =  nestTubs( straw.name("TTrackerStrawGas_"),
                                        detail.getOuterTubsParams(),
                                        findMaterialOrThrow(detail.gasMaterialName()),
-                                       sec00Rotation,
+                                       panelRotation,
                                        mid,
-                                       sec0Info.logical,
+                                       pnl0Info.logical,
                                        copyNo,
                                        strawVisible,
                                        G4Colour::Red(),
@@ -731,9 +770,93 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
     } // end loop over straws within a layer
   } // end loop over layers
 
-  return sec0Info;
+  return pnl0Info;
 
 } // end preparePanel
+
+mu2e::VolumeInfo
+mu2e::ConstructTTrackerTDR::prepareEBKey(bool keyItself){
+
+  // the keys and their shields are almost the same; the boolean decides which one to make
+
+  // place they keys in the addPannels...; use different mother volume, i.e. tracker mother
+  // write the corresponding TTrackeMaker code first
+
+  // keys are identical other than placement - so get required properties from plane 0, panel 0.
+  // they are placed wrt to the panels; they could be constructed independently though
+  //
+
+  bool keyVisible  = _config.getBool("ttrackerSupport.electronics.key.visible",true);
+  bool keySolid    = _config.getBool("ttrackerSupport.electronics.key.solid",false);
+
+  // Internally all keys are the same.
+  // Create one logical volume for now, do not place it.
+  Panel const& panel(_ttracker.getPanel(PanelId(0,0)));
+
+  TubsParams  keyParams  = keyItself ? panel.getEBKeyParams() : panel.getEBKeyShieldParams();
+
+  G4Material* keyMaterial = findMaterialOrThrow( keyItself ?
+                                                 panel.getEBKeyMaterial() :
+                                                 panel.getEBKeyShieldMaterial() );
+
+  VolumeInfo key0Info = keyItself ? nestTubs("PanelEBKey",
+                                             keyParams,
+                                             keyMaterial,
+                                             noRotation,
+                                             zeroVector,
+                                             nullptr,       // logical volume - not needed since no placement.
+                                             0,             // copyNo
+                                             keyVisible,
+                                             G4Colour::Yellow(),
+                                             keySolid,
+                                             true,          // edge visible
+                                             doNotPlace,
+                                             _doSurfaceCheck
+                                             ) :
+                                    nestTubs("PanelEBKeyShield",
+                                             keyParams,
+                                             keyMaterial,
+                                             noRotation,
+                                             zeroVector,
+                                             nullptr,       // logical volume - not needed since no placement.
+                                             0,             // copyNo
+                                             keyVisible,
+                                             G4Colour::Green(),
+                                             keySolid,
+                                             true,          // edge visible
+                                             doNotPlace,
+                                             _doSurfaceCheck
+                                             );
+
+  if (_verbosityLevel>1) {
+    cout << __func__
+         << " preparing EBKey: "
+         << " EBKey Params: "
+         << keyParams.innerRadius()
+         << ", "
+         << keyParams.outerRadius()
+         << ", "
+         << keyParams.zHalfLength()
+         << ", "
+         << keyParams.phi0()/M_PI*180.
+         << ", "
+         << keyParams.phiMax()/M_PI*180.
+         << endl;
+
+  }
+
+  // Make it sensitive here
+  if (keyItself) {
+    G4VSensitiveDetector* EBKeySD = G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::panelEBKey());
+    if (EBKeySD) {
+      key0Info.logical->SetSensitiveDetector(EBKeySD);
+    }
+  }
+
+  return key0Info;
+
+} // end prepareEBKey
 
 
 // For debugging graphically, add three boxes that are aligned with the coordinate axes,
@@ -827,12 +950,26 @@ mu2e::ConstructTTrackerTDR::constructAxes(){
 
 
 void
-mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int ipln, G4LogicalVolume* planeLogical,
-                                      double panelCenterPhi ){
+mu2e::ConstructTTrackerTDR::addPanelsAndEBKeys(VolumeInfo& basePanel,
+                                               int ipln,
+                                               VolumeInfo& plane,
+                                               VolumeInfo& baseEBKey,
+                                               VolumeInfo& baseEBKeyShield,
+                                               VolumeInfo& trackerMother,
+                                               double panelCenterPhi ){
+
+  // panel EBKeys are placed inside the tracker mother volume as they
+  // are outside the planes
+  // we somehow need to avoid the overlaps
 
   Plane const& pln = _ttracker.getPlane(ipln);
+  // to get the key info from the base panel
+  Panel const& panel(_ttracker.getPanel(PanelId(0,0)));
 
-  int secDraw = _config.getInt ("ttracker.secDraw",-1);
+  // to prevent the overlaps
+  SupportStructure const& sup = _ttracker.getSupportStructure();
+
+  int pnlDraw = _config.getInt ("ttracker.pnlDraw",-1);
 
   // Assume all planes have the same number of panels.
   int baseCopyNo = ipln * _ttracker.getPlane(0).nPanels();
@@ -841,27 +978,31 @@ mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int ipln, G4Logical
   PlacedTubs const& chanUp(_ttracker.getSupportStructure().innerChannelUpstream());
 
   // Place the panel envelope into the plane envelope, one placement per panel.
-  for ( int isec=0; isec<pln.nPanels(); ++isec){
+  for ( int ipnl=0; ipnl<pln.nPanels(); ++ipnl){
 
     // For debugging, only place the one requested panel.
-    if ( secDraw > -1  && isec != secDraw ) continue;
-    //if ( secDraw > -1  && isec%2 == 0 ) continue;
+    if ( pnlDraw > -1  && ipnl != pnlDraw ) continue;
+    //if ( pnlDraw > -1  && ipnl%2 == 0 ) continue;
 
     // Choose a representative straw from this this (plane,panel).
-    Straw const& straw = _ttracker.getStraw( StrawId(ipln,isec,0,0) );
+    Straw const& straw = _ttracker.getStraw( StrawId(ipln,ipnl,0,0) );
 
     // Azimuth of the midpoint of the wire.
     CLHEP::Hep3Vector const& mid = straw.getMidPoint();
     double phimid = mid.phi();
     if ( phimid < 0 ) phimid += 2.*M_PI;
 
-    // Is this panel on the front or back face of the plane?
+    // Is this panel on the front(+) or back(-) face of the plane?
     double sign   = ((mid.z() - pln.origin().z())>0. ? 1.0 : -1.0 );
     CLHEP::Hep3Vector panelPosition(0.,0., sign*std::abs(chanUp.position().z()) );
 
     // The rotation that will make the straw mid point have the correct azimuth.
     // Panels on the downstream side are flipped front/back by rotation about Y.
     // so the sense of the z rotation changes sign.
+
+    // the specific rotation below is a consequence of the orientation
+    // and origin of the local coordinate system of the G4Tub
+
     double phi0 = panelCenterPhi-phimid;
     if ( sign > 0 ){
       phi0 = panelCenterPhi + M_PI +phimid;
@@ -873,17 +1014,174 @@ mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int ipln, G4Logical
       _reg.add(G4RotationMatrix(rotZ)) :
       _reg.add(G4RotationMatrix(rotZ*rotY));
 
+    if (_verbosityLevel>1) {
+      cout << __func__
+           << " placing panel: "
+           << ipnl
+           << " inside plane: "
+           << ipln
+           << " sign "
+           << sign
+           << " phimid "
+           << phimid/M_PI*180.
+           << " phi0 "
+           << phi0/M_PI*180.
+           << " rel position "
+           << panelPosition
+           << " "
+           << endl;
+    }
+
     bool many(false);
     G4VPhysicalVolume* physVol = new G4PVPlacement(rotation,
                                                    panelPosition,
                                                    basePanel.logical,
                                                    basePanel.name,
-                                                   planeLogical,
+                                                   plane.logical,
                                                    many,
-                                                   baseCopyNo + isec,
+                                                   baseCopyNo + ipnl,
                                                    false);
     if ( _doSurfaceCheck) {
       checkForOverlaps( physVol, _config, _verbosityLevel>0);
+    }
+
+    // Now placing the EBkey
+
+    // see comment above about panel phi0
+    double keyAngShift = panel.getEBKeyParams().phiMax()*0.5;
+
+    // additional rotation to place some of the keys at the top of the tracker
+
+    double keyPhi0 = keyAngShift - phimid - panel.getEBKeyPhiExtraRotation(); // as it needs to placed per geant4
+    if ( sign > 0 ) {
+      keyPhi0 = keyAngShift + M_PI + phimid + panel.getEBKeyPhiExtraRotation();
+    }
+
+    keyPhi0 = getWithinZeroTwoPi(keyPhi0);
+
+    bool willOveralp = false;
+
+    double keyNominalPhi0 =  getWithinZeroTwoPi(phimid + panel.getEBKeyPhiExtraRotation());
+
+    for ( auto const& sbeam : sup.beamBody() ) {
+
+      // check if there will be overlap with the support
+
+      double phiEnd    =  getWithinZeroTwoPi(sbeam.phi0() + sbeam.phiMax());
+      double diffEdge1 = diffWithinZeroTwoPi(keyNominalPhi0,sbeam.phi0());
+      double diffEdge2 = diffWithinZeroTwoPi(keyNominalPhi0,phiEnd);
+
+      if ( ( diffEdge1 < panel.getEBKeyParams().phiMax() ) ||
+           ( diffEdge2 < panel.getEBKeyParams().phiMax() ) ) {
+        willOveralp = true;
+      }
+
+      if ( willOveralp && (_verbosityLevel > 0 ) ) {
+        cout  << __func__
+              << " Support Beam/key overalp, will skip the key: "
+              << " plane: "
+              << ipln
+              << ", key "
+              << ipnl
+              << ", "
+              << sbeam.name()               << " "
+              << ", phi0, "
+              << sbeam.phi0()/M_PI*180.
+              << ", span "
+              << sbeam.phiMax()/M_PI*180.
+              << ", keyNominalPhi0 "
+              << keyNominalPhi0/M_PI*180.
+              << ", keyPhi0 "
+              << keyPhi0/M_PI*180.
+              << ", span "
+              << panel.getEBKeyParams().phiMax()
+              << ", keyAngShift "
+              << keyAngShift/M_PI*180.
+               << endl;
+      }
+
+      if (willOveralp) break;
+
+    }
+
+    // override willOveralp
+    //willOveralp = false;
+
+    if (!willOveralp) {
+
+      CLHEP::HepRotationZ keyRotZ(keyPhi0);
+      CLHEP::HepRotationY keyRotY(M_PI);
+      G4RotationMatrix* keyRotation  = (sign < 0 )?
+        _reg.add(G4RotationMatrix(keyRotZ)) :
+        _reg.add(G4RotationMatrix(keyRotZ*keyRotY));
+
+      // it is placed inside the trackerMother not inside the plane
+
+      // panelPosition is in the plane coordinate system
+      // pln.origin()  is in the detector/tracker coordinate system.
+      // plnPosition - is in the coordinate system of the Tracker mother volume.
+
+      // we need to shift the positions by half of the width of the
+      // keys/shield depending on the key location wrt to the plane
+
+      CLHEP::Hep3Vector keyPosition =  panelPosition + pln.origin()+ _offset +
+        CLHEP::Hep3Vector(0., 0., panel.getEBKeyShieldParams().zHalfLength());
+
+      if (_verbosityLevel>1) {
+        cout << __func__
+             << " placing key: "
+             << ipnl
+             << " inside tracker mother volume "
+             << " sign "
+             << sign
+             << " phi0 " << phi0 << ", "
+             << phi0/M_PI*180.
+             << " keyPhi0 " << keyPhi0 << ", "
+             << keyPhi0/M_PI*180.
+             << " keyAngShift " << keyAngShift << ", "
+             << keyAngShift/M_PI*180.
+             << " positions: "
+             <<  _offset << ", "
+             << pln.origin() << ", "
+             << panelPosition  << ", "
+             << keyPosition
+             << " tracker Mother position in the world "
+             << trackerMother.centerInWorld
+             << " tracker Mother position in Mu2e "
+             << trackerMother.centerInMu2e()
+             << endl;
+      }
+
+      // the copy number allows to distinguish the actual key
+      // EBKey itself
+      G4VPhysicalVolume* keyPhysVol = new G4PVPlacement(keyRotation,
+                                                        keyPosition,
+                                                        baseEBKey.logical,
+                                                        baseEBKey.name,
+                                                        trackerMother.logical,
+                                                        many,
+                                                        baseCopyNo + ipnl,
+                                                        false);
+      if ( _doSurfaceCheck) {
+        checkForOverlaps( keyPhysVol, _config, _verbosityLevel>0);
+      }
+
+      CLHEP::Hep3Vector keyShieldPosition =  panelPosition + pln.origin()+ _offset -
+        CLHEP::Hep3Vector(0., 0., panel.getEBKeyShieldParams().zHalfLength());
+
+      // EBKeyShield
+      G4VPhysicalVolume* keyShieldPhysVol = new G4PVPlacement(keyRotation,
+                                                              keyShieldPosition,
+                                                              baseEBKeyShield.logical,
+                                                              baseEBKeyShield.name,
+                                                              trackerMother.logical,
+                                                              many,
+                                                              baseCopyNo + ipnl,
+                                                              false);
+      if ( _doSurfaceCheck) {
+        checkForOverlaps( keyShieldPhysVol, _config, _verbosityLevel>0);
+      }
+
     }
 
   }
@@ -906,6 +1204,8 @@ mu2e::ConstructTTrackerTDR::panelHalfAzimuth(){
   return  panelCenterPhi;
 
 }
+
+// // similarly for the keys - not needed as the maker has all the info, i.e. radial span
 
 // Some helper functions and classes.
 namespace mu2e {
@@ -1153,3 +1453,18 @@ void mu2e::ConstructTTrackerTDR::addPlaneSupports( std::vector<VolumeInfo>& supp
   }
 
 } // end addPlaneSupports
+
+double mu2e::ConstructTTrackerTDR::getWithinZeroTwoPi (double phi0) {
+  phi0 = fmod(phi0,2.*M_PI);
+  if ( phi0<0. ) {
+    phi0 += 2.*M_PI;
+  }
+  return phi0;
+}
+
+double mu2e::ConstructTTrackerTDR::diffWithinZeroTwoPi (double phi1, double phi2) {
+  phi1 = getWithinZeroTwoPi(phi1);
+  phi2 = getWithinZeroTwoPi(phi2);
+  double diff = fabs(phi1 - phi2);
+  return fmin(diff,2.*M_PI - diff);
+}

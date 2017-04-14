@@ -40,7 +40,7 @@ namespace mu2e {
       tracker,        virtualdetector,   timeVD,            stoppingtarget,    CRV, 
       calorimeter,    calorimeterRO,     calorimeterROCard, calorimeterCrate,  ExtMonUCITof,     
       ttrackerDS,     protonabsorber,    PSVacuum,          stepper,           trackerSWires,     
-      itrackerFWires, trackerWalls,   STMDet,          
+      itrackerFWires, trackerWalls,      STMDet,            panelEBKey,
       lastEnum
     };
 
@@ -50,7 +50,7 @@ namespace mu2e {
       "tracker",       "virtualdetector", "timeVD",            "stoppingtarget",   "CRV",            \
       "calorimeter",   "calorimeterRO",   "calorimeterROCard", "calorimeterCrate", "ExtMonUCITof",   \
       "ttrackerDS",    "protonabsorber",  "PSVacuum",          "stepper",          "trackerSWires",  \
-      "itrackerFWires", "trackerWalls",  "STMDet"     
+      "itrackerFWires", "trackerWalls",   "STMDet",            "panelEBKey" 
 
   public:
 

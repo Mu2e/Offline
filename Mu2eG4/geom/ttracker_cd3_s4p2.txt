@@ -10,6 +10,7 @@ bool hasTTracker      = true;
 string ttrackerSupport.model = "detailedv0";
 int TTrackerVersion   = 3;
 int    ttracker.verbosityLevel     =    0;
+bool   ttracker.doSurfaceCheck     = false;
 // Mother to hold all straws and supports.
 double ttracker.mother.rIn         =    376.9; // mm
 double ttracker.mother.rOut        =    850.1; // mm
@@ -143,10 +144,32 @@ double ttrackerSupport.channel.depth    =  5.0;
 string ttrackerSupport.channel.material =  "DSVacuum";
 string ttrackerSupport.electronicsSpace.material =  "StrawGas";
 
+// electronic board aka key
+// additional electronics related/connected to each of the pannels
+// R 810.1 814.1 mm; 9 degrees arc, G10, first at the top 0.064" thick
+// The distance from the front face of the panel to the front face of the KEY is 12.15mm. ???
+
+double ttrackerSupport.electronics.key.halfLength        =  0.8128;  // board half thickness
+double ttrackerSupport.electronics.key.shieldHalfLength  =  0.8128;  // shield half thickness
+double ttrackerSupport.electronics.key.innerRadius =  810.1;
+double ttrackerSupport.electronics.key.outerRadius =  814.1;
+double ttrackerSupport.electronics.key.shiftFromPanelFace = 12.15; //unused for now,
+                                                                   // the bords are in the panel center
+bool   ttrackerSupport.electronics.key.visible          = true;
+bool   ttrackerSupport.electronics.key.solid            = true;
+bool   ttrackerSupport.electronics.key.shieldVisible    = true;
+bool   ttrackerSupport.electronics.key.shieldSolid      = true;
+string ttrackerSupport.electronics.key.material         = "G10"; // board material
+string ttrackerSupport.electronics.key.shieldMaterial   = "DSVacuum"; // shield board material
+double ttrackerSupport.electronics.key.phiRange         = 9.;    // degrees; centered at the panel center phi
+double ttrackerSupport.electronics.key.phiExtraRotation = 15.;   // degrees; deltas from the center
+
 // Debug control for TTracker; uncomment to make only a selected panel.
 // it is not about drawing, but about the construction itself
 int    ttracker.plnDraw  =   -1;
 int    ttracker.pnlDraw  =   -1;
+//
+bool   ttracker.drawAxes = false;
 //
 bool   ttracker.envelopeVisible      =  true;
 bool   ttracker.envelopeSolid        =  false;

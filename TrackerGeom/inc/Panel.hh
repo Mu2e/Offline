@@ -16,12 +16,16 @@
 
 #include "TrackerGeom/inc/Layer.hh"
 #include "DataProducts/inc/PanelId.hh"
+//#include "GeomPrimitives/inc/PlacedTubs.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
+
 
 #include "CLHEP/Vector/ThreeVector.h"
 #ifndef __CINT__
 #include "boost/bind.hpp"
 #endif
 
+#include <iostream>
 
 namespace mu2e {
 
@@ -89,6 +93,12 @@ namespace mu2e {
     CLHEP::Hep3Vector const& getBaseDelta() const{
       return _baseDelta;
     }
+
+    TubsParams  const& getEBKeyParams()           const { return _EBKey; }
+    TubsParams  const& getEBKeyShieldParams()     const { return _EBKeyShield; }
+    std::string const& getEBKeyMaterial()         const { return _EBKeyMaterial; }
+    std::string const& getEBKeyShieldMaterial()   const { return _EBKeyShieldMaterial; }
+    double             getEBKeyPhiExtraRotation() const { return _EBKeyPhiExtraRotation; }
 
     // On readback from persistency, recursively recompute mutable members.
     void fillPointers ( const Tracker& tracker ) const;
@@ -160,6 +170,14 @@ namespace mu2e {
     mutable CLHEP::Hep3Vector _straw0MidPoint;
     mutable CLHEP::Hep3Vector _straw0Direction;
 
+    // electronic boards; they are placed wrt to the panel, but in a
+    // different mother volume one per panel
+
+    TubsParams  _EBKey;
+    std::string _EBKeyMaterial;
+    TubsParams  _EBKeyShield;
+    std::string _EBKeyShieldMaterial;
+    double      _EBKeyPhiExtraRotation;
 
   };
 

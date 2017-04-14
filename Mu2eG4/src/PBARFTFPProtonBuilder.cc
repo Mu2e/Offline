@@ -39,6 +39,7 @@
 //
 //----------------------------------------------------------------------------
 //
+#if G4VERSION<4099
 #include "Mu2eG4/inc/PBARFTFPProtonBuilder.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ParticleDefinition.hh"
@@ -101,3 +102,4 @@ Build(G4HadronElasticProcess * )
 }
 
  // 2002 by J.P. Wellisch
+#endif

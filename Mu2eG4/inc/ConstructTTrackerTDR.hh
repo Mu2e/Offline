@@ -47,10 +47,13 @@ namespace mu2e {
     void constructStations();
 
     // Construct all panels(panels) within one station
-    void addPanels( VolumeInfo&      basePanel,
-                    int              idev,
-                    G4LogicalVolume* planeLogical,
-                    double           panelCenterPhi );
+    void addPanelsAndEBKeys( VolumeInfo&      basePanel,
+                             int              idev,
+                             VolumeInfo&      plane,
+                             VolumeInfo&      baseEBKey,
+                             VolumeInfo&      baseEBKeyShield,
+                             VolumeInfo&      trackerMother,
+                             double           panelCenterPhi );
 
     // Construct the support infrastructure for each station.
     void addPlaneSupports( std::vector<VolumeInfo>& supportsInfo, int idev, VolumeInfo const& devInfo );
@@ -62,6 +65,11 @@ namespace mu2e {
     // Build logical volume heirarchy for one panel: straws placed inside a panel mother volume.
     // Do not place this volume heirarchy.
     VolumeInfo preparePanel();
+
+    VolumeInfo prepareEBKey(bool keyItself);
+
+    inline double  getWithinZeroTwoPi (double phi0);
+    inline double diffWithinZeroTwoPi (double phi1, double phi2);
 
     // Compute the half width, in phi, of a panel envelope.
     double panelHalfAzimuth();

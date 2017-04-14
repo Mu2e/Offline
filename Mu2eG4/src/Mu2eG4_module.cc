@@ -420,7 +420,7 @@ namespace mu2e {
     // that is derived from the G4 geometry or physics processes.
 
     // Mu2e specific customizations that must be done after the call to Initialize.
-    postG4InitializeTasks(pset_);
+    postG4InitializeTasks(pset_,pL);
     _sensitiveDetectorHelper.registerSensitiveDetectors();
     if (standardMu2eDetector_) _extMonFNALPixelSD =
                                  dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
@@ -586,7 +586,7 @@ namespace mu2e {
       cout << "Enter a character to go to the next event" << endl;
       cout << "q quits, s enters G4 interactive session, g enters a GUI session (if available)"
            << endl;
-      cout << "Once in G4 interactive session to quit it type \"exit\" "
+      cout << "Once in G4 interactive session to quit it type \"exit\" or use File menu"
            << endl;
 
       string userinput;
@@ -629,8 +629,8 @@ namespace mu2e {
               command += visPath(_visGUIMacro);
               _UI->ApplyCommand( command );
 
-              cout << "In GUI interactive session use the \"Draw Current Event\" "
-                   << "button in the Vis menu"
+              cout << "In GUI interactive session use the \"Start Here\" menu "
+                   << "followed by the Viewer commands or redisplaying event"
                    << endl;
 
             } else {

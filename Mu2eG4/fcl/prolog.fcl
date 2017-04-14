@@ -15,10 +15,14 @@ mu2eg4DefaultPhysics: {
     BirksConsts : {} // e.g. { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV}
     useNewMuMinusAtomicCapture: false
     minRangeCut: 0.010 // mm
-    physicsListName:  "Shielding_MU2E01"
+    protonProductionCut: 0.0 // mm
+    physicsListName:  "ShieldingM"
+    turnOffRadioactiveDecay:  false
+    turnOnRadioactiveDecay:  false
 
     // current G4 stepper choices in Mu2eWorld.cc are shown below
     // G4ClassicalRK4
+    // G4ClassicalRK4WSpin
     // G4ImplicitEuler
     // G4ExplicitEuler
     // G4SimpleRunge

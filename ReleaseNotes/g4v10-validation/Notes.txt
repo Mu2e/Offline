@@ -1,0 +1,21 @@
+1) remotes/origin/g4v10-validation-branch
+    - rooted at tag v6_0_0 on master
+    - uses g4 v4_10_2_p02
+    - protonProductionCut=0
+
+2) remotes/origin/g4v10-validation-branch2
+    - rooted at a0f31bea0490a5d3e6bcb2175021c70b365569e5
+      This is a commit on origin/g4v10-validation-branch
+      with the comment:
+         set ROOT_INLCLUDE_PATH for root6, remove obsolete python
+    - protonProductionCut=1
+
+3) remotes/origin/g4v10-validation-branch-p03
+    - Copy of origin/g4v10-validation-branch
+    - Rebase onto 5cf33883720d7cacb1fb37c7afa4c0ddfadf4eef
+        - This is the commit that immediately follows v6_1_2
+        - The only difference between this commit and v6_1_2 is
+          the creation of the release notes file for v6_1_3
+    - Note that origin/g4v10-validation-branch was NOT rebased.
+    - Update to use geant4 v4_10_2_p03
+       - Also need to use art v2_06_02 and BTrk v1_01_08a .
