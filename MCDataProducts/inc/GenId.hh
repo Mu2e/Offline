@@ -44,13 +44,14 @@ namespace mu2e {
       MARS, StoppedParticleReactionGun, bremElectronGun, muonicXRayGun,
       fromSimParticleStartPoint, fromSimParticleCompact, StoppedParticleG4Gun,
       CaloCalib, InFlightParticleSampler, muplusDecayGun, StoppedMuonXRayGammaRayGun,
+      pbarFlat,
       lastEnum
     };
 
     // Keep this in sync with the enum. Used in GenId.cc
 #define GENID_NAMES                                                     \
     "unknown",      "particleGun",       "conversionGun",               \
-      "cosmicToy",    "cosmicDYB",         "cosmic",           "dioShankerWatanabe",  \
+      "cosmicToy",    "cosmicDYB",         "cosmic",           "dioShankerWatanabe", \
       "dioCzarnecki", "dioFlat",  "dioE5", "dioE58",           "pionCapture", \
       "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",          \
       "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi", \
@@ -58,9 +59,10 @@ namespace mu2e {
       "extMonFNALGun", "fromStepPointMCs", "stoppedMuonGun", "PiCaptureCombined", \
       "MARS", "StoppedParticleReactionGun","bremElectronGun", "muonicXRayGun", \
       "fromSimParticleStartPoint", "fromSimParticleCompact", "StoppedParticleG4Gun", \
-      "CaloCalib", "InFlightParticleSampler","muplusDecayGun", "StoppedMuonXRayGammaRayGun"
+      "CaloCalib", "InFlightParticleSampler","muplusDecayGun", "StoppedMuonXRayGammaRayGun", \
+       "pbarFlat"
 
-  public:
+    public:
 
     // The most important c'tor and accessor methods are first.
     GenId( enum_type id):
@@ -108,6 +110,9 @@ namespace mu2e {
     bool isDio() const {
       return (_id == dioCzarnecki || _id == dioShankerWatanabe || _id == dioFlat  || 
               _id == dioE5        || _id == dioE58 );
+    }
+   bool isPrimaryAntiProton() const {
+      return (_id == pbarFlat);
     }
 
     bool isCosmic() const {
