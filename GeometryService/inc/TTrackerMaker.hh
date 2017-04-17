@@ -45,9 +45,9 @@ namespace mu2e {
 
     void makeMother();
     void makePlane( PlaneId planeId );
-    void makePanel( const PanelId& secId, Plane& plane );
-    void makeLayer ( const LayerId& layId,  Panel& sec );
-    void makeManifolds( const PanelId& secId);
+    void makePanel( const PanelId& panelId, Plane& plane );
+    void makeLayer ( const LayerId& layId,  Panel& panel );
+    void makeManifolds( const PanelId& panelId);
 
     void computeStrawHalfLengths();
     void computePanelBoxParams(Panel& panel, Plane& plane);
@@ -68,7 +68,7 @@ namespace mu2e {
 
     double choosePlaneSpacing( int iplane ) const;
     double findFirstPlaneZ0() const;
-    double panelRotation(int isec,int iplane) const;
+    double panelRotation(int ipanel,int iplane) const;
     double panelZSide(int ipanel, int iplane) const;
 
     // Some functions for the, fully detailed support structure.
@@ -213,11 +213,6 @@ namespace mu2e {
 
     std::string _electronicsSpaceMaterial;
 
-    int         _nStaves;
-    double      _stavePhi0;
-    double      _stavePhiWidth;
-    std::string _staveMaterial;
-
     std::vector<double> _beam0_phiRange;
     double _beam0_innerRadius;
     double _beam0_outerRadius;
@@ -236,6 +231,23 @@ namespace mu2e {
     std::vector<std::string> _beam1_serviceMaterials;
     std::vector<double> _beam1_serviceCovRelThickness;
     std::vector<std::string> _beam1_serviceMaterialsCov;
+
+    // electronic board aka key 
+    // connected to each of the panels
+
+    double _EBKeyHalfLength;
+    double _EBKeyShieldHalfLength;
+    double _EBKeyInnerRadius;
+    double _EBKeyOuterRadius;
+    double _EBKeyShiftFromPanelFace;
+    bool   _EBKeyVisible;
+    bool   _EBKeySolid;
+    bool   _EBKeyShieldVisible;
+    bool   _EBKeyShieldSolid;
+    std::string _EBKeyMaterial;
+    std::string _EBKeyShieldMaterial;
+    double _EBKeyPhiRange;
+    double _EBKeyPhiExtraRotation;
 
     std::vector<int>  _nonExistingPlanes;
 

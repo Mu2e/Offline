@@ -110,3 +110,4 @@ physics.producers.makeSH.minimumEnergy : 0
 
 physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
 
+#physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"

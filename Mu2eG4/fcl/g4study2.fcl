@@ -106,7 +106,7 @@ services.GeometryService.standardMu2eDetector: false
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/visxz.mac"
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
 
-physics.producers.g4run.physics.physicsListName : "Shielding"
+physics.producers.g4run.physics.physicsListName : "ShieldingM"
 #physics.producers.g4run.physics.bfieldMaxStep   : 500000. // not implemented (no field)
 physics.producers.g4run.debug.diagLevel         : 1
 physics.producers.g4run.debug.printElements     : true

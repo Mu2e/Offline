@@ -87,7 +87,7 @@ Qualifiers = "${qualifiers_value}:trig:debug"
       setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+debug )
       setupRequired( heppdt  ${heppdt_ver} -q +${mu2e_ups_qualifiers}:+debug )
       setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers}:+debug )
-      setupRequired( mu2e_artdaq_core ${mu2e_artdaq_core_ver} -q ${mu2e_ups_qualifiers}:+s41:+debug )
+      setupRequired( mu2e_artdaq_core ${mu2e_artdaq_core_ver} -q ${mu2e_ups_qualifiers}:+${MU2E_ART_SQUALIFIER}:+debug )
 
 Flavor     = ANY
 Qualifiers = "${qualifiers_value}:trig:prof"
@@ -102,7 +102,7 @@ Qualifiers = "${qualifiers_value}:trig:prof"
       setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+prof )
       setupRequired( heppdt  ${heppdt_ver} -q +${mu2e_ups_qualifiers}:+prof )
       setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers}:+prof )
-      setupRequired( mu2e_artdaq_core ${mu2e_artdaq_core_ver} -q ${mu2e_ups_qualifiers}:+s41:+prof )
+      setupRequired( mu2e_artdaq_core ${mu2e_artdaq_core_ver} -q ${mu2e_ups_qualifiers}:+${MU2E_ART_SQUALIFIER}:+prof )
 
 Common:
   Action = setup

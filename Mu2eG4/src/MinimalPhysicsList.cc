@@ -22,7 +22,7 @@
 #include "G4ParticleTable.hh"
 
 namespace mu2e {
-  MinimalPhysicsList::MinimalPhysicsList():  G4VUserPhysicsList(){
+  MinimalPhysicsList::MinimalPhysicsList():  G4VModularPhysicsList(){
     defaultCutValue = 1.0*CLHEP::cm;
     SetVerboseLevel(1);
   }

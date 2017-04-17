@@ -1,0 +1,110 @@
+           Release notes for Mu2e Offline software, v6_2_0
+
+1) kutschke April 18, 2017
+   Merged the branch origin/g4v10-validation-branch-p03
+   into master.
+
+   This is the start of the geant v4.10 era
+
+0) genser, October 7, 2016 - April 13, 2017
+
+   Summary of the changes done while on the g4v10-validation-branch'es
+
+    G4FieldManager ownership fix
+
+        Mu2eG4/src/constructExtMonFNALBuilding.cc
+
+    Removed tracker top support beam; added panel keys; removed remnants of old panel name (section)
+
+        GeometryService/inc/TTrackerMaker.hh
+        GeometryService/src/TTrackerMaker.cc
+        MCDataProducts/inc/StepInstanceName.hh
+        Mu2eG4/fcl/transportOnly.fcl
+        Mu2eG4/geom/ttracker_cd3_s4p2.txt
+        Mu2eG4/inc/ConstructTTrackerTDR.hh
+        Mu2eG4/inc/SensitiveDetectorName.hh
+        Mu2eG4/src/ConstructTTrackerTDR.cc
+        Mu2eG4/src/Mu2eWorld.cc
+        TrackerGeom/inc/Panel.hh
+
+    Extended g4study tube configuration
+
+        Mu2eG4/src/constructStudyEnv_v001.cc
+        Mu2eG4/test/g4study2Geom.txt
+
+    mm->CLHEP::mm
+
+        Mu2eG4/inc/QGSP_BERT_HP_MU2E00.icc
+        Mu2eG4/inc/QGSP_BERT_MU2E00.icc
+
+    Added separate production cut for protons; moved the cuts back to postG4InitializeTasks
+
+        Mu2eG4/fcl/prolog.fcl
+        Mu2eG4/inc/postG4InitializeTasks.hh
+        Mu2eG4/inc/setMinimumRangeCut.hh
+A       Mu2eG4/inc/setParticleCut.hh
+        Mu2eG4/src/Mu2eG4Study_module.cc
+        Mu2eG4/src/Mu2eG4_module.cc
+        Mu2eG4/src/physicsListDecider.cc
+        Mu2eG4/src/postG4InitializeTasks.cc
+        Mu2eG4/src/setMinimumRangeCut.cc
+A       Mu2eG4/src/setParticleCut.cc
+
+    Added turnOnRadioactiveDecay option
+
+        Mu2eG4/fcl/prolog.fcl
+        Mu2eG4/src/physicsListDecider.cc
+
+    Turned off FTFP_BERT_PBAR_MU2E02 for 10.2
+
+        Mu2eG4/src/HadronPhysicsFTFP_BERT_PBAR_MU2E02.cc
+        Mu2eG4/src/PBARDiffractiveExcitation.cc
+        Mu2eG4/src/PBARFTFModel.cc
+        Mu2eG4/src/PBARFTFPProtonBuilder.cc
+        Mu2eG4/src/physicsListDecider.cc
+
+      similar change by lgoodenough:
+        Mu2eG4/src/PBARExcitedStringDecay.cc
+        Mu2eG4/src/PBARLundStringFragmentation.cc
+        Mu2eG4/src/PBARVLongitudinalStringDecay.cc
+
+    Moved minRange cut from postG4InitializeTasks to physicsListDecider
+
+        Mu2eG4/inc/setMinimumRangeCut.hh
+        Mu2eG4/src/physicsListDecider.cc
+        Mu2eG4/src/postG4InitializeTasks.cc
+        Mu2eG4/src/setMinimumRangeCut.cc
+
+    Refactored physicsListDecider
+
+        Mu2eG4/inc/MinimalPhysicsList.hh
+        Mu2eG4/src/MinimalPhysicsList.cc
+        Mu2eG4/src/physicsListDecider.cc
+
+    vis driver Geant4 10.2 related changes
+
+        Mu2eG4/src/Mu2eG4_module.cc
+        Mu2eG4/test/vismqt.mac
+A       Mu2eG4/test/vismqtm.mac
+        Mu2eG4/test/visqtGUI.mac
+
+    Reenabled decayMuonsWithSpin option
+
+        Mu2eG4/fcl/prolog.fcl
+        Mu2eG4/src/DecayMuonsWithSpin.cc
+        Mu2eG4/src/physicsListDecider.cc
+
+    Added turnOffRadioactiveDecay option
+
+        Mu2eG4/fcl/g4test_03.fcl
+        Mu2eG4/fcl/prolog.fcl
+        Mu2eG4/src/physicsListDecider.cc
+
+    Decreased verbosity for excited ions for 10.2
+
+        Mu2eG4/src/TrackingAction.cc
+
+    Introduced Geant4 10.2.p02 using ShieldingM physics list
+
+        Mu2eG4/fcl/prolog.fcl
+        setup.sh

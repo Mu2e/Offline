@@ -11,10 +11,10 @@
 // Original author Rob Kutschke
 //
 
-#include "G4VUserPhysicsList.hh"
+#include "G4VModularPhysicsList.hh"
 
 namespace mu2e {
-  class MinimalPhysicsList: public G4VUserPhysicsList{
+  class MinimalPhysicsList: public G4VModularPhysicsList{
   public:
     MinimalPhysicsList();
     ~MinimalPhysicsList();

@@ -16,15 +16,9 @@
 /gui/addMenu file File
 /gui/addButton file Quit exit
 #
-# Vis menu :
-/gui/addMenu vis Vis
-#/gui/addButton vis "Create Viewer and Draw Event" "/control/execute Mu2eG4/test/visqtGUI_00.mac"
-/gui/addButton vis "Create Viewer for current handler" "/vis/viewer/create ! ! !"
-/gui/addButton vis "Draw Current Event" "/vis/sceneHandler/drawEvent !"
-/gui/addButton vis "Select viewer-0" "/vis/viewer/select viewer-0"
-/gui/addButton vis "Create Qt scene Handler" "/vis/sceneHandler/create OGLSQt"
-/gui/addButton vis "Select Scene Handler scene-handler-1" "/vis/sceneHandler/select scene-handler-1"
-
+# Start Here Menu/Button
+/gui/addMenu start "Start Here"
+/gui/addButton start "Start by clicking Here Once" "/control/execute Mu2eG4/test/vismqtm.mac"
 #
 # Viewer menu :
 /gui/addMenu viewer Viewer
@@ -42,6 +36,15 @@
 /gui/addButton viewer "Update scene" "/vis/scene/notifyHandlers !"
 /gui/addButton viewer "Select viewer-0" "/vis/viewer/select viewer-0"
 /gui/addButton viewer "List viewers"    "/vis/viewer/list !"
+
+# Vis menu :
+/gui/addMenu vis Vis
+#/gui/addButton vis "Create Viewer and Draw Event" "/control/execute Mu2eG4/test/visqtGUI_00.mac"
+/gui/addButton vis "Draw Current Event" "/vis/sceneHandler/drawEvent !"
+/gui/addButton vis "Create Viewer for current handler" "/vis/viewer/create ! ! !"
+/gui/addButton vis "Select viewer-0" "/vis/viewer/select viewer-0"
+/gui/addButton vis "Create Qt scene Handler" "/vis/sceneHandler/create OGLSQt"
+/gui/addButton vis "Select Scene Handler scene-handler-1" "/vis/sceneHandler/select scene-handler-1"
 
 # set vis verbosity (see guidance in the command help)
 /vis/verbose 3

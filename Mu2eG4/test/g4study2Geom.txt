@@ -46,6 +46,10 @@ string         tube.wallMaterialName = "G4_W";
 double         tube.rIn        = 0.0;
 double         tube.rOut       = 1.0;
 double         tube.halfLength = 3.0;
+double         tube.phi0       = 0.;
+double         tube.phiSpan    = 360.; // degrees
+double         tube.phiRotZ    =  0.;
+double         tube.sign       =  1.; // for additional 180 deg rotation tests around Y axis (when -1)
 
 int            tube.copyNumber = 3; // non 0 for volume tracking purposes
                                     // 0 & 1 are World and an auxiliary 
