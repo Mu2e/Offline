@@ -1,3 +1,5 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v6_2_1
+1) brownd 17 April 2017
+   Added scripts for reading, writing, and analyzing digi files for processing in track trigger studies.
