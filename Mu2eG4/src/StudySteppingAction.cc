@@ -62,6 +62,8 @@ namespace mu2e {
     _stepperStepPointCollectionSizeLimit(config.getInt("g4.steppingActionStepsSizeLimit",0)),
     _stepperStepPointCollectionCurrentSize(0),
     _saveSteps(config.getBool("g4.steppingActionSaveSteps", true)),
+    // the above functionality is achieved in g4study2 by using
+    // physics.producers.g4run.Mu2eG4SteppingOnlyCut : @local::stepperout
 
     _simID(0),
     _event(0) {
