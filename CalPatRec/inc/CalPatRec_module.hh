@@ -294,7 +294,7 @@ namespace mu2e {
     bool findData         (const art::Event& e);
     void findTimePeaks    (CalTimePeakCollection* TimePeakColl);
     void createTimePeak   (CalTimePeakCollection* TimePeakColl);
-    void filterOutliers   (TrkDefHack& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
+    //    void filterOutliers   (TrkDefHack& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
 //----------------------------------------------------------------------
 // 2015 - 02 - 16 Gianipez added the two following functions
 //----------------------------------------------------------------------

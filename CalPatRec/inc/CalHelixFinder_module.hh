@@ -38,7 +38,6 @@
 
 #include "Mu2eBTrk/inc/BaBarMu2eField.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
-#include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 
 #include "CalPatRec/inc/CalHelixFinder_types.hh"
