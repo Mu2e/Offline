@@ -35,6 +35,9 @@ namespace mu2e {
       Straw const& s2(StrawHitCollection const& strawhits,Tracker const& tracker) const 
 	{ return tracker.getStraw(sh2(strawhits).strawIndex()); }
       CLHEP::Hep3Vector const& pos() const { return _pos; }
+      // compute the positions for the 2 hits given a direction vector for the track between them.
+      void position(StrawHitCollection const& strawhits,Tracker const& tracker,
+	  CLHEP::Hep3Vector& p1, CLHEP::Hep3Vector& p2, CLHEP::Hep3Vector const& dir) const;
       float dist() const { return _dist; }
       PanelId::isep panelSeparation() const { return static_cast<PanelId::isep>(_isep); }
       float time() const { return _time; }
@@ -62,6 +65,7 @@ namespace mu2e {
       float _wdot; // dot product of the angle between the 2 wire directions
       float _mvaout; // output of the MVA
     };
+   typedef std::vector<mu2e::StereoHit> StereoHitCollection;
 }
 #endif
 

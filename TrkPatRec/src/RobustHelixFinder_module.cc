@@ -22,11 +22,14 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 // tracking
 #include "TrkReco/inc/TrkTimeCalculator.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/TrkDef.hh"
@@ -93,6 +96,9 @@ namespace mu2e
     int                                 _diag,_debug;
     int                                 _printfreq;
     bool				_prefilter; // prefilter hits based on sector
+    bool				_updatestereo; // update the stereo hit positions each iteration
+    double				_dhit; // distance between hit position updates to consider changed' (mm)
+    double				_dhit2;
     unsigned				_minnhit; // minimum # of hits to work with
     double				_maxdr; // maximum hit-helix radius difference
     double				_maxrpull; // maximum hit-helix radius difference pull
@@ -115,6 +121,7 @@ namespace mu2e
     art::InputTag			_shpTag;
     art::InputTag			_shfTag;
     art::InputTag			_tcTag;
+    art::InputTag			_sthTag;
     // output label
     std::string                        _trackseed;
 
@@ -128,10 +135,11 @@ namespace mu2e
     TH1F* _niter, *_nitermva;
 
     // cache of event objects
-    const StrawHitCollection*  _shcol;
-    const StrawHitPositionCollection*  _shpcol;
-    const StrawHitFlagCollection*      _shfcol;
-    const TimeClusterCollection*       _tccol;
+    const StrawHitCollection*	      _shcol;
+    const StrawHitPositionCollection* _shpcol;
+    const StrawHitFlagCollection*     _shfcol;
+    const StereoHitCollection*	      _sthcol;
+    const TimeClusterCollection*      _tccol;
 
     // robust helix fitter
     RobustHelixFit                     _hfit;
@@ -148,6 +156,7 @@ namespace mu2e
     bool filterHitsMVA(HelixSeed& hseed); // return value tells if any hits changed state
     void updateT0(HelixSeed& hseed); // update T0 value based on current good hits
     void correctParameters(RobustHelix& helix);// correct the helix parameters to MC truth using linear relations and correlations
+    bool updateStereo(HelixSeed& hseed); // update the stereo hit positions for the current helix estimate
     unsigned hitCount(HelixSeed const& hseed);
     void fitHelix(HelixSeed& hseed);
  
@@ -158,6 +167,8 @@ namespace mu2e
     _debug       (pset.get<int>("debugLevel",0)),
     _printfreq   (pset.get<int>("printFrequency",101)),
     _prefilter   (pset.get<bool>("PrefilterHits",true)),
+    _updatestereo(pset.get<bool>("UpdateStereoHits",true)),
+    _dhit	 (pset.get<double>("HitDistanceChange",10.0)), // mm
     _minnhit	 (pset.get<unsigned>("minNHit",5)),
     _maxdr	 (pset.get<double>("MaxRadiusDiff",100.0)), // mm
     _maxrpull	 (pset.get<double>("MaxRPull",5.0)), // unitless
@@ -176,6 +187,7 @@ namespace mu2e
     _shpTag	 (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
     _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
     _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
+    _sthTag	 (pset.get<art::InputTag>("StereoHitCollection","MakeStereoHits")),
     _trackseed   (pset.get<string>("HelixSeedCollectionLabel","TimeClusterFinder")),
     _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits")),
     _hbkg        (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
@@ -190,6 +202,7 @@ namespace mu2e
   {
     _maxrwdot[0] = pset.get<double>("MaxStereoRWDot",1.0);
     _maxrwdot[1] = pset.get<double>("MaxNonStereoRWDot",1.0);
+    _dhit2 = _dhit*_dhit;
     produces<HelixSeedCollection>();
   }
 
@@ -207,7 +220,7 @@ namespace mu2e
     }
     if(_diag > 0){
       art::ServiceHandle<art::TFileService> tfs;
-      _niter = tfs->make<TH1F>( "nitever" , "Number of Fit Iteraions",201,-0.5,200.5);
+      _niter = tfs->make<TH1F>( "niter" , "Number of Fit Iteraions",201,-0.5,200.5);
       _nitermva = tfs->make<TH1F>( "nitermva" , "Number of MVA Fit Iteraions",201,-0.5,200.5);
     }
   }
@@ -445,7 +458,7 @@ namespace mu2e
   }
 
   bool RobustHelixFinder::findData(const art::Event& evt){
-    _shcol = 0; _shfcol = 0; _shpcol = 0; _tccol = 0; 
+    _shcol = 0; _shfcol = 0; _shpcol = 0; _tccol = 0; _sthcol = 0; 
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol = shH.product();
     auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
@@ -454,8 +467,10 @@ namespace mu2e
     _shfcol = shfH.product();
     auto tcH = evt.getValidHandle<TimeClusterCollection>(_tcTag);
     _tccol = tcH.product();
+    auto sthH = evt.getValidHandle<StereoHitCollection>(_sthTag);
+    _sthcol = sthH.product();
 
-    return _shcol != 0 && _shfcol != 0 && _shpcol != 0 && _tccol != 0;
+    return _shcol != 0 && _shfcol != 0 && _shpcol != 0 && _tccol != 0 && _sthcol != 0;
   }
 
   void RobustHelixFinder::prefilterHits(HelixSeed& hseed ) {
@@ -543,27 +558,45 @@ namespace mu2e
     unsigned niter(0);
     bool changed(true);
     do {
-      _hfit.fitCircle(hseed);
-      changed = filterCircleHits(hseed);
-      ++niter;
-    } while(hseed._status.hasAllProperties(TrkFitFlag::circleOK)  && niter < _maxniter && changed);
-    // then fit phi-Z
-    if(hseed._status.hasAnyProperty(TrkFitFlag::circleOK)){
-      if(niter < _maxniter) hseed._status.merge(TrkFitFlag::circleConverged);
-      // solve for the longitudinal parameters
-      niter = 0;
-      changed = false;
+// xy iteration
+      unsigned xyniter(0);
+      bool xychanged(true);
       do {
-	_hfit.fitFZ(hseed);
-	changed = filterHits(hseed);
-	++niter;
-      } while(hseed._status.hasAllProperties(TrkFitFlag::phizOK)  && niter < _maxniter && changed);
-      if(hseed._status.hasAnyProperty(TrkFitFlag::phizOK)){
-	if(niter < _maxniter) hseed._status.merge(TrkFitFlag::phizConverged);
-	// final test
-	if (_hfit.goodHelix(hseed.helix()))hseed._status.merge(TrkFitFlag::helixOK);
-	if(_diag > 0)_niter->Fill(niter);
+	_hfit.fitCircle(hseed);
+	changed = filterCircleHits(hseed);
+	++xyniter;
+      } while(hseed._status.hasAllProperties(TrkFitFlag::circleOK)  && xyniter < _maxniter && xychanged);
+      // then fit phi-Z
+      if(hseed._status.hasAnyProperty(TrkFitFlag::circleOK)){
+	if(xyniter < _maxniter)
+	  hseed._status.merge(TrkFitFlag::circleConverged);
+	else
+	  hseed._status.clear(TrkFitFlag::circleConverged);
+	// solve for the longitudinal parameters
+	unsigned fzniter(0);
+	bool fzchanged(false);
+	do {
+	  _hfit.fitFZ(hseed);
+	  fzchanged = filterHits(hseed);
+	  ++fzniter;
+	} while(hseed._status.hasAllProperties(TrkFitFlag::phizOK)  && fzniter < _maxniter && fzchanged);
+	if(hseed._status.hasAnyProperty(TrkFitFlag::phizOK)){
+	  if(fzniter < _maxniter)
+	    hseed._status.merge(TrkFitFlag::phizConverged);
+	  else
+	    hseed._status.clear(TrkFitFlag::phizConverged);
+	}
       }
+      ++niter;
+      // update the stereo hit positions; this checks how much the positions changed
+      if (_hfit.goodHelix(hseed.helix()))
+	changed = updateStereo(hseed);
+    } while(_hfit.goodHelix(hseed.helix()) && niter < _maxniter && changed);
+    // final test
+    if(_diag > 0)_niter->Fill(niter);
+    if (_hfit.goodHelix(hseed.helix())){
+      hseed._status.merge(TrkFitFlag::helixOK);
+      if(niter < _maxniter)hseed._status.merge(TrkFitFlag::helixConverged);
     }
   }
 
@@ -572,7 +605,69 @@ namespace mu2e
     HelixHitCollection const& hhits = hseed._hhits;
     unsigned retval(0);
     for(auto hhit : hhits)
-      if(!hhit._flag.hasAnyProperty(outlier))++retval;
+      if(!hhit.flag().hasAnyProperty(outlier))++retval;
+    return retval;
+  }
+
+  bool RobustHelixFinder::updateStereo(HelixSeed& hseed) {
+    static StrawHitFlag stereo(StrawHitFlag::stereo);
+    bool retval(false);
+    if(_updatestereo){
+      const Tracker& tracker = getTrackerOrThrow();
+// create a map from stereo hits back to helix hits
+      std::map<size_t, std::pair<int,int> > sthmap;
+      for(size_t ihh = 0; ihh < hseed.hits().size(); ++ihh) {
+	auto const& hhit = hseed.hits().at(ihh);
+	if(hhit.flag().hasAnyProperty(stereo) && hhit.stereoHitIndex() >= 0){
+	  size_t stindex = hhit.stereoHitIndex();
+	  auto const& sthit = _sthcol->at(stindex);
+	  // find out which hit this is WRT the stereo indexing (first or second)
+	  bool isfirst;
+	  if(sthit.hitIndex1() == hhit.index())
+	    isfirst = true;
+	  else if(sthit.hitIndex2() == hhit.index())
+	    isfirst = false;
+	  else
+	    throw cet::exception("RECO")<<"mu2e::RobustHelixFinder: stereo hit index not consistent"<< endl;
+	  // see if this stereo hit has already been seen: if so, update its helix hit indices, if not create a map entry
+	  auto ifnd = sthmap.find(stindex);
+	  if(ifnd == sthmap.end()){
+	    std::pair<int, int> mypair = std::make_pair(-1,-1);
+	    if(isfirst)
+	      mypair.first = ihh;
+	    else 
+	      mypair.second = ihh;
+	    //create new entry
+	    sthmap[stindex] = mypair;
+	  } else {
+	    auto& mypair = ifnd->second;
+	    if(isfirst)
+	      mypair.first = ihh;
+	    else 
+	      mypair.second = ihh;
+	  }
+	}
+      }
+      // now loop over the stereo hits in the map and update the positions
+      for(auto imap=sthmap.begin();imap != sthmap.end(); ++imap){
+	auto const& sthit = _sthcol->at(imap->first);
+	// compute the local helix direction at this hit
+	Hep3Vector hdir;
+	hseed.helix().direction(sthit.pos().z(),hdir);
+	// update the positions of the individual hits based on refining this stereo hit ( which we can't change!!)
+	Hep3Vector pos1, pos2;
+	sthit.position(*_shcol,tracker,pos1,pos2,hdir);
+	// check for a change
+	if(imap->second.first >= 0){
+	  if(!retval) retval = hseed._hhits.at(imap->second.first).pos().diff2(pos1) > _dhit2;
+	  hseed._hhits.at(imap->second.first)._pos = pos1;
+	}
+	if(imap->second.second >= 0){
+	  if(!retval)retval = hseed._hhits.at(imap->second.second).pos().diff2(pos2) > _dhit2;
+	  hseed._hhits.at(imap->second.second)._pos = pos2;
+	}
+      }
+    }
     return retval;
   }
 

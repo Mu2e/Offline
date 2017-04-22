@@ -18,7 +18,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/StereoHitCollection.hh"
+#include "RecoDataProducts/inc/StereoHit.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
 // art includes.
 #include "canvas/Persistency/Common/Ptr.h"
@@ -116,7 +116,7 @@ namespace mu2e {
     _minMVA(pset.get<double>("minMVA",0.6)), // MVA cut
     _wres(pset.get<double>("LongitudinalResolution",20.0)), // estimated resolution of stereo reco
     _bestpair(pset.get<bool>("BestStereoPair",false)),
-    _writepairs(pset.get<bool>("WriteStereoPairs",false)),
+    _writepairs(pset.get<bool>("WriteStereoPairs",true)),
     _mvatool(pset.get<fhicl::ParameterSet>("MVATool",fhicl::ParameterSet()))
   {
     _maxChi = sqrt(_maxChisq);

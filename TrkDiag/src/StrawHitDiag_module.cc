@@ -25,7 +25,7 @@
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StereoHitCollection.hh"
+#include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 // Utilities

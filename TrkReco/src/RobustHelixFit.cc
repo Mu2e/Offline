@@ -107,9 +107,8 @@ namespace mu2e
 	// solve for the longitudinal parameters
       fitFZ(hseed);
 	// final test
-      if (goodHelix(hseed._helix)){
+      if (goodHelix(hseed._helix))
 	hseed._status.merge(TrkFitFlag::helixOK);
-      }
     }
   }
 
@@ -372,7 +371,8 @@ namespace mu2e
 	changed |= resolvePhi(hhit,rhel);
     }
     // set the flags
-    if(goodFZ(rhel)) hseed._status.merge(TrkFitFlag::phizOK);
+    if(goodFZ(rhel))
+      hseed._status.merge(TrkFitFlag::phizOK);
   }
 
   // simple median fit.  No initialization required
@@ -461,9 +461,8 @@ namespace mu2e
       rhel._radius = rho;
       // update flag
       hseed._status.merge(TrkFitFlag::circleInit);
-      if(goodCircle(rhel)){
+      if(goodCircle(rhel))
 	hseed._status.merge(TrkFitFlag::circleOK);
-      }
     }
   }
 
