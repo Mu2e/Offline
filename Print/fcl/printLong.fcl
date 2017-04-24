@@ -42,6 +42,14 @@ physics :{
         #eCut : 10.0          # cut on hits
 	#inputTags : [ "CaloShowerStepROFromShowerStep" ] # select instances
       }
+      CaloDigiPrinter : {
+        verbose: 1   # 0, 1
+	#inputTags : [ "CaloDigiFromShower" ] # select instances
+      }
+      CaloRecoDigiPrinter : {
+        verbose: 1   # 0, 1
+	#inputTags : [ "CaloRecoDigiFromDigi" ] # select instances
+      }
       CaloCrystalHitPrinter : {
         verbose: 1   # 0, 1
         #eCut : 10.0          # cut on hits

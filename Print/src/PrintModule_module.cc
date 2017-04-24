@@ -14,6 +14,8 @@
 #include "Print/inc/StepPointMCPrinter.hh"
 #include "Print/inc/MCTrajectoryPrinter.hh"
 #include "Print/inc/CaloHitPrinter.hh"
+#include "Print/inc/CaloDigiPrinter.hh"
+#include "Print/inc/CaloRecoDigiPrinter.hh"
 #include "Print/inc/CaloCrystalHitPrinter.hh"
 #include "Print/inc/CaloClusterPrinter.hh"
 #include "Print/inc/StrawDigiPrinter.hh"
@@ -52,6 +54,8 @@ mu2e::PrintModule::PrintModule(fhicl::ParameterSet const& pset ):
   _printers.push_back( new StepPointMCPrinter(pset) );
   _printers.push_back( new MCTrajectoryPrinter(pset) );
   _printers.push_back( new CaloHitPrinter(pset) );
+  _printers.push_back( new CaloDigiPrinter(pset) );
+  _printers.push_back( new CaloRecoDigiPrinter(pset) );
   _printers.push_back( new CaloCrystalHitPrinter(pset) );
   _printers.push_back( new CaloClusterPrinter(pset) );
   _printers.push_back( new StrawDigiPrinter(pset) );
