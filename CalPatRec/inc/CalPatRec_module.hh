@@ -46,7 +46,6 @@ namespace art {
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
-#include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "CalPatRec/inc/CalTimePeak.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
 

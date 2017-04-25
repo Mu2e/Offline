@@ -41,7 +41,7 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
 // diagnostics
-#include "TrkPatRec/inc/StrawHitInfo.hh"
+#include "TrkDiag/inc/StrawHitInfo.hh"
 #include "DataProducts/inc/threevec.hh"
 using namespace std; 
 

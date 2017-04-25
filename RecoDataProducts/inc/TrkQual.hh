@@ -4,8 +4,6 @@
 //
 #ifndef RecoDataProducts_TrkQual_hh
 #define RecoDataProducts_TrkQual_hh
-//
-// Class to describe flag bits used for straw hits
 // 
 // $Id: TrkQual.hh,v 1.4 2013/04/04 01:08:20 brownd Exp $
 // $Author: brownd $

@@ -52,7 +52,6 @@ namespace art {
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
-#include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
 #include "RecoDataProducts/inc/KalRepCollection.hh"
