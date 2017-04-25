@@ -398,3 +398,131 @@ TrkExtrapolUpiM.fitdirection : @local::FitDir.upstream
 
 
 END_PROLOG
+
+
+
+BEGIN_PROLOG
+	
+        
+TrackCaloIntersectionDeM :
+{
+  module_type            : TrackCaloIntersection
+  fitterModuleLabel      : KFFDeM
+  downstream             : true
+  checkExit              : true
+  pathStep               : 2
+  tolerance              : 1
+  outputNtup             : true
+  diagLevel              : 0
+}  
+
+TrackCaloIntersectionDmuM :
+{
+  module_type            : TrackCaloIntersection
+  fitterModuleLabel      : KFFDmuM
+  downstream             : true
+  checkExit              : true
+  pathStep               : 2
+  tolerance              : 1
+  outputNtup             : true
+  diagLevel              : 0
+}  
+
+
+
+
+TrkCaloMatcherExtDeM :
+{
+  module_type             : TrackCaloMatchingExtend
+  caloClusterModuleLabel  : CaloClusterFromProtoCluster
+  trkIntersectModuleLabel : TrackCaloIntersectionDeM
+  trackExtend             : 41.7
+  dtOffset                : -2.072
+  sigmaT                  : 0.8
+  sigmaXY                 : 8.4
+  chi2Cut                 : 50
+  diagLevel               : 0
+}  
+
+TrkCaloMatcherMVADeM :
+{
+  module_type             : TrackCaloMatchingMVA
+  caloClusterModuleLabel  : CaloClusterFromProtoCluster
+  trkIntersectModuleLabel : TrackCaloIntersectionDeM
+  BDTWeightsX             : "TrackCaloMatching/test/TMVARegression_BDTGXEl.weights.xml"
+  BDTWeightsY             : "TrackCaloMatching/test/TMVARegression_BDTGYEl.weights.xml"
+  diagLevel               : 0
+  dtOffset                : -2.072
+  sigmaT                  : 0.8
+  sigmaXY                 : 7.1
+  chi2Cut                 : 50
+}  
+
+
+
+TrkCaloMatcherExtDmuM :
+{
+  module_type             : TrackCaloMatchingExtend
+  caloClusterModuleLabel  : CaloClusterFromProtoCluster
+  trkIntersectModuleLabel : TrackCaloIntersectionDmuM
+  trackExtend             : 22.3
+  dtOffset                : -2.072
+  sigmaT                  : 0.8
+  sigmaXY                 : 8.2
+  chi2Cut                 : 50
+  diagLevel               : 0
+}  
+
+TrkCaloMatcherMVADmuM :
+{
+  module_type             : TrackCaloMatchingMVA
+  caloClusterModuleLabel  : CaloClusterFromProtoCluster
+  trkIntersectModuleLabel : TrackCaloIntersectionDmuM
+  BDTWeightsX             : "TrackCaloMatching/test/TMVARegression_BDTGXMu.weights.xml"
+  BDTWeightsY             : "TrackCaloMatching/test/TMVARegression_BDTGYMu.weights.xml"
+  diagLevel               : 0
+  dtOffset                : -2.072
+  sigmaT                  : 0.8
+  sigmaXY                 : 6.1
+  chi2Cut                 : 50
+}  
+
+
+
+
+
+
+
+
+
+
+TrackCaloMatchingMVA : 
+{
+   
+   producers : {
+      TrackCaloIntersectionDeM   : @local::TrackCaloIntersectionDeM
+      TrackCaloIntersectionDmuM  : @local::TrackCaloIntersectionDmuM
+      TrkCaloMatcherMVADeM       : @local::TrkCaloMatcherMVADeM
+      TrkCaloMatcherMVADmuM      : @local::TrkCaloMatcherMVADmuM
+   }
+   
+   TrkCaloMatchMVA : [TrackCaloIntersectionDeM, TrackCaloIntersectionDmuM, 
+	              TrkCaloMatcherMVADeM, TrkCaloMatcherMVADmuM ]
+}
+
+TrackCaloMatchingExt : 
+{
+   
+   producers : {
+      TrackCaloIntersectionDeM   : @local::TrackCaloIntersectionDeM
+      TrackCaloIntersectionDmuM  : @local::TrackCaloIntersectionDmuM
+      TrkCaloMatcherExtDeM       : @local::TrkCaloMatcherExtDeM
+      TrkCaloMatcherExtDmuM      : @local::TrkCaloMatcherExtDmuM
+
+   }
+   
+   TrkCaloMatchExt : [TrackCaloIntersectionDeM, TrackCaloIntersectionDmuM, 
+	              TrkCaloMatcherExtDeM, TrkCaloMatcherExtDmuM ]
+}
+
+END_PROLOG

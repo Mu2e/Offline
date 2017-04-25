@@ -374,9 +374,9 @@ namespace mu2e {
       event.getByLabel(_caloHitTruthModuleLabel, caloHitTruthHandle);
       const CaloHitMCTruthAssns& caloHitTruth(*caloHitTruthHandle);
 
-      //art::Handle<KalRepPtrCollection> trksHandle;
-      //event.getByLabel(_trkPatRecModuleLabel, trksHandle);
-      //const KalRepPtrCollection& trks = *trksHandle;
+      art::Handle<KalRepPtrCollection> trksHandle;
+      event.getByLabel(_trkPatRecModuleLabel, trksHandle);
+      const KalRepPtrCollection& trks = *trksHandle;
 
 
 
@@ -611,7 +611,7 @@ namespace mu2e {
 
 
        //--------------------------  Do tracks  --------------------------------
-       /*
+       
        _nTrk = 0;
 
        for ( size_t itrk=0; itrk< trks.size(); ++itrk )
@@ -657,7 +657,7 @@ namespace mu2e {
           ++_nTrk;
 
         }
-        */
+        
 
 
  

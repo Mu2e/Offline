@@ -117,6 +117,28 @@ namespace mu2e {
            return list;
       }      
       
+
+      //find the nearest crystals from the position
+      std::vector<int> Disk::nearestIdxFromPosition(double x, double y) const 
+      {
+           int level(1);
+           std::vector<int> list;
+
+           unsigned int mapIdx = crystalMap_->indexFromXY(x/cellSize_,y/cellSize_);
+           if (mapIdx < mapToCrystal_.size() && mapToCrystal_.at(mapIdx)>-1) list.push_back( mapToCrystal_.at(mapIdx) );
+
+           while(list.empty())
+           {
+              std::vector<int> temp(crystalMap_->neighbors(mapIdx,level));
+              for (auto it : temp) 
+                 if (mapToCrystal_.at(it)>-1) list.push_back(mapToCrystal_.at(it));
+              ++level;                  
+           }
+           
+	   return list;
+      }
+
+
       //Slightly inefficient but robust integration. Divide the area between the disk and 
       //the first few crystals into tiny squares, and sum square surface in the empty space
       //Use symmetry, do it for a quarter slice

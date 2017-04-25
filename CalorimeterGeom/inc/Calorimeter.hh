@@ -53,6 +53,7 @@ namespace mu2e {
            virtual const std::vector<int>&  nextNeighbors(int crystalId, bool rawMap=false)                 const = 0;
            virtual       std::vector<int>   neighborsByLevel(int crystalId, int level, bool rawMap = false) const = 0; 
            virtual int                      crystalIdxFromPosition(const CLHEP::Hep3Vector &pos)            const = 0;
+           virtual int                      nearestIdxFromPosition(const CLHEP::Hep3Vector &pos)            const = 0;
 
 
            // get to know me!

@@ -85,18 +85,18 @@ using namespace std;
 namespace mu2e {
   
 
-  class ReadTrkExtrapolBis : public art::EDAnalyzer {
+  class ReadTrkExtrapolMVA : public art::EDAnalyzer {
 
      public:
      
-	 explicit ReadTrkExtrapolBis(fhicl::ParameterSet const& pset):
+	 explicit ReadTrkExtrapolMVA(fhicl::ParameterSet const& pset):
 	   art::EDAnalyzer(pset),
 	   _diagLevel(pset.get<int>("diagLevel",0)),
 	   _trkExtrapolModuleLabel(pset.get<std::string>("trkExtrapolModuleLabel")),
 	   _Ntup(0)
 	 {}
 
-	 virtual ~ReadTrkExtrapolBis() {}
+	 virtual ~ReadTrkExtrapolMVA() {}
 
 	 void beginJob();
 	 void endJob() {}
@@ -119,7 +119,7 @@ namespace mu2e {
 
 
 
-  void ReadTrkExtrapolBis::beginJob( ) {
+  void ReadTrkExtrapolMVA::beginJob( ) {
  
  
       art::ServiceHandle<art::TFileService> tfs;
@@ -145,7 +145,7 @@ namespace mu2e {
 
 
 
-  void ReadTrkExtrapolBis::analyze(art::Event const& event )
+  void ReadTrkExtrapolMVA::analyze(art::Event const& event )
   {
 
         art::Handle<TrkCaloIntersectCollection>  trjExtrapolHandle;
@@ -183,5 +183,5 @@ namespace mu2e {
 
 
 
-using mu2e::ReadTrkExtrapolBis;
-DEFINE_ART_MODULE(ReadTrkExtrapolBis);
+using mu2e::ReadTrkExtrapolMVA;
+DEFINE_ART_MODULE(ReadTrkExtrapolMVA);

@@ -76,12 +76,12 @@
 namespace mu2e {
 
 
-  class ReadTrackCaloMatchingBis : public art::EDAnalyzer {
+  class ReadTrackCaloMatchingMVA : public art::EDAnalyzer {
 
 
       public:
 
-          explicit ReadTrackCaloMatchingBis(fhicl::ParameterSet const& pset):
+          explicit ReadTrackCaloMatchingMVA(fhicl::ParameterSet const& pset):
             art::EDAnalyzer(pset),
             _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel")),
 	    _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel")),
@@ -90,13 +90,13 @@ namespace mu2e {
             _trkCaloMatchModuleLabel(pset.get<std::string>("trkCaloMatchModuleLabel")),
             _trkIntersectModuleLabel(pset.get<std::string>("trkIntersectModuleLabel")),
             _trkFitterModuleLabel(pset.get<std::string>("fitterModuleLabel")),
-           _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
+            _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
             _virtualDetectorLabel(pset.get<std::string>("virtualDetectorName")),
             _Ntup(0)
           {
           }
 
-          virtual ~ReadTrackCaloMatchingBis() {}
+          virtual ~ReadTrackCaloMatchingMVA() {}
           void beginJob();
           void endJob() {}
 
@@ -132,7 +132,7 @@ namespace mu2e {
 
           int    _nTrk,_trknHit[1024],_trkStat[1024],_trkCluIdx[1024];
           float  _trkx[1024],_trky[1024],_trkz[1024],_trkFFx[1024],_trkFFy[1024],_trkFFz[1024],_trke[1024],_trkt[1024];
-          float  _trkpx[1024],_trkpy[1024],_trkpz[1024],_trkprob[1024];
+          float  _trkpx[1024],_trkpy[1024],_trkpz[1024],_trkprob[1024],_tkrCposX[1024],_tkrCposY[1024];
           float  _trkd0[1024],_trkz0[1024],_trkphi0[1024],_trkomega[1024],_trkcdip[1024],_trkdlen[1024];
 
           int   _nCluster,_nCluSim,_cluNcrys[1024];
@@ -157,7 +157,7 @@ namespace mu2e {
 
 
 
-  void ReadTrackCaloMatchingBis::beginJob( ) {
+  void ReadTrackCaloMatchingMVA::beginJob( ) {
 
        art::ServiceHandle<art::TFileService> tfs;
        _Ntup = tfs->make<TTree>("trkClu", "track-cluster match info");
@@ -178,6 +178,8 @@ namespace mu2e {
        _Ntup->Branch("trkFFX",       &_trkFFx,    "trkFFX[nTrk]/F");
        _Ntup->Branch("trkFFY",       &_trkFFy,    "trkFFY[nTrk]/F");
        _Ntup->Branch("trkFFZ",       &_trkFFz,    "trkFFZ[nTrk]/F");
+       _Ntup->Branch("tkrCposX",     &_tkrCposX,  "tkrCposX[nTrk]/F");
+       _Ntup->Branch("tkrCposY",     &_tkrCposY,  "tkrCposY[nTrk]/F");
        _Ntup->Branch("trkt",         &_trkt,      "trkt[nTrk]/F");
        _Ntup->Branch("trke",         &_trke,      "trke[nTrk]/F");
        _Ntup->Branch("trkpX",        &_trkpx,     "trkpX[nTrk]/F");
@@ -249,7 +251,7 @@ namespace mu2e {
 
 
 
-  void ReadTrackCaloMatchingBis::analyze(art::Event const& event)
+  void ReadTrackCaloMatchingMVA::analyze(art::Event const& event)
   {
 
         Calorimeter const & cal = *(GeomHandle<Calorimeter>());
@@ -328,13 +330,21 @@ namespace mu2e {
 
               HepPoint point = trk.position(pathLength);
               CLHEP::Hep3Vector posTrkInTracker(point.x(),point.y(),point.z());
-              CLHEP::Hep3Vector posTrkInSectionFF = cal.geomUtil().mu2eToDiskFF(intersect.diskId(),cal.geomUtil().trackerToMu2e(posTrkInTracker));
-
+              CLHEP::Hep3Vector posInMu2e = cal.geomUtil().trackerToMu2e(posTrkInTracker);
+              CLHEP::Hep3Vector posTrkInSectionFF = cal.geomUtil().mu2eToDiskFF(intersect.diskId(),posInMu2e);
+                  
+              CLHEP::Hep3Vector posTrkInCrystal = cal.geomUtil().mu2eToCrystal(cal.nearestIdxFromPosition(posInMu2e),posInMu2e);  
+              
+              
+              
+ 
               HelixTraj trkHel(trk.helix(pathLength).params(),trk.helix(pathLength).covariance());
 
               _trkFFx[_nTrk]    = posTrkInSectionFF.x();
               _trkFFy[_nTrk]    = posTrkInSectionFF.y();
               _trkFFz[_nTrk]    = posTrkInSectionFF.z();
+              _tkrCposX[_nTrk]  = posTrkInCrystal.x();
+              _tkrCposY[_nTrk]  = posTrkInCrystal.y();
               _trkx[_nTrk]      = posTrkInTracker.x();
               _trky[_nTrk]      = posTrkInTracker.y();
               _trkz[_nTrk]      = posTrkInTracker.z();
@@ -471,7 +481,8 @@ namespace mu2e {
 
 
 
-   int ReadTrackCaloMatchingBis::findBestCluster(TrkCaloMatchCollection const& trkCaloMatches, int trkId, double maxChi2)
+   //----------------------------------------------------------
+   int ReadTrackCaloMatchingMVA::findBestCluster(TrkCaloMatchCollection const& trkCaloMatches, int trkId, double maxChi2)
    {
       double chi2Best(maxChi2), cluBest(-1);
       for (auto const& trkCaloMatch: trkCaloMatches)
@@ -485,7 +496,8 @@ namespace mu2e {
       return cluBest;
    }
 
-   int ReadTrackCaloMatchingBis::findBestTrack(TrkCaloMatchCollection const& trkCaloMatches, int cluId, double maxChi2)
+   //----------------------------------------------------------
+   int ReadTrackCaloMatchingMVA::findBestTrack(TrkCaloMatchCollection const& trkCaloMatches, int cluId, double maxChi2)
    {
       double chi2Best(maxChi2), trkBest(-1);
       for (auto const& trkCaloMatch: trkCaloMatches)
@@ -507,5 +519,5 @@ namespace mu2e {
 
 
 
-using mu2e::ReadTrackCaloMatchingBis;
-DEFINE_ART_MODULE(ReadTrackCaloMatchingBis);
+using mu2e::ReadTrackCaloMatchingMVA;
+DEFINE_ART_MODULE(ReadTrackCaloMatchingMVA);
