@@ -648,7 +648,7 @@ namespace mu2e {
     int        disk0NSamplesPerEvent[10] = {0};
     int        disk1NSamplesPerEvent[10] = {0};
     double     thresholds           [10] = {1., 2., 3, 4., 5., 6, 7, 8, 9, 10};
-    double     ADC2mV                    = 2000./pow(2.,12);
+    //    double     ADC2mV                    = 2000./pow(2.,12);
     double     radius(0);
 
     //2016-01-27 G. Pezzullo conversion from thresholds given in MeV to mV
@@ -693,14 +693,19 @@ namespace mu2e {
 
       if (radius < _caloRmin)               continue;
 
-      _recoDigiAmp   [i] = amplitude;
       _recoDigiEnergy[i] = recoDigi->energyDep();
 
       const CaloDigi&	caloDigi = *recoDigi->caloDigiPtr();
-      //nWords     = caloDigi.nSamples();
 
       pulse      = caloDigi.waveform();
-
+      nWords     = pulse.size();
+      //get the amplitude
+      for (int j=0; j<nWords; ++j){
+	double content = pulse.at(j);
+	if (content > amplitude) amplitude = content;
+      }
+      _recoDigiAmp     [i] = amplitude;
+      
       _recoDigiSamples [i] = nWords;
       _recoDigiId      [i] = roId;
       _recoDigiT0      [i] = caloDigi.t0();
@@ -711,7 +716,7 @@ namespace mu2e {
 
       if (_fillWaveforms == 1){
         for (int j=0; j<nWords; ++j){
-          _recoDigiPulse[i][j] = pulse.at(j)*ADC2mV;
+          _recoDigiPulse[i][j] = pulse.at(j);//*ADC2mV;
         }
       }
 
@@ -805,17 +810,17 @@ namespace mu2e {
           //    if ( sim->fromGenerator() ){
           const CLHEP::Hep3Vector genPos = sim->startPosition();
 
-          if (!_calorimeter->geomUtil().isInsideCalorimeter(genPos)){
-            ++nParticles;
+          // if (!_calorimeter->isInsideCalorimeter(genPos)){
+          //   ++nParticles;
 
-            int        pdgId       = sim->pdgId();
-            double     ceEnergy    = 104.9;
-            double     startEnergy = sim->startMomentum().e();
-            if ( (pdgId == 11) && (startEnergy>ceEnergy))
-              {
-                isConversion = 1;
-              }
-          }
+          //   int        pdgId       = sim->pdgId();
+          //   double     ceEnergy    = 104.9;
+          //   double     startEnergy = sim->startMomentum().e();
+          //   if ( (pdgId == 11) && (startEnergy>ceEnergy))
+          //     {
+          //       isConversion = 1;
+          //     }
+          // }
         }//end loop on the particles inside the crystalHit
 
         _cryMCTime    [_nHits] = caloDigiMC->timeFirst();

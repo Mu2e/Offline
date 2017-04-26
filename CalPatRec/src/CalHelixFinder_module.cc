@@ -321,10 +321,16 @@ namespace mu2e {
     // cluster hits assigned to the reconsturcted Helix
 
     int nhits = HfResult.nGoodHits();
+    // printf("[CalHelixFinder::initHelixSeed] radius = %2.3f x0 = %2.3f y0 = %2.3f dfdz = %2.3e nhits = %i chi2XY = %2.3f chi2PHIZ = %2.3f\n",
+    // 	   helixRadius, center.x(), center.y(), dfdz, nhits, HfResult._sxyw.chi2DofCircle(), HfResult._srphi.chi2DofLine());
+    // printf("[CalHelixFinder::initHelixSeed] Index      X          Y         Z          PHI\n");
+      
     for (int i=0; i<nhits; ++i){
-      const StrawHitIndex loc        = HfResult._goodhits[i];
+      const StrawHitIndex     loc    = HfResult._goodhits[i];
       const StrawHitPosition& shpos  = _shpcol->at(loc);
-      double              shphi      = shpos.pos().z()*dfdz + phi0;
+      double                  shphi  = Hep3Vector(shpos.pos() - HelSeed._helix.center()).phi();
+      // printf("[CalHelixFinder::initHelixSeed] %4i %10.3f %10.3f %10.3f %10.3f\n", 
+      // 	     (int)loc, shpos.pos().x(), shpos.pos().y(), shpos.pos().z(), shphi);
 
       HelixHit            hhit(shpos,loc,shphi);
       
