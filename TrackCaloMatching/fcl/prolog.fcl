@@ -406,7 +406,7 @@ BEGIN_PROLOG
         
 TrackCaloIntersectionDeM :
 {
-  module_type            : TrackCaloIntersection
+  module_type            : TrackCaloIntersectionMVA
   fitterModuleLabel      : KFFDeM
   downstream             : true
   checkExit              : true
@@ -418,7 +418,7 @@ TrackCaloIntersectionDeM :
 
 TrackCaloIntersectionDmuM :
 {
-  module_type            : TrackCaloIntersection
+  module_type            : TrackCaloIntersectionMVA
   fitterModuleLabel      : KFFDmuM
   downstream             : true
   checkExit              : true

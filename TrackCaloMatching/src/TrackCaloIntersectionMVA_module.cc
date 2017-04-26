@@ -1,5 +1,5 @@
 //
-// $Id: TrackCaloIntersection_module.cc,v 1.20 2014/09/20 18:04:22 murat Exp $
+// $Id: TrackCaloIntersectionMVA_module.cc,v 1.20 2014/09/20 18:04:22 murat Exp $
 // $Author: murat $
 // $Date: 2014/09/20 18:04:22 $
 //
@@ -89,15 +89,14 @@ namespace {
 namespace mu2e {
 
 
-    class TrackCaloIntersection : public art::EDProducer {
+    class TrackCaloIntersectionMVA : public art::EDProducer {
 
 
        public:
 
-	   explicit TrackCaloIntersection(fhicl::ParameterSet const& pset):
-	     _trkterModuleLabel(pset.get<std::string>("fitterModuleLabel")),
-	     _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
-	     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
+	   explicit TrackCaloIntersectionMVA(fhicl::ParameterSet const& pset):
+	     _trkModuleLabel(pset.get<std::string>("fitterModuleLabel")),
+	     _downstream(pset.get<bool>("downstream")),
 	     _diagLevel(pset.get<int>("diagLevel",0)),
 	     _pathStep(pset.get<double>("pathStep")),
 	     _tolerance(pset.get<double>("tolerance")),
@@ -105,15 +104,11 @@ namespace mu2e {
 	     _outputNtup(pset.get<bool>("outputNtup")),
 	     _trkdiag(0)
 	   {
-
-	         _downstream          = (_fdir.dzdt() > 0 ) ? true : false;
-		 
-        	 produces<TrkCaloIntersectCollection>();
-		 
+               produces<TrkCaloIntersectCollection>();               
 	   }
 
 
-	   virtual ~TrackCaloIntersection() {}
+	   virtual ~TrackCaloIntersectionMVA() {}
 
 	   void beginJob();
 	   void endJob() {}
@@ -140,15 +135,13 @@ namespace mu2e {
 	   double radiusAtRange(TrkDifTraj const& traj, double range);
 	   
 
-	   std::string                   _trkterModuleLabel;
-	   TrkParticle                   _tpart;
-	   TrkFitDirection               _fdir;
-	   bool                          _downstream;
-	   int                           _diagLevel;
-	   double                        _pathStep;
-	   double                        _tolerance;
-	   bool                          _checkExit;
-	   bool                          _outputNtup;
+	   std::string  _trkModuleLabel;
+	   bool         _downstream;
+	   int          _diagLevel;
+	   double       _pathStep;
+	   double       _tolerance;
+	   bool         _checkExit;
+	   bool         _outputNtup;
 
 
 
@@ -166,7 +159,7 @@ namespace mu2e {
 
 
 
-    void TrackCaloIntersection::beginJob() 
+    void TrackCaloIntersectionMVA::beginJob() 
     {
 	
 	if (_outputNtup)
@@ -189,7 +182,7 @@ namespace mu2e {
     }
 
     //-----------------------------------------------------------------------------
-    void TrackCaloIntersection::fillTrkNtup(int itrk, KalRepPtr const &kalrep,  TrkDifTraj const& traj, std::vector<TrkCaloInter> const& intersec)
+    void TrackCaloIntersectionMVA::fillTrkNtup(int itrk, KalRepPtr const &kalrep,  TrkDifTraj const& traj, std::vector<TrkCaloInter> const& intersec)
     {
 	_trkid = itrk;
 	_trkint = intersec.size();    
@@ -217,32 +210,32 @@ namespace mu2e {
 
 
     //-----------------------------------------------------------------------------
-    void TrackCaloIntersection::produce(art::Event & evt )
+    void TrackCaloIntersectionMVA::produce(art::Event & evt )
     {
 
 	//get tracks
 	art::Handle<KalRepPtrCollection> trksHandle;
-	evt.getByLabel(_trkterModuleLabel, trksHandle);
+	evt.getByLabel(_trkModuleLabel, trksHandle);
 	KalRepPtrCollection const& trksPtrColl = *trksHandle.product();
 
 	//output of Extrapolated tracks
 	std::unique_ptr<TrkCaloIntersectCollection> extrapolatedTracks(new TrkCaloIntersectCollection);
 
-	if (_diagLevel) std::cout<<"Event Number : "<< evt.event()<<"\nStart TrackCaloIntersection  with ntrk = "<<trksPtrColl.size()<<std::endl;
+	if (_diagLevel) std::cout<<"Event Number : "<< evt.event()<<"\nStart TrackCaloIntersectionMVA  with ntrk = "<<trksPtrColl.size()<<std::endl;
 
-	doExtrapolation(*extrapolatedTracks, trksPtrColl);   
+	doExtrapolation(*extrapolatedTracks, trksPtrColl);           
 	evt.put(std::move(extrapolatedTracks));
 
     } 
 
 
     //-----------------------------------------------------------------------------
-    void TrackCaloIntersection::doExtrapolation(TrkCaloIntersectCollection& extrapolatedTracks, KalRepPtrCollection const& trksPtrColl)
+    void TrackCaloIntersectionMVA::doExtrapolation(TrkCaloIntersectCollection& extrapolatedTracks, KalRepPtrCollection const& trksPtrColl)
     {
 	 Calorimeter const&  cal = *(GeomHandle<Calorimeter>());
 	 CLHEP::Hep3Vector   endCalTracker = cal.geomUtil().mu2eToTracker( CLHEP::Hep3Vector(cal.geomInfo().origin().x(),cal.geomInfo().origin().y(),cal.caloInfo().envelopeZ1()) );
 	 
-	 
+         	 
 	 for (unsigned int itrk=0; itrk< trksPtrColl.size(); ++itrk )
 	 {
 	      std::vector<TrkCaloInter> intersectVec;
@@ -282,7 +275,7 @@ namespace mu2e {
 
     //-----------------------------------------------------------------------------
     // Find entry / exit points with a pseudo binary search
-    void TrackCaloIntersection::findIntersectSection(Calorimeter const& cal, TrkDifTraj const& traj,
+    void TrackCaloIntersectionMVA::findIntersectSection(Calorimeter const& cal, TrkDifTraj const& traj,
                                            HelixTraj const& trkHel, unsigned int iSection, std::vector<TrkCaloInter>& intersect)
     {
 	 	 	 
@@ -294,6 +287,7 @@ namespace mu2e {
 	 double rangeStart   = trkHel.zFlight(zStart);
 	 double rangeEnd     = trkHel.zFlight(zEnd);
          
+                  
 	 //apply first order correction to the helix model to match the trajDif model, add buffer to endRange to be on the safe side
 	 //D. Brown will add a zFlight() method for TrajDifTraj in the future, rewrite code when available	 
 	 double sinDip         = sqrt(1.0-trkHel.cosDip()*trkHel.cosDip());
@@ -304,7 +298,7 @@ namespace mu2e {
 	 else             {rangeStart -= rangeStartCorr;rangeEnd -= rangeEndCorr;} 
 
 
-         if (_diagLevel>1) std::cout<<"TrackCaloIntersection inter   rangeStart = "<<rangeStart<<"   rangeEnd="<<rangeEnd
+         if (_diagLevel>1) std::cout<<"TrackCaloIntersectionMVA inter   rangeStart = "<<rangeStart<<"   rangeEnd="<<rangeEnd
 	                            <<"  from z in Tracker="<<zStart<<" - "<<zEnd
 				    <<"  Start at position "<< traj.position(rangeStart)<<std::endl;
 
@@ -313,7 +307,7 @@ namespace mu2e {
 
 	 if (rangeIn > rangeEnd)
 	 {
-	     if (_diagLevel>1) std::cout<<"TrackCaloIntersection end search behind Section "<<iSection<<",range= "<<rangeIn<<", position is : "<<traj.position(rangeIn)<<std::endl;
+	     if (_diagLevel>1) std::cout<<"TrackCaloIntersectionMVA end search behind Section "<<iSection<<",range= "<<rangeIn<<", position is : "<<traj.position(rangeIn)<<std::endl;
 	     return;
 	 }  
 	 
@@ -335,7 +329,7 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     // find two starting points inside and outside of the calorimeter, either move out if we're in, or move in if we're out
     // if we are outside the calorimeter envelope, fast forward to the envelope
-    double TrackCaloIntersection::scanIn(Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd)
+    double TrackCaloIntersectionMVA::scanIn(Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd)
     {         
 
 	 //check if we're inside the rdial envelope, if not, fast forward to it
@@ -385,7 +379,7 @@ namespace mu2e {
 
     //-----------------------------------------------------------------------------
     // generic algorithm: step along the track (coarse search) until you reach the outside of the calo section, then refine with binary search
-    double TrackCaloIntersection::scanOut(Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd)
+    double TrackCaloIntersectionMVA::scanOut(Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd)
     {         
 
 	 double range(rangeStart);
@@ -404,7 +398,7 @@ namespace mu2e {
     
 
     //-----------------------------------------------------------------------------
-    double TrackCaloIntersection::scanBinary(Calorimeter const& cal, TrkDifTraj const& traj, int iSection, double rangeIn, double rangeOut)
+    double TrackCaloIntersectionMVA::scanBinary(Calorimeter const& cal, TrkDifTraj const& traj, int iSection, double rangeIn, double rangeOut)
     {         
          
 	 CLHEP::Hep3Vector trjVec;
@@ -430,7 +424,7 @@ namespace mu2e {
 
 
     //-----------------------------------------------------------------------------
-    void TrackCaloIntersection::updateTrjVec(Calorimeter const& cal, TrkDifTraj const& traj, double range, CLHEP::Hep3Vector& trjVec)
+    void TrackCaloIntersectionMVA::updateTrjVec(Calorimeter const& cal, TrkDifTraj const& traj, double range, CLHEP::Hep3Vector& trjVec)
     {
        HepPoint trjPoint = traj.position(range);
        trjVec.set(trjPoint.x(),trjPoint.y(),trjPoint.z());
@@ -439,7 +433,7 @@ namespace mu2e {
 
 
     //-----------------------------------------------------------------------------
-    double TrackCaloIntersection::radiusAtRange(TrkDifTraj const& traj, double range)
+    double TrackCaloIntersectionMVA::radiusAtRange(TrkDifTraj const& traj, double range)
     {
        HepPoint trjPoint = traj.position(range);
        return sqrt(trjPoint.x()*trjPoint.x()+trjPoint.y()*trjPoint.y());
@@ -448,7 +442,7 @@ namespace mu2e {
     
     //-----------------------------------------------------------------------------
     // see http://paulbourke.net/geometry/circlesphere  for notation
-    double TrackCaloIntersection::extendToRadius(HelixTraj const& trkHel, TrkDifTraj const& traj, double range, double cylinderRad)
+    double TrackCaloIntersectionMVA::extendToRadius(HelixTraj const& trkHel, TrkDifTraj const& traj, double range, double cylinderRad)
     {         
 
 	 double radius    = 1.0/trkHel.omega();
@@ -492,8 +486,8 @@ namespace mu2e {
 
 }
 
-using mu2e::TrackCaloIntersection;
-DEFINE_ART_MODULE(TrackCaloIntersection);
+using mu2e::TrackCaloIntersectionMVA;
+DEFINE_ART_MODULE(TrackCaloIntersectionMVA);
 
 
 
@@ -506,7 +500,7 @@ DEFINE_ART_MODULE(TrackCaloIntersection);
 // an infinite loop. The idea is to try to fast-forward right outside the disk inner / outer boundaries, then backtrack a little bit to be inside. 
 // If the fast-forwarding keeps you inside instead of being outside, you backtrack to the origin, leading to an infinite loop...
 
-double TrackCaloIntersection::scanOutDisk(Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd)
+double TrackCaloIntersectionMVA::scanOutDisk(Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd)
 {         
 
      double rangeForward(0);
