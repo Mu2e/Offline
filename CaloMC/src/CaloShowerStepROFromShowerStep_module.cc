@@ -29,7 +29,7 @@
 #include "SeedService/inc/SeedService.hh"
 
 #include "CLHEP/Random/RandGaussQ.h"
-#include "CLHEP/Random/RandPoisson.h"
+#include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandExponential.h"
 
 #include "TH2D.h"
@@ -152,7 +152,7 @@ namespace mu2e {
          const std::string       messageCategory_;
 
          CLHEP::HepRandomEngine& engine_;
-         CLHEP::RandPoisson      randPoisson_;
+         CLHEP::RandPoissonQ     randPoisson_;
          CLHEP::RandGaussQ       randGauss_;
          CLHEP::RandExponential  randExpo_;
 
