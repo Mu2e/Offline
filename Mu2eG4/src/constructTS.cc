@@ -820,7 +820,10 @@ namespace mu2e {
 	      "TSColl"
               );
 
-    TubsParams coll1Param2 ( coll1.rIn3(),  ts.innerRadius(), coll1.halfLength()-2.*vdHalfLength);
+    double tmpRout = ts.innerRadius();
+    if ( coll1.rIn4() > 1.0 ) tmpRout = coll1.rIn4();
+
+    TubsParams coll1Param2 ( coll1.rIn3(),  tmpRout, coll1.halfLength()-2.*vdHalfLength);
  
     nestTubs( "Coll12",
               coll1Param2,
@@ -832,7 +835,24 @@ namespace mu2e {
               G4Color::Blue(),
 	      "TSColl"
               );
-    
+
+    if ( coll1.rIn4() > 1.0 && coll1.rOu4() > coll1.rIn4() ) {
+      // Make the sheath
+      TubsParams coll1Param3 ( coll1.rIn4(),  coll1.rOu4(), coll1.halfLength()-2.*vdHalfLength);
+      nestTubs( "Coll13",
+		coll1Param3,
+		findMaterialOrThrow( coll1.material3() ),
+		0,
+		coll1.getLocal(),
+		_helper->locateVolInfo("TS1Vacuum"),
+		0,
+		G4Color::Blue(),
+		"TSColl"
+		);
+
+    } // end of adding sheath to Coll1
+
+
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS1  OffsetInMu2e    : " << ts1in->getGlobal()       << endl;
       cout << __func__ << " Coll1 local offset   : " << ts.getColl1().getLocal() << endl;

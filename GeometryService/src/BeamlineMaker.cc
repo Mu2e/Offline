@@ -486,8 +486,11 @@ namespace mu2e {
     coll1._rIn1      = c.getDouble("ts.coll1.innerRadius1",0.);
     coll1._rIn2      = c.getDouble("ts.coll1.innerRadius2",0.);
     coll1._rIn3      = c.getDouble("ts.coll1.innerRadius3",0.);
+    coll1._rIn4      = c.getDouble("ts.coll1.innerRadius4",0.);
+    coll1._rOut4     = c.getDouble("ts.coll1.outerRadius4",0.);
     coll1._material1 = c.getString("ts.coll1.material1Name");
     coll1._material2 = c.getString("ts.coll1.material2Name");
+    coll1._material3 = c.getString("ts.coll1.material3Name");
 
     // TS3
     coll32._hole             = coll31._hole              = c.getDouble("ts.coll3.hole",0.);

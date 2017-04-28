@@ -156,13 +156,21 @@ string   ds.MBSSupport.material   = "MBSSupportMix";
 // Cable Runs, added April 2017 (DNB)
 // Cal Cable run in on top, a wedge between crates.
 bool      ds.hasCableRunCal        = true;
-double    ds.CableRunCal.length    = 1900; // mm
+bool      ds.hasCableRunTrk        = true;
+double    ds.CableRunCal.length    = 1900; // mm - actually halflength
 double    ds.CableRunCal.Rin       = 696.0;  // top of Cal
 double    ds.CableRunCal.Rout      = 895.0;  // estimate
 double    ds.CableRunCal.dPhi      = 14.0; // degrees
 double    ds.CableRunCal.zC        = 15150.0; //
 double    ds.CableRunCal.phi0      = 83.0; // degrees
 string    ds.CableRunCal.material  = "Electronics"; // 
+double    ds.CableRunTrk.length    = 1900; // mm - actually halflength
+double    ds.CableRunTrk.Rin       = 820.0;  
+double    ds.CableRunTrk.Rout      = 850.0;  
+double    ds.CableRunTrk.dPhi      = 20.7; // degrees
+double    ds.CableRunTrk.zC        = 15150.0; //
+double    ds.CableRunTrk.phi0      = 194.5; // degrees
+string    ds.CableRunTrk.material  = "Electronics"; // 
 
 
 

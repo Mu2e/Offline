@@ -565,7 +565,7 @@ namespace mu2e {
 
        nestTubs( "CalCableRun",
 		 calCableRunParams,
-		 findMaterialOrThrow(ds->cableMaterial()),
+		 findMaterialOrThrow(ds->calCableRunMaterial()),
 		 0,
 		 calCableRunLoc,
 		 dsShieldParent,
@@ -574,7 +574,51 @@ namespace mu2e {
 		 "DS"
 		 );
 
-     } // end of if ( ds->hasCableRuns() )
+     } // end of if ( ds->hasCableRunCal() )
+
+     if ( ds->hasCableRunTrk() ) {
+
+       TubsParams  trkCableRun1Params ( ds->rInCableRunTrk(), 
+					ds->rOutCableRunTrk(), 
+					ds->lengthCableRunTrk(),
+					ds->phi0CableRunTrk()*CLHEP::degree,
+					ds->dPhiCableRunTrk()*CLHEP::degree);
+
+       CLHEP::Hep3Vector trkCableRunLoc( 0.0, 0.0, ds->zCCableRunTrk() );
+
+       nestTubs( "TrkCableRun1",
+		 trkCableRun1Params,
+		 findMaterialOrThrow(ds->trkCableRunMaterial()),
+		 0,
+		 trkCableRunLoc,
+		 dsShieldParent,
+		 0,
+		 G4Color::Magenta(),
+		 "DS"
+		 );
+
+       // Now the second one
+       TubsParams  trkCableRun2Params ( ds->rInCableRunTrk(), 
+					ds->rOutCableRunTrk(), 
+					ds->lengthCableRunTrk(),
+					(180.0 - ds->phi0CableRunTrk()
+					 - ds->dPhiCableRunTrk())
+					*CLHEP::degree,
+					ds->dPhiCableRunTrk()*CLHEP::degree);
+
+       nestTubs( "TrkCableRun2",
+		 trkCableRun2Params,
+		 findMaterialOrThrow(ds->trkCableRunMaterial()),
+		 0,
+		 trkCableRunLoc,
+		 dsShieldParent,
+		 0,
+		 G4Color::Magenta(),
+		 "DS"
+		 );
+
+
+     } // end of if ( ds->hasCableRunTrk() )
 
 
 

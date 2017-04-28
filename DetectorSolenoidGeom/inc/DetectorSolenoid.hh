@@ -123,13 +123,21 @@ namespace mu2e {
 
     // Cable Runs
     bool hasCableRunCal()              const { return _hasCableRunCal; }
-    std::string cableMaterial()        const { return _materialCableRunCal; }
+    std::string calCableRunMaterial()  const { return _materialCableRunCal; }
     double rInCableRunCal()            const { return _rInCableRunCal; }
     double rOutCableRunCal()           const { return _rOutCableRunCal; }
     double lengthCableRunCal()         const { return _lengthCableRunCal; }
     double phi0CableRunCal()           const { return _phi0CableRunCal; }
     double dPhiCableRunCal()           const { return _dPhiCableRunCal; }
     double zCCableRunCal()             const { return _zCCableRunCal; }
+    bool hasCableRunTrk()              const { return _hasCableRunTrk; }
+    std::string trkCableRunMaterial()  const { return _materialCableRunTrk; }
+    double rInCableRunTrk()            const { return _rInCableRunTrk; }
+    double rOutCableRunTrk()           const { return _rOutCableRunTrk; }
+    double lengthCableRunTrk()         const { return _lengthCableRunTrk; }
+    double phi0CableRunTrk()           const { return _phi0CableRunTrk; }
+    double dPhiCableRunTrk()           const { return _dPhiCableRunTrk; }
+    double zCCableRunTrk()             const { return _zCCableRunTrk; }
 
     // Vacuum volumes inside DS
     //
@@ -244,6 +252,14 @@ namespace mu2e {
     double              _phi0CableRunCal;
     double              _dPhiCableRunCal;
     std::string         _materialCableRunCal;
+    bool                _hasCableRunTrk;
+    double              _lengthCableRunTrk;
+    double              _rInCableRunTrk;
+    double              _rOutCableRunTrk;
+    double              _zCCableRunTrk;
+    double              _phi0CableRunTrk;
+    double              _dPhiCableRunTrk;
+    std::string         _materialCableRunTrk;
     
     // Vacuum volumes inside DS
     double _vacuumPressure;

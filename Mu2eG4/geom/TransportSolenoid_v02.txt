@@ -151,10 +151,13 @@ double ts.coll1.halfLength = 500.0;
 double ts.coll1.innerRadius1 = 150.0;
 double ts.coll1.innerRadius2 = 150.0;
 double ts.coll1.innerRadius3 = 160.0; 
+double ts.coll1.innerRadius4 = 240.0;
+double ts.coll1.outerRadius4 = 248.0;
 // r3 is outer cylinder inner radius; set it and r2 to 170mm and r1==150mm
 // and both materials to G4_Cu to get the previous setup
 string ts.coll1.material1Name = "G4_C";
 string ts.coll1.material2Name = "CollCu";
+string ts.coll1.material3Name = "StainlessSteel";
 
 double ts.coll3.halfLength       = 400.0;
 double ts.coll3.hole             = 50.0;
