@@ -1,8 +1,55 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v6_2_1
-1) brownd 17 April 2017
-   Added scripts for reading, writing, and analyzing digi files for processing in track trigger studies.
+
+3) dbrown 28 April 2017
+    Made numerous changes to bring aspects of the Offline Geometry model
+    up to date with current designs or plans for various components.
+
+    i.  Updated model for TS3u/d interface region.  Added some structure
+        representing flanges, vacuum end plates, pbar window support.
+	modified:   BeamlineGeom/inc/TransportSolenoid.hh
+	modified:   GeometryService/src/BeamlineMaker.cc
+	modified:   Mu2eG4/geom/TransportSolenoid_v01.txt
+	new file:   Mu2eG4/geom/TransportSolenoid_v02.txt
+	modified:   Mu2eG4/src/constructTS.cc
+
+    ii. Added a rough model of a downstream cable run for Cal
+        modified:   DetectorSolenoidGeom/inc/DetectorSolenoid.hh
+        modified:   GeometryService/src/DetectorSolenoidMaker.cc
+        modified:   Mu2eG4/geom/DetectorSolenoid_v02.txt
+    	modified:   Mu2eG4/src/constructDS.cc
+    	modified:   Mu2eG4/geom/protonAbsorber_cylindrical.txt
+
+    iii.Made a working version of a reduced overlap checker.  Modify 
+        Mu2eG4/test/geom_SurfaceCheck_Select.txt to pick the items you
+        wish to check.  Then mu2e -c Mu2eG4/fcl/surfaceCheckSelect.fcl
+        to run it.  Did require minor changes to a couple of construction
+        code files to make it work right.
+	new file:   Mu2eG4/fcl/surfaceCheckSelect.fcl
+	modified:   Mu2eG4/src/constructDiskCalorimeter.cc
+	modified:   Mu2eG4/src/constructExternalShielding.cc
+	deleted:    Mu2eG4/test/geom_SurfaceCheck_ExtShieldsOnly.txt
+	new file:   Mu2eG4/test/geom_SurfaceCheck_Select.txt
+
+    iv. Added some pipes, finished the internal structure of some existing
+        pipes.
+	modified:   Mu2eG4/geom/Pipe_v01.txt
+
+    v.  Housekeeping, announced earlier in mu2e-hn-Geometry HN.
+    	deleted:    Mu2eG4/geom/PSShield_v01.txt
+    	deleted:    Mu2eG4/geom/PSShield_v03.txt
+    	deleted:    Mu2eG4/geom/protonAbsorber_conical.txt
+    	deleted:    Mu2eG4/geom/protonAbsorber_helical.txt
+
+    vi. Updated 'master' geometry file with changes above.  Did not make
+        this the default master geometry file yet, due to concern raised
+	by Rob K. 
+	modified:   Mu2eG4/geom/geom_common_current.txt
 
 2) brownd 21 April 2017
   Implemented stereo position correction for helix hits, plus some minor cleanup.
+
+1) brownd 17 April 2017
+   Added scripts for reading, writing, and analyzing digi files for processing in track trigger studies.
+
