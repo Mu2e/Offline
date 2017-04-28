@@ -163,7 +163,7 @@ namespace mu2e {
     std::vector<double> xRing() const { return _xRing; }
     std::vector<double> yRing() const { return _yRing; }
     std::vector<double> zRing() const { return _zRing; }
-
+    std::vector<double> thetaRing() const { return _thetaRing; }
     // Coils
     std::string coil_material() const { return _coilMaterial; }
     unsigned getNCoils(TSRegion::enum_type i) const { return _nCoils.at(i); }
@@ -230,6 +230,7 @@ namespace mu2e {
     std::vector<double> _xRing;
     std::vector<double> _yRing;
     std::vector<double> _zRing;
+    std::vector<double> _thetaRing;
 
     // Coils
     std::string _coilMaterial;

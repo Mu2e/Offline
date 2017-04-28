@@ -74,7 +74,7 @@ namespace mu2e {
     c.getVectorDouble("ts.xRing", ts._xRing, nRing);
     c.getVectorDouble("ts.yRing", ts._yRing, nRing);
     c.getVectorDouble("ts.zRing", ts._zRing, nRing);
-
+    c.getVectorDouble("ts.thetaRing",ts._thetaRing, nRing);
 
     // - end wall parameters
     ts._rIn_endWallU1 = c.getDouble("ts.tsUendWall1.rIn",c.getDouble("ts.ts1in.rOut") );

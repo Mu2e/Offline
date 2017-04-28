@@ -549,7 +549,34 @@ namespace mu2e {
 	   dsShieldParent, 0, _config.getBool("ds.visible"),
 	   G4Colour::Blue(), _config.getBool("ds.solid"),
 	   forceAuxEdgeVisible, placePV, doSurfaceCheck );
-     }
+     }  // end of if ( ds->hasMBSS() )
+
+     // End of MBS spherical shielding, begin cable runs for Cal and Tracker
+     // Each is modeled as a thin wedge of a ring
+     if ( ds->hasCableRunCal() ) {
+
+       TubsParams  calCableRunParams  ( ds->rInCableRunCal(), 
+					ds->rOutCableRunCal(), 
+					ds->lengthCableRunCal(),
+					ds->phi0CableRunCal()*CLHEP::degree,
+					ds->dPhiCableRunCal()*CLHEP::degree);
+
+       CLHEP::Hep3Vector calCableRunLoc( 0.0, 0.0, ds->zCCableRunCal() );
+
+       nestTubs( "CalCableRun",
+		 calCableRunParams,
+		 findMaterialOrThrow(ds->cableMaterial()),
+		 0,
+		 calCableRunLoc,
+		 dsShieldParent,
+		 0,
+		 G4Color::Magenta(),
+		 "DS"
+		 );
+
+     } // end of if ( ds->hasCableRuns() )
+
+
 
      //************** Begin pion Degrader code *************
 

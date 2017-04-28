@@ -1,0 +1,62 @@
+//
+// Use G4's surface check technology to check for overlaps.
+//
+// $Id: geom_SurfaceCheck.txt,v 1.1 2013/04/12 22:17:27 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2013/04/12 22:17:27 $
+//
+
+#include "Mu2eG4/geom/geom_common.txt"
+
+bool g4.doSurfaceCheck    = false;
+
+// By default, all of these should be false.  Uncomment to set true.
+// Various portions of the DS
+ bool ds.doSurfaceCheck = true;
+// bool dsCoil.doSurfaceCheck = true;
+// bool dsSpacer.doSurfaceCheck = true;
+ bool dsSupport.doSurfaceCheck = true;
+// bool dsThShield.doSurfaceCheck = true;
+// bool dsVacuum.doSurfaceCheck = true;
+// bool dsShielding.doSurfaceCheck = true;
+bool calorimeter.doSurfaceCheck = true;
+
+// External Shielding
+// bool g4.doSurfaceCheckExtShld = true;
+
+// Various portions of PS
+// bool PS.doSurfaceCheck = true;
+// bool targetPS.doSurfaceCheck = true;
+// bool PSShield.doSurfaceCheck = true;
+// bool clamp_supWheel.doSurfaceCheck = true;
+
+// ProtonBeamDump areas
+// bool protonBeamDump.dirt.doSurfaceCheck = true;
+// bool protonBeamDump.shielding.doSurfaceCheck = true;
+// bool protonBeamDump.core.doSurfaceCheck = true;
+// bool protonBeamDump.mouth.doSurfaceCheck = true;
+// bool protonBeamDump.neutronCave.doSurfaceCheck = true;
+
+// Various portions of TS
+// bool ts.cryo.doSurfaceCheck = true;
+// bool ts.polyliner.doSurfaceCheck = true;
+// bool ts.cas.doSurfaceCheck = true;
+// bool ts.coils.doSurfaceCheck = true;
+// bool ts.coll.doSurfaceCheck = true;
+bool pbar.doSurfaceCheck = true;
+// bool muondegrader.doSurfaceCheck = true;
+
+
+
+// number of random points on the volume surface
+int  g4.nSurfaceCheckPointsPercmsq =   1;
+int  g4.minSurfaceCheckPoints      = 100; // per volume
+int  g4.maxSurfaceCheckPoints = 10000000; // per volume
+
+vector<string> bfield.innerMaps = {};
+vector<string> bfield.outerMaps = {};
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -44,11 +44,11 @@ double ts.rInRing = 1000;
 double ts.rOutRing = 1050;
 double ts.lengthRing = 400;
 string ts.RingMaterialType = "StainlessSteel";
-int ts.nRing = 6;
-vector<double> ts.xRing = {3904, 3044.7, 770, -770, -3044.7, -3904};
-vector<double> ts.yRing = {0, 0, 0, 0, 0, 0};
-vector<double> ts.zRing = {-2934, -859.3, 0, 0, 859.3, 2934};
-
+int ts.nRing = 8;
+vector<double> ts.xRing = {3904, 3044.7, 770, 270, -270, -770, -3044.7, -3904};
+vector<double> ts.yRing = {0, 0, 0, 0, 0, 0, 0, 0};
+vector<double> ts.zRing = {-2934, -859.3, 0, 0, 0, 0, 859.3, 2934};
+vector<double> ts.thetaRing = {0, 45, 90, 90, 90, 90, 45, 0}; // degrees yrot
 
 int  ts.cryo.verbosityLevel = 0.;
 bool ts.cryo.isVisible = true;
@@ -65,19 +65,28 @@ bool   ts.polyliner.isSolid        = true;
 
 // Pbar Absorber
 // Pbar absorber at TS3 center, disk always built, wedge optional plus
+int    pbar.version = 2;
 bool   pbar.isVisible = true;
 bool   pbar.isSolid   = false;
 int    pbar.verbosityLevel = 0;
-double pbar.halfLength = 100.0e-3; // 0.06->0.1
+double pbar.halfLength = 0.77e-03;// 100.0e-3; // 0.06->0.1
 string pbar.Type       = "wedge"; // "disk"
-string pbar.materialName = "G4_KAPTON";
+string pbar.materialName = "G4_Be";// "G4_KAPTON";
 
 double pbarwedge.y0  = -10.;
-double pbarwedge.y1  = 239.; // Do not exceed ts.rVac
-double pbarwedge.dz0 = 0.001;// G4 does not like 0
-double pbarwedge.dz1 = 1.1;  // This makes total thickness changing
-                             // from 0.2 mm to 1.3 mm over the 
+double pbarwedge.y1  = 190.; // Do not exceed hole in support // ts.rVac
+double pbarwedge.dz0 = 0.00077; //0.001;// G4 does not like 0
+double pbarwedge.dz1 = 0.84; //1.1;  // This makes total thickness changing
+// from 0.154 mm to 0.994 mm over the // from 0.2 mm to 1.3 mm over the 
                              // height of window
+// Info on support for the Antiproton Stopping Window in TS3:
+double pbar.support.midThickness = 53.0; // mm, 
+double pbar.support.midRin = 270.1; //
+double pbar.support.midRout = 812.4; 
+string pbar.support.material = "StainlessSteel";
+double pbar.support.innerHalflength = 5.0; // mm
+double pbar.support.holeDisp = 90.0 ; // mm
+
 
 // Pbar absorber in front of TS1 entrance
 bool   pbar.coll1In.build = true;

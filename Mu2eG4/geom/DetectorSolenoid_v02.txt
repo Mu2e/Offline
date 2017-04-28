@@ -88,7 +88,7 @@ double dsSupport.rOut         = 1111.;
 double dsSupport.halfLength   = 5275.;// [10575.4-2*12.7]*0.5
 
 // Flags
-int    ds.verbosityLevel     = 1;
+int    ds.verbosityLevel     = 0;
 bool   ds.visible            = true;
 bool   ds.solid              = false;
 bool   dsCoil.visible        = true;
@@ -151,6 +151,19 @@ vector<double> ds.MBSSupport.outlineU = {550., 550., 451., 451., -451., -451.,-5
 vector<double> ds.MBSSupport.outlineV = {0., 350., 350., 234., 234., 350.,350., 0. };
 vector<double> ds.MBSSupport.location   = { 0, -685., 13505. };
 string   ds.MBSSupport.material   = "MBSSupportMix";
+
+
+// Cable Runs, added April 2017 (DNB)
+// Cal Cable run in on top, a wedge between crates.
+bool      ds.hasCableRunCal        = true;
+double    ds.CableRunCal.length    = 1900; // mm
+double    ds.CableRunCal.Rin       = 696.0;  // top of Cal
+double    ds.CableRunCal.Rout      = 895.0;  // estimate
+double    ds.CableRunCal.dPhi      = 14.0; // degrees
+double    ds.CableRunCal.zC        = 15150.0; //
+double    ds.CableRunCal.phi0      = 83.0; // degrees
+string    ds.CableRunCal.material  = "Electronics"; // 
+
 
 
 // Vacuum volumes inside DS

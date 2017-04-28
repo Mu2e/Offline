@@ -129,6 +129,18 @@ namespace mu2e {
       ds->_materialMBSS = c.getString("ds.MBSSupport.material");
     }
 
+    // Cable Runs
+    ds->_hasCableRunCal = c.getBool("ds.hasCableRunCal",false);
+    if ( ds->_hasCableRunCal ) {
+      ds->_lengthCableRunCal = c.getDouble("ds.CableRunCal.length");
+      ds->_rInCableRunCal    = c.getDouble("ds.CableRunCal.Rin");
+      ds->_rOutCableRunCal   = c.getDouble("ds.CableRunCal.Rout");
+      ds->_dPhiCableRunCal   = c.getDouble("ds.CableRunCal.dPhi");
+      ds->_zCCableRunCal     = c.getDouble("ds.CableRunCal.zC"  );
+      ds->_phi0CableRunCal   = c.getDouble("ds.CableRunCal.phi0");
+      ds->_materialCableRunCal = c.getString("ds.CableRunCal.material");
+    }
+  
 
 
     // Vacuum volumes

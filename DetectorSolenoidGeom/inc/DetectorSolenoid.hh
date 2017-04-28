@@ -121,6 +121,15 @@ namespace mu2e {
     CLHEP::Hep3Vector MBSSlocation()   const { return _locationMBSS; }
     std::string MBSSmaterial()         const { return _materialMBSS; }
 
+    // Cable Runs
+    bool hasCableRunCal()              const { return _hasCableRunCal; }
+    std::string cableMaterial()        const { return _materialCableRunCal; }
+    double rInCableRunCal()            const { return _rInCableRunCal; }
+    double rOutCableRunCal()           const { return _rOutCableRunCal; }
+    double lengthCableRunCal()         const { return _lengthCableRunCal; }
+    double phi0CableRunCal()           const { return _phi0CableRunCal; }
+    double dPhiCableRunCal()           const { return _dPhiCableRunCal; }
+    double zCCableRunCal()             const { return _zCCableRunCal; }
 
     // Vacuum volumes inside DS
     //
@@ -226,7 +235,16 @@ namespace mu2e {
     CLHEP::Hep3Vector   _locationMBSS;
     std::string         _materialMBSS;
 
-
+    // Cable Runs
+    bool                _hasCableRunCal;
+    double              _lengthCableRunCal;
+    double              _rInCableRunCal;
+    double              _rOutCableRunCal;
+    double              _zCCableRunCal;
+    double              _phi0CableRunCal;
+    double              _dPhiCableRunCal;
+    std::string         _materialCableRunCal;
+    
     // Vacuum volumes inside DS
     double _vacuumPressure;
     std::string _vacuumMaterialName; 
