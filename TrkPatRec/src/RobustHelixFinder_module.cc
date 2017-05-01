@@ -360,7 +360,7 @@ namespace mu2e
     static StrawHitFlag outlier(StrawHitFlag::outlier);
 // loop over hits
     for(auto& hhit : hhits) {
-      bool oldout = !hhit._flag.hasAnyProperty(outlier);
+      bool oldout = hhit._flag.hasAnyProperty(outlier);
       if(hhit._hqual < _minmva ) {
 	// outlier hit flag it
 	hhit._flag.merge(outlier);
@@ -381,7 +381,7 @@ namespace mu2e
     static Hep3Vector zaxis(0.0,0.0,1.0); // unit in z direction
 // loop over hits
     for(auto& hhit : hhits) {
-      bool oldout = !hhit._flag.hasAnyProperty(outlier);
+      bool oldout = hhit._flag.hasAnyProperty(outlier);
       // directions
       Hep3Vector const& wdir = hhit.wdir();
       Hep3Vector cvec = (hhit.pos() - helix.center()).perpPart(); // direction from the circle center to the hit
