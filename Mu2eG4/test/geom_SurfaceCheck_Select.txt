@@ -12,14 +12,14 @@ bool g4.doSurfaceCheck    = false;
 
 // By default, all of these should be false.  Uncomment to set true.
 // Various portions of the DS
- bool ds.doSurfaceCheck = true;
+// bool ds.doSurfaceCheck = true;
 // bool dsCoil.doSurfaceCheck = true;
 // bool dsSpacer.doSurfaceCheck = true;
- bool dsSupport.doSurfaceCheck = true;
+// bool dsSupport.doSurfaceCheck = true;
 // bool dsThShield.doSurfaceCheck = true;
 // bool dsVacuum.doSurfaceCheck = true;
 // bool dsShielding.doSurfaceCheck = true;
-bool calorimeter.doSurfaceCheck = true;
+// bool calorimeter.doSurfaceCheck = true;
 
 // External Shielding
 // bool g4.doSurfaceCheckExtShld = true;
@@ -43,9 +43,8 @@ bool calorimeter.doSurfaceCheck = true;
 // bool ts.cas.doSurfaceCheck = true;
 // bool ts.coils.doSurfaceCheck = true;
 // bool ts.coll.doSurfaceCheck = true;
-bool pbar.doSurfaceCheck = true;
+// bool pbar.doSurfaceCheck = true;
 // bool muondegrader.doSurfaceCheck = true;
-
 
 
 // number of random points on the volume surface

@@ -48,7 +48,7 @@ int ts.nRing = 6;
 vector<double> ts.xRing = {3904, 3044.7, 770, -770, -3044.7, -3904};
 vector<double> ts.yRing = {0, 0, 0, 0, 0, 0};
 vector<double> ts.zRing = {-2934, -859.3, 0, 0, 859.3, 2934};
-
+vector<double> ts.thetaRing = { 0, 45, 90, 90, 45, 0 };
 
 int  ts.cryo.verbosityLevel = 0.;
 bool ts.cryo.isVisible = true;
