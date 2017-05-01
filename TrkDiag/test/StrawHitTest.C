@@ -54,7 +54,16 @@ Int_t myproc(Int_t proc,Bool_t xtalk) {
   return other;
 }
 
-void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
+Int_t myhpart(Int_t mcpdg,Int_t mcgen, Int_t mcproc){
+  enum hpart{Proton=0,LowEe,DIO,Other,CE};
+  if(mcpdg==11&&mcgen==2)return CE;
+  if(mcpdg==11&&mcproc==56)return DIO;
+  if(mcpdg==2212)return Proton;
+  if(mcpdg==11)return LowEe;
+  return Other;
+}
+
+void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) {
 
   TString spage(page);
   gStyle->SetOptStat(0);
@@ -277,7 +286,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
 
 
     TCanvas* tcan = new TCanvas("tcan","tcan",800,600);
-    tstack->Draw();
+    tstack->Draw("h");
     tleg->Draw();
 
   } else if(spage=="selcan"){
@@ -325,7 +334,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     TCanvas* tscan = new TCanvas("tscan","tscan",800,600);
     tscan->Divide(2,1);
     tscan->cd(1);
-    tstacks->Draw();
+    tstacks->Draw("h");
     tlegs->Draw();
 
   } else if(spage == "bcan"){
@@ -648,9 +657,6 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     hits->Project("mtime","time",ootmuonorigin+timecut);
     mtime->Scale(scale);
     origin->Add(mtime);
-    hits->Project("ntime","time",norigin+timecut);
-    ntime->Scale(scale);
-    origin->Add(ntime);
     hits->Project("gtime","time",porigin+timecut);
     gtime->Scale(scale);
     origin->Add(gtime);
@@ -660,7 +666,10 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     hits->Project("pptime","time",pprotonorigin+timecut);
     pptime->Scale(scale);
     origin->Add(pptime);
-
+    hits->Project("ntime","time",norigin+timecut);
+    ntime->Scale(scale);
+    origin->Add(ntime);
+ 
     double total = dtime->Integral() + pptime->Integral() + stptime->Integral() + gtime->Integral() + ntime->Integral() + mtime->Integral() + cetime->Integral() ;
  
     cout << "DIO integral = " << dtime->Integral()
@@ -672,18 +681,18 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
       << " CE inegral = " << cetime->Integral()
       << " total = " << total << endl;
 
-    TCanvas* ocan = new TCanvas("ocan","origin",800,800);
-    origin->Draw();
+    TCanvas* ocan = new TCanvas("ocan","ocan",800,800);
+    origin->Draw("h");
     TLegend* tleg = new TLegend(.6,.6,.9,.9);
     char title[50];
+    snprintf(title,50,"Neutron, #int=%4.0f",ntime->Integral()*10.0);
+    tleg->AddEntry(ntime,title,"F");
     snprintf(title,50,"Primary Proton, #int=%4.0f",pptime->Integral()*10.0);
     tleg->AddEntry(pptime,title,"F");
     snprintf(title,50,"Stopping Target Proton, #int=%4.0f",stptime->Integral()*10.0);
     tleg->AddEntry(stptime,title,"F");
     snprintf(title,50,"Photon, #int=%4.0f",gtime->Integral()*10.0);
     tleg->AddEntry(gtime,title,"F");
-    snprintf(title,50,"Neutron, #int=%4.0f",ntime->Integral()*10.0);
-    tleg->AddEntry(ntime,title,"F");
     snprintf(title,50,"OOT Muon, #int=%4.0f",mtime->Integral()*10.0);
     tleg->AddEntry(mtime,title,"F");
     snprintf(title,50,"DIO, #int=%4.0f",dtime->Integral()*10.0);
@@ -695,7 +704,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     tleg->Draw();
   } else if(spage=="sorigin"){
 
-    THStack* sorigin = new THStack("origin","Reco Hit Time by Generator Particle;Hit Time (ns);Hits/event/ns");
+    THStack* sorigin = new THStack("sorigin","Selected Hit Time by Generator Particle;Hit Time (ns);Hits/event/ns");
     TH1F* dtime = new TH1F("dtime","DIO Reco Hit Time",150,250,1750);
     TH1F* gtime = new TH1F("gtime","Photon Reco Hit Time",150,250,1750);
     TH1F* pptime = new TH1F("pptime","Primary Proton Reco Hit Time",150,250,1750);
@@ -718,12 +727,9 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
      hits->Project("dtime","mctime",dioorigin+hitsel);
     dtime->Scale(scale);
     sorigin->Add(dtime);
-   hits->Project("mtime","mctime",ootmuonorigin+hitsel);
+    hits->Project("mtime","mctime",ootmuonorigin+hitsel);
     mtime->Scale(scale);
     sorigin->Add(mtime);
-    hits->Project("ntime","mctime",norigin+hitsel);
-    ntime->Scale(scale);
-    sorigin->Add(ntime);
     hits->Project("gtime","mctime",porigin+hitsel);
     gtime->Scale(scale);
     sorigin->Add(gtime);
@@ -733,10 +739,13 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     hits->Project("pptime","mctime",pprotonorigin+hitsel);
     pptime->Scale(scale);
     sorigin->Add(pptime);
+    hits->Project("ntime","mctime",norigin+hitsel);
+    ntime->Scale(scale);
+    sorigin->Add(ntime);
 
 
     double total = dtime->Integral() + pptime->Integral() + stptime->Integral() + gtime->Integral() + ntime->Integral() + mtime->Integral() + cetime->Integral();
- 
+
     cout << "DIO integral = " << dtime->Integral()
       << " Primary Proton inegral = " << pptime->Integral()
       << " ST Proton inegral = " << stptime->Integral()
@@ -746,18 +755,18 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
       << " CE inegral = " << cetime->Integral()
       << " total = " << total << endl;
 
-    TCanvas* socan = new TCanvas("socan","origin",800,800);
-    sorigin->Draw();
+    TCanvas* socan = new TCanvas("socan","socan",800,800);
+    sorigin->Draw("h");
     TLegend* tleg = new TLegend(.6,.6,.9,.9);
     char title[50];
+    snprintf(title,50,"Neutron, #int=%4.0f",ntime->Integral()*10.0);
+    tleg->AddEntry(ntime,title,"F");
     snprintf(title,50,"Primary Proton, #int=%4.0f",pptime->Integral()*10.0);
     tleg->AddEntry(pptime,title,"F");
     snprintf(title,50,"Stopping Target Proton, #int=%4.0f",stptime->Integral()*10.0);
     tleg->AddEntry(stptime,title,"F");
     snprintf(title,50,"Photon, #int=%4.0f",gtime->Integral()*10.0);
     tleg->AddEntry(gtime,title,"F");
-    snprintf(title,50,"Neutron, #int=%4.0f",ntime->Integral()*10.0);
-    tleg->AddEntry(ntime,title,"F");
     snprintf(title,50,"OOT Muon, #int=%4.0f",mtime->Integral()*10.0);
     tleg->AddEntry(mtime,title,"F");
     snprintf(title,50,"DIO, #int=%4.0f",dtime->Integral()*10.0);
@@ -767,5 +776,62 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     snprintf(title,50,"Total #int=%4.0f",total*10.0);
     tleg->AddEntry(dtime,title,"");
     tleg->Draw();
-  }
+  } else if(spage=="hitsel"){
+    TH2F* hsel = new TH2F("hsel","Hit Selection",5,-0.5,4.5,7,-0.5,6.5);
+    TAxis* yax = hsel->GetYaxis();
+    unsigned ibin(1);
+    yax->SetBinLabel(ibin++,"All");
+    yax->SetBinLabel(ibin++,"Radius");
+    yax->SetBinLabel(ibin++,"Time");
+    yax->SetBinLabel(ibin++,"Energy");
+    yax->SetBinLabel(ibin++,"Isolated");
+    yax->SetBinLabel(ibin++,"Cluster");
+    yax->SetBinLabel(ibin++,"Good");
+    TAxis* xax = hsel->GetXaxis();
+    ibin = 1;
+    xax->SetBinLabel(ibin++,"Proton");
+    xax->SetBinLabel(ibin++,"LowEE");
+    xax->SetBinLabel(ibin++,"DIO");
+    xax->SetBinLabel(ibin++,"Other");
+    xax->SetBinLabel(ibin++,"CE");
+    // first, get normalization
+    TH1F* myhp = new TH1F("myhp","My hit particle",5,-0.5,4.5);
+    TH1F* myhpg = new TH1F("myhpg","My hit particle",5,-0.5,4.5);
+    xax = myhp->GetXaxis();
+    ibin = 1;
+    xax->SetBinLabel(ibin++,"Proton");
+    xax->SetBinLabel(ibin++,"LowEE");
+    xax->SetBinLabel(ibin++,"DIO");
+    xax->SetBinLabel(ibin++,"Other");
+    xax->SetBinLabel(ibin++,"CE");
+    hits->Project("myhp","myhpart(mcpdg,mcgen,mcproc)");
+    hits->Project("myhpg","myhpart(mcpdg,mcgen,mcproc)",hitsel);
+    myhpg->SetFillColor(kGreen);
+    // now loop over selections
+    std::vector<TCut> selcuts = {"","rsel","tsel","esel","isolated","delta",hitsel};
+    for(size_t icut=0;icut< selcuts.size();++icut){
+      char val[100];
+      cout << "Projecting cut " << selcuts[icut] << endl;
+      snprintf(val,100,"%lu:myhpart(mcpdg,mcgen,mcproc)",icut);
+      hits->Project("+hsel",val,selcuts[icut]);
+    }
+// normalize by row
+    for(int ibin=1;ibin <= myhp->GetXaxis()->GetNbins();++ibin){
+      double norm = 1.0/myhp->GetBinContent(ibin);
+      cout << "Normalization for " << hsel->GetYaxis()->GetBinLabel(ibin)  << " = " << norm << endl;
+      for(int jbin=1;jbin <= hsel->GetYaxis()->GetNbins(); ++jbin) {
+	double val =hsel->GetBinContent(ibin,jbin);
+	cout << "value for ibin " << ibin <<" jbin " << jbin << " val " << val << endl;
+	hsel->SetBinContent(ibin,jbin,val*norm);
+      }
+    }
+    TCanvas* hscan = new TCanvas("hscan","hscan",800,800);
+    hscan->Divide(1,2);
+    hscan->cd(1);
+    hsel->Draw("box");
+    hscan->cd(2);
+    myhp->Draw();
+    myhpg->Draw("same");
+  
+  } 
 }
