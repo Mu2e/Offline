@@ -1,0 +1,43 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remote_ceiling.ccl
+
+string building.remote.handling.ceiling.name     = "remoteHandlingCeiling";
+
+string building.remote.handling.ceiling.material = "CONCRETE_MARS";
+
+double building.remote.handling.ceiling.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.ceiling.offsetFromFloorSurface.y = 4826;
+double building.remote.handling.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.ceiling.yHalfThickness           = 406.4;
+
+vector<double> building.remote.handling.ceiling.xPositions = {
+  2463.8,
+  941.3,
+  -12319.0,
+  -12319.0,
+  3708.4,
+  3708.4,
+  9245.6,
+  9245.6,
+  11684.0,
+  11684.0
+};
+
+vector<double> building.remote.handling.ceiling.yPositions = {
+  8446.0,
+  6858.0,
+  6858.0,
+  16611.6,
+  16611.6,
+  13512.8,
+  13512.8,
+  16611.6,
+  16611.6,
+  10729.0
+};
+
+// Local Variables:
+// mode:c++
+// End:

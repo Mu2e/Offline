@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remoteIntWallNotch1.ccl
+
+string building.remote.handling.Interior.WallNotch.1.name     = "remoteHandlingInteriorWallNotch1";
+
+string building.remote.handling.Interior.WallNotch.1.material = "CONCRETE_MARS";
+
+double building.remote.handling.Interior.WallNotch.1.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.Interior.WallNotch.1.offsetFromFloorSurface.y = 2667;
+double building.remote.handling.Interior.WallNotch.1.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.Interior.WallNotch.1.yHalfThickness           = 1295.4;
+
+vector<double> building.remote.handling.Interior.WallNotch.1.xPositions = {
+  -11709.4,   // P0
+  -11252.2,   // P1
+  -11252.2,   // P2
+  -11709.4   // P3
+};
+
+vector<double> building.remote.handling.Interior.WallNotch.1.yPositions = {
+  8128,   // P0
+  8128,   // P1
+  7518.4,   // P2
+  7518.4   // P3
+};
+
+// Local Variables:
+// mode:c++
+// End:

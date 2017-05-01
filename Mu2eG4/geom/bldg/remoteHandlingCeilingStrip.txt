@@ -1,0 +1,49 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remote_ceilingStrip.ccl
+
+string building.remote.handling.ceiling.strip.name     = "remoteHandlingCeilingStrip";
+
+string building.remote.handling.ceiling.strip.material = "CONCRETE_MARS";
+
+double building.remote.handling.ceiling.strip.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.ceiling.strip.offsetFromFloorSurface.y = 4800.6;
+double building.remote.handling.ceiling.strip.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.ceiling.strip.yHalfThickness           = 381;
+
+vector<double> building.remote.handling.ceiling.strip.xPositions = {
+  -11709.4,   // P0 -4749.8,    //P1 AH removed
+   -4749.8,   // P2
+  1468.12,   // P3
+  3251.2,   // P4
+  3251.2,   // P5
+  8712.11,   // P6 mod AH was 11684
+  9312.5,   // P7 mod AH was 11839.5
+  3708.4,   // P8
+  3708.4,   // P9
+  1544.32,   // Q0
+  -4140.2,   // Q1
+  -4140.2,   // Q2
+  -11709.4   // Q3
+};
+
+vector<double> building.remote.handling.ceiling.strip.yPositions = {
+  6858,   // P0 mod AH was 6502.4  //6502.4,   P1  AH removed
+  6858,   // P2
+  6858,   // P3
+  7289.8,   // P4
+  8635,   // P5 mod AH was 8674.1
+  9970.5,   // P6 mod AH was 10729
+  9436.9,   // P7 mod AH was 10087.1
+  8105.14,   // P8
+  6771.64,   // P9
+  6248.4,   // Q0
+  6248.4,   // Q1
+  5892.8,   // Q2
+  5892.8   // Q3
+};
+
+// Local Variables:
+// mode:c++
+// End:

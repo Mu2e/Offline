@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remoteIntWall4.ccl
+
+string building.remote.handling.Interior.Wall.4.name     = "remoteHandlingInteriorWall4";
+
+string building.remote.handling.Interior.Wall.4.material = "CONCRETE_MARS";
+
+double building.remote.handling.Interior.Wall.4.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.Interior.Wall.4.offsetFromFloorSurface.y = 4191;
+double building.remote.handling.Interior.Wall.4.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.Interior.Wall.4.yHalfThickness           = 228.6;
+
+vector<double> building.remote.handling.Interior.Wall.4.xPositions = {
+  3251.2,   // P0
+  3708.4,   // P1
+  3708.4,   // P2
+  3251.2   // P3
+};
+
+vector<double> building.remote.handling.Interior.Wall.4.yPositions = {
+  10668,   // P0
+  10668,   // P1
+  13716,   // P2
+  13716   // P3
+};
+
+// Local Variables:
+// mode:c++
+// End:
