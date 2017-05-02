@@ -32,7 +32,7 @@ double mu2e.solenoidOffset   =  3904.;   // mm
 double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 
 #include "Mu2eG4/geom/mu2eWorld.txt"
-#include "Mu2eG4/geom/mu2eHall_v02.txt"
+#include "Mu2eG4/geom/mu2eHall.txt"
 
 // Solenoids
 #include "Mu2eG4/geom/DetectorSolenoid_v02.txt"

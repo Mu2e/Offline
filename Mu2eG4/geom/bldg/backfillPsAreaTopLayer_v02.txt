@@ -15,6 +15,7 @@ double building.backfill.psArea.TopLayer.yHalfThickness           = 1930.4;
 vector<double> building.backfill.psArea.TopLayer.xPositions = {
   -2921,   // P0
   -6254.75,   // P1
+  -12318.9,   // SW corner psHatchLower
   -12343.4,   // P2
   -12319.3,   // P3
   -16841.4,   // P4
@@ -27,6 +28,7 @@ vector<double> building.backfill.psArea.TopLayer.xPositions = {
 vector<double> building.backfill.psArea.TopLayer.yPositions = {
   -609.6,   // P0
   -609.6,   // P1
+  -2091.9,  // SW corner psHatchLower
   -2096.1,   // P2
   -2194.8,   // P3
   -3297.85,   // P4

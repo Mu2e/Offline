@@ -32,8 +32,8 @@ vector<double> dirt.beamline.berm.xPositions = {
   -17853.7,   // p5
   -50000,   // p5_to_W
   -50000,   // NWcorner
-  -20482.51,   // P2 from WextWall
-  -20398.21,   // P3 from WextWall
+  -20527.11,   // P2 from WextWall
+  -20442.71,   // P3 from WextWall
   -14706.6,   // P4 from WextWall
   -12319,   // P5    from WextWall
   -12319,   // from NRetWall
@@ -71,8 +71,8 @@ vector<double> dirt.beamline.berm.yPositions = {
   -7505.7,   // p5
   -7505.7,   // p5_to_W
   50000,   // NWcorner
-  8877.43,   // P2 from WextWall
-  8532.0,   // P3 from WextWall
+  8866.56,   // P2 from WextWall
+  8521.1,   // P3 from WextWall
   9956.8,   // P4  from WextWall
   9956.8,   // P5   from WextWall
   9702.8,   // from NRetWall
