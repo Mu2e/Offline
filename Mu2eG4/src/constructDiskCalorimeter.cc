@@ -70,7 +70,7 @@ namespace mu2e {
     bool const isCrystalSolid       = config.getBool("calorimeter.crystalSolid",true);
     bool const forceAuxEdgeVisible  = config.getBool("g4.forceAuxEdgeVisible",false);
     bool const isShieldSolid        = config.getBool("calorimeter.shieldSolid",false);
-    bool const doSurfaceCheck       = config.getBool("g4.doSurfaceCheck",false);
+    bool const doSurfaceCheck       = config.getBool("g4.doSurfaceCheck",false) || config.getBool("calorimeter.doSurfaceCheck",false);
     int  const crateVersion         = config.getInt("calorimeter.crateVersion",1);
 
 

@@ -1,0 +1,65 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_foundation_N.ccl
+
+string building.foundation.N.name     = "foundationN";
+
+string building.foundation.N.material = "CONCRETE_MARS";
+
+double building.foundation.N.offsetFromMu2eOrigin.x   = 947.4;
+double building.foundation.N.offsetFromFloorSurface.y = -685.8;
+double building.foundation.N.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.foundation.N.yHalfThickness           = 533.4;
+
+vector<double> building.foundation.N.xPositions = {
+  0,   // Fone
+  -3022.6,   // F0
+  -6042.02,   // F1
+  -12022.1,   // F2
+  -12393,   // F3
+  -17853.7,   // f4 AH mod was -18465.6
+  -19179.0,   // f5 AH mod was -19781.6
+  -12420.6,   // f6
+  -12420.6,   // f7
+  11785.6,   // f8
+  11785.6,   // g0
+  14385.8,   // g1 AH mod was 14389.5
+  14313.8,   // g2 AH mod was 13324.8
+  26008.7,   // g3 AH mod was 24976.3
+  27486.5,   // g4 AH mod was 27440.9
+  17957.8,   // gone AH mod was 17958.3
+  7467.6,   // G5
+  7467.6,   // G6
+  8077.2,   // G7
+  8077.2,   // G8
+  0   // G9
+};
+
+vector<double> building.foundation.N.yPositions = {
+  -2387.6,   // Fone
+  -2387.6,   // F0
+  -2387.6,   // F1
+  -3836.55,   // F2 AH mod was -3836.71
+  -2306.04,   // F3 AH mod was -2306.2
+  -3649.57,   // f4 AH mod was -3777.74
+  1778.98,   // f5 AH  mod was 1653.08
+  3418.66,   // f6 AH mod was 3418.52
+  16713.2,   // f7 
+  16713.2,   // f8
+  10835.6,   // g0
+  11449.7,   // g1 AH mod was 11437.8
+  11745.8,   // g2 AH mod was 15831.8 
+  14592.4,   // g3 AH mod was 18655.3
+  8521.27,   // g4 AH mod was 8484.83
+  6201.81,   // gone AH mod was 6199.89
+  3648.58,   // G5
+  2518.28,   // G6
+  2518.28,   // G7
+  609.6,   // G8
+  609.6   // G9
+};
+
+// Local Variables:
+// mode:c++
+// End:

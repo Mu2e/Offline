@@ -103,19 +103,42 @@ namespace mu2e {
 
 
       //find the local indexes of the crystal neighbors for a given level (level = number of rings away)
-      std::vector<int> Disk::findLocalNeighbors(int crystalId, int level) const
+      std::vector<int> Disk::findLocalNeighbors(int crystalId, int level, bool raw) const
       {
-	   std::vector<int> list; 
+           std::vector<int> list; 
 	   std::vector<int> temp(crystalMap_->neighbors(crystalToMap_.at(crystalId),level));
-
-	   for (unsigned int i=0;i<temp.size();++i)
-	     if (mapToCrystal_.at(temp[i])>-1) list.push_back(mapToCrystal_.at(temp[i]));
+                      	   
+           for (unsigned int i=0;i<temp.size();++i)
+           {
+	      if (raw) {list.push_back(mapToCrystal_.at(temp[i]));}
+              else {if (mapToCrystal_.at(temp[i])>-1) list.push_back(mapToCrystal_.at(temp[i]));}	      
+           } 
 	   
+           return list;
+      }      
+      
+
+      //find the nearest crystals from the position
+      std::vector<int> Disk::nearestIdxFromPosition(double x, double y) const 
+      {
+           int level(1);
+           std::vector<int> list;
+
+           unsigned int mapIdx = crystalMap_->indexFromXY(x/cellSize_,y/cellSize_);
+           if (mapIdx < mapToCrystal_.size() && mapToCrystal_.at(mapIdx)>-1) list.push_back( mapToCrystal_.at(mapIdx) );
+
+           while(list.empty())
+           {
+              std::vector<int> temp(crystalMap_->neighbors(mapIdx,level));
+              for (auto it : temp) 
+                 if (mapToCrystal_.at(it)>-1) list.push_back(mapToCrystal_.at(it));
+              ++level;                  
+           }
+           
 	   return list;
       }
 
-      
-      
+
       //Slightly inefficient but robust integration. Divide the area between the disk and 
       //the first few crystals into tiny squares, and sum square surface in the empty space
       //Use symmetry, do it for a quarter slice

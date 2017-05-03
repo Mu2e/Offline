@@ -129,6 +129,28 @@ namespace mu2e {
       ds->_materialMBSS = c.getString("ds.MBSSupport.material");
     }
 
+    // Cable Runs
+    ds->_hasCableRunCal = c.getBool("ds.hasCableRunCal",false);
+    ds->_hasCableRunTrk = c.getBool("ds.hasCableRunTrk",false);
+    if ( ds->_hasCableRunCal ) {
+      ds->_lengthCableRunCal = c.getDouble("ds.CableRunCal.length");
+      ds->_rInCableRunCal    = c.getDouble("ds.CableRunCal.Rin");
+      ds->_rOutCableRunCal   = c.getDouble("ds.CableRunCal.Rout");
+      ds->_dPhiCableRunCal   = c.getDouble("ds.CableRunCal.dPhi");
+      ds->_zCCableRunCal     = c.getDouble("ds.CableRunCal.zC"  );
+      ds->_phi0CableRunCal   = c.getDouble("ds.CableRunCal.phi0");
+      ds->_materialCableRunCal = c.getString("ds.CableRunCal.material");
+    }
+    if ( ds->_hasCableRunTrk ) {
+      ds->_lengthCableRunTrk = c.getDouble("ds.CableRunTrk.length");
+      ds->_rInCableRunTrk    = c.getDouble("ds.CableRunTrk.Rin");
+      ds->_rOutCableRunTrk   = c.getDouble("ds.CableRunTrk.Rout");
+      ds->_dPhiCableRunTrk   = c.getDouble("ds.CableRunTrk.dPhi");
+      ds->_zCCableRunTrk     = c.getDouble("ds.CableRunTrk.zC"  );
+      ds->_phi0CableRunTrk   = c.getDouble("ds.CableRunTrk.phi0");
+      ds->_materialCableRunTrk = c.getString("ds.CableRunTrk.material");
+    }
+  
 
 
     // Vacuum volumes

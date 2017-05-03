@@ -81,15 +81,12 @@ namespace mu2e {
 	  _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
 	  _trkCaloMatchModuleLabel(pset.get<std::string>("trkCaloMatchModuleLabel")),
 	  _trkFitterModuleLabel(pset.get<std::string>("fitterModuleLabel")),
-	  _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
-	  _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
 	  _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
 	  _virtualDetectorLabel(pset.get<std::string>("virtualDetectorName")),
 	  _maxChi2Match(pset.get<double>("maxChi2Match")),
 	  _Ntup(0)
 
 	{
-	  _trkfitInstanceName = _fdir.name() + _tpart.name();
 	}
 
 
@@ -118,8 +115,6 @@ namespace mu2e {
 	std::string      _trkCaloMatchModuleLabel;
 	std::string      _trkFitterModuleLabel;
 	std::string      _trkfitInstanceName;
-	TrkParticle      _tpart;
-	TrkFitDirection  _fdir;
 	std::string      _g4ModuleLabel;
 	std::string      _virtualDetectorLabel;
 	double           _maxChi2Match;
@@ -222,7 +217,7 @@ namespace mu2e {
 
       // Get tracks
       art::Handle<KalRepPtrCollection> trksHandle;
-      event.getByLabel(_trkFitterModuleLabel,_trkfitInstanceName,trksHandle);
+      event.getByLabel(_trkFitterModuleLabel,trksHandle);
       KalRepPtrCollection const& trksPtrColl(*trksHandle);
 
       // Get clusters

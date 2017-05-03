@@ -1,0 +1,61 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_FillpsAreaLower.ccl
+
+string building.backfill.psArea.Lower.name     = "backfillPsAreaLower";
+
+string building.backfill.psArea.Lower.material = "CA7Backfill";
+
+double building.backfill.psArea.Lower.offsetFromMu2eOrigin.x   = 947.4;
+double building.backfill.psArea.Lower.offsetFromFloorSurface.y = 2514.6;
+double building.backfill.psArea.Lower.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.backfill.psArea.Lower.yHalfThickness           = 2667;
+
+vector<double> building.backfill.psArea.Lower.xPositions = {
+  -2921,   // P0
+  -4089.4,   // P1
+  -4089.4,   // P2
+  -4851.4,   // P3
+  -4851.4,   // P4
+  -6254.75,   // P5  
+  -7889.49,   // P6
+  -7491.88,   // P7
+  -8232.14,   // P8
+  -8629.74,   // P9
+  -11595.4,   // Q0 mod DNB was  -11605.4
+  -11199.3,   // Q1
+  -11939.6,   // Q2
+  -12319.3,   // Q3  mod DNB was -12322
+  -16841.4,   // Q4
+  -16817.3,   // Q5
+  -17853.7,   // Q6
+  -17853.7,   // q5 mod DNB
+  -2921   // q6
+};
+
+vector<double> building.backfill.psArea.Lower.yPositions = {
+  -609.6,   // P0
+  -609.6,   // P1
+  -2286,   // P2
+  -2286,   // P3
+  -609.6,   // P4
+  -609.6,   // P5
+  -1008.71,   // P6 
+  -2637.28,   // P7
+  -2818.01,   // P8
+  -1189.44,   // P9 
+  -1920.03,   // Q0 
+  -3542.43,   // Q1
+  -3723.16,   // Q2
+  -2194.8,   // Q3 
+  -3297.85,   // Q4
+  -3396.55,  // Q5
+  -3649.57,  // Q6
+  -7505.7,   // q5
+  -7505.7   // q6
+};
+
+// Local Variables:
+// mode:c++
+// End:

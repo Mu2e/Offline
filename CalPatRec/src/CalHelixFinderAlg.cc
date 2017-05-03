@@ -762,9 +762,9 @@ namespace mu2e {
 //
 //-----------------------------------------------------------------------------
   bool CalHelixFinderAlg::doLinearFitPhiZ(CalHelixFinderData& Helix    , 
-				       int                 SeedIndex, 
-				       int                *IndexVec ,
-				       int                 UseInteligentWeight) {
+					  int                 SeedIndex, 
+					  int                *IndexVec ,
+					  int                 UseInteligentWeight) {
     // sort points by z
     //    std::sort(_xyzp.begin(),_xyzp.end(),zcomp());
 
@@ -1649,6 +1649,8 @@ namespace mu2e {
 	Helix._center.setY(Helix._sxyw.y0());
 	Helix._radius    = Helix._sxyw.radius();
 	Helix._sxy.init(Helix._sxyw);
+//2017-04-24 gianipez comment: if refineHelixParamters(...) removedone hit, we need to re-perform  the phi-z fit
+//	doLinearFitPhiZ(Helix, 0, _indicesTrkCandidate, useInteligentWeight);
 	if (_debug != 0)  printInfo(Helix);
       }
     }
@@ -1790,7 +1792,12 @@ namespace mu2e {
     //-------------------------------------------------------------------------------
     TrkSxy.addPoint(0., 0., 1./900.);
 
-
+    //2017-04-24 gianipez added the following printf to debug the code
+    if (_debug > 6) {
+      printf("[CalHelixFinderAlg::doWeightedCircleFit] Before adding points: x0 = %2.3f yo = %2.3f radius = %2.3f \n", 
+	     HelCenter.x(), HelCenter.y(), Radius);
+      printf("[CalHelixFinderAlg::doWeightedCircleFit] Index      X          Y         Z          W          wire-X        wire-Y\n");
+    }
     for (int i=SeedIndex; i<np; i++) {
       if ( _xyzp[i].isOutlier())           goto NEXT_POINT;
    
@@ -1803,7 +1810,11 @@ namespace mu2e {
       if ( IdVec[i] < 1)                  goto NEXT_POINT;
  
       TrkSxy.addPoint(hitPos.x(), hitPos.y(), Weights[i]);
-
+    //2017-04-24 gianipez added the following printf to debug the code
+      if (_debug > 6) {
+	printf("[CalHelixFinderAlg::doWeightedCircleFit] %4i %10.3f %10.3f %10.3f %10.3e %10.3f %10.3f\n", 
+	       (int)_xyzp[i]._ind, hitPos.x(), hitPos.y(), hitPos.z(), wt, strawDir.x(), strawDir.y());
+      }
     NEXT_POINT: ;
     }
 
@@ -1811,6 +1822,12 @@ namespace mu2e {
     Radius  = TrkSxy.radius();
     HelCenter.setX( TrkSxy.x0());
     HelCenter.setY( TrkSxy.y0());
+
+    //2017-04-24 gianipez added the following printf to debug the code
+    if (_debug > 6) {
+      printf("[CalHelixFinderAlg::doWeightedCircleFit] after adding points: x0 = %2.3f yo = %2.3f radius = %2.3f \n", 
+	     HelCenter.x(), HelCenter.y(), Radius);
+    }
   }
 
 
@@ -2235,7 +2252,6 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
       
       if (UsePhiResiduals == 1){
 	Helix._srphi.addPoint(_xyzp[ibest]._pos.z(), _phiCorrected[ibest], phiwtBest);
-
       }
       
       if (_debug > 5) {
@@ -2254,7 +2270,10 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
       helCenter.setY( Helix._sxy.y0());
                                         // now update helix 
       doWeightedCircleFit (Helix._sxy, SeedIndex, IndexVec,  helCenter,  r,  weights);
-  
+
+      //2017-04-24 gianipez comment: why dont we update also the phi-z part? 
+      //      if (UsePhiResiduals == 1){      doLinearFitPhiZ(Helix, SeedIndex, IndexVec, 1);}
+
       ++n_added_points;
 	                              goto NEXT_ITERATION;
     }

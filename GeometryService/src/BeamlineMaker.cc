@@ -74,7 +74,7 @@ namespace mu2e {
     c.getVectorDouble("ts.xRing", ts._xRing, nRing);
     c.getVectorDouble("ts.yRing", ts._yRing, nRing);
     c.getVectorDouble("ts.zRing", ts._zRing, nRing);
-
+    c.getVectorDouble("ts.thetaRing",ts._thetaRing, nRing);
 
     // - end wall parameters
     ts._rIn_endWallU1 = c.getDouble("ts.tsUendWall1.rIn",c.getDouble("ts.ts1in.rOut") );
@@ -486,8 +486,11 @@ namespace mu2e {
     coll1._rIn1      = c.getDouble("ts.coll1.innerRadius1",0.);
     coll1._rIn2      = c.getDouble("ts.coll1.innerRadius2",0.);
     coll1._rIn3      = c.getDouble("ts.coll1.innerRadius3",0.);
+    coll1._rIn4      = c.getDouble("ts.coll1.innerRadius4",0.);
+    coll1._rOut4     = c.getDouble("ts.coll1.outerRadius4",0.);
     coll1._material1 = c.getString("ts.coll1.material1Name");
     coll1._material2 = c.getString("ts.coll1.material2Name");
+    coll1._material3 = c.getString("ts.coll1.material3Name","None");
 
     // TS3
     coll32._hole             = coll31._hole              = c.getDouble("ts.coll3.hole",0.);

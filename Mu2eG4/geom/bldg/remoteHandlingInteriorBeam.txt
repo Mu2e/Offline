@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remoteIntBeam.ccl
+
+string building.remote.handling.Interior.Beam.name     = "remoteHandlingInteriorBeam";
+
+string building.remote.handling.Interior.Beam.material = "CONCRETE_MARS";
+
+double building.remote.handling.Interior.Beam.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.Interior.Beam.offsetFromFloorSurface.y = 4178.3;
+double building.remote.handling.Interior.Beam.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.Interior.Beam.yHalfThickness           = 215.9;
+
+vector<double> building.remote.handling.Interior.Beam.xPositions = {
+  -11709.4,   // P0
+  -5461,   // P1
+  -5461,   // P2
+  -11709.4   // P3
+};
+
+vector<double> building.remote.handling.Interior.Beam.yPositions = {
+  6248.4,   // P0
+  6248.4,   // P1
+  8128,   // P2
+  8128   // P3
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -14,6 +14,7 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -86,6 +87,7 @@ namespace mu2e {
   void
   FlagStrawHits::produce(art::Event& event) {
     const Tracker& tracker = getTrackerOrThrow();
+    const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
 
     if ( _debug > 1 ) cout << "FlagStrawHits: produce() begin; event " << event.id().event() << endl;
 
@@ -112,24 +114,43 @@ namespace mu2e {
 // A more efficient algorithm is to first find all big hits, then
 // loop over only those in the double loop.  It avoids the search for indices FIXME!!
 
-    vector<StrawIndex> ct_straws_neighbor;
-    vector<StrawIndex> ct_straws_preamp;
+    size_t nplanes = tt.nPlanes();
+    size_t npanels = tt.getPlane(0).nPanels();
+    vector<vector<size_t> > hits_by_panel(nplanes*npanels,vector<size_t>());
     
+    // select and sort hits by panel
     for (size_t ish=0;ish<nsh;++ish){
       StrawHit const& sh = shcol->at(ish);
       const Straw& straw = tracker.getStraw( sh.strawIndex() );
-      if (sh.energyDep() >= _ctE){
-        for (size_t jsh=0;jsh<nsh;++jsh){
-          StrawHit const& sh2 = shcol->at(jsh);
-          if (sh2.time()-sh.time() > _ctMinT && sh2.time()-sh.time() < _ctMaxT){
-            if (straw.isSamePreamp(sh2.strawIndex()))
-              ct_straws_preamp.push_back(sh2.strawIndex());
-            if (straw.isNearestNeighbour(sh2.strawIndex()))
-              ct_straws_neighbor.push_back(sh2.strawIndex());
-          }
-        }
-      }
+      size_t iplane = straw.id().getPlane();
+      size_t ipnl = straw.id().getPanel();
+      size_t global_panel = ipnl + iplane*npanels;
+      hits_by_panel[global_panel].push_back(ish);
     }
+
+    vector<bool> is_ct_straw_neighbor(nsh,false);
+    vector<bool> is_ct_straw_preamp(nsh,false);
+
+    for (size_t ipanel=0;ipanel<nplanes*npanels;++ipanel){ // loop over panels
+      // loop over hits in this panel
+      for (size_t ish : hits_by_panel[ipanel]){
+        StrawHit const& sh = shcol->at(ish);
+        const Straw& straw = tracker.getStraw( sh.strawIndex() );
+        if (sh.energyDep() >= _ctE){
+          for (size_t jsh : hits_by_panel[ipanel]){
+            if (ish == jsh)
+              continue;
+            StrawHit const& sh2 = shcol->at(jsh);
+            if (sh2.time()-sh.time() > _ctMinT && sh2.time()-sh.time() < _ctMaxT){
+              if (straw.isSamePreamp(sh2.strawIndex()))
+                is_ct_straw_preamp[jsh] = true;
+              if (straw.isNearestNeighbour(sh2.strawIndex()))
+                is_ct_straw_neighbor[jsh] = true;
+            }
+          } // end loop over possible neighbors
+        } // end if energy cut
+      } // end loop over hits in panel
+    } // end loop over panels
 
     for(size_t ish=0;ish<nsh;++ish){
       StrawHit const& sh = shcol->at(ish);
@@ -138,9 +159,9 @@ namespace mu2e {
       if(shpcol != 0)flag.merge(shpcol->at(ish).flag());
       if(sh.energyDep() > _minE && sh.energyDep() < _maxE)
         flag.merge(StrawHitFlag::energysel);
-      if (find(ct_straws_neighbor.begin(),ct_straws_neighbor.end(),sh.strawIndex()) != ct_straws_neighbor.end())
+      if (is_ct_straw_neighbor[ish])
         flag.merge(StrawHitFlag::strawxtalk);
-      if (find(ct_straws_preamp.begin(),ct_straws_preamp.end(),sh.strawIndex()) != ct_straws_preamp.end())
+      if (is_ct_straw_preamp[ish])
         flag.merge(StrawHitFlag::elecxtalk);
       if(sh.time() > _minT && sh.time() < _maxT)
         flag.merge(StrawHitFlag::timesel);

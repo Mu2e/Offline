@@ -1,0 +1,48 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_floor_remote.ccl
+
+string building.floor.remote.name     = "floorRemote";
+
+string building.floor.remote.material = "CONCRETE_MARS";
+
+double building.floor.remote.offsetFromMu2eOrigin.x   = 947.4;
+double building.floor.remote.offsetFromFloorSurface.y = -76.2;
+double building.floor.remote.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.floor.remote.yHalfThickness           = 76.2;
+
+vector<double> building.floor.remote.xPositions = {
+  -6121.4,   // G                                        
+  -11709.4,   // F2                                      
+  -11709.4,   // F3                                         
+  3251.2,   // F4                           
+  3251.2,   // F5                            
+  3708.4,   // F6                    
+  3708.4,   // New (due to extension of floor to new eastern part of remoteH) 
+  11074.4,  // Also new                                                        
+  11074.4,  // Also also new                                                   
+  8712.1,   // o7 - from beamline  
+  9312.51,   // J 
+  2787.8, // H
+  1193.8   // I                                                             
+};
+vector<double> building.floor.remote.yPositions = {
+  6248.4,  // G                                                               
+  6248.4,    // F2                                                            
+  16002,   // F3                                                               
+  16002,   // F4                                                               
+  13716,   // F5                                                               
+  13716,   // F6                                                               
+  16002,   // New (due to extension of floor to new eastern part of remoteH)   
+  16002,   // Also new                                                         
+  10580.6, // Also also new                                                    
+  9970.57,   // o7  
+  9436.97,   // J 
+  7842.4, // H
+  6448.42   // I                                                              
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -40,7 +40,7 @@ physics: {
         protonTimeMap        : @local::protonTimeMap
         muonTimeMap          : @local::muonTimeMap
         
-        //@table::Tracking.producers
+        @table::Tracking.producers
 
 	@table::CaloDigiMC.producers
 	@table::CaloReco.producers
@@ -73,12 +73,12 @@ physics: {
 
 
     p1: [ generate, g4run, protonTimeMap, muonTimeMap, 
-    //@sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM,           
-         @sequence::CaloDigiMC.DigiSim,
-         @sequence::CaloReco.Reco,	 
-	 @sequence::CaloDigiMC.TruthMatch,
-	 @sequence::CaloCluster.Reco, 
-	 @sequence::CaloCluster.TruthMatch 	 
+          @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM,           
+          @sequence::CaloDigiMC.DigiSim,
+          @sequence::CaloReco.Reco,	 
+	  @sequence::CaloDigiMC.TruthMatch,
+	  @sequence::CaloCluster.Reco, 
+	  @sequence::CaloCluster.TruthMatch 	 
        ]
 
     e1: [CaloExample]

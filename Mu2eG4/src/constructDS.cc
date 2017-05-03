@@ -549,7 +549,78 @@ namespace mu2e {
 	   dsShieldParent, 0, _config.getBool("ds.visible"),
 	   G4Colour::Blue(), _config.getBool("ds.solid"),
 	   forceAuxEdgeVisible, placePV, doSurfaceCheck );
-     }
+     }  // end of if ( ds->hasMBSS() )
+
+     // End of MBS spherical shielding, begin cable runs for Cal and Tracker
+     // Each is modeled as a thin wedge of a ring
+     if ( ds->hasCableRunCal() ) {
+
+       TubsParams  calCableRunParams  ( ds->rInCableRunCal(), 
+					ds->rOutCableRunCal(), 
+					ds->lengthCableRunCal(),
+					ds->phi0CableRunCal()*CLHEP::degree,
+					ds->dPhiCableRunCal()*CLHEP::degree);
+
+       CLHEP::Hep3Vector calCableRunLoc( 0.0, 0.0, ds->zCCableRunCal() );
+
+       nestTubs( "CalCableRun",
+		 calCableRunParams,
+		 findMaterialOrThrow(ds->calCableRunMaterial()),
+		 0,
+		 calCableRunLoc,
+		 dsShieldParent,
+		 0,
+		 G4Color::Magenta(),
+		 "DS"
+		 );
+
+     } // end of if ( ds->hasCableRunCal() )
+
+     if ( ds->hasCableRunTrk() ) {
+
+       TubsParams  trkCableRun1Params ( ds->rInCableRunTrk(), 
+					ds->rOutCableRunTrk(), 
+					ds->lengthCableRunTrk(),
+					ds->phi0CableRunTrk()*CLHEP::degree,
+					ds->dPhiCableRunTrk()*CLHEP::degree);
+
+       CLHEP::Hep3Vector trkCableRunLoc( 0.0, 0.0, ds->zCCableRunTrk() );
+
+       nestTubs( "TrkCableRun1",
+		 trkCableRun1Params,
+		 findMaterialOrThrow(ds->trkCableRunMaterial()),
+		 0,
+		 trkCableRunLoc,
+		 dsShieldParent,
+		 0,
+		 G4Color::Magenta(),
+		 "DS"
+		 );
+
+       // Now the second one
+       TubsParams  trkCableRun2Params ( ds->rInCableRunTrk(), 
+					ds->rOutCableRunTrk(), 
+					ds->lengthCableRunTrk(),
+					(180.0 - ds->phi0CableRunTrk()
+					 - ds->dPhiCableRunTrk())
+					*CLHEP::degree,
+					ds->dPhiCableRunTrk()*CLHEP::degree);
+
+       nestTubs( "TrkCableRun2",
+		 trkCableRun2Params,
+		 findMaterialOrThrow(ds->trkCableRunMaterial()),
+		 0,
+		 trkCableRunLoc,
+		 dsShieldParent,
+		 0,
+		 G4Color::Magenta(),
+		 "DS"
+		 );
+
+
+     } // end of if ( ds->hasCableRunTrk() )
+
+
 
      //************** Begin pion Degrader code *************
 

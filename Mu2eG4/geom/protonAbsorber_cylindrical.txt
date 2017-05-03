@@ -56,9 +56,9 @@ vector<double> protonabsorber.oPASupportInnerRadii = {509.0,578.0,594,610,647.0,
 vector<double> protonabsorber.oPASupportOuterRadii = {584.0,653.0,629,645,722.0,791.0};
 vector<double> protonabsorber.oPASupportHalflength = { 25.4,25.4,12.7,12.7,25.4, 25.4};
 vector<double> protonabsorber.oPASupportZMidpoints = {4789.,5858.,6100,6350,6927.,7996.};
-vector<double> protonabsorber.oPASupportHasExtra = { 1.0, 1.0, -1.0, -1.0,-1.0,-1.0};
-vector<double> protonabsorber.oPASupportExtraRad = { 120.0,50.0,0.0,0.0,0.0,0.0};
-vector<double> protonabsorber.oPASupportExtraDPhi = {80.,80.,0,0,0,0 };
+vector<double> protonabsorber.oPASupportHasExtra = { 1.0, 1.0, 1.0, 1.0,-1.0,-1.0};
+vector<double> protonabsorber.oPASupportExtraRad = { 120.0,50.0,100.0,90.0,0.0,0.0};
+vector<double> protonabsorber.oPASupportExtraDPhi = {80.,80.,80.,80.,0,0 };
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

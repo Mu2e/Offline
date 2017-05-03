@@ -22,8 +22,15 @@ physics :{
       StepPointMCPrinter : {
         pCut : 10.0
       }
+
       CaloHitPrinter : {
         verbose: 0
+      }
+      CaloDigiPrinter : {
+        verbose: 0
+      }
+      CaloRecoDigiPrinter : {
+        verbose: 1
       }
       CaloCrystalHitPrinter : {
         verbose: 0

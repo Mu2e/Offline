@@ -66,7 +66,9 @@ namespace mu2e {
 
     // Get config info
     const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    const bool doSurfaceCheckGL      = config.getBool("g4.doSurfaceCheck",false);
+    const bool doSurfaceCheckESO   = config.getBool("g4.doSurfaceCheckExtShld",false);
+    const bool doSurfaceCheck = (doSurfaceCheckGL || doSurfaceCheckESO);
     const bool placePV             = true;
 
     
