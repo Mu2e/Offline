@@ -234,9 +234,12 @@ namespace mu2e {
     G4double boardDispY = 2*(crateDY-crateDYTop-crateDYBottom)/nBoards;
     G4double boardPosY  = crateBottomPosY+crateDYBottom+boardDispY/2.;
     G4double boardPosZ  = crateFShieldDistanceDZ;    
-    G4double radiatorPosY = boardDY-radiatorDY;   
-    G4double activeStripPosY  = radiatorPosY-radiatorDY-activeStripDY;
-    G4double passiveStripPosY = activeStripPosY - activeStripDY - passiveStripDY;
+    // G4double radiatorPosY = boardDY-radiatorDY;   
+    // G4double activeStripPosY  = radiatorPosY-radiatorDY-activeStripDY;
+    // G4double passiveStripPosY = activeStripPosY - activeStripDY - passiveStripDY;
+    G4double radiatorPosY = -boardDY + radiatorDY;   
+    G4double activeStripPosY  = radiatorPosY+radiatorDY+activeStripDY;
+    G4double passiveStripPosY = activeStripPosY + activeStripDY + passiveStripDY;
 
     //-----------------------------------------
     // Define and build crystal + wrapper units   

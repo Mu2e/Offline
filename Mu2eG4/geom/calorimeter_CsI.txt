@@ -133,6 +133,6 @@ bool calorimeter.crystalVisible               = true;
 bool calorimeter.crystalSolid                 = false;
 bool calorimeter.absorberBoxVisible           = false;
 bool calorimeter.absorberBoxSolid             = false;
-bool calorimeter.shieldSolid                  = false;
+bool calorimeter.shieldSolid                  = true;
 
 int  calorimeter.verbosityLevel               = 0;
