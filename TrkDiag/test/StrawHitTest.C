@@ -777,7 +777,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     tleg->AddEntry(dtime,title,"");
     tleg->Draw();
   } else if(spage=="hitsel"){
-    TH2F* hsel = new TH2F("hsel","Hit Selection",5,-0.5,4.5,7,-0.5,6.5);
+    TH2F* hsel = new TH2F("hsel","Hit Selection;Producing Particle;Cut efficiency (%)",5,-0.5,4.5,7,-0.5,6.5);
     TAxis* yax = hsel->GetYaxis();
     unsigned ibin(1);
     yax->SetBinLabel(ibin++,"All");
@@ -786,26 +786,29 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     yax->SetBinLabel(ibin++,"Energy");
     yax->SetBinLabel(ibin++,"Isolated");
     yax->SetBinLabel(ibin++,"Cluster");
-    yax->SetBinLabel(ibin++,"Good");
+    yax->SetBinLabel(ibin++,"Good (Net)");
     TAxis* xax = hsel->GetXaxis();
     ibin = 1;
     xax->SetBinLabel(ibin++,"Proton");
-    xax->SetBinLabel(ibin++,"LowEE");
-    xax->SetBinLabel(ibin++,"DIO");
+    xax->SetBinLabel(ibin++,"LowEe");
+    xax->SetBinLabel(ibin++,"DIOe");
     xax->SetBinLabel(ibin++,"Other");
-    xax->SetBinLabel(ibin++,"CE");
+    xax->SetBinLabel(ibin++,"Ce");
     // first, get normalization
-    TH1F* myhp = new TH1F("myhp","My hit particle",5,-0.5,4.5);
-    TH1F* myhpg = new TH1F("myhpg","My hit particle",5,-0.5,4.5);
+    TH1F* myhp = new TH1F("myhp","Hit Rate;Producing Particle;Hits/event",5,-0.5,4.5);
+    TH1F* myhpg = new TH1F("myhpg","Hit Rate;Producing Particle;Hits/event",5,-0.5,4.5);
     xax = myhp->GetXaxis();
     ibin = 1;
     xax->SetBinLabel(ibin++,"Proton");
-    xax->SetBinLabel(ibin++,"LowEE");
-    xax->SetBinLabel(ibin++,"DIO");
+    xax->SetBinLabel(ibin++,"LowEe");
+    xax->SetBinLabel(ibin++,"DIOe");
     xax->SetBinLabel(ibin++,"Other");
-    xax->SetBinLabel(ibin++,"CE");
+    xax->SetBinLabel(ibin++,"Ce");
     hits->Project("myhp","myhpart(mcpdg,mcgen,mcproc)");
     hits->Project("myhpg","myhpart(mcpdg,mcgen,mcproc)",hitsel);
+    double pscale(1.0/nevents);
+    myhp->Scale(pscale);
+    myhpg->Scale(pscale);
     myhpg->SetFillColor(kGreen);
     // now loop over selections
     std::vector<TCut> selcuts = {"","rsel","tsel","esel","isolated","delta",hitsel};
@@ -825,13 +828,17 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 	hsel->SetBinContent(ibin,jbin,val*norm);
       }
     }
-    TCanvas* hscan = new TCanvas("hscan","hscan",800,800);
+    TCanvas* hscan = new TCanvas("hscan","hscan",1000,1200);
     hscan->Divide(1,2);
     hscan->cd(1);
-    hsel->Draw("box");
+    hsel->Draw("boxtext0");
     hscan->cd(2);
-    myhp->Draw();
-    myhpg->Draw("same");
+    TLegend* leg = new TLegend(0.6,0.7,0.8,0.9);
+    leg->AddEntry(myhp,"All Hits","l");
+    leg->AddEntry(myhpg,"Selected Hits","f");
+    myhp->Draw("histtext0");
+    myhpg->Draw("histtext90same");
+    leg->Draw();
   
   } 
 }

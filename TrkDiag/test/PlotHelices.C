@@ -1,5 +1,6 @@
 #include "TDirectory.h"
 #include "TCanvas.h"
+#include "TLegend.h"
 #include "TStyle.h"
 #include "TArc.h"
 #include "TH2F.h"
@@ -26,7 +27,9 @@ void PlotHelices(TDirectory* tdir,int nmax=20, int nps=3,const char* name=0){
   char trk_fzname[100];
   char mctfzname[100];
   TCanvas* cans[100];
-  for(int iplot=1;iplot<nmax;++iplot){
+  bool drawlegend(true);
+  TLegend* leg(0);
+  for(int iplot=1;iplot<=nmax;++iplot){
     snprintf(ce_used_xyname,100,"ce_used_shxy%i",iplot);
     snprintf(ce_notused_xyname,100,"ce_notused_shxy%i",iplot);
     snprintf(bkg_used_xyname,100,"bkg_used_shxy%i",iplot);
@@ -62,7 +65,7 @@ void PlotHelices(TDirectory* tdir,int nmax=20, int nps=3,const char* name=0){
     TH2F* trk_shfz = (TH2F*)tdir->Get(trk_fzname);
     TH2F* mctshfz = (TH2F*)tdir->Get(mctfzname);
     div_t divide = div(iplot-1,nps);
-    if(divide.rem == 0){
+    if(divide.rem == 0 || iplot == nmax){
       if(name != 0 && ican>=0){
 	char fname[100];
 	snprintf(fname,100,"%s_%s.png",name,cans[ican]->GetTitle());
@@ -74,6 +77,19 @@ void PlotHelices(TDirectory* tdir,int nmax=20, int nps=3,const char* name=0){
       cans[ican] = new TCanvas(cname,cname,400*nps,800);
       cans[ican]->Clear();
       cans[ican]->Divide(nps,2);
+      // construct legend
+      if(leg == 0){
+	leg = new TLegend(0.8,0.6,1.0,1.0);
+//	if(trk_shxy != 0)leg->AddEntry(trk_shxy,"All","l");
+	if(notselected_shxy != 0)leg->AddEntry(notselected_shxy,"Not Selected","l");
+	if(selected_shxy != 0)leg->AddEntry(selected_shxy,"Selected","l");
+	if(mctshxy != 0)leg->AddEntry(mctshxy,"MC True Pos","p");
+	if(tc_shxy != 0)leg->AddEntry(tc_shxy,"TimeCluster","l");
+	if(ce_notused_shxy != 0)leg->AddEntry(ce_notused_shxy,"Ce Unused","l");
+	if(bkg_used_shxy != 0)leg->AddEntry(bkg_used_shxy,"Bkg Used","l");
+	if(ce_used_shxy != 0)leg->AddEntry(ce_used_shxy,"Ce Used","l");
+      }
+      drawlegend=true;
     }
     ce_used_shxy->SetStats(0);
     cans[ican]->cd(divide.rem+1);
@@ -85,6 +101,11 @@ void PlotHelices(TDirectory* tdir,int nmax=20, int nps=3,const char* name=0){
     if(ce_notused_shxy != 0)ce_notused_shxy->Draw("same");
     if(bkg_used_shxy != 0)bkg_used_shxy->Draw("same");
     if(ce_used_shxy != 0)ce_used_shxy->Draw("same");
+    if(drawlegend){
+      leg->Draw();
+      drawlegend = false;
+    }
+
     cans[ican]->cd(divide.rem+nps+1);
     if(trk_shfz != 0)trk_shfz->Draw();
     if(notselected_shfz != 0)notselected_shfz->Draw("same");

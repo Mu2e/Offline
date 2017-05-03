@@ -566,6 +566,13 @@ namespace mu2e {
     selected->SetStats(0);
     tc->SetStats(0);
     trk->SetStats(0);
+
+    ce_used->SetLineColor(kRed);
+    ce_notused->SetLineColor(kCyan);
+    bkg_used->SetLineColor(kMagenta);
+    notselected->SetLineColor(kYellow);
+    selected->SetLineColor(kOrange);
+    tc->SetLineColor(kGreen);
 // get the 'function' lists for these (can be any TObject)
     TList* ce_used_list = ce_used->GetListOfFunctions();
     TList* ce_notused_list = ce_notused->GetListOfFunctions();
@@ -581,6 +588,10 @@ namespace mu2e {
       char mctruth_name[100];
       snprintf(mctruth_name,100,"mctshxy%i",igraph);
       mct = tfs->make<TH2F>(mctruth_name,title,100,-_xysize,_xysize,100,-_xysize,_xysize);
+      mct->SetStats(0);
+      mct->SetLineColor(kBlue);
+      mct->SetMarkerStyle(20);
+      mct->SetMarkerColor(kBlue);
       mct_list = mct->GetListOfFunctions();
     }
     // define plot center

@@ -151,7 +151,7 @@ void TrkRecoDiag::createHistos() {
   effbins.push_back("Seed Fit");accbins.push_back(effbins.back());
   effbins.push_back("Seed Cuts");accbins.push_back(effbins.back());
   effbins.push_back("Kalman Fit");accbins.push_back(effbins.back());
-  effbins.push_back("Physics Sel");accbins.push_back(effbins.back());
+  effbins.push_back("TrkQual Sel");accbins.push_back(effbins.back());
 
   _eff = new TH1F("eff",title("Efficiency"),effbins.size(),-0.5,effbins.size()-0.5);
   _acc = new TH1F("acc",title("Acceptance"),accbins.size(),-0.5,accbins.size()-0.5);
