@@ -60,10 +60,6 @@ namespace mu2e
     double      _microBunchPeriod;
 
     //the following variable are only used to print out results and summaries
-    double      _leadingVetoTime;
-    double      _trailingVetoTime;
-    double      _totalTime;
-    double      _totalDeadTime;
     int         _totalEvents;
     int         _totalEventsCoincidence;
     std::string _moduleLabel;  //for this instance of the CrvCoincidenceCheck module
@@ -125,13 +121,9 @@ namespace mu2e
     _acceptThreeAdjacentCounters(pset.get<bool>("acceptThreeAdjacentCounters")),
     _timeWindowStart(pset.get<double>("timeWindowStart")),
     _timeWindowEnd(pset.get<double>("timeWindowEnd")),
-    _leadingVetoTime(pset.get<double>("leadingVetoTime")),
-    _trailingVetoTime(pset.get<double>("trailingVetoTime")),
     _muonsOnly(pset.get<bool>("muonsOnly",false))
   {
     produces<CrvCoincidenceCheckResult>();
-    _totalTime=0;
-    _totalDeadTime=0;
     _totalEvents=0;
     _totalEventsCoincidence=0;
     if(_muonsOnly)
@@ -373,6 +365,14 @@ namespace mu2e
 
           if(fabs(slope[0]-slope[1])>_maxSlopeDifference) coincidenceFound=false;   //slope most not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
 
+          if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens within e.g. 20ns and 120ns
+          {
+            art::Handle<GenParticleCollection> genParticleCollection;
+            event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
+            double genTime = genParticleCollection->at(0).time();
+            if(timeMax>genTime+_muonMaxTime || timeMin<genTime+_muonMinTime) coincidenceFound=false;
+          }
+
           if(coincidenceFound) AddCoincidence(crvCoincidenceCheckResult,iterHitMap->first,*layer1Iter,*layer2Iter,*layer3Iter);
         }
       }
@@ -406,7 +406,7 @@ namespace mu2e
             if(counters.size()<3) coincidenceFound=false;
             if(*counters.rbegin()-*counters.begin()!=2) coincidenceFound=false;
 
-            if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens with 20ns and 120ns
+            if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens within e.g. 20ns and 120ns
             {
               art::Handle<GenParticleCollection> genParticleCollection;
               event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
@@ -424,44 +424,11 @@ namespace mu2e
     if(crvCoincidenceCheckResult->CoincidenceFound()) _totalEventsCoincidence++;
     _moduleLabel = *this->currentContext()->moduleLabel();
 
-/*************************************************/
-//This section is used only to print out results
-
     if(_verboseLevel>0)
     {
       std::cout<<_moduleLabel<<"   run "<<event.id().run()<<"  subrun "<<event.id().subRun()<<"  event "<<event.id().event()<<"    ";
       std::cout<<(crvCoincidenceCheckResult->CoincidenceFound()?"Coincidence satisfied":"No coincidence found")<<std::endl;
-
-      std::vector<CrvCoincidenceCheckResult::DeadTimeWindow> deadTimeWindows;
-      deadTimeWindows = crvCoincidenceCheckResult->GetDeadTimeWindows(_leadingVetoTime,_trailingVetoTime);
-
-      double deadTime = 0;
-      for(unsigned int i=0; i < deadTimeWindows.size(); i++)
-      {
-        double t1 = deadTimeWindows[i]._startTime;
-        double t2 = deadTimeWindows[i]._endTime;
-        if(t1<_timeWindowStart) t1=_timeWindowStart;
-        if(t2<_timeWindowStart) continue;
-        if(t1>_timeWindowEnd)   continue;
-        if(t2>_timeWindowEnd)   t2=_timeWindowEnd;
-        deadTime = t2 - t1;
-        std::cout << "   Found Dead time: " << deadTime << " (" << deadTimeWindows[i]._startTime << " ... " << deadTimeWindows[i]._endTime << ")" << std::endl;
-        _totalDeadTime += deadTime;
-        if(_verboseLevel>1)
-        {
-          const std::vector<CrvCoincidenceCheckResult::CoincidenceHit> &hits = deadTimeWindows[i]._hits;
-          for(unsigned int j=0; j<hits.size(); j++)
-          {
-            std::cout<<"time: "<<hits[j]._time<<"   PEs: "<<hits[j]._PEs<<"   bar index: "<<hits[j]._counter<<"   SiPM: "<<hits[j]._SiPM<<std::endl;
-          }
-        }
-      }
-      _totalTime += _timeWindowEnd - _timeWindowStart;
-      double fractionDeadTime = _totalDeadTime / _totalTime;
-      std::cout << "Dead time so far: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%" << std::endl;
     }
-
-/*************************************************/
 
     event.put(std::move(crvCoincidenceCheckResult));
 
