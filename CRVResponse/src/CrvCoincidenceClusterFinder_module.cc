@@ -106,7 +106,7 @@ namespace mu2e
   void CrvCoincidenceClusterFinder::endJob()
   {
     double fractionDeadTime = _totalDeadTime / _totalTime;
-    std::cout << "Final dead time: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%" << std::endl;
+    std::cout << "SUMMARY " << _crvCoincidenceCheckModuleLabel << "    Total dead time: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%   using time window " << _timeWindowStart << " ns ... " << _timeWindowEnd << " ns" << std::endl;
   }
 
   void CrvCoincidenceClusterFinder::beginRun(art::Run &run)
@@ -115,6 +115,8 @@ namespace mu2e
 
   void CrvCoincidenceClusterFinder::produce(art::Event& event) 
   {
+    _totalTime += _timeWindowEnd - _timeWindowStart;
+
     std::unique_ptr<CrvCoincidenceClusters> crvCoincidenceClusters(new CrvCoincidenceClusters);
 
     GeomHandle<CosmicRayShield> CRS;
@@ -217,11 +219,23 @@ namespace mu2e
    
             double deadTime = deadTimeWindowEnd-deadTimeWindowStart;
             std::cout << "   Found dead time window: " << deadTimeWindowStart << " ns ... " << deadTimeWindowEnd << " ns   (dead time incl. start/end margins: "<<deadTime<<" ns)";
-            std::cout << "   in CRV region " << crvSectorType << std::endl;
+            std::cout << "   in CRV region " << crvSectorType << "(";
+            switch (crvSectorType)
+            {
+              case 0: std::cout<<"Right"; break;
+              case 1: std::cout<<"Left"; break;
+              case 2: std::cout<<"Top"; break;
+              case 3: std::cout<<"Downstream"; break;
+              case 4: std::cout<<"Upstream"; break;
+              case 5:
+              case 6:
+              case 7: std::cout<<"Cryo"; break;
+              default: std::cout<<"Unknown";
+            };
+            std::cout << ")" << std::endl;
             _totalDeadTime += deadTime;
-            _totalTime += _timeWindowEnd - _timeWindowStart;
             double fractionDeadTime = _totalDeadTime / _totalTime;
-            std::cout << "Dead time so far: " << _totalDeadTime << " ns / " << _totalTime << " ns = " << fractionDeadTime*100 << "%" << std::endl;
+            std::cout << "Dead time so far: " << _totalDeadTime << " ns / " << _totalTime << " ns = " << fractionDeadTime*100 << "%    using time window " << _timeWindowStart << " ns ... " << _timeWindowEnd << " ns" << std::endl;
           }
 
 

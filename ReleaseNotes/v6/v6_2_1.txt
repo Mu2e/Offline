@@ -1,6 +1,8 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v6_2_1
+6) ehrlich 5 May 2017
+   added a CRV coincidence cluster finder
 
 5) dbrown 01 May 2017
    Significant updates to Offline Geometry - representing a long-term
