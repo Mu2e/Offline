@@ -23,13 +23,10 @@ services:
     RandomNumberGenerator : { }
     BTrkHelper            : @local::BTrkHelperDefault
 
-    user:
-    {
-        GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
-        ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-        GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-        SeedService            : @local::automaticSeeds
-    }
+    GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+    SeedService            : @local::automaticSeeds
 }
 
 physics:
@@ -38,7 +35,6 @@ physics:
     {
         @table::EventMixing.producers
         @table::Tracking.producers
-        MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
     }
 
     filters:
@@ -46,8 +42,8 @@ physics:
         TrkPatRecFilter:
         {
             module_type        : TrkPatRecFilter
-            fitterModuleLabels : [ "TRFDownstreameMinus" ]
-            trkPatRecInstances : [ "DownstreameMinus" ]
+            fitterModuleLabels : [ "KFFDeM" ]
+            trkPatRecInstances : [ "" ]
             minMomentum        :  50.0
             maxMomentum        : 200.0
         }
@@ -63,8 +59,7 @@ physics:
 
     trigFilter: [@sequence::EventMixing.TimeMaps,
                  @sequence::Tracking.DigiSim,
-                 MakeCaloReadoutHits,
-                 @sequence::Tracking.TPRDownstreameMinus,
+                 @sequence::Tracking.TPRDeM,
                  TrkPatRecFilter]
     trigger_paths: [trigFilter]
 
@@ -84,7 +79,6 @@ outputs:
             "keep *_*_*_cosmics1",
             "keep *_*_*_cosmics2",
             "keep *_makeSD_*_*",
-            "keep *_MakeCaloReadoutHits_*_*",
             "keep *_muonTimeMap_*_*",
             "keep *_protonTimeMap_*_*"
         ]
@@ -97,8 +91,8 @@ services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 300
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
 
 // We guarantee that our subruns are atomic. The following line is to not run out of memory.
 services.scheduler.fileMode: MERGE
