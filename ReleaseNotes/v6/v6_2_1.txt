@@ -1,6 +1,5 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v6_2_1
+
 6) ehrlich 5 May 2017
    added a CRV coincidence cluster finder
 
@@ -142,7 +141,7 @@ Still under construction
 
     vi. Updated 'master' geometry file with changes above.  Did not make
         this the default master geometry file yet, due to concern raised
-	by Rob K. 
+	by Rob K.
 	modified:   Mu2eG4/geom/geom_common_current.txt
 
 2) brownd 21 April 2017
@@ -150,4 +149,3 @@ Still under construction
 
 1) brownd 17 April 2017
    Added scripts for reading, writing, and analyzing digi files for processing in track trigger studies.
-
