@@ -1,0 +1,55 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_PSarea_upperExtension2_N.ccl
+
+string dirt.psArea.upper2.N.name     = "dirtPsAreaUpper2N";
+
+string dirt.psArea.upper2.N.material = "MBOverburden";
+
+double dirt.psArea.upper2.N.offsetFromMu2eOrigin.x   = 947.4;
+//double dirt.psArea.upper2.N.offsetFromFloorSurface.y = 5638.8;
+double dirt.psArea.upper2.N.offsetFromFloorSurface.y = 5664.6;
+double dirt.psArea.upper2.N.offsetFromMu2eOrigin.z   = -3581.4;
+
+//double dirt.psArea.upper2.N.yHalfThickness           = 457.2;
+double dirt.psArea.upper2.N.yHalfThickness           = 431.4;
+
+vector<int>    dirt.psArea.upper2.N.xreplace   = { 7, 8 }; 
+vector<double> dirt.psArea.upper2.N.xPositions = {
+  -2006.6,   // h0
+  -4749.8,
+  -4749.8,
+  -12319,   // h1
+  -12319,   // h2
+  -17134.6,   // h3
+  -17041,    // h4
+  -50000,   // h3_to_W
+  -50000,   // NWcorner
+  -2006.6,   // h0_to_N
+  -2006.6,   // To NRetWall
+  -12319,    // NW corner NRetWall
+  -12319,    // SW corner WextWall
+  -2006.6     // along NRetWall S face
+};
+
+vector<int>    dirt.psArea.upper2.N.yreplace   = { 8, 9 }; 
+vector<double> dirt.psArea.upper2.N.yPositions = {
+  6858,   // h0
+  6858,
+  6502.4,
+  6502.4,   // h1
+  3390.67,   // h2
+  2173.52,   // h3
+  1779,   // h4
+  1779,   // h4_to_W
+  50000,   // NWcorner
+  50000,   // h0_to_N
+  10312.41, // To NRetWall
+  10312.41, // NW corner NRetWall
+  9702.79,  // SW corner NRetWall
+  9702.79   // last point on NRetWall S face
+};
+
+// Local Variables:
+// mode:c++
+// End:

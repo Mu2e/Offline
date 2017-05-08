@@ -15,6 +15,7 @@ double building.backfill.psArea.Inter.yHalfThickness           = 609.6;
 vector<double> building.backfill.psArea.Inter.xPositions = {
   -2921,   // P0
   -6254.75,   // P1
+  -11709.4,   // inside corner psHatchLower leg
   -12318.9,   // SW corner psHatchLower
   -12343.4,   // P2
   -12319.3,   // P3
@@ -28,6 +29,7 @@ vector<double> building.backfill.psArea.Inter.xPositions = {
 vector<double> building.backfill.psArea.Inter.yPositions = {
   -609.6,   // P0
   -609.6,   // P1
+  -1943.1,  // inside corner psHatchLower left "leg"
   -2091.9,  // SW corner psHatchLower
   -2096.1,   // P2
   -2194.8,   // P3

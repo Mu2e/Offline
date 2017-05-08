@@ -1,0 +1,36 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_PSarea_upperExtension_N.ccl
+
+string dirt.psArea.upper.N.name     = "dirtPsAreaUpperN";
+
+string dirt.psArea.upper.N.material = "MBOverburden";
+
+double dirt.psArea.upper.N.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.psArea.upper.N.offsetFromFloorSurface.y = 4826.4;
+double dirt.psArea.upper.N.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.psArea.upper.N.yHalfThickness           = 406.8;
+
+vector<int>    dirt.psArea.upper.N.xreplace   = { 4, 5 }; 
+vector<double> dirt.psArea.upper.N.xPositions = {
+  -12319,   // h1
+  -12319,   // h2
+  -17134.6,   // h3
+  -17041,    // h4
+  -50000,   // h4_to_W
+  -50000   // h1_to_W
+};
+
+vector<double> dirt.psArea.upper.N.yPositions = {
+  7086.59,   // h1
+  3390.67,   // h2
+  2173.52,   // h3
+  1779,      // h4
+  1779,   // h4_to_W
+  7086.59   // h1_to_W
+};
+
+// Local Variables:
+// mode:c++
+// End:

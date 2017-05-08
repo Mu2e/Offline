@@ -16,6 +16,8 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Mu2eG4/geom/bldg/backfillPsAreaLower_v02.txt"
 #include "Mu2eG4/geom/bldg/backfillPsAreaRWallFootLevel_v02.txt"
 #include "Mu2eG4/geom/bldg/backfillPsAreaTopLayer_v02.txt"
+#include "Mu2eG4/geom/bldg/backfillPsHatchE.txt"
+#include "Mu2eG4/geom/bldg/backfillPsHatchS.txt"
 //#include "Mu2eG4/geom/bldg/backfillTSarea-W1.txt"
 #include "Mu2eG4/geom/bldg/backfillTSarea-W1Lower.txt"
 //#include "Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotch2.txt"
@@ -153,6 +155,8 @@ vector<string> bldg.prefix.list = {
    "building.backfill.psArea.Lower",
    "building.backfill.psArea.RWallFootLevel",
    "building.backfill.psArea.TopLayer",
+   "building.backfill.psHatch.E",
+   "building.backfill.psHatch.S",
    "building.backfill.TSarea-W.1Lower",
    "building.backfill.TSarea-W.1UpperNotchLower",
    "building.backfill.TSarea-W.1UpperNotchUpper1",
@@ -313,7 +317,7 @@ vector<string> bldg.prefix.list = {
 #include "Mu2eG4/geom/bldg/dirtFoundationExtMon_v02.txt"
 #include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea_v02.txt"
 #include "Mu2eG4/geom/bldg/dirtFoundationIsland.txt"
-#include "Mu2eG4/geom/bldg/dirtFoundationN.txt"
+#include "Mu2eG4/geom/bldg/dirtFoundationN_v02.txt"
 #include "Mu2eG4/geom/bldg/dirtFoundationSd.txt"
 #include "Mu2eG4/geom/bldg/dirtFoundationSmid.txt"
 #include "Mu2eG4/geom/bldg/dirtFoundationSu.txt"
@@ -326,15 +330,15 @@ vector<string> bldg.prefix.list = {
 //#include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2S.txt"
 #include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlabN_v02.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlabS.txt"
-#include "Mu2eG4/geom/bldg/dirtPsAreaUpper2N.txt"
-#include "Mu2eG4/geom/bldg/dirtPsAreaUpper2SliverN.txt"
-#include "Mu2eG4/geom/bldg/dirtPsAreaUpperN.txt"
+#include "Mu2eG4/geom/bldg/dirtPsAreaUpper2N_v02.txt"
+//#include "Mu2eG4/geom/bldg/dirtPsAreaUpper2SliverN_v02.txt"
+#include "Mu2eG4/geom/bldg/dirtPsAreaUpperN_v02.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaUpperS.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaUpperSliverS.txt"
-#include "Mu2eG4/geom/bldg/dirtPsAreaW.txt"
+#include "Mu2eG4/geom/bldg/dirtPsAreaW_v02.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsWallUpper.txt"
-#include "Mu2eG4/geom/bldg/dirtPsWallUpperSliver.txt"
-#include "Mu2eG4/geom/bldg/dirtRemoteHandling.txt"
+//#include "Mu2eG4/geom/bldg/dirtPsWallUpperSliver.txt"
+#include "Mu2eG4/geom/bldg/dirtRemoteHandling_v02.txt"
 #include "Mu2eG4/geom/bldg/dirtRemoteHandlingCeiling.txt"
 #include "Mu2eG4/geom/bldg/dirtTsAreaAlcove.txt"
 #include "Mu2eG4/geom/bldg/dirtTsAreaStairwell.txt"
@@ -350,7 +354,7 @@ vector<string> bldg.prefix.list = {
 #include "Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaInter_v02.txt"
 #include "Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaLower_v02.txt"
 #include "Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaRWallFootLevel_v02.txt"
-#include "Mu2eG4/geom/bldg/dirtTempSofRetWallTop.txt"
+#include "Mu2eG4/geom/bldg/dirtTempSofRetWallTop_v02.txt"
 #include "Mu2eG4/geom/bldg/dirtSRetainingWallFoot.txt"
 #include "Mu2eG4/geom/bldg/dirtWallFill1.txt"
 #include "Mu2eG4/geom/bldg/dirtWallFill2.txt"
@@ -395,8 +399,6 @@ vector<string> dirt.prefix.list = {
   "dirt.psArea.dirtSlab2.N.Beyond",
   "dirt.psArea.upper.N",
   "dirt.psArea.upper2.N",
-  "dirt.psArea.upper2.sliver.N",
-  "dirt.psWall.upper.sliver",
   "dirt.remote.handling",
   "dirt.remote.handling.ceiling",
   "dirt.tsArea.W",

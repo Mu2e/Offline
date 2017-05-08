@@ -12,8 +12,9 @@ double dirt.foundation.extMon.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.foundation.extMon.yHalfThickness           = 533.4;
 
-vector<int>    dirt.foundation.extMon.xreplace   = { 12, 13 }; 
+vector<int>    dirt.foundation.extMon.xreplace   = { 13, 14 }; 
 vector<double> dirt.foundation.extMon.xPositions = {
+  -19179,     // b
   -19085.1,   // c
   -26778.2,   // d
   -25645.6,   // e
@@ -27,11 +28,12 @@ vector<double> dirt.foundation.extMon.xPositions = {
   -17853.7,   // SW corner psWallUpper
   -17853.7,   // e7_to_S
   -50000,   // SWcorner
-  -50000   // c_to_W
+  -50000   // b_to_W
 };
 
-vector<int>    dirt.foundation.extMon.yreplace   = { 11, 12 }; 
+vector<int>    dirt.foundation.extMon.yreplace   = { 12, 13 }; 
 vector<double> dirt.foundation.extMon.yPositions = {
+  1778.98,   // b
   1383.57,   // c
   -494.654,   // d
   -5133.6,   // e
@@ -45,7 +47,7 @@ vector<double> dirt.foundation.extMon.yPositions = {
   -3649.57,   // SW corner psWallUpper
   -50000,   // e7_to_S
   -50000,   // SWcorner
-  1383.57   // c_to_W
+  1778.98   // b_to_W
 };
 
 // Local Variables:

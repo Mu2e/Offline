@@ -15,8 +15,8 @@ double dirt.foundation.extMonPSarea.yHalfThickness           = 1739.9;
 vector<int>    dirt.foundation.extMonPSarea.xreplace   = { 4, 5 }; 
 vector<double> dirt.foundation.extMonPSarea.xPositions = {
   -17853.7,   // q1
-  -20814.7,   // q2
-  -21843.9,   // q3
+  -21112.8,   // q2
+  -22439.1,   // q3
   -19179,   // q4
   -50000,   // q4_to_W
   -50000,   // SWcorner
@@ -25,9 +25,9 @@ vector<double> dirt.foundation.extMonPSarea.xPositions = {
 
 vector<int>    dirt.foundation.extMonPSarea.yreplace   = { 5, 6 }; 
 vector<double> dirt.foundation.extMonPSarea.yPositions = {
-  -3649.57,   // q1
-  -4372.49,   // q2
-  1128.35,   // q3
+  -3650.57,   // q1
+  -4446.78,   // q2
+   987.771,   // q3
   1778.98,   // q4
   1778.98,   // q4_to_W
   -50000,   // SWcorner

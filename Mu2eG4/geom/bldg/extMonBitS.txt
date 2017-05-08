@@ -15,7 +15,7 @@ double building.extMon.bit.S.yHalfThickness           = 1219.2;
 vector<double> building.extMon.bit.S.xPositions = {
   -15730.4,   // A
   -16026.1,   // B
-  -15954.4,   // C
+  -15954.5,   // C
   -15658.7   // D
 };
 
