@@ -8,7 +8,7 @@
 //
 
 // Include the degrader or not
-bool   degrader.build = true;
+bool   degrader.build = false;
 
 // Choose one of the following.
 // If the degrader is IN the beamline, uncomment the next line
