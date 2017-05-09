@@ -316,6 +316,17 @@ vector<string> bldg.prefix.list = {
 #include "Mu2eG4/geom/bldg/dirtFoundationE.txt"
 #include "Mu2eG4/geom/bldg/dirtFoundationExtMon_v02.txt"
 #include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea_v02.txt"
+#include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea1.txt"
+#include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea2.txt"
+#include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea3.txt"
+#include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea4.txt"
+#include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea5.txt"
+#include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea6.txt"
+#include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea7.txt"
+#include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea8.txt"
+#include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea9.txt"
+#include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea10.txt"
+#include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea11.txt"
 #include "Mu2eG4/geom/bldg/dirtFoundationIsland.txt"
 #include "Mu2eG4/geom/bldg/dirtFoundationN_v02.txt"
 #include "Mu2eG4/geom/bldg/dirtFoundationSd.txt"
@@ -336,6 +347,7 @@ vector<string> bldg.prefix.list = {
 //#include "Mu2eG4/geom/bldg/dirtPsAreaUpperS.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaUpperSliverS.txt"
 #include "Mu2eG4/geom/bldg/dirtPsAreaW_v02.txt"
+#include "Mu2eG4/geom/bldg/dirtPsAreaWLower.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsWallUpper.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsWallUpperSliver.txt"
 #include "Mu2eG4/geom/bldg/dirtRemoteHandling_v02.txt"
@@ -389,11 +401,23 @@ vector<string> dirt.prefix.list = {
   "dirt.foundation.Su",
   "dirt.foundation.extMon",
   "dirt.foundation.extMonPSarea",
+  "dirt.foundation.extMonPSarea.1",
+  "dirt.foundation.extMonPSarea.2",
+  "dirt.foundation.extMonPSarea.3",
+  "dirt.foundation.extMonPSarea.4",
+  "dirt.foundation.extMonPSarea.5",
+  "dirt.foundation.extMonPSarea.6",
+  "dirt.foundation.extMonPSarea.7",
+  "dirt.foundation.extMonPSarea.8",
+  "dirt.foundation.extMonPSarea.9",
+  "dirt.foundation.extMonPSarea.10",
+  "dirt.foundation.extMonPSarea.11",
   "dirt.foundation.island",
   "dirt.island",
   "dirt.island.upper",
   "dirt.passage.E",
   "dirt.psArea.W",
+  "dirt.psArea.WLower",
   "dirt.psArea.dirtSlab.N",
   "dirt.psArea.dirtSlab2.N",
   "dirt.psArea.dirtSlab2.N.Beyond",
