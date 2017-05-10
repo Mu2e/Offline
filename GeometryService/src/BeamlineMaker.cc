@@ -625,7 +625,7 @@ namespace mu2e {
     pbarWindow._y1       = c.getDouble("pbarwedge.y1",0.);
     pbarWindow._dz0      = c.getDouble("pbarwedge.dz0",0.);
     pbarWindow._dz1      = c.getDouble("pbarwedge.dz1",0.);
-
+    pbarWindow._wedgeZOffset = c.getDouble("pbarwedge.zOffset",0.);
   }
 
 } // namespace mu2e

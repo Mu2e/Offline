@@ -29,6 +29,7 @@ namespace mu2e {
     double getY1()  const  { return _y1 ; };
     double getDZ0() const  { return _dz0; };
     double getDZ1() const  { return _dz1; };
+    double getWedgeZOffset() const { return _wedgeZOffset; }
 
     void set(double halfZ, CLHEP::Hep3Vector origin) {
       _halfZ  = halfZ;
@@ -48,7 +49,7 @@ namespace mu2e {
     double _y1 ;
     double _dz0;
     double _dz1;
-
+    double _wedgeZOffset;
 };
 
 }

@@ -1147,7 +1147,7 @@ namespace mu2e {
     // ******* In version two, there are changes *****
     // - support structure is ~1 cm thick stainless with a window shaped
     //   like that of the COL3u and Col3d windows.
-    // - wedge contains complete volume of window and is shaped like the 
+    // - wedge is shaped like the 
     //   hole in the support structure.
 
     // First, ascertain which version this is, along with other config info
@@ -1198,7 +1198,7 @@ namespace mu2e {
 	  double pbarWedge_y1  = pbarWindow.getY1();
 	  double pbarWedge_dz0 = pbarWindow.getDZ0();
 	  double pbarWedge_dz1 = pbarWindow.getDZ1();
-      
+
 	  VolumeInfo pbarWedgeInfo;
       
 	  pbarWedgeInfo.name = "PbarAbsWedge";
@@ -1230,7 +1230,7 @@ namespace mu2e {
 	  finishNesting(pbarWedgeInfo,
 			pbarMaterial,
 			0,
-			G4ThreeVector(0.,0.,pbarWedge_dz/2+pbarWindow.halfLength()),
+			G4ThreeVector(0.,0.,pbarWedge_dz/2+pbarWindow.halfLength() ),
 			parent.logical,
 			0,
 			G4Color::Yellow(),
@@ -1297,7 +1297,6 @@ namespace mu2e {
 					  0, ts.innerRadius(), hDz,
 					  0.0, CLHEP::twopi );
 
-      // ed to here
       supportInfo.solid = new G4SubtractionSolid("pBarTS3Support",
                                               support_mother,
                                               support_hole,
@@ -1317,26 +1316,70 @@ namespace mu2e {
 		    G4Color::Gray(),
 		    "PbarAbs");
 
+      // -- vacuum wall
+
+      if (verbosityLevel > 0) std::cout << "TS3 pbar windows HalfLength : " << pbarWindow.halfLength() << std::endl; 
+        
+      if ( pbarWindow.shape() == "wedge" ||
+	   pbarWindow.shape() == "disk" ) {
+
+	VolumeInfo pbarDiskInfo;
+	pbarDiskInfo.name = "PbarAbsDisk";
+
+	// Helper info
+	double pbarWedge_y0  = pbarWindow.getY0();
+	double pbarWedge_y1  = pbarWindow.getY1();
+	double pbarWedge_dy = (pbarWedge_y1 + pbarWedge_y0)/2.;
+
+	G4Tubs *pbarAbs_disk = new G4Tubs("PbarAbs_disk",
+					  0.0 ,pbarWindow.rOut(),
+					  pbarWindow.halfLength(),
+					  0.0,CLHEP::twopi);
+
+	pbarDiskInfo.solid = new G4IntersectionSolid(pbarDiskInfo.name,
+						     support_hole,
+						     pbarAbs_disk,
+						     0,
+						     G4ThreeVector(0,0,0));
+	  
+	  finishNesting(pbarDiskInfo,
+			pbarMaterial,
+			0,
+			G4ThreeVector(0,pbarWedge_dy,0),
+			parent.logical,
+			0,
+			G4Color::Yellow(),
+			"PbarAbs"
+			);
+	// nestTubs( "PbarAbs",
+	// 	  pbarParams,
+	// 	  pbarMaterial,
+	// 	  0,
+	// 	  pbarWindow.getLocal(),
+	// 	  parent,
+	// 	  0,
+	// 	  G4Color::Yellow()
+	// 	  );
+      }
+
       if( pbarWindow.shape() == "wedge" ) 
 	{
 	  // -- pbar wedge        
 	  double pbarWedge_y0  = pbarWindow.getY0();
 	  double pbarWedge_y1  = pbarWindow.getY1();
-	  double pbarWedge_dz0 = pbarWindow.getDZ0() + 2.0*pbarWindow.halfLength();
-	  double pbarWedge_dz1 = pbarWindow.getDZ1() + 2.0*pbarWindow.halfLength();
+	  double pbarWedge_dz0 = pbarWindow.getDZ0();
+	  double pbarWedge_dz1 = pbarWindow.getDZ1();
+	  double pbarWedge_dz = ( pbarWedge_dz0<pbarWedge_dz1 ) ? pbarWedge_dz1 : pbarWedge_dz0;
+	  double pbarWedge_offsetZ = pbarWindow.getWedgeZOffset() + pbarWedge_dz/2.0;
       
 	  VolumeInfo pbarWedgeInfo;
       
 	  pbarWedgeInfo.name = "PbarAbsWedge";
       
-	  //	  double pbarWedge_dz = ( pbarWedge_dz0<pbarWedge_dz1 ) ? pbarWedge_dz1 : pbarWedge_dz0;
 	  double pbarWedge_h = pbarWedge_y1 - pbarWedge_y0;
 	  
 	  double pbarWedge_dy = (pbarWedge_y1 + pbarWedge_y0)/2.;
-      
-	  //	  G4Tubs *pbarWedge_disk = new G4Tubs("PbarAbsWedge_disk",
-	  //					      0,bl.getTS().innerRadius(),pbarWedge_dz/2.,0,CLHEP::twopi);
-      
+            
 	  G4Trd *pbarWedge_trd = new G4Trd("PbarAbsWedge_trd",
 					   bl.getTS().innerRadius(),bl.getTS().innerRadius(),
 					   pbarWedge_dz0/2.,pbarWedge_dz1/2.,
@@ -1345,7 +1388,7 @@ namespace mu2e {
 	  AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 	  G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
 	  pbarWedgeRot->rotateX(90.0*CLHEP::degree);
-	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_dy,0.0);
+	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_dy,pbarWedge_offsetZ);
 	  
 	  pbarWedgeInfo.solid = new G4IntersectionSolid(pbarWedgeInfo.name,
 							support_hole,
