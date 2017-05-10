@@ -78,7 +78,7 @@ double ttrackerSupport.endRing.outerRadius =  840.;
 double ttrackerSupport.endRing.innerRadius =  700.;
 double ttrackerSupport.endRing.halfLength  =   25.;
 double ttrackerSupport.endRing.zOffset     = 1610.;
-string ttrackerSupport.endRing.material    = "HRSBronze"; // was "G4_Al";
+string ttrackerSupport.endRing.material    = "Brass"; // was "G4_Al";
 
 // midRing =? support rings which connect to the rail system
 vector<int> ttrackerSupport.midRing.slot  = { 4, 14 };

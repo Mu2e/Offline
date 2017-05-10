@@ -383,6 +383,15 @@ namespace mu2e {
       HRSBronze->AddMaterial(findMaterialOrThrow("G4_Ni"),0.050);
     }
 
+    // C360 brass
+    mat = uniqueMaterialOrThrow( "Brass" );
+    {
+      G4Material* Brass = new G4Material(mat.name, 8.50*CLHEP::g/CLHEP::cm3,3);
+      Brass->AddMaterial(findMaterialOrThrow("G4_Cu"),0.615);
+      Brass->AddMaterial(findMaterialOrThrow("G4_Zn"),0.354);
+      Brass->AddMaterial(findMaterialOrThrow("G4_Pb"),0.031);
+    }
+
 
     // A mix made to represent the MBS spherical support
     mat = uniqueMaterialOrThrow( "MBSSupportMix" );
