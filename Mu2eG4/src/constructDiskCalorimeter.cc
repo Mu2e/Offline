@@ -664,7 +664,7 @@ namespace mu2e {
 		  std::ostringstream crTubName;
 		  crTubName << "CableRunCalTub" << idisk;
 		  G4Tubs* ccrTub = new G4Tubs( crTubName.str(),crRin, crRout,
-					       crateHalfLength,
+					       crateHalfLength - 5.0,
 					       config.getDouble("ds.CableRunCal.phi0")*CLHEP::degree,
 					       config.getDouble("ds.CableRunCal.dPhi")*CLHEP::degree);
 
@@ -704,13 +704,13 @@ namespace mu2e {
 		  std::ostringstream cr1TubName;
 		  cr1TubName << "CableRun1TrkTub" << idisk;
 		  G4Tubs* ccr1Tub = new G4Tubs( cr1TubName.str(),crRin, crRout,
-					       crateHalfLength,
+					       crateHalfLength - 5.0,
 						phi01, dPhi);
 
 		  std::ostringstream cr2TubName;
 		  cr2TubName << "CableRun2TrkTub" << idisk;
 		  G4Tubs* ccr2Tub = new G4Tubs( cr2TubName.str(),crRin, crRout,
-					       crateHalfLength,
+					       crateHalfLength - 5.0,
 						phi02, dPhi);
 
 
