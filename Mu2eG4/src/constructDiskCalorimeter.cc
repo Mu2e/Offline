@@ -85,6 +85,7 @@ namespace mu2e {
     G4Material* readMaterial          = materialFinder.get("calorimeter.readoutMaterial");
     G4Material* pipeMaterial          = materialFinder.get("calorimeter.pipeMaterial");
     G4Material* crateMaterial         = materialFinder.get("calorimeter.crateMaterial");
+    G4Material* crateBkgMaterial      = materialFinder.get("calorimeter.crateBackgroundMaterial");
     G4Material* crateBottomAMaterial  = materialFinder.get("calorimeter.crateMaterial");
     G4Material* shieldMaterial        = materialFinder.get("calorimeter.shieldMaterial");
     // G4Material* copperPlaneMaterial   = materialFinder.get("calorimeter.copperPlaneMaterial");
@@ -647,7 +648,7 @@ namespace mu2e {
 
 		calorimeterFEBInfo[idisk] = nestTubs(cratename.str(),
 						     cratepar,
-						     crateMaterial,
+						     crateBkgMaterial,
 						     &cal.disk(idisk).geomInfo().rotation(),posCaloMotherInDS+cratePosZ,
 						     mother,
 						     idisk,
