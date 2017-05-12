@@ -37,6 +37,9 @@ bool g4.doSurfaceCheck    = false;
 // bool protonBeamDump.mouth.doSurfaceCheck = true;
 // bool protonBeamDump.neutronCave.doSurfaceCheck = true;
 
+// The Tracker
+// bool ttracker.doSurfaceCheck = true;
+
 // Various portions of TS
 // bool ts.cryo.doSurfaceCheck = true;
 // bool ts.polyliner.doSurfaceCheck = true;

@@ -100,6 +100,25 @@ namespace mu2e {
 	      "DS"
               );
 
+    // DNB (Lou) May 2017.  Making a vacuum volume inside the cryostat
+    G4Tubs * dsCryoVacTub = new G4Tubs( "DSCryoVacuumTube",
+					ds->rIn2(), ds->rOut1(),
+					ds->halfLength() - 2.*ds->endWallHalfLength(),
+					0.0, 360.0*CLHEP::degree);
+
+    CLHEP::Hep3Vector dsCryoVacLocationInMu2e( dsP.x(), dsP.y(), dsP.z() );
+    VolumeInfo dsCryoVacMother( "DSCryoVacuumRegion",
+				dsCryoVacLocationInMu2e - _hallOriginInMu2e,
+				parent.centerInWorld );
+    dsCryoVacMother.solid = dsCryoVacTub;
+				
+    finishNesting ( dsCryoVacMother,
+		    findMaterialOrThrow("DSVacuum"),
+		    0, dsCryoVacMother.centerInParent,
+		    parent.logical, 0, G4Colour::White(),
+		    "DS" );
+		    
+
     // - end walls
     TubsParams    dsEndWallParams    ( ds->rIn2(), ds->rOut1(), ds->endWallHalfLength() );
     G4ThreeVector dsUpEndWallPosition( dsP.x(), dsP.y(), 
@@ -158,8 +177,8 @@ namespace mu2e {
               dsInnerThShieldParams,
               dsThShieldMaterial,
               0,
-              dsInnerThShieldPosition-_hallOriginInMu2e,
-              parent,
+              dsInnerThShieldPosition-dsCryoVacLocationInMu2e,
+              dsCryoVacMother,
               0,
               G4Color::Cyan(),
 	      "DSThShield"
@@ -172,8 +191,8 @@ namespace mu2e {
               dsOuterThShieldParams,
               dsThShieldMaterial,
               0,
-              dsOuterThShieldPosition-_hallOriginInMu2e,
-              parent,
+              dsOuterThShieldPosition-dsCryoVacLocationInMu2e,
+              dsCryoVacMother,
               0,
               G4Color::Cyan(),
 	      "DSThShield"
@@ -204,8 +223,8 @@ namespace mu2e {
                 coilParams,
                 dsCoilMaterial,
                 0,
-                coilPosition-_hallOriginInMu2e,
-                parent,
+                coilPosition-dsCryoVacLocationInMu2e,
+                dsCryoVacMother,
                 0,
                 G4Color::Green(),
 		"DSCoil"
@@ -231,8 +250,8 @@ namespace mu2e {
 		  spacerParams,
 		  dsSpacerMaterial,
 		  0,
-		  spacerPosition-_hallOriginInMu2e,
-		  parent,
+		  spacerPosition-dsCryoVacLocationInMu2e,
+		  dsCryoVacMother,
 		  0,
 		  G4Color::Green(),
 		  "DSSpacer"
@@ -249,8 +268,8 @@ namespace mu2e {
               dsSupportParams,
               dsSupportMaterial,
               0,
-              dsSupportPosition-_hallOriginInMu2e,
-              parent,
+              dsSupportPosition-dsCryoVacLocationInMu2e,
+              dsCryoVacMother,
               0,
               G4Color::Blue(),
 	      "DSSupport"

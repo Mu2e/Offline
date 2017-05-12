@@ -103,6 +103,7 @@ namespace mu2e {
 	       "PS"
                );
 
+
     // Rings
     Tube const & psRing1Params = *psgh.getRing1ParamsPtr();
     Tube const & psRing2Params = *psgh.getRing2ParamsPtr();
@@ -147,16 +148,36 @@ namespace mu2e {
 		 "PS"
                  );
 
+
+
+    // Put vacuum inside vacuum vessel
+    double vacRIn = psVacVesselInnerParams.getTubsParams().outerRadius();
+    double vacROut = psVacVesselOuterParams.getTubsParams().innerRadius();
+    double vacHalfLength = psVacVesselOuterParams.getTubsParams().zHalfLength() - 2.*psVacVesselEndPlateUParams.getTubsParams().zHalfLength();
+
+    VolumeInfo psVacuumVesselVacuumInfo
+      = nestTubs ( "psVacuumVesselVacuum",
+		   TubsParams(vacRIn, vacROut, vacHalfLength),
+		   findMaterialOrThrow("PSVacuum"),
+		   0,
+		   psVacVesselOuterParams.originInMu2e() - _hallOriginInMu2e,
+		   parent, 0, G4Colour::White(),
+		   "PS" );
+
+
+
     Polycone const & psCoilShellParams = *psgh.getCoilShellParamsPtr();
 
     //Coil "Outer Shell"
 
-    //we will place the shell inside the parent, which is the hall
+    //we will place the shell inside the parent, which used to be the hall,
+    // but is now the vacuum in the PS cryo.
+
     string const psCoilShellName = "PSCoilShell";
   
     VolumeInfo psCoilShellInfo(psCoilShellName,
-                               psCoilShellParams.originInMu2e()-parent.centerInMu2e(),
-                               parent.centerInWorld);
+                               psCoilShellParams.originInMu2e()-psVacuumVesselVacuumInfo.centerInMu2e(),
+                               psVacuumVesselVacuumInfo.centerInWorld);
 
     psCoilShellInfo.solid  =  new G4Polycone( psCoilShellName,
                                               psCoilShellParams.phi0(),
@@ -171,8 +192,8 @@ namespace mu2e {
     finishNesting(psCoilShellInfo,
                   psCoilShellMaterial,
                   0,
-                  psCoilShellParams.originInMu2e()-parent.centerInMu2e(),
-                  parent.logical,
+                  psCoilShellParams.originInMu2e()-psVacuumVesselVacuumInfo.centerInMu2e(),
+                  psVacuumVesselVacuumInfo.logical,
                   0,
                   G4Colour::White(),
 		  "PS"
