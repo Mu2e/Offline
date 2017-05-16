@@ -78,21 +78,18 @@ namespace mu2e
       const StrawHitFlagCollection* _shfcol;
        // bkg-ray removal parameters
       bool _flagall;
-      unsigned _minnhits, _minnstereo, _minns, _maxisolated;
+      unsigned _minnhits, _minnstereo, _minnp, _maxisolated;
       double _clustermvacut;
     // internal helper functions
-      void countActive(BkgCluster const& cluster, unsigned& nactive, unsigned& nstereo) const;
-      void classifyClusters(BkgClusterCollection& clusters,BkgQualCollection& cquals) const;
-      void fillBkgQual(BkgCluster& cluster,BkgQual& cqual) const;
       bool findData(const art::Event& evt);
-      void countStations(BkgQual& cqual, vector<int> const& stations) const;
+      void classifyClusters(BkgClusterCollection& clusters,BkgQualCollection& cquals) const;
+      void fillBkgQual(BkgCluster const& cluster,BkgQual& cqual, TTracker const& tt) const;
+      void countHits(BkgCluster const& cluster, unsigned& nactive, unsigned& nstereo) const;
+      void countPlanes(BkgCluster const& cluster,BkgQual& cqual, TTracker const& tt) const;
       // clusterer
       BkgClusterer* _clusterer;
-      // cache tracker basics
-      unsigned _nstations;
       // MVA
       MVATools _clusterMVA; //
-
   };
 
   FlagBkgHits::FlagBkgHits(fhicl::ParameterSet const& pset) :
@@ -104,7 +101,7 @@ namespace mu2e
     _flagall(pset.get<bool>("FlagAllHits",false)), // flag all hits in the cluster, regardless of MVA value
     _minnhits(pset.get<unsigned>("MinGoodHits",5)),
     _minnstereo(pset.get<unsigned>("MinStereoHits",2)),
-    _minns(pset.get<unsigned>("MinNStations",2)),
+    _minnp(pset.get<unsigned>("MinNPlanes",4)),
     _maxisolated(pset.get<unsigned>("MaxIsolated",1)),
     _clustermvacut(pset.get<double>("ClusterMVACut",0.8)),
     _clusterMVA(pset.get<fhicl::ParameterSet>("ClusterMVA",fhicl::ParameterSet()))
@@ -134,10 +131,6 @@ namespace mu2e
       cout << "Cluster MVA : " << endl;
       _clusterMVA.showMVA();
      }
-    // cache tracker parameters for downstream functions
-    const TTracker& tracker = dynamic_cast<const TTracker&>(getTrackerOrThrow());
-    unsigned nplanes = tracker.nPlanes();
-    _nstations = nplanes/2;
   }
 
   void FlagBkgHits::produce(art::Event& event ) {
@@ -202,96 +195,107 @@ namespace mu2e
   }
 
   void FlagBkgHits::classifyClusters(BkgClusterCollection& clusters,BkgQualCollection& cquals) const {
+    const TTracker& tracker = dynamic_cast<const TTracker&>(getTrackerOrThrow());
 // loop over clusters
     for (auto& cluster : clusters) { 
-    // create an empty qual
+      // create an empty qual
       BkgQual cqual;
-     // only process clusters which have a minimum number of hits
-      unsigned nactive, nstereo;
-      countActive(cluster,nactive,nstereo);
-      if(nactive >= _minnhits && nstereo >= _minnstereo){
-	cqual[BkgQual::nhits] = nactive;
-	cqual[BkgQual::sfrac] = static_cast<double>(nstereo)/nactive;
-	fillBkgQual(cluster,cqual);
+      fillBkgQual(cluster,cqual,tracker);
+    // set the final flag
+      if(cqual.MVAOutput() > _clustermvacut) {
+	cluster._flag.merge(BkgClusterFlag::bkg);
       }
       // ALWAYS record a quality to keep the vectors in sync.
       cquals.push_back(cqual);
     }
   }
 
-  void FlagBkgHits::fillBkgQual(BkgCluster& cluster, BkgQual& cqual) const {
-    const TTracker& tracker = dynamic_cast<const TTracker&>(getTrackerOrThrow());
-  // compute averages, spreads, and plane counts from hits
-    accumulator_set<double, stats<tag::weighted_variance>, double> racc;
-    accumulator_set<double, stats<tag::variance(lazy)> > tacc;
-    std::vector<int> stations(_nstations,0);
-    std::vector<double> hz;
+  void FlagBkgHits::fillBkgQual(BkgCluster const& cluster, BkgQual& cqual, TTracker const& tracker) const {
+    // only process clusters which have a minimum number of hits
+    unsigned nactive, nstereo;
+    countHits(cluster,nactive,nstereo);
+    if(nactive >= _minnhits && nstereo >= _minnstereo){
+      cqual[BkgQual::nhits] = nactive;
+      cqual[BkgQual::sfrac] = static_cast<double>(nstereo)/nactive;
+      // count planes
+      countPlanes(cluster,cqual,tracker);
+      if(cqual[BkgQual::np] >= _minnp){
+	// finish filling the bkgqual
+	// compute averages, spreads
+	accumulator_set<double, stats<tag::weighted_variance>, double> racc;
+	accumulator_set<double, stats<tag::variance(lazy)> > tacc;
+	std::vector<double> hz;
+	for(auto const& chit : cluster.hits()) {
+	  if(chit.flag().hasAllProperties(StrawHitFlag::active)){
+	    StrawHit const& sh = _shcol->at(chit.index());
+	    StrawHitPosition const& shp = _shpcol->at(chit.index());
+	    hz.push_back(shp.pos().z());
+	    double dt = sh.time() - cluster.time();
+	    tacc(dt);
+	    Hep3Vector psep = (shp.pos()-cluster.pos()).perpPart();
+	    double rho = psep.mag();
+	    Hep3Vector pdir = psep.unit();
+	    Hep3Vector tdir(-shp.wdir().y(),shp.wdir().x(),0.0);
+	    double rw= pdir.dot(shp.wdir());
+	    double rt = pdir.dot(tdir);
+	    double rwt = (rw*rw)/(shp.posRes(StrawHitPosition::wire)*shp.posRes(StrawHitPosition::wire)) +
+	      (rt*rt)/(shp.posRes(StrawHitPosition::trans)*shp.posRes(StrawHitPosition::trans));
+	    racc(rho,weight=rwt);
+	  }
+	}
+	cqual[BkgQual::hrho] = extract_result<tag::weighted_mean>(racc);
+	cqual[BkgQual::shrho] = sqrt(std::max(extract_result<tag::weighted_variance>(racc),0.0));
+	cqual[BkgQual::sdt] = sqrt(std::max(extract_result<tag::variance>(tacc),0.0));
+	// find the min, max and gap from the sorted Z positions
+	std::sort(hz.begin(),hz.end());
+	cqual[BkgQual::zmin] = hz.front();
+	cqual[BkgQual::zmax] = hz.back();
+	// find biggest Z gap
+	double zgap = 0.0;
+	for(unsigned iz=1;iz<hz.size();++iz)
+	  if(hz[iz]-hz[iz-1] > zgap)zgap = hz[iz]-hz[iz-1]; 
+	cqual[BkgQual::zgap] = zgap;
+	// compute MVA
+	cqual.setMVAValue(_clusterMVA.evalMVA(cqual.values()));
+	cqual.setMVAStatus(BkgQual::calculated);
+      }
+    }
+  }
+
+  void FlagBkgHits::countPlanes(BkgCluster const& cluster, BkgQual& cqual, TTracker const& tracker) const {
+    // loop over hits and record which planes they are in
+    std::vector<int> hitplanes(tracker.nPlanes(),0);
     for(auto const& chit : cluster.hits()) {
       if(chit.flag().hasAllProperties(StrawHitFlag::active)){
 	StrawHit const& sh = _shcol->at(chit.index());
-	StrawHitPosition const& shp = _shpcol->at(chit.index());
 	unsigned iplane = (unsigned)(tracker.getStraw(sh.strawIndex()).id().getPlaneId());
-	unsigned istation = iplane/2;
-	++stations[istation];
-	hz.push_back(shp.pos().z());
-	double dt = sh.time() - cluster.time();
-	tacc(dt);
-	Hep3Vector psep = (shp.pos()-cluster.pos()).perpPart();
-	double rho = psep.mag();
-	Hep3Vector pdir = psep.unit();
-	Hep3Vector tdir(-shp.wdir().y(),shp.wdir().x(),0.0);
-	double rw= pdir.dot(shp.wdir());
-	double rt = pdir.dot(tdir);
-	double rwt = (rw*rw)/(shp.posRes(StrawHitPosition::wire)*shp.posRes(StrawHitPosition::wire)) +
-	  (rt*rt)/(shp.posRes(StrawHitPosition::trans)*shp.posRes(StrawHitPosition::trans));
-	racc(rho,weight=rwt);
+	++hitplanes[iplane];
       }
     }
-    cqual[BkgQual::hrho] = extract_result<tag::weighted_mean>(racc);
-    cqual[BkgQual::shrho] = sqrt(std::max(extract_result<tag::weighted_variance>(racc),0.0));
-    cqual[BkgQual::sdt] = sqrt(std::max(extract_result<tag::variance>(tacc),0.0));
-// find the min, max and gap from the sorted Z positions
-    std::sort(hz.begin(),hz.end());
-    cqual[BkgQual::zmin] = hz.front();
-    cqual[BkgQual::zmax] = hz.back();
-    // find biggest Z gap
-    double zgap = 0.0;
-    for(unsigned iz=1;iz<hz.size();++iz)
-      if(hz[iz]-hz[iz-1] > zgap)zgap = hz[iz]-hz[iz-1]; 
-    cqual[BkgQual::zgap] = zgap;
-    // count stations
-    countStations(cqual,stations);
-     // compute MVA
-    cqual.setMVAValue(_clusterMVA.evalMVA(cqual.values()));
-    cqual.setMVAStatus(BkgQual::calculated);
-    // set the final flag
-    if(cqual.MVAOutput() > _clustermvacut) {
-      cluster._flag.merge(BkgClusterFlag::bkg);
+  // work from either end to find the first and last plane
+    unsigned ipmin = 0;
+    unsigned ipmax = tracker.nPlanes()-1;
+    while(hitplanes[ipmin]==0)++ipmin;
+    while(hitplanes[ipmax]==0)--ipmax;
+    // count the number of plane that should have hits, skipping the missing planes
+    unsigned npexp(0);
+    // # of planes with hits in this cluster
+    unsigned np(0);
+    // average number of hits/plane and the # of planes with no hits
+    double nphits(0.0);
+    vector<Plane> const& planes = tracker.getPlanes();
+    for(unsigned ip = ipmin; ip <= ipmax; ++ip) {
+      if(planes[ip].exists())++npexp;
+      if(hitplanes[ip]> 0)++np;
+      nphits += hitplanes[ip];
     }
-  }
-  
-  void FlagBkgHits::countStations(BkgQual& cqual, vector<int> const& stations) const {
-  // work from either end to find the first and last station
-    unsigned ismin = 0;
-    unsigned ismax = _nstations-1;
-    unsigned nsmiss = 0;
-    while(stations[ismin]==0)++ismin;
-    while(stations[ismax]==0)--ismax;
-    // number of stations is the number of stations that should be there.  This doesn't take into
-    // account the missing stations FIXME!!!
-    unsigned ns = ismax-ismin+1;
-    cqual[BkgQual::ns] = ns; 
-    double nshits(0.0);
-    for(unsigned is =ismin;is<ismax;++is){
-      if(stations[is]== 0)++nsmiss;
-      nshits += stations[is];
-    }
-    cqual[BkgQual::nsmiss] = nsmiss;
-    nshits /= (ns-nsmiss);
-    cqual[BkgQual::nshits] = nshits;
+    // fill qual variables
+    cqual[BkgQual::np] = np; 
+    cqual[BkgQual::npmiss] = npexp-np; 
+    cqual[BkgQual::nphits] = nphits/static_cast<float>(np);
   }
 
-  void FlagBkgHits::countActive(BkgCluster const& cluster, unsigned& nactive, unsigned& nstereo) const {
+  void FlagBkgHits::countHits(BkgCluster const& cluster, unsigned& nactive, unsigned& nstereo) const {
     nactive = nstereo = 0;
     for(auto const& chit : cluster.hits()) {
       if(chit.flag().hasAllProperties(StrawHitFlag::active)){
