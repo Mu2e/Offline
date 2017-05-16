@@ -172,6 +172,11 @@ double ts.coll3.holeRadius       = 150.0;
 double ts.coll3.holeHalfHeight   = 100.0;
 double ts.coll3.holeDisplacement = 90.0;
 
+// A test block added to help reduce beam flash from electrons.
+bool   ts.useFlashBlock          = true;
+double ts.flashBlock.Height      = 35.0; // mm
+double ts.flashBlock.Width       = 50.0; // mm
+
 double ts.coll5.halfLength    = 500.0;
 double ts.coll5.Radius1       = 128.0; 
 double ts.coll5.Radius2       = 240.0; 

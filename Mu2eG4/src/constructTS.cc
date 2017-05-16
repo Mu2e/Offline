@@ -874,9 +874,27 @@ namespace mu2e {
     G4Tubs* coll3_hole_circle = new G4Tubs("coll3_hole_circle",
                                            0.0,coll31.holeRadius(),hDz+2.0,
                                            0.0, CLHEP::twopi );
-    G4IntersectionSolid* coll3_hole = new G4IntersectionSolid("coll3_hole",
-                                                              coll3_hole_box,
-                                                              coll3_hole_circle);
+    G4IntersectionSolid* theHole = new G4IntersectionSolid("coll3_hole",
+							   coll3_hole_box,
+							   coll3_hole_circle);
+
+    G4VSolid* coll3_hole;
+    if (coll31.useFlashBlock()) {
+      G4Box* flashBlockBox = new G4Box( "flashBlockBox",
+					coll31.flashBlockWidth()/2.0*CLHEP::mm,
+					coll31.flashBlockHeight()/2.0*CLHEP::mm,
+					hDz+1.4);
+      CLHEP::Hep3Vector displaceFB(0.0,
+				   -coll31.holeHalfHeight() + coll31.flashBlockHeight()/2.0*CLHEP::mm, 
+				   0.0 );
+
+      coll3_hole = new G4SubtractionSolid("coll3_holef",
+					  theHole,
+					  flashBlockBox,
+					  0, displaceFB);
+    } else {
+      coll3_hole = theHole;
+    }
 
     // Make collimators themselves. At this moment the collimators
     // coll31 and coll32 are the same size. But it is possible to make them

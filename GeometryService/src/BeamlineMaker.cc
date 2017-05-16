@@ -500,6 +500,10 @@ namespace mu2e {
     coll32._rotationAngle    = coll31._rotationAngle     = c.getDouble("ts.coll3.rotationAngle",0.);
     coll32._material         = coll31._material          = c.getString("ts.coll3.materialName");
 
+    coll32._useFlashBlock    = coll31._useFlashBlock     = c.getBool("ts.useFlashBlock",false);
+    coll32._flashBlockHeight = coll31._flashBlockHeight  = c.getDouble("ts.flashBlock.Height",0.0);
+    coll32._flashBlockWidth  = coll31._flashBlockWidth   = c.getDouble("ts.flashBlock.Width",0.0);
+
     // TS5
     // TS5
     coll51._rIn         = c.getDouble("ts.coll5.Radius1",0.);

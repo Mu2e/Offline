@@ -1,0 +1,15 @@
+//
+// Redirection to the current Mu2e top level geometry file.
+// The file that is included will be time dependent.
+//
+
+#include "Mu2eG4/geom/geom_common_current.txt"
+bool    ts.useFlashBlock = true;  // Tells art to build the flash Block in COL3
+double  ts.flashBlock.Height = 35.0; // mm
+double  ts.flashBlock.Width  = 50.0; // mm
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
