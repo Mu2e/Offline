@@ -270,4 +270,14 @@
  <class name="mu2e::TrkQualDetail"/>
  <class name="art::Wrapper<mu2e::TrkQualCollection>"/>
 
+ <class name="mu2e::BkgQual"/>
+ <class name="mu2e::BkgQualCollection"/>
+ <class name="mu2e::BkgQualDetail"/>
+ <class name="art::Wrapper<mu2e::BkgQualCollection>"/>
+
+ <class name="mu2e::BkgCluster"/>
+ <class name="mu2e::BkgClusterCollection"/>
+ <class name="mu2e::BkgClusterHit"/>
+ <class name="std::vector<mu2e::BkgClusterHit>"/>
+
 </lcgdict>

@@ -14,6 +14,7 @@ rootlibs  = env['ROOTLIBS']
 babarlibs = env['BABARLIBS']
 
 mainlib = helper.make_mainlib ( [
+    'mu2e_TrkReco',
     'mu2e_BTrkData',
     'mu2e_Mu2eBTrk',
     'mu2e_Mu2eUtilities',
@@ -51,6 +52,7 @@ mainlib = helper.make_mainlib ( [
 # Fixme: split into link lists for each module.
 helper.make_plugins( [
    mainlib,
+   'mu2e_TrkReco',
    'mu2e_Mu2eUtilities',
    'mu2e_SeedService_SeedService_service',
    'mu2e_ConditionsService',

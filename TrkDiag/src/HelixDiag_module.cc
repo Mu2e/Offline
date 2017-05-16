@@ -295,7 +295,7 @@ namespace mu2e {
 	    hhinfo._outlier = hhit._flag.hasAnyProperty(StrawHitFlag::outlier);
 	    hhinfo._stereo = hhit._flag.hasAnyProperty(StrawHitFlag::stereo);
 	    hhinfo._tdiv = hhit._flag.hasAnyProperty(StrawHitFlag::tdiv);
-	    hhinfo._delta = hhit._flag.hasAnyProperty(StrawHitFlag::delta);
+	    hhinfo._delta = hhit._flag.hasAnyProperty(StrawHitFlag::bkg);
 	    hhinfo._esel = hhit._flag.hasAnyProperty(StrawHitFlag::energysel);
 	    hhinfo._resphi = hhit._flag.hasAnyProperty(StrawHitFlag::resolvedphi);
 	    hhinfo._hhphi = hhit._phi;

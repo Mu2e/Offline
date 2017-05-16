@@ -23,11 +23,11 @@
 #include "TH1F.h"
 #include "TTree.h"
 // data
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StereoHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHitPosition.hh"
+#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "MCDataProducts/inc/StrawDigiMC.hh"
 // Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
@@ -282,7 +282,7 @@ namespace mu2e
       _strawxtalk = shf.hasAllProperties(StrawHitFlag::strawxtalk);
       _elecxtalk = shf.hasAllProperties(StrawHitFlag::elecxtalk);
       _isolated = shf.hasAllProperties(StrawHitFlag::isolated);
-      _delta = shf.hasAllProperties(StrawHitFlag::delta);
+      _delta = shf.hasAllProperties(StrawHitFlag::bkg);
       _rho = shp.pos().perp();
       // summarize the MC truth for this strawhit.  Preset the values in case MC is missing/incomplete
       _mcgid = -1;

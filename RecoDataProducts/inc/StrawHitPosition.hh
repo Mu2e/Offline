@@ -11,7 +11,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 // root includes
 #include "Rtypes.h"
-
+// C++ includes
+#include <vector>
 namespace mu2e {
 
   struct StrawHitPosition {
@@ -32,6 +33,7 @@ namespace mu2e {
     Int_t _stindex; // index into stereo hit collection (-1 if not based on stereo)
     StrawHitFlag _flag; // bit flags for this hit position
   };
+  typedef std::vector<mu2e::StrawHitPosition> StrawHitPositionCollection;
 }
 #endif
 

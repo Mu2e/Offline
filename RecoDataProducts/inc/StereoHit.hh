@@ -19,6 +19,8 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "DataProducts/inc/PanelId.hh"
+// C++
+#include <vector>
 
 namespace mu2e {
   class StereoHit {
@@ -62,6 +64,7 @@ namespace mu2e {
       float _wdot; // dot product of the angle between the 2 wire directions
       float _mvaout; // output of the MVA
     };
+   typedef std::vector<mu2e::StereoHit> StereoHitCollection;
 }
 #endif
 

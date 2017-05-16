@@ -31,11 +31,11 @@
 #include "TH1F.h"
 #include "TTree.h"
 // data
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StereoHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHitPosition.hh"
+#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
 // Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"

@@ -25,7 +25,7 @@ namespace art {
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"

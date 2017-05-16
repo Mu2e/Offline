@@ -414,7 +414,7 @@ namespace mu2e {
       if(shf.hasAllProperties(StrawHitFlag::energysel))++_hcnt._nesel;
       if(shf.hasAllProperties(StrawHitFlag::radsel))++_hcnt._nrsel;
       if(shf.hasAllProperties(StrawHitFlag::timesel))++_hcnt._ntsel;
-      if(shf.hasAllProperties(StrawHitFlag::delta))++_hcnt._nbkg;
+      if(shf.hasAllProperties(StrawHitFlag::bkg))++_hcnt._nbkg;
       if(shf.hasAllProperties(StrawHitFlag::stereo))++_hcnt._nster;
       if(shf.hasAllProperties(StrawHitFlag::tdiv))++_hcnt._ntdiv;
       if(shf.hasAllProperties(StrawHitFlag::trksel))++_hcnt._ntpk;

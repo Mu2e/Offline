@@ -17,12 +17,13 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 // data
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StereoHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHitPosition.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "RecoDataProducts/inc/BkgCluster.hh"
+#include "RecoDataProducts/inc/BkgQual.hh"
 // Mu2e
-#include "TrkReco/inc/ClusterStrawHits.hh"
+#include "TrkReco/inc/TLTClusterer.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -38,7 +39,7 @@
 #include <boost/accumulators/statistics/variance.hpp>
 #include <boost/accumulators/statistics/min.hpp>
 #include <boost/accumulators/statistics/max.hpp>
- 
+#include <boost/accumulators/statistics/weighted_variance.hpp> 
 // C++
 #include <iostream>
 #include <fstream>
@@ -52,402 +53,255 @@
 #include <numeric>
 using namespace std; 
 using namespace boost::accumulators;
+using CLHEP::Hep3Vector;
 
 namespace mu2e 
 {
-  // structs for MVAs
-  // select hits close to each other and/or to the cluster
-  struct DeltaHitMVA {
-    std::vector<Double_t> _pars;
-    Double_t& _dphi; // phi diff to cluster
-    Double_t& _drho; // rho diff to cluster
-    Double_t& _dt;  // time diff to cluster
-    DeltaHitMVA() : _pars(3,0.0),_dphi(_pars[0]),_drho(_pars[1]),_dt(_pars[2]){}
-  };
-
-  struct DeltaClusterMVA {
-    std::vector<Double_t> _pars;
-    Double_t& _prho;
-    Double_t& _srho;
-    Double_t& _zmin;
-    Double_t& _zmax;
-    Double_t& _zgap;
-    Double_t& _ns;
-    Double_t& _nsmiss;
-    Double_t& _sphi;
-    Double_t& _ngdhits;
-    DeltaClusterMVA() : _pars(9,0.0),_prho(_pars[0]),_srho(_pars[1]),
-    _zmin(_pars[2]),_zmax(_pars[3]),_zgap(_pars[4]),
-    _ns(_pars[5]),_nsmiss(_pars[6]),
-    _sphi(_pars[7]),_ngdhits(_pars[8]) {}
-  };
-
-  struct DeltaHitInfo {
-    DeltaHitInfo(size_t hindex,double htime, double hphi, double hrho, double hz,double hgd,int hflag,bool stereo) :
-      _hindex(hindex), _htime(htime), _hphi(hphi), _hrho(hrho), _hz(hz), _hgd(hgd), _hflag(hflag), _stereo(stereo) {}
-    size_t _hindex;
-    Float_t _htime, _hphi, _hrho, _hz, _hgd, _cdist;
-    Int_t _hflag;
-    Bool_t _stereo;
-  };
-
-  struct DeltaInfo {
-    DeltaInfo() : _tcluster(0.0), _pcluster(0.0), _rcluster(0.0),
-      _tmed(0.0), _pmed(0.0),_rmed(0.0),
-      _tmean(0.0), _pmean(0.0), _rmean(0.0),
-      _trms(0.0), _prms(0.0),_rrms(0.0),
-      _nchits(0),_ngdhits(0), _ngdstereo(0),
-      _zmin(0.0),_zmax(0.0),_zgap(0.0),
-      _ismin(-1),_ismax(-1),_ns(-1),_nsmiss(-1),
-      _idmin(-1),_idmax(-1),_nd(-1),_ndmiss(-1),
-      _isdelta(false),_pmvaout(-100.0){}
-    // cluster information
-    double _tcluster, _pcluster, _rcluster;
-    // accumulators for cluster center
-    double _tmed, _pmed, _rmed;
-    double _tmean, _pmean, _rmean;
-    double _trms, _prms, _rrms;
-    // summary information
-    unsigned _nchits, _ngdhits, _ngdstereo;
-    double _zmin, _zmax, _zgap;
-    unsigned _ismin, _ismax, _ns, _nsmiss;
-    unsigned _idmin, _idmax, _nd, _ndmiss;
-    bool _isdelta;
-    double _pmvaout;
-    // information about the hits in the delta
-    std::vector<DeltaHitInfo> _dhinfo;
-  };
 
   class FlagBkgHits : public art::EDProducer
   {
     public:
+      enum clusterer { TwoLevelThreshold=1};
       explicit FlagBkgHits(fhicl::ParameterSet const&);
       virtual ~FlagBkgHits();
       virtual void beginJob();
-      virtual void beginRun(art::Run&);
       virtual void produce(art::Event& event ); 
-      void endJob();
     private:
       // configuration parameters
       int _debug;
       int _printfreq;
       // event object labels
-      art::InputTag _shlabel, _shplabel, _stlabel, _shflabel;
-      // straw hit selection masks
-      StrawHitFlag _stmask, _deltamask, _ismask;
-      // delta-ray removal parameters
-      art::InputTag _dhittype, _stereohitweights, _nonstereohitweights;
-      art::InputTag _dclustertype, _nonstereoclusterweights, _stereoclusterweights;
-      double _gdstereo, _gdnonstereo;
-      bool _flagall;
-      unsigned _mindh, _minns;
-      double _stereoclusterhitfrac;
-      double _stereoclustermvacut, _nonstereoclustermvacut;
+      art::InputTag _shtag, _shptag, _shftag;
       // input collections
       const StrawHitCollection* _shcol;
       const StrawHitPositionCollection* _shpcol;
-      const StereoHitCollection* _stcol;
       const StrawHitFlagCollection* _shfcol;
-      // output collections
-      StrawHitFlagCollection* _bkgfcol;
-      // internal helper functions
-      void filterDeltas();
-      void fillDeltaInfo(std::list<StrawHitCluster> const& clusters,std::vector<DeltaInfo>& dinfo);
-      void fillDeltaSummary(DeltaInfo& delta);
-      double deltaPhi(double phi1,double phi2) const;
+       // bkg-ray removal parameters
+      bool _flagall;
+      unsigned _minnhits, _minnstereo, _minns, _maxisolated;
+      double _clustermvacut;
+    // internal helper functions
+      void countActive(BkgCluster const& cluster, unsigned& nactive, unsigned& nstereo) const;
+      void classifyClusters(BkgClusterCollection& clusters,BkgQualCollection& cquals) const;
+      void fillBkgQual(BkgCluster& cluster,BkgQual& cqual) const;
       bool findData(const art::Event& evt);
+      void countStations(BkgQual& cqual, vector<int> const& stations) const;
       // clusterer
-      ClusterStrawHits _clusterer;
-      // delta removal diagnostics
-      MVATools _stereohitMVA, _nonstereohitMVA; // assign hits to delta clusters
-      DeltaHitMVA _dhmva; // input variables to TMVA for delta hit selection
-      DeltaClusterMVA _dpmva;
-      MVATools _stereoclusterMVA, _nonstereoclusterMVA; // classify delta clusters
-      Int_t _iev;
-      Bool_t _isdelta;
-      Float_t _pphi, _pt, _prho;
-      Float_t _zmin, _zmax, _zgap;
-      Int_t _ns, _nd, _smin, _smax, _nsmiss, _ndmiss;
-      Int_t _nchits,_ngdhits, _ngdstereo;
-      Float_t _tmed, _pmed, _rmed;
-      Float_t _tmean, _pmean, _rmean;
-      Float_t _stime, _sphi, _srho;
-      Float_t _pmvaout;
-      // histograms
-      TH1F *_nhits, *_niter, *_nchanged, *_nclusters;
+      BkgClusterer* _clusterer;
+      // cache tracker basics
+      unsigned _nstations;
+      // MVA
+      MVATools _clusterMVA; //
+
   };
 
   FlagBkgHits::FlagBkgHits(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
-    _shlabel(pset.get<art::InputTag>("StrawHitCollectionLabel","makeSH")),
-    _shplabel(pset.get<art::InputTag>("StrawHitPositionCollectionLabel","MakeStereoHits")),
-    _stlabel(pset.get<art::InputTag>("StereoHitCollectionLabel","MakeStereoHits")),
-    _shflabel(pset.get<art::InputTag>("StrawHitFlagCollectionLabel","FlagStrawHits")),
-    _stmask(StrawHitFlag::stereo),
-    _deltamask(StrawHitFlag::delta),
-    _ismask(StrawHitFlag::isolated),
-    _gdstereo(pset.get<double>("StereoHitMVACut",0.55)),
-    _gdnonstereo(pset.get<double>("NonStereoHitMVACut",0.55)),
+    _shtag(pset.get<art::InputTag>("StrawHitCollectionLabel","makeSH")),
+    _shptag(pset.get<art::InputTag>("StrawHitPositionCollectionLabel","MakeStereoHits")),
+    _shftag(pset.get<art::InputTag>("StrawHitFlagCollectionLabel","FlagStrawHits")),
     _flagall(pset.get<bool>("FlagAllHits",false)), // flag all hits in the cluster, regardless of MVA value
-    _mindh(pset.get<unsigned>("MinDeltaHits",5)),
+    _minnhits(pset.get<unsigned>("MinGoodHits",5)),
+    _minnstereo(pset.get<unsigned>("MinStereoHits",2)),
     _minns(pset.get<unsigned>("MinNStations",2)),
-    _stereoclusterhitfrac(pset.get<double>("StereoClusterHitFraction",0.5)),
-    _stereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.8)),
-    _nonstereoclustermvacut(pset.get<double>("NonStereoClusterMVACut",0.8)),
-    _clusterer(pset.get<fhicl::ParameterSet>("ClusterStrawHits",fhicl::ParameterSet())),
-    _stereohitMVA(pset.get<fhicl::ParameterSet>("StereoHitMVA",fhicl::ParameterSet())),
-    _nonstereohitMVA(pset.get<fhicl::ParameterSet>("NonStereoHitMVA",fhicl::ParameterSet())),
-    _stereoclusterMVA(pset.get<fhicl::ParameterSet>("StereoClusterMVA",fhicl::ParameterSet())),
-    _nonstereoclusterMVA(pset.get<fhicl::ParameterSet>("NonStereoClusterMVA",fhicl::ParameterSet()))
+    _maxisolated(pset.get<unsigned>("MaxIsolated",1)),
+    _clustermvacut(pset.get<double>("ClusterMVACut",0.8)),
+    _clusterMVA(pset.get<fhicl::ParameterSet>("ClusterMVA",fhicl::ParameterSet()))
   {
     produces<StrawHitFlagCollection>();
-    // eventually, should also produce a collection of delta-rays and their properties, FIXME!!
+    produces<BkgClusterCollection>();
+    produces<BkgQualCollection>();
+    // choose clusterer and configure
+    clusterer ctype = static_cast<clusterer>(pset.get<int>("Clusterer",TwoLevelThreshold));
+    switch ( ctype ) {
+      case TwoLevelThreshold:
+	_clusterer = new TLTClusterer(pset.get<fhicl::ParameterSet>("TLTClustererParameters",fhicl::ParameterSet()));
+	break;
+      default:
+	throw cet::exception("RECO")<< "Unknown clusterer" << ctype << endl;
+    }
   }
 
   FlagBkgHits::~FlagBkgHits(){}
 
   void FlagBkgHits::beginJob(){
+  // initialize the clusterer:
+    _clusterer->init();
+  // initialize the cluster classification MVA
+    _clusterMVA.initMVA();
     if(_debug > 0){
-      art::ServiceHandle<art::TFileService> tfs;
-      _nhits=tfs->make<TH1F>("nhits","N Hits Used in Clustering",100,0,5000);
-      _niter=tfs->make<TH1F>("niter","N Cluster Iterations",50,-0.5,49.5);
-      _nchanged=tfs->make<TH1F>("nchanged","N Hits Changed in Last Iteration",100,-0.5,99.5);
-      _nclusters=tfs->make<TH1F>("nclusters","N Clusters",200,0,1000);
-    }
-    // initialize the MVAs
-    _stereohitMVA.initMVA();
-    _nonstereohitMVA.initMVA();
-    _stereoclusterMVA.initMVA();
-    _nonstereoclusterMVA.initMVA();
-     if(_debug > 0){
-      cout << "Stereo Hit MVA : " << endl;
-      _stereohitMVA.showMVA();
-      cout << "Non-Stereo Hit MVA : " << endl;
-      _nonstereohitMVA.showMVA();
-      cout << "Stereo Cluster MVA : " << endl;
-      _stereoclusterMVA.showMVA();
-      cout << "Non-Stereo Cluster MVA : " << endl;
-      _nonstereoclusterMVA.showMVA();
+      cout << "Cluster MVA : " << endl;
+      _clusterMVA.showMVA();
      }
+    // cache tracker parameters for downstream functions
+    const TTracker& tracker = dynamic_cast<const TTracker&>(getTrackerOrThrow());
+    unsigned nplanes = tracker.nPlanes();
+    _nstations = nplanes/2;
   }
-
-  void FlagBkgHits::beginRun(art::Run& ){}
 
   void FlagBkgHits::produce(art::Event& event ) {
     // event printout
-    _iev=event.id().event();
-    if(_debug > 0 && (_iev%_printfreq)==0)cout<<"FlagBkgHits: event="<<_iev<<endl;
+    unsigned iev=event.id().event();
+    if(_debug > 0 && (iev%_printfreq)==0)cout<<"FlagBkgHits: event="<<iev<<endl;
     // find the data
     if(!findData(event)){
-      throw cet::exception("RECO")<< "Missing input collection" << endl;
+      throw cet::exception("RECO")<< "FlagBkgHits: Missing input collection" << endl;
     }
-    // create output
-    unique_ptr<StrawHitFlagCollection> bkgfcol(new StrawHitFlagCollection);
-    _bkgfcol = bkgfcol.get();
-    // find clusters in time/phi/rho space
-    std::vector<DeltaInfo> dinfo;
-    // test of new straw hit clustering
-    StrawHitClusterList clusters;
-    _clusterer.findClusters(*_shcol,*_shpcol,*bkgfcol,clusters);
-    if(_debug > 0){
-      _nhits->Fill(clusters._nhits);
-      _niter->Fill(clusters._niter);
-      _nchanged->Fill(clusters._nchanged);
-      _nclusters->Fill(clusters._clist.size());
-    }
-    fillDeltaInfo(clusters._clist,dinfo);
-    // loop over clusters and classify them
-    for(auto& delta : dinfo){
-    // fill summary information
-      fillDeltaSummary(delta);
-    // if the cluster is a delta, flag its hits
-    // (or optionally flag all the hits in the cluster)
-      if(delta._isdelta){
-	for(auto dhinfo : delta._dhinfo){
-	  if(_flagall || dhinfo._hflag > 0 ){
-	    bkgfcol->at(dhinfo._hindex).merge(_deltamask);
+    // create outputs
+    unique_ptr<StrawHitFlagCollection> bkgfcol(new StrawHitFlagCollection(*_shfcol));
+    StrawHitFlagCollection* flags = bkgfcol.get();
+    unique_ptr<BkgClusterCollection> bkgccol(new BkgClusterCollection);
+    BkgClusterCollection* clusters = bkgccol.get();
+    unique_ptr<BkgQualCollection> bkgqcol(new BkgQualCollection);
+    BkgQualCollection* cquals = bkgqcol.get();
+    // find clusters
+    _clusterer->findClusters(*clusters,*_shcol,*_shpcol,*_shfcol);
+    // classify the clusters in terms of being low-energy electros
+    cquals->reserve(clusters->size());
+    classifyClusters(*clusters, *cquals);
+    // loop over clusters;
+    for(auto const& cluster : *clusters) {
+    // if the cluster has been flagged as a background cluster, go over the hits
+      if(cluster.flag().hasAllProperties(BkgClusterFlag::bkg)){
+      //  if hits are 'active' in the cluster, flag them as background in the global event hit flag 
+	for(auto const& chit : cluster.hits()) {
+	  if(_flagall || chit.flag().hasAllProperties(StrawHitFlag::active)){
+	    flags->at(chit.index()).merge(StrawHitFlag::bkg);
 	  }
 	}
       }
-    // flag single-hit clusters as 'isolated'
-      if(delta._dhinfo.size()==1)
-	bkgfcol->at(delta._dhinfo[0]._hindex).merge(_ismask);
+    // flag small clusters as 'isolated'
+      if(cluster.hits().size() <= _maxisolated)
+	for(auto const& chit : cluster.hits()) {
+	    flags->at(chit.index()).merge(StrawHitFlag::isolated);
+	}
     }
-    // put the background flag into the event
-     event.put(std::move(bkgfcol));
-  }
-
-  void FlagBkgHits::endJob(){
-    // does this cause the file to close?
-    art::ServiceHandle<art::TFileService> tfs;
+    // put the products in the event
+    event.put(std::move(bkgccol));
+    event.put(std::move(bkgqcol));
+    event.put(std::move(bkgfcol));
   }
 
   // find the input data objects 
   bool FlagBkgHits::findData(const art::Event& evt){
     bool retval(false);
-    _shcol = 0; _shpcol = 0; _stcol = 0; _shfcol = 0;
+    _shcol = 0; _shpcol = 0; _shfcol = 0;
     art::Handle<mu2e::StrawHitCollection> shH;
-    if(evt.getByLabel(_shlabel,shH))
+    if(evt.getByLabel(_shtag,shH))
       _shcol = shH.product();
     art::Handle<mu2e::StrawHitPositionCollection> shposH;
-    if(evt.getByLabel(_shplabel,shposH))
+    if(evt.getByLabel(_shptag,shposH))
       _shpcol = shposH.product();
-    art::Handle<mu2e::StereoHitCollection> stH;
-    if(evt.getByLabel(_stlabel,stH))
-      _stcol = stH.product();
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
-    if(evt.getByLabel(_shflabel,shflagH))
+    if(evt.getByLabel(_shftag,shflagH))
       _shfcol = shflagH.product();
     // don't require stereo hits, they are used only for diagnostics
     retval = _shcol != 0 && _shpcol != 0 && _shfcol != 0;
-
     return retval;
   }
 
-  void FlagBkgHits::fillDeltaInfo(std::list<StrawHitCluster> const& clusters,std::vector<DeltaInfo>& dinfo){
-    for (std::list<StrawHitCluster>::const_iterator icl=clusters.begin();icl!=clusters.end();++icl){
-      StrawHitCluster const& cluster = *icl;
-      DeltaInfo dp;
-      dp._tcluster = dp._tmed = cluster.time();
-      dp._pcluster = dp._pmed = cluster.pos().phi();
-      dp._rcluster = dp._rmed = cluster.pos().perp();
-      // find precise cluster position
-      for(auto ich : cluster.hits()){
-	    size_t ish = ich._index;
-        StrawHit const& sh = _shcol->at(ish);
-	    StrawHitPosition const& shp = _shpcol->at(ish);
-	    double ct = sh.time();
-	    double phi = dp._pcluster+deltaPhi(shp.pos().phi(),dp._pcluster);
-	    double rho = shp.pos().perp();
-	    double dphi = deltaPhi(phi,dp._pcluster);
-	    _dhmva._dphi = fabs(dphi);
-	    _dhmva._drho = fabs(rho - dp._rmed);
-	    _dhmva._dt = fabs(ct - dp._tmed);
-	    double gd(-1.0);
-	    int iflag(0);
-	    bool stereo = shp.flag().hasAllProperties(_stmask);
-	    if(stereo){
-	      gd = _stereohitMVA.evalMVA(_dhmva._pars);
-	      if(gd > _gdstereo)iflag = 1;
-    	} else {
-    	  gd = _nonstereohitMVA.evalMVA(_dhmva._pars);
-        if(gd > _gdnonstereo)iflag = 1;
-    	}
-    	DeltaHitInfo dhinfo(ish,ct,phi,rho,shp.pos().z(),gd,iflag,stereo);
-        dhinfo._cdist = ich._dist;
-    	dp._dhinfo.push_back(dhinfo);
+  void FlagBkgHits::classifyClusters(BkgClusterCollection& clusters,BkgQualCollection& cquals) const {
+// loop over clusters
+    for (auto& cluster : clusters) { 
+    // create an empty qual
+      BkgQual cqual;
+     // only process clusters which have a minimum number of hits
+      unsigned nactive, nstereo;
+      countActive(cluster,nactive,nstereo);
+      if(nactive >= _minnhits && nstereo >= _minnstereo){
+	cqual[BkgQual::nhits] = nactive;
+	cqual[BkgQual::sfrac] = static_cast<double>(nstereo)/nactive;
+	fillBkgQual(cluster,cqual);
       }
-        fillDeltaSummary(dp);
-        dinfo.push_back(dp);
+      // ALWAYS record a quality to keep the vectors in sync.
+      cquals.push_back(cqual);
     }
   }
 
-  void FlagBkgHits::fillDeltaSummary(DeltaInfo& delta) {
-    // tracker, to get StrawID later
+  void FlagBkgHits::fillBkgQual(BkgCluster& cluster, BkgQual& cqual) const {
     const TTracker& tracker = dynamic_cast<const TTracker&>(getTrackerOrThrow());
-    unsigned nplanes = tracker.nPlanes();
-    unsigned nstations = nplanes/2;
-    // fill the BDT information about each hit, compared to the centroid
-    // also accumulate information about selected hits
-    accumulator_set<double, stats<tag::mean,tag::variance(lazy)> > tacc,pacc,racc;
-    std::vector<bool> planes(nplanes,false);
-    std::vector<bool> stations(nstations,false);
+  // compute averages, spreads, and plane counts from hits
+    accumulator_set<double, stats<tag::weighted_variance>, double> racc;
+    accumulator_set<double, stats<tag::variance(lazy)> > tacc;
+    std::vector<int> stations(_nstations,0);
     std::vector<double> hz;
-    hz.reserve(delta._dhinfo.size());
-    delta._ngdhits = delta._ngdstereo = 0;
-    delta._nchits = delta._dhinfo.size();
-    for(auto ih : delta._dhinfo){
-      DeltaHitInfo& dhinfo = ih;
-      if(dhinfo._hflag > 0){
-        tacc(dhinfo._htime);
-        pacc(dhinfo._hphi);
-        racc(dhinfo._hrho);
-	const StrawHit& sh = _shcol->at(dhinfo._hindex);
+    for(auto const& chit : cluster.hits()) {
+      if(chit.flag().hasAllProperties(StrawHitFlag::active)){
+	StrawHit const& sh = _shcol->at(chit.index());
+	StrawHitPosition const& shp = _shpcol->at(chit.index());
 	unsigned iplane = (unsigned)(tracker.getStraw(sh.strawIndex()).id().getPlaneId());
 	unsigned istation = iplane/2;
-	planes[iplane] = true;
-	stations[istation] = true;
-	hz.push_back(dhinfo._hz);
-	++delta._ngdhits;
-	if(dhinfo._stereo)
-	  ++delta._ngdstereo;
+	++stations[istation];
+	hz.push_back(shp.pos().z());
+	double dt = sh.time() - cluster.time();
+	tacc(dt);
+	Hep3Vector psep = (shp.pos()-cluster.pos()).perpPart();
+	double rho = psep.mag();
+	Hep3Vector pdir = psep.unit();
+	Hep3Vector tdir(-shp.wdir().y(),shp.wdir().x(),0.0);
+	double rw= pdir.dot(shp.wdir());
+	double rt = pdir.dot(tdir);
+	double rwt = (rw*rw)/(shp.posRes(StrawHitPosition::wire)*shp.posRes(StrawHitPosition::wire)) +
+	  (rt*rt)/(shp.posRes(StrawHitPosition::trans)*shp.posRes(StrawHitPosition::trans));
+	racc(rho,weight=rwt);
       }
     }
-    if(extract_result<tag::count>(tacc) > 0){
-      delta._tmean = extract_result<tag::mean>(tacc);
-      delta._pmean = extract_result<tag::mean>(pacc);
-      delta._rmean = extract_result<tag::mean>(racc);
-      delta._trms = extract_result<tag::variance>(tacc);
-      delta._prms = extract_result<tag::variance>(pacc);
-      delta._rrms = extract_result<tag::variance>(racc);
-      delta._trms = (delta._trms>0.0) ? sqrt(delta._trms) : 0.0;
-      delta._prms = (delta._prms>0.0) ? sqrt(delta._prms) : 0.0;
-      delta._rrms = (delta._rrms>0.0) ? sqrt(delta._rrms) : 0.0;
-      std::sort(hz.begin(),hz.end());
-      delta._zmin = hz.front();
-      delta._zmax = hz.back();
-      // look for gaps in z
-      delta._zgap = 0.0;
-      for(unsigned iz=1;iz<hz.size();++iz){
-	if(hz[iz]-hz[iz-1] > delta._zgap)delta._zgap = hz[iz]-hz[iz-1]; 
-      }
-      // count 'missing' planes between first and last
-      delta._ismin = 0;
-      delta._ismax = nplanes/2-1;
-      delta._idmin = 0;
-      delta._idmax = nplanes-1;
-      delta._nsmiss = 0;
-      delta._ndmiss = 0;
-      while(!stations[delta._ismin])++delta._ismin;
-      while(!stations[delta._ismax])--delta._ismax;
-      delta._ns = delta._ismax-delta._ismin+1;
-      for(unsigned is =delta._ismin;is<delta._ismax;++is){
-	if(!stations[is])++delta._nsmiss;
-      }
-      while(!planes[delta._idmin])++delta._idmin;
-      while(!planes[delta._idmax])--delta._idmax;
-      delta._nd = delta._idmax-delta._idmin+1;
-      for(unsigned id =delta._idmin;id<delta._idmax;++id){
-	if(!planes[id])++delta._ndmiss;
-      }
-      // compute final delta selection based on the delta properties
-      delta._isdelta = false;
-      _dpmva._prho = delta._rmed;
-      _dpmva._srho = delta._rrms;
-      _dpmva._zmin = delta._zmin;
-      _dpmva._zmax = delta._zmax;
-      _dpmva._zgap = delta._zgap;
-      _dpmva._ns = delta._ns;
-      _dpmva._nsmiss = delta._nsmiss;
-      _dpmva._sphi = delta._prms;
-      _dpmva._ngdhits = delta._ngdhits;
-      double sfrac = delta._ngdstereo/delta._ngdhits;
-      bool clusterdelta;
-      if(sfrac > _stereoclusterhitfrac){
-	delta._pmvaout = _stereoclusterMVA.evalMVA(_dpmva._pars);
-	clusterdelta = delta._pmvaout > _stereoclustermvacut;
-      } else {
-	delta._pmvaout = _nonstereoclusterMVA.evalMVA(_dpmva._pars);
-	clusterdelta = delta._pmvaout > _nonstereoclustermvacut;
-      }
+    cqual[BkgQual::hrho] = extract_result<tag::weighted_mean>(racc);
+    cqual[BkgQual::shrho] = sqrt(std::max(extract_result<tag::weighted_variance>(racc),0.0));
+    cqual[BkgQual::sdt] = sqrt(std::max(extract_result<tag::variance>(tacc),0.0));
+// find the min, max and gap from the sorted Z positions
+    std::sort(hz.begin(),hz.end());
+    cqual[BkgQual::zmin] = hz.front();
+    cqual[BkgQual::zmax] = hz.back();
+    // find biggest Z gap
+    double zgap = 0.0;
+    for(unsigned iz=1;iz<hz.size();++iz)
+      if(hz[iz]-hz[iz-1] > zgap)zgap = hz[iz]-hz[iz-1]; 
+    cqual[BkgQual::zgap] = zgap;
+    // count stations
+    countStations(cqual,stations);
+     // compute MVA
+    cqual.setMVAValue(_clusterMVA.evalMVA(cqual.values()));
+    cqual.setMVAStatus(BkgQual::calculated);
+    // set the final flag
+    if(cqual.MVAOutput() > _clustermvacut) {
+      cluster._flag.merge(BkgClusterFlag::bkg);
+    }
+  }
+  
+  void FlagBkgHits::countStations(BkgQual& cqual, vector<int> const& stations) const {
+  // work from either end to find the first and last station
+    unsigned ismin = 0;
+    unsigned ismax = _nstations-1;
+    unsigned nsmiss = 0;
+    while(stations[ismin]==0)++ismin;
+    while(stations[ismax]==0)--ismax;
+    // number of stations is the number of stations that should be there.  This doesn't take into
+    // account the missing stations FIXME!!!
+    unsigned ns = ismax-ismin+1;
+    cqual[BkgQual::ns] = ns; 
+    double nshits(0.0);
+    for(unsigned is =ismin;is<ismax;++is){
+      if(stations[is]== 0)++nsmiss;
+      nshits += stations[is];
+    }
+    cqual[BkgQual::nsmiss] = nsmiss;
+    nshits /= (ns-nsmiss);
+    cqual[BkgQual::nshits] = nshits;
+  }
 
-      delta._isdelta = delta._ngdhits >= _mindh && delta._ns >= _minns && clusterdelta;
+  void FlagBkgHits::countActive(BkgCluster const& cluster, unsigned& nactive, unsigned& nstereo) const {
+    nactive = nstereo = 0;
+    for(auto const& chit : cluster.hits()) {
+      if(chit.flag().hasAllProperties(StrawHitFlag::active)){
+	++nactive;
+	if(chit.flag().hasAllProperties(StrawHitFlag::stereo))++nstereo;
+      }
     }
   }
 
- double FlagBkgHits::deltaPhi(double phi1,double phi2) const {
-    double dphi = phi2-phi1;
-    if(dphi > M_PI){
-      dphi -= 2*M_PI;
-    } else if(dphi < -M_PI){
-      dphi += 2*M_PI;
-    }
-    return dphi;
-  }
-    
 }
+
 using mu2e::FlagBkgHits;
-
-
 DEFINE_ART_MODULE(FlagBkgHits);

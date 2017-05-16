@@ -30,7 +30,7 @@ namespace mu2e {
       bitnames[std::string("EnergySelection")]      = bit_to_mask(energysel);
       bitnames[std::string("RadiusSelection")]      = bit_to_mask(radsel);
       bitnames[std::string("TimeSelection")]	    = bit_to_mask(timesel);
-      bitnames[std::string("DeltaRay")]             = bit_to_mask(delta);
+      bitnames[std::string("Background")]             = bit_to_mask(bkg);
       bitnames[std::string("Isolated")]             = bit_to_mask(isolated);
       bitnames[std::string("Outlier")]              = bit_to_mask(outlier);
       bitnames[std::string("OtherBackground")]      = bit_to_mask(other);

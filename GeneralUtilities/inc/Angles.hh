@@ -11,20 +11,7 @@ namespace mu2e {
   namespace Angles {
    // find difference between 2 angles in the range (-pi,pi]
    // Note that this also updates the input angle phase so that dphi = phi - refphi
-    double deltaPhi(double& phi, double refphi=0.0) {
-      double dphi = phi - refphi;
-      const double twopi = 2*M_PI;
-      while(dphi > M_PI){
-	dphi -= twopi;
-	phi -= twopi;
-      }
-      while(dphi <= -M_PI){
-	dphi += twopi;
-	phi += twopi;
-      }
-      return dphi;
-    }
+    double deltaPhi(double& phi, double refphi=0.0);
   }
-
 }
 #endif

@@ -1,4 +1,4 @@
-#include "TrkDiag/inc/StrawHitInfo.hh"P
+#include "TrkDiag/inc/StrawHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawMatInfo.hh"
