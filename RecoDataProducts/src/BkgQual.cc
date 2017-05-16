@@ -20,9 +20,9 @@ namespace mu2e {
       varnames[std::string("MinZ")]		= BkgQualDetail::zmin;
       varnames[std::string("MaxZ")]		= BkgQualDetail::zmax;
       varnames[std::string("ZGap")]		= BkgQualDetail::zgap;
-      varnames[std::string("NStations")]	= BkgQualDetail::ns;
-      varnames[std::string("MissingStations")]	= BkgQualDetail::nsmiss; 
-      varnames[std::string("NStationHits")]	= BkgQualDetail::nshits; 
+      varnames[std::string("NPlanes")]		= BkgQualDetail::np;
+      varnames[std::string("MissingPlanes")]	= BkgQualDetail::npmiss; 
+      varnames[std::string("NPlaneHits")]	= BkgQualDetail::nphits; 
       varnames[std::string("NHits")]		= BkgQualDetail::nhits; 
       varnames[std::string("StereoFraction")]	= BkgQualDetail::sfrac; 
     }
