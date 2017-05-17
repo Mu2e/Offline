@@ -4,9 +4,24 @@
 //
 
 #include "Mu2eG4/geom/geom_common_current.txt"
-bool    ts.useFlashBlock = true;  // Tells art to build the flash Block in COL3
-double  ts.flashBlock.Height = 35.0; // mm
-double  ts.flashBlock.Width  = 50.0; // mm
+
+// All dimensions specified here are full dimensions, not half lengths, etc
+bool   ts.useFlashBlockUp          = true;
+double ts.flashBlockUp.Height      = 35.0; // mm
+double ts.flashBlockUp.Width       = 50.0; // mm
+double ts.flashBlockUp.TransOffset = 15.0; // mm, neg = West
+double ts.flashBlockUp.LongOffset  = 200.0;  // from Center:  neg = upstream
+double ts.flashBlockUp.Length      = 200.0; // mm full length
+string ts.flashBlockUp.Material    = "CollCu"; //
+
+bool   ts.useFlashBlockDn          = false;
+double ts.flashBlockDn.Height      = 35.0; // mm
+double ts.flashBlockDn.Width       = 50.0; // mm
+double ts.flashBlockDn.TransOffset = 15.0; // mm, neg = West
+double ts.flashBlockDn.LongOffset  = 0.0;  // from Center:  neg = upstream
+double ts.flashBlockDn.Length      = 100.0; // mm full length
+string ts.flashBlockDn.Material    = "CollCu"; //
+
 
 
 // This tells emacs to view this file in c++ mode.

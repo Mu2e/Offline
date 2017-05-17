@@ -173,9 +173,22 @@ double ts.coll3.holeHalfHeight   = 100.0;
 double ts.coll3.holeDisplacement = 90.0;
 
 // A test block added to help reduce beam flash from electrons.
-bool   ts.useFlashBlock          = true;
-double ts.flashBlock.Height      = 35.0; // mm
-double ts.flashBlock.Width       = 50.0; // mm
+bool   ts.useFlashBlockUp          = true;
+double ts.flashBlockUp.Height      = 35.0; // mm
+double ts.flashBlockUp.Width       = 50.0; // mm
+double ts.flashBlockUp.TransOffset = 15.0; // mm
+double ts.flashBlockUp.LongOffset  = 200.0;  // from Center:  neg = upstream
+double ts.flashBlockUp.Length      = 200.0; // mm full length
+string ts.flashBlockUp.Material    = "CollCu"; //
+
+bool   ts.useFlashBlockDn          = false;
+double ts.flashBlockDn.Height      = 35.0; // mm
+double ts.flashBlockDn.Width       = 50.0; // mm
+double ts.flashBlockDn.TransOffset = 15.0; // mm
+double ts.flashBlockDn.LongOffset  = 0.0;  // from Center:  neg = upstream
+double ts.flashBlockDn.Length      = 100.0; // mm full length
+string ts.flashBlockDn.Material    = "CollCu"; //
+
 
 double ts.coll5.halfLength    = 500.0;
 double ts.coll5.Radius1       = 128.0; 

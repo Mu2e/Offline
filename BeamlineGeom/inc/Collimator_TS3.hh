@@ -31,6 +31,10 @@ namespace mu2e {
     bool        useFlashBlock()      const { return _useFlashBlock;    }
     double      flashBlockHeight()   const { return _flashBlockHeight; }
     double      flashBlockWidth()    const { return _flashBlockWidth;  }
+    double      flashBlockLength()   const { return _flashBlockLength; }
+    double      flashBlockTranOff()  const { return _flashBlockTO;     }
+    double      flashBlockLongOff()  const { return _flashBlockLO;     }
+    std::string flashBlockMaterial() const { return _flashBlockMaterial;}
 
     std::string material()           const { return _material; }
 
@@ -45,6 +49,10 @@ namespace mu2e {
     bool   _useFlashBlock;
     double _flashBlockHeight;
     double _flashBlockWidth;
+    double _flashBlockLength;
+    double _flashBlockTO;
+    double _flashBlockLO;
+    std::string _flashBlockMaterial;
 
     std::string _material;
 

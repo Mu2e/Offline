@@ -874,27 +874,10 @@ namespace mu2e {
     G4Tubs* coll3_hole_circle = new G4Tubs("coll3_hole_circle",
                                            0.0,coll31.holeRadius(),hDz+2.0,
                                            0.0, CLHEP::twopi );
-    G4IntersectionSolid* theHole = new G4IntersectionSolid("coll3_hole",
+    G4IntersectionSolid* coll3_hole = new G4IntersectionSolid("coll3_hole",
 							   coll3_hole_box,
 							   coll3_hole_circle);
 
-    G4VSolid* coll3_hole;
-    if (coll31.useFlashBlock()) {
-      G4Box* flashBlockBox = new G4Box( "flashBlockBox",
-					coll31.flashBlockWidth()/2.0*CLHEP::mm,
-					coll31.flashBlockHeight()/2.0*CLHEP::mm,
-					hDz+1.4);
-      CLHEP::Hep3Vector displaceFB(0.0,
-				   -coll31.holeHalfHeight() + coll31.flashBlockHeight()/2.0*CLHEP::mm, 
-				   0.0 );
-
-      coll3_hole = new G4SubtractionSolid("coll3_holef",
-					  theHole,
-					  flashBlockBox,
-					  0, displaceFB);
-    } else {
-      coll3_hole = theHole;
-    }
 
     // Make collimators themselves. At this moment the collimators
     // coll31 and coll32 are the same size. But it is possible to make them
@@ -952,6 +935,53 @@ namespace mu2e {
                   0,
                   G4Color::Gray(),
 		  "TSColl");
+
+    // **************************************************************
+    // Now place the "flashblocks" for tests of mitigating beam flash
+    // **************************************************************
+
+    if (coll31.useFlashBlock()) {
+      std::vector<double> boxPars = { coll31.flashBlockWidth()/2.0*CLHEP::mm,
+				      coll31.flashBlockHeight()/2.0*CLHEP::mm,
+				      coll31.flashBlockLength()/2.0*CLHEP::mm};
+
+      CLHEP::Hep3Vector displaceFB(coll31.flashBlockTranOff()*CLHEP::mm,
+				   coll31.holeDisplacement() 
+				   - coll31.holeHalfHeight() 
+				   + coll31.flashBlockHeight()/2.0*CLHEP::mm, 
+				   coll31.flashBlockLongOff()*CLHEP::mm );
+
+      nestBox( "flashBlockUp",
+	       boxPars,
+	       findMaterialOrThrow(coll31.flashBlockMaterial()),
+	       coll31Rot,
+	       coll31.getLocal()+displaceFB,
+	       _helper->locateVolInfo("TS3Vacuum").logical,
+	       0,
+	       G4Colour::Gray(),
+	       "TSColl");
+    } 
+
+    if (coll32.useFlashBlock()) {
+      std::vector<double> boxPars = { coll32.flashBlockWidth()/2.0*CLHEP::mm,
+				      coll32.flashBlockHeight()/2.0*CLHEP::mm,
+				      coll32.flashBlockLength()/2.0*CLHEP::mm};
+
+      CLHEP::Hep3Vector displaceFB(coll32.flashBlockTranOff()*CLHEP::mm,
+				   -coll32.holeHalfHeight() + coll32.flashBlockHeight()/2.0*CLHEP::mm, 
+				   coll32.flashBlockLongOff()*CLHEP::mm );
+
+      nestBox( "flashBlockDn",
+	       boxPars,
+	       findMaterialOrThrow(coll32.flashBlockMaterial()),
+	       coll32Rot,
+	       coll32.getLocal()+displaceFB,
+	       _helper->locateVolInfo("TS3Vacuum").logical,
+	       0,
+	       G4Colour::Gray(),
+	       "TSColl");
+    } 
+
 
     // Now add a Recorder at the Coll31 exit and Coll32 entrance
     // (do not use VirtualDetector because of _ in its volume name)
