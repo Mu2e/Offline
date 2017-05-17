@@ -279,5 +279,7 @@
  <class name="mu2e::BkgClusterCollection"/>
  <class name="mu2e::BkgClusterHit"/>
  <class name="std::vector<mu2e::BkgClusterHit>"/>
+ <class name="mu2e::BkgClusterFlag"/>
+ <class name="mu2e::BkgClusterFlagDetail"/>
 
 </lcgdict>

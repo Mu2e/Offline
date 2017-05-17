@@ -19,7 +19,7 @@ namespace mu2e {
     // I need 32 bits for this class
     typedef unsigned mask_type;
     // different classification bits
-    enum bit_type {stereo=0, tight=4, loose=5, refined=10, bkg=15};
+    enum bit_type {stereo=0, tight=4, loose=5, refined=10, bkg=15, iso=16};
     // functions needed for the BitMap template
     static std::string const& typeName();
     static std::map<std::string,mask_type> const& bitNames();

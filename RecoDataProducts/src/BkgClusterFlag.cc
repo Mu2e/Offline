@@ -28,6 +28,7 @@ namespace mu2e {
       bitnames[std::string("loose")]           = bit_to_mask(loose);
       bitnames[std::string("refined")]           = bit_to_mask(refined);
       bitnames[std::string("background")]       = bit_to_mask(bkg);
+      bitnames[std::string("isolated")]       = bit_to_mask(iso);
    }
     return bitnames;
   }
