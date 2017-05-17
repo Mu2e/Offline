@@ -78,8 +78,8 @@ namespace mu2e
       const StrawHitFlagCollection* _shfcol;
        // bkg-ray removal parameters
       bool _flagall;
+      // simple counting cuts
       unsigned _minnhits, _minnstereo, _minnp, _maxisolated;
-      double _clustermvacut;
     // internal helper functions
       bool findData(const art::Event& evt);
       void classifyClusters(BkgClusterCollection& clusters,BkgQualCollection& cquals) const;
@@ -89,7 +89,9 @@ namespace mu2e
       // clusterer
       BkgClusterer* _clusterer;
       // MVA
-      MVATools _clusterMVA; //
+      bool _useMVA;
+      double _bkgMVAcut;
+      MVATools _bkgMVA; //
   };
 
   FlagBkgHits::FlagBkgHits(fhicl::ParameterSet const& pset) :
@@ -98,13 +100,14 @@ namespace mu2e
     _shtag(pset.get<art::InputTag>("StrawHitCollectionLabel","makeSH")),
     _shptag(pset.get<art::InputTag>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _shftag(pset.get<art::InputTag>("StrawHitFlagCollectionLabel","FlagStrawHits")),
-    _flagall(pset.get<bool>("FlagAllHits",false)), // flag all hits in the cluster, regardless of MVA value
-    _minnhits(pset.get<unsigned>("MinGoodHits",5)),
+    _flagall(pset.get<bool>("FlagAllHits",false)), // flag all hits in the cluster, regardless of hit assignment
+    _minnhits(pset.get<unsigned>("MinActiveHits",5)),
     _minnstereo(pset.get<unsigned>("MinStereoHits",2)),
     _minnp(pset.get<unsigned>("MinNPlanes",4)),
     _maxisolated(pset.get<unsigned>("MaxIsolated",1)),
-    _clustermvacut(pset.get<double>("ClusterMVACut",0.8)),
-    _clusterMVA(pset.get<fhicl::ParameterSet>("ClusterMVA",fhicl::ParameterSet()))
+    _useMVA(pset.get<bool>("UseBkgMVA",true)),
+    _bkgMVAcut(pset.get<double>("BkgMVACut",0.8)),
+    _bkgMVA(pset.get<fhicl::ParameterSet>("BkgMVA",fhicl::ParameterSet()))
   {
     produces<StrawHitFlagCollection>();
     produces<BkgClusterCollection>();
@@ -126,11 +129,13 @@ namespace mu2e
   // initialize the clusterer:
     _clusterer->init();
   // initialize the cluster classification MVA
-    _clusterMVA.initMVA();
-    if(_debug > 0){
-      cout << "Cluster MVA : " << endl;
-      _clusterMVA.showMVA();
-     }
+    if(_useMVA){
+      _bkgMVA.initMVA();
+      if(_debug > 0){
+	cout << "Cluster MVA : " << endl;
+	_bkgMVA.showMVA();
+      }
+    }
   }
 
   void FlagBkgHits::produce(art::Event& event ) {
@@ -202,7 +207,7 @@ namespace mu2e
       BkgQual cqual;
       fillBkgQual(cluster,cqual,tracker);
     // set the final flag
-      if(cqual.MVAOutput() > _clustermvacut) {
+      if(cqual.MVAOutput() > _bkgMVAcut) {
 	cluster._flag.merge(BkgClusterFlag::bkg);
       }
       // ALWAYS record a quality to keep the vectors in sync.
@@ -256,8 +261,10 @@ namespace mu2e
 	  if(hz[iz]-hz[iz-1] > zgap)zgap = hz[iz]-hz[iz-1]; 
 	cqual[BkgQual::zgap] = zgap;
 	// compute MVA
-	cqual.setMVAValue(_clusterMVA.evalMVA(cqual.values()));
-	cqual.setMVAStatus(BkgQual::calculated);
+	if(_useMVA){
+	  cqual.setMVAValue(_bkgMVA.evalMVA(cqual.values()));
+	  cqual.setMVAStatus(BkgQual::calculated);
+	}
       }
     }
   }
