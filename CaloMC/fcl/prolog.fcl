@@ -33,9 +33,9 @@ CaloShowerStepROFromShowerStep :
     caloShowerMCName            : calorimeter
     TimeOffsets                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
     blindTime                   : @local::HitMakerBlindTime
-    caloLRUcorrection           : true
+    caloLRUCorrection           : true
     caloBirksCorrection         : true
-    caloPEStatcorrection        : true
+    caloPEStatCorrection        : true
     addTravelTime               : true	    
     diagLevel                   : 0
 }
