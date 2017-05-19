@@ -188,6 +188,11 @@ namespace mu2e {
     if( (mcptrdigis != 0 && mcptrdigis->size() != ndigi) ||
 	(mcdigis != 0 && mcdigis->size() != ndigi) )
       throw cet::exception("RECO")<<"mu2e::StrawHitsFromStrawDigis: MCPtrDigi collection size doesn't match StrawDigi collection size" << endl;
+// presize
+    strawHits->reserve(ndigi);
+    mcptrHits->reserve(ndigi);
+    mchits->reserve(ndigi);
+
     for(size_t isd=0;isd<ndigi;++isd){
       StrawDigi const& digi = (*strawdigis)[isd];
 // convert the digi to a hit
