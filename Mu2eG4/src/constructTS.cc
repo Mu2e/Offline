@@ -946,10 +946,8 @@ namespace mu2e {
 				      coll31.flashBlockLength()/2.0*CLHEP::mm};
 
       CLHEP::Hep3Vector displaceFB(coll31.flashBlockTranOff()*CLHEP::mm,
-				   coll31.holeDisplacement() 
-				   - coll31.holeHalfHeight() 
-				   + coll31.flashBlockHeight()/2.0*CLHEP::mm, 
-				   coll31.flashBlockLongOff()*CLHEP::mm );
+				   coll31.holeDisplacement() - coll31.holeHalfHeight() + coll31.flashBlockHeight()/2.0*CLHEP::mm, 
+				   coll31.flashBlockLength()/2.0 - coll31.halfLength());
 
       nestBox( "flashBlockUp",
 	       boxPars,
@@ -968,8 +966,8 @@ namespace mu2e {
 				      coll32.flashBlockLength()/2.0*CLHEP::mm};
 
       CLHEP::Hep3Vector displaceFB(coll32.flashBlockTranOff()*CLHEP::mm,
-				   -coll32.holeHalfHeight() + coll32.flashBlockHeight()/2.0*CLHEP::mm, 
-				   coll32.flashBlockLongOff()*CLHEP::mm );
+				   coll32.holeDisplacement() - coll32.holeHalfHeight() + coll32.flashBlockHeight()/2.0*CLHEP::mm, 
+				   coll32.flashBlockLength()/2*CLHEP::mm - coll32.halfLength());
 
       nestBox( "flashBlockDn",
 	       boxPars,
