@@ -396,12 +396,12 @@ namespace mu2e {
     }
 
     // C360 brass
-    mat = uniqueMaterialOrThrow( "Brass" );
+    mat = uniqueMaterialOrThrow( "BrassC360" );
     {
-      G4Material* Brass = new G4Material(mat.name, 8.50*CLHEP::g/CLHEP::cm3,3);
-      Brass->AddMaterial(findMaterialOrThrow("G4_Cu"),0.615);
-      Brass->AddMaterial(findMaterialOrThrow("G4_Zn"),0.354);
-      Brass->AddMaterial(findMaterialOrThrow("G4_Pb"),0.031);
+      G4Material* BrassC360 = new G4Material(mat.name, 8.50*CLHEP::g/CLHEP::cm3,3);
+      BrassC360->AddMaterial(findMaterialOrThrow("G4_Cu"),0.615);
+      BrassC360->AddMaterial(findMaterialOrThrow("G4_Zn"),0.354);
+      BrassC360->AddMaterial(findMaterialOrThrow("G4_Pb"),0.031);
     }
 
 

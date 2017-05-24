@@ -2,6 +2,10 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_2_2
 
+4)  dnbrow01  24 May 2017
+    Change name of Brass material to "BrassC360" to avoid confusion.
+    modified:   Mu2eG4/src/ConstructMaterials.cc
+
 3)  murat May 23 2017
 
     - modify Mu2eG4/src/constructTS.cc to have the beam flash tooth always 
