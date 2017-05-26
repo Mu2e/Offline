@@ -21,7 +21,7 @@ namespace mu2e
     BkgClusterHit() : _dist(0.0), _index(0) {}
     BkgClusterHit(double dist, StrawHitIndex index, StrawHitFlag const& flag) : _dist(dist), _index(index), _flag(flag) {
       _flag.merge(StrawHitFlag::active); }// initial hits are active
-    float distance() const { return _dist; }\
+    float distance() const { return _dist; }
     StrawHitIndex const& index() const { return _index; }
     StrawHitFlag const& flag() const { return _flag; }
     float _dist; // generalized distance from the cluster center

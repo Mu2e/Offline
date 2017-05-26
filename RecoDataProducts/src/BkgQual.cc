@@ -14,14 +14,15 @@ namespace mu2e {
   std::map<std::string,BkgQualDetail::MVA_varindex> const& BkgQualDetail::varNames() {
     static std::map<std::string,BkgQualDetail::MVA_varindex> varnames;
     if(varnames.size()==0){
-      varnames[std::string("HitRho")]		= BkgQualDetail::hrho;
-      varnames[std::string("HitRhoSpread")]	= BkgQualDetail::shrho;
+      varnames[std::string("Rho")]		= BkgQualDetail::hrho;
+      varnames[std::string("RhoSpread")]	= BkgQualDetail::shrho;
       varnames[std::string("TimeSpread")]	= BkgQualDetail::sdt;
       varnames[std::string("MinZ")]		= BkgQualDetail::zmin;
       varnames[std::string("MaxZ")]		= BkgQualDetail::zmax;
       varnames[std::string("ZGap")]		= BkgQualDetail::zgap;
       varnames[std::string("NPlanes")]		= BkgQualDetail::np;
       varnames[std::string("MissingPlanes")]	= BkgQualDetail::npmiss; 
+      varnames[std::string("NExpectedPlanes")]	= BkgQualDetail::npexp; 
       varnames[std::string("NPlaneHits")]	= BkgQualDetail::nphits; 
       varnames[std::string("NHits")]		= BkgQualDetail::nhits; 
       varnames[std::string("StereoFraction")]	= BkgQualDetail::sfrac; 
