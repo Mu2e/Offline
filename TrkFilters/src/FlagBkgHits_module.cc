@@ -116,7 +116,7 @@ namespace mu2e
     clusterer ctype = static_cast<clusterer>(pset.get<int>("Clusterer",TwoLevelThreshold));
     switch ( ctype ) {
       case TwoLevelThreshold:
-	_clusterer = new TLTClusterer(pset.get<fhicl::ParameterSet>("TLTClustererParameters",fhicl::ParameterSet()));
+	_clusterer = new TLTClusterer(pset.get<fhicl::ParameterSet>("TLTClusterer",fhicl::ParameterSet()));
 	break;
       default:
 	throw cet::exception("RECO")<< "Unknown clusterer" << ctype << endl;
@@ -219,6 +219,7 @@ namespace mu2e
     // only process clusters which have a minimum number of hits
     unsigned nactive, nstereo;
     countHits(cluster,nactive,nstereo);
+    cqual.setMVAStatus(BkgQual::unset);
     if(nactive >= _minnhits && nstereo >= _minnstereo){
       cqual[BkgQual::nhits] = nactive;
       cqual[BkgQual::sfrac] = static_cast<double>(nstereo)/nactive;
@@ -261,6 +262,7 @@ namespace mu2e
 	  if(hz[iz]-hz[iz-1] > zgap)zgap = hz[iz]-hz[iz-1]; 
 	cqual[BkgQual::zgap] = zgap;
 	// compute MVA
+	cqual.setMVAStatus(BkgQual::filled);
 	if(_useMVA){
 	  cqual.setMVAValue(_bkgMVA.evalMVA(cqual.values()));
 	  cqual.setMVAStatus(BkgQual::calculated);
@@ -298,6 +300,7 @@ namespace mu2e
     }
     // fill qual variables
     cqual[BkgQual::np] = np; 
+    cqual[BkgQual::npexp] = npexp; 
     cqual[BkgQual::npmiss] = npexp-np; 
     cqual[BkgQual::nphits] = nphits/static_cast<float>(np);
   }

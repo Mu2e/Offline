@@ -45,13 +45,10 @@ namespace mu2e
   double distance(BkgCluster const&, StrawHit const& sh, StrawHitPosition const& shp) const; 
   // merge overlapping clusters
   unsigned mergeClusters(BkgClusterCollection& bkgcol,
+      double dt, double drho2,
       StrawHitCollection const& shcol,
       StrawHitPositionCollection const& shpcol ) const;
-  // merge 2 clusters.  The smaller of the 2 becomes a 'ghost'
-  void mergeClusters(BkgCluster& c1, BkgCluster& c2,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol ) const;
-  // compress out empties
+ // compress out empties
   void cleanClusters(BkgClusterCollection& bkgcol ) const;
   // initialize clusters.  Different strategeis can be tried
   void initClusters( BkgClusterCollection& clusters,
@@ -91,15 +88,14 @@ namespace mu2e
   StrawHitFlag _stereo; // mask for selecting stereo hits
   double _dseed; // Minimum separation to seed a new cluster
   double _dhit; // Maximum separation to include a hit in a cluster
-  double _dmerge; // distance to merge 2 clusters
   double _dd; // cluster diameter
   double _dd2; // cluster diameter squared, cached for efficiency
   double _dt; // natural time spread
   double _maxdt; // maximum time difference
   double _trms2; // time RMS
   double _md2; // // cached square of maximum distance
+  double _maxdsum; // maximum total distance change to consider 'converged'
   unsigned _maxniter; // maximum number of iterations
-  double _maxdist; // maximum total distance change to consider 'converged'
   bool _stereoinit; // initialize using only stereo hits
   bool _refine; // refine the hit assignment using an MVA
   unsigned _minnrefine; // Minimum # of hits to refine a cluster

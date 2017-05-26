@@ -45,12 +45,12 @@ namespace mu2e
     _sigmask(pset.get<vector<string> >("SignalMask",vector<string>())),
     _dseed(pset.get<double>("SeedDistance",100.0)), // minimum 'chisquared' to define a new cluster
     _dhit(pset.get<unsigned>("HitDistance",25.0)), // maximum 'chisquared' to add hit to a cluster
-    _dmerge(pset.get<double>("MergeDistance",9.0)), // minimum 'chisquared' to merge clusters
     _dd(pset.get<double>("ClusterDiameter",10.0)), // the natural cluster transverse size (mm)
     _dt(pset.get<double>("TimeDifference",30.0)), // the natural time spread (nsec)
     _maxdt(pset.get<double>("MaxTimeDifference",50.0)), // Maximum time difference (nsec)
+    _maxdsum(pset.get<double>("MaxDistanceSum",100.0)), // iteration convergence
     _maxniter(pset.get<unsigned>("MaxNIterations",50)),
-    _maxdist(pset.get<double>("MaxDistance",10.0)), // iteration convergence
+    _stereoinit(pset.get<bool>("StereoInit",true)), // initialize using stereo hits
     _refine(pset.get<bool>("RefineClusters",false)),
     _minnrefine(pset.get<unsigned>("MinNRefineHits",5)), // # of hits before refining the cluster
     _minerr(pset.get<double>("MinHitError",5.0)), // corresponds to an error of the straw diameter
@@ -59,7 +59,7 @@ namespace mu2e
     _idiag(0)
   {
     // cache some values to avoid repeating FP operations on fixed numbers
-    double trms(pset.get<double>("TimeRMS",1.0)); // effective individual hit time resolution (nsec)
+    double trms(pset.get<double>("TimeRMS",2.0)); // effective individual hit time resolution (nsec)
     _trms2 = trms*trms;
     double maxdist(pset.get<double>("MaxDistance",50.0)); // Maximum transverse distance (mm)
     _md2 = maxdist*maxdist;
@@ -90,10 +90,11 @@ namespace mu2e
 	  retval += tdist*tdist/_trms2;
 	}
 	if(d2 > _dd2){
-	  // project separation along wire and transverse directions
-	  double dw = shp.wdir().dot(psep);
+	  // project separation along wire and transverse directions.  Only count distance beyond
+	  // the natural cluster size
+	  double dw = std::max(0.0,shp.wdir().dot(psep)-_dd);
 	  Hep3Vector that(-shp.wdir().y(),shp.wdir().x(),0.0);
-	  double dp = that.dot(psep);
+	  double dp = std::max(0.0,that.dot(psep)-_dd);
 	// add these contributions
 	  retval += (dw*dw)/(shp.posRes(StrawHitPosition::wire)*shp.posRes(StrawHitPosition::wire)) +
 	    (dp*dp)/(shp.posRes(StrawHitPosition::trans)*shp.posRes(StrawHitPosition::trans));
@@ -114,11 +115,11 @@ namespace mu2e
     if(_diag > 0){
       art::ServiceHandle<art::TFileService> tfs;
       _idiag = tfs->make<TTree>("idiag","iteration diagnostics");
-      _idiag->Branch("niter",&_niter,"niter/U");
-      _idiag->Branch("nmerge",&_nmerge,"nmerge/U");
-      _idiag->Branch("nclu",&_nclu,"nclu/U");
-      _idiag->Branch("nchits",&_nchits,"nchits/U");
-      _idiag->Branch("nhits",&_nhits,"nhits/U");
+      _idiag->Branch("niter",&_niter,"niter/i");
+      _idiag->Branch("nmerge",&_nmerge,"nmerge/i");
+      _idiag->Branch("nclu",&_nclu,"nclu/i");
+      _idiag->Branch("nchits",&_nchits,"nchits/i");
+      _idiag->Branch("nhits",&_nhits,"nhits/i");
       _idiag->Branch("odist",&_odist,"odist/D");
       _idiag->Branch("tdist",&_tdist,"tdist/D");
     }
@@ -136,10 +137,16 @@ namespace mu2e
     }
 // initialize the clusters
     initClusters(clusters, shcol, shpcol, shfcol );
-// compute the initial total distance
     _tdist = _odist = 0.0;
-// iterate between assigning/creating clusters, updating and merging
     _niter = 0;
+    if(_diag > 0){
+      countClusters(clusters, _nclu, _nchits, _tdist);
+      _nhits = 0;
+      for( auto const& shf : shfcol )
+	  if(shf.hasAllProperties(_sigmask) && !shf.hasAnyProperty(_bkgmask))++_nhits;
+      _idiag->Fill();
+    }
+// iterate between assigning/creating clusters, updating and merging
     do {
       ++_niter;
       // assign hits to these clusters
@@ -147,18 +154,13 @@ namespace mu2e
       // update the cluster positions for these new
       updateClusters(clusters, shcol, shpcol);
       // check for merging
-      _nmerge = mergeClusters(clusters, shcol, shpcol);
+      _nmerge = mergeClusters(clusters, _dt, _dd2, shcol, shpcol);
       // measure convergence
       _odist = _tdist;
       countClusters(clusters, _nclu, _nchits, _tdist);
-      if(_diag > 0){
-// record convergence information: nhits, distance, iteration
-	_nhits = 0;
-	for( auto const& shf : shfcol )
-	  if(shf.hasAllProperties(_stereo) && !shf.hasAnyProperty(_bkgmask))++_nhits;
+      if(_diag > 0)
 	_idiag->Fill();
-      }
-    } while ( fabs(_odist - _tdist) > _maxdist && _niter < _maxniter);
+    } while ( fabs(_odist - _tdist) > _maxdsum && _niter < _maxniter);
   // optionally refine the hit assignment using an MVA
     if(_refine)refineClusters(clusters,shcol, shpcol);
   // compress out the empty (merged) clusters from the list
@@ -174,6 +176,7 @@ namespace mu2e
 // dimension clusters proportional to the number of hits
     clusters.reserve( (unsigned)rint(shcol.size()/3.0) );
    // stereo init means take every stereo hit as a cluster seed, then merge
+   // A more efficient implementation would loop over stereo hits themselves FIXME!
     if(_stereoinit){
       for(size_t ish = 0; ish < shcol.size(); ++ish) {
 	StrawHitFlag const& shf = shfcol.at(ish);
@@ -185,7 +188,11 @@ namespace mu2e
 	  clusters.push_back(sclust);
 	}
       }
-      mergeClusters(clusters, shcol, shpcol);
+      // merge with wide windows
+      mergeClusters(clusters, _maxdt, _md2, shcol, shpcol);
+      // this process leaves lots of empties; flush them out to improve
+      // efficiency later
+      cleanClusters(clusters);
     } else {
       // otherwise, just take the 1st hit as a cluster and work from there
       for(size_t ish = 0; ish < shcol.size(); ++ish) {
@@ -212,16 +219,20 @@ namespace mu2e
     // loop over the clusters
     for(auto& clu : clusters) {
       if(clu.hits().size() > 0){
-	// remember which hits were in this cluster
-	vector<BkgClusterHit> hits(clu.hits());
-	// remove the hits
-	clu._hits.clear();
-	// loop over hits that were in the cluster
-	for(auto& hit : hits) {
-	  if(hit.distance() < _dhit){
-	    assigned.insert(hit.index());
-	    clu._hits.push_back(hit);
-	  }
+      // mark hits which are outside cuts for removal
+	vector<size_t> toremove;
+	toremove.reserve(clu.hits().size());
+	// reverse-loop to facilitate removal
+	for(int ihit = clu.hits().size()-1;ihit >= 0; --ihit){
+	  if(clu.hits()[ihit].distance() > _dhit)
+	    toremove.push_back(ihit);
+	  else
+	    assigned.insert(clu.hits()[ihit].index());
+	}
+	// actually remove the hits
+	for(auto ihit : toremove){
+	  std::swap(clu._hits[ihit],clu._hits.back());
+	  clu._hits.pop_back();
 	}
       }
     }
@@ -238,13 +249,13 @@ namespace mu2e
 	    // loop over all non-empty clusters
 	    if(clu.hits().size() > 0){
 	      double dist = distance(clu,shcol.at(ish), shpcol.at(ish));
+	      mindist = std::min(dist,mindist);
 	      if(dist < _dhit){
 		clu._hits.push_back(BkgClusterHit(dist,ish,shf));
 		// assign to 1st cluster inside radius.  This doesn't correctly handle
 		// overlapping clusters, but those should have been merged and this is more efficient
 		break;
 	      }
-	      mindist = std::min(dist,mindist);
 	    }
 	  }
 	  // hit isn't assigned and has minimal distance from other clusters, create a cluster from it
@@ -259,8 +270,11 @@ namespace mu2e
   }
 
   unsigned TLTClusterer::mergeClusters(BkgClusterCollection& clusters,
+      double dt, double dd2,
       StrawHitCollection const& shcol,
       StrawHitPositionCollection const& shpcol) const {
+// note: this algorithm merges pairwise iteratively. 
+// More efficient could be to merge groups of clusters in a single iteration
     unsigned retval(0);
     unsigned niter(0);
     // struct to keep track of which clusters to merge
@@ -271,11 +285,10 @@ namespace mu2e
 	if(clusters[ic].hits().size()>0){
 	  for(size_t jc = ic+1; jc < clusters.size(); ++jc){
 	    if(clusters[jc].hits().size()>0){
-	      if(fabs(clusters[ic].time() - clusters[jc].time()) < _dt) {
+	      if(fabs(clusters[ic].time() - clusters[jc].time()) < dt) {
 		double d2 = (clusters[ic].pos() - clusters[jc].pos()).perp2();
-		if(d2 < _dd2){
+		if(d2 < dd2){
 		  tomerge.push_back(make_pair(ic,jc));
-		  break;
 		}
 	      }
 	    }
@@ -283,30 +296,27 @@ namespace mu2e
 	}
       }
       // acually merge
-      for(auto const& ipair : tomerge )
-	mergeClusters(clusters[ipair.first],clusters[ipair.second], shcol, shpcol);
+      for(auto& ipair : tomerge ){
+	if(clusters[ipair.first].hits().size() > 0 &&
+	    clusters[ipair.second].hits().size() > 0){
+	  // merge smaller into bigger
+	  if(clusters[ipair.first].hits().size() < clusters[ipair.second].hits().size()){
+	    auto smaller = ipair.first;
+	    ipair.first = ipair.second;
+	    ipair.second = smaller;
+	  }
+	  // move the hits over from the smaller cluster
+	  clusters[ipair.first]._hits.insert(clusters[ipair.first]._hits.end(),
+	    clusters[ipair.second]._hits.begin(),clusters[ipair.second]._hits.end());
+	  clusters[ipair.second]._hits.clear();
+	  // re-compute the position for the merged cluster
+	  updateCluster(clusters[ipair.first], shcol, shpcol);
+	}
+      }
       retval += tomerge.size();
       ++niter;
     } while(tomerge.size() > 0 && niter < _maxniter);
     return retval;
-  }
-
-  // merge 2 clusters by absorbing the smaller into the larger.  This leaves
-  // a 'ghost' cluster which is ignored during processing and is compressed
-  // out after all clustering is done
-  void TLTClusterer::mergeClusters(BkgCluster& c1, BkgCluster& c2,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol) const {
-    if(c1.hits().size() > c2.hits().size()){
-      c1._hits.insert(c1._hits.end(),c2._hits.begin(),c2._hits.end());
-      c2._hits.clear();
-      // re-compute the position for the merged cluster
-      if(c1.hits().size() > 1)updateCluster(c1, shcol, shpcol);
-    } else {
-      c2._hits.insert(c2._hits.end(),c1._hits.begin(),c1._hits.end());
-      c1._hits.clear();
-      if(c2.hits().size() > 1)updateCluster(c2, shcol, shpcol);
-    }
   }
 
 // update local cache (position, time)
@@ -336,7 +346,7 @@ namespace mu2e
       for(auto const& chit : cluster.hits()) {
 	StrawHit const& sh = shcol.at(chit.index());
 	StrawHitPosition const& shp = shpcol.at(chit.index());
-	double dt = sh.time();
+	double dt = sh.time() - cluster.time();
 	double dr = shp.pos().perp() - crho;
 	double phi = shp.pos().phi();
 	double dp = Angles::deltaPhi(phi,cphi);
@@ -387,6 +397,7 @@ namespace mu2e
       if(clu.hits().size() > 0){
 	++nclu;
 	nchits += clu.hits().size();
+	// compute the total distance for all hits
 	for(auto const& chit : clu.hits() )
 	  tdist += chit.distance();
       }
