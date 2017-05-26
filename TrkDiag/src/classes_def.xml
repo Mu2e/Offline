@@ -30,4 +30,6 @@
  <class name="std::vector<mu2e::CrvHitInfoMC>" />
  <class name="mu2e::CrvHitInfoReco" />
  <class name="std::vector<mu2e::CrvHitInfoReco>" />
+ <class name="mu2e::BkgHitInfo" />
+ <class name="std::vector<mu2e::BkgHitInfo>" />
 </lcgdict>

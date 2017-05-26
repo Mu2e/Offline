@@ -112,7 +112,32 @@ namespace mu2e
     fillStrawHitDiag();
   }
 
- void StrawHitDiag::beginJob(){
+  bool StrawHitDiag::findData(const art::Event& evt){
+    _shcol = 0;
+    _shpcol = 0;
+    _shfcol = 0;
+    _stcol = 0;
+    _mcdigis = 0;
+    // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
+    auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
+    _shcol = shH.product();
+    auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
+    _shpcol = shpH.product();
+    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+    _shfcol = shfH.product();
+    auto hsH = evt.getValidHandle<StereoHitCollection>(_stTag);
+    _stcol = hsH.product();
+    if(_mcdiag){
+      auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
+      _mcdigis = mcdH.product();
+      // update time offsets
+      _toff.updateMap(evt);
+    }
+    return _shcol != 0 && _shpcol != 0 && _shfcol != 0 
+      && (_mcdigis != 0  || !_mcdiag);
+  }
+
+  void StrawHitDiag::beginJob(){
     art::ServiceHandle<art::TFileService> tfs;
     // straw hit tuple
     _shdiag=tfs->make<TTree>("shdiag","strawhit diagnostics");

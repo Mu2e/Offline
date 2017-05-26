@@ -21,9 +21,6 @@ namespace mu2e {
     CLHEP::Hep3Vector _mcpos;
     Int_t _mcpdg, _mcgen, _mcproc, _mcid;
     Float_t _mcedep, _mctime, _mct0, _mcht, _mcmom, _mctd;
-    Int_t _hflag;
-    Float_t _hgd, _cdist; // MVA output of generalized distance
-    Float_t _dphi, _drho, _dt; // MVA inputs
   };
 }
 #endif

@@ -32,6 +32,7 @@
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
+#include "TrkDiag/inc/BkgHitInfo.hh"
 /// Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
@@ -41,15 +42,6 @@ using namespace std;
 using CLHEP::Hep3Vector;
 namespace mu2e 
 {
-// struct with additional info on background hits
-  struct BkgHitInfo : public StrawHitInfo {
-    Float_t _dist; // generalized distance 
-    Float_t _rrho; // transverse distance to cluster center
-    Float_t _rerr; // estimated error on transverse distance
-    CLHEP::Hep3Vector _rpos; // relative position of hit WRT cluster center
-    Bool_t _active; // hit is active in cluster
-    Bool_t _cbkg; // hit is classified backg
-  };
 
   class BkgDiag : public art::EDAnalyzer {
     public:
@@ -67,6 +59,7 @@ namespace mu2e
       // control flags
       int _diag,_debug;
       bool _mcdiag;
+      float _maxdt, _maxdrho;
   // data tags
       art::InputTag _shTag;
       art::InputTag _shpTag;
@@ -91,6 +84,7 @@ namespace mu2e
       Int_t _iev;
       CLHEP::Hep3Vector _cpos;
       Float_t _ctime, _crho;
+      Float_t _mindt, _mindrho;
       Bool_t _isbkg, _isref, _isolated, _stereo;
       Int_t _nactive, _nhits, _nstereo, _nsactive, _nbkg;
 // BkgQual vars
@@ -111,6 +105,8 @@ namespace mu2e
     _diag(pset.get<int>("diagLevel",1)),
     _debug(pset.get<int>("debugLevel",0)),
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
+    _maxdt(pset.get<double>("MaxTimeDifference",50.0)), // Maximum time difference (nsec)
+    _maxdrho(pset.get<double>("MaxRhoDifference",50.0)), // Maximum transverse distance difference (mm)
     _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
     _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
     _shfTag(pset.get<string>("StrawHitFlagCollectionTag","FlagBkgHits")),
@@ -121,11 +117,13 @@ namespace mu2e
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {}
 
+  BkgDiag::~BkgDiag(){}
+
   void BkgDiag::beginJob() {
     art::ServiceHandle<art::TFileService> tfs;
     if(_diag > 0){
       // detailed delta diagnostics
-      _bdiag=tfs->make<TTree>("ddiag","background diagnostics");
+      _bdiag=tfs->make<TTree>("bkgdiag","background diagnostics");
       // general branches
       _bdiag->Branch("iev",&_iev,"iev/I");
       // cluster info branches
@@ -136,6 +134,8 @@ namespace mu2e
       _bdiag->Branch("isref",&_isref,"isref/B");
       _bdiag->Branch("isolated",&_isolated,"isolated/B");
       _bdiag->Branch("stereo",&_stereo,"stereo/B");
+      _bdiag->Branch("mindt",&_mindt,"mindt/F");
+      _bdiag->Branch("mindrho",&_mindrho,"mindrho/F");
       _bdiag->Branch("nhits",&_nhits,"nhits/I");
       _bdiag->Branch("nactive",&_nactive,"nactive/I");
       _bdiag->Branch("nstereo",&_nstereo,"nstereo/I");
@@ -155,7 +155,7 @@ namespace mu2e
       // mc truth branches
       if(_mcdiag){
 	_bdiag->Branch("pmom",&_pmom,"pmom/F");
-	_bdiag->Branch("pid",&_ppid,"pid/I");
+	_bdiag->Branch("ppid",&_ppid,"ppid/I");
 	_bdiag->Branch("ppdg",&_ppdg,"ppdg/I");
 	_bdiag->Branch("pgen",&_pgen,"pgen/I");
 	_bdiag->Branch("pproc",&_pproc,"pproc/I");
@@ -195,6 +195,18 @@ namespace mu2e
       }
       _mvaout = qual.MVAOutput();
       _mvastat = qual.status();
+      // info on nearest cluster
+      _mindt = _mindrho = 1.0e3;
+      for(size_t jbkg = 0; jbkg < _bkgccol->size(); ++jbkg){
+	if(ibkg != jbkg){
+	  BkgCluster const& ocluster = _bkgccol->at(jbkg);
+	  double dt = fabs(ocluster.time() - cluster.time());
+	  double drho = (ocluster.pos()-cluster.pos()).perp();
+	  // only look at differences whtn the other dimension difference is small
+	  if(drho < _maxdrho && dt < _mindt) _mindt = dt;
+	  if(dt < _maxdt && drho < _mindrho) _mindrho = drho;
+	}
+      }
       // fill mc info
       art::Ptr<SimParticle> pptr;
       // loop over hits in this delta and classify them
@@ -227,7 +239,7 @@ namespace mu2e
       for(auto const& chit : cluster.hits()){
 	size_t ish = chit.index();
 	StrawHitPosition const& shp = _shpcol->at(ish);
-	StrawHitFlag const& shf = _shfcol->at(ish);
+	StrawHitFlag const& shf = chit.flag();
 	if(shf.hasAllProperties(StrawHitFlag::active)){
 	  ++_nactive;
 	  if(shf.hasAllProperties(StrawHitFlag::stereo))++_nsactive;
@@ -239,16 +251,17 @@ namespace mu2e
 	// fill basic straw hit info
 	fillStrawHitInfo(chit.index(),pptr,bkghinfo);
 	// background hit specific information
-	bkghinfo._active = chit.flag().hasAllProperties(StrawHitFlag::active);
-	bkghinfo._cbkg = chit.flag().hasAllProperties(StrawHitFlag::bkg);
+	bkghinfo._active = shf.hasAllProperties(StrawHitFlag::active);
+	bkghinfo._cbkg = shf.hasAllProperties(StrawHitFlag::bkg);
 	bkghinfo._dist = chit.distance();
+	bkghinfo._index = ish;
 	// calculate separation to cluster
 	Hep3Vector psep = (shp.pos()-cluster.pos()).perpPart();
 	double rho = psep.mag();
 	Hep3Vector pdir = psep.unit();
 	bkghinfo._rpos = psep;
 	bkghinfo._rho = rho;
-	bkghinfo._rerr = shp.posRes(StrawHitPosition::wire)*pdir.dot(shp.wdir());
+	bkghinfo._rerr = std::max(2.5,shp.posRes(StrawHitPosition::wire)*fabs(pdir.dot(shp.wdir())));
 	//global counting for the cluster
 	if(bkghinfo._relation==0)++_nprimary;
 	if(bkghinfo._mcgen == 2)++_nconv;
@@ -478,5 +491,9 @@ namespace mu2e
       }
     }
   }
+} // mu2e namespace
 
-}
+// Part of the magic that makes this class a module.
+using mu2e::BkgDiag;
+DEFINE_ART_MODULE(BkgDiag);
+
