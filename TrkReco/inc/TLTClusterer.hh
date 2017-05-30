@@ -13,8 +13,6 @@
 #include "TrkReco/inc/BkgClusterer.hh"
 // framework
 #include "fhiclcpp/ParameterSet.h"
-// Mu2e
-#include "Mu2eUtilities/inc/MVATools.hh"
 // root
 #include "TTree.h"
 // boost
@@ -97,12 +95,8 @@ namespace mu2e
   double _maxdsum; // maximum total distance change to consider 'converged'
   unsigned _maxniter; // maximum number of iterations
   bool _stereoinit; // initialize using only stereo hits
-  bool _refine; // refine the hit assignment using an MVA
-  unsigned _minnrefine; // Minimum # of hits to refine a cluster
   double _maxwt; // maximum weight to give a single hit
   double _minerr; // minimum error to give a single hit
-  double _minmva; // minimum MVA for a good refined hit
-  MVATools _hitMVA; // MVA to refine hit assignment
 
   // diagnostics
   mutable TTree* _idiag; // iteration diagnostics

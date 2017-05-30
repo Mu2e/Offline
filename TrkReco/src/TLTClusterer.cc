@@ -26,16 +26,6 @@ using namespace std;
 using CLHEP::Hep3Vector;
 namespace mu2e
 {
-// struct for hit MVA
-  struct BkgHitMVA {
-    std::vector<Double_t> _pars;
-    Double_t& _rho; // transverse radius of this hit WRT cluster center
-    Double_t& _drho; // rho diff to cluster median radius
-    Double_t& _crho; // normalized rho difference
-    Double_t& _dt;  // time diff to cluster
-    BkgHitMVA() : _pars(4,0.0),_rho(_pars[0]),_drho(_pars[1]),_crho(_pars[2]),_dt(_pars[3]){}
-  };
-
 
  TLTClusterer::TLTClusterer(fhicl::ParameterSet const& pset) :
     _diag(pset.get<int>("diagLevel",0)),
@@ -51,11 +41,7 @@ namespace mu2e
     _maxdsum(pset.get<double>("MaxDistanceSum",100.0)), // iteration convergence
     _maxniter(pset.get<unsigned>("MaxNIterations",50)),
     _stereoinit(pset.get<bool>("StereoInit",true)), // initialize using stereo hits
-    _refine(pset.get<bool>("RefineClusters",false)),
-    _minnrefine(pset.get<unsigned>("MinNRefineHits",5)), // # of hits before refining the cluster
     _minerr(pset.get<double>("MinHitError",5.0)), // corresponds to an error of the straw diameter
-    _minmva(pset.get<double>("MinHitMVA",0.2)), // used with MVA hit refining
-    _hitMVA(pset.get<fhicl::ParameterSet>("HitMVA",fhicl::ParameterSet())),
     _idiag(0)
   {
     // cache some values to avoid repeating FP operations on fixed numbers
@@ -92,12 +78,12 @@ namespace mu2e
 	if(d2 > _dd2){
 	  // project separation along wire and transverse directions.  Only count distance beyond
 	  // the natural cluster size
-	  double dw = std::max(0.0,shp.wdir().dot(psep)-_dd);
+	  double dw = std::max(0.0,shp.wdir().dot(psep)-_dd)/shp.posRes(StrawHitPosition::wire);
 	  Hep3Vector that(-shp.wdir().y(),shp.wdir().x(),0.0);
-	  double dp = std::max(0.0,that.dot(psep)-_dd);
+	  // minimum error is always larger than the transverse error
+	  double dp = std::max(0.0,that.dot(psep)-_dd)/_minerr;
 	// add these contributions
-	  retval += (dw*dw)/(shp.posRes(StrawHitPosition::wire)*shp.posRes(StrawHitPosition::wire)) +
-	    (dp*dp)/(shp.posRes(StrawHitPosition::trans)*shp.posRes(StrawHitPosition::trans));
+	  retval += dw*dw + dp*dp;
 	}
       }
     }
@@ -105,13 +91,7 @@ namespace mu2e
   }
 
   void TLTClusterer::init() {
-    // initialize the MVAs
-    _hitMVA.initMVA();
-    if(_debug > 0){
-      cout << "Hit MVA : " << endl;
-      _hitMVA.showMVA();
-    }
-    // setup diagnostics
+   // setup diagnostics
     if(_diag > 0){
       art::ServiceHandle<art::TFileService> tfs;
       _idiag = tfs->make<TTree>("idiag","iteration diagnostics");
@@ -161,8 +141,6 @@ namespace mu2e
       if(_diag > 0)
 	_idiag->Fill();
     } while ( fabs(_odist - _tdist) > _maxdsum && _niter < _maxniter);
-  // optionally refine the hit assignment using an MVA
-    if(_refine)refineClusters(clusters,shcol, shpcol);
   // compress out the empty (merged) clusters from the list
     cleanClusters(clusters);
   }
@@ -340,7 +318,7 @@ namespace mu2e
       // calculate cluster info
       double crho = cluster.pos().perp();
       double cphi = cluster.pos().phi();
-      // choose local cylindrical coordinates WRT the cluster; these map reasonably onto the straw directions
+      // choose local cylindrical coordinates WRT the cluster; these map roughly onto the straw directions
       Hep3Vector rdir = cluster.pos().perpPart().unit();
       Hep3Vector pdir(-rdir.y(),rdir.x(),0.0);
       for(auto const& chit : cluster.hits()) {
@@ -350,13 +328,16 @@ namespace mu2e
 	double dr = shp.pos().perp() - crho;
 	double phi = shp.pos().phi();
 	double dp = Angles::deltaPhi(phi,cphi);
-	// only the error along the straw contributes significantly
-	double dw = shp.posRes(StrawHitPosition::wire);
 	Hep3Vector const& wdir = shp.wdir();
-	// weight according to the wire direction; linearly for now
-	double twt = 1.0/dw;
-	double rwt = fabs(rdir.dot(wdir))*twt;
-	double pwt = fabs(pdir.dot(wdir))*twt;
+	// weight according to the wire direction error, linearly for now
+	double dw = 1.0/shp.posRes(StrawHitPosition::wire);
+	// limit to a maximum weight
+	// should have an option for geometric sum of errors FIXME!
+	// Not clear if time should be weighted FIXME!
+	double twt = std::min(_maxwt,dw);
+	// project weight along radial and azimuthal airections
+	double rwt = std::min(_maxwt,fabs(rdir.dot(wdir))*dw);
+	double pwt = std::min(_maxwt,fabs(pdir.dot(wdir))*dw);
 	tacc(dt,weight=twt);
 	racc(dr,weight=rwt);
 	pacc(dp,weight=pwt);
@@ -404,57 +385,4 @@ namespace mu2e
     }
   }
 
-  void TLTClusterer::refineClusters(BkgClusterCollection& clusters,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol) const {
-    for( auto& cluster: clusters) {
-      if(cluster.hits().size() >= _minnrefine)
-	refineCluster(cluster,shcol, shpcol);
-    }
-  }
-
-  // use an MVA to refine the cluster
-  void TLTClusterer::refineCluster(BkgCluster& cluster,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol) const {
-      // determine a radius for the hits around the center of this cluster
-    accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > racc;
-    for(auto const& chit : cluster.hits()){
-      StrawHitPosition const& shp = shpcol.at(chit.index());
-
-      Hep3Vector psep = (shp.pos()-cluster.pos()).perpPart();
-      double rho = psep.mag();
-      double rwt = _maxwt;
-      Hep3Vector pdir = psep.unit();
-      double dr = shp.posRes(StrawHitPosition::wire)*pdir.dot(shp.wdir());
-      if(dr > _minerr)rwt = 1.0/dr;
-      racc(rho,weight=rwt);
-    }
-    cluster._rho = extract_result<tag::weighted_median>(racc);
-    // now compute the MVA for each hit
-    for(auto& chit : cluster._hits){
-      StrawHit const& sh = shcol.at(chit.index());
-      StrawHitPosition const& shp = shpcol.at(chit.index());
-
-      Hep3Vector psep = (shp.pos()-cluster.pos()).perpPart();
-      double rho = psep.mag();
-      Hep3Vector pdir = psep.unit();
-      double rerr = std::max(_minerr,shp.posRes(StrawHitPosition::wire)*pdir.dot(shp.wdir()));
-      double dr = rho - cluster.rho();
-      // fill the struct
-      BkgHitMVA hmva;
-      hmva._rho = rho;
-      hmva._drho = dr;
-      hmva._crho = dr/rerr;
-      hmva._dt = sh.time() - cluster.time();
-      // MVA value OVERWRITES the geometric + time distance
-      chit._dist = _hitMVA.evalMVA(hmva._pars);
-      // if the hit MVA value is too small, flag off the hit
-      if(chit._dist < _minmva){ 
-	chit._flag.clear(StrawHitFlag::active);
-      }
-    }
-    // set cluster bit
-    cluster._flag.merge(BkgClusterFlag::refined);
-  }
 } // mu2e namespace
