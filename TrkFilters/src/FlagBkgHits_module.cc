@@ -76,7 +76,7 @@ namespace mu2e
       const StrawHitCollection* _shcol;
       const StrawHitPositionCollection* _shpcol;
       const StrawHitFlagCollection* _shfcol;
-       // bkg-ray removal parameters
+       // how to treat individual hits
       bool _flagall;
       // simple counting cuts
       unsigned _minnhits, _minnstereo, _minnp, _maxisolated;
@@ -89,9 +89,10 @@ namespace mu2e
       // clusterer
       BkgClusterer* _clusterer;
       // MVA
+      double _cperr2;
       bool _useMVA;
       double _bkgMVAcut;
-      MVATools _bkgMVA; //
+      MVATools _bkgMVA;
   };
 
   FlagBkgHits::FlagBkgHits(fhicl::ParameterSet const& pset) :
@@ -100,7 +101,7 @@ namespace mu2e
     _shtag(pset.get<art::InputTag>("StrawHitCollectionLabel","makeSH")),
     _shptag(pset.get<art::InputTag>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _shftag(pset.get<art::InputTag>("StrawHitFlagCollectionLabel","FlagStrawHits")),
-    _flagall(pset.get<bool>("FlagAllHits",false)), // flag all hits in the cluster, regardless of hit assignment
+    _flagall(pset.get<bool>("FlagAllHits",true)), // flag all hits in the cluster, regardless of hit assignment
     _minnhits(pset.get<unsigned>("MinActiveHits",5)),
     _minnstereo(pset.get<unsigned>("MinStereoHits",2)),
     _minnp(pset.get<unsigned>("MinNPlanes",4)),
@@ -121,6 +122,9 @@ namespace mu2e
       default:
 	throw cet::exception("RECO")<< "Unknown clusterer" << ctype << endl;
     }
+    // pre-compute
+    double cperr = pset.get<double>("ClusterPositionError",10.0); // average per-hit position error on cluster center (mm)
+    _cperr2 = cperr*cperr;
   }
 
   FlagBkgHits::~FlagBkgHits(){}
@@ -223,6 +227,7 @@ namespace mu2e
     if(nactive >= _minnhits && nstereo >= _minnstereo){
       cqual[BkgQual::nhits] = nactive;
       cqual[BkgQual::sfrac] = static_cast<double>(nstereo)/nactive;
+      cqual[BkgQual::crho] = cluster.pos().perp();
       // count planes
       countPlanes(cluster,cqual,tracker);
       if(cqual[BkgQual::np] >= _minnp){
@@ -238,14 +243,16 @@ namespace mu2e
 	    hz.push_back(shp.pos().z());
 	    double dt = sh.time() - cluster.time();
 	    tacc(dt);
+	    // compute the transverse radius of this hit WRT the cluster center
 	    Hep3Vector psep = (shp.pos()-cluster.pos()).perpPart();
 	    double rho = psep.mag();
+	    // project the hit position error along the radial direction to compute the weight
 	    Hep3Vector pdir = psep.unit();
 	    Hep3Vector tdir(-shp.wdir().y(),shp.wdir().x(),0.0);
-	    double rw= pdir.dot(shp.wdir());
-	    double rt = pdir.dot(tdir);
-	    double rwt = (rw*rw)/(shp.posRes(StrawHitPosition::wire)*shp.posRes(StrawHitPosition::wire)) +
-	      (rt*rt)/(shp.posRes(StrawHitPosition::trans)*shp.posRes(StrawHitPosition::trans));
+	    double rwerr = shp.posRes(StrawHitPosition::wire)*pdir.dot(shp.wdir());
+	    double rterr = shp.posRes(StrawHitPosition::trans)*pdir.dot(tdir);
+	// include the cluster center position error when computing the weight
+	    double rwt = 1.0/sqrt(rwerr*rwerr + rterr*rterr + _cperr2/nactive);
 	    racc(rho,weight=rwt);
 	  }
 	}
@@ -267,6 +274,13 @@ namespace mu2e
 	  cqual.setMVAValue(_bkgMVA.evalMVA(cqual.values()));
 	  cqual.setMVAStatus(BkgQual::calculated);
 	}
+      } else {
+	cqual[BkgQual::hrho] = -1.0;
+	cqual[BkgQual::shrho] = -1.0;
+	cqual[BkgQual::sdt] = -1.0;
+	cqual[BkgQual::zmin] = -1.0;
+	cqual[BkgQual::zmax] = -1.0;
+	cqual[BkgQual::zgap] = -1.0;
       }
     }
   }
@@ -301,7 +315,7 @@ namespace mu2e
     // fill qual variables
     cqual[BkgQual::np] = np; 
     cqual[BkgQual::npexp] = npexp; 
-    cqual[BkgQual::npmiss] = npexp-np; 
+    cqual[BkgQual::npfrac] = np/static_cast<float>(npexp); 
     cqual[BkgQual::nphits] = nphits/static_cast<float>(np);
   }
 
