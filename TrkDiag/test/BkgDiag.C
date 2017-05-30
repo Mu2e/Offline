@@ -7,11 +7,11 @@
 #include "TH2F.h"
 #include "TBox.h"
 
-void BkgDiag(TTree* bdiag, const char* page="rho",bool train=false) {
+void BDiag(TTree* bdiag, const char* page="rho",bool train=false) {
   TString spage(page);
   TCut cluster("mvastat>0");
   if(train)cluster += TCut("ppdg==11&&nprimary/nhits>0.8");
-  TCut con("pgen==2&&pmom>100");
+  TCut con("pgen==2&&pmom>90");
   TCut bkg("pproc<20");
   // hit cuts
   TCut primary("_relation>=0");
@@ -20,26 +20,35 @@ void BkgDiag(TTree* bdiag, const char* page="rho",bool train=false) {
   TCut nstht("!_stereo");
 
   if(spage == "rho"){
-    TH1F* rhocon = new TH1F("rhocon","Cluster #rho;#rho (mm)",100,0,35);
-    TH1F* rhobkg = new TH1F("rhobkg","Cluster #rho;#rho (mm)",100,0,35);
+    TH1F* rhocon = new TH1F("rhocon","Cluster Hit #rho;#rho (mm)",100,0,50);
+    TH1F* rhobkg = new TH1F("rhobkg","Cluster Hit #rho;#rho (mm)",100,0,50);
     rhocon->SetLineColor(kRed);
     rhobkg->SetLineColor(kBlue);
     rhocon->SetStats(0);
     rhobkg->SetStats(0);
-    bdiag->Project("rhocon","Rho",cluster+con);
-    bdiag->Project("rhobkg","Rho",cluster+bkg);
+    bdiag->Project("rhocon","HitRho",cluster+con);
+    bdiag->Project("rhobkg","HitRho",cluster+bkg);
 
-    TH1F* rhoscon = new TH1F("rhoscon","Cluster #rho RMS;#rho RMS (mm)",100,0,25);
-    TH1F* rhosbkg = new TH1F("rhosbkg","Cluster #rho RMS;#rho RMS(mm)",100,0,25);
+    TH1F* radiuscon = new TH1F("radiuscon","Cluster Transverse Radius;#rho (mm)",100,350,700);
+    TH1F* radiusbkg = new TH1F("radiusbkg","Cluster Transverse Radius;#rho (mm)",100,350,700);
+    radiuscon->SetLineColor(kRed);
+    radiusbkg->SetLineColor(kBlue);
+    radiuscon->SetStats(0);
+    radiusbkg->SetStats(0);
+    bdiag->Project("radiuscon","ClusterRho",cluster+con);
+    bdiag->Project("radiusbkg","ClusterRho",cluster+bkg);
+
+    TH1F* rhoscon = new TH1F("rhoscon","Cluster Hit #rho RMS;#rho RMS (mm)",100,0,50);
+    TH1F* rhosbkg = new TH1F("rhosbkg","Cluster Hit #rho RMS;#rho RMS(mm)",100,0,50);
     rhoscon->SetLineColor(kRed);
     rhosbkg->SetLineColor(kBlue);
     rhoscon->SetStats(0);
     rhosbkg->SetStats(0);
-    bdiag->Project("rhoscon","RhoSpread",cluster+con);
-    bdiag->Project("rhosbkg","RhoSpread",cluster+bkg);
+    bdiag->Project("rhoscon","HitRhoSpread",cluster+con);
+    bdiag->Project("rhosbkg","HitRhoSpread",cluster+bkg);
 
-    TH1F* timescon = new TH1F("timescon","Cluster time RMS;time RMS (ns)",100,0,30);
-    TH1F* timesbkg = new TH1F("timesbkg","Cluster time RMS;time RMS(ns)",100,0,30);
+    TH1F* timescon = new TH1F("timescon","Cluster time RMS;time RMS (ns)",100,0,20);
+    TH1F* timesbkg = new TH1F("timesbkg","Cluster time RMS;time RMS(ns)",100,0,20);
     timescon->SetLineColor(kRed);
     timesbkg->SetLineColor(kBlue);
     timescon->SetStats(0);
@@ -48,10 +57,11 @@ void BkgDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     bdiag->Project("timesbkg","TimeSpread",cluster+bkg);
 
     rhocon->Scale(10);
+    radiuscon->Scale(10);
     rhoscon->Scale(10);
     timescon->Scale(10);
 
-    TLegend* rleg = new TLegend(0.2,0.7,0.6,0.9);
+    TLegend* rleg = new TLegend(0.6,0.7,0.9,0.9);
     rleg->AddEntry(rhobkg,"Background clusters","L");
     rleg->AddEntry(rhocon,"Conversion clusters (X10)","L");
 
@@ -67,6 +77,9 @@ void BkgDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     rhocan->cd(3);
     timesbkg->Draw();
     timescon->Draw("same");
+    rhocan->cd(4);
+    radiusbkg->Draw();
+    radiuscon->Draw("same");
  } else if(spage == "z"){
 
     TH1F* zmincon = new TH1F("zmincon","peak zmin;zmin (mm)",100,-1600,1600);
@@ -75,6 +88,8 @@ void BkgDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     TH1F* zmaxbkg = new TH1F("zmaxbkg","peak zmax;zmax (mm)",100,-1600,1600);
     TH1F* zgapcon = new TH1F("zgapcon","peak zgap;zgap (mm)",100,0,1600);
     TH1F* zgapbkg = new TH1F("zgapbkg","peak zgap;zgap (mm)",100,0,1600);
+    TH1F* zfraccon = new TH1F("zfraccon","peak zfrac;zfrac (mm)",100,0,1.0);
+    TH1F* zfracbkg = new TH1F("zfracbkg","peak zfrac;zfrac (mm)",100,0,1.0);
 
     zmincon->SetLineColor(kRed);
     zminbkg->SetLineColor(kBlue);
@@ -82,6 +97,8 @@ void BkgDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     zmaxbkg->SetLineColor(kBlue);
     zgapcon->SetLineColor(kRed);
     zgapbkg->SetLineColor(kBlue);
+    zfraccon->SetLineColor(kRed);
+    zfracbkg->SetLineColor(kBlue);
 
     zmincon->SetStats(0);
     zminbkg->SetStats(0);
@@ -89,23 +106,28 @@ void BkgDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     zmaxbkg->SetStats(0);
     zgapcon->SetStats(0);
     zgapbkg->SetStats(0);
+    zfraccon->SetStats(0);
+    zfracbkg->SetStats(0);
 
-    bdiag->Project("zmincon","MinZ",cluster+con);
-    bdiag->Project("zminbkg","MinZ",cluster+bkg);
-    bdiag->Project("zmaxcon","MaxZ",cluster+con);
-    bdiag->Project("zmaxbkg","MaxZ",cluster+bkg);
+    bdiag->Project("zmincon","ZMin",cluster+con);
+    bdiag->Project("zminbkg","ZMin",cluster+bkg);
+    bdiag->Project("zmaxcon","ZMax",cluster+con);
+    bdiag->Project("zmaxbkg","ZMax",cluster+bkg);
     bdiag->Project("zgapcon","ZGap",cluster+con);
     bdiag->Project("zgapbkg","ZGap",cluster+bkg);
+    bdiag->Project("zfraccon","ZGap/(ZMax-ZMin)",cluster+con);
+    bdiag->Project("zfracbkg","ZGap/(ZMax-ZMin)",cluster+bkg);
 
     zmincon->Scale(10);
     zmaxcon->Scale(10);
     zgapcon->Scale(10);
+    zfraccon->Scale(10);
 
     TLegend* zleg = new TLegend(0.2,0.7,0.8,0.9);
     zleg->AddEntry(zminbkg,"Background clusters","L");
     zleg->AddEntry(zmincon,"Conversion clusters (X10)","L");
 
-    TCanvas* zcan = new TCanvas("zcan","zcan",1200,800);
+    TCanvas* zcan = new TCanvas("zcan","zcan",1000,600);
     zcan->Divide(2,2);
     zcan->cd(1);
     zminbkg->Draw();
@@ -117,6 +139,9 @@ void BkgDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     zcan->cd(3);
     zgapbkg->Draw();
     zgapcon->Draw("same");
+    zcan->cd(4);
+    zfracbkg->Draw();
+    zfraccon->Draw("same");
 
   } else if(spage == "planes"){
 
@@ -124,39 +149,49 @@ void BkgDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     TH1F* npmissbkg = new TH1F("npmissbkg","Missing Planes;N miss ",36,-0.5,36.5);
     TH1F* npcon = new TH1F("npcon","N Planes;N planes",37,-0.5,36.5);
     TH1F* npbkg = new TH1F("npbkg","N Planes;N planes",37,-0.5,36.5);
-    TH1F* mfcon = new TH1F("mfcon","Missing Plane Fraction;N planes",50,-0.1,10.0);
-    TH1F* mfbkg = new TH1F("mfbkg","Missing Plane Fraction;N planes",50,-0.1,10.0);
+    TH1F* mfcon = new TH1F("mfcon","Plane Fraction;N planes",50,0.0,1.0);
+    TH1F* mfbkg = new TH1F("mfbkg","Plane Fraction;N planes",50,0.0,1.0);
 
     npmisscon->SetLineColor(kRed);
     npmissbkg->SetLineColor(kBlue);
     npcon->SetLineColor(kRed);
     npbkg->SetLineColor(kBlue);
+    mfcon->SetLineColor(kRed);
+    mfbkg->SetLineColor(kBlue);
 
     npmisscon->SetStats(0);
     npmissbkg->SetStats(0);
     npcon->SetStats(0);
     npbkg->SetStats(0);
+    mfcon->SetStats(0);
+    mfbkg->SetStats(0);
 
-    bdiag->Project("npmisscon","MissingPlanes",con+cluster);
-    bdiag->Project("npmissbkg","MissingPlanes",bkg+cluster);
+    bdiag->Project("npmisscon","NExpectedPlanes-NPlanes",con+cluster);
+    bdiag->Project("npmissbkg","NExpectedPlanes-NPlanes",bkg+cluster);
     bdiag->Project("npcon","NPlanes",con+cluster);
     bdiag->Project("npbkg","NPlanes",bkg+cluster);
+    bdiag->Project("mfcon","PlaneFraction",con+cluster);
+    bdiag->Project("mfbkg","PlaneFraction",bkg+cluster);
 
     npmisscon->Scale(10);
     npcon->Scale(10);
+    mfcon->Scale(10);
 
     TLegend* stleg = new TLegend(0.2,0.7,0.8,0.9);
     stleg->AddEntry(npbkg,"Background clusters","L");
     stleg->AddEntry(npcon,"Conversion clusters (X10)","L");
 
-    TCanvas* pcan = new TCanvas("pcan","pcan",1200,800);
-    pcan->Divide(1,2);
+    TCanvas* pcan = new TCanvas("pcan","pcan",1000,600);
+    pcan->Divide(2,2);
     pcan->cd(1);
-    npbkg->Draw();
-    npcon->Draw("same");
+    npcon->Draw();
+    npbkg->Draw("same");
     pcan->cd(2);
     npmissbkg->Draw();
     npmisscon->Draw("same");
+    pcan->cd(3);
+    mfcon->Draw();
+    mfbkg->Draw("same");
 
   } else if(spage == "nhits"){
 
@@ -189,6 +224,7 @@ void BkgDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     bdiag->Project("sfracbkg","StereoFraction",bkg+cluster);
 
     nhitscon->Scale(10);
+    nphitscon->Scale(10);
     sfraccon->Scale(10);
 
     TLegend* nhleg = new TLegend(0.2,0.7,0.8,0.9);
@@ -282,45 +318,56 @@ void BkgDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     nsthtmvau->Draw("same");
     mhleg->Draw();
   }  else if(spage=="hits") {
-
-    TH1F* drhobkgp = new TH1F("drhobkgp","Bkg Hit #rho difference;#Delta #rho (mm)",100,-25,50.0);
-    TH1F* cdbkgp = new TH1F("cdbkgp","Bkg Hit cluster distance;distance",100,0,2.0);
-    TH1F* dtbkgp = new TH1F("dtbkgp","Bkg Hit time difference;#Delta t (nsec)",100,0,50);
-     TH1F* drhobkgu = new TH1F("drhobkgu","Bkg Hit #rho difference;#Delta #rho (mm)",100,-25,50.0);
-    TH1F* cdbkgu = new TH1F("cdbkgu","Bkg Hit cluster distance;distance",100,0,2.0);
-    TH1F* dtbkgu = new TH1F("dtbkgu","Bkg Hit time difference;#Delta t (nsec)",100,0,50);
+    TH1F* drhobkgp = new TH1F("drhobkgp","Bkg Hit #rho difference;#Delta #rho (mm)",100,-50.0,100.0);
+    TH1F* drhobkgu = new TH1F("drhobkgu","Bkg Hit #rho difference;#Delta #rho (mm)",100,-50.0,100.0);
+    TH1F* cdbkgp = new TH1F("cdbkgp","Bkg Hit cluster distance;distance",100,0,5.0);
+    TH1F* cdbkgu = new TH1F("cdbkgu","Bkg Hit cluster distance;distance",100,0,5.0);
+    TH1F* chibkgp = new TH1F("chibkgp","Bkg Hit cluster chi;chi",100,0,10.0);
+    TH1F* chibkgu = new TH1F("chibkgu","Bkg Hit cluster chi;chi",100,0,10.0);
+    TH1F* dtbkgp = new TH1F("dtbkgp","Bkg Hit time difference;#Delta t (nsec)",100,0,40);
+    TH1F* dtbkgu = new TH1F("dtbkgu","Bkg Hit time difference;#Delta t (nsec)",100,0,40);
     drhobkgp->SetLineColor(kBlue);
     cdbkgp->SetLineColor(kBlue);
+    chibkgp->SetLineColor(kBlue);
     dtbkgp->SetLineColor(kBlue);
     drhobkgu->SetLineColor(kRed);
     cdbkgu->SetLineColor(kRed);
+    chibkgu->SetLineColor(kRed);
     dtbkgu->SetLineColor(kRed);
 
-    bdiag->Project("drhobkgp","_rho-Rho",bkg+cluster+primary);
-    bdiag->Project("cdbkgp","_dist",bkg+cluster+primary);
+    TCut conhit("_mcgen==2&&_mcmom>90");
+
+    bdiag->Project("drhobkgp","_rrho-HitRho",bkg+cluster+primary);
+    bdiag->Project("cdbkgp","_gdist",bkg+cluster+primary);
+    bdiag->Project("chibkgp","(_rrho-HitRho)/_rerr",bkg+cluster+primary);
     bdiag->Project("dtbkgp","_time-ctime",bkg+cluster+primary);
-    bdiag->Project("drhobkgu","_rho-Rho",bkg+cluster+norel);
-    bdiag->Project("dtbkgu","_time-ctime",bkg+cluster+norel);
-    bdiag->Project("cdbkgu","_dist",bkg+cluster+norel);
+    bdiag->Project("drhobkgu","_rrho-HitRho",bkg+cluster+conhit);
+    bdiag->Project("dtbkgu","_time-ctime",bkg+cluster+conhit);
+    bdiag->Project("cdbkgu","_gdist",bkg+cluster+conhit);
+    bdiag->Project("chibkgu","(_rrho-HitRho)/_rerr",bkg+cluster+conhit);
+
+    drhobkgu->Scale(100);
+    cdbkgu->Scale(100);
+    chibkgu->Scale(100);
+    dtbkgu->Scale(100);
 
     TCanvas* dhcan = new TCanvas("dhcan","Delta hits",1200,800);
     dhcan->Divide(2,2);
     dhcan->cd(1);
     drhobkgp->Draw();
     drhobkgu->Draw("same");
-    TLegend* hleg = new TLegend(0.2,0.7,0.6,0.9);
+    TLegend* hleg = new TLegend(0.5,0.7,0.9,0.9);
     hleg->AddEntry(drhobkgp,"Bkg Primary hit","L");
-    hleg->AddEntry(drhobkgu,"Bgk unrelated hit","L");
+    hleg->AddEntry(drhobkgu,"Bgk unrelated hit (X100)","L");
     hleg->Draw();
- 
     dhcan->cd(2);
-    drhobkgp->Draw();
-    drhobkgu->Draw("same");
-    dhcan->cd(3);
     dtbkgp->Draw();
     dtbkgu->Draw("same");
-    dhcan->cd(4);
+    dhcan->cd(3);
     cdbkgp->Draw();
     cdbkgu->Draw("same");
+    dhcan->cd(4);
+    chibkgp->Draw();
+    chibkgu->Draw("same");
   }    
 }
