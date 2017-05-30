@@ -84,6 +84,7 @@ namespace mu2e {
 
     // Construct the requested materials.
     constructMu2eMaterials();
+    constructMu2eMaterials2();
 
     // Print element table, if requested.
     if (printElements_){
@@ -112,7 +113,12 @@ namespace mu2e {
   //    that have G4-specific types (G4double).  Removing the braces would require removing
   //    the G4double typename in front of the variable strings for assignments after the first 
 //    one, possibly making things a little confusing for people needing to define materials.
-
+//  **************** Added Note *********************
+//  Because of warnings from the compiler about too many variables in the
+//  construct function, we have split the constructMu2eMaterials function into
+//  two functions.  New materials should be added to the second function,
+//  named constructMu2eMaterials2.
+//  *************************************************
   void ConstructMaterials::constructMu2eMaterials(){
 
 
@@ -1014,6 +1020,24 @@ namespace mu2e {
                       density, kStateGas, temperature, pressure);
     }
 
+
+    // Completed constructing Mu2e specific materials, first function.
+    // Now second function for Mu2e specific materials.
+    
+  }
+
+
+  void ConstructMaterials::constructMu2eMaterials2(){
+
+
+    // An alias for the stopping target material
+    CheckedG4String mat = uniqueMaterialOrThrow("StoppingTarget_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial());
+    if ( true /* Always load the stopping target material */ ){
+      G4Material* met = findMaterialOrThrow("G4_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial());
+      G4Material* tgt = new G4Material(mat.name, met->GetDensity(), 1);
+      tgt->AddMaterial(met, 1.);
+    }
+
     mat = uniqueMaterialOrThrow( "CarbonFiber_resin");
     {
       G4double density;
@@ -1063,6 +1087,16 @@ namespace mu2e {
       Lyso_01->AddMaterial( Lyso_00, 99.85*CLHEP::perCent ); 
       Lyso_01->AddElement( Ce, 0.15*CLHEP::perCent );    
     }   
+
+
+    mat = uniqueMaterialOrThrow("CorrugatedPolypropylene");
+    {
+      G4double standardPolypropyleneDensity = 0.946*CLHEP::g/CLHEP::cm3;
+      G4double corrugatedEffectiveDensity = 0.2 * standardPolypropyleneDensity;
+      G4Material* CorrugatedPolypropylene = new G4Material( mat.name, corrugatedEffectiveDensity, 2);
+      CorrugatedPolypropylene->AddElement( getElementOrThrow("C"), 3);
+      CorrugatedPolypropylene->AddElement( getElementOrThrow("H"), 6);
+    }
 
 
     //G10-FR4 used for printed board of the I-Tracker
@@ -1188,27 +1222,14 @@ namespace mu2e {
       stWallEq->AddMaterial(strwMet2, 1.25e-2 );
     }
 
-    // An alias for the stopping target material
-    mat = uniqueMaterialOrThrow("StoppingTarget_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial());
-    if ( true /* Always load the stopping target material */ ){
-      G4Material* met = findMaterialOrThrow("G4_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial());
-      G4Material* tgt = new G4Material(mat.name, met->GetDensity(), 1);
-      tgt->AddMaterial(met, 1.);
-    }
 
-    mat = uniqueMaterialOrThrow("CorrugatedPolypropylene");
-    {
-      G4double standardPolypropyleneDensity = 0.946*CLHEP::g/CLHEP::cm3;
-      G4double corrugatedEffectiveDensity = 0.2 * standardPolypropyleneDensity;
-      G4Material* CorrugatedPolypropylene = new G4Material( mat.name, corrugatedEffectiveDensity, 2);
-      CorrugatedPolypropylene->AddElement( getElementOrThrow("C"), 3);
-      CorrugatedPolypropylene->AddElement( getElementOrThrow("H"), 6);
-    }
+    // Completed constructMu2eMaterials2(), second function for
+    // building all Mu2e materials.
 
-
-    // Completed constructing Mu2e specific materials.
-    
   }
+
+
+
 
   // Check to see if the named material already exists.
   CheckedG4String ConstructMaterials::uniqueMaterialOrThrow( G4String const& name){
