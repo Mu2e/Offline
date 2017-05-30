@@ -31,19 +31,17 @@ namespace mu2e
 // the cluster itself
   struct BkgCluster {
   // default constructor.  Default hit count chosen for compuational efficiency
-    BkgCluster() : _time(0.0) , _rho(0.0) { _hits.reserve(16); }
+    BkgCluster() : _time(0.0)  { _hits.reserve(16); }
 // construct from a position and time
-    BkgCluster(CLHEP::Hep3Vector const& pos, double time) : _pos(pos), _time(time), _rho(0.0) { _hits.reserve(16); }
+    BkgCluster(CLHEP::Hep3Vector const& pos, double time) : _pos(pos), _time(time) { _hits.reserve(16); }
 // accessors
     CLHEP::Hep3Vector const& pos() const { return _pos; }
     float time() const { return _time; }
-    float rho() const { return _rho; }
     std::vector<BkgClusterHit> const& hits() const { return _hits; }
     BkgClusterFlag const& flag() const { return _flag; }
 // data members
     CLHEP::Hep3Vector _pos; // nominal position.  Only the xy values have meaning, ideally this would be a dedicated 2-d vector object FIXME!
     float _time;  //nominal time
-    float _rho; // transverse radius of the cluster
     std::vector<BkgClusterHit> _hits; // associated hits
     BkgClusterFlag _flag; // characterize this cluster
   };

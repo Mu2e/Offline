@@ -21,7 +21,7 @@ namespace mu2e {
 // enumerate the input varibles used in BkgQual.  The order should match that used in
 // the MVA configuration (XML).  The names may optionally be required to match exactly what's in the
 // MVA configuration
-    enum MVA_varindex {hrho=0, shrho, sdt, zmin, zmax, zgap, np, npexp, npmiss, nphits, nhits, sfrac, n_vars};
+    enum MVA_varindex {hrho=0, shrho, crho, sdt, zmin, zmax, zgap, np, npexp, npfrac, nphits, nhits, sfrac, n_vars};
     typedef std::map<std::string,MVA_varindex> map_type;
     static std::string const& typeName();
     static std::map<std::string,MVA_varindex> const& varNames();
