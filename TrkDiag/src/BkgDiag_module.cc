@@ -83,7 +83,7 @@ namespace mu2e
       TTree* _bdiag;
       Int_t _iev;
       CLHEP::Hep3Vector _cpos;
-      Float_t _ctime, _crho;
+      Float_t _ctime;
       Float_t _mindt, _mindrho;
       Bool_t _isbkg, _isref, _isolated, _stereo;
       Int_t _nactive, _nhits, _nstereo, _nsactive, _nbkg;
@@ -129,7 +129,6 @@ namespace mu2e
       // cluster info branches
       _bdiag->Branch("cpos",&_cpos,"dx/D:dy/D:dz/D");
       _bdiag->Branch("ctime",&_ctime,"ctime/F");
-      _bdiag->Branch("crho",&_crho,"crho/F");
       _bdiag->Branch("isbkg",&_isbkg,"isbkg/B");
       _bdiag->Branch("isref",&_isref,"isref/B");
       _bdiag->Branch("isolated",&_isolated,"isolated/B");
@@ -184,7 +183,6 @@ namespace mu2e
       // fill cluster info
       _cpos = cluster.pos(); 
       _ctime = cluster.time();
-      _crho = cluster.rho();
       _isbkg = cluster.flag().hasAllProperties(BkgClusterFlag::bkg);
       _isref = cluster.flag().hasAllProperties(BkgClusterFlag::refined);
       _isolated = cluster.flag().hasAllProperties(BkgClusterFlag::iso);
@@ -253,14 +251,14 @@ namespace mu2e
 	// background hit specific information
 	bkghinfo._active = shf.hasAllProperties(StrawHitFlag::active);
 	bkghinfo._cbkg = shf.hasAllProperties(StrawHitFlag::bkg);
-	bkghinfo._dist = chit.distance();
+	bkghinfo._gdist = chit.distance();
 	bkghinfo._index = ish;
 	// calculate separation to cluster
 	Hep3Vector psep = (shp.pos()-cluster.pos()).perpPart();
 	double rho = psep.mag();
 	Hep3Vector pdir = psep.unit();
 	bkghinfo._rpos = psep;
-	bkghinfo._rho = rho;
+	bkghinfo._rrho = rho;
 	bkghinfo._rerr = std::max(2.5,shp.posRes(StrawHitPosition::wire)*fabs(pdir.dot(shp.wdir())));
 	//global counting for the cluster
 	if(bkghinfo._relation==0)++_nprimary;
