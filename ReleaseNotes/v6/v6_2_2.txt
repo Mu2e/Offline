@@ -2,6 +2,19 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_2_2
 
+6) dnbrow01  30 May 2017
+   Improve selective overlaps checking for building, dirt, and 
+   External Shielding.  Split ConstructMaterials to use two functions
+   to eschew compiler complaint about too many variables in previous
+   single function.  Add the trench cover for the DS, built by Aaron Hill.
+   modified:   GeometryService/src/Mu2eHallMaker.cc
+   new file:   Mu2eG4/geom/bldg/dsAreaTrenchCover.txt
+   modified:   Mu2eG4/geom/mu2eHall_v02.txt
+   modified:   Mu2eG4/inc/ConstructMaterials.hh
+   modified:   Mu2eG4/src/ConstructMaterials.cc
+   modified:   Mu2eG4/src/constructExternalShielding.cc
+   modified:   Mu2eG4/test/geom_SurfaceCheck_Select.txt
+
 5) edmonds 26 May 2017
    Added KalSeedFilter module which reduces the payload of persistent tracks
 
