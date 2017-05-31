@@ -1,0 +1,40 @@
+#
+# Read Tracker digis and run the track trigger prototype 
+#
+#  > mu2e --config TrkFilters/fcl/ReadDigis.fcl --source "your digis file" --TFile ReadDigis.root --nevts=100
+#
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+#include "TrkFilters/fcl/prolog.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : ReadDigis
+
+source :
+{
+  module_type : RootInput
+}
+# we don't need any simulation services for this job
+services : @local::Services.Reco
+# timing information
+#services.TimeTracker : {
+#  dbOutput : {
+#    filename : "TimingTest.db"
+#    overwrite : true
+#    }
+#}
+# setup modules needed to filter tracks
+physics :
+{
+  producers : {
+    @table::Tracking.producers
+    preloadDigis : { module_type: PreloadDigiProducts}
+  }
+}
+# create a trigger test path.  Note that physics.trigger_paths and physics.end_paths are not used, art will
+# create those automatically from all the defined paths
+
+#physics.TimingTest : [ makeSH, FSHPreStereo, MakeStrawHitPositions, MakeStereoHits, FlagStrawHits ]
+
+physics.TimingTest : [ preloadDigis , makeSH, FSHPreStereo ,MakeStrawHitPositions,MakeStereoHits,  FlagStrawHits ]

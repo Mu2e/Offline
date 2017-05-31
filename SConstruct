@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Build a Mu2e base release or satellite release.
 #
@@ -126,6 +127,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
 genreflex = Builder(action="mu2e_genreflex $SOURCE $TARGET  \"$_CPPINCFLAGS\" $LIBNAME $DEBUG_LEVEL" )
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
+
 # Get the flag that controls compiler options. Check that it is legal.
 # There is probably a way to tell AddOption to do this test internally.
 level = subprocess.check_output([bopt, '--build']).strip()
@@ -156,6 +158,7 @@ env.MergeFlags('-gdwarf-2')
 env.MergeFlags('-Werror=return-type')
 env.MergeFlags('-Winit-self')
 env.MergeFlags('-Woverloaded-virtual')
+
 #
 # Fixme: Recommend these once we scrub to the code to make them work,
 #env.MergeFlags('-pedantic')
@@ -181,14 +184,19 @@ if level == 'debug':
 # Fixme: check with root 6
 # Then guess at the correct location of Spectrum and MLP.
 rootlibs = [ 'Core', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
-             'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
+             'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl', 'mu2e_PerfLib' ]
 env.Append( ROOTLIBS = rootlibs )
 
 bindir = base+'/bin/'
 env.Append( BINDIR = bindir )
 
+genassembly= Builder(action ='$CXX -std=c++14 $CCFLAGS $_CPPINCFLAGS -S $SOURCE -o $TARGET', single_source =1, suffix ='.s')
+env.Append(BUILDERS = {'GenerateAssembly' : genassembly})
+
 # Make the modified environment visible to all of the SConscript files
 Export('env')
+
+#print "MY ENV ", env.Dump()
 
 # Walk the directory tree to locate all SConscript files.
 ss=[]
@@ -317,6 +325,9 @@ class mu2e_helper:
         plugin_cc = self.plugin_cc()
         for cc in exclude_cc: plugin_cc.remove(cc)
         for cc in plugin_cc:
+	    if cc in ['StrawHitsFromStrawDigis_module.cc', 'FlagStrawHits_module.cc', 'MakeStrawHitPositions_module.cc']:
+	      env.GenerateAssembly(cc)
+
             env.SharedLibrary( self.prefixed_plugin_libname(cc),
                                cc,
                                LIBS=[ userlibs ],

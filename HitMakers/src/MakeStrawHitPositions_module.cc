@@ -45,6 +45,8 @@
 #include <float.h>
 
 //#include "CalPatRec/inc/THackData.hh"
+//#include "PerfLib/inc/perflib.hh"
+//perf::PerfStats g_perf("MakeStrawHitPositions 100") ;
 
 using namespace std;
 
@@ -135,6 +137,8 @@ namespace mu2e {
   }
 
   void MakeStrawHitPositions::produce(art::Event& event) {
+  //   g_perf.read_begin_counters_inlined();
+    
     Tracker const& tracker = getTrackerOrThrow();
 
     if ( _debugLevel > 0 ) cout << "MakeStrawHitPositions: produce() begin; event " << event.id().event() << endl;
@@ -183,6 +187,8 @@ namespace mu2e {
     }
 
     event.put(std::move(shpcol));
+ //   g_perf.read_end_counters_inlined();
+
   } // end MakeStrawHitPositions::produce.
 } // end namespace mu2e
 

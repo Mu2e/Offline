@@ -48,6 +48,9 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 
+//#include "PerfLib/inc/perflib.hh"
+//perf::PerfStats g_perf("StrawHitsFromStrawDigis 100") ;
+
 using namespace std;
 using CLHEP::Hep3Vector;
 namespace mu2e {
@@ -154,6 +157,8 @@ namespace mu2e {
   }
 
   void StrawHitsFromStrawDigis::produce(art::Event& event) {
+ // g_perf.read_begin_counters_inlined();
+
     if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis produce " << endl;
 // update conditions
     
@@ -253,6 +258,8 @@ namespace mu2e {
     event.put(move(strawHits));
     if(mcptrHits != 0)event.put(move(mcptrHits));
     if(mchits != 0)event.put(move(mchits));
+
+   // g_perf.read_end_counters_inlined();    
   }
 
   void StrawHitsFromStrawDigis::fillDiagMC(Straw const& straw,

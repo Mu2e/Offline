@@ -35,6 +35,9 @@
 #include <iostream>
 #include <float.h>
 
+//#include "PerfLib/inc/perflib.hh"
+//perf::PerfStats g_perf("MakeStereoHits 100") ;
+
 using namespace std;
 
 namespace mu2e {
@@ -139,6 +142,8 @@ namespace mu2e {
   }
 
   void MakeStereoHits::produce(art::Event& event) {
+  //   g_perf.read_begin_counters_inlined();
+
     // Get a reference to T trackers
     const Tracker& tracker = getTrackerOrThrow();
     const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
@@ -291,6 +296,7 @@ namespace mu2e {
       event.put(move(sthits));
     }
     event.put(move(shpcol));
+   // g_perf.read_end_counters_inlined();
   } // end MakeStereoHits::produce.
 
 // estimate the resolution on the stereo hit position projection along a wire direction
