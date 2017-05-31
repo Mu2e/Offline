@@ -86,7 +86,8 @@ helper.make_plugins( [
    'CLHEP',
    'HepPDT',
    rootlibs,
-   'xerces-c',
+    'TMVA',
+    'xerces-c',
    'boost_filesystem',
    'boost_system',
     ] )
