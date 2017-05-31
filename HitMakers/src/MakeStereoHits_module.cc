@@ -38,7 +38,7 @@
 #include "CalPatRec/inc/THackData.hh"
 
 //#include "PerfLib/inc/perflib.hh"
-//perf::PerfStats g_perf("MakeStereoHits 100") ;
+//perf::PerfStats g_perf("MakeStereoHits new 100") ;
 
 using namespace std;
 
@@ -367,7 +367,7 @@ struct free_delete{
       event.put(move(sthits));
     }
     event.put(move(shpcol));
-   // g_perf.read_end_counters_inlined();
+  //  g_perf.read_end_counters_inlined();
   } // end MakeStereoHits::produce.
 
 // estimate the resolution on the stereo hit position projection along a wire direction

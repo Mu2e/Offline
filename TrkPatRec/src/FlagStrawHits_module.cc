@@ -36,7 +36,7 @@
 #include <iostream>
 
 //#include "PerfLib/inc/perflib.hh"
-//perf::PerfStats g_perf("FlagStrawHits 200") ;
+//perf::PerfStats g_perf("FlagStrawHits new 200") ;
 
 using namespace std;
 
@@ -125,7 +125,7 @@ struct free_delete{
 
   void
   FlagStrawHits::produce(art::Event& event) {
-   // _stats.read_begin_counters();
+   //  g_perf.read_begin_counters_inlined();
 
     if ( _debug > 1 ) cout << "FlagStrawHits: produce() begin; event " << event.id().event() << endl;
       
@@ -229,7 +229,7 @@ struct free_delete{
   }
     event.put(move(shfcol));
 
-//    g_perf.read_end_counters_inlined();
+ //  g_perf.read_end_counters_inlined();    
 
   } // end FlagStrawHits::produce.
   

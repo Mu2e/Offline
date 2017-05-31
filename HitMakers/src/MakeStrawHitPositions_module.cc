@@ -46,7 +46,7 @@
 
 //#include "CalPatRec/inc/THackData.hh"
 //#include "PerfLib/inc/perflib.hh"
-//perf::PerfStats g_perf("MakeStrawHitPositions 100") ;
+//perf::PerfStats g_perf("MakeStrawHitPositions new 100") ;
 
 using namespace std;
 
@@ -139,7 +139,7 @@ namespace mu2e {
   constexpr double invsqrt12 = 1.0/sqrt(12.0);
 
   void MakeStrawHitPositions::produce(art::Event& event) {
-  //   g_perf.read_begin_counters_inlined();
+ //    g_perf.read_begin_counters_inlined();
     
     Tracker const& tracker = getTrackerOrThrow();
 
@@ -191,7 +191,7 @@ namespace mu2e {
     unique_ptr<StrawHitPositionCollection> shpcol1(new StrawHitPositionCollection);
     shpcol1->swap(shpcol);
     event.put(std::move(shpcol1)); 
- //   g_perf.read_end_counters_inlined();
+   // g_perf.read_end_counters_inlined();
 
   } // end MakeStrawHitPositions::produce.
 } // end namespace mu2e
