@@ -35,6 +35,9 @@
 // C++ includes.
 #include <iostream>
 
+#include "PerfLib/inc/perflib.hh"
+perf::PerfStats g_perf("FlagStrawHits 200") ;
+
 using namespace std;
 
 namespace mu2e {
@@ -86,6 +89,8 @@ namespace mu2e {
 
   void
   FlagStrawHits::produce(art::Event& event) {
+     g_perf.read_begin_counters_inlined();
+
     const Tracker& tracker = getTrackerOrThrow();
     const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
 
@@ -176,7 +181,10 @@ namespace mu2e {
     }
     event.put(move(shfcol));
 
+    g_perf.read_end_counters_inlined();
+
   } // end FlagStrawHits::produce.
+  
 } // end namespace mu2e
 
 using mu2e::FlagStrawHits;
