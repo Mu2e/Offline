@@ -50,7 +50,7 @@ FlagBkgHits : {
 TimeClusterFinder : {
   module_type               : TimeClusterFinder
   HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
-  HitBackgroundBits	    : ["DeltaRay","Isolated"]
+  HitBackgroundBits	    : ["Background"]
   PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
   StrawHitFlagCollection    : "FlagBkgHits"
 }

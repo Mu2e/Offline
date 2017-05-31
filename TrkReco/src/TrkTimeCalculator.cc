@@ -32,7 +32,7 @@ namespace mu2e
   TrkTimeCalculator::TrkTimeCalculator(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
 //    _useflag(pset.get<std::vector<std::string>>("UseFlag")),
-//    _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier","DeltaRay","Isolated"})),
+//    _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier","Background"})),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _shOffset(pset.get<double>("StrawHitTimeOffset",25.5)),
     _shSlope(pset.get<double>("StrawHitTimeSlope",4.7e-3)),// ns/mm

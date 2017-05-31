@@ -195,7 +195,7 @@ CalPatRec : { @table::CalPatRec
 	    TimeSelectionBits                           : ["EnergySelection","TimeSelection","RadiusSelection"]
 	    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
 	    KalmanFitSelectionBits                      : []
-	    BackgroundSelectionBits                     : ["DeltaRay","Isolated"]
+	    BackgroundSelectionBits                     : ["Background","Isolated"]
 
 	    HelixFitHack : { @table::CalPatRec.HelixFitHack }
 	    SeedFitHack  : { @table::CalPatRec.SeedFitHack  }
@@ -377,7 +377,7 @@ CalPatRec : { @table::CalPatRec
 	    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
 	    caloClusterModuleLabel                      : CaloClusterFromProtoCluster
 	    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
-	    BackgroundSelectionBits                     : ["DeltaRay","Isolated"]
+	    BackgroundSelectionBits                     : ["Background","Isolated"]
 	    MinNHits                                    : 15
 	    DtMin                                       : -40.
 	    DtMax                                       :  40.   # make it symmetric

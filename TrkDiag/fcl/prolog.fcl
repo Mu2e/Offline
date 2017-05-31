@@ -77,7 +77,7 @@ BEGIN_PROLOG
   TimeClusterDiag : {
 	module_type : TimeClusterDiag
 	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
-	HitBackgroundBits	    : ["DeltaRay"]
+	HitBackgroundBits	    : ["Background"]
 	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
   }
