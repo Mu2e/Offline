@@ -39,6 +39,9 @@ namespace mu2e{
     std::string pName("proton");
     setParticleCut(config, pName, pL);
 
+    // add processes if requested
+    addUserProcesses(config);
+
   }
 
   template void postG4InitializeTasks(const SimpleConfig&, G4VUserPhysicsList* pL);

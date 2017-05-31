@@ -122,3 +122,4 @@ physics.producers.makeSH.maxFullPrint : 5
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
 physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
 #physics.producers.g4run.physics.turnOffRadioactiveDecay: true
+#physics.producers.g4run.physics.addProcesses : [ "GammaToMuPair", "AnnihiToMuPair", "ee2hadr" ]
