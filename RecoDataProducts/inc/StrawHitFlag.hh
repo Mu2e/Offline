@@ -21,7 +21,7 @@ namespace mu2e {
 // the lower 16 bits are used to flag hit properties.  bits 0-10 refer to track-related
 // properties, 12-15 are for external association (like to a calorimeter cluster)
 // The upper 16 bits are reserved to flag the track number (or cluster) to which these hits are associated.
-    enum bit_type {stereo=0, energysel=1, radsel=2, timesel=3, bkg=6, isolated=7, outlier=8, other=9,
+    enum bit_type {stereo=0, energysel=1, radsel=2, timesel=3, bkgclust=5, bkg=6, isolated=7, outlier=8, other=9,
     tdiv=10, tclust=11,
     calosel=12, strawxtalk=13, elecxtalk=14, trksel=15,
     active=16,doca=17, resolvedphi=18,
