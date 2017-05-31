@@ -201,6 +201,7 @@ namespace mu2e {
 //end
 
 
+      
 
     for(size_t isd=0;isd<ndigi;++isd){
       StrawDigi const& digi = (*strawdigis)[isd];

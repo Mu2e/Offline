@@ -20,6 +20,7 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "Mu2eUtilities/inc/FMVATools.hh"
+
 // art includes.
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -34,13 +35,19 @@
 // C++ includes.
 #include <iostream>
 #include <float.h>
+#include "CalPatRec/inc/THackData.hh"
 
 //#include "PerfLib/inc/perflib.hh"
 //perf::PerfStats g_perf("MakeStereoHits 100") ;
 
 using namespace std;
 
+#include "PerfLib/inc/perflib.hh"
+using perf::PerfStats;
+using perf::metrics_t;
+
 namespace mu2e {
+  // struct to hold MVA input  
   // struct to hold MVA input
   struct StereoMVA {
     std::vector <Double_t> _pars;
