@@ -89,6 +89,7 @@ namespace mu2e {
     TrkChargeReco::PeakFit *_pfit; // peak fitter
 // Diagnostics
     TTree* _shdiag;
+    
     SHID _shid; // strawhit ID
     TrkChargeReco::PeakFitParams _peakfit; // result from peak fit
     Float_t _edep, _time, _dt;
@@ -158,7 +159,6 @@ namespace mu2e {
 
   void StrawHitsFromStrawDigis::produce(art::Event& event) {
  // g_perf.read_begin_counters_inlined();
-
     if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis produce " << endl;
 // update conditions
     
@@ -174,14 +174,17 @@ namespace mu2e {
     // find the digis
     art::Handle<mu2e::StrawDigiCollection> strawdigisH; 
     const StrawDigiCollection* strawdigis(0);
-    if(event.getByLabel(_strawDigis,strawdigisH))
-      strawdigis = strawdigisH.product();
-    if(strawdigis == 0)
-      throw cet::exception("RECO")<<"mu2e::StrawHitsFromStrawDigis: No StrawDigi collection found for label " <<  _strawDigis << endl;
+
+    auto res = event.getByLabel(_strawDigis,strawdigisH);
+    
+    if(res) 
+      strawdigis = strawdigisH.product();    
+    
 
   // find the associated MC truth collection.  Note this doesn't have to exist!
     const PtrStepPointMCVectorCollection * mcptrdigis(0);
     art::Handle<PtrStepPointMCVectorCollection> mcptrdigiH;
+    
     if(event.getByLabel(_strawDigis,mcptrdigiH))
       mcptrdigis = mcptrdigiH.product();
     const StrawDigiMCCollection * mcdigis(0);
@@ -190,9 +193,15 @@ namespace mu2e {
       mcdigis = mcdigiH.product();
   // loop over digis.  Note the MC truth is in sequence
     size_t ndigi = strawdigis->size();
+     // std::cout << "ndigi=" << ndigi << "\n";
+
     if( (mcptrdigis != 0 && mcptrdigis->size() != ndigi) ||
 	(mcdigis != 0 && mcdigis->size() != ndigi) )
       throw cet::exception("RECO")<<"mu2e::StrawHitsFromStrawDigis: MCPtrDigi collection size doesn't match StrawDigi collection size" << endl;
+//end
+
+
+
     for(size_t isd=0;isd<ndigi;++isd){
       StrawDigi const& digi = (*strawdigis)[isd];
 // convert the digi to a hit
@@ -217,24 +226,33 @@ namespace mu2e {
 	  makehit = false;
       } else
 	makehit = false;
+      
+
       if(makehit){
+
 // fit the ADC waveform to get the charge
 	StrawDigi::ADCWaveform const& adc = digi.adcWaveform();
 	// note: pedestal is being subtracting inside strawele, in the real experiment we will need
 	// per-channel version of this FIXME!!!
 	TrkChargeReco::PeakFitParams params;
+
 	_pfit->process(adc,params);
-	if(_debugLevel > 0){
+
+     if(_debugLevel > 0){
 	  cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
 	  << " Fit charge = " << params._charge << " Fit time = " << params._time << endl;
 	}
 	// use time division to correct for attenuation FIXME!!
 	// the gain should come from a straw-dependent database FIXME!!
-	double energy = _strawphys->ionizationEnergy(params._charge/_strawphys->strawGain());
-	// crate the straw hit and append it to the list
+
+    double energy = _strawphys->ionizationEnergy(params._charge/_strawphys->strawGain());
+
+    // crate the straw hit and append it to the list
 	StrawHit newhit(digi.strawIndex(),time,dt,energy);
 	strawHits->push_back(newhit);
-// copy MC truth from digi to hit.  These are exactly the same as for the digi
+
+
+	// copy MC truth from digi to hit.  These are exactly the same as for the digi
 	if(mcptrdigis != 0){
 	  mcptrHits->push_back((*mcptrdigis)[isd]);
 	}
@@ -252,10 +270,15 @@ namespace mu2e {
 	  if(mcdigis != 0) fillDiagMC( straw, (*mcdigis)[isd]);
 	  _shdiag->Fill();
 	}
+	
+	
       }
+
     }
-// put objects into event
+
+// put objects into event 
     event.put(move(strawHits));
+    
     if(mcptrHits != 0)event.put(move(mcptrHits));
     if(mchits != 0)event.put(move(mchits));
 

@@ -7,6 +7,10 @@
 
 BEGIN_PROLOG
 
+PreloadDigiProducts : {
+  module_type                 : PreloadDigiProducts
+}
+
 # this should go in a general file FIXME!!
 FitDir : {
   downstream : 0
@@ -257,6 +261,7 @@ KFFUpiP.fitdirection	      : @local::FitDir.upstream
 # Declare a table with all the modules needed for track reconstruction
 Tracking : {
   producers : {
+    preloadDigis    : @local::PreloadDigiProducts
     makeSD	    : @local::makeSD
     makeSH	    : @local::makeSHfromSD
     FSHPreStereo    : @local::FSHPreStereo

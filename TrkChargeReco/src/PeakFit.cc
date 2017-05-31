@@ -30,7 +30,7 @@ namespace mu2e {
       // reset
       fit = PeakFitParams();
       double sum = 0.0;
-      for (auto iadc : adcData) { sum += _strawele.adcCurrent(iadc); }
+      for (auto iadc : adcData) { sum += _strawele.adcCurrentOpt(iadc); }
       // convert charge to pC
       double charge = sum*_strawele.adcPeriod()*StrawElectronics::_pC_per_uA_ns;
       fit._charge = charge;

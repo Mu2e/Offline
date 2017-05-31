@@ -52,6 +52,7 @@ namespace mu2e {
       void tdcTimes(TDCValues const& tdc, std::array<double,2>& times) const;
       double adcVoltage(unsigned short adcval) const; // mVolts
       double adcCurrent(unsigned short adcval) const; // microAmps
+      double adcCurrentOpt(unsigned short adcval) const; // microAmps
 // accessors
       double adcLSB() const { return _ADCLSB; } //LSB in mvolts
       double tdcLSB() const { return _TDCLSB; } //LSB in nseconds
@@ -82,6 +83,8 @@ namespace mu2e {
     private:
     // generic waveform parameters
       double _dVdI[2]; // scale factor between charge and voltage (milliVolts/picoCoulombs)
+      double _ADCLSB; // least-significant bit of ADC (mVolts)
+      unsigned short _ADCped; // ADC pedestal (reading for 0 volts)
       double _tmax[2]; // time at which value is maximum
       double _ttrunc[2]; // time to truncate signal to 0
       double _linmax[2]; // linear response to unit charge at maximum
@@ -97,9 +100,7 @@ namespace mu2e {
       double _vthresh; // threshold voltage for electronics discriminator (mVolt)
       double _analognoise[2]; // threshold voltage noise width (mVolt)
 // add some noise parameter: FIXME!!!
-      double _ADCLSB; // least-significant bit of ADC (mVolts)
       unsigned short _maxADC; // maximum ADC value
-      unsigned short _ADCped; // ADC pedestal (reading for 0 volts)
       size_t _nADC,_nADCpre; // Number of ADC samples, presamples
       double _ADCPeriod; // ADC period in nsec
       double _ADCOffset; // Offset of 1st ADC sample WRT threshold crossing (nsec)
@@ -111,6 +112,12 @@ namespace mu2e {
   // helper functions
       static inline double mypow(double,unsigned);
   };
+  
+    inline double StrawElectronics::adcCurrentOpt(unsigned short adcval) const {
+  // this includes the effects from normalization of the pulse shape  
+    return (adcval-_ADCped)*_ADCLSB/_dVdI[adc];
+  }
+
 }
 
 #endif
