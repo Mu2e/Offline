@@ -97,7 +97,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
   TCut stpprotonorigin("mcgpdg==2212&&mcgid==28");
   TCut pprotonorigin("mcgpdg==2212&&mcgid==16");
 
-  TCut hitsel("esel&&rsel&&tsel&&(!delta)&&(!isolated)");
+  TCut hitsel("esel&&rsel&&tsel&&(!bkg)");
 
   TCut goodevt("mcom>100");
   TCut goodpeak("abs(tpeak-mct0-25)<30");
@@ -777,15 +777,16 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     tleg->AddEntry(dtime,title,"");
     tleg->Draw();
   } else if(spage=="hitsel"){
-    TH2F* hsel = new TH2F("hsel","Hit Selection;Producing Particle;Cut efficiency (%)",5,-0.5,4.5,7,-0.5,6.5);
+    TH2F* hsel = new TH2F("hsel","Hit Selection;Producing Particle;Cut efficiency (%)",5,-0.5,4.5,8,-0.5,7.5);
     TAxis* yax = hsel->GetYaxis();
     unsigned ibin(1);
     yax->SetBinLabel(ibin++,"All");
     yax->SetBinLabel(ibin++,"Radius");
     yax->SetBinLabel(ibin++,"Time");
     yax->SetBinLabel(ibin++,"Energy");
+    yax->SetBinLabel(ibin++,"Clustered");
     yax->SetBinLabel(ibin++,"Isolated");
-    yax->SetBinLabel(ibin++,"Cluster");
+    yax->SetBinLabel(ibin++,"Bkg");
     yax->SetBinLabel(ibin++,"Good (Net)");
     TAxis* xax = hsel->GetXaxis();
     ibin = 1;
@@ -811,7 +812,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     myhpg->Scale(pscale);
     myhpg->SetFillColor(kGreen);
     // now loop over selections
-    std::vector<TCut> selcuts = {"","rsel","tsel","esel","isolated","delta",hitsel};
+    std::vector<TCut> selcuts = {"","rsel","tsel","esel","bkgclust","isolated","bkg",hitsel};
     for(size_t icut=0;icut< selcuts.size();++icut){
       char val[100];
       cout << "Projecting cut " << selcuts[icut] << endl;
@@ -828,7 +829,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 	hsel->SetBinContent(ibin,jbin,val*norm);
       }
     }
-    TCanvas* hscan = new TCanvas("hscan","hscan",800,800);
+    TCanvas* hscan = new TCanvas("hscan","hscan",1200,1200);
     hscan->Divide(1,2);
     hscan->cd(1);
     hsel->Draw("boxtext0");
