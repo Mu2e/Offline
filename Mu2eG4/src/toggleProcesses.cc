@@ -27,6 +27,10 @@
 #include "G4VRestProcess.hh"
 #include "G4ProcessManager.hh"
 
+#include "G4MuonMinus.hh"
+#include "G4MuonMinusCapture.hh"
+#include "G4MuMinusCapturePrecompound.hh"
+
 #include "G4PhysicsListHelper.hh"
 #include "G4GammaConversionToMuons.hh"
 #include "G4AnnihiToMuPair.hh"
@@ -50,19 +54,19 @@ namespace mu2e{
     for( size_t i=0; i<plist.size(); ++i ) {
       int pdg = plist[i];
       G4ParticleDefinition* particle = theParticleTable->FindParticle(pdg);
-      if( particle==0 ) {
+      if( particle==nullptr ) {
         cout << "SwitchDecayOff: cannot find particle pdgId=" << pdg << endl;
       } else {
         G4ProcessManager* pmanager = particle->GetProcessManager();
         G4ProcessVector * pVector  = pmanager->GetProcessList();
-        G4VProcess *decayProcess = 0;
-        for( G4int j=0; j<pmanager->GetProcessListLength(); j++ ) {
+        G4VProcess *decayProcess = nullptr;
+        for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
           if( (*pVector)[j]->GetProcessName() == "Decay" ) {
             decayProcess = (*pVector)[j];
             break;
           }
         }
-        if( decayProcess==0 ) {
+        if( decayProcess==nullptr ) {
           cout << "SwitchDecayOff: cannot find decay process for particle pdgId=" << pdg
                << " (" << particle->GetParticleName() << ")" << endl;
         } else {
@@ -72,11 +76,66 @@ namespace mu2e{
         }
         cout << "SwitchDecayOff: list of processes defined for particle pdgId=" << pdg
              << " (" << particle->GetParticleName() << "):" << endl;
-        for( G4int j=0; j<pmanager->GetProcessListLength(); j++ )
+        for( G4int j=0; j<pmanager->GetProcessListLength(); ++j )
           cout << (*pVector)[j]->GetProcessName() << endl;
       }
     }
 
+  }
+
+  void switchCaptureDModel(std::string cDModel) {
+
+    // change muMinusCaptureAtRest deexcitation model to muMinusNuclearCapture
+    // this is limited to muon minus only
+
+    if (std::string("muMinusNuclearCapture")!=cDModel) {
+      return;
+    }
+
+    G4ParticleDefinition* particle = G4MuonMinus::MuonMinus();
+    if( particle==0 ) {
+      cout << "SwitchDecayOff: cannot find MuonMinus " << endl;
+    } else {
+      G4ProcessManager* pmanager = particle->GetProcessManager();
+      G4ProcessVector * pVector  = pmanager->GetProcessList();
+      G4VProcess* muCapProcess = nullptr;
+      for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
+        if( (*pVector)[j]->GetProcessName() == "muMinusCaptureAtRest" ) {
+          muCapProcess = (*pVector)[j];
+          break;
+        }
+      }
+      if( muCapProcess==0 ) {
+        cout << __func__ << " : cannot find muMinusCaptureAtRest process for "
+             << particle->GetParticleName() << endl;
+      } else {
+        pmanager->RemoveProcess(muCapProcess);
+        cout << __func__ << " : muMinusCaptureAtRest process is removed for " 
+             << particle->GetParticleName() << endl;
+        G4MuonMinusCapture* muProcess = new G4MuonMinusCapture(new G4MuMinusCapturePrecompound());
+        G4PhysicsListHelper* ph = G4PhysicsListHelper::GetPhysicsListHelper();
+        ph->RegisterProcess(muProcess, particle);
+        //        pmanager->AddRestProcess( muProcess );
+        cout << __func__ << " : added muMinusCaptureAtRest with muMinusNuclearCapture for " 
+             << particle->GetParticleName() << endl;
+        }
+      cout  << __func__ << " : list of processes defined for " 
+            << particle->GetParticleName() << " :" << endl;
+      for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
+        cout << (*pVector)[j]->GetProcessName() << endl;
+      }
+    }
+  }
+
+  void switchCaptureDModel(const SimpleConfig& config) { 
+    if( ! config.hasName("g4.captureDModel") ) return;
+    std::string cDModel = config.getString("g4.captureDModel");
+    switchCaptureDModel(cDModel);
+  }
+
+  void switchCaptureDModel(const fhicl::ParameterSet& pset) { 
+    std::string cDModel= pset.get<std::string>("physics.captureDModel");
+    switchCaptureDModel(cDModel);
   }
 
   void switchDecayOff(const SimpleConfig& config) {

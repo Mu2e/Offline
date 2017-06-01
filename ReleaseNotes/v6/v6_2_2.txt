@@ -2,6 +2,17 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_2_2
 
+8) genser 31 May 2017
+
+   enabled switching muon capture nuclear deexcitation model to precompound by using
+   fcl: physics.producers.g4run.physics.captureDModel: "muMinusNuclearCapture"
+   Modified files:
+      Mu2eG4/fcl/g4test_03.fcl
+      Mu2eG4/fcl/prolog.fcl
+      Mu2eG4/inc/toggleProcesses.hh
+      Mu2eG4/src/postG4InitializeTasks.cc
+      Mu2eG4/src/toggleProcesses.cc
+
 7) genser 31 May 2017
 
    enabled turning on GammaToMuPair, AnnihiToMuPair, ee2hadr processes

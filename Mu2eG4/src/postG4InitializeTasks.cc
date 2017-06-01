@@ -42,6 +42,9 @@ namespace mu2e{
     // add processes if requested
     addUserProcesses(config);
 
+    // swap Bertini Cascade with Precompound model in G4MuonMinusCapture
+    switchCaptureDModel(config);
+
   }
 
   template void postG4InitializeTasks(const SimpleConfig&, G4VUserPhysicsList* pL);
