@@ -136,7 +136,10 @@ namespace mu2e
       _mvavars.push_back(0.0);
       _reader.AddVariable(vname,&_mvavars.back());
     }
-    _reader.BookMVA("MLP method", pset.get<std::string>("BkgMVA.MVAWeights"));
+    // get config file from standard locations
+    ConfigFileLookupPolicy configFile;
+    string weights = configFile(pset.get<std::string>("BkgMVA.MVAWeights"));
+    _reader.BookMVA("MLP method", weights);
   }
 
   FlagBkgHits::~FlagBkgHits(){}
