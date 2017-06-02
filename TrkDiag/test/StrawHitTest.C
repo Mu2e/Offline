@@ -55,11 +55,10 @@ Int_t myproc(Int_t proc,Bool_t xtalk) {
 }
 
 Int_t myhpart(Int_t mcpdg,Int_t mcgen, Int_t mcproc){
-  enum hpart{Proton=0,LowEe,DIO,Other,CE};
+  enum hpart{Proton=0,LowEe,Other,CE};
   if(mcpdg==11&&mcgen==2)return CE;
-  if(mcpdg==11&&mcproc==56)return DIO;
   if(mcpdg==2212)return Proton;
-  if(mcpdg==11)return LowEe;
+  if(abs(mcpdg)==11)return LowEe;
   return Other;
 }
 
@@ -446,32 +445,16 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 //    ephot->Draw("same");
 
     TBox* eselbox = new TBox(0.0,edelta->GetMinimum(),3.5,edelta->GetMaximum());
-//    Int_t tYellow = TColor::GetColorTransparent(kYellow,0.3);
     eselbox->SetFillColor(kYellow);
     eselbox->SetFillStyle(3004);
-//    eselbox->SetLineStyle(3);
     eselbox->Draw();
-//    TLine* ecut_t = new TLine(0.003,0.0,0.003,edelta->GetMaximum());
-//    ecut_t->SetLineColor(kBlack);
-//    ecut_t->SetLineStyle(2);
-//    ecut_t->SetLineWidth(2);
-//    TLine* ecut_l = new TLine(0.0,0.0,0.0,edelta->GetMaximum());
-//    ecut_l->SetLineColor(kBlack);
-//    ecut_l->SetLineStyle(2);
-//    ecut_l->SetLineWidth(2);
-//    ecut_t->Draw();
-//    ecut_l->Draw();
 
     TLegend* leg2 = new TLegend(0.55,0.7,0.9,0.9);
     leg2->AddEntry(rconv,"CE Induced","l");
     leg2->AddEntry(rdelta,"Background e Induced","l");
-//    leg2->AddEntry(rdio,"DIO Electrons","l");
-//    leg2->AddEntry(rneut,"Neutrons","l");
-//    leg2->AddEntry(rphot,"Photons","l");
     leg2->AddEntry(rp,"Proton Induced","l");
     leg2->AddEntry(ex,"X-talk","l");
     leg2->AddEntry(eselbox,"Track Reconstruction Selection","F");
-//    leg3->AddEntry(ecut_l,"Loose cut","l");
     leg2->Draw();
 
     int istart = econv->FindFixBin(0.0);
@@ -777,13 +760,14 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     tleg->AddEntry(dtime,title,"");
     tleg->Draw();
   } else if(spage=="hitsel"){
-    TH2F* hsel = new TH2F("hsel","Hit Selection;Producing Particle;Cut efficiency (%)",5,-0.5,4.5,8,-0.5,7.5);
+    TH2F* hsel = new TH2F("hsel","Hit Selection;Producing Particle;Cut efficiency (%)",4,-0.5,3.5,9,-0.5,8.5);
     TAxis* yax = hsel->GetYaxis();
     unsigned ibin(1);
     yax->SetBinLabel(ibin++,"All");
     yax->SetBinLabel(ibin++,"Radius");
     yax->SetBinLabel(ibin++,"Time");
     yax->SetBinLabel(ibin++,"Energy");
+    yax->SetBinLabel(ibin++,"Presel");
     yax->SetBinLabel(ibin++,"Clustered");
     yax->SetBinLabel(ibin++,"Isolated");
     yax->SetBinLabel(ibin++,"Bkg");
@@ -792,17 +776,15 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     ibin = 1;
     xax->SetBinLabel(ibin++,"Proton");
     xax->SetBinLabel(ibin++,"LowEe");
-    xax->SetBinLabel(ibin++,"DIOe");
     xax->SetBinLabel(ibin++,"Other");
     xax->SetBinLabel(ibin++,"Ce");
     // first, get normalization
-    TH1F* myhp = new TH1F("myhp","Hit Rate;Producing Particle;Hits/event",5,-0.5,4.5);
-    TH1F* myhpg = new TH1F("myhpg","Hit Rate;Producing Particle;Hits/event",5,-0.5,4.5);
+    TH1F* myhp = new TH1F("myhp","Hit Rate;Producing Particle;Hits/event",4,-0.5,3.5);
+    TH1F* myhpg = new TH1F("myhpg","Hit Rate;Producing Particle;Hits/event",4,-0.5,3.5);
     xax = myhp->GetXaxis();
     ibin = 1;
     xax->SetBinLabel(ibin++,"Proton");
     xax->SetBinLabel(ibin++,"LowEe");
-    xax->SetBinLabel(ibin++,"DIOe");
     xax->SetBinLabel(ibin++,"Other");
     xax->SetBinLabel(ibin++,"Ce");
     hits->Project("myhp","myhpart(mcpdg,mcgen,mcproc)");
@@ -812,7 +794,8 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     myhpg->Scale(pscale);
     myhpg->SetFillColor(kGreen);
     // now loop over selections
-    std::vector<TCut> selcuts = {"","rsel","tsel","esel","bkgclust","isolated","bkg",hitsel};
+    TCut preclu("tsel&&esel");
+    std::vector<TCut> selcuts = {"","rsel","tsel","esel",preclu,"bkgclust","isolated","bkg",hitsel};
     for(size_t icut=0;icut< selcuts.size();++icut){
       char val[100];
       cout << "Projecting cut " << selcuts[icut] << endl;
@@ -821,11 +804,11 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     }
 // normalize by row
     for(int ibin=1;ibin <= myhp->GetXaxis()->GetNbins();++ibin){
-      double norm = 1.0/myhp->GetBinContent(ibin);
-      cout << "Normalization for " << hsel->GetYaxis()->GetBinLabel(ibin)  << " = " << norm << endl;
+      double norm = 100.0/hsel->GetBinContent(ibin,1);
+//      cout << "Normalization for " << hsel->GetYaxis()->GetBinLabel(ibin)  << " = " << norm << endl;
       for(int jbin=1;jbin <= hsel->GetYaxis()->GetNbins(); ++jbin) {
 	double val =hsel->GetBinContent(ibin,jbin);
-	cout << "value for ibin " << ibin <<" jbin " << jbin << " val " << val << endl;
+//	cout << "value for ibin " << ibin <<" jbin " << jbin << " val " << val << endl;
 	hsel->SetBinContent(ibin,jbin,val*norm);
       }
     }

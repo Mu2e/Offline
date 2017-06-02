@@ -284,39 +284,6 @@ void BDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     nssel->SetFillStyle(3004);
     nssel->Draw();
 
-
-  } else if(spage=="hitmva") {
-    TH1F* sthtmvap = new TH1F("sthtmvap","Stereo Hit MVA output",200,-0.2,1.2);
-    TH1F* sthtmvau = new TH1F("sthtmvau","Stereo Hit MVA output",200,-0.2,1.2);
-    sthtmvau->SetLineColor(kRed);
-    sthtmvap->SetLineColor(kBlue);
-    TH1F* nsthtmvap = new TH1F("nsthtmvap","Non-Stereo Hit MVA output",200,-0.2,1.2);
-    TH1F* nsthtmvau = new TH1F("nsthtmvau","Non-Stereo Hit MVA output",200,-0.2,1.2);
-    nsthtmvap->SetLineColor(kBlue);
-    nsthtmvau->SetLineColor(kRed);
-
-    bdiag->Project("sthtmvap","_hgd",bkg+cluster+stht+primary);
-    bdiag->Project("sthtmvau","_hgd",bkg+cluster+stht+norel);
-    bdiag->Project("nsthtmvap","_hgd",bkg+cluster+nstht+primary);
-    bdiag->Project("nsthtmvau","_hgd",bkg+cluster+nstht+norel);
-
-    TLegend* mhleg = new TLegend(0.2,0.7,0.6,0.9);
-    mhleg->AddEntry(sthtmvap,"#delta primary hits","L");
-    mhleg->AddEntry(sthtmvau,"#delta unrelated (X10)","L");
-
-    Double_t factor(10.0);
-    sthtmvau->Scale(factor);
-    nsthtmvau->Scale(factor);
-
-    TCanvas* can = new TCanvas("hmvacan","Hit MVA output",800,400);
-    can->Divide(2,1);
-    can->cd(1);
-    sthtmvap->Draw();
-    sthtmvau->Draw("same");
-    can->cd(2);
-    nsthtmvap->Draw();
-    nsthtmvau->Draw("same");
-    mhleg->Draw();
   }  else if(spage=="hits") {
     TH1F* drhobkgp = new TH1F("drhobkgp","Bkg Hit #rho difference;#Delta #rho (mm)",100,-50.0,100.0);
     TH1F* drhobkgu = new TH1F("drhobkgu","Bkg Hit #rho difference;#Delta #rho (mm)",100,-50.0,100.0);
