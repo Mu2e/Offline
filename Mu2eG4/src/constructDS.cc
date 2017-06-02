@@ -55,12 +55,13 @@ namespace mu2e {
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( _config, "DS"         , "ds"          );
     geomOptions->loadEntry( _config, "DSCoil"     , "dsCoil"      );
+    geomOptions->loadEntry( _config, "DSRing"     , "dsRing"      );
     geomOptions->loadEntry( _config, "DSSpacer"   , "dsSpacer"    );
     geomOptions->loadEntry( _config, "DSSupport"  , "dsSupport"   );
     geomOptions->loadEntry( _config, "DSThShield" , "dsThShield"  );
     geomOptions->loadEntry( _config, "DSVacuum"   , "dsVacuum"    );
     geomOptions->loadEntry( _config, "DSShielding", "dsShielding" );
-    geomOptions->loadEntry( _config, "PiondegAbs" , "piondeg"     );
+    //    geomOptions->loadEntry( _config, "PiondegAbs" , "piondeg"     );
 
     // Fetch parent (hall) position
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
@@ -290,19 +291,34 @@ namespace mu2e {
     std::vector<double> zr = ds->zRing();
     
     for ( unsigned int iRing = 0; iRing < xr.size(); iRing++ ) {
-      std::ostringstream leftName;
-      leftName << "DSleftSideRing" << iRing;
+
+      // Let's build a mother volume first
+      std::ostringstream ringMotherName;
+      ringMotherName << "DSRingMother" << iRing;
       CLHEP::HepRotation* ringRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-      double lx = xr[iRing];
-      double ly = yr[iRing];
-      double lz = zr[iRing] - lr/2.0 - trs/2.0;
+
+      double motherx = xr[iRing];
+      double mothery = yr[iRing];
+      double motherz = zr[iRing];
+
+      VolumeInfo motherVol = nestTubs( ringMotherName.str(),
+				       TubsParams( rirs, rors, trs + lr/2.0 ),
+				       findMaterialOrThrow("G4_AIR"),
+				       ringRotat, 
+				       CLHEP::Hep3Vector(motherx,mothery,motherz) - _hallOriginInMu2e,
+				       parent, 0, G4Color::Blue(),
+				       "DSRing" );
+ 
+     std::ostringstream leftName;
+      leftName << "DSleftSideRing" << iRing;
+
 
       nestTubs( leftName.str(),
 		TubsParams( rirs, rors, trs/2.0 ),
 		ringMaterial,
                 ringRotat,
-		CLHEP::Hep3Vector(lx,ly,lz)-_hallOriginInMu2e,
-		parent,
+		CLHEP::Hep3Vector(0.0,0.0,-lr/2.0-trs/2.0),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"DSRing"
@@ -315,9 +331,8 @@ namespace mu2e {
 		TubsParams( rir, ror, lr/2.0 ),
 		ringMaterial,
                 ringRotat,
-		CLHEP::Hep3Vector(xr[iRing],yr[iRing],zr[iRing]) 
-		- _hallOriginInMu2e,
-		parent,
+		CLHEP::Hep3Vector(0.0,0.0,0.0),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"DSRing"
@@ -326,16 +341,12 @@ namespace mu2e {
       std::ostringstream rightName;
       rightName << "DSrightSideRing" << iRing;
 
-      double rx = xr[iRing];
-      double ry = yr[iRing];
-      double rz = zr[iRing] + lr/2.0 + trs/2.0; 
-
       nestTubs( rightName.str(),
 		TubsParams( rirs, rors, trs/2.0 ),
 		ringMaterial,
                 ringRotat,
-		CLHEP::Hep3Vector(rx,ry,rz)-_hallOriginInMu2e,
-		parent,
+		CLHEP::Hep3Vector(0.0,0.0,lr/2.0+trs/2.0),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"DSRing"

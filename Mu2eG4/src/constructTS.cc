@@ -502,20 +502,38 @@ namespace mu2e {
     std::vector<double> thetasRing = ts->thetaRing();
 
     for ( unsigned int iRing = 0; iRing < xr.size(); iRing++ ) {
-      std::ostringstream leftName;
-      leftName << "leftSideRing" << iRing;
+      // Let's make a mother volume first for each ring.
+      std::ostringstream ringMotherName;
+      ringMotherName << "TSRingMother" << iRing;
       CLHEP::HepRotation* ringRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
       double ringRotTheta = thetasRing[iRing]*CLHEP::degree;
       ringRotat->rotateY(ringRotTheta);
-      double lx = xr[iRing] + lr*sin(ringRotTheta)/2.0 + trs*sin(ringRotTheta)/2.0;
-      double ly = yr[iRing];
-      double lz = zr[iRing] - lr*cos(ringRotTheta)/2.0 - trs*cos(ringRotTheta)/2.0; 
+      CLHEP::HepRotation* noRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+
+      double motherx = xr[iRing];
+      double mothery = yr[iRing];
+      double motherz = zr[iRing];
+
+      VolumeInfo motherVol = nestTubs( ringMotherName.str(),
+				       TubsParams( rirs, rors, trs + lr/2.0 ),
+				       findMaterialOrThrow("G4_AIR"),
+				       ringRotat, 
+				       CLHEP::Hep3Vector(motherx,mothery,motherz
+							 ) - _hallOriginInMu2e,
+				       parent, 0, G4Color::Blue(),
+				       "TSCryo" );
+      std::ostringstream leftName;
+      leftName << "leftSideRing" << iRing;
+
+      double lx = 0.0;
+      double ly = 0.0;
+      double lz = - lr/2.0 - trs/2.0; 
       nestTubs( leftName.str(),
 		TubsParams( rirs, rors, trs/2.0 ),
 		ringMaterial,
-                ringRotat,
-		CLHEP::Hep3Vector(lx,ly,lz)-_hallOriginInMu2e,
-		parent,
+                noRotat,
+		CLHEP::Hep3Vector(lx,ly,lz),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"TSCryo"
@@ -527,9 +545,9 @@ namespace mu2e {
       nestTubs( centerName.str(),
 		TubsParams( rir, ror, lr/2.0 ),
 		ringMaterial,
-                ringRotat,
-		CLHEP::Hep3Vector(xr[iRing],yr[iRing],zr[iRing])-_hallOriginInMu2e,
-		parent,
+                noRotat,
+		CLHEP::Hep3Vector(0,0,0),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"TSCryo"
@@ -539,16 +557,16 @@ namespace mu2e {
       std::ostringstream rightName;
       rightName << "rightSideRing" << iRing;
 
-      double rx = xr[iRing] - lr*sin(ringRotTheta)/2.0 - trs*sin(ringRotTheta)/2.0;
-      double ry = yr[iRing];
-      double rz = zr[iRing] + lr*cos(ringRotTheta)/2.0 + trs*cos(ringRotTheta)/2.0; 
+      double rx = 0.0;
+      double ry = 0.0;
+      double rz = lr/2.0 + trs/2.0; 
 
       nestTubs( rightName.str(),
 		TubsParams( rirs, rors, trs/2.0 ),
 		ringMaterial,
-                ringRotat,
-		CLHEP::Hep3Vector(rx,ry,rz)-_hallOriginInMu2e,
-		parent,
+                noRotat,
+		CLHEP::Hep3Vector(rx,ry,rz),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"TSCryo"
