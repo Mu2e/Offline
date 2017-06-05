@@ -81,20 +81,20 @@ private:
   TTree* _trkQualTree; // the tree we will fill
 
   // event weight info
-  double _eventWeight; // total event weight (product of weights below)
-  double _beamWeight; // proton beam intensity weight
-  double _genWeight; // weight from the generator (e.g. DIO spectrum)
+  float _eventWeight; // total event weight (product of weights below)
+  float _beamWeight; // proton beam intensity weight
+  float _genWeight; // weight from the generator (e.g. DIO spectrum)
 
   // variables needed for cutting but not used in the TrkQualMVA itself
   TrkFitFlag _fitStatus; // the status of the fit
-  double _fitMom; // the fit momentum at the front of the tracker
-  double _mcMom; // true momentum at the front of the tracker
-  double _t0; // t0 of the track
-  double _tandip; // tandip of the track
+  float _fitMom; // the fit momentum at the front of the tracker
+  float _mcMom; // true momentum at the front of the tracker
+  float _t0; // t0 of the track
+  float _tandip; // tandip of the track
 
   // the current TrkQual information
-  TrkQual _trkQual; // the current TrkQual MVAStruct
-  double _trkQualValue;
+  std::vector<float> _trkQualVariableVals; // need a vector of floats to use TMVA::Reader so I will copy things in here
+  float _trkQualValue;
 
   // variables that we will add will go in here
   //
@@ -156,7 +156,13 @@ private:
   }
 
   void fillTrkQualInfo(const TrkQual& trk_qual) {
-    _trkQual = trk_qual;
+
+    int n_trkqual_vars = TrkQual::n_vars;
+    for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
+      TrkQual::MVA_varindex i_index = TrkQual::MVA_varindex(i_trkqual_var);
+      _trkQualVariableVals[i_trkqual_var] = (float) trk_qual[i_index];
+
+    }
     _trkQualValue = trk_qual.MVAOutput();
   }
 };
@@ -188,10 +194,12 @@ mu2e::KalSeedToTrkQualTree::KalSeedToTrkQualTree(fhicl::ParameterSet const & pse
   _trkQualTree->Branch("TanDip", &_tandip);
 
   int n_trkqual_vars = TrkQual::n_vars;
+  _trkQualVariableVals.reserve(n_trkqual_vars);
   for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
     TrkQual::MVA_varindex i_index =TrkQual::MVA_varindex(i_trkqual_var);
     std::string varname = TrkQual::varName(i_index);
-    _trkQualTree->Branch(varname.c_str(), &_trkQual[i_index]);
+
+    _trkQualTree->Branch(varname.c_str(), &_trkQualVariableVals[i_trkqual_var]);
   }
   //  _trkQualTree->Branch("trkQual", &_trkQual);
   _trkQualTree->Branch("OriginalTrkQualVal", &_trkQualValue);
@@ -238,11 +246,14 @@ void mu2e::KalSeedToTrkQualTree::analyze(art::Event const & event)
     TrkMCTools::primaryParticle(primary, hit_indices, strawDigiMCs);
 
     // Find the StepPointMC at the front of the tracker
+    const auto& productid = primary.id();
     const auto& trackid = primary->id();
     for ( const auto& i_step_point : *vdStepPointMCs) {
-      if ( i_step_point.volumeId() == VirtualDetectorId::TT_FrontHollow 
-	   && i_step_point.trackId() == trackid) {
-	
+
+      if ( (i_step_point.volumeId() == VirtualDetectorId::TT_FrontHollow || i_step_point.volumeId() == VirtualDetectorId::TT_FrontPA)	   
+	   && i_step_point.trackId() == trackid
+	   && i_step_point.simParticle().id() == productid) {
+
 	fillStepPointMCInfo(i_step_point);
 	break;
       }
@@ -256,7 +267,9 @@ void mu2e::KalSeedToTrkQualTree::analyze(art::Event const & event)
   }
 
   // Fill the tree
-  _trkQualTree->Fill();
+  if (finalKals->size()>0) {
+    _trkQualTree->Fill();
+  }
 }
 
 DEFINE_ART_MODULE(mu2e::KalSeedToTrkQualTree)

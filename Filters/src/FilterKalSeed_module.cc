@@ -45,6 +45,10 @@ namespace mu2e {
       return m_keys.find(key) != m_keys.end();
     }
 
+    std::set<cet::map_vector_key>& keys() {
+      return m_keys;
+    }
+
   private:
     std::set<cet::map_vector_key> m_keys;
     
@@ -134,6 +138,7 @@ private:
     // Also need to add all the parents (and change their genParticles) too
     art::Ptr<SimParticle> childPtr = old_step.simParticle();
     art::Ptr<SimParticle> parentPtr = childPtr->parent();
+
     while (parentPtr) {
       _simParticlesToKeep[old_step.simParticle().id()].push_back(parentPtr->id());
 
@@ -194,7 +199,7 @@ bool mu2e::FilterKalSeed::filter(art::Event & event)
   const auto& kalFinals = event.getValidHandle<KalSeedCollection>(_kalFinalsTag);
   const auto& strawHits = event.getValidHandle<StrawHitCollection>("makeSH");
   const auto& strawDigis = event.getValidHandle<StrawDigiCollection>("makeSD");
-  const auto& strawDigiMCs = event.getValidHandle<StrawDigiMCCollection>("makeSD");
+  const auto& strawDigiMCs = event.getValidHandle<StrawDigiMCCollection>("makeSH");
   
   _newKalFinals = std::unique_ptr<KalSeedCollection>(new KalSeedCollection);
   _newStrawHits = std::unique_ptr<StrawHitCollection>(new StrawHitCollection);
@@ -284,7 +289,8 @@ bool mu2e::FilterKalSeed::filter(art::Event & event)
   // Get the hits from the virtualdetector
   const auto& stepPointMCs = event.getValidHandle<StepPointMCCollection>("detectorFilter:virtualdetector");
   for (const auto& stepPointMC : *stepPointMCs) {
-    if (stepPointMC.volumeId() == VirtualDetectorId::TT_FrontHollow) { // can add other virtualdetectors here
+    if (stepPointMC.volumeId() == VirtualDetectorId::TT_FrontHollow
+	|| stepPointMC.volumeId() == VirtualDetectorId::TT_FrontPA) { // can add other virtualdetectors here
       copyStepPointMC(stepPointMC);
     }
   }
