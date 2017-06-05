@@ -136,7 +136,7 @@ namespace mu2e {
     _dontuseflag(pset.get<vector<string>>("UseFlag",vector<string>{"Outlier"})),
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
     _mcsel(pset.get<bool>("MonteCarloSelection",true)),
-    _hsel(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"Stereo","TimeDivision"})),
+    _hsel(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
     _hbkg(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _minnprimary(pset.get<int>("MinimumPrimaryHits",10)),
     _mcgen(pset.get<int>("MCGeneratorCode",2)),
@@ -501,14 +501,15 @@ namespace mu2e {
       double proj = that.dot(shp.wdir());
       TEllipse* te = new TEllipse(shp.pos().z(),dphi,
 	  shp._tres, shp._wres*proj/rhel.radius());
+      te->SetLineColor(kYellow);
+      te->SetFillColor(kYellow);
+      notselected_list->Add(te);
       if(selectedHit(ishp)){
-	te->SetLineColor(kOrange);
-	te->SetFillColor(kOrange);
-	selected_list->Add(te);
-      } else {
-	te->SetLineColor(kYellow);
-	te->SetFillColor(kYellow);
-	notselected_list->Add(te);
+	TEllipse* tes = new TEllipse(shp.pos().z(),dphi,
+	  shp._tres, shp._wres*proj/rhel.radius());
+	tes->SetLineColor(kOrange);
+	tes->SetFillColor(kOrange);
+	selected_list->Add(tes);
       }
       if(_mcdiag){
 	StrawDigiMC const& mcdigi = _mcdigis->at(ishp);
@@ -533,6 +534,15 @@ namespace mu2e {
     RobustHelix const& rhel = hseed._helix;
     HelixHitCollection const& hhits = hseed._hhits;
 
+    static std::string ce_used_title("Ce Used;x(mm);y(mm)");
+    static std::string ce_notused_title("Ce Not Used;x(mm);y(mm)");
+    static std::string bkg_used_title("Bkg Used;x(mm);y(mm)");
+    static std::string notselected_title("Not Selected;x(mm);y(mm)");
+    static std::string selected_title("Selected;x(mm);y(mm)");
+    static std::string tc_title("Time Cluster;x(mm);y(mm)");
+    static std::string trk_title("Tracker XY;x(mm);y(mm)");
+    static std::string mctruth_title("MC Truth;x(mm);y(mm)");
+
     static unsigned igraph = 0;
     igraph++;
     art::ServiceHandle<art::TFileService> tfs;
@@ -552,13 +562,13 @@ namespace mu2e {
     snprintf(trk_name,100,"trk_shxy%i",igraph);
     char title[100];
     snprintf(title,100,"StrawHit XY evt %i hel %i;mm;rad",_iev,ihel);
-    TH2F* ce_used = tfs->make<TH2F>(ce_used_name,title,100,-_xysize,_xysize,100,-_xysize,_xysize);
-    TH2F* ce_notused = tfs->make<TH2F>(ce_notused_name,title,100,-_xysize,_xysize,100,-_xysize,_xysize);
-    TH2F* bkg_used = tfs->make<TH2F>(bkg_used_name,title,100,-_xysize,_xysize,100,-_xysize,_xysize);
-    TH2F* notselected = tfs->make<TH2F>(notselected_name,title,100,-_xysize,_xysize,100,-_xysize,_xysize);
-    TH2F* selected = tfs->make<TH2F>(selected_name,title,100,-_xysize,_xysize,100,-_xysize,_xysize);
-    TH2F* tc = tfs->make<TH2F>(tc_name,title,100,-_xysize,_xysize,100,-_xysize,_xysize);
-    TH2F* trk = tfs->make<TH2F>(trk_name,title,100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* ce_used = tfs->make<TH2F>(ce_used_name,ce_used_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* ce_notused = tfs->make<TH2F>(ce_notused_name,ce_notused_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* bkg_used = tfs->make<TH2F>(bkg_used_name,bkg_used_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* notselected = tfs->make<TH2F>(notselected_name,notselected_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* selected = tfs->make<TH2F>(selected_name,selected_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* tc = tfs->make<TH2F>(tc_name,tc_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* trk = tfs->make<TH2F>(trk_name,trk_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
     ce_used->SetStats(0);
     ce_notused->SetStats(0);
     bkg_used->SetStats(0);
@@ -587,7 +597,7 @@ namespace mu2e {
     if(_mcdiag){
       char mctruth_name[100];
       snprintf(mctruth_name,100,"mctshxy%i",igraph);
-      mct = tfs->make<TH2F>(mctruth_name,title,100,-_xysize,_xysize,100,-_xysize,_xysize);
+      mct = tfs->make<TH2F>(mctruth_name,mctruth_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
       mct->SetStats(0);
       mct->SetLineColor(kBlue);
       mct->SetMarkerStyle(20);
@@ -660,14 +670,17 @@ namespace mu2e {
       // create an elipse for this hit
       TEllipse* te = new TEllipse(shp._pos.x()-pcent.x(),shp._pos.y()-pcent.y(),
 	  shp._wres, shp._tres,0.0,360.0, shp._wdir.phi()*180.0/TMath::Pi());
+      // draw all hits
+      te->SetLineColor(kYellow);
+      te->SetFillColor(kYellow);
+      notselected_list->Add(te);
+      // selected hits; this overlaps with those below
       if(selectedHit(ishp)){
-	te->SetLineColor(kOrange);
-	te->SetFillColor(kOrange);
-	selected_list->Add(te);
-      } else {
-	te->SetLineColor(kYellow);
-	te->SetFillColor(kYellow);
-	notselected_list->Add(te);
+	TEllipse* tes = new TEllipse(shp._pos.x()-pcent.x(),shp._pos.y()-pcent.y(),
+	  shp._wres, shp._tres,0.0,360.0, shp._wdir.phi()*180.0/TMath::Pi());
+ 	tes->SetLineColor(kOrange);
+	tes->SetFillColor(kOrange);
+	selected_list->Add(tes);
       }
       if(_mcdiag){
 	StrawDigiMC const& mcdigi = _mcdigis->at(ishp);
@@ -765,7 +778,7 @@ namespace mu2e {
 
   bool
   HelixDiag::selectedHit(size_t index) {
-    return _shfcol->at(index).hasAnyProperty(_hsel) && !_shfcol->at(index).hasAnyProperty(_hbkg);
+    return _shfcol->at(index).hasAllProperties(_hsel) && !_shfcol->at(index).hasAnyProperty(_hbkg);
   }
 
 }
