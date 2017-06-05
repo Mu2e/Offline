@@ -14,6 +14,7 @@ bool g4.doSurfaceCheck    = false;
 // Various portions of the DS
 // bool ds.doSurfaceCheck = true;
 // bool dsCoil.doSurfaceCheck = true;
+// bool dsRing.doSurfaceCheck = true;
 // bool dsSpacer.doSurfaceCheck = true;
 // bool dsSupport.doSurfaceCheck = true;
 // bool dsThShield.doSurfaceCheck = true;
@@ -21,8 +22,8 @@ bool g4.doSurfaceCheck    = false;
 // bool dsShielding.doSurfaceCheck = true;
 // bool calorimeter.doSurfaceCheck = true;
 
-// External Shielding
-// bool g4.doSurfaceCheckExtShld = true;
+// External Shielding (both upstream and downstream)
+// bool ExtShield.doSurfaceCheck = true;
 
 // Various portions of PS
 // bool PS.doSurfaceCheck = true;
@@ -37,6 +38,9 @@ bool g4.doSurfaceCheck    = false;
 // bool protonBeamDump.mouth.doSurfaceCheck = true;
 // bool protonBeamDump.neutronCave.doSurfaceCheck = true;
 
+// The Tracker
+// bool ttracker.doSurfaceCheck = true;
+
 // Various portions of TS
 // bool ts.cryo.doSurfaceCheck = true;
 // bool ts.polyliner.doSurfaceCheck = true;
@@ -45,6 +49,36 @@ bool g4.doSurfaceCheck    = false;
 // bool ts.coll.doSurfaceCheck = true;
 // bool pbar.doSurfaceCheck = true;
 // bool muondegrader.doSurfaceCheck = true;
+
+// Virtual detectors
+// bool vd.doSurfaceCheck = true;
+
+
+// Special:  The building and dirt.  Elements can be selected in small
+// groups by naming the first two parts of their name strings.
+// For example:
+// bool building.psArea.doSurfaceCheck = true;
+// would do a surface check for all these building pieces:
+//  "building.psArea",
+//  "building.psArea.ceiling",
+//  "building.psArea.ceiling.E",
+//  "building.psArea.ceiling.N",
+//  "building.psArea.ceiling.SW",
+//  "building.psArea.hatch.block",
+//  "building.psArea.hatch.lid",
+//  "building.psArea.hatch.lip.N",
+//  "building.psArea.hatch.lip.S",
+//  "building.psArea.hatch.lower",
+//  "building.psArea.hatch.upper",
+//  "building.psArea.ShieldingBlock",
+//  "building.psArea.upper.N",
+//  "building.psArea.upper.S",
+// And here is an example for dirt...
+// bool dirt.foundation.doSurfaceCheck = true;
+// which likewise checks a number of similarly named volumes.
+
+
+
 
 
 // number of random points on the volume surface

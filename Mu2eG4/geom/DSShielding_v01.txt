@@ -8,7 +8,7 @@
 bool dsShielding.visible = true;
 bool dsShielding.solid   = false;
 
-string vpsp.material            = "G4_Fe"; 
+string vpsp.material            = "StainlessSteel";//"G4_Fe"; 
 
 double vpsp.cryoseal.z          = 20.;
 double vpsp.cryoseal.rIn        = 970.;
@@ -30,7 +30,7 @@ double vpsp.endflange.rIn        = 1100.;
 double vpsp.endflange.rOut       = 1250.;
 double vpsp.endflange.halfLength = 20.;
 
-string ifb.material   = "G4_Fe"; 
+string ifb.material   = "StainlessSteel";//"G4_Fe"; 
 
 double ifb.main.z          = 2822.;
 double ifb.main.rIn        = 1080.;

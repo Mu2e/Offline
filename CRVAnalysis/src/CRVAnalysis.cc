@@ -9,7 +9,7 @@
 
 namespace mu2e
 {
-  void CRVAnalysis::FillCrvHitInfoCollections(const std::string &crvCoincidenceModuleLabel,
+  void CRVAnalysis::FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterFinderModuleLabel,
                                               const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo)
   {
     GeomHandle<CosmicRayShield> CRS;
@@ -20,89 +20,26 @@ namespace mu2e
     event.getMany(selector, CrvStepsVector);
 
     std::string crvCoincidenceInstanceName="";
-    art::Handle<CrvCoincidenceCheckResult> crvCoincidenceCheckResult;
-    event.getByLabel(crvCoincidenceModuleLabel,crvCoincidenceInstanceName,crvCoincidenceCheckResult);
+    art::Handle<CrvCoincidenceClusters> crvCoincidenceClusters;
+    event.getByLabel(crvCoincidenceClusterFinderModuleLabel,crvCoincidenceInstanceName,crvCoincidenceClusters);
 
-    if(crvCoincidenceCheckResult.product()==NULL) return;
+    if(crvCoincidenceClusters.product()==NULL) return;
 
-    //loop through all coincidence combinations
-    //extract all the hits of all coincidence combinations
-    //distribute them into the crv sector types
-    //and put them into a (time ordered) set
-    std::map<int, std::set<CrvCoincidenceCheckResult::CoincidenceHit> > sectorTypeMap;
-
-    const std::vector<CrvCoincidenceCheckResult::CoincidenceCombination> &coincidenceCombinationsAll = crvCoincidenceCheckResult->GetCoincidenceCombinations();
-    std::vector<CrvCoincidenceCheckResult::CoincidenceCombination>::const_iterator iter;
-    for(iter=coincidenceCombinationsAll.begin(); iter!=coincidenceCombinationsAll.end(); iter++)
+    const std::vector<CrvCoincidenceClusters::Cluster> &clusters = crvCoincidenceClusters->GetClusters();
+    std::vector<CrvCoincidenceClusters::Cluster>::const_iterator iter = clusters.begin();
+    for( ; iter!=clusters.end(); iter++)
     {
-      for(int i=0; i<3; i++)
-      {
-        const mu2e::CRSScintillatorBarIndex &crvBarIndex = iter->_counters[i]; 
-        const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndex);
-        int crvSectorNumber = crvCounter.id().getShieldNumber();
-        int crvSectorType = CRS->getCRSScintillatorShield(crvSectorNumber).getSectorType();
-        // 0: R
-        // 1: L
-        // 2: T
-        // 3: D
-        // 4: U
-        // 5,6,7: C1,C2,C3
-
-        sectorTypeMap[crvSectorType].emplace(iter->_time[i], iter->_PEs[i], iter->_counters[i], iter->_SiPMs[i]);
-      }
-    }
-
-    //loop through all crv sectors types
-    std::map<int, std::set<CrvCoincidenceCheckResult::CoincidenceHit> >::const_iterator sectorTypeMapIter;
-    for(sectorTypeMapIter=sectorTypeMap.begin(); sectorTypeMapIter!=sectorTypeMap.end(); sectorTypeMapIter++)
-    {
-      int crvSectorType = sectorTypeMapIter->first;
-      const std::set<CrvCoincidenceCheckResult::CoincidenceHit> &crvHits = sectorTypeMapIter->second;
-
-      //loop through the set of crv hits for this particular crv sector type
-      //remember: the hits in this set are time ordered
-      std::set<CrvCoincidenceCheckResult::CoincidenceHit>::const_iterator h=crvHits.begin();
-      while(h!=crvHits.end())
-      {
-        int nCoincidenceHits=1;
-        int PEs=h->_PEs;
-        CLHEP::Hep3Vector pos=CRS->getBar(h->_counter).getPosition();
-        double startTime = h->_time;
-        double endTime = h->_time;
-
-        std::vector<const CrvCoincidenceCheckResult::CoincidenceHit*> cluster;
-        cluster.push_back(&(*h));
-
-        while(++h != crvHits.end())  //go to next (time ordered) hit
-        {
-          if(endTime >= h->_time - _overlapTime)  //the veto time window of this next hit overlaps the time window of the previous hit
-          {                                       //so it can be added to the cluster
-            endTime = h->_time;
-            nCoincidenceHits++;
-            PEs+=h->_PEs;
-            pos+=CRS->getBar(h->_counter).getPosition();
-
-            cluster.push_back(&(*h));
-          }
-          else break;
-        }
-
-        pos/=nCoincidenceHits; //find the average position of the crv counters
-
-        //insert the cluster information into the vector of the reco hits
-        recoInfo.emplace_back(crvSectorType, pos, startTime, endTime, PEs, nCoincidenceHits);
-
-        //fill the MC collection
-        FillCrvHitInfoMCCollection(cluster, CrvStepsVector, MCInfo);
-
-      }//loop through all hits
-    }//loop through all sector types
+      //fill the Reco collection
+      recoInfo.emplace_back(iter->_crvSectorType, iter->_avgPos, iter->_startTime, iter->_endTime, iter->_PEs, iter->_hits.size());
+      //fill the MC collection
+      FillCrvHitInfoMCCollection(iter->_hits, CrvStepsVector, MCInfo);
+    }//loop through all clusters
   }//FillCrvInfoStructure
 
   //fill the MC collection
-  void CRVAnalysis::FillCrvHitInfoMCCollection(const std::vector<const CrvCoincidenceCheckResult::CoincidenceHit*> &cluster,
-                                            const std::vector<art::Handle<mu2e::StepPointMCCollection> > &CrvStepsVector,
-                                            CrvHitInfoMCCollection &MCInfo) 
+  void CRVAnalysis::FillCrvHitInfoMCCollection(const std::vector<CrvCoincidenceClusters::Hit> &hits,
+                                               const std::vector<art::Handle<mu2e::StepPointMCCollection> > &CrvStepsVector,
+                                               CrvHitInfoMCCollection &MCInfo) 
   {
 
     struct trackInfo
@@ -125,10 +62,10 @@ namespace mu2e
       for(iterStepPoint=CrvStepsCollection->begin(); iterStepPoint!=CrvStepsCollection->end(); iterStepPoint++)
       {
         const StepPointMC &step = *iterStepPoint;
-        for(size_t j=0; j<cluster.size(); j++)
+        for(size_t j=0; j<hits.size(); j++)
         {
-          double timeDiff = cluster[j]->_time-step.time();
-          if(timeDiff<100 && timeDiff>0 && step.barIndex()==cluster[j]->_counter)
+          double timeDiff = hits[j]._time-step.time();
+          if(timeDiff<100 && timeDiff>0 && step.barIndex()==hits[j]._counter)
           {  
             //found a relevant step point for this cluster
             cet::map_vector_key trackID=step.trackId();

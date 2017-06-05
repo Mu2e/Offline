@@ -500,6 +500,26 @@ namespace mu2e {
     coll32._rotationAngle    = coll31._rotationAngle     = c.getDouble("ts.coll3.rotationAngle",0.);
     coll32._material         = coll31._material          = c.getString("ts.coll3.materialName");
 
+    // For studies of flash mitigation, building a "flashblock", also known
+    // as "Rick's" (Coleman) "Tooth"
+    coll31._useFlashBlock     = c.getBool("ts.useFlashBlockUp",false);
+    coll31._flashBlockHeight  = c.getDouble("ts.flashBlockUp.Height",0.0);
+    coll31._flashBlockWidth   = c.getDouble("ts.flashBlockUp.Width",0.0);
+    coll31._flashBlockLength  = c.getDouble("ts.flashBlockUp.Length",0.0);
+    coll31._flashBlockTO      = c.getDouble("ts.flashBlockUp.TransOffset",0.);
+    coll31._flashBlockLO      = c.getDouble("ts.flashBlockUp.LongOffset",0.);
+    coll31._flashBlockMaterial= c.getString("ts.flashBlockUp.Material","CollCu");
+
+    coll32._useFlashBlock     = c.getBool("ts.useFlashBlockDn",false);
+    coll32._flashBlockHeight  = c.getDouble("ts.flashBlockDn.Height",0.0);
+    coll32._flashBlockWidth   = c.getDouble("ts.flashBlockDn.Width",0.0);
+    coll32._flashBlockLength  = c.getDouble("ts.flashBlockDn.Length",0.0);
+    coll32._flashBlockTO      = c.getDouble("ts.flashBlockDn.TransOffset",0.);
+    coll32._flashBlockLO      = c.getDouble("ts.flashBlockDn.LongOffset",0.);
+    coll32._flashBlockMaterial= c.getString("ts.flashBlockDn.Material","CollCu");
+
+
+
     // TS5
     // TS5
     coll51._rIn         = c.getDouble("ts.coll5.Radius1",0.);
@@ -625,7 +645,7 @@ namespace mu2e {
     pbarWindow._y1       = c.getDouble("pbarwedge.y1",0.);
     pbarWindow._dz0      = c.getDouble("pbarwedge.dz0",0.);
     pbarWindow._dz1      = c.getDouble("pbarwedge.dz1",0.);
-
+    pbarWindow._wedgeZOffset = c.getDouble("pbarwedge.zOffset",0.);
   }
 
 } // namespace mu2e

@@ -22,6 +22,7 @@
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceClusters.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "RecoDataProducts/inc/ExtMonUCITofHitCollection.hh"

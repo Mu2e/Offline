@@ -12,7 +12,7 @@ double dirt.psArea.dirtSlab.N.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.psArea.dirtSlab.N.yHalfThickness           = 368.3;
 
-vector<int>    dirt.psArea.dirtSlab.N.xreplace   = { 18, 19 }; 
+vector<int>    dirt.psArea.dirtSlab.N.xreplace   = { 17, 18 }; 
 vector<double> dirt.psArea.dirtSlab.N.xPositions = {
   -1270,   // c
   -4140.2,   // P1
@@ -30,8 +30,7 @@ vector<double> dirt.psArea.dirtSlab.N.xPositions = {
   -15954.5,   // NW corner of southern part of dirtExtMon
   -15361.7,   // SW corner extMonCeiling
   -16446,     // NW corner extMonCeiling
-  -17108.7,   // d
-  -17405,   // e
+  -17037.6,   // e
   -50000,   // e_to_W
   -50000,   // NWcorner
   -1270,   // c_to_N
@@ -47,7 +46,7 @@ vector<double> dirt.psArea.dirtSlab.N.xPositions = {
   -1270    // c to N
 };
 
-vector<int>    dirt.psArea.dirtSlab.N.yreplace   = { 19, 20 }; 
+vector<int>    dirt.psArea.dirtSlab.N.yreplace   = { 18, 19 }; 
 vector<double> dirt.psArea.dirtSlab.N.yPositions = {
   2438.4,   // c
   2438.4,   // P1
@@ -65,9 +64,8 @@ vector<double> dirt.psArea.dirtSlab.N.yPositions = {
   -2660.36,   // NW corner of southern part of dirtExtMon
   -2518.25,   // SW corner extMonCeiling
   1923.3,     // NW corner extMonCeiling
-  1761.51,   // d
-  1688.26,   // e
-  1688.26,   // e_to_W
+  1776.25,   // e
+  1776.25,   // e_to_W
   50000,     // NWcorner
   50000,     // c_to_N
   10312.41,  // Down to NRetWall

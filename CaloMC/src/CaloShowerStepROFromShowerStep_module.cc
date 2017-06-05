@@ -114,8 +114,9 @@ namespace mu2e {
           caloShowerMCName_           (pset.get<std::string>("caloShowerMCName")),
           toff_                       (pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
           blindTime_                  (pset.get<double>     ("blindTime")),
-          caloLRUCorrection_          (pset.get<bool>       ("caloLRUcorrection")),
+          caloLRUCorrection_          (pset.get<bool>       ("caloLRUCorrection")),
           caloBirksCorrection_        (pset.get<bool>       ("caloBirksCorrection")),
+          caloPEStatCorrection_       (pset.get<bool>       ("caloPEStatCorrection")),
           addTravelTime_              (pset.get<bool>       ("addTravelTime")),
           diagLevel_                  (pset.get<int>        ("diagLevel",0)),
           messageCategory_            ("CaloShowerStepROFromShowerStep"),
@@ -288,6 +289,7 @@ namespace mu2e {
            if (caloLRUCorrection_)
                 edep_corr = LRUCorrection(crystalID, posZ/cryhalflength, edep_corr, calorimeterCalibrations);
 
+
            if (caloBirksCorrection_)
                 edep_corr = BirksCorrection(pdgId,edep_corr, calorimeterCalibrations);
 
@@ -303,6 +305,7 @@ namespace mu2e {
                double edep_corr_RO(edep_corr);
 	       if (caloPEStatCorrection_) edep_corr_RO = photoStatisticsCorrection(ROID, edep_corr_RO, NpePerMeV);          
                if (edep_corr_RO < 1e-4) continue;
+if (diagLevel_ > 3) std::cout<<"[CaloShowerStepROFromShowerStep::insert into vector] = "<< edep_corr_RO<<std::endl;          
 
 	       //finally, add a caloShowerStepRO entry here 
 	       caloShowerStepROs.push_back(CaloShowerStepRO(ROID,stepPtr,hitTime,edep_corr_RO));
@@ -432,6 +435,8 @@ namespace mu2e {
       
       if (diagLevel_ > 2) hPECorr_->Fill(edep,edepInit);
       if (diagLevel_ > 2 && lightYield>10) hPECorr2_->Fill((edep-edepInit)/sqrt(edepInit));            
+      if (diagLevel_ > 3) std::cout<<"[CaloShowerStepROFromShowerStep::photoStatCorrection] before / after peStat -> edep_corr = "<< edep<<"  /  "<<edepInit<<std::endl;          
+
       return edep;
   }
 

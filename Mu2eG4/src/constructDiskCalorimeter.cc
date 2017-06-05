@@ -17,6 +17,7 @@
 #include "Mu2eG4/inc/constructDiskCalorimeter.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
+#include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -84,6 +85,7 @@ namespace mu2e {
     G4Material* readMaterial          = materialFinder.get("calorimeter.readoutMaterial");
     G4Material* pipeMaterial          = materialFinder.get("calorimeter.pipeMaterial");
     G4Material* crateMaterial         = materialFinder.get("calorimeter.crateMaterial");
+    G4Material* crateBkgMaterial      = materialFinder.get("calorimeter.crateBackgroundMaterial");
     G4Material* crateBottomAMaterial  = materialFinder.get("calorimeter.crateMaterial");
     G4Material* shieldMaterial        = materialFinder.get("calorimeter.shieldMaterial");
     // G4Material* copperPlaneMaterial   = materialFinder.get("calorimeter.copperPlaneMaterial");
@@ -99,8 +101,8 @@ namespace mu2e {
 
     G4Material* ROelectMaterial = materialFinder.get("calorimeter.readoutMaterial");
     G4Material* tempFillerMaterial = materialFinder.get("calorimeter.fillerMaterialName");
-
     
+
     G4VPhysicalVolume* pv;
 
     
@@ -234,9 +236,12 @@ namespace mu2e {
     G4double boardDispY = 2*(crateDY-crateDYTop-crateDYBottom)/nBoards;
     G4double boardPosY  = crateBottomPosY+crateDYBottom+boardDispY/2.;
     G4double boardPosZ  = crateFShieldDistanceDZ;    
-    G4double radiatorPosY = boardDY-radiatorDY;   
-    G4double activeStripPosY  = radiatorPosY-radiatorDY-activeStripDY;
-    G4double passiveStripPosY = activeStripPosY - activeStripDY - passiveStripDY;
+    // G4double radiatorPosY = boardDY-radiatorDY;   
+    // G4double activeStripPosY  = radiatorPosY-radiatorDY-activeStripDY;
+    // G4double passiveStripPosY = activeStripPosY - activeStripDY - passiveStripDY;
+    G4double radiatorPosY = -boardDY + radiatorDY;   
+    G4double activeStripPosY  = radiatorPosY+radiatorDY+activeStripDY;
+    G4double passiveStripPosY = activeStripPosY + activeStripDY + passiveStripDY;
 
     //-----------------------------------------
     // Define and build crystal + wrapper units   
@@ -643,13 +648,107 @@ namespace mu2e {
 
 		calorimeterFEBInfo[idisk] = nestTubs(cratename.str(),
 						     cratepar,
-						     crateMaterial,
+						     crateBkgMaterial,
 						     &cal.disk(idisk).geomInfo().rotation(),posCaloMotherInDS+cratePosZ,
 						     mother,
 						     idisk,
 						     isDiskCaseVisible,
 						     G4Colour::Green(),
 						     isDiskCaseSolid,forceAuxEdgeVisible,true,doSurfaceCheck);		
+
+		// Dave Brown (Lou) invading code here to put in cable runs
+		if ( config.getBool("ds.hasCableRunCal",false)) {
+
+		  double crRin = config.getDouble("ds.CableRunCal.Rin")*CLHEP::mm;
+		  double crRout = config.getDouble("ds.CableRunCal.Rout")*CLHEP::mm;
+
+		  std::ostringstream crTubName;
+		  crTubName << "CableRunCalTub" << idisk;
+		  G4Tubs* ccrTub = new G4Tubs( crTubName.str(),crRin, crRout,
+					       crateHalfLength - 5.0,
+					       config.getDouble("ds.CableRunCal.phi0")*CLHEP::degree,
+					       config.getDouble("ds.CableRunCal.dPhi")*CLHEP::degree);
+
+
+		  CLHEP::Hep3Vector calCableRunLoc(0.0,0.0,0.0);
+		  std::ostringstream ccrLogName;
+		  ccrLogName << "CalCableRunLogInCalFeb" << idisk;
+		
+		  G4LogicalVolume* ccrTubLog = 
+		    new G4LogicalVolume(ccrTub,findMaterialOrThrow(config.getString("ds.CableRunCal.material")),ccrLogName.str());
+
+		  std::ostringstream ccrName;
+		  ccrName << "CalCableRunInCalFeb" << idisk;
+		  G4RotationMatrix ccrRot = G4RotationMatrix();
+		  G4Transform3D ccrCoord = G4Transform3D(ccrRot,calCableRunLoc);
+
+		  pv = new G4PVPlacement(ccrCoord,
+					 ccrTubLog,ccrName.str(),
+					 calorimeterFEBInfo[idisk].logical, 
+					 false, 0, false);
+		   doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+			     
+		} // End of conditionally adding CalCableRun
+
+		if ( config.getBool("ds.hasCableRunTrk",false)) {
+
+		  double crRin = config.getDouble("ds.CableRunTrk.Rin")*CLHEP::mm;
+		  double crRout = config.getDouble("ds.CableRunTrk.Rout")*CLHEP::mm;
+		  double phi01 = config.getDouble("ds.CableRunTrk.phi0")*CLHEP::degree;
+		  double dPhi = config.getDouble("ds.CableRunTrk.dPhi")*CLHEP::degree;
+		  double phi02 = 180.0*CLHEP::degree - phi01 - dPhi;
+		  if ( phi01 + dPhi > 180.0*CLHEP::degree + phi0Crate ) {
+		    dPhi = 179.5*CLHEP::degree + phi0Crate - phi01;
+		    phi02 = 180.0*CLHEP::degree - phi01 - dPhi;
+		  }
+		    
+		  std::ostringstream cr1TubName;
+		  cr1TubName << "CableRun1TrkTub" << idisk;
+		  G4Tubs* ccr1Tub = new G4Tubs( cr1TubName.str(),crRin, crRout,
+					       crateHalfLength - 5.0,
+						phi01, dPhi);
+
+		  std::ostringstream cr2TubName;
+		  cr2TubName << "CableRun2TrkTub" << idisk;
+		  G4Tubs* ccr2Tub = new G4Tubs( cr2TubName.str(),crRin, crRout,
+					       crateHalfLength - 5.0,
+						phi02, dPhi);
+
+
+
+		  CLHEP::Hep3Vector trkCableRunLoc(0.0,0.0,0.0);
+		  std::ostringstream ccr1LogName;
+		  ccr1LogName << "TrkCableRun1LogInCalFeb" << idisk;
+		  std::ostringstream ccr2LogName;
+		  ccr2LogName << "TrkCableRun2LogInCalFeb" << idisk;
+		
+		  G4LogicalVolume* ccr1TubLog = 
+		    new G4LogicalVolume(ccr1Tub,findMaterialOrThrow(config.getString("ds.CableRunTrk.material")),ccr1LogName.str());
+		  G4LogicalVolume* ccr2TubLog = 
+		    new G4LogicalVolume(ccr2Tub,findMaterialOrThrow(config.getString("ds.CableRunTrk.material")),ccr2LogName.str());
+
+		  std::ostringstream ccr1Name;
+		  ccr1Name << "TrkCableRun1InCalFeb" << idisk;
+		  std::ostringstream ccr2Name;
+		  ccr2Name << "TrkCableRun2InCalFeb" << idisk;
+
+		  G4RotationMatrix ccrRot = G4RotationMatrix();
+		  G4Transform3D ccrCoord = G4Transform3D(ccrRot,trkCableRunLoc);
+
+		  pv = new G4PVPlacement(ccrCoord,
+					 ccr1TubLog,ccr1Name.str(),
+					 calorimeterFEBInfo[idisk].logical, 
+					 false, 0, false);
+		   doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+
+		  pv = new G4PVPlacement(ccrCoord,
+					 ccr2TubLog,ccr2Name.str(),
+					 calorimeterFEBInfo[idisk].logical, 
+					 false, 0, false);
+		   doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+			     
+		} // End of conditionally adding TrkCableRun
+
 
 		G4RotationMatrix rotCrate = G4RotationMatrix();
 		

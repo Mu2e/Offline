@@ -68,13 +68,20 @@ namespace mu2e {
 
       const std::string volName = c.getString( prefix+".name" );
 
+      std::string loadPrefix = prefix;
+      std::string dot = ".";
+      std::size_t place1 = prefix.find(dot);
+      std::size_t place2 = std::string::npos;
+      if ( place1 != std::string::npos ) place2 = prefix.find(dot,place1+1);
+      if ( place2 != std::string::npos ) loadPrefix = prefix.substr(0,place2);
+
       solidMap[volName] = ExtrudedSolid( volName,
                                          c.getString( prefix+".material"),
                                          offset,
                                          c.getDouble( prefix+".yHalfThickness" ),
                                          getPairedVector(x,y) );
 
-      geomOptions.loadEntry( c, volName, prefix );
+      geomOptions.loadEntry( c, volName, loadPrefix );
 
     }
 

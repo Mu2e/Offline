@@ -41,11 +41,11 @@ string protonabsorber.ipa.endRingMaterial = "CorrugatedPolypropylene";
 // Outer part
 bool   protonabsorber.isShorterCone = true;
 bool   protonabsorber.outerPA = true;
-double protonabsorber.outerPAInnerRadius0 = 454.6; // was 452.4;
+double protonabsorber.outerPAInnerRadius0 = 454.0; // was 452.4;
 double protonabsorber.outerPAInnerRadius1 = 728.4;
-double protonabsorber.outerPAHalfLength = 2120.5; // was 2137.5;
+double protonabsorber.outerPAHalfLength = 2125.0; // was 2137.5;
 double protonabsorber.outerPAThickness = 20.0;
-double protonabsorber.outerPAZCenter = 6409.5; // was 6392.5;
+double protonabsorber.outerPAZCenter = 6405.0; // was 6392.5;
 string protonabsorber.outerPAMaterialName = "Polyethylene096";
 
 // oPA Supports are Aluminum rings that support and "hold together" the

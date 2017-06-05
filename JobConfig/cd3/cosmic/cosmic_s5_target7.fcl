@@ -1,0 +1,3 @@
+#include "JobConfig/cd3/cosmic/cosmic_defs_s5.fclinc"
+
+services.TFileService.fileName       : "nts.owner.cd3-cosmic-g4s5-target7.version.sequencer.root"

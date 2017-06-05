@@ -9,8 +9,9 @@
 double TSdA.rFactorForVDs        = 650.; // Just for virtual detector build
 
 double tsda.r4		 = 525; // outer radius, inner radius is TS5
+double tsda.rin          = 240.0; // inner radius in newest spec.  shadow COL5
 double tsda.halfLength4  = 25.0;
-double tsda.z0           = 5871.; // Why this value?
+double tsda.z0           = 5871.; // Why this value?.  It is 4204 in Mu2e coords.  Apparently, this is zMu2e + 1667.  Hmmm.
 string tsda.materialName = "Polyethylene096";
 
 int    tsda.verbosityLevel = 0;

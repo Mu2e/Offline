@@ -13,17 +13,17 @@ double building.extMon.upper.offsetFromMu2eOrigin.z   = -3581.4;
 double building.extMon.upper.yHalfThickness           = 368.3;
 
 vector<double> building.extMon.upper.xPositions = {
-  -15657.8,   // a0
+  -15658.7,   // a0
   -15361.7,   // a1
   -16446,   // A2
-  -16742.1   // A3
+  -16740.1   // A3
 };
 
 vector<double> building.extMon.upper.yPositions = {
-  -2590.54,   // a0
+  -2588.16,   // a0
   -2518.25,   // a1
   1923.3,   // A2
-  1851.01   // A3
+  1849.01   // A3
 };
 
 // Local Variables:

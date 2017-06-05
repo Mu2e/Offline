@@ -34,12 +34,12 @@ vector<double> dirt.extMon.ceiling.xPositions = {
   -50000,   // NWcorner
   -17108.7,   // c_to_N
   -17108.7,   // Down to WextWallFoot
-  -20628.71,   // NW corner WextWallFoot
-  -20482.51,   // Oy, elbow of WextWallFoot and WextWall
+  -20628.7,   // NW corner WextWallFoot
+  -20483.5,   // Oy, elbow of WextWallFoot and WextWall
   -20527.1,   // NW corner of WextWall
   -20442.7,    // SW corner of WextWall
-  -20398.21,  // other elbow of WextWallFoot and WextWall
-  -19761.22,   // SW corner WextWallFoot
+  -20399.2,  // other elbow of WextWallFoot and WextWall
+  -19761.2,   // SW corner WextWallFoot
   -17108.7    // c to N again
 };
 
@@ -65,12 +65,12 @@ vector<double> dirt.extMon.ceiling.yPositions = {
   50000,   // NWcorner
   50000,   // c_to_N
   10335.55, // To top of WextWallFoot
-  9476.21,  // NW corner WextWallFoot
-  8877.48,  // elbow between WextWallFoot and WextWall
+  9476.17,  // NW corner WextWallFoot
+  8878.45,  // elbow between WextWallFoot and WextWall
   8866.57,  // NW corner WextWall
   8521.11,  // SW corner WextWall
-  8432.2,   // other elbow between WextWallFoot and WextWall
-  5922.91,  // SW corner WextWallFoot
+  8531.24,   // other elbow between WextWallFoot and WextWall
+  5922.93,  // SW corner WextWallFoot
   6599.68   // c to N again
 };
 

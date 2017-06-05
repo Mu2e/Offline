@@ -102,7 +102,8 @@ namespace {
     Plane const& pln        = ttracker.getPlane(ipln);
 
     int pnlDraw         = config.getInt ("ttracker.pnlDraw",-1);
-    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false)
+      || config.getBool("ttracker.doSurfaceCheck",false);
     int verbosityLevel  = config.getInt ("ttracker.verbosityLevel",0);
 
 
@@ -176,7 +177,8 @@ namespace {
     // Only instantiate panels to be drawn.
     int plnDraw = config.getInt("ttracker.plnDraw",-1);
     //int pnlDraw = config.getInt("ttracker.pnlDraw",-1);
-    bool const doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+    bool const doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false)
+      || config.getBool("ttracker.doSurfaceCheck",false);
     bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
 
     G4ThreeVector const zeroVector(0.0,0.0,0.0);

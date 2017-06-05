@@ -502,20 +502,38 @@ namespace mu2e {
     std::vector<double> thetasRing = ts->thetaRing();
 
     for ( unsigned int iRing = 0; iRing < xr.size(); iRing++ ) {
-      std::ostringstream leftName;
-      leftName << "leftSideRing" << iRing;
+      // Let's make a mother volume first for each ring.
+      std::ostringstream ringMotherName;
+      ringMotherName << "TSRingMother" << iRing;
       CLHEP::HepRotation* ringRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
       double ringRotTheta = thetasRing[iRing]*CLHEP::degree;
       ringRotat->rotateY(ringRotTheta);
-      double lx = xr[iRing] + lr*sin(ringRotTheta)/2.0 + trs*sin(ringRotTheta)/2.0;
-      double ly = yr[iRing];
-      double lz = zr[iRing] - lr*cos(ringRotTheta)/2.0 - trs*cos(ringRotTheta)/2.0; 
+      CLHEP::HepRotation* noRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+
+      double motherx = xr[iRing];
+      double mothery = yr[iRing];
+      double motherz = zr[iRing];
+
+      VolumeInfo motherVol = nestTubs( ringMotherName.str(),
+				       TubsParams( rirs, rors, trs + lr/2.0 ),
+				       findMaterialOrThrow("G4_AIR"),
+				       ringRotat, 
+				       CLHEP::Hep3Vector(motherx,mothery,motherz
+							 ) - _hallOriginInMu2e,
+				       parent, 0, G4Color::Blue(),
+				       "TSCryo" );
+      std::ostringstream leftName;
+      leftName << "leftSideRing" << iRing;
+
+      double lx = 0.0;
+      double ly = 0.0;
+      double lz = - lr/2.0 - trs/2.0; 
       nestTubs( leftName.str(),
 		TubsParams( rirs, rors, trs/2.0 ),
 		ringMaterial,
-                ringRotat,
-		CLHEP::Hep3Vector(lx,ly,lz)-_hallOriginInMu2e,
-		parent,
+                noRotat,
+		CLHEP::Hep3Vector(lx,ly,lz),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"TSCryo"
@@ -527,9 +545,9 @@ namespace mu2e {
       nestTubs( centerName.str(),
 		TubsParams( rir, ror, lr/2.0 ),
 		ringMaterial,
-                ringRotat,
-		CLHEP::Hep3Vector(xr[iRing],yr[iRing],zr[iRing])-_hallOriginInMu2e,
-		parent,
+                noRotat,
+		CLHEP::Hep3Vector(0,0,0),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"TSCryo"
@@ -539,16 +557,16 @@ namespace mu2e {
       std::ostringstream rightName;
       rightName << "rightSideRing" << iRing;
 
-      double rx = xr[iRing] - lr*sin(ringRotTheta)/2.0 - trs*sin(ringRotTheta)/2.0;
-      double ry = yr[iRing];
-      double rz = zr[iRing] + lr*cos(ringRotTheta)/2.0 + trs*cos(ringRotTheta)/2.0; 
+      double rx = 0.0;
+      double ry = 0.0;
+      double rz = lr/2.0 + trs/2.0; 
 
       nestTubs( rightName.str(),
 		TubsParams( rirs, rors, trs/2.0 ),
 		ringMaterial,
-                ringRotat,
-		CLHEP::Hep3Vector(rx,ry,rz)-_hallOriginInMu2e,
-		parent,
+                noRotat,
+		CLHEP::Hep3Vector(rx,ry,rz),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"TSCryo"
@@ -875,8 +893,9 @@ namespace mu2e {
                                            0.0,coll31.holeRadius(),hDz+2.0,
                                            0.0, CLHEP::twopi );
     G4IntersectionSolid* coll3_hole = new G4IntersectionSolid("coll3_hole",
-                                                              coll3_hole_box,
-                                                              coll3_hole_circle);
+							   coll3_hole_box,
+							   coll3_hole_circle);
+
 
     // Make collimators themselves. At this moment the collimators
     // coll31 and coll32 are the same size. But it is possible to make them
@@ -934,6 +953,51 @@ namespace mu2e {
                   0,
                   G4Color::Gray(),
 		  "TSColl");
+
+    // **************************************************************
+    // Now place the "flashblocks" for tests of mitigating beam flash
+    // **************************************************************
+
+    if (coll31.useFlashBlock()) {
+      std::vector<double> boxPars = { coll31.flashBlockWidth()/2.0*CLHEP::mm,
+				      coll31.flashBlockHeight()/2.0*CLHEP::mm,
+				      coll31.flashBlockLength()/2.0*CLHEP::mm};
+
+      CLHEP::Hep3Vector displaceFB(coll31.flashBlockTranOff()*CLHEP::mm,
+				   coll31.holeDisplacement() - coll31.holeHalfHeight() + coll31.flashBlockHeight()/2.0*CLHEP::mm, 
+				   coll31.flashBlockLength()/2.0 - coll31.halfLength());
+
+      nestBox( "flashBlockUp",
+	       boxPars,
+	       findMaterialOrThrow(coll31.flashBlockMaterial()),
+	       coll31Rot,
+	       coll31.getLocal()+displaceFB,
+	       _helper->locateVolInfo("TS3Vacuum").logical,
+	       0,
+	       G4Colour::Gray(),
+	       "TSColl");
+    } 
+
+    if (coll32.useFlashBlock()) {
+      std::vector<double> boxPars = { coll32.flashBlockWidth()/2.0*CLHEP::mm,
+				      coll32.flashBlockHeight()/2.0*CLHEP::mm,
+				      coll32.flashBlockLength()/2.0*CLHEP::mm};
+
+      CLHEP::Hep3Vector displaceFB(coll32.flashBlockTranOff()*CLHEP::mm,
+				   coll32.holeDisplacement() - coll32.holeHalfHeight() + coll32.flashBlockHeight()/2.0*CLHEP::mm, 
+				   coll32.flashBlockLength()/2*CLHEP::mm - coll32.halfLength());
+
+      nestBox( "flashBlockDn",
+	       boxPars,
+	       findMaterialOrThrow(coll32.flashBlockMaterial()),
+	       coll32Rot,
+	       coll32.getLocal()+displaceFB,
+	       _helper->locateVolInfo("TS3Vacuum").logical,
+	       0,
+	       G4Colour::Gray(),
+	       "TSColl");
+    } 
+
 
     // Now add a Recorder at the Coll31 exit and Coll32 entrance
     // (do not use VirtualDetector because of _ in its volume name)
@@ -1147,7 +1211,7 @@ namespace mu2e {
     // ******* In version two, there are changes *****
     // - support structure is ~1 cm thick stainless with a window shaped
     //   like that of the COL3u and Col3d windows.
-    // - wedge contains complete volume of window and is shaped like the 
+    // - wedge is shaped like the 
     //   hole in the support structure.
 
     // First, ascertain which version this is, along with other config info
@@ -1198,7 +1262,7 @@ namespace mu2e {
 	  double pbarWedge_y1  = pbarWindow.getY1();
 	  double pbarWedge_dz0 = pbarWindow.getDZ0();
 	  double pbarWedge_dz1 = pbarWindow.getDZ1();
-      
+
 	  VolumeInfo pbarWedgeInfo;
       
 	  pbarWedgeInfo.name = "PbarAbsWedge";
@@ -1230,7 +1294,7 @@ namespace mu2e {
 	  finishNesting(pbarWedgeInfo,
 			pbarMaterial,
 			0,
-			G4ThreeVector(0.,0.,pbarWedge_dz/2+pbarWindow.halfLength()),
+			G4ThreeVector(0.,0.,pbarWedge_dz/2+pbarWindow.halfLength() ),
 			parent.logical,
 			0,
 			G4Color::Yellow(),
@@ -1297,7 +1361,6 @@ namespace mu2e {
 					  0, ts.innerRadius(), hDz,
 					  0.0, CLHEP::twopi );
 
-      // ed to here
       supportInfo.solid = new G4SubtractionSolid("pBarTS3Support",
                                               support_mother,
                                               support_hole,
@@ -1317,26 +1380,70 @@ namespace mu2e {
 		    G4Color::Gray(),
 		    "PbarAbs");
 
+      // -- vacuum wall
+
+      if (verbosityLevel > 0) std::cout << "TS3 pbar windows HalfLength : " << pbarWindow.halfLength() << std::endl; 
+        
+      if ( pbarWindow.shape() == "wedge" ||
+	   pbarWindow.shape() == "disk" ) {
+
+	VolumeInfo pbarDiskInfo;
+	pbarDiskInfo.name = "PbarAbsDisk";
+
+	// Helper info
+	double pbarWedge_y0  = pbarWindow.getY0();
+	double pbarWedge_y1  = pbarWindow.getY1();
+	double pbarWedge_dy = (pbarWedge_y1 + pbarWedge_y0)/2.;
+
+	G4Tubs *pbarAbs_disk = new G4Tubs("PbarAbs_disk",
+					  0.0 ,pbarWindow.rOut(),
+					  pbarWindow.halfLength(),
+					  0.0,CLHEP::twopi);
+
+	pbarDiskInfo.solid = new G4IntersectionSolid(pbarDiskInfo.name,
+						     support_hole,
+						     pbarAbs_disk,
+						     0,
+						     G4ThreeVector(0,0,0));
+	  
+	  finishNesting(pbarDiskInfo,
+			pbarMaterial,
+			0,
+			G4ThreeVector(0,pbarWedge_dy,0),
+			parent.logical,
+			0,
+			G4Color::Yellow(),
+			"PbarAbs"
+			);
+	// nestTubs( "PbarAbs",
+	// 	  pbarParams,
+	// 	  pbarMaterial,
+	// 	  0,
+	// 	  pbarWindow.getLocal(),
+	// 	  parent,
+	// 	  0,
+	// 	  G4Color::Yellow()
+	// 	  );
+      }
+
       if( pbarWindow.shape() == "wedge" ) 
 	{
 	  // -- pbar wedge        
 	  double pbarWedge_y0  = pbarWindow.getY0();
 	  double pbarWedge_y1  = pbarWindow.getY1();
-	  double pbarWedge_dz0 = pbarWindow.getDZ0() + 2.0*pbarWindow.halfLength();
-	  double pbarWedge_dz1 = pbarWindow.getDZ1() + 2.0*pbarWindow.halfLength();
+	  double pbarWedge_dz0 = pbarWindow.getDZ0();
+	  double pbarWedge_dz1 = pbarWindow.getDZ1();
+	  double pbarWedge_dz = ( pbarWedge_dz0<pbarWedge_dz1 ) ? pbarWedge_dz1 : pbarWedge_dz0;
+	  double pbarWedge_offsetZ = pbarWindow.getWedgeZOffset() + pbarWedge_dz/2.0;
       
 	  VolumeInfo pbarWedgeInfo;
       
 	  pbarWedgeInfo.name = "PbarAbsWedge";
       
-	  //	  double pbarWedge_dz = ( pbarWedge_dz0<pbarWedge_dz1 ) ? pbarWedge_dz1 : pbarWedge_dz0;
 	  double pbarWedge_h = pbarWedge_y1 - pbarWedge_y0;
 	  
 	  double pbarWedge_dy = (pbarWedge_y1 + pbarWedge_y0)/2.;
-      
-	  //	  G4Tubs *pbarWedge_disk = new G4Tubs("PbarAbsWedge_disk",
-	  //					      0,bl.getTS().innerRadius(),pbarWedge_dz/2.,0,CLHEP::twopi);
-      
+            
 	  G4Trd *pbarWedge_trd = new G4Trd("PbarAbsWedge_trd",
 					   bl.getTS().innerRadius(),bl.getTS().innerRadius(),
 					   pbarWedge_dz0/2.,pbarWedge_dz1/2.,
@@ -1345,7 +1452,7 @@ namespace mu2e {
 	  AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 	  G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
 	  pbarWedgeRot->rotateX(90.0*CLHEP::degree);
-	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_dy,0.0);
+	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_dy,pbarWedge_offsetZ);
 	  
 	  pbarWedgeInfo.solid = new G4IntersectionSolid(pbarWedgeInfo.name,
 							support_hole,

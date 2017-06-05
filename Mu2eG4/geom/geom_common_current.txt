@@ -32,7 +32,10 @@ double mu2e.solenoidOffset   =  3904.;   // mm
 double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 
 #include "Mu2eG4/geom/mu2eWorld.txt"
-#include "Mu2eG4/geom/mu2eHall.txt"
+// mu2eHall.txt should be used with protonBeamDump_v02.txt, below
+//#include "Mu2eG4/geom/mu2eHall.txt"
+// whereas mu2eHall_v02.txt should be used with protonBeamDump_v03.txt, below
+#include "Mu2eG4/geom/mu2eHall_v02.txt"
 
 // Solenoids
 #include "Mu2eG4/geom/DetectorSolenoid_v02.txt"
@@ -66,6 +69,7 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/degrader_v01.txt"
 
 #include "Mu2eG4/geom/ProductionTargetInPS.txt"
+//#include "Mu2eG4/geom/protonBeamDump_v02.txt"
 #include "Mu2eG4/geom/protonBeamDump_v03.txt"
 #include "Mu2eG4/geom/extmon_fnal_v02.txt"
 
@@ -73,7 +77,6 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 
 // Crystal calorimeter
 #include "Mu2eG4/geom/calorimeter_CsI.txt"
-//#include "Mu2eG4/geom/calorimeter_BaF2.txt"
 
 //CRV counters
 #include "Mu2eG4/geom/crv_counters_v03.txt"

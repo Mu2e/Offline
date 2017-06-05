@@ -101,19 +101,31 @@ BEGIN_PROLOG
       leadingVetoTime               : 0      //the time window before the first hit time of the coincidence triplet (only used to print out the results)
       trailingVetoTime              : 125    //the time window after the last hit time of the coincidence triplet (only used to print out the results)
     }
-
+    CrvCoincidenceClusterFinder:
+    {
+      module_type                    : CrvCoincidenceClusterFinder
+      verboseLevel                   : 1
+      maxDistance                    : 1000 //mm
+      maxTimeDifference              : 100  //ns
+      crvCoincidenceCheckModuleLabel : "CrvCoincidence"
+      timeWindowStart                : 500  //ns
+      timeWindowEnd                  : 1750 //ns
+      deadTimeWindowStartMargin      : 0    //ns
+      deadTimeWindowEndMargin        : 125  //ns
+    }
 
 CrvResponsePackage : 
 {
    producers : 
    {
-     CrvPhotonArrivals: @local::CrvPhotonArrivals
-     CrvSiPMResponses : @local::CrvSiPMResponses
-     CrvWaveforms     : @local::CrvWaveforms
-     CrvRecoPulses    : @local::CrvRecoPulses
-     CrvCoincidence   : @local::CrvCoincidence
+     CrvPhotonArrivals           : @local::CrvPhotonArrivals
+     CrvSiPMResponses            : @local::CrvSiPMResponses
+     CrvWaveforms                : @local::CrvWaveforms
+     CrvRecoPulses               : @local::CrvRecoPulses
+     CrvCoincidence              : @local::CrvCoincidence
+     CrvCoincidenceClusterFinder : @local::CrvCoincidenceClusterFinder
    }
-   CrvResponseSequence : [ CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence ]
+   CrvResponseSequence : [ CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
 }
 
 END_PROLOG
