@@ -340,7 +340,7 @@ namespace mu2e
         _hotx[i] = point.x();
         _hoty[i] = point.y();
         _hotz[i] = point.z();
-        _hott0[i] = strawHit->hitT0()._t0 / CLHEP::ns;
+        _hott0[i] = strawHit->trkT0()._t0 / CLHEP::ns;
         ++i;
       }
       if (i >= MAXNHOT) {

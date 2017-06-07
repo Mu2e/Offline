@@ -357,7 +357,7 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
 	     straw->id().getStraw()
 	     );
 
-      printf(" %8.3f",hit->hitT0().t0());
+      printf(" %8.3f",hit->trkT0().t0());
 
       double res, sigres;
       hit->resid(res, sigres, true);
@@ -390,7 +390,7 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
 	     hit->hitErr(),
 	     hit->t0Err(),
 	     hit->penaltyErr(),
-	     hit->extErr()
+	     hit->temperature()
 	     );
 //-----------------------------------------------------------------------------
 // test: calculated residual in fTmp[0]

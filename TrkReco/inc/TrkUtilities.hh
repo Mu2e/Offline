@@ -39,7 +39,7 @@ namespace mu2e {
     double overlap(HelixSeed const& hs,TimeCluster const& tc);
     double overlap(SHIV const& shiv1, SHIV const& shiv2); 
     // compute the flightlength for a given z position
-    double zFlight(TrkDifPieceTraj const& ptraj, double pz);
+    //    double zFlight(TrkDifPieceTraj const& ptraj, double pz);
   }
 }
 #endif

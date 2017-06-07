@@ -85,16 +85,21 @@ KFSeed : {
   seedsmear       		  : 10000
   maxhitchi                       : 5.0
   # interate the fit twice: once at the physical size of the straw, once at its RMS
-  hiterr                          : [ 5.0, 1.44 ]
+    #  hiterr                          : [ 5.0, 1.44 ]
+  # time external error, assuming s drift velocity of 40 #mu m / ns
+  hiterr                          : [ 125., 36. ]
   ambiguityStrategy       	  : [ 0  , 0    ]
   t0Tolerance			  : [ 5.0, 5.0  ]
   weedhits			  : [ true, true ]
-  UnWeed			  : true
   ResolveAfterWeeding		  : false
   AddMaterial			  : [ false, false ]
-  initT0			  : false
+#  initT0			  : true
+  initT0			  : false 
+  useTrkCaloHit                   : false
   updateT0			  : false
   dtOffset                        : @local::TrackCaloMatching.DtOffset
+  strawHitT0Weight                : 1
+  caloHitT0Weight                 : 10
 }
 
 # Kalman fit configuration for the final track fit.  This also runs the simulated annealing
@@ -102,18 +107,22 @@ KFFinal : {
   materialCorrection          : true
   fieldCorrection	      : true
   initT0		      : false
+  useTrkCaloHit                   : false
   ResolveAfterWeeding	      : false
-  hiterr                      : [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
+  # time external error, assuming s drift velocity of 40 #mu m / ns
+#  hiterr                      : [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
+  hiterr                      : [ 125., 37.5, 12.5, 6.25, 3.125, 1.25, 0.0, 0.0, 0.0]
   t0Tolerance                 : [ 2.0, 1.0, 1.0, 1.0 , 0.5  , 0.5 , 0.2, 0.2, 0.1]
 # specific choices for ambiguity resolution
   weedhits		      : @local::PanelAmbig.Weed
-  UnWeed		      : true
   AddMaterial		      : [ false, false, false, true, false, false, false, true, true ]
   PanelAmbigResolver          : @local::PanelAmbig.Resolver
   ambiguityStrategy           : @local::PanelAmbig.Strategy
 # Extend downstream to the calorimeter by default
   DownstreamExtent	      : 3
   dtOffset                    : @local::TrackCaloMatching.DtOffset
+  strawHitT0Weight            : 1
+  caloHitT0Weight             : 10
 }
 
 # Seed fit; this is really a least-squares fit, but uses the Kalman infrastructure

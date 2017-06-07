@@ -400,7 +400,7 @@ namespace mu2e
     tshinfo._hlen = tsh->hitLen();
     Hep3Vector tdir = tsh->trkTraj()->direction(tshinfo._trklen);
     tshinfo._wdot = tdir.dot(tsh->straw().getDirection());
-    tshinfo._t0 = tsh->hitT0()._t0;
+    tshinfo._t0 = tsh->trkT0()._t0;
     // include signal propagation time correction
     tshinfo._ht = tsh->time()-tsh->signalTime();
     tshinfo._tddist = tsh->timeDiffDist();
@@ -410,7 +410,7 @@ namespace mu2e
       tshinfo._doca = tsh->poca().doca();
     else
       tshinfo._doca = -100.0;
-    tshinfo._exerr = tsh->extErr();
+    tshinfo._exerr = tsh->driftVelocity()*tsh->temperature();
     tshinfo._penerr = tsh->penaltyErr();
     tshinfo._t0err = tsh->t0Err()/tsh->driftVelocity();
 // cannot count correlations with other hits in this function; set to false

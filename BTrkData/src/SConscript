@@ -13,17 +13,17 @@ helper=mu2e_helper()
 babarlibs = env['BABARLIBS']
 
 mainlib = helper.make_mainlib ( [
-    'mu2e_ConditionsService',
-    'mu2e_RecoDataProducts',
-    'mu2e_Mu2eInterfaces',
-    babarlibs,
-    'art_Framework_Services_Registry',
-    'art_Utilities',
-    'canvas_Utilities',
-    'cetlib',
-    'CLHEP',
-    'boost_system',
-    ] )
+        'mu2e_ConditionsService',
+        'mu2e_RecoDataProducts',
+        'mu2e_Mu2eInterfaces',
+        babarlibs,
+        'art_Framework_Services_Registry',
+        'art_Utilities',
+        'canvas_Utilities',
+        'cetlib',
+        'CLHEP',
+        'boost_system',
+        ] )
 
 # Fixme: do I need all of babarlibs below?
 helper.make_dict_and_map( [

@@ -308,7 +308,7 @@ namespace mu2e {
 		 straw->id().getStraw(),
 		 
 		 hit->ambig(),
-		 hit->hitT0().t0(),
+		 hit->trkT0().t0(),
 		 hit->driftRadius(),
 		 pos.x(),
 		 pos.y(),

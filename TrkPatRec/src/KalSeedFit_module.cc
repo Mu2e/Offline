@@ -185,9 +185,39 @@ namespace mu2e
 	TrkDef seeddef(tclust,hstraj,_tpart,_fdir);
 // filter outliers; this doesn't use drift information, just straw positions
 	if(_foutliers)filterOutliers(seeddef);
-    // now, fit the seed helix from the filtered hits
+	// _seedfit.makeTrack(_shcol,seeddef,seedrep);
+
+	const HelixTraj* htraj = &seeddef.helix();
+	TrkFitFlag       seedok(TrkFitFlag::seedOK);//FIX ME! is there a bettere flag?
+	double           flt0  = htraj->zFlight(0.0);
+	
+	KalSeed kf(_tpart,_fdir, hseed._t0, flt0, seedok);
+	auto hsH = event.getValidHandle<HelixSeedCollection>(_hsTag);
+	kf._helix = art::Ptr<HelixSeed>(hsH,iseed);
+	// extract the hits from the rep and put the hitseeds into the KalSeed
+	int nsh = tclust._strawHitIdxs.size();
+	for (int i=0; i< nsh; ++i){
+	  TrkStrawHitSeed tshs;
+	  tshs._index = tclust._strawHitIdxs.at(i);
+	  kf._hits.push_back(tshs);
+	}
+	
+	if(kf._hits.size() >= _minnhits) kf._status.merge(TrkFitFlag::hitsOK);
+	// extract the helix trajectory from the fit (there is just 1)
+	// use this to create segment.  This will be the only segment in this track
+	if(htraj != 0){
+	  KalSegment kseg;
+	  // sample the momentum at this point
+	  BbrVectorErr momerr;// = seedrep->momentumErr(seedrep->flt0());
+	  TrkUtilities::fillSegment(*htraj,momerr,kseg);
+	  kf._segments.push_back(kseg);
+	} else {
+	  throw cet::exception("RECO")<<"mu2e::KalSeedFit: Can't extract helix traj from seed fit" << endl;
+	}
+	// now, fit the seed helix from the filtered hits
 	KalRep *seedrep(0);
-	_seedfit.makeTrack(_shcol,seeddef,seedrep);
+	_seedfit.makeTrack(_shcol, kf, seedrep);
+	
 	if(_debug > 1){
 	  if(seedrep == 0)
 	    cout << "No Seed fit produced " << endl;
@@ -202,8 +232,6 @@ namespace mu2e
 	  // fill ptr to the helix seed
 	  auto hsH = event.getValidHandle<HelixSeedCollection>(_hsTag);
 	  kseed._helix = art::Ptr<HelixSeed>(hsH,iseed);
-	  // calo cluser ptr from Helix Seed
-	  //	  kseed._caloCluster = hseed._caloCluster; 
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
 	  TrkUtilities::fillHitSeeds(seedrep,kseed._hits);
 	  if(kseed._hits.size() >= _minnhits)kseed._status.merge(TrkFitFlag::hitsOK);

@@ -1029,7 +1029,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           {
             int    strawindex=strawHit->straw().index().asInt();
             double time = strawHit->time(); 
-            double hitT0 = strawHit->hitT0()._t0; //this is the time the hit "arrived at the straw"
+            double hitT0 = strawHit->trkT0()._t0; //this is the time the hit "arrived at the straw"
                                               //don't know what the other times are
             double strawtime = strawHit->strawHit().time();
             double driftRadius = strawHit->driftRadius();
@@ -1340,7 +1340,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
             const mu2e::TrkStrawHit* strawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hitOnTrack);
             if(strawHit)
             {
-              double strawTime   = strawHit->hitT0()._t0/CLHEP::ns;
+              double strawTime   = strawHit->trkT0()._t0/CLHEP::ns;
               double trackTime   = strawTime*CLHEP::ns;  //TODO: add correction for drift time
               double weight= strawHit->weight();  
               double fltLen= strawHit->fltLen();
