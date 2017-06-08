@@ -10,17 +10,33 @@ bool   ts.useFlashBlockUp          = true;
 double ts.flashBlockUp.Height      = 40.0;  // mm
 double ts.flashBlockUp.Width       = 80.0;  // mm
 double ts.flashBlockUp.TransOffset = -15.0; // mm, neg = West
-double ts.flashBlockUp.LongOffset  = 200.0; // from Center:  neg = upstream
-double ts.flashBlockUp.Length      =  40.0; // mm full length
+double ts.flashBlockUp.LongOffset  = 200.0; // from Center:  neg = upstream ... not used anyway
+double ts.flashBlockUp.Length      =  10.0; // mm full length
 string ts.flashBlockUp.Material    = "CollCu"; //
 
 bool   ts.useFlashBlockDn          = false;
 double ts.flashBlockDn.Height      = 40.0; // mm
 double ts.flashBlockDn.Width       = 70.0; // mm
 double ts.flashBlockDn.TransOffset = -15.0; // mm, neg = West
-double ts.flashBlockDn.LongOffset  = 0.0;  // from Center:  neg = upstream
+double ts.flashBlockDn.LongOffset  = 0.0;  // from Center:  neg = upstream... not used anyway
 double ts.flashBlockDn.Length      = 100.0; // mm full length
 string ts.flashBlockDn.Material    = "CollCu"; //
+
+//-----------------------------------------------------------------------------
+// changes to the tracker geometry for rad. damage studies:
+// --------------------------------------------------------
+// 1. "softly" remove 1 mm copper behind the "G10 electronics boards"
+// 2. stiffener ring made out of C943 bronze
+// 3. manifold material - C360 brass
+//-----------------------------------------------------------------------------
+double ttrackerSupport.electronics.cu.halfLength   =  0.01;
+string ttrackerSupport.electronics.cu.material     =  "G4_AIR";
+
+string ttrackerSupport.endRing.material            = "BronzeC943";
+
+string ttrackerSupport.centerPlate.material        = "BrassC360";
+string ttrackerSupport.cover.material              = "BrassC360";
+string ttrackerSupport.innerRing.material          = "BrassC360"; // default:"TrackerManifold"
 
 
 

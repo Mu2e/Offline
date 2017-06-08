@@ -183,8 +183,18 @@ namespace mu2e {
     double       _endRingHalfLength;
     double       _endRingZOffset;
     std::string  _endRingMaterial;
+    bool         _hasDownRing;
+    double       _downRingOuterRadius;
+    double       _downRingInnerRadius;
+    double       _downRingHalfLength;
+    double       _downRingZOffset;
+    std::string  _downRingMaterial;
+
     std::vector<int> _midRingSlot;
     double           _midRingHalfLength;
+    double           _midRingPhi0;
+    double           _midRingdPhi;
+    std::string      _midRingMaterial;
 
     double      _innerRingInnerRadius;
     double      _innerRingOuterRadius;
