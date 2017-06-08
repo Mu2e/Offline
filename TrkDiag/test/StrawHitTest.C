@@ -54,11 +54,12 @@ Int_t myproc(Int_t proc,Bool_t xtalk) {
   return other;
 }
 
-Int_t myhpart(Int_t mcpdg,Int_t mcgen, Int_t mcproc){
-  enum hpart{Proton=0,LowEe,Other,CE};
-  if(mcpdg==11&&mcgen==2)return CE;
-  if(mcpdg==2212)return Proton;
+Int_t myhpart(Int_t mcpdg,Int_t mcgen, Int_t mcproc,Float_t mcoe){
+  enum hpart{Hadron=0,LowEe,Mudecay,CE,Other};
+  if(mcgen==2)return CE;
+  if(mcpdg==11&&(mcproc==56||mcproc==14))return Mudecay;
   if(abs(mcpdg)==11)return LowEe;
+  if(mcgen==28||mcpdg>2000)return Hadron;
   return Other;
 }
 
@@ -69,7 +70,8 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 //  TCut conv("mcpdg==11&&mcgen==2&&mcmom>100.0");
   TCut conv("mcpdg==11&&mcgen==2");
   TCut oele("abs(mcpdg)==11&&mcgen!=2");
-  TCut dio("mcpdg==11&&mcgen==6");
+//  TCut dio("mcpdg==11&&mcgen==6"); MC truth bug
+  TCut dio("mcpdg==11&&mcproc==56");
   TCut delta("mcpdg==11&&mcgen<0&&mcproc==17");
   TCut pconv("mcpdg==11&&mcgen<0&&mcproc==11");
   TCut compt("mcpdg==11&&mcgen<0&&mcproc==12");
@@ -760,46 +762,44 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     tleg->AddEntry(dtime,title,"");
     tleg->Draw();
   } else if(spage=="hitsel"){
-    TH2F* hsel = new TH2F("hsel","Hit Selection;Producing Particle;Cut efficiency (%)",4,-0.5,3.5,9,-0.5,8.5);
+    TH2F* hsel = new TH2F("hsel","Hit Selection;Producing Particle;Cut efficiency (%)",5,-0.5,4.5,4,-0.5,3.5);
     TAxis* yax = hsel->GetYaxis();
     unsigned ibin(1);
-    yax->SetBinLabel(ibin++,"All");
-    yax->SetBinLabel(ibin++,"Radius");
-    yax->SetBinLabel(ibin++,"Time");
-    yax->SetBinLabel(ibin++,"Energy");
-    yax->SetBinLabel(ibin++,"Presel");
-    yax->SetBinLabel(ibin++,"Clustered");
-    yax->SetBinLabel(ibin++,"Isolated");
-    yax->SetBinLabel(ibin++,"Bkg");
-    yax->SetBinLabel(ibin++,"Good (Net)");
+    yax->SetBinLabel(ibin++,"Hit Time>500ns");
+    yax->SetBinLabel(ibin++,"Hit Radius");
+    yax->SetBinLabel(ibin++,"Hit Energy");
+    yax->SetBinLabel(ibin++,"Bkg Hit");
     TAxis* xax = hsel->GetXaxis();
     ibin = 1;
-    xax->SetBinLabel(ibin++,"Proton");
+    xax->SetBinLabel(ibin++,"Hadron");
     xax->SetBinLabel(ibin++,"LowEe");
-    xax->SetBinLabel(ibin++,"Other");
+    xax->SetBinLabel(ibin++,"#mu#rightarrowe#nu#nu");
     xax->SetBinLabel(ibin++,"Ce");
+    xax->SetBinLabel(ibin++,"Other");
     // first, get normalization
-    TH1F* myhp = new TH1F("myhp","Hit Rate;Producing Particle;Hits/event",4,-0.5,3.5);
-    TH1F* myhpg = new TH1F("myhpg","Hit Rate;Producing Particle;Hits/event",4,-0.5,3.5);
+    TH1F* myhp = new TH1F("myhp","Hit Rate;Producing Particle;Hits/event",5,-0.5,4.5);
+    TH1F* myhpg = new TH1F("myhpg","Hit Rate;Producing Particle;Hits/event",5,-0.5,4.5);
     xax = myhp->GetXaxis();
     ibin = 1;
-    xax->SetBinLabel(ibin++,"Proton");
+    xax->SetBinLabel(ibin++,"Hadron");
     xax->SetBinLabel(ibin++,"LowEe");
-    xax->SetBinLabel(ibin++,"Other");
+    xax->SetBinLabel(ibin++,"#mu#rightarrowe");
     xax->SetBinLabel(ibin++,"Ce");
-    hits->Project("myhp","myhpart(mcpdg,mcgen,mcproc)");
-    hits->Project("myhpg","myhpart(mcpdg,mcgen,mcproc)",hitsel);
+    xax->SetBinLabel(ibin++,"Other");
+    hits->Project("myhp","myhpart(mcpdg,mcgen,mcproc,mcoe)","tsel");
+    hits->Project("myhpg","myhpart(mcpdg,mcgen,mcproc,mcoe)",hitsel);
     double pscale(1.0/nevents);
     myhp->Scale(pscale);
     myhpg->Scale(pscale);
     myhpg->SetFillColor(kGreen);
     // now loop over selections
     TCut preclu("tsel&&esel");
-    std::vector<TCut> selcuts = {"","rsel","tsel","esel",preclu,"bkgclust","isolated","bkg",hitsel};
+//    std::vector<TCut> selcuts = {"","rsel","tsel","esel",preclu,"bkgclust","isolated","bkg",hitsel};
+    std::vector<TCut> selcuts = {"tsel","tsel&&rsel","tsel&&rsel&&esel",hitsel};
     for(size_t icut=0;icut< selcuts.size();++icut){
       char val[100];
       cout << "Projecting cut " << selcuts[icut] << endl;
-      snprintf(val,100,"%lu:myhpart(mcpdg,mcgen,mcproc)",icut);
+      snprintf(val,100,"%lu:myhpart(mcpdg,mcgen,mcproc,mcoe)",icut);
       hits->Project("+hsel",val,selcuts[icut]);
     }
 // normalize by row
