@@ -1,4 +1,75 @@
-void Draw(TTree* c) {
+#include "TH1F.h"
+#include "TF1.h"
+#include "TTree.h"
+#include "TLegend.h"
+#include "TPad.h"
+#include "TPaveText.h"
+#include "TCanvas.h"
+#include "TH2F.h"
+#include "TStyle.h"
+#include "TLine.h"
+#include "TArrow.h"
+#include "TCut.h"
+#include "TBox.h"
+#include "TMath.h"
+#include "TProfile.h"
+#include "TDirectory.h"
+#include "Math/Math.h"
+#include "THStack.h"
+
+
+Double_t crystalball (Double_t *x, Double_t *par) {
+  // par[0] : norm
+  // par[1] : x0
+  // par[2] : sigma
+  // par[3] : n
+  // par[4] : alpha
+  // par[5] : fraction of exponential tail
+  // par[6] : tail exponential lambda
+
+  double dx = x[0]-par[1];
+  if ( dx/fabs(par[2]) > -1.*par[4]) {
+    double g = par[0]*TMath::Gaus(x[0], par[1], par[2]);
+//    double g2 = par[5]*par[0]*TMath::Gaus(x[0], par[1], par[6]);
+//    return g1+g2;
+    double e = par[0]*par[5]*dx*exp(-(dx)/par[6])/(par[6]*par[6]);
+    return g+e;
+  }
+  else {
+    double A = pow(par[3]/fabs(par[4]), par[3])*exp(-0.5*par[4]*par[4]);
+    double B = par[3]/fabs(par[4]) - fabs(par[4]);
+    return par[0]*A*pow(B-dx/fabs(par[2]), -1.*par[3]);
+  }
+}
+
+
+// The following is from Alexx Perloff, JetMetaAnalysis
+double fnc_dscb(double*xx,double*pp) {
+  double x   = xx[0];
+// gaussian core
+  double N   = pp[0];//norm
+  double mu  = pp[1];//mean
+  double sig = pp[2];//variance
+  // transition parameters
+  double a1  = pp[3];
+  double p1  = pp[4];
+  double a2  = pp[5];
+  double p2  = pp[6];
+
+  double u   = (x-mu)/sig;
+  double A1  = TMath::Power(p1/TMath::Abs(a1),p1)*TMath::Exp(-a1*a1/2);
+  double A2  = TMath::Power(p2/TMath::Abs(a2),p2)*TMath::Exp(-a2*a2/2);
+  double B1  = p1/TMath::Abs(a1) - TMath::Abs(a1);
+  double B2  = p2/TMath::Abs(a2) - TMath::Abs(a2);
+
+  double result(N);
+  if      (u<-a1) result *= A1*TMath::Power(B1-u,-p1);
+  else if (u<a2)  result *= TMath::Exp(-u*u/2);
+  else            result *= A2*TMath::Power(B2+u,-p2);
+  return result;
+}
+
+void Draw(TTree* ta) {
 
   TH2F* evspep = new TH2F("evspep","Associated Cluster Energy vs Track Momentum;P (MeV/c);E (MeV)",50,0,200,50,0,200);
   TH2F* evspmp = new TH2F("evspmp","Associated Cluster Energy vs Track Momentum;P (MeV/c);E (MeV)",50,0,200,50,0,200);
@@ -19,10 +90,10 @@ void Draw(TTree* c) {
 
   TCanvas* can = new TCanvas("can","can",800,800);
 
-  c->Project("evspem","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==11");
-  c->Project("evspmm","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==13");
-  c->Project("evspep","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==-11");
-  c->Project("evspmp","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==-13");
+  ta->Project("evspem","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==11");
+  ta->Project("evspmm","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==13");
+  ta->Project("evspep","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==-11");
+  ta->Project("evspmp","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==-13");
 
   evspem->Draw();
   evspem->Draw("box");
@@ -34,3 +105,66 @@ void Draw(TTree* c) {
   leg->AddEntry(evspmp,"True #mu^{+}","L");
   leg->Draw();
 }
+
+void MomRes(TTree* ta, double tqcut) {
+// cuts
+  TCut reco("dem.status>0");
+  char ctext[80];
+  snprintf(ctext,80,"dem.trkqual>%f",tqcut);
+  TCut goodfit(ctext);
+  double tdlow(0.57735027);
+  double tdhigh(1.0);
+  double t0min(700.0);
+  double t0max(1695.0);
+  snprintf(ctext,80,"dem.td>%5.5f&&dem.td<%5.5f",tdlow,tdhigh);
+  TCut rpitch = TCut(ctext);
+  snprintf(ctext,80,"dem.t0>%f&&dem.t0<%f",t0min,t0max);
+  TCut livegate = TCut(ctext);
+  TCut cosmic = TCut("dem.d0<105 && dem.d0>-80 && (dem.d0+2/dem.om)>450 && (dem.d0+2/dem.om)<680");
+  TCut rmomloose("dem.mom>100.0");
+  TCut physics = rpitch+cosmic+livegate+rmomloose;
+
+  TF1* dscb = new TF1("dscb",fnc_dscb,-2.0,2.5,7);
+  dscb->SetParName(0,"Norm");
+  dscb->SetParName(1,"x0");
+  dscb->SetParName(2,"sigma");
+  dscb->SetParName(3,"ANeg");
+  dscb->SetParName(4,"PNeg");
+  dscb->SetParName(5,"APos");
+  dscb->SetParName(6,"PPos");
+
+  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
+  rcan->Clear();
+  gStyle->SetOptFit(111111);
+  gStyle->SetOptStat("oumr");
+  gPad->SetLogy();
+  TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
+  momres->Sumw2();
+  TCut final = reco+goodfit+physics;
+  ta->Project("momres","dem.mom-demmcent.mom","evtinfo.evtwt"*final);
+  //    ta->Project(mname,"fit.mom-mcent.mom",final);
+  double integral = momres->GetEntries()*momres->GetBinWidth(1);
+  cout << "Integral = " << integral << " mean = " << momres->GetMean() << " rms = " << momres->GetRMS() << endl;
+  dscb->SetParameters(3*integral,momres->GetMean()+0.07,0.3*momres->GetRMS(),0.9,3.5,1.5,6.0);
+
+  momres->SetMinimum(0.5);
+  momres->Fit("dscb","LRQ");
+  momres->Fit("dscb","LRM");
+
+  TLine* zero = new TLine(0.0,0.0,0.0,momres->GetBinContent(momres->GetMaximumBin()));
+  zero->SetLineStyle(2);
+  zero->Draw();
+
+  TPaveText* rtext = new TPaveText(0.1,0.5,0.4,0.9,"NDC");
+  rtext->AddText("Reco Cuts");
+  char line[40];
+  snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
+  rtext->AddText(line);
+  snprintf(line,80,"t0>%5.1f nsec",t0min);
+  rtext->AddText(line);
+  sprintf(line,"%s",goodfit.GetTitle());
+  rtext->AddText(line);
+  rtext->Draw();
+
+}
+
