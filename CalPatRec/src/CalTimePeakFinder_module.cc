@@ -249,7 +249,7 @@ namespace mu2e {
     StrawHitFlag        energyFlag(StrawHitFlag::energysel);
     StrawHitFlag        timeFlag  (StrawHitFlag::timesel);
     StrawHitFlag        radiusFlag(StrawHitFlag::radsel);
-    StrawHitFlag        deltaRayFlag(StrawHitFlag::delta);
+    StrawHitFlag        deltaRayFlag(StrawHitFlag::bkg);
     StrawHitFlag        isolatedFlag(StrawHitFlag::isolated);
 //-----------------------------------------------------------------------------
 // Loop over calorimeter clusters

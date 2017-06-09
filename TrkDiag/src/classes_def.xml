@@ -1,4 +1,6 @@
 <lcgdict>
+ <class name="mu2e::StrawHitInfo" />
+ <class name="std::vector<mu2e::StrawHitInfo>" />
  <class name="mu2e::TrkStrawHitInfoMC" />
  <class name="std::vector<mu2e::TrkStrawHitInfoMC>" />
  <class name="mu2e::TrkStrawHitInfo" />
@@ -28,4 +30,6 @@
  <class name="std::vector<mu2e::CrvHitInfoMC>" />
  <class name="mu2e::CrvHitInfoReco" />
  <class name="std::vector<mu2e::CrvHitInfoReco>" />
+ <class name="mu2e::BkgHitInfo" />
+ <class name="std::vector<mu2e::BkgHitInfo>" />
 </lcgdict>

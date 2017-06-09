@@ -1,3 +1,4 @@
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #ifndef RecoDataProducts_StrawHit_hh
 #define RecoDataProducts_StrawHit_hh
 //
@@ -76,6 +77,7 @@ namespace mu2e {
     return ost;
   }
 
+   typedef std::vector<mu2e::StrawHit> StrawHitCollection;
 
 } // namespace mu2e
 

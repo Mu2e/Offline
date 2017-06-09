@@ -18,10 +18,9 @@
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
 // BaBar
@@ -38,7 +37,6 @@
 
 #include "Mu2eBTrk/inc/BaBarMu2eField.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
-#include "TrkPatRec/inc/StrawHitInfo.hh"
 
 #include "CalPatRec/inc/CalHelixFinder_types.hh"
 #include "CalPatRec/inc/CalHelixFinderAlg.hh"

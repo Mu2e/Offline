@@ -16,15 +16,11 @@ namespace mu2e {
     Float_t _edep, _time, _rho;
     Float_t _wres, _tres, _chisq, _stdt, _dist;
     Int_t _plane, _panel, _layer, _straw;
-    Bool_t _esel, _rsel, _delta, _stereo, _tdiv, _strawxtalk, _elecxtalk;
+    Bool_t _bkg, _isolated, _tsel, _esel, _rsel, _stereo, _tdiv, _strawxtalk, _elecxtalk;
     Int_t _relation;
-    Bool_t _primary;
     CLHEP::Hep3Vector _mcpos;
     Int_t _mcpdg, _mcgen, _mcproc, _mcid;
     Float_t _mcedep, _mctime, _mct0, _mcht, _mcmom, _mctd;
-    Int_t _hflag;
-    Float_t _hgd, _cdist; // MVA output of generalized distance
-    Float_t _dphi, _drho, _dt; // MVA inputs
   };
 }
 #endif

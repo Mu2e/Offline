@@ -187,7 +187,7 @@ namespace mu2e
     _sthTag	 (pset.get<art::InputTag>("StereoHitCollection","MakeStereoHits")),
     _trackseed   (pset.get<string>("HelixSeedCollectionLabel","TimeClusterFinder")),
     _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits")),
-    _hbkg        (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
+    _hbkg        (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
     _stmva       (pset.get<fhicl::ParameterSet>("HelixStereoHitMVA",fhicl::ParameterSet())),
     _nsmva       (pset.get<fhicl::ParameterSet>("HelixNonStereoHitMVA",fhicl::ParameterSet())),
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet())),

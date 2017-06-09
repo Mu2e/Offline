@@ -128,7 +128,7 @@ namespace mu2e {
     _ccTag              (pset.get<art::InputTag>("caloClusterModuleLabel","MakeCaloCluster")),
     _mcdigisTag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH")),
     _hsel		(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
-    _hbkg		(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
+    _hbkg		(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
     _peakMVA		(pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet())),
     _tmin		(pset.get<double>("tmin",500.0)),
     _tmax		(pset.get<double>("tmax",1700.0)),

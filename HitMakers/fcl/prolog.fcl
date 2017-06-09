@@ -60,6 +60,7 @@ MakeStrawHitPositions : {
 MakeStereoHits : {
   module_type : MakeStereoHits
   MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
+  WriteStereoPairs : true
 }
 
 #------------------------------------------------------------------------------

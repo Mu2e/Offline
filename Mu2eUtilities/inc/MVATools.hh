@@ -18,7 +18,7 @@ namespace mu2e
     explicit MVATools(fhicl::ParameterSet const&);
     virtual ~MVATools();
     void initMVA();
-    double evalMVA(std::vector<double> const&);
+    double evalMVA(std::vector<double> const&) const;
     void showMVA()const;
   protected:
     void getNorm();
@@ -30,8 +30,9 @@ namespace mu2e
     std::vector<double>_wnr2;
     std::vector <std::vector<std::vector<double> > > _wgts;
     std::vector <std::vector<std::vector<double> > > _twgts;
-    std::vector<double>_x;
-    std::vector<double>_y;
+    // local workspace variables
+    mutable std::vector<double>_x;
+    mutable std::vector<double>_y;
     std::vector<std::string> _title, _label;
   };
 }

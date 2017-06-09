@@ -25,10 +25,9 @@ namespace art {
 #include "RecoDataProducts/inc/HelixVal.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -49,7 +48,7 @@ namespace art {
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
-#include "TrkPatRec/inc/StrawHitInfo.hh"
+#include "CalPatRec/inc/CalTimePeak.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
 #include "RecoDataProducts/inc/KalRepCollection.hh"
