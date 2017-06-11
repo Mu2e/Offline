@@ -85,6 +85,22 @@ namespace mu2e {
               G4Color::Magenta(),
 	      "DS"
               );
+    // ***
+    // Lining for inner cryo shell - for test of shielding
+    // added 11 June 2017
+    // ***
+    if ( ds->hasInnerLining() ) { // only if specifically enabled
+      nestTubs( "DSInnerCryoLining",
+		TubsParams( ds->rIn1()-ds->innerLiningThickness(),ds->rIn1(),ds->halfLength()-2.*ds->endWallHalfLength()),
+		findMaterialOrThrow(ds->innerLiningMaterial()),
+		0,
+		dsInnerCryoPosition-_hallOriginInMu2e,
+		parent,
+		0,
+		G4Color::Magenta(),
+		"DS"
+		);
+    }
 
     // - outer cryo shell
     G4ThreeVector dsOuterCryoPosition( dsP.x(), dsP.y(), dsP.z());
