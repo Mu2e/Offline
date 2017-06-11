@@ -85,7 +85,7 @@ namespace mu2e {
     // CRV info
     std::string _crvCoincidenceModuleLabel;
     // analysis options
-    bool _fillmc, _pempty;
+    bool _fillmc, _pempty, _crv;
     int _diag;
     // analysis parameters
     double _minReflectTime; // minimum time for a track to reflect in the gradient
@@ -148,6 +148,7 @@ namespace mu2e {
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
     _fillmc(pset.get<bool>("FillMCInfo",true)),
     _pempty(pset.get<bool>("ProcessEmptyEvents",true)),
+    _crv(pset.get<bool>("AnalyzeCRV",false)),
     _diag(pset.get<int>("diagLevel",1)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
     _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
@@ -179,7 +180,7 @@ namespace mu2e {
 // calorimeter information for the downstream electron track
     _trkana->Branch("demc.",&_demc,TrkCaloInfo::leafnames().c_str());
 // CRV info
-    _trkana->Branch("crvinfo",&_crvinfo);
+   if(_crv) _trkana->Branch("crvinfo",&_crvinfo);
 // optionally add MC truth branches
     if(_fillmc){
       _trkana->Branch("demmc",&_demmc,TrkInfoMC::leafnames().c_str());
@@ -250,7 +251,7 @@ namespace mu2e {
       if(_fillmc) fillMCInfo(demK);
 
       // fill CRV info
-      CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, event, _crvinfo, _crvinfomc);
+      if(_crv)CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, event, _crvinfo, _crvinfomc);
 
       // fill this row in the TTree
       _trkana->Fill();

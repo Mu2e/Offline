@@ -137,7 +137,7 @@ namespace mu2e {
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
     _mcsel(pset.get<bool>("MonteCarloSelection",true)),
     _hsel(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
-    _hbkg(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
+    _hbkg(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
     _minnprimary(pset.get<int>("MinimumPrimaryHits",10)),
     _mcgen(pset.get<int>("MCGeneratorCode",2)),
     _targetradius(pset.get<double>("TargetRadius",75)),
