@@ -61,7 +61,6 @@ namespace mu2e {
     geomOptions->loadEntry( _config, "DSThShield" , "dsThShield"  );
     geomOptions->loadEntry( _config, "DSVacuum"   , "dsVacuum"    );
     geomOptions->loadEntry( _config, "DSShielding", "dsShielding" );
-    //    geomOptions->loadEntry( _config, "PiondegAbs" , "piondeg"     );
 
     // Fetch parent (hall) position
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
@@ -365,7 +364,7 @@ namespace mu2e {
     //   front face, DS1, and TS5
     double ds1Z0     = dsFrontZ0 + ds->frontHalfLength() + ds->vac_halfLengthDs1();
     double ds2Z0     = ds->vac_zLocDs23Split() - ds->vac_halfLengthDs2();
-    double ds2HalfLength     = _config.getDouble("ds2.halfLength");
+    //    double ds2HalfLength     = _config.getDouble("ds2.halfLength");
     
     if ( verbosityLevel > 0 ) {
       cout << __func__ << " DS2 vacuum extent: " 
@@ -650,47 +649,6 @@ namespace mu2e {
 
      } // end of if ( ds->hasCableRunTrk() )
 
-
-
-     //************** Begin pion Degrader code *************
-
-
-    bool addPionDegrader  = _config.getBool("piondegrader.build",false);
-    double piondegXoffset        = _config.getDouble("piondeg.xoffset");
-    double piondegZoffset        = _config.getDouble("piondeg.zoffset");
-    double piondegHalfLength     = _config.getDouble("piondeg.halfLength");
-    double piondegRadius = _config.getDouble("piondeg.radius");
-    double piondegParams[5]  = { 0.0,  piondegRadius, piondegHalfLength, 0.0, CLHEP::twopi };
-
-    if( addPionDegrader ) {
-      std::cout<<" pion degrader position:\t"
-	       <<" x offset: "<<piondegXoffset
-	       <<" z position: "<<-ds2HalfLength + piondegZoffset + piondegHalfLength
-	       <<" Pion degrader halflength:"<<piondegHalfLength
-	       <<std::endl;
-
-      G4Material* piondegMaterial  = materialFinder.get("piondeg.materialName");
-      VolumeInfo piondegInfo = nestTubs( "PiondegAbs",
-					 piondegParams,
-					 piondegMaterial,
-					 0,
-					 G4ThreeVector(piondegXoffset,0.,-ds2HalfLength + piondegZoffset + piondegHalfLength),
-					 ds2VacInfo,
-					 0,
-					 G4Color::Blue()
-					 );
-      
-      if ( verbosityLevel > 0) {
-      cout << __func__ << 
-	" PiondegAbs Z offset in Mu2e       : " << -ds2HalfLength + piondegZoffset + piondegHalfLength << endl;
-      cout << __func__ << 
-	" piondegZoffset                    : " << piondegZoffset    << endl;
-       cout << __func__ << 
-	" piondegHalfLength                : " << piondegHalfLength << endl;
-      }
-	//std::cout<<"piondegInfo\t"<<piondegParams<<std::endl;
-
- }
   } // end of Mu2eWorld::constructDS;
 
 }

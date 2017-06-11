@@ -24,6 +24,7 @@ bool g4.doSurfaceCheck    = false;
 
 // External Shielding (both upstream and downstream)
 // bool ExtShield.doSurfaceCheck = true;
+// bool Saddles.doSurfaceCheck = true;
 
 // Various portions of PS
 // bool PS.doSurfaceCheck = true;
