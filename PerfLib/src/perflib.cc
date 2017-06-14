@@ -1,6 +1,6 @@
 #include "PerfLib/inc/perflib.hh"
 
-//include <linux/hw_breakpoint.h>
+// include <linux/hw_breakpoint.h>
 #include <linux/perf_event.h>
 #include <pthread.h>
 #include <sched.h>
@@ -77,10 +77,9 @@ void PerfStats::add_counter(unsigned int type, unsigned int event_mask, int meth
   ++_counter_count;
 }
 
-void PerfStats::record_counters(){
-  if(_sample_count<2)
-    return;
-  
+void PerfStats::record_counters() {
+  if (_sample_count < 2) return;
+
   sqlite3* db;
   std::stringstream sql;
 
@@ -99,8 +98,8 @@ void PerfStats::record_counters(){
   );\n";
 
   sql << "INSERT INTO perfstats ( observation, iteration, name, value) VALUES";
-  
-  for (size_t ismpl = 0; ismpl < _sample_count; ++ismpl,++_written_sample_count){
+
+  for (size_t ismpl = 0; ismpl < _sample_count; ++ismpl, ++_written_sample_count) {
     for (size_t idx = 0; idx < _counter_count; ++idx) {
       sql << "(";
       sql << "\'" << _observation_name << "\'" << ',';
@@ -108,26 +107,24 @@ void PerfStats::record_counters(){
       sql << "\'" << _conters_dec[idx].name << "\'" << ',';
       sql << _samples[ismpl][idx];
       sql << "),\n";
-    } 
+    }
   }
-  
-  _sample_count=0;
-  
-  sql.seekp(-2, sql.cur);
-  sql << ";\n";    
 
-  
+  _sample_count = 0;
+
+  sql.seekp(-2, sql.cur);
+  sql << ";\n";
+
   if (sqlite3_exec(db, sql.str().c_str(), 0, 0, 0) != SQLITE_OK) std::cout << "SQL error:  sql=" << sql.str() << "\n";
 
 close:
   sqlite3_close(db);
-  
 }
 /*
 void PerfStats::record_counters(std::string const& observation, size_t iteration) {
   if(iteration==0)
     return;
-  
+
   sqlite3* db;
   std::stringstream sql;
 
@@ -166,10 +163,9 @@ close:
 
 */
 
-void PerfStats::record_metrics( metrics_t const& metrics, std::string const& observation, unsigned int iteration) {
-  if(iteration==0)
-    return;
-  
+void PerfStats::record_metrics(metrics_t const& metrics, std::string const& observation, unsigned int iteration) {
+  if (iteration == 0) return;
+
   sqlite3* db;
   std::stringstream sql;
 
@@ -189,15 +185,15 @@ void PerfStats::record_metrics( metrics_t const& metrics, std::string const& obs
 
   sql << "INSERT INTO metrics ( observation, iteration, name, value) VALUES";
 
-  for(auto const& metric: metrics){
+  for (auto const& metric : metrics) {
     sql << "(";
     sql << "\'" << observation << "\'" << ',';
     sql << iteration << ',';
-    sql << "\'" <<metric.first << "\'" << ',';
+    sql << "\'" << metric.first << "\'" << ',';
     sql << metric.second;
     sql << "),\n";
   }
-  
+
   sql.seekp(-2, sql.cur);
   sql << ";\n";
 
@@ -249,7 +245,7 @@ void PerfStats::init() {
 
   start_counters();
 
-  //read_begin_counters();
+  // read_begin_counters();
 }
 // http://researcher.watson.ibm.com/researcher/files/us-ajvega/FastPath_Weaver_Talk.pdf
 void PerfStats::add_default_counters() {
@@ -272,6 +268,11 @@ void PerfStats::add_default_counters() {
   auto UNHALTED_CORE_CYCLES = pme_t(0x3c, 0x00);
 
   // auto FP_ASSIST_ANY= 0x1531ecau;// pme_t(0xca,0x1e);
+
+  /*The time-stamp counter is contained in a 64-bit MSR. The high-order 32 bits
+   * of the MSR are loaded into the EDX register, and the low-order 32 bits are
+   * loaded into the EAX register. The processor monotonically increments the time-stamp
+   * counter MSR every clock cycle and resets it to 0 whenever the processor is reset. */
 
   add_counter(PERF_TYPE_USER, PERF_TYPE_TICKS, RDTSC, "Ticks");
 
@@ -301,7 +302,7 @@ void PerfStats::add_default_counters() {
    * state and not in a TM stopclock state.*/
   add_counter(PERF_TYPE_HARDWARE, PERF_COUNT_HW_REF_CPU_CYCLES, RDPMC, "Reference CPU cycles", (1 << 30) + 2);
 
-  //add_counter(PERF_TYPE_RAW, PERF_COUNT_RAW_FLOPS, IOCTL, "Flops");
+  // add_counter(PERF_TYPE_RAW, PERF_COUNT_RAW_FLOPS, IOCTL, "Flops");
   // add_counter(PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES, IOCTL, "Cache references");
   // add_counter(PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES, IOCTL, "Cache misses");
   // add_counter(PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS, IOCTL, "Branch instructions");
@@ -332,16 +333,15 @@ void PerfStats::stop_counters() {
   for (size_t idx = 0; idx < _counter_count; ++idx) stop_hwctr(idx);
 }
 
-
 void PerfStats::read_begin_counters_lib() {
-   long long cnt;
+  long long cnt;
 
   for (size_t idx = 0; idx < _counter_count; ++idx) {
     if (_conters_dec[idx].method == RDTSC) {
       _begin[idx] = rdtsc_read_ticks_begin();
-    }else if (_conters_dec[idx].method == RDPMC) {
+    } else if (_conters_dec[idx].method == RDPMC) {
       _begin[idx] = rdpmc_read_hwctr(_conters_dec[idx].rdpmc_eax);
-    }else if (_conters_dec[idx].method == IOCTL) {
+    } else if (_conters_dec[idx].method == IOCTL) {
       //   ioctl(_conters_dec[idx].file, PERF_EVENT_IOC_DISABLE, 0);
 
       if (read(_conters_dec[idx].file, &cnt, 8) == 8)
@@ -350,19 +350,19 @@ void PerfStats::read_begin_counters_lib() {
         _begin[idx] = 0;
 
       //  ioctl(_conters_dec[idx].file, PERF_EVENT_IOC_ENABLE, 0);
-    } 
+    }
   }
 }
 
 void PerfStats::read_end_counters_lib() {
-   long long cnt;
+  long long cnt;
 
   for (size_t idx = 0; idx < _counter_count; ++idx) {
     if (_conters_dec[idx].method == RDTSC) {
       _end[idx] = rdtsc_read_ticks_begin();
-    }else if (_conters_dec[idx].method == RDPMC) {
+    } else if (_conters_dec[idx].method == RDPMC) {
       _end[idx] = rdpmc_read_hwctr(_conters_dec[idx].rdpmc_eax);
-    }else if (_conters_dec[idx].method == IOCTL) {
+    } else if (_conters_dec[idx].method == IOCTL) {
       //   ioctl(_conters_dec[idx].file, PERF_EVENT_IOC_DISABLE, 0);
 
       if (read(_conters_dec[idx].file, &cnt, 8) == 8)
@@ -372,12 +372,10 @@ void PerfStats::read_end_counters_lib() {
 
       //  ioctl(_conters_dec[idx].file, PERF_EVENT_IOC_ENABLE, 0);
     }
-     _delta[idx] = _end[idx] - _begin[idx];
+    _delta[idx] = _end[idx] - _begin[idx];
   }
 
-  _samples[_sample_count++]=_delta;
-  
-   if(_sample_count==MAX_SAMPLES)
-     record_counters();
-  
+  _samples[_sample_count++] = _delta;
+
+  if (_sample_count == MAX_SAMPLES) record_counters();
 }

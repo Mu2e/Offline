@@ -1,6 +1,8 @@
 #ifndef _perflib_common_h_
 #define _perflib_common_h_
 
+#include <fcntl.h>
+#include <unistd.h>
 #include <chrono>
 #include <fstream>
 #include <future>
@@ -14,8 +16,6 @@
 #include <thread>
 #include <type_traits>
 #include <vector>
-#include <fcntl.h>
-#include <unistd.h>
 //#include <boost/exception/diagnostic_information.hpp>
 #include <cstring>
 namespace perflib {

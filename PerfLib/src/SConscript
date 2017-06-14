@@ -56,6 +56,10 @@ helper.make_plugins( [ mainlib,
                        'boost_filesystem',
                        'boost_system',
                      ] )
+
+base      = os.environ['MU2E_BASE_RELEASE']
+bindir    = env['BINDIR']
+
 # This tells emacs to view this file in python mode.
 # Local Variables:
 # mode:python
