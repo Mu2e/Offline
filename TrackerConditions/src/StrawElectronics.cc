@@ -21,6 +21,8 @@ namespace mu2e {
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
     _dVdI{pset.get<double>("thresholddVdI",1.5e4),
       pset.get<double>("adcdVdI",2.0e7) }, // mVolt/uAmps (transimpedance gain)
+    _ADCLSB(pset.get<double>("ADCLSB",0.3662)), //mVolt
+    _ADCped(pset.get<unsigned>("ADCPedestal",1393)),
     _tau{pset.get<double>("thresholdFallTime",22.0),  // nsec
       pset.get<double>("adcShapingTime",22.0) }, // nsec
     _tdead(pset.get<double>("DeadTime",100.0)), // nsec dead after threshold crossing (electronics processing time)
@@ -30,9 +32,7 @@ namespace mu2e {
     _vthresh(pset.get<double>("DiscriminatorThreshold",12.0)), //mVolt, post amplification
     _analognoise{pset.get<double>("thresholdAnalogNoise",3.0), //mVolt
       pset.get<double>("adcAnalogNoise",8.0)},
-    _ADCLSB(pset.get<double>("ADCLSB",0.3662)), //mVolt
     _maxADC(pset.get<int>("maxADC",4095)),
-    _ADCped(pset.get<unsigned>("ADCPedestal",1393)),
     _nADC(pset.get<unsigned>("nADC",12)),
     _nADCpre(pset.get<unsigned>("nADCPresamples",4)),
     _ADCPeriod(pset.get<double>("ADCPeriod",20.0)), // nsec

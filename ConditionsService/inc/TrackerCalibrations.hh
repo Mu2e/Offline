@@ -39,6 +39,7 @@ namespace mu2e
 
     // time difference calibration
     virtual double TimeDiffToDistance(StrawIndex strawIndex, double deltaT) const;
+    double TimeDiffToDistance2(StrawIndex strawIndex, double deltaT) const;
     // information about a hit's position and time.  This uses time difference to compute
     // the position along the wire
     virtual void StrawHitInfo(Straw const& straw, StrawHit const& strawhit, SHInfo& shinfo) const;
@@ -76,6 +77,19 @@ namespace mu2e
         << " )";
 
     return ost;
+  }
+  
+  inline double TrackerCalibrations::SignalVelocity(StrawIndex ) const {
+    return _distvsdeltat; //mm/ns
+  }
+  
+  inline double TrackerCalibrations::TimeDiffToDistance2(StrawIndex strawIndex, double deltaT) const{
+    return 0.5 * SignalVelocity(strawIndex) * deltaT;
+  }
+  
+  inline  double TrackerCalibrations::TimeDivisionResolution(StrawIndex , double znorm) const {
+  // this resolution function assumes all straws lengths have the same relative resolution FIXME!!
+    return _tdresopar0 + _tdresopar1 * (znorm - 0.5) * (znorm - 0.5); //resolution in mm
   }
 }
 

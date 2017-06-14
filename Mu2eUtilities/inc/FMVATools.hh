@@ -37,10 +37,10 @@ class FMVATools {
   void showMVA() const;
 
   value_t evalMVA(inp_params_t const& /*params*/) const;
-
+  value_t evalMVA_(inp_params_t const& /*params*/) const;
  private:
-  std::array<value_t, max_synapses> _x;
-  std::array<value_t, max_synapses> _y;
+  mutable std::array<value_t, max_synapses> _x;
+  mutable std::array<value_t, max_synapses> _y;
   FlatWeights _first_layer;
   FlatWeights _inner_layers;
 

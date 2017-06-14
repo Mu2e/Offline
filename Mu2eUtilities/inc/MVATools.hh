@@ -14,6 +14,8 @@ namespace mu2e
 {
   class MVATools
   {
+      friend class FMVATools;     
+    
   public:
     explicit MVATools(fhicl::ParameterSet const&);
     virtual ~MVATools();

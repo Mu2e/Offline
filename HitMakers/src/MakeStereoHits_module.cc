@@ -19,7 +19,8 @@
 #include "RecoDataProducts/inc/StrawHitPosition.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
-#include "Mu2eUtilities/inc/MVATools.hh"
+#include "Mu2eUtilities/inc/FMVATools.hh"
+
 // art includes.
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -34,13 +35,15 @@
 // C++ includes.
 #include <iostream>
 #include <float.h>
+#include "CalPatRec/inc/THackData.hh"
 
 //#include "PerfLib/inc/perflib.hh"
-//perf::PerfStats g_perf("MakeStereoHits 100") ;
+//perf::PerfStats g_perf("MakeStereoHits evalMVA 310") ;
 
 using namespace std;
 
 namespace mu2e {
+  // struct to hold MVA input  
   // struct to hold MVA input
   struct StereoMVA {
     std::vector <Double_t> _pars;
@@ -52,6 +55,10 @@ namespace mu2e {
   };
 
   class MakeStereoHits : public art::EDProducer {
+
+    typedef vector<size_t> PanelHits;
+    typedef vector<PanelHits> StationPanels;
+    typedef vector< StationPanels > TrackerStations;
 
   public:
     explicit MakeStereoHits(fhicl::ParameterSet const& pset);
@@ -88,7 +95,7 @@ namespace mu2e {
     bool _bestpair; // require both hits agree as to the best pair
     bool _writepairs; // write out the stereo pairs
     // MVA
-    MVATools _mvatool;
+    FMVATools _mvatool;    
     StereoMVA _vmva; // input variables to TMVA for stereo selection
     // for optimized Stereo Hit finding
     size_t _nsta; // number of stations
@@ -99,6 +106,7 @@ namespace mu2e {
     double longRes(StereoHit const& sthit) const; // longitudinal resolution
     bool betterPair(StereoHit const& newpair, StereoHit const& oldpair) const;
     bool findData(art::Event& event);
+    void reportInsertedHits(TrackerStations const & stax);
  };
 
   MakeStereoHits::MakeStereoHits(fhicl::ParameterSet const& pset) :
@@ -120,7 +128,7 @@ namespace mu2e {
     _wres(pset.get<double>("LongitudinalResolution",20.0)), // estimated resolution of stereo reco
     _bestpair(pset.get<bool>("BestStereoPair",false)),
     _writepairs(pset.get<bool>("WriteStereoPairs",true)),
-    _mvatool(pset.get<fhicl::ParameterSet>("MVATool",fhicl::ParameterSet()))
+    _mvatool(pset.get<fhicl::ParameterSet>("MVATool",fhicl::ParameterSet()))    
   {
     _maxChi = sqrt(_maxChisq);
     // Tell the framework what we make.
@@ -141,8 +149,28 @@ namespace mu2e {
     genMap();
   }
 
+void MakeStereoHits::reportInsertedHits(TrackerStations const & stax){
+      if(!stax.empty())	{
+	if(!stax[0].empty())
+	  cout << "Built PanelHits size = " << stax[0][0].size() << endl;
+	cout << "Built StationPanels size = " << stax[0].size() << endl;
+      }
+      cout << "Built TrackerStations size = " << stax.size() << endl;
+      for( size_t station =0; station < stax.size(); ++station) {                      // loop over stations
+	for(size_t ipnl = 0; ipnl < stax[station].size(); ++ipnl) {   // loop over panels in this station
+	  for(size_t ish : stax[station][ipnl]){ 	   
+	    cout << "Inserted hit " << ish << " into station " << station << " panel " << ipnl << endl;
+	  }
+	}
+      }
+}
+
+struct free_delete{
+    void operator()(void* x) { free(x); }
+};
+
   void MakeStereoHits::produce(art::Event& event) {
-  //   g_perf.read_begin_counters_inlined();
+    // g_perf.read_begin_counters_inlined();
 
     // Get a reference to T trackers
     const Tracker& tracker = getTrackerOrThrow();
@@ -152,10 +180,7 @@ namespace mu2e {
     if( !findData(event) ){
       throw cet::exception("RECO")<<"mu2e::MakeStereoHits: collection missing or sizes don't match " << endl; 
     }
-    
-    // copy the input StrawHitPosition collection
-    unique_ptr<StrawHitPositionCollection> shpcol(new StrawHitPositionCollection(*_shpcol));
- 
+
     // create the stereo hits
     StereoHitCollection stereohits;
     size_t nsh = _shcol->size();
@@ -164,21 +189,16 @@ namespace mu2e {
     vector<int> ibest(nsh,-1);
     // select and sort hits by panel
     size_t nres = max(size_t(32),nsh/10);
-    typedef vector<size_t> PanelHits;
+
     PanelHits hpstax;
     hpstax.reserve(nres);
-    if(_debug > 2) cout << "Built PanelHits size = " << hpstax.size() << endl;
-    typedef vector<PanelHits> StationPanels;
     StationPanels pstax(2*_npnl,hpstax);
-    if(_debug > 2) cout << "Built StationPanels size = " << pstax.size() << endl;
-    typedef vector< StationPanels > TrackerStations;
     TrackerStations stax(_nsta,pstax);
-    if(_debug > 2) cout << "Built TrackerStations size = " << stax.size() << endl;
-  
+
     for(size_t ish=0;ish<nsh;++ish){
       // merge the flags
       StrawHitFlag shf = _shfcol->at(ish);
-      shf.merge(shpcol->at(ish).flag());
+      shf.merge(_shpcol->at(ish).flag());
     // select hits based on flag
       if(shf.hasAllProperties(_shsel) && (!shf.hasAnyProperty(_shmask)) ){
 	StrawHit const& hit = _shcol->at(ish);
@@ -192,40 +212,87 @@ namespace mu2e {
 	  jpnl = ipnl + (iplane%2)*_npnl;
 	else
 	  jpnl = ipnl + (1-iplane%2)*_npnl;
-	if(_debug > 2) cout << "Inserting hit " << ish << " into station " << station << " panel " << jpnl << endl;
+	        
         stax[station][jpnl].push_back(ish);
       }
     }
-    // loop over panel pairs in the same station
+    
+    if(_debug > 2) 
+      reportInsertedHits(stax);
 
-    for(StationPanels pstax : stax){                                // loop over stations
-      for(size_t ipnl = 0; ipnl < pstax.size(); ++ipnl) {   // loop over panels in this station
+    // prepair hitpairs    
+    size_t nhitpairs=0;
+        
+    for(StationPanels const& pstax : stax){ // loop over stations
+      auto pstax_size = pstax.size();      
+      for(size_t ipnl = 0; ipnl < pstax_size; ++ipnl) {             // loop over panels in this station	
+	if( _pover[ipnl].empty() || pstax[ipnl].empty() ) continue;	
+	  for( size_t jpnl : _pover[ipnl]){                        // loop over overlapping panels	      
+	      nhitpairs+=pstax[ipnl].size()*pstax[jpnl].size();
+	  }
+	}
+      }
+    
+    std::unique_ptr<size_t, free_delete>buffer((size_t*)malloc(2*nhitpairs*sizeof(size_t)));
+    size_t*const shprcol=buffer.get();
+        
+    size_t idx=0;
+
+    for(StationPanels const& pstax : stax){  // loop over stations
+      auto pstax_size = pstax.size();
+      for(size_t ipnl = 0; ipnl < pstax_size; ++ipnl) {            // loop over panels in this station	
 	if( (!_pover[ipnl].empty()) && (!pstax[ipnl].empty()) ){
 	  for( size_t jpnl : _pover[ipnl]){                        // loop over overlapping panels
-	    if( !pstax[jpnl].empty()){
-	      for(size_t ish : pstax[ipnl]){                                    // loop over selected hits in the first panel
-		StrawHit const& sh1 = _shcol->at(ish);
-		Straw const& straw1 = tt.getStraw(sh1.strawIndex());
-		StrawHitPosition const& shp1 = _shpcol->at(ish);
-		bool tdiv1 = shp1.flag().hasAllProperties(StrawHitFlag::tdiv);
-		for(size_t jsh : pstax[jpnl]){                              // loop over selected hits in the 2nd panel
+	    if( !pstax[jpnl].empty() ){
+	      for(size_t ish : pstax[ipnl]){                       // loop over selected hits in the first panel
+		for(size_t jsh : pstax[jpnl]){
+		    shprcol[idx] =ish;
+		    shprcol[idx+1] =jsh;
+		    idx+=2;
+		}
+	      }	      
+	    }
+	  }
+	}
+      }
+    }
+
+   // loop over hitpairs
+  for(size_t ishpr=0;ishpr < idx;ishpr+=2) {
+ 		  auto ish=shprcol[ishpr];
+		  auto jsh=shprcol[ishpr+1];
+		  
+		  StrawHit const& sh1 = _shcol->at(ish);
 		  StrawHit const& sh2 = _shcol->at(jsh);
+
+   		  double dt = fabs(sh1.time()-sh2.time()); //acceptance  0.11
+		  if(dt >= _maxDt )// hits are not close in time
+		    continue;
+		  Straw const& straw1 = tt.getStraw(sh1.strawIndex());
 		  Straw const& straw2 = tt.getStraw(sh2.strawIndex());
-		  StrawHitPosition const& shp2 = _shpcol->at(jsh);
-		  bool tdiv2 = shp2.flag().hasAllProperties(StrawHitFlag::tdiv);
-		  double ddot = straw1.direction().dot(straw2.direction());
-		  PanelId::isep sep = straw1.id().getPanelId().separation(straw2.id().getPanelId());
-		  double de = min((float)1.0,fabs((sh1.energyDep() - sh2.energyDep())/(sh1.energyDep()+sh2.energyDep())));
+		  double ddot = straw1.direction().dot(straw2.direction()); //acceptance 0.35
+		  if( ddot <= _minDdot )// hits are not close in time
+		    continue;
+		  StrawHitPosition const& shp1 = _shpcol->at(ish);
+		  StrawHitPosition const& shp2 = _shpcol->at(jsh);		  
+
 		  CLHEP::Hep3Vector dp = shp1.pos()-shp2.pos();
-		  double dperp = dp.perp();
-		  double dz = fabs(dp.z());
-		  double dt = fabs(sh1.time()-sh2.time());
-		  if( sep != PanelId::same && sep < PanelId::apart // hits are in the same station but not the same panel
-		      && ddot > _minDdot // negative crosings are in opposite quadrants
+		  double dperp = dp.perp(); //acceptance 0.47
+
+		  if (dperp >= _maxDPerp)
+		    continue;
+		  double de = min((float)1.0, fabs((sh1.energyDep() - sh2.energyDep())/(sh1.energyDep()+sh2.energyDep())));
+		  if (de >= _maxDE)
+		    continue;
+		  //double dz = fabs(dp.z()); //acceptance 1.0
+		  //PanelId::isep sep = straw1.id().getPanelId().separation(straw2.id().getPanelId()); //acceptance 1.0
+		  if( //sep != PanelId::same && sep < PanelId::apart // hits are in the same station but not the same panel
+		      ddot > _minDdot // negative crosings are in opposite quadrants
 		      && dt < _maxDt // hits are close in time
 		      && de < _maxDE   // deposited energy is roughly consistent (should compare dE/dx but have no path yet!)
-		      && dz < _maxDZ // longitudinal separation isn't too big
-		      && dperp < _maxDPerp) { // transverse separation isn't too big
+		     // && dz < _maxDZ // longitudinal separation isn't too big
+		      && dperp < _maxDPerp
+		       ) { // transverse separation isn't too big
 		    // tentative stereo hit: this solves for the POCA
 		    StereoHit sth(*_shcol,tt,ish,jsh);
 		    double dl1 = straw1.getDetail().activeHalfLength()-fabs(sth.wdist1());
@@ -235,10 +302,14 @@ namespace mu2e {
 		      // compute difference between stereo points and TD prediction
 		      double chi1(0.0), chi2(0.0);
 		      unsigned ndof(0);
+
+		      bool tdiv1 = shp1.flag().hasAllProperties(StrawHitFlag::tdiv);
 		      if(tdiv1){
 			chi1 = (shp1.wireDist()-sth.wdist1())/shp1.posRes(StrawHitPosition::wire);
 			++ndof;
 		      }
+
+		      bool tdiv2 = shp2.flag().hasAllProperties(StrawHitFlag::tdiv);
 		      if(tdiv2){
 			chi2 = (shp2.wireDist()-sth.wdist2())/shp2.posRes(StrawHitPosition::wire);
 			++ndof;
@@ -253,7 +324,15 @@ namespace mu2e {
 			  _vmva._chisq = chisq;
 			  _vmva._rho = sth.pos().perp();
 			  _vmva._ndof = ndof;
+
+			//  g_perf.read_begin_counters_inlined();			  
 			  double mvaout = _mvatool.evalMVA(_vmva._pars);
+			  
+			 // double ref = _mvatool.evalMVA_(_vmva._pars);
+			 // if(fabs(mvaout-ref) > 1e-2)
+			 //   std::cout << "Broken MVATOOL ref,val=" << ref << ", " << mvaout << "\n";
+			//  g_perf.read_end_counters_inlined();
+			   
 			  if(mvaout > _minMVA){
 			  // valid stereo pairing.  Record it
 			    sth.setMVAOut(mvaout);
@@ -269,14 +348,10 @@ namespace mu2e {
 		      } // good individual chis
 		    } // good longitudinal separation
 		  } // good initial hit compatibility
-		} // loop over hit2: jsh
-	      } // loop over hit1: ish
-	    } // overlapping panel not empty
-	  }// loop over overlapping panels: jpnl
-	} // panel not empty
-      } // loop over panels: ipnl
-    } // loop over stations : pstax
+}
     // now, overwrite the positions for those hits which have stereo
+    // copy the input StrawHitPosition collection
+    unique_ptr<StrawHitPositionCollection> shpcol(new StrawHitPositionCollection(*_shpcol));
     for(size_t ish=0; ish<nsh;++ish){
       if(ibest[ish] > 0){
 	StereoHit const& sthit = stereohits.at(ibest[ish]);
@@ -292,11 +367,11 @@ namespace mu2e {
     }
     // if requested, put the stereo hits themselves into the event
     if(_writepairs){
-      unique_ptr<StereoHitCollection> sthits(new StereoHitCollection(stereohits));
+      unique_ptr<StereoHitCollection> sthits(new StereoHitCollection(move(stereohits)));
       event.put(move(sthits));
     }
     event.put(move(shpcol));
-   // g_perf.read_end_counters_inlined();
+    //g_perf.read_end_counters_inlined();
   } // end MakeStereoHits::produce.
 
 // estimate the resolution on the stereo hit position projection along a wire direction

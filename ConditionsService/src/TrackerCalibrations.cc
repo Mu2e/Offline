@@ -70,47 +70,38 @@ namespace mu2e {
 
   }
 
-  double TrackerCalibrations::TimeDivisionResolution(StrawIndex , double znorm) const {
-  // this resolution function assumes all straws lengths have the same relative resolution FIXME!!
-    double reso  = _tdresopar0 + _tdresopar1 * (znorm - 0.5) * (znorm - 0.5); //resolution in mm
-    return reso;
-
-  }
-
-  double TrackerCalibrations::SignalVelocity(StrawIndex ) const {
-    return _distvsdeltat; //mm/ns
-  }
 
   double TrackerCalibrations::TimeDiffToDistance(StrawIndex strawIndex, double deltaT) const{
     return 0.5 * SignalVelocity(strawIndex) * deltaT;
   }
 
+  constexpr double invsqrt12 = 1.0/sqrt(12.0);
+
   void TrackerCalibrations::StrawHitInfo(Straw const& straw, StrawHit const& strawhit, SHInfo&
   shinfo) const {
     double shlen = straw.getDetail().activeHalfLength();
-    double vwire = SignalVelocity(strawhit.strawIndex());
+    double invvwire = 1.0/SignalVelocity(strawhit.strawIndex());
    // compute the position as being on the wire the distance specified by time division.  Note this can
 // be beyond the physical wire!
-    double tddist = TimeDiffToDistance(strawhit.strawIndex(),strawhit.dt());
-    // resolution depends on position along the wire
+   shinfo._tddist = TimeDiffToDistance2(strawhit.strawIndex(),strawhit.dt());
+   shinfo._tdiv = true;
+   shinfo._tdres = shlen*invsqrt12;
+
+   // resolution depends on position along the wire
 // constrain to a physical length
-    if(fabs(tddist) < shlen + _tdbuff ) {
-      shinfo._tddist = tddist;
-      shinfo._tdres = TimeDivisionResolution(straw.index(),0.5*(shlen-tddist)/shlen);
-      shinfo._tdiv = true;
+    if(fabs(shinfo._tddist) < shlen + _tdbuff ) {
+      shinfo._tdres = TimeDivisionResolution(straw.index(),0.5*(shlen-shinfo._tddist)/shlen);
     } else {
 // There's no information if we're outside the physical limit: set the position to 0, increase the error, and flag
       shinfo._tddist = 0.0;
-      static const double invsqrt12 = 1.0/sqrt(12.0);
-      shinfo._tdres = shlen*invsqrt12;
       shinfo._tdiv = false;
     }
     shinfo._pos = straw.getMidPoint() + shinfo._tddist*straw.getDirection();
 // time resolution is due to intrinsic timing resolution and time difference resolution
-    shinfo._timeres = shinfo._tdres/vwire;
+    shinfo._timeres = shinfo._tdres*invvwire;
 // this time represents when the particle passed by the wire.
 // Position error along the wire is given by the time division
-    shinfo._time = strawhit.time() - (shlen-shinfo._tddist)/vwire;
+    shinfo._time = strawhit.time() - (shlen-shinfo._tddist)*invvwire;
   }
 
 

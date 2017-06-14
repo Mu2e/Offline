@@ -62,7 +62,7 @@ void FMVATools::initMVA() {
   _first_layer.pack(weights, norms);
   _inner_layers.pack(_mva_tools._twgts);
 
-  _mva_tools.showMVA();
+  //_mva_tools.showMVA();
 }
 
 void FMVATools::showMVA() const { _mva_tools.showMVA(); }
@@ -82,6 +82,10 @@ inline float sigmoid_approx(float x) {
   return 1.0f / (1.0f + y);
 }
 
+ value_t FMVATools::evalMVA_(inp_params_t const& v) const{
+    return _mva_tools.evalMVA(v);
+ }
+  
 value_t FMVATools::evalMVA(inp_params_t const& v) const {
   // Normalize
   const auto nweightpairs = _first_layer._dims[1];
@@ -105,12 +109,8 @@ value_t FMVATools::evalMVA(inp_params_t const& v) const {
       }
       _y[j] += _inner_layers._weights[s++];
 
-      //	auto ref = 1./(1.+exp(-_y[j]));
-
+     // _y[j] = 1./(1.+exp((float)-_y[j]));
       _y[j] = sigmoid_approx(_y[j]);
-
-      //	if(abs(_y[j]-ref) > 0.0035)
-      //	  cout << "ref,actual " << ref << ", " << _y[j] <<endl;
     }
     _x = _y;
   }

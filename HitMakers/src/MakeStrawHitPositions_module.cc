@@ -47,7 +47,7 @@
 
 //#include "CalPatRec/inc/THackData.hh"
 //#include "PerfLib/inc/perflib.hh"
-//perf::PerfStats g_perf("MakeStrawHitPositions 100") ;
+//perf::PerfStats g_perf("MakeStrawHitPositions new 100") ;
 
 using namespace std;
 
@@ -137,8 +137,10 @@ namespace mu2e {
 
   }
 
+  constexpr double invsqrt12 = 1.0/sqrt(12.0);
+
   void MakeStrawHitPositions::produce(art::Event& event) {
-  //   g_perf.read_begin_counters_inlined();
+ //    g_perf.read_begin_counters_inlined();
     
     Tracker const& tracker = getTrackerOrThrow();
 
@@ -156,25 +158,27 @@ namespace mu2e {
     }
     // create a collection of StrawHitPosition, and intialize them using the time division
     size_t nsh = strawhits->size();
-    unique_ptr<StrawHitPositionCollection> shpcol(new StrawHitPositionCollection);
-    shpcol->reserve(nsh);
+    
+    StrawHitPositionCollection shpcol(nsh);
 
  //01 - 13 - 2014 gianipez added some printout
     int banner(0);
     SHInfo shinfo;
-    static const double invsqrt12 = 1.0/sqrt(12.0);
 
     for(size_t ish=0;ish<nsh;++ish){
       StrawHit const& hit = strawhits->at(ish);
       Straw const& straw = tracker.getStraw(hit.strawIndex());
+
+      StrawHitPosition & shp = shpcol.at(ish);
+      
+      shp._wdir = straw.getDirection();     
+      shp._tres = straw.getRadius()*invsqrt12;
+
       tcal->StrawHitInfo(straw,hit,shinfo);
 // create and fill the position struct
-      StrawHitPosition shp;
       shp._pos = shinfo._pos;
-      shp._wdir = straw.getDirection();
       shp._wdist = shinfo._tddist;
       shp._wres = shinfo._tdres;
-      shp._tres = straw.getRadius()*invsqrt12;
 // if time division worked, flag the position accordingly
       if(shinfo._tdiv)
 	shp._flag.merge(StrawHitFlag::tdiv); 
@@ -183,12 +187,12 @@ namespace mu2e {
 	printHits(hit,shp, banner);
 	banner=1;
       }
-
-      shpcol->push_back(shp);
     }
 
-    event.put(std::move(shpcol));
- //   g_perf.read_end_counters_inlined();
+    unique_ptr<StrawHitPositionCollection> shpcol1(new StrawHitPositionCollection);
+    shpcol1->swap(shpcol);
+    event.put(std::move(shpcol1)); 
+   // g_perf.read_end_counters_inlined();
 
   } // end MakeStrawHitPositions::produce.
 } // end namespace mu2e
