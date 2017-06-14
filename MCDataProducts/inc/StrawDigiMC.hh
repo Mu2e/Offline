@@ -72,6 +72,7 @@ namespace mu2e {
     hit.print(ost,false);
     return ost;
   }
+   typedef std::vector<mu2e::StrawDigiMC> StrawDigiMCCollection;
 
 } // namespace mu2e
 

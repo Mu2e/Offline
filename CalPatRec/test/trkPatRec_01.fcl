@@ -134,7 +134,7 @@ physics : {
 	    TimeSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
 	    HelixFitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
 	    KalmanFitSelectionBits : []
-	    BackgroundSelectionBits : ["DeltaRay","Isolated"]
+	    BackgroundSelectionBits : ["Background","Isolated"]
 	}
 
 	makeCaloCluster: {
@@ -188,7 +188,7 @@ physics : {
 
 	    #      goodHitMask                 : ["EnergySelection","RadiusSelection","TimeSelection"]
 	    goodHitMask                  : ["EnergySelection", "RadiusSelection"]
-	    badHitMask                   : ["DeltaRay", "Isolated"]
+	    badHitMask                   : ["Background", "Isolated"]
 	    
 	    trackerStepPoints            : tracker
 	    minHits                      : 5

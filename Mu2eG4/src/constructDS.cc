@@ -55,12 +55,12 @@ namespace mu2e {
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( _config, "DS"         , "ds"          );
     geomOptions->loadEntry( _config, "DSCoil"     , "dsCoil"      );
+    geomOptions->loadEntry( _config, "DSRing"     , "dsRing"      );
     geomOptions->loadEntry( _config, "DSSpacer"   , "dsSpacer"    );
     geomOptions->loadEntry( _config, "DSSupport"  , "dsSupport"   );
     geomOptions->loadEntry( _config, "DSThShield" , "dsThShield"  );
     geomOptions->loadEntry( _config, "DSVacuum"   , "dsVacuum"    );
     geomOptions->loadEntry( _config, "DSShielding", "dsShielding" );
-    geomOptions->loadEntry( _config, "PiondegAbs" , "piondeg"     );
 
     // Fetch parent (hall) position
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
@@ -85,6 +85,22 @@ namespace mu2e {
               G4Color::Magenta(),
 	      "DS"
               );
+    // ***
+    // Lining for inner cryo shell - for test of shielding
+    // added 11 June 2017
+    // ***
+    if ( ds->hasInnerLining() ) { // only if specifically enabled
+      nestTubs( "DSInnerCryoLining",
+		TubsParams( ds->rIn1()-ds->innerLiningThickness(),ds->rIn1(),ds->halfLength()-2.*ds->endWallHalfLength()),
+		findMaterialOrThrow(ds->innerLiningMaterial()),
+		0,
+		dsInnerCryoPosition-_hallOriginInMu2e,
+		parent,
+		0,
+		G4Color::Magenta(),
+		"DS"
+		);
+    }
 
     // - outer cryo shell
     G4ThreeVector dsOuterCryoPosition( dsP.x(), dsP.y(), dsP.z());
@@ -290,19 +306,34 @@ namespace mu2e {
     std::vector<double> zr = ds->zRing();
     
     for ( unsigned int iRing = 0; iRing < xr.size(); iRing++ ) {
-      std::ostringstream leftName;
-      leftName << "DSleftSideRing" << iRing;
+
+      // Let's build a mother volume first
+      std::ostringstream ringMotherName;
+      ringMotherName << "DSRingMother" << iRing;
       CLHEP::HepRotation* ringRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-      double lx = xr[iRing];
-      double ly = yr[iRing];
-      double lz = zr[iRing] - lr/2.0 - trs/2.0;
+
+      double motherx = xr[iRing];
+      double mothery = yr[iRing];
+      double motherz = zr[iRing];
+
+      VolumeInfo motherVol = nestTubs( ringMotherName.str(),
+				       TubsParams( rirs, rors, trs + lr/2.0 ),
+				       findMaterialOrThrow("G4_AIR"),
+				       ringRotat, 
+				       CLHEP::Hep3Vector(motherx,mothery,motherz) - _hallOriginInMu2e,
+				       parent, 0, G4Color::Blue(),
+				       "DSRing" );
+ 
+     std::ostringstream leftName;
+      leftName << "DSleftSideRing" << iRing;
+
 
       nestTubs( leftName.str(),
 		TubsParams( rirs, rors, trs/2.0 ),
 		ringMaterial,
                 ringRotat,
-		CLHEP::Hep3Vector(lx,ly,lz)-_hallOriginInMu2e,
-		parent,
+		CLHEP::Hep3Vector(0.0,0.0,-lr/2.0-trs/2.0),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"DSRing"
@@ -315,9 +346,8 @@ namespace mu2e {
 		TubsParams( rir, ror, lr/2.0 ),
 		ringMaterial,
                 ringRotat,
-		CLHEP::Hep3Vector(xr[iRing],yr[iRing],zr[iRing]) 
-		- _hallOriginInMu2e,
-		parent,
+		CLHEP::Hep3Vector(0.0,0.0,0.0),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"DSRing"
@@ -326,16 +356,12 @@ namespace mu2e {
       std::ostringstream rightName;
       rightName << "DSrightSideRing" << iRing;
 
-      double rx = xr[iRing];
-      double ry = yr[iRing];
-      double rz = zr[iRing] + lr/2.0 + trs/2.0; 
-
       nestTubs( rightName.str(),
 		TubsParams( rirs, rors, trs/2.0 ),
 		ringMaterial,
                 ringRotat,
-		CLHEP::Hep3Vector(rx,ry,rz)-_hallOriginInMu2e,
-		parent,
+		CLHEP::Hep3Vector(0.0,0.0,lr/2.0+trs/2.0),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"DSRing"
@@ -354,7 +380,7 @@ namespace mu2e {
     //   front face, DS1, and TS5
     double ds1Z0     = dsFrontZ0 + ds->frontHalfLength() + ds->vac_halfLengthDs1();
     double ds2Z0     = ds->vac_zLocDs23Split() - ds->vac_halfLengthDs2();
-    double ds2HalfLength     = _config.getDouble("ds2.halfLength");
+    //    double ds2HalfLength     = _config.getDouble("ds2.halfLength");
     
     if ( verbosityLevel > 0 ) {
       cout << __func__ << " DS2 vacuum extent: " 
@@ -639,47 +665,6 @@ namespace mu2e {
 
      } // end of if ( ds->hasCableRunTrk() )
 
-
-
-     //************** Begin pion Degrader code *************
-
-
-    bool addPionDegrader  = _config.getBool("piondegrader.build",false);
-    double piondegXoffset        = _config.getDouble("piondeg.xoffset");
-    double piondegZoffset        = _config.getDouble("piondeg.zoffset");
-    double piondegHalfLength     = _config.getDouble("piondeg.halfLength");
-    double piondegRadius = _config.getDouble("piondeg.radius");
-    double piondegParams[5]  = { 0.0,  piondegRadius, piondegHalfLength, 0.0, CLHEP::twopi };
-
-    if( addPionDegrader ) {
-      std::cout<<" pion degrader position:\t"
-	       <<" x offset: "<<piondegXoffset
-	       <<" z position: "<<-ds2HalfLength + piondegZoffset + piondegHalfLength
-	       <<" Pion degrader halflength:"<<piondegHalfLength
-	       <<std::endl;
-
-      G4Material* piondegMaterial  = materialFinder.get("piondeg.materialName");
-      VolumeInfo piondegInfo = nestTubs( "PiondegAbs",
-					 piondegParams,
-					 piondegMaterial,
-					 0,
-					 G4ThreeVector(piondegXoffset,0.,-ds2HalfLength + piondegZoffset + piondegHalfLength),
-					 ds2VacInfo,
-					 0,
-					 G4Color::Blue()
-					 );
-      
-      if ( verbosityLevel > 0) {
-      cout << __func__ << 
-	" PiondegAbs Z offset in Mu2e       : " << -ds2HalfLength + piondegZoffset + piondegHalfLength << endl;
-      cout << __func__ << 
-	" piondegZoffset                    : " << piondegZoffset    << endl;
-       cout << __func__ << 
-	" piondegHalfLength                : " << piondegHalfLength << endl;
-      }
-	//std::cout<<"piondegInfo\t"<<piondegParams<<std::endl;
-
- }
   } // end of Mu2eWorld::constructDS;
 
 }

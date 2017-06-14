@@ -170,7 +170,7 @@ physics.producers.CalPatRec.DtMin                                 : -100.
 physics.producers.CalPatRec.DtMax                                 : +100.
 # physics.producers.CalPatRec.SeedFit.debugLevel                  : 1
 # physics.producers.CalPatRec.HelixFit.debugLevel                 : 1
-# physics.producers.CalPatRec.BackgroundSelectionBits               : ["DeltaRay"]
+# physics.producers.CalPatRec.BackgroundSelectionBits               : ["Background"]
 #------------------------------------------------------------------------------
 # analysis and event display
 #------------------------------------------------------------------------------

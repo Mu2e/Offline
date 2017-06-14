@@ -43,23 +43,23 @@ Int_t myppart(Int_t ppart, Int_t part){
 }
 
 Int_t myproc(Int_t proc,Bool_t xtalk) {
-  enum mp{ primary=0, compt=1, delta=2, gamconv=3, photo=4, had=5, xt=6, other=7};
+  enum mp{ primary=0, compt=1, bkg=2, gamconv=3, photo=4, had=5, xt=6, other=7};
   if(xtalk)return xt;
   if(proc==56)return primary;
   if(proc==12)return compt;
-  if(proc==17 || proc==21) return delta;
+  if(proc==17 || proc==21) return bkg;
   if(proc==13)return gamconv;
   if(proc==40)return photo;
   if(proc==58)return had;
   return other;
 }
 
-Int_t myhpart(Int_t mcpdg,Int_t mcgen, Int_t mcproc){
-  enum hpart{Proton=0,LowEe,DIO,Other,CE};
-  if(mcpdg==11&&mcgen==2)return CE;
-  if(mcpdg==11&&mcproc==56)return DIO;
-  if(mcpdg==2212)return Proton;
-  if(mcpdg==11)return LowEe;
+Int_t myhpart(Int_t mcpdg,Int_t mcgen, Int_t mcproc,Float_t mcoe){
+  enum hpart{Hadron=0,LowEe,Mudecay,CE,Other};
+  if(mcgen==2)return CE;
+  if(mcpdg==11&&(mcproc==14||(mcproc==56&&mcoe<90)))return Mudecay;
+  if(abs(mcpdg)==11)return LowEe;
+  if(mcpdg>2000)return Hadron;
   return Other;
 }
 
@@ -70,14 +70,16 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 //  TCut conv("mcpdg==11&&mcgen==2&&mcmom>100.0");
   TCut conv("mcpdg==11&&mcgen==2");
   TCut oele("abs(mcpdg)==11&&mcgen!=2");
-  TCut dio("mcpdg==11&&mcgen==6");
-  TCut delta("mcpdg==11&&mcgen<0&&mcproc==17");
+//  TCut dio("mcpdg==11&&mcgen==6"); MC truth bug
+  TCut dio("mcpdg==11&&(mcproc==14||mcproc==56&&mcoe<90)");
+  TCut bkg("mcpdg==11&&mcgen<0&&mcproc==17");
   TCut pconv("mcpdg==11&&mcgen<0&&mcproc==11");
   TCut compt("mcpdg==11&&mcgen<0&&mcproc==12");
   TCut proton("mcpdg==2212");
+  TCut hadron("mcpdg>2000");
   TCut photon("mcpdg==22");
   TCut neutron("mcpdg==2112");
-  TCut bkge("abs(mcpdg)==11&&mcgen!=2");
+  TCut bkge("abs(mcpdg)==11&&mcppdg==22");
   TCut bkgo("abs(mcpdg)!=11&&mcpdg!=2212");
   TCut xtalk("mcxtalk");
   TCut direct("!mcxtalk");
@@ -97,7 +99,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
   TCut stpprotonorigin("mcgpdg==2212&&mcgid==28");
   TCut pprotonorigin("mcgpdg==2212&&mcgid==16");
 
-  TCut hitsel("esel&&rsel&&tsel&&(!delta)&&(!isolated)");
+  TCut hitsel("esel&&rsel&&tsel&&(!bkg)&&(!isolated)");
 
   TCut goodevt("mcom>100");
   TCut goodpeak("abs(tpeak-mct0-25)<30");
@@ -128,11 +130,11 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     hits->Project("pdgid","mcpdg");
     hits->Project("gide","mcgen","mcpdg==11");
     hits->Project("gidp","mcgen",proton);
-    hits->Project("pide","mcproc",delta);
+    hits->Project("pide","mcproc",bkg);
     hits->Project("pidp","mcproc",proton);
     hits->Project("nuconv","mcnunique",conv);
     hits->Project("nudio","mcnunique",dio);
-    hits->Project("nudel","mcnunique",delta);
+    hits->Project("nudel","mcnunique",bkg);
     hits->Project("nup","mcnunique",proton);
 
     TLegend* leg = new TLegend(0.5,0.5,0.8,0.8);
@@ -166,79 +168,8 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     scan->cd(4);
     hits->Draw("edep:mcedep>>eve","","",10000);
 
-  } else if(spage=="particle"){
 
-    double pscale(1.0/nevents);
-    TH1F* part = new TH1F("part","Particle Producing Hits;Particle;Hits/event",7,-0.5,6.5);
-    hits->Project("part","mypart(mcpdg)");
-    part->Scale(pscale);
-
-    TH1F* ppart = new TH1F("ppart","Immediate Parent Particle Producing Hits;Parent Particle;Hits/event",7,-0.5,6.5);
-    hits->Project("ppart","myppart(mcppdg,mcpdg)");
-    ppart->Scale(pscale);
-
-    TH1F* upart = new TH1F("upart","Ultimate Parent Particle Producing Hits;Ultimate Parent;Hits/event",7,-0.5,6.5);
-    hits->Project("upart","myorigin(mcgpdg,mcgid)");
-    upart->Scale(pscale);
- 
-    TH1F* proc = new TH1F("proc","Production Process of Particle Producing Hits;Production Process;Hits/event",8,-0.5,7.5);
-    hits->Project("proc","myproc(mcproc,xtalk)");
-    proc->Scale(pscale);
     
-    TAxis* xax(0);
-    int ibin(1);
-
-    xax = part->GetXaxis();
-    xax->SetBinLabel(ibin++,"Proton");
-    xax->SetBinLabel(ibin++,"Electron");
-    xax->SetBinLabel(ibin++,"Photon");
-    xax->SetBinLabel(ibin++,"Neutron");
-    xax->SetBinLabel(ibin++,"Positron");
-    xax->SetBinLabel(ibin++,"Muon");
-    xax->SetBinLabel(ibin++,"Other");
-
-    ibin=1;
-    xax = ppart->GetXaxis();
-    xax->SetBinLabel(ibin++,"Proton");
-    xax->SetBinLabel(ibin++,"Electron");
-    xax->SetBinLabel(ibin++,"Photon");
-    xax->SetBinLabel(ibin++,"Neutron");
-    xax->SetBinLabel(ibin++,"Positron");
-    xax->SetBinLabel(ibin++,"Muon");
-    xax->SetBinLabel(ibin++,"Other");
-
-    ibin=1;
-    xax = upart->GetXaxis();
-    xax->SetBinLabel(ibin++,"Beam Proton");
-    xax->SetBinLabel(ibin++,"Target Proton");
-    xax->SetBinLabel(ibin++,"Target Photon");
-    xax->SetBinLabel(ibin++,"Target Neutron");
-    xax->SetBinLabel(ibin++,"Target Electron");
-    xax->SetBinLabel(ibin++,"Out-Of-Target");
-    xax->SetBinLabel(ibin++,"Other");
-
-    ibin=1;
-    xax = proc->GetXaxis();
-    xax->SetBinLabel(ibin++,"Primary");
-    xax->SetBinLabel(ibin++,"Compton");
-    xax->SetBinLabel(ibin++,"Delta-Ray");
-    xax->SetBinLabel(ibin++,"#gamma Conversion");
-    xax->SetBinLabel(ibin++,"Photoelectric");
-    xax->SetBinLabel(ibin++,"Hadronic");
-    xax->SetBinLabel(ibin++,"Cross-Talk");
-    xax->SetBinLabel(ibin++,"Other");
-
-    TCanvas* pcan = new TCanvas("pcan","pcan",1200,800);
-    pcan->Divide(2,2);
-    pcan->cd(1);
-    part->Draw();
-    pcan->cd(2);
-    ppart->Draw();
-    pcan->cd(3);
-    upart->Draw();
-    pcan->cd(4);
-    proc->Draw();
-
   } else if(spage =="tcan"){
     THStack* tstack = new THStack("tc","Reco Hit Time by Particle;Hit Time (ns);Hits/event/ns");
     TH1F* ctime = new TH1F("ctime","Conversion Reco Hit Time",150,250,1750);
@@ -337,208 +268,69 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     tstacks->Draw("h");
     tlegs->Draw();
 
-  } else if(spage == "bcan"){
-
-    TH1F* econv = new TH1F("econv","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,16.0);
-//    TH1F* edio = new TH1F("edio","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,16.0);
-//    TH1F* eneut = new TH1F("eneut","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,16.0);
-//    TH1F* ephot = new TH1F("ephot","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,16.0);
-    TH1F* edelta = new TH1F("edelta","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,16.0);
-    TH1F* ep = new TH1F("ep","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,16.0);
-    TH1F* ex = new TH1F("ex","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,16.0);
-    econv->SetLineColor(kRed);
-//    edio->SetLineColor(kGreen);
-    edelta->SetLineColor(kCyan);
-    ep->SetLineColor(kBlue);
-    ex->SetLineColor(kMagenta);
-//    eneut->SetLineColor(kYellow);
-//    ephot->SetLineColor(kMagenta);
+  } else if(spage=="particle"){
+    THStack* estack = new THStack("edep","Reco Hit Energy by Particle;Deposited Energy (KeV)");
+    TH1F* econv = new TH1F("econv","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,12.0);
+    estack->Add(econv);
+    TH1F* emu = new TH1F("emu","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,12.0);
+    estack->Add(emu);
+    TH1F* egam = new TH1F("egam","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,12.0);
+    estack->Add(egam);
+    TH1F* ehad = new TH1F("ehad","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,12.0);
+    estack->Add(ehad);
+    econv->SetFillColor(kRed);
+    emu->SetFillColor(kCyan);
+    egam->SetFillColor(kGreen);
+    ehad->SetFillColor(kMagenta);
     econv->SetStats(0);
-//    edio->SetStats(0);
-    edelta->SetStats(0);
-    ep->SetStats(0);
-    ex->SetStats(0);
+    emu->SetStats(0);
+    egam->SetStats(0);
+    ehad->SetStats(0);
 
+    THStack* rstack = new THStack("rho","Reco Hit Radius by Particle;Transverse Radius (mm)");
     TH1F* rconv = new TH1F("rconv","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
-//    TH1F* rdio = new TH1F("rdio","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
-//    TH1F* rneut = new TH1F("rneut","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
-//    TH1F* rphot = new TH1F("rphot","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
-    TH1F* rdelta = new TH1F("rdelta","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
-    TH1F* rp = new TH1F("rp","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
+    rstack->Add(rconv);
+    TH1F* rmu = new TH1F("rmu","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
+    rstack->Add(rmu);
+    TH1F* rgam = new TH1F("rgam","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
+    rstack->Add(rgam);
+    TH1F* rhad = new TH1F("rhad","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
+    rstack->Add(rhad);
 //    TH1F* rx = new TH1F("rx","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
-    rconv->SetLineColor(kRed);
-    rp->SetMinimum(1);
-//    rdio->SetLineColor(kGreen);
-    rdelta->SetLineColor(kCyan);
-    rp->SetLineColor(kBlue);
-//    rx->SetLineColor(kMagenta);
-//    rneut->SetLineColor(kYellow);
-//    rphot->SetLineColor(kMagenta);
-    /*   
-	 TH1F* nconv = new TH1F("nconv","N, D<10cm",41,-1.5,39.5);
-	 TH1F* ndio = new TH1F("ndio","N, D<10cm",41,-1.5,39.5);
-	 TH1F* ndelta = new TH1F("ndelta","N, D<10cm",41,-1.5,39.5);
-	 TH1F* np = new TH1F("np","N, D<10cm",41,-1.5,39.5);
-	 nconv->SetLineColor(kRed);
-	 ndio->SetLineColor(kGreen);
-	 ndelta->SetLineColor(kCyan);
-	 np->SetLineColor(kBlue);
-
-	 TH1F* zconv = new TH1F("zconv","Z",100,-1500,1500);
-	 TH1F* zdio = new TH1F("zdio","Z",100,-1500,1500);
-	 TH1F* zdelta = new TH1F("zdelta","Z",100,-1500,1500);
-	 TH1F* zp = new TH1F("zp","Z",100,-1500,1500);
-	 zconv->SetLineColor(kRed);
-	 zdio->SetLineColor(kGreen);
-	 zdelta->SetLineColor(kCyan);
-	 zp->SetLineColor(kBlue);
-     */
+    rconv->SetFillColor(kRed);
+    rmu->SetFillColor(kCyan);
+    rgam->SetFillColor(kGreen);
+    rhad->SetFillColor(kMagenta);
     hits->Project("econv","edep*1000.0",conv+direct);
-//    hits->Project("edio","edep*1000.0",dio+direct);
-//    hits->Project("eneut","edep*1000.0",neutron);
-//    hits->Project("ephot","edep*1000.0",photon);
-    hits->Project("edelta","edep*1000.0",bkge+direct);
-    hits->Project("ep","edep*1000.0",proton+direct);
-    hits->Project("ex","edep*1000.0",xtalk);
+    hits->Project("emu","edep*1000.0",dio+direct);
+    hits->Project("egam","edep*1000.0",bkge+direct);
+    hits->Project("ehad","edep*1000.0",hadron+direct);
 
     hits->Project("rconv","sqrt(shpos.y^2+shpos.x^2)",conv+direct);
-//    hits->Project("rdio","sqrt(shpos.y^2+shpos.x^2)",dio+direct);
-//    hits->Project("rneut","sqrt(shpos.y^2+shpos.x^2)",neutron);
-//    hits->Project("rphot","sqrt(shpos.y^2+shpos.x^2)",photon);
-    hits->Project("rdelta","sqrt(shpos.y^2+shpos.x^2)",bkge+direct);
-    hits->Project("rp","sqrt(shpos.y^2+shpos.x^2)",proton+direct);
-//    hits->Project("rx","sqrt(shpos.y^2+shpos.x^2)",xtalk);
-    /*    
-	  hits->Project("nconv","n200",conv);
-	  hits->Project("ndio","n200",bkge);
-	  hits->Project("ndelta","n200",bkgo);
-	  hits->Project("np","n200",proton);
-
-	  hits->Project("zconv","shpos.z",conv);
-	  hits->Project("zdio","shpos.z",bkge);
-	  hits->Project("zdelta","shpos.z",bkgo);
-	  hits->Project("zp","shpos.z",proton);
-     */
+    hits->Project("rmu","sqrt(shpos.y^2+shpos.x^2)",dio+direct);
+    hits->Project("rgam","sqrt(shpos.y^2+shpos.x^2)",bkge+direct);
+    hits->Project("rhad","sqrt(shpos.y^2+shpos.x^2)",hadron+direct);
+    
     TCanvas* bcan = new TCanvas("bcan","background",1000,800);
     bcan->Divide(1,2);
     bcan->cd(1);
     gPad->SetLogy();
-    /*    edio->Draw();
-	  econv->Draw("same");
-	  ep->Draw("same");
-	  edelta->Draw("same");
-	  leg2->Draw();
-
-	  bcan->cd(2);
-     */
-//    edelta->GetXaxis()->SetRangeUser(-0.005,0.04);
-    edelta->SetMinimum(1);
-    double maxv = edelta->GetMaximum();
-    maxv = max(maxv, ep->GetMaximum());
-    maxv = max(maxv, ex->GetMaximum());
-    edelta->SetMaximum(2*maxv);
-    edelta->Draw();
-    ep->Draw("same");
+    estack->Draw();
     econv->Draw("same");
-//    edio->Draw("same");
-    ex->Draw("same");
-//    eneut->Draw("same");
-//    ephot->Draw("same");
-
-    TBox* eselbox = new TBox(0.0,edelta->GetMinimum(),3.5,edelta->GetMaximum());
-//    Int_t tYellow = TColor::GetColorTransparent(kYellow,0.3);
-    eselbox->SetFillColor(kYellow);
-    eselbox->SetFillStyle(3004);
-//    eselbox->SetLineStyle(3);
-    eselbox->Draw();
-//    TLine* ecut_t = new TLine(0.003,0.0,0.003,edelta->GetMaximum());
-//    ecut_t->SetLineColor(kBlack);
-//    ecut_t->SetLineStyle(2);
-//    ecut_t->SetLineWidth(2);
-//    TLine* ecut_l = new TLine(0.0,0.0,0.0,edelta->GetMaximum());
-//    ecut_l->SetLineColor(kBlack);
-//    ecut_l->SetLineStyle(2);
-//    ecut_l->SetLineWidth(2);
-//    ecut_t->Draw();
-//    ecut_l->Draw();
-
     TLegend* leg2 = new TLegend(0.55,0.7,0.9,0.9);
-    leg2->AddEntry(rconv,"CE Induced","l");
-    leg2->AddEntry(rdelta,"Background e Induced","l");
-//    leg2->AddEntry(rdio,"DIO Electrons","l");
-//    leg2->AddEntry(rneut,"Neutrons","l");
-//    leg2->AddEntry(rphot,"Photons","l");
-    leg2->AddEntry(rp,"Proton Induced","l");
-    leg2->AddEntry(ex,"X-talk","l");
-    leg2->AddEntry(eselbox,"Track Reconstruction Selection","F");
-//    leg3->AddEntry(ecut_l,"Loose cut","l");
+    leg2->AddEntry(econv,"Conversion electron","f");
+    leg2->AddEntry(emu,"#mu#rightarrowe#nu#nu","f");
+    leg2->AddEntry(egam,"Low-E e","f");
+    leg2->AddEntry(ehad,"Hadron","f");
     leg2->Draw();
-
-    int istart = econv->FindFixBin(0.0);
-    int istop = econv->FindFixBin(0.003);
-    double xtint = ex->Integral(istart,istop);
-    double ceint = econv->Integral(istart,istop);
-    double pint = ep->Integral();
-    double dint1 = edelta->Integral(istart,istop);
-    double dint2 = edelta->Integral(istop,edelta->GetNbinsX());
-    std::cout << "cross-talk integral = " << xtint
-    << " conversion integral = " << ceint 
-    << " proton integral = " << pint
-  << " delta integral = " << dint1 << " " << dint2 << std::endl;
 
     bcan->cd(2);
     gPad->SetLogy();
-
-    rdelta->SetMinimum(rconv->GetMaximum()/100.);
-    rdelta->Draw();
-    rconv->Draw("same");
-    rp->Draw("same");
-//    rdio->Draw("same");
-//    rx->Draw("same");
-//    rneut->Draw("same");
- //   rphot->Draw("same");
-
-    TBox* rselbox = new TBox(395.0,rdelta->GetMinimum(),650,rdelta->GetMaximum());
-    rselbox->SetFillColor(kYellow);
-    rselbox->SetFillStyle(3004);
-//    rselbox->SetLineStyle(3);
-    rselbox->Draw();
-
-//    TLine* rmin_t = new TLine(395,0.0,395,rdelta->GetMaximum());
-//    rmin_t->SetLineColor(kBlack);
-//    rmin_t->SetLineStyle(2);
-//    rmin_t->SetLineWidth(2);
-//    TLine* rmin_l = new TLine(390,0.0,390,rdelta->GetMaximum());
-//    rmin_l->SetLineColor(kBlack);
-//    rmin_l->SetLineStyle(3);
-//    rmin_l->SetLineWidth(2);
-
-//    TLine* rmax_t = new TLine(650,0.0,650,rdelta->GetMaximum());
-//    rmax_t->SetLineColor(kBlack);
-//    rmax_t->SetLineStyle(2);
-//    rmax_t->SetLineWidth(2);
-//    TLine* rmax_l = new TLine(650,0.0,650,rdelta->GetMaximum());
-//    rmax_l->SetLineColor(kBlack);
-//    rmax_l->SetLineStyle(3);
-//    rmax_l->SetLineWidth(2);
-//    rmin_t->Draw();
-//    rmin_l->Draw();
-//    rmax_t->Draw();
-//    rmax_l->Draw();
-
-    /*    
-	  bcan->cd(4);
-	  gPad->SetLogy();
-
-	  zdio->Draw();
-	  zconv->Draw("same");
-	  zp->Draw("same");
-	  zdelta->Draw("same");
-     */  
+    rstack->Draw();
   } else if (spage == "ccan") {
 
     TCanvas* ccan = new TCanvas("ccan","cleaned hits",1200,800);
-    TCut clean = goodpeak+TCut("tight>0&&delta==0");
+    TCut clean = goodpeak+TCut("tight>0&&bkg==0");
         
 	  TH1F* gid = new TH1F("gid","Generator code",21,-1.5,19.5);
 	  TH1F* gidc = new TH1F("gidc","Generator code",21,-1.5,19.5);
@@ -577,22 +369,22 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 
     TH1F* tconv = new TH1F("tconv","time WRT peak;nsec",101,-80,80);
     TH1F* tdio = new TH1F("tdio","time WRT peak;nsec",101,-80,80);
-    TH1F* tdelta = new TH1F("tdelta","time WRT peak;nsec",101,-80,80);
+    TH1F* tbkg = new TH1F("tbkg","time WRT peak;nsec",101,-80,80);
     TH1F* tp = new TH1F("tp","time WRT peak;nsec",101,-80,80);
     tconv->SetLineColor(kRed);
     tdio->SetLineColor(kGreen);
-    tdelta->SetLineColor(kCyan);
+    tbkg->SetLineColor(kCyan);
     tp->SetLineColor(kBlue);
 
     hits->Project("tconv","time-tpeak",conv+goodevt+clean);
     hits->Project("tdio","time-tpeak",bkge+goodevt+clean);
-    hits->Project("tdelta","time-tpeak",bkgo+goodevt+clean);
+    hits->Project("tbkg","time-tpeak",bkgo+goodevt+clean);
     hits->Project("tp","time-tpeak",proton+goodevt+clean);
 
     TLegend* leg4 = new TLegend(0.65,0.6,0.9,0.95);
     leg4->AddEntry(tconv,"Conv. Electrons","l");
     leg4->AddEntry(tdio,"Bkg Electrons","l");
-    leg4->AddEntry(tdelta,"Photons","l");
+    leg4->AddEntry(tbkg,"Photons","l");
     leg4->AddEntry(tp,"Protons","l");
 
 
@@ -611,7 +403,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     ccan->cd(1);
     tconv->Draw();
     tdio->Draw("same");
-    tdelta->Draw("same");
+    tbkg->Draw("same");
     tp->Draw("same");
     leg4->Draw();
     tmin->Draw();
@@ -620,13 +412,13 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     // compute efficiency and purity
     Float_t ncon = gidc->GetEntries();
     Float_t nsel = gid->GetEntries();
-    Float_t nsdelta = gid->GetBinContent(1);
+    Float_t nsbkg = gid->GetBinContent(1);
     Float_t nscon = gid->GetBinContent(4);
     Float_t nsdio = gid->GetBinContent(8);
     Float_t nsprot = gid->GetBinContent(14);
     cout << "selection efficiency = " << nscon/ncon << endl;
     cout << "selection purity = " << nscon/nsel << endl;
-    cout << "bkg fraction deltas = " << nsdelta/nsel << " dio " << nsdio/nsel << " proton " << nsprot/nsel << endl;
+    cout << "bkg fraction bkgs = " << nsbkg/nsel << " dio " << nsdio/nsel << " proton " << nsprot/nsel << endl;
   } else if(spage=="origin"){
 
     TCut timecut("time>500");
@@ -777,58 +569,55 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     tleg->AddEntry(dtime,title,"");
     tleg->Draw();
   } else if(spage=="hitsel"){
-    TH2F* hsel = new TH2F("hsel","Hit Selection;Producing Particle;Cut efficiency (%)",5,-0.5,4.5,7,-0.5,6.5);
+    TH2F* hsel = new TH2F("hsel","Hit Selection;Producing Particle;Cut efficiency (%)",5,-0.5,4.5,4,-0.5,3.5);
     TAxis* yax = hsel->GetYaxis();
     unsigned ibin(1);
-    yax->SetBinLabel(ibin++,"All");
-    yax->SetBinLabel(ibin++,"Radius");
-    yax->SetBinLabel(ibin++,"Time");
-    yax->SetBinLabel(ibin++,"Energy");
-    yax->SetBinLabel(ibin++,"Isolated");
-    yax->SetBinLabel(ibin++,"Cluster");
-    yax->SetBinLabel(ibin++,"Good (Net)");
+    yax->SetBinLabel(ibin++,"Hit Time>500ns");
+    yax->SetBinLabel(ibin++,"Hit Radius");
+    yax->SetBinLabel(ibin++,"Hit Energy");
+    yax->SetBinLabel(ibin++,"Bkg Hit");
     TAxis* xax = hsel->GetXaxis();
     ibin = 1;
-    xax->SetBinLabel(ibin++,"Proton");
+    xax->SetBinLabel(ibin++,"Hadron");
     xax->SetBinLabel(ibin++,"LowEe");
-    xax->SetBinLabel(ibin++,"DIOe");
-    xax->SetBinLabel(ibin++,"Other");
+    xax->SetBinLabel(ibin++,"#mu#rightarrowe#nu#nu");
     xax->SetBinLabel(ibin++,"Ce");
+    xax->SetBinLabel(ibin++,"Other");
     // first, get normalization
     TH1F* myhp = new TH1F("myhp","Hit Rate;Producing Particle;Hits/event",5,-0.5,4.5);
     TH1F* myhpg = new TH1F("myhpg","Hit Rate;Producing Particle;Hits/event",5,-0.5,4.5);
     xax = myhp->GetXaxis();
     ibin = 1;
-    xax->SetBinLabel(ibin++,"Proton");
+    xax->SetBinLabel(ibin++,"Hadron");
     xax->SetBinLabel(ibin++,"LowEe");
-    xax->SetBinLabel(ibin++,"DIOe");
-    xax->SetBinLabel(ibin++,"Other");
+    xax->SetBinLabel(ibin++,"#mu#rightarrowe");
     xax->SetBinLabel(ibin++,"Ce");
-    hits->Project("myhp","myhpart(mcpdg,mcgen,mcproc)");
-    hits->Project("myhpg","myhpart(mcpdg,mcgen,mcproc)",hitsel);
+    xax->SetBinLabel(ibin++,"Other");
+    hits->Project("myhp","myhpart(mcpdg,mcgen,mcproc,mcoe)","tsel");
+    hits->Project("myhpg","myhpart(mcpdg,mcgen,mcproc,mcoe)",hitsel);
     double pscale(1.0/nevents);
     myhp->Scale(pscale);
     myhpg->Scale(pscale);
     myhpg->SetFillColor(kGreen);
     // now loop over selections
-    std::vector<TCut> selcuts = {"","rsel","tsel","esel","isolated","delta",hitsel};
+    std::vector<TCut> selcuts = {"tsel","tsel&&rsel","tsel&&rsel&&esel",hitsel};
     for(size_t icut=0;icut< selcuts.size();++icut){
       char val[100];
       cout << "Projecting cut " << selcuts[icut] << endl;
-      snprintf(val,100,"%lu:myhpart(mcpdg,mcgen,mcproc)",icut);
+      snprintf(val,100,"%lu:myhpart(mcpdg,mcgen,mcproc,mcoe)",icut);
       hits->Project("+hsel",val,selcuts[icut]);
     }
 // normalize by row
     for(int ibin=1;ibin <= myhp->GetXaxis()->GetNbins();++ibin){
-      double norm = 1.0/myhp->GetBinContent(ibin);
-      cout << "Normalization for " << hsel->GetYaxis()->GetBinLabel(ibin)  << " = " << norm << endl;
+      double norm = 100.0/hsel->GetBinContent(ibin,1);
+//      cout << "Normalization for " << hsel->GetYaxis()->GetBinLabel(ibin)  << " = " << norm << endl;
       for(int jbin=1;jbin <= hsel->GetYaxis()->GetNbins(); ++jbin) {
 	double val =hsel->GetBinContent(ibin,jbin);
-	cout << "value for ibin " << ibin <<" jbin " << jbin << " val " << val << endl;
+//	cout << "value for ibin " << ibin <<" jbin " << jbin << " val " << val << endl;
 	hsel->SetBinContent(ibin,jbin,val*norm);
       }
     }
-    TCanvas* hscan = new TCanvas("hscan","hscan",1000,1200);
+    TCanvas* hscan = new TCanvas("hscan","hscan",1200,1200);
     hscan->Divide(1,2);
     hscan->cd(1);
     hsel->Draw("boxtext0");

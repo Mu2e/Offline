@@ -19,6 +19,8 @@ mu2eg4DefaultPhysics: {
     physicsListName:  "ShieldingM"
     turnOffRadioactiveDecay:  false
     turnOnRadioactiveDecay:  false
+    addProcesses: []
+    captureDModel: ""
 
     // current G4 stepper choices in Mu2eWorld.cc are shown below
     // G4ClassicalRK4

@@ -19,6 +19,8 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "DataProducts/inc/PanelId.hh"
+// C++
+#include <vector>
 
 namespace mu2e {
   class StereoHit {

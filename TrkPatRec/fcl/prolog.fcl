@@ -4,7 +4,6 @@
 #------------------------------------------------------------------------------
 #include "TrkPatRec/fcl/Particle.fcl"
 #include "TrkPatRec/fcl/PanelAmbigResolver.fcl"
-
 BEGIN_PROLOG
 
 # this should go in a general file FIXME!!
@@ -12,9 +11,7 @@ FitDir : {
   downstream : 0
   upstream : 1
 }
-
-# configure precursor modules to track finding and fitting
-
+# Hit Filters; these should be in the same package as the modules FIXME!
 FSHPreStereo  : {
   module_type : FlagStrawHits
   StrawHitPositionCollectionLabel : ""
@@ -28,24 +25,32 @@ FlagStrawHits  : {
 
 FlagBkgHits : {
   module_type : FlagBkgHits
-  StereoHitMVA : { MVAWeights : "TrkPatRec/test/StereoHits.weights.xml" }
-  NonStereoHitMVA : { MVAWeights : "TrkPatRec/test/NonStereoHits.weights.xml" }
-  StereoClusterMVA : { MVAWeights : "TrkPatRec/test/StereoCluster.weights.xml" }
-  NonStereoClusterMVA : { MVAWeights : "TrkPatRec/test/NonStereoCluster.weights.xml" }
-  MinDeltaHits : 3
-  StereoHitMVACut : 0.2
-  NonStereoHitMVACut : 0.2
-  ClusterStrawHits : {
-    BackgroundMask : [] 
-    SignalMask : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+  UseBkgMVA : true
+  BkgMVA : { MVAWeights : "TrkFilters/data/BkgMVA.weights.xml" }
+  MinActiveHits : 3
+  MinStereoHits : 0
+  MinNPlanes : 2
+  MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
+  BkgMVACut : 0.5
+  debugLevel : 1
+  TLTClusterer : { 
+    MaxNIterations : 10
+    TimeDifference : 25.0
+    MaxDistance : 100.0
+    HitDistance : 5.0
+    SeedDistance : 25.0
+    MaxTimeDifference : 40.0
+    BackgroundMask : []
+    SignalMask : ["TimeSelection", "EnergySelection"]
   }
 }
+
 
 # time clustering is the 1st stage of track finding 
 TimeClusterFinder : {
   module_type               : TimeClusterFinder
   HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
-  HitBackgroundBits	    : ["DeltaRay","Isolated"]
+  HitBackgroundBits	    : ["Background"]
   PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
   StrawHitFlagCollection    : "FlagBkgHits"
 }

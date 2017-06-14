@@ -64,7 +64,7 @@ CalPatRec : {
 	debugLevel2                             : 0
 	diagLevel                               : 0
 	HelixFitSelectionBits                   : ["EnergySelection","TimeSelection","RadiusSelection"]
-	BackgroundSelectionBits                 : ["DeltaRay"]
+	BackgroundSelectionBits                 : ["Background"]
 	minNHit                                 : 10      # minimal number of hits on found helix
 	hitChi2Max                              : 25.
 	mostProbableDfDz                        : 0.00475
@@ -329,7 +329,7 @@ CalPatRec : { @table::CalPatRec
 	    TimeSelectionBits                           : ["EnergySelection","TimeSelection","RadiusSelection"]
 	    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
 	    KalmanFitSelectionBits                      : []
-	    BackgroundSelectionBits                     : ["DeltaRay","Isolated"]
+	    BackgroundSelectionBits                     : ["Background","Isolated"]
 
 	    HelixFitHack : { @table::CalPatRec.HelixFitHack }
 	    SeedFitHack  : { @table::CalPatRec.SeedFitHack  }
@@ -512,9 +512,9 @@ CalPatRec : { @table::CalPatRec
 	    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
 	    caloClusterModuleLabel                      : CaloClusterFromProtoCluster
 #	    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
-#	    BackgroundSelectionBits                     : ["DeltaRay", "Isolated"]
+#	    BackgroundSelectionBits                     : ["Background", "Isolated"]
 	    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection"]
-	    BackgroundSelectionBits                     : ["DeltaRay"]
+	    BackgroundSelectionBits                     : ["Background"]
 	    MinNHits                                    : 15
 	    DtMin                                       : -40.
 	    DtMax                                       :  40.   # make it symmetric

@@ -27,7 +27,7 @@ namespace mu2e {
     // We use just a few basic types, so simplify config file by
     // only specifying dimensions, tolerances, and material once per type.
     // Locations and orientations (?) will have to be entered for each box.
-
+    const int verNo = c.getInt("Saddle.version",1);
     const int nType = c.getInt("Saddle.numberOfBoxTypes");
 
     std::vector<int>                       nBoxesOfType;
@@ -221,19 +221,10 @@ namespace mu2e {
             holeIdx++; // Keep track of number of holes total
             // Location of the center of the hole in block coords
             // Use our now-familiar trick for variable names
-            std::ostringstream hCentUVarName;
-            hCentUVarName << hCentBaseName << "UType" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
-            std::ostringstream hCentVVarName;
-            hCentVVarName << hCentBaseName << "VType" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
-            std::ostringstream hCentWVarName;
-            hCentWVarName << hCentBaseName << "WType" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
+            std::ostringstream hCentVarName;
+            hCentVarName << hCentBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
 
-            CLHEP::Hep3Vector holeCenter(c.getDouble(hCentUVarName.str())
-                                         *CLHEP::mm,
-                                         c.getDouble(hCentVVarName.str())
-                                         *CLHEP::mm,
-                                         c.getDouble(hCentWVarName.str())
-                                         *CLHEP::mm);
+            CLHEP::Hep3Vector holeCenter(c.getHep3Vector(hCentVarName.str()));
             holeLoc.push_back(holeCenter);
 
             // Get the hole radius
@@ -309,24 +300,24 @@ namespace mu2e {
     } // end loop over types...
 
     // Now make the pointer to the object itself.
-    std::unique_ptr<Saddle> res(new Saddle(
-                                                                     outlines,
-                                                                     lengths,
-                                                                     tols,
-                                                                     mats,
-                                                                     sites,
-                                                                     orients,
-                                                                     nHoles,
-                                                                     nNotches,
-                                                                     holeID,
-                                                                     holeLoc,
-                                                                     holeRad,
-                                                                     holeLen,
-                                                                     holeOri,
-                                                                     notchID,
-                                                                     notchLoc,
-                                                                     notchDim)
-                                             );
+    std::unique_ptr<Saddle> res(new Saddle( verNo,
+					    outlines,
+					    lengths,
+					    tols,
+					    mats,
+					    sites,
+					    orients,
+					    nHoles,
+					    nNotches,
+					    holeID,
+					    holeLoc,
+					    holeRad,
+					    holeLen,
+					    holeOri,
+					    notchID,
+					    notchLoc,
+					    notchDim)
+				);
 
     //----------------------------------------------------------------
     if(c.getInt("Saddle.verbosityLevel") > 0) {

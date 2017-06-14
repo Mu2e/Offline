@@ -168,9 +168,20 @@ namespace mu2e {
       _endRingZOffset          = config.getDouble( "ttrackerSupport.endRing.zOffset"     );
       _endRingMaterial         = config.getString( "ttrackerSupport.endRing.material"    );
 
+      _hasDownRing    = config.getBool( "ttrackerSupport.downRing.build",false);
+      if ( _hasDownRing ) {
+	_downRingOuterRadius      = config.getDouble( "ttrackerSupport.downRing.outerRadius" );
+	_downRingInnerRadius      = config.getDouble( "ttrackerSupport.downRing.innerRadius" );
+	_downRingHalfLength       = config.getDouble( "ttrackerSupport.downRing.halfLength"  );
+	_downRingZOffset          = config.getDouble( "ttrackerSupport.downRing.zOffset"     );
+	_downRingMaterial         = config.getString( "ttrackerSupport.downRing.material"    );
+      }
+
       config.getVectorInt( "ttrackerSupport.midRing.slot", _midRingSlot );
       _midRingHalfLength       = config.getDouble(    "ttrackerSupport.midRing.halfLength" );
-
+      _midRingPhi0 = config.getDouble( "ttrackerSupport.midRing.Phi0",180.0)*CLHEP::degree;
+      _midRingdPhi = config.getDouble( "ttrackerSupport.midRing.dPhi",180.0)*CLHEP::degree;
+      _midRingMaterial = config.getString( "ttrackerSupport.midRing.material", "StainlessSteel316");
       // support beams;
       // fixme use vectors to contain them all (e.g. vector<SupportBeamParams>)
 
@@ -1474,10 +1485,17 @@ namespace mu2e {
     //    TubsParams midRingTubs ( _endRingInnerRadius, _endRingOuterRadius, _midRingHalfLength);
     sup._stiffRings.push_back(PlacedTubs ( "TTrackerEndRingUpstream",   endRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter-_endRingZOffset), _endRingMaterial ));
 
+    if ( _hasDownRing ) {
+      TubsParams downRingTubs( _downRingInnerRadius, _downRingOuterRadius, _downRingHalfLength);
+      sup._stiffRings.push_back(PlacedTubs ( "TTrackerEndRingDownstream",
+					     downRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter + _downRingZOffset),
+					     _downRingMaterial ));
+    }
+
     {
       if ( _numPlanes%2 !=0 ){
         throw cet::exception("GEOM")
-          << "TTrackerMaker::makeSupportStructure expected and even number of planes. Saw " << _numPlanes << " planes.\n";
+          << "TTrackerMaker::makeSupportStructure expected an even number of planes. Saw " << _numPlanes << " planes.\n";
       }
 
       // From upstream end of most upstream station to the downstream end of the most downstream station.
@@ -1491,6 +1509,7 @@ namespace mu2e {
 
       double z1 = -(_endRingZOffset-_endRingHalfLength);
       double z2 = overallLength/2.;
+      if ( _hasDownRing ) z2 = _downRingZOffset - _downRingHalfLength;
       double zoff = (z1+z2)/2.;
       double zHalf = ( z2-z1)/2.;
 
@@ -1809,7 +1828,7 @@ namespace mu2e {
     SupportStructure& sup  = _tt->_supportStructure;
 
     TubsParams thinRingTubs ( _endRingInnerRadius, _outerRingOuterRadius, _midRingHalfLength,
-                              CLHEP::pi, CLHEP::pi); // half rings, on the bottom part
+                              _midRingPhi0, _midRingdPhi); // by default, half rings, on the bottom part, but user-configurable
 
     for ( size_t i=0; i< _midRingSlot.size(); ++i){
       std::ostringstream name;
@@ -1831,7 +1850,7 @@ namespace mu2e {
 
       // Center the support in the gap between two stations.
       double z = 0.5*( _tt->getPlane(ipln1).origin().z() +  _tt->getPlane(ipln2).origin().z());
-      sup._stiffRings.push_back(PlacedTubs ( name.str(),  thinRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter+z), _endRingMaterial ));
+      sup._stiffRings.push_back(PlacedTubs ( name.str(),  thinRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter+z), _midRingMaterial ));
     }
 
   }

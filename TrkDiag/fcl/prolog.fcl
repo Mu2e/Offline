@@ -77,7 +77,7 @@ BEGIN_PROLOG
   TimeClusterDiag : {
 	module_type : TimeClusterDiag
 	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
-	HitBackgroundBits	    : ["DeltaRay"]
+	HitBackgroundBits	    : ["Background"]
 	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
   }
@@ -114,9 +114,11 @@ BEGIN_PROLOG
     # change this if reading cosmic data or generating inline
     TrkCaloDiag : @local::TrkCaloDiag
     CrvCoincidenceModuleLabel : "CrvCoincidence"
-    eventWeightModules : [ ]
+    # note that these weights will only be applied if the module which
+    # produces them is run
+    beamWeightTag : protonBunchSummarizer
+    generatorWeightTag : DIOWeight
   }
-
 
 # TrkCaloIntersection by default looks for merged tracks; repoint to the tracker-found tracks
   TrackCaloMatching : { @table::TrackCaloMatching 
@@ -165,13 +167,7 @@ BEGIN_PROLOG
     }
     analyzers : {
       genCountLogger: { module_type: GenEventCountReader }
-      TrkAna: {
-	@table::TrackAnalysis
-	# note that these weights will only be applied if the module which
-	# produces them is run
-	beamWeightTag : protonBunchSummarizer
-	generatorWeightTag : DIOWeight
-      }
+      TrkAna: @local::TrackAnalysis
     }
   
     # separate out the sime and reco parts of the sequence

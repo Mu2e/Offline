@@ -57,6 +57,9 @@
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/TrackSummary.hh"
 
+#include "RecoDataProducts/inc/BkgCluster.hh"
+#include "RecoDataProducts/inc/BkgQual.hh"
+
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "RecoDataProducts/inc/TrackCaloAssns.hh" 
 // BTrk Kalman fit persistence

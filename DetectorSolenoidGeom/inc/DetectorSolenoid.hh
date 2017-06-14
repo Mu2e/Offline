@@ -41,6 +41,13 @@ namespace mu2e {
     double cryoZMax() const { return _position[CLHEP::Hep3Vector::Z] + _halfLength; }
     const CLHEP::Hep3Vector& position() const { return _position; } // in mu2e coordinates
 
+    // Experimental inner lining on cryostat, requested by Jim Miller for 
+    // studies of shielding.
+    bool hasInnerLining() const { return _hasInnerLining; }
+    double innerLiningThickness() const { return _innerLiningThickness; }
+    std::string innerLiningMaterial() const { return _innerLiningMaterial; }
+
+
     // DS shield
     std::string shield_material() const { return _shield_materialName; }
     std::string shield_insideMaterial() const { return _shield_insideMaterialName; }
@@ -169,6 +176,11 @@ namespace mu2e {
     double _endWallHalfLength; 
     double _frontHalfLength; 
     CLHEP::Hep3Vector _position; 
+
+    // experimental innerLining for shielding studies, req by Jim Miller
+    bool _hasInnerLining;
+    double _innerLiningThickness;
+    std::string _innerLiningMaterial;
 
     // DS shield
     std::string _shield_materialName;

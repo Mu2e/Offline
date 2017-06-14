@@ -208,7 +208,7 @@ namespace mu2e
     XMLString::release(&ATT_INDEX);
   }
 
-  double MVATools::evalMVA(vector<double>const &v){
+  double MVATools::evalMVA(vector<double>const &v) const {
 
     // Normalize
     for(vector<double>::size_type i = 0; i != _wn.size(); ++i){

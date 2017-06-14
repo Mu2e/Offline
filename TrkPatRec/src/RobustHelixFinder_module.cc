@@ -145,8 +145,6 @@ namespace mu2e
     RobustHelixFit                     _hfit;
     TrkTimeCalculator			_ttcalc;
     double _t0shift;   // adhoc t0 shift
-    bool			      _parcor; // correct the parameters
-    std::vector<double> _crcorr, _rcorr; // corrections for center radius and radius
     // helper functions
     bool findData           (const art::Event& e);
     void prefilterHits(HelixSeed& hseed); // rough filtering based on hits being in 1/2 the detector
@@ -155,7 +153,6 @@ namespace mu2e
     void fillMVA(HelixSeed& hseed); // return value tells if any hits changed state
     bool filterHitsMVA(HelixSeed& hseed); // return value tells if any hits changed state
     void updateT0(HelixSeed& hseed); // update T0 value based on current good hits
-    void correctParameters(RobustHelix& helix);// correct the helix parameters to MC truth using linear relations and correlations
     bool updateStereo(HelixSeed& hseed); // update the stereo hit positions for the current helix estimate
     unsigned hitCount(HelixSeed const& hseed);
     void fitHelix(HelixSeed& hseed);
@@ -190,15 +187,12 @@ namespace mu2e
     _sthTag	 (pset.get<art::InputTag>("StereoHitCollection","MakeStereoHits")),
     _trackseed   (pset.get<string>("HelixSeedCollectionLabel","TimeClusterFinder")),
     _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits")),
-    _hbkg        (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
+    _hbkg        (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
     _stmva       (pset.get<fhicl::ParameterSet>("HelixStereoHitMVA",fhicl::ParameterSet())),
     _nsmva       (pset.get<fhicl::ParameterSet>("HelixNonStereoHitMVA",fhicl::ParameterSet())),
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet())),
     _ttcalc      (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
-    _t0shift     (pset.get<double>("T0Shift",4.0)),
-    _parcor      (pset.get<bool>("CorrectHelixParameters",false)),
-    _crcorr      (pset.get<vector<double> >("CenterRadiusCorrection")),
-    _rcorr       (pset.get<vector<double> >("RadiusCorrection"))
+    _t0shift     (pset.get<double>("T0Shift",4.0))
   {
     _maxrwdot[0] = pset.get<double>("MaxStereoRWDot",1.0);
     _maxrwdot[1] = pset.get<double>("MaxNonStereoRWDot",1.0);
@@ -291,8 +285,6 @@ namespace mu2e
       // test fit status
       if(hseed.status().hasAllProperties(_saveflag)){
 	if(niter < _maxniter)hseed._status.merge(TrkFitFlag::helixConverged);
-// correct the parameters if requested
-	if(_parcor)correctParameters(hseed._helix);
 // update t0
 	updateT0(hseed);
 // save this helix
@@ -538,19 +530,6 @@ namespace mu2e
       hseed._t0._t0 = extract_result<tag::weighted_mean>(terr) + _t0shift; // ad-hoc correction FIXME!!
       hseed._t0._t0err = sqrt(std::max(0.0,extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
     }
-  }
-
-  void RobustHelixFinder::correctParameters(RobustHelix& helix) {
-  // linear correction to center radius
-    double cr = helix.rcent();
-    double crcorr = _crcorr[0] + _crcorr[1]*cr;
-  // quadratic correciton to radius (relative to a linear fit)
-    double dr = helix.radius()-_rcorr[0];
-    static double qf = pow(1.0+_rcorr[1]*_rcorr[1],1.5)*_rcorr[2];
-    double rcorr = _rcorr[3] + _rcorr[1]*dr + qf*dr*dr;
-    // update
-    helix._rcent = crcorr;
-    helix._radius = rcorr;
   }
 
   void RobustHelixFinder::fitHelix(HelixSeed& hseed) {

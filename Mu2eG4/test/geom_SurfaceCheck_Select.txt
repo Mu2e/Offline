@@ -14,6 +14,7 @@ bool g4.doSurfaceCheck    = false;
 // Various portions of the DS
 // bool ds.doSurfaceCheck = true;
 // bool dsCoil.doSurfaceCheck = true;
+// bool dsRing.doSurfaceCheck = true;
 // bool dsSpacer.doSurfaceCheck = true;
 // bool dsSupport.doSurfaceCheck = true;
 // bool dsThShield.doSurfaceCheck = true;
@@ -23,6 +24,7 @@ bool g4.doSurfaceCheck    = false;
 
 // External Shielding (both upstream and downstream)
 // bool ExtShield.doSurfaceCheck = true;
+// bool Saddles.doSurfaceCheck = true;
 
 // Various portions of PS
 // bool PS.doSurfaceCheck = true;
