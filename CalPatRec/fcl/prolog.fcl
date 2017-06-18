@@ -412,7 +412,7 @@ CalPatRec : { @table::CalPatRec
 	    StrawHitCollectionLabel         : makeSH
 	    StrawHitPositionCollectionLabel : CalPatRecMakeStereoHits
 	    minimumRadius                   : 380.            # mm
-	    maximumRadius                   : [700., 700. ]   # mm
+	    maximumRadius                   : 700.  # mm
 	    maximumEnergy                   : 0.005           # 5 KeV, in MeV
 	}
 
