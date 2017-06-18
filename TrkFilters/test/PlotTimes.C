@@ -37,12 +37,19 @@ void PlotAllTimes(const char* dirname, double maxtime) {
 	plots.push_back(plot);
       }
     }
-    TCanvas* can = new TCanvas("tcan","times",1200,1200);
+    TCanvas* acan = new TCanvas("alltimes","times",1200,1200);
     int ncel = (int)ceil(sqrt(plots.size()));
-    can->Divide(ncel,ncel);
+    acan->Divide(ncel,ncel);
     for(unsigned iplot=0;iplot<plots.size();++iplot){
-      can->cd(iplot+1);
+      acan->cd(iplot+1);
       plots[iplot]->Draw();
+      TCanvas* can = new TCanvas(plots[iplot]->GetName(),plots[iplot]->GetName(),400,400);
+      can->Divide(1,1);
+      can->cd(1);
+      plots[iplot]->Draw();
+      char rname[100];
+      snprintf(rname,100,"%s%s",plots[iplot]->GetName(),".root");
+      can->SaveAs(rname);
     }
   }
 }
