@@ -74,11 +74,10 @@ namespace mu2e {
     // stands for (mainly) cryostats.
     // In version 2, Saddles are logical structures, each of which looks
     // like an individual saddle or stand.  Each saddle contains
-    // extruded box components that form its sides, ends, bottom, and
-    // possibly top.  This forces different constructs.
+    // an extruded box with holes and/or notches.
     //================================================================    
 
-    if ( saddleSet->getVersion() == 1 ) {
+    if ( saddleSet->getVersion() <= 2 ) {
       //----------------------------------------------------------------
       // Saddle Boxes <=====
       //----------------------------------------------------------------
@@ -162,7 +161,7 @@ namespace mu2e {
 				    sitesSA[i]-parent.centerInMu2e(),
 				    parent.centerInWorld);
 
-
+	  
 	    // Create a subtraction solid that will become the solid for the 
 	    // volume.
 
@@ -306,11 +305,13 @@ namespace mu2e {
 			  doSurfaceCheck);
 	  
 	  } // end of if...else...
-	  
+	
 	} // end of for loop over saddles
-    } else { // end of version 1. Now for version 2      
-      std::cout << "You should not be trying version 2 of Saddles yet!" << std::endl;
-    } // end of version 2
+    
+    } else { // end of version 1, 2.  At this time, other versions are not
+      // implemented.
+      std::cout << "Requested Saddle version " << saddleSet->getVersion() << ".  Only versions 1 and 2 currently supported." << std::endl;
+    }  
   } // end of constructSaddles fn
 
 } // namespace mu2e

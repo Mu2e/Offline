@@ -57,6 +57,16 @@ namespace mu2e {
     std::string hOrBaseName      = "Saddle.holeOrientation";
     std::string nCentBaseName    = "Saddle.notchCenter";
     std::string nDimBaseName     = "Saddle.notchDim";
+    std::vector<int>                  nHoles;
+    std::vector<int>                  nNotches;
+    std::vector<int>                  holeID;
+    std::vector<int>                  notchID;
+    std::vector<CLHEP::Hep3Vector>    holeLoc;
+    std::vector<double>               holeRad;
+    std::vector<double>               holeLen;
+    std::vector<std::string>          holeOri;
+    std::vector<CLHEP::Hep3Vector>    notchLoc;
+    std::vector<std::vector<double> > notchDim;
 
     // Some temporary holders
     std::vector<double> tempDoubleVec;
@@ -71,7 +81,7 @@ namespace mu2e {
 
       std::ostringstream bnVertsVarName;
       bnVertsVarName << vertBaseName << iType;
-      int nVert = c.getInt(bnVertsVarName.str());
+      int nVert = c.getInt(bnVertsVarName.str(),4);
 
       // Get the vertices for this type box - u,v,w are the self-coordinates
       // Specify shape in u-v plane and extrude in w
@@ -147,26 +157,12 @@ namespace mu2e {
     std::vector<std::string>          mats;
     std::vector<CLHEP::Hep3Vector>    sites;
     std::vector<std::string>          orients;
-    std::vector<int>                  nHoles;
-    std::vector<int>                  nNotches;
-    std::vector<int>                  holeID;
-    std::vector<int>                  notchID;
-    std::vector<CLHEP::Hep3Vector>    holeLoc;
-    std::vector<double>               holeRad;
-    std::vector<double>               holeLen;
-    std::vector<std::string>          holeOri;
-    std::vector<CLHEP::Hep3Vector>    notchLoc;
-    std::vector<std::vector<double> > notchDim;
     outlines                         .reserve(nBoxesTot);
     lengths                          .reserve(nBoxesTot);
     tols                             .reserve(nBoxesTot);
     mats                             .reserve(nBoxesTot);
     sites                            .reserve(nBoxesTot);
     orients                          .reserve(nBoxesTot);
-    nHoles                           .reserve(nBoxesTot);
-    nNotches                         .reserve(nBoxesTot);
-    holeID                           .reserve(nBoxesTot);
-    notchID                          .reserve(nBoxesTot);
 
     // Helper variables for building lists of holes and notches
     int holeIdx = 0;
@@ -201,100 +197,124 @@ namespace mu2e {
         orients.push_back(orientation);
 
         // ********************************************
-        // Now handle special stuff - holes and notches
+        // Now handle special stuff - holes and notches (in version 1, 
+	// these properties go with individual instances)
         // ********************************************
+	nHoles                           .reserve(nBoxesTot);
+	nNotches                         .reserve(nBoxesTot);
+	holeID                           .reserve(nBoxesTot);
+	notchID                          .reserve(nBoxesTot);
 
-        std::ostringstream bNHolesVarName;
-        bNHolesVarName << nHolesBaseName << "Type" << it+1 << "Box" << iboxt+1;
+	std::ostringstream bNHolesVarName;
+	if ( verNo == 1 ) {
+	  bNHolesVarName << nHolesBaseName << "Type" << it+1 << "Box" << iboxt+1;
+	} else {
+	  bNHolesVarName << nHolesBaseName << "Type" << it+1;
+	}
 
-        std::ostringstream bNNotchesVarName;
-        bNNotchesVarName << nNotchesBaseName << "Type" << it+1 << "Box" << iboxt+1;
-        int nHinput = c.getInt(bNHolesVarName.str(),0);
-        int nNinput = c.getInt(bNNotchesVarName.str(),0);
-        nHoles.push_back(nHinput);
-        nNotches.push_back(nNinput);
+	std::ostringstream bNNotchesVarName;
+	if ( verNo == 1 ) {	
+	  bNNotchesVarName << nNotchesBaseName << "Type" << it+1 << "Box" << iboxt+1;
+	} else {
+	  bNNotchesVarName << nNotchesBaseName << "Type" << it+1;
+	}
+	int nHinput = c.getInt(bNHolesVarName.str(),0);
+	int nNinput = c.getInt(bNNotchesVarName.str(),0);
+	nHoles.push_back(nHinput);
+	nNotches.push_back(nNinput);
+	  
+	if ( nHinput > 0 ) {
+	  holeID.push_back(holeIdx);  // Keeps track of where in the list of
+	  // holes this block's holes begin
+	  for ( int iHole = 0; iHole < nHinput; iHole++ ) {
+	    holeIdx++; // Keep track of number of holes total
+	    // Location of the center of the hole in block coords
+	    // Use our now-familiar trick for variable names
+	    std::ostringstream hCentVarName;
+	    if (verNo == 1 ) {
+	      hCentVarName << hCentBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
+	    } else {
+	      hCentVarName << hCentBaseName << "Type" << it+1 << "Hole" << iHole+1;
+	    }
 
-        if ( nHinput > 0 ) {
-          holeID.push_back(holeIdx);  // Keeps track of where in the list of
-          // holes this block's holes begin
-          for ( int iHole = 0; iHole < nHinput; iHole++ ) {
-            holeIdx++; // Keep track of number of holes total
-            // Location of the center of the hole in block coords
-            // Use our now-familiar trick for variable names
-            std::ostringstream hCentVarName;
-            hCentVarName << hCentBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
+	    CLHEP::Hep3Vector holeCenter(c.getHep3Vector(hCentVarName.str()));
+	    holeLoc.push_back(holeCenter);
 
-            CLHEP::Hep3Vector holeCenter(c.getHep3Vector(hCentVarName.str()));
-            holeLoc.push_back(holeCenter);
+	    // Get the hole radius
+	    std::ostringstream hRadVarName;
+	    if ( verNo == 1 ) {
+	      hRadVarName << hRadBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
+	    } else {
+	      hRadVarName << hRadBaseName << "Type" << it+1 << "Hole" << iHole+1;
+	    }
 
-            // Get the hole radius
-            std::ostringstream hRadVarName;
-            hRadVarName << hRadBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
-            double tempDouble = c.getDouble(hRadVarName.str());
-            holeRad.push_back(tempDouble*CLHEP::mm);
-            // Get the hole length (remember G4 uses half-length)
-            std::ostringstream hLenVarName;
-            hLenVarName << hLenBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
-            tempDouble = c.getDouble(hLenVarName.str());
-            holeLen.push_back(tempDouble*CLHEP::mm/2.0);
-            // Get the hole orientation (uses same convention as blocks)
-            std::ostringstream hOriVarName;
-            hOriVarName << hOrBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
-            std::string orio( c.getString(hOriVarName.str(),"000"));
-            if ( orio.length() != 3 ) {
-              throw cet::exception("GEOM")
-                << "Hole orientation must be specified with a three-digit number"
-                << "\nentered as a string.You specified: " << orio;
-            }
-            holeOri.push_back(orio);
-          } // End of loop over holes for this block
+	    double tempDouble = c.getDouble(hRadVarName.str());
+	    holeRad.push_back(tempDouble*CLHEP::mm);
+	    // Get the hole length (remember G4 uses half-length)
+	    std::ostringstream hLenVarName;
+	    if ( verNo == 1 ) {
+	      hLenVarName << hLenBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
+	    } else {
+	      hLenVarName << hLenBaseName << "Type" << it+1 << "Hole" << iHole+1;
+	    }
 
-        } else {
-          holeID.push_back(-1);  // Indicates this block has no holes
-        } // End checking for holes for this block
+	    tempDouble = c.getDouble(hLenVarName.str());
+	    holeLen.push_back(tempDouble*CLHEP::mm/2.0);
+	    // Get the hole orientation (uses same convention as blocks)
+	    std::ostringstream hOriVarName;
+	    if ( verNo == 1) {
+	      hOriVarName << hOrBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
+	    } else {
+	      hOriVarName << hOrBaseName << "Type" << it+1 << "Hole" << iHole+1;
+	    }
 
-        if ( nNinput > 0 ) {
-          notchID.push_back(notchIdx); // Record starting point in list of
-          // notches for the notches belonging to this block.
-          for ( int iNotch = 0; iNotch<nNinput; iNotch++ ) {
-            notchIdx++; // Keep  track of the number of notches
+	    std::string orio( c.getString(hOriVarName.str(),"000"));
+	    if ( orio.length() != 3 ) {
+		throw cet::exception("GEOM")
+		  << "Hole orientation must be specified with a three-digit number"
+		  << "\nentered as a string.You specified: " << orio;
+	      }
+	      holeOri.push_back(orio);
+	    } // End of loop over holes for this block
+	    
+	  } else {
+	    holeID.push_back(-1);  // Indicates this block has no holes
+	  } // End checking for holes for this block
 
-            // Location of the center of the notch in block coords
-            // Use our now-familiar trick for variable names
-            std::ostringstream nCentUVarName;
-            nCentUVarName << nCentBaseName << "UType" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
-            std::ostringstream nCentVVarName;
-            nCentVVarName << nCentBaseName << "VType" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
-            std::ostringstream nCentWVarName;
-            nCentWVarName << nCentBaseName << "WType" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
+	  if ( nNinput > 0 ) {
+	    notchID.push_back(notchIdx); // Record starting point in list of
+	    // notches for the notches belonging to this block.
+	    for ( int iNotch = 0; iNotch<nNinput; iNotch++ ) {
+	      notchIdx++; // Keep  track of the number of notches
+	      
+	      // Location of the center of the notch in block coords
+	      // Use our now-familiar trick for variable names
+	      std::ostringstream nCentVarName;
+	      if ( verNo == 1 ) {
+		nCentVarName << nCentBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
+	      } else {
+		nCentVarName << nCentBaseName << "Type" << it+1 << "Notch" << iNotch+1;
+	      }
+	      CLHEP::Hep3Vector notchCenter(c.getHep3Vector(nCentVarName.str()));
+	      notchLoc.push_back(notchCenter);
 
-            CLHEP::Hep3Vector notchCenter(c.getDouble(nCentUVarName.str())
-                                          *CLHEP::mm,
-                                          c.getDouble(nCentVVarName.str())
-                                          *CLHEP::mm,
-                                          c.getDouble(nCentWVarName.str())
-                                          *CLHEP::mm);
-            notchLoc.push_back(notchCenter);
+	      // And now get the dimensions of the box that defines the notch
+	      // These are halfLength dimensions
+	      std::ostringstream nDimVarName;
+	      if ( verNo == 1 ) {
+		nDimVarName << nDimBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
+	      } else {
+		nDimVarName << nDimBaseName << "Type" << it+1 << "Notch" << iNotch+1;
+	      }
 
-            // And now get the dimensions of the box that defines the notch
-            std::ostringstream nDimUVarName;
-            nDimUVarName << nDimBaseName << "UType" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
-            std::ostringstream nDimVVarName;
-            nDimVVarName << nDimBaseName << "VType" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
-            std::ostringstream nDimWVarName;
-            nDimWVarName << nDimBaseName << "WType" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
+	      std::vector<double> tempDubs;
+	      c.getVectorDouble(nDimVarName.str(),tempDubs,3);
 
-            std::vector<double> tempDubs;
-            tempDubs.push_back(c.getDouble(nDimUVarName.str())*CLHEP::mm/2.0);
-            tempDubs.push_back(c.getDouble(nDimVVarName.str())*CLHEP::mm/2.0);
-            tempDubs.push_back(c.getDouble(nDimWVarName.str())*CLHEP::mm/2.0);
-
-            notchDim.push_back(tempDubs);
-          } // End of loop over notches for this block
-        } else {
-          notchID.push_back(-1); // Indicates no notches for this block
-        } // End of checking for notches for this block
-
+	      notchDim.push_back(tempDubs);
+	    } // End of loop over notches for this block
+	  } else {
+	    notchID.push_back(-1); // Indicates no notches for this block
+	  } // End of checking for notches for this block
 
       } // end loop over boxes of type...
     } // end loop over types...
