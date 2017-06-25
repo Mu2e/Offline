@@ -2,6 +2,25 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_2_3
 
+6)  dnbrow01  25 June 2017
+    Geometry update.
+    Restructured the logic of the pipe services.  Version 1 in the code
+    works exactly as before.  Version 2 allows specification of default
+    values for the lengths, and pipe-by-pipe overrides.  Thus a bunch of
+    different-length pipes - but otherwise identical - can be specified 
+    together, saving space and time in entering the description of the 
+    pipes.  Pipe_v02.txt (using version 1 of the code) contained 1428 lines.  
+    Pipe_v03.txt (using version 2 of the code) describes 
+    the exact same set of pipes using 282 lines.  Updated geom_common_current
+    to prefer the new version.  Old version still in geom_common for now.
+    modified:   GeometryService/src/PipeMaker.cc
+    modified:   Mu2eG4/geom/geom_common_current.txt
+    modified:   Mu2eG4/src/constructServicesGeom.cc
+    modified:   ServicesGeom/inc/Pipe.hh
+    modified:   ReleaseNotes/v6/v6_2_3.txt
+    new file:   Mu2eG4/geom/Pipe_v03.txt
+
+
 5)  dnbrow01  24 June 2017
     Geometry updates.
     Add materials we anticipate needing soon, Inconel718, TeflonFEP, and

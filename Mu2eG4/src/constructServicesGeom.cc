@@ -74,6 +74,8 @@ namespace mu2e {
     // ==> Make Pipes <========
     // *******************************************************
 
+    int                        version = pipeSet->getVersion();
+
     // Load up the vectors needed for building.
     std::vector<int>            nPipes = pipeSet->getNPipes();
     std::vector<int>            nComps = pipeSet->getNComponentsInPipe();
@@ -94,11 +96,13 @@ namespace mu2e {
     // *** Loop over the types and construct all *********
     // ***************************************************
 
+    int whichPipe = 0;
     for ( unsigned int it = 0; it < nPipes.size(); it++ ) {
 
       int nPipe = nPipes[it];
       int nComp = nComps[it];
-      double len = pLeng[it];
+      double len = 0.0;
+      if (version == 1) len = pLeng[it];
       std::string flav = pFlav[it];
       bool isBend = false;
       if ( flav != "straight" ) {
@@ -107,8 +111,11 @@ namespace mu2e {
 
       std::string fillMat = pFill[it];
 
+      // *** Now loop over the individual pipes ***
       for ( int ip = 0; ip < nPipe; ip++ ) {
 
+	if ( version > 1 ) len = pLeng[whichPipe];
+	whichPipe++;
 	// Make the container ("mother") volume for the type.
 	TubsParams  pipeParams(0.0,cOutRad[it][0],len/2.0);
 	TorusParams bendParams(0.0,cOutRad[it][0],len);

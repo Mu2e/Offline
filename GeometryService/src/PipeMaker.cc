@@ -30,6 +30,7 @@ namespace mu2e {
     // full of pipes.  Component positions are specified with respect to 
     // the first pipe and then the first pipe is placed in the world.
 
+    const int version = c.getInt("Pipe.version",1);
 
     const int nType = c.getInt("Pipe.numberOfPipeTypes");
 
@@ -41,7 +42,7 @@ namespace mu2e {
     std::vector<std::string>               fillOfType;
     nComponentsOfType                      .reserve(nType);
     nPipesOfType                           .reserve(nType);
-    lengthOfType                           .reserve(nType);
+    if (version == 1) lengthOfType         .reserve(nType);
     flavorOfType                           .reserve(nType);
     fillOfType                             .reserve(nType);
 
@@ -84,6 +85,7 @@ namespace mu2e {
 
     // Some temporary holders
     std::vector<double> tempDoubleVec;
+    int totPipes = 0; // Keep track of total number of pipes
 
     // *********************
     // Loop over the various pipe _types_ and fill the vectors with
@@ -103,11 +105,15 @@ namespace mu2e {
       int nComp = c.getInt(bCompNumberVarName.str(),1);
       nComponentsOfType.push_back(nComp);
 
+      totPipes += nComp;  // Track total pipes
+
       // Get the length of this type of box - the w component.
       // This is Full length - will be cut in half when making Tubs, not Tori
-      std::ostringstream bLengthVarName;
-      bLengthVarName << lengthBaseName << iType;
-      lengthOfType.push_back(c.getDouble(bLengthVarName.str())*CLHEP::mm);
+      if ( version == 1 ){
+	std::ostringstream bLengthVarName;
+	bLengthVarName << lengthBaseName << iType;
+	lengthOfType.push_back(c.getDouble(bLengthVarName.str())*CLHEP::mm);
+      }
 
       // Get the flavor - straight or bend for this type
       std::ostringstream pFlavVarName;
@@ -123,7 +129,7 @@ namespace mu2e {
 
     } // End of collecting Type information
 
-
+    if ( version > 1 ) lengthOfType.reserve(totPipes);
 
     // ****************
     // Now collect individual pipe information
@@ -152,6 +158,20 @@ namespace mu2e {
 	    << "\nentered as a string.You specified: " << orientation;
 	}
 	tmpVecOri.push_back(orientation);
+	if ( version > 1 ) {
+	  // We will cheat and collect a length for each pipe rather than 
+	  // each type (which rhymes).  
+	  std::ostringstream aLengthVarName;
+	  aLengthVarName << lengthBaseName << it+1 << "Pipe" << ip+1;
+	  std::ostringstream altLengthVarName;
+	  altLengthVarName << lengthBaseName << it+1;
+
+	  double tmpVal = c.getDouble( aLengthVarName.str(), -1.0 );
+	  if ( tmpVal < 0.0 ) tmpVal = c.getDouble( altLengthVarName.str() );
+	  lengthOfType.push_back(tmpVal);
+
+	}
+
       }
       orients.push_back(tmpVecOri);
       sites.push_back(tmpVecHep3V);
@@ -176,7 +196,7 @@ namespace mu2e {
     std::vector<double> tmpVecuOff;
     std::vector<double> tmpVecvOff;
 
-    // Loop over all the boxes and fill the vectors used to build them
+    // Loop over all the tubes and fill the vectors used to build them
     for ( int it = 0; it < nType; it++ ) {
       for ( int ipipet = 0; ipipet < nComponentsOfType[it]; ipipet++ ) {
 	// holder variable
@@ -222,19 +242,20 @@ namespace mu2e {
     } // end loop over types...
 
     // Now make the pointer to the object itself.
-    std::unique_ptr<Pipe> res(new Pipe(           nComponentsOfType,
-						  nPipesOfType,
-						  lengthOfType,
-						  flavorOfType,
-						  fillOfType,
-						  sites,
-						  orients,
-						  rInOfCompByType,
-						  rOutOfCompByType,
-						  materialOfCompByType,
-						  uOffsetsOfCompByType,
-						  vOffsetsOfCompByType)
-                                             );
+    std::unique_ptr<Pipe> res(new Pipe( version,           
+					nComponentsOfType,
+					nPipesOfType,
+					lengthOfType,
+					flavorOfType,
+					fillOfType,
+					sites,
+					orients,
+					rInOfCompByType,
+					rOutOfCompByType,
+					materialOfCompByType,
+					uOffsetsOfCompByType,
+					vOffsetsOfCompByType)
+			      );
 
     //----------------------------------------------------------------
     if(c.getInt("Pipe.verbosityLevel") > 0) {
