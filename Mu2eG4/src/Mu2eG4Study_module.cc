@@ -369,6 +369,8 @@ namespace mu2e {
   // Create one G4 event and copy its output to the art::event.
   void Mu2eG4Study::produce(art::Event& event) {
 
+    throw std::runtime_error("\n\nMu2eG4Study module is very obsolete. Please upgrade your job configuration to use the modern mainstream Mu2eG4 module instead.\nStarting with v5_7_7 and still as of v6_2_3 Mu2eG4/fcl/g4study2.fcl and g4study2Calo_01.fcl are examples on how to do it.\n\n\n");
+
     // Handle to the generated particles; need when building art::Ptr to a GenParticle.
     art::Handle<GenParticleCollection> gensHandle;
     event.getByLabel(_generatorModuleLabel, gensHandle);
