@@ -160,7 +160,7 @@ string Saddle.materialType6              = "StainlessSteel";
 // Notches and Holes
 int Saddle.nHolesType6                   = 1;
 vector<double> Saddle.holeCenterType6Hole1 = {0,1550,0};
-double Saddle.holeRadiusType6Hole1   = 1301.0;
+double Saddle.holeRadiusType6Hole1   = 1329.0;
 double Saddle.holeLengthType6Hole1   = 701.0;
 int Saddle.nNotchesType6             = 3;
 vector<double> Saddle.notchCenterType6Notch1 = {0, 486, -300};
@@ -202,10 +202,10 @@ int Saddle.nNotchesType8                 = 1;
 vector<double> Saddle.notchCenterType8Notch1 = {0, 311.5, 0};
 vector<double> Saddle.notchDimType8Notch1    = {694,290,180}; // halflengths
 // Now place and orient the instances
-vector<double> Saddle.centerType8Box1    = { 0,-2282, 4039};
-vector<double> Saddle.centerType8Box2    = { 0,-2282, 8689};
-vector<double> Saddle.centerType8Box3    = { 0,-2282, 13339};
-vector<double> Saddle.centerType8Box4    = { 0,-2282, 15290.8};
+vector<double> Saddle.centerType8Box1    = { -3904,-2282, 4039};
+vector<double> Saddle.centerType8Box2    = { -3904,-2282, 8689};
+vector<double> Saddle.centerType8Box3    = { -3904,-2282, 13339};
+vector<double> Saddle.centerType8Box4    = { -3904,-2282, 15290.8};
 string Saddle.orientationType8Box1       = "000";
 string Saddle.orientationType8Box2       = "000";
 

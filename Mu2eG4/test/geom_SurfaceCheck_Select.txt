@@ -6,13 +6,14 @@
 // 
 //
 
-#include "Mu2eG4/geom/geom_common_DOE_review_2017.txt"
+//#include "Mu2eG4/geom/geom_common_DOE_review_2017.txt"
+#include "Mu2eG4/geom/geom_common.txt"
 
 bool g4.doSurfaceCheck    = false;
 
 // By default, all of these should be false.  Uncomment to set true.
 // Various portions of the DS
- bool ds.doSurfaceCheck = true;
+// bool ds.doSurfaceCheck = true;
 // bool dsCoil.doSurfaceCheck = true;
 // bool dsRing.doSurfaceCheck = true;
 // bool dsSpacer.doSurfaceCheck = true;
@@ -29,23 +30,23 @@ bool g4.doSurfaceCheck    = false;
 // bool Services.doSurfaceCheck = true;
 
 // Various portions of PS
- bool PS.doSurfaceCheck = true;
+// bool PS.doSurfaceCheck = true;
 // bool targetPS.doSurfaceCheck = true;
 // bool PSShield.doSurfaceCheck = true;
 // bool clamp_supWheel.doSurfaceCheck = true;
 
 // ProtonBeamDump areas
 // bool protonBeamDump.dirt.doSurfaceCheck = true;
- bool protonBeamDump.shielding.doSurfaceCheck = true;
+// bool protonBeamDump.shielding.doSurfaceCheck = true;
 // bool protonBeamDump.core.doSurfaceCheck = true;
 // bool protonBeamDump.mouth.doSurfaceCheck = true;
 // bool protonBeamDump.neutronCave.doSurfaceCheck = true;
 
 // The Tracker
- bool ttracker.doSurfaceCheck = true;
+// bool ttracker.doSurfaceCheck = true;
 
 // Various portions of TS
- bool ts.cryo.doSurfaceCheck = true;
+// bool ts.cryo.doSurfaceCheck = true;
 // bool ts.polyliner.doSurfaceCheck = true;
 // bool ts.cas.doSurfaceCheck = true;
 // bool ts.coils.doSurfaceCheck = true;
@@ -54,7 +55,7 @@ bool g4.doSurfaceCheck    = false;
 // bool muondegrader.doSurfaceCheck = true;
 
 // Virtual detectors
- bool vd.doSurfaceCheck = true;
+// bool vd.doSurfaceCheck = true;
 
 
 // Special:  The building and dirt.  Elements can be selected in small
