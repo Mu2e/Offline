@@ -61,6 +61,15 @@ namespace mu2e{
       // Find the list of processes attached to this particle.
       G4ParticleDefinition*  particle     = iter->value();
       G4ProcessManager*      pmanager     = particle->GetProcessManager();
+
+      if ( !pmanager ){
+        cout << __func__
+             << " No process manager found for : " << particle->GetParticleName()
+             << " skipping it "
+             << endl;
+        continue;
+      }
+
       G4ProcessVector const* pVector      = pmanager->GetProcessList();
       G4String               particleName = particle->GetParticleName();
 
