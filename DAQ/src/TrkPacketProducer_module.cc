@@ -163,14 +163,14 @@ namespace mu2e {
     for ( size_t i=0; i<hits_SD.size(); ++i ) {
 
       StrawDigi const& SD = gblresult ? hits_SD.at(i) : StrawDigi();
-      StrawDigi::ADCWaveform const& theWaveform = SD.adcWaveform();
+      TrkTypes::ADCWaveform const& theWaveform = SD.adcWaveform();
 
       // Fill struct with info for current hit
       trkhit curHit;
       curHit.evt = eventNum;
       curHit.strawIdx = SD.strawIndex().asInt();
-      curHit.recoDigiT0 = SD.TDC(StrawDigi::zero);
-      curHit.recoDigiT1 = SD.TDC(StrawDigi::one);
+      curHit.recoDigiT0 = SD.TDC(TrkTypes::cal);
+      curHit.recoDigiT1 = SD.TDC(TrkTypes::hv);
       curHit.recoDigiSamples = theWaveform.size();
       for(size_t j = 0; j<theWaveform.size(); j++) {
 	curHit.waveform.push_back(theWaveform[j]);

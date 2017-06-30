@@ -33,26 +33,24 @@ namespace mu2e {
 
     // Accessors
     StrawIndex strawIndex() const { return _strawIndex; }
-    double wireEndTime(StrawDigi::TDCChannel itdc) const { 
-      return _wetime[static_cast<size_t>(itdc)]; }
+    double wireEndTime(StrawEnd strawend) const { 
+      return _wetime[static_cast<size_t>(strawend)]; }
 
-    CLHEP::HepLorentzVector const& clusterPosition(StrawDigi::TDCChannel itdc) const { 
-      return _cpos[static_cast<size_t>(itdc)]; }
+    CLHEP::HepLorentzVector const& clusterPosition(StrawEnd strawend) const { 
+      return _cpos[static_cast<size_t>(strawend)]; }
 
-    double driftDistance(StrawDigi::TDCChannel itdc) const;
-    double distanceToMid(StrawDigi::TDCChannel itdc) const;
-    art::Ptr<StepPointMC> const&  stepPointMC(StrawDigi::TDCChannel itdc) const {
-      return _stepMC[static_cast<size_t>(itdc)]; }
-
-    bool hasTDC(StrawDigi::TDCChannel itdc) const { return !stepPointMC(itdc).isNull();} 
+    double driftDistance(StrawEnd strawend) const;
+    double distanceToMid(StrawEnd strawend) const;
+    art::Ptr<StepPointMC> const&  stepPointMC(StrawEnd strawend) const {
+      return _stepMC[static_cast<size_t>(strawend)]; }
 
     std::vector<art::Ptr<StepPointMC> > const& stepPointMCs() const { return _stepMCs; }
 
     double energySum() const;// sum of all MC true energy deposited
     // energy sum of particle that triggered the discriminator
-    double triggerEnergySum(StrawDigi::TDCChannel itdc=StrawDigi::zero) const;
+    double triggerEnergySum(StrawEnd strawend) const;
     // check if this digi was created by cross-talk
-    bool isCrossTalk(StrawDigi::TDCChannel itdc) const;
+    bool isCrossTalk(StrawEnd strawend) const;
     // Print contents of the object.
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
@@ -62,6 +60,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector _cpos[2]; // Positions of the clusters responsible
     // for the TDC firings on each end (can be the same)
     double _wetime[2]; // times at the wire ends of the signals which fired the TDC
+    unsigned _iclust[2]; // cluster sequence number of the cluster which pushed signal over threhold
     art::Ptr<StepPointMC> _stepMC[2];	  // Ptr into StepPointMC collection of step which
     // triggered the TDC
     std::vector<art::Ptr<StepPointMC> > _stepMCs; // All StepPointMCs which contributed to the waveform

@@ -99,7 +99,7 @@ namespace mu2e {
 	_tf1->FixParameter(PeakFitParams::pedestal,_strawele.ADCPedestal());
       // no floating width: fix the value to what strawelectronics says
       if(!_fitConfig.hasOption(FitConfig::floatWidth))
-	_tf1->FixParameter(PeakFitParams::width,_strawele.fallTime(StrawElectronics::adc));
+	_tf1->FixParameter(PeakFitParams::width,_strawele.fallTime(TrkTypes::adc));
       // no late peak: fix the charge and shift and disable those parameters
       if(!_fitConfig.hasOption(FitConfig::latePeak)){
 	_tf1->FixParameter(PeakFitParams::lateShift,0.0);
@@ -118,7 +118,7 @@ namespace mu2e {
 // limit the width to be > 0
       _tf1->SetParLimits(PeakFitParams::width,0.0,30.0);
 // limit the pedestal to +- 5 sigma noise
-      double pednoise =_strawele.analogNoise(StrawElectronics::adc)/_strawele.adcLSB();
+      double pednoise =_strawele.analogNoise(TrkTypes::adc)/_strawele.adcLSB();
       double pedmin = std::max(0.0,_strawele.ADCPedestal()-5.0*pednoise);
       double pedmax = _strawele.ADCPedestal()+5.0*pednoise;
       _tf1->SetParLimits(PeakFitParams::pedestal,pedmin,pedmax);
@@ -128,7 +128,7 @@ namespace mu2e {
     // need to check/fix the normalization, FIXME!!!
     Float_t PeakFitFunction::earlyPeak(const Double_t time, const Double_t charge) const
     {
-      return charge * exp(-time / _strawele.fallTime(StrawElectronics::adc));
+      return charge * exp(-time / _strawele.fallTime(TrkTypes::adc));
     }
 
     // Normalized CR-RC network response to a current delta function
@@ -140,9 +140,9 @@ namespace mu2e {
       if (time > 0.0)
       {
       // normalization from ADC units to charge
-	static const double norm = _strawele.currentToVoltage(StrawElectronics::adc)*
-	pow(_strawele.fallTime(StrawElectronics::adc),-2)/StrawElectronics::_pC_per_uA_ns;
-	returnValue = time*norm*exp(-time/_strawele.fallTime(StrawElectronics::adc));
+	static const double norm = _strawele.currentToVoltage(TrkTypes::adc)*
+	pow(_strawele.fallTime(TrkTypes::adc),-2)/StrawElectronics::_pC_per_uA_ns;
+	returnValue = time*norm*exp(-time/_strawele.fallTime(TrkTypes::adc));
       }
       return returnValue;
     }
@@ -151,7 +151,7 @@ namespace mu2e {
     // need to fix the normalization FIXME!!!
     Float_t PeakFitFunction::convolvedSinglePeak(const Double_t time, const Double_t sigma) const
     {
-      static const double norm = _strawele.currentToVoltage(StrawElectronics::adc)/
+      static const double norm = _strawele.currentToVoltage(TrkTypes::adc)/
 	StrawElectronics::_pC_per_uA_ns;
       Float_t returnValue = 0.0;
 
@@ -161,9 +161,9 @@ namespace mu2e {
       }
       else
       {
-	const Float_t a = std::max((time + sigma) / _strawele.fallTime(StrawElectronics::adc),0.0);
+	const Float_t a = std::max((time + sigma) / _strawele.fallTime(TrkTypes::adc),0.0);
 	// Assuming that shaping time is pggositive and thus b is negative (if t - sigma is)
-	const Float_t b = std::max((time - sigma) / _strawele.fallTime(StrawElectronics::adc),0.0);
+	const Float_t b = std::max((time - sigma) / _strawele.fallTime(TrkTypes::adc),0.0);
 	returnValue =  norm*(-exp(-a)*(1+a) + exp(-b)*(1+b)) / (2.0 * sigma);
 	// this value doesn't have the correct absolute normalization, FIXME!!!!
       }

@@ -16,6 +16,7 @@
 
 using namespace std;
 namespace mu2e {
+  using namespace TrkTypes;
   double StrawElectronics::_pC_per_uA_ns(1000.0); // unit conversion from pC/ns to microAmp.
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
@@ -61,7 +62,7 @@ namespace mu2e {
     for(int ipath=0;ipath<2;++ipath){
       _freq[ipath] = 1.0/_tau[ipath];
       _ttrunc[ipath] = _tau[ipath]*nlambda;
-      _linmax[ipath] = linearResponse(static_cast<path>(ipath),_tmax[ipath],1.0); // response to unit charge (without saturation!)
+      _linmax[ipath] = linearResponse(static_cast<Path>(ipath),_tmax[ipath],1.0); // response to unit charge (without saturation!)
     }
     // saturation parameters
     _vdiff = _vmax-_vsat;
@@ -69,7 +70,7 @@ namespace mu2e {
 
   StrawElectronics::~StrawElectronics() {}
 
-  double StrawElectronics::linearResponse(path ipath,double time,double charge) const {
+  double StrawElectronics::linearResponse(Path ipath,double time,double charge) const {
     double retval(0.0);
     // There is no response before the hitlets own time
     if(time >  0.0 && time < _ttrunc[ipath]){
@@ -107,8 +108,8 @@ namespace mu2e {
     // Offset to when the TDC clock starts
     return min(static_cast<unsigned long>(max(static_cast<int>(floor((time-_clockStart)/_TDCLSB)),0)),_maxTDC);
   }
-void StrawElectronics::digitizeWaveform(vector<double> const& wf, ADCWaveform& adc) const{
-    if(wf.size() != _nADC)      
+void StrawElectronics::digitizeWaveform(ADCVoltages const& wf, ADCWaveform& adc) const{
+    if(wf.size() != _nADC)
       throw cet::exception("SIM") 
 	<< "mu2e::StrawElectronics: wrong number of voltages to digitize" 
 	<< endl;
@@ -123,7 +124,7 @@ void StrawElectronics::digitizeWaveform(vector<double> const& wf, ADCWaveform& a
       tdc[itime] = tdcResponse(times[itime]);
   }
 
-  void StrawElectronics::adcTimes(double time, vector<double>& adctimes) const {
+  void StrawElectronics::adcTimes(double time, ADCVoltages& adctimes) const {
 // clock has a fixed phase; Assume we digitize with a fixed delay relative to the leading edge
     adctimes.clear();
     adctimes.reserve(_nADC);

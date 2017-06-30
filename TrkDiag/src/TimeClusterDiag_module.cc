@@ -220,8 +220,7 @@ namespace mu2e {
       StrawHitFlag const& shflag =_shfcol->at(istr);
       if(TrkMCTools::CEDigi(mcdigi)){
 	++_ceclust._nce;
-	StrawDigi::TDCChannel itdc = StrawDigi::zero;
-	if(!mcdigi.hasTDC(itdc))itdc = StrawDigi::one;
+	StrawEnd itdc;
 	cpos += mcdigi.clusterPosition(itdc).vect();
 	_ceclust._time += mcdigi.clusterPosition(itdc).t();
 	bool selected = shflag.hasAllProperties(_hsel) && !shflag.hasAnyProperty(_hbkg);
@@ -239,8 +238,7 @@ namespace mu2e {
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawDigiMC const& mcdigi = _mcdigis->at(istr);
       if(TrkMCTools::CEDigi(mcdigi)){
-	StrawDigi::TDCChannel itdc = StrawDigi::zero;
-	if(!mcdigi.hasTDC(itdc))itdc = StrawDigi::one;
+	StrawEnd itdc;
 	Hep3Vector hpos = mcdigi.clusterPosition(itdc).vect();
 	double hphi = hpos.phi();
 	float hrho = hpos.perp();
@@ -272,8 +270,7 @@ namespace mu2e {
 // MC truth
       if(_mcdiag){
 	StrawDigiMC const& mcdigi = _mcdigis->at(idx);
-	StrawDigi::TDCChannel itdc = StrawDigi::zero;
-	if(!mcdigi.hasTDC(itdc))itdc= StrawDigi::one;
+	StrawEnd itdc;
 	tchi._mctime = _toff.timeWithOffsetsApplied( *mcdigi.stepPointMC(itdc));
 	tchi._mcmom = mcdigi.stepPointMC(itdc)->momentum().mag();
 	art::Ptr<SimParticle> sp;

@@ -219,7 +219,7 @@ namespace mu2e {
 	makehit = false;
       if(makehit){
 // fit the ADC waveform to get the charge
-	StrawDigi::ADCWaveform const& adc = digi.adcWaveform();
+	TrkTypes::ADCWaveform const& adc = digi.adcWaveform();
 	// note: pedestal is being subtracting inside strawele, in the real experiment we will need
 	// per-channel version of this FIXME!!!
 	TrkChargeReco::PeakFitParams params;
@@ -263,10 +263,10 @@ namespace mu2e {
   void StrawHitsFromStrawDigis::fillDiagMC(Straw const& straw,
     StrawDigiMC const& mcdigi) {
     _shmcinfo._energy = mcdigi.energySum();
-    _shmcinfo._trigenergy = mcdigi.triggerEnergySum();
+    StrawEnd end;
+    _shmcinfo._trigenergy = mcdigi.triggerEnergySum(end);
 // sum the energy from the explicit trigger particle, and find it's releationship 
-    StrawDigi::TDCChannel itdc = StrawDigi::zero;
-    if(!mcdigi.hasTDC(itdc)) itdc = StrawDigi::one;
+    StrawEnd itdc;
     art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
     art::Ptr<SimParticle> const& spp = spmcp->simParticle();
     _shmcinfo._xtalk = straw.index() != spmcp->strawIndex();

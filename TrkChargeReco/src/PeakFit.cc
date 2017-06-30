@@ -12,7 +12,7 @@ namespace mu2e {
     PeakFit::PeakFit(StrawElectronics const& strawele, FitType const& fittype) : _strawele(strawele), _fittype(fittype) {
     }
 
-    void PeakFit::process(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const {
+    void PeakFit::process(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const {
       switch(_fittype) {
         case FitType::sumadc :
           sumADC(adcData, fit); 
@@ -26,7 +26,7 @@ namespace mu2e {
       }
     }
 
-    void PeakFit::sumADC(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const{
+    void PeakFit::sumADC(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const{
       // reset
       fit = PeakFitParams();
       double sum = 0.0;
@@ -36,7 +36,7 @@ namespace mu2e {
       fit._charge = charge;
     }		
 
-    void PeakFit::peakMinusPed(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const 
+    void PeakFit::peakMinusPed(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const 
     {
       // reset
       fit = PeakFitParams();
@@ -47,11 +47,11 @@ namespace mu2e {
       double pedestal = std::accumulate(adcData.begin(), adcData.begin() + _strawele.nADCPreSamples(),0)/(double) _strawele.nADCPreSamples();
 
       // convert charge to pC
-     double charge = (peak - pedestal) * _strawele.adcLSB() / _strawele.normalization(StrawElectronics::adc) / exp(-1.0) * _strawele.peakMinusPedestalEnergyScale();
+     double charge = (peak - pedestal) * _strawele.adcLSB() / _strawele.normalization(TrkTypes::adc) / exp(-1.0) * _strawele.peakMinusPedestalEnergyScale();
      fit._charge = charge;
     }
 
-    void PeakFit::initializeFit(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const{
+    void PeakFit::initializeFit(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const{
       // set parameters
       fit._earlyCharge = adcData[0]-_strawele.ADCPedestal(); // this is a crude value, should compute something FIXME!!!
       fit._pedestal = _strawele.ADCPedestal();

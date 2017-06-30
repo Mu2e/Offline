@@ -52,14 +52,14 @@ namespace mu2e {
 	// is both input (determines starting point) and output
 	bool crossesThreshold(double threshold,WFX& wfx) const;
 	// sample the waveform at a given time.  Return value is in units of volts 
-	double sampleWaveform(StrawElectronics::path ipath,double time) const;
+	double sampleWaveform(TrkTypes::Path ipath,double time) const;
 	// sample the waveform at a series of points
-	void sampleWaveform(StrawElectronics::path ipath, std::vector<double> const& times,std::vector<double>& volts) const;
+	void sampleWaveform(TrkTypes::Path ipath, std::vector<double> const& times,std::vector<double>& volts) const;
 	//accessors
 	StrawClusterSequence const& clusts() const { return _cseq; }
 	ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }
 	XTalk const& xtalk() const { return _xtalk; }
-	StrawEnd strawEnd() const;
+	StrawEnd strawEnd() const { return _cseq.strawEnd(); }
       private:
 	// clust sequence used in this waveform
 	StrawClusterSequence const& _cseq;

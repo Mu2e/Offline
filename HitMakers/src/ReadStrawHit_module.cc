@@ -339,15 +339,12 @@ namespace mu2e {
       PanelId secid = sid.getPanelId();
 
       double fracDist = 0.0;
-      StrawDigi::TDCChannel itdc = StrawDigi::zero;
+      StrawEnd itdc(TrkTypes::cal);
 
       if (gblSHresult) {
         fracDist = SHtruth.distanceToMid()/str.getHalfLength();
       } else {
-        if(!SDtruth.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
-        if (SDtruth.hasTDC(StrawDigi::one)) {
-          fracDist = SDtruth.distanceToMid(itdc)/str.getHalfLength();
-        }
+	fracDist = SDtruth.distanceToMid(itdc)/str.getHalfLength();
       }
 
       // Use MC truth data

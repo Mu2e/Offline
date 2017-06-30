@@ -13,43 +13,35 @@
 
 // C++ includes
 #include <iostream>
-#include <array>
 #include <vector>
 #include <utility>
 
 // Mu2e includes
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
+#include "TrackerConditions/inc/Types.hh"
 #include "fhiclcpp/ParameterSet.h"
-#include <array>
-#include <vector>
 
 namespace mu2e {
   class StrawElectronics : virtual public ConditionsEntity {
     public:
-// separately describe the 2 analog paths
-      enum path{thresh=0,adc};
-// these are copied from StrawDigi, but I don't want a direct dependency
-      typedef unsigned long TDCValues[2];
-      typedef std::vector<unsigned short> ADCWaveform;
- 
       // construct from parameters
       StrawElectronics(fhicl::ParameterSet const& pset);
       virtual ~StrawElectronics();
       // linear response to a charge pulse.  This does NOT include saturation effects,
       // since those are cumulative and cannot be computed for individual charges
-      double linearResponse(path ipath, double time,double charge) const; // mvolts per pCoulomb
+      double linearResponse(TrkTypes::Path ipath, double time,double charge) const; // mvolts per pCoulomb
       // Given a (linear) total voltage, compute the saturated voltage
       double saturatedResponse(double lineearresponse) const;
       // relative time when linear response is maximal
-      double maxResponseTime(path ipath) const { return _tmax[ipath]; }
+      double maxResponseTime(TrkTypes::Path ipath) const { return _tmax[ipath]; }
   // digization
       unsigned short adcResponse(double mvolts) const; // ADC response to analog inputs
       unsigned long tdcResponse(double time) const; // TDC response to a given time
-      void digitizeWaveform(std::vector<double> const& wf,ADCWaveform& adc) const;
-      void digitizeTimes(std::array<double,2> const& times,TDCValues& tdc) const;
+      void digitizeWaveform(TrkTypes::ADCVoltages const& wf,TrkTypes::ADCWaveform& adc) const; // digitize an array of voltages at the ADC
+      void digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc) const;
       bool combineEnds(double t1, double t2) const; // are times from 2 ends combined into a single digi?
   // interpretation of digital data
-      void tdcTimes(TDCValues const& tdc, std::array<double,2>& times) const;
+      void tdcTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes& times) const;
       double adcVoltage(unsigned short adcval) const; // mVolts
       double adcCurrent(unsigned short adcval) const; // microAmps
 // accessors
@@ -64,30 +56,30 @@ namespace mu2e {
       double adcOffset() const { return _ADCOffset; } // offset WRT clock edge for digitization
       double flashStart() const { return _flashStart; } // time flash blanking starts
       double flashEnd() const { return _flashEnd; } // time flash blanking ends
-      void adcTimes(double time, std::vector<double>& adctimes) const; // sampling times of ADC
+      void adcTimes(double time, TrkTypes::ADCTimes& adctimes) const; // given crossing time, fill sampling times of ADC CHECK THIS IS CORRECT IN DRAC FIXME!
       double saturationVoltage() const { return _vsat; }
       double maximumVoltage() const { return _vmax; }
-      double fallTime(path ipath) const { return _tau[ipath]; }
+      double fallTime(TrkTypes::Path ipath) const { return _tau[ipath]; }
       double dispersion(double dlen) const { return _disp*dlen; } // dispersion width is linear in propagation length
       double threshold() const { return _vthresh; }
-      double analogNoise(path ipath) const { return _analognoise[ipath]; }
+      double analogNoise(TrkTypes::Path ipath) const { return _analognoise[ipath]; }
       double deadTime() const { return _tdead; }
       double clockStart() const { return _clockStart; }
       double clockJitter() const { return _clockJitter; }
-      double currentToVoltage(path ipath) const { return _dVdI[ipath]; }
-      double normalization(path ipath) const { return _norm[ipath]; }
-      double maxLinearResponse(path ipath,double charge=1.0) const { return _linmax[ipath]*charge; }
+      double currentToVoltage(TrkTypes::Path ipath) const { return _dVdI[ipath]; }
+      double normalization(TrkTypes::Path ipath) const { return _norm[ipath]; }
+      double maxLinearResponse(TrkTypes::Path ipath,double charge=1.0) const { return _linmax[ipath]*charge; }
       double peakMinusPedestalEnergyScale() const { return _pmpEnergyScale; }
       static double _pC_per_uA_ns; // unit conversion from pC/ns to microAmp
     private:
     // generic waveform parameters
-      double _dVdI[2]; // scale factor between charge and voltage (milliVolts/picoCoulombs)
-      double _tmax[2]; // time at which value is maximum
-      double _ttrunc[2]; // time to truncate signal to 0
-      double _linmax[2]; // linear response to unit charge at maximum
-      double _norm[2]; // normalization factor
+      double _dVdI[TrkTypes::npaths]; // scale factor between charge and voltage (milliVolts/picoCoulombs)
+      double _tmax[TrkTypes::npaths]; // time at which value is maximum
+      double _ttrunc[TrkTypes::npaths]; // time to truncate signal to 0
+      double _linmax[TrkTypes::npaths]; // linear response to unit charge at maximum
+      double _norm[TrkTypes::npaths]; // normalization factor
 // adc path parameters
-      double _tau[2], _freq[2]; // shaping time and associated frequency
+      double _tau[TrkTypes::npaths], _freq[TrkTypes::npaths]; // shaping time and associated frequency
 // threshold path parameters
       double _tband, _voff, _toff;
       double _tdead; // electronics dead time
@@ -95,8 +87,7 @@ namespace mu2e {
       double _vmax, _vsat, _vdiff; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
       double _disp; // dispersion in ns/mm;
       double _vthresh; // threshold voltage for electronics discriminator (mVolt)
-      double _analognoise[2]; // threshold voltage noise width (mVolt)
-// add some noise parameter: FIXME!!!
+      double _analognoise[TrkTypes::npaths]; //noise (mVolt)
       double _ADCLSB; // least-significant bit of ADC (mVolts)
       unsigned short _maxADC; // maximum ADC value
       unsigned short _ADCped; // ADC pedestal (reading for 0 volts)
