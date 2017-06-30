@@ -73,6 +73,8 @@ namespace mu2e {
       electronNuclear,        photonNuclear,           antilambdaInelastic, DecayWithSpin,
       ionElastic,             EMCascade,               DIO,                 NuclearCapture,
       muonNuclear,            GammaToMuPair,           AnnihiToMuPair,      ee2hadr,
+      G4MinEkineCuts,         G4MaxTimeCuts,           OpAbsorption,        OpBoundary,
+      Scintillation,          inelastic,
       lastEnum,
 
       // An alias for backward compatibility
@@ -111,7 +113,9 @@ namespace mu2e {
     "sigma0Inelastic",        "xi-Inelastic",            "xi0Inelastic",           "positronNuclear", \
     "electronNuclear",        "photonNuclear",           "anti-lambdaInelastic",   "DecayWithSpin", \
     "ionElastic",             "EMCascade",               "DIO",                    "NuclearCapture", \
-    "muonNuclear",            "GammaToMuPair",           "AnnihiToMuPair",         "ee2hadr",
+    "muonNuclear",            "GammaToMuPair",           "AnnihiToMuPair",         "ee2hadr", \
+    "G4MinEkineCuts",         "G4MaxTimeCuts",           "OpAbsorption",           "OpBoundary", \
+    "Scintillation",          "inelastic"
 
 
   public:

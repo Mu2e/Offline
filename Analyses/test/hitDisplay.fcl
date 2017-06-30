@@ -100,7 +100,7 @@ physics : {
 
 #      goodHitMask                 : ["EnergySelection","RadiusSelection","TimeSelection"]
       goodHitMask                  : ["EnergySelection", "RadiusSelection"]
-      badHitMask                   : ["DeltaRay", "Isolated"]
+      badHitMask                   : ["Background", "Isolated"]
 
       trackerStepPoints            : tracker
       minHits                      : 5

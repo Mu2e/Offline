@@ -24,6 +24,12 @@ double ds.frontHalfLength    =   15.;
 string ds.materialName       = "StainlessSteel";
 string ds.insideMaterialName = "DSVacuum";
 
+// Test geometry added for Jim Miller for study of absorbing radiation in DS
+bool   ds.hasInnerLining     = false;
+double ds.innerLiningThickness = 10.0; // mm
+string ds.innerLiningMaterial  = "G4_Li"; // 
+
+
 // The shield
 string dsShield.materialName       = "G4_Al";
 string dsShield.insideMaterialName = "DSVacuum";

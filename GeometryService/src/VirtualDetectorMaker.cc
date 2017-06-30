@@ -211,7 +211,10 @@ namespace mu2e {
         // which has a different offset. We will use the global offset
         // here (!) as DS is not in the geometry service yet
 
+
         Hep3Vector vdTTMidOffset(0.,0.,0.);
+	// Version 4 adds brass rings in TTracker, have to move vd to the side
+	if ( c.getBool("TTrackerHasBrassRings",false) ) vdTTMidOffset.setZ(10.1);
 
         vd->addVirtualDetector( VirtualDetectorId::TT_Mid,
                                  ttOffset, 0, vdTTMidOffset);

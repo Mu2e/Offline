@@ -139,7 +139,7 @@ physics : {
 	    TimeSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
 	    HelixFitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
 	    KalmanFitSelectionBits : []
-	    BackgroundSelectionBits : []#"DeltaRay","Isolated"]
+	    BackgroundSelectionBits : []#"Background","Isolated"]
 	}
 
 	makeCaloCluster: {

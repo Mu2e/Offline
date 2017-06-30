@@ -14,7 +14,7 @@ FitDir : {
 # Hit Filters; these should be in the same package as the modules FIXME!
 FSHPreStereo  : {
   module_type : FlagStrawHits
-  StrawHitPositionCollectionLabel : ""
+  StrawHitPositionCollectionTag : ""
   maximumEnergy : 0.01
 }
 
@@ -62,8 +62,6 @@ RobustHelixFinder : {
   # MVA parameters for outlier filtering
   HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
   HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
-  CenterRadiusCorrection : []
-  RadiusCorrection : []
 }
 
 # we need both positive and negative helicity helix finders

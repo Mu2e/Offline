@@ -211,7 +211,7 @@ physics.producers.CaloReadoutHitsMaker.g4ModuleLabel : g4run
 physics.producers.CalPatRec.minClusterEnergy         : 60.
 physics.producers.CalPatRec. minClusterSize          : 2
 physics.producers.CalPatRec.HelixFit.distPatRec      : 100.
-physics.producers.CalPatRec.BackgroundSelectionBits  : ["DeltaRay","Isolated"]
+physics.producers.CalPatRec.BackgroundSelectionBits  : ["Background","Isolated"]
 
 
 physics.producers.TrkExtrapol.fitterModuleLabel      : MergePatRec

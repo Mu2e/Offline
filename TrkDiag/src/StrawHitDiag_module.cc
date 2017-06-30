@@ -82,7 +82,7 @@ namespace mu2e
       Float_t _mcedep;
       Float_t _pdist,_pperp,_pmom;
       Float_t _mctime, _mcptime;
-      Int_t _esel,_rsel, _timesel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk;
+      Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
       Int_t _plane, _panel, _layer, _straw;
       Float_t _shwres, _shtres, _shchisq, _shdt, _shdist;
       Bool_t _mcxtalk;
@@ -106,9 +106,6 @@ namespace mu2e
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::TrkPatRec: data missing or incomplete"<< endl;
     }
-// update time maps
-    _toff.updateMap(event);
-
     fillStrawHitDiag();
   }
   bool StrawHitDiag::findData(const art::Event& evt){
@@ -152,34 +149,9 @@ namespace mu2e
     _shdiag->Branch("panel",&_panel,"panel/I");
     _shdiag->Branch("layer",&_layer,"layer/I");
     _shdiag->Branch("straw",&_straw,"straw/I");
-    _shdiag->Branch("mcshpos",&_mcshp,"x/F:y/F:z/F");
-    _shdiag->Branch("mcopos",&_mcop,"x/F:y/F:z/F");
-    _shdiag->Branch("mcpopos",&_mcpop,"x/F:y/F:z/F");
-    _shdiag->Branch("mcoe",&_mcoe,"F");
-    _shdiag->Branch("mcom",&_mcom,"F");
-    _shdiag->Branch("mcpoe",&_mcpoe,"F");
-    _shdiag->Branch("mcpom",&_mcpom,"F");
-    _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
-    _shdiag->Branch("mcshd",&_mcshd,"mcshd/F");
-    _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
-    _shdiag->Branch("nmcsteps",&_nmcsteps,"nmcsteps/I");
-    _shdiag->Branch("mcnunique",&_mcnunique,"mcnunique/I");
-    _shdiag->Branch("mcnmax",&_mcnmax,"mcnmax/I");
-    _shdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
-    _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
-    _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
-    _shdiag->Branch("mctime",&_mctime,"mctime/F");
-    _shdiag->Branch("mcppdg",&_mcppdg,"mcpdg/I");
-    _shdiag->Branch("mcpproc",&_mcpproc,"mcpproc/I");
-    _shdiag->Branch("mcptime",&_mcptime,"mcptime/F");
-    _shdiag->Branch("mcgid",&_mcgid,"mcgid/I");
-    _shdiag->Branch("mcgpdg",&_mcgpdg,"mcgpdg/I");
-    _shdiag->Branch("mcge",&_mcge,"mcge/F");
-    _shdiag->Branch("mcgt",&_mcgt,"mcgt/F");
-    _shdiag->Branch("mcgpos",&_mcgpos,"x/F:y/F:z/F");
     _shdiag->Branch("esel",&_esel,"esel/I");
     _shdiag->Branch("rsel",&_rsel,"rsel/I");
-    _shdiag->Branch("tsel",&_timesel,"tsel/I");
+    _shdiag->Branch("tsel",&_tsel,"tsel/I");
     _shdiag->Branch("bkgclust",&_bkgclust,"bkgclust/I");
     _shdiag->Branch("bkg",&_bkg,"bkg/I");
     _shdiag->Branch("stereo",&_stereo,"stereo/I");
@@ -187,6 +159,7 @@ namespace mu2e
     _shdiag->Branch("strawxtalk",&_strawxtalk,"strawxtalk/I");
     _shdiag->Branch("elecxtalk",&_elecxtalk,"elecxtalk/I");
     _shdiag->Branch("isolated",&_isolated,"isolated/I");
+    _shdiag->Branch("calosel",&_calosel,"calosel/I");
     _shdiag->Branch("pdist",&_pdist,"pdist/F");
     _shdiag->Branch("pperp",&_pperp,"pperp/F");
     _shdiag->Branch("pmom",&_pmom,"pmom/F");
@@ -195,7 +168,34 @@ namespace mu2e
     _shdiag->Branch("shchisq",&_shchisq,"shchisq/F");
     _shdiag->Branch("shdt",&_shdt,"shdt/F");
     _shdiag->Branch("shdist",&_shdist,"shdist/F");
-    _shdiag->Branch("mcxtalk",&_mcxtalk,"mcxtalk/B");
+    if(_mcdiag){
+      _shdiag->Branch("mcshpos",&_mcshp,"x/F:y/F:z/F");
+      _shdiag->Branch("mcopos",&_mcop,"x/F:y/F:z/F");
+      _shdiag->Branch("mcpopos",&_mcpop,"x/F:y/F:z/F");
+      _shdiag->Branch("mcoe",&_mcoe,"F");
+      _shdiag->Branch("mcom",&_mcom,"F");
+      _shdiag->Branch("mcpoe",&_mcpoe,"F");
+      _shdiag->Branch("mcpom",&_mcpom,"F");
+      _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
+      _shdiag->Branch("mcshd",&_mcshd,"mcshd/F");
+      _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
+      _shdiag->Branch("nmcsteps",&_nmcsteps,"nmcsteps/I");
+      _shdiag->Branch("mcnunique",&_mcnunique,"mcnunique/I");
+      _shdiag->Branch("mcnmax",&_mcnmax,"mcnmax/I");
+      _shdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
+      _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
+      _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
+      _shdiag->Branch("mctime",&_mctime,"mctime/F");
+      _shdiag->Branch("mcppdg",&_mcppdg,"mcpdg/I");
+      _shdiag->Branch("mcpproc",&_mcpproc,"mcpproc/I");
+      _shdiag->Branch("mcptime",&_mcptime,"mcptime/F");
+      _shdiag->Branch("mcgid",&_mcgid,"mcgid/I");
+      _shdiag->Branch("mcgpdg",&_mcgpdg,"mcgpdg/I");
+      _shdiag->Branch("mcge",&_mcge,"mcge/F");
+      _shdiag->Branch("mcgt",&_mcgt,"mcgt/F");
+      _shdiag->Branch("mcgpos",&_mcgpos,"x/F:y/F:z/F");
+      _shdiag->Branch("mcxtalk",&_mcxtalk,"mcxtalk/B");
+    }
   }
 
   void StrawHitDiag::fillStrawHitDiag() {
@@ -221,7 +221,8 @@ namespace mu2e
       _tdiv = shp.flag().hasAllProperties(StrawHitFlag::tdiv);
       _esel = shf.hasAllProperties(StrawHitFlag::energysel);
       _rsel = shf.hasAllProperties(StrawHitFlag::radsel);
-      _timesel = shf.hasAllProperties(StrawHitFlag::timesel);
+      _tsel = shf.hasAllProperties(StrawHitFlag::timesel);
+      _calosel = shf.hasAllProperties(StrawHitFlag::calosel);
       _strawxtalk = shf.hasAllProperties(StrawHitFlag::strawxtalk);
       _elecxtalk = shf.hasAllProperties(StrawHitFlag::elecxtalk);
       _isolated = shf.hasAllProperties(StrawHitFlag::isolated);

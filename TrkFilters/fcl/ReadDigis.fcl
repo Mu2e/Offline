@@ -48,7 +48,8 @@ physics.PHTrigPath : [ @sequence::Tracking.Trigger.PosHelixFilterSequence ]
 
 physics.DeMSeedTrigPath : [ @sequence::Tracking.Trigger.DeMSeedFilterSequence ]
 
-physics.DeMKalTrigPath : [ @sequence::Tracking.Trigger.DeMKalFilterSequence ]
+#physics.DeMKalTrigPath : [ @sequence::Tracking.Trigger.DeMKalFilterSequence ]
+physics.UeMSeedTrigPath : [ @sequence::Tracking.Trigger.UeMSeedFilterSequence ] 
 
 # analysis path: this is for monitoring only
 physics.ReadDigisEndPath : [ TrkTriggerDiag ]

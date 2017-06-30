@@ -11,6 +11,11 @@
 // 1) This code new's many objects of type G4Material.  The lifeime
 //    of these objects is controlled within G4.  We must never
 //    delete them.
+// 2) (DNB Louisville).  Because of the large number of materials, we
+//    have split the function for building Mu2e material into two
+//    functions, which I have unimaginatively named 
+//    constructMu2eMaterials and constructMu2eMaterials2.  New materials
+//    should be added to the latter.
 //
 
 // C++ includes
@@ -327,6 +332,20 @@ namespace mu2e {
       Polyetheretherketone->AddMaterial(findMaterialOrThrow("G4_O"), 0.081081);
     }
 
+    //  FEP, AKA Teflon FEP, AKA flourinated ethylene propylene.
+    //  Used, among other places, in signal cable insulation.
+    //  Here, specifically treating as an equal mix of 
+    //  tetraflouroethylene and hexaflouropropylene (the manufacturers
+    //  tend to protect the specifics).  So that's C2F4 + C3F6 = C5F10
+
+    mat = uniqueMaterialOrThrow( "TeflonFEP" );
+    {
+      G4Material* TeflonFEP = new G4Material(mat.name, 2.14*CLHEP::g/CLHEP::cm3, 2);
+      TeflonFEP->AddElement( getElementOrThrow("C"), 5 );
+      TeflonFEP->AddElement( getElementOrThrow("F"), 10);
+    }
+
+
     // Stainless Steel (Medical Physics, Vol 25, No 10, Oct 1998) based on brachytherapy example
     // FIXME is there a better reference?
     mat = uniqueMaterialOrThrow( "StainlessSteel");
@@ -377,6 +396,24 @@ namespace mu2e {
       G4Material* RackSteel = new G4Material( mat.name, 8.05*CLHEP::g/CLHEP::cm3, 2);
       RackSteel->AddMaterial(findMaterialOrThrow("G4_Al"),0.985);
       RackSteel->AddMaterial(findMaterialOrThrow("G4_C"), 0.015);
+    }
+
+    // Inconel 718 alloy.  Taken from http://www.matweb.com/
+    // Only building from elements that comprise more than 0.1% of it composition
+    mat = uniqueMaterialOrThrow( "Inconel718" );
+    {
+      G4Material* Inconel718 = new G4Material( mat.name, 8.19*CLHEP::g/CLHEP::cm3, 11);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Al"),0.005);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Cr"),0.190);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Co"),0.010);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Cu"),0.003);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Fe"),0.170);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Mn"),0.003);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Mo"),0.030);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Ni"),0.527);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Nb"),0.052);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Si"),0.003);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Ti"),0.007);
     }
 
     // Bronze used in the HRS.  Formally, Bronze C63200.
@@ -553,6 +590,20 @@ namespace mu2e {
       G10Lite->AddMaterial(findMaterialOrThrow("G10"),1.0);
     }
 
+
+    // DC 704 diffusion pump oil.  The DC stands for Dow-Corning, though
+    // many brands produce the same "704" pump oil.  Chemical
+    // name is tetraphenyl tetramethyl trisiloxane, C28H32O2Si3
+    // Information from http://www.sigmaaldrich.com/catalog/product/aldrich/445975?lang=en&region=US  on 24 June 2017.
+
+    mat = uniqueMaterialOrThrow( "DC704" );
+    {
+      G4Material* DC704 = new G4Material( mat.name, 1.07*CLHEP::g/CLHEP::cm3,4);
+      DC704->AddElement(getElementOrThrow("C"),28);
+      DC704->AddElement(getElementOrThrow("H"),32);
+      DC704->AddElement(getElementOrThrow("O"),2);
+      DC704->AddElement(getElementOrThrow("Si"),3);
+    }
 
     mat = uniqueMaterialOrThrow( "Electronics" );
     {

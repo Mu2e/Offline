@@ -64,7 +64,7 @@ CalPatRec : {
 	debugLevel2                             : 0
 	diagLevel                               : 0
 	HelixFitSelectionBits                   : ["EnergySelection","TimeSelection","RadiusSelection"]
-	BackgroundSelectionBits                 : ["DeltaRay"]
+	BackgroundSelectionBits                 : ["Background"]
 	minNHit                                 : 10      # minimal number of hits on found helix
 	hitChi2Max                              : 25.
 	mostProbableDfDz                        : 0.00475
@@ -412,7 +412,7 @@ CalPatRec : { @table::CalPatRec
 	    StrawHitCollectionLabel         : makeSH
 	    StrawHitPositionCollectionLabel : CalPatRecMakeStereoHits
 	    minimumRadius                   : 380.            # mm
-	    maximumRadius                   : [700., 700. ]   # mm
+	    maximumRadius                   : 700.  # mm
 	    maximumEnergy                   : 0.005           # 5 KeV, in MeV
 	}
 
@@ -512,7 +512,7 @@ CalPatRec : { @table::CalPatRec
 	    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
 	    caloClusterModuleLabel                      : CaloClusterFromProtoCluster
 #	    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
-#	    BackgroundSelectionBits                     : ["DeltaRay", "Isolated"]
+#	    BackgroundSelectionBits                     : ["Background", "Isolated"]
 	    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection"]
 	    BackgroundSelectionBits                     : ["Background"]
 	    MinNHits                                    : 15

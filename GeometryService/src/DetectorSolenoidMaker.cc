@@ -34,6 +34,11 @@ namespace mu2e {
     ds->_endWallHalfLength = c.getDouble("ds.endWallHalfLength");
     ds->_frontHalfLength   = c.getDouble("ds.frontHalfLength");
 
+    // experimental inner lining for shielding
+    ds->_hasInnerLining = c.getBool("ds.hasInnerLining",false);
+    ds->_innerLiningThickness = c.getDouble("ds.innerLiningThickness",0.0)*CLHEP::mm;
+    ds->_innerLiningMaterial = c.getString("ds.innerLiningMaterial","None");
+
     // DS shield
     ds->_shield_materialName       = c.getString("dsShield.materialName");
     ds->_shield_insideMaterialName = c.getString("dsShield.insideMaterialName");

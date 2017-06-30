@@ -32,12 +32,16 @@ Tracking.filters : {
     module_type : SeedFilter
     KalSeedCollection : "KFFDeM"
   }
+# filters for upstream electron backgrounds (cosmic rays)
+  UeMSeedFilter : {
+    module_type : SeedFilter
+    KalSeedCollection : "KSFUeM"
+  }
 # Other filters FIXME!!
-# filters for  upstream-going negative electrons near the CE energy
 # calibration filters
 # reflecting cosmic filters
 # low-momentum electron filters
-#low-field running filters
+# low-field running filters
 #  Prescaling filters
   TCPrescale : {
     module_type : PrescaleEvent
@@ -54,6 +58,7 @@ Tracking.Trigger : {
   TCFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter,  TCPrescale  ]
   PosHelixFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, PosHelixFinder, PosHelixFilter, PosHelixPrescale   ]
   DeMSeedFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, PosHelixFinder, PosHelixFilter, KSFDeM, DeMSeedFilter ]
+  UeMSeedFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, NegHelixFinder, NegHelixFilter, KSFUeM, UeMSeedFilter ]
   DeMKalFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, PosHelixFinder, PosHelixFilter, KSFDeM, DeMSeedFilter, KFFDeM, DeMKalFilter ]
 # add sequences for upstream, calibration, ...  FIXME!
 }

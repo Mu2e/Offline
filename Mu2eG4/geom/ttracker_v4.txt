@@ -9,6 +9,8 @@ bool hasTTracker      = true;
 // Tell the TTracker object that we using the detailed support structure.
 string ttrackerSupport.model = "detailedv0";
 int TTrackerVersion   = 3;
+bool TTrackerHasBrassRings = true;
+
 int    ttracker.verbosityLevel     =    0;
 bool   ttracker.doSurfaceCheck     = false;
 // Mother to hold all straws and supports.

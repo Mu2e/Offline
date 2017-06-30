@@ -1,0 +1,1428 @@
+// Original author David Norvil Brown, University of Louisville
+// Numbers based on Mu2e geometry as of March 2016
+// See Mu2e docdb #4678 for more details on parameters
+
+// Sort boxes into "types"
+int Pipe.numberOfPipeTypes = 23;
+
+// How many of each type box to make, and how many components in each.
+int Pipe.nPipeType1 = 0;  // long straight pipe sections in West wall relief
+int Pipe.nComponentsInType1 = 0;
+int Pipe.nPipeType2 = 1;  // 11 in PS-TS_Sheild.txt   
+int Pipe.nComponentsInType2 = 10;
+int Pipe.nPipeType3 = 1;  // 12 in PS-TS_Shield.txt    
+int Pipe.nComponentsInType3 = 10;
+int Pipe.nPipeType4 = 1;  // 13 in PS-TS_Sheild.txt
+int Pipe.nComponentsInType4 = 10;
+int Pipe.nPipeType5 = 1;  // 21 in PS-TS_Sheild.txt 
+int Pipe.nComponentsInType5 = 10;
+int Pipe.nPipeType6 = 1;  // 22 in PS-TS_Sheild.txt 
+int Pipe.nComponentsInType6 = 10;
+int Pipe.nPipeType7 = 1;  // 23 in PS-TS_Sheild.txt 
+int Pipe.nComponentsInType7 = 10;
+int Pipe.nPipeType8 = 1;  // 24 in PS-TS_Sheild.txt 
+int Pipe.nComponentsInType8 = 10;
+int Pipe.nPipeType9 = 1;  // 25 in PS-TS_Sheild.txt 
+int Pipe.nComponentsInType9 = 10;
+int Pipe.nPipeType10 = 1; // 26 in PS-TS_Sheild.txt 
+int Pipe.nComponentsInType10 = 10;
+int Pipe.nPipeType11 = 1; // 31 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType11 = 10;
+int Pipe.nPipeType12 = 1; // 32 in PS-TS_Sheild.txt                    
+int Pipe.nComponentsInType12 = 10;
+int Pipe.nPipeType13 = 1; // 33 in PS-TS_Sheild.txt                    
+int Pipe.nComponentsInType13 = 10;
+int Pipe.nPipeType14 = 1; // 34 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType14 = 10;
+int Pipe.nPipeType15 = 1; // 35 in PS-TS_Sheild.txt                    
+int Pipe.nComponentsInType15 = 10;
+int Pipe.nPipeType16 = 1; // 36 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType16 = 10;
+int Pipe.nPipeType17 = 1; // 37 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType17 = 10;
+int Pipe.nPipeType18 = 1; // 41 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType18 = 10;
+int Pipe.nPipeType19 = 1; // 42 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType19 = 10;
+int Pipe.nPipeType20 = 1; // 43 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType20 = 10;
+int Pipe.nPipeType21 = 1; // 44 in PS-TS_Sheild.txt                     
+int Pipe.nComponentsInType21 = 10;
+int Pipe.nPipeType22 = 16; //bend that connects pipes 
+int Pipe.nComponentsInType22 = 1;
+ //lN2 and lHe supply and return lines in west
+         // wall relief
+int Pipe.nPipeType23 = 6; // Crude model of diffusion pumps
+int Pipe.nComponentsInType23 = 1;
+
+// Lengths in w dimension for each type of pipe.  Dimensions should be in mm.
+double Pipe.lengthType1 = 11875;
+double Pipe.lengthType2 = 3632.48; // 4254.48;
+double Pipe.lengthType3 = 12721.18;
+double Pipe.lengthType4 = 745.98;
+double Pipe.lengthType5 = 2438.68; //3060.68;
+double Pipe.lengthType6 = 2387.58;
+double Pipe.lengthType7 = 965.18;
+double Pipe.lengthType8 = 10861.58;
+double Pipe.lengthType9 = 1849.48;
+double Pipe.lengthType10 = 939.78;
+double Pipe.lengthType11 = 3632.48; //4254.48;
+double Pipe.lengthType12 = 2317.58;
+double Pipe.lengthType13 = 14274.78;
+double Pipe.lengthType14 = 1339.98;
+double Pipe.lengthType15 = 965.18;
+double Pipe.lengthType16 = 812.78;
+double Pipe.lengthType17 = 2893.38;
+double Pipe.lengthType18 = 7772.68; // 8394.68;
+double Pipe.lengthType19 = 4851.38;
+double Pipe.lengthType20 = 1491.88;
+double Pipe.lengthType21 = 2178.18;
+double Pipe.lengthType22 = 127.01; //radius of torus
+double Pipe.lengthType23 = 1700.0;  // Guess based on blueprint in doc-8048-v4
+
+// long straight pipe sections in West wall relief
+
+// Flavor of the type.  Here, flavor means "straight" (default) or "bend".
+string Pipe.flavorType1 = "straight";
+string Pipe.flavorType2 = "straight";
+string Pipe.flavorType3 = "straight";
+string Pipe.flavorType4 = "straight";
+string Pipe.flavorType5 = "straight";
+string Pipe.flavorType6 = "straight";
+string Pipe.flavorType7 = "straight";
+string Pipe.flavorType8 = "straight";
+string Pipe.flavorType9 = "straight";
+string Pipe.flavorType10 = "straight";
+string Pipe.flavorType11 = "straight";
+string Pipe.flavorType12 = "straight";
+string Pipe.flavorType13 = "straight";
+string Pipe.flavorType14 = "straight";
+string Pipe.flavorType15 = "straight";
+string Pipe.flavorType16 = "straight";
+string Pipe.flavorType17 = "straight";
+string Pipe.flavorType18 = "straight";
+string Pipe.flavorType19 = "straight";
+string Pipe.flavorType20 = "straight";
+string Pipe.flavorType21 = "straight";
+string Pipe.flavorType22 = "bend";
+string Pipe.flavorType23 = "straight";
+
+// Fill material of the type
+string Pipe.fillMaterialType1 = "G10Lite";
+string Pipe.fillMaterialType2 = "G10Lite";
+string Pipe.fillMaterialType3 = "G10Lite";
+string Pipe.fillMaterialType4 = "G10Lite";
+string Pipe.fillMaterialType5 = "G10Lite";
+string Pipe.fillMaterialType6 = "G10Lite";
+string Pipe.fillMaterialType7 = "G10Lite";
+string Pipe.fillMaterialType8 = "G10Lite";
+string Pipe.fillMaterialType9 = "G10Lite";
+string Pipe.fillMaterialType10 = "G10Lite";
+string Pipe.fillMaterialType11 = "G10Lite";
+string Pipe.fillMaterialType12 = "G10Lite";
+string Pipe.fillMaterialType13 = "G10Lite";
+string Pipe.fillMaterialType14 = "G10Lite";
+string Pipe.fillMaterialType15 = "G10Lite";
+string Pipe.fillMaterialType16 = "G10Lite";
+string Pipe.fillMaterialType17 = "G10Lite";
+string Pipe.fillMaterialType18 = "G10Lite";
+string Pipe.fillMaterialType19 = "G10Lite";
+string Pipe.fillMaterialType20 = "G10Lite";
+string Pipe.fillMaterialType21 = "G10Lite";
+string Pipe.fillMaterialType22 = "G10Lite";
+string Pipe.fillMaterialType23 = "DC704"; // pump oil - crude model, excuse pun
+
+// The position of the piece in Mu2e Offline coordinates
+
+vector<double> Pipe.centerType1Pipe1 = {-4390,2488.13,-3911.6}; // straight pipe,
+// West wall relief, top
+vector<double> Pipe.centerType1Pipe2 = {-4390,1294.43,-3911.6}; // straight pipe,
+// West wall relief, bottom
+// Pipes added from PS-TS_Shield.txt
+vector<double> Pipe.centerType2Pipe1 = {-10076.2,3237.68,-3911.6};//{-10076.2,3548.68,-3911.6};
+vector<double> Pipe.centerType3Pipe1 = {-3588.6,1294.43,-3911.6};
+vector<double> Pipe.centerType4Pipe1 = {2899,1294.43,-4411.6};
+vector<double> Pipe.centerType5Pipe1 = {-10076.2,3834.48,-2692.4};//{-10076.2,4145.48,-2692.4};
+vector<double> Pipe.centerType6Pipe1 = {-8755.4,2488.13,-2692.4};
+vector<double> Pipe.centerType7Pipe1 = {-7434.6,2488.13,-3302};
+vector<double> Pipe.centerType8Pipe1 = {-1876.8,2488.13,-3911.6};
+vector<double> Pipe.centerType9Pipe1 = {3681,2488.13,-2859.85};
+vector<double> Pipe.centerType10Pipe1 = {3681,1891.23,-1808.1};
+vector<double> Pipe.centerType11Pipe1 = {-10076.2,3237.68,-1473.2};//{-10076.2,3548.68,-1473.2};
+vector<double> Pipe.centerType12Pipe1 = {-8790.4,1294.43,-1473.2};
+vector<double> Pipe.centerType13Pipe1 = {-7504.6,1294.43,5791.2};
+vector<double> Pipe.centerType14Pipe1 = {-6707.6,1294.43,13055.6};
+vector<double> Pipe.centerType15Pipe1 = {-5910.6,1294.43,12446};
+vector<double> Pipe.centerType16Pipe1 = {-5377.2,1294.43,11836.4};
+vector<double> Pipe.centerType17Pipe1 = {-4843.8,1294.43,10262.7};
+vector<double> Pipe.centerType18Pipe1 = {-10076.2,1167.58,-254.0};//{-10076.2,1478.58,-254.0};
+vector<double> Pipe.centerType19Pipe1 = {-7523.5,-2845.77,-254.0};
+vector<double> Pipe.centerType20Pipe1 = {-4970.8,-1972.82,-254.0};
+vector<double> Pipe.centerType21Pipe1 = {-4326.02,-1099.87,777.13};
+vector<double> Pipe.centerType22Pipe1 = {-6037.61,1294.43,12928.59};
+vector<double> Pipe.centerType22Pipe2 = {-5783.59,1294.43,11963.41};
+vector<double> Pipe.centerType22Pipe3 = {-4970.81,1294.43,11709.39};
+vector<double> Pipe.centerType22Pipe4 = {-7377.59,1294.43,12928.59};
+vector<double> Pipe.centerType22Pipe5 = {-7631.61,1294.43,-1346.19};
+vector<double> Pipe.centerType22Pipe6 = {-9949.19,1421.44,-1473.2};
+vector<double> Pipe.centerType22Pipe7 = {-5097.81,-2718.76,-254.0};
+vector<double> Pipe.centerType22Pipe8 = {-9949.19,-2718.76,-254.0};
+vector<double> Pipe.centerType22Pipe9 = {-9949.19,2615.14,-2692.4};
+vector<double> Pipe.centerType22Pipe10 = {-9949.19,1421.44,-3911.6};
+vector<double> Pipe.centerType22Pipe11 = {-7561.61,2488.13,-2819.41};
+vector<double> Pipe.centerType22Pipe12 = {-7307.59,2488.13,-3784.59};
+vector<double> Pipe.centerType22Pipe13 = {2771.99,1294.43,-4038.61};
+vector<double> Pipe.centerType22Pipe14 = {3553.99,2488.13,-3784.59};
+vector<double> Pipe.centerType22Pipe15 = {3681,2361.12,-1935.11};
+vector<double> Pipe.centerType22Pipe16 = {-4903.2,-1226.88,-146.5};
+
+vector<double> Pipe.centerType23Pipe1 = { -2664.0,50.0,14600.0 };
+vector<double> Pipe.centerType23Pipe2 = { -2664.0,50.0,16000.0 };
+vector<double> Pipe.centerType23Pipe3 = { -5144.0,50.0,14600.0 };
+vector<double> Pipe.centerType23Pipe4 = { -5144.0,50.0,16000.0 };
+vector<double> Pipe.centerType23Pipe5 = {  8500.0,50.0,-7900.0 };
+vector<double> Pipe.centerType23Pipe6 = {  8500.0,50.0,-7400.0 };
+
+
+// The orientation of the pipe.  See docdb xxxx for details.
+string Pipe.orientationType1Pipe1 = "030";
+string Pipe.orientationType1Pipe2 = "030";
+string Pipe.orientationType2Pipe1 = "100";
+string Pipe.orientationType3Pipe1 = "010";
+string Pipe.orientationType4Pipe1 = "000";
+string Pipe.orientationType5Pipe1 = "100";
+string Pipe.orientationType6Pipe1 = "010";
+string Pipe.orientationType7Pipe1 = "000";
+string Pipe.orientationType8Pipe1 = "010";
+string Pipe.orientationType9Pipe1 = "000";
+string Pipe.orientationType10Pipe1 = "100";
+string Pipe.orientationType11Pipe1 = "100";
+string Pipe.orientationType12Pipe1 = "010";
+string Pipe.orientationType13Pipe1 = "000";
+string Pipe.orientationType14Pipe1 = "010";
+string Pipe.orientationType15Pipe1 = "000";
+string Pipe.orientationType16Pipe1 = "010";
+string Pipe.orientationType17Pipe1 = "000";
+string Pipe.orientationType18Pipe1 = "100";
+string Pipe.orientationType19Pipe1 = "010";
+string Pipe.orientationType20Pipe1 = "100";
+string Pipe.orientationType21Pipe1 = "060";
+string Pipe.orientationType22Pipe1 = "100";
+string Pipe.orientationType22Pipe2 = "320";
+string Pipe.orientationType22Pipe3 = "100";
+string Pipe.orientationType22Pipe4 = "120";
+string Pipe.orientationType22Pipe5 = "300";
+string Pipe.orientationType22Pipe6 = "002";
+string Pipe.orientationType22Pipe7 = "003";
+string Pipe.orientationType22Pipe8 = "002";
+string Pipe.orientationType22Pipe9 = "002";
+string Pipe.orientationType22Pipe10 = "002";
+string Pipe.orientationType22Pipe11 = "100";
+string Pipe.orientationType22Pipe12 = "320";
+string Pipe.orientationType22Pipe13 = "100";
+string Pipe.orientationType22Pipe14 = "300";
+string Pipe.orientationType22Pipe15 = "030";
+string Pipe.orientationType22Pipe16 = "0b0";
+string Pipe.orientationType23Pipe1 = "100";
+string Pipe.orientationType23Pipe2 = "100";
+string Pipe.orientationType23Pipe3 = "100";
+string Pipe.orientationType23Pipe4 = "100";
+string Pipe.orientationType23Pipe5 = "100";
+string Pipe.orientationType23Pipe6 = "100";
+
+// Now the component information
+
+// Radii in mm
+// First, inner radii
+double Pipe.rInType1Comp1 = 124.23; 
+double Pipe.rInType1Comp2 = 100.015; 
+double Pipe.rInType1Comp3 = 11.05; 
+double Pipe.rInType1Comp4 = 11.05; 
+double Pipe.rInType1Comp5 = 11.05; 
+double Pipe.rInType1Comp6 = 11.05; 
+double Pipe.rInType1Comp7 = 17.4; 
+double Pipe.rInType1Comp8 = 14.224; 
+double Pipe.rInType1Comp9 = 9.464; 
+double Pipe.rInType1Comp10 = 9.464; 
+
+double Pipe.rInType2Comp1 = 124.23;
+double Pipe.rInType2Comp2 = 100.015; 
+double Pipe.rInType2Comp3 = 11.05; 
+double Pipe.rInType2Comp4 = 11.05; 
+double Pipe.rInType2Comp5 = 11.05; 
+double Pipe.rInType2Comp6 = 11.05; 
+double Pipe.rInType2Comp7 = 17.4; 
+double Pipe.rInType2Comp8 = 14.224; 
+double Pipe.rInType2Comp9 = 9.464; 
+double Pipe.rInType2Comp10 = 9.464; 
+
+double Pipe.rInType3Comp1 = 124.23;
+double Pipe.rInType3Comp2 = 100.015; 
+double Pipe.rInType3Comp3 = 11.05; 
+double Pipe.rInType3Comp4 = 11.05; 
+double Pipe.rInType3Comp5 = 11.05; 
+double Pipe.rInType3Comp6 = 11.05; 
+double Pipe.rInType3Comp7 = 17.4; 
+double Pipe.rInType3Comp8 = 14.224; 
+double Pipe.rInType3Comp9 = 9.464; 
+double Pipe.rInType3Comp10 = 9.464; 
+
+double Pipe.rInType4Comp1 = 124.23;
+double Pipe.rInType4Comp2 = 100.015; 
+double Pipe.rInType4Comp3 = 11.05; 
+double Pipe.rInType4Comp4 = 11.05; 
+double Pipe.rInType4Comp5 = 11.05; 
+double Pipe.rInType4Comp6 = 11.05; 
+double Pipe.rInType4Comp7 = 17.4; 
+double Pipe.rInType4Comp8 = 14.224; 
+double Pipe.rInType4Comp9 = 9.464; 
+double Pipe.rInType4Comp10 = 9.464; 
+
+double Pipe.rInType5Comp1 = 124.23;
+double Pipe.rInType5Comp2 = 100.015; 
+double Pipe.rInType5Comp3 = 11.05; 
+double Pipe.rInType5Comp4 = 11.05; 
+double Pipe.rInType5Comp5 = 11.05; 
+double Pipe.rInType5Comp6 = 11.05; 
+double Pipe.rInType5Comp7 = 17.4; 
+double Pipe.rInType5Comp8 = 14.224; 
+double Pipe.rInType5Comp9 = 9.464; 
+double Pipe.rInType5Comp10 = 9.464; 
+
+double Pipe.rInType6Comp1 = 124.23;
+double Pipe.rInType6Comp2 = 100.015; 
+double Pipe.rInType6Comp3 = 11.05; 
+double Pipe.rInType6Comp4 = 11.05; 
+double Pipe.rInType6Comp5 = 11.05; 
+double Pipe.rInType6Comp6 = 11.05; 
+double Pipe.rInType6Comp7 = 17.4; 
+double Pipe.rInType6Comp8 = 14.224; 
+double Pipe.rInType6Comp9 = 9.464; 
+double Pipe.rInType6Comp10 = 9.464; 
+
+double Pipe.rInType7Comp1 = 124.23;
+double Pipe.rInType7Comp2 = 100.015; 
+double Pipe.rInType7Comp3 = 11.05; 
+double Pipe.rInType7Comp4 = 11.05; 
+double Pipe.rInType7Comp5 = 11.05; 
+double Pipe.rInType7Comp6 = 11.05; 
+double Pipe.rInType7Comp7 = 17.4; 
+double Pipe.rInType7Comp8 = 14.224; 
+double Pipe.rInType7Comp9 = 9.464; 
+double Pipe.rInType7Comp10 = 9.464; 
+
+double Pipe.rInType8Comp1 = 124.23;
+double Pipe.rInType8Comp2 = 100.015; 
+double Pipe.rInType8Comp3 = 11.05; 
+double Pipe.rInType8Comp4 = 11.05; 
+double Pipe.rInType8Comp5 = 11.05; 
+double Pipe.rInType8Comp6 = 11.05; 
+double Pipe.rInType8Comp7 = 17.4; 
+double Pipe.rInType8Comp8 = 14.224; 
+double Pipe.rInType8Comp9 = 9.464; 
+double Pipe.rInType8Comp10 = 9.464; 
+
+double Pipe.rInType9Comp1 = 124.23;
+double Pipe.rInType9Comp2 = 100.015; 
+double Pipe.rInType9Comp3 = 11.05; 
+double Pipe.rInType9Comp4 = 11.05; 
+double Pipe.rInType9Comp5 = 11.05; 
+double Pipe.rInType9Comp6 = 11.05; 
+double Pipe.rInType9Comp7 = 17.4; 
+double Pipe.rInType9Comp8 = 14.224; 
+double Pipe.rInType9Comp9 = 9.464; 
+double Pipe.rInType9Comp10 = 9.464; 
+
+double Pipe.rInType10Comp1 = 124.23;
+double Pipe.rInType10Comp2 = 100.015; 
+double Pipe.rInType10Comp3 = 11.05; 
+double Pipe.rInType10Comp4 = 11.05; 
+double Pipe.rInType10Comp5 = 11.05; 
+double Pipe.rInType10Comp6 = 11.05; 
+double Pipe.rInType10Comp7 = 17.4; 
+double Pipe.rInType10Comp8 = 14.224; 
+double Pipe.rInType10Comp9 = 9.464; 
+double Pipe.rInType10Comp10 = 9.464; 
+
+double Pipe.rInType11Comp1 = 124.23;
+double Pipe.rInType11Comp2 = 100.015; 
+double Pipe.rInType11Comp3 = 11.05; 
+double Pipe.rInType11Comp4 = 11.05; 
+double Pipe.rInType11Comp5 = 11.05; 
+double Pipe.rInType11Comp6 = 11.05; 
+double Pipe.rInType11Comp7 = 17.4; 
+double Pipe.rInType11Comp8 = 14.224; 
+double Pipe.rInType11Comp9 = 9.464; 
+double Pipe.rInType11Comp10 = 9.464; 
+
+double Pipe.rInType12Comp1 = 124.23;
+double Pipe.rInType12Comp2 = 100.015; 
+double Pipe.rInType12Comp3 = 11.05; 
+double Pipe.rInType12Comp4 = 11.05; 
+double Pipe.rInType12Comp5 = 11.05; 
+double Pipe.rInType12Comp6 = 11.05; 
+double Pipe.rInType12Comp7 = 17.4; 
+double Pipe.rInType12Comp8 = 14.224; 
+double Pipe.rInType12Comp9 = 9.464; 
+double Pipe.rInType12Comp10 = 9.464; 
+
+double Pipe.rInType13Comp1 = 124.23;
+double Pipe.rInType13Comp2 = 100.015; 
+double Pipe.rInType13Comp3 = 11.05; 
+double Pipe.rInType13Comp4 = 11.05; 
+double Pipe.rInType13Comp5 = 11.05; 
+double Pipe.rInType13Comp6 = 11.05; 
+double Pipe.rInType13Comp7 = 17.4; 
+double Pipe.rInType13Comp8 = 14.224; 
+double Pipe.rInType13Comp9 = 9.464; 
+double Pipe.rInType13Comp10 = 9.464; 
+
+double Pipe.rInType14Comp1 = 124.23;
+double Pipe.rInType14Comp2 = 100.015; 
+double Pipe.rInType14Comp3 = 11.05; 
+double Pipe.rInType14Comp4 = 11.05; 
+double Pipe.rInType14Comp5 = 11.05; 
+double Pipe.rInType14Comp6 = 11.05; 
+double Pipe.rInType14Comp7 = 17.4; 
+double Pipe.rInType14Comp8 = 14.224; 
+double Pipe.rInType14Comp9 = 9.464; 
+double Pipe.rInType14Comp10 = 9.464; 
+
+double Pipe.rInType15Comp1 = 124.23;
+double Pipe.rInType15Comp2 = 100.015; 
+double Pipe.rInType15Comp3 = 11.05; 
+double Pipe.rInType15Comp4 = 11.05; 
+double Pipe.rInType15Comp5 = 11.05; 
+double Pipe.rInType15Comp6 = 11.05; 
+double Pipe.rInType15Comp7 = 17.4; 
+double Pipe.rInType15Comp8 = 14.224; 
+double Pipe.rInType15Comp9 = 9.464; 
+double Pipe.rInType15Comp10 = 9.464; 
+
+double Pipe.rInType16Comp1 = 124.23;
+double Pipe.rInType16Comp2 = 100.015; 
+double Pipe.rInType16Comp3 = 11.05; 
+double Pipe.rInType16Comp4 = 11.05; 
+double Pipe.rInType16Comp5 = 11.05; 
+double Pipe.rInType16Comp6 = 11.05; 
+double Pipe.rInType16Comp7 = 17.4; 
+double Pipe.rInType16Comp8 = 14.224; 
+double Pipe.rInType16Comp9 = 9.464; 
+double Pipe.rInType16Comp10 = 9.464; 
+
+double Pipe.rInType17Comp1 = 124.23;
+double Pipe.rInType17Comp2 = 100.015; 
+double Pipe.rInType17Comp3 = 11.05; 
+double Pipe.rInType17Comp4 = 11.05; 
+double Pipe.rInType17Comp5 = 11.05; 
+double Pipe.rInType17Comp6 = 11.05; 
+double Pipe.rInType17Comp7 = 17.4; 
+double Pipe.rInType17Comp8 = 14.224; 
+double Pipe.rInType17Comp9 = 9.464; 
+double Pipe.rInType17Comp10 = 9.464; 
+
+double Pipe.rInType18Comp1 = 124.23;
+double Pipe.rInType18Comp2 = 100.015; 
+double Pipe.rInType18Comp3 = 11.05; 
+double Pipe.rInType18Comp4 = 11.05; 
+double Pipe.rInType18Comp5 = 11.05; 
+double Pipe.rInType18Comp6 = 11.05; 
+double Pipe.rInType18Comp7 = 17.4; 
+double Pipe.rInType18Comp8 = 14.224; 
+double Pipe.rInType18Comp9 = 9.464; 
+double Pipe.rInType18Comp10 = 9.464; 
+
+double Pipe.rInType19Comp1 = 124.23;
+double Pipe.rInType19Comp2 = 100.015; 
+double Pipe.rInType19Comp3 = 11.05; 
+double Pipe.rInType19Comp4 = 11.05; 
+double Pipe.rInType19Comp5 = 11.05; 
+double Pipe.rInType19Comp6 = 11.05; 
+double Pipe.rInType19Comp7 = 17.4; 
+double Pipe.rInType19Comp8 = 14.224; 
+double Pipe.rInType19Comp9 = 9.464; 
+double Pipe.rInType19Comp10 = 9.464; 
+
+double Pipe.rInType20Comp1 = 124.23;
+double Pipe.rInType20Comp2 = 100.015; 
+double Pipe.rInType20Comp3 = 11.05; 
+double Pipe.rInType20Comp4 = 11.05; 
+double Pipe.rInType20Comp5 = 11.05; 
+double Pipe.rInType20Comp6 = 11.05; 
+double Pipe.rInType20Comp7 = 17.4; 
+double Pipe.rInType20Comp8 = 14.224; 
+double Pipe.rInType20Comp9 = 9.464; 
+double Pipe.rInType20Comp10 = 9.464; 
+
+double Pipe.rInType21Comp1 = 124.23;
+double Pipe.rInType21Comp2 = 100.015; 
+double Pipe.rInType21Comp3 = 11.05; 
+double Pipe.rInType21Comp4 = 11.05; 
+double Pipe.rInType21Comp5 = 11.05; 
+double Pipe.rInType21Comp6 = 11.05; 
+double Pipe.rInType21Comp7 = 17.4; 
+double Pipe.rInType21Comp8 = 14.224; 
+double Pipe.rInType21Comp9 = 9.464; 
+double Pipe.rInType21Comp10 = 9.464; 
+
+double Pipe.rInType22Comp1 = 124.23;
+
+double Pipe.rInType23Comp1 = 190.0;
+
+// next, outer radii
+double Pipe.rOutType1Comp1 = 127.0; 
+double Pipe.rOutType1Comp2 = 103.19; 
+double Pipe.rOutType1Comp3 = 12.7; 
+double Pipe.rOutType1Comp4 = 12.7; 
+double Pipe.rOutType1Comp5 = 12.7; 
+double Pipe.rOutType1Comp6 = 12.7; 
+double Pipe.rOutType1Comp7 = 19.05; 
+double Pipe.rOutType1Comp8 = 15.875; 
+double Pipe.rOutType1Comp9 = 11.115; 
+double Pipe.rOutType1Comp10 = 11.115; 
+
+double Pipe.rOutType2Comp1 = 127.0;
+double Pipe.rOutType2Comp2 = 103.19; 
+double Pipe.rOutType2Comp3 = 12.7; 
+double Pipe.rOutType2Comp4 = 12.7; 
+double Pipe.rOutType2Comp5 = 12.7; 
+double Pipe.rOutType2Comp6 = 12.7; 
+double Pipe.rOutType2Comp7 = 19.05; 
+double Pipe.rOutType2Comp8 = 15.875; 
+double Pipe.rOutType2Comp9 = 11.115; 
+double Pipe.rOutType2Comp10 = 11.115; 
+
+double Pipe.rOutType3Comp1 = 127.0;
+double Pipe.rOutType3Comp2 = 103.19; 
+double Pipe.rOutType3Comp3 = 12.7; 
+double Pipe.rOutType3Comp4 = 12.7; 
+double Pipe.rOutType3Comp5 = 12.7; 
+double Pipe.rOutType3Comp6 = 12.7; 
+double Pipe.rOutType3Comp7 = 19.05; 
+double Pipe.rOutType3Comp8 = 15.875; 
+double Pipe.rOutType3Comp9 = 11.115; 
+double Pipe.rOutType3Comp10 = 11.115; 
+
+double Pipe.rOutType4Comp1 = 127.0;
+double Pipe.rOutType4Comp2 = 103.19; 
+double Pipe.rOutType4Comp3 = 12.7; 
+double Pipe.rOutType4Comp4 = 12.7; 
+double Pipe.rOutType4Comp5 = 12.7; 
+double Pipe.rOutType4Comp6 = 12.7; 
+double Pipe.rOutType4Comp7 = 19.05; 
+double Pipe.rOutType4Comp8 = 15.875; 
+double Pipe.rOutType4Comp9 = 11.115; 
+double Pipe.rOutType4Comp10 = 11.115; 
+
+double Pipe.rOutType5Comp1 = 127.0;
+double Pipe.rOutType5Comp2 = 103.19; 
+double Pipe.rOutType5Comp3 = 12.7; 
+double Pipe.rOutType5Comp4 = 12.7; 
+double Pipe.rOutType5Comp5 = 12.7; 
+double Pipe.rOutType5Comp6 = 12.7; 
+double Pipe.rOutType5Comp7 = 19.05; 
+double Pipe.rOutType5Comp8 = 15.875; 
+double Pipe.rOutType5Comp9 = 11.115; 
+double Pipe.rOutType5Comp10 = 11.115; 
+
+double Pipe.rOutType6Comp1 = 127.0;
+double Pipe.rOutType6Comp2 = 103.19; 
+double Pipe.rOutType6Comp3 = 12.7; 
+double Pipe.rOutType6Comp4 = 12.7; 
+double Pipe.rOutType6Comp5 = 12.7; 
+double Pipe.rOutType6Comp6 = 12.7; 
+double Pipe.rOutType6Comp7 = 19.05; 
+double Pipe.rOutType6Comp8 = 15.875; 
+double Pipe.rOutType6Comp9 = 11.115; 
+double Pipe.rOutType6Comp10 = 11.115; 
+
+double Pipe.rOutType7Comp1 = 127.0;
+double Pipe.rOutType7Comp2 = 103.19; 
+double Pipe.rOutType7Comp3 = 12.7; 
+double Pipe.rOutType7Comp4 = 12.7; 
+double Pipe.rOutType7Comp5 = 12.7; 
+double Pipe.rOutType7Comp6 = 12.7; 
+double Pipe.rOutType7Comp7 = 19.05; 
+double Pipe.rOutType7Comp8 = 15.875; 
+double Pipe.rOutType7Comp9 = 11.115; 
+double Pipe.rOutType7Comp10 = 11.115; 
+
+double Pipe.rOutType8Comp1 = 127.0;
+double Pipe.rOutType8Comp2 = 103.19; 
+double Pipe.rOutType8Comp3 = 12.7; 
+double Pipe.rOutType8Comp4 = 12.7; 
+double Pipe.rOutType8Comp5 = 12.7; 
+double Pipe.rOutType8Comp6 = 12.7; 
+double Pipe.rOutType8Comp7 = 19.05; 
+double Pipe.rOutType8Comp8 = 15.875; 
+double Pipe.rOutType8Comp9 = 11.115; 
+double Pipe.rOutType8Comp10 = 11.115; 
+
+double Pipe.rOutType9Comp1 = 127.0;
+double Pipe.rOutType9Comp2 = 103.19; 
+double Pipe.rOutType9Comp3 = 12.7; 
+double Pipe.rOutType9Comp4 = 12.7; 
+double Pipe.rOutType9Comp5 = 12.7; 
+double Pipe.rOutType9Comp6 = 12.7; 
+double Pipe.rOutType9Comp7 = 19.05; 
+double Pipe.rOutType9Comp8 = 15.875; 
+double Pipe.rOutType9Comp9 = 11.115; 
+double Pipe.rOutType9Comp10 = 11.115; 
+
+double Pipe.rOutType10Comp1 = 127.0;
+double Pipe.rOutType10Comp2 = 103.19; 
+double Pipe.rOutType10Comp3 = 12.7; 
+double Pipe.rOutType10Comp4 = 12.7; 
+double Pipe.rOutType10Comp5 = 12.7; 
+double Pipe.rOutType10Comp6 = 12.7; 
+double Pipe.rOutType10Comp7 = 19.05; 
+double Pipe.rOutType10Comp8 = 15.875; 
+double Pipe.rOutType10Comp9 = 11.115; 
+double Pipe.rOutType10Comp10 = 11.115; 
+
+double Pipe.rOutType11Comp1 = 127.0;
+double Pipe.rOutType11Comp2 = 103.19; 
+double Pipe.rOutType11Comp3 = 12.7; 
+double Pipe.rOutType11Comp4 = 12.7; 
+double Pipe.rOutType11Comp5 = 12.7; 
+double Pipe.rOutType11Comp6 = 12.7; 
+double Pipe.rOutType11Comp7 = 19.05; 
+double Pipe.rOutType11Comp8 = 15.875; 
+double Pipe.rOutType11Comp9 = 11.115; 
+double Pipe.rOutType11Comp10 = 11.115; 
+
+double Pipe.rOutType12Comp1 = 127.0;
+double Pipe.rOutType12Comp2 = 103.19; 
+double Pipe.rOutType12Comp3 = 12.7; 
+double Pipe.rOutType12Comp4 = 12.7; 
+double Pipe.rOutType12Comp5 = 12.7; 
+double Pipe.rOutType12Comp6 = 12.7; 
+double Pipe.rOutType12Comp7 = 19.05; 
+double Pipe.rOutType12Comp8 = 15.875; 
+double Pipe.rOutType12Comp9 = 11.115; 
+double Pipe.rOutType12Comp10 = 11.115; 
+
+double Pipe.rOutType13Comp1 = 127.0;
+double Pipe.rOutType13Comp2 = 103.19; 
+double Pipe.rOutType13Comp3 = 12.7; 
+double Pipe.rOutType13Comp4 = 12.7; 
+double Pipe.rOutType13Comp5 = 12.7; 
+double Pipe.rOutType13Comp6 = 12.7; 
+double Pipe.rOutType13Comp7 = 19.05; 
+double Pipe.rOutType13Comp8 = 15.875; 
+double Pipe.rOutType13Comp9 = 11.115; 
+double Pipe.rOutType13Comp10 = 11.115; 
+
+double Pipe.rOutType14Comp1 = 127.0;
+double Pipe.rOutType14Comp2 = 103.19; 
+double Pipe.rOutType14Comp3 = 12.7; 
+double Pipe.rOutType14Comp4 = 12.7; 
+double Pipe.rOutType14Comp5 = 12.7; 
+double Pipe.rOutType14Comp6 = 12.7; 
+double Pipe.rOutType14Comp7 = 19.05; 
+double Pipe.rOutType14Comp8 = 15.875; 
+double Pipe.rOutType14Comp9 = 11.115; 
+double Pipe.rOutType14Comp10 = 11.115; 
+
+double Pipe.rOutType15Comp1 = 127.0;
+double Pipe.rOutType15Comp2 = 103.19; 
+double Pipe.rOutType15Comp3 = 12.7; 
+double Pipe.rOutType15Comp4 = 12.7; 
+double Pipe.rOutType15Comp5 = 12.7; 
+double Pipe.rOutType15Comp6 = 12.7; 
+double Pipe.rOutType15Comp7 = 19.05; 
+double Pipe.rOutType15Comp8 = 15.875; 
+double Pipe.rOutType15Comp9 = 11.115; 
+double Pipe.rOutType15Comp10 = 11.115; 
+
+double Pipe.rOutType16Comp1 = 127.0;
+double Pipe.rOutType16Comp2 = 103.19; 
+double Pipe.rOutType16Comp3 = 12.7; 
+double Pipe.rOutType16Comp4 = 12.7; 
+double Pipe.rOutType16Comp5 = 12.7; 
+double Pipe.rOutType16Comp6 = 12.7; 
+double Pipe.rOutType16Comp7 = 19.05; 
+double Pipe.rOutType16Comp8 = 15.875; 
+double Pipe.rOutType16Comp9 = 11.115; 
+double Pipe.rOutType16Comp10 = 11.115; 
+
+double Pipe.rOutType17Comp1 = 127.0;
+double Pipe.rOutType17Comp2 = 103.19; 
+double Pipe.rOutType17Comp3 = 12.7; 
+double Pipe.rOutType17Comp4 = 12.7; 
+double Pipe.rOutType17Comp5 = 12.7; 
+double Pipe.rOutType17Comp6 = 12.7; 
+double Pipe.rOutType17Comp7 = 19.05; 
+double Pipe.rOutType17Comp8 = 15.875; 
+double Pipe.rOutType17Comp9 = 11.115; 
+double Pipe.rOutType17Comp10 = 11.115; 
+
+double Pipe.rOutType18Comp1 = 127.0;
+double Pipe.rOutType18Comp2 = 103.19; 
+double Pipe.rOutType18Comp3 = 12.7; 
+double Pipe.rOutType18Comp4 = 12.7; 
+double Pipe.rOutType18Comp5 = 12.7; 
+double Pipe.rOutType18Comp6 = 12.7; 
+double Pipe.rOutType18Comp7 = 19.05; 
+double Pipe.rOutType18Comp8 = 15.875; 
+double Pipe.rOutType18Comp9 = 11.115; 
+double Pipe.rOutType18Comp10 = 11.115; 
+
+double Pipe.rOutType19Comp1 = 127.0;
+double Pipe.rOutType19Comp2 = 103.19; 
+double Pipe.rOutType19Comp3 = 12.7; 
+double Pipe.rOutType19Comp4 = 12.7; 
+double Pipe.rOutType19Comp5 = 12.7; 
+double Pipe.rOutType19Comp6 = 12.7; 
+double Pipe.rOutType19Comp7 = 19.05; 
+double Pipe.rOutType19Comp8 = 15.875; 
+double Pipe.rOutType19Comp9 = 11.115; 
+double Pipe.rOutType19Comp10 = 11.115; 
+
+double Pipe.rOutType20Comp1 = 127.0;
+double Pipe.rOutType20Comp2 = 103.19; 
+double Pipe.rOutType20Comp3 = 12.7; 
+double Pipe.rOutType20Comp4 = 12.7; 
+double Pipe.rOutType20Comp5 = 12.7; 
+double Pipe.rOutType20Comp6 = 12.7; 
+double Pipe.rOutType20Comp7 = 19.05; 
+double Pipe.rOutType20Comp8 = 15.875; 
+double Pipe.rOutType20Comp9 = 11.115; 
+double Pipe.rOutType20Comp10 = 11.115; 
+
+double Pipe.rOutType21Comp1 = 127.0;
+double Pipe.rOutType21Comp2 = 103.19; 
+double Pipe.rOutType21Comp3 = 12.7; 
+double Pipe.rOutType21Comp4 = 12.7; 
+double Pipe.rOutType21Comp5 = 12.7; 
+double Pipe.rOutType21Comp6 = 12.7; 
+double Pipe.rOutType21Comp7 = 19.05; 
+double Pipe.rOutType21Comp8 = 15.875; 
+double Pipe.rOutType21Comp9 = 11.115; 
+double Pipe.rOutType21Comp10 = 11.115; 
+
+double Pipe.rOutType22Comp1 = 127.0;
+
+double Pipe.rOutType23Comp1 = 240.0;
+
+// Materials for each type of component pipe.  
+string Pipe.materialType1Comp1   = "StainlessSteel";
+string Pipe.materialType1Comp2   = "G4_Al";
+string Pipe.materialType1Comp3   = "G4_Al";
+string Pipe.materialType1Comp4   = "G4_Al";
+string Pipe.materialType1Comp5   = "G4_Al";
+string Pipe.materialType1Comp6   = "G4_Al";
+string Pipe.materialType1Comp7   = "G4_Al";
+string Pipe.materialType1Comp8   = "G4_Al";
+string Pipe.materialType1Comp9   = "G4_Al";
+string Pipe.materialType1Comp10   = "G4_Al";
+
+string Pipe.materialType2Comp1 = "StainlessSteel";
+string Pipe.materialType2Comp2   = "G4_Al";
+string Pipe.materialType2Comp3   = "G4_Al";
+string Pipe.materialType2Comp4   = "G4_Al";
+string Pipe.materialType2Comp5   = "G4_Al";
+string Pipe.materialType2Comp6   = "G4_Al";
+string Pipe.materialType2Comp7   = "G4_Al";
+string Pipe.materialType2Comp8   = "G4_Al";
+string Pipe.materialType2Comp9   = "G4_Al";
+string Pipe.materialType2Comp10   = "G4_Al";
+
+string Pipe.materialType3Comp1 = "StainlessSteel";
+string Pipe.materialType3Comp2   = "G4_Al";
+string Pipe.materialType3Comp3   = "G4_Al";
+string Pipe.materialType3Comp4   = "G4_Al";
+string Pipe.materialType3Comp5   = "G4_Al";
+string Pipe.materialType3Comp6   = "G4_Al";
+string Pipe.materialType3Comp7   = "G4_Al";
+string Pipe.materialType3Comp8   = "G4_Al";
+string Pipe.materialType3Comp9   = "G4_Al";
+string Pipe.materialType3Comp10   = "G4_Al";
+
+string Pipe.materialType4Comp1 = "StainlessSteel";
+string Pipe.materialType4Comp2   = "G4_Al";
+string Pipe.materialType4Comp3   = "G4_Al";
+string Pipe.materialType4Comp4   = "G4_Al";
+string Pipe.materialType4Comp5   = "G4_Al";
+string Pipe.materialType4Comp6   = "G4_Al";
+string Pipe.materialType4Comp7   = "G4_Al";
+string Pipe.materialType4Comp8   = "G4_Al";
+string Pipe.materialType4Comp9   = "G4_Al";
+string Pipe.materialType4Comp10   = "G4_Al";
+
+string Pipe.materialType5Comp1 = "StainlessSteel";
+string Pipe.materialType5Comp2   = "G4_Al";
+string Pipe.materialType5Comp3   = "G4_Al";
+string Pipe.materialType5Comp4   = "G4_Al";
+string Pipe.materialType5Comp5   = "G4_Al";
+string Pipe.materialType5Comp6   = "G4_Al";
+string Pipe.materialType5Comp7   = "G4_Al";
+string Pipe.materialType5Comp8   = "G4_Al";
+string Pipe.materialType5Comp9   = "G4_Al";
+string Pipe.materialType5Comp10   = "G4_Al";
+
+string Pipe.materialType6Comp1 = "StainlessSteel";
+string Pipe.materialType6Comp2   = "G4_Al";
+string Pipe.materialType6Comp3   = "G4_Al";
+string Pipe.materialType6Comp4   = "G4_Al";
+string Pipe.materialType6Comp5   = "G4_Al";
+string Pipe.materialType6Comp6   = "G4_Al";
+string Pipe.materialType6Comp7   = "G4_Al";
+string Pipe.materialType6Comp8   = "G4_Al";
+string Pipe.materialType6Comp9   = "G4_Al";
+string Pipe.materialType6Comp10   = "G4_Al";
+
+string Pipe.materialType7Comp1 = "StainlessSteel";
+string Pipe.materialType7Comp2   = "G4_Al";
+string Pipe.materialType7Comp3   = "G4_Al";
+string Pipe.materialType7Comp4   = "G4_Al";
+string Pipe.materialType7Comp5   = "G4_Al";
+string Pipe.materialType7Comp6   = "G4_Al";
+string Pipe.materialType7Comp7   = "G4_Al";
+string Pipe.materialType7Comp8   = "G4_Al";
+string Pipe.materialType7Comp9   = "G4_Al";
+string Pipe.materialType7Comp10   = "G4_Al";
+
+string Pipe.materialType8Comp1 = "StainlessSteel";
+string Pipe.materialType8Comp2   = "G4_Al";
+string Pipe.materialType8Comp3   = "G4_Al";
+string Pipe.materialType8Comp4   = "G4_Al";
+string Pipe.materialType8Comp5   = "G4_Al";
+string Pipe.materialType8Comp6   = "G4_Al";
+string Pipe.materialType8Comp7   = "G4_Al";
+string Pipe.materialType8Comp8   = "G4_Al";
+string Pipe.materialType8Comp9   = "G4_Al";
+string Pipe.materialType8Comp10   = "G4_Al";
+
+string Pipe.materialType9Comp1 = "StainlessSteel";
+string Pipe.materialType9Comp2   = "G4_Al";
+string Pipe.materialType9Comp3   = "G4_Al";
+string Pipe.materialType9Comp4   = "G4_Al";
+string Pipe.materialType9Comp5   = "G4_Al";
+string Pipe.materialType9Comp6   = "G4_Al";
+string Pipe.materialType9Comp7   = "G4_Al";
+string Pipe.materialType9Comp8   = "G4_Al";
+string Pipe.materialType9Comp9   = "G4_Al";
+string Pipe.materialType9Comp10   = "G4_Al";
+
+string Pipe.materialType10Comp1 = "StainlessSteel";
+string Pipe.materialType10Comp2   = "G4_Al";
+string Pipe.materialType10Comp3   = "G4_Al";
+string Pipe.materialType10Comp4   = "G4_Al";
+string Pipe.materialType10Comp5   = "G4_Al";
+string Pipe.materialType10Comp6   = "G4_Al";
+string Pipe.materialType10Comp7   = "G4_Al";
+string Pipe.materialType10Comp8   = "G4_Al";
+string Pipe.materialType10Comp9   = "G4_Al";
+string Pipe.materialType10Comp10   = "G4_Al";
+
+string Pipe.materialType11Comp1 = "StainlessSteel";
+string Pipe.materialType11Comp2   = "G4_Al";
+string Pipe.materialType11Comp3   = "G4_Al";
+string Pipe.materialType11Comp4   = "G4_Al";
+string Pipe.materialType11Comp5   = "G4_Al";
+string Pipe.materialType11Comp6   = "G4_Al";
+string Pipe.materialType11Comp7   = "G4_Al";
+string Pipe.materialType11Comp8   = "G4_Al";
+string Pipe.materialType11Comp9   = "G4_Al";
+string Pipe.materialType11Comp10   = "G4_Al";
+
+string Pipe.materialType12Comp1 = "StainlessSteel";
+string Pipe.materialType12Comp2   = "G4_Al";
+string Pipe.materialType12Comp3   = "G4_Al";
+string Pipe.materialType12Comp4   = "G4_Al";
+string Pipe.materialType12Comp5   = "G4_Al";
+string Pipe.materialType12Comp6   = "G4_Al";
+string Pipe.materialType12Comp7   = "G4_Al";
+string Pipe.materialType12Comp8   = "G4_Al";
+string Pipe.materialType12Comp9   = "G4_Al";
+string Pipe.materialType12Comp10   = "G4_Al";
+
+string Pipe.materialType13Comp1 = "StainlessSteel";
+string Pipe.materialType13Comp2   = "G4_Al";
+string Pipe.materialType13Comp3   = "G4_Al";
+string Pipe.materialType13Comp4   = "G4_Al";
+string Pipe.materialType13Comp5   = "G4_Al";
+string Pipe.materialType13Comp6   = "G4_Al";
+string Pipe.materialType13Comp7   = "G4_Al";
+string Pipe.materialType13Comp8   = "G4_Al";
+string Pipe.materialType13Comp9   = "G4_Al";
+string Pipe.materialType13Comp10   = "G4_Al";
+
+string Pipe.materialType14Comp1 = "StainlessSteel";
+string Pipe.materialType14Comp2   = "G4_Al";
+string Pipe.materialType14Comp3   = "G4_Al";
+string Pipe.materialType14Comp4   = "G4_Al";
+string Pipe.materialType14Comp5   = "G4_Al";
+string Pipe.materialType14Comp6   = "G4_Al";
+string Pipe.materialType14Comp7   = "G4_Al";
+string Pipe.materialType14Comp8   = "G4_Al";
+string Pipe.materialType14Comp9   = "G4_Al";
+string Pipe.materialType14Comp10   = "G4_Al";
+
+string Pipe.materialType15Comp1 = "StainlessSteel";
+string Pipe.materialType15Comp2   = "G4_Al";
+string Pipe.materialType15Comp3   = "G4_Al";
+string Pipe.materialType15Comp4   = "G4_Al";
+string Pipe.materialType15Comp5   = "G4_Al";
+string Pipe.materialType15Comp6   = "G4_Al";
+string Pipe.materialType15Comp7   = "G4_Al";
+string Pipe.materialType15Comp8   = "G4_Al";
+string Pipe.materialType15Comp9   = "G4_Al";
+string Pipe.materialType15Comp10   = "G4_Al";
+
+string Pipe.materialType16Comp1 = "StainlessSteel";
+string Pipe.materialType16Comp2   = "G4_Al";
+string Pipe.materialType16Comp3   = "G4_Al";
+string Pipe.materialType16Comp4   = "G4_Al";
+string Pipe.materialType16Comp5   = "G4_Al";
+string Pipe.materialType16Comp6   = "G4_Al";
+string Pipe.materialType16Comp7   = "G4_Al";
+string Pipe.materialType16Comp8   = "G4_Al";
+string Pipe.materialType16Comp9   = "G4_Al";
+string Pipe.materialType16Comp10   = "G4_Al";
+
+string Pipe.materialType17Comp1 = "StainlessSteel";
+string Pipe.materialType17Comp2   = "G4_Al";
+string Pipe.materialType17Comp3   = "G4_Al";
+string Pipe.materialType17Comp4   = "G4_Al";
+string Pipe.materialType17Comp5   = "G4_Al";
+string Pipe.materialType17Comp6   = "G4_Al";
+string Pipe.materialType17Comp7   = "G4_Al";
+string Pipe.materialType17Comp8   = "G4_Al";
+string Pipe.materialType17Comp9   = "G4_Al";
+string Pipe.materialType17Comp10   = "G4_Al";
+
+string Pipe.materialType18Comp1 = "StainlessSteel";
+string Pipe.materialType18Comp2   = "G4_Al";
+string Pipe.materialType18Comp3   = "G4_Al";
+string Pipe.materialType18Comp4   = "G4_Al";
+string Pipe.materialType18Comp5   = "G4_Al";
+string Pipe.materialType18Comp6   = "G4_Al";
+string Pipe.materialType18Comp7   = "G4_Al";
+string Pipe.materialType18Comp8   = "G4_Al";
+string Pipe.materialType18Comp9   = "G4_Al";
+string Pipe.materialType18Comp10   = "G4_Al";
+
+string Pipe.materialType19Comp1 = "StainlessSteel";
+string Pipe.materialType19Comp2   = "G4_Al";
+string Pipe.materialType19Comp3   = "G4_Al";
+string Pipe.materialType19Comp4   = "G4_Al";
+string Pipe.materialType19Comp5   = "G4_Al";
+string Pipe.materialType19Comp6   = "G4_Al";
+string Pipe.materialType19Comp7   = "G4_Al";
+string Pipe.materialType19Comp8   = "G4_Al";
+string Pipe.materialType19Comp9   = "G4_Al";
+string Pipe.materialType19Comp10   = "G4_Al";
+
+string Pipe.materialType20Comp1 = "StainlessSteel";
+string Pipe.materialType20Comp2   = "G4_Al";
+string Pipe.materialType20Comp3   = "G4_Al";
+string Pipe.materialType20Comp4   = "G4_Al";
+string Pipe.materialType20Comp5   = "G4_Al";
+string Pipe.materialType20Comp6   = "G4_Al";
+string Pipe.materialType20Comp7   = "G4_Al";
+string Pipe.materialType20Comp8   = "G4_Al";
+string Pipe.materialType20Comp9   = "G4_Al";
+string Pipe.materialType20Comp10   = "G4_Al";
+
+string Pipe.materialType21Comp1 = "StainlessSteel";
+string Pipe.materialType21Comp2   = "G4_Al";
+string Pipe.materialType21Comp3   = "G4_Al";
+string Pipe.materialType21Comp4   = "G4_Al";
+string Pipe.materialType21Comp5   = "G4_Al";
+string Pipe.materialType21Comp6   = "G4_Al";
+string Pipe.materialType21Comp7   = "G4_Al";
+string Pipe.materialType21Comp8   = "G4_Al";
+string Pipe.materialType21Comp9   = "G4_Al";
+string Pipe.materialType21Comp10   = "G4_Al";
+
+string Pipe.materialType22Comp1 = "StainlessSteel";
+
+string Pipe.materialType23Comp1 = "StainlessSteel";
+
+// Now the offsets, defining the positions of the components relative
+// to the mother pipe
+double Pipe.uOffsetType1Comp1  = 0.0;
+double Pipe.uOffsetType1Comp2  = 0.0;
+double Pipe.uOffsetType1Comp3  = 60.0;
+double Pipe.uOffsetType1Comp4  = -60.0;
+double Pipe.uOffsetType1Comp5  = 60.0;
+double Pipe.uOffsetType1Comp6  = -60.0;
+double Pipe.uOffsetType1Comp7  = 0.0;
+double Pipe.uOffsetType1Comp8  = 0.0;
+double Pipe.uOffsetType1Comp9  = 0.0;
+double Pipe.uOffsetType1Comp10  = 63.5;
+
+double Pipe.uOffsetType2Comp1 = 0.0;
+double Pipe.uOffsetType2Comp2  = 0.0;
+double Pipe.uOffsetType2Comp3  = 60.0;
+double Pipe.uOffsetType2Comp4  = -60.0;
+double Pipe.uOffsetType2Comp5  = 60.0;
+double Pipe.uOffsetType2Comp6  = -60.0;
+double Pipe.uOffsetType2Comp7  = 0.0;
+double Pipe.uOffsetType2Comp8  = 0.0;
+double Pipe.uOffsetType2Comp9  = 0.0;
+double Pipe.uOffsetType2Comp10  = 63.5;
+
+double Pipe.uOffsetType3Comp1 = 0.0;
+double Pipe.uOffsetType3Comp2  = 0.0;
+double Pipe.uOffsetType3Comp3  = 60.0;
+double Pipe.uOffsetType3Comp4  = -60.0;
+double Pipe.uOffsetType3Comp5  = 60.0;
+double Pipe.uOffsetType3Comp6  = -60.0;
+double Pipe.uOffsetType3Comp7  = 0.0;
+double Pipe.uOffsetType3Comp8  = 0.0;
+double Pipe.uOffsetType3Comp9  = 0.0;
+double Pipe.uOffsetType3Comp10  = 63.5;
+
+double Pipe.uOffsetType4Comp1 = 0.0;
+double Pipe.uOffsetType4Comp2  = 0.0;
+double Pipe.uOffsetType4Comp3  = 60.0;
+double Pipe.uOffsetType4Comp4  = -60.0;
+double Pipe.uOffsetType4Comp5  = 60.0;
+double Pipe.uOffsetType4Comp6  = -60.0;
+double Pipe.uOffsetType4Comp7  = 0.0;
+double Pipe.uOffsetType4Comp8  = 0.0;
+double Pipe.uOffsetType4Comp9  = 0.0;
+double Pipe.uOffsetType4Comp10  = 63.5;
+
+double Pipe.uOffsetType5Comp1 = 0.0;
+double Pipe.uOffsetType5Comp2  = 0.0;
+double Pipe.uOffsetType5Comp3  = 60.0;
+double Pipe.uOffsetType5Comp4  = -60.0;
+double Pipe.uOffsetType5Comp5  = 60.0;
+double Pipe.uOffsetType5Comp6  = -60.0;
+double Pipe.uOffsetType5Comp7  = 0.0;
+double Pipe.uOffsetType5Comp8  = 0.0;
+double Pipe.uOffsetType5Comp9  = 0.0;
+double Pipe.uOffsetType5Comp10  = 63.5;
+
+double Pipe.uOffsetType6Comp1 = 0.0;
+double Pipe.uOffsetType6Comp2  = 0.0;
+double Pipe.uOffsetType6Comp3  = 60.0;
+double Pipe.uOffsetType6Comp4  = -60.0;
+double Pipe.uOffsetType6Comp5  = 60.0;
+double Pipe.uOffsetType6Comp6  = -60.0;
+double Pipe.uOffsetType6Comp7  = 0.0;
+double Pipe.uOffsetType6Comp8  = 0.0;
+double Pipe.uOffsetType6Comp9  = 0.0;
+double Pipe.uOffsetType6Comp10  = 63.5;
+
+double Pipe.uOffsetType7Comp1 = 0.0;
+double Pipe.uOffsetType7Comp2  = 0.0;
+double Pipe.uOffsetType7Comp3  = 60.0;
+double Pipe.uOffsetType7Comp4  = -60.0;
+double Pipe.uOffsetType7Comp5  = 60.0;
+double Pipe.uOffsetType7Comp6  = -60.0;
+double Pipe.uOffsetType7Comp7  = 0.0;
+double Pipe.uOffsetType7Comp8  = 0.0;
+double Pipe.uOffsetType7Comp9  = 0.0;
+double Pipe.uOffsetType7Comp10  = 63.5;
+
+double Pipe.uOffsetType8Comp1 = 0.0;
+double Pipe.uOffsetType8Comp2  = 0.0;
+double Pipe.uOffsetType8Comp3  = 60.0;
+double Pipe.uOffsetType8Comp4  = -60.0;
+double Pipe.uOffsetType8Comp5  = 60.0;
+double Pipe.uOffsetType8Comp6  = -60.0;
+double Pipe.uOffsetType8Comp7  = 0.0;
+double Pipe.uOffsetType8Comp8  = 0.0;
+double Pipe.uOffsetType8Comp9  = 0.0;
+double Pipe.uOffsetType8Comp10  = 63.5;
+
+double Pipe.uOffsetType9Comp1 = 0.0;
+double Pipe.uOffsetType9Comp2  = 0.0;
+double Pipe.uOffsetType9Comp3  = 60.0;
+double Pipe.uOffsetType9Comp4  = -60.0;
+double Pipe.uOffsetType9Comp5  = 60.0;
+double Pipe.uOffsetType9Comp6  = -60.0;
+double Pipe.uOffsetType9Comp7  = 0.0;
+double Pipe.uOffsetType9Comp8  = 0.0;
+double Pipe.uOffsetType9Comp9  = 0.0;
+double Pipe.uOffsetType9Comp10  = 63.5;
+
+double Pipe.uOffsetType10Comp1 = 0.0;
+double Pipe.uOffsetType10Comp2  = 0.0;
+double Pipe.uOffsetType10Comp3  = 60.0;
+double Pipe.uOffsetType10Comp4  = -60.0;
+double Pipe.uOffsetType10Comp5  = 60.0;
+double Pipe.uOffsetType10Comp6  = -60.0;
+double Pipe.uOffsetType10Comp7  = 0.0;
+double Pipe.uOffsetType10Comp8  = 0.0;
+double Pipe.uOffsetType10Comp9  = 0.0;
+double Pipe.uOffsetType10Comp10  = 63.5;
+
+double Pipe.uOffsetType11Comp1 = 0.0;
+double Pipe.uOffsetType11Comp2  = 0.0;
+double Pipe.uOffsetType11Comp3  = 60.0;
+double Pipe.uOffsetType11Comp4  = -60.0;
+double Pipe.uOffsetType11Comp5  = 60.0;
+double Pipe.uOffsetType11Comp6  = -60.0;
+double Pipe.uOffsetType11Comp7  = 0.0;
+double Pipe.uOffsetType11Comp8  = 0.0;
+double Pipe.uOffsetType11Comp9  = 0.0;
+double Pipe.uOffsetType11Comp10  = 63.5;
+
+double Pipe.uOffsetType12Comp1 = 0.0;
+double Pipe.uOffsetType12Comp2  = 0.0;
+double Pipe.uOffsetType12Comp3  = 60.0;
+double Pipe.uOffsetType12Comp4  = -60.0;
+double Pipe.uOffsetType12Comp5  = 60.0;
+double Pipe.uOffsetType12Comp6  = -60.0;
+double Pipe.uOffsetType12Comp7  = 0.0;
+double Pipe.uOffsetType12Comp8  = 0.0;
+double Pipe.uOffsetType12Comp9  = 0.0;
+double Pipe.uOffsetType12Comp10  = 63.5;
+
+double Pipe.uOffsetType13Comp1 = 0.0;
+double Pipe.uOffsetType13Comp2  = 0.0;
+double Pipe.uOffsetType13Comp3  = 60.0;
+double Pipe.uOffsetType13Comp4  = -60.0;
+double Pipe.uOffsetType13Comp5  = 60.0;
+double Pipe.uOffsetType13Comp6  = -60.0;
+double Pipe.uOffsetType13Comp7  = 0.0;
+double Pipe.uOffsetType13Comp8  = 0.0;
+double Pipe.uOffsetType13Comp9  = 0.0;
+double Pipe.uOffsetType13Comp10  = 63.5;
+
+double Pipe.uOffsetType14Comp1 = 0.0;
+double Pipe.uOffsetType14Comp2  = 0.0;
+double Pipe.uOffsetType14Comp3  = 60.0;
+double Pipe.uOffsetType14Comp4  = -60.0;
+double Pipe.uOffsetType14Comp5  = 60.0;
+double Pipe.uOffsetType14Comp6  = -60.0;
+double Pipe.uOffsetType14Comp7  = 0.0;
+double Pipe.uOffsetType14Comp8  = 0.0;
+double Pipe.uOffsetType14Comp9  = 0.0;
+double Pipe.uOffsetType14Comp10  = 63.5;
+
+double Pipe.uOffsetType15Comp1 = 0.0;
+double Pipe.uOffsetType15Comp2  = 0.0;
+double Pipe.uOffsetType15Comp3  = 60.0;
+double Pipe.uOffsetType15Comp4  = -60.0;
+double Pipe.uOffsetType15Comp5  = 60.0;
+double Pipe.uOffsetType15Comp6  = -60.0;
+double Pipe.uOffsetType15Comp7  = 0.0;
+double Pipe.uOffsetType15Comp8  = 0.0;
+double Pipe.uOffsetType15Comp9  = 0.0;
+double Pipe.uOffsetType15Comp10  = 63.5;
+
+double Pipe.uOffsetType16Comp1 = 0.0;
+double Pipe.uOffsetType16Comp2  = 0.0;
+double Pipe.uOffsetType16Comp3  = 60.0;
+double Pipe.uOffsetType16Comp4  = -60.0;
+double Pipe.uOffsetType16Comp5  = 60.0;
+double Pipe.uOffsetType16Comp6  = -60.0;
+double Pipe.uOffsetType16Comp7  = 0.0;
+double Pipe.uOffsetType16Comp8  = 0.0;
+double Pipe.uOffsetType16Comp9  = 0.0;
+double Pipe.uOffsetType16Comp10  = 63.5;
+
+double Pipe.uOffsetType17Comp1 = 0.0;
+double Pipe.uOffsetType17Comp2  = 0.0;
+double Pipe.uOffsetType17Comp3  = 60.0;
+double Pipe.uOffsetType17Comp4  = -60.0;
+double Pipe.uOffsetType17Comp5  = 60.0;
+double Pipe.uOffsetType17Comp6  = -60.0;
+double Pipe.uOffsetType17Comp7  = 0.0;
+double Pipe.uOffsetType17Comp8  = 0.0;
+double Pipe.uOffsetType17Comp9  = 0.0;
+double Pipe.uOffsetType17Comp10  = 63.5;
+
+double Pipe.uOffsetType18Comp1 = 0.0;
+double Pipe.uOffsetType18Comp2  = 0.0;
+double Pipe.uOffsetType18Comp3  = 60.0;
+double Pipe.uOffsetType18Comp4  = -60.0;
+double Pipe.uOffsetType18Comp5  = 60.0;
+double Pipe.uOffsetType18Comp6  = -60.0;
+double Pipe.uOffsetType18Comp7  = 0.0;
+double Pipe.uOffsetType18Comp8  = 0.0;
+double Pipe.uOffsetType18Comp9  = 0.0;
+double Pipe.uOffsetType18Comp10  = 63.5;
+
+double Pipe.uOffsetType19Comp1 = 0.0;
+double Pipe.uOffsetType19Comp2  = 0.0;
+double Pipe.uOffsetType19Comp3  = 60.0;
+double Pipe.uOffsetType19Comp4  = -60.0;
+double Pipe.uOffsetType19Comp5  = 60.0;
+double Pipe.uOffsetType19Comp6  = -60.0;
+double Pipe.uOffsetType19Comp7  = 0.0;
+double Pipe.uOffsetType19Comp8  = 0.0;
+double Pipe.uOffsetType19Comp9  = 0.0;
+double Pipe.uOffsetType19Comp10  = 63.5;
+
+double Pipe.uOffsetType20Comp1 = 0.0;
+double Pipe.uOffsetType20Comp2  = 0.0;
+double Pipe.uOffsetType20Comp3  = 60.0;
+double Pipe.uOffsetType20Comp4  = -60.0;
+double Pipe.uOffsetType20Comp5  = 60.0;
+double Pipe.uOffsetType20Comp6  = -60.0;
+double Pipe.uOffsetType20Comp7  = 0.0;
+double Pipe.uOffsetType20Comp8  = 0.0;
+double Pipe.uOffsetType20Comp9  = 0.0;
+double Pipe.uOffsetType20Comp10  = 63.5;
+
+double Pipe.uOffsetType21Comp1 = 0.0;
+double Pipe.uOffsetType21Comp2  = 0.0;
+double Pipe.uOffsetType21Comp3  = 60.0;
+double Pipe.uOffsetType21Comp4  = -60.0;
+double Pipe.uOffsetType21Comp5  = 60.0;
+double Pipe.uOffsetType21Comp6  = -60.0;
+double Pipe.uOffsetType21Comp7  = 0.0;
+double Pipe.uOffsetType21Comp8  = 0.0;
+double Pipe.uOffsetType21Comp9  = 0.0;
+double Pipe.uOffsetType21Comp10  = 63.5;
+
+double Pipe.uOffsetType22Comp1 = 0.0;
+
+double Pipe.uOffsetType23Comp1 = 0.0;
+
+// in v
+double Pipe.vOffsetType1Comp1  = 0.0;
+double Pipe.vOffsetType1Comp2  = 0.0;
+double Pipe.vOffsetType1Comp3  = -58.74;
+double Pipe.vOffsetType1Comp4  = -58.74;
+double Pipe.vOffsetType1Comp5  = 58.74;
+double Pipe.vOffsetType1Comp6  = 58.74;
+double Pipe.vOffsetType1Comp7  = 55.56;
+double Pipe.vOffsetType1Comp8  = -58.74;
+double Pipe.vOffsetType1Comp9  = 0.0;
+double Pipe.vOffsetType1Comp10  = 0.0;
+
+double Pipe.vOffsetType2Comp1 = 0.0;
+double Pipe.vOffsetType2Comp2  = 0.0;
+double Pipe.vOffsetType2Comp3  = -58.74;
+double Pipe.vOffsetType2Comp4  = -58.74;
+double Pipe.vOffsetType2Comp5  = 58.74;
+double Pipe.vOffsetType2Comp6  = 58.74;
+double Pipe.vOffsetType2Comp7  = 55.56;
+double Pipe.vOffsetType2Comp8  = -58.74;
+double Pipe.vOffsetType2Comp9  = 0.0;
+double Pipe.vOffsetType2Comp10  = 0.0;
+
+double Pipe.vOffsetType3Comp1 = 0.0;
+double Pipe.vOffsetType3Comp2  = 0.0;
+double Pipe.vOffsetType3Comp3  = -58.74;
+double Pipe.vOffsetType3Comp4  = -58.74;
+double Pipe.vOffsetType3Comp5  = 58.74;
+double Pipe.vOffsetType3Comp6  = 58.74;
+double Pipe.vOffsetType3Comp7  = 55.56;
+double Pipe.vOffsetType3Comp8  = -58.74;
+double Pipe.vOffsetType3Comp9  = 0.0;
+double Pipe.vOffsetType3Comp10  = 0.0;
+
+double Pipe.vOffsetType4Comp1 = 0.0;
+double Pipe.vOffsetType4Comp2  = 0.0;
+double Pipe.vOffsetType4Comp3  = -58.74;
+double Pipe.vOffsetType4Comp4  = -58.74;
+double Pipe.vOffsetType4Comp5  = 58.74;
+double Pipe.vOffsetType4Comp6  = 58.74;
+double Pipe.vOffsetType4Comp7  = 55.56;
+double Pipe.vOffsetType4Comp8  = -58.74;
+double Pipe.vOffsetType4Comp9  = 0.0;
+double Pipe.vOffsetType4Comp10  = 0.0;
+
+double Pipe.vOffsetType5Comp1 = 0.0;
+double Pipe.vOffsetType5Comp2  = 0.0;
+double Pipe.vOffsetType5Comp3  = -58.74;
+double Pipe.vOffsetType5Comp4  = -58.74;
+double Pipe.vOffsetType5Comp5  = 58.74;
+double Pipe.vOffsetType5Comp6  = 58.74;
+double Pipe.vOffsetType5Comp7  = 55.56;
+double Pipe.vOffsetType5Comp8  = -58.74;
+double Pipe.vOffsetType5Comp9  = 0.0;
+double Pipe.vOffsetType5Comp10  = 0.0;
+
+double Pipe.vOffsetType6Comp1 = 0.0;
+double Pipe.vOffsetType6Comp2  = 0.0;
+double Pipe.vOffsetType6Comp3  = -58.74;
+double Pipe.vOffsetType6Comp4  = -58.74;
+double Pipe.vOffsetType6Comp5  = 58.74;
+double Pipe.vOffsetType6Comp6  = 58.74;
+double Pipe.vOffsetType6Comp7  = 55.56;
+double Pipe.vOffsetType6Comp8  = -58.74;
+double Pipe.vOffsetType6Comp9  = 0.0;
+double Pipe.vOffsetType6Comp10  = 0.0;
+
+double Pipe.vOffsetType7Comp1 = 0.0;
+double Pipe.vOffsetType7Comp2  = 0.0;
+double Pipe.vOffsetType7Comp3  = -58.74;
+double Pipe.vOffsetType7Comp4  = -58.74;
+double Pipe.vOffsetType7Comp5  = 58.74;
+double Pipe.vOffsetType7Comp6  = 58.74;
+double Pipe.vOffsetType7Comp7  = 55.56;
+double Pipe.vOffsetType7Comp8  = -58.74;
+double Pipe.vOffsetType7Comp9  = 0.0;
+double Pipe.vOffsetType7Comp10  = 0.0;
+
+double Pipe.vOffsetType8Comp1 = 0.0;
+double Pipe.vOffsetType8Comp2  = 0.0;
+double Pipe.vOffsetType8Comp3  = -58.74;
+double Pipe.vOffsetType8Comp4  = -58.74;
+double Pipe.vOffsetType8Comp5  = 58.74;
+double Pipe.vOffsetType8Comp6  = 58.74;
+double Pipe.vOffsetType8Comp7  = 55.56;
+double Pipe.vOffsetType8Comp8  = -58.74;
+double Pipe.vOffsetType8Comp9  = 0.0;
+double Pipe.vOffsetType8Comp10  = 0.0;
+
+double Pipe.vOffsetType9Comp1 = 0.0;
+double Pipe.vOffsetType9Comp2  = 0.0;
+double Pipe.vOffsetType9Comp3  = -58.74;
+double Pipe.vOffsetType9Comp4  = -58.74;
+double Pipe.vOffsetType9Comp5  = 58.74;
+double Pipe.vOffsetType9Comp6  = 58.74;
+double Pipe.vOffsetType9Comp7  = 55.56;
+double Pipe.vOffsetType9Comp8  = -58.74;
+double Pipe.vOffsetType9Comp9  = 0.0;
+double Pipe.vOffsetType9Comp10  = 0.0;
+
+double Pipe.vOffsetType10Comp1 = 0.0;
+double Pipe.vOffsetType10Comp2  = 0.0;
+double Pipe.vOffsetType10Comp3  = -58.74;
+double Pipe.vOffsetType10Comp4  = -58.74;
+double Pipe.vOffsetType10Comp5  = 58.74;
+double Pipe.vOffsetType10Comp6  = 58.74;
+double Pipe.vOffsetType10Comp7  = 55.56;
+double Pipe.vOffsetType10Comp8  = -58.74;
+double Pipe.vOffsetType10Comp9  = 0.0;
+double Pipe.vOffsetType10Comp10  = 0.0;
+
+double Pipe.vOffsetType11Comp1 = 0.0;
+double Pipe.vOffsetType11Comp2  = 0.0;
+double Pipe.vOffsetType11Comp3  = -58.74;
+double Pipe.vOffsetType11Comp4  = -58.74;
+double Pipe.vOffsetType11Comp5  = 58.74;
+double Pipe.vOffsetType11Comp6  = 58.74;
+double Pipe.vOffsetType11Comp7  = 55.56;
+double Pipe.vOffsetType11Comp8  = -58.74;
+double Pipe.vOffsetType11Comp9  = 0.0;
+double Pipe.vOffsetType11Comp10  = 0.0;
+
+double Pipe.vOffsetType12Comp1 = 0.0;
+double Pipe.vOffsetType12Comp2  = 0.0;
+double Pipe.vOffsetType12Comp3  = -58.74;
+double Pipe.vOffsetType12Comp4  = -58.74;
+double Pipe.vOffsetType12Comp5  = 58.74;
+double Pipe.vOffsetType12Comp6  = 58.74;
+double Pipe.vOffsetType12Comp7  = 55.56;
+double Pipe.vOffsetType12Comp8  = -58.74;
+double Pipe.vOffsetType12Comp9  = 0.0;
+double Pipe.vOffsetType12Comp10  = 0.0;
+
+double Pipe.vOffsetType13Comp1 = 0.0;
+double Pipe.vOffsetType13Comp2  = 0.0;
+double Pipe.vOffsetType13Comp3  = -58.74;
+double Pipe.vOffsetType13Comp4  = -58.74;
+double Pipe.vOffsetType13Comp5  = 58.74;
+double Pipe.vOffsetType13Comp6  = 58.74;
+double Pipe.vOffsetType13Comp7  = 55.56;
+double Pipe.vOffsetType13Comp8  = -58.74;
+double Pipe.vOffsetType13Comp9  = 0.0;
+double Pipe.vOffsetType13Comp10  = 0.0;
+
+double Pipe.vOffsetType14Comp1 = 0.0;
+double Pipe.vOffsetType14Comp2  = 0.0;
+double Pipe.vOffsetType14Comp3  = -58.74;
+double Pipe.vOffsetType14Comp4  = -58.74;
+double Pipe.vOffsetType14Comp5  = 58.74;
+double Pipe.vOffsetType14Comp6  = 58.74;
+double Pipe.vOffsetType14Comp7  = 55.56;
+double Pipe.vOffsetType14Comp8  = -58.74;
+double Pipe.vOffsetType14Comp9  = 0.0;
+double Pipe.vOffsetType14Comp10  = 0.0;
+
+double Pipe.vOffsetType15Comp1 = 0.0;
+double Pipe.vOffsetType15Comp2  = 0.0;
+double Pipe.vOffsetType15Comp3  = -58.74;
+double Pipe.vOffsetType15Comp4  = -58.74;
+double Pipe.vOffsetType15Comp5  = 58.74;
+double Pipe.vOffsetType15Comp6  = 58.74;
+double Pipe.vOffsetType15Comp7  = 55.56;
+double Pipe.vOffsetType15Comp8  = -58.74;
+double Pipe.vOffsetType15Comp9  = 0.0;
+double Pipe.vOffsetType15Comp10  = 0.0;
+
+double Pipe.vOffsetType16Comp1 = 0.0;
+double Pipe.vOffsetType16Comp2  = 0.0;
+double Pipe.vOffsetType16Comp3  = -58.74;
+double Pipe.vOffsetType16Comp4  = -58.74;
+double Pipe.vOffsetType16Comp5  = 58.74;
+double Pipe.vOffsetType16Comp6  = 58.74;
+double Pipe.vOffsetType16Comp7  = 55.56;
+double Pipe.vOffsetType16Comp8  = -58.74;
+double Pipe.vOffsetType16Comp9  = 0.0;
+double Pipe.vOffsetType16Comp10  = 0.0;
+
+double Pipe.vOffsetType17Comp1 = 0.0;
+double Pipe.vOffsetType17Comp2  = 0.0;
+double Pipe.vOffsetType17Comp3  = -58.74;
+double Pipe.vOffsetType17Comp4  = -58.74;
+double Pipe.vOffsetType17Comp5  = 58.74;
+double Pipe.vOffsetType17Comp6  = 58.74;
+double Pipe.vOffsetType17Comp7  = 55.56;
+double Pipe.vOffsetType17Comp8  = -58.74;
+double Pipe.vOffsetType17Comp9  = 0.0;
+double Pipe.vOffsetType17Comp10  = 0.0;
+
+double Pipe.vOffsetType18Comp1 = 0.0;
+double Pipe.vOffsetType18Comp2  = 0.0;
+double Pipe.vOffsetType18Comp3  = -58.74;
+double Pipe.vOffsetType18Comp4  = -58.74;
+double Pipe.vOffsetType18Comp5  = 58.74;
+double Pipe.vOffsetType18Comp6  = 58.74;
+double Pipe.vOffsetType18Comp7  = 55.56;
+double Pipe.vOffsetType18Comp8  = -58.74;
+double Pipe.vOffsetType18Comp9  = 0.0;
+double Pipe.vOffsetType18Comp10  = 0.0;
+
+double Pipe.vOffsetType19Comp1 = 0.0;
+double Pipe.vOffsetType19Comp2  = 0.0;
+double Pipe.vOffsetType19Comp3  = -58.74;
+double Pipe.vOffsetType19Comp4  = -58.74;
+double Pipe.vOffsetType19Comp5  = 58.74;
+double Pipe.vOffsetType19Comp6  = 58.74;
+double Pipe.vOffsetType19Comp7  = 55.56;
+double Pipe.vOffsetType19Comp8  = -58.74;
+double Pipe.vOffsetType19Comp9  = 0.0;
+double Pipe.vOffsetType19Comp10  = 0.0;
+
+double Pipe.vOffsetType20Comp1 = 0.0;
+double Pipe.vOffsetType20Comp2  = 0.0;
+double Pipe.vOffsetType20Comp3  = -58.74;
+double Pipe.vOffsetType20Comp4  = -58.74;
+double Pipe.vOffsetType20Comp5  = 58.74;
+double Pipe.vOffsetType20Comp6  = 58.74;
+double Pipe.vOffsetType20Comp7  = 55.56;
+double Pipe.vOffsetType20Comp8  = -58.74;
+double Pipe.vOffsetType20Comp9  = 0.0;
+double Pipe.vOffsetType20Comp10  = 0.0;
+
+double Pipe.vOffsetType21Comp1 = 0.0;
+double Pipe.vOffsetType21Comp2  = 0.0;
+double Pipe.vOffsetType21Comp3  = -58.74;
+double Pipe.vOffsetType21Comp4  = -58.74;
+double Pipe.vOffsetType21Comp5  = 58.74;
+double Pipe.vOffsetType21Comp6  = 58.74;
+double Pipe.vOffsetType21Comp7  = 55.56;
+double Pipe.vOffsetType21Comp8  = -58.74;
+double Pipe.vOffsetType21Comp9  = 0.0;
+double Pipe.vOffsetType21Comp10  = 0.0;
+
+double Pipe.vOffsetType22Comp1 = 0.0;
+
+double Pipe.vOffsetType23Comp1 = 0.0;
+
+// Global stuff
+
+bool  Pipe.visible = true;
+bool  Pipe.solid   = false;
+
+int   Pipe.verbosityLevel = 0;
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

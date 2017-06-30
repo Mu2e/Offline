@@ -1,11 +1,12 @@
 //
 // Use G4's surface check technology to check for overlaps.
 //
-// $Id: geom_SurfaceCheck.txt,v 1.1 2013/04/12 22:17:27 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/04/12 22:17:27 $
+// Based on geom_SurfaceCheck.txt,v 1.1 2013/04/12 22:17:27 kutschke Exp $
+// 
+// 
 //
 
+//#include "Mu2eG4/geom/geom_common_DOE_review_2017.txt"
 #include "Mu2eG4/geom/geom_common.txt"
 
 bool g4.doSurfaceCheck    = false;
@@ -22,8 +23,11 @@ bool g4.doSurfaceCheck    = false;
 // bool dsShielding.doSurfaceCheck = true;
 // bool calorimeter.doSurfaceCheck = true;
 
-// External Shielding (both upstream and downstream)
+// External Shielding (both upstream and downstream), Saddles, Services (pipes,
+// racks, etc)
 // bool ExtShield.doSurfaceCheck = true;
+// bool Saddles.doSurfaceCheck = true;
+// bool Services.doSurfaceCheck = true;
 
 // Various portions of PS
 // bool PS.doSurfaceCheck = true;

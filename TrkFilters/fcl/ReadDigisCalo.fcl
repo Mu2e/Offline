@@ -1,0 +1,82 @@
+#
+# Read Tracker digis and run the track trigger prototype 
+#
+#  > mu2e --config TrkFilters/fcl/ReadDigis.fcl --source "your digis file" --TFile ReadDigis.root --nevts=100
+#
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+#include "TrkFilters/fcl/prolog.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+#include "CaloReco/fcl/prolog.fcl"
+#include "CaloCluster/fcl/prolog.fcl"
+
+process_name : ReadDigis
+
+source :
+{
+  module_type : RootInput
+}
+# we don't need any simulation services for this job
+services : @local::Services.Reco
+# timing information
+services.TimeTracker : {
+  dbOutput : {
+    filename : "ReadDigisCalo.db"
+    overwrite : true
+    }
+}
+# setup modules needed to filter tracks
+physics :
+{
+  producers : {
+    @table::Tracking.producers
+    @table::CaloReco.producers
+    @table::CaloCluster.producers
+  }
+  filters : {
+    @table::Tracking.filters
+  }
+  analyzers : {
+    TrkTriggerDiag : {
+      module_type : TrkTriggerDiag
+    }
+    StrawHitDiag : {
+      module_type : StrawHitDiag
+      MonteCarloDiag : false
+      TimeOffsets : {
+        inputs : [ "" ] 
+      }
+    }
+  }
+}
+# create a trigger test path.  Note that physics.trigger_paths and physics.end_paths are not used, art will
+# create those automatically from all the defined paths
+
+physics.TCTrigPath : [ @sequence::Tracking.Trigger.TCFilterSequence ]
+
+physics.PHTrigPath : [ @sequence::Tracking.Trigger.PosHelixFilterSequence ]
+
+physics.DeMSeedTrigPath : [@sequence::CaloReco.Reco,
+	             @sequence::CaloCluster.Reco, 
+ @sequence::Tracking.Trigger.DeMSeedFilterSequence ]
+
+physics.UeMSeedTrigPath : [@sequence::CaloReco.Reco,
+	             @sequence::CaloCluster.Reco, 
+ @sequence::Tracking.Trigger.UeMSeedFilterSequence ]
+
+# physics.DeMKalTrigPath : [ @sequence::Tracking.Trigger.DeMKalFilterSequence ]
+
+# Enable filtering on CaloCluster times
+# Currently this is done twice FIXME!
+physics.producers.FSHPreStereo.UseCaloCluster : true
+#physics.producers.FSHPreStereo.CaloClusterTag :"CaloClusterFromProtoCluster"
+physics.producers.FlagStrawHits.UseCaloCluster : true
+#physics.producers.FlagStrawHits.CaloClusterTag :"CaloClusterFromProtoCluster"
+physics.producers.TimeClusterFinder.HitSelectionBits: ["EnergySelection","TimeSelection","RadiusSelection","CalorimeterSelection"]
+physics.producers.FlagBkgHits.TLTClusterer.SignalMask : ["TimeSelection", "EnergySelection","CalorimeterSelection"]
+physics.producers.FlagBkgHits.TLTClusterer.SignalMask : ["TimeSelection", "EnergySelection","CalorimeterSelection"]
+physics.producers.MakeStereoHits.StrawHitSelectionBits: ["TimeSelection", "EnergySelection","CalorimeterSelection"]
+# analysis path: this is for monitoring only
+physics.ReadDigisEndPath : [ TrkTriggerDiag ]
+
