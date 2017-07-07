@@ -81,7 +81,7 @@ namespace mu2e
 				     double Resid    , double &ResidError, 
 				     CLHEP::Hep3Vector TrajDirection){
     // update the drift distance using this traj direction
-    updateDrift();
+    //    updateDrift();
 
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     // convert this to a distance to the wire

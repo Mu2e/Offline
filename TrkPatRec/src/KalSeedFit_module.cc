@@ -36,6 +36,7 @@
 // BaBar
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/TrkBase/TrkMomCalculator.hh"
 // Mu2e BaBar
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/KalFit.hh"
@@ -97,6 +98,9 @@ namespace mu2e
       // ouptut collections
       // Kalman fitter.  This will be configured for a least-squares fit (no material or BField corrections).
       KalFit _seedfit;
+
+      const TTracker* _tracker;     // straw tracker geometry
+
       // helper functions
       bool findData(const art::Event& e);
       void filterOutliers(TrkDef& trkdef);
@@ -136,6 +140,9 @@ namespace mu2e
  // calculate the helicity
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
+    GeomHandle<mu2e::TTracker> th;
+    _tracker = th.get();
+
     // change coordinates to mu2e
     CLHEP::Hep3Vector vpoint(0.0,0.0,0.0);
     CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(vpoint);
@@ -185,20 +192,31 @@ namespace mu2e
 	TrkDef seeddef(tclust,hstraj,_tpart,_fdir);
 // filter outliers; this doesn't use drift information, just straw positions
 	if(_foutliers)filterOutliers(seeddef);
-	// _seedfit.makeTrack(_shcol,seeddef,seedrep);
 
 	const HelixTraj* htraj = &seeddef.helix();
 	TrkFitFlag       seedok(TrkFitFlag::seedOK);//FIX ME! is there a bettere flag?
 	double           flt0  = htraj->zFlight(0.0);
+	double           mom   = TrkMomCalculator::vecMom(*htraj, _seedfit.bField(), flt0).mag();
+	double           vflt  = seeddef.particle().beta(mom)*CLHEP::c_light;
+	double           helt0 = hseed.t0().t0();
 	
-	KalSeed kf(_tpart,_fdir, hseed._t0, flt0, seedok);
+	KalSeed kf(_tpart,_fdir, hseed.t0(), flt0, seedok);
 	auto hsH = event.getValidHandle<HelixSeedCollection>(_hsTag);
 	kf._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	// extract the hits from the rep and put the hitseeds into the KalSeed
-	int nsh = tclust._strawHitIdxs.size();
+	int nsh = seeddef.strawHitIndices().size();//tclust._strawHitIdxs.size();
 	for (int i=0; i< nsh; ++i){
+	  size_t          istraw   = seeddef.strawHitIndices().at(i);
+	  const StrawHit& strawhit(_shcol->at(istraw));
+	  const Straw&    straw    = _tracker->getStraw(strawhit.strawIndex());	  
+	  double          fltlen   = htraj->zFlight(straw.getMidPoint().z());
+	  double          propTime = (fltlen-flt0)/vflt;
+
+	  //fill the TrkStrwaHitSeed info
 	  TrkStrawHitSeed tshs;
-	  tshs._index = tclust._strawHitIdxs.at(i);
+	  tshs._index  = istraw;
+	  tshs._t0     = TrkT0(helt0 + propTime, hseed.t0().t0Err());
+	  tshs._trklen = fltlen; 
 	  kf._hits.push_back(tshs);
 	}
 	
@@ -214,6 +232,7 @@ namespace mu2e
 	} else {
 	  throw cet::exception("RECO")<<"mu2e::KalSeedFit: Can't extract helix traj from seed fit" << endl;
 	}
+
 	// now, fit the seed helix from the filtered hits
 	KalRep *seedrep(0);
 	_seedfit.makeTrack(_shcol, kf, seedrep);

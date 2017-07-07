@@ -32,25 +32,23 @@ namespace mu2e
 // caloCluster specific interface
     const CaloCluster& caloCluster() const { return _caloCluster; }
 // correct the hit time
-    double time() const;
-    void hitPosition(CLHEP::Hep3Vector& hpos) const;
-    //    HitT0 const& hitT0() const { return _hitt0;}
-    //    void updateHitT0(HitT0 const& t0) { _hitt0 = t0; }
-    bool signalPropagationTime(double &propTime, double&Doca, 
-			       double resid, double &residErr,
-			       CLHEP::Hep3Vector trajDirection);//propagation time
-    void trackT0Time(double& htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
- 
-    double physicalTime() const;
+    double time                 () const;
+    void   hitPosition          (CLHEP::Hep3Vector& hpos) const;
+    bool   signalPropagationTime(double &propTime, double&Doca, 
+				 double resid, double &residErr,
+				 CLHEP::Hep3Vector trajDirection);//propagation time
+    void   trackT0Time          (double& htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
+    
+    double physicalTime         () const;
     
     //FIXME! THAT FUNCTION NEED TO BE IMPLEMENTED
-    double physicalPosition() const { return 0;}
+    double physicalPosition     () const { return 0;}
 
 // intrinsic hit error (mm)
-    double hitErr() const { return _hitErr; }
+    double hitErr               () const { return _hitErr; }
     
 
-    void print(std::ostream& ) const;
+    void print                  (std::ostream& ) const;
   protected:
     virtual TrkErrCode updateMeasurement(const TrkDifTraj* traj);
 
@@ -59,12 +57,7 @@ namespace mu2e
     TrkLineTraj*       _hittraj;
     double             _hitErr;
   };
-/// / unary functor to select TrkStrawHit from a given hit
- //  struct FindTrkCaloHit {
- //    FindTrkStrawHit(CaloCluster const& caloCluster) : _caloCluster(caloCluster) {}
- //    bool operator () (TrkCaloHit* const& tcal ) { return tcal->caloCluster() == _caloCluster; }
- //    CaloCluster const& _caloCluster;
- //  };
+
 // define TrkStrawHitVector, to allow explicit conversion and construction
   typedef std::vector<TrkCaloHit*> TrkCaloHitVector;
 // utility function to convert vector of TrkHits into TrkCaloHits
