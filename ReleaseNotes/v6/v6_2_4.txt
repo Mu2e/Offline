@@ -1,3 +1,34 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v6_2_4
+
+2) TrkDiag/test/ce.C
+   Update the module label used as a TDirectory name to match the
+   new conventions.
+
+
+1) Mu2eG4/geom/geom_common_current.txt
+   The code does not respect the indended difference between the z0 of
+   tracker center and the z0 of the origin of the detector system.  So
+   these two items must have the same value.  Specfically, in
+   Mu2eG4/geom/geom_common_current.txt the line:
+
+     double mu2e.detectorSystemZ0 = 10171.;
+
+   must match:
+
+    double ttracker.z0 = 10171.0;
+
+   from the included ttracker file.  For now this must be maintened by hand.
+
+   The intention is that ttracker.z0 describes the nominal center of the ttracker
+   whereas mu2e.detectorSystemZ0 describes the origin of a coordinate system in
+   which the reco work is done.  When we do alignment on the tracker, its position
+   and orientation can shift but the detector system should stay fixed. This
+   distinction is not respected by the code so, for the time being, the two values
+   must be the same.
+
+   This changed fixes an problem introduced with commit d8b1d154 on June 6, 2017.
+
+
+
