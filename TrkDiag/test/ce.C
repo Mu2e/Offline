@@ -30,7 +30,7 @@
   gROOT->SetStyle("Plain");
   gStyle->SetOptStat("emruo");
 
-  TChain* mychain = new TChain("RKFDownstreameMinus/trkdiag");
+  TChain* mychain = new TChain("RKFDeM/trkdiag");
   mychain->Add("genReco.hist");
 
 #include "TrkDiag/test/KalFit.C+"
