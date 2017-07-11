@@ -2,6 +2,17 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_2_4
 
+4) 11 July 2017  dnbrow01
+   Added 4 files to Sandbox based on Rob's 6 new files, mentioned
+   in item (3) below.  These files implement Rob's tests, with specifics 
+   that fix the tracker StepPointMCs.  Will need to be generalized and
+   possibly moved to a more permanent location.
+   new file:   Sandbox/src/ModifyTrackSPM_module.cc
+   new file:   Sandbox/src/ReadTrackSPM_module.cc
+   new file:   Sandbox/test/modifyTrackSPM.fcl
+   new file:   Sandbox/test/readTrackSPM.fcl
+
+
 3) July 10, 2017 kutschke
    Added 6 new files to Sandbox.  These are used to test a proposal
    to fix the existing files that were produced with the DetectorSystem
