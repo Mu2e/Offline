@@ -2,12 +2,19 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_2_4
 
-2) TrkDiag/test/ce.C
+3) July 10, 2017 kutschke
+   Added 6 new files to Sandbox.  These are used to test a proposal
+   to fix the existing files that were produced with the DetectorSystem
+   z0 bug: https://mu2e-hnews.fnal.gov/HyperNews/Mu2e/get/Sim/343.html
+
+2) July 10, 2017 kutschke
+   TrkDiag/test/ce.C
    Update the module label used as a TDirectory name to match the
    new conventions.
 
 
-1) Mu2eG4/geom/geom_common_current.txt
+1) July 10, 2017 kutschke
+   Mu2eG4/geom/geom_common_current.txt
    The code does not respect the indended difference between the z0 of
    tracker center and the z0 of the origin of the detector system.  So
    these two items must have the same value.  Specfically, in
