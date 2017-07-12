@@ -1,7 +1,8 @@
 //
-// Create a product in an output file.
+// Read and report a list of products from an input file.
 //
 // Original author Rob Kutschke
+// Modified by David (Lou) Brown
 //
 
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -12,6 +13,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 
+#include <vector>
 using namespace std;
 
 namespace mu2e {
@@ -24,27 +26,30 @@ namespace mu2e {
     void analyze( art::Event const& e) override;
 
   private:
-    art::InputTag tag_;
+    vector<string> tags_;
 
   };
 
   ReadTrackSPM::ReadTrackSPM(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
-    tag_(pset.get<std::string>("productTag"))
+    tags_(pset.get<vector<string> >("productTags",vector<string>()))
   {}
 
   void ReadTrackSPM::analyze(art::Event const& event) {
 
-    auto testp = event.getValidHandle<std::vector<mu2e::StepPointMC> >(tag_);
-
     cout << "Event: " << event.id() << " contains the following:  " << endl;
 
-    int count = 0;
-    for ( auto theTSPM : *testp ) {
-      cout << ++count << theTSPM << endl;
-    }
-
-
+    for ( auto aTag : tags_ ) { 
+      art::InputTag theTag(aTag);
+      auto testp = event.getValidHandle<vector<mu2e::StepPointMC> >(theTag);
+      if ( 0 != testp ) {  // This is probably redundant.  Think about
+	cout << "  For Tag " << aTag << ": " << endl;
+	int count = 0;
+	for ( auto theTSPM : *testp ) {
+	  cout << ++count << theTSPM << endl;
+	} // end for loop over step points
+      } // end if 0 != testp
+    } // end of loop over tags
   } // end ReadTrackSPM::analyze
 
 }  // end namespace mu2e

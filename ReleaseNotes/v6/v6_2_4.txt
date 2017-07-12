@@ -2,6 +2,27 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_2_4
 
+5) 12 July 2017  dnbrow01
+   Created the new directory UtilityModules to hold the modules and
+   associated fcl files for the StepPointMC corrections from yesterday's
+   notes.  Fleshed out the modules and config files.  Note that the
+   output sections of the config files assume certain process names.
+   These are names from standard jobs, so should be safe, but user beware!
+   This has been tested on the files being used for a sensitivity update
+   for the July 2017 DOE review.
+   renamed:    Sandbox/src/ModifyTrackSPM_module.cc -> UtilityModules/src/ModifyTrackSPM_module.cc
+   renamed:    Sandbox/src/ReadTrackSPM_module.cc -> UtilityModules/src/ReadTrackSPM_module.cc
+   new file:   UtilityModules/src/SConscript
+   renamed:    Sandbox/test/modifyTrackSPM.fcl -> UtilityModules/test/modifyTrackSPM.fcl
+   new file:   UtilityModules/test/modifyTrackSPM_conv.fcl
+   new file:   UtilityModules/test/modifyTrackSPM_detmix.fcl
+   new file:   UtilityModules/test/modifyTrackSPM_flte.fcl
+   renamed:    Sandbox/test/readTrackSPM.fcl -> UtilityModules/test/readTrackSPM.fcl
+   new file:   UtilityModules/test/readTrackSPM_conv.fcl
+   new file:   UtilityModules/test/readTrackSPM_detmix.fcl
+   new file:   UtilityModules/test/readTrackSPM_flate.fcl
+
+
 4) 11 July 2017  dnbrow01
    Added 4 files to Sandbox based on Rob's 6 new files, mentioned
    in item (3) below.  These files implement Rob's tests, with specifics 

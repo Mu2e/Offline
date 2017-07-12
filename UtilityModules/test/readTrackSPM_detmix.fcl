@@ -20,7 +20,13 @@ physics : {
   analyzers : {
     readTrackSPM : {
       module_type : ReadTrackSPM
-      productTag  : "g4run:tracker"
+      productTags : [ "deuteronMixer:tracker",
+      		      "ootMixer:tracker",
+		      "flashMixer:tracker",
+		      "photonMixer:tracker",
+		      "neutronMixer:tracker",
+		      "dioMixer:tracker",
+		      "protonMixer:tracker" ]
     }
   }
 
