@@ -16,7 +16,7 @@ namespace mu2e {
 
   struct HelixHit : public StrawHitPosition {
     HelixHit() : _shidx(0), _phi(0.0), _hqual(0.0) {}
-    HelixHit(StrawHitPosition const& shp, StrawHitIndex shidx=0, Float_t phi=0.0) : StrawHitPosition(shp), _shidx(shidx), _phi(phi) {}
+    HelixHit(StrawHitPosition const& shp, StrawHitIndex shidx=0, Float_t phi=0.0) : StrawHitPosition(shp), _shidx(shidx), _phi(phi), _hqual(0.) {}
 
     StrawHitIndex index() const { return _shidx; }
     Float_t phi() const { return _phi; }
@@ -29,5 +29,3 @@ namespace mu2e {
   typedef std::vector<mu2e::HelixHit> HelixHitCollection;
 }
 #endif
-
-
