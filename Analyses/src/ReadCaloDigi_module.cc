@@ -479,7 +479,7 @@ namespace mu2e {
     //    event.get(s_dem,dem_handle);
 
     int      nTraks(0);
-    const mu2e::KalRepCollection* list_of_ele_tracks;
+    const mu2e::KalRepCollection* list_of_ele_tracks = nullptr;
 
     if (dem_handle.isValid()) {
       list_of_ele_tracks = dem_handle.product();
@@ -678,9 +678,9 @@ namespace mu2e {
         nHitsRO   [i][j] = 0;
       }
     }
-    
+
     _nRecoDigi = nCaloRecoDigi;
-    
+
     for (int i=0; i< nCaloRecoDigi; ++i){
       recoDigi   = &recoCaloDigiCol->at(i);
       //amplitude  = recoDigi->amplitude()*ADC2mV;
@@ -705,7 +705,7 @@ namespace mu2e {
 	if (content > amplitude) amplitude = content;
       }
       _recoDigiAmp     [i] = amplitude;
-      
+
       _recoDigiSamples [i] = nWords;
       _recoDigiId      [i] = roId;
       _recoDigiT0      [i] = caloDigi.t0();
@@ -856,7 +856,7 @@ namespace mu2e {
 
       	indexMC          = 0;//caloDigi.index();
 
-	
+
       	eDep             = crystalHit->energyDep();
       	psd              = 0;//recoDigi  ->psd();
 
@@ -924,5 +924,3 @@ namespace mu2e {
 }  // end namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::ReadCaloDigi);
-
-
