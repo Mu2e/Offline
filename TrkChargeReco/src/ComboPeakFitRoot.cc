@@ -17,7 +17,7 @@ namespace mu2e {
     // find initial values for the fit
     PeakFit::process(adcData,fit);
 	if(_config._debug>0)std::cout << "PeakFitRoot Initialization charge = " << fit._charge << std::endl;
-	
+
     // convert waveform to a TGraph
     TGraphErrors fitData;
     adcWaveform2TGraphErrors(adcData,fitData);
@@ -33,8 +33,8 @@ namespace mu2e {
 	int locPrimaryPeak = 0;
 	_peakfit.fitModelTF1()->ReleaseParameter(PeakFitParams::width);
 	_peakfit.fitModelTF1()->SetParameter(PeakFitParams::width,12.0);
-	
-	if (hasEarlyCharge(initialGuess)) 
+
+	if (hasEarlyCharge(initialGuess))
 	{
 		_peakfit.fitModelTF1()->ReleaseParameter(PeakFitParams::earlyCharge);
 		_peakfit.fitModelTF1()->SetParameter(PeakFitParams::earlyCharge, initialGuess[0]._peakHeight - (double) _strawele.ADCPedestal()); // Are units correct???
@@ -57,17 +57,19 @@ namespace mu2e {
 		// debug
     	if(_config._debug>1){
       		std::cout << "data = ";
-      		for (size_t i = 0; i < adcData.size(); ++i)
-		std::cout << fitData.GetY()[i] << ",  ";
+      		for (size_t i = 0; i < adcData.size(); ++i){
+                  std::cout << fitData.GetY()[i] << ",  ";
+                }
       		std::cout << std::endl;
-      		std::cout << "func = ";  
-      for (size_t i = 0; i < adcData.size(); ++i)
-		std::cout << _peakfit.fitModelTF1()->Eval(fitData.GetX()[i]) << ",  ";
+      		std::cout << "func = ";
+                for (size_t i = 0; i < adcData.size(); ++i){
+                  std::cout << _peakfit.fitModelTF1()->Eval(fitData.GetX()[i]) << ",  ";
+                }
       		std::cout << std::endl;
     }
-	
+
     // invoke the fit
-    TFitResultPtr fitresult = fitData.Fit(_peakfit.fitModelTF1(),_fitoptions.c_str()); 
+    TFitResultPtr fitresult = fitData.Fit(_peakfit.fitModelTF1(),_fitoptions.c_str());
     // if the fit is a failure, try again, up to the maximum # of iterations
     unsigned ifit=1;
     if(fitresult->Status() ==4 && ifit < _config._maxnit){
@@ -81,7 +83,7 @@ namespace mu2e {
       fitresult->Status());
   }
 
-	bool ComboPeakFitRoot::hasEarlyCharge(const peakResultVector &initialGuess) const 
+	bool ComboPeakFitRoot::hasEarlyCharge(const peakResultVector &initialGuess) const
 	{
 		// Is this stable??
 		return initialGuess[0]._peakTime < (_strawele.nADCPreSamples()*_strawele.adcPeriod());
@@ -95,7 +97,7 @@ namespace mu2e {
 		{
 			if (peak._peakTime >= (_strawele.nADCPreSamples()*_strawele.adcPeriod())) ++nPeaks;
 		}
-		return nPeaks>1; 
+		return nPeaks>1;
 	}
 
 
@@ -123,7 +125,7 @@ namespace mu2e {
       //instead of arrays
       const Double_t *adcValues = gr.GetY();
       const Double_t *measurementTimes = gr.GetX();
-      const int numSamplesPerHit = gr.GetN();	
+      const int numSamplesPerHit = gr.GetN();
       Double_t subtractedValues[numSamplesPerHit];
 
       const double earlyPeakCharge = adcValues[0];
@@ -131,8 +133,8 @@ namespace mu2e {
       for (int i = 0; i < numSamplesPerHit; ++i)
       {
 	PeakFitFunction func(_strawele, _config);
-	
-	// FIXME : THIS NEEDS TO GET THE FUNCTION EARLYPEAK FROM PEAK FIT FUNCTION 
+
+	// FIXME : THIS NEEDS TO GET THE FUNCTION EARLYPEAK FROM PEAK FIT FUNCTION
         subtractedValues[i] = adcValues[i] - func.earlyPeak(measurementTimes[i], earlyPeakCharge);
       }
 
@@ -144,7 +146,7 @@ namespace mu2e {
       initialGuess.push_back(newPeakData);
     }
 
-    // Performs explicit peak search on adc waveform data  
+    // Performs explicit peak search on adc waveform data
     void ComboPeakFitRoot::findPeaks(const TGraphErrors &gr, peakResultVector &initialGuess, const double sigma) const
     {
       int ientry = 0; // Start time at 0
@@ -191,5 +193,3 @@ namespace mu2e {
   } // TrkChargeReco namespace
 
 }// mu2e namespace
-
-
