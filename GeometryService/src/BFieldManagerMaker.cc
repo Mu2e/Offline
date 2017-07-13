@@ -22,7 +22,7 @@
 
 // Includes from boost
 #include <boost/regex.hpp>
-#include <boost/iostreams/filtering_stream.hpp>
+#include "boost_fix/iostreams/filtering_stream.hpp"
 #include <boost/iostreams/filter/bzip2.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 

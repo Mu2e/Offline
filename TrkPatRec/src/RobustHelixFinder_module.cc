@@ -41,8 +41,8 @@
 #include "CLHEP/Matrix/SymMatrix.h"
 // boost
 #include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics.hpp>
+#include "boost_fix/accumulators/statistics/stats.hpp"
+#include "boost_fix/accumulators/statistics.hpp"
 #include <boost/accumulators/statistics/median.hpp>
 // root
 #include "TH1F.h"
@@ -57,13 +57,13 @@
 #include <vector>
 #include <set>
 #include <map>
-using namespace std; 
+using namespace std;
 using CLHEP::Hep3Vector;
 using CLHEP::HepVector;
 using CLHEP::HepSymMatrix;
 using namespace boost::accumulators;
 
-namespace mu2e 
+namespace mu2e
 {
 
   // struct to hold MVA input
@@ -88,7 +88,7 @@ namespace mu2e
     explicit RobustHelixFinder(fhicl::ParameterSet const&);
     virtual ~RobustHelixFinder();
     virtual void beginJob();
-    virtual void produce(art::Event& event ); 
+    virtual void produce(art::Event& event );
   private:
     unsigned                           _iev;
 
@@ -112,7 +112,7 @@ namespace mu2e
     double				_maxchisq; // outlier cut on chisquared
     double				_maxrwdot[2]; // outlier cut on angle between radial direction and wire: smaller is better
     double				_minrerr; // minimum radius error
-    
+
     bool				_usemva; // use MVA to cut outliers
     double				_minmva; // outlier cut on MVA
 
@@ -156,7 +156,7 @@ namespace mu2e
     bool updateStereo(HelixSeed& hseed); // update the stereo hit positions for the current helix estimate
     unsigned hitCount(HelixSeed const& hseed);
     void fitHelix(HelixSeed& hseed);
- 
+
   };
 
   RobustHelixFinder::RobustHelixFinder(fhicl::ParameterSet const& pset) :
@@ -232,7 +232,7 @@ namespace mu2e
 
     for(auto itclust=_tccol->begin(); itclust != _tccol->end(); ++ itclust) {
       auto const& tclust = *itclust;
-    // build an empty HelixSeed 
+    // build an empty HelixSeed
       HelixSeed hseed;
       // copy in the t0 and cluster
       hseed._t0 = tclust._t0;
@@ -248,7 +248,7 @@ namespace mu2e
 	if(_shfcol->at(ind).hasAnyProperty(_hsel) && !_shfcol->at(ind).hasAnyProperty(_hbkg))
 	  goodhits.push_back(ind);
       }
-      // create helix seed hits from the straw hit positions 
+      // create helix seed hits from the straw hit positions
       for(auto idx : goodhits ) {
 	HelixHit hhit(_shpcol->at(idx),idx);
 	hhit._flag.clear(StrawHitFlag::resolvedphi);
@@ -278,7 +278,7 @@ namespace mu2e
 	    ++niter;
 	  }
 	  if(_diag > 0)_nitermva->Fill(niter);
-	} else 
+	} else
 	  // simply fill the MVA information for diagnostics
 	  fillMVA(hseed);
       }
@@ -345,7 +345,7 @@ namespace mu2e
       }
     }
   }
-  
+
   bool RobustHelixFinder::filterHitsMVA(HelixSeed& hseed) {
     HelixHitCollection& hhits = hseed._hhits;
     bool changed(false);
@@ -413,7 +413,7 @@ namespace mu2e
     // only remove hits, never add
       if(!hhit._flag.hasAnyProperty(outlier)) {
 	// first compare detector azimuth with the circle center
-	double hphi = hhit.pos().phi(); 
+	double hphi = hhit.pos().phi();
 	double dphi = fabs(Angles::deltaPhi(hphi,helix.fcent()));
 	// compute spatial distance and chisquiared
 	// directions
@@ -437,7 +437,7 @@ namespace mu2e
 	  std::pow(_cradres*cdir.dot(wtdir),(int)2) +
 	  std::pow(_cperpres*cperp.dot(wtdir),(int)2);
 	// create a chisquared from these
-	double chisq = dwire*dwire/wres2 + dtrans*dtrans/wtres2; 
+	double chisq = dwire*dwire/wres2 + dtrans*dtrans/wtres2;
 	// cut
 	if( dphi > _maxphisep || fabs(dwire) > _maxdwire || fabs(dtrans) > _maxdtrans || chisq > _maxchisq) {
 	  // outlier hit flag it.  But don't clear if it's not an outlier
@@ -450,7 +450,7 @@ namespace mu2e
   }
 
   bool RobustHelixFinder::findData(const art::Event& evt){
-    _shcol = 0; _shfcol = 0; _shpcol = 0; _tccol = 0; _sthcol = 0; 
+    _shcol = 0; _shfcol = 0; _shpcol = 0; _tccol = 0; _sthcol = 0;
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol = shH.product();
     auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
@@ -520,7 +520,7 @@ namespace mu2e
 	terr(_ttcalc.strawHitTime(_shcol->at(ind),_shpcol->at(ind)),weight=wt);
       }
     }
-    // add cluster time 
+    // add cluster time
     if(hseed.caloCluster().isNonnull()){
       double time = _ttcalc.caloClusterTime(*hseed.caloCluster());
       double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(hseed.caloCluster()->diskId()),2);
@@ -614,7 +614,7 @@ namespace mu2e
 	    std::pair<int, int> mypair = std::make_pair(-1,-1);
 	    if(isfirst)
 	      mypair.first = ihh;
-	    else 
+	    else
 	      mypair.second = ihh;
 	    //create new entry
 	    sthmap[stindex] = mypair;
@@ -622,7 +622,7 @@ namespace mu2e
 	    auto& mypair = ifnd->second;
 	    if(isfirst)
 	      mypair.first = ihh;
-	    else 
+	    else
 	      mypair.second = ihh;
 	  }
 	}

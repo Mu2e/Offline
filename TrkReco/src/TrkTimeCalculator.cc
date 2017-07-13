@@ -2,7 +2,7 @@
 // Object to calculate t0
 //
 // $Id: HelixFit.cc,v 1.12 2014/07/10 14:47:26 brownd Exp $
-// $Author: brownd $ 
+// $Author: brownd $
 // $Date: 2014/07/10 14:47:26 $
 //
 // the following has to come before other BaBar includes
@@ -12,8 +12,8 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 // boost
 #include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics.hpp>
+#include "boost_fix/accumulators/statistics/stats.hpp"
+#include "boost_fix/accumulators/statistics.hpp"
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/median.hpp>
 // root
@@ -26,7 +26,7 @@
 using CLHEP::Hep3Vector;
 using namespace std;
 using namespace boost::accumulators;
-namespace mu2e 
+namespace mu2e
 {
 
   TrkTimeCalculator::TrkTimeCalculator(fhicl::ParameterSet const& pset) :
@@ -42,7 +42,7 @@ namespace mu2e
     _caloT0Offset[1] = pset.get<double>("Disk1TimeOffset",12.2); // nanoseconds
     _caloT0Err[0] = pset.get<double>("Disk0TimeErr",0.8); // nanoseconds
     _caloT0Err[1] = pset.get<double>("Disk1TimeErr",1.7); // nanoseconds
-  } 
+  }
 
   TrkTimeCalculator::~TrkTimeCalculator() {}
 

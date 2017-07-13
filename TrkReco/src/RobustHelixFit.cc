@@ -2,7 +2,7 @@
 // Object to perform helix fit to straw hits
 //
 // $Id: HelixFit.cc,v 1.12 2014/07/10 14:47:26 brownd Exp $
-// $Author: brownd $ 
+// $Author: brownd $
 // $Date: 2014/07/10 14:47:26 $
 //
 // mu2e
@@ -15,7 +15,7 @@
 // boost
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics.hpp>
+#include "boost_fix/accumulators/statistics.hpp"
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/median.hpp>
 #include <boost/accumulators/statistics/weighted_median.hpp>
@@ -30,7 +30,7 @@
 using CLHEP::Hep3Vector;
 using namespace std;
 using namespace boost::accumulators;
-namespace mu2e 
+namespace mu2e
 {
   // comparison functor for sorting by z
   struct zcomp : public std::binary_function<HelixHit,HelixHit,bool> {
@@ -152,7 +152,7 @@ namespace mu2e
 	AGESums sums;
 	fillSums(hseed,center,rmed,sums);
 	// descent vector cases: if the inner vs outer difference is significant (compared to the median), damp using the median sums,
-	// otherwise not.  These expressions take care of the undiferentiable condition on the boundary. 
+	// otherwise not.  These expressions take care of the undiferentiable condition on the boundary.
 	double dx(sums._sco-sums._sci);
 	double dy(sums._sso-sums._ssi);
 	if(fabs(dx) < sums._scc)
@@ -191,7 +191,7 @@ namespace mu2e
 	} else {
 	  static const double minage(0.1);
 	  if(_debug > 0 && agenew-age>minage)
-	    std::cout << "iteration did not improve AGE!!! lambda = " 
+	    std::cout << "iteration did not improve AGE!!! lambda = "
 	      << lambda  << " age = " << age << " agenew = " << agenew << std::endl;
 	  break;
 	}
@@ -265,14 +265,14 @@ namespace mu2e
 		} // lambda in range
 	      } // good phi separation
 	    } // good z separation
-	  } // good 2nd hit 
+	  } // good 2nd hit
 	} // loop over 2nd hit
       } // good first hit
     } // loop over first hit
     // extract the lambda
     if(boost::accumulators::extract::count(accf) > _minnhit){
       double lambda = extract_result<tag::weighted_median>(accf);
-      // check the range 
+      // check the range
       if( lambda < _lmax && lambda > _lmin) {
 	// update helix
 	rhel._lambda = lambda;
@@ -346,7 +346,7 @@ namespace mu2e
 		  accf(lambda, weight=wt);
 		} // good slope
 	      } // minimum hit separation
-	    } // good 2nd hit 
+	    } // good 2nd hit
 	  } // loop on 2nd hit
 	} // good 1st hit
       } // loop on 1st hit
@@ -396,7 +396,7 @@ namespace mu2e
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
       const Calorimeter* calo = ch.get();
     // cluster position in detector coordinates
-      Hep3Vector cog = calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector())); 
+      Hep3Vector cog = calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector()));
       pos.push_back(WPos(cog.perpPart(),_ccwt));
     }
     // loop over all triples
@@ -411,23 +411,23 @@ namespace mu2e
 	  double rj2 = pos[jp].perp2();
 	  size_t mink = jp+1;
 	  for(size_t kp=mink;kp<np; ++kp){
-	    double dist2ik = pos[ip].diff2(pos[kp]); 
-	    double dist2jk = pos[jp].diff2(pos[kp]); 
+	    double dist2ik = pos[ip].diff2(pos[kp]);
+	    double dist2jk = pos[jp].diff2(pos[kp]);
 	    if( dist2ik > mind2 &&  dist2jk > mind2 &&
 		dist2ik < maxd2 &&  dist2jk < maxd2) {
 	      // this effectively measures the slope difference
-	      double delta = (pos[kp].x() - pos[jp].x())*(pos[jp].y() - pos[ip].y()) - 
+	      double delta = (pos[kp].x() - pos[jp].x())*(pos[jp].y() - pos[ip].y()) -
 		(pos[jp].x() - pos[ip].x())*(pos[kp].y() - pos[jp].y());
 	      if(fabs(delta) > _mindelta){
 		double rk2 = pos[kp].perp2();
 		// find circle center for this triple
 		double cx = 0.5* (
-		    (pos[kp].y() - pos[jp].y())*ri2 + 
-		    (pos[ip].y() - pos[kp].y())*rj2 + 
+		    (pos[kp].y() - pos[jp].y())*ri2 +
+		    (pos[ip].y() - pos[kp].y())*rj2 +
 		    (pos[jp].y() - pos[ip].y())*rk2 ) / delta;
 		double cy = -0.5* (
-		    (pos[kp].x() - pos[jp].x())*ri2 + 
-		    (pos[ip].x() - pos[kp].x())*rj2 + 
+		    (pos[kp].x() - pos[jp].x())*ri2 +
+		    (pos[ip].x() - pos[kp].x())*rj2 +
 		    (pos[jp].x() - pos[ip].x())*rk2 ) / delta;
 		double rho = sqrt(std::pow(pos[ip].x()-cx,(int)2)+std::pow(pos[ip].y()-cy,(int)2));
 		double rc = sqrt(cx*cx + cy*cy);
@@ -437,10 +437,10 @@ namespace mu2e
 		// optionally consistent with the target
 		if(rho > _rmin && rho< _rmax && rmax < _trackerradius
 		    && ( (!_targetinit) || rmin < _targetradius) ) {
-		  // accumulate 
+		  // accumulate
 		  ++ntriple;
 		  double wt = pos[ip].weight()*pos[jp].weight()*pos[kp].weight();
-		  accx(cx,weight = wt); 
+		  accx(cx,weight = wt);
 		  accy(cy,weight = wt);
 		  accr(rho,weight = wt);
 		} // radius meets requirements
@@ -494,7 +494,7 @@ namespace mu2e
       // find the median radius
       accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > accr;
       for(unsigned irad=0;irad<radii.size();++irad){
-	accr(radii[irad].first, weight = radii[irad].second); 
+	accr(radii[irad].first, weight = radii[irad].second);
       }
       rmed = extract_result<tag::weighted_median>(accr);
       // now compute the AGE (Absolute Geometric Error)
@@ -533,7 +533,7 @@ namespace mu2e
 	  ++sums._no;
 	} else {
 	  sums._sci += wt*pcos;
-	  sums._ssi += wt*psin;        
+	  sums._ssi += wt*psin;
 	  ++sums._ni;
 	}
 	wtot += wt;
@@ -609,4 +609,3 @@ namespace mu2e
 
 
 }
-
