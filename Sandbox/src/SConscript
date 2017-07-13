@@ -142,6 +142,7 @@ helper.make_plugins( [ mainlib,
                        'Core',
                        'boost_filesystem',
                        'boost_system',
+                       'tbb',
                      ],
                      services,
                      )
