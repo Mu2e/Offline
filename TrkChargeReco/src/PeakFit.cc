@@ -1,7 +1,8 @@
-// MAKE SURE THAT initParams is getting passed everywhere correctly 
+// MAKE SURE THAT initParams is getting passed everywhere correctly
 
 #include "TrkChargeReco/inc/PeakFit.hh"
 
+#include <numeric>
 
 //SumADC::SumADC(const ConfigStruct &initParams) : PeakFitRootBase(initParams){}
 namespace mu2e {
@@ -15,7 +16,7 @@ namespace mu2e {
     void PeakFit::process(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const {
       switch(_fittype) {
         case FitType::sumadc :
-          sumADC(adcData, fit); 
+          sumADC(adcData, fit);
           break;
         case FitType::peakminusped :
           peakMinusPed(adcData, fit);
@@ -34,9 +35,9 @@ namespace mu2e {
       // convert charge to pC
       double charge = sum*_strawele.adcPeriod()*StrawElectronics::_pC_per_uA_ns;
       fit._charge = charge;
-    }		
+    }
 
-    void PeakFit::peakMinusPed(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const 
+    void PeakFit::peakMinusPed(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const
     {
       // reset
       fit = PeakFitParams();
@@ -64,6 +65,3 @@ namespace mu2e {
     }
   }
 }
-
-
-    
