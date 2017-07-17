@@ -1,11 +1,9 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v6_2_4
 
 6) 17 July 2017  dnbrow01
    Fix some of the hard-wired 10200. instances in modules with references
    to parameterset values.  Update geom_common_DOE_review_2017.txt with
-   the necessary mu2e.detectorSystemZ0 = 10171 value.  
+   the necessary mu2e.detectorSystemZ0 = 10171 value.
    modified:   Analyses/src/BkgRates_module.cc
    modified:   Analyses/src/CaloCalib_module.cc
    modified:   Analyses/src/ConvElecHistory_module.cc
