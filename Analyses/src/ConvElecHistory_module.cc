@@ -72,7 +72,8 @@ namespace mu2e {
       _nOverflow(0),
       _nKilled(0),
       _totalcputime(0),
-      _totalrealtime(0)
+      _totalrealtime(0),
+      _mu2eDetectorSystemZ0(pset.get<double>("mu2e.detectorSystemZ0")) // Have to have
     {
     }
     virtual ~ConvElecHistory() {
@@ -110,6 +111,8 @@ namespace mu2e {
 
     int _nBadG4Status, _nOverflow, _nKilled;
     float _totalcputime, _totalrealtime;
+
+    double _mu2eDetectorSystemZ0;
 
     Float_t B_evt, B_run; // --2--
     Float_t B_gentime, B_genx, B_geny, B_genz, B_gene, B_genp, B_gencosth, B_genphi, B_genfoil; // --9--
@@ -369,7 +372,7 @@ namespace mu2e {
       
       B_cry1x     = calo1.position().x() + 3904.;
       B_cry1y     = calo1.position().y();
-      B_cry1z     = calo1.position().z() - 10200.;
+      B_cry1z     = calo1.position().z() - _mu2eDetectorSystemZ0;
       B_cry1p     = calo1.momentum().mag();
       B_cry1costh = calo1.momentum().cosTheta();
       B_cry1phi   = calo1.momentum().phi();
@@ -389,7 +392,7 @@ namespace mu2e {
 
     B_deadx  = simCE.endPosition().x() + 3904.;
     B_deady  = simCE.endPosition().y();
-    B_deadz  = simCE.endPosition().z() - 10200.;
+    B_deadz  = simCE.endPosition().z() - _mu2eDetectorSystemZ0;
     B_deadtime  = simCE.endGlobalTime();
     B_deadvol  = simCE.endVolumeIndex();
 
@@ -439,7 +442,7 @@ namespace mu2e {
       
       B_vdTTFrontx = vdFrontpos.x() + 3904.;
       B_vdTTFronty = vdFrontpos.y();
-      B_vdTTFrontz = vdFrontpos.z() - 10200.;
+      B_vdTTFrontz = vdFrontpos.z() - _mu2eDetectorSystemZ0;
       B_vdTTFrontp = vdFrontmom.mag();
       B_vdTTFrontcosth = vdFrontmom.cosTheta();
       B_vdTTFrontphi = vdFrontmom.phi();
@@ -467,7 +470,7 @@ namespace mu2e {
       
       B_vdTTMiddlex = vdMiddlepos.x() + 3904.;
       B_vdTTMiddley = vdMiddlepos.y();
-      B_vdTTMiddlez = vdMiddlepos.z() - 10200.;
+      B_vdTTMiddlez = vdMiddlepos.z() - _mu2eDetectorSystemZ0;
       B_vdTTMiddlep = vdMiddlemom.mag();
       B_vdTTMiddlecosth = vdMiddlemom.cosTheta();
       B_vdTTMiddlephi = vdMiddlemom.phi();
@@ -495,7 +498,7 @@ namespace mu2e {
       
       B_vdTTEndx = vdEndpos.x() + 3904.;
       B_vdTTEndy = vdEndpos.y();
-      B_vdTTEndz = vdEndpos.z() - 10200.;
+      B_vdTTEndz = vdEndpos.z() - _mu2eDetectorSystemZ0;
       B_vdTTEndp = vdEndmom.mag();
       B_vdTTEndcosth = vdEndmom.cosTheta();
       B_vdTTEndphi = vdEndmom.phi();
@@ -528,13 +531,13 @@ namespace mu2e {
     
       //cout << "Daughter n. " << dauidx << ": " << endl;
       //cout << "pdg " << d.pdgId() << "'\t pos: "
-      //	   << d.startPosition().z() - 10200.
+      //	   << d.startPosition().z() - _mu2eDetectorSystemZ0
       //	   << "\t start volume: " << volInfo.name() << endl;
 
   
       B_daux[dauidx] = d.startPosition().x() + 3904.;
       B_dauy[dauidx] = d.startPosition().y();
-      B_dauz[dauidx] = d.startPosition().z() - 10200.;
+      B_dauz[dauidx] = d.startPosition().z() - _mu2eDetectorSystemZ0;
       B_daup[dauidx] = d.startMomentum().mag();
       B_daucosth[dauidx] = d.startMomentum().cosTheta();
       B_dauphi[dauidx] = d.startMomentum().phi();
