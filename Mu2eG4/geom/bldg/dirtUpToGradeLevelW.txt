@@ -12,7 +12,7 @@ double dirt.upToGradeLevel.W.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.upToGradeLevel.W.yHalfThickness           = 241.3;
 
-vector<int>    dirt.upToGradeLevel.W.xreplace   = { 7, 8, 9 }; 
+vector<int>    dirt.upToGradeLevel.W.xreplace   = { 7, 8 }; 
 vector<double> dirt.upToGradeLevel.W.xPositions = {
   -2921,   // p0
   -6254.75,   // P1
@@ -22,7 +22,6 @@ vector<double> dirt.upToGradeLevel.W.xPositions = {
   -18196.8,   // p5
   -18196.8,   // p5_to_S
   -50000,   // SWcorner
-  -50000,   // p4_to_W
   -50000,   // NWcorner
   -2921,   // p0_to_N
   -2921,   // To NRetWall
@@ -35,7 +34,7 @@ vector<double> dirt.upToGradeLevel.W.xPositions = {
   -2921     // along NRetWall S face
 };
 
-vector<int>    dirt.upToGradeLevel.W.yreplace   = { 6, 7, 9, 10 }; 
+vector<int>    dirt.upToGradeLevel.W.yreplace   = { 6, 7, 8, 9 }; 
 vector<double> dirt.upToGradeLevel.W.yPositions = {
   -609.6,   // p0
   -609.6,   // P1
@@ -45,7 +44,6 @@ vector<double> dirt.upToGradeLevel.W.yPositions = {
   -7505.7,   // p5
   -50000,   // p5_to_S
   -50000,   // SWcorner
-  -3595.78,   // p4_to_W
   50000,   // NWcorner
   50000,   // p0_to_N
   10312.41, // To NRetWall

@@ -13,7 +13,6 @@ double building.psArea.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
 double building.psArea.ceiling.yHalfThickness           = 457.2;
 
 vector<double> building.psArea.ceiling.xPositions = {
-  -2006.6,   // b1
   -6251.57,   // A
   -16400.1,   // B
   -17333.2,   // C
@@ -28,7 +27,6 @@ vector<double> building.psArea.ceiling.xPositions = {
 };
 
 vector<double> building.psArea.ceiling.yPositions = {
-  0,   // b1
   0,   // A
   -2458.94,   // B
   1392.03,   // C

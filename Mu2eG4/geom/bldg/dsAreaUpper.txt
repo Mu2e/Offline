@@ -14,7 +14,6 @@ double building.dsArea.upper.yHalfThickness           = 1955.8;
 
 vector<double> building.dsArea.upper.xPositions = {
   5308.6,   // D0
-  14046.2,   // D1
   44932.6,   // E7
   44932.6,   // U0
   21158.2,   // F9
@@ -37,7 +36,6 @@ vector<double> building.dsArea.upper.xPositions = {
   44932.6,   // H6
   37249.1,   // H7
   37249.1,   // H8
-  29083,   // h9
   21971,   // i0
   21971,   // i1
   21158.2,   // i2
@@ -53,7 +51,6 @@ vector<double> building.dsArea.upper.xPositions = {
 
 vector<double> building.dsArea.upper.yPositions = {
   -8661.4,   // D0
-  -8661.4,   // D1
   -8661.4,   // E7
   -1041.4,   // U0
   -1041.4,   // F9
@@ -76,7 +73,6 @@ vector<double> building.dsArea.upper.yPositions = {
   -9474.2,   // H6
   -9474.2,   // H7
   -9271,   // H8
-  -9271,   // h9
   -9271,   // i0
   -12014.2,   // i1
   -12014.2,   // i2

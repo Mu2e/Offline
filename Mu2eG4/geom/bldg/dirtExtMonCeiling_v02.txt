@@ -30,7 +30,6 @@ vector<double> dirt.extMon.ceiling.xPositions = {
   -17853.7,   // e6
   -17853.7,   // e6_to_S
   -50000,   // SWcorner
-  -50000,   // d_to_W
   -50000,   // NWcorner
   -17108.7,   // c_to_N
   -17108.7,   // Down to WextWallFoot
@@ -61,7 +60,6 @@ vector<double> dirt.extMon.ceiling.yPositions = {
   -3649.57,   // e6
   -50000,   // e6_to_S
   -50000,   // SWcorner
-  -714.699,   // d_to_W
   50000,   // NWcorner
   50000,   // c_to_N
   10335.55, // To top of WextWallFoot
