@@ -59,8 +59,8 @@ build=$($MU2E_BASE_RELEASE/buildopts --build)
 # products that need qualifiers.  Note it includes the '+' character
 # and is therefore different from the value shown in
 # SETUP_<productname> environment vars, or by the "ups active" command.
-export MU2E_UPS_QUALIFIERS=+e14:+${build}
-export MU2E_ART_SQUALIFIER=s50
+export MU2E_UPS_QUALIFIERS=+e10:+${build}
+export MU2E_ART_SQUALIFIER=s41
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
 if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
@@ -68,7 +68,7 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
 fi
 
 # Setup the framework and its dependent products
-setup -B art v2_07_03 -q${MU2E_UPS_QUALIFIERS}
+setup -B art v2_06_02 -q${MU2E_UPS_QUALIFIERS}
 
 # root6 needs a path to include files to prevent some runtime warnings
 export ROOT_INCLUDE_PATH=`dropit -s -p$ROOT_INCLUDE_PATH $MU2E_BASE_RELEASE`
@@ -78,7 +78,7 @@ export ROOT_INCLUDE_PATH=`dropit -s -p$ROOT_INCLUDE_PATH $MU2E_BASE_RELEASE`
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
-  setup -B geant4 v4_10_2_p03b -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
+  setup -B geant4 v4_10_2_p03 -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
 fi
 
 # Get access to raw data formats.
@@ -89,11 +89,11 @@ fi
 
 # Other libraries we need.
 setup -B heppdt   v3_04_01f -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk     v1_01_08c -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk     v1_01_08a -q${MU2E_UPS_QUALIFIERS}
 setup -B xerces_c v3_1_4a   -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
-setup -B scons v2_5_1a -q p2713d
+setup -B scons v2_5_1 -q p2713b
 
 # The debugger
 setup -B gdb v7_12
