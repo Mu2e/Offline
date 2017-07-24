@@ -2,6 +2,50 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_2_5
 
+2)  kutschke  24 July 2017
+    Many changes to make the code compatible with gcc v6.3.0 -std=c++14.
+    There should be no changes to executable behaviour and I have not seen
+    any in my tests.  The next upgrade to a new art will require this compiler.
+
+    Most of the changes arise because the new compiler is pickier than the old one.
+    A) Some compiler headers that were not explicitly #included in our code were
+       accidentally included by other compiler headers. Some of these now need to
+       be explcitly included they are no longer accidentally included.
+
+    B) Some automatic type conversions no longer work - fix by making them explicit.
+
+    C) Many files have a misleading indentation warning
+       - Usually fixed by adding {} in the right place or by changing indentation,
+       - My judgement is that there were no real errors in the code.
+       - The affected files are:
+        CaloMC/src/CaloPulseShape.cc
+        CaloReco/src/CaloRecoDigiFromDigi_module.cc
+        CalorimeterGeom/src/SquareMapper.cc
+        CalorimeterGeom/src/SquareShiftMapper.cc
+        GeometryService/src/GeometryService_service.cc
+        TrkChargeReco/src/ComboPeakFitRoot.cc
+
+    D) RecoDataProducts/inc/HelixHit.hh
+         - The variable _hqual was not initialized by the second c'tor; initialize it to 0.
+
+    E) Analyses/src/ReadCaloDigi_module.cc
+         - Initialize an uninitialized variable - need to do a code review on this code.
+           It should throw an exception rather than dereference an 0 pointer.
+
+    F) New directory: boost_fix/. This contains header files named after boost
+       headers.  In each case the file #includes the corresponding boost header
+       and wraps it in pragmas that disable certain warnings just for that header.
+       The reason is that the boost headers contain code that triggers compiler
+       warnings - as best we can tell the code is correct.  This is our way to
+       disable the checks only in the smallest possible scope.
+       For this release the pragmas have been commented out - when we move to
+       gcc 6.3.0 we will uncomment them.
+
+    G) Many files: replace #include of native boost header with the one from boost_fix.
+       When boost is fixed, we can find these later by acking the code base for boost_fix.
+
+    H) Missing link library (one link now needs tbb that did not before).
+
 1)  dnbrow01  20 July 2017
     Commit work done by UofL student Lacee Pyles.  She has removed redundant
     vertices from a number of files used to specify building and dirt
