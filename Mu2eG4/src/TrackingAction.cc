@@ -30,14 +30,13 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
-#include "Mu2eG4/inc/IMu2eG4SteppingAction.hh"
+#include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
@@ -59,7 +58,7 @@ using namespace std;
 namespace mu2e {
 
   TrackingAction::TrackingAction(const fhicl::ParameterSet& pset,
-                                 IMu2eG4SteppingAction * steppingAction,
+                                 Mu2eG4SteppingAction * steppingAction,
                                  const Mu2eG4TrajectoryControl& trajectoryControl,
                                  const Mu2eG4ResourceLimits& lim):
     _debugList(pset.get<std::vector<int> >("debug.trackingActionEventList", std::vector<int>())),
@@ -79,37 +78,6 @@ namespace mu2e {
     _primaryHelper()
   {}
 
-  TrackingAction::TrackingAction( const SimpleConfig& config,
-                                  IMu2eG4SteppingAction     * steppingAction ):
-    _debugList(),
-    _physVolHelper(0),
-    _timer(),
-    _trajectories(nullptr),
-    _sizeLimit(config.getInt("g4.particlesSizeLimit",0)),
-    _currentSize(0),
-    _overflowSimParticles(false),
-    _mcTrajectoryMomentumCut(config.getDouble("g4.mcTrajectoryMomentumCut", 50.)),
-    _saveTrajectoryMomentumCut(config.getDouble("g4.saveTrajectoryMomentumCut", 50.)),
-    _mcTrajectoryMinSteps(config.getInt("g4.mcTrajectoryMinSteps", 5)),
-    _steppingAction(steppingAction),
-    _processInfo(0),
-    _printTrackTiming(config.getBool("g4.printTrackTiming",true)),
-     _spHelper(),
-    _primaryHelper()
-  {
-
-    string name("g4.trackingActionEventList");
-    if ( config.hasName(name) ){
-      vector<int> list;
-      config.getVectorInt(name,list);
-      _debugList.add(list);
-    }
-
-  }
-
-  TrackingAction::~TrackingAction(){
-  }
-
   // Receive information that has a lifetime of a run.
   void TrackingAction::beginRun( const PhysicalVolumeHelper& physVolHelper,
                                  PhysicsProcessInfo& processInfo,
@@ -118,9 +86,6 @@ namespace mu2e {
     _processInfo   = &processInfo;
     _mu2eOrigin    =  mu2eOrigin;
 
-  }
-
-  void TrackingAction::endRun(){
   }
 
   void TrackingAction::PreUserTrackingAction(const G4Track* trk){
