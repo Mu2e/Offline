@@ -14,7 +14,6 @@ double building.remote.handling.ceiling.strip.yHalfThickness           = 381;
 
 vector<double> building.remote.handling.ceiling.strip.xPositions = {
   -11709.4,   // P0 -4749.8,    //P1 AH removed
-   -4749.8,   // P2
   1468.12,   // P3
   3251.2,   // P4
   3251.2,   // P5
@@ -30,7 +29,6 @@ vector<double> building.remote.handling.ceiling.strip.xPositions = {
 
 vector<double> building.remote.handling.ceiling.strip.yPositions = {
   6858,   // P0 mod AH was 6502.4  //6502.4,   P1  AH removed
-  6858,   // P2
   6858,   // P3
   7289.8,   // P4
   8635,   // P5 mod AH was 8674.1
