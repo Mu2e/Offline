@@ -76,9 +76,11 @@ namespace mu2e {
     G4Material* upstreamVacuumMaterial   = findMaterialOrThrow(  ts.upstreamVacuumMaterial() );
 
     double rCol = ts.getColl51().rOut();
+    double rCin = ts.getColl1().rIn1();
     double vdHalfLength = CLHEP::mm * vdg->getHalfLength();
     
     TubsParams vdParams(0,rCol,vdHalfLength);
+    TubsParams vdParamsIn(0,rCin,vdHalfLength);
 
     // Virtual Detectors Coll1_In, COll1_Out are placed inside TS1
 
@@ -117,6 +119,38 @@ namespace mu2e {
 
         vd.logical->SetSensitiveDetector(vdSD);
       }
+
+    // Virtual Detectors Coll1_pBarCollar_In, COll1_pBarCollar_Out are 
+    // placed inside Coll1, which is inside TS1
+
+    // Just copy what is done above, with minor edits.  
+    // FIXME: one should factorize some the code below; the main
+    // things which change: parent and offset
+    for( int vdId=VirtualDetectorId::Coll1_pBarCollar_In;
+         vdId<=VirtualDetectorId::Coll1_pBarCollar_Out;
+         ++vdId) if( vdg->exist(vdId) ) {
+        VolumeInfo const & parent = _helper->locateVolInfo("TS1Vacuum");
+        if ( verbosityLevel > 0) {
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)
+               << " at " << vdg->getGlobal(vdId) << endl;
+          cout << __func__ << "    VD parameters: " << vdParamsIn << endl;
+          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+        }
+
+        VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
+                                  vdParamsIn, upstreamVacuumMaterial, 0,
+                                  vdg->getLocal(vdId),
+                                  parent,
+                                  vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  false);
+
+        doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
+
+        vd.logical->SetSensitiveDetector(vdSD);
+      }
+
 
     // ************************** DNB (Lou) Jan 2016 **********
     // Virtual Detector TS2_Bend is placed inside TS2

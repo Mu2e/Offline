@@ -1784,10 +1784,16 @@ namespace mu2e {
     }
 
     if (is_pbarTS1Out) {
+
+      // Get VDs
+      GeomHandle<VirtualDetector> vdg;
+      double vdHalfLength = vdg->getHalfLength()*CLHEP::mm;
+
       CollimatorTS1 const& coll1  = ts.getColl1() ;
 
       string pbarTS1OutMaterial   = config.getString("pbar.coll1Out.material1Name");
-      double pbarTS1OutHalfLength = config.getDouble("pbar.coll1Out.halfLength", 0.05);
+      //      double pbarTS1OutHalfLength = config.getDouble("pbar.coll1Out.halfLength", 0.05);
+      double pbarTS1OutHalfLength = coll1.collarHalfLength()-2.*vdHalfLength;
       double pbarTS1OutrIn        = config.getDouble("pbar.coll1Out.rIn",        120.0);
       double pbarTS1OutphiBegin   = config.getDouble("pbar.coll1Out.phiBegin",   210.0);
       double pbarTS1OutphiDelta   = config.getDouble("pbar.coll1Out.phiDelta",   120.0);

@@ -67,21 +67,28 @@ namespace mu2e {
       // collimator 1, which is placed inside TS1.
 
       double coll1HL = bg->getTS().getColl1().halfLength();
-
+      double coll1ColLen = bg->getTS().getColl1().collarHalfLength() * 2.0;
       const HepRotation *ts1rot = bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS1,
                                                         TransportSolenoid::TSRadialPart::IN)->getRotation();
       Hep3Vector   ts1pos = bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS1,
                                                   TransportSolenoid::TSRadialPart::IN)->getGlobal();
 
       Hep3Vector coll1pos = bg->getTS().getColl1().getLocal();
+      double zDiff = bg->getTS().getColl1().collarMarginZ();
 
 
-      Hep3Vector deltaZ1(0,0,coll1HL-vdHL);
+      Hep3Vector deltaZ1(0,0,coll1HL-vdHL);  
+      Hep3Vector deltaZ1Collar(0,0,coll1HL - vdHL - zDiff);
+      Hep3Vector deltaZ0Collar(0,0,coll1HL - coll1ColLen - zDiff + vdHL);
 
       vd->addVirtualDetector( VirtualDetectorId::Coll1_In,
                                ts1pos, ts1rot, coll1pos-deltaZ1);
       vd->addVirtualDetector( VirtualDetectorId::Coll1_Out,
                                ts1pos, ts1rot, coll1pos+deltaZ1);
+      vd->addVirtualDetector( VirtualDetectorId::Coll1_pBarCollar_Out,
+			      ts1pos, ts1rot, coll1pos+deltaZ1Collar);
+      vd->addVirtualDetector( VirtualDetectorId::Coll1_pBarCollar_In,
+			      ts1pos, ts1rot, coll1pos+deltaZ0Collar);
 
       //************************************************************
       // VD TS2_Bend, TS4_Bend are placed at the nominal beamline in

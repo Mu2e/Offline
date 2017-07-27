@@ -129,6 +129,8 @@ string pbar.coll1Out.material1Name = "G4_C";
 double pbar.coll1Out.halfLength = 100.0;
 double pbar.coll1Out.rIn = 120.0;
 double pbar.coll1Out.z = -3144.5;
+double pbar.coll1Out.zDiff = 0.5; // margin between end of collar and Coll1    
+// Has always been there, now we keep track of it 
 //double pbar.coll1Out.phiBegin = 200.0; // Old, incorrect values 
 //double pbar.coll1Out.phiDelta = 140.0;
 double pbar.coll1Out.phiBegin = 210.0;
@@ -173,7 +175,7 @@ double ts.coll3.holeHalfHeight   = 100.0;
 double ts.coll3.holeDisplacement = 90.0;
 
 // A test block added to help reduce beam flash from electrons.
-bool   ts.useFlashBlockUp          = true;
+bool   ts.useFlashBlockUp          = false;
 double ts.flashBlockUp.Height      = 35.0; // mm
 double ts.flashBlockUp.Width       = 50.0; // mm
 double ts.flashBlockUp.TransOffset = 15.0; // mm

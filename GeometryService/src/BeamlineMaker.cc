@@ -492,6 +492,10 @@ namespace mu2e {
     coll1._material2 = c.getString("ts.coll1.material2Name");
     coll1._material3 = c.getString("ts.coll1.material3Name","None");
 
+    coll1._collarHalfLength = c.getDouble("pbar.coll1Out.halfLength",100.0);
+    coll1._collarZ = c.getDouble("pbar.coll1Out.z",-3144.5);
+    coll1._collarMarginZ = c.getDouble("pbar.coll1Out.zDiff",0.5);
+
     // TS3
     coll32._hole             = coll31._hole              = c.getDouble("ts.coll3.hole",0.);
     coll32._holeRadius       = coll31._holeRadius        = c.getDouble("ts.coll3.holeRadius",0.);

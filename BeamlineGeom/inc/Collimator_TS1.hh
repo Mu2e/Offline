@@ -33,6 +33,10 @@ namespace mu2e {
     std::string material2() const { return _material2; }
     std::string material3() const { return _material3; }
 
+    double collarHalfLength() const { return _collarHalfLength; }
+    double collarZ() const { return _collarZ; }
+    double collarMarginZ() const { return _collarMarginZ; }
+
   private:
 
     double _rIn1;
@@ -44,6 +48,11 @@ namespace mu2e {
     std::string _material1;
     std::string _material2;
     std::string _material3;
+
+    double _collarHalfLength;
+    double _collarZ;
+    double _collarMarginZ;
+
 };
 
 }

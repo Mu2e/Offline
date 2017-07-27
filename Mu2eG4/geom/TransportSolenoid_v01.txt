@@ -115,6 +115,8 @@ string pbar.coll1Out.material1Name = "G4_C";
 double pbar.coll1Out.halfLength = 100.0;
 double pbar.coll1Out.rIn = 120.0;
 double pbar.coll1Out.z = -3144.5;
+double pbar.coll1Out.zDiff = 0.5; // margin between end of collar and Coll1
+// Has always been there, now we keep track of it
 //double pbar.coll1Out.phiBegin = 200.0; // Old, incorrect values 
 //double pbar.coll1Out.phiDelta = 140.0;
 double pbar.coll1Out.phiBegin = 210.0;
