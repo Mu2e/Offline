@@ -8,8 +8,8 @@
 // 3) Add options to print size of branches of named trees, regardless of size"
 //      -r -s -e --run --subrun --event --tree=name
 //
-#include "Arguments.hh"
-#include "RootSizeOnDisk.hh"
+#include "Print/artProductSizes/Arguments.hh"
+#include "Print/artProductSizes/RootSizeOnDisk.hh"
 
 #include "TError.h"
 #include "TFile.h"

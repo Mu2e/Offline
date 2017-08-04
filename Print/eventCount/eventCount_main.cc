@@ -3,8 +3,8 @@
 // that are present in an art format event-data file.
 //
 
-#include "ROOTtools/eventCount/Arguments.hh"
-#include "ROOTtools/eventCount/FileInfo.hh"
+#include "Print/eventCount/Arguments.hh"
+#include "Print/eventCount/FileInfo.hh"
 
 #include <iostream>
 #include <string>
@@ -23,20 +23,28 @@ int main( int argc, char** argv ){
   std::vector<mu2e::FileInfo> infos;
   infos.reserve( arg.fileNames.size() );
 
-  bool full = arg.style == mu2e::Arguments::full;
+  int level = 1;
+  if ( arg.style == mu2e::Arguments::minimal || 
+       arg.style == mu2e::Arguments::full ) level = 0;
 
   for ( size_t i=0; i<arg.fileNames.size(); ++i ){
     auto const& filename = arg.fileNames.at(i);
 
     //if ( i!=0 && full ) cout << separator << endl;
 
-    infos.emplace_back( filename );
+    infos.emplace_back( filename, level );
     auto const& info(infos.back());
 
-    if ( full ){
-      info.fullPrint(cout);
-    } else{
+    if ( arg.style == mu2e::Arguments::minimal ){
       info.minimalPrint(cout);
+    } else if ( arg.style == mu2e::Arguments::full ) {
+      info.fullPrint(cout);
+    } else if ( arg.style == mu2e::Arguments::events ) {
+      info.eventPrint(cout);
+    } else if ( arg.style == mu2e::Arguments::subruns ) {
+      info.subrunPrint(cout);
+    } else if ( arg.style == mu2e::Arguments::sam ) {
+      info.samPrint(cout);
     }
 
   }

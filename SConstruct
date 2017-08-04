@@ -241,19 +241,25 @@ class mu2e_helper:
     def prefixed_plugin_libname(self,sourcename):
         return '#/lib/' + self.plugin_libname(sourcename)
 #
-#   Build a list of plugins to be biult.
+#   Build a list of plugins to be built.
 #
     def plugin_cc(self):
         return Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) \
             +  Glob('*_source.cc', strings=True) + Glob('*_utils.cc',strings=True)    \
             +  Glob('*_tool.cc',strings=True);
 #
-#   Build a list of .cc files that are not plugings; these go into the
+#   Build a list of bin source files
+#
+    def bin_cc(self):
+        return Glob('*_main.cc', strings=True)
+#
+#   Build a list of .cc files that are not plugings or bins; these go into the
 #   library named after the directory.
 #
-    def non_plugin_cc(self):
-        tmp = non_plugin_cc = Glob('*.cc', strings=True)
+    def mainlib_cc(self):
+        tmp = Glob('*.cc', strings=True)
         for cc in self.plugin_cc(): tmp.remove(cc)
+        for cc in self.bin_cc(): tmp.remove(cc)
         return tmp
 #
 #   Names need to build the _dict and _map libraries.
@@ -283,15 +289,15 @@ class mu2e_helper:
 #   Make the main library.
 #
     def make_mainlib( self, userlibs, cppf=[], pf=[], addfortran=False ):
-        non_plugin_cc = self.non_plugin_cc()
+        mainlib_cc = self.mainlib_cc()
         if addfortran:
             fortran = Glob('*.f', strings=True)
-            non_plugin_cc = [ non_plugin_cc, fortran]
+            mainlib_cc = [ mainlib_cc, fortran ]
             pass
         libs = []
-        if non_plugin_cc:
+        if mainlib_cc:
             env.SharedLibrary( self.prefixed_libname(),
-                               non_plugin_cc,
+                               mainlib_cc,
                                LIBS=[ userlibs ],
                                CPPFLAGS=cppf,
                                parse_flags=pf
@@ -341,6 +347,17 @@ class mu2e_helper:
                                    LIBS=[ userlibs ],
                                    parse_flags=pf_dict
                                    )
+#
+#   Make a bin based on binname_main.cc -> binname
+#
+    def make_bin( self, target, userlibs=[], otherSource=[], bindir="" ):
+        if not bindir : bindir = env['BINDIR']
+        sourceFiles = [ target+"_main.cc" ] + otherSource
+        env.Program(
+            target = bindir+target,
+            source = sourceFiles,
+            LIBS   = userlibs
+            )
 
 # Export the class so that it can be used in the SConscript files
 # For reasons I don't understand, this must come before the env.SConscript(ss) line.

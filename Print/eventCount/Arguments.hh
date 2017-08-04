@@ -14,7 +14,7 @@ namespace mu2e {
   struct Arguments{
 
     // Style of printout.
-    enum PrintStyle { minimal, full };
+    enum PrintStyle { minimal, full, events, subruns, sam};
 
     Arguments ( int argc, char**argv );
 

@@ -40,7 +40,7 @@ The branch "event" takes 3760313 bytes on disk
 
  */
 
-#include "rootFileSizeTools.hh"
+#include "Print/artProductSizes/rootFileSizeTools.hh"
 
 using namespace std;
 

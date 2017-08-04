@@ -4,7 +4,7 @@
 // See the implementation of usage() for the documentation.
 //
 
-#include "ROOTtools/eventCount/Arguments.hh"
+#include "Print/eventCount/Arguments.hh"
 #include <iostream>
 
 using namespace std;
@@ -34,6 +34,18 @@ mu2e::Arguments::Arguments( int argc, char**argv ):
       style = minimal;
     }
 
+    else if ( a.find("--events") == 0 ){
+      style = events;
+    }
+
+    else if ( a.find("--subruns") == 0 ){
+      style = subruns;
+    }
+
+    else if ( a.find("--sam") == 0 ){
+      style = sam;
+    }
+
     // Reject any other argument that starts with a -
     else if ( a.find("-") == 0 ){
       cerr << "Unrecognized argument:: " << a << endl;
@@ -58,8 +70,11 @@ void  mu2e::Arguments::usage() const{
        << " -?        - print this message and exit\n"
        << " --help    - print this message and exit\n"
        << " --minimal - minimal printout [default]\n"
-       << " --full    - full printout\n\n"
-       << "If both --minimal and --full are present, the last one wins.\n\n"
+       << " --full    - full printout\n"
+       << " --events  - print run/subrun/event for all events\n"
+       << " --subruns - print run/subrun for all subruns, including those with no events \n"
+       << " --sam     - print json format for sam record \n"
+       << "\nIf both --minimal and --full are present, the last one wins.\n\n"
        << "Output format for option minimal: \n"
        << "   filename OK/BAD  nRuns nSubRuns nEvents\n\n"
        << "   BAD means that the file could not be opened or that one or more TTrees is missing.\n"

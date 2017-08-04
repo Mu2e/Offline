@@ -21,7 +21,7 @@ level = mu2eopts[0];
 # for interactive use.
 
 userlibs = [ rootlibs ]
-non_plugin_cc = helper.non_plugin_cc()
+mainlib_cc = helper.mainlib_cc()
 decorated_libname= "lib/lib" + helper.dict_libname()
 
 env.DictionarySource( helper.dict_tmp_name(),
@@ -29,10 +29,10 @@ env.DictionarySource( helper.dict_tmp_name(),
                       LIBNAME=decorated_libname, 
                       DEBUG_LEVEL=level )
 
-non_plugin_cc.append(helper.dict_tmp_name())
+mainlib_cc.append(helper.dict_tmp_name())
 
 env.SharedLibrary( helper.prefixed_libname(),
-                   non_plugin_cc,
+                   mainlib_cc,
                    LIBS=[ userlibs ] )
 
 # this tells emacs to view this file in python mode.

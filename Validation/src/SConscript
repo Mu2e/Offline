@@ -71,18 +71,7 @@ helper.make_plugins( [ mainlib,'mu2e_Validation_root',
 helper.make_dict_and_map( [ mainlib,
                           ] )
 
-
-base      = os.environ['MU2E_BASE_RELEASE']
-bindir    = env['BINDIR']
-
-env.Program(
-  target = bindir+'valCompare',
-  source = [ 'valCompare.cpp' ],
-  LIBS   = [ 'mu2e_Validation_root', 
-                       rootlibs ]
-  )
-
-
+helper.make_bin( "valCompare", [ 'mu2e_Validation_root', rootlibs ] )
 
 
 # this tells emacs to view this file in python mode.
