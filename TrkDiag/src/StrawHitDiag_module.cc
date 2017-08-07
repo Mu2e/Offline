@@ -95,7 +95,7 @@ namespace mu2e
     _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
     _shfTag(pset.get<string>("StrawHitFlagCollectionTag","FlagBkgHits")),
     _stTag(pset.get<string>("StereoHitCollectionTag","MakeStereoHits")),
-    _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH")),
+    _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {}
 

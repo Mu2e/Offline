@@ -21,8 +21,6 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
@@ -51,13 +49,12 @@
 using namespace std;
 using CLHEP::Hep3Vector;
 namespace mu2e {
-
+  using namespace TrkTypes;
   class StrawHitsFromStrawDigis : public art::EDProducer {
 
   public:
     explicit StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset);
     virtual ~StrawHitsFromStrawDigis(); 
-    virtual void beginJob();
     virtual void beginRun( art::Run& run );
     virtual void produce( art::Event& e);
 
@@ -67,8 +64,6 @@ namespace mu2e {
     unsigned _nbase;
     double _mbtime; // period of 1 microbunch
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
-    double _maxdt; // maximum time difference between end times
-    bool _singledigi; // turn single-end digitizations into hits
     TrkChargeReco::FitType _fittype;
     bool _truncateADC; // model ADC truncation
     bool _floatPedestal; // float pedestal in fit
@@ -89,15 +84,11 @@ namespace mu2e {
     SHID _shid; // strawhit ID
     TrkChargeReco::PeakFitParams _peakfit; // result from peak fit
     Float_t _edep, _time, _dt;
-    SHMCInfo _shmcinfo; // mc truth info (if available)
-    void fillDiagMC(Straw const& straw, StrawDigiMC const& mcdigi);
   };
 
   StrawHitsFromStrawDigis::StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset) :
     _nbase(pset.get<unsigned>("NumADCBaseline",1)),
     _mbbuffer(pset.get<double>("TimeBuffer",100.0)), // nsec
-    _maxdt(pset.get<double>("MaxTimeDifference",8.0)), // nsec
-    _singledigi(pset.get<bool>("UseSingleDigis",false)), // use or not single-end digitizations
     _fittype((TrkChargeReco::FitType) pset.get<unsigned>("FitType",0)),
     _truncateADC(pset.get<bool>("TruncateADC",true)), 
     _floatPedestal(pset.get<bool>("FloatPedestal",true)), 
@@ -113,25 +104,10 @@ namespace mu2e {
     _pfit(0)
   {
     produces<StrawHitCollection>();
-    produces<PtrStepPointMCVectorCollection>();
-    produces<StrawDigiMCCollection>();
     if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis constructor " << endl;
   }
 
   StrawHitsFromStrawDigis::~StrawHitsFromStrawDigis() { delete _pfit; }
-
-  void StrawHitsFromStrawDigis::beginJob(){
-    if(_diagLevel > 1){
-      art::ServiceHandle<art::TFileService> tfs;
-      _shdiag =tfs->make<TTree>("shdiag","StrawHit diagnostics");
-      _shdiag->Branch("shid",&_shid); // strawhit ID
-      _shdiag->Branch("peakfit",&_peakfit); // ADC waveform fit information
-      _shdiag->Branch("edep",&_edep,"edep/F"); // reconstructed deposited energy
-      _shdiag->Branch("time",&_time,"time/F"); // reconstructed deposited energy
-      _shdiag->Branch("dt",&_dt,"dt/F"); // reconstructed deposited energy
-      _shdiag->Branch("mcinfo",&_shmcinfo); // MC truth info
-    }
-  }
 
   void StrawHitsFromStrawDigis::beginRun( art::Run& run ){
 // create and configure the ADC waveform charge extraction fit
@@ -160,11 +136,8 @@ namespace mu2e {
     _strawele = ConditionsHandle<StrawElectronics>("ignored");
     _strawphys = ConditionsHandle<StrawPhysics>("ignored");
     unique_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
-    unique_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
-    unique_ptr<StrawDigiMCCollection> mchits(new StrawDigiMCCollection);
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
+   ConditionsHandle<AcceleratorParams> accPar("ignored");
     _mbtime = accPar->deBuncherPeriod;
-    const Tracker& tracker = getTrackerOrThrow();
 
     // find the digis
     art::Handle<mu2e::StrawDigiCollection> strawdigisH; 
@@ -174,126 +147,38 @@ namespace mu2e {
     if(strawdigis == 0)
       throw cet::exception("RECO")<<"mu2e::StrawHitsFromStrawDigis: No StrawDigi collection found for label " <<  _strawDigis << endl;
 
-  // find the associated MC truth collection.  Note this doesn't have to exist!
-    const PtrStepPointMCVectorCollection * mcptrdigis(0);
-    art::Handle<PtrStepPointMCVectorCollection> mcptrdigiH;
-    if(event.getByLabel(_strawDigis,mcptrdigiH))
-      mcptrdigis = mcptrdigiH.product();
-    const StrawDigiMCCollection * mcdigis(0);
-    art::Handle<StrawDigiMCCollection> mcdigiH;
-    if(event.getByLabel(_strawDigis,mcdigiH))
-      mcdigis = mcdigiH.product();
-  // loop over digis.  Note the MC truth is in sequence
+    // loop over digis
     size_t ndigi = strawdigis->size();
-    if( (mcptrdigis != 0 && mcptrdigis->size() != ndigi) ||
-	(mcdigis != 0 && mcdigis->size() != ndigi) )
-      throw cet::exception("RECO")<<"mu2e::StrawHitsFromStrawDigis: MCPtrDigi collection size doesn't match StrawDigi collection size" << endl;
-// presize
     strawHits->reserve(ndigi);
-    mcptrHits->reserve(ndigi);
-    mchits->reserve(ndigi);
 
     for(size_t isd=0;isd<ndigi;++isd){
       StrawDigi const& digi = (*strawdigis)[isd];
-// convert the digi to a hit
-      array<double,2> times;
+      // convert the digi to a hit
+      TDCTimes times;
+      // convert TDC values to times.  Note this is merely a unit change (pedestal and scale), physical effects coming from
+      // drift, electronics, particle propagation, etc are NOT corrected here
       _strawele->tdcTimes(digi.TDC(),times);
-// hit wants primary time and dt.  Check if both ends digitized, or if
-// this is a single-end digitization
-// This algorithm is intrinsically biased due to the preference of times[0] vs times[1]. FIXME!!!
-      double time(times[0]);
-      double dt = times[1]-times[0];
-      bool makehit(true);
-      if(time < _mbtime+_mbbuffer && fabs(dt)<_maxdt ){
-	time = times[0];
-      } else if(_singledigi){
-// single-ended hit.  Take the valid time, and set delta_t to 0.  This needs
-// to be flaged in StrawHit, FIXME!!!
-	if(times[0] < _mbtime+_mbbuffer)
-	  time = times[0];
-	else if(times[1] < _mbtime+_mbbuffer)
-	  time = times[1];
-	else
-	  makehit = false;
-      } else
-	makehit = false;
-      if(makehit){
-// fit the ADC waveform to get the charge
-	TrkTypes::ADCWaveform const& adc = digi.adcWaveform();
-	// note: pedestal is being subtracting inside strawele, in the real experiment we will need
-	// per-channel version of this FIXME!!!
-	TrkChargeReco::PeakFitParams params;
-	_pfit->process(adc,params);
-	if(_debugLevel > 0){
-	  cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
+      // convert the digi TOT to physical units.  This needs to be implemented FIXME!!
+      TOTTimes tots{0.0,0.0};
+      // fit the ADC waveform to get the charge
+      ADCWaveform const& adc = digi.adcWaveform();
+      // note: pedestal is being subtracting inside strawele, in the real experiment we will need
+      // per-channel version of this FIXME!!!
+      TrkChargeReco::PeakFitParams params;
+      _pfit->process(adc,params);
+      if(_debugLevel > 0){
+	cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
 	  << " Fit charge = " << params._charge << " Fit time = " << params._time << endl;
-	}
-	// use time division to correct for attenuation FIXME!!
-	// the gain should come from a straw-dependent database FIXME!!
-	double energy = _strawphys->ionizationEnergy(params._charge/_strawphys->strawGain());
-	// crate the straw hit and append it to the list
-	StrawHit newhit(digi.strawIndex(),time,dt,energy);
-	strawHits->push_back(newhit);
-// copy MC truth from digi to hit.  These are exactly the same as for the digi
-	if(mcptrdigis != 0){
-	  mcptrHits->push_back((*mcptrdigis)[isd]);
-	}
-	if(mcdigis != 0){
-	  mchits->push_back((*mcdigis)[isd]);
-	}
-// diagnostics
-	if(_diagLevel > 1){
-	  const Straw& straw = tracker.getStraw( newhit.strawIndex() );
-	  _shid = SHID( straw.id() );
-	  _peakfit = params;
-	  _edep = newhit.energyDep();
-	  _time = newhit.time();
-	  _dt = newhit.dt();
-	  if(mcdigis != 0) fillDiagMC( straw, (*mcdigis)[isd]);
-	  _shdiag->Fill();
-	}
       }
+      // use time division to correct for attenuation FIXME!!
+      // the gain should come from a straw-dependent database FIXME!!
+      double energy = _strawphys->ionizationEnergy(params._charge/_strawphys->strawGain());
+      // crate the straw hit and append it to the list
+      StrawHit newhit(digi.strawIndex(),times,tots,energy);
+      strawHits->push_back(newhit);
     }
-// put objects into event
+    // put objects into event
     event.put(move(strawHits));
-    if(mcptrHits != 0)event.put(move(mcptrHits));
-    if(mchits != 0)event.put(move(mchits));
-  }
-
-  void StrawHitsFromStrawDigis::fillDiagMC(Straw const& straw,
-    StrawDigiMC const& mcdigi) {
-    _shmcinfo._energy = mcdigi.energySum();
-    StrawEnd end;
-    _shmcinfo._trigenergy = mcdigi.triggerEnergySum(end);
-// sum the energy from the explicit trigger particle, and find it's releationship 
-    StrawEnd itdc;
-    art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
-    art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-    _shmcinfo._xtalk = straw.index() != spmcp->strawIndex();
-    _shmcinfo._threshenergy = 0.0;
-    std::set<art::Ptr<SimParticle> > spptrs; // set of unique particles contributing to this hit
-    for(auto imcs = mcdigi.stepPointMCs().begin(); imcs!= mcdigi.stepPointMCs().end(); ++ imcs){
-    // if the simParticle for this step is the same as the one which fired the discrim, add the energy
-      if( (*imcs)->simParticle() == spp )
-	_shmcinfo._threshenergy += (*imcs)->eDep();
-      spptrs.insert((*imcs)->simParticle()); 
-    }
-    _shmcinfo._nmcpart = spptrs.size();
-    _shmcinfo._pdg = spp->pdgId();
-    _shmcinfo._proc = spp->creationCode();
-    if(spp->genParticle().isNonnull())
-      _shmcinfo._gen = spp->genParticle()->generatorId().id();
-    else
-      _shmcinfo._gen=-1;
-    Hep3Vector mcsep = spmcp->position()-straw.getMidPoint();
-    Hep3Vector dir = spmcp->momentum().unit();
-    _shmcinfo._mom = spmcp->momentum().mag();
-    Hep3Vector mcperp = (dir.cross(straw.getDirection())).unit();
-    double dperp = mcperp.dot(mcsep);
-    _shmcinfo._dperp = fabs(dperp);
-    _shmcinfo._ambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
-    _shmcinfo._len = mcsep.dot(straw.getDirection());
-
   }
 }
 using mu2e::StrawHitsFromStrawDigis;

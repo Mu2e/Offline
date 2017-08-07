@@ -119,12 +119,12 @@ void StrawElectronics::digitizeWaveform(ADCVoltages const& wf, ADCWaveform& adc)
       adc.push_back(adcResponse(*iwf));
   }
 
-  void StrawElectronics::digitizeTimes(array<double,2> const& times,TDCValues& tdc) const {
+  void StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdc) const {
     for(size_t itime=0;itime<2;++itime)
       tdc[itime] = tdcResponse(times[itime]);
   }
 
-  void StrawElectronics::adcTimes(double time, ADCVoltages& adctimes) const {
+  void StrawElectronics::adcTimes(double time, ADCTimes& adctimes) const {
 // clock has a fixed phase; Assume we digitize with a fixed delay relative to the leading edge
     adctimes.clear();
     adctimes.reserve(_nADC);
@@ -141,7 +141,7 @@ void StrawElectronics::digitizeWaveform(ADCVoltages const& wf, ADCWaveform& adc)
     return fabs(t1-t2) < _tdead;
   }
 
-  void StrawElectronics::tdcTimes(TDCValues const& tdc, std::array<double,2>& times) const {
+  void StrawElectronics::tdcTimes(TDCValues const& tdc, TDCTimes& times) const {
     for(size_t itime=0;itime<2;++itime)
     // add back the time when the clock started
       times[itime] = tdc[itime]*_TDCLSB+_clockStart;

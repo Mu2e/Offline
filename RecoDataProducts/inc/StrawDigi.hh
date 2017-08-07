@@ -22,7 +22,7 @@
 
 // Mu2e includes
 #include "DataProducts/inc/StrawIndex.hh"
-#include "RecoDataProducts/inc/StrawEnd.hh"
+#include "TrackerConditions/inc/StrawEnd.hh"
 #include "TrackerConditions/inc/Types.hh"
 // unfortunately the persistence requires this array dimension be
 // instantiated by hand in the classesdef, so this this #define

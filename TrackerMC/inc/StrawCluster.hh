@@ -19,7 +19,7 @@
 
 // Mu2e includes
 #include "DataProducts/inc/StrawIndex.hh"
-#include "RecoDataProducts/inc/StrawEnd.hh"
+#include "TrackerConditions/inc/StrawEnd.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 // toolkit includes
 #include "canvas/Persistency/Common/Ptr.h"

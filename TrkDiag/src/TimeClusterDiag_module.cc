@@ -126,7 +126,7 @@ namespace mu2e {
     _shfTag		(pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
     _tcTag		(pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
     _ccTag              (pset.get<art::InputTag>("caloClusterModuleLabel","MakeCaloCluster")),
-    _mcdigisTag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH")),
+    _mcdigisTag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _hsel		(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
     _hbkg		(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
     _peakMVA		(pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet())),

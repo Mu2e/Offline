@@ -15,6 +15,7 @@
 
 using namespace std;
 namespace mu2e {
+  using namespace TrkTypes;
   namespace TrackerMC {
     StrawWaveform::StrawWaveform(StrawClusterSequence const& hseq, ConditionsHandle<StrawElectronics> const& strawele, XTalk const& xtalk) :
       _cseq(hseq), _strawele(strawele), _xtalk(xtalk)
@@ -168,7 +169,7 @@ namespace mu2e {
       return satresp;
     }
 
-    void StrawWaveform::sampleWaveform(TrkTypes::Path ipath,std::vector<double> const& times,std::vector<double>& volts) const {
+    void StrawWaveform::sampleWaveform(TrkTypes::Path ipath,ADCTimes const& times,ADCVoltages& volts) const {
       volts.clear();
       volts.reserve(times.size());
       for(auto itime=times.begin();itime!=times.end();++itime){

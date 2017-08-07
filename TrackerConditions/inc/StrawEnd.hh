@@ -1,9 +1,9 @@
-#ifndef DataProducts_StrawEnd_hh
-#define DataProducts_StrawEnd_hh
+#ifndef TrackerConditions_StrawEnd_hh
+#define TrackerConditions_StrawEnd_hh
 #include <iostream>
 #include "TrackerConditions/inc/Types.hh"
 //
-// define the wire ends
+// define the ends of a straw
 namespace mu2e {
   struct StrawEnd {
     size_t _end;

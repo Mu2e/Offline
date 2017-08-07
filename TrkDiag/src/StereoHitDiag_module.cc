@@ -105,7 +105,7 @@ namespace mu2e
     _shpTag		(pset.get<art::InputTag>("StrawHitPositionCollection","MakeStrawHitPositions")),
     _sthpTag		(pset.get<art::InputTag>("StereoHitPositionCollection","MakeStereoHits")),
     _stTag		(pset.get<art::InputTag>("StereoHitCollection","MakeStereoHits")),
-    _mcdigisTag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH"))
+    _mcdigisTag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD"))
   {}
 
   StereoHitDiag::~StereoHitDiag(){}

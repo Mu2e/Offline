@@ -318,8 +318,7 @@ Tracking : {
     MCTracks : ["keep mu2e::GenParticles_*_*_*",
 		"keep mu2e::SimParticlesmv_*_*_*" ]
     MCDigis : ["keep mu2e::StrawDigiMCs_makeSD_*_*"]
-    MCHits : ["keep mu2e::StrawDigiMCs_makeSH_*_*",
-	      "keep mu2e::StepPointMCs_detectorFilter_tracker_*",
+    MCHits : [ "keep mu2e::StepPointMCs_detectorFilter_tracker_*",
 	      "keep mu2e::StepPointMCs_detectorFilter_virtualdetector_*"]
 
   }

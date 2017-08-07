@@ -20,9 +20,10 @@
 
 // Mu2e includes
 #include "DataProducts/inc/StrawIndex.hh"
-#include "RecoDataProducts/inc/StrawEnd.hh"
+#include "TrackerConditions/inc/StrawEnd.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
+#include "TrackerConditions/inc/Types.hh"
 #include "TrackerMC/inc/StrawClusterSequence.hh"
 
 namespace mu2e {
@@ -54,7 +55,7 @@ namespace mu2e {
 	// sample the waveform at a given time.  Return value is in units of volts 
 	double sampleWaveform(TrkTypes::Path ipath,double time) const;
 	// sample the waveform at a series of points
-	void sampleWaveform(TrkTypes::Path ipath, std::vector<double> const& times,std::vector<double>& volts) const;
+	void sampleWaveform(TrkTypes::Path ipath, TrkTypes::ADCTimes const& times,TrkTypes::ADCVoltages& volts) const;
 	//accessors
 	StrawClusterSequence const& clusts() const { return _cseq; }
 	ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }

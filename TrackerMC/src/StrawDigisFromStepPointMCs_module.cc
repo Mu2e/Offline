@@ -63,6 +63,7 @@ using namespace std;
 
 namespace mu2e {
   namespace TrackerMC {
+    using namespace TrkTypes;
     struct IonCluster {  // ion charge cluster before drift or amplification
       CLHEP::Hep3Vector _pos; // position of this cluster
       double _charge; // charge of this cluster, in pC.  Note: this is pre-gain!!!
@@ -402,8 +403,9 @@ namespace mu2e {
       for(size_t iend=0;iend<2;++iend){
 	findThresholdCrossings(waveforms[iend],xings);
       }
-      // convert the crossing points into digis, and add them to the event data
-      if(xings.size() > 0){
+      // convert the crossing points into digis, and add them to the event data.  Require both ends to have threshold
+      // crossings
+      if(xings.size() > 1){
 	// fill digis from these crossings
 	fillDigis(xings,waveforms,xtalk._dest,digis,mcdigis,mcptrs);
 	// diagnostics
@@ -659,50 +661,52 @@ namespace mu2e {
 	  iwfxl = jwfxl;
 	}
 	++iwfxl;
-	// create a digi from this pair or singleton
-	createDigi(xpair,wf,index,digis);
-	// fill associated MC truth matching.  Only count the same step once
-	set<art::Ptr<StepPointMC> > xmcsp;
-	double wetime[2] ={-100.,-100.};
-	CLHEP::HepLorentzVector cpos[2];
-	art::Ptr<StepPointMC> stepMC[2];
-	StrawEnd primaryend = primaryEnd(index);
+	// create a digi from pairs
+	if(xpair.size()==2){
+	  createDigi(xpair,wf,index,digis);
+	  // fill associated MC truth matching.  Only count the same step once
+	  set<art::Ptr<StepPointMC> > xmcsp;
+	  double wetime[2] ={-100.,-100.};
+	  CLHEP::HepLorentzVector cpos[2];
+	  art::Ptr<StepPointMC> stepMC[2];
+	  StrawEnd primaryend = primaryEnd(index);
 
-	for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
-	  StrawCluster const& sh =*((*ixp)->_iclust);
-	  xmcsp.insert(sh.stepPointMC());
-	  // index according to the primary end
-	  size_t iend = sh.strawEnd() == primaryend ? 0 : 1;
-	  wetime[iend] = sh.time();
-	  cpos[iend] = sh.clusterPosition();
-	  stepMC[iend] = sh.stepPointMC();
+	  for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
+	    StrawCluster const& sh =*((*ixp)->_iclust);
+	    xmcsp.insert(sh.stepPointMC());
+	    // index according to the primary end
+	    size_t iend = sh.strawEnd() == primaryend ? 0 : 1;
+	    wetime[iend] = sh.time();
+	    cpos[iend] = sh.clusterPosition();
+	    stepMC[iend] = sh.stepPointMC();
+	  }
+	  // choose the minimum time from either end, as the ADC sums both
+	  double ptime = 1.0e10;
+	  for(size_t iend = 0; iend < 2; ++iend){
+	    if(wetime[iend] > 0)ptime = std::min(ptime,wetime[iend]);
+	  }
+	  // subtract a small buffer
+	  ptime -= 0.01*_strawele->adcPeriod();
+	  // pickup all StepPointMCs associated with clusts inside the time window of the ADC digitizations (after the threshold)
+	  set<art::Ptr<StepPointMC> > spmcs;
+	  for(auto ih=wf[primaryend._end].clusts().clustList().begin();ih!= wf[primaryend._end].clusts().clustList().end();++ih){
+	    if(ih->time() >= ptime && ih->time() < ptime +
+		( _strawele->nADCSamples()-_strawele->nADCPreSamples())*_strawele->adcPeriod())
+	      spmcs.insert(ih->stepPointMC());
+	  }
+	  vector<art::Ptr<StepPointMC>> stepMCs;
+	  stepMCs.reserve(spmcs.size());
+	  for(auto ispmc=spmcs.begin(); ispmc!= spmcs.end(); ++ispmc){
+	    stepMCs.push_back(*ispmc);
+	  }
+	  PtrStepPointMCVector mcptr;
+	  for(auto ixmcsp=xmcsp.begin();ixmcsp!=xmcsp.end();++ixmcsp)
+	    mcptr.push_back(*ixmcsp);
+	  mcptrs->push_back(mcptr);
+	  mcdigis->push_back(StrawDigiMC(index,wetime,cpos,stepMC,stepMCs));
+	  // diagnostics
+	  if(_diagLevel > 1)digiDiag(xpair,digis->back(),mcdigis->back());
 	}
-	// choose the minimum time from either end, as the ADC sums both
-	double ptime = 1.0e10;
-	for(size_t iend = 0; iend < 2; ++iend){
-	  if(wetime[iend] > 0)ptime = std::min(ptime,wetime[iend]);
-	}
-	// subtract a small buffer
-	ptime -= 0.01*_strawele->adcPeriod();
-	// pickup all StepPointMCs associated with clusts inside the time window of the ADC digitizations (after the threshold)
-	set<art::Ptr<StepPointMC> > spmcs;
-	for(auto ih=wf[primaryend._end].clusts().clustList().begin();ih!= wf[primaryend._end].clusts().clustList().end();++ih){
-	  if(ih->time() >= ptime && ih->time() < ptime +
-	      ( _strawele->nADCSamples()-_strawele->nADCPreSamples())*_strawele->adcPeriod())
-	    spmcs.insert(ih->stepPointMC());
-	}
-	vector<art::Ptr<StepPointMC>> stepMCs;
-	stepMCs.reserve(spmcs.size());
-	for(auto ispmc=spmcs.begin(); ispmc!= spmcs.end(); ++ispmc){
-	  stepMCs.push_back(*ispmc);
-	}
-	PtrStepPointMCVector mcptr;
-	for(auto ixmcsp=xmcsp.begin();ixmcsp!=xmcsp.end();++ixmcsp)
-	  mcptr.push_back(*ixmcsp);
-	mcptrs->push_back(mcptr);
-	mcdigis->push_back(StrawDigiMC(index,wetime,cpos,stepMC,stepMCs));
-	// diagnostics
-	if(_diagLevel > 1)digiDiag(xpair,digis->back(),mcdigis->back());
       }
     }
 
@@ -711,7 +715,7 @@ namespace mu2e {
       // storage for MC match can be more than 1 StepPointMCs
       set<art::Ptr<StepPointMC>> mcmatch;
       // initialize the float variables that we later digitize
-      array<double,2> xtimes = {2*_mbtime,2*_mbtime}; // overflow signals missing information
+      TDCTimes xtimes = {0.0,0.0}; 
       StrawEnd primaryend = primaryEnd(index);
       // smear (coherently) both times for the TDC clock jitter
       double dt = _randgauss.fire(0.0,_strawele->clockJitter());
@@ -725,16 +729,16 @@ namespace mu2e {
 	mcmatch.insert(wfx._iclust->stepPointMC());
       }
       //  sums voltages from both waveforms for ADC
-      vector<double> wf[2];
+      ADCVoltages wf[2];
       // get the sample times from the electroincs
-      vector<double> adctimes;
+      TrkTypes::ADCTimes adctimes;
       _strawele->adcTimes(xpair[0]->_time,adctimes);
       // sample the waveform from both ends at these times
       for(size_t iend=0;iend<2;++iend){
 	waveform[iend].sampleWaveform(TrkTypes::adc,adctimes,wf[iend]);
       }
       // add ends and add noise
-      vector<double> wfsum; wfsum.reserve(adctimes.size());
+      ADCVoltages wfsum; wfsum.reserve(adctimes.size());
       for(unsigned isamp=0;isamp<adctimes.size();++isamp){
 	wfsum.push_back(wf[0][isamp]+wf[1][isamp]+_randgauss.fire(0.0,_strawele->analogNoise(TrkTypes::adc)));
       }
@@ -869,7 +873,8 @@ namespace mu2e {
 	  double tstart = clusts.begin()->time()-tstep;
 	  double tfall = _strawele->fallTime(_diagpath);
 	  double tend = clusts.rbegin()->time() + nfall*tfall;
-	  vector<double> times, volts;
+	  ADCTimes times;
+	  ADCVoltages volts;
 	  times.reserve(size_t(rint(tend-tstart)/tstep));
 	  volts.reserve(size_t(rint(tend-tstart)/tstep));
 	  double t = tstart;
