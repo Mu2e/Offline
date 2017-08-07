@@ -132,7 +132,7 @@ physics :
     {
        module_type   : CrvBackgroundOverlay
        backgroundFile: "CRVResponse/efficiencyCheck/background_5600.root"
-       overlayFactor : 2
+       overlayFactor : 0
     }
 
     protonTimeMap: { module_type : GenerateProtonTimes }

@@ -1,0 +1,131 @@
+BEGIN_PROLOG
+
+    CrvPhotonArrivals:
+    {
+      module_type               : CrvPhotonArrivalsGenerator
+      g4ModuleLabels            : ["*"]
+      processNames              : ["*"]
+      lookupTableFileNames      : ["CRVConditions/v3_0/LookupTable_6600",
+                                   "CRVConditions/v3_0/LookupTable_5600",
+                                   "CRVConditions/v3_0/LookupTable_4500",
+                                   "CRVConditions/v3_0/LookupTable_3000",
+                                   "CRVConditions/v3_0/LookupTable_2300",
+                                   "CRVConditions/v3_0/LookupTable_900"]
+      lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
+      scintillationYield        : 6697     //6697 photons per MeV corresponds to a PE yield of 48 PEs/cm @ 1m away from SiPMs
+                                           //scintillation yield = 146.178 (photons/MeV)/(PEs/cm) * PE yield - 319.19 photons/MeV, 
+                                           //where PE yield is the number of PEs per cm @ 1m away from SiPMs
+//      scintillationYield        : 5820     //beam on (42 PEs/cm) without safety factor
+//      scintillationYield        : 4797     //end of run (35 PEs/cm) without safety factor
+      scintillationYieldVariation       : 0.2   //gaussian distribution with sigma equal to 20% of the mean
+      scintillationYieldVariationCutoff : 0.4   //the scintillation yield variation is cut off at 40% below the mean
+      scintillatorBirksConstant : 0.126    //0.126 mm/Mev
+      scintillatorRatioFastSlow : 1.0      //100% fast
+      scintillatorDecayTimeFast : 3.0      //3.0 ns   //includes WLS component in the scintillator
+      scintillatorDecayTimeSlow : 100.0    //100.0 ns  //unknown, not used
+      fiberDecayTime            : 7.4      //7.4 ns
+      startTime                 : 400.0    //0.0 ns
+      visibleEnergyAdjustmentFileName : "CRVResponse/fcl/visibleEnergyAdjustment.txt"
+      timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+    }
+    CrvSiPMResponses:
+    {
+      module_type                  : CrvSiPMResponsesGenerator
+      crvPhotonArrivalsModuleLabel : "CrvPhotonArrivals"
+      deadSiPMProbability          : 0.01
+      numberPixels                 : 1584
+      numberPixelsAtFiber          : 615
+      bias                         : 2.4        //V
+      timeConstant                 : 12.0       //ns
+      blindTime                    : 500.0      //ns
+
+      GeigerProbCoef               : 1.0        // = pc
+      GeigerProbVoltScale          : 5.5        // = vs
+                                                //from the SiPM specs:
+                                                //Geiger probability at over voltage v = 2.4V (bias voltage): 
+                                                //0.35 = 1 - exp(-pow(v,pc)/vs)
+                                                //Geiger probability at over voltage v = 1.0V: 
+                                                //0.17 = 1 - exp(-pow(v,pc)/vs)
+
+      TrapType0Prob                : 0.0        //0.14       //trap_prob*trap_type0_prob=0.2*0.7
+      TrapType1Prob                : 0.0        //0.06       //trap_prob*trap_type1_prob=0.2*0.3
+      TrapType0Lifetime            : 5.0        //ns
+      TrapType1Lifetime            : 50.0       //ns
+
+      ThermalProb                  : 2.9e-3     //ns^-1     1MHz/GeigerProb at SiPM --> 2.9e6 s^-1 = 2.9e-3 ns^-1 
+
+      PhotonProduction             : 0.136      // = p (photon probability with every charge release)
+                                                //total cross talk probability cp:
+                                                //use probability to release a charge r = 0.35 (Geiger probability)
+                                                //cp = p*r + (p*r)^2 + (p*r)^3 + ... = 0.05
+    }
+    CrvWaveforms:
+    {
+      module_type                  : CrvWaveformsGenerator
+      crvSiPMResponsesModuleLabel  : "CrvSiPMResponses"
+      singlePEWaveformFileName     : "CRVResponse/fcl/singlePEWaveform_v2.txt"
+      singlePEWaveformPrecision    : 0.5    //0.5 ns
+      singlePEWaveformMaxTime      : 100    //100 ns
+      digitizationPrecision        : 12.5   //12.5 ns (digitizer sampling rate)
+      digitizationPoints           : 8      //8 points
+      FEBtimeSpread                : 2.0    //2.0 ns
+      minVoltage                   : 0.03123 //31.23mV (corresponds to 5.5PE) using dark current calibration
+      noise                        : 4.0e-4 //0.4mV
+    }
+    CrvRecoPulses:
+    {
+      module_type               : CrvRecoPulsesFinder
+      crvWaveformsModuleLabel   : "CrvWaveforms"
+      scale                     : 0.00564   //0.00564 V/PE
+      offset                    : 0.00021   //0.00021 V      //from dark current calibration: pulse height = scale * PE + offset
+      useFittedPulseHeight      : false    //not used in test beam analysis
+      useFittedPulseTime        : true
+      doLEfit                   : true
+      minPEs                    : 6        //6 PEs
+    }
+    CrvCoincidence:
+    {
+      module_type                   : CrvCoincidenceCheck
+      verboseLevel                  : 1
+      crvRecoPulsesModuleLabel      : "CrvRecoPulses"
+      CRVSectors                    : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","T5","T6","D1","U" ,"C1","C2","C3","D2","D3","D4"] //used only to match the vector entries below
+      PEthresholds                  : [ 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 16 , 16 , 18 , 18 , 18 , 18,  22 , 16 , 18 , 18 , 18 , 22 , 22 , 22 ] //beam on
+//      PEthresholds                  : [ 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 12 , 12 , 14 , 14 , 14 , 14 , 18 , 12 , 14 , 14 , 14 , 18 , 18 , 18 ] //end of run
+      adjacentPulseTimeDifferences  : [  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ] //ns
+      maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 20 , 10 , 10 , 10 , 10 , 10 , 20 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
+      maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
+      maxSlopeDifference            : 2.0    //
+      acceptThreeAdjacentCounters   : false  //use hits in three adjacent counters in one layer to form a coincidence
+      timeWindowStart               : 500    //ns
+      timeWindowEnd                 : 1750   //ns
+      leadingVetoTime               : 0      //the time window before the first hit time of the coincidence triplet (only used to print out the results)
+      trailingVetoTime              : 125    //the time window after the last hit time of the coincidence triplet (only used to print out the results)
+    }
+    CrvCoincidenceClusterFinder:
+    {
+      module_type                    : CrvCoincidenceClusterFinder
+      verboseLevel                   : 1
+      maxDistance                    : 1000 //mm
+      maxTimeDifference              : 100  //ns
+      crvCoincidenceCheckModuleLabel : "CrvCoincidence"
+      timeWindowStart                : 500  //ns
+      timeWindowEnd                  : 1750 //ns
+      deadTimeWindowStartMargin      : 0    //ns
+      deadTimeWindowEndMargin        : 125  //ns
+    }
+
+CrvResponsePackage : 
+{
+   producers : 
+   {
+     CrvPhotonArrivals           : @local::CrvPhotonArrivals
+     CrvSiPMResponses            : @local::CrvSiPMResponses
+     CrvWaveforms                : @local::CrvWaveforms
+     CrvRecoPulses               : @local::CrvRecoPulses
+     CrvCoincidence              : @local::CrvCoincidence
+     CrvCoincidenceClusterFinder : @local::CrvCoincidenceClusterFinder
+   }
+   CrvResponseSequence : [ CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
+}
+
+END_PROLOG

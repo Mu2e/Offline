@@ -29,13 +29,13 @@ moduleGap=3
         fclfile=CRVResponse/efficiencyCheck/submit/$name'_'$i.fcl
         fcllist=CRVResponse/efficiencyCheck/submit/$name'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm_verticalPlanes.fcl\"" >| $fclfile
-        echo "services.user.GeometryService.inputFile                 : \"$geomfile\"" >> $fclfile
+        echo "services.GeometryService.inputFile                      : \"$geomfile\"" >> $fclfile
         echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.scintillationYield  : $photonYield" >> $fclfile
         echo "physics.producers.backgroundOverlay.overlayFactor       : $overlayFactor" >> $fclfile
 
         generate_fcl --description=$name --dsconf=$i --run=1 --events=20000 --njobs=50 $fclfile
-        ls /mu2e/app/users/ehrlich/work_08302015/Offline/000/cnf.ehrlich.$name.$i.*.fcl > $fcllist
+        ls $PWD/000/cnf.$USER.$name.$i.*.fcl > $fcllist
         clustername=CRV_efficiency5cm_side_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield
         mu2eprodsys --setup=./setup.sh --fcllist=$fcllist --clustername=$clustername --dsconf=$i --wfproject=$name
 
