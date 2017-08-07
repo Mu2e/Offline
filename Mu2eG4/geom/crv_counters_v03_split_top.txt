@@ -1,4 +1,11 @@
-int   crs.nSectors = 23;
+//THIS IS ONLY A TEST GEOMETRY
+//THIS CRV GEOMETRY IS INCOMPATIBLE WITH PREVIOUSLY GENERATED FILES (e.g. CD3)
+//It uses a different CRV-D geometry, and has fixed the typo for CRV-T
+//It also splits CRV-T and CRV-TS in a different way so that the PE thresholds can be adjusted in a better way.
+//This requires the use of CRVResponse/fcl/prolog_split_top.fcl. The default prolog will not work.
+
+
+int   crs.nSectors = 22;  //default file has 21
 int   crs.nLayers  = 4;
 
 vector<string> crs.sectorNames = {
@@ -23,8 +30,7 @@ vector<string> crs.sectorNames = {
                        "C2",  //18
                        "C3",  //19
                        "D2",  //20
-                       "D3",  //21
-                       "D4"   //22
+                       "D3"   //21  default file has also a D4
                       };
 
 double          crs.scintillatorBarLengthR1      =  4500; //0
@@ -49,7 +55,6 @@ double          crs.scintillatorBarLengthC2      =   900; //18
 double          crs.scintillatorBarLengthC3      =   900; //19
 double          crs.scintillatorBarLengthD2      =  2300; //20
 double          crs.scintillatorBarLengthD3      =  2300; //21
-double          crs.scintillatorBarLengthD4      =  5600; //22
 
 double          crs.scintillatorBarThickness     =  20;
 double          crs.scintillatorBarWidth         =  49.5;
@@ -83,7 +88,6 @@ int             crs.nModulesC2                   =   1;  //18
 int             crs.nModulesC3                   =   1;  //19
 int             crs.nModulesD2                   =   1;  //20
 int             crs.nModulesD3                   =   1;  //21
-int             crs.nModulesD4                   =   2;  //22
 
 int             crs.nCountersPerModuleR1         =   16;  //0 //at one layer
 int             crs.nCountersPerModuleR2         =   16;  //1
@@ -105,9 +109,8 @@ int             crs.nCountersPerModuleU          =   16;  //16
 int             crs.nCountersPerModuleC1         =   16;  //17
 int             crs.nCountersPerModuleC2         =   16;  //18
 int             crs.nCountersPerModuleC3         =   16;  //19
-int             crs.nCountersPerModuleD2         =   8;   //20
-int             crs.nCountersPerModuleD3         =   8;   //21
-int             crs.nCountersPerModuleD4         =   16;  //22
+int             crs.nCountersPerModuleD2         =   16;  //20   //default file has only 8 counters
+int             crs.nCountersPerModuleD3         =   16;  //21   //default file has only 8 counters
 
 vector<double>  crs.firstCounterR1        =  {-6429.4,    212.8,  -2146.85}; //0 //in mu2e coordinates
 vector<double>  crs.firstCounterR2        =  {-6429.4,   2012.8,  12595.15}; //1
@@ -120,18 +123,17 @@ vector<double>  crs.firstCounterL2        =  {-1378.6,    212.8,  15052.15}; //7
 vector<double>  crs.firstCounterL3        =  {-1378.6,    212.8,  15463.15}; //8
 vector<double>  crs.firstCounterT1        =  {-3404.0,   2600.6,  -2146.85}; //9
 vector<double>  crs.firstCounterT2        =  {-3404.0,   2600.6,    310.15}; //10
-vector<double>  crs.firstCounterT3        =  {-3904.0,   2600.6,   2764.15}; //11  //typo: needs to be 2767.15
+vector<double>  crs.firstCounterT3        =  {-3904.0,   2600.6,   2767.15}; //11  //typo in default file (2764.15mm)
 vector<double>  crs.firstCounterT4        =  {-3904.0,   2600.6,   5224.15}; //12
 vector<double>  crs.firstCounterT5        =  {-3904.0,   2600.6,  15052.15}; //13
 vector<double>  crs.firstCounterT6        =  {-3904.0,   2600.6,  15463.15}; //14
-vector<double>  crs.firstCounterD1        =  {-3904.0,   2710.75, 18771.0};  //15
+vector<double>  crs.firstCounterD1        =  {-3904.0,   2910.75, 18771.0};  //15  //raised by 20cm compared to default file
 vector<double>  crs.firstCounterU         =  {-3404.0,   2710.75, -2296.8};  //16
 vector<double>  crs.firstCounterC1        =  {-6557.6,   1098.4,  12509.3};  //17
 vector<double>  crs.firstCounterC2        =  {-6557.6,   1098.4,  13355.5};  //18
 vector<double>  crs.firstCounterC3        =  {-6557.6,   1663.0,  12932.4};  //19
-vector<double>  crs.firstCounterD2        =  {-5554.0,    253.75, 18771.0};  //20
-vector<double>  crs.firstCounterD3        =  {-2254.0,    253.75, 18771.0};  //21
-vector<double>  crs.firstCounterD4        =  {-3904.0,   -157.25, 18771.0};  //22
+vector<double>  crs.firstCounterD2        =  {-5554.0,    453.75, 18771.0};  //20  //raised by 20cm compared to default file
+vector<double>  crs.firstCounterD3        =  {-2254.0,    453.75, 18771.0};  //21  //raised by 20cm compared to default file
 
 string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
 string          crs.absorberMaterialName         = "G4_Al";
@@ -163,7 +165,6 @@ vector<double>  crs.layerDirectionC2  =  {0, 0, 1};  //18
 vector<double>  crs.layerDirectionC3  =  {0, -1, 0}; //19  <--THIS NEEDS TO BE CHANGED IN THE NEXT VERSION
 vector<double>  crs.layerDirectionD2  =  {0, 0, 1};  //20
 vector<double>  crs.layerDirectionD3  =  {0, 0, 1};  //21
-vector<double>  crs.layerDirectionD4  =  {0, 0, 1};  //22
 
 vector<double>  crs.offsetDirectionR1  =  {0, 0, -1}; //0
 vector<double>  crs.offsetDirectionR2  =  {0, 0, -1}; //1
@@ -187,7 +188,6 @@ vector<double>  crs.offsetDirectionC2  =  {-1, 0, 0}; //18
 vector<double>  crs.offsetDirectionC3  =  {-1, 0, 0}; //19
 vector<double>  crs.offsetDirectionD2  =  {0, -1, 0}; //20
 vector<double>  crs.offsetDirectionD3  =  {0, -1, 0}; //21
-vector<double>  crs.offsetDirectionD4  =  {0, -1, 0}; //22
 
 vector<double>  crs.gapDirectionR1  =  {0, 0, 1};  //0
 vector<double>  crs.gapDirectionR2  =  {0, 0, 1};  //1
@@ -211,7 +211,6 @@ vector<double>  crs.gapDirectionC2  =  {-1, 0, 0}; //18
 vector<double>  crs.gapDirectionC3  =  {-1, 0, 0}; //19
 vector<double>  crs.gapDirectionD2  =  {0, -1, 0}; //20
 vector<double>  crs.gapDirectionD3  =  {0, -1, 0}; //21
-vector<double>  crs.gapDirectionD4  =  {0, -1, 0}; //22
 
 // virtual detectors
 bool vd.crv.build = false;
@@ -252,7 +251,6 @@ bool crs.sipmsAtSide0C2  = true;  //18
 bool crs.sipmsAtSide0C3  = true;  //19
 bool crs.sipmsAtSide0D2  = true;  //20
 bool crs.sipmsAtSide0D3  = false; //21
-bool crs.sipmsAtSide0D4  = true;  //22
 
 // side 1 is the positive side of the counter, i.e. the +x side of a CRV-T counter, or the +y side of a CRV-R counter
 bool crs.sipmsAtSide1R1  = true;  //0
@@ -277,7 +275,6 @@ bool crs.sipmsAtSide1C2  = false; //18
 bool crs.sipmsAtSide1C3  = false; //19
 bool crs.sipmsAtSide1D2  = false; //20
 bool crs.sipmsAtSide1D3  = true;  //21
-bool crs.sipmsAtSide1D4  = true;  //22
 
 // information about the coincidence groups
 int crs.precedingSectorForR1  = -1;  //0   //no preceding sector
@@ -302,7 +299,6 @@ int crs.precedingSectorForC2  = -1;  //18  //no preceding sector
 int crs.precedingSectorForC3  = -1;  //19  //no preceding sector
 int crs.precedingSectorForD2  = 15;  //20
 int crs.precedingSectorForD3  = 15;  //21
-int crs.precedingSectorForD4  = 21;  //22
 
 int crs.sectorTypeR1  = 1;  //0
 int crs.sectorTypeR2  = 1;  //1
@@ -326,7 +322,6 @@ int crs.sectorTypeC2  = 7;  //18
 int crs.sectorTypeC3  = 8;  //19
 int crs.sectorTypeD2  = 4;  //20
 int crs.sectorTypeD3  = 4;  //21
-int crs.sectorTypeD4  = 4;  //22
 
 //information about the FEBs
 int crs.FEBBoxesAtSide0R1  = 1; //0 
@@ -351,7 +346,6 @@ int crs.FEBBoxesAtSide0C2  = 0; //18
 int crs.FEBBoxesAtSide0C3  = 0; //19
 int crs.FEBBoxesAtSide0D2  = 1; //20
 int crs.FEBBoxesAtSide0D3  = 0; //21
-int crs.FEBBoxesAtSide0D4  = 1; //22
 
 int crs.FEBBoxesAtSide1R1  = 2; //0 
 int crs.FEBBoxesAtSide1R2  = 2; //1 
@@ -375,7 +369,6 @@ int crs.FEBBoxesAtSide1C2  = 1; //18
 int crs.FEBBoxesAtSide1C3  = 0; //19   <--- THIS NEEDS TO BE CHANGED IN THE NEXT VERSION
 int crs.FEBBoxesAtSide1D2  = 0; //20
 int crs.FEBBoxesAtSide1D3  = 1; //21
-int crs.FEBBoxesAtSide1D4  = 1; //22
 
 string         crs.FEBMaterialName     = "ElectronicsFEB";
 double         crs.FEBDistanceToModule =  33.3;        //between surface of 4th scintillator layer and center of 1st FEB

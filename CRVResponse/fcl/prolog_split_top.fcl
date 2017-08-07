@@ -88,11 +88,11 @@ BEGIN_PROLOG
       module_type                   : CrvCoincidenceCheck
       verboseLevel                  : 1
       crvRecoPulsesModuleLabel      : "CrvRecoPulses"
-      CRVSectors                    : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","T5","T6","D1","U" ,"C1","C2","C3","D2","D3","D4"] //used only to match the vector entries below
-      PEthresholds                  : [ 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 16 , 16 , 18 , 18 , 18 , 18,  22 , 16 , 18 , 18 , 18 , 22 , 22 , 22 ] //beam on
-//      PEthresholds                  : [ 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 12 , 12 , 14 , 14 , 14 , 14 , 18 , 12 , 14 , 14 , 14 , 18 , 18 , 18 ] //end of run
-      adjacentPulseTimeDifferences  : [  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ] //ns
-      maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 20 , 10 , 10 , 10 , 10 , 10 , 20 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
+      CRVSectors                    : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","T5","T6","D1","U" ,"C1","C2","C3","D2","D3"] //used only to match the vector entries below
+      PEthresholds                  : [ 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 16 , 16 , 18 , 18 , 18 , 18,  22 , 16 , 18 , 18 , 18 , 22 , 22 ] //beam on
+//      PEthresholds                  : [ 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 12 , 12 , 14 , 14 , 14 , 14 , 18 , 12 , 14 , 14 , 14 , 18 , 18 ] //end of run
+      adjacentPulseTimeDifferences  : [  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 ] //ns
+      maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 20 , 10 , 10 , 10 , 10 , 10 , 20 , 10 , 10 , 10 , 10 , 10 ] //ns
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
       maxSlopeDifference            : 2.0    //
       acceptThreeAdjacentCounters   : false  //use hits in three adjacent counters in one layer to form a coincidence
