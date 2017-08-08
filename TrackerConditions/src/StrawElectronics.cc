@@ -24,7 +24,8 @@ namespace mu2e {
       pset.get<double>("adcdVdI",2.0e7) }, // mVolt/uAmps (transimpedance gain)
     _tau{pset.get<double>("thresholdFallTime",22.0),  // nsec
       pset.get<double>("adcShapingTime",22.0) }, // nsec
-    _tdead(pset.get<double>("DeadTime",100.0)), // nsec dead after threshold crossing (electronics processing time)
+    _tdeadAnalog(pset.get<double>("DeadTimeAnalog",100.0)), // nsec dead after threshold crossing (pulse baseline restoration time)
+    _tdeadDigital(pset.get<double>("DeadTimeDigital",100.0)), // nsec dead after threshold crossing (electronics processing time)
     _vmax(pset.get<double>("MaximumVoltage",180.0)), // 1000 mVolt
     _vsat(pset.get<double>("SaturationVoltage",120.0)), // mVolt
     _disp(pset.get<double>("Dispersion",1.0e-4)), // 0.1 ps/mm
@@ -40,6 +41,8 @@ namespace mu2e {
     _ADCOffset(pset.get<double>("ADCOffset",2.0)), // nsec
     _TDCLSB(pset.get<double>("TDCLSB",0.015625)),  // nsec
     _maxTDC(pset.get<unsigned>("maxTDC",16777216)),
+    _TOTLSB(pset.get<double>("TOTLSB",4.0)), //ns
+    _maxTOT(pset.get<unsigned>("maxTOT",16)),
     _clockStart(pset.get<double>("clockStart",10.0)), // nsec
     _clockJitter(pset.get<double>("clockJitter",0.2)), // nsec
     _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
@@ -69,6 +72,14 @@ namespace mu2e {
  }
 
   StrawElectronics::~StrawElectronics() {}
+
+  double StrawElectronics::fastResponse(double time, double charge) const {
+    if (time > 0.0 && time < _ttrunc[thresh]){
+      double tau = time*_freq[thresh];
+      return charge*_norm[thresh]*exp(-tau)*(_voff + 1.0);
+    }
+    return 0;
+  }
 
   double StrawElectronics::linearResponse(Path ipath,double time,double charge) const {
     double retval(0.0);
@@ -108,6 +119,8 @@ namespace mu2e {
     // Offset to when the TDC clock starts
     return min(static_cast<unsigned long>(max(static_cast<int>(floor((time-_clockStart)/_TDCLSB)),0)),_maxTDC);
   }
+
+  
 void StrawElectronics::digitizeWaveform(ADCVoltages const& wf, ADCWaveform& adc) const{
     if(wf.size() != _nADC)
       throw cet::exception("SIM") 
@@ -136,9 +149,10 @@ void StrawElectronics::digitizeWaveform(ADCVoltages const& wf, ADCWaveform& adc)
   }
   
   bool StrawElectronics::combineEnds(double t1, double t2) const {
-  // use deadtime to define when ends should be combined: that
-  // must be longer than the propagaion + resolution time!
-    return fabs(t1-t2) < _tdead;
+    // currently two clock ticks are allowed for coincidence time
+    int clockTicks1 = static_cast<int>(floor(t1-_clockStart)/_ADCPeriod);
+    int clockTicks2 = static_cast<int>(floor(t1-_clockStart)/_ADCPeriod);
+    return abs(clockTicks1-clockTicks2) < 2;
   }
 
   void StrawElectronics::tdcTimes(TDCValues const& tdc, TDCTimes& times) const {

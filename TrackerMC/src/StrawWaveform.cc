@@ -169,6 +169,20 @@ namespace mu2e {
       return satresp;
     }
 
+    double StrawWaveform::fastSampleWaveform(double time) const {
+      // loop over all clusts and add their response at this time
+      ClusterList const& hlist = _cseq.clustList();
+      double linresp(0.0);
+      auto iclust = hlist.begin();
+      while(iclust != hlist.end() && iclust->time() < time){
+	// compute the linear straw electronics response to this charge.  This is pre-saturation 
+	linresp += _strawele->fastResponse(time-iclust->time(),iclust->charge());
+	// move to next clust
+	++iclust;
+      }
+      return linresp;
+    }
+
     void StrawWaveform::sampleWaveform(TrkTypes::Path ipath,ADCTimes const& times,ADCVoltages& volts) const {
       volts.clear();
       volts.reserve(times.size());
@@ -176,6 +190,16 @@ namespace mu2e {
 	volts.push_back(sampleWaveform(ipath,*itime));
       }
     }
+
+  unsigned short StrawWaveform::digitizeTOT(double threshold, double time) const {
+      for (size_t i=0;i<_strawele->maxTOT();i++){
+        if (fastSampleWaveform(time + i*_strawele->totLSB()) < threshold)
+          return static_cast<unsigned short>(i);
+      }
+      return static_cast<unsigned short>(_strawele->maxTOT());
+    }
   }
+
+
 }
 

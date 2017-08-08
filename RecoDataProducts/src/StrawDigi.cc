@@ -13,13 +13,13 @@ namespace mu2e {
   StrawDigi::StrawDigi() : _strawIndex(0)
   {
   }
-  StrawDigi::StrawDigi(StrawIndex index, TDCValues tdc, ADCWaveform const& adc) : _strawIndex(index),
+  StrawDigi::StrawDigi(StrawIndex index, TDCValues tdc, TOTValues tot, ADCWaveform const& adc) : _strawIndex(index),
 //  _tdc(tdc),
   _adc(adc)
   {
     for(size_t itdc=0;itdc<2;++itdc){
       _tdc[itdc] = tdc[itdc];
-      _tot[itdc] = 0; // temporary FIXME!
+      _tot[itdc] = tot[itdc];
     }
   }
   
