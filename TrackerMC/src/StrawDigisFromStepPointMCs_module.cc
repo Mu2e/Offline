@@ -105,8 +105,9 @@ namespace mu2e {
 	// Diagnostics level.
 	int _diagLevel, _printLevel;
 	unsigned _maxhist;
-	bool _xtalkhist,_noxhist;
-	int _minnxinghist;
+	bool _xtalkhist;
+	unsigned _minnxinghist;
+	double _tstep, _nfall;
 	// Limit on number of events for which there will be full printout.
 	int _maxFullPrint;
 	// Name of the tracker StepPoint collection
@@ -141,9 +142,9 @@ namespace mu2e {
 	fhicl::ParameterSet _deadStraws;
 	DeadStrawList _strawStatus;
 	// diagnostics
-	TTree* _swdiag;
 	Int_t _splane, _spanel, _slayer, _sstraw;
-	Int_t _nclust,_iclust;
+	Int_t _nclustcal, _nclusthv, _iclustcal, _iclusthv;
+	Float_t _ctimecal, _ctimehv, _cdistcal, _cdisthv;
 	Float_t _hqsum, _vmax, _tvmax, _sesum;
 	Int_t _wmcpdg, _wmcproc, _nxing;
 	Float_t _mce, _slen, _sedep;
@@ -154,7 +155,8 @@ namespace mu2e {
 	TTree* _sddiag;
 	Int_t _sdplane, _sdpanel, _sdlayer, _sdstraw;
 	Int_t _nend, _nstep;
-	Float_t _xtime0, _xtime1, _htime0, _htime1, _charge0, _charge1, _ddist0, _ddist1, _wdist0, _wdist1, _vstart0, _vstart1, _vcross0, _vcross1;
+	Float_t _xtimecal, _xtimehv, _htimecal, _htimehv, _chargecal, _chargehv, _ddistcal, _ddisthv;
+	Float_t _wdistcal, _wdisthv, _vstartcal, _vstarthv, _vcrosscal, _vcrosshv;
 	Float_t _mctime, _mcenergy, _mctrigenergy, _mcthreshenergy;
 	Int_t _mcthreshpdg, _mcthreshproc, _mcnstep;
 	Float_t _mcdca;
@@ -193,7 +195,7 @@ namespace mu2e {
 	void findCrossTalkStraws(Straw const& straw,vector<XTalk>& xtalk);
 	// diagnostic functions
 	void waveformDiag(const StrawWaveform wf[2], WFXList const& xings);
-	void digiDiag(WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi);
+	void digiDiag(const StrawWaveform wf[2], WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi);
 	StrawEnd primaryEnd(StrawIndex strawind) const;
     };
 
@@ -204,9 +206,10 @@ namespace mu2e {
       _printLevel(pset.get<int>("printLevel",0)),
       _maxhist(pset.get<unsigned>("MaxHist",100)),
       _xtalkhist(pset.get<bool>("CrossTalkHist",false)),
-      _noxhist(pset.get<bool>("NoCrossingHist",false)),
-      _minnxinghist(pset.get<int>("MinNXingHist",0)),
-      // Parameters
+      _minnxinghist(pset.get<int>("MinNXingHist",1)), // minimum # of crossings to histogram waveform
+      _tstep(pset.get<double>("WaveformStep",0.1)), // ns
+      _nfall(pset.get<double>("WaveformTail",5.0)),  // # of decay lambda past last signal to record waveform
+    // Parameters
       _maxFullPrint(pset.get<int>("maxFullPrint",2)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
       _addXtalk(pset.get<bool>("addCrossTalk",false)),
@@ -255,32 +258,6 @@ namespace mu2e {
 	_cdiag->Branch("charge",&_cq,"charge/F");
 	_cdiag->Branch("nion",&_nion,"nion/I");
 
-	_swdiag =tfs->make<TTree>("swdiag","StrawWaveform diagnostics");
-	_swdiag->Branch("plane",&_splane,"plane/I");
-	_swdiag->Branch("panel",&_spanel,"panel/I");
-	_swdiag->Branch("layer",&_slayer,"layer/I");
-	_swdiag->Branch("straw",&_sstraw,"straw/I");
-	_swdiag->Branch("nclust",&_nclust,"nclust/I");
-	_swdiag->Branch("iclust",&_iclust,"iclust/I");
-	_swdiag->Branch("hqsum",&_hqsum,"hqsum/F");
-	_swdiag->Branch("vmax",&_vmax,"vmax/F");
-	_swdiag->Branch("tvmax",&_tvmax,"tvmax/F");
-	_swdiag->Branch("mcpdg",&_wmcpdg,"mcpdg/I");
-	_swdiag->Branch("mcproc",&_wmcproc,"mcproc/I");
-	_swdiag->Branch("mce",&_mce,"mce/F");
-	_swdiag->Branch("slen",&_slen,"slen/F");
-	_swdiag->Branch("sedep",&_sedep,"sedep/F");
-	_swdiag->Branch("nxing",&_nxing,"nxing/I");
-	_swdiag->Branch("nstep",&_nsteppoint,"nstep/I");
-	_swdiag->Branch("sesum",&_sesum,"sesum/F");
-	_swdiag->Branch("npart",&_npart,"npart/I");
-	_swdiag->Branch("tmin",&_tmin,"tmin/F");
-	_swdiag->Branch("tmax",&_tmax,"tmax/F");
-	_swdiag->Branch("txing",&_txing,"txing/F");
-	_swdiag->Branch("xddist",&_xddist,"xddist/F");
-	_swdiag->Branch("xwdist",&_xwdist,"xwdist/F");
-	_swdiag->Branch("xpdist",&_xpdist,"xpdist/F");
-	_swdiag->Branch("xtalk",&_wfxtalk,"xtalk/B");
 
 	if(_diagLevel > 1){
 	  _sddiag =tfs->make<TTree>("sddiag","StrawDigi diagnostics");
@@ -290,20 +267,28 @@ namespace mu2e {
 	  _sddiag->Branch("straw",&_sdstraw,"straw/I");
 	  _sddiag->Branch("nend",&_nend,"nend/I");
 	  _sddiag->Branch("nstep",&_nstep,"nstep/I");
-	  _sddiag->Branch("xtime0",&_xtime0,"xtime0/F");
-	  _sddiag->Branch("xtime1",&_xtime1,"xtime1/F");
-	  _sddiag->Branch("htime0",&_htime0,"htime0/F");
-	  _sddiag->Branch("htime1",&_htime1,"htime1/F");
-	  _sddiag->Branch("charge0",&_charge0,"charge0/F");
-	  _sddiag->Branch("charge1",&_charge1,"charge1/F");
-	  _sddiag->Branch("wdist0",&_wdist0,"wdist0/F");
-	  _sddiag->Branch("wdist1",&_wdist1,"wdist1/F");
-	  _sddiag->Branch("vstart0",&_vstart0,"vstart0/F");
-	  _sddiag->Branch("vstart1",&_vstart1,"vstart1/F");
-	  _sddiag->Branch("vcross0",&_vcross0,"vcross0/F");
-	  _sddiag->Branch("vcross1",&_vcross1,"vcross1/F");
-	  _sddiag->Branch("ddist0",&_ddist0,"ddist0/F");
-	  _sddiag->Branch("ddist1",&_ddist1,"ddist1/F");
+	  _sddiag->Branch("xtimecal",&_xtimecal,"xtimecal/F");
+	  _sddiag->Branch("xtimehv",&_xtimehv,"xtimehv/F");
+	  _sddiag->Branch("htimecal",&_htimecal,"htimecal/F");
+	  _sddiag->Branch("htimehv",&_htimehv,"htimehv/F");
+	  _sddiag->Branch("ctimecal",&_ctimecal,"ctimecal/F");
+	  _sddiag->Branch("ctimehv",&_ctimehv,"ctimehv/F");
+	  _sddiag->Branch("chargecal",&_chargecal,"chargecal/F");
+	  _sddiag->Branch("chargehv",&_chargehv,"chargehv/F");
+	  _sddiag->Branch("wdistcal",&_wdistcal,"wdistcal/F");
+	  _sddiag->Branch("wdisthv",&_wdisthv,"wdisthv/F");
+	  _sddiag->Branch("nclustcal",&_nclustcal,"nclustcal/I");
+	  _sddiag->Branch("iclustcal",&_iclustcal,"iclustcal/I");
+	  _sddiag->Branch("nclusthv",&_nclusthv,"nclusthv/I");
+	  _sddiag->Branch("iclusthv",&_iclusthv,"iclusthv/I");
+	  _sddiag->Branch("cdistcal",&_cdistcal,"cdistcal/F");
+	  _sddiag->Branch("cdisthv",&_cdisthv,"cdisthv/F");
+	  _sddiag->Branch("vstartcal",&_vstartcal,"vstartcal/F");
+	  _sddiag->Branch("vstarthv",&_vstarthv,"vstarthv/F");
+	  _sddiag->Branch("vcrosscal",&_vcrosscal,"vcrosscal/F");
+	  _sddiag->Branch("vcrosshv",&_vcrosshv,"vcrosshv/F");
+	  _sddiag->Branch("ddistcal",&_ddistcal,"ddistcal/F");
+	  _sddiag->Branch("ddisthv",&_ddisthv,"ddisthv/F");
 	  _sddiag->Branch("tdccal",&_tdccal,"tdccal/I");
 	  _sddiag->Branch("tdchv",&_tdchv,"tdchv/I");
 	  _sddiag->Branch("adc",&_adc);
@@ -401,16 +386,17 @@ namespace mu2e {
       WFXList xings;
       // loop over the ends of this straw
       for(size_t iend=0;iend<2;++iend){
+	// find the threshold crossings
 	findThresholdCrossings(waveforms[iend],xings);
       }
       // convert the crossing points into digis, and add them to the event data.  Require both ends to have threshold
-      // crossings
+      // crossings.  The logic here needs to be improved to require exactly 2 matching ends FIXME!!
       if(xings.size() > 1){
 	// fill digis from these crossings
 	fillDigis(xings,waveforms,xtalk._dest,digis,mcdigis,mcptrs);
-	// diagnostics
       }
-      if(_diagLevel > 0 && waveforms[0].clusts().clustList().size() > 0)waveformDiag(waveforms,xings);
+      // waveform diagnostics
+      if(_diagLevel > 2 && waveforms[0].clusts().clustList().size() > 0)waveformDiag(waveforms,xings);
     }
 
     void StrawDigisFromStepPointMCs::fillClusterMap(art::Event const& event, StrawClusterMap & hmap){
@@ -670,21 +656,17 @@ namespace mu2e {
 	  CLHEP::HepLorentzVector cpos[2];
 	  art::Ptr<StepPointMC> stepMC[2];
 	  StrawEnd primaryend = primaryEnd(index);
-
+// fill MC info
 	  for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
-	    StrawCluster const& sh =*((*ixp)->_iclust);
-	    xmcsp.insert(sh.stepPointMC());
-	    // index according to the primary end
-	    size_t iend = sh.strawEnd() == primaryend ? 0 : 1;
-	    wetime[iend] = sh.time();
-	    cpos[iend] = sh.clusterPosition();
-	    stepMC[iend] = sh.stepPointMC();
+	    StrawCluster const& clu =*((*ixp)->_iclust);
+	    xmcsp.insert(clu.stepPointMC());
+	    size_t iend = clu.strawEnd();
+	    wetime[iend] = clu.time();
+	    cpos[iend] = clu.clusterPosition();
+	    stepMC[iend] = clu.stepPointMC();
 	  }
 	  // choose the minimum time from either end, as the ADC sums both
-	  double ptime = 1.0e10;
-	  for(size_t iend = 0; iend < 2; ++iend){
-	    if(wetime[iend] > 0)ptime = std::min(ptime,wetime[iend]);
-	  }
+	  double ptime = std::min(wetime[TrkTypes::cal],wetime[TrkTypes::hv]);
 	  // subtract a small buffer
 	  ptime -= 0.01*_strawele->adcPeriod();
 	  // pickup all StepPointMCs associated with clusts inside the time window of the ADC digitizations (after the threshold)
@@ -705,7 +687,7 @@ namespace mu2e {
 	  mcptrs->push_back(mcptr);
 	  mcdigis->push_back(StrawDigiMC(index,wetime,cpos,stepMC,stepMCs));
 	  // diagnostics
-	  if(_diagLevel > 1)digiDiag(xpair,digis->back(),mcdigis->back());
+	  if(_diagLevel > 1)digiDiag(wf,xpair,digis->back(),mcdigis->back());
 	}
       }
     }
@@ -780,121 +762,38 @@ namespace mu2e {
       // create random noise clusts and add them to the sequences of random straws.
     }
     // diagnostic functions
-    void StrawDigisFromStepPointMCs::waveformDiag(const StrawWaveform wfs[2],
-	WFXList const& xings) {
-      const Tracker& tracker = getTrackerOrThrow();
-      const Straw& straw = tracker.getStraw( wfs[0].clusts().strawIndex() );
-      _splane = straw.id().getPlane();
-      _spanel = straw.id().getPanel();
-      _slayer = straw.id().getLayer();
-      _sstraw = straw.id().getStraw();
-      ClusterList const& clusts = wfs[0].clusts().clustList();
-      _nclust = clusts.size();
-      _iclust = -1;
-      set<art::Ptr<StepPointMC> > steps;
-      set<art::Ptr<SimParticle> > parts;
-      _nxing = xings.size();
-      _txing = _mbtime+_mbbuffer;
-      _xddist = _xwdist = _xpdist = -1.0;
-      if(_nxing > 0){
-	for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
-	  _txing = min(_txing,static_cast<float_t>(ixing->_time));
-	  // find the clust index of the 1st crossing
-	  for(auto ih=clusts.begin();ih!= clusts.end();++ih){
-	    if(ih == ixing->_iclust)break;
-	    ++_iclust;
-	  }
-	  _xddist = ixing->_iclust->driftDistance();
-	  _xwdist = ixing->_iclust->wireDistance();
-	  // compute direction perpendicular to wire and momentum
-	  art::Ptr<StepPointMC> const& spp = ixing->_iclust->stepPointMC();
-	  if(!spp.isNull()){
-	    CLHEP::Hep3Vector pdir = straw.getDirection().cross(spp->momentum()).unit();
-	    // project the differences in position to get the perp distance
-	    _xpdist = pdir.dot(spp->position()-straw.getMidPoint());
-	  }
-	}
-      } else {
-	// no xings: just take the 1st clust
-	if(_nclust > 0 ){
-	  _iclust = 0;
-	  _xddist = clusts.front().driftDistance();
-	  _xwdist = clusts.front().wireDistance();
-	  art::Ptr<StepPointMC> const& spp = clusts.front().stepPointMC();
-	  if(!spp.isNull()){
-	    CLHEP::Hep3Vector pdir = straw.getDirection().cross(spp->momentum()).unit();
-	    // project the differences in position to get the perp distance
-	    _xpdist = pdir.dot(spp->position()-straw.getMidPoint());
-	  }
-	}
-      }
-      _hqsum = 0.0;
-      _vmax = _tvmax = 0.0;
-      _wmcpdg=0;
-      _wmcproc=0;
-      for(auto ihitl=clusts.begin();ihitl!=clusts.end();++ihitl){
-	if(ihitl->stepPointMC().isNonnull()){
-	  steps.insert(ihitl->stepPointMC());
-	  parts.insert(ihitl->stepPointMC()->simParticle());
-	  _hqsum += ihitl->charge();
-	  double htime = ihitl->time()+_strawele->maxResponseTime(_diagpath);
-	  double vout = wfs[0].sampleWaveform(_diagpath,htime);
-	  if(vout > _vmax){
-	    _vmax = vout;
-	    _tvmax = htime;
-	    _wmcpdg = ihitl->stepPointMC()->simParticle()->pdgId();
-	    _wmcproc = ihitl->stepPointMC()->simParticle()->creationCode();
-	    _mce = ihitl->stepPointMC()->simParticle()->startMomentum().e();
-	    _slen = ihitl->stepPointMC()->stepLength();
-	    _sedep = ihitl->stepPointMC()->ionizingEdep();
-	  }
-	}
-      }
-      _nsteppoint = steps.size();
-      _npart = parts.size();
-      _sesum = 0.0;
-      for(auto istep=steps.begin();istep!=steps.end();++istep)
-	_sesum += (*istep)->ionizingEdep();
-      _tmin = clusts.begin()->time();
-      _tmax = clusts.rbegin()->time();
-      _wfxtalk = !wfs[0].xtalk().self();
-      _swdiag->Fill();
-      if(_diagLevel > 2) {
-	// histogram individual waveforms
-	static unsigned nhist(0);// maximum number of histograms per job!
-	bool histthis = _noxhist && _nxing==0;
-	histthis |= _xtalkhist && _wfxtalk;
-	histthis |= (!_xtalkhist) && (!_noxhist);
-	histthis &=  _nxing >= _minnxinghist;
-	// histogram the waveforms
-	if(nhist < _maxhist && histthis ) {
-	  static const double tstep(0.1); // 0.1 ns
-	  static const double nfall(5.0); // 5 lambda past last fall time
-	  double tstart = clusts.begin()->time()-tstep;
+    void StrawDigisFromStepPointMCs::waveformDiag(const StrawWaveform wfs[2], WFXList const& xings) {
+      // histogram individual waveforms
+      static unsigned nhist(0);// maximum number of histograms per job!
+      for(size_t iend=0;iend<2;++iend){
+	if(nhist < _maxhist && xings.size() >= _minnxinghist &&
+	  ( ((!_xtalkhist) && wfs[iend].xtalk().self()) || (_xtalkhist && !wfs[iend].xtalk().self()) ) ) {
+	  ClusterList const& clist = wfs[iend].clusts().clustList();
+	  double tstart = clist.begin()->time()-_tstep;
 	  double tfall = _strawele->fallTime(_diagpath);
-	  double tend = clusts.rbegin()->time() + nfall*tfall;
+	  double tend = clist.rbegin()->time() + _nfall*tfall;
 	  ADCTimes times;
 	  ADCVoltages volts;
-	  times.reserve(size_t(rint(tend-tstart)/tstep));
-	  volts.reserve(size_t(rint(tend-tstart)/tstep));
+	  times.reserve(size_t(rint(tend-tstart)/_tstep));
+	  volts.reserve(size_t(rint(tend-tstart)/_tstep));
 	  double t = tstart;
 	  while(t<tend){
 	    times.push_back(t);
-	    t += tstep;
+	    t += _tstep;
 	  }
-	  wfs[0].sampleWaveform(_diagpath,times,volts);
+	  wfs[iend].sampleWaveform(_diagpath,times,volts);
 	  ++nhist;
 	  art::ServiceHandle<art::TFileService> tfs;
 	  char name[60];
 	  char title[100];
-	  snprintf(name,60,"SWF%i_%i",wfs[0].clusts().strawIndex().asInt(),nhist);
-	  snprintf(title,100,"Electronic output for straw %i event %i;time (nSec);mVolts",wfs[0].clusts().strawIndex().asInt(),nhist);
+	  snprintf(name,60,"SWF%i_%i",wfs[iend].clusts().strawIndex().asInt(),nhist);
+	  snprintf(title,100,"Electronic output for straw %i end %i path %i;time (nSec);Waveform (mVolts)",wfs[iend].clusts().strawIndex().asInt(),(int)iend,_diagpath);
 	  TH1F* wfh = tfs->make<TH1F>(name,title,volts.size(),times.front(),times.back());
 	  for(size_t ibin=0;ibin<times.size();++ibin)
 	    wfh->SetBinContent(ibin+1,volts[ibin]);
 	  TList* flist = wfh->GetListOfFunctions();
 	  for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
-	    if(ixing->_iclust->strawEnd() == wfs[0].strawEnd()){
+	    if(ixing->_iclust->strawEnd() == wfs[iend].strawEnd()){
 	      TMarker* smark = new TMarker(ixing->_time,ixing->_vcross,8);
 	      smark->SetMarkerColor(kGreen);
 	      smark->SetMarkerSize(2);
@@ -906,39 +805,38 @@ namespace mu2e {
       }
     }
 
-    void StrawDigisFromStepPointMCs::digiDiag(WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi) {
+    void StrawDigisFromStepPointMCs::digiDiag(const StrawWaveform wfs[2], WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi) {
       const Tracker& tracker = getTrackerOrThrow();
-      StrawEnd primaryend = primaryEnd(digi.strawIndex());
       const Straw& straw = tracker.getStraw( digi.strawIndex() );
       _sdplane = straw.id().getPlane();
       _sdpanel = straw.id().getPanel();
       _sdlayer = straw.id().getLayer();
       _sdstraw = straw.id().getStraw();
-      _xtime0 = _xtime1 = -1000.0;
-      _htime0 = _htime1 = -1000.0;
-      _charge0 = _charge1 = -1000.0;
-      _wdist0 = _wdist1 = -1000.0;
-      _ddist0 = _ddist1 = -1000.0;
-      _vstart0 = _vstart1 = -1000.0;
-      _vcross0 = _vcross1 = -1000.0;
+      _xtimecal = _xtimehv = -1000.0;
+      _htimecal = _htimehv = -1000.0;
+      _chargecal = _chargehv = -1000.0;
+      _wdistcal = _wdisthv = -1000.0;
+      _ddistcal = _ddisthv = -1000.0;
+      _vstartcal = _vstarthv = -1000.0;
+      _vcrosscal = _vcrosshv = -1000.0;
       _nend = xpair.size();
       for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
-	if((*ixp)->_iclust->strawEnd() == primaryend) {
-	  _xtime0 =(*ixp)->_time;
-	  _htime0 = (*ixp)->_iclust->time();
-	  _charge0 = (*ixp)->_iclust->charge();
-	  _ddist0 = (*ixp)->_iclust->driftDistance();
-	  _wdist0 = (*ixp)->_iclust->wireDistance();
-	  _vstart0 = (*ixp)->_vstart;
-	  _vcross0 = (*ixp)->_vcross;
+	if((*ixp)->_iclust->strawEnd() == TrkTypes::cal){
+	  _xtimecal =(*ixp)->_time;
+	  _htimecal = (*ixp)->_iclust->time();
+	  _chargecal = (*ixp)->_iclust->charge();
+	  _ddistcal = (*ixp)->_iclust->driftDistance();
+	  _wdistcal = (*ixp)->_iclust->wireDistance();
+	  _vstartcal = (*ixp)->_vstart;
+	  _vcrosscal = (*ixp)->_vcross;
 	} else {
-	  _xtime1 =(*ixp)->_time;
-	  _htime1 = (*ixp)->_iclust->time();
-	  _charge1 = (*ixp)->_iclust->charge();
-	  _ddist1 = (*ixp)->_iclust->driftDistance();
-	  _wdist1 = (*ixp)->_iclust->wireDistance();
-	  _vstart1 = (*ixp)->_vstart;
-	  _vcross1 = (*ixp)->_vcross;
+	  _xtimehv =(*ixp)->_time;
+	  _htimehv = (*ixp)->_iclust->time();
+	  _chargehv = (*ixp)->_iclust->charge();
+	  _ddisthv = (*ixp)->_iclust->driftDistance();
+	  _wdisthv = (*ixp)->_iclust->wireDistance();
+	  _vstarthv = (*ixp)->_vstart;
+	  _vcrosshv = (*ixp)->_vcross;
 	}
       }
       if(xpair.size() < 2 || xpair[0]->_iclust->stepPointMC() == xpair[1]->_iclust->stepPointMC())
@@ -985,8 +883,39 @@ namespace mu2e {
       }
       _mcthreshpdg = threshpart->simParticle()->pdgId();
       _mcthreshproc = threshpart->simParticle()->creationCode();
-
-      // check for x-talk
+      // cluster diagnostics.  
+      for(size_t iend=0;iend<2;++iend){
+	ClusterList const& clist = wfs[iend].clusts().clustList();
+	auto ctrig = xpair[iend]->_iclust;
+	if(iend == TrkTypes::cal)
+	  _nclustcal = clist.size();
+	else
+	  _nclusthv = clist.size();
+	// find the earliest cluster from the same particle that triggered the crossing
+	auto iclu = clist.begin();
+	while( iclu != clist.end() && ctrig->stepPointMC()->simParticle() != iclu->stepPointMC()->simParticle() ){
+	  ++iclu;
+	}
+	if(iclu != clist.end() ){
+	  if(iend == TrkTypes::cal){
+	    _ctimecal = ctrig->time() - iclu->time();
+	    _cdistcal = iclu->driftDistance();
+	  } else {
+	    _ctimehv = ctrig->time() - iclu->time();
+	    _cdisthv = iclu->driftDistance();
+	  }
+	  // count how many clusters till we get to the trigger cluster
+	  size_t iclust(0);
+	  while( iclu != clist.end() && iclu != ctrig){
+	    ++iclu;
+	    ++iclust;
+	  }
+	  if(iend == TrkTypes::cal)
+	    _iclustcal = iclust;
+	  else
+	    _iclusthv = iclust;
+	}
+      }
       _xtalk = digi.strawIndex() != spmc->strawIndex();
       // fill the tree entry
       _sddiag->Fill();
