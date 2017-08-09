@@ -28,22 +28,19 @@ namespace mu2e {
 
     StrawDigiMC();
     // construct from hitlets
-    StrawDigiMC(StrawIndex index, double wetime[2], CLHEP::HepLorentzVector cpos[2], 
+    StrawDigiMC(StrawIndex index, double wetime[2], 
+    CLHEP::HepLorentzVector cpos[2], 
     art::Ptr<StepPointMC> stepMC[2], std::vector<art::Ptr<StepPointMC> > const& stepMCs);
-
+    // copy constructor, for filter
+    StrawDigiMC(StrawDigiMC const& other);
     // Accessors
     StrawIndex strawIndex() const { return _strawIndex; }
-    double wireEndTime(StrawEnd strawend) const { 
-      return _wetime[static_cast<size_t>(strawend)]; }
+    double wireEndTime(StrawEnd strawend) const { return _wetime[strawend]; }
 
-    CLHEP::HepLorentzVector const& clusterPosition(StrawEnd strawend) const { 
-      return _cpos[static_cast<size_t>(strawend)]; }
-
+    CLHEP::HepLorentzVector const& clusterPosition(StrawEnd strawend) const { return _cpos[strawend]; }
     double driftDistance(StrawEnd strawend) const;
     double distanceToMid(StrawEnd strawend) const;
-    art::Ptr<StepPointMC> const&  stepPointMC(StrawEnd strawend) const {
-      return _stepMC[static_cast<size_t>(strawend)]; }
-
+    art::Ptr<StepPointMC> const&  stepPointMC(StrawEnd strawend) const { return _stepMC[strawend]; }
     std::vector<art::Ptr<StepPointMC> > const& stepPointMCs() const { return _stepMCs; }
 
     double energySum() const;// sum of all MC true energy deposited
@@ -59,8 +56,8 @@ namespace mu2e {
   // the following should be an std::array<,2>, but that's not supported by CINT: FIXME!!
     CLHEP::HepLorentzVector _cpos[2]; // Positions of the clusters responsible
     // for the TDC firings on each end (can be the same)
-    double _wetime[2]; // times at the wire ends of the signals which fired the TDC
-    unsigned _iclust[2]; // cluster sequence number of the cluster which pushed signal over threhold
+    double _wetime[2]; // times at the wire ends of the signals which fired the TDC.  This needs double precision as neutrons can take seconds (!) to generate signals
+
     art::Ptr<StepPointMC> _stepMC[2];	  // Ptr into StepPointMC collection of step which
     // triggered the TDC
     std::vector<art::Ptr<StepPointMC> > _stepMCs; // All StepPointMCs which contributed to the waveform

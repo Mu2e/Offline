@@ -22,7 +22,8 @@ namespace mu2e {
     : _strawIndex(StrawIndex::NO_STRAW)
   {}
 
-  StrawDigiMC::StrawDigiMC(StrawIndex index, double wetime[2], CLHEP::HepLorentzVector cpos[2], 
+  StrawDigiMC::StrawDigiMC(StrawIndex index, double wetime[2],
+      CLHEP::HepLorentzVector cpos[2], 
       art::Ptr<StepPointMC> stepMC[2], vector<art::Ptr<StepPointMC> > const& stepMCs) :
     _strawIndex(index), _stepMCs(stepMCs)
   {
@@ -33,6 +34,14 @@ namespace mu2e {
     }
   }
 
+  StrawDigiMC::StrawDigiMC(StrawDigiMC const& other ) : 
+    _strawIndex(other._strawIndex), _stepMCs(other._stepMCs) {
+    for(size_t strawend=0;strawend<2;++strawend){
+      _wetime[strawend] = other._wetime[strawend];
+      _cpos[strawend] = other._cpos[strawend];
+      _stepMC[strawend] = other._stepMC[strawend];
+    }
+  }
 
   double StrawDigiMC::driftDistance(StrawEnd strawend) const {
     double retval = -100.0;
