@@ -21,6 +21,7 @@
 #include "TrackerConditions/inc/Types.hh"
 #include "fhiclcpp/ParameterSet.h"
 
+
 namespace mu2e {
   class StrawElectronics : virtual public ConditionsEntity {
     public:
@@ -30,6 +31,8 @@ namespace mu2e {
       // linear response to a charge pulse.  This does NOT include saturation effects,
       // since those are cumulative and cannot be computed for individual charges
       double linearResponse(TrkTypes::Path ipath, double time,double charge) const; // mvolts per pCoulomb
+      // fast response to a charge pulse, this is just an exponential with no saturation or rising edge effects. Only valid for threshold path
+      double fastResponse(double time, double charge) const;
       // Given a (linear) total voltage, compute the saturated voltage
       double saturatedResponse(double lineearresponse) const;
       // relative time when linear response is maximal
@@ -47,8 +50,10 @@ namespace mu2e {
 // accessors
       double adcLSB() const { return _ADCLSB; } //LSB in mvolts
       double tdcLSB() const { return _TDCLSB; } //LSB in nseconds
+      double totLSB() const { return _TOTLSB; } //LSB in nseconds
       unsigned short maxADC() const { return _maxADC; }
       unsigned long maxTDC() const { return _maxTDC; }
+      unsigned short maxTOT() const { return _maxTOT; }
       unsigned short ADCPedestal() const { return _ADCped; };
       size_t nADCSamples() const { return _nADC; }
       size_t nADCPreSamples() const { return _nADCpre; }
@@ -63,7 +68,8 @@ namespace mu2e {
       double dispersion(double dlen) const { return _disp*dlen; } // dispersion width is linear in propagation length
       double threshold() const { return _vthresh; }
       double analogNoise(TrkTypes::Path ipath) const { return _analognoise[ipath]; }
-      double deadTime() const { return _tdead; }
+      double deadTimeAnalog() const { return _tdeadAnalog; }
+      double deadTimeDigital() const { return _tdeadDigital; }
       double clockStart() const { return _clockStart; }
       double clockJitter() const { return _clockJitter; }
       double currentToVoltage(TrkTypes::Path ipath) const { return _dVdI[ipath]; }
@@ -82,7 +88,8 @@ namespace mu2e {
       double _tau[TrkTypes::npaths], _freq[TrkTypes::npaths]; // shaping time and associated frequency
 // threshold path parameters
       double _tband, _voff, _toff;
-      double _tdead; // electronics dead time
+      double _tdeadAnalog; // electronics dead time
+      double _tdeadDigital; // electronics readout dead time
       // scale factor between current and voltage (milliVolts per microAmps)
       double _vmax, _vsat, _vdiff; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
       double _disp; // dispersion in ns/mm;
@@ -96,6 +103,8 @@ namespace mu2e {
       double _ADCOffset; // Offset of 1st ADC sample WRT threshold crossing (nsec)
       double _TDCLSB; // least-significant bit of TDC (nsecs)
       unsigned long _maxTDC; // maximum TDC value
+      double _TOTLSB; // least-significant bit of TOT (nsecs)
+      unsigned short _maxTOT; // maximum TOT value
       double _clockStart, _clockJitter; // time TDC clock starts, and its error (common to both ends!!)
       double _flashStart, _flashEnd; // flash blanking period (no digitizations during this time!!!)
       double _pmpEnergyScale; // fudge factor for peak minus pedestal energy method

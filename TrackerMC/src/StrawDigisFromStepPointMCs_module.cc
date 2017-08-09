@@ -91,7 +91,7 @@ namespace mu2e {
 	typedef map<StrawIndex,StrawClusterSequencePair> StrawClusterMap;  // clusts by straw
 	typedef vector<art::Ptr<StepPointMC> > StrawSPMCPV; // vector of associated StepPointMCs for a single straw/particle
 	typedef list<WFX> WFXList;
-	typedef vector<WFXList::const_iterator> WFXP;
+	typedef WFXList::const_iterator WFXP[2];
 
 	explicit StrawDigisFromStepPointMCs(fhicl::ParameterSet const& pset);
 	// Accept compiler written d'tor.
@@ -143,8 +143,7 @@ namespace mu2e {
 	DeadStrawList _strawStatus;
 	// diagnostics
 	Int_t _splane, _spanel, _slayer, _sstraw;
-	Int_t _nclustcal, _nclusthv, _iclustcal, _iclusthv;
-	Float_t _ctimecal, _ctimehv, _cdistcal, _cdisthv;
+	Int_t _nclust[2], _iclust[2];
 	Float_t _hqsum, _vmax, _tvmax, _sesum;
 	Int_t _wmcpdg, _wmcproc, _nxing;
 	Float_t _mce, _slen, _sedep;
@@ -154,9 +153,10 @@ namespace mu2e {
 	Bool_t _wfxtalk;
 	TTree* _sddiag;
 	Int_t _sdplane, _sdpanel, _sdlayer, _sdstraw;
-	Int_t _nend, _nstep;
-	Float_t _xtimecal, _xtimehv, _htimecal, _htimehv, _chargecal, _chargehv, _ddistcal, _ddisthv;
-	Float_t _wdistcal, _wdisthv, _vstartcal, _vstarthv, _vcrosscal, _vcrosshv;
+	Int_t _nstep;
+	Float_t _ctime[2], _cdist[2];
+	Float_t _xtime[2], _htime[2], _charge[2], _ddist[2];
+	Float_t _wdist[2], _vstart[2], _vcross[2];
 	Float_t _mctime, _mcenergy, _mctrigenergy, _mcthreshenergy;
 	Int_t _mcthreshpdg, _mcthreshproc, _mcnstep;
 	Float_t _mcdca;
@@ -164,7 +164,7 @@ namespace mu2e {
 	Float_t _dmcmom;
 	Bool_t _xtalk;
 	vector<unsigned> _adc;
-	Int_t _tdccal, _tdchv;
+	Int_t _tdc[2], _tot[2];
 	TTree* _sdiag;
 	Float_t _steplen, _stepE, _qsum, _partP;
 	Int_t _nsubstep, _niontot, _partPDG;
@@ -196,7 +196,6 @@ namespace mu2e {
 	// diagnostic functions
 	void waveformDiag(const StrawWaveform wf[2], WFXList const& xings);
 	void digiDiag(const StrawWaveform wf[2], WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi);
-	StrawEnd primaryEnd(StrawIndex strawind) const;
     };
 
     StrawDigisFromStepPointMCs::StrawDigisFromStepPointMCs(fhicl::ParameterSet const& pset) :
@@ -265,32 +264,20 @@ namespace mu2e {
 	  _sddiag->Branch("panel",&_sdpanel,"panel/I");
 	  _sddiag->Branch("layer",&_sdlayer,"layer/I");
 	  _sddiag->Branch("straw",&_sdstraw,"straw/I");
-	  _sddiag->Branch("nend",&_nend,"nend/I");
 	  _sddiag->Branch("nstep",&_nstep,"nstep/I");
-	  _sddiag->Branch("xtimecal",&_xtimecal,"xtimecal/F");
-	  _sddiag->Branch("xtimehv",&_xtimehv,"xtimehv/F");
-	  _sddiag->Branch("htimecal",&_htimecal,"htimecal/F");
-	  _sddiag->Branch("htimehv",&_htimehv,"htimehv/F");
-	  _sddiag->Branch("ctimecal",&_ctimecal,"ctimecal/F");
-	  _sddiag->Branch("ctimehv",&_ctimehv,"ctimehv/F");
-	  _sddiag->Branch("chargecal",&_chargecal,"chargecal/F");
-	  _sddiag->Branch("chargehv",&_chargehv,"chargehv/F");
-	  _sddiag->Branch("wdistcal",&_wdistcal,"wdistcal/F");
-	  _sddiag->Branch("wdisthv",&_wdisthv,"wdisthv/F");
-	  _sddiag->Branch("nclustcal",&_nclustcal,"nclustcal/I");
-	  _sddiag->Branch("iclustcal",&_iclustcal,"iclustcal/I");
-	  _sddiag->Branch("nclusthv",&_nclusthv,"nclusthv/I");
-	  _sddiag->Branch("iclusthv",&_iclusthv,"iclusthv/I");
-	  _sddiag->Branch("cdistcal",&_cdistcal,"cdistcal/F");
-	  _sddiag->Branch("cdisthv",&_cdisthv,"cdisthv/F");
-	  _sddiag->Branch("vstartcal",&_vstartcal,"vstartcal/F");
-	  _sddiag->Branch("vstarthv",&_vstarthv,"vstarthv/F");
-	  _sddiag->Branch("vcrosscal",&_vcrosscal,"vcrosscal/F");
-	  _sddiag->Branch("vcrosshv",&_vcrosshv,"vcrosshv/F");
-	  _sddiag->Branch("ddistcal",&_ddistcal,"ddistcal/F");
-	  _sddiag->Branch("ddisthv",&_ddisthv,"ddisthv/F");
-	  _sddiag->Branch("tdccal",&_tdccal,"tdccal/I");
-	  _sddiag->Branch("tdchv",&_tdchv,"tdchv/I");
+	  _sddiag->Branch("xtime",&_xtime,"xtimecal/F:xtimehv/F");
+	  _sddiag->Branch("htime",&_htime,"htimecal/F:htimehv/F");
+	  _sddiag->Branch("ctime",&_ctime,"ctimecal/F:ctimehv/F");
+	  _sddiag->Branch("charge",&_charge,"chargecal/F:chargehv/F");
+	  _sddiag->Branch("wdist",&_wdist,"wdistcal/F:wdisthv/F");
+	  _sddiag->Branch("cdist",&_cdist,"cdistcal/F:cdisthv/F");
+	  _sddiag->Branch("vstart",&_vstart,"vstartcal/F:vstarthv/F");
+	  _sddiag->Branch("vcross",&_vcross,"vcrosscal/F:vcrosshv/F");
+	  _sddiag->Branch("ddist",&_ddist,"ddistcal/F:ddisthv/F");
+	  _sddiag->Branch("nclust",&_nclust,"nclustcal/I:nclusthv/I");
+	  _sddiag->Branch("iclust",&_iclust,"iclustcal/I:iclusthv/I");
+	  _sddiag->Branch("tdc",&_tdc,"tdccal/I:tdchv/I");
+          _sddiag->Branch("tot",&_tot,"totcal/I:tothv/I");
 	  _sddiag->Branch("adc",&_adc);
 	  _sddiag->Branch("mctime",&_mctime,"mctime/F");
 	  _sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
@@ -620,7 +607,7 @@ namespace mu2e {
 	  ++iwfxl;
 	xings.insert(iwfxl,wfx);
 	// insure a minimum time buffer between crossings
-	wfx._time += _strawele->deadTime();
+	wfx._time += _strawele->deadTimeAnalog();
 	if(wfx._time >_mbtime+_strawele->flashStart())
 	  break;
 	// skip to the next clust
@@ -635,60 +622,84 @@ namespace mu2e {
 	StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
 	PtrStepPointMCVectorCollection* mcptrs ){
       // loop over crossings
-      auto iwfxl = xings.begin();
-      while(iwfxl!= xings.end()){
-	WFXP xpair(1,iwfxl);
-	// associate adjacent crossing if they are on opposite ends within the maximum propagation time difference
-	auto jwfxl = iwfxl; ++jwfxl;
-	if(jwfxl != xings.end() &&
-	    iwfxl->_iclust->strawEnd() != jwfxl->_iclust->strawEnd() &&
-	    _strawele->combineEnds(iwfxl->_time,jwfxl->_time)) {
-	  xpair.push_back(jwfxl);
-	  iwfxl = jwfxl;
-	}
-	++iwfxl;
-	// create a digi from pairs
-	if(xpair.size()==2){
-	  createDigi(xpair,wf,index,digis);
-	  // fill associated MC truth matching.  Only count the same step once
-	  set<art::Ptr<StepPointMC> > xmcsp;
-	  double wetime[2] ={-100.,-100.};
-	  CLHEP::HepLorentzVector cpos[2];
-	  art::Ptr<StepPointMC> stepMC[2];
-	  StrawEnd primaryend = primaryEnd(index);
-// fill MC info
-	  for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
-	    StrawCluster const& clu =*((*ixp)->_iclust);
-	    xmcsp.insert(clu.stepPointMC());
-	    size_t iend = clu.strawEnd();
-	    wetime[iend] = clu.time();
-	    cpos[iend] = clu.clusterPosition();
-	    stepMC[iend] = clu.stepPointMC();
-	  }
-	  // choose the minimum time from either end, as the ADC sums both
-	  double ptime = std::min(wetime[TrkTypes::cal],wetime[TrkTypes::hv]);
-	  // subtract a small buffer
-	  ptime -= 0.01*_strawele->adcPeriod();
-	  // pickup all StepPointMCs associated with clusts inside the time window of the ADC digitizations (after the threshold)
-	  set<art::Ptr<StepPointMC> > spmcs;
-	  for(auto ih=wf[primaryend._end].clusts().clustList().begin();ih!= wf[primaryend._end].clusts().clustList().end();++ih){
-	    if(ih->time() >= ptime && ih->time() < ptime +
-		( _strawele->nADCSamples()-_strawele->nADCPreSamples())*_strawele->adcPeriod())
-	      spmcs.insert(ih->stepPointMC());
-	  }
-	  vector<art::Ptr<StepPointMC>> stepMCs;
-	  stepMCs.reserve(spmcs.size());
-	  for(auto ispmc=spmcs.begin(); ispmc!= spmcs.end(); ++ispmc){
-	    stepMCs.push_back(*ispmc);
-	  }
-	  PtrStepPointMCVector mcptr;
-	  for(auto ixmcsp=xmcsp.begin();ixmcsp!=xmcsp.end();++ixmcsp)
-	    mcptr.push_back(*ixmcsp);
-	  mcptrs->push_back(mcptr);
-	  mcdigis->push_back(StrawDigiMC(index,wetime,cpos,stepMC,stepMCs));
-	  // diagnostics
-	  if(_diagLevel > 1)digiDiag(wf,xpair,digis->back(),mcdigis->back());
-	}
+     auto first_wfx = xings.begin();
+      while (first_wfx != xings.end()){
+        auto second_wfx = first_wfx; ++second_wfx;
+        bool found_coincidence = false;
+        while (second_wfx != xings.end()){
+          // if we are past coincidence window, stop
+          if (!_strawele->combineEnds(first_wfx->_time,second_wfx->_time))
+            break;
+          // if these are crossings on different ends of the straw
+          if (first_wfx->_iclust->strawEnd() != second_wfx->_iclust->strawEnd())
+          {
+            found_coincidence = true;
+            WFXP xpair;
+            xpair[first_wfx->_iclust->strawEnd()] = first_wfx;
+            xpair[second_wfx->_iclust->strawEnd()] = second_wfx;
+            // create a digi from this pair
+            createDigi(xpair,wf,index,digis);
+            // fill associated MC truth matching. Only count the same step once
+            set<art::Ptr<StepPointMC> > xmcsp;
+            double wetime[2] = {-100.,-100.};
+            CLHEP::HepLorentzVector cpos[2];
+            art::Ptr<StepPointMC> stepMC[2];
+
+            for (size_t iend=0;iend<2;++iend){
+              StrawCluster const& sc = *(xpair[iend]->_iclust);
+              xmcsp.insert(sc.stepPointMC());
+              wetime[iend] = sc.time();
+              cpos[iend] = sc.clusterPosition();
+              stepMC[iend] = sc.stepPointMC();
+            }
+            // choose the minimum time from either end, as the ADC sums both
+            double ptime = 1.0e10;
+            for (size_t iend=0;iend<2;++iend){
+              if (wetime[iend] > 0)
+                ptime = std::min(ptime,wetime[iend]);
+            }
+            // subtract a small buffer
+            ptime -= 0.01*_strawele->adcPeriod();
+            // pickup all StepPointMCs associated with clusts inside the time window of the ADC digitizations (after the threshold)
+            set<art::Ptr<StepPointMC> > spmcs;
+            for (auto ih=wf[0].clusts().clustList().begin();ih!=wf[0].clusts().clustList().end();++ih){
+              if (ih->time() >= ptime && ih->time() < ptime +
+                  ( _strawele->nADCSamples()-_strawele->nADCPreSamples())*_strawele->adcPeriod())
+                spmcs.insert(ih->stepPointMC());
+            }
+            vector<art::Ptr<StepPointMC> > stepMCs;
+            stepMCs.reserve(spmcs.size());
+            for(auto ispmc=spmcs.begin(); ispmc!= spmcs.end(); ++ispmc){
+              stepMCs.push_back(*ispmc);
+            }
+            PtrStepPointMCVector mcptr;
+            for(auto ixmcsp=xmcsp.begin();ixmcsp!=xmcsp.end();++ixmcsp)
+              mcptr.push_back(*ixmcsp);
+            mcptrs->push_back(mcptr);
+            mcdigis->push_back(StrawDigiMC(index,wetime,cpos,stepMC,stepMCs));
+	    // diagnostics
+	    if(_diagLevel > 1)digiDiag(wf,xpair,digis->back(),mcdigis->back());
+            // we are done looking for a coincidence with this first wfx
+            break;
+          }
+
+          ++second_wfx;
+        }
+
+        // now find next crossing to start looking from for coincidence
+        if (found_coincidence){
+          first_wfx = second_wfx;
+          ++first_wfx;
+          // move past deadtime for event readout
+          while (first_wfx != xings.end()){
+            if (first_wfx->_time > second_wfx->_time + _strawele->deadTimeDigital())
+              break;
+            ++first_wfx;
+          }
+        }else{
+          // analog deadtime between non triggering crossings enforced when finding crossings
+          ++first_wfx;
+        }
       }
     }
 
@@ -698,25 +709,28 @@ namespace mu2e {
       set<art::Ptr<StepPointMC>> mcmatch;
       // initialize the float variables that we later digitize
       TDCTimes xtimes = {0.0,0.0}; 
-      StrawEnd primaryend = primaryEnd(index);
+      TrkTypes::TOTValues tot;
+      // get the ADC sample times from the electroincs.  Use the cal side time to randomize
+      // the phase, this doesn't really matter
+      TrkTypes::ADCTimes adctimes;
+      _strawele->adcTimes(xpair[TrkTypes::cal]->_time,adctimes);
+      //  sums voltages from both waveforms for ADC
+      ADCVoltages wf[2];
       // smear (coherently) both times for the TDC clock jitter
       double dt = _randgauss.fire(0.0,_strawele->clockJitter());
       // loop over the associated crossings
-      for(auto iwfx = xpair.begin();iwfx!= xpair.end();++iwfx){
-	WFX const& wfx = **iwfx;
-	size_t index = wfx._iclust->strawEnd() == primaryend ? 0 : 1;
+      for(size_t iend = 0;iend<2; ++iend){
+	WFX const& wfx = *xpair[iend];
 	// record the crossing time for this end, including clock jitter  These already include noise effects
-	xtimes[index] = wfx._time+dt;
+	xtimes[iend] = wfx._time+dt;
 	// record MC match if it isn't already recorded
 	mcmatch.insert(wfx._iclust->stepPointMC());
-      }
-      //  sums voltages from both waveforms for ADC
-      ADCVoltages wf[2];
-      // get the sample times from the electroincs
-      TrkTypes::ADCTimes adctimes;
-      _strawele->adcTimes(xpair[0]->_time,adctimes);
-      // sample the waveform from both ends at these times
-      for(size_t iend=0;iend<2;++iend){
+	// randomize threshold.  This assumes the noise on each end is incoherent.  A better model
+	// would have separate coherent + incoherent components, FIXME!
+        double threshold = _randgauss.fire(_strawele->threshold(),_strawele->analogNoise(TrkTypes::thresh));
+        // find TOT
+        tot[iend] = waveform[iend].digitizeTOT(threshold,wfx._time + dt);
+	// sample ADC
 	waveform[iend].sampleWaveform(TrkTypes::adc,adctimes,wf[iend]);
       }
       // add ends and add noise
@@ -730,14 +744,9 @@ namespace mu2e {
       TrkTypes::TDCValues tdc;
       _strawele->digitizeTimes(xtimes,tdc);
       // create the digi from this
-      digis->push_back(StrawDigi(index,tdc,adc));
+      digis->push_back(StrawDigi(index,tdc,tot,adc));
     }
 
-    StrawEnd StrawDigisFromStepPointMCs::primaryEnd(StrawIndex strawind) const {
-      // Here, Im assuming the cal end is the primary, whereas in the real detector the primary
-      // ends will alternate and needs to be looked up in an electronics map FIXME!!!!!
-      return StrawEnd(TrkTypes::cal);
-    }
     // find straws which couple to the given one, and record them and their couplings in XTalk objects.
     // For now, this is just a fixed number for adjacent straws,
     // the couplings and straw identities should eventually come from a database, FIXME!!!
@@ -812,39 +821,41 @@ namespace mu2e {
       _sdpanel = straw.id().getPanel();
       _sdlayer = straw.id().getLayer();
       _sdstraw = straw.id().getStraw();
-      _xtimecal = _xtimehv = -1000.0;
-      _htimecal = _htimehv = -1000.0;
-      _chargecal = _chargehv = -1000.0;
-      _wdistcal = _wdisthv = -1000.0;
-      _ddistcal = _ddisthv = -1000.0;
-      _vstartcal = _vstarthv = -1000.0;
-      _vcrosscal = _vcrosshv = -1000.0;
-      _nend = xpair.size();
-      for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
-	if((*ixp)->_iclust->strawEnd() == TrkTypes::cal){
-	  _xtimecal =(*ixp)->_time;
-	  _htimecal = (*ixp)->_iclust->time();
-	  _chargecal = (*ixp)->_iclust->charge();
-	  _ddistcal = (*ixp)->_iclust->driftDistance();
-	  _wdistcal = (*ixp)->_iclust->wireDistance();
-	  _vstartcal = (*ixp)->_vstart;
-	  _vcrosscal = (*ixp)->_vcross;
-	} else {
-	  _xtimehv =(*ixp)->_time;
-	  _htimehv = (*ixp)->_iclust->time();
-	  _chargehv = (*ixp)->_iclust->charge();
-	  _ddisthv = (*ixp)->_iclust->driftDistance();
-	  _wdisthv = (*ixp)->_iclust->wireDistance();
-	  _vstarthv = (*ixp)->_vstart;
-	  _vcrosshv = (*ixp)->_vcross;
+
+      for(size_t iend=0;iend<2;++iend){
+	_xtime[iend] = xpair[iend]->_time;
+	_htime[iend] = xpair[iend]->_iclust->time();
+	_charge[iend] = xpair[iend]->_iclust->charge();
+	_ddist[iend] = xpair[iend]->_iclust->driftDistance();
+	_wdist[iend] = xpair[iend]->_iclust->wireDistance();
+	_vstart[iend] = xpair[iend]->_vstart;
+	_vcross[iend] = xpair[iend]->_vcross;
+	_tdc[iend] = digi.TDC(xpair[iend]->_iclust->strawEnd());
+	_tot[iend] = digi.TOT(xpair[iend]->_iclust->strawEnd());
+	ClusterList const& clist = wfs[iend].clusts().clustList();
+	auto ctrig = xpair[iend]->_iclust;
+	_nclust[iend] = clist.size();
+	// find the earliest cluster from the same particle that triggered the crossing
+	auto iclu = clist.begin();
+	while( iclu != clist.end() && ctrig->stepPointMC()->simParticle() != iclu->stepPointMC()->simParticle() ){
+	  ++iclu;
+	}
+	if(iclu != clist.end() ){
+	  _ctime[iend] = ctrig->time() - iclu->time();
+	  _cdist[iend] = iclu->driftDistance();
+	  // count how many clusters till we get to the trigger cluster
+	  size_t iclust(0);
+	  while( iclu != clist.end() && iclu != ctrig){
+	    ++iclu;
+	    ++iclust;
+	  }
+	  _iclust[iend] = iclust;
 	}
       }
-      if(xpair.size() < 2 || xpair[0]->_iclust->stepPointMC() == xpair[1]->_iclust->stepPointMC())
+      if(xpair[0]->_iclust->stepPointMC() == xpair[1]->_iclust->stepPointMC())
 	_nstep = 1;
       else
 	_nstep = 2;
-      _tdccal = digi.TDC(TrkTypes::cal);
-      _tdchv = digi.TDC(TrkTypes::hv);
       _adc.clear();
       for(auto iadc=digi.adcWaveform().begin();iadc!=digi.adcWaveform().end();++iadc){
 	_adc.push_back(*iadc);
@@ -883,39 +894,7 @@ namespace mu2e {
       }
       _mcthreshpdg = threshpart->simParticle()->pdgId();
       _mcthreshproc = threshpart->simParticle()->creationCode();
-      // cluster diagnostics.  
-      for(size_t iend=0;iend<2;++iend){
-	ClusterList const& clist = wfs[iend].clusts().clustList();
-	auto ctrig = xpair[iend]->_iclust;
-	if(iend == TrkTypes::cal)
-	  _nclustcal = clist.size();
-	else
-	  _nclusthv = clist.size();
-	// find the earliest cluster from the same particle that triggered the crossing
-	auto iclu = clist.begin();
-	while( iclu != clist.end() && ctrig->stepPointMC()->simParticle() != iclu->stepPointMC()->simParticle() ){
-	  ++iclu;
-	}
-	if(iclu != clist.end() ){
-	  if(iend == TrkTypes::cal){
-	    _ctimecal = ctrig->time() - iclu->time();
-	    _cdistcal = iclu->driftDistance();
-	  } else {
-	    _ctimehv = ctrig->time() - iclu->time();
-	    _cdisthv = iclu->driftDistance();
-	  }
-	  // count how many clusters till we get to the trigger cluster
-	  size_t iclust(0);
-	  while( iclu != clist.end() && iclu != ctrig){
-	    ++iclu;
-	    ++iclust;
-	  }
-	  if(iend == TrkTypes::cal)
-	    _iclustcal = iclust;
-	  else
-	    _iclusthv = iclust;
-	}
-      }
+
       _xtalk = digi.strawIndex() != spmc->strawIndex();
       // fill the tree entry
       _sddiag->Fill();

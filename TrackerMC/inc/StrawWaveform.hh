@@ -54,8 +54,11 @@ namespace mu2e {
 	bool crossesThreshold(double threshold,WFX& wfx) const;
 	// sample the waveform at a given time.  Return value is in units of volts 
 	double sampleWaveform(TrkTypes::Path ipath,double time) const;
+        // sample the simplified waveform at a given time. Return value is in volts. valid for thresh only
+        double fastSampleWaveform(double time) const;
 	// sample the waveform at a series of points
 	void sampleWaveform(TrkTypes::Path ipath, TrkTypes::ADCTimes const& times,TrkTypes::ADCVoltages& volts) const;
+        unsigned short digitizeTOT(double threshold, double time) const;
 	//accessors
 	StrawClusterSequence const& clusts() const { return _cseq; }
 	ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }

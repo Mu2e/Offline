@@ -36,7 +36,7 @@ namespace mu2e {
 //      typedef std::array<unsigned short,NADC> TrkTypes::ADCWaveform;
 //      typedef std::array<unsigned long,2> TrkTypes::TDCValues;
       StrawDigi();
-      StrawDigi( StrawIndex sid, TrkTypes::TDCValues tdc, TrkTypes::ADCWaveform const& adc);
+      StrawDigi( StrawIndex sid, TrkTypes::TDCValues tdc, TrkTypes::TOTValues tot, TrkTypes::ADCWaveform const& adc);
       StrawDigi(StrawDigi const& other);
       StrawDigi& operator=(StrawDigi const& other);
       StrawIndex strawIndex() const { return _strawIndex; }
