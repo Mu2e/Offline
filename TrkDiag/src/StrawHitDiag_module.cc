@@ -69,7 +69,7 @@ namespace mu2e
       threevec _shp;
       Float_t _shlen, _slen; 
       Float_t _edep;
-      Float_t _tcal, _thv, _totcal, _tothv;
+      Float_t _time[2], _tot[2];
       Float_t _rho;
       Int_t _mcnsteps;
       Int_t _mcpdg,_mcgen,_mcproc;
@@ -81,12 +81,14 @@ namespace mu2e
       Float_t _mcshlen,_mcshd;
       Float_t _mcedep;
       Float_t _pdist,_pperp,_pmom;
-      Float_t _mcsptime,_mctcal,_mcthv;
+      Float_t _mcsptime,_mctime[2];
       Float_t _mcptime;
       Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
       Int_t _plane, _panel, _layer, _straw;
       Float_t _shwres, _shtres, _shchisq, _shdt, _shdist;
       Bool_t _mcxtalk;
+      // helper array
+      StrawEnd _end[2];
   };
 
   StrawHitDiag::StrawHitDiag(fhicl::ParameterSet const& pset) :
@@ -97,7 +99,8 @@ namespace mu2e
     _shfTag(pset.get<string>("StrawHitFlagCollectionTag","FlagBkgHits")),
     _stTag(pset.get<string>("StereoHitCollectionTag","MakeStereoHits")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
+    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
+    _end{TrkTypes::cal,TrkTypes::hv}
   {}
 
   StrawHitDiag::~StrawHitDiag(){}
@@ -143,10 +146,8 @@ namespace mu2e
     _shdiag->Branch("shlen",&_shlen,"shlen/F");
     _shdiag->Branch("slen",&_slen,"slen/F");
     _shdiag->Branch("edep",&_edep,"edep/F");
-    _shdiag->Branch("tcal",&_tcal,"tcal/F");
-    _shdiag->Branch("thv",&_thv,"thv/F");
-    _shdiag->Branch("totcal",&_totcal,"totcal/F");
-    _shdiag->Branch("tothv",&_tothv,"tothv/F");
+    _shdiag->Branch("time",&_time,"tcal/F:thv/F");
+    _shdiag->Branch("tot",&_tot,"totcal/F:tothv/F");
     _shdiag->Branch("rho",&_rho,"rho/F");
     _shdiag->Branch("plane",&_plane,"plane/I");
     _shdiag->Branch("panel",&_panel,"panel/I");
@@ -187,8 +188,7 @@ namespace mu2e
       _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
       _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
       _shdiag->Branch("mcsptime",&_mcsptime,"mcsptime/F");
-      _shdiag->Branch("mctcal",&_mctcal,"mctcal/F");
-      _shdiag->Branch("mcthv",&_mcthv,"mcthv/F");
+      _shdiag->Branch("mctime",&_mctime,"mctcal/F:mcthv/F");
       _shdiag->Branch("mcppdg",&_mcppdg,"mcpdg/I");
       _shdiag->Branch("mcpproc",&_mcpproc,"mcpproc/I");
       _shdiag->Branch("mcptime",&_mcptime,"mcptime/F");
@@ -215,10 +215,10 @@ namespace mu2e
       _layer = straw.id().getLayer();
       _straw = straw.id().getStraw();
       _edep = sh.energyDep();
-      _tcal = sh.time(TrkTypes::cal);
-      _thv = sh.time(TrkTypes::hv);
-      _totcal = sh.TOT(TrkTypes::cal);
-      _tothv = sh.TOT(TrkTypes::hv);
+      for(size_t iend=0;iend<2;++iend){
+	_time[iend] = sh.time(_end[iend]);
+	_tot[iend] = sh.TOT(_end[iend]);
+      }
       _shp = shp.pos();
       _shlen =(shp.pos()-straw.getMidPoint()).dot(straw.getDirection());
       _slen = straw.getHalfLength(); 
@@ -250,7 +250,7 @@ namespace mu2e
       _mcgen = -1;
       _mcproc = -1;
       _mcsptime = -1.0;
-      _mctcal = _mcthv = -1.0;
+      _mctime[0] = _mctime[1] = -1.0;
       _mcshp = threevec();
       _mcop = threevec();
       _mcoe = -1;
@@ -283,8 +283,9 @@ namespace mu2e
         if(osp.genParticle().isNonnull())
           _mcgen = osp.genParticle()->generatorId().id();
         _mcsptime = _toff.timeWithOffsetsApplied(*spmcp);
-	_mctcal = mcdigi.wireEndTime(TrkTypes::cal);
-	_mcthv = mcdigi.wireEndTime(TrkTypes::hv);
+	for(size_t iend=0;iend<2; ++iend){
+	  _mctime[iend] = mcdigi.wireEndTime(_end[iend]);
+	}
         _mcshp = spmcp->position();
         _mcop = det->toDetector(osp.startPosition());
         _mcoe = osp.startMomentum().e();
