@@ -84,6 +84,7 @@ namespace mu2e {
     SHID _shid; // strawhit ID
     TrkChargeReco::PeakFitParams _peakfit; // result from peak fit
     Float_t _edep, _time, _dt;
+    StrawEnd _end[2]; // helper
   };
 
   StrawHitsFromStrawDigis::StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset) :
@@ -101,7 +102,8 @@ namespace mu2e {
     _peakFitOption(pset.get<string>("PeakFitOption","QNSEX0B")),
     _maxFitIter(pset.get<unsigned>("MaxFitIterations",1)),
     _strawDigis(pset.get<string>("StrawDigis","makeSD")),
-    _pfit(0)
+    _pfit(0),
+    _end{TrkTypes::cal,TrkTypes::hv}
   {
     produces<StrawHitCollection>();
     if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis constructor " << endl;
@@ -160,6 +162,9 @@ namespace mu2e {
       _strawele->tdcTimes(digi.TDC(),times);
       // convert the digi TOT to physical units.  This needs to be implemented FIXME!!
       TOTTimes tots{0.0,0.0};
+      for(size_t iend=0;iend<2;++iend){
+	tots[iend] = digi.TOT(_end[iend])*_strawele->totLSB();
+      }
       // fit the ADC waveform to get the charge
       ADCWaveform const& adc = digi.adcWaveform();
       // note: pedestal is being subtracting inside strawele, in the real experiment we will need
