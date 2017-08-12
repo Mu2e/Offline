@@ -122,6 +122,7 @@ class Straw: public VirtualShape
     return _hitNumber;
   }
 
+  ClassDef(Straw,1);
 };
 
 }

@@ -25,10 +25,8 @@
 #include "EventDisplay/src/EventDisplayFrame.h"
 #include "EventDisplay/src/RootFileManager.h"
 
-#ifdef BABARINSTALLED
 using namespace CLHEP;
 #include "RecoDataProducts/inc/KalRepCollection.hh"
-#endif
 
 namespace mu2e
 {
@@ -46,11 +44,9 @@ namespace mu2e
                                                          const std::string &classNameToCheck,
                                                          const mu2e_eventdisplay::EventDisplayFrame *_frame,
                                                          bool &showEvent);
-#ifdef BABARINSTALLED
     void checkMinimumHitsKalman(const art::Event &event, 
                                 const mu2e_eventdisplay::EventDisplayFrame *_frame, 
                                 bool &showEvent);
-#endif
     mu2e_eventdisplay::EventDisplayFrame *_frame;
     bool _firstLoop;
 
@@ -111,9 +107,7 @@ namespace mu2e
         checkMinimumHits<mu2e::StepPointMCCollection>(event, "<StepPointMC>", _frame, showEvent);
         checkMinimumHits<mu2e::StrawHitCollection>(event, "<mu2e::StrawHit>", _frame, showEvent);
         checkMinimumHits<mu2e::StrawHitCollection>(event, "<StrawHit>", _frame, showEvent);
-#ifdef BABARINSTALLED
         checkMinimumHitsKalman(event, _frame, showEvent);
-#endif
         if(showEvent) _frame->setEvent(event,_firstLoop);
       }
     }
@@ -148,7 +142,6 @@ namespace mu2e
     }
   }
 
-#ifdef BABARINSTALLED
   void EventDisplay::checkMinimumHitsKalman(const art::Event &event,
                                             const mu2e_eventdisplay::EventDisplayFrame *_frame, bool &showEvent)
   {
@@ -174,7 +167,6 @@ namespace mu2e
       }
     }
   }
-#endif
 
   void EventDisplay::endJob()
   {

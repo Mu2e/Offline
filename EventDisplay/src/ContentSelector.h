@@ -28,13 +28,9 @@
 #include <iostream>
 #include <vector>
 
-#ifdef BABARINSTALLED
 using namespace CLHEP;
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
-#else
-#warning BaBar package is absent. KalRep cannot be displayed in the event display.
-#endif
 
 namespace mu2e_eventdisplay
 {
@@ -54,11 +50,9 @@ class ContentSelector
   std::vector<art::Handle<mu2e::CaloHitCollection> > _caloHitVector;
   std::vector<art::Handle<mu2e::SimParticleCollection> > _simParticleVector;
   std::vector<art::Handle<mu2e::MCTrajectoryCollection> > _mcTrajectoryVector;
-#ifdef BABARINSTALLED
   std::vector<art::Handle<mu2e::KalRepCollection> > _trkRecoTrkVector;
   std::vector<art::Handle<mu2e::KalRepCollection> > _hitOnTrackVector; //Hits on Tracks are stored inside of KalRep
   std::vector<art::Handle<mu2e::TrkExtTrajCollection> > _trkExtTrajVector;
-#endif
   art::Handle<mu2e::PhysicalVolumeInfoCollection> _physicalVolumes;
   art::Handle<mu2e::PhysicalVolumeInfoMultiCollection> _physicalVolumesMulti;
   bool _hasPhysicalVolumes, _hasPhysicalVolumesMulti;

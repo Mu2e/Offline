@@ -221,6 +221,8 @@ class Cube: public VirtualShape
     }
     else start();
   }
+
+  ClassDef(Cube,1);
 };
 
 }

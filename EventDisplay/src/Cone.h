@@ -264,6 +264,7 @@ class Cone: public VirtualShape
     else start();
   }
 
+  ClassDef(Cone,1);
 };
 
 }

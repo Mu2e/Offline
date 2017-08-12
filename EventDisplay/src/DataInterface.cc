@@ -55,14 +55,10 @@ using namespace std;
 
 #include <boost/shared_array.hpp>
 
-#ifdef BABARINSTALLED
 using namespace CLHEP;
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#else
-#warning BaBar package is absent. KalRep cannot be displayed in the event display.
-#endif
 
 namespace mu2e_eventdisplay
 {
@@ -910,7 +906,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     }
   }
 
-#ifdef BABARINSTALLED
   const mu2e::KalRepCollection *kalRepHits=contentSelector->getSelectedHitCollection<mu2e::KalRepCollection>();
   if(kalRepHits!=nullptr)
   {
@@ -996,7 +991,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       }
     }
   }
-#endif
 
   const mu2e::StepPointMCCollection *calosteppoints=contentSelector->getSelectedCaloHitCollection<mu2e::StepPointMCCollection>();
   if(calosteppoints!=nullptr)
@@ -1203,7 +1197,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     }
   }
 
-#ifdef BABARINSTALLED
   trackInfos.clear();
   std::vector<const mu2e::KalRepCollection*> kalRepCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::KalRepCollection>(trackInfos);
   for(unsigned int i=0; i<kalRepCollectionVector.size(); i++)
@@ -1345,7 +1338,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       }
     }
   }
-#endif
 }
 
 void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &contentSelector,

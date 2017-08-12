@@ -41,8 +41,9 @@ namespace mu2e_eventdisplay
     const boost::shared_ptr<ComponentInfo> getComponentInfo() const {return _componentInfo;}
 #endif
 
-    ClassDef(ComponentInfoContainer,0);
+    ClassDef(ComponentInfoContainer,1);
   };
 
 }
 #endif /* EventDisplay_src_dict_classes_ComponentInfoContainer_h */
+
