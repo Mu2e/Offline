@@ -9,10 +9,14 @@
 // Original author David Brown, LBNL
 //
 #include "TrackerConditions/inc/StrawElectronics.hh"
+#include "GeneralUtilities/inc/DigitalFiltering.hh"
 #include "cetlib_except/exception.h"
 #include "TMath.h"
 #include <math.h>
 #include <algorithm>
+
+#include <TFile.h>
+#include <TH1F.h>
 
 using namespace std;
 namespace mu2e {
@@ -21,17 +25,16 @@ namespace mu2e {
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
     _dVdI{pset.get<double>("thresholddVdI",1.8e4),
-      pset.get<double>("adcdVdI",2.4e7) }, // mVolt/uAmps (transimpedance gain)
-    _tau{pset.get<double>("thresholdFallTime",22.0),  // nsec
-      pset.get<double>("adcShapingTime",22.0) }, // nsec
+      pset.get<double>("adcdVdI",2.4e7),
+      pset.get<double>("threshToAdc1dVdI",0),
+      pset.get<double>("threshToAdc2dVdI",0) }, // mVolt/uAmps (transimpedance gain)
     _tdeadAnalog(pset.get<double>("DeadTimeAnalog",100.0)), // nsec dead after threshold crossing (pulse baseline restoration time)
     _tdeadDigital(pset.get<double>("DeadTimeDigital",100.0)), // nsec dead after threshold crossing (electronics processing time)
-    _vmax(pset.get<double>("MaximumVoltage",180.0)), // 1000 mVolt
     _vsat(pset.get<double>("SaturationVoltage",120.0)), // mVolt
     _disp(pset.get<double>("Dispersion",1.0e-4)), // 0.1 ps/mm
     _vthresh(pset.get<double>("DiscriminatorThreshold",12.0)), //mVolt, post amplification
     _analognoise{pset.get<double>("thresholdAnalogNoise",3.0), //mVolt
-      pset.get<double>("adcAnalogNoise",8.0)},
+      pset.get<double>("adcAnalogNoise",8.0),0,0},
     _ADCLSB(pset.get<double>("ADCLSB",0.3662)), //mVolt
     _maxADC(pset.get<int>("maxADC",4095)),
     _ADCped(pset.get<unsigned>("ADCPedestal",1393)),
@@ -47,68 +50,135 @@ namespace mu2e {
     _clockJitter(pset.get<double>("clockJitter",0.2)), // nsec
     _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
     _flashEnd(pset.get<double>("FlashEnd",300.0)), // nsec
-    _pmpEnergyScale(pset.get<double>("peakMinusPedestalEnergyScale",1.0)) // fudge factor for peak minus pedestal energy method
- {
-    // calcluate normalization.  Formulas are different, first threshold
-    _tband = 1.0/(TMath::TwoPi()*pset.get<double>("preampBandwidth",0.2)); //GHz
-    double nlambda = pset.get<double>("MaxNLambda",10.0);  // only model waveform out to this # of lifetimes
-    double ratio = _tband/_tau[thresh];
-    _voff =TMath::Erf(ratio/TMath::Sqrt2());
-    _toff = _tband*ratio;
-// normalization includes unit conversion to microamps from charge in picoC and time in nsec
-    _norm[thresh] = _dVdI[thresh]*exp(-0.5*(ratio*ratio))*_tau[thresh]/_pC_per_uA_ns;
-    _tmax[thresh] = _toff + _tband*TMath::ErfInverse(exp(-0.5*ratio*ratio));
-    
-    _norm[adc] = _dVdI[adc]/(_tau[adc]*_pC_per_uA_ns);
-    _tmax[adc] = _tau[adc];
+    _pmpEnergyScale(pset.get<double>("peakMinusPedestalEnergyScale",1.0)), // fudge factor for peak minus pedestal energy method
 
-    for(int ipath=0;ipath<2;++ipath){
-      _freq[ipath] = 1.0/_tau[ipath];
-      _ttrunc[ipath] = _tau[ipath]*nlambda;
-      _linmax[ipath] = linearResponse(static_cast<Path>(ipath),_tmax[ipath],1.0); // response to unit charge (without saturation!)
+    _responseBins(pset.get<int>("ResponseBins",10000)),
+    _sampleRate(pset.get<double>("SampleRate",1.0)), // ghz
+    _saturationSampleFactor(pset.get<int>("SaturationSampleFactor",5)),
+    _preampPoles(pset.get<vector<double> >("PreampPoles",vector<double>{160.,160.,6.0})),
+    _preampZeros(pset.get<vector<double> >("PreampZeros",vector<double>{0.72343156})),
+    _adcPoles(pset.get<vector<double> >("ADCPoles",vector<double>{6.24137023,4.6,30.0})),
+    _adcZeros(pset.get<vector<double> >("ADCZeros",vector<double>{0.72343156})),
+    _preampToAdc1Poles(pset.get<vector<double> >("PreampToAdc1Poles",vector<double>{6.24137032,30.0})),
+    _preampToAdc1Zeros(pset.get<vector<double> >("PreampToAdc1Zeros",vector<double>{0.72343156})),
+    _preampToAdc2Poles(pset.get<vector<double> >("PreampToAdc2Poles",vector<double>{4.6})),
+    _preampToAdc2Zeros(pset.get<vector<double> >("PreampToAdc2Zeros",vector<double>{})),
+    _ionNormalization(pset.get<double>("IonNormalization",1.0)),
+    _ionSigma(pset.get<double>("IonSigma",2.0)),
+    _ionT0(pset.get<double>("IonT0",6.0))
+ {
+    // precompute ion drift current pulses
+    _currentPulse = std::vector<double>(_responseBins,0);
+    _currentImpulse = std::vector<double>(_responseBins,0);
+    _currentImpulse[_responseBins/2] = 1;
+    double integral = 0;
+    for (int i=0;i<_responseBins;i++){
+      double t_gaus = (i-_responseBins/2)/_sampleRate;
+      double val_gaus = 1/sqrt(TMath::TwoPi()*_ionSigma*_ionSigma)*exp(-(t_gaus*t_gaus)/(2*_ionSigma*_ionSigma));
+      for (int j=0;j<_responseBins-i;j++){
+        double t_tail = j/_sampleRate;
+        double val = val_gaus / (t_tail + _ionT0);
+        _currentPulse[i+j] += val;
+        integral += val;
+      }
     }
-    // saturation parameters
-    _vdiff = _vmax-_vsat;
- }
+    for (int i=0;i<_responseBins;i++){
+      // correct for sampleRate so that calculateResponse peak is independent of it
+      // this combined with pC_per_uA_ns is the unit transform from pC to uA
+      // do not renormalize since changed shape can change normalization???
+      // normalization here is folded into dVdI
+      _currentPulse[i] *= _sampleRate / _pC_per_uA_ns;
+    }
+    
+    // calculate parameters for transfer function
+    _preampResponse = std::vector<double>(_responseBins,0);
+    _adcResponse = std::vector<double>(_responseBins,0);
+    _preampToAdc1Response = std::vector<double>(_responseBins,0);
+    _preampToAdc2Response = std::vector<double>(_responseBins,0);
+    calculateResponse(_preampPoles,_preampZeros,_currentPulse,_preampResponse,_dVdI[thresh]);
+    calculateResponse(_adcPoles,_adcZeros,_currentPulse,_adcResponse,_dVdI[adc]);
+    calculateResponse(_preampToAdc1Poles,_preampToAdc1Zeros,_currentPulse,_preampToAdc1Response,_dVdI[satadc1]);
+    calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_currentImpulse,_preampToAdc2Response,_dVdI[satadc2]);
+
+    // now set other parameters
+    _tmax[thresh] = 0;
+    _linmax[thresh] = 0;
+    _tmax[adc] = 0;
+    _linmax[adc] = 0;
+    _ttrunc[thresh] = (_responseBins/2)/_sampleRate;
+    _ttrunc[adc] = (_responseBins/2)/_sampleRate;
+    for (int i=0;i<_responseBins;i++){
+      if (_preampResponse[i] > _linmax[thresh]){
+        _linmax[thresh] = _preampResponse[i];
+        _tmax[thresh] = (-_responseBins/2 + i)/_sampleRate;
+      }
+      if (_adcResponse[i] > _linmax[adc]){
+        _linmax[adc] = _adcResponse[i];
+        _tmax[adc] = (-_responseBins/2 + i)/_sampleRate;
+      }
+    }
+  }
 
   StrawElectronics::~StrawElectronics() {}
 
-  double StrawElectronics::fastResponse(double time, double charge) const {
-    if (time > 0.0 && time < _ttrunc[thresh]){
-      double tau = time*_freq[thresh];
-      return charge*_norm[thresh]*exp(-tau)*(_voff + 1.0);
+  void StrawElectronics::calculateResponse(std::vector<double> &poles, std::vector<double> &zeros, std::vector<double> &input, std::vector<double> &response, double dVdI) {
+    std::vector<double> za;
+    std::vector<double> pa;
+    for (size_t i=0;i<poles.size();i++){
+      if (poles[i] != 0)
+        pa.push_back(poles[i]*-1*TMath::TwoPi());
     }
-    return 0;
-  }
+    for (size_t i=0;i<zeros.size();i++){
+      if (zeros[i] != 0)
+        za.push_back(zeros[i]*-1*TMath::TwoPi());
+    }
+    std::vector<double> a(za.size()+1,0);
+    std::vector<double> b(pa.size()+1,0);
+    std::vector<double> aprime(std::max(za.size()+1,pa.size()+1),0);
+    std::vector<double> bprime(std::max(za.size()+1,pa.size()+1),0);
+    DigitalFiltering::zpk2tf(b,a,za,pa); 
+    DigitalFiltering::bilinear(bprime,aprime,a,b,_sampleRate*1000.);
 
-  double StrawElectronics::linearResponse(Path ipath,double time,double charge) const {
-    double retval(0.0);
-    // There is no response before the hitlets own time
-    if(time >  0.0 && time < _ttrunc[ipath]){
-// response is relative to the time normalized by the shaping time.
-      double tau = time*_freq[ipath];
-      double base = charge*_norm[ipath]*exp(-tau);
-      if(ipath == adc)
-	retval = base*tau;
-      else if(ipath == thresh){
-	if(time > 5.0*_tband)
-	  retval = base*(_voff + 1.0);
-	else
-	  retval = base*(_voff + TMath::Erf( (time-_toff)/(_tband*TMath::Sqrt2()) ) );
+    // calculate impulse response
+    for (size_t i=0;i<static_cast<size_t>(_responseBins);i++){
+      response[i] = 0;
+      for (size_t j=0;j<bprime.size();j++){
+        if (i >= j){
+          response[i] += input[i-j]*bprime[j];
+        }
+      }
+      for (size_t j=1;j<aprime.size();j++){
+        if (i >= j){
+          response[i] += -1*response[i-j]*aprime[j];
+        }
       }
     }
-    return retval;
+
+    for (int i=0;i<_responseBins;i++)
+      response[i] *= dVdI;
   }
 
+  double StrawElectronics::linearResponse(Path ipath, double time, double charge) const {
+    int index = time*_sampleRate + _responseBins/2.;
+    if ( index >= _responseBins)
+      index = _responseBins-1;
+    if (index < 0)
+      index = 0;
+    if (ipath == thresh)
+      return charge * _preampResponse[index];
+    else if (ipath == adc)
+      return charge * _adcResponse[index];
+    else if (ipath == satadc1)
+      return charge * _preampToAdc1Response[index];
+    else
+      return charge * _preampToAdc2Response[index] * _saturationSampleFactor;
+  }
+  
   double StrawElectronics::saturatedResponse(double vlin) const {
-    double retval(0.0);
-  // up to saturation voltage the response is linear
-    if(vlin < _vsat)
-      retval = vlin;
-    else {
-      retval = _vmax - _vdiff*exp(-(vlin-_vsat)/_vdiff);
-    }
-    return retval;
+    if (vlin < _vsat)
+      return vlin;
+    else
+      return _vsat;
   }
 
   unsigned short StrawElectronics::adcResponse(double mvolts) const {

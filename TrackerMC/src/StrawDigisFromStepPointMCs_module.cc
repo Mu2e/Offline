@@ -809,7 +809,7 @@ namespace mu2e {
 	  // find TOT
 	  tot[iend] = waveform[iend].digitizeTOT(threshold,wfx._time + dt);
 	  // sample ADC
-	  waveform[iend].sampleWaveform(TrkTypes::adc,adctimes,wf[iend]);
+	  waveform[iend].sampleADCWaveform(adctimes,wf[iend]);
 	}
 	// add ends and add noise
 	ADCVoltages wfsum; wfsum.reserve(adctimes.size());
@@ -866,9 +866,9 @@ namespace mu2e {
 	    double t = tstart;
 	    while(t<tend){
 	      times.push_back(t);
+              volts.push_back(wfs[iend].sampleWaveform(_diagpath,t));
 	      t += _tstep;
 	    }
-	    wfs[iend].sampleWaveform(_diagpath,times,volts);
 	    ++nhist;
 	    art::ServiceHandle<art::TFileService> tfs;
 	    char name[60];

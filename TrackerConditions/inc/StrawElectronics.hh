@@ -21,7 +21,6 @@
 #include "TrackerConditions/inc/Types.hh"
 #include "fhiclcpp/ParameterSet.h"
 
-
 namespace mu2e {
   class StrawElectronics : virtual public ConditionsEntity {
     public:
@@ -31,8 +30,6 @@ namespace mu2e {
       // linear response to a charge pulse.  This does NOT include saturation effects,
       // since those are cumulative and cannot be computed for individual charges
       double linearResponse(TrkTypes::Path ipath, double time,double charge) const; // mvolts per pCoulomb
-      // fast response to a charge pulse, this is just an exponential with no saturation or rising edge effects. Only valid for threshold path
-      double fastResponse(double time, double charge) const;
       // Given a (linear) total voltage, compute the saturated voltage
       double saturatedResponse(double lineearresponse) const;
       // relative time when linear response is maximal
@@ -63,8 +60,6 @@ namespace mu2e {
       double flashEnd() const { return _flashEnd; } // time flash blanking ends
       void adcTimes(double time, TrkTypes::ADCTimes& adctimes) const; // given crossing time, fill sampling times of ADC CHECK THIS IS CORRECT IN DRAC FIXME!
       double saturationVoltage() const { return _vsat; }
-      double maximumVoltage() const { return _vmax; }
-      double fallTime(TrkTypes::Path ipath) const { return _tau[ipath]; }
       double dispersion(double dlen) const { return _disp*dlen; } // dispersion width is linear in propagation length
       double threshold() const { return _vthresh; }
       double analogNoise(TrkTypes::Path ipath) const { return _analognoise[ipath]; }
@@ -73,9 +68,14 @@ namespace mu2e {
       double clockStart() const { return _clockStart; }
       double clockJitter() const { return _clockJitter; }
       double currentToVoltage(TrkTypes::Path ipath) const { return _dVdI[ipath]; }
-      double normalization(TrkTypes::Path ipath) const { return _norm[ipath]; }
       double maxLinearResponse(TrkTypes::Path ipath,double charge=1.0) const { return _linmax[ipath]*charge; }
       double peakMinusPedestalEnergyScale() const { return _pmpEnergyScale; }
+      double normalization(TrkTypes::Path ipath) const { return 1.;} //FIXME
+      double fallTime(TrkTypes::Path ipath) const { return 22.;} //FIXME
+
+      void calculateResponse(std::vector<double> &poles, std::vector<double> &zeros, std::vector<double> &input, std::vector<double> &response, double dVdI);
+      double truncationTime(TrkTypes::Path ipath) const { return _ttrunc[ipath];}
+      double saturationTimeStep() const { return _saturationSampleFactor/_sampleRate;}
       static double _pC_per_uA_ns; // unit conversion from pC/ns to microAmp
     private:
     // generic waveform parameters
@@ -83,15 +83,11 @@ namespace mu2e {
       double _tmax[TrkTypes::npaths]; // time at which value is maximum
       double _ttrunc[TrkTypes::npaths]; // time to truncate signal to 0
       double _linmax[TrkTypes::npaths]; // linear response to unit charge at maximum
-      double _norm[TrkTypes::npaths]; // normalization factor
-// adc path parameters
-      double _tau[TrkTypes::npaths], _freq[TrkTypes::npaths]; // shaping time and associated frequency
 // threshold path parameters
-      double _tband, _voff, _toff;
       double _tdeadAnalog; // electronics dead time
       double _tdeadDigital; // electronics readout dead time
       // scale factor between current and voltage (milliVolts per microAmps)
-      double _vmax, _vsat, _vdiff; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
+      double _vsat; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
       double _disp; // dispersion in ns/mm;
       double _vthresh; // threshold voltage for electronics discriminator (mVolt)
       double _analognoise[TrkTypes::npaths]; //noise (mVolt)
@@ -110,6 +106,28 @@ namespace mu2e {
       double _pmpEnergyScale; // fudge factor for peak minus pedestal energy method
   // helper functions
       static inline double mypow(double,unsigned);
+
+      int _responseBins;
+      double _sampleRate;
+      int _saturationSampleFactor;
+      std::vector<double> _preampPoles;
+      std::vector<double> _preampZeros;
+      std::vector<double> _adcPoles;
+      std::vector<double> _adcZeros;
+      std::vector<double> _preampToAdc1Poles;
+      std::vector<double> _preampToAdc1Zeros;
+      std::vector<double> _preampToAdc2Poles;
+      std::vector<double> _preampToAdc2Zeros;
+
+      double _ionNormalization;
+      double _ionSigma;
+      double _ionT0;
+      std::vector<double> _currentPulse;
+      std::vector<double> _currentImpulse;
+      std::vector<double> _preampResponse;
+      std::vector<double> _adcResponse;
+      std::vector<double> _preampToAdc1Response;
+      std::vector<double> _preampToAdc2Response;
   };
 }
 

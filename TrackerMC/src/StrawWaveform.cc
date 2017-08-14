@@ -161,39 +161,69 @@ namespace mu2e {
 	// move to next clust
 	++iclust;
       }
-      // apply saturation effects and x-talk
-      double satresp = _strawele->saturatedResponse(linresp);
-      satresp *= _xtalk._postamp;
+      double totresp = linresp * _xtalk._postamp;
       if(_xtalk._preamp>0.0)
-	satresp += _strawele->saturatedResponse(_xtalk._preamp*linresp);
-      return satresp;
+	totresp += _xtalk._preamp*linresp;
+      return totresp;
     }
 
-    double StrawWaveform::fastSampleWaveform(double time) const {
-      // loop over all clusts and add their response at this time
-      ClusterList const& hlist = _cseq.clustList();
-      double linresp(0.0);
-      auto iclust = hlist.begin();
-      while(iclust != hlist.end() && iclust->time() < time){
-	// compute the linear straw electronics response to this charge.  This is pre-saturation 
-	linresp += _strawele->fastResponse(time-iclust->time(),iclust->charge());
-	// move to next clust
-	++iclust;
-      }
-      return linresp;
-    }
-
-    void StrawWaveform::sampleWaveform(TrkTypes::Path ipath,ADCTimes const& times,ADCVoltages& volts) const {
+    void StrawWaveform::sampleADCWaveform(ADCTimes const& times,ADCVoltages& volts) const {
       volts.clear();
       volts.reserve(times.size());
-      for(auto itime=times.begin();itime!=times.end();++itime){
-	volts.push_back(sampleWaveform(ipath,*itime));
+      // check if going to be saturated
+      double max_possible_voltage = 0;
+      for (auto iclust = _cseq.clustList().begin();iclust != _cseq.clustList().end();++iclust){
+        max_possible_voltage += maxLinearResponse(iclust);
+      }
+      if (max_possible_voltage > _strawele->saturationVoltage()){
+        // create waveform of threshold circuit output
+        // step along waveform and apply saturation
+        // for each time, get contribution from each step in waveform using impulse response
+        
+        // skip to the first cluster that matters for the first adc time
+        auto iclust = _cseq.clustList().begin();
+        while (iclust != _cseq.clustList().end()){
+          double time = iclust->time();
+          if (time + _strawele->truncationTime(TrkTypes::thresh) > times[0])
+            break;
+          else
+            ++iclust;
+        }
+
+        // step through time
+        for (size_t j=0;j<times.size();j++){
+          volts.push_back(0);
+        }
+
+        int num_steps = (int)ceil((times[times.size()-1]-iclust->time())/_strawele->saturationTimeStep());
+
+        for (int i=0;i<num_steps;i++){
+          double time = iclust->time() + i*_strawele->saturationTimeStep();
+          // sum up the preamp response at this step
+          double response = 0;
+          auto jclust = iclust;
+          while(jclust != _cseq.clustList().end() && jclust->time() < time){
+            response += _strawele->linearResponse(TrkTypes::satadc1,time-jclust->time(),jclust->charge());
+            ++jclust;
+          }
+          // now saturate it
+          double sat_response = _strawele->saturatedResponse(response);
+          // then calculate the impulse response at each of the adctimes and add it to that
+          for (size_t j=0;j<times.size();j++){
+            // this function includes multiplication by number of steps in saturationTimeStep
+            volts[j] += _strawele->linearResponse(TrkTypes::satadc2,times[j]-time,sat_response);
+          }
+        }
+      }else{
+        for(auto itime=times.begin();itime!=times.end();++itime){
+          volts.push_back(sampleWaveform(TrkTypes::adc,*itime));
+        }
       }
     }
 
   unsigned short StrawWaveform::digitizeTOT(double threshold, double time) const {
-      for (size_t i=0;i<_strawele->maxTOT();i++){
-        if (fastSampleWaveform(time + i*_strawele->totLSB()) < threshold)
+      for (size_t i=1;i<_strawele->maxTOT();i++){
+        if (sampleWaveform(TrkTypes::thresh,time + i*_strawele->totLSB()) < threshold)
           return static_cast<unsigned short>(i);
       }
       return static_cast<unsigned short>(_strawele->maxTOT());

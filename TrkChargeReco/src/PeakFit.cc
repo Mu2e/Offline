@@ -47,6 +47,7 @@ namespace mu2e {
       double pedestal = std::accumulate(adcData.begin(), adcData.begin() + _strawele.nADCPreSamples(),0)/(double) _strawele.nADCPreSamples();
 
       // convert charge to pC
+      // FIXME
      double charge = (peak - pedestal) * _strawele.adcLSB() / _strawele.normalization(TrkTypes::adc) / exp(-1.0) * _strawele.peakMinusPedestalEnergyScale();
      fit._charge = charge;
     }

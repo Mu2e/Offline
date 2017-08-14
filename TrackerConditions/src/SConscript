@@ -9,6 +9,7 @@ import os
 Import('env')
 Import('mu2e_helper')
 
+rootlibs  = env['ROOTLIBS']
 helper=mu2e_helper();
 
 mainlib = helper.make_mainlib ( [ 'mu2e_GeometryService',
@@ -25,7 +26,8 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeometryService',
                                   'cetlib_except',
 				  'CLHEP',
                                   'MathCore',
-                                  'boost_system'
+                                  'boost_system',
+                                  rootlibs
                                 ] )
 
 # This tells emacs to view this file in python mode.

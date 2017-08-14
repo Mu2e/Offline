@@ -52,12 +52,11 @@ namespace mu2e {
 	// find the next point the waveform crosses threhold.  Waveform crossing
 	// is both input (determines starting point) and output
 	bool crossesThreshold(double threshold,WFX& wfx) const;
-	// sample the waveform at a given time.  Return value is in units of volts 
+	// sample the waveform at a given time, no saturation included.  Return value is in units of volts 
 	double sampleWaveform(TrkTypes::Path ipath,double time) const;
-        // sample the simplified waveform at a given time. Return value is in volts. valid for thresh only
-        double fastSampleWaveform(double time) const;
-	// sample the waveform at a series of points
-	void sampleWaveform(TrkTypes::Path ipath, TrkTypes::ADCTimes const& times,TrkTypes::ADCVoltages& volts) const;
+	// sample the waveform at a series of points allowing saturation to occur after preamp stage
+        // FIXME no cross talk yet
+	void sampleADCWaveform(TrkTypes::ADCTimes const& times,TrkTypes::ADCVoltages& volts) const;
         unsigned short digitizeTOT(double threshold, double time) const;
 	//accessors
 	StrawClusterSequence const& clusts() const { return _cseq; }
