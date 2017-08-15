@@ -35,12 +35,14 @@
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // boost
+#include <boost/serialization/array_wrapper.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include "boost_fix/accumulators/statistics.hpp"
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/median.hpp>
 #include <boost/accumulators/statistics/weighted_median.hpp>
+
 // Root
 #include "TGraph.h"
 #include "TH1F.h"
