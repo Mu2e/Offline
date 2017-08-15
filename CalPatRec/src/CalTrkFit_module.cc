@@ -76,7 +76,7 @@ namespace mu2e {
     _diagLevel       (pset.get<int>                ("diagLevel"                      )),
     _debugLevel      (pset.get<int>                ("debugLevel"                     )),
     _printfreq       (pset.get<int>                ("printFrequency"                 )),
-    _useAsFilter     (pset.get<int>                ("useAsFilter"                    )),    
+    _useAsFilter     (pset.get<int>                ("useAsFilter"                    )),
     _addhits         (pset.get<bool>               ("addhits"                        )),
     _zsave           (pset.get<vector<double> >("ZSavePositions",
 						vector<double>{-1522.0,0.0,1522.0}   )), // front, middle and back of the tracker
@@ -230,14 +230,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // output collections should always be created
 //-----------------------------------------------------------------------------
-    art::ProductID   kalRepsID(getProductID<KalRepCollection>(event));
+    art::ProductID   kalRepsID(getProductID<KalRepCollection>());
 
     unique_ptr<KalRepCollection>       tracks   (new KalRepCollection        );
     unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection     );
     unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection   );
     unique_ptr<KalSeedCollection>      kscol    (new KalSeedCollection()     );
     unique_ptr<StrawHitFlagCollection> shfcol   (new StrawHitFlagCollection());
- 
+
     if (! findData(event)) goto END;
 
     shfcol.reset(new StrawHitFlagCollection(*_shfcol));
@@ -254,7 +254,7 @@ namespace mu2e {
 // loop over track "seeds" found by CalSeedFit
 //-----------------------------------------------------------------------------
     nseeds = _trkseeds->size();
-    
+
     for (int iseed=0; iseed<nseeds; iseed++) {
       kalSeed = &_trkseeds->at(iseed);
       int n_seed_hits = kalSeed->hits().size();
@@ -283,7 +283,7 @@ namespace mu2e {
 	  break;
 	}
       }
-      
+
       if (kseg == kalSeed->segments().end()) {
 	printf("Helix segment range doesn't cover flt0 = %10.3f\n",flt0) ;
 
@@ -344,7 +344,7 @@ namespace mu2e {
 	  _result._nunweediter = 0;
 	  _fitter.unweedHits(_result,_maxaddchi);
 	  if (_debugLevel > 0) _fitter.printHits(_result,"CalTrkFit::produce after unweedHits");
-	      
+
 	  findMissingHits(_result);
 //-----------------------------------------------------------------------------
 // if new hits have been added, add them and refit the track.
@@ -367,7 +367,7 @@ namespace mu2e {
 // now evaluate the T0 and its error using the straw hits
 //-----------------------------------------------------------------------------
 	_fitter.updateT0(_result);
-	    
+
 	if (_debugLevel > 0) _fitter.printHits(_result,"CalTrkFit::produce : final, after weedHits");
       }
 
@@ -547,7 +547,7 @@ namespace mu2e {
 	}
 
         if (! found) {
-					// estimate trajectory length to hit 
+					// estimate trajectory length to hit
 	  double hflt = 0;
 	  TrkHelixUtils::findZFltlen(*reftraj,zhit,hflt);
 
@@ -576,7 +576,7 @@ namespace mu2e {
 	  double      doca, rdrift, dr, hit_error(0.2);
 
 	  TrkStrawHit hit(sh,straw,istr,hitt0,hflt,hit_error,10);
-	  
+
 	  ConditionsHandle<TrackerCalibrations> tcal("ignored");
 
 	  double tdrift=hit.time()-hit.hitT0()._t0;

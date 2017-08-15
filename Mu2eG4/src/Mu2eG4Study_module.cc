@@ -38,7 +38,7 @@
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "SeedService/inc/SeedService.hh"
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 #endif
 
@@ -63,7 +63,7 @@
 // Geant4 includes
 #include "G4UIExecutive.hh"
 #include "G4UImanager.hh"
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
 #include "G4VisExecutive.hh"
 #endif
 #include "G4Run.hh"
@@ -127,7 +127,7 @@ namespace mu2e {
 
     G4UIsession  *_session;
     G4UImanager  *_UI;
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
     std::unique_ptr<G4VisManager> _visManager;
 #endif
     int _rmvlevel;
@@ -178,7 +178,7 @@ namespace mu2e {
     _steppingAction(nullptr),
     _session(nullptr),
     _UI(nullptr),
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
     _visManager(nullptr),
 #endif
     _rmvlevel(pSet.get<int>("diagLevel",0)),
@@ -316,7 +316,7 @@ namespace mu2e {
     _runManager->SetUserAction(_trackingAction);
 
     // setting tracking/stepping verbosity level; tracking manager
-    // sets stepping verbosity level as well; 
+    // sets stepping verbosity level as well;
 
     G4RunManagerKernel const * rmk = G4RunManagerKernel::GetRunManagerKernel();
     G4TrackingManager* tm  = rmk->GetTrackingManager();
@@ -343,7 +343,7 @@ namespace mu2e {
     // Mu2e specific customizations that must be done after the call to Initialize.
     postG4InitializeTasks(config,pL);
 
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
 
@@ -385,7 +385,7 @@ namespace mu2e {
     //    unique_ptr<PointTrajectoryCollection> pointTrajectories( new PointTrajectoryCollection);
 
     // ProductID for the SimParticleCollection.
-    art::ProductID simPartId(getProductID<SimParticleCollection>(event));
+    art::ProductID simPartId(getProductID<SimParticleCollection>());
 
     // Some of the user actions have begein event methods. These are not G4 standards.
 
@@ -441,18 +441,18 @@ namespace mu2e {
           // Cast away const-ness; required by the G4 interface ...
           char* dummy = (char *)"dummy";
           char** argv = &dummy;
-          G4UIExecutive* UIE = ( c == 's' || c == 'v' ) ? 
+          G4UIExecutive* UIE = ( c == 's' || c == 'v' ) ?
 	    new G4UIExecutive(argc, argv,"tcsh") :
 	    new G4UIExecutive(argc, argv);
-	  
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
 
 	  if (UIE->IsGUI()) {
 
 	    // we add a command here and initialize it (/vis/sceneHandler has to exist prior to this)
 	    Mu2eVisCommandSceneHandlerDrawEvent* drEv = new Mu2eVisCommandSceneHandlerDrawEvent();
 	    _visManager->RegisterMessenger(drEv); // assumes ownership;
-	    // drEv->SetVisManager(_visManager.get());  
+	    // drEv->SetVisManager(_visManager.get());
 	    // vis manager pointer is static member of the drEv base class so the above is not needed
 
 	    if ( !_visGUIMacro.empty() ){
@@ -471,7 +471,7 @@ namespace mu2e {
 
 	  } // end UIE->IsGUI()
 #endif
-          UIE->SessionStart(); 
+          UIE->SessionStart();
           delete UIE;
 
 	  //If current scene is scene-0 and if scene-handler-0 has viewer-0 we
@@ -480,7 +480,7 @@ namespace mu2e {
 
 	  // basically _UI->ApplyCommand("/vis/viewer/select viewer-0"); // to have tracks drawn
 
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
 	  G4String viewerToLookFor("viewer-0");
 	  G4VViewer* pViewer = _visManager->GetViewer(viewerToLookFor);
 	  if (pViewer) {
@@ -535,7 +535,7 @@ namespace mu2e {
       return;
     }
 
-    //numberOfEventsToBeProcessed should be the total number of events to be processed 
+    //numberOfEventsToBeProcessed should be the total number of events to be processed
     // or a large number and NOT 1 for G4 to work properly
 
     G4int numberOfEventsToBeProcessed = std::numeric_limits<int>::max(); // largest int for now

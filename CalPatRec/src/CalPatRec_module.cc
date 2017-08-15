@@ -546,7 +546,7 @@ namespace mu2e {
     _flags = new StrawHitFlagCollection();
     unique_ptr<StrawHitFlagCollection> flags (_flags);
 
-    art::ProductID kalRepsID(getProductID<KalRepCollection>(event));
+    art::ProductID kalRepsID(getProductID<KalRepCollection>());
 
     double pEntrance(.0), step_time(-9999.);
     double time_threshold(500.);
@@ -735,9 +735,9 @@ namespace mu2e {
             hit   = &_shcol->at(loc);
             straw = &_tracker->getStraw(hit->strawIndex());
             printf("[CalPatRec::printGoodHits]  %6i  %10s %6i    active   %8.3f  %8.3f  %9.3f %9.3f\n",
-                   loc, 
+                   loc,
 		   _index[i]._flag.hex().data(),
-		   hit->strawIndex().asInt(), 
+		   hit->strawIndex().asInt(),
 		   shPos->x(), shPos->y(), shPos->z(),
                    straw->getMidPoint().z()
                    );
@@ -924,10 +924,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //	      int last_iteration = _kfit.maxIteration();
 	      int last_iteration = -1;
-	      
+
 	      _kfit.unweedHits(*_kfresult,_maxaddchi);
 	      if (_debugLevel > 0) _kfit.printHits(*_kfresult,"CalPatRec::produce after unweedHits");
-	      
+
 	      std::vector<StrawHitIndex> misshits;
 	      findMissingHits(*_kfresult,misshits);
 //-----------------------------------------------------------------------------
@@ -952,7 +952,7 @@ namespace mu2e {
 // now evaluate the T0 and its error using the straw hits
 //-----------------------------------------------------------------------------
 	    _kfit.updateT0(*_kfresult);
-	    
+
 	    if (_debugLevel > 0) {
 	      _kfit.printHits(*_kfresult,"CalPatRec::produce : final, after weedHits");
 	    }
@@ -984,7 +984,7 @@ namespace mu2e {
 		  break;
 		}
 	      }
-	    
+
 	      if (_diagLevel > 0) {
 		if (found) _hist._kaldoca[0]->Fill(doca);
 		else       _hist._kaldoca[1]->Fill(doca);
@@ -1028,7 +1028,7 @@ namespace mu2e {
 	int mask = 1 << AlgorithmID::CalPatRecBit;
 
 	algs->push_back(AlgorithmID(best,mask));
-	
+
       }
       else {
 //-----------------------------------------------------------------------------

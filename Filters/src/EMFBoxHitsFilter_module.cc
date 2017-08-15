@@ -204,7 +204,7 @@ namespace mu2e {
       //----------------
       // Prepare the output particle collection
       ParticleSelector selector(particlesToKeep);
-      art::ProductID newParticlesPID(getProductID<SimParticleCollection>(event));
+      art::ProductID newParticlesPID(getProductID<SimParticleCollection>());
       const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
       compressSimParticleCollection(newParticlesPID, newParticlesGetter, *inparticlesh, selector, *outparts);
 

@@ -197,10 +197,10 @@ namespace mu2e {
 
         outE = pm_.makeEventPrincipal(runNumber_, currentSubRunNumber_, ++currentEventNumber_, ts, false);
 
-        art::ProductID particlesPID = getProductID<GenParticleCollection,art::InEvent>(*outE );
+        art::ProductID particlesPID = getProductID<GenParticleCollection,art::InEvent>();
         const art::EDProductGetter* particlesGetter = outE->productGetter(particlesPID);
 
-        art::ProductID infoPID = getProductID<MARSInfoCollection,art::InEvent>(*outE );
+        art::ProductID infoPID = getProductID<MARSInfoCollection,art::InEvent>();
         const art::EDProductGetter* infoGetter = outE->productGetter(infoPID);
 
         const unsigned nj = currentLine_.protonNumber;

@@ -36,7 +36,7 @@ namespace mu2e {
   class SimParticleSelector {
   public:
     SimParticleSelector() { }
-    
+
     void push_back(cet::map_vector_key key) {
       m_keys.insert(key);
     }
@@ -51,7 +51,7 @@ namespace mu2e {
 
   private:
     std::set<cet::map_vector_key> m_keys;
-    
+
   };
 }
 
@@ -200,14 +200,14 @@ bool mu2e::FilterKalSeed::filter(art::Event & event)
   const auto& strawHits = event.getValidHandle<StrawHitCollection>("makeSH");
   const auto& strawDigis = event.getValidHandle<StrawDigiCollection>("makeSD");
   const auto& strawDigiMCs = event.getValidHandle<StrawDigiMCCollection>("makeSH");
-  
+
   _newKalFinals = std::unique_ptr<KalSeedCollection>(new KalSeedCollection);
   _newStrawHits = std::unique_ptr<StrawHitCollection>(new StrawHitCollection);
   _newStrawDigis = std::unique_ptr<StrawDigiCollection>(new StrawDigiCollection);
   _newStrawDigiMCs = std::unique_ptr<StrawDigiMCCollection>(new StrawDigiMCCollection);
 
   _newStepPointMCs = std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection);
-  _newStepPointMCsPID = getProductID<StepPointMCCollection>(event);
+  _newStepPointMCsPID = getProductID<StepPointMCCollection>();
   _newStepPointMCGetter = event.productGetter(_newStepPointMCsPID);
 
   // Create all the new collections, ProductIDs and product getters for the SimParticles and GenParticles
@@ -216,11 +216,11 @@ bool mu2e::FilterKalSeed::filter(art::Event & event)
     art::ProductID i_product_id = oldSimParticles.id();
 
     _newSimParticles[i_product_id] = std::unique_ptr<SimParticleCollection>(new SimParticleCollection);
-    _newSimParticlesPID[i_product_id] = getProductID<SimParticleCollection>(event, (*i_tag).label() );
+    _newSimParticlesPID[i_product_id] = getProductID<SimParticleCollection>((*i_tag).label() );
     _newSimParticleGetter[i_product_id] = event.productGetter(_newSimParticlesPID[i_product_id]);
 
     _newGenParticles[i_product_id] = std::unique_ptr<GenParticleCollection>(new GenParticleCollection);
-    _newGenParticlesPID[i_product_id] = getProductID<GenParticleCollection>(event, (*i_tag).label() );
+    _newGenParticlesPID[i_product_id] = getProductID<GenParticleCollection>((*i_tag).label() );
     _newGenParticleGetter[i_product_id] = event.productGetter(_newGenParticlesPID[i_product_id]);
   }
 
@@ -232,7 +232,7 @@ bool mu2e::FilterKalSeed::filter(art::Event & event)
     mu2e::CondensedIndex counter = 0;
     // Loop through the hits in the fit
     for (const auto& hit : kalFinal.hits()) {
-      
+
       // at the moment, we are only writing everything related to the hits in the fit
       // in the future, we could add code here to look for other hits near these and write those out too
       StrawHitIndex hit_index = hit.index();
@@ -295,7 +295,7 @@ bool mu2e::FilterKalSeed::filter(art::Event & event)
     }
   }
   event.put(std::move(_newStepPointMCs));
-  
+
 
   // Get the TrkQual information that was used for these KalSeeds
   const auto& trkQuals = event.getValidHandle<TrkQualCollection>("KFFDeM");
@@ -306,7 +306,7 @@ bool mu2e::FilterKalSeed::filter(art::Event & event)
 
   // Put everything into the event
   event.put(std::move(newTrkQuals));
-  
+
 
   return true;
 }
