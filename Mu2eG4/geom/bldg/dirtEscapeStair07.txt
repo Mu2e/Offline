@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/dirt_escape_stair_07.ccl
+
+string dirt.escape.stair.07.name     = "dirtEscapeStair07";
+
+string dirt.escape.stair.07.material = "MBOverburden";
+
+double dirt.escape.stair.07.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.escape.stair.07.offsetFromFloorSurface.y = 1143;
+double dirt.escape.stair.07.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.escape.stair.07.yHalfThickness           = 76.2;
+
+vector<double> dirt.escape.stair.07.xPositions = {
+  14460.4,   // F3
+  15645.3,   // F2
+  15358.2,   // TF2
+  14173.3   // TF3
+};
+
+vector<double> dirt.escape.stair.07.yPositions = {
+  13665.1,   // F3
+  13952.2,   // F2
+  15137.1,   // TF2
+  14850   // TF3
+};
+
+// Local Variables:
+// mode:c++
+// End:

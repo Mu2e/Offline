@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_escape_hatch_lid.ccl
+
+string building.escape.hatch.lid.name     = "escapeHatchLid";
+
+string building.escape.hatch.lid.material = "CONCRETE_MARS";
+
+double building.escape.hatch.lid.offsetFromMu2eOrigin.x   = 947.4;
+double building.escape.hatch.lid.offsetFromFloorSurface.y = 10591.8;
+double building.escape.hatch.lid.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.escape.hatch.lid.yHalfThickness           = 76.2;
+
+vector<double> building.escape.hatch.lid.xPositions = {
+  19375.5,   // L0
+  15870.2,   // L1
+  17269.8,   // L2
+  20775.2   // L3
+};
+
+vector<double> building.escape.hatch.lid.yPositions = {
+  24552.1,   // L0
+  23702.8,   // L1
+  17926.3,   // L2
+  18775.7   // L3
+};
+
+// Local Variables:
+// mode:c++
+// End:
