@@ -36,7 +36,6 @@
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // boost
-#include <boost/serialization/array_wrapper.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include "boost_fix/accumulators/statistics.hpp"
