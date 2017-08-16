@@ -1,10 +1,10 @@
 //
-// A module to read the background overlay StepPointMC information from a TTree, and recreates a new StepPointMC collection
+// A module to read the background overlay StepPointMC information from a TTree, and recreates a new StepPointMC collection 
 //
 // $Id: $
 // $Author: ehrlich $
 // $Date: 2014/08/07 01:33:40 $
-//
+// 
 // Original Author: Ralf Ehrlich
 
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -36,9 +36,9 @@
 #include <TTree.h>
 #include <TVector2.h>
 
-namespace mu2e
+namespace mu2e 
 {
-  class CrvBackgroundOverlay : public art::EDProducer
+  class CrvBackgroundOverlay : public art::EDProducer 
   {
 
     public:
@@ -67,7 +67,7 @@ namespace mu2e
     int                      _overlayFactor;
     size_t                   _volumeIdStart, _volumeIdEnd;
     size_t                   _currentEntry;
-    size_t                   _nEntries;
+    size_t                   _nEntries; 
   };
 
   CrvBackgroundOverlay::CrvBackgroundOverlay(fhicl::ParameterSet const& pset) :
@@ -116,11 +116,11 @@ namespace mu2e
 
   }
 
-  void CrvBackgroundOverlay::produce(art::Event& event)
+  void CrvBackgroundOverlay::produce(art::Event& event) 
   {
     GeomHandle<CosmicRayShield> CRS;
 
-    art::ProductID simPartId(getProductID<SimParticleCollection>());
+    art::ProductID simPartId(getProductID<SimParticleCollection>(event));
     SimParticleHelper spHelper(0, simPartId, event);
 
     std::unique_ptr<StepPointMCCollection> stepPointMCs(new StepPointMCCollection);
@@ -212,3 +212,4 @@ namespace mu2e
 
 using mu2e::CrvBackgroundOverlay;
 DEFINE_ART_MODULE(CrvBackgroundOverlay)
+

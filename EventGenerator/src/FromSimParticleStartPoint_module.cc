@@ -3,7 +3,7 @@
 // from its production vertex.
 //
 // Author Zhengyun You
-//
+// 
 //
 
 #include <iostream>
@@ -92,16 +92,16 @@ namespace mu2e {
     if ( _doHistograms ){
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir( "FromSPStartPoint" );
-
+      
       _ntup = tfs->make<TNtuple>("fromspsp","Generator information",
                                  "evt:E:x:y:z:p:costh:phi:t:pdgId:GenId");
     }
 
-    createEngine( art::ServiceHandle<SeedService>()->getSeed() );
+    createEngine( art::ServiceHandle<SeedService>()->getSeed() );    
   }
 
   void FromSimParticleStartPoint::beginJob() {
-
+   
   }
 
 
@@ -110,13 +110,13 @@ namespace mu2e {
     float nt[11];
     nt[0] = event.id().event();
     nt[1] = gen.momentum().e();
-    nt[2] = gen.position().x();
-    nt[3] = gen.position().y();
-    nt[4] = gen.position().z();
+    nt[2] = gen.position().x();     
+    nt[3] = gen.position().y();     
+    nt[4] = gen.position().z();     
     nt[5] = gen.momentum().vect().mag();
     nt[6] = gen.momentum().cosTheta();
     nt[7] = gen.momentum().phi();
-    nt[8] = gen.time();
+    nt[8] = gen.time();    
     nt[9] = gen.pdgId();
     nt[10] = gen.generatorId().id();
 
@@ -127,20 +127,20 @@ namespace mu2e {
 
       if (_inVolumes.size() == 0) return;
       art::Handle<PhysicalVolumeInfoCollection> volsHandle;
-      event.getRun().getByLabel(_inModuleLabel,volsHandle);
+      event.getRun().getByLabel(_inModuleLabel,volsHandle);    
       PhysicalVolumeInfoCollection const& vols(*volsHandle);
 
-
+      
       for (size_t i=0; i<vols.size(); ++i) {
         PhysicalVolumeInfo const& theVol = vols.at(i);
-
+     
         for (size_t j=0; j<_inVolumes.size(); ++j) {
           if (theVol.name().compare(0,_inVolumes[j].size(),_inVolumes[j]) == 0) {
             _selVolumes.push_back(i);
           }
         }
       }
-
+     
       if (_diagLevel>-1) {
         cout << "Searching for all ";
         for (size_t i = 0; i < _inPdgId.size(); ++i ) {
@@ -163,7 +163,7 @@ namespace mu2e {
 
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     std::unique_ptr<GenSimParticleLink> history(new GenSimParticleLink);
-    art::ProductID gpc_pid = (getProductID<GenParticleCollection>());
+    art::ProductID gpc_pid = (getProductID<GenParticleCollection>(event));
 
     if (_firstevent) {
 
@@ -210,8 +210,8 @@ namespace mu2e {
           findvolume = true;
         }
         else {
-
-          for (vector<unsigned>::iterator volumeFinder = _selVolumes.begin();
+        
+          for (vector<unsigned>::iterator volumeFinder = _selVolumes.begin(); 
             volumeFinder != _selVolumes.end(); ++volumeFinder) {
             if ( *volumeFinder == aParticle.endVolumeIndex()) {
               findvolume = true;
@@ -224,20 +224,20 @@ namespace mu2e {
         if (findvolume) {
 
           if (_diagLevel>-1) {
-            cout << "find particle " << aParticle.pdgId();
+            cout << "find particle " << aParticle.pdgId(); 
             cout << " in the selected volume " << endl;
           }
           if (_inProcessCodeToLook != aParticle.creationCode() ) {
-
+            
             if (_diagLevel>-1) cout << "keep with creation code " << aParticle.creationCode().name() << endl;
 
             PDGCode::type pdgId = aParticle.pdgId();
             CLHEP::Hep3Vector pos = aParticle.startPosition();
             CLHEP::HepLorentzVector mom = aParticle.startMomentum();
             double time = aParticle.startGlobalTime();
-
+            
             if (_diagLevel>-1) cout << "creating particle" << pdgId << endl;
-
+		
             GenParticle outGen(pdgId, GenId::fromSimParticleStartPoint, pos, mom, time);
 
             output->push_back(outGen);
@@ -257,10 +257,10 @@ namespace mu2e {
         }
       } // if (pdgFinder != _inPdgId.end())
     } // for
-
+    
     event.put(std::move(output));
     event.put(std::move(history));
-
+    
   }
 
 } // namespace mu2e

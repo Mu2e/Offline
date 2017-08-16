@@ -351,7 +351,7 @@ namespace mu2e {
     for ( size_t i=0; i<simHandles.size(); ++i ){
 
       // These are needed to reseat the art::Ptr's inside the SimParticleCollections.
-      art::ProductID simsProductId(getProductID<SimParticleCollection>(instanceNames_.at(i)));
+      art::ProductID simsProductId(getProductID<SimParticleCollection>(event,instanceNames_.at(i)));
       art::EDProductGetter const * productGetter = event.productGetter(simsProductId);
 
       // Adapters to translate from the Info map to the format needed by the compress functions.

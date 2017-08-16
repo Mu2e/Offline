@@ -39,7 +39,7 @@
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
-// root
+// root 
 #include "TH1F.h"
 #include "TTree.h"
 // C++
@@ -49,29 +49,29 @@
 #include <functional>
 #include <float.h>
 #include <vector>
-using namespace std;
+using namespace std; 
 using CLHEP::Hep3Vector;
 using CLHEP::HepVector;
 
-namespace mu2e
+namespace mu2e 
 {
   class KalFinalFit : public art::EDProducer
   {
     public:
       explicit KalFinalFit(fhicl::ParameterSet const&);
       virtual ~KalFinalFit();
-      virtual void produce(art::Event& event );
+      virtual void produce(art::Event& event ); 
     private:
       unsigned _iev;
       // configuration parameters
       int _debug;
       int _printfreq;
-      bool _saveall,_addhits;
+      bool _saveall,_addhits; 
       vector<double> _zsave;
       // event object tags
       art::InputTag _shTag;
       art::InputTag _shfTag;
-      art::InputTag _ksTag;
+      art::InputTag _ksTag; 
       // flags
       StrawHitFlag _addsel;
       StrawHitFlag _addbkg;
@@ -144,11 +144,11 @@ namespace mu2e
     unique_ptr<KalRepPtrCollection> krPtrcol(new KalRepPtrCollection );
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
     unique_ptr<TrkQualCollection> tqcol(new TrkQualCollection());
-
+    
     // copy in the existing flags
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(*_shfcol));
     // lookup productID for payload saver
-    art::ProductID kalRepsID(getProductID<KalRepCollection>());
+    art::ProductID kalRepsID(getProductID<KalRepCollection>(event));
     // loop over the seed fits.  I need an index loop here to build the Ptr
     for(size_t ikseed=0; ikseed < _kscol->size(); ++ikseed) {
       const auto& kseed = _kscol->at(ikseed);
@@ -257,7 +257,7 @@ namespace mu2e
     event.put(move(tqcol));
   }
 
-  // find the input data objects
+  // find the input data objects 
   bool KalFinalFit::findData(const art::Event& evt){
     _shcol = 0;
     _shfcol = 0;
@@ -326,11 +326,11 @@ namespace mu2e
 	  // look at the adjacent hits; if they are in the same panel, this is a double
 	  auto jhit = ihit; ++jhit;
 	  auto hhit = ihit; --hhit;
-	  if( (jhit != hits.end() &&
+	  if( (jhit != hits.end() && 
 		jhit->flag().hasAllProperties(active) &&
 		jhit->strawId().getPlane() == ihit->strawId().getPlane() &&
 		jhit->strawId().getPanel() == ihit->strawId().getPanel() ) ||
-	      (hhit >= hits.begin() &&
+	      (hhit >= hits.begin() && 
 	       hhit->flag().hasAllProperties(active) &&
 	       hhit->strawId().getPlane() == ihit->strawId().getPlane() &&
 	       hhit->strawId().getPanel() == ihit->strawId().getPanel() )
@@ -351,9 +351,9 @@ namespace mu2e
       // find the fit segment that best matches the location for testing the quality
       std::vector<KalSegment> const& ksegs = kseed.segments();
       auto bestkseg = ksegs.begin();
-      for(auto ikseg = ksegs.begin(); ikseg != ksegs.end(); ++ikseg){
+      for(auto ikseg = ksegs.begin(); ikseg != ksegs.end(); ++ikseg){ 
 	HelixVal const& hel = ikseg->helix();
-	// check for a segment whose range includes z=0.  There should be a better way of doing this, FIXME
+	// check for a segment whose range includes z=0.  There should be a better way of doing this, FIXME	
 	double sind = hel.tanDip()/sqrt(1.0+hel.tanDip()*hel.tanDip());
 	if(hel.z0()+sind*ikseg->fmin() < 0.0 && hel.z0()+sind*ikseg->fmax() > 0.0){
 	  bestkseg = ikseg;
@@ -369,7 +369,7 @@ namespace mu2e
 	trkqual.setMVAStatus(TrkQual::calculated);
       } else {
 	trkqual.setMVAStatus(TrkQual::filled);
-      }
+      } 
     } else {
       trkqual.setMVAStatus(TrkQual::failed);
     }

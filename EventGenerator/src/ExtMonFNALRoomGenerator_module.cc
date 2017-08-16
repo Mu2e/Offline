@@ -268,10 +268,10 @@ namespace mu2e {
       std::unique_ptr<MARSInfoCollection> info(new MARSInfoCollection());
       std::unique_ptr<GenParticleMARSAssns> assns(new GenParticleMARSAssns());
 
-      const art::ProductID particlesPID = getProductID<GenParticleCollection>();
+      const art::ProductID particlesPID = getProductID<GenParticleCollection>(event);
       const art::EDProductGetter *particlesGetter = event.productGetter(particlesPID);
 
-      const art::ProductID marsPID = getProductID<MARSInfoCollection>();
+      const art::ProductID marsPID = getProductID<MARSInfoCollection>(event);
       const art::EDProductGetter *marsGetter = event.productGetter(marsPID);
 
       typedef std::set<MARSInfo, CmpProtonId> UniqProtons;

@@ -359,19 +359,19 @@ namespace mu2e {
 
     if (standardMu2eDetector_) {
 
-      allMu2e =
+      allMu2e = 
         (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &_sensitiveDetectorHelper),
                                    std::make_unique<ConstructMaterials>(pset_)));
 
     } else {
 
-      allMu2e =
+      allMu2e = 
         (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(pset_, &_sensitiveDetectorHelper),
                                         std::make_unique<ConstructMaterials>(pset_)));
     }
 
     preG4InitializeTasks(pset_.get<fhicl::ParameterSet>("physics"));
-
+ 
     _runManager->SetVerboseLevel(_rmvlevel);
 
 
@@ -458,7 +458,7 @@ namespace mu2e {
       mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
     }
     cout << __func__ << " Append volume info " <<  endl;
-    cout << __func__ << " multiStagePars_.simParticleNumberOffset() "
+    cout << __func__ << " multiStagePars_.simParticleNumberOffset() " 
          << multiStagePars_.simParticleNumberOffset() <<  endl;
 
     // Append info for the current stage
@@ -502,7 +502,7 @@ namespace mu2e {
     }
 
     // ProductID for the SimParticleCollection.
-    art::ProductID simPartId(getProductID<SimParticleCollection>());
+    art::ProductID simPartId(getProductID<SimParticleCollection>(event));
     SimParticleHelper spHelper(multiStagePars_.simParticleNumberOffset(), simPartId, event);
     SimParticlePrimaryHelper parentHelper(event, simPartId, gensHandle);
 
@@ -511,7 +511,7 @@ namespace mu2e {
     unique_ptr<StepPointMCCollection>      tvdHits(           new StepPointMCCollection);
     unique_ptr<MCTrajectoryCollection>     mcTrajectories(    new MCTrajectoryCollection);
     unique_ptr<SimParticleRemapping>       simsRemap(         new SimParticleRemapping);
-    unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(    new ExtMonFNALSimHitCollection);
+    unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(    new ExtMonFNALSimHitCollection);    
     // products for the g4study
     unique_ptr<StepPointMCCollection>      steppingPoints(    new StepPointMCCollection);
 

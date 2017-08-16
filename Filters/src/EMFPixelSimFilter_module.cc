@@ -108,7 +108,7 @@ namespace mu2e {
 
         ParticleSelector selector(particlesWithHits);
 
-        art::ProductID newParticlesPID(getProductID<SimParticleCollection>());
+        art::ProductID newParticlesPID(getProductID<SimParticleCollection>(event));
         const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
 
         compressSimParticleCollection(newParticlesPID, newParticlesGetter, *inparts, selector, *outparts);

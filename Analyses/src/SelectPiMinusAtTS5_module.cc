@@ -82,7 +82,7 @@ namespace mu2e {
     , _vids(pset.get<std::vector<VolumeId> >("acceptedVids"))
     , _positionCut(pset.get<bool>("positionCut", false))
     , _positionCenter(std::vector<double>(3, 0.0))
-    , _positionHalfLength(std::vector<double>(3, 0.0))
+    , _positionHalfLength(std::vector<double>(3, 0.0)) 
     , _storeParents(pset.get<bool>("storeParents"))
       // default to false for compatibility with existing .fcl files.
     , _storeExtraHits(pset.get<bool>("storeExtraHits", false))
@@ -128,11 +128,11 @@ namespace mu2e {
 	std::cout << "particle type " << ((*i).simParticle())->pdgId() << std::endl;
 	if ( ((*i).simParticle())->pdgId() != PDGCode::pi_minus ) continue;
 
-        if ( _positionCut &&
+        if ( _positionCut && 
              ( fabs(i->position().x() - _positionCenter[0]) > _positionHalfLength[0] ||
                fabs(i->position().y() - _positionCenter[1]) > _positionHalfLength[1] ||
                fabs(i->position().z() - _positionCenter[2]) > _positionHalfLength[2] ) )
-          continue;
+          continue;          
 
         AGDEBUG("here");
         const art::Ptr<SimParticle>& particle = outhits->back().simParticle();
@@ -173,7 +173,7 @@ namespace mu2e {
     // The case when parents are stored is supported by compressSimParticleCollection()
     // otherwise we need to prepare the output SimParticleCollection by hand
     std::unique_ptr<SimParticleCollection> outparts(new SimParticleCollection());
-    art::ProductID newProductId(getProductID<SimParticleCollection>());
+    art::ProductID newProductId(getProductID<SimParticleCollection>(event));
     const art::EDProductGetter *newProductGetter(event.productGetter(newProductId));
     if(!_storeParents) {
 
