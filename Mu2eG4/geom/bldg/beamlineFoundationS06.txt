@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_beamline_foundation_s06.ccl
+
+string building.beamline.foundation.s06.name     = "beamlineFoundationS06";
+
+string building.beamline.foundation.s06.material = "CONCRETE_MARS";
+
+double building.beamline.foundation.s06.offsetFromMu2eOrigin.x   = 947.4;
+double building.beamline.foundation.s06.offsetFromFloorSurface.y = 1828.8;
+double building.beamline.foundation.s06.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.beamline.foundation.s06.yHalfThickness           = 457.2;
+
+vector<double> building.beamline.foundation.s06.xPositions = {
+  20965.6,   // A0
+  22437,   // A1
+  22733.2,   // A2
+  21261.9   // A3
+};
+
+vector<double> building.beamline.foundation.s06.yPositions = {
+  13347.4,   // A0
+  7274.74,   // A1
+  7346.51,   // A2
+  13419.2   // A3
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,87 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/fill_foundation_N.ccl
+
+string building.backfill.foundation.N.name     = "backfillFoundationN";
+
+string building.backfill.foundation.N.material = "CA7Backfill";
+
+double building.backfill.foundation.N.offsetFromMu2eOrigin.x   = 947.4;
+double building.backfill.foundation.N.offsetFromFloorSurface.y = -685.8;
+double building.backfill.foundation.N.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.backfill.foundation.N.yHalfThickness           = 533.4;
+
+vector<double> building.backfill.foundation.N.xPositions = {
+  -17853.7,   // f4
+  -19179,   // f5
+  -12420.6,   // f6
+  -12420.6,   // f7
+  11785.6,   // f8
+  11785.6,   // g0
+  14385.8,   // g1
+  14313.8,   // g2
+  14350.8,   // ESFD03
+  14060.9,   // ESFD00
+  16332,   // ESFD01
+  16621.9,   // ESFD02
+  19484.5,   // FDN13
+  20955.9,   // FDN14
+  17957.8,   // g5
+  24053.8,   // dFDN17
+  38679,   // dFDN16
+  37255.5,   // dFDN15
+  27183.7,   // dFDN14
+  25365.4,   // dFDN13
+  21465,   // dFDN12
+  20161.1,   // dFDN11
+  14582.2,   // dFDN10
+  15886.1,   // dFDN09
+  12751,   // dFDN08
+  11785.6,   // dFDN07
+  -13411.2,   // dFDN06
+  -13411.2,   // dFDN05
+  -19414,   // dFDN04
+  -20141.3,   // dFDN03
+  -18816,   // dFDN02
+  -17853.7   // dFDN01
+};
+
+vector<double> building.backfill.foundation.N.yPositions = {
+  -3649.57,   // f4
+  1778.98,   // f5
+  3418.66,   // f6
+  16713.2,   // f7
+  16713.2,   // f8
+  10835.6,   // g0
+  11449.7,   // g1
+  11745.8,   // g2
+  11754.8,   // ESFD03
+  12941.1,   // ESFD00
+  13491.4,   // ESFD01
+  12305.1,   // ESFD02
+  12988.5,   // FDN13
+  6915.85,   // FDN14
+  6201.81,   // g5
+  6201.81,   // dFDN17
+  10464.4,   // dFDN16
+  16339.6,   // dFDN15
+  13899.2,   // dFDN14
+  21403.7,   // dFDN13
+  20458.7,   // dFDN12
+  25840.2,   // dFDN11
+  24488.4,   // dFDN10
+  19106.9,   // dFDN09
+  18347.3,   // dFDN08
+  17703.8,   // dFDN07
+  17703.8,   // dFDN06
+  4282.26,   // dFDN05
+  2741.32,   // dFDN04
+  1544.03,   // dFDN03
+  -3884.52,   // dFDN02
+  -4640.17   // dFDN01
+};
+
+// Local Variables:
+// mode:c++
+// End:
