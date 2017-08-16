@@ -27,7 +27,7 @@ namespace mu2e {
 					     double			extErr,
 					     int                        Iter,
 					     int			Final) :
-    AmbigResolver(extErr),
+    _extErr(extErr),
     _debugLevel  (PSet.get<int>   ("debugLevel"       )),
     _mindrift    (PSet.get<double>("HitMinDrift"      )),
     _zeropenalty (PSet.get<double>("ZeroDriftPenalty" )),
@@ -772,7 +772,7 @@ namespace mu2e {
 // the hit drift radius is large - reduce the external error, no penalty
 //-----------------------------------------------------------------------------
 	      hit[i]->setAmbig(_sign[r.ibest][i]);
-	      hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
+//	      hit[i]->setExtErr(_extErr/_scaleErrDoublet);
 	    }
 	    else {
 //-----------------------------------------------------------------------------
@@ -815,7 +815,7 @@ namespace mu2e {
 // make the best choice possible, external error should be zero at this point
 //-----------------------------------------------------------------------------
 	      hit[i]->setAmbig (_sign[r.ibest][i]);
-	      //	      hit[i]->setExtErr(AmbigResolver::_extErr);
+	      //	      hit[i]->setExtErr(_extErr);
 	    }
 	  }
 	}
@@ -843,7 +843,7 @@ namespace mu2e {
 // however, the best chi2 is good enough to be reliable under any circumstances
 //-----------------------------------------------------------------------------
 		hit[i]->setAmbig (_sign[r.ibest][i]);
-		hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
+//		hit[i]->setExtErr(_extErr/_scaleErrDoublet);
 	      }
 	      else {
 //-----------------------------------------------------------------------------
@@ -858,7 +858,7 @@ namespace mu2e {
 // ... but finally decide
 //-----------------------------------------------------------------------------
 		  hit[i]->setAmbig (_sign[r.ibest][i]);
-		  hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
+//		  hit[i]->setExtErr(_extErr/_scaleErrDoublet);
 		}
 	      }
 	    }
@@ -883,7 +883,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	      if (fabs(r.doca[r.ibest][i]) < 0.4) {
 		hit[i]->setAmbig (_sign[r.ibest][i]);
-		hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
+//		hit[i]->setExtErr(_extErr/_scaleErrDoublet);
 	      }
 	      else {
 		double err = fabs(r.rdrift[i]);
@@ -904,7 +904,7 @@ namespace mu2e {
 	    if (r.chi2min/r.chi2next < _minChi2Ratio) {
 	      if (r.rdrift[i] > _minDriftDoublet) {
 		hit[i]->setAmbig (_sign[r.ibest][i]);
-		hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
+//		hit[i]->setExtErr(_extErr/_scaleErrDoublet);
 	      }
 	      else {
 //-----------------------------------------------------------------------------
@@ -913,7 +913,7 @@ namespace mu2e {
 //                     in all cases - need to check
 //-----------------------------------------------------------------------------
 		hit[i]->setAmbig (_sign[r.ibest][i]);
-		hit[i]->setExtErr(AmbigResolver::_extErr);
+//		hit[i]->setExtErr(_extErr);
 	      }
 	    }
 	    else {
@@ -931,7 +931,7 @@ namespace mu2e {
 // final decision
 //-----------------------------------------------------------------------------
 		hit[i]->setAmbig (_sign[r.ibest][i]);
-		hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
+//		hit[i]->setExtErr(_extErr/_scaleErrDoublet);
 	      }
 	    }
 	  }
@@ -963,7 +963,7 @@ namespace mu2e {
 	      double herr = hit[i]->hitErr();
 	      if (max_res/herr < 4) {
 		hit[i]->setAmbig (_sign[best_dd][i]);
-		hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
+//		hit[i]->setExtErr(_extErr/_scaleErrDoublet);
 	      }
 	      else {
 		double err = fabs(r.rdrift[i]);

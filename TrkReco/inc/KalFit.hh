@@ -27,6 +27,7 @@
 #include "BTrk/BField/BField.hh"
 // Mu2e objects
 #include "BTrkData/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkHitContext.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "TrkReco/inc/TrkDef.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
@@ -85,6 +86,8 @@ namespace mu2e
     extent _exdown;
 // relay access to BaBar field: this should come from conditions, FIXME!!!
     mutable BField* _bfield;
+// hit context: this should be a member of KalRep FIXME!!
+    TrkHitContext _hcon;
   // helper functions
     bool fitable(TrkDef const& tdef);
     bool fitable(KalSeed const& kseed);

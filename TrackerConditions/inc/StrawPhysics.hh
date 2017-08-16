@@ -24,6 +24,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include <array>
 #include <vector>
+#include <algorithm>
 
 namespace mu2e {
   class StrawPhysics : virtual public ConditionsEntity {
@@ -34,10 +35,8 @@ namespace mu2e {
     // models.  Note these are different from the corresponding
     // functions used in reconstruction, as those can be wire-
     // dependent and have emergent properties
-      double ionizationCharge(double ionizationEnergy) const;
-      double ionizationEnergy(double ionizationCharge) const;
-      unsigned nIons(double urand) const; // number of ions, given a flat random number 0 < x < 1
-      double meanNIons() const { return _navg; } // average number of ions per cluster
+      unsigned nePerIon(double urand) const; // number of electrons for a given ionization, given a flat random number 0 < x < 1
+      unsigned nePerEIon(double Eion) const; // number of electrons for a given ionization energy (approximate)
       double strawGain() const { return _gasgain; } // nominal gain
       double clusterGain(CLHEP::RandGaussQ& rgauss, CLHEP::RandFlat& rflat, unsigned nele) const;
       double driftDistanceToTime(double ddist, double phi) const;  // single cluster!
@@ -46,11 +45,12 @@ namespace mu2e {
       double propagationTime(double wdist) const;
       double velocityDispersion() const { return _vdisp; } 
       double meanFreePath() const { return _meanpath; }
-      double ionizationEnergy() const { return _EIonize; }
-
+      double ionizationEnergy(unsigned nele=1) const { return _EIonize*nele*(nele+1)/2; } // approximate total energy assuming all electrons come from the same shell
+      double ionizationEnergy(double q) const { return ionizationEnergy( static_cast<unsigned>(std::max(1.0,rint(q/_QIonize)))); }
+      double ionizationCharge(unsigned nele=1) const { return _QIonize*nele; } 
     private:
-      double _EIonize; // energy of each ionization (MeV)
-      double _meanpath; // mean free path
+      double _EIonize; // energy of a single ionization electron (MeV)
+      double _meanpath; // mean free path (mm)
       double _QIonize; // charge of a single ionization (=e, pC)
       std::vector<double> _intNProb; // integrated probability distribution of the number of e produced per cluster
       double _navg; // average number of cluster electrons

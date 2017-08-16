@@ -28,7 +28,7 @@ namespace mu2e {
       enum trajtype {reftraj=0};
 // construct from parameter set
 #ifndef __GCCXML__
-    explicit HitAmbigResolver(fhicl::ParameterSet const&, double ExtErr);
+    explicit HitAmbigResolver(fhicl::ParameterSet const&);
 #endif/*__GCCXML__*/
       virtual ~HitAmbigResolver();
 // resolve a track.  Depending on the configuration, this might

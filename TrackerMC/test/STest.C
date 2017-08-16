@@ -14,7 +14,7 @@
 #include "TProfile.h"
 #include "TDirectory.h"
 
-void STest(TTree* sdiag, TTree* cdiag, char* page ="G4") {
+void STest(TTree* sdiag, TTree* cdiag, const char* page ="G4") {
   TString spage(page);
   if(spage == "G4") {
     THStack* sstack = new THStack("sstack","G4 Step Length in Straw Gas;step (mm)");
@@ -84,32 +84,48 @@ void STest(TTree* sdiag, TTree* cdiag, char* page ="G4") {
 
   } else if(spage == "cluster") {
     THStack* cstack = new THStack("cstack","Number of clusters");
+    THStack* slstack = new THStack("slstack","Step Length Between Ionizations;step (mm)");
 //    TH1F* nc = new TH1F("nc","Number of clusters",50,-0.5,49.5);
     TH1F* nch = new TH1F("nch","Number of clusters",50,-0.5,49.5);
     TH1F* ncl = new TH1F("ncl","Number of clusters",50,-0.5,49.5);
     TH2F* ncs = new TH2F("ncs","Number of clusters vs G4 step length;step (mm)",50,0.5,10.0,50,-0.5,49.5);
     TH1F* ne = new TH1F("ne","Number of electrons/cluster",15,-0.5,14.5);
+    TH1F* ee = new TH1F("ee","Energy per electrons;ev",100,0.0,150.0);
+    TH1F* gp = new TH1F("gp","Straw Gain",100,0,4e5);
+    TH1F* slh = new TH1F("slh","Step Length Between Ionizations;step (mm)",100,0.0,2.0);
+    TH1F* sll = new TH1F("sll","Step Length Between Ionizations;step (mm)",100,0.0,2.0);
+
 //    nc->SetStats(0);
     nch->SetStats(0);
     ncl->SetStats(0);
-    nch->SetLineColor(kRed);
+    slh->SetStats(0);
+    sll->SetStats(0);
     nch->SetFillColor(kRed);
-    ncl->SetLineColor(kGreen);
+    slh->SetFillColor(kRed);
     ncl->SetFillColor(kGreen);
+    sll->SetFillColor(kGreen);
     ncs->SetStats(0);
-    ne->SetStats(0);
+    ne->SetStats(1);
+    ee->SetStats(1);
 
 //    sdiag->Project("nc","nsubstep");
     sdiag->Project("nch","nsubstep","partP>100");
     sdiag->Project("ncl","nsubstep","partP<5");
     sdiag->Project("ncs","nsubstep:steplen");
     cdiag->Project("ne","nion");
+    sdiag->Project("ee","1.0e6*stepE/niontot");
+    cdiag->Project("gp","gain");
+    sdiag->Project("slh","steplen/nsubstep","partP>100");
+    sdiag->Project("sll","steplen/nsubstep","partP<5");
+    
 
     cstack->Add(ncl);
     cstack->Add(nch);
+    slstack->Add(sll);
+    slstack->Add(slh);
 
-    TCanvas* ccan = new TCanvas("ccan","ccan",800,800);
-    ccan->Divide(2,2);
+    TCanvas* ccan = new TCanvas("ccan","ccan",1200,800);
+    ccan->Divide(3,2);
     ccan->cd(1);
     ne->Draw();
     ccan->cd(2);
@@ -122,15 +138,16 @@ void STest(TTree* sdiag, TTree* cdiag, char* page ="G4") {
     cleg->AddEntry(ncl,"E_{e} < 5 MeV");
 //    cleg->AddEntry(nc,"All E_{e}");
     cleg->Draw();
-ccan->cd(3);
+    ccan->cd(3);
     ncs->Draw("colorz");
+    ccan->cd(4);
+    ee->Draw();
+    ccan->cd(5);
+    gp->Draw();
+    ccan->cd(6);
+    slstack->Draw();
 
   } else if(spage == "gain") {
-
-    TH1F* gp = new TH1F("gp","Straw Gain",100,0,4e5);
-    cdiag->Project("gp","gain");
-    TCanvas* gcan = new TCanvas("gcan","gcan",600,600);
-    gp->Draw();
 
   }
 }

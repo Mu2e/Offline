@@ -20,8 +20,7 @@
 namespace mu2e {
   typedef std::vector<KalSite*>::const_iterator KSI;
 
-  AmbigResolver::AmbigResolver(double extErr) : _extErr(extErr) {
-  }
+  AmbigResolver::AmbigResolver() {}
 
   AmbigResolver::~AmbigResolver() {}
 
@@ -33,7 +32,6 @@ namespace mu2e {
     TrkStrawHitVector tshv;
     convert(krep->hitVector(),tshv);
     for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
-      (*itsh)->setExtErr(_extErr);
       (*itsh)->setPenalty(0);
     }
   }

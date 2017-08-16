@@ -23,17 +23,17 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e
 {
-  TrkStrawHit::TrkStrawHit(const StrawHit& strawhit, const Straw& straw, unsigned istraw,
-    const HitT0& hitt0,double fltlen,double exterr,double maxdriftpull) :
+  TrkStrawHit::TrkStrawHit(const StrawHit& strawhit, const Straw& straw, StrawHitIndex index,
+    const HitT0& hitt0,double fltlen,TrkHitContext const& tcon) :
     _strawhit(strawhit),
     _straw(straw),
-    _istraw(istraw),
-    _exterr(exterr),
+    _index(index),
     _penerr(0.0),
     _toterr(0.0),
     _iamb(0),
+    _enduse(cal),
     _ambigupdate(false),
-    _maxdriftpull(maxdriftpull)
+    _tcon(tcon)
   {
 // is there an efficiency issue fetching the calibration object for every hit???
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
@@ -64,8 +64,8 @@ namespace mu2e
   }
 
   double
-  TrkStrawHit::time() const {
-    return strawHit().time();
+  TrkStrawHit::driftTime(StrawEnd end) const {
+    return strawHit().time(end) - _hitt0._t0 - _stime[end];
   }
 
   void
@@ -76,8 +76,8 @@ namespace mu2e
       int iamb = poca().doca() > 0 ? 1 : -1;
       setAmbig(iamb);
     }
-// compute the drift time
-    double tdrift = strawHit().time() - _hitt0._t0 - _stime;
+// compute the drift time; for now, use cal side FIXME!
+    double tdrift = strawHit().time() - _hitt0._t0 - _stime[TrkTypes::cal];
 // find the track direction at this hit
     Hep3Vector tdir = getParentRep()->traj().direction(fltLen());
 // convert time to distance.  This computes the intrinsic drift radius error as well
@@ -85,10 +85,10 @@ namespace mu2e
 // Propogate error in t0, using local drift velocity
     double rt0err = _hitt0._t0err*_t2d._vdrift;
     // total hit error is the sum of all
-    _toterr = sqrt(_t2d._rdrifterr*_t2d._rdrifterr + rt0err*rt0err + _exterr*_exterr + _penerr*_penerr);
+    _toterr = sqrt(_t2d._rdrifterr*_t2d._rdrifterr + rt0err*rt0err + _tcon._exterr*_tcon._exterr + _penerr*_penerr);
 // If the hit is wildly away from the track , disable it
     double rstraw = _straw.getRadius();
-    if(!physicalDrift(_maxdriftpull)){
+    if(!physicalDrift(_tcon._maxdriftpull)){
       setActivity(false);
       setFlag(driftFail);
     } else {
@@ -109,15 +109,17 @@ namespace mu2e
 
   void
   TrkStrawHit::updateSignalTime() {
-// compute the electronics propagation time.  The convention is that the hit time is measured at the
-// FAR END of the wire, as signed by the wire direction.
+// compute the electronics propagation time for the 2 ends.
+// note: the wire direction points from HV to cal
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     double vwire = tcal->SignalVelocity(straw().index());
     if( poca().status().success()){
-      _stime = (straw().getHalfLength()-hitLen())/vwire;
+      _stime[TrkTypes::cal] = (straw().getHalfLength()-hitLen())/vwire;
+      _stime[TrkTypes::hv] = (straw().getHalfLength()+hitLen())/vwire;
     } else {
 // if we're missing poca information, use time division instead
-      _stime = (straw().getHalfLength()-_tddist)/vwire;
+      _stime[TrkTypes::cal] = (straw().getHalfLength()-_tddist)/vwire;
+      _stime[TrkTypes::hv] = (straw().getHalfLength()+_tddist)/vwire;
     }
   }
 
@@ -174,7 +176,7 @@ namespace mu2e
 
   void TrkStrawHit::print(std::ostream& o) const {
     o<<"------------------- TrkStrawHit -------------------"<<std::endl;
-    o<<"istraw "<<_istraw<<std::endl;
+    o<<"straw hit "<<_index<<std::endl;
     o<<"is active "<<isActive()<<std::endl;
     o<<"hitRms "<<hitRms()<<" weight "<<weight()<<" fltLen "<<fltLen()<<" hitLen "<<hitLen()<<std::endl;
     _strawhit.print(o,true);

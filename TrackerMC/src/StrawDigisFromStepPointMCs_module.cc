@@ -48,6 +48,7 @@
 //CLHEP
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandExponential.h"
 #include "CLHEP/Vector/LorentzVector.h"
 // root
 #include "TMath.h"
@@ -67,8 +68,10 @@ namespace mu2e {
     struct IonCluster {  // ion charge cluster before drift or amplification
       CLHEP::Hep3Vector _pos; // position of this cluster
       double _charge; // charge of this cluster, in pC.  Note: this is pre-gain!!!
+      double _eion; // ionization energy of this cluster, in MeV
       unsigned _nion; // number of ionizations in this cluste
-      IonCluster(CLHEP::Hep3Vector const& pos, double charge, unsigned nion): _pos(pos),_charge(charge), _nion(nion) {}
+      IonCluster(CLHEP::Hep3Vector const& pos, double charge, double eion, unsigned nion): 
+	_pos(pos),_charge(charge),_eion(eion),_nion(nion) {}
     };
 
     struct WireCharge { // charge at the wire after drift
@@ -118,7 +121,8 @@ namespace mu2e {
 	double _ctMinCharge; // minimum charge to add cross talk (for performance issues)
 	bool   _addNoise; // should we add noise hits?
 	double _preampxtalk, _postampxtalk; // x-talk parameters; these should come from conditions, FIXME!!
-	double _highdEdx; // cut dividing highly-ionizing steps from low
+	double _highE; // cut dividing highly-ionizing steps from low
+	double _minstepE; // minimum step energy to simulate
 	string _g4ModuleLabel;  // Nameg of the module that made these hits.
 	double _mbtime; // period of 1 microbunch
 	double _mbbuffer; // buffer on that for ghost clusts (for waveform)
@@ -132,6 +136,7 @@ namespace mu2e {
 	art::RandomNumberGenerator::base_engine_t& _engine;
 	CLHEP::RandGaussQ _randgauss;
 	CLHEP::RandFlat _randflat;
+	CLHEP::RandExponential _randexp;
 	// A category for the error logger.
 	const string _messageCategory;
 	// Give some informationation messages only on the first event.
@@ -169,7 +174,7 @@ namespace mu2e {
 	Float_t _steplen, _stepE, _qsum, _partP;
 	Int_t _nsubstep, _niontot, _partPDG;
 	TTree* _cdiag;
-	Float_t _gain, _cq;
+	Float_t _gain, _cq, _cen;
 	Int_t _nion;
 
 	//    vector<TGraph*> _waveforms;
@@ -199,7 +204,6 @@ namespace mu2e {
     };
 
     StrawDigisFromStepPointMCs::StrawDigisFromStepPointMCs(fhicl::ParameterSet const& pset) :
-
       // diagnostic parameters
       _diagLevel(pset.get<int>("diagLevel",0)),
       _printLevel(pset.get<int>("printLevel",0)),
@@ -208,7 +212,7 @@ namespace mu2e {
       _minnxinghist(pset.get<int>("MinNXingHist",1)), // minimum # of crossings to histogram waveform
       _tstep(pset.get<double>("WaveformStep",0.1)), // ns
       _nfall(pset.get<double>("WaveformTail",5.0)),  // # of decay lambda past last signal to record waveform
-    // Parameters
+      // Parameters
       _maxFullPrint(pset.get<int>("maxFullPrint",2)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
       _addXtalk(pset.get<bool>("addCrossTalk",false)),
@@ -216,7 +220,8 @@ namespace mu2e {
       _addNoise(pset.get<bool>("addNoise",false)),
       _preampxtalk(pset.get<double>("preAmplificationCrossTalk",0.0)),
       _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.02)), // dimensionless relative coupling
-      _highdEdx(pset.get<double>("HighlyIonizingdEdx",0.001)), // MeV/mm
+      _highE(pset.get<double>("HighlyIonizingE",4.0)), // highly-ionizing step energy, in units of ionization energy
+      _minstepE(pset.get<double>("minstepE",2.0e-6)), // minimum step energy depostion to turn into a straw signal (MeV)
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
       _steptimebuf(pset.get<double>("StepPointMCTimeBuffer",100.0)), // nsec
       _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
@@ -225,19 +230,19 @@ namespace mu2e {
       _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
       _randgauss( _engine ),
       _randflat( _engine ),
-
+      _randexp( _engine),
       _messageCategory("HITS"),
-
       // Control some information messages.
       _firstEvent(true),
       _deadStraws(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet())),
       _strawStatus(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet()))
-      {
-	// Tell the framework what we make.
-	produces<StrawDigiCollection>();
-	produces<PtrStepPointMCVectorCollection>();
-	produces<StrawDigiMCCollection>();
-      }
+    {
+      // Tell the framework what we make.
+      produces<StrawDigiCollection>();
+      produces<PtrStepPointMCVectorCollection>();
+      produces<StrawDigiMCCollection>();
+    }
+
     void StrawDigisFromStepPointMCs::beginJob(){
 
       if(_diagLevel > 0){
@@ -255,6 +260,7 @@ namespace mu2e {
 	_cdiag =tfs->make<TTree>("cdiag","Cluster diagnostics");
 	_cdiag->Branch("gain",&_gain,"gain/F");
 	_cdiag->Branch("charge",&_cq,"charge/F");
+	_cdiag->Branch("energy",&_cen,"energy/F");
 	_cdiag->Branch("nion",&_nion,"nion/I");
 
 
@@ -424,7 +430,8 @@ namespace mu2e {
 	      // or in dead regions of the straw
 	      double wpos = fabs((steps[ispmc].position()-straw.getMidPoint()).dot(straw.getDirection()));
 	      if(wpos <  straw.getDetail().activeHalfLength() &&
-		  _strawStatus.isAlive(strawind,wpos) ){
+		  _strawStatus.isAlive(strawind,wpos) &&
+		  steps[ispmc].ionizingEdep() > _minstepE){
 		// create ptr to MC truth, used for references
 		art::Ptr<StepPointMC> spmcptr(handle,ispmc);
 		// create a clust from this step, and add it to the clust map
@@ -477,54 +484,55 @@ namespace mu2e {
 
     void StrawDigisFromStepPointMCs::divideStep(StepPointMC const& step,
 	vector<IonCluster>& clusters) {
-      // calculate the total # of electrons the step energy corresponds to.  We will maintain
-      // this, as it includes all the fluctuations G4 has already made
-      unsigned nele = max(unsigned(1),unsigned(rint(step.ionizingEdep()/_strawphys->ionizationEnergy())));
-      // if the step is already smaller than the mean free path, don't subdivide
-      if(step.stepLength() > _strawphys->meanFreePath()) {
-	// if this isn't a highly-ionizing step, use the best statistics
-	if(step.ionizingEdep()/step.stepLength() < _highdEdx){
-	  // Calculate the total number of ionization electrons corresponding to this energy
-	  // create clusters until all the electrons are used up
-	  unsigned niontot(0);
-	  CLHEP::Hep3Vector dir = step.momentum().unit();
-	  while(niontot < nele){
-	    unsigned nion = _strawphys->nIons(_randflat.fire());
-	    // truncate if necessary
-	    if(niontot + nion > nele) nion = nele-niontot;
-	    double qc = _strawphys->ionizationCharge(nion*_strawphys->ionizationEnergy());
-	    // place the cluster at a random position along the step.
-	    // This works for high-momentum particles, otherwise I should use a helix, FIXME!!!
-	    double length = _randflat.fire(0.0,step.stepLength());
-	    CLHEP::Hep3Vector pos = step.position() + length*dir;
-	    IonCluster cluster(pos,qc,nion);
-	    clusters.push_back(cluster);
-	    niontot += nion;
-	  }
-	} else {
-	  // if this is a highly-ionizing particle divide the # of electrons evenly by the mean free path
-	  int nion = max(1,int(rint(nele*_strawphys->meanFreePath()/step.stepLength())));
-	  unsigned niontot(0);
-	  CLHEP::Hep3Vector dir = step.momentum().unit();
-	  while(niontot < nele){
-	    // truncate if necessary
-	    if(niontot + nion > nele) nion = nele-niontot;
-	    double qc = _strawphys->ionizationCharge(nion*_strawphys->ionizationEnergy());
-	    // place the cluster at a random position along the step.
-	    // This works for high-momentum particles, otherwise I should use a helix, FIXME!!!
-	    double length = _randflat.fire(0.0,step.stepLength());
-	    CLHEP::Hep3Vector pos = step.position() + length*dir;
-	    IonCluster cluster(pos,qc,nion);
-	    clusters.push_back(cluster);
-	    niontot += nion;
-	  }
-	}
+      // Assume short steps with large energy deposits are from multiple ionizations
+      // Don't worry about position for these, just get the energy right
+      if(step.stepLength() < _strawphys->meanFreePath() && step.ionizingEdep() > _highE*_strawphys->ionizationEnergy()){
+	double etot(0.0);
+	do{
+	  unsigned nion = _strawphys->nePerIon(_randflat.fire());
+	  double cen = _strawphys->ionizationEnergy(nion);
+	  double qc = _strawphys->ionizationCharge(nion);
+	  IonCluster cluster(step.position(),qc,cen,nion);
+	  clusters.push_back(cluster);
+	  etot += cen;
+	} while(etot < step.ionizingEdep());
       } else {
-	// for short steps put all the charge into 1 cluster
-	double qstep = _strawphys->ionizationCharge(step.ionizingEdep());
-	IonCluster cluster(step.position(),qstep,nele);
-	clusters.push_back(cluster);
+      // explicitly divide longer steps
+	CLHEP::Hep3Vector dir = step.momentum().unit();
+	double slen(0.0);
+	double etot(0.0);
+	// loop until we're at the end of the step or we've used up all the energy
+	do {
+	  // generate a cluster with a random step and # of electrons
+	  double cstep = _randexp.fire()*_strawphys->meanFreePath();
+	  unsigned nion = _strawphys->nePerIon(_randflat.fire());
+	  double cen = _strawphys->ionizationEnergy(nion);
+	  if( cen + etot < step.ionizingEdep() && cstep+slen < step.stepLength()){
+	    // create a cluster object
+	    slen += cstep;
+	    etot += cen;
+	    CLHEP::Hep3Vector pos = step.position() + slen*dir;
+	    double qc = _strawphys->ionizationCharge(nion);
+	    IonCluster cluster(pos,qc,cen,nion);
+	    clusters.push_back(cluster);
+	  } else
+	    break;
+	} while (true);
+	//	here, we're at the last part of the step.  Put all the remaining
+	//	energy in a single step, chosen randomly along the remaining path
+	double cen =  step.ionizingEdep() - etot;
+	// ignore energy below the ioniztion potential
+	if(cen >= _strawphys->ionizationEnergy()){
+	  slen += _randflat.fire(0.0,step.stepLength()-slen);
+	  CLHEP::Hep3Vector pos = step.position() + slen*dir;
+	  // approximate the # of electrons based on the amount of energy
+	  unsigned nion =_strawphys->nePerEIon(cen);
+	  double qc = _strawphys->ionizationCharge(nion);
+	  IonCluster cluster(pos,qc,cen,nion);
+	  clusters.push_back(cluster);
+	}
       }
+      // diagnostics
       if(_diagLevel > 0){
 	_steplen = step.stepLength();
 	_stepE = step.ionizingEdep();
@@ -562,6 +570,7 @@ namespace mu2e {
       if(_diagLevel > 0){
 	_gain = gain;
 	_cq = cluster._charge;
+	_cen = cluster._eion;
 	_nion = cluster._nion;
 	_cdiag->Fill(); 
       }
@@ -904,5 +913,4 @@ namespace mu2e {
 
 using mu2e::TrackerMC::StrawDigisFromStepPointMCs;
 DEFINE_ART_MODULE(StrawDigisFromStepPointMCs);
-
 

@@ -17,7 +17,7 @@
 using namespace std;
 namespace mu2e {
   StrawPhysics::StrawPhysics(fhicl::ParameterSet const& pset) :
-    _EIonize(pset.get<double>("EnergyPerIonization",3.9e-5)), // 100% Ar is between 27 ev/ionization and 100 ev/ionization, this number is tuned to reproduce the correct mean-free-path from the G4 energy deposits when setting the number of electrons/cluster to the distribution below
+    _EIonize(pset.get<double>("EnergyPerIonization",1.6e-5)), // 100% Ar is between 27 ev/ionization and 100 ev/ionization, this number is tuned to reproduce the correct mean-free-path from the G4 energy deposits when setting the number of electrons/cluster to the distribution below
     _meanpath(pset.get<double>("MeanFreePath",0.357)), // mm, average distance between ionizations for STP Ar (Blum etal, table 1.1)
     _QIonize(pset.get<double>("ChargePerIonization",1.6e-7)), // e, pC
     _gasgain(pset.get<double>("GasGain",7.0e4)),
@@ -36,8 +36,7 @@ namespace mu2e {
     double ptot(0.0);
     std::vector<double> nProb = pset.get<vector<double> >("ProbPerCharge",vector<double>{0.656,0.15,0.064,0.035,0.0225,0.0155,0.0105,
       0.0081,0.0061, 0.0049, 0.0039, 0.0030, 0.0025, 0.0020, 0.0016, 0.0012, 0.00095, 0.00075}); // Blum, table 1.4
-// renormalize these probs, as G4 splits off the high-energy delta rays explicitly and they would
-// be double-counted in the far tails
+// renormalize these probs
     for(unsigned iprob=0;iprob< nProb.size(); ++iprob ) {
       ptot += nProb[iprob];
     }
@@ -102,23 +101,22 @@ namespace mu2e {
     return  wdist/_vprop;
   }
 
-  double StrawPhysics::ionizationCharge(double ionizationEnergy) const {
-    return _QIonize*ionizationEnergy/_EIonize; }
-
-  double StrawPhysics::ionizationEnergy(double ionizationCharge) const {
-    return _EIonize*ionizationCharge/_QIonize; }
-
-  unsigned StrawPhysics::nIons(double urand) const {
+  unsigned StrawPhysics::nePerIon(double urand) const {
   // sample the distribution for the number of ionizations.
-    unsigned nion(_intNProb.size()+1);
+    unsigned nele(_intNProb.size()+1);
     for(unsigned ie=0;ie< _intNProb.size(); ++ie){
       if(urand < _intNProb[ie]){
 	// if the nput random number is below the integral for this number, we're done
-	nion = ie+1;
+	nele = ie+1;
 	break;
       }
     }
-    return nion;
+    return nele;
+  }
+
+  unsigned StrawPhysics::nePerEIon(double EIon) const {
+    // approximate assuming linear increase in ionization energy per electron.
+    return std::min(static_cast<unsigned>(std::max(1.0,floor(0.5*(sqrt(1.0+8.0*EIon/_EIonize)-1.0)))),(unsigned)_intNProb.size());
   }
 
 }

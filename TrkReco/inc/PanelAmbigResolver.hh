@@ -32,7 +32,7 @@ namespace mu2e {
       public:
 	// construct from parameter set
 #ifndef __GCCXML__
-	explicit PanelAmbigResolver(fhicl::ParameterSet const&, double ExtErr, size_t iter );
+	explicit PanelAmbigResolver(fhicl::ParameterSet const&, size_t iter );
 #endif/*__GCCXML__*/
 	virtual ~PanelAmbigResolver();
 	// resolve a track.  Depending on the configuration, this might

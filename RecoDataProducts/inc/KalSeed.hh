@@ -23,7 +23,8 @@ namespace mu2e {
   struct KalSeed {
     KalSeed() :  _flt0(0), _chisq(0.0), _fitcon(0.0) {}
     KalSeed(TrkParticle tpart,TrkFitDirection fdir,TrkT0 const& t0, double flt0, TrkFitFlag const& status) :
-      _tpart(tpart), _fdir(fdir), _status(status), _t0(t0), _flt0(static_cast<Float_t>(flt0)) {}
+      _tpart(tpart), _fdir(fdir), _status(status), _t0(t0), _flt0(static_cast<Float_t>(flt0)),
+      _chisq(-1.0), _fitcon(-1.0) {}
 
 
     TrkParticle const& particle() const { return _tpart; }
@@ -46,8 +47,8 @@ namespace mu2e {
     TrkFitFlag			    _status; // status of this fit
     TrkT0			    _t0; // track t0
     Float_t			    _flt0; // flight distance where the track crosses the tracker midplane (z=0)
-    Float_t	_chisq; // fit chisquared value
-    Float_t _fitcon; // fit consistency
+    Float_t			    _chisq; // fit chisquared value
+    Float_t			    _fitcon; // fit consistency
     //
     // contained content substructure.
     //

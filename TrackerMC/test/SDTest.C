@@ -36,15 +36,15 @@ void SDTest(TTree* sddiag, char* page ="adc",unsigned NADC=8,TCut cut=TCut()) {
   } else if(spage == "tdc"){
     TCanvas* tdc = new TCanvas("tdc","TDC",800,800);
     TH1F* dtdc = new TH1F("dtdc","#Delta TDC",200,-500,500);
-    sddiag->Project("dtdc","tdc1-tdc0");
+    sddiag->Project("dtdc","tdccal-tdchv");
     dtdc->Draw();
   } else if(spage=="dvdt") {
     TH2F* dvdt = new TH2F("dvdt","#Delta V vs #Delta t;#Delta t (nsec);#Delta V (mm)",100,-6,6,100,-1200,1200);
-    sddiag->Project("dvdt","wdist1-wdist0:xtime1-xtime0","vcross0>0&&vcross1>0");
+    sddiag->Project("dvdt","wdisthv-wdistcal:xtimehv-xtimecal","vcrosscal>0&&vcrosshv>0");
     dvdt->FitSlicesY(0,20,80);
     TProfile* dtdcdt = new TProfile("dtdcdt","#Delta TDC vs #Delta t;#Delta t (ns):#Delta TDC",100,-6,6,-200,200);
-    sddiag->Project("dvdt","wdist1-wdist0:xtime1-xtime0","vcross0>0&&vcross1>0");
-    sddiag->Project("dtdcdt","tdc1-tdc0:xtime1-xtime0","vcross0>0&&vcross1>0");
+    sddiag->Project("dvdt","wdisthv-wdistcal:xtimehv-xtimecal","vcrosscal>0&&vcrosshv>0");
+    sddiag->Project("dtdcdt","tdchv-tdccal:xtimehv-xtimecal","vcrosscal>0&&vcrosshv>0");
     dvdt->FitSlicesY(0,20,80);
     TCanvas* dvdtcan = new TCanvas("dvdtcan","dvdtcan",1200,800);
     dvdtcan->Divide(2,2);

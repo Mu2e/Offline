@@ -168,16 +168,16 @@ namespace mu2e
       AmbigResolver* ar(0);
       switch (_ambigstrategy[iter]) {
       case fixedambig:
-        ar = new FixedAmbigResolver(fixedPset,_herr[iter]);
+        ar = new FixedAmbigResolver(fixedPset);
         break;
       case hitambig:
-        ar = new HitAmbigResolver(hitPset,_herr[iter]);
+        ar = new HitAmbigResolver(hitPset);
         break;
       case panelambig:
-        ar = new PanelAmbig::PanelAmbigResolver(panelPset,_herr[iter],iter);
+        ar = new PanelAmbig::PanelAmbigResolver(panelPset,iter);
         break;
       case pocaambig:
-        ar = new PocaAmbigResolver(pocaPset,_herr[iter]);
+        ar = new PocaAmbigResolver(pocaPset);
         break;
       case doubletambig: // 4
         ar = new DoubletAmbigResolver(doubletPset,_herr[iter],iter,Final);
@@ -190,6 +190,9 @@ namespace mu2e
       else
         throw cet::exception("RECO")<<"mu2e::KalFit: unknown ambiguity resolver " << _ambigstrategy[iter] << " for iteration " << iter << endl;
     }
+    // set physical drift limit
+    _hcon._maxdriftpull = _maxdriftpull;
+
   }
 
   KalFit::~KalFit(){
@@ -344,7 +347,7 @@ namespace mu2e
 // update the time in the TrkT0 object
         hitt0._t0 += tflt;
 // create the hit object.  Assume we're at the last iteration over added error
-        TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,_herr.back(),_maxdriftpull);
+        TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,_hcon);
         assert(trkhit != 0);
 // allow the hit to update its own ambiguity for now: eventually we should get the resolver to do this, FIXME!!!
         trkhit->setAmbigUpdate(true);
@@ -406,10 +409,8 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
   TrkErrCode KalFit::fitIteration(KalRep* krep,TrkStrawHitVector& tshv, size_t iter) {
-    // update the external hit errors.  This isn't strictly necessary on the 1st iteration.
-    for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
-      (*itsh)->setExtErr(_herr[iter]);
-    }
+    // update the temperature used in simulated annealing
+    _hcon._exterr = _herr[iter];
     // update t0, and propagate it to the hits
     double oldt0 = krep->t0()._t0;
     unsigned niter(0);
@@ -476,7 +477,7 @@ namespace mu2e
       const StrawHit& strawhit(shcol->at(index));
       const Straw& straw = tracker.getStraw(strawhit.strawIndex());
       TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,ths.index(),ths.t0(),ths.trkLen(),
-	_herr.front(),_maxdriftpull);
+	_hcon);
       assert(trkhit != 0);
       // set the initial ambiguity
       trkhit->setAmbig(ths.ambig());
@@ -510,7 +511,7 @@ namespace mu2e
       TrkT0 hitt0(tdef.t0());
       hitt0._t0 += (fltlen-flt0)/vflt;
       // create the hit object.  Start with the 1st additional error for anealing
-      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fltlen,_herr.front(),_maxdriftpull);
+      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fltlen,_hcon);
       assert(trkhit != 0);
       // set the initial ambiguity to null
       trkhit->setAmbig(0);
@@ -852,7 +853,7 @@ namespace mu2e
                 D2T d2t;
                 tcal->DistanceToTime(hit->straw().index(),doca,krep->traj().direction(hit->fltLen()),d2t);
                 // subtracting hitT0 makes this WRT the previous track t0
-                hitt0.push_back(hit->time() - d2t._tdrift - hit->signalTime() - hit->hitT0()._t0);
+                hitt0.push_back(hit->strawHit().time() - d2t._tdrift - hit->signalTime() - hit->hitT0()._t0);
                 // assume residual error dominates
                 hitt0err.push_back(residerr/d2t._vdrift);
               }
