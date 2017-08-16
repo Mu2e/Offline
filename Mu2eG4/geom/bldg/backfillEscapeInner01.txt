@@ -1,0 +1,41 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/fill_escape_inner01.ccl
+
+string building.backfill.escape.inner.01.name     = "backfillEscapeInner01";
+
+string building.backfill.escape.inner.01.material = "CA7Backfill";
+
+double building.backfill.escape.inner.01.offsetFromMu2eOrigin.x   = 947.4;
+double building.backfill.escape.inner.01.offsetFromFloorSurface.y = 3733.8;
+double building.backfill.escape.inner.01.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.backfill.escape.inner.01.yHalfThickness           = 1447.8;
+
+vector<double> building.backfill.escape.inner.01.xPositions = {
+  18461.6,   // BLS09
+  21261.9,   // bEI01
+  23926,   // bEI02
+  23064.7,   // bEI03
+  15659.1,   // EWE09
+  15635.2,   // EWE10
+  23232.1,   // EWE11
+  24141.3,   // EWE12
+  18485.5   // BLS10
+};
+
+vector<double> building.backfill.escape.inner.01.yPositions = {
+  12751.5,   // BLS09
+  13419.2,   // bEI01
+  14076.9,   // bEI02
+  17631.7,   // bEI03
+  15838.4,   // EWE09
+  15936,   // EWE10
+  17776.7,   // EWE11
+  14024.5,   // EWE12
+  12652.7   // BLS10
+};
+
+// Local Variables:
+// mode:c++
+// End:

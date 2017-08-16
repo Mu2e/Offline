@@ -13,34 +13,35 @@ double building.floor.remote.offsetFromMu2eOrigin.z   = -3581.4;
 double building.floor.remote.yHalfThickness           = 76.2;
 
 vector<double> building.floor.remote.xPositions = {
-  -6121.4,   // G                                        
-  -11709.4,   // F2                                      
-  -11709.4,   // F3                                         
-  3251.2,   // F4                           
-  3251.2,   // F5                            
-  3708.4,   // F6                    
-  3708.4,   // New (due to extension of floor to new eastern part of remoteH) 
-  11074.4,  // Also new                                                        
-  11074.4,  // Also also new                                                   
-  8712.1,   // o7 - from beamline  
-  9312.51,   // J 
-  2787.8, // H
-  1193.8   // I                                                             
+  -6121.4,   // FR0
+  -11709.4,   // FR1
+  -11709.4,   // FR2
+  3251.2,   // FR3
+  3251.2,   // FR4
+  3708.4,   // FR5
+  3708.4,   // FR6
+  11074.4,   // FR7
+  11072.5,   // FR8
+  9163.95,   // BNW03
+  9312.4,   // BNW00
+  2787.8,   // FN7
+  1193.8   // FN6
 };
+
 vector<double> building.floor.remote.yPositions = {
-  6248.4,  // G                                                               
-  6248.4,    // F2                                                            
-  16002,   // F3                                                               
-  16002,   // F4                                                               
-  13716,   // F5                                                               
-  13716,   // F6                                                               
-  16002,   // New (due to extension of floor to new eastern part of remoteH)   
-  16002,   // Also new                                                         
-  10580.6, // Also also new                                                    
-  9970.57,   // o7  
-  9436.97,   // J 
-  7842.4, // H
-  6448.42   // I                                                              
+  6248.4,   // FR0
+  6248.4,   // FR1
+  16002,   // FR2
+  16002,   // FR3
+  13716,   // FR4
+  13716,   // FR5
+  16002,   // FR6
+  16002,   // FR7
+  10544.1,   // FR8
+  10080.4,   // BNW03
+  9436.98,   // BNW00
+  7842.4,   // FN7
+  6248.4   // FN6
 };
 
 // Local Variables:

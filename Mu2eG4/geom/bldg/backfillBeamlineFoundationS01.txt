@@ -1,0 +1,53 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/fill_beamline_foundation_s01.ccl
+
+string building.backfill.beamline.foundation.s01.name     = "backfillBeamlineFoundationS01";
+
+string building.backfill.beamline.foundation.s01.material = "CA7Backfill";
+
+double building.backfill.beamline.foundation.s01.offsetFromMu2eOrigin.x   = 947.4;
+double building.backfill.beamline.foundation.s01.offsetFromFloorSurface.y = 0;
+double building.backfill.beamline.foundation.s01.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.backfill.beamline.foundation.s01.yHalfThickness           = 152.4;
+
+vector<double> building.backfill.beamline.foundation.s01.xPositions = {
+  19780.7,   // A3
+  21252.1,   // bBFS01
+  27520.4,   // BFDU01
+  27460.6,   // BFDU02
+  37483,   // BFDU03
+  36526,   // BFDU04
+  26454.2,   // BFDU05
+  24635.9,   // BFDU06
+  20735.6,   // BFDU07
+  19431.7,   // BFDU08
+  15778.2,   // BFDU09
+  17585.7,   // bBFS11
+  23064.7,   // BFDU13
+  23926,   // BFDU14
+  21261.9   // BFDU15
+};
+
+vector<double> building.backfill.beamline.foundation.s01.yPositions = {
+  13060.3,   // A3
+  6987.64,   // bBFS01
+  8518.61,   // BFDU01
+  8765.47,   // BFDU02
+  11193.9,   // BFDU03
+  15143.6,   // BFDU04
+  12703.2,   // BFDU05
+  20207.7,   // BFDU06
+  19262.7,   // BFDU07
+  24644.1,   // BFDU08
+  23758.9,   // BFDU09
+  16304.1,   // bBFS11
+  17631.7,   // BFDU13
+  14076.9,   // BFDU14
+  13419.2   // BFDU15
+};
+
+// Local Variables:
+// mode:c++
+// End:
