@@ -32,7 +32,6 @@ namespace mu2e {
     _cdsigmapoly(pset.get<vector<double> >("ClusterDriftSigmaPolynomial",vector<double>{0.2})) // constant drift time error for now (ns)
   {
     // integrate the number of ionizations
-    _navg = 0.0;
     double ptot(0.0);
     std::vector<double> nProb = pset.get<vector<double> >("ProbPerCharge",vector<double>{0.656,0.15,0.064,0.035,0.0225,0.0155,0.0105,
       0.0081,0.0061, 0.0049, 0.0039, 0.0030, 0.0025, 0.0020, 0.0016, 0.0012, 0.00095, 0.00075}); // Blum, table 1.4
@@ -42,12 +41,16 @@ namespace mu2e {
     }
     double norm = 1.0/ptot;
     double psum(0.0);
+    _EAverage = _QAverage = 0.0;
     for(unsigned iprob=0;iprob< nProb.size(); ++iprob ) {
       double nprob = nProb[iprob]*norm;
       _intNProb.push_back(psum + nprob);
       psum += nprob;
-      _navg += nprob*(iprob+1);
+      _EAverage += nprob*ionizationEnergy(iprob+1);
+      _QAverage += nprob*ionizationCharge(iprob+1);
     }
+    // now compute the average charge and energy per ionization from this distrubion
+    
   }
 
   StrawPhysics::~StrawPhysics() {}

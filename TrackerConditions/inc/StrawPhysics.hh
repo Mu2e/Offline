@@ -45,15 +45,16 @@ namespace mu2e {
       double propagationTime(double wdist) const;
       double velocityDispersion() const { return _vdisp; } 
       double meanFreePath() const { return _meanpath; }
-      double ionizationEnergy(unsigned nele=1) const { return _EIonize*nele*(nele+1)/2; } // approximate total energy assuming all electrons come from the same shell
-      double ionizationEnergy(double q) const { return ionizationEnergy( static_cast<unsigned>(std::max(1.0,rint(q/_QIonize)))); }
+      double ionizationEnergy(unsigned nele=1) const { return _EIonize*nele*(nele+1)/2; } // approximate total energy for an ionization of "nele" electrons, assuming all electrons come from the same shell
+      double ionizationEnergy(double q) const { return _EAverage*q/_QAverage; }  // energy to produce a given charge.  This assumes the internal distribution of the number of electrons/ionization
       double ionizationCharge(unsigned nele=1) const { return _QIonize*nele; } 
     private:
-      double _EIonize; // energy of a single ionization electron (MeV)
+      double _EIonize; // energy to create a single ionization electron (MeV)
+      double _EAverage; // Average energy of ionization electrons (MeV)
       double _meanpath; // mean free path (mm)
-      double _QIonize; // charge of a single ionization (=e, pC)
+      double _QIonize; // charge of a single ionization electron (=e, pC)
+      double _QAverage; // average charge produced per ionization
       std::vector<double> _intNProb; // integrated probability distribution of the number of e produced per cluster
-      double _navg; // average number of cluster electrons
       double _gasgain; // nominal (average) avalanche gain
       double _polyaA; // 'A' parameter of Polya function used in gain fluctuation
       double _gslope; // slope of gain relative RMS vs 1/sqrt(n)
