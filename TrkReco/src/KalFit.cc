@@ -852,8 +852,8 @@ namespace mu2e
                 // translate the DOCA into a time
                 D2T d2t;
                 tcal->DistanceToTime(hit->straw().index(),doca,krep->traj().direction(hit->fltLen()),d2t);
-                // subtracting hitT0 makes this WRT the previous track t0
-                hitt0.push_back(hit->strawHit().time() - d2t._tdrift - hit->signalTime() - hit->hitT0()._t0);
+                // driftTime is WRT the previous iteration t0 
+                hitt0.push_back(hit->driftTime()- d2t._tdrift );
                 // assume residual error dominates
                 hitt0err.push_back(residerr/d2t._vdrift);
               }
