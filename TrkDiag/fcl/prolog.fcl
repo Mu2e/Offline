@@ -140,6 +140,7 @@ BEGIN_PROLOG
       TimeClusterDiag : @local::TimeClusterDiag
       StrawHitDiag : @local::StrawHitDiag
       HelixDiag : @local::HelixDiag
+      TrkRecoDiag : @local::TrkRecoDiag
     }
   }
 

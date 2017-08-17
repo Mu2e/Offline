@@ -377,11 +377,9 @@ namespace mu2e
     tshinfo._layer = tsh->straw().id().getLayer();
     tshinfo._straw = tsh->straw().id().getStraw();
     tshinfo._edep = tsh->strawHit().energyDep();
-    static HepPoint origin(0.0,0.0,0.0);
-    Hep3Vector hpos = tsh->hitTraj()->position(tsh->hitLen()) - origin;
-    tshinfo._z = hpos.z();
-    tshinfo._phi = hpos.phi();
-    tshinfo._rho = hpos.perp();
+    // kludge CLHEP problem
+    HepPoint hpos = tsh->hitTraj()->position(tsh->hitLen());
+    tshinfo._poca = Hep3Vector(hpos.x(),hpos.y(),hpos.z());
     double resid,residerr;
     if(tsh->resid(resid,residerr,_uresid)){
       tshinfo._resid = resid;
@@ -406,6 +404,11 @@ namespace mu2e
     tshinfo._tddist = tsh->timeDiffDist();
     tshinfo._tdderr = tsh->timeDiffDistErr();
     tshinfo._ambig = tsh->ambig();
+    tshinfo._driftend = tsh->driftEnd();
+    tshinfo._tdcal = tsh->driftTime(TrkTypes::cal);
+    tshinfo._tdhv = tsh->driftTime(TrkTypes::hv);
+    tshinfo._totcal = tsh->strawHit().TOT(TrkTypes::cal);
+    tshinfo._tothv = tsh->strawHit().TOT(TrkTypes::hv);
     if(tsh->hasResidual())
       tshinfo._doca = tsh->poca().doca();
     else

@@ -206,6 +206,8 @@ namespace mu2e {
     evt.getByLabel<CaloClusterCollection>(_ccTag,ccH);
     if(ccH.isValid())
       _cccol = ccH.product();
+    else
+      _cccol = 0;
 
     return _shcol != 0 && _shfcol != 0 && _shpcol != 0 && _tccol != 0 && (_mcdigis != 0 || !_mcdiag);
   }
@@ -220,7 +222,7 @@ namespace mu2e {
       StrawHitFlag const& shflag =_shfcol->at(istr);
       if(TrkMCTools::CEDigi(mcdigi)){
 	++_ceclust._nce;
-	StrawEnd itdc;
+	StrawEnd itdc(TrkTypes::cal);
 	cpos += mcdigi.clusterPosition(itdc).vect();
 	_ceclust._time += mcdigi.clusterPosition(itdc).t();
 	bool selected = shflag.hasAllProperties(_hsel) && !shflag.hasAnyProperty(_hbkg);
@@ -238,7 +240,7 @@ namespace mu2e {
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawDigiMC const& mcdigi = _mcdigis->at(istr);
       if(TrkMCTools::CEDigi(mcdigi)){
-	StrawEnd itdc;
+	StrawEnd itdc(TrkTypes::cal);
 	Hep3Vector hpos = mcdigi.clusterPosition(itdc).vect();
 	double hphi = hpos.phi();
 	float hrho = hpos.perp();
