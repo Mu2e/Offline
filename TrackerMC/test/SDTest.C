@@ -13,12 +13,12 @@
 #include "TProfile.h"
 #include "TDirectory.h"
 
-void SDTest(TTree* sddiag, char* page ="adc",unsigned NADC=8,TCut cut=TCut()) {
+void SDTest(TTree* sddiag, char* page ="adc",unsigned NADC=12,TCut cut=TCut()) {
   TString spage(page);
   if(spage == "adc") {
     TCanvas* adc = new TCanvas("adc","ADC",800,800);
-    TH2F* adcwf = new TH2F("adcwf","ADC Waveform;Digitization;Value",NADC,-0.5,NADC-0.5,1024,-0.5,4095.5);
-    TProfile* adcwfp = new TProfile("adcwfp","ADC Waveform;Digitization;Value",NADC,-0.5,NADC-0.5,-0.5,4095.5,"S");
+    TH2F* adcwf = new TH2F("adcwf","ADC Waveform;Digitization;Value",NADC,-0.5,NADC-0.5,1024,1300,4095.5);
+    TProfile* adcwfp = new TProfile("adcwfp","ADC Waveform;Digitization;Value",NADC,-0.5,NADC-0.5,1300,4095.5,"S");
     adcwf->SetStats(0);
     adcwfp->SetStats(0);
     char name[15];

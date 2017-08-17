@@ -504,7 +504,7 @@ namespace mu2e {
 	// loop until we're at the end of the step or we've used up all the energy
 	do {
 	  // generate a cluster with a random step and # of electrons
-	  double cstep = _randexp.fire()*_strawphys->meanFreePath();
+	  double cstep = _randexp.fire(_strawphys->meanFreePath());
 	  unsigned nion = _strawphys->nePerIon(_randflat.fire());
 	  double cen = _strawphys->ionizationEnergy(nion);
 	  if( cen + etot < step.ionizingEdep() && cstep+slen < step.stepLength()){

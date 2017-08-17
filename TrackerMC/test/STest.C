@@ -97,9 +97,9 @@ void STest(TTree* sdiag, TTree* cdiag, const char* page ="G4") {
 
 //    nc->SetStats(0);
     nch->SetStats(0);
-    ncl->SetStats(0);
+//    ncl->SetStats(0);
     slh->SetStats(0);
-    sll->SetStats(0);
+//    sll->SetStats(0);
     nch->SetFillColor(kRed);
     slh->SetFillColor(kRed);
     ncl->SetFillColor(kGreen);
