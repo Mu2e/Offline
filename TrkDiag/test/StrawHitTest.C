@@ -116,10 +116,10 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     pide->SetLineColor(kRed);
     pidp->SetLineColor(kBlue);
 
-    TH1F* nuconv = new TH1F("nuconv","N unique trkids in StrawHit",6,-0.5,5.5);
-    TH1F* nudio = new TH1F("nudio","N unique trkids in StrawHit",6,-0.5,5.5);
-    TH1F* nudel = new TH1F("nudel","N unique trkids in StrawHit",6,-0.5,5.5);
-    TH1F* nup = new TH1F("nup","N unique trkids in StrawHit",6,-0.5,5.5);
+    TH1F* nuconv = new TH1F("nuconv","N steps in StrawHit",6,-0.5,5.5);
+    TH1F* nudio = new TH1F("nudio","N steps in StrawHit",6,-0.5,5.5);
+    TH1F* nudel = new TH1F("nudel","N steps in StrawHit",6,-0.5,5.5);
+    TH1F* nup = new TH1F("nup","N steps in StrawHit",6,-0.5,5.5);
     nuconv->SetLineColor(kRed);
     nudio->SetLineColor(kGreen);
     nudel->SetLineColor(kCyan);
@@ -132,10 +132,10 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     hits->Project("gidp","mcgen",proton);
     hits->Project("pide","mcproc",bkg);
     hits->Project("pidp","mcproc",proton);
-    hits->Project("nuconv","mcnunique",conv);
-    hits->Project("nudio","mcnunique",dio);
-    hits->Project("nudel","mcnunique",bkg);
-    hits->Project("nup","mcnunique",proton);
+    hits->Project("nuconv","mcnsteps",conv);
+    hits->Project("nudio","mcnsteps",dio);
+    hits->Project("nudel","mcnsteps",bkg);
+    hits->Project("nup","mcnsteps",proton);
 
     TLegend* leg = new TLegend(0.5,0.5,0.8,0.8);
     leg->AddEntry(gide,"Electrons","l");
