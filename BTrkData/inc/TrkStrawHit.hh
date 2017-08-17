@@ -29,7 +29,7 @@ namespace mu2e
   public:
   // enum for hit flags
     enum TrkStrawHitFlag {weededHit=-5, driftFail=-3, updateFail=-1,addedHit=3,unweededHit=4};
-    enum enduse { cal=TrkTypes::cal, hv = TrkTypes::hv, both};
+    enum enduse { cal=TrkTypes::cal, hv = TrkTypes::hv, earliest, both};
     TrkStrawHit(const StrawHit& strawhit, const Straw& straw,StrawHitIndex index,
     const HitT0& trkt0, double fltlen, TrkHitContext const& tcon);
     virtual ~TrkStrawHit();
@@ -47,7 +47,9 @@ namespace mu2e
     const Straw& straw() const { return _straw; }
 // the following function is DEPRECATED as the underlying function is now end specific
     double time() const { return _strawhit.time(); }
-    double driftTime(StrawEnd end=TrkTypes::cal) const;
+    double driftTime(StrawEnd end) const; // drift time for a specific end
+    double driftTime() const; // drift time for the current end strategy
+
     double driftRadius() const { return _t2d._rdrift;}
     double driftRadiusErr() const { return _t2d._rdrifterr;}
     double driftVelocity() const { return _t2d._vdrift; }

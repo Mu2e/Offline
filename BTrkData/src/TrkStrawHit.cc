@@ -31,7 +31,7 @@ namespace mu2e
     _penerr(0.0),
     _toterr(0.0),
     _iamb(0),
-    _enduse(cal),
+    _enduse(earliest), // default should be set by a configuration object FIXME!
     _ambigupdate(false),
     _tcon(tcon)
   {
@@ -68,6 +68,23 @@ namespace mu2e
     return strawHit().time(end) - _hitt0._t0 - _stime[end];
   }
 
+  double
+  TrkStrawHit::driftTime() const {
+    double tdrift;
+    if(_enduse==earliest){
+      tdrift = std::min(strawHit().time(TrkTypes::cal) - _stime[TrkTypes::cal],
+	  strawHit().time(TrkTypes::hv) - _stime[TrkTypes::hv] )
+	- _hitt0._t0;
+    } else if(_enduse ==both){
+      tdrift = 0.5*(strawHit().time(TrkTypes::cal) - _stime[TrkTypes::cal] +
+	  strawHit().time(TrkTypes::hv) - _stime[TrkTypes::hv] )
+	- _hitt0._t0;
+    } else {
+      tdrift = strawHit().time(static_cast<TrkTypes::End>(_enduse)) - _stime[_enduse] - _hitt0._t0;
+    }
+    return tdrift;
+  }
+
   void
   TrkStrawHit::updateDrift() {
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
@@ -76,8 +93,8 @@ namespace mu2e
       int iamb = poca().doca() > 0 ? 1 : -1;
       setAmbig(iamb);
     }
-// compute the drift time; for now, use cal side FIXME!
-    double tdrift = strawHit().time() - _hitt0._t0 - _stime[TrkTypes::cal];
+// compute the drift time
+    double tdrift = driftTime();
 // find the track direction at this hit
     Hep3Vector tdir = getParentRep()->traj().direction(fltLen());
 // convert time to distance.  This computes the intrinsic drift radius error as well
@@ -110,16 +127,16 @@ namespace mu2e
   void
   TrkStrawHit::updateSignalTime() {
 // compute the electronics propagation time for the 2 ends.
-// note: the wire direction points from HV to cal
+// note: the wire direction points from cal to HV
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
     double vwire = tcal->SignalVelocity(straw().index());
     if( poca().status().success()){
-      _stime[TrkTypes::cal] = (straw().getHalfLength()-hitLen())/vwire;
-      _stime[TrkTypes::hv] = (straw().getHalfLength()+hitLen())/vwire;
+      _stime[TrkTypes::cal] = (straw().getHalfLength()+hitLen())/vwire;
+      _stime[TrkTypes::hv] = (straw().getHalfLength()-hitLen())/vwire;
     } else {
 // if we're missing poca information, use time division instead
-      _stime[TrkTypes::cal] = (straw().getHalfLength()-_tddist)/vwire;
-      _stime[TrkTypes::hv] = (straw().getHalfLength()+_tddist)/vwire;
+      _stime[TrkTypes::cal] = (straw().getHalfLength()+_tddist)/vwire;
+      _stime[TrkTypes::hv] = (straw().getHalfLength()-_tddist)/vwire;
     }
   }
 
