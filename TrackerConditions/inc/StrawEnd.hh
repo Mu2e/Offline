@@ -17,14 +17,14 @@ namespace mu2e {
 
     friend std::ostream& operator << (std::ostream& os, StrawEnd const& end) {
       switch ( end._end ) {
-	default:
-	  os << "Unknown";
-	  break;
 	case TrkTypes::cal:
 	  os << "Cal";
 	  break;
 	case TrkTypes::hv:
 	  os << "HV";
+	  break;
+      	default:
+	  os << "Unknown";
 	  break;
       }
       return os;

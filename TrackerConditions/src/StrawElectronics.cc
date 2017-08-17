@@ -20,8 +20,8 @@ namespace mu2e {
   double StrawElectronics::_pC_per_uA_ns(1000.0); // unit conversion from pC/ns to microAmp.
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdI{pset.get<double>("thresholddVdI",1.5e4),
-      pset.get<double>("adcdVdI",2.0e7) }, // mVolt/uAmps (transimpedance gain)
+    _dVdI{pset.get<double>("thresholddVdI",1.8e4),
+      pset.get<double>("adcdVdI",2.4e7) }, // mVolt/uAmps (transimpedance gain)
     _tau{pset.get<double>("thresholdFallTime",22.0),  // nsec
       pset.get<double>("adcShapingTime",22.0) }, // nsec
     _tdeadAnalog(pset.get<double>("DeadTimeAnalog",100.0)), // nsec dead after threshold crossing (pulse baseline restoration time)
