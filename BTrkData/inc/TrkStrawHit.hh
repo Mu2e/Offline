@@ -36,7 +36,7 @@ namespace mu2e
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
     virtual int ambig() const { return _iamb; }
-    enduse endUse() const { return _enduse; }
+    enduse driftEnd() const { return _enduse; }
 //    virtual void invert();
     virtual void setAmbig(int newambig);
     void setAmbigUpdate(bool update) { _ambigupdate = update; }
