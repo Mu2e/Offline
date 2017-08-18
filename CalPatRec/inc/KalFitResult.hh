@@ -11,7 +11,7 @@
 #include "BTrk/BaBar/BaBar.hh"
 // KalFit objects
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "BTrk/TrkBase/TrkHit.hh"
 #include "CalPatRec/inc/TrkDefHack.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
@@ -47,7 +47,7 @@ namespace mu2e
 // data payload
     TrkDefHack const*                _tdef; // original track definition on which this is based
     KalRep*                      _krep; // Kalman rep, owned by the collection
-    std::vector<TrkStrawHit*>    _hits; // straw hits, owned by the KalRep
+    TrkHitVector                 _hits; // hits, owned by the KalRep
     std::vector<DetIntersection> _detinter; // material intersections, used by the KalRep
     TrkErrCode                   _fit; // error code from last fit
     unsigned                     _nt0iter; // number of times t0 was iterated

@@ -639,8 +639,10 @@ namespace mu2e {
 
       if (radius_ok && (fabs(dt) < _maxdtmiss)) {
         // make sure we haven't already used this hit
-        std::vector<TrkStrawHit*>::iterator ifnd = find_if(kalfit._hits.begin(),kalfit._hits.end(),FindTrkStrawHit(sh));
-        if(ifnd == kalfit._hits.end()){
+      	TrkStrawHitVector tshv;
+	convert(kalfit._hits, tshv);
+        TrkStrawHitVector::iterator ifnd = find_if(tshv.begin(), tshv.end(),FindTrkStrawHit(sh));
+        if(ifnd == tshv.end()){
           // good in-time hit.  Compute DOCA of the wire to the trajectory
           Straw const& straw = _tracker->getStraw(sh.strawIndex());
           CLHEP::Hep3Vector hpos = straw.getMidPoint();

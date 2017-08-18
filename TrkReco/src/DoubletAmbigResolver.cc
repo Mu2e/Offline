@@ -349,7 +349,7 @@ namespace mu2e {
       doca[0] = poca.doca()-r;
       doca[1] = poca.doca()+r;
 
-      double err = AmbigResolver::_extErr;
+      double err = AmbigResolver::_extErr*Hit->driftVelocity();
       double x0  = sqrt(doca[0]*doca[0]+err*err);
       double x1  = sqrt(doca[1]*doca[1]+err*err);
 
@@ -383,7 +383,6 @@ namespace mu2e {
 // can't tell
 //-----------------------------------------------------------------------------
 	if (_Final == 0) {
-	  //	  Hit->setExtErr(Hit->driftRadius());
 	  Hit->setTemperature(Hit->driftRadius()/Hit->driftVelocity());
 	  Hit->setAmbig(0);
 	}
