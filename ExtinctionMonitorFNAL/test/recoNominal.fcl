@@ -3,7 +3,7 @@
 #include "ExtinctionMonitorFNAL/test/recoDefsCommon.fcl"
 
 process_name : recoNominal
-outputs.FullOutput.fileName    : "dataRecoNominal.root"
+outputs.FullOutput.fileName    : "dataRecoNominal.art"
 services.TFileService.fileName : "histRecoNominal.root"
 
 singleParticleMode : false

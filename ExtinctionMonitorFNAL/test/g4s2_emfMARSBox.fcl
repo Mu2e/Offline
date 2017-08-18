@@ -93,11 +93,11 @@ services.TFileService.fileName : "hg4s2EMFMARSBox.root"
 outputs.outFiltered : { module_type : RootOutput
                         SelectEvents: { SelectEvents: [trigFilter] }
                         outputCommands:   [ "keep *_*Filter*_*_*", "keep *_SimParticleMARSAssnsMaker_*_*", "keep *_geom*_*_*" ]
-                        fileName: "vdg4s2EMFMARSBoxFiltered.root"
+                        fileName: "vdg4s2EMFMARSBoxFiltered.art"
                       }
 
 outputs.outFull : { module_type : RootOutput
-                    fileName: "vdg4s2EMFMARSBoxAll.root"
+                    fileName: "vdg4s2EMFMARSBoxAll.art"
                   }
 
 physics.marsOutputs : [ outFiltered ]
