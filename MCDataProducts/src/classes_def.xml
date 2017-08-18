@@ -152,6 +152,8 @@
  <class name="art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,void>" />
  <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRawHit,mu2e::ExtMonFNALHitTruthBits>" />
  <class name="art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,mu2e::ExtMonFNALHitTruthBits>" />
+ <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRawHit,void> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,void> >" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRawHit,mu2e::ExtMonFNALHitTruthBits> >" />
  <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,mu2e::ExtMonFNALHitTruthBits> >" />
 
