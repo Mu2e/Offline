@@ -2,6 +2,10 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_2_5
 
+6)  gandr  16 August 2017
+    Update ExtMonFNAL code to revive the detector
+    simulation-digitization-reconstruction chain.
+
 5)  dnbrow01  16 August 2017
     A large number of changes, primarily from Aaron Hill, to bring the
     conventional construction model more up to date.  This work adds
