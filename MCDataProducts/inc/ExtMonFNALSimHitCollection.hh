@@ -13,7 +13,7 @@
 #include "MCDataProducts/inc/ExtMonFNALSimHit.hh"
 
 namespace mu2e {
-  class ExtMonFNALSimHitCollection : public std::vector<mu2e::ExtMonFNALSimHit> {};
+  typedef std::vector<mu2e::ExtMonFNALSimHit> ExtMonFNALSimHitCollection;
 }
 
 #endif /* MCDataProducts_ExtMonFNALSimHitCollection_hh */
