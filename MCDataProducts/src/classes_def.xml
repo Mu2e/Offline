@@ -165,6 +165,8 @@
  <class name="art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,void>" />
  <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoCluster,mu2e::ExtMonFNALRecoClusterTruthBits>" />
  <class name="art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,mu2e::ExtMonFNALRecoClusterTruthBits>" />
+ <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoCluster,void> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,void> >" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoCluster,mu2e::ExtMonFNALRecoClusterTruthBits> >" />
  <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,mu2e::ExtMonFNALRecoClusterTruthBits> >" />
 
@@ -177,6 +179,8 @@
  <class name="art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,void>" />
  <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,mu2e::ExtMonFNALTrkMatchInfo>" />
  <class name="art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo>" />
+ <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,void> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,void> >" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,mu2e::ExtMonFNALTrkMatchInfo> >" />
  <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo> >" />
 
