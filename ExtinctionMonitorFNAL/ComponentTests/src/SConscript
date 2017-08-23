@@ -22,7 +22,7 @@ import os
 Import('env')
 Import('mu2e_helper')
 
-helper=mu2e_helper();
+helper=mu2e_helper(env);
 
 #FIXME: do not build in this directory:# helper.make_plugins( [ my_libs ] )
 

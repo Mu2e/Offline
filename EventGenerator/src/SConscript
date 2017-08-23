@@ -9,7 +9,7 @@ import os
 Import('env')
 Import('mu2e_helper')
 
-helper=mu2e_helper();
+helper=mu2e_helper(env);
 
 env.Append(FORTRANFLAGS = '-fno-automatic -finit-local-zero -fcheck=bounds' )
 do_fortran=True

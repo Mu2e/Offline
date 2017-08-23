@@ -43,16 +43,18 @@
  <class name="mu2e::TrkFitFlagDetail"/>
  <class name="mu2e::StrawCluster"/>
  <class name="mu2e::StrawClusterCollection"/>
+<!--
  <class name="mu2e::KalRepPayload">
     <field name="transientTrack_" transient="true"/>
  </class>
- <class name="mu2e::KalRepPayloadCollection"/>
- <class name="mu2e::LocalHelixPayload"/>
- <class name="std::vector<mu2e::LocalHelixPayload>"/>
- <class name="mu2e::HOTPayload"/>
- <class name="std::vector<mu2e::HOTPayload>"/>
- <class name="mu2e::KalRepExtensionPayload"/>
- <class name="mu2e::KalRepExtensionPayloadCollection"/>
+-->
+<!-- <class name="mu2e::KalRepPayloadCollection"/>  -->
+<!-- <class name="mu2e::LocalHelixPayload"/> -->
+<!-- <class name="std::vector<mu2e::LocalHelixPayload>"/> -->
+<!-- <class name="mu2e::HOTPayload"/> -->
+<!-- <class name="std::vector<mu2e::HOTPayload>"/> -->
+<!-- <class name="mu2e::KalRepExtensionPayload"/> -->
+<!-- <class name="mu2e::KalRepExtensionPayloadCollection"/> -->
 
  <class name="mu2e::ExtMonUCITofHit"/>
  <class name="mu2e::ExtMonUCITofHitCollection"/>
@@ -151,8 +153,8 @@
  <class name="art::Wrapper<mu2e::StrawClusterCollection>"/>
  <class name="art::Wrapper<mu2e::TrkCaloIntersectCollection>"/>
  <class name="art::Wrapper<mu2e::TrkCaloMatchCollection>"/>
- <class name="art::Wrapper<mu2e::KalRepPayloadCollection>"/>
- <class name="art::Wrapper<mu2e::KalRepExtensionPayloadCollection>"/>
+<!-- <class name="art::Wrapper<mu2e::KalRepPayloadCollection>"/> -->
+<!--  <class name="art::Wrapper<mu2e::KalRepExtensionPayloadCollection>"/> -->
  <class name="art::Wrapper<mu2e::TimeClusterCollection>"/>
  <class name="art::Wrapper<mu2e::HelixSeedCollection>"/>
 

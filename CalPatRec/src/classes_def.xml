@@ -38,7 +38,7 @@
 
 <class name="mu2e::HelixFitHack"/>
 <class name="mu2e::HelixFitHackResult" />
-<class name="mu2e::HelixDefHack" />
+<!-- <class name="mu2e::HelixDefHack" /> -->
 <class name="mu2e::XYZPHack" />
 <class name="mu2e::XYZPHackVector" />
 

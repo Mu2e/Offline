@@ -2,6 +2,16 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_2_5
 
+7)  rlc 18 August 2017
+    Add scripts directory to hold helper functions for scons.
+    Simplify SConstruct by using helper functions - minor mod is 
+    needed for all SConscripts.  Use new helper for build while using 
+    ClassDef (two places).  Fix bug where genreflex runs before lib
+    directory is available.  Remove a few obsolete paths.
+    Fix dependencies in genreflex build.  Fix genreflex warnings
+    from out-of-date classes_def.xml several places and activate
+    fail-onw-warning. Remove mu2e_genreflex.
+
 6)  gandr  16 August 2017
     Update ExtMonFNAL code to revive the detector
     simulation-digitization-reconstruction chain.
