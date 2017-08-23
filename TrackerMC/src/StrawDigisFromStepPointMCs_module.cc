@@ -108,7 +108,7 @@ namespace mu2e {
 	// Diagnostics level.
 	int _diagLevel, _printLevel;
 	unsigned _maxhist;
-	bool _xtalkhist;
+	bool  _xtalkhist;
 	unsigned _minnxinghist;
 	double _tstep, _nfall;
 	// Limit on number of events for which there will be full printout.
@@ -147,17 +147,16 @@ namespace mu2e {
 	fhicl::ParameterSet _deadStraws;
 	DeadStrawList _strawStatus;
 	// diagnostics
-	Int_t _splane, _spanel, _slayer, _sstraw;
-	Int_t _nclust[2], _iclust[2];
-	Float_t _hqsum, _vmax, _tvmax, _sesum;
-	Int_t _wmcpdg, _wmcproc, _nxing;
-	Float_t _mce, _slen, _sedep;
-	Int_t _nsteppoint;
-	Int_t _npart;
-	Float_t _tmin, _tmax, _txing, _xddist, _xwdist, _xpdist;
-	Bool_t _wfxtalk;
+	TTree* _swdiag;
+	Int_t _swplane, _swpanel, _swlayer, _swstraw, _ndigi;
+	Float_t _hqsum[2], _vmax[2], _tvmax[2], _sesum[2];
+	Int_t _wmcpdg[2], _wmcproc[2], _nxing[2], _nclu[2];
+	Int_t _nsteppoint[2], _npart[2];
+	Float_t _mce[2], _slen[2], _sedep[2];
+	Float_t _tmin[2], _tmax[2], _txing[2], _xddist[2], _xwdist[2], _xpdist[2];
 	TTree* _sddiag;
 	Int_t _sdplane, _sdpanel, _sdlayer, _sdstraw;
+	Int_t _nclust[2], _iclust[2];
 	Int_t _nstep;
 	Float_t _ctime[2], _cdist[2];
 	Float_t _xtime[2], _htime[2], _charge[2], _ddist[2];
@@ -199,6 +198,7 @@ namespace mu2e {
 	void createDigi(WFXP const& xpair, const StrawWaveform wf[2], StrawIndex index, StrawDigiCollection* digis);
 	void findCrossTalkStraws(Straw const& straw,vector<XTalk>& xtalk);
 	// diagnostic functions
+	void waveformHist(const StrawWaveform wf[2], WFXList const& xings);
 	void waveformDiag(const StrawWaveform wf[2], WFXList const& xings);
 	void digiDiag(const StrawWaveform wf[2], WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi);
     };
@@ -263,6 +263,32 @@ namespace mu2e {
 	_cdiag->Branch("energy",&_cen,"energy/F");
 	_cdiag->Branch("nion",&_nion,"nion/I");
 
+   	_swdiag =tfs->make<TTree>("swdiag","StrawWaveform diagnostics");
+	_swdiag->Branch("plane",&_swplane,"plane/I");
+	_swdiag->Branch("panel",&_swpanel,"panel/I");
+	_swdiag->Branch("layer",&_swlayer,"layer/I");
+	_swdiag->Branch("straw",&_swstraw,"straw/I");
+	_swdiag->Branch("ndigi",&_ndigi,"ndigi/I");
+	_swdiag->Branch("hqsum",&_hqsum,"hqsumcal/F:hqsumhv/F");
+	_swdiag->Branch("vmax",&_vmax,"vmaxcal/F:vmaxhv/F");
+	_swdiag->Branch("tvmax",&_tvmax,"tvmaxcal/F:tvmaxhv/F");
+	_swdiag->Branch("mcpdg",&_wmcpdg,"mcpdgcal/I:mcpdghv/I");
+	_swdiag->Branch("mcproc",&_wmcproc,"mcproccal/I:mcprochv/I");
+	_swdiag->Branch("mce",&_mce,"mcecal/F:mcehv/F");
+	_swdiag->Branch("slen",&_slen,"slencal/F:slenhv/F");
+	_swdiag->Branch("sedep",&_sedep,"sedepcal/F:sedephv/F");
+	_swdiag->Branch("nxing",&_nxing,"nxingcal/I:nxinghv/I");
+	_swdiag->Branch("nclu",&_nclu,"nclucal/I:ncluhv/I");
+	_swdiag->Branch("nstep",&_nsteppoint,"nscal/I:nshv/I");
+	_swdiag->Branch("sesum",&_sesum,"sesumcal/F:sesumhv/F");
+	_swdiag->Branch("npart",&_npart,"npart/I");
+	_swdiag->Branch("tmin",&_tmin,"tmincal/F:tminhv/F");
+	_swdiag->Branch("tmax",&_tmax,"tmaxcal/F:tmaxhv/F");
+	_swdiag->Branch("txing",&_txing,"txcal/F:txhv/F");
+	_swdiag->Branch("xddist",&_xddist,"xdcal/F:xdhv/F");
+	_swdiag->Branch("xwdist",&_xwdist,"xwdcal/F:xwdhv/F");
+	_swdiag->Branch("xpdist",&_xpdist,"xpdcal/F:xpdhv/F");
+  
 
 	if(_diagLevel > 1){
 	  _sddiag =tfs->make<TTree>("sddiag","StrawDigi diagnostics");
@@ -384,12 +410,21 @@ namespace mu2e {
       }
       // convert the crossing points into digis, and add them to the event data.  Require both ends to have threshold
       // crossings.  The logic here needs to be improved to require exactly 2 matching ends FIXME!!
+      size_t nd = digis->size();
       if(xings.size() > 1){
 	// fill digis from these crossings
 	fillDigis(xings,waveforms,xtalk._dest,digis,mcdigis,mcptrs);
+      } 
+      // waveform diagnostics 
+      if (_diagLevel >1 && (
+	waveforms[0].clusts().clustList().size() > 0 ||
+	waveforms[0].clusts().clustList().size() > 0 ) ) {
+	// waveform xing diagnostics
+	_ndigi = digis->size()-nd;
+	waveformDiag(waveforms,xings);
+	// waveform histograms
+	if(_diagLevel > 2 )waveformHist(waveforms,xings);
       }
-      // waveform diagnostics
-      if(_diagLevel > 2 && waveforms[0].clusts().clustList().size() > 0)waveformDiag(waveforms,xings);
     }
 
     void StrawDigisFromStepPointMCs::fillClusterMap(art::Event const& event, StrawClusterMap & hmap){
@@ -780,7 +815,7 @@ namespace mu2e {
       // create random noise clusts and add them to the sequences of random straws.
     }
     // diagnostic functions
-    void StrawDigisFromStepPointMCs::waveformDiag(const StrawWaveform wfs[2], WFXList const& xings) {
+    void StrawDigisFromStepPointMCs::waveformHist(const StrawWaveform wfs[2], WFXList const& xings) {
       // histogram individual waveforms
       static unsigned nhist(0);// maximum number of histograms per job!
       for(size_t iend=0;iend<2;++iend){
@@ -821,6 +856,86 @@ namespace mu2e {
 	  _waveforms.push_back(wfh);
 	}
       }
+    }
+
+    void StrawDigisFromStepPointMCs::waveformDiag(const StrawWaveform wfs[2], WFXList const& xings) {
+      const Tracker& tracker = getTrackerOrThrow();
+      const Straw& straw = tracker.getStraw( wfs[0].clusts().strawIndex() );
+      _swplane = straw.id().getPlane();
+      _swpanel = straw.id().getPanel();
+      _swlayer = straw.id().getLayer();
+      _swstraw = straw.id().getStraw();
+      for(size_t iend=0;iend<2; ++iend){
+	ClusterList const& clusts = wfs[iend].clusts().clustList();
+	size_t nclust = clusts.size();
+	set<art::Ptr<StepPointMC> > steps;
+	set<art::Ptr<SimParticle> > parts;
+	_nxing[iend] = 0;
+	_txing[iend] = -100.0;
+	_xddist[iend] = _xwdist[iend] = _xpdist[iend] = -1.0;
+	for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
+	  if(ixing->_iclust->strawEnd() == iend) {
+	    ++_nxing[iend];
+	    _txing[iend] = min(_txing[iend],static_cast<float_t>(ixing->_time));
+	    _xddist[iend] = ixing->_iclust->driftDistance();
+	    _xwdist[iend] = ixing->_iclust->wireDistance();
+	    // compute direction perpendicular to wire and momentum
+	    art::Ptr<StepPointMC> const& spp = ixing->_iclust->stepPointMC();
+	    if(!spp.isNull()){
+	      CLHEP::Hep3Vector pdir = straw.getDirection().cross(spp->momentum()).unit();
+	      // project the differences in position to get the perp distance
+	      _xpdist[iend] = pdir.dot(spp->position()-straw.getMidPoint());
+	    }
+	  }
+	}
+	if(_nxing[iend] == 0){
+	  // no xings: just take the 1st clust
+	  if(nclust > 0 ){
+	    _xddist[iend] = clusts.front().driftDistance();
+	    _xwdist[iend] = clusts.front().wireDistance();
+	    art::Ptr<StepPointMC> const& spp = clusts.front().stepPointMC();
+	    if(!spp.isNull()){
+	      CLHEP::Hep3Vector pdir = straw.getDirection().cross(spp->momentum()).unit();
+	      // project the differences in position to get the perp distance
+	      _xpdist[iend] = pdir.dot(spp->position()-straw.getMidPoint());
+	    }
+	  }
+	}
+	if(nclust > 0){
+	  _tmin[iend] = clusts.begin()->time();
+	  _tmax[iend] = clusts.rbegin()->time();
+	}
+
+	_hqsum[iend] = 0.0;
+	_vmax[iend] = _tvmax[iend] = 0.0;
+	_wmcpdg[iend] = _wmcproc[iend] = 0;
+	for(auto ihitl=clusts.begin();ihitl!=clusts.end();++ihitl){
+	  if(ihitl->stepPointMC().isNonnull()){
+	    steps.insert(ihitl->stepPointMC());
+	    parts.insert(ihitl->stepPointMC()->simParticle());
+	    _hqsum[iend] += ihitl->charge();
+	    double htime = ihitl->time()+_strawele->maxResponseTime(_diagpath);
+	    double vout = wfs[iend].sampleWaveform(_diagpath,htime);
+	    if(vout > _vmax[iend]){
+	      _vmax[iend] = vout;
+	      _tvmax[iend] = htime;
+	      _wmcpdg[iend] = ihitl->stepPointMC()->simParticle()->pdgId();
+	      _wmcproc[iend] = ihitl->stepPointMC()->simParticle()->creationCode();
+	      _mce[iend] = ihitl->stepPointMC()->simParticle()->startMomentum().e();
+	      _slen[iend] = ihitl->stepPointMC()->stepLength();
+	      _sedep[iend] = ihitl->stepPointMC()->ionizingEdep();
+	    }
+	  }
+	}
+	_nsteppoint[iend] = steps.size();
+	_npart[iend] = parts.size();
+	_sesum[iend] = 0.0;
+	_tmin[iend] = _mbtime+_mbbuffer;
+	_tmax[iend] = -100.0;
+	for(auto istep=steps.begin();istep!=steps.end();++istep)
+	  _sesum [iend]+= (*istep)->ionizingEdep();
+      }
+      _swdiag->Fill();
     }
 
     void StrawDigisFromStepPointMCs::digiDiag(const StrawWaveform wfs[2], WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi) {
