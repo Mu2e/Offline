@@ -158,8 +158,8 @@ namespace mu2e {
 	Int_t _sdplane, _sdpanel, _sdlayer, _sdstraw;
 	Int_t _nclust[2], _iclust[2];
 	Int_t _nstep;
-	Float_t _ctime[2], _cdist[2];
-	Float_t _xtime[2], _htime[2], _charge[2], _ddist[2];
+	Float_t _ectime[2], _cdist[2];
+	Float_t _xtime[2], _tctime[2], _charge[2], _ddist[2];
 	Float_t _wdist[2], _vstart[2], _vcross[2];
 	Float_t _mctime, _mcenergy, _mctrigenergy, _mcthreshenergy;
 	Int_t _mcthreshpdg, _mcthreshproc, _mcnstep;
@@ -298,8 +298,8 @@ namespace mu2e {
 	  _sddiag->Branch("straw",&_sdstraw,"straw/I");
 	  _sddiag->Branch("nstep",&_nstep,"nstep/I");
 	  _sddiag->Branch("xtime",&_xtime,"xtimecal/F:xtimehv/F");
-	  _sddiag->Branch("htime",&_htime,"htimecal/F:htimehv/F");
-	  _sddiag->Branch("ctime",&_ctime,"ctimecal/F:ctimehv/F");
+	  _sddiag->Branch("tctime",&_tctime,"tctimecal/F:tctimehv/F");
+	  _sddiag->Branch("ectime",&_ectime,"ectimecal/F:ectimehv/F");
 	  _sddiag->Branch("charge",&_charge,"chargecal/F:chargehv/F");
 	  _sddiag->Branch("wdist",&_wdist,"wdistcal/F:wdisthv/F");
 	  _sddiag->Branch("cdist",&_cdist,"cdistcal/F:cdisthv/F");
@@ -504,9 +504,9 @@ namespace mu2e {
 	      propagateCharge(straw,wireq,end,weq);
 	      // compute the total time, modulo the microbunch
 	      double gtime = tstep + wireq._time + weq._time;
-	      double htime = microbunchTime(gtime);
+	      double ctime = microbunchTime(gtime);
 	      // create the clust
-	      StrawCluster clust(StrawCluster::primary,strawind,end,htime,weq._charge,wireq._dd,weq._wdist,
+	      StrawCluster clust(StrawCluster::primary,strawind,end,ctime,weq._charge,wireq._dd,weq._wdist,
 		  spmcptr,CLHEP::HepLorentzVector(iclu->_pos,mbtime));
 	      // add the clusts to the appropriate sequence.
 	      shsp.clustSequence(end).insert(clust);
@@ -904,34 +904,35 @@ namespace mu2e {
 	if(nclust > 0){
 	  _tmin[iend] = clusts.begin()->time();
 	  _tmax[iend] = clusts.rbegin()->time();
+	} else {
+	  _tmin[iend] = _mbtime+_mbbuffer;
+	  _tmax[iend] = -100.0;
 	}
 
 	_hqsum[iend] = 0.0;
 	_vmax[iend] = _tvmax[iend] = 0.0;
 	_wmcpdg[iend] = _wmcproc[iend] = 0;
-	for(auto ihitl=clusts.begin();ihitl!=clusts.end();++ihitl){
-	  if(ihitl->stepPointMC().isNonnull()){
-	    steps.insert(ihitl->stepPointMC());
-	    parts.insert(ihitl->stepPointMC()->simParticle());
-	    _hqsum[iend] += ihitl->charge();
-	    double htime = ihitl->time()+_strawele->maxResponseTime(_diagpath);
-	    double vout = wfs[iend].sampleWaveform(_diagpath,htime);
+	for(auto iclu=clusts.begin();iclu!=clusts.end();++iclu){
+	  if(iclu->stepPointMC().isNonnull()){
+	    steps.insert(iclu->stepPointMC());
+	    parts.insert(iclu->stepPointMC()->simParticle());
+	    _hqsum[iend] += iclu->charge();
+	    double ctime = iclu->time()+_strawele->maxResponseTime(_diagpath);
+	    double vout = wfs[iend].sampleWaveform(_diagpath,ctime);
 	    if(vout > _vmax[iend]){
 	      _vmax[iend] = vout;
-	      _tvmax[iend] = htime;
-	      _wmcpdg[iend] = ihitl->stepPointMC()->simParticle()->pdgId();
-	      _wmcproc[iend] = ihitl->stepPointMC()->simParticle()->creationCode();
-	      _mce[iend] = ihitl->stepPointMC()->simParticle()->startMomentum().e();
-	      _slen[iend] = ihitl->stepPointMC()->stepLength();
-	      _sedep[iend] = ihitl->stepPointMC()->ionizingEdep();
+	      _tvmax[iend] = ctime;
+	      _wmcpdg[iend] = iclu->stepPointMC()->simParticle()->pdgId();
+	      _wmcproc[iend] = iclu->stepPointMC()->simParticle()->creationCode();
+	      _mce[iend] = iclu->stepPointMC()->simParticle()->startMomentum().e();
+	      _slen[iend] = iclu->stepPointMC()->stepLength();
+	      _sedep[iend] = iclu->stepPointMC()->ionizingEdep();
 	    }
 	  }
 	}
 	_nsteppoint[iend] = steps.size();
 	_npart[iend] = parts.size();
 	_sesum[iend] = 0.0;
-	_tmin[iend] = _mbtime+_mbbuffer;
-	_tmax[iend] = -100.0;
 	for(auto istep=steps.begin();istep!=steps.end();++istep)
 	  _sesum [iend]+= (*istep)->ionizingEdep();
       }
@@ -948,7 +949,7 @@ namespace mu2e {
 
       for(size_t iend=0;iend<2;++iend){
 	_xtime[iend] = xpair[iend]->_time;
-	_htime[iend] = xpair[iend]->_iclust->time();
+	_tctime[iend] = xpair[iend]->_iclust->time();
 	_charge[iend] = xpair[iend]->_iclust->charge();
 	_ddist[iend] = xpair[iend]->_iclust->driftDistance();
 	_wdist[iend] = xpair[iend]->_iclust->wireDistance();
@@ -965,7 +966,7 @@ namespace mu2e {
 	  ++iclu;
 	}
 	if(iclu != clist.end() ){
-	  _ctime[iend] = ctrig->time() - iclu->time();
+	  _ectime[iend] = iclu->time();
 	  _cdist[iend] = iclu->driftDistance();
 	  // count how many clusters till we get to the trigger cluster
 	  size_t iclust(0);

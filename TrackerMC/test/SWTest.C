@@ -73,9 +73,9 @@ void SWTest(TTree* sw){
   nclusvs->SetStats(0);
 //  sw->Project("nclus","nclucal","npAart==1&&nstep==1");
   sw->Project("nclusvs","nclucal:slen","npart==1&&nstep==1");
-  TH1F* tvmaxcal = new TH1F("tvmax","Time of maximum voltage;ns",100,0,50);
+  TH1F* tvmaxcal = new TH1F("tvmaxcal","Time of maximum voltage;ns",100,0,50);
   tvmaxcal->SetStats(0);
-  sw->Project("tvmaxcal","tvmax-tmincal","nxingcal>0");
+  sw->Project("tvmaxcal","tvmaxcal-tmincal","nxingcal>0");
 
   TH2F* vvsdist = new TH2F("vvsdist","Voltage vs Drift Distance",50,0,2.51,50,0,400);
   sw->Project("vvsdist","vmaxcal:xdcal","nxingcal>0");
