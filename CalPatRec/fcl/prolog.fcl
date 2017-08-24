@@ -385,14 +385,13 @@ CalPatRec : { @table::CalPatRec
 	CalPatRecFSHP : {
 	    module_type                     : FlagStrawHits
 	    StrawHitCollectionLabel         : makeSH
-	    StrawHitPositionCollectionLabel : ""
+	    StrawHitPositionCollectionTag   : ""
 	    maximumEnergy                   : 0.005   # 5 KeV, in MeV
 	}
 
 	CalPatRecMakeStrawHitPositions : {
 	    module_type                 : MakeStrawHitPositions
 	    StrawHitCollection          : makeSH
-	    StrawHitFlagCollection      : CalPatRecFSHP
 	    diagLevel                   : 0
 	    printHits                   : 0
 	}
@@ -409,8 +408,8 @@ CalPatRec : { @table::CalPatRec
 
 	CalPatRecFlagStrawHits              : {
 	    module_type                     : FlagStrawHits
-	    StrawHitCollectionLabel         : makeSH
-	    StrawHitPositionCollectionLabel : CalPatRecMakeStereoHits
+	    StrawHitCollectionTag           : makeSH
+	    StrawHitPositionCollectionTag   : CalPatRecMakeStereoHits
 	    minimumRadius                   : 380.            # mm
 	    maximumRadius                   : 700.  # mm
 	    maximumEnergy                   : 0.005           # 5 KeV, in MeV
