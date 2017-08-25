@@ -18,8 +18,8 @@ using namespace std;
 namespace mu2e {
   StrawPhysics::StrawPhysics(fhicl::ParameterSet const& pset) :
     _EIonize(pset.get<double>("EnergyPerIonization",1.6e-5)), // 100% Ar is between 27 ev/ionization and 100 ev/ionization, this number is tuned to reproduce the correct mean-free-path from the G4 energy deposits when setting the number of electrons/cluster to the distribution below
-    _meanpath(pset.get<double>("MeanFreePath",0.357)), // mm, average distance between ionizations for STP Ar (Blum etal, table 1.1)
-    _QIonize(pset.get<double>("ChargePerIonization",1.6e-7)), // e, pC
+    _meanpath(pset.get<double>("MeanFreePath",0.357)), // mm, average distance between ionizations for a MIP in STP Ar (Blum etal, table 1.1)
+    _Qe(pset.get<double>("ElectronCharge",1.6e-7)), // e, pC
     _gasgain(pset.get<double>("GasGain",7.0e4)),
     _polyaA(pset.get<double>("PolyaA",1.25)), // A = 1/f = theta + 1.  A=1 -> exponential, A=infinity->delta-function
     _gslope(pset.get<double>("GainRMSSlope",0.809)), // slope of relative gain sigma on 1/sqrt(n)
@@ -41,15 +41,17 @@ namespace mu2e {
     }
     double norm = 1.0/ptot;
     double psum(0.0);
-    _EAverage = _QAverage = 0.0;
+    // now compute the average charge and energy per ionization from this distrubio
+    _NAverage = _EAverage = _QAverage = 0.0;
     for(unsigned iprob=0;iprob< nProb.size(); ++iprob ) {
+      unsigned nele = iprob+1;
       double nprob = nProb[iprob]*norm;
       _intNProb.push_back(psum + nprob);
       psum += nprob;
-      _EAverage += nprob*ionizationEnergy(iprob+1);
-      _QAverage += nprob*ionizationCharge(iprob+1);
+      _EAverage += nprob*ionizationEnergy(nele);
+      _QAverage += nprob*ionizationCharge(nele);
+      _NAverage += nprob*nele;
     }
-    // now compute the average charge and energy per ionization from this distrubion
     
   }
 

@@ -121,7 +121,8 @@ namespace mu2e {
 	double _ctMinCharge; // minimum charge to add cross talk (for performance issues)
 	bool   _addNoise; // should we add noise hits?
 	double _preampxtalk, _postampxtalk; // x-talk parameters; these should come from conditions, FIXME!!
-	double _highE; // cut dividing highly-ionizing steps from low
+	double _highdEdx; // factor dividing highly-ionizing steps from low
+	double _dedxcut; // cut dividing highly-ionizing steps from low
 	double _minstepE; // minimum step energy to simulate
 	string _g4ModuleLabel;  // Nameg of the module that made these hits.
 	double _mbtime; // period of 1 microbunch
@@ -220,7 +221,7 @@ namespace mu2e {
       _addNoise(pset.get<bool>("addNoise",false)),
       _preampxtalk(pset.get<double>("preAmplificationCrossTalk",0.0)),
       _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.02)), // dimensionless relative coupling
-      _highE(pset.get<double>("HighlyIonizingE",4.0)), // highly-ionizing step energy, in units of ionization energy
+      _highdEdx(pset.get<double>("HighlyIonizingFactor",4.0)), // highly-ionizing step energy, in units of the average ionization energy
       _minstepE(pset.get<double>("minstepE",2.0e-6)), // minimum step energy depostion to turn into a straw signal (MeV)
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
       _steptimebuf(pset.get<double>("StepPointMCTimeBuffer",100.0)), // nsec
@@ -244,7 +245,7 @@ namespace mu2e {
     }
 
     void StrawDigisFromStepPointMCs::beginJob(){
-
+      
       if(_diagLevel > 0){
 
 	art::ServiceHandle<art::TFileService> tfs;
@@ -336,6 +337,10 @@ namespace mu2e {
       //  CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
       // scale the field for the curvature
       //  _bz = BField::mmTeslaToMeVc*bfmgr->getBField(vpoint_mu2e).z();
+      //
+      _strawphys = ConditionsHandle<StrawPhysics>("ignored");
+      _dedxcut = _highdEdx*_strawphys->meanIonEnergy()/_strawphys->meanFreePath(); 
+
     }
 
     void StrawDigisFromStepPointMCs::produce(art::Event& event) {
@@ -519,54 +524,45 @@ namespace mu2e {
 
     void StrawDigisFromStepPointMCs::divideStep(StepPointMC const& step,
 	vector<IonCluster>& clusters) {
-      // Assume short steps with large energy deposits are from multiple ionizations
-      // Don't worry about position for these, just get the energy right
-      if(step.stepLength() < _strawphys->meanFreePath() && step.ionizingEdep() > _highE*_strawphys->ionizationEnergy()){
-	double etot(0.0);
-	do{
-	  unsigned nion = _strawphys->nePerIon(_randflat.fire());
-	  double cen = _strawphys->ionizationEnergy(nion);
-	  double qc = _strawphys->ionizationCharge(nion);
-	  IonCluster cluster(step.position(),qc,cen,nion);
-	  clusters.push_back(cluster);
-	  etot += cen;
-	} while(etot < step.ionizingEdep());
-      } else {
-      // explicitly divide longer steps
-	CLHEP::Hep3Vector dir = step.momentum().unit();
-	double slen(0.0);
-	double etot(0.0);
-	// loop until we're at the end of the step or we've used up all the energy
-	do {
-	  // generate a cluster with a random step and # of electrons
-	  double cstep = _randexp.fire(_strawphys->meanFreePath());
-	  unsigned nion = _strawphys->nePerIon(_randflat.fire());
-	  double cen = _strawphys->ionizationEnergy(nion);
-	  if( cen + etot < step.ionizingEdep() && cstep+slen < step.stepLength()){
-	    // create a cluster object
-	    slen += cstep;
-	    etot += cen;
-	    CLHEP::Hep3Vector pos = step.position() + slen*dir;
-	    double qc = _strawphys->ionizationCharge(nion);
-	    IonCluster cluster(pos,qc,cen,nion);
-	    clusters.push_back(cluster);
-	  } else
-	    break;
-	} while (true);
-	//	here, we're at the last part of the step.  Put all the remaining
-	//	energy in a single step, chosen randomly along the remaining path
-	double cen =  step.ionizingEdep() - etot;
-	// ignore energy below the ioniztion potential
-	if(cen >= _strawphys->ionizationEnergy()){
-	  slen += _randflat.fire(0.0,step.stepLength()-slen);
-	  CLHEP::Hep3Vector pos = step.position() + slen*dir;
-	  // approximate the # of electrons based on the amount of energy
-	  unsigned nion =_strawphys->nePerEIon(cen);
-	  double qc = _strawphys->ionizationCharge(nion);
-	  IonCluster cluster(pos,qc,cen,nion);
-	  clusters.push_back(cluster);
+      // decide if this is a min ion stop or not
+      double dedx = step.ionizingEdep()/step.stepLength();
+      bool minion = dedx < _dedxcut;
+      CLHEP::Hep3Vector pos = step.position();
+      CLHEP::Hep3Vector dir = step.momentum().unit();
+      double slen = step.stepLength();
+      double etot = step.ionizingEdep();
+      // divide the step according the MIP mean free path.
+      // loop until we're at the end of the step or we've used up all the energy
+      do {
+	// generate a cluster with a random step
+	double cstep = _randexp.fire(_strawphys->meanFreePath());
+	if(cstep > slen){
+	  // use up the remaining energy and model this as non-minion
+	  cstep = slen;
+	  minion = false;
 	}
-      }
+	// only simulate individual ionization for min-ion particles. For the rest, just divide up
+	// the average energy/ionization into the range.
+	double cen;
+	unsigned nion;
+	if(minion){
+	  nion = _strawphys->nePerIon(_randflat.fire());
+	  cen = std::min(_strawphys->ionizationEnergy(nion),etot);
+	} else {
+	  // assume energy deposition is proportional to step
+	  cen = std::min(cstep*dedx,etot); 
+	  double fnion = rint(_strawphys->meanIonCount()*cen/_strawphys->meanIonEnergy());
+	  nion = std::max( static_cast<unsigned>(fnion),(unsigned)1);
+	}
+	// create a cluster object
+	pos += cstep*dir;
+	double qc = _strawphys->ionizationCharge(nion);
+	IonCluster cluster(pos,qc,cen,nion);
+	clusters.push_back(cluster);
+	// update sums
+	slen -= cstep;
+	etot -= cen;
+      } while (slen > 0.0 && etot > 0.0); 
       // diagnostics
       if(_diagLevel > 0){
 	_steplen = step.stepLength();

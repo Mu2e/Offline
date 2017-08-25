@@ -47,13 +47,15 @@ namespace mu2e {
       double meanFreePath() const { return _meanpath; }
       double ionizationEnergy(unsigned nele=1) const { return _EIonize*nele*(nele+1)/2; } // approximate total energy for an ionization of "nele" electrons, assuming all electrons come from the same shell
       double ionizationEnergy(double q) const { return _EAverage*q/_QAverage; }  // energy to produce a given charge.  This assumes the internal distribution of the number of electrons/ionization
-      double ionizationCharge(unsigned nele=1) const { return _QIonize*nele; } 
+      double ionizationCharge(double eion) const { return _Qe*eion/_EAverage; } 
+      double ionizationCharge(unsigned nele=1) const { return _Qe*nele; } 
+      double meanIonCharge() const { return _QAverage; }
+      double meanIonEnergy() const { return _EAverage; }
+      double meanIonCount() const { return _NAverage; }
     private:
       double _EIonize; // energy to create a single ionization electron (MeV)
-      double _EAverage; // Average energy of ionization electrons (MeV)
       double _meanpath; // mean free path (mm)
-      double _QIonize; // charge of a single ionization electron (=e, pC)
-      double _QAverage; // average charge produced per ionization
+      double _Qe; // charge of a single ionization electron (=e, pC)
       std::vector<double> _intNProb; // integrated probability distribution of the number of e produced per cluster
       double _gasgain; // nominal (average) avalanche gain
       double _polyaA; // 'A' parameter of Polya function used in gain fluctuation
@@ -65,6 +67,9 @@ namespace mu2e {
       double _longfrac;
       double _vprop; // (average) propagation velocity
       double _vdisp; // dispersion of propagation velocity (dv/dl)
+      double _NAverage; // Average number of ionization electrons/ionization
+      double _EAverage; // Average energy of ionization electrons (MeV)
+      double _QAverage; // average charge produced per ionization
     // parameters describing cluster DtoT
       std::vector<double> _cdpoly;
       std::vector<double> _cdsigmapoly;

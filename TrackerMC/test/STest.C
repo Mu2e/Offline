@@ -119,10 +119,10 @@ void STest(TTree* sdiag, TTree* cdiag, const char* page ="G4") {
     sdiag->Project("sll","steplen/nsubstep","partP<5");
     
 
-    cstack->Add(ncl);
     cstack->Add(nch);
-    slstack->Add(sll);
+    cstack->Add(ncl);
     slstack->Add(slh);
+    slstack->Add(sll);
 
     TCanvas* ccan = new TCanvas("ccan","ccan",1200,800);
     ccan->Divide(3,2);
