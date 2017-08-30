@@ -27,6 +27,7 @@
 #include "BTrk/BField/BField.hh"
 // Mu2e objects
 #include "BTrkData/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkCaloHit.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "TrkReco/inc/TrkDef.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
@@ -49,8 +50,8 @@ namespace mu2e
 #endif/*__GCCXML__*/
 
     virtual ~KalFit();
-// create a fit object from a track definition
-    void makeTrack(const StrawHitCollection* shcol, TrkDef& tdef, KalRep*& kres);
+// // create a fit object from a track definition
+//     void makeTrack(const StrawHitCollection* shcol, TrkDef& tdef, KalRep*& kres);
 // create a fit object from  a track seed, 
     void makeTrack(const StrawHitCollection* shcol, KalSeed const& kseed, KalRep*& kres);
 // add a set of hits to an existing fit
@@ -66,11 +67,14 @@ namespace mu2e
     double _maxhitchi;	    // maximum hit chi when adding or weeding
     double _maxdriftpull;   // maximum drift pull in TrkStrawHit 
     bool _initt0;	    // initialize t0?
+    bool _useTrkCaloHit;    //use the TrkCaloHit to initialize the t0?
     bool _updatet0;	    // update t0 ieach iteration?
     std::vector<double> _t0tol;  // convergence tolerance for t0
     double _t0errfac;	    // fudge factor for the calculated t0 error
     double _mint0doca;	    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
     double _t0nsig;	    // # of sigma to include when selecting hits for t0
+    double _dtoffset;
+    double _strHitW, _calHitW;//weight used to evaluate the initial track T0
     unsigned _minnstraws;   // minimum # staws for fit
     double _maxmatfltdiff; // maximum difference in track flightlength to separate to intersections of the same material
     // iteration-dependent configuration parameters
@@ -80,7 +84,6 @@ namespace mu2e
     std::vector<bool> _addmaterial; // look for additional materials along the track
     std::vector<AmbigResolver*> _ambigresolver;
     bool _resolveAfterWeeding;
-    bool _unweed;
     extent _exup;
     extent _exdown;
 // relay access to BaBar field: this should come from conditions, FIXME!!!
@@ -88,26 +91,28 @@ namespace mu2e
   // helper functions
     bool fitable(TrkDef const& tdef);
     bool fitable(KalSeed const& kseed);
-    void initT0(const StrawHitCollection* shcol, TrkParticle const& part,
-	TrkT0& t0,std::vector<StrawHitIndex> const& hits, HelixTraj const& htraj   );
-    void makeHits(const StrawHitCollection* shcol,TrkDef const& tdef, TrkStrawHitVector& tshv); 
-    void makeHits(const StrawHitCollection* shcol, HelixTraj const& htraj,
-	std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv );
-    void makeMaterials(TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
-    unsigned addMaterial(KalRep* krep);
-    bool weedHits(KalRep* kres, TrkStrawHitVector& tshv,size_t iter);
-    bool unweedHits(KalRep* kres, TrkStrawHitVector& tshv, double maxchi);
-    bool updateT0(KalRep* kres, TrkStrawHitVector& tshv);
-    TrkErrCode fitTrack(KalRep* kres, TrkStrawHitVector& tshv);
-    TrkErrCode fitIteration(KalRep* kres,TrkStrawHitVector& tshv,size_t iter); 
-    void updateHitTimes(KalRep* kres, TrkStrawHitVector& tshv); 
-    double zFlight(KalRep* krep,double pz);
-    double extendZ(extent ex);
-    TrkErrCode extendFit(KalRep* krep);
+    void initT0(KalRep* krep);
+    
+    void makeTrkStrawHits  (const StrawHitCollection* shcol, HelixTraj const& htraj,
+			    std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv );
+    void makeTrkCaloHit    (KalSeed const& kseed, TrkCaloHit *tch);
+    void makeMaterials     (TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
+    unsigned addMaterial   (KalRep* krep);
+    bool weedHits          (KalRep* kres, size_t iter);
+    bool unweedBestHit     (KalRep* kres, double maxchi);
+    bool updateT0          (KalRep* kres);
+    TrkErrCode fitTrack    (KalRep* kres);
+    TrkErrCode fitIteration(KalRep* kres,size_t iter); 
+    void updateHitTimes    (KalRep* kres); 
+    double zFlight         (KalRep* krep,double pz);
+    double extendZ         (extent ex);
+    TrkErrCode extendFit   (KalRep* krep);
 
-    void findBoundingHits(TrkStrawHitVector& hits, double flt0,
-	TrkStrawHitVector::reverse_iterator& ilow,
-	TrkStrawHitVector::iterator& ihigh);
+    void findBoundingHits  (KalRep* krep, double flt0,
+			    TrkHitVector::reverse_iterator& ilow,
+			    TrkHitVector::iterator& ihigh);
+    
+    void findTrkCaloHit    (KalRep*krep, TrkCaloHit*tch);
   };
 }
 #endif

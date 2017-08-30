@@ -52,12 +52,23 @@ namespace mu2e {
     KalFitResult(const TrkDefHack* hdef);
     ~KalFitResult();
 
-    void    removeFailed() { if(_fit.failure()) deleteTrack(); }
-    void    fit         () { if(_fit.success()) _fit = _krep->fit(); }
-    void    deleteTrack ();
-    
-    KalRep* stealTrack             () { KalRep* retval = _krep; _krep=0; _hits.clear(); return retval; }
     const StrawHitCollection* shcol() { return _shcol; }
+    void    removeFailed() { if(_fit.failure())deleteTrack(); }
+    void    fit() { if(_fit.success()) _fit = _krep->fit(); }
+    void    deleteTrack();
+    KalRep* stealTrack() { KalRep* retval = _krep; _krep=0; _hits.clear(); return retval; }
+// data payload
+    TrkDefHack const*                _tdef; // original track definition on which this is based
+    KalRep*                      _krep; // Kalman rep, owned by the collection
+    TrkHitVector                 _hits; // hits, owned by the KalRep
+    std::vector<DetIntersection> _detinter; // material intersections, used by the KalRep
+    TrkErrCode                   _fit; // error code from last fit
+    unsigned                     _nt0iter; // number of times t0 was iterated
+    unsigned                     _nweediter; // number of iterations on hit weeding
+    unsigned                     _nunweediter; // number of iterations on hit unweeding
+    unsigned                     _ninter; // number of iterations on material intersections
+    int                          _decisionMode;
+    std::vector <Doublet>        _listOfDoublets;
   };
 
   typedef std::vector<KalFitResult> KalFitResultCollection;

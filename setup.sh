@@ -88,9 +88,12 @@ fi
 #fi
 
 # Other libraries we need.
+
 setup -B heppdt   v3_04_01f -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk     v1_01_08a -q${MU2E_UPS_QUALIFIERS}
 setup -B xerces_c v3_1_4a   -q${MU2E_UPS_QUALIFIERS}
+#setup -B BTrk   v1_02_01  -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_02_02  -q${MU2E_UPS_QUALIFIERS}
+#setup -B tbb       v4_4_3a   -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_5_1 -q p2713b

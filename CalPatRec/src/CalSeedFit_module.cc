@@ -421,6 +421,52 @@ namespace mu2e {
   void CalSeedFit::findMissingHits(KalFitResultNew& KRes) {
 
     const char* oname = "CalSeedFit::findMissingHits";
+    for (unsigned istr=0; istr<nstrs;++istr) {
+//----------------------------------------------------------------------
+// 2015-02-11 gianipez and P. Murat changed the selection bit
+//            for searching for missed hits
+//----------------------------------------------------------------------
+      StrawHit const& sh = _shcol->at(istr);
+//-----------------------------------------------------------------------------
+// I think, we want to check the radial bit: if it is set, than at least one of
+// the two measured times is wrong...
+//-----------------------------------------------------------------------------
+      radius_ok = _shfcol->at(istr).hasAllProperties(StrawHitFlag::radsel);
+      dt        = _shcol->at(istr).time()-kalfit._krep->t0()._t0;
+
+      if (radius_ok && (fabs(dt) < _maxdtmiss)) {
+        // make sure we haven't already used this hit
+	TrkStrawHitVector tshv;
+	convert(kalfit._hits, tshv);
+        TrkStrawHitVector::iterator ifnd = find_if(tshv.begin(), tshv.end(),FindTrkStrawHit(sh));
+        if(ifnd == tshv.end()){
+          // good in-time hit.  Compute DOCA of the wire to the trajectory
+          Straw const& straw = _tracker->getStraw(sh.strawIndex());
+          CLHEP::Hep3Vector hpos = straw.getMidPoint();
+          CLHEP::Hep3Vector hdir = straw.getDirection();
+          // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
+          HepPoint spt(hpos.x(),hpos.y(),hpos.z());
+          TrkLineTraj htraj(spt,hdir,-20,20);
+          // estimate flightlength along track.  This assumes a constant BField!!!
+          double fltlen = (hpos.z()-tpos.z())/tdir.z();
+          TrkPoca hitpoca(kalfit._krep->pieceTraj(),fltlen,htraj,0.0);
+
+          if (_debugLevel > 0) {
+            printf("[CalSeedFit::findMissingHits] %8i  %6i  %8i  %10.3f \n",
+                   straw.index().asInt(),
+                   straw.id().getPlane(),
+                   straw.id().getPanel(),
+                   hitpoca.doca());
+          }
+//-----------------------------------------------------------------------------
+// flag hits with small residuals
+//-----------------------------------------------------------------------------
+          if (fabs(hitpoca.doca()) < _maxadddoca) {
+            misshits.push_back(istr);
+          }
+        }
+      }
+    }
 
     mu2e::TrkStrawHit*       hit;
     int                      hit_index;

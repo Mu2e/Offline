@@ -28,9 +28,9 @@ namespace mu2e {
 					     int                        Iter,
 					     int			Final) :
     AmbigResolver(extErr),
-    _debugLevel  (PSet.get<int>   ("debugLevel"       )),
-    _mindrift    (PSet.get<double>("HitMinDrift"      )),
-    _zeropenalty (PSet.get<double>("ZeroDriftPenalty" )),
+    _debugLevel  (PSet.get<int>   ("debugLevel"      ,0        )),
+    _mindrift    (PSet.get<double>("HitMinDrift"     ,0.2      )),
+    _zeropenalty (PSet.get<double>("ZeroDriftPenalty",0.2      )),
     _penalty     (PSet.get<bool>  ("HitAmbigPenalty" ,false    )),
     _expnorm     (PSet.get<double>("HitExpNorm"      ,0.03907  )),
     _lambda      (PSet.get<double>("HitLambda"       ,0.1254   )),
@@ -42,14 +42,13 @@ namespace mu2e {
 // as doublet reconstruction is used in several places, need to be able to 
 // create the ambig resolver w/o specifying any numbers in the talk to's
 //-----------------------------------------------------------------------------
-    _sigmaSlope       (PSet.get<double>("sigmaSlope"       )),
-    _maxDoubletChi2   (PSet.get<double>("maxDoubletChi2"   )),
-    _scaleErrDoublet  (PSet.get<double>("scaleErrDoublet"  )),
-    _minDriftDoublet  (PSet.get<double>("minDriftDoublet"  )),
-    _deltaDriftDoublet(PSet.get<double>("deltaDriftDoublet")),
-    _excludeBothHits  (PSet.get<int>   ("excludeBothHits"  )),
-    _minChi2Ratio     (PSet.get<double>("minChi2Ratio"     )),
-    _maxHitChi        (PSet.get<double>("maxHitChi"        )),
+    _sigmaSlope       (PSet.get<double>("sigmaSlope"       ,  0.025)),
+    _maxDoubletChi2   (PSet.get<double>("maxDoubletChi2"   , 10.   )),
+    _scaleErrDoublet  (PSet.get<double>("scaleErrDoublet"  ,  5.   )),
+    _minDriftDoublet  (PSet.get<double>("minDriftDoublet"  ,  0.3  )),
+    _deltaDriftDoublet(PSet.get<double>("deltaDriftDoublet",  0.3  )),
+    _excludeBothHits  (PSet.get<int>   ("excludeBothHits"  ,  1    )),  // default:1
+    _minChi2Ratio     (PSet.get<double>("minChi2Ratio"     ,  0.3  )),   
     _iter(Iter),
     _Final(Final)
   {
@@ -72,24 +71,33 @@ namespace mu2e {
   DoubletAmbigResolver::~DoubletAmbigResolver() {}
 
 //-----------------------------------------------------------------------------
-// first step: create list of doublets, at this step hit errors are not used
+// first step: create list of doublets
 //-----------------------------------------------------------------------------
-  void DoubletAmbigResolver::findDoublets (const KalRep* KRep, vector<Doublet>* ListOfDoublets) const {
+  void DoubletAmbigResolver::findDoublets (const KalRep* KRep, vector<Doublet>* DCol) const {
     mu2e::TrkStrawHit *hit;
 
     int               station, panel;
     int               oldStation(-1), oldPanel(-1), idlast(0);
-    int               trkshsize, shId; // , layer, istraw;
+    int               trkshsize, shId, layer, istraw;
     
     Hep3Vector  wdir;
     Hep3Vector  pos, posPanel, wpos[10], tmppos;    
     Hep3Vector  tdir, trkpos;
     HepPoint           tpos;
 
+    std::vector<Doublet>* dcol;
+
     double            flen, ds, doca, rdrift, phiPanel;
     double            endTrk(0.0);//Krep->endFoundRange();
 
-    ListOfDoublets->clear();
+    if (_debugLevel > 1){
+      printf("[KalFitHack::findDoublets]-------------------------------------------------\n");
+      printf("[KalFitHack::findDoublets]  i  shId  ch  panel  il   iw   driftR       doca\n");
+      printf("[KalFitHack::findDoublets]-------------------------------------------------\n");
+    }
+
+    dcol = DCol;
+    dcol->clear();
 
     int multipletIndex(0);
 //-----------------------------------------------------------------------------
@@ -133,6 +141,13 @@ namespace mu2e {
       doca   = poca.doca();
 					// get the drift radius
       rdrift  =  (*ihit)->driftRadius();
+
+      if (_debugLevel > 1) {
+	layer  = straw.id().getLayer();
+	istraw = straw.id().getStraw();
+	printf("[KalFitHack::findDoublets] %2i  %5i %3i  %4i  %3i %3i %8.3f %8.3f\n",
+	       i, shId, station, panel, layer, istraw, rdrift, doca);
+      }
 //-----------------------------------------------------------------------------
 // do not use straw hits with small drift radii
 //-----------------------------------------------------------------------------
@@ -140,7 +155,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // new chamber : create new doublet candidate
 //-----------------------------------------------------------------------------
-	ListOfDoublets->push_back(Doublet(multipletIndex, station, panel, wdir, tdir, trkpos, *ihit));
+	dcol->push_back(Doublet(multipletIndex, station, panel, wdir, tdir, trkpos, *ihit));
 	oldStation = station;
 	oldPanel   = panel;
 	++idlast;
@@ -151,13 +166,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // same chamber, same panel : add one more hit to the last doublet
 //-----------------------------------------------------------------------------
-	  ListOfDoublets->at(idlast-1).addStrawHit(tdir, trkpos, *ihit);
+	  dcol->at(idlast-1).addStrawHit(tdir, trkpos, *ihit);
 	}
 	else {
 //-----------------------------------------------------------------------------
 // same chamber, different panel : new doublet candidate
 //-----------------------------------------------------------------------------
-	  ListOfDoublets->push_back(Doublet(multipletIndex, station, panel, wdir, tdir, trkpos, *ihit)); // 
+	  dcol->push_back(Doublet(multipletIndex, station, panel, wdir, tdir, trkpos, *ihit)); // 
 	  oldStation = station;
 	  oldPanel   = panel;
 	  ++idlast;
@@ -170,26 +185,17 @@ namespace mu2e {
 // list of doublets is formed, determine the doublet parameters but not 
 // assine the hit drift directions
 //-----------------------------------------------------------------------------
-    int ndoublets = ListOfDoublets->size();
+    int ndoublets = dcol->size();
     Data_t r;
 
     for (int i=0; i<ndoublets; i++) {
-      Doublet* d = &ListOfDoublets->at(i);
+      Doublet* d = &dcol->at(i);
       int nhits = d->fNStrawHits;
-//-----------------------------------------------------------------------------
-// first, store old hit ambiguities - the ones used to fit the trajectory - 
-// they are useful to know. Assume that at this point drift ambiguities from 
-// the previous iteration didn't change
-//-----------------------------------------------------------------------------
-      for (int i=0; i<nhits; i++) {
-	d->fOldAmbig[i] = d->fHit[i]->ambig();
-      }
-
       if (nhits == 1) {
 //-----------------------------------------------------------------------------
 // single hit
 //-----------------------------------------------------------------------------
-	
+
       }
       else if (nhits == 2) {
 //-----------------------------------------------------------------------------
@@ -243,12 +249,13 @@ namespace mu2e {
       printf("------------------------------------------------------------------------\n");
 
       for (int i=0; i<ndoublets; ++i){
-	doublet   = &ListOfDoublets->at(i);
+	doublet   = &dcol->at(i);
 	trkshsize = doublet->fNStrawHits;
-//-----------------------------------------------------------------------------
-// assume wires are perpendicular to the radial direction to the panel
-// this is already ambiguos, use atan2 to get the right quadrant
-//-----------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------
+	// assume wires are perpendicular to the radial direction to the panel
+	// this is already ambiguos
+	// use atan2 to get the right quadrant
+	//-----------------------------------------------------------------------------
 	posPanel = doublet->fHit[0]->straw().getMidPoint();
 	phiPanel = atan2(posPanel.y(),posPanel.x());
 	rot.set(-phiPanel);
@@ -258,14 +265,14 @@ namespace mu2e {
 	  hit   = doublet->fHit[j];
 	  Straw const& straw = hit->straw();
 	  shId  = straw.index().asInt();
-//-----------------------------------------------------------------------------
-// mid-wire position and the wire direction
-//-----------------------------------------------------------------------------
+	  //-----------------------------------------------------------------------------
+	  // mid-wire position and the wire direction
+	  //-----------------------------------------------------------------------------
 	  wpos[j] = straw.getMidPoint();
 	  wdir    = doublet->fShDir;
-//-----------------------------------------------------------------------------
-// track position and direction
-//-----------------------------------------------------------------------------
+	  //-----------------------------------------------------------------------------
+	  // track position and direction
+	  //-----------------------------------------------------------------------------
 	  trkpos  = doublet->fTrkPos[j];
 	  tdir    = doublet->fTrkDir[j];
 
@@ -277,11 +284,11 @@ namespace mu2e {
 	  TrkPoca     poca   (trstraw, 0.,trtrk   , 0.);
 	  doca   = poca.doca();
 	  rdrift = hit->driftRadius();
-//-----------------------------------------------------------------------------
-// rotate into a coordinate system with X axis pointing towards the panel and 
-// Y axis pointing in the wire direction
-// current channel numbering scheme allows for that
-//-----------------------------------------------------------------------------
+	  //-----------------------------------------------------------------------------
+	  // rotate into a coordinate system with X axis pointing towards the panel and 
+	  // Y axis pointing in the wire direction
+	  // current channel numbering scheme allows for that
+	  //-----------------------------------------------------------------------------
 	  wpos[j] = rot*wpos[j];
 	  trkpos  = rot*trkpos;
 	  tdir    = rot*tdir;
@@ -342,8 +349,12 @@ namespace mu2e {
       doca[0] = poca.doca()-r;
       doca[1] = poca.doca()+r;
 
+      double err = AmbigResolver::_extErr*Hit->driftVelocity();
+      double x0  = sqrt(doca[0]*doca[0]+err*err);
+      double x1  = sqrt(doca[1]*doca[1]+err*err);
+
       int    ibest, inext;
-      if (fabs(doca[0]) <= fabs(doca[1])) {
+      if (x0 < x1) {
 	ibest = 0;
 	inext = 1;
       }
@@ -351,22 +362,16 @@ namespace mu2e {
 	ibest = 1;
 	inext = 0;
       }
-//-----------------------------------------------------------------------------
-// can't use drift error - the track was fit with larger uncertainty assigned to
-// the hit
-//-----------------------------------------------------------------------------
-      double drift_err = Hit->driftRadiusErr(); // (0.220);   // assume 220 microns - from 
-      double ext_err   = Hit->extErr();
-      double t0_err    = Hit->t0Err();
-      double err       = sqrt(drift_err*drift_err+ext_err*ext_err+t0_err*t0_err);
+ 
+      double drift_err(0.220);   // assume 220 microns - from 
 
-      xbest = doca[ibest]/err;
-      xnext = doca[inext]/err;
+      xbest = doca[ibest]/drift_err;
+      xnext = doca[inext]/drift_err;
 //-----------------------------------------------------------------------------
-// want the best solution to be consistent with the trajectory, 
-// another one - inconsistent, and the two - significantly different
+// want the best solution to be consistent with the trajectory, another one - 
+// to be inconsistent, and the two - significantly different
 //-----------------------------------------------------------------------------
-      if ((fabs(xbest) < _maxHitChi) && (fabs(xnext) > _maxHitChi) && (fabs(xbest/xnext) < sqrt(_minChi2Ratio))) {
+      if ((fabs(xbest) < 5.) && (fabs(xnext) > 5) && (fabs(xbest/xnext) < 0.2)) {
 //-----------------------------------------------------------------------------
 // hit is close enough to the trajectory
 //-----------------------------------------------------------------------------
@@ -378,8 +383,8 @@ namespace mu2e {
 // can't tell
 //-----------------------------------------------------------------------------
 	if (_Final == 0) {
+	  Hit->setTemperature(Hit->driftRadius()/Hit->driftVelocity());
 	  Hit->setAmbig(0);
-	  Hit->setPenalty(Hit->driftRadius());
 	}
 	else {
 //-----------------------------------------------------------------------------
@@ -394,8 +399,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // couldn't determine doca
 //-----------------------------------------------------------------------------
+      Hit->setTemperature(Hit->driftRadius()/Hit->driftVelocity());
       Hit->setAmbig(0);
-      Hit->setPenalty(Hit->driftRadius());
     }
 
     Hit->setAmbigUpdate(false);
@@ -446,8 +451,8 @@ namespace mu2e {
 
     double            phiPanel;
     
-    double            trkslope, dxdz[2], sigr[2]; // , xdr[4][2];
-    double            dsl, xdsl;
+    double            trkslope, dxdz[2], xdr[4][2];
+    double            dsl, xdsl, sig;
 
     double            sflt[2], tflt[2];
     HepPoint          spi[2] , tpi[2], hpos[4][2];
@@ -464,26 +469,20 @@ namespace mu2e {
       R->rdrift[i] = hit[i]->driftRadius();
 
       R->spos  [i] = R->straw[i]->getMidPoint();
-      sdir     [i] = R->straw[i]->getDirection();
+      sdir  [i] = R->straw[i]->getDirection();
 
-      phiPanel     = std::atan2(R->spos[i].y(),R->spos[i].x());
+      phiPanel  = std::atan2(R->spos[i].y(),R->spos[i].x());
       rot.set(-phiPanel);
       
       R->sposr[i]  = rot*R->spos[i];
-      sdirr[i]     = rot*sdir[i];
+      sdirr[i]  = rot*sdir[i];
       
-      R->tpos [i]  = HitDoublet->fTrkPos[R->index[i]];
-      tdir [i]     = HitDoublet->fTrkDir[R->index[i]];
+      R->tpos [i] = HitDoublet->fTrkPos[R->index[i]];
+      tdir [i]    = HitDoublet->fTrkDir[R->index[i]];
 
-      R->tposr[i]  = rot*R->tpos[i];
-      tdirr[i]     = rot*tdir[i];
-      dxdz [i]     = tdirr[i].x()/tdirr[i].z();
-
-					// exclude penalty error
-      double e1    = hit[i]->t0Err();
-      double e2    = hit[i]->driftRadiusErr();
-      double e3    = hit[i]->extErr();
-      sigr[i]      = sqrt(0.4*0.4 + e1*e1 + e2*e2 + e3*e3);
+      R->tposr[i] = rot*R->tpos[i];
+      tdirr[i]  = rot*tdir[i];
+      dxdz [i]  = tdirr[i].x()/tdirr[i].z();
     }
 //-----------------------------------------------------------------------------
 // choose the best combination of the drift signs - the one corresponding 
@@ -501,11 +500,9 @@ namespace mu2e {
       R->chi2[is] = xdsl*xdsl;
     }
 //-----------------------------------------------------------------------------
-// 2. add coordinate term
-//    when calculating residuals, try to exclude both hits simultaneously
-//    however, only for ambig != 0 cases
+// 2. add coordinate term, try to exclude both hits simultaneously
 //-----------------------------------------------------------------------------
-    const TrkSimpTraj                  *ptraj, *ptraj0;
+    const TrkSimpTraj                   *ptraj, *ptraj0;
     vector<KalSite*>::const_iterator   it1, it2;
     double                             s, slen;
     HepPoint                           t1pos;
@@ -547,15 +544,15 @@ namespace mu2e {
 
 	TrkLineTraj tt (t1pos,t1dir,0.); // track, don't need
 	
-	poca[ih] = TrkPoca(tt,0.,st,0);
+	poca[ih] = TrkPoca(st,0.,tt,0);
 	
-	tflt[ih] = poca[ih].flt1();
-	sflt[ih] = poca[ih].flt2();
+	sflt[ih] = poca[ih].flt1();
+	tflt[ih] = poca[ih].flt2();
 	
 	st.getInfo(sflt[ih],spi[ih],sdi[ih]);
 	tt.getInfo(tflt[ih],tpi[ih],tdi[ih]);
 	
-	u[ih]    = tdi[ih].cross(sdi[ih]).unit();  // 'u' is directed towards the center
+	u[ih]    = sdi[ih].cross(tdi[ih]).unit();  // direction towards the center
       }
     }
 //-----------------------------------------------------------------------------
@@ -598,41 +595,28 @@ namespace mu2e {
 
       ptraj->getInfo(hit[ih]->fltLen(),t1pos,t1dir);
 
-      TrkLineTraj tt (t1pos,t1dir,0.); // local straight line parameterization of the track
+      TrkLineTraj tt (t1pos,t1dir,0.); // track, don't need
       
-      poca[ih] = TrkPoca(tt,0.,st,0.);
+      poca[ih] = TrkPoca(st,0.,tt,0);
 	
-      tflt[ih] = poca[ih].flt1();
-      sflt[ih] = poca[ih].flt2();
+      sflt[ih] = poca[ih].flt1();
+      tflt[ih] = poca[ih].flt2();
 	
-      tt.getInfo(tflt[ih],tpi[ih],tdi[ih]);
       st.getInfo(sflt[ih],spi[ih],sdi[ih]);
+      tt.getInfo(tflt[ih],tpi[ih],tdi[ih]);
 	
-      u[ih]    = tdi[ih].cross(sdi[ih]).unit();  // 'u' directed towards the center
+      u[ih]    = sdi[ih].cross(tdi[ih]).unit();  // direction towards the center
 
-//-----------------------------------------------------------------------------
-// positive drift direction means the hit has larger radius than the wire, 'u' is directed inside, thus '-'
-// use the same convention for track-to-hit residuals: 
-// residual is positive, if the hit has larger radius than the track
-//-----------------------------------------------------------------------------
       for (int is=0; is<4; is++) {
-	hpos[is][ih]    = spi[ih]-u[ih]*R->rdrift[ih]*_sign[is][ih];
-	R->doca[is][ih] = (tpi[ih]-hpos[is][ih]).dot(u[ih]);  // hit residual
+//-----------------------------------------------------------------------------
+// chi2 contributions of this hit
+//-----------------------------------------------------------------------------
+	hpos[is][ih]    = spi[ih]+u[ih]*R->rdrift[ih]*_sign[is][ih];
+	R->doca[is][ih] = (hpos[is][ih]-tpi[ih]).dot(u[ih]);
+	sig             = sqrt(R->rdrift[ih]*R->rdrift[ih] +0.1*0.1); // 2.5; // 1.; // hit[ih]->hitRms();
+	xdr[is][ih]     = R->doca[is][ih]/sig;
+	R->chi2[is]    += xdr[is][ih]*xdr[is][ih];
       }
-    }
-
-//-----------------------------------------------------------------------------
-// add coordinate term to the doublet chi2 - dx(mean)/sigma ^ 2
-//-----------------------------------------------------------------------------
-    double  dx0,dx1,dxm,w0,w1;
-
-    for (int is=0; is<4; is++) {
-      dx0          = R->doca[is][0];
-      dx1          = R->doca[is][1];
-      w0           = 1/(sigr[0]*sigr[0]);
-      w1           = 1/(sigr[1]*sigr[1]);
-      dxm          = (dx0*w0 + dx1*w1)/(w0+w1);
-      R->chi2[is] += dxm*dxm*(w0+w1);
     }
 //-----------------------------------------------------------------------------
 // determine the best solution
@@ -684,7 +668,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DoubletAmbigResolver::defineHitDriftSign(mu2e::TrkStrawHit* Hit, int I, Data_t* R) const {
 
-    double err = fabs(R->rdrift[I]);
+    double err = fabs(R->rdrift[I]/Hit->driftVelocity());
     if (_sign[R->ibest][I] == _sign[R->inext][I]) {
 //-----------------------------------------------------------------------------
 // both the 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
@@ -706,10 +690,10 @@ namespace mu2e {
       }
       else {
 //-----------------------------------------------------------------------------
-// all 4 chi2's are "of the same order", nothing to fish
+// all 4 chi2s are "of the same order", nothing to fish
 //-----------------------------------------------------------------------------
+	Hit->setTemperature(err);
 	Hit->setAmbig(0);
-	Hit->setPenalty(err);
       }
     }
     else {
@@ -717,8 +701,8 @@ namespace mu2e {
 // the best and the next solutions correspond to different drift directions 
 // of this hit. Can't choose, assign large error
 //-----------------------------------------------------------------------------
+      Hit->setTemperature(err);
       Hit->setAmbig(0);
-      Hit->setPenalty(err);
     }
   }
 
@@ -769,10 +753,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	    if (r.rdrift[i] > _minDriftDoublet) {
 //-----------------------------------------------------------------------------
-// the hit drift radius is large - reduce the external error, no penalty
+// the hit drift radius is large - reduce the external error
 //-----------------------------------------------------------------------------
+	      hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
 	      hit[i]->setAmbig(_sign[r.ibest][i]);
-	      hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
 	    }
 	    else {
 //-----------------------------------------------------------------------------
@@ -780,9 +764,8 @@ namespace mu2e {
 // the ambiguity to zero to use the wire coordinate
 //-----------------------------------------------------------------------------
 	      if (_Final == 0) {
+		hit[i]->setTemperature(r.rdrift[i]/hit[i]->driftVelocity());
 		hit[i]->setAmbig(0);
-		//		hit[i]->setExtErr(r.rdrift[i]);
-		hit[i]->setPenalty(r.rdrift[i]);
 	      }
 	      else {
 		hit[i]->setAmbig(_sign[r.ibest][i]);
@@ -798,6 +781,41 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	  if (_Final == 0) {
 	    defineHitDriftSign(hit[i],i,&r);
+
+// 	    if (_sign[r.ibest][i] == _sign[r.inext][i]) {
+// //-----------------------------------------------------------------------------
+// // bothe 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
+// // check other two chi2's. If both are an order of magnitude worse than the best,
+// // assume that for this hit the drift direction is defined
+// //-----------------------------------------------------------------------------
+// 	      int defined = 1;
+// 	      for (int j=0; j<4; j++) {
+// 		if ((j != r.ibest) && (j != r.inext)) {
+// 		  if (r.chi2min/r.chi2[j] > 0.2) {
+// 		    defined = 0;
+// 		    break;
+// 		  }
+// 		}
+// 	      }
+
+// 	      if (defined == 1) {
+// 		hit[i]->setAmbig (_sign[r.ibest][i]);
+// 	      }
+// 	      else {
+// //-----------------------------------------------------------------------------
+// // all 4 chi2s are "of the same order", nothing to fish
+// //-----------------------------------------------------------------------------
+// 		hit[i]->setExtErr(r.rdrift[i]);
+// 		hit[i]->setAmbig(0);
+// 	      }
+// 	    }
+// 	    else {
+// //-----------------------------------------------------------------------------
+// // assign external error and set ambiguity to zero
+// //-----------------------------------------------------------------------------
+// 	      hit[i]->setExtErr(r.rdrift[i]);
+// 	      hit[i]->setAmbig(0);
+// 	    }
 	  }
 	  else {
 //-----------------------------------------------------------------------------
@@ -814,8 +832,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // make the best choice possible, external error should be zero at this point
 //-----------------------------------------------------------------------------
+	      hit[i]->setTemperature(AmbigResolver::_extErr);
 	      hit[i]->setAmbig (_sign[r.ibest][i]);
-	      //	      hit[i]->setExtErr(AmbigResolver::_extErr);
 	    }
 	  }
 	}
@@ -829,37 +847,63 @@ namespace mu2e {
 // the hardest case - close drift radii
 //-----------------------------------------------------------------------------
 	  if (r.chi2min < _maxDoubletChi2) {
-	    if (r.chi2next < _maxDoubletChi2) {
-//-----------------------------------------------------------------------------
-// protect from accidentally good best chi2: two best chi2's are good enough - can't tell
-//-----------------------------------------------------------------------------
-	      double err = fabs(r.rdrift[i]);
-	      hit[i]->setAmbig(0);
-	      hit[i]->setPenalty(err);
-	    }
-	    else {
-	      if (r.chi2min/r.chi2next < _minChi2Ratio) { // 0.3
+	    if (r.chi2min/r.chi2next < _minChi2Ratio) { // 0.3
 //-----------------------------------------------------------------------------
 // however, the best chi2 is good enough to be reliable under any circumstances
 //-----------------------------------------------------------------------------
-		hit[i]->setAmbig (_sign[r.ibest][i]);
-		hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
-	      }
-	      else {
+	      hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
+	      hit[i]->setAmbig (_sign[r.ibest][i]);
+	    }
+	    else {
 //-----------------------------------------------------------------------------
 // the best chi2 is good, but the next one is also close - try to postpone 
 // the decision point
 //-----------------------------------------------------------------------------
-		if (_Final == 0) {
-		  defineHitDriftSign(hit[i],i,&r);
-		}
-		else {
+	      if (_Final == 0) {
+// 		double err = fabs(r.rdrift[i]);
+// 		if (_sign[r.ibest][i] == _sign[r.inext][i]) {
+// //-----------------------------------------------------------------------------
+// // bothe 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
+// // check other two chi2's. If both are an order of magnitude worse than the best,
+// // assume that for this hit the drift direction is defined
+// //-----------------------------------------------------------------------------
+// 		  int defined = 1;
+// 		  for (int j=0; j<4; j++) {
+// 		    if ((j != r.ibest) && (j != r.inext)) {
+// 		      if (r.chi2min/r.chi2[j] > 0.2) {
+// 			defined = 0;
+// 			break;
+// 		      }
+// 		    }
+// 		  }
+
+// 		  if (defined == 1) {
+// 		    hit[i]->setAmbig (_sign[r.ibest][i]);
+// 		  }
+// 		  else {
+// //-----------------------------------------------------------------------------
+// // all 4 chi2s are "of the same order", nothing to fish
+// //-----------------------------------------------------------------------------
+// 		    hit[i]->setExtErr(err);
+// 		    hit[i]->setAmbig(0);
+// 		  }
+// 		}
+// 		else {
+// //-----------------------------------------------------------------------------
+// // the best and the next solutions correspond to different drift directions 
+// // of this hit. Can't choose, assign large error
+// //-----------------------------------------------------------------------------
+// 		  hit[i]->setExtErr(err);
+// 		  hit[i]->setAmbig(0);
+// 		}
+		defineHitDriftSign(hit[i],i,&r);
+	      }
+	      else {
 //-----------------------------------------------------------------------------
 // ... but finally decide
 //-----------------------------------------------------------------------------
-		  hit[i]->setAmbig (_sign[r.ibest][i]);
-		  hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
-		}
+		hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
+		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
 	    }
 	  }
@@ -873,22 +917,22 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // don't have to make a decision, scale of uncertainty is defined by the radius
 //-----------------------------------------------------------------------------
-	      double err = fabs(r.rdrift[i]);
+	      double err = fabs(r.rdrift[i])/hit[i]->driftVelocity();
+	      hit[i]->setTemperature(err);
 	      hit[i]->setAmbig(0);
-	      hit[i]->setPenalty(err);
 	    }
 	    else {
 //-----------------------------------------------------------------------------
 // need to make final decision: consider 400 um a limit
 //-----------------------------------------------------------------------------
 	      if (fabs(r.doca[r.ibest][i]) < 0.4) {
+		hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
-		hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
 	      }
 	      else {
-		double err = fabs(r.rdrift[i]);
+		double err = fabs(r.rdrift[i])/hit[i]->driftVelocity();
+		hit[i]->setTemperature(err);
 		hit[i]->setAmbig(0);
-		hit[i]->setPenalty(err);
 	      }
 	    }
 	  }
@@ -903,8 +947,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	    if (r.chi2min/r.chi2next < _minChi2Ratio) {
 	      if (r.rdrift[i] > _minDriftDoublet) {
+		hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
-		hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
 	      }
 	      else {
 //-----------------------------------------------------------------------------
@@ -912,8 +956,8 @@ namespace mu2e {
 // 2015-04-15 P.Murat: for well-resolved doublets it may be possible to decide 
 //                     in all cases - need to check
 //-----------------------------------------------------------------------------
+		hit[i]->setTemperature(AmbigResolver::_extErr);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
-		hit[i]->setExtErr(AmbigResolver::_extErr);
 	      }
 	    }
 	    else {
@@ -930,8 +974,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // final decision
 //-----------------------------------------------------------------------------
+		hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
-		hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
 	      }
 	    }
 	  }
@@ -942,13 +986,48 @@ namespace mu2e {
 // a good example - one of the hits - on Dave's no-gaussial tail
 //-----------------------------------------------------------------------------
 	    if (_Final == 0) {
+// 	      double err = fabs(r.rdrift[i]);
+// 	      if (_sign[r.ibest][i] == _sign[r.inext][i]) {
+// //-----------------------------------------------------------------------------
+// // both the 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
+// // check other two chi2's. If both are an order of magnitude worse than the best,
+// // assume that for this hit the drift direction is defined
+// //-----------------------------------------------------------------------------
+// 		int defined = 1;
+// 		for (int j=0; j<4; j++) {
+// 		  if ((j != r.ibest) && (j != r.inext)) {
+// 		    if (r.chi2min/r.chi2[j] > 0.2) {
+// 		      defined = 0;
+// 		      break;
+// 		    }
+// 		  }
+// 		}
+
+// 		if (defined == 1) {
+// 		  hit[i]->setAmbig (_sign[r.ibest][i]);
+// 		}
+// 		else {
+// //-----------------------------------------------------------------------------
+// // all 4 chi2s are "of the same order", nothing to fish
+// //-----------------------------------------------------------------------------
+// 		  hit[i]->setExtErr(err);
+// 		  hit[i]->setAmbig(0);
+// 		}
+// 	      }
+// 	      else {
+// //-----------------------------------------------------------------------------
+// // the best and the next solutions correspond to different drift directions 
+// // of this hit. Can't choose, assign large error
+// //-----------------------------------------------------------------------------
+// 		hit[i]->setExtErr(err);
+// 		hit[i]->setAmbig(0);
+// 	      }
 	      defineHitDriftSign(hit[i],i,&r);
 	    }
 	    else {
 //-----------------------------------------------------------------------------
-// _Final = 1: make final decision. 
-// Forget about 'ibest' - doublet is not good, look at all residuals for this hit
-// 'dd' stans for 'drift direction'
+// _Final = 1: make final decision - forget about 'ibest' - doublet is not good,
+//            look at all residuals for this hit
 //-----------------------------------------------------------------------------
 	      int    best_dd = -1;
 	      double max_res = 1.e6;
@@ -962,13 +1041,13 @@ namespace mu2e {
 
 	      double herr = hit[i]->hitErr();
 	      if (max_res/herr < 4) {
+		hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
 		hit[i]->setAmbig (_sign[best_dd][i]);
-		hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
 	      }
 	      else {
-		double err = fabs(r.rdrift[i]);
+		double err = fabs(r.rdrift[i])/hit[i]->driftVelocity();
+		hit[i]->setTemperature(err);
 		hit[i]->setAmbig(0);
-		hit[i]->setPenalty(err);
 					// hit residual is large - try to disable?
 		hit[i]->setActivity(false);
 	      }
@@ -1008,17 +1087,17 @@ namespace mu2e {
 //---------------------------------------------------------------------------
 // loop over the doublets found and mark their ambiguities
 //---------------------------------------------------------------------------
-  void DoubletAmbigResolver::markMultiplets (KalRep* Krep, vector<Doublet>* ListOfDoublets) const {
+  void DoubletAmbigResolver::markMultiplets (KalRep* Krep, std::vector<Doublet>* dcol ) const {
 
     mu2e::TrkStrawHit    *hit, *hitj, *hitk, *hmax;
     mu2e::Straw          straw;
     Doublet              *doublet;
     int                  ndoublets, ndhits;
 
-    ndoublets  = ListOfDoublets->size();
+    ndoublets  = dcol->size();
 
     if (_debugLevel > 0) {
-      printf("[KalFitHack::markMultiplets] BEGIN _iter:%i\n",_iter);
+      printf("[KalFitHack::markMultiplets] BEGIN iherr:%i\n",_iter);
       printf("----------------------------------------------------");
       printf("------------------------------------------------------------------------------");
       printf("------------------------------------------------------------------------------------------\n");
@@ -1031,7 +1110,7 @@ namespace mu2e {
     }    
 
     for (int i=0; i<ndoublets; ++i) {
-      doublet = &ListOfDoublets->at(i);
+      doublet = &dcol->at(i);
       ndhits  = doublet->fNStrawHits;
       
       if (ndhits == 1) {
@@ -1131,26 +1210,28 @@ namespace mu2e {
 		}
 	      }
 //-----------------------------------------------------------------------------
-// if the hit radius is greater than some minimal value, set the drift sign
+// if the hit radius is greated than some minimal value, set the drift sign
 //-----------------------------------------------------------------------------
 	      rdrift = hit->driftRadius();
 
 	      if ( fabs(rdrift) > _minDriftDoublet){
 		hit->setAmbig(doublet->fStrawAmbig[ih]);
+		hit->setAmbigUpdate(false);
 	      }
 	      else {
 		if (_Final == 0) {
 		  hit->setAmbig(0);
-		  hit->setPenalty(rdrift);
+		  hit->setTemperature(rdrift/hit->driftVelocity());
+		  hit->setAmbigUpdate(false);
 		}
 		else {
 //-----------------------------------------------------------------------------
 // final decision
 //-----------------------------------------------------------------------------
 		  hit->setAmbig(doublet->fStrawAmbig[ih]);
+		  hit->setAmbigUpdate(false);
 		}
 	      }
-	      hit->setAmbigUpdate(false);
 	    }
 	  }
 	}
@@ -1162,13 +1243,13 @@ namespace mu2e {
 // build list of doublets and resolve the drift signs
 //-----------------------------------------------------------------------------
   bool DoubletAmbigResolver::resolveTrk(KalRep* KRep) const {
-    vector<Doublet>     list_of_doublets;
 
 					// initialize external hit errors
     initHitErrors(KRep);
-    findDoublets (KRep, &list_of_doublets);
+    vector<Doublet> listOfDoublets;
+    findDoublets (KRep,&listOfDoublets);
 
-    if (list_of_doublets.size() > 0) markMultiplets(KRep,&list_of_doublets);
+    if (listOfDoublets.size() > 0) markMultiplets(KRep, &listOfDoublets);
 
     return false; // assume no change FIXME!!!
   }

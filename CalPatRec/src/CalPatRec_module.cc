@@ -1002,8 +1002,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         if (ipeak<16) {
           for (size_t ihit=0; ihit<_kfresult->_hits.size(); ++ihit){
-            const TrkStrawHit* tsh = _kfresult->_hits[ihit];
-            if (tsh->isActive()) {
+            TrkStrawHit* tsh = dynamic_cast<TrkStrawHit*>(_kfresult->_hits[ihit]);
+            if (tsh == 0)      continue;
+	    if (tsh->isActive()) {
               _flags->at(tsh->index()).merge(StrawHitFlag::trackBit(ipeak));
               _flags->at(tsh->index()).merge(StrawHitFlag::calosel);
             }
@@ -1378,8 +1379,10 @@ namespace mu2e {
 
       if (radius_ok && (fabs(dt) < _maxdtmiss)) {
         // make sure we haven't already used this hit
-        std::vector<TrkStrawHit*>::iterator ifnd = find_if(kalfit._hits.begin(),kalfit._hits.end(),FindTrkStrawHit(sh));
-        if(ifnd == kalfit._hits.end()){
+	TrkStrawHitVector tshv;
+	convert(kalfit._hits, tshv);
+        TrkStrawHitVector::iterator ifnd = find_if(tshv.begin(), tshv.end(),FindTrkStrawHit(sh));
+        if(ifnd == tshv.end()){
           // good in-time hit.  Compute DOCA of the wire to the trajectory
           Straw const& straw = _tracker->getStraw(sh.strawIndex());
           CLHEP::Hep3Vector hpos = straw.getMidPoint();

@@ -4,6 +4,7 @@
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/TrkBase/TrkDifTraj.hh"
+#include "BTrk/TrkBase/TrkDifPieceTraj.hh"
 #include "BTrk/TrkBase/TrkRep.hh"
 #include "BTrk/TrkBase/TrkHit.hh"
 //
@@ -13,35 +14,32 @@
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include <algorithm>
 
+#include "TrkReco/inc/TrkUtilities.hh"
+
 using namespace std;
 using CLHEP::Hep3Vector;
 
 namespace mu2e
 {
-  TrkCaloHit::TrkCaloHit(const CaloCluster& caloCluster, const HitT0& hitt0,double fltlen,double exterr) :
+  TrkCaloHit::TrkCaloHit(const CaloCluster& caloCluster, Hep3Vector &caloClusterPos, 
+			 double crystalHalfLength, Hep3Vector const& clusterAxis,
+			 const HitT0& hitt0,double fltlen, double timeWeight, double dtoffset) :
     _caloCluster(caloCluster),
-    _exterr(exterr),
-    _toterr(0.0),
-    _iamb(0)
+    _dtoffset(dtoffset)
   {
-// is there an efficiency issue fetching the crystal half length?
-    double crystalHalfLength(100);
-    Hep3Vector const& clusterAxis = Hep3Vector(0, 0, 1);//_straw.getDirection();
 
-//checkif cog is in the correct reference system!
-    Hep3Vector const& cog = _caloCluster.cog3Vector();//_straw.getMidPoint();
-    _caloClusterPos.setX(cog.x());
-    _caloClusterPos.setY(cog.y());
-    _caloClusterPos.setZ(cog.z() + crystalHalfLength);
+    caloClusterPos.setZ(caloClusterPos.z() + crystalHalfLength);
 
 // the hit trajectory is defined as a line segment directed along the wire direction starting from the wire center
-    _hittraj = new TrkLineTraj(HepPoint(_caloClusterPos.x(),_caloClusterPos.y(),_caloClusterPos.z()),
+    _hittraj = new TrkLineTraj(HepPoint(caloClusterPos.x(), caloClusterPos.y(), caloClusterPos.z()),
 			       clusterAxis, -crystalHalfLength, crystalHalfLength);
     setHitLen(crystalHalfLength);
     setFltLen(fltlen);
 // compute initial hit t0 
-    updateHitT0(hitt0);
+    setHitT0(hitt0);
     setActivity(true);
+    
+    sett0Weight(timeWeight);
 //    std::cout << "creating TrkCaloHit " << this << std::endl;
   }
 
@@ -53,21 +51,22 @@ namespace mu2e
   }
 
   double
-  TrkCaloHit::time() const {
+  TrkCaloHit::time() const{
     return caloCluster().time();
   }
 
   TrkErrCode
-    TrkCaloHit::updateMeasurement(const TrkDifTraj* traj) {
-      TrkErrCode status(TrkErrCode::fail);
-// find POCA to the wire
+  TrkCaloHit::updateMeasurement(const TrkDifTraj* traj) {
+    TrkErrCode status(TrkErrCode::fail);
+    // find POCA to the wire
     updatePoca(traj);
-   if( poca().status().success()) {
+    if( poca().status().success()) {
       status = poca().status();
-// sign drift distance by ambiguity.  Note that an ambiguity of 0 means to ignore the drift
-      double residual = poca().doca();//FIXME - _t2d._rdrift*_iamb;
+      double residual = poca().doca();
       setHitResid(residual);
-      setHitRms(_toterr);
+      double     extErr  = temperature();
+      double     totErr  = sqrt(_hitErr*_hitErr + extErr*extErr);
+      setHitRms(totErr);
     } else {
 //      cout << "TrkCaloHit:: updateMeasurement() failed" << endl;
       setFlag(updateFail);
@@ -79,22 +78,56 @@ namespace mu2e
   }
 
   void
-  TrkCaloHit::hitPosition(Hep3Vector& hpos) const{
-    if( poca().status().success() && _iamb!=0){
-      Hep3Vector pdir = (trkTraj()->position(fltLen()) - hitTraj()->position(hitLen())).unit();
-      hpos = _caloClusterPos + pdir*_hitErr*_iamb;
-    } else {
-      hpos = _caloClusterPos;
-    }
+  TrkCaloHit::hitPosition(CLHEP::Hep3Vector& hpos) const{
+    hpos.setX(hitTraj()->position(hitLen()).x());
+    hpos.setY(hitTraj()->position(hitLen()).y());
+    hpos.setZ(hitTraj()->position(hitLen()).z());
+    //hpos = _caloClusterPos;
   }
 
+
+  bool 
+  TrkCaloHit::signalPropagationTime(double &propTime, double&Doca,
+				    double resid    , double &residErr,
+				    CLHEP::Hep3Vector trajDirection){
+    
+    propTime = 0;//FIX ME! 
+    residErr = 0.5;//FIX ME!
+    return true;
+  }
+  
+  void
+  TrkCaloHit::trackT0Time(double& htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt){
+    // compute the flightlength to this hit from z=0 
+    CLHEP::Hep3Vector hpos;
+    hitPosition(hpos);
+    double hflt  = ptraj->zFlight(hpos.z()) - t0flt;
+    htime = time() + _dtoffset - hflt/vflt;
+  }
+
+  double
+  TrkCaloHit::physicalTime() const {
+    Hep3Vector trjPos(0);
+    hitPosition(trjPos);
+    double     CsI_refractiveIndex(1.8);//FIXME! that should come from the geometryhandle
+    double     extErr  = temperature();
+    double     totErr  = sqrt(_hitErr*_hitErr + extErr*extErr);
+    double     caloClX = _caloCluster.cog3Vector().x();
+    double     caloClY = _caloCluster.cog3Vector().y();
+    double     residx2 = (trjPos.x() - caloClX)*(trjPos.x() - caloClX); 
+    double     residy2 = (trjPos.y() - caloClY)*(trjPos.y() - caloClY); 
+    double     resid   = sqrt( residx2 + residy2)/(CLHEP::c_light/CsI_refractiveIndex)/totErr;
+    
+    return resid;
+  }
+  
 
   void TrkCaloHit::print(std::ostream& o) const {
     o<<"------------------- TrkCaloHit -------------------"<<std::endl;
     // o<<"istraw "<<_istraw<<std::endl;
     // o<<"is active "<<isActive()<<std::endl;
     o<<"hitRms "<<hitRms()<<" weight "<<weight()<<" fltLen "<<fltLen()<<" hitLen "<<hitLen()<<std::endl;
-    o<<" hitT0 "<<_hitt0.t0()<<" hitT0err "<<_hitt0.t0Err()<<" t0err "<<t0Err()<<std::endl;
+    o<<" hitT0 "<<hitT0().t0()<<" hitT0err "<<hitT0().t0Err()<<std::endl;
     Hep3Vector hpos; hitPosition(hpos);
     o<<"hitPosition "<<hpos<<std::endl;
     o<<"---------------------------------------------------"<<std::endl;

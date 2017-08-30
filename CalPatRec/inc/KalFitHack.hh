@@ -18,6 +18,7 @@
 // KalFitHack objects
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
+#include "BTrk/TrkBase/TrkHit.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
 #include "BTrk/KalmanTrack/KalContext.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
@@ -135,10 +136,10 @@ namespace mu2e {
 			 double                    maxchi ,
 			 const CaloCluster*              CCluster=NULL );
 
-    void findBoundingHits(std::vector<TrkStrawHit*>&                   hits, 
-			  double                                       flt0,
-			  std::vector<TrkStrawHit*>::reverse_iterator& ilow ,
-			  std::vector<TrkStrawHit*>::iterator&         ihigh);
+    void findBoundingHits(TrkHitVector&                   hits, 
+			  double                          flt0,
+			  TrkHitVector::reverse_iterator& ilow,
+			  TrkHitVector::iterator&         ihigh);
 
     bool fitable     (TrkDefHack const& tdef);
     void fitIteration(KalFitResult& kres , int Iteration, const CaloCluster* CCluster);
