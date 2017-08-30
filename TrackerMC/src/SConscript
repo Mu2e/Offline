@@ -56,10 +56,12 @@ helper.make_plugins( [ mainlib,
                        'fhiclcpp',
                        'cetlib',
                        'cetlib_except',
-                       'CLHEP',
-                       'boost_filesystem',
-                       'boost_system',
-                       rootlibs,
+		       'BTrk_BField',
+		       'CLHEP',
+		       'HepPDT',
+		       'boost_filesystem',
+		       'boost_system',
+		       rootlibs,
                      ] )
 
 

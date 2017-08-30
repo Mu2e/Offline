@@ -14,7 +14,7 @@
 #include "TProfile.h"
 #include "TDirectory.h"
 
-void STest(TTree* sdiag, TTree* cdiag, const char* page ="G4") {
+void STest(TTree* sdiag, const char* page ="G4") {
   TString spage(page);
   if(spage == "G4") {
     THStack* sstack = new THStack("sstack","G4 Step Length in Straw Gas;step (mm)");
@@ -112,9 +112,7 @@ void STest(TTree* sdiag, TTree* cdiag, const char* page ="G4") {
     sdiag->Project("nch","nsubstep","partP>100");
     sdiag->Project("ncl","nsubstep","partP<5");
     sdiag->Project("ncs","nsubstep:steplen");
-    cdiag->Project("ne","nion");
     sdiag->Project("ee","1.0e6*stepE/niontot");
-    cdiag->Project("gp","gain");
     sdiag->Project("slh","steplen/nsubstep","partP>100");
     sdiag->Project("sll","steplen/nsubstep","partP<5");
     
@@ -146,8 +144,5 @@ void STest(TTree* sdiag, TTree* cdiag, const char* page ="G4") {
     gp->Draw();
     ccan->cd(6);
     slstack->Draw();
-
-  } else if(spage == "gain") {
-
   }
 }

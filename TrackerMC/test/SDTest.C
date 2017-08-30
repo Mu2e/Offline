@@ -16,7 +16,7 @@
 void SDTest(TTree* sddiag, const char* page ="adc",unsigned NADC=12,TCut cut=TCut()) {
   TString spage(page);
   if(spage == "adc") {
-    TCanvas* adc = new TCanvas("adc","ADC",800,800);
+    TCanvas* adc = new TCanvas("adc","ADC",800,600);
     TH2F* adcwf = new TH2F("adcwf","ADC Waveform;Digitization;Value",NADC,-0.5,NADC-0.5,1024,1300,4095.5);
     TProfile* adcwfp = new TProfile("adcwfp","ADC Waveform;Digitization;Value",NADC,-0.5,NADC-0.5,1300,4095.5,"S");
     adcwf->SetStats(0);
@@ -34,7 +34,7 @@ void SDTest(TTree* sddiag, const char* page ="adc",unsigned NADC=12,TCut cut=TCu
     adc->cd(2);
     adcwfp->Draw();
   } else if(spage == "tdc"){
-    TCanvas* tdc = new TCanvas("tdc","TDC",800,800);
+    TCanvas* tdc = new TCanvas("tdc","TDC",800,600);
     TH1F* dtdc = new TH1F("dtdc","#Delta TDC",200,-500,500);
     sddiag->Project("dtdc","tdccal-tdchv");
     dtdc->Draw();
@@ -46,7 +46,7 @@ void SDTest(TTree* sddiag, const char* page ="adc",unsigned NADC=12,TCut cut=TCu
     sddiag->Project("dvdt","wdisthv-wdistcal:xtimehv-xtimecal","vcrosscal>0&&vcrosshv>0");
     sddiag->Project("dtdcdt","tdchv-tdccal:xtimehv-xtimecal","vcrosscal>0&&vcrosshv>0");
     dvdt->FitSlicesY(0,20,80);
-    TCanvas* dvdtcan = new TCanvas("dvdtcan","dvdtcan",1200,800);
+    TCanvas* dvdtcan = new TCanvas("dvdtcan","dvdtcan",800,600);
     dvdtcan->Divide(2,2);
     dvdtcan->cd(1);
     dvdt->Draw("box");
@@ -73,7 +73,7 @@ void SDTest(TTree* sddiag, const char* page ="adc",unsigned NADC=12,TCut cut=TCu
     sddiag->Project("ttvsd","tctimecal-mctime%1695:mcdca","mcmom>50&ectime>300");
     sddiag->Project("xtvsd","xtimecal-mctime%1695:mcdca","mcmom>50&ectime>300");
 
-    TCanvas* ccan = new TCanvas("ccan","ccan",1200,800);
+    TCanvas* ccan = new TCanvas("ccan","ccan",800,600);
     ccan->Divide(3,2);
     ccan->cd(1);
     nclust->Draw();
@@ -87,6 +87,21 @@ void SDTest(TTree* sddiag, const char* page ="adc",unsigned NADC=12,TCut cut=TCu
     ttvsd->Draw("box");
     ccan->cd(6);
     xtvsd->Draw("box");
+  } else if(spage == "ionize") {
+    TH1F* dke = new TH1F("dke","#delta-Ray Kinetic Energy;Energy (KeV)",100,0,10.0);
+    TH1F* dbg = new TH1F("dbg","#delta-Ray #beta#times#gamma;#beta#times#gamma",100,0,0.5);
+    TH1F* pbg = new TH1F("pbg","Proton #beta#times#gamma;#beta#times#gamma",100,0,0.5);
+
+    sddiag->Project("dke","(sqrt(mcmom^2+0.511^2)-0.511)*1000.0","mcpdg==11&&mcproc<20");
+    sddiag->Project("dbg","mcmom/0.511","mcpdg==11&&mcproc<20");
+    sddiag->Project("pbg","mcmom/938.27","mcpdg==2212");
+    TCanvas* ican = new TCanvas("ican","ican",800,600);
+    ican->Divide(2,2);
+    ican->cd(1);
+    dke->Draw();
+    ican->cd(2);
+    dbg->Draw();
+    ican->cd(3);
+    pbg->Draw();
   }
 }
-
