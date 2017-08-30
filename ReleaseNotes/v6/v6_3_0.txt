@@ -1,0 +1,17 @@
+           Release notes for Mu2e Offline software, v6_3_0
+
+1) kutschke August 28, 2017
+    - Upgrade to art v2_07_03 from v2_06_02
+    - Most of the work was done in item 2 of ReleaseNotes/v6/v6_2_5.txt
+       (the changes in that item were compatible with both versions of art )
+    - The changes in this commit do not work with art v2_06_02
+      - Change setup.sh to select the new tools
+      - Location of art/Framework/Principal/get_BranchDescription.h
+        has changed.
+      - Renable the pragma's to fix the boost use of deprecated compiler
+        features.  See item 2F of ReleaseNotes/v6/v6_2_5.txt.
+    - For more information about art v2_07_03, including new features and
+      backwards breaking changes, see:
+        - https://mu2e-docdb.fnal.gov/cgi-bin/private/ShowDocument?docid=11201
+        - Check all of the release notes between art v2_06_02 and v2_07_03
+          https://cdcvs.fnal.gov/redmine/projects/art/wiki#nbspart-suite-release-notes

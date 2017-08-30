@@ -69,7 +69,7 @@ services.TFileService.fileName : "hg4s1EMFMARSRoom.root"
 outputs.outFiltered : { module_type : RootOutput
                         SelectEvents: { SelectEvents: [trigFilter] }
                         outputCommands:   [ "keep *_*Filter*_*_*", "keep *_SimParticleMARSAssnsMaker_*_*", "keep *_geom*_*_*", "keep mu2e::StatusG4_*_*_*"]
-                        fileName: "vdg4s1EMFMARSRoomFiltered.root"
+                        fileName: "vdg4s1EMFMARSRoomFiltered.art"
                       }
 
 physics.marsOutputs : [ outFiltered ]

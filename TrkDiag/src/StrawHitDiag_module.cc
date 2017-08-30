@@ -70,7 +70,6 @@ namespace mu2e
       Float_t _shlen, _slen; 
       Float_t _edep;
       Float_t _time, _bkgt, _rho;
-      Int_t _nmcsteps;
       Int_t _mcnunique,_mcnmax;
       Int_t _mcpdg,_mcgen,_mcproc;
       Int_t _mcppdg,_mcpproc;
@@ -81,7 +80,7 @@ namespace mu2e
       Float_t _mcshlen,_mcshd;
       Float_t _mcedep;
       Float_t _pdist,_pperp,_pmom;
-      Float_t _mctime, _mcptime;
+      Double_t _mctime, _mcptime;
       Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
       Int_t _plane, _panel, _layer, _straw;
       Float_t _shwres, _shtres, _shchisq, _shdt, _shdist;
@@ -179,16 +178,15 @@ namespace mu2e
       _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
       _shdiag->Branch("mcshd",&_mcshd,"mcshd/F");
       _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
-      _shdiag->Branch("nmcsteps",&_nmcsteps,"nmcsteps/I");
       _shdiag->Branch("mcnunique",&_mcnunique,"mcnunique/I");
       _shdiag->Branch("mcnmax",&_mcnmax,"mcnmax/I");
       _shdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
       _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
       _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
-      _shdiag->Branch("mctime",&_mctime,"mctime/F");
+      _shdiag->Branch("mctime",&_mctime,"mctime/D");
       _shdiag->Branch("mcppdg",&_mcppdg,"mcpdg/I");
       _shdiag->Branch("mcpproc",&_mcpproc,"mcpproc/I");
-      _shdiag->Branch("mcptime",&_mcptime,"mcptime/F");
+      _shdiag->Branch("mcptime",&_mcptime,"mcptime/D");
       _shdiag->Branch("mcgid",&_mcgid,"mcgid/I");
       _shdiag->Branch("mcgpdg",&_mcgpdg,"mcgpdg/I");
       _shdiag->Branch("mcge",&_mcge,"mcge/F");
@@ -236,10 +234,6 @@ namespace mu2e
       _mcgt = -1.0;
       _mcgpos = threevec();
       _mcppdg=0;
-      _mcpproc=-1;
-      _mcptime=0.0;
-      _mcpop = threevec();
-      _mcpoe = _mcpom = -1.0;
       _mcnmax = -1;
       _mcpdg = -1;
       _mcgen = -1;

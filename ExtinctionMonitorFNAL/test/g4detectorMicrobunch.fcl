@@ -22,7 +22,7 @@ physics.producers.generate.guns[1].tmax: 1694.
 physics.producers.generate.guns[1].multiplicity: 12.
 
 
-outputs.FullOutput.fileName    : "dataMicrobunch.root"
+outputs.FullOutput.fileName    : "dataMicrobunch.art"
 services.TFileService.fileName : "histMicrobunch.root"
 
 // This tells emacs to view this file in the JavaScript mode.

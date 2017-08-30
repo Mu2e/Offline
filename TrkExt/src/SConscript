@@ -12,7 +12,7 @@ Import('mu2e_helper')
 babarlibs = env['BABARLIBS']
 rootlibs  = env['ROOTLIBS']
 
-helper=mu2e_helper();
+helper=mu2e_helper(env);
 
 mainlib = helper.make_mainlib ( [ 'mu2e_Mu2eBTrk',
 				  'mu2e_TrkReco',

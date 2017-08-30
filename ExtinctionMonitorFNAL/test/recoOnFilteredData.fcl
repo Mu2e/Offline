@@ -3,7 +3,7 @@
 #include "ExtinctionMonitorFNAL/test/recoDefsCommon.fcl"
 
 process_name : recoOnFilteredData
-outputs.FullOutput.fileName    : "dataRecoOnFilteredData.root"
+outputs.FullOutput.fileName    : "dataRecoOnFilteredData.art"
 services.TFileService.fileName : "histRecoOnFilteredData.root"
 
 singleParticleMode : false
