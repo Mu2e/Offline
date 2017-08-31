@@ -538,7 +538,7 @@ namespace mu2e {
 	// uncharged particle, put all the energy in a single cluster
       if (charge == 0.0 || step.stepLength() < _strawphys->meanFreePath()){
 	double cen = step.ionizingEdep();
-	double fnion = rint(_strawphys->meanIonCount()*cen/_strawphys->meanIonEnergy());
+	double fnion = rint(cen/_strawphys->meanIonEnergy());
 	unsigned nion = std::max( static_cast<unsigned>(fnion),(unsigned)1);
 	double qc = _strawphys->ionizationCharge(nion);
 	IonCluster cluster(step.position(),qc,cen,nion);
@@ -594,7 +594,7 @@ namespace mu2e {
 	      // For the rest, divide up the average energy/ionization evenly.
 	      // This assumes the energy comes from many separate ionizations
 	      cen = std::min(cstep*dedx,etot); 
-	      double fnion = rint(_strawphys->meanIonCount()*cen/_strawphys->meanIonEnergy());
+	      double fnion = rint(cen/_strawphys->meanIonEnergy());
 	      nion = std::max( static_cast<unsigned>(fnion),(unsigned)1);
 	    }
 	    // create a cluster object
@@ -636,7 +636,7 @@ namespace mu2e {
 	  unsigned nsteps = std::min(std::max(static_cast<unsigned>(fnsteps),(unsigned)1),_maxdnclu);
 	  // compute energy deposit at each step.  No need to randomize
 	  double cen = step.ionizingEdep()/fnsteps;
-	  double fnion = rint(_strawphys->meanIonCount()*cen/_strawphys->meanIonEnergy());
+	  double fnion = rint(cen/_strawphys->meanIonEnergy());
 	  unsigned nion = std::max( static_cast<unsigned>(fnion),(unsigned)1);
 	  double qc = _strawphys->ionizationCharge(nion);
 	  unsigned istep(0);
