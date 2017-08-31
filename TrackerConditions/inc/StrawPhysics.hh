@@ -45,7 +45,7 @@ namespace mu2e {
       double propagationTime(double wdist) const;
       double velocityDispersion() const { return _vdisp; } 
       double meanFreePath() const { return _meanpath; }
-      double ionizationEnergy(unsigned nele=1) const { return _EIonize*nele*(nele+1)/2; } // approximate total energy for an ionization of "nele" electrons, assuming all electrons come from the same shell
+      double ionizationEnergy(unsigned nele=1) const;
       double ionizationEnergy(double q) const { return _EAverage*q/_QAverage; }  // energy to produce a given charge.  This assumes the internal distribution of the number of electrons/ionization
       double ionizationCharge(double eion) const { return _Qe*eion/_EAverage; } 
       double ionizationCharge(unsigned nele=1) const { return _Qe*nele; } 
@@ -53,7 +53,7 @@ namespace mu2e {
       double meanIonEnergy() const { return _EAverage; }
       double meanIonCount() const { return _NAverage; }
     private:
-      double _EIonize; // energy to create a single ionization electron (MeV)
+      std::vector<double> _EIonize; // cumulative energy to create N ionization electrons (MeV)
       double _meanpath; // mean free path (mm)
       double _Qe; // charge of a single ionization electron (=e, pC)
       std::vector<double> _intNProb; // integrated probability distribution of the number of e produced per cluster
@@ -73,8 +73,6 @@ namespace mu2e {
     // parameters describing cluster DtoT
       std::vector<double> _cdpoly;
       std::vector<double> _cdsigmapoly;
-
-
   };
 }
 #endif

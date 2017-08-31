@@ -17,7 +17,6 @@
 using namespace std;
 namespace mu2e {
   StrawPhysics::StrawPhysics(fhicl::ParameterSet const& pset) :
-    _EIonize(pset.get<double>("EnergyPerIonization",1.6e-5)), // 100% Ar is between 27 ev/ionization and 100 ev/ionization, this number is tuned to reproduce the correct mean-free-path from the G4 energy deposits when setting the number of electrons/cluster to the distribution below
     _meanpath(pset.get<double>("MeanFreePath",0.357)), // mm, average distance between ionizations for a MIP in STP Ar (Blum etal, table 1.1)
     _Qe(pset.get<double>("ElectronCharge",1.6e-7)), // e, pC
     _gasgain(pset.get<double>("GasGain",7.0e4)),
@@ -35,20 +34,32 @@ namespace mu2e {
     double ptot(0.0);
     std::vector<double> nProb = pset.get<vector<double> >("ProbPerCharge",vector<double>{0.656,0.15,0.064,0.035,0.0225,0.0155,0.0105,
       0.0081,0.0061, 0.0049, 0.0039, 0.0030, 0.0025, 0.0020, 0.0016, 0.0012, 0.00095, 0.00075}); // Blum, table 1.4
-// renormalize these probs
+    std::vector<double> eionize = pset.get<vector<double> >("IonizationEnergyTable",vector<double>{
+15.75962,27.62967,40.74,59.81,75.02,91.009,124.323,143.460,422.45,478.69,538.96,618.26,686.10,755.74,854.77,918.03,4120.8857,4426.2296}); // CRC table for Ar ionization energies (in eV).
+// renormalize the probs and integrate the energies
     for(unsigned iprob=0;iprob< nProb.size(); ++iprob ) {
       ptot += nProb[iprob];
     }
     double norm = 1.0/ptot;
     double psum(0.0);
-    // now compute the average charge and energy per ionization from this distrubio
+    // integrate the ionization energy table
+    const double MeV_per_eV(1.0e-6);
+    _EIonize.reserve(eionize.size());
+    for(size_t iion=0;iion<eionize.size();++iion){
+      double esum(0.0);
+      if(iion>0)
+	esum = _EIonize[iion-1];
+      esum += MeV_per_eV *eionize[iion];// cumulative energy to free 'iion' electrons
+      _EIonize.push_back(esum);
+    }
+    // now compute the average charge and energy per ionization from these distributions
     _NAverage = _EAverage = _QAverage = 0.0;
     for(unsigned iprob=0;iprob< nProb.size(); ++iprob ) {
       unsigned nele = iprob+1;
       double nprob = nProb[iprob]*norm;
       _intNProb.push_back(psum + nprob);
       psum += nprob;
-      _EAverage += nprob*ionizationEnergy(nele);
+      _EAverage += nprob*ionizationEnergy(nele)/nele;
       _QAverage += nprob*ionizationCharge(nele);
       _NAverage += nprob*nele;
     }
@@ -120,9 +131,22 @@ namespace mu2e {
   }
 
   unsigned StrawPhysics::nePerEIon(double EIon) const {
-    // approximate assuming linear increase in ionization energy per electron.
-    return std::min(static_cast<unsigned>(std::max(1.0,floor(0.5*(sqrt(1.0+8.0*EIon/_EIonize)-1.0)))),(unsigned)_intNProb.size());
+    // Find the maximum number of electrons this energy could produce
+    unsigned ie(0);
+    while(ie < _EIonize.size() && EIon > _EIonize[ie]){
+      ++ie;
+    }
+    // require at least 1 electron
+    return std::max((unsigned)1,ie);
   }
 
+  double StrawPhysics::ionizationEnergy(unsigned nele) const {
+    if(nele >=1 && nele <= _EIonize.size())
+      return _EIonize[nele-1];
+    else if(nele<1)
+      return 0.0;
+    else
+      return _EIonize.back();
+  } 
 }
 
