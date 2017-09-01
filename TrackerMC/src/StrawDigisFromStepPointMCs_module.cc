@@ -69,9 +69,9 @@ namespace mu2e {
       Hep3Vector _pos; // position of this cluster
       double _charge; // charge of this cluster, in pC.  Note: this is pre-gain!!!
       double _eion; // ionization energy of this cluster, in MeV
-      unsigned _nion; // number of ionizations in this cluste
-      IonCluster(Hep3Vector const& pos, double charge, double eion, unsigned nion): 
-	_pos(pos),_charge(charge),_eion(eion),_nion(nion) {}
+      unsigned _ne; // number of electrons in this cluster
+      IonCluster(Hep3Vector const& pos, double charge, double eion, unsigned ne): 
+	_pos(pos),_charge(charge),_eion(eion),_ne(ne) {}
     };
 
     struct WireCharge { // charge at the wire after drift
@@ -175,10 +175,10 @@ namespace mu2e {
 	Int_t _tdc[2], _tot[2];
 	TTree* _sdiag;
 	Float_t _steplen, _stepE, _qsum, _partP;
-	Int_t _nsubstep, _niontot, _partPDG;
+	Int_t _nsubstep, _netot, _partPDG;
 	TTree* _cdiag;
 	Float_t _gain, _cq, _cen;
-	Int_t _nion;
+	Int_t _ne;
 
 	//    vector<TGraph*> _waveforms;
 	vector<TH1F*> _waveforms;
@@ -259,14 +259,14 @@ namespace mu2e {
 	_sdiag->Branch("partP",&_partP,"partP/F");
 	_sdiag->Branch("qsum",&_qsum,"qsum/F");
 	_sdiag->Branch("nsubstep",&_nsubstep,"nsubstep/I");
-	_sdiag->Branch("niontot",&_niontot,"niontot/I");
+	_sdiag->Branch("netot",&_netot,"netot/I");
 	_sdiag->Branch("partPDG",&_partPDG,"partPDG/I");
 
 	_cdiag =tfs->make<TTree>("cdiag","Cluster diagnostics");
 	_cdiag->Branch("gain",&_gain,"gain/F");
 	_cdiag->Branch("charge",&_cq,"charge/F");
 	_cdiag->Branch("energy",&_cen,"energy/F");
-	_cdiag->Branch("nion",&_nion,"nion/I");
+	_cdiag->Branch("ne",&_ne,"ne/I");
 
    	_swdiag =tfs->make<TTree>("swdiag","StrawWaveform diagnostics");
 	_swdiag->Branch("plane",&_swplane,"plane/I");
@@ -347,10 +347,14 @@ namespace mu2e {
       const Straw& straw = tracker.getStraw(StrawId(0,0,0,0));
       double rstraw = straw.getRadius();
       _ptmin = _ptfac*BField::mmTeslaToMeVc*b0.mag()*rstraw;
+      if ( _printLevel > 0 ) {
+	_strawphys = ConditionsHandle<StrawPhysics>("ignored");
+	_strawphys->print(cout);
+      }
     }
 
     void StrawDigisFromStepPointMCs::produce(art::Event& event) {
-      if ( _printLevel > 0 ) cout << "StrawDigisFromStepPointMCs: produce() begin; event " << event.id().event() << endl;
+      if ( _printLevel > 1 ) cout << "StrawDigisFromStepPointMCs: produce() begin; event " << event.id().event() << endl;
       static int ncalls(0);
       ++ncalls;
       // update conditions caches.
@@ -400,7 +404,7 @@ namespace mu2e {
       // store MC truth match
       event.put(move(mcdigis));
       event.put(move(mcptrs));
-      if ( _printLevel > 0 ) cout << "StrawDigisFromStepPointMCs: produce() end" << endl;
+      if ( _printLevel > 1 ) cout << "StrawDigisFromStepPointMCs: produce() end" << endl;
       // Done with the first event; disable some messages.
       _firstEvent = false;
     } // end produce
@@ -538,10 +542,10 @@ namespace mu2e {
 	// uncharged particle, put all the energy in a single cluster
       if (charge == 0.0 || step.stepLength() < _strawphys->meanFreePath()){
 	double cen = step.ionizingEdep();
-	double fnion = rint(cen/_strawphys->meanIonEnergy());
-	unsigned nion = std::max( static_cast<unsigned>(fnion),(unsigned)1);
-	double qc = _strawphys->ionizationCharge(nion);
-	IonCluster cluster(step.position(),qc,cen,nion);
+	double fne = rint(cen/_strawphys->meanElectronEnergy());
+	unsigned ne = std::max( static_cast<unsigned>(fne),(unsigned)1);
+	double qc = _strawphys->ionizationCharge(ne);
+	IonCluster cluster(step.position(),qc,cen,ne);
 	clusters.push_back(cluster);
       } else {
 	// use beta-gamma to decide if this is a min-ion particle or not
@@ -586,20 +590,20 @@ namespace mu2e {
 	    }
 	    // explicitly simulate ionization statistics for min-ion particles.
 	    double cen;
-	    unsigned nion;
+	    unsigned ne;
 	    if(minion){
-	      nion = _strawphys->nePerIon(_randflat.fire());
-	      cen = std::min(_strawphys->ionizationEnergy(nion),etot);
+	      ne = _strawphys->nePerIon(_randflat.fire());
+	      cen = std::min(_strawphys->ionizationEnergy(ne),etot);
 	    } else {
 	      // For the rest, divide up the average energy/ionization evenly.
 	      // This assumes the energy comes from many separate ionizations
 	      cen = std::min(cstep*dedx,etot); 
-	      double fnion = rint(cen/_strawphys->meanIonEnergy());
-	      nion = std::max( static_cast<unsigned>(fnion),(unsigned)1);
+	      double fne = rint(cen/_strawphys->meanElectronEnergy());
+	      ne = std::max( static_cast<unsigned>(fne),(unsigned)1);
 	    }
 	    // create a cluster object
-	    double qc = _strawphys->ionizationCharge(nion);
-	    IonCluster cluster(cpos,qc,cen,nion);
+	    double qc = _strawphys->ionizationCharge(ne);
+	    IonCluster cluster(cpos,qc,cen,ne);
 	    clusters.push_back(cluster);
 	    // update for the next step
 	    slen -= cstep;
@@ -636,9 +640,9 @@ namespace mu2e {
 	  unsigned nsteps = std::min(std::max(static_cast<unsigned>(fnsteps),(unsigned)1),_maxdnclu);
 	  // compute energy deposit at each step.  No need to randomize
 	  double cen = step.ionizingEdep()/fnsteps;
-	  double fnion = rint(cen/_strawphys->meanIonEnergy());
-	  unsigned nion = std::max( static_cast<unsigned>(fnion),(unsigned)1);
-	  double qc = _strawphys->ionizationCharge(nion);
+	  double fne = rint(cen/_strawphys->meanElectronEnergy());
+	  unsigned ne = std::max( static_cast<unsigned>(fne),(unsigned)1);
+	  double qc = _strawphys->ionizationCharge(ne);
 	  unsigned istep(0);
 	  unsigned ntries(0);
 	  // loop until we've found enough valid samples, or have given up trying
@@ -650,7 +654,7 @@ namespace mu2e {
 	    // test
 	    double rd2 = (cpos-straw.getMidPoint()).perpPart(straw.getDirection()).mag2();
 	    if(rd2 < r2){
-	      IonCluster cluster(cpos,qc,cen,nion);
+	      IonCluster cluster(cpos,qc,cen,ne);
 	      clusters.push_back(cluster);
 	      ++istep;
 //	    } else {
@@ -661,7 +665,7 @@ namespace mu2e {
 	  if(istep != nsteps){
 	  // failed to find valid steps. put any remining energy at the step
 	    while(istep < nsteps){
-	      IonCluster cluster(step.position(),qc,cen,nion);
+	      IonCluster cluster(step.position(),qc,cen,ne);
 	      clusters.push_back(cluster);
 	      ++istep;
 	    }
@@ -676,10 +680,10 @@ namespace mu2e {
 	_partP = step.momentum().mag();
 	_partPDG = step.simParticle()->pdgId();
 	_nsubstep = clusters.size();
-	_niontot = 0;
+	_netot = 0;
 	_qsum = 0.0;
 	for(auto iclust=clusters.begin();iclust != clusters.end();++iclust){
-	  _niontot += iclust->_nion;
+	  _netot += iclust->_ne;
 	  _qsum += iclust->_charge;
 	}
 	_sdiag->Fill();
@@ -695,7 +699,7 @@ namespace mu2e {
       // for now ignore Lorentz effects FIXME!!!
       double dphi = 0.0;
       // sample the gain for this cluster 
-      double gain = _strawphys->clusterGain(_randgauss, _randflat, cluster._nion);
+      double gain = _strawphys->clusterGain(_randgauss, _randflat, cluster._ne);
       wireq._charge = cluster._charge*(gain);
       // smear drift time
       wireq._time = _randgauss.fire(_strawphys->driftDistanceToTime(dd,dphi),
@@ -708,7 +712,7 @@ namespace mu2e {
 	_gain = gain;
 	_cq = cluster._charge;
 	_cen = cluster._eion;
-	_nion = cluster._nion;
+	_ne = cluster._ne;
 	_cdiag->Fill(); 
       }
     }
