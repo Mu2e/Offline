@@ -22,7 +22,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "CalPatRec/inc/KalFitResult.hh"
+// #include "CalPatRec/inc/KalFitResult.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 
 #include <boost/accumulators/accumulators.hpp>

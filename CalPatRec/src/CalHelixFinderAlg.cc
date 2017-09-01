@@ -61,8 +61,6 @@
 #include <algorithm>
 
 #include "CalPatRec/inc/CalHelixFinderAlg.hh"
-#include "CalPatRec/inc/THackData.hh"
-// #include "CalPatRec/inc/TrkDefHack.hh"
 
 using CLHEP::HepVector;
 using CLHEP::Hep3Vector;

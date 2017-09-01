@@ -12,7 +12,7 @@
 
 #include "CalPatRec/inc/CalTimePeak.hh"
 #include "CalPatRec/inc/LsqSums4.hh"
-#include "CalPatRec/inc/HelixFitHack.hh"
-#include "CalPatRec/inc/KalFitHack.hh"
+// #include "CalPatRec/inc/HelixFitHack.hh"
+// #include "CalPatRec/inc/KalFitHack.hh"
 #include "TrkReco/inc/TrkDef.hh"
 

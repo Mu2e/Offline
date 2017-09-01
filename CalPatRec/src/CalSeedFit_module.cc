@@ -421,27 +421,47 @@ namespace mu2e {
   void CalSeedFit::findMissingHits(KalFitResultNew& KRes) {
 
     const char* oname = "CalSeedFit::findMissingHits";
-    for (unsigned istr=0; istr<nstrs;++istr) {
+    
+    Hep3Vector tdir;
+    HepPoint   tpos;
+    int        radius_ok;
+    double     dt;
+
+    KRes._krep->pieceTraj().getInfo(0.0,tpos,tdir);
+
+    int nstrs =  _shcol->size();
+    for (int istr=0; istr<nstrs;++istr) {
 //----------------------------------------------------------------------
 // 2015-02-11 gianipez and P. Murat changed the selection bit
 //            for searching for missed hits
 //----------------------------------------------------------------------
-      StrawHit const& sh = _shcol->at(istr);
+      const StrawHit* sh = &_shcol->at(istr);
 //-----------------------------------------------------------------------------
 // I think, we want to check the radial bit: if it is set, than at least one of
 // the two measured times is wrong...
 //-----------------------------------------------------------------------------
       radius_ok = _shfcol->at(istr).hasAllProperties(StrawHitFlag::radsel);
-      dt        = _shcol->at(istr).time()-kalfit._krep->t0()._t0;
+      dt        = _shcol->at(istr).time()-KRes._krep->t0()._t0;
 
       if (radius_ok && (fabs(dt) < _maxdtmiss)) {
         // make sure we haven't already used this hit
-	TrkStrawHitVector tshv;
-	convert(kalfit._hits, tshv);
-        TrkStrawHitVector::iterator ifnd = find_if(tshv.begin(), tshv.end(),FindTrkStrawHit(sh));
-        if(ifnd == tshv.end()){
+	// TrkStrawHitVector tshv;
+	// convert(KRes._hits, tshv);
+
+	TrkHit* hit(NULL);
+
+	for (auto ih=KRes._krep->hitVector().begin(); ih != KRes._krep->hitVector().end(); ih++) {
+	  TrkStrawHit* tsh = (TrkStrawHit*) (*ih);
+	  if (&tsh->strawHit() == sh) {
+	    hit = *ih;
+	    break;
+	  }
+	}
+	//         TrkHitVector::iterator ifnd = find_if(KRes._krep->hitVector().begin(),KRes._krep->hitVector().end(),FindTrkStrawHit(sh));
+	//        if (ifnd == KRes._krep->hitVector().end()) {
+        if (hit == NULL) {
           // good in-time hit.  Compute DOCA of the wire to the trajectory
-          Straw const& straw = _tracker->getStraw(sh.strawIndex());
+          Straw const& straw = _tracker->getStraw(sh->strawIndex());
           CLHEP::Hep3Vector hpos = straw.getMidPoint();
           CLHEP::Hep3Vector hdir = straw.getDirection();
           // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
@@ -449,7 +469,7 @@ namespace mu2e {
           TrkLineTraj htraj(spt,hdir,-20,20);
           // estimate flightlength along track.  This assumes a constant BField!!!
           double fltlen = (hpos.z()-tpos.z())/tdir.z();
-          TrkPoca hitpoca(kalfit._krep->pieceTraj(),fltlen,htraj,0.0);
+          TrkPoca hitpoca(KRes._krep->pieceTraj(),fltlen,htraj,0.0);
 
           if (_debugLevel > 0) {
             printf("[CalSeedFit::findMissingHits] %8i  %6i  %8i  %10.3f \n",
@@ -461,8 +481,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // flag hits with small residuals
 //-----------------------------------------------------------------------------
-          if (fabs(hitpoca.doca()) < _maxadddoca) {
-            misshits.push_back(istr);
+          if (fabs(hitpoca.doca()) < _maxAddDoca) {
+            KRes._missingHits.push_back(istr);
           }
         }
       }
@@ -473,8 +493,6 @@ namespace mu2e {
     const StrawHit*          sh;
     const Straw*             straw;
 
-    Hep3Vector               tdir;
-    HepPoint                 tpos;
     double                   doca, /*rdrift, */fltlen;
 
     if (_debugLevel > 0) printf("[%s]: BEGIN\n",oname);
