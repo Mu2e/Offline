@@ -16,15 +16,13 @@
 #include <array>
 #include <vector>
 #include <utility>
+#include <algorithm>
 // CLHEP
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandFlat.h"
 // Mu2e includes
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
-#include <array>
-#include <vector>
-#include <algorithm>
 
 namespace mu2e {
   class StrawPhysics : virtual public ConditionsEntity {
@@ -46,15 +44,16 @@ namespace mu2e {
       double velocityDispersion() const { return _vdisp; } 
       double meanFreePath() const { return _meanpath; }
       double ionizationEnergy(unsigned nele=1) const;
-      double ionizationEnergy(double q) const { return _EAverage*q/_QAverage; }  // energy to produce a given charge.  This assumes the internal distribution of the number of electrons/ionization
+      double ionizationEnergy(double q) const { return _EAverage*q/_Qe; }  // energy to produce a given charge.  This assumes the internal distribution of the number of electrons/ionization
       double ionizationCharge(double eion) const { return _Qe*eion/_EAverage; } 
       double ionizationCharge(unsigned nele=1) const { return _Qe*nele; } 
-      double meanIonCharge() const { return _QAverage; }
-      double meanIonEnergy() const { return _EAverage; }
-      double meanIonCount() const { return _NAverage; }
+      double meanElectronEnergy() const { return _EAverage; }
+      double meanElectronCount() const { return _NAverage; }
+      void print(std::ostream& os) const;
     private:
       std::vector<double> _EIonize; // cumulative energy to create N ionization electrons (MeV)
       double _meanpath; // mean free path (mm)
+      double _eKin; // average kinetic energy of ioniztion electrons (MeV)
       double _Qe; // charge of a single ionization electron (=e, pC)
       std::vector<double> _intNProb; // integrated probability distribution of the number of e produced per cluster
       double _gasgain; // nominal (average) avalanche gain
@@ -69,7 +68,6 @@ namespace mu2e {
       double _vdisp; // dispersion of propagation velocity (dv/dl)
       double _NAverage; // Average number of ionization electrons/ionization
       double _EAverage; // Average energy of ionization electrons (MeV)
-      double _QAverage; // average charge produced per ionization
     // parameters describing cluster DtoT
       std::vector<double> _cdpoly;
       std::vector<double> _cdsigmapoly;

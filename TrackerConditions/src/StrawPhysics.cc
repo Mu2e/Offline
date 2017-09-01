@@ -18,6 +18,7 @@ using namespace std;
 namespace mu2e {
   StrawPhysics::StrawPhysics(fhicl::ParameterSet const& pset) :
     _meanpath(pset.get<double>("MeanFreePath",0.357)), // mm, average distance between ionizations for a MIP in STP Ar (Blum etal, table 1.1)
+    _eKin(pset.get<double>("IonizedElectronKE",0.0)), // kinetic energy of electron (MeV)
     _Qe(pset.get<double>("ElectronCharge",1.6e-7)), // e, pC
     _gasgain(pset.get<double>("GasGain",7.0e4)),
     _polyaA(pset.get<double>("PolyaA",1.25)), // A = 1/f = theta + 1.  A=1 -> exponential, A=infinity->delta-function
@@ -36,7 +37,7 @@ namespace mu2e {
       0.0081,0.0061, 0.0049, 0.0039, 0.0030, 0.0025, 0.0020, 0.0016, 0.0012, 0.00095, 0.00075}); // Blum, table 1.4
     std::vector<double> eionize = pset.get<vector<double> >("IonizationEnergyTable",vector<double>{
 15.75962,27.62967,40.74,59.81,75.02,91.009,124.323,143.460,422.45,478.69,538.96,618.26,686.10,755.74,854.77,918.03,4120.8857,4426.2296}); // CRC table for Ar ionization energies (in eV).
-// renormalize the probs and integrate the energies
+// renormalize the probs
     for(unsigned iprob=0;iprob< nProb.size(); ++iprob ) {
       ptot += nProb[iprob];
     }
@@ -48,19 +49,18 @@ namespace mu2e {
     for(size_t iion=0;iion<eionize.size();++iion){
       double esum(0.0);
       if(iion>0)
-	esum = _EIonize[iion-1];
-      esum += MeV_per_eV *eionize[iion];// cumulative energy to free 'iion' electrons
+	esum = _EIonize[iion-1]; 
+      esum += MeV_per_eV*eionize[iion] + _eKin;// cumulative energy to free 'iion' electrons
       _EIonize.push_back(esum);
     }
     // now compute the average charge and energy per ionization from these distributions
-    _NAverage = _EAverage = _QAverage = 0.0;
+    _NAverage = _EAverage = 0.0;
     for(unsigned iprob=0;iprob< nProb.size(); ++iprob ) {
       unsigned nele = iprob+1;
       double nprob = nProb[iprob]*norm;
       _intNProb.push_back(psum + nprob);
       psum += nprob;
       _EAverage += nprob*ionizationEnergy(nele)/nele;
-      _QAverage += nprob*ionizationCharge(nele);
       _NAverage += nprob*nele;
     }
     
@@ -148,5 +148,16 @@ namespace mu2e {
     else
       return _EIonize.back();
   } 
+  void StrawPhysics::print(std::ostream& os) const {
+    os << "StrawPhysics parameters: "  << std::endl
+    << "Mean free path = " << _meanpath << " mm " << std::endl
+    << "Average electron ionization energy = " << _EAverage << " MeV " << std::endl
+    << "Ionization electron kinetic energy = " << _eKin << " MeV " << std::endl
+    << "Average # of ionization electrons = " << _NAverage << std::endl
+    << "Average gas gain = " << _gasgain << std::endl
+    << "Polya 'A' parameter = " << _polyaA << std::endl
+    << "Signal propagagation velocity = " << _vprop << " mm/ns " <<  std::endl;
+  }
 }
+
 
