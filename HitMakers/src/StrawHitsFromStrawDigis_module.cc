@@ -79,11 +79,7 @@ namespace mu2e {
     ConditionsHandle<StrawElectronics> _strawele; // models of straw response to stimuli
     ConditionsHandle<StrawPhysics> _strawphys; // models of straw response to stimuli
     TrkChargeReco::PeakFit *_pfit; // peak fitter
-// Diagnostics
-    TTree* _shdiag;
-    SHID _shid; // strawhit ID
     TrkChargeReco::PeakFitParams _peakfit; // result from peak fit
-    Float_t _edep, _time, _dt;
     StrawEnd _end[2]; // helper
   };
 
