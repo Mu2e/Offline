@@ -67,7 +67,7 @@ namespace mu2e {
       double _vprop; // (average) propagation velocity
       double _vdisp; // dispersion of propagation velocity (dv/dl)
       double _NAverage; // Average number of ionization electrons/ionization
-      double _EAverage; // Average energy of ionization electrons (MeV)
+      double _EAverage; // Average energy of a single ionization electron (MeV)
     // parameters describing cluster DtoT
       std::vector<double> _cdpoly;
       std::vector<double> _cdsigmapoly;
