@@ -22,6 +22,23 @@
 #include "fhiclcpp/ParameterSet.h"
 
 namespace mu2e {
+  struct WireDistancePoint{
+    double _distance;
+    double _mean;
+    double _normalization;
+    double _sigma;
+    double _t0;
+    double _tmax[TrkTypes::npaths]; // time at which value is maximum
+    double _linmax[TrkTypes::npaths]; // linear response to unit charge at maximum
+    std::vector<double> _currentPulse;
+    std::vector<double> _preampResponse;
+    std::vector<double> _adcResponse;
+    std::vector<double> _preampToAdc1Response;
+    WireDistancePoint(){};
+    WireDistancePoint(double distance, double mean, double normalization, double sigma, double t0) : 
+      _distance(distance), _mean(mean), _normalization(normalization), _sigma(sigma), _t0(t0) {};
+  };
+
   class StrawElectronics : virtual public ConditionsEntity {
     public:
       // construct from parameters
@@ -29,11 +46,12 @@ namespace mu2e {
       virtual ~StrawElectronics();
       // linear response to a charge pulse.  This does NOT include saturation effects,
       // since those are cumulative and cannot be computed for individual charges
-      double linearResponse(TrkTypes::Path ipath, double time,double charge) const; // mvolts per pCoulomb
+      double linearResponse(TrkTypes::Path ipath, double time,double charge,double distance,bool forsaturation=false) const; // mvolts per pCoulomb
+      double adcImpulseResponse(double time, double charge) const;
       // Given a (linear) total voltage, compute the saturated voltage
       double saturatedResponse(double lineearresponse) const;
       // relative time when linear response is maximal
-      double maxResponseTime(TrkTypes::Path ipath) const { return _tmax[ipath]; }
+      double maxResponseTime(TrkTypes::Path ipath,double distance) const;
   // digization
       unsigned short adcResponse(double mvolts) const; // ADC response to analog inputs
       unsigned long tdcResponse(double time) const; // TDC response to a given time
@@ -60,7 +78,6 @@ namespace mu2e {
       double flashEnd() const { return _flashEnd; } // time flash blanking ends
       void adcTimes(double time, TrkTypes::ADCTimes& adctimes) const; // given crossing time, fill sampling times of ADC CHECK THIS IS CORRECT IN DRAC FIXME!
       double saturationVoltage() const { return _vsat; }
-      double dispersion(double dlen) const { return _disp*dlen; } // dispersion width is linear in propagation length
       double threshold() const { return _vthresh; }
       double analogNoise(TrkTypes::Path ipath) const { return _analognoise[ipath]; }
       double deadTimeAnalog() const { return _tdeadAnalog; }
@@ -68,7 +85,7 @@ namespace mu2e {
       double clockStart() const { return _clockStart; }
       double clockJitter() const { return _clockJitter; }
       double currentToVoltage(TrkTypes::Path ipath) const { return _dVdI[ipath]; }
-      double maxLinearResponse(TrkTypes::Path ipath,double charge=1.0) const { return _linmax[ipath]*charge; }
+      double maxLinearResponse(TrkTypes::Path ipath,double distance,double charge=1.0) const;
       double peakMinusPedestalEnergyScale() const { return _pmpEnergyScale; }
       double normalization(TrkTypes::Path ipath) const { return 1.;} //FIXME
       double fallTime(TrkTypes::Path ipath) const { return 22.;} //FIXME
@@ -80,15 +97,12 @@ namespace mu2e {
     private:
     // generic waveform parameters
       double _dVdI[TrkTypes::npaths]; // scale factor between charge and voltage (milliVolts/picoCoulombs)
-      double _tmax[TrkTypes::npaths]; // time at which value is maximum
       double _ttrunc[TrkTypes::npaths]; // time to truncate signal to 0
-      double _linmax[TrkTypes::npaths]; // linear response to unit charge at maximum
 // threshold path parameters
       double _tdeadAnalog; // electronics dead time
       double _tdeadDigital; // electronics readout dead time
       // scale factor between current and voltage (milliVolts per microAmps)
       double _vsat; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
-      double _disp; // dispersion in ns/mm;
       double _vthresh; // threshold voltage for electronics discriminator (mVolt)
       double _analognoise[TrkTypes::npaths]; //noise (mVolt)
       double _ADCLSB; // least-significant bit of ADC (mVolts)
@@ -119,15 +133,17 @@ namespace mu2e {
       std::vector<double> _preampToAdc2Poles;
       std::vector<double> _preampToAdc2Zeros;
 
-      double _ionNormalization;
-      double _ionSigma;
-      double _ionT0;
-      std::vector<double> _currentPulse;
+      std::vector<double> _wireDistances;
+      std::vector<double> _currentMeans;
+      std::vector<double> _currentNormalizations;
+      std::vector<double> _currentSigmas;
+      std::vector<double> _currentT0s;
+
       std::vector<double> _currentImpulse;
-      std::vector<double> _preampResponse;
-      std::vector<double> _adcResponse;
-      std::vector<double> _preampToAdc1Response;
       std::vector<double> _preampToAdc2Response;
+      
+      std::vector<WireDistancePoint> _wPoints;
+
   };
 }
 

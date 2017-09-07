@@ -47,7 +47,7 @@ namespace mu2e {
 	    // check if this clust could cross threshold
 	    if(wfx._vstart + maxLinearResponse(wfx._iclust) > threshold){
 	      // check the actual response 
-	      double maxtime = wfx._iclust->time() + _strawele->maxResponseTime(TrkTypes::thresh);
+	      double maxtime = wfx._iclust->time() + _strawele->maxResponseTime(TrkTypes::thresh,wfx._iclust->wireDistance());
 	      double maxresp = sampleWaveform(TrkTypes::thresh,maxtime);
 	      if(maxresp > threshold){
 		// interpolate to find the precise crossing
@@ -68,7 +68,7 @@ namespace mu2e {
     void StrawWaveform::returnCrossing(double threshold, WFX& wfx) const {
       while(wfx._iclust != _cseq.clustList().end() && wfx._vstart > threshold) {
 	// move forward in time at least as twice the time to the maxium for this clust
-	double time = wfx._iclust->time() + 2*_strawele->maxResponseTime(TrkTypes::thresh); 
+	double time = wfx._iclust->time() + 2*_strawele->maxResponseTime(TrkTypes::thresh,wfx._iclust->wireDistance()); 
 	while(wfx._iclust != _cseq.clustList().end() && 
 	    wfx._iclust->time() < time){
 	  ++(wfx._iclust);
@@ -99,7 +99,7 @@ namespace mu2e {
     bool StrawWaveform::fineCrossing(double threshold,double maxresp, WFX& wfx) const {
       static double timestep(0.020); // interpolation minimum to use linear threshold crossing calculation
       double pretime = wfx._iclust->time();
-      double posttime = pretime + _strawele->maxResponseTime(TrkTypes::thresh);
+      double posttime = pretime + _strawele->maxResponseTime(TrkTypes::thresh,wfx._iclust->wireDistance());
       double presample = wfx._vstart;
       double postsample = maxresp;
       static const unsigned maxstep(10); // 10 steps max
@@ -157,7 +157,7 @@ namespace mu2e {
       auto iclust = hlist.begin();
       while(iclust != hlist.end() && iclust->time() < time){
 	// compute the linear straw electronics response to this charge.  This is pre-saturation 
-	linresp += _strawele->linearResponse(ipath,time-iclust->time(),iclust->charge());
+	linresp += _strawele->linearResponse(ipath,time-iclust->time(),iclust->charge(),iclust->wireDistance());
 	// move to next clust
 	++iclust;
       }
@@ -170,6 +170,14 @@ namespace mu2e {
     void StrawWaveform::sampleADCWaveform(ADCTimes const& times,ADCVoltages& volts) const {
       volts.clear();
       volts.reserve(times.size());
+      if (_xtalk._dest != _xtalk._source){
+        //FIXME doesn't deal with cross talk hits yet
+        for (size_t j=0;j<times.size();j++){
+          volts.push_back(0);
+        }
+        return;
+      }
+
       // check if going to be saturated
       double max_possible_voltage = 0;
       for (auto iclust = _cseq.clustList().begin();iclust != _cseq.clustList().end();++iclust){
@@ -203,7 +211,7 @@ namespace mu2e {
           double response = 0;
           auto jclust = iclust;
           while(jclust != _cseq.clustList().end() && jclust->time() < time){
-            response += _strawele->linearResponse(TrkTypes::satadc1,time-jclust->time(),jclust->charge());
+            response += _strawele->linearResponse(TrkTypes::thresh,time-jclust->time(),jclust->charge(),jclust->wireDistance(),true);
             ++jclust;
           }
           // now saturate it
@@ -211,7 +219,7 @@ namespace mu2e {
           // then calculate the impulse response at each of the adctimes and add it to that
           for (size_t j=0;j<times.size();j++){
             // this function includes multiplication by number of steps in saturationTimeStep
-            volts[j] += _strawele->linearResponse(TrkTypes::satadc2,times[j]-time,sat_response);
+            volts[j] += _strawele->adcImpulseResponse(times[j]-time,sat_response);
           }
         }
       }else{

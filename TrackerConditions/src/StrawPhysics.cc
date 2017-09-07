@@ -24,8 +24,6 @@ namespace mu2e {
     _polyaA(pset.get<double>("PolyaA",1.25)), // A = 1/f = theta + 1.  A=1 -> exponential, A=infinity->delta-function
     _gslope(pset.get<double>("GainRMSSlope",0.809)), // slope of relative gain sigma on 1/sqrt(n)
     _nggauss(pset.get<unsigned>("NGainGauss",30)), // number of electrons/cluster to switch to a Gaussian model of the gain fluctuations
-    _attlen{pset.get<double>("ShortAttentuationLength",50.0),pset.get<double>("LongAttentuationLength",27000.0)}, // from ATLAS TRT measurement
-    _longfrac(pset.get<double>("LongAttenuationFraction",0.92)),
     _vprop(pset.get<double>("PropagationVelocity",273.0)), //mm/nsec
     _vdisp(pset.get<double>("PropagationVelocityDispersion",0.01)), //1/nsec
     _cdpoly(pset.get<vector<double> >("ClusterDriftPolynomial",vector<double>{0.0,16.0})), // linear term has units nanoseconds/mm
@@ -108,11 +106,6 @@ namespace mu2e {
     return max(0.0,retval);
   }
   
-  double StrawPhysics::propagationAttenuation(double wdist) const {
-    return  (1.0-_longfrac)*exp(-wdist/_attlen[0]) +
-      _longfrac*exp(-wdist/_attlen[1]);
-  }
-
   double StrawPhysics::propagationTime(double wdist) const {
     return  wdist/_vprop;
   }

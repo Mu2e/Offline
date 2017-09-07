@@ -15,9 +15,6 @@
 #include <math.h>
 #include <algorithm>
 
-#include <TFile.h>
-#include <TH1F.h>
-
 using namespace std;
 namespace mu2e {
   using namespace TrkTypes;
@@ -25,16 +22,13 @@ namespace mu2e {
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
     _dVdI{pset.get<double>("thresholddVdI",1.8e4),
-      pset.get<double>("adcdVdI",2.4e7),
-      pset.get<double>("threshToAdc1dVdI",0),
-      pset.get<double>("threshToAdc2dVdI",0) }, // mVolt/uAmps (transimpedance gain)
+      pset.get<double>("adcdVdI",2.4e7) }, // mVolt/uAmps (transimpedance gain)
     _tdeadAnalog(pset.get<double>("DeadTimeAnalog",100.0)), // nsec dead after threshold crossing (pulse baseline restoration time)
     _tdeadDigital(pset.get<double>("DeadTimeDigital",100.0)), // nsec dead after threshold crossing (electronics processing time)
     _vsat(pset.get<double>("SaturationVoltage",120.0)), // mVolt
-    _disp(pset.get<double>("Dispersion",1.0e-4)), // 0.1 ps/mm
     _vthresh(pset.get<double>("DiscriminatorThreshold",12.0)), //mVolt, post amplification
     _analognoise{pset.get<double>("thresholdAnalogNoise",3.0), //mVolt
-      pset.get<double>("adcAnalogNoise",8.0),0,0},
+      pset.get<double>("adcAnalogNoise",8.0)},
     _ADCLSB(pset.get<double>("ADCLSB",0.3662)), //mVolt
     _maxADC(pset.get<int>("maxADC",4095)),
     _ADCped(pset.get<unsigned>("ADCPedestal",1393)),
@@ -63,61 +57,89 @@ namespace mu2e {
     _preampToAdc1Zeros(pset.get<vector<double> >("PreampToAdc1Zeros",vector<double>{0.72343156})),
     _preampToAdc2Poles(pset.get<vector<double> >("PreampToAdc2Poles",vector<double>{4.6})),
     _preampToAdc2Zeros(pset.get<vector<double> >("PreampToAdc2Zeros",vector<double>{})),
-    _ionNormalization(pset.get<double>("IonNormalization",1.0)),
-    _ionSigma(pset.get<double>("IonSigma",2.0)),
-    _ionT0(pset.get<double>("IonT0",6.0))
+    _wireDistances(pset.get<vector<double> >("WireDistances",vector<double>{0,1})),
+    _currentMeans(pset.get<vector<double> >("CurrentMeans",vector<double>{5.0,5.0})),
+    _currentNormalizations(pset.get<vector<double> >("CurrentNormalizations",vector<double>{1.0,1.0})),
+    _currentSigmas(pset.get<vector<double> >("CurrentSigmas",vector<double>{2.0,2.0})),
+    _currentT0s(pset.get<vector<double> >("CurrentT0s",vector<double>{6.0,6.0}))
  {
-    // precompute ion drift current pulses
-    _currentPulse = std::vector<double>(_responseBins,0);
+   _ttrunc[thresh] = (_responseBins/2)/_sampleRate;
+   _ttrunc[adc] = (_responseBins/2)/_sampleRate;
+   
+   // precompute ion drift current pulses
     _currentImpulse = std::vector<double>(_responseBins,0);
     _currentImpulse[_responseBins/2] = 1;
-    double integral = 0;
-    for (int i=0;i<_responseBins;i++){
-      double t_gaus = (i-_responseBins/2)/_sampleRate;
-      double val_gaus = 1/sqrt(TMath::TwoPi()*_ionSigma*_ionSigma)*exp(-(t_gaus*t_gaus)/(2*_ionSigma*_ionSigma));
-      for (int j=0;j<_responseBins-i;j++){
-        double t_tail = j/_sampleRate;
-        double val = val_gaus / (t_tail + _ionT0);
-        _currentPulse[i+j] += val;
-        integral += val;
-      }
-    }
-    for (int i=0;i<_responseBins;i++){
-      // correct for sampleRate so that calculateResponse peak is independent of it
-      // this combined with pC_per_uA_ns is the unit transform from pC to uA
-      // do not renormalize since changed shape can change normalization???
-      // normalization here is folded into dVdI
-      _currentPulse[i] *= _sampleRate / _pC_per_uA_ns;
-    }
-    
-    // calculate parameters for transfer function
-    _preampResponse = std::vector<double>(_responseBins,0);
-    _adcResponse = std::vector<double>(_responseBins,0);
-    _preampToAdc1Response = std::vector<double>(_responseBins,0);
     _preampToAdc2Response = std::vector<double>(_responseBins,0);
-    calculateResponse(_preampPoles,_preampZeros,_currentPulse,_preampResponse,_dVdI[thresh]);
-    calculateResponse(_adcPoles,_adcZeros,_currentPulse,_adcResponse,_dVdI[adc]);
-    calculateResponse(_preampToAdc1Poles,_preampToAdc1Zeros,_currentPulse,_preampToAdc1Response,_dVdI[satadc1]);
-    calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_currentImpulse,_preampToAdc2Response,_dVdI[satadc2]);
+    calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_currentImpulse,_preampToAdc2Response,1);
 
-    // now set other parameters
-    _tmax[thresh] = 0;
-    _linmax[thresh] = 0;
-    _tmax[adc] = 0;
-    _linmax[adc] = 0;
-    _ttrunc[thresh] = (_responseBins/2)/_sampleRate;
-    _ttrunc[adc] = (_responseBins/2)/_sampleRate;
-    for (int i=0;i<_responseBins;i++){
-      if (_preampResponse[i] > _linmax[thresh]){
-        _linmax[thresh] = _preampResponse[i];
-        _tmax[thresh] = (-_responseBins/2 + i)/_sampleRate;
+    for (size_t ai=0;ai<_wireDistances.size();ai++){
+      _wPoints.push_back(WireDistancePoint(_wireDistances[ai],_currentMeans[ai],_currentNormalizations[ai],_currentSigmas[ai],_currentT0s[ai]));
+      _wPoints[ai]._currentPulse = std::vector<double>(_responseBins,0);
+      double integral = 0;
+      for (int i=0;i<_responseBins;i++){
+        double t_gaus = (i-_responseBins/2)/_sampleRate;
+        double val_gaus = 1/sqrt(TMath::TwoPi()*_wPoints[ai]._sigma*_wPoints[ai]._sigma)*exp(-((t_gaus-_wPoints[ai]._mean)*(t_gaus-_wPoints[ai]._mean))/(2*_wPoints[ai]._sigma*_wPoints[ai]._sigma));
+        for (int j=0;j<_responseBins-i;j++){
+          double t_tail = j/_sampleRate;
+          double val = val_gaus / (t_tail + _wPoints[ai]._t0);
+          _wPoints[ai]._currentPulse[i+j] += val;
+          integral += val;
+        }
       }
-      if (_adcResponse[i] > _linmax[adc]){
-        _linmax[adc] = _adcResponse[i];
-        _tmax[adc] = (-_responseBins/2 + i)/_sampleRate;
+      for (int i=0;i<_responseBins;i++){
+        // correct for sampleRate so that calculateResponse peak is independent of it
+        // this combined with pC_per_uA_ns is the unit transform from pC to uA
+        // do not renormalize since changed shape can change normalization???
+        // normalization here is folded into dVdI
+        _wPoints[ai]._currentPulse[i] *= _sampleRate / _pC_per_uA_ns;
+      }
+
+      // calculate parameters for transfer function
+      _wPoints[ai]._preampResponse = std::vector<double>(_responseBins,0);
+      _wPoints[ai]._adcResponse = std::vector<double>(_responseBins,0);
+      _wPoints[ai]._preampToAdc1Response = std::vector<double>(_responseBins,0);
+      calculateResponse(_preampPoles,_preampZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._preampResponse,_dVdI[thresh]);
+      calculateResponse(_adcPoles,_adcZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._adcResponse,_dVdI[adc]);
+      calculateResponse(_preampToAdc1Poles,_preampToAdc1Zeros,_wPoints[ai]._currentPulse,_wPoints[ai]._preampToAdc1Response,1);
+
+      // now set other parameters
+      _wPoints[ai]._tmax[thresh] = 0;
+      _wPoints[ai]._linmax[thresh] = 0;
+      _wPoints[ai]._tmax[adc] = 0;
+      _wPoints[ai]._linmax[adc] = 0;
+      double preampToAdc1Max = 0;
+      for (int i=0;i<_responseBins;i++){
+        if (_wPoints[ai]._preampResponse[i] > _wPoints[ai]._linmax[thresh]){
+          _wPoints[ai]._linmax[thresh] = _wPoints[ai]._preampResponse[i];
+          _wPoints[ai]._tmax[thresh] = (-_responseBins/2 + i)/_sampleRate;
+        }
+        if (_wPoints[ai]._adcResponse[i] > _wPoints[ai]._linmax[adc]){
+          _wPoints[ai]._linmax[adc] = _wPoints[ai]._adcResponse[i];
+          _wPoints[ai]._tmax[adc] = (-_responseBins/2 + i)/_sampleRate;
+        }
+        if (_wPoints[ai]._preampToAdc1Response[i] > preampToAdc1Max)
+          preampToAdc1Max = _wPoints[ai]._preampToAdc1Response[i];
+      }
+      
+      // normalize preampToAdc1Response to match preampResponse
+      for (int i=0;i<_responseBins;i++){
+        _wPoints[ai]._preampToAdc1Response[i] *= _wPoints[ai]._linmax[thresh]/preampToAdc1Max;
       }
     }
-  }
+
+    // normalize preampToAdc2Response to match adcResponse
+    std::vector<double> preampToAdc2test(_responseBins,0);
+    calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_wPoints[0]._preampToAdc1Response,preampToAdc2test,1);
+    double preampToAdc2Max = 0;
+    for (int i=0;i<_responseBins;i++){
+      if (preampToAdc2test[i] > preampToAdc2Max)
+        preampToAdc2Max = preampToAdc2test[i];
+    }
+    for (int i=0;i<_responseBins;i++){
+      _preampToAdc2Response[i] *= _wPoints[0]._linmax[adc]/preampToAdc2Max;
+      preampToAdc2test[i] *= _wPoints[0]._linmax[adc]/preampToAdc2Max;
+    }
+ }
 
   StrawElectronics::~StrawElectronics() {}
 
@@ -158,20 +180,42 @@ namespace mu2e {
       response[i] *= dVdI;
   }
 
-  double StrawElectronics::linearResponse(Path ipath, double time, double charge) const {
+  double StrawElectronics::linearResponse(Path ipath, double time, double charge, double distance, bool forsaturation) const {
     int index = time*_sampleRate + _responseBins/2.;
     if ( index >= _responseBins)
       index = _responseBins-1;
     if (index < 0)
       index = 0;
-    if (ipath == thresh)
-      return charge * _preampResponse[index];
-    else if (ipath == adc)
-      return charge * _adcResponse[index];
-    else if (ipath == satadc1)
-      return charge * _preampToAdc1Response[index];
-    else
-      return charge * _preampToAdc2Response[index] * _saturationSampleFactor;
+    int  distIndex = 0;
+    for (size_t i=1;i<_wPoints.size()-1;i++){
+      if (distance < _wPoints[i]._distance)
+        break;
+      distIndex = i;
+    }
+    double distFrac = 1 - (distance - _wPoints[distIndex]._distance)/(_wPoints[distIndex+1]._distance - _wPoints[distIndex]._distance);
+    double p0, p1;
+    if (ipath == thresh){
+      if (forsaturation){
+        p0 = _wPoints[distIndex]._preampToAdc1Response[index];
+        p1 = _wPoints[distIndex + 1]._preampToAdc1Response[index];
+      }else{
+        p0 = _wPoints[distIndex]._preampResponse[index];
+        p1 = _wPoints[distIndex + 1]._preampResponse[index];
+      }
+    }else{
+      p0 = _wPoints[distIndex]._adcResponse[index];
+      p1 = _wPoints[distIndex + 1]._adcResponse[index];
+    }
+    return charge * ( p0 * distFrac + p1 * (1 - distFrac));
+  }
+
+  double StrawElectronics::adcImpulseResponse(double time, double charge) const {
+    int index = time*_sampleRate + _responseBins/2.;
+    if ( index >= _responseBins)
+      index = _responseBins-1;
+    if (index < 0)
+      index = 0;
+    return charge * _preampToAdc2Response[index] * _saturationSampleFactor;
   }
   
   double StrawElectronics::saturatedResponse(double vlin) const {
@@ -179,6 +223,34 @@ namespace mu2e {
       return vlin;
     else
       return _vsat;
+  }
+
+  double StrawElectronics::maxResponseTime(TrkTypes::Path ipath,double distance) const {
+    int  distIndex = 0;
+    for (size_t i=1;i<_wPoints.size()-1;i++){
+      if (distance < _wPoints[i]._distance)
+        break;
+      distIndex = i;
+    }
+    double distFrac = 1 - (distance - _wPoints[distIndex]._distance)/(_wPoints[distIndex+1]._distance - _wPoints[distIndex]._distance);
+    double p0 = _wPoints[distIndex]._tmax[ipath];
+    double p1 = _wPoints[distIndex + 1]._tmax[ipath];
+    
+    return p0 * distFrac + p1 * (1 - distFrac);
+  }
+
+  double StrawElectronics::maxLinearResponse(TrkTypes::Path ipath,double distance,double charge) const {
+    int  distIndex = 0;
+    for (size_t i=1;i<_wPoints.size()-1;i++){
+      if (distance < _wPoints[i]._distance)
+        break;
+      distIndex = i;
+    }
+    double distFrac = 1 - (distance - _wPoints[distIndex]._distance)/(_wPoints[distIndex+1]._distance - _wPoints[distIndex]._distance);
+    double p0 = _wPoints[distIndex]._linmax[ipath];
+    double p1 = _wPoints[distIndex + 1]._linmax[ipath];
+ 
+    return charge * (p0 * distFrac + p1 * (1 - distFrac));
   }
 
   unsigned short StrawElectronics::adcResponse(double mvolts) const {

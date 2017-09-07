@@ -39,7 +39,6 @@ namespace mu2e {
       double clusterGain(CLHEP::RandGaussQ& rgauss, CLHEP::RandFlat& rflat, unsigned nele) const;
       double driftDistanceToTime(double ddist, double phi) const;  // single cluster!
       double driftTimeSpread(double ddist, double phi) const; // single cluster!
-      double propagationAttenuation(double wdist) const; 
       double propagationTime(double wdist) const;
       double velocityDispersion() const { return _vdisp; } 
       double meanFreePath() const { return _meanpath; }
@@ -62,8 +61,6 @@ namespace mu2e {
       unsigned _nggauss; // number of electrons/cluster to switch to a Gaussian model
       // attenuation length of charge down the wire; note
       // there is a short and a long component, each with it's own amplitude
-      double _attlen[2];
-      double _longfrac;
       double _vprop; // (average) propagation velocity
       double _vdisp; // dispersion of propagation velocity (dv/dl)
       double _NAverage; // Average number of ionization electrons/ionization

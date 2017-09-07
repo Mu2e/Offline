@@ -57,6 +57,19 @@ namespace mu2e {
           }
         }
       }
+      if (pa.size() > 3){
+        b[4] = 0.0;
+        for (size_t i=0;i<pa.size();i++){
+          for (size_t j=i+1;j<pa.size();j++){
+            for (size_t k=j+1;k<pa.size();k++){
+              for (size_t l=k+1;l<pa.size();l++){
+                b[4] += pa[i]*pa[j]*pa[k]*pa[l];
+              }
+            }
+          }
+        }
+      }
+
     }
 
     unsigned int iter_factorial(unsigned int n)

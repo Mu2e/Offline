@@ -654,8 +654,8 @@ namespace mu2e {
 	weq._wdist = wlen - wireq._wpos;
       else
 	weq._wdist = wlen + wireq._wpos;
-      // split the charge, and attenuate it according to the distance
-      weq._charge = 0.5*wireq._charge*_strawphys->propagationAttenuation(weq._wdist);    // linear time propagation.  Dispersion is handled elsewhere
+      // split the charge
+      weq._charge = 0.5*wireq._charge;
       weq._time = _strawphys->propagationTime(weq._wdist);
     }
 
@@ -951,7 +951,7 @@ namespace mu2e {
 	      steps.insert(iclu->stepPointMC());
 	      parts.insert(iclu->stepPointMC()->simParticle());
 	      _hqsum[iend] += iclu->charge();
-	      double ctime = iclu->time()+_strawele->maxResponseTime(_diagpath);
+	      double ctime = iclu->time()+_strawele->maxResponseTime(_diagpath,iclu->wireDistance());
 	      double vout = wfs[iend].sampleWaveform(_diagpath,ctime);
 	      if(vout > _vmax[iend]){
 		_vmax[iend] = vout;

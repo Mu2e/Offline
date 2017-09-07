@@ -12,7 +12,7 @@ namespace mu2e {
     // 2 ends of the straw readout
     enum End{cal=0,hv, nends};
     // separately describe the 2 analog paths
-    enum Path{thresh=0,adc,satadc1,satadc2,npaths};
+    enum Path{thresh=0,adc,npaths};
     // typedefs used for tracker data structures 
 //    typedef std::array<unsigned long,nends> TDCValues;
 //    typedef std::array<unsigned short,nends> TOTValues;
