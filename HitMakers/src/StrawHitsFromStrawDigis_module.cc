@@ -29,7 +29,6 @@
 #include "TrkChargeReco/inc/PeakFitRoot.hh"
 #include "TrkChargeReco/inc/PeakFitFunction.hh"
 #include "TrkChargeReco/inc/ComboPeakFitRoot.hh"
-#include "TrackerMC/inc/SHInfo.hh"
 //CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 // root 
