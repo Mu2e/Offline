@@ -54,11 +54,11 @@ void STest(TTree* sdiag, const char* page ="G4") {
     sdiag->Project("selen","stepE*1000:steplen");
     sdiag->Project("pe","partP");
 
-    sstack->Add(slenl);
     sstack->Add(slenh);
+    sstack->Add(slenl);
  
-    estack->Add(sel);
     estack->Add(seh);
+    estack->Add(sel);
 
     TCanvas* g4can = new TCanvas("g4can","g4can",1000,1000);
     g4can->Divide(2,2);
@@ -83,66 +83,55 @@ void STest(TTree* sdiag, const char* page ="G4") {
     pe->Draw();
 
   } else if(spage == "cluster") {
-    THStack* cstack = new THStack("cstack","Number of clusters");
-    THStack* slstack = new THStack("slstack","Step Length Between Ionizations;step (mm)");
-//    TH1F* nc = new TH1F("nc","Number of clusters",50,-0.5,49.5);
-    TH1F* nch = new TH1F("nch","Number of clusters",50,-0.5,49.5);
-    TH1F* ncl = new TH1F("ncl","Number of clusters",50,-0.5,49.5);
-    TH2F* ncs = new TH2F("ncs","Number of clusters vs G4 step length;step (mm)",50,0.5,10.0,50,-0.5,49.5);
-    TH1F* ne = new TH1F("ne","Number of electrons/cluster",15,-0.5,14.5);
-    TH1F* ee = new TH1F("ee","Energy per electrons;ev",100,0.0,150.0);
-    TH1F* gp = new TH1F("gp","Straw Gain",100,0,4e5);
-    TH1F* slh = new TH1F("slh","Step Length Between Ionizations;step (mm)",100,0.0,2.0);
-    TH1F* sll = new TH1F("sll","Step Length Between Ionizations;step (mm)",100,0.0,2.0);
+    TH2F* nch = new TH2F("nch","N Clusters vs G4 Step Length;Step Length (mm)",50,0.0,10.0,60,-0.5,59.5);
+    TH2F* ncl = new TH2F("ncl","N Clusters vs G4 Step Length;Step Length (mm)",50,0.0,10.0,20,-0.5,19.5);
+    TH1F* nech = new TH1F("nech","Number of electrons/cluster",25,-0.5,24.5);
+    TH1F* necl = new TH1F("necl","Number of electrons/cluster",50,-0.5,49.5);
+    TH1F* slh = new TH1F("slh","Average Distance Between Clusters;step (mm)",100,0.0,2.0);
+    TH1F* sll = new TH1F("sll","Average Distance Between Clusters;step (mm)",100,0.0,2.0);
+    TH2F* eeh = new TH2F("eeh","Sum electron energy vs G4 Step Energy;G4 Step Energy (KeV);e Energy (KeV)",100,0,5.0,100,0.0,5.0);
+    TH2F* eel = new TH2F("eel","Sum electron energy vs G4 Step Energy;G4 Step Energy (KeV);e Energy (KeV)",100,0,5.0,100,0.0,5.0);
 
-//    nc->SetStats(0);
     nch->SetStats(0);
-//    ncl->SetStats(0);
-    slh->SetStats(0);
-//    sll->SetStats(0);
-    nch->SetFillColor(kRed);
+//    eeh->SetStats(0);
+    nech->SetFillColor(kRed);
     slh->SetFillColor(kRed);
-    ncl->SetFillColor(kGreen);
+    ncl->SetStats(0);
+    necl->SetFillColor(kGreen);
     sll->SetFillColor(kGreen);
-    ncs->SetStats(0);
-    ne->SetStats(1);
-    ee->SetStats(1);
+    TCut mini("partPDG==11&&partP>100");
+    TCut highi("partPDG==2212||partPDG==11&&partP<1.0");
+    TCut bigstep("steplen>1.0");
 
-//    sdiag->Project("nc","nsubstep");
-    sdiag->Project("nch","nsubstep","partP>100");
-    sdiag->Project("ncl","nsubstep","partP<5");
-    sdiag->Project("ncs","nsubstep:steplen");
-    sdiag->Project("ee","1.0e6*stepE/niontot");
-    sdiag->Project("slh","steplen/nsubstep","partP>100");
-    sdiag->Project("sll","steplen/nsubstep","partP<5");
-    
+    sdiag->Project("nch","nclust:steplen",mini);
+    sdiag->Project("ncl","nclust:steplen",highi);
+    sdiag->Project("nech","clusters._ne",mini);
+    sdiag->Project("necl","clusters._ne",highi);
+    sdiag->Project("slh","steplen/nclust",mini&&bigstep);
+    sdiag->Project("sll","steplen/nclust",highi);
+    sdiag->Project("eeh","eesum*1.0e3:stepE*1.0e3",mini);
+    sdiag->Project("eel","eesum*1.0e3:stepE*1.0e3",highi);
 
-    cstack->Add(nch);
-    cstack->Add(ncl);
-    slstack->Add(slh);
-    slstack->Add(sll);
+    TCanvas* hcan = new TCanvas("hcan","hcan",600,600);
+    hcan->Divide(2,2);
+    hcan->cd(1);
+    nch->Draw("colorz");
+    hcan->cd(2);
+    slh->Draw();
+    hcan->cd(3);
+    nech->Draw();
+    hcan->cd(4);
+    eeh->Draw("colorz");
 
-    TCanvas* ccan = new TCanvas("ccan","ccan",1200,800);
-    ccan->Divide(3,2);
-    ccan->cd(1);
-    ne->Draw();
-    ccan->cd(2);
-//    nc->Draw();
-//    nch->Draw("same");
-//    ncl->Draw("same");
-    cstack->Draw();
-    TLegend* cleg = new TLegend(0.5,0.6,0.9,0.9);
-    cleg->AddEntry(nch,"E_{e} > 100 MeV");
-    cleg->AddEntry(ncl,"E_{e} < 5 MeV");
-//    cleg->AddEntry(nc,"All E_{e}");
-    cleg->Draw();
-    ccan->cd(3);
-    ncs->Draw("colorz");
-    ccan->cd(4);
-    ee->Draw();
-    ccan->cd(5);
-    gp->Draw();
-    ccan->cd(6);
-    slstack->Draw();
+    TCanvas* lcan = new TCanvas("lcan","lcan",600,600);
+    lcan->Divide(2,2);
+    lcan->cd(1);
+    ncl->Draw("colorz");
+    lcan->cd(2);
+    sll->Draw();
+    lcan->cd(3);
+    necl->Draw();
+    lcan->cd(4);
+    eel->Draw("colorz");
   }
 }

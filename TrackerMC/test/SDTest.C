@@ -88,9 +88,9 @@ void SDTest(TTree* sddiag, const char* page ="adc",unsigned NADC=12,TCut cut=TCu
     ccan->cd(6);
     xtvsd->Draw("box");
   } else if(spage == "ionize") {
-    TH1F* dke = new TH1F("dke","#delta-Ray Kinetic Energy;Energy (KeV)",100,0,10.0);
-    TH1F* dbg = new TH1F("dbg","#delta-Ray #beta#times#gamma;#beta#times#gamma",100,0,0.5);
-    TH1F* pbg = new TH1F("pbg","Proton #beta#times#gamma;#beta#times#gamma",100,0,0.5);
+    TH1F* dke = new TH1F("dke","Compton and #delta-Ray e Kinetic Energy;Energy (KeV)",100,0,10.0);
+    TH1F* dbg = new TH1F("dbg","Compton and #delta-Ray e #beta#times#gamma;#beta#times#gamma",100,0,1.0);
+    TH1F* pbg = new TH1F("pbg","Proton #beta#times#gamma;#beta#times#gamma",100,0,1.0);
 
     sddiag->Project("dke","(sqrt(mcmom^2+0.511^2)-0.511)*1000.0","mcpdg==11&&mcproc<20");
     sddiag->Project("dbg","mcmom/0.511","mcpdg==11&&mcproc<20");

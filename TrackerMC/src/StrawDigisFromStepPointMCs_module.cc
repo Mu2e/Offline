@@ -45,10 +45,12 @@
 // MC structures
 #include "TrackerMC/inc/StrawClusterSequencePair.hh"
 #include "TrackerMC/inc/StrawWaveform.hh"
+#include "TrackerMC/inc/IonCluster.hh"
 //CLHEP
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandExponential.h"
+#include "CLHEP/Random/RandPoisson.h"
 #include "CLHEP/Vector/LorentzVector.h"
 // root
 #include "TMath.h"
@@ -65,14 +67,6 @@ using CLHEP::Hep3Vector;
 namespace mu2e {
   namespace TrackerMC {
     using namespace TrkTypes;
-    struct IonCluster {  // ion charge cluster before drift or amplification
-      Hep3Vector _pos; // position of this cluster
-      double _charge; // charge of this cluster, in pC.  Note: this is pre-gain!!!
-      double _eion; // ionization energy of this cluster, in MeV
-      unsigned _ne; // number of electrons in this cluster
-      IonCluster(Hep3Vector const& pos, double charge, double eion, unsigned ne): 
-	_pos(pos),_charge(charge),_eion(eion),_ne(ne) {}
-    };
 
     struct WireCharge { // charge at the wire after drift
       double _charge; // charge at the wire, in units of pC
@@ -137,6 +131,7 @@ namespace mu2e {
 	CLHEP::RandGaussQ _randgauss;
 	CLHEP::RandFlat _randflat;
 	CLHEP::RandExponential _randexp;
+	CLHEP::RandPoisson _randP;
 	// A category for the error logger.
 	const string _messageCategory;
 	// Give some informationation messages only on the first event.
@@ -145,8 +140,9 @@ namespace mu2e {
 	Hep3Vector _bdir;
 	// minimum pt (perp to bfield) to assume straight trajectory in a starw
 	double _ptmin, _ptfac;
-	// max # clusters for modeling a delta-ray
-	unsigned _maxdnclu;
+	// max # clusters for modeling non-minion steps
+	unsigned _maxnclu;
+	bool _sort; // sort cluster sizes before filling energy
 	// List of dead straws as a parameter set; needed at beginRun time.
 	fhicl::ParameterSet _deadStraws;
 	DeadStrawList _strawStatus;
@@ -160,7 +156,7 @@ namespace mu2e {
 	Float_t _tmin[2], _tmax[2], _txing[2], _xddist[2], _xwdist[2], _xpdist[2];
 	TTree* _sddiag;
 	Int_t _sdplane, _sdpanel, _sdlayer, _sdstraw;
-	Int_t _nclust[2], _iclust[2];
+	Int_t _ncludd[2], _iclust[2];
 	Int_t _nstep;
 	Float_t _ectime[2], _cdist[2];
 	Float_t _xtime[2], _tctime[2], _charge[2], _ddist[2];
@@ -175,11 +171,9 @@ namespace mu2e {
 	Int_t _tdc[2], _tot[2];
 	TTree* _sdiag;
 	Float_t _steplen, _stepE, _qsum, _esum, _eesum, _qe, _partP;
-	Int_t _nsubstep, _netot, _partPDG;
-	TTree* _cdiag;
-	Float_t _gain, _cq, _cen;
-	Int_t _ne;
-
+	Int_t _nclusd, _netot, _partPDG;
+	vector<IonCluster> _clusters;
+	
 	//    vector<TGraph*> _waveforms;
 	vector<TH1F*> _waveforms;
 	//  helper functions
@@ -201,7 +195,10 @@ namespace mu2e {
 	    PtrStepPointMCVectorCollection* mcptrs );
 	void createDigi(WFXP const& xpair, const StrawWaveform wf[2], StrawIndex index, StrawDigiCollection* digis);
 	void findCrossTalkStraws(Straw const& straw,vector<XTalk>& xtalk);
-	// diagnostic functions
+	void fillClusterNe(std::vector<unsigned>& me);
+	void fillClusterPositions(Straw const& straw, StepPointMC const& step, std::vector<Hep3Vector>& cpos);
+	void fillClusterMinion(StepPointMC const& step, std::vector<unsigned>& me, std::vector<double>& cen);
+	  // diagnostic functions
 	void waveformHist(const StrawWaveform wf[2], WFXList const& xings);
 	void waveformDiag(const StrawWaveform wf[2], WFXList const& xings);
 	void digiDiag(const StrawWaveform wf[2], WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi);
@@ -236,10 +233,12 @@ namespace mu2e {
       _randgauss( _engine ),
       _randflat( _engine ),
       _randexp( _engine),
+      _randP( _engine),
       _messageCategory("HITS"),
       _firstEvent(true),      // Control some information messages.
       _ptfac(pset.get<double>("PtFactor", 2.0)), // factor for defining curling in a straw
-      _maxdnclu(pset.get<unsigned>("MaxNDeltaClusters", 8)),
+      _maxnclu(pset.get<unsigned>("MaxNClusters", 10)), // max # of clusters for low-PT steps
+      _sort(pset.get<bool>("SortClusterEnergy",false)), // 
       _deadStraws(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet())),
       _strawStatus(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet()))
     {
@@ -262,15 +261,10 @@ namespace mu2e {
 	_sdiag->Branch("esum",&_esum,"esum/F");
 	_sdiag->Branch("eesum",&_eesum,"eesum/F");
 	_sdiag->Branch("qe",&_qe,"qe/F");
-	_sdiag->Branch("nsubstep",&_nsubstep,"nsubstep/I");
+	_sdiag->Branch("nclust",&_nclusd,"nclust/I");
 	_sdiag->Branch("netot",&_netot,"netot/I");
 	_sdiag->Branch("partPDG",&_partPDG,"partPDG/I");
-
-	_cdiag =tfs->make<TTree>("cdiag","Cluster diagnostics");
-	_cdiag->Branch("gain",&_gain,"gain/F");
-	_cdiag->Branch("charge",&_cq,"charge/F");
-	_cdiag->Branch("energy",&_cen,"energy/F");
-	_cdiag->Branch("ne",&_ne,"ne/I");
+	_sdiag->Branch("clusters",&_clusters);
 
    	_swdiag =tfs->make<TTree>("swdiag","StrawWaveform diagnostics");
 	_swdiag->Branch("plane",&_swplane,"plane/I");
@@ -287,7 +281,7 @@ namespace mu2e {
 	_swdiag->Branch("slen",&_slen,"slencal/F:slenhv/F");
 	_swdiag->Branch("sedep",&_sedep,"sedepcal/F:sedephv/F");
 	_swdiag->Branch("nxing",&_nxing,"nxingcal/I:nxinghv/I");
-	_swdiag->Branch("nclu",&_nclu,"nclucal/I:ncluhv/I");
+	_swdiag->Branch("nclust",&_nclu,"nclucal/I:ncluhv/I");
 	_swdiag->Branch("nstep",&_nsteppoint,"nscal/I:nshv/I");
 	_swdiag->Branch("sesum",&_sesum,"sesumcal/F:sesumhv/F");
 	_swdiag->Branch("npart",&_npart,"npart/I");
@@ -315,7 +309,7 @@ namespace mu2e {
 	  _sddiag->Branch("vstart",&_vstart,"vstartcal/F:vstarthv/F");
 	  _sddiag->Branch("vcross",&_vcross,"vcrosscal/F:vcrosshv/F");
 	  _sddiag->Branch("ddist",&_ddist,"ddistcal/F:ddisthv/F");
-	  _sddiag->Branch("nclust",&_nclust,"nclustcal/I:nclusthv/I");
+	  _sddiag->Branch("nclust",&_ncludd,"nclustcal/I:nclusthv/I");
 	  _sddiag->Branch("iclust",&_iclust,"iclustcal/I:iclusthv/I");
 	  _sddiag->Branch("tdc",&_tdc,"tdccal/I:tdchv/I");
           _sddiag->Branch("tot",&_tot,"totcal/I:tothv/I");
@@ -502,20 +496,20 @@ namespace mu2e {
       StepPointMC const& step = *spmcptr;
       StrawIndex const & strawind = step.strawIndex();
       // Subdivide the StepPointMC into ionization clusters
-      vector<IonCluster> clusters;
-      divideStep(step,clusters);
+      _clusters.clear();
+      divideStep(step,_clusters);
       // check
       if(_debug > 1){
 	double ec(0.0);
 	double ee(0.0);
 	double eq(0.0);
-	for (auto const& cluster : clusters) {
+	for (auto const& cluster : _clusters) {
 	  ec += cluster._eion;
 	  ee += _strawphys->ionizationEnergy(cluster._ne);
 	  eq += _strawphys->ionizationEnergy(cluster._charge);
 	}
 	cout << "step with ionization edep = " << step.ionizingEdep()
-	<< " creates " << clusters.size() 
+	<< " creates " << _clusters.size() 
 	<< " clusters with total cluster energy = " << ec 
 	<< " electron count energy = " << ee
 	<< " charge energy = " << eq << endl;
@@ -527,7 +521,7 @@ namespace mu2e {
       if( mbtime > _strawele->flashEnd()-_steptimebuf
 	  || mbtime <  _strawele->flashStart() ) {
 	// drift these clusters to the wire, and record the charge at the wire
-	for(auto iclu=clusters.begin(); iclu != clusters.end(); ++iclu){
+	for(auto iclu = _clusters.begin(); iclu != _clusters.end(); ++iclu){
 	  WireCharge wireq;
 	  driftCluster(straw,*iclu,wireq);
 	  // propagate this charge to each end of the wire
@@ -562,8 +556,8 @@ namespace mu2e {
 	// uncharged particle, put all the energy in a single cluster
       if (charge == 0.0 || step.stepLength() < _strawphys->meanFreePath()){
 	double cen = step.ionizingEdep();
-	double fne = rint(cen/_strawphys->meanElectronEnergy());
-	unsigned ne = std::max( static_cast<unsigned>(fne),(unsigned)1);
+	double fne = cen/_strawphys->meanElectronEnergy();
+	unsigned ne = std::max( static_cast<unsigned>(_randP(fne)),(unsigned)1);
 	double qc = _strawphys->ionizationCharge(ne);
 	IonCluster cluster(step.position(),qc,cen,ne);
 	clusters.push_back(cluster);
@@ -576,130 +570,37 @@ namespace mu2e {
 	  double bg = mom/mass; // beta x gamma
 	  minion = bg > _bgcut;
 	}
-	// basic info
+	// get tracker information
 	const Tracker& tracker = getTrackerOrThrow();
 	const Straw& straw = tracker.getStraw(step.strawIndex());
-	double r2 = straw.getDetail().innerRadius()*straw.getDetail().innerRadius();
-	// decide how we step; straight or helix, depending on the Pt
-	Hep3Vector const& mom = step.momentum();
-	Hep3Vector mdir = mom.unit();
-	// approximate pt
-	double apt = step.momentum().perpPart(_bdir).mag();
-	if( apt > _ptmin) {
-	  // divide the step linearly along the direction according the MIP mean free path.
-	  // loop until we're at the end of the step or we've used up all the energy
-	  double etot = step.ionizingEdep();
-	  // make sure this linear approximation doesn't extend past the physical straw
-	  Hep3Vector dperp = (step.position() -straw.getMidPoint()).perpPart(straw.getDirection());
-	  Hep3Vector mperp = mdir.perpPart(straw.getDirection());
-	  double dm = dperp.dot(mperp);
-	  double m2 = mperp.mag2();
-	  double dp2 = dperp.mag2();
-	  double smax = (-dm + sqrt(dm*dm - m2*(dp2 - r2)))/m2;
-	  double slen = std::min(smax,step.stepLength());
-	  double dedx = etot/slen; // average de/dx for this step
-	  while (slen > 0.0 && etot > 0.0) {
-	    // generate a random cluster: length, position, energy, n electrons
-	    double cstep = _randexp.fire(_strawphys->meanFreePath());
-	    Hep3Vector cpos = step.position() + _randflat.fire(step.stepLength())*mdir;
-	    double cen;
-	    unsigned ne;
-	    if(minion){
-	      // explicitly simulate ionization statistics for min-ion particles.
-	      // make sure there's enough energy for at least 1 electron
-	      if(etot > _strawphys->ionizationEnergy((unsigned)1)){
-		// sample until we get something consistent with the step
-		do {
-		  ne = _strawphys->nePerIon(_randflat.fire());
-		  cen = _strawphys->ionizationEnergy(ne);
-		} while(cen > etot);
-	      } else {
-		// we've used up all the energy: assign what's left to a single electron
-		cen = etot;
-		ne = 1;
-	      }
-	    } else {
-	      // For the rest, divide up the average energy/ionization evenly.
-	      // This assumes the energy comes from many separate ionizations
-	      cen = std::min(cstep*dedx,etot); 
-	      double fne = rint(cen/_strawphys->meanElectronEnergy());
-	      ne = std::max( static_cast<unsigned>(fne),(unsigned)1);
-	    }
-	    // create a cluster object
-	    double qc = _strawphys->ionizationCharge(ne);
-	    IonCluster cluster(cpos,qc,cen,ne);
-	    clusters.push_back(cluster);
-	    // update for the next step
-	    slen -= cstep;
-	    etot -= cen;
-	  }
-	  // if we used up the step length but not the energy,
-	  // put the remaining energy in a single random step.  This models
-	  // delta-ray energy deposition
-	  if(etot > 0.0){
-	    Hep3Vector cpos = step.position() + _randflat.fire(step.stepLength())*mdir;
-	    double fne = rint(etot/_strawphys->meanElectronEnergy());
-	    unsigned ne = std::max( static_cast<unsigned>(fne),(unsigned)1);
-	    double qc = _strawphys->ionizationCharge(ne);
-	    IonCluster cluster(cpos,qc,etot,ne);
-	    clusters.push_back(cluster);
-	  }
+	// compute the number of clusters for this step from the mean free path
+	double fnc = step.stepLength()/_strawphys->meanFreePath();
+	// use a truncated Poisson distribution; this keeps both the mean and variance physical
+	unsigned nc = std::max(static_cast<unsigned>(_randP.fire(fnc)),(unsigned)1);
+	if(!minion)nc = std::min(nc,_maxnclu);
+	// require clusters not exceed the energy sum required for single-electron clusters
+	nc = std::min(nc,static_cast<unsigned>(floor(step.ionizingEdep()/_strawphys->ionizationEnergy((unsigned)1))));
+	// generate random positions for the clusters
+	std::vector<Hep3Vector> cpos(nc);
+	fillClusterPositions(straw,step,cpos);
+	// generate electron counts and energies for these clusters: minion model is more detailed 
+	std::vector<unsigned> ne(nc);
+	std::vector<double> cen(nc);
+	if(minion){
+	  fillClusterMinion(step,ne,cen);
 	} else {
-	  // Use a helix to model particles which curl on the scale of the straws
-	  GeomHandle<BFieldManager> bfmgr;
-	  GeomHandle<DetectorSystem> det;
-	  // find the local field vector at this step
-	  Hep3Vector vpoint_mu2e = det->toMu2e(step.position());
-	  Hep3Vector bf = bfmgr->getBField(vpoint_mu2e);
-	  // compute transverse radius of particle
-	  double rcurl = fabs(charge*(mom.perpPart(bf).mag())/BField::mmTeslaToMeVc*bf.mag());
-	  // basis using local Bfield direction
-	  Hep3Vector bfdir = bf.unit();
-	  Hep3Vector qmdir = (charge*mom).unit(); // charge-signed momentum direction
-	  Hep3Vector rdir = qmdir.cross(bfdir).unit(); // points along magnetic force, ie towards center
-	  Hep3Vector pdir = bfdir.cross(rdir).unit(); // perp to this and field
-	  // find the center of the helix at the start of this step
-	  Hep3Vector hcent = step.position() + rcurl*rdir;
-	  // find helix parameters.  By definition, z0 = phi0 = 0
-	  double omega = qmdir.dot(pdir)/(rcurl*qmdir.dot(bfdir));
-	  // compute how far this step goes along the field direction.  This includes sign information
-	  double zlen = step.stepLength()*mdir.dot(bfdir);
-	  // take random steps along this length.  Use MIP mean free path as 'reasonable' length but limit the number
-	  float fnsteps = rint(step.stepLength()/_strawphys->meanFreePath());
-	  unsigned nsteps = std::min(std::max(static_cast<unsigned>(fnsteps),(unsigned)1),_maxdnclu);
-	  // compute energy deposit at each step.  No need to randomize
-	  double cen = step.ionizingEdep()/nsteps;
-	  double fne = rint(cen/_strawphys->meanElectronEnergy());
-	  unsigned ne = std::max( static_cast<unsigned>(fne),(unsigned)1);
-	  double qc = _strawphys->ionizationCharge(ne);
-	  unsigned istep(0);
-	  unsigned ntries(0);
-	  // loop until we've found enough valid samples, or have given up trying
-	  while(istep < nsteps && ntries < 10*nsteps){
-	    double zclu = _randflat.fire(zlen);
-	    double phi = zclu*omega;
-	    // build cluster position from these
-	    Hep3Vector cpos = hcent + rcurl*(-rdir*cos(phi) + pdir*sin(phi)) + zclu*bfdir;
-	    // test
-	    double rd2 = (cpos-straw.getMidPoint()).perpPart(straw.getDirection()).mag2();
-	    if(rd2 - r2 < 1.0e-3){
-	      IonCluster cluster(cpos,qc,cen,ne);
-	      clusters.push_back(cluster);
-	      ++istep;
-	    } else if (_debug > 0) {
-	      cout << "cluster outside straw: helix " <<  sqrt(rd2) << endl;
-	    }
-	    ++ntries;
+	  // get Poisson distribution of # of electrons for the average energy
+	  double fne = step.ionizingEdep()/(nc*_strawphys->meanElectronEnergy()); // average # of electrons/cluster for non-minion clusters
+	  for(unsigned ic=0;ic<nc;++ic){
+	    ne[ic] = static_cast<unsigned>(std::max(_randP.fire(fne),(long)1));
+	    cen[ic] = ne[ic]*_strawphys->meanElectronEnergy(); // average energy per electron, works for large numbers of electrons
 	  }
-	  if(istep != nsteps){
-	  // failed to find valid steps. put any remining energy at the step
-	    while(istep < nsteps){
-	      IonCluster cluster(step.position(),qc,cen,ne);
-	      clusters.push_back(cluster);
-	      ++istep;
-	    }
-	    if(_debug > 0)cout << "mu2e::StrawDigisFromStepPointMCs: Couldn't create enough clusters : "<< istep << " wanted " << nsteps << endl;
-	  }
+	}
+	// create the cluster objects
+	for(unsigned ic=0;ic<nc;++ic){
+	  double qc = _strawphys->ionizationCharge(ne[ic]);
+	  IonCluster cluster(cpos[ic],qc,cen[ic],ne[ic]);
+	  clusters.push_back(cluster);
 	}
       }
       // diagnostics
@@ -708,14 +609,14 @@ namespace mu2e {
 	_stepE = step.ionizingEdep();
 	_partP = step.momentum().mag();
 	_partPDG = step.simParticle()->pdgId();
-	_nsubstep = clusters.size();
+	_nclusd = (int)clusters.size();
 	_netot = 0;
 	_qsum = _esum = _eesum = 0.0;
 	for(auto iclust=clusters.begin();iclust != clusters.end();++iclust){
 	  _netot += iclust->_ne;
 	  _qsum += iclust->_charge;
 	  _esum += iclust->_eion;
-	  _eesum += _strawphys->ionizationEnergy(iclust->_ne);
+	  _eesum += _strawphys->meanElectronEnergy()*iclust->_ne;
 	}
 	_qe = _strawphys->ionizationEnergy(_qsum);
 	_sdiag->Fill();
@@ -740,13 +641,6 @@ namespace mu2e {
       // position along wire
       // need to add Lorentz effects, this should be in StrawPhysics, FIXME!!!
       wireq._wpos = cpos.dot(straw.getDirection());
-      if(_diag > 0){
-	_gain = gain;
-	_cq = cluster._charge;
-	_cen = cluster._eion;
-	_ne = cluster._ne;
-	_cdiag->Fill(); 
-      }
     }
 
     void StrawDigisFromStepPointMCs::propagateCharge(Straw const& straw,
@@ -965,8 +859,8 @@ namespace mu2e {
 	    double tend = clist.rbegin()->time() + _nfall*tfall;
 	    ADCTimes times;
 	    ADCVoltages volts;
-	    times.reserve(size_t(rint(tend-tstart)/_tstep));
-	    volts.reserve(size_t(rint(tend-tstart)/_tstep));
+	    times.reserve(size_t(ceil(tend-tstart)/_tstep));
+	    volts.reserve(size_t(ceil(tend-tstart)/_tstep));
 	    double t = tstart;
 	    while(t<tend){
 	      times.push_back(t);
@@ -1097,7 +991,7 @@ namespace mu2e {
 	  _tot[iend] = digi.TOT(xpair[iend]->_iclust->strawEnd());
 	  ClusterList const& clist = wfs[iend].clusts().clustList();
 	  auto ctrig = xpair[iend]->_iclust;
-	  _nclust[iend] = clist.size();
+	  _ncludd[iend] = clist.size();
 	  // find the earliest cluster from the same particle that triggered the crossing
 	  auto iclu = clist.begin();
 	  while( iclu != clist.end() && ctrig->stepPointMC()->simParticle() != iclu->stepPointMC()->simParticle() ){
@@ -1162,8 +1056,135 @@ namespace mu2e {
 	// fill the tree entry
 	_sddiag->Fill();
       }
-    } // end namespace trackermc
-  } // end namespace mu2e
+
+      void StrawDigisFromStepPointMCs::fillClusterPositions(Straw const& straw, StepPointMC const& step, std::vector<Hep3Vector>& cpos) {
+	// basic info
+	double charge(0.0);
+	GlobalConstantsHandle<ParticleDataTable> pdt;
+	if(pdt->particle(step.simParticle()->pdgId()).isValid()){
+	  charge = pdt->particle(step.simParticle()->pdgId()).ref().charge();
+	}
+	double r2 = straw.getDetail().innerRadius()*straw.getDetail().innerRadius();
+	// decide how we step; straight or helix, depending on the Pt
+	Hep3Vector const& mom = step.momentum();
+	Hep3Vector mdir = mom.unit();
+	// approximate pt
+	double apt = step.momentum().perpPart(_bdir).mag();
+	if( apt > _ptmin) { // use linear approximation
+	  // make sure this linear approximation doesn't extend past the physical straw
+	  Hep3Vector dperp = (step.position() -straw.getMidPoint()).perpPart(straw.getDirection());
+	  Hep3Vector mperp = mdir.perpPart(straw.getDirection());
+	  double dm = dperp.dot(mperp);
+	  double m2 = mperp.mag2();
+	  double dp2 = dperp.mag2();
+	  double smax = (-dm + sqrt(dm*dm - m2*(dp2 - r2)))/m2;
+	  double slen = std::min(smax,step.stepLength());
+	  // generate a vector of random lengths
+	  for(unsigned ic=0;ic < cpos.size();++ic){
+	    // generate a random cluster position
+	    cpos[ic] = step.position() +_randflat.fire(slen) *mdir;
+	  }
+	} else {
+	  // Use a helix to model particles which curl on the scale of the straws
+	  GeomHandle<BFieldManager> bfmgr;
+	  GeomHandle<DetectorSystem> det;
+	  // find the local field vector at this step
+	  Hep3Vector vpoint_mu2e = det->toMu2e(step.position());
+	  Hep3Vector bf = bfmgr->getBField(vpoint_mu2e);
+	  // compute transverse radius of particle
+	  double rcurl = fabs(charge*(mom.perpPart(bf).mag())/BField::mmTeslaToMeVc*bf.mag());
+	  // basis using local Bfield direction
+	  Hep3Vector bfdir = bf.unit();
+	  Hep3Vector qmdir = (charge*mom).unit(); // charge-signed momentum direction
+	  Hep3Vector rdir = qmdir.cross(bfdir).unit(); // points along magnetic force, ie towards center
+	  Hep3Vector pdir = bfdir.cross(rdir).unit(); // perp to this and field
+	  // find the center of the helix at the start of this step
+	  Hep3Vector hcent = step.position() + rcurl*rdir;
+	  // find helix parameters.  By definition, z0 = phi0 = 0
+	  double omega = qmdir.dot(pdir)/(rcurl*qmdir.dot(bfdir));
+	  // compute how far this step goes along the field direction.  This includes sign information
+	  double zlen = step.stepLength()*mdir.dot(bfdir);
+	  // loop until we've found enough valid samples, or have given up trying
+	  unsigned iclu(0);
+	  unsigned ntries(0);
+	  unsigned nclus = cpos.size();
+	  while(iclu < nclus && ntries < 10*nclus){
+	    double zclu = _randflat.fire(zlen);
+	    double phi = zclu*omega;
+	    // build cluster position from these
+	    Hep3Vector cp = hcent + rcurl*(-rdir*cos(phi) + pdir*sin(phi)) + zclu*bfdir;
+	    // test
+	    double rd2 = (cp-straw.getMidPoint()).perpPart(straw.getDirection()).mag2();
+	    if(rd2 - r2 < 1.0e-3){
+	      cpos[iclu] = cp;
+	      ++iclu;
+	    } else if (_debug > 0) {
+	      cout << "cluster outside straw: helix " <<  sqrt(rd2) << endl;
+	    }
+	    ++ntries;
+	  }
+	  if(iclu != nclus){
+	  // failed to find valid steps. put any remining energy at the step
+	    if(_debug > 0)cout << "mu2e::StrawDigisFromStepPointMCs: Couldn't create enough clusters : "<< iclu << " wanted " << nclus << endl;
+	    while(iclu < nclus){
+	      cpos[iclu] = step.position();
+	      ++iclu;
+	    }
+	  }
+	}
+      }
+
+      void StrawDigisFromStepPointMCs::fillClusterMinion(StepPointMC const& step, std::vector<unsigned>& ne, std::vector<double>& cen) {
+	// Loop until we've assigned energy + electrons to every cluster 
+	unsigned mc(0);
+	double esum(0.0);
+	double etot = step.ionizingEdep();
+	unsigned nc = ne.size();
+	while(mc < nc){
+	  std::vector<unsigned> me(nc);
+	  // fill an array of random# of electrons according to the measured distribution.  These are returned sorted lowest-highest.
+	  fillClusterNe(me);
+	  for(auto ie : me) {
+	    // maximum energy for this cluster requires at least 1 electron for the rest of the cluster
+	    double emax = etot - esum - (nc -mc -1)*_strawphys->ionizationEnergy((unsigned)1);
+	    double eele = _strawphys->ionizationEnergy(ie);
+	    if( eele < emax){
+	      ne[mc] = ie;
+	      cen[mc] = eele;
+	      ++mc;
+	      esum += eele;
+	    } else {
+	      break;
+	    }
+	  }
+	}
+	// distribute any residual energy randomly to these clusters.  This models delta rays
+	unsigned ns;
+	do{
+	  unsigned me = _strawphys->nePerIon(_randflat.fire());
+	  double emax = etot - esum;
+	  double eele = _strawphys->ionizationEnergy(me);
+	  if(eele < emax){
+	    // choose a random cluster to assign this energy to
+	    unsigned mc = std::min(nc-1,static_cast<unsigned>(floor(_randflat.fire(nc))));
+	    ne[mc] += me;
+	    cen[mc] += eele;
+	    esum += eele;
+	  }
+	  // maximum energy for this cluster requires at least 1 electron for the rest of the cluster
+	  ns = static_cast<unsigned>(floor((etot-esum)/_strawphys->ionizationEnergy((unsigned)1)));
+	} while(ns > 0);
+      }
+
+      void StrawDigisFromStepPointMCs::fillClusterNe(std::vector<unsigned>& me) {
+	for(size_t ie=0;ie < me.size(); ++ie){
+	  me[ie] = _strawphys->nePerIon(_randflat.fire());
+	}
+	if(_sort)std::sort(me.begin(),me.end());
+      }
+
+  } // end namespace trackermc
+} // end namespace mu2e
 
 using mu2e::TrackerMC::StrawDigisFromStepPointMCs;
 DEFINE_ART_MODULE(StrawDigisFromStepPointMCs);
