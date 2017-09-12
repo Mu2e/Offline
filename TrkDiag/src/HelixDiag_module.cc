@@ -152,7 +152,7 @@ namespace mu2e {
     _cperpres	 (pset.get<double>("CenterPerpResolution",12.0)),
     _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
     _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
-    _shfTag(pset.get<string>("StrawHitFlagCollectionTag","PosHelixFinder")),
+    _shfTag(pset.get<string>("StrawHitFlagCollectionTag","TimeClusterFinder")),
     _hsTag(pset.get<string>("HelixSeedCollectionTag","PosHelixFinder")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
@@ -397,10 +397,10 @@ namespace mu2e {
     static unsigned igraph = 0;
     igraph++;
     art::ServiceHandle<art::TFileService> tfs;
-    char ce_used_name[100];
-    snprintf(ce_used_name,100,"ce_used_shfz%i",igraph);
-    char ce_notused_name[100];
-    snprintf(ce_notused_name,100,"ce_notused_shfz%i",igraph);
+    char pri_used_name[100];
+    snprintf(pri_used_name,100,"pri_used_shfz%i",igraph);
+    char pri_notused_name[100];
+    snprintf(pri_notused_name,100,"pri_notused_shfz%i",igraph);
     char bkg_used_name[100];
     snprintf(bkg_used_name,100,"bkg_used_shfz%i",igraph);
     char notselected_name[100];
@@ -413,23 +413,23 @@ namespace mu2e {
     snprintf(trk_name,100,"trk_shfz%i",igraph);
     char title[100];
     snprintf(title,100,"StrawHit #PhiZ evt %i hel %i;mm;rad",_iev,ihel);
-    TH2F* ce_used = tfs->make<TH2F>(ce_used_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
-    TH2F* ce_notused = tfs->make<TH2F>(ce_notused_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
+    TH2F* pri_used = tfs->make<TH2F>(pri_used_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
+    TH2F* pri_notused = tfs->make<TH2F>(pri_notused_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
     TH2F* bkg_used = tfs->make<TH2F>(bkg_used_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
     TH2F* notselected = tfs->make<TH2F>(notselected_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
     TH2F* selected = tfs->make<TH2F>(selected_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
     TH2F* tc = tfs->make<TH2F>(tc_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
     TH2F* trk = tfs->make<TH2F>(trk_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
-    ce_used->SetStats(0);
-    ce_notused->SetStats(0);
+    pri_used->SetStats(0);
+    pri_notused->SetStats(0);
     bkg_used->SetStats(0);
     notselected->SetStats(0);
     selected->SetStats(0);
     tc->SetStats(0);
     trk->SetStats(0);
 // get the 'function' lists for these (can be any TObject)
-    TList* ce_used_list = ce_used->GetListOfFunctions();
-    TList* ce_notused_list = ce_notused->GetListOfFunctions();
+    TList* pri_used_list = pri_used->GetListOfFunctions();
+    TList* pri_notused_list = pri_notused->GetListOfFunctions();
     TList* bkg_used_list = bkg_used->GetListOfFunctions();
     TList* notselected_list = notselected->GetListOfFunctions();
     TList* selected_list = selected->GetListOfFunctions();
@@ -457,11 +457,11 @@ namespace mu2e {
 	if (use(hhit) ) {
 	  te->SetFillColor(kRed);
 	  te->SetLineColor(kRed);
-	  ce_used_list->Add(te);
+	  pri_used_list->Add(te);
 	} else {
 	  te->SetFillColor(kCyan);
 	  te->SetLineColor(kCyan);
-	  ce_notused_list->Add(te);
+	  pri_notused_list->Add(te);
 	}
       }
       else {
@@ -534,8 +534,8 @@ namespace mu2e {
     RobustHelix const& rhel = hseed._helix;
     HelixHitCollection const& hhits = hseed._hhits;
 
-    static std::string ce_used_title("Ce Used;x(mm);y(mm)");
-    static std::string ce_notused_title("Ce Not Used;x(mm);y(mm)");
+    static std::string pri_used_title("Pri Used;x(mm);y(mm)");
+    static std::string pri_notused_title("Pri Not Used;x(mm);y(mm)");
     static std::string bkg_used_title("Bkg Used;x(mm);y(mm)");
     static std::string notselected_title("Not Selected;x(mm);y(mm)");
     static std::string selected_title("Selected;x(mm);y(mm)");
@@ -546,10 +546,10 @@ namespace mu2e {
     static unsigned igraph = 0;
     igraph++;
     art::ServiceHandle<art::TFileService> tfs;
-    char ce_used_name[100];
-    snprintf(ce_used_name,100,"ce_used_shxy%i",igraph);
-    char ce_notused_name[100];
-    snprintf(ce_notused_name,100,"ce_notused_shxy%i",igraph);
+    char pri_used_name[100];
+    snprintf(pri_used_name,100,"pri_used_shxy%i",igraph);
+    char pri_notused_name[100];
+    snprintf(pri_notused_name,100,"pri_notused_shxy%i",igraph);
     char bkg_used_name[100];
     snprintf(bkg_used_name,100,"bkg_used_shxy%i",igraph);
     char notselected_name[100];
@@ -562,30 +562,30 @@ namespace mu2e {
     snprintf(trk_name,100,"trk_shxy%i",igraph);
     char title[100];
     snprintf(title,100,"StrawHit XY evt %i hel %i;mm;rad",_iev,ihel);
-    TH2F* ce_used = tfs->make<TH2F>(ce_used_name,ce_used_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
-    TH2F* ce_notused = tfs->make<TH2F>(ce_notused_name,ce_notused_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* pri_used = tfs->make<TH2F>(pri_used_name,pri_used_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* pri_notused = tfs->make<TH2F>(pri_notused_name,pri_notused_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
     TH2F* bkg_used = tfs->make<TH2F>(bkg_used_name,bkg_used_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
     TH2F* notselected = tfs->make<TH2F>(notselected_name,notselected_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
     TH2F* selected = tfs->make<TH2F>(selected_name,selected_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
     TH2F* tc = tfs->make<TH2F>(tc_name,tc_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
     TH2F* trk = tfs->make<TH2F>(trk_name,trk_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
-    ce_used->SetStats(0);
-    ce_notused->SetStats(0);
+    pri_used->SetStats(0);
+    pri_notused->SetStats(0);
     bkg_used->SetStats(0);
     notselected->SetStats(0);
     selected->SetStats(0);
     tc->SetStats(0);
     trk->SetStats(0);
 
-    ce_used->SetLineColor(kRed);
-    ce_notused->SetLineColor(kCyan);
+    pri_used->SetLineColor(kRed);
+    pri_notused->SetLineColor(kCyan);
     bkg_used->SetLineColor(kMagenta);
     notselected->SetLineColor(kYellow);
     selected->SetLineColor(kOrange);
     tc->SetLineColor(kGreen);
 // get the 'function' lists for these (can be any TObject)
-    TList* ce_used_list = ce_used->GetListOfFunctions();
-    TList* ce_notused_list = ce_notused->GetListOfFunctions();
+    TList* pri_used_list = pri_used->GetListOfFunctions();
+    TList* pri_notused_list = pri_notused->GetListOfFunctions();
     TList* bkg_used_list = bkg_used->GetListOfFunctions();
     TList* notselected_list = notselected->GetListOfFunctions();
     TList* selected_list = selected->GetListOfFunctions();
@@ -636,11 +636,11 @@ namespace mu2e {
 	if (use(hhit) ) {
 	  te->SetFillColor(kRed);
 	  te->SetLineColor(kRed);
-	  ce_used_list->Add(te);
+	  pri_used_list->Add(te);
 	} else {
 	  te->SetFillColor(kCyan);
 	  te->SetLineColor(kCyan);
-	  ce_notused_list->Add(te);
+	  pri_notused_list->Add(te);
 	}
       }
       else {
@@ -702,7 +702,7 @@ namespace mu2e {
     fitarc->SetLineColor(kRed);
     fitarc->SetLineWidth(2);
     fitarc->SetFillStyle(0);
-    ce_used_list->Add(fitarc);
+    pri_used_list->Add(fitarc);
     if (_mcdiag) {
       // mc true circle
       TArc* mcarc = new TArc(_mch.centerx()-pcent.x(),_mch.centery()-pcent.y(),_mch.radius());

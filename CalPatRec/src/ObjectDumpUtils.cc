@@ -383,7 +383,7 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
 	     hit->hitErr(),
 	     hit->t0Err(),
 	     hit->penaltyErr(),
-	     hit->extErr()
+	     hit->temperature()
 	     );
 //-----------------------------------------------------------------------------
 // test: calculated residual in fTmp[0]

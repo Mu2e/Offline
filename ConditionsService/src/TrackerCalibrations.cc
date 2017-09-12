@@ -31,6 +31,7 @@ namespace mu2e {
     _edepToAmpl = config.getDouble("EdepToAmpl",1.0); // mV/MeV
     _amplRes = config.getDouble("AmplRes", 0.0); //   relative
     _crossTalk = config.getDouble("Crosstalk",0.0); //   relative
+    _mint0doca = config.getDouble("minT0DOCA", -0.2);
   }
 
   void TrackerCalibrations::DistanceToTime(StrawIndex strawIndex,double rdrift, CLHEP::Hep3Vector const& tdir,D2T& d2t) const {
@@ -119,4 +120,8 @@ namespace mu2e {
     return _crossTalk;
   }
 
+
+  double TrackerCalibrations::Mint0doca() const{
+    return _mint0doca;
+  }
 }

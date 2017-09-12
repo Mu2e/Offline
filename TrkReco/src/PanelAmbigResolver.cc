@@ -97,7 +97,7 @@ namespace mu2e {
       auto ihit=tshv.begin();
       while(ihit!=tshv.end()){
 	PanelId pid = (*ihit)->straw().id().getPanelId();
-	(*ihit)->setExtErr(AmbigResolver::_extErr);
+	(*ihit)->setTemperature(AmbigResolver::_extErr);
 	TrkStrawHitVector phits;
 	auto jhit=ihit;
 	while(jhit != tshv.end() && (*jhit)->straw().id().getPanelId() == pid){

@@ -4,7 +4,7 @@
 
 process_name : digiG4Out
 
-outputs.FullOutput.fileName    : "dataDigi.root"
+outputs.FullOutput.fileName    : "dataDigi.art"
 services.TFileService.fileName : "histDigi.root"
 
 // This tells emacs to view this file in the JavaScript mode.

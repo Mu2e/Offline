@@ -21,8 +21,8 @@ class PlotHelices {
     _names.push_back("mctsh");
     _names.push_back("tc_sh");
     _names.push_back("bkg_used_sh");
-    _names.push_back("ce_notused_sh");
-    _names.push_back("ce_used_sh");
+    _names.push_back("pri_notused_sh");
+    _names.push_back("pri_used_sh");
   }
   PlotHelices(TDirectory* tdir, std::vector<std::string>const& pnames) : _drawfz(true), _csize(400) ,_tdir(tdir),  _names(pnames) {}
   

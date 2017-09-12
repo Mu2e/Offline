@@ -84,9 +84,7 @@ BEGIN_PROLOG
 
   HelixDiag : {
 	module_type : HelixDiag
-	MinimumCEHits : 10
 	HelixSeedCollectionTag : "PosHelixFinder"
-	StrawHitFlagCollectionTag : "TimeClusterFinder"
 	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
   }
 

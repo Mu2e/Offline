@@ -19,7 +19,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
-#include "CalPatRec/inc/TrkDefHack.hh"
+// #include "CalPatRec/inc/TrkDefHack.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
@@ -43,6 +43,7 @@
 
 #include "TrkDiag/inc/KalDiag.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
+#include "RecoDataProducts/inc/TrkQual.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 
 #include "CalPatRec/inc/ObjectDumpUtils.hh"
@@ -143,7 +144,8 @@ namespace mu2e {
 
     produces<AlgorithmIDCollection>  ();
     produces<KalRepPtrCollection>    ();
-    
+    produces<TrkQualCollection>      ();
+
     _kalDiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet()));
     _dar     = new DoubletAmbigResolver (pset.get<fhicl::ParameterSet>("DoubletAmbigResolver"),0.,0,0);
 
@@ -231,6 +233,7 @@ namespace mu2e {
 
     unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection );
     unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection   );
+    unique_ptr<TrkQualCollection>      tqcol    (new TrkQualCollection()   );
 
     if (_debugLevel > 0) ObjectDumpUtils::printEventHeader(&AnEvent,"MergePatRec::produce");
 
@@ -256,6 +259,7 @@ namespace mu2e {
     const KalRep              *krep_tpr, *krep_cpr;
     Hep3Vector                cpr_mom, tpr_mom;
     short                     best(-1),  mask;
+    double                    best_MVAQual(-1);
     AlgorithmID               alg_id;
     TrkHitVector              tlist, clist;
     int                       nat, nac, natc;
@@ -416,10 +420,12 @@ namespace mu2e {
 	    if (tpr_prob >= cpr_prob) {
 	      trackPtrs->push_back(*tpr);
 	      best    = AlgorithmID::TrkPatRecBit;
+	      best_MVAQual = tpr_qual;
 	    }
 	    else {
 	      trackPtrs->push_back(*cpr);
 	      best    = AlgorithmID::CalPatRecBit;
+	      best_MVAQual = cpr_qual;
 	    }
 	  }
 	  else if (tpr_trkinfo._trkqual > _minTprQual) {
@@ -428,6 +434,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	    trackPtrs->push_back(*tpr);
 	    best    = AlgorithmID::TrkPatRecBit; 
+	    best_MVAQual = tpr_qual;
 	  }
 	  else if (cpr_qual > _minCprQual) {
 //-----------------------------------------------------------------------------
@@ -435,6 +442,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	    trackPtrs->push_back(*cpr);
 	    best    = AlgorithmID::CalPatRecBit; 
+	    best_MVAQual = cpr_qual;
 	  }
 	  else {
 //-----------------------------------------------------------------------------
@@ -443,10 +451,12 @@ namespace mu2e {
 	    if (tpr_prob >= cpr_prob) {
 	      trackPtrs->push_back(*tpr);
 	      best    = AlgorithmID::TrkPatRecBit; 
+	      best_MVAQual = tpr_qual;
 	    }
 	    else {
 	      trackPtrs->push_back(*cpr);
 	      best    = AlgorithmID::CalPatRecBit; 
+	      best_MVAQual = cpr_qual;
 	    }
 	  }
 
@@ -459,10 +469,18 @@ namespace mu2e {
       if (tpr_flag[i1] == 1) {
 	trackPtrs->push_back(*tpr);
 	best = AlgorithmID::TrkPatRecBit;
+	best_MVAQual = tpr_qual;
       }
 
       alg_id.Set(best,mask);
       algs->push_back(alg_id);
+
+      // compute TrkQual for this track and save it
+      // DUMMY FILLING. FIXME!
+      TrkQual trkqual;
+      trkqual.setMVAValue(best_MVAQual);
+
+      tqcol->push_back(trkqual);
     }
 //-----------------------------------------------------------------------------
 // account for presence of multiple tracks
@@ -478,6 +496,107 @@ namespace mu2e {
 
 	alg_id.Set(best,mask);
 	algs->push_back(alg_id);
+
+ // compute TrkQual for this track and save it
+ // DUMMY FILLING. FIXME!
+	krep_cpr  = cpr->get();	_kalDiag->kalDiag(krep_cpr,false);
+	cpr_trkinfo = _kalDiag->_trkinfo;
+
+	cpr_mom   = krep_cpr->momentum();
+	clist     = krep_cpr->hitVector();
+	nac       = krep_cpr->nActive();
+
+	vector<double>  pmva;
+	pmva.resize(10);
+
+	float na = nac;
+
+	pmva[ 0] = na;
+	pmva[ 1] = na/krep_cpr->nHits();
+
+	if      (_calPatRecMVAType == 0) pmva[2] = log10(krep_cpr->chisqConsistency().consistency());
+	else                             pmva[2] = krep_cpr->chisq()/(na-5.);
+//-----------------------------------------------------------------------------
+// determine, approximately, 'sz0' - flight length corresponding to the 
+// virtual detector at the tracker entrance
+//-----------------------------------------------------------------------------
+	double  h1_fltlen, hn_fltlen, entlen;
+	
+	h1_fltlen      = krep_cpr->firstHit()->kalHit()->hit()->fltLen();
+	hn_fltlen      = krep_cpr->lastHit ()->kalHit()->hit()->fltLen();
+	entlen         = std::min(h1_fltlen,hn_fltlen);
+
+	CLHEP::Hep3Vector fitmom = krep_cpr->momentum(entlen);
+//-----------------------------------------------------------------------------
+// pmva[3]: momentum error in the first point
+// for consistency, use helical parameterization in the first point
+//-----------------------------------------------------------------------------
+	CLHEP::Hep3Vector momdir = fitmom.unit();
+	BbrVectorErr      momerr = krep_cpr->momentumErr(entlen);
+	
+	CLHEP::HepVector momvec(3);
+	for (int i=0; i<3; i++) momvec[i] = momdir[i];
+	
+	pmva[ 3] = sqrt(momerr.covMatrix().similarity(momvec));
+	pmva[ 4] = krep_cpr->t0().t0Err();
+
+	Hep3Vector tfront = ds->toDetector(vdet->getGlobal(mu2e::VirtualDetectorId::TT_FrontPA));
+	double     zfront = tfront.z();
+	double     sz0    = s_at_given_z(krep_cpr,zfront);
+
+	HelixParams helx  = krep_cpr->helix(sz0);
+
+	pmva[ 5] = helx.d0();
+	pmva[ 6] = helx.d0()+2/helx.omega();
+
+					// calculate number of doublets 
+
+	vector<mu2e::Doublet> list_of_doublets;
+	_dar->findDoublets(krep_cpr,&list_of_doublets);
+
+//-----------------------------------------------------------------------------
+// counting only 2+ hit doublets
+//-----------------------------------------------------------------------------
+	mu2e::Doublet*                     d;
+	//	mu2e::DoubletAmbigResolver::Data_t r;
+	
+	int   nd_tot(0), nd_os(0), nd_ss(0), ns;
+
+	int nad(0);                     // number of doublets with at least one hit active
+	
+	int nd = list_of_doublets.size();
+	for (int i=0; i<nd; i++) {
+	  d  = (mu2e::Doublet*) &list_of_doublets.at(i);
+	  ns = d->fNStrawHits;
+	  
+	  if (ns > 1) { 
+	    nd_tot += 1;
+	    if (d->isSameSign()) nd_ss += 1;
+	    else                 nd_os += 1;
+
+	    int active = 1;
+	    for (int is=0; is<ns; is++) {
+	      if (!d->fHit[is]->isActive()) {
+		active = 0;
+		break;
+	      }
+	    }
+	    
+	    if (active == 1) {
+	      nad += 1;
+	    }
+	  }
+	}
+	
+	pmva[ 7] = nad/na;
+	pmva[ 8] = cpr_trkinfo._nnullambig/na;
+	pmva[ 9] = cpr_trkinfo._nmatactive/na;
+
+	double  cpr_MVAQual = _calPatRecQualMVA->evalMVA(pmva);
+	TrkQual trkqual;
+	trkqual.setMVAValue(cpr_MVAQual);
+	
+	tqcol->push_back(trkqual);
       }
     }
 
@@ -485,6 +604,7 @@ namespace mu2e {
 
     AnEvent.put(std::move(trackPtrs));
     AnEvent.put(std::move(algs     ));
+    AnEvent.put(std::move(tqcol    ));
   }
 
 

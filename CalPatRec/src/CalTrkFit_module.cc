@@ -24,7 +24,7 @@
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "CalPatRec/inc/KalFitResult.hh"
+// #include "CalPatRec/inc/KalFitResult.hh"
 #include "CalPatRec/inc/CprModuleHistBase.hh"
 #include "art/Utilities/make_tool.h"
 
@@ -425,7 +425,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	for(auto zpos : _zsave) {
 	  // compute the flightlength for this z
-	  double fltlen = TrkUtilities::zFlight(krep->pieceTraj(),zpos);
+	  // double fltlen = TrkUtilities::zFlight(krep->pieceTraj(),zpos);
+	  double fltlen = krep->pieceTraj().zFlight(zpos);
 	  // sample the momentum at this flight.  This belongs in a separate utility FIXME
 	  BbrVectorErr momerr = krep->momentumErr(fltlen);
 	  // sample the helix
@@ -505,27 +506,26 @@ namespace mu2e {
 //----------------------------------------------------------------------
 // 2015-02-11 change the selection bit for searching for missed hits
 //----------------------------------------------------------------------
-      StrawHit const& sh = _shcol->at(istr);
+      StrawHit const&   sh    = _shcol->at(istr);
 //-----------------------------------------------------------------------------
 // I think, we want to check the radial bit: if it is set, than at least one of
 // the two measured times is wrong...
 //-----------------------------------------------------------------------------
-//      int radius_ok = KRes._shfcol->at(istr).hasAllProperties(StrawHitFlag::radsel);
-      dt        = KRes._shcol->at(istr).time()-krep->t0()._t0;
+      //      int radius_ok = _shfcol->at(istr).hasAllProperties(StrawHitFlag::radsel);
+      dt        = _shcol->at(istr).time()-KRes._krep->t0()._t0;
 
       //      if (radius_ok && (fabs(dt) < _maxdtmiss)) {
       if (fabs(dt) < _maxdtmiss) {
-
 					// make sure we haven't already used this hit
+
 	TrkStrawHit  *tsh, *closest(NULL);
 	bool found = false;
 
 	Straw const&      straw = _tracker->getStraw(sh.strawIndex());
 	CLHEP::Hep3Vector hpos  = straw.getMidPoint();
 
-	double dz_max(1.e12) ; // closest_z(1.e12);
-
-	double zhit = hpos.z();
+	double            dz_max(1.e12) ; // closest_z(1.e12);
+	double            zhit = hpos.z();
 
 	for (std::vector<TrkHit*>::iterator it=krep->hitVector().begin(); it!=krep->hitVector().end(); it++) {
 	  tsh = static_cast<TrkStrawHit*> (*it);
@@ -551,6 +551,7 @@ namespace mu2e {
 	  double hflt = 0;
 	  TrkHelixUtils::findZFltlen(*reftraj,zhit,hflt);
 
+
           // good in-time hit.  Compute DOCA of the wire to the trajectory
 	  // also estimate the drift time if this hit were on the track to get hte hit radius
 
@@ -575,7 +576,7 @@ namespace mu2e {
 
 	  double      doca, rdrift, dr, hit_error(0.2);
 
-	  TrkStrawHit hit(sh,straw,istr,hitt0,hflt,hit_error,10);
+	  TrkStrawHit hit(sh,straw,istr,hitt0,hflt,hit_error,10.,1.,_maxadddoca);
 	  
 	  ConditionsHandle<TrackerCalibrations> tcal("ignored");
 
@@ -620,7 +621,7 @@ namespace mu2e {
       }
     }
   }
-
+  
 }
 using mu2e::CalTrkFit;
 DEFINE_ART_MODULE(CalTrkFit);

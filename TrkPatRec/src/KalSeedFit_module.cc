@@ -37,6 +37,7 @@
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
+#include "BTrk/TrkBase/TrkMomCalculator.hh"
 // Mu2e BaBar
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/KalFit.hh"
@@ -94,6 +95,8 @@ namespace mu2e
       // ouptut collections
       // Kalman fitter.  This will be configured for a least-squares fit (no material or BField corrections).
       KalFit _kfit;
+      const TTracker* _tracker;     // straw tracker geometry
+
       // helper functions
       bool findData(const art::Event& e);
       void filterOutliers(TrkDef& trkdef);
@@ -133,6 +136,9 @@ namespace mu2e
  // calculate the helicity
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
+    GeomHandle<mu2e::TTracker> th;
+    _tracker = th.get();
+
     // change coordinates to mu2e
     CLHEP::Hep3Vector vpoint(0.0,0.0,0.0);
     CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(vpoint);
@@ -182,9 +188,50 @@ namespace mu2e
 	TrkDef seeddef(tclust,hstraj,_tpart,_fdir);
 // filter outliers; this doesn't use drift information, just straw positions
 	if(_foutliers)filterOutliers(seeddef);
-    // now, fit the seed helix from the filtered hits
+	const HelixTraj* htraj = &seeddef.helix();
+	TrkFitFlag       seedok(TrkFitFlag::seedOK);//FIX ME! is there a bettere flag?
+	double           flt0  = htraj->zFlight(0.0);
+	double           mom   = TrkMomCalculator::vecMom(*htraj, _kfit.bField(), flt0).mag();
+	double           vflt  = seeddef.particle().beta(mom)*CLHEP::c_light;
+	double           helt0 = hseed.t0().t0();
+	
+	KalSeed kf(_tpart,_fdir, hseed.t0(), flt0, seedok);
+	auto hsH = event.getValidHandle<HelixSeedCollection>(_hsTag);
+	kf._helix = art::Ptr<HelixSeed>(hsH,iseed);
+	// extract the hits from the rep and put the hitseeds into the KalSeed
+	int nsh = seeddef.strawHitIndices().size();//tclust._strawHitIdxs.size();
+	for (int i=0; i< nsh; ++i){
+	  size_t          istraw   = seeddef.strawHitIndices().at(i);
+	  const StrawHit& strawhit(_shcol->at(istraw));
+	  const Straw&    straw    = _tracker->getStraw(strawhit.strawIndex());	  
+	  double          fltlen   = htraj->zFlight(straw.getMidPoint().z());
+	  double          propTime = (fltlen-flt0)/vflt;
+
+	  //fill the TrkStrwaHitSeed info
+	  TrkStrawHitSeed tshs;
+	  tshs._index  = istraw;
+	  tshs._t0     = TrkT0(helt0 + propTime, hseed.t0().t0Err());
+	  tshs._trklen = fltlen; 
+	  kf._hits.push_back(tshs);
+	}
+	
+	if(kf._hits.size() >= _minnhits) kf._status.merge(TrkFitFlag::hitsOK);
+	// extract the helix trajectory from the fit (there is just 1)
+	// use this to create segment.  This will be the only segment in this track
+	if(htraj != 0){
+	  KalSegment kseg;
+	  // sample the momentum at this point
+	  BbrVectorErr momerr;// = krep->momentumErr(krep->flt0());
+	  TrkUtilities::fillSegment(*htraj,momerr,kseg);
+	  kf._segments.push_back(kseg);
+	} else {
+	  throw cet::exception("RECO")<<"mu2e::KalSeedFit: Can't extract helix traj from seed fit" << endl;
+	}
+
+	// now, fit the seed helix from the filtered hits
 	KalRep *krep(0);
-	_kfit.makeTrack(_shcol,seeddef,krep);
+	_kfit.makeTrack(_shcol, kf, krep);
+	
 	if(_debug > 1){
 	  if(krep == 0)
 	    cout << "No Seed fit produced " << endl;
@@ -199,8 +246,6 @@ namespace mu2e
 	  // fill ptr to the helix seed
 	  auto hsH = event.getValidHandle<HelixSeedCollection>(_hsTag);
 	  kseed._helix = art::Ptr<HelixSeed>(hsH,iseed);
-	  // calo cluser ptr from Helix Seed
-	  //	  kseed._caloCluster = hseed._caloCluster; 
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
 	  TrkUtilities::fillHitSeeds(krep,kseed._hits);
 	  if(kseed._hits.size() >= _minnhits)kseed._status.merge(TrkFitFlag::hitsOK);

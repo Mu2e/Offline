@@ -210,6 +210,10 @@ public :
   double _hselminm, _hselmaxm;
   double _sselminm, _sselmaxm, _sselmerr, _sselchi2;
   double _pseltq, _pselminm, _pselmaxm;
+  double _mincost, _maxcost;
+  double _mint0;
+  double _tdlow, _tdhigh;
+
 
   void createHistos();
   const char* title(const char*);

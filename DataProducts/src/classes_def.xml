@@ -9,7 +9,6 @@
  <class name="mu2e::StrawId"/>
  <class name="mu2e::LayerId"/>
  <class name="mu2e::PanelId"/>
- <class name="mu2e::PlaneId"/>
  <class name="mu2e::ExtMonFNALModuleId"/>
  <class name="mu2e::ExtMonFNALChipId"/>
  <class name="mu2e::ExtMonFNALPixelId"/>

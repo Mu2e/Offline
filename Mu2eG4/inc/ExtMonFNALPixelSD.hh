@@ -14,11 +14,11 @@
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "art/Framework/Principal/Event.h"
 
+#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 
 namespace mu2e {
 
   class SimpleConfig;
-  class ExtMonFNALSimHitCollection;
   class SimParticleHelper;
 
   // This class should not derive from Mu2eSensitiveDetector because the latter

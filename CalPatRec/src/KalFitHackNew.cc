@@ -281,7 +281,8 @@ namespace mu2e {
 
 // create Kalman representation
 
-    Result._krep = new KalRep(*Result.helixTraj(), hotlist, detinter, *this, Result._tpart);
+    double flt0 = Result._helixTraj->zFlight(0.0);
+    Result._krep = new KalRep(*Result.helixTraj(), hotlist, detinter, *this, Result._tpart,Result._t0,flt0);
 
     hotlist.clear();         // clear hotlist, as from now on the hits are owned by Result._krep
 
@@ -289,8 +290,8 @@ namespace mu2e {
 
 // initialize krep t0; eventually, this should be in the constructor, FIXME!!!
 
-    double flt0 = Result.helixTraj()->zFlight(0.0);
-    Result._krep->setT0(Result._t0,flt0);
+    // double flt0 = Result.helixTraj()->zFlight(0.0);
+    // Result._krep->setT0(Result._t0,flt0);
 
     if (_debugLevel > 0) printHits(Result,"makeTrack_001");
 //-----------------------------------------------------------------------------
@@ -372,7 +373,7 @@ namespace mu2e {
                                         // update the time in the TrkT0 object and create a new
                                         // hit object.  Assume we're at the last iteration over added error
         hitt0._t0 += tflt;
-        trkhit     = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,hit_error,_maxdriftpull);
+        trkhit     = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,hit_error,_maxdriftpull,1.,_mint0doca);
         assert(trkhit != 0);
                                         // 3 means "Added by addHits"
         trkhit->setFlag(3);
@@ -415,7 +416,7 @@ namespace mu2e {
 
         activity = 1;
 // if it's outside limits, deactivate the HOT
-        if (fabs(chi) > MaxChi || ! trkhit->physicalDrift(MaxChi)) {
+        if ((fabs(chi) > MaxChi) || (trkhit->physicalTime() > MaxChi)) {
           trkhit->setActivity(false);
           activity = 0;
         }
@@ -735,7 +736,7 @@ namespace mu2e {
     // estimate arrival time at the wire
       hitt0._t0          = KRes.t0()._t0 + (fltlen-flt0)/vflt;
       // create the hit object.  Start with the 1st additional error for anealing
-      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fltlen,_hiterr.front(),_maxdriftpull);
+      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fltlen,_hiterr.front(),_maxdriftpull,1.,_mint0doca);
       assert(trkhit != 0);
 					// set hit flag and the initial ambiguity to null
       trkhit->setFlag(0);
@@ -888,7 +889,7 @@ namespace mu2e {
              hit->hitErr(),
              hit->t0Err(),
              hit->penaltyErr(),
-             hit->extErr()
+             hit->temperature()*hit->driftVelocity()
              );
     }
   }
@@ -1032,7 +1033,7 @@ namespace mu2e {
         if(iHot->resid(resid, residErr, true)){
           double chival = fabs(resid/residErr);
   // test both for a good chisquared and for the drift radius to be physical
-          if (chival < maxchi && iHot->physicalDrift(maxchi) && chival < best) {
+          if (chival < maxchi && (iHot->physicalTime() < maxchi) && chival < best) {
             best    = chival;
             bestHot = iHot;
           }
@@ -1328,7 +1329,7 @@ namespace mu2e {
       double tflt = (hit->fltLen()-hflt)/(beta*CLHEP::c_light);
 // update the time in the TrkT0 object
       hitt0._t0 += tflt;
-      hit->updateHitT0(hitt0);
+      hit->setHitT0(hitt0);
 // update the reference flightlength
       hflt = hit->fltLen();
     }
@@ -1342,7 +1343,7 @@ namespace mu2e {
       double beta = KRep->particleType().beta(mom);
       double tflt = (hit->fltLen()-hflt)/(beta*CLHEP::c_light);
       hitt0._t0  += tflt;
-      hit->updateHitT0(hitt0);
+      hit->setHitT0(hitt0);
       hflt = hit->fltLen();
     }
   }

@@ -1,0 +1,39 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_beamline_upper_NW.ccl
+
+string building.beamline.upper.NW.name     = "beamlineUpperNW";
+
+string building.beamline.upper.NW.material = "CONCRETE_MARS";
+
+double building.beamline.upper.NW.offsetFromMu2eOrigin.x   = 947.4;
+double building.beamline.upper.NW.offsetFromFloorSurface.y = 5511.8;
+double building.beamline.upper.NW.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.beamline.upper.NW.yHalfThickness           = 330.2;
+
+vector<double> building.beamline.upper.NW.xPositions = {
+  1803.4,   // BC04
+  2787.8,   // J
+  15158.4,   // A0
+  14917.2,   // D0
+  14472.9,   // E0
+  14558.5,   // A1
+  2463.8,   // RHC00
+  941.301   // RHC01
+};
+
+vector<double> building.beamline.upper.NW.yPositions = {
+  6858,   // BC04
+  7842.4,   // J
+  10853.4,   // A0
+  11848.7,   // D0
+  11741.1,   // E0
+  11387.6,   // A1
+  8446,   // RHC00
+  6858   // RHC01
+};
+
+// Local Variables:
+// mode:c++
+// End:

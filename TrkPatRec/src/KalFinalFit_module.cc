@@ -228,7 +228,7 @@ namespace mu2e
 	  // standard points, or to sample each unique segment on the fit FIXME!
 	  for(auto zpos : _zsave) {
 	    // compute the flightlength for this z
-	    double fltlen = TrkUtilities::zFlight(krep->pieceTraj(),zpos);
+	    double fltlen = krep->pieceTraj().zFlight(zpos);
 	    // sample the momentum at this flight.  This belongs in a separate utility FIXME
 	    BbrVectorErr momerr = krep->momentumErr(fltlen);
 	    // sample the helix

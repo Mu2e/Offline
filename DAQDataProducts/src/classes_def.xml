@@ -9,13 +9,13 @@
 
 <lcgdict>
 
- <class name="mu2e::DataBlock::dtc_id"/>
+<!-- <class name="mu2e::DataBlock::dtc_id"/>  -->
 
- <class name="mu2e::DataBlock::adc_t"/>
+<!-- <class name="mu2e::DataBlock::adc_t"/>  -->
 
- <class name="mu2e::DataBlock::timestamp"/>
+<!-- <class name="mu2e::DataBlock::timestamp"/>  -->
 
- <class name="mu2e::DataBlock::SYSID"/>
+<!-- <class name="mu2e::DataBlock::SYSID"/>  -->
 
  <class name="mu2e::DataBlock"/>
 

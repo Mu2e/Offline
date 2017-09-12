@@ -45,7 +45,7 @@
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 
 // CalPatRec
-#include "CalPatRec/inc/TrkDefHack.hh"
+// #include "CalPatRec/inc/TrkDefHack.hh"
 #include "CalPatRec/inc/LsqSums4.hh"
 #include "CalPatRec/inc/ObjectDumpUtils.hh"
 

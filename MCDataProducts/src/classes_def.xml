@@ -152,6 +152,8 @@
  <class name="art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,void>" />
  <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRawHit,mu2e::ExtMonFNALHitTruthBits>" />
  <class name="art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,mu2e::ExtMonFNALHitTruthBits>" />
+ <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRawHit,void> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,void> >" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRawHit,mu2e::ExtMonFNALHitTruthBits> >" />
  <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,mu2e::ExtMonFNALHitTruthBits> >" />
 
@@ -163,6 +165,8 @@
  <class name="art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,void>" />
  <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoCluster,mu2e::ExtMonFNALRecoClusterTruthBits>" />
  <class name="art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,mu2e::ExtMonFNALRecoClusterTruthBits>" />
+ <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoCluster,void> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,void> >" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoCluster,mu2e::ExtMonFNALRecoClusterTruthBits> >" />
  <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,mu2e::ExtMonFNALRecoClusterTruthBits> >" />
 
@@ -175,6 +179,8 @@
  <class name="art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,void>" />
  <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,mu2e::ExtMonFNALTrkMatchInfo>" />
  <class name="art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo>" />
+ <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,void> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,void> >" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,mu2e::ExtMonFNALTrkMatchInfo> >" />
  <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo> >" />
 
@@ -218,11 +224,8 @@
  <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,void > >" /> 
 
  <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,art::Ptr<mu2e::CaloShowerSim> >" />
- <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,void >" />
- <class name="art::Assns<mu2e::CaloCrystalHit,mu2e::SimParticle,void >" />
  <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,art::Ptr<mu2e::CaloShowerSim> > >" /> 
- <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,void > >" /> 
- <class name="art::Wrapper< mu2e::CaloCrystalHit,art::Assns<mu2e::SimParticle,void > >" /> 
+<!--  <class name="art::Wrapper< mu2e::CaloCrystalHit,art::Assns<mu2e::SimParticle,void > >" />  -->
 
  <class name="art::Assns<mu2e::CaloCluster,mu2e::SimParticle,art::Ptr<mu2e::CaloShowerSim> >" />
  <class name="art::Assns<mu2e::CaloCluster,mu2e::SimParticle,void >" />
@@ -232,11 +235,7 @@
  <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCluster,void > >" />
 
  <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCluster,art::Ptr<mu2e::CaloShowerSim> >" />
- <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCluster,void >" />
- <class name="art::Assns<mu2e::CaloCluster,mu2e::SimParticle,void >" />
  <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCluster,art::Ptr<mu2e::CaloShowerSim> > >" />
- <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCluster,void > >" />
- <class name="art::Wrapper< art::Assns<mu2e::CaloCluster,mu2e::SimParticle,void > >" />
 
  <class name="mu2e::CrvPhotonArrivals" />
  <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvPhotonArrivals>" />

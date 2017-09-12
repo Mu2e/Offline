@@ -33,8 +33,7 @@ namespace mu2e {
     TrkStrawHitVector tshv;
     convert(krep->hitVector(),tshv);
     for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
-      (*itsh)->setExtErr(_extErr);
-      (*itsh)->setPenalty(0);
+      (*itsh)->setTemperature(_extErr);
     }
   }
 

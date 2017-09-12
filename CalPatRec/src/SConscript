@@ -14,7 +14,7 @@ babarlibs     = env['BABARLIBS']
 rootlibs      = env['ROOTLIBS']
 extrarootlibs = ['Spectrum', 'TMVA' , 'Minuit' , 'XMLIO' ]
 
-helper=mu2e_helper();
+helper=mu2e_helper(env);
 # helper=calpatrec_helper();
 
 mainlib = helper.make_mainlib( [ 'mu2e_TrkDiag',

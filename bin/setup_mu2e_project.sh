@@ -48,7 +48,7 @@ bin_dir=`cd $bin_dir >/dev/null 2>&1 && /bin/pwd`
 user_root=`dirname $bin_dir`
 
 add_to_var $user_root/lib    LD_LIBRARY_PATH
-add_to_var $user_root/Config PYTHONPATH
+add_to_var $user_root/scripts/build/python PYTHONPATH
 add_to_var $user_root/bin    PATH
 
 unset bin_dir user_root

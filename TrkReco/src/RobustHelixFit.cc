@@ -33,8 +33,11 @@ using namespace boost::accumulators;
 namespace mu2e
 {
   // comparison functor for sorting by z
-  struct zcomp : public std::binary_function<HelixHit,HelixHit,bool> {
-    bool operator()(HelixHit const& p1, HelixHit const& p2) { return p1._pos.z() < p2._pos.z(); }
+  struct ZComp : public std::binary_function<HelixHit,HelixHit,bool> {
+    ZComp (Helicity hel=Helicity::unknown) : _hel(hel) {}
+    bool operator()(HelixHit const& p1, HelixHit const& p2) {
+    return _hel._value > Helicity::unknown ? p1._pos.z() < p2._pos.z() : p1._pos.z() > p2._pos.z() ; }
+    Helicity _hel;
   };
   // struct for weighted positions
   class WPos : public Hep3Vector {
@@ -92,6 +95,9 @@ namespace mu2e
 	double lmin = -1.0*_lmax;
       _lmax = -1.0*_lmin;
       _lmin = lmin;
+      double minzsep = -1.0*_maxzsep;
+      _maxzsep = -1.0*_minzsep;
+      _minzsep = minzsep;
     }
   }
 
@@ -240,8 +246,9 @@ namespace mu2e
     rhel._fz0 = 0.0;
     static TrkFitFlag circleOK(TrkFitFlag::circleOK);
     static TrkFitFlag helixOK(TrkFitFlag::helixOK);
-    // sort points by z
-    std::sort(hhits.begin(),hhits.end(),zcomp());
+    // sort points by z.  Sign this by helicity
+    ZComp zc(_helicity);
+    std::sort(hhits.begin(),hhits.end(),zc);
     // initialize phi for this center (without resolving loop);
     for(auto& hhit : hhits){
       initPhi(hhit,rhel);

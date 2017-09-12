@@ -413,7 +413,7 @@ namespace mu2e
       tshinfo._doca = tsh->poca().doca();
     else
       tshinfo._doca = -100.0;
-    tshinfo._exerr = tsh->extErr();
+    tshinfo._exerr = tsh->driftVelocity()*tsh->temperature();
     tshinfo._penerr = tsh->penaltyErr();
     tshinfo._t0err = tsh->t0Err()/tsh->driftVelocity();
 // cannot count correlations with other hits in this function; set to false

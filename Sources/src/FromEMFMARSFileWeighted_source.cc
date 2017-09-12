@@ -29,7 +29,7 @@
 #include "art/Framework/Principal/SubRunPrincipal.h"
 #include "art/Framework/Principal/EventPrincipal.h"
 #include "art/Framework/IO/Sources/put_product_in_principal.h"
-#include "art/Framework/Core/get_BranchDescription.h"
+#include "art/Framework/Principal/get_BranchDescription.h"
 #include "canvas/Persistency/Provenance/ProductID.h"
 
 #include "MCDataProducts/inc/GenParticle.hh"

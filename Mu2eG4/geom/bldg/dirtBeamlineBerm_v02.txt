@@ -12,8 +12,9 @@ double dirt.beamline.berm.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.beamline.berm.yHalfThickness           = 1244.6;
 
-vector<int>    dirt.beamline.berm.xreplace   = { 15, 16, 32, 33 }; 
+vector<int>    dirt.beamline.berm.xreplace   = { 16, 17, 38, 39 }; 
 vector<double> dirt.beamline.berm.xPositions = {
+  45745.4,    // a
   -4140.2,    // b
   -4140.2,    // P0
   -4749.8,    // P1
@@ -46,12 +47,18 @@ vector<double> dirt.beamline.berm.xPositions = {
   3403.5,   // Back against wall
   -2000.0,  // Follow Wall back
   -2000.0,  // arbitrary
+  15900.8,  // NW corner escape hatch
+  17204.7, //SW corner of escapehatchN
+  17288.5,  // SW corner escapehatchS
+  20744.5,  // SE corner escape hatch
+  19356.8,  // NE corner escape hatch
   50000,   // NEcorner
   50000   // a_to_E
 };
 
-vector<int>    dirt.beamline.berm.yreplace   = { 16, 32 }; 
+vector<int>    dirt.beamline.berm.yreplace   = { 17, 38 }; 
 vector<double> dirt.beamline.berm.yPositions = {
+  2438.4,   // a
   2438.4,   // b
   6858,   // P0
   6858,   // P1
@@ -84,6 +91,11 @@ vector<double> dirt.beamline.berm.yPositions = {
   10312.5,  // back to wall
   10312.5,  // follow wall back
   20000.0,  // arbitrary
+  23684.2,  // NW corner escape hatch  
+  18302.6, // SW corner of escapehatchN
+  17957,     // SW corner escape hatch 
+  18794.4,     // SE corner escape hatch  
+  24521.6,  // NE corner escape hatch  
   50000,   // NEcorner
   2438.4   // a_to_E
 };

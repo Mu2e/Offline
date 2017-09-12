@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/fill_esc_stair_W01.ccl
+
+string building.backfill.escape.stair.W01.name     = "backfillEscapeStairW01";
+
+string building.backfill.escape.stair.W01.material = "CA7Backfill";
+
+double building.backfill.escape.stair.W01.offsetFromMu2eOrigin.x   = 947.4;
+double building.backfill.escape.stair.W01.offsetFromFloorSurface.y = 3784.6;
+double building.backfill.escape.stair.W01.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.backfill.escape.stair.W01.yHalfThickness           = 2108.2;
+
+vector<double> building.backfill.escape.stair.W01.xPositions = {
+  13585.7,   // SW0
+  13729.1,   // SW3
+  13630.3,   // ESF3
+  13487.1   // bESW03
+};
+
+vector<double> building.backfill.escape.stair.W01.yPositions = {
+  15333.6,   // SW0
+  14742.4,   // SW3
+  14718.5,   // ESF3
+  15309.7   // bESW03
+};
+
+// Local Variables:
+// mode:c++
+// End:

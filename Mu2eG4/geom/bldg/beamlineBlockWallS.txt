@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_beamline_block_wall_S.ccl
+
+string building.beamline.block.wall.S.name     = "beamlineBlockWallS";
+
+string building.beamline.block.wall.S.material = "CONCRETE_MARS";
+
+double building.beamline.block.wall.S.offsetFromMu2eOrigin.x   = 947.4;
+double building.beamline.block.wall.S.offsetFromFloorSurface.y = 1320.8;
+double building.beamline.block.wall.S.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.beamline.block.wall.S.yHalfThickness           = 1320.8;
+
+vector<double> building.beamline.block.wall.S.xPositions = {
+  9613.81,   // BBWS00
+  9637.74,   // BBWS01
+  15574.7,   // BBWS02
+  15550.7   // BBWS03
+};
+
+vector<double> building.beamline.block.wall.S.yPositions = {
+  8193.43,   // BBWS00
+  8094.68,   // BBWS01
+  9533.17,   // BBWS02
+  9631.91   // BBWS03
+};
+
+// Local Variables:
+// mode:c++
+// End:
