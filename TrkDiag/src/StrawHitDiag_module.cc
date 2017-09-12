@@ -79,7 +79,7 @@ namespace mu2e
       threevec _mcshp, _mcop, _mcpop, _mcgpos;
       Float_t _mcoe, _mcpoe, _mcom, _mcpom;
       Float_t _mcshlen,_mcshd;
-      Float_t _mcedep;
+      Float_t _mcedep, _mcetrig;
       Float_t _pdist,_pperp,_pmom;
       Float_t _mctime, _mcptime;
       Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
@@ -179,6 +179,7 @@ namespace mu2e
       _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
       _shdiag->Branch("mcshd",&_mcshd,"mcshd/F");
       _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
+      _shdiag->Branch("mcetrig",&_mcetrig,"mcetrig/F");
       _shdiag->Branch("nmcsteps",&_nmcsteps,"nmcsteps/I");
       _shdiag->Branch("mcnunique",&_mcnunique,"mcnunique/I");
       _shdiag->Branch("mcnmax",&_mcnmax,"mcnmax/I");
@@ -272,6 +273,7 @@ namespace mu2e
         _mcnunique = mcdigi.stepPointMCs().size();
         // compute energy sum
         _mcedep = mcdigi.energySum();
+        _mcetrig = mcdigi.triggerEnergySum();
         _mcnmax = mcdigi.stepPointMCs().size();
         _mcpdg = osp.pdgId();
         _mcproc = osp.creationCode();

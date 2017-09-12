@@ -141,6 +141,7 @@ BEGIN_PROLOG
       TimeClusterDiag : @local::TimeClusterDiag
       StrawHitDiag : @local::StrawHitDiag
       HelixDiag : @local::HelixDiag
+      TrkRecoDiag : @local::TrkRecoDiag
     }
   }
 
@@ -173,8 +174,7 @@ BEGIN_PROLOG
     # separate out the sime and reco parts of the sequence
     SimSequence	: [ @sequence::EventMixing.TimeMaps,
 		    @sequence::Tracking.DigiSim,
-		    @sequence::CaloDigiMC.DigiSim,
-                    @sequence::CrvResponsePackage.CrvResponseSequence ]
+		    @sequence::CaloDigiMC.DigiSim ]
     RecoSequence : [ @sequence::CaloReco.Reco,
 	             @sequence::CaloCluster.Reco, 
 		     @sequence::Tracking.TPRDeM,
