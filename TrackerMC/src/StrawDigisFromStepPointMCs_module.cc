@@ -567,8 +567,10 @@ namespace mu2e {
 	if(pdt->particle(step.simParticle()->pdgId()).isValid()){
 	  double mass = pdt->particle(step.simParticle()->pdgId()).ref().mass();
 	  double mom = step.momentum().mag();
+	  // approximate pt
+	  double apt = step.momentum().perpPart(_bdir).mag();
 	  double bg = mom/mass; // beta x gamma
-	  minion = bg > _bgcut;
+	  minion = bg > _bgcut && apt > _ptmin;
 	}
 	// get tracker information
 	const Tracker& tracker = getTrackerOrThrow();
