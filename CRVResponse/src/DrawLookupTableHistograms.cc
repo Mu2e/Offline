@@ -23,6 +23,7 @@ void MakeCrvPhotonArrivals::DrawHistograms()
     if(i<0) continue;
     const LookupBin &bin = _bins[0][i];
     float p = bin.arrivalProbability[0];
+//    float p = bin.arrivalProbability[1];  //for 5000mm long counters with mirror on the negative side
     if(!isnan(p)) h1.Fill(y,z,p);
   }
 

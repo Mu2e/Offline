@@ -1,10 +1,10 @@
 i=0
 layerOffset=10
-moduleGap=3
+moduleGap=5
 #  for moduleGap in {1..5}
 #  do
 
-    dy=$((811+$moduleGap))
+    dy=`echo "804.3+$moduleGap" | bc -l`
 
 #    for layerOffset in {0..62..2}
 #    do
@@ -19,6 +19,7 @@ moduleGap=3
         genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig_5cm_downstreamPlanes'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/genconfig_5cm_downstreamPlanes.txt\"" >| $genconfigfile
         echo "double cosmicDYB.dy = $dy;" >> $genconfigfile
+#        echo "double cosmicDYB.muCosThMax = 0.707;" >> $genconfigfile
 
         geomfile=CRVResponse/efficiencyCheck/submit/geom_5cm_downstreamPlanes'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/geom_5cm_downstreamPlanes.txt\"" >| $geomfile
@@ -38,7 +39,7 @@ moduleGap=3
 
         generate_fcl --description=$name --dsconf=$i --run=1 --events=20000 --njobs=50 $fclfile
         ls $PWD/000/cnf.$USER.$name.$i.*.fcl > $fcllist
-        clustername=CRV_efficiency5cm_downstream_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield
+        clustername=$name'_'gap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield
         mu2eprodsys --setup=./setup.sh --fcllist=$fcllist --clustername=$clustername --dsconf=$i --wfproject=$name
 
       done

@@ -109,6 +109,14 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
             for(int i=65; i<75; i++) _zbins.push_back(2475.0*mm+25.0*mm*(i-64));   //  2500 ...  2725
             for(int i=75; i<81; i++) _zbins.push_back(2740.0*mm+10.0*mm*(i-74));   //  2750 ...  2800
             break;
+    case 5000: _barLength        = 500.*cm;
+            //74 bins
+            for(int i=0; i<6; i++)   _zbins.push_back(-2500.0*mm+10.0*mm*i);       // -2500 ... -2450
+            for(int i=6; i<16; i++)  _zbins.push_back(-2450.0*mm+25.0*mm*(i-5));   // -2425 ... -2200
+            for(int i=16; i<59; i++) _zbins.push_back(-2200.0*mm+100.0*mm*(i-15)); // -2100 ...  2100
+            for(int i=59; i<69; i++) _zbins.push_back(2175.0*mm+25.0*mm*(i-58));   //  2200 ...  2425
+            for(int i=69; i<75; i++) _zbins.push_back(2440.0*mm+10.0*mm*(i-68));   //  2450 ...  2500
+            break;
     case 4500: _barLength        = 450.*cm;
             //69 bins
             for(int i=0; i<6; i++)   _zbins.push_back(-2250.0*mm+10.0*mm*i);       // -2250 ... -2200
@@ -440,8 +448,8 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
 
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, -_fiberSeparation/2.0, 0.0),
-                    logicPhotonDet,
-                    "PhotonDet",
+                    _lengthOption==5000?logicMirror:logicPhotonDet,
+                    _lengthOption==5500?"Mirror":"PhotonDet",
                     logicFiberGuideBar0,
                     _checkOverlaps,
                     0);
@@ -456,8 +464,8 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                     1);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, _fiberSeparation/2.0, 0.0),
-                    logicPhotonDet,
-                    "PhotonDet",
+                    _lengthOption==5000?logicMirror:logicPhotonDet,
+                    _lengthOption==5500?"Mirror":"PhotonDet",
                     logicFiberGuideBar0,
                     _checkOverlaps,
                     2);

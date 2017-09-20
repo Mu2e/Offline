@@ -1205,8 +1205,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(unsigned int j=0; j<kalReps->size(); j++)
     {
       KalRep const* kalrep = kalReps->get(j);
-      double t0=kalrep->t0().t0();
-      {
         int trackclass=trackInfos[i].classID;
         int trackclassindex=trackInfos[i].index;
         std::string trackcollection=trackInfos[i].entryText;
@@ -1283,14 +1281,25 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
           track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
         }
+
 	int charge = kalrep->charge();
+        double t0=kalrep->t0().t0();
+        double firsthitfltlen = kalrep->lowFitRange(); 
+        double lasthitfltlen = kalrep->hiFitRange();
+        double entlen = min(firsthitfltlen,lasthitfltlen);
+        double loclen(0.0);
+        const TrkSimpTraj* ltraj = kalrep->localTrajectory(entlen,loclen);
+        const CLHEP::HepVector &params=ltraj->parameters()->parameter();
+        double d0 = params[0];
+        double om = params[2];
+        double rmax = d0+2.0/om;
+
 	sprintf(c2,"Charge %i",charge);
 	info->setText(1,c2);
 	sprintf(c3,"Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV);
-	sprintf(c4,"T0 %gns",t0/CLHEP::ns);
+	sprintf(c4,"t0 %gns  d0 %gmm  rmax %gmm",t0/CLHEP::ns,d0/CLHEP::mm,rmax/CLHEP::mm);
 	info->setText(2,c3);
 	info->setText(3,c4);
-      }
     }
   }
 

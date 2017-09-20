@@ -1,12 +1,12 @@
-layerOffset=42
+#layerOffset=42
 timeWindow=10
 sides=2
-PEthreshold=12
-moduleGap=3
+PEthreshold=14
+moduleGap=5
 
     for photonYield in {3189,3781,4359}  # 24,28,32 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
     do
-      for layerOffset in {0..62..2}
+      for layerOffset in {0..62..1}
       do
 
               directory=/pnfs/mu2e/scratch/users/ehrlich/workflow

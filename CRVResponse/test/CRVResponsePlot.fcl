@@ -38,9 +38,9 @@ physics :
       crvSiPMResponsesModuleLabel    : CrvSiPMResponses
       crvWaveformsModuleLabel        : CrvWaveforms
       crvRecoPulsesModuleLabel       : CrvRecoPulses
-      crvBarIndex                    : 870
-      timeStart                      : 800
-      timeEnd                        : 1250
+      crvBarIndex                    : 4768
+      timeStart                      : 0
+      timeEnd                        : 1600
     }
   }
 
@@ -49,6 +49,10 @@ physics :
 
   end_paths: [an, out]
 }
+
+physics.producers.CrvPhotonArrivals.startTime  : 0.0 
+physics.producers.CrvSiPMResponses.blindTime   : 0.0
+physics.producers.CrvWaveforms.minVoltage      : 0.0
 
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20

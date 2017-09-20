@@ -1,36 +1,27 @@
 #!/bin/bash
 
-for length in "900" "2300" "3000" "4500" "5600" "6600" "7100" "7600" 
+#for length in "900" "2300" "3000" "4500" "5000" "5600" "6600" "7100" "7600" 
+for length in "5000" 
 do
 
   echo "Length "$length
+  S0=/mu2e/data/outstage/ehrlich/tables/$length
 
-  S1=LookupTable'_'$length
+  S1=$S0/LookupTable'_'$length
 
   rm $S1
 
-  i=0
-  for simType in {0..3}
+  for PROCESS in {0..2199}   #550*4-1
   do
-    minBin=0
-    upperLimit=60000
-    if [ $simType -ge 2 ]; then
-      upperLimit=110000
-    fi
+    SIMTYPE=$(($PROCESS/550))
+    MINBIN=$(($PROCESS%550*200))
 
-    while [ $minBin -lt $upperLimit ]
-    do
-      maxBin=$(($minBin+199))
+    printf -v MINBINTMP "%06d\n" $MINBIN
+    S2=$S0/LookupTable'_'$SIMTYPE'_'$MINBINTMP
 
-      S2=/pnfs/mu2e/scratch/outstage/ehrlich/LookupTable'_'$length'_'$i".*/*/LookupTable_*"
+    ls -l $S2
 
-      ls -l $S2
-
-      cat $S2 >> $S1
-
-      minBin=$(($maxBin+1))
-      (( i++ ))
-    done
+    cat $S2 >> $S1
   done
 
   mv $S1 /pnfs/mu2e/scratch/outstage/ehrlich/LookupTables_v3_0/.

@@ -28,9 +28,16 @@ void LookupBinDefinitions::ReadVector(std::vector<double> &v, std::ifstream &i)
 {
   size_t n;
   i.read(reinterpret_cast<char*>(&n),sizeof(size_t));
+/*
   double d[n];
   i.read(reinterpret_cast<char*>(d),sizeof(double)*n);
   v.assign(d,d+n);
+*/
+  double *d=new double[n];
+  i.read(reinterpret_cast<char*>(d),sizeof(double)*n);
+  v.assign(d,d+n);
+  delete [] d;
+//  i.read(reinterpret_cast<char*>(v.data()),sizeof(double)*n);
 }
 void LookupBinDefinitions::Write(const std::string &filename)
 {

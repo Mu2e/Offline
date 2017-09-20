@@ -40,7 +40,9 @@
 #include "G4ParticleTypes.hh"
 #include "G4ParticleTable.hh"
 
-#include "G4PhysListFactory.hh"
+//#include "G4PhysListFactory.hh"
+#include "FTFP_BERT.hh"
+#include "QGSP_BERT_HP.hh"
 
 #include "G4Gamma.hh"
 #include "G4Electron.hh"
@@ -70,13 +72,18 @@ WLSPhysicsList::WLSPhysicsList(G4String physName) : G4VModularPhysicsList()
     fCutForElectron  = defaultCutValue;
     fCutForPositron  = defaultCutValue;
 
-    G4PhysListFactory factory;
+//    G4PhysListFactory factory;
     G4VModularPhysicsList* phys = NULL;
-    if (factory.IsReferencePhysList(physName)) {
-       phys = factory.GetReferencePhysList(physName);
-       if(!phys)G4Exception("WLSPhysicsList::WLSPhysicsList","InvalidSetup",
-                            FatalException,"PhysicsList does not exist");
+    if (physName == "QGSP_BERT_HP") {
+       phys = new QGSP_BERT_HP;
+    } else {
+       phys = new FTFP_BERT;
     }
+//    if (factory.IsReferencePhysList(physName)) {
+//       phys = factory.GetReferencePhysList(physName);
+//       if(!phys)G4Exception("WLSPhysicsList::WLSPhysicsList","InvalidSetup",
+//                            FatalException,"PhysicsList does not exist");
+//    }
 
     for (G4int i = 0; ; ++i) {
        G4VPhysicsConstructor* elem =
@@ -88,10 +95,13 @@ WLSPhysicsList::WLSPhysicsList(G4String physName) : G4VModularPhysicsList()
 
     AbsorptionOn = true;
 
-    physicsVector->push_back(new WLSExtraPhysics());
-    physicsVector->push_back(opticalPhysics = new WLSOpticalPhysics(AbsorptionOn));
+    fPhysicsVector =
+                GetSubInstanceManager().offset[GetInstanceID()].physicsVector;
+    
+    fPhysicsVector->push_back(new WLSExtraPhysics());
+    fPhysicsVector->push_back(opticalPhysics = new WLSOpticalPhysics(AbsorptionOn));
 
-    physicsVector->push_back(new G4RadioactiveDecayPhysics());
+    fPhysicsVector->push_back(new G4RadioactiveDecayPhysics());
 
     stepMaxProcess = new WLSStepMax();
 }
@@ -103,11 +113,11 @@ WLSPhysicsList::~WLSPhysicsList()
 
 void WLSPhysicsList::ClearPhysics()
 {
-    for (G4PhysConstVector::iterator p  = physicsVector->begin();
-                                     p != physicsVector->end(); ++p) {
+    for (G4PhysConstVector::iterator p  = fPhysicsVector->begin();
+                                     p != fPhysicsVector->end(); ++p) {
         delete (*p);
     }
-    physicsVector->clear();
+    fPhysicsVector->clear();
 }
 
 void WLSPhysicsList::ConstructParticle()
@@ -199,11 +209,11 @@ void WLSPhysicsList::ConstructProcess()
 void WLSPhysicsList::RemoveFromPhysicsList(const G4String& name)
 {
     G4bool success = false;
-    for (G4PhysConstVector::iterator p  = physicsVector->begin();
-                                     p != physicsVector->end(); ++p) {
+    for (G4PhysConstVector::iterator p  = fPhysicsVector->begin();
+                                     p != fPhysicsVector->end(); ++p) {
         G4VPhysicsConstructor* e = (*p);
         if (e->GetPhysicsName() == name) {
-           physicsVector->erase(p);
+           fPhysicsVector->erase(p);
            success = true;
            break;
         }
@@ -220,7 +230,7 @@ void WLSPhysicsList::SetAbsorption(G4bool toggle)
 {
        AbsorptionOn = toggle;
        RemoveFromPhysicsList("Optical");
-       physicsVector->push_back(opticalPhysics = new WLSOpticalPhysics(toggle));
+       fPhysicsVector->push_back(opticalPhysics = new WLSOpticalPhysics(toggle));
        opticalPhysics->ConstructProcess();
 }
 

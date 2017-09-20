@@ -20,7 +20,7 @@
 #include "G4SystemOfUnits.hh"
 #include <sstream>
 
-#include <TH3D.h>
+////#include <TH3D.h>
 #include <TNtuple.h>
 
 #include "G4LossTableManager.hh"
@@ -218,7 +218,7 @@ void WLSSteppingAction::ShowVisibleEnergyTable(const G4Step *theStep)
   std::cout<<"PDGcode: "<<theStep->GetTrack()->GetParticleDefinition()->GetPDGEncoding()<<std::endl;
   std::cout<<"Original Energy Deposition (G4): "<<theStep->GetTotalEnergyDeposit()<<std::endl;
   std::cout<<"Original Nonionizting Energy Deposition (G4): "<<theStep->GetNonIonizingEnergyDeposit()<<std::endl;
-  std::cout<<"Visible Energy Deposition (G4): "<<G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDeposition(theStep)<<std::endl;
+  std::cout<<"Visible Energy Deposition (G4): "<<G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDepositionAtAStep(theStep)<<std::endl;
   std::cout<<"Step Length: "<<theStep->GetStepLength()<<std::endl;
   const G4ThreeVector &p1 = theStep->GetPreStepPoint()->GetPosition();
   const G4ThreeVector &p2 = theStep->GetPostStepPoint()->GetPosition();

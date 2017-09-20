@@ -4,6 +4,7 @@
 #include "globals.hh"
 #include "G4UserEventAction.hh"
 #include "G4ThreeVector.hh"
+#include <vector>
 
 class TH1D;
 class TH2D;
