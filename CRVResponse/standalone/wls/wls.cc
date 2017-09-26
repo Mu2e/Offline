@@ -141,11 +141,14 @@ int main(int argc, char** argv)
     std::cout<<"                  2  cerenkov in fiber 0"<<std::endl;
     std::cout<<"                  3  cerenkov in fiber 1"<<std::endl;
     std::cout<<"-l length option  Length of the scintillator counter:"<<std::endl;
-    std::cout<<"                  7600  7600 mm"<<std::endl;
-    std::cout<<"                  7350  7350 mm"<<std::endl;
-    std::cout<<"                  7100  7100 mm"<<std::endl;
-    std::cout<<"                  6600  6600 mm"<<std::endl;
+    std::cout<<"                  7600  7600 mm (reflector at positive side)"<<std::endl;
+    std::cout<<"                  7350  7350 mm (reflector at positive side)"<<std::endl;
+    std::cout<<"                  7100  7100 mm (reflector at postiive side)"<<std::endl;
+    std::cout<<"                  6600  6600 mm (reflector at positive side)"<<std::endl;
+    std::cout<<"                  6001  6000 mm (reflector at positive side)"<<std::endl;
+    std::cout<<"                  6000  6000 mm"<<std::endl;
     std::cout<<"                  5600  5600 mm"<<std::endl;
+    std::cout<<"                  5000  5000 mm (reflector at negative side)"<<std::endl;
     std::cout<<"                  4500  4500 mm"<<std::endl;
     std::cout<<"                  3000  3000 mm"<<std::endl;
     std::cout<<"                  2300  2300 mm"<<std::endl;
@@ -157,11 +160,14 @@ int main(int argc, char** argv)
     std::cout<<std::endl;
     std::cout<<"Options for running the simulation:"<<std::endl;
     std::cout<<"-l length option  Length of the scintillator counter:"<<std::endl;
-    std::cout<<"                  7600  7600 mm"<<std::endl;
-    std::cout<<"                  7350  7350 mm"<<std::endl;
-    std::cout<<"                  7100  7100 mm"<<std::endl;
-    std::cout<<"                  6600  6600 mm"<<std::endl;
+    std::cout<<"                  7600  7600 mm (reflector at positive side)"<<std::endl;
+    std::cout<<"                  7350  7350 mm (reflector at positive side)"<<std::endl;
+    std::cout<<"                  7100  7100 mm (reflector at postiive side)"<<std::endl;
+    std::cout<<"                  6600  6600 mm (reflector at positive side)"<<std::endl;
+    std::cout<<"                  6001  6000 mm (reflector at positive side)"<<std::endl;
+    std::cout<<"                  6000  6000 mm"<<std::endl;
     std::cout<<"                  5600  5600 mm"<<std::endl;
+    std::cout<<"                  5000  5000 mm (reflector at negative side)"<<std::endl;
     std::cout<<"                  4500  4500 mm"<<std::endl;
     std::cout<<"                  3000  3000 mm"<<std::endl;
     std::cout<<"                  2300  2300 mm"<<std::endl;
@@ -239,6 +245,8 @@ int main(int argc, char** argv)
        lengthOption!=4500 &&
        lengthOption!=5000 &&
        lengthOption!=5600 &&
+       lengthOption!=6000 &&
+       lengthOption!=6001 &&
        lengthOption!=6600 &&
        lengthOption!=7100 &&
        lengthOption!=7350 &&

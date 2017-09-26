@@ -38,7 +38,7 @@ physics :
       crvSiPMResponsesModuleLabel    : CrvSiPMResponses
       crvWaveformsModuleLabel        : CrvWaveforms
       crvRecoPulsesModuleLabel       : CrvRecoPulses
-      crvBarIndex                    : 4768
+      crvBarIndex                    : 1
       timeStart                      : 0
       timeEnd                        : 1600
     }

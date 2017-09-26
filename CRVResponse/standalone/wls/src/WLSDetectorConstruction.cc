@@ -101,6 +101,15 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
             for(int i=75; i<85; i++) _zbins.push_back(2975.0*mm+25.0*mm*(i-74));   //  3000 ...  3225
             for(int i=85; i<91; i++) _zbins.push_back(3240.0*mm+10.0*mm*(i-84));   //  3250 ...  3300
             break;
+    case 6001:
+    case 6000: _barLength        = 600.*cm;
+            //84 bins
+            for(int i=0; i<6; i++)   _zbins.push_back(-3000.0*mm+10.0*mm*i);       // -3000 ... -2950
+            for(int i=6; i<16; i++)  _zbins.push_back(-2950.0*mm+25.0*mm*(i-5));   // -2925 ... -2700
+            for(int i=16; i<69; i++) _zbins.push_back(-2700.0*mm+100.0*mm*(i-15)); // -2600 ...  2600
+            for(int i=69; i<79; i++) _zbins.push_back(2675.0*mm+25.0*mm*(i-68));   //  2700 ...  2925
+            for(int i=79; i<85; i++) _zbins.push_back(2940.0*mm+10.0*mm*(i-78));   //  2950 ...  3000
+            break;
     case 5600: _barLength        = 560.*cm;
             //80 bins
             for(int i=0; i<6; i++)   _zbins.push_back(-2800.0*mm+10.0*mm*i);       // -2800 ... -2750
@@ -449,32 +458,28 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, -_fiberSeparation/2.0, 0.0),
                     _lengthOption==5000?logicMirror:logicPhotonDet,
-                    _lengthOption==5500?"Mirror":"PhotonDet",
+                    _lengthOption==5000?"Mirror":"PhotonDet",
                     logicFiberGuideBar0,
                     _checkOverlaps,
                     0);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, -_fiberSeparation/2.0, 0.0),
-                    _lengthOption>=6600?logicMirror:logicPhotonDet,
-                    _lengthOption>=6600?"Mirror":"PhotonDet",
-//                    (_lengthOption>=6600 || _lengthOption==4500)?logicMirror:logicPhotonDet,
-//                    (_lengthOption>=6600 || _lengthOption==4500)?"Mirror":"PhotonDet",
+                    _lengthOption>6000?logicMirror:logicPhotonDet,
+                    _lengthOption>6000?"Mirror":"PhotonDet",
                     logicFiberGuideBar1,
                     _checkOverlaps,
                     1);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, _fiberSeparation/2.0, 0.0),
                     _lengthOption==5000?logicMirror:logicPhotonDet,
-                    _lengthOption==5500?"Mirror":"PhotonDet",
+                    _lengthOption==5000?"Mirror":"PhotonDet",
                     logicFiberGuideBar0,
                     _checkOverlaps,
                     2);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, _fiberSeparation/2.0, 0.0),
-                    _lengthOption>=6600?logicMirror:logicPhotonDet,
-                    _lengthOption>=6600?"Mirror":"PhotonDet",
-//                    (_lengthOption>=6600 || _lengthOption==4500)?logicMirror:logicPhotonDet,
-//                    (_lengthOption>=6600 || _lengthOption==4500)?"Mirror":"PhotonDet",
+                    _lengthOption>6000?logicMirror:logicPhotonDet,
+                    _lengthOption>6000?"Mirror":"PhotonDet",
                     logicFiberGuideBar1,
                     _checkOverlaps,
                     3);

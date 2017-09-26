@@ -124,6 +124,12 @@ namespace mu2e
 
       for(int SiPM=0; SiPM<4; SiPM++) 
       {
+
+        if(!(*iter)->getBarDetail().hasCMB(SiPM%2)) continue;  //no SiPM responses at non-existing SiPMs 
+                                                               //SiPM%2 returns the side of the CRV counter
+                                                               //0 ... negative side
+                                                               //1 ... positive side
+
         if(_randFlat.fire() < _deadSiPMProbability) continue;  //assume that this random SiPM is dead
 
         std::vector<double> photonArrivalTimesAdjusted;
