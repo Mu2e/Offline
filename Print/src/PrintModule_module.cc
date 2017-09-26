@@ -24,6 +24,11 @@
 #include "Print/inc/TrkCaloIntersectPrinter.hh"
 #include "Print/inc/TrackSummaryPrinter.hh"
 #include "Print/inc/KalRepPrinter.hh"
+#include "Print/inc/SimParticleTimeMapPrinter.hh"
+#include "Print/inc/StrawHitFlagPrinter.hh"
+#include "Print/inc/StereoHitPrinter.hh"
+#include "Print/inc/TimeClusterPrinter.hh"
+#include "Print/inc/KalSeedPrinter.hh"
 
 namespace mu2e {
 
@@ -64,7 +69,11 @@ mu2e::PrintModule::PrintModule(fhicl::ParameterSet const& pset ):
   _printers.push_back( new TrkCaloIntersectPrinter(pset) );
   _printers.push_back( new TrackSummaryPrinter(pset) );
   _printers.push_back( new KalRepPrinter(pset) );
-
+  _printers.push_back( new SimParticleTimeMapPrinter(pset) );
+  _printers.push_back( new StrawHitFlagPrinter(pset) );
+  _printers.push_back( new StereoHitPrinter(pset) );
+  _printers.push_back( new TimeClusterPrinter(pset) );
+  _printers.push_back( new KalSeedPrinter(pset) );
 }
 
 

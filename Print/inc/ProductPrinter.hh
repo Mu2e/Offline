@@ -37,7 +37,7 @@ namespace mu2e {
       // when this destructs, it restores the flag state
       boost::io::ios_flags_saver ifs(os);
       // print fixed or scientific
-      os.setf(std::ios::floatfield);
+      os.flags(std::ios::right);
       for(int r=1; r<=matrix.num_row(); r++) {
 	os << "   ";
 	for(int c=1; c<=matrix.num_col(); c++) {

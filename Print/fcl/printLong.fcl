@@ -33,6 +33,9 @@ physics :{
 	#inputTags : [ "mothersFilter", "virtualdetector" ] # select instances
         #pCut : 10.0          # cut on all particles
       }
+      SimParticleTimeMapPrinter : {
+        verbose : 1  # 0,1
+      }
       MCTrajectoryPrinter : {
         verbose: 2   # 0, 1, 2
 	#inputTags : [ "g4run" ] # select instances
@@ -70,7 +73,16 @@ physics :{
         eCut : -1.0          # cut, typically 0.002
 	#inputTags : [ "MakeSH" ] # select instances
       }
+      StrawHitFlagPrinter : {
+        verbose: 0   # 0, 1
+      }
+      StereoHitPrinter : {
+        verbose: 1   # 0, 1
+      }
 
+      TimeClusterPrinter : {
+        verbose: 1   # 0, 1
+      }
       TrackClusterMatchPrinter : {
         verbose: 2   # 0, 1, 2
 	#inputTags : [ "TrackCaloMatchingDem" ] # select instances
@@ -86,8 +98,13 @@ physics :{
       }
 
       KalRepPrinter : {
-        verbose: 4   # 0 - 5 (5 is KalRep printAll)
+        verbose: 0   # 0 - 5 (5 is KalRep printAll)
 	#inputTags : [ "TRFDeM" ] # select instances
+      }
+
+      KalSeedPrinter : {
+        verbose: 4   # 0,1,2,3,4
+	#inputTags : [ "KFFDeM" ] # select instances
       }
 
     }

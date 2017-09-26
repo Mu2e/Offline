@@ -19,6 +19,9 @@ physics :{
       SimParticlePrinter : {
         pCut : 10.0
       }
+      SimParticleTimeMapPrinter : {
+        verbose : 1
+      }
       StepPointMCPrinter : {
         pCut : 10.0
       }
@@ -45,7 +48,16 @@ physics :{
       StrawHitPrinter : {
         verbose: 0
       }
+      StrawHitFlagPrinter : {
+        verbose: 0
+      }
+      StereoHitPrinter : {
+        verbose: 0
+      }
 
+      TimeClusterPrinter : {
+        verbose: 0
+      }
       TrackClusterMatchPrinter : {
         verbose: 0
       }
@@ -57,6 +69,9 @@ physics :{
         verbose: 3
       }
       KalRepPrinter : {
+        verbose: 3
+      }
+      KalSeedPrinter : {
         verbose: 3
       }
 

@@ -1,9 +1,9 @@
 
-#ifndef ValStrawHit_HH_
-#define ValStrawHit_HH_
+#ifndef ValStereoHit_HH_
+#define ValStereoHit_HH_
 
 #include "art/Framework/Principal/Event.h"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/StereoHit.hh"
 #include "Validation/inc/ValId.hh"
 #include "Validation/inc/ValPosition.hh"
 #include "TH1D.h"
@@ -11,12 +11,12 @@
 
 namespace mu2e {
 
-  class ValStrawHit {
+  class ValStereoHit {
 
   public:
-    ValStrawHit(std::string name):_name(name){}
+    ValStereoHit(std::string name):_name(name){}
     int declare( art::TFileDirectory tfs);
-    int fill(const StrawHitCollection & coll, art::Event const& event);
+    int fill(const StereoHitCollection & coll, art::Event const& event);
     std::string& name() { return _name; }
 
   private:
@@ -25,11 +25,12 @@ namespace mu2e {
     TH1D* _hVer;
     TH1D* _hN;
     TH1D* _hN2;
+    ValPosition _pos;
     TH1D* _ht;
-    TH1D* _hdt;
     TH1D* _hE;
-    TH1D* _hDI;
-    TH1D* _hSI;
+    TH1D* _hchi2;
+    TH1D* _hmva;
+
   };
 }
 
