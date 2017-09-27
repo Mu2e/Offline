@@ -7,6 +7,9 @@ process_name : CRVResponse
 source :
 {
   module_type : RootInput
+  inputCommands: ["keep *", 
+                  "drop *KalRepPayload*_*_*_*",
+                  "drop *CaloCrystalOnlyHit*_*_*_*"]
 }
 
 services :
@@ -29,7 +32,8 @@ physics :
   }
 
   an : [protonTimeMap, muonTimeMap, @sequence::CrvResponsePackage.CrvResponseSequence]
-  out: [Output]
+#  out: [Output]
+  out: []
 
   end_paths: [an, out]
 }

@@ -59,8 +59,8 @@ namespace mu2e
 
     ConfigFileLookupPolicy                                               _resolveFullPath;
     std::vector<std::string>                                             _lookupTableFileNames;
-    std::vector<double>                                                  _lookupTableCounterLengths;
-    std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> > _makeCrvPhotonArrivals;
+    std::vector<std::string>                                             _lookupTableCRVSectors;
+    std::vector<boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> >      _makeCrvPhotonArrivals;
 
     double      _scintillationYield;
     double      _scintillationYieldVariation;
@@ -92,7 +92,7 @@ namespace mu2e
     _g4ModuleLabels(pset.get<std::vector<std::string> >("g4ModuleLabels")),
     _processNames(pset.get<std::vector<std::string> >("processNames")),
     _lookupTableFileNames(pset.get<std::vector<std::string> >("lookupTableFileNames")),
-    _lookupTableCounterLengths(pset.get<std::vector<double> >("lookupTableCounterLengths")),
+    _lookupTableCRVSectors(pset.get<std::vector<std::string> >("CRVSectors")),
     _scintillationYield(pset.get<double>("scintillationYield")),    //5000.0 photons per MeV
     _scintillationYieldVariation(pset.get<double>("scintillationYieldVariation")),    //20.0%
     _scintillationYieldVariationCutoff(pset.get<double>("scintillationYieldVariationCutoff")),    //20.0%
@@ -110,24 +110,10 @@ namespace mu2e
   {
     if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (g4ModuleLabels/processNames)");
 
+    if(_lookupTableFileNames.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified lookup tables (lookupTableFileNames/CRVSectors)");
+
     ConfigFileLookupPolicy configFile;
     _visibleEnergyAdjustmentFileName = configFile(_visibleEnergyAdjustmentFileName);
-
-    if(_lookupTableFileNames.size()!=_lookupTableCounterLengths.size()) throw std::logic_error("ERROR: mismatch between specified lookup tables (lookupTableFileNames/lookupTableCounterLengths)");
-    for(unsigned int i=0; i<_lookupTableFileNames.size(); i++)
-    {
-      double counterLength = _lookupTableCounterLengths[i];
-      _makeCrvPhotonArrivals.emplace(counterLength, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat, _randGaussQ, _randPoissonQ)));
-      std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
-      iterCPA->second->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
-      iterCPA->second->SetScintillationYield(_scintillationYield);
-      iterCPA->second->SetScintillatorBirksConstant(_scintillatorBirksConstant);
-      iterCPA->second->SetScintillatorRatioFastSlow(_scintillatorRatioFastSlow);
-      iterCPA->second->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
-      iterCPA->second->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
-      iterCPA->second->SetFiberDecayTime(_fiberDecayTime);
-      iterCPA->second->LoadVisibleEnergyAdjustmentTable(_visibleEnergyAdjustmentFileName);
-    }
 
     produces<CrvPhotonArrivalsCollection>();
   }
@@ -144,13 +130,37 @@ namespace mu2e
   {
     GeomHandle<CosmicRayShield> CRS;
     std::vector<CRSScintillatorShield> const &shields = CRS->getCRSScintillatorShields();
-    std::vector<CRSScintillatorShield>::const_iterator ishield;
-    for(ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
+    if(shields.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between the geometry and the specified lookup table CRVSectors");
+
+    for(size_t i=0; i<shields.size(); i++) 
     {
-      if(ishield->getCRSScintillatorBarDetail().getMaterialName()!="G4_POLYSTYRENE")
+      if(shields[i].getCRSScintillatorBarDetail().getMaterialName()!="G4_POLYSTYRENE") 
+        throw std::logic_error("ERROR: scintillator material is not the expected G4_POLYSTYRENE which is used in the look-up tables");
+      if(shields[i].getName().substr(4)!=_lookupTableCRVSectors[i]) throw std::logic_error("ERROR: mismatch between the geometry and the specified lookup table CRVSectors"); 
+                            //substr(4) removes the "CRV_" part of the sector name
+
+      bool tableLoaded=false;
+      for(size_t j=0; j<i; j++)
       {
-        throw std::logic_error("scintillator material is not the expected G4_POLYSTYRENE which is used in the look-up tables");
+        if(_lookupTableFileNames[i]==_lookupTableFileNames[j])
+        {
+           tableLoaded=true;
+           _makeCrvPhotonArrivals.emplace_back(_makeCrvPhotonArrivals[j]);
+           break;
+        }
       }
+      if(tableLoaded) continue;
+
+      _makeCrvPhotonArrivals.emplace_back(boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat, _randGaussQ, _randPoissonQ)));
+      boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> &CPA=_makeCrvPhotonArrivals.back();
+      CPA->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
+      CPA->SetScintillationYield(_scintillationYield);
+      CPA->SetScintillatorBirksConstant(_scintillatorBirksConstant);
+      CPA->SetScintillatorRatioFastSlow(_scintillatorRatioFastSlow);
+      CPA->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
+      CPA->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
+      CPA->SetFiberDecayTime(_fiberDecayTime);
+      CPA->LoadVisibleEnergyAdjustmentTable(_visibleEnergyAdjustmentFileName);
     }
   }
 
@@ -234,25 +244,22 @@ namespace mu2e
           }
           double scintillationYieldAdjustment = _scintillationYieldAdjustments[step.barIndex()];
 
-          double counterLength = CRSbar.getHalfLength()*2.0;
-          std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
-          if(iterCPA!=_makeCrvPhotonArrivals.end())
-          {
-            iterCPA->second->MakePhotons(p1Local, p2Local, t1, t2,  
+          const CRSScintillatorBarId &barId = CRSbar.id();
+          int CRVSectorNumber=barId.getShieldNumber();
+          boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> &CPA=_makeCrvPhotonArrivals.at(CRVSectorNumber);
+          CPA->MakePhotons(p1Local, p2Local, t1, t2,  
                                         PDGcode, beta, charge,
                                         energyDepositedTotal,
                                         energyDepositedNonIonizing,
                                         step.stepLength(),
                                         scintillationYieldAdjustment);
 
-            CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];
-            for(int SiPM=0; SiPM<4; SiPM++)
-            {
-              const std::vector<double> &times=iterCPA->second->GetArrivalTimes(SiPM);
-              crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).end(),times.begin(),times.end());
-            }
+          CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];
+          for(int SiPM=0; SiPM<4; SiPM++)
+          {
+            const std::vector<double> &times=CPA->GetArrivalTimes(SiPM);
+            crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).end(),times.begin(),times.end());
           }
-          else std::cout<<"ERROR: Did not find the matching lookuptable file for the CRV counter with the length "<<counterLength<<"."<<std::endl;
 
         } //loop over StepPointMCs in the StepPointMC collection
       } //loop over all StepPointMC collections

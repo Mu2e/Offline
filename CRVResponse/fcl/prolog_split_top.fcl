@@ -5,13 +5,29 @@ BEGIN_PROLOG
       module_type               : CrvPhotonArrivalsGenerator
       g4ModuleLabels            : ["*"]
       processNames              : ["*"]
-      lookupTableFileNames      : ["CRVConditions/v3_0/LookupTable_6600",
-                                   "CRVConditions/v3_0/LookupTable_5600",
-                                   "CRVConditions/v3_0/LookupTable_4500",
-                                   "CRVConditions/v3_0/LookupTable_3000",
-                                   "CRVConditions/v3_0/LookupTable_2300",
-                                   "CRVConditions/v3_0/LookupTable_900"]
-      lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
+      CRVSectors                : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","T5","T6","D1","U" ,"C1","C2","C3","D2","D3"] //used only to match the vector entries below
+      lookupTableFileNames      : ["CRVConditions/v3_0/LookupTable_4500", //R1
+                                   "CRVConditions/v3_0/LookupTable_4500", //R2
+                                   "CRVConditions/v3_0/LookupTable_4500", //R3
+                                   "CRVConditions/v3_0/LookupTable_4500", //R4
+                                   "CRVConditions/v3_0/LookupTable_4500", //R5
+                                   "CRVConditions/v3_0/LookupTable_4500", //R6
+                                   "CRVConditions/v3_0/LookupTable_4500", //L1
+                                   "CRVConditions/v3_0/LookupTable_4500", //L2
+                                   "CRVConditions/v3_0/LookupTable_4500", //L3
+                                   "CRVConditions/v3_0/LookupTable_6600", //T1
+                                   "CRVConditions/v3_0/LookupTable_6600", //T2
+                                   "CRVConditions/v3_0/LookupTable_5600", //T3
+                                   "CRVConditions/v3_0/LookupTable_5600", //T4
+                                   "CRVConditions/v3_0/LookupTable_5600", //T5
+                                   "CRVConditions/v3_0/LookupTable_5600", //T6
+                                   "CRVConditions/v3_0/LookupTable_5600", //D1
+                                   "CRVConditions/v3_0/LookupTable_6600", //U
+                                   "CRVConditions/v3_0/LookupTable_900",  //C1
+                                   "CRVConditions/v3_0/LookupTable_900",  //C2
+                                   "CRVConditions/v3_0/LookupTable_900",  //C3
+                                   "CRVConditions/v3_0/LookupTable_2300", //D2
+                                   "CRVConditions/v3_0/LookupTable_2300"] //D3
       scintillationYield        : 6697     //6697 photons per MeV corresponds to a PE yield of 48 PEs/cm @ 1m away from SiPMs
                                            //scintillation yield = 146.178 (photons/MeV)/(PEs/cm) * PE yield - 319.19 photons/MeV, 
                                            //where PE yield is the number of PEs per cm @ 1m away from SiPMs
