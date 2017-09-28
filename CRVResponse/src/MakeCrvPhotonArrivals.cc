@@ -138,6 +138,7 @@ void LookupBin::Read(std::ifstream &lookupfile)
 
 void MakeCrvPhotonArrivals::LoadLookupTable(const std::string &filename)
 {
+  _fileName = filename;
   std::ifstream lookupfile(filename,std::ios::binary);
   if(!lookupfile.good()) throw std::logic_error("Could not open lookup table file "+filename);
 

@@ -146,6 +146,7 @@ namespace mu2e
         {
            tableLoaded=true;
            _makeCrvPhotonArrivals.emplace_back(_makeCrvPhotonArrivals[j]);
+           std::cout<<"CRV sector "<<i<<" ("<<_lookupTableCRVSectors[i]<<") uses "<<_makeCrvPhotonArrivals.back()->GetFileName()<<std::endl;
            break;
         }
       }
@@ -161,6 +162,7 @@ namespace mu2e
       CPA->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
       CPA->SetFiberDecayTime(_fiberDecayTime);
       CPA->LoadVisibleEnergyAdjustmentTable(_visibleEnergyAdjustmentFileName);
+      std::cout<<"CRV sector "<<i<<" ("<<_lookupTableCRVSectors[i]<<") uses "<<_makeCrvPhotonArrivals.back()->GetFileName()<<std::endl;
     }
   }
 

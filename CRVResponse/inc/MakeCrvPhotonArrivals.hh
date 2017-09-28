@@ -77,6 +77,8 @@ class MakeCrvPhotonArrivals
 
     ~MakeCrvPhotonArrivals();
 
+    const std::string         &GetFileName() const {return _fileName;}
+
     void                      LoadLookupTable(const std::string &filename);
     void                      LoadVisibleEnergyAdjustmentTable(const std::string &filename);
     void                      MakePhotons(const CLHEP::Hep3Vector &stepStart,   //they need to be points
@@ -97,6 +99,8 @@ class MakeCrvPhotonArrivals
     void                      SetFiberDecayTime(double decayTime) {_fiberDecayTime=decayTime;}
 
   private:
+
+    std::string               _fileName;
 
     std::vector<double>       _arrivalTimes[4];
     double                    _scintillationYield;
