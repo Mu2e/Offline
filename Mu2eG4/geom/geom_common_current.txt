@@ -38,9 +38,9 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/mu2eHall_v02.txt"
 
 // Solenoids
-#include "Mu2eG4/geom/DetectorSolenoid_v02.txt"
+#include "Mu2eG4/geom/DetectorSolenoid_v03.txt"
 #include "Mu2eG4/geom/DSShielding_v01.txt"
-#include "Mu2eG4/geom/ProductionSolenoid_v01.txt"
+#include "Mu2eG4/geom/ProductionSolenoid_v02.txt"
 #include "Mu2eG4/geom/psEnclosure_v01.txt"
 #include "Mu2eG4/geom/PSShield_v06.txt"
 #include "Mu2eG4/geom/PSExternalShielding_v01.txt"
@@ -49,7 +49,7 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 
 // External Shielding
 #include "Mu2eG4/geom/ExtShieldUpstream_v02.txt"
-#include "Mu2eG4/geom/ExtShieldDownstream_v02.txt"
+#include "Mu2eG4/geom/ExtShieldDownstream_v04.txt"
 #include "Mu2eG4/geom/Saddle_v02.txt"
 #include "Mu2eG4/geom/Pipe_v03.txt"
 #include "Mu2eG4/geom/ElectronicRack_v01.txt"
@@ -65,7 +65,7 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/STM_v02.txt" // (muon) stopping target monitor
 
 // Proton Absorber
-#include "Mu2eG4/geom/protonAbsorber_cylindrical.txt"
+#include "Mu2eG4/geom/protonAbsorber_cylindrical_v02.txt"
 #include "Mu2eG4/geom/degrader_v01.txt"
 
 #include "Mu2eG4/geom/ProductionTargetInPS.txt"
