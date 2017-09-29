@@ -25,9 +25,9 @@ namespace mu2e {
       pset.get<double>("adcdVdI",2.4e7) }, // mVolt/uAmps (transimpedance gain)
     _tdeadAnalog(pset.get<double>("DeadTimeAnalog",100.0)), // nsec dead after threshold crossing (pulse baseline restoration time)
     _tdeadDigital(pset.get<double>("DeadTimeDigital",100.0)), // nsec dead after threshold crossing (electronics processing time)
-    _vsat(pset.get<double>("SaturationVoltage",120.0)), // mVolt
     _vthresh(pset.get<double>("DiscriminatorThreshold",12.0)), //mVolt, post amplification
-    _analognoise{pset.get<double>("thresholdAnalogNoise",3.0), //mVolt
+    _tnoise(pset.get<double>("ThresholdNoise",1.0)), // mvolt
+    _analognoise{pset.get<double>("thresholdAnalogNoise",2.8), //mVolt
       pset.get<double>("adcAnalogNoise",8.0)},
     _ADCLSB(pset.get<double>("ADCLSB",0.3662)), //mVolt
     _maxADC(pset.get<int>("maxADC",4095)),
@@ -217,7 +217,7 @@ namespace mu2e {
       index = 0;
     return charge * _preampToAdc2Response[index] * _saturationSampleFactor;
   }
-  
+ 
   double StrawElectronics::saturatedResponse(double vlin) const {
     if (vlin < _vsat)
       return vlin;
