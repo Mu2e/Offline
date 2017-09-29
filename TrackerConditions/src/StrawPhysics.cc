@@ -27,7 +27,7 @@ namespace mu2e {
     _vprop(pset.get<double>("PropagationVelocity",273.0)), //mm/nsec
     _vdisp(pset.get<double>("PropagationVelocityDispersion",0.01)), //1/nsec
     _cdpoly(pset.get<vector<double> >("ClusterDriftPolynomial",vector<double>{0.0,16.0})), // linear term has units nanoseconds/mm
-    _cdsigmapoly(pset.get<vector<double> >("ClusterDriftSigmaPolynomial",vector<double>{0.2})) // constant drift time error for now (ns)
+    _dtvar(pset.get<double>("DriftTimeVarianceSigmaPolynomial",0.128)) // Drift time variance linear dependence on drift time (ns)
   {
     // integrate the number of ionizations
     double ptot(0.0);
@@ -96,14 +96,8 @@ namespace mu2e {
     return max(0.0,retval);
   }
 
-  double StrawPhysics::driftTimeSpread(double ddist, double phi) const {
-    double retval(0.0);
-    double arg(1.0);
-    for(size_t ipow=0;ipow<_cdsigmapoly.size();++ipow){
-      retval += arg*_cdsigmapoly[ipow];
-      arg*=ddist;
-    }
-    return max(0.0,retval);
+  double StrawPhysics::driftTimeSpread(double dtime) const {
+    return sqrt(max(0.0,dtime*_dtvar));
   }
   
   double StrawPhysics::propagationTime(double wdist) const {

@@ -636,9 +636,10 @@ namespace mu2e {
       // sample the gain for this cluster 
       double gain = _strawphys->clusterGain(_randgauss, _randflat, cluster._ne);
       wireq._charge = cluster._charge*(gain);
-      // smear drift time
-      wireq._time = _randgauss.fire(_strawphys->driftDistanceToTime(dd,dphi),
-	  _strawphys->driftTimeSpread(dd,dphi));
+      // compute drift time for this cluster
+      double dt = _strawphys->driftDistanceToTime(dd,dphi);
+      double dtsig = _strawphys->driftTimeSpread(dt);
+      wireq._time = _randgauss.fire(dt,dtsig);
       wireq._dd = dd;
       // position along wire
       // need to add Lorentz effects, this should be in StrawPhysics, FIXME!!!
