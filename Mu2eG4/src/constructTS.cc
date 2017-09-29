@@ -155,6 +155,7 @@ namespace mu2e {
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::IN);
     tssName = "TS1InnerCryoShell";
+    double ts1InsVacRIn = strsec->rOut();
     nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
@@ -182,6 +183,7 @@ namespace mu2e {
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT );
     tssName =  "TS1OuterCryoShell";
+    double ts1InsVacROut = strsec->rIn();
     nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
@@ -235,6 +237,25 @@ namespace mu2e {
            << "," << pos2.z() +ts->endWallU2_halfLength() << "]" << endl;
     }
 
+    // Put in the insulating vacuum, which will serve as the mother volume
+    // for the coils and coil assemblies (CAs).
+    double ts1InsVacHalfLen = strsec->getHalfLength() - ts->endWallU1_halfLength() + ts->endWallU2_halfLength();
+    double ts1InsVacOffset = ts->endWallU1_halfLength() + ts->endWallU2_halfLength();
+    CLHEP::Hep3Vector ts1CIVLoc = strsec->getGlobal()-_hallOriginInMu2e + CLHEP::Hep3Vector(0,0,ts1InsVacOffset);
+    tssName =  "TS1CryoInsVac";
+    nestTubs( tssName,
+              TubsParams( ts1InsVacRIn,
+                          ts1InsVacROut,
+                          ts1InsVacHalfLen ),
+              upstreamVacuumMaterial,
+              strsec->getRotation(),
+              ts1CIVLoc,
+              parent,
+              0,
+              G4Color::Red(),
+	      "TSCryo"
+              );
+
     // Build TS2
     torsec = ts->getTSVacuum<TorusSection>(TransportSolenoid::TSRegion::TS2);
     nestTorus("TS2Vacuum",
@@ -267,6 +288,7 @@ namespace mu2e {
     std::array<double,5> ts2Cryo1Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
 
     tssName = "TS2InnerCryoShell";
+    double ts2InsVacRIn = torsec->rOut();
     nestTorus(tssName,
               ts2Cryo1Params,
               cryoMaterial,
@@ -287,6 +309,7 @@ namespace mu2e {
     std::array<double,5> ts2Cryo2Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
 
     tssName = "TS2OuterCryoShell";
+    double ts2InsVacROut = torsec->rIn();
     nestTorus(tssName,
               ts2Cryo2Params,
               cryoMaterial,
@@ -303,6 +326,25 @@ namespace mu2e {
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
                 << std::endl;
 
+
+    // Put in the insulating vacuum, which will serve as the mother volume
+    // for the coils and coil assemblies (CAs).
+    std::array<double,5> ts2CIVParams { { ts2InsVacRIn, ts2InsVacROut, torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
+
+
+    tssName = "TS2CryoInsVac";
+    nestTorus(tssName,
+              ts2CIVParams,
+              upstreamVacuumMaterial,
+              torsec->getRotation(),
+              torsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              G4Color::Red(),
+	      "TSCryo"
+              );
+
+
     // Build TS3
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS3,TransportSolenoid::TSRadialPart::IN );
     nestTubs( "TS3Vacuum",
@@ -316,6 +358,7 @@ namespace mu2e {
 	      "TSCryo"
               );
 
+    double ts3InsVacRIn = strsec->rOut();
     tssName = "TS3InnerCryoShell";
     nestTubs( tssName,
               TubsParams( strsec->rIn(),
@@ -338,6 +381,7 @@ namespace mu2e {
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS3,TransportSolenoid::TSRadialPart::OUT );
 
     tssName = "TS3OuterCryoShell";
+    double ts3InsVacROut = strsec->rIn();
     nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
@@ -360,6 +404,24 @@ namespace mu2e {
       cout << __func__ << " TS3  OffsetInMu2e : " << strsec->getGlobal()   << endl;
       cout << __func__ << " TS3  rotation     : " << strsec->getRotation() << endl;
     }
+
+    // Put in the insulating vacuum, which will serve as the mother volume
+    // for the coils and coil assemblies (CAs).
+
+    tssName =  "TS3CryoInsVac";
+    nestTubs( tssName,
+              TubsParams( ts3InsVacRIn,
+                          ts3InsVacROut,
+                          strsec->getHalfLength() ),
+              upstreamVacuumMaterial,
+              strsec->getRotation(),
+              strsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              G4Color::Red(),
+	      "TSCryo"
+              );
+
 
     // Build TS4
     torsec = ts->getTSVacuum<TorusSection>(TransportSolenoid::TSRegion::TS4);
@@ -392,6 +454,7 @@ namespace mu2e {
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::IN );
     std::array<double,5> ts4Cryo1Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
     tssName = "TS4InnerCryoShell";
+    double ts4InsVacRIn = torsec->rOut();
     nestTorus(tssName,
               ts4Cryo1Params,
               cryoMaterial,
@@ -411,6 +474,7 @@ namespace mu2e {
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::OUT );
     std::array<double,5> ts4Cryo2Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
     tssName = "TS4OuterCryoShell";
+    double ts4InsVacROut = torsec->rIn();
     nestTorus(tssName,
               ts4Cryo2Params,
               cryoMaterial,
@@ -426,6 +490,25 @@ namespace mu2e {
       std::cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
                 << std::endl;
+
+    // Put in the insulating vacuum, which will serve as the mother volume
+    // for the coils and coil assemblies (CAs).
+    std::array<double,5> ts4CIVParams { { ts4InsVacRIn, ts4InsVacROut, torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
+
+    tssName = "TS4CryoInsVac";
+    nestTorus(tssName,
+              ts4CIVParams,
+              upstreamVacuumMaterial,
+              torsec->getRotation(),
+              torsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              G4Color::Red(),
+	      "TSCryo"
+              );
+
+
+
 
     // Build TS5.
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::IN );    
@@ -444,6 +527,7 @@ namespace mu2e {
 	      "TSCryo"
               );
 
+    double ts5InsVacRIn = strsec->rOut();
     tssName = "TS5InnerCryoShell";
     nestTubs( tssName,
               TubsParams( strsec->rIn(),
@@ -465,6 +549,7 @@ namespace mu2e {
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::OUT );
     tssName = "TS5OuterCryoShell";
+    double ts5InsVacROut = strsec->rIn();
     nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
@@ -487,6 +572,30 @@ namespace mu2e {
       cout << __func__ << " TS5  OffsetInMu2e : " << strsec->getGlobal()   << endl;
       cout << __func__ << " TS5  rotation     : " << strsec->getRotation() << endl;
     }
+
+
+    // Put in the insulating vacuum, which will serve as the mother volume
+    // for the coils and coil assemblies (CAs).
+
+    double ts5InsVacHalfLen = strsec->getHalfLength() - ts->endWallD_halfLength();// - ts->getColl53().halfLength();
+    double ts5InsVacOffset = ts->endWallD_halfLength();// + ts->getColl53().halfLength();
+    CLHEP::Hep3Vector ts5CIVLoc = strsec->getGlobal()-_hallOriginInMu2e - CLHEP::Hep3Vector(0,0,ts5InsVacOffset);
+    tssName =  "TS5CryoInsVac";
+    nestTubs( tssName,
+              TubsParams( ts5InsVacRIn,
+                          ts5InsVacROut,
+                          ts5InsVacHalfLen ),
+              upstreamVacuumMaterial,
+              strsec->getRotation(),
+              ts5CIVLoc,
+              parent,
+              0,
+              G4Color::Red(),
+	      "TSCryo"
+              );
+
+
+
 
     // Build Rings (added April 1, 2015, David Norvil Brown)
     double rirs = ts->rInRingSide();
@@ -601,14 +710,18 @@ namespace mu2e {
 	double rinner = config.getDouble("pbar.support.midRin")*CLHEP::mm;
 	double router = config.getDouble("pbar.support.midRout")*CLHEP::mm;
 	double halflen = config.getDouble("pbar.support.midThickness")*CLHEP::mm/2.0;
+
+	G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+	VolumeInfo useAsParent = _helper->locateVolInfo( "TS3CryoInsVac" );
+
 	std::ostringstream PabsSupMidName;
 	PabsSupMidName << "PabsTS3MidOut";
 	nestTubs( PabsSupMidName.str(),
 		  TubsParams( rinner, router, halflen ),
 		  ringMaterial,
-		  pasubRotat, 
-		  CLHEP::Hep3Vector(0,0,0)-_hallOriginInMu2e,
-		  parent,
+		  0, 
+		  CLHEP::Hep3Vector(0,0,0)- useAsParent.centerInMu2e(),
+		  useAsParent,
 		  0,
 		  G4Color::Blue(),
 		  "TSCryo"
@@ -674,59 +787,94 @@ namespace mu2e {
       std::string const & caName  = its.name()+"CA";
       verbosityLevel && std::cout << __func__ << " constructing " << caName << std::endl;
 
+      VolumeInfo useAsParent;
+      G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+
       if ( its==tsCAReg_enum::TS2 || its==tsCAReg_enum::TS4 ) {
         
-        // those sections are toruses
+        // these sections are toruses
         // fixme, make the base class TSSection more general to be used here instead the two
         caTorsec = ts.getTSCA<TorusSection>(its);
+
+	if ( its == tsCAReg_enum::TS2 ) {
+	  useAsParent = _helper->locateVolInfo( "TS2CryoInsVac" );
+	} else if ( its == tsCAReg_enum::TS4 ) {
+	  useAsParent = _helper->locateVolInfo( "TS4CryoInsVac" );
+	} else {  // Should never get here
+	  useAsParent = parent;
+	}
+
+
         nestTorus(caName,
                   caTorsec->getParameters(),
                   findMaterialOrThrow(caTorsec->getMaterial()),
-                  caTorsec->getRotation(),
-                  caTorsec->getGlobal()-parentCenterInMu2e,
-                  parent,
+		  0,
+                  caTorsec->getGlobal()-useAsParent.centerInMu2e(),
+                  useAsParent,
                   0,
                   G4Color::Yellow(),
                   "TSCA"
                   );
-
+	//                  caTorsec->getRotation(),
       } else if ( its==tsCAReg_enum::TS1 
                   || its==tsCAReg_enum::TS3u 
                   || its==tsCAReg_enum::TS3d 
                   || its==tsCAReg_enum::TS5
                   ) {
 
+	if ( its == tsCAReg_enum::TS1 ) {
+	  useAsParent = _helper->locateVolInfo( "TS1CryoInsVac" );
+	} else if ( its == tsCAReg_enum::TS3u || its == tsCAReg_enum::TS3d ) {
+	  useAsParent = _helper->locateVolInfo( "TS3CryoInsVac" );
+	} else if ( its == tsCAReg_enum::TS5 ) {
+	  useAsParent = _helper->locateVolInfo( "TS5CryoInsVac" );
+	} else { // Should never get here
+	  useAsParent = parent;
+	}
+
         caConsec = ts.getTSCA<ConeSection>(its);
+
+	CLHEP::Hep3Vector V = caConsec->getGlobal() - useAsParent.centerInMu2e();
+	CLHEP::HepRotation* rot = useAsParent.physical->GetRotation();
+	V = (*rot) * V;
+
+
         nestCons(caName,
                  caConsec->getParameters(),
                  findMaterialOrThrow(caConsec->getMaterial()),
-                 caConsec->getRotation(),
-                 caConsec->getGlobal()-parentCenterInMu2e,
-                 parent,
+		 0,
+                 V,
+                 useAsParent,
                  0,
                  G4Color::Yellow(),
                  "TSCA"
                  );
-
+	//                 caConsec->getRotation(),
       } else {
 
-        caStrsec = ts.getTSCA<StraightSection>(its);
-        nestTubs(caName,
-                 TubsParams(caStrsec->rIn(),
-                            caStrsec->rOut(),
-                            caStrsec->getHalfLength()),
-                 findMaterialOrThrow(caStrsec->getMaterial()),
-                 caStrsec->getRotation(),
-                 caStrsec->getGlobal()-parentCenterInMu2e,
-                 parent,
-                 0,
-                 G4Color::Cyan(),
-                 "TSCA"
-                 );
+	useAsParent = _helper->locateVolInfo("TS3CryoInsVac");
+	caStrsec = ts.getTSCA<StraightSection>(its);
+	CLHEP::Hep3Vector V = caStrsec->getGlobal() - useAsParent.centerInMu2e();
+	CLHEP::HepRotation* rot = useAsParent.physical->GetRotation();
+	V = (*rot) * V;
+
+	nestTubs(caName,
+		 TubsParams(caStrsec->rIn(),
+			    caStrsec->rOut(),
+			    caStrsec->getHalfLength()),
+		 findMaterialOrThrow(caStrsec->getMaterial()),
+		 0,
+		 V,
+		 useAsParent,
+		 0,
+		 G4Color::Cyan(),
+		 "TSCA"
+		 );
+
+	//caStrsec->getRotation(),
 
       }
 
-      G4Helper* _helper = &(*art::ServiceHandle<G4Helper>());
       verbosityLevel 
         && std::cout << __func__ << " " << caName << " Mass in kg: " 
                      << _helper->locateVolInfo(caName).logical->GetMass()/CLHEP::kg 
@@ -759,17 +907,51 @@ namespace mu2e {
         
         ostringstream coilname ; coilname << "TS" << iTS << "_Coil" << ++iC ;
 
-        nestTubs( coilname.str(),
-                  TubsParams( coil.rIn(), coil.rOut(), coil.halfLength() ),
-                  coilMaterial,
-                  coil.getRotation(),
-                  coil.getGlobal()-parent.centerInMu2e(),
-                  parent,
-                  0,
-                  G4Color::Green(),
-		  "TSCoils"
-                  );
+	// Use insulating vacuums as mother volumes
+	ostringstream ivName;
+	ivName << "TS" << iTS << "CryoInsVac";
 
+	G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+	VolumeInfo useAsParent = _helper->locateVolInfo( ivName.str() );
+
+	CLHEP::Hep3Vector V = coil.getGlobal() - useAsParent.centerInMu2e();
+
+
+	CLHEP::HepRotation* rot = useAsParent.physical->GetRotation();
+	V = (*rot) * V;
+	CLHEP::HepRotation invrot = rot->inverse();
+
+	if ( iTS == TransportSolenoid::TSRegion::TS2 || 
+	     iTS == TransportSolenoid::TSRegion::TS4 ) {
+
+	  CLHEP::HepRotation* twist = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	  twist->rotateX(90.0*CLHEP::degree);
+	  twist->rotateY(-coil.getRotation()->theta());
+
+
+	  nestTubs( coilname.str(),
+		    TubsParams( coil.rIn(), coil.rOut(), coil.halfLength() ),
+		    coilMaterial,
+		    twist,
+		    V,
+		    useAsParent,
+		    0,
+		    G4Color::Green(),
+		    "TSCoils"
+		    );
+	} else {
+
+	  nestTubs( coilname.str(),
+		    TubsParams( coil.rIn(), coil.rOut(), coil.halfLength() ),
+		    coilMaterial,
+		    0,
+		    V,
+		    useAsParent,
+		    0,
+		    G4Color::Green(),
+		    "TSCoils"
+		    );
+	}
         if ( verbosityLevel > 0 ) {
           cout << __func__ << " " << coilname.str() << " placed at: " << coil.getGlobal() << endl;
           cout << __func__ << "            rotation: " << -coil.getRotation()->getTheta()/CLHEP::degree << endl;
@@ -1084,16 +1266,18 @@ namespace mu2e {
     
     TubsParams coll5Param3 ( coll53.rIn(),  coll53.rOut(), coll53.halfLength()-2.*vdHalfLength);
     
-    // Build Coll53 flange outsie the TS5Vacuum
-    G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
+    // Build Coll53 flange outside the TS5Vacuum
+    VolumeInfo useAsParent = _helper->locateVolInfo("TS5CryoInsVac");
+    //    G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
+    G4ThreeVector _useParentOriginInMu2e = useAsParent.centerInMu2e();
     StraightSection   const * strsec (nullptr);
     strsec = ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS5);
     nestTubs( "Coll53",
               coll5Param3,
               findMaterialOrThrow( coll53.material() ),
 	      0,
-              strsec->getGlobal()-_hallOriginInMu2e+coll53.getLocal(),
-              parent,
+              strsec->getGlobal()-_useParentOriginInMu2e+coll53.getLocal(),
+              useAsParent,
               0,
               G4Color::Blue(),
 	      "TSColl"

@@ -67,7 +67,7 @@ bool   ts.polyliner.isSolid        = true;
 // Pbar absorber at TS3 center, disk always built, wedge optional plus
 bool   pbar.isVisible = true;
 bool   pbar.isSolid   = false;
-int    pbar.verbosityLevel = 0;
+int    pbar.verbosityLevel = 1;
 double pbar.halfLength = 100.0e-3; // 0.06->0.1
 string pbar.Type       = "wedge"; // "disk"
 string pbar.materialName = "G4_KAPTON";
@@ -84,7 +84,7 @@ bool   pbar.coll1In.build = true;
 double pbar.coll1In.halfLength = 0.125;
 double pbar.coll1In.rOut = 160.0;
 double pbar.coll1In.offset = -140.02;       // distance to the TS1 entrance on +z.  It is implemented as distance to COL1, which shifted 40 mm, so shifted this as well.
-double pbar.coll1In.material1Name = "G4_Al";
+string pbar.coll1In.material1Name = "G4_Al";
 double pbar.coll1In.rOutRecord = 200.0;
 // Support structure for the upstream Pbar window in front of TS1 entrance
 int    pbar.coll1In.Version = 2; // 1 for just the window. 2 adds supports
@@ -186,12 +186,12 @@ int  ts.coils.verbosityLevel = 0;
 string ts.coils.material = "SCCable";
 
 // - TS1
-vector<double> ts1.coils.rIn       = { 405.0 , 405.0, 405.0 };
-vector<double> ts1.coils.rOut      = { 423.0 , 430.3, 444.9 };
-vector<double> ts1.coils.sLength   = { 172.60, 284.2, 162.4 };
-vector<double> ts1.coils.xPos      = { 3904., 3904., 3904.  };
-vector<double> ts1.coils.zPos      = {-3629.,-3379.,-3136.5 };
-vector<double> ts1.coils.yRotAngle = {    0. ,   0. ,   0.  };
+vector<double> ts1.coils.rIn       = { 405.0 , 405.0, 405.0, 405.0 };
+vector<double> ts1.coils.rOut      = { 423.0 , 430.3, 444.9, 448.6 };
+vector<double> ts1.coils.sLength   = { 172.60, 284.2, 162.4, 86.3 };
+vector<double> ts1.coils.xPos      = { 3904., 3904., 3904., 3904.  };
+vector<double> ts1.coils.zPos      = {-3629.,-3379.,-3136.5, -2972.3 };
+vector<double> ts1.coils.yRotAngle = {    0. ,   0. ,   0., 0.  };
 
 // - TS2
 vector<double> ts2.coils.rIn       = 
@@ -209,19 +209,19 @@ vector<double> ts2.coils.rOut      =
 
 vector<double> ts2.coils.sLength   = 
   { 
+    86.30, 172.60, 172.60, 172.60, 172.60, 172.60, 
     172.60, 172.60, 172.60, 172.60, 172.60, 172.60, 
-    172.60, 172.60, 172.60, 172.60, 172.60, 172.60, 
-    172.60, 172.60, 172.60, 172.60, 172.60, 172.60
+    172.60, 172.60, 172.60, 172.60, 172.60, 81.30
   };
 vector<double> ts2.coils.xPos   = 
   { 
     3904.,3894.,3864.,3807.,3723.,3613.,
     3479.,3322.,3143.,2944.,2728.,2495.,
-    2248.,1990.,1722.,1457.,1217., 970.
+    2248.,1990.,1722.,1457.,1217., 1015.8
   };
 vector<double> ts2.coils.zPos   = 
   { 
-    -2929., -2687., -2447., -2182., -1914., -1656.,
+    -2885.7, -2687., -2447., -2182., -1914., -1656.,
     -1409., -1176.,  -960.,  -761.,  -582.,  -425.,
     -291.,   -181.,   -97.,   -40.,   -10.,     0.
   };
@@ -235,33 +235,45 @@ vector<double> ts2.coils.yRotAngle =
 // - TS3
 vector<double> ts3.coils.rIn       = 
   {
+    405. ,
     465.  , 465.  , 465.  , 465.  , 
-    465.  , 465.  , 465.  , 465.  
+    465.  , 465.  , 465.  , 465.  ,
+    405.
   };
 vector<double> ts3.coils.rOut      =
   {
+    448.60,
     523.20, 512.20, 519.50, 621.70,
-    618.10, 512.20, 515.90, 515.90
+    618.10, 512.20, 515.90, 515.90,
+    441.30
   };
 vector<double> ts3.coils.sLength   =
   {
+    91.30,
     172.60, 81.20,172.60, 81.20,
-     81.20,172.60, 81.20,172.60
+    81.20,172.60, 81.20,172.60,
+    91.30
   };
 vector<double> ts3.coils.xPos   =
   {
+    929.20,
     751.30, 588.30, 425.40, 153.80,
-    -153.80, -425.40, -588.30, -751.30
+    -153.80, -425.40, -588.30, -751.30,
+    -929.20
   };
 vector<double> ts3.coils.zPos   =
   {
+    0.,
     0.,0.,0.,0.,
-    0.,0.,0.,0.
+    0.,0.,0.,0.,
+    0.
   };
 vector<double> ts3.coils.yRotAngle = 
   {
+    -90.  ,
     -90.  , -90.  , -90.  , -90.  , 
-    -90.  , -90.  , -90.  , -90.  
+    -90.  , -90.  , -90.  , -90.  ,
+    -90.
   };
 
 // - TS4
@@ -279,13 +291,13 @@ vector<double> ts4.coils.rOut      =
   };
 vector<double> ts4.coils.sLength   = 
   { 
+    81.30, 172.60, 172.60, 172.60, 172.60, 172.60, 
     172.60, 172.60, 172.60, 172.60, 172.60, 172.60, 
-    172.60, 172.60, 172.60, 172.60, 172.60, 172.60, 
-    172.60, 172.60, 172.60, 172.60, 172.60, 172.60
+    172.60, 172.60, 172.60, 172.60, 172.60, 86.30
   };
 vector<double> ts4.coils.xPos   = 
   { 
-    -970. ,-1217.,-1457.,-1722.,-1990.,-2248.,
+    -1015.8 ,-1217.,-1457.,-1722.,-1990.,-2248.,
     -2495.,-2728.,-2944.,-3143.,-3322.,-3479.,
     -3613.,-3723.,-3807.,-3864.,-3894.,-3904.
   };
@@ -293,7 +305,7 @@ vector<double> ts4.coils.zPos   =
   { 
         0.,   10.,   40.,   97.,  181.,  291.,    
       425.,  582.,  761.,  960., 1176., 1409.,   
-     1656., 1914., 2182., 2447., 2687., 2929.   
+     1656., 1914., 2182., 2447., 2687., 2885.70   
   };
 vector<double> ts4.coils.yRotAngle = 
   { 
@@ -304,27 +316,27 @@ vector<double> ts4.coils.yRotAngle =
 
 // - TS5
 vector<double> ts5.coils.rIn      = 
-  {
+  { 405. ,
     405.  , 405.  , 405.  , 405.  , 405.  
   };
 vector<double> ts5.coils.rOut     = 
-  {
+  { 444.90,
     430.30, 426.70, 419.40, 415.70, 412.10
   };
 vector<double> ts5.coils.sLength   = 
   {
-    172.60, 172.60, 172.60, 172.60, 172.60
+    86.30, 172.60, 172.60, 172.60, 172.60, 172.60
   };
 vector<double> ts5.coils.xPos      = 
-  {
+  { -3904.,
     -3904.,-3904.,-3904.,-3904.,-3904.
   };
 vector<double> ts5.coils.zPos      = 
-  {
+  { 2972.3,
     3151.6,3339.8,3528.1,3716.4,3904.7
   };
 vector<double> ts5.coils.yRotAngle = 
-  {
+  {   0.  ,
       0.  ,   0.  ,   0.  ,   0.  ,   0.  
   };
 

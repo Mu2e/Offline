@@ -236,11 +236,11 @@ namespace mu2e {
     std::string _coilMaterial;
     std::map<TSRegion::enum_type,std::vector<Coil>> _coilMap;
     const std::map<TSRegion::enum_type,unsigned> _nCoils = {
-      {TSRegion::TS1, 3},
+      {TSRegion::TS1, 4},
       {TSRegion::TS2,18},
-      {TSRegion::TS3, 8},
+      {TSRegion::TS3,10},
       {TSRegion::TS4,18},
-      {TSRegion::TS5, 5}
+      {TSRegion::TS5, 6}
     };
     
     // Collimators
