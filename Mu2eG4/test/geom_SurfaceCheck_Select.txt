@@ -22,6 +22,7 @@ bool g4.doSurfaceCheck    = false;
 // bool dsVacuum.doSurfaceCheck = true;
 // bool dsShielding.doSurfaceCheck = true;
 // bool calorimeter.doSurfaceCheck = true;
+// bool protonAbsorber.doSurfaceCheck = true;
 
 // External Shielding (both upstream and downstream), Saddles, Services (pipes,
 // racks, etc)
@@ -59,7 +60,7 @@ bool g4.doSurfaceCheck    = false;
 
 
 // Special:  The building and dirt.  Elements can be selected in small
-// groups by naming the first two parts of their name strings.
+// groups by naming the first two (only!) parts of their name strings.
 // For example:
 // bool building.psArea.doSurfaceCheck = true;
 // would do a surface check for all these building pieces:

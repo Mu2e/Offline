@@ -89,14 +89,17 @@ namespace mu2e {
     bool isAvailable (int id) const ;
 
     // outer PA
-    std::string outerPAfillMaterial() const {return _oPAmaterialName; }
-    double outerPAzcenter () const { return _oPAzcenter; }
-    double outerPAhalflength () const { return _oPAhalflength; }
-    double outerPAthickness () const { return _oPAthickness; }
+    std::string outerPAfillMaterial()    const {return _oPAmaterialName; }
+    double outerPAzcenter ()             const { return _oPAzcenter; }
+    double outerPAhalflength ()          const { return _oPAhalflength; }
+    double outerPAthickness ()           const { return _oPAthickness; }
+    double slotWidth()                   const { return _oPAslotWidth; }
+    double slotLength()                  const { return _oPAslotLength; }
+    double slotOffset()                  const { return _oPAslotOffset; }
 
     // Outer PA supports
     std::string oPAsupportMaterial() const { return _oPASupportMaterialName; }
-    int oPAnSupports() const { return _oPAnSupports; }
+    int oPAnSupports()                         const { return _oPAnSupports; }
     std::vector<double> oPAsupportInnerRadii() const { return _oPASupportIR; }
     std::vector<double> oPAsupportOuterRadii() const { return _oPASupportOR; }
     std::vector<double> oPAsupportHalflength() const { return _oPASupportHL; }
@@ -104,6 +107,9 @@ namespace mu2e {
     std::vector<double> oPAsupportExtra()      const { return _oPASupportHE; }
     std::vector<double> oPAsupportXRad()       const { return _oPASupportXR; }
     std::vector<double> oPAsupportDPhiX()      const { return _oPASupportPH; }
+    double  slatHeight()                       const { return _oPASlatHeight; }
+    double  slatWidth()                        const { return _oPASlatWidth; }
+    double  slatLength()                       const { return _oPASlatLength; }
 
     // support structure for inner PA
     bool buildSupports() const { return _buildSupports; }
@@ -140,6 +146,9 @@ namespace mu2e {
     double _oPAhalflength;
     double _oPAthickness;
     bool _oPA1flag, _oPA2flag;
+    double _oPAslotWidth;  // width of slots in OPA for ST support wires
+    double _oPAslotLength;  // length of slots in OPA for ST support wires
+    double _oPAslotOffset;  // offset of slots in OPA relative to DS2 part center
 
     std::string         _oPASupportMaterialName;
     int                 _oPAnSupports;  // How many supports there are
@@ -150,6 +159,9 @@ namespace mu2e {
     std::vector<double> _oPASupportHE;  // Has Extra on bottom (only for upstm)
     std::vector<double> _oPASupportXR;  // Extra radial amount
     std::vector<double> _oPASupportPH;  // dPhi of extra bit
+    double  _oPASlatHeight; 
+    double  _oPASlatWidth;
+    double  _oPASlatLength;
 
     // support structure for inner PA
     bool _buildSupports;

@@ -1,0 +1,82 @@
+//
+// Conical proton absorber geometry file.
+// Now the default is 1m inner part and 2.2m outer part.
+// See doc-3186, 3155, 3006, and 2259
+//
+// $Id: protonAbsorber_cylindrical_v2.txt,v 1.1 2014/08/29 16:37:09 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/08/29 16:37:09 $
+//
+// This version introduces an OPA version number and  implements the OPA as 
+// 24 slats in a "barrel" shape instead
+// of as a conical frustrum.  Slots are cut in the barrel to allow support
+// wires to penetrate.
+// It also adds the support rods for the Stopping Target and the notches in 
+// the OPA support ring for those support rods.
+//
+
+int protonabsorber.version = 2;
+
+string protonabsorber.materialName = "Polyethylene096";
+double protonabsorber.OutRadius1   =  300.0;
+double protonabsorber.OutRadius0   =  300.0;
+double protonabsorber.thickness    =    0.5;
+int    protonabsorber.verbosityLevel = 0;
+bool   protonabsorber.visible      = true;
+bool   protonabsorber.solid        = false;
+
+// To make inner part shorter than MECO design
+bool   protonabsorber.isShorterCone = true;
+double protonabsorber.distFromTargetEnd = 630.;
+double protonabsorber.halfLength   = 500.0;
+
+// Here, Supports for the IPA refers just to the wires used to hang it.
+bool   protonabsorber.ipa.buildSupports = true;
+int    protonabsorber.ipa.nSets         = 2;
+int    protonabsorber.ipa.nWiresPerSet  = 6;
+//double protonabsorber.ipa.wireRadius    = 0.0762; // assume 6-mil diameter
+double protonabsorber.ipa.wireRadius    = 0.0381; // assume 3-mil diameter
+string protonabsorber.ipa.wireMaterial  = "G4_W";
+double protonabsorber.ipa.wireRotationToVertical = 45; // degrees
+
+int    protonabsorber.ipa.nEndRings = 2;
+double protonabsorber.ipa.endRingHalfLength = 6.35; // 1/4" long in the z-direction
+double protonabsorber.ipa.endRingRadialLength = 9.525; // 3/4" long in the r-direction
+string protonabsorber.ipa.endRingMaterial = "CorrugatedPolypropylene";
+
+
+// Outer part
+int    protonabsorber.outerPAversion            = 2;
+bool   protonabsorber.isShorterCone             = true;
+bool   protonabsorber.outerPA                   = true;
+double protonabsorber.outerPAInnerRadius0       = 454.0; // was 452.4;
+double protonabsorber.outerPAInnerRadius1       = 728.4;
+double protonabsorber.outerPAHalfLength         = 2125.0; // was 2137.5;
+double protonabsorber.outerPAThickness          = 20.0;
+double protonabsorber.outerPAZCenter            = 6405.0; // was 6392.5;
+string protonabsorber.outerPAMaterialName       = "Polyethylene096";
+int    protonabsorber.outerPAnSides             = 24;
+double protonabsorber.outerPAslotWidth          = 1.0; //mm 
+double protonabsorber.outerPAslotLength         = 840.0; // mm
+double protonabsorber.outerPAslotOffset         = -410.0; // mm - relative
+
+// oPA Supports are Aluminum rings that support and "hold together" the
+// OPA.  Support rings and bars for the IPA are also included here
+string protonabsorber.oPASupportMaterialName = "G4_Al";
+int    protonabsorber.oPASupportNSupportRing = 5;
+vector<double> protonabsorber.oPASupportInnerRadii = {515.0,584.0,611,653.0,722.2};
+vector<double> protonabsorber.oPASupportOuterRadii = {590.0,659.0,646,728.0,797.2};
+vector<double> protonabsorber.oPASupportHalflength = { 25.4,25.4,12.7,25.4, 25.4};
+vector<double> protonabsorber.oPASupportZMidpoints = {4789.,5858.,6290,6927.,7996.};
+vector<double> protonabsorber.oPASupportHasExtra = { 1.0, 1.0, 1.0,-1.0,-1.0};
+vector<double> protonabsorber.oPASupportExtraRad = { 120.0,50.0,90.0,0.0,0.0};
+vector<double> protonabsorber.oPASupportExtraDPhi = {80.,80.,80.,0,0 };
+double  protonabsorber.oPASupportSlatHeight = 20.0; // mm
+double  protonabsorber.oPASupportSlatWidth  = 50.0; // mm
+double  protonabsorber.oPASupportSlatLength = 800.0; // mm - Same as ST
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

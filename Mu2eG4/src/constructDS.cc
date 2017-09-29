@@ -619,6 +619,68 @@ namespace mu2e {
 		 "DS"
 		 );
 
+       if ( ds->cableRunVersion() > 1 ) {
+
+	 // Now the part between the Calorimeter Disks
+	 TubsParams  upCalCableRunParm1( ds->upRInCableRunCal(), 
+					 ds->upROutCableRunCal(), 
+					 ds->upHL1CableRunCal(),
+					 ds->phi0CableRunCal()*CLHEP::degree,
+					 ds->dPhiCableRunCal()*CLHEP::degree);
+
+	 CLHEP::Hep3Vector upCalCableRunLoc1( 0.0, 0.0,ds->upZC1CableRunCal());
+
+	 nestTubs( "CalCableRunUpGap1",
+		   upCalCableRunParm1,
+		   findMaterialOrThrow(ds->calCableRunMaterial()),
+		   0,
+		   upCalCableRunLoc1,
+		   dsShieldParent,
+		   0,
+		   G4Color::Magenta(),
+		   "DS"
+		   );
+
+	 TubsParams  upCalCableRunParm2( ds->upRInCableRunCal(), 
+					 ds->upROutCableRunCal(), 
+					 ds->upHL2CableRunCal(),
+					 ds->phi0CableRunCal()*CLHEP::degree,
+					 ds->dPhiCableRunCal()*CLHEP::degree);
+
+	 CLHEP::Hep3Vector upCalCableRunLoc2( 0.0, 0.0,ds->upZC2CableRunCal());
+	 
+	 nestTubs( "CalCableRunUpGap2",
+		   upCalCableRunParm2,
+		   findMaterialOrThrow(ds->calCableRunMaterial()),
+		   0,
+		   upCalCableRunLoc2,
+		   dsShieldParent,
+		   0,
+		   G4Color::Magenta(),
+		   "DS"
+		   );
+
+	 // And last but not least the connector between the top of the Cal
+	 // and the top of the MBS
+	 // Implement this as a Polycone
+	 std::vector<double> zs = { ds->upZC2CableRunCal() + ds->upHL2CableRunCal() + 4.0, ds->zCCableRunCal() - ds->lengthCableRunCal() };
+	 std::vector<double> rins = { ds->upRInCableRunCal(), ds->rInCableRunCal()};
+	 std::vector<double> routs= { ds->upROutCableRunCal(), ds->rOutCableRunCal()};
+	 PolyconsParams myPars( zs, rins, routs,
+				ds->phi0CableRunCal()*CLHEP::degree,
+				ds->dPhiCableRunCal()*CLHEP::degree );
+	 
+	 nestPolycone ( "calCableRunFall",
+			myPars,
+			findMaterialOrThrow(ds->calCableRunMaterial()),
+			0,
+			G4ThreeVector(0,0,0),
+			dsShieldParent,
+			0,
+			G4Colour::Magenta(),
+			"DS" );
+
+       } // end of if ( CableRunVersion > 1 )
      } // end of if ( ds->hasCableRunCal() )
 
      if ( ds->hasCableRunTrk() ) {
@@ -662,8 +724,131 @@ namespace mu2e {
 		 "DS"
 		 );
 
+       if ( ds->cableRunVersion() > 1 ) {
+	 // Now the part between the Calorimeter Disks
+	 TubsParams  upTrkCableRunParm1( ds->rInCableRunTrk(), 
+					 ds->rOutCableRunTrk(), 
+					 ds->upHL1CableRunCal(),
+					 ds->phi0CableRunTrk()*CLHEP::degree,
+					 ds->dPhiCableRunTrk()*CLHEP::degree);
 
+	 CLHEP::Hep3Vector upTrkCableRunLoc1( 0.0, 0.0,ds->upZC1CableRunCal());
+
+	 nestTubs( "TrkCableRunGap1",
+		   upTrkCableRunParm1,
+		   findMaterialOrThrow(ds->trkCableRunMaterial()),
+		   0,
+		   upTrkCableRunLoc1,
+		   dsShieldParent,
+		   0,
+		   G4Color::Magenta(),
+		   "DS"
+		   );
+
+	 TubsParams  upTrkCableRunParm1a( ds->rInCableRunTrk(), 
+					  ds->rOutCableRunTrk(), 
+					  ds->upHL1CableRunCal(),
+					  (180.0 - ds->phi0CableRunTrk()
+					   - ds->dPhiCableRunTrk())
+					  *CLHEP::degree,
+					  ds->dPhiCableRunTrk()*CLHEP::degree);
+
+	 nestTubs( "TrkCableRunGap1a",
+		   upTrkCableRunParm1a,
+		   findMaterialOrThrow(ds->trkCableRunMaterial()),
+		   0,
+		   upTrkCableRunLoc1,
+		   dsShieldParent,
+		   0,
+		   G4Color::Magenta(),
+		   "DS"
+		   );
+
+
+	 TubsParams  upTrkCableRunParm2( ds->rInCableRunTrk(), 
+					 ds->rOutCableRunTrk(), 
+					 ds->upHL2CableRunCal(),
+					 ds->phi0CableRunTrk()*CLHEP::degree,
+					 ds->dPhiCableRunTrk()*CLHEP::degree);
+
+	 CLHEP::Hep3Vector upTrkCableRunLoc2( 0.0, 0.0,ds->upZC2CableRunCal());
+	 
+	 nestTubs( "TrkCableRunGap2",
+		   upTrkCableRunParm2,
+		   findMaterialOrThrow(ds->trkCableRunMaterial()),
+		   0,
+		   upTrkCableRunLoc2,
+		   dsShieldParent,
+		   0,
+		   G4Color::Magenta(),
+		   "DS"
+		   );
+
+	 TubsParams  upTrkCableRunParm2a( ds->rInCableRunTrk(), 
+					  ds->rOutCableRunTrk(), 
+					  ds->upHL2CableRunCal(),
+					  (180.0 - ds->phi0CableRunTrk()
+					   - ds->dPhiCableRunTrk())
+					  *CLHEP::degree,
+					  ds->dPhiCableRunTrk()*CLHEP::degree);
+
+	 nestTubs( "TrkCableRunGap2a",
+		   upTrkCableRunParm2a,
+		   findMaterialOrThrow(ds->trkCableRunMaterial()),
+		   0,
+		   upTrkCableRunLoc2,
+		   dsShieldParent,
+		   0,
+		   G4Color::Magenta(),
+		   "DS"
+		   );
+
+
+       } // end of adding gap runs for trk cable runs
      } // end of if ( ds->hasCableRunTrk() )
+
+     if ( ds->hasServicePipes() ) {
+       TubsParams pipeMomParms( 0.0, 
+				ds->servicePipeROut(),
+				ds->servicePipeHalfLength());//default phi,dphi
+       TubsParams pipeSelfParms(ds->servicePipeRIn(),
+				ds->servicePipeROut(),
+				ds->servicePipeHalfLength() );
+       std::vector<double>theXs = ds->servicePipeXCs();
+       double theY = ds->servicePipeYC();
+       double theZ = ds->servicePipeZC();
+
+       for ( unsigned int iP = 0; iP < theXs.size(); iP++ ) {
+	 CLHEP::Hep3Vector pipeLoc(theXs[iP],theY, theZ);
+	 ostringstream pmName;
+	 pmName << "DSservicePipeMother" << iP+1;
+	 VolumeInfo DSPipeMother = nestTubs ( pmName.str(),
+					      pipeMomParms,
+					      findMaterialOrThrow(ds->servicePipeFillMat()),
+					      0,
+					      pipeLoc,
+					      dsShieldParent,
+					      0,
+					      G4Color::Magenta(),
+					      "DS"
+					      );
+
+	 // Now make it a real pipe
+	 ostringstream pName;
+	 pName << "DSservicePipe" << iP+1;
+	 nestTubs ( pName.str(),
+		    pipeSelfParms,
+		    findMaterialOrThrow(ds->servicePipeMaterial()),
+		    0,
+		    CLHEP::Hep3Vector(0,0,0),
+		    DSPipeMother,
+		    0,
+		    G4Color::Magenta(),
+		    "DS"
+		    );
+
+       } // End of loop over service pipes
+     } // end of if ( ds->hasServicePipes() )
 
   } // end of Mu2eWorld::constructDS;
 

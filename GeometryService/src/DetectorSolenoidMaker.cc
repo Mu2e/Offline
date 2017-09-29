@@ -138,6 +138,15 @@ namespace mu2e {
     ds->_hasCableRunCal = c.getBool("ds.hasCableRunCal",false);
     ds->_hasCableRunTrk = c.getBool("ds.hasCableRunTrk",false);
     if ( ds->_hasCableRunCal ) {
+      ds->_cableRunVersion = c.getInt("ds.CableRun.version",1);
+      if ( ds->_cableRunVersion > 1 ) {
+	ds->_upRInCableRunCal  = c.getDouble("ds.CableRunCal.UpRin");
+	ds->_upROutCableRunCal = c.getDouble("ds.CableRunCal.UpRout");
+	ds->_upHL1CableRunCal  = c.getDouble("ds.CableRunCal.UpHL1");
+	ds->_upHL2CableRunCal  = c.getDouble("ds.CableRunCal.UpHL2");
+	ds->_upZC1CableRunCal  = c.getDouble("ds.CableRunCal.UpZC1");
+	ds->_upZC2CableRunCal  = c.getDouble("ds.CableRunCal.UpZC2");
+      }
       ds->_lengthCableRunCal = c.getDouble("ds.CableRunCal.length");
       ds->_rInCableRunCal    = c.getDouble("ds.CableRunCal.Rin");
       ds->_rOutCableRunCal   = c.getDouble("ds.CableRunCal.Rout");
@@ -156,6 +165,19 @@ namespace mu2e {
       ds->_materialCableRunTrk = c.getString("ds.CableRunTrk.material");
     }
   
+    // Service pipes
+    bool hasServicePipes = c.getBool("ds.hasServicePipes",false);
+    ds->_hasServicePipes = hasServicePipes;
+    if ( hasServicePipes ) {
+      ds->_servicePipeRIn = c.getDouble("ds.servicePipeRIn");
+      ds->_servicePipeROut = c.getDouble("ds.servicePipeROut");
+      ds->_servicePipeHL  = c.getDouble("ds.servicePipeHL");
+      ds->_servicePipeMat = c.getString("ds.servicePipeMat");
+      ds->_servicePipeFillMat = c.getString("ds.servicePipeFillMat");
+      ds->_servicePipeZC = c.getDouble("ds.servicePipeZC");
+      ds->_servicePipeYC = c.getDouble("ds.servicePipeYC");
+      c.getVectorDouble("ds.servicePipeXCs",ds->_servicePipeXCs);
+    } 
 
 
     // Vacuum volumes

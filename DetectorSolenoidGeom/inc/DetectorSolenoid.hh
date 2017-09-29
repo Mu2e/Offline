@@ -129,8 +129,15 @@ namespace mu2e {
     std::string MBSSmaterial()         const { return _materialMBSS; }
 
     // Cable Runs
+    int  cableRunVersion()             const { return _cableRunVersion; }
     bool hasCableRunCal()              const { return _hasCableRunCal; }
     std::string calCableRunMaterial()  const { return _materialCableRunCal; }
+    double upRInCableRunCal()          const { return _upRInCableRunCal; }
+    double upROutCableRunCal()         const { return _upROutCableRunCal;}
+    double upHL1CableRunCal()          const { return _upHL1CableRunCal; }
+    double upHL2CableRunCal()          const { return _upHL2CableRunCal; }
+    double upZC1CableRunCal()          const { return _upZC1CableRunCal; }
+    double upZC2CableRunCal()          const { return _upZC2CableRunCal; }
     double rInCableRunCal()            const { return _rInCableRunCal; }
     double rOutCableRunCal()           const { return _rOutCableRunCal; }
     double lengthCableRunCal()         const { return _lengthCableRunCal; }
@@ -145,6 +152,17 @@ namespace mu2e {
     double phi0CableRunTrk()           const { return _phi0CableRunTrk; }
     double dPhiCableRunTrk()           const { return _dPhiCableRunTrk; }
     double zCCableRunTrk()             const { return _zCCableRunTrk; }
+
+    // Services pipes along bottom of DS
+    bool   hasServicePipes()           const { return _hasServicePipes; }
+    double servicePipeRIn()            const { return _servicePipeRIn;  }
+    double servicePipeROut()           const { return _servicePipeROut; }
+    double servicePipeHalfLength()     const { return _servicePipeHL;   }
+    std::string servicePipeMaterial()       const { return _servicePipeMat;}
+    std::string servicePipeFillMat()        const { return _servicePipeFillMat; }
+    double servicePipeZC()             const { return _servicePipeZC;  }
+    double servicePipeYC()             const { return _servicePipeYC;  }
+    std::vector<double> servicePipeXCs() const { return _servicePipeXCs;}
 
     // Vacuum volumes inside DS
     //
@@ -256,8 +274,15 @@ namespace mu2e {
     std::string         _materialMBSS;
 
     // Cable Runs
+    int                 _cableRunVersion;
     bool                _hasCableRunCal;
     double              _lengthCableRunCal;
+    double              _upRInCableRunCal;
+    double              _upROutCableRunCal;
+    double              _upHL1CableRunCal;
+    double              _upHL2CableRunCal;
+    double              _upZC1CableRunCal;
+    double              _upZC2CableRunCal;
     double              _rInCableRunCal;
     double              _rOutCableRunCal;
     double              _zCCableRunCal;
@@ -272,7 +297,19 @@ namespace mu2e {
     double              _phi0CableRunTrk;
     double              _dPhiCableRunTrk;
     std::string         _materialCableRunTrk;
-    
+
+    // Service pipes
+    bool                  _hasServicePipes;
+    double                _servicePipeRIn;
+    double                _servicePipeROut;
+    double                _servicePipeHL;
+    std::string           _servicePipeMat;
+    std::string           _servicePipeFillMat;
+    double                _servicePipeZC;
+    double                _servicePipeYC;
+    std::vector<double>   _servicePipeXCs;
+
+   
     // Vacuum volumes inside DS
     double _vacuumPressure;
     std::string _vacuumMaterialName; 
