@@ -38,7 +38,7 @@ namespace mu2e {
       double strawGain() const { return _gasgain; } // nominal gain
       double clusterGain(CLHEP::RandGaussQ& rgauss, CLHEP::RandFlat& rflat, unsigned nele) const;
       double driftDistanceToTime(double ddist, double phi) const;  // single cluster!
-      double driftTimeSpread(double tdrift) const; // single cluster!
+      double driftTimeSpread(double tdrift) const; // single electron VARIANCE
       double propagationTime(double wdist) const;
       double velocityDispersion() const { return _vdisp; } 
       double meanFreePath() const { return _meanpath; }
