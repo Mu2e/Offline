@@ -13,7 +13,7 @@
 #include "TProfile.h"
 #include "TDirectory.h"
 
-void SDTest(TTree* sddiag, const char* page ="adc",unsigned NADC=12,TCut cut=TCut()) {
+void SDTest(TTree* sddiag, const char* page ="adc",unsigned NADC=16,TCut cut=TCut()) {
   TString spage(page);
   if(spage == "adc") {
     TCanvas* adc = new TCanvas("adc","ADC",800,600);

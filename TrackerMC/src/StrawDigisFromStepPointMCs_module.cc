@@ -637,7 +637,7 @@ namespace mu2e {
       wireq._charge = cluster._charge*(gain);
       // compute drift time for this cluster
       double dt = _strawphys->driftDistanceToTime(dd,dphi);
-      double dtsig = _strawphys->driftTimeSpread(dt);
+      double dtsig = sqrt(_strawphys->driftTimeSpread(dt)/cluster._ne);// cluster time is averaged over electrons
       wireq._time = _randgauss.fire(dt,dtsig);
       wireq._dd = dd;
       // position along wire
@@ -865,10 +865,14 @@ namespace mu2e {
       // histogram individual waveforms
       static unsigned nhist(0);// maximum number of histograms per job!
       for(size_t iend=0;iend<2;++iend){
-	if(nhist < _maxhist && xings.size() >= _minnxinghist &&
+	// step to the 1st cluster past the blanking time to avoid double-counting
+	ClusterList const& clist = wfs[iend].clusts().clustList();
+	auto icl = clist.begin();
+	while(icl->time() < _strawele->flashEnd())
+	  icl++;
+	if(icl != clist.end() && nhist < _maxhist && xings.size() >= _minnxinghist &&
 	    ( ((!_xtalkhist) && wfs[iend].xtalk().self()) || (_xtalkhist && !wfs[iend].xtalk().self()) ) ) {
-	  ClusterList const& clist = wfs[iend].clusts().clustList();
-	  double tstart = clist.begin()->time()-_tstep;
+	  double tstart = icl->time()-_tstep;
 	  double tfall = _strawele->fallTime(_diagpath);
 	  double tend = clist.rbegin()->time() + _nfall*tfall;
 	  ADCTimes times;
