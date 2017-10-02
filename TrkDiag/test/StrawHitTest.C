@@ -306,10 +306,10 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     hits->Project("egam","edep*1000.0",bkge+direct);
     hits->Project("ehad","edep*1000.0",hadron+direct);
 
-    hits->Project("rconv","sqrt(shpos.y^2+shpos.x^2)",conv+direct);
-    hits->Project("rmu","sqrt(shpos.y^2+shpos.x^2)",dio+direct);
-    hits->Project("rgam","sqrt(shpos.y^2+shpos.x^2)",bkge+direct);
-    hits->Project("rhad","sqrt(shpos.y^2+shpos.x^2)",hadron+direct);
+    hits->Project("rconv","sqrt(shpos.dy^2+shpos.dx^2)",conv+direct);
+    hits->Project("rmu","sqrt(shpos.dy^2+shpos.dx^2)",dio+direct);
+    hits->Project("rgam","sqrt(shpos.dy^2+shpos.dx^2)",bkge+direct);
+    hits->Project("rhad","sqrt(shpos.dy^2+shpos.dx^2)",hadron+direct);
     
     TCanvas* bcan = new TCanvas("bcan","background",1000,800);
     bcan->Divide(1,2);
@@ -345,9 +345,9 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 	  hits->Project("gid","mcgen",clean);
 	  hits->Project("gidc","mcgen",conv);
 
-	  hits->Project("rres","sqrt(shpos.y^2+shpos.x^2)-sqrt(mcshpos.y^2+mcshpos.x^2)");
+	  hits->Project("rres","sqrt(shpos.dy^2+shpos.dx^2)-sqrt(mcshpos.dy^2+mcshpos.dx^2)");
     
-    hits->Project("pres","atan2(shpos.y,shpos.x)-atan2(mcshpos.y,mcshpos.x)");
+    hits->Project("pres","atan2(shpos.dy,shpos.dx)-atan2(mcshpos.dy,mcshpos.dx)");
 
     /*
        TLegend* leg3 = new TLegend(0.4,0.75,0.7,0.9);

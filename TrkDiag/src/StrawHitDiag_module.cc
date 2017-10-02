@@ -78,7 +78,7 @@ namespace mu2e
       Hep3Vector _mcshp, _mcop, _mcpop, _mcgpos;
       Float_t _mcoe, _mcpoe, _mcom, _mcpom;
       Float_t _mcshlen,_mcshd;
-      Float_t _mcedep;
+      Float_t _mcedep, _mcetrig;
       Float_t _mcct[2];
       Float_t _pdist,_pperp,_pmom;
       Float_t _mcsptime,_mcwt[2];
@@ -184,6 +184,7 @@ namespace mu2e
       _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
       _shdiag->Branch("mcshd",&_mcshd,"mcshd/F");
       _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
+      _shdiag->Branch("mcetrig",&_mcetrig,"mcetrig/F");
       _shdiag->Branch("mcnsteps",&_mcnsteps,"mcnsteps/I");
       _shdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
       _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
@@ -277,6 +278,7 @@ namespace mu2e
         _mcnsteps = mcdigi.stepPointMCs().size();
         // compute energy sum
         _mcedep = mcdigi.energySum();
+        _mcetrig = mcdigi.triggerEnergySum(TrkTypes::cal);
         _mcpdg = osp.pdgId();
         _mcproc = osp.creationCode();
         _mcgen = -1;
