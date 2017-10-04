@@ -142,7 +142,7 @@ namespace mu2e
     // straw hit tuple
     _shdiag=tfs->make<TTree>("shdiag","strawhit diagnostics");
     _shdiag->Branch("eventid",&_eventid,"eventid/I");
-    _shdiag->Branch("shpos",&_shp);
+    _shdiag->Branch("shpos.",&_shp);
     _shdiag->Branch("shlen",&_shlen,"shlen/F");
     _shdiag->Branch("slen",&_slen,"slen/F");
     _shdiag->Branch("edep",&_edep,"edep/F");
@@ -173,14 +173,14 @@ namespace mu2e
     _shdiag->Branch("shdt",&_shdt,"shdt/F");
     _shdiag->Branch("shdist",&_shdist,"shdist/F");
     if(_mcdiag){
-      _shdiag->Branch("mcshpos",&_mcshp);
-      _shdiag->Branch("mcopos",&_mcop);
-      _shdiag->Branch("mcpopos",&_mcpop);
+      _shdiag->Branch("mcshpos.",&_mcshp);
+      _shdiag->Branch("mcopos.",&_mcop);
+      _shdiag->Branch("mcpopos.",&_mcpop);
       _shdiag->Branch("mcct",&_mcct,"mcctcal/F:mccthv/F");
-      _shdiag->Branch("mcoe",&_mcoe,"F");
-      _shdiag->Branch("mcom",&_mcom,"F");
-      _shdiag->Branch("mcpoe",&_mcpoe,"F");
-      _shdiag->Branch("mcpom",&_mcpom,"F");
+      _shdiag->Branch("mcoe",&_mcoe,"mcoe/F");
+      _shdiag->Branch("mcom",&_mcom,"mcom/F");
+      _shdiag->Branch("mcpoe",&_mcpoe,"mcpoe/F");
+      _shdiag->Branch("mcpom",&_mcpom,"mcpom/F");
       _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
       _shdiag->Branch("mcshd",&_mcshd,"mcshd/F");
       _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
@@ -191,14 +191,14 @@ namespace mu2e
       _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
       _shdiag->Branch("mcsptime",&_mcsptime,"mcsptime/F");
       _shdiag->Branch("mcwt",&_mcwt,"mcwtcal/F:mcwthv/F");
-      _shdiag->Branch("mcppdg",&_mcppdg,"mcpdg/I");
+      _shdiag->Branch("mcppdg",&_mcppdg,"mcppdg/I");
       _shdiag->Branch("mcpproc",&_mcpproc,"mcpproc/I");
       _shdiag->Branch("mcptime",&_mcptime,"mcptime/F");
       _shdiag->Branch("mcgid",&_mcgid,"mcgid/I");
       _shdiag->Branch("mcgpdg",&_mcgpdg,"mcgpdg/I");
       _shdiag->Branch("mcge",&_mcge,"mcge/F");
       _shdiag->Branch("mcgt",&_mcgt,"mcgt/F");
-      _shdiag->Branch("mcgpos",&_mcgpos);
+      _shdiag->Branch("mcgpos.",&_mcgpos);
       _shdiag->Branch("mcxtalk",&_mcxtalk,"mcxtalk/B");
     }
   }
