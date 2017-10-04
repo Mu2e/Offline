@@ -25,7 +25,7 @@ services :
 
   RandomNumberGenerator : { }
 
-  GeometryService : { inputFile : "Mu2eG4/test/geom_01.txt" }
+  GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }
 
   ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
 
@@ -109,7 +109,7 @@ outputs:
 #physics.producers.generate.inputfile  : "Scripts/genconfig_Conversion.txt"
 physics.producers.generate.inputfile  : "CaloCluster/test/genconfig_giani.txt"
 #services.GeometryService.inputFile : "Scripts/geom_nohp.txt"
-services.GeometryService.inputFile : "Mu2eG4/test/geom_01.txt"
+services.GeometryService.inputFile : "Mu2eG4/geom/geom_common.txt"
 physics.producers.makeSH.diagLevel    : 0
 physics.producers.makeSH.maxFullPrint : 2
 source.firstRun                            :  1 

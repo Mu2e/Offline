@@ -2,6 +2,113 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_3_3
 
+2)    dnbrow01  04 October 2017
+      Eliminate use of Mu2eG4/test/geom_01.txt in favor of 
+      Mu2eG4/geom/geom_common.txt.  Since Mu2eG4/test/geom_01.txt
+      has long simply been a pointer to Mu2eG4/geom/geom_common.txt,
+      this is not a functional change - just a cleanup to hopefully
+      avoid confusion down the road.
+      modified:   Analyses/test/BkgRatesCounter.fcl
+      modified:   Analyses/test/ConvElInfo.fcl
+      modified:   Analyses/test/ConversionEnergyLoss.fcl
+      modified:   Analyses/test/InteractiveRoot.fcl
+      modified:   Analyses/test/InteractiveRoot2.fcl
+      modified:   Analyses/test/TTVirtDebug.fcl
+      modified:   Analyses/test/TTrackerSig.fcl
+      modified:   Analyses/test/TestTO.fcl
+      modified:   Analyses/test/cosmicFilter.fcl
+      modified:   Analyses/test/extmon_uci_readback.fcl
+      modified:   Analyses/test/genReco.fcl
+      modified:   Analyses/test/histforpabs.fcl
+      modified:   Analyses/test/hitDisplay.fcl
+      modified:   Analyses/test/isoRPCtest.fcl
+      modified:   Analyses/test/materailsPropStudy.fcl
+      modified:   Analyses/test/printStrawHits.fcl
+      modified:   Analyses/test/printTTrackerGeom.fcl
+      modified:   Analyses/test/psVacuum_readback.fcl
+      modified:   Analyses/test/readCaloDigi.fcl
+      modified:   Analyses/test/readMCTrajectories.fcl
+      modified:   Analyses/test/readStoppedPis.fcl
+      modified:   Analyses/test/readback.fcl
+      modified:   Analyses/test/readback0.fcl
+      modified:   Analyses/test/simParticleCheck00.fcl
+      modified:   Analyses/test/simParticlesWithHitsExample.fcl
+      modified:   Analyses/test/strawHit.fcl
+      modified:   Analyses/test/transportMuonStudy.fcl
+      modified:   Analyses/test/ttrackerGeomPlots.fcl
+      modified:   Analyses/test/vd_readback.fcl
+      modified:   BFieldTest/test/BFieldSymmetry.fcl
+      modified:   BFieldTest/test/BFieldTest.fcl
+      modified:   CalPatRec/test/calPatRec.fcl
+      modified:   CalPatRec/test/calPatRec_01.fcl
+      modified:   CalPatRec/test/calPatRec_02.fcl
+      modified:   CalPatRec/test/calPatRec_display.fcl
+      modified:   CalPatRec/test/calPatRec_display_cnv00502.fcl
+      modified:   CalPatRec/test/calPatRec_display_read.fcl
+      modified:   CalPatRec/test/mergePatRec.fcl
+      modified:   CalPatRec/test/mergePatRec_02.fcl
+      modified:   CalPatRec/test/mergePatRec_03.fcl
+      modified:   CalPatRec/test/mergePatRec_display.fcl
+      modified:   CalPatRec/test/mergePatRec_display_read.fcl
+      modified:   CalPatRec/test/trkPatRec_01.fcl
+      modified:   CalPatRec/test/trkPatRec_02.fcl
+      modified:   CalPatRec/test/trkPatRec_display.fcl
+      modified:   CalPatRec/test/trkPatRec_display_read.fcl
+      modified:   CaloCluster/test/CaloClusterProduction.fcl
+      modified:   CaloCluster/test/ClusterTrajectory.fcl
+      modified:   CaloCluster/test/readCaloCluster.fcl
+      modified:   CaloCluster/test/readCaloClusterEff.fcl
+      modified:   CaloCluster/test/readCaloClusterEnergyResolMap.fcl
+      modified:   CaloCluster/test/readCogRecFunc.fcl
+      modified:   CaloCluster/test/readCrystalHit.fcl
+      modified:   CaloCluster/test/readOffSetCog.fcl
+      modified:   DAQ/test/PacketProducerTestMain.fcl
+      modified:   EventDisplay/test/EventDisplay.fcl
+      modified:   EventDisplay/test/timeWindowDisplay.fcl
+      modified:   EventGenerator/test/FromSPEndPointTest.fcl
+      modified:   EventGenerator/test/g4test_FromStepPointMCs.fcl
+      modified:   EventMixing/inputGeneration/dioBG.fcl
+      modified:   EventMixing/inputGeneration/dioMerge.fcl
+      modified:   EventMixing/inputGeneration/neutronBG.fcl
+      modified:   EventMixing/inputGeneration/neutronMerge.fcl
+      modified:   EventMixing/inputGeneration/photonBG.fcl
+      modified:   EventMixing/inputGeneration/photonMerge.fcl
+      modified:   EventMixing/inputGeneration/protonBG.fcl
+      modified:   EventMixing/inputGeneration/protonMerge.fcl
+      modified:   EventMixing/test/inspectMixed.fcl
+      modified:   EventMixing/test/inspectUnMixed.fcl
+      modified:   EventMixing/test/mixAnalyzer_01.fcl
+      modified:   EventMixing/test/mixProducer_01.fcl
+      modified:   EventMixing/test/mixTest_00.fcl
+      modified:   EventMixing/test/mixTest_01.fcl
+      modified:   HitMakers/test/makeClusters.fcl
+      modified:   HitMakers/test/makeDPIStrawClusters.fcl
+      modified:   HitMakers/test/makeDPIStrawClustersAndTau.fcl
+      modified:   HitMakers/test/makehits.fcl
+      modified:   HitMakers/test/read.fcl
+      modified:   JobConfig/cd3/beam/MixPremixedPBIAndTrack.fcl
+      modified:   Mu2eG4/fcl/g4BremTest.fcl
+      modified:   Mu2eG4/fcl/g4test_01.fcl
+      modified:   Mu2eG4/fcl/g4test_02.fcl
+      modified:   Mu2eG4/fcl/g4test_03.fcl
+      modified:   Mu2eG4/fcl/g4validate_01.fcl
+      modified:   Mu2eG4/fcl/geomTest_01.fcl
+      modified:   Mu2eG4/fcl/rantest.fcl
+      modified:   Mu2eG4/fcl/replayAll.fcl
+      modified:   Mu2eG4/fcl/replayWithSkip.fcl
+      modified:   Mu2eG4/fcl/signalOnly.fcl
+      modified:   Mu2eG4/fcl/transportOnly.fcl
+      modified:   Mu2eG4/geom/geom_common.txt
+      modified:   ParticleID/test/test.fcl
+      modified:   TrackCaloMatching/test/caloMatching.fcl
+      modified:   TrackCaloMatching/test/readCaloMatching.fcl
+      modified:   TrackCaloMatching/test/readExtrapol.fcl
+      modified:   TrackCaloMatching/test/trkExtrapol.fcl
+      modified:   TrkDiag/fcl/MixTest.fcl
+      modified:   TrkExt/test/TrkExt.fcl
+      modified:   Validation/fcl/val.fcl
+      modified:   fcl/standardServices.fcl
+
 1)    dnbrow01  29 September 2017
         Polycone class definition had apparently originally been designed
 	to hold all the information necessary to describe it as indiviual

@@ -31,7 +31,7 @@ services :
   GeometryService :
 
   {
-    inputfile : "Mu2eG4/test/geom_01_LowDetailGraphics.txt"
+    inputfile : "Mu2eG4/geom/geom_common.txt"
   }
 
   ConditionsService :

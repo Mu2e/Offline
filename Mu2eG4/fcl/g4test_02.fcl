@@ -24,7 +24,7 @@ services : {
   TFileService          : { fileName : "g4test_02.root" }
   RandomNumberGenerator : {}
 
-  GeometryService        : { inputFile      : "Mu2eG4/test/geom_01_LowDetailGraphics.txt" }
+  GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt" }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
   G4Helper               : { }
