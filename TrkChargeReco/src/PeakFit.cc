@@ -48,7 +48,7 @@ namespace mu2e {
 
       // convert charge to pC
       // FIXME
-     double charge = (peak - pedestal) * _strawele.adcLSB() / _strawele.normalization(TrkTypes::adc) / exp(-1.0) * _strawele.peakMinusPedestalEnergyScale();
+     double charge = (peak - pedestal) * _strawele.adcLSB() * _strawele.peakMinusPedestalEnergyScale();
      fit._charge = charge;
     }
 
