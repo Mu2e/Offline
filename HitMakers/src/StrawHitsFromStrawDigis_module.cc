@@ -85,7 +85,7 @@ namespace mu2e {
   StrawHitsFromStrawDigis::StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset) :
     _nbase(pset.get<unsigned>("NumADCBaseline",1)),
     _mbbuffer(pset.get<double>("TimeBuffer",100.0)), // nsec
-    _fittype((TrkChargeReco::FitType) pset.get<unsigned>("FitType",0)),
+    _fittype((TrkChargeReco::FitType) pset.get<unsigned>("FitType",1)),
     _truncateADC(pset.get<bool>("TruncateADC",true)), 
     _floatPedestal(pset.get<bool>("FloatPedestal",true)), 
     _floatWidth(pset.get<bool>("FloatWidth",true)), 
