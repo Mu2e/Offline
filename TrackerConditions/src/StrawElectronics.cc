@@ -21,19 +21,19 @@ namespace mu2e {
   double StrawElectronics::_pC_per_uA_ns(1000.0); // unit conversion from pC/ns to microAmp.
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdI{pset.get<double>("thresholddVdI",1.8e4),
-      pset.get<double>("adcdVdI",2.4e7) }, // mVolt/uAmps (transimpedance gain)
+    _dVdI{pset.get<double>("thresholddVdI",2.5e7),
+      pset.get<double>("adcdVdI",47.33e9) }, // mVolt/uAmps (transimpedance gain)
     _tdeadAnalog(pset.get<double>("DeadTimeAnalog",100.0)), // nsec dead after threshold crossing (pulse baseline restoration time)
     _tdeadDigital(pset.get<double>("DeadTimeDigital",100.0)), // nsec dead after threshold crossing (electronics processing time)
-    _vsat(pset.get<double>("SaturationVoltage",100.0)), // mVolt
+    _vsat(pset.get<double>("SaturationVoltage",90.0)), // mVolt
     _vthresh(pset.get<double>("DiscriminatorThreshold",12.0)), //mVolt, post amplification
-    _tnoise(pset.get<double>("ThresholdNoise",1.0)), // mvolt
-    _analognoise{pset.get<double>("thresholdAnalogNoise",2.8), //mVolt
-      pset.get<double>("adcAnalogNoise",8.0)},
+    _snoise(pset.get<double>("StrawNoise",2.8)), // mvolt
+    _analognoise{pset.get<double>("thresholdAnalogNoise",0.95), //mVolt
+      pset.get<double>("adcAnalogNoise",3.0)},
     _ADCLSB(pset.get<double>("ADCLSB",0.3662)), //mVolt
     _maxADC(pset.get<int>("maxADC",4095)),
     _ADCped(pset.get<unsigned>("ADCPedestal",1393)),
-    _nADC(pset.get<unsigned>("nADC",12)),
+    _nADC(pset.get<unsigned>("nADC",16)),
     _nADCpre(pset.get<unsigned>("nADCPresamples",4)),
     _ADCPeriod(pset.get<double>("ADCPeriod",20.0)), // nsec
     _ADCOffset(pset.get<double>("ADCOffset",2.0)), // nsec
@@ -44,25 +44,25 @@ namespace mu2e {
     _clockStart(pset.get<double>("clockStart",10.0)), // nsec
     _clockJitter(pset.get<double>("clockJitter",0.2)), // nsec
     _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
-    _flashEnd(pset.get<double>("FlashEnd",300.0)), // nsec
-    _pmpEnergyScale(pset.get<double>("peakMinusPedestalEnergyScale",1.0)), // fudge factor for peak minus pedestal energy method
+    _flashEnd(pset.get<double>("FlashEnd",500.0)), // nsec
+    _pmpEnergyScale(pset.get<double>("peakMinusPedestalEnergyScale",0.0042)), // fudge factor for peak minus pedestal energy method
 
     _responseBins(pset.get<int>("ResponseBins",10000)),
-    _sampleRate(pset.get<double>("SampleRate",1.0)), // ghz
-    _saturationSampleFactor(pset.get<int>("SaturationSampleFactor",5)),
-    _preampPoles(pset.get<vector<double> >("PreampPoles",vector<double>{160.,160.,6.0})),
-    _preampZeros(pset.get<vector<double> >("PreampZeros",vector<double>{0.72343156})),
-    _adcPoles(pset.get<vector<double> >("ADCPoles",vector<double>{6.24137023,4.6,30.0})),
+    _sampleRate(pset.get<double>("SampleRate",10.0)), // ghz
+    _saturationSampleFactor(pset.get<int>("SaturationSampleFactor",50)),
+    _preampPoles(pset.get<vector<double> >("PreampPoles",vector<double>{160.,7.})),
+    _preampZeros(pset.get<vector<double> >("PreampZeros",vector<double>{0.2})),
+    _adcPoles(pset.get<vector<double> >("ADCPoles",vector<double>{6.24137023,4.6,30.0, 6.24})),
     _adcZeros(pset.get<vector<double> >("ADCZeros",vector<double>{0.72343156})),
     _preampToAdc1Poles(pset.get<vector<double> >("PreampToAdc1Poles",vector<double>{6.24137032,30.0})),
     _preampToAdc1Zeros(pset.get<vector<double> >("PreampToAdc1Zeros",vector<double>{0.72343156})),
-    _preampToAdc2Poles(pset.get<vector<double> >("PreampToAdc2Poles",vector<double>{4.6})),
+    _preampToAdc2Poles(pset.get<vector<double> >("PreampToAdc2Poles",vector<double>{4.6, 6.24})),
     _preampToAdc2Zeros(pset.get<vector<double> >("PreampToAdc2Zeros",vector<double>{})),
-    _wireDistances(pset.get<vector<double> >("WireDistances",vector<double>{0,1})),
-    _currentMeans(pset.get<vector<double> >("CurrentMeans",vector<double>{5.0,5.0})),
+    _wireDistances(pset.get<vector<double> >("WireDistances",vector<double>{0.0,1200.0})),
+    _currentMeans(pset.get<vector<double> >("CurrentMeans",vector<double>{5.0,6.29})),
     _currentNormalizations(pset.get<vector<double> >("CurrentNormalizations",vector<double>{1.0,1.0})),
-    _currentSigmas(pset.get<vector<double> >("CurrentSigmas",vector<double>{2.0,2.0})),
-    _currentT0s(pset.get<vector<double> >("CurrentT0s",vector<double>{6.0,6.0}))
+    _currentSigmas(pset.get<vector<double> >("CurrentSigmas",vector<double>{2.2,3.0})),
+    _currentT0s(pset.get<vector<double> >("CurrentT0s",vector<double>{4.7, 8.2}))
  {
    _ttrunc[thresh] = (_responseBins/2)/_sampleRate;
    _ttrunc[adc] = (_responseBins/2)/_sampleRate;

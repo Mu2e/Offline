@@ -24,10 +24,10 @@ namespace mu2e {
     _polyaA(pset.get<double>("PolyaA",1.25)), // A = 1/f = theta + 1.  A=1 -> exponential, A=infinity->delta-function
     _gslope(pset.get<double>("GainRMSSlope",0.809)), // slope of relative gain sigma on 1/sqrt(n)
     _nggauss(pset.get<unsigned>("NGainGauss",30)), // number of electrons/cluster to switch to a Gaussian model of the gain fluctuations
-    _vprop(pset.get<double>("PropagationVelocity",273.0)), //mm/nsec
+    _vprop(pset.get<double>("PropagationVelocity",299.0)), //mm/nsec
     _vdisp(pset.get<double>("PropagationVelocityDispersion",0.01)), //1/nsec
     _cdpoly(pset.get<vector<double> >("ClusterDriftPolynomial",vector<double>{0.0,16.0})), // linear term has units nanoseconds/mm
-    _dtvar(pset.get<double>("DriftTimeVariance",0.128)) // Drift time variance linear dependence on drift time (ns)
+    _dtvar(pset.get<double>("DriftTimeVariance",0.22)) // Drift time variance linear dependence on drift time (ns)
   {
     // integrate the number of ionizations
     double ptot(0.0);

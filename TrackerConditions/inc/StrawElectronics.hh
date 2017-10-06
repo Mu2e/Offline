@@ -79,8 +79,8 @@ namespace mu2e {
       void adcTimes(double time, TrkTypes::ADCTimes& adctimes) const; // given crossing time, fill sampling times of ADC CHECK THIS IS CORRECT IN DRAC FIXME!
       double saturationVoltage() const { return _vsat; }
       double threshold() const { return _vthresh; }
-      double analogNoise(TrkTypes::Path ipath) const { return _analognoise[ipath]; }  /// coherent (straw) noise
-      double thresholdNoise() const { return _tnoise;} // incoherent part of threshold circuit noise
+      double analogNoise(TrkTypes::Path ipath) const { return _analognoise[ipath]; }  // incoherent noise
+      double strawNoise() const { return _snoise;} // coherent part of threshold circuit noise
       double deadTimeAnalog() const { return _tdeadAnalog; }
       double deadTimeDigital() const { return _tdeadDigital; }
       double clockStart() const { return _clockStart; }
@@ -105,7 +105,7 @@ namespace mu2e {
       // scale factor between current and voltage (milliVolts per microAmps)
       double _vsat; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
       double _vthresh; // threshold voltage for electronics discriminator (mVolt)
-      double _tnoise; // threshold noise
+      double _snoise; // straw noise at threshold
       double _analognoise[TrkTypes::npaths]; //noise (mVolt) from the straw itself
       double _ADCLSB; // least-significant bit of ADC (mVolts)
       unsigned short _maxADC; // maximum ADC value
