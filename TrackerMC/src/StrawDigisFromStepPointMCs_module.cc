@@ -1,5 +1,6 @@
-
-// It also builds the truth match map
+//
+// module to convert G4 steps into straw digis.
+// It also builds the truth match
 //
 // $Id: StrawDigisFromStepPointMCs_module.cc,v 1.39 2014/08/29 19:49:23 brownd Exp $
 // $Author: brownd $
@@ -88,9 +89,11 @@ namespace mu2e {
 
 	typedef map<StrawIndex,StrawClusterSequencePair> StrawClusterMap;  // clusts by straw
 	typedef vector<art::Ptr<StepPointMC> > StrawSPMCPV; // vector of associated StepPointMCs for a single straw/particle
-	typedef list<WFX> WFXList;
-	typedef WFXList::const_iterator WFXP[2];
+	// work with pairs of waveforms, one for each straw end
 	typedef std::array<StrawWaveform,2> SWFP;
+	typedef std::array<WFX,2> WFXP;
+	typedef list<WFXP> WFXPList;
+	typedef WFXPList::const_iterator WFXPI;
 
 	explicit StrawDigisFromStepPointMCs(fhicl::ParameterSet const& pset);
 	// Accept compiler written d'tor.
@@ -187,12 +190,12 @@ namespace mu2e {
 	double microbunchTime(double globaltime) const;
 	void addGhosts(StrawCluster const& clust,StrawClusterSequence& shs);
 	void addNoise(StrawClusterMap& hmap);
-	void findThresholdCrossings(SWFP const& swfp, WFXList& xings);
+	void findThresholdCrossings(SWFP const& swfp, WFXPList& xings);
 	void createDigis(StrawClusterSequencePair const& hsp,
 	    XTalk const& xtalk,
 	    StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
 	    PtrStepPointMCVectorCollection* mcptrs );
-	void fillDigis(WFXList const& xings,SWFP const& swfp , StrawIndex index,
+	void fillDigis(WFXPList const& xings,SWFP const& swfp , StrawIndex index,
 	    StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
 	    PtrStepPointMCVectorCollection* mcptrs );
 	void createDigi(WFXP const& xpair, SWFP const& wf, StrawIndex index, StrawDigiCollection* digis);
@@ -201,8 +204,8 @@ namespace mu2e {
 	void fillClusterPositions(Straw const& straw, StepPointMC const& step, std::vector<Hep3Vector>& cpos);
 	void fillClusterMinion(StepPointMC const& step, std::vector<unsigned>& me, std::vector<double>& cen);
 	  // diagnostic functions
-	void waveformHist(SWFP const& wf, WFXList const& xings);
-	void waveformDiag(SWFP const& wf, WFXList const& xings);
+	void waveformHist(SWFP const& wf, WFXPList const& xings);
+	void waveformDiag(SWFP const& wf, WFXPList const& xings);
 	void digiDiag(SWFP const& wf, WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi);
     };
 
@@ -215,7 +218,7 @@ namespace mu2e {
       _xtalkhist(pset.get<bool>("CrossTalkHist",false)),
       _minnxinghist(pset.get<int>("MinNXingHist",1)), // minimum # of crossings to histogram waveform
       _tstep(pset.get<double>("WaveformStep",0.1)), // ns
-      _nfall(pset.get<double>("WaveformTail",5.0)),  // # of decay lambda past last signal to record waveform
+      _nfall(pset.get<double>("WaveformTail",10.0)),  // # of decay lambda past last signal to record waveform
       // Parameters
       _maxFullPrint(pset.get<int>("maxFullPrint",2)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
@@ -365,7 +368,7 @@ namespace mu2e {
       _strawphys = ConditionsHandle<StrawPhysics>("ignored");
       const Tracker& tracker = getTrackerOrThrow();
       // make the microbunch buffer long enough to get the full waveform
-      _mbbuffer = _strawele->nADCSamples()*_strawele->adcPeriod();
+      _mbbuffer = (_strawele->nADCSamples() - _strawele->nADCPreSamples())*_strawele->adcPeriod();
       // Containers to hold the output information.
       unique_ptr<StrawDigiCollection> digis(new StrawDigiCollection);
       unique_ptr<StrawDigiMCCollection> mcdigis(new StrawDigiMCCollection);
@@ -417,22 +420,17 @@ namespace mu2e {
       SWFP waveforms  ={ StrawWaveform(hsp.clustSequence(TrkTypes::cal),_strawele,xtalk),
 	StrawWaveform(hsp.clustSequence(TrkTypes::hv),_strawele,xtalk) };
       // find the threshold crossing points for these waveforms
-      WFXList xings;
+      WFXPList xings;
 	// find the threshold crossings
       findThresholdCrossings(waveforms,xings);
-      // convert the crossing points into digis, and add them to the event data.  Require both ends to have threshold
-      // crossings.  The logic here needs to be improved to require exactly 2 matching ends FIXME!!
-      size_t nd = digis->size();
-      if(xings.size() > 1){
-	// fill digis from these crossings
-	fillDigis(xings,waveforms,xtalk._dest,digis,mcdigis,mcptrs);
-      } 
+      // convert the crossing points into digis, and add them to the event data
+      fillDigis(xings,waveforms,xtalk._dest,digis,mcdigis,mcptrs);
       // waveform diagnostics 
       if (_diag >1 && (
 	waveforms[0].clusts().clustList().size() > 0 ||
-	waveforms[0].clusts().clustList().size() > 0 ) ) {
+	waveforms[1].clusts().clustList().size() > 0 ) ) {
 	// waveform xing diagnostics
-	_ndigi = digis->size()-nd;
+	_ndigi = digis->size();
 	waveformDiag(waveforms,xings);
 	// waveform histograms
 	if(_diag > 2 )waveformHist(waveforms,xings);
@@ -440,54 +438,54 @@ namespace mu2e {
     }
 
     void StrawDigisFromStepPointMCs::fillClusterMap(art::Event const& event, StrawClusterMap & hmap){
-	// get conditions
-	const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
-	// Get all of the tracker StepPointMC collections from the event:
-	typedef vector< art::Handle<StepPointMCCollection> > HandleVector;
-	// This selector will select only data products with the given instance name.
-	art::ProductInstanceNameSelector selector(_trackerStepPoints);
-	HandleVector stepsHandles;
-	event.getMany( selector, stepsHandles);
-	// Informational message on the first event.
-	if ( _firstEvent ) {
-	  mf::LogInfo log(_messageCategory);
-	  log << "StrawDigisFromStepPointMCs::fillHitMap will use StepPointMCs from: \n";
-	  for ( HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end();
-	      i != e; ++i ){
-	    art::Provenance const& prov(*(i->provenance()));
-	    log  << "   " << prov.branchName() << "\n";
-	  }
+      // get conditions
+      const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
+      // Get all of the tracker StepPointMC collections from the event:
+      typedef vector< art::Handle<StepPointMCCollection> > HandleVector;
+      // This selector will select only data products with the given instance name.
+      art::ProductInstanceNameSelector selector(_trackerStepPoints);
+      HandleVector stepsHandles;
+      event.getMany( selector, stepsHandles);
+      // Informational message on the first event.
+      if ( _firstEvent ) {
+	mf::LogInfo log(_messageCategory);
+	log << "StrawDigisFromStepPointMCs::fillHitMap will use StepPointMCs from: \n";
+	for ( HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end();
+	    i != e; ++i ){
+	  art::Provenance const& prov(*(i->provenance()));
+	  log  << "   " << prov.branchName() << "\n";
 	}
-	if(stepsHandles.empty()){
-	  throw cet::exception("SIM")<<"mu2e::StrawDigisFromStepPointMCs: No StepPointMC collections found for tracker" << endl;
-	}
-	// Loop over StepPointMC collections
-	for ( HandleVector::const_iterator ispmcc=stepsHandles.begin(), espmcc=stepsHandles.end();ispmcc != espmcc; ++ispmcc ){
-	  art::Handle<StepPointMCCollection> const& handle(*ispmcc);
-	  StepPointMCCollection const& steps(*handle);
-	  // Loop over the StepPointMCs in this collection
-	  for (size_t ispmc =0; ispmc<steps.size();++ispmc){
-	    // find straw index
-	    StrawIndex const & strawind = steps[ispmc].strawIndex();
-	    // Skip dead straws, and straws that don't exist
-	    if(tracker.strawExists(strawind)) {
-	      // lookup straw here, to avoid having to find the tracker for every step
-	      Straw const& straw = tracker.getStraw(strawind);
-	      // Skip steps that occur in the deadened region near the end of each wire,
-	      // or in dead regions of the straw
-	      double wpos = fabs((steps[ispmc].position()-straw.getMidPoint()).dot(straw.getDirection()));
-	      if(wpos <  straw.getDetail().activeHalfLength() &&
-		  _strawStatus.isAlive(strawind,wpos) &&
-		  steps[ispmc].ionizingEdep() > _minstepE){
-		// create ptr to MC truth, used for references
-		art::Ptr<StepPointMC> spmcptr(handle,ispmc);
-		// create a clust from this step, and add it to the clust map
-		addStep(spmcptr,straw,hmap[strawind]);
-	      }
+      }
+      if(stepsHandles.empty()){
+	throw cet::exception("SIM")<<"mu2e::StrawDigisFromStepPointMCs: No StepPointMC collections found for tracker" << endl;
+      }
+      // Loop over StepPointMC collections
+      for ( HandleVector::const_iterator ispmcc=stepsHandles.begin(), espmcc=stepsHandles.end();ispmcc != espmcc; ++ispmcc ){
+	art::Handle<StepPointMCCollection> const& handle(*ispmcc);
+	StepPointMCCollection const& steps(*handle);
+	// Loop over the StepPointMCs in this collection
+	for (size_t ispmc =0; ispmc<steps.size();++ispmc){
+	  // find straw index
+	  StrawIndex const & strawind = steps[ispmc].strawIndex();
+	  // Skip dead straws, and straws that don't exist
+	  if(tracker.strawExists(strawind)) {
+	    // lookup straw here, to avoid having to find the tracker for every step
+	    Straw const& straw = tracker.getStraw(strawind);
+	    // Skip steps that occur in the deadened region near the end of each wire,
+	    // or in dead regions of the straw
+	    double wpos = fabs((steps[ispmc].position()-straw.getMidPoint()).dot(straw.getDirection()));
+	    if(wpos <  straw.getDetail().activeHalfLength() &&
+		_strawStatus.isAlive(strawind,wpos) &&
+		steps[ispmc].ionizingEdep() > _minstepE){
+	      // create ptr to MC truth, used for references
+	      art::Ptr<StepPointMC> spmcptr(handle,ispmc);
+	      // create a clust from this step, and add it to the clust map
+	      addStep(spmcptr,straw,hmap[strawind]);
 	    }
 	  }
 	}
       }
+    }
 
     void StrawDigisFromStepPointMCs::addStep(art::Ptr<StepPointMC> const& spmcptr,
 	Straw const& straw,
@@ -508,10 +506,10 @@ namespace mu2e {
 	  eq += _strawphys->ionizationEnergy(cluster._charge);
 	}
 	cout << "step with ionization edep = " << step.ionizingEdep()
-	<< " creates " << _clusters.size() 
-	<< " clusters with total cluster energy = " << ec 
-	<< " electron count energy = " << ee
-	<< " charge energy = " << eq << endl;
+	  << " creates " << _clusters.size() 
+	  << " clusters with total cluster energy = " << ec 
+	  << " electron count energy = " << ee
+	  << " charge energy = " << eq << endl;
       }
       // get time offset for this step
       double tstep = _toff.timeWithOffsetsApplied(step);
@@ -670,126 +668,99 @@ namespace mu2e {
 	shs.insert(StrawCluster(clust,_mbtime));
     }
 
-    void StrawDigisFromStepPointMCs::findThresholdCrossings( SWFP const& swfp, WFXList& xings){
+    void StrawDigisFromStepPointMCs::findThresholdCrossings( SWFP const& swfp, WFXPList& xings){
       //randomize the threshold to account for electronics noise; this includes parts that are coherent
       // for both ends (coming from the straw itself)
       // Keep track of crossings on each end to keep them in sequence
-      std::vector<double> thresh;
-      thresh.push_back(_randgauss.fire(_strawele->threshold(),_strawele->analogNoise(TrkTypes::thresh)));
-      // loop over the ends of this straw
+      double threshbase = _randgauss.fire(_strawele->threshold(),_strawele->strawNoise()); // common part of the thresold
+      // add specifics for each end
+      double thresh[2] = {_randgauss.fire(threshbase,_strawele->analogNoise(TrkTypes::thresh)),
+	_randgauss.fire(threshbase,_strawele->analogNoise(TrkTypes::thresh))};
+      // Initialize search when the electronics becomes enabled:
+      WFXP wfx = {WFX(swfp[0],_strawele->flashEnd()),WFX(swfp[1],_strawele->flashEnd())};
+      // search for coherent crossings on both ends
+      bool crosses[2];
       for(size_t iend=0;iend<2;++iend){
-	size_t icross(0);
-	// start when the electronics becomes enabled:
-	WFX wfx(swfp[iend],_strawele->flashEnd());
-	// add incoherent noise. 
-	double threshold = _randgauss.fire(thresh[icross],_strawele->thresholdNoise()); 
-	// iterate sequentially over clusts inside the sequence.  Note we fold
-	// the flash blanking to AFTER the end of the microbunch
-	// keep these in time-order
-	while( wfx._time < _mbtime+_strawele->flashStart() &&
-	  swfp[iend].crossesThreshold(threshold,wfx) ){
-	  auto iwfxl = xings.begin();
-	  while(iwfxl != xings.end() && iwfxl->_time < wfx._time)
-	    ++iwfxl;
-	  xings.insert(iwfxl,wfx);
-	  // insure a minimum time buffer between crossings
-	  wfx._time += _strawele->deadTimeAnalog();
-	  if(wfx._time >_mbtime+_strawele->flashStart())
-	    break;
-	  // skip to the next clust
-	  ++(wfx._iclust);
-	  // update threshold
-	  ++icross;
-	  if(icross >= thresh.size())
-	    thresh.push_back(_randgauss.fire(_strawele->threshold(),_strawele->analogNoise(TrkTypes::thresh)));
-	  threshold = _randgauss.fire(thresh[icross],_strawele->thresholdNoise()); 
+	crosses[iend] = swfp[iend].crossesThreshold(thresh[iend],wfx[iend]);
+      }
+      // loop until we hit the end of the waveforms
+      while( crosses[0] && crosses[1] && wfx[0]._time < _mbtime+_strawele->flashStart() &&
+	  wfx[1]._time < _mbtime+_strawele->flashStart() ) {
+	// see if the crossings match
+	if(_strawele->combineEnds(wfx[0]._time,wfx[1]._time)){
+	  // put the pair of crossings in the crosing list
+	  xings.push_back(wfx);
+	  // search for next crossing:
+	  // update threshold for straw noise
+	  threshbase = _randgauss.fire(_strawele->threshold(),_strawele->strawNoise());
+	  for(unsigned iend=0;iend<2;++iend){
+	    // insure a minimum time buffer between crossings
+	    wfx[iend]._time += _strawele->deadTimeAnalog();
+	    // skip to the next clust
+	    ++(wfx[iend]._iclust);
+	    // update threshold for incoherent noise
+	    thresh[iend] = _randgauss.fire(threshbase,_strawele->analogNoise(TrkTypes::thresh));
+	    // find next crossing
+	    crosses[iend] = swfp[iend].crossesThreshold(thresh[iend],wfx[iend]);
+	  }
+	} else {
+	  // skip to the next crossing on the earlier waveform
+	  unsigned iearly = wfx[0]._time < wfx[1]._time ? 0 : 1;
+	  ++(wfx[iearly]._iclust);
+	  wfx[iearly]._time += _strawele->deadTimeAnalog();
+	  crosses[iearly] = swfp[iearly].crossesThreshold(thresh[iearly],wfx[iearly]);
 	}
       }
     }
 
-    void StrawDigisFromStepPointMCs::fillDigis(WFXList const& xings, SWFP const& wf,
+    void StrawDigisFromStepPointMCs::fillDigis(WFXPList const& xings, SWFP const& wf,
 	StrawIndex index,
 	StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
 	PtrStepPointMCVectorCollection* mcptrs ){
       // loop over crossings
-      auto first_wfx = xings.begin();
-      while (first_wfx != xings.end()){
-	auto second_wfx = first_wfx; ++second_wfx;
-	bool found_coincidence = false;
-	while (second_wfx != xings.end()){
-	  // if we are past coincidence window, stop
-	  if (!_strawele->combineEnds(first_wfx->_time,second_wfx->_time))
-	    break;
-	  // if these are crossings on different ends of the straw
-	  if (first_wfx->_iclust->strawEnd() != second_wfx->_iclust->strawEnd())
-	  {
-	    found_coincidence = true;
-	    WFXP xpair;
-	    xpair[first_wfx->_iclust->strawEnd()] = first_wfx;
-	    xpair[second_wfx->_iclust->strawEnd()] = second_wfx;
-	    // create a digi from this pair
-	    createDigi(xpair,wf,index,digis);
-	    // fill associated MC truth matching. Only count the same step once
-	    set<art::Ptr<StepPointMC> > xmcsp;
-	    double wetime[2] = {-100.,-100.};
-	    CLHEP::HepLorentzVector cpos[2];
-	    art::Ptr<StepPointMC> stepMC[2];
+      for(auto xpair : xings) {
+	// create a digi from this pair
+	createDigi(xpair,wf,index,digis);
+	// fill associated MC truth matching. Only count the same step once
+	set<art::Ptr<StepPointMC> > xmcsp;
+	double wetime[2] = {-100.,-100.};
+	CLHEP::HepLorentzVector cpos[2];
+	art::Ptr<StepPointMC> stepMC[2];
 
-	    for (size_t iend=0;iend<2;++iend){
-	      StrawCluster const& sc = *(xpair[iend]->_iclust);
-	      xmcsp.insert(sc.stepPointMC());
-	      wetime[iend] = sc.time();
-	      cpos[iend] = sc.clusterPosition();
-	      stepMC[iend] = sc.stepPointMC();
-	    }
-	    // choose the minimum time from either end, as the ADC sums both
-	    double ptime = 1.0e10;
-	    for (size_t iend=0;iend<2;++iend){
-	      if (wetime[iend] > 0)
-		ptime = std::min(ptime,wetime[iend]);
-	    }
-	    // subtract a small buffer
-	    ptime -= 0.01*_strawele->adcPeriod();
-	    // pickup all StepPointMCs associated with clusts inside the time window of the ADC digitizations (after the threshold)
-	    set<art::Ptr<StepPointMC> > spmcs;
-	    for (auto ih=wf[0].clusts().clustList().begin();ih!=wf[0].clusts().clustList().end();++ih){
-	      if (ih->time() >= ptime && ih->time() < ptime +
-		  ( _strawele->nADCSamples()-_strawele->nADCPreSamples())*_strawele->adcPeriod())
-		spmcs.insert(ih->stepPointMC());
-	    }
-	    vector<art::Ptr<StepPointMC> > stepMCs;
-	    stepMCs.reserve(spmcs.size());
-	    for(auto ispmc=spmcs.begin(); ispmc!= spmcs.end(); ++ispmc){
-	      stepMCs.push_back(*ispmc);
-	    }
-	    PtrStepPointMCVector mcptr;
-	    for(auto ixmcsp=xmcsp.begin();ixmcsp!=xmcsp.end();++ixmcsp)
-	      mcptr.push_back(*ixmcsp);
-	    mcptrs->push_back(mcptr);
-	    mcdigis->push_back(StrawDigiMC(index,wetime,cpos,stepMC,stepMCs));
-	    // diagnostics
-	    if(_diag > 1)digiDiag(wf,xpair,digis->back(),mcdigis->back());
-	    // we are done looking for a coincidence with this first wfx
-	    break;
-	  }
-
-	  ++second_wfx;
+	for (size_t iend=0;iend<2;++iend){
+	  StrawCluster const& sc = *(xpair[iend]._iclust);
+	  xmcsp.insert(sc.stepPointMC());
+	  wetime[iend] = sc.time();
+	  cpos[iend] = sc.clusterPosition();
+	  stepMC[iend] = sc.stepPointMC();
 	}
-
-	// now find next crossing to start looking from for coincidence
-	if (found_coincidence){
-	  first_wfx = second_wfx;
-	  ++first_wfx;
-	  // move past deadtime for event readout
-	  while (first_wfx != xings.end()){
-	    if (first_wfx->_time > second_wfx->_time + _strawele->deadTimeDigital())
-	      break;
-	    ++first_wfx;
-	  }
-	}else{
-	  // analog deadtime between non triggering crossings enforced when finding crossings
-	  ++first_wfx;
+	// choose the minimum time from either end, as the ADC sums both
+	double ptime = 1.0e10;
+	for (size_t iend=0;iend<2;++iend){
+	  if (wetime[iend] > 0)
+	    ptime = std::min(ptime,wetime[iend]);
 	}
+	// subtract a small buffer
+	ptime -= 0.01*_strawele->adcPeriod();
+	// pickup all StepPointMCs associated with clusts inside the time window of the ADC digitizations (after the threshold)
+	set<art::Ptr<StepPointMC> > spmcs;
+	for (auto ih=wf[0].clusts().clustList().begin();ih!=wf[0].clusts().clustList().end();++ih){
+	  if (ih->time() >= ptime && ih->time() < ptime +
+	      ( _strawele->nADCSamples()-_strawele->nADCPreSamples())*_strawele->adcPeriod())
+	    spmcs.insert(ih->stepPointMC());
+	}
+	vector<art::Ptr<StepPointMC> > stepMCs;
+	stepMCs.reserve(spmcs.size());
+	for(auto ispmc=spmcs.begin(); ispmc!= spmcs.end(); ++ispmc){
+	  stepMCs.push_back(*ispmc);
+	}
+	PtrStepPointMCVector mcptr;
+	for(auto ixmcsp=xmcsp.begin();ixmcsp!=xmcsp.end();++ixmcsp)
+	  mcptr.push_back(*ixmcsp);
+	mcptrs->push_back(mcptr);
+	mcdigis->push_back(StrawDigiMC(index,wetime,cpos,stepMC,stepMCs));
+	// diagnostics
+	if(_diag > 1)digiDiag(wf,xpair,digis->back(),mcdigis->back());
       }
     }
 
@@ -803,21 +774,20 @@ namespace mu2e {
       // get the ADC sample times from the electroincs.  Use the cal side time to randomize
       // the phase, this doesn't really matter
       TrkTypes::ADCTimes adctimes;
-      _strawele->adcTimes(xpair[TrkTypes::cal]->_time,adctimes);
+      _strawele->adcTimes(xpair[0]._time,adctimes);
       //  sums voltages from both waveforms for ADC
       ADCVoltages wf[2];
       // smear (coherently) both times for the TDC clock jitter
       double dt = _randgauss.fire(0.0,_strawele->clockJitter());
       // loop over the associated crossings
       for(size_t iend = 0;iend<2; ++iend){
-	WFX const& wfx = *xpair[iend];
+	WFX const& wfx = xpair[iend];
 	// record the crossing time for this end, including clock jitter  These already include noise effects
 	xtimes[iend] = wfx._time+dt;
 	// record MC match if it isn't already recorded
 	mcmatch.insert(wfx._iclust->stepPointMC());
-	// randomize threshold.  This assumes the noise on each end is incoherent.  A better model
-	// would have separate coherent + incoherent components, FIXME!
-	double threshold = _randgauss.fire(_strawele->threshold(),_strawele->analogNoise(TrkTypes::thresh));
+	// randomize threshold using the incoherent noise
+	double threshold = _randgauss.fire(wfx._vcross,_strawele->analogNoise(TrkTypes::thresh));
 	// find TOT
 	tot[iend] = waveform[iend].digitizeTOT(threshold,wfx._time + dt);
 	// sample ADC
@@ -861,7 +831,7 @@ namespace mu2e {
       // create random noise clusts and add them to the sequences of random straws.
     }
     // diagnostic functions
-    void StrawDigisFromStepPointMCs::waveformHist(SWFP const& wfs, WFXList const& xings) {
+    void StrawDigisFromStepPointMCs::waveformHist(SWFP const& wfs, WFXPList const& xings) {
       // histogram individual waveforms
       static unsigned nhist(0);// maximum number of histograms per job!
       for(size_t iend=0;iend<2;++iend){
@@ -896,19 +866,17 @@ namespace mu2e {
 	    wfh->SetBinContent(ibin+1,volts[ibin]);
 	  TList* flist = wfh->GetListOfFunctions();
 	  for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
-	    if(ixing->_iclust->strawEnd() == wfs[iend].strawEnd()){
-	      TMarker* smark = new TMarker(ixing->_time,ixing->_vcross,8);
-	      smark->SetMarkerColor(kGreen);
-	      smark->SetMarkerSize(2);
-	      flist->Add(smark);
-	    }
+	    TMarker* smark = new TMarker(ixing->at(iend)._time,ixing->at(iend)._vcross,8);
+	    smark->SetMarkerColor(kGreen);
+	    smark->SetMarkerSize(2);
+	    flist->Add(smark);
 	  }
 	  _waveforms.push_back(wfh);
 	}
       }
     }
 
-    void StrawDigisFromStepPointMCs::waveformDiag(SWFP const& wfs, WFXList const& xings) {
+    void StrawDigisFromStepPointMCs::waveformDiag(SWFP const& wfs, WFXPList const& xings) {
       const Tracker& tracker = getTrackerOrThrow();
       const Straw& straw = tracker.getStraw( wfs[0].clusts().strawIndex() );
       _swplane = straw.id().getPlane();
@@ -924,18 +892,16 @@ namespace mu2e {
 	_txing[iend] = -100.0;
 	_xddist[iend] = _xwdist[iend] = _xpdist[iend] = -1.0;
 	for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
-	  if(ixing->_iclust->strawEnd() == iend) {
-	    ++_nxing[iend];
-	    _txing[iend] = min(_txing[iend],static_cast<float_t>(ixing->_time));
-	    _xddist[iend] = ixing->_iclust->driftDistance();
-	    _xwdist[iend] = ixing->_iclust->wireDistance();
-	    // compute direction perpendicular to wire and momentum
-	    art::Ptr<StepPointMC> const& spp = ixing->_iclust->stepPointMC();
-	    if(!spp.isNull()){
-	      Hep3Vector pdir = straw.getDirection().cross(spp->momentum()).unit();
-	      // project the differences in position to get the perp distance
-	      _xpdist[iend] = pdir.dot(spp->position()-straw.getMidPoint());
-	    }
+	  ++_nxing[iend];
+	  _txing[iend] = min(_txing[iend],static_cast<float_t>(ixing->at(iend)._time));
+	  _xddist[iend] = ixing->at(iend)._iclust->driftDistance();
+	  _xwdist[iend] = ixing->at(iend)._iclust->wireDistance();
+	  // compute direction perpendicular to wire and momentum
+	  art::Ptr<StepPointMC> const& spp = ixing->at(iend)._iclust->stepPointMC();
+	  if(!spp.isNull()){
+	    Hep3Vector pdir = straw.getDirection().cross(spp->momentum()).unit();
+	    // project the differences in position to get the perp distance
+	    _xpdist[iend] = pdir.dot(spp->position()-straw.getMidPoint());
 	  }
 	}
 	if(_nxing[iend] == 0){
@@ -998,17 +964,17 @@ namespace mu2e {
       _sdstraw = straw.id().getStraw();
 
       for(size_t iend=0;iend<2;++iend){
-	_xtime[iend] = xpair[iend]->_time;
-	_tctime[iend] = xpair[iend]->_iclust->time();
-	_charge[iend] = xpair[iend]->_iclust->charge();
-	_ddist[iend] = xpair[iend]->_iclust->driftDistance();
-	_wdist[iend] = xpair[iend]->_iclust->wireDistance();
-	_vstart[iend] = xpair[iend]->_vstart;
-	_vcross[iend] = xpair[iend]->_vcross;
-	_tdc[iend] = digi.TDC(xpair[iend]->_iclust->strawEnd());
-	_tot[iend] = digi.TOT(xpair[iend]->_iclust->strawEnd());
+	_xtime[iend] = xpair[iend]._time;
+	_tctime[iend] = xpair[iend]._iclust->time();
+	_charge[iend] = xpair[iend]._iclust->charge();
+	_ddist[iend] = xpair[iend]._iclust->driftDistance();
+	_wdist[iend] = xpair[iend]._iclust->wireDistance();
+	_vstart[iend] = xpair[iend]._vstart;
+	_vcross[iend] = xpair[iend]._vcross;
+	_tdc[iend] = digi.TDC(xpair[iend]._iclust->strawEnd());
+	_tot[iend] = digi.TOT(xpair[iend]._iclust->strawEnd());
 	ClusterList const& clist = wfs[iend].clusts().clustList();
-	auto ctrig = xpair[iend]->_iclust;
+	auto ctrig = xpair[iend]._iclust;
 	_ncludd[iend] = clist.size();
 	// find the earliest cluster from the same particle that triggered the crossing
 	auto iclu = clist.begin();
@@ -1027,7 +993,7 @@ namespace mu2e {
 	  _iclust[iend] = iclust;
 	}
       }
-      if(xpair[0]->_iclust->stepPointMC() == xpair[1]->_iclust->stepPointMC())
+      if(xpair[0]._iclust->stepPointMC() == xpair[1]._iclust->stepPointMC())
 	_nstep = 1;
       else
 	_nstep = 2;
@@ -1040,7 +1006,7 @@ namespace mu2e {
       _dmcmom = -1.0;
       _mctime = _mcenergy = _mctrigenergy = _mcthreshenergy = _mcdca = -1000.0;
       _mcthreshpdg = _mcthreshproc = _mcnstep = 0;
-      art::Ptr<StepPointMC> const& spmc = xpair[0]->_iclust->stepPointMC();
+      art::Ptr<StepPointMC> const& spmc = xpair[0]._iclust->stepPointMC();
       if(!spmc.isNull()){
 	_mctime = _toff.timeWithOffsetsApplied(*spmc);
 	// compute the doca for this step
