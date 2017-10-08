@@ -110,7 +110,7 @@ void KalFit::Cuts() {
   livegate = TCut(ctext);
   snprintf(ctext,80,"mcent.td>%4.3f&&mcent.td<%4.3f",tdlow-0.05,tdhigh+0.2);
   tpitch = TCut(ctext);
-  snprintf(ctext,80,"mcmid.t0%%1695>%f",500.);
+  snprintf(ctext,80,"fmod(mcmid.t0,1695.0)>%f",500.);
   tt0 = TCut(ctext);
   tmom = TCut("mcent.mom>100.0");
   snprintf(ctext,80,"mc.ndigigood>=%i",minnhits);
