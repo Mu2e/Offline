@@ -1,10 +1,10 @@
 i=0
-layerOffset=10
+layerOffset=42
 moduleGap=5
 #  for moduleGap in {1..5}
 #  do
 
-    dy=`echo "804.3+$moduleGap" | bc -l`
+    dz=`echo "804.3+$moduleGap" | bc -l`
 
 #    for layerOffset in {0..62..2}
 #    do
@@ -16,22 +16,21 @@ moduleGap=5
 
         overlayFactor="0"
 
-        genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig_5cm_upstreamPlanes'_'$i.txt
-        echo "#include \"CRVResponse/efficiencyCheck/genconfig_5cm_upstreamPlanes.txt\"" >| $genconfigfile
-        echo "double cosmicDYB.dy = $dy;" >> $genconfigfile
-#        echo "double cosmicDYB.muCosThMax = 0.707;" >> $genconfigfile
+        genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig_5cm_6000'_'$i.txt
+        echo "#include \"CRVResponse/efficiencyCheck/genconfig_5cm_6000.txt\"" >| $genconfigfile
+        echo "double cosmicDYB.dz = $dz;" >> $genconfigfile
 
-        geomfile=CRVResponse/efficiencyCheck/submit/geom_5cm_upstreamPlanes'_'$i.txt
-        echo "#include \"CRVResponse/efficiencyCheck/geom_5cm_upstreamPlanes.txt\"" >| $geomfile
+        geomfile=CRVResponse/efficiencyCheck/submit/geom_5cm_6000'_'$i.txt
+        echo "#include \"CRVResponse/efficiencyCheck/geom_5cm_6000.txt\"" >| $geomfile
         echo "double crs.gapBetweenModules = $moduleGap;" >> $geomfile
         echo "double crs.layerOffset       = $layerOffset;" >> $geomfile
 
 #### for adjacentPulseTimeDifference = 0ns
 
-        name=CRV_Efficiency_check_5cm0_upstreamPlanes
+        name=CRV_Efficiency_check_5cm0_6000
         fclfile=CRVResponse/efficiencyCheck/submit/$name'_'$i.fcl
         fcllist=CRVResponse/efficiencyCheck/submit/$name'_'$i.txt
-        echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm0_upstreamPlanes.fcl\"" >| $fclfile
+        echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm0_6000.fcl\"" >| $fclfile
         echo "services.GeometryService.inputFile                      : \"$geomfile\"" >> $fclfile
         echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.scintillationYield  : $photonYield" >> $fclfile
@@ -44,10 +43,10 @@ moduleGap=5
 
 #### for adjacentPulseTimeDifference = 5ns
 
-        name=CRV_Efficiency_check_5cm_upstreamPlanes
+        name=CRV_Efficiency_check_5cm_6000
         fclfile=CRVResponse/efficiencyCheck/submit/$name'_'$i.fcl
         fcllist=CRVResponse/efficiencyCheck/submit/$name'_'$i.txt
-        echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm_upstreamPlanes.fcl\"" >| $fclfile
+        echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm_6000.fcl\"" >| $fclfile
         echo "services.GeometryService.inputFile                      : \"$geomfile\"" >> $fclfile
         echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.scintillationYield  : $photonYield" >> $fclfile
@@ -60,10 +59,10 @@ moduleGap=5
 
 #### for adjacentPulseTimeDifference = 10ns
 
-        name=CRV_Efficiency_check_5cm10_upstreamPlanes
+        name=CRV_Efficiency_check_5cm10_6000
         fclfile=CRVResponse/efficiencyCheck/submit/$name'_'$i.fcl
         fcllist=CRVResponse/efficiencyCheck/submit/$name'_'$i.txt
-        echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm10_upstreamPlanes.fcl\"" >| $fclfile
+        echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm10_6000.fcl\"" >| $fclfile
         echo "services.GeometryService.inputFile                      : \"$geomfile\"" >> $fclfile
         echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.scintillationYield  : $photonYield" >> $fclfile

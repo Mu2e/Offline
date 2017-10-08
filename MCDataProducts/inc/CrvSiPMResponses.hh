@@ -8,6 +8,7 @@
 // Contact person Ralf Ehrlich
 //
 
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include <vector>
 #include <cmath>
 
@@ -23,8 +24,13 @@ namespace mu2e
     {
       double _time;
       double _charge;
-      CrvSingleSiPMResponse(double time, double charge) : _time(time), _charge(charge) {}
-      CrvSingleSiPMResponse() : _time(NAN), _charge(NAN) {}  //to make ROOT happy
+      double _chargeInPEs;
+      art::Ptr<StepPointMC> _step;
+      CrvSingleSiPMResponse(double time, double charge, double chargeInPEs, art::Ptr<StepPointMC> step) : 
+                                               _time(time), _charge(charge), _chargeInPEs(chargeInPEs), _step(step) {}
+      CrvSingleSiPMResponse(double time, double charge, double chargeInPEs) :      //that's for dark noise (i.e. no StepPointMCs)
+                                               _time(time), _charge(charge), _chargeInPEs(chargeInPEs) {}
+      CrvSingleSiPMResponse() : _time(NAN), _charge(NAN), _chargeInPEs(NAN) {}  //to make ROOT happy
     };
 
     std::vector<CrvSingleSiPMResponse> &GetSiPMResponses(int fiberNumber, int side);

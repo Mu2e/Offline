@@ -242,6 +242,9 @@
  <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvPhotonArrivals>" />
  <class name="mu2e::CrvPhotonArrivalsCollection" />
  <class name="art::Wrapper<mu2e::CrvPhotonArrivalsCollection>" />
+
+ <class name="mu2e::CrvPhotonArrivals::SinglePhoton" />
+ <class name="std::vector<mu2e::CrvPhotonArrivals::SinglePhoton>" />
  
  <class name="mu2e::CrvSiPMResponses" />
  <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvSiPMResponses>" />

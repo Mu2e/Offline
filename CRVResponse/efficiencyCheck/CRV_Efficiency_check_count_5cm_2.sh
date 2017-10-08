@@ -1,7 +1,7 @@
-#layerOffset=42
-layerOffset=10
-#timeWindow=10
-timeWindow=20
+layerOffset=42
+#layerOffset=10
+timeWindow=10
+#timeWindow=20
 sides=2
 #PEthreshold=12
 moduleGap=5
@@ -13,12 +13,20 @@ do
     do
 
               directory=/pnfs/mu2e/scratch/users/ehrlich/workflow
-#              name=CRVa_Efficiency_check_5cm
+#              name=CRV_Efficiency_check_5cm
 #              name=CRV_Efficiency_check_5cm10
+#              name=CRV_Efficiency_check_5cm0_5000r
+#              name=CRV_Efficiency_check_5cm0_6000r
+#              name=CRV_Efficiency_check_5cm0_6000
+#              name=CRV_Efficiency_check_5cm0_upstreamPlanes
+#              name=CRV_Efficiency_check_5cm_5000r
+#              name=CRV_Efficiency_check_5cm_6000r
+              name=CRV_Efficiency_check_5cm_6000
+#              name=CRV_Efficiency_check_5cm_upstreamPlanes
 #              name=CRV_Efficiency_check_5cm_6600
 #              name=CRV_Efficiency_check_5cm10_6600
 #              name=CRV_Efficiency_check_5cm_verticalPlanes
-              name=CRV_Efficiency_check_5cm_downstreamPlanes45
+#              name=CRV_Efficiency_check_5cm_downstreamPlanes45
 #              name=CRV_Efficiency_check_5cm10_upstreamPlanes
 
               files=$directory/$name/outstage/'*.'$name'_'gap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log

@@ -193,9 +193,9 @@ namespace mu2e
       for(size_t i=0; i<CRVStepsVector.size(); i++)
       {
         const art::Handle<StepPointMCCollection> &CRVSteps = CRVStepsVector[i];
-        for(StepPointMCCollection::const_iterator iter=CRVSteps->begin(); iter!=CRVSteps->end(); iter++)
+        for(size_t istep=0; istep<CRVSteps->size(); istep++)
         {
-          StepPointMC const& step(*iter);
+          StepPointMC const& step(CRVSteps->at(istep));
 
           double t1 = _timeOffsets.timeWithOffsetsApplied(step); 
           if(t1<_startTime) continue;   //Ignore this StepPoint to reduce computation time.
@@ -260,7 +260,14 @@ namespace mu2e
           for(int SiPM=0; SiPM<4; SiPM++)
           {
             const std::vector<double> &times=CPA->GetArrivalTimes(SiPM);
-            crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).end(),times.begin(),times.end());
+            art::Ptr<StepPointMC> spmcptr(CRVSteps,istep);
+            for(size_t itime=0; itime<times.size(); itime++)
+            {
+              CrvPhotonArrivals::SinglePhoton photon;
+              photon._time = times[itime];
+              photon._step = spmcptr;
+              crvPhotons.GetPhotonArrivalTimes(SiPM).push_back(photon);
+            }
           }
 
         } //loop over StepPointMCs in the StepPointMC collection

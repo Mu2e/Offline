@@ -10,6 +10,7 @@ Based on Paul Rubinov's C# code
 #include <set>
 #include <map>
 #include <vector>
+#include <utility>
 #include "CLHEP/Random/Randomize.h"
 
 namespace mu2eCrv
@@ -17,26 +18,30 @@ namespace mu2eCrv
 
   struct Pixel
   {
-    double _v;
-    double _t;
-    Pixel(double bias, double time) : _v(bias), _t(time) {}
-
-    private:
-    Pixel();  //disables the default constructor
+    bool   _discharged; 
+    double _t;          //time of last discharge (if _discharged is true), or NAN (if _discharged is false)
+    Pixel() : _discharged(false), _t(NAN) {}
   };
 
   struct SiPMresponse
   {
     double _time;
-    double _charge;
-    SiPMresponse(double time, double charge) : _time(time), _charge(charge) {}
+    double _charge;       //in C
+    double _chargeInPEs;  //in PEs
+    size_t _photonIndex;  //index in the original photon vector
+    bool   _darkNoise;
+    SiPMresponse(double time, double charge, double chargeInPEs, size_t photonIndex, bool darkNoise) : 
+                  _time(time), _charge(charge), _chargeInPEs(chargeInPEs), _photonIndex(photonIndex), _darkNoise(darkNoise) {}
   };
 
   struct ScheduledCharge
   {
-    int    _cellid;
-    double _time;
-    ScheduledCharge(int cellid, double time) : _cellid(cellid), _time(time) {}
+    std::pair<int,int>  _pixelId;
+    double              _time;
+    size_t              _photonIndex; //index in the original photon vector
+    bool                _darkNoise;   //this charge is dark noise and was not created by an "outside photon"
+    ScheduledCharge(const std::pair<int,int> &pixelId, double time, size_t photonIndex, bool darkNoise) : 
+                  _pixelId(pixelId), _time(time), _photonIndex(photonIndex), _darkNoise(darkNoise) {}
     bool operator<(const ScheduledCharge &r) const
     {
       return _time < r._time;
@@ -47,50 +52,60 @@ namespace mu2eCrv
   
   class MakeCrvSiPMResponses
   {
-    int    _numberPixels;
-    int    _numberPixelsAtFiber;
-    double _bias;             //in V above breakdown
+    int    _nPixelsX;
+    int    _nPixelsY;
+    int    _nPixelsRFiber;
+    double _overvoltage;      //in V  (operating overvoltage = bias voltage - breakdown voltage)
     double _blindTime;        //in ns
     double _microBunchPeriod; //in ns
     double _timeConstant;     //in ns
-
-    double _time;             //in ns
+    double _capacitance;      //in F
 
     public:
     struct ProbabilitiesStruct
     {
-      double _constGeigerProbCoef;
-      double _constGeigerProbVoltScale;
-      double _constTrapType0Prob;  //per unit voltage
-      double _constTrapType1Prob;  //per unit voltage
-      double _constTrapType0Lifetime;
-      double _constTrapType1Lifetime;
-      double _constThermalProb;         //per unit time
-      double _constPhotonProduction;    //in 1/fC
+      double _avalancheProbParam1;
+      double _avalancheProbParam2;
+      double _trapType0Prob;
+      double _trapType1Prob;
+      double _trapType0Lifetime;
+      double _trapType1Lifetime;
+      double _thermalRate;  //in ns^-1
+      double _crossTalkProb; 
     };
 
     private:
-    ProbabilitiesStruct            _probabilities;
+    ProbabilitiesStruct                _probabilities;
+    std::vector<std::pair<int,int> >   _inactivePixels;
 
-    std::map<int,Pixel>            _pixels;
-    std::multiset<ScheduledCharge> _scheduledCharges;
+    std::map<std::pair<int,int>,Pixel> _pixels;
+    std::multiset<ScheduledCharge>     _scheduledCharges;
 
-    double GenerateAvalanche(Pixel &pixel, int cellid);
-    void   RechargeCell(Pixel &pixel);
-    void   FillPhotonQueue(const std::vector<double> &photons);
+    std::vector<std::pair<int,int> > FindCrossTalkPixelIds(const std::pair<int,int> &pixelId);
+    std::pair<int,int>               FindThermalNoisePixelId();
+    std::pair<int,int>               FindFiberPhotonsPixelId();
+    bool                             IsInactivePixelId(const std::pair<int,int> &pixelId);
+
+    double GetAvalancheProbability(double v);
+    double GenerateAvalanche(Pixel &pixel, const std::pair<int,int> &pixelId, double time, size_t photonIndex, bool darkNoise);
+    double GetVoltage(const Pixel &pixel, double time);
+    void   FillPhotonQueue(const std::vector<std::pair<double,size_t> > &photons);
 
     CLHEP::RandFlat     &_randFlat;
     CLHEP::RandPoissonQ &_randPoissonQ;
+    double               _avalancheProbFullyChargedPixel;
 
     public:
 
     MakeCrvSiPMResponses(CLHEP::RandFlat &randFlat, CLHEP::RandPoissonQ &randPoissonQ) :
-                         _randFlat(randFlat), _randPoissonQ(randPoissonQ) {}
+                         _randFlat(randFlat), _randPoissonQ(randPoissonQ), 
+                         _avalancheProbFullyChargedPixel(0) {}
 
-    void SetSiPMConstants(int numberPixels, int numberPixelsAtFiber, double bias, 
+    void SetSiPMConstants(int nPixelsX, int nPixelsY, int nPixelsRFiber, double overvoltage, 
                           double blindTime, double microBunchPeriod, double timeConstant, 
-                          ProbabilitiesStruct probabilities);
-    void Simulate(const std::vector<double> &photons, 
+                          double capacitance, ProbabilitiesStruct probabilities,
+                          const std::vector<std::pair<int,int> > &inactivePixels);
+    void Simulate(const std::vector<std::pair<double,size_t> > &photons, 
                   std::vector<SiPMresponse> &SiPMresponseVector);
   };
 

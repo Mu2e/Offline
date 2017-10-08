@@ -147,7 +147,7 @@ namespace mu2e
         for(size_t i=0; i<timesAndCharges.size(); i++)
         {
           times.push_back(timesAndCharges[i]._time + timeShiftFEB);
-          charges.push_back(timesAndCharges[i]._charge);
+          charges.push_back(timesAndCharges[i]._chargeInPEs);   //FIXME: needs to be _charge
         }
 
         //first create the full waveform

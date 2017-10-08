@@ -67,7 +67,7 @@ void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times,
     {
       double singlePEWaveformTime = waveformTime - timeOfCharge;
       if(singlePEWaveformTime<0) continue;  //this shouldn't happen
-      unsigned int singlePEwaveformIndex=static_cast<unsigned int>(singlePEWaveformTime/_singlePEWaveformPrecision + 0.5);
+      unsigned int singlePEwaveformIndex=static_cast<unsigned int>(lrint(singlePEWaveformTime/_singlePEWaveformPrecision));
       if(singlePEwaveformIndex>=_singlePEWaveform.size()) break; 
 
       if(waveform.size()<waveformIndex+1) waveform.resize(waveformIndex+1);

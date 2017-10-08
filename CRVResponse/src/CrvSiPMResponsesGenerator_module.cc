@@ -51,14 +51,17 @@ namespace mu2e
     private:
     std::string _crvPhotonArrivalsModuleLabel;
     double      _deadSiPMProbability;
-    int         _numberPixels;
-    int         _numberPixelsAtFiber;
-    double      _bias;
+    int         _nPixelsX;
+    int         _nPixelsY;
+    int         _nPixelsRFiber;
+    double      _overvoltage;
     double      _timeConstant;
+    double      _capacitance;
     double      _blindTime;             //time window during which the SiPM is blind
     double      _microBunchPeriod;
 
     mu2eCrv::MakeCrvSiPMResponses::ProbabilitiesStruct _probabilities;
+    std::vector<std::pair<int,int> >   _inactivePixels;
 
     boost::shared_ptr<mu2eCrv::MakeCrvSiPMResponses> _makeCrvSiPMResponses;
 
@@ -69,23 +72,26 @@ namespace mu2e
   CrvSiPMResponsesGenerator::CrvSiPMResponsesGenerator(fhicl::ParameterSet const& pset) :
     _crvPhotonArrivalsModuleLabel(pset.get<std::string>("crvPhotonArrivalsModuleLabel")),
     _deadSiPMProbability(pset.get<double>("deadSiPMProbability")),   //0.01
-    _numberPixels(pset.get<int>("numberPixels")),   //1584
-    _numberPixelsAtFiber(pset.get<int>("numberPixelsAtFiber")),   //615
-    _bias(pset.get<double>("bias")),                //2.5V
-    _timeConstant(pset.get<double>("timeConstant")), //12.0ns
-    _blindTime(pset.get<double>("blindTime")),      //500ns
+    _nPixelsX(pset.get<int>("nPixelsX")),                            //40
+    _nPixelsY(pset.get<int>("nPixelsY")),                            //40
+    _nPixelsRFiber(pset.get<int>("nPixelsRFiber")),                  //14
+    _overvoltage(pset.get<double>("overvoltage")),                   //2.1V
+    _timeConstant(pset.get<double>("timeConstant")),                 //12.0ns
+    _capacitance(pset.get<double>("capacitance")),                   //8.84e-14F (per pixel)
+    _blindTime(pset.get<double>("blindTime")),                       //500ns
+    _inactivePixels(pset.get<std::vector<std::pair<int,int> > >("inactivePixels")),      //{18,18},....,{21,21}
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randPoissonQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
     produces<CrvSiPMResponsesCollection>();
-    _probabilities._constGeigerProbCoef = pset.get<double>("GeigerProbCoef");  //2.0
-    _probabilities._constGeigerProbVoltScale = pset.get<double>("GeigerProbVoltScale");  //3.0
-    _probabilities._constTrapType0Prob = pset.get<double>("TrapType0Prob");  //trap_prob*trap_type0_prob=0.2*0.7=0.14
-    _probabilities._constTrapType1Prob = pset.get<double>("TrapType1Prob");  //trap_prob*trap_type1_prob=0.2*0.3=0.06
-    _probabilities._constTrapType0Lifetime = pset.get<double>("TrapType0Lifetime");   //5.0ns
-    _probabilities._constTrapType1Lifetime = pset.get<double>("TrapType1Lifetime");  //50.0ns
-    _probabilities._constThermalProb = pset.get<double>("ThermalProb"); //2.9e-3 ns^-1     1MHz/GeigerProb at SiPM --> 2.9e6 s^-1 = 2.9e-3 ns^-1 
-    _probabilities._constPhotonProduction = pset.get<double>("PhotonProduction");  //0.136
+    _probabilities._avalancheProbParam1 = pset.get<double>("AvalancheProbParam1");  //0.65
+    _probabilities._avalancheProbParam2 = pset.get<double>("AvalancheProbParam2");  //2.7
+    _probabilities._trapType0Prob = pset.get<double>("TrapType0Prob");              //0
+    _probabilities._trapType1Prob = pset.get<double>("TrapType1Prob");              //0
+    _probabilities._trapType0Lifetime = pset.get<double>("TrapType0Lifetime");      //5.0ns
+    _probabilities._trapType1Lifetime = pset.get<double>("TrapType1Lifetime");      //50.0ns
+    _probabilities._thermalRate = pset.get<double>("ThermalRate");                  //3.0e-4 ns^-1   300MHz for entire SiPM
+    _probabilities._crossTalkProb = pset.get<double>("CrossTalkProb");              //0.05
   }
 
   void CrvSiPMResponsesGenerator::beginJob()
@@ -97,8 +103,8 @@ namespace mu2e
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     _microBunchPeriod = accPar->deBuncherPeriod;
     _makeCrvSiPMResponses = boost::shared_ptr<mu2eCrv::MakeCrvSiPMResponses>(new mu2eCrv::MakeCrvSiPMResponses(_randFlat, _randPoissonQ));
-    _makeCrvSiPMResponses->SetSiPMConstants(_numberPixels, _numberPixelsAtFiber, _bias, _blindTime, _microBunchPeriod, 
-                                            _timeConstant, _probabilities);
+    _makeCrvSiPMResponses->SetSiPMConstants(_nPixelsX, _nPixelsY, _nPixelsRFiber, _overvoltage, _blindTime, _microBunchPeriod, 
+                                            _timeConstant, _capacitance, _probabilities, _inactivePixels);
   }
 
   void CrvSiPMResponsesGenerator::endJob()
@@ -132,20 +138,16 @@ namespace mu2e
 
         if(_randFlat.fire() < _deadSiPMProbability) continue;  //assume that this random SiPM is dead
 
-        std::vector<double> photonArrivalTimesAdjusted;
-        if(crvPhotons!=crvPhotonArrivalsCollection->end())
+        std::vector<std::pair<double,size_t> > photonArrivalTimesAdjusted;   //pair of photon time and index in the original photon vector
+        if(crvPhotons!=crvPhotonArrivalsCollection->end())  //if there are no photons at this SiPM, then we still need to continue to simulate dark noise
         {
-          const std::vector<double> &photonArrivalTimes = crvPhotons->second.GetPhotonArrivalTimes(SiPM);
-          std::vector<double>::const_iterator timeIter;
-          for(timeIter=photonArrivalTimes.begin(); timeIter!=photonArrivalTimes.end(); timeIter++)
+          const std::vector<CrvPhotonArrivals::SinglePhoton> &photonArrivalTimes = crvPhotons->second.GetPhotonArrivalTimes(SiPM);
+          for(size_t iphoton=0; iphoton<photonArrivalTimes.size(); iphoton++)
           {
-            double time = *timeIter;
+            double time = photonArrivalTimes[iphoton]._time;
             time = fmod(time,_microBunchPeriod); 
-            if(time>_blindTime)
-            {
-              photonArrivalTimesAdjusted.push_back(time);
-//std::cout<<"Photon arrivals   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"      "<<time<<std::endl;
-            }
+            if(time>_blindTime) photonArrivalTimesAdjusted.push_back(std::pair<double,size_t>(time,iphoton)); //wrapped time
+            //no ghost hits, since the SiPMs are off during the blind time (which is longer than the "ghost time")
           }
         }
 
@@ -159,27 +161,18 @@ namespace mu2e
         {
           //time in SiPMresponseVector is between blindTime and microBunchPeriod
           //no additional time wrapping and check for blind time is required
-          const double &time=responseIter->_time;
-          const double &charge=responseIter->_charge;
-          responsesOneSiPM.emplace_back(time, charge);
+          double time=responseIter->_time;
+          double charge=responseIter->_charge;
+          double chargeInPEs=responseIter->_chargeInPEs;
+          int photonIndex=responseIter->_photonIndex;
+          bool darkNoise=responseIter->_darkNoise;
+          if(!darkNoise) 
+          {
+            const std::vector<CrvPhotonArrivals::SinglePhoton> &photonArrivalTimes = crvPhotons->second.GetPhotonArrivalTimes(SiPM);
+            responsesOneSiPM.emplace_back(time, charge, chargeInPEs,photonArrivalTimes[photonIndex]._step);
+          }
+          else responsesOneSiPM.emplace_back(time, charge, chargeInPEs);
 //std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<time<<std::endl;
-
-/*
-          //make ghost hits - see doc-db 3425 page 9 - not needed, since all microbunches are separated by a blind time of at least 500ns
-          double deltaT=100;  //TODO: Is the additional time window Ok?
-          double wrappedTimePrevPeriod=time-_microBunchPeriod;
-          double wrappedTimeNextPeriod=time+_microBunchPeriod;
-          if(wrappedTimePrevPeriod>-deltaT)
-          {
-            responsesOneSiPM.emplace_back(wrappedTimePrevPeriod, charge);
-//std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<wrappedTimePrevPeriod<<"  prev period"<<std::endl;
-          }
-          if(wrappedTimeNextPeriod<_microBunchPeriod+deltaT)
-          {
-            responsesOneSiPM.emplace_back(wrappedTimeNextPeriod, charge);
-//std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<wrappedTimeNextPeriod<<"  next period"<<std::endl;
-          }
-*/
         }
 
       }

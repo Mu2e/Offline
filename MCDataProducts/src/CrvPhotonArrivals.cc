@@ -6,25 +6,25 @@
 namespace mu2e 
 {
 
-  std::vector<double> &CrvPhotonArrivals::GetPhotonArrivalTimes(int fiberNumber, int side) 
+  std::vector<CrvPhotonArrivals::SinglePhoton> &CrvPhotonArrivals::GetPhotonArrivalTimes(int fiberNumber, int side) 
   {
     int SiPMNumber = FindSiPMNumber(fiberNumber, side);
     return _times[SiPMNumber];
   }
 
-  std::vector<double> &CrvPhotonArrivals::GetPhotonArrivalTimes(int SiPMNumber) 
+  std::vector<CrvPhotonArrivals::SinglePhoton> &CrvPhotonArrivals::GetPhotonArrivalTimes(int SiPMNumber) 
   {
     CheckSiPMNumber(SiPMNumber);
     return _times[SiPMNumber];
   }
 
-  const std::vector<double> &CrvPhotonArrivals::GetPhotonArrivalTimes(int fiberNumber, int side) const 
+  const std::vector<CrvPhotonArrivals::SinglePhoton> &CrvPhotonArrivals::GetPhotonArrivalTimes(int fiberNumber, int side) const 
   {
     int SiPMNumber = FindSiPMNumber(fiberNumber, side);
     return _times[SiPMNumber];
   }
 
-  const std::vector<double> &CrvPhotonArrivals::GetPhotonArrivalTimes(int SiPMNumber) const
+  const std::vector<CrvPhotonArrivals::SinglePhoton> &CrvPhotonArrivals::GetPhotonArrivalTimes(int SiPMNumber) const
   {
     CheckSiPMNumber(SiPMNumber);
     return _times[SiPMNumber];
@@ -47,9 +47,11 @@ namespace mu2e
     double firstTime = NAN;
     for(int SiPM=0; SiPM<4; SiPM++)
     {
-      if(_times[SiPM].size()==0) continue;
-      double t = *std::min_element(_times[SiPM].begin(),_times[SiPM].end());
-      if(isnan(firstTime) || t<firstTime) firstTime=t;
+      for(size_t i=0; i<_times[SiPM].size(); i++)
+      {
+        double t = _times[SiPM][i]._time;
+        if(isnan(firstTime) || t<firstTime) firstTime=t;
+      }
     }
     return firstTime;
   }

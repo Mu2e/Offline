@@ -226,7 +226,7 @@ physics.producers.CrvPhotonArrivals.timeOffsets    : { inputs : [] }
 physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
 physics.producers.CrvPhotonArrivals.processNames   : ["*"]
 physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["CRVConditions/v3_0/LookupTable_5600"]
-physics.producers.CrvPhotonArrivals.lookupTableCounterLengths : [5600]
+physics.producers.CrvPhotonArrivals.CRVSectors                : ["Test"]
 
 physics.producers.CrvCoincidencePE10T5.PEthresholds                   : [10]
 physics.producers.CrvCoincidencePE10T5.maxTimeDifferences             : [5]

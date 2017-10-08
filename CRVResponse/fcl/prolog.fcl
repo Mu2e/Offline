@@ -48,31 +48,34 @@ BEGIN_PROLOG
       module_type                  : CrvSiPMResponsesGenerator
       crvPhotonArrivalsModuleLabel : "CrvPhotonArrivals"
       deadSiPMProbability          : 0.01
-      numberPixels                 : 1584
-      numberPixelsAtFiber          : 615
-      bias                         : 2.4        //V
-      timeConstant                 : 12.0       //ns
+      nPixelsX                     : 40
+      nPixelsY                     : 40
+      nPixelsRFiber                : 14
+      inactivePixels               : [ [18,18], [18,19], [18,20], [18,21],
+                                       [19,18], [19,19], [19,20], [19,21],
+                                       [20,18], [20,19], [20,20], [20,21],
+                                       [21,18], [21,19], [21,20], [21,21] ]
+      overvoltage                  : 2.1        //V
+      timeConstant                 : 12.0       //ns  ????
+      capacitance                  : 8.84e-14   //F
       blindTime                    : 500.0      //ns
 
-      GeigerProbCoef               : 1.0        // = pc
-      GeigerProbVoltScale          : 5.5        // = vs
-                                                //from the SiPM specs:
-                                                //Geiger probability at over voltage v = 2.4V (bias voltage): 
-                                                //0.35 = 1 - exp(-pow(v,pc)/vs)
-                                                //Geiger probability at over voltage v = 1.0V: 
-                                                //0.17 = 1 - exp(-pow(v,pc)/vs)
+      AvalancheProbParam1          : 0.65       // = p1  //needs to be changed to 1.49 according after the (wavelength depending) quantum efficiency and fill factor 
+                                                         //has been taken included in the lookup table generator
+                                                         //the value of 0.65 is used for the time being to keep the avalanche probability at 0.35,
+                                                         //which is the value which has been used for the past couple of months
+      AvalancheProbParam2          : 2.7        // = p2
+                                                //from the SiPM specs for 450nm with 3.0v overvoltage
+                                                //(the quantum eficiency and the fill factor has been taken care of by the photon generator
+                                                //Avalanche probability at over voltage v: p1*(1 - exp(-v/p2))
 
-      TrapType0Prob                : 0.0        //0.14       //trap_prob*trap_type0_prob=0.2*0.7
-      TrapType1Prob                : 0.0        //0.06       //trap_prob*trap_type1_prob=0.2*0.3
-      TrapType0Lifetime            : 5.0        //ns
-      TrapType1Lifetime            : 50.0       //ns
+      TrapType0Prob                : 0.0        //0.14 (Paul's number)  ????
+      TrapType1Prob                : 0.0        //0.06 (Paul's number)  ????
+      TrapType0Lifetime            : 5.0        //ns  ????
+      TrapType1Lifetime            : 50.0       //ns  ????
 
-      ThermalProb                  : 2.9e-3     //ns^-1     1MHz/GeigerProb at SiPM --> 2.9e6 s^-1 = 2.9e-3 ns^-1 
-
-      PhotonProduction             : 0.136      // = p (photon probability with every charge release)
-                                                //total cross talk probability cp:
-                                                //use probability to release a charge r = 0.35 (Geiger probability)
-                                                //cp = p*r + (p*r)^2 + (p*r)^3 + ... = 0.05
+      ThermalRate                  : 3.0e-4     //ns^-1     0.3MHz for entire SiPM 
+      CrossTalkProb                : 0.05       //should be 0.04, but the value of 0.05 was used for the past couple of months
     }
     CrvWaveforms:
     {

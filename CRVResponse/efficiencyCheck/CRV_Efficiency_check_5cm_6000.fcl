@@ -1,32 +1,26 @@
 #include "minimalMessageService.fcl"
 #include "standardServices.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
-#include "CRVResponse/efficiencyCheck/prolog5cm10Upstream.fcl"
+#include "CRVResponse/efficiencyCheck/prolog5cm.fcl"
 
 BEGIN_PROLOG
 
 outsideCrvCut: 
 {
-   type: union  //cut all tracks leaving to the side of the CRV, and also through a bottom plane
+   type: union  //cut all tracks leaving to the side of the CRV
    pars: 
    [
       // +x plane
       { 
         type  : plane 
         normal: [  1, 0, 0 ] 
-        point : [ -104, 0, 0 ] 
+        point : [ -704, 0, 0 ] 
       },
       // -x plane
       { 
         type  : plane 
         normal: [ -1, 0, 0 ] 
         point : [ -6704, 0, 0 ] 
-      },
-      // -y plane
-      { 
-        type  : plane 
-        normal: [ 0, -1, 0 ] 
-        point : [ 0, -542, 0 ] 
       }
    ]
 }
@@ -36,19 +30,19 @@ belowCrvCut:
    pars:
    [
       { 
-        type  : plane            //cut all tracks exiting at the +z side of the CRV
-                                 //since the "plane check" is in an intersect, the next check will be done for all tracks exiting at the -z side of the CRV
-        normal: [ 0, 0, 1 ] 
-        point : [ 0, 0, -2286.8 ]
+        type  : plane            //cut all tracks exiting below the CRV
+                                 //since the "plane check" is inside an interect, the next check will be done for all tracks exiting below the CRV
+        normal: [ 0, -1, 0 ] 
+        point : [ 0, 2590.6, 0 ]
       },
       {
         type: union              //the union (in combination with the "constant" below) makes sure that this will always return true
-                                 //so that all tracks exiting at the +z side of the CRV will be cut
-                                 //however, it also makes sure that the pdgId test will be performed for all tracks exiting at the +x side of the CRV
+                                 //so that all tracks exiting below the CRV will be cut
+                                 //however, it also makes sure that the pdgId test will be performed for all tracks exiting below the CRV
         pars:
         [
           {
-            type : pdgId         //if the track which exits at the +z side of the CRV is a muon, then it will be written to the "belowCRV"
+            type : pdgId         //if the track which exits below the CRV is a muon, then it will be written to the "belowCRV"
             pars : [ 13, -13 ] 
             write: belowCrv
           },
@@ -61,6 +55,7 @@ belowCrvCut:
    ]
 }
 END_PROLOG
+
 
 process_name : CRVEfficiency
 
@@ -76,7 +71,7 @@ services :
   TFileService          : { fileName : "nts.owner.crv_efficiency.ver.seq.root" }
   RandomNumberGenerator : { }
 
-  GeometryService        : { inputFile      : "CRVResponse/efficiencyCheck/geom_5cm_upstreamPlanes.txt" }
+  GeometryService        : { inputFile      : "CRVResponse/efficiencyCheck/geom_5cm_6000.txt" }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
   G4Helper               : { }
@@ -90,7 +85,7 @@ physics :
     generate: 
     {
        module_type          : EventGenerator
-       inputfile            : "CRVResponse/efficiencyCheck/genconfig_5cm_upstreamPlanes.txt"
+       inputfile            : "CRVResponse/efficiencyCheck/genconfig_5cm_6000.txt"
     }
 
     g4run : 
@@ -358,7 +353,7 @@ physics :
 physics.producers.CrvPhotonArrivals.timeOffsets    : { inputs : [] }
 physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
 physics.producers.CrvPhotonArrivals.processNames   : ["*"]
-physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["CRVConditions/v3_0/LookupTable_6600"]
+physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["CRVConditions/v3_0/LookupTable_6000"]
 physics.producers.CrvPhotonArrivals.CRVSectors                : ["Test"]
 
 physics.producers.CrvCoincidencePE10T5.PEthresholds                   : [10]
@@ -651,4 +646,3 @@ physics.producers.CrvCoincidencePE40T40.maxTimeDifferences             : [40]
 
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
-

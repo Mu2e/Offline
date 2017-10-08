@@ -139,11 +139,11 @@ namespace mu2e
       std::vector<double> photonArrivalTimesAdjusted;
       if(photonArrivals!=crvPhotonArrivalsCollection->end())
       {
-        const std::vector<double> &photonArrivalTimes = photonArrivals->second.GetPhotonArrivalTimes(SiPM);
-        std::vector<double>::const_iterator timeIter;
+        const std::vector<CrvPhotonArrivals::SinglePhoton> &photonArrivalTimes = photonArrivals->second.GetPhotonArrivalTimes(SiPM);
+        std::vector<CrvPhotonArrivals::SinglePhoton>::const_iterator timeIter;
         for(timeIter=photonArrivalTimes.begin(); timeIter!=photonArrivalTimes.end(); timeIter++)
         {
-          double time = *timeIter;
+          double time = timeIter->_time;
           time = fmod(time,_microBunchPeriod); 
           photonArrivalTimesAdjusted.push_back(time);
         }
@@ -177,7 +177,7 @@ namespace mu2e
         for(size_t i=0; i<timesAndCharges.size(); i++)
         {
           siPMtimes.push_back(timesAndCharges[i]._time);
-          siPMcharges.push_back(timesAndCharges[i]._charge);
+          siPMcharges.push_back(timesAndCharges[i]._chargeInPEs);
         }
       }
 

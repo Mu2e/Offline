@@ -8,6 +8,7 @@
 // Contact person Ralf Ehrlich
 //
 
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include <vector>
 
 namespace mu2e 
@@ -16,13 +17,19 @@ namespace mu2e
   {
     public:
 
+    struct SinglePhoton
+    {
+      double _time;
+      art::Ptr<StepPointMC> _step;
+    };
+
     CrvPhotonArrivals() {}
 
-    std::vector<double> &GetPhotonArrivalTimes(int fiberNumber, int side); 
-    std::vector<double> &GetPhotonArrivalTimes(int SiPMNumber);
+    std::vector<SinglePhoton> &GetPhotonArrivalTimes(int fiberNumber, int side); 
+    std::vector<SinglePhoton> &GetPhotonArrivalTimes(int SiPMNumber);
 
-    const std::vector<double> &GetPhotonArrivalTimes(int fiberNumber, int side) const;
-    const std::vector<double> &GetPhotonArrivalTimes(int SiPMNumber) const;
+    const std::vector<SinglePhoton> &GetPhotonArrivalTimes(int fiberNumber, int side) const;
+    const std::vector<SinglePhoton> &GetPhotonArrivalTimes(int SiPMNumber) const;
 
     unsigned int GetNumberOfPhotonArrivals(int fiberNumber, int side) const; 
     unsigned int GetNumberOfPhotonArrivals(int SiPMNumber) const;
@@ -34,7 +41,7 @@ namespace mu2e
     static int  FindSiPMNumber(int fiberNumber, int side);
     static void CheckSiPMNumber(int SiPMNumber);
 
-    std::vector<double>  _times[4];
+    std::vector<SinglePhoton> _times[4];
   };
 }
 

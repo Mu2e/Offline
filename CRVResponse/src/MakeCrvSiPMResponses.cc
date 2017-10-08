@@ -13,136 +13,173 @@ Based on Paul Rubinov's C# code
 //to get standalone version: compile with
 //g++ MakeCrvSiPMResponses.cc -std=c++11 -I../inc -I$CLHEP_INCLUDE_DIR -L$CLHEP_LIB_DIR -lCLHEP -DSiPMResponseStandalone
 
-    // the idea here is that a pixel goes through the phases,
-    // these next steps happen inside the cell itself:
-    //   1) estimate if there is a thermaly generated free charge
-    //   2) check if a trap releases a free charge
-    //   3) for each free charge, check for avalanche by comparing to the Geiger prob (GP)
-    //   4) check for avalanche:
-    //   if there is an avelanche:
-    //     5) compute size of avalanche based on OV
-    //     6) release appropriate number of photons
-    //     7) add appropriate traps
-    //     8) reduce the overvoltage (OV) to zero
-    //   else
-    //     9) compute the recharge current
-    //     10) increase the OV by the step charge Q
-
 namespace mu2eCrv
 {
 
-double MakeCrvSiPMResponses::GenerateAvalanche(Pixel &pixel, int cellid)
+double MakeCrvSiPMResponses::GetAvalancheProbability(double v)
 {
-  double v = pixel._v;
+  double avalancheProbability = _probabilities._avalancheProbParam1*(1 - exp(-v/_probabilities._avalancheProbParam2));
+  return avalancheProbability; 
+}
 
-  double GeigerProb = 1 - exp(-pow(v, _probabilities._constGeigerProbCoef)/_probabilities._constGeigerProbVoltScale);
+std::vector<std::pair<int,int> > MakeCrvSiPMResponses::FindCrossTalkPixelIds(const std::pair<int,int> &pixelId)
+{
+  std::vector<std::pair<int,int> > toReturn;
+  if(pixelId.first>0)            toReturn.push_back(std::pair<int,int>(pixelId.first-1,pixelId.second));
+  if(pixelId.first+1<_nPixelsX)  toReturn.push_back(std::pair<int,int>(pixelId.first+1,pixelId.second));
+  if(pixelId.second>0)           toReturn.push_back(std::pair<int,int>(pixelId.first,  pixelId.second-1));
+  if(pixelId.second+1<_nPixelsY) toReturn.push_back(std::pair<int,int>(pixelId.first,  pixelId.second+1));
+  return toReturn;
+}
 
-  if(_randFlat.fire() < GeigerProb)
+std::pair<int,int> MakeCrvSiPMResponses::FindThermalNoisePixelId()
+{
+  int x=_randFlat.fire(_nPixelsX);
+  int y=_randFlat.fire(_nPixelsY);
+  return std::pair<int,int>(x,y);
+}
+
+std::pair<int,int> MakeCrvSiPMResponses::FindFiberPhotonsPixelId()
+{
+  int x=0;
+  int y=0;
+  do
   {
-    int trapsType0 = _randPoissonQ.fire(_probabilities._constTrapType0Prob/_bias * v);
-    int trapsType1 = _randPoissonQ.fire(_probabilities._constTrapType1Prob/_bias * v);
-    int photons    = _randPoissonQ.fire(_probabilities._constPhotonProduction/_bias * v);
-  
-    double trap0Lifetime = _probabilities._constTrapType0Lifetime;
-    double trap1Lifetime = _probabilities._constTrapType1Lifetime;
-    for(int i=0; i<trapsType0; i++)
+    x=_randFlat.fire(2*_nPixelsRFiber)-_nPixelsRFiber;
+    y=_randFlat.fire(2*_nPixelsRFiber)-_nPixelsRFiber;
+  } while(sqrt(x*x+y*y)>_nPixelsRFiber);
+
+  x+=_nPixelsX/2;
+  y+=_nPixelsY/2;
+
+  return std::pair<int,int>(x,y);
+}
+
+bool MakeCrvSiPMResponses::IsInactivePixelId(const std::pair<int,int> &pixelId)
+{
+  for(size_t i=0; i<_inactivePixels.size(); i++)
+  {
+    if(pixelId==_inactivePixels[i]) return true;
+  }
+  return false;
+}
+
+double MakeCrvSiPMResponses::GenerateAvalanche(Pixel &pixel, const std::pair<int,int> &pixelId, double time, size_t photonIndex, bool darkNoise)
+{
+  double v = GetVoltage(pixel,time);
+
+  if(_randFlat.fire() < GetAvalancheProbability(v))
+  {
+    //after pulses
+    //for simplicity, it is assumed that all pixels are fully charged
+    //the _trapType0Prob and _trapType1Prob are measured probabilities (from the Hamamatsu specs), however the actually production probabilities are higher, but are reduced by the avalanche probability
+    //(measured probability = production probability * avalanche probability)
+    //the production probabilities are needed here
+    if(_randFlat.fire() < _probabilities._trapType0Prob/_avalancheProbFullyChargedPixel)
     {
       //create new Type0 trap (fast)
-      double life = -trap0Lifetime * log(_randFlat.fire());
-      _scheduledCharges.emplace(cellid,_time + life); //constructs ScheduledCharge(cellid,_time+life)
+      double traptime = -_probabilities._trapType0Lifetime * log(_randFlat.fire());
+      _scheduledCharges.emplace(pixelId,time + traptime,photonIndex,darkNoise); 
     }
-    for(int i=0; i<trapsType1; i++)
+
+    if(_randFlat.fire() < _probabilities._trapType1Prob/_avalancheProbFullyChargedPixel)
     {
       //create new Type1 trap (slow)
-      double life = -trap1Lifetime * log(_randFlat.fire());
-      _scheduledCharges.emplace(cellid,_time + life); //constructs ScheduledCharge(cellid,_time+life)
+      double traptime = -_probabilities._trapType1Lifetime * log(_randFlat.fire());
+      _scheduledCharges.emplace(pixelId,time + traptime,photonIndex,darkNoise); 
     }
 
-    //cross talk (distribute photons over all pixels leading to release of free charges there)
-    for(int i=0; i<photons; i++)
+    //cross talk can happen in all 4 neighboring pixels (distribute photons there for possible avalanches)
+    //for simplicity, it is assumed that all pixels are fully charged
+    std::vector<std::pair<int,int> > crossTalkPixelIds = FindCrossTalkPixelIds(pixelId);
+    double probabilityNoCrossTalk = 1.0-_probabilities._crossTalkProb;              //prob that cross talk does not occur = 1 - prob that cross talk occurs
+    double probabilityNoCrossTalkSinglePixel = pow(probabilityNoCrossTalk,1.0/4.0); //prob that cross talk does not occur at any of the 4 neighboring pixels 
+                                                                                    //=pow(prob that cross talk does not occur at a pixel,4)
+    double crossTalkProbabilitySinglePixel = 1.0-probabilityNoCrossTalkSinglePixel;
+
+    //the crossTalkProbabilitySinglePixel is the measured probability (based on the _crossTalkProb from the Hamamatsu specs), 
+    //however the actually production probability is higher, but is reduced by the avalanche probability
+    //(measured probability = production probability * avalanche probability)
+    //the production probability is needed here
+    crossTalkProbabilitySinglePixel /= _avalancheProbFullyChargedPixel;
+    for(size_t i=0; i<crossTalkPixelIds.size(); i++)
     {
-      int cellidCrossTalk = _randFlat.fireInt(_numberPixels);
-      _scheduledCharges.emplace_hint(_scheduledCharges.begin(),cellidCrossTalk,_time); 
-                                                      //constructs ScheduledCharge(cellidCrossTalk,time)
+      if(_randFlat.fire() < crossTalkProbabilitySinglePixel)
+      {
+        _scheduledCharges.emplace_hint(_scheduledCharges.begin(),crossTalkPixelIds[i],time,photonIndex,darkNoise); 
+      }
     }
 
-    //zero the _v
-    pixel._v=0;
-    pixel._t=_time;
+    //the pixel's overvoltage becomes 0, i.e. the pixel's voltage gets reduced to the breakdown voltage
+    //the time when this happens gets recorded in the pixel variable
+    pixel._discharged=true;
+    pixel._t=time;
 
-    return v;  //avalanche voltage
+    double outputCharge = _capacitance*v;   //output charge = capacitance (of one pixel) * overvoltage
+                                            //gain = outputCharge / elementary charge
+    return outputCharge;  
   }
-  else return 0;
+  else return 0;  //no avalanche means no output charge
 }
 
-void MakeCrvSiPMResponses::RechargeCell(Pixel &pixel)
+double MakeCrvSiPMResponses::GetVoltage(const Pixel &pixel, double time)
 {
-  double v = pixel._v;
+  if(!pixel._discharged) return _overvoltage;
 
-  if(v < _bias)
-  {
-    double timeStep = _time - pixel._t;
-    v = exp(-timeStep/_timeConstant) * (v-_bias) + _bias;
-    if(v > _bias) { v = _bias; }
-
-    pixel._v=v;
-    pixel._t=_time;
-  }
+  double deltaT = time - pixel._t;   //time since last discharge
+  double v = _overvoltage * (1.0-exp(-deltaT/_timeConstant));
+  return v;
 }
 
-void MakeCrvSiPMResponses::SetSiPMConstants(int numberPixels, int numberPixelsAtFiber, double bias,  
+void MakeCrvSiPMResponses::SetSiPMConstants(int nPixelsX, int nPixelsY, int nPixelsRFiber, double overvoltage,  
                                             double blindTime, double microBunchPeriod, double timeConstant, 
-                                            ProbabilitiesStruct probabilities)
+                                            double capacitance, ProbabilitiesStruct probabilities, 
+                                            const std::vector<std::pair<int,int> > &inactivePixels)
 {
-  _numberPixels = numberPixels;
-  _numberPixelsAtFiber = numberPixelsAtFiber;
-  _bias = bias;
+  _nPixelsX = nPixelsX;
+  _nPixelsY = nPixelsY;
+  _nPixelsRFiber = nPixelsRFiber;
+  _overvoltage = overvoltage;   //operating overvoltage = bias voltage - breakdown voltage
   _blindTime = blindTime;
   _microBunchPeriod = microBunchPeriod;
   _timeConstant = timeConstant;
+  _capacitance = capacitance;  //capacitance per pixel
   _probabilities = probabilities;
+  _inactivePixels = inactivePixels;
+
+  _avalancheProbFullyChargedPixel = GetAvalancheProbability(overvoltage);
 }
 
-    // for each time step, the flow is like this:
-    // 0) add free charges from external photons, if any
-
-    //these next steps happen inside the cell itself:
-    //   1) estimate if there is a thermaly generated free charge
-    //   2) check if a trap releases a free charge
-    //   3) for each free charge, check for avalanche by comparing to the Gieger prob (GP)
-    //   4) check for avalanche:
-    //   if there is an avelanche:
-    //     5) compute size of avalanche based on OV
-    //     6) release appropriate number of photons
-    //     7) add appropriate traps
-    //     8) reduce the overvoltage (OV) to zero
-    //   else
-    //     9) compute the recharge current
-    //     10) increase the OV by the step charge Q
-
-void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<double> &photons)
+void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<std::pair<double,size_t> > &photons)
 {
 //schedule charges caused by the CRV counter photons
 //no check whether time>=_blindTime && time<_mircoBunchPeriod, since this should be done in the calling method
-  std::vector<double>::const_iterator iter;
-  for(iter=photons.begin(); iter!=photons.end(); iter++)
+  for(size_t i=0; i<photons.size(); i++)
   {
-    int cellid = _randFlat.fireInt(_numberPixelsAtFiber);  //only pixels at fiber
-    _scheduledCharges.emplace(cellid, *iter);  //constructs ScheduledCharge(cellid, *iter)
+    std::pair<int,int> pixelId = FindFiberPhotonsPixelId();  //only pixels at fiber
+    _scheduledCharges.emplace(pixelId, photons[i].first, photons[i].second, false);
   }
 
 //schedule random thermal charges
   double timeWindow = _microBunchPeriod - _blindTime;
-  int numberThermalCharges = _randPoissonQ.fire(_probabilities._constThermalProb * timeWindow);
+
+  //for the dark noise simulation, it is assumed that all pixels are fully charged (for simplicity)
+
+  //the actual thermal production rate gets scaled down by the avalanche probability, i.e. only a fraction of the thermaly created charges lead to a dark noise pulse
+  //thermal production rate * avalanche probability = thermal rate
+  double thermalProductionRate = _probabilities._thermalRate/_avalancheProbFullyChargedPixel;
+
+  //average number of thermaly created charges is thermalProductionRate*timeWindow
+  int numberThermalCharges = _randPoissonQ.fire(thermalProductionRate * timeWindow);  
   for(int i=0; i<numberThermalCharges; i++)
   {
-    int cellid = _randFlat.fireInt(_numberPixels);  //all pixels
+    std::pair<int,int> pixelId = FindThermalNoisePixelId();  //all pixels
     double time = _blindTime + timeWindow * _randFlat.fire();
-    _scheduledCharges.emplace(cellid, time); //constructs ScheduledCharge(cellid, time)
+    _scheduledCharges.emplace(pixelId, time, 0, true);
   }
 }
 
-void MakeCrvSiPMResponses::Simulate(const std::vector<double> &photons, 
+void MakeCrvSiPMResponses::Simulate(const std::vector<std::pair<double,size_t> > &photons,   //pair of photon time and index in the original photon vector
                                    std::vector<SiPMresponse> &SiPMresponseVector)
 {
   _pixels.clear();
@@ -154,26 +191,27 @@ void MakeCrvSiPMResponses::Simulate(const std::vector<double> &photons,
     std::multiset<ScheduledCharge>::iterator currentCharge = _scheduledCharges.begin();
     if(currentCharge==_scheduledCharges.end()) break;  //no more scheduled charges
 
-    int cellid = currentCharge->_cellid;
-    _time = currentCharge->_time;
+    std::pair<int,int> pixelId = currentCharge->_pixelId;
+    double time = currentCharge->_time;
+    size_t photonIndex = currentCharge->_photonIndex;
+    bool darkNoise = currentCharge->_darkNoise;
     _scheduledCharges.erase(currentCharge);
 
-    double wrappedTime=fmod(_time,_microBunchPeriod);
-    if(wrappedTime<_blindTime) continue;  //Current time is inside the blind time.
-                                          //This may happen for charges which were added later (after pulses, cross talk of after pulses).
-                                          //TODO: Do the voltages of all pixels need to be reset after a blind Time?
+    if(IsInactivePixelId(pixelId)) continue;
 
-    //find pixel with cellid, create if it doesn't exist
-    std::map<int,Pixel>::iterator p = _pixels.find(cellid);
-    if(p==_pixels.end()) p=_pixels.emplace(cellid, Pixel(_bias, _time)).first; 
+    time = fmod(time,_microBunchPeriod); //this is relevant for afterpulses
+    if(time<_blindTime) continue; 
+
+    //find pixel with pixelId, create a fully charged pixel if it doesn't exist
+    std::map<std::pair<int,int>,Pixel>::iterator p = _pixels.find(pixelId);
+    if(p==_pixels.end()) p=_pixels.emplace(pixelId, Pixel()).first; 
     // .first returns the iterator to the new pixel
 
     Pixel &pixel = p->second;
-    RechargeCell(pixel);
-    double output = GenerateAvalanche(pixel, cellid); //in units of PEs*biasVoltage
+    double outputCharge = GenerateAvalanche(pixel, pixelId, time, photonIndex, darkNoise);   //the output charge (in Coulomb) of the pixel due to the avalanche
+    double outputChargeInPEs = (outputCharge/_capacitance)/_overvoltage;                     //the output charge in units of single PEs of a fully charges pixel
 
-    if(output>0) SiPMresponseVector.emplace_back(wrappedTime, output/_bias); //output/bias is the charge is in units of PEs
-                                                                             //output time is between blindTime and microBunchPeriod
+    if(outputCharge>0) SiPMresponseVector.emplace_back(time, outputCharge, outputChargeInPEs, photonIndex, darkNoise);
   } //while(1)
 }
 
@@ -184,36 +222,43 @@ void MakeCrvSiPMResponses::Simulate(const std::vector<double> &photons,
 #ifdef SiPMResponseStandalone
 int main()
 {
-  std::vector<double> photonTimes;
-  photonTimes.push_back(50);
-  photonTimes.push_back(20);
-  photonTimes.push_back(30);
-  photonTimes.push_back(30);
-  photonTimes.push_back(30);
-  photonTimes.push_back(23);
-  photonTimes.push_back(56);
-  photonTimes.push_back(12);
+  std::vector<std::pair<double,size_t> > photonTimes;
+  photonTimes.emplace_back(650,0);
+  photonTimes.emplace_back(620,1);
+  for(int i=0; i<100; i++) photonTimes.emplace_back(630,i+2);
+  for(int i=0; i<100; i++) photonTimes.emplace_back(623,i+102);
+  photonTimes.emplace_back(656,202);
+  photonTimes.emplace_back(612,203);
   std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
 
   mu2eCrv::MakeCrvSiPMResponses::ProbabilitiesStruct probabilities;
-  probabilities._constGeigerProbCoef = 1.0;
-  probabilities._constGeigerProbVoltScale = 5.5;
-  probabilities._constTrapType0Prob = 0.14;   //trap_prob*trap_type0_prob=0.2*0.7
-  probabilities._constTrapType1Prob = 0.06;   //trap_prob*trap_type1_pron=0.2*0.3
-  probabilities._constTrapType0Lifetime = 5;
-  probabilities._constTrapType1Lifetime = 50;
-  probabilities._constThermalProb = 6.31e-7; //ns^1     1MHz at SiPM --> 1MHz/#pixel=631Hz at Pixel --> 631s^-1 = 6.31-7ns^-1 
-  probabilities._constPhotonProduction = 0.136;
+  probabilities._avalancheProbParam1 = 0.65;
+  probabilities._avalancheProbParam2 = 2.7;
+  probabilities._trapType0Prob = 0.0;
+  probabilities._trapType1Prob = 0.0;
+  probabilities._trapType0Lifetime = 5;
+  probabilities._trapType1Lifetime = 50;
+  probabilities._thermalRate = 3.0e-4;   
+  probabilities._crossTalkProb = 0.05;
+
+  std::vector<std::pair<int,int> > inactivePixels = { {18,18}, {18,19}, {18,20}, {18,21},
+                                                      {19,18}, {19,19}, {19,20}, {19,21},
+                                                      {20,18}, {20,19}, {20,20}, {20,21},
+                                                      {21,18}, {21,19}, {21,20}, {21,21} };
 
   CLHEP::HepJamesRandom engine(1);
   CLHEP::RandFlat randFlat(engine);
   CLHEP::RandPoissonQ randPoissonQ(engine);
   mu2eCrv::MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
-  sim.SetSiPMConstants(1584, 615, 2.4, 0.0, 1695, 0.08, probabilities);
+  sim.SetSiPMConstants(40, 40, 14, 2.1, 500, 1695, 12.0, 8.84e-14, probabilities, inactivePixels);
+
   sim.Simulate(photonTimes, SiPMresponseVector);
 
   for(unsigned int i=0; i<SiPMresponseVector.size(); i++)
-  std::cout<<i<<"   "<<SiPMresponseVector[i]._time<<"   "<<SiPMresponseVector[i]._charge<<std::endl;
+  {
+    std::cout<<i<<"   "<<SiPMresponseVector[i]._time<<"   "<<SiPMresponseVector[i]._charge<<"   "<<SiPMresponseVector[i]._chargeInPEs;
+    std::cout<<"     "<<(SiPMresponseVector[i]._darkNoise?"dark Noise":std::to_string(SiPMresponseVector[i]._photonIndex).c_str())<<std::endl;
+  }
 
   return 0;
 }
