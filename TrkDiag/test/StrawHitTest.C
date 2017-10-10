@@ -629,5 +629,20 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     myhpg->Draw("histtext90same");
     leg->Draw();
   
-  } 
+  } else if(spage == "tot") {
+
+    TH2F* ptot = new TH2F("ptot","Proton TOT vs MC Transverse Drift Distance;True Drift Distance (mm);TOT (ns)",50,0,2.5,16,0,64);
+    TH2F* etot = new TH2F("etot","Electron TOT vs MC Transverse Drift Distance;True Drift Distance (mm);TOT (ns)",50,0,2.5,16,0,64);
+    ptot->SetStats(0);
+    etot->SetStats(0);
+    hits->Project("ptot","0.5*(totcal+tothv):abs(mcshd)","mcpdg==2212");
+    hits->Project("etot","0.5*(totcal+tothv):abs(mcshd)","mcpdg==11&&mcproc==56&&mcoe>100");
+    TCanvas* totcan = new TCanvas("totcan","TOT can",800,600);
+    totcan->Divide(2,1);
+    totcan->cd(1);
+    etot->Draw("colorz");
+    totcan->cd(2);
+    ptot->Draw("colorz");
+
+  }
 }
