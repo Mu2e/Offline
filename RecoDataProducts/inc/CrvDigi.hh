@@ -1,5 +1,5 @@
-#ifndef MCDataProducts_CrvWaveforms_hh
-#define MCDataProducts_CrvWaveforms_hh
+#ifndef MCDataProducts_CrvDigi_hh
+#define MCDataProducts_CrvDigi_hh
 //
 // $Id: $
 // $Author: ehrlich $
@@ -8,23 +8,20 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include <vector>
 
 namespace mu2e 
 {
-  class CrvWaveforms
+  class CrvDigi
   {
     public:
 
-    CrvWaveforms() {}
+    CrvDigi() {}
 
     struct CrvSingleWaveform
     {
-      std::vector<double>                 _voltages;
-      std::vector<art::Ptr<StepPointMC> > _steps;
-      art::Ptr<SimParticle>               _simparticle;
-      double                              _startTime;
+      std::vector<int>   _ADCs;
+      double             _startTime;
     };
 
     std::vector<CrvSingleWaveform> &GetSingleWaveforms(int fiberNumber, int side);
@@ -46,4 +43,4 @@ namespace mu2e
   };
 }
 
-#endif /* MCDataProducts_CrvWaveforms_hh */
+#endif /* RecoDataProducts_CrvDigi_hh */

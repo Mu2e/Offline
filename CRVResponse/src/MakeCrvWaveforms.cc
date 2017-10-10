@@ -10,9 +10,11 @@
 namespace mu2eCrv
 {
 
-void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double singlePEWaveformPrecision, double singlePEWaveformMaxTime) 
+void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double singlePEWaveformPrecision, double singlePEWaveformMaxTime, 
+                                                                                                           double singlePEReferenceCharge) 
 {
   _singlePEWaveformPrecision = singlePEWaveformPrecision;
+  _singlePEReferenceCharge = singlePEReferenceCharge;
   std::ifstream f(filename.c_str());
   if(!f.good()) throw std::logic_error("Could not open single PE waveform file. "+filename);
 
@@ -59,7 +61,7 @@ void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times,
   for(; iterTime!=times.end() && iterCharge!=charges.end(); iterTime++, iterCharge++)
   {
     double timeOfCharge=*iterTime;  //the time when the charge happened
-    double charge=*iterCharge;
+    double charge=*iterCharge/_singlePEReferenceCharge;  //scale it to the 1PE reference charge used for the single PE waveform
     unsigned int waveformIndex = (timeOfCharge>startTime ? ceil((timeOfCharge-startTime)/digitizationPrecision) : 0);  //waveform index of the first digitization point for this particular charge
     double waveformTime = waveformIndex*digitizationPrecision + startTime;  //the time for this waveform index
 

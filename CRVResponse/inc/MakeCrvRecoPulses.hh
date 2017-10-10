@@ -12,8 +12,8 @@ class MakeCrvRecoPulses
   MakeCrvRecoPulses();
 
   public:
-  MakeCrvRecoPulses(double scale, double offset, bool useFittedPulseHeight, bool useFittedPulseTime, bool doLEfit);
-  void         SetWaveform(const std::vector<double> &waveform, double startTime, double binWidth);
+  MakeCrvRecoPulses(double calibrationFactor, double pedestal, bool usePulseArea);
+  void         SetWaveform(const std::vector<int> &waveform, double startTime, double binWidth);
   unsigned int GetNPulses();
   int          GetPEs(int pulse);
   double       GetPulseTime(int pulse);
@@ -29,8 +29,8 @@ class MakeCrvRecoPulses
   double       GetLEfitChi2(int pulse);
 
   private:
-  double _scale, _offset;
-  bool   _useFittedPulseHeight, _useFittedPulseTime, _doLEfit;
+  double _calibrationFactor, _pedestal;
+  bool   _usePulseArea;
 
   std::vector<int>    _PEs;
   std::vector<double> _pulseTimes, _pulseHeights, _pulseWidths, _pulseFitChi2s;

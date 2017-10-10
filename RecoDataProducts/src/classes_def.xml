@@ -215,6 +215,15 @@
  <class name="art::Wrapper<std::vector<mu2e::TrackSummary> >"/>
  <class name="art::Ptr<mu2e::TrackSummary>" />
 
+ <class name="mu2e::CrvDigi::CrvSingleWaveform" />
+ <class name="std::vector<mu2e::CrvDigi::CrvSingleWaveform>" />
+
+ <class name="mu2e::CrvDigi" />
+ <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigi>" />
+ <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigi>" />
+ <class name="mu2e::CrvDigiCollection" />
+ <class name="art::Wrapper<mu2e::CrvDigiCollection>" />
+
  <class name="mu2e::CrvRecoPulses::CrvSingleRecoPulse" />
  <class name="std::vector<mu2e::CrvRecoPulses::CrvSingleRecoPulse>" />
 

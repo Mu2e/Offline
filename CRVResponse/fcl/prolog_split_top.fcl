@@ -85,21 +85,27 @@ BEGIN_PROLOG
       singlePEWaveformFileName     : "CRVResponse/fcl/singlePEWaveform_v2.txt"
       singlePEWaveformPrecision    : 0.5    //0.5 ns
       singlePEWaveformMaxTime      : 100    //100 ns
+      singlePEReferenceCharge      : 1.8564e-13  //1.8564e-13 C charge which was used to generate the above 1PE waveform
       digitizationPrecision        : 12.5   //12.5 ns (digitizer sampling rate)
       digitizationPoints           : 8      //8 points
       FEBtimeSpread                : 2.0    //2.0 ns
       minVoltage                   : 0.03123 //31.23mV (corresponds to 5.5PE) using dark current calibration
       noise                        : 4.0e-4 //0.4mV
     }
+    CrvDigi:
+    {
+      module_type                  : CrvDigitizer
+      crvWaveformsModuleLabel      : "CrvWaveforms"
+      ADCconversionFactor          : 2000
+      Pedestal                     : 0
+    }
     CrvRecoPulses:
     {
       module_type               : CrvRecoPulsesFinder
-      crvWaveformsModuleLabel   : "CrvWaveforms"
-      scale                     : 0.00564   //0.00564 V/PE
-      offset                    : 0.00021   //0.00021 V      //from dark current calibration: pulse height = scale * PE + offset
-      useFittedPulseHeight      : false    //not used in test beam analysis
-      useFittedPulseTime        : true
-      doLEfit                   : true
+      crvDigiModuleLabel        : "CrvDigi"
+      calibrationFactor         : 11.28    //11.28 ADC/PE
+      pedestal                  : 0.42     //0.42 ADC      //from dark current calibration: pulse height = scale * PE + offset
+      usePulseArea              : false    //not used in test beam analysis
       minPEs                    : 6        //6 PEs
     }
     CrvCoincidence:
@@ -140,11 +146,12 @@ CrvResponsePackage :
      CrvPhotonArrivals           : @local::CrvPhotonArrivals
      CrvSiPMResponses            : @local::CrvSiPMResponses
      CrvWaveforms                : @local::CrvWaveforms
+     CrvDigi                     : @local::CrvDigi
      CrvRecoPulses               : @local::CrvRecoPulses
      CrvCoincidence              : @local::CrvCoincidence
      CrvCoincidenceClusterFinder : @local::CrvCoincidenceClusterFinder
    }
-   CrvResponseSequence : [ CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
+   CrvResponseSequence : [ CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
 }
 
 END_PROLOG

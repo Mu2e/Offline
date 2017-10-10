@@ -17,7 +17,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/CrvWaveformsCollection.hh"
+#include "RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
 
 #include "art/Framework/Services/Optional/TFileDirectory.h"
@@ -54,9 +54,9 @@ namespace mu2e
     private:
     boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> _makeCrvRecoPulses;
 
-    std::string _crvWaveformsModuleLabel;
-    double      _scale, _offset;
-    bool        _useFittedPulseHeight, _useFittedPulseTime, _doLEfit;
+    std::string _crvDigiModuleLabel;
+    double      _calibrationFactor, _pedestal;
+    bool        _usePulseArea;  //for PE calculation
     int         _minPEs;
     double      _microBunchPeriod;
 
@@ -64,16 +64,14 @@ namespace mu2e
   };
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
-    _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
-    _scale(pset.get<double>("scale")),   //0.0056 V/PE
-    _offset(pset.get<double>("offset")),   //0 V
-    _useFittedPulseHeight(pset.get<bool>("useFittedPulseHeight")),   //false, since the test beam analysis didn't use it either
-    _useFittedPulseTime(pset.get<bool>("useFittedPulseTime")),   //true
-    _doLEfit(pset.get<bool>("doLEfit")),   //true
+    _crvDigiModuleLabel(pset.get<std::string>("crvDigiModuleLabel")),
+    _calibrationFactor(pset.get<double>("calibrationFactor")),   //0.0056 V/PE
+    _pedestal(pset.get<double>("pedestal")),   //0 V
+    _usePulseArea(pset.get<bool>("usePulseArea")),   //still false, but will be changed in the future
     _minPEs(pset.get<int>("minPEs"))     //6 PEs
   {
     produces<CrvRecoPulsesCollection>();
-    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_scale, _offset, _useFittedPulseHeight, _useFittedPulseTime, _doLEfit));
+    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_calibrationFactor, _pedestal, _usePulseArea));
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -94,30 +92,30 @@ namespace mu2e
   {
     std::unique_ptr<CrvRecoPulsesCollection> crvRecoPulsesCollection(new CrvRecoPulsesCollection);
 
-    art::Handle<CrvWaveformsCollection> crvWaveformsCollection;
-    event.getByLabel(_crvWaveformsModuleLabel,"",crvWaveformsCollection);
+    art::Handle<CrvDigiCollection> crvDigiCollection;
+    event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
 
-    for(CrvWaveformsCollection::const_iterator iter=crvWaveformsCollection->begin(); 
-        iter!=crvWaveformsCollection->end(); iter++)
+    for(CrvDigiCollection::const_iterator iter=crvDigiCollection->begin(); 
+        iter!=crvDigiCollection->end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = iter->first;
-      const CrvWaveforms &crvWaveforms = iter->second;
+      const CrvDigi &crvWaveforms = iter->second;
       double digitizationPrecision = crvWaveforms.GetDigitizationPrecision(); //ns
 
       CrvRecoPulses &crvRecoPulses = (*crvRecoPulsesCollection)[barIndex];
       for(int SiPM=0; SiPM<4; SiPM++)
       {
         //merge single waveforms together if there is no time gap between them
-        const std::vector<CrvWaveforms::CrvSingleWaveform> &singleWaveforms = crvWaveforms.GetSingleWaveforms(SiPM);
-        std::vector<std::vector<double> > allVoltages;
+        const std::vector<CrvDigi::CrvSingleWaveform> &singleWaveforms = crvWaveforms.GetSingleWaveforms(SiPM);
+        std::vector<std::vector<int> > allADCs;
         std::vector<double> allStartTimes;
         for(size_t i=0; i<singleWaveforms.size(); i++)
         {
           bool appendWaveform=false;
-          if(!allVoltages.empty())
+          if(!allADCs.empty())
           {
             //difference between the time of the last digitization point and the next start time
-            double lastTime = allStartTimes.back()+(allVoltages.back().size()-1)*digitizationPrecision;
+            double lastTime = allStartTimes.back()+(allADCs.back().size()-1)*digitizationPrecision;
             double timeDiff = singleWaveforms[i]._startTime - lastTime;
             if(timeDiff<digitizationPrecision*1.1) appendWaveform=true;   //the next start time seems to be just 
                                                                           //one digitization point (12.5ns) away
@@ -128,19 +126,19 @@ namespace mu2e
                                                                           //of the floating point numbers into consideration.
           }
 
-          if(appendWaveform) allVoltages.back().insert(allVoltages.back().end(),
-                                                       singleWaveforms[i]._voltages.begin(),
-                                                       singleWaveforms[i]._voltages.end());
+          if(appendWaveform) allADCs.back().insert(allADCs.back().end(),
+                                                       singleWaveforms[i]._ADCs.begin(),
+                                                       singleWaveforms[i]._ADCs.end());
           else
           {
-            allVoltages.push_back(singleWaveforms[i]._voltages);
+            allADCs.push_back(singleWaveforms[i]._ADCs);
             allStartTimes.push_back(singleWaveforms[i]._startTime); 
           }
         }
 
-        for(size_t i=0; i<allVoltages.size(); i++)
+        for(size_t i=0; i<allADCs.size(); i++)
         {
-          _makeCrvRecoPulses->SetWaveform(allVoltages[i], allStartTimes[i], digitizationPrecision);
+          _makeCrvRecoPulses->SetWaveform(allADCs[i], allStartTimes[i], digitizationPrecision);
 
           unsigned int n = _makeCrvRecoPulses->GetNPulses();
           for(unsigned int i=0; i<n; i++)
@@ -151,11 +149,10 @@ namespace mu2e
             double pulseWidth  = _makeCrvRecoPulses->GetPulseWidth(i);
             double pulseFitChi2= _makeCrvRecoPulses->GetPulseFitChi2(i);
             double LEtime      = _makeCrvRecoPulses->GetLEtime(i);
-            double LEfitChi2   = _makeCrvRecoPulses->GetLEfitChi2(i);
-            if(pulseTime<0) continue;
-            if(pulseTime>_microBunchPeriod) continue;
+//            if(pulseTime<0) continue;
+//            if(pulseTime>_microBunchPeriod) continue;
             if(PEs<_minPEs) continue; 
-            crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, pulseTime, pulseHeight, pulseWidth, pulseFitChi2, LEtime, LEfitChi2);
+            crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, pulseTime, pulseHeight, pulseWidth, pulseFitChi2, LEtime);
           }
         }
 

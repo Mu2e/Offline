@@ -78,10 +78,11 @@ namespace mu2e
   {
     double singlePEWaveformPrecision(pset.get<double>("singlePEWaveformPrecision"));    //1.0 ns
     double singlePEWaveformMaxTime(pset.get<double>("singlePEWaveformMaxTime"));        //200
+    double singlePEReferenceCharge(pset.get<double>("singlePEReferenceCharge")); //1.8564e-13 C (the charge which was used to generate the above 1PE waveform)
     ConfigFileLookupPolicy configFile;
     _singlePEWaveformFileName = configFile(_singlePEWaveformFileName);
     _makeCrvWaveforms = boost::shared_ptr<mu2eCrv::MakeCrvWaveforms>(new mu2eCrv::MakeCrvWaveforms());
-    _makeCrvWaveforms->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformPrecision, singlePEWaveformMaxTime);
+    _makeCrvWaveforms->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformPrecision, singlePEWaveformMaxTime, singlePEReferenceCharge);
     produces<CrvWaveformsCollection>();
   }
 
@@ -147,7 +148,7 @@ namespace mu2e
         for(size_t i=0; i<timesAndCharges.size(); i++)
         {
           times.push_back(timesAndCharges[i]._time + timeShiftFEB);
-          charges.push_back(timesAndCharges[i]._chargeInPEs);   //FIXME: needs to be _charge
+          charges.push_back(timesAndCharges[i]._charge); 
         }
 
         //first create the full waveform
@@ -167,12 +168,45 @@ namespace mu2e
             //start new single waveform
             CrvWaveforms::CrvSingleWaveform singleWaveform;
             singleWaveform._startTime=startTime+i*_digitizationPrecision;
+            //collect voltages
             for(int singleWaveformIndex=0; 
                 i<fullWaveform.size() && singleWaveformIndex<_digitizationPoints; 
                 i++, singleWaveformIndex++)
             {
               singleWaveform._voltages.push_back(fullWaveform[i]);
             }
+
+            //collect StepPointMCs and SimParticles responsible for this single waveform
+            std::set<art::Ptr<StepPointMC> > steps;
+            std::map<art::Ptr<SimParticle>, int> simparticles;
+            for(size_t j=0; j<timesAndCharges.size(); j++)
+            {
+              if(timesAndCharges[j]._time>=singleWaveform._startTime-50.0 && timesAndCharges[j]._time>=singleWaveform._startTime+50.0)  //FIXME
+              {
+                steps.insert(timesAndCharges[j]._step);
+                if(timesAndCharges[j]._step.isNonnull()) simparticles[timesAndCharges[j]._step->simParticle()]++;
+              }
+            }
+            //loop through the steps to fill the single waveform
+            std::set<art::Ptr<StepPointMC> >::iterator stepIter;
+            for(stepIter=steps.begin(); stepIter!=steps.end(); stepIter++)
+            {
+              singleWaveform._steps.push_back(*stepIter);
+            }
+            //find the most likely SimParticle
+            //if no SimParticle was recorded for this single waveform, then it was caused either by noise hits (if the threshold is low enough), or is the tail end of the peak.
+            //in that case, _simparticle will be null (set by the default constructor of art::Ptr)
+            std::map<art::Ptr<SimParticle>,int >::iterator simparticleIter;
+            int simparticleCount=0;
+            for(simparticleIter=simparticles.begin(); simparticleIter!=simparticles.end(); simparticleIter++)
+            {
+              if(simparticleIter->second>simparticleCount)
+              {
+                simparticleCount=simparticleIter->second;
+                singleWaveform._simparticle=simparticleIter->first;
+              }
+            }
+
             i--;
             singleWaveforms.push_back(singleWaveform);
           }
@@ -198,12 +232,12 @@ namespace mu2e
       if(fullWaveform[i+1]>_minVoltage) return true;  //the following point is above the threshold --> start recording
     }
 
-    if(i-1>=0)
+    if(i>=1)
     {
       if(fullWaveform[i-1]>_minVoltage) return true;  //the previous point was above the threshold --> continue recording
     }
 
-    if(i-2>=0)
+    if(i>=2)
     {
       if(fullWaveform[i-2]>_minVoltage) return true;  //the point before the previous point was above the threshold --> continue recording
     }

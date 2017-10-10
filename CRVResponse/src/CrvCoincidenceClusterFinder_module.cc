@@ -219,20 +219,7 @@ namespace mu2e
    
             double deadTime = deadTimeWindowEnd-deadTimeWindowStart;
             std::cout << "   Found dead time window: " << deadTimeWindowStart << " ns ... " << deadTimeWindowEnd << " ns   (dead time incl. start/end margins: "<<deadTime<<" ns)";
-            std::cout << "   in CRV region " << crvSectorType << "(";
-            switch (crvSectorType)
-            {
-              case 0: std::cout<<"Right"; break;
-              case 1: std::cout<<"Left"; break;
-              case 2: std::cout<<"Top"; break;
-              case 3: std::cout<<"Downstream"; break;
-              case 4: std::cout<<"Upstream"; break;
-              case 5:
-              case 6:
-              case 7: std::cout<<"Cryo"; break;
-              default: std::cout<<"Unknown";
-            };
-            std::cout << ")" << std::endl;
+            std::cout << "   in CRV region " << crvSectorType << std::endl;
             _totalDeadTime += deadTime;
             double fractionDeadTime = _totalDeadTime / _totalTime;
             std::cout << "Dead time so far: " << _totalDeadTime << " ns / " << _totalTime << " ns = " << fractionDeadTime*100 << "%    using time window " << _timeWindowStart << " ns ... " << _timeWindowEnd << " ns" << std::endl;
