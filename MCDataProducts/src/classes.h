@@ -32,7 +32,7 @@
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
 #include "MCDataProducts/inc/CrvSiPMResponsesCollection.hh"
-#include "MCDataProducts/inc/CrvWaveformsCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 #include "MCDataProducts/inc/ExtMonUCITofHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"

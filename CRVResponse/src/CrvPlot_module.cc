@@ -17,7 +17,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
 #include "MCDataProducts/inc/CrvSiPMResponsesCollection.hh"
-#include "MCDataProducts/inc/CrvWaveformsCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -102,8 +102,8 @@ namespace mu2e
     art::Handle<CrvSiPMResponsesCollection> crvSiPMResponsesCollection;
     event.getByLabel(_crvSiPMResponsesModuleLabel,"",crvSiPMResponsesCollection);
 
-    art::Handle<CrvWaveformsCollection> crvWaveformsCollection;
-    event.getByLabel(_crvWaveformsModuleLabel,"",crvWaveformsCollection);
+    art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
+    event.getByLabel(_crvWaveformsModuleLabel,"",crvDigiMCCollection);
 
     art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
     event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
@@ -113,7 +113,7 @@ namespace mu2e
 
     CrvPhotonArrivalsCollection::const_iterator  photonArrivals = crvPhotonArrivalsCollection->find(barIndex);
     CrvSiPMResponsesCollection::const_iterator   siPMResponses  = crvSiPMResponsesCollection->find(barIndex);
-    CrvWaveformsCollection::const_iterator       waveforms      = crvWaveformsCollection->find(barIndex);
+    CrvDigiMCCollection::const_iterator          digiMC         = crvDigiMCCollection->find(barIndex);
     CrvRecoPulsesCollection::const_iterator      recoPulses     = crvRecoPulsesCollection->find(barIndex);
 
     gStyle->SetOptStat(0);
@@ -196,10 +196,10 @@ namespace mu2e
       std::vector<double> voltagesTimes;
       double histMax = hist->GetMaximum();
       double scale=NAN;
-      if(waveforms!=crvWaveformsCollection->end())
+      if(digiMC!=crvDigiMCCollection->end())
       {
-        double digitizationPrecision = waveforms->second.GetDigitizationPrecision(); //ns
-        const std::vector<CrvWaveforms::CrvSingleWaveform> &singleWaveforms = waveforms->second.GetSingleWaveforms(SiPM);
+        double digitizationPrecision = digiMC->second.GetDigitizationPrecision(); //ns
+        const std::vector<CrvDigiMC::CrvSingleWaveform> &singleWaveforms = digiMC->second.GetSingleWaveforms(SiPM);
         for(size_t i=0; i<singleWaveforms.size(); i++)
         {
           for(size_t j=0; j<singleWaveforms[i]._voltages.size(); j++)

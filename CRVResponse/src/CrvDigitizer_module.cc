@@ -17,7 +17,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/CrvWaveformsCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -79,34 +79,34 @@ namespace mu2e
   {
     std::unique_ptr<CrvDigiCollection> crvDigiCollection(new CrvDigiCollection);
 
-    art::Handle<CrvWaveformsCollection> crvWaveformsCollection;
-    event.getByLabel(_crvWaveformsModuleLabel,"",crvWaveformsCollection);
+    art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
+    event.getByLabel(_crvWaveformsModuleLabel,"",crvDigiMCCollection);
 
-    for(CrvWaveformsCollection::const_iterator iter=crvWaveformsCollection->begin(); 
-        iter!=crvWaveformsCollection->end(); iter++)
+    for(CrvDigiMCCollection::const_iterator iter=crvDigiMCCollection->begin(); 
+        iter!=crvDigiMCCollection->end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = iter->first;
-      const CrvWaveforms &crvWaveforms = iter->second;
-      double digitizationPrecision = crvWaveforms.GetDigitizationPrecision(); //ns
+      const CrvDigiMC &crvDigiMC = iter->second;
+      double digitizationPrecision = crvDigiMC.GetDigitizationPrecision(); //ns //inverse of TDC rate
 
       CrvDigi &crvDigi = (*crvDigiCollection)[barIndex];
       crvDigi.SetDigitizationPrecision(digitizationPrecision);
       for(int SiPM=0; SiPM<4; SiPM++)
       {
-        std::vector<CrvDigi::CrvSingleWaveform> &singleWaveformsDigi = crvDigi.GetSingleWaveforms(SiPM);
-        const std::vector<CrvWaveforms::CrvSingleWaveform> &singleWaveforms = crvWaveforms.GetSingleWaveforms(SiPM);
-        for(size_t i=0; i<singleWaveforms.size(); i++)
+        std::vector<CrvDigi::CrvSingleWaveform> &singleWaveforms = crvDigi.GetSingleWaveforms(SiPM);
+        const std::vector<CrvDigiMC::CrvSingleWaveform> &singleWaveformsMC = crvDigiMC.GetSingleWaveforms(SiPM);
+        for(size_t i=0; i<singleWaveformsMC.size(); i++)
         {
           //start new single waveform
-          CrvDigi::CrvSingleWaveform singleWaveformDigi;
+          CrvDigi::CrvSingleWaveform singleWaveform;
 
-          singleWaveformDigi._startTime = singleWaveforms[i]._startTime; 
+          const std::vector<double> &voltages = singleWaveformsMC[i]._voltages;
+          double startTime = singleWaveformsMC[i]._startTime; 
+          _makeCrvDigis->SetWaveform(voltages,_ADCconversionFactor,_pedestal, startTime, digitizationPrecision);
+          singleWaveform._ADCs = _makeCrvDigis->GetADCs();
+          singleWaveform._startTDC = _makeCrvDigis->GetTDC();
 
-          const std::vector<double> &voltages = singleWaveforms[i]._voltages;
-          _makeCrvDigis->SetWaveform(voltages,_ADCconversionFactor,_pedestal);
-          singleWaveformDigi._ADCs = _makeCrvDigis->GetADCs();
-
-          singleWaveformsDigi.push_back(singleWaveformDigi);
+          singleWaveforms.push_back(singleWaveform);
         }
 
       }

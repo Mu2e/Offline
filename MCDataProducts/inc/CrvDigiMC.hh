@@ -1,5 +1,5 @@
-#ifndef MCDataProducts_CrvWaveforms_hh
-#define MCDataProducts_CrvWaveforms_hh
+#ifndef MCDataProducts_CrvDigiMC_hh
+#define MCDataProducts_CrvDigiMC_hh
 //
 // $Id: $
 // $Author: ehrlich $
@@ -13,11 +13,11 @@
 
 namespace mu2e 
 {
-  class CrvWaveforms
+  class CrvDigiMC
   {
     public:
 
-    CrvWaveforms() {}
+    CrvDigiMC() {}
 
     struct CrvSingleWaveform
     {
@@ -46,4 +46,4 @@ namespace mu2e
   };
 }
 
-#endif /* MCDataProducts_CrvWaveforms_hh */
+#endif /* MCDataProducts_CrvDigiMC_hh */

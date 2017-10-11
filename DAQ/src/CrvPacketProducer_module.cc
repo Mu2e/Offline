@@ -16,12 +16,10 @@
 #include <cmath>
 #include <math.h>
 
-#include "CRVResponse/inc/MakeCrvRecoPulses.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
-#include "MCDataProducts/inc/CrvWaveformsCollection.hh"
-#include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
+#include "RecoDataProducts/inc/CrvDigiCollection.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
@@ -126,7 +124,7 @@ namespace mu2e {
     _generateTextFile(pset.get<int>("generateTextFile",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
-    _makerModuleLabel(pset.get<std::string>("makerModuleLabel","CrvWaveforms")) {
+    _makerModuleLabel(pset.get<std::string>("makerModuleLabel","CrvDigi")) {
     produces<DataBlockCollection>();
 
     if(_generateTextFile>0) {
@@ -150,17 +148,17 @@ namespace mu2e {
     unique_ptr<DataBlockCollection> dtcPackets(new DataBlockCollection);
 
     bool gblresult;
-    art::Handle<CrvWaveformsCollection> crvDigisHandle;
+    art::Handle<CrvDigiCollection> crvDigisHandle;
     gblresult = evt.getByLabel(_makerModuleLabel,"", crvDigisHandle);
     ( _diagLevel > 0 ) && 
       std::cout 
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
-      << " CrvWaveformsCollection             _makerModuleLabel: " << _makerModuleLabel << ", "
+      << " CrvDigiCollection             _makerModuleLabel: " << _makerModuleLabel << ", "
       << ", " << gblresult << std::endl;
 
     if (!gblresult) throw cet::exception("DATA") << " Missing digi data";
 
-    CrvWaveformsCollection const& hits_CRV = gblresult ? *crvDigisHandle : CrvWaveformsCollection();
+    CrvDigiCollection const& hits_CRV = gblresult ? *crvDigisHandle : CrvDigiCollection();
 
     auto eventNum = evt.id().event();
     if ( _diagLevel > 2 ) {
@@ -171,15 +169,15 @@ namespace mu2e {
     std::vector<crvhit> crvHitVector; // Vector of trk hit digi data
 
 
-    for(CrvWaveformsCollection::const_iterator iter=hits_CRV.begin(); 
+    for(CrvDigiCollection::const_iterator iter=hits_CRV.begin(); 
         iter!=hits_CRV.end(); iter++) {
 
       const CRSScintillatorBarIndex &barIndex = iter->first;
-      const CrvWaveforms &crvWaveforms = iter->second;
+      const CrvDigi &crvDigi = iter->second;
       
       for(int SiPM=0; SiPM<4; SiPM++)  {
 	  //merge single waveforms together if there is no time gap between them
-	  const std::vector<CrvWaveforms::CrvSingleWaveform> &singleWaveforms = crvWaveforms.GetSingleWaveforms(SiPM);
+	  const std::vector<CrvDigi::CrvSingleWaveform> &singleWaveforms = crvDigi.GetSingleWaveforms(SiPM);
 	  
 	  int sipmID = barIndex.asInt()*4 + SiPM;
 	  
@@ -209,12 +207,10 @@ namespace mu2e {
 	    curHit.ringID = ringID;
 	    curHit.dtcID = dtcID;
 
-	    // At the moment, the time and voltages are note in adc_t format
-	    // The CRV people say they will digitize this info later
-	    curHit.time = (int) (singleWaveforms[i]._startTime);
-	    curHit.recoDigiSamples = (singleWaveforms[i]._voltages).size();
+	    curHit.time = singleWaveforms[i]._startTDC;
+	    curHit.recoDigiSamples = (singleWaveforms[i]._ADCs).size();
 	    for(size_t j = 0; j<curHit.recoDigiSamples; j++) {
-	      curHit.waveform.push_back((adc_t) ((singleWaveforms[i]._voltages)[j]) );
+	      curHit.waveform.push_back((adc_t) ((singleWaveforms[i]._ADCs)[j]) );
 	    }
 	    
 	    crvHitVector.push_back(curHit);

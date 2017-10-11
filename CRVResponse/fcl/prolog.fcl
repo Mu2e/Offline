@@ -153,4 +153,16 @@ CrvResponsePackage :
    CrvResponseSequence : [ CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
 }
 
+CrvDAQPackage : 
+{
+   producers : 
+   {
+     CrvPhotonArrivals           : @local::CrvPhotonArrivals
+     CrvSiPMResponses            : @local::CrvSiPMResponses
+     CrvWaveforms                : @local::CrvWaveforms
+     CrvDigi                     : @local::CrvDigi
+   }
+   CrvResponseSequence : [ CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvDigi ]
+}
+
 END_PROLOG

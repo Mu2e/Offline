@@ -255,14 +255,14 @@
  <class name="mu2e::CrvSiPMResponses::CrvSingleSiPMResponse" />
  <class name="std::vector<mu2e::CrvSiPMResponses::CrvSingleSiPMResponse>" />
 
- <class name="mu2e::CrvWaveforms" />
- <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvWaveforms>" />
- <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvWaveforms>" />
- <class name="mu2e::CrvWaveformsCollection" />
- <class name="art::Wrapper<mu2e::CrvWaveformsCollection>" />
+ <class name="mu2e::CrvDigiMC" />
+ <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigiMC>" />
+ <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigiMC>" />
+ <class name="mu2e::CrvDigiMCCollection" />
+ <class name="art::Wrapper<mu2e::CrvDigiMCCollection>" />
 
- <class name="mu2e::CrvWaveforms::CrvSingleWaveform" />
- <class name="std::vector<mu2e::CrvWaveforms::CrvSingleWaveform>" />
+ <class name="mu2e::CrvDigiMC::CrvSingleWaveform" />
+ <class name="std::vector<mu2e::CrvDigiMC::CrvSingleWaveform>" />
 
  <class name="mu2e::ProtonBunchIntensity" />
  <class name="art::Wrapper<mu2e::ProtonBunchIntensity>"/>

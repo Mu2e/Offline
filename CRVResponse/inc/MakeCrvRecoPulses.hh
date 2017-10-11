@@ -13,7 +13,7 @@ class MakeCrvRecoPulses
 
   public:
   MakeCrvRecoPulses(double calibrationFactor, double pedestal, bool usePulseArea);
-  void         SetWaveform(const std::vector<int> &waveform, double startTime, double binWidth);
+  void         SetWaveform(const std::vector<unsigned int> &waveform, unsigned int startTDC, double binWidth);
   unsigned int GetNPulses();
   int          GetPEs(int pulse);
   double       GetPulseTime(int pulse);

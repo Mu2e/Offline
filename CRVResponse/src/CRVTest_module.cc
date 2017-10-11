@@ -17,7 +17,6 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
 #include "MCDataProducts/inc/CrvSiPMResponsesCollection.hh"
-#include "MCDataProducts/inc/CrvWaveformsCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"

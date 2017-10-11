@@ -107,38 +107,38 @@ namespace mu2e
       {
         //merge single waveforms together if there is no time gap between them
         const std::vector<CrvDigi::CrvSingleWaveform> &singleWaveforms = crvWaveforms.GetSingleWaveforms(SiPM);
-        std::vector<std::vector<int> > allADCs;
-        std::vector<double> allStartTimes;
+        std::vector<std::vector<unsigned int> > ADCs;
+        std::vector<unsigned int> startTDCs;
         for(size_t i=0; i<singleWaveforms.size(); i++)
         {
+          if(singleWaveforms[i]._ADCs.size()==0) continue;
+
           bool appendWaveform=false;
-          if(!allADCs.empty())
+          if(!ADCs.empty())
           {
             //difference between the time of the last digitization point and the next start time
-            double lastTime = allStartTimes.back()+(allADCs.back().size()-1)*digitizationPrecision;
-            double timeDiff = singleWaveforms[i]._startTime - lastTime;
-            if(timeDiff<digitizationPrecision*1.1) appendWaveform=true;   //the next start time seems to be just 
-                                                                          //one digitization point (12.5ns) away
-                                                                          //so that one can assume that the following 
-                                                                          //single waveform is just a continuation
-                                                                          //and can be appended.
-                                                                          //the factor of 1.1 takes the limited precision 
-                                                                          //of the floating point numbers into consideration.
+            unsigned int lastTDC = startTDCs.back()+(ADCs.back().size()-1);
+            unsigned int nextTDC = singleWaveforms[i]._startTDC;
+            if(lastTDC+1 == nextTDC) appendWaveform=true;   //the next start time seems to be just 
+                                                            //one digitization point (12.5ns) away
+                                                            //so that one can assume that the following 
+                                                            //single waveform is just a continuation
+                                                            //and can be appended.
           }
 
-          if(appendWaveform) allADCs.back().insert(allADCs.back().end(),
-                                                       singleWaveforms[i]._ADCs.begin(),
-                                                       singleWaveforms[i]._ADCs.end());
+          if(appendWaveform) ADCs.back().insert(ADCs.back().end(),
+                                                singleWaveforms[i]._ADCs.begin(),
+                                                singleWaveforms[i]._ADCs.end());
           else
           {
-            allADCs.push_back(singleWaveforms[i]._ADCs);
-            allStartTimes.push_back(singleWaveforms[i]._startTime); 
+            ADCs.push_back(singleWaveforms[i]._ADCs);
+            startTDCs.push_back(singleWaveforms[i]._startTDC); 
           }
         }
 
-        for(size_t i=0; i<allADCs.size(); i++)
+        for(size_t i=0; i<ADCs.size(); i++)
         {
-          _makeCrvRecoPulses->SetWaveform(allADCs[i], allStartTimes[i], digitizationPrecision);
+          _makeCrvRecoPulses->SetWaveform(ADCs[i], startTDCs[i], digitizationPrecision);
 
           unsigned int n = _makeCrvRecoPulses->GetNPulses();
           for(unsigned int i=0; i<n; i++)

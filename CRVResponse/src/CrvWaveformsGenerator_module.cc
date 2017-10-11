@@ -16,7 +16,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/CrvSiPMResponsesCollection.hh"
-#include "MCDataProducts/inc/CrvWaveformsCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 #include "SeedService/inc/SeedService.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -83,7 +83,7 @@ namespace mu2e
     _singlePEWaveformFileName = configFile(_singlePEWaveformFileName);
     _makeCrvWaveforms = boost::shared_ptr<mu2eCrv::MakeCrvWaveforms>(new mu2eCrv::MakeCrvWaveforms());
     _makeCrvWaveforms->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformPrecision, singlePEWaveformMaxTime, singlePEReferenceCharge);
-    produces<CrvWaveformsCollection>();
+    produces<CrvDigiMCCollection>();
   }
 
   void CrvWaveformsGenerator::beginJob()
@@ -96,7 +96,7 @@ namespace mu2e
 
   void CrvWaveformsGenerator::produce(art::Event& event) 
   {
-    std::unique_ptr<CrvWaveformsCollection> crvWaveformsCollection(new CrvWaveformsCollection);
+    std::unique_ptr<CrvDigiMCCollection> crvDigiMCCollection(new CrvDigiMCCollection);
 
     art::Handle<CrvSiPMResponsesCollection> crvSiPMResponsesCollection;
     event.getByLabel(_crvSiPMResponsesModuleLabel,"",crvSiPMResponsesCollection);
@@ -120,8 +120,8 @@ namespace mu2e
       const CRSScintillatorBarIndex &barIndex = iter->first;
       const CrvSiPMResponses &siPMResponses = iter->second;
 
-      CrvWaveforms &crvWaveforms = (*crvWaveformsCollection)[barIndex];
-      crvWaveforms.SetDigitizationPrecision(_digitizationPrecision);
+      CrvDigiMC &crvDigiMC = (*crvDigiMCCollection)[barIndex];
+      crvDigiMC.SetDigitizationPrecision(_digitizationPrecision);
 
       unsigned int FEB=barIndex.asUint()/32.0; //assume that the counters are ordered in the correct way, 
                                                //i.e. that all counters beloning to the same FEB are grouped together
@@ -159,21 +159,20 @@ namespace mu2e
         //break the waveform apart into short pieces (_digitizationPoints)
         //and apply the zero suppression, i.e. set all waveform digi points to zero which are below the minimum voltage, 
         //if the neighboring digi points are also below the minimum voltage
-        std::vector<CrvWaveforms::CrvSingleWaveform> &singleWaveforms = crvWaveforms.GetSingleWaveforms(SiPM);
+        std::vector<CrvDigiMC::CrvSingleWaveform> &singleWaveforms = crvDigiMC.GetSingleWaveforms(SiPM);
 
         for(size_t i=0; i<fullWaveform.size(); i++)
         {
           if(SingleWaveformStart(fullWaveform, i)) //acts as a zero suppression
           {
             //start new single waveform
-            CrvWaveforms::CrvSingleWaveform singleWaveform;
+            CrvDigiMC::CrvSingleWaveform singleWaveform;
             singleWaveform._startTime=startTime+i*_digitizationPrecision;
             //collect voltages
-            for(int singleWaveformIndex=0; 
-                i<fullWaveform.size() && singleWaveformIndex<_digitizationPoints; 
-                i++, singleWaveformIndex++)
+            for(int singleWaveformIndex=0; singleWaveformIndex<_digitizationPoints; i++, singleWaveformIndex++)
             {
-              singleWaveform._voltages.push_back(fullWaveform[i]);
+              if(i<fullWaveform.size()) singleWaveform._voltages.push_back(fullWaveform[i]);
+              else singleWaveform._voltages.push_back(0);   //so that all single waveforms have always the right number of entries
             }
 
             //collect StepPointMCs and SimParticles responsible for this single waveform
@@ -214,7 +213,7 @@ namespace mu2e
       }
     }
 
-    event.put(std::move(crvWaveformsCollection));
+    event.put(std::move(crvDigiMCCollection));
   } // end produce
 
   bool CrvWaveformsGenerator::SingleWaveformStart(std::vector<double> &fullWaveform, size_t i)

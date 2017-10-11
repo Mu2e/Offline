@@ -13,7 +13,7 @@ MakeCrvRecoPulses::MakeCrvRecoPulses(double calibrationFactor, double pedestal, 
                                      _usePulseArea(usePulseArea)
 {}
 
-void MakeCrvRecoPulses::SetWaveform(const std::vector<int> &waveform, double startTime, double binWidth)
+void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, unsigned int startTDC, double binWidth)
 {
   _pulseTimes.clear();
   _pulseHeights.clear();
@@ -59,14 +59,14 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<int> &waveform, double sta
     if(maxBin-startBin>1) startBin++;
     if(endBin-maxBin>1) endBin--;
 
-    double t1=startTime+startBin*binWidth;
-    double t2=startTime+endBin*binWidth;
+    double t1=(startTDC+startBin)*binWidth;
+    double t2=(startTDC+endBin)*binWidth;
 
     //fill the graph
     TGraph g;
     for(int bin=startBin; bin<=endBin; bin++) 
     {
-      double t=bin*binWidth + startTime;
+      double t=(startTDC+bin)*binWidth;
       double v=waveform[bin]-_pedestal;
       g.SetPoint(g.GetN(), t, v);
     }
@@ -74,7 +74,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<int> &waveform, double sta
     //set the fit function
     TF1 f("peakfitter","[0]*(TMath::Exp(-(x-[1])/[2]-TMath::Exp(-(x-[1])/[2])))");
     f.SetParameter(0, (waveform[maxBin]-_pedestal)*2.718);
-    f.SetParameter(1, maxBin*binWidth + startTime);
+    f.SetParameter(1, (startTDC+maxBin)*binWidth);
     f.SetParameter(2, 15.0);
 
     //do the fit

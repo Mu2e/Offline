@@ -20,8 +20,8 @@ namespace mu2e
 
     struct CrvSingleWaveform
     {
-      std::vector<int>   _ADCs;
-      double             _startTime;
+      std::vector<unsigned int> _ADCs;
+      unsigned int              _startTDC;
     };
 
     std::vector<CrvSingleWaveform> &GetSingleWaveforms(int fiberNumber, int side);
