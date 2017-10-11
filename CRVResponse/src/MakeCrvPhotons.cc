@@ -1,4 +1,4 @@
-#include "MakeCrvPhotonArrivals.hh"
+#include "MakeCrvPhotons.hh"
 
 #include <sstream>
 
@@ -136,7 +136,7 @@ void LookupBin::Read(std::ifstream &lookupfile)
   lookupfile.read(reinterpret_cast<char*>(fiberEmissions),sizeof(unsigned short)*4*nFiberEmissions);
 }
 
-void MakeCrvPhotonArrivals::LoadLookupTable(const std::string &filename)
+void MakeCrvPhotons::LoadLookupTable(const std::string &filename)
 {
   _fileName = filename;
   std::ifstream lookupfile(filename,std::ios::binary);
@@ -166,12 +166,12 @@ void MakeCrvPhotonArrivals::LoadLookupTable(const std::string &filename)
   lookupfile.close();
 }
 
-MakeCrvPhotonArrivals::~MakeCrvPhotonArrivals()
+MakeCrvPhotons::~MakeCrvPhotons()
 {
 }
 
-void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //they need to be points
-                          const CLHEP::Hep3Vector &stepEnd,     //local to the CRV bar
+void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //they need to be points
+                          const CLHEP::Hep3Vector &stepEnd,            //local to the CRV bar
                           double timeStart, double timeEnd,
                           int PDGcode, double beta, double charge,
                           double energyDepositedTotal,
@@ -280,7 +280,7 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
   }//loop over all points along the track
 }
 
-bool MakeCrvPhotonArrivals::IsInsideScintillator(const CLHEP::Hep3Vector &p)
+bool MakeCrvPhotons::IsInsideScintillator(const CLHEP::Hep3Vector &p)
 {
   if(fabs(p.x())>=_LC.halfThickness) return false;
   if(fabs(p.y())>=_LC.halfWidth) return false;
@@ -301,7 +301,7 @@ bool MakeCrvPhotonArrivals::IsInsideScintillator(const CLHEP::Hep3Vector &p)
   return true;
 }
 
-int MakeCrvPhotonArrivals::IsInsideFiber(const CLHEP::Hep3Vector &p, double &r)
+int MakeCrvPhotons::IsInsideFiber(const CLHEP::Hep3Vector &p, double &r)
 {
   CLHEP::Hep2Vector p2D(p.x(), p.y());
   CLHEP::Hep2Vector fiber0(0.0, -_LC.fiberSeparation/2.0);
@@ -313,7 +313,7 @@ int MakeCrvPhotonArrivals::IsInsideFiber(const CLHEP::Hep3Vector &p, double &r)
   return -1;
 }
 
-double MakeCrvPhotonArrivals::GetRandomTime(const LookupBin &theBin, int SiPM, bool &overflow)
+double MakeCrvPhotons::GetRandomTime(const LookupBin &theBin, int SiPM, bool &overflow)
 {
   double rand=_randFlat.fire()*LookupBin::probabilityScale;
   double sumProb=0;
@@ -328,7 +328,7 @@ double MakeCrvPhotonArrivals::GetRandomTime(const LookupBin &theBin, int SiPM, b
   return timeDelay;
 }
 
-int MakeCrvPhotonArrivals::GetRandomFiberEmissions(const LookupBin &theBin, int SiPM)
+int MakeCrvPhotons::GetRandomFiberEmissions(const LookupBin &theBin, int SiPM)
 {
   double rand=_randFlat.fire()*LookupBin::probabilityScale;
   double sumProb=0;
@@ -342,7 +342,7 @@ int MakeCrvPhotonArrivals::GetRandomFiberEmissions(const LookupBin &theBin, int 
   return emissions;
 }
 
-int MakeCrvPhotonArrivals::GetNumberOfPhotonsFromAverage(double average)  //from G4Scintillation
+int MakeCrvPhotons::GetNumberOfPhotonsFromAverage(double average)  //from G4Scintillation
 {
   int nPhotons;
   if(average>10.0)
@@ -357,18 +357,18 @@ int MakeCrvPhotonArrivals::GetNumberOfPhotonsFromAverage(double average)  //from
   return nPhotons;
 }
 
-int MakeCrvPhotonArrivals::GetNumberOfPhotons(int SiPM)
+int MakeCrvPhotons::GetNumberOfPhotons(int SiPM)
 {
   return _arrivalTimes[SiPM].size();
 }
 
-const std::vector<double> &MakeCrvPhotonArrivals::GetArrivalTimes(int SiPM)
+const std::vector<double> &MakeCrvPhotons::GetArrivalTimes(int SiPM)
 {
   return _arrivalTimes[SiPM];
 }
 
 //average number of cerenkov photons per millimeter
-double MakeCrvPhotonArrivals::GetAverageNumberOfCerenkovPhotons(double beta, double charge, double rindex, double cerenkovEnergyInterval) 
+double MakeCrvPhotons::GetAverageNumberOfCerenkovPhotons(double beta, double charge, double rindex, double cerenkovEnergyInterval) 
 { 
   const double Rfact = 369.81/(CLHEP::eV * CLHEP::cm); //from G4Cerenkov::GetAverageNumberOfPhotons() 
 
@@ -383,7 +383,7 @@ double MakeCrvPhotonArrivals::GetAverageNumberOfCerenkovPhotons(double beta, dou
 //this mimics G4EmSaturation::VisibleEnergyDeposition
 //but assumes that nloss/(protonRange/chargesq) is small enough so that it can be approximated as 0
 //and uses a lookup table for the energyDepositedTotal/electronRange values obtained specifically for Polystyrene
-double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLength,
+double MakeCrvPhotons::VisibleEnergyDeposition(int PDGcode, double stepLength,
                                             double energyDepositedTotal,
                                             double energyDepositedNonIonizing)
 {
@@ -432,7 +432,7 @@ double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLe
   return evis;
 }
 
-void MakeCrvPhotonArrivals::LoadVisibleEnergyAdjustmentTable(const std::string &filename)
+void MakeCrvPhotons::LoadVisibleEnergyAdjustmentTable(const std::string &filename)
 {
   std::ifstream visibleEnergyAdjustmentFile(filename);
   if(!visibleEnergyAdjustmentFile.good()) throw std::logic_error("Could not open visible energy correction table file "+filename);
@@ -444,7 +444,7 @@ void MakeCrvPhotonArrivals::LoadVisibleEnergyAdjustmentTable(const std::string &
   visibleEnergyAdjustmentFile.close();
 }
 
-double MakeCrvPhotonArrivals::FindVisibleEnergyAdjustmentFactor(double energy)
+double MakeCrvPhotons::FindVisibleEnergyAdjustmentFactor(double energy)
 {
   if(_visibleEnergyAdjustmentTable.size()==0) throw std::logic_error("Found no visible energy correction table.");
 

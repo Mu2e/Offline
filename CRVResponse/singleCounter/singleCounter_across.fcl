@@ -78,8 +78,8 @@ physics :
     protonTimeMap: { module_type : GenerateProtonTimes }
     muonTimeMap: { module_type : GenerateMuonLife }
 
-    CrvPhotonArrivals: @local::CrvPhotonArrivals
-    CrvSiPMResponses : @local::CrvSiPMResponses
+    CrvPhotons       : @local::CrvPhotons
+    CrvSiPMCharges   : @local::CrvSiPMCharges
     CrvWaveforms     : @local::CrvWaveforms
     CrvRecoPulses    : @local::CrvRecoPulses
   }
@@ -89,13 +89,13 @@ physics :
     CrvTest : 
     {
       module_type                 : CRVTest
-      crvSiPMResponsesModuleLabel : "CrvSiPMResponses"
+      crvSiPMChargesModuleLabel   : "CrvSiPMCharges"
       crvRecoPulsesModuleLabel    : "CrvRecoPulses"
       genParticleModuleLabel      : "generate" 
     }
   }
 
-  trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses ]
+  trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvRecoPulses ]
   trigger_paths  : [trig]
 
 #  out: [CrvTest, Output]
@@ -112,9 +112,9 @@ outputs:
     }
 }
 
-physics.producers.CrvPhotonArrivals.scintillationYieldVariation  : 0.0
-physics.producers.CrvSiPMResponses.deadSiPMProbability  : 0.0
-physics.producers.CrvWaveforms.FEBtimeSpread            : 0.0
+physics.producers.CrvPhotons.scintillationYieldVariation  : 0.0
+physics.producers.CrvSiPMCharges.deadSiPMProbability      : 0.0
+physics.producers.CrvWaveforms.FEBtimeSpread              : 0.0
 
 
 services.SeedService.baseSeed         :  773651

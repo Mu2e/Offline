@@ -15,8 +15,8 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
-#include "MCDataProducts/inc/CrvSiPMResponsesCollection.hh"
+#include "MCDataProducts/inc/CrvPhotonsCollection.hh"
+#include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -46,7 +46,7 @@ namespace mu2e
     void endJob();
 
     private:
-    std::string _crvSiPMResponsesModuleLabel;
+    std::string _crvSiPMChargesModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
     std::string _genParticleModuleLabel;
 
@@ -55,7 +55,7 @@ namespace mu2e
 
   CRVTest::CRVTest(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
-    _crvSiPMResponsesModuleLabel(pset.get<std::string>("crvSiPMResponsesModuleLabel")),
+    _crvSiPMChargesModuleLabel(pset.get<std::string>("crvSiPMChargesModuleLabel")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _genParticleModuleLabel(pset.get<std::string>("genParticleModuleLabel"))
   {
@@ -74,8 +74,8 @@ namespace mu2e
 
   void CRVTest::analyze(const art::Event& event) 
   {
-    art::Handle<CrvSiPMResponsesCollection> crvSiPMResponsesCollection;
-    event.getByLabel(_crvSiPMResponsesModuleLabel,"",crvSiPMResponsesCollection);
+    art::Handle<CrvSiPMChargesCollection> crvSiPMChargesCollection;
+    event.getByLabel(_crvSiPMChargesModuleLabel,"",crvSiPMChargesCollection);
 
     art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
     event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
@@ -94,7 +94,7 @@ namespace mu2e
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
 
       CrvRecoPulsesCollection::const_iterator    iterRecoPulses    = crvRecoPulsesCollection->find(barIndex);
-      CrvSiPMResponsesCollection::const_iterator iterSiPMResponses = crvSiPMResponsesCollection->find(barIndex);
+      CrvSiPMChargesCollection::const_iterator   iterSiPMCharges   = crvSiPMChargesCollection->find(barIndex);
 
       for(int SiPM=0; SiPM<4; SiPM++) 
       {
@@ -126,14 +126,14 @@ namespace mu2e
           }
         }
 
-        if(iterSiPMResponses!=crvSiPMResponsesCollection->end()) 
+        if(iterSiPMCharges!=crvSiPMChargesCollection->end()) 
         {
-          const CrvSiPMResponses &crvSiPMResponses = iterSiPMResponses->second;
+          const CrvSiPMCharges &crvSiPMCharges = iterSiPMCharges->second;
 
-          const std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &singleSiPMResponses = crvSiPMResponses.GetSiPMResponses(SiPM);
-          for(size_t i=0; i<singleSiPMResponses.size(); i++) 
+          const std::vector<CrvSiPMCharges::CrvSingleCharge> &singleSiPMCharges = crvSiPMCharges.GetSiPMCharges(SiPM);
+          for(size_t i=0; i<singleSiPMCharges.size(); i++) 
           {
-            double charge = singleSiPMResponses[i]._charge;
+            double charge = singleSiPMCharges[i]._charge;
             MCPEs+=charge; 
           }
         }

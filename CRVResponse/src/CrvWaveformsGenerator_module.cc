@@ -1,5 +1,5 @@
 //
-// A module to create CRV waveforms from CRV SiPMResponses
+// A module to create CRV waveforms from CRV SiPMCharges
 //
 // $Id: $
 // $Author: ehrlich $
@@ -15,7 +15,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/CrvSiPMResponsesCollection.hh"
+#include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
 #include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 #include "SeedService/inc/SeedService.hh"
 
@@ -46,7 +46,7 @@ namespace mu2e
     void endJob();
 
     private:
-    std::string _crvSiPMResponsesModuleLabel;
+    std::string _crvSiPMChargesModuleLabel;
     std::string _singlePEWaveformFileName;
 
     boost::shared_ptr<mu2eCrv::MakeCrvWaveforms> _makeCrvWaveforms;
@@ -66,7 +66,7 @@ namespace mu2e
   };
 
   CrvWaveformsGenerator::CrvWaveformsGenerator(fhicl::ParameterSet const& pset) :
-    _crvSiPMResponsesModuleLabel(pset.get<std::string>("crvSiPMResponsesModuleLabel")),
+    _crvSiPMChargesModuleLabel(pset.get<std::string>("crvSiPMChargesModuleLabel")),
     _singlePEWaveformFileName(pset.get<std::string>("singlePEWaveformFileName")),
     _digitizationPrecision(pset.get<double>("digitizationPrecision")),   //12.5 ns
     _digitizationPoints(pset.get<int>("digitizationPoints")),  //8 points for every single waveform
@@ -98,8 +98,8 @@ namespace mu2e
   {
     std::unique_ptr<CrvDigiMCCollection> crvDigiMCCollection(new CrvDigiMCCollection);
 
-    art::Handle<CrvSiPMResponsesCollection> crvSiPMResponsesCollection;
-    event.getByLabel(_crvSiPMResponsesModuleLabel,"",crvSiPMResponsesCollection);
+    art::Handle<CrvSiPMChargesCollection> crvSiPMChargesCollection;
+    event.getByLabel(_crvSiPMChargesModuleLabel,"",crvSiPMChargesCollection);
 
     double samplingPointShift = _randFlat.fire()*_digitizationPrecision;
 
@@ -114,11 +114,11 @@ namespace mu2e
       _timeShiftFEBsSide1.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
     }
 
-    for(CrvSiPMResponsesCollection::const_iterator iter=crvSiPMResponsesCollection->begin(); 
-        iter!=crvSiPMResponsesCollection->end(); iter++)
+    for(CrvSiPMChargesCollection::const_iterator iter=crvSiPMChargesCollection->begin(); 
+        iter!=crvSiPMChargesCollection->end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = iter->first;
-      const CrvSiPMResponses &siPMResponses = iter->second;
+      const CrvSiPMCharges &siPMCharges = iter->second;
 
       CrvDigiMC &crvDigiMC = (*crvDigiMCCollection)[barIndex];
       crvDigiMC.SetDigitizationPrecision(_digitizationPrecision);
@@ -128,22 +128,22 @@ namespace mu2e
 
       for(int SiPM=0; SiPM<4; SiPM++)
       {
-        double firstSiPMResponseTime = siPMResponses.GetFirstSiPMResponseTime(SiPM);
-        if(isnan(firstSiPMResponseTime)) continue;
+        double firstSiPMChargeTime = siPMCharges.GetFirstSiPMChargeTime(SiPM);
+        if(isnan(firstSiPMChargeTime)) continue;
 
         double timeShiftFEB=0;
         if(SiPM%2==0 && FEB<_timeShiftFEBsSide0.size()) timeShiftFEB=_timeShiftFEBsSide0[FEB];
         if(SiPM%2==1 && FEB<_timeShiftFEBsSide1.size()) timeShiftFEB=_timeShiftFEBsSide1[FEB];
 
-        firstSiPMResponseTime += timeShiftFEB;  //Ok, since all SiPMResponse times of this SiPM will be shifted by the same timeShiftFEB
+        firstSiPMChargeTime += timeShiftFEB;  //Ok, since all SiPMCharge times of this SiPM will be shifted by the same timeShiftFEB
 
-        double startTime = floor(firstSiPMResponseTime / _digitizationPrecision) * _digitizationPrecision;  //start time of the waveform 
-                                                                                                            //in multiples of the 
-                                                                                                            //digitization interval (12.5ns)
+        double startTime = floor(firstSiPMChargeTime / _digitizationPrecision) * _digitizationPrecision;  //start time of the waveform 
+                                                                                                          //in multiples of the 
+                                                                                                          //digitization interval (12.5ns)
 
         startTime -= samplingPointShift;  //random shift of start time (same shift for all FEBs of this event)
 
-        const std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &timesAndCharges = siPMResponses.GetSiPMResponses(SiPM);
+        const std::vector<CrvSiPMCharges::CrvSingleCharge> &timesAndCharges = siPMCharges.GetSiPMCharges(SiPM);
         std::vector<double> times, charges;
         for(size_t i=0; i<timesAndCharges.size(); i++)
         {

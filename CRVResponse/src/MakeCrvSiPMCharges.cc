@@ -3,7 +3,7 @@ Author: Ralf Ehrlich
 Based on Paul Rubinov's C# code
 */
 
-#include "MakeCrvSiPMResponses.hh"
+#include "MakeCrvSiPMCharges.hh"
 
 #include <math.h>
 #include <iostream>
@@ -11,18 +11,18 @@ Based on Paul Rubinov's C# code
 
 
 //to get standalone version: compile with
-//g++ MakeCrvSiPMResponses.cc -std=c++11 -I../inc -I$CLHEP_INCLUDE_DIR -L$CLHEP_LIB_DIR -lCLHEP -DSiPMResponseStandalone
+//g++ MakeCrvSiPMCharges.cc -std=c++11 -I../inc -I$CLHEP_INCLUDE_DIR -L$CLHEP_LIB_DIR -lCLHEP -DSiPMChargesStandalone
 
 namespace mu2eCrv
 {
 
-double MakeCrvSiPMResponses::GetAvalancheProbability(double v)
+double MakeCrvSiPMCharges::GetAvalancheProbability(double v)
 {
   double avalancheProbability = _probabilities._avalancheProbParam1*(1 - exp(-v/_probabilities._avalancheProbParam2));
   return avalancheProbability; 
 }
 
-std::vector<std::pair<int,int> > MakeCrvSiPMResponses::FindCrossTalkPixelIds(const std::pair<int,int> &pixelId)
+std::vector<std::pair<int,int> > MakeCrvSiPMCharges::FindCrossTalkPixelIds(const std::pair<int,int> &pixelId)
 {
   std::vector<std::pair<int,int> > toReturn;
   if(pixelId.first>0)            toReturn.push_back(std::pair<int,int>(pixelId.first-1,pixelId.second));
@@ -32,14 +32,14 @@ std::vector<std::pair<int,int> > MakeCrvSiPMResponses::FindCrossTalkPixelIds(con
   return toReturn;
 }
 
-std::pair<int,int> MakeCrvSiPMResponses::FindThermalNoisePixelId()
+std::pair<int,int> MakeCrvSiPMCharges::FindThermalNoisePixelId()
 {
   int x=_randFlat.fire(_nPixelsX);
   int y=_randFlat.fire(_nPixelsY);
   return std::pair<int,int>(x,y);
 }
 
-std::pair<int,int> MakeCrvSiPMResponses::FindFiberPhotonsPixelId()
+std::pair<int,int> MakeCrvSiPMCharges::FindFiberPhotonsPixelId()
 {
   int x=0;
   int y=0;
@@ -55,7 +55,7 @@ std::pair<int,int> MakeCrvSiPMResponses::FindFiberPhotonsPixelId()
   return std::pair<int,int>(x,y);
 }
 
-bool MakeCrvSiPMResponses::IsInactivePixelId(const std::pair<int,int> &pixelId)
+bool MakeCrvSiPMCharges::IsInactivePixelId(const std::pair<int,int> &pixelId)
 {
   for(size_t i=0; i<_inactivePixels.size(); i++)
   {
@@ -64,7 +64,7 @@ bool MakeCrvSiPMResponses::IsInactivePixelId(const std::pair<int,int> &pixelId)
   return false;
 }
 
-double MakeCrvSiPMResponses::GenerateAvalanche(Pixel &pixel, const std::pair<int,int> &pixelId, double time, size_t photonIndex, bool darkNoise)
+double MakeCrvSiPMCharges::GenerateAvalanche(Pixel &pixel, const std::pair<int,int> &pixelId, double time, size_t photonIndex, bool darkNoise)
 {
   double v = GetVoltage(pixel,time);
 
@@ -122,7 +122,7 @@ double MakeCrvSiPMResponses::GenerateAvalanche(Pixel &pixel, const std::pair<int
   else return 0;  //no avalanche means no output charge
 }
 
-double MakeCrvSiPMResponses::GetVoltage(const Pixel &pixel, double time)
+double MakeCrvSiPMCharges::GetVoltage(const Pixel &pixel, double time)
 {
   if(!pixel._discharged) return _overvoltage;
 
@@ -131,7 +131,7 @@ double MakeCrvSiPMResponses::GetVoltage(const Pixel &pixel, double time)
   return v;
 }
 
-void MakeCrvSiPMResponses::SetSiPMConstants(int nPixelsX, int nPixelsY, int nPixelsRFiber, double overvoltage,  
+void MakeCrvSiPMCharges::SetSiPMConstants(int nPixelsX, int nPixelsY, int nPixelsRFiber, double overvoltage,  
                                             double blindTime, double microBunchPeriod, double timeConstant, 
                                             double capacitance, ProbabilitiesStruct probabilities, 
                                             const std::vector<std::pair<int,int> > &inactivePixels)
@@ -150,7 +150,7 @@ void MakeCrvSiPMResponses::SetSiPMConstants(int nPixelsX, int nPixelsY, int nPix
   _avalancheProbFullyChargedPixel = GetAvalancheProbability(overvoltage);
 }
 
-void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<std::pair<double,size_t> > &photons)
+void MakeCrvSiPMCharges::FillPhotonQueue(const std::vector<std::pair<double,size_t> > &photons)
 {
 //schedule charges caused by the CRV counter photons
 //no check whether time>=_blindTime && time<_mircoBunchPeriod, since this should be done in the calling method
@@ -179,7 +179,7 @@ void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<std::pair<double,si
   }
 }
 
-void MakeCrvSiPMResponses::Simulate(const std::vector<std::pair<double,size_t> > &photons,   //pair of photon time and index in the original photon vector
+void MakeCrvSiPMCharges::Simulate(const std::vector<std::pair<double,size_t> > &photons,   //pair of photon time and index in the original photon vector
                                    std::vector<SiPMresponse> &SiPMresponseVector)
 {
   _pixels.clear();
@@ -219,7 +219,7 @@ void MakeCrvSiPMResponses::Simulate(const std::vector<std::pair<double,size_t> >
 
 //sample program
 
-#ifdef SiPMResponseStandalone
+#ifdef SiPMChargesStandalone
 int main()
 {
   std::vector<std::pair<double,size_t> > photonTimes;
@@ -231,7 +231,7 @@ int main()
   photonTimes.emplace_back(612,203);
   std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
 
-  mu2eCrv::MakeCrvSiPMResponses::ProbabilitiesStruct probabilities;
+  mu2eCrv::MakeCrvSiPMCharges::ProbabilitiesStruct probabilities;
   probabilities._avalancheProbParam1 = 0.65;
   probabilities._avalancheProbParam2 = 2.7;
   probabilities._trapType0Prob = 0.0;
@@ -249,7 +249,7 @@ int main()
   CLHEP::HepJamesRandom engine(1);
   CLHEP::RandFlat randFlat(engine);
   CLHEP::RandPoissonQ randPoissonQ(engine);
-  mu2eCrv::MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
+  mu2eCrv::MakeCrvSiPMCharges sim(randFlat,randPoissonQ);
   sim.SetSiPMConstants(40, 40, 14, 2.1, 500, 1695, 12.0, 8.84e-14, probabilities, inactivePixels);
 
   sim.Simulate(photonTimes, SiPMresponseVector);

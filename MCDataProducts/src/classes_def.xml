@@ -237,23 +237,23 @@
  <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCluster,art::Ptr<mu2e::CaloShowerSim> >" />
  <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCluster,art::Ptr<mu2e::CaloShowerSim> > >" />
 
- <class name="mu2e::CrvPhotonArrivals" />
- <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvPhotonArrivals>" />
- <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvPhotonArrivals>" />
- <class name="mu2e::CrvPhotonArrivalsCollection" />
- <class name="art::Wrapper<mu2e::CrvPhotonArrivalsCollection>" />
+ <class name="mu2e::CrvPhotons" />
+ <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvPhotons>" />
+ <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvPhotons>" />
+ <class name="mu2e::CrvPhotonsCollection" />
+ <class name="art::Wrapper<mu2e::CrvPhotonsCollection>" />
 
- <class name="mu2e::CrvPhotonArrivals::SinglePhoton" />
- <class name="std::vector<mu2e::CrvPhotonArrivals::SinglePhoton>" />
+ <class name="mu2e::CrvPhotons::SinglePhoton" />
+ <class name="std::vector<mu2e::CrvPhotons::SinglePhoton>" />
  
- <class name="mu2e::CrvSiPMResponses" />
- <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvSiPMResponses>" />
- <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvSiPMResponses>" />
- <class name="mu2e::CrvSiPMResponsesCollection" />
- <class name="art::Wrapper<mu2e::CrvSiPMResponsesCollection>" />
+ <class name="mu2e::CrvSiPMCharges" />
+ <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvSiPMCharges>" />
+ <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvSiPMCharges>" />
+ <class name="mu2e::CrvSiPMChargesCollection" />
+ <class name="art::Wrapper<mu2e::CrvSiPMChargesCollection>" />
 
- <class name="mu2e::CrvSiPMResponses::CrvSingleSiPMResponse" />
- <class name="std::vector<mu2e::CrvSiPMResponses::CrvSingleSiPMResponse>" />
+ <class name="mu2e::CrvSiPMCharges::CrvSingleCharge" />
+ <class name="std::vector<mu2e::CrvSiPMCharges::CrvSingleCharge>" />
 
  <class name="mu2e::CrvDigiMC" />
  <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigiMC>" />

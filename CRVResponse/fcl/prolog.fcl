@@ -1,8 +1,8 @@
 BEGIN_PROLOG
 
-    CrvPhotonArrivals:
+    CrvPhotons:
     {
-      module_type               : CrvPhotonArrivalsGenerator
+      module_type               : CrvPhotonGenerator
       g4ModuleLabels            : ["*"]
       processNames              : ["*"]
       CRVSectors                : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","D1","U" ,"C1","C2","C3","D2","D3","D4"] //used only to match the vector entries below
@@ -43,10 +43,10 @@ BEGIN_PROLOG
       visibleEnergyAdjustmentFileName : "CRVResponse/fcl/visibleEnergyAdjustment.txt"
       timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
     }
-    CrvSiPMResponses:
+    CrvSiPMCharges:
     {
-      module_type                  : CrvSiPMResponsesGenerator
-      crvPhotonArrivalsModuleLabel : "CrvPhotonArrivals"
+      module_type                  : CrvSiPMChargeGenerator
+      crvPhotonsModuleLabel        : "CrvPhotons"
       deadSiPMProbability          : 0.01
       nPixelsX                     : 40
       nPixelsY                     : 40
@@ -80,7 +80,7 @@ BEGIN_PROLOG
     CrvWaveforms:
     {
       module_type                  : CrvWaveformsGenerator
-      crvSiPMResponsesModuleLabel  : "CrvSiPMResponses"
+      crvSiPMChargesModuleLabel    : "CrvSiPMCharges"
       singlePEWaveformFileName     : "CRVResponse/fcl/singlePEWaveform_v2.txt"
       singlePEWaveformPrecision    : 0.5    //0.5 ns
       singlePEWaveformMaxTime      : 100    //100 ns
@@ -142,27 +142,27 @@ CrvResponsePackage :
 {
    producers : 
    {
-     CrvPhotonArrivals           : @local::CrvPhotonArrivals
-     CrvSiPMResponses            : @local::CrvSiPMResponses
+     CrvPhotons                  : @local::CrvPhotons
+     CrvSiPMCharges              : @local::CrvSiPMCharges
      CrvWaveforms                : @local::CrvWaveforms
      CrvDigi                     : @local::CrvDigi
      CrvRecoPulses               : @local::CrvRecoPulses
      CrvCoincidence              : @local::CrvCoincidence
      CrvCoincidenceClusterFinder : @local::CrvCoincidenceClusterFinder
    }
-   CrvResponseSequence : [ CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
+   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
 }
 
 CrvDAQPackage : 
 {
    producers : 
    {
-     CrvPhotonArrivals           : @local::CrvPhotonArrivals
-     CrvSiPMResponses            : @local::CrvSiPMResponses
+     CrvPhotons                  : @local::CrvPhotons
+     CrvSiPMCharges              : @local::CrvSiPMCharges
      CrvWaveforms                : @local::CrvWaveforms
      CrvDigi                     : @local::CrvDigi
    }
-   CrvResponseSequence : [ CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvDigi ]
+   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi ]
 }
 
 END_PROLOG

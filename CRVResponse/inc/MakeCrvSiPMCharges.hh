@@ -3,8 +3,8 @@ Author: Ralf Ehrlich
 Based on Paul Rubinov's C# code
 */
 
-#ifndef MakeCrvSiPMResponses_hh
-#define MakeCrvSiPMResponses_hh
+#ifndef MakeCrvSiPMCharges_hh
+#define MakeCrvSiPMCharges_hh
 
 #include <memory>
 #include <set>
@@ -50,7 +50,7 @@ namespace mu2eCrv
     ScheduledCharge();
   };
   
-  class MakeCrvSiPMResponses
+  class MakeCrvSiPMCharges
   {
     int    _nPixelsX;
     int    _nPixelsY;
@@ -97,7 +97,7 @@ namespace mu2eCrv
 
     public:
 
-    MakeCrvSiPMResponses(CLHEP::RandFlat &randFlat, CLHEP::RandPoissonQ &randPoissonQ) :
+    MakeCrvSiPMCharges(CLHEP::RandFlat &randFlat, CLHEP::RandPoissonQ &randPoissonQ) :
                          _randFlat(randFlat), _randPoissonQ(randPoissonQ), 
                          _avalancheProbFullyChargedPixel(0) {}
 

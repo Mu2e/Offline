@@ -1,4 +1,4 @@
-#include "MakeCrvPhotonArrivals.hh"
+#include "MakeCrvPhotons.hh"
 
 #include <TCanvas.h>
 #include <TH2F.h>
@@ -9,7 +9,7 @@
 namespace mu2eCrv
 {
 
-void MakeCrvPhotonArrivals::DrawHistograms()
+void MakeCrvPhotons::DrawHistograms()
 {
   TCanvas c1("ArrivalProbabilities1","");
   TH2F h1("HistArrivalProbabilities1","",_LBD.yBins.size()-1,_LBD.yBins.data(),_LBD.zBins.size()-1,_LBD.zBins.data());

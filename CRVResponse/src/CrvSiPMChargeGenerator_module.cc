@@ -1,5 +1,5 @@
 //
-// A module to create CRV SiPM responses from CRV photon arrivals
+// A module to create CRV SiPM charges from CRV photons
 //
 // $Id: $
 // $Author: ehrlich $
@@ -7,7 +7,7 @@
 // 
 // Original Author: Ralf Ehrlich
 
-#include "CRVResponse/inc/MakeCrvSiPMResponses.hh"
+#include "CRVResponse/inc/MakeCrvSiPMCharges.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
@@ -17,8 +17,8 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
-#include "MCDataProducts/inc/CrvSiPMResponsesCollection.hh"
+#include "MCDataProducts/inc/CrvPhotonsCollection.hh"
+#include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
 #include "SeedService/inc/SeedService.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -38,18 +38,18 @@
 
 namespace mu2e 
 {
-  class CrvSiPMResponsesGenerator : public art::EDProducer 
+  class CrvSiPMChargeGenerator : public art::EDProducer 
   {
 
     public:
-    explicit CrvSiPMResponsesGenerator(fhicl::ParameterSet const& pset);
+    explicit CrvSiPMChargeGenerator(fhicl::ParameterSet const& pset);
     void produce(art::Event& e);
     void beginJob();
     void beginRun(art::Run &run);
     void endJob();
 
     private:
-    std::string _crvPhotonArrivalsModuleLabel;
+    std::string _crvPhotonsModuleLabel;
     double      _deadSiPMProbability;
     int         _nPixelsX;
     int         _nPixelsY;
@@ -60,17 +60,17 @@ namespace mu2e
     double      _blindTime;             //time window during which the SiPM is blind
     double      _microBunchPeriod;
 
-    mu2eCrv::MakeCrvSiPMResponses::ProbabilitiesStruct _probabilities;
+    mu2eCrv::MakeCrvSiPMCharges::ProbabilitiesStruct _probabilities;
     std::vector<std::pair<int,int> >   _inactivePixels;
 
-    boost::shared_ptr<mu2eCrv::MakeCrvSiPMResponses> _makeCrvSiPMResponses;
+    boost::shared_ptr<mu2eCrv::MakeCrvSiPMCharges> _makeCrvSiPMCharges;
 
     CLHEP::RandFlat     _randFlat;
     CLHEP::RandPoissonQ _randPoissonQ;
   };
 
-  CrvSiPMResponsesGenerator::CrvSiPMResponsesGenerator(fhicl::ParameterSet const& pset) :
-    _crvPhotonArrivalsModuleLabel(pset.get<std::string>("crvPhotonArrivalsModuleLabel")),
+  CrvSiPMChargeGenerator::CrvSiPMChargeGenerator(fhicl::ParameterSet const& pset) :
+    _crvPhotonsModuleLabel(pset.get<std::string>("crvPhotonsModuleLabel")),
     _deadSiPMProbability(pset.get<double>("deadSiPMProbability")),   //0.01
     _nPixelsX(pset.get<int>("nPixelsX")),                            //40
     _nPixelsY(pset.get<int>("nPixelsY")),                            //40
@@ -83,7 +83,7 @@ namespace mu2e
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randPoissonQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
-    produces<CrvSiPMResponsesCollection>();
+    produces<CrvSiPMChargesCollection>();
     _probabilities._avalancheProbParam1 = pset.get<double>("AvalancheProbParam1");  //0.65
     _probabilities._avalancheProbParam2 = pset.get<double>("AvalancheProbParam2");  //2.7
     _probabilities._trapType0Prob = pset.get<double>("TrapType0Prob");              //0
@@ -94,29 +94,29 @@ namespace mu2e
     _probabilities._crossTalkProb = pset.get<double>("CrossTalkProb");              //0.05
   }
 
-  void CrvSiPMResponsesGenerator::beginJob()
+  void CrvSiPMChargeGenerator::beginJob()
   {
   }
 
-  void CrvSiPMResponsesGenerator::beginRun(art::Run &run)
+  void CrvSiPMChargeGenerator::beginRun(art::Run &run)
   {
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     _microBunchPeriod = accPar->deBuncherPeriod;
-    _makeCrvSiPMResponses = boost::shared_ptr<mu2eCrv::MakeCrvSiPMResponses>(new mu2eCrv::MakeCrvSiPMResponses(_randFlat, _randPoissonQ));
-    _makeCrvSiPMResponses->SetSiPMConstants(_nPixelsX, _nPixelsY, _nPixelsRFiber, _overvoltage, _blindTime, _microBunchPeriod, 
+    _makeCrvSiPMCharges = boost::shared_ptr<mu2eCrv::MakeCrvSiPMCharges>(new mu2eCrv::MakeCrvSiPMCharges(_randFlat, _randPoissonQ));
+    _makeCrvSiPMCharges->SetSiPMConstants(_nPixelsX, _nPixelsY, _nPixelsRFiber, _overvoltage, _blindTime, _microBunchPeriod, 
                                             _timeConstant, _capacitance, _probabilities, _inactivePixels);
   }
 
-  void CrvSiPMResponsesGenerator::endJob()
+  void CrvSiPMChargeGenerator::endJob()
   {
   }
 
-  void CrvSiPMResponsesGenerator::produce(art::Event& event) 
+  void CrvSiPMChargeGenerator::produce(art::Event& event) 
   {
-    std::unique_ptr<CrvSiPMResponsesCollection> crvSiPMResponsesCollection(new CrvSiPMResponsesCollection);
+    std::unique_ptr<CrvSiPMChargesCollection> crvSiPMChargesCollection(new CrvSiPMChargesCollection);
 
-    art::Handle<CrvPhotonArrivalsCollection> crvPhotonArrivalsCollection;
-    event.getByLabel(_crvPhotonArrivalsModuleLabel,"",crvPhotonArrivalsCollection);
+    art::Handle<CrvPhotonsCollection> crvPhotonsCollection;
+    event.getByLabel(_crvPhotonsModuleLabel,"",crvPhotonsCollection);
 
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
@@ -124,37 +124,37 @@ namespace mu2e
     for(iter=counters.begin(); iter!=counters.end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
-      CrvPhotonArrivalsCollection::const_iterator crvPhotons=crvPhotonArrivalsCollection->find(barIndex); 
+      CrvPhotonsCollection::const_iterator crvPhotons=crvPhotonsCollection->find(barIndex); 
 
-      CrvSiPMResponses &crvSiPMResponses = (*crvSiPMResponsesCollection)[barIndex];
+      CrvSiPMCharges &crvSiPMCharges = (*crvSiPMChargesCollection)[barIndex];
 
       for(int SiPM=0; SiPM<4; SiPM++) 
       {
 
-        if(!(*iter)->getBarDetail().hasCMB(SiPM%2)) continue;  //no SiPM responses at non-existing SiPMs 
+        if(!(*iter)->getBarDetail().hasCMB(SiPM%2)) continue;  //no SiPM charges at non-existing SiPMs 
                                                                //SiPM%2 returns the side of the CRV counter
                                                                //0 ... negative side
                                                                //1 ... positive side
 
         if(_randFlat.fire() < _deadSiPMProbability) continue;  //assume that this random SiPM is dead
 
-        std::vector<std::pair<double,size_t> > photonArrivalTimesAdjusted;   //pair of photon time and index in the original photon vector
-        if(crvPhotons!=crvPhotonArrivalsCollection->end())  //if there are no photons at this SiPM, then we still need to continue to simulate dark noise
+        std::vector<std::pair<double,size_t> > photonTimesAdjusted;   //pair of photon time and index in the original photon vector
+        if(crvPhotons!=crvPhotonsCollection->end())  //if there are no photons at this SiPM, then we still need to continue to simulate dark noise
         {
-          const std::vector<CrvPhotonArrivals::SinglePhoton> &photonArrivalTimes = crvPhotons->second.GetPhotonArrivalTimes(SiPM);
-          for(size_t iphoton=0; iphoton<photonArrivalTimes.size(); iphoton++)
+          const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->second.GetPhotons(SiPM);
+          for(size_t iphoton=0; iphoton<photonTimes.size(); iphoton++)
           {
-            double time = photonArrivalTimes[iphoton]._time;
+            double time = photonTimes[iphoton]._time;
             time = fmod(time,_microBunchPeriod); 
-            if(time>_blindTime) photonArrivalTimesAdjusted.push_back(std::pair<double,size_t>(time,iphoton)); //wrapped time
+            if(time>_blindTime) photonTimesAdjusted.push_back(std::pair<double,size_t>(time,iphoton)); //wrapped time
             //no ghost hits, since the SiPMs are off during the blind time (which is longer than the "ghost time")
           }
         }
 
         std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
-        _makeCrvSiPMResponses->Simulate(photonArrivalTimesAdjusted, SiPMresponseVector);
+        _makeCrvSiPMCharges->Simulate(photonTimesAdjusted, SiPMresponseVector);
 
-        std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &responsesOneSiPM = crvSiPMResponses.GetSiPMResponses(SiPM);
+        std::vector<CrvSiPMCharges::CrvSingleCharge> &chargesOneSiPM = crvSiPMCharges.GetSiPMCharges(SiPM);
 
         std::vector<mu2eCrv::SiPMresponse>::const_iterator responseIter;
         for(responseIter=SiPMresponseVector.begin(); responseIter!=SiPMresponseVector.end(); responseIter++)
@@ -168,31 +168,31 @@ namespace mu2e
           bool darkNoise=responseIter->_darkNoise;
           if(!darkNoise) 
           {
-            const std::vector<CrvPhotonArrivals::SinglePhoton> &photonArrivalTimes = crvPhotons->second.GetPhotonArrivalTimes(SiPM);
-            responsesOneSiPM.emplace_back(time, charge, chargeInPEs,photonArrivalTimes[photonIndex]._step);
+            const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->second.GetPhotons(SiPM);
+            chargesOneSiPM.emplace_back(time, charge, chargeInPEs,photonTimes[photonIndex]._step);
           }
-          else responsesOneSiPM.emplace_back(time, charge, chargeInPEs);
-//std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<time<<std::endl;
+          else chargesOneSiPM.emplace_back(time, charge, chargeInPEs);
+//std::cout<<"SiPM charge   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<time<<std::endl;
         }
 
       }
 
       //2 options:
-      //(1) -create a crvSiPMResponse object as a reference to a crvSiPMResponseCollection map entry at the beginning for all counters
-      //    -fill this this crvSiPMResponse object
-      //    -if the crvSiPMResponse object stays empty, erase the map entry in crvSiPMResponseCollection
-      //(2) -create a standalone crvSiPMResponse object
-      //    -fill this this crvSiPMResponse object
-      //    -if the crvSiPMResponse didn't stay empty, create a new map entry in crvSiPMResponseCollection and fill its content with
-      //     the new crvSiPMResponse  <---- too time consuming, therefore use option (1)
+      //(1) -create a crvSiPMCharges object as a reference to a crvSiPMChargesCollection map entry at the beginning for all counters
+      //    -fill this this crvSiPMCharges object
+      //    -if the crvSiPMCharges object stays empty, erase the map entry in crvSiPMChargesCollection
+      //(2) -create a standalone crvSiPMCharges object
+      //    -fill this this crvSiPMCharges object
+      //    -if the crvSiPMCharges didn't stay empty, create a new map entry in crvSiPMChargesCollection and fill its content with
+      //     the new crvSiPMCharges  <---- too time consuming, therefore use option (1)
 
-      if(crvSiPMResponses.IsEmpty()) crvSiPMResponsesCollection->erase(barIndex);  
+      if(crvSiPMCharges.IsEmpty()) crvSiPMChargesCollection->erase(barIndex);  
     }
 
-    event.put(std::move(crvSiPMResponsesCollection));
+    event.put(std::move(crvSiPMChargesCollection));
   } // end produce
 
 } // end namespace mu2e
 
-using mu2e::CrvSiPMResponsesGenerator;
-DEFINE_ART_MODULE(CrvSiPMResponsesGenerator)
+using mu2e::CrvSiPMChargeGenerator;
+DEFINE_ART_MODULE(CrvSiPMChargeGenerator)

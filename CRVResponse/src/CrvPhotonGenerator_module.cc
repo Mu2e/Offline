@@ -7,7 +7,7 @@
 // 
 // Original Author: Ralf Ehrlich
 
-#include "CRVResponse/inc/MakeCrvPhotonArrivals.hh"
+#include "CRVResponse/inc/MakeCrvPhotons.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
@@ -18,7 +18,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
+#include "MCDataProducts/inc/CrvPhotonsCollection.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "SeedService/inc/SeedService.hh"
 
@@ -43,11 +43,11 @@
 
 namespace mu2e 
 {
-  class CrvPhotonArrivalsGenerator : public art::EDProducer 
+  class CrvPhotonGenerator : public art::EDProducer 
   {
 
     public:
-    explicit CrvPhotonArrivalsGenerator(fhicl::ParameterSet const& pset);
+    explicit CrvPhotonGenerator(fhicl::ParameterSet const& pset);
     void produce(art::Event& e);
     void beginJob();
     void endJob();
@@ -57,10 +57,10 @@ namespace mu2e
     std::vector<std::string> _g4ModuleLabels;
     std::vector<std::string> _processNames;
 
-    ConfigFileLookupPolicy                                               _resolveFullPath;
-    std::vector<std::string>                                             _lookupTableFileNames;
-    std::vector<std::string>                                             _lookupTableCRVSectors;
-    std::vector<boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> >      _makeCrvPhotonArrivals;
+    ConfigFileLookupPolicy                                     _resolveFullPath;
+    std::vector<std::string>                                   _lookupTableFileNames;
+    std::vector<std::string>                                   _lookupTableCRVSectors;
+    std::vector<boost::shared_ptr<mu2eCrv::MakeCrvPhotons> >   _makeCrvPhotons;
 
     double      _scintillationYield;
     double      _scintillationYieldVariation;
@@ -88,7 +88,7 @@ namespace mu2e
     std::map<CRSScintillatorBarIndex,double>  _scintillationYieldAdjustments;
   };
 
-  CrvPhotonArrivalsGenerator::CrvPhotonArrivalsGenerator(fhicl::ParameterSet const& pset) :
+  CrvPhotonGenerator::CrvPhotonGenerator(fhicl::ParameterSet const& pset) :
     _g4ModuleLabels(pset.get<std::vector<std::string> >("g4ModuleLabels")),
     _processNames(pset.get<std::vector<std::string> >("processNames")),
     _lookupTableFileNames(pset.get<std::vector<std::string> >("lookupTableFileNames")),
@@ -115,18 +115,18 @@ namespace mu2e
     ConfigFileLookupPolicy configFile;
     _visibleEnergyAdjustmentFileName = configFile(_visibleEnergyAdjustmentFileName);
 
-    produces<CrvPhotonArrivalsCollection>();
+    produces<CrvPhotonsCollection>();
   }
 
-  void CrvPhotonArrivalsGenerator::beginJob()
+  void CrvPhotonGenerator::beginJob()
   {
   }
 
-  void CrvPhotonArrivalsGenerator::endJob()
+  void CrvPhotonGenerator::endJob()
   {
   }
 
-  void CrvPhotonArrivalsGenerator::beginRun(art::Run& rr)
+  void CrvPhotonGenerator::beginRun(art::Run& rr)
   {
     GeomHandle<CosmicRayShield> CRS;
     std::vector<CRSScintillatorShield> const &shields = CRS->getCRSScintillatorShields();
@@ -145,34 +145,34 @@ namespace mu2e
         if(_lookupTableFileNames[i]==_lookupTableFileNames[j])
         {
            tableLoaded=true;
-           _makeCrvPhotonArrivals.emplace_back(_makeCrvPhotonArrivals[j]);
-           std::cout<<"CRV sector "<<i<<" ("<<_lookupTableCRVSectors[i]<<") uses "<<_makeCrvPhotonArrivals.back()->GetFileName()<<std::endl;
+           _makeCrvPhotons.emplace_back(_makeCrvPhotons[j]);
+           std::cout<<"CRV sector "<<i<<" ("<<_lookupTableCRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<std::endl;
            break;
         }
       }
       if(tableLoaded) continue;
 
-      _makeCrvPhotonArrivals.emplace_back(boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat, _randGaussQ, _randPoissonQ)));
-      boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> &CPA=_makeCrvPhotonArrivals.back();
-      CPA->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
-      CPA->SetScintillationYield(_scintillationYield);
-      CPA->SetScintillatorBirksConstant(_scintillatorBirksConstant);
-      CPA->SetScintillatorRatioFastSlow(_scintillatorRatioFastSlow);
-      CPA->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
-      CPA->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
-      CPA->SetFiberDecayTime(_fiberDecayTime);
-      CPA->LoadVisibleEnergyAdjustmentTable(_visibleEnergyAdjustmentFileName);
-      std::cout<<"CRV sector "<<i<<" ("<<_lookupTableCRVSectors[i]<<") uses "<<_makeCrvPhotonArrivals.back()->GetFileName()<<std::endl;
+      _makeCrvPhotons.emplace_back(boost::shared_ptr<mu2eCrv::MakeCrvPhotons>(new mu2eCrv::MakeCrvPhotons(_randFlat, _randGaussQ, _randPoissonQ)));
+      boost::shared_ptr<mu2eCrv::MakeCrvPhotons> &photonMaker=_makeCrvPhotons.back();
+      photonMaker->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
+      photonMaker->SetScintillationYield(_scintillationYield);
+      photonMaker->SetScintillatorBirksConstant(_scintillatorBirksConstant);
+      photonMaker->SetScintillatorRatioFastSlow(_scintillatorRatioFastSlow);
+      photonMaker->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
+      photonMaker->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
+      photonMaker->SetFiberDecayTime(_fiberDecayTime);
+      photonMaker->LoadVisibleEnergyAdjustmentTable(_visibleEnergyAdjustmentFileName);
+      std::cout<<"CRV sector "<<i<<" ("<<_lookupTableCRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<std::endl;
     }
   }
 
-  void CrvPhotonArrivalsGenerator::produce(art::Event& event) 
+  void CrvPhotonGenerator::produce(art::Event& event) 
   {
     _timeOffsets.updateMap(event);
 
     _scintillationYieldAdjustments.clear();
 
-    std::unique_ptr<CrvPhotonArrivalsCollection> crvPhotonArrivalsCollection(new CrvPhotonArrivalsCollection);
+    std::unique_ptr<CrvPhotonsCollection> crvPhotonsCollection(new CrvPhotonsCollection);
 
     GeomHandle<CosmicRayShield> CRS;
 
@@ -210,7 +210,7 @@ namespace mu2e
           ParticleDataTable::maybe_ref particle = particleDataTable->particle(PDGcode);
           if(!particle) 
           {
-            std::cerr<<"Error in CrvPhotonArrivalsGenerator: Found a PDG code which is not in the GEANT particle table: ";
+            std::cerr<<"Error in CrvPhotonGenerator: Found a PDG code which is not in the GEANT particle table: ";
             std::cerr<<PDGcode<<std::endl;
             continue;
           }
@@ -248,25 +248,25 @@ namespace mu2e
 
           const CRSScintillatorBarId &barId = CRSbar.id();
           int CRVSectorNumber=barId.getShieldNumber();
-          boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> &CPA=_makeCrvPhotonArrivals.at(CRVSectorNumber);
-          CPA->MakePhotons(p1Local, p2Local, t1, t2,  
+          boost::shared_ptr<mu2eCrv::MakeCrvPhotons> &photonMaker=_makeCrvPhotons.at(CRVSectorNumber);
+          photonMaker->MakePhotons(p1Local, p2Local, t1, t2,  
                                         PDGcode, beta, charge,
                                         energyDepositedTotal,
                                         energyDepositedNonIonizing,
                                         step.stepLength(),
                                         scintillationYieldAdjustment);
 
-          CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];
+          CrvPhotons &crvPhotons = (*crvPhotonsCollection)[step.barIndex()];
           for(int SiPM=0; SiPM<4; SiPM++)
           {
-            const std::vector<double> &times=CPA->GetArrivalTimes(SiPM);
+            const std::vector<double> &times=photonMaker->GetArrivalTimes(SiPM);
             art::Ptr<StepPointMC> spmcptr(CRVSteps,istep);
             for(size_t itime=0; itime<times.size(); itime++)
             {
-              CrvPhotonArrivals::SinglePhoton photon;
+              CrvPhotons::SinglePhoton photon;
               photon._time = times[itime];
               photon._step = spmcptr;
-              crvPhotons.GetPhotonArrivalTimes(SiPM).push_back(photon);
+              crvPhotons.GetPhotons(SiPM).push_back(photon);
             }
           }
 
@@ -276,10 +276,10 @@ namespace mu2e
 
 /* photnns into the event */
 
-    event.put(std::move(crvPhotonArrivalsCollection));
+    event.put(std::move(crvPhotonsCollection));
   } // end produce
 
 } // end namespace mu2e
 
-using mu2e::CrvPhotonArrivalsGenerator;
-DEFINE_ART_MODULE(CrvPhotonArrivalsGenerator)
+using mu2e::CrvPhotonGenerator;
+DEFINE_ART_MODULE(CrvPhotonGenerator)

@@ -34,8 +34,8 @@ physics :
     CrvPlot:
     {
       module_type                    : CrvPlot
-      crvPhotonArrivalsModuleLabel   : CrvPhotonArrivals
-      crvSiPMResponsesModuleLabel    : CrvSiPMResponses
+      crvPhotonsModuleLabel          : CrvPhotons
+      crvSiPMChargesModuleLabel      : CrvSiPMCharges
       crvWaveformsModuleLabel        : CrvWaveforms
       crvRecoPulsesModuleLabel       : CrvRecoPulses
       crvBarIndex                    : 1
@@ -50,8 +50,8 @@ physics :
   end_paths: [an, out]
 }
 
-physics.producers.CrvPhotonArrivals.startTime  : 0.0 
-physics.producers.CrvSiPMResponses.blindTime   : 0.0
+physics.producers.CrvPhotons.startTime         : 0.0 
+physics.producers.CrvSiPMCharges.blindTime     : 0.0
 physics.producers.CrvWaveforms.minVoltage      : 0.0
 
 services.SeedService.baseSeed         :  773651

@@ -132,8 +132,8 @@ physics :
     protonTimeMap: { module_type : GenerateProtonTimes }
     muonTimeMap: { module_type : GenerateMuonLife }
 
-    CrvPhotonArrivals: @local::CrvPhotonArrivals
-    CrvSiPMResponses : @local::CrvSiPMResponses
+    CrvPhotons       : @local::CrvPhotons
+    CrvSiPMCharges   : @local::CrvSiPMCharges
     CrvWaveforms     : @local::CrvWaveforms
     CrvRecoPulses    : @local::CrvRecoPulses
 
@@ -182,7 +182,7 @@ physics :
   }
 
 
-  trig : [generate, g4run, belowCrvFilter, backgroundOverlay, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses,
+  trig : [generate, g4run, belowCrvFilter, backgroundOverlay, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvRecoPulses,
           CrvCoincidencePE10T5,
           CrvCoincidencePE12T5,
           CrvCoincidencePE14T5,
@@ -222,11 +222,11 @@ physics :
   end_paths: []
 }
 
-physics.producers.CrvPhotonArrivals.timeOffsets    : { inputs : [] }
-physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
-physics.producers.CrvPhotonArrivals.processNames   : ["*"]
-physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["CRVConditions/v3_0/LookupTable_5600"]
-physics.producers.CrvPhotonArrivals.CRVSectors                : ["Test"]
+physics.producers.CrvPhotons.timeOffsets    : { inputs : [] }
+physics.producers.CrvPhotons.g4ModuleLabels : ["*"]
+physics.producers.CrvPhotons.processNames   : ["*"]
+physics.producers.CrvPhotons.lookupTableFileNames      : ["CRVConditions/v3_0/LookupTable_5600"]
+physics.producers.CrvPhotons.CRVSectors                : ["Test"]
 
 physics.producers.CrvCoincidencePE10T5.PEthresholds                   : [10]
 physics.producers.CrvCoincidencePE10T5.maxTimeDifferences             : [5]

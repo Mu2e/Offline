@@ -33,7 +33,7 @@ moduleGap=5
 #        echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm_6600.fcl\"" >| $fclfile
 #        echo "services.GeometryService.inputFile                      : \"$geomfile\"" >> $fclfile
 #        echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
-#        echo "physics.producers.CrvPhotonArrivals.scintillationYield  : $photonYield" >> $fclfile
+#        echo "physics.producers.CrvPhotons.scintillationYield         : $photonYield" >> $fclfile
 #        echo "physics.producers.backgroundOverlay.overlayFactor       : $overlayFactor" >> $fclfile
 
 #        generate_fcl --description=$name --dsconf=$i --run=1 --events=20000 --njobs=50 $fclfile
@@ -49,7 +49,7 @@ moduleGap=5
         echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm10_6600.fcl\"" >| $fclfile
         echo "services.GeometryService.inputFile                      : \"$geomfile\"" >> $fclfile
         echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
-        echo "physics.producers.CrvPhotonArrivals.scintillationYield  : $photonYield" >> $fclfile
+        echo "physics.producers.CrvPhotons.scintillationYield         : $photonYield" >> $fclfile
         echo "physics.producers.backgroundOverlay.overlayFactor       : $overlayFactor" >> $fclfile
 
         generate_fcl --description=$name --dsconf=$i --run=1 --events=20000 --njobs=50 $fclfile

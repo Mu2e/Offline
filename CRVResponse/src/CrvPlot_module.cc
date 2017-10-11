@@ -15,8 +15,8 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
-#include "MCDataProducts/inc/CrvSiPMResponsesCollection.hh"
+#include "MCDataProducts/inc/CrvPhotonsCollection.hh"
+#include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
 #include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
 
@@ -51,8 +51,8 @@ namespace mu2e
     void beginRun(art::Run const &run);
 
     private:
-    std::string _crvPhotonArrivalsModuleLabel;
-    std::string _crvSiPMResponsesModuleLabel;
+    std::string _crvPhotonsModuleLabel;
+    std::string _crvSiPMChargesModuleLabel;
     std::string _crvWaveformsModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
     int         _crvBarIndex;
@@ -66,8 +66,8 @@ namespace mu2e
 
   CrvPlot::CrvPlot(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
-    _crvPhotonArrivalsModuleLabel(pset.get<std::string>("crvPhotonArrivalsModuleLabel")),
-    _crvSiPMResponsesModuleLabel(pset.get<std::string>("crvSiPMResponsesModuleLabel")),
+    _crvPhotonsModuleLabel(pset.get<std::string>("crvPhotonsModuleLabel")),
+    _crvSiPMChargesModuleLabel(pset.get<std::string>("crvSiPMChargesModuleLabel")),
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _crvBarIndex(pset.get<int>("crvBarIndex")),
@@ -96,11 +96,11 @@ namespace mu2e
     _icanvas++;
     if(_icanvas>=20) return;
 
-    art::Handle<CrvPhotonArrivalsCollection> crvPhotonArrivalsCollection;
-    event.getByLabel(_crvPhotonArrivalsModuleLabel,"",crvPhotonArrivalsCollection);
+    art::Handle<CrvPhotonsCollection> crvPhotonsCollection;
+    event.getByLabel(_crvPhotonsModuleLabel,"",crvPhotonsCollection);
 
-    art::Handle<CrvSiPMResponsesCollection> crvSiPMResponsesCollection;
-    event.getByLabel(_crvSiPMResponsesModuleLabel,"",crvSiPMResponsesCollection);
+    art::Handle<CrvSiPMChargesCollection> crvSiPMChargesCollection;
+    event.getByLabel(_crvSiPMChargesModuleLabel,"",crvSiPMChargesCollection);
 
     art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
     event.getByLabel(_crvWaveformsModuleLabel,"",crvDigiMCCollection);
@@ -111,8 +111,8 @@ namespace mu2e
     GeomHandle<CosmicRayShield> CRS;
     const CRSScintillatorBarIndex barIndex(_crvBarIndex);
 
-    CrvPhotonArrivalsCollection::const_iterator  photonArrivals = crvPhotonArrivalsCollection->find(barIndex);
-    CrvSiPMResponsesCollection::const_iterator   siPMResponses  = crvSiPMResponsesCollection->find(barIndex);
+    CrvPhotonsCollection::const_iterator         photons        = crvPhotonsCollection->find(barIndex);
+    CrvSiPMChargesCollection::const_iterator     siPMCharges    = crvSiPMChargesCollection->find(barIndex);
     CrvDigiMCCollection::const_iterator          digiMC         = crvDigiMCCollection->find(barIndex);
     CrvRecoPulsesCollection::const_iterator      recoPulses     = crvRecoPulsesCollection->find(barIndex);
 
@@ -135,17 +135,17 @@ namespace mu2e
     {
       _canvas[_icanvas]->cd(SiPM+1);
 
-//Photon Arrival Times
-      std::vector<double> photonArrivalTimesAdjusted;
-      if(photonArrivals!=crvPhotonArrivalsCollection->end())
+//Photon Times
+      std::vector<double> photonTimesAdjusted;
+      if(photons!=crvPhotonsCollection->end())
       {
-        const std::vector<CrvPhotonArrivals::SinglePhoton> &photonArrivalTimes = photonArrivals->second.GetPhotonArrivalTimes(SiPM);
-        std::vector<CrvPhotonArrivals::SinglePhoton>::const_iterator timeIter;
-        for(timeIter=photonArrivalTimes.begin(); timeIter!=photonArrivalTimes.end(); timeIter++)
+        const std::vector<CrvPhotons::SinglePhoton> &photonTimes = photons->second.GetPhotons(SiPM);
+        std::vector<CrvPhotons::SinglePhoton>::const_iterator timeIter;
+        for(timeIter=photonTimes.begin(); timeIter!=photonTimes.end(); timeIter++)
         {
           double time = timeIter->_time;
           time = fmod(time,_microBunchPeriod); 
-          photonArrivalTimesAdjusted.push_back(time);
+          photonTimesAdjusted.push_back(time);
         }
       }
 
@@ -155,9 +155,9 @@ namespace mu2e
       TH1D *hist=new TH1D(s2.str().c_str(),s3.str().c_str(),100,_timeStart,_timeEnd);
       histVector.push_back(hist);
 
-      for(unsigned int i=0; i<photonArrivalTimesAdjusted.size(); i++)
+      for(unsigned int i=0; i<photonTimesAdjusted.size(); i++)
       {
-        hist->Fill(photonArrivalTimesAdjusted[i]);
+        hist->Fill(photonTimesAdjusted[i]);
       }
 
       hist->SetLineColor(kBlue);
@@ -171,9 +171,9 @@ namespace mu2e
 
 //SiPM response
       std::vector<double> siPMtimes, siPMcharges;
-      if(siPMResponses!=crvSiPMResponsesCollection->end())
+      if(siPMCharges!=crvSiPMChargesCollection->end())
       {
-        const std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &timesAndCharges = siPMResponses->second.GetSiPMResponses(SiPM);
+        const std::vector<CrvSiPMCharges::CrvSingleCharge> &timesAndCharges = siPMCharges->second.GetSiPMCharges(SiPM);
         for(size_t i=0; i<timesAndCharges.size(); i++)
         {
           siPMtimes.push_back(timesAndCharges[i]._time);

@@ -37,8 +37,8 @@ physics :
     protonTimeMap: { module_type : GenerateProtonTimes }
     muonTimeMap: { module_type : GenerateMuonLife }
 
-    CrvPhotonArrivals: @local::CrvPhotonArrivals
-    CrvSiPMResponses : @local::CrvSiPMResponses
+    CrvPhotons       : @local::CrvPhotons
+    CrvSiPMCharges   : @local::CrvSiPMCharges
     CrvWaveforms     : @local::CrvWaveforms
     CrvRecoPulses    : @local::CrvRecoPulses
   }
@@ -48,13 +48,13 @@ physics :
     CrvTest : 
     {
       module_type                 : CRVTest
-      crvSiPMResponsesModuleLabel : "CrvSiPMResponses"
+      crvSiPMChargesModuleLabel   : "CrvSiPMCharges"
       crvRecoPulsesModuleLabel    : "CrvRecoPulses"
       genParticleModuleLabel      : "generate" 
     }
   }
 
-  trig : [generate, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses]
+  trig : [generate, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvRecoPulses]
   trigger_paths  : [trig]
 
 #  out: [CrvTest, Output]
@@ -71,11 +71,11 @@ outputs:
     }
 }
 
-physics.producers.CrvPhotonArrivals.g4ModuleLabels      : []   #emtpy so that the module doesn't expect any StepPointMCs
-physics.producers.CrvPhotonArrivals.processNames        : []   #the module needs to be present so that an empty PhotonArrivalsCollection is produced
-physics.producers.CrvSiPMResponses.deadSiPMProbability  : 0.0
-physics.producers.CrvWaveforms.minVoltage               : 0.0
-physics.producers.CrvRecoPulses.minPEs                  : 0
+physics.producers.CrvPhotons.g4ModuleLabels           : []   #emtpy so that the module doesn't expect any StepPointMCs
+physics.producers.CrvPhotons.processNames             : []   #the module needs to be present so that an empty PhotonsCollection is produced
+physics.producers.CrvSiPMCharges.deadSiPMProbability  : 0.0
+physics.producers.CrvWaveforms.minVoltage             : 0.0
+physics.producers.CrvRecoPulses.minPEs                : 0
 
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20

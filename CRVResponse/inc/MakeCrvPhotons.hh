@@ -1,5 +1,5 @@
-#ifndef MakeCrvPhotonArrivals_h
-#define MakeCrvPhotonArrivals_h
+#ifndef MakeCrvPhotons_h
+#define MakeCrvPhotons_h
 
 #include <vector>
 #include <map>
@@ -68,14 +68,14 @@ struct LookupBin
 
 
 
-class MakeCrvPhotonArrivals
+class MakeCrvPhotons
 {
   public:
 
-    MakeCrvPhotonArrivals(CLHEP::RandFlat &randFlat, CLHEP::RandGaussQ &randGaussQ, CLHEP::RandPoissonQ &randPoissonQ) : 
+    MakeCrvPhotons(CLHEP::RandFlat &randFlat, CLHEP::RandGaussQ &randGaussQ, CLHEP::RandPoissonQ &randPoissonQ) : 
                                                       _randFlat(randFlat), _randGaussQ(randGaussQ), _randPoissonQ(randPoissonQ) {}
 
-    ~MakeCrvPhotonArrivals();
+    ~MakeCrvPhotons();
 
     const std::string         &GetFileName() const {return _fileName;}
 
