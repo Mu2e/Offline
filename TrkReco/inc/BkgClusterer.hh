@@ -9,6 +9,7 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitPosition.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/BkgCluster.hh"
 //
 namespace mu2e 
@@ -23,7 +24,7 @@ namespace mu2e
     virtual void findClusters(BkgClusterCollection& clusters,
       StrawHitCollection const& shcol,
       StrawHitPositionCollection const& shpcol,
-      StrawHitFlagCollection const& shfcol) const = 0;
+      StrawHitFlagCollection const& shfcol) = 0;
   };
 }
 #endif

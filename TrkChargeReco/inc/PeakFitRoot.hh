@@ -2,6 +2,7 @@
 #ifndef TrkChargeReco_PeakFitRoot_hh
 #define TrkChargeReco_PeakFitRoot_hh
 // base class for controlling peak fits
+    //  Virtual class providing structure for extracting charge from ADC waveforms
 //
 #include "TrkChargeReco/inc/PeakFit.hh"
 #include "TrkChargeReco/inc/PeakFitFunction.hh"
@@ -9,31 +10,40 @@
 #include <string>
 
 class TGraphErrors;
-// base class for controlling the peak fit.
+
+
 namespace mu2e {
 
   namespace TrkChargeReco {
 
-    //  PeakFitRoot
-    //  Virtual class providing structure for extracting charge from ADC waveforms
-    class PeakFitRoot : public PeakFit  {
+
+    class PeakFitRoot : public PeakFit 
+    {
       public:
 	
+	PeakFitRoot(const StrawElectronics& strawele, const fhicl::ParameterSet& pset);
+ 	virtual ~PeakFitRoot(){}
+
+
 	// extract peak information from adc waveform data.  1 waveform generates 1 peak fit.
 	// The default implementation simply sums the ADC data after subtracting pedesdal
 	virtual void process(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const;
-
-	// Destructor
-	virtual ~PeakFitRoot(){}
-
-	// PeakFitRoot normal constructor with ConfigStruct initilization parameters
-	PeakFitRoot(StrawElectronics const& strawele, FitConfig const& config, FitType const& fittype, std::string fitoptions="QNEX0S");
-      	// Converts adcWaveform object to TGraphErrors object for easier manipulation in ROOT
+     	
+        // Converts adcWaveform object to TGraphErrors object for easier manipulation in ROOT
 	void adcWaveform2TGraphErrors(StrawElectronics::ADCWaveform const& adcData, TGraphErrors &fitData) const;
+      
       protected:
+        bool            _truncateADC;     // model ADC truncation
+        bool            _floatPedestal;   // float pedestal in fit
+        bool            _floatWidth;      // _float width in fit
+        bool            _earlyPeak;       // additional peak finding
+        bool            _latePeak;        // additional peak finding
+	std::string     _fitoptions;      // ROOT fit options
+        unsigned        _maxFitIter;      // maximumnumber of fit options
+        int             _debug; 
+	
 	PeakFitFunction _peakfit;
-	FitConfig _config;
-	std::string _fitoptions;
+        FitConfig       _config;
     };
   }
 }

@@ -27,10 +27,10 @@
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
 // helpers
-#include "TrkChargeReco/inc/PeakFit.hh"
-#include "TrkChargeReco/inc/PeakFitRoot.hh"
-#include "TrkChargeReco/inc/PeakFitFunction.hh"
-#include "TrkChargeReco/inc/ComboPeakFitRoot.hh"
+#include "TrkChargeRecoOld/inc/PeakFit.hh"
+#include "TrkChargeRecoOld/inc/PeakFitRoot.hh"
+#include "TrkChargeRecoOld/inc/PeakFitFunction.hh"
+#include "TrkChargeRecoOld/inc/ComboPeakFitRoot.hh"
 #include "TrackerMC/inc/SHInfo.hh"
 //CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
@@ -69,7 +69,7 @@ namespace mu2e {
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
     double _maxdt; // maximum time difference between end times
     bool _singledigi; // turn single-end digitizations into hits
-    TrkChargeReco::FitType _fittype;
+    TrkChargeRecoOld::FitType _fittype;
     bool _truncateADC; // model ADC truncation
     bool _floatPedestal; // float pedestal in fit
     bool _floatWidth; // _float width in fit
@@ -83,11 +83,11 @@ namespace mu2e {
     string _strawDigis;
     ConditionsHandle<StrawElectronics> _strawele; // models of straw response to stimuli
     ConditionsHandle<StrawPhysics> _strawphys; // models of straw response to stimuli
-    TrkChargeReco::PeakFit *_pfit; // peak fitter
+    TrkChargeRecoOld::PeakFit *_pfit; // peak fitter
 // Diagnostics
     TTree* _shdiag;
     SHID _shid; // strawhit ID
-    TrkChargeReco::PeakFitParams _peakfit; // result from peak fit
+    TrkChargeRecoOld::PeakFitParams _peakfit; // result from peak fit
     Float_t _edep, _time, _dt;
     SHMCInfo _shmcinfo; // mc truth info (if available)
     void fillDiagMC(Straw const& straw, StrawDigiMC const& mcdigi);
@@ -98,7 +98,7 @@ namespace mu2e {
     _mbbuffer(pset.get<double>("TimeBuffer",100.0)), // nsec
     _maxdt(pset.get<double>("MaxTimeDifference",8.0)), // nsec
     _singledigi(pset.get<bool>("UseSingleDigis",false)), // use or not single-end digitizations
-    _fittype((TrkChargeReco::FitType) pset.get<unsigned>("FitType",0)),
+    _fittype((TrkChargeRecoOld::FitType) pset.get<unsigned>("FitType",0)),
     _truncateADC(pset.get<bool>("TruncateADC",true)), 
     _floatPedestal(pset.get<bool>("FloatPedestal",true)), 
     _floatWidth(pset.get<bool>("FloatWidth",true)), 
@@ -135,21 +135,21 @@ namespace mu2e {
 
   void StrawHitsFromStrawDigis::beginRun( art::Run& run ){
 // create and configure the ADC waveform charge extraction fit
-    TrkChargeReco::FitConfig myconfig;
+    TrkChargeRecoOld::FitConfig myconfig;
     myconfig._debug = _debugLevel;
     myconfig._maxnit = _maxFitIter;
-    if(_floatWidth)myconfig.setOption(TrkChargeReco::FitConfig::floatWidth);
-    if(_floatPedestal)myconfig.setOption(TrkChargeReco::FitConfig::floatPedestal);
-    if(_truncateADC)myconfig.setOption(TrkChargeReco::FitConfig::truncateADC);
-    if(_earlyPeak)myconfig.setOption(TrkChargeReco::FitConfig::earlyPeak);
-    if(_latePeak)myconfig.setOption(TrkChargeReco::FitConfig::latePeak);
+    if(_floatWidth)myconfig.setOption(TrkChargeRecoOld::FitConfig::floatWidth);
+    if(_floatPedestal)myconfig.setOption(TrkChargeRecoOld::FitConfig::floatPedestal);
+    if(_truncateADC)myconfig.setOption(TrkChargeRecoOld::FitConfig::truncateADC);
+    if(_earlyPeak)myconfig.setOption(TrkChargeRecoOld::FitConfig::earlyPeak);
+    if(_latePeak)myconfig.setOption(TrkChargeRecoOld::FitConfig::latePeak);
     _strawele = ConditionsHandle<StrawElectronics>("ignored");
-    if (_fittype == TrkChargeReco::FitType::sumadc || _fittype == TrkChargeReco::FitType::peakminusped)
-      _pfit = new TrkChargeReco::PeakFit(*_strawele,_fittype);
-	  else if(_fittype == TrkChargeReco::FitType::combopeakfit)
-	     _pfit = new TrkChargeReco::ComboPeakFitRoot(*_strawele,myconfig,_fittype,_peakFitOption);
+    if (_fittype == TrkChargeRecoOld::FitType::sumadc || _fittype == TrkChargeRecoOld::FitType::peakminusped)
+      _pfit = new TrkChargeRecoOld::PeakFit(*_strawele,_fittype);
+	  else if(_fittype == TrkChargeRecoOld::FitType::combopeakfit)
+	     _pfit = new TrkChargeRecoOld::ComboPeakFitRoot(*_strawele,myconfig,_fittype,_peakFitOption);
     else
-	     _pfit = new TrkChargeReco::PeakFitRoot(*_strawele,myconfig,_fittype,_peakFitOption);
+	     _pfit = new TrkChargeRecoOld::PeakFitRoot(*_strawele,myconfig,_fittype,_peakFitOption);
     if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis beginRun " << endl;
   }
 
@@ -222,7 +222,7 @@ namespace mu2e {
 	StrawDigi::ADCWaveform const& adc = digi.adcWaveform();
 	// note: pedestal is being subtracting inside strawele, in the real experiment we will need
 	// per-channel version of this FIXME!!!
-	TrkChargeReco::PeakFitParams params;
+	TrkChargeRecoOld::PeakFitParams params;
 	_pfit->process(adc,params);
 	if(_debugLevel > 0){
 	  cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
@@ -232,7 +232,7 @@ namespace mu2e {
 	// the gain should come from a straw-dependent database FIXME!!
 	double energy = _strawphys->ionizationEnergy(params._charge/_strawphys->strawGain());
 	// crate the straw hit and append it to the list
-	StrawHit newhit(digi.strawIndex(),time,dt,energy);
+        StrawHit newhit(digi.strawIndex(),time,dt,energy);
 	strawHits->push_back(newhit);
 // copy MC truth from digi to hit.  These are exactly the same as for the digi
 	if(mcptrdigis != 0){

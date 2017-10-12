@@ -22,9 +22,8 @@ FlagStrawHits  : {
   module_type : FlagStrawHits
   maximumEnergy : 0.0035
 }
-
 FlagBkgHits : {
-  module_type : FlagBkgHits
+  module_type : FlagBkgHits2
   UseBkgMVA : true
   BkgMVA : { MVAWeights : "TrkFilters/data/BkgMVA.weights.xml" }
   MinActiveHits : 3
@@ -32,9 +31,31 @@ FlagBkgHits : {
   MinNPlanes : 2
   MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
   BkgMVACut : 0.5
-  debugLevel : 1
+  debugLevel : 0
+
+  Clusterer : 2
   TLTClusterer : { 
-    MaxNIterations : 10
+    MaxNIterations : 100
+    TimeDifference : 25.0
+    MaxDistance : 100.0
+    HitDistance : 5.0
+    SeedDistance : 25.0
+    MaxTimeDifference : 40.0
+    BackgroundMask : []
+    SignalMask : ["TimeSelection", "EnergySelection"]
+  }
+  TNTClusterer : { 
+    MaxNIterations : 1
+    TimeDifference : 25.0
+    MaxDistance : 100.0
+    HitDistance : 5.0
+    SeedDistance : 25.0
+    MaxTimeDifference : 40.0
+    BackgroundMask : []
+    SignalMask : ["TimeSelection", "EnergySelection"]
+  }
+  TNTBClusterer : { 
+    MaxNIterations : 1
     TimeDifference : 25.0
     MaxDistance : 100.0
     HitDistance : 5.0
@@ -48,7 +69,9 @@ FlagBkgHits : {
 
 # time clustering is the 1st stage of track finding 
 TimeClusterFinder : {
-  module_type               : TimeClusterFinder
+  module_type               : TimeClusterFinder2
+  MaxdPhi                   : 1.5
+  PrefilterCluster : true
   HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits	    : ["Background"]
   PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
@@ -56,28 +79,30 @@ TimeClusterFinder : {
 }
 
 RobustHelixFinder : {
-  module_type		: RobustHelixFinder
-  # Input hits are reqiured to have at least one of these
-  HitSelectionBits	    : ["Stereo","TimeDivision"]
-  # MVA parameters for outlier filtering
-  HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
-  HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
+   module_type		: RobustHelixFinder2
+   HitSelectionBits	    : ["Stereo","TimeDivision"]
+   HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
+   HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
+   trigMode : true
 }
 
 # we need both positive and negative helicity helix finders
 PosHelixFinder : {
   @table::RobustHelixFinder
-  RobustHelixFit : {
+  RobustHelixFit2 : {
     Helicity		: 1
+    ntripleMax : 200    
   }
 }
 
 NegHelixFinder : {
   @table::RobustHelixFinder
-  RobustHelixFit : {
+  RobustHelixFit2 : {
     Helicity		: -1
+    ntripleMax : 200    
   }
 }
+
 
 # pattern recognition internals
 # Kalman fit configuration for the seed fit (least squares configuration of Kalman fit)
@@ -312,7 +337,8 @@ Tracking : {
 # simulation sequence to create digis.  Currently just one module, but that might change
   DigiSim : [ makeSD ]
 # production sequence to prepare hits for tracking
-  PrepareHits : [ makeSH, FSHPreStereo, MakeStrawHitPositions, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
+  #PrepareHits : [ makeSH, FSHPreStereo, MakeStrawHitPositions, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
+  PrepareHits : [ makeSH, MakeStereoHits, FlagBkgHits ]
 # define standard outputs 
   Output : {
     Digis : [ "keep mu2e::StrawDigis_*_*_*" ]

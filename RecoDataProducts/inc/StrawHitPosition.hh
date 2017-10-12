@@ -23,10 +23,12 @@ namespace mu2e {
     CLHEP::Hep3Vector const& wdir() const { return _wdir; }
     Float_t wireDist() const { return _wdist; }
     Float_t posRes(edir dir) const;
+    Float_t phi() const { return _phi;}
     Int_t stereoHitIndex() const { return _stindex; } // negative if there's no stereo hit
     StrawHitFlag const& flag() const { return _flag; }
     CLHEP::Hep3Vector _pos; // pos() of the hit.  This is on the wire
     CLHEP::Hep3Vector _wdir; // wire direction at this position (unit vector)
+    Float_t _phi; //cache phi angle to speed up processing
     Float_t _wdist; // distance along the wire from the center
     Float_t _wres; // resolution along the wire
     Float_t _tres; // resolution perpendicular to the wire (= straw radius)

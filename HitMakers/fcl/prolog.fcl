@@ -33,8 +33,9 @@ makeSD : {
 
 #  straw hit making from straw digis
 makeSHfromSD : {
-  module_type : StrawHitsFromStrawDigis
+  module_type : StrawHitsFromStrawDigis2
   StrawDigis : makeSD
+  #UseCalorimeter : true
 }
 
 # Form DCHHits (DcH). - 2015-01-23 P.Murat: is it obsolete?
@@ -55,12 +56,14 @@ MakeStrawHitPositions : {
   module_type             : MakeStrawHitPositions
   StrawHitCollectionLabel : "makeSH"
   StrawHitFlagCollectionLabel : "FSHPreStereo"
+
 }
 
 MakeStereoHits : {
-  module_type : MakeStereoHits
+  module_type : MakeStereoHits2
   MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
   WriteStereoPairs : true
+  maxChisquared : 20
 }
 
 #------------------------------------------------------------------------------

@@ -20,6 +20,8 @@
  <class name="mu2e::StrawHitCollection"/>
  <class name="mu2e::CaloRecoDigi"/>
  <class name="mu2e::CaloRecoDigiCollection"/>
+ <class name="mu2e::CaloRecoDigiFast"/>
+ <class name="mu2e::CaloRecoDigiFastCollection"/>
  <class name="mu2e::CaloHit"/>
  <class name="mu2e::CaloHitCollection"/>
  <class name="mu2e::CaloCrystalHit"/>
@@ -143,6 +145,7 @@
 
  <class name="art::Wrapper<mu2e::StrawHitCollection>"/>
  <class name="art::Wrapper<mu2e::CaloRecoDigiCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloRecoDigiFastCollection>"/>
  <class name="art::Wrapper<mu2e::CaloHitCollection>"/>
  <class name="art::Wrapper<mu2e::CaloCrystalHitCollection>"/>
  <class name="art::Wrapper<mu2e::CaloProtoClusterCollection>"/>

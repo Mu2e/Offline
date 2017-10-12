@@ -10,6 +10,7 @@
 #include "canvas/Persistency/Common/Assns.h"
 
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloRecoDigiFastCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"

@@ -108,7 +108,7 @@ namespace mu2e
   void TLTClusterer::findClusters(BkgClusterCollection& clusters,
       StrawHitCollection const& shcol,
       StrawHitPositionCollection const& shpcol,
-      StrawHitFlagCollection const& shfcol ) const {
+      StrawHitFlagCollection const& shfcol ) {
 // require consistency
     if(shcol.size() != shpcol.size() || shcol.size() != shfcol.size()){
       ostringstream os;
