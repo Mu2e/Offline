@@ -1,0 +1,43 @@
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+process_name : testCry
+
+source : {
+  module_type : EmptyEvent
+  maxEvents : -1
+}
+services : {
+  message               : @local::default_message
+  TFileService : { fileName : "cryHist.root" }
+  GlobalConstantsService: { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  RandomNumberGenerator : { }
+  SeedService            : @local::automaticSeeds
+}
+
+physics : {
+  producers : {
+    cryTestStandAlone : {
+      module_type : CRYEventGenerator
+      inputFile : "CRYEventGenerator/config/defaultCRYconfig.txt"
+    }
+    randomsaver : @local::randomsaver
+  }
+
+  p1 : [cryTestStandAlone, randomsaver]
+  e1 : [outfile]
+
+  trigger_paths : [p1]
+  end_paths : [e1]
+}
+
+outputs : {
+  outfile : {
+    module_type : RootOutput
+    fileName : "cryOut.art"
+  }
+}
+
+services.SeedService.baseSeed         :  10000
+services.SeedService.maxUniqueEngines :  20
