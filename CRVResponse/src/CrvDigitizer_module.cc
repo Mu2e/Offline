@@ -57,7 +57,7 @@ namespace mu2e
   CrvDigitizer::CrvDigitizer(fhicl::ParameterSet const& pset) :
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
     _ADCconversionFactor(pset.get<double>("ADCconversionFactor")),
-    _pedestal(pset.get<int>("Pedestal"))
+    _pedestal(pset.get<int>("pedestal"))
   {
     produces<CrvDigiCollection>();
     _makeCrvDigis = boost::shared_ptr<mu2eCrv::MakeCrvDigis>(new mu2eCrv::MakeCrvDigis());

@@ -40,6 +40,7 @@ physics :
     CrvPhotons       : @local::CrvPhotons
     CrvSiPMCharges   : @local::CrvSiPMCharges
     CrvWaveforms     : @local::CrvWaveforms
+    CrvDigi          : @local::CrvDigi
     CrvRecoPulses    : @local::CrvRecoPulses
   }
 
@@ -54,7 +55,7 @@ physics :
     }
   }
 
-  trig : [generate, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvRecoPulses]
+  trig : [generate, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses]
   trigger_paths  : [trig]
 
 #  out: [CrvTest, Output]

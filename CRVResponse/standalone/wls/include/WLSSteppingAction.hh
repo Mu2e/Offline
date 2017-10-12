@@ -14,7 +14,7 @@ class TNtuple;
 
 namespace mu2eCrv
 {
-  class MakeCrvPhotonArrivals;
+  class MakeCrvPhotons;
 }
 
 class WLSSteppingAction : public G4UserSteppingAction
@@ -32,7 +32,7 @@ class WLSSteppingAction : public G4UserSteppingAction
 
   private:
 
-    std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals> _crvPhotonArrivals;
+    std::unique_ptr<mu2eCrv::MakeCrvPhotons> _crvPhotons;
     static WLSSteppingAction *_fgInstance;  
     std::vector<double>       _arrivalTimes[2][4];
     std::vector<int>          _fiberEmissions[4];

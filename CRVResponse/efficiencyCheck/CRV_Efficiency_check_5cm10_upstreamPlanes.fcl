@@ -140,6 +140,7 @@ physics :
     CrvPhotons       : @local::CrvPhotons
     CrvSiPMCharges   : @local::CrvSiPMCharges
     CrvWaveforms     : @local::CrvWaveforms
+    CrvDigi          : @local::CrvDigi
     CrvRecoPulses    : @local::CrvRecoPulses
 
     CrvCoincidencePE10T5  : @local::CrvCoincidence
@@ -251,7 +252,7 @@ physics :
   }
 
 
-  trig : [generate, g4run, belowCrvFilter, backgroundOverlay, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvRecoPulses,
+  trig : [generate, g4run, belowCrvFilter, backgroundOverlay, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses,
           CrvCoincidencePE10T5,
           CrvCoincidencePE12T5,
           CrvCoincidencePE14T5,

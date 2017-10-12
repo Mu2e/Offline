@@ -8,7 +8,7 @@
 #include "WLSEventAction.hh"
 #include "WLSSteppingAction.hh"
 
-#include "MakeCrvPhotonArrivals.hh"
+#include "MakeCrvPhotons.hh"
 
 #include "G4ProcessManager.hh"
 #include "G4OpBoundaryProcess.hh"
@@ -39,9 +39,9 @@ WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName
   //load lookup tables
   if(_mode==1)
   {
-    _crvPhotonArrivals = std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat, _randGaussQ, _randPoissonQ));
-    _crvPhotonArrivals->LoadLookupTable(lookupFileName);
-    _crvPhotonArrivals->LoadVisibleEnergyAdjustmentTable(visibleEnergyAdjustmentFileName);
+    _crvPhotons = std::unique_ptr<mu2eCrv::MakeCrvPhotons>(new mu2eCrv::MakeCrvPhotons(_randFlat, _randGaussQ, _randPoissonQ));
+    _crvPhotons->LoadLookupTable(lookupFileName);
+    _crvPhotons->LoadVisibleEnergyAdjustmentTable(visibleEnergyAdjustmentFileName);
   }
 
   _ntuple = new TNtuple("CRVPhotons","CRVPhotons","SiPM:Energy:Length:StartZ"); //WLS fiber test
@@ -152,17 +152,17 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
       G4MaterialPropertiesTable* fiberPropertiesTable = fiber->GetMaterialPropertiesTable();
       double fiberDecayTime = fiberPropertiesTable->GetConstProperty("WLSTIMECONSTANT");
 
-      _crvPhotonArrivals->SetScintillationYield(scintillationYield);
-      _crvPhotonArrivals->SetScintillatorBirksConstant(scintillatorBirksConstant);
-      _crvPhotonArrivals->SetScintillatorRatioFastSlow(scintillatorRatioFastSlow);
-      _crvPhotonArrivals->SetScintillatorDecayTimeFast(scintillatorDecayTimeFast);
-      _crvPhotonArrivals->SetScintillatorDecayTimeSlow(scintillatorDecayTimeSlow);
-      _crvPhotonArrivals->SetFiberDecayTime(fiberDecayTime);
+      _crvPhotons->SetScintillationYield(scintillationYield);
+      _crvPhotons->SetScintillatorBirksConstant(scintillatorBirksConstant);
+      _crvPhotons->SetScintillatorRatioFastSlow(scintillatorRatioFastSlow);
+      _crvPhotons->SetScintillatorDecayTimeFast(scintillatorDecayTimeFast);
+      _crvPhotons->SetScintillatorDecayTimeSlow(scintillatorDecayTimeSlow);
+      _crvPhotons->SetFiberDecayTime(fiberDecayTime);
     }
 
     if(PDGcode!=0)  //ignore optical photons
     {
-      _crvPhotonArrivals->MakePhotons(p1, p2, t1, t2,  
+      _crvPhotons->MakePhotons(p1, p2, t1, t2,  
                             PDGcode, beta, charge,
                             energyDepositedTotal,
                             energyDepositedNonIonizing,
@@ -170,7 +170,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
  
       for(int SiPM=0; SiPM<4; SiPM++)
       {
-        std::vector<double> times=_crvPhotonArrivals->GetArrivalTimes(SiPM);
+        std::vector<double> times=_crvPhotons->GetArrivalTimes(SiPM);
         _arrivalTimes[1][SiPM].insert(_arrivalTimes[1][SiPM].end(),times.begin(),times.end());
       }
     }
