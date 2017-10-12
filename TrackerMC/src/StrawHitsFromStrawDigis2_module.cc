@@ -98,7 +98,7 @@ namespace mu2e {
       mbbuffer_(pset.get<double>(    "TimeBuffer",100.0)), 
       maxdt_(pset.get<double>(       "MaxTimeDifference",8.0)), 
       singledigi_(pset.get<bool>(    "UseSingleDigis",false)), 
-      fittype_((TrkChargeReco::FitType) pset.get<unsigned>("FitType",0)),
+      fittype_((TrkChargeReco::FitType) pset.get<unsigned>("FitType",TrkChargeReco::FitType::sumadc)),
       usecc_(pset.get<bool>(         "UseCalorimeter",false)),     
       clusterDt_(pset.get<double>(   "clusterDt",100)),
       minE_(pset.get<double>(        "minimumEnergy",0.0)), // Minimum deposited straw energy (MeV)
@@ -163,7 +163,7 @@ namespace mu2e {
       size_t npanels = tt.getPlane(0).nPanels();
       
       ConditionsHandle<AcceleratorParams> accPar("ignored");
-      double _mbtime = accPar->deBuncherPeriod;
+      double mbtime = accPar->deBuncherPeriod;
       ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
       ConditionsHandle<StrawPhysics> strawphys = ConditionsHandle<StrawPhysics>("ignored");
       ConditionsHandle<TrackerCalibrations> tcal("ignored");
@@ -220,7 +220,7 @@ namespace mu2e {
           double dt = times[1]-times[0];
 
 
-          if (time < _mbtime+mbbuffer_ && fabs(dt) < maxdt_ )
+          if (time < mbtime+mbbuffer_ && fabs(dt) < maxdt_ )
           {
 	     time = times[0];
           } 
@@ -228,9 +228,9 @@ namespace mu2e {
           {
              // single-ended hit.  Take the valid time, and set delta_t to 0.  This needs
              // to be flaged in StrawHit, FIXME!!!
-	     if (times[0] < _mbtime+mbbuffer_)
+	     if (times[0] < mbtime+mbbuffer_)
 	       time = times[0];
-	     else if (times[1] < _mbtime+mbbuffer_)
+	     else if (times[1] < mbtime+mbbuffer_)
 	       time = times[1];
 	     else
 	       continue;
@@ -249,7 +249,7 @@ namespace mu2e {
 	  
           
           //prefiltering on time if needed
-          //if (sh.time() < minT_ || sh.time() > maxT_) continue;
+          //if (time < minT_ ||time > maxT_) continue;
 
 
           //extract energy from waveform
@@ -275,7 +275,7 @@ namespace mu2e {
           if (energy > minE_ && energy < maxE_) flag.merge(StrawHitFlag::energysel);
           if (time > minT_ && time < maxT_)     flag.merge(StrawHitFlag::timesel);
           if (usecc_)                           flag.merge(StrawHitFlag::calosel);
-
+          
           StrawHitPosition shp;
           tcal->StrawHitInfo(straw,hit,shinfo);
           shp._pos   = shinfo._pos;

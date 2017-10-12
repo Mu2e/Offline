@@ -13,7 +13,6 @@ namespace mu2e {
     
     enum FitType {sumadc=0,peakminusped=1,combopeakfit=2,peakfit=3};
 
-    //  Virtual class providing structure for extracting charge from ADC waveforms
     class PeakFit {
        
        public:
@@ -38,7 +37,7 @@ namespace mu2e {
       protected:
       
 	const StrawElectronics& _strawele;
-	const FitType&          _fittype; 
+	TrkChargeReco::FitType  _fittype; 
 
 	
     };

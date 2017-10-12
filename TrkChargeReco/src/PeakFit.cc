@@ -1,10 +1,6 @@
-// MAKE SURE THAT initParams is getting passed everywhere correctly
-
 #include "TrkChargeReco/inc/PeakFit.hh"
-
 #include <numeric>
 
-//SumADC::SumADC(const ConfigStruct &initParams) : PeakFitRootBase(initParams){}
 namespace mu2e {
 
    namespace TrkChargeReco {
@@ -12,12 +8,13 @@ namespace mu2e {
 
        PeakFit::PeakFit(const StrawElectronics& strawele, const fhicl::ParameterSet& pset) : 
           _strawele(strawele),
-          _fittype((TrkChargeReco::FitType) pset.get<unsigned>("FitType",0))
+          _fittype((TrkChargeReco::FitType) pset.get<TrkChargeReco::FitType>("FitType",TrkChargeReco::FitType::sumadc))
        {}
 
 
        void PeakFit::process(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const
        {
+         
          switch(_fittype)
          {
             case FitType::sumadc :
