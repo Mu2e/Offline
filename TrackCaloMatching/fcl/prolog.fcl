@@ -17,8 +17,7 @@ TrackCaloMatching : {  @table::TrackCaloMatching  # general namespace for everyt
 	TrackCaloIntersection : { module_type:TrackCaloIntersection
 	    diagLevel                    : 0
 	    fitterModuleLabel            : MergePatRec
-	    fitparticle                  : @local::Particle.eminus
-	    fitdirection                 : @local::FitDir.downstream
+            downstream                   : true
 	    pathStep                     : 20.              # mm
 	    tolerance                    :  1.              # mm
 	    checkExit                    : true
