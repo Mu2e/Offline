@@ -127,28 +127,28 @@ namespace mu2e {
 
           int    _evt;
 
-          int    _nMatch, _mTrkId[1024],_mCluId[1024];
-          float  _mChi2[1024],_mChi2Pos[1024],_mChi2Time[1024];
+          int    _nMatch, _mTrkId[4096],_mCluId[4096];
+          float  _mChi2[4096],_mChi2Pos[4096],_mChi2Time[4096];
 
-          int    _nTrk,_trknHit[1024],_trkStat[1024],_trkCluIdx[1024];
-          float  _trkx[1024],_trky[1024],_trkz[1024],_trkFFx[1024],_trkFFy[1024],_trkFFz[1024],_trke[1024],_trkt[1024];
-          float  _trkpx[1024],_trkpy[1024],_trkpz[1024],_trkprob[1024],_tkrCposX[1024],_tkrCposY[1024];
-          float  _trkd0[1024],_trkz0[1024],_trkphi0[1024],_trkomega[1024],_trkcdip[1024],_trkdlen[1024];
+          int    _nTrk,_trknHit[4096],_trkStat[4096],_trkCluIdx[4096];
+          float  _trkx[4096],_trky[4096],_trkz[4096],_trkFFx[4096],_trkFFy[4096],_trkFFz[4096],_trke[4096],_trkt[4096];
+          float  _trkpx[4096],_trkpy[4096],_trkpz[4096],_trkprob[4096],_tkrCposX[4096],_tkrCposY[4096];
+          float  _trkd0[4096],_trkz0[4096],_trkphi0[4096],_trkomega[4096],_trkcdip[4096],_trkdlen[4096];
 
-          int   _nCluster,_nCluSim,_cluNcrys[1024];
-          float _cluEnergy[1024],_cluTime[1024],_cluCogX[1024],_cluCogY[1024],_cluCogZ[1024];
-          float _cluE1[1024],_cluE9[1024],_cluE25[1024],_clu2Mom[1024],_cluAngle[1024];
+          int   _nCluster,_nCluSim,_cluNcrys[4096];
+          float _cluEnergy[4096],_cluTime[4096],_cluCogX[4096],_cluCogY[4096],_cluCogZ[4096];
+          float _cluE1[4096],_cluE9[4096],_cluE25[4096],_clu2Mom[4096],_cluAngle[4096];
           int   _cluConv[16384],_cluSimIdx[16384],_cluSimLen[16384];
           std::vector<std::vector<int> > _cluList;
       
           int   _clusimId[16384],_clusimPdgId[16384],_clusimGenIdx[16384],_clusimCrCode[16384];
           float _clusimMom[16384],_clusimPosX[16384],_clusimPosY[16384],_clusimPosZ[16384],_clusimTime[16384],_clusimEdep[16384];
 
-          int   _nHits,_cryId[1024],_crySecId[1024];
-          float _cryTime[1024],_cryEdep[1024],_cryPosX[1024],_cryPosY[1024],_cryPosZ[1024];
+          int   _nHits,_cryId[4096],_crySecId[4096];
+          float _cryTime[4096],_cryEdep[4096],_cryEdepErr[4096],_cryPosX[4096],_cryPosY[4096],_cryPosZ[4096];
 
-          int   _nVd,_vdId[1024],_vdPdgId[1024],_vdenIdx[1024];
-          float _vdTime[1024],_vdPosX[1024],_vdPosY[1024],_vdPosZ[1024],_vdMom[1024],_vdMomX[1024],_vdMomY[1024],_vdMomZ[1024];
+          int   _nVd,_vdId[4096],_vdPdgId[4096],_vdenIdx[4096];
+          float _vdTime[4096],_vdPosX[4096],_vdPosY[4096],_vdPosZ[4096],_vdMom[4096],_vdMomX[4096],_vdMomY[4096],_vdMomZ[4096];
 
   };
 
@@ -231,6 +231,7 @@ namespace mu2e {
        _Ntup->Branch("cryPosY",      &_cryPosY ,  "cryPosY[nCry]/F");
        _Ntup->Branch("cryPosZ",      &_cryPosZ ,  "cryPosZ[nCry]/F");
        _Ntup->Branch("cryEdep",      &_cryEdep ,  "cryEdep[nCry]/F");
+       _Ntup->Branch("cryEdepErr",   &_cryEdepErr,"cryEdepErr[nCry]/F");
        _Ntup->Branch("cryTime",      &_cryTime ,  "cryTime[nCry]/F");
 
        _Ntup->Branch("nVd",          &_nVd ,      "nVd/I");
@@ -441,6 +442,7 @@ namespace mu2e {
 
                _cryTime[_nHits]      = hit.time();
                _cryEdep[_nHits]      = hit.energyDep();
+               _cryEdepErr[_nHits]   = hit.energyDepErr();
                _cryPosX[_nHits]      = crystalPos.x();
                _cryPosY[_nHits]      = crystalPos.y();
                _cryPosZ[_nHits]      = crystalPos.z();
@@ -458,7 +460,7 @@ namespace mu2e {
                 const StepPointMC& hit = *iter;
 
                 if (hit.volumeId()<73 || hit.volumeId() > 80) continue;
-                if (_nVd > 999) std::cout<<"Problem, nVd = "<<_nVd <<std::endl;
+                if (_nVd > 999) {std::cout<<"Problem, nVd = "<<_nVd <<std::endl; continue;}
 
                 _vdId[_nVd]     = hit.volumeId();
                 _vdPdgId[_nVd]  = hit.simParticle()->pdgId();

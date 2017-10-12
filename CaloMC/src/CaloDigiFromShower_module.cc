@@ -71,8 +71,8 @@ namespace mu2e {
            produces<CaloDigiCollection>();    
   
            maxADCCounts_ =  1 << nBits_;
-           ADCTomV_      = dynamicRange_/maxADCCounts_;
-           mVToADC_      = maxADCCounts_/dynamicRange_;
+           ADCTomV_      = dynamicRange_/float(maxADCCounts_);
+           mVToADC_      = float(maxADCCounts_)/dynamicRange_;
            nROperCard_   = 40;
 
       }

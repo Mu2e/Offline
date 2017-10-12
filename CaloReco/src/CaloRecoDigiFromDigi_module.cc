@@ -157,7 +157,7 @@ namespace mu2e {
             int    roId     = caloDigi.roId();
             double t0       = caloDigi.t0();
             double adc2MeV  = calorimeterCalibrations->ADC2MeV(roId);
-            const std::vector<int> waveform = caloDigi.waveform();
+            const std::vector<int>& waveform = caloDigi.waveform();
 
             size_t index = &caloDigi - base;
             art::Ptr<CaloDigi> caloDigiPtr(caloDigisHandle, index);
