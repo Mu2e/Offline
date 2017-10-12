@@ -1,0 +1,31 @@
+// default config for CRY cosmic generator
+
+// Verbose
+int cosmicCRY.verbose = 0;
+
+// histogram settings
+bool cosmicCRY.doHistograms = true;
+double cosmicCRY.muCosThMin = 0.00366518;
+double cosmicCRY.muCosThMax = 1.0;
+double cosmicCRY.muEMin = 3000.;
+double cosmicCRY.muEMax = 1.e5;
+
+// Enable all particles by default
+bool cosmicCRY.returnMuons = true;
+bool cosmicCRY.returnNeutrons = true;
+bool cosmicCRY.returnProtons = true;
+bool cosmicCRY.returnGammas = true;
+bool cosmicCRY.returnElectrons = true;
+bool cosmicCRY.returnPions = true;
+bool cosmicCRY.returnKaons = true;
+
+
+// Date of the desired day for the flux
+int cosmicCRY.month = 6;
+int cosmicCRY.day = 21;
+int cosmicCRY.year = 2021;
+
+// Experiment site settings
+double cosmicCRY.latitude = 41.8;
+int cosmicCRY.altitude = 0; // meter, accepts either of 3 values: 0, 2100 or 11300
+double cosmicCRY.subboxLength = 100.; // meter
