@@ -37,6 +37,10 @@
 #include <float.h>
 
 
+//Notes: Main contributors: MakeStereoHits and MVATools. 
+//       Could we cache the panel separation?
+//       StereoHit <-> Single Hit position 
+
 namespace {
 
    struct StereoMVA 
@@ -194,7 +198,7 @@ namespace mu2e {
          if (!shf.hasAllProperties(_shsel) || shf.hasAnyProperty(_shmask) ) continue;
 
 	 const StrawHit& hit = _shcol.at(ish);
-	 const Straw& straw = tt.getStraw(hit.strawIndex());
+	 const Straw& straw  = tt.getStraw(hit.strawIndex());
 
          size_t iplane  = straw.id().getPlane();
          size_t ipnl    = straw.id().getPanel();
@@ -235,7 +239,8 @@ namespace mu2e {
                 float de = std::min(1.0f,std::abs((sh1.energyDep() - sh2.energyDep())/(sh1.energyDep()+sh2.energyDep())));
                 if (de > _maxDE ) continue;
 
-	        PanelId::isep sep = straw1.id().getPanelId().separation(straw2.id().getPanelId());
+//Could we cache the panel separation?
+                PanelId::isep sep = straw1.id().getPanelId().separation(straw2.id().getPanelId());
                 // hits are in the same station but not the same panel
                 if ( sep == PanelId::same || sep >= PanelId::apart) continue;
 
@@ -332,7 +337,6 @@ namespace mu2e {
     if (_writepairs) event.put(std::move(stereohits));
     event.put(std::move(shpcol));
     event.put(std::move(shfcol));
-
   } 
 
   

@@ -207,12 +207,12 @@ namespace mu2e {
 
 
 
-       CALLGRIND_START_INSTRUMENTATION;
+      // CALLGRIND_START_INSTRUMENTATION;
        
        findClusters(*timeClusterColl,*flagColl,shcol,shpcol, shfcol, CaloClusterHandle, caloClusters);
        
-       CALLGRIND_STOP_INSTRUMENTATION;
-       CALLGRIND_DUMP_STATS;
+       ///CALLGRIND_STOP_INSTRUMENTATION;
+       //CALLGRIND_DUMP_STATS;
 
 
 

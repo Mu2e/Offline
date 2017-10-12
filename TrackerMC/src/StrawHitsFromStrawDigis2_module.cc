@@ -48,9 +48,8 @@
 #include <memory>
 
  
-#include "/usr/include/valgrind/callgrind.h"
-
-
+//Notes: Main contributors: PeakFit process and Strawele, atan not negligible but needed (could it be sped up?)
+//       Is time prefiltering safe, i.e. dropping hits outside time window? 
 
 
 namespace mu2e {
