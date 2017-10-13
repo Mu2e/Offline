@@ -40,7 +40,8 @@ namespace mu2e {
     TH1D *_hStartE;
     TH1D *_hStartTheta;
     TH1D *_hStartPhi;
-    TTree *_tCry;
+    TTree *_tCryPrimary;
+    TTree *_tCrySecondaries;;
 
     double _muEMin;   // min and max values of muon energy (MeV)
     double _muEMax;
@@ -76,17 +77,36 @@ namespace mu2e {
     CRYSetup * _crySetup;
     CRYGenerator * _cryGen;
 
-    int pdgId;
-    double ke0;
-    double px0;
-    double py0;
-    double pz0;
-    double ptot0;
-    double x0;
-    double y0;
-    double z0;
-    double theta0;
-    double phi0;
+    enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL, CALO, CUSTOMIZED};
+    enum DirectionChoice {ALL, POSITIVE_X, NEGATIVE_X, POSITIVE_Z, NEGATIVE_Z,
+      PHI_RANGE};
+    RefPointChoice    _refPointChoice;
+    DirectionChoice   _directionChoice;
+    CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
+    bool _vertical;
+    bool _dontProjectToSurface;
+
+    int _evtId0;
+    int _pdgId0;
+    double _ke0;
+    int _nSecondaries;
+
+    static const int _maxNSecondaries = 100;
+    int _pdgId1[_maxNSecondaries];
+    double _x1[_maxNSecondaries];
+    double _y1[_maxNSecondaries];
+    double _z1[_maxNSecondaries];
+    double _t1[_maxNSecondaries];
+    double _ke1[_maxNSecondaries];
+    double _px1[_maxNSecondaries];
+    double _py1[_maxNSecondaries];
+    double _pz1[_maxNSecondaries];
+    double _ptot1[_maxNSecondaries];
+    double _theta1[_maxNSecondaries];
+    double _phi1[_maxNSecondaries];
+
+    void makeTrees();
+    void createSetupString();
   };  // CosmicCRY
 
 }
