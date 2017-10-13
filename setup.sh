@@ -91,13 +91,19 @@ fi
 
 setup -B heppdt   v3_04_01f -q${MU2E_UPS_QUALIFIERS}
 setup -B xerces_c v3_1_4a   -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_02_02  -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_02_03  -q${MU2E_UPS_QUALIFIERS} # local copy
+echo "MU2E_UPS_QUALIFIERS:    " $MU2E_UPS_QUALIFIERS
+# setup -B BTrk   v1_02_02  -q${MU2E_UPS_QUALIFIERS} # stable copy
 
 # The build system.
 setup -B scons v2_5_1a -q p2713d
 
 # The debugger
-setup -B gdb v7_12
+# setup -B gdb v7_12
+setup -B gdb v8_0_1
+
+# Clang
+setup -B clang v5_0_0 -q+e14
 
 # Search path for fcl files
 export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
