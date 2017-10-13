@@ -30,6 +30,7 @@
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
 
 #include "CRYGenerator.h"
 #include "CRYSetup.h"
@@ -72,9 +73,9 @@ namespace mu2e
             
 
   CosmicCRY::CosmicCRY( art::Run& run, const SimpleConfig& config )
-  : GeneratorBase()
-  , _verbose( config.getInt("cosmicCRY.verbose", 0) )
-  , _doHistograms( config.getBool("cosmicCRY.doHistograms", true) )
+  : _verbose(config.getInt("cosmicCRY.verbose", 0) )
+  , _doHistograms(config.getBool("cosmicCRY.doHistograms", true) )
+  , _saveTree(config.getBool("cosmicCRY.saveTree", false) )
   , _hStartXZ(NULL)
   , _hStartY(NULL)
   // , _hStartPlane(NULL)
@@ -188,18 +189,21 @@ namespace mu2e
       _hStartTheta = tfdir.make<TH1D>("StartTheta", "StartTheta", 200, -M_PI - 0.5, M_PI + 0.5);
       _hStartPhi = tfdir.make<TH1D>("StartPhi", "StartPhi", 200, -M_PI - 0.5, M_PI + 0.5);
 
-      _tCry = tfdir.make<TTree>("cryTree", "cryTree");
-      _tCry->Branch("pdgId", &pdgId);
-      _tCry->Branch("ke", &ke0);
-      _tCry->Branch("px", &px0);
-      _tCry->Branch("py", &py0);
-      _tCry->Branch("pz", &pz0);
-      _tCry->Branch("ptot", &ptot0);
-      _tCry->Branch("x", &x0);
-      _tCry->Branch("y", &y0);
-      _tCry->Branch("z", &z0);
-      _tCry->Branch("theta", &theta0);
-      _tCry->Branch("phi", &phi0);
+    // And tree
+      if (_saveTree) {
+        _tCry = tfdir.make<TTree>("cryTree", "cryTree");
+        _tCry->Branch("pdgId", &pdgId);
+        _tCry->Branch("ke", &ke0);
+        _tCry->Branch("px", &px0);
+        _tCry->Branch("py", &py0);
+        _tCry->Branch("pz", &pz0);
+        _tCry->Branch("ptot", &ptot0);
+        _tCry->Branch("x", &x0);
+        _tCry->Branch("y", &y0);
+        _tCry->Branch("z", &z0);
+        _tCry->Branch("theta", &theta0);
+        _tCry->Branch("phi", &phi0);
+      }
     }
   }
 

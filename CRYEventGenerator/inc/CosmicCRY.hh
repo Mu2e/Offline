@@ -1,11 +1,9 @@
-#ifndef EventGenerator_CosmicCRY_hh
-#define EventGenerator_CosmicCRY_hh
+#ifndef CRYEventGenerator_CosmicCRY_hh
+#define CRYEventGenerator_CosmicCRY_hh
 
 // Cosmic rays generator using CRY
 
 #include <vector>
-
-#include "EventGenerator/inc/GeneratorBase.hh"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -19,10 +17,11 @@ namespace art{
 
 class CRYSetup;
 class CRYGenerator;
+class GenParticleCollection;
 
 namespace mu2e {
 
-  class CosmicCRY: public GeneratorBase {
+  class CosmicCRY{
 
   public:
     CosmicCRY( art::Run& run, const SimpleConfig& config );
@@ -32,8 +31,9 @@ namespace mu2e {
 
   private:
 
-    int   _verbose;
-    bool  _doHistograms;
+    int  _verbose;
+    bool _doHistograms;
+    bool _saveTree;
     TH2D *_hStartXZ;
     TH1D *_hStartY;
     // TH1D *_hStartPlane;
@@ -90,4 +90,4 @@ namespace mu2e {
   };  // CosmicCRY
 
 }
-#endif /* end of include guard: EventGenerator_CosmicCRY_hh */
+#endif /* end of include guard: CRYEventGenerator_CosmicCRY_hh */

@@ -5,6 +5,8 @@ int cosmicCRY.verbose = 0;
 
 // histogram settings
 bool cosmicCRY.doHistograms = true;
+bool cosmicCRY.saveTree = true;
+
 double cosmicCRY.muCosThMin = 0.00366518;
 double cosmicCRY.muCosThMax = 1.0;
 double cosmicCRY.muEMin = 3000.;
