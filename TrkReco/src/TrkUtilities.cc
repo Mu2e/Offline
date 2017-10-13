@@ -109,7 +109,7 @@ namespace mu2e {
 	  if(detstraw != 0){
 	    // found a straw: create a TrkStraw object from it
 	    // i must recompute POCA since the KalMaterial doesn't cache the hit flight FIXME!
-	    TrkPoca poca(krep->traj(),kmat->detIntersection().pathlen,detstraw->wireTraj(),0);
+	    TrkPoca poca(krep->traj(),kmat->detIntersection().pathlen,*detstraw->wireTraj(),0);
 	    TrkStraw tstraw(detstraw->straw()->id(),
 	      kmat->detIntersection().dist, //poca.doca(),
 	      kmat->detIntersection().pathlen, // poca.flt1(),
