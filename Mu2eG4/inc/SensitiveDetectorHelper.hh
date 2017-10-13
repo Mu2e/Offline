@@ -63,7 +63,7 @@ namespace mu2e {
     // Return one of the StepPointMCCollections.
     cet::maybe_ref<StepPointMCCollection> steps( StepInstanceName::enum_type id );
 
-    // create SDs for arbitrary logical volumes as requiested
+    // create SDs for arbitrary logical volumes as requested
     void instantiateLVSDs(const SimpleConfig& config);
 
     bool extMonPixelsEnabled() const { return extMonPixelsEnabled_; }
