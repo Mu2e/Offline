@@ -133,7 +133,7 @@ namespace mu2e
     std::vector<TGraph*> graphVector;
     std::vector<TGaxis*> axisVector;
 
-    double extension = (_timeEnd-_timeStart)*0.05;
+    double extension = (_timeEnd-_timeStart)*0.1;
 
     for(int SiPM=0; SiPM<4; SiPM++)
     {
@@ -167,7 +167,7 @@ namespace mu2e
       hist->SetLineColor(kBlue);
       hist->GetXaxis()->SetTitle("t [ns]");
       hist->GetYaxis()->SetTitle("Photons");
-      hist->GetYaxis()->SetTitleOffset(0.5);
+      hist->GetYaxis()->SetTitleOffset(1.0);
       hist->GetYaxis()->SetAxisColor(kBlue);
       hist->GetYaxis()->SetTitleColor(kBlue);
       hist->GetYaxis()->SetLabelColor(kBlue);
@@ -274,7 +274,7 @@ namespace mu2e
 
       TGaxis *axisSiPMResponse = new TGaxis(_timeEnd+extension,0,_timeEnd+extension,histMax,0,histMax/scaleSiPMResponse,10,"+L");
       axisVector.push_back(axisSiPMResponse);
-      axisSiPMResponse->SetTitle("SiPM charge [PE]");
+      axisSiPMResponse->SetTitle("SiPM charges [PE]");
       axisSiPMResponse->SetTitleOffset(1.0);
       axisSiPMResponse->SetTitleColor(kOrange);
       axisSiPMResponse->SetLineColor(kOrange);
