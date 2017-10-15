@@ -37,6 +37,7 @@ namespace mu2e {
     _nADCpre(pset.get<unsigned>("nADCPresamples",4)),
     _ADCPeriod(pset.get<double>("ADCPeriod",20.0)), // nsec
     _ADCOffset(pset.get<double>("ADCOffset",2.0)), // nsec
+    _maxtsep(pset.get<unsigned>("MaxThreshTimeSeparation",2)), // ADC clock ticks
     _TDCLSB(pset.get<double>("TDCLSB",0.015625)),  // nsec
     _maxTDC(pset.get<unsigned>("maxTDC",16777216)),
     _TOTLSB(pset.get<double>("TOTLSB",4.0)), //ns
@@ -294,8 +295,8 @@ void StrawElectronics::digitizeWaveform(ADCVoltages const& wf, ADCWaveform& adc)
   bool StrawElectronics::combineEnds(double t1, double t2) const {
     // currently two clock ticks are allowed for coincidence time
     int clockTicks1 = static_cast<int>(floor(t1-_clockStart)/_ADCPeriod);
-    int clockTicks2 = static_cast<int>(floor(t1-_clockStart)/_ADCPeriod);
-    return abs(clockTicks1-clockTicks2) < 2;
+    int clockTicks2 = static_cast<int>(floor(t2-_clockStart)/_ADCPeriod);
+    return (unsigned)abs(clockTicks1-clockTicks2) < _maxtsep;
   }
 
   void StrawElectronics::tdcTimes(TDCValues const& tdc, TDCTimes& times) const {
