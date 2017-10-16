@@ -159,6 +159,9 @@ namespace mu2e {
         } else if (_interpStyle == BFInterpolationStyle::meco) {
             retval = interpolateQuadratic(testpoint, result);
 
+        } else if (_interpStyle == BFInterpolationStyle::fit) {
+            retval = fitFunction(testpoint, result);
+
         } else {
             throw cet::exception("GEOM")
                 << "Unrecognized option for interpolation into the BField: " << _interpStyle
@@ -373,6 +376,28 @@ namespace mu2e {
         if (_flipy && sign == -1) {
             result.setY(-result.y());
         }
+        return true;
+    }
+
+    bool BFMap::fitFunction(const CLHEP::Hep3Vector& p, CLHEP::Hep3Vector& result) const {
+        // Check validity.  Return a zero field and optionally print a warning.
+        if (p.x() > (800 - 3896) or p.x() < (-800 - 3896) or p.y() > 800 or p.y() < -800 or
+            p.z() < 4500 or p.z() > 13500) {
+            return interpolateTriLinear(p, result);
+        }
+
+        if (!isValid(p)) {
+            if (_warnIfOutside) {
+                mf::LogWarning("GEOM")
+                    << "Point is outside of the valid region of the map: " << _key << "\n"
+                    << "Point in input coordinates: " << p << "\n";
+            }
+            result = CLHEP::Hep3Vector(0, 0, 0);
+            return false;
+        }
+
+        vector<double> b_vec = _fitFunc->mag_field_function(p.x() + 3896, p.y(), p.z(), true);
+        result = CLHEP::Hep3Vector(b_vec[0], b_vec[1], b_vec[2]);
         return true;
     }
 

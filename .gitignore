@@ -26,6 +26,7 @@ tmp
 *.log
 *.log.*
 *.pdf
+*.pyc
 BaBar/include
 EventDisplay/src/EventDisplayDict.cc
 EventDisplay/src/EventDisplayDict.h
