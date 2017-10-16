@@ -144,7 +144,7 @@ namespace mu2e {
     _shTag	       (pset.get<art::InputTag>("StrawHitCollection","makeSH")),
     _shpTag	       (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
     _shfTag	       (pset.get<art::InputTag>("StrawHitFlagCollection","FlagBkgHits")),
-    _ccTag             (pset.get<art::InputTag>("caloClusterModuleLabel","MakeCaloCluster")),
+    _ccTag             (pset.get<art::InputTag>("caloClusterModuleLabel","CaloClusterFromProtoCluster")),
     _hsel		(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
     _hbkg              (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
     _maxdt             (pset.get<double>("DtMax",30.0)),

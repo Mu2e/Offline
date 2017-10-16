@@ -92,7 +92,7 @@ CalPatRec : {
 	minnstraws                              : 10
 	MaxIterations                           : 3
 	materialCorrection                      : false
-	seedsmear       			: 10000
+	SeedSmear       			: 10000
 	maxhitchi                               : 5.0
 	hiterr                                  : [ 80.  , 23.04 ]
 	ambiguityStrategy       		: [ 0    , 0     ]
@@ -186,7 +186,7 @@ CalPatRec : {
 	MaximumMaterialFlightDifference         : 1000 # mm separation in flightlength
 	materialCorrection                      : false
 	MaxIterations                           : 3
-	seedsmear       			: 10000
+	SeedSmear	       			: 10000
 	weedhits                                : [ true , true  ]   # default:true
 	maxhitchi                               : 5.0
 	maxweed                                 : 10
@@ -421,7 +421,7 @@ CalPatRec : { @table::CalPatRec
 
 	MergeHelixFinderDmp : { @table::CalPatRec.producers.MergeHelixFinder 
 	    trkHelixFinderModuleLabel : NegHelixFinderDmp
-	    calHelixFinderModuleLabel : none
+	    calHelixFinderModuleLabel : CalHelixFinderDmp
 	}
 
 	MergeHelixFinderUem : { @table::CalPatRec.producers.MergeHelixFinder 
@@ -448,7 +448,7 @@ CalPatRec : { @table::CalPatRec
 	MergePatRecTpr : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: none         }
 	MergePatRecDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: CalTrkFitDem }
 	MergePatRecDmm : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuM calPatRecModuleLabel: CalTrkFitDmm }
-	MergePatRecDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: none         }
+	MergePatRecDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: none }
 	MergePatRecDmp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuP calPatRecModuleLabel: none         }
 	MergePatRecUem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUeM  calPatRecModuleLabel: none         }
 	MergePatRecUmm : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUmuM calPatRecModuleLabel: none         }
