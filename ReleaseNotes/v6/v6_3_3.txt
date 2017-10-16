@@ -1,6 +1,22 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v6_3_3
+4)    dnbrow01  16 October 2017
+      Flesh out more of the Alignment tools.  Compiles, links, runs.
+      Currently just prints out alignment parameters.
+      new file:   Alignment/fcl/alignTest_01.fcl
+      modified:   Alignment/inc/AlignmentMap.hh
+      modified:   Alignment/inc/AlignmentObj.hh
+      new file:   Alignment/inc/AlignmentSequence.hh
+      new file:   Alignment/inc/AlignmentService.hh
+      new file:   Alignment/inc/IoV.hh
+      new file:   Alignment/inc/ShapeDetail.hh
+      new file:   Alignment/src/AlignmentMap.cc
+      new file:   Alignment/src/AlignmentSequence.cc
+      new file:   Alignment/src/AlignmentService_service.cc
+      new file:   Alignment/src/SConscript
+      new file:   Alignment/test/align_dev.txt
+
 3)    dnbrow01  13 October 2017
       Update the model of the wedge portion of the TS3 pbar absorber
       to reflect the most likely    way it will be constructed -	strips
