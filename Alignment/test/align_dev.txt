@@ -1,0 +1,7 @@
+// This is absolutely positively bogus playing around stuff
+bool hasAlignment = true;
+int OooGooBooGoo.things = 5;
+vector<double> OooGooBooGoo.translate = {0.0,0.02,0.15};
+vector<double> OooGooBooGoo.rotate = {0.0,0.02,0.0}; // Euler angles
+vector<double> Skinnamaroo_2.translate = {1.2,4.1,7.7};
+vector<double> Skinnamaroo_2.rotate = {0.01,0.0,0.035};

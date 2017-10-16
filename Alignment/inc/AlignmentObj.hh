@@ -17,21 +17,31 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
+#include "Alignment/inc/ShapeDetail.hh"
 
-class AlignmentObj {
-public:
-  AlignmentObj() {}
-  AlignmentObj( CLHEP::Hep3Vector d, CLHEP::HepRotation r )
-  _displacement(d),
-    _rotation(r) {}
+namespace mu2e {
 
-  CLHEP::Hep3Vector displacement() const { return _displacement;}
-  CLHEP::HepRotation rotation()    const { return _rotation;    }
+  class AlignmentObj {
+  public:
+    AlignmentObj() {_displacement.set(0,0,0); _rotation=CLHEP::HepRotation::IDENTITY; _detail=0;}
+    AlignmentObj( CLHEP::Hep3Vector & disp, CLHEP::HepRotation & rot, 
+		  ShapeDetail* deet = 0 ) :
+      _displacement(disp),
+      _rotation(rot),
+      _detail( deet ){}
 
-private:
-  CLHEP::Hep3Vector _displacement;
-  CLHEP::HepRotation _rotation;
+    CLHEP::Hep3Vector  displacement() const { return _displacement;}
+    CLHEP::HepRotation rotation()     const { return _rotation;    }
+    ShapeDetail*       detail()       const { return _detail;      }
 
-};
+    void  setDetail( ShapeDetail* theDeets ) { _detail = theDeets; }
+    void  setDisplacement ( CLHEP::Hep3Vector & aDisp ) { _displacement = aDisp;}
+    void  setRotation ( CLHEP::HepRotation & aRot ) { _rotation = aRot; }
 
+  private:
+    CLHEP::Hep3Vector  _displacement;
+    CLHEP::HepRotation _rotation;
+    ShapeDetail*       _detail;
+  };
+} // end of namespace mu2e
 #endif  //  Alignment_AlignmentObj_HH
