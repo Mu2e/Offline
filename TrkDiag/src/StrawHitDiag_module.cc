@@ -77,7 +77,7 @@ namespace mu2e
       Float_t _mcge, _mcgt;
       Hep3Vector _mcshp, _mcop, _mcpop, _mcgpos;
       Float_t _mcoe, _mcpoe, _mcom, _mcpom;
-      Float_t _mcshlen,_mcshd;
+      Float_t _mcshlen,_mcshd, _mcplen;
       Float_t _mcedep, _mcetrig;
       Float_t _mcct[2];
       Float_t _pdist,_pperp,_pmom;
@@ -183,6 +183,7 @@ namespace mu2e
       _shdiag->Branch("mcpom",&_mcpom,"mcpom/F");
       _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
       _shdiag->Branch("mcshd",&_mcshd,"mcshd/F");
+      _shdiag->Branch("mcplen",&_mcplen,"mcplen/F");
       _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
       _shdiag->Branch("mcetrig",&_mcetrig,"mcetrig/F");
       _shdiag->Branch("mcnsteps",&_mcnsteps,"mcnsteps/I");
@@ -206,6 +207,7 @@ namespace mu2e
   void StrawHitDiag::fillStrawHitDiag() {
     GeomHandle<DetectorSystem> det;
     const Tracker& tracker = getTrackerOrThrow();
+    static const double rstraw = tracker.getStraw(StrawId(0,0,0,0)).getRadius();
     unsigned nstrs = _shcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawHit const& sh = _shcol->at(istr);
@@ -259,6 +261,7 @@ namespace mu2e
       _mcom = -1;
       _mcshlen = -1;
       _mcshd = -1;
+      _mcplen = -1;
       _mcpproc=-1;
       _mcptime=0.0;
       _mcpoe = _mcpom = -1.0;
@@ -294,8 +297,12 @@ namespace mu2e
         _mcoe = osp.startMomentum().e();
         _mcom = osp.startMomentum().vect().mag();
         _mcshlen = (spmcp->position()-straw.getMidPoint()).dot(straw.getDirection());
-        _mcshd = (spmcp->position()-straw.getMidPoint()).dot(straw.getDirection().cross(spmcp->momentum().unit()));
-  // immediate parent information
+	Hep3Vector mdir = spmcp->momentum().unit();
+	Hep3Vector tdir = straw.getDirection().cross(mdir);
+        _mcshd = (spmcp->position()-straw.getMidPoint()).dot(tdir);
+	double scos = mdir.dot(straw.getDirection());
+        _mcplen = 2.0*sqrt( (rstraw*rstraw -_mcshd*_mcshd)/(1.0-scos*scos) );
+	// immediate parent information
 	art::Ptr<SimParticle> psp = osp.parent();
 	if(psp.isNonnull()){
 	  SimParticle const& posp =psp->originParticle();

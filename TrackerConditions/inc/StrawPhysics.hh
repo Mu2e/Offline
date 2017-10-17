@@ -40,7 +40,6 @@ namespace mu2e {
       double driftDistanceToTime(double ddist, double phi) const;  // single cluster!
       double driftTimeSpread(double tdrift) const; // single electron VARIANCE
       double propagationTime(double wdist) const;
-      double velocityDispersion() const { return _vdisp; } 
       double meanFreePath() const { return _meanpath; }
       double ionizationEnergy(unsigned nele=1) const;
       double ionizationEnergy(double q) const { return _EAverage*q/_Qe; }  // energy to produce a given charge.  This assumes the internal distribution of the number of electrons/ionization
@@ -62,7 +61,6 @@ namespace mu2e {
       // attenuation length of charge down the wire; note
       // there is a short and a long component, each with it's own amplitude
       double _vprop; // (average) propagation velocity
-      double _vdisp; // dispersion of propagation velocity (dv/dl)
       double _NAverage; // Average number of ionization electrons/ionization
       double _EAverage; // Average energy of a single ionization electron (MeV)
     // parameters describing cluster DtoT

@@ -113,6 +113,8 @@ namespace mu2e {
       size_t _nADC,_nADCpre; // Number of ADC samples, presamples
       double _ADCPeriod; // ADC period in nsec
       double _ADCOffset; // Offset of 1st ADC sample WRT threshold crossing (nsec)
+      unsigned _maxtsep; // maximum # of ADC clock ticks between straw end threshold crossings to form a digi
+      unsigned _TCoince; // maxing threshold xing pair time separation to create a digi, in number of ADC clock cycles
       double _TDCLSB; // least-significant bit of TDC (nsecs)
       unsigned long _maxTDC; // maximum TDC value
       double _TOTLSB; // least-significant bit of TOT (nsecs)
