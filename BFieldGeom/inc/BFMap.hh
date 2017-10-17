@@ -73,6 +73,8 @@ namespace mu2e {
                 "Mau10_800mm_long.csv");
         };
 
+        //~BFMap() { delete _fitFunc; };
+
         // Accessors
         bool getBFieldWithStatus(const CLHEP::Hep3Vector&, CLHEP::Hep3Vector&) const;
 
