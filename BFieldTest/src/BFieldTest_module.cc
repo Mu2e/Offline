@@ -38,6 +38,9 @@
 
 #include <cstdio>
 #include <iostream>
+#include <vector>
+
+#include "BFieldGeom/inc/csv.h"
 
 namespace {
 
@@ -69,6 +72,18 @@ namespace {
         int npoints;
     };
 
+    struct CSVConfig {
+        CSVConfig(std::string const& aname, fhicl::ParameterSet const& modulePSet) : name(aname) {
+            // Get the parameter set for this file from the module parameter set.
+            fhicl::ParameterSet pset = modulePSet.get<fhicl::ParameterSet>(name);
+
+            csv_name = pset.get<std::string>("csv_name");
+        }
+
+        std::string name;
+        std::string csv_name;
+    };
+
     inline std::ostream& operator<<(std::ostream& ost, const ScanConfig& c) {
         ost << c.name << " x: " << c.x << " y: " << c.y << " zmin: " << c.zmin
             << " zmax: " << c.zmax << " npoints: " << c.npoints;
@@ -76,7 +91,27 @@ namespace {
     }
 
     // Do a scan long the z axis.
-    void scanz(ScanConfig const& c, mu2e::BFieldManager const& bfmgr) {
+    // void scanz(ScanConfig const& c, mu2e::BFieldManager const& bfmgr) {
+    //     std::string outFile = c.name + ".txt";
+
+    //     std::cout << "BFieldTest writing output file: " << outFile << std::endl;
+
+    //     // Use c-style IO to get the format that I want.
+    //     FILE* file = fopen(outFile.c_str(), "w");
+
+    //     double dz((c.zmax - c.zmin) /
+    //               (c.npoints > 1 ? c.npoints - 1 : 1 /* dz not used for 1 point*/));
+
+    //     for (int i = 0; i < c.npoints; ++i) {
+    //         const double z(c.zmin + i * dz);
+    //         CLHEP::Hep3Vector field = bfmgr.getBField(CLHEP::Hep3Vector(c.x, c.y, z));
+
+    //         std::fprintf(file, "%15.10f %15.10f %15.10f %15.10f %15.10f %15.10f\n", c.x, c.y, z,
+    //                      field[0], field[1], field[2]);
+    //     }
+    // }
+
+    void scanCSV(CSVConfig const& c, mu2e::BFieldManager const& bfmgr) {
         std::string outFile = c.name + ".txt";
 
         std::cout << "BFieldTest writing output file: " << outFile << std::endl;
@@ -84,19 +119,18 @@ namespace {
         // Use c-style IO to get the format that I want.
         FILE* file = fopen(outFile.c_str(), "w");
 
-        double dz((c.zmax - c.zmin) /
-                  (c.npoints > 1 ? c.npoints - 1 : 1 /* dz not used for 1 point*/));
+        io::CSVReader<3> in(c.csv_name);
+        in.set_header("x", "y", "z");
+        double x, y, z;
+        while (in.read_row(x, y, z)) {
+            CLHEP::Hep3Vector field = bfmgr.getBField(CLHEP::Hep3Vector(x, y, z));
 
-        for (int i = 0; i < c.npoints; ++i) {
-            const double z(c.zmin + i * dz);
-            CLHEP::Hep3Vector field = bfmgr.getBField(CLHEP::Hep3Vector(c.x, c.y, z));
-
-            std::fprintf(file, "%15.10f %15.10f %15.10f %15.10f %15.10f %15.10f\n", c.x, c.y, z,
+            std::fprintf(file, "%15.10f %15.10f %15.10f %15.10f %15.10f %15.10f\n", x, y, z,
                          field[0], field[1], field[2]);
         }
-    }
+    };
 
-}  // namespace
+};  // namespace
 
 namespace mu2e {
     class BFieldTest01 : public art::EDAnalyzer {
@@ -117,10 +151,10 @@ namespace mu2e {
         }
 
         void beginRun(const art::Run& run);
-        void analyze(const art::Event&) {}
+        void analyze(const art::Event&){};
 
        private:
-        std::vector<ScanConfig> scans_;
+        std::vector<CSVConfig> scans_;
     };
 
     void BFieldTest01::beginRun(const art::Run& run) {
@@ -128,9 +162,9 @@ namespace mu2e {
 
         // Make the plots.
         for (auto const& c : scans_) {
-            scanz(c, *bfmgr);
+            scanCSV(c, *bfmgr);
         }
-    }
+    };
 
 }  // namespace mu2e
 
