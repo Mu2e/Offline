@@ -19,6 +19,8 @@
 #include "CLHEP/Vector/Rotation.h"
 #include "Alignment/inc/ShapeDetail.hh"
 
+#include <ostream>
+
 namespace mu2e {
 
   class AlignmentObj {
@@ -29,6 +31,7 @@ namespace mu2e {
       _displacement(disp),
       _rotation(rot),
       _detail( deet ){}
+    AlignmentObj( const AlignmentObj& rhs );
 
     CLHEP::Hep3Vector  displacement() const { return _displacement;}
     CLHEP::HepRotation rotation()     const { return _rotation;    }
@@ -42,6 +45,9 @@ namespace mu2e {
     CLHEP::Hep3Vector  _displacement;
     CLHEP::HepRotation _rotation;
     ShapeDetail*       _detail;
-  };
+  }; // end of AlignmentObj class declaration and "inline" defs
+
+  std::ostream& operator<<(std::ostream& os, const AlignmentObj& rhs );
+
 } // end of namespace mu2e
 #endif  //  Alignment_AlignmentObj_HH

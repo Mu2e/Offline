@@ -9,6 +9,7 @@
 // represented as doubles.  That may change later.
 
 #include <limits>
+#include <ostream>
 
 namespace mu2e {
 
@@ -18,10 +19,18 @@ namespace mu2e {
     _startTime(start),
       _endTime(end) {}
 
+    IoV() :
+      _startTime(0.0),
+      _endTime( std::numeric_limits<double>::max() -10.0 ) {}
+
+    // copy c-tor
+    IoV( const IoV& rhs );
+
+
     double start() const {return _startTime;}
     double end()   const {return _endTime;}
 
-    double _maxtime = std::numeric_limits<double>::max() - 10.0;  // allow for something...?
+    static constexpr double maxtime = std::numeric_limits<double>::max() - 10.0;  // allow for something...?
 
     static bool isValid(double aTime) { return !(aTime < 0 || aTime > (std::numeric_limits<double>::max() -10.0) ); }
     bool contains(double aTime) const { return (aTime >= _startTime && aTime <= _endTime); }
@@ -30,7 +39,9 @@ namespace mu2e {
 
     double _startTime;
     double _endTime;
-  };
+  }; // end of class def
+
+  std::ostream& operator<<(std::ostream& os, const IoV& rhs);
 
 } // end namespace mu2e
 

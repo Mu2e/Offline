@@ -20,18 +20,16 @@
 #include "cetlib_except/exception.h"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "boost/shared_ptr.hpp"
-
+#include "Alignment/inc/AlignmentMap.hh"
 
 namespace mu2e {
 // Forward declarations
-  class AlignmentMap;
   class AlignmentSequence;
 
   class AlignmentService {
 public:
     AlignmentService(const fhicl::ParameterSet&, art::ActivityRegistry&);
-    ~AlignmentService();
+    ~AlignmentService() { delete _alignmentMap; _alignmentMap = 0;}
 
     // Functions registered for callbacks.
     void preBeginRun( art::Run const &run);
@@ -39,7 +37,8 @@ public:
 
     SimpleConfig const& config() const { return *_config;}
 
-
+    AlignmentMap* alignmentMap() { return _alignmentMap; }
+    //   AlignmentMap const * alignmentMap() const { return _alignmentMap; }
 
 private:
 
@@ -60,41 +59,8 @@ private:
     // The object that parses run-time configuration file.
     std::unique_ptr<SimpleConfig> _config;
 
-    // Load G4 geometry options
-    std::unique_ptr<AlignmentMap> _alignmentMap;
-
-    // Check the configuration.
-    //    void checkConfig();
-
-    // template <typename DET> friend class GeomHandle;
-
-    // template <class DET>
-    // DET* getElement()
-    // {
-    //   if(_run_count==0)
-    //     throw cet::exception("GEOM")
-    //       << "Cannot get detectors from an unconfigured geometry service.\n"
-    //       << "You've attempted to a get an element before the first run\n";
-
-    //   // to use this generic way requires a map of names (typeid?) to
-    //   // abstract elements.
-    //   // find the detector element requested
-    //   std::string name = typeid(DET).name();
-    //   DetMap::iterator it(_detectors.find(name));
-    //   if(it==_detectors.end())
-    //     throw cet::exception("GEOM")
-    //       << "Failed to retrieve detector element of type " << name << "\n";
-
-    //   // this must succeed or there is something terribly wrong
-    //   DET* d = dynamic_cast<DET*>(it->second.get());
-
-    //   if(d==0)
-    //     throw cet::exception("GEOM")
-    //       << "Failed to convert found detector " << name
-    //       << " to its correct type.  There is a serious problem.\n";
-
-    //   return d;
-    // }
+    // Load Alignments
+    AlignmentMap* _alignmentMap;
 
 
     // Keep a count of how many runs we have seen.

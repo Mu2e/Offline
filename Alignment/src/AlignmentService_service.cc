@@ -29,6 +29,7 @@ using namespace std;
 
 namespace mu2e {
 
+
   AlignmentService::AlignmentService(fhicl::ParameterSet const& pset,
                                    art::ActivityRegistry&iRegistry) :
     _inputfile(            pset.get<std::string> ("inputFile",            "alignment000.txt")),
@@ -36,17 +37,15 @@ namespace mu2e {
     _messageOnReplacement( pset.get<bool>        ("messageOnReplacement", false)),
     _messageOnDefault(     pset.get<bool>        ("messageOnDefault",     false)),
     _configStatsVerbosity( pset.get<int>         ("configStatsVerbosity", 0)),
-    _printConfig(          pset.get<bool>        ("printConfig",          true)),
+    _printConfig(          pset.get<bool>        ("printConfig",          false)),
     _config(nullptr),
-    _alignmentMap(),
+    _alignmentMap(new AlignmentMap()),
     _run_count()
   {
     iRegistry.sPreBeginRun.watch(this, &AlignmentService::preBeginRun);
     iRegistry.sPostEndJob.watch (this, &AlignmentService::postEndJob );
   }
 
-  AlignmentService::~AlignmentService(){
-  }
 
   void
   AlignmentService::preBeginRun(art::Run const &) {
@@ -68,6 +67,7 @@ namespace mu2e {
 
 
     if (_config->getBool("hasAlignment",false)) {
+      //      _alignmentMap = unique_ptr<AlignmentMap>( new AlignmentMap() );
       _alignmentMap->make( *_config );
     }
 

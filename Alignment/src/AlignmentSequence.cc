@@ -8,6 +8,17 @@
 
 namespace mu2e {
 
+  AlignmentSequence::AlignmentSequence(const AlignmentSequence& rhs ) {
+    _lastValidity = rhs.lastValidity();
+    unsigned int count = rhs.size();
+    for ( unsigned int iCopy = 0; iCopy < count; iCopy++ ) {
+      std::pair<IoV,AlignmentObj> anAlign(rhs.at(iCopy).first,rhs.at(iCopy).second);
+      _sequence.push_back(anAlign);
+    }
+
+  } // end of copy ctor
+
+
   void AlignmentSequence::addPair ( IoV & interval, AlignmentObj & alignObj ) {
 
     std::pair<IoV,AlignmentObj> aPr(interval,alignObj);
@@ -47,4 +58,14 @@ namespace mu2e {
     AlignmentObj tmpNullAO;
     return tmpNullAO;
   }
+
+  std::ostream& operator<<(std::ostream& os, const AlignmentSequence& rhs) {
+    os << "AlignmentSequence:  {\n";
+    for ( unsigned int i = 0; i < rhs.size(); i++ ) {
+      os << rhs.at(i).first << ":  " << rhs.at(i).second << "\n";
+    } // end of loop
+    os << "\t }";
+    return os;
+  } // end of output operator
+
 }  // end of namespace mu2e

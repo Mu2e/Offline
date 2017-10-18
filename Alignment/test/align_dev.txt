@@ -1,7 +1,17 @@
 // This is absolutely positively bogus playing around stuff
+// You would not be aligning the support rings.  This is just for testing
 bool hasAlignment = true;
-int OooGooBooGoo.things = 5;
-vector<double> OooGooBooGoo.translate = {0.0,0.02,0.15};
-vector<double> OooGooBooGoo.rotate = {0.0,0.02,0.0}; // Euler angles
-vector<double> Skinnamaroo_2.translate = {1.2,4.1,7.7};
-vector<double> Skinnamaroo_2.rotate = {0.01,0.0,0.035};
+vector<double> ThinSupportRing_12.translate.iov1 = {0.0,0.2,-10.0};
+vector<double> ThinSupportRing_12.rotate.iov1    = {0.,0.,0.}; // Euler angles
+double  ThinSupportRing_12.startTime.iov1        = 0.0; 
+double  ThinSupportRing_12.endTime.iov1          = 51000001; // no Idea
+
+double  ThinSupportRing_11.endTime.iov1          = 714010241; // still none
+vector<double> ThinSupportRing_11.translate.iov1 = {0.0,2.1,-2.1};
+double  ThinSupportRing_11.startTime.iov1        = 12.0; 
+vector<double> ThinSupportRing_11.rotate.iov1    = {0.,0.,0.5}; 
+
+double  ThinSupportRing_12.startTime.iov2        = 51000002; // after first one
+double  ThinSupportRing_12.endTime.iov2          = 52000001; // just testing
+vector<double> ThinSupportRing_12.rotate.iov2    = {0.,0.001,0.};
+vector<double> ThinSupportRing_12.translate.iov2 = {0.,0.,1.5};
