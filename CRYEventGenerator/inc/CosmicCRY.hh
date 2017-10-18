@@ -10,6 +10,7 @@
 
 class TH1D;
 class TH2D;
+class TH1I;
 class TTree;
 namespace art{
   class Run;
@@ -40,8 +41,17 @@ namespace mu2e {
     TH1D *_hStartE;
     TH1D *_hStartTheta;
     TH1D *_hStartPhi;
+    TH1D *_hPtot;
+    TH1D *_hPyOverPtot;
+    TH1D *_hTime;
+    TH1D *_hParticleType;
+    TH1D *_hDensityOverR;
+    TH1D *_hNegMuKE;
+    TH1D *_hPosMuKE;
+    TH2D *_hPtypeKE;
+    TH1D *_hnSecondaries;
     TTree *_tCryPrimary;
-    TTree *_tCrySecondaries;;
+    TTree *_tCrySecondaries;
 
     double _muEMin;   // min and max values of muon energy (MeV)
     double _muEMax;
@@ -91,7 +101,7 @@ namespace mu2e {
     double _ke0;
     int _nSecondaries;
 
-    static const int _maxNSecondaries = 100;
+    static const int _maxNSecondaries = 300;
     int _pdgId1[_maxNSecondaries];
     double _x1[_maxNSecondaries];
     double _y1[_maxNSecondaries];

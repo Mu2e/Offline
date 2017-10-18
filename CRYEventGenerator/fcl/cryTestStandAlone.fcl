@@ -7,10 +7,11 @@ process_name : testCry
 source : {
   module_type : EmptyEvent
   maxEvents : -1
+  firstRun : 5
 }
 services : {
   message               : @local::default_message
-  TFileService : { fileName : "cryHist.root" }
+  TFileService : { fileName : "cryHist_%R.root" }
   GlobalConstantsService: { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
   RandomNumberGenerator : { }
   SeedService            : @local::automaticSeeds
@@ -39,5 +40,5 @@ outputs : {
   }
 }
 
-services.SeedService.baseSeed         :  10000
+services.SeedService.baseSeed         :  10307
 services.SeedService.maxUniqueEngines :  20

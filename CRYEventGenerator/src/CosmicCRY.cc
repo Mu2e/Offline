@@ -82,6 +82,15 @@ namespace mu2e
   , _hStartE(NULL)
   , _hStartTheta(NULL)
   , _hStartPhi(NULL)
+  , _hPtot(NULL)
+  , _hPyOverPtot(NULL)
+  , _hTime(NULL)
+  , _hParticleType(NULL)
+  , _hDensityOverR(NULL)
+  , _hNegMuKE(NULL)
+  , _hPosMuKE(NULL)
+  , _hPtypeKE(NULL)
+  , _hnSecondaries(NULL)
 
   , _muEMin    ( config.getDouble("cosmicCRY.muEMin") )   //in MeV
   , _muEMax    ( config.getDouble("cosmicCRY.muEMax") )   //in MeV
@@ -139,14 +148,44 @@ namespace mu2e
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir("CosmicCRY");
       _hStartXZ = tfdir.make<TH2D>("StartXZ", "StartXZ", 
-          500, -1.0e5,  1.0e5, 500, -1.0e5, 1.0e5 );
+          400, -2.0e5,  2.0e5, 400, -2.0e5, 2.0e5 );
       _hStartY = tfdir.make<TH1D>("StartY", "StartY", 100, -1.0e3, 1.0e3 );
 
       // _hStartPlane = tfdir.make<TH1D>("StartPlane", "StartPlane", 5, 0, 5);
-      _hStartE = tfdir.make<TH1D>("StartE", "StartE", 2000, 0, _muEMax);
-      _hStartTheta = tfdir.make<TH1D>("StartTheta", "StartTheta", 200, -M_PI - 0.5, M_PI + 0.5);
-      _hStartPhi = tfdir.make<TH1D>("StartPhi", "StartPhi", 200, -M_PI - 0.5, M_PI + 0.5);
+      _hStartE = tfdir.make<TH1D>("StartE", "StartE", 4000, 0, _muEMax);
+      _hStartTheta = tfdir.make<TH1D>("StartTheta", "StartTheta",
+          200, -M_PI - 0.5, M_PI + 0.5);
+      _hStartPhi = tfdir.make<TH1D>("StartPhi", "StartPhi",
+          200, -M_PI - 0.5, M_PI + 0.5);
 
+      _hPtot = tfdir.make<TH1D>("Ptot", "Total momentum", 500, 0., 2E6);
+      _hPyOverPtot = tfdir.make<TH1D>("PyOverPtot", "Py/Ptot", 200, -20., 20.);
+      _hTime = tfdir.make<TH1D>("Time", "Timing of secondary particles",
+          1000, -1.E-3, 1E0);
+      _hDensityOverR = tfdir.make<TH1D>("DensityOverR", "Density", 2000, 0., 200E3);
+      _hNegMuKE = tfdir.make<TH1D>("NegMuKE", "Momenta of #mu^-", 4000, 0., 2E6);
+      _hPosMuKE = tfdir.make<TH1D>("PosMuKE", "Momenta of #mu^+", 4000, 0., 2E6);
+      _hnSecondaries = tfdir.make<TH1D>("nSecondaries", "Number of secondaries",
+          1000, 0, 1000);
+
+      _hParticleType = tfdir.make<TH1D>("ParticleType", "Particle types", 7, 0, 7);
+      _hParticleType->GetXaxis()->SetBinLabel(1, "mu");
+      // _hParticleType->GetXaxis()->SetBinLabel(2, "pos. mu");
+      _hParticleType->GetXaxis()->SetBinLabel(2, "gamma");
+      _hParticleType->GetXaxis()->SetBinLabel(3, "electron");
+      _hParticleType->GetXaxis()->SetBinLabel(4, "neutron");
+      _hParticleType->GetXaxis()->SetBinLabel(5, "proton");
+      _hParticleType->GetXaxis()->SetBinLabel(6, "pion");
+      _hParticleType->GetXaxis()->SetBinLabel(7, "kaon");
+
+      _hPtypeKE = tfdir.make<TH2D>("PtypeKE", "Particle type vs energy",
+          2000, 0., 2E6, 6, 0, 6);
+      _hPtypeKE->GetYaxis()->SetBinLabel(1, "mu");
+      _hPtypeKE->GetYaxis()->SetBinLabel(2, "gamma");
+      _hPtypeKE->GetYaxis()->SetBinLabel(3, "electron");
+      _hPtypeKE->GetYaxis()->SetBinLabel(4, "neutron");
+      _hPtypeKE->GetYaxis()->SetBinLabel(5, "proton");
+      _hPtypeKE->GetYaxis()->SetBinLabel(6, "pion");
     }
 
     // And tree
@@ -163,12 +202,16 @@ namespace mu2e
     std::vector<CRYParticle*> *daughters = new std::vector<CRYParticle*>;
     _cryGen->genEvent(daughters);
 
+    if (_doHistograms) {
+      _hnSecondaries->Fill(daughters->size());
+    }
     if (_saveTree) {
       _pdgId0 = _cryGen->primaryParticle()->PDGid();
       _ke0 = _cryGen->primaryParticle()->ke(); // MeV
       _nSecondaries = daughters->size();
       _tCryPrimary->Fill();
     }
+
 
     for (unsigned j=0; j<daughters->size(); j++) {
       CRYParticle* p = (*daughters)[j];
@@ -187,7 +230,7 @@ namespace mu2e
       CLHEP::HepLorentzVector mom4(totalP*p->v(), totalP*p->w(),
           totalP*p->u(), totalE);
       genParts.push_back(
-          GenParticle(static_cast<PDGCode::type>(p->PDGid()), GenId::cosmicDYB,
+          GenParticle(static_cast<PDGCode::type>(p->PDGid()), GenId::cosmicCRY,
             position, mom4, p->t()));
 
       if (_doHistograms) {
@@ -199,6 +242,88 @@ namespace mu2e
         CLHEP::Hep3Vector momDir(p->u(), p->v(), p->w());
         _hStartTheta->Fill(momDir.theta());
         _hStartPhi->Fill(momDir.phi());
+
+        _hPtot->Fill(totalP);
+        _hTime->Fill(p->t());
+        double r2 = position.x() * position.x() + position.z() * position.z();
+        double r = safeSqrt(r2);
+        _hDensityOverR->Fill(r, 1/r2/M_PI);
+        _hPyOverPtot->Fill(p->w());
+        switch (p->PDGid()) {
+          case 13: // mu-
+            _hParticleType->Fill(0);
+            _hNegMuKE->Fill(p->ke());
+            _hPtypeKE->Fill(p->ke(), 0);
+            break;
+          case -13: // mu+
+            _hParticleType->Fill(0);
+            _hPosMuKE->Fill(p->ke());
+            _hPtypeKE->Fill(p->ke(), 0);
+            break;
+          case 22: // photon
+            _hParticleType->Fill(1);
+            _hPtypeKE->Fill(p->ke(), 1);
+            break;
+          case -11: // e-
+            _hParticleType->Fill(2);
+            _hPtypeKE->Fill(p->ke(), 2);
+            break;
+          case 11: // e+
+            _hParticleType->Fill(2);
+            _hPtypeKE->Fill(p->ke(), 2);
+            break;
+          case 2112: // neutron
+            _hParticleType->Fill(3);
+            _hPtypeKE->Fill(p->ke(), 3);
+            break;
+          case -2112: // neutron
+            _hParticleType->Fill(3);
+            _hPtypeKE->Fill(p->ke(), 3);
+            break;
+          case 2212: // proton
+            _hParticleType->Fill(4);
+            _hPtypeKE->Fill(p->ke(), 4);
+            break;
+          case -2212: // proton
+            _hParticleType->Fill(4);
+            _hPtypeKE->Fill(p->ke(), 4);
+            break;
+          case 111: // pi0
+            _hParticleType->Fill(5);
+            _hPtypeKE->Fill(p->ke(), 5);
+            break;
+          case 211: // pi+
+            _hParticleType->Fill(5);
+            _hPtypeKE->Fill(p->ke(), 5);
+            break;
+          case -211: // pi-
+            _hParticleType->Fill(5);
+            _hPtypeKE->Fill(p->ke(), 5);
+            break;
+          case 130: // k0 L
+            _hParticleType->Fill(6);
+            _hPtypeKE->Fill(p->ke(), 6);
+            break;
+          case 310: // k0 S
+            _hParticleType->Fill(6);
+            _hPtypeKE->Fill(p->ke(), 6);
+            break;
+          case 311: // k0
+            _hParticleType->Fill(6);
+            _hPtypeKE->Fill(p->ke(), 6);
+            break;
+          case 321: // k+
+            _hParticleType->Fill(6);
+            _hPtypeKE->Fill(p->ke(), 6);
+            break;
+          case -321: // k-
+            _hParticleType->Fill(6);
+            _hPtypeKE->Fill(p->ke(), 6);
+            break;
+          default:
+            _hParticleType->Fill(-1);
+            break;
+        }
       }
 
       if (_saveTree && j < _maxNSecondaries) {

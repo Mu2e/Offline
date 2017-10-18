@@ -5,7 +5,7 @@ int cosmicCRY.verbose = 0;
 
 // histogram settings
 bool cosmicCRY.doHistograms = true;
-bool cosmicCRY.saveTree = true;
+bool cosmicCRY.saveTree = false;
 
 double cosmicCRY.muCosThMin = 0.00366518;
 double cosmicCRY.muCosThMax = 1.0;
@@ -22,7 +22,7 @@ bool cosmicCRY.returnPions = true;
 bool cosmicCRY.returnKaons = true;
 
 
-// Date of the desired day for the flux
+// Date
 int cosmicCRY.month = 6;
 int cosmicCRY.day = 21;
 int cosmicCRY.year = 2021;
@@ -30,4 +30,9 @@ int cosmicCRY.year = 2021;
 // Experiment site settings
 double cosmicCRY.latitude = 41.8;
 int cosmicCRY.altitude = 0; // meter, accepts either of 3 values: 0, 2100 or 11300
-double cosmicCRY.subboxLength = 100.; // meter
+double cosmicCRY.subboxLength = 300.; // meter
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
