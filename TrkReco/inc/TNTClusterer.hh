@@ -84,7 +84,7 @@ namespace mu2e {
          double   distance(const ClusterStraw&, ClusterStrawHit&) const;
          void     mergeClusters(std::list<ClusterStraw>& clusters, double dt, double dd2, bool recalculateDist=false);
          void     mergeTwoClu(ClusterStraw& clu1, ClusterStraw& clu2);
-         void     dump(std::list<ClusterStraw>& clusters);
+         void     dump(std::list<ClusterStraw> clusters);
 
          int          _diag;
          StrawHitFlag _bkgmask; // mask for background hits

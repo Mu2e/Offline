@@ -35,7 +35,7 @@ FlagBkgHits : {
 
   Clusterer : 2
   TLTClusterer : { 
-    MaxNIterations : 100
+    MaxNIterations : 10
     TimeDifference : 25.0
     MaxDistance : 100.0
     HitDistance : 5.0
@@ -45,7 +45,7 @@ FlagBkgHits : {
     SignalMask : ["TimeSelection", "EnergySelection"]
   }
   TNTClusterer : { 
-    MaxNIterations : 1
+    MaxNIterations : 10
     TimeDifference : 25.0
     MaxDistance : 100.0
     HitDistance : 5.0

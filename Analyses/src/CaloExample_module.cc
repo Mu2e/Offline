@@ -51,6 +51,7 @@
 
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloRecoDigiFastCollection.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -131,7 +132,7 @@ namespace mu2e {
 
 
        TH1F *_hcryE,*_hcryT,*_hcryX,*_hcryY,*_hcryZ;
-       TH1F *_hcluE,*_hcluT,*_hcluX,*_hcluY,*_hcluZ,*_hcluE1Et,*_hcluE1E9,*_hcluE1E25;
+       TH1F *_hcluE,*_hcluT,*_hcluX,*_hcluY,*_hcluZ,*_hcluE1Et,*_hcluE1E9,*_hcluE1E25,*_hcluEF;
        
        TH2F *_hxy;
 
@@ -317,6 +318,7 @@ namespace mu2e {
        _hcryY     = tfs->make<TH1F>("cryY",     "Y coord of crystal hit",     100,  300., 700.  );
        _hcryZ     = tfs->make<TH1F>("cryZ",     "Z coord of crystal hit",     100,11000., 13000.);
        _hcluE     = tfs->make<TH1F>("cluEdep",  "Energy deposited / clustal", 150,    0., 150.  );
+       _hcluEF    = tfs->make<TH1F>("cluEdepF", "Energy deposited / clustal", 150,    0., 150.  );
        _hcluT     = tfs->make<TH1F>("cluTime",  "Time of clustal hit",        100,    0., 2000. );
        _hcluX     = tfs->make<TH1F>("cluX",     "X coord of clustal hit",     100,  300., 700.  );
        _hcluY     = tfs->make<TH1F>("cluY",     "Y coord of clustal hit",     100,  300., 700.  );
@@ -378,8 +380,10 @@ namespace mu2e {
       art::Handle<KalRepPtrCollection> trksHandle;
       event.getByLabel(_trkPatRecModuleLabel, trksHandle);
       const KalRepPtrCollection& trks = *trksHandle;
-
-
+      
+      const CaloRecoDigiFastCollection* caloDigis(0);
+      art::Handle<CaloRecoDigiFastCollection> caloRecoDigiFastHandle;
+      if (event.getByLabel("CaloRecoFast", caloRecoDigiFastHandle)) caloDigis = caloRecoDigiFastHandle.product();
 
       const double CrDensity = 4.9*(CLHEP::g/CLHEP::cm3);
       const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
@@ -396,8 +400,8 @@ namespace mu2e {
 	 }
       }
 
-
-
+ 
+      if (caloDigis) for (const auto& digi : *caloDigis) _hcluEF->Fill(digi.energy());
 
 
 

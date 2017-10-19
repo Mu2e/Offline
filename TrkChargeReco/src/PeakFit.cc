@@ -31,10 +31,15 @@ namespace mu2e {
 
        void PeakFit::sumADC(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const
        {
-          fit = PeakFitParams();
-          double sum(0.0);
-          for (auto iadc : adcData) { sum += _strawele.adcCurrent(iadc); }
-          double charge = sum*_strawele.adcPeriod()*StrawElectronics::_pC_per_uA_ns;
+          //fit = PeakFitParams();
+          //double sum2(0.0);
+          //for (auto iadc : adcData) { sum2 += _strawele.adcCurrent(iadc); }
+          //double charge2 = sum2*_strawele.adcPeriod()*StrawElectronics::_pC_per_uA_ns;
+          //fit._charge = charge;
+              
+          unsigned sum(0.0);
+          for (auto iadc : adcData) sum += iadc;
+          double charge = (sum- adcData.size()*_strawele.ADCPedestal())*_strawele.adcLSB()/_strawele.currentToVoltage(StrawElectronics::adc)*_strawele.adcPeriod()*StrawElectronics::_pC_per_uA_ns;
           fit._charge = charge;
        }
 

@@ -48,9 +48,9 @@
 #include <memory>
 
  
-//Notes: Main contributors: PeakFit process and Strawele, atan not negligible but needed (could it be sped up?)
+//Notes: Main contributors: PeakFit process and Strawele, atan not negligible (fast implementation?)
 //       Is time prefiltering safe, i.e. dropping hits outside time window? 
-
+//       All uppercase or lowercase fcl parameters
 
 namespace mu2e {
 
@@ -78,6 +78,7 @@ namespace mu2e {
        double ctMaxT_;                  // time relative to proton hit to flag cross talk (ns)
        double minT_;                    // minimum hit time
        double maxT_;                    // maximum hit time
+       bool   trigMode_;                // trigger mode cut on dt and other thing 
        bool   doMC_;                    // produce MC information
        int    printLevel_;
        int    diagLevel_;
@@ -107,6 +108,7 @@ namespace mu2e {
       ctMaxT_(pset.get<double>(      "crossTalkMaximumTime",100)), // nsec
       minT_(pset.get<double>(        "minimumTime",500)), // nsec
       maxT_(pset.get<double>(        "maximumTime",2000)), // nsec
+      trigMode_(pset.get<bool>(      "trigMode",true)),
       doMC_(pset.get<bool>(          "doMC",false)),
       printLevel_(pset.get<int>(     "printLevel",0)),
       diagLevel_(pset.get<int>(      "diagLevel",0)),
@@ -248,7 +250,7 @@ namespace mu2e {
 	  
           
           //prefiltering on time if needed
-          //if (time < minT_ ||time > maxT_) continue;
+          if (trigMode_ && (time < minT_ ||time > maxT_)) continue;
 
 
           //extract energy from waveform

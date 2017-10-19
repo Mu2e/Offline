@@ -52,16 +52,16 @@ namespace mu2e
        if (_hitsPtr.size()==1)
        {
           _pos = _hitsPtr.at(0)->_pos;
+          _pos.setZ(0);
           _time = _hitsPtr.at(0)->_time;
           _itime = int(_time/10.0);
           return;
        } 
               
-       accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > racc, pacc, tacc;      
+       accumulator_set<double, stats<tag::weighted_median>, double > racc, pacc, tacc;      
+       //accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > racc, pacc, tacc;      
        //double racc(0),tacc(0),pacc(0),rweight(0),tweight(0),pweight(0);
-       
-       
-
+             
        double crho = _pos.perp();
        double cphi = _pos.phi();
        CLHEP::Hep3Vector rdir = _pos.perpPart().unit();
@@ -71,9 +71,7 @@ namespace mu2e
        {
           double dt  = hitPtr->_time -_time;
 	  double dr  = hitPtr->_pos.perp() - crho;
-	  double dp  = hitPtr->_phi-cphi;
-          while(dp > 3.1415926)  dp -= 6.2831853;
-          while(dp < -3.1415926) dp += 6.2831853;
+	  double dp = Angles::deltaPhi(hitPtr->_phi,cphi);
 
           // weight according to the wire direction error, linearly for now
 	  double twt = std::min(_maxwt,hitPtr->_posResInv);	
@@ -93,7 +91,6 @@ namespace mu2e
        //if (rweight>1e-6) crho  += racc/rweight;
        //if (pweight>1e-6) cphi  += pacc/pweight;
        //if (tweight>1e-6) _time += tacc/tweight;
-
        _pos = CLHEP::Hep3Vector(crho*cos(cphi),crho*sin(cphi),0.0);
        _itime = int(_time/10.0);
    }
@@ -176,6 +173,7 @@ namespace mu2e
       if (_mergeInit) initCluMerge(shcol, shpcol, shfcol, chits, clusters);
       else            initClu(shcol, shpcol, shfcol, chits);
 
+
       if (chits.size()==0) return;
 
  
@@ -188,7 +186,6 @@ namespace mu2e
       //while (nChanged > 10  && _niter < _maxniter)
       {        
           /*nChanged =*/ formClusters(chits,clusters);
-
           _odist = _tdist;      
           _tdist = 0.0;
           for (auto& cluster: clusters)
@@ -335,18 +332,12 @@ namespace mu2e
               if (cluster.hasChanged()) cluster.updateCache(_maxwt);
               cluster.flagChanged(false); 
            }
-
            if (recalculateDist) std::cout<<"Merge "<<niter<<" "<<nchanged<<std::endl;
        }
 
       
        return;    
    }
-
-
-
-
-
 
    void TNTClusterer::mergeTwoClu(ClusterStraw& clu1, ClusterStraw& clu2 )
    {
@@ -485,13 +476,14 @@ namespace mu2e
 
 
   //-------------------------------------------------------------------------------------------------------------------
-  void TNTClusterer::dump(std::list<ClusterStraw>& clusters)
+  void TNTClusterer::dump(std::list<ClusterStraw> clusters)
   {
       int iclu(0);      
+      clusters.sort([](ClusterStraw& a, ClusterStraw& b){return a.hits().at(0)->_index < b.hits().at(0)->_index ;});
       for (auto& cluster: clusters)
       { 
-          //std::cout<<"Cluster "<<iclu<<" "<<cluster.pos()<<" "<<cluster.time()<<"  - ";
-          std::cout<<"Cluster "<<iclu<<" "<<cluster.hits().size()<<"  - ";
+          std::cout<<"Cluster "<<iclu<<" "<<cluster.pos()<<" "<<cluster.time()<<"  "<<cluster.hits().size()<<"  - ";
+          //std::cout<<"Cluster "<<iclu<<" "<<cluster.hits().size()<<"  - ";
           for (auto& hit : cluster.hits()) std::cout<<hit->_index<<" ";
           std::cout<<std::endl;
           ++iclu;
