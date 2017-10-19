@@ -57,7 +57,7 @@ physics :
 
 physics.producers.CrvPhotons.startTime         : 0.0 
 physics.producers.CrvSiPMCharges.blindTime     : 0.0
-physics.producers.CrvWaveforms.minVoltage      : 0.0
+#physics.producers.CrvWaveforms.minVoltage      : 0.0
 
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20

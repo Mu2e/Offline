@@ -26,9 +26,10 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
   _t2s.clear();
   _PEs.clear();
   _LEtimes.clear();
+  _peakBins.clear();
 
   //find the maxima
-  int nBins = static_cast<int>(waveform.size());
+  int nBins = waveform.size();
   std::vector<int> peaks;
   for(int bin=0; bin<=nBins; bin++) 
   {
@@ -107,6 +108,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
     _t2s.push_back(t2);
     _PEs.push_back(PEs);
     _LEtimes.push_back(LEtime);
+    _peakBins.push_back(maxBin);
   }
 }
 
@@ -190,6 +192,13 @@ double MakeCrvRecoPulses::GetLEtime(int pulse)
   int n = _LEtimes.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
   return _LEtimes[pulse];
+}
+
+int MakeCrvRecoPulses::GetPeakBin(int pulse)
+{
+  int n = _peakBins.size();
+  if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
+  return _peakBins[pulse];
 }
 
 }

@@ -14,13 +14,13 @@ outsideCrvCut:
       { 
         type  : plane 
         normal: [  1, 0, 0 ] 
-        point : [ -704, 0, 0 ] 
+        point : [ -904, 0, 0 ] 
       },
       // -x plane
       { 
         type  : plane 
         normal: [ -1, 0, 0 ] 
-        point : [ -6704, 0, 0 ] 
+        point : [ -6904, 0, 0 ] 
       }
    ]
 }

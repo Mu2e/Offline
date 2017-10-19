@@ -50,7 +50,7 @@ namespace mu2e
       for(size_t i=0; i<_photons[SiPM].size(); i++)
       {
         double t = _photons[SiPM][i]._time;
-        if(isnan(firstTime) || t<firstTime) firstTime=t;
+        if(std::isnan(firstTime) || t<firstTime) firstTime=t;
       }
     }
     return firstTime;

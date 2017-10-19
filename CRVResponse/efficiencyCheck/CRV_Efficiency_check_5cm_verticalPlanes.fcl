@@ -227,7 +227,7 @@ physics.producers.CrvPhotons.timeOffsets    : { inputs : [] }
 physics.producers.CrvPhotons.g4ModuleLabels : ["*"]
 physics.producers.CrvPhotons.processNames   : ["*"]
 physics.producers.CrvPhotons.lookupTableFileNames      : ["CRVConditions/v3_0/LookupTable_4500"]
-physics.producers.CrvPhotons.lookupTableCounterLengths : [4500]
+physics.producers.CrvPhotons.CRVSectors                : ["Test"]
 
 physics.producers.CrvCoincidencePE10T5.PEthresholds                   : [10]
 physics.producers.CrvCoincidencePE10T5.maxTimeDifferences             : [5]

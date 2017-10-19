@@ -108,6 +108,7 @@ namespace mu2e
         //merge single waveforms together if there is no time gap between them
         const std::vector<CrvDigi::CrvSingleWaveform> &singleWaveforms = crvWaveforms.GetSingleWaveforms(SiPM);
         std::vector<std::vector<unsigned int> > ADCs;
+        std::vector<std::vector<unsigned int> > singleWaveformIndices;
         std::vector<unsigned int> startTDCs;
         for(size_t i=0; i<singleWaveforms.size(); i++)
         {
@@ -126,12 +127,18 @@ namespace mu2e
                                                             //and can be appended.
           }
 
-          if(appendWaveform) ADCs.back().insert(ADCs.back().end(),
-                                                singleWaveforms[i]._ADCs.begin(),
-                                                singleWaveforms[i]._ADCs.end());
+          if(appendWaveform) 
+          {
+            ADCs.back().insert(ADCs.back().end(),
+                               singleWaveforms[i]._ADCs.begin(),
+                               singleWaveforms[i]._ADCs.end());
+            singleWaveformIndices.back().insert(singleWaveformIndices.back().end(),singleWaveforms[i]._ADCs.size(),i);
+          }
           else
           {
             ADCs.push_back(singleWaveforms[i]._ADCs);
+            std::vector<unsigned int> tmp(singleWaveforms[i]._ADCs.size(),i);
+            singleWaveformIndices.push_back(tmp);
             startTDCs.push_back(singleWaveforms[i]._startTDC); 
           }
         }
@@ -141,18 +148,20 @@ namespace mu2e
           _makeCrvRecoPulses->SetWaveform(ADCs[i], startTDCs[i], digitizationPrecision);
 
           unsigned int n = _makeCrvRecoPulses->GetNPulses();
-          for(unsigned int i=0; i<n; i++)
+          for(unsigned int j=0; j<n; j++)
           {
-            double pulseTime   = _makeCrvRecoPulses->GetPulseTime(i);
-            int    PEs         = _makeCrvRecoPulses->GetPEs(i);
-            double pulseHeight = _makeCrvRecoPulses->GetPulseHeight(i); 
-            double pulseWidth  = _makeCrvRecoPulses->GetPulseWidth(i);
-            double pulseFitChi2= _makeCrvRecoPulses->GetPulseFitChi2(i);
-            double LEtime      = _makeCrvRecoPulses->GetLEtime(i);
+            double pulseTime   = _makeCrvRecoPulses->GetPulseTime(j);
+            int    PEs         = _makeCrvRecoPulses->GetPEs(j);
+            double pulseHeight = _makeCrvRecoPulses->GetPulseHeight(j); 
+            double pulseWidth  = _makeCrvRecoPulses->GetPulseWidth(j);
+            double pulseFitChi2= _makeCrvRecoPulses->GetPulseFitChi2(j);
+            double LEtime      = _makeCrvRecoPulses->GetLEtime(j);
+            int    peakBin     = _makeCrvRecoPulses->GetPeakBin(j);
 //            if(pulseTime<0) continue;
 //            if(pulseTime>_microBunchPeriod) continue;
             if(PEs<_minPEs) continue; 
-            crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, pulseTime, pulseHeight, pulseWidth, pulseFitChi2, LEtime);
+            int singleWaveformIndex = singleWaveformIndices[i][peakBin];
+            crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, pulseTime, pulseHeight, pulseWidth, pulseFitChi2, LEtime, singleWaveformIndex);
           }
         }
 

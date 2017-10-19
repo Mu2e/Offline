@@ -1,12 +1,12 @@
 i=0
 layerOffset=10
 moduleGap=5
-#  for moduleGap in {1..5}
+#  for moduleGap in {3,5}
 #  do
 
     dy=`echo "804.3+$moduleGap" | bc -l`
 
-#    for layerOffset in {0..62..2}
+#    for layerOffset in {0..62..1}
 #    do
 #      for photonYield in {3189,3781,4359}  # 24,28,32 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
       for photonYield in {2604,2897,3189,3481,3774,4066,4359,4651,4943,5236,5528,5820,6113,6405,6697,6990,7282,7574,7867}  # 20,22,...,56 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
@@ -19,7 +19,7 @@ moduleGap=5
         genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig_5cm_upstreamPlanes'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/genconfig_5cm_upstreamPlanes.txt\"" >| $genconfigfile
         echo "double cosmicDYB.dy = $dy;" >> $genconfigfile
-#        echo "double cosmicDYB.muCosThMax = 0.707;" >> $genconfigfile
+        echo "double cosmicDYB.muCosThMax = 0.707;" >> $genconfigfile
 
         geomfile=CRVResponse/efficiencyCheck/submit/geom_5cm_upstreamPlanes'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/geom_5cm_upstreamPlanes.txt\"" >| $geomfile

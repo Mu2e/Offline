@@ -28,7 +28,7 @@ void MakeCrvPhotons::DrawHistograms()
     const LookupBin &bin = _bins[0][i];
     float p = bin.arrivalProbability[0];
 //    float p = bin.arrivalProbability[1];  //for 5000mm long counters with mirror on the negative side
-    if(!isnan(p)) h1.Fill(y,z,p);
+    if(!std::isnan(p)) h1.Fill(y,z,p);
   }
 
   h1.SetXTitle("y [mm]");
@@ -60,7 +60,7 @@ void MakeCrvPhotons::DrawHistograms()
       if(i<0) continue;
       const LookupBin &bin = _bins[0][i];
       float p = bin.arrivalProbability[0];
-      if(!isnan(p)) h2Tmp->Fill(z,p);
+      if(!std::isnan(p)) h2Tmp->Fill(z,p);
     }
     h2Tmp->Draw("same");
     h2.push_back(h2Tmp);
