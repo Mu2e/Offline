@@ -13,6 +13,7 @@
 #include "cetlib_except/exception.h"
 #include "TMath.h"
 #include <math.h>
+#include <complex>
 #include <algorithm>
 
 using namespace std;
@@ -21,8 +22,8 @@ namespace mu2e {
   double StrawElectronics::_pC_per_uA_ns(1000.0); // unit conversion from pC/ns to microAmp.
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdI{pset.get<double>("thresholddVdI",2.5e7),
-      pset.get<double>("adcdVdI",47.33e9) }, // mVolt/uAmps (transimpedance gain)
+    _dVdI{pset.get<double>("thresholddVdI",8.1e6),
+      pset.get<double>("adcdVdI",2.11e4) }, // mVolt/uAmps (transimpedance gain)
     _tdeadAnalog(pset.get<double>("DeadTimeAnalog",100.0)), // nsec dead after threshold crossing (pulse baseline restoration time)
     _tdeadDigital(pset.get<double>("DeadTimeDigital",100.0)), // nsec dead after threshold crossing (electronics processing time)
     _vsat(pset.get<double>("SaturationVoltage",90.0)), // mVolt
@@ -91,9 +92,9 @@ namespace mu2e {
       for (int i=0;i<_responseBins;i++){
         // correct for sampleRate so that calculateResponse peak is independent of it
         // this combined with pC_per_uA_ns is the unit transform from pC to uA
-        // do not renormalize since changed shape can change normalization???
-        // normalization here is folded into dVdI
-        _wPoints[ai]._currentPulse[i] *= _sampleRate / _pC_per_uA_ns;
+        _wPoints[ai]._currentPulse[i] /= _sampleRate * _pC_per_uA_ns;
+        _wPoints[ai]._currentPulse[i] /= 4.615; // normalization for 1/(t+t0)
+        _wPoints[ai]._currentPulse[i] *= _wPoints[ai]._normalization;
       }
 
       // calculate parameters for transfer function
@@ -163,6 +164,16 @@ namespace mu2e {
     DigitalFiltering::zpk2tf(b,a,za,pa); 
     DigitalFiltering::bilinear(bprime,aprime,a,b,_sampleRate*1000.);
 
+    // calculate gain at 160 MHz
+    std::complex<double> w (0,160 * TMath::TwoPi());
+    std::complex<double> numerator,denominator;
+    for (size_t i=0;i<b.size();i++)
+      denominator += std::complex<double>(b[i],0)*std::pow(w,b.size()-i-1);
+    for (size_t i=0;i<a.size();i++)
+      numerator += std::complex<double>(a[i],0)*std::pow(w,a.size()-i-1);
+
+    double gain_160 = std::abs(numerator/denominator);
+
     // calculate impulse response
     for (size_t i=0;i<static_cast<size_t>(_responseBins);i++){
       response[i] = 0;
@@ -179,7 +190,7 @@ namespace mu2e {
     }
 
     for (int i=0;i<_responseBins;i++)
-      response[i] *= dVdI;
+      response[i] *= dVdI / gain_160;
   }
 
   double StrawElectronics::linearResponse(Path ipath, double time, double charge, double distance, bool forsaturation) const {
