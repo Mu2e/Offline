@@ -291,7 +291,7 @@ vector<double> ts3.coils.sLength   =
   };
 vector<double> ts3.coils.xPos   =
   {
-    929.20
+    929.20,
     751.30, 588.30, 425.40, 153.80,
     -153.80, -425.40, -588.30, -751.30,
     -929.20
