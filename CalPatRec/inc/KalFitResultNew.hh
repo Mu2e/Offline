@@ -70,7 +70,6 @@ namespace mu2e {
     ~KalFitResultNew();
 
     void    removeFailed() { if(_fit.failure()) deleteTrack(); }
-    //    void    fit         () { if(_fit.success()) _fit = _krep->fit(); }
     void    deleteTrack ();
     KalRep* stealTrack  ();
     void    init        ();
