@@ -25,7 +25,7 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 // #include "CalPatRec/inc/KalFitResult.hh"
-#include "CalPatRec/inc/CprModuleHistBase.hh"
+#include "CalPatRec/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 
 // Mu2e BaBar
@@ -99,64 +99,54 @@ namespace mu2e {
     produces<AlgorithmIDCollection  >();
     produces<StrawHitFlagCollection >();
     produces<KalSeedCollection      >();
-
-    // fHackData = new THackData("HackData","Hack Data");
-    // gROOT->GetRootFolder()->Add(fHackData);
 //-----------------------------------------------------------------------------
 // provide for interactive diagnostics
 //-----------------------------------------------------------------------------
     if (_debugLevel != 0) _printfreq = 1;
 
     if (_diagLevel  != 0) {
-      _hmanager = art::make_tool<CprModuleHistBase>(pset.get<fhicl::ParameterSet>("histograms"));
+      _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
       fhicl::ParameterSet ps1 = pset.get<fhicl::ParameterSet>("Fitter.DoubletAmbigResolver");
-      //      fhicl::ParameterSet ps2 = pset.get<fhicl::ParameterSet>("doubletAmbigResolver");
-      _dar      = new DoubletAmbigResolver(ps1,0,0,0);
-      _data.listOfDoublets = new std::vector<Doublet>;
+      _data.dar               = new DoubletAmbigResolver(ps1,0,0,0);
+      _data.listOfDoublets    = new std::vector<Doublet>;
     }
     else {
-      _hmanager = std::make_unique<CprModuleHistBase>();
-      _dar                 = NULL;
+      _hmanager            = std::make_unique<ModuleHistToolBase>();
+      _data.dar            = NULL;
       _data.listOfDoublets = NULL;
     }
-
   }
 
   //-----------------------------------------------------------------------------
   // destructor
   //-----------------------------------------------------------------------------
   CalTrkFit::~CalTrkFit() {
-    if (_dar) {
+    if (_data.dar) {
       delete _data.listOfDoublets;
-      delete _dar;
+      delete _data.dar;
     }
   }
 
   //-----------------------------------------------------------------------------
   void CalTrkFit::beginJob(){
     art::ServiceHandle<art::TFileService> tfs;
-    _hmanager->bookHistograms(tfs,&_hist);
+    _hmanager->bookHistograms(tfs);
   }
 
 //-----------------------------------------------------------------------------
   bool CalTrkFit::beginRun(art::Run& ) {
     mu2e::GeomHandle<mu2e::TTracker> th;
-    _tracker      = th.get();
-    _data.tracker = _tracker;  // cache for passing around to histogramming code
+    _data.tracker     = th.get();
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
-    _calorimeter = ch.get();
-    // calibrations
+    _data.calorimeter = ch.get();
 
     mu2e::ConditionsHandle<TrackerCalibrations> tcal("ignored");
     _trackerCalib = tcal.operator ->();
 
-    _fitter.setTracker(_tracker);
+    _fitter.setTracker(_data.tracker);
     _fitter.setTrackerCalib(_trackerCalib);
-    _fitter.setCalorimeter(_calorimeter);
-
-    // ConditionsHandle<AcceleratorParams> accPar("ignored");
-    // _data.mbtime = accPar->deBuncherPeriod;
+    _fitter.setCalorimeter (_data.calorimeter);
 
     return true;
   }
@@ -210,23 +200,17 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   bool CalTrkFit::filter(art::Event& event ) {
     const char*               oname = "CalTrkFit::produce";
-    //    bool                      findkal (false);
     int                       nseeds;
 
     KalRep*                 krep;
-    const KalSeed*            kalSeed(0);
+    const KalSeed*          kalSeed(0);
 
-    _data.event      = &event;
-    _data.result     = &_result;
-    _data.ntracks[0] = 0;	        // _ntracks doesn't seem to be used
-    _data.ntracks[1] = 0;
 					// reset the fit iteration counter
     _fitter.setNIter(0);
 					// event printout
-    _eventid = event.event();
-    _iev     = event.id().event();
+    _data.eventNumber = event.event();
 
-    if ((_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
+    if ((_data.eventNumber%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 //-----------------------------------------------------------------------------
 // output collections should always be created
 //-----------------------------------------------------------------------------
@@ -237,7 +221,13 @@ namespace mu2e {
     unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection   );
     unique_ptr<KalSeedCollection>      kscol    (new KalSeedCollection()     );
     unique_ptr<StrawHitFlagCollection> shfcol   (new StrawHitFlagCollection());
- 
+
+    _data.event   = &event;
+    _data.result  = &_result;
+    //    _data.ntracks = 0;
+    _data.kscol   = kscol.get();
+    _data.tracks  = tracks.get();
+    
     if (! findData(event)) goto END;
 
     shfcol.reset(new StrawHitFlagCollection(*_shfcol));
@@ -367,18 +357,11 @@ namespace mu2e {
 // now evaluate the T0 and its error using the straw hits
 //-----------------------------------------------------------------------------
 	_fitter.updateT0(_result);
-	    
+
 	if (_debugLevel > 0) _fitter.printHits(_result,"CalTrkFit::produce : final, after weedHits");
       }
 
       if (_result._fit.success()) {
-//-----------------------------------------------------------------------------
-// fill 'per-track' histograms (mode=1)
-//-----------------------------------------------------------------------------
-	if (_diagLevel > 0) {
-	  _dar->findDoublets(_result._krep,_data.listOfDoublets);
-	  _hmanager->fillHistograms(1,&_data,&_hist);
-	}
 //-----------------------------------------------------------------------------
 // save successful kalman fits in the event.
 // start from _result, as stealTrack clears the hit pointers
@@ -423,7 +406,7 @@ namespace mu2e {
 // sample the fit at the requested z positions.  This should
 // be in terms of known positions (front of tracker, ...) FIXME!
 //-----------------------------------------------------------------------------
-	for(auto zpos : _zsave) {
+	for (auto zpos : _zsave) {
 	  // compute the flightlength for this z
 	  // double fltlen = TrkUtilities::zFlight(krep->pieceTraj(),zpos);
 	  double fltlen = krep->pieceTraj().zFlight(zpos);
@@ -450,10 +433,7 @@ namespace mu2e {
 // histogramming
 //-----------------------------------------------------------------------------
   END:;
-    if (_diagLevel > 0) {
-      _data.ntracks[0] = tracks->size();
-      _hmanager->fillHistograms(0,&_data,&_hist);
-    }
+    if (_diagLevel > 0) _hmanager->fillHistograms(&_data);
 //-----------------------------------------------------------------------------
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
@@ -473,7 +453,6 @@ namespace mu2e {
   //
   //-----------------------------------------------------------------------------
   void CalTrkFit::endJob(){
-    // does this cause the file to close?
     art::ServiceHandle<art::TFileService> tfs;
   }
 
@@ -521,7 +500,7 @@ namespace mu2e {
 	TrkStrawHit  *tsh, *closest(NULL);
 	bool found = false;
 
-	Straw const&      straw = _tracker->getStraw(sh.strawIndex());
+	Straw const&      straw = _data.tracker->getStraw(sh.strawIndex());
 	CLHEP::Hep3Vector hpos  = straw.getMidPoint();
 
 	double            dz_max(1.e12) ; // closest_z(1.e12);
@@ -535,7 +514,7 @@ namespace mu2e {
 	    break;
 	  }
 					// check proximity in Z
-          Straw const&  trk_straw = _tracker->getStraw(tsh->strawHit().strawIndex());
+          Straw const&  trk_straw = _data.tracker->getStraw(tsh->strawHit().strawIndex());
           double        ztrk      = trk_straw.getMidPoint().z();
 
 	  double dz  = ztrk-zhit;
@@ -550,7 +529,6 @@ namespace mu2e {
 					// estimate trajectory length to hit 
 	  double hflt = 0;
 	  TrkHelixUtils::findZFltlen(*reftraj,zhit,hflt);
-
 
           // good in-time hit.  Compute DOCA of the wire to the trajectory
 	  // also estimate the drift time if this hit were on the track to get hte hit radius
@@ -586,13 +564,10 @@ namespace mu2e {
 
 	  tcal->TimeToDistance(straw.index(),tdrift,tdir,t2d);
 
-
 	  rdrift = t2d._rdrift;
-
-	  doca = hitpoca.doca();
+	  doca   = hitpoca.doca();
 	  if (doca > 0) dr = doca-rdrift;
 	  else          dr = doca+rdrift;
-
 //-----------------------------------------------------------------------------
 // flag hits with small residuals
 //-----------------------------------------------------------------------------

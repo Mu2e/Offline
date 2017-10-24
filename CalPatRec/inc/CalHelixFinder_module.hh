@@ -72,10 +72,11 @@ namespace fhicl {
 }
 
 namespace mu2e {
+  using namespace CalHelixFinderTypes;
 
   class Calorimeter;
   class TTracker;
-  class CprModuleHistBase;
+  class ModuleHistToolBase;
 
   class CalHelixFinder : public art::EDFilter {
   protected:
@@ -83,7 +84,7 @@ namespace mu2e {
 // data members
 //-----------------------------------------------------------------------------
     unsigned                              _iev;
-					// configuration parameters
+					                // configuration parameters
     int                                   _diagLevel; 
     int                                   _debugLevel;
     int                                   _printfreq;
@@ -120,10 +121,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // diagnostics 
 //-----------------------------------------------------------------------------
-    CalHelixFinder_Hist_t                 _hist;
-    CalHelixFinder_Data_t                 _data;
+    CalHelixFinderTypes::Data_t           _data;
 
-    std::unique_ptr<CprModuleHistBase>    _hmanager;
+    std::unique_ptr<ModuleHistToolBase>   _hmanager;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------

@@ -23,17 +23,15 @@ namespace art {
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/HelixVal.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
 
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruth.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/Doublet.hh"
 
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
@@ -48,44 +46,17 @@ namespace art {
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
-#include "CalPatRec/inc/CalTimePeak.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/Doublet.hh"
-
-#include "TROOT.h"
-#include "TFolder.h"
-
-#include "CalPatRec/inc/CalTimePeakFinder_types.hh"
 #include "CalPatRec/inc/CalTimePeak.hh"
-#include "CalPatRec/inc/CprModuleHistBase.hh"
-
-// #include "CalPatRec/inc/THackData.hh"
+#include "CalPatRec/inc/CalTimePeakFinder_types.hh"
 
 // Mu2e
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
-// root 
-#include "TMath.h"
-#include "TFile.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TH3F.h"
-#include "TCanvas.h"
-#include "TApplication.h"
-#include "TGMsgBox.h"
-#include "TTree.h"
-#include "TFolder.h"
 
-//#include "TStopwatch.h"
-
-// boost
-// C++
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -96,33 +67,18 @@ namespace art {
 #include <set>
 #include <map>
 
-// class THackData;
-
 namespace fhicl {
   class ParameterSet;
 }
 
-namespace mu2e {  
+namespace mu2e {
+  using namespace CalTimePeakFinderTypes;
+  
   class Calorimeter;
   class TTracker;
-
-  class CalTimePeakFinder : public art::EDFilter {
-  public:
-
-    struct TimePeakHist_t {
-      TH1F*  nhits;           // number of hits on a helix  
-      TH1F*  energy[2];   
-      TH1F*  time[2];
-      TH2F*  nhitsvstime;
-      TH2F*  nhitsvsenergy;
-    };
-
-    struct Hist_t {
-      TimePeakHist_t  timePeak;  // helix fit histograms
+  class ModuleHistToolBase; 
   
-      TH1F* nseeds[2];
-    };
-
+  class CalTimePeakFinder: public art::EDFilter {
   protected:
 //-----------------------------------------------------------------------------
 // data members
@@ -132,15 +88,13 @@ namespace mu2e {
     int              _diagLevel; 
     int              _debugLevel;
     int              _printfreq;
-    int              _useAsFilter; //allows to use the module as a produer or as a filter
+    int              _useAsFilter;      // allows to use the module as a produer or as a filter
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
     std::string      _shLabel ; // MakeStrawHit label (makeSH)
     std::string      _shfLabel;
     std::string      _ccmLabel; // caloClusterModuleLabel
-
-    //    std::string      _dtspecpar;
 
     StrawHitFlag     _hsel;
     StrawHitFlag     _bkgsel;
@@ -159,28 +113,25 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // cache of event objects
 //-----------------------------------------------------------------------------
-    art::Handle<mu2e::StrawHitCollection> _strawhitsH;
-
+    art::Handle<CaloClusterCollection>    _ccH; // data member, as used from different places
+    
     const StrawHitCollection*             _shcol;
     const StrawHitFlagCollection*         _shfcol;
     const CaloClusterCollection*          _ccCollection;
-    art::Handle<CaloClusterCollection>    _ccH;
 
     double                                _dtoffset;
-
-    CalTimePeakCollection*                _tpeaks;   // cache of time peaks
 
     const TTracker*                       _tracker;     // straw tracker geometry
     const Calorimeter*                    _calorimeter; // cached pointer to the calorimeter geometry
 
     const TrackerCalibrations*            _trackerCalib;
+
+    const CaloCluster*                     cl;
 //-----------------------------------------------------------------------------
 // diagnostics 
 //-----------------------------------------------------------------------------
-    CalTimePeakFinder_Hist_t              _hist;
-    CalTimePeakFinder_Data_t              _data;
-
-    std::unique_ptr<CprModuleHistBase>    _hmanager;
+    Data_t                                 _data;
+    std::unique_ptr<ModuleHistToolBase>    _hmanager;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -200,10 +151,9 @@ namespace mu2e {
     void findTimePeaks    (CalTimePeakCollection* TimePeakColl,
 			   TimeClusterCollection& OutSeeds);
 
-    void initTimeCluster  (TimeCluster   &TrackSeed   , 
+    void initTimeCluster  (TimeCluster &TrackSeed   , 
 			   CalTimePeak &TPeak       ,
 			   int         &ClusterIndex);
-    
   };
 }
 #endif

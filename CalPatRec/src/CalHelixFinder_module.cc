@@ -33,7 +33,7 @@
 
 #include "CalPatRec/inc/CalHelixFinderData.hh"
 
-#include "CalPatRec/inc/CprModuleHistBase.hh"
+#include "CalPatRec/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 
 #include "TVector2.h"
@@ -89,8 +89,8 @@ namespace mu2e {
 
     if (_debugLevel != 0) _printfreq = 1;
 
-    if (_diagLevel != 0) _hmanager = art::make_tool<CprModuleHistBase>(pset.get<fhicl::ParameterSet>("histograms"));
-    else                 _hmanager = std::make_unique<CprModuleHistBase>();
+    if (_diagLevel != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
+    else                 _hmanager = std::make_unique<ModuleHistToolBase>();
 
   }
 
@@ -105,7 +105,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void CalHelixFinder::beginJob(){
     art::ServiceHandle<art::TFileService> tfs;
-    _hmanager->bookHistograms(tfs,&_hist);
+    _hmanager->bookHistograms(tfs);
   }
 
 //-----------------------------------------------------------------------------
@@ -267,9 +267,7 @@ namespace mu2e {
 //--------------------------------------------------------------------------------    
 // fill histograms
 //--------------------------------------------------------------------------------
-    if (_diagLevel > 0) {
-      _hmanager->fillHistograms(0,&_data,&_hist);
-    }
+    if (_diagLevel > 0) _hmanager->fillHistograms(&_data);
 //-----------------------------------------------------------------------------
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
@@ -280,9 +278,8 @@ namespace mu2e {
 // filtering
 //-----------------------------------------------------------------------------    
     if (_useAsFilter == 0) return true;
-    if (nseeds       >  0) return true;
-    else                   return false;
-  }
+    else                   return (nseeds >  0);
+ }
 
 //-----------------------------------------------------------------------------
 //

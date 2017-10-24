@@ -40,10 +40,7 @@
 #include <boost/accumulators/statistics/moment.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "TVector2.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TSystem.h"
+#include "CalPatRec/inc/ModuleHistToolBase.hh"
 
 using namespace std;
 using namespace boost::accumulators;
@@ -104,8 +101,8 @@ namespace mu2e {
 
     if (_debugLevel != 0) _printfreq = 1;
 
-    if (_diagLevel != 0) _hmanager = art::make_tool<CprModuleHistBase>(pset.get<fhicl::ParameterSet>("histograms"));
-    else                 _hmanager = std::make_unique<CprModuleHistBase>();
+    if (_diagLevel != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
+    else                 _hmanager = std::make_unique<ModuleHistToolBase>();
   }
 
 //-----------------------------------------------------------------------------
@@ -117,7 +114,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void CalSeedFit::beginJob(){
     art::ServiceHandle<art::TFileService> tfs;
-    _hmanager->bookHistograms(tfs,&_hist);
+    _hmanager->bookHistograms(tfs);
   }
 
 //-----------------------------------------------------------------------------
@@ -221,7 +218,6 @@ namespace mu2e {
   bool CalSeedFit::filter(art::Event& event ) {
     const char*    oname = "CalSeedFit::filter";
     char           message[200];
-    //    bool           findseed(false);
     int            npeaks;
 
     ::KalRep*      krep;
@@ -231,8 +227,8 @@ namespace mu2e {
 
     _data.event   = &event;
     _data.result  = &_result;
-    _data.ntracks = 0;
     _data.nrescued.clear();
+    _data.mom.clear();
 
     _eventid = event.event();
     _iev     = event.id().event();
@@ -301,11 +297,9 @@ namespace mu2e {
       }
 
       if (_result._fit.success()) {
-	_data.ntracks += 1;
 //-----------------------------------------------------------------------------
-// track is successfully found, try to pick up additional hits missed 
-// by the helix finder
-// at this step, ignore presence of the calorimeter cluster when refitting the track
+// track is successfully found, try to pick up hits missed by the helix finder
+// at this step, ignore the calorimeter cluster when refitting the track
 //-----------------------------------------------------------------------------
 	int nrescued = 0;
 	if (_rescueHits) { 
@@ -316,7 +310,6 @@ namespace mu2e {
 	    _fitter.addHits(_result,_maxAddChi);
 	  }
 	}
-	_data.nrescued.push_back(nrescued);
 //-----------------------------------------------------------------------------
 // final printout
 //-----------------------------------------------------------------------------
@@ -325,12 +318,6 @@ namespace mu2e {
 		  "CalSeedFit::produce after seedfit::addHits: fit_success = %i\n",
 		  _result._fit.success());
 	  _fitter.printHits(_result,message);
-	}
-//-----------------------------------------------------------------------------
-// track fit completed, per-track histogramming
-//-----------------------------------------------------------------------------
-	if (_diagLevel > 0) {
-	  _hmanager->fillHistograms(1,&_data,&_hist);
 	}
 //-----------------------------------------------------------------------------
 // form the output
@@ -374,6 +361,19 @@ namespace mu2e {
 	    }
 	    cout << endl;
 	  }
+
+	  if (_diagLevel > 0) {
+//-----------------------------------------------------------------------------
+// store some info for convenient diagnostics
+//-----------------------------------------------------------------------------
+	    double  h1_fltlen      = krep->firstHit()->kalHit()->hit()->fltLen();
+	    double  hn_fltlen      = krep->lastHit ()->kalHit()->hit()->fltLen();
+	    double  entlen         = std::min(h1_fltlen, hn_fltlen);
+
+	    CLHEP::Hep3Vector fitmom = krep->momentum(entlen);
+	    _data.mom.push_back(fitmom.mag());
+ 	    _data.nrescued.push_back(nrescued);
+	  }
 	}
 	else {
 	  throw cet::exception("RECO")<<"mu2e::KalSeedFit: Can't extract helix traj from seed fit" << endl;
@@ -391,10 +391,7 @@ namespace mu2e {
       }
     }
 
-    if (_diagLevel > 0) {
-      _data.ntracks = tracks->size();
-      _hmanager->fillHistograms(0,&_data,&_hist);
-    }
+    if (_diagLevel > 0) _hmanager->fillHistograms(&_data);
 //-----------------------------------------------------------------------------
 // put reconstructed tracks into the event record and do filtering
 //-----------------------------------------------------------------------------
@@ -404,7 +401,7 @@ namespace mu2e {
     event.put(std::move(algs  ));
 
     if (_useAsFilter == 0) return true;
-    else                   return (_data.ntracks > 0);
+    else                   return (tracks->size() > 0);
 
   }
 
