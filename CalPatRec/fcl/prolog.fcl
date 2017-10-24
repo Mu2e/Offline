@@ -457,6 +457,40 @@ CalPatRec : { @table::CalPatRec
     }
 
     filters : { 
+
+	DeltaFinder : { module_type:DeltaFinder
+	    strawHitCollectionTag         : makeSH                # input coll
+	    strawHitFlagCollectionTag     : FlagStrawHits         # input coll
+	    strawHitPositionCollectionTag : MakeStrawHitPositions # input coll
+	    strawDigiMCCollectionTag      : makeSH                # input coll
+	    minHitTime                    : 450.                  # ns
+	    minNFacesWithHits             : 2                     # 
+	    minNSeeds                     : 2                     #
+	    maxElectronHitEnergy          : 0.020                 # means: use all hits
+	    maxChi2Stereo                 : 20.                   # 
+	    maxChi2Neighbor               : 40.                   # 
+	    maxChi2Radial                 : 40.                   # 
+	    maxDt                         : 50.                   # ns
+	    maxDxy                        : 50.                   # mm
+	    maxGap                        : 1                     # gap in missing stations along the candidate
+	    sigmaR                        : 10.                   # mm, roughly 3 MeV/c
+	    diagLevel                     : 0
+	    diagPlugin : { tool_type : "DeltaFinderDiag" 
+		debugLevel                : 0
+		mcDiag                    : false
+		mcTruth                   : 0 
+		printElectrons            : 0
+		printElectronsHits        : 0
+		printElectronsMinNHits    : 0
+		printElectronsMaxFReco    : 1.1                   # if print, then print all
+		printElectronsMinMom      : 0                     # by default, print all
+		printDeltaSeeds           : 0
+		printDeltaCandidates      : 0
+		printOTracker             : 0                     #
+		testOrder                 : 0                     #
+		mcUtils                   : { tool_type : "CalPatRecMcUtils" }
+	    }
+	}
 #------------------------------------------------------------------------------
 # new modules
 #------------------------------------------------------------------------------
@@ -480,8 +514,7 @@ CalPatRec : { @table::CalPatRec
 	    minClusterTime                              : 500.   # ns
 	    pitchAngle                                  : 0.67   # mean pitch for CE
 	    dtOffset                                    : @local::TrackCaloMatching.DtOffset
-	    histograms                                  : { 
-		tool_type                               : "CalTimePeakFinderHist" 
+	    diagPlugin : { tool_type                    : "CalTimePeakFinderDiag" 
 		mcTruth                                 : 0 
 		mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
 	    }
@@ -501,8 +534,7 @@ CalPatRec : { @table::CalPatRec
 
 	    # HelixFinderAlg configuraton (pattern recognition)
 	    HelixFinderAlg                              : { @table::CalPatRec.HelixFinderAlg }
-	    histograms                                  : { 
-		tool_type                               : "CalHelixFinderHist" 
+	    diagPlugin : { tool_type                    : "CalHelixFinderDiag"
 		mcTruth                                 : 1
 		mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
 	    }
@@ -528,8 +560,7 @@ CalPatRec : { @table::CalPatRec
 	    Fitter                                      : { @table::CalPatRec.SeedFitter }
 	    TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	    ParameterErrors                             : [10.0,0.05,0.001,10.0,0.05]
-	    histograms                                  : { 
-		tool_type                               : "CalSeedFitHist"
+	    diagPlugin : { tool_type                    : "CalSeedFitDiag"
 		mcTruth                                 : 1
 		mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
 	    }	    
@@ -555,8 +586,7 @@ CalPatRec : { @table::CalPatRec
 	    fitdirection                                : @local::FitDir.downstream
 	    Fitter                                      : { @table::CalPatRec.KalFitter }
 	    TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	    histograms                                  : { 
-		tool_type                               : "CalTrkFitHist" 
+	    diagPlugin : { tool_type                    : "CalTrkFitDiag" 
 		mcTruth                                 : 1
 		mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
 	    }
@@ -572,11 +602,6 @@ CalPatRecFlagBkgHits           : { @table::CalPatRec.producers.CalPatRecFlagBkgH
 #------------------------------------------------------------------------------
 # calorimeter-seeded tracking makes sense only for downstream particles
 #------------------------------------------------------------------------------
-# CalTimePeakFinder              : { @table::CalPatRec.filters.CalTimePeakFinder }
-# CalHelixFinder                 : { @table::CalPatRec.filters.CalHelixFinder    }
-# CalSeedFit                     : { @table::CalPatRec.filters.CalSeedFit        }
-# CalTrkFit                      : { @table::CalPatRec.filters.CalTrkFit         }
-
 CalPatRec: { @table::CalPatRec 
     filters : { @table::CalPatRec.filters
 	CalTimePeakFinderDem           : { @table::CalPatRec.filters.CalTimePeakFinder }
