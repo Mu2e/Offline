@@ -284,8 +284,9 @@ bool DeltaFinder::findData(const art::Event& Evt) {
     _shpcol   = 0;
     _shfcol   = NULL;
 
-    auto shH  = Evt.getValidHandle<StrawHitCollection>(_shTag);
-    _shcol    = shH.product();
+    auto shH    = Evt.getValidHandle<StrawHitCollection>(_shTag);
+    _shcol      = shH.product();
+    _data.shcol = _shcol;  // FIXME
 
     auto shfH = Evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
     _shfcol   = shfH.product();

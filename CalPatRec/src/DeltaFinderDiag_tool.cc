@@ -4,6 +4,8 @@
 #include "TH1.h"
 #include "TH2.h"
 
+#include <string.h>
+
 #include "CalPatRec/inc/DeltaFinder_types.hh"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -17,6 +19,8 @@
 
 #include "CalPatRec/inc/ModuleHistToolBase.hh"
 #include "CalPatRec/inc/McUtilsToolBase.hh"
+
+using namespace std;
 
 namespace mu2e {
   using namespace DeltaFinderTypes;
@@ -84,10 +88,8 @@ namespace mu2e {
     };
   protected:
 
-    art::InputTag                         _mcStrawHitTag;
-    int                                   _firstCall;
-    const PtrStepPointMCVectorCollection* _listOfMcStrawHits;
     bool                                  _mcDiag;
+    art::InputTag                         _stepPointMcCollTag;
     int                                   _printOTracker;
     int                                   _printElectrons;
     int                                   _printElectronsHits;
@@ -99,6 +101,9 @@ namespace mu2e {
 
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
 
+    int                                   _firstCall;
+
+    const PtrStepPointMCVectorCollection* _listOfMcStrawHits;
     int                                   _nDeltaHitsTot;
     int                                   _nDeltaHitsReco;
     
@@ -148,9 +153,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   DeltaFinderDiag::DeltaFinderDiag(const fhicl::ParameterSet& PSet):
     _mcDiag                (PSet.get<bool>         ("mcDiag"                       )),
+    _stepPointMcCollTag    (PSet.get<string>       ("stepPointMcCollTag"           )),
     _printOTracker         (PSet.get<int>          ("printOTracker"                )),
     _printElectrons        (PSet.get<int>          ("printElectrons"               )),
-    _printElectronsHits    (PSet.get<int>          ("printElectronHits"            )),
+    _printElectronsHits    (PSet.get<int>          ("printElectronsHits"           )),
     _printElectronsMinNHits(PSet.get<int>          ("printElectronsMinNHits"       )),
     _printElectronsMaxFReco(PSet.get<float>        ("printElectronsMaxFReco"       )),
     _printElectronsMinMom  (PSet.get<float>        ("printElectronsMinMom"         )),
@@ -191,7 +197,7 @@ namespace mu2e {
     Hist->fEventNumber     = Dir->make<TH1F>("event" , "Event Number", 100, 0., 100000.);
     Hist->fNSecondHits     = Dir->make<TH1F>("nhit2" , "N(second hits)", 100, 0., 100.);
     Hist->fNSeeds          = Dir->make<TH1F>("nseeds", "N(seeds)"   , 200, 0., 2000.);
-    Hist->fNSeedsVsStation = Dir->make<TH2F>("nseeds", "N(seeds) vs station", 20, 0., 20.,100,0,100);
+    Hist->fNSeedsVsStation = Dir->make<TH2F>("ns_vs_st", "N(seeds) vs station", 20, 0., 20.,100,0,100);
 
     Hist->fNMc             = Dir->make<TH1F>("nmc"       , "N(MC particles)", 100, 0., 1000.);
     Hist->fPDGCode         = Dir->make<TH1F>("pdg_code"  , "PDG Code"       , 100, 0., 100.);
@@ -204,13 +210,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::bookSeedHistograms(SeedHist_t* Hist, art::TFileDirectory* Dir) {
 
-    Hist->fChi2Dof            = Dir->make<TH1F>("chi2dof"     , "Chi squared/degrees of freedom", 1000, 0., 100.);
-    Hist->fNFacesWithHits     = Dir->make<TH1F>("nfaces_wh"   , "Number of faces with hits", 5, 0., 5.);
-    Hist->fNHitsPerFace       = Dir->make<TH1F>("nhits_face"  , "Number of hits per face", 20, 0., 20.);
-    Hist->fNHitsPerSeed       = Dir->make<TH1F>("nhits_seed"  , "Number of hits per seed", 40, 0., 40.);
-    Hist->fSeedRadius         = Dir->make<TH1F>("rad"         , "Seed radius", 500, 0., 1000.);
-    Hist->fSeedMomentum       = Dir->make<TH1F>("mom"         , "Seed momentum", 400, 0., 400.);
-    Hist->fSeedSize           = Dir->make<TH2F>("preseed_size", "Seed (nh2+1):(nh1+1)", 20, 0., 20.,20,0,20);
+    Hist->fChi2Dof         = Dir->make<TH1F>("chi2dof"     , "Chi squared/degrees of freedom", 1000, 0., 100.);
+    Hist->fNFacesWithHits  = Dir->make<TH1F>("nfaces_wh"   , "Number of faces with hits", 5, 0., 5.);
+    Hist->fNHitsPerFace    = Dir->make<TH1F>("nhits_face"  , "Number of hits per face", 20, 0., 20.);
+    Hist->fNHitsPerSeed    = Dir->make<TH1F>("nhits_seed"  , "Number of hits per seed", 40, 0., 40.);
+    Hist->fSeedRadius      = Dir->make<TH1F>("rad"         , "Seed radius", 500, 0., 1000.);
+    Hist->fSeedMomentum    = Dir->make<TH1F>("mom"         , "Seed momentum", 400, 0., 400.);
+    Hist->fSeedSize        = Dir->make<TH2F>("preseed_size", "Seed (nh2+1):(nh1+1)", 20, 0., 20.,20,0,20);
   }
 
 //-----------------------------------------------------------------------------
@@ -225,12 +231,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::bookMcHistograms(McHist_t* Hist, art::TFileDirectory* Dir) {
 
-    Hist->fPDGCode   = Dir->make<TH1F>("pdg"  , "PDG code"        , 500, -250., 250.);
-    Hist->fMom       = Dir->make<TH1F>("mom"  , "momentum"        , 200, 0., 200.);
-    Hist->fNHits     = Dir->make<TH1F>("nhits", "N(hits)"         , 200, 0., 200.);
+    Hist->fPDGCode    = Dir->make<TH1F>("pdg"  , "PDG code"        , 500, -250., 250.);
+    Hist->fMom        = Dir->make<TH1F>("mom"  , "momentum"        , 200, 0., 200.);
+    Hist->fNHits      = Dir->make<TH1F>("nhits", "N(hits)"         , 200, 0., 200.);
     Hist->fNHitsDelta = Dir->make<TH1F>("nhitsr", "N(hits reco)"   , 200, 0., 200.);
-    Hist->fFractReco = Dir->make<TH1F>("fractr", "NR/N"           , 100, 0.,   1.);
-    Hist->fMaxSeg    = Dir->make<TH1F>("max_seg", "Max N Segments", 20, 0., 20.);
+    Hist->fFractReco  = Dir->make<TH1F>("fractr", "NR/N"           , 100, 0.,   1.);
+    Hist->fMaxSeg     = Dir->make<TH1F>("max_seg", "Max N Segments", 20, 0., 20.);
 
     Hist->fFractRecoVsNHits = Dir->make<TH2F>("freco_vs_nhits", "F(Reco) vs nhits", 100, 0., 200.,100,0,1);
   }
@@ -453,7 +459,7 @@ namespace mu2e {
 // start from precalculating MC-specific info
 //-----------------------------------------------------------------------------
     if (_mcDiag) {
-      _listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _mcStrawHitTag);
+      _listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
 
       InitMcDiag();
       associateMcTruth();

@@ -331,6 +331,44 @@ CalPatRec : { @table::CalPatRec
 # distributions for the ANN training variable
 #------------------------------------------------------------------------------
 	}
+
+	DeltaFinder : { module_type:DeltaFinder
+	    strawHitCollectionTag         : makeSH                # input coll
+	    strawHitFlagCollectionTag     : FlagStrawHits         # input coll
+	    strawHitPositionCollectionTag : MakeStrawHitPositions # input coll
+	    strawDigiMCCollectionTag      : makeSH                # input coll
+	    minHitTime                    : 450.                  # ns
+	    minNFacesWithHits             : 2                     # 
+	    minNSeeds                     : 2                     #
+	    maxElectronHitEnergy          : 0.020                 # means: use all hits
+	    maxChi2Stereo                 : 20.                   # 
+	    maxChi2Neighbor               : 40.                   # 
+	    maxChi2Radial                 : 40.                   # 
+	    maxDt                         : 50.                   # ns
+	    maxDxy                        : 50.                   # mm
+	    maxGap                        : 1                     # gap in missing stations along the candidate
+	    sigmaR                        : 10.                   # mm, roughly 3 MeV/c
+	    # debugging/diagnostics
+	    testOrder                     : 0
+	    debugLevel                    : 0
+	    diagLevel                     : 1
+	    diagPlugin : { tool_type : "DeltaFinderDiag" 
+		stepPointMcCollTag        : makeSH
+		debugLevel                : 0
+		mcDiag                    : false
+		mcTruth                   : 0 
+		printElectrons            : 0
+		printElectronsHits        : 0
+		printElectronsMinNHits    : 0
+		printElectronsMaxFReco    : 1.1                   # if print, then print all
+		printElectronsMinMom      : 0                     # by default, print all
+		printDeltaSeeds           : 0
+		printDeltaCandidates      : 0
+		printOTracker             : 0                     #
+		testOrder                 : 0                     #
+		mcUtils                   : { tool_type : "CalPatRecMcUtils" }
+	    }
+	}
     }
 }
 #------------------------------------------------------------------------------
@@ -457,40 +495,6 @@ CalPatRec : { @table::CalPatRec
     }
 
     filters : { 
-
-	DeltaFinder : { module_type:DeltaFinder
-	    strawHitCollectionTag         : makeSH                # input coll
-	    strawHitFlagCollectionTag     : FlagStrawHits         # input coll
-	    strawHitPositionCollectionTag : MakeStrawHitPositions # input coll
-	    strawDigiMCCollectionTag      : makeSH                # input coll
-	    minHitTime                    : 450.                  # ns
-	    minNFacesWithHits             : 2                     # 
-	    minNSeeds                     : 2                     #
-	    maxElectronHitEnergy          : 0.020                 # means: use all hits
-	    maxChi2Stereo                 : 20.                   # 
-	    maxChi2Neighbor               : 40.                   # 
-	    maxChi2Radial                 : 40.                   # 
-	    maxDt                         : 50.                   # ns
-	    maxDxy                        : 50.                   # mm
-	    maxGap                        : 1                     # gap in missing stations along the candidate
-	    sigmaR                        : 10.                   # mm, roughly 3 MeV/c
-	    diagLevel                     : 0
-	    diagPlugin : { tool_type : "DeltaFinderDiag" 
-		debugLevel                : 0
-		mcDiag                    : false
-		mcTruth                   : 0 
-		printElectrons            : 0
-		printElectronsHits        : 0
-		printElectronsMinNHits    : 0
-		printElectronsMaxFReco    : 1.1                   # if print, then print all
-		printElectronsMinMom      : 0                     # by default, print all
-		printDeltaSeeds           : 0
-		printDeltaCandidates      : 0
-		printOTracker             : 0                     #
-		testOrder                 : 0                     #
-		mcUtils                   : { tool_type : "CalPatRecMcUtils" }
-	    }
-	}
 #------------------------------------------------------------------------------
 # new modules
 #------------------------------------------------------------------------------
