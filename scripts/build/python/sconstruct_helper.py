@@ -74,7 +74,10 @@ def cppPath(mu2eOpts):
         os.environ['HEPPDT_INC'],
         os.environ['ROOT_INC'],
         os.environ['XERCES_C_INC'],
-        os.environ['TBB_INC'] 
+        os.environ['TBB_INC'],
+        os.environ['MU2E_ARTDAQ_CORE_INC'],
+        os.environ['ARTDAQ_CORE_INC'],
+        os.environ['TRACE_INC'] 
         ]
 
     if mu2eOpts['satellite']:
@@ -89,6 +92,8 @@ def libPath(mu2eOpts):
         os.environ['ART_LIB'],
         os.environ['CANVAS_LIB'],
         os.environ['BTRK_LIB'],
+        os.environ['MU2E_ARTDAQ_CORE_LIB'],
+        os.environ['ARTDAQ_CORE_LIB'],
         os.environ['MESSAGEFACILITY_LIB'],
         os.environ['FHICLCPP_LIB'],
         os.environ['SQLITE_LIB'],
@@ -100,7 +105,7 @@ def libPath(mu2eOpts):
         os.environ['HEPPDT_LIB'],
         os.environ['ROOTSYS']+'/lib',
         os.environ['XERCESCROOT']+'/lib',
-        os.environ['TBB_LIB']   
+        os.environ['TBB_LIB']
         ]
     
     if mu2eOpts['satellite']:

@@ -82,10 +82,7 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
 fi
 
 # Get access to raw data formats.
-# For now this is not generally available; once it is we can remove the conditional.
-#if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "on" ]]; then
-#  setup -B mu2e_artdaq_core v1_00_06 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
-#fi
+setup -B mu2e_artdaq_core v1_02_00 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
 
 # Other libraries we need.
 
