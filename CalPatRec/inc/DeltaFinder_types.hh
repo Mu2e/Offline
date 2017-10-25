@@ -35,12 +35,13 @@ namespace mu2e {
     struct HitData_t {
       const StrawHit*         fHit;
       const StrawHitPosition* fPos;
+      const Straw*            fStraw;
       float                   fChi2Min;
       int                     fSeedNumber;
       int                     fNSecondHits;
 
-      HitData_t(const StrawHit* Hit, const StrawHitPosition* Pos) {
-	fHit = Hit; fPos = Pos; fChi2Min = 1.e10; fSeedNumber = -1; fNSecondHits = -1;
+      HitData_t(const StrawHit* Hit, const StrawHitPosition* Pos, const Straw* aStraw) {
+	fHit = Hit; fPos = Pos; fStraw = aStraw; fChi2Min = 1.e10; fSeedNumber = -1; fNSecondHits = -1;
       }
     };
 
@@ -94,12 +95,12 @@ namespace mu2e {
       int                            fGood;             // <-killer number> if not to be used - what about 0 ?
       int                            fNFacesWithHits;
       int                            fNHitsTot;         // total number of hits
-      const StrawHit*                fHit[2];           // stereo hit seeding the seed search
+      const HitData_t*               fHitData[2];       // stereo hit seeding the seed search
       const StrawHitPosition*        fPos[2];
       StereoHit                      sth;
       float                          chi2dof;           // for two initial hits
       PanelZ_t*                      panelz   [kNFaces];
-      std::vector<const StrawHit*>   hitlist  [kNFaces];
+      std::vector<const HitData_t*>  hitlist  [kNFaces];
       std::vector<McPart_t*>         fMcPart  [kNFaces];
       std::vector<int>               fLayer   [kNFaces];
       std::vector<int>               fHitIndex[kNFaces];
@@ -124,11 +125,11 @@ namespace mu2e {
       //------------------------------------------------------------------------------
       ~DeltaSeed() {}
 
-      float            Chi2() { return chi2dof; }
-      int              NHits(int Face) { return hitlist[Face].size(); }
-      const StrawHit*  Hit  (int Face, int I) { return hitlist[Face].at(I); }
-      int              NHitsTot() { return fNHitsTot; }
-      int              MCTruth () { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
+      float            Chi2    ()         { return chi2dof; }
+      int              NHits   (int Face) { return hitlist[Face].size(); }
+      const HitData_t* HitData (int Face, int I) { return hitlist[Face][I]; } // no boundary check !
+      int              NHitsTot()         { return fNHitsTot; }
+      int              MCTruth ()         { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
       //-----------------------------------------------------------------------------
       // drift time can't be < 0, so it is the minimal measured time which represents 
       // best the 'particle time'

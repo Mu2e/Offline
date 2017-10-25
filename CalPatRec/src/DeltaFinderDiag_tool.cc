@@ -514,7 +514,6 @@ namespace mu2e {
 
     for (int i=0; i<nmc; i++) {
       McPart_t* mc = _list_of_mc_particles.at(i);
-      //      const SimParticle* sim = mc->fSim;
 
       fillMcHistograms(_hist.fMc[0],mc);
 //-----------------------------------------------------------------------------
@@ -595,7 +594,7 @@ namespace mu2e {
 
     for (int ish=0; ish<nsh; ish++) {
       
-      const StrawHit* sh = &_data->shcol->at(ish);
+      const StrawHit* sh           = &_data->shcol->at(ish);
       const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_listOfMcStrawHits,ish);
 //-----------------------------------------------------------------------------
 // search if this particle has already been registered
@@ -655,8 +654,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // define MC pointers (SimParticle's) for the first two, "pre-seed", hits
 //-----------------------------------------------------------------------------
-	int loc1 = seed->fHit[0]-hit0;
-	int loc2 = seed->fHit[1]-hit0;
+	int loc1 = seed->fHitData[0]->fHit-hit0;
+	int loc2 = seed->fHitData[1]->fHit-hit0;
 	
 	seed->fPreSeedMcPart[0] = _list_of_mc_part_hit.at(loc1);
 	seed->fPreSeedMcPart[1] = _list_of_mc_part_hit.at(loc2);
@@ -666,7 +665,7 @@ namespace mu2e {
 	for (int face=0; face<kNFaces; face++) {
 	  int nh = seed->hitlist[face].size();
 	  for (int ih=0; ih<nh; ih++) {
-	    const StrawHit* hit = seed->hitlist[face].at(ih);
+	    const StrawHit* hit = seed->hitlist[face][ih]->fHit;
 	    int loc = hit-hit0;
 	    seed->fMcPart[face].push_back(_list_of_mc_part_hit.at(loc));
 	  }
@@ -705,7 +704,7 @@ namespace mu2e {
 	      for (int iface=0; iface<kNFaces; iface++) {
 		int nh2 = ds->NHits(iface);
 		for (int ih2=0; ih2<nh2; ih2++) {
-		  const StrawHit* delta_hit = ds->hitlist[iface][ih2];
+		  const StrawHit* delta_hit = ds->hitlist[iface][ih2]->fHit;
 	
 		  if (delta_hit == hit) { 
 		    hit_is_found = 1;
@@ -815,8 +814,8 @@ namespace mu2e {
 	    DeltaSeed* seed = &_data->seedHolder[st].at(ps);
 
 	    printf("seed %3i %2i %4i %2i ",st,ps,seed->fGood,seed->fType);
-	    printf("(%5i:%9i)",seed->fHit[0]->strawIndex().asInt(),seed->fPreSeedMcPart[0]->fID);
-	    printf("(%5i:%9i)",seed->fHit[1]->strawIndex().asInt(),seed->fPreSeedMcPart[1]->fID);
+	    printf("(%5i:%9i)",seed->fHitData[0]->fHit->strawIndex().asInt(),seed->fPreSeedMcPart[0]->fID);
+	    printf("(%5i:%9i)",seed->fHitData[1]->fHit->strawIndex().asInt(),seed->fPreSeedMcPart[1]->fID);
 	    printf(" %8.2f",seed->chi2dof);
 	    printf("%8.1f %8.1f",seed->fMinTime,seed->fMaxTime);
 	    printf(" %8.3f %8.3f %9.3f",seed->CofM.x(),seed->CofM.y(),seed->CofM.z());
@@ -831,7 +830,7 @@ namespace mu2e {
 	      int nh = seed->NHits(face);
 	      printf("       %i:%3i ",face,nh);
 	      for (int ih=0; ih<nh; ih++) {
-		const StrawHit* hit =  seed->hitlist[face][ih];
+		const StrawHit* hit =  seed->hitlist[face][ih]->fHit;
 
 		McPart_t* mcp = seed->fMcPart[face][ih];
 		int mcid = mcp->fID;
@@ -872,7 +871,9 @@ namespace mu2e {
 	      printf(" %9.2f %9.2f %9.2f",
 		     ds->CofM.x(),ds->CofM.y(),ds->CofM.z());
 	      printf( "%8.1f %8.1f",ds->fMinTime,ds->fMaxTime);
-	      printf(" (%6i %6i)",ds->fHit[0]->strawIndex().asInt(),ds->fHit[1]->strawIndex().asInt());
+	      printf(" (%6i %6i)",
+		     ds->fHitData[0]->fHit->strawIndex().asInt(),
+		     ds->fHitData[1]->fHit->strawIndex().asInt());
 
 	      printf("\n");
 	    }
@@ -988,7 +989,7 @@ namespace mu2e {
 	  for (int il=0; il<2; il++) {
 	    int nh = pz->fHitData[il].size();
 	    for (int ih=0; ih<nh; ih++) {
-	      printStrawHit(pz->fHitData[il].at(ih).fHit,ih);
+	      printStrawHit(pz->fHitData[il][ih].fHit,ih);
 	    }
 	    nhitso += nh;
 	  }

@@ -79,8 +79,10 @@ physics: {
     }
 
     p1: [ @sequence::Tracking.PrepareHits, DeltaFinder, SeedFinderAna ]
+    p2: [ @sequence::Tracking.PrepareHits, DeltaFinder ]
+    p3: [ DeltaFinder ]
 
-    trigger_paths : [ p1 ]
+    trigger_paths : [ p2 ]
     out           : []
     end_paths     : [ out ]
 }
