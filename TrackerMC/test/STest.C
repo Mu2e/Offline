@@ -152,6 +152,7 @@ void STest(TTree* sdiag, const char* page ="G4") {
     hcan->cd(3);
     neB->Draw("HIST");
     nech->Draw("same");
+    neB->Draw("HISTsame");
     TLegend* leg = new TLegend(0.4,0.7,0.9,0.9);
     snprintf(legtit,80,"Input <N_{e}> = %3.2f",neB->GetMean());
     leg->AddEntry(neB,legtit,"LF");
