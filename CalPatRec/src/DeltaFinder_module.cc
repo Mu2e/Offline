@@ -124,11 +124,10 @@ namespace mu2e {
     void         findSeeds (int Station, int Face);
     void         findSeeds ();
     
-    void         getNeighborHits(DeltaSeed* Seed, int Face, int Face2, PanelZ_t* panelz);
-
-    void         getIntersect(const HitData_t* Hit1, const HitData_t* Hit2, CLHEP::Hep3Vector* Pos);
+    void         getNeighborHits(DeltaSeed* Seed, int Face1, int Face2, PanelZ_t* panelz);
 
     void         pruneSeeds     (int Station);
+
     int          checkDuplicates(int Station,
 				 int Face1, const HitData_t* Hit1,
 				 int Face2, const HitData_t* Hit2);
@@ -198,6 +197,8 @@ namespace mu2e {
     _tracker      = ttHandle.get();
     _data.tracker = _tracker;
     
+    ChannelID cx, co;
+
     for (int ist=0; ist<_tracker->nStations(); ist++) {
       const Station* st = &_tracker->getStation(ist);
       for (int ipl=0; ipl<st->nPlanes(); ipl++) {
@@ -205,19 +206,24 @@ namespace mu2e {
 	for (int ipn=0; ipn<pln->nPanels(); ipn++) {
 	  const Panel* panel = &pln->getPanel(ipn);
 	  int face;
-	  if(panel->id().getPanel() % 2 == 0) face = 0;
-	  else face = 1;
+	  if (panel->id().getPanel() % 2 == 0) face = 0;
+	  else                                 face = 1;
 	  for (int il=0; il<panel->nLayers(); il++) {
-	    C_X.Station = ist;
-	    C_X.Plane   = ipl;
-	    C_X.Face    = face;
-	    C_X.Panel   = ipn;
-	    C_X.Layer   = il;
-	    orderID(&C_X, &C_O);
-	    int os = C_O.Station; 
-	    int of = C_O.Face;
-	    int op = C_O.Panel;
-	    _data.oTracker[os][of][op].fPanel = panel;	  
+	    cx.Station = ist;
+	    cx.Plane   = ipl;
+	    cx.Face    = face;
+	    cx.Panel   = ipn;
+	    cx.Layer   = il;
+	    orderID (&cx, &co);
+	    int os = co.Station; 
+	    int of = co.Face;
+	    int op = co.Panel;
+	    PanelZ_t* pz = &_data.oTracker[os][of][op];
+	    pz->fPanel = panel;
+//-----------------------------------------------------------------------------
+// the next four lines could be pre-calculated
+//-----------------------------------------------------------------------------
+	    pz->phi = panel->straw0MidPoint().phi();
 	  }
 	}	
       }
@@ -236,26 +242,29 @@ namespace mu2e {
 //
 //-----------------------------------------------------------------------------
   void DeltaFinder::orderHits() {
-    
-    int hitsize = _shcol->size(); 
-    for (int h=0; h<hitsize; ++h) {
-      const StrawHit*         sh  = &_shcol->at(h);
+    ChannelID cx, co;
+
+    int nhits = _shcol->size(); 
+    for (int h=0; h<nhits; ++h) {
+      const StrawHit*         sh  = &(*_shcol)[h];
       const StrawHitPosition* shp = &_shpcol->at(h);
       StrawIndex si               = sh->strawIndex();
       const Straw* straw          = &_tracker->getStraw(si);
-      C_X.Station                 = straw->id().getStation();
-                                              // get original location
-      C_X.Plane   = straw->id().getPlane() % 2;
-      C_X.Face    = -1;
-      C_X.Panel   = straw->id().getPanel();
-      C_X.Layer   = straw->id().getLayer();
+
+      cx.Station                 = straw->id().getStation();
+      cx.Plane                   = straw->id().getPlane() % 2;
+      cx.Face                    = -1;
+      cx.Panel                   = straw->id().getPanel();
+      cx.Layer                   = straw->id().getLayer();
+
 					      // get Z-ordered location
-      orderID(&C_X, &C_O);
+      orderID(&cx, &co);
      
-      int os       = C_O.Station; 
-      int of       = C_O.Face;
-      int op       = C_O.Panel;
-      int ol       = C_O.Layer;
+      int os       = co.Station; 
+      int of       = co.Face;
+      int op       = co.Panel;
+      int ol       = co.Layer;
+
       PanelZ_t* pz = &_data.oTracker[os][of][op];
 
       if ((os < 0) || (os >= kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
@@ -263,7 +272,8 @@ namespace mu2e {
       if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
       if ((ol < 0) || (ol >= 2              )) printf(" >>> ERROR: wrong layer   number: %i\n",ol);
 
-      pz->fHitData[ol].push_back(HitData_t(sh,shp,straw));
+      float sigw = shp->posRes(StrawHitPosition::wire);
+      pz->fHitData[ol].push_back(HitData_t(sh,shp,straw,sigw));
     }
   }
   
@@ -287,8 +297,8 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
 bool DeltaFinder::findData(const art::Event& Evt) {
-    _shcol    = 0;
-    _shpcol   = 0;
+    _shcol    = NULL;
+    _shpcol   = NULL;
     _shfcol   = NULL;
 
     auto shH    = Evt.getValidHandle<StrawHitCollection>(_shTag);
@@ -482,7 +492,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 
     int nseeds = _data.seedHolder[Station].size();
     for (int i=0; i<nseeds; i++) {
-      DeltaSeed* seed = &_data.seedHolder[Station].at(i);
+      DeltaSeed* seed = &_data.seedHolder[Station][i];
 
       int nhits = seed->hitlist[Face1].size();
       for (int ih=0; ih<nhits; ih++) {
@@ -516,18 +526,6 @@ bool DeltaFinder::findData(const art::Event& Evt) {
     return 0;
   }
 
-
-//-----------------------------------------------------------------------------
-  void DeltaFinder::getIntersect(const HitData_t* Hd1, const HitData_t* Hd2, CLHEP::Hep3Vector* Pos) {
-
-    const Hep3Vector& wpos1 = Hd1->fStraw->getMidPoint ();
-    const Hep3Vector& wdir1 = Hd1->fStraw->getDirection();
-    const Hep3Vector& wpos2 = Hd2->fStraw->getMidPoint ();
-    const Hep3Vector& wdir2 = Hd2->fStraw->getDirection();
-
-    TwoLinePCA pca(wpos1,wdir1,wpos2,wdir2);
-    *Pos = 0.5*(pca.point1() + pca.point2());
-  }
 
 //-----------------------------------------------------------------------------
   int DeltaFinder::findIntersection(const HitData_t* Hd1, const HitData_t* Hd2, Intersection_t* Result) {
@@ -576,17 +574,11 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 
 
 //-----------------------------------------------------------------------------
-// function to get neighboring straws w/ hits contained in them +- 7 mm
-// strawhit->strawindex->strawid->straw->radius
-// input: straw & panelz
-// output: list of pointers to hits
-// HitHolder is assumed to be empty 
-// when picking up neighboring hits need to have them ordered in distance from the seed hit
+// pick up neighboring hits in 'Face'
 //-----------------------------------------------------------------------------
   void DeltaFinder::getNeighborHits(DeltaSeed* Seed, int Face, int Face2, PanelZ_t* panelz) {
     
-    //    const StrawHit     *sh1, *sh2;
-    const HitData_t    *hd1, *hd2;                      
+    Intersection_t     res;
 
     struct WD_t {
       const HitData_t* hd;
@@ -597,10 +589,10 @@ bool DeltaFinder::findData(const art::Event& Evt) {
     
     vector<WD_t>         hits;
 
-    hd1                 = Seed->HitData(Face,0);
-    const Straw* straw1 = hd1->fStraw;
-    float minrad        = straw1->getMidPoint().perp();
-    float maxrad        = minrad;
+    const HitData_t* hd1 = Seed->HitData(Face,0);
+    const Straw* straw1  = hd1->fStraw;
+    float minrad         = straw1->getMidPoint().perp();
+    float maxrad         = minrad;
     
     for (int l=0; l<2; ++l) {
       int nh = panelz->fHitData[l].size();
@@ -621,9 +613,9 @@ bool DeltaFinder::findData(const art::Event& Evt) {
     //-----------------------------------------------------------------------------
     int nhits = hits.size();
     for (int i=0; i<nhits-1; i++) {
-      WD_t* hi = &hits.at(i);
+      WD_t* hi = &hits[i];
       for (int j=i+1; j<nhits; j++) {
-	WD_t* hj = &hits.at(j);
+	WD_t* hj = &hits[j];
 	if (hi->dr >= hj->dr) {
 	  float            dri = hi->dr;
 	  const HitData_t* hdi = hi->hd;
@@ -638,9 +630,9 @@ bool DeltaFinder::findData(const art::Event& Evt) {
     }
 //-----------------------------------------------------------------------------
 // hits are orders in distance from the first pre-seed hit
-// loop over them again, 'sh2' - the second seed hit
+// loop over them again, 'hd2' - the second seed hit
 //-----------------------------------------------------------------------------
-    hd2 = Seed->HitData(Face2,0);
+    const HitData_t* hd2 = Seed->HitData(Face2,0);
 
     for (int i=0; i<nhits; i++) {
       const HitData_t* hd = hits[i].hd;
@@ -650,13 +642,13 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 // radially we're OK, check distance from the intersection
 //-----------------------------------------------------------------------------
       CLHEP::Hep3Vector pos;
-      getIntersect(hd, hd2, &pos);
+      findIntersection(hd, hd2, &res);
 
-      const StrawHitPosition* shp = hd->fPos;
-      CLHEP::Hep3Vector dxyz = shp->pos()-pos;
-      float dxy = sqrt((dxyz.x())*(dxyz.x()) + (dxyz.y())*(dxyz.y())); //change to perp
-      float chi2 = (dxy/(shp->posRes(StrawHitPosition::wire)))*(dxy/(shp->posRes(StrawHitPosition::wire)));
-      if (chi2 < _maxChi2Neighbor) {
+      //      const StrawHitPosition* shp = hd->fPos;      
+      float chi = res.wd1/hd->fSigW;
+
+      //      float chi2 = (dxy/(shp->posRes(StrawHitPosition::wire)))*(dxy/(shp->posRes(StrawHitPosition::wire)));
+      if (chi*chi < _maxChi2Neighbor) {
 //-----------------------------------------------------------------------------
 // OK along the wire, add hit as a neighbor
 //-----------------------------------------------------------------------------
@@ -681,18 +673,8 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 
     Intersection_t  res;
 
-    const StrawHit* sh0 = &_shcol->at(0);
-
-    for(int p=0; p<3; ++p) {                        // loop over panels
+    for (int p=0; p<3; ++p) {                        // loop over panels
       PanelZ_t* panelz = &_data.oTracker[Station][Face][p];	  
-      const CLHEP::Hep3Vector& wdir = panelz->fPanel->straw0Direction();
-//-----------------------------------------------------------------------------
-// the next four lines could be pre-calculated
-//-----------------------------------------------------------------------------
-      float wx   = wdir.x();
-      float wy   = wdir.y();
-      float pphi = atan(-wx/wy);
-      if (wy < 0) pphi = pphi + M_PI;               // correct for incomplete arctan answer
       for (int l=0; l<2; ++l) {                     // loop over layers
 	int hitsize1 = panelz->fHitData[l].size(); 
 	for (int h1=0; h1<hitsize1; ++h1) {             // loop over hits/hit positions
@@ -700,35 +682,25 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 // hit has not been used yet to start a seed, 
 // however it could've been used as a second seed
 //-----------------------------------------------------------------------------
-	  HitData_t* hd1 = &panelz->fHitData[l].at(h1);
+	  HitData_t* hd1 = &panelz->fHitData[l][h1];
 	  const StrawHit* sh = hd1->fHit; 
 	  if (sh->energyDep() >= _maxElectronHitEnergy)  continue;
 	  if (fabs(sh->dt())  >= 4.                   )  continue;
 	  float ct = sh->time();
 	  if (ct              <  _minHitTime          )  continue;
-	  const StrawHitPosition* shp = hd1->fPos;
-	  const Straw* straw1         = hd1->fStraw;
-	  std::size_t loc1            = sh-sh0;
-	  int counter                 = 0;                // number of stereo candidates hits close to set up counter
+	  const Straw* straw1 = hd1->fStraw;
+	  int counter         = 0;                // number of stereo candidates hits close to set up counter
 //-----------------------------------------------------------------------------
 // loop over the second faces
 //-----------------------------------------------------------------------------
-	  int fmax = kNFaces;
-	  for (int f2=Face+1; f2<fmax; f2++) {
-	    for(int p2=0; p2<3; ++p2) {	       // loop over panels
+	  for (int f2=Face+1; f2<kNFaces; f2++) {
+	    for (int p2=0; p2<3; ++p2) {	       // loop over panels
 	      PanelZ_t* panelz2 = &_data.oTracker[Station][f2][p2];
 	      //-----------------------------------------------------------------------------
 	      // check if the two panels overlap in XY
-	      //-----------------------------------------------------------------------------
-	      const CLHEP::Hep3Vector& twdir = panelz2->fPanel->straw0Direction();
-	      float twx   = twdir.x();
-	      float twy   = twdir.y();
-	      float tpphi = atan(-twx/twy);
-	      if(twy < 0) tpphi = tpphi + M_PI;
-	      //-----------------------------------------------------------------------------
 	      // 2D angle between the vectors pointing to the panel centers, can't be greater than pi
 	      //-----------------------------------------------------------------------------
-	      float dphi = tpphi - pphi;
+	      float dphi = panelz2->phi - panelz->phi;
 	      if (dphi < -M_PI) dphi += 2*M_PI;
 	      if (dphi >  M_PI) dphi -= 2*M_PI;
 	      if (abs(dphi) >= 2*M_PI/3.) continue;
@@ -738,7 +710,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 	      for (int l2=0; l2<2;++l2) {
 		int hitsize2 = panelz2->fHitData[l2].size();
 		for (int h2=0; h2<hitsize2;++h2) {
-		  HitData_t* hd2 = &panelz2->fHitData[l2].at(h2);
+		  HitData_t* hd2 = &panelz2->fHitData[l2][h2];
 		  const StrawHit* sh2 = hd2->fHit;
 		  if (sh2->energyDep() >= _maxElectronHitEnergy)  continue;
 		  if (fabs(sh2->dt())  >= 4.                   )  continue;
@@ -751,30 +723,20 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 		  // intersect two straws, we need coordinates of the intersection point and 
 		  // two distances from hits to the intersection point, 4 numbers in total
 		  //-----------------------------------------------------------------------------
-		  std::size_t loc2 = sh2-sh0;
-		  StereoHit sth(*_shcol, *_tracker, loc1, loc2);
-
 		  findIntersection(hd1,hd2,&res);
 		  //-----------------------------------------------------------------------------
 		  // make sure the two straws do intersect
 		  //-----------------------------------------------------------------------------
-		  const CLHEP::Hep3Vector& s1_midp = straw1->getMidPoint();
-		  CLHEP::Hep3Vector sth_dxyz       = sth.pos()-s1_midp;
-		  float wdist = sqrt(sth_dxyz.x()*sth_dxyz.x()+sth_dxyz.y()*sth_dxyz.y());
-		  if ( wdist >= straw1->getHalfLength())          continue;
+		  if (fabs(res.t1) >= straw1->getHalfLength())    continue;
 
 		  const Straw* straw2              = hd2->fStraw;
-		  const CLHEP::Hep3Vector& s2_midp = straw2->getMidPoint();
-		  CLHEP::Hep3Vector sth_dxyz2      = sth.pos()-s2_midp;
-		  float wdist2 = sqrt(sth_dxyz2.x()*sth_dxyz2.x()+sth_dxyz2.y()*sth_dxyz2.y());
-		  if ( wdist2 >= straw2->getHalfLength())         continue;
+		  if (fabs(res.t2) >= straw2->getHalfLength())    continue;
 		  //-----------------------------------------------------------------------------
 		  // both StrawHit's are required to be close enough to the intersection point
 		  //-----------------------------------------------------------------------------
-		  float chi1 = (shp->wireDist()-sth.wdist1())/shp->posRes(StrawHitPosition::wire);
+		  float chi1 = res.wd1/hd1->fSigW;
 		  if (chi1*chi1 >= _maxChi2Stereo)                continue;
-		  const StrawHitPosition* shp2 = hd2->fPos;
-		  float chi2 = (shp2->wireDist()-sth.wdist2())/shp2->posRes(StrawHitPosition::wire);
+		  float chi2 = res.wd2/hd2->fSigW;
 		  if (chi2*chi2 >= _maxChi2Stereo)                continue;
 		  //-----------------------------------------------------------------------------
 		  // check whether there already is a seed containing both hits
@@ -811,7 +773,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 
 		  getNeighborHits(&seed, Face, f2, panelz);
 
-		  CLHEP::Hep3Vector smpholder(s1_midp); // use precalculated
+		  CLHEP::Hep3Vector smpholder(straw1->getMidPoint()); // use precalculated
 
 		  int nh1 = seed.hitlist[Face].size();
 		  for(int h3=1; h3<nh1; ++h3) {
@@ -823,7 +785,6 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 		  CLHEP::Hep3Vector smp2holder(straw2->getMidPoint());
 		  int nh2 = seed.hitlist[f2].size();
 		  for(int h4=1; h4<nh2; ++h4) {
-		    //		    const StrawHit* sh4 = seed.hitlist[f2][h4]->fHit;
 		    smp2holder += seed.hitlist[f2][h4]->fStraw->getMidPoint();
 		  }
 				
@@ -837,7 +798,6 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 		  seed.CofM         = 0.5*(pca.point1() + pca.point2());
 		  seed.fHitData[0]  = hd1;
 		  seed.fHitData[1]  = hd2;
-		  seed.sth          = sth;
 		  seed.chi2dof      = (chi1*chi1 + chi2*chi2)/2;
 		  seed.panelz[Face] = panelz;
 		  seed.panelz[f2]   = panelz2;
@@ -873,11 +833,11 @@ bool DeltaFinder::findData(const art::Event& Evt) {
     int nseeds =  _data.seedHolder[Station].size();
 
     for (int i1=0; i1<nseeds-1; i1++) {
-      DeltaSeed* ds1 = &_data.seedHolder[Station].at(i1);
+      DeltaSeed* ds1 = &_data.seedHolder[Station][i1];
       if (ds1->fGood < 0) continue;
       const HitData_t* h1 = ds1->fHitData[0];
       for (int i2=i1+1; i2<nseeds; i2++) {
-	DeltaSeed* ds2 = &_data.seedHolder[Station].at(i2);
+	DeltaSeed* ds2 = &_data.seedHolder[Station][i2];
 	if (ds2->fGood < 0) continue;
 	const HitData_t* h2 = ds2->fHitData[0];
 	if (h2 == h1) {
@@ -925,7 +885,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 // the same number of hits, choose candidate with lower chi2
 //-----------------------------------------------------------------------------
 	      if (ds1->Chi2() < ds2->Chi2()) ds2->fGood = -i1;
-	      else    {
+	      else {
 		ds1->fGood = -i2;
 		break;
 	      }
@@ -936,7 +896,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
     }
   }
      
-// -----FindSeeds-----------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // TODO: update the time as more hits are added
 //-----------------------------------------------------------------------------
   void DeltaFinder::findSeeds() {
@@ -948,13 +908,14 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 //-----------------------------------------------------------------------------
 	int last = _data.seedHolder[s].size();
 	
-	findSeeds(s, f1);
+	findSeeds(s,f1);
 //-----------------------------------------------------------------------------
 // for seeds with hits in faces (f,f+1), (f,f+2), (f,f+3) find hits in other two faces
 //-----------------------------------------------------------------------------
 	int nseeds = _data.seedHolder[s].size();
 	for (int iseed=last; iseed<nseeds; iseed++) {
-	  DeltaSeed* seed  = &_data.seedHolder[s].at(iseed);
+	  DeltaSeed* seed = &_data.seedHolder[s][iseed];
+	  double seed_phi = seed->CofM.phi();              // check to find right panel
 //-----------------------------------------------------------------------------
 // simultaneously update CoM coordinates
 //-----------------------------------------------------------------------------
@@ -990,11 +951,10 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 // face is different from the two first faces used
 //-----------------------------------------------------------------------------
 	    for (int p2=0; p2<3; ++p2) {
-	      PanelZ_t* panelz              = &_data.oTracker[s][f2][p2];
-	      float phi_ps                  = seed->CofM.phi();              // check to find right panel
-	      float phi_p                   = panelz->fPanel->straw0MidPoint().phi(); 
-	      const CLHEP::Hep3Vector& wdir = panelz->fPanel->straw0Direction();
-	      double dphi                   = TVector2::Phi_mpi_pi(phi_ps-phi_p);
+	      PanelZ_t* panelz = &_data.oTracker[s][f2][p2];
+	      double dphi      = seed_phi-panelz->phi;
+	      if (dphi < -M_PI) dphi += 2*M_PI;
+	      if (dphi >  M_PI) dphi -= 2*M_PI;
 	      if (fabs(dphi) >= M_PI/3)                                     continue;
 //-----------------------------------------------------------------------------
 // panel overlaps with the seed, look at its hits
@@ -1008,7 +968,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 		  // between any two measured hit times should not exceed _maxDt 
 		  // (_maxDt of the order of maximal drift time in the straw, slightly higher)
 		  //-----------------------------------------------------------------------------
-		  HitData_t* hd      = &panelz->fHitData[l].at(h);
+		  HitData_t* hd      = &panelz->fHitData[l][h];
 		  const StrawHit* sh = hd->fHit;
 
 		  if (sh->energyDep()           >= _maxElectronHitEnergy) continue;
@@ -1020,14 +980,15 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 		  //-----------------------------------------------------------------------------
 		  // split into wire parallel and perpendicular components
 		  //-----------------------------------------------------------------------------
+		  const CLHEP::Hep3Vector& wdir = panelz->fPanel->straw0Direction();
 		  CLHEP::Hep3Vector d_par    = (dxyz.dot(wdir))/(wdir.dot(wdir))*wdir; 
 		  CLHEP::Hep3Vector d_perp_z = dxyz-d_par;
-		  float  d_perp    = d_perp_z.perp();
-		  double sigw      = shp->posRes(StrawHitPosition::wire);
-		  float  chi2_par  = (d_par.mag()/sigw)*(d_par.mag()/sigw);
-		  float  chi2_perp = (d_perp/_sigmaR)*(d_perp/_sigmaR);
-		  float  chi2      = chi2_par + chi2_perp;
-		  if (chi2 >= _maxChi2Radial) continue;
+		  float  d_perp              = d_perp_z.perp();
+		  double sigw                = hd->fSigW;
+		  float  chi2_par            = (d_par.mag()/sigw)*(d_par.mag()/sigw);
+		  float  chi2_perp           = (d_perp/_sigmaR)*(d_perp/_sigmaR);
+		  float  chi2                = chi2_par + chi2_perp;
+		  if (chi2 >= _maxChi2Radial)                             continue;
 		  //-----------------------------------------------------------------------------
 		  // add hit
 		  //-----------------------------------------------------------------------------
@@ -1119,7 +1080,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
     for (int s=0; s<kNStations; ++s) {
       int pssize = _data.seedHolder[s].size();
       for (int ps=0; ps<pssize; ++ps) {
-	DeltaSeed* seed = &_data.seedHolder[s].at(ps);
+	DeltaSeed* seed = &_data.seedHolder[s][ps];
 //-----------------------------------------------------------------------------
 // create new delta candidate if a seed has >= _minNFacesWithHits
 //-----------------------------------------------------------------------------
@@ -1151,7 +1112,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 
 	  int ps2size = _data.seedHolder[s2].size();
 	  for (int ps2=0; ps2<ps2size; ++ps2) {
-	    DeltaSeed* seed2 = &_data.seedHolder[s2].at(ps2);
+	    DeltaSeed* seed2 = &_data.seedHolder[s2][ps2];
 	    if (seed2->used)                                 continue;
 	    if (seed2->fGood < 0)                            continue;
 	    if (seed2->fNFacesWithHits < _minNFacesWithHits) continue;

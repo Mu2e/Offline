@@ -53,7 +53,7 @@ physics: {
 
 	PrefetchData: { @table::PrefetchData 
 	    strawHitPositionCollectionTag : MakeStrawHitPositions 
-	    strawHitFlagCollectionTag     : FlagBkgHits
+	    strawHitFlagCollectionTag     : FlagStrawHits
 	}
 
 	DeltaFinder: { @table::CalPatRec.producers.DeltaFinder
@@ -81,8 +81,9 @@ physics: {
     p1: [ @sequence::Tracking.PrepareHits, DeltaFinder, SeedFinderAna ]
     p2: [ @sequence::Tracking.PrepareHits, DeltaFinder ]
     p3: [ DeltaFinder ]
+    p4: [ PrefetchData, DeltaFinder ]
 
-    trigger_paths : [ p2 ]
+    trigger_paths : [ p1 ]
     out           : []
     end_paths     : [ out ]
 }

@@ -36,12 +36,13 @@ namespace mu2e {
       const StrawHit*         fHit;
       const StrawHitPosition* fPos;
       const Straw*            fStraw;
-      float                   fChi2Min;
       int                     fSeedNumber;
       int                     fNSecondHits;
+      float                   fChi2Min;
+      float                   fSigW;     // cached resolution along the wire
 
-      HitData_t(const StrawHit* Hit, const StrawHitPosition* Pos, const Straw* aStraw) {
-	fHit = Hit; fPos = Pos; fStraw = aStraw; fChi2Min = 1.e10; fSeedNumber = -1; fNSecondHits = -1;
+      HitData_t(const StrawHit* Hit, const StrawHitPosition* Pos, const Straw* aStraw, float SigW) {
+	fHit = Hit; fPos = Pos; fStraw = aStraw; fChi2Min = 1.e10; fSigW = SigW; fSeedNumber = -1; fNSecondHits = -1;
       }
     };
 
@@ -49,6 +50,9 @@ namespace mu2e {
       int                              fNHits  [2]; // guess, total number of hits per layer
       std::vector<HitData_t>           fHitData[2];
       const Panel*                     fPanel;      // backward pointer to the tracker panel
+      double                           wx;	    // direction cosines of the wire 
+      double                           wy;
+      double                           phi;         // phi angle of the wire
     }; 
 
 //-----------------------------------------------------------------------------
