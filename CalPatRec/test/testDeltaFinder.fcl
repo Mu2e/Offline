@@ -82,6 +82,7 @@ physics: {
     p2: [ @sequence::Tracking.PrepareHits, DeltaFinder ]
     p3: [ DeltaFinder ]
     p4: [ PrefetchData, DeltaFinder ]
+    p5: [ PrefetchData, DeltaFinder, SeedFinderAna ]
 
     trigger_paths : [ p1 ]
     out           : []

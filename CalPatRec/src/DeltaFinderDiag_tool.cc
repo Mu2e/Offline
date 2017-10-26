@@ -474,7 +474,7 @@ namespace mu2e {
     for (int s=0; s<kNStations; ++s) {
       int seedsize = _data->seedHolder[s].size();
       for(int se=0; se<seedsize; ++se) {
-	DeltaSeed* seed = &_data->seedHolder[s].at(se);
+	DeltaSeed* seed = _data->seedHolder[s].at(se);
 	
 	fillSeedHistograms(_hist.fSeed[0],seed);
 
@@ -650,15 +650,21 @@ namespace mu2e {
     for (int is=0; is<kNStations; is++) {
       int nseeds = _data->seedHolder[is].size();
       for (int i=0; i<nseeds; ++i) {
-	DeltaSeed* seed = &_data->seedHolder[is].at(i);
+	DeltaSeed* seed = _data->seedHolder[is].at(i);
 //-----------------------------------------------------------------------------
 // define MC pointers (SimParticle's) for the first two, "pre-seed", hits
 //-----------------------------------------------------------------------------
-	int loc1 = seed->fHitData[0]->fHit-hit0;
-	int loc2 = seed->fHitData[1]->fHit-hit0;
+	if (seed->fType != 0) {
+	  int loc1 = seed->fHitData[0]->fHit-hit0;
+	  int loc2 = seed->fHitData[1]->fHit-hit0;
 	
-	seed->fPreSeedMcPart[0] = _list_of_mc_part_hit.at(loc1);
-	seed->fPreSeedMcPart[1] = _list_of_mc_part_hit.at(loc2);
+	  seed->fPreSeedMcPart[0] = _list_of_mc_part_hit.at(loc1);
+	  seed->fPreSeedMcPart[1] = _list_of_mc_part_hit.at(loc2);
+	}
+	else {
+	  seed->fPreSeedMcPart[0] = NULL;
+	  seed->fPreSeedMcPart[1] = NULL;
+	}
 //-----------------------------------------------------------------------------
 // define MC pointers (McPart_t's) for hits in all faces
 //-----------------------------------------------------------------------------
@@ -698,7 +704,7 @@ namespace mu2e {
 // now loop over the DeltaCandidate hits - the idea is that all of them will be marked 
 // as 'delta electron' hits and not used in the pattern recognition
 //-----------------------------------------------------------------------------
-	  for (int is=dc->st_start; is<=dc->st_end; is++) {
+	  for (int is=dc->fFirstStation; is<=dc->fLastStation; is++) {
 	    DeltaSeed* ds = dc->seed[is];
 	    if (ds) {
 	      for (int iface=0; iface<kNFaces; iface++) {
@@ -740,7 +746,7 @@ namespace mu2e {
       DeltaCandidate* d = & _data->deltaCandidateHolder.at(i);
       npart             = 0;
 
-      for (int is=d->st_start; is<=d->st_end; is++) {
+      for (int is=d->fFirstStation; is<=d->fLastStation; is++) {
 	if (! d->st_used[is]) continue;
 	DeltaSeed* s = d->seed[is];
 	for (int face=0; face<kNFaces; face++) {
@@ -811,11 +817,17 @@ namespace mu2e {
 	  printf("      st  i  good type   SHID:MCID(0)    SHID:MCID(1)       chi2  mintime maxtime   X        Y         Z    nfwh  nht\n");
 	  printf("------------------------------------------------------------------------------------------------------\n");
 	  for (int ps=0; ps<nseeds; ++ps) {
-	    DeltaSeed* seed = &_data->seedHolder[st].at(ps);
+	    DeltaSeed* seed = _data->seedHolder[st].at(ps);
 
 	    printf("seed %3i %2i %4i %2i ",st,ps,seed->fGood,seed->fType);
-	    printf("(%5i:%9i)",seed->fHitData[0]->fHit->strawIndex().asInt(),seed->fPreSeedMcPart[0]->fID);
-	    printf("(%5i:%9i)",seed->fHitData[1]->fHit->strawIndex().asInt(),seed->fPreSeedMcPart[1]->fID);
+	    if (seed->fType != 0) {
+	      printf("(%5i:%9i)",seed->fHitData[0]->fHit->strawIndex().asInt(),seed->fPreSeedMcPart[0]->fID);
+	      printf("(%5i:%9i)",seed->fHitData[1]->fHit->strawIndex().asInt(),seed->fPreSeedMcPart[1]->fID);
+	    }
+	    else {
+	      printf("(%5i:%9i)",-1,-1);
+	      printf("(%5i:%9i)",-1,-1);
+	    }
 	    printf(" %8.2f",seed->chi2dof);
 	    printf("%8.1f %8.1f",seed->fMinTime,seed->fMaxTime);
 	    printf(" %8.3f %8.3f %9.3f",seed->CofM.x(),seed->CofM.y(),seed->CofM.z());
@@ -859,21 +871,26 @@ namespace mu2e {
 	  printf("----------------------------------------------------------------------\n");
 	  printf("%3i: %3i",i,dc->fNHits);
 	  printf(" %3i",dc->n_seeds );
-	  printf(" %2i",dc->st_start);
-	  printf(" %2i",dc->st_end  );
+	  printf(" %2i",dc->fFirstStation);
+	  printf(" %2i",dc->fLastStation  );
 	  printf("  %9.2f %9.2f %9.2f",dc->CofM.x(),dc->CofM.y(),dc->CofM.z());
 	  printf("\n");
 
-	  for (int is=dc->st_start;is<=dc->st_end; is++) {
+	  for (int is=dc->fFirstStation;is<=dc->fLastStation; is++) {
 	    DeltaSeed* ds = dc->seed[is];
 	    if (ds != NULL) {
 	      printf("     %3i     %2i:%3i",ds->fNHitsTot,is,ds->fNumber);
 	      printf(" %9.2f %9.2f %9.2f",
 		     ds->CofM.x(),ds->CofM.y(),ds->CofM.z());
 	      printf( "%8.1f %8.1f",ds->fMinTime,ds->fMaxTime);
-	      printf(" (%6i %6i)",
-		     ds->fHitData[0]->fHit->strawIndex().asInt(),
-		     ds->fHitData[1]->fHit->strawIndex().asInt());
+	      if (ds->fType != 0) {
+		printf(" (%6i %6i)",
+		       ds->fHitData[0]->fHit->strawIndex().asInt(),
+		       ds->fHitData[1]->fHit->strawIndex().asInt());
+	      }
+	      else {
+		printf(" (  %6i %6i)",-1,-1);
+	      }
 
 	      printf("\n");
 	    }

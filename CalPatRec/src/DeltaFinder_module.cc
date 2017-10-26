@@ -45,6 +45,8 @@ namespace mu2e {
   
   using namespace DeltaFinderTypes;
 
+  using CLHEP::Hep3Vector;
+
   class DeltaFinder: public art::EDProducer {
   public:
 					// intersection of the two hit wires
@@ -119,7 +121,7 @@ namespace mu2e {
 
     bool         findData     (const art::Event&  Evt);
 
-    void         orderHits ();
+    int          orderHits ();
 
     void         findSeeds (int Station, int Face);
     void         findSeeds ();
@@ -132,7 +134,9 @@ namespace mu2e {
 				 int Face1, const HitData_t* Hit1,
 				 int Face2, const HitData_t* Hit2);
 
-    void         connectSeeds  ();
+    void         connectSeeds      ();
+    int          recoverMissingHits();
+
     void         runDeltaFinder();
 
     int          findIntersection(const HitData_t* Hit1, const HitData_t* Hit2, Intersection_t* Result);
@@ -221,9 +225,12 @@ namespace mu2e {
 	    PanelZ_t* pz = &_data.oTracker[os][of][op];
 	    pz->fPanel = panel;
 //-----------------------------------------------------------------------------
-// the next four lines could be pre-calculated
+// panel caches phi of its center and the z
 //-----------------------------------------------------------------------------
+	    pz->wx  = panel->straw0Direction().x();
+	    pz->wy  = panel->straw0Direction().y();
 	    pz->phi = panel->straw0MidPoint().phi();
+	    pz->z   = (panel->getLayer(0).straw0MidPoint().z()+panel->getLayer(1).straw0MidPoint().z())/2.;
 	  }
 	}	
       }
@@ -241,7 +248,7 @@ namespace mu2e {
 //------------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  void DeltaFinder::orderHits() {
+  int DeltaFinder::orderHits() {
     ChannelID cx, co;
 
     int nhits = _shcol->size(); 
@@ -275,8 +282,93 @@ namespace mu2e {
       float sigw = shp->posRes(StrawHitPosition::wire);
       pz->fHitData[ol].push_back(HitData_t(sh,shp,straw,sigw));
     }
+
+    return 0;
   }
   
+//------------------------------------------------------------------------------
+// start from looking at the "holes" in the seed pattern
+//-----------------------------------------------------------------------------
+  int DeltaFinder::recoverMissingHits() {
+
+    int ndelta = _data.deltaCandidateHolder.size();
+    for (int i=0; i<ndelta; i++) {
+      DeltaCandidate* dc = &_data.deltaCandidateHolder[i];
+      double dc_phi = dc->CofM.phi();
+      int s1 = dc->fFirstStation+1;
+      int s2 = dc->fLastStation-1;
+      for (int ist=s1; ist<=s2; ist++) {
+	if (dc->seed[ist] != NULL) continue;
+	//-----------------------------------------------------------------------------
+	// delta candidate doesn't have hits in this station, check all hits here
+	// when predicting time, use the same value of Z for both layers
+	//-----------------------------------------------------------------------------
+	DeltaSeed*  new_seed (NULL);
+	for (int face=0; face<kNFaces; face++) {
+	  double zface          = _data.oTracker[ist][face][0].z;
+	  double predicted_time = dc->PredictedTime(zface);
+
+	  for (int ip=0; ip<kNPanelsPerFace; ip++) {
+	    PanelZ_t* panelz = &_data.oTracker[ist][face][ip];
+	    double dphi      = dc_phi-panelz->phi;
+	    if (dphi < -M_PI) dphi += 2*M_PI;
+	    if (dphi >  M_PI) dphi -= 2*M_PI;
+	    if (fabs(dphi) < M_PI/3) {
+	      //-----------------------------------------------------------------------------
+	      // panel and seed overlap in phi, loop over hits
+	      //-----------------------------------------------------------------------------
+	      for (int l=0; l<2; ++l) {
+		int nhits = panelz->fHitData[l].size();
+		for (int h=0; h<nhits; ++h) {
+		  const HitData_t* hd = &panelz->fHitData[l][h];
+		  const StrawHit* sh  = hd->fHit;
+		  if (sh->energyDep() > _maxElectronHitEnergy) continue;
+		  double dt = sh->time()-predicted_time;
+		  if (fabs(dt) > _maxDt)                       continue;
+		  
+		  double dx = hd->fPos->pos().x()-dc->CofM.x();
+		  double dy = hd->fPos->pos().y()-dc->CofM.y();
+		  
+		  double dw = dx*panelz->wx+dy+panelz->wy; // distance along the wire
+		  
+		  double dxx = dx-panelz->wx*dw;
+		  double dyy = dy-panelz->wy*dw;
+		  
+		  double chi2_par  = (dw*dw)/(hd->fSigW*hd->fSigW);
+		  double chi2_perp = (dxx*dxx+dyy*dyy)/(_sigmaR*_sigmaR);
+		  double chi2      = chi2_par + chi2_perp;
+		  
+		  if (chi2 >= _maxChi2Radial)          continue;
+		  //-----------------------------------------------------------------------------
+		  // add hit
+		  //-----------------------------------------------------------------------------
+		  if (new_seed == NULL) new_seed = new DeltaSeed();
+
+		  new_seed->panelz[face] = panelz;
+		  new_seed->fNHitsTot += 1;
+		  if (sh->time() < new_seed->fMinTime) new_seed->fMinTime = sh->time();
+		  if (sh->time() > new_seed->fMaxTime) new_seed->fMaxTime = sh->time();
+		  new_seed->hitlist[face].push_back(hd);
+		}
+	      }
+	    }
+	  }
+	  if (new_seed) new_seed->fFaceProcessed[face] = 1;
+	}
+	//-----------------------------------------------------------------------------
+	// station is processed, see if anything has been found
+	//-----------------------------------------------------------------------------
+	if (new_seed) {
+	  _data.seedHolder[ist].push_back(new_seed);
+	  dc->seed[ist] = new_seed;
+	  new_seed = NULL;
+	}
+      }
+    }
+
+    return 0;
+  }
+
 //-----------------------------------------------------------------------------
   void  DeltaFinder::runDeltaFinder() {
 
@@ -293,10 +385,11 @@ namespace mu2e {
     orderHits();
     findSeeds();
     connectSeeds();
+    recoverMissingHits();
   }
 
 //-----------------------------------------------------------------------------
-bool DeltaFinder::findData(const art::Event& Evt) {
+  bool DeltaFinder::findData(const art::Event& Evt) {
     _shcol    = NULL;
     _shpcol   = NULL;
     _shfcol   = NULL;
@@ -327,6 +420,10 @@ bool DeltaFinder::findData(const art::Event& Evt) {
     
     for (int is=0; is<kNStations; is++) {
       _data.nseeds_per_station[is] = 0;
+
+      for (auto ds=_data.seedHolder[is].begin(); ds!=_data.seedHolder[is].end(); ds++) {
+	delete *ds;
+      }
       _data.seedHolder[is].clear();
     }
 
@@ -354,7 +451,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 
     for (int i=0; i<ndeltas; i++) {
       DeltaCandidate* dc = &_data.deltaCandidateHolder.at(i);
-      for (int station=dc->st_start; station<=dc->st_end; station++) {
+      for (int station=dc->fFirstStation; station<=dc->fLastStation; station++) {
 	DeltaSeed* ds = dc->seed[station];
 	if (ds != NULL) {
 //-----------------------------------------------------------------------------
@@ -492,7 +589,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 
     int nseeds = _data.seedHolder[Station].size();
     for (int i=0; i<nseeds; i++) {
-      DeltaSeed* seed = &_data.seedHolder[Station][i];
+      DeltaSeed* seed = _data.seedHolder[Station][i];
 
       int nhits = seed->hitlist[Face1].size();
       for (int ih=0; ih<nhits; ih++) {
@@ -746,46 +843,46 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 		  //-----------------------------------------------------------------------------
 		  // new seed
 		  //-----------------------------------------------------------------------------
-		  DeltaSeed seed;
-		  seed.fStation             =  Station;
-		  seed.fNumber              =  _data.seedHolder[Station].size();
-		  seed.fType                = 10*Face+f2;
-		  seed.fNFacesWithHits      = 2;
-		  seed.fFaceProcessed[Face] = 1;
-		  seed.fFaceProcessed[f2  ] = 1;
+		  DeltaSeed* seed = new DeltaSeed();
+		  seed->fStation             =  Station;
+		  seed->fNumber              =  _data.seedHolder[Station].size();
+		  seed->fType                = 10*Face+f2;
+		  seed->fNFacesWithHits      = 2;
+		  seed->fFaceProcessed[Face] = 1;
+		  seed->fFaceProcessed[f2  ] = 1;
 
 		  hd1->fChi2Min    = chi1*chi1;
 		  hd2->fChi2Min    = chi2*chi2;
-		  hd1->fSeedNumber = seed.fNumber;
-		  hd2->fSeedNumber = seed.fNumber;
+		  hd1->fSeedNumber = seed->fNumber;
+		  hd2->fSeedNumber = seed->fNumber;
 
-		  seed.fMinTime = sh->time();
-		  if (sh2->time() > seed.fMinTime) {
-		    seed.fMaxTime = sh2->time();
+		  seed->fMinTime = sh->time();
+		  if (sh2->time() > seed->fMinTime) {
+		    seed->fMaxTime = sh2->time();
 		  }
 		  else {
-		    seed.fMinTime = sh2->time();
-		    seed.fMaxTime = sh->time();
+		    seed->fMinTime = sh2->time();
+		    seed->fMaxTime = sh->time();
 		  }
 				
-		  seed.hitlist[Face].push_back(hd1);
-		  seed.hitlist[f2  ].push_back(hd2);
+		  seed->hitlist[Face].push_back(hd1);
+		  seed->hitlist[f2  ].push_back(hd2);
 
-		  getNeighborHits(&seed, Face, f2, panelz);
+		  getNeighborHits(seed, Face, f2, panelz);
 
 		  CLHEP::Hep3Vector smpholder(straw1->getMidPoint()); // use precalculated
 
-		  int nh1 = seed.hitlist[Face].size();
+		  int nh1 = seed->hitlist[Face].size();
 		  for(int h3=1; h3<nh1; ++h3) {
-		    smpholder  += seed.hitlist[Face][h3]->fStraw->getMidPoint();
+		    smpholder  += seed->hitlist[Face][h3]->fStraw->getMidPoint();
 		  }
 
-		  getNeighborHits(&seed, f2, Face, panelz2);
+		  getNeighborHits(seed, f2, Face, panelz2);
 
 		  CLHEP::Hep3Vector smp2holder(straw2->getMidPoint());
-		  int nh2 = seed.hitlist[f2].size();
+		  int nh2 = seed->hitlist[f2].size();
 		  for(int h4=1; h4<nh2; ++h4) {
-		    smp2holder += seed.hitlist[f2][h4]->fStraw->getMidPoint();
+		    smp2holder += seed->hitlist[f2][h4]->fStraw->getMidPoint();
 		  }
 				
 		  CLHEP::Hep3Vector CofMsmp1 = smpholder /nh1;
@@ -795,13 +892,13 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 		  const Hep3Vector& CofMdir2 = straw2->getDirection();
 		  TwoLinePCA pca(CofMsmp1, CofMdir1, CofMsmp2, CofMdir2);
 
-		  seed.CofM         = 0.5*(pca.point1() + pca.point2());
-		  seed.fHitData[0]  = hd1;
-		  seed.fHitData[1]  = hd2;
-		  seed.chi2dof      = (chi1*chi1 + chi2*chi2)/2;
-		  seed.panelz[Face] = panelz;
-		  seed.panelz[f2]   = panelz2;
-		  seed.fNHitsTot    = nh1+nh2;
+		  seed->CofM         = 0.5*(pca.point1() + pca.point2());
+		  seed->fHitData[0]  = hd1;
+		  seed->fHitData[1]  = hd2;
+		  seed->chi2dof      = (chi1*chi1 + chi2*chi2)/2;
+		  seed->panelz[Face] = panelz;
+		  seed->panelz[f2]   = panelz2;
+		  seed->fNHitsTot    = nh1+nh2;
 
 		  _data.seedHolder[Station].push_back(seed);
 		  //-----------------------------------------------------------------------------
@@ -833,11 +930,11 @@ bool DeltaFinder::findData(const art::Event& Evt) {
     int nseeds =  _data.seedHolder[Station].size();
 
     for (int i1=0; i1<nseeds-1; i1++) {
-      DeltaSeed* ds1 = &_data.seedHolder[Station][i1];
+      DeltaSeed* ds1 = _data.seedHolder[Station][i1];
       if (ds1->fGood < 0) continue;
       const HitData_t* h1 = ds1->fHitData[0];
       for (int i2=i1+1; i2<nseeds; i2++) {
-	DeltaSeed* ds2 = &_data.seedHolder[Station][i2];
+	DeltaSeed* ds2 = _data.seedHolder[Station][i2];
 	if (ds2->fGood < 0) continue;
 	const HitData_t* h2 = ds2->fHitData[0];
 	if (h2 == h1) {
@@ -914,7 +1011,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 //-----------------------------------------------------------------------------
 	int nseeds = _data.seedHolder[s].size();
 	for (int iseed=last; iseed<nseeds; iseed++) {
-	  DeltaSeed* seed = &_data.seedHolder[s][iseed];
+	  DeltaSeed* seed = _data.seedHolder[s][iseed];
 	  double seed_phi = seed->CofM.phi();              // check to find right panel
 //-----------------------------------------------------------------------------
 // simultaneously update CoM coordinates
@@ -1080,7 +1177,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
     for (int s=0; s<kNStations; ++s) {
       int pssize = _data.seedHolder[s].size();
       for (int ps=0; ps<pssize; ++ps) {
-	DeltaSeed* seed = &_data.seedHolder[s][ps];
+	DeltaSeed* seed = _data.seedHolder[s][ps];
 //-----------------------------------------------------------------------------
 // create new delta candidate if a seed has >= _minNFacesWithHits
 //-----------------------------------------------------------------------------
@@ -1093,8 +1190,8 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 	delta.seed[s]    = seed;
 	delta.CofM       = seed->CofM;
 	delta.n_seeds    = 1;
-	delta.st_start   = s;
-	delta.st_end     = s;
+	delta.fFirstStation = s;
+	delta.fLastStation     = s;
 	delta.fNHits     = seed->fNHitsTot;
 	delta.fTzSums.addPoint(seed->CofM.z(),seed->fMinTime);
 //-----------------------------------------------------------------------------
@@ -1103,7 +1200,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 	int sdist = 0;
 	for (int s2=s+1; s2<kNStations; ++s2) {
 	  if ((s2 == 6) || (s2 == 13)) sdist += 1;
-	  if (s2-delta.st_end > _maxGap+1+sdist) break;
+	  if (s2-delta.fLastStation > _maxGap+1+sdist) break;
 //-----------------------------------------------------------------------------
 // find the closest seed in station s2
 //-----------------------------------------------------------------------------
@@ -1112,7 +1209,7 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 
 	  int ps2size = _data.seedHolder[s2].size();
 	  for (int ps2=0; ps2<ps2size; ++ps2) {
-	    DeltaSeed* seed2 = &_data.seedHolder[s2][ps2];
+	    DeltaSeed* seed2 = _data.seedHolder[s2][ps2];
 	    if (seed2->used)                                 continue;
 	    if (seed2->fGood < 0)                            continue;
 	    if (seed2->fNFacesWithHits < _minNFacesWithHits) continue;
@@ -1132,13 +1229,13 @@ bool DeltaFinder::findData(const art::Event& Evt) {
 	  }
 
 	  if (closest) {
-	    delta.st_end      = s2;
-	    delta.dxy    [s2] = dxy_min;
-	    delta.seed   [s2] = closest;
-	    delta.st_used[s2] = true;
-	    delta.CofM        = (delta.CofM*delta.n_seeds+closest->CofM)/(delta.n_seeds+1);
-	    delta.n_seeds    += 1;
-	    delta.fNHits     += closest->fNHitsTot;
+	    delta.fLastStation = s2;
+	    delta.dxy    [s2]  = dxy_min;
+	    delta.seed   [s2]  = closest;
+	    delta.st_used[s2]  = true;
+	    delta.CofM         = (delta.CofM*delta.n_seeds+closest->CofM)/(delta.n_seeds+1);
+	    delta.n_seeds     += 1;
+	    delta.fNHits      += closest->fNHitsTot;
 	    delta.fTzSums.addPoint(closest->CofM.z(),closest->fMinTime);
 	  }
 	}

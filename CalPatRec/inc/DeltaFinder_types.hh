@@ -42,17 +42,20 @@ namespace mu2e {
       float                   fSigW;     // cached resolution along the wire
 
       HitData_t(const StrawHit* Hit, const StrawHitPosition* Pos, const Straw* aStraw, float SigW) {
-	fHit = Hit; fPos = Pos; fStraw = aStraw; fChi2Min = 1.e10; fSigW = SigW; fSeedNumber = -1; fNSecondHits = -1;
+	fHit = Hit; fPos = Pos; fStraw = aStraw; fChi2Min = 1.1e10; fSigW = SigW; fSeedNumber = -1; fNSecondHits = -1;
       }
+
+      int Used() { return (fChi2Min < 1.e10) ; }
     };
 
     struct PanelZ_t {
       int                              fNHits  [2]; // guess, total number of hits per layer
       std::vector<HitData_t>           fHitData[2];
       const Panel*                     fPanel;      // backward pointer to the tracker panel
-      double                           wx;	    // direction cosines of the wire 
+      double                           wx;          // direction cosines of the wires, assumed to be all the same
       double                           wy;
       double                           phi;         // phi angle of the wire
+      double                           z;           // 
     }; 
 
 //-----------------------------------------------------------------------------
@@ -89,25 +92,23 @@ namespace mu2e {
       float Momentum() { return fStartMom; }
       float Time    () { return fTime; }
     }; 
-
+//
     class DeltaSeed {
     public:
       int                            fNumber;		// number within the station
       int                            fStation;		// station
       int                            fType;             // defines indices of the two faces used for preseed seach
+					                // 0: used in recovery
       int                            fFaceProcessed[kNFaces];
       int                            fGood;             // <-killer number> if not to be used - what about 0 ?
       int                            fNFacesWithHits;
       int                            fNHitsTot;         // total number of hits
       const HitData_t*               fHitData[2];       // stereo hit seeding the seed search
       const StrawHitPosition*        fPos[2];
-      StereoHit                      sth;
       float                          chi2dof;           // for two initial hits
       PanelZ_t*                      panelz   [kNFaces];
       std::vector<const HitData_t*>  hitlist  [kNFaces];
       std::vector<McPart_t*>         fMcPart  [kNFaces];
-      std::vector<int>               fLayer   [kNFaces];
-      std::vector<int>               fHitIndex[kNFaces];
       CLHEP::Hep3Vector              CofM;
       float                          fMinTime; // min and max times of the included hits
       float                          fMaxTime;
@@ -115,14 +116,21 @@ namespace mu2e {
       bool                           used;   // denotes if seed has been used in connectseeds
 
       DeltaSeed() {
+	fType             =  0;
 	fGood             =  1;
+	fNHitsTot         =  0;
 	fNFacesWithHits   =  0;
 	fStation          = -1;
 	fNumber           = -1;
 	fPreSeedMcPart[0] = NULL;
 	fPreSeedMcPart[1] = NULL;
 	used              = false;
-	for (int i=0; i<kNFaces; i++) fFaceProcessed[i] = 0;
+	fMinTime          = 1.e10;
+	fMaxTime          = -1.;
+	for (int face=0; face<kNFaces; face++) {
+	  fFaceProcessed[face] = 0;
+	  panelz        [face] = NULL;
+	}
       }
       //------------------------------------------------------------------------------
       // dont need a copy constructor
@@ -139,6 +147,7 @@ namespace mu2e {
       // best the 'particle time'
       //-----------------------------------------------------------------------------
       float            Time()     { return fMinTime; }
+
     };
 
     struct DeltaCandidate {
@@ -149,8 +158,8 @@ namespace mu2e {
       float                 dxy    [kNStations];
       CLHEP::Hep3Vector     CofM;
       int                   n_seeds;
-      int                   st_start;
-      int                   st_end;
+      int                   fFirstStation;
+      int                   fLastStation;
       McPart_t*             fMcPart;
       int                   fNHits;
       int                   fNHitsMcP;	// Nhits by the "best" particle"
@@ -163,12 +172,14 @@ namespace mu2e {
 	  dxy    [s] = -1;
 	  seed   [s] = NULL;
 	}
-	st_start   = -1;
-	st_end     = -1;
-	fMcPart    = NULL;
-	fNHits     = 0;
+	fFirstStation = -1;
+	fLastStation  = -1;
+	fMcPart       = NULL;
+	fNHits        = 0;
 	fTzSums.clear();
       }
+
+      double PredictedTime(double Z) { return fTzSums.yMean()+fTzSums.dydx()*(Z-CofM.z()); }
     };
 //-----------------------------------------------------------------------------
 // data structure passed to the histogramming routine
@@ -178,7 +189,7 @@ namespace mu2e {
       const TTracker*              tracker;
       std::string                  strawDigiMCCollectionTag;
       std::string                  ptrStepPointMCVectorCollectionTag;
-      std::vector<DeltaSeed>       seedHolder[kNStations];
+      std::vector<DeltaSeed*>      seedHolder [kNStations];
       std::vector<DeltaCandidate>  deltaCandidateHolder;
       PanelZ_t                     oTracker[kNStations][kNFaces][kNPanelsPerFace];
       int                          nseeds;
