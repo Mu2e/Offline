@@ -6,7 +6,7 @@
 // This is a placeholder IoV scheme until one is decided on by
 // the collaboration.
 // This implementation consists of a start time and end time,
-// represented as doubles.  That may change later.
+// represented as unsigned longs.  That may change later.
 
 #include <limits>
 #include <ostream>
@@ -15,13 +15,13 @@ namespace mu2e {
 
   class IoV {
   public:
-    IoV( double start, double end ) :
+    IoV( const unsigned long& start, const unsigned long& end ) :
     _startTime(start),
       _endTime(end) {}
 
     IoV() :
       _startTime(0.0),
-      _endTime( std::numeric_limits<double>::max() -10.0 ) {}
+      _endTime( std::numeric_limits<unsigned long>::max() - 10 ) {}
 
     // copy c-tor
     IoV( const IoV& rhs );
@@ -30,15 +30,24 @@ namespace mu2e {
     double start() const {return _startTime;}
     double end()   const {return _endTime;}
 
-    static constexpr double maxtime = std::numeric_limits<double>::max() - 10.0;  // allow for something...?
+    static constexpr unsigned long maxtime = 
+      std::numeric_limits<unsigned long>::max() - 10;// allow for something...?
 
-    static bool isValid(double aTime) { return !(aTime < 0 || aTime > (std::numeric_limits<double>::max() -10.0) ); }
-    bool contains(double aTime) const { return (aTime >= _startTime && aTime <= _endTime); }
+    static bool isValid(const unsigned long& aTime) 
+      { return !(aTime < 0 || aTime > (std::numeric_limits<unsigned long>::max() - 10) ); }
+
+    bool contains(const unsigned long&  aTime) const 
+      { return (aTime >= _startTime && aTime <= _endTime); }
+
+    void updateEndTime( const unsigned long& aTime ) { _endTime = aTime; }
+
+    IoV operator+ ( const IoV& rhs );
 
   private:
 
-    double _startTime;
-    double _endTime;
+    unsigned long _startTime;
+    unsigned long _endTime;
+
   }; // end of class def
 
   std::ostream& operator<<(std::ostream& os, const IoV& rhs);
