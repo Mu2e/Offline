@@ -180,6 +180,7 @@ namespace mu2e {
       }
 
       double PredictedTime(double Z) { return fTzSums.yMean()+fTzSums.dydx()*(Z-CofM.z()); }
+      int    NSeeds() { return n_seeds; }
     };
 //-----------------------------------------------------------------------------
 // data structure passed to the histogramming routine
@@ -195,18 +196,7 @@ namespace mu2e {
       int                          nseeds;
       int                          nseeds_per_station[kNStations];
       const StrawHitCollection*    shcol;
-      int                          nsh; // total number of straw hits
-      int                          testOrder;         // 
-      int                          printElectrons;    //
-      int                          printElectronsMinNHits;
-      float                        printElectronsMaxFReco;
-      float                        printElectronsMinMom;
-      int                          printDeltaSeeds;
-      int                          printDeltaCandidates;
       int                          debugLevel;	     // printout level
-      int                          diagLevel;            // histogramming level
-      bool                         mcDiag;
-      int                          printOTracker;     //
     };
   }
 }

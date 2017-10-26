@@ -808,7 +808,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     _data = (Data_t*) Data;
     
-    if (_data->printDeltaSeeds != 0) {
+    if (_printDeltaSeeds != 0) {
       for (int st=0; st<kNStations; ++st) {
 	int nseeds = _data->seedHolder[st].size();
 	printf("station: %2i N(seeds): %3i\n",st,nseeds);
@@ -889,7 +889,7 @@ namespace mu2e {
 		       ds->fHitData[1]->fHit->strawIndex().asInt());
 	      }
 	      else {
-		printf(" (  %6i %6i)",-1,-1);
+		printf(" (%6i %6i)",-1,-1);
 	      }
 
 	      printf("\n");
@@ -920,11 +920,11 @@ namespace mu2e {
 	      nseeds   = mc->fDelta->n_seeds;
 	    }
 
-	    printf(" event: %3i electron: sim.id = %10i",_data->event->event(),mc->fID);
-	    printf(" mom = %7.3f time: %8.3f nhits: %3i deltaID: %3i nseeds: %2i nhits(delta): %3i stations:%2i:%2i",
+	    printf(" event: %3i electron.sim.id: %10i",_data->event->event(),mc->fID);
+	    printf(" mom = %7.3f time: %8.3f deltaID: %3i nseeds: %2i nhits: %3i/%3i stations:%2i:%2i",
 		   mc->Momentum(), mc->Time(), 
-		   mc->NHits(), 
 		   delta_id, nseeds,
+		   mc->NHits(), 
 		   mc->fNHitsDelta, 
 		   mc->fFirstStation, mc->fLastStation);
 	    printf(" freco: %6.3f\n",fr);
@@ -951,7 +951,7 @@ namespace mu2e {
     if (Index <= 0) {
       printf("--------------------------------------------------------------------------");
       printf("--------------------------------------\n");
-      printf("   I   SHID  Plane   Panel  Layer   Straw     Time          dt       eDep ");
+      printf(" S:F  I   SHID  Plane   Panel  Layer   Straw     Time          dt       eDep ");
       printf("           PDG         ID         p   \n");
       printf("--------------------------------------------------------------------------");
       printf("--------------------------------------\n");

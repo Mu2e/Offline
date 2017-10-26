@@ -57,6 +57,7 @@ physics: {
 	}
 
 	DeltaFinder: { @table::CalPatRec.producers.DeltaFinder
+	    maxElectronHitEnergy          :0.007
 	    StrawHitPositionCollectionTag : MakeStrawHitPositions
 	    debugLevel                    : 1
 	    diagLevel                     : 1
@@ -88,7 +89,7 @@ physics: {
     p4: [ PrefetchData, DeltaFinder ]
     p5: [ PrefetchData, DeltaFinder, SeedFinderAna ]
 
-    trigger_paths : [ p1 ]
+    trigger_paths : [ p4 ]
     out           : []
     end_paths     : [ out ]
 }

@@ -68,9 +68,6 @@ namespace mu2e {
       int Panel; 
       int Layer;
     };
-
-    ChannelID C_X;
-    ChannelID C_O;
 //-----------------------------------------------------------------------------
 // talk-to parameters: input collections and algorithm parameters
 //-----------------------------------------------------------------------------
@@ -288,15 +285,23 @@ namespace mu2e {
   
 //------------------------------------------------------------------------------
 // start from looking at the "holes" in the seed pattern
+// delta candidates in the list are already required to have at least 2 segments
+// extend them outwards by one station
 //-----------------------------------------------------------------------------
   int DeltaFinder::recoverMissingHits() {
 
     int ndelta = _data.deltaCandidateHolder.size();
     for (int i=0; i<ndelta; i++) {
       DeltaCandidate* dc = &_data.deltaCandidateHolder[i];
+      //-----------------------------------------------------------------------------
+      // don't extend seeds made out of one segment
+      //-----------------------------------------------------------------------------
       double dc_phi = dc->CofM.phi();
-      int s1 = dc->fFirstStation+1;
-      int s2 = dc->fLastStation-1;
+      int s1 = dc->fFirstStation-1;
+      if (s1 < 0) s1 = 0;
+      int s2 = dc->fLastStation+1;
+      if (s2 >= kNStations) s2 = kNStations-1;
+
       for (int ist=s1; ist<=s2; ist++) {
 	if (dc->seed[ist] != NULL) continue;
 	//-----------------------------------------------------------------------------
@@ -329,7 +334,7 @@ namespace mu2e {
 		  double dx = hd->fPos->pos().x()-dc->CofM.x();
 		  double dy = hd->fPos->pos().y()-dc->CofM.y();
 		  
-		  double dw = dx*panelz->wx+dy+panelz->wy; // distance along the wire
+		  double dw = dx*panelz->wx+dy*panelz->wy; // distance along the wire
 		  
 		  double dxx = dx-panelz->wx*dw;
 		  double dyy = dy-panelz->wy*dw;
@@ -359,9 +364,13 @@ namespace mu2e {
 	// station is processed, see if anything has been found
 	//-----------------------------------------------------------------------------
 	if (new_seed) {
+	  new_seed->fNumber = _data.seedHolder[ist].size();
 	  _data.seedHolder[ist].push_back(new_seed);
 	  dc->seed[ist] = new_seed;
+	  dc->fNHits += new_seed->fNHitsTot;
 	  new_seed = NULL;
+	  if (ist < dc->fFirstStation) dc->fFirstStation = ist;
+	  if (ist > dc->fLastStation ) dc->fLastStation  = ist;
 	}
       }
     }
