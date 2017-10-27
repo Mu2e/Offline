@@ -8,27 +8,25 @@
 // mu2e
 #include "TrkReco/inc/RobustHelixFit2.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloRecoDigiFastCollection.hh"
+#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-//CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
-// boost
+
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include "boost_fix/accumulators/statistics.hpp"
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/median.hpp>
 #include <boost/accumulators/statistics/weighted_median.hpp>
-// root
+
 #include "TH1F.h"
-// C++
+
 #include <vector>
 #include <utility>
 #include <string>
 #include <math.h>
 #include <cmath>
-using CLHEP::Hep3Vector;
+
 using namespace std;
 using namespace boost::accumulators;
 
@@ -36,12 +34,12 @@ using namespace boost::accumulators;
 namespace {
   
   // struct for weighted positions
-  class WPos : public Hep3Vector {
+  class WPos : public CLHEP::Hep3Vector {
     public :
-      WPos(Hep3Vector pos,double weight=1.0) : Hep3Vector(pos), _weight(weight) {}
+      WPos(CLHEP::Hep3Vector pos,double weight=1.0) : CLHEP::Hep3Vector(pos), _weight(weight) {}
       double weight() const { return _weight; }
     private :
-      Hep3Vector _pos; //position
+      CLHEP::Hep3Vector _pos; //position
       double _weight; // weight for this position
   };
 
@@ -107,31 +105,28 @@ namespace mu2e
   {}
 
 
-
-  void RobustHelixFit2::fitHelix(HelixSeed& hseed, const CaloRecoDigiFastCollection& caloDigis)
+  void RobustHelixFit2::fitHelix(HelixSeed& hseed, const CaloClusterCollection* caloClusters)
   {
-     // reset the fit status flags, in case this is called iteratively
-     hseed._status.clear(TrkFitFlag::helixOK);      
+    hseed._status.clear(TrkFitFlag::helixOK);
 
-     fitCircle(hseed, caloDigis);
-     if(hseed._status.hasAnyProperty(TrkFitFlag::circleOK))
-     {
-        fitFZ(hseed);
-        if (goodHelix(hseed._helix)) hseed._status.merge(TrkFitFlag::helixOK);
-     }
+    fitCircle(hseed, caloClusters);
+    if (hseed._status.hasAnyProperty(TrkFitFlag::circleOK))
+    {
+      fitFZ(hseed);
+      if (goodHelix(hseed._helix)) hseed._status.merge(TrkFitFlag::helixOK);
+    }
   }
-
-
-  void RobustHelixFit2::fitCircle(HelixSeed& hseed, const CaloRecoDigiFastCollection& caloDigis)
+  
+  void RobustHelixFit2::fitCircle(HelixSeed& hseed, const CaloClusterCollection* caloClusters)
   {
      hseed._status.clear(TrkFitFlag::circleOK);
      switch ( _cfit )
      {
         case median : default :
-	  fitCircleMedian(hseed, caloDigis);
+	  fitCircleMedian(hseed, caloClusters);
 	  break;
         case AGE :
-	  fitCircleAGE(hseed, caloDigis);
+	  fitCircleAGE(hseed, caloClusters);
 	  break;
         case chisq :
 	  throw cet::exception("Reco") << "mu2e::RobustHelixFit2: Chisq fit not yet implemented " << std::endl;
@@ -139,12 +134,12 @@ namespace mu2e
      }
   }
 
-  void RobustHelixFit2::fitCircleAGE(HelixSeed& hseed, const CaloRecoDigiFastCollection& caloDigis) 
+  void RobustHelixFit2::fitCircleAGE(HelixSeed& hseed, const CaloClusterCollection* caloClusters) 
   {
     // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
     // This algorithm requires a reasonable initial estimate: use the median fit
     // this algorithm needs extension to use the calorimeter cluster position FIXME!
-    if (!hseed._status.hasAllProperties(TrkFitFlag::circleInit)) fitCircleMedian(hseed, caloDigis);
+    if (!hseed._status.hasAllProperties(TrkFitFlag::circleInit)) fitCircleMedian(hseed, caloClusters);
     
     if (hseed._status.hasAllProperties(TrkFitFlag::circleInit))
     {
@@ -152,14 +147,14 @@ namespace mu2e
 
       unsigned niter(0);
       double age;
-      Hep3Vector center = rhel.center();
+      CLHEP::Hep3Vector center = rhel.center();
       double rmed = rhel.radius();
       // initialize step
       double lambda = _lambda0;
       // find median and AGE for the initial center
       findAGE(hseed,center,rmed,age);
       // loop while step is large
-      Hep3Vector descent(1.0,0.0,0.0);
+      CLHEP::Hep3Vector descent(1.0,0.0,0.0);
       while(lambda*descent.mag() > _minlambda && niter < _maxniter)
       {
 	// fill the sums for computing the descent vector
@@ -173,10 +168,10 @@ namespace mu2e
 	  dx += (sums._sco < sums._sci) ? -sums._scc : sums._scc;
 	if(fabs(dy) < sums._ssc)
 	  dy += (sums._sso < sums._ssi) ? -sums._ssc : sums._ssc;
-	descent = Hep3Vector(dx,dy,0.0);
+	descent = CLHEP::Hep3Vector(dx,dy,0.0);
 	// compute error function, decreasing lambda until this is better than the previous
 	double agenew;
-	Hep3Vector cnew = center + lambda*descent;
+	CLHEP::Hep3Vector cnew = center + lambda*descent;
 	findAGE(hseed,cnew,rmed,agenew);
 	// if we've improved, increase the step size and iterate
 	if(agenew < age){
@@ -229,7 +224,7 @@ namespace mu2e
   }
 
 
-  void RobustHelixFit2::forceTargetInter(Hep3Vector& center, double& radius)
+  void RobustHelixFit2::forceTargetInter(CLHEP::Hep3Vector& center, double& radius)
   {    
      double rperigee = center.perp()-radius;    
      if (fabs(rperigee) > _targetradius)
@@ -244,7 +239,7 @@ namespace mu2e
         radius += dr;
 
         // direction radially outwards from origin to the center, the center moves opposite the radius
-        Hep3Vector pdir = Hep3Vector(center.x(),center.y(),0.0).unit();
+        CLHEP::Hep3Vector pdir = CLHEP::Hep3Vector(center.x(),center.y(),0.0).unit();
         center -= dr*pdir;
      }
   }
@@ -401,13 +396,11 @@ namespace mu2e
 
 
   // simple median fit.  No initialization required
-  void RobustHelixFit2::fitCircleMedian(HelixSeed& hseed, const CaloRecoDigiFastCollection& caloDigis) 
+  void RobustHelixFit2::fitCircleMedian(HelixSeed& hseed, const CaloClusterCollection* caloClusters) 
   {
-     //CBE put that in the constructor    
      const double mind2 = _mindist*_mindist;
      const double maxd2 = _maxdist*_maxdist;
-   
-   
+      
      HelixHitCollection& hhits = hseed._hhits;
      RobustHelix& rhel         = hseed._helix;
      accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > accx, accy, accr;
@@ -419,8 +412,8 @@ namespace mu2e
      pos.reserve(hhits.size()+1);
 
      //get the calorimeter hit first
-     int icIdx = hseed.timeCluster()->caloFastIdx();
-     CLHEP::Hep3Vector caloPos(caloDigis[icIdx].pos().x(),caloDigis[icIdx].pos().y(),0);
+     //int icIdx = hseed.timeCluster()->caloFastIdx();
+     //CLHEP::Hep3Vector caloPos(caloClusters->at(icIdx).pos().x(),caloClusters->at(icIdx).pos().y(),0);
      //pos.push_back(WPos(caloPos.perpPart(),_ccwt));
 
 
@@ -429,19 +422,15 @@ namespace mu2e
          if (use(hhit) && (stereo(hhit) || (!_stereoinit)) )        	                
                pos.push_back(WPos(hhit._pos.perpPart(),hitWeight(hhit)));        
 
-
      
-     //if ( _usecc && hseed.caloCluster().isNonnull())
-     //{
-     //   mu2e::GeomHandle<mu2e::Calorimeter> ch;
-     //   const Calorimeter* calo = ch.get();
-     //   // cluster position in detector coordinates
-     //   Hep3Vector cog = calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector()));
-     //   pos.push_back(WPos(cog.perpPart(),_ccwt));
-     //}
+     if ( _usecc && hseed.caloCluster().isNonnull())
+     {
+        mu2e::GeomHandle<mu2e::Calorimeter> ch;
+        const Calorimeter* calo = ch.get();
+        CLHEP::Hep3Vector cog = calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector()));
+        pos.push_back(WPos(cog.perpPart(),_ccwt));
+     }
 
-
-     // CBE Obviously replace the first point by the calo cluster if available -> turns out limited gain
      if (pos.size()<3) return;
 
      // loop over all triples
@@ -529,7 +518,7 @@ namespace mu2e
 
 
 
-  void RobustHelixFit2::findAGE(HelixSeed const& hseed, Hep3Vector const& center,double& rmed, double& age)
+  void RobustHelixFit2::findAGE(HelixSeed const& hseed, CLHEP::Hep3Vector const& center,double& rmed, double& age)
   {     
       const HelixHitCollection& hhits = hseed._hhits;
 
@@ -541,7 +530,7 @@ namespace mu2e
          if(use(hhit))
          {
 	    // find radial information for this point
-	    double rad = Hep3Vector(hhit._pos - center).perp();
+	    double rad = CLHEP::Hep3Vector(hhit._pos - center).perp();
 	    double wt = hitWeight(hhit);
 	    radii.push_back(make_pair(rad,wt));
 	    wtot += wt;
@@ -553,8 +542,8 @@ namespace mu2e
       {
           mu2e::GeomHandle<mu2e::Calorimeter> ch;
           const Calorimeter* calo = ch.get();
-          Hep3Vector cog = calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector()));
-          double rad = Hep3Vector(cog - center).perp();
+          CLHEP::Hep3Vector cog = calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector()));
+          double rad = CLHEP::Hep3Vector(cog - center).perp();
           radii.push_back(make_pair(rad,_ccwt));
       }
 
@@ -578,7 +567,7 @@ namespace mu2e
   }
 
 
-  void RobustHelixFit2::fillSums(HelixSeed const& hseed, Hep3Vector const& center,double rmed,AGESums& sums)
+  void RobustHelixFit2::fillSums(HelixSeed const& hseed, CLHEP::Hep3Vector const& center,double rmed, AGESums& sums)
   {    
      HelixHitCollection const& hhits = hseed._hhits;
      sums.clear();
@@ -589,7 +578,7 @@ namespace mu2e
 
          if (!use(hhit)) continue;
 	 // find radial information for this point
-	 double rad = Hep3Vector(hhit._pos - center).perp();
+	 double rad = CLHEP::Hep3Vector(hhit._pos - center).perp();
 	 double wt = hitWeight(hhit);
 	 // now x,y projections
 	 double pcos = (hhit._pos.x()-center.x())/rad;
@@ -630,13 +619,13 @@ namespace mu2e
      return dphi;
   }
 
-  bool RobustHelixFit2::use(HelixHit const& hhit) const 
+  bool RobustHelixFit2::use(const HelixHit& hhit) const 
   {
      return (!hhit._flag.hasAnyProperty(_dontuseflag))
       && (hhit._flag.hasAllProperties(_useflag) || _useflag.empty());
   }
 
-  bool RobustHelixFit2::stereo(HelixHit const& hhit) const 
+  bool RobustHelixFit2::stereo(const HelixHit& hhit) const 
   {
     static StrawHitFlag stereo(StrawHitFlag::stereo);
     return hhit._flag.hasAllProperties(stereo);
@@ -648,13 +637,13 @@ namespace mu2e
      hhit._flag.merge(outlier);
   }
 
-  void RobustHelixFit2::initPhi(HelixHit& hhit, RobustHelix const& rhel) const 
+  void RobustHelixFit2::initPhi(HelixHit& hhit, const RobustHelix& rhel) const 
   {
      // ray from the circle center to the point
-     hhit._phi = Hep3Vector(hhit._pos - rhel.center()).phi();
+     hhit._phi = CLHEP::Hep3Vector(hhit._pos - rhel.center()).phi();
   }
 
-  bool RobustHelixFit2::resolvePhi(HelixHit& hhit, RobustHelix const& rhel) const
+  bool RobustHelixFit2::resolvePhi(HelixHit& hhit, const RobustHelix& rhel) const
   {
      // find phi expected
      double phiex = rhel.circleAzimuth(hhit._pos.z());
@@ -666,22 +655,22 @@ namespace mu2e
      return nloop != 0;
   }
 
-  bool RobustHelixFit2::goodFZ(RobustHelix const& rhel)
+  bool RobustHelixFit2::goodFZ(const RobustHelix& rhel)
   {
      return rhel.lambda() > _lmin && rhel.lambda() < _lmax;
   }
 
-  bool RobustHelixFit2::goodCircle(RobustHelix const& rhel)
+  bool RobustHelixFit2::goodCircle(const RobustHelix& rhel)
   {
      return rhel.radius() > _rmin && rhel.radius() < _rmax;
   }
 
-  bool RobustHelixFit2::goodHelix(RobustHelix const& rhel)
+  bool RobustHelixFit2::goodHelix(const RobustHelix& rhel)
   {
      return goodCircle(rhel) && goodFZ(rhel) && rhel.helicity() == _helicity;
   }
 
-  double RobustHelixFit2::hitWeight(HelixHit const& hhit) const 
+  double RobustHelixFit2::hitWeight(const HelixHit& hhit) const 
   {
      double retval(1.0);
      if (hhit.flag().hasAnyProperty(StrawHitFlag::stereo)) retval = _stwt;

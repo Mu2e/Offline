@@ -48,7 +48,6 @@
 using namespace std; 
 using namespace boost::accumulators;
 using CLHEP::Hep3Vector;
-#include "/usr/include/valgrind/callgrind.h"
 
 
 
@@ -61,6 +60,17 @@ namespace {
       Double_t& _dphi;
       Double_t& _rho;
       TimePeakMVA() : _pars(3,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]) {}
+   };
+   
+   
+   struct meanAccumulator 
+   {
+      meanAccumulator(): sum(0),weight(0) {};
+      void add(double m, double w) {sum +=m*w; weight +=w;}
+      void remove(double m, double w) {sum -=m*w; weight -=w;}
+      double mean() {return weight>0 ? sum/weight : 0;}
+      double sum;
+      double weight;
    };
  
    
@@ -105,6 +115,7 @@ namespace mu2e {
         MVATools          _peakMVA; // MVA for peak cleaning
         TimePeakMVA       _pmva; // input variables to TMVA for peak cleaning
         TrkTimeCalculator _ttcalc;
+        int               _deltaNbins; 
 
         typedef std::pair<Float_t,int> BinContent;
 
@@ -139,7 +150,7 @@ namespace mu2e {
       _shTag	         (pset.get<art::InputTag>("StrawHitCollection","makeSH")),
       _shpTag	         (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
       _shfTag	         (pset.get<art::InputTag>("StrawHitFlagCollection","FlagBkgHits")),
-      _ccFastTag         (pset.get<art::InputTag>("caloClusterModuleLabel","MakeCaloCluster")),
+      _ccFastTag         (pset.get<art::InputTag>("caloClusterModuleLabel","CaloClusterFast")),
       _hsel	         (pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
       _hbkg              (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
       _maxdt             (pset.get<double>(  "DtMax",30.0)),
@@ -162,6 +173,7 @@ namespace mu2e {
     {    
         unsigned nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
         _timespec = TH1F("timespec","time spectrum",nbins,_tmin,_tmax);
+        _deltaNbins = int(_maxdt/_tbin)-1;
 
         produces<TimeClusterCollection>();
         produces<StrawHitFlagCollection>();
@@ -200,21 +212,14 @@ namespace mu2e {
        const StrawHitFlagCollection& shfcol(*strawHitFlagsHandle);
 
        if (_usecc && caloClusters==nullptr)
-          throw cet::exception("RECO")<<"mu2e::TimeClusterFinder2: No caloDigi collection but useCalorimeter flag set to true" << std::endl; 
+          throw cet::exception("RECO")<<"mu2e::TimeClusterFinder2: No caloCluster collection but useCalorimeter flag set to true" << std::endl; 
 
        std::unique_ptr<TimeClusterCollection> timeClusterColl(new TimeClusterCollection);
        std::unique_ptr<StrawHitFlagCollection> flagColl(new StrawHitFlagCollection(shfcol));
 
-
-
-      // CALLGRIND_START_INSTRUMENTATION;
        
        findClusters(*timeClusterColl,*flagColl,shcol,shpcol, shfcol, CaloClusterHandle, caloClusters);
        
-       ///CALLGRIND_STOP_INSTRUMENTATION;
-       //CALLGRIND_DUMP_STATS;
-
-
 
        if (_debug > 0) std::cout << "Found " << timeClusterColl->size() << " Time Clusters " << std::endl;
        for (auto tpc : *timeClusterColl)
@@ -360,31 +365,26 @@ namespace mu2e {
 
        std::vector<BinContent> bcv;
        int nbins = _timespec.GetNbinsX()+1;
-       std::vector<bool> used(nbins,false);
+       std::vector<bool> alreadyUsed(nbins,false);
 
        for (int ibin=1;ibin < nbins; ++ibin)
-         bcv.push_back(make_pair(_timespec.GetBinContent(ibin),ibin));
-       std::sort(bcv.begin(),bcv.end(),[](const BinContent & x, const BinContent &y){return x.first > y.first;});
+         if (_timespec.GetBinContent(ibin) >= _ymin) bcv.push_back(make_pair(_timespec.GetBinContent(ibin),ibin));
+       std::sort(bcv.begin(),bcv.end(),[](const BinContent& x, const BinContent& y){return x.first > y.first;});
 
        for (const auto& bc : bcv)
        {
-          if( bc.first >= _ymin && !used[bc.second])
-          {	
-	     double tctime(0.0);
-	     double norm(0.0);
-	     for (int ibin = std::max(1,bc.second-2);ibin < std::min(nbins,bc.second+3); ++ibin)
-             {
-	        if (fabs(_timespec.GetBinCenter(bc.second)-_timespec.GetBinCenter(ibin)) < _maxdt )
-                {
-	           norm += _timespec.GetBinContent(ibin);
-	           tctime += _timespec.GetBinCenter(ibin)*_timespec.GetBinContent(ibin);
-	           // mark these bins as used so they aren't found as separate peaks
-	           used[ibin] = true;
-	        }
-	     }
-	     tctime /= norm;  
-	     if (norm > _minnhits) tctimes.push_back(tctime);
-          }
+           if (alreadyUsed[bc.second]) continue;
+
+	   double tctime(0.0);
+	   double norm(0.0);
+	   for (int ibin = std::max(1,bc.second-_deltaNbins);ibin < std::min(nbins,bc.second+_deltaNbins+1); ++ibin)
+           {
+	       norm += _timespec.GetBinContent(ibin);
+	       tctime += _timespec.GetBinCenter(ibin)*_timespec.GetBinContent(ibin);
+               alreadyUsed[ibin] = true;
+	   }
+	   tctime /= norm;  
+	   if (norm > _minnhits) tctimes.push_back(tctime);
        }
     }
 
@@ -443,65 +443,68 @@ namespace mu2e {
     void TimeClusterFinder2::refineCluster(TimeCluster& tclust, const StrawHitCollection& shcol, 
                                            const StrawHitPositionCollection& shpcol)
     {
-
        double pphi(tclust._pos.phi());
        double ptime(tclust._t0.t0());              
+       meanAccumulator faccu,taccu;
+       
+
        
        if (_preFilter)
        {
-          /*
-          //preFilter all in one shot
-          std::vector<int> toremove;    
-          for (size_t ips=0; ips<tclust._strawHitIdxs.size(); ++ips)
-          {
-	     unsigned ish = tclust._strawHitIdxs[ips];
-	     double phi   = shpcol.at(ish).pos().phi(); 
-	     double dphi  = fabs(Angles::deltaPhi(phi,pphi));                
-             if (dphi > _maxdPhi) toremove.push_back(ips);
+           /*
+           //preFilter all in one shot
+           std::vector<int> toremove;    
+           for (size_t ips=0; ips<tclust._strawHitIdxs.size(); ++ips)
+           {
+	      unsigned ish = tclust._strawHitIdxs[ips];
+	      double phi   = shpcol.at(ish).pos().phi(); 
+	      double dphi  = fabs(Angles::deltaPhi(phi,pphi));                
+              if (dphi > _maxdPhi) toremove.push_back(ips);
+           }
+
+           for (auto irm=toremove.rbegin();irm!=toremove.rend();++irm)
+           {
+              std::swap(tclust._strawHitIdxs[*irm],tclust._strawHitIdxs.back());
+              tclust._strawHitIdxs.pop_back();
+           }
+
+           accumulator_set<double, stats<tag::mean > > facc;
+           for (size_t ips=0;ips<tclust._strawHitIdxs.size();++ips)
+           {
+	      unsigned ish = tclust._strawHitIdxs[ips];
+	      double   phi = shpcol.at(ish).pos().phi();
+	      Angles::deltaPhi(phi,pphi);
+	      facc(phi);
+           }
+           pphi  = extract_result<tag::mean>(facc); 
+           */
+
+           //prefilter one after another         
+           while (tclust._strawHitIdxs.size() >= _minnhits)
+           {                    
+               int iworst(-1);
+               double maxadPhi(0);
+               double maxdPhi(0),sumphi(0);
+
+               for (size_t ips=0; ips<tclust._strawHitIdxs.size(); ++ips)
+               {
+	          unsigned ish = tclust._strawHitIdxs[ips];
+	          double phi   = shpcol.at(ish).phi(); 
+	          double dphi  = Angles::deltaPhi(phi,pphi);
+	          double adphi = std::abs(dphi);
+                  sumphi += phi;
+
+                  if (adphi > maxadPhi) {iworst=ips; maxadPhi=adphi; maxdPhi=phi;}             
+               }
+
+               if (maxadPhi<_maxdPhi) break;
+
+               std::swap(tclust._strawHitIdxs[iworst],tclust._strawHitIdxs.back());
+	       tclust._strawHitIdxs.pop_back();      
+               pphi  = (sumphi-maxdPhi)/float(tclust._strawHitIdxs.size());
           }
-
-          for (auto irm=toremove.rbegin();irm!=toremove.rend();++irm)
-          {
-             std::swap(tclust._strawHitIdxs[*irm],tclust._strawHitIdxs.back());
-             tclust._strawHitIdxs.pop_back();
-          }
-
-          accumulator_set<double, stats<tag::mean > > facc;
-          for (size_t ips=0;ips<tclust._strawHitIdxs.size();++ips)
-          {
-	     unsigned ish = tclust._strawHitIdxs[ips];
-	     double   phi = shpcol.at(ish).pos().phi();
-	     Angles::deltaPhi(phi,pphi);
-	     facc(phi);
-          }
-          pphi  = extract_result<tag::mean>(facc); 
-          */
-          
-          //prefilter one after another         
-          while (tclust._strawHitIdxs.size() >= _minnhits)
-          {                    
-              int iworst(-1);
-              double maxadPhi(0);
-              double maxdPhi(0),sumphi(0);
-
-              for (size_t ips=0; ips<tclust._strawHitIdxs.size(); ++ips)
-              {
-	         unsigned ish = tclust._strawHitIdxs[ips];
-	         double phi   = shpcol.at(ish).phi(); 
-	         double dphi  = Angles::deltaPhi(phi,pphi);
-	         double adphi = std::abs(dphi);
-                 sumphi += phi; //do we want the recalculated phi here? 
-
-                 if (adphi > maxadPhi) {iworst=ips; maxadPhi=adphi; maxdPhi=phi;}             
-              }
-
-              if (maxadPhi<_maxdPhi) break;
-
-              std::swap(tclust._strawHitIdxs[iworst],tclust._strawHitIdxs.back());
-	      tclust._strawHitIdxs.pop_back();      
-              pphi  = (sumphi-maxdPhi)/float(tclust._strawHitIdxs.size());
-         }
        }
+
 
 
        while (tclust._strawHitIdxs.size() >= _minnhits)
@@ -527,31 +530,32 @@ namespace mu2e {
              {
 	        worstmva = mvaout;
 	        iworst = ips;
-	     }             
+	     }
           }
           
           if (worstmva > _minpeakmva) break;
 
-	  std::swap(tclust._strawHitIdxs[iworst],tclust._strawHitIdxs.back());
-	  tclust._strawHitIdxs.pop_back();      
-          
+          std::swap(tclust._strawHitIdxs[iworst],tclust._strawHitIdxs.back());
+          tclust._strawHitIdxs.pop_back();      
+	  
           // re-compute the average phi and range
           accumulator_set<double, stats<tag::mean > > facc;
           accumulator_set<double, stats<tag::weighted_mean >, double > tacc;
           for (size_t ips=0;ips<tclust._strawHitIdxs.size();++ips)
           {
-	     unsigned ish = tclust._strawHitIdxs[ips];
-	     double  time = _ttcalc.strawHitTime(shcol.at(ish),shpcol.at(ish));
-	     double    wt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
-	     double   phi = shpcol.at(ish).phi();
-	     Angles::deltaPhi(phi,pphi);
-	     tacc(time,weight=wt);
-	     facc(phi);
+            unsigned ish = tclust._strawHitIdxs[ips];
+            double  time = _ttcalc.strawHitTime(shcol.at(ish),shpcol.at(ish));
+            double    wt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
+            double   phi = shpcol.at(ish).phi();
+            Angles::deltaPhi(phi,pphi);
+            tacc(time,weight=wt);
+            facc(phi);
           }
           pphi  = extract_result<tag::mean>(facc);
           ptime = extract_result<tag::weighted_mean>(tacc);
        }
 
+       
        // final pass: hard cut on dt 
        std::vector<size_t> toremove;
        accumulator_set<double, stats<tag::mean > > facc;
@@ -568,12 +572,12 @@ namespace mu2e {
           Angles::deltaPhi(phi,pphi);
           if (fabs(dt) < _maxpeakdt)
           {
-	    terr(_ttcalc.strawHitTime(shcol.at(ish),shpcol.at(ish)),weight=wt);
-	    facc(phi);
-	    racc(rho);
-	    zacc(shpcol.at(ish).pos().z());
+	     terr(_ttcalc.strawHitTime(shcol.at(ish),shpcol.at(ish)),weight=wt);
+             facc(phi);
+	     racc(rho);
+	     zacc(shpcol.at(ish).pos().z());
           } else {
-	    toremove.push_back(ips);
+	     toremove.push_back(ips);
           }
        }
 
@@ -590,7 +594,7 @@ namespace mu2e {
        double zpos = extract_result<tag::mean>(zacc);
        tclust._pos = CLHEP::Hep3Vector(prho*cos(pphi),prho*sin(pphi),zpos);
 
-       if (_debug > 0) std::cout<<"final time "<<tclust._t0._t0<<std::endl;    
+       //if (_debug > 0) std::cout<<"final time "<<tclust._t0._t0<<std::endl;    
     }
 
     //--------------------------------------------------------------------------------------------------------------

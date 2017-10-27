@@ -21,6 +21,7 @@
 #include "GeneralUtilities/inc/Angles.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
 
+#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
@@ -56,12 +57,10 @@
 #include <functional>
 #include <float.h>
 #include <vector>
-#include <set>
 #include <map>
 
 using namespace std;
 using namespace boost::accumulators;
-#include "/usr/include/valgrind/callgrind.h"
 
 
 namespace {
@@ -126,7 +125,7 @@ namespace mu2e
     art::InputTag			_shfTag;
     art::InputTag			_tcTag;
     art::InputTag			_sthTag;
-    std::string                        _trackseed;
+    std::string                         _trackseed;
 
     StrawHitFlag  _hsel, _hbkg;
 
@@ -142,7 +141,7 @@ namespace mu2e
     bool              _trigMode;
     
     
-    void     findHelices(const CaloRecoDigiFastCollection& caloDigis,const StrawHitCollection& shcol,const StrawHitPositionCollection& shpcol, 
+    void     findHelices(const CaloClusterCollection* caloClusters,const StrawHitCollection& shcol,const StrawHitPositionCollection& shpcol, 
                          const StrawHitFlagCollection& shfcol,const StereoHitCollection& sthcol, const TimeClusterCollection& tccol, 
                          HelixSeedCollection& outseeds, art::Event& event);    
     void     prefilterHits(HelixSeed& hseed); 
@@ -153,7 +152,8 @@ namespace mu2e
     void     updateT0(HelixSeed& hseed, const StrawHitCollection& shcol,const StrawHitPositionCollection& shpcol);
     bool     updateStereo(HelixSeed& hseed, const StereoHitCollection& sthcol, const StrawHitCollection& shcol);
     unsigned hitCount(HelixSeed const& hseed);
-    void     fitHelix(HelixSeed& hseed, const StereoHitCollection& sthcol, const StrawHitCollection& shcol, const CaloRecoDigiFastCollection& caloDigis);
+    void     fitHelix(HelixSeed& hseed, const StereoHitCollection& sthcol, const StrawHitCollection& shcol, const CaloClusterCollection* caloClusters);
+    void     refitHelix(HelixSeed& hseed, const CaloClusterCollection* caloClusters);
 
   };
 
@@ -178,7 +178,7 @@ namespace mu2e
     _minrerr     (pset.get<double>("MinRadiusErr",20.0)), // mm
     _usemva      (pset.get<bool>("UseHitMVA",true)),
     _minmva      (pset.get<double> ("MinMVA",0.1)), // min MVA output to define an outlier
-    _ccFastTag	 (pset.get<art::InputTag>("CaloRecoDigiFast","CaloRecoFast")),
+    _ccFastTag	 (pset.get<art::InputTag>("CaloCluster","CaloClusterFast")),
     _shTag	 (pset.get<art::InputTag>("StrawHitCollection","makeSH")),
     _shpTag	 (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
     _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
@@ -186,7 +186,7 @@ namespace mu2e
     _sthTag	 (pset.get<art::InputTag>("StereoHitCollection","MakeStereoHits")),
     _trackseed   (pset.get<string>("HelixSeedCollectionLabel","TimeClusterFinder")),
     _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits")),
-    _hbkg        (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
+    _hbkg        (pset.get<std::vector<std::string> >("HitBackgroundBits",std::vector<std::string>{"Background"})),
     _stmva       (pset.get<fhicl::ParameterSet>("HelixStereoHitMVA",fhicl::ParameterSet())),
     _nsmva       (pset.get<fhicl::ParameterSet>("HelixNonStereoHitMVA",fhicl::ParameterSet())),
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit2",fhicl::ParameterSet())),
@@ -224,13 +224,11 @@ namespace mu2e
 
   void RobustHelixFinder2::produce(art::Event& event ) {
 
-//CALLGRIND_START_INSTRUMENTATION;
-
      _iev=event.id().event();
-  
-     art::Handle<CaloRecoDigiFastCollection> caloRecoDigiFastHandle;
-     event.getByLabel(_ccFastTag, caloRecoDigiFastHandle);
-     const CaloRecoDigiFastCollection& caloDigis(*caloRecoDigiFastHandle);
+       
+     const CaloClusterCollection* caloClusters(0);
+     art::Handle<CaloClusterCollection> CaloClusterHandle;
+     if (event.getByLabel(_ccFastTag, CaloClusterHandle)) caloClusters = CaloClusterHandle.product();
 
      art::Handle<StrawHitCollection> strawHitsHandle;
      event.getByLabel(_shTag,strawHitsHandle);
@@ -251,20 +249,18 @@ namespace mu2e
      art::Handle<TimeClusterCollection> timeClustersHandle;
      event.getByLabel(_tcTag,timeClustersHandle);
      const TimeClusterCollection& tccol(*timeClustersHandle);
+
          
      unique_ptr<HelixSeedCollection> outseeds(new HelixSeedCollection);
 
     
-     findHelices(caloDigis,shcol,shpcol,shfcol,sthcol,tccol,*outseeds,event);
-
-//CALLGRIND_STOP_INSTRUMENTATION;
-//CALLGRIND_DUMP_STATS;
+     findHelices(caloClusters,shcol,shpcol,shfcol,sthcol,tccol,*outseeds,event);
 
      event.put(std::move(outseeds));
   }
 
 
-  void RobustHelixFinder2::findHelices(const CaloRecoDigiFastCollection& caloDigis,const StrawHitCollection& shcol, 
+  void RobustHelixFinder2::findHelices(const CaloClusterCollection* caloClusters,const StrawHitCollection& shcol, 
                                        const StrawHitPositionCollection& shpcol, const StrawHitFlagCollection& shfcol,
                                        const StereoHitCollection& sthcol, const TimeClusterCollection& tccol, 
                                        HelixSeedCollection& outseeds, art::Event& event)
@@ -300,24 +296,28 @@ namespace mu2e
         unsigned niter(0);
         if (hitCount(hseed) >= _minnhit)
         {
-	   hseed._status.merge(TrkFitFlag::hitsOK);
-      	   fitHelix(hseed,sthcol,shcol,caloDigis);
+	    hseed._status.merge(TrkFitFlag::hitsOK);
+      	    fitHelix(hseed,sthcol,shcol,caloClusters);
 
-	   if (_usemva)
-           {	      	      
-              bool changed = true;
-	      while (hseed._status.hasAllProperties(TrkFitFlag::helixOK)  && niter < _maxniter && changed)
-              {
-	         fillMVA(hseed,shcol);
-	         changed = filterHitsMVA(hseed);
-                 if (!changed) break;
+	    if (_usemva)
+            {	      	      
+               bool changed = true;
+	       while (hseed._status.hasAllProperties(TrkFitFlag::helixOK)  && niter < _maxniter && changed)
+               {
+	          fillMVA(hseed,shcol);
+	          changed = filterHitsMVA(hseed);
+                  if (!changed) break;
 
-                 _hfit.fitHelix(hseed, caloDigis);	    
-                 //CBE Do we need to do that for the trigger ?
-	         updateT0(hseed,shcol,shpcol);
-	         ++niter;
-	      }	
-	   } 
+                  refitHelix(hseed, caloClusters);                 
+	          updateT0(hseed,shcol,shpcol);
+	          ++niter;
+	       }	
+               if (_diag > 0)_nitermva->Fill(niter);
+	    } 
+            else
+	    {
+	      if (_diag > 0) fillMVA(hseed);
+            }
          }
          
          if (_diag > 0)_nitermva->Fill(niter);  
@@ -506,7 +506,7 @@ namespace mu2e
 	      if (hhit._flag.hasAnyProperty(_outlier)) continue;
 	      accx(hhit._pos.x());
 	      accy(hhit._pos.y());
-	      nhit++;
+	      ++nhit;
           }
 
           double mx = extract_result<tag::median>(accx);
@@ -566,7 +566,7 @@ namespace mu2e
 
   void RobustHelixFinder2::fitHelix(HelixSeed& hseed, const StereoHitCollection& sthcol,  
                                     const StrawHitCollection& shcol, 
-                                    const CaloRecoDigiFastCollection& caloDigis)
+                                    const CaloClusterCollection* caloClusters)
   {    
      // iteratively fit the circle
      unsigned niter(0);
@@ -577,10 +577,10 @@ namespace mu2e
        unsigned xyniter(0),xychanged(0);            
        do
        {
-	  _hfit.fitCircle(hseed, caloDigis);
+	  _hfit.fitCircle(hseed, caloClusters);
 	  xychanged = filterCircleHits(hseed);
 	  ++xyniter;
-       }  while (hseed._status.hasAllProperties(TrkFitFlag::circleOK) && xyniter < _maxniter && xychanged > 1);
+       }  while (hseed._status.hasAllProperties(TrkFitFlag::circleOK) && xyniter < _maxniter && xychanged);
 
        // then fit phi-Z
        if (hseed._status.hasAnyProperty(TrkFitFlag::circleOK))
@@ -621,6 +621,21 @@ namespace mu2e
      {
         hseed._status.merge(TrkFitFlag::helixOK);
         if (niter < _maxniter) hseed._status.merge(TrkFitFlag::helixConverged);
+     }
+  }
+  
+
+  void RobustHelixFinder2::refitHelix(HelixSeed& hseed, const CaloClusterCollection* caloClusters)
+  {
+     // reset the fit status flags, in case this is called iteratively
+     hseed._status.clear(TrkFitFlag::helixOK);      
+
+     _hfit.fitCircle(hseed, caloClusters);
+     
+     if (hseed._status.hasAnyProperty(TrkFitFlag::circleOK))
+     {
+        _hfit.fitFZ(hseed);
+        if (_hfit.goodHelix(hseed._helix)) hseed._status.merge(TrkFitFlag::helixOK);
      }
   }
 

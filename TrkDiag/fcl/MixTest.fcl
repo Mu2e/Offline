@@ -103,5 +103,6 @@ physics.analyzers.HelixDiag.DiagLevel : 2
 physics.analyzers.HelixDiag.MonteCarloSelection : true
 physics.producers.TimeClusterFinder.printFrequency : 1
 
+physics.producers.makeSH.doMC : true
 physics.producers.makeSD.TimeOffsets.inputs : [ "protonTimeMap", "muonTimeMap" ] 
 #include "EventMixing/fcl/epilog.fcl"

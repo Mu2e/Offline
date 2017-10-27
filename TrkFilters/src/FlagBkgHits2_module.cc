@@ -56,7 +56,6 @@
 #include <numeric>
 
 using namespace boost::accumulators;
-#include "/usr/include/valgrind/callgrind.h"
 
 namespace mu2e 
 {
@@ -170,7 +169,6 @@ namespace mu2e
      unsigned iev=event.id().event();
      if(_debug > 0 && (iev%_printfreq)==0) std::cout<<"FlagBkgHits2: event="<<iev<<std::endl;
 
-//     CALLGRIND_START_INSTRUMENTATION;
 
      art::Handle<StrawHitCollection> strawHitsHandle;
      event.getByLabel(_shtag,strawHitsHandle);
@@ -218,10 +216,6 @@ namespace mu2e
 	     bkgfcol->at(chit.index()).merge(StrawHitFlag::isolated);      
      }
 
-
-
-//     CALLGRIND_STOP_INSTRUMENTATION;
-//     CALLGRIND_DUMP_STATS;
 
      event.put(std::move(bkgccol));
      event.put(std::move(bkgqcol));

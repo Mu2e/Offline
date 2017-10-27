@@ -20,7 +20,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-#include "/usr/include/valgrind/callgrind.h"
 
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -210,6 +209,8 @@ namespace mu2e {
          stax[station][jpnl].push_back(ish);      
      }
 
+
+    // should be able to rewrite the loop to avoid the loop on station and overlaps
     
     // loop over stations
     for (const StationPanels& pstax : stax)
@@ -239,7 +240,7 @@ namespace mu2e {
                 float de = std::min(1.0f,std::abs((sh1.energyDep() - sh2.energyDep())/(sh1.energyDep()+sh2.energyDep())));
                 if (de > _maxDE ) continue;
 
-//Could we cache the panel separation?
+
                 PanelId::isep sep = straw1.id().getPanelId().separation(straw2.id().getPanelId());
                 // hits are in the same station but not the same panel
                 if ( sep == PanelId::same || sep >= PanelId::apart) continue;

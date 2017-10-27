@@ -39,7 +39,7 @@
 
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "RecoDataProducts/inc/CaloRecoDigiFastCollection.hh"
+#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPosition.hh"
@@ -48,9 +48,6 @@
 #include <memory>
 
  
-//Notes: Main contributors: PeakFit process and Strawele, atan not negligible (fast implementation?)
-//       Is time prefiltering safe, i.e. dropping hits outside time window? 
-//       All uppercase or lowercase fcl parameters
 
 namespace mu2e {
 
@@ -84,7 +81,7 @@ namespace mu2e {
        int    diagLevel_;
       
        std::string strawDigis_;
-       std::string caloRecoDigiFastModuleLabel_;
+       std::string caloClusterModuleLabel_;
        fhicl::ParameterSet paramFit_;       
        
        std::unique_ptr<TrkChargeReco::PeakFit> pfit_;
@@ -113,7 +110,7 @@ namespace mu2e {
       printLevel_(pset.get<int>(     "printLevel",0)),
       diagLevel_(pset.get<int>(      "diagLevel",0)),
       strawDigis_(pset.get<std::string>("StrawDigis","makeSD")),
-      caloRecoDigiFastModuleLabel_(pset.get<std::string>("caloRecoDigiFastModuleLabel","CaloRecoFast")),
+      caloClusterModuleLabel_(pset.get<std::string>("caloClusterModuleLabel","CaloClusterFast")),
       paramFit_(pset.get<fhicl::ParameterSet>("PeakFitter",fhicl::ParameterSet())),
       hitDiag_()
   {
@@ -174,9 +171,9 @@ namespace mu2e {
       event.getByLabel(strawDigis_,strawdigisHandle);
       const StrawDigiCollection& strawdigis(*strawdigisHandle);
       
-      const CaloRecoDigiFastCollection* caloDigis(0);
-      art::Handle<CaloRecoDigiFastCollection> caloRecoDigiFastHandle;
-      if (event.getByLabel(caloRecoDigiFastModuleLabel_, caloRecoDigiFastHandle)) caloDigis = caloRecoDigiFastHandle.product();
+      const CaloClusterCollection* caloClusters(0);
+      art::Handle<CaloClusterCollection> caloClusterHandle;
+      if (event.getByLabel(caloClusterModuleLabel_, caloClusterHandle)) caloClusters = caloClusterHandle.product();
 
       const PtrStepPointMCVectorCollection* mcptrdigis(0);
       art::Handle<PtrStepPointMCVectorCollection> mcptrdigiH;
@@ -240,11 +237,11 @@ namespace mu2e {
 	     continue;
 
           //calorimeter filtering
-          if (usecc_ && caloDigis)
+          if (usecc_ && caloClusters)
           {
              bool outsideCaloTime(true);
-             for (const auto& digi : *caloDigis) 
-               if (std::abs(time-digi.time())<clusterDt_) {outsideCaloTime=false; break;}
+             for (const auto& cluster : *caloClusters) 
+               if (std::abs(time-cluster.time())<clusterDt_) {outsideCaloTime=false; break;}
              if (outsideCaloTime) continue;
           }
 	  
@@ -325,6 +322,8 @@ namespace mu2e {
       event.put(std::move(strawHitPositions));
       if (doMC_ && mcptrHits != 0) event.put(move(mcptrHits));
       if (doMC_ && mchits != 0)    event.put(move(mchits));
+
+
    }
 
 }

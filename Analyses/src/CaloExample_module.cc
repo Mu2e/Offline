@@ -51,7 +51,6 @@
 
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "RecoDataProducts/inc/CaloRecoDigiFastCollection.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -381,9 +380,6 @@ namespace mu2e {
       event.getByLabel(_trkPatRecModuleLabel, trksHandle);
       const KalRepPtrCollection& trks = *trksHandle;
       
-      const CaloRecoDigiFastCollection* caloDigis(0);
-      art::Handle<CaloRecoDigiFastCollection> caloRecoDigiFastHandle;
-      if (event.getByLabel("CaloRecoFast", caloRecoDigiFastHandle)) caloDigis = caloRecoDigiFastHandle.product();
 
       const double CrDensity = 4.9*(CLHEP::g/CLHEP::cm3);
       const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
@@ -401,7 +397,6 @@ namespace mu2e {
       }
 
  
-      if (caloDigis) for (const auto& digi : *caloDigis) _hcluEF->Fill(digi.energy());
 
 
 
