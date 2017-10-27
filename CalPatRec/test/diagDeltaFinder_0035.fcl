@@ -2,6 +2,7 @@
 
 #include "CalPatRec/test/testDeltaFinder.fcl"
 
+physics.producers.DeltaFinder.diagLevel            : 1
 physics.producers.DeltaFinder.maxElectronHitEnergy : 0.0035
 services.TFileService.fileName                     : "delta_finder_arpan_0035.root"
 

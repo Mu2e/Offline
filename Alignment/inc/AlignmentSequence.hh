@@ -27,7 +27,7 @@ namespace mu2e {
     AlignmentSequence( const AlignmentSequence& rhs ); // copy c-tor
 
     void addPair( IoV & interval, AlignmentObj& alignObj );
-    AlignmentObj getAlignment( double atTime );  // How do we want to handle invalid times?
+    AlignmentObj getAlignment( const unsigned long& atTime );  // How do we want to handle invalid times?
 
     unsigned int lastValidity() const  { return _lastValidity; }
     unsigned int size() const  { return _sequence.size(); }

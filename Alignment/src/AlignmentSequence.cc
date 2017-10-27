@@ -26,7 +26,7 @@ namespace mu2e {
 
   } // end of def of addPair
 
-  AlignmentObj AlignmentSequence::getAlignment( double aTime ) {
+  AlignmentObj AlignmentSequence::getAlignment( const unsigned long& aTime ) {
     if ( mu2e::IoV::isValid(aTime) ) {
       bool found = false;
       if ( _sequence[_lastValidity].first.contains(aTime)) {
