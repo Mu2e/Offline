@@ -94,7 +94,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // cache event/geometry objects
 //-----------------------------------------------------------------------------
-    const StrawHitCollection*           _shcol;
+    const StrawHitCollection*           _shcol ;
     const StrawHitFlagCollection*       _shfcol;
     const StrawHitPositionCollection*   _shpcol;
 
@@ -132,6 +132,8 @@ namespace mu2e {
 				 int Face2, const HitData_t* Hit2);
 
     void         connectSeeds      ();
+
+    int          recoverStation    (DeltaCandidate* Delta, int Station);
     int          recoverMissingHits();
 
     void         runDeltaFinder();
@@ -231,6 +233,9 @@ namespace mu2e {
 	  }
 	}	
       }
+
+      if ((ist == 6) || (ist == 13))  _data.stationUsed[ist] = 0;
+      else                            _data.stationUsed[ist] = 1;
     }
 //-----------------------------------------------------------------------------
 // it is enough to print that once
@@ -284,6 +289,81 @@ namespace mu2e {
   }
   
 //------------------------------------------------------------------------------
+// try to recover hits in a Station
+  // delta candidate doesn't have hits in this station, check all hits here
+  // when predicting time, use the same value of Z for both layers of a given face
+//-----------------------------------------------------------------------------
+  int DeltaFinder::recoverStation(DeltaCandidate* Delta, int Station) {
+
+    DeltaSeed*  new_seed (NULL);
+
+    for (int face=0; face<kNFaces; face++) {
+      double zface          = _data.oTracker[Station][face][0].z;
+      double predicted_time = Delta->PredictedTime(zface);
+
+      for (int ip=0; ip<kNPanelsPerFace; ip++) {
+	PanelZ_t* panelz = &_data.oTracker[Station][face][ip];
+	double dphi      = Delta->phi-panelz->phi;
+	if (dphi < -M_PI) dphi += 2*M_PI;
+	if (dphi >  M_PI) dphi -= 2*M_PI;
+	if (fabs(dphi) < M_PI/3) {
+	  //-----------------------------------------------------------------------------
+	  // panel and seed overlap in phi, loop over hits
+	  //-----------------------------------------------------------------------------
+	  for (int l=0; l<2; ++l) {
+	    int nhits = panelz->fHitData[l].size();
+	    for (int h=0; h<nhits; ++h) {
+	      const HitData_t* hd = &panelz->fHitData[l][h];
+	      const StrawHit* sh  = hd->fHit;
+	      if (sh->energyDep() > _maxElectronHitEnergy) continue;
+	      double dt = sh->time()-predicted_time;
+	      if (fabs(dt) > _maxDt)                       continue;
+		  
+	      double dx = hd->fPos->pos().x()-Delta->CofM.x();
+	      double dy = hd->fPos->pos().y()-Delta->CofM.y();
+		  
+	      double dw = dx*panelz->wx+dy*panelz->wy; // distance along the wire
+		  
+	      double dxx = dx-panelz->wx*dw;
+	      double dyy = dy-panelz->wy*dw;
+		  
+	      double chi2_par  = (dw*dw)/(hd->fSigW*hd->fSigW);
+	      double chi2_perp = (dxx*dxx+dyy*dyy)/(_sigmaR*_sigmaR);
+	      double chi2      = chi2_par + chi2_perp;
+		  
+	      if (chi2 >= _maxChi2Radial)          continue;
+	      //-----------------------------------------------------------------------------
+	      // add hit
+	      //-----------------------------------------------------------------------------
+	      if (new_seed == NULL) new_seed = new DeltaSeed();
+
+	      new_seed->panelz[face] = panelz;
+	      new_seed->fNHitsTot += 1;
+	      if (sh->time() < new_seed->fMinTime) new_seed->fMinTime = sh->time();
+	      if (sh->time() > new_seed->fMaxTime) new_seed->fMaxTime = sh->time();
+	      new_seed->hitlist[face].push_back(hd);
+	    }
+	  }
+	}
+      }
+      if (new_seed) new_seed->fFaceProcessed[face] = 1;
+    }
+    //-----------------------------------------------------------------------------
+    // station is processed, see if anything has been found
+    //-----------------------------------------------------------------------------
+    if (new_seed) {
+      new_seed->fNumber = _data.seedHolder[Station].size();
+      _data.seedHolder[Station].push_back(new_seed);
+      Delta->seed[Station] = new_seed;
+      Delta->fNHits += new_seed->fNHitsTot;
+      new_seed = NULL;
+      if (Station < Delta->fFirstStation) Delta->fFirstStation = Station;
+      if (Station > Delta->fLastStation ) Delta->fLastStation  = Station;
+    }
+
+    return 0;
+  }
+//------------------------------------------------------------------------------
 // start from looking at the "holes" in the seed pattern
 // delta candidates in the list are already required to have at least 2 segments
 // extend them outwards by one station
@@ -291,87 +371,45 @@ namespace mu2e {
   int DeltaFinder::recoverMissingHits() {
 
     int ndelta = _data.deltaCandidateHolder.size();
-    for (int i=0; i<ndelta; i++) {
-      DeltaCandidate* dc = &_data.deltaCandidateHolder[i];
+    for (int idelta=0; idelta<ndelta; idelta++) {
+      DeltaCandidate* dc = &_data.deltaCandidateHolder[idelta];
       //-----------------------------------------------------------------------------
       // don't extend seeds made out of one segment
       //-----------------------------------------------------------------------------
-      double dc_phi = dc->CofM.phi();
-      int s1 = dc->fFirstStation-1;
-      if (s1 < 0) s1 = 0;
-      int s2 = dc->fLastStation+1;
-      if (s2 >= kNStations) s2 = kNStations-1;
+      int s1 = dc->fFirstStation+1;
+      int s2 = dc->fLastStation-1;
+      //-----------------------------------------------------------------------------
+      // first check inside "holes"
+      //-----------------------------------------------------------------------------
+      for (int i=s1; i<=s2; i++) {
+	if (dc->seed[i] != NULL) continue;
+	recoverStation(dc,i);
+      }
 
-      for (int ist=s1; ist<=s2; ist++) {
-	if (dc->seed[ist] != NULL) continue;
+      s1 = dc->fFirstStation-1;
+      for (int i=s1; i>=0; i--) {
 	//-----------------------------------------------------------------------------
-	// delta candidate doesn't have hits in this station, check all hits here
-	// when predicting time, use the same value of Z for both layers
+	// skip empty stations
 	//-----------------------------------------------------------------------------
-	DeltaSeed*  new_seed (NULL);
-	for (int face=0; face<kNFaces; face++) {
-	  double zface          = _data.oTracker[ist][face][0].z;
-	  double predicted_time = dc->PredictedTime(zface);
+	if (_data.stationUsed[i] == 0) continue;
+	//-----------------------------------------------------------------------------
+	// so far, do not allow holes while extending 
+	//-----------------------------------------------------------------------------
+	recoverStation(dc,i);
+	if (dc->fFirstStation != i) break;
+      }
 
-	  for (int ip=0; ip<kNPanelsPerFace; ip++) {
-	    PanelZ_t* panelz = &_data.oTracker[ist][face][ip];
-	    double dphi      = dc_phi-panelz->phi;
-	    if (dphi < -M_PI) dphi += 2*M_PI;
-	    if (dphi >  M_PI) dphi -= 2*M_PI;
-	    if (fabs(dphi) < M_PI/3) {
-	      //-----------------------------------------------------------------------------
-	      // panel and seed overlap in phi, loop over hits
-	      //-----------------------------------------------------------------------------
-	      for (int l=0; l<2; ++l) {
-		int nhits = panelz->fHitData[l].size();
-		for (int h=0; h<nhits; ++h) {
-		  const HitData_t* hd = &panelz->fHitData[l][h];
-		  const StrawHit* sh  = hd->fHit;
-		  if (sh->energyDep() > _maxElectronHitEnergy) continue;
-		  double dt = sh->time()-predicted_time;
-		  if (fabs(dt) > _maxDt)                       continue;
-		  
-		  double dx = hd->fPos->pos().x()-dc->CofM.x();
-		  double dy = hd->fPos->pos().y()-dc->CofM.y();
-		  
-		  double dw = dx*panelz->wx+dy*panelz->wy; // distance along the wire
-		  
-		  double dxx = dx-panelz->wx*dw;
-		  double dyy = dy-panelz->wy*dw;
-		  
-		  double chi2_par  = (dw*dw)/(hd->fSigW*hd->fSigW);
-		  double chi2_perp = (dxx*dxx+dyy*dyy)/(_sigmaR*_sigmaR);
-		  double chi2      = chi2_par + chi2_perp;
-		  
-		  if (chi2 >= _maxChi2Radial)          continue;
-		  //-----------------------------------------------------------------------------
-		  // add hit
-		  //-----------------------------------------------------------------------------
-		  if (new_seed == NULL) new_seed = new DeltaSeed();
-
-		  new_seed->panelz[face] = panelz;
-		  new_seed->fNHitsTot += 1;
-		  if (sh->time() < new_seed->fMinTime) new_seed->fMinTime = sh->time();
-		  if (sh->time() > new_seed->fMaxTime) new_seed->fMaxTime = sh->time();
-		  new_seed->hitlist[face].push_back(hd);
-		}
-	      }
-	    }
-	  }
-	  if (new_seed) new_seed->fFaceProcessed[face] = 1;
-	}
+      s1 = dc->fLastStation+1;
+      for (int i=s1; i<kNStations; i++) {
 	//-----------------------------------------------------------------------------
-	// station is processed, see if anything has been found
+	// skip empty stations
 	//-----------------------------------------------------------------------------
-	if (new_seed) {
-	  new_seed->fNumber = _data.seedHolder[ist].size();
-	  _data.seedHolder[ist].push_back(new_seed);
-	  dc->seed[ist] = new_seed;
-	  dc->fNHits += new_seed->fNHitsTot;
-	  new_seed = NULL;
-	  if (ist < dc->fFirstStation) dc->fFirstStation = ist;
-	  if (ist > dc->fLastStation ) dc->fLastStation  = ist;
-	}
+	if (_data.stationUsed[i] == 0) continue;
+	//-----------------------------------------------------------------------------
+	// so far, do not allow holes while extending 
+	//-----------------------------------------------------------------------------
+	recoverStation(dc,i);
+	if (dc->fLastStation != i) break;
       }
     }
 
@@ -1242,6 +1280,7 @@ namespace mu2e {
 	    if (delta.seed[i] != NULL) delta.seed[i]->used = true;
 	  }
 	  delta.fNumber = _data.deltaCandidateHolder.size();
+	  delta.phi     = delta.CofM.phi();                  // calculate just once
 	  _data.deltaCandidateHolder.push_back(delta);
 	}
       }

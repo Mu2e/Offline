@@ -172,6 +172,7 @@ namespace mu2e {
       bool                  st_used[kNStations];
       float                 dxy    [kNStations];
       CLHEP::Hep3Vector     CofM;
+      float                 phi;
       int                   n_seeds;
       int                   fFirstStation;
       int                   fLastStation;
@@ -208,6 +209,7 @@ namespace mu2e {
       std::vector<DeltaSeed*>      seedHolder [kNStations];
       std::vector<DeltaCandidate>  deltaCandidateHolder;
       PanelZ_t                     oTracker[kNStations][kNFaces][kNPanelsPerFace];
+      int                          stationUsed[kNStations];
       int                          nseeds;
       int                          nseeds_per_station[kNStations];
       const StrawHitCollection*    shcol;
