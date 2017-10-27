@@ -63,12 +63,16 @@ physics: {
 	    diagLevel                     : 1
 	    diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
 		mcDiag                        : true
-		debugLevel                    : 1     #### 1
 		printElectrons                : 1
+		printElectronsMinMom          :  0.
+		printElectronsMaxMom          : 20.
+		printElectronsMinNHits        : 30
+		printElectronsMaxFReco        : 0.5
+
 		printDeltaSeeds               : 1
 		printDeltaCandidates          : 1
 		printOTracker                 : 1
-		printElectronsMinMom          : 0.
+		printShcol                    : 0
 	    }
 	}
 

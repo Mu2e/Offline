@@ -426,6 +426,7 @@ namespace mu2e {
     _data.event  = &Event;
 
     _data.nseeds = 0;
+    _data.debugLevel = _debugLevel;
     
     for (int is=0; is<kNStations; is++) {
       _data.nseeds_per_station[is] = 0;
@@ -686,14 +687,7 @@ namespace mu2e {
     
     Intersection_t     res;
 
-    struct WD_t {
-      const HitData_t* hd;
-      float            dr;
-      
-      WD_t(HitData_t* Hd, float Dr) { hd = Hd; dr = Dr; }
-    };
-    
-    vector<WD_t>         hits;
+    vector<HitData_t*> hits;
 
     const HitData_t* hd1 = Seed->HitData(Face,0);
     const Straw* straw1  = hd1->fStraw;
@@ -707,9 +701,8 @@ namespace mu2e {
 	if (hd == hd1) continue ;
 	const StrawHit* sh = hd->fHit;
 	if ((sh->time()-Seed->fMinTime > _maxDt) || (Seed->fMaxTime-sh->time() > _maxDt)) continue;
-	float rad          = hd->fStraw->getMidPoint().perp();
-	float dr           = fabs(rad-minrad);
-	hits.push_back(WD_t(hd,dr));
+	hd->fDr        = fabs(hd->fRMid-minrad);
+	hits.push_back(hd);
       }
     }
     //-----------------------------------------------------------------------------
@@ -719,18 +712,13 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     int nhits = hits.size();
     for (int i=0; i<nhits-1; i++) {
-      WD_t* hi = &hits[i];
+     HitData_t** hi = &hits[i];
       for (int j=i+1; j<nhits; j++) {
-	WD_t* hj = &hits[j];
-	if (hi->dr >= hj->dr) {
-	  float            dri = hi->dr;
-	  const HitData_t* hdi = hi->hd;
-	  
-	  hi->dr = hj->dr;
-	  hi->hd = hj->hd;
-
-	  hj->hd = hdi;
-	  hj->dr = dri;
+	HitData_t** hj = &hits[j];
+	if ((*hi)->fDr >= (*hj)->fDr) {
+	  HitData_t** h = hi;
+	  *hi = (*hj);
+	  *hj = *h;
 	}
       }
     }
@@ -741,8 +729,8 @@ namespace mu2e {
     const HitData_t* hd2 = Seed->HitData(Face2,0);
 
     for (int i=0; i<nhits; i++) {
-      const HitData_t* hd = hits[i].hd;
-      float rad     = hd->fStraw->getMidPoint().perp();
+      const HitData_t* hd = hits[i];
+      float rad     = hd->fRMid;
       if ((minrad-rad > 10) || (rad-maxrad > 10) ) continue;
 //-----------------------------------------------------------------------------
 // radially we're OK, check distance from the intersection
@@ -750,10 +738,8 @@ namespace mu2e {
       CLHEP::Hep3Vector pos;
       findIntersection(hd, hd2, &res);
 
-      //      const StrawHitPosition* shp = hd->fPos;      
       float chi = res.wd1/hd->fSigW;
 
-      //      float chi2 = (dxy/(shp->posRes(StrawHitPosition::wire)))*(dxy/(shp->posRes(StrawHitPosition::wire)));
       if (chi*chi < _maxChi2Neighbor) {
 //-----------------------------------------------------------------------------
 // OK along the wire, add hit as a neighbor

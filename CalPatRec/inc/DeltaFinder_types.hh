@@ -40,9 +40,19 @@ namespace mu2e {
       int                     fNSecondHits;
       float                   fChi2Min;
       float                   fSigW;     // cached resolution along the wire
+      float                   fRMid;
+      float                   fDr;	// work variable
 
       HitData_t(const StrawHit* Hit, const StrawHitPosition* Pos, const Straw* aStraw, float SigW) {
-	fHit = Hit; fPos = Pos; fStraw = aStraw; fChi2Min = 1.1e10; fSigW = SigW; fSeedNumber = -1; fNSecondHits = -1;
+	fHit         = Hit; 
+	fPos         = Pos; 
+	fStraw       = aStraw; 
+	fChi2Min     = 1.1e10; 
+	fSigW        = SigW; 
+	fSeedNumber  = -1; 
+	fNSecondHits = -1;
+	fRMid        = fStraw->getMidPoint().perp();
+	fDr          = 1.1e10;
       }
 
       int Used() { return (fChi2Min < 1.e10) ; }
@@ -67,10 +77,12 @@ namespace mu2e {
       std::vector<const StrawHit*> fListOfHits;
       int                          fFirstStation;
       int                          fLastStation;
-      int                          fID;	          // SimParticle::id().asInt()
+      int                          fID;	           // SimParticle::id().asInt()
       int                          fPdgID;
-      int                          fNHitsDelta;	// number of hits associated with reconstructed delta electrons
+      int                          fNHitsDelta;	   // number of hits associated with reconstructed delta electrons
       float                        fTime;
+      float                        fHitTMin;          // min and max times of the straw hits
+      float                        fHitTMax;
       float                        fStartMom;
 
       McPart_t(const SimParticle* Sim = NULL) { 
@@ -83,14 +95,17 @@ namespace mu2e {
 	fLastStation  = -1;
 	fStartMom     = -1;
 	fTime         = 1.e6; 		// at initialization, make it absurd
+	fHitTMin      = 1.e6;
+	fHitTMax      = -1.e6;
       }
 
       ~McPart_t() { fListOfHits.clear(); }
 
       int NHits() { return fListOfHits.size(); }
 
-      float Momentum() { return fStartMom; }
-      float Time    () { return fTime; }
+      float Momentum () { return fStartMom; }
+      float Time     () { return fTime; }
+      float HitDt    () { return fHitTMax-fHitTMin; }
     }; 
 //
     class DeltaSeed {

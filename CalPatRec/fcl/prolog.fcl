@@ -362,9 +362,11 @@ CalPatRec : { @table::CalPatRec
 		printElectronsMinNHits    : 0
 		printElectronsMaxFReco    : 1.1                   # if print, then print all
 		printElectronsMinMom      : 0                     # by default, print all
+		printElectronsMaxMom      : 500.                  # in MeV/c, by default, print all
 		printDeltaSeeds           : 0
 		printDeltaCandidates      : 0
 		printOTracker             : 0                     #
+		printShcol                : 0                     #
 		testOrder                 : 0                     #
 		mcUtils                   : { tool_type : "CalPatRecMcUtils" }
 	    }

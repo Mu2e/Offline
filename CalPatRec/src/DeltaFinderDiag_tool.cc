@@ -64,6 +64,7 @@ namespace mu2e {
       TH1F*  fFractReco;
       TH1F*  fMaxSeg;
       TH2F*  fFractRecoVsNHits;
+      TH1F*  fHitDt;
     };
 
     struct EventHist_t {
@@ -96,13 +97,14 @@ namespace mu2e {
     int                                   _printElectronsMinNHits;
     float                                 _printElectronsMaxFReco;
     float                                 _printElectronsMinMom;
+    float                                 _printElectronsMaxMom;
     int                                   _printDeltaSeeds;
     int                                   _printDeltaCandidates;
+    int                                   _printShcol;
 
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
 
-    int                                   _firstCall;
-
+    int                                   _eventNumber;
     const PtrStepPointMCVectorCollection* _listOfMcStrawHits;
     int                                   _nDeltaHitsTot;
     int                                   _nDeltaHitsReco;
@@ -137,6 +139,7 @@ namespace mu2e {
     
     void        printStrawHit(const StrawHit* Sh, int Index);
     void        printOTracker();
+    void        printStrawHitCollection();
 //-----------------------------------------------------------------------------
 // overriden virtual functions of the base class
 //-----------------------------------------------------------------------------
@@ -160,11 +163,13 @@ namespace mu2e {
     _printElectronsMinNHits(PSet.get<int>          ("printElectronsMinNHits"       )),
     _printElectronsMaxFReco(PSet.get<float>        ("printElectronsMaxFReco"       )),
     _printElectronsMinMom  (PSet.get<float>        ("printElectronsMinMom"         )),
+    _printElectronsMaxMom  (PSet.get<float>        ("printElectronsMaxMom"         )),
     _printDeltaSeeds       (PSet.get<int>          ("printDeltaSeeds"              )),
-    _printDeltaCandidates  (PSet.get<int>          ("printDeltaCandidates"         ))
+    _printDeltaCandidates  (PSet.get<int>          ("printDeltaCandidates"         )),
+    _printShcol            (PSet.get<int>          ("printShcol"                   ))
   {
     printf(" DeltaFinderDiag::DeltaFinderDiag : HOORAY! \n");
-    _firstCall   =  1;
+    //    _firstCall   =  1;
     //    _timeOffsets = NULL;
 
     if (_mcDiag != 0) _mcUtils = art::make_tool<McUtilsToolBase>(PSet.get<fhicl::ParameterSet>("mcUtils"));
@@ -236,7 +241,8 @@ namespace mu2e {
     Hist->fNHits      = Dir->make<TH1F>("nhits", "N(hits)"         , 200, 0., 200.);
     Hist->fNHitsDelta = Dir->make<TH1F>("nhitsr", "N(hits reco)"   , 200, 0., 200.);
     Hist->fFractReco  = Dir->make<TH1F>("fractr", "NR/N"           , 100, 0.,   1.);
-    Hist->fMaxSeg     = Dir->make<TH1F>("max_seg", "Max N Segments", 20, 0., 20.);
+    Hist->fMaxSeg     = Dir->make<TH1F>("max_seg", "Max N Segments",  20, 0.,  20.);
+    Hist->fHitDt      = Dir->make<TH1F>("hit_dt" , "Hit TMax-TMin" , 100, 0., 200.);
 
     Hist->fFractRecoVsNHits = Dir->make<TH2F>("freco_vs_nhits", "F(Reco) vs nhits", 100, 0., 200.,100,0,1);
   }
@@ -447,6 +453,9 @@ namespace mu2e {
 
     int max_nseg = Mc->fLastStation-Mc->fFirstStation+1;
     Hist->fMaxSeg->Fill(max_nseg);
+
+    float dt = Mc->HitDt();
+    Hist->fHitDt->Fill(dt);
   }
 
 //-----------------------------------------------------------------------------
@@ -458,11 +467,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // start from precalculating MC-specific info
 //-----------------------------------------------------------------------------
+    int en = _data->event->event();
     if (_mcDiag) {
-      _listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
-
-      InitMcDiag();
-      associateMcTruth();
+      if (_eventNumber != en) {
+	  _eventNumber       = en;
+	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+	InitMcDiag();
+	associateMcTruth();
+      }
     }
 //-----------------------------------------------------------------------------
 // event histograms - just one set
@@ -539,22 +551,6 @@ namespace mu2e {
 		fillMcHistograms(_hist.fMc[6],mc);
 	      }
 	    }
-
-	    if (_data->debugLevel > 0) {
-//-----------------------------------------------------------------------------
-// a closer look at misreconstructed delta electrons
-//-----------------------------------------------------------------------------
-	      float fr = mc->fNHitsDelta/(mc->NHits()+1.e-3);
-
-	      if ((mc->Momentum() < 5) && (mc->Time() > 550) && (mc->NHits() > 40) && (fr < 0.5)) {
-		printf(" event: %6i missed delta: sim.id = %10i mom = %10.3f time= %9.3f nhits = %3i nhits(delta): %3i first: %2i last: %2i",
-		       _data->event->event(),
-		       mc->fID, mc->Momentum(), mc->Time(), 
-		       mc->NHits(), mc->fNHitsDelta, 
-		       mc->fFirstStation, mc->fLastStation);
-		printf(" fraction: %6.3f\n",fr);
-	      }
-	    }
 	  }
 
 	  if ((mc->Momentum() > 20) && (mc->Momentum() < 80)) {
@@ -618,7 +614,9 @@ namespace mu2e {
       if (station < mc->fFirstStation) mc->fFirstStation = station;
       if (station > mc->fLastStation ) mc->fLastStation  = station;
 
-      if (sh->time() < mc->fTime) mc->fTime = sh->time();
+      if (sh->time() < mc->fTime   ) mc->fTime    = sh->time();
+      if (sh->time() < mc->fHitTMin) mc->fHitTMin = sh->time();
+      if (sh->time() > mc->fHitTMax) mc->fHitTMax = sh->time();
 
       _list_of_mc_part_hit[ish] = mc;
     }
@@ -696,7 +694,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       int nh = mc->fListOfHits.size();
       for (int ih=0; ih<nh; ih++) {
-	const StrawHit* hit = mc->fListOfHits.at(ih);
+	const StrawHit* hit = mc->fListOfHits[ih];
 	int hit_is_found = 0;
 	for (int id=0; id<ndelta; id++) {
 	  DeltaCandidate* dc = &_data->deltaCandidateHolder.at(id);
@@ -807,15 +805,25 @@ namespace mu2e {
 // print DeltaSeeds - pieces of delta electrons reconstructed within one station
 //-----------------------------------------------------------------------------
     _data = (Data_t*) Data;
+
+    int en = _data->event->event();
+    if (_mcDiag) {
+      if (_eventNumber != en) {
+	_eventNumber       = en;
+	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+	InitMcDiag();
+	associateMcTruth();
+      }
+    }
     
     if (_printDeltaSeeds != 0) {
       for (int st=0; st<kNStations; ++st) {
 	int nseeds = _data->seedHolder[st].size();
 	printf("station: %2i N(seeds): %3i\n",st,nseeds);
 	if (nseeds > 0) {
-	  printf("------------------------------------------------------------------------------------------------------\n");
+	  printf("---------------------------------------------------------------------------------------------------------------------\n");
 	  printf("      st  i  good type   SHID:MCID(0)    SHID:MCID(1)       chi2  mintime maxtime   X        Y         Z    nfwh  nht\n");
-	  printf("------------------------------------------------------------------------------------------------------\n");
+	  printf("---------------------------------------------------------------------------------------------------------------------\n");
 	  for (int ps=0; ps<nseeds; ++ps) {
 	    DeltaSeed* seed = _data->seedHolder[st].at(ps);
 
@@ -907,8 +915,11 @@ namespace mu2e {
       for (int i=0; i<nmc; i++) {
 	McPart_t* mc = _list_of_mc_particles.at(i);
 
-	if ((mc->fPdgID    == 11                   ) && (mc->Time()   > 550                     ) && 
-	    (mc->Momentum() > _printElectronsMinMom) && (mc->NHits()  >= _printElectronsMinNHits)    ) {
+	if ((mc->fPdgID     == 11                     ) && 
+	    (mc->Time()     > 550                     ) && 
+	    (mc->Momentum() >  _printElectronsMinMom  ) && 
+	    (mc->Momentum() <  _printElectronsMaxMom  ) && 
+	    (mc->NHits()    >= _printElectronsMinNHits)    ) {
 
 	  float fr = mc->fNHitsDelta/(mc->NHits()+1.e-3);
 
@@ -942,6 +953,8 @@ namespace mu2e {
 
     if (_printOTracker > 0) printOTracker();
 
+    if (_printShcol) printStrawHitCollection();
+
     return 0;
   }
     
@@ -955,7 +968,7 @@ namespace mu2e {
       printf("           PDG         ID         p   \n");
       printf("--------------------------------------------------------------------------");
       printf("--------------------------------------\n");
-      return;
+      if (Index < 0) return;
     }
 
     const StrawHit* sh0 = &_data->shcol->at(0);
@@ -1015,6 +1028,21 @@ namespace mu2e {
     }
 
     printf(" nhits, nhitso : %6i %6i \n", (int) _data->shcol->size(),nhitso);
+  }
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+  void DeltaFinderDiag::printStrawHitCollection() {
+
+    int nsh = _data->shcol->size();
+    printf(" StrawHitCollection: nhits : %6i\n", nsh);
+
+    for (int i=0; i<nsh; i++) {
+      const StrawHit* sh = &_data->shcol->at(i);
+      printStrawHit(sh,i);
+    }
+
   }
 
 }
