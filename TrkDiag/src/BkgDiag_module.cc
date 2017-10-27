@@ -113,7 +113,7 @@ namespace mu2e
     _stTag(pset.get<string>("StereoHitCollectionTag","MakeStereoHits")),
     _bkgcTag(pset.get<string>("BackgroundClusterCollectionTag","FlagBkgHits")),
     _bkgqTag(pset.get<string>("BackgroundQualCollectionTag","FlagBkgHits")),
-    _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH")),
+    _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {}
 
@@ -312,9 +312,7 @@ namespace mu2e
     for(auto const& chit : bkgc.hits()){
       size_t ish = chit.index();
       StrawDigiMC const& mcdigi = _mcdigis->at(ish);
-      // use TDC channel 0 to define the MC match
-      StrawDigi::TDCChannel itdc = StrawDigi::zero;
-      if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+      StrawEnd itdc(TrkTypes::cal);
       art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       if(spp.isNonnull()){
@@ -405,8 +403,7 @@ namespace mu2e
       size_t ish = chit.index();
       StrawDigiMC const& mcdigi = _mcdigis->at(ish);
       // use TDC channel 0 to define the MC match
-      StrawDigi::TDCChannel itdc = StrawDigi::zero;
-      if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+      StrawEnd itdc(TrkTypes::cal);
       art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
 
@@ -460,8 +457,7 @@ namespace mu2e
     if(_mcdigis != 0) {
       StrawDigiMC const& mcdigi = _mcdigis->at(ish);
       // use TDC channel 0 to define the MC match
-      StrawDigi::TDCChannel itdc = StrawDigi::zero;
-      if(!mcdigi.hasTDC(StrawDigi::zero)) itdc = StrawDigi::one;
+      StrawEnd itdc(TrkTypes::cal);
       art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       shinfo._mct0 = _toff.timeWithOffsetsApplied(*spmcp);

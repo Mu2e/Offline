@@ -5,13 +5,14 @@
 //
 #ifndef TrkStrawHit_HH
 #define TrkStrawHit_HH
-// BaBar
+// BTrk
 #include "BTrk/BbrGeom/TrkLineTraj.hh"
 #include "BTrk/TrkBase/TrkDifPieceTraj.hh"
 #include "BTrk/TrkBase/TrkHit.hh"
 #include "BTrk/TrkBase/TrkT0.hh"
 // Mu2e
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 // CLHEP
@@ -28,55 +29,50 @@ namespace mu2e
   class TrkStrawHit : public TrkHit {
   public:
   // enum for hit flags
-    //    enum TrkStrawHitFlag {weededHit=-5, driftFail=-3, updateFail=-1,addedHit=3,unweededHit=4};
-    TrkStrawHit(const StrawHit& strawhit, const Straw& straw,unsigned istraw,
+    enum enduse { cal=TrkTypes::cal, hv = TrkTypes::hv, earliest, both};
+    TrkStrawHit(const StrawHit& strawhit, const Straw& straw,StrawHitIndex index,
 		const TrkT0& trkt0, double fltlen, double exterr, double maxdriftpull, 
 		double timeWeight, double mint0doca);
     virtual ~TrkStrawHit();
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
     virtual int ambig() const { return _iamb; }
+    enduse driftEnd() const { return _enduse; }
 //    virtual void invert();
     virtual void setAmbig(int newambig);
     void setAmbigUpdate(bool update) { _ambigupdate = update; }
-    unsigned index() const { return _istraw; } // index into StrawHit vector
+    StrawHitIndex index() const { return _index; } // index into StrawHit vector
     double hitRMS() const { return _t2d._rdrifterr;}
 // strawhit specific interface
     const StrawHit& strawHit() const { return _strawhit; }
     const Straw& straw() const { return _straw; }
-// correct the hit time for the wire propagation
-    double time() const;
+// the following function is DEPRECATED as the underlying function is now end specific
+    double time() const { return _strawhit.time(); }
+    double driftTime(StrawEnd end) const; // drift time for a specific end
+    double driftTime() const; // drift time for the current end strategy
+
     double driftRadius() const { return _t2d._rdrift;}
     double driftRadiusErr() const { return _t2d._rdrifterr;}
     double driftVelocity() const { return _t2d._vdrift; }
     double timeDiffDist() const { return _tddist; }
     double timeDiffDistErr() const { return _tddist_err; }
     const CLHEP::Hep3Vector& wirePosition() const { return _wpos; }
-    const CLHEP::Hep3Vector& wirePositionError() const { return _wpos_err; }
     void hitPosition(CLHEP::Hep3Vector& hpos) const;
-    //    HitT0 const& hitT0() const { return _hitt0;}
-    //    void updateHitT0(HitT0 const& t0) { _hitt0 = t0; }
     bool signalPropagationTime(double &propTime, double&Doca, 
 			       double resid, double &residErr, 
 			       CLHEP::Hep3Vector trajDirection);//propagation time
     void trackT0Time(double &htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
 
-    double signalTime() const { return _stime; } // time for signal to reach the end of the wire
-// external hit error (mm); the intrinsic error comes from the t2d calibration object
-//    double extErr() const { return _exterr; }
+    double signalTime(StrawEnd end=TrkTypes::cal) const { return _stime[end]; } // time for signal to reach the end of the wire
 // error to penalize mis-assigned ambiguity
     double penaltyErr() const { return _penerr; }
 // error ON RDrift and residual coming from hit t0 error
-//    double t0Err() const { return _hitt0._t0err*_t2d._vdrift; }
     double t0Err() const { return hitT0()._t0err*_t2d._vdrift; }
 // total error
     double totalErr() const { return _toterr; }
 // intrinsic hit error (mm)
     double hitErr() const { return _t2d._rdrifterr; }
-// changing the extneral hit error invalidates the cache, it should invalidate the fit, FIXME!!!!
-//    void setExtErr(double exterr) { _exterr = exterr; }
     double physicalTime() const;
-    
     //FIXME! this function is not used yet. Needs to be implemented
     double physicalPosition() const {return 0;}
     
@@ -98,15 +94,14 @@ namespace mu2e
   //private:
     const StrawHit&   _strawhit;
     const Straw&      _straw;
-    unsigned          _istraw;
+    StrawHitIndex     _index;
     TrkLineTraj*      _hittraj;
     CLHEP::Hep3Vector _wpos;
     CLHEP::Hep3Vector _wpos_err;
-    //    HitT0 _hitt0;
-    double            _stime;
-    //    double _exterr,
+    double _stime[2]; // time for the signal to get from the POCA to each wire end
     double            _penerr,_toterr;
     int               _iamb;
+    enduse _enduse; // which ends are used in the drift measurement
     bool              _ambigupdate;
     T2D               _t2d; // current values of t2d
     double            _tddist;

@@ -21,7 +21,7 @@ namespace mu2e {
 	
 	// extract peak information from adc waveform data.  1 waveform generates 1 peak fit.
 	// The default implementation simply sums the ADC data after subtracting pedesdal
-	virtual void process(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const;
+	virtual void process(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const;
 
 	// Destructor
 	virtual ~PeakFitRoot(){}
@@ -29,7 +29,7 @@ namespace mu2e {
 	// PeakFitRoot normal constructor with ConfigStruct initilization parameters
 	PeakFitRoot(StrawElectronics const& strawele, FitConfig const& config, FitType const& fittype, std::string fitoptions="QNEX0S");
       	// Converts adcWaveform object to TGraphErrors object for easier manipulation in ROOT
-	void adcWaveform2TGraphErrors(StrawElectronics::ADCWaveform const& adcData, TGraphErrors &fitData) const;
+	void adcWaveform2TGraphErrors(TrkTypes::ADCWaveform const& adcData, TGraphErrors &fitData) const;
       protected:
 	PeakFitFunction _peakfit;
 	FitConfig _config;

@@ -13,7 +13,7 @@ namespace mu2e {
   ComboPeakFitRoot::ComboPeakFitRoot(StrawElectronics const& strawele, FitConfig const& config, FitType const& fittype,
     std::string fitoptions) : PeakFitRoot(strawele, config, fittype, fitoptions){}
 
-  void ComboPeakFitRoot::process(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const {
+  void ComboPeakFitRoot::process(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const {
     // find initial values for the fit
     PeakFit::process(adcData,fit);
 	if(_config._debug>0)std::cout << "PeakFitRoot Initialization charge = " << fit._charge << std::endl;
@@ -166,9 +166,9 @@ namespace mu2e {
         while (jentry < numSamplesPerHit)
         {
           adcValue = adcValues[jentry];
-          descending |= ((adcPrev-adcValue) > (TMath::Sqrt2()*_strawele.analogNoise(StrawElectronics::adc)/_strawele.adcLSB()*sigma));
+          descending |= ((adcPrev-adcValue) > (TMath::Sqrt2()*_strawele.analogNoise(TrkTypes::adc)/_strawele.adcLSB()*sigma));
 
-          if (descending && (adcValue-adcPrev > (TMath::Sqrt2()*_strawele.analogNoise(StrawElectronics::adc)/_strawele.adcLSB()*sigma)))
+          if (descending && (adcValue-adcPrev > (TMath::Sqrt2()*_strawele.analogNoise(TrkTypes::adc)/_strawele.adcLSB()*sigma)))
           {
             break;
           }

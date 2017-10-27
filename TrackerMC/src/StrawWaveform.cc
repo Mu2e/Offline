@@ -15,6 +15,7 @@
 
 using namespace std;
 namespace mu2e {
+  using namespace TrkTypes;
   namespace TrackerMC {
     StrawWaveform::StrawWaveform(StrawClusterSequence const& hseq, ConditionsHandle<StrawElectronics> const& strawele, XTalk const& xtalk) :
       _cseq(hseq), _strawele(strawele), _xtalk(xtalk)
@@ -33,7 +34,7 @@ namespace mu2e {
       // loop till we're at the end or we go over threshold
       if(wfx._iclust != _cseq.clustList().end()){
 	// sample initial voltage for this clust
-	wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._iclust->time());
+	wfx._vstart = sampleWaveform(TrkTypes::thresh,wfx._iclust->time());
 	// if we start above threhold, scan forward till we're below
 	if(wfx._vstart > threshold)
 	  returnCrossing(threshold, wfx);
@@ -42,12 +43,12 @@ namespace mu2e {
 	  // start the fine scan from this clust.  
 	  while(wfx._iclust != _cseq.clustList().end() ){
 	    // First, get the starting voltage
-	    wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._iclust->time());
+	    wfx._vstart = sampleWaveform(TrkTypes::thresh,wfx._iclust->time());
 	    // check if this clust could cross threshold
 	    if(wfx._vstart + maxLinearResponse(wfx._iclust) > threshold){
 	      // check the actual response 
-	      double maxtime = wfx._iclust->time() + _strawele->maxResponseTime(StrawElectronics::thresh);
-	      double maxresp = sampleWaveform(StrawElectronics::thresh,maxtime);
+	      double maxtime = wfx._iclust->time() + _strawele->maxResponseTime(TrkTypes::thresh,wfx._iclust->wireDistance());
+	      double maxresp = sampleWaveform(TrkTypes::thresh,maxtime);
 	      if(maxresp > threshold){
 		// interpolate to find the precise crossing
 		fineCrossing(threshold,maxresp,wfx);
@@ -67,13 +68,13 @@ namespace mu2e {
     void StrawWaveform::returnCrossing(double threshold, WFX& wfx) const {
       while(wfx._iclust != _cseq.clustList().end() && wfx._vstart > threshold) {
 	// move forward in time at least as twice the time to the maxium for this clust
-	double time = wfx._iclust->time() + 2*_strawele->maxResponseTime(StrawElectronics::thresh); 
+	double time = wfx._iclust->time() + 2*_strawele->maxResponseTime(TrkTypes::thresh,wfx._iclust->wireDistance()); 
 	while(wfx._iclust != _cseq.clustList().end() && 
 	    wfx._iclust->time() < time){
 	  ++(wfx._iclust);
 	}
 	if(wfx._iclust != _cseq.clustList().end()){
-	  wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._iclust->time());
+	  wfx._vstart = sampleWaveform(TrkTypes::thresh,wfx._iclust->time());
 	  wfx._time =wfx._iclust->time();
 	}
       }
@@ -98,7 +99,7 @@ namespace mu2e {
     bool StrawWaveform::fineCrossing(double threshold,double maxresp, WFX& wfx) const {
       static double timestep(0.020); // interpolation minimum to use linear threshold crossing calculation
       double pretime = wfx._iclust->time();
-      double posttime = pretime + _strawele->maxResponseTime(StrawElectronics::thresh);
+      double posttime = pretime + _strawele->maxResponseTime(TrkTypes::thresh,wfx._iclust->wireDistance());
       double presample = wfx._vstart;
       double postsample = maxresp;
       static const unsigned maxstep(10); // 10 steps max
@@ -109,7 +110,7 @@ namespace mu2e {
       double time = pretime + slope*(threshold-presample);
       // linear interpolation
       while(fabs(dt) > timestep && nstep < maxstep) {
-	double sample = sampleWaveform(StrawElectronics::thresh,time);
+	double sample = sampleWaveform(TrkTypes::thresh,time);
 	if(sample > threshold){
 	  posttime = time;
 	  postsample = sample;
@@ -144,45 +145,99 @@ namespace mu2e {
 
     double StrawWaveform::maxLinearResponse(ClusterList::const_iterator const& iclust) const {
       // ignore saturation effects
-      double linresp = _strawele->maxLinearResponse(StrawElectronics::thresh,iclust->charge());
+      double linresp = _strawele->maxLinearResponse(TrkTypes::thresh,iclust->charge());
       linresp *= (_xtalk._preamp + _xtalk._postamp);
       return linresp;
     }
 
-    double StrawWaveform::sampleWaveform(StrawElectronics::path ipath,double time) const {
+    double StrawWaveform::sampleWaveform(TrkTypes::Path ipath,double time) const {
       // loop over all clusts and add their response at this time
       ClusterList const& hlist = _cseq.clustList();
       double linresp(0.0);
       auto iclust = hlist.begin();
       while(iclust != hlist.end() && iclust->time() < time){
 	// compute the linear straw electronics response to this charge.  This is pre-saturation 
-	linresp += _strawele->linearResponse(ipath,time-iclust->time(),iclust->charge());
+	linresp += _strawele->linearResponse(ipath,time-iclust->time(),iclust->charge(),iclust->wireDistance());
 	// move to next clust
 	++iclust;
       }
-      // apply saturation effects and x-talk
-      double satresp = _strawele->saturatedResponse(linresp);
-      satresp *= _xtalk._postamp;
+      double totresp = linresp * _xtalk._postamp;
       if(_xtalk._preamp>0.0)
-	satresp += _strawele->saturatedResponse(_xtalk._preamp*linresp);
-      return satresp;
+	totresp += _xtalk._preamp*linresp;
+      return totresp;
     }
 
-    void StrawWaveform::sampleWaveform(StrawElectronics::path ipath,std::vector<double> const& times,std::vector<double>& volts) const {
+    void StrawWaveform::sampleADCWaveform(ADCTimes const& times,ADCVoltages& volts) const {
       volts.clear();
       volts.reserve(times.size());
-      for(auto itime=times.begin();itime!=times.end();++itime){
-	volts.push_back(sampleWaveform(ipath,*itime));
+      if (_xtalk._dest != _xtalk._source){
+        //FIXME doesn't deal with cross talk hits yet
+        for (size_t j=0;j<times.size();j++){
+          volts.push_back(0);
+        }
+        return;
+      }
+
+      // check if going to be saturated
+      double max_possible_voltage = 0;
+      for (auto iclust = _cseq.clustList().begin();iclust != _cseq.clustList().end();++iclust){
+        max_possible_voltage += maxLinearResponse(iclust);
+      }
+      if (max_possible_voltage > _strawele->saturationVoltage()){
+        // create waveform of threshold circuit output
+        // step along waveform and apply saturation
+        // for each time, get contribution from each step in waveform using impulse response
+        
+        // skip to the first cluster that matters for the first adc time
+        auto iclust = _cseq.clustList().begin();
+        while (iclust != _cseq.clustList().end()){
+          double time = iclust->time();
+          if (time + _strawele->truncationTime(TrkTypes::thresh) > times[0])
+            break;
+          else
+            ++iclust;
+        }
+
+        // step through time
+        for (size_t j=0;j<times.size();j++){
+          volts.push_back(0);
+        }
+
+        int num_steps = (int)ceil((times[times.size()-1]-iclust->time())/_strawele->saturationTimeStep());
+
+        for (int i=0;i<num_steps;i++){
+          double time = iclust->time() + i*_strawele->saturationTimeStep();
+          // sum up the preamp response at this step
+          double response = 0;
+          auto jclust = iclust;
+          while(jclust != _cseq.clustList().end() && jclust->time() < time){
+            response += _strawele->linearResponse(TrkTypes::thresh,time-jclust->time(),jclust->charge(),jclust->wireDistance(),true);
+            ++jclust;
+          }
+          // now saturate it
+          double sat_response = _strawele->saturatedResponse(response);
+          // then calculate the impulse response at each of the adctimes and add it to that
+          for (size_t j=0;j<times.size();j++){
+            // this function includes multiplication by number of steps in saturationTimeStep
+            volts[j] += _strawele->adcImpulseResponse(times[j]-time,sat_response);
+          }
+        }
+      }else{
+        for(auto itime=times.begin();itime!=times.end();++itime){
+          volts.push_back(sampleWaveform(TrkTypes::adc,*itime));
+        }
       }
     }
 
-    StrawEnd StrawWaveform::strawEnd() const {
-      if(!_cseq.clustList().empty())
-	return _cseq.clustList().begin()->strawEnd();
-      else
-	return StrawEnd(StrawEnd::unknown);
-
+  unsigned short StrawWaveform::digitizeTOT(double threshold, double time) const {
+      for (size_t i=1;i<_strawele->maxTOT();i++){
+        if (sampleWaveform(TrkTypes::thresh,time + i*_strawele->totLSB()) < threshold)
+          return static_cast<unsigned short>(i);
+      }
+      return static_cast<unsigned short>(_strawele->maxTOT());
     }
   }
+
+
 }
 

@@ -349,7 +349,7 @@ namespace mu2e {
       doca[0] = poca.doca()-r;
       doca[1] = poca.doca()+r;
 
-      double err = AmbigResolver::_extErr*Hit->driftVelocity();
+      double err = AmbigResolver::_tmpErr*Hit->driftVelocity();
       double x0  = sqrt(doca[0]*doca[0]+err*err);
       double x1  = sqrt(doca[1]*doca[1]+err*err);
 
@@ -755,7 +755,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // the hit drift radius is large - reduce the external error
 //-----------------------------------------------------------------------------
-	      hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
+	      hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
 	      hit[i]->setAmbig(_sign[r.ibest][i]);
 	    }
 	    else {
@@ -832,7 +832,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // make the best choice possible, external error should be zero at this point
 //-----------------------------------------------------------------------------
-	      hit[i]->setTemperature(AmbigResolver::_extErr);
+	      hit[i]->setTemperature(AmbigResolver::_tmpErr);
 	      hit[i]->setAmbig (_sign[r.ibest][i]);
 	    }
 	  }
@@ -851,7 +851,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // however, the best chi2 is good enough to be reliable under any circumstances
 //-----------------------------------------------------------------------------
-	      hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
+	      hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
 	      hit[i]->setAmbig (_sign[r.ibest][i]);
 	    }
 	    else {
@@ -902,7 +902,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // ... but finally decide
 //-----------------------------------------------------------------------------
-		hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
+		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
 	    }
@@ -926,7 +926,7 @@ namespace mu2e {
 // need to make final decision: consider 400 um a limit
 //-----------------------------------------------------------------------------
 	      if (fabs(r.doca[r.ibest][i]) < 0.4) {
-		hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
+		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
 	      else {
@@ -947,7 +947,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	    if (r.chi2min/r.chi2next < _minChi2Ratio) {
 	      if (r.rdrift[i] > _minDriftDoublet) {
-		hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
+		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
 	      else {
@@ -956,7 +956,7 @@ namespace mu2e {
 // 2015-04-15 P.Murat: for well-resolved doublets it may be possible to decide 
 //                     in all cases - need to check
 //-----------------------------------------------------------------------------
-		hit[i]->setTemperature(AmbigResolver::_extErr);
+		hit[i]->setTemperature(AmbigResolver::_tmpErr);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
 	    }
@@ -974,7 +974,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // final decision
 //-----------------------------------------------------------------------------
-		hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
+		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
 	    }
@@ -1041,7 +1041,7 @@ namespace mu2e {
 
 	      double herr = hit[i]->hitErr();
 	      if (max_res/herr < 4) {
-		hit[i]->setTemperature(AmbigResolver::_extErr/_scaleErrDoublet);
+		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
 		hit[i]->setAmbig (_sign[best_dd][i]);
 	      }
 	      else {

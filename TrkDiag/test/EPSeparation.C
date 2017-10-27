@@ -1,5 +1,6 @@
 #include "TTree.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TTree.h"
 #include "TCut.h"
 #include "TProfile.h"
@@ -21,8 +22,22 @@ void EPSeparation(TTree* sh, EffStruct& eff,const char* fname=0) {
   double escale(1.0);
   TCut conv("mcproc==56&&mcpdg==11&&mcoe>100");
   TCut prot("mcpdg==2212");
-  TH1F* ee = new TH1F("ee","Energy Deposition;Straw energy (KeV)",100,0,22.0);
-  TH1F* pe = new TH1F("pe","Energy Deposition;Straw energy (KeV)",100,0,22.0);
+
+  TH2F* eeve = new TH2F("eeve","Straw Hit Energy vs G4 Energy;G4 Energy (KeV);Reco Energy(KeV)",100,0,12.0,100,0,12.0);
+  TH2F* peve = new TH2F("peve","Straw Hit Energy vs G4 Energy;G4 Energy (KeV);Reco Energy(KeV)",100,0,12.0,100,0,12.0);
+  eeve->SetStats(0);
+  peve->SetStats(0);
+  eeve->SetMarkerStyle(6);
+  peve->SetMarkerStyle(6);
+  eeve->SetFillColor(kRed);
+  peve->SetFillColor(kBlack);
+  eeve->SetMarkerColor(kRed);
+  peve->SetMarkerColor(kBlack);
+  sh->Project("eeve","1000.0*edep:1000.0*mcedep",conv);
+  sh->Project("peve","1000.0*edep:1000.0*mcedep",prot);
+
+  TH1F* ee = new TH1F("ee","Energy Deposition;Straw energy (KeV)",100,0,10.0);
+  TH1F* pe = new TH1F("pe","Energy Deposition;Straw energy (KeV)",100,0,10.0);
   ee->SetLineColor(kRed);
   pe->SetLineColor(kBlack);
   ee->SetStats(0);
@@ -71,14 +86,22 @@ void EPSeparation(TTree* sh, EffStruct& eff,const char* fname=0) {
   char plab[40];
   snprintf(elab,40,"e^{-} eff=%3.3f",eff._eeff);
   snprintf(plab,40,"P^{+} rej=%3.3f",eff._peff);
-  TLegend* eleg = new TLegend(0.1,0.7,0.5,0.9);
+  TLegend* eleg = new TLegend(0.6,0.7,0.9,0.9);
   eleg->AddEntry(ee,elab,"l");
   eleg->AddEntry(pe,plab,"l");
   snprintf(elab,40,"e^{-} eff=%3.3f",eff._deeff);
   snprintf(plab,40,"P^{+} rej=%3.3f",eff._dpeff);
-  TLegend* deleg = new TLegend(0.1,0.7,0.5,0.9);
+  TLegend* deleg = new TLegend(0.6,0.7,0.9,0.9);
   deleg->AddEntry(ededx,elab,"l");
   deleg->AddEntry(pdedx,plab,"l");
+
+  TCanvas* evecan = new TCanvas("evecan","E vs E", 600,600);
+  peve->Draw();
+  eeve->Draw("same");
+  TLegend* eveleg = new TLegend(0.1,0.7,0.5,0.9);
+  eveleg->AddEntry(eeve,"Ce e^{-}","p");
+  eveleg->AddEntry(peve,"Protons","p");
+  eveleg->Draw();
 
   TCanvas* ecan = new TCanvas("ecan","Energy",800,400);
   ecan->Divide(2,1);
@@ -108,7 +131,12 @@ void EPSeparation(TTree* sh, EffStruct& eff,const char* fname=0) {
   if(fname !=0)
     e2can->SaveAs(fname);
 
-  
-
-//  delete ecan;
 }
+
+void test(TTree* sh){
+  EffStruct eff;
+  eff._ecut = 3.0;
+  eff._decut =  0.6;
+  EPSeparation(sh,eff);
+}
+

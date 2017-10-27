@@ -201,6 +201,11 @@
 
 <!--  <class name="std::array<unsigned short,10>"/>
  <class name="std::array<unsigned long,2>"/> -->
+
+ <class name="mu2e::TrkTypes::TDCValues"/>
+ <class name="mu2e::TrkTypes::TOTValues"/>
+ <class name="mu2e::TrkTypes::TDCTimes"/>
+ <class name="mu2e::TrkTypes::TOTTimes"/>
  <class name="mu2e::StrawDigi"/>
  <class name="mu2e::StrawDigiCollection"/>
  <class name="art::Ptr<mu2e::StrawDigi>"/>

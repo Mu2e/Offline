@@ -51,6 +51,7 @@ namespace mu2e {
     };
 
   protected:
+    double _extErr;
     int    _debugLevel;
 
     double _mindrift;                   // minimum drift to assign an ambiguity.  Below this, an ambiguity of '0' is defined
@@ -102,6 +103,8 @@ namespace mu2e {
     double penaltyError(double rdrift) const;
 					// update the hit state and the t0 value.
     virtual bool resolveTrk(KalRep* KRes) const;
+
+
   };
 }
 #endif

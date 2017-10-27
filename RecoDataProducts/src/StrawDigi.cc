@@ -9,40 +9,40 @@
 #include "RecoDataProducts/inc/StrawDigi.hh"
 
 namespace mu2e {
+  using namespace TrkTypes;
   StrawDigi::StrawDigi() : _strawIndex(0)
   {
   }
-  StrawDigi::StrawDigi(StrawIndex index, TDCValues tdc, ADCWaveform const& adc) : _strawIndex(index),
+  StrawDigi::StrawDigi(StrawIndex index, TDCValues tdc, TOTValues tot, ADCWaveform const& adc) : _strawIndex(index),
 //  _tdc(tdc),
   _adc(adc)
   {
-    for(size_t itdc=0;itdc<2;++itdc)
+    for(size_t itdc=0;itdc<2;++itdc){
       _tdc[itdc] = tdc[itdc];
+      _tot[itdc] = tot[itdc];
+    }
   }
   
   StrawDigi::StrawDigi(StrawDigi const& other) : _strawIndex(other._strawIndex),
   //  _tdc(other._tdc),
      _adc(other._adc)
   {
-    for(size_t itdc=0;itdc<2;++itdc)
+    for(size_t itdc=0;itdc<2;++itdc){
       _tdc[itdc] = other._tdc[itdc];
+      _tot[itdc] = other._tot[itdc];
+    }
   }
 
   StrawDigi& StrawDigi::operator=(StrawDigi const& other) {
     if(this != &other){
       _strawIndex = other._strawIndex;
-      for(size_t itdc=0;itdc<2;++itdc)
+      for(size_t itdc=0;itdc<2;++itdc){
 	_tdc[itdc] = other._tdc[itdc];
-//       _tdc = other._tdc;
+	_tot[itdc] = other._tot[itdc];
+      }
       _adc = other._adc;
     }
     return *this;
-  }
-
-  unsigned long StrawDigi::TDC(StrawEnd end) const {
-// for now assume plus end is channel 0 FIXME!!!
-    if(end==StrawEnd::plus)return _tdc[0]; 
-      else return _tdc[1]; 
   }
 }
 

@@ -56,7 +56,7 @@ namespace mu2e {
     auto ireco = event.getValidHandle<TrackSummaryRecoMap>(recoMapInput_);
     auto imc = event.getValidHandle<StrawDigiMCCollection>(strawHitDigiMCInput_);
 
-    const StrawDigi::TDCChannel strawChannel = StrawDigi::zero;
+    StrawEnd end(TrkTypes::cal);
 
     typedef std::map<art::Ptr<SimParticle>, unsigned> PerParticleCount;
     PerParticleCount nPrincipal;
@@ -79,7 +79,7 @@ namespace mu2e {
         }
 
         if(hit->isActive()) {
-          ++nPrincipal[particleEnteringG4Volume(*dmc.stepPointMC(strawChannel))];
+          ++nPrincipal[particleEnteringG4Volume(*dmc.stepPointMC(end))];
           // Aggregate all the steps, so that each particle is counted no more than once per hit
           std::set<art::Ptr<SimParticle> > parts;
           for(const auto& pstep: dmc.stepPointMCs()) {
