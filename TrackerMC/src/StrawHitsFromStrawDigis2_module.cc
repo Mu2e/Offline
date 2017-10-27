@@ -329,10 +329,6 @@ namespace mu2e {
 }
 
 
-
-
-
-
 using mu2e::StrawHitsFromStrawDigis2;
 DEFINE_ART_MODULE(StrawHitsFromStrawDigis2);
 

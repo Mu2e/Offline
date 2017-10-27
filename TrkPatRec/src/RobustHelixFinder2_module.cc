@@ -1,7 +1,3 @@
-// cache phi for HHit 
-// prefilterHits -> use the phi median
-// rewrite do-while loops
-
 //
 // TTracker Pattern Recognition based on Robust Helix Fit
 //

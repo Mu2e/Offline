@@ -1,7 +1,3 @@
-// Can we speed up StereoHit constructor?
-// We create additional position and flag collections, do everything into one module?
-//
-// Need to fix MVA tool to use simple cuts
 //
 // A module to create simple stereo hits out of StrawHits. StrawHit selection is done by flagging in an upstream module
 //
@@ -36,9 +32,6 @@
 #include <float.h>
 
 
-//Notes: Main contributors: MakeStereoHits and MVATools. 
-//       Could we cache the panel separation?
-//       StereoHit <-> Single Hit position 
 
 namespace {
 

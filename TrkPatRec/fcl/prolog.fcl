@@ -69,7 +69,7 @@ FlagBkgHits : {
 
 # time clustering is the 1st stage of track finding 
 TimeClusterFinder : {
-  module_type               : TimeClusterFinder
+  module_type               : TimeClusterFinder2
   MaxdPhi                   : 1.5
   HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits	    : ["Background"]
@@ -78,7 +78,7 @@ TimeClusterFinder : {
 }
 
 RobustHelixFinder : {
-   module_type		: RobustHelixFinder
+   module_type		: RobustHelixFinder2
    HitSelectionBits	    : ["Stereo","TimeDivision"]
    HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
    HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
@@ -88,7 +88,7 @@ RobustHelixFinder : {
 # we need both positive and negative helicity helix finders
 PosHelixFinder : {
   @table::RobustHelixFinder
-  RobustHelixFit : {
+  RobustHelixFit2 : {
     Helicity		: 1
     ntripleMax : 200    
   }
@@ -96,7 +96,7 @@ PosHelixFinder : {
 
 NegHelixFinder : {
   @table::RobustHelixFinder
-  RobustHelixFit : {
+  RobustHelixFit2 : {
     Helicity		: -1
     ntripleMax : 200    
   }
