@@ -754,9 +754,9 @@ namespace mu2e {
       for (int j=i+1; j<nhits; j++) {
 	HitData_t** hj = &hits[j];
 	if ((*hi)->fDr >= (*hj)->fDr) {
-	  HitData_t** h = hi;
-	  *hi = (*hj);
-	  *hj = *h;
+	  HitData_t* h = hits[i];
+	  hits[i] = hits[j];
+	  hits[j] = h;
 	}
       }
     }
@@ -928,6 +928,7 @@ namespace mu2e {
 		  seed->CofM         = 0.5*(pca.point1() + pca.point2());
 		  seed->fHitData[0]  = hd1;
 		  seed->fHitData[1]  = hd2;
+		  seed->chi2tot      = (chi1*chi1 + chi2*chi2);
 		  seed->chi2dof      = (chi1*chi1 + chi2*chi2)/2;
 		  seed->panelz[Face] = panelz;
 		  seed->panelz[f2]   = panelz2;
@@ -974,10 +975,34 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // the two DeltaSeeds share the same first hit - arbitrate
 //-----------------------------------------------------------------------------
-	  if (ds1->Chi2() < ds2->Chi2()) ds2->fGood = -i1;
+	  if (ds1->Chi2Tot() < 10.) {
+	    if (ds2->Chi2Tot() > 10.) ds2->fGood = -i1;
+	    else {
+	      //-----------------------------------------------------------------------------
+	      // both chi2's are good, choose based on the number of hits
+	      //-----------------------------------------------------------------------------
+	      if (ds1->fNHitsTot > ds2->fNHitsTot) ds2->fGood = -i1;
+	      else {
+		ds1->fGood = -i2;
+		break;
+	      }
+	    }
+	  }
 	  else {
-	    ds1->fGood = -i2;
-	    break;
+	    //-----------------------------------------------------------------------------
+	    // first segment has large chi2
+	    //-----------------------------------------------------------------------------
+	    if (ds2->Chi2Tot() < 10.) ds1->fGood = -i2;
+	    else {
+	      //-----------------------------------------------------------------------------
+	      // both chi2's are bad, choose based on the number of hits
+	      //-----------------------------------------------------------------------------
+	      if (ds1->fNHitsTot > ds2->fNHitsTot) ds2->fGood = -i1;
+	      else {
+		ds1->fGood = -i2;
+		break;
+	      }
+	    }
 	  }
 	}
 	else {
@@ -1014,7 +1039,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // the same number of hits, choose candidate with lower chi2
 //-----------------------------------------------------------------------------
-	      if (ds1->Chi2() < ds2->Chi2()) ds2->fGood = -i1;
+	      if (ds1->Chi2Tot() < ds2->Chi2Tot()) ds2->fGood = -i1;
 	      else {
 		ds1->fGood = -i2;
 		break;
@@ -1276,10 +1301,13 @@ namespace mu2e {
 // store only delta candidates with more than 2 stations
 //-----------------------------------------------------------------------------
 	if (delta.n_seeds >= _minNSeeds) {
-	  for (int i=0; i<kNStations; i++) {
-	    if (delta.seed[i] != NULL) delta.seed[i]->used = true;
-	  }
 	  delta.fNumber = _data.deltaCandidateHolder.size();
+	  for (int i=0; i<kNStations; i++) {
+	    if (delta.seed[i] != NULL) {
+	      delta.seed[i]->used        = true;
+	      delta.seed[i]->fDeltaIndex = delta.fNumber;
+	    }
+	  }
 	  delta.phi     = delta.CofM.phi();                  // calculate just once
 	  _data.deltaCandidateHolder.push_back(delta);
 	}

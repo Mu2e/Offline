@@ -38,7 +38,8 @@ namespace mu2e {
     };
 
     struct SeedHist_t {
-      TH1F*  fChi2Dof;
+      TH1F*  fChi2;
+      TH1F*  fChi2Tot;
       TH1F*  fNFacesWithHits;
       TH1F*  fNHitsPerFace;
       TH1F*  fNHitsPerSeed;
@@ -137,8 +138,10 @@ namespace mu2e {
     int         InitMcDiag      ();
     int         associateMcTruth();
     
-    void        printStrawHit(const StrawHit* Sh, int Index);
+    void        printHitData(const HitData_t* Hd, int Index);
     void        printOTracker();
+
+    void        printStrawHit(const StrawHit* Sh, int Index);
     void        printStrawHitCollection();
 //-----------------------------------------------------------------------------
 // overriden virtual functions of the base class
@@ -215,7 +218,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::bookSeedHistograms(SeedHist_t* Hist, art::TFileDirectory* Dir) {
 
-    Hist->fChi2Dof         = Dir->make<TH1F>("chi2dof"     , "Chi squared/degrees of freedom", 1000, 0., 100.);
+    Hist->fChi2            = Dir->make<TH1F>("chi2d"       , "Chi (first 2 hits)", 1000, 0., 100.);
+    Hist->fChi2Tot         = Dir->make<TH1F>("chi2t"       , "Chi (all 2 hits)"  , 1000, 0., 100.);
     Hist->fNFacesWithHits  = Dir->make<TH1F>("nfaces_wh"   , "Number of faces with hits", 5, 0., 5.);
     Hist->fNHitsPerFace    = Dir->make<TH1F>("nhits_face"  , "Number of hits per face", 20, 0., 20.);
     Hist->fNHitsPerSeed    = Dir->make<TH1F>("nhits_seed"  , "Number of hits per seed", 40, 0., 40.);
@@ -393,7 +397,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void  DeltaFinderDiag::fillSeedHistograms(SeedHist_t* Hist, DeltaSeed* Seed) {
 
-    Hist->fChi2Dof->Fill(Seed->chi2dof);
+    Hist->fChi2->Fill(Seed->chi2dof);
+    Hist->fChi2Tot->Fill(Seed->Chi2Tot());
 
     int loc1 = Seed->fType/10;
     int loc2 = Seed->fType % 10;
@@ -580,45 +585,63 @@ namespace mu2e {
       McPart_t* p = _list_of_mc_particles.at(i);
       delete p;
     }
-
+    
     _list_of_mc_particles.clear();
-
     _list_of_mc_part_hit.clear();
+    
+    const StrawHit* sh0 = &_data->shcol->at(0);
+    int   nsh           = _data->shcol->size();
 
-    int nsh = _data->shcol->size();
     _list_of_mc_part_hit.resize(nsh);
+    
+    for (int ist=0; ist<kNStations; ist++) {
+      for (int face=0; face<kNFaces; face++) {
+	for (int ip=0; ip<kNPanelsPerFace; ip++) {
+	  PanelZ_t* panelz = &_data->oTracker[ist][face][ip];
+	  
+	  for (int il=0; il<2; il++) {
+	    int nhits = panelz->fHitData[il].size();
+	    for (int ih=0; ih<nhits; ih++) {
+	      HitData_t* hd = &panelz->fHitData[il][ih];
 
-    for (int ish=0; ish<nsh; ish++) {
-      
-      const StrawHit* sh           = &_data->shcol->at(ish);
-      const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_listOfMcStrawHits,ish);
-//-----------------------------------------------------------------------------
-// search if this particle has already been registered
-//-----------------------------------------------------------------------------
-      McPart_t* mc = findParticle(sim);
+	      const StrawHit* sh           = hd->fHit;
+	      int ish                      = sh-sh0;
+	      const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_listOfMcStrawHits,ish);
+	      //-----------------------------------------------------------------------------
+	      // search if this particle has already been registered
+	      //-----------------------------------------------------------------------------
+	      McPart_t* mc = findParticle(sim);
 
-      if (mc == NULL) {
+	      if (mc == NULL) {
 					// add new particle
-	mc = new McPart_t(sim);
-	_list_of_mc_particles.push_back(mc);
-	mc->fID       = _mcUtils->getID(sim);
-	mc->fPdgID    = _mcUtils->getPdgID(sim);
-	mc->fStartMom = _mcUtils->getStartMom(sim);
+		mc = new McPart_t(sim);
+		_list_of_mc_particles.push_back(mc);
+		mc->fID       = _mcUtils->getID(sim);
+		mc->fPdgID    = _mcUtils->getPdgID(sim);
+		mc->fStartMom = _mcUtils->getStartMom(sim);
+	      }
+	      //-----------------------------------------------------------------------------
+	      // list of hits produced by the particle
+	      //-----------------------------------------------------------------------------
+	      mc->fListOfHits.push_back(hd);
+	      
+	      StrawIndex shid = sh->strawIndex();
+	      const Straw& straw  = _data->tracker->getStraw(shid);
+	      int station = straw.id().getStation();
+	      if (station < mc->fFirstStation) mc->fFirstStation = station;
+	      if (station > mc->fLastStation ) mc->fLastStation  = station;
+	      
+	      if (sh->time() < mc->fTime   ) mc->fTime    = sh->time();
+	      if (sh->time() < mc->fHitTMin) mc->fHitTMin = sh->time();
+	      if (sh->time() > mc->fHitTMax) mc->fHitTMax = sh->time();
+	      //-----------------------------------------------------------------------------
+	      // list of MC particles parallel to StrawHitCollection
+	      //-----------------------------------------------------------------------------
+	      _list_of_mc_part_hit[ish] = mc;
+	    }
+	  }
+	}
       }
-      
-      mc->fListOfHits.push_back(sh);
-
-      StrawIndex shid = sh->strawIndex();
-      const Straw& straw  = _data->tracker->getStraw(shid);
-      int station = straw.id().getStation();
-      if (station < mc->fFirstStation) mc->fFirstStation = station;
-      if (station > mc->fLastStation ) mc->fLastStation  = station;
-
-      if (sh->time() < mc->fTime   ) mc->fTime    = sh->time();
-      if (sh->time() < mc->fHitTMin) mc->fHitTMin = sh->time();
-      if (sh->time() > mc->fHitTMax) mc->fHitTMax = sh->time();
-
-      _list_of_mc_part_hit[ish] = mc;
     }
 
     if (_data->debugLevel > 10) {
@@ -645,13 +668,14 @@ namespace mu2e {
 
     const StrawHit* hit0 = &_data->shcol->at(0);
 
+
     for (int is=0; is<kNStations; is++) {
       int nseeds = _data->seedHolder[is].size();
       for (int i=0; i<nseeds; ++i) {
 	DeltaSeed* seed = _data->seedHolder[is].at(i);
-//-----------------------------------------------------------------------------
-// define MC pointers (SimParticle's) for the first two, "pre-seed", hits
-//-----------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------
+	// define MC pointers (SimParticle's) for the first two, "pre-seed", hits
+	//-----------------------------------------------------------------------------
 	if (seed->fType != 0) {
 	  int loc1 = seed->fHitData[0]->fHit-hit0;
 	  int loc2 = seed->fHitData[1]->fHit-hit0;
@@ -663,99 +687,63 @@ namespace mu2e {
 	  seed->fPreSeedMcPart[0] = NULL;
 	  seed->fPreSeedMcPart[1] = NULL;
 	}
-//-----------------------------------------------------------------------------
-// define MC pointers (McPart_t's) for hits in all faces
-//-----------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------
+	// define MC pointers (McPart_t's) for hits in all faces
+	//-----------------------------------------------------------------------------
 	for (int face=0; face<kNFaces; face++) {
 	  int nh = seed->hitlist[face].size();
 	  for (int ih=0; ih<nh; ih++) {
 	    const StrawHit* hit = seed->hitlist[face][ih]->fHit;
 	    int loc = hit-hit0;
-	    seed->fMcPart[face].push_back(_list_of_mc_part_hit.at(loc));
-	  }
-	}
-      }
-    }
-//-----------------------------------------------------------------------------
-// for each MC electron calculate the number of reconstructed hits
-//-----------------------------------------------------------------------------
-    int nmc    = _list_of_mc_particles.size();
-    int ndelta = _data->deltaCandidateHolder.size();
-
-    _nDeltaHitsTot  = 0;
-    _nDeltaHitsReco = 0;
-
-    for (int i=0; i<nmc; i++) {
-      McPart_t* mc = _list_of_mc_particles.at(i);
-      mc->fNHitsDelta = 0;
-//-----------------------------------------------------------------------------
-// loop over the hits of MC delta electron and calculate fraction of them which have 
-// been reconstructed as hits of reconstructed delta electrons
-//-----------------------------------------------------------------------------
-      int nh = mc->fListOfHits.size();
-      for (int ih=0; ih<nh; ih++) {
-	const StrawHit* hit = mc->fListOfHits[ih];
-	int hit_is_found = 0;
-	for (int id=0; id<ndelta; id++) {
-	  DeltaCandidate* dc = &_data->deltaCandidateHolder.at(id);
-//-----------------------------------------------------------------------------
-// now loop over the DeltaCandidate hits - the idea is that all of them will be marked 
-// as 'delta electron' hits and not used in the pattern recognition
-//-----------------------------------------------------------------------------
-	  for (int is=dc->fFirstStation; is<=dc->fLastStation; is++) {
-	    DeltaSeed* ds = dc->seed[is];
-	    if (ds) {
-	      for (int iface=0; iface<kNFaces; iface++) {
-		int nh2 = ds->NHits(iface);
-		for (int ih2=0; ih2<nh2; ih2++) {
-		  const StrawHit* delta_hit = ds->hitlist[iface][ih2]->fHit;
-	
-		  if (delta_hit == hit) { 
-		    hit_is_found = 1;
-		    break;
-		  }
-		}
+	    McPart_t* mc = _list_of_mc_part_hit.at(loc);
+	    seed->fMcPart[face].push_back(mc);
+	    //-----------------------------------------------------------------------------
+	    // count CE hits 
+	    //-----------------------------------------------------------------------------
+	    if ((mc->fPdgID == 11) && (mc->fStartMom > 100)) {
+	      seed->fNHitsCE += 1;
+	      if (seed->fDeltaIndex >= 0) {
+		DeltaCandidate* dc = &_data->deltaCandidateHolder[seed->fDeltaIndex];
+		dc->fNHitsCE += 1;
 	      }
 	    }
 	  }
-	  if (hit_is_found) break;
-	}
-
-	if (hit_is_found) mc->fNHitsDelta += 1;
-      }
-
-      if (mc->fPdgID == 11) {
-	float mom = mc->Momentum();
-	if (mom < 20) {
-	  _nDeltaHitsTot  += mc->NHits();
-	  _nDeltaHitsReco += mc->fNHitsDelta;
 	}
       }
     }
 //-----------------------------------------------------------------------------
-// proceed with the delta candidates
+// proceed with the reconstructed delta candidates
 //-----------------------------------------------------------------------------
     int const    max_part(1000);
     McPart_t*    part [max_part];
     int          nhits[max_part];
     int          npart;
 
-    for (int i=0; i<ndelta; i++) {
-      DeltaCandidate* d = & _data->deltaCandidateHolder.at(i);
-      npart             = 0;
+    int ndelta = _data->deltaCandidateHolder.size();
+    for (int idelta=0; idelta<ndelta; idelta++) {
+      DeltaCandidate* dc = & _data->deltaCandidateHolder[idelta];
+      npart              = 0;
 
-      for (int is=d->fFirstStation; is<=d->fLastStation; is++) {
-	if (! d->st_used[is]) continue;
-	DeltaSeed* s = d->seed[is];
+      for (int is=dc->fFirstStation; is<=dc->fLastStation; is++) {
+	if (! dc->st_used[is]) continue;
+	DeltaSeed* ds = dc->seed[is];
 	for (int face=0; face<kNFaces; face++) {
-	  int nh = s->hitlist[face].size();
+	  int nh = ds->hitlist[face].size();
 	  for (int ih=0; ih<nh; ih++) {
-	    McPart_t* sim = s->fMcPart[face][ih];
-
-	    int found = 0;
+//-----------------------------------------------------------------------------
+// assign delta index to each hit flagged as delta
+//-----------------------------------------------------------------------------
+	    HitData_t* hd = (HitData_t*) ds->hitlist[face][ih];
+	    hd->fDeltaIndex = idelta;
+//-----------------------------------------------------------------------------
+// try to identify a reconstructed delta-electron with the MC particle
+//-----------------------------------------------------------------------------
+	    McPart_t* mc = ds->fMcPart[face][ih];  // list parallel to the list of hits
+	    
+	    int found(0);
 
 	    for (int ip=0; ip<npart; ip++) {
-	      if (sim == part[ip]) {
+	      if (mc == part[ip]) {
 		found = 1;
 		nhits[ip]++;
 		break;
@@ -764,7 +752,7 @@ namespace mu2e {
 
 	    if (found == 0) {
 	      if (npart < max_part) {
-		part [npart] = sim;
+		part [npart] = mc;
 		nhits[npart] = 1;
 		npart += 1;
 	      }
@@ -789,11 +777,41 @@ namespace mu2e {
       }
 
       if (ibest >= 0) {
-	d->fMcPart         = part [ibest];
-	d->fNHitsMcP       = nhits[ibest];
-	d->fMcPart->fDelta = d;
+	dc->fMcPart         = part [ibest];
+	dc->fNHitsMcP       = nhits[ibest];
+	dc->fMcPart->fDelta = dc;
       }
     }
+//-----------------------------------------------------------------------------
+// now, for each MC electron calculate the number of hits flagged as delta
+//-----------------------------------------------------------------------------
+    int nmc    = _list_of_mc_particles.size();
+
+    _nDeltaHitsTot  = 0;
+    _nDeltaHitsReco = 0;
+
+    for (int i=0; i<nmc; i++) {
+      McPart_t* mc = _list_of_mc_particles.at(i);
+      mc->fNHitsDelta = 0;
+//-----------------------------------------------------------------------------
+// loop over the hits of MC delta electron and calculate fraction of them which have 
+// been reconstructed as hits of reconstructed delta electrons
+//-----------------------------------------------------------------------------
+      int nh = mc->fListOfHits.size();
+      for (int ih=0; ih<nh; ih++) {
+	const HitData_t* hit = mc->fListOfHits[ih];
+	if (hit->fDeltaIndex >= 0) mc->fNHitsDelta += 1;
+      }
+
+      if (mc->fPdgID == 11) {
+	float mom = mc->Momentum();
+	if (mom < 20) {
+	  _nDeltaHitsTot  += mc->NHits();
+	  _nDeltaHitsReco += mc->fNHitsDelta;
+	}
+      }
+    }
+
     return 0;
   }
   
@@ -821,9 +839,9 @@ namespace mu2e {
 	int nseeds = _data->seedHolder[st].size();
 	printf("station: %2i N(seeds): %3i\n",st,nseeds);
 	if (nseeds > 0) {
-	  printf("---------------------------------------------------------------------------------------------------------------------\n");
-	  printf("      st  i  good type   SHID:MCID(0)    SHID:MCID(1)       chi2  mintime maxtime   X        Y         Z    nfwh  nht\n");
-	  printf("---------------------------------------------------------------------------------------------------------------------\n");
+	  printf("-----------------------------------------------------------------------------------------------------------------------------\n");
+	  printf("      st  i  good type   SHID:MCID(0)    SHID:MCID(1)      chi2    chi2t  mintime maxtime    X        Y         Z    nfwh nht\n");
+	  printf("-----------------------------------------------------------------------------------------------------------------------------\n");
 	  for (int ps=0; ps<nseeds; ++ps) {
 	    DeltaSeed* seed = _data->seedHolder[st].at(ps);
 
@@ -836,7 +854,7 @@ namespace mu2e {
 	      printf("(%5i:%9i)",-1,-1);
 	      printf("(%5i:%9i)",-1,-1);
 	    }
-	    printf(" %8.2f",seed->chi2dof);
+	    printf(" %8.2f %8.2f",seed->chi2dof,seed->Chi2Tot());
 	    printf("%8.1f %8.1f",seed->fMinTime,seed->fMaxTime);
 	    printf(" %8.3f %8.3f %9.3f",seed->CofM.x(),seed->CofM.y(),seed->CofM.z());
 	    printf("%4i",seed->fNFacesWithHits);
@@ -848,7 +866,7 @@ namespace mu2e {
 	    for (int face=0; face<kNFaces; face++) {
 	      printf("       ");
 	      int nh = seed->NHits(face);
-	      printf("       %i:%3i ",face,nh);
+	      printf("        %i:%2i ",face,nh);
 	      for (int ih=0; ih<nh; ih++) {
 		const StrawHit* hit =  seed->hitlist[face][ih]->fHit;
 
@@ -874,23 +892,25 @@ namespace mu2e {
       if (nd > 0) {
 	for (int i=0; i<nd; i++) {
 	  DeltaCandidate* dc = &_data->deltaCandidateHolder.at(i);
-	  printf("----------------------------------------------------------------------\n");
-	  printf("   i  nh  ns s1 s2       X         Y         Z    mintime  maxtime    \n");
-	  printf("----------------------------------------------------------------------\n");
-	  printf("%3i: %3i",i,dc->fNHits);
-	  printf(" %3i",dc->n_seeds );
-	  printf(" %2i",dc->fFirstStation);
-	  printf(" %2i",dc->fLastStation  );
-	  printf("  %9.2f %9.2f %9.2f",dc->CofM.x(),dc->CofM.y(),dc->CofM.z());
+	  int pdg_id = -1;
+	  if (dc->fMcPart) pdg_id = dc->fMcPart->fPdgID;
+	  printf("----------------------------------------------------------------------------------\n");
+	  printf("      i  nh n(CE) ns s1 s2      X         Y         Z    mintime  maxtime   PdgID \n");
+	  printf("----------------------------------------------------------------------------------\n");
+	  printf(":dc:%3i %3i  %3i",i,dc->fNHits,dc->fNHitsCE);
+	  printf(" %3i",dc->n_seeds);
+	  printf(" %2i %2i %9.2f %9.2f %9.2f",dc->fFirstStation,dc->fLastStation,
+		 dc->CofM.x(),dc->CofM.y(),dc->CofM.z());
+	  printf("                   %i5 %i3",pdg_id,dc->fNHitsMcP);
 	  printf("\n");
 
 	  for (int is=dc->fFirstStation;is<=dc->fLastStation; is++) {
 	    DeltaSeed* ds = dc->seed[is];
 	    if (ds != NULL) {
-	      printf("     %3i     %2i:%3i",ds->fNHitsTot,is,ds->fNumber);
+	      printf("        %3i  %3i    %2i:%3i",ds->fNHitsTot,ds->fNHitsCE,is,ds->fNumber);
 	      printf(" %9.2f %9.2f %9.2f",
 		     ds->CofM.x(),ds->CofM.y(),ds->CofM.z());
-	      printf( "%8.1f %8.1f",ds->fMinTime,ds->fMaxTime);
+	      printf("%8.1f %8.1f",ds->fMinTime,ds->fMaxTime);
 	      if (ds->fType != 0) {
 		printf(" (%6i %6i)",
 		       ds->fHitData[0]->fHit->strawIndex().asInt(),
@@ -935,15 +955,15 @@ namespace mu2e {
 	    printf(" mom = %7.3f time: %8.3f deltaID: %3i nseeds: %2i nhits: %3i/%3i stations:%2i:%2i",
 		   mc->Momentum(), mc->Time(), 
 		   delta_id, nseeds,
-		   mc->NHits(), 
 		   mc->fNHitsDelta, 
+		   mc->NHits(), 
 		   mc->fFirstStation, mc->fLastStation);
 	    printf(" freco: %6.3f\n",fr);
 
-	    if (_printElectronsHits > 1) {
+	    if (_printElectronsHits > 0) {
 	      int nh = mc->fListOfHits.size();
 	      for (int ih=0; ih<nh; ih++) {
-		printStrawHit(mc->fListOfHits.at(ih),ih);
+		printHitData(mc->fListOfHits[ih],ih);
 	      }
 	    }
 	  }
@@ -958,6 +978,81 @@ namespace mu2e {
     return 0;
   }
     
+//-----------------------------------------------------------------------------
+  void DeltaFinderDiag::printHitData(const HitData_t* Hd, int Index) {
+
+    if (Index <= 0) {
+      printf("--------------------------------------------------------------------------");
+      printf("--------------------------------------\n");
+      printf(" S:F  I   SHID  Plane   Panel  Layer   Straw     Time          dt       eDep ");
+      printf("           PDG         ID         p   DeltaID\n");
+      printf("--------------------------------------------------------------------------");
+      printf("--------------------------------------\n");
+      if (Index < 0) return;
+    }
+
+    const StrawHit* sh0 = &_data->shcol->at(0);
+    const StrawHit* sh  = Hd->fHit;
+    int loc             = sh-sh0;
+
+    
+    const SimParticle* sim(0);
+    int                pdg_id(-9999), sim_id(-9999);
+    float              mc_mom(-9999.);
+	
+    if (_mcDiag) {
+      sim    = _mcUtils->getSimParticle(_listOfMcStrawHits,loc);
+      pdg_id = _mcUtils->getPdgID(sim);
+      sim_id = _mcUtils->getID(sim);
+      mc_mom = _mcUtils->getStartMom(sim);
+    }
+
+    const mu2e::Straw* straw = &_data->tracker->getStraw(sh->strawIndex());
+    
+    printf("%5i ",loc);
+    printf("%5i" ,sh->strawIndex().asInt());
+	
+    printf("  %5i  %5i   %5i   %5i   %8.3f   %8.3f   %9.6f   %10i   %10i  %8.3f %5i\n",
+	   straw->id().getPlane(),
+	   straw->id().getPanel(),
+	   straw->id().getLayer(),
+	   straw->id().getStraw(),
+	   sh->time(),
+	   sh->dt(),
+	   sh->energyDep(),
+	   pdg_id,
+	   sim_id,
+	   mc_mom,
+	   Hd->fDeltaIndex);
+  }
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+  void DeltaFinderDiag::printOTracker() {
+
+    int nhitso = 0;
+    for (int is=0; is<kNStations; is++) {
+      for (int face=0; face<kNFaces; face++) {
+	for (int ip=0; ip<kNPanelsPerFace; ip++) {
+	  PanelZ_t* pz = &_data->oTracker[is][face][ip];
+	  printf("        --------------- station: %2i face: %2i panel: %2i nhits[0]:%3li nhits[1]:%3li \n",
+		 is,face,ip, pz->fHitData[0].size(),pz->fHitData[1].size());
+
+	  for (int il=0; il<2; il++) {
+	    int nh = pz->fHitData[il].size();
+	    for (int ih=0; ih<nh; ih++) {
+	      printHitData(&pz->fHitData[il][ih],ih);
+	    }
+	    nhitso += nh;
+	  }
+	}
+      }
+    }
+
+    printf(" nhits, nhitso : %6i %6i \n", (int) _data->shcol->size(),nhitso);
+  }
+
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::printStrawHit(const StrawHit* Sh, int Index) {
 
@@ -1001,33 +1096,6 @@ namespace mu2e {
 	   pdg_id,
 	   sim_id,
 	   mc_mom);
-  }
-
-//-----------------------------------------------------------------------------
-//
-//-----------------------------------------------------------------------------
-  void DeltaFinderDiag::printOTracker() {
-
-    int nhitso = 0;
-    for (int is=0; is<kNStations; is++) {
-      for (int face=0; face<kNFaces; face++) {
-	for (int ip=0; ip<kNPanelsPerFace; ip++) {
-	  PanelZ_t* pz = &_data->oTracker[is][face][ip];
-	  printf("        --------------- station: %2i face: %2i panel: %2i nhits[0]:%3li nhits[1]:%3li \n",
-		 is,face,ip, pz->fHitData[0].size(),pz->fHitData[1].size());
-
-	  for (int il=0; il<2; il++) {
-	    int nh = pz->fHitData[il].size();
-	    for (int ih=0; ih<nh; ih++) {
-	      printStrawHit(pz->fHitData[il][ih].fHit,ih);
-	    }
-	    nhitso += nh;
-	  }
-	}
-      }
-    }
-
-    printf(" nhits, nhitso : %6i %6i \n", (int) _data->shcol->size(),nhitso);
   }
 
 //-----------------------------------------------------------------------------

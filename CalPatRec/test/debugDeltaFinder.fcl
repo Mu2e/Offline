@@ -64,10 +64,11 @@ physics: {
 	    diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
 		mcDiag                        : true
 		printElectrons                : 1
-		printElectronsMinMom          :  0.
-		printElectronsMaxMom          : 20.
-		printElectronsMinNHits        : 30
-		printElectronsMaxFReco        : 0.5
+		printElectronsHits            : 1
+		printElectronsMinMom          : 100.
+		printElectronsMaxMom          : 110.
+		printElectronsMinNHits        : 0
+		printElectronsMaxFReco        : 1.1 # 0.5
 
 		printDeltaSeeds               : 1
 		printDeltaCandidates          : 1
