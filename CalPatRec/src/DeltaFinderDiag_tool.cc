@@ -840,12 +840,12 @@ namespace mu2e {
 	printf("station: %2i N(seeds): %3i\n",st,nseeds);
 	if (nseeds > 0) {
 	  printf("-----------------------------------------------------------------------------------------------------------------------------\n");
-	  printf("      st  i  good type   SHID:MCID(0)    SHID:MCID(1)      chi2    chi2t  mintime maxtime    X        Y         Z    nfwh nht\n");
+	  printf("      st  i good type   SHID:MCID(0)    SHID:MCID(1)       chi2    chi2t  mintime maxtime    X        Y         Z    nfwh nht\n");
 	  printf("-----------------------------------------------------------------------------------------------------------------------------\n");
 	  for (int ps=0; ps<nseeds; ++ps) {
 	    DeltaSeed* seed = _data->seedHolder[st].at(ps);
 
-	    printf("seed %3i %2i %4i %2i ",st,ps,seed->fGood,seed->fType);
+	    printf("seed %3i:%03i %3i %2i ",st,ps,seed->fGood,seed->fType);
 	    if (seed->fType != 0) {
 	      printf("(%5i:%9i)",seed->fHitData[0]->fHit->strawIndex().asInt(),seed->fPreSeedMcPart[0]->fID);
 	      printf("(%5i:%9i)",seed->fHitData[1]->fHit->strawIndex().asInt(),seed->fPreSeedMcPart[1]->fID);
@@ -867,15 +867,26 @@ namespace mu2e {
 	      printf("       ");
 	      int nh = seed->NHits(face);
 	      printf("        %i:%2i ",face,nh);
+	      int nprinted = 0;
 	      for (int ih=0; ih<nh; ih++) {
 		const StrawHit* hit =  seed->hitlist[face][ih]->fHit;
 
 		McPart_t* mcp = seed->fMcPart[face][ih];
 		int mcid = mcp->fID;
 		printf("(%5i:%9i)",hit->strawIndex().asInt(),mcid);
+		nprinted++;
+		if (nprinted == 5) {
+		  printf("\n");
+		  nprinted = 0;
+		}
 	      }
-	      if (nh == 0) printf("(   -1:       -1)");
-	      printf("\n");
+	      if (nprinted > 0) {
+		printf("\n");
+	      }
+	      if (nh == 0) {
+		printf("(   -1:       -1)");
+		printf("\n");
+	      }
 	    }
 	  }
 	}
@@ -907,7 +918,7 @@ namespace mu2e {
 	  for (int is=dc->fFirstStation;is<=dc->fLastStation; is++) {
 	    DeltaSeed* ds = dc->seed[is];
 	    if (ds != NULL) {
-	      printf("        %3i  %3i    %2i:%3i",ds->fNHitsTot,ds->fNHitsCE,is,ds->fNumber);
+	      printf("        %3i  %3i    %2i:%03i",ds->fNHitsTot,ds->fNHitsCE,is,ds->fNumber);
 	      printf(" %9.2f %9.2f %9.2f",
 		     ds->CofM.x(),ds->CofM.y(),ds->CofM.z());
 	      printf("%8.1f %8.1f",ds->fMinTime,ds->fMaxTime);

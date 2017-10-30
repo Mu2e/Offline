@@ -86,6 +86,7 @@ namespace mu2e {
     float                               _maxDxy;
     int                                 _maxGap;
     float                               _sigmaR;
+    float                               _maxDriftTime;
 
     int                                 _debugLevel;
     int                                 _diagLevel;
@@ -168,6 +169,7 @@ namespace mu2e {
     _maxDxy                (pset.get<float>        ("maxDxy"                       )),
     _maxGap                (pset.get<int>          ("maxGap"                       )),
     _sigmaR                (pset.get<float>        ("sigmaR"                       )),
+    _maxDriftTime          (pset.get<float>        ("maxDriftTime"                 )),
 
     _debugLevel            (pset.get<int>          ("debugLevel"                   )),
     _diagLevel             (pset.get<int>          ("diagLevel"                    )),
@@ -317,7 +319,11 @@ namespace mu2e {
 	      const StrawHit* sh  = hd->fHit;
 	      if (sh->energyDep() > _maxElectronHitEnergy) continue;
 	      double dt = sh->time()-predicted_time;
-	      if (fabs(dt) > _maxDt)                       continue;
+	      //-----------------------------------------------------------------------------
+	      // predicted time is the partticle time, the drift time should be larger
+	      //-----------------------------------------------------------------------------
+	      if (dt > _maxDriftTime)                       continue;
+	      if (dt < -10.         )                       continue;
 		  
 	      double dx = hd->fPos->pos().x()-Delta->CofM.x();
 	      double dy = hd->fPos->pos().y()-Delta->CofM.y();
@@ -1244,14 +1250,14 @@ namespace mu2e {
 	if (seed->fNFacesWithHits < _minNFacesWithHits)     continue;
 
 	DeltaCandidate delta;
-	delta.st_used[s] = true;
-	delta.seed[s]    = seed;
-	delta.CofM       = seed->CofM;
-	delta.n_seeds    = 1;
+	delta.st_used[s]    = true;
+	delta.seed[s]       = seed;
+	delta.CofM          = seed->CofM;
+	delta.n_seeds       = 1;
 	delta.fFirstStation = s;
-	delta.fLastStation     = s;
-	delta.fNHits     = seed->fNHitsTot;
-	delta.fTzSums.addPoint(seed->CofM.z(),seed->fMinTime);
+	delta.fLastStation  = s;
+	delta.fNHits        = seed->fNHitsTot;
+	delta.fTzSums.addPoint(seed->CofM.z(),seed->fMaxTime-_maxDriftTime);
 //-----------------------------------------------------------------------------
 // stations 6 and 13 are empty - account for that
 //-----------------------------------------------------------------------------
@@ -1294,7 +1300,7 @@ namespace mu2e {
 	    delta.CofM         = (delta.CofM*delta.n_seeds+closest->CofM)/(delta.n_seeds+1);
 	    delta.n_seeds     += 1;
 	    delta.fNHits      += closest->fNHitsTot;
-	    delta.fTzSums.addPoint(closest->CofM.z(),closest->fMinTime);
+	    delta.fTzSums.addPoint(closest->CofM.z(),closest->fMaxTime-_maxDriftTime);
 	  }
 	}
 //-----------------------------------------------------------------------------

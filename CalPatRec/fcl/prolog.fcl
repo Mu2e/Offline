@@ -348,6 +348,7 @@ CalPatRec : { @table::CalPatRec
 	    maxDxy                        : 40.                   # mm
 	    maxGap                        : 1                     # gap in missing stations along the candidate
 	    sigmaR                        : 10.                   # mm, roughly 3 MeV/c
+	    maxDriftTime                  : 40.                   # ns
 	    # debugging/diagnostics
 	    testOrder                     : 0
 	    debugLevel                    : 0

@@ -73,7 +73,7 @@ physics: {
 		printDeltaSeeds               : 1
 		printDeltaCandidates          : 1
 		printOTracker                 : 1
-		printShcol                    : 0
+#		printShcol                    : 0
 	    }
 	}
 
@@ -94,7 +94,7 @@ physics: {
     p4: [ PrefetchData, DeltaFinder ]
     p5: [ PrefetchData, DeltaFinder, SeedFinderAna ]
 
-    trigger_paths : [ p4 ]
+    trigger_paths : [ p5 ]
     out           : []
     end_paths     : [ out ]
 }
