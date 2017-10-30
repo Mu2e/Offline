@@ -199,8 +199,9 @@
  <class name="mu2e::ExtMonFNALTrkFitCollection" />
  <class name="art::Wrapper<mu2e::ExtMonFNALTrkFitCollection>" />
 
-<!--  <class name="std::array<unsigned short,10>"/>
- <class name="std::array<unsigned long,2>"/> -->
+ <class name="mu2e::TrkTypes::ADCWaveform" />
+ <!-- <class name="std::array<unsigned short,16>"/>
+ <class name="std::array<unsigned long,2>"/>  -->
 
  <class name="mu2e::TrkTypes::TDCValues"/>
  <class name="mu2e::TrkTypes::TOTValues"/>

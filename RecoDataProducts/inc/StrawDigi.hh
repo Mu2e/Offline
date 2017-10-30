@@ -18,7 +18,7 @@
 // C++ includes
 #include <iostream>
 #include <vector>
-//#include <array>
+#include <array>
 
 // Mu2e includes
 #include "DataProducts/inc/StrawIndex.hh"
@@ -27,14 +27,10 @@
 // unfortunately the persistence requires this array dimension be
 // instantiated by hand in the classesdef, so this this #define
 // can't be changed without changing that too
-//#define NADC 10
 namespace mu2e {
   
   class StrawDigi {
     public:
-// unfortunately genreflex doesn't understand array, so I can't use these for now
-//      typedef std::array<unsigned short,NADC> TrkTypes::ADCWaveform;
-//      typedef std::array<unsigned long,2> TrkTypes::TDCValues;
       StrawDigi();
       StrawDigi( StrawIndex sid, TrkTypes::TDCValues tdc, TrkTypes::TOTValues tot, TrkTypes::ADCWaveform const& adc);
       StrawDigi(StrawDigi const& other);
