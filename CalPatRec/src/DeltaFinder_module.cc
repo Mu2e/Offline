@@ -86,6 +86,7 @@ namespace mu2e {
     float                               _maxDxy;
     int                                 _maxGap;
     float                               _sigmaR;
+    float                               _maxDriftTime;
 
     int                                 _debugLevel;
     int                                 _diagLevel;
@@ -168,6 +169,7 @@ namespace mu2e {
     _maxDxy                (pset.get<float>        ("maxDxy"                       )),
     _maxGap                (pset.get<int>          ("maxGap"                       )),
     _sigmaR                (pset.get<float>        ("sigmaR"                       )),
+    _maxDriftTime          (pset.get<float>        ("maxDriftTime"                 )),
 
     _debugLevel            (pset.get<int>          ("debugLevel"                   )),
     _diagLevel             (pset.get<int>          ("diagLevel"                    )),
@@ -317,7 +319,11 @@ namespace mu2e {
 	      const StrawHit* sh  = hd->fHit;
 	      if (sh->energyDep() > _maxElectronHitEnergy) continue;
 	      double dt = sh->time()-predicted_time;
-	      if (fabs(dt) > _maxDt)                       continue;
+	      //-----------------------------------------------------------------------------
+	      // predicted time is the partticle time, the drift time should be larger
+	      //-----------------------------------------------------------------------------
+	      if (dt > _maxDriftTime)                       continue;
+	      if (dt < -10.         )                       continue;
 		  
 	      double dx = hd->fPos->pos().x()-Delta->CofM.x();
 	      double dy = hd->fPos->pos().y()-Delta->CofM.y();
@@ -754,9 +760,9 @@ namespace mu2e {
       for (int j=i+1; j<nhits; j++) {
 	HitData_t** hj = &hits[j];
 	if ((*hi)->fDr >= (*hj)->fDr) {
-	  HitData_t** h = hi;
-	  *hi = (*hj);
-	  *hj = *h;
+	  HitData_t* h = hits[i];
+	  hits[i] = hits[j];
+	  hits[j] = h;
 	}
       }
     }
@@ -928,6 +934,7 @@ namespace mu2e {
 		  seed->CofM         = 0.5*(pca.point1() + pca.point2());
 		  seed->fHitData[0]  = hd1;
 		  seed->fHitData[1]  = hd2;
+		  seed->chi2tot      = (chi1*chi1 + chi2*chi2);
 		  seed->chi2dof      = (chi1*chi1 + chi2*chi2)/2;
 		  seed->panelz[Face] = panelz;
 		  seed->panelz[f2]   = panelz2;
@@ -974,10 +981,34 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // the two DeltaSeeds share the same first hit - arbitrate
 //-----------------------------------------------------------------------------
-	  if (ds1->Chi2() < ds2->Chi2()) ds2->fGood = -i1;
+	  if (ds1->Chi2Tot() < 10.) {
+	    if (ds2->Chi2Tot() > 10.) ds2->fGood = -i1;
+	    else {
+	      //-----------------------------------------------------------------------------
+	      // both chi2's are good, choose based on the number of hits
+	      //-----------------------------------------------------------------------------
+	      if (ds1->fNHitsTot > ds2->fNHitsTot) ds2->fGood = -i1;
+	      else {
+		ds1->fGood = -i2;
+		break;
+	      }
+	    }
+	  }
 	  else {
-	    ds1->fGood = -i2;
-	    break;
+	    //-----------------------------------------------------------------------------
+	    // first segment has large chi2
+	    //-----------------------------------------------------------------------------
+	    if (ds2->Chi2Tot() < 10.) ds1->fGood = -i2;
+	    else {
+	      //-----------------------------------------------------------------------------
+	      // both chi2's are bad, choose based on the number of hits
+	      //-----------------------------------------------------------------------------
+	      if (ds1->fNHitsTot > ds2->fNHitsTot) ds2->fGood = -i1;
+	      else {
+		ds1->fGood = -i2;
+		break;
+	      }
+	    }
 	  }
 	}
 	else {
@@ -1014,7 +1045,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // the same number of hits, choose candidate with lower chi2
 //-----------------------------------------------------------------------------
-	      if (ds1->Chi2() < ds2->Chi2()) ds2->fGood = -i1;
+	      if (ds1->Chi2Tot() < ds2->Chi2Tot()) ds2->fGood = -i1;
 	      else {
 		ds1->fGood = -i2;
 		break;
@@ -1219,14 +1250,14 @@ namespace mu2e {
 	if (seed->fNFacesWithHits < _minNFacesWithHits)     continue;
 
 	DeltaCandidate delta;
-	delta.st_used[s] = true;
-	delta.seed[s]    = seed;
-	delta.CofM       = seed->CofM;
-	delta.n_seeds    = 1;
+	delta.st_used[s]    = true;
+	delta.seed[s]       = seed;
+	delta.CofM          = seed->CofM;
+	delta.n_seeds       = 1;
 	delta.fFirstStation = s;
-	delta.fLastStation     = s;
-	delta.fNHits     = seed->fNHitsTot;
-	delta.fTzSums.addPoint(seed->CofM.z(),seed->fMinTime);
+	delta.fLastStation  = s;
+	delta.fNHits        = seed->fNHitsTot;
+	delta.fTzSums.addPoint(seed->CofM.z(),seed->fMaxTime-_maxDriftTime);
 //-----------------------------------------------------------------------------
 // stations 6 and 13 are empty - account for that
 //-----------------------------------------------------------------------------
@@ -1269,17 +1300,20 @@ namespace mu2e {
 	    delta.CofM         = (delta.CofM*delta.n_seeds+closest->CofM)/(delta.n_seeds+1);
 	    delta.n_seeds     += 1;
 	    delta.fNHits      += closest->fNHitsTot;
-	    delta.fTzSums.addPoint(closest->CofM.z(),closest->fMinTime);
+	    delta.fTzSums.addPoint(closest->CofM.z(),closest->fMaxTime-_maxDriftTime);
 	  }
 	}
 //-----------------------------------------------------------------------------
 // store only delta candidates with more than 2 stations
 //-----------------------------------------------------------------------------
 	if (delta.n_seeds >= _minNSeeds) {
-	  for (int i=0; i<kNStations; i++) {
-	    if (delta.seed[i] != NULL) delta.seed[i]->used = true;
-	  }
 	  delta.fNumber = _data.deltaCandidateHolder.size();
+	  for (int i=0; i<kNStations; i++) {
+	    if (delta.seed[i] != NULL) {
+	      delta.seed[i]->used        = true;
+	      delta.seed[i]->fDeltaIndex = delta.fNumber;
+	    }
+	  }
 	  delta.phi     = delta.CofM.phi();                  // calculate just once
 	  _data.deltaCandidateHolder.push_back(delta);
 	}
