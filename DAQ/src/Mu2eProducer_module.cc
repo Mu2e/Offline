@@ -18,8 +18,8 @@
 #include "mu2e-artdaq-core/Overlays/ArtFragmentReader.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
+#include "TrackerConditions/inc/Types.hh"
 #include "RecoDataProducts/inc/StrawDigi.hh"
-#include "RecoDataProducts/inc/StrawDigiCollection.hh"
 
 #include <iostream>
 
@@ -214,13 +214,19 @@ void
 	std::vector<adc_t> waveform = cc.DBT_Waveform(pos);
 
 	// Create the StrawDigi data products
-	mu2e::StrawDigi::TDCValues tdc;
+	mu2e::TrkTypes::TDCValues tdc;
 	tdc[0] = TDC0;
 	tdc[1] = TDC1;
 	mu2e::StrawIndex sid(strawIdx);
+
+	// TOT needs to be added to the bytestream format FIXME!!!
+	mu2e::TrkTypes::TOTValues tot;
+	tot[0] = 0;
+	tot[1] = 0;
 	
 	if( debug_ ) {
-	  std::cout << "MAKEDIGI: " << sid << " " << tdc[0] << " " << tdc[1] << " ";
+	  std::cout << "MAKEDIGI: " << sid << " " << tdc[0] << " " << tdc[1] << " "
+	    << tot[0] << " " << tot[1] << " ";
 	  for(size_t i=0; i<waveform.size(); i++) {
 	    std::cout << waveform[i];
 	    if(i<waveform.size()-1) {
@@ -230,13 +236,14 @@ void
 	  std::cout << std::endl;
 	}
 
-	mu2e::StrawDigi::ADCWaveform wf;
+	mu2e::TrkTypes::ADCWaveform wf;
 	for(size_t i=0; i<waveform.size(); i++) {
-	  wf.push_back((unsigned short)waveform[i]);
+//	  wf.push_back((unsigned short)waveform[i]);
+	  wf[i] =waveform[i];
 	}
 
 	// Fill the StrawDigiCollection
-	straw_digis->push_back(mu2e::StrawDigi( sid, tdc, wf));
+	straw_digis->push_back(mu2e::StrawDigi( sid, tdc, tot, wf));
 
 	
 
@@ -302,7 +309,9 @@ void
 	adc_t apdID      = cc.DBC_apdID(pos);
 	adc_t time       = cc.DBC_Time(pos);
 	adc_t numSamples = cc.DBC_NumSamples(pos);
-	mu2e::StrawDigi::ADCWaveform waveform = cc.DBC_Waveform(pos);
+	// this typedef belongs somewhere else FIXME!
+	typedef std::vector<unsigned short> CalWaveform;
+	CalWaveform waveform = cc.DBC_Waveform(pos);
 	
 	if( debug_ ) {
 	  std::cout << "timestamp: " << timestamp << std::endl;
