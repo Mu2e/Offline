@@ -277,14 +277,16 @@ namespace mu2e {
 
   
 void StrawElectronics::digitizeWaveform(ADCVoltages const& wf, ADCWaveform& adc) const{
-    if(wf.size() != _nADC)
+    if(wf.size() != adc.size())
       throw cet::exception("SIM") 
 	<< "mu2e::StrawElectronics: wrong number of voltages to digitize" 
 	<< endl;
-    adc.clear();
-    adc.reserve(_nADC);
-    for(auto iwf=wf.begin();iwf!=wf.end();++iwf)
-      adc.push_back(adcResponse(*iwf));
+//    adc.clear();
+//    adc.reserve(_nADC);
+//    for(auto iwf=wf.begin();iwf!=wf.end();++iwf)
+//      adc.push_back(adcResponse(*iwf));
+      for(size_t iadc=0;iadc<adc.size();++iadc)
+      adc.at(iadc) = adcResponse(wf[iadc]);
   }
 
   void StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdc) const {
