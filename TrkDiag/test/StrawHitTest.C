@@ -337,7 +337,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 
 	  TH1F* rres = new TH1F("rres","StrawHit Radius resolution;mm",100,-200,200);
    
-    TH1F* pres = new TH1F("pres","StrawHit #phi resolution;mm",100,-0.5,0.5);
+    TH1F* pres = new TH1F("pres","StrawHit #phi resolution;rad",100,-0.5,0.5);
         
 
 	  gid->SetLineColor(kBlue);
