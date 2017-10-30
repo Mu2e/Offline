@@ -1,6 +1,5 @@
 //
 // This module transforms StrawDigi objects into StrawHit objects
-// It also builds the truth match map (if MC truth info for the StrawDigis exists)
 //
 // $Id: StrawHitsFromStrawDigis_module.cc,v 1.12 2014/03/25 22:14:39 brownd Exp $
 // $Author: brownd $ 
@@ -31,19 +30,9 @@
 #include "TrkChargeReco/inc/ComboPeakFitRoot.hh"
 //CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
-// root 
-#include "TMath.h"
-#include "TFile.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TGraph.h"
-#include "TMarker.h"
-#include "TTree.h"
 // data
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 
 using namespace std;
 using CLHEP::Hep3Vector;
