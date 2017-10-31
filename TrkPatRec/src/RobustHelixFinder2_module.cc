@@ -312,7 +312,7 @@ namespace mu2e
 	    } 
             else
 	    {
-	      if (_diag > 0) fillMVA(hseed);
+	      if (_diag > 0) fillMVA(hseed,shcol);
             }
          }
          
