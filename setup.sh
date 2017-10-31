@@ -95,7 +95,7 @@ setup -B cry   v1_7h  -q${MU2E_UPS_QUALIFIERS}
 setup -B scons v2_5_1a -q p2713d
 
 # The debugger
-setup -B gdb v7_12
+setup -B gdb v8_0_1
 
 # Search path for fcl files
 export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
