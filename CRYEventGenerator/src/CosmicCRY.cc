@@ -45,7 +45,6 @@
 #include "CLHEP/Random/RandPoisson.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/TwoVector.h"
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;
@@ -76,21 +75,22 @@ namespace mu2e
   : _verbose(config.getInt("cosmicCRY.verbose", 0) )
   , _doHistograms(config.getBool("cosmicCRY.doHistograms", true) )
   , _saveTree(config.getBool("cosmicCRY.saveTree", false) )
-  , _hStartXZ(NULL)
-  , _hStartY(NULL)
-  // , _hStartPlane(NULL)
-  , _hStartE(NULL)
-  , _hStartTheta(NULL)
-  , _hStartPhi(NULL)
+  , _hXZ(NULL)
+  , _hY(NULL)
+  // , _hPlane(NULL)
+  , _hE(NULL)
+  , _hTheta(NULL)
+  , _hPhi(NULL)
   , _hPtot(NULL)
   , _hPyOverPtot(NULL)
   , _hTime(NULL)
-  , _hParticleType(NULL)
-  , _hDensityOverR(NULL)
   , _hNegMuKE(NULL)
   , _hPosMuKE(NULL)
   , _hPtypeKE(NULL)
-  , _hnSecondaries(NULL)
+  , _hNSecondaries(NULL)
+  , _hSecondPtotVsPrimKE(NULL)
+  , _hShowerRadiusVsPrimKE(NULL)
+  , _hNSecondariesVsPrimKE(NULL)
 
   , _muEMin    ( config.getDouble("cosmicCRY.muEMin") )   //in MeV
   , _muEMax    ( config.getDouble("cosmicCRY.muEMax") )   //in MeV
@@ -141,51 +141,49 @@ namespace mu2e
     if (_verbose > 1) 
       CLHEP::HepRandom::getTheEngine()->showStatus();
 
-    _cryGen = new CRYGenerator(_crySetup);
+    _cryGen = std::make_shared<CRYGenerator>(_crySetup);
 
     // Histograming
     if (_doHistograms) {
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir("CosmicCRY");
-      _hStartXZ = tfdir.make<TH2D>("StartXZ", "StartXZ", 
+      _hXZ = tfdir.make<TH2D>("XZ", "XZ", 
           400, -2.0e5,  2.0e5, 400, -2.0e5, 2.0e5 );
-      _hStartY = tfdir.make<TH1D>("StartY", "StartY", 100, -1.0e3, 1.0e3 );
+      _hY = tfdir.make<TH1D>("Y", "Y", 100, -1.0e3, 1.0e3 );
 
-      // _hStartPlane = tfdir.make<TH1D>("StartPlane", "StartPlane", 5, 0, 5);
-      _hStartE = tfdir.make<TH1D>("StartE", "StartE", 4000, 0, _muEMax);
-      _hStartTheta = tfdir.make<TH1D>("StartTheta", "StartTheta",
+      // _hPlane = tfdir.make<TH1D>("Plane", "Plane", 5, 0, 5);
+      _hE = tfdir.make<TH1D>("E", "E", 4000, 0, _muEMax);
+      _hTheta = tfdir.make<TH1D>("Theta", "Theta",
           200, -M_PI - 0.5, M_PI + 0.5);
-      _hStartPhi = tfdir.make<TH1D>("StartPhi", "StartPhi",
+      _hPhi = tfdir.make<TH1D>("Phi", "Phi",
           200, -M_PI - 0.5, M_PI + 0.5);
 
       _hPtot = tfdir.make<TH1D>("Ptot", "Total momentum", 500, 0., 2E6);
       _hPyOverPtot = tfdir.make<TH1D>("PyOverPtot", "Py/Ptot", 200, -20., 20.);
       _hTime = tfdir.make<TH1D>("Time", "Timing of secondary particles",
           1000, -1.E-3, 1E0);
-      _hDensityOverR = tfdir.make<TH1D>("DensityOverR", "Density", 2000, 0., 200E3);
       _hNegMuKE = tfdir.make<TH1D>("NegMuKE", "Momenta of #mu^-", 4000, 0., 2E6);
       _hPosMuKE = tfdir.make<TH1D>("PosMuKE", "Momenta of #mu^+", 4000, 0., 2E6);
-      _hnSecondaries = tfdir.make<TH1D>("nSecondaries", "Number of secondaries",
+      _hNSecondaries = tfdir.make<TH1D>("nSecondaries", "Number of secondaries",
           1000, 0, 1000);
 
-      _hParticleType = tfdir.make<TH1D>("ParticleType", "Particle types", 7, 0, 7);
-      _hParticleType->GetXaxis()->SetBinLabel(1, "mu");
-      // _hParticleType->GetXaxis()->SetBinLabel(2, "pos. mu");
-      _hParticleType->GetXaxis()->SetBinLabel(2, "gamma");
-      _hParticleType->GetXaxis()->SetBinLabel(3, "electron");
-      _hParticleType->GetXaxis()->SetBinLabel(4, "neutron");
-      _hParticleType->GetXaxis()->SetBinLabel(5, "proton");
-      _hParticleType->GetXaxis()->SetBinLabel(6, "pion");
-      _hParticleType->GetXaxis()->SetBinLabel(7, "kaon");
-
       _hPtypeKE = tfdir.make<TH2D>("PtypeKE", "Particle type vs energy",
-          2000, 0., 2E6, 6, 0, 6);
+          2000, 0., 2E6, 7, 0, 7);
       _hPtypeKE->GetYaxis()->SetBinLabel(1, "mu");
       _hPtypeKE->GetYaxis()->SetBinLabel(2, "gamma");
       _hPtypeKE->GetYaxis()->SetBinLabel(3, "electron");
       _hPtypeKE->GetYaxis()->SetBinLabel(4, "neutron");
       _hPtypeKE->GetYaxis()->SetBinLabel(5, "proton");
       _hPtypeKE->GetYaxis()->SetBinLabel(6, "pion");
+      _hPtypeKE->GetYaxis()->SetBinLabel(7, "kaon");
+
+      _hSecondPtotVsPrimKE = tfdir.make<TH2D>("SecondPtotVsPrimKE",
+          "Total momenta of secondaries vs Primary KE", 
+          1000, 1E3, 1E8, 2000, 0., 2E6);
+      _hShowerRadiusVsPrimKE = tfdir.make<TH2D>("primeKEvsShowerRadius", 
+          "Primary KE vs shower radius", 1000, 1E3, 1E8, 300, 0., 300E3*1.42);
+      _hNSecondariesVsPrimKE = tfdir.make<TH2D>("primeKEvsNSecondaries",
+          "Primary KE vs number of secondaries", 1000, 1E3, 1E8, 200, 0., 200);
     }
 
     // And tree
@@ -199,174 +197,174 @@ namespace mu2e
 
   void CosmicCRY::generate( GenParticleCollection& genParts )
   {
-    std::vector<CRYParticle*> *daughters = new std::vector<CRYParticle*>;
-    _cryGen->genEvent(daughters);
+    std::vector<CRYParticle*> *secondaries = new std::vector<CRYParticle*>;
+    _cryGen->genEvent(secondaries);
 
-    if (_doHistograms) {
-      _hnSecondaries->Fill(daughters->size());
-    }
-    if (_saveTree) {
       _pdgId0 = _cryGen->primaryParticle()->PDGid();
       _ke0 = _cryGen->primaryParticle()->ke(); // MeV
-      _nSecondaries = daughters->size();
+      _nSecondaries = secondaries->size();
+      _t0 = _cryGen->timeSimulated();
+
+    if (_doHistograms) {
+      _hNSecondaries->Fill(secondaries->size());
+      _hNSecondariesVsPrimKE->Fill(_ke0, _nSecondaries);
+    }
+    if (_saveTree) {
       _tCryPrimary->Fill();
     }
 
+    double secondPtot = 0.;
+    std::vector<CLHEP::Hep2Vector> secondXZ;
 
-    for (unsigned j=0; j<daughters->size(); j++) {
-      CRYParticle* p = (*daughters)[j];
+    for (unsigned j=0; j<secondaries->size(); j++) {
+      CRYParticle* secondary = (*secondaries)[j];
 
       GlobalConstantsHandle<ParticleDataTable> pdt;
-      const HepPDT::ParticleData& p_data = pdt->particle(p->PDGid()).ref();
+      const HepPDT::ParticleData& p_data = pdt->particle(secondary->PDGid()).ref();
       double mass = p_data.mass().value(); // in MeV
 
-      double ke = p->ke(); // MeV by default in CRY
+      double ke = secondary->ke(); // MeV by default in CRY
       double totalE = ke + mass;
       double totalP = safeSqrt(totalE * totalE - mass * mass);
 
+      secondPtot += totalP;
+      secondXZ.push_back(
+          CLHEP::Hep2Vector(secondary->x() * 1000, secondary->y() * 1000));
+
       // Change coordinate system since y points upward, z points along
       // the beam line; which make cry(xyz) -> mu2e(zxy), uvw -> mu2e(zxy)
-      CLHEP::Hep3Vector position(p->y() * 1000, p->z() * 1000, p->x() * 1000); // to mm
-      CLHEP::HepLorentzVector mom4(totalP*p->v(), totalP*p->w(),
-          totalP*p->u(), totalE);
+      CLHEP::Hep3Vector position(secondary->y() * 1000, secondary->z() * 1000,
+          secondary->x() * 1000); // to mm
+      CLHEP::HepLorentzVector mom4(totalP*secondary->v(), totalP*secondary->w(),
+          totalP*secondary->u(), totalE);
       genParts.push_back(
-          GenParticle(static_cast<PDGCode::type>(p->PDGid()), GenId::cosmicCRY,
-            position, mom4, p->t()));
+          GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
+            GenId::cosmicCRY,
+            position, mom4, secondary->t() - _t0));
 
       if (_doHistograms) {
-        _hStartXZ->Fill(position.x(), position.z());
-        _hStartY->Fill(position.y());
-        _hStartE->Fill(p->ke());
-        // _hStartPlane->Fill(position.y());
+        _hXZ->Fill(position.x(), position.z());
+        _hY->Fill(position.y());
+        _hE->Fill(secondary->ke());
+        // _hPlane->Fill(position.y());
         // Keep the original uvw order to have correct theta and phi.
-        CLHEP::Hep3Vector momDir(p->u(), p->v(), p->w());
-        _hStartTheta->Fill(momDir.theta());
-        _hStartPhi->Fill(momDir.phi());
+        CLHEP::Hep3Vector momDir(secondary->u(), secondary->v(), secondary->w());
+        _hTheta->Fill(momDir.theta());
+        _hPhi->Fill(momDir.phi());
 
         _hPtot->Fill(totalP);
-        _hTime->Fill(p->t());
-        double r2 = position.x() * position.x() + position.z() * position.z();
-        double r = safeSqrt(r2);
-        _hDensityOverR->Fill(r, 1/r2/M_PI);
-        _hPyOverPtot->Fill(p->w());
-        switch (p->PDGid()) {
+        _hTime->Fill(secondary->t() - _t0);
+        _hPyOverPtot->Fill(secondary->w());
+        switch (secondary->PDGid()) {
           case 13: // mu-
-            _hParticleType->Fill(0);
-            _hNegMuKE->Fill(p->ke());
-            _hPtypeKE->Fill(p->ke(), 0);
+            _hNegMuKE->Fill(secondary->ke());
+            _hPtypeKE->Fill(secondary->ke(), 0);
             break;
           case -13: // mu+
-            _hParticleType->Fill(0);
-            _hPosMuKE->Fill(p->ke());
-            _hPtypeKE->Fill(p->ke(), 0);
+            _hPosMuKE->Fill(secondary->ke());
+            _hPtypeKE->Fill(secondary->ke(), 0);
             break;
           case 22: // photon
-            _hParticleType->Fill(1);
-            _hPtypeKE->Fill(p->ke(), 1);
+            _hPtypeKE->Fill(secondary->ke(), 1);
             break;
           case -11: // e-
-            _hParticleType->Fill(2);
-            _hPtypeKE->Fill(p->ke(), 2);
+            _hPtypeKE->Fill(secondary->ke(), 2);
             break;
           case 11: // e+
-            _hParticleType->Fill(2);
-            _hPtypeKE->Fill(p->ke(), 2);
+            _hPtypeKE->Fill(secondary->ke(), 2);
             break;
           case 2112: // neutron
-            _hParticleType->Fill(3);
-            _hPtypeKE->Fill(p->ke(), 3);
+            _hPtypeKE->Fill(secondary->ke(), 3);
             break;
           case -2112: // neutron
-            _hParticleType->Fill(3);
-            _hPtypeKE->Fill(p->ke(), 3);
+            _hPtypeKE->Fill(secondary->ke(), 3);
             break;
           case 2212: // proton
-            _hParticleType->Fill(4);
-            _hPtypeKE->Fill(p->ke(), 4);
+            _hPtypeKE->Fill(secondary->ke(), 4);
             break;
           case -2212: // proton
-            _hParticleType->Fill(4);
-            _hPtypeKE->Fill(p->ke(), 4);
+            _hPtypeKE->Fill(secondary->ke(), 4);
             break;
           case 111: // pi0
-            _hParticleType->Fill(5);
-            _hPtypeKE->Fill(p->ke(), 5);
+            _hPtypeKE->Fill(secondary->ke(), 5);
             break;
           case 211: // pi+
-            _hParticleType->Fill(5);
-            _hPtypeKE->Fill(p->ke(), 5);
+            _hPtypeKE->Fill(secondary->ke(), 5);
             break;
           case -211: // pi-
-            _hParticleType->Fill(5);
-            _hPtypeKE->Fill(p->ke(), 5);
+            _hPtypeKE->Fill(secondary->ke(), 5);
             break;
           case 130: // k0 L
-            _hParticleType->Fill(6);
-            _hPtypeKE->Fill(p->ke(), 6);
+            _hPtypeKE->Fill(secondary->ke(), 6);
             break;
           case 310: // k0 S
-            _hParticleType->Fill(6);
-            _hPtypeKE->Fill(p->ke(), 6);
+            _hPtypeKE->Fill(secondary->ke(), 6);
             break;
           case 311: // k0
-            _hParticleType->Fill(6);
-            _hPtypeKE->Fill(p->ke(), 6);
+            _hPtypeKE->Fill(secondary->ke(), 6);
             break;
           case 321: // k+
-            _hParticleType->Fill(6);
-            _hPtypeKE->Fill(p->ke(), 6);
+            _hPtypeKE->Fill(secondary->ke(), 6);
             break;
           case -321: // k-
-            _hParticleType->Fill(6);
-            _hPtypeKE->Fill(p->ke(), 6);
+            _hPtypeKE->Fill(secondary->ke(), 6);
             break;
           default:
-            _hParticleType->Fill(-1);
+            _hPtypeKE->Fill(secondary->ke(), -1);
             break;
         }
       }
 
       if (_saveTree && j < _maxNSecondaries) {
-        _pdgId1[j] = p->PDGid();
+        _pdgId1[j] = secondary->PDGid();
         _x1[j] = position.x();
         _y1[j] = position.y();
         _z1[j] = position.z();
-        _t1[j] = p->t();
-        _ke1[j] = p->ke();
-        _px1[j] = totalP * p->v();
-        _py1[j] = totalP * p->w();
-        _pz1[j] = totalP * p->u();
+        _t1[j] = secondary->t();
+        _ke1[j] = secondary->ke();
+        _px1[j] = totalP * secondary->v();
+        _py1[j] = totalP * secondary->w();
+        _pz1[j] = totalP * secondary->u();
         _ptot1[j] = totalP;
 
         // Keep the original uvw order to have correct theta and phi.
-        CLHEP::Hep3Vector momDir(p->u(), p->v(), p->w()); 
+        CLHEP::Hep3Vector momDir(secondary->u(), secondary->v(), secondary->w()); 
         _theta1[j] = momDir.theta();
         _phi1[j] = momDir.phi();
       }
 
       if (_verbose > 1) {
         std::cout << "Secondary " << j 
-          << ": " << CRYUtils::partName(p->id()) 
-          << " (pdgId " << p->PDGid() << ")"
-          << ", kinetic energy " << p->ke()  << " MeV"
+          << ": " << CRYUtils::partName(secondary->id()) 
+          << " (pdgId " << secondary->PDGid() << ")"
+          << ", kinetic energy " << secondary->ke()  << " MeV"
           << ", position " 
-          << "(" << p->x()
-          << ", " << p->y()
-          << ", " << p->z()
+          << "(" << secondary->x()
+          << ", " << secondary->y()
+          << ", " << secondary->z()
           << ") m"
-          << ", time " << p->t() << " sec"
+          << ", time " << secondary->t() << " sec"
           << ", mass: " << mass
           << ", mom: " << totalP
-          << ", mom dir.: " << p->u() <<", " << p->v() << ", " << p->w()
+          << ", mom dir.: " << secondary->u() <<", " << secondary->v()
+          << ", " << secondary->w()
           << std::endl;
 
         // std::cout <<  genParts.back() << std::endl;
       }
+
+      delete secondary;
     }
 
+    if (_doHistograms) {
+      _hSecondPtotVsPrimKE->Fill(_ke0, secondPtot);
+      // _hShowerRadiusVsPrimKE->Fill(_ke0, calMEC(secondXZ));
+    }
     if (_saveTree) {
       _tCrySecondaries->Fill();
     }
+
+    delete secondaries;
   }
 
   void CosmicCRY::makeTrees()
@@ -447,5 +445,29 @@ namespace mu2e
 
     sprintf(tmpStr, "subboxLength %f ", _subboxLength);
     _setupString.append(tmpStr);
+  }
+
+  double CosmicCRY::calMEC(std::vector<CLHEP::Hep2Vector> points)
+  {
+    double radius = 0.;
+    unsigned int nPoints = points.size();
+
+    if (nPoints <= 2)  {
+      radius = 0.;
+    }
+    else
+    {
+      CLHEP::Hep2Vector center(-150E3, -150E3);
+      double maxDistance = 0.;
+
+      for (unsigned int i = 0; i < nPoints; ++i) {
+        CLHEP::Hep2Vector diff = points.at(i) - center;
+        if (diff.mag() > maxDistance) {
+          maxDistance = diff.mag();
+        }
+      }
+
+    }
+    return radius;
   }
 }

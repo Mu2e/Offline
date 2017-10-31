@@ -7,6 +7,7 @@
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Vector/TwoVector.h"
 
 class TH1D;
 class TH2D;
@@ -35,21 +36,22 @@ namespace mu2e {
     int  _verbose;
     bool _doHistograms;
     bool _saveTree;
-    TH2D *_hStartXZ;
-    TH1D *_hStartY;
-    // TH1D *_hStartPlane;
-    TH1D *_hStartE;
-    TH1D *_hStartTheta;
-    TH1D *_hStartPhi;
+    TH2D *_hXZ;
+    TH1D *_hY;
+    TH1D *_hE;
+    TH1D *_hTheta;
+    TH1D *_hPhi;
     TH1D *_hPtot;
     TH1D *_hPyOverPtot;
     TH1D *_hTime;
-    TH1D *_hParticleType;
-    TH1D *_hDensityOverR;
     TH1D *_hNegMuKE;
     TH1D *_hPosMuKE;
     TH2D *_hPtypeKE;
-    TH1D *_hnSecondaries;
+    TH1D *_hNSecondaries;
+    TH2D *_hSecondPtotVsPrimKE;
+    TH2D *_hShowerRadiusVsPrimKE;
+    TH2D *_hNSecondariesVsPrimKE;
+
     TTree *_tCryPrimary;
     TTree *_tCrySecondaries;
 
@@ -85,7 +87,7 @@ namespace mu2e {
     std::string _cryDataPath;
 
     CRYSetup * _crySetup;
-    CRYGenerator * _cryGen;
+    std::shared_ptr<CRYGenerator> _cryGen;
 
     enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL, CALO, CUSTOMIZED};
     enum DirectionChoice {ALL, POSITIVE_X, NEGATIVE_X, POSITIVE_Z, NEGATIVE_Z,
@@ -99,6 +101,7 @@ namespace mu2e {
     int _evtId0;
     int _pdgId0;
     double _ke0;
+    double _t0;
     int _nSecondaries;
 
     static const int _maxNSecondaries = 300;
@@ -117,6 +120,7 @@ namespace mu2e {
 
     void makeTrees();
     void createSetupString();
+    double calMEC(std::vector<CLHEP::Hep2Vector> points); // minimum enclosing circle
   };  // CosmicCRY
 
 }
