@@ -14,6 +14,7 @@ class TH2F;
 
 #include "CalPatRec/inc/LsqSums2.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 
 namespace mu2e {
   class StrawHitPosition;
@@ -133,8 +134,8 @@ namespace mu2e {
       CLHEP::Hep3Vector              CofM;
       float                          fMinTime;          // min and max times of the included hits
       float                          fMaxTime;
+      float                          fMaxDriftTime;
       McPart_t*                      fPreSeedMcPart[2]; // McPart_t's corresponding to initial intersection 
-      bool                           used;              // denotes if seed has been used in connectseeds
       int                            fDeltaIndex;
 
       DeltaSeed() {
@@ -147,9 +148,10 @@ namespace mu2e {
 	fNumber           = -1;
 	fPreSeedMcPart[0] = NULL;
 	fPreSeedMcPart[1] = NULL;
-	used              = false;
+	//	used              = false;
 	fMinTime          = 1.e10;
 	fMaxTime          = -1.;
+	fMaxDriftTime     = -1.;
 	for (int face=0; face<kNFaces; face++) {
 	  fFaceProcessed[face] = 0;
 	  panelz        [face] = NULL;
@@ -162,40 +164,45 @@ namespace mu2e {
       ~DeltaSeed() {}
 
       float            Chi2    ()         { return chi2dof; }
-      float            Chi2Tot ()         { return chi2tot/(fNHitsTot-1+1.e-6) ; }
+      float            Chi2Tot ()         { return chi2tot/fNHitsTot ; }
       int              NHits   (int Face) { return hitlist[Face].size(); }
       const HitData_t* HitData (int Face, int I) { return hitlist[Face][I]; } // no boundary check !
       int              NHitsTot()         { return fNHitsTot; }
       int              MCTruth ()         { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
+      bool             Used    ()         { return (fDeltaIndex >= 0); }
       //-----------------------------------------------------------------------------
       // drift time can't be < 0, so it is the minimal measured time which represents 
       // best the 'particle time'
+      // keep in mind that fMaxTime < particle T0 < fMinTime
       //-----------------------------------------------------------------------------
       float            Time()     { return fMinTime; }
-
+      float            T0Min()    { return fMaxTime-fMaxDriftTime;   }
+      float            T0Max()    { return fMinTime; }
     };
 
     struct DeltaCandidate {
     public:
       int                   fNumber;
+      int                   fFirstStation;
+      int                   fLastStation;
       DeltaSeed*            seed   [kNStations];
-      bool                  st_used[kNStations];
-      float                 dxy    [kNStations];
+      float                 dxy    [kNStations];   // used only for diagnostics
+      float                 fT0Min [kNStations];
+      float                 fT0Max [kNStations];
       CLHEP::Hep3Vector     CofM;
       float                 phi;
       int                   n_seeds;
-      int                   fFirstStation;
-      int                   fLastStation;
       McPart_t*             fMcPart;
       int                   fNHits;
-      int                   fNHitsMcP;	// Nhits by the "best" particle"
+      int                   fNHitsMcP;	       // Nhits by the "best" particle"
       int                   fNHitsCE;
       LsqSums2              fTzSums;
+      // float                 fT0Min;
+      // float                 fT0Max;
 
       DeltaCandidate() {
 	fNumber = -1;
 	for(int s=0; s<kNStations; ++s) {
-	  st_used[s] = false;
 	  dxy    [s] = -1;
 	  seed   [s] = NULL;
 	}
@@ -204,29 +211,33 @@ namespace mu2e {
 	fMcPart       = NULL;
 	fNHits        = 0;
 	fNHitsCE      = 0;
-	fTzSums.clear();
+	//	fTzSums.clear();
       }
 
-      double     PredictedTime(double Z) { return fTzSums.yMean()+fTzSums.dydx()*(Z-CofM.z()); }
+      //      double     PredictedTime(double Z) { return fTzSums.yMean()+fTzSums.dydx()*(Z-CofM.z()); }
       int        NSeeds               () { return n_seeds; }
       DeltaSeed* Seed            (int I) { return seed[I]; }
+      bool       StationUsed     (int I) { return (seed[I] != NULL); }
+      float      T0Min           (int I) { return fT0Min[I]; }
+      float      T0Max           (int I) { return fT0Max[I]; }
     };
 //-----------------------------------------------------------------------------
 // data structure passed to the histogramming routine
 //-----------------------------------------------------------------------------
     struct Data_t {
-      const art::Event*            event;
-      const TTracker*              tracker;
-      std::string                  strawDigiMCCollectionTag;
-      std::string                  ptrStepPointMCVectorCollectionTag;
-      std::vector<DeltaSeed*>      seedHolder [kNStations];
-      std::vector<DeltaCandidate>  deltaCandidateHolder;
-      PanelZ_t                     oTracker[kNStations][kNFaces][kNPanelsPerFace];
-      int                          stationUsed[kNStations];
-      int                          nseeds;
-      int                          nseeds_per_station[kNStations];
-      const StrawHitCollection*    shcol;
-      int                          debugLevel;	     // printout level
+      const art::Event*             event;
+      const TTracker*               tracker;
+      std::string                   strawDigiMCCollectionTag;
+      std::string                   ptrStepPointMCVectorCollectionTag;
+      std::vector<DeltaSeed*>       seedHolder [kNStations];
+      std::vector<DeltaCandidate>   deltaCandidateHolder;
+      PanelZ_t                      oTracker[kNStations][kNFaces][kNPanelsPerFace];
+      int                           stationUsed[kNStations];
+      int                           nseeds;
+      int                           nseeds_per_station[kNStations];
+      const StrawHitCollection*     shcol;
+      const StrawHitFlagCollection* shfcol;
+      int                           debugLevel;	     // printout level
     };
   }
 }
