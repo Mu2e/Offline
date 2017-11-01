@@ -2,8 +2,8 @@
 
 #include "CalPatRec/test/testDeltaFinder.fcl"
 
-physics.producers.DeltaFinder.maxElectronHitEnergy : 0.0035
-services.TFileService.fileName                     : "delta_finder_0035.root"
+physics.producers.DeltaFinder.maxElectronHitEnergy : 0.0070
+services.TFileService.fileName                     : "delta_finder_0070.root"
 
 # physics.producers.MakeStrawHitPositions.printHits  : 1
 

@@ -16,8 +16,8 @@ END_PROLOG
 
 services : {
     message               : @local::default_message
-    TFileService          : { fileName : "delta_finder_arpan.root" }
-    RandomNumberGenerator : { }
+    TFileService          :  { fileName       : "debugDeltaFinder.root" }
+    RandomNumberGenerator :  { }
     #   Timing                : { }
     GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"      }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
@@ -57,7 +57,11 @@ physics: {
 	}
 
 	DeltaFinder: { @table::CalPatRec.producers.DeltaFinder
-	    maxElectronHitEnergy          :0.007
+	    maxElectronHitEnergy          : 0.007
+	    maxChi2Stereo                 : 10.
+#	    maxChi2Neighbor               : 25.                   # 
+#	    maxChi2Radial                 : 25.                   # 
+#	    maxDriftTime                  : 50.
 	    StrawHitPositionCollectionTag : MakeStrawHitPositions
 	    debugLevel                    : 1
 	    diagLevel                     : 1
@@ -65,10 +69,16 @@ physics: {
 		mcDiag                        : true
 		printElectrons                : 1
 		printElectronsHits            : 1
+
 		printElectronsMinMom          : 100.
 		printElectronsMaxMom          : 110.
 		printElectronsMinNHits        : 0
 		printElectronsMaxFReco        : 1.1 # 0.5
+
+#		printElectronsMinMom          : 0.
+#		printElectronsMaxMom          : 20.
+#		printElectronsMinNHits        : 40
+#		printElectronsMaxFReco        : 1.1
 
 		printDeltaSeeds               : 1
 		printDeltaCandidates          : 1

@@ -341,14 +341,16 @@ CalPatRec : { @table::CalPatRec
 	    minNFacesWithHits             : 2                     # 
 	    minNSeeds                     : 2                     #
 	    maxElectronHitEnergy          : 0.020                 # means: use all hits
-	    maxChi2Stereo                 : 20.                   # 
-	    maxChi2Neighbor               : 40.                   # 
-	    maxChi2Radial                 : 40.                   # 
-	    maxDt                         : 50.                   # ns
+	    maxChi2Stereo                 : 10. # 50.                   #
+	    maxChi2Neighbor               : 25.                   # 
+	    maxChi2Radial                 : 25.                   # 
+	    maxChi2Tot                    : 25.                   # 
+	    maxDt                         : 40.                   # ns
 	    maxDxy                        : 40.                   # mm
 	    maxGap                        : 1                     # gap in missing stations along the candidate
 	    sigmaR                        : 10.                   # mm, roughly 3 MeV/c
 	    maxDriftTime                  : 40.                   # ns
+	    maxDtDs                       :  5.                   # ns, max allowed T0 shift per station
 	    # debugging/diagnostics
 	    testOrder                     : 0
 	    debugLevel                    : 0

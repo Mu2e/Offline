@@ -133,7 +133,7 @@ namespace mu2e
           const std::vector<CrvSiPMCharges::CrvSingleCharge> &singleSiPMCharges = crvSiPMCharges.GetSiPMCharges(SiPM);
           for(size_t i=0; i<singleSiPMCharges.size(); i++) 
           {
-            double charge = singleSiPMCharges[i]._charge;
+            double charge = singleSiPMCharges[i]._chargeInPEs;
             MCPEs+=charge; 
           }
         }

@@ -125,6 +125,7 @@ BEGIN_PROLOG
       timeWindowEnd                 : 1750   //ns
       leadingVetoTime               : 0      //the time window before the first hit time of the coincidence triplet (only used to print out the results)
       trailingVetoTime              : 125    //the time window after the last hit time of the coincidence triplet (only used to print out the results)
+      crvWaveformsModuleLabel       : "CrvWaveforms"
     }
     CrvCoincidenceClusterFinder:
     {

@@ -625,9 +625,10 @@ namespace mu2e {
 	      //-----------------------------------------------------------------------------
 	      mc->fListOfHits.push_back(hd);
 	      
-	      StrawIndex shid = sh->strawIndex();
-	      const Straw& straw  = _data->tracker->getStraw(shid);
-	      int station = straw.id().getStation();
+	      StrawIndex   shid  = sh->strawIndex();
+	      const Straw& straw = _data->tracker->getStraw(shid);
+	      int station        = straw.id().getStation();
+
 	      if (station < mc->fFirstStation) mc->fFirstStation = station;
 	      if (station > mc->fLastStation ) mc->fLastStation  = station;
 	      
@@ -700,7 +701,7 @@ namespace mu2e {
 	    //-----------------------------------------------------------------------------
 	    // count CE hits 
 	    //-----------------------------------------------------------------------------
-	    if ((mc->fPdgID == 11) && (mc->fStartMom > 100)) {
+	    if ((mc->fPdgID == 11) && (mc->fStartMom > 95) && (mc->fStartMom <110)) {
 	      seed->fNHitsCE += 1;
 	      if (seed->fDeltaIndex >= 0) {
 		DeltaCandidate* dc = &_data->deltaCandidateHolder[seed->fDeltaIndex];
@@ -725,8 +726,8 @@ namespace mu2e {
       npart              = 0;
 
       for (int is=dc->fFirstStation; is<=dc->fLastStation; is++) {
-	if (! dc->st_used[is]) continue;
-	DeltaSeed* ds = dc->seed[is];
+	DeltaSeed* ds = dc->Seed(is);
+	if (ds == 0) continue;
 	for (int face=0; face<kNFaces; face++) {
 	  int nh = ds->hitlist[face].size();
 	  for (int ih=0; ih<nh; ih++) {
@@ -839,9 +840,9 @@ namespace mu2e {
 	int nseeds = _data->seedHolder[st].size();
 	printf("station: %2i N(seeds): %3i\n",st,nseeds);
 	if (nseeds > 0) {
-	  printf("-----------------------------------------------------------------------------------------------------------------------------\n");
-	  printf("      st  i good type   SHID:MCID(0)    SHID:MCID(1)       chi2    chi2t  mintime maxtime    X        Y         Z    nfwh nht\n");
-	  printf("-----------------------------------------------------------------------------------------------------------------------------\n");
+	  printf("------------------------------------------------------------------------------------------------------------------------------\n");
+	  printf("      st  i good type   SHID:MCID(0)    SHID:MCID(1)       chi2    chi2t mintime  maxtime      X        Y         Z   nfwh nht\n");
+	  printf("------------------------------------------------------------------------------------------------------------------------------\n");
 	  for (int ps=0; ps<nseeds; ++ps) {
 	    DeltaSeed* seed = _data->seedHolder[st].at(ps);
 
@@ -906,7 +907,7 @@ namespace mu2e {
 	  int pdg_id = -1;
 	  if (dc->fMcPart) pdg_id = dc->fMcPart->fPdgID;
 	  printf("----------------------------------------------------------------------------------\n");
-	  printf("      i  nh n(CE) ns s1 s2      X         Y         Z    mintime  maxtime   PdgID \n");
+	  printf("      i  nh n(CE) ns s1 s2     X        Y        Z    chi2s   chi2t   htmin   htmax   t0min   t0max   PdgID \n");
 	  printf("----------------------------------------------------------------------------------\n");
 	  printf(":dc:%3i %3i  %3i",i,dc->fNHits,dc->fNHitsCE);
 	  printf(" %3i",dc->n_seeds);
@@ -919,16 +920,22 @@ namespace mu2e {
 	    DeltaSeed* ds = dc->seed[is];
 	    if (ds != NULL) {
 	      printf("        %3i  %3i    %2i:%03i",ds->fNHitsTot,ds->fNHitsCE,is,ds->fNumber);
-	      printf(" %9.2f %9.2f %9.2f",
+	      printf(" %7.2f %7.2f %8.2f",
 		     ds->CofM.x(),ds->CofM.y(),ds->CofM.z());
-	      printf("%8.1f %8.1f",ds->fMinTime,ds->fMaxTime);
+	      printf(" %7.1f %7.1f",ds->chi2dof, ds->chi2tot);
+	      printf(" %7.1f %7.1f",ds->fMinTime,ds->fMaxTime);
+	      printf(" %7.1f %7.1f",dc->fT0Min[is],dc->fT0Max[is]);
 	      if (ds->fType != 0) {
-		printf(" (%6i %6i)",
-		       ds->fHitData[0]->fHit->strawIndex().asInt(),
-		       ds->fHitData[1]->fHit->strawIndex().asInt());
+		int f0 = ds->fType / 10;
+		int f1 = ds->fType % 10;
+
+		printf(" (%5i:%9i, %5i:%9i)",
+		       ds->hitlist[f0][0]->fHit->strawIndex().asInt(),ds->fMcPart[f0][0]->fID,
+		       ds->hitlist[f1][0]->fHit->strawIndex().asInt(),ds->fMcPart[f1][0]->fID
+		       );
 	      }
 	      else {
-		printf(" (%6i %6i)",-1,-1);
+		printf(" (%5i:%9i, %5i:%9i)",-1,-1,-1,-1);
 	      }
 
 	      printf("\n");
@@ -993,12 +1000,12 @@ namespace mu2e {
   void DeltaFinderDiag::printHitData(const HitData_t* Hd, int Index) {
 
     if (Index <= 0) {
-      printf("--------------------------------------------------------------------------");
-      printf("--------------------------------------\n");
-      printf(" S:F  I   SHID  Plane   Panel  Layer   Straw     Time          dt       eDep ");
-      printf("           PDG         ID         p   DeltaID\n");
-      printf("--------------------------------------------------------------------------");
-      printf("--------------------------------------\n");
+      printf("-------------------------------------------------------------------------");
+      printf("-----------------------------------------------------------\n");
+      printf("       SHID  Plane  Panel  Layer   Straw     Time          dt       eDep ");
+      printf("           PDG         ID         p   DeltaID radOK edepOK \n");
+      printf("-------------------------------------------------------------------------");
+      printf("-----------------------------------------------------------\n");
       if (Index < 0) return;
     }
 
@@ -1006,7 +1013,11 @@ namespace mu2e {
     const StrawHit* sh  = Hd->fHit;
     int loc             = sh-sh0;
 
-    
+    const StrawHitFlag* shf = &_data->shfcol->at(loc);
+   
+    int radselOK        = (! shf->hasAnyProperty(StrawHitFlag::radsel));
+    int edepOK          = (! shf->hasAnyProperty(StrawHitFlag::energysel));
+
     const SimParticle* sim(0);
     int                pdg_id(-9999), sim_id(-9999);
     float              mc_mom(-9999.);
@@ -1023,7 +1034,7 @@ namespace mu2e {
     printf("%5i ",loc);
     printf("%5i" ,sh->strawIndex().asInt());
 	
-    printf("  %5i  %5i   %5i   %5i   %8.3f   %8.3f   %9.6f   %10i   %10i  %8.3f %5i\n",
+    printf("  %5i  %5i   %5i   %5i   %8.3f   %8.3f   %9.6f   %10i   %10i  %8.3f %5i %5i %5i\n",
 	   straw->id().getPlane(),
 	   straw->id().getPanel(),
 	   straw->id().getLayer(),
@@ -1034,7 +1045,9 @@ namespace mu2e {
 	   pdg_id,
 	   sim_id,
 	   mc_mom,
-	   Hd->fDeltaIndex);
+	   Hd->fDeltaIndex,
+	   radselOK,
+	   edepOK);
   }
 
 //-----------------------------------------------------------------------------
@@ -1069,17 +1082,22 @@ namespace mu2e {
 
     if (Index <= 0) {
       printf("--------------------------------------------------------------------------");
-      printf("--------------------------------------\n");
+      printf("-----------------------------------------------------\n");
       printf(" S:F  I   SHID  Plane   Panel  Layer   Straw     Time          dt       eDep ");
-      printf("           PDG         ID         p   \n");
+      printf("           PDG         ID         p   radselOK edepOK\n");
       printf("--------------------------------------------------------------------------");
-      printf("--------------------------------------\n");
+      printf("-----------------------------------------------------\n");
       if (Index < 0) return;
     }
 
     const StrawHit* sh0 = &_data->shcol->at(0);
     int loc             = Sh-sh0;
     
+    const StrawHitFlag* shf = &_data->shfcol->at(loc);
+   
+    int radselOK        = (! shf->hasAnyProperty(StrawHitFlag::radsel));
+    int edepOK          = (! shf->hasAnyProperty(StrawHitFlag::energysel));
+
     const SimParticle* sim(0);
     int                pdg_id(-9999), sim_id(-9999);
     float              mc_mom(-9999.);
@@ -1096,7 +1114,7 @@ namespace mu2e {
     printf("%5i ",loc);
     printf("%5i" ,Sh->strawIndex().asInt());
 	
-    printf("  %5i  %5i   %5i   %5i   %8.3f   %8.3f   %9.6f   %10i   %10i  %8.3f\n",
+    printf("  %5i  %5i   %5i   %5i   %8.3f   %8.3f   %9.6f   %10i   %10i  %8.3f %5i %5i\n",
 	   straw->id().getPlane(),
 	   straw->id().getPanel(),
 	   straw->id().getLayer(),
@@ -1106,7 +1124,8 @@ namespace mu2e {
 	   Sh->energyDep(),
 	   pdg_id,
 	   sim_id,
-	   mc_mom);
+	   mc_mom,
+	   radselOK,edepOK);
   }
 
 //-----------------------------------------------------------------------------

@@ -16,6 +16,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
 
@@ -47,6 +48,7 @@ namespace mu2e
 
     private:
     int         _verboseLevel;
+    std::string _crvWaveformsModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
     std::vector<std::string> _CRVSectors;
     std::vector<int>         _PEthresholds;
@@ -111,6 +113,7 @@ namespace mu2e
 
   CrvCoincidenceCheck::CrvCoincidenceCheck(fhicl::ParameterSet const& pset) :
     _verboseLevel(pset.get<int>("verboseLevel")),
+    _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel","")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _CRVSectors(pset.get<std::vector<std::string> >("CRVSectors")),
     _PEthresholds(pset.get<std::vector<int> >("PEthresholds")),
@@ -184,6 +187,9 @@ namespace mu2e
 
     GeomHandle<CosmicRayShield> CRS;
 
+    art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
+    if(!_crvWaveformsModuleLabel.empty()) event.getByLabel(_crvWaveformsModuleLabel,"",crvDigiMCCollection);
+
     art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
     event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
 
@@ -226,6 +232,10 @@ namespace mu2e
       double x=CRSbar.getPosition()[sector.widthDirection];
       double y=CRSbar.getPosition()[sector.thicknessDirection];
 
+      //get DigiMC
+      CrvDigiMCCollection::const_iterator digiMCIter;
+      if(crvDigiMCCollection.isValid()) digiMCIter=crvDigiMCCollection->find(barIndex);
+
       //get the reco pulses for this counter
       const CrvRecoPulses &crvRecoPulses = iter->second;
       for(int SiPM=0; SiPM<4; SiPM++)
@@ -247,6 +257,19 @@ namespace mu2e
           const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector[i];
           int PEs=pulse._PEs;
           double time=pulse._pulseTime;
+
+/*
+          if(crvDigiMCCollection.isValid())
+          {
+            if(digiMCIter!=crvDigiMCCollection->end())
+            {
+              size_t singleWaveformIndex=pulse._singleWaveformIndex; 
+              const CrvDigiMC::CrvSingleWaveform &singleWaveform = digiMCIter->second.GetSingleWaveforms(SiPM)[singleWaveformIndex];
+              if(singleWaveform._simparticle) std::cout<<singleWaveform._simparticle->id()<<"   "<<singleWaveform._simparticle->pdgId()<<std::endl;
+            }
+          }
+*/
+
           if(_verboseLevel>4)
           {
             std::cout<<"sector: "<<sectorNumber<<"  module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  counter: "<<counterNumber<<"  SiPM: "<<SiPM<<"      ";
