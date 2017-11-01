@@ -14,10 +14,10 @@ source :
 services :
 {
   message               : @local::default_message
-  TFileService          : { fileName : "hist.root" }
+  TFileService          : { fileName : "hist_dicounter_across.root" }
   RandomNumberGenerator : { }
 
-  GeometryService        : { inputFile      : "CRVResponse/singleCounter/geom.txt" }
+  GeometryService        : { inputFile      : "CRVResponse/singleCounter/geom_dicounter.txt" }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
   G4Helper               : { }
@@ -31,7 +31,7 @@ physics :
     generate: 
     {
        module_type          : EventGenerator
-       inputfile            : "CRVResponse/singleCounter/genconfig.txt"
+       inputfile            : "CRVResponse/singleCounter/genconfig_dicounter_across.txt"
     }
 
     g4run : 
@@ -109,7 +109,7 @@ outputs:
     Output : 
     {
         module_type : RootOutput
-        fileName    : "data_crv.root"
+        fileName    : "data_crv_across.root"
     }
 }
 
@@ -118,6 +118,7 @@ physics.producers.CrvPhotons.CRVSectors                   : ["Test"]
 physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v3_0/LookupTable_3000"]
 physics.producers.CrvSiPMCharges.deadSiPMProbability      : 0.0
 physics.producers.CrvWaveforms.FEBtimeSpread              : 0.0
+
 
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
