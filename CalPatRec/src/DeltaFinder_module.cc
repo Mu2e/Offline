@@ -418,7 +418,7 @@ namespace mu2e {
       //-----------------------------------------------------------------------------
       int s1 = dc->fFirstStation;
       int s2 = dc->fLastStation-1;
-      int last;
+      int last(-1);
       float t0min(-1.), t0max(-1.);
       //-----------------------------------------------------------------------------
       // first check inside "holes", skip unused stations
