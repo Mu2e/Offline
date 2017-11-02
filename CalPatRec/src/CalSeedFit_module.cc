@@ -240,6 +240,8 @@ namespace mu2e {
 
     if (!findData(event))  goto END;
 
+    _data.tracks = tracks.get();
+
     _fitter.setStepPointMCVectorCollection(_listOfMCStrawHits);
 
     _result._fitType     = 0;

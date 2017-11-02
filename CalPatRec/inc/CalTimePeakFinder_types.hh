@@ -14,12 +14,15 @@ namespace fhicl {
   class ParameterSet;
 };
 
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
+#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
 namespace mu2e {
 
   class KalFitResultNew;
-  class CaloCluster;
+  //  class CaloCluster;
   
 #ifndef __CalPatRec_CalTimePeak_hh__
   class CalTimePeakCollection;
@@ -30,11 +33,15 @@ namespace mu2e {
 // data structure shared by CalTimePeakFinder with its plugins
 //-----------------------------------------------------------------------------
     struct Data_t {                        
-      const art::Event*      _event;
-      const TimeCluster*     _timeCluster;
-      CalTimePeakCollection* _tpeaks;      // cache of time peaks
-      TimeClusterCollection* _outseeds;
-      int                    _minNHits;
+      const art::Event*               _event;
+      const TimeCluster*              _timeCluster;
+      const CaloClusterCollection*    ccCollection;
+      const StrawHitCollection*       shcol;
+      const StrawHitFlagCollection*   shfcol;
+      CalTimePeakCollection*          _tpeaks;      // cache of time peaks
+      TimeClusterCollection*          _outseeds;
+      int                             minNHits;
+      double                          minClusterEnergy;
     };
   }
 }

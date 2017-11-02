@@ -84,6 +84,9 @@ namespace mu2e {
 
     if (_diagLevel  != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
     else                  _hmanager = std::make_unique<ModuleHistToolBase>();
+
+    _data.minClusterEnergy =  _minClusterEnergy;
+    _data.minNHits         =  _minNHits;
   }
 
 //-----------------------------------------------------------------------------
@@ -93,8 +96,10 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void CalTimePeakFinder::beginJob(){
-    art::ServiceHandle<art::TFileService> tfs;
-    _hmanager->bookHistograms(tfs);
+    if (_diagLevel > 0) {
+      art::ServiceHandle<art::TFileService> tfs;
+      _hmanager->bookHistograms(tfs);
+    }
   }
 
 //-----------------------------------------------------------------------------
@@ -119,34 +124,34 @@ namespace mu2e {
 
     art::Handle<mu2e::StrawHitCollection> shcolH;
     if (evt.getByLabel(_shLabel, shcolH)) {
-      _shcol = shcolH.product();
+      _data.shcol = shcolH.product();
     }
     else {
-      _shcol  = 0;
+      _data.shcol  = 0;
       printf(" >>> ERROR in CalTimePeakFinder::findData: StrawHitCollection with label=%s not found.\n",
              _shLabel.data());
     }
 
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
     if (evt.getByLabel(_shfLabel,shflagH)) {
-      _shfcol = shflagH.product();
+      _data.shfcol = shflagH.product();
     }
     else {
-      _shfcol = 0;
+      _data.shfcol = 0;
       printf(" >>> ERROR in CalTimePeakFinder::findData: StrawHitFlagCollection with label=%s not found.\n",
              _shfLabel.data());
     }
 
     if (evt.getByLabel(_ccmLabel, _ccH)) {
-      _ccCollection = _ccH.product();
+      _data.ccCollection = _ccH.product();
     }
     else {
-      _ccCollection = 0;
+      _data.ccCollection = 0;
       printf(" >>> ERROR in CalTimePeakFinder::findData: CaloClusterCollection with label=%s not found.\n",
              _ccmLabel.data());
     }
 
-    return (_shcol != 0) && (_shfcol != 0) && (_ccCollection != 0);
+    return (_data.shcol != 0) && (_data.shfcol != 0) && (_data.ccCollection != 0);
   }
 
 //-----------------------------------------------------------------------------
@@ -215,11 +220,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // Loop over calorimeter clusters
 //-----------------------------------------------------------------------------
-    nsh   = _shcol->size();
-    ncl   = _ccCollection->size();
+    nsh   = _data.shcol->size();
+    ncl   = _data.ccCollection->size();
 
     for (int ic=0; ic<ncl; ic++) {
-      cl      = &_ccCollection->at(ic);
+      cl      = &_data.ccCollection->at(ic);
 
       if ( cl->energyDep() > _minClusterEnergy) {
 
@@ -241,8 +246,8 @@ namespace mu2e {
           // create time peak
           CalTimePeak tpeak(cl,xcl,ycl,zcl);
 
-          tpeak._shcol  = _shcol;
-          tpeak._shfcol = _shfcol;
+          tpeak._shcol  = _data.shcol;
+          tpeak._shfcol = _data.shfcol;
           tpeak._tmin   = cl_time+_mindt;
           tpeak._tmax   = cl_time+_maxdt;
 //-----------------------------------------------------------------------------
@@ -250,19 +255,16 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
           stime = 0;
           mu2e::StrawHitFlag flag;
-          // int   nhitsTimeWindow(0), nhitsHasTime(0), nhitsHasEnergy(0), nhitsHasRadius(0),
-          //       nhitsNoDelta(0), nhitsNoIsolated(0);
 
           double meanDriftTime = 1.25/0.06;// half straw tube radius / drift velocity
-	  //          int    gen_index, sim_id, vol_id;
 
           for(int istr=0; istr<nsh;++istr) {
-            flag = _shfcol->at(istr);
+            flag = _data.shfcol->at(istr);
 
             int hit_has_all_properties = flag.hasAllProperties(_hsel);
             int bgr_hit                = flag.hasAnyProperty(_bkgsel);
 
-            hit    = &_shcol->at(istr);
+            hit    = &_data.shcol->at(istr);
             time   = hit->time();
             straw  = &_tracker->getStraw(hit->strawIndex());
             zstraw = straw->getMidPoint().z();
@@ -293,7 +295,7 @@ namespace mu2e {
 
           tpeak._tpeak = stime/(tpeak.NHits()+1.e-12);
 
-          if (tpeak.NHits() > _data._minNHits) {
+          if (tpeak.NHits() > _data.minNHits) {
 	    TimePeakColl->push_back(tpeak);
 
 					//fill seed information

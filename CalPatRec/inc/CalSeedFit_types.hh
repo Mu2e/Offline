@@ -24,13 +24,13 @@ namespace mu2e {
   namespace CalSeedFitTypes {
   
     struct Data_t {
-      const art::Event*    event;
-      KalFitResultNew*     result;
-      fhicl::ParameterSet* timeOffsets;
-
-      KalSeedCollection*   tracks;	// these don't readily report their momentum
-      std::vector<int>     nrescued;	// per track
-      std::vector<float>   mom;
+      const art::Event*               event;
+      KalFitResultNew*                result;
+      fhicl::ParameterSet*            timeOffsets;
+      
+      KalSeedCollection*              tracks;        // these report their momentum very unwillingly
+      std::vector<int>                nrescued;	     // per track
+      std::vector<float>              mom;
     };
   }
 }

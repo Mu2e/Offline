@@ -25,7 +25,7 @@ namespace art {
 #include "RecoDataProducts/inc/HelixVal.hh"
 
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
+// #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
@@ -115,9 +115,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     art::Handle<CaloClusterCollection>    _ccH; // data member, as used from different places
     
-    const StrawHitCollection*             _shcol;
-    const StrawHitFlagCollection*         _shfcol;
-    const CaloClusterCollection*          _ccCollection;
+    // const StrawHitCollection*             _shcol;
+    // const StrawHitFlagCollection*         _shfcol;
+    // const CaloClusterCollection*          _ccCollection;
 
     double                                _dtoffset;
 

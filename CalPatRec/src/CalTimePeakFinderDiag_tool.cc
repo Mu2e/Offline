@@ -42,11 +42,21 @@ namespace mu2e {
     
     enum {
       kNEventHistSets       = 10,
+      kNClusterHistSets     = 10,
       kNTimeClusterHistSets = 10
     };
 
     struct EventHist_t {
+      TH1F*   ncl;
+      TH1F*   ncl50;
       TH1F*   nseeds;
+    };
+    
+    struct ClusterHist_t {
+      TH1F*   energy;
+      TH1F*   time;
+      TH1F*   size;
+      TH1F*   diskID;
     };
     
     struct TimeClusterHist_t {
@@ -58,8 +68,9 @@ namespace mu2e {
     };
 
     struct Hist_t {
-      EventHist_t*        _event[kNEventHistSets];
-      TimeClusterHist_t*  _tcl  [kNTimeClusterHistSets];
+      EventHist_t*        _event  [kNEventHistSets];
+      ClusterHist_t*      _cluster[kNClusterHistSets];
+      TimeClusterHist_t*  _tcl    [kNTimeClusterHistSets];
     };
 
   protected:
@@ -79,9 +90,11 @@ namespace mu2e {
   private:
     
     int  bookEventHistograms      (EventHist_t*       Hist, art::TFileDirectory* Dir);
+    int  bookClusterHistograms    (ClusterHist_t*     Hist, art::TFileDirectory* Dir);
     int  bookTimeClusterHistograms(TimeClusterHist_t* Hist, art::TFileDirectory* Dir);
     
     int  fillEventHistograms      (EventHist_t*       Hist, Data_t* Data);
+    int  fillClusterHistograms    (ClusterHist_t*     Hist, const CaloCluster* Cl);
     int  fillTimeClusterHistograms(TimeClusterHist_t* Hist, TimeCluster* Tcl);
 				  
     virtual int bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) override ;
@@ -104,7 +117,18 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   int CalTimePeakFinderDiag::bookEventHistograms(EventHist_t* Hist, art::TFileDirectory* Dir) {
-    Hist->nseeds = Dir->make<TH1F>("nseeds0"  , "number of track candidates: all events", 21, -0.5, 20.5);
+    Hist->nseeds = Dir->make<TH1F>("nseeds0", "number of track candidates"  , 21, -0.5, 20.5);
+    Hist->ncl    = Dir->make<TH1F>("ncl"    , "N(calorimeter clusters)"     , 500, 0, 500);
+    Hist->ncl50  = Dir->make<TH1F>("ncl50"  , "N(calorimeter clusters) E>50", 100, 0, 100);
+    return 0;
+  }
+    
+//-----------------------------------------------------------------------------
+  int CalTimePeakFinderDiag::bookClusterHistograms(ClusterHist_t* Hist, art::TFileDirectory* Dir) {
+    Hist->energy = Dir->make<TH1F>("energy", "Cluster energy", 200, 0,  200);
+    Hist->time   = Dir->make<TH1F>("time"  , "Cluster time"  , 400, 0, 2000);
+    Hist->size   = Dir->make<TH1F>("size"  , "Cluster size"  ,  50, 0,   50);
+    Hist->diskID = Dir->make<TH1F>("disk"  , "Cluster diskID",   5, 0,    5);
     return 0;
   }
     
@@ -130,7 +154,8 @@ namespace mu2e {
     int book_event_histset[kNEventHistSets];
     for (int i=0; i<kNEventHistSets; i++) book_event_histset[i] = 0;
 
-    book_event_histset[ 0] = 1;		// all events
+    book_event_histset[ 0] = 1;		// events: all
+    book_event_histset[ 1] = 1;		// events: with good seeds
 
     for (int i=0; i<kNEventHistSets; i++) {
       if (book_event_histset[i] != 0) {
@@ -139,6 +164,24 @@ namespace mu2e {
 	
 	_hist._event[i] = new EventHist_t;
 	bookEventHistograms(_hist._event[i],&tfdir);
+      }
+    }
+//-----------------------------------------------------------------------------
+// book calorimeter cluster histograms
+//-----------------------------------------------------------------------------
+    int book_cluster_histset[kNClusterHistSets];
+    for (int i=0; i<kNClusterHistSets; i++) book_cluster_histset[i] = 0;
+
+    book_cluster_histset[ 0] = 1;		// clusters: all 
+    book_cluster_histset[ 1] = 1;		// clusters: above time seeding threshold
+
+    for (int i=0; i<kNClusterHistSets; i++) {
+      if (book_cluster_histset[i] != 0) {
+	sprintf(folder_name,"cl_%i",i);
+	art::TFileDirectory tfdir = Tfs->mkdir(folder_name);
+	
+	_hist._cluster[i] = new ClusterHist_t;
+	bookClusterHistograms(_hist._cluster[i],&tfdir);
       }
     }
 //-----------------------------------------------------------------------------
@@ -166,7 +209,29 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   int CalTimePeakFinderDiag::fillEventHistograms(EventHist_t* Hist, Data_t* Data) {
     int nseeds = Data->_outseeds->size();
+    int ncl    = Data->ccCollection->size();
+    int ncl50(0);
+
+    for (int i=0; i<ncl; i++) {
+      const CaloCluster* cl = &Data->ccCollection->at(i);
+      if (cl->energyDep() > Data->minClusterEnergy) ncl50 += 1;
+    }
+
     Hist->nseeds->Fill(nseeds);
+    Hist->ncl->Fill(ncl);
+    Hist->ncl50->Fill(ncl50);
+
+    return 0;
+  }
+
+//-----------------------------------------------------------------------------
+  int CalTimePeakFinderDiag::fillClusterHistograms(ClusterHist_t* Hist, const CaloCluster* Cl) {
+
+    Hist->energy->Fill(Cl->energyDep());
+    Hist->time->Fill(Cl->time());
+    Hist->size->Fill(Cl->size());
+    Hist->diskID->Fill(Cl->diskId());
+
     return 0;
   }
 
@@ -194,7 +259,7 @@ namespace mu2e {
   int CalTimePeakFinderDiag::fillHistograms(void* Data, int Mode) {
     _data = (Data_t*) Data;
 //-----------------------------------------------------------------------------
-// precalculate some parameters
+// Precalculate some parameters
 //-----------------------------------------------------------------------------
     int nseeds       = _data->_outseeds->size();
     int n_good_seeds = 0;
@@ -202,9 +267,8 @@ namespace mu2e {
     for (int i=0; i<nseeds; ++i) {
       TimeCluster* tcl = &_data->_outseeds->at(i);
       int nhits        = tcl->hits().size();
-      if (nhits >= _data->_minNHits) n_good_seeds += 1;
+      if (nhits >= _data->minNHits) n_good_seeds += 1;
     }
-    
 //-----------------------------------------------------------------------------
 // fill event histograms
 //-----------------------------------------------------------------------------
@@ -212,13 +276,22 @@ namespace mu2e {
     if (n_good_seeds > 0) fillEventHistograms(_hist._event[1],_data);
 
 //-----------------------------------------------------------------------------
+// fill cluster histograms
+//-----------------------------------------------------------------------------
+    int ncl = _data->ccCollection->size();
+    for (int i=0; i<ncl; ++i) {
+      const CaloCluster* cl = &_data->ccCollection->at(i);
+      fillClusterHistograms(_hist._cluster[0],cl);
+      if (cl->energyDep() > _data->minClusterEnergy) fillClusterHistograms(_hist._cluster[1],cl);
+    }
+//-----------------------------------------------------------------------------
 // fill time cluster histograms
 //-----------------------------------------------------------------------------
     for (int i=0; i<nseeds; ++i) {
       TimeCluster* tcl = &_data->_outseeds->at(i);
       fillTimeClusterHistograms(_hist._tcl[0],tcl);
       int nhits            = tcl->hits().size();
-      if (nhits > _data->_minNHits) {
+      if (nhits > _data->minNHits) {
 	fillTimeClusterHistograms(_hist._tcl[1],tcl);
       }
     }
