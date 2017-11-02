@@ -64,7 +64,8 @@ physics :
 
     readStrawHits: {
       module_type      : ReadStrawHit
-      makerModuleLabel : makeSH
+      recoModuleLabel : makeSH
+      simModuleLabel : makeSD
       diagLevel        : 3
       maxFullPrint     : 100
     }
