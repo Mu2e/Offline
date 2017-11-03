@@ -1116,6 +1116,12 @@ namespace mu2e {
       CarbonFiber->AddMaterial(CFibers, fiberFrac );
       CarbonFiber->AddMaterial(CFresin, (1.0-fiberFrac) );
     }
+ 
+    mat = uniqueMaterialOrThrow("PET_P100");
+      G4Material* PET_P100 = new G4Material( mat.name, 0.11*CLHEP::g/CLHEP::cm3, 3);
+      PET_P100->AddElement( getElementOrThrow("C"), 10);
+      PET_P100->AddElement( getElementOrThrow("H"),  8);
+      PET_P100->AddElement( getElementOrThrow("O"),  4);
 
     mat = uniqueMaterialOrThrow( "Lyso_01");  /// Alessandra
     {

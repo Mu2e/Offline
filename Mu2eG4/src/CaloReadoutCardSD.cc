@@ -60,9 +60,8 @@ namespace mu2e {
 	 int idro = touchableHandle->GetCopyNumber(0) + touchableHandle->GetCopyNumber(2)*_nro;  //the idro is always Number(0) + _nro*number(X), make sure X is right
 
 	 //uncomment for diagnosis purposes only when playing with the geometry
-	 //for (int i=0;i<8;++i) std::cout<<"Card Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "
-	 //                               <<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(aStep->GetPreStepPoint()->GetPosition())
-	 // 			 	  <<"   "<<idro<<"   "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
+ 	 //for (int i=0;i<=touchableHandle->GetHistoryDepth();++i) std::cout<<"cryRO Transform level "<<i<<"   "
+         // <<touchableHandle->GetCopyNumber(i)<<std::endl;
 
 	 _collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                 	    idro,

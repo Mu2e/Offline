@@ -685,10 +685,10 @@ namespace mu2e {
       recoDigi   = &recoCaloDigiCol->at(i);
       //amplitude  = recoDigi->amplitude()*ADC2mV;
       roId       = recoDigi->ROid();
-      crystalId  = _calorimeter->crystalByRO(roId);
+      crystalId  = _calorimeter->caloInfo().crystalByRO(roId);
       diskId     = _calorimeter->crystal(crystalId).diskId();
 
-      crystalPos = _calorimeter->crystal(crystalId).localPositionFF();
+      crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalId).position());
       radius     = sqrt(crystalPos.x()*crystalPos.x() + crystalPos.y()*crystalPos.y());
 
       if (radius < _caloRmin)               continue;
@@ -779,7 +779,7 @@ namespace mu2e {
 
 
       CaloCrystalHit const& hit    = caloCrystalHits->at(ic);
-      CLHEP::Hep3Vector crystalPos = _calorimeter->crystal(hit.id()).localPositionFF();
+      CLHEP::Hep3Vector crystalPos = crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalId).position());
 
       _cryEtot             += hit.energyDep();
       _cryTime[_nHits]      = hit.time();

@@ -132,7 +132,7 @@ namespace mu2e {
       // fill the map that associate for each crystal the corresponding CaloRecoDigi indexes
       for (unsigned int i=0; i< recoCaloDigis.size(); ++i)
       {
-          int crystalId = cal.crystalByRO(recoCaloDigis[i].ROid());
+          int crystalId = cal.caloInfo().crystalByRO(recoCaloDigis[i].ROid());
           hitMap_[crystalId].push_back(&recoCaloDigis[i]);
       }
 

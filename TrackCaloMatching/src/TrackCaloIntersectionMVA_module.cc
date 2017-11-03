@@ -504,8 +504,8 @@ double TrackCaloIntersectionMVA::scanOutDisk(Calorimeter const& cal, TrkDifTraj 
 {         
 
      double rangeForward(0);
-     double caloRadiusIn  = cal.disk(iSection).innerEnvelopeR() + 4*cal.diskInfo().crystalHalfTrans();
-     double caloRadiusOut = cal.disk(iSection).outerEnvelopeR() - 4*cal.diskInfo().crystalHalfTrans();
+     double caloRadiusIn  = cal.disk(iSection).innerEnvelopeR() + 2*cal.diskInfo().crystalXYLength();
+     double caloRadiusOut = cal.disk(iSection).outerEnvelopeR() - 2*cal.diskInfo().crystalXYLength();
 
      double range(rangeStart);
 

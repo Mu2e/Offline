@@ -104,6 +104,7 @@ namespace mu2e {
 	     _outputNtup(pset.get<bool>("outputNtup")),
 	     _trkdiag(0)
 	   {
+		 
         	 produces<TrkCaloIntersectCollection>();		 
 	   }
 
@@ -503,8 +504,8 @@ double TrackCaloIntersection::scanOutDisk(Calorimeter const& cal, TrkDifTraj con
 {         
 
      double rangeForward(0);
-     double caloRadiusIn  = cal.disk(iSection).innerEnvelopeR() + 4*cal.diskInfo().crystalHalfTrans();
-     double caloRadiusOut = cal.disk(iSection).outerEnvelopeR() - 4*cal.diskInfo().crystalHalfTrans();
+     double caloRadiusIn  = cal.disk(iSection).innerEnvelopeR() + 2*cal.diskInfo().crystalXYLength();
+     double caloRadiusOut = cal.disk(iSection).outerEnvelopeR() - 2*cal.diskInfo().crystalXYLength();
 
      double range(rangeStart);
 

@@ -1,5 +1,3 @@
-#ifndef CalorimeterGeom_CaloGeomUtil_hh
-#define CalorimeterGeom_CaloGeomUtil_hh
 //
 // Contains geometry utilities: coordinates transformations and checks if you are inside disks
 // FF is the abrevation of front face
@@ -7,20 +5,22 @@
 // Original author B. Echenard
 //
 
+#ifndef CalorimeterGeom_CaloGeomUtil_hh
+#define CalorimeterGeom_CaloGeomUtil_hh
+
 #include "CalorimeterGeom/inc/CaloGeomUtil.hh"
 #include "CalorimeterGeom/inc/CaloInfo.hh"
 #include "CalorimeterGeom/inc/CaloGeomInfo.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
-
 #include <vector>
 #include <memory>
+
 
 namespace mu2e {
 
     
-
     class CaloGeomUtil {
 
        public:
@@ -55,7 +55,7 @@ namespace mu2e {
           const std::vector<std::shared_ptr<Disk>>& disks_;
        	  const CaloInfo&                           caloInfo_;
        	  const CaloGeomInfo&                       geomInfo_;
-          const std::vector<Crystal const*>&        fullCrystalList_;
+          const std::vector<const Crystal*>&        fullCrystalList_;
      };
 
 }    

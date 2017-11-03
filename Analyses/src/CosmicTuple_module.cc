@@ -326,7 +326,7 @@ namespace mu2e {
         for ( size_t i=0; i<apdhits->size(); ++i ) {
           const StepPointMC & apdhit = apdhits->at(i);
           int apdid = apdhit.volumeId();
-          int cida  = cg->crystalByRO(apdid);
+          int cida  = cg->caloInfo().crystalByRO(apdid);
           hit_apds[cida] =1;
         }
       }
