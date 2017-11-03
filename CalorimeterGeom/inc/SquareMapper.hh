@@ -3,9 +3,8 @@
 
 
 #include "CalorimeterGeom/inc/CrystalMapper.hh"
-
-#include <vector>
 #include "CLHEP/Vector/TwoVector.h"
+#include <vector>
 
 
 
@@ -34,20 +33,20 @@ namespace mu2e {
 	    SquareMapper();
             virtual ~SquareMapper() {};
 
-            virtual int               nCrystalMax(int maxRing)              const {return (2*maxRing+1)*(2*maxRing+1);}
-            virtual int               nApex()                               const {return apexX_.size();}
-            virtual double            apexX(int i)                          const {return apexX_.at(i);}
-            virtual double            apexY(int i)                          const {return apexY_.at(i);}
+            virtual int               nCrystalMax(int maxRing)        const {return (2*maxRing+1)*(2*maxRing+1);}
+            virtual int               nApex()                         const {return apexX_.size();}
+            virtual double            apexX(int i)                    const {return apexX_.at(i);}
+            virtual double            apexY(int i)                    const {return apexY_.at(i);}
 
-	    virtual CLHEP::Hep2Vector xyFromIndex(int thisIndex)            const;
-            virtual int               indexFromXY(double x, double y)       const;
+	    virtual CLHEP::Hep2Vector xyFromIndex(int thisIndex)      const;
+            virtual int               indexFromXY(double x, double y) const;
 
 	    virtual std::vector<int>  neighbors(int thisIndex, unsigned int level=1) const;
 
 
 	private:
 
-	    SquLK        lk(int index) const;
+	    SquLK lk(int index)        const;
 	    int index(const SquLK &lk) const;
 	    int ring(const  SquLK &lk) const;
 

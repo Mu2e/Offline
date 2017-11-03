@@ -175,7 +175,7 @@ namespace mu2e {
        const CaloClusterCollection& caloClusters(*caloClustersHandle);
 
        
-       double cellsize = 2*(cal.caloInfo().crystalHalfTrans()+cal.caloInfo().wrapperThickness());
+       double cellsize = cal.caloInfo().crystalXYLength()+2.0*cal.caloInfo().wrapperThickness();
        const auto* trkIntersectBase = &trkIntersects.front();
        const auto* caloClusterBase = &caloClusters.front();
 

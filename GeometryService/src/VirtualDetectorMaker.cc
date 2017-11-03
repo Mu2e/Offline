@@ -443,15 +443,15 @@ namespace mu2e {
         int vdIdFEBEdge  = VirtualDetectorId::EMC_FEB_0_EdgeIn;
         int vdIdFEBSurf  = VirtualDetectorId::EMC_FEB_0_SurfIn;
 
-        double crateHalfLength = cg->caloInfo().crateHalfLength();
+        double crateHalfLength = cg->caloInfo().crateZLength()/2.0;           
 	double delta           = 2*vdHL+0.02;
 
-        CLHEP::Hep3Vector parentInMu2e = cg->geomInfo().center();
+        CLHEP::Hep3Vector parentInMu2e = cg->geomInfo().origin();
 
 	for(size_t i=0; i<cg->nDisk(); ++i)
         {
            const CLHEP::Hep3Vector& sizeDisk = cg->disk(i).geomInfo().size();
-           CLHEP::Hep3Vector posDiskLocal  = cg->disk(i).geomInfo().origin() - cg->geomInfo().center();
+           CLHEP::Hep3Vector posDiskLocal  = cg->disk(i).geomInfo().origin() - cg->geomInfo().origin();
            CLHEP::Hep3Vector posCrateLocal = posDiskLocal + CLHEP::Hep3Vector(0.0,0.0,cg->disk(i).geomInfo().crateDeltaZ());
 
            CLHEP::Hep3Vector  posFrontDisk = posDiskLocal - CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0+delta);

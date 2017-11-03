@@ -16,7 +16,7 @@ namespace mu2e {
       caloInfo_(),
       geomInfo_(),
       fullCrystalList_(),  
-      geomUtil_(disks_,caloInfo_,geomInfo_,fullCrystalList_)
+      geomUtil_(disks_, caloInfo_, geomInfo_, fullCrystalList_)
     {}
 
 
@@ -37,7 +37,7 @@ namespace mu2e {
     }
     
     
-    int DiskCalorimeter::crystalIdxFromPosition(const CLHEP::Hep3Vector &pos) const 
+    int DiskCalorimeter::crystalIdxFromPosition(const CLHEP::Hep3Vector& pos) const 
     {   
 	int offset(0);
 	for (unsigned int idisk=0;idisk<disks_.size();++idisk)
@@ -53,7 +53,7 @@ namespace mu2e {
     }
     
 
-    int DiskCalorimeter::nearestIdxFromPosition(const CLHEP::Hep3Vector &pos) const 
+    int DiskCalorimeter::nearestIdxFromPosition(const CLHEP::Hep3Vector& pos) const 
     {                   
         int offset(0);
         CLHEP::Hep3Vector posInSection = geomUtil_.mu2eToDisk(0,pos);
@@ -74,6 +74,7 @@ namespace mu2e {
     {
         return std::abs(p1.z()-p2.z());
     }
+    
     double DiskCalorimeter::deltaPerp(int ic, const CLHEP::Hep3Vector& pos) const
     {
         return sqrt((fullCrystalList_.at(ic)->position()-pos).perp2());

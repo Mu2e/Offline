@@ -38,37 +38,31 @@ namespace mu2e {
 
             // calo sections
 	    virtual unsigned int              nDisk()     const  {return nDisks_;}
-            virtual unsigned int              nCrate()    const  {return nCrates_;}
-            virtual unsigned int              nBoard()    const  {return nBoards_;}
 	    virtual const Disk&               disk(int i) const  {return *disks_.at(i);}
 
             	    
   	    // crystal / readout section
-            virtual unsigned int              nCrystal()     const  {return fullCrystalList_.size();}
 	    virtual unsigned int              nRO()          const  {return fullCrystalList_.size()*caloInfo_.nROPerCrystal();}
+            virtual unsigned int              nCrystal()     const  {return fullCrystalList_.size();}
             virtual const Crystal&            crystal(int i) const  {return *fullCrystalList_.at(i);}
 	            
-	    virtual int                       crystalByRO(int roid)          const  {return (roid/caloInfo_.nROPerCrystal());}
-	    virtual int                       ROBaseByCrystal(int crystalId) const  {return (crystalId*caloInfo_.nROPerCrystal());}
 
-
-             // calorimeter geometry information 
+            // calorimeter geometry information 
 	    virtual const CaloInfo&           caloInfo() const  {return caloInfo_;} 
 	    virtual const CaloGeomInfo&       geomInfo() const  {return geomInfo_;} 	    
 	    virtual const CaloGeomUtil&       geomUtil() const  {return geomUtil_;} 
-	                  CaloInfo&           caloInfo() {return caloInfo_;} 
-	                  CaloGeomInfo&       geomInfo() {return geomInfo_;} 	    
-	                  CaloGeomUtil&       geomUtil() {return geomUtil_;} 
+	                  CaloInfo&           caloInfo()        {return caloInfo_;} 
+	                  CaloGeomInfo&       geomInfo()        {return geomInfo_;} 	    
+	                  CaloGeomUtil&       geomUtil()        {return geomUtil_;} 
            
 
 
   	    // neighbors, indexing 
             virtual const std::vector<int>&  neighbors(int crystalId, bool rawMap)     const  {return fullCrystalList_.at(crystalId)->neighbors(rawMap);}	  
-            virtual const std::vector<int>&  nextNeighbors(int crystalId, bool rawMap) const  {return fullCrystalList_.at(crystalId)->nextNeighbors(rawMap);}	  
-                        
+            virtual const std::vector<int>&  nextNeighbors(int crystalId, bool rawMap) const  {return fullCrystalList_.at(crystalId)->nextNeighbors(rawMap);} 
             virtual       std::vector<int>   neighborsByLevel(int crystalId, int level, bool rawMap) const; 
-            virtual int                      crystalIdxFromPosition(const CLHEP::Hep3Vector &pos) const;
-            virtual int                      nearestIdxFromPosition(const CLHEP::Hep3Vector &pos) const; 
+            virtual int                      crystalIdxFromPosition(const CLHEP::Hep3Vector& pos) const;
+            virtual int                      nearestIdxFromPosition(const CLHEP::Hep3Vector& pos) const; 
 
 
             // get to know me!
@@ -90,7 +84,7 @@ namespace mu2e {
             
             CaloInfo                      caloInfo_;
 	    CaloGeomInfo                  geomInfo_;
-	    std::vector<Crystal const*>   fullCrystalList_; //crystal non-owning pointers
+	    std::vector<Crystal const*>   fullCrystalList_; //non-owning crystal pointers
 	    CaloGeomUtil                  geomUtil_;
      };
 

@@ -175,7 +175,7 @@ namespace mu2e {
          bool isCompressible(int simPdgId, const  std::unordered_set<int>&, const  SimParticlePtrCollection&);
          void compressSteps(const Calorimeter&, CaloShowerStepCollection&, bool isCrystal,
                             int volId, const SimPtr&, std::vector<const StepPointMC*>&);
-
+         void dumpAllInfo(const HandleVector& stepsHandles,const Calorimeter& cal);
     };
 
 
@@ -287,7 +287,7 @@ namespace mu2e {
          PhysicalVolumeMultiHelper vi(*vols_);
 
          const Calorimeter& cal = *(GeomHandle<Calorimeter>());
-         zSliceSize_             = (2.0*cal.caloInfo().crystalHalfLength()+0.01)/float(numZSlices_);
+         zSliceSize_             = (cal.caloInfo().crystalZLength()+0.01)/float(numZSlices_);
 
 
          // Collect the StepPointMC's produced by each SimParticle Ancestor
@@ -295,6 +295,8 @@ namespace mu2e {
 
          std::map<SimPtr,CaloCompressUtil> crystalAncestorsMap; 
          collectStepBySimAncestor(cal,vi,crystalStepsHandles,crystalAncestorsMap);
+
+         if (diagLevel_ == 99)  dumpAllInfo(crystalStepsHandles,cal);
 
 
          //Loop over ancestor simParticles, check if they are compressible, and produce the corresponding caloShowerStepMC
@@ -476,7 +478,8 @@ namespace mu2e {
           ShowerStepUtil buffer(numZSlices_,ShowerStepUtil::weight_type::energy );        
           for (const StepPointMC* step : steps)
           {               
-               CLHEP::Hep3Vector pos  = (isCrystal) ? cal.geomUtil().mu2eToCrystal(volId,step->position()) : cal.geomUtil().mu2eToCrystal(cal.crystalByRO(volId),step->position());
+               CLHEP::Hep3Vector pos  = (isCrystal) ?
+               cal.geomUtil().mu2eToCrystal(volId,step->position()) : cal.geomUtil().mu2eToCrystal(cal.caloInfo().crystalByRO(volId),step->position());
                int               idx  = (isCrystal) ? int(std::max(1e-6,pos.z())/zSliceSize_) : 0;
                
 
@@ -547,6 +550,23 @@ namespace mu2e {
 
         
 
+    //-------------------------------------------------------------------------------------------------------------
+    void CaloShowerStepFromStepPt::dumpAllInfo(const HandleVector& stepsHandles,const Calorimeter& cal)
+    {       
+        std::cout<<"Dumping StepPointMCs  Mu2e / crystal / disk / diskFF frames"<<std::endl; 
+        for ( HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end(); i != e; ++i )
+         {     
+              const art::Handle<StepPointMCCollection>& handle(*i);
+              const StepPointMCCollection& steps(*handle);
+
+              std::cout<<steps.size()<<std::endl;
+              for (const auto& step : steps ) std::cout<<step.volumeId()<<" "<<step.totalEDep()<<" "<<step.position()<<" "
+                                                       <<cal.geomUtil().mu2eToCrystal(step.volumeId(),step.position())<<"   "
+                                                       <<cal.geomUtil().mu2eToDisk(cal.crystal(step.volumeId()).diskId(),step.position())<<"   "
+                                                       <<cal.geomUtil().mu2eToDiskFF(cal.crystal(step.volumeId()).diskId(),step.position())
+                                                       <<std::endl;
+         }
+    }
  
 
 }

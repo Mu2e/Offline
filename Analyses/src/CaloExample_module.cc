@@ -144,7 +144,7 @@ namespace mu2e {
        float _genmomX[16384],_genmomY[16384],_genmomZ[16384],_genStartX[16384],_genStartY[16384],_genStartZ[16384],_genStartT[16384];
 
        int   _nHits,_cryId[163840],_crySectionId[163840],_crySimIdx[163840],_crySimLen[163840];
-       float _cryEtot,_cryTime[163840],_cryEdep[163840],_cryEdepErr[163840],_cryDose[163840],_cryPosX[163840],_cryPosY[163840],_cryPosZ[163840],_cryLeak[163840];
+       float _cryEtot,_cryTime[163840],_cryEdep[163840],_cryDose[163840],_cryPosX[163840],_cryPosY[163840],_cryPosZ[163840],_cryLeak[163840];
 
        int   _nSim,_motId[500000],_motPdgId[500000],_motcrCode[500000],_motGenIdx[500000];
        float _motmom[500000],_motStartX[500000],_motStartY[500000],_motStartZ[500000],_motStartT[500000];
@@ -225,7 +225,6 @@ namespace mu2e {
        _Ntup->Branch("cryPosY",      &_cryPosY ,     "cryPosY[nCry]/F");
        _Ntup->Branch("cryPosZ",      &_cryPosZ ,     "cryPosZ[nCry]/F");
        _Ntup->Branch("cryEdep",      &_cryEdep ,     "cryEdep[nCry]/F");
-       _Ntup->Branch("cryEdepErr",   &_cryEdepErr ,  "cryEdepErr[nCry]/F");
        _Ntup->Branch("cryTime",      &_cryTime ,     "cryTime[nCry]/F");
        _Ntup->Branch("cryDose",      &_cryDose ,     "cryDose[nCry]/F");
        _Ntup->Branch("crySimIdx",    &_crySimIdx ,   "crySimIdx[nCry]/I");
@@ -375,9 +374,9 @@ namespace mu2e {
       event.getByLabel(_caloHitTruthModuleLabel, caloHitTruthHandle);
       const CaloHitMCTruthAssns& caloHitTruth(*caloHitTruthHandle);
 
-      art::Handle<KalRepPtrCollection> trksHandle;
-      event.getByLabel(_trkPatRecModuleLabel, trksHandle);
-      const KalRepPtrCollection& trks = *trksHandle;
+//      art::Handle<KalRepPtrCollection> trksHandle;
+//      event.getByLabel(_trkPatRecModuleLabel, trksHandle);
+//      const KalRepPtrCollection& trks = *trksHandle;
 
 
 
@@ -443,14 +442,13 @@ namespace mu2e {
        {
            const CaloCrystalHit &hit     = caloCrystalHits.at(ic);
 	   int diskId                    = cal.crystal(hit.id()).diskId();
-           CLHEP::Hep3Vector crystalPos  = cal.crystal(hit.id()).localPositionFF();  //in disk FF frame
+           CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.id()).position());  //in disk FF frame
  
            CrystalContentMC contentMC(cal, caloHitTruth, hit);
 
            _cryEtot             += hit.energyDep();
            _cryTime[_nHits]      = hit.time();
            _cryEdep[_nHits]      = hit.energyDep();
-           _cryEdepErr[_nHits]   = hit.energyDepErr();
            _cryDose[_nHits]      = hit.energyDep() / CrMass / (CLHEP::joule/CLHEP::kg); //dose
            _cryPosX[_nHits]      = crystalPos.x();
            _cryPosY[_nHits]      = crystalPos.y();
@@ -615,7 +613,7 @@ namespace mu2e {
        //--------------------------  Do tracks  --------------------------------
        
        _nTrk = 0;
-
+/*
        for ( size_t itrk=0; itrk< trks.size(); ++itrk )
        {
          KalRep const* krep = trks.at(itrk).get();
@@ -659,7 +657,7 @@ namespace mu2e {
           ++_nTrk;
 
         }
-        
+*/        
 
 
  
