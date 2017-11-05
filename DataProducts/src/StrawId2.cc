@@ -16,11 +16,9 @@ namespace mu2e {
   StrawId2::StrawId2( unsigned short plane,
       unsigned short panel,
       unsigned short straw) : _sid(0) {
-    bool goodinput =
-      setPlane(plane) &&
-      setPanel(panel) &&
-      setStraw(straw);
-    if(!goodinput) throw cet::exception("CONFIG");
+    setPlane(plane);
+    setPanel(panel);
+    setStraw(straw);
   }
 
   // anonymous namespace for string functions
@@ -50,25 +48,25 @@ namespace mu2e {
     *this = strawIdFromString(asstring);
   }
 
-  bool StrawId2::setStraw(unsigned short istraw) {
-   bool retval = validStraw(istraw);
-    if(retval)
-    _sid |= istraw << _strawsft;
-    return retval;
+  void StrawId2::setStraw(unsigned short istraw) {
+    if(validStraw(istraw))
+      _sid |= istraw;
+    else
+      throw cet::exception("CONFIG") << "invalid straw " << istraw << "\n";
   }
 
-  bool StrawId2::setPanel(unsigned short ipanel) {
-    bool retval = validPanel(ipanel);
-    if(retval)
-    _sid |= ipanel << _panelsft;
-    return retval;
+  void StrawId2::setPanel(unsigned short ipanel) {
+    if(validPanel(ipanel))
+      _sid |= ipanel << _panelsft;
+    else
+      throw cet::exception("CONFIG") << "invalid panel " << ipanel << "\n";
   }
 
-  bool StrawId2::setPlane(unsigned short iplane) {
-    bool retval = validPlane(iplane);
-    if(retval)
-    _sid |= iplane << _planesft;
-    return retval;
+  void StrawId2::setPlane(unsigned short iplane) {
+    if(validPlane(iplane))
+      _sid |= iplane << _planesft;
+    else
+      throw cet::exception("CONFIG") << "invalid plane " << iplane << "\n";
   }
 }
 
