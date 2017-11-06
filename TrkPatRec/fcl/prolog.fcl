@@ -16,11 +16,29 @@ FSHPreStereo  : {
   module_type : FlagStrawHits
   StrawHitPositionCollectionTag : ""
   maximumEnergy : 0.01
+  UseCaloCluster           : false
+  UseCaloClusterXYPosition : false
+  CaloClusterMinE          : 50.
+  CaloClusterMinSize       : 2
+  CaloClusterMinDt         : -40
+  CaloClusterMaxDt         : 40
+  pitchAngle               : 0.67   # mean pitch for CE
+  beta                     : 1.
+  dtOffset                 : @local::TrackCaloMatching.DtOffset
 }
 
 FlagStrawHits  : {
   module_type : FlagStrawHits
   maximumEnergy : 0.0035
+  UseCaloCluster           : false
+  UseCaloClusterXYPosition : false
+  CaloClusterMinE          : 50.
+  CaloClusterMinSize       : 2
+  CaloClusterMinDt         : -40
+  CaloClusterMaxDt         : 40
+  pitchAngle               : 0.67   # mean pitch for CE
+  beta                     : 1.
+  dtOffset                 : @local::TrackCaloMatching.DtOffset
 }
 
 FlagBkgHits : {
