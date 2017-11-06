@@ -63,7 +63,7 @@ CalPatRec : {
 	debugLevel                              : 0
 	debugLevel2                             : 0
 	diagLevel                               : 0
-	HelixFitSelectionBits                   : ["EnergySelection","TimeSelection","RadiusSelection"]
+	HelixFitSelectionBits                   : ["EnergySelection","TimeSelection"] 
 	BackgroundSelectionBits                 : ["Background"]
 	minNHit                                 : 10      # minimal number of hits on found helix
 	hitChi2Max                              : 25.
@@ -71,8 +71,8 @@ CalPatRec : {
 	maxDfDz                                 : 0.01
 	minDfDz                                 : 0.002
 	sigmaPhi                                : 0.1636  # radians
-	weightXY                                : 0.2941
-	weightZPhi                              : 0.174
+	weightXY                                : 0.1018
+	weightZPhi                              : 0.0502
 	maxXDPhi                                : 5    #
 	distPatRec                              : 100. # mm
 	maxChi2TrkCandidate                     : 1500
@@ -219,6 +219,64 @@ CalPatRec : {
 	#  parameters of KalContext 
 	#------------------------------------------------------------------------------
 	MinNDOF                                 : 5 # match 10 hits of HelixFit
+	#------------------------------------------------------------------------------
+	# ambiguity resolver parameters
+	#------------------------------------------------------------------------------
+	FixedAmbigResolver                      : {}
+	HitAmbigResolver                        : {}
+	PocaAmbigResolver                       : {}
+	PanelAmbigResolver                      : {}
+	#------------------------------------------------------------------------------
+	# provision for doublet ambiguity resolver - SeedFit is not using it, but the
+	# initialization might require
+	#------------------------------------------------------------------------------
+	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
+    }
+    
+    KalSeedFitter : {
+	debugLevel                        : 0
+	minnstraws                        : 10
+	maxhitchi                         : 5.0
+	maxDriftPull                      : 10.
+	minT0DOCA                         : -0.2               # 
+	t0window                          : 2.5
+	MaxIterations                     : 3
+	fieldCorrection	      	          : false
+	materialCorrection                : false
+	seedsmear       		  : 10000
+	maxhitchi                         : 5.0
+	# interate the fit twice: once at the physical size of the straw, once at its RMS
+	#  hiterr                          : [ 5.0, 3.0 ]
+	# time external error, assuming s drift velocity of 62.5 #mu m / ns
+	hiterr                            : [ 80., 48.]
+	ambiguityStrategy       	  : [ 0  , 0    ]
+	t0Tolerance			  : [ 5.0, 5.0  ]
+	weedhits			  : [ true, true ]
+	ResolveAfterWeeding		  : false
+	AddMaterial			  : [ false, false ]
+	#  initT0			  : true
+	initT0   			  : false 
+	useTrkCaloHit                     : false
+	updateT0			  : false
+	dtOffset                          : @local::TrackCaloMatching.DtOffset
+	strawHitT0Weight                : 1
+	caloHitT0Weight                 : 10
+	
+	DivergeFlt                              : 1000.            #  default: 1000.
+#	RdriftMinusDocaTol                      : 1.
+#	daveMode                                : 0
+	#------------------------------------------------------------------------------
+	# shouldn't be used during the seed fit, only during the hit-based fit 
+	#------------------------------------------------------------------------------
+#	scaleErrDoublet                         : 1.
+#	minDriftDoublet                         : 0.3
+#	deltaDriftDoublet                       : 0.3
+#	maxDoubletChi2                          : -1    # not used !
+#	sigmaSlope                              : 0.025
+	#------------------------------------------------------------------------------
+	#  parameters of KalContext 
+	#------------------------------------------------------------------------------
+	MinNDOF                                 : 10
 	#------------------------------------------------------------------------------
 	# ambiguity resolver parameters
 	#------------------------------------------------------------------------------
@@ -549,30 +607,32 @@ CalPatRec : { @table::CalPatRec
 	    }
 	}
 
-	CalSeedFit : { module_type:CalSeedFit
-	    diagLevel                                   : 0
+	CalSeedFit : { module_type:KalSeedFit   
+	    # module_type:CalSeedFit
+#	    diagLevel                                   : 0
 	    debugLevel                                  : 0
 	    printFrequency                              : 100
-	    useAsFilter                                 : 0
-	    rescueHits                                  : 1
-	    StrawHitCollectionLabel                     : makeSH			 
-	    StrawDigiCollectionLabel                    : makeSD
-	    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions	 
-	    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits 
-	    HelixSeedModuleLabel                        : CalHelixFinder
-	    CalTimePeakModuleLabel                      : CalTimePeakFinder
-	    MaxDtMiss                                   : 55.
-	    MaxAddDoca                                  : 7.    # mm
-	    MaxAddChi                                   : 5.    # normalized unit
+#	    useAsFilter                                 : 0
+#	    rescueHits                                  : 1
+	    StrawHitCollectionTag                       : makeSH			 
+#	    StrawDigiCollectionLabel                    : makeSD
+#	    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions	 
+	    StrawHitFlagCollectionTag                   : CalPatRecFlagBkgHits 
+	    SeedCollectionTag                           : CalHelixFinder
+#	    CalTimePeakModuleLabel                      : CalTimePeakFinder
+#	    MaxDtMiss                                   : 55.
+#	    MaxAddDoca                                  : 7.    # mm
+#	    MaxAddChi                                   : 5.    # normalized unit
 	    fitparticle                                 : @local::Particle.eminus
 	    fitdirection                                : @local::FitDir.downstream
-	    Fitter                                      : { @table::CalPatRec.SeedFitter }
-	    TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+#	    Fitter                                      : { @table::CalPatRec.SeedFitter }
+#	    TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	    ParameterErrors                             : [10.0,0.05,0.001,10.0,0.05]
-	    diagPlugin : { tool_type                    : "CalSeedFitDiag"
-		mcTruth                                 : 1
-		mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
-	    }	    
+	    KalFit                                      : { @table::CalPatRec.KalSeedFitter }
+	    # diagPlugin : { tool_type                    : "CalSeedFitDiag"
+	    # 	mcTruth                                 : 1
+	    # 	mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
+	    # }	    
 	}
 
 	CalTrkFit : { module_type:CalTrkFit
