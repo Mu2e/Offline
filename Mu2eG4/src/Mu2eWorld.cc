@@ -153,6 +153,7 @@ namespace mu2e {
     , gdmlFileName_(pset.get<std::string>("debug.GDMLFileName"))
     , g4stepperName_(pset.get<std::string>("physics.stepper"))
     , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep"))
+    , limitStepInAllVolumes_(pset.get<bool>("physics.limitStepInAllVolumes"))
   {
     _verbosityLevel = pset.get<int>("debug.worldVerbosityLevel");
   }
@@ -439,16 +440,16 @@ namespace mu2e {
   } // end Mu2eWorld::constructBFieldAndManagers
 
 
-  namespace {
-
     // A helper function for Mu2eWorld::constructStepLimiters().
     // Find all logical volumes matching a wildcarded name and add steplimiters to them.
-    void stepLimiterHelper ( std::string const& regexp, G4UserLimits* stepLimit ){
-      boost::regex expression(regexp.c_str());
-      std::vector<mu2e::VolumeInfo const*> vols =
-        art::ServiceHandle<mu2e::G4Helper>()->locateVolInfo(expression);
-      for ( auto v : vols ){
-        v->logical->SetUserLimits( stepLimit );
+  void Mu2eWorld::stepLimiterHelper ( std::string const& regexp, G4UserLimits* stepLimit ) {
+    boost::regex expression(regexp.c_str());
+    std::vector<mu2e::VolumeInfo const*> vols =
+      art::ServiceHandle<mu2e::G4Helper>()->locateVolInfo(expression);
+    for ( auto v : vols ){
+      v->logical->SetUserLimits( stepLimit );
+      if(_verbosityLevel > 1)  {
+        std::cout<<"Activated step limit for volume "<<v->logical->GetName() <<std::endl;
       }
     }
   }
@@ -487,6 +488,9 @@ namespace mu2e {
     // limits.  For now that is not necessary.
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     G4UserLimits* stepLimit = reg.add( G4UserLimits(bfieldMaxStep_) );
+    if(_verbosityLevel > 1) {
+      std::cout<<"Using step limit = "<<bfieldMaxStep_/CLHEP::mm<<" mm"<<std::endl;
+    }
 
     // Add the step limiters to the interesting volumes.
     // Keep them separated so that we can add different step limits should we decide to.
@@ -531,6 +535,11 @@ namespace mu2e {
     //     }
     //
     // ==== END COMMENT-OUT
+
+    // Activate step limiter everywhere for spectial studies
+    if(limitStepInAllVolumes_) {
+      stepLimiterHelper("^.*$", stepLimit);
+    }
 
   } // end Mu2eWorld::constructStepLimiters(){
 
