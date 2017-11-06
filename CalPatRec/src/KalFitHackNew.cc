@@ -485,6 +485,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void KalFitHackNew::fitIteration(KalFitResultNew& KRes, int Iteration) {
 
+    // update the external hit errors.  This isn't strictly necessary on the 1st iteration.
+    TrkHitVector* thv   = &(KRes._krep->hitVector());
+    for (auto itsh=thv->begin();itsh!=thv->end(); ++itsh){
+      (*itsh)->setTemperature(_hiterr[Iteration]);
+    }
+
     unsigned     niter(0);
     bool         changed(true);
     bool         fit_success;
