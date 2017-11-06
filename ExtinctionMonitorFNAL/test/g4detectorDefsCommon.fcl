@@ -4,7 +4,8 @@
 BEGIN_PROLOG
 // Default gun: in-time protons
 defaultGunPars : {
-   coneAngle : 0.005
+   coneAngleMin : 0.
+   coneAngleMax : 0.005
    pdgId     : 2212 // 2212 is p+, -13 is mu+
    reference : "detector"
    offset   : [ 0, 0, +650 ]

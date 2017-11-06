@@ -3,6 +3,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "DataProducts/inc/PDGCode.hh"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -52,7 +53,9 @@ namespace mu2e {
             pset.get<double>("pmin", GeomHandle<ExtMonFNALBuilding>()->filterMagnet().nominalMomentum()),
             pset.get<double>("pmax", GeomHandle<ExtMonFNALBuilding>()->filterMagnet().nominalMomentum()),
 
-            RandomUnitSphereParams(-1., -cos(pset.get<double>("coneAngle")), 0., 2*M_PI),
+            RandomUnitSphereParams(-cos(pset.get<double>("coneAngleMin")),
+                                   -cos(pset.get<double>("coneAngleMax")),
+                                   0., 2*M_PI),
 
             pset.get<double>("tmin", 0.),
             pset.get<double>("tmax", 0.),
@@ -77,6 +80,11 @@ namespace mu2e {
     else if(ref == "detector") {
       m_rotation = GeomHandle<ExtMonFNAL::ExtMon>()->detectorRotationInMu2e();
       m_translation = GeomHandle<ExtMonFNAL::ExtMon>()->detectorCenterInMu2e();
+    }
+    else if(ref == "productionTarget") {
+      m_rotation = GeomHandle<ProductionTarget>()->protonBeamRotation();
+      m_translation = GeomHandle<ProductionTarget>()->position()
+        + m_rotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->halfLength());
     }
     else {
       throw cet::exception("BADCONFIG")
