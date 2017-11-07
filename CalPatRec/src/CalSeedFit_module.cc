@@ -40,10 +40,7 @@
 #include <boost/accumulators/statistics/moment.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "TVector2.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TSystem.h"
+#include "CalPatRec/inc/ModuleHistToolBase.hh"
 
 using namespace std;
 using namespace boost::accumulators;
@@ -104,8 +101,8 @@ namespace mu2e {
 
     if (_debugLevel != 0) _printfreq = 1;
 
-    if (_diagLevel != 0) _hmanager = art::make_tool<CprModuleHistBase>(pset.get<fhicl::ParameterSet>("histograms"));
-    else                 _hmanager = std::make_unique<CprModuleHistBase>();
+    if (_diagLevel != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
+    else                 _hmanager = std::make_unique<ModuleHistToolBase>();
   }
 
 //-----------------------------------------------------------------------------
@@ -117,7 +114,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void CalSeedFit::beginJob(){
     art::ServiceHandle<art::TFileService> tfs;
-    _hmanager->bookHistograms(tfs,&_hist);
+    _hmanager->bookHistograms(tfs);
   }
 
 //-----------------------------------------------------------------------------
@@ -221,7 +218,6 @@ namespace mu2e {
   bool CalSeedFit::filter(art::Event& event ) {
     const char*    oname = "CalSeedFit::filter";
     char           message[200];
-    //    bool           findseed(false);
     int            npeaks;
 
     ::KalRep*      krep;
@@ -231,8 +227,8 @@ namespace mu2e {
 
     _data.event   = &event;
     _data.result  = &_result;
-    _data.ntracks = 0;
     _data.nrescued.clear();
+    _data.mom.clear();
 
     _eventid = event.event();
     _iev     = event.id().event();
@@ -243,6 +239,8 @@ namespace mu2e {
     unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection);
 
     if (!findData(event))  goto END;
+
+    _data.tracks = tracks.get();
 
     _fitter.setStepPointMCVectorCollection(_listOfMCStrawHits);
 
@@ -301,11 +299,9 @@ namespace mu2e {
       }
 
       if (_result._fit.success()) {
-	_data.ntracks += 1;
 //-----------------------------------------------------------------------------
-// track is successfully found, try to pick up additional hits missed 
-// by the helix finder
-// at this step, ignore presence of the calorimeter cluster when refitting the track
+// track is successfully found, try to pick up hits missed by the helix finder
+// at this step, ignore the calorimeter cluster when refitting the track
 //-----------------------------------------------------------------------------
 	int nrescued = 0;
 	if (_rescueHits) { 
@@ -316,7 +312,6 @@ namespace mu2e {
 	    _fitter.addHits(_result,_maxAddChi);
 	  }
 	}
-	_data.nrescued.push_back(nrescued);
 //-----------------------------------------------------------------------------
 // final printout
 //-----------------------------------------------------------------------------
@@ -325,12 +320,6 @@ namespace mu2e {
 		  "CalSeedFit::produce after seedfit::addHits: fit_success = %i\n",
 		  _result._fit.success());
 	  _fitter.printHits(_result,message);
-	}
-//-----------------------------------------------------------------------------
-// track fit completed, per-track histogramming
-//-----------------------------------------------------------------------------
-	if (_diagLevel > 0) {
-	  _hmanager->fillHistograms(1,&_data,&_hist);
 	}
 //-----------------------------------------------------------------------------
 // form the output
@@ -357,6 +346,11 @@ namespace mu2e {
 	  BbrVectorErr momerr = krep->momentumErr(krep->flt0());
 	  TrkUtilities::fillSegment(*htraj, momerr, kseg);
 	  kseed._segments.push_back(kseg);
+
+	  kseed._chisq = krep->chisq();
+	  // use the default consistency calculation, as t0 is not fit here
+	  kseed._fitcon = krep->chisqConsistency().significanceLevel();
+
 	  // push this seed into the collection
 	  tracks->push_back(kseed);
 	  
@@ -368,6 +362,19 @@ namespace mu2e {
 	      cout << kseg.covar()._cov[ipar] << " ";
 	    }
 	    cout << endl;
+	  }
+
+	  if (_diagLevel > 0) {
+//-----------------------------------------------------------------------------
+// store some info for convenient diagnostics
+//-----------------------------------------------------------------------------
+	    double  h1_fltlen      = krep->firstHit()->kalHit()->hit()->fltLen();
+	    double  hn_fltlen      = krep->lastHit ()->kalHit()->hit()->fltLen();
+	    double  entlen         = std::min(h1_fltlen, hn_fltlen);
+
+	    CLHEP::Hep3Vector fitmom = krep->momentum(entlen);
+	    _data.mom.push_back(fitmom.mag());
+ 	    _data.nrescued.push_back(nrescued);
 	  }
 	}
 	else {
@@ -386,10 +393,7 @@ namespace mu2e {
       }
     }
 
-    if (_diagLevel > 0) {
-      _data.ntracks = tracks->size();
-      _hmanager->fillHistograms(0,&_data,&_hist);
-    }
+    if (_diagLevel > 0) _hmanager->fillHistograms(&_data);
 //-----------------------------------------------------------------------------
 // put reconstructed tracks into the event record and do filtering
 //-----------------------------------------------------------------------------
@@ -399,7 +403,7 @@ namespace mu2e {
     event.put(std::move(algs  ));
 
     if (_useAsFilter == 0) return true;
-    else                   return (_data.ntracks > 0);
+    else                   return (tracks->size() > 0);
 
   }
 
@@ -421,78 +425,14 @@ namespace mu2e {
   void CalSeedFit::findMissingHits(KalFitResultNew& KRes) {
 
     const char* oname = "CalSeedFit::findMissingHits";
-    
-    Hep3Vector tdir;
-    HepPoint   tpos;
-    int        radius_ok;
-    double     dt;
-
-    KRes._krep->pieceTraj().getInfo(0.0,tpos,tdir);
-
-    int nstrs =  _shcol->size();
-    for (int istr=0; istr<nstrs;++istr) {
-//----------------------------------------------------------------------
-// 2015-02-11 gianipez and P. Murat changed the selection bit
-//            for searching for missed hits
-//----------------------------------------------------------------------
-      const StrawHit* sh = &_shcol->at(istr);
-//-----------------------------------------------------------------------------
-// I think, we want to check the radial bit: if it is set, than at least one of
-// the two measured times is wrong...
-//-----------------------------------------------------------------------------
-      radius_ok = _shfcol->at(istr).hasAllProperties(StrawHitFlag::radsel);
-      dt        = _shcol->at(istr).time()-KRes._krep->t0()._t0;
-
-      if (radius_ok && (fabs(dt) < _maxdtmiss)) {
-        // make sure we haven't already used this hit
-	// TrkStrawHitVector tshv;
-	// convert(KRes._hits, tshv);
-
-	TrkHit* hit(NULL);
-
-	for (auto ih=KRes._krep->hitVector().begin(); ih != KRes._krep->hitVector().end(); ih++) {
-	  TrkStrawHit* tsh = (TrkStrawHit*) (*ih);
-	  if (&tsh->strawHit() == sh) {
-	    hit = *ih;
-	    break;
-	  }
-	}
-	//         TrkHitVector::iterator ifnd = find_if(KRes._krep->hitVector().begin(),KRes._krep->hitVector().end(),FindTrkStrawHit(sh));
-	//        if (ifnd == KRes._krep->hitVector().end()) {
-        if (hit == NULL) {
-          // good in-time hit.  Compute DOCA of the wire to the trajectory
-          Straw const& straw = _tracker->getStraw(sh->strawIndex());
-          CLHEP::Hep3Vector hpos = straw.getMidPoint();
-          CLHEP::Hep3Vector hdir = straw.getDirection();
-          // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
-          HepPoint spt(hpos.x(),hpos.y(),hpos.z());
-          TrkLineTraj htraj(spt,hdir,-20,20);
-          // estimate flightlength along track.  This assumes a constant BField!!!
-          double fltlen = (hpos.z()-tpos.z())/tdir.z();
-          TrkPoca hitpoca(KRes._krep->pieceTraj(),fltlen,htraj,0.0);
-
-          if (_debugLevel > 0) {
-            printf("[CalSeedFit::findMissingHits] %8i  %6i  %8i  %10.3f \n",
-                   straw.index().asInt(),
-                   straw.id().getPlane(),
-                   straw.id().getPanel(),
-                   hitpoca.doca());
-          }
-//-----------------------------------------------------------------------------
-// flag hits with small residuals
-//-----------------------------------------------------------------------------
-          if (fabs(hitpoca.doca()) < _maxAddDoca) {
-            KRes._missingHits.push_back(istr);
-          }
-        }
-      }
-    }
 
     mu2e::TrkStrawHit*       hit;
     int                      hit_index;
     const StrawHit*          sh;
     const Straw*             straw;
 
+    Hep3Vector               tdir;
+    HepPoint                 tpos;
     double                   doca, /*rdrift, */fltlen;
 
     if (_debugLevel > 0) printf("[%s]: BEGIN\n",oname);

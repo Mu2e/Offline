@@ -20,9 +20,10 @@
 
 // Mu2e includes
 #include "DataProducts/inc/StrawIndex.hh"
-#include "RecoDataProducts/inc/StrawEnd.hh"
+#include "TrackerConditions/inc/StrawEnd.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
+#include "TrackerConditions/inc/Types.hh"
 #include "TrackerMC/inc/StrawClusterSequence.hh"
 
 namespace mu2e {
@@ -51,15 +52,17 @@ namespace mu2e {
 	// find the next point the waveform crosses threhold.  Waveform crossing
 	// is both input (determines starting point) and output
 	bool crossesThreshold(double threshold,WFX& wfx) const;
-	// sample the waveform at a given time.  Return value is in units of volts 
-	double sampleWaveform(StrawElectronics::path ipath,double time) const;
-	// sample the waveform at a series of points
-	void sampleWaveform(StrawElectronics::path ipath, std::vector<double> const& times,std::vector<double>& volts) const;
+	// sample the waveform at a given time, no saturation included.  Return value is in units of volts 
+	double sampleWaveform(TrkTypes::Path ipath,double time) const;
+	// sample the waveform at a series of points allowing saturation to occur after preamp stage
+        // FIXME no cross talk yet
+	void sampleADCWaveform(TrkTypes::ADCTimes const& times,TrkTypes::ADCVoltages& volts) const;
+        unsigned short digitizeTOT(double threshold, double time) const;
 	//accessors
 	StrawClusterSequence const& clusts() const { return _cseq; }
 	ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }
 	XTalk const& xtalk() const { return _xtalk; }
-	StrawEnd strawEnd() const;
+	StrawEnd strawEnd() const { return _cseq.strawEnd(); }
       private:
 	// clust sequence used in this waveform
 	StrawClusterSequence const& _cseq;

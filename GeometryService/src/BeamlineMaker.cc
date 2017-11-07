@@ -637,7 +637,7 @@ namespace mu2e {
   void BeamlineMaker::BuildPbarWindow(const SimpleConfig& c, TransportSolenoid* ts){
 
     PbarWindow & pbarWindow ( ts->_pbarWindow );
-
+    pbarWindow._version  = c.getInt("pbar.version",1);
     pbarWindow._shape    = c.getString("pbar.Type","disk");
     pbarWindow._material = c.getString("pbar.materialName");
     pbarWindow.set( c.getDouble("pbar.halfLength"),
@@ -650,6 +650,15 @@ namespace mu2e {
     pbarWindow._dz0      = c.getDouble("pbarwedge.dz0",0.);
     pbarWindow._dz1      = c.getDouble("pbarwedge.dz1",0.);
     pbarWindow._wedgeZOffset = c.getDouble("pbarwedge.zOffset",0.);
+
+    // for version 3 (made of strips)
+    pbarWindow._diskRadius = c.getDouble("pbar.diskradius", 250.0);
+    pbarWindow._nStrips    = c.getInt("pbarwedge.nStrips", 0);
+    pbarWindow._width      = c.getDouble("pbarwedge.width",0.0);
+    pbarWindow._stripThickness=c.getDouble("pbarwedge.stripThickness",0.0);
+    if ( pbarWindow._nStrips > 0 ) {
+      c.getVectorDouble("pbarwedge.stripHeights",pbarWindow._stripHeights,pbarWindow._nStrips);
+    }
   }
 
 } // namespace mu2e

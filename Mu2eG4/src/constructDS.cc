@@ -26,6 +26,7 @@
 #include "Mu2eG4/inc/nestExtrudedSolid.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
 // G4 includes
 #include "G4ThreeVector.hh"
@@ -35,7 +36,8 @@
 #include "G4Polycone.hh"
 #include "G4Tubs.hh"
 #include "G4SubtractionSolid.hh"
-
+#include "G4VSensitiveDetector.hh"
+#include "G4SDManager.hh"
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"
@@ -598,7 +600,11 @@ namespace mu2e {
 
      // End of MBS spherical shielding, begin cable runs for Cal and Tracker
      // Each is modeled as a thin wedge of a ring
+
+     bool cableRunSensitive = _config.getBool("ds.CableRun.sensitive",false);
+
      if ( ds->hasCableRunCal() ) {
+
 
        TubsParams  calCableRunParams  ( ds->rInCableRunCal(), 
 					ds->rOutCableRunCal(), 
@@ -608,16 +614,22 @@ namespace mu2e {
 
        CLHEP::Hep3Vector calCableRunLoc( 0.0, 0.0, ds->zCCableRunCal() );
 
-       nestTubs( "CalCableRun",
-		 calCableRunParams,
-		 findMaterialOrThrow(ds->calCableRunMaterial()),
-		 0,
-		 calCableRunLoc,
-		 dsShieldParent,
-		 0,
-		 G4Color::Magenta(),
-		 "DS"
-		 );
+       VolumeInfo ccrTemp = nestTubs( "CalCableRun",
+				      calCableRunParams,
+				      findMaterialOrThrow(ds->calCableRunMaterial()),
+				      0,
+				      calCableRunLoc,
+				      dsShieldParent,
+				      0,
+				      G4Color::Magenta(),
+				      "DS"
+				      );
+
+       if ( cableRunSensitive ) {
+	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
+	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
+	 if(cableRunSD) ccrTemp.logical->SetSensitiveDetector(cableRunSD);
+       }
 
        if ( ds->cableRunVersion() > 1 ) {
 
@@ -630,16 +642,23 @@ namespace mu2e {
 
 	 CLHEP::Hep3Vector upCalCableRunLoc1( 0.0, 0.0,ds->upZC1CableRunCal());
 
-	 nestTubs( "CalCableRunUpGap1",
-		   upCalCableRunParm1,
-		   findMaterialOrThrow(ds->calCableRunMaterial()),
-		   0,
-		   upCalCableRunLoc1,
-		   dsShieldParent,
-		   0,
-		   G4Color::Magenta(),
-		   "DS"
-		   );
+	 VolumeInfo ccrTempUG1 = nestTubs( "CalCableRunUpGap1",
+					   upCalCableRunParm1,
+					   findMaterialOrThrow(ds->calCableRunMaterial()),
+					   0,
+					   upCalCableRunLoc1,
+					   dsShieldParent,
+					   0,
+					   G4Color::Magenta(),
+					   "DS"
+					   );
+
+       if ( cableRunSensitive ) {
+	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
+	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
+	 if(cableRunSD) ccrTempUG1.logical->SetSensitiveDetector(cableRunSD);
+       }
+
 
 	 TubsParams  upCalCableRunParm2( ds->upRInCableRunCal(), 
 					 ds->upROutCableRunCal(), 
@@ -649,16 +668,22 @@ namespace mu2e {
 
 	 CLHEP::Hep3Vector upCalCableRunLoc2( 0.0, 0.0,ds->upZC2CableRunCal());
 	 
-	 nestTubs( "CalCableRunUpGap2",
-		   upCalCableRunParm2,
-		   findMaterialOrThrow(ds->calCableRunMaterial()),
-		   0,
-		   upCalCableRunLoc2,
-		   dsShieldParent,
-		   0,
-		   G4Color::Magenta(),
-		   "DS"
-		   );
+	 VolumeInfo ccrTmpUG2 = nestTubs( "CalCableRunUpGap2",
+					  upCalCableRunParm2,
+					  findMaterialOrThrow(ds->calCableRunMaterial()),
+					  0,
+					  upCalCableRunLoc2,
+					  dsShieldParent,
+					  0,
+					  G4Color::Magenta(),
+					  "DS"
+					  );
+
+       if ( cableRunSensitive ) {
+	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
+	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
+	 if(cableRunSD) ccrTmpUG2.logical->SetSensitiveDetector(cableRunSD);
+       }
 
 	 // And last but not least the connector between the top of the Cal
 	 // and the top of the MBS
@@ -670,15 +695,22 @@ namespace mu2e {
 				ds->phi0CableRunCal()*CLHEP::degree,
 				ds->dPhiCableRunCal()*CLHEP::degree );
 	 
-	 nestPolycone ( "calCableRunFall",
-			myPars,
-			findMaterialOrThrow(ds->calCableRunMaterial()),
-			0,
-			G4ThreeVector(0,0,0),
-			dsShieldParent,
-			0,
-			G4Colour::Magenta(),
-			"DS" );
+	 VolumeInfo ccrTmpF = nestPolycone ( "calCableRunFall",
+					     myPars,
+					     findMaterialOrThrow(ds->calCableRunMaterial()),
+					     0,
+					     G4ThreeVector(0,0,0),
+					     dsShieldParent,
+					     0,
+					     G4Colour::Magenta(),
+					     "DS" );
+
+       if ( cableRunSensitive ) {
+	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
+	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
+	 if(cableRunSD) ccrTmpF.logical->SetSensitiveDetector(cableRunSD);
+       }
+
 
        } // end of if ( CableRunVersion > 1 )
      } // end of if ( ds->hasCableRunCal() )
@@ -693,16 +725,22 @@ namespace mu2e {
 
        CLHEP::Hep3Vector trkCableRunLoc( 0.0, 0.0, ds->zCCableRunTrk() );
 
-       nestTubs( "TrkCableRun1",
-		 trkCableRun1Params,
-		 findMaterialOrThrow(ds->trkCableRunMaterial()),
-		 0,
-		 trkCableRunLoc,
-		 dsShieldParent,
-		 0,
-		 G4Color::Magenta(),
-		 "DS"
-		 );
+       VolumeInfo tcrTmp1 = nestTubs( "TrkCableRun1",
+				      trkCableRun1Params,
+				      findMaterialOrThrow(ds->trkCableRunMaterial()),
+				      0,
+				      trkCableRunLoc,
+				      dsShieldParent,
+				      0,
+				      G4Color::Magenta(),
+				      "DS"
+				      );
+
+       if ( cableRunSensitive ) {
+	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
+	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
+	 if(cableRunSD) tcrTmp1.logical->SetSensitiveDetector(cableRunSD);
+       }
 
        // Now the second one
        TubsParams  trkCableRun2Params ( ds->rInCableRunTrk(), 
@@ -713,16 +751,22 @@ namespace mu2e {
 					*CLHEP::degree,
 					ds->dPhiCableRunTrk()*CLHEP::degree);
 
-       nestTubs( "TrkCableRun2",
-		 trkCableRun2Params,
-		 findMaterialOrThrow(ds->trkCableRunMaterial()),
-		 0,
-		 trkCableRunLoc,
-		 dsShieldParent,
-		 0,
-		 G4Color::Magenta(),
-		 "DS"
-		 );
+       VolumeInfo tcrTmp2=nestTubs( "TrkCableRun2",
+				    trkCableRun2Params,
+				    findMaterialOrThrow(ds->trkCableRunMaterial()),
+				    0,
+				    trkCableRunLoc,
+				    dsShieldParent,
+				    0,
+				    G4Color::Magenta(),
+				    "DS"
+				    );
+
+       if ( cableRunSensitive ) {
+	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
+	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
+	 if(cableRunSD) tcrTmp2.logical->SetSensitiveDetector(cableRunSD);
+       }
 
        if ( ds->cableRunVersion() > 1 ) {
 	 // Now the part between the Calorimeter Disks
@@ -734,16 +778,22 @@ namespace mu2e {
 
 	 CLHEP::Hep3Vector upTrkCableRunLoc1( 0.0, 0.0,ds->upZC1CableRunCal());
 
-	 nestTubs( "TrkCableRunGap1",
-		   upTrkCableRunParm1,
-		   findMaterialOrThrow(ds->trkCableRunMaterial()),
-		   0,
-		   upTrkCableRunLoc1,
-		   dsShieldParent,
-		   0,
-		   G4Color::Magenta(),
-		   "DS"
-		   );
+	 VolumeInfo tcrTmpG1=nestTubs( "TrkCableRunGap1",
+				       upTrkCableRunParm1,
+				       findMaterialOrThrow(ds->trkCableRunMaterial()),
+				       0,
+				       upTrkCableRunLoc1,
+				       dsShieldParent,
+				       0,
+				       G4Color::Magenta(),
+				       "DS"
+				       );
+
+       if ( cableRunSensitive ) {
+	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
+	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
+	 if(cableRunSD) tcrTmpG1.logical->SetSensitiveDetector(cableRunSD);
+       }
 
 	 TubsParams  upTrkCableRunParm1a( ds->rInCableRunTrk(), 
 					  ds->rOutCableRunTrk(), 
@@ -753,16 +803,22 @@ namespace mu2e {
 					  *CLHEP::degree,
 					  ds->dPhiCableRunTrk()*CLHEP::degree);
 
-	 nestTubs( "TrkCableRunGap1a",
-		   upTrkCableRunParm1a,
-		   findMaterialOrThrow(ds->trkCableRunMaterial()),
-		   0,
-		   upTrkCableRunLoc1,
-		   dsShieldParent,
-		   0,
-		   G4Color::Magenta(),
-		   "DS"
-		   );
+	 VolumeInfo tcrTmpG1a=nestTubs( "TrkCableRunGap1a",
+					upTrkCableRunParm1a,
+					findMaterialOrThrow(ds->trkCableRunMaterial()),
+					0,
+					upTrkCableRunLoc1,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"DS"
+					);
+
+       if ( cableRunSensitive ) {
+	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
+	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
+	 if(cableRunSD) tcrTmpG1a.logical->SetSensitiveDetector(cableRunSD);
+       }
 
 
 	 TubsParams  upTrkCableRunParm2( ds->rInCableRunTrk(), 
@@ -773,16 +829,23 @@ namespace mu2e {
 
 	 CLHEP::Hep3Vector upTrkCableRunLoc2( 0.0, 0.0,ds->upZC2CableRunCal());
 	 
-	 nestTubs( "TrkCableRunGap2",
-		   upTrkCableRunParm2,
-		   findMaterialOrThrow(ds->trkCableRunMaterial()),
-		   0,
-		   upTrkCableRunLoc2,
-		   dsShieldParent,
-		   0,
-		   G4Color::Magenta(),
-		   "DS"
-		   );
+	 VolumeInfo tcrTmpG2=nestTubs( "TrkCableRunGap2",
+				       upTrkCableRunParm2,
+				       findMaterialOrThrow(ds->trkCableRunMaterial()),
+				       0,
+				       upTrkCableRunLoc2,
+				       dsShieldParent,
+				       0,
+				       G4Color::Magenta(),
+				       "DS"
+				       );
+
+	 if ( cableRunSensitive ) {
+	   G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
+	     FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
+	   if(cableRunSD) tcrTmpG2.logical->SetSensitiveDetector(cableRunSD);
+	 }
+
 
 	 TubsParams  upTrkCableRunParm2a( ds->rInCableRunTrk(), 
 					  ds->rOutCableRunTrk(), 
@@ -792,16 +855,22 @@ namespace mu2e {
 					  *CLHEP::degree,
 					  ds->dPhiCableRunTrk()*CLHEP::degree);
 
-	 nestTubs( "TrkCableRunGap2a",
-		   upTrkCableRunParm2a,
-		   findMaterialOrThrow(ds->trkCableRunMaterial()),
-		   0,
-		   upTrkCableRunLoc2,
-		   dsShieldParent,
-		   0,
-		   G4Color::Magenta(),
-		   "DS"
-		   );
+	 VolumeInfo tcrTmpG2a= nestTubs( "TrkCableRunGap2a",
+					 upTrkCableRunParm2a,
+					 findMaterialOrThrow(ds->trkCableRunMaterial()),
+					 0,
+					 upTrkCableRunLoc2,
+					 dsShieldParent,
+					 0,
+					 G4Color::Magenta(),
+					 "DS"
+					 );
+
+	 if ( cableRunSensitive ) {
+	   G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
+	     FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
+	   if(cableRunSD) tcrTmpG2a.logical->SetSensitiveDetector(cableRunSD);
+	 }
 
 
        } // end of adding gap runs for trk cable runs

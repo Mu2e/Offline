@@ -5,15 +5,27 @@
 // This class holds a list of associations between GeomHandle objects and
 // AlignmentObj objects for use in the Mu2e Alignment service.
 
+#include "Alignment/inc/AlignmentSequence.hh"
+#include "ConfigTools/inc/SimpleConfig.hh"
+
 #include <unordered_map>
+#include <string>
+#include <iostream>
 
-class AlignmentMap {
-public:
-  AlignmentMap(){}
+namespace mu2e {
+  class AlignmentMap {
+  public:
+    AlignmentMap();
+    ~AlignmentMap(){}
 
-private:
-  std::unordered_map<GeomHandle,AlignmentObj> _map;
+    void make(const SimpleConfig&  _config );
+    AlignmentSequence find(std::string& handle) ;
 
-};
+    void addAlignment( std::string& handle, AlignmentSequence& as );
 
+  private:
+    std::unordered_map<std::string, AlignmentSequence> _map;
+
+  };
+} // end of namespace mu2e
 #endif // Alignment_AlignmentMap_HH

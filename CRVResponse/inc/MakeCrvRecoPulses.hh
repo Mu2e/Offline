@@ -27,6 +27,7 @@ class MakeCrvRecoPulses
   double       GetT2(int pulse);
   double       GetLEtime(int pulse);
   double       GetLEfitChi2(int pulse);
+  int          GetPeakBin(int pulse);
 
   private:
   double _calibrationFactor, _pedestal;
@@ -36,6 +37,7 @@ class MakeCrvRecoPulses
   std::vector<double> _pulseTimes, _pulseHeights, _pulseWidths, _pulseFitChi2s;
   std::vector<double> _fitParams0, _fitParams1, _fitParams2, _t1s, _t2s;
   std::vector<double> _LEtimes, _LEfitChi2s;
+  std::vector<int>    _peakBins;
 };
 
 }

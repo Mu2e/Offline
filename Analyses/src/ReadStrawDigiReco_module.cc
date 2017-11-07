@@ -5,7 +5,7 @@
 //
 
 // Mu2e includes.
-#include "RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "RecoDataProducts/inc/StrawDigi.hh"
 
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Utilities/Exception.h"
@@ -121,8 +121,8 @@ void mu2e::ReadStrawDigiReco::analyze(art::Event const& evt) {
     // Calculate number of digis per wire
     ++nhperwire[index];
 
-    auto t0 = digi.TDC(StrawDigi::zero);
-    auto t1 = digi.TDC(StrawDigi::one);
+    auto t0 = digi.TDC(TrkTypes::cal);
+    auto t1 = digi.TDC(TrkTypes::hv);
     auto const& adcs = digi.adcWaveform();
 
     _hDigiTime0 ->Fill(t0);

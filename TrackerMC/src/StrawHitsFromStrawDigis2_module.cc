@@ -1,6 +1,5 @@
 //
 // This module transforms StrawDigi objects into StrawHit objects
-// It also builds the truth match map (if MC truth info for the StrawDigis exists)
 //
 // $Id: StrawHitsFromStrawDigis2_module.cc,v 1.12 2014/03/25 22:14:39 brownd Exp $
 // $Author: brownd $ 
@@ -30,15 +29,12 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
-#include "TrackerMC/inc/StrawHitDiag.hh"
 
 #include "TrkChargeReco/inc/PeakFit.hh"
 #include "TrkChargeReco/inc/PeakFitRoot.hh"
 #include "TrkChargeReco/inc/PeakFitFunction.hh"
 #include "TrkChargeReco/inc/ComboPeakFitRoot.hh"
 
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -50,6 +46,7 @@
  
 
 namespace mu2e {
+  using namespace TrkTypes;
 
   class StrawHitsFromStrawDigis2 : public art::EDProducer 
   {
@@ -76,17 +73,15 @@ namespace mu2e {
        double minT_;                    // minimum hit time
        double maxT_;                    // maximum hit time
        bool   trigMode_;                // trigger mode cut on dt and other thing 
-       bool   doMC_;                    // produce MC information
        int    printLevel_;
        int    diagLevel_;
-      
+       StrawEnd end_[2]; // helper
+ 
        std::string strawDigis_;
        std::string caloClusterModuleLabel_;
-       fhicl::ParameterSet paramFit_;       
+       fhicl::ParameterSet peakfit_;       
        
        std::unique_ptr<TrkChargeReco::PeakFit> pfit_;
-       TrkChargeReco::PeakFitParams peakfit_;
-       StrawHitDiag hitDiag_; 
        
  };
 
@@ -106,19 +101,16 @@ namespace mu2e {
       minT_(pset.get<double>(        "minimumTime",500)), // nsec
       maxT_(pset.get<double>(        "maximumTime",2000)), // nsec
       trigMode_(pset.get<bool>(      "trigMode",true)),
-      doMC_(pset.get<bool>(          "doMC",false)),
       printLevel_(pset.get<int>(     "printLevel",0)),
       diagLevel_(pset.get<int>(      "diagLevel",0)),
+      end_{TrkTypes::cal,TrkTypes::hv},
       strawDigis_(pset.get<std::string>("StrawDigis","makeSD")),
       caloClusterModuleLabel_(pset.get<std::string>("caloClusterModuleLabel","CaloClusterFast")),
-      paramFit_(pset.get<fhicl::ParameterSet>("PeakFitter",fhicl::ParameterSet())),
-      hitDiag_()
+      peakfit_(pset.get<fhicl::ParameterSet>("PeakFitter",fhicl::ParameterSet()))
   {
       produces<StrawHitCollection>();
       produces<StrawHitFlagCollection>();
       produces<StrawHitPositionCollection>();
-      if (doMC_) produces<PtrStepPointMCVectorCollection>();
-      if (doMC_) produces<StrawDigiMCCollection>();
       
       if (printLevel_ > 0) std::cout << "In StrawHitsFromStrawDigis2 constructor " << std::endl;
   }
@@ -129,7 +121,6 @@ namespace mu2e {
   //------------------------------------------------------------------------------------------
   void StrawHitsFromStrawDigis2::beginJob()
   {
-     if (diagLevel_>1) hitDiag_.init();
   }
 
   void StrawHitsFromStrawDigis2::beginRun(art::Run& run)
@@ -139,11 +130,11 @@ namespace mu2e {
       // this must be done here because strawele is not accessible at startup and it 
       // contains a const refenence to pfit_, so this can't be instanciated earliere
       if (fittype_ == TrkChargeReco::FitType::sumadc || fittype_ == TrkChargeReco::FitType::peakminusped)
-         pfit_ = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::PeakFit(*strawele,paramFit_) );
+         pfit_ = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::PeakFit(*strawele,peakfit_) );
       else if (fittype_ == TrkChargeReco::FitType::combopeakfit)
-	 pfit_ = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::ComboPeakFitRoot(*strawele,paramFit_) );
+	 pfit_ = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::ComboPeakFitRoot(*strawele,peakfit_) );
       else
-	 pfit_ = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::PeakFitRoot(*strawele,paramFit_) );
+	 pfit_ = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::PeakFitRoot(*strawele,peakfit_) );
                       
       if (printLevel_ > 0) std::cout << "In StrawHitsFromStrawDigis2 begin Run " << std::endl;
   }
@@ -160,8 +151,6 @@ namespace mu2e {
       size_t nplanes = tt.nPlanes();
       size_t npanels = tt.getPlane(0).nPanels();
       
-      ConditionsHandle<AcceleratorParams> accPar("ignored");
-      double mbtime = accPar->deBuncherPeriod;
       ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
       ConditionsHandle<StrawPhysics> strawphys = ConditionsHandle<StrawPhysics>("ignored");
       ConditionsHandle<TrackerCalibrations> tcal("ignored");
@@ -175,29 +164,12 @@ namespace mu2e {
       art::Handle<CaloClusterCollection> caloClusterHandle;
       if (event.getByLabel(caloClusterModuleLabel_, caloClusterHandle)) caloClusters = caloClusterHandle.product();
 
-      const PtrStepPointMCVectorCollection* mcptrdigis(0);
-      art::Handle<PtrStepPointMCVectorCollection> mcptrdigiH;
-      if (doMC_ && event.getByLabel(strawDigis_,mcptrdigiH)) mcptrdigis = mcptrdigiH.product();
-
-      const StrawDigiMCCollection* mcdigis(0);
-      art::Handle<StrawDigiMCCollection> mcdigiH;
-      if (doMC_ && event.getByLabel(strawDigis_,mcdigiH)) mcdigis = mcdigiH.product();
-
-      if ( (mcptrdigis != 0 && mcptrdigis->size() != strawdigis.size()) || 
-           (mcdigis != 0 && mcdigis->size() != strawdigis.size()) )
-           throw cet::exception("RECO")<<"mu2e::StrawHitsFromStrawDigis: MCPtrDigi collection size doesn't match StrawDigi collection size" << std::endl;
-
-
       std::unique_ptr<StrawHitCollection> strawHits(new StrawHitCollection);
       strawHits->reserve(strawdigis.size());
       std::unique_ptr<StrawHitFlagCollection> strawHitFlags(new StrawHitFlagCollection);
       strawHitFlags->reserve(strawdigis.size());
       std::unique_ptr<StrawHitPositionCollection> strawHitPositions(new StrawHitPositionCollection);
       strawHitPositions->reserve(strawdigis.size());      
-      std::unique_ptr<PtrStepPointMCVectorCollection> mcptrHits(new PtrStepPointMCVectorCollection);
-      mcptrHits->reserve(strawdigis.size());
-      std::unique_ptr<StrawDigiMCCollection> mchits(new StrawDigiMCCollection);
-      mchits->reserve(strawdigis.size());
 
 
       std::vector<std::vector<size_t> > hits_by_panel(nplanes*npanels,std::vector<size_t>());    
@@ -212,29 +184,14 @@ namespace mu2e {
       for (size_t isd=0;isd<strawdigis.size();++isd)
       {
           const StrawDigi& digi = strawdigis[isd];          
-          std::array<double,2> times;
+          TDCTimes times;
           strawele->tdcTimes(digi.TDC(),times);
-          double time(times[0]);
-          double dt = times[1]-times[0];
-
-
-          if (time < mbtime+mbbuffer_ && fabs(dt) < maxdt_ )
-          {
-	     time = times[0];
-          } 
-          else if (singledigi_)
-          {
-             // single-ended hit.  Take the valid time, and set delta_t to 0.  This needs
-             // to be flaged in StrawHit, FIXME!!!
-	     if (times[0] < mbtime+mbbuffer_)
-	       time = times[0];
-	     else if (times[1] < mbtime+mbbuffer_)
-	       time = times[1];
-	     else
-	       continue;
-          } 
-          else
-	     continue;
+	  TOTTimes tots{0.0,0.0};
+	  for(size_t iend=0;iend<2;++iend){
+	    tots[iend] = digi.TOT(end_[iend])*strawele->totLSB();
+	  }
+	  // take the earliest of the 2 end times
+	  float time = std::min(times[0],times[1]);
 
           //calorimeter filtering
           if (usecc_ && caloClusters)
@@ -261,13 +218,7 @@ namespace mu2e {
                                                   
           //create straw hit, mc info if requested
           const Straw& straw  = tracker.getStraw( digi.strawIndex() );
-          StrawHit hit(digi.strawIndex(),time,dt,energy);
-          
-	  if ( doMC_ && mcptrdigis != 0) mcptrHits->push_back((*mcptrdigis)[isd]);
-	  if ( doMC_ && mcdigis != 0)    mchits->push_back((*mcdigis)[isd]);          
-          if ( diagLevel_ > 1)           hitDiag_.fill(straw, hit, params, mcdigis, isd);
-          
-          
+          StrawHit hit(digi.strawIndex(),times,tots,energy);
           
           StrawHitFlag flag;
           if (energy > minE_ && energy < maxE_) flag.merge(StrawHitFlag::energysel);
@@ -320,8 +271,6 @@ namespace mu2e {
       event.put(std::move(strawHits));
       event.put(std::move(strawHitFlags));
       event.put(std::move(strawHitPositions));
-      if (doMC_ && mcptrHits != 0) event.put(move(mcptrHits));
-      if (doMC_ && mchits != 0)    event.put(move(mchits));
 
 
    }

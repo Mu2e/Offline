@@ -166,7 +166,7 @@ namespace mu2e {
     _kfTag(pset.get<art::InputTag>("KalFinalFitCollectionTag","KFFDeM")),
     _tqTag(pset.get<art::InputTag>("TrkQualTag","KFFDeM")),
     _tcTag(pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
-    _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH")),
+    _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
     _beamWtModule( pset.get<art::InputTag>("beamWeightModule","protonBunchSummarizer" )),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))

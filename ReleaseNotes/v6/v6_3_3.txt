@@ -1,6 +1,74 @@
-Still under construction
 
            Release notes for Mu2e Offline software, v6_3_3
+
+6)    dnbrow01  26 October 2017
+      Update to an unsigned long representation of time in IoVs.
+      modified:   Alignment/inc/AlignmentSequence.hh
+      modified:   Alignment/inc/IoV.hh
+      modified:   Alignment/src/AlignmentSequence.cc
+      modified:   Alignment/src/IoV.cc
+
+      Remote Handling area door added by Lacee Pyles
+      modified:   Mu2eG4/geom/geom_common_current.txt
+      new file:   Mu2eG4/geom/ExtShieldUpstream_v04.txt
+
+
+5)    dnbrow01  18 October 2017
+      Alignment system is now functioning code.  Compiles, links, runs,
+      does reasonable things.  Still needs detector system input
+      for details.  Also needs collaboration decision for time handling.
+      modified:   Alignment/inc/AlignmentMap.hh
+      modified:   Alignment/inc/AlignmentObj.hh
+      modified:   Alignment/inc/AlignmentSequence.hh
+      modified:   Alignment/inc/AlignmentService.hh
+      modified:   Alignment/inc/IoV.hh
+      modified:   Alignment/src/AlignmentMap.cc
+      new file:   Alignment/src/AlignmentObj.cc
+      modified:   Alignment/src/AlignmentSequence.cc
+      modified:   Alignment/src/AlignmentService_service.cc
+      new file:   Alignment/src/IoV.cc
+      modified:   Alignment/src/SConscript
+      modified:   Alignment/test/align_dev.txt
+
+
+4)    dnbrow01  16 October 2017
+      Flesh out more of the Alignment tools.  Compiles, links, runs.
+      Currently just prints out alignment parameters.
+      new file:   Alignment/fcl/alignTest_01.fcl
+      modified:   Alignment/inc/AlignmentMap.hh
+      modified:   Alignment/inc/AlignmentObj.hh
+      new file:   Alignment/inc/AlignmentSequence.hh
+      new file:   Alignment/inc/AlignmentService.hh
+      new file:   Alignment/inc/IoV.hh
+      new file:   Alignment/inc/ShapeDetail.hh
+      new file:   Alignment/src/AlignmentMap.cc
+      new file:   Alignment/src/AlignmentSequence.cc
+      new file:   Alignment/src/AlignmentService_service.cc
+      new file:   Alignment/src/SConscript
+      new file:   Alignment/test/align_dev.txt
+
+3)    dnbrow01  13 October 2017
+      Update the model of the wedge portion of the TS3 pbar absorber
+      to reflect the most likely    way it will be constructed -	strips
+      of Beryllium arranged as steps.	   This is not yet part of the
+      default	     geometry, but will be pulled in   with geom_common_current
+      modified:   BeamlineGeom/inc/PbarWindow.hh
+      modified:   GeometryService/src/BeamlineMaker.cc
+      new file:   Mu2eG4/geom/TransportSolenoid_v03.txt
+      modified:   Mu2eG4/geom/geom_common_current.txt
+      modified:   Mu2eG4/src/constructTS.cc
+
+      Turn the Cable Runs in the DS into sensitive	volumes.
+      modified:   MCDataProducts/inc/StepInstanceName.hh
+      modified:   Mu2eG4/geom/DetectorSolenoid_v03.txt
+      modified:   Mu2eG4/inc/SensitiveDetectorName.hh
+      modified:   Mu2eG4/src/constructDS.cc
+
+      Saw a typo in the comments and couldn't keep myself from fixing it.
+      modified:   Mu2eG4/inc/SensitiveDetectorHelper.hh
+
+      Reorganized the	text to	be more	intuitive, I think.
+      modified:   Mu2eG4/test/geom_SurfaceCheck_Select.txt
 
 2)    dnbrow01  04 October 2017
       Eliminate use of Mu2eG4/test/geom_01.txt in favor of 

@@ -17,7 +17,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/CrvPhotonsCollection.hh"
 #include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
-#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
+#include "RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -53,10 +53,11 @@ namespace mu2e
     private:
     std::string _crvPhotonsModuleLabel;
     std::string _crvSiPMChargesModuleLabel;
-    std::string _crvWaveformsModuleLabel;
+    std::string _crvDigiModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
     int         _crvBarIndex;
     double      _timeStart, _timeEnd;
+    double      _recoPulsePedestal;
 
     double      _microBunchPeriod;
 
@@ -68,11 +69,12 @@ namespace mu2e
     art::EDAnalyzer(pset),
     _crvPhotonsModuleLabel(pset.get<std::string>("crvPhotonsModuleLabel")),
     _crvSiPMChargesModuleLabel(pset.get<std::string>("crvSiPMChargesModuleLabel")),
-    _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
+    _crvDigiModuleLabel(pset.get<std::string>("crvDigiModuleLabel")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _crvBarIndex(pset.get<int>("crvBarIndex")),
     _timeStart(pset.get<double>("timeStart")),
-    _timeEnd(pset.get<double>("timeEnd"))
+    _timeEnd(pset.get<double>("timeEnd")),
+    _recoPulsePedestal(pset.get<double>("recoPulsePedestal"))
   {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("Plots");
@@ -102,8 +104,8 @@ namespace mu2e
     art::Handle<CrvSiPMChargesCollection> crvSiPMChargesCollection;
     event.getByLabel(_crvSiPMChargesModuleLabel,"",crvSiPMChargesCollection);
 
-    art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
-    event.getByLabel(_crvWaveformsModuleLabel,"",crvDigiMCCollection);
+    art::Handle<CrvDigiCollection> crvDigiCollection;
+    event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
 
     art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
     event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
@@ -113,7 +115,7 @@ namespace mu2e
 
     CrvPhotonsCollection::const_iterator         photons        = crvPhotonsCollection->find(barIndex);
     CrvSiPMChargesCollection::const_iterator     siPMCharges    = crvSiPMChargesCollection->find(barIndex);
-    CrvDigiMCCollection::const_iterator          digiMC         = crvDigiMCCollection->find(barIndex);
+    CrvDigiCollection::const_iterator            digi           = crvDigiCollection->find(barIndex);
     CrvRecoPulsesCollection::const_iterator      recoPulses     = crvRecoPulsesCollection->find(barIndex);
 
     gStyle->SetOptStat(0);
@@ -130,6 +132,8 @@ namespace mu2e
     std::vector<TH1D*> histVector;
     std::vector<TGraph*> graphVector;
     std::vector<TGaxis*> axisVector;
+
+    double extension = (_timeEnd-_timeStart)*0.1;
 
     for(int SiPM=0; SiPM<4; SiPM++)
     {
@@ -152,7 +156,7 @@ namespace mu2e
       std::ostringstream s2, s3;
       s2<<"Photons_"<<_icanvas<<"__"<<SiPM;
       s3<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
-      TH1D *hist=new TH1D(s2.str().c_str(),s3.str().c_str(),100,_timeStart,_timeEnd);
+      TH1D *hist=new TH1D(s2.str().c_str(),s3.str().c_str(),100,_timeStart,_timeEnd+extension);
       histVector.push_back(hist);
 
       for(unsigned int i=0; i<photonTimesAdjusted.size(); i++)
@@ -163,11 +167,14 @@ namespace mu2e
       hist->SetLineColor(kBlue);
       hist->GetXaxis()->SetTitle("t [ns]");
       hist->GetYaxis()->SetTitle("Photons");
-      hist->GetYaxis()->SetTitleOffset(0.5);
+      hist->GetYaxis()->SetTitleOffset(1.0);
       hist->GetYaxis()->SetAxisColor(kBlue);
       hist->GetYaxis()->SetTitleColor(kBlue);
       hist->GetYaxis()->SetLabelColor(kBlue);
       hist->Draw();
+
+      double histMax = hist->GetMaximum();
+      if(histMax==0) histMax=1;
 
 //SiPM response
       std::vector<double> siPMtimes, siPMcharges;
@@ -182,7 +189,7 @@ namespace mu2e
       }
 
       double scaleSiPMResponse = 0.5;
-      TH1D *histSiPMResponse=new TH1D((s2.str()+"SiPMResponse").c_str(),"",100,_timeStart,_timeEnd);
+      TH1D *histSiPMResponse=new TH1D((s2.str()+"SiPMResponse").c_str(),"",100,_timeStart,_timeEnd+extension);
       histVector.push_back(histSiPMResponse);
       for(unsigned int i=0; i<siPMtimes.size(); i++)
       {
@@ -192,32 +199,31 @@ namespace mu2e
       histSiPMResponse->Draw("same");
 
 //waveforms
-      std::vector<double> voltages;
-      std::vector<double> voltagesTimes;
-      double histMax = hist->GetMaximum();
+      std::vector<double> ADCs;
+      std::vector<double> times;
       double scale=NAN;
-      if(digiMC!=crvDigiMCCollection->end())
+      if(digi!=crvDigiCollection->end())
       {
-        double digitizationPrecision = digiMC->second.GetDigitizationPrecision(); //ns
-        const std::vector<CrvDigiMC::CrvSingleWaveform> &singleWaveforms = digiMC->second.GetSingleWaveforms(SiPM);
+        double digitizationPrecision = digi->second.GetDigitizationPrecision(); //ns
+        const std::vector<CrvDigi::CrvSingleWaveform> &singleWaveforms = digi->second.GetSingleWaveforms(SiPM);
         for(size_t i=0; i<singleWaveforms.size(); i++)
         {
-          for(size_t j=0; j<singleWaveforms[i]._voltages.size(); j++)
+          for(size_t j=0; j<singleWaveforms[i]._ADCs.size(); j++)
           {    
-            voltages.push_back(singleWaveforms[i]._voltages[j]);
-            voltagesTimes.push_back(singleWaveforms[i]._startTime+digitizationPrecision*j); 
+            ADCs.push_back(singleWaveforms[i]._ADCs[j]);
+            times.push_back((singleWaveforms[i]._startTDC+j)*digitizationPrecision); 
           }
         }
 
-        unsigned int n = voltages.size();
+        size_t n = ADCs.size();
 
         if(n>0)
         {
-          double maxVoltage=*std::max_element(voltages.begin(),voltages.end());
-          scale = histMax/maxVoltage;
+          double maxADC=*std::max_element(ADCs.begin(),ADCs.end());
+          scale = histMax/maxADC;
 
-          for(unsigned int i=0; i<n; i++) voltages[i]*=scale;
-          TGraph *graphW=new TGraph(n,voltagesTimes.data(),voltages.data());
+          for(size_t i=0; i<n; i++) ADCs[i]*=scale;
+          TGraph *graphW=new TGraph(n,times.data(),ADCs.data());
           graphVector.push_back(graphW);
           graphW->SetTitle("");
           graphW->SetMarkerStyle(20);
@@ -247,6 +253,7 @@ namespace mu2e
           {
             tF[iF] = tF1 + iF*1.0;
             vF[iF] = fitParam0*TMath::Exp(-(tF[iF]-fitParam1)/fitParam2-TMath::Exp(-(tF[iF]-fitParam1)/fitParam2));
+            vF[iF]+=_recoPulsePedestal;
             vF[iF]*=scale;
             if(isnan(vF[iF])) nF=0;
           }
@@ -265,27 +272,26 @@ namespace mu2e
         }
       }
 
-      if(histMax>0 && !isnan(scale) && !isnan(scaleSiPMResponse))
+      TGaxis *axisSiPMResponse = new TGaxis(_timeEnd+extension,0,_timeEnd+extension,histMax,0,histMax/scaleSiPMResponse,10,"+L");
+      axisVector.push_back(axisSiPMResponse);
+      axisSiPMResponse->SetTitle("SiPM charges [PE]");
+      axisSiPMResponse->SetTitleOffset(1.0);
+      axisSiPMResponse->SetTitleColor(kOrange);
+      axisSiPMResponse->SetLineColor(kOrange);
+      axisSiPMResponse->SetLabelColor(kOrange);
+      axisSiPMResponse->Draw("same");
+
+      if(!isnan(scale))
       {
-        TGaxis *axis = new TGaxis(_timeEnd*0.93,0,_timeEnd*0.93,histMax,0,histMax/scale,10,"+L");
+        TGaxis *axis = new TGaxis(_timeEnd,0,_timeEnd,histMax,0,histMax/scale,10,"+L");
         axisVector.push_back(axis);
-        axis->SetTitle("voltage [V]");
+        axis->SetTitle("ADC");
         axis->SetTitleOffset(-0.5);
         axis->SetTitleColor(kRed);
         axis->SetLineColor(kRed);
         axis->SetLabelColor(kRed);
         axis->Draw("same");
-
-        TGaxis *axisSiPMResponse = new TGaxis(_timeEnd,0,_timeEnd,histMax,0,histMax/scaleSiPMResponse,10,"+L");
-        axisVector.push_back(axisSiPMResponse);
-        axisSiPMResponse->SetTitle("SiPM output [PE]");
-        axisSiPMResponse->SetTitleOffset(1.0);
-        axisSiPMResponse->SetTitleColor(kOrange);
-        axisSiPMResponse->SetLineColor(kOrange);
-        axisSiPMResponse->SetLabelColor(kOrange);
-        axisSiPMResponse->Draw("same");
       }
-
     } //SiPM
 
     _canvas[_icanvas]->Write();

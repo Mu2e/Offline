@@ -12,7 +12,7 @@ namespace mu2e {
        {}
 
 
-       void PeakFit::process(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const
+       void PeakFit::process(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const
        {
          
          switch(_fittype)
@@ -29,21 +29,16 @@ namespace mu2e {
        }
 
 
-       void PeakFit::sumADC(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const
+       void PeakFit::sumADC(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const
        {
-          //fit = PeakFitParams();
-          //double sum2(0.0);
-          //for (auto iadc : adcData) { sum2 += _strawele.adcCurrent(iadc); }
-          //double charge2 = sum2*_strawele.adcPeriod()*StrawElectronics::_pC_per_uA_ns;
-          //fit._charge = charge;
               
           unsigned sum(0.0);
           for (auto iadc : adcData) sum += iadc;
-          double charge = (sum- adcData.size()*_strawele.ADCPedestal())*_strawele.adcLSB()/_strawele.currentToVoltage(StrawElectronics::adc)*_strawele.adcPeriod()*StrawElectronics::_pC_per_uA_ns;
+          double charge = (sum- adcData.size()*_strawele.ADCPedestal())*_strawele.adcLSB()/_strawele.currentToVoltage(TrkTypes::adc)*_strawele.adcPeriod()*StrawElectronics::_pC_per_uA_ns;
           fit._charge = charge;
        }
 
-       void PeakFit::peakMinusPed(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const
+       void PeakFit::peakMinusPed(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const
        {
           fit = PeakFitParams();
           auto maxIter = std::max_element(adcData.begin(), adcData.end());
@@ -52,11 +47,11 @@ namespace mu2e {
           const double peak = *maxIter;
           double pedestal = std::accumulate(adcData.begin(), adcData.begin() + _strawele.nADCPreSamples(),0)/(double) _strawele.nADCPreSamples();
 
-          double charge = (peak - pedestal) * _strawele.adcLSB() / _strawele.normalization(StrawElectronics::adc) / exp(-1.0) * _strawele.peakMinusPedestalEnergyScale();
-          fit._charge = charge;
+	  double charge = (peak - pedestal) * _strawele.adcLSB() * _strawele.peakMinusPedestalEnergyScale();
+	  fit._charge = charge;
        }
 
-       void PeakFit::initializeFit(const StrawElectronics::ADCWaveform& adcData, PeakFitParams& fit) const
+       void PeakFit::initializeFit(const TrkTypes::ADCWaveform& adcData, PeakFitParams& fit) const
        {
           fit._earlyCharge = adcData[0]-_strawele.ADCPedestal(); // this is a crude value, should compute something FIXME!!!
           fit._pedestal = _strawele.ADCPedestal();

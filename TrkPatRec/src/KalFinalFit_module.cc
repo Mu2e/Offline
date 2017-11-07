@@ -164,7 +164,6 @@ namespace mu2e
 	}
 	// build a Kalman rep around this seed
 	KalRep *krep(0);
-
 	_kfit.makeTrack(_shcol,kseed,krep);
 	if(_debug > 1){
 	  if(krep == 0)

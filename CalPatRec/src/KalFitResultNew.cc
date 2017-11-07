@@ -37,7 +37,6 @@ namespace mu2e {
     }
   }
 
-
 //-----------------------------------------------------------------------------
   KalFitResultNew::~KalFitResultNew() {
     if (_helixTraj) delete _helixTraj;

@@ -22,8 +22,8 @@ namespace mu2e
     struct CrvSingleWaveform
     {
       std::vector<double>                 _voltages;
-      std::vector<art::Ptr<StepPointMC> > _steps;
-      art::Ptr<SimParticle>               _simparticle;
+      std::vector<art::Ptr<StepPointMC> > _steps;        //step points responsible for this waveform
+      art::Ptr<SimParticle>               _simparticle;  //most likely sim particle responsible for this waveform
       double                              _startTime;
     };
 

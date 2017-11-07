@@ -122,6 +122,7 @@ namespace mu2e
 
       CrvDigiMC &crvDigiMC = (*crvDigiMCCollection)[barIndex];
       crvDigiMC.SetDigitizationPrecision(_digitizationPrecision);
+      bool empty=true;
 
       unsigned int FEB=barIndex.asUint()/32.0; //assume that the counters are ordered in the correct way, 
                                                //i.e. that all counters beloning to the same FEB are grouped together
@@ -208,9 +209,21 @@ namespace mu2e
 
             i--;
             singleWaveforms.push_back(singleWaveform);
+            empty=false;
           }
         }
-      }
+      } //SiPM
+
+      //2 options:
+      //(1) -create a crvDigiMC object as a reference to a crvDigiMCCollection map entry at the beginning for all counters
+      //    -fill this crvDigiMC object
+      //    -if the crvDigiMC object stays empty, erase the map entry in crvDigiMCCollection
+      //(2) -create a standalone crvDigiMC object
+      //    -fill this crvDigiMC object
+      //    -if the crvDigiMC didn't stay empty, create a new map entry in crvDigiMCCollection and fill its content with
+      //     the new crvDigiMC  <---- too time consuming, therefore use option (1)
+
+      if(empty) crvDigiMCCollection->erase(barIndex);  
     }
 
     event.put(std::move(crvDigiMCCollection));

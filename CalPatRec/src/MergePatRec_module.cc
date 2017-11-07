@@ -48,7 +48,11 @@
 
 #include "CalPatRec/inc/ObjectDumpUtils.hh"
 
+#include "CalPatRec/inc/MergePatRec_types.hh"
 #include "CalPatRec/inc/AlgorithmIDCollection.hh"
+#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "art/Utilities/make_tool.h"
+
 // Xerces XML Parser
 #include <xercesc/dom/DOM.hpp>
 
@@ -76,16 +80,18 @@ using namespace std;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
+  using namespace MergePatRecTypes;
+
   class MergePatRec : public art::EDProducer {
   public:
-    explicit MergePatRec(fhicl::ParameterSet const&);
-    virtual ~MergePatRec();
-    virtual void beginJob();
-    virtual void beginRun(art::Run&);
-    virtual void produce(art::Event& event ); 
-    void endJob();
+    explicit       MergePatRec(fhicl::ParameterSet const&);
+    virtual       ~MergePatRec();
+    virtual void   beginJob();
+    virtual void   beginRun(art::Run&);
+    virtual void   produce(art::Event& event ); 
+    void           endJob();
 
-    double s_at_given_z(const KalRep* Krep, double Z);
+    double         s_at_given_z(const KalRep* Krep, double Z);
 
     class ProbDist {
     public:
@@ -109,7 +115,7 @@ namespace mu2e {
   private:
     unsigned         _iev;
 					// configuration parameters
-    int              _diag;
+    int              _diagLevel;
     int              _debugLevel;
     int              _printfreq;
     bool             _addhits; 
@@ -133,10 +139,13 @@ namespace mu2e {
 
     ProbDist*        _trkPatRecProb;
     ProbDist*        _calPatRecProb;
+
+    Data_t                              _data;              // all data used
+    std::unique_ptr<ModuleHistToolBase> _hmanager;
   };
   
   MergePatRec::MergePatRec(fhicl::ParameterSet const& pset) :
-    _diag                   (pset.get<int>("diagLevel" )),
+    _diagLevel              (pset.get<int>("diagLevel" )),
     _debugLevel             (pset.get<int>("debugLevel")),
     _trkPatRecModuleLabel   (pset.get<std::string>("trkPatRecModuleLabel"   )),
     _calPatRecModuleLabel   (pset.get<std::string>("calPatRecModuleLabel"   ))
@@ -168,6 +177,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     _calPatRecProb    = new ProbDist(_calPatRecMVAHist.data());
     _trkPatRecProb    = new ProbDist(_trkPatRecMVAHist.data());
+
+    if (_diagLevel != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
+    else                 _hmanager = std::make_unique<ModuleHistToolBase>();
   }
 
   MergePatRec::~MergePatRec() {
@@ -176,6 +188,10 @@ namespace mu2e {
   }
   
   void MergePatRec::beginJob() {
+    if (_diagLevel > 0) {
+      art::ServiceHandle<art::TFileService> tfs;
+      _hmanager->bookHistograms(tfs);
+    }
   }
   
   void MergePatRec::beginRun(art::Run& ) {
@@ -224,9 +240,7 @@ namespace mu2e {
     int const   max_ntrk(100);
     int         tpr_flag[max_ntrk], cpr_flag[max_ntrk], ntpr(0), ncpr(0);
 
-    art::Handle<mu2e::KalRepPtrCollection>    tpr_h, cpr_h;
-
-    mu2e::KalRepPtrCollection  *list_of_kreps_tpr(0), *list_of_kreps_cpr(0);
+    art::Handle<mu2e::KalRepPtrCollection>    htpr, hcpr;
 
     mu2e::GeomHandle<mu2e::DetectorSystem>      ds;
     mu2e::GeomHandle<mu2e::VirtualDetector>     vdet;
@@ -237,17 +251,21 @@ namespace mu2e {
 
     if (_debugLevel > 0) ObjectDumpUtils::printEventHeader(&AnEvent,"MergePatRec::produce");
 
-    AnEvent.getByLabel(_trkPatRecModuleLabel,tpr_h);
-    AnEvent.getByLabel(_calPatRecModuleLabel,cpr_h);
+    AnEvent.getByLabel(_trkPatRecModuleLabel,htpr);
+    AnEvent.getByLabel(_calPatRecModuleLabel,hcpr);
     
-    if (tpr_h.isValid()) { 
-      list_of_kreps_tpr = (mu2e::KalRepPtrCollection*) &(*tpr_h);
-      ntpr              = list_of_kreps_tpr->size();
+    _data.event = &AnEvent;
+    _data.list_of_kreps_tpr = NULL;
+    _data.list_of_kreps_cpr = NULL;
+
+    if (htpr.isValid()) { 
+      _data.list_of_kreps_tpr = htpr.product();
+      ntpr                    = _data.list_of_kreps_tpr->size();
     }
 
-    if (cpr_h.isValid()) {
-      list_of_kreps_cpr = (mu2e::KalRepPtrCollection*) &(*cpr_h);
-      ncpr              = list_of_kreps_cpr->size();
+    if (hcpr.isValid()) {
+      _data.list_of_kreps_cpr = hcpr.product();
+      ncpr                    = _data.list_of_kreps_cpr->size();
     }
 
     for (int i=0; i<max_ntrk; i++) {
@@ -255,7 +273,7 @@ namespace mu2e {
       cpr_flag[i] = 1;
     }
 
-    art::Ptr<KalRep>          *tpr, *cpr;
+    const art::Ptr<KalRep>    *tpr, *cpr;
     const KalRep              *krep_tpr, *krep_cpr;
     Hep3Vector                cpr_mom, tpr_mom;
     short                     best(-1),  mask;
@@ -269,7 +287,7 @@ namespace mu2e {
     TrkInfo                   tpr_trkinfo, cpr_trkinfo;
 
     for (int i1=0; i1<ntpr; i1++) {
-      tpr       = &list_of_kreps_tpr->at(i1);
+      tpr       = &_data.list_of_kreps_tpr->at(i1);
       tpr_mom   = (*tpr)->momentum();
       //      tpr_chisq = (*tpr)->chisq();
       mask      = 1 << AlgorithmID::TrkPatRecBit;
@@ -284,7 +302,7 @@ namespace mu2e {
       tpr_qual    = tpr_trkinfo._trkqual;
 
       for (int i2=0; i2<ncpr; i2++) {
-	cpr       = &list_of_kreps_cpr->at(i2);
+	cpr       = &_data.list_of_kreps_cpr->at(i2);
 	krep_cpr  = cpr->get();
 
 	_kalDiag->kalDiag(krep_cpr,false);
@@ -341,12 +359,10 @@ namespace mu2e {
 
 	vector<mu2e::Doublet> list_of_doublets;
 	_dar->findDoublets(krep_cpr,&list_of_doublets);
-
 //-----------------------------------------------------------------------------
 // counting only 2+ hit doublets
 //-----------------------------------------------------------------------------
 	mu2e::Doublet*                     d;
-	//	mu2e::DoubletAmbigResolver::Data_t r;
 	
 	int   nd_tot(0), nd_os(0), nd_ss(0), ns;
 
@@ -487,7 +503,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     for (int i=0; i<ncpr; i++) {
       if (cpr_flag[i] == 1) {
-	cpr = &list_of_kreps_cpr->at(i);
+	cpr = &_data.list_of_kreps_cpr->at(i);
 
 	trackPtrs->push_back(*cpr);
 
@@ -605,6 +621,11 @@ namespace mu2e {
     AnEvent.put(std::move(trackPtrs));
     AnEvent.put(std::move(algs     ));
     AnEvent.put(std::move(tqcol    ));
+//-----------------------------------------------------------------------------
+// in the end of event processing fill diagnostic histograms
+//-----------------------------------------------------------------------------
+    if (_diagLevel  > 0) _hmanager->fillHistograms(&_data);
+    if (_debugLevel > 0) _hmanager->debug(&_data);
   }
 
 

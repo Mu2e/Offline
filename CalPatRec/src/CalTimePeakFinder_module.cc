@@ -8,6 +8,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "fhiclcpp/ParameterSet.h"
 
+#include "CalPatRec/inc/ModuleHistToolBase.hh"
 #include "CalPatRec/inc/CalTimePeakFinder_module.hh"
 
 // framework
@@ -32,16 +33,8 @@
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/median.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/moment.hpp>
-#include <boost/algorithm/string.hpp>
-
-#include "TVector2.h"
-
 using namespace std;
-using namespace boost::accumulators;
+
 using CLHEP::HepVector;
 using CLHEP::HepSymMatrix;
 using CLHEP::Hep3Vector;
@@ -89,8 +82,11 @@ namespace mu2e {
 
     if (_debugLevel != 0) _printfreq = 1;
 
-    if (_diagLevel  != 0) _hmanager = art::make_tool<CprModuleHistBase>(pset.get<fhicl::ParameterSet>("histograms"));
-    else                  _hmanager = std::make_unique<CprModuleHistBase>();
+    if (_diagLevel  != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
+    else                  _hmanager = std::make_unique<ModuleHistToolBase>();
+
+    _data.minClusterEnergy =  _minClusterEnergy;
+    _data.minNHits         =  _minNHits;
   }
 
 //-----------------------------------------------------------------------------
@@ -100,8 +96,10 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void CalTimePeakFinder::beginJob(){
-    art::ServiceHandle<art::TFileService> tfs;
-    _hmanager->bookHistograms(tfs,&_hist);
+    if (_diagLevel > 0) {
+      art::ServiceHandle<art::TFileService> tfs;
+      _hmanager->bookHistograms(tfs);
+    }
   }
 
 //-----------------------------------------------------------------------------
@@ -120,112 +118,80 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// find the input data objects
+// find input things
 //-----------------------------------------------------------------------------
   bool CalTimePeakFinder::findData(const art::Event& evt) {
 
-    //    art::Handle<mu2e::StrawHitCollection> strawhitsH;
-    if (evt.getByLabel(_shLabel, _strawhitsH)) {
-      _shcol = _strawhitsH.product();
+    art::Handle<mu2e::StrawHitCollection> shcolH;
+    if (evt.getByLabel(_shLabel, shcolH)) {
+      _data.shcol = shcolH.product();
     }
     else {
-      _shcol  = 0;
+      _data.shcol  = 0;
       printf(" >>> ERROR in CalTimePeakFinder::findData: StrawHitCollection with label=%s not found.\n",
              _shLabel.data());
     }
 
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
     if (evt.getByLabel(_shfLabel,shflagH)) {
-      _shfcol = shflagH.product();
+      _data.shfcol = shflagH.product();
     }
     else {
-      _shfcol = 0;
+      _data.shfcol = 0;
       printf(" >>> ERROR in CalTimePeakFinder::findData: StrawHitFlagCollection with label=%s not found.\n",
              _shfLabel.data());
     }
 
     if (evt.getByLabel(_ccmLabel, _ccH)) {
-      _ccCollection = _ccH.product();
+      _data.ccCollection = _ccH.product();
     }
     else {
-      _ccCollection = 0;
+      _data.ccCollection = 0;
       printf(" >>> ERROR in CalTimePeakFinder::findData: CaloClusterCollection with label=%s not found.\n",
              _ccmLabel.data());
     }
 
- 
-//-----------------------------------------------------------------------------
-// done
-//-----------------------------------------------------------------------------
-    return (_shcol != 0) && (_shfcol != 0) && (_ccCollection != 0);
+    return (_data.shcol != 0) && (_data.shfcol != 0) && (_data.ccCollection != 0);
   }
 
 //-----------------------------------------------------------------------------
 // event entry point
 //-----------------------------------------------------------------------------
-//  void CalTimePeakFinder::produce(art::Event& event ) {
-  bool CalTimePeakFinder::filter(art::Event& event ) {
+  bool CalTimePeakFinder::filter(art::Event& event) {
     const char*               oname = "CalTimePeakFinder::filter";
 
                                         // event printout
     _iev     = event.id().event();
-
     if ((_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 
-    _tpeaks = new CalTimePeakCollection;
-    
+    _data._event = &event;
+    _data._tpeaks = new CalTimePeakCollection;
+
+    unique_ptr<CalTimePeakCollection>  tpeaks  (_data._tpeaks);
     unique_ptr<TimeClusterCollection>  outseeds(new TimeClusterCollection);
-    unique_ptr<CalTimePeakCollection>  tpeaks  (_tpeaks);
-//-----------------------------------------------------------------------------
-// find the time peaks in the time spectrum of selected hits.
-//-----------------------------------------------------------------------------
+    
+    _data._outseeds = outseeds.get();
+
     bool ok = findData(event);
 
-    if (ok) findTimePeaks(_tpeaks, *outseeds);
-    else {
-      printf("%s ERROR: No straw hits found\n",oname);
-    }
-//--------------------------------------------------------------------------------    
-// fill diagnostic if needed
-//--------------------------------------------------------------------------------
-    if (_diagLevel > 0) {
+    if (ok) findTimePeaks(_data._tpeaks, *_data._outseeds);
+    else    printf("%s ERROR: No straw hits found in event %i\n",oname,_iev);
 
-      int   nseeds = outseeds->size();
-      
-      _data.nseeds[0] = nseeds;
-      _data.nseeds[1] = 0;
-      _data.minNHits  = _minNHits;
-      
-      for (int i=0; i<nseeds; ++i) {
-	TimeCluster* tmpseed = &outseeds->at(i);
-	_data.cl             = tmpseed->caloCluster().get();
-	_data.timeCluster    = tmpseed;
-	int nhits            = tmpseed->hits().size();
-
-	if (nhits >= _minNHits) _data.nseeds[1] += 1;
-//-----------------------------------------------------------------------------
-// fill timepeak-level histograms
-//-----------------------------------------------------------------------------
-	_hmanager->fillHistograms(1,&_data,&_hist);
-      }
-//-----------------------------------------------------------------------------
-// fill event-level histograms : so far, for nseeds
-//-----------------------------------------------------------------------------
-      _hmanager->fillHistograms(0,&_data,&_hist);
-    }
+    // diagnostics, if requested
+    if (_diagLevel > 0) _hmanager->fillHistograms(&_data);
 //-----------------------------------------------------------------------------
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
-    int   nseeds = outseeds->size();
-    
     event.put(std::move(outseeds));
     event.put(std::move(tpeaks  ));
-    
-    if (_useAsFilter == 1) return (nseeds > 0) ? true : false ; 
-    else                   return true;
+//-----------------------------------------------------------------------------
+// filtering, if requested
+//-----------------------------------------------------------------------------
+    if (_useAsFilter == 0) return true;
 
+    int nseeds = outseeds->size();
+    return (nseeds > 0) ; 
   }
-
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
@@ -254,11 +220,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // Loop over calorimeter clusters
 //-----------------------------------------------------------------------------
-    nsh   = _shcol->size();
-    ncl   = _ccCollection->size();
+    nsh   = _data.shcol->size();
+    ncl   = _data.ccCollection->size();
 
     for (int ic=0; ic<ncl; ic++) {
-      cl      = &_ccCollection->at(ic);
+      cl      = &_data.ccCollection->at(ic);
 
       if ( cl->energyDep() > _minClusterEnergy) {
 
@@ -280,8 +246,8 @@ namespace mu2e {
           // create time peak
           CalTimePeak tpeak(cl,xcl,ycl,zcl);
 
-          tpeak._shcol  = _shcol;
-          tpeak._shfcol = _shfcol;
+          tpeak._shcol  = _data.shcol;
+          tpeak._shfcol = _data.shfcol;
           tpeak._tmin   = cl_time+_mindt;
           tpeak._tmax   = cl_time+_maxdt;
 //-----------------------------------------------------------------------------
@@ -289,26 +255,16 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
           stime = 0;
           mu2e::StrawHitFlag flag;
-          // int   nhitsTimeWindow(0), nhitsHasTime(0), nhitsHasEnergy(0), nhitsHasRadius(0),
-          //       nhitsNoDelta(0), nhitsNoIsolated(0);
 
           double meanDriftTime = 1.25/0.06;// half straw tube radius / drift velocity
-	  //          int    gen_index, sim_id, vol_id;
 
           for(int istr=0; istr<nsh;++istr) {
-            flag = _shfcol->at(istr);
+            flag = _data.shfcol->at(istr);
 
             int hit_has_all_properties = flag.hasAllProperties(_hsel);
             int bgr_hit                = flag.hasAnyProperty(_bkgsel);
 
-            // int hit_has_energy         = flag.hasAllProperties(energyFlag);
-            // int hit_has_time           = flag.hasAllProperties(timeFlag);
-            // int hit_has_radius         = flag.hasAllProperties(radiusFlag);
-
-            // int deltaRay_hit           = flag.hasAnyProperty(deltaRayFlag);
-            // int isolated_hit           = flag.hasAnyProperty(isolatedFlag);
-
-            hit    = &_shcol->at(istr);
+            hit    = &_data.shcol->at(istr);
             time   = hit->time();
             straw  = &_tracker->getStraw(hit->strawIndex());
             zstraw = straw->getMidPoint().z();
@@ -339,7 +295,7 @@ namespace mu2e {
 
           tpeak._tpeak = stime/(tpeak.NHits()+1.e-12);
 
-          if (tpeak.NHits() > _minNHits) {
+          if (tpeak.NHits() > _data.minNHits) {
 	    TimePeakColl->push_back(tpeak);
 
 					//fill seed information

@@ -9,6 +9,8 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
+# list mixed background frames in the following file
+#include "bkgfiles.fcl"
 
 process_name : TrkAnaMix
 
@@ -26,11 +28,9 @@ physics :
   analyzers : @local::TrkAna.analyzers
 }
 
+# setup paths.  Art will handle these automatically
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.SimAndRecoMixSequence ]
-physics.trigger_paths  : [ TrkAnaTriggerPath ]
-
 physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence ]
-physics.end_paths : [ TrkAnaEndPath ]
 
 # You can add detailed (hit) information to the TTree by setting diagLevel to 2
 physics.analyzers.TrkAna.diagLevel : 1

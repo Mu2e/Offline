@@ -7,6 +7,10 @@ process_name : CRVResponse
 source :
 {
   module_type : RootInput
+  inputCommands: ["keep *", 
+                  "drop *KalRepPayload*_*_*_*",
+                  "drop *CaloCrystalOnlyHit*_*_*_*",
+                  "drop *Crv*_*_*_*"]
 }
 
 services :
@@ -36,11 +40,12 @@ physics :
       module_type                    : CrvPlot
       crvPhotonsModuleLabel          : CrvPhotons
       crvSiPMChargesModuleLabel      : CrvSiPMCharges
-      crvWaveformsModuleLabel        : CrvWaveforms
+      crvDigiModuleLabel             : CrvDigi
       crvRecoPulsesModuleLabel       : CrvRecoPulses
       crvBarIndex                    : 1
-      timeStart                      : 0
-      timeEnd                        : 1600
+      timeStart                      : 500
+      timeEnd                        : 1000
+      recoPulsePedestal              : 100.42
     }
   }
 
@@ -52,7 +57,7 @@ physics :
 
 physics.producers.CrvPhotons.startTime         : 0.0 
 physics.producers.CrvSiPMCharges.blindTime     : 0.0
-physics.producers.CrvWaveforms.minVoltage      : 0.0
+#physics.producers.CrvWaveforms.minVoltage      : 0.0
 
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20

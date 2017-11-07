@@ -105,7 +105,7 @@ namespace mu2e
     _shpTag		(pset.get<art::InputTag>("StrawHitPositionCollection","MakeStrawHitPositions")),
     _sthpTag		(pset.get<art::InputTag>("StereoHitPositionCollection","MakeStereoHits")),
     _stTag		(pset.get<art::InputTag>("StereoHitCollection","MakeStereoHits")),
-    _mcdigisTag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH"))
+    _mcdigisTag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD"))
   {}
 
   StereoHitDiag::~StereoHitDiag(){}
@@ -225,10 +225,10 @@ namespace mu2e
 	  StrawDigiMC const& mcd1 = _mcdigis->at(sth.hitIndex1());
 	  StrawDigiMC const& mcd2 = _mcdigis->at(sth.hitIndex2());
 	  _mcrel = MCRelationship::relationship(mcd1,mcd2);
-	  if(mcd1.stepPointMC(StrawDigi::zero).isNonnull() &&
-	      mcd2.stepPointMC(StrawDigi::zero).isNonnull() ){
-	    CLHEP::Hep3Vector mcsep = mcd1.stepPointMC(StrawDigi::zero)->position() -
-	      mcd2.stepPointMC(StrawDigi::zero)->position();
+	  if(mcd1.stepPointMC(TrkTypes::cal).isNonnull() &&
+	      mcd2.stepPointMC(TrkTypes::cal).isNonnull() ){
+	    CLHEP::Hep3Vector mcsep = mcd1.stepPointMC(TrkTypes::cal)->position() -
+	      mcd2.stepPointMC(TrkTypes::cal)->position();
 	    _mcdist = mcsep.mag();
 	    _mcperp = mcsep.perp();
 	  }
@@ -265,10 +265,10 @@ namespace mu2e
 	  _mcr = MCRelationship::relationship(mcd1,mcd2);
 	}
 	StrawDigiMC const& mcd = _mcdigis->at(ish);
-	StrawDigi::TDCChannel itdc = StrawDigi::zero;
+	StrawEnd itdc;
 	_mcshphi = _mcshrho = -1000.0;
 	_mcpdg = _mcproc = _mcgen = 0;
-	if(mcd.hasTDC(itdc) && mcd.stepPointMC(itdc).isNonnull() ){
+	if(mcd.stepPointMC(itdc).isNonnull() ){
 	  _mcshphi = mcd.stepPointMC(itdc)->position().phi();
 	  _mcshrho = mcd.stepPointMC(itdc)->position().perp();
 	  if(mcd.stepPointMC(itdc)->simParticle().isNonnull()){

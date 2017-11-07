@@ -188,7 +188,7 @@ namespace mu2e {
       _trkana->Branch("demmcent",&_demmcent,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch("demmcmid",&_demmcmid,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch("demmcxit",&_demmcxit,TrkInfoMCStep::leafnames().c_str());
-      _trkana->Branch("crvinfomc",&_crvinfomc);
+      if(_crv)_trkana->Branch("crvinfomc",&_crvinfomc);
       if(_diag > 1)_trkana->Branch("demtshmc",&_demtshmc);
     }
 

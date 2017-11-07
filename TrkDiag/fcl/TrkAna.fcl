@@ -27,10 +27,7 @@ physics :
 }
 
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.SimAndRecoSequence ]
-physics.trigger_paths  : [ TrkAnaTriggerPath ]
-
 physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence ]
-physics.end_paths : [ TrkAnaEndPath ]
 
 # You can add detailed (hit) information to the TTree by setting diagLevel to 2
 physics.analyzers.TrkAna.diagLevel : 1

@@ -55,7 +55,7 @@
 #include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 
-#include "RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "RecoDataProducts/inc/StrawDigi.hh"
 #include "RecoDataProducts/inc/TrackSummary.hh"
 
 #include "RecoDataProducts/inc/BkgCluster.hh"

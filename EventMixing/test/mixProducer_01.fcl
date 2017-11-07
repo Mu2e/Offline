@@ -47,7 +47,8 @@ physics :
     g4run : @local::g4run
 
     # Form StrawHits (SH).
-    makeSH : @local::makeSH
+    makeSD : @local::makeSD
+    makeSH : @local::makeSHfromSD
 
     @table::CaloDigiMC.producers
     @table::CaloReco.producers
@@ -73,14 +74,15 @@ physics :
     readStrawHits:
     {
       module_type      : ReadStrawHit
-      makerModuleLabel : makeSH
+      recoModuleLabel : makeSH
+      simModuleLabel : makeSD
       diagLevel        : 3
       maxFullPrint     : 100
     }
 
   }
 
-  p1 : [generate , g4run , makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
+  p1 : [generate , g4run , makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
   e1 : [checkhits, readStrawHits, outfile]
 
   trigger_paths  : [p1]

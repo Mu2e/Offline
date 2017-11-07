@@ -82,22 +82,20 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
 fi
 
 # Get access to raw data formats.
-# For now this is not generally available; once it is we can remove the conditional.
-#if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "on" ]]; then
-#  setup -B mu2e_artdaq_core v1_00_06 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
-#fi
+setup -B mu2e_artdaq_core v1_02_00 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
 
 # Other libraries we need.
 
 setup -B heppdt   v3_04_01f -q${MU2E_UPS_QUALIFIERS}
 setup -B xerces_c v3_1_4a   -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_02_02  -q${MU2E_UPS_QUALIFIERS}
+setup -B cry   v1_7h  -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_5_1a -q p2713d
 
 # The debugger
-setup -B gdb v7_12
+setup -B gdb v8_0_1
 
 # Search path for fcl files
 export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl

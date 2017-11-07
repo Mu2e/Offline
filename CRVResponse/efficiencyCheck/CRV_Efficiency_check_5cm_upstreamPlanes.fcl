@@ -14,19 +14,19 @@ outsideCrvCut:
       { 
         type  : plane 
         normal: [  1, 0, 0 ] 
-        point : [ -104, 0, 0 ] 
+        point : [ -304, 0, 0 ] 
       },
       // -x plane
       { 
         type  : plane 
         normal: [ -1, 0, 0 ] 
-        point : [ -6704, 0, 0 ] 
+        point : [ -6904, 0, 0 ] 
       },
       // -y plane
       { 
         type  : plane 
         normal: [ 0, -1, 0 ] 
-        point : [ 0, -542, 0 ] 
+        point : [ 0, -1500, 0 ] 
       }
    ]
 }
@@ -140,6 +140,7 @@ physics :
     CrvPhotons       : @local::CrvPhotons
     CrvSiPMCharges   : @local::CrvSiPMCharges
     CrvWaveforms     : @local::CrvWaveforms
+    CrvDigi          : @local::CrvDigi
     CrvRecoPulses    : @local::CrvRecoPulses
 
     CrvCoincidencePE10T5  : @local::CrvCoincidence
@@ -251,7 +252,7 @@ physics :
   }
 
 
-  trig : [generate, g4run, belowCrvFilter, backgroundOverlay, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvRecoPulses,
+  trig : [generate, g4run, belowCrvFilter, backgroundOverlay, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses,
           CrvCoincidencePE10T5,
           CrvCoincidencePE12T5,
           CrvCoincidencePE14T5,

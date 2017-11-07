@@ -27,7 +27,7 @@ double cosmicDYB.tMax   = 1300.0;
 string cosmicDYB.refPointChoice  = "Customized";
 bool   cosmicDYB.vertical        = true;
 string cosmicDYB.directionChoice = "Positive_z";
-vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-3404, 1906.75, -2395.375};  //use a reference point close to the top of the downstream counters
+vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-3604, 1600.0, -2395.375};   //use a reference point close to the top of the downstream counters
                                                                                     //to make that tracks make it all the way to the other side of the CRV
                                                                                     //when they reach the bottom
 

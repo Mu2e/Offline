@@ -5,6 +5,9 @@
 #include "TH1.h"
 
 #include <vector>
+#include "RecoDataProducts/inc/Doublet.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 
 namespace art {
   class Event;
@@ -14,32 +17,24 @@ namespace mu2e {
   
   class KalFitResultNew;
   class TTracker;
-  class Doublet;
+  class Calorimeter;
+  class DoubletAmbigResolver;
 
-  struct CalTrkFit_Data_t : public TObject {
-    const art::Event*     event;
-    KalFitResultNew*      result;
-    fhicl::ParameterSet*  timeOffsets;
-    const TTracker*       tracker;
-    std::vector<Doublet>* listOfDoublets;
+  namespace CalTrkFitTypes {
+  
+    struct Data_t {
+      const art::Event*     event;
+      const TTracker*       tracker;
+      const Calorimeter*    calorimeter;
+      fhicl::ParameterSet*  timeOffsets;
 
-    int                   ntracks[2];
-  };
-
-  struct CalTrkFit_Hist_t : public TObject {
-    TH1F*  nhits;
-    TH1F*  chi2   [2];
-    TH1F*  p      [2];
-    TH1F*  kaldoca[2];
-    TH1F*  ntracks[2];
-
-    TH1F*  dSlopeOS[2];
-    TH1F*  dSlopeSS[2];
-    TH1F*  chi2bOS [2];
-    TH1F*  chi2bSS [2];
-    TH1F*  chi2rOS [2];
-    TH1F*  chi2rSS [2];
-  };
-
+      KalFitResultNew*      result;
+      KalRepCollection*     tracks;
+      KalSeedCollection*    kscol;
+      std::vector<Doublet>* listOfDoublets;
+      DoubletAmbigResolver* dar;
+      int                   eventNumber;
+    };
+  }
 }
 #endif

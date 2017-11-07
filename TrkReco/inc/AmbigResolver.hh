@@ -20,7 +20,7 @@ namespace mu2e {
   class TrkStrawHit;
   class AmbigResolver {
     public:
-    explicit AmbigResolver(double extErr);
+    explicit AmbigResolver(double tmpErr);
     virtual ~AmbigResolver() = 0;
 
 // resolve a track.  Depending on the configuration, this might
@@ -29,12 +29,12 @@ namespace mu2e {
     virtual bool resolveTrk(KalRep* kfit) const = 0;
 
     protected:
-// init hit external errors for simulated annealing
+// reset penalty errors
     virtual void initHitErrors(KalRep* kfit) const ;
 // find the local trajectory piece computed from the fit excluding a particular set of hits.
 // the hits are assumed to be contiguous
     const TrkSimpTraj* findTraj(std::vector<TrkStrawHit*> const& phits, const KalRep* krep) const;
-    double _extErr; // external hit error
+    double _tmpErr; // hit error associated with annealing 'temperature'
   };
 }
 

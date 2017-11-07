@@ -96,15 +96,15 @@ BEGIN_PROLOG
     {
       module_type                  : CrvDigitizer
       crvWaveformsModuleLabel      : "CrvWaveforms"
-      ADCconversionFactor          : 2000
-      Pedestal                     : 0
+      ADCconversionFactor          : 2000  //2000 ADC/V
+      pedestal                     : 100
     }
     CrvRecoPulses:
     {
       module_type               : CrvRecoPulsesFinder
       crvDigiModuleLabel        : "CrvDigi"
       calibrationFactor         : 11.28    //11.28 ADC/PE
-      pedestal                  : 0.42     //0.42 ADC      //from dark current calibration: pulse height = scale * PE + offset
+      pedestal                  : 100.42   //0.42 ADC      //from dark current calibration: pulse height = scale * PE + offset
       usePulseArea              : false    //not used in test beam analysis
       minPEs                    : 6        //6 PEs
     }
@@ -125,6 +125,7 @@ BEGIN_PROLOG
       timeWindowEnd                 : 1750   //ns
       leadingVetoTime               : 0      //the time window before the first hit time of the coincidence triplet (only used to print out the results)
       trailingVetoTime              : 125    //the time window after the last hit time of the coincidence triplet (only used to print out the results)
+      crvWaveformsModuleLabel       : "CrvWaveforms"
     }
     CrvCoincidenceClusterFinder:
     {

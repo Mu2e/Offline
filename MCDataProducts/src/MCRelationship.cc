@@ -10,14 +10,15 @@ namespace mu2e
 
   MCRelationship::relation MCRelationship::relationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2) {
     SPPtr ptr1, ptr2;
-    if(mcd1.stepPointMC(StrawDigi::zero).isNonnull())
-      ptr1 = mcd1.stepPointMC(StrawDigi::zero)->simParticle();
-    else if(mcd1.stepPointMC(StrawDigi::one).isNonnull())
-      ptr1 = mcd1.stepPointMC(StrawDigi::one)->simParticle();
-    if(mcd2.stepPointMC(StrawDigi::zero).isNonnull())
-      ptr2 = mcd2.stepPointMC(StrawDigi::zero)->simParticle();
-    else if(mcd2.stepPointMC(StrawDigi::one).isNonnull())
-      ptr2 = mcd2.stepPointMC(StrawDigi::one)->simParticle();
+    // should take the earlier of the 2 cluster times FIXME!
+    if(mcd1.stepPointMC(TrkTypes::cal).isNonnull())
+      ptr1 = mcd1.stepPointMC(TrkTypes::cal)->simParticle();
+    else if(mcd1.stepPointMC(TrkTypes::hv).isNonnull())
+      ptr1 = mcd1.stepPointMC(TrkTypes::hv)->simParticle();
+    if(mcd2.stepPointMC(TrkTypes::cal).isNonnull())
+      ptr2 = mcd2.stepPointMC(TrkTypes::cal)->simParticle();
+    else if(mcd2.stepPointMC(TrkTypes::hv).isNonnull())
+      ptr2 = mcd2.stepPointMC(TrkTypes::hv)->simParticle();
     return relationship(ptr1,ptr2);
   }
 

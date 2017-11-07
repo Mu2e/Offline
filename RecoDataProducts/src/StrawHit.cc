@@ -26,8 +26,10 @@ namespace mu2e {
 
     ost << "traw Hit:"
         << " idx: "      << _strawIndex
-        << " time: "     << _time
-        << " dt: "       << _dt
+        << " cal time "     << _time[TrkTypes::cal]
+        << " HV time "     << _time[TrkTypes::hv]
+        << " cal TOT "     << _tot[TrkTypes::cal]
+        << " HV TOT "     << _tot[TrkTypes::hv]
         << " eDep: "     << _energyDep;
 
     if ( doEndl ){

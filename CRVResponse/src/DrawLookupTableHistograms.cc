@@ -1,5 +1,7 @@
 #include "MakeCrvPhotons.hh"
 
+#include <TStyle.h>
+#include <TMarker.h>
 #include <TCanvas.h>
 #include <TH2F.h>
 #include <sstream>
@@ -11,7 +13,9 @@ namespace mu2eCrv
 
 void MakeCrvPhotons::DrawHistograms()
 {
-  TCanvas c1("ArrivalProbabilities1","");
+  gStyle->SetOptStat(0);
+
+  TCanvas c1("ArrivalProbabilities1","",400,800);
   TH2F h1("HistArrivalProbabilities1","",_LBD.yBins.size()-1,_LBD.yBins.data(),_LBD.zBins.size()-1,_LBD.zBins.data());
 
   for(unsigned int iy=1; iy<_LBD.yBins.size(); iy++)
@@ -24,13 +28,22 @@ void MakeCrvPhotons::DrawHistograms()
     const LookupBin &bin = _bins[0][i];
     float p = bin.arrivalProbability[0];
 //    float p = bin.arrivalProbability[1];  //for 5000mm long counters with mirror on the negative side
-    if(!isnan(p)) h1.Fill(y,z,p);
+    if(!std::isnan(p)) h1.Fill(y,z,p);
   }
 
+  h1.SetXTitle("y [mm]");
+  h1.SetYTitle("z [mm]");
   h1.Draw("COLZ");
+
+  TMarker marker(-13,_LBD.zBins[0],0);
+  marker.SetMarkerStyle(20);
+  marker.SetMarkerSize(2);
+  marker.SetMarkerColor(2);
+  marker.Draw("same");
+
   c1.SaveAs("ArrivalProbability1.C");
 
-  TCanvas c2("ArrivalProbabilities2","");
+  TCanvas c2("ArrivalProbabilities2","",600,400);
   std::vector<TH1F*> h2;
   for(double x=-8; x<10; x+=2)
   {
@@ -47,7 +60,7 @@ void MakeCrvPhotons::DrawHistograms()
       if(i<0) continue;
       const LookupBin &bin = _bins[0][i];
       float p = bin.arrivalProbability[0];
-      if(!isnan(p)) h2Tmp->Fill(z,p);
+      if(!std::isnan(p)) h2Tmp->Fill(z,p);
     }
     h2Tmp->Draw("same");
     h2.push_back(h2Tmp);

@@ -1,8 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 ///////////////////////////////////////////////////////////////////////////////
-#include "CalPatRec/inc/CprMcUtilsBase.hh"
-
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Utilities/ToolMacros.h"
@@ -29,16 +27,17 @@
 
 #include "TrackerGeom/inc/Straw.hh"
 
+#include "CalPatRec/inc/McUtilsToolBase.hh"
+
 namespace mu2e {
 
-
-  class CalPatRecMcUtils : public mu2e::CprMcUtilsBase {
+  class CalPatRecMcUtils : public mu2e::McUtilsToolBase {
   public:
 
     CalPatRecMcUtils(const fhicl::ParameterSet& PSet);
     ~CalPatRecMcUtils();
 
-  private:
+  public:
 
     virtual double mcDoca(const art::Event* Event     , 
 			  const char*       MCCollName, 
@@ -48,10 +47,16 @@ namespace mu2e {
 			    fhicl::ParameterSet*      TimeOffsets   ,
 			    const char*               MCDigiCollName, 
 			    const StrawHitCollection* Shcol         ) override;
+
+    virtual const PtrStepPointMCVectorCollection* getListOfMcStrawHits(const art::Event* Event,
+								       const art::InputTag& Tag) override;
+    
+    virtual const SimParticle* getSimParticle(const PtrStepPointMCVectorCollection* List, int IHit) override;
+
+    int   getID      (const SimParticle* Sim) override;
+    int   getPdgID   (const SimParticle* Sim) override;
+    float getStartMom(const SimParticle* Sim) override;
   };
-
-
-
 
 //-----------------------------------------------------------------------------
   CalPatRecMcUtils::CalPatRecMcUtils(const fhicl::ParameterSet& PSet) {
@@ -199,6 +204,32 @@ namespace mu2e {
     if (pEntrance < 100. ) n_gen_hits = 0;
 
     return n_gen_hits;
+  }
+
+//-----------------------------------------------------------------------------
+  const PtrStepPointMCVectorCollection* CalPatRecMcUtils::getListOfMcStrawHits(const art::Event* Event,const art::InputTag& Tag) {
+    auto handle = Event->getValidHandle<PtrStepPointMCVectorCollection>(Tag);
+    const PtrStepPointMCVectorCollection* coll = handle.product();
+    return coll;
+  }
+
+//-----------------------------------------------------------------------------
+  const SimParticle* CalPatRecMcUtils::getSimParticle(const PtrStepPointMCVectorCollection* List, int IHit) {
+    const PtrStepPointMCVector* mcptr = & List->at(IHit);
+    const SimParticle* sim = mcptr->at(0)->simParticle().get();
+    return sim;
+  }
+
+//-----------------------------------------------------------------------------
+  int   CalPatRecMcUtils::getID      (const SimParticle* Sim) { return Sim->id().asInt();  }
+
+//-----------------------------------------------------------------------------
+  int   CalPatRecMcUtils::getPdgID   (const SimParticle* Sim) { return Sim->pdgId();  }
+
+//-----------------------------------------------------------------------------
+  float CalPatRecMcUtils::getStartMom(const SimParticle* Sim) {
+    CLHEP::HepLorentzVector const& p = Sim->startMomentum();
+    return sqrt(p.x()*p.x()+p.y()*p.y()+p.z()*p.z());
   }
 
   DEFINE_ART_CLASS_TOOL(CalPatRecMcUtils)

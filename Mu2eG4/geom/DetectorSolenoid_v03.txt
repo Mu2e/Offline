@@ -15,7 +15,7 @@
 // DS is at 3239 mm, consistent with CDR.
 
 double ds.rIn.in             =  950.;
-double ds.rIn.out            =  970.;
+double ds.rIn.out            =  969.05; //970.;
 double ds.rOut.in            = 1303.;
 double ds.rOut.out           = 1328.;
 double ds.halfLength         = 5450.;
@@ -164,6 +164,7 @@ string   ds.MBSSupport.material   = "MBSSupportMix";
 bool      ds.hasCableRunCal        = true;
 bool      ds.hasCableRunTrk        = true;
 int       ds.CableRun.version      = 2;
+bool      ds.CableRun.sensitive    = true;
 double    ds.CableRunCal.UpRin     = 721.0; //mm top of Cal
 double    ds.CableRunCal.UpRout    = 821.0; //mm
 double    ds.CableRunCal.UpHL1     = 120.0; // mm

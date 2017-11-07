@@ -1,0 +1,40 @@
+Still under construction
+
+           Release notes for Mu2e Offline software, v6_4_0
+
+2)    dnbrow01  01 November 2017
+      Updated a number of fcl files using StrawHit access that was outdated
+      as of this release.  See item (1) below.
+      modified:   Analyses/test/readback.fcl
+      modified:   BFieldGeom/test/makeBinaryMaps.fcl
+      modified:   BFieldGeom/test/readBinaryMaps.fcl
+      modified:   EventGenerator/test/g4test_FromStepPointMCs.fcl
+      modified:   EventMixing/inputGeneration/dioBG.fcl
+      modified:   EventMixing/inputGeneration/neutronBG.fcl
+      modified:   EventMixing/inputGeneration/photonBG.fcl
+      modified:   EventMixing/inputGeneration/protonBG.fcl
+      modified:   EventMixing/test/mixProducer_01.fcl
+      modified:   Mu2eG4/fcl/g4BremTest.fcl
+      modified:   Mu2eG4/fcl/g4test_mucapture.fcl
+      modified:   Mu2eG4/fcl/g4validate_01.fcl
+      modified:   Mu2eG4/fcl/pi_e_nu.fcl
+      modified:   Mu2eG4/fcl/replayAll.fcl
+
+      Started building the code for handling a more detailed description
+      of the TTracker geometry.
+      modified:   Mu2eG4/inc/constructTTracker.hh
+      new file:   Mu2eG4/src/constructTTrackerv5.cc
+
+
+1)    brownd, rbonventre  30 October 2017
+Major upgrade to the StrawHit response model and simulation, including:
+- refined cluster formation simulation for MIP particles
+- electronics response model using transfer functions
+- added data driven attenuation and dispersion model
+- updated tuning of electronics parameters
+- TimeOverThreshold (TOT) measurement in StrawDigi and downstream
+- require coincidence between straw ends to create a digi as in FPGA
+- Update StrawDigi and downstream interfaces to treat measurements at
+each end of the straw the same
+- use hardware names for the straw ends (cal, HV)
+- remove MC diagnostics in MakeStrawHits module

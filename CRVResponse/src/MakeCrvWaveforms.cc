@@ -23,7 +23,7 @@ void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double 
   unsigned int index=0;
   while(f >> currentTime >> currentVoltage)
   {
-    if(!isnan(previousTime))
+    if(!std::isnan(previousTime))
     {
       double t=index*singlePEWaveformPrecision;  
       while(currentTime>=t && index*singlePEWaveformPrecision<singlePEWaveformMaxTime)

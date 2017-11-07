@@ -26,7 +26,7 @@ do
 #              name=CRV_Efficiency_check_5cm_6600
 #              name=CRV_Efficiency_check_5cm10_6600
 #              name=CRV_Efficiency_check_5cm_verticalPlanes
-#              name=CRV_Efficiency_check_5cm_downstreamPlanes45
+#              name=CRV_Efficiency_check_5cm_downstreamPlanes
 #              name=CRV_Efficiency_check_5cm10_upstreamPlanes
 
               files=$directory/$name/outstage/'*.'$name'_'gap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield/*/*/log.*.log

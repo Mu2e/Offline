@@ -19,16 +19,16 @@ namespace mu2e {
 	
 	// extract peak information from adc waveform data.  1 waveform generates 1 peak fit.
 	// The default implementation simply sums the ADC data after subtracting pedesdal
-	virtual void process(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const;
+	virtual void process(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const;
 
 	// Extract charge by summing the ADC data after subtracting pedestal
-	void sumADC(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const;
+	void sumADC(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const;
 	
 	// Extract charge by taking the difference of the ADC peak and pedestal
-	void peakMinusPed(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const;
+	void peakMinusPed(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const;
 
 	// Initialize values to be used as parameters in fit
-	void initializeFit(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const;
+	void initializeFit(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const;
 
 	PeakFit(const StrawElectronics& strawele, const fhicl::ParameterSet& pset);
 	virtual ~PeakFit(){}

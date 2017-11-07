@@ -18,6 +18,7 @@
 #include <array>
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -57,6 +58,8 @@
 #include "G4IntersectionSolid.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4LogicalVolume.hh"
+#include "G4TwoVector.hh"
+#include "G4ExtrudedSolid.hh"
 
 using namespace std;
 
@@ -1397,10 +1400,13 @@ namespace mu2e {
     //   like that of the COL3u and Col3d windows.
     // - wedge is shaped like the 
     //   hole in the support structure.
-
-    // First, ascertain which version this is, along with other config info
-    int pbarAbsTS3Version = config.getInt("pbar.version",1);
-    int const verbosityLevel = config.getInt("pbar.verbosityLevel", 0);
+    // ******* In version three, there are some more changes
+    // - The window in the support structure is circular with the circular 
+    //   disk to be placed inside, with a radius less than the inner cryo
+    //   shell.  
+    // - The wedge has a rectangular projection in the y-z plane.  
+    //   It is made of a series of rectangular sheets forming a 
+    //   "stairstep" structure.
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "PbarAbs", "pbar" );
@@ -1416,6 +1422,11 @@ namespace mu2e {
 
     PbarWindow const & pbarWindow = bl.getTS().getPbarWindow();
     G4Material* pbarMaterial  = findMaterialOrThrow( pbarWindow.material() );
+
+    // First, ascertain which version this is, along with other config info
+    int pbarAbsTS3Version = pbarWindow.version();
+    int const verbosityLevel = config.getInt("pbar.verbosityLevel", 0);
+
 
     if ( pbarAbsTS3Version == 1 ) {
       // -- vacuum wall
@@ -1516,7 +1527,7 @@ namespace mu2e {
 	    " Incorrect pbar window geometry requested! \n " ;
 	}
     }  // end of if ( pbarAbsTS3Version == 1 )
-    else {
+    else if ( pbarAbsTS3Version == 2 ) {
       // =============== Now Version 2 of pbarAbs in TS3! ==============
       // First, build the subtraction shape to represent the hole in the 
       // support.  Based on code in Collimator build function
@@ -1654,11 +1665,156 @@ namespace mu2e {
 			"PbarAbs"
 			);
 	} //end of if ( pbarWindow.shape == wedge )
-      else {
+    }  else if ( pbarAbsTS3Version == 3 ) {
+      // =============== Now Version 3 of pbarAbs in TS3! ==============
+      // Get collimators
+      TransportSolenoid const& ts = bl.getTS();
+      // First, construct hole; make it slightly longer than the support
+      double hDz = config.getDouble("pbar.support.innerHalflength")* CLHEP::mm;
+
+      VolumeInfo supportInfo;
+      supportInfo.name = "pBarAbsSupport";
+
+
+      // Now make the actual support
+      G4Tubs* support_mother = new G4Tubs("PbarSupport_mother",
+					  pbarWindow.diskRadius(), 
+					  ts.innerRadius(), hDz,
+					  0.0, CLHEP::twopi );
+
+      supportInfo.solid = support_mother;
+
+      CLHEP::HepRotation * supportRot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+
+      finishNesting(supportInfo,
+		    findMaterialOrThrow(config.getString("pbar.support.material")),
+		    supportRot,
+		    G4ThreeVector(0,0,0),
+		    parent.logical,
+		    0,
+		    G4Color::Gray(),
+		    "PbarAbs");
+
+      // -- vacuum wall
+
+        
+      if ( pbarWindow.shape() == "wedge" ||
+	   pbarWindow.shape() == "disk" ) {
+
+	VolumeInfo pbarDiskInfo;
+	pbarDiskInfo.name = "PbarAbsDisk";
+
+      if (verbosityLevel > 0) std::cout << "TS3 pbar window thickness : " << pbarWindow.halfLength()*2. << std::endl; 
+
+
+	pbarDiskInfo.solid = new G4Tubs("PbarAbs_disk",
+					  0.0 ,pbarWindow.diskRadius(),
+					  pbarWindow.halfLength(),
+					  0.0,CLHEP::twopi);
+	  
+	  finishNesting(pbarDiskInfo,
+			pbarMaterial,
+			0,
+			G4ThreeVector(0,0,0),
+			parent.logical,
+			0,
+			G4Color::Yellow(),
+			"PbarAbs"
+			);
+
+      }
+
+      if( pbarWindow.shape() == "wedge" ) 
+	{
+	  // Helper info
+	  // -- pbar wedge        
+	  double pbarWedge_y1  = pbarWindow.getY1();
+          double pbarWedge_offsetZ = pbarWindow.getWedgeZOffset();
+	  VolumeInfo pbarWedgeInfo;
+      
+	  pbarWedgeInfo.name = "PbarAbsWedge";
+      	  
+	  // The plan here is to make the new wedge design as a 
+	  // "staircase".  That is, an extrusion whose face looks like
+	  // a series of steps.  
+
+	  // First, get the extrusion HALF length
+	  double exHL = pbarWindow.width()*CLHEP::mm/2.0;
+
+	  // Now the thickness of each step
+	  double stepThck = pbarWindow.stripThickness()*CLHEP::mm;
+
+	  // The number of steps
+	  int nSteps = pbarWindow.nStrips();
+
+	  // The height of the strips, which is like the length of the
+	  // steps if you look at it as steps.
+	  std::vector<double> stepLength = pbarWindow.heights();
+
+	  // Sanity check.  There is no way we should get to this point
+	  // and have a stepLength vector with the wrong number of 
+	  // steps, so just check...
+
+	  if ( (unsigned int) nSteps != stepLength.size() ) {
+	    throw cet::exception("GEOM")<<
+	      " The size of the PbarWedge stripHeight vector, " 
+					<< stepLength.size() <<
+	      "\n Does not match the expected number of strips, "
+					<< nSteps << "\n" ;
+	  }
+
+
+	  // Now we'll map out the vertices.  If you imagine our wedge
+	  // as a staircase leading up to a building, the origin of our
+	  // coordinate system will be the corner of the stairs on the bottom
+	  // and against the wall of the building.  The x-axis will point
+	  // up, against the wall, and the y-axis will run along the ground,
+	  // perpendicularly outward from the building.
+
+	  std::vector<G4TwoVector> stairOutline;
+	  stairOutline.reserve(2*nSteps + 2);  // # of vertices to describe 
+
+	  // First point is (0,0)
+	  G4TwoVector tmpVertex(0,0);
+	  stairOutline.push_back(tmpVertex);
+	  double xCoord = 0.0;
+	  // Now loop over steps
+	  for ( int iStep = 0; iStep < nSteps; iStep++ ) {
+	    stairOutline.push_back(G4TwoVector(xCoord,-stepLength[iStep]));
+	    xCoord += stepThck;
+	    stairOutline.push_back(G4TwoVector(xCoord,-stepLength[iStep]));
+	  }
+	  G4TwoVector tmpVertex2(xCoord,0);
+	  stairOutline.push_back(tmpVertex2);
+
+	  G4ExtrudedSolid * stairCase = new G4ExtrudedSolid( "PbarAbsWedge_ES",
+							     stairOutline,
+							     exHL,
+							     G4TwoVector(0,0),1.,
+							     G4TwoVector(0,0),1. );
+
+
+	  AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+	  G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
+	  pbarWedgeRot->rotateY(90.0*CLHEP::degree);
+	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_y1,pbarWedge_offsetZ);
+	  
+	  pbarWedgeInfo.solid = stairCase;
+	  
+	  finishNesting(pbarWedgeInfo,
+			pbarMaterial,
+			pbarWedgeRot,
+			pbarWedgeTrans,
+			parent.logical,
+			0,
+			G4Color::Yellow(),
+			"PbarAbs"
+			);
+	} //end of if ( pbarWindow.shape == wedge )
+    }  else {
 	throw cet::exception("GEOM")<<
 	  " Incorrect pbar window geometry requested! \n " ;
-      }
-    } // end of else for pbarAbsTS3Version == 1
+    } // end of else for pbarAbsTS3Version == ... 
 
 
     // =============================================

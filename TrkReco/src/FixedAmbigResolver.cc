@@ -12,8 +12,8 @@
 
 namespace mu2e {
 
-  FixedAmbigResolver::FixedAmbigResolver(fhicl::ParameterSet const& pset , double extErr) : 
-    AmbigResolver(extErr),
+  FixedAmbigResolver::FixedAmbigResolver(fhicl::ParameterSet const& pset , double tmpErr) : 
+    AmbigResolver(tmpErr),
     _neutralize(pset.get<bool>("Neutralize",true))
  {}
 

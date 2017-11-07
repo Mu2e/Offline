@@ -33,7 +33,7 @@
 
 #include "CalPatRec/inc/CalHelixFinderData.hh"
 
-#include "CalPatRec/inc/CprModuleHistBase.hh"
+#include "CalPatRec/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 
 #include "TVector2.h"
@@ -89,8 +89,8 @@ namespace mu2e {
 
     if (_debugLevel != 0) _printfreq = 1;
 
-    if (_diagLevel != 0) _hmanager = art::make_tool<CprModuleHistBase>(pset.get<fhicl::ParameterSet>("histograms"));
-    else                 _hmanager = std::make_unique<CprModuleHistBase>();
+    if (_diagLevel != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
+    else                 _hmanager = std::make_unique<ModuleHistToolBase>();
 
   }
 
@@ -105,7 +105,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void CalHelixFinder::beginJob(){
     art::ServiceHandle<art::TFileService> tfs;
-    _hmanager->bookHistograms(tfs,&_hist);
+    _hmanager->bookHistograms(tfs);
   }
 
 //-----------------------------------------------------------------------------
@@ -181,7 +181,6 @@ namespace mu2e {
   bool CalHelixFinder::filter(art::Event& event ) {
     const char*             oname = "CalHelixFinder::filter";
     int                     npeaks;
-    HelixSeed               helix_seed;
     CalHelixFinderData      hf_result;
 
     
@@ -215,10 +214,15 @@ namespace mu2e {
     npeaks = _timeclcol->size();
     for (int ipeak=0; ipeak<npeaks; ipeak++) {
       const TimeCluster* tc = &_timeclcol->at(ipeak);
+
+      HelixSeed          helix_seed;
+
 //-----------------------------------------------------------------------------
 // create track definitions for the helix fit from this initial information
 // track fitting objects for this peak
 //-----------------------------------------------------------------------------
+      hf_result.clearTempVariables();
+
       hf_result._timeCluster    = tc;
       hf_result._timeClusterPtr = art::Ptr<mu2e::TimeCluster>(_timeclcolH,ipeak);
 //-----------------------------------------------------------------------------
@@ -231,6 +235,7 @@ namespace mu2e {
 // fill seed information
 //-----------------------------------------------------------------------------
 	initHelixSeed(helix_seed, hf_result);
+	helix_seed._status.merge(TrkFitFlag::helixOK);
 	outseeds->push_back(helix_seed);
 
 	if (_diagLevel > 0) {
@@ -267,9 +272,7 @@ namespace mu2e {
 //--------------------------------------------------------------------------------    
 // fill histograms
 //--------------------------------------------------------------------------------
-    if (_diagLevel > 0) {
-      _hmanager->fillHistograms(0,&_data,&_hist);
-    }
+    if (_diagLevel > 0) _hmanager->fillHistograms(&_data);
 //-----------------------------------------------------------------------------
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
@@ -280,9 +283,8 @@ namespace mu2e {
 // filtering
 //-----------------------------------------------------------------------------    
     if (_useAsFilter == 0) return true;
-    if (nseeds       >  0) return true;
-    else                   return false;
-  }
+    else                   return (nseeds >  0);
+ }
 
 //-----------------------------------------------------------------------------
 //
@@ -315,7 +317,18 @@ namespace mu2e {
     HelSeed._helix._radius = helixRadius;
     HelSeed._helix._lambda = 1./dfdz;
     HelSeed._helix._fz0    = -z0*dfdz + phi0 - M_PI/2.;
-    HelSeed._t0            = TrkT0(HfResult._timeClusterPtr->caloCluster()->time(), 0.1); //dummy error on T0
+                                        //now evaluate the helix T0 using the calorimeter cluster
+    double   mm2MeV        = 3/10.;//FIX ME!
+    double   tandip        = hel->tanDip();
+    double   mom           = helixRadius*mm2MeV/std::cos( std::atan(tandip));
+    double   beta          = _tpart.beta(mom);
+    CLHEP::Hep3Vector        gpos = _calorimeter->geomUtil().diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskId(),
+									HfResult._timeClusterPtr->caloCluster()->cog3Vector());
+    CLHEP::Hep3Vector        tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+    double   pitchAngle    = M_PI/2. - atan(tandip);
+    double   hel_t0        = HfResult._timeClusterPtr->caloCluster()->time() - (tpos.z() - z0)/sin(pitchAngle)/(beta*CLHEP::c_light);
+    
+    HelSeed._t0            = TrkT0(hel_t0, 0.1); //dummy error on T0 FIXME!
     HelSeed._timeCluster   = HfResult._timeClusterPtr;
     
     // cluster hits assigned to the reconsturcted Helix
@@ -325,10 +338,15 @@ namespace mu2e {
     // 	   helixRadius, center.x(), center.y(), dfdz, nhits, HfResult._sxyw.chi2DofCircle(), HfResult._srphi.chi2DofLine());
     // printf("[CalHelixFinder::initHelixSeed] Index      X          Y         Z          PHI\n");
       
+    double     z_start(0);
     for (int i=0; i<nhits; ++i){
       const StrawHitIndex     loc    = HfResult._goodhits[i];
       const StrawHitPosition& shpos  = _shpcol->at(loc);
+      if ( i==0 ) z_start = shpos.pos().z();
+      
       double                  shphi  = Hep3Vector(shpos.pos() - HelSeed._helix.center()).phi();
+      int                     nLoops = (shpos.pos().z() - z_start)/(2.*M_PI/dfdz);
+      shphi = shphi + double(nLoops)*2.*M_PI;
       // printf("[CalHelixFinder::initHelixSeed] %4i %10.3f %10.3f %10.3f %10.3f\n", 
       // 	     (int)loc, shpos.pos().x(), shpos.pos().y(), shpos.pos().z(), shphi);
 

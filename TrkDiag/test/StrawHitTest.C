@@ -116,10 +116,10 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     pide->SetLineColor(kRed);
     pidp->SetLineColor(kBlue);
 
-    TH1F* nuconv = new TH1F("nuconv","N unique trkids in StrawHit",6,-0.5,5.5);
-    TH1F* nudio = new TH1F("nudio","N unique trkids in StrawHit",6,-0.5,5.5);
-    TH1F* nudel = new TH1F("nudel","N unique trkids in StrawHit",6,-0.5,5.5);
-    TH1F* nup = new TH1F("nup","N unique trkids in StrawHit",6,-0.5,5.5);
+    TH1F* nuconv = new TH1F("nuconv","N steps in StrawHit",6,-0.5,5.5);
+    TH1F* nudio = new TH1F("nudio","N steps in StrawHit",6,-0.5,5.5);
+    TH1F* nudel = new TH1F("nudel","N steps in StrawHit",6,-0.5,5.5);
+    TH1F* nup = new TH1F("nup","N steps in StrawHit",6,-0.5,5.5);
     nuconv->SetLineColor(kRed);
     nudio->SetLineColor(kGreen);
     nudel->SetLineColor(kCyan);
@@ -132,10 +132,10 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     hits->Project("gidp","mcgen",proton);
     hits->Project("pide","mcproc",bkg);
     hits->Project("pidp","mcproc",proton);
-    hits->Project("nuconv","mcnunique",conv);
-    hits->Project("nudio","mcnunique",dio);
-    hits->Project("nudel","mcnunique",bkg);
-    hits->Project("nup","mcnunique",proton);
+    hits->Project("nuconv","mcnsteps",conv);
+    hits->Project("nudio","mcnsteps",dio);
+    hits->Project("nudel","mcnsteps",bkg);
+    hits->Project("nup","mcnsteps",proton);
 
     TLegend* leg = new TLegend(0.5,0.5,0.8,0.8);
     leg->AddEntry(gide,"Electrons","l");
@@ -306,10 +306,10 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     hits->Project("egam","edep*1000.0",bkge+direct);
     hits->Project("ehad","edep*1000.0",hadron+direct);
 
-    hits->Project("rconv","sqrt(shpos.y^2+shpos.x^2)",conv+direct);
-    hits->Project("rmu","sqrt(shpos.y^2+shpos.x^2)",dio+direct);
-    hits->Project("rgam","sqrt(shpos.y^2+shpos.x^2)",bkge+direct);
-    hits->Project("rhad","sqrt(shpos.y^2+shpos.x^2)",hadron+direct);
+    hits->Project("rconv","sqrt(shpos.dy^2+shpos.dx^2)",conv+direct);
+    hits->Project("rmu","sqrt(shpos.dy^2+shpos.dx^2)",dio+direct);
+    hits->Project("rgam","sqrt(shpos.dy^2+shpos.dx^2)",bkge+direct);
+    hits->Project("rhad","sqrt(shpos.dy^2+shpos.dx^2)",hadron+direct);
     
     TCanvas* bcan = new TCanvas("bcan","background",1000,800);
     bcan->Divide(1,2);
@@ -337,7 +337,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 
 	  TH1F* rres = new TH1F("rres","StrawHit Radius resolution;mm",100,-200,200);
    
-    TH1F* pres = new TH1F("pres","StrawHit #phi resolution;mm",100,-0.5,0.5);
+    TH1F* pres = new TH1F("pres","StrawHit #phi resolution;rad",100,-0.5,0.5);
         
 
 	  gid->SetLineColor(kBlue);
@@ -345,9 +345,9 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 	  hits->Project("gid","mcgen",clean);
 	  hits->Project("gidc","mcgen",conv);
 
-	  hits->Project("rres","sqrt(shpos.y^2+shpos.x^2)-sqrt(mcshpos.y^2+mcshpos.x^2)");
+	  hits->Project("rres","sqrt(shpos.dy^2+shpos.dx^2)-sqrt(mcshpos.dy^2+mcshpos.dx^2)");
     
-    hits->Project("pres","atan2(shpos.y,shpos.x)-atan2(mcshpos.y,mcshpos.x)");
+    hits->Project("pres","atan2(shpos.dy,shpos.dx)-atan2(mcshpos.dy,mcshpos.dx)");
 
     /*
        TLegend* leg3 = new TLegend(0.4,0.75,0.7,0.9);
@@ -629,5 +629,20 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     myhpg->Draw("histtext90same");
     leg->Draw();
   
-  } 
+  } else if(spage == "tot") {
+
+    TH2F* ptot = new TH2F("ptot","Proton TOT vs MC Transverse Drift Distance;True Drift Distance (mm);TOT (ns)",50,0,2.5,16,0,64);
+    TH2F* etot = new TH2F("etot","Electron TOT vs MC Transverse Drift Distance;True Drift Distance (mm);TOT (ns)",50,0,2.5,16,0,64);
+    ptot->SetStats(0);
+    etot->SetStats(0);
+    hits->Project("ptot","0.5*(totcal+tothv):abs(mcshd)","mcpdg==2212");
+    hits->Project("etot","0.5*(totcal+tothv):abs(mcshd)","mcpdg==11&&mcproc==56&&mcoe>100");
+    TCanvas* totcan = new TCanvas("totcan","TOT can",800,600);
+    totcan->Divide(2,1);
+    totcan->cd(1);
+    etot->Draw("colorz");
+    totcan->cd(2);
+    ptot->Draw("colorz");
+
+  }
 }

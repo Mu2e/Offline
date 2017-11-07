@@ -27,10 +27,10 @@ namespace mu2e {
 
 	// extract peak information from adc waveform data.  1 waveform generates 1 peak fit.
 	// The default implementation simply sums the ADC data after subtracting pedesdal
-	virtual void process(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const;
+	virtual void process(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const;
      	
         // Converts adcWaveform object to TGraphErrors object for easier manipulation in ROOT
-	void adcWaveform2TGraphErrors(StrawElectronics::ADCWaveform const& adcData, TGraphErrors &fitData) const;
+	void adcWaveform2TGraphErrors(TrkTypes::ADCWaveform const& adcData, TGraphErrors &fitData) const;
       
       protected:
         bool            _truncateADC;     // model ADC truncation

@@ -24,6 +24,9 @@ namespace mu2e{
   VolumeInfo constructTTrackerv3Detailed( VolumeInfo const& mother,
                                           SimpleConfig const& config );
 
+  VolumeInfo constructTTrackerv5( VolumeInfo const& mother,
+				  SimpleConfig const& config );
+
 }  // end namespace mu2e
 
 #endif /* Mu2eG4_constructTTracker_hh */

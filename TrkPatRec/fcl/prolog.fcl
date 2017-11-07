@@ -16,11 +16,29 @@ FSHPreStereo  : {
   module_type : FlagStrawHits
   StrawHitPositionCollectionTag : ""
   maximumEnergy : 0.01
+  UseCaloCluster           : false
+  UseCaloClusterXYPosition : false
+  CaloClusterMinE          : 50.
+  CaloClusterMinSize       : 2
+  CaloClusterMinDt         : -40
+  CaloClusterMaxDt         : 40
+  pitchAngle               : 0.67   # mean pitch for CE
+  beta                     : 1.
+  dtOffset                 : @local::TrackCaloMatching.DtOffset
 }
 
 FlagStrawHits  : {
   module_type : FlagStrawHits
   maximumEnergy : 0.0035
+  UseCaloCluster           : false
+  UseCaloClusterXYPosition : false
+  CaloClusterMinE          : 50.
+  CaloClusterMinSize       : 2
+  CaloClusterMinDt         : -40
+  CaloClusterMaxDt         : 40
+  pitchAngle               : 0.67   # mean pitch for CE
+  beta                     : 1.
+  dtOffset                 : @local::TrackCaloMatching.DtOffset
 }
 FlagBkgHits : {
   module_type : FlagBkgHits2
@@ -134,7 +152,7 @@ KFFinal : {
   materialCorrection          : true
   fieldCorrection	      : true
   initT0		      : false
-  useTrkCaloHit                   : false
+  useTrkCaloHit               : false
   ResolveAfterWeeding	      : false
   # time external error, assuming s drift velocity of 62.5 #mu m / ns
 #  hiterr                      : [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
@@ -354,8 +372,7 @@ Tracking : {
     MCTracks : ["keep mu2e::GenParticles_*_*_*",
 		"keep mu2e::SimParticlesmv_*_*_*" ]
     MCDigis : ["keep mu2e::StrawDigiMCs_makeSD_*_*"]
-    MCHits : ["keep mu2e::StrawDigiMCs_makeSH_*_*",
-	      "keep mu2e::StepPointMCs_detectorFilter_tracker_*",
+    MCHits : [ "keep mu2e::StepPointMCs_detectorFilter_tracker_*",
 	      "keep mu2e::StepPointMCs_detectorFilter_virtualdetector_*"]
 
   }

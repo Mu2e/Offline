@@ -31,7 +31,7 @@ namespace mu2e {
     }
 
 
-    void PeakFitRoot::process(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const 
+    void PeakFitRoot::process(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const 
     {
 
        // find initial values for the fit and set the initial values based on this 'fit'
@@ -85,7 +85,7 @@ namespace mu2e {
        }
     }
 
-    void PeakFitRoot::adcWaveform2TGraphErrors(StrawElectronics::ADCWaveform const& adcData, TGraphErrors &fitData) const
+    void PeakFitRoot::adcWaveform2TGraphErrors(TrkTypes::ADCWaveform const& adcData, TGraphErrors &fitData) const
     {
         Double_t adcDataTemp[adcData.size()];
         Double_t measurementTimes[adcData.size()];
@@ -97,7 +97,7 @@ namespace mu2e {
 	    adcDataTemp[i] = (Double_t) adcData[i];
 	    measurementTimes[i] = (Double_t) i * _strawele.adcPeriod(); // should deal with global time offset FIXME!!
 	    measurementTimesErrors[i] = 0.0; //_strawele.adcPeriod();
-	    adcDataErrors[i] = 1.0*_strawele.analogNoise(StrawElectronics::adc)/_strawele.adcLSB(); // should be able to scale the error FIXME!!
+	    adcDataErrors[i] = 1.0*_strawele.analogNoise(TrkTypes::adc)/_strawele.adcLSB(); // should be able to scale the error FIXME!!
         }
         fitData = TGraphErrors(adcData.size(),measurementTimes,adcDataTemp,measurementTimesErrors,adcDataErrors);
      }

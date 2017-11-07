@@ -19,9 +19,9 @@ double          crs.gapSmall                     =   0.1; //mm
 double          crs.gapBetweenModules            =   3.0; //mm
 vector<double>  crs.gapBetweenLayers             =   {9.525, 9.525, 9.525}; //mm
 
-int             crs.nModulesTest                 =   4;
+int             crs.nModulesTest                 =   6;
 int             crs.nCountersPerModuleTest       =   16;
-vector<double>  crs.firstCounterTest             =  {-3404.0,   2710.75, -2296.8};  //next modules start at y=1896.75, 1082.75, 268.75
+vector<double>  crs.firstCounterTest             =  {-3604.0,   2710.75, -2296.8};  //next modules start at y=1896.75, 1082.75, 268.75
 
 vector<double>  crs.layerDirectionTest           =  {0, 0,-1};
 vector<double>  crs.offsetDirectionTest          =  {0,-1, 0}; 

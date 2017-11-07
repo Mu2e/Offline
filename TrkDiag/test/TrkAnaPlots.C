@@ -168,3 +168,90 @@ void MomRes(TTree* ta, double tqcut) {
 
 }
 
+void Acc(TTree* ta, int ngen) {
+  unsigned nbins(8);
+  double bmax = nbins-0.5;
+
+  TH1F* acc = new TH1F("acc","CE Acceptance #times Efficiency;;Cummulative a#times#epsilon",nbins,-0.5,bmax);
+  TH1F* racc = new TH1F("racc","CE Acceptance #times Efficiency;;Relative a#times#epsilon",nbins,-0.5,bmax);
+//  acc->Sumw2();
+//  racc->Sumw2();
+  unsigned ibin(1);
+  acc->GetXaxis()->SetBinLabel(ibin++,"All CE");
+  acc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
+  acc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
+
+
+  ibin = 1;
+  racc->GetXaxis()->SetBinLabel(ibin++,"All CE");
+  racc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
+  racc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
+
+  ibin = 0;
+  const char* binnames[11] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0"};
+
+  TCut mcsel = "demmc.ndigigood>15&&demmcent.mom>90.0";
+  // &&demmcent.td>0.55&&demmcent.td<1.05";
+  //&&fmod(demmcent.t0,1695.0)>500.0";
+  TCut reco = "dem.status>0";
+  TCut goodfit = "dem.trkqual>0.4";
+  TCut livegate = "dem.t0>500.0&&dem.t0<1695";
+  TCut rpitch = "dem.td>0.57735027&&dem.td<1.0";
+  TCut cosmic = "dem.d0<105 && dem.d0>-80 && (dem.d0+2/dem.om)>450 && (dem.d0+2/dem.om)<680";
+  TCut rmom = "dem.mom>100.0";
+
+  ta->Project("acc",binnames[ibin++],"evtinfo.evtwt");
+  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*mcsel);
+  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*(mcsel+reco));
+  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*(mcsel+reco+goodfit));
+  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*(mcsel+reco+goodfit+livegate));
+  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*(mcsel+reco+goodfit+livegate+rpitch));
+  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*(mcsel+reco+goodfit+livegate+rpitch+cosmic));
+  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*(mcsel+reco+goodfit+livegate+rpitch+cosmic+rmom));
+
+  double all = acc->GetBinContent(1);
+  double norm = ngen;
+  if(ngen < 0)
+    norm = all;
+  double prev = norm;
+  for(ibin=1;ibin<=nbins;ibin++){
+    racc->SetBinContent(ibin,acc->GetBinContent(ibin)/prev);
+    prev = acc->GetBinContent(ibin);
+  }
+  cout << "Found " << norm << "Entries." << endl;
+  racc->SetMaximum(1.1);
+  acc->Scale(1.0/(float)norm);
+  acc->SetMaximum(1.1);
+  acc->SetStats(0);
+  racc->SetStats(0);
+  acc->GetXaxis()->SetLabelSize(0.06);
+  racc->GetXaxis()->SetLabelSize(0.06);
+  acc->SetMarkerSize(2.0);
+  racc->SetMarkerSize(2.0);
+  acc->GetYaxis()->SetTitleSize(0.05);
+  racc->GetYaxis()->SetTitleSize(0.05);
+
+  gStyle->SetPaintTextFormat("5.4f");
+  TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
+  acan->Clear();
+  acan->Divide(1,2);
+  acan->cd(1);
+  TPad* tp = (TPad*)acan->cd(1);
+  tp->SetBottomMargin(0.15);
+  acc->Draw("histtext0");
+  acan->cd(2);
+  tp = (TPad*)acan->cd(2);
+  tp->SetBottomMargin(0.15);
+  racc->Draw("histtext0");
+}
+

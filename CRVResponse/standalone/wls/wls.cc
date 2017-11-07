@@ -21,7 +21,7 @@
 #include "G4UIExecutive.hh"
 
 #include "CLHEP/Random/Randomize.h"
-#include "MakeCrvPhotonArrivals.hh"
+#include "MakeCrvPhotons.hh"
 
 #include <fstream>
 #include <iostream>
@@ -100,14 +100,14 @@ bool findArgs(int argc, char** argv, const char* c, double &value)
 
 void DrawHistograms(const std::string &lookupFilename)
 {
-  std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals> crvPhotonArrivals;
+  std::unique_ptr<mu2eCrv::MakeCrvPhotons> crvPhotons;
   CLHEP::HepJamesRandom  engine(0);
   CLHEP::RandFlat randFlat(engine);
   CLHEP::RandGaussQ randGausQ(engine);
   CLHEP::RandPoissonQ randPoissonQ(engine);
-  crvPhotonArrivals = std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(randFlat, randGausQ, randPoissonQ));
-  crvPhotonArrivals->LoadLookupTable(lookupFilename);
-  crvPhotonArrivals->DrawHistograms();
+  crvPhotons = std::unique_ptr<mu2eCrv::MakeCrvPhotons>(new mu2eCrv::MakeCrvPhotons(randFlat, randGausQ, randPoissonQ));
+  crvPhotons->LoadLookupTable(lookupFilename);
+  crvPhotons->DrawHistograms();
 }
 
 int main(int argc, char** argv) 

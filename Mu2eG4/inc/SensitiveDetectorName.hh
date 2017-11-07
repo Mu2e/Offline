@@ -90,6 +90,10 @@ namespace mu2e {
       return StepInstanceName::name(StepInstanceName::panelEBKey).c_str();
     }
 
+    static char const * DSCableRun() {
+      return StepInstanceName::name(StepInstanceName::DSCableRun).c_str();
+    }
+
   };
 
 } // namespace mu2e

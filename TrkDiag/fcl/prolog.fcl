@@ -8,8 +8,7 @@ BEGIN_PROLOG
 # Note that KalDiag must be configured differently depending on whether you are
 # reading data generated inline, or are reading data output through Read
   KalDiag : {
-    MCPtrLabel	      : makeSH
-    StrawHitMCLabel   : makeSH
+    StrawDigiMCLabel   : makeSD
     TimeOffsets       :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
   }
 
@@ -156,7 +155,7 @@ BEGIN_PROLOG
       @table::CaloReco.producers
       @table::CaloCluster.producers
       @table::TrackCaloMatching.producers
-      @table::CrvResponsePackage.producers
+#      @table::CrvResponsePackage.producers
   # DIO weighting for flat spectrum electrons
       DIOWeight: {
 	module_type: DecayInOrbitWeight

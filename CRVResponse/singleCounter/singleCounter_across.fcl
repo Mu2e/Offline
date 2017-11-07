@@ -81,6 +81,7 @@ physics :
     CrvPhotons       : @local::CrvPhotons
     CrvSiPMCharges   : @local::CrvSiPMCharges
     CrvWaveforms     : @local::CrvWaveforms
+    CrvDigi          : @local::CrvDigi
     CrvRecoPulses    : @local::CrvRecoPulses
   }
 
@@ -95,7 +96,7 @@ physics :
     }
   }
 
-  trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvRecoPulses ]
+  trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses ]
   trigger_paths  : [trig]
 
 #  out: [CrvTest, Output]
@@ -113,6 +114,8 @@ outputs:
 }
 
 physics.producers.CrvPhotons.scintillationYieldVariation  : 0.0
+physics.producers.CrvPhotons.CRVSectors                   : ["Test"]
+physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v3_0/LookupTable_3000"]
 physics.producers.CrvSiPMCharges.deadSiPMProbability      : 0.0
 physics.producers.CrvWaveforms.FEBtimeSpread              : 0.0
 
