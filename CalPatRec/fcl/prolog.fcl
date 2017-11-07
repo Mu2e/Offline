@@ -722,23 +722,19 @@ CalPatRec: { @table::CalPatRec
     producers : { @table::CalPatRec.producers
 	
 	CalSeedFitDem                  : { @table::CalPatRec.producers.CalSeedFit        
-	    HelixSeedModuleLabel       : CalHelixFinderDem
-	    CalTimePeakModuleLabel     : CalTimePeakFinderDem
+	    SeedCollectionTag       : CalHelixFinderDem
 	}
 	CalSeedFitDmm                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.muminus
-	    HelixSeedModuleLabel       : CalHelixFinderDmm
-	    CalTimePeakModuleLabel     : CalTimePeakFinderDmm
+	    SeedCollectionTag       : CalHelixFinderDmm
 	}
 	CalSeedFitDep                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.eplus  
-	    HelixSeedModuleLabel       : CalHelixFinderDep
-	    CalTimePeakModuleLabel     : CalTimePeakFinderDep
+	    SeedCollectionTag       : CalHelixFinderDep
 	}
 	CalSeedFitDmp                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.muplus
-	    HelixSeedModuleLabel       : CalHelixFinderDmp
-	    CalTimePeakModuleLabel     : CalTimePeakFinderDmp
+	    SeedCollectionTag       : CalHelixFinderDmp
 	}
     }
     
