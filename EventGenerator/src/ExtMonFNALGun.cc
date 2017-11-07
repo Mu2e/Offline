@@ -81,10 +81,19 @@ namespace mu2e {
       m_rotation = GeomHandle<ExtMonFNAL::ExtMon>()->detectorRotationInMu2e();
       m_translation = GeomHandle<ExtMonFNAL::ExtMon>()->detectorCenterInMu2e();
     }
-    else if(ref == "productionTarget") {
+    else if(ref == "productionTargetEntrance") {
       m_rotation = GeomHandle<ProductionTarget>()->protonBeamRotation();
       m_translation = GeomHandle<ProductionTarget>()->position()
         + m_rotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->halfLength());
+    }
+    else if(ref == "productionTargetCenter") {
+      m_rotation = GeomHandle<ProductionTarget>()->protonBeamRotation();
+      m_translation = GeomHandle<ProductionTarget>()->position();
+    }
+    else if(ref == "productionTargetExit") {
+      m_rotation = GeomHandle<ProductionTarget>()->protonBeamRotation();
+      m_translation = GeomHandle<ProductionTarget>()->position()
+        - m_rotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->halfLength());
     }
     else {
       throw cet::exception("BADCONFIG")

@@ -33,7 +33,7 @@ physics : {
 	       pmin: 8888.6000
 	       pmax: 8888.6000
 	       pdgId     : -2212 // antiproton
-	       reference : "productionTarget"
+	       reference : "productionTargetEntrance"
 	       offset   : [ 0, 0, 0 ]
 	       halfSize : [ 0, 0, 0 ]
 	       tmin     : 0
