@@ -71,7 +71,7 @@ namespace mu2e {
   StrawHitsFromStrawDigis::StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset) :
     _nbase(pset.get<unsigned>("NumADCBaseline",1)),
     _mbbuffer(pset.get<double>("TimeBuffer",100.0)), // nsec
-    _fittype((TrkChargeReco::FitType) pset.get<unsigned>("FitType",1)),
+    _fittype((TrkChargeReco::FitType) pset.get<unsigned>("FitType",TrkChargeReco::peakminusped)),
     _truncateADC(pset.get<bool>("TruncateADC",true)), 
     _floatPedestal(pset.get<bool>("FloatPedestal",true)), 
     _floatWidth(pset.get<bool>("FloatWidth",true)), 
@@ -104,7 +104,7 @@ namespace mu2e {
     if(_latePeak)myconfig.setOption(TrkChargeReco::FitConfig::latePeak);
     ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
 
-    if (_fittype == TrkChargeReco::FitType::sumadc || _fittype == TrkChargeReco::FitType::peakminusped)
+    if ( _fittype == TrkChargeReco::FitType::peakminusped)
       _pfit = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::PeakFit(*strawele,_peakfit) );
     else if (_fittype == TrkChargeReco::FitType::combopeakfit)
       _pfit = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::ComboPeakFitRoot(*strawele,_peakfit) );

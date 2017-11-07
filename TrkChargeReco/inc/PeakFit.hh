@@ -11,7 +11,7 @@ namespace mu2e {
   namespace TrkChargeReco {
 	
     
-    enum FitType {sumadc=0,peakminusped=1,combopeakfit=2,peakfit=3};
+    enum FitType {peakminusped=1,combopeakfit=2,peakfit=3};
 
     class PeakFit {
        
@@ -21,9 +21,6 @@ namespace mu2e {
 	// The default implementation simply sums the ADC data after subtracting pedesdal
 	virtual void process(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const;
 
-	// Extract charge by summing the ADC data after subtracting pedestal
-	void sumADC(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const;
-	
 	// Extract charge by taking the difference of the ADC peak and pedestal
 	void peakMinusPed(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const;
 

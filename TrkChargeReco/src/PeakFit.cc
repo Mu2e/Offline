@@ -8,7 +8,7 @@ namespace mu2e {
 
        PeakFit::PeakFit(const StrawElectronics& strawele, const fhicl::ParameterSet& pset) : 
           _strawele(strawele),
-          _fittype((TrkChargeReco::FitType) pset.get<TrkChargeReco::FitType>("FitType",TrkChargeReco::FitType::sumadc))
+          _fittype((TrkChargeReco::FitType) pset.get<TrkChargeReco::FitType>("FitType",TrkChargeReco::FitType::peakminusped))
        {}
 
 
@@ -17,25 +17,12 @@ namespace mu2e {
          
          switch(_fittype)
          {
-            case FitType::sumadc :
-              sumADC(adcData, fit);
-              break;
             case FitType::peakminusped :
               peakMinusPed(adcData, fit);
               break;
             default :
               initializeFit(adcData,fit);
          }
-       }
-
-
-       void PeakFit::sumADC(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const
-       {
-              
-          unsigned sum(0.0);
-          for (auto iadc : adcData) sum += iadc;
-          double charge = (sum- adcData.size()*_strawele.ADCPedestal())*_strawele.adcLSB()/_strawele.currentToVoltage(TrkTypes::adc)*_strawele.adcPeriod()*StrawElectronics::_pC_per_uA_ns;
-          fit._charge = charge;
        }
 
        void PeakFit::peakMinusPed(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const
@@ -45,10 +32,12 @@ namespace mu2e {
           fit._time = std::distance(adcData.begin(), maxIter) * _strawele.adcPeriod();
 
           const double peak = *maxIter;
-          double pedestal = std::accumulate(adcData.begin(), adcData.begin() + _strawele.nADCPreSamples(),0)/(double) _strawele.nADCPreSamples();
+          fit._pedestal = std::accumulate(adcData.begin(), adcData.begin() + _strawele.nADCPreSamples(),0)/(double) _strawele.nADCPreSamples();
 
-	  double charge = (peak - pedestal) * _strawele.adcLSB() * _strawele.peakMinusPedestalEnergyScale();
+	  double charge = (peak - fit._pedestal) * _strawele.adcLSB() * _strawele.peakMinusPedestalEnergyScale();
 	  fit._charge = charge;
+
+	 //should compute width FIXME!
        }
 
        void PeakFit::initializeFit(const TrkTypes::ADCWaveform& adcData, PeakFitParams& fit) const

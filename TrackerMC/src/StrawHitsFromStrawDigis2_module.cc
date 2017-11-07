@@ -90,7 +90,7 @@ namespace mu2e {
       mbbuffer_(pset.get<double>(    "TimeBuffer",100.0)), 
       maxdt_(pset.get<double>(       "MaxTimeDifference",8.0)), 
       singledigi_(pset.get<bool>(    "UseSingleDigis",false)), 
-      fittype_((TrkChargeReco::FitType) pset.get<unsigned>("FitType",TrkChargeReco::FitType::sumadc)),
+      fittype_((TrkChargeReco::FitType) pset.get<unsigned>("FitType",TrkChargeReco::FitType::peakminusped)),
       usecc_(pset.get<bool>(         "UseCalorimeter",false)),     
       clusterDt_(pset.get<double>(   "clusterDt",100)),
       minE_(pset.get<double>(        "minimumEnergy",0.0)), // Minimum deposited straw energy (MeV)
@@ -129,7 +129,7 @@ namespace mu2e {
                  
       // this must be done here because strawele is not accessible at startup and it 
       // contains a const refenence to pfit_, so this can't be instanciated earliere
-      if (fittype_ == TrkChargeReco::FitType::sumadc || fittype_ == TrkChargeReco::FitType::peakminusped)
+      if (fittype_ == TrkChargeReco::FitType::peakminusped)
          pfit_ = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::PeakFit(*strawele,peakfit_) );
       else if (fittype_ == TrkChargeReco::FitType::combopeakfit)
 	 pfit_ = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::ComboPeakFitRoot(*strawele,peakfit_) );
