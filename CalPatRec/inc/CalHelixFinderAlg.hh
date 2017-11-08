@@ -81,6 +81,7 @@ namespace mu2e {
     int                  _diag;
     int                  _debug;
     int                  _debug2;
+    int                  _smartTag;     //flag used to test addiotional layer of rejection after the search for the "best triplet"
     StrawHitFlag         _hsel;         // good hit selection
     StrawHitFlag         _bkgsel;       // background hit selection
     int                  _minnhit;      // minimum # of hits to work with
@@ -208,7 +209,7 @@ namespace mu2e {
                                        int            &Iworst);
 
     bool   doLinearFitPhiZ     (CalHelixFinderData& Helix, int SeedIndex, int *indexVec,
-				int UseInteligentWeight=0);
+				int UseInteligentWeight=0, int DoCleanUp=1);
 
    //perfoms the weighted circle fit, update the helix parameters (HelicCenter, Radius) and
     // fills the vector Weights which holds the calculated weights of the hits
