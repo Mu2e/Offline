@@ -3,9 +3,9 @@
 #------------------------------------------------------------------------------
 #  mergePatRec02: read input data, remake all hits, do not regenereate events
 #------------------------------------------------------------------------------
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "TrackCaloMatching/fcl/prolog.fcl"
 #include "CalPatRec/fcl/prolog.fcl"
 #include "ParticleID/fcl/prolog.fcl"

@@ -11,9 +11,9 @@
 #  Dave Brown (LBNL), 20 May 2015
 #  Andrei Gaponenko,   3 Nov 2015
 #
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 BEGIN_PROLOG
 stepInstanceNames   : [ "tracker", "virtualdetector", "calorimeter", "calorimeterRO" ]

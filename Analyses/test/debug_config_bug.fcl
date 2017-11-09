@@ -11,7 +11,7 @@
 # see that it is missing commas after the 10th entry in the list.
 #
 
-#include "standardProducers.fcl"
+#include "fcl/standardProducers.fcl"
 
 BEGIN_PROLOG
   generatorSeq  : [ generate, g4run, protonTimeMap, muonTimeMap ]

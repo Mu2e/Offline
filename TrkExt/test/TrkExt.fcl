@@ -4,9 +4,9 @@
 # $Author: gandr $
 # $Date: 2014/05/28 21:16:30 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 # Give this job a name.
 process_name : TrkExt

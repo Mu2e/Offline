@@ -4,7 +4,7 @@
 # $Author: kutschke $
 # $Date: 2011/05/18 21:08:02 $
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 # Give this job a name.
 process : HelloWorld

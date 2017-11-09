@@ -1,7 +1,7 @@
 # Make a test input file to be ready by the SourceTest00 module.
 #
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 process_name : SourceTest00
 

@@ -6,8 +6,8 @@
 # $Author: youzy $
 # $Date: 2012/05/16 01:02:53 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this job a name.  
 process_name : ExtMonUCIReadBack01

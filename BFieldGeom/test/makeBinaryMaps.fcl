@@ -3,9 +3,9 @@
 # Create lots of text output for comparison with output from readBinaryMaps.fcl.
 #
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name : MakeBinaryMaps
 

@@ -11,9 +11,9 @@
 #  mu2e -c Analyses/test/genReco.fcl -n 1000 >| results/2014-12-19-Analyses_test_genReco.log 2>&1 &
 #------------------------------------------------------------------------------
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 #include "CaloCluster/fcl/prolog.fcl"
 #include "Analyses/fcl/prolog.fcl"

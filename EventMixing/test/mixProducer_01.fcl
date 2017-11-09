@@ -4,8 +4,8 @@
 # $Author: gandr $
 # $Date: 2012/03/02 17:16:22 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this job a name.
 process_name : MixProducer01

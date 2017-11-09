@@ -6,8 +6,8 @@
 #
 # David Brown (LBNL) 13 July 2016
 #
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 #include "Mu2eReco/fcl/standardServices.fcl"
 #include "Mu2eReco/fcl/prolog.fcl"
 

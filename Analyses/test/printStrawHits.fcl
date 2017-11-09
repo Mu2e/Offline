@@ -6,8 +6,8 @@
 # $Author: murat $
 # $Date: 2014/06/27 15:57:03 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 #include "Analyses/fcl/prolog.fcl"
 
 process_name : Print

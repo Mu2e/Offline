@@ -1,7 +1,7 @@
 // Andrei Gaponenko, 2015
 
-#include "minimalMessageService.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name :  nts1extmonregion
 

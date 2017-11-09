@@ -6,9 +6,9 @@
 
 # Jacob Colston and Joseph Brock - edits for CD3 (2015)
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name : pionsg4s4RPC
 

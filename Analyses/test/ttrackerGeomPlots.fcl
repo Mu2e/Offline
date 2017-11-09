@@ -7,7 +7,7 @@
 #
 # Original author Rob Kutschke
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 # Give this process a name.
 process_name : TTrackerGeom

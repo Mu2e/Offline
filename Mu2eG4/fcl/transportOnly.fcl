@@ -1,9 +1,9 @@
 # Variant of g4test_03 but with transport only.
 #
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 # Give this job a name.
 process_name : transportOnly

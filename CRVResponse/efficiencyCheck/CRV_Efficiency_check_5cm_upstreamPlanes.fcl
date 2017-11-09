@@ -1,5 +1,5 @@
-#include "minimalMessageService.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
 #include "CRVResponse/efficiencyCheck/prolog5cmUpstream.fcl"
 
