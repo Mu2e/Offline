@@ -47,7 +47,7 @@ namespace mu2e {
     void makePlane( PlaneId planeId );
     void makePanel( const PanelId& panelId, Plane& plane );
     void makeLayer ( const LayerId& layId,  Panel& panel );
-    void makeManifolds( const PanelId& panelId);
+    //    void makeManifolds( const PanelId& panelId);
 
     void computeStrawHalfLengths();
     void computePanelBoxParams(Panel& panel, Plane& plane);
@@ -84,6 +84,7 @@ namespace mu2e {
     void finalCheck();
 
     int    _verbosityLevel;
+    int    _ttVersion;
 
     // Properties of the mother volume.
     double _motherRIn;               // Inner radius of the mother volume
@@ -112,7 +113,12 @@ namespace mu2e {
     double _strawWallThickness;          // Thickness of each straw.
     double _strawGap;                    // Gap between straws.
     double _planeSpacing;               // Z-separation between adjacent stations.
-    double _planeHalfSeparation;        // Z-separation between adjacent planes.
+    double _planeHalfSeparation;        // Z-separation between adjacent planes
+
+    double _planePadding;         // Small spaces around panel and plane to 
+    double _panelPadding;         // allow for misalignment (and more 
+    // realistically describe how both are built.
+
     double _innerSupportRadius;          // Inner radius of support frame.
     double _outerSupportRadius;          // Outer radius of support frame.
     double _supportHalfThickness;        // Thickness of support frame.
@@ -196,6 +202,10 @@ namespace mu2e {
     double           _midRingdPhi;
     std::string      _midRingMaterial;
 
+    //  These two for all panels
+    double         _panelPhi;
+    double         _dphiRibs;
+
     double      _innerRingInnerRadius;
     double      _innerRingOuterRadius;
     double      _innerRingHalfLength;
@@ -220,6 +230,7 @@ namespace mu2e {
     double      _channelZOffset;
     double      _channelDepth;
     std::string _channelMaterial;
+    double      _panelZOffset;  // used from version 5 on
 
     std::string _electronicsSpaceMaterial;
 

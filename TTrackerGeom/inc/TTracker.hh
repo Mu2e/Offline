@@ -98,6 +98,8 @@ namespace mu2e {
       return _planes.at(pnlid.getPlane()).getPanel(pnlid);
     }
 
+    double panelOffset() const { return _panelZOffset; }
+
     const Layer& getLayer ( const LayerId& lid ) const{
       return _planes.at(lid.getPlane()).getLayer(lid);
     }
@@ -140,12 +142,13 @@ namespace mu2e {
       return _supportStructure;
     }
 
-    const std::vector<double>& getManifoldHalfLengths () const{
-      return _manifoldHalfLengths;
-    }
 
     TubsParams getPlaneEnvelopeParams() const{
       return _planeEnvelopeParams;
+    }
+
+    TubsParams getPanelEnvelopeParams() const{
+      return _panelEnvelopeParams;
     }
 
     const TubsParams& getInnerTrackerEnvelopeParams() const{
@@ -224,9 +227,6 @@ namespace mu2e {
     // There will be pointers to the objects in this container.
     std::deque<Straw>  _allStraws;
 
-    // Deprecated: part of the ancient MECO TTracker design.  A few vestiges not yet removed.
-    std::vector<Manifold> _allManifolds;
-
     // Outer envelope that holds the new style support structure.
     PlacedTubs _mother;
 
@@ -236,19 +236,20 @@ namespace mu2e {
     // The envelope that holds all of the pieces in one plane, including supports.
     TubsParams _planeEnvelopeParams;
 
+    // Ditto for Panel
+    TubsParams _panelEnvelopeParams;
+
     // Which level of detail is present in the model of the support structure?
     SupportModel _supportModel;
 
     // All supports are the same shape; only relevant for _supportModel=="simple"
     Support _supportParams;
+    double _panelZOffset; // introduced for version 5
 
     // A more detailed model of the supports; again each plane has identical supports.
     // only relevant for _supportModel == "detailedv0".
     SupportStructure _supportStructure;
 
-    // All manifolds are the same shape.
-    // Deprecated: these will go away soon.
-    std::vector<double> _manifoldHalfLengths;
 
     // Inner radius of inside edge of innermost straw.
     double _envelopeInnerRadius;

@@ -103,7 +103,7 @@ namespace mu2e {
   void TTrackerMaker::parseConfig( const SimpleConfig& config ){
 
     _verbosityLevel     = config.getInt("ttracker.verbosityLevel",0);
-
+    _ttVersion          = config.getInt("TTrackerVersion",3);
 
     _motherRIn        = config.getDouble("ttracker.mother.rIn"        )*CLHEP::mm;
     _motherROut       = config.getDouble("ttracker.mother.rOut"       )*CLHEP::mm;
@@ -120,6 +120,9 @@ namespace mu2e {
     _layerZPattern      = config.getInt("ttracker.layerZPattern");
     _spacingPattern     = config.getInt("ttracker.spacingPattern");
     _innermostLayer     = config.getInt("ttracker.innermostLayer");
+
+    _planePadding      = config.getDouble("ttracker.planePadding",0.5)*CLHEP::mm;
+    _panelPadding      = config.getDouble("ttracker.panelPadding",0.25)*CLHEP::mm;
 
     _oddStationRotation   =  config.getDouble("ttracker.oddStationRotation")*CLHEP::degree;
     _zCenter              =  config.getDouble("ttracker.z0")*CLHEP::mm;
@@ -204,6 +207,10 @@ namespace mu2e {
       config.getVectorDouble( "ttrackerSupport.beam1.serviceCovRelThickness", _beam1_serviceCovRelThickness );
       config.getVectorString( "ttrackerSupport.beam1.serviceMaterialsCov", _beam1_serviceMaterialsCov );
 
+
+      _panelPhi  = config.getDouble("ttrackerSupport.phiCoverage",120.0)*CLHEP::degree;
+      _dphiRibs = config.getDouble("ttrackerSupport.dphiRibs",27.0)*CLHEP::degree;
+
       _innerRingInnerRadius    = config.getDouble( "ttrackerSupport.innerRing.innerRadius" );
       _innerRingOuterRadius    = config.getDouble( "ttrackerSupport.innerRing.outerRadius" );
       _innerRingHalfLength     = config.getDouble( "ttrackerSupport.innerRing.halfLength"  );
@@ -223,6 +230,7 @@ namespace mu2e {
       _electronicsCuHhalfLength = config.getDouble( "ttrackerSupport.electronics.cu.halfLength"  );
       _electronicsCuMaterial    = config.getString( "ttrackerSupport.electronics.cu.material"    );
       _channelZOffset           = config.getDouble( "ttrackerSupport.channel.zOffset"            );
+      _panelZOffset             = config.getDouble( "ttrackerSupport.panel.zOffset", 0.0 );
       _channelDepth             = config.getDouble( "ttrackerSupport.channel.depth"              );
       _channelMaterial          = config.getString( "ttrackerSupport.channel.material"           );
       _electronicsSpaceMaterial = config.getString( "ttrackerSupport.electronicsSpace.material"  );
@@ -446,7 +454,7 @@ namespace mu2e {
 
     _tt->_z0                  = _zCenter;
     _tt->_envelopeInnerRadius = _envelopeInnerRadius;
-    _tt->_manifoldHalfLengths = _manifoldHalfLengths;
+    //    _tt->_manifoldHalfLengths = _manifoldHalfLengths;  //These are gone
     _tt->_envelopeMaterial    = _envelopeMaterial;
 
     // Z location of the first plane.
@@ -520,7 +528,6 @@ namespace mu2e {
   void TTrackerMaker::finalCheck( ){
 
     // Only do this test for the new model(s).
-    if ( _supportModel == SupportModel::simple ) return;
 
     StrawId s0(0,1,0,0);
     StrawId s1(0,1,1,1);
@@ -581,7 +588,7 @@ namespace mu2e {
       throw cet::exception("GEOM")  << "Planes are too close \n";
     }
 
-    makeManifolds( plnId );
+    //    makeManifolds( plnId );
 
     double strawSpacing = _strawGap+2.*_strawOuterRadius;
 
@@ -835,53 +842,54 @@ namespace mu2e {
 //std::cout << "<-<-<- makeLayer\n";
   } // end TTrackerMaker::makeLayer
 
-  void TTrackerMaker::makeManifolds( const PanelId& plnId){
-//std::cout << "->->-> makeManifolds\n";
+//   void TTrackerMaker::makeManifolds( const PanelId& plnId){
+// //std::cout << "->->-> makeManifolds\n";
 
-    if ( _panelsPerPlane != 4 && _panelsPerPlane != 6 ) {
-      throw cet::exception("GEOM")
-        << "This code only knows how to do 4 or 6 panels per plane.\n";
-    }
+//     if ( _panelsPerPlane != 4 && _panelsPerPlane != 6 ) {
+//       throw cet::exception("GEOM")
+//         << "This code only knows how to do 4 or 6 panels per plane.\n";
+//     }
 
-//    double phi = _tt->getPlane(plnId.getPlane()).rotation();
-//    CLHEP::HepRotationZ RZ(phi);
-
-
-    // manifold objects are not used for now...
-
-    for ( int i=0; i<_manifoldsPerEnd; ++i){
-
-      // First compute everything in their nominal positions: panel 0, right ?
-      double x0 = _envelopeInnerRadius +
-        _strawsPerManifold*_strawOuterRadius +
-        _manifoldHalfLengths.at(0);
-
-      double y0 = _tt->_strawDetails.at(i).halfLength() + _manifoldHalfLengths.at(2);
-
-      double z0 = ( _supportHalfThickness + _manifoldHalfLengths.at(2) );
-      //if ( plnId.getPanel() <= 1 ) z0 = -z0; // is this correct for the 6 panels?
-      // why not *_panelZSide.at(plnId.getPanel())
-
-      z0 = z0*panelZSide(plnId.getPanel(),plnId.getPlane());
-
-      // is the above assuming correct Z? why not plnId.getPanel()%2?
-      // are manifolds ever used?
-      // is it correct at all? I mean the origin? It is always the same for each plane...
-      // x never changes
-
-      CLHEP::Hep3Vector origin(x0,y0,z0);
-
-      //       cout << "Manifold plane, panel, origin, length[0] :" <<
-      //         _tt->getPlane(plnId.getPlane()).id() << ", " <<
-      //         plnId.getPanel() << ", " <<
-      //         origin << ", " << _manifoldHalfLengths.at(0) <<endl;
+// //    double phi = _tt->getPlane(plnId.getPlane()).rotation();
+// //    CLHEP::HepRotationZ RZ(phi);
 
 
-      _tt->_allManifolds.push_back( Manifold( origin, _manifoldHalfLengths) );
-    }
+//     // manifold objects are not used for now...
 
-//std::cout << "<-<-<- makeManifolds\n";
-  }
+//     for ( int i=0; i<_manifoldsPerEnd; ++i){
+
+//       // First compute everything in their nominal positions: panel 0, right ?
+//       double x0 = _envelopeInnerRadius +
+//         _strawsPerManifold*_strawOuterRadius +
+//         _manifoldHalfLengths.at(0);
+
+//       double y0 = _tt->_strawDetails.at(i).halfLength() + _manifoldHalfLengths.at(2);
+
+//       double z0 = ( _supportHalfThickness + _manifoldHalfLengths.at(2) );
+//       //if ( plnId.getPanel() <= 1 ) z0 = -z0; // is this correct for the 6 panels?
+//       // why not *_panelZSide.at(plnId.getPanel())
+
+//       z0 = z0*panelZSide(plnId.getPanel(),plnId.getPlane());
+
+//       // is the above assuming correct Z? why not plnId.getPanel()%2?
+//       // are manifolds ever used?
+//       // is it correct at all? I mean the origin? It is always the same for each plane...
+//       // x never changes
+
+//       CLHEP::Hep3Vector origin(x0,y0,z0);
+
+//       //       cout << "Manifold plane, panel, origin, length[0] :" <<
+//       //         _tt->getPlane(plnId.getPlane()).id() << ", " <<
+//       //         plnId.getPanel() << ", " <<
+//       //         origin << ", " << _manifoldHalfLengths.at(0) <<endl;
+
+
+//       _tt->_allManifolds.push_back( Manifold( origin, _manifoldHalfLengths) );
+//     }
+
+// //std::cout << "<-<-<- makeManifolds\n";
+//   }
+
 
 // ======= Station view makers ============
 
@@ -1478,6 +1486,7 @@ namespace mu2e {
   void TTrackerMaker::makeSupportStructure(){
 
     SupportStructure& sup  = _tt->_supportStructure;
+    _tt->_panelZOffset = _panelZOffset;
 
     // Positions for the next few objects in Mu2e coordinates.
     TubsParams endRingTubs( _endRingInnerRadius, _endRingOuterRadius, _endRingHalfLength);
@@ -1501,6 +1510,9 @@ namespace mu2e {
       // From upstream end of most upstream station to the downstream end of the most downstream station.
       // Including all materials.
       double overallLength = (_numPlanes/2-1)*_planeSpacing + 2.*_planeHalfSeparation + 2.* _innerRingHalfLength;
+      if ( _ttVersion > 3 ) overallLength = (_numPlanes/2-1)*_planeSpacing +
+			      2.*_planeHalfSeparation + 4.*_innerRingHalfLength
+			      + _planePadding + 2.*_panelPadding;
 
       // we make support beams here (they used to be called staves)
 
@@ -1766,64 +1778,85 @@ namespace mu2e {
 
     }
 
-    // Positions from here onward are in the coordinates of the plane envelope.
+    // Special for two items added to sup for v5
     {
-      TubsParams centerPlateTubs( _innerRingOuterRadius, _outerRingOuterRadius, _centerPlateHalfLength);
-      sup._centerPlate = PlacedTubs( "TTrackerSupportCenterPlate", centerPlateTubs, CLHEP::Hep3Vector(0.,0.,0.), _centerPlateMaterial);
+      sup._panelPhiRange = _panelPhi;
+      sup._panelPhiRibs  = _dphiRibs;
     }
 
-    {
-      TubsParams innerRingTubs( _innerRingInnerRadius, _innerRingOuterRadius, _innerRingHalfLength);
+    // Positions from here onward are in the coordinates of the plane envelope.
+    // For versions above 3, coordinates of the panel envelope
+    { // Build and place the "center" plate
+      TubsParams centerPlateTubs( _innerRingOuterRadius, _outerRingOuterRadius, _centerPlateHalfLength,0., _panelPhi);
+      CLHEP::Hep3Vector centerSpot(0.,0.,0.);
+      if ( _ttVersion > 3) centerSpot.set(0.,0.,_innerRingHalfLength - _centerPlateHalfLength );
+      sup._centerPlate = PlacedTubs( "TTrackerSupportCenterPlate", centerPlateTubs, centerSpot, _centerPlateMaterial);
+    }
+
+    { // This is the inner ring
+      TubsParams innerRingTubs( _innerRingInnerRadius, _innerRingOuterRadius, _innerRingHalfLength,0., _panelPhi);
       sup._innerRing = PlacedTubs( "TTrackerSupportInnerRing", innerRingTubs, CLHEP::Hep3Vector(0.,0.,0), _innerRingMaterial );
     }
 
-    {
+    { // This is the channel info for the inner ring
       double outerRadius        = _innerRingInnerRadius + _channelDepth;
       double channelHalfLength  = (_layerHalfSpacing-_strawOuterRadius) + 2.*_strawOuterRadius;
-      TubsParams innerChannelTubs( _innerRingInnerRadius, outerRadius, channelHalfLength );
-      sup._innerChannelUpstream   = PlacedTubs( "TTrackerSupportInnerChannelUpstream",   innerChannelTubs, CLHEP::Hep3Vector(0.,0.,-_channelZOffset), _envelopeMaterial );
-      sup._innerChannelDownstream = PlacedTubs( "TTrackerSupportInnerChannelDownstream", innerChannelTubs, CLHEP::Hep3Vector(0.,0., _channelZOffset), _envelopeMaterial );
+      TubsParams innerChannelTubs( _innerRingInnerRadius, outerRadius, channelHalfLength, 0., _panelPhi );
+      sup._innerChannelUpstream   = PlacedTubs( "TTrackerSupportInnerChannelUpstream",   innerChannelTubs, CLHEP::Hep3Vector(0.,0.,-_channelZOffset+_panelZOffset), _envelopeMaterial );
+      sup._innerChannelDownstream = PlacedTubs( "TTrackerSupportInnerChannelDownstream", innerChannelTubs, CLHEP::Hep3Vector(0.,0., _channelZOffset-_panelZOffset), _envelopeMaterial );
     }
 
-    {
+    { // This is the Outer ring
       double halfLength = (_innerRingHalfLength - _centerPlateHalfLength)/2.;
       double dz         = _centerPlateHalfLength + halfLength;
-      TubsParams outerRingTubs( _outerRingInnerRadius, _outerRingOuterRadius, halfLength);
+      if ( _ttVersion > 3 ) {
+	halfLength *= 2.0;
+	dz = -_centerPlateHalfLength;
+      }
+      TubsParams outerRingTubs( _outerRingInnerRadius, _outerRingOuterRadius, halfLength,0.0, _panelPhi);
       sup._outerRingUpstream   = PlacedTubs ( "TTrackerSupportOuterRingUpstream",   outerRingTubs, CLHEP::Hep3Vector(0.,0.,-dz), _outerRingMaterial );
       sup._outerRingDownstream = PlacedTubs ( "TTrackerSupportOuterRingDownstream", outerRingTubs, CLHEP::Hep3Vector(0.,0., dz), _outerRingMaterial );
     }
 
-    {
+    { // Cover plate
       double dz = _innerRingHalfLength-_coverHalfLength;
-      TubsParams coverTubs( _innerRingOuterRadius, _outerRingInnerRadius, _coverHalfLength);
+      if ( _ttVersion > 3 ) dz = -dz;
+      TubsParams coverTubs( _innerRingOuterRadius, _outerRingInnerRadius, _coverHalfLength,0., _panelPhi);
       sup._coverUpstream   = PlacedTubs( "TTrackerSupportCoverUpstream",   coverTubs, CLHEP::Hep3Vector(0.,0.,-dz), _coverMaterial );
       sup._coverDownstream = PlacedTubs( "TTrackerSupportCoverDownstream", coverTubs, CLHEP::Hep3Vector(0.,0., dz), _coverMaterial );
     }
 
-    {
+    { // Gas volume
       double halfLength = (_innerRingHalfLength - _centerPlateHalfLength - 2.*_coverHalfLength)/2.;
       double dz         = _centerPlateHalfLength + halfLength;
-      TubsParams gasTubs( _innerRingOuterRadius, _outerRingInnerRadius, halfLength );
+      if ( _ttVersion > 3 ) {
+	halfLength = _innerRingHalfLength - _centerPlateHalfLength - _coverHalfLength;
+	dz = _coverHalfLength - _centerPlateHalfLength;
+      }
+
+      TubsParams gasTubs( _innerRingOuterRadius, _outerRingInnerRadius, halfLength, 0., _panelPhi );
       sup._gasUpstream   = PlacedTubs ( "TTrackerSupportGasUpstream",  gasTubs, CLHEP::Hep3Vector(0.,0.,-dz), _electronicsSpaceMaterial );
       sup._gasDownstream = PlacedTubs ( "TTrackerSupportGasDownstream", gasTubs, CLHEP::Hep3Vector(0.,0., dz), _electronicsSpaceMaterial );
     }
 
     // Positions for the next two are in the coordinates of the electronics space.
-    {
-      TubsParams g10Tubs( _innerRingOuterRadius, _outerRingInnerRadius, _electronicsG10HalfLength );
+    { // G10 (now just "Electronics" )
+      TubsParams g10Tubs( _innerRingOuterRadius, _outerRingInnerRadius, _electronicsG10HalfLength, 0., _panelPhi );      
       sup._g10Upstream   = PlacedTubs ( "TTrackerSupportElecG10Upstream",   g10Tubs, CLHEP::Hep3Vector(0.,0.,-_electronicsG10HalfLength), _electronicsG10Material );
       sup._g10Downstream = PlacedTubs ( "TTrackerSupportElecG10Downstream", g10Tubs, CLHEP::Hep3Vector(0.,0.,-_electronicsG10HalfLength), _electronicsG10Material );
     }
 
     {
-      TubsParams cuTubs( _innerRingOuterRadius, _outerRingInnerRadius, _electronicsCuHhalfLength);
+      TubsParams cuTubs( _innerRingOuterRadius, _outerRingInnerRadius, _electronicsCuHhalfLength, 0., _panelPhi);
       sup._cuUpstream   = PlacedTubs ( "TTrackerSupportElecCuUpstream",   cuTubs, CLHEP::Hep3Vector(0.,0.,_electronicsCuHhalfLength), _electronicsCuMaterial);
       sup._cuDownstream = PlacedTubs ( "TTrackerSupportElecCuDownstream", cuTubs, CLHEP::Hep3Vector(0.,0.,_electronicsCuHhalfLength), _electronicsCuMaterial);
     }
 
-  }
+  } // end of makeSupportStructure()
+  // *******************************
 
-  // This needs to know the z positions of the
+
+  // This needs to know the z positions of the support rings
   void TTrackerMaker::makeThinSupportRings(){
     SupportStructure& sup  = _tt->_supportStructure;
 
@@ -1879,15 +1912,19 @@ namespace mu2e {
   // Envelope that holds one plane ("TTrackerPlaneEnvelope")
   void TTrackerMaker::computePlaneEnvelope(){
 
-    if ( _supportModel == SupportModel::simple ){
-      double halfThick = _tt->_supportParams.halfThickness() + 2.*_tt->_manifoldHalfLengths[2];
-      _tt->_planeEnvelopeParams = TubsParams( _tt->_envelopeInnerRadius,
-                                               _tt->_supportParams.outerRadius(),
-                                               halfThick);
-    } else if ( _supportModel == SupportModel::detailedv0 ){
+    // Only the detailed model is supported now
+    if ( _supportModel == SupportModel::detailedv0 ){
+      _tt->_panelEnvelopeParams = TubsParams( _envelopeInnerRadius,
+                                               _outerRingOuterRadius,
+                                               _innerRingHalfLength
+					      + _panelPadding,
+					      0., _panelPhi);
       _tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
                                                _outerRingOuterRadius,
-                                               _innerRingHalfLength );
+					      2.0 * (_innerRingHalfLength
+						     + _panelPadding ) 
+					      + _planePadding );
+      
     }else{
       throw cet::exception("GEOM")
         << "Unknown value of _supportModel in TTrackerMaker::computePlaneEnvelopeParams "

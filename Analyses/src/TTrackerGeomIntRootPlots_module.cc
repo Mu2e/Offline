@@ -703,7 +703,11 @@ namespace mu2e {
     const size_t iplane = 0;
     const Plane& plane = _ttracker->getPlane(iplane);
 
-    const std::vector<double>& _manifoldHalfLengths = _ttracker->getManifoldHalfLengths();
+    // This is outdated - the manifolds are no longer part of the TTracker.
+    //    const std::vector<double>& _manifoldHalfLengths = _ttracker->getManifoldHalfLengths();
+    std::vector<double> _manifoldHalfLengths;
+    _config->getVectorDouble("ttracker.manifoldHalfLengths",_manifoldHalfLengths);
+
     //const int _manifoldsPerEnd = _manifoldHalfLengths.size();
 
     const size_t isec = 0;

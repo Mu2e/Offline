@@ -284,6 +284,8 @@ namespace mu2e {
       int ver = _config.getInt("TTrackerVersion",3);
       if ( ver == 3 ){
         trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, _config );
+      } else if ( ver == 5 ) {
+	trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config );
       }
     } else {
       trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, _config );

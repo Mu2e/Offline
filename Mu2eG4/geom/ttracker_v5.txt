@@ -8,7 +8,7 @@
 bool hasTTracker      = true;
 // Tell the TTracker object that we using the detailed support structure.
 string ttrackerSupport.model = "detailedv0";
-int TTrackerVersion   = 3;
+int TTrackerVersion   = 5;
 bool TTrackerHasBrassRings = true;
 
 int    ttracker.verbosityLevel     =    0;
@@ -98,7 +98,7 @@ double ttrackerSupport.midRing.Phi0       = 0.0;   // in degrees
 double ttrackerSupport.midRing.dPhi       = 360.0; // degrees
 string ttrackerSupport.midRing.material   = "BrassC360"; 
 
-// staves are called beams now
+// steves are called beams now
 // in doc-db 888.v7 the one at the top is different one from the ones
 // on the sides
 
@@ -126,21 +126,26 @@ vector<double> ttrackerSupport.beam1.serviceCovRelThickness = {.1, .1, .1, .1, .
 vector<string> ttrackerSupport.beam1.serviceMaterialsCov =
   { "G4_POLYETHYLENE", "G4_POLYETHYLENE", "StainlessSteel316", "G4_POLYETHYLENE", "G4_POLYETHYLENE" };
 
-// A panel's support ring structure covers 360 degrees of the circle
-// in this model.  This is not consistent with how they are built.
-double ttrackerSupport.phiCoverage            = 360.0;
-// Angle between ribs at the top of the panel arc. Not used in this model.
+
+// In this version, panel means the as-built panel and not just the 
+// straws associated to a panel.
+// Specify the angular composition
+// A panel's support ring structure covers 120 degrees of the circle
+double ttrackerSupport.phiCoverage            = 120.0;
+// Angle between ribs at the top of the panel arc
 double ttrackerSupport.dphiRibs               = 27.0; // degrees
+double ttracker.planePadding                  = 0.5; // mm
+double ttracker.panelPadding                  = 0.25; // mm
 
 
 // innerRing =? composite manifold of plastic and Al
 double ttrackerSupport.innerRing.innerRadius  = 700.;
 double ttrackerSupport.innerRing.outerRadius  = 712.7;
-double ttrackerSupport.innerRing.halfLength   =  24.067; // was 23.8
+double ttrackerSupport.innerRing.halfLength   =  12.1;//24.067; // was 23.8
 string ttrackerSupport.innerRing.material     =  "TrackerManifold";
 
 // centerPlate =? base plate
-double ttrackerSupport.centerPlate.halfLength =  5.03; // was 4.763
+double ttrackerSupport.centerPlate.halfLength =  2.38; // 5.03; // was 4.763
 string ttrackerSupport.centerPlate.material   = "G4_Al";
 
 // outerRing =? outer ring
@@ -155,12 +160,13 @@ string ttrackerSupport.cover.material         =  "G4_Al";
 // electronics =? electronics board and components, including ROC.  Should
 // include some Si
 double ttrackerSupport.electronics.g10.halfLength  =  1.5;
-string ttrackerSupport.electronics.g10.material    =  "G10";
+string ttrackerSupport.electronics.g10.material    =  "Electronics";
 double ttrackerSupport.electronics.cu.halfLength   =  0.5;
-string ttrackerSupport.electronics.cu.material     =  "G4_Cu";
+string ttrackerSupport.electronics.cu.material     =  "Electronics";
 
 // channel =? gap for modeling where the staws go through the manifold
 double ttrackerSupport.channel.zOffset  = 11.267; // was 11.0
+double ttrackerSupport.panel.zOffset = 11.267;
 double ttrackerSupport.channel.depth    =  5.0;
 string ttrackerSupport.channel.material =  "DSVacuum";
 string ttrackerSupport.electronicsSpace.material =  "StrawGas";

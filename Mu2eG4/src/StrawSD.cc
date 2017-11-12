@@ -82,9 +82,9 @@ namespace mu2e {
       _verbosityLevel = max(verboseLevel,config.getInt("ttracker.verbosityLevel",0)); // Geant4 SD verboseLevel
       _supportModel   = ttracker->getSupportModel();
 
-      if ( _TrackerVersion != 3) {
+      if ( _TrackerVersion < 3 ) {
         throw cet::exception("StrawSD")
-          << "Expected TTrackerVersion of 3 but found " << _TrackerVersion <<endl;
+          << "Expected TTrackerVersion >= 3 but found " << _TrackerVersion <<endl;
         // esp take a look at the detectorOrigin calculation
       }
 

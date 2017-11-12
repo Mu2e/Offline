@@ -36,7 +36,7 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/constructTTracker.hh"
-#include "Mu2eG4/inc/ConstructTTrackerTDR.hh"
+#include "Mu2eG4/inc/ConstructTTrackerDetail5.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
@@ -67,7 +67,7 @@ namespace mu2e{
     //    TTracker const & ttracker = *(GeomHandle<TTracker>());
 
     // The more detailed version has its own function.
-    ConstructTTrackerTDR tt(ds3Vac, config);
+    ConstructTTrackerDetail5 tt(ds3Vac, config);
     return tt.motherInfo();
     // Temporary until I can do more...
 
