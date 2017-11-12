@@ -2,6 +2,13 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_4_0
 
+4)      dnbrow01  12 November 2017
+	Improve	  memory footprint by reusing sets of straws among panels.
+	Rationalize some function and object naming.  Prepare for use
+	of Alignment in	 G4 stage of simulation.
+	modified:   Mu2eG4/inc/ConstructTTrackerDetail5.hh
+	modified:   Mu2eG4/src/ConstructTTrackerDetail5.cc
+
 3)      dnbrow01  12 November 2017
 	Created a new version of the TTracker geometry that builds individual
 	panels as they will be built instead of a bunch of copies of an

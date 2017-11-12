@@ -41,29 +41,29 @@ namespace mu2e {
     // stiffening rings and staves.
     void constructMainSupports();
 
-    // Construct all stations.
-    void constructStations();
+    // Construct all Planes.
+    void constructPlanes();
 
-    // Construct all panels(panels) within one station
-    void addPanelsAndEBKeys( int              idev,
+    // Construct all panels(panels) within one Plane
+    void addPanelsAndEBKeys( VolumeInfo&     baseStrawPanel,
+			     int              idev,
                              VolumeInfo&      plane,
                              VolumeInfo&      baseEBKey,
                              VolumeInfo&      baseEBKeyShield,
                              VolumeInfo&      trackerMother,
                              double           panelCenterPhi );
 
-    // Construct the support infrastructure for each station.
-    void addPlaneSupports( std::vector<VolumeInfo>& supportsInfo, int idev, VolumeInfo const& devInfo );
 
-    // Build logical volume heirarchy for the elements of the support structure that are inside
-    // each plane(plane) envelope.  Do not place this volume heirarchy.
-    //    void preparePlaneSupports( std::vector<VolumeInfo>& supportsInfo );
-
-    // Build logical volume heirarchy for one panel: straws placed inside a panel mother volume.
-    // Do not place this volume heirarchy.
+    // Build logical volume heirarchy for one panel: straws placed inside 
+    // a panel mother volume with supports, then placed in a plane
     VolumeInfo preparePanel(const int& ipln, const int& ipnl,
-			    VolumeInfo& thePlane, CLHEP::Hep3Vector& pnlPos,
+			    VolumeInfo& thePlane, VolumeInfo& strawPanel,
+			    CLHEP::Hep3Vector& pnlPos,
 			    G4RotationMatrix* rot);
+
+    // This is like the former preparePanel function - it just makes a set of
+    // straws for repeated use in panels.
+    VolumeInfo prepareStrawPanel();
 
     VolumeInfo prepareEBKey(bool keyItself);
 

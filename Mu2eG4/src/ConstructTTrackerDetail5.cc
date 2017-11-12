@@ -62,7 +62,7 @@ mu2e::ConstructTTrackerDetail5::ConstructTTrackerDetail5( VolumeInfo   const& ds
   // Do the work.
   constructMother(); // Unchanged from "TDR" version
   constructMainSupports(); // Unchanged from "TDR" version
-  constructStations(); // Much different from "TDR" version <==
+  constructPlanes(); // Much different from "TDR" version <==
 
   // Debugging only.
   if ( _config.getBool("ttracker.drawAxes",false) ) {
@@ -393,7 +393,7 @@ mu2e::ConstructTTrackerDetail5::constructMainSupports(){
 // is representated in G4 as two independent planes.
 // **********************************************************
 void
-mu2e::ConstructTTrackerDetail5::constructStations(){
+mu2e::ConstructTTrackerDetail5::constructPlanes(){
 
   // If the following is set, turns on detailed drawing of the "named" planes
   int plnDraw(_config.getInt("ttracker.plnDraw",-1));
@@ -404,7 +404,7 @@ mu2e::ConstructTTrackerDetail5::constructStations(){
   // as the "supports" (not to be confused with the "main supports").
   // We are changing that with v5.  Now we make a panel in software
   // that is like what we refer to as a panel in hardware.
-  //  VolumeInfo basePanel = preparePanel();
+  VolumeInfo baseStrawPanel = prepareStrawPanel();
 
   // Build the electronic board aka key <==
   VolumeInfo baseEBKey       = prepareEBKey(true);   // key itself
@@ -414,8 +414,6 @@ mu2e::ConstructTTrackerDetail5::constructStations(){
   // structure that live inside each plane envelope.  <==
   // Here is where the support material for each plane has historically been 
   // built. 
-  //  std::vector<VolumeInfo> baseSupports;
-  //  preparePlaneSupports(baseSupports);
 
   TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
   bool planeEnvelopeVisible      = _config.getBool("ttracker.planeEnvelopeVisible",false);
@@ -476,14 +474,14 @@ mu2e::ConstructTTrackerDetail5::constructStations(){
       checkForOverlaps(plnInfo.physical, _config, _verbosityLevel>0);
     }
 
-    //    addPlaneSupports( baseSupports, ipln, plnInfo );
 
-    addPanelsAndEBKeys( ipln, plnInfo, baseEBKey, baseEBKeyShield,
+    addPanelsAndEBKeys( baseStrawPanel, ipln, plnInfo, 
+			baseEBKey, baseEBKeyShield,
                         _motherInfo, dPhiPanel );
 
   } // end loop over planes
 
-} // end constructStations
+} // end constructPlanes
 
 
 // ************************
@@ -538,7 +536,12 @@ namespace mu2e {
 // ************************
 
 mu2e::VolumeInfo
-mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane, const int& iPanel, VolumeInfo& thePlane, CLHEP::Hep3Vector& pnlPosition, G4RotationMatrix* rot ){
+mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane, 
+					     const int& iPanel, 
+					     VolumeInfo& thePlane, 
+					     VolumeInfo& strawPanel,
+					     CLHEP::Hep3Vector& pnlPosition, 
+					     G4RotationMatrix* rot ){
 
   // Detail 5 version will take panels very seriously.
   // In the TDR version of this code, a "panel" was just a set of straws.
@@ -552,16 +555,10 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane, const int& iPane
   SupportStructure const& sup     = _ttracker.getSupportStructure();
 
   // Panels are identical other than placement - so get required properties from plane 0, panel 0.
-  Plane const& plane(_ttracker.getPlane(PlaneId(iPlane)));
   Panel const& panel(_ttracker.getPanel(PanelId(iPlane,iPanel)));
 
   bool panelEnvelopeVisible = _config.getBool("ttracker.panelEnvelopeVisible",false);
   bool panelEnvelopeSolid   = _config.getBool("ttracker.panelEnvelopeSolid",true);
-  bool strawVisible          = _config.getBool("ttracker.strawVisible",false);
-  bool strawSolid            = _config.getBool("ttracker.strawSolid",true);
-  bool strawLayeringVisible  = _config.getBool("ttracker.strawLayeringVisible",false);
-  bool strawLayeringSolid    = _config.getBool("ttracker.strawLayeringSolid",false);
-  bool partialStraws         = _config.getBool("ttracker.partialStraws",false);
 
   // Azimuth of the centerline of the panel envelope: panelCenterPhi
   // Upon construction and before placement, the panel envelope occupies [0,phiMax].
@@ -612,10 +609,25 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane, const int& iPane
   // Here we make the envelope for everything in one panel, including 
   // the "panel supports."  (Not "Main supports").
   // *****************
-  ostringstream pnlName;
-  pnlName << "PanelEnvelope_" << iPlane << "_" << iPanel;
+  //  ostringstream pnlName;
+  //  pnlName << "Panel_" << std::setfill('0') << std::setw(2) << iPlane << "_" 
+  //	  << std::setw(1) << iPanel;
 
-  VolumeInfo pnl0Info = nestTubs( pnlName.str(),
+  // *****************************************
+  // Here we will get Alignment information
+  // AlignmentMap* alignMap = art::ServiceHandle<AlignmentService>()->alignmentMap();
+  // AlignmentSequence tmpSeq = AlignMap->find(panel.name());
+  // unsigned long time = 0; // Need a way to get time?
+  // CLHEP::Hep3Vector alignTrans(0,0,0);
+  // rotation here
+  // if ( tmpSeq.isValid() ) {
+  //    alignTrans = tmpSeq.getAlignment(time).diplacement();
+  //    rotation here
+  // }
+  // Now modify the position vector and rotation with the Alignment info
+  // *********************************************************
+
+  VolumeInfo pnl0Info = nestTubs( panel.name("Panel"),
                                   panEnvParams,
                                   envelopeMaterial,
                                   rot,
@@ -630,234 +642,24 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane, const int& iPane
                                   _doSurfaceCheck
                                   );
 
-
-  // ************************
-  // Now we put in the Straws!
-  // ************************
-
-  // The rotation matrix that will place the straw inside the panel envelope.
-  // For straws on the upstream side of the support, the sign of the X rotation was chosen to put the
-  // z axis of the straw volume to be positive when going clockwise; this is the same convention used
-  // within the TTracker class.  For straws on the downstream side of the support, the z axis of the straw
-  // volume is positive when going counter-clockwise.  This won't be important since we never work
-  // in the straw-local coordiates within G4.
-  CLHEP::HepRotationZ pnlRz(-panelCenterPhi);
-  CLHEP::HepRotationX pnlRx(M_PI/2.);
-  G4RotationMatrix* panelRotation = _reg.add(G4RotationMatrix(pnlRx*pnlRz));
-
-  // The z of the center of the placed panel envelope, in Mu2e coordinates.
-  // This carries a sign, depending on upstream/downstream.
-  double zPanel(0.);
-  for ( int i=0; i<panel.nLayers(); ++i){
-    zPanel += panel.getStraw(StrawId(iPlane,iPanel,i,0)).getMidPoint().z();
-  }
-  zPanel /= panel.nLayers();
-
-  // Is panel 0 on the upstream(+1) or downstream(-z) side of the plane.
-  double side = (zPanel-plane.origin().z()) > 0. ? -1. : 1.;
-
-  // A unit vector in the direction from the origin to the wire center within the panel envelope.
-  CLHEP::Hep3Vector unit( cos(panelCenterPhi), sin(panelCenterPhi), 0.);
-
-  // Sensitive detector object for the straw gas.
-  G4VSensitiveDetector *strawSD =
-    G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::TrackerGas());
-  if ( strawSD == nullptr ){
-    cout << __func__
-         << " Warning: there is no sensitive detector object for the straw gas.  Continuing ..."
-         << endl;
-  }
-
-  // Sensitive detector object for the straw sense wires.
-  G4VSensitiveDetector *senseWireSD = G4SDManager::GetSDMpointer()->
-    FindSensitiveDetector(SensitiveDetectorName::TrackerSWires());
-
-  // Sensitive detector object for the straw walls.
-  G4VSensitiveDetector *strawWallSD = G4SDManager::GetSDMpointer()->
-    FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
-
-  // Place the straws into the panel envelope.
-  for ( std::vector<Layer>::const_iterator i=panel.getLayers().begin(); i != panel.getLayers().end(); ++i ){
-
-    Layer const& lay(*i);
-
-    for ( std::vector<Straw const*>::const_iterator j=lay.getStraws().begin();
-          j != lay.getStraws().end(); ++j ){
-
-      Straw const&       straw(**j);
-      StrawDetail const& detail(straw.getDetail());
-
-      if (_verbosityLevel>2) {
-        cout << __func__ << " constructing straw "
-             << straw.id().getStraw()
-             << " id: "
-             << straw.id()
-             << " with detailIndex of: "
-             << straw.detailIndex()
-             << endl;
-      }
-
-      if ( _verbosityLevel > 2 ){
-        cout << "Detail for: " << straw.id() << " " << detail.Id()            << endl;
-        cout << "           outerTubsParams: " << detail.getOuterTubsParams() << detail.gasMaterialName()             << endl;
-        cout << "           wallMother:      " << detail.wallMother()         << detail.wallMotherMaterialName()      << endl;
-        cout << "           wallOuterMetal:  " << detail.wallOuterMetal()     << detail.wallOuterMetalMaterialName()  << endl;
-        cout << "           wallCore         " << detail.wallCore()           << detail.wallCoreMaterialName()        << endl;
-        cout << "           wallInnerMetal1: " << detail.wallInnerMetal1()    << detail.wallInnerMetal1MaterialName() << endl;
-        cout << "           wallInnerMetal2: " << detail.wallInnerMetal2()    << detail.wallInnerMetal2MaterialName() << endl;
-        cout << "           wireMother:      " << detail.wireMother()         << detail.wireMotherMaterialName()      << endl;
-        cout << "           wirePlate:       " << detail.wirePlate()          << detail.wirePlateMaterialName()       << endl;
-        cout << "           wireCore:        " << detail.wireCore()           << detail.wireCoreMaterialName()        << endl;
-      }
-
-      // To make graphical debugging less busy, create only a subset of the straws.
-      if ( partialStraws ){
-        if ( straw.id().getStraw()%8 != 0 && straw.id().getStraw() !=47 ) continue;
-      }
-
-      // Mid point of the straw in Mu2e coordinates.
-      CLHEP::Hep3Vector const& pos(straw.getMidPoint());
-
-      // Mid point of the straw, within the panel envelope.
-      double r = (CLHEP::Hep3Vector( pos.x(), pos.y(), 0.)).mag();
-      CLHEP::Hep3Vector mid = r*unit;
-      mid.setZ(side*(pos.z() - zPanel));
-
-      int copyNo=straw.index().asInt();
-      bool edgeVisible(true);
-
-      // The enclosing volume for the straw is made of gas.  The walls and the wire will be placed inside.
-      VolumeInfo strawVol =  nestTubs( straw.name("TTrackerStrawGas_"),
-                                       detail.getOuterTubsParams(),
-                                       findMaterialOrThrow(detail.gasMaterialName()),
-                                       panelRotation,
-                                       mid,
-                                       pnl0Info.logical,
-                                       copyNo,
-                                       strawVisible,
-                                       G4Colour::Red(),
-                                       strawSolid,
-                                       edgeVisible,
-                                       place,
-                                       _doSurfaceCheck
-                                       );
-
-      if (strawSD) {
-        strawVol.logical->SetSensitiveDetector(strawSD);
-      }
-
-      // Wall has 4 layers; the three metal layers sit inside the plastic layer.
-      // The plastic layer sits inside the gas.
-      VolumeInfo wallVol =  nestTubs( straw.name("TTrackerStrawWall_"),
-                                      detail.wallMother(),
-                                      findMaterialOrThrow(detail.wallMaterialName()),
-                                      noRotation,
-                                      zeroVector,
-                                      strawVol.logical,
-                                      copyNo,
-                                      strawLayeringVisible,
-                                      G4Colour::Green(),
-                                      strawLayeringSolid,
-                                      edgeVisible,
-                                      place,
-                                      _doSurfaceCheck
-                                      );
-
-
-      VolumeInfo outerMetalVol =  nestTubs( straw.name("TTrackerStrawWallOuterMetal_"),
-                                            detail.wallOuterMetal(),
-                                            findMaterialOrThrow(detail.wallOuterMetalMaterialName()),
-                                            noRotation,
-                                            zeroVector,
-                                            wallVol.logical,
-                                            copyNo,
-                                            strawLayeringVisible,
-                                            G4Colour::Blue(),
-                                            strawLayeringSolid,
-                                            edgeVisible,
-                                            place,
-                                            _doSurfaceCheck
-                                            );
-
-
-      VolumeInfo innerMetal1Vol =  nestTubs( straw.name("TTrackerStrawWallInnerMetal1_"),
-                                             detail.wallInnerMetal1(),
-                                             findMaterialOrThrow(detail.wallInnerMetal1MaterialName()),
-                                             noRotation,
-                                             zeroVector,
-                                             wallVol.logical,
-                                             copyNo,
-                                             strawLayeringVisible,
-                                             G4Colour::Blue(),
-                                             strawLayeringSolid,
-                                             edgeVisible,
-                                             place,
-                                             _doSurfaceCheck
-                                             );
-
-      VolumeInfo innerMetal2Vol =  nestTubs( straw.name("TTrackerStrawWallInnerMetal2_"),
-                                             detail.wallInnerMetal2(),
-                                             findMaterialOrThrow(detail.wallInnerMetal2MaterialName()),
-                                             noRotation,
-                                             zeroVector,
-                                             wallVol.logical,
-                                             copyNo,
-                                             strawLayeringVisible,
-                                             G4Colour::Blue(),
-                                             strawLayeringSolid,
-                                             edgeVisible,
-                                             place,
-                                             _doSurfaceCheck
-                                             );
-
-      VolumeInfo wireVol =  nestTubs( straw.name("TTrackerWireCore_"),
-                                      detail.wireMother(),
-                                      findMaterialOrThrow(detail.wireCoreMaterialName()),
-                                      noRotation,
-                                      zeroVector,
-                                      strawVol.logical,
-                                      copyNo,
-                                      strawLayeringVisible,
-                                      G4Colour::Green(),
-                                      strawLayeringSolid,
-                                      edgeVisible,
-                                      place,
-                                      _doSurfaceCheck
-                                      );
-
-      VolumeInfo platingVol =  nestTubs( straw.name("TTrackerWirePlate_"),
-                                         detail.wirePlate(),
-                                         findMaterialOrThrow(detail.wirePlateMaterialName()),
-                                         noRotation,
-                                         zeroVector,
-                                         wireVol.logical,
-                                         copyNo,
-                                         strawLayeringVisible,
-                                         G4Colour::Red(),
-                                         strawLayeringSolid,
-                                         edgeVisible,
-                                         place,
-                                         _doSurfaceCheck
-                                         );
-
-      if (senseWireSD) {
-        wireVol.logical->SetSensitiveDetector(senseWireSD);
-        platingVol.logical->SetSensitiveDetector(senseWireSD);
-      }
-
-      if (strawWallSD) {
-        wallVol.logical->SetSensitiveDetector(strawWallSD);
-        outerMetalVol.logical->SetSensitiveDetector(strawWallSD);
-        innerMetal1Vol.logical->SetSensitiveDetector(strawWallSD);
-        innerMetal2Vol.logical->SetSensitiveDetector(strawWallSD);
-      }
-
-    } // end loop over straws within a layer
-  } // end loop over layers
-
   // ***************************************
-  // We have now placed all the straws in the panel.
-  // Now we put in the so-called support structure.
+  // Now put in the straw panel already prepared
+  // ***************************************
+
+  G4VPhysicalVolume* physVol = new G4PVPlacement( 0, G4ThreeVector(0,0,0),
+						  strawPanel.logical,
+						  strawPanel.name,
+						  pnl0Info.logical,
+						  false,
+						  iPanel,
+						  false );
+  if ( _doSurfaceCheck ) {
+    checkForOverlaps( physVol, _config, _verbosityLevel>0);
+  }
+
+						 
+  // ***************************************
+   // Now we put in the so-called support structure.
   // A lot of this code is taken from the original preparePlaneSupports
   // function.  Many of the pieces here have an "upstream"
   // and "downstream" versions because of the way the code
@@ -1014,6 +816,330 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane, const int& iPane
 
 } // end preparePanel
 // *******************
+
+
+mu2e::VolumeInfo 
+mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
+
+ // ************************
+  // Now we put in the Straws!
+  // ************************
+
+  // What we are doing is building one set of straws that we'll use in
+  // all of the panels in all of the planes in all the world.
+
+
+  TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
+  SupportStructure const& sup     = _ttracker.getSupportStructure();
+
+  // Straw Panels are identical other than placement - so get required 
+  // properties from plane 0, panel 0.
+  Plane const& plane(_ttracker.getPlane(PlaneId(0)));
+  Panel const& panel(_ttracker.getPanel(PanelId(0,0)));
+
+  bool panelEnvelopeVisible = _config.getBool("ttracker.panelEnvelopeVisible",
+					      false);
+  bool panelEnvelopeSolid   = _config.getBool("ttracker.panelEnvelopeSolid",
+					      true );
+  bool strawVisible          = _config.getBool("ttracker.strawVisible",false);
+  bool strawSolid            = _config.getBool("ttracker.strawSolid",true);
+  bool strawLayeringVisible  = _config.getBool("ttracker.strawLayeringVisible",
+					       false);
+  bool strawLayeringSolid    = _config.getBool("ttracker.strawLayeringSolid",
+					       false);
+  bool partialStraws         = _config.getBool("ttracker.partialStraws",false);
+
+  // Azimuth of the centerline of a the panel enveleope: panelCenterPhi
+  // Upon construction and before placement, the panel envelope 
+  // occupies [0,phiMax].
+  double panelCenterPhi = panelHalfAzimuth();
+  double phiMax          = 2.*panelCenterPhi;  
+
+  if (_verbosityLevel>1) {
+    cout << __func__
+         << " preparing straw panel: "
+         << " panelCenterPhi "
+         << panelCenterPhi/M_PI*180.
+         << " panel center from the maker "
+         << panel.boxRzAngle()/M_PI*180.
+         << endl;
+  }
+
+  // Get information about the channel position and depth.
+  PlacedTubs const& chanUp(sup.innerChannelUpstream());
+
+  // Internally all panel envelopes are the same.
+  // Create one logical panel envelope but, for now, do not place it.
+  // Fill it with straws and then place it multiple times.
+  TubsParams panEnvParams(planeEnvelopeParams.innerRadius(),
+                          sup.innerChannelUpstream().tubsParams().outerRadius(),
+                          chanUp.tubsParams().zHalfLength(),
+                          0.,
+                          phiMax);
+
+  if (_verbosityLevel>0) {
+    cout << __func__
+         << " preparing straw panel: "
+         << " panel envelope panEnvParams: "
+         << panEnvParams.innerRadius()
+         << ", "
+         << panEnvParams.outerRadius()
+         << ", "
+         << panEnvParams.zHalfLength()
+         << ", "
+         << panEnvParams.phi0()/M_PI*180.
+         << ", "
+         << panEnvParams.phiMax()/M_PI*180.
+         << endl;
+  }
+
+
+  G4Material* envelopeMaterial = findMaterialOrThrow(
+						_ttracker.envelopeMaterial());
+
+  VolumeInfo spnl0Info = nestTubs( "StrawPanelEnvelope",
+                                  panEnvParams,
+                                  envelopeMaterial,
+                                  noRotation,
+                                  zeroVector,
+                                  nullptr,               // logical volume - not needed since no placement.
+                                  0,                     // copyNo
+                                  panelEnvelopeVisible,
+                                  G4Colour::Magenta(),
+                                  panelEnvelopeSolid,
+                                  true,                  // edge visible
+                                  doNotPlace,
+                                  _doSurfaceCheck
+                                  );
+
+  // The rotation matrix that will place the straw inside the panel envelope.
+  // For straws on the upstream side of the support, the sign of the 
+  // X rotation was chosen to put the z axis of the straw volume to be 
+  // positive when going clockwise; this is the same convention used
+  // within the TTracker class.  For straws on the downstream side of 
+  // the support, the z axis of the straw volume is positive when going 
+  // counter-clockwise.  This won't be important since we never work
+  // in the straw-local coordinates within G4.
+
+  CLHEP::HepRotationZ pnlRz(-panelCenterPhi);
+  CLHEP::HepRotationX pnlRx(M_PI/2.);
+  G4RotationMatrix* panelRotation = _reg.add(G4RotationMatrix(pnlRx*pnlRz));
+
+  // The z of the center of the placed panel envelope, in Mu2e coordinates.
+  // This carries a sign, depending on upstream/downstream.
+  double zPanel(0.);
+  for ( int i=0; i<panel.nLayers(); ++i){
+    zPanel += panel.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
+  }
+  zPanel /= panel.nLayers();
+
+  // Is panel 0 on the upstream(+1) or downstream(-z) side of the plane.
+  double side = (zPanel-plane.origin().z()) > 0. ? -1. : 1.;
+
+  // A unit vector in the direction from the origin to the wire center within the panel envelope.
+  CLHEP::Hep3Vector unit( cos(panelCenterPhi), sin(panelCenterPhi), 0.);
+
+  // Sensitive detector object for the straw gas.
+  G4VSensitiveDetector *strawSD =
+    G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::TrackerGas());
+  if ( strawSD == nullptr ){
+    cout << __func__
+         << " Warning: there is no sensitive detector object for the straw gas.  Continuing ..."
+         << endl;
+  }
+
+  // Sensitive detector object for the straw sense wires.
+  G4VSensitiveDetector *senseWireSD = G4SDManager::GetSDMpointer()->
+    FindSensitiveDetector(SensitiveDetectorName::TrackerSWires());
+
+  // Sensitive detector object for the straw walls.
+  G4VSensitiveDetector *strawWallSD = G4SDManager::GetSDMpointer()->
+    FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
+
+  // Place the straws into the panel envelope.
+  for ( std::vector<Layer>::const_iterator i=panel.getLayers().begin(); i != panel.getLayers().end(); ++i ){
+
+    Layer const& lay(*i);
+
+    for ( std::vector<Straw const*>::const_iterator j=lay.getStraws().begin();
+          j != lay.getStraws().end(); ++j ){
+
+      Straw const&       straw(**j);
+      StrawDetail const& detail(straw.getDetail());
+
+      if (_verbosityLevel>2) {
+        cout << __func__ << " constructing straw "
+             << straw.id().getStraw()
+             << " id: "
+             << straw.id()
+             << " with detailIndex of: "
+             << straw.detailIndex()
+             << endl;
+      }
+
+      if ( _verbosityLevel > 2 ){
+        cout << "Detail for: " << straw.id() << " " << detail.Id()            << endl;
+        cout << "           outerTubsParams: " << detail.getOuterTubsParams() << detail.gasMaterialName()             << endl;
+        cout << "           wallMother:      " << detail.wallMother()         << detail.wallMotherMaterialName()      << endl;
+        cout << "           wallOuterMetal:  " << detail.wallOuterMetal()     << detail.wallOuterMetalMaterialName()  << endl;
+        cout << "           wallCore         " << detail.wallCore()           << detail.wallCoreMaterialName()        << endl;
+        cout << "           wallInnerMetal1: " << detail.wallInnerMetal1()    << detail.wallInnerMetal1MaterialName() << endl;
+        cout << "           wallInnerMetal2: " << detail.wallInnerMetal2()    << detail.wallInnerMetal2MaterialName() << endl;
+        cout << "           wireMother:      " << detail.wireMother()         << detail.wireMotherMaterialName()      << endl;
+        cout << "           wirePlate:       " << detail.wirePlate()          << detail.wirePlateMaterialName()       << endl;
+        cout << "           wireCore:        " << detail.wireCore()           << detail.wireCoreMaterialName()        << endl;
+      }
+
+      // To make graphical debugging less busy, create only a subset of the straws.
+      if ( partialStraws ){
+        if ( straw.id().getStraw()%8 != 0 && straw.id().getStraw() !=47 ) continue;
+      }
+
+      // Mid point of the straw in Mu2e coordinates.
+      CLHEP::Hep3Vector const& pos(straw.getMidPoint());
+
+      // Mid point of the straw, within the panel envelope.
+      double r = (CLHEP::Hep3Vector( pos.x(), pos.y(), 0.)).mag();
+      CLHEP::Hep3Vector mid = r*unit;
+      mid.setZ(side*(pos.z() - zPanel));
+
+      int copyNo=straw.index().asInt();
+      bool edgeVisible(true);
+
+      // The enclosing volume for the straw is made of gas.  The walls and the wire will be placed inside.
+      VolumeInfo strawVol =  nestTubs( straw.name("TTrackerStrawGas_"),
+                                       detail.getOuterTubsParams(),
+                                       findMaterialOrThrow(detail.gasMaterialName()),
+                                       panelRotation,
+                                       mid,
+                                       spnl0Info.logical,
+                                       copyNo,
+                                       strawVisible,
+                                       G4Colour::Red(),
+                                       strawSolid,
+                                       edgeVisible,
+                                       place,
+                                       _doSurfaceCheck
+                                       );
+
+      if (strawSD) {
+        strawVol.logical->SetSensitiveDetector(strawSD);
+      }
+
+      // Wall has 4 layers; the three metal layers sit inside the plastic layer.
+      // The plastic layer sits inside the gas.
+      VolumeInfo wallVol =  nestTubs( straw.name("TTrackerStrawWall_"),
+                                      detail.wallMother(),
+                                      findMaterialOrThrow(detail.wallMaterialName()),
+                                      noRotation,
+                                      zeroVector,
+                                      strawVol.logical,
+                                      copyNo,
+                                      strawLayeringVisible,
+                                      G4Colour::Green(),
+                                      strawLayeringSolid,
+                                      edgeVisible,
+                                      place,
+                                      _doSurfaceCheck
+                                      );
+
+
+      VolumeInfo outerMetalVol =  nestTubs( straw.name("TTrackerStrawWallOuterMetal_"),
+                                            detail.wallOuterMetal(),
+                                            findMaterialOrThrow(detail.wallOuterMetalMaterialName()),
+                                            noRotation,
+                                            zeroVector,
+                                            wallVol.logical,
+                                            copyNo,
+                                            strawLayeringVisible,
+                                            G4Colour::Blue(),
+                                            strawLayeringSolid,
+                                            edgeVisible,
+                                            place,
+                                            _doSurfaceCheck
+                                            );
+
+
+      VolumeInfo innerMetal1Vol =  nestTubs( straw.name("TTrackerStrawWallInnerMetal1_"),
+                                             detail.wallInnerMetal1(),
+                                             findMaterialOrThrow(detail.wallInnerMetal1MaterialName()),
+                                             noRotation,
+                                             zeroVector,
+                                             wallVol.logical,
+                                             copyNo,
+                                             strawLayeringVisible,
+                                             G4Colour::Blue(),
+                                             strawLayeringSolid,
+                                             edgeVisible,
+                                             place,
+                                             _doSurfaceCheck
+                                             );
+
+      VolumeInfo innerMetal2Vol =  nestTubs( straw.name("TTrackerStrawWallInnerMetal2_"),
+                                             detail.wallInnerMetal2(),
+                                             findMaterialOrThrow(detail.wallInnerMetal2MaterialName()),
+                                             noRotation,
+                                             zeroVector,
+                                             wallVol.logical,
+                                             copyNo,
+                                             strawLayeringVisible,
+                                             G4Colour::Blue(),
+                                             strawLayeringSolid,
+                                             edgeVisible,
+                                             place,
+                                             _doSurfaceCheck
+                                             );
+
+      VolumeInfo wireVol =  nestTubs( straw.name("TTrackerWireCore_"),
+                                      detail.wireMother(),
+                                      findMaterialOrThrow(detail.wireCoreMaterialName()),
+                                      noRotation,
+                                      zeroVector,
+                                      strawVol.logical,
+                                      copyNo,
+                                      strawLayeringVisible,
+                                      G4Colour::Green(),
+                                      strawLayeringSolid,
+                                      edgeVisible,
+                                      place,
+                                      _doSurfaceCheck
+                                      );
+
+      VolumeInfo platingVol =  nestTubs( straw.name("TTrackerWirePlate_"),
+                                         detail.wirePlate(),
+                                         findMaterialOrThrow(detail.wirePlateMaterialName()),
+                                         noRotation,
+                                         zeroVector,
+                                         wireVol.logical,
+                                         copyNo,
+                                         strawLayeringVisible,
+                                         G4Colour::Red(),
+                                         strawLayeringSolid,
+                                         edgeVisible,
+                                         place,
+                                         _doSurfaceCheck
+                                         );
+
+      if (senseWireSD) {
+        wireVol.logical->SetSensitiveDetector(senseWireSD);
+        platingVol.logical->SetSensitiveDetector(senseWireSD);
+      }
+
+      if (strawWallSD) {
+        wallVol.logical->SetSensitiveDetector(strawWallSD);
+        outerMetalVol.logical->SetSensitiveDetector(strawWallSD);
+        innerMetal1Vol.logical->SetSensitiveDetector(strawWallSD);
+        innerMetal2Vol.logical->SetSensitiveDetector(strawWallSD);
+      }
+
+    } // end loop over straws within a layer
+  } // end loop over layers
+
+
+  // We have now placed all the straws in the panel.
+  return spnl0Info;
+} // end of prepareStrawPanel()
+  // ***************************************
 
 
 mu2e::VolumeInfo
@@ -1195,13 +1321,13 @@ mu2e::ConstructTTrackerDetail5::constructAxes(){
 // Here panels get added to plane
 // ******************************
 void
-mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(
-                                               int ipln,
-                                               VolumeInfo& plane,
-                                               VolumeInfo& baseEBKey,
-                                               VolumeInfo& baseEBKeyShield,
-                                               VolumeInfo& trackerMother,
-                                               double panelCenterPhi ){
+mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
+						   int ipln,
+						   VolumeInfo& plane,
+						   VolumeInfo& baseEBKey,
+						   VolumeInfo& baseEBKeyShield,
+						   VolumeInfo& trackerMother,
+						   double panelCenterPhi ){
 
   // panel EBKeys are placed inside the tracker mother volume as they
   // are outside the planes
@@ -1280,7 +1406,9 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(
            << endl;
     }
 
-    VolumeInfo placedPan = preparePanel( ipln, ipnl, plane, panelPosition, rotation );
+    VolumeInfo placedPan = preparePanel( ipln, ipnl, plane, 
+					 baseStrawPanel,
+					 panelPosition, rotation );
     // ostringstream disPanelName;
     // disPanelName << "Panel_" << ipln << "_" << ipnl;
     bool many(false);
@@ -1310,7 +1438,7 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(
 
     keyPhi0 = getWithinZeroTwoPi(keyPhi0);
 
-    bool willOveralp = false;
+    bool willOverlap = false;
 
     double keyNominalPhi0 =  getWithinZeroTwoPi(phimid + panel.getEBKeyPhiExtraRotation());
 
@@ -1324,10 +1452,10 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(
 
       if ( ( diffEdge1 < panel.getEBKeyParams().phiMax() ) ||
            ( diffEdge2 < panel.getEBKeyParams().phiMax() ) ) {
-        willOveralp = true;
+        willOverlap = true;
       }
 
-      if ( willOveralp && (_verbosityLevel > 0 ) ) {
+      if ( willOverlap && (_verbosityLevel > 0 ) ) {
         cout  << __func__
               << " Support Beam/key overalp, will skip the key: "
               << " plane: "
@@ -1351,14 +1479,14 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(
                << endl;
       }
 
-      if (willOveralp) break;
+      if (willOverlap) break;
 
     }
 
-    // override willOveralp
-    //willOveralp = false;
+    // override willOverlap
+    //willOverlap = false;
 
-    if (!willOveralp) {
+    if (!willOverlap) {
 
       CLHEP::HepRotationZ keyRotZ(keyPhi0);
       CLHEP::HepRotationY keyRotY(M_PI);
@@ -1440,6 +1568,8 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(
 } // end of addPanelsAndEBKeys 
 // ***************************
 
+
+
 double
 mu2e::ConstructTTrackerDetail5::panelHalfAzimuth(){
 
@@ -1448,36 +1578,6 @@ mu2e::ConstructTTrackerDetail5::panelHalfAzimuth(){
 
 }
 
-
-void mu2e::ConstructTTrackerDetail5::addPlaneSupports( std::vector<VolumeInfo>& supportsInfo, int ipln, VolumeInfo const& plnInfo ){
-
-  for ( auto& info : supportsInfo ){
-
-    if ( _verbosityLevel > 0 ) {
-      cout << "Plane Support: "
-           << info.name      << " "
-           << info.solid     << " "
-           << info.logical   << " "
-           << info.physical  << " "
-           << info.centerInParent << " "
-           << info.centerInWorld  << " "
-           << endl;
-    }
-
-    bool many(false);
-
-    info.physical = new G4PVPlacement(noRotation,
-                                      info.centerInParent,
-                                      info.logical,
-                                      info.name,
-                                      plnInfo.logical,
-                                      many,
-                                      ipln,
-                                      _doSurfaceCheck);
-
-  }
-
-} // end addPlaneSupports
 
 double mu2e::ConstructTTrackerDetail5::getWithinZeroTwoPi (double phi0) {
   phi0 = fmod(phi0,2.*M_PI);
