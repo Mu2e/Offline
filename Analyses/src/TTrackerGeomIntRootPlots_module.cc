@@ -143,6 +143,8 @@ namespace mu2e {
     _dirname(""),
     _file(0){
 
+      throw std::runtime_error("\n\nTTrackerGeomIntRootPlots module is very obsolete.\nIt corresponded to TTracker implementation from 2010 and was used to write doc-db doc 1166;\nPlease remove this line to run it if needed for historical or similar resons \n\n\n");
+
   }
 
   void TTrackerGeomIntRootPlots::beginJob( ){
