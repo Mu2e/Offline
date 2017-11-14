@@ -552,7 +552,7 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
   // a "panel."
 
   TubsParams panEnvParams = _ttracker.getPanelEnvelopeParams();
-  SupportStructure const& sup     = _ttracker.getSupportStructure();
+  //  SupportStructure const& sup     = _ttracker.getSupportStructure();
 
   // Panels are identical other than placement - so get required properties from plane 0, panel 0.
   Panel const& panel(_ttracker.getPanel(PanelId(iPlane,iPanel)));
@@ -632,7 +632,7 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
                                   envelopeMaterial,
                                   rot,
                                   pnlPosition,
-                                  thePlane.logical,               // logical volume - not needed since no placement.
+                                  thePlane.logical, // logical volume of plane
                                   0,                     // copyNo
                                   panelEnvelopeVisible,
                                   G4Colour::Magenta(),
@@ -657,160 +657,6 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
     checkForOverlaps( physVol, _config, _verbosityLevel>0);
   }
 
-						 
-  // ***************************************
-   // Now we put in the so-called support structure.
-  // A lot of this code is taken from the original preparePlaneSupports
-  // function.  Many of the pieces here have an "upstream"
-  // and "downstream" versions because of the way the code
-  // for v3 of the TTracker was developed.  We only need one
-  // or the other for v5, so arbitrarily choose downstream.
-  // In the future, when we retire the ability to choose
-  // v3 of the ttracker, we can simplify the support structure class.
-  // ***************************************
-
-  bool supportVisible = _config.getBool("ttracker.supportVisible",false);
-  bool supportSolid   = _config.getBool("ttracker.supportSolid",true);
-
-  // Many parts of the support structure are G4Tubs objects.
-  G4Colour  lightBlue (0.0, 0.0, 0.75);
-  std::vector<VHelper> vols;
-  vols.reserve(6);
-
-  vols.push_back( VHelper(sup.centerPlate(),         lightBlue,           "",  
-			  supportVisible ));
-  vols.push_back( VHelper(sup.outerRingDownstream(), G4Colour::Green(),   "",  
-			  supportVisible ));
-  vols.push_back( VHelper(sup.coverDownstream(),     G4Colour::Cyan(),    "", 
-			  supportVisible ));
-  vols.push_back( VHelper(sup.gasDownstream(),       G4Colour::Magenta(), "", 
-			  supportVisible ));
-  vols.push_back( VHelper(sup.g10Downstream(),         G4Colour::Blue(),   
-			  sup.gasDownstream().name(),   supportVisible ));
-  vols.push_back( VHelper(sup.cuDownstream(),          G4Colour::Yellow(),  
-			  sup.gasDownstream().name(),   supportVisible ));
-
-
-  for ( auto& vol : vols ){
-
-    PlacedTubs const& part = vol.part;
-
-    if ( _verbosityLevel > 0 ) {
-      cout << "Building panel support element " << part.name() 
-	   << ", with params: " << part.tubsParams() 
-	   << ", at position:  " << part.position() << endl;
-    }
-
-
-    if ( vol.motherName.empty() ){
-
-      // These volumes are top level volumes of the support structure 
-      // and will be placed inside each panel envelope.
-      ostringstream aName;
-      aName << part.name() << "_" << iPlane << "_" << iPanel;
-      vol.info = nestTubs( aName.str(),
-			   part.tubsParams(),
-			   findMaterialOrThrow(part.materialName()),
-			   noRotation,
-			   part.position(),
-			   pnl0Info.logical,
-			   0,
-			   vol.visible,
-			   vol.colour,
-			   supportSolid,
-			   _forceAuxEdgeVisible,
-			   place,
-			   _doSurfaceCheck
-			   );
-
-    } else{
-
-      // These volumes are lower level volumes and are placed, at this time, 
-      // inside their parents.
-      ostringstream aName;
-      aName << part.name() << "_" << iPlane << "_" << iPanel;
-
-      G4LogicalVolume* motherLogical = findMotherLogical( vols, 
-							  vol.motherName);
-
-      vol.info = nestTubs( aName.str(),
-                           part.tubsParams(),
-                           findMaterialOrThrow(part.materialName()),
-                           noRotation,
-                           part.position(),
-                           motherLogical,
-                           0,
-                           vol.visible,
-                           vol.colour,
-                           supportSolid,
-                           _forceAuxEdgeVisible,
-                           place,
-                           _doSurfaceCheck
-                           );
-    }
-  } // end loop over support vols
-
-  {  // Now add the inner ring.
-
-    PlacedTubs const& ring     = sup.innerRing();
-    PlacedTubs const& chanDown = sup.innerChannelDownstream();
-
-    // Parameters of the polycone.
-    const int n(6);
-    double z[n];
-    double rIn[n];
-    double rOut[n];
-
-    // I am not sure if I am allowed to have two coincident zplanes so slightly
-    // slope the edges of the channel.
-    double eps=0.1;
-
-    z[0]    = -ring.tubsParams().zHalfLength();
-    z[1]    = chanDown.position().z()  - chanDown.tubsParams().zHalfLength() - eps;
-    z[2]    = chanDown.position().z() - chanDown.tubsParams().zHalfLength();
-    z[3]    = chanDown.position().z() + chanDown.tubsParams().zHalfLength();
-    z[4]    = chanDown.position().z() + chanDown.tubsParams().zHalfLength() + eps;
-    z[5]    = ring.tubsParams().zHalfLength();
-
-    rIn[0]  = ring.tubsParams().innerRadius();
-    rIn[1]  = ring.tubsParams().innerRadius();
-    rIn[2]  = chanDown.tubsParams().outerRadius();
-    rIn[3]  = chanDown.tubsParams().outerRadius();
-    rIn[4]  = ring.tubsParams().innerRadius();
-    rIn[5]  = ring.tubsParams().innerRadius();
-
-    for ( int i=0; i<n; ++i){
-      rOut[i] = ring.tubsParams().outerRadius();
-    }
-
-    ostringstream aName;
-    aName << ring.name() << "_" << iPlane << "_" << iPanel;
-
-    VolumeInfo innerRingInfo( aName.str(), ring.position(), zeroVector );
-    innerRingInfo.solid = new G4Polycone( ring.name(),
-                                          0.,
-                                          panEnvParams.phiMax(),
-                                          n,
-                                          z,
-                                          rIn,
-                                          rOut);
-
-    finishNesting( innerRingInfo,
-                   findMaterialOrThrow(ring.materialName()),
-                   noRotation,
-                   zeroVector,
-                   pnl0Info.logical,
-                   0,
-                   supportVisible,
-                   G4Colour::Red(),
-                   supportSolid,
-                   _forceAuxEdgeVisible,
-                   place,
-                   false
-                   );
-
-  }
-  // Did the inner ring, now we've got it all for the panel!
 
   return pnl0Info;
 
@@ -829,7 +675,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   // all of the panels in all of the planes in all the world.
 
 
-  TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
+  //  TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
   SupportStructure const& sup     = _ttracker.getSupportStructure();
 
   // Straw Panels are identical other than placement - so get required 
@@ -853,7 +699,6 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   // Upon construction and before placement, the panel envelope 
   // occupies [0,phiMax].
   double panelCenterPhi = panelHalfAzimuth();
-  double phiMax          = 2.*panelCenterPhi;  
 
   if (_verbosityLevel>1) {
     cout << __func__
@@ -865,17 +710,17 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
          << endl;
   }
 
-  // Get information about the channel position and depth.
-  PlacedTubs const& chanUp(sup.innerChannelUpstream());
 
   // Internally all panel envelopes are the same.
   // Create one logical panel envelope but, for now, do not place it.
   // Fill it with straws and then place it multiple times.
-  TubsParams panEnvParams(planeEnvelopeParams.innerRadius(),
-                          sup.innerChannelUpstream().tubsParams().outerRadius(),
-                          chanUp.tubsParams().zHalfLength(),
-                          0.,
-                          phiMax);
+  //  TubsParams panEnvParams(planeEnvelopeParams.innerRadius(),
+  //                          sup.innerChannelUpstream().tubsParams().outerRadius(),
+  //                          chanUp.tubsParams().zHalfLength(),
+  //                          0.,
+  //                          phiMax);
+
+  TubsParams panEnvParams = _ttracker.getPanelEnvelopeParams();
 
   if (_verbosityLevel>0) {
     cout << __func__
@@ -1137,6 +982,214 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
 
 
   // We have now placed all the straws in the panel.
+
+
+						 
+  // ***************************************
+   // Now we put in the so-called support structure.
+  // A lot of this code is taken from the original preparePlaneSupports
+  // function.  Many of the pieces here have an "upstream"
+  // and "downstream" versions because of the way the code
+  // for v3 of the TTracker was developed.  We only need one
+  // or the other for v5, so arbitrarily choose downstream.
+  // In the future, when we retire the ability to choose
+  // v3 of the ttracker, we can simplify the support structure class.
+  // ***************************************
+
+  bool supportVisible = _config.getBool("ttracker.supportVisible",false);
+  bool supportSolid   = _config.getBool("ttracker.supportSolid",true);
+
+  // Many parts of the support structure are G4Tubs objects.
+  G4Colour  lightBlue (0.0, 0.0, 0.75);
+  std::vector<VHelper> vols;
+  vols.reserve(6);
+
+  vols.push_back( VHelper(sup.centerPlate(),         lightBlue,           "",  
+			  supportVisible ));
+  vols.push_back( VHelper(sup.outerRingDownstream(), G4Colour::Green(),   "",  
+			  supportVisible ));
+  vols.push_back( VHelper(sup.coverDownstream(),     G4Colour::Cyan(),    "", 
+			  supportVisible ));
+  vols.push_back( VHelper(sup.gasDownstream(),       G4Colour::Magenta(), "", 
+			  supportVisible ));
+  vols.push_back( VHelper(sup.g10Downstream(),         G4Colour::Blue(),   
+			  sup.gasDownstream().name(),   supportVisible ));
+  vols.push_back( VHelper(sup.cuDownstream(),          G4Colour::Yellow(),  
+			  sup.gasDownstream().name(),   supportVisible ));
+
+
+  for ( auto& vol : vols ){
+
+    PlacedTubs const& part = vol.part;
+
+    if ( _verbosityLevel > 0 ) {
+      cout << "Building panel support element " << part.name() 
+	   << ", with params: " << part.tubsParams() 
+	   << ", at position:  " << part.position() << endl;
+    }
+
+
+    if ( vol.motherName.empty() ){
+
+      // These volumes are top level volumes of the support structure 
+      // and will be placed inside each panel envelope.
+      ostringstream aName;
+      aName << part.name();
+      vol.info = nestTubs( aName.str(),
+			   part.tubsParams(),
+			   findMaterialOrThrow(part.materialName()),
+			   noRotation,
+			   part.position(),
+			   spnl0Info.logical,
+			   0,
+			   vol.visible,
+			   vol.colour,
+			   supportSolid,
+			   _forceAuxEdgeVisible,
+			   place,
+			   _doSurfaceCheck
+			   );
+
+    } else{
+
+      // These volumes are lower level volumes and are placed, at this time, 
+      // inside their parents.
+      ostringstream aName;
+      aName << part.name();
+
+      G4LogicalVolume* motherLogical = findMotherLogical( vols, 
+							  vol.motherName);
+
+      vol.info = nestTubs( aName.str(),
+                           part.tubsParams(),
+                           findMaterialOrThrow(part.materialName()),
+                           noRotation,
+                           part.position(),
+                           motherLogical,
+                           0,
+                           vol.visible,
+                           vol.colour,
+                           supportSolid,
+                           _forceAuxEdgeVisible,
+                           place,
+                           _doSurfaceCheck
+                           );
+    }
+  } // end loop over support vols
+
+  {  // Now add the inner ring.
+
+    PlacedTubs const& ring     = sup.innerRing();
+    PlacedTubs const& chanDown = sup.innerChannelDownstream();
+
+    // Parameters of the polycone.
+    const int n(6);
+    double z[n];
+    double rIn[n];
+    double rOut[n];
+
+    // I am not sure if I am allowed to have two coincident zplanes so slightly
+    // slope the edges of the channel.
+    double eps=0.1;
+
+    z[0]    = -ring.tubsParams().zHalfLength();
+    z[1]    = chanDown.position().z()  - chanDown.tubsParams().zHalfLength() - eps;
+    z[2]    = chanDown.position().z() - chanDown.tubsParams().zHalfLength();
+    z[3]    = chanDown.position().z() + chanDown.tubsParams().zHalfLength();
+    z[4]    = chanDown.position().z() + chanDown.tubsParams().zHalfLength() + eps;
+    z[5]    = ring.tubsParams().zHalfLength();
+
+    rIn[0]  = ring.tubsParams().innerRadius();
+    rIn[1]  = ring.tubsParams().innerRadius();
+    rIn[2]  = chanDown.tubsParams().outerRadius();
+    rIn[3]  = chanDown.tubsParams().outerRadius();
+    rIn[4]  = ring.tubsParams().innerRadius();
+    rIn[5]  = ring.tubsParams().innerRadius();
+
+    for ( int i=0; i<n; ++i){
+      rOut[i] = ring.tubsParams().outerRadius();
+    }
+
+    ostringstream aName;
+    aName << ring.name() << "_a";
+
+    // Inner ring is divided into three parts - two channels where the
+    // straws hit it, and a solid ring where they don't.  First
+    // part is from phi = 0 to first rib...
+    VolumeInfo innerRingInfoa( aName.str(), ring.position(), zeroVector );
+    double maxPhi1 = (sup.panelPhiRange() - sup.panelPhiRibs())/2.;
+    innerRingInfoa.solid = new G4Polycone( ring.name(),
+                                          0.,
+                                          maxPhi1,
+                                          n,
+                                          z,
+                                          rIn,
+                                          rOut);
+
+    finishNesting( innerRingInfoa,
+                   findMaterialOrThrow(ring.materialName()),
+                   noRotation,
+                   zeroVector,
+                   spnl0Info.logical,
+                   0,
+                   supportVisible,
+                   G4Colour::Red(),
+                   supportSolid,
+                   _forceAuxEdgeVisible,
+                   place,
+                   false
+                   );
+
+    // Second part is from second rib to phi = phiMax...
+    ostringstream bName;
+    bName << ring.name() << "_b";
+
+    VolumeInfo innerRingInfob( bName.str(), ring.position(), zeroVector );
+    innerRingInfob.solid = new G4Polycone( ring.name(),
+                                          maxPhi1+sup.panelPhiRibs(),
+                                          maxPhi1,
+                                          n,
+                                          z,
+                                          rIn,
+                                          rOut);
+
+    finishNesting( innerRingInfob,
+                   findMaterialOrThrow(ring.materialName()),
+                   noRotation,
+                   zeroVector,
+                   spnl0Info.logical,
+                   0,
+                   supportVisible,
+                   G4Colour::Red(),
+                   supportSolid,
+                   _forceAuxEdgeVisible,
+                   place,
+                   false
+                   );
+
+    // Now the third, solid part, from first rib to second rib.
+    ostringstream cName;
+    cName << ring.name() << "_c";
+    TubsParams middlePartParams ( ring.innerRadius(),ring.outerRadius(),
+				  ring.zHalfLength(), maxPhi1,
+				  sup.panelPhiRibs());
+    VolumeInfo ribRingPart = nestTubs( cName.str(),
+				       middlePartParams,
+				       findMaterialOrThrow(sup.outerRingDownstream().materialName()),
+				       noRotation,
+				       ring.position(),
+				       spnl0Info.logical,
+				       0,
+				       supportVisible,
+				       G4Colour::Red(),
+				       supportSolid,
+				       _forceAuxEdgeVisible,
+				       place,
+				       _doSurfaceCheck
+				       );
+  }
+  // Did the inner ring, now we've got it all for the panel!
+
   return spnl0Info;
 } // end of prepareStrawPanel()
   // ***************************************

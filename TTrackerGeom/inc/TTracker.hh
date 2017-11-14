@@ -98,6 +98,10 @@ namespace mu2e {
       return _planes.at(pnlid.getPlane()).getPanel(pnlid);
     }
 
+    const std::vector<double>& getManifoldHalfLengths () const{
+      return _manifoldHalfLengths;
+    }
+
     double panelOffset() const { return _panelZOffset; }
 
     const Layer& getLayer ( const LayerId& lid ) const{
@@ -227,10 +231,15 @@ namespace mu2e {
     // There will be pointers to the objects in this container.
     std::deque<Straw>  _allStraws;
 
+    // Deprecated: part of the ancient MECO TTracker design.  
+    // A few vestiges not yet removed.
+    std::vector<Manifold> _allManifolds;
+
     // Outer envelope that holds the new style support structure.
     PlacedTubs _mother;
 
-    // The envelope that holds all of the planes in the tracker, including the plane supports.
+    // The envelope that holds all of the planes in the tracker, 
+    // including the plane supports.
     TubsParams _innerTrackerEnvelopeParams;
 
     // The envelope that holds all of the pieces in one plane, including supports.
@@ -250,6 +259,9 @@ namespace mu2e {
     // only relevant for _supportModel == "detailedv0".
     SupportStructure _supportStructure;
 
+    // All manifolds are the same shape.
+    // Deprecated: these will go away soon.
+    std::vector<double> _manifoldHalfLengths;
 
     // Inner radius of inside edge of innermost straw.
     double _envelopeInnerRadius;

@@ -47,7 +47,7 @@ namespace mu2e {
     void makePlane( PlaneId planeId );
     void makePanel( const PanelId& panelId, Plane& plane );
     void makeLayer ( const LayerId& layId,  Panel& panel );
-    //    void makeManifolds( const PanelId& panelId);
+    void makeManifolds( const PanelId& panelId);
 
     void computeStrawHalfLengths();
     void computePanelBoxParams(Panel& panel, Plane& plane);

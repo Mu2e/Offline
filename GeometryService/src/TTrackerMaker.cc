@@ -588,7 +588,7 @@ namespace mu2e {
       throw cet::exception("GEOM")  << "Planes are too close \n";
     }
 
-    //    makeManifolds( plnId );
+    makeManifolds( plnId );
 
     double strawSpacing = _strawGap+2.*_strawOuterRadius;
 
@@ -842,53 +842,53 @@ namespace mu2e {
 //std::cout << "<-<-<- makeLayer\n";
   } // end TTrackerMaker::makeLayer
 
-//   void TTrackerMaker::makeManifolds( const PanelId& plnId){
-// //std::cout << "->->-> makeManifolds\n";
+   void TTrackerMaker::makeManifolds( const PanelId& plnId){
+ //std::cout << "->->-> makeManifolds\n";
 
-//     if ( _panelsPerPlane != 4 && _panelsPerPlane != 6 ) {
-//       throw cet::exception("GEOM")
-//         << "This code only knows how to do 4 or 6 panels per plane.\n";
-//     }
+     if ( _panelsPerPlane != 4 && _panelsPerPlane != 6 ) {
+       throw cet::exception("GEOM")
+         << "This code only knows how to do 4 or 6 panels per plane.\n";
+     }
 
-// //    double phi = _tt->getPlane(plnId.getPlane()).rotation();
-// //    CLHEP::HepRotationZ RZ(phi);
-
-
-//     // manifold objects are not used for now...
-
-//     for ( int i=0; i<_manifoldsPerEnd; ++i){
-
-//       // First compute everything in their nominal positions: panel 0, right ?
-//       double x0 = _envelopeInnerRadius +
-//         _strawsPerManifold*_strawOuterRadius +
-//         _manifoldHalfLengths.at(0);
-
-//       double y0 = _tt->_strawDetails.at(i).halfLength() + _manifoldHalfLengths.at(2);
-
-//       double z0 = ( _supportHalfThickness + _manifoldHalfLengths.at(2) );
-//       //if ( plnId.getPanel() <= 1 ) z0 = -z0; // is this correct for the 6 panels?
-//       // why not *_panelZSide.at(plnId.getPanel())
-
-//       z0 = z0*panelZSide(plnId.getPanel(),plnId.getPlane());
-
-//       // is the above assuming correct Z? why not plnId.getPanel()%2?
-//       // are manifolds ever used?
-//       // is it correct at all? I mean the origin? It is always the same for each plane...
-//       // x never changes
-
-//       CLHEP::Hep3Vector origin(x0,y0,z0);
-
-//       //       cout << "Manifold plane, panel, origin, length[0] :" <<
-//       //         _tt->getPlane(plnId.getPlane()).id() << ", " <<
-//       //         plnId.getPanel() << ", " <<
-//       //         origin << ", " << _manifoldHalfLengths.at(0) <<endl;
+ //    double phi = _tt->getPlane(plnId.getPlane()).rotation();
+ //    CLHEP::HepRotationZ RZ(phi);
 
 
-//       _tt->_allManifolds.push_back( Manifold( origin, _manifoldHalfLengths) );
-//     }
+     // manifold objects are not used for now...
 
-// //std::cout << "<-<-<- makeManifolds\n";
-//   }
+     for ( int i=0; i<_manifoldsPerEnd; ++i){
+
+       // First compute everything in their nominal positions: panel 0, right ?
+       double x0 = _envelopeInnerRadius +
+         _strawsPerManifold*_strawOuterRadius +
+         _manifoldHalfLengths.at(0);
+
+       double y0 = _tt->_strawDetails.at(i).halfLength() + _manifoldHalfLengths.at(2);
+
+       double z0 = ( _supportHalfThickness + _manifoldHalfLengths.at(2) );
+       //if ( plnId.getPanel() <= 1 ) z0 = -z0; // is this correct for the 6 panels?
+       // why not *_panelZSide.at(plnId.getPanel())
+
+       z0 = z0*panelZSide(plnId.getPanel(),plnId.getPlane());
+
+       // is the above assuming correct Z? why not plnId.getPanel()%2?
+       // are manifolds ever used?
+       // is it correct at all? I mean the origin? It is always the same for each plane...
+       // x never changes
+
+       CLHEP::Hep3Vector origin(x0,y0,z0);
+
+       //       cout << "Manifold plane, panel, origin, length[0] :" <<
+       //         _tt->getPlane(plnId.getPlane()).id() << ", " <<
+       //         plnId.getPanel() << ", " <<
+       //         origin << ", " << _manifoldHalfLengths.at(0) <<endl;
+
+
+       _tt->_allManifolds.push_back( Manifold( origin, _manifoldHalfLengths) );
+     }
+
+ //std::cout << "<-<-<- makeManifolds\n";
+   }
 
 
 // ======= Station view makers ============
@@ -1912,19 +1912,31 @@ namespace mu2e {
   // Envelope that holds one plane ("TTrackerPlaneEnvelope")
   void TTrackerMaker::computePlaneEnvelope(){
 
-    // Only the detailed model is supported now
-    if ( _supportModel == SupportModel::detailedv0 ){
+    if ( _supportModel == SupportModel::simple ){
+      double halfThick = _tt->_supportParams.halfThickness() + 
+	2.*_tt->_manifoldHalfLengths[2];
+      _tt->_planeEnvelopeParams = TubsParams( _tt->_envelopeInnerRadius,
+					      _tt->_supportParams.outerRadius(),
+					      halfThick);
+    } else if ( _supportModel == SupportModel::detailedv0 ){
+      // This is new for version 5, its existence doesn't affect earlier 
+      // versions.
       _tt->_panelEnvelopeParams = TubsParams( _envelopeInnerRadius,
                                                _outerRingOuterRadius,
                                                _innerRingHalfLength
 					      + _panelPadding,
 					      0., _panelPhi);
-      _tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
-                                               _outerRingOuterRadius,
-					      2.0 * (_innerRingHalfLength
-						     + _panelPadding ) 
-					      + _planePadding );
-      
+      if ( _ttVersion > 3 ) { 
+	_tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
+						_outerRingOuterRadius,
+						2.0 * (_innerRingHalfLength
+						       + _panelPadding ) 
+						+ _planePadding );
+      } else {
+	_tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
+						_outerRingOuterRadius,
+						_innerRingHalfLength);
+      } // end of if on version in assigning plane envelope params
     }else{
       throw cet::exception("GEOM")
         << "Unknown value of _supportModel in TTrackerMaker::computePlaneEnvelopeParams "
