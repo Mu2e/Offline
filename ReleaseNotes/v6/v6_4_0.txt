@@ -2,6 +2,16 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_4_0
 
+5) 	dnbrow01  14 November 2017
+	Had accidentally removed a setting for older versions of
+	TTracker when putting in corresponding setting for newer version.
+	Restored the old version with a switch for the new version.
+	Also include the updated new TTracker with the updated inner ring.
+	modified:   GeometryService/inc/TTrackerMaker.hh
+	modified:   GeometryService/src/TTrackerMaker.cc
+	modified:   Mu2eG4/src/ConstructTTrackerDetail5.cc
+	modified:   TTrackerGeom/inc/TTracker.hh
+
 4)      dnbrow01  12 November 2017
 	Improve	  memory footprint by reusing sets of straws among panels.
 	Rationalize some function and object naming.  Prepare for use
