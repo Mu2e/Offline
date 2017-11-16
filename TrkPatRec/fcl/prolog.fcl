@@ -11,83 +11,10 @@ FitDir : {
   downstream : 0
   upstream : 1
 }
-# Hit Filters; these should be in the same package as the modules FIXME!
-FSHPreStereo  : {
-  module_type : FlagStrawHits
-  StrawHitPositionCollectionTag : ""
-  maximumEnergy : 0.01
-  UseCaloCluster           : false
-  UseCaloClusterXYPosition : false
-  CaloClusterMinE          : 50.
-  CaloClusterMinSize       : 2
-  CaloClusterMinDt         : -40
-  CaloClusterMaxDt         : 40
-  pitchAngle               : 0.67   # mean pitch for CE
-  beta                     : 1.
-  dtOffset                 : @local::TrackCaloMatching.DtOffset
-}
-
-FlagStrawHits  : {
-  module_type : FlagStrawHits
-  maximumEnergy : 0.0035
-  UseCaloCluster           : false
-  UseCaloClusterXYPosition : false
-  CaloClusterMinE          : 50.
-  CaloClusterMinSize       : 2
-  CaloClusterMinDt         : -40
-  CaloClusterMaxDt         : 40
-  pitchAngle               : 0.67   # mean pitch for CE
-  beta                     : 1.
-  dtOffset                 : @local::TrackCaloMatching.DtOffset
-}
-FlagBkgHits : {
-  module_type : FlagBkgHits2
-  UseBkgMVA : true
-  BkgMVA : { MVAWeights : "TrkFilters/data/BkgMVA.weights.xml" }
-  MinActiveHits : 3
-  MinStereoHits : 0
-  MinNPlanes : 2
-  MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
-  BkgMVACut : 0.5
-  debugLevel : 0
-
-  Clusterer : 2
-  TLTClusterer : { 
-    MaxNIterations : 10
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection"]
-  }
-  TNTClusterer : { 
-    MaxNIterations : 10
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection"]
-  }
-  TNTBClusterer : { 
-    MaxNIterations : 1
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection"]
-  }
-}
-
 
 # time clustering is the 1st stage of track finding 
 TimeClusterFinder : {
-  module_type               : TimeClusterFinder2
+  module_type               : TimeClusterFinder
   MaxdPhi                   : 1.5
   HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits	    : ["Background"]
@@ -96,7 +23,7 @@ TimeClusterFinder : {
 }
 
 RobustHelixFinder : {
-   module_type		: RobustHelixFinder2
+   module_type		: RobustHelixFinder
    HitSelectionBits	    : ["Stereo","TimeDivision"]
    HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
    HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
@@ -106,7 +33,7 @@ RobustHelixFinder : {
 # we need both positive and negative helicity helix finders
 PosHelixFinder : {
   @table::RobustHelixFinder
-  RobustHelixFit2 : {
+  RobustHelixFit : {
     Helicity		: 1
     ntripleMax : 200    
   }
@@ -114,7 +41,7 @@ PosHelixFinder : {
 
 NegHelixFinder : {
   @table::RobustHelixFinder
-  RobustHelixFit2 : {
+  RobustHelixFit : {
     Helicity		: -1
     ntripleMax : 200    
   }
@@ -317,8 +244,6 @@ Tracking : {
 # the following should be independently sourced FIXME!
     @table::TrkHitReco.producers
     @table::TrackerMC.producers
-    FlagStrawHits   : @local::FlagStrawHits
-    FlagBkgHits	    : @local::FlagBkgHits
     TimeClusterFinder  : @local::TimeClusterFinder
     PosHelixFinder  : @local::PosHelixFinder
     NegHelixFinder  : @local::NegHelixFinder
@@ -353,7 +278,6 @@ Tracking : {
 # simulation sequence to create digis.  Currently just one module, but that might change
   DigiSim : [ makeSD ]
 # production sequence to prepare hits for tracking
-  #PrepareHits : [ makeSH, FSHPreStereo, MakeStrawHitPositions, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
   PrepareHits : [ makeSH, MakeStereoHits, FlagBkgHits ]
 # define standard outputs 
   Output : {

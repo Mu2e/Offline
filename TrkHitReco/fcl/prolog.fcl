@@ -1,7 +1,7 @@
 BEGIN_PROLOG
 #  straw hit making from straw digis
 makeSHfromSD : {
-  module_type : StrawHitsFromStrawDigis2
+  module_type : StrawHitReco
   StrawDigis : makeSD
   #UseCalorimeter : true
 }
@@ -14,10 +14,70 @@ MakeStrawHitPositions : {
 }
 
 MakeStereoHits : {
-  module_type : MakeStereoHits2
+  module_type : MakeStereoHits
   MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
   WriteStereoPairs : true
   maxChisquared : 20
+}
+
+# Hit Flagging these are producer modules
+   
+FlagStrawHits  : {
+  module_type : FlagStrawHits
+  maximumEnergy : 0.0035
+  UseCaloCluster           : false
+  UseCaloClusterXYPosition : false
+  CaloClusterMinE          : 50.
+  CaloClusterMinSize       : 2
+  CaloClusterMinDt         : -40
+  CaloClusterMaxDt         : 40
+  pitchAngle               : 0.67   # mean pitch for CE
+  beta                     : 1.
+  dtOffset                 : @local::TrackCaloMatching.DtOffset
+}
+
+FlagBkgHits : {
+
+  module_type : FlagBkgHits
+  UseBkgMVA : true
+  BkgMVA : { MVAWeights : "TrkHitReco/data/BkgMVA.weights.xml" }
+  MinActiveHits : 3
+  MinStereoHits : 0
+  MinNPlanes : 2
+  MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
+  BkgMVACut : 0.5
+  debugLevel : 0
+  Clusterer : 2
+  TLTClusterer : { 
+    MaxNIterations : 10
+    TimeDifference : 25.0
+    MaxDistance : 100.0
+    HitDistance : 5.0
+    SeedDistance : 25.0
+    MaxTimeDifference : 40.0
+    BackgroundMask : []
+    SignalMask : ["TimeSelection", "EnergySelection"]
+  }
+  TNTClusterer : { 
+    MaxNIterations : 10
+    TimeDifference : 25.0
+    MaxDistance : 100.0
+    HitDistance : 5.0
+    SeedDistance : 25.0
+    MaxTimeDifference : 40.0
+    BackgroundMask : []
+    SignalMask : ["TimeSelection", "EnergySelection"]
+  }
+  TNTBClusterer : { 
+    MaxNIterations : 1
+    TimeDifference : 25.0
+    MaxDistance : 100.0
+    HitDistance : 5.0
+    SeedDistance : 25.0
+    MaxTimeDifference : 40.0
+    BackgroundMask : []
+    SignalMask : ["TimeSelection", "EnergySelection"]
+  }
 }
 
 TrkHitReco : {
@@ -25,6 +85,8 @@ TrkHitReco : {
 	makeSH                    : { @table::makeSHfromSD              }
 	MakeStrawHitPositions     : { @table::MakeStrawHitPositions     } 
 	MakeStereoHits            : { @table::MakeStereoHits            }
+	FlagStrawwHits            : { @table::FlagStrawHits            }
+	FlagBkgHits		  : { @table::FlagBkgHits            }
     }
 }
 

@@ -1,5 +1,4 @@
 # -*- mode: tcl -*-
-#include "TrkPatRec/fcl/prolog.fcl"
 #
 # Define sequences for track based triggers.  The sequences for hit preparation
 # and the tracking modules configuration must preceede these and are defined elsewhere
@@ -53,6 +52,7 @@ Tracking.filters : {
   }
 #
 }
+
 # sequences for different trigger paths.  Early triggers are prescaled
 Tracking.Trigger : {
   TCFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter,  TCPrescale  ]

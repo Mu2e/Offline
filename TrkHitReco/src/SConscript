@@ -13,11 +13,14 @@ helper=mu2e_helper(env);
 
 rootlibs = env['ROOTLIBS']
 
-mainlib = helper.make_mainlib ( [ 'mu2e_TrackerConditions',
+mainlib = helper.make_mainlib ( [ 
+				  'mu2e_TrkReco',
+				  'mu2e_TrackerConditions',
 				  'mu2e_ConditionsService',
                                   'mu2e_GeometryService',
                                   'mu2e_RecoDataProducts',
                                   'mu2e_TrackerGeom',
+			          'mu2e_CalorimeterGeom',
                                   'mu2e_GlobalConstantsService',
                                   'mu2e_DataProducts',
                                   'mu2e_GeneralUtilities',
@@ -36,11 +39,13 @@ mainlib = helper.make_mainlib ( [ 'mu2e_TrackerConditions',
                                 ] )
 
 helper.make_plugins( [ mainlib,
+		       'mu2e_TrkReco',
 		       'mu2e_Mu2eUtilities',
                        'mu2e_ConditionsService',
                        'mu2e_TrackerConditions',
                        'mu2e_GeometryService',
                        'mu2e_TrackerGeom',
+		       'mu2e_CalorimeterGeom',
                        'mu2e_RecoDataProducts',
                        'mu2e_GlobalConstantsService',
                        'mu2e_DataProducts',
@@ -63,7 +68,8 @@ helper.make_plugins( [ mainlib,
                        'boost_filesystem',
                        'boost_system',
                        rootlibs,
-                       'xerces-c' # only needed for MakeStereoHits_module.cc
+                       'TMVA',
+		        'xerces-c' # only needed for MakeStereoHits_module.cc
                                  # See the Fixme at the top of the file.
                      ],
                      )
