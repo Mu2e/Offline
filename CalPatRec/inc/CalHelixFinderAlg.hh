@@ -94,6 +94,8 @@ namespace mu2e {
                                         // 2014-03-10 Gianipez and P. Murat: limit
                                         // the dfdz value in the pattern-recognition stage
     double               _mpDfDz;
+    int                  _minNSt;       //minimum number of active stations found in the ::findDfDZ(...) function
+    double               _dzOverHelPitchCut; //cut on the ratio between the Dz and the predicted helix-pitch used in ::findDfDz(...)
     double               _maxDfDz;
     double               _minDfDz;
     double               _sigmaPhi;     // hit phi resolution (wrt the trajectory axis, assume R=25-30cm)
@@ -231,7 +233,7 @@ namespace mu2e {
     bool findHelix                    (CalHelixFinderData& Helix);
     bool findHelix                    (CalHelixFinderData& Helix, const CalTimePeak* TimePeak);
     bool findHelix                    (CalHelixFinderData& Helix, const TimeCluster* TimePeak );
-    int  findDfDz                     (CalHelixFinderData& Helix, int SeedIndex, int *indexVec);
+    int  findDfDz                     (CalHelixFinderData& Helix, int SeedIndex, int *indexVec, int  Diag_flag=0);
     void findTrack                    (int                  seedIndex,
 			               double&              chi2,
 			               int&                 countGoodPoint,
@@ -262,6 +264,7 @@ namespace mu2e {
     void   rescueHits           (CalHelixFinderData&  mytrk, int seedIndex       ,
 				 int *indexVec             , int UsePhiResiduals = 0);
 
+    void   resolve2PiAmbiguity  (CLHEP::Hep3Vector Center, double DfDz, double Phi0);
 
     void   resetTrackParamters  ();
 //-----------------------------------------------------------------------------

@@ -43,6 +43,8 @@ CalPatRec : {
 	minNHit                                 : 10      # minimal number of hits on found helix
 	hitChi2Max                              : 25.
 	mostProbableDfDz                        : 0.00475
+	minNActiveStationPairs                  : 10
+	dzOverHelPitchCut                       : 0.7
 	maxDfDz                                 : 0.01
 	minDfDz                                 : 0.002
 	sigmaPhi                                : 0.1636  # radians
@@ -69,6 +71,8 @@ CalPatRec : {
 	minNHit                                 : 10      # minimal number of hits on found helix
 	hitChi2Max                              : 25.
 	mostProbableDfDz                        : 0.00475
+	minNActiveStationPairs                  : 10
+	dzOverHelPitchCut                       : 0.7
 	maxDfDz                                 : 0.01
 	minDfDz                                 : 0.002
 	sigmaPhi                                : 0.1636  # radians
@@ -308,7 +312,7 @@ CalPatRec : {
 	removeFailedFits                        : false
 	ambiguityStrategy    			: [ 4    , 4    , 4    , 4   , 4    , 4    , 4    , 4   , 4    ]
 	AddMaterial		                : [ false, false, false, true, false, false, false, true, true ]
-	hiterr 					: [ 5.0  , 1.5  , 0.5  , 0.25, 0.125, 0.05 , 0.0  , 0.0 , 0.0  ]
+	hiterr 					: [ 80.  , 24.  , 8.   , 4.  , 2.   , 0.8  , 0.0  , 0.0 , 0.0  ]
 	t0Tolerance				: [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
 	# not used t0ErrorFactor                           : 1.2                # scale ?
 	minT0DOCA                               : -0.2               # 
@@ -516,7 +520,6 @@ CalPatRec : { @table::CalPatRec
 	    debugLevel                                  : 0
 	    printFrequency                              : 100
 #	    useAsFilter                                 : 0
-#	    rescueHits                                  : 1
 	    StrawHitCollectionTag                       : makeSH			 
 #	    StrawDigiCollectionLabel                    : makeSD
 #	    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions	 
@@ -524,8 +527,13 @@ CalPatRec : { @table::CalPatRec
 	    SeedCollectionTag                           : CalHelixFinder
 #	    CalTimePeakModuleLabel                      : CalTimePeakFinder
 #	    MaxDtMiss                                   : 55.
-#	    MaxAddDoca                                  : 7.    # mm
-#	    MaxAddChi                                   : 5.    # normalized unit
+	    MinNHits                                    : 10
+	    MaxDoca                                     : 40.
+	    FilterOutliers                              : true
+	    FilterHelixOutliers                         : false
+	    MaxAddDoca                                  : 7.    # mm
+	    MaxAddChi                                   : 5.    # normalized unit
+	    rescueHits                                  : 1
 	    fitparticle                                 : @local::Particle.eminus
 	    fitdirection                                : @local::FitDir.downstream
 #	    Fitter                                      : { @table::CalPatRec.SeedFitter }
