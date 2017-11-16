@@ -1,17 +1,17 @@
 
-#ifndef TrkChargeReco_ComboPeakFitRoot_hh
-#define TrkChargeReco_ComboPeakFitRoot_hh
+#ifndef TrkHitReco_ComboPeakFitRoot_hh
+#define TrkHitReco_ComboPeakFitRoot_hh
 // base class for controlling peak fits
 // Virtual class providing structure for extracting charge from ADC waveforms
 //
-#include "TrkChargeReco/inc/PeakFitRoot.hh"
+#include "TrkHitReco/inc/PeakFitRoot.hh"
 #include "TGraphErrors.h"
 #include <vector>
 
 // base class for controlling the peak fit.
 namespace mu2e {
 
-  namespace TrkChargeReco {
+  namespace TrkHitReco {
 
     class ComboPeakFitRoot : public PeakFitRoot  {
       public:

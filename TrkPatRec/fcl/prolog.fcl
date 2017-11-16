@@ -311,13 +311,12 @@ KFFUpiP.fitparticle	      : @local::Particle.piplus
 KFFUpiP.fitdirection	      : @local::FitDir.upstream
 
 # Declare a table with all the modules needed for track reconstruction
+# This should be divided into sim, reco FIXME!
 Tracking : {
   producers : {
-    makeSD	    : @local::makeSD
-    makeSH	    : @local::makeSHfromSD
-    FSHPreStereo    : @local::FSHPreStereo
-    MakeStrawHitPositions  : @local::MakeStrawHitPositions
-    MakeStereoHits  : @local::MakeStereoHits
+# the following should be independently sourced FIXME!
+    @table::TrkHitReco.producers
+    @table::TrackerMC.producers
     FlagStrawHits   : @local::FlagStrawHits
     FlagBkgHits	    : @local::FlagBkgHits
     TimeClusterFinder  : @local::TimeClusterFinder

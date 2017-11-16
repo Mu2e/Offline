@@ -36,7 +36,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_TrackerConditions',
 
 helper.make_plugins( [ mainlib,
                        'mu2e_SeedService_SeedService_service',
-		       'mu2e_TrkChargeReco',
                        'mu2e_TrackerConditions',
                        'mu2e_Mu2eUtilities',
                        'mu2e_ConditionsService',

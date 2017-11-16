@@ -1,14 +1,14 @@
-#ifndef TrkChargeReco_PeakFit_hh
-#define TrkChargeReco_PeakFit_hh
+#ifndef TrkHitReco_PeakFit_hh
+#define TrkHitReco_PeakFit_hh
 //  Virtual class providing structure for extracting charge from ADC waveforms
 
-#include "TrkChargeReco/inc/PeakFitParams.hh"
+#include "TrkHitReco/inc/PeakFitParams.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 namespace mu2e {
 
-  namespace TrkChargeReco {
+  namespace TrkHitReco {
 	
     
     enum FitType {peakminusped=1,combopeakfit=2,peakfit=3};
@@ -34,7 +34,7 @@ namespace mu2e {
       protected:
       
 	const StrawElectronics& _strawele;
-	TrkChargeReco::FitType  _fittype; 
+	TrkHitReco::FitType  _fittype; 
 
 	
     };

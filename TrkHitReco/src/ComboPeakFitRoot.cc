@@ -1,7 +1,7 @@
 // fit waveform using root TF1
 //
 // The member variables of PeakFitRoot need to be protected not private
-#include "TrkChargeReco/inc/ComboPeakFitRoot.hh"
+#include "TrkHitReco/inc/ComboPeakFitRoot.hh"
 #include "TMath.h"
 #include "TGraphErrors.h"
 #include "TF1.h"
@@ -9,7 +9,7 @@
 
 namespace mu2e {
 
-  namespace TrkChargeReco {
+  namespace TrkHitReco {
 
   ComboPeakFitRoot::ComboPeakFitRoot(const StrawElectronics& strawele, const fhicl::ParameterSet& pset) : 
       PeakFitRoot(strawele, pset) 
@@ -194,6 +194,6 @@ namespace mu2e {
       }
     }
 
-  } // TrkChargeReco namespace
+  } // TrkHitReco namespace
 
 }// mu2e namespace

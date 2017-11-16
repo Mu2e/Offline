@@ -1,11 +1,12 @@
 //
 // This module transforms StrawDigi objects into StrawHit objects
 //
-// $Id: StrawHitsFromStrawDigis2_module.cc,v 1.12 2014/03/25 22:14:39 brownd Exp $
+// $Id: StrawHitReco_module.cc,v 1.12 2014/03/25 22:14:39 brownd Exp $
 // $Author: brownd $ 
 // $Date: 2014/03/25 22:14:39 $
 //
 // Original author David Brown, LBNL
+// Merged with flag and position creation B. Echenard, CalTech
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -30,10 +31,10 @@
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
 
-#include "TrkChargeReco/inc/PeakFit.hh"
-#include "TrkChargeReco/inc/PeakFitRoot.hh"
-#include "TrkChargeReco/inc/PeakFitFunction.hh"
-#include "TrkChargeReco/inc/ComboPeakFitRoot.hh"
+#include "TrkHitReco/inc/PeakFit.hh"
+#include "TrkHitReco/inc/PeakFitRoot.hh"
+#include "TrkHitReco/inc/PeakFitFunction.hh"
+#include "TrkHitReco/inc/ComboPeakFitRoot.hh"
 
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
@@ -48,11 +49,11 @@
 namespace mu2e {
   using namespace TrkTypes;
 
-  class StrawHitsFromStrawDigis2 : public art::EDProducer 
+  class StrawHitReco : public art::EDProducer 
   {
      public:
-       explicit StrawHitsFromStrawDigis2(fhicl::ParameterSet const& pset);
-       virtual ~StrawHitsFromStrawDigis2(); 
+       explicit StrawHitReco(fhicl::ParameterSet const& pset);
+       virtual ~StrawHitReco(); 
        virtual void produce( art::Event& e);
        virtual void beginRun( art::Run& run );
        virtual void beginJob();
@@ -62,7 +63,7 @@ namespace mu2e {
        double mbbuffer_;                // buffer on that for ghost hits (wrapping)
        double maxdt_;                   // maximum time difference between end times
        bool   singledigi_;              // turn single-end digitizations into hits
-       TrkChargeReco::FitType fittype_; // peak Fitter
+       TrkHitReco::FitType fittype_; // peak Fitter
        bool   usecc_;                   // use calorimeter cluster filtering
        double clusterDt_;               // maximum hit-calo lcuster time difference
        double minE_;                    // minimum charge (units??)
@@ -81,16 +82,16 @@ namespace mu2e {
        std::string caloClusterModuleLabel_;
        fhicl::ParameterSet peakfit_;       
        
-       std::unique_ptr<TrkChargeReco::PeakFit> pfit_;
+       std::unique_ptr<TrkHitReco::PeakFit> pfit_;
        
  };
 
 
-  StrawHitsFromStrawDigis2::StrawHitsFromStrawDigis2(fhicl::ParameterSet const& pset) :
+  StrawHitReco::StrawHitReco(fhicl::ParameterSet const& pset) :
       mbbuffer_(pset.get<double>(    "TimeBuffer",100.0)), 
       maxdt_(pset.get<double>(       "MaxTimeDifference",8.0)), 
       singledigi_(pset.get<bool>(    "UseSingleDigis",false)), 
-      fittype_((TrkChargeReco::FitType) pset.get<unsigned>("FitType",TrkChargeReco::FitType::peakminusped)),
+      fittype_((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminusped)),
       usecc_(pset.get<bool>(         "UseCalorimeter",false)),     
       clusterDt_(pset.get<double>(   "clusterDt",100)),
       minE_(pset.get<double>(        "minimumEnergy",0.0)), // Minimum deposited straw energy (MeV)
@@ -112,39 +113,39 @@ namespace mu2e {
       produces<StrawHitFlagCollection>();
       produces<StrawHitPositionCollection>();
       
-      if (printLevel_ > 0) std::cout << "In StrawHitsFromStrawDigis2 constructor " << std::endl;
+      if (printLevel_ > 0) std::cout << "In StrawHitReco constructor " << std::endl;
   }
 
-  StrawHitsFromStrawDigis2::~StrawHitsFromStrawDigis2() {}
+  StrawHitReco::~StrawHitReco() {}
 
   
   //------------------------------------------------------------------------------------------
-  void StrawHitsFromStrawDigis2::beginJob()
+  void StrawHitReco::beginJob()
   {
   }
 
-  void StrawHitsFromStrawDigis2::beginRun(art::Run& run)
+  void StrawHitReco::beginRun(art::Run& run)
   {    
       ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
                  
       // this must be done here because strawele is not accessible at startup and it 
       // contains a const refenence to pfit_, so this can't be instanciated earliere
-      if (fittype_ == TrkChargeReco::FitType::peakminusped)
-         pfit_ = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::PeakFit(*strawele,peakfit_) );
-      else if (fittype_ == TrkChargeReco::FitType::combopeakfit)
-	 pfit_ = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::ComboPeakFitRoot(*strawele,peakfit_) );
+      if (fittype_ == TrkHitReco::FitType::peakminusped)
+         pfit_ = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFit(*strawele,peakfit_) );
+      else if (fittype_ == TrkHitReco::FitType::combopeakfit)
+	 pfit_ = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::ComboPeakFitRoot(*strawele,peakfit_) );
       else
-	 pfit_ = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::PeakFitRoot(*strawele,peakfit_) );
+	 pfit_ = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFitRoot(*strawele,peakfit_) );
                       
-      if (printLevel_ > 0) std::cout << "In StrawHitsFromStrawDigis2 begin Run " << std::endl;
+      if (printLevel_ > 0) std::cout << "In StrawHitReco begin Run " << std::endl;
   }
 
 
 
   //------------------------------------------------------------------------------------------
-  void StrawHitsFromStrawDigis2::produce(art::Event& event)
+  void StrawHitReco::produce(art::Event& event)
   {        
-      if (printLevel_ > 0) std::cout << "In StrawHitsFromStrawDigis2 produce " << std::endl;
+      if (printLevel_ > 0) std::cout << "In StrawHitReco produce " << std::endl;
 
       const Tracker& tracker = getTrackerOrThrow();
       const TTracker& tt(*GeomHandle<TTracker>());
@@ -210,7 +211,7 @@ namespace mu2e {
           //extract energy from waveform
 	  // note: pedestal is being subtracting inside strawele, in the real experiment we will need
 	  // per-channel version of this FIXME!!!
-	  TrkChargeReco::PeakFitParams params;
+	  TrkHitReco::PeakFitParams params;
 	  pfit_->process(digi.adcWaveform(),params);
  	  double energy = strawphys->ionizationEnergy(params._charge/strawphys->strawGain());
 	  if (printLevel_ > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
@@ -278,6 +279,6 @@ namespace mu2e {
 }
 
 
-using mu2e::StrawHitsFromStrawDigis2;
-DEFINE_ART_MODULE(StrawHitsFromStrawDigis2);
+using mu2e::StrawHitReco;
+DEFINE_ART_MODULE(StrawHitReco);
 

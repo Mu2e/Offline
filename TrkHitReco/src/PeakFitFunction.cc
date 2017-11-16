@@ -1,11 +1,11 @@
 #include "TF1.h"
-#include "TrkChargeReco/inc/PeakFitFunction.hh"
+#include "TrkHitReco/inc/PeakFitFunction.hh"
 #include <algorithm>
 #include <iostream>
 
 namespace mu2e {
 
-  namespace TrkChargeReco {
+  namespace TrkHitReco {
 
     PeakFitFunction::PeakFitFunction(const StrawElectronics& strawele) : 
       _strawele(strawele), _fitConfig(), _tf1(0)
@@ -89,8 +89,8 @@ namespace mu2e {
       FitFunctionRoot rootfun = std::bind(&PeakFitFunction::fitModelRoot,this,std::placeholders::_1,std::placeholders::_2);
       // create the TF1
       // NB: the min and max times should come from a global config object, FIXME!!!!
-//      _tf1 = new TF1("TrkChargeReco::PeakFitFunction",rootfun,0.0,1695.0,PeakFitParams::nParams);
-       _tf1 = new TF1("TrkChargeReco::PeakFitFunction",*this,0.0,1695.0,PeakFitParams::nParams);
+//      _tf1 = new TF1("TrkHitReco::PeakFitFunction",rootfun,0.0,1695.0,PeakFitParams::nParams);
+       _tf1 = new TF1("TrkHitReco::PeakFitFunction",*this,0.0,1695.0,PeakFitParams::nParams);
       // Set the parameter names
       for(size_t iparam=0;iparam< PeakFitParams::nParams; ++ iparam)
 	_tf1->SetParName(iparam,PeakFitParams::parameterName((PeakFitParams::paramIndex) iparam).c_str());

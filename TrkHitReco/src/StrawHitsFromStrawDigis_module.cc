@@ -24,10 +24,10 @@
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
 // helpers
-#include "TrkChargeReco/inc/PeakFit.hh"
-#include "TrkChargeReco/inc/PeakFitRoot.hh"
-#include "TrkChargeReco/inc/PeakFitFunction.hh"
-#include "TrkChargeReco/inc/ComboPeakFitRoot.hh"
+#include "TrkHitReco/inc/PeakFit.hh"
+#include "TrkHitReco/inc/PeakFitRoot.hh"
+#include "TrkHitReco/inc/PeakFitFunction.hh"
+#include "TrkHitReco/inc/ComboPeakFitRoot.hh"
 //CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 // data
@@ -51,7 +51,7 @@ namespace mu2e {
     // # of ADC digitizations to sum to define baseline
     unsigned _nbase;
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
-    TrkChargeReco::FitType _fittype;
+    TrkHitReco::FitType _fittype;
     bool _truncateADC; // model ADC truncation
     bool _floatPedestal; // float pedestal in fit
     bool _floatWidth; // _float width in fit
@@ -63,7 +63,7 @@ namespace mu2e {
     unsigned _maxFitIter; //
     // Name of the StrawDigi collection
     string _strawDigis;
-    std::unique_ptr<TrkChargeReco::PeakFit> _pfit;
+    std::unique_ptr<TrkHitReco::PeakFit> _pfit;
     fhicl::ParameterSet _peakfit;       
     StrawEnd _end[2]; // helper
   };
@@ -71,7 +71,7 @@ namespace mu2e {
   StrawHitsFromStrawDigis::StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset) :
     _nbase(pset.get<unsigned>("NumADCBaseline",1)),
     _mbbuffer(pset.get<double>("TimeBuffer",100.0)), // nsec
-    _fittype((TrkChargeReco::FitType) pset.get<unsigned>("FitType",TrkChargeReco::peakminusped)),
+    _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::peakminusped)),
     _truncateADC(pset.get<bool>("TruncateADC",true)), 
     _floatPedestal(pset.get<bool>("FloatPedestal",true)), 
     _floatWidth(pset.get<bool>("FloatWidth",true)), 
@@ -94,22 +94,22 @@ namespace mu2e {
 
   void StrawHitsFromStrawDigis::beginRun( art::Run& run ){
 // create and configure the ADC waveform charge extraction fit
-    TrkChargeReco::FitConfig myconfig;
+    TrkHitReco::FitConfig myconfig;
     myconfig._debug = _debugLevel;
     myconfig._maxnit = _maxFitIter;
-    if(_floatWidth)myconfig.setOption(TrkChargeReco::FitConfig::floatWidth);
-    if(_floatPedestal)myconfig.setOption(TrkChargeReco::FitConfig::floatPedestal);
-    if(_truncateADC)myconfig.setOption(TrkChargeReco::FitConfig::truncateADC);
-    if(_earlyPeak)myconfig.setOption(TrkChargeReco::FitConfig::earlyPeak);
-    if(_latePeak)myconfig.setOption(TrkChargeReco::FitConfig::latePeak);
+    if(_floatWidth)myconfig.setOption(TrkHitReco::FitConfig::floatWidth);
+    if(_floatPedestal)myconfig.setOption(TrkHitReco::FitConfig::floatPedestal);
+    if(_truncateADC)myconfig.setOption(TrkHitReco::FitConfig::truncateADC);
+    if(_earlyPeak)myconfig.setOption(TrkHitReco::FitConfig::earlyPeak);
+    if(_latePeak)myconfig.setOption(TrkHitReco::FitConfig::latePeak);
     ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
 
-    if ( _fittype == TrkChargeReco::FitType::peakminusped)
-      _pfit = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::PeakFit(*strawele,_peakfit) );
-    else if (_fittype == TrkChargeReco::FitType::combopeakfit)
-      _pfit = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::ComboPeakFitRoot(*strawele,_peakfit) );
+    if ( _fittype == TrkHitReco::FitType::peakminusped)
+      _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFit(*strawele,_peakfit) );
+    else if (_fittype == TrkHitReco::FitType::combopeakfit)
+      _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::ComboPeakFitRoot(*strawele,_peakfit) );
     else
-      _pfit = std::unique_ptr<TrkChargeReco::PeakFit>(new TrkChargeReco::PeakFitRoot(*strawele,_peakfit) );
+      _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFitRoot(*strawele,_peakfit) );
 
 
     if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis beginRun " << endl;
@@ -150,7 +150,7 @@ namespace mu2e {
       ADCWaveform const& adc = digi.adcWaveform();
       // note: pedestal is being subtracting inside strawele, in the real experiment we will need
       // per-channel version of this FIXME!!!
-      TrkChargeReco::PeakFitParams params;
+      TrkHitReco::PeakFitParams params;
       _pfit->process(adc,params);
       if(_debugLevel > 0){
 	cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
