@@ -1277,7 +1277,7 @@ namespace mu2e {
         i->_nearestById.push_back( nsId );
         if ( _verbosityLevel>2 ) {
           const Straw& temp = _tt->getStraw( nsId );
-          cout << __func__ << " Neighbour left straw: " << temp.id() << '\t' << temp.index() << endl;
+          cout << __func__ << setw(34) << " Neighbour left straw: " << temp.id() << '\t' << temp.index() << endl;
         }
         i->_nearestByIndex.push_back( _tt->getStraw(nsId).index() );
       }
@@ -1293,7 +1293,7 @@ namespace mu2e {
         i->_nearestById.push_back( nsId );
         if ( _verbosityLevel>2 ) {
           const Straw& temp = _tt->getStraw( nsId );// is this correct for the new model? <------------
-          cout << __func__ << " Neighbour right straw: " << temp.id() << '\t' << temp.index() << endl;
+          cout << __func__ << setw(34) << " Neighbour right straw: " << temp.id() << '\t' << temp.index() << endl;
         }
         i->_nearestByIndex.push_back( _tt->getStraw(nsId).index() );
       }
@@ -1330,7 +1330,7 @@ namespace mu2e {
           i->_nearestById.push_back( nsId );
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
-            cout << __func__ << " Neighbour opposite up straw: "
+            cout << __func__ << setw(34) << " Neighbour opposite up straw: "
                  << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
           }
         }
@@ -1340,7 +1340,7 @@ namespace mu2e {
           i->_nearestById.push_back( nsId );
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
-            cout << __func__ << " Neighbour opposite up straw: "
+            cout << __func__ << setw(34) << " Neighbour opposite up straw: "
                  << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
           }
         }
@@ -1350,7 +1350,7 @@ namespace mu2e {
           i->_nearestById.push_back( nsId );
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
-            cout << __func__ << " Neighbour opposite down straw: "
+            cout << __func__ << setw(34) << " Neighbour opposite down straw: "
                  << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
           }
         }
@@ -1360,7 +1360,7 @@ namespace mu2e {
           i->_nearestById.push_back( nsId );
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
-            cout << __func__ << " Neighbour opposite down straw: "
+            cout << __func__ << setw(34) << " Neighbour opposite down straw: "
                  << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
           }
         }
@@ -1431,25 +1431,25 @@ namespace mu2e {
 
         cout << "Straw " << straw->id() << ": " << straw->id().getStraw() << endl;
 
-        cout << " _nextOuterL: "   << setw(5) << straw->_nextOuterL.asInt() << " : ";
+        cout << " _nextOuterL: "   << setw(8) << straw->_nextOuterL.asInt() << " : ";
         if ( straw->_nextOuterL.asInt()!=StrawIndex::NO_STRAW ) {
           cout << _tt->getStraw(straw->_nextOuterL).id();
         }
         cout << endl;
 
-        cout << " _nextInnerL: " << setw(5) << straw->_nextInnerL.asInt() << " : ";
+        cout << " _nextInnerL: " << setw(8) << straw->_nextInnerL.asInt() << " : ";
         if ( straw->_nextInnerL.asInt()!=StrawIndex::NO_STRAW ) {
           cout << _tt->getStraw(straw->_nextInnerL).id();
         }
         cout << endl;
 
-        cout << " _nextOuterP: " << setw(5) << straw->_nextOuterP.asInt() << " : " ;
+        cout << " _nextOuterP: " << setw(8) << straw->_nextOuterP.asInt() << " : " ;
         if ( straw->_nextOuterP.asInt()!=StrawIndex::NO_STRAW ) {
           cout << _tt->getStraw(straw->_nextOuterP).id();
         }
         cout << endl;
 
-        cout << " _nextInnerP: " << setw(5) << straw->_nextInnerP.asInt() << " : " ;
+        cout << " _nextInnerP: " << setw(8) << straw->_nextInnerP.asInt() << " : " ;
         if ( straw->_nextInnerP.asInt()!=StrawIndex::NO_STRAW ) {
           cout << _tt->getStraw(straw->_nextInnerP).id();
         }
@@ -1458,11 +1458,13 @@ namespace mu2e {
         // now print _nearestById & _nearestByIndex
 
         for (auto const& s : straw->nearestNeighboursByIndex()) {
-          cout << s << endl;
+          cout << setw(12) << "index: " << setw(12) << s ;
+          cout << setw(12) << "id: " << setw(12) <<  (_tt->getStraw(s)).id() << endl;
         }
 
         for (auto const& s : straw->nearestNeighboursById()) {
-          cout << s << endl;
+          cout << setw(12) << "id: " << setw(12) << s;
+          cout << setw(12) << "index: " << setw(12) <<  (_tt->getStraw(s)).index() << endl;
         }
 
       }
@@ -1481,7 +1483,18 @@ namespace mu2e {
       return  StrawIndex(StrawIndex::NO_STRAW);
     }
     StrawId sid ( layerId, snum );
+
+    if ( _verbosityLevel>3 ) {
+      cout << __func__ 
+           << " starting from id: " << setw(12) << sid 
+           << " returning index: " 
+           << setw(12) << _tt->getStraw(sid).index() 
+           << " which is id: " <<  setw(12) << _tt->getStraw(sid).id() 
+           << endl;
+    }
+
     return _tt->getStraw(sid).index();
+
   } //; ttStrawIndex
 
   void TTrackerMaker::makeSupportStructure(){

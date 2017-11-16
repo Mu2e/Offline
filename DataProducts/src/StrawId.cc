@@ -1,8 +1,10 @@
 // C++ includes
 #include <iostream>
+#include <sstream>
 #include <vector>
 // art includes
 #include "cetlib_except/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 // Mu2e includes
 #include "DataProducts/inc/StrawId.hh"
 #include "GeneralUtilities/inc/splitLine.hh"
@@ -38,5 +40,32 @@ namespace mu2e {
   StrawId::StrawId(std::string const& asstring) {
     *this = strawIdFromString(asstring);
   }
+
+  StrawId::StrawId( LayerId layer,
+                           int n
+                           ):
+    _lid(layer),
+    _n(n){
+
+    // get the layer number to check if the starw number is correct
+    std::ostringstream os;
+    os << layer;
+    vector<string> v;
+    splitLine( os.str(), "_", v);
+    istringstream slay(v[2]);
+    int lay;
+    slay >> lay;
+
+    if ( n%2!=lay%2 ) {
+      std::cerr << "CONFIG " 
+        //      mf::LogWarning("CONFIG")
+        //      throw cet::exception("CONFIG")
+                << "StrawId(LayerId,int): incorrect straw in layer "
+                << layer  << "_" << n
+                << "\n";
+    }
+
+  }
+
 }
 

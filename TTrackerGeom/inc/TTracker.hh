@@ -14,6 +14,10 @@
 
 #include <deque>
 #include <vector>
+#include <array>
+#include <limits>
+
+#include "DataProducts/inc/StrawId2.hh"
 
 #include "TTrackerGeom/inc/Manifold.hh"
 #include "TTrackerGeom/inc/Support.hh"
@@ -36,11 +40,23 @@ namespace mu2e {
     friend class TTrackerMaker;
 
   public:
+
+    // =============== NewTracker Public Objects Start ==============
+
+    constexpr static int _nstraws = StrawId2::_nplanes *
+                                    StrawId2::_npanels *
+                                    StrawId2::_nstraws;
+
+    constexpr static int _maxRedirect = std::numeric_limits<uint16_t>::max();
+
+    // =============== NewTracker Public Objects End   ==============
+
     TTracker(){}  // TODO: insert proper initializer list, starting w/ base class
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
     void fillPointers () const;
+    void fillPointers2 () const;
 
     double rOut() const { return _rOut;}
     double z0()   const { return _z0;}
@@ -268,6 +284,21 @@ namespace mu2e {
 
     // presence info for each straw.
     std::vector<bool> _strawExists;
+
+    // =============== NewTracker Private Objects Start ==============
+
+    // Dense array.
+    std::array<Plane,StrawId2::_nplanes> _planes2;
+
+    // Dense array.
+    std::array<Straw,TTracker::_nstraws> _straws2;
+
+    // Sparse array: designed for indexing by StrawId2.
+    // For all legal entries in StrawId2, this points to a straw in _straws2;
+    // All other entries are null.
+    std::array<Straw const*,TTracker::_maxRedirect> _straws2_p;
+
+    // =============== NewTracker Private Objects End ==============
 
   };
 

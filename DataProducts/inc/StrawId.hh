@@ -12,8 +12,11 @@
 // Original author Rob Kutschke
 //
 #include <ostream>
+#include <iostream>
 #include "DataProducts/inc/LayerId.hh"
 #include <string>
+// art includes
+#include "cetlib_except/exception.h"
 
 namespace mu2e {
 
@@ -34,10 +37,7 @@ public:
 
   StrawId( LayerId layer,
            int n
-           ):
-    _lid(layer),
-    _n(n){
-  }
+           );
 
   StrawId( PanelId panelid,
            int layer,
@@ -45,15 +45,33 @@ public:
            ):
     _lid(panelid,layer),
     _n(n){
+
+    if ( n%2!=layer%2 ) {
+      std::cerr << "CONFIG " 
+        //      throw cet::exception("CONFIG")
+                << "StrawId(PanelId, int, int): incorrect straw in layer "
+                << panelid << "_" << layer << "_" << n
+                << "\n";
+    }
+
   }
 
   StrawId( PlaneId plane,
-           int section,
+           int panel,
            int layer,
            int n
            ):
-    _lid(LayerId(plane,section,layer)),
+    _lid(LayerId(plane,panel,layer)),
     _n(n){
+
+    if ( n%2!=layer%2 ) {
+      std::cerr << "CONFIG "
+        //      throw cet::exception("CONFIG")
+                << "StrawId(PlaneId, int, int, int): incorrect straw in layer "
+                << plane << "_" << panel << "_" << layer <<  "_" << n
+                << "\n";
+    }
+    
   }
 
   // Use compiler-generated copy c'tor, copy assignment, and d'tor.
