@@ -67,22 +67,22 @@ CalHelixFinderDiag::~CalHelixFinderDiag() {
 //-----------------------------------------------------------------------------
 int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) {
 
-  _hist.nseeds[0]   = Tfs->make<TH1F>("nseeds0"  , "number of track candidates: all events"    , 21, -0.5, 20.5);
-  _hist.nseeds[1]   = Tfs->make<TH1F>("nseeds1"  , "number of track candidates: nhits > 15"    , 21, -0.5, 20.5);
-  _hist.nhits       = Tfs->make<TH1F>("nhits"    , "number of hits on a track candidate"       , 101, -0.5, 100.5);
-  _hist.radius[0]   = Tfs->make<TH1F>("radius0"  , "helix radius; r [mm]"                      , 401, -0.5, 400.5);
-  _hist.radius[1]   = Tfs->make<TH1F>("radius1"  , "helix radius nhits > 15; r [mm]"           , 401, -0.5, 400.5);
-  _hist.pT [0]      = Tfs->make<TH1F>("pT0"      , "transverse momentum; pT [MeV/c]"           , 400, -0.5, 200.5);
-  _hist.p  [0]      = Tfs->make<TH1F>("p0"       , "momentum; p [MeV/c]"                       , 400, -0.5, 200.5);
-  _hist.pT [1]      = Tfs->make<TH1F>("pT1"      , "transverse momentum nhits > 15; pT [MeV/c]", 400, -0.5, 200.5);
-  _hist.p  [1]      = Tfs->make<TH1F>("p1"       , "momentum nhits > 15; p [MeV/c]"            , 400, -0.5, 200.5);
-  _hist.chi2XY[0]   = Tfs->make<TH1F>("chi2XY0"  , "normalized chi2-XY"                        , 200, 0., 20.);
-  _hist.chi2XY[1]   = Tfs->make<TH1F>("chi2XY1"  , "normalized chi2-XY: nhits>15"              , 200, 0., 20.);
-  _hist.chi2ZPhi[0] = Tfs->make<TH1F>("chi2ZPhi0", "normalized chi2-ZPhi"                      , 200, 0., 20.);
-  _hist.chi2ZPhi[1] = Tfs->make<TH1F>("chi2ZPhi1", "normalized chi2-ZPhi: nhits>15"            , 200, 0., 20.);
-  _hist.nhitsvspT   = Tfs->make<TH2F>("nhitsvspT", "nhits vs pT"                               , 100, 0, 100, 400, 0, 200);
-  _hist.nhitsvsp    = Tfs->make<TH2F>("nhitsvsp" , "nhits vs p"                                , 100, 0, 100, 400, 0, 200);
-
+  _hist.nseeds[0]     = Tfs->make<TH1F>("nseeds0"  , "number of track candidates: all events"    , 21, -0.5, 20.5);
+  _hist.nseeds[1]     = Tfs->make<TH1F>("nseeds1"  , "number of track candidates: nhits > 15"    , 21, -0.5, 20.5);
+  _hist.nhits         = Tfs->make<TH1F>("nhits"    , "number of hits on a track candidate"       , 101, -0.5, 100.5);
+  _hist.radius[0]     = Tfs->make<TH1F>("radius0"  , "helix radius; r [mm]"                      , 401, -0.5, 400.5);
+  _hist.radius[1]     = Tfs->make<TH1F>("radius1"  , "helix radius nhits > 15; r [mm]"           , 401, -0.5, 400.5);
+  _hist.pT [0]        = Tfs->make<TH1F>("pT0"      , "transverse momentum; pT [MeV/c]"           , 400, -0.5, 200.5);
+  _hist.p  [0]        = Tfs->make<TH1F>("p0"       , "momentum; p [MeV/c]"                       , 400, -0.5, 200.5);
+  _hist.pT [1]        = Tfs->make<TH1F>("pT1"      , "transverse momentum nhits > 15; pT [MeV/c]", 400, -0.5, 200.5);
+  _hist.p  [1]        = Tfs->make<TH1F>("p1"       , "momentum nhits > 15; p [MeV/c]"            , 400, -0.5, 200.5);
+  _hist.chi2XY[0]     = Tfs->make<TH1F>("chi2XY0"  , "normalized chi2-XY"                        , 200, 0., 20.);
+  _hist.chi2XY[1]     = Tfs->make<TH1F>("chi2XY1"  , "normalized chi2-XY: nhits>15"              , 200, 0., 20.);
+  _hist.chi2ZPhi[0]   = Tfs->make<TH1F>("chi2ZPhi0", "normalized chi2-ZPhi"                      , 200, 0., 20.);
+  _hist.chi2ZPhi[1]   = Tfs->make<TH1F>("chi2ZPhi1", "normalized chi2-ZPhi: nhits>15"            , 200, 0., 20.);
+  _hist.nhitsvspT     = Tfs->make<TH2F>("nhitsvspT", "nhits vs pT"                               , 100, 0, 100, 400, 0, 200);
+  _hist.nhitsvsp      = Tfs->make<TH2F>("nhitsvsp" , "nhits vs p"                                , 100, 0, 100, 400, 0, 200);
+  _hist.nStationPairs = Tfs->make<TH1F>("nstpairs" , "n-station pairs used in findDfDz"          , 200, 0, 200);
   return 0;
 }
 
@@ -129,6 +129,8 @@ int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tf
 
       _hist.nhitsvspT ->Fill(_data->nhits[i],_data->pT[i]);
       _hist.nhitsvsp  ->Fill(_data->nhits[i],_data->p [i]);
+
+      _hist.nStationPairs->Fill(_data->nStationPairs[i]);
     }
 
     return 0;

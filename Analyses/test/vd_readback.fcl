@@ -6,8 +6,8 @@
 # $Author: youzy $
 # $Date: 2012/06/22 18:09:22 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 #include "Analyses/fcl/prolog.fcl"
 

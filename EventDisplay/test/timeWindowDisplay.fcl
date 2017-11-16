@@ -8,8 +8,8 @@
 # $Date: 2012/05/21 19:31:23 $
 #
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 process_name : EventDisplay
 

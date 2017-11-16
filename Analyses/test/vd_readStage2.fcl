@@ -5,9 +5,9 @@
 //
 
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 #include "Analyses/fcl/prolog.fcl"
 

@@ -4,9 +4,9 @@
 # $Author: tassiell $
 # $Date: 2013/04/03 22:24:58 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 # Give this job a name.
 process_name : MaterailsPropStudy

@@ -6,8 +6,8 @@
 # $Author: kutschke $
 # $Date: 2011/06/01 22:09:15 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this job a name.  
 process_name : PtrTest0

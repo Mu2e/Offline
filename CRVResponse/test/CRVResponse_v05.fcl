@@ -1,5 +1,5 @@
-#include "minimalMessageService.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
 #include "CRVResponse/fcl/prolog_v05.fcl"
 
 process_name : CRVResponse

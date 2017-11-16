@@ -7,9 +7,9 @@
 # so need to define input and 
 #------------------------------------------------------------------------------
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 #include "CaloCluster/fcl/prolog.fcl"
 #include "Analyses/fcl/prolog.fcl"

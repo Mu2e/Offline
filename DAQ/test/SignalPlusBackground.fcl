@@ -4,9 +4,9 @@
 #  modules to generate simulated DTC packets. It is included by templateSigPlusBkg.fcl.
 # 
 #
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "TrkDiag/fcl/KalDiag.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 

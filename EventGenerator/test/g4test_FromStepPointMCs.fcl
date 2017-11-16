@@ -1,9 +1,9 @@
 // Run G4 simulation starting from saved hits.
 // Most of the configuration was copied from g4test_03.fcl
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name: g4FromStepPointMCs
 

@@ -1,7 +1,7 @@
 # Make a test input file to be modified by ModifyTestProduct
 #
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 process_name : makeTestProduct
 

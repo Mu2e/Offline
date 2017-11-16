@@ -10,9 +10,9 @@
 #
 # Original author Rob Kutschke
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "HitMakers/fcl/prolog.fcl"
 #include "TrackCaloMatching/fcl/prolog.fcl"
 #include "CalPatRec/fcl/prolog.fcl"

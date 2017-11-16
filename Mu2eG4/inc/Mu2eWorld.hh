@@ -86,6 +86,8 @@ namespace mu2e {
 
     void instantiateSensitiveDetectors();
 
+    void stepLimiterHelper(const std::string &regexp, G4UserLimits* stepLimit);
+
     // Field managers for the different regions of magnetic field.
     // These have a lifetime equal to that of the G4 geometry.
     std::unique_ptr<FieldMgr> _dsUniform;
@@ -105,6 +107,7 @@ namespace mu2e {
     std::string gdmlFileName_;
     std::string g4stepperName_;
     double bfieldMaxStep_;
+    bool limitStepInAllVolumes_;
   };
 
 } // end namespace mu2e

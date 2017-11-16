@@ -25,7 +25,7 @@ namespace mu2e {
       constexpr static uint16_t _npanels = 6; // number of panels
       constexpr static uint16_t _nplanes = 36; // number of planes
       constexpr static uint16_t _invalid = 0xFFFF; // invalid identifier
-    
+
     public:
       // test values
       static bool validStraw(uint16_t istraw) { return istraw < _nstraws; }
@@ -65,7 +65,7 @@ namespace mu2e {
 	return _sid % 2 == 0 ? 0 : 1;
       }
 
-      uint16_t stationn() const{
+      uint16_t station() const{
 	return floor(plane()/2);
       }
 

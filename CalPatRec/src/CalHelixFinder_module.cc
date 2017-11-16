@@ -262,6 +262,7 @@ namespace mu2e {
 	      _data.nseeds[1]++;
 	      _data.good[loc] = 1;
 	    }
+	    _data.nStationPairs[loc] = hf_result._diag.nStationPairs;
 	  }
 	  else {
 	    printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());

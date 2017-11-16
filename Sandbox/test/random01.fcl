@@ -1,8 +1,8 @@
 # Run the random number generator test and save the state to the output file
 #
 
-#include "minimalMessageService.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name : random01
 

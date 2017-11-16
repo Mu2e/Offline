@@ -1,9 +1,9 @@
 // Andrei Gaponenko, 2013
 // Jake Colston & Joseph Brock, 2015 (edit for cd3)
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 BEGIN_PROLOG
 

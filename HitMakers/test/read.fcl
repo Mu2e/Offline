@@ -8,7 +8,7 @@
 #
 
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 # Give this job a name.  
 process_name : ReadTest01

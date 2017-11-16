@@ -1,8 +1,8 @@
 // Andrei Gaponenko, 2016
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name : pionsnts3tgtstops
 
