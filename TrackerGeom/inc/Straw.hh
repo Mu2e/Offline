@@ -94,23 +94,6 @@ namespace mu2e {
       return _preampById;
     }
     
-    
-    // The following routines deal with straws in this straw's layer
-    // as well as the other layer in the same panel.  They return 
-    // the enum NO_STRAW when the appropriate requested straw does not exist.
-    StrawIndex nextOuterSameLayer() const {
-      return  _nextOuterL;
-    }
-    StrawIndex nextInnerSameLayer() const {
-      return  _nextInnerL;
-    }
-    StrawIndex nextOuterInPanel() const {
-      return _nextOuterP;  // This will always be in the opposite layer
-    }
-    StrawIndex nextInnerInPanel() const {
-      return _nextInnerP;
-    }
-
     // Formatted string embedding the id of the straw.
     std::string name( std::string const& base ) const;
 
@@ -189,10 +172,6 @@ namespace mu2e {
     std::vector<StrawId>    _preampById;
     std::vector<StrawIndex> _preampByIndex;
 
-    StrawIndex _nextOuterL;
-    StrawIndex _nextInnerL;
-    StrawIndex _nextOuterP;
-    StrawIndex _nextInnerP;
   };
 
 }  //namespace mu2e

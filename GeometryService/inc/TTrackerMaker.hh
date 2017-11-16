@@ -58,8 +58,6 @@ namespace mu2e {
     void computePlaneEnvelope();
 
     void identifyNeighbourStraws();
-    void identifyDirectionalNeighbourStraws();
-    StrawIndex ttStrawIndex (LayerId const &layerId, int snum);
 
     void makeStation( StationId stationId );
 

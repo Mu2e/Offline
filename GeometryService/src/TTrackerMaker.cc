@@ -3,9 +3,6 @@
 //
 // Original author Rob Kutschke
 //
-// Significant change mf 5/30/11:
-//    Insertion into the Straw objects data useful for early (hit/miss
-//    based) pattern recognition.  See identifyDirectionalNeighborStraws().
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/RotationY.h"
@@ -481,7 +478,6 @@ namespace mu2e {
     _tt->fillPointers();
 
     identifyNeighbourStraws();
-    identifyDirectionalNeighbourStraws();
 
     _tt->_stations.reserve(_numStations);
     // Construct the planes and their internals.
@@ -1369,133 +1365,6 @@ namespace mu2e {
     }
 
   } // identifyNeighborStraws
-
-  // Identify the neighbour straws in inner/outer same-layer or zig-zag order
-  void TTrackerMaker::identifyDirectionalNeighbourStraws() {
-
-    // TODO:  The following algorithm relies on a few more geometry assumptions
-    //        than would strictly be necessary.  For example, it relies on
-    //        the layer labelling such that leayer 0 lies half a straw to the
-    //        inner side of layer 1, in each panel.  Some of these assumptions
-    //        can be lifted, and others at least checked, so that if the
-    //        geometry changes, the code will still produce the right results,
-    //        or will at least throw to indicate a serious problem.
-
-    deque<Straw>& allStraws = _tt->_allStraws;
-
-    for (deque<Straw>::iterator straw = allStraws.begin();
-         straw != allStraws.end(); ++straw) {
-
-      // throw exception if more than 2 layers in the panel of this straw
-      if (_tt->getPanel(straw->id().getPanelId()).nLayers() != 2 ) {
-        throw cet::exception("GEOM")
-          << "The code expects exactly 2 layers per panel. \n";
-      }
-
-      LayerId layerId = straw->id().getLayerId();
-      int layerNumber = layerId.getLayer();
-      bool layerStaggeredToInside = (layerNumber == 0);
-
-      // In all cases, layer 0 is staggered to the inside,
-      // layer 1 is staggered to the outside.  We will now check this:
-      // FIXME the above is probably not true
-      // TODO -- Do the check
-
-      LayerId otherLayerId ( layerId.getPanelId(), 1-layerNumber );
-
-      int nStrawLayer = _tt->getLayer(layerId)._nStraws;
-
-      // since the logic relies on the index and the straw number
-
-      int strawNumberWithinLayer = straw->id().getStraw();
-      int incrementedStrawNumber =
-        ( strawNumberWithinLayer + 2 < 2*nStrawLayer )
-        ? strawNumberWithinLayer + 2
-        : StrawIndex::NO_STRAW;
-      int decrementedStrawNumber =
-        ( strawNumberWithinLayer - 2 >=  0)
-        ? strawNumberWithinLayer - 2
-        : StrawIndex::NO_STRAW;
-
-      straw->_nextOuterL = ttStrawIndex (layerId, incrementedStrawNumber);
-      straw->_nextInnerL = ttStrawIndex (layerId, decrementedStrawNumber);
-      if (layerStaggeredToInside) {
-        straw->_nextOuterP = ttStrawIndex(otherLayerId, strawNumberWithinLayer);
-        straw->_nextInnerP = ttStrawIndex(otherLayerId, decrementedStrawNumber);
-      } else {
-        straw->_nextOuterP = ttStrawIndex(otherLayerId, incrementedStrawNumber);
-        straw->_nextInnerP = ttStrawIndex(otherLayerId, strawNumberWithinLayer);
-      }
-
-      if ( _verbosityLevel>2 ) {
-
-        cout << "Straw " << straw->id() << ": " << straw->id().getStraw() << endl;
-
-        cout << " _nextOuterL: "   << setw(8) << straw->_nextOuterL.asInt() << " : ";
-        if ( straw->_nextOuterL.asInt()!=StrawIndex::NO_STRAW ) {
-          cout << _tt->getStraw(straw->_nextOuterL).id();
-        }
-        cout << endl;
-
-        cout << " _nextInnerL: " << setw(8) << straw->_nextInnerL.asInt() << " : ";
-        if ( straw->_nextInnerL.asInt()!=StrawIndex::NO_STRAW ) {
-          cout << _tt->getStraw(straw->_nextInnerL).id();
-        }
-        cout << endl;
-
-        cout << " _nextOuterP: " << setw(8) << straw->_nextOuterP.asInt() << " : " ;
-        if ( straw->_nextOuterP.asInt()!=StrawIndex::NO_STRAW ) {
-          cout << _tt->getStraw(straw->_nextOuterP).id();
-        }
-        cout << endl;
-
-        cout << " _nextInnerP: " << setw(8) << straw->_nextInnerP.asInt() << " : " ;
-        if ( straw->_nextInnerP.asInt()!=StrawIndex::NO_STRAW ) {
-          cout << _tt->getStraw(straw->_nextInnerP).id();
-        }
-        cout << endl;
-
-        // now print _nearestById & _nearestByIndex
-
-        for (auto const& s : straw->nearestNeighboursByIndex()) {
-          cout << setw(12) << "index: " << setw(12) << s ;
-          cout << setw(12) << "id: " << setw(12) <<  (_tt->getStraw(s)).id() << endl;
-        }
-
-        for (auto const& s : straw->nearestNeighboursById()) {
-          cout << setw(12) << "id: " << setw(12) << s;
-          cout << setw(12) << "index: " << setw(12) <<  (_tt->getStraw(s)).index() << endl;
-        }
-
-      }
-
-      // TODO -- Insert logic to check that the radius of the purported
-      // next straw differs by the right amount and sign, in each of these
-      // four cases.
-
-    } // end of loop over all straws
-
-  } // identifyDirectionalNeighbourStraws
-
-  StrawIndex TTrackerMaker::ttStrawIndex(LayerId const & layerId, int snum)
-  {
-    if ( snum == StrawIndex::NO_STRAW ) {
-      return  StrawIndex(StrawIndex::NO_STRAW);
-    }
-    StrawId sid ( layerId, snum );
-
-    if ( _verbosityLevel>3 ) {
-      cout << __func__ 
-           << " starting from id: " << setw(12) << sid 
-           << " returning index: " 
-           << setw(12) << _tt->getStraw(sid).index() 
-           << " which is id: " <<  setw(12) << _tt->getStraw(sid).id() 
-           << endl;
-    }
-
-    return _tt->getStraw(sid).index();
-
-  } //; ttStrawIndex
 
   void TTrackerMaker::makeSupportStructure(){
 
