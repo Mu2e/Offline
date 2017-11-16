@@ -1,0 +1,24 @@
+BEGIN_PROLOG
+# straw digis
+makeSD : {
+    module_type : StrawDigisFromStepPointMCs
+    g4ModuleLabel : g4run
+    TimeOffsets   : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+    deadStrawList        : {
+	verbosity   : 0
+	deadPlanes : [ ]
+	deadPanels : [ ]
+	deadLayers  : [ ]
+	deadStraws  : [ ]
+    }
+}
+#------------------------------------------------------------------------------
+
+TrackerMC : {
+    producers : { 
+	makeSD                    : { @table::makeSD                    }
+    }
+}
+
+
+END_PROLOG

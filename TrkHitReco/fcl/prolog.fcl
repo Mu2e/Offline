@@ -1,0 +1,33 @@
+BEGIN_PROLOG
+#  straw hit making from straw digis
+makeSHfromSD : {
+  module_type : StrawHitsFromStrawDigis2
+  StrawDigis : makeSD
+  #UseCalorimeter : true
+}
+
+MakeStrawHitPositions : {
+  module_type             : MakeStrawHitPositions
+  StrawHitCollectionLabel : "makeSH"
+  StrawHitFlagCollectionLabel : "FSHPreStereo"
+
+}
+
+MakeStereoHits : {
+  module_type : MakeStereoHits2
+  MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
+  WriteStereoPairs : true
+  maxChisquared : 20
+}
+
+TrkHitReco : {
+    producers : { 
+	makeSH                    : { @table::makeSHfromSD              }
+	MakeStrawHitPositions     : { @table::MakeStrawHitPositions     } 
+	MakeStereoHits            : { @table::MakeStereoHits            }
+    }
+}
+
+
+
+END_PROLOG
