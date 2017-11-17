@@ -623,14 +623,15 @@ CalPatRec : { @table::CalPatRec
 	    useAsFilter                                 : 0
 	    StrawHitCollectionLabel                     : makeSH
 	    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
+	    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions
 	    caloClusterModuleLabel                      : CaloClusterFromProtoCluster
 #	    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
 #	    BackgroundSelectionBits                     : ["Background", "Isolated"]
 	    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection"]
 	    BackgroundSelectionBits                     : ["Background"]
 	    MinNHits                                    : 15
-	    DtMin                                       : -40.
-	    DtMax                                       :  40.   # make it symmetric
+	    DtMin                                       : -30.   # value before 2017-11-17 was -40. ns
+	    DtMax                                       :  20.   # value before 2017-11-17 was 40. 
 	    minClusterEnergy                            : 50.    # MeV
 	    minClusterSize                              : 2      # number of crystals
 	    minClusterTime                              : 500.   # ns

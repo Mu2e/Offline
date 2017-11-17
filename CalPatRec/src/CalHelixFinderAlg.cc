@@ -1701,7 +1701,7 @@ namespace mu2e {
 //---------------------------------------------------------------------------------------
 // use the results of the helix search to see if points along the track can be rescued
 //---------------------------------------------------------------------------------------
-    if (Helix._srphi.qn() == 0) {
+    if (Helix._srphi.qn() < 10) {
       usePhiResid = 0;
     }else {
       usePhiResid = 1;
@@ -1753,14 +1753,6 @@ namespace mu2e {
     if (_debug != 0) printf("[CalHelixFinderAlg::doPatternRecognition]: calling filterUsingPatternRecognition\n");
 
                                   // update hack data with last results
-    // THackData* hack;
-    // hack = (THackData*) gROOT->GetRootFolder()->FindObject("HackData");
-    // hack->fData[14] = Helix._radius;
-    // hack->fData[15] = Helix._sxy.chi2DofCircle();
-    // hack->fData[6]  = Helix._fz0;
-    // hack->fData[7]  = Helix._dfdz*Helix._radius;
-    // hack->fData[8]  = Helix._dfdz;
-
     Helix._diag.radius_14          = Helix._radius;
     Helix._diag.chi2_dof_circle_15 = Helix._sxy.chi2DofCircle();
     Helix._diag.z0_6               = Helix._fz0;

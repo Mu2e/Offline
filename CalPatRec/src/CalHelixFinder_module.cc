@@ -351,7 +351,7 @@ namespace mu2e {
       // printf("[CalHelixFinder::initHelixSeed] %4i %10.3f %10.3f %10.3f %10.3f\n", 
       // 	     (int)loc, shpos.pos().x(), shpos.pos().y(), shpos.pos().z(), shphi);
 
-      HelixHit            hhit(shpos,loc,shphi);
+      HelixHit                hhit(shpos,loc,shphi);
       
       hhit._flag.clear(StrawHitFlag::resolvedphi);
 					

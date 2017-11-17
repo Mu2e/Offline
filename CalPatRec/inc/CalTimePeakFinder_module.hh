@@ -94,6 +94,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     std::string      _shLabel ; // MakeStrawHit label (makeSH)
     std::string      _shfLabel;
+    std::string      _shpLabel;
     std::string      _ccmLabel; // caloClusterModuleLabel
 
     StrawHitFlag     _hsel;

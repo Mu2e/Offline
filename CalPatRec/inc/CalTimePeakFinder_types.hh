@@ -16,6 +16,7 @@ namespace fhicl {
 
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHitPosition.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
@@ -37,6 +38,7 @@ namespace mu2e {
       const TimeCluster*              _timeCluster;
       const CaloClusterCollection*    ccCollection;
       const StrawHitCollection*       shcol;
+      const StrawHitPositionCollection*       shpcol;
       const StrawHitFlagCollection*   shfcol;
       CalTimePeakCollection*          _tpeaks;      // cache of time peaks
       TimeClusterCollection*          _outseeds;
