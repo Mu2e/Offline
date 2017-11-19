@@ -22,6 +22,7 @@
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "art/Utilities/ToolMacros.h"
 #include "art/Utilities/make_tool.h"
@@ -60,10 +61,12 @@ namespace mu2e {
 
     struct HitData_t {
       float  doca;
+      float  dtCls;
     };
     
     struct HitHist_t {
       TH1F*  doca;
+      TH1F*  dtCls;
     };
 
     struct Hist_t {
@@ -138,7 +141,8 @@ namespace mu2e {
     
 //-----------------------------------------------------------------------------
   int CalTrkFitDiag::bookHitHistograms(HitHist_t* Hist, art::TFileDirectory* Dir) {
-    Hist->doca  = Dir->make<TH1F>("doca","doca", 1000, -20.,  20 );
+    Hist->doca  = Dir->make<TH1F>("doca" ,"doca", 1000, -20.,  20 );
+    Hist->dtCls = Dir->make<TH1F>("dtCls","dtCls; #Delta t = t_{calo-cluster}-t_{straw} - tof [ns]", 401, -200.5,  200.5 );
     return 0;
   }
 
@@ -252,7 +256,8 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   int CalTrkFitDiag::fillHitHistograms(HitHist_t* Hist, HitData_t* HitData) {
-    Hist->doca->Fill(HitData->doca);
+    Hist->doca ->Fill(HitData->doca );
+    Hist->dtCls->Fill(HitData->dtCls);    
     return 0;
   }
 
@@ -288,6 +293,22 @@ namespace mu2e {
       krep->traj().getInfo(0.0,tpos,tdir);
 					          // loop over track hits
       int nhits = krep->hitVector().size();
+
+      //get the calorimeter cluster from the KalSeed
+      double             z_cls(-99999), time_cls(-9999);
+      double             pitchAngle(0.67);//FIX ME! that should be parsed from the fcl
+      double             meanDriftTime = 1.25/0.06;// half straw tube radius / drift velocity
+      const CaloCluster* cluster(0);
+      cluster = _data->kscol->at(i).caloCluster().get();
+
+      if (cluster != 0)  {
+	CLHEP::Hep3Vector gpos        = _data->calorimeter->geomUtil().diskToMu2e(cluster->diskId(),cluster->cog3Vector());
+	CLHEP::Hep3Vector cog_cluster = _data->calorimeter->geomUtil().mu2eToTracker(gpos);
+	z_cls    = cog_cluster.z();//z-coordinate of the cluster in the tracker coordinate frame
+	
+	time_cls = cluster->time();
+      }
+
       for (int i=0; i<nhits; ++i) {
 	const mu2e::TrkStrawHit* hit = static_cast<TrkStrawHit*> (hot_l.at(i));
 	int                hIndex    = hit->index();
@@ -320,6 +341,17 @@ namespace mu2e {
 
 	hitData.doca = hitpoca.doca();
 	
+	//estiamte the time residual between the straw-hit and the calcorimeter cluster taking into account the tof and mean-rift time
+	double           dt(-9999.);
+	if (cluster != 0){
+	  double           z_straw = hpos.z();
+	  double           time    = sh->time();
+	  double           tof     = (z_cls - z_straw)/sin(pitchAngle)/CLHEP::c_light;
+	  dt      = time_cls - (time + tof - meanDriftTime);
+	}
+	
+	hitData.dtCls = dt;
+
 	if (found) fillHitHistograms(_hist._hit[0],&hitData); 
 	else       fillHitHistograms(_hist._hit[1],&hitData);
       }

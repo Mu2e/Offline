@@ -275,10 +275,10 @@ namespace mu2e {
       }
       
       if (kseg == kalSeed->segments().end()) {
-	printf("Helix segment range doesn't cover flt0 = %10.3f\n",flt0) ;
+	printf("[CalTrkFit::filter] Helix segment range doesn't cover flt0 = %10.3f\n",flt0) ;
 
 	for (auto iseg= kalSeed->segments().begin(); iseg != kalSeed->segments().end(); ++iseg) {
-	  printf("segment fmin, fmax: %10.3f %10.f \n",iseg->fmin(),iseg->fmax());
+	  printf("[CalTrkFit::filter] segment fmin, fmax: %10.3f %10.f \n",iseg->fmin(),iseg->fmax());
 	}
 	kseg = kalSeed->segments().begin();
       }

@@ -14,14 +14,9 @@ rootlibs  = env['ROOTLIBS']
 babarlibs = env['BABARLIBS']
 
 mainlib = helper.make_mainlib ( [
-    'mu2e_TrkReco',
-    'mu2e_BTrkData',
-    'mu2e_Mu2eBTrk',
     'mu2e_Mu2eUtilities',
     'mu2e_ConditionsService',
     'mu2e_GeometryService',
-    'mu2e_CalorimeterGeom',
-    'mu2e_BFieldGeom',
     'mu2e_TrackerGeom',
     'mu2e_MCDataProducts',
     'mu2e_RecoDataProducts',
@@ -29,7 +24,6 @@ mainlib = helper.make_mainlib ( [
     'mu2e_Mu2eInterfaces',
     'mu2e_DataProducts',
     'mu2e_GeneralUtilities',
-    babarlibs,
     'art_Framework_Core',
     'art_Framework_Principal',
     'art_Framework_Services_Registry',
@@ -52,23 +46,17 @@ mainlib = helper.make_mainlib ( [
 # Fixme: split into link lists for each module.
 helper.make_plugins( [
    mainlib,
-   'mu2e_TrkReco',
    'mu2e_Mu2eUtilities',
    'mu2e_SeedService_SeedService_service',
    'mu2e_ConditionsService',
    'mu2e_GeometryService',
-   'mu2e_CalorimeterGeom',
-   'mu2e_BFieldGeom',
-   'mu2e_Mu2eHallGeom',
    'mu2e_TrackerGeom',
    'mu2e_TTrackerGeom',
-   'mu2e_MCDataProducts',
    'mu2e_RecoDataProducts',
    'mu2e_GlobalConstantsService',
    'mu2e_Mu2eInterfaces',
    'mu2e_DataProducts',
    'mu2e_GeneralUtilities',
-   babarlibs,
    'art_Framework_Core',
    'art_Framework_Principal',
    'art_Framework_Services_Registry',
@@ -86,16 +74,12 @@ helper.make_plugins( [
    'CLHEP',
    'HepPDT',
    rootlibs,
-    'TMVA',
-    'xerces-c',
    'boost_filesystem',
    'boost_system',
     ] )
 
-# Fixme: do I need all of babarlibs below?
 helper.make_dict_and_map( [
         mainlib,
-        babarlibs,
         'art_Persistency_Common',
         'art_Persistency_Common',
         'art_Utilities',

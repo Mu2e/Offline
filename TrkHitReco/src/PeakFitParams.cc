@@ -1,7 +1,7 @@
-#include "TrkChargeReco/inc/PeakFitParams.hh"
+#include "TrkHitReco/inc/PeakFitParams.hh"
 
 namespace mu2e {
-  namespace TrkChargeReco {
+  namespace TrkHitReco {
 
     std::vector<std::string> PeakFitParams::_pnames { "earlyCharge",
 						      "pedestal",

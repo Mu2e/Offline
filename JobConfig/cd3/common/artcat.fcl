@@ -18,7 +18,7 @@
 //
 // Andrei Gaponenko, 2016
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 process_name: artcat
 source: { module_type: RootInput }

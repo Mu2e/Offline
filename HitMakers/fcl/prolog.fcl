@@ -6,38 +6,6 @@
 BEGIN_PROLOG
 
 #------------------------------------------------------------------------------
-# time map generation modules, used by the MC digi makers
-#------------------------------------------------------------------------------
-# Form StrawHits (SH).
-protonTimeMap : { 
-    module_type        : GenerateProtonTimes 
-}
-
-muonTimeMap : { 
-    module_type        : GenerateMuonLife 
-}
-
-# straw digis
-makeSD : {
-    module_type : StrawDigisFromStepPointMCs
-    g4ModuleLabel : g4run
-    TimeOffsets   : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-    deadStrawList        : {
-	verbosity   : 0
-	deadPlanes : [ ]
-	deadPanels : [ ]
-	deadLayers  : [ ]
-	deadStraws  : [ ]
-    }
-}
-
-#  straw hit making from straw digis
-makeSHfromSD : {
-  module_type : StrawHitsFromStrawDigis2
-  StrawDigis : makeSD
-  #UseCalorimeter : true
-}
-
 # Form DCHHits (DcH). - 2015-01-23 P.Murat: is it obsolete?
 makeDcH : {
   module_type          : MakeDriftCellHit
@@ -49,21 +17,6 @@ makeDcH : {
   zZoneLimits          : [ 0 ]
   zZoneActive          : [ true ]
   zZoneMinLiveTime     : [ 0.0 ]
-}
-# pattern recognition precursors
-
-MakeStrawHitPositions : {
-  module_type             : MakeStrawHitPositions
-  StrawHitCollectionLabel : "makeSH"
-  StrawHitFlagCollectionLabel : "FSHPreStereo"
-
-}
-
-MakeStereoHits : {
-  module_type : MakeStereoHits2
-  MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
-  WriteStereoPairs : true
-  maxChisquared : 20
 }
 
 #------------------------------------------------------------------------------
@@ -77,16 +30,6 @@ makeDcHWTOff : {
   maxFullPrint         : 0
   minimumEnergy        : 0.00004
   makerModuleLabel     : makeDcH
-}
-
-
-HitMakers : {
-    producers : { 
-	makeSD                    : { @table::makeSD                    }
-	makeSH                    : { @table::makeSHfromSD              }
-	MakeStrawHitPositions     : { @table::MakeStrawHitPositions     } 
-	MakeStereoHits            : { @table::MakeStereoHits            }
-    }
 }
 
 END_PROLOG

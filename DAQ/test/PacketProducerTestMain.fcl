@@ -3,9 +3,9 @@
 #  This script is an example of how to configure the TrkPacketProducer, CalPacketProducer, and CrvPacketProducer
 #  modules to generate simulated DTC packets.
 #
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "TrkDiag/fcl/KalDiag.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 

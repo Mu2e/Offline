@@ -1,4 +1,4 @@
-// $Id: FlagBkgHits2_module.cc, without diagnostics $
+// $Id: FlagBkgHits_module.cc, without diagnostics $
 // $Author: brownd & mpettee $ 
 // $Date: 2016/11/30 $
 //
@@ -60,12 +60,12 @@ using namespace boost::accumulators;
 namespace mu2e 
 {
 
-  class FlagBkgHits2 : public art::EDProducer
+  class FlagBkgHits : public art::EDProducer
   {
     public:
        enum clusterer { TwoLevelThreshold=1, TwoNiveauThreshold=2, TwoNiveauThresholdB=3};
-       explicit FlagBkgHits2(fhicl::ParameterSet const&);
-       virtual ~FlagBkgHits2();
+       explicit FlagBkgHits(fhicl::ParameterSet const&);
+       virtual ~FlagBkgHits();
        virtual void beginJob();
        virtual void produce(art::Event& event ); 
     
@@ -103,7 +103,7 @@ namespace mu2e
       void countPlanes(const BkgCluster& cluster,BkgQual& cqual, const TTracker& tt, const StrawHitCollection& shcol) const;
   };
 
-  FlagBkgHits2::FlagBkgHits2(const fhicl::ParameterSet& pset) :
+  FlagBkgHits::FlagBkgHits(const fhicl::ParameterSet& pset) :
     _debug(pset.get<int>(           "debugLevel",0)),
     _printfreq(pset.get<int>(       "printFrequency",101)),
     _shtag(pset.get<art::InputTag>( "StrawHitCollectionLabel","makeSH")),
@@ -154,20 +154,20 @@ namespace mu2e
       _reader.BookMVA("MLP method", weights);
   }
 
-  FlagBkgHits2::~FlagBkgHits2(){}
+  FlagBkgHits::~FlagBkgHits(){}
 
 
-  void FlagBkgHits2::beginJob()
+  void FlagBkgHits::beginJob()
   {
      _clusterer->init();
      if(_useMVA) _bkgMVA.initMVA();
   }
 
 
-  void FlagBkgHits2::produce(art::Event& event )
+  void FlagBkgHits::produce(art::Event& event )
   {
      unsigned iev=event.id().event();
-     if(_debug > 0 && (iev%_printfreq)==0) std::cout<<"FlagBkgHits2: event="<<iev<<std::endl;
+     if(_debug > 0 && (iev%_printfreq)==0) std::cout<<"FlagBkgHits: event="<<iev<<std::endl;
 
 
      art::Handle<StrawHitCollection> strawHitsHandle;
@@ -226,7 +226,7 @@ namespace mu2e
 
 
 
-  void FlagBkgHits2::classifyClusters(BkgClusterCollection& clusters,BkgQualCollection& cquals, 
+  void FlagBkgHits::classifyClusters(BkgClusterCollection& clusters,BkgQualCollection& cquals, 
                                       const StrawHitCollection& shcol, const StrawHitPositionCollection& shpcol) const 
   {
       const TTracker& tracker = dynamic_cast<const TTracker&>(getTrackerOrThrow());
@@ -246,7 +246,7 @@ namespace mu2e
 
 
 
-  void FlagBkgHits2::fillBkgQual(const BkgCluster& cluster, BkgQual& cqual, const TTracker& tracker, 
+  void FlagBkgHits::fillBkgQual(const BkgCluster& cluster, BkgQual& cqual, const TTracker& tracker, 
                                  const StrawHitCollection& shcol, const StrawHitPositionCollection& shpcol) const 
   {
 
@@ -341,7 +341,7 @@ namespace mu2e
      }
   }
 
-  void FlagBkgHits2::countPlanes(const BkgCluster& cluster, BkgQual& cqual, const TTracker& tracker, 
+  void FlagBkgHits::countPlanes(const BkgCluster& cluster, BkgQual& cqual, const TTracker& tracker, 
                                  const StrawHitCollection& shcol) const 
   {
       std::vector<int> hitplanes(tracker.nPlanes(),0);
@@ -377,7 +377,7 @@ namespace mu2e
       cqual[BkgQual::nphits] = nphits/static_cast<float>(np);
   }
 
-  void FlagBkgHits2::countHits(const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo) const 
+  void FlagBkgHits::countHits(const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo) const 
   {
       nactive = nstereo = 0;
       for (const auto& chit : cluster.hits()) 
@@ -392,5 +392,5 @@ namespace mu2e
 
 }
 
-using mu2e::FlagBkgHits2;
-DEFINE_ART_MODULE(FlagBkgHits2);
+using mu2e::FlagBkgHits;
+DEFINE_ART_MODULE(FlagBkgHits);

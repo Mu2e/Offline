@@ -23,15 +23,16 @@ namespace mu2e {
 
       enum  { kMaxSeeds = 100 };
 
-      int     nseeds  [        2]; // 0:all, 1:nhits > nhitsMin; assume nseeds <= 100
-      int     nhits   [kMaxSeeds];
-      int     good    [kMaxSeeds];
-      double  radius  [kMaxSeeds];
-      double  chi2XY  [kMaxSeeds];
-      double  chi2ZPhi[kMaxSeeds];
-      double  pT      [kMaxSeeds];
-      double  p       [kMaxSeeds];
-
+      int     nseeds   [        2]; // 0:all, 1:nhits > nhitsMin; assume nseeds <= 100
+      int     nhits    [kMaxSeeds];
+      int     good     [kMaxSeeds];
+      double  radius   [kMaxSeeds];
+      double  chi2XY   [kMaxSeeds];
+      double  chi2ZPhi [kMaxSeeds];
+      double  pT       [kMaxSeeds];
+      double  p        [kMaxSeeds];
+      int     nStationPairs[kMaxSeeds];
+ 
       int maxSeeds() { return kMaxSeeds; }
     };
 
@@ -45,6 +46,7 @@ namespace mu2e {
       TH1F*  p       [2];
       TH2F*  nhitsvspT;
       TH2F*  nhitsvsp;
+      TH1F*  nStationPairs;
     };
 
   }

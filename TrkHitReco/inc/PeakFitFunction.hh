@@ -1,9 +1,9 @@
-#ifndef TrkChargeReco_PeakFitFunction_hh
-#define TrkChargeReco_PeakFitFunction_hh
+#ifndef TrkHitReco_PeakFitFunction_hh
+#define TrkHitReco_PeakFitFunction_hh
 
 // Class holding functions which describe the ideal waveforms.  These are used to construct fits.
 
-#include "TrkChargeReco/inc/PeakFitParams.hh"
+#include "TrkHitReco/inc/PeakFitParams.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include <functional>
 #include "Rtypes.h"
@@ -14,7 +14,7 @@ class TF1;
 
 namespace mu2e {
 
-  namespace TrkChargeReco {
+  namespace TrkHitReco {
 
     // define the specific fit configuration among all options
     struct FitConfig 

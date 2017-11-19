@@ -153,7 +153,7 @@ namespace mu2e {
     _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makeSH")),
     _shpTag(pset.get<art::InputTag>("StrawHitPositionCollectionTag","MakeStereoHits")),
     _shfTag(pset.get<art::InputTag>("StrawHitFlagCollectionTag","FlagBkgHits")),
-    _hsTag(pset.get<art::InputTag>("HelixSeedCollectionTag","PosHelixFinder")),
+    _hsTag(pset.get<art::InputTag>("HelixSeedCollectionTag","HelixFinder:Positive")),
     _ksTag(pset.get<art::InputTag>("KalSeedFitCollectionTag","KSFDeM")),
     _kfTag(pset.get<art::InputTag>("KalFinalFitCollectionTag","KFFDeM")),
     _tqTag(pset.get<art::InputTag>("TrkQualTag","KFFDeM")),

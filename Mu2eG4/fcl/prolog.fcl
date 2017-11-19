@@ -33,6 +33,7 @@ mu2eg4DefaultPhysics: {
     // G4HelixSimpleRunge
     stepper : "G4ClassicalRK4"
     bfieldMaxStep: 20. // mm
+    limitStepInAllVolumes: false
 }
 #----------------
 mu2eg4DefaultResourceLimits: {

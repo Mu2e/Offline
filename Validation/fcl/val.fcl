@@ -3,8 +3,8 @@
 #
 
 #include "fcl/minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 
 process_name : validation1

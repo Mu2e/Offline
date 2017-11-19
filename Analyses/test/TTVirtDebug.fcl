@@ -5,8 +5,8 @@
 # $Author: kutschke $
 # $Date: 2013/12/20 20:05:12 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this job a name.
 process_name : TTVirtDebug

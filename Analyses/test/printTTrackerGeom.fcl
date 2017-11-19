@@ -6,8 +6,8 @@
 # $Author: kutschke $
 # $Date: 2013/12/20 20:05:53 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 
 process_name : PrintTTracker

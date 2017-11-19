@@ -98,7 +98,7 @@ double ttrackerSupport.midRing.Phi0       = 0.0;   // in degrees
 double ttrackerSupport.midRing.dPhi       = 360.0; // degrees
 string ttrackerSupport.midRing.material   = "BrassC360"; 
 
-// steves are called beams now
+// staves are called beams now
 // in doc-db 888.v7 the one at the top is different one from the ones
 // on the sides
 
@@ -125,6 +125,13 @@ vector<string> ttrackerSupport.beam1.serviceMaterials  = {"G4_Cu", "G4_Cu", "Str
 vector<double> ttrackerSupport.beam1.serviceCovRelThickness = {.1, .1, .1, .1, .1} ; // fractions of service layers as "covers"
 vector<string> ttrackerSupport.beam1.serviceMaterialsCov =
   { "G4_POLYETHYLENE", "G4_POLYETHYLENE", "StainlessSteel316", "G4_POLYETHYLENE", "G4_POLYETHYLENE" };
+
+// A panel's support ring structure covers 360 degrees of the circle
+// in this model.  This is not consistent with how they are built.
+double ttrackerSupport.phiCoverage            = 360.0;
+// Angle between ribs at the top of the panel arc. Not used in this model.
+double ttrackerSupport.dphiRibs               = 27.0; // degrees
+
 
 // innerRing =? composite manifold of plastic and Al
 double ttrackerSupport.innerRing.innerRadius  = 700.;

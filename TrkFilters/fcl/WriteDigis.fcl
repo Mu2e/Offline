@@ -4,9 +4,9 @@
 #
 #  > mu2e --config TrkFilters/fcl/WriteDigis.fcl --TFile TTWrite.root --nevts=100
 #
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "TrkFilters/fcl/prolog.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"

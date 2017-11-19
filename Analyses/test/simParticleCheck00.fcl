@@ -4,8 +4,8 @@
 # $Author: genser $
 # $Date: 2012/12/17 21:20:26 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # this file can be used to test 
 # e.g., if a geant4 version has a "particle timing problem"

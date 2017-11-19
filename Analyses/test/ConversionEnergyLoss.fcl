@@ -8,8 +8,8 @@
 #
 # Original author Rob Kutschke
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this process a name.
 process_name : ConversionEnergyLoss

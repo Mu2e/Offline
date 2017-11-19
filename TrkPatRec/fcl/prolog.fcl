@@ -11,83 +11,10 @@ FitDir : {
   downstream : 0
   upstream : 1
 }
-# Hit Filters; these should be in the same package as the modules FIXME!
-FSHPreStereo  : {
-  module_type : FlagStrawHits
-  StrawHitPositionCollectionTag : ""
-  maximumEnergy : 0.01
-  UseCaloCluster           : false
-  UseCaloClusterXYPosition : false
-  CaloClusterMinE          : 50.
-  CaloClusterMinSize       : 2
-  CaloClusterMinDt         : -40
-  CaloClusterMaxDt         : 40
-  pitchAngle               : 0.67   # mean pitch for CE
-  beta                     : 1.
-  dtOffset                 : @local::TrackCaloMatching.DtOffset
-}
-
-FlagStrawHits  : {
-  module_type : FlagStrawHits
-  maximumEnergy : 0.0035
-  UseCaloCluster           : false
-  UseCaloClusterXYPosition : false
-  CaloClusterMinE          : 50.
-  CaloClusterMinSize       : 2
-  CaloClusterMinDt         : -40
-  CaloClusterMaxDt         : 40
-  pitchAngle               : 0.67   # mean pitch for CE
-  beta                     : 1.
-  dtOffset                 : @local::TrackCaloMatching.DtOffset
-}
-FlagBkgHits : {
-  module_type : FlagBkgHits2
-  UseBkgMVA : true
-  BkgMVA : { MVAWeights : "TrkFilters/data/BkgMVA.weights.xml" }
-  MinActiveHits : 3
-  MinStereoHits : 0
-  MinNPlanes : 2
-  MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
-  BkgMVACut : 0.5
-  debugLevel : 0
-
-  Clusterer : 2
-  TLTClusterer : { 
-    MaxNIterations : 10
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection"]
-  }
-  TNTClusterer : { 
-    MaxNIterations : 10
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection"]
-  }
-  TNTBClusterer : { 
-    MaxNIterations : 1
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection"]
-  }
-}
-
 
 # time clustering is the 1st stage of track finding 
 TimeClusterFinder : {
-  module_type               : TimeClusterFinder2
+  module_type               : TimeClusterFinder
   MaxdPhi                   : 1.5
   HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits	    : ["Background"]
@@ -96,28 +23,13 @@ TimeClusterFinder : {
 }
 
 RobustHelixFinder : {
-   module_type		: RobustHelixFinder2
+   module_type		: RobustHelixFinder
    HitSelectionBits	    : ["Stereo","TimeDivision"]
    HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
    HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
    trigMode : true
-}
-
-# we need both positive and negative helicity helix finders
-PosHelixFinder : {
-  @table::RobustHelixFinder
-  RobustHelixFit2 : {
-    Helicity		: 1
-    ntripleMax : 200    
-  }
-}
-
-NegHelixFinder : {
-  @table::RobustHelixFinder
-  RobustHelixFit2 : {
-    Helicity		: -1
-    ntripleMax : 200    
-  }
+   Helicities		: [1,-1]
+   ntripleMax : 200    
 }
 
 
@@ -189,62 +101,62 @@ KalFinalFit : {
 # seed Fit configuration for specific particles
 #  First, downstream electrons
 KSFDeM			      : @local::KalSeedFit
-KSFDeM.SeedCollectionTag      : "PosHelixFinder"
+KSFDeM.SeedCollectionTag      : "HelixFinder:Positive"
 KSFDeM.fitparticle	      : @local::Particle.eminus
 KSFDeM.fitdirection	      : @local::FitDir.downstream 
 # upstream electrons
 KSFUeM			      : @local::KalSeedFit
-KSFUeM.SeedCollectionTag      : "NegHelixFinder"
+KSFUeM.SeedCollectionTag      : "HelixFinder:Negative"
 KSFUeM.fitparticle	      : @local::Particle.eminus
 KSFUeM.fitdirection	      : @local::FitDir.upstream 
 #  downstream positrons
 KSFDeP			      : @local::KalSeedFit
-KSFDeP.SeedCollectionTag      : "NegHelixFinder"
+KSFDeP.SeedCollectionTag      : "HelixFinder:Negative"
 KSFDeP.fitparticle	      : @local::Particle.eplus
 KSFDeP.fitdirection	      : @local::FitDir.downstream 
 # upstream positrons
 KSFUeP			      : @local::KalSeedFit
-KSFUeP.SeedCollectionTag      : "PosHelixFinder"
+KSFUeP.SeedCollectionTag      : "HelixFinder:Positive"
 KSFUeP.fitparticle	      : @local::Particle.eplus
 KSFUeP.fitdirection	      : @local::FitDir.upstream 
 # downstream mu minus
 KSFDmuM			      : @local::KalSeedFit
-KSFDmuM.SeedCollectionTag     : "PosHelixFinder"
+KSFDmuM.SeedCollectionTag     : "HelixFinder:Positive"
 KSFDmuM.fitparticle	      : @local::Particle.muminus
 KSFDmuM.fitdirection	      : @local::FitDir.downstream 
 # upstream mu minus
 KSFUmuM			      : @local::KalSeedFit
-KSFUmuM.SeedCollectionTag     : "NegHelixFinder"
+KSFUmuM.SeedCollectionTag     : "HelixFinder:Negative"
 KSFUmuM.fitparticle	      : @local::Particle.muminus
 KSFUmuM.fitdirection	      : @local::FitDir.upstream 
 # downstream mu plus
 KSFDmuP			      : @local::KalSeedFit
-KSFDmuP.SeedCollectionTag     : "NegHelixFinder"
+KSFDmuP.SeedCollectionTag     : "HelixFinder:Negative"
 KSFDmuP.fitparticle	      : @local::Particle.muplus
 KSFDmuP.fitdirection	      : @local::FitDir.downstream 
 # upstream mu plus
 KSFUmuP			      : @local::KalSeedFit
-KSFUmuP.SeedCollectionTag     : "PosHelixFinder"
+KSFUmuP.SeedCollectionTag     : "HelixFinder:Positive"
 KSFUmuP.fitparticle	      : @local::Particle.muplus
 KSFUmuP.fitdirection	      : @local::FitDir.upstream 
 # downstream pi minus
 KSFDpiM			      : @local::KalSeedFit
-KSFDpiM.SeedCollectionTag     : "PosHelixFinder"
+KSFDpiM.SeedCollectionTag     : "HelixFinder:Positive"
 KSFDpiM.fitparticle	      : @local::Particle.piminus
 KSFDpiM.fitdirection	      : @local::FitDir.downstream 
 # upstream pi minus
 KSFUpiM			      : @local::KalSeedFit
-KSFUpiM.SeedCollectionTag     : "NegHelixFinder"
+KSFUpiM.SeedCollectionTag     : "HelixFinder:Negative"
 KSFUpiM.fitparticle	      : @local::Particle.piminus
 KSFUpiM.fitdirection	      : @local::FitDir.upstream 
 # downstream pi plus
 KSFDpiP			      : @local::KalSeedFit
-KSFDpiP.SeedCollectionTag     : "NegHelixFinder"
+KSFDpiP.SeedCollectionTag     : "HelixFinder:Negative"
 KSFDpiP.fitparticle	      : @local::Particle.piplus
 KSFDpiP.fitdirection	      : @local::FitDir.downstream 
 # upstream pi plus
 KSFUpiP			      : @local::KalSeedFit
-KSFUpiP.SeedCollectionTag     : "PosHelixFinder"
+KSFUpiP.SeedCollectionTag     : "HelixFinder:Positive"
 KSFUpiP.fitparticle	      : @local::Particle.piplus
 KSFUpiP.fitdirection	      : @local::FitDir.upstream
 
@@ -311,18 +223,14 @@ KFFUpiP.fitparticle	      : @local::Particle.piplus
 KFFUpiP.fitdirection	      : @local::FitDir.upstream
 
 # Declare a table with all the modules needed for track reconstruction
+# This should be divided into sim, reco FIXME!
 Tracking : {
   producers : {
-    makeSD	    : @local::makeSD
-    makeSH	    : @local::makeSHfromSD
-    FSHPreStereo    : @local::FSHPreStereo
-    MakeStrawHitPositions  : @local::MakeStrawHitPositions
-    MakeStereoHits  : @local::MakeStereoHits
-    FlagStrawHits   : @local::FlagStrawHits
-    FlagBkgHits	    : @local::FlagBkgHits
+# the following should be independently sourced FIXME!
+    @table::TrkHitReco.producers
+    @table::TrackerMC.producers
     TimeClusterFinder  : @local::TimeClusterFinder
-    PosHelixFinder  : @local::PosHelixFinder
-    NegHelixFinder  : @local::NegHelixFinder
+    HelixFinder  : @local::RobustHelixFinder
 # now all the different track fits based on these inputs
 # First, seed fits
     KSFDeM	  : @local::KSFDeM
@@ -354,8 +262,9 @@ Tracking : {
 # simulation sequence to create digis.  Currently just one module, but that might change
   DigiSim : [ makeSD ]
 # production sequence to prepare hits for tracking
-  #PrepareHits : [ makeSH, FSHPreStereo, MakeStrawHitPositions, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
   PrepareHits : [ makeSH, MakeStereoHits, FlagBkgHits ]
+# production sequence to find helices
+  FindHelices : [ TimeClusterFinder, HelixFinder ]
 # define standard outputs 
   Output : {
     Digis : [ "keep mu2e::StrawDigis_*_*_*" ]
@@ -378,19 +287,19 @@ Tracking : {
   }
 }
 # production sequences for tracking specific paricles; first electrons
-Tracking.TPRDeM  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, KSFDeM, KFFDeM ]
-Tracking.TPRUeM  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, NegHelixFinder, KSFUeM, KFFUeM ]
-Tracking.TPRDeP  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, NegHelixFinder, KSFDeP, KFFDeP ]
-Tracking.TPRUeP  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, KSFUeP, KFFUeP ]
+Tracking.TPRDeM  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFDeM, KFFDeM ]
+Tracking.TPRUeM  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFUeM, KFFUeM ]
+Tracking.TPRDeP  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFDeP, KFFDeP ]
+Tracking.TPRUeP  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFUeP, KFFUeP ]
 #muons
-Tracking.TPRDmuM  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, KSFDmuM, KFFDmuM ]
-Tracking.TPRUmuM  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, NegHelixFinder, KSFUmuM, KFFUmuM ]
-Tracking.TPRDmuP  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, NegHelixFinder, KSFDmuP, KFFDmuP ]
-Tracking.TPRUmuP  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, KSFUmuP, KFFUmuP ]
+Tracking.TPRDmuM  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFDmuM, KFFDmuM ]
+Tracking.TPRUmuM  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFUmuM, KFFUmuM ]
+Tracking.TPRDmuP  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFDmuP, KFFDmuP ]
+Tracking.TPRUmuP  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFUmuP, KFFUmuP ]
 #pions
-Tracking.TPRDpiM  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, KSFDpiM, KFFDpiM ]
-Tracking.TPRUpiM  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, NegHelixFinder, KSFUpiM, KFFUpiM ]
-Tracking.TPRDpiP  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, NegHelixFinder, KSFDpiP, KFFDpiP ]
-Tracking.TPRUpiP  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, KSFUpiP, KFFUpiP ]
+Tracking.TPRDpiM  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFDpiM, KFFDpiM ]
+Tracking.TPRUpiM  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFUpiM, KFFUpiM ]
+Tracking.TPRDpiP  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFDpiP, KFFDpiP ]
+Tracking.TPRUpiP  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFUpiP, KFFUpiP ]
 
 END_PROLOG

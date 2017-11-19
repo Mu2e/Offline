@@ -3,9 +3,9 @@
 # $Author: gianipez $
 # $Date: 2012/07/10 00:02:19 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 # Give this job a name.
 process_name : trkExtrapol

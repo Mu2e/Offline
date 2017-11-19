@@ -5,8 +5,8 @@
 # $Author: kutschke $
 # $Date: 2011/09/24 16:18:30 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this job a name.
 process_name : MixBug01

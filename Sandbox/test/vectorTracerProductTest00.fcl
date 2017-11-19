@@ -8,7 +8,7 @@
 # Original author Rob Kutschke
 #
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 # Give this job a name.  
 process_name : vectorTracerProduct00

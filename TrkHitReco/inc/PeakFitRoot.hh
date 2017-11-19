@@ -1,11 +1,11 @@
 
-#ifndef TrkChargeReco_PeakFitRoot_hh
-#define TrkChargeReco_PeakFitRoot_hh
+#ifndef TrkHitReco_PeakFitRoot_hh
+#define TrkHitReco_PeakFitRoot_hh
 // base class for controlling peak fits
     //  Virtual class providing structure for extracting charge from ADC waveforms
 //
-#include "TrkChargeReco/inc/PeakFit.hh"
-#include "TrkChargeReco/inc/PeakFitFunction.hh"
+#include "TrkHitReco/inc/PeakFit.hh"
+#include "TrkHitReco/inc/PeakFitFunction.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include <string>
 
@@ -14,7 +14,7 @@ class TGraphErrors;
 
 namespace mu2e {
 
-  namespace TrkChargeReco {
+  namespace TrkHitReco {
 
 
     class PeakFitRoot : public PeakFit 

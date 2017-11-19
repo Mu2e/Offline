@@ -1,5 +1,5 @@
 // fit waveform using root TF1
-#include "TrkChargeReco/inc/PeakFitRoot.hh"
+#include "TrkHitReco/inc/PeakFitRoot.hh"
 #include "TF1.h"
 #include "TGraphErrors.h"
 #include "TFitResult.h"
@@ -7,7 +7,7 @@
 
 namespace mu2e {
   
-  namespace TrkChargeReco {
+  namespace TrkHitReco {
 
     PeakFitRoot::PeakFitRoot(const StrawElectronics& strawele, const fhicl::ParameterSet& pset) : 
         PeakFit(strawele,pset),
@@ -22,11 +22,11 @@ namespace mu2e {
         _peakfit(strawele),
         _config(_maxFitIter, _debug)
     {   
-        if (_floatWidth)    _config.setOption(TrkChargeReco::FitConfig::floatWidth);
-        if (_floatPedestal) _config.setOption(TrkChargeReco::FitConfig::floatPedestal);
-        if (_truncateADC)   _config.setOption(TrkChargeReco::FitConfig::truncateADC);
-        if (_earlyPeak)     _config.setOption(TrkChargeReco::FitConfig::earlyPeak);
-        if (_latePeak)      _config.setOption(TrkChargeReco::FitConfig::latePeak);
+        if (_floatWidth)    _config.setOption(TrkHitReco::FitConfig::floatWidth);
+        if (_floatPedestal) _config.setOption(TrkHitReco::FitConfig::floatPedestal);
+        if (_truncateADC)   _config.setOption(TrkHitReco::FitConfig::truncateADC);
+        if (_earlyPeak)     _config.setOption(TrkHitReco::FitConfig::earlyPeak);
+        if (_latePeak)      _config.setOption(TrkHitReco::FitConfig::latePeak);
         _peakfit.init(_config);
     }
 
@@ -79,9 +79,9 @@ namespace mu2e {
           Double_t parmin, parmax;
           _peakfit.fitModelTF1()->GetParLimits(ipar,parmin,parmax);
           if(parmin == parmax)
-	    fit.fixParam((TrkChargeReco::PeakFitParams::paramIndex)ipar);
+	    fit.fixParam((TrkHitReco::PeakFitParams::paramIndex)ipar);
           else
-	    fit.freeParam((TrkChargeReco::PeakFitParams::paramIndex)ipar);
+	    fit.freeParam((TrkHitReco::PeakFitParams::paramIndex)ipar);
        }
     }
 

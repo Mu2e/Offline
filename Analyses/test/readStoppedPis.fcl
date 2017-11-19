@@ -4,8 +4,8 @@
 #
 # $Id: readStoppedPis.fcl,v 1.2 2012/08/09 19:23:58 mf Exp $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this job a name.  
 process_name : ReadBackPis01

@@ -1,7 +1,7 @@
 //
 // A module to create simple stereo hits out of StrawHits. StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits2_module.cc,v 1.23 2014/09/18 08:42:47 brownd Exp $
+// $Id: MakeStereoHits_module.cc,v 1.23 2014/09/18 08:42:47 brownd Exp $
 // $Author: brownd $
 // $Date: 2014/09/18 08:42:47 $
 // 
@@ -52,11 +52,11 @@ namespace {
 namespace mu2e {
 
 
-  class MakeStereoHits2 : public art::EDProducer {
+  class MakeStereoHits : public art::EDProducer {
 
      public:
 
-       explicit MakeStereoHits2(fhicl::ParameterSet const& pset);
+       explicit MakeStereoHits(fhicl::ParameterSet const& pset);
 
        void produce( art::Event& e);
        virtual void beginJob();
@@ -107,7 +107,7 @@ namespace mu2e {
        void reportInsertedHits(const TrackerStations& stax);
   };
 
-  MakeStereoHits2::MakeStereoHits2(fhicl::ParameterSet const& pset) :
+  MakeStereoHits::MakeStereoHits(fhicl::ParameterSet const& pset) :
      _debug(pset.get<int>(           "debugLevel",0)),
      _shTag(pset.get<art::InputTag>( "StrawHitCollection","makeSH")),
      _shpTag(pset.get<art::InputTag>("StrawHitPositionCollection","makeSH")),
@@ -139,20 +139,20 @@ namespace mu2e {
       produces<StrawHitFlagCollection>();
   }
 
-  void MakeStereoHits2::beginJob()
+  void MakeStereoHits::beginJob()
   {
      _mvatool.initMVA();    
-     if (_debug > 0) std::cout << "MakeStereoHits2 MVA parameters: " << std::endl;
+     if (_debug > 0) std::cout << "MakeStereoHits MVA parameters: " << std::endl;
      if (_debug > 0) _mvatool.showMVA();
   }
 
-  void MakeStereoHits2::beginRun(art::Run & run)
+  void MakeStereoHits::beginRun(art::Run & run)
   {
       genMap();
   }
 
 
-  void MakeStereoHits2::produce(art::Event& event) 
+  void MakeStereoHits::produce(art::Event& event) 
   {    
      const TTracker& tt(*GeomHandle<TTracker>());
      
@@ -335,13 +335,13 @@ namespace mu2e {
 
   
   // estimate the resolution on the stereo hit position projection along a wire direction
-  double MakeStereoHits2::longRes(StereoHit const& sthit) const 
+  double MakeStereoHits::longRes(StereoHit const& sthit) const 
   {
      return _wres; // this should be a real calculation FIXME!!!
   }
 
 
-  bool MakeStereoHits2::betterPair(StereoHit const& newpair, StereoHit const& oldpair) const 
+  bool MakeStereoHits::betterPair(StereoHit const& newpair, StereoHit const& oldpair) const 
   {
      // choose the best pair as:
      // 1) take the pair with the minimum plane separation
@@ -354,7 +354,7 @@ namespace mu2e {
   }
 
 
-  void MakeStereoHits2::genMap()
+  void MakeStereoHits::genMap()
   {
       const TTracker& tt(*GeomHandle<TTracker>());
 
@@ -416,7 +416,7 @@ namespace mu2e {
   }
 
 
-  void MakeStereoHits2::reportInsertedHits(const TrackerStations& stax)
+  void MakeStereoHits::reportInsertedHits(const TrackerStations& stax)
   {
       if (stax.empty()) return;
       if ( !stax[0].empty()) std::cout << "Built PanelHits size = " << stax[0][0].size() << std::endl;
@@ -433,6 +433,6 @@ namespace mu2e {
 
 } 
 
-using mu2e::MakeStereoHits2;
-DEFINE_ART_MODULE(MakeStereoHits2)
+using mu2e::MakeStereoHits;
+DEFINE_ART_MODULE(MakeStereoHits)
 

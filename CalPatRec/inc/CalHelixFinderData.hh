@@ -50,6 +50,8 @@ namespace mu2e {
       double    dphi0res_22;
       double    dphi0res_23;
       double    dphi0res_24;
+
+      int       nStationPairs;
       
       double    dfdz;
       double    dfdz_scaled;

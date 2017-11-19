@@ -1,14 +1,14 @@
-#include "TrkChargeReco/inc/PeakFit.hh"
+#include "TrkHitReco/inc/PeakFit.hh"
 #include <numeric>
 
 namespace mu2e {
 
-   namespace TrkChargeReco {
+   namespace TrkHitReco {
 
 
        PeakFit::PeakFit(const StrawElectronics& strawele, const fhicl::ParameterSet& pset) : 
           _strawele(strawele),
-          _fittype((TrkChargeReco::FitType) pset.get<TrkChargeReco::FitType>("FitType",TrkChargeReco::FitType::peakminusped))
+          _fittype((TrkHitReco::FitType) pset.get<TrkHitReco::FitType>("FitType",TrkHitReco::FitType::peakminusped))
        {}
 
 

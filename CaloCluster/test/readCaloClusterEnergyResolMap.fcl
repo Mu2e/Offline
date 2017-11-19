@@ -8,8 +8,8 @@
 # Original author G. Pezzullo & G. Tassielli
 
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this job a name.  
 process_name : ReadCaloClusterEnergyResolMap

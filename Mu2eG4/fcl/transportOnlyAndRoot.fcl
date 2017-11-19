@@ -6,86 +6,79 @@
 # $Date: 2014/08/29 16:16:17 $
 # original author KLG
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 # Give this job a name.
 process_name : transportAndRoot
 
-# Start form an empty source
-source :
-{
+# Start from an empty source
+source : {
   module_type : EmptyEvent
-  maxEvents : 1
+  maxEvents : 10
 }
 
-services :
-{
+services : {
+
   message : @local::default_message
-
-  TFileService :
-  {
-    fileName : "transportOnlyAndRoot.root"
-  }
-
+  TFileService :  {    fileName : "transportOnlyAndRoot.root"  }
   RandomNumberGenerator : { }
 
-  GeometryService :
-  {
-    inputFile : "Mu2eG4/test/transportOnlyGeom.txt"
-  }
-
-  ConditionsService :
-  {
-    conditionsfile : "Mu2eG4/test/conditions_01.txt"
-  }
-
-  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-
-  G4Helper : { }
-
+  GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"            }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+  BTrkHelper             : @local::BTrkHelperDefault
+  G4Helper               : { }
+  SeedService            : @local::automaticSeeds
 }
 
-physics :
-{
-  producers:
-  {
+physics : {
 
-    # Generate Event
-    generate:
-    {
-      module_type   : EventGenerator
-      inputfile     : "Mu2eG4/test/genconfig_tonly.txt"
-      seed          : [7789]
-    }
+  producers:  {
 
-    # Run G4 and add hits to the event
-    g4run :
-    {
-      module_type          : G4
-      generatorModuleLabel : generate
-      rmvlevel             : 2
-      seed                 : [9877]
-    }
+    generate : @local::generate
+    g4run :  @local::g4run
 
-    randomsaver:
-    {
-      module_type          : RandomSaverNumber
-    }
+    protonTimeMap        : { module_type : GenerateProtonTimes }
+    muonTimeMap          : { module_type : GenerateMuonLife }
+
+    makeSD               : @local::makeSD
+    makeSH               : @local::makeSHfromSD
+
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
+
+    randomsaver          : @local::randomsaver
 
   }
 
 
-  analyzers:
-  {
+  analyzers: {
 
-    checkhits:
-    {
-      module_type          : ReadBack
-      generatorModuleLabel : generate
-      g4ModuleLabel        : g4run
-      minimumEnergy        : 0.000
+    checkhits: {
+      module_type            : ReadBack
+      generatorModuleLabel   : generate
+      g4ModuleLabel          : g4run
+      diagLevel              : 0
+      minimumEnergy          : 0.000
+      maxFullPrint           : 201
+    }
+
+    # Look at the hits from TTrackerPlaneSupport Sensitive Detectors
+    checksdd: {
+      module_type          : ReadTTrackerDSDetectors
+      diagLevel            : 0
+      hitMakerModuleLabel  : g4run
+      sddStepPoints        : ttrackerDS
       maxFullPrint         : 201
+    }
+    # Look at the hits from virtualdetectors
+    readvd: {
+      module_type      : ReadVirtualDetector
+      vdStepPoints     : virtualdetector
+      savePDG          : [13 , -211]
+      maxPrint         : 200
     }
 
     geometryplots:
@@ -95,27 +88,40 @@ physics :
 
   }
 
-# randomsaver is currently broken.
-#  p1 : [generate , g4run, randomsaver ]
-  p1 : [generate , g4run]
-  e1 : [geometryplots, checkhits, outfile]
+  p1 : [generate , g4run , protonTimeMap, muonTimeMap, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim, @sequence::CaloReco.Reco,randomsaver ]
+  e1 : [geometryplots, checkhits, checksdd, readvd, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
 
 }
 
-outputs:
-{
+outputs:  {
 
-  outfile :
-  {
+  outfile : {
     module_type   :   RootOutput
     fileName      :   "data_06.root"
-    outputCommands:   [ "keep *_*_*_*"
-#                       "drop mu2eSimParticles_*_*_*" # Uncomment this line to reduce file size.
-                      ]
+#    outputCommands:   [ 
+#         "keep *_*_*_*"
+#         "drop mu2eSimParticles_*_*_*" # Uncomment this line to reduce file size.
+#      ]
   }
 
 }
 
+// Disable all physics except transport.
+physics.producers.g4run.physics.physicsListName: "Minimal"
+physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+
+physics.producers.generate.inputfile   : "Mu2eG4/test/genconfig_tonly.txt"
+physics.producers.makeSH.diagLevel     : 0
+physics.producers.makeSH.maxFullPrint  : 5
+physics.producers.makeSH.minimumEnergy : 0
+
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
+
+#physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"

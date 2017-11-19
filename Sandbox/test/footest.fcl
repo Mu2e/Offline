@@ -2,7 +2,7 @@
 # Illustrate the printout from the FooService
 #
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 process_name : Example01
 

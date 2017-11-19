@@ -1,5 +1,5 @@
-#ifndef TrkChargeReco_PeakFitParams_hh
-#define TrkChargeReco_PeakFitParams_hh
+#ifndef TrkHitReco_PeakFitParams_hh
+#define TrkHitReco_PeakFitParams_hh
 
 // Parameter structs used by functions in FitModel.hh
 #include "Rtypes.h"
@@ -7,7 +7,7 @@
 
 namespace mu2e{
 
-  namespace TrkChargeReco{
+  namespace TrkHitReco{
 
     struct PeakFitParams
     {      
