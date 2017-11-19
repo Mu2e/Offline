@@ -8,9 +8,10 @@
 // mu2e
 #include "TrkReco/inc/RobustHelixFit.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
+
+#include "RecoDataProducts/inc/CaloCluster.hh"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
@@ -83,33 +84,21 @@ namespace mu2e
     _targetradius(pset.get<double>("targetradius",150.0)), // effective target radius (mm)
     _trackerradius(pset.get<double>("trackerradius",750.0)), // tracker out radius; include some buffer (mm)
     _rwind(pset.get<double>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix in the AGG fit (mm)
-    _helicity(pset.get<int>("Helicity",Helicity::unknown)),
     _hphi("hphi","phi value",_nphibins,-_phifactor*CLHEP::pi,_phifactor*CLHEP::pi),
     _ntripleMax(pset.get<unsigned>("ntripleMax",100000))
   {
-    if (_helicity._value == Helicity::unknown)
-      throw cet::exception("RECO")<<"mu2e::RobustHelixFit: Invalid Helicity specified"<< std::endl;
-    
     if (_stereofit)_useflag = StrawHitFlag(StrawHitFlag::stereo);
-    if (_helicity._value < 0)
-    {
-       // swap order and sign!
-       double lmin = -1.0*_lmax;
-       _lmax = -1.0*_lmin;
-       _lmin = lmin;
-    }
-     
   }
 
   RobustHelixFit::~RobustHelixFit()
   {}
 
 
-  void RobustHelixFit::fitHelix(HelixSeed& hseed, const CaloClusterCollection* caloClusters)
+  void RobustHelixFit::fitHelix(HelixSeed& hseed)
   {
     hseed._status.clear(TrkFitFlag::helixOK);
 
-    fitCircle(hseed, caloClusters);
+    fitCircle(hseed);
     if (hseed._status.hasAnyProperty(TrkFitFlag::circleOK))
     {
       fitFZ(hseed);
@@ -117,16 +106,16 @@ namespace mu2e
     }
   }
   
-  void RobustHelixFit::fitCircle(HelixSeed& hseed, const CaloClusterCollection* caloClusters)
+  void RobustHelixFit::fitCircle(HelixSeed& hseed)
   {
      hseed._status.clear(TrkFitFlag::circleOK);
      switch ( _cfit )
      {
         case median : default :
-	  fitCircleMedian(hseed, caloClusters);
+	  fitCircleMedian(hseed);
 	  break;
         case AGE :
-	  fitCircleAGE(hseed, caloClusters);
+	  fitCircleAGE(hseed);
 	  break;
         case chisq :
 	  throw cet::exception("Reco") << "mu2e::RobustHelixFit: Chisq fit not yet implemented " << std::endl;
@@ -134,12 +123,12 @@ namespace mu2e
      }
   }
 
-  void RobustHelixFit::fitCircleAGE(HelixSeed& hseed, const CaloClusterCollection* caloClusters) 
+  void RobustHelixFit::fitCircleAGE(HelixSeed& hseed) 
   {
     // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
     // This algorithm requires a reasonable initial estimate: use the median fit
     // this algorithm needs extension to use the calorimeter cluster position FIXME!
-    if (!hseed._status.hasAllProperties(TrkFitFlag::circleInit)) fitCircleMedian(hseed, caloClusters);
+    if (!hseed._status.hasAllProperties(TrkFitFlag::circleInit)) fitCircleMedian(hseed);
     
     if (hseed._status.hasAllProperties(TrkFitFlag::circleInit))
     {
@@ -258,13 +247,11 @@ namespace mu2e
       std::sort(hhits.begin(),hhits.end(),[](const HelixHit& p1, const HelixHit& p2){return p1._pos.z() < p2._pos.z();});    
       for(auto& hhit : hhits)initPhi(hhit,rhel); 
 
-
       std::vector<const HelixHit*> validHhits;
       validHhits.reserve(hhits.size());
       for (const auto& hhit: hhits) 
          if (use(hhit) && ( (!_stereoinit) || stereo(hhit))) validHhits.push_back(&hhit);
       if (validHhits.empty()) return retval;
-
 
       // make initial estimate of dfdz using 'nearby' pairs.  This insures they are on the same loop
       accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > accf;
@@ -278,17 +265,18 @@ namespace mu2e
 	      if (dphi < _mindphi || dphi > _maxdphi) continue;
 
               double lambda = dz/dphi;
-	      if (lambda < _lmin || lambda > _lmax) continue;
-     	      double wt = hitWeight(**ihit)*hitWeight(**jhit);
-              accf(lambda, weight=wt);
+	      if(goodLambda(rhel.helicity(),lambda)){
+		double wt = hitWeight(**ihit)*hitWeight(**jhit);
+		accf(lambda, weight=wt);
+	      }
 	  }
-      } 
+      }
 
       if(boost::accumulators::extract::count(accf) < _minnhit) return retval;
 
       double lambda = extract_result<tag::weighted_median>(accf);
 
-      if( lambda > _lmax || lambda < _lmin) return retval;
+      if(!goodLambda( rhel.helicity(),lambda) ) return retval;
       rhel._lambda = lambda;
 
       // find phi at z intercept.  Use a histogram technique since phi looping
@@ -365,9 +353,10 @@ namespace mu2e
 	          if (dz < _minzsep || fabs(dphi) < _mindphi) continue;
 
                   double lambda = dz/dphi;
-	          if (lambda < _lmin || lambda > _lmax) continue;
-     	          double wt = hitWeight(**ihit)*hitWeight(**jhit);
-                  accf(lambda, weight=wt);
+	          if (goodLambda(rhel.helicity(),lambda)){
+		    double wt = hitWeight(**ihit)*hitWeight(**jhit);
+		    accf(lambda, weight=wt);
+		  }
 	      }
           } 
           rhel._lambda = extract_result<tag::weighted_median>(accf);
@@ -396,7 +385,7 @@ namespace mu2e
 
 
   // simple median fit.  No initialization required
-  void RobustHelixFit::fitCircleMedian(HelixSeed& hseed, const CaloClusterCollection* caloClusters) 
+  void RobustHelixFit::fitCircleMedian(HelixSeed& hseed) 
   {
      const double mind2 = _mindist*_mindist;
      const double maxd2 = _maxdist*_maxdist;
@@ -410,13 +399,6 @@ namespace mu2e
      // pick out a subset of hits. I can aford to be choosy
      std::vector<WPos> pos;
      pos.reserve(hhits.size()+1);
-
-     //get the calorimeter hit first
-     //int icIdx = hseed.timeCluster()->caloFastIdx();
-     //CLHEP::Hep3Vector caloPos(caloClusters->at(icIdx).pos().x(),caloClusters->at(icIdx).pos().y(),0);
-     //pos.push_back(WPos(caloPos.perpPart(),_ccwt));
-
-
 
      for (const auto& hhit : hhits) 
          if (use(hhit) && (stereo(hhit) || (!_stereoinit)) )        	                
@@ -657,7 +639,7 @@ namespace mu2e
 
   bool RobustHelixFit::goodFZ(const RobustHelix& rhel)
   {
-     return rhel.lambda() > _lmin && rhel.lambda() < _lmax;
+     return rhel.validHelicity() && fabs(rhel.lambda()) > _lmin && fabs(rhel.lambda()) < _lmax;
   }
 
   bool RobustHelixFit::goodCircle(const RobustHelix& rhel)
@@ -667,7 +649,7 @@ namespace mu2e
 
   bool RobustHelixFit::goodHelix(const RobustHelix& rhel)
   {
-     return goodCircle(rhel) && goodFZ(rhel) && rhel.helicity() == _helicity;
+     return goodCircle(rhel) && goodFZ(rhel);
   }
 
   double RobustHelixFit::hitWeight(const HelixHit& hhit) const 
@@ -678,5 +660,18 @@ namespace mu2e
      return retval;
   }
 
-
+  bool RobustHelixFit::goodLambda(Helicity const& h, double lambda) const {
+    bool retval(false);
+    switch (h._value) {
+      case Helicity::neghel :
+	retval = (lambda > -_lmax) && (lambda < -_lmin);
+	break;
+      case Helicity::poshel :
+	retval = (lambda > _lmin) && (lambda < _lmax);
+	break;
+      default:
+	break;
+    }
+    return retval;
+  }
 }

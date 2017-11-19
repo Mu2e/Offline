@@ -14,7 +14,6 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/HelixHit.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "TH1F.h"
 
@@ -49,16 +48,16 @@ namespace mu2e
       explicit RobustHelixFit(fhicl::ParameterSet const&);
       virtual ~RobustHelixFit();
 
-      void fitCircle(HelixSeed& hseed, const CaloClusterCollection* caloClusters);
+      void fitCircle(HelixSeed& hseed);
       void fitFZ(HelixSeed& hseed);
       bool goodHelix(RobustHelix const& rhel);
       Helicity const& helicity() const { return _helicity; }
 
     private:
 
-      void fitHelix(HelixSeed& hseed, const CaloClusterCollection* caloClusters);
-      void fitCircleMedian(HelixSeed& hseed, const CaloClusterCollection* caloClusters);
-      void fitCircleAGE(HelixSeed& hseed, const CaloClusterCollection* caloClusters);
+      void fitHelix(HelixSeed& hseed);
+      void fitCircleMedian(HelixSeed& hseed);
+      void fitCircleAGE(HelixSeed& hseed);
       bool initFZ(HelixHitCollection& hhits,RobustHelix& myhel);
       void findAGE(HelixSeed const& hseed, CLHEP::Hep3Vector const& center,double& rmed, double& age);
       void fillSums(HelixSeed const& hseed, CLHEP::Hep3Vector const& center,double rmed,AGESums& sums);
@@ -76,6 +75,7 @@ namespace mu2e
       void initPhi(HelixHit& hh, RobustHelix const& myhel) const;
       bool resolvePhi(HelixHit& hh, RobustHelix const& myhel) const;
       double hitWeight(HelixHit const& hhit) const;
+      bool goodLambda(Helicity const& h, double lambda) const;
 
       int _debug;
       CircleFit _cfit; // type of circle fit
