@@ -1,7 +1,7 @@
 #ifndef RecoDataProducts_TrkFitFlag_hh
 #define RecoDataProducts_TrkFitFlag_hh
 //
-// Class to describe flag bits used for straw hits
+// Class to describe flag bits used for track fits
 // 
 // $Id: TrkFitFlag.hh,v 1.4 2013/04/04 01:08:20 brownd Exp $
 // $Author: brownd $
