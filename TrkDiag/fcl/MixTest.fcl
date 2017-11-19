@@ -58,7 +58,7 @@ physics :
       HelixDiag : {
 	module_type : HelixDiag
 	MinimumCEHits : 10
-	HelixSeedCollectionTag : "PosHelixFinder"
+	HelixSeedCollectionTag : "HelixFinder:Positive"
 	StrawHitFlagCollectionTag : "TimeClusterFinder"
 	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
       }

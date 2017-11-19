@@ -16,11 +16,11 @@ Tracking.filters : {
 # filters for either positive or negative helicity tracks near the CE energy
   PosHelixFilter : {
     module_type : HelixFilter
-    HelixSeedCollection : "PosHelixFinder"
+    HelixSeedCollection : "HelixFinder:Positive"
   }
   NegHelixFilter : {
     module_type : HelixFilter
-    HelixSeedCollection : "NegHelixFinder"
+    HelixSeedCollection : "HelixFinder:Negative"
   }
 # filters for CE candidates (downstream eminus near 100 MeV/c)
   DeMSeedFilter : {
@@ -56,10 +56,10 @@ Tracking.filters : {
 # sequences for different trigger paths.  Early triggers are prescaled
 Tracking.Trigger : {
   TCFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter,  TCPrescale  ]
-  PosHelixFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, PosHelixFinder, PosHelixFilter, PosHelixPrescale   ]
-  DeMSeedFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, PosHelixFinder, PosHelixFilter, KSFDeM, DeMSeedFilter ]
-  UeMSeedFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, NegHelixFinder, NegHelixFilter, KSFUeM, UeMSeedFilter ]
-  DeMKalFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, PosHelixFinder, PosHelixFilter, KSFDeM, DeMSeedFilter, KFFDeM, DeMKalFilter ]
+  PosHelixFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, HelixFinder, PosHelixFilter, PosHelixPrescale   ]
+  DeMSeedFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, HelixFinder, PosHelixFilter, KSFDeM, DeMSeedFilter ]
+  UeMSeedFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, HelixFinder, NegHelixFilter, KSFUeM, UeMSeedFilter ]
+  DeMKalFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, HelixFinder, PosHelixFilter, KSFDeM, DeMSeedFilter, KFFDeM, DeMKalFilter ]
 # add sequences for upstream, calibration, ...  FIXME!
 }
 END_PROLOG
