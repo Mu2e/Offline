@@ -150,6 +150,9 @@ namespace mu2e {
     _smartTag         (pset.get<int>   ("smartTag"         )),
     _hsel             (pset.get<vector<string> >("HelixFitSelectionBits"  )),
     _bkgsel           (pset.get<vector<string> >("BackgroundSelectionBits")),
+    _maxElectronHitEnergy(pset.get<double>("maxElectronHitEnergy")),
+    _minT             (pset.get<double>("minimumTime"      )), // nsec
+    _maxT             (pset.get<double>("maximumTime"      )), // nsec
     _minnhit          (pset.get<int>   ("minNHit"          )),
     _minzsep          (pset.get<double>("minzsep",50.0)),
     _maxzsep          (pset.get<double>("maxzsep",500.0)),
@@ -1213,6 +1216,8 @@ namespace mu2e {
 	  const StrawHit& sh = Helix.shcol()->at(loc);
 	  const Straw& straw = _tracker->getStraw(sh.strawIndex());
 	  const StrawHitPosition& shp = Helix.shpos()->at(loc);
+
+	  if (sh.energyDep() > _maxElectronHitEnergy)         continue;
 
 	  CalHelixPoint pos(loc,sh,shp,straw,flag);
 	  if (_debug > 0) {

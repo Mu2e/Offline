@@ -67,7 +67,7 @@ namespace mu2e {
     _shfLabel        (pset.get<string>         ("StrawHitFlagCollectionLabel"    )),
     _shpLabel        (pset.get<string>         ("StrawHitPositionCollectionLabel")),
     _ccmLabel        (pset.get<string>         ("caloClusterModuleLabel"         )),
-    _hsel            (pset.get<vector<string> >("HelixFitSelectionBits"          )),
+    _hsel            (pset.get<vector<string> >("HitSelectionBits"               )),
     _bkgsel          (pset.get<vector<string> >("BackgroundSelectionBits"        )),
     _mindt           (pset.get<double>         ("DtMin"                          )),
     _maxdt           (pset.get<double>         ("DtMax"                          )),
@@ -163,7 +163,7 @@ namespace mu2e {
              _ccmLabel.data());
     }
 
-    return (_data.shcol != 0) && (_data.shfcol != 0) && (_data.ccCollection != 0);
+    return (_data.shcol != 0) && /*(_data.shfcol != 0) && */(_data.ccCollection != 0);
   }
 
 //-----------------------------------------------------------------------------

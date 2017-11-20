@@ -15,6 +15,7 @@ class TH2F;
 #include "CalPatRec/inc/LsqSums2.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
 
 namespace mu2e {
   class StrawHitPosition;
@@ -237,6 +238,7 @@ namespace mu2e {
       int                           nseeds_per_station[kNStations];
       const StrawHitCollection*     shcol;
       const StrawHitFlagCollection* shfcol;
+      const TimeClusterCollection*  tpeakcol;
       int                           debugLevel;	     // printout level
     };
   }

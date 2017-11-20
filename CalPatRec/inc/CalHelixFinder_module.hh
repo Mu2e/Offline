@@ -96,6 +96,8 @@ namespace mu2e {
     std::string                           _shpLabel;
     std::string                           _shfLabel;
     std::string                           _timeclLabel;
+    
+    int                                   _minNHitsTimeCluster; //min nhits within a TimeCluster after check of Delta-ray hits
 
     TrkParticle                           _tpart;	        // particle type being searched for
     TrkFitDirection                       _fdir;		// fit direction in search
@@ -151,7 +153,9 @@ namespace mu2e {
 			     const StrawHitCollection*          StrawCollection ,
 			     const StrawHitPositionCollection*  ShPosCollection , 
 			     const StrawHitFlagCollection*      ShFlagCollection);
-
+    
+    int  goodHitsTimeCluster(const TimeCluster* TimeCluster);
+    
   };
 }
 #endif
