@@ -456,6 +456,22 @@ CalPatRec : { @table::CalPatRec
 
     producers : { @table::CalPatRec.producers
 
+	PrefetchData : { module_type:PrefetchData
+	    mcDiag                        : true
+
+	    fetchStrawHits                : 0
+	    fetchStrawHitFlags            : 0
+	    fetchStrawHitPositions        : 0
+	    fetchStereoHits               : 0
+	    fetchStrawDigis               : 1
+
+	    strawHitCollectionTag         : makeSH
+	    stereoHitCollectionTag        : MakeStereoHits
+	    strawHitPositionCollectionTag : MakeStrawHitPositions
+	    strawDigiCollection           : makeSD
+	    strawHitFlagCollectionTag     : FlagStrawHits
+	}
+
 	CalPatRecFSHP : {
 	    module_type                     : FlagStrawHits
 	    StrawHitCollectionTag           : makeSH

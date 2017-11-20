@@ -215,17 +215,16 @@ namespace mu2e {
     _chi2nFindZ    = 0.0,
     _eventToLook   = -1;
 
-    _hDfDzRes      = NULL;//new TH1F("hDfDzRes","dfdz residuals",
-    //  20, _minDfDz, _maxDfDz);
+    _hDfDzRes = new TH1F("hDfDzRes","dfdz residuals" , 20, _minDfDz, _maxDfDz);
+    _hPhi0Res = new TH1F("hPhi0Res", "phi0 residuals", 20, 0., 2.*M_PI);
+
   }
 
 
 //-----------------------------------------------------------------------------
   CalHelixFinderAlg::~CalHelixFinderAlg() {
-    if (_hDfDzRes){
-      delete _hDfDzRes;
-      _hDfDzRes = 0;
-    }
+    delete _hDfDzRes;
+    delete _hPhi0Res;
   }
 
 //-----------------------------------------------------------------------------
@@ -393,11 +392,11 @@ namespace mu2e {
 
     double phi, phi_ref(-1e10), z, z_ref, dphi, dz, dzOverHelPitch;
 
-    _hDfDzRes = new TH1F("hDfDzRes","dfdz residuals" , 20, _minDfDz, _maxDfDz);
-    _hPhi0Res = new TH1F("hPhi0Res", "phi0 residuals", 20, 0., 2.*M_PI);
-
     CLHEP::Hep3Vector center = Helix._center;
     CLHEP::Hep3Vector pos_ref, pos;
+
+    _hDfDzRes->Reset();
+    _hPhi0Res->Reset();
 					// 2015 - 03 -30 G. Pezzu changed the value of tollMax.
 					// using the initial value of dfdz we can set it more accuratelly:
 					// tollMax = half-helix-step = Pi / dfdz
@@ -620,10 +619,10 @@ namespace mu2e {
       }
       printf("\n");
     }
-    delete     _hDfDzRes;
-    _hDfDzRes = 0;
-    delete     _hPhi0Res;
-    _hPhi0Res = 0;
+    // delete     _hDfDzRes;
+    // _hDfDzRes = 0;
+    // delete     _hPhi0Res;
+    // _hPhi0Res = 0;
 //-----------------------------------------------------------------------------
 // Part 2: try to perform a more accurate estimate - straight line fit
 //-----------------------------------------------------------------------------
@@ -2015,7 +2014,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 					       int                 SeedIndex,
 					       int*                IndexVec,
 					       int                 Print,
-					       TString             Banner) {
+					       TString            Banner) {
     double     x, y, r;
     double     hitChi2Worst;
 
@@ -2561,12 +2560,16 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     sxy.addPoint(0., 0., 0.1);                 //Target center in the transverse plane
 
     TString banner="CalHelixFinderAlg::findTrack";
-    if (UseMPVDfDz ==1) banner += "-UseMPVDfDz";
+
 
     double dz_max;
     TString name;
-    name =  banner;
-    name += "-loop";
+
+    if (_debug) {
+      if (UseMPVDfDz ==1) banner += "-UseMPVDfDz";
+      name =  banner;
+      name += "-loop";
+    }
 
     int i_last = SeedIndex;
 
@@ -2576,8 +2579,10 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     double  dz_z0(1e10);
 
     for (int i=SeedIndex+1; i<np; i++) {
-      name =  banner;
-      name += "-loop";
+      if (_debug) {
+	name =  banner;
+	name += "-loop";
+      }
       if (_xyzp[i].isOutlier()) goto NEXT_POINT;
       weight = 1.;
 //----------------------------------------------------------------------//
@@ -2732,10 +2737,11 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	  dfdz = _hdfdz;                   //_mpDfDz;
 	}
 
-	name = banner;
-	name += "2strawhitsHelixDef";
-	//	printf(" CalHelixFinderAlg::_debug: %5i TEEEEST\n",_debug);
 	if (_debug > 10) {
+	  name = banner;
+	  name += "2strawhitsHelixDef";
+	  //	printf(" CalHelixFinderAlg::_debug: %5i TEEEEST\n",_debug);
+
 	  printf("[%s] strawhit type     X        Y        Z     index\n", name.Data());
 	  printf("[%s] ----------------------------------------------------\n", name.Data());
 	  printf("[%s]    seeding     %5.3f  %5.3f  %5.3f   %i  \n", name.Data(),p2.x(), p2.y(), p2.z(), SeedIndex);
@@ -2793,9 +2799,10 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     dphi0Res [0] = phi0 - shPos.z()*dfdz;
     radiusRes[0] = sxy.radius();
 
-    name = banner;
-    name += "-results";
-
+    if (_debug) {
+      name = banner;
+      name += "-results";
+    }
 
     Chi2 = sxy.chi2DofCircle();
 //-----------------------------------------------------------------------------
@@ -2889,9 +2896,9 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     if (CountGoodPoints > 2) {
       //2014-01-29 gianipez added the following line
       Chi2       = sxy.chi2DofCircle();
-      name = banner;
-      name += "EndFindTrack";
       if (_debug > 10) {
+	name = banner;
+	name += "EndFindTrack";
 	printf("[%s] Chi2 = %5.3f nGoodPoints = %d dfdz = %5.5f mode = %i\n",
 	       name.Data(),
 	       sxy.chi2DofCircle(),

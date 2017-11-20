@@ -259,7 +259,8 @@ namespace mu2e {
 
     int    refineHelixParameters(CalHelixFinderData& Trk,
 				 int seedIndex, int *indexVec,
-				 int Print=0, TString Banner="");
+				 int Print=0, 
+				 TString Banner="");
 
                                         // 12-10-2013 Gianipez: new pattern recognition functions
     void   rescueHitsBeforeSeed (CalHelixFinderData&  mytrk);
