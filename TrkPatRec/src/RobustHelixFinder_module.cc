@@ -131,7 +131,7 @@ namespace mu2e {
     TrkTimeCalculator _ttcalc;
     double            _t0shift;   
     StrawHitFlag      _outlier;
-    bool              _trigMode;
+    bool              _updateStereo;
     
     
     void     findHelices(const StrawHitCollection& shcol,const StrawHitPositionCollection& shpcol, 
@@ -186,7 +186,7 @@ namespace mu2e {
     _ttcalc      (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
     _t0shift     (pset.get<double>("T0Shift",4.0)),
     _outlier     (StrawHitFlag::outlier),
-    _trigMode    (pset.get<bool>("TrigMode",false))
+    _updateStereo    (pset.get<bool>("UpdateStereo",true))
   {
     _maxrwdot[0] = pset.get<double>("MaxStereoRWDot",1.0);
     _maxrwdot[1] = pset.get<double>("MaxNonStereoRWDot",1.0);
@@ -545,7 +545,7 @@ namespace mu2e {
       // update the stereo hit positions; this checks how much the positions changed
       // do this only in non trigger mode
 
-      if (!_trigMode && _hfit.goodHelix(hseed.helix())) changed = updateStereo(hseed, sthcol, shcol);      
+      if (_updateStereo && _hfit.goodHelix(hseed.helix())) changed = updateStereo(hseed, sthcol, shcol);      
     } while (_hfit.goodHelix(hseed.helix()) && niter < _maxniter && changed);
 
 
