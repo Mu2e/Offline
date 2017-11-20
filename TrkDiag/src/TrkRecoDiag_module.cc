@@ -96,7 +96,15 @@ namespace mu2e {
       const TimeClusterCollection* _tccol;
       const StrawDigiMCCollection* _mcdigis;
       const StepPointMCCollection* _vdmcsteps;
-      const findData(const art::Event& e);
+      const TrkQualCollection* _tqcol;
+      // time offsets
+      SimParticleTimeOffset _toff;
+      // Virtual Detector IDs
+      vector<int> _midvids, _entvids, _xitvids;
+      // cache of BField at 0,0,0
+      double _bz0;
+      // helper functions
+      bool findData(const art::Event& e);
       bool conversion(size_t index);
       // TTree and branch variables
       TTree *_trdiag;
@@ -274,7 +282,6 @@ namespace mu2e {
 	  _ndigi = TrkMCTools::countDigis(bestpart,_mcdigis);
 	  fillMCInfo(bestpart);
 	  // find the best reco matches to this particle.
-	  if(_kfcol != 0){
 	  auto bestkf = findMCMatch(bestpart,*_kfcol, _nkfprimary);
 	  if(bestkf != _kfcol->end()){
 	    fillKalFinal(bestpart,bestkf);
