@@ -27,6 +27,7 @@ namespace mu2e {
 
 	   virtual CLHEP::Hep2Vector  xyFromIndex(int thisIndex)                   const = 0;
            virtual int                indexFromXY(double x, double y)              const = 0;
+           virtual int                indexFromRowCol(int nRow, int nCol)          const = 0;
 
 	   virtual std::vector<int>   neighbors(int thisIndex, unsigned int level) const = 0;
 

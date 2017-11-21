@@ -44,6 +44,9 @@ namespace mu2e {
 	   int                        idxFromPosition(double x, double y) const;           
 	   std::vector<int>           findLocalNeighbors(int crystalId, int level,bool raw=false) const;            
            std::vector<int>           nearestIdxFromPosition(double x, double y) const; 
+           int                        idMinCrystalInside(int row);
+       	   int 	       	       	      idMaxCrystalInside(int row);
+
            
            double                     estimateEmptySpace() const;
            void                       print(std::ostream& os = std::cout) const;

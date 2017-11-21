@@ -72,7 +72,7 @@ namespace mu2e {
       CLHEP::Hep2Vector SquareShiftMapper::xyFromIndex(int thisIndex) const
       {
           SquShiftLK thisLK = lk(thisIndex);
-	  return CLHEP::Hep2Vector( (thisLK.l_+thisLK.k_)/2.0, (thisLK.l_-thisLK.k_) );
+          return CLHEP::Hep2Vector( (thisLK.l_+thisLK.k_)/2.0, (thisLK.l_-thisLK.k_) );
       }
 
       int SquareShiftMapper::indexFromXY(double x0, double y0) const
@@ -94,6 +94,19 @@ namespace mu2e {
 	  SquShiftLK lk(l,k);
 	  return index(lk);
       }
+
+
+
+      //--------------------------------------------------------------------------------
+      int SquareShiftMapper::indexFromRowCol(int nRow, int nCol) const
+      {
+	  int k = nRow/2-nRow + nCol;
+          int l = nRow/2 + nCol;
+
+	  SquShiftLK lk(l,k);
+	  return index(lk);
+      }
+
 
 
 

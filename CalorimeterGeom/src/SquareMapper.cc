@@ -69,6 +69,7 @@ namespace mu2e {
 	  return CLHEP::Hep2Vector(thisLK.l_,thisLK.k_);
       }
 
+
       int SquareMapper::indexFromXY(double x0, double y0) const
       {
           int l = int( std::abs(x0)+0.5);
@@ -80,6 +81,13 @@ namespace mu2e {
 	  return index(lk);
       }
 
+
+     //--------------------------------------------------------------------------------
+     int SquareMapper::indexFromRowCol(int nRow, int nCol) const
+      {
+	  SquLK lk(nCol,nRow);
+	  return index(lk);
+      }
 
 
       //--------------------------------------------------------------------------------

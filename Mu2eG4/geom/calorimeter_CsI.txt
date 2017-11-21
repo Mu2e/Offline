@@ -41,6 +41,7 @@ double calorimeter.stripThickness              = 5;
 double calorimeter.stripYLength                = 12;
 double calorimeter.coolBPPipeRadius            = 5;
 
+double calorimeter.FPInnerRadius               = 360;
 double calorimeter.FPStyrofoamZLength          = 21.75;
 double calorimeter.FPCarbonZLength             = 3;
 double calorimeter.coolFPPipeRadius            = 5;
