@@ -570,7 +570,7 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
          << " panelCenterPhi "
          << panelCenterPhi/M_PI*180.
          << " panel center from the maker "
-         << panel.boxRzAngle()/M_PI*180.
+         << panel.rotation()/M_PI*180.
          << endl;
   }
 
@@ -709,7 +709,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
          << " panelCenterPhi "
          << panelCenterPhi/M_PI*180.
          << " panel center from the maker "
-         << panel.boxRzAngle()/M_PI*180.
+         << panel.rotation()/M_PI*180.
          << endl;
   }
 

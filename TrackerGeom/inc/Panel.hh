@@ -79,12 +79,12 @@ namespace mu2e {
     // Formatted string embedding the id of the panel.
     std::string name( std::string const& base ) const;
 
-    const std::vector<double>& boxHalfLengths() const { return _boxHalfLengths; }
+    // const std::vector<double>& boxHalfLengths() const { return _boxHalfLengths; }
 
-    double         boxRxAngle()     const { return _boxRxAngle;     }
-    double         boxRyAngle()     const { return _boxRyAngle;     }
-    double         boxRzAngle()     const { return _boxRzAngle;     }
-    const CLHEP::Hep3Vector&    boxOffset()      const { return _boxOffset;      }
+    // double         boxRxAngle()     const { return _boxRxAngle;     }
+    // double         boxRyAngle()     const { return _boxRyAngle;     }
+    double         rotation()     const { return _rotation;     }
+    // const CLHEP::Hep3Vector&    boxOffset()      const { return _boxOffset;      }
 
     std::vector<CLHEP::Hep3Vector> const& getBasePosition() const{
       return _basePosition;
@@ -149,7 +149,7 @@ namespace mu2e {
     // Properties of the enclosing logical volume (box).
 
     // Half lengths of the logical box.
-    std::vector<double> _boxHalfLengths;
+    // std::vector<double> _boxHalfLengths;
 
     std::vector<CLHEP::Hep3Vector> _basePosition;
     CLHEP::Hep3Vector _baseDelta;
@@ -157,10 +157,10 @@ namespace mu2e {
     // Rotations and offsets to place the logical box.
     // placedshape = ( offset + RZ*RX*RY*shape );
     //
-    double _boxRxAngle;
-    double _boxRyAngle;
-    double _boxRzAngle;
-    CLHEP::Hep3Vector _boxOffset;
+    // double _boxRxAngle;
+    // double _boxRyAngle;
+    double _rotation; // is it really used? needed?
+    // CLHEP::Hep3Vector _boxOffset;
 
     // Position (in tracker coordinates) of the midpoint, and direction
     // of the average of the primary straw.  Mutable because these are set

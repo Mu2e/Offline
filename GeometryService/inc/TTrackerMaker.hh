@@ -50,8 +50,6 @@ namespace mu2e {
     void makeManifolds( const PanelId& panelId);
 
     void computeStrawHalfLengths();
-    void computePanelBoxParams(Panel& panel, Plane& plane);
-    void computeConstantPanelBoxParams();
     void computeLayerSpacingAndShift();
     void computeManifoldEdgeExcessSpace();
     void computeTrackerEnvelope();
@@ -158,12 +156,12 @@ namespace mu2e {
     // This is only valid for SupportModel==simple
     std::vector<double> _strawActiveHalfLengths;
 
-    // panel box half lengths
-    std::vector<double> _panelBoxHalfLengths;
+    // // panel box half lengths
+    // std::vector<double> _panelBoxHalfLengths;
 
-    // panel box offset magnitudes
-    double _panelBoxXOffsetMag;
-    double _panelBoxZOffsetMag;
+    // // panel box offset magnitudes
+    // double _panelBoxXOffsetMag;
+    // double _panelBoxZOffsetMag;
 
     // distance between layers (in Z)
     double _layerHalfSpacing;

@@ -59,9 +59,9 @@ namespace mu2e {
         size_t nStrawsPerPanel = panel.nLayers()  * layer.nStraws();
         size_t nStrawsPerPlane = plane.nPanels() * nStrawsPerPanel;
 
-        double cang = panel.boxRzAngle()/M_PI*180.;
+        double cang = panel.rotation()/M_PI*180.;
         double dang = plane.rotation()/M_PI*180.;
-        double sroz = (panel.boxOffset() - plane.origin()).z();
+        // double sroz = (panel.boxOffset() - plane.origin()).z();
 
         size_t ipnlf = nStrawsPerPanel*cpnl + nStrawsPerPlane*cpln;
 
@@ -74,17 +74,17 @@ namespace mu2e {
                               straw.getMidPoint()[1]*straw.getMidPoint()[1])
              << " direction " << straw.getDirection()
              << " panel rotation: " << cang
-             << " origin " << panel.boxOffset()
+          //             << " origin " << panel.boxOffset()
              << " plane rotation: " << dang
              << " origin " << plane.origin()
-             << " pln rel origin z " << sroz
+          //             << " pln rel origin z " << sroz
              << " straw exists " << _tt->strawExists(StrawIndex(istr))
              << " plane exists " << plane.exists();
 
         if (ipnl>cpnl && ipln==cpln) cout << " <--S";
         if (iang>cang && ipln==cpln) cout << " <--A";
         if (ilay>clay && ipnl==cpnl) cout << " <--L";
-        if ((cpnl%2 == 0 && sroz>0.) || (cpnl%2 != 0 && sroz<0.)) cout << " <--Z";
+        //  if ((cpnl%2 == 0 && sroz>0.) || (cpnl%2 != 0 && sroz<0.)) cout << " <--Z";
         if (ipln!=cpln) ipln=cpln;
         if (ipnl!=cpnl) ipnl=cpnl;
         if (ilay!=clay) ilay=clay;
@@ -383,8 +383,6 @@ namespace mu2e {
       }
     }
 
-    _panelBoxXOffsetMag = 0.0;
-    _panelBoxZOffsetMag = 0.0;
     _layerHalfSpacing = 0.0;
     _layerHalfShift = 0.0;
     _manifoldXEdgeExcessSpace = 0.0;
@@ -687,8 +685,7 @@ namespace mu2e {
       }
     }
 
-    // calculate/make a panel envelope
-    computePanelBoxParams(panel, plane);
+    panel._rotation = panelRotation( panel.id().getPanel(),plane.id() ); //  is it really used? needed?
 
     // make EBkey
 
@@ -960,7 +957,7 @@ namespace mu2e {
 
   void TTrackerMaker::makeDetails(){
 
-    computeConstantPanelBoxParams();
+    computeStrawHalfLengths();
 
     if ( _supportModel == SupportModel::simple ){
       _tt->_strawDetails.reserve(_manifoldsPerEnd);
@@ -985,55 +982,6 @@ namespace mu2e {
     }
 
   } // end TTrackerMaker::makeDetails
-
-  void  TTrackerMaker::computePanelBoxParams(Panel& panel, Plane& plane){
-
-    // get panel number
-    int ipnl = panel.id().getPanel();
-    //    int ipln = plane.id();
-    //    cout << "Debugging TTrackerMaker ipnl,ipln: " << ipnl << ", " << ipln << endl;
-
-    // we copy precalculated _panelBoxHalfLengths etc.. into the panel
-
-    panel._boxHalfLengths = _panelBoxHalfLengths;
-    double xOffset = _panelBoxXOffsetMag;
-    double zOffset = _panelBoxZOffsetMag * panelZSide(ipnl,plane.id());
-
-    // Now calculate the rotations and placement of the panel envelope
-
-    panel._boxRxAngle = 0.;
-    panel._boxRyAngle = 0.;
-    panel._boxRzAngle = panelRotation(ipnl,plane.id() );
-
-    CLHEP::HepRotationZ RZ(panel._boxRzAngle);
-
-    panel._boxOffset  = RZ*(CLHEP::Hep3Vector( xOffset, 0., zOffset) + plane.origin());
-
-    // we set to 0.0  values smaller than a small number
-    static const double max0val = 1.e-06;
-    for (int ii=0; ii!=panel._boxOffset.SIZE; ++ii) {
-      if (abs(panel._boxOffset[ii])<max0val) panel._boxOffset[ii]=0.0;
-    }
-
-    //     cout << "Debugging panel box ipnl, by, bz, bxl, bxs, boxRzAngle, boxOffset: " <<
-    //       ipnl << ", " <<
-    //       by << ", " <<
-    //       bz << ", " <<
-    //       bxl << ", " <<
-    //       bxs << ", " <<
-    //       panel._boxRzAngle << ", " <<
-    //       panel._boxOffset <<
-    //       endl;
-
-    //     cout << "Debugging panel box ipnl, straw lengths: ";
-    //     for ( int i=0; i<_manifoldsPerEnd; ++i ){
-    //       cout << i << " " << _strawHalfLengths.at(i);
-    //     }
-    //     cout << endl;
-
-    return;
-
-  } // end TTrackerMaker::computePanelBoxParams
 
   void TTrackerMaker::computeLayerSpacingAndShift(){
 
@@ -1063,135 +1011,6 @@ namespace mu2e {
     }
 
   }
-
-  void TTrackerMaker::computeConstantPanelBoxParams() {
-
-    computeStrawHalfLengths();
-
-    // we do not use the trapezoid any more; but it is a good check while renumbering the straws
-
-    // the box is a trapezoid ;
-
-    // note that G4 has it own coordinate convention for each solid
-    // (see mu2e<->G4 translation below):
-
-    // trapezoid y dimensions (or x in G4)
-    // trapezoid x dimension  (or z in G4)
-    // trapezoid z dimension  (or y in G4)
-
-    // shorter y             is the length of the straws in the top/last (shortest) manifold
-    // longer  y is longer than the length of the straws in the longest manifold
-    // the other dimentions are "x", the combined manifold width + _manifoldXEdgeExcessSpace
-    // the "thickness" of the trpezoid z, ~ the layer thickness * number of layers
-
-    // x
-
-    // if there are more than one layer per panel, manifolds have a
-    // straw "sticking out" by a straw radius (and half of the straw
-    // gap), but only the last one extends beyond the entire structure
-    // in the z direction; remember that those are "halfLengths", so
-    // the sticking out straw radius has to be divided by 2 and the gap by 4
-
-    // _layerHalfShift is 0 in one layer case
-    double bx = _manifoldHalfLengths.at(0)*double(_manifoldsPerEnd) + _layerHalfShift;
-
-    // calculating "longer" x;
-    // starting from the tng of the slope
-
-    // calculate the largest slope starting from the longest straws manifold
-    double maxtg = 0.0;
-
-    // the code below looks at the slope "seen" from the longest set of straws
-    for (int i=1; i!=_manifoldsPerEnd; ++i) {
-
-      // _strawHalfLengths has changed its indexing
-
-      double ttg = ( _manifoldHalfLengths.at(0) + _layerHalfShift )*double(i) /
-        ( _strawHalfLengths.at(0) - _strawHalfLengths.at(i*2) ) ;
-
-      if (maxtg < ttg ) {
-        maxtg = ttg;
-      }
-
-    }
-
-    // finally y (long, short)
-    double byl = (_manifoldHalfLengths.at(0) + _layerHalfShift)/maxtg + _strawHalfLengths.at(0);
-
-    double bys = byl - bx/maxtg;
-
-    // z
-    // manifold better be thicker than the straws:
-
-    double bz = _manifoldHalfLengths.at(2);
-
-    // now push it all back into the vector
-    // std::vector<double> _panelBoxHalfLengths;
-
-    static const size_t panelBoxHalfLengthsSize= 5;
-
-    _panelBoxHalfLengths.reserve(panelBoxHalfLengthsSize);
-
-    // Pad the trapezoid to be slightly larger than it needs to be
-    static const double pad = 0.0; // this needs to be in the geom file... if to be non-zero
-
-    // the order is forced by the nestTrp/G4Trd and Panel data
-
-    _panelBoxHalfLengths.push_back(0.0); //dummy to be compatible with LTracker
-    _panelBoxHalfLengths.push_back(bx+pad);
-    _panelBoxHalfLengths.push_back(bz+pad);
-
-    _panelBoxHalfLengths.push_back(bys+pad);
-    _panelBoxHalfLengths.push_back(byl+pad);
-
-    if (_panelBoxHalfLengths.size()!=panelBoxHalfLengthsSize) {
-      cout << " _panelBoxHalfLengths.size() sould be " << panelBoxHalfLengthsSize <<
-        ", but is : " << _panelBoxHalfLengths.size() << endl;
-      throw cet::exception("GEOM")
-        << "something is wrong with panel _panelBoxHalfLengths calculations \n";
-    }
-
-    _panelBoxXOffsetMag = _envelopeInnerRadius  + _panelBoxHalfLengths.at(1); // bx + pad
-    _panelBoxZOffsetMag = _supportHalfThickness + _panelBoxHalfLengths.at(2); // bz + pad
-
-    // we need to make sure the trapezoids do not extend beyond the plane envelope...
-    // we will check if the plane envelope radius acomodates the newly created box
-
-    double outerSupportRadiusRequireds =
-      sqrt( sum_of_squares(_envelopeInnerRadius + 2.0*_panelBoxHalfLengths.at(1),
-                           _panelBoxHalfLengths.at(3)
-                           )
-            );
-    double outerSupportRadiusRequiredl =
-      max( outerSupportRadiusRequireds,
-           sqrt( sum_of_squares(_envelopeInnerRadius-pad,
-                                _panelBoxHalfLengths.at(4))
-                 )
-           );
-
-    //     if (true) {
-    //       cout << "Debugging _strawHalfLengths: ";
-    //       for (size_t i=0; i!=_manifoldsPerEnd; ++i) {
-    //         cout << _strawHalfLengths.at(i)  << ", ";
-    //       }
-    //       cout << endl;
-    //       cout << "Debugging _supportParams.innerRadius   :   " << _tt->_supportParams.innerRadius() << endl;
-    //       cout << "Debugging _supportParams.outerRadius   :   " << _tt->_supportParams.outerRadius() << endl;
-    //       cout << "Debugging _supportParams.outerRadius rs:   " << outerSupportRadiusRequireds << endl;
-    //       cout << "Debugging _supportParams.outerRadius rl:   " << outerSupportRadiusRequiredl << endl;
-    //     }
-
-    if (_tt->_supportParams.outerRadius() < outerSupportRadiusRequiredl) {
-      cout << " _supportParams.outerRadius         :   " << _tt->_supportParams.outerRadius() << endl;
-      cout << " _supportParams.outerRadius required:   " << outerSupportRadiusRequiredl << endl;
-      throw cet::exception("GEOM")
-        << "outerSupportRadius is to small given other paramters \n";
-    }
-
-    return;
-
-  } // end TTrackerMaker::computeConstantPanelBoxParams
-
 
   // Compute the spacing for the given plane.
   double TTrackerMaker::choosePlaneSpacing( int ipln ) const {
