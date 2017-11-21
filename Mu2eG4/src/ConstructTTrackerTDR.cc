@@ -564,7 +564,8 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
   // This carries a sign, depending on upstream/downstream.
   double zPanel(0.);
   for ( int i=0; i<panel.nLayers(); ++i){
-    zPanel += panel.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
+    // note that the straw numbers follow a special pattern now, requiring 1 for layer 1 here:
+    zPanel += panel.getStraw(StrawId(0,0,i,i)).getMidPoint().z();
   }
   zPanel /= panel.nLayers();
 
