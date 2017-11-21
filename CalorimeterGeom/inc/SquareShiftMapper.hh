@@ -35,8 +35,9 @@ namespace mu2e {
             virtual double            apexX(int i)                    const {return apexX_.at(i);}
             virtual double            apexY(int i)                    const {return apexY_.at(i);}
 
-	    virtual CLHEP::Hep2Vector xyFromIndex(int thisIndex)      const;
-            virtual int               indexFromXY(double x, double y) const;
+	    virtual CLHEP::Hep2Vector xyFromIndex(int thisIndex)          const;
+            virtual int               indexFromXY(double x, double y)     const;
+            virtual int               indexFromRowCol(int nRow, int nCol) const;
 
 	    virtual std::vector<int>  neighbors(int thisIndex, unsigned int level=1) const;
 

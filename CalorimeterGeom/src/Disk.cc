@@ -50,15 +50,38 @@ namespace mu2e {
 	  {
 	      CLHEP::Hep2Vector xy  = cellSize_*crystalMap_->xyFromIndex(i);	      
  	      if ( !isInsideDisk(xy.x(),xy.y()) ) {mapToCrystal_.push_back(-1); continue;}
+ 	      
+              //these crystals have been manually removed from the map for whatever stupid reason...
+              if ( std::abs(xy.x()-257.25) < 1.0 && std::abs(xy.y()-583.1) < 1.0) {mapToCrystal_.push_back(-1); continue;}
+              if ( std::abs(xy.x()-257.25) < 1.0 && std::abs(xy.y()+583.1) < 1.0) {mapToCrystal_.push_back(-1); continue;}
+              if ( std::abs(xy.x()+257.25) < 1.0 && std::abs(xy.y()-583.1) < 1.0) {mapToCrystal_.push_back(-1); continue;}
+              if ( std::abs(xy.x()+257.25) < 1.0 && std::abs(xy.y()+583.1) < 1.0) {mapToCrystal_.push_back(-1); continue;}
 
               CLHEP::Hep3Vector posFF(xy.x(),xy.y(),0);
 	      CLHEP::Hep3Vector pos = posFF + crystalOriginInDisk;
               
-	      crystalToMap_.push_back(i);
+              crystalToMap_.push_back(i);
 	      mapToCrystal_.push_back(nCrystal);
 	      crystalList_.push_back( Crystal(nCrystal,id_, pos) );		
 	      ++nCrystal;
-	  }
+	  }            
+      }
+
+
+      //-----------------------------------------------------------------------------
+      int Disk::idMinCrystalInside(int row)
+      {
+          int idx(0);
+          while (mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)]<0) ++idx;
+         
+          return mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)];      
+      }
+
+      int Disk::idMaxCrystalInside(int row)
+      {
+          int idx = int(radiusOut_/cellSize_)+2;
+          while (mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)]<0 && idx>0) --idx;
+          return mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)];      
       }
 
       //-----------------------------------------------------------------------------

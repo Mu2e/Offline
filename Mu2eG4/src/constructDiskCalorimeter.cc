@@ -5,6 +5,15 @@
 // Original author Bertrand Echenard
 //
 //
+// Note about chimes in the disk. There are two ways to add the chimes between the crystals and the disk edges. 
+//      1) create each edge separately (by subtracting the inner hole or as the intersection between the outside edge and the bar)
+//      2) make an union comprising of all the inner chimes described as boxes, then subtract the hole inside. For the outer chimes
+//         describe the hole inside the disk as a sum of "empty" bars, then remove them from the cylinder.
+//      
+//   It turns out that version 1 is more annoying to code, but produced much faster code, so we picked it.  
+//
+
+
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"
@@ -29,6 +38,9 @@
 #include "G4Polyhedra.hh"
 #include "G4Tubs.hh"
 #include "G4Torus.hh"
+#include "G4SubtractionSolid.hh"
+#include "G4UnionSolid.hh"
+#include "G4IntersectionSolid.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
 #include "G4VisAttributes.hh"
@@ -103,20 +115,6 @@ namespace mu2e {
        }
 
        
-       /*
-       G4RotationMatrix* rY = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
-       //rY->rotateY(CLHEP::pi/2.0);    
-       
-       G4LogicalVolume* testLog = caloBuildFEB(config,materialFinder, cal );
-       //G4LogicalVolume* testLog = caloBuildCrate(config,materialFinder, cal );
-       //G4LogicalVolume* testLog = caloBuildFrontPlate(config,materialFinder, cal, 0);
-       //G4LogicalVolume* testLog = caloBuildDisk(config,materialFinder, cal, 0 );
-       //G4LogicalVolume* testLog = caloBuildBackPlate(config,materialFinder, cal, 0 );
-       pv = new G4PVPlacement(rY,G4ThreeVector(0,0,0),testLog,"test1",calorimeterInfo.logical,false,0,false);
-       
-       return mother;       
-       */
-
  
 
 
@@ -220,12 +218,10 @@ namespace mu2e {
        G4Material* FPCarbonMaterial      = materialFinder.get("calorimeter.FPCarbonMaterial");
        G4Material* pipeMaterial          = materialFinder.get("calorimeter.pipeMaterial");
 
-       G4double diskCaseInnerRadius      = cal.geomInfo().diskCaseRadiusIn().at(idisk);
        G4double diskCaseOuterRadius      = cal.geomInfo().diskCaseRadiusOut().at(idisk);
-       G4double innerCaseThickness       = cal.caloInfo().caseThicknessIn();
        G4double outerCaseThickness       = cal.caloInfo().caseThicknessOut();
        G4double outerRingRadius          = diskCaseOuterRadius + outerCaseThickness;
-       G4double innerRingRadius          = diskCaseInnerRadius - innerCaseThickness;
+       G4double FPInnerRadius            = cal.caloInfo().FPInnerRadius();
        G4double FPStyroHalfThick         = cal.caloInfo().FPStyrofoamZLength()/2.0;  
        G4double FPCarbonHalfThick        = cal.caloInfo().FPCarbonZLength()/2.0;  
        G4double frontPanelHalfThick      = FPStyroHalfThick+2.0*FPCarbonHalfThick;
@@ -243,17 +239,17 @@ namespace mu2e {
        if (nPipes==0) return nullptr;
 
        //this is the full front panel
-       G4Tubs* frontPlate = new G4Tubs("caloFrontPlate",innerRingRadius,outerRingRadius+2*coolingPipeRadius,frontPanelHalfThick,0,CLHEP::twopi);       
+       G4Tubs* frontPlate = new G4Tubs("caloFrontPlate",FPInnerRadius,outerRingRadius+2*coolingPipeRadius,frontPanelHalfThick,0,CLHEP::twopi);       
        G4LogicalVolume* frontPlateLog = caloBuildLogical(frontPlate, vacuumMaterial, "caloFrontPlateLog",0,G4Color::White(),0,0);
 
        //styrofoam panel
-       G4Tubs* frontPanelStyro = new G4Tubs("caloFPStyro",innerRingRadius,outerRingRadius,FPStyroHalfThick,0,CLHEP::twopi);       
+       G4Tubs* frontPanelStyro = new G4Tubs("caloFPStyro",FPInnerRadius,outerRingRadius,FPStyroHalfThick,0,CLHEP::twopi);       
        G4LogicalVolume* frontPanelStyroLog = caloBuildLogical(frontPanelStyro, FPStyrofoamMaterial, "caloFPStyroLog",isPipeVisible,G4Color::Brown(),0,forceEdge);
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,0.0), frontPanelStyroLog, "caloFPStyroPV", frontPlateLog, false, 0, false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                
 
        //carbon fiber panel
-       G4Tubs* frontPanelCarb = new G4Tubs("caloFPCarb",innerRingRadius,outerRingRadius,FPCarbonHalfThick,0,CLHEP::twopi);       
+       G4Tubs* frontPanelCarb = new G4Tubs("caloFPCarb",FPInnerRadius,outerRingRadius,FPCarbonHalfThick,0,CLHEP::twopi);       
        G4LogicalVolume* frontPanelCarbLog = caloBuildLogical(frontPanelCarb, FPCarbonMaterial, "caloFPCarbLog",isPipeVisible,G4Color::Grey(),0,forceEdge);
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,-frontPanelHalfThick+FPCarbonHalfThick), frontPanelCarbLog, "caloFPCarbPV1", frontPlateLog, false, 0, false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                
@@ -348,6 +344,11 @@ namespace mu2e {
        G4double innerCaseRadius        = diskCaseInnerRadius - innerCaseThickness;
        G4double diskDepth              = wrapperHalfZ;
 
+       std::vector<double> chimesInX   = cal.caloInfo().chimesInsideX();
+       std::vector<double> chimesInY   = cal.caloInfo().chimesInsideY();
+       std::vector<double> chimesOutX  = cal.caloInfo().chimesOutsideX();
+       std::vector<double> chimesOutY  = cal.caloInfo().chimesOutsideY();
+
        G4VPhysicalVolume* pv;
 
 
@@ -357,8 +358,8 @@ namespace mu2e {
        G4Box* crystal     = new G4Box("caloCrystal",    crystalHalfXY,crystalHalfXY,crystalHalfZ);
        G4Box* crystalWrap = new G4Box("caloCrystalWrap",wrapperHalfXY,wrapperHalfXY,wrapperHalfZ);
 
-       G4LogicalVolume *crystalLog = caloBuildLogical(crystal,     crysMaterial, "caloCrystalLog",0, G4Color::Magenta(),0,0);
-       G4LogicalVolume *wrapperLog = caloBuildLogical(crystalWrap, wrapMaterial, "caloCrystalWrapLog",isCrystalVisible,G4Color::Red(),isCrystalSolid,forceEdge);  
+       G4LogicalVolume *crystalLog = caloBuildLogical(crystal,     crysMaterial, "caloCrystalLog",0, G4Color::Cyan(),0,0);
+       G4LogicalVolume *wrapperLog = caloBuildLogical(crystalWrap, wrapMaterial, "caloCrystalWrapLog",isCrystalVisible,G4Color::Cyan(),isCrystalSolid,forceEdge);  
 
        // crystal center in z = half wrapper size w.r.t wrapper center since there is no wrapper at the back of the crystal
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,wrapperHalfThick),crystalLog,"caloCrysPV",wrapperLog,false,0,false);
@@ -372,29 +373,73 @@ namespace mu2e {
        // Build disk cases (inner, crystal and outer cases + two external rings)
        //----
        G4Tubs* fullCaseDisk    = new G4Tubs("caloDiskFullCase",   innerCaseRadius,outerCaseRadius+outerRingEdgeThickness,diskDepth,0,CLHEP::twopi);       
-       G4Tubs* innerCaseDisk   = new G4Tubs("caloDiskInnerCase",  innerCaseRadius,diskCaseInnerRadius,diskDepth,0,CLHEP::twopi);       
-       G4Tubs* crystalCaseDisk = new G4Tubs("caloDiskCrystalCase",diskCaseInnerRadius,diskCaseOuterRadius,diskDepth,0,CLHEP::twopi);       
-       G4Tubs* outerCaseDisk   = new G4Tubs("caloDiskOuterCase",  diskCaseOuterRadius,outerCaseRadius,diskDepth,0,CLHEP::twopi);       
+       G4Tubs* crystalCaseDisk = new G4Tubs("caloDiskCrystalCase",innerCaseRadius,outerCaseRadius,                       diskDepth,0,CLHEP::twopi);       
        G4Tubs* ringCaseDisk    = new G4Tubs("caloDiskRingCase",   outerCaseRadius,outerCaseRadius+outerRingEdgeThickness,outerRingEdgeDepth,0,CLHEP::twopi);       
 
        G4LogicalVolume* fullCaseDiskLog    = caloBuildLogical(fullCaseDisk,    vacuumMaterial,    "caloDiskFullCaseLog",   0, G4Color::Black(),0,0);   
-       G4LogicalVolume* innerCaseDiskLog   = caloBuildLogical(innerCaseDisk,   innerRingMaterial, "caloDiskInnerCaseLog",  isDiskVisible,G4Color::Yellow(),isDiskSolid,forceEdge);   
        G4LogicalVolume* crystalCaseDiskLog = caloBuildLogical(crystalCaseDisk, shimeMaterial,     "caloDiskCrystalCaseLog",isDiskVisible,G4Color::Yellow(),isDiskSolid,forceEdge);   
-       G4LogicalVolume* outerCaseDiskLog   = caloBuildLogical(outerCaseDisk,   outerRingMaterial, "caloDiskOuterCaseLog",  isDiskVisible,G4Color::Yellow(),isDiskSolid,forceEdge);   
        G4LogicalVolume* ringCaseDiskLog    = caloBuildLogical(ringCaseDisk,    outerRingMaterial, "caloDiskRingCaseLog",   isDiskVisible,G4Color::Yellow(),isDiskSolid,forceEdge);   
 
-       pv = new G4PVPlacement(0,G4ThreeVector(0.0,0,0.0),innerCaseDiskLog,"caloDiskInnerCasePV",fullCaseDiskLog,true,0,false);
-       doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0,0.0),crystalCaseDiskLog,"caloDiskCrystalCasePV",fullCaseDiskLog,true,0,false);
-       doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
-       pv = new G4PVPlacement(0,G4ThreeVector(0.0,0,0.0),outerCaseDiskLog,"caloDiskOuterCasePV",fullCaseDiskLog,true,0,false);
        doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0,diskDepth-outerRingEdgeDepth),ringCaseDiskLog,"caloDiskRingCasePV",fullCaseDiskLog,true,0,false);
        doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0,-diskDepth+outerRingEdgeDepth),ringCaseDiskLog,"caloDiskRingCasePV",fullCaseDiskLog,true,0,false);
        doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
 
-       //now put the crystals inside the crystalDiskCase 
+
+
+
+       //--------------------------------------------------------------------
+       // add the chimes in the inner / outer part of the disk (see top Note). This is surprisingly compact...
+       G4Tubs* holeIn = new G4Tubs("InnerDiskEdge",0,innerCaseRadius,diskDepth,0,CLHEP::twopi);           
+       for (unsigned i=0;i<chimesInX.size();++i)
+       {            
+           G4Box* box = new G4Box("ChimeIn",chimesInX[i],wrapperHalfXY,crystalHalfZ);
+           G4SubtractionSolid* cutChime = new G4SubtractionSolid("Cropped chime", box, holeIn,0, G4ThreeVector(0,-chimesInY[i],0));
+           G4LogicalVolume* cutChimeLog = caloBuildLogical(cutChime, innerRingMaterial, "cutChimeLog",  isDiskVisible, G4Color::Yellow(), isCrystalSolid, forceEdge);   
+           pv = new G4PVPlacement(0,CLHEP::Hep3Vector(0,chimesInY[i],0),cutChimeLog,"Chimes",crystalCaseDiskLog,true,0,false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+       }
+
+       for (unsigned i=0;i<chimesOutX.size();++i)
+       {
+           double xlen = sqrt(outerCaseRadius*outerCaseRadius-chimesOutY[i]*chimesOutY[i])-chimesOutX[i];
+           G4Box* box = new G4Box("ChimeOut",xlen,wrapperHalfXY,crystalHalfZ);
+           G4IntersectionSolid* cutChime1 = new G4IntersectionSolid("Cropped chime", crystalCaseDisk, box,0, G4ThreeVector(chimesOutX[i]+xlen,chimesOutY[i],0));
+           G4LogicalVolume* cutChime1Log = caloBuildLogical(cutChime1, outerRingMaterial, "cutChimeLog",  isDiskVisible, G4Color::Yellow(), isCrystalSolid, forceEdge);   
+           pv = new G4PVPlacement(0,CLHEP::Hep3Vector(0,0,0),cutChime1Log,"Chimes",crystalCaseDiskLog,true,0,false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+
+           G4IntersectionSolid* cutChime2 = new G4IntersectionSolid("Cropped chime", crystalCaseDisk, box,0, G4ThreeVector(-chimesOutX[i]-xlen,chimesOutY[i],0));
+           G4LogicalVolume* cutChime2Log = caloBuildLogical(cutChime2, outerRingMaterial, "cutChimeLog",  isDiskVisible, G4Color::Yellow(), isCrystalSolid, forceEdge);   
+           pv = new G4PVPlacement(0,CLHEP::Hep3Vector(0,0,0),cutChime2Log,"Chimes",crystalCaseDiskLog,true,0,false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+       }
+
+       //add the two pieces at the top and bottom
+       if (chimesOutY.size()>0)
+       {
+           double ylow = *std::min_element(chimesOutY.begin(),chimesOutY.end())-2.0*wrapperHalfXY;
+           double yup  = *std::max_element(chimesOutY.begin(),chimesOutY.end())+2.0*wrapperHalfXY;
+
+           G4Box* box = new G4Box("ChimeOut",0.4*outerCaseRadius,wrapperHalfXY,crystalHalfZ);
+           G4IntersectionSolid* cutChime1 = new G4IntersectionSolid("Cropped chime", crystalCaseDisk, box,0, G4ThreeVector(0,ylow,0));
+           G4IntersectionSolid* cutChime2 = new G4IntersectionSolid("Cropped chime", crystalCaseDisk, box,0, G4ThreeVector(0,yup,0));
+
+           G4LogicalVolume* cutChime1Log = caloBuildLogical(cutChime1, outerRingMaterial, "cutChimeLog",  isDiskVisible, G4Color::Yellow(), isCrystalSolid, forceEdge);   
+           G4LogicalVolume* cutChime2Log = caloBuildLogical(cutChime2, outerRingMaterial, "cutChimeLog",  isDiskVisible, G4Color::Yellow(), isCrystalSolid, forceEdge);   
+
+           pv = new G4PVPlacement(0,CLHEP::Hep3Vector(0,0,0),cutChime1Log,"Chimes",crystalCaseDiskLog,true,0,false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+           pv = new G4PVPlacement(0,CLHEP::Hep3Vector(0,0,0),cutChime2Log,"Chimes",crystalCaseDiskLog,true,0,false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+       }
+       
+       
+       
+       //------------------------------------------------------------
+       // finally put the crystals inside the crystalDiskCase 
        int nTotCrystal(0);
        for (int i=0;i<idisk;++i) nTotCrystal+=cal.disk(idisk).nCrystals();
        
@@ -404,10 +449,11 @@ namespace mu2e {
 	     std::ostringstream name;name<<"caloCrystalPV_" <<id;
              CLHEP::Hep3Vector crystalPosition = cal.disk(idisk).crystal(ic).localPosition();
              crystalPosition.setZ(0.0);
-	     
+
              pv = new G4PVPlacement(0,crystalPosition,wrapperLog,name.str(),crystalCaseDiskLog,true,id,false);
              doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
        }
+
               
        return fullCaseDiskLog;
    }
@@ -466,6 +512,14 @@ namespace mu2e {
        G4double outerRingRadius         = diskCaseOuterRadius + outerCaseThickness ;   
        G4double outerRingEdgeRadius     = outerRingRadius + outerRingEdgeThickness;   
 
+       std::vector<double> chimesInX   = cal.caloInfo().chimesInsideX();
+       std::vector<double> chimesInY   = cal.caloInfo().chimesInsideY();
+       std::vector<double> chimesOutX  = cal.caloInfo().chimesOutsideX();
+       std::vector<double> chimesOutY  = cal.caloInfo().chimesOutsideY();
+       int nChimesInX                  = int(chimesInX.size());
+       int nChimesOutX                 = int(chimesOutX.size());
+
+
        G4VPhysicalVolume* pv;
 
        if (cal.caloInfo().nROPerCrystal()==0) return nullptr;
@@ -523,11 +577,10 @@ namespace mu2e {
 
 
        //----------------------
-       // Build backplate and  readouts in the holes
+       // Build backplate and readouts in the holes
        //----
        int nTotCrystal(0);
        for (int i=0;i<idisk;++i) nTotCrystal+=cal.disk(idisk).nCrystals();
-
 
        G4Tubs* backPlate = new G4Tubs("caloBackPlate",innerRingRadius,outerRingRadius,holeHalfZ,0,CLHEP::twopi);       
        G4LogicalVolume* backPlateLog = caloBuildLogical(backPlate, backPlateMaterial, "caloBackPlateLog", isROVisible, G4Color::Blue(),isROSolid,forceEdge);
@@ -543,35 +596,73 @@ namespace mu2e {
              doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
        }
 
-       for (int is=1;is<int(outerRingRadius/wrapperHalfXY)-2;is+=2)
+       
+             
+       // two kind of copper strips: cut by inner hole and full length
+       // strips cut by inner hole have return pipes, and adjacent strips need to have the same length
+       std::vector<double> stripY, stripX0, stripX1;
+       for (int is=0;is<int(outerRingRadius/2.0/wrapperHalfXY);is+=1)
        {
-           double ypos = is*wrapperHalfXY;
-           double ypos2 = ((is-1)%4) ? (is-2)*wrapperHalfXY : ypos;
+           double ycrystal = is*2.0*wrapperHalfXY;
+           
+           int idxIn(-1),idxOut(-1);
+           for (unsigned i=0; i<chimesInY.size();++i)  if (abs(chimesInY[i]-ycrystal) < 0.1) idxIn=i;       
+           for (unsigned i=0; i<chimesOutY.size();++i) if (abs(chimesOutY[i]-ycrystal) < 0.1) idxOut=i;
+           
+           double x0  = (idxIn > -1) ? chimesInX[idxIn] : 0.0;
+           double x1  = (idxOut > -1) ? chimesOutX[idxOut] : 0.0;           
+           if (idxIn > -1  && idxIn+1<nChimesInX)   x0 = std::min(x0,chimesInX[idxIn+1]);
+           if (idxIn > -1  && idxIn+1==nChimesInX)   x0 = 0.0;
+           if (idxOut > -1 && idxOut+1<nChimesOutX) x1 = std::max(x1,chimesOutX[idxOut+1]);
 
-           double dx1 = sqrt(outerRingRadius*outerRingRadius-ypos*ypos)-50*CLHEP::mm;
-           double dx0 = (fabs(ypos2) < innerRingRadius) ? sqrt(innerRingRadius*innerRingRadius-ypos2*ypos2)+50*CLHEP::mm : 0;
-           double dx  = (dx0 > 1e-3) ? 0.5*(dx1-dx0) : dx1;
-
-           G4Box* bstrip = new G4Box("strip",dx,stripHalfY, stripHalfZ);
-           G4LogicalVolume* bstripLog = caloBuildLogical(bstrip, stripMaterial, "caloStripLog", isROVisible, G4Color::Red(),isROSolid,forceEdge);
-
+           if (idxIn > -1 && idxIn-1<nChimesInX) std::cout<<is<<" "<<chimesInX[idxIn]<<" "<<chimesInX[idxIn+1]<<" "<<x0<<" "<<chimesInY[idxIn]<<std::endl;
+           
+           stripY.push_back((2*is+1)*wrapperHalfXY);
+           stripX0.push_back(x0);      
+           stripX1.push_back(x1);      
+       
+           //hack to make it look more like the drawing for the current calorimeter - pick one          
+           //if (x0>0.1 && is%2==1 ) //if (is<8 && is%2==1 )
+           //{
+           //   double mi = std::min(stripX0[is],stripX0[is-1]);
+           //   double ma = std::max(stripX1[is],stripX1[is-1]);
+           //   stripX0[is]  = mi;
+           //   stripX0[is-1]= mi;            
+           //   stripX1[is]  = ma;
+           //   stripX1[is-1]= ma;            
+           //}
+       }
+       
+       //build the strips
+       for (unsigned i=0;i<stripY.size();++i) 
+       {                                
            double zpos = holeHalfZ-stripHalfZ;
-           if (dx0 > 1e-3){
-               double xpos = 0.5*(dx0+dx1);
-               pv = new G4PVPlacement(0,G4ThreeVector(xpos,  ypos, zpos), bstripLog,"caloStripPV", backPlateLog, false,0,false);
+           if (stripX0[i]>0.1)
+           {
+               G4Box* bstrip = new G4Box("strip",0.5*(stripX1[i]-stripX0[i]),stripHalfY, stripHalfZ);
+               G4LogicalVolume* bstripLog = caloBuildLogical(bstrip, stripMaterial, "caloStripLog", isROVisible, G4Color::Red(),isROSolid,forceEdge);
+               double xpos = stripX0[i]+0.5*(stripX1[i]-stripX0[i]);
+
+               pv = new G4PVPlacement(0,G4ThreeVector(xpos,  stripY[i], zpos), bstripLog,"caloStripPV", backPlateLog, false,0,false);
                doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
-  	       pv = new G4PVPlacement(0,G4ThreeVector(-xpos, ypos, zpos), bstripLog,"caloStripPV", backPlateLog, false,0,false);
+  	       pv = new G4PVPlacement(0,G4ThreeVector(-xpos, stripY[i], zpos), bstripLog,"caloStripPV", backPlateLog, false,0,false);
                doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
-               pv = new G4PVPlacement(0,G4ThreeVector(xpos, -ypos, zpos), bstripLog,"caloStripPV", backPlateLog, false,0,false);
+               pv = new G4PVPlacement(0,G4ThreeVector(xpos, -stripY[i], zpos), bstripLog,"caloStripPV", backPlateLog, false,0,false);
                doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
-  	       pv = new G4PVPlacement(0,G4ThreeVector(-xpos, -ypos, zpos),bstripLog,"caloStripPV", backPlateLog, false,0,false);
+  	       pv = new G4PVPlacement(0,G4ThreeVector(-xpos, -stripY[i], zpos),bstripLog,"caloStripPV", backPlateLog, false,0,false);
                doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
-           } else {
-               pv = new G4PVPlacement(0,G4ThreeVector(0, ypos, zpos), bstripLog,"caloStripPV", backPlateLog, false,0,false);
+           } 
+           else 
+           {
+               G4Box* bstrip = new G4Box("strip",stripX1[i],stripHalfY, stripHalfZ);
+               G4LogicalVolume* bstripLog = caloBuildLogical(bstrip, stripMaterial, "caloStripLog", 1, G4Color::Red(),1,forceEdge);
+
+               pv = new G4PVPlacement(0,G4ThreeVector(0,  stripY[i], zpos), bstripLog,"caloStripPV", backPlateLog, false,0,false);
                doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
-               pv = new G4PVPlacement(0,G4ThreeVector(0, -ypos, zpos), bstripLog,"caloStripPV", backPlateLog, false,0,false);
-               doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);           
-           }           
+  	       pv = new G4PVPlacement(0,G4ThreeVector(0, -stripY[i], zpos), bstripLog,"caloStripPV", backPlateLog, false,0,false);
+               doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+           }
+       
        }
 
 

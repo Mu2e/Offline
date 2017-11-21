@@ -98,6 +98,7 @@ namespace mu2e {
 	  calo_->caloInfo_.outerRingEdgeZLength( config.getDouble("calorimeter.outerRingEdgeZLength") );
 	  calo_->caloInfo_.outerRingEdgeRLength( config.getDouble("calorimeter.outerRingEdgeRLength") );
 
+          calo_->caloInfo_.FPInnerRadius(      config.getDouble("calorimeter.FPInnerRadius") );
           calo_->caloInfo_.FPstyrofoamZLength( config.getDouble("calorimeter.FPStyrofoamZLength") );
           calo_->caloInfo_.FPCarbonZLength(    config.getDouble("calorimeter.FPCarbonZLength") );
           calo_->caloInfo_.coolFPPipeRadius(   config.getDouble("calorimeter.coolFPPipeRadius") );
@@ -272,6 +273,36 @@ namespace mu2e {
                  CLHEP::Hep3Vector globalPosition = thisDisk->geomInfo().origin() + thisDisk->geomInfo().inverseRotation()*(thisCrystal.localPosition());
                  thisCrystal.setPosition(globalPosition);
             }
+            
+            //calculate the position of the inner and outer chimes. 
+            std::vector<double> chimesInX, chimesInY, chimesOutX, chimesOutY;
+            
+            int nrowIn = int(innerRadius/2.0/crystalCellRadius)+1;
+            for (int irow=-nrowIn;irow<=nrowIn;++irow)
+            {  
+                int icry = thisDisk->idMinCrystalInside(irow);
+                if (icry <0 || icry > thisDisk->nCrystals()) continue;
+                double xmin = thisDisk->crystal(icry).localPosition().x()-crystalCellRadius;
+                double ymin = thisDisk->crystal(icry).localPosition().y();
+                if (xmin > crystalCellRadius) {chimesInX.push_back(xmin);chimesInY.push_back(ymin);}               
+            }
+
+            int nrowOut = int(outerRadius/2.0/crystalCellRadius)+1;
+            for (int irow=-nrowOut;irow<=nrowOut;++irow)
+            {  
+                int icry = thisDisk->idMaxCrystalInside(irow);
+                if (icry <0 || icry > thisDisk->nCrystals()) continue;
+                double xmax = thisDisk->crystal(icry).localPosition().x()+crystalCellRadius;
+                double ymax = thisDisk->crystal(icry).localPosition().y();
+                if (xmax > crystalCellRadius) {chimesOutX.push_back(xmax);chimesOutY.push_back(ymax);}               
+            }
+
+            calo_->caloInfo_.chimesInsideX(chimesInX);
+            calo_->caloInfo_.chimesInsideY(chimesInY);            
+            calo_->caloInfo_.chimesOutsideX(chimesOutX);
+            calo_->caloInfo_.chimesOutsideY(chimesOutY);
+            
+
 
 
             if (verbosityLevel_) std::cout<<"Constructed Disk "<<thisDisk->id()<<":  Rin="<<thisDisk->innerRadius()<<"  Rout="<<thisDisk->outerRadius()

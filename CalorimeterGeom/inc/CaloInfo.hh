@@ -1,5 +1,5 @@
 //
-// Contains data for the calorimeter class. A lot of information should move to a DB
+// Contains data for the calorimeter class. This is temporary, the data should move to a DB when available
 //
 // Original author B. Echenard
 //
@@ -22,7 +22,8 @@ namespace mu2e {
               FEEXLength_(0),FEEYLength_(0),FEEZLength_(0),FEEBoxThickness_(0),
               BPHoleXLength_(0),BPHoleYLength_(0),BPHoleZLenght_(0),stripThickness_(0),stripLengthY_(0),coolBPPipeRadius_(0),
               outerRingEdgeZLength_(0),outerRingEdgeRLength_(0),caseThicknessIn_(0),caseThicknessOut_(0),
-              FPStyrofoamZLength_(0),FPCarbonZLength_(0),coolFPPipeRadius_(0),
+              chimeInsideX_(),chimeInsideY_(),chimeOutsideX_(),chimeOutsideY_(),
+              FPInnerRadius_(0),FPStyrofoamZLength_(0),FPCarbonZLength_(0),coolFPPipeRadius_(0),
 	      nPipes_(0),pipeRadius_(0), pipeThickness_(0),pipeTorRadius_(),pipeSeparation_(0),              
               nCrate_(0),nBoard_(0),nCrateBeforeSpace_(0),crateXLength_(0),crateYLength_(0),crateZLength_(0),
               crateFShieldThick_(0),crateBShieldThick_(0),crateTThick_(0),crateSThick_(0),crateFShieldYLength_(0),
@@ -68,7 +69,12 @@ namespace mu2e {
            void outerRingEdgeRLength(double value) {outerRingEdgeRLength_ = value;}
            void caseThicknessIn(double value)      {caseThicknessIn_ = value;}
            void caseThicknessOut(double value)     {caseThicknessOut_ = value;}
-           
+           void chimesInsideX(std::vector<double>& value)   {chimeInsideX_ = value;}
+	   void chimesInsideY(std::vector<double>& value)   {chimeInsideY_ = value;}
+	   void chimesOutsideX(std::vector<double>& value)  {chimeOutsideX_ = value;}
+	   void chimesOutsideY(std::vector<double>& value)  {chimeOutsideY_ = value;}
+
+           void FPInnerRadius(double value)               {FPInnerRadius_ = value;}
            void FPstyrofoamZLength(double value)          {FPStyrofoamZLength_ = value;}
            void FPCarbonZLength(double value)             {FPCarbonZLength_ = value;}
            void coolFPPipeRadius(double value)            {coolFPPipeRadius_ = value;}
@@ -134,7 +140,13 @@ namespace mu2e {
            double outerRingEdgeRLength()  const {return outerRingEdgeRLength_;}
            double caseThicknessIn()       const {return caseThicknessIn_;}
            double caseThicknessOut()      const {return caseThicknessOut_;}
-          
+           const  std::vector<double>& chimesInsideX()  const {return chimeInsideX_;}
+           const  std::vector<double>& chimesInsideY()  const {return chimeInsideY_;}
+           const  std::vector<double>& chimesOutsideX() const {return chimeOutsideX_;}
+           const  std::vector<double>& chimesOutsideY() const {return chimeOutsideY_;}
+
+
+           double FPInnerRadius()         const {return FPInnerRadius_;}
            double FPStyrofoamZLength()    const {return FPStyrofoamZLength_;}
            double FPCarbonZLength()       const {return FPCarbonZLength_;}
            double coolFPPipeRadius()      const {return coolFPPipeRadius_;}
@@ -142,8 +154,9 @@ namespace mu2e {
            double pipeRadius()            const {return pipeRadius_;}
            double pipeThickness()         const {return pipeThickness_;}
            const std::vector<double>& pipeTorRadius() const {return pipeTorRadius_;}
-           double pipeSeparation()       const {return pipeSeparation_;}
+           double pipeSeparation()        const {return pipeSeparation_;}
                 
+
            int    nCrate()                const {return nCrate_;}
            int    nBoard()                const {return nBoard_;}
            int    nCrateBeforeSpace()     const {return nCrateBeforeSpace_;}
@@ -195,13 +208,17 @@ namespace mu2e {
           double stripThickness_;
           double stripLengthY_;
           double coolBPPipeRadius_;
-          
-	  
+          	  
           double outerRingEdgeZLength_;
           double outerRingEdgeRLength_;
           double caseThicknessIn_;
           double caseThicknessOut_;
+          std::vector<double>  chimeInsideX_;          
+          std::vector<double>  chimeInsideY_;          
+          std::vector<double>  chimeOutsideX_;          
+          std::vector<double>  chimeOutsideY_;          
 
+          double FPInnerRadius_;
           double FPStyrofoamZLength_;
           double FPCarbonZLength_;
           double coolFPPipeRadius_;
