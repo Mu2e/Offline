@@ -43,11 +43,6 @@ fi
 
 # Define the directory in which this file lives as the root of a release.
 export MU2E_BASE_RELEASE=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && /bin/pwd`
-echo "Base release directory is: " $MU2E_BASE_RELEASE
-
-# Remove any satellite release environment.  TODO: test this and abort.
-export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE/:$MU2E_DATA_PATH/
-echo "MU2E_SEARCH_PATH:   "  $MU2E_SEARCH_PATH
 
 # Export a description of the configuration that we set up so that the
 # build system can check consistency between setup and build configs.
@@ -69,9 +64,6 @@ fi
 
 # Setup the framework and its dependent products
 setup -B art v2_07_03 -q${MU2E_UPS_QUALIFIERS}
-
-# root6 needs a path to include files to prevent some runtime warnings
-export ROOT_INCLUDE_PATH=`dropit -s -p$ROOT_INCLUDE_PATH $MU2E_BASE_RELEASE`
 
 # The interface to SAM - conflicts with ifdhc from the grid runtime environment
 #setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
@@ -97,17 +89,21 @@ setup -B scons v2_5_1a -q p2713d
 # The debugger
 setup -B gdb v8_0_1
 
-# Search path for fcl files
-export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
+# satellite releases run this setup, then add itself to the following
 
-# Tell the framework to look in the local area to find modules.
-source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
-
-#
-if [ "${MU2E_BASE_RELEASE}" != `/bin/pwd` ]; then
-  source ${MU2E_BASE_RELEASE}/bin/addlocal.sh
-fi
+# where to search for geometry and other configuration
+export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE:$MU2E_DATA_PATH
+# Search path for fcl files (overwrites any path from products above)
+export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}
+# other paths needed to run from this release
+export LD_LIBRARY_PATH=`dropit -p $LD_LIBRARY_PATH -sf $MU2E_BASE_RELEASE/lib`
+export PYTHONPATH=`dropit -p $PYTHONPATH -sf $MU2E_BASE_RELEASE/scripts/build/python`
+export PATH=`dropit -p $PATH -sf $MU2E_BASE_RELEASE/bin`
+# root6 needs a path to include files to prevent some runtime warnings
+export ROOT_INCLUDE_PATH=`dropit -p $ROOT_INCLUDE_PATH -sf $MU2E_BASE_RELEASE`
 
 # Environment variables used by the test build system.
 export PACKAGE_SOURCE=${MU2E_BASE_RELEASE}
 export BUILD_BASE=${MU2E_BASE_RELEASE}
+
+
