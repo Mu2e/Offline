@@ -11,8 +11,6 @@
 #
 #
 
-set -e
-
 usage() {
  cat <<EOF
 Usage: createSatelliteRelease [options]
