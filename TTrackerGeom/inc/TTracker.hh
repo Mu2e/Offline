@@ -288,15 +288,15 @@ namespace mu2e {
     // =============== NewTracker Private Objects Start ==============
 
     // Dense array.
-    std::array<Plane,StrawId2::_nplanes> _planes2;
+    std::array<Plane,StrawId2::_nplanes> _allPlanes2;
 
     // Dense array.
-    std::array<Straw,TTracker::_nstraws> _straws2;
+    std::array<Straw,TTracker::_nstraws> _allStraws2;
 
     // Sparse array: designed for indexing by StrawId2.
     // For all legal entries in StrawId2, this points to a straw in _straws2;
     // All other entries are null.
-    std::array<Straw const*,TTracker::_maxRedirect> _straws2_p;
+    std::array<Straw const*,TTracker::_maxRedirect> _allStraws2_p;
 
     // =============== NewTracker Private Objects End ==============
 
