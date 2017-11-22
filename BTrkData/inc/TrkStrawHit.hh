@@ -36,7 +36,7 @@ namespace mu2e
     virtual ~TrkStrawHit();
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
-    virtual int ambig() const { return _iamb; }
+    int ambig() const { return _iamb; }
     enduse driftEnd() const { return _enduse; }
 //    virtual void invert();
     virtual void setAmbig(int newambig);
@@ -46,8 +46,8 @@ namespace mu2e
 // strawhit specific interface
     const StrawHit& strawHit() const { return _strawhit; }
     const Straw& straw() const { return _straw; }
+    virtual double time() const { return _strawhit.time(); }
 // the following function is DEPRECATED as the underlying function is now end specific
-    double time() const { return _strawhit.time(); }
     double driftTime(StrawEnd end) const; // drift time for a specific end
     double driftTime() const; // drift time for the current end strategy
 
@@ -58,10 +58,10 @@ namespace mu2e
     double timeDiffDistErr() const { return _tddist_err; }
     const CLHEP::Hep3Vector& wirePosition() const { return _wpos; }
     void hitPosition(CLHEP::Hep3Vector& hpos) const;
-    bool signalPropagationTime(double &propTime, double&Doca, 
+    virtual bool signalPropagationTime(double &propTime, double&Doca, 
 			       double resid, double &residErr, 
 			       CLHEP::Hep3Vector trajDirection);//propagation time
-    void trackT0Time(double &htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
+    virtual void trackT0Time(double &htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
 
     double signalTime(StrawEnd end=TrkTypes::cal) const { return _stime[end]; } // time for signal to reach the end of the wire
 // error to penalize mis-assigned ambiguity
@@ -71,15 +71,14 @@ namespace mu2e
 // total error
     double totalErr() const { return _toterr; }
 // intrinsic hit error (mm)
-    double hitErr() const { return _t2d._rdrifterr; }
-    double physicalTime() const;
-    //FIXME! this function is not used yet. Needs to be implemented
-    double physicalPosition() const {return 0;}
+    virtual double hitErr() const { return _t2d._rdrifterr; }
+  // test the consistincy of this hit with 'physical' limts, with a given # of sigma
+    virtual bool isPhysical(double maxchi) const;
     
 // logical operators to allow searching for StrawHits
     bool operator == (StrawHit const& sh) const { return _strawhit == sh; }
     bool operator != (StrawHit const& sh) const { return !operator==(sh); }
-    void print(std::ostream& ) const;
+    virtual void print(std::ostream& ) const;
 
     //**************************************************
     // SET VALUES

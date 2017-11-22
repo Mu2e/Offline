@@ -105,8 +105,8 @@ namespace mu2e
     htime = time() + _dtoffset - hflt/vflt;
   }
 
-  double
-  TrkCaloHit::physicalTime() const {
+  bool
+  TrkCaloHit::isPhysical(double maxchi) const {
     Hep3Vector trjPos(0);
     hitPosition(trjPos);
     double     CsI_refractiveIndex(1.8);//FIXME! that should come from the geometryhandle
@@ -117,10 +117,10 @@ namespace mu2e
     double     residx2 = (trjPos.x() - caloClX)*(trjPos.x() - caloClX); 
     double     residy2 = (trjPos.y() - caloClY)*(trjPos.y() - caloClY); 
     double     resid   = sqrt( residx2 + residy2)/(CLHEP::c_light/CsI_refractiveIndex)/totErr;
-    
-    return resid;
+    // This function should check that the time is within the value expected for a signal in
+    // this crystal, please check the following, it seems to be missing the crystal size FIXME!
+    return resid < maxchi;
   }
-  
 
   void TrkCaloHit::print(std::ostream& o) const {
     o<<"------------------- TrkCaloHit -------------------"<<std::endl;

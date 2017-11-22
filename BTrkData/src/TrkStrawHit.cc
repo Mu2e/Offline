@@ -174,14 +174,13 @@ namespace mu2e
     tcal->TimeToDistance(straw().index(),tdrift,tdir,_t2d);
 // Propogate error in t0, using local drift velocity
     double rt0err = hitT0()._t0err*_t2d._vdrift;
-    // total hit error is the sum of all
-    //    _toterr = sqrt(_t2d._rdrifterr*_t2d._rdrifterr + rt0err*rt0err + _exterr*_exterr + _penerr*_penerr);
+    // annealing error depends on the 'temperature'
     double exterr = _t2d._vdrift*temperature();
+    // total hit error is the sum of all
     _toterr = sqrt(_t2d._rdrifterr*_t2d._rdrifterr + rt0err*rt0err + exterr*exterr + _penerr*_penerr);
 // If the hit is wildly away from the track , disable it
     double rstraw = _straw.getRadius();
-    //    if(!physicalDrift(_maxdriftpull)){
-    if(physicalTime() > _maxdriftpull){
+    if(!isPhysical(_maxdriftpull)){
       setActivity(false);
       setFlag(driftFail);
     } else {
@@ -194,13 +193,9 @@ namespace mu2e
     }
   }
 
-  double
-  TrkStrawHit::physicalTime() const {
-    if (_t2d._rdrift > 0) {
-      return (_straw.getRadius() - _t2d._rdrift)/_toterr;
-    }else {
-      return -_t2d._rdrift/_toterr;
-    }
+  bool TrkStrawHit::isPhysical(double maxchi) const {
+    return _t2d._rdrift < _straw.getRadius() + maxchi*_toterr &&
+      _t2d._rdrift > -maxchi*_toterr;
   }
 
   void
