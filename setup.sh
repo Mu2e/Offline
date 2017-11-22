@@ -80,7 +80,7 @@ setup -B mu2e_artdaq_core v1_02_00 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFI
 
 setup -B heppdt   v3_04_01f -q${MU2E_UPS_QUALIFIERS}
 setup -B xerces_c v3_1_4a   -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_02_02  -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_02_03  -q${MU2E_UPS_QUALIFIERS}
 setup -B cry   v1_7h  -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
