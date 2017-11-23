@@ -271,7 +271,7 @@ namespace mu2e {
 
                  //pre-compute the crystal position in the mu2e frame (aka global frame), taken from BaseCalorimeter.cc
                  CLHEP::Hep3Vector globalPosition = thisDisk->geomInfo().origin() + thisDisk->geomInfo().inverseRotation()*(thisCrystal.localPosition());
-                 thisCrystal.setPosition(globalPosition);
+                 thisCrystal.setPosition(globalPosition);                                  
             }
             
             //calculate the position of the inner and outer chimes. 
@@ -282,7 +282,7 @@ namespace mu2e {
             {  
                 int icry = thisDisk->idMinCrystalInside(irow);
                 if (icry <0 || icry > thisDisk->nCrystals()) continue;
-                double xmin = thisDisk->crystal(icry).localPosition().x()-crystalCellRadius;
+                double xmin = thisDisk->crystal(icry).localPositionIdeal().x()-crystalCellRadius;
                 double ymin = thisDisk->crystal(icry).localPosition().y();
                 if (xmin > crystalCellRadius) {chimesInX.push_back(xmin);chimesInY.push_back(ymin);}               
             }
@@ -292,7 +292,7 @@ namespace mu2e {
             {  
                 int icry = thisDisk->idMaxCrystalInside(irow);
                 if (icry <0 || icry > thisDisk->nCrystals()) continue;
-                double xmax = thisDisk->crystal(icry).localPosition().x()+crystalCellRadius;
+                double xmax = thisDisk->crystal(icry).localPositionIdeal().x()+crystalCellRadius;
                 double ymax = thisDisk->crystal(icry).localPosition().y();
                 if (xmax > crystalCellRadius) {chimesOutX.push_back(xmax);chimesOutY.push_back(ymax);}               
             }
