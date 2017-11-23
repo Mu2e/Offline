@@ -57,7 +57,8 @@ namespace mu2e {
            void                            fillCrystals(const CLHEP::Hep3Vector &crystalOriginInDisk);
            bool                            isInsideDisk(double x, double y) const;
 	   double                          calcDistToSide(const CLHEP::Hep2Vector& a, const CLHEP::Hep2Vector& b) const;
-           
+           bool                            isInsideCrystal(int icry, double x, double y) const;
+
            std::vector<Crystal>            crystalList_;
 	   int                             id_;
            DiskGeomInfo                    geomInfo_;

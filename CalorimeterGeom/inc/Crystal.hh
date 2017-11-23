@@ -19,10 +19,11 @@ namespace mu2e {
 
 	  public:
 
-             Crystal(int localId, int diskId, const CLHEP::Hep3Vector& localPosition) : 
+             Crystal(int localId, int diskId, const CLHEP::Hep3Vector& localPosition, const CLHEP::Hep3Vector& localPositionIdeal) : 
 	        localId_(localId), 
 	        diskId_(diskId), 
 	        localPosition_(localPosition), 
+	        localPositionIdeal_(localPositionIdeal), 
 	        position_(), 
 	        neighbors_(), 
 	        nextNeighbors_(),
@@ -34,6 +35,7 @@ namespace mu2e {
              int   localId()                                        const {return localId_;}
              int   diskId()                                         const {return diskId_;}
              const CLHEP::Hep3Vector& localPosition()               const {return localPosition_;}
+             const CLHEP::Hep3Vector& localPositionIdeal()          const {return localPositionIdeal_;}
              const CLHEP::Hep3Vector& position()                    const {return position_;}
              const std::vector<int>&  neighbors(bool raw=false)     const {return raw ? neighborsRaw_ : neighbors_;}	     
              const std::vector<int>&  nextNeighbors(bool raw=false) const {return raw ? nextNeighborsRaw_: nextNeighbors_;}	     
@@ -49,6 +51,7 @@ namespace mu2e {
 	     int                 localId_;
 	     int                 diskId_;
              CLHEP::Hep3Vector   localPosition_;
+             CLHEP::Hep3Vector   localPositionIdeal_;
              CLHEP::Hep3Vector   position_;
              std::vector<int>    neighbors_;
              std::vector<int>    nextNeighbors_;

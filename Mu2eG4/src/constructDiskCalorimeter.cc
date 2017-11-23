@@ -448,6 +448,8 @@ namespace mu2e {
 	     std::ostringstream name;name<<"caloCrystalPV_" <<id;
              CLHEP::Hep3Vector crystalPosition = cal.disk(idisk).crystal(ic).localPosition();
              crystalPosition.setZ(0.0);
+             
+             //if needed, move the crystal construction here for individual dimensions             
 
              pv = new G4PVPlacement(0,crystalPosition,wrapperLog,name.str(),crystalCaseDiskLog,true,id,false);
              doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
@@ -588,7 +590,7 @@ namespace mu2e {
        {	      
 	     G4int id = nTotCrystal+ic;
 	     std::ostringstream name;name<<"caloHolePV_" <<id;
-             CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).localPosition();
+             CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).localPositionIdeal();
              unitPosition.setZ(0.0);
 
              pv = new G4PVPlacement(0,unitPosition,holeBackLog,name.str(),backPlateLog,false,id,false);
@@ -613,8 +615,6 @@ namespace mu2e {
            if (idxIn > -1  && idxIn+1<nChimesInX)   x0 = std::min(x0,chimesInX[idxIn+1]);
            if (idxIn > -1  && idxIn+1==nChimesInX)   x0 = 0.0;
            if (idxOut > -1 && idxOut+1<nChimesOutX) x1 = std::max(x1,chimesOutX[idxOut+1]);
-
-           if (idxIn > -1 && idxIn-1<nChimesInX) std::cout<<is<<" "<<chimesInX[idxIn]<<" "<<chimesInX[idxIn+1]<<" "<<x0<<" "<<chimesInY[idxIn]<<std::endl;
            
            stripY.push_back((2*is+1)*wrapperHalfXY);
            stripX0.push_back(x0);      
@@ -677,7 +677,7 @@ namespace mu2e {
        {	      
 	     G4int id = nTotCrystal+ic;
 	     std::ostringstream name;name<<"caloFEEPV_" <<id;
-             CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).localPosition();
+             CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).localPositionIdeal();
              unitPosition.setZ(0); //<--- HERE
 
              pv = new G4PVPlacement(0,unitPosition,FEEBoxLog,name.str(),backPlateFEELog,false,id,false);
