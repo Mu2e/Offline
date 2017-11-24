@@ -152,9 +152,12 @@ def sconscriptList(mu2eOpts):
 
     # If we are making a build for the trigger, do not build everything.
     if mu2eOpts["trigger"] == 'on':
-        ss.remove('Mu2eG4/src/SConscript')
-        ss.remove('CRVResponse/src/SConscript')
-        ss.remove('Sandbox/src/SConscript')
+        notNeeded = ["Mu2eG4/src/SConscript",
+                     "CRVResponse/src/SConscript",
+                     "Sandbox/src/SConscript"]
+        for x in notNeeded:
+            if x in ss:
+                ss.remove(x)
 
     return ss
 

@@ -99,7 +99,7 @@ namespace mu2e
 // KalFit parameters
     _debug(pset.get<int>("debugLevel",0)),
     _maxhitchi(pset.get<double>("maxhitchi",3.5)),
-    _maxdriftpull(pset.get<double>("maxDriftPull",10)),
+    _maxpull(pset.get<double>("maxPull",5)),
     // t0 parameters
     _initt0(pset.get<bool>("initT0",true)),
     _useTrkCaloHit(pset.get<bool>("useTrkCaloHit",false)),
@@ -313,7 +313,7 @@ namespace mu2e
         hitt0._t0 += tflt;
 // create the hit object.  Assume we're at the last iteration over added error
         TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,_herr.back(),
-					      _maxdriftpull,_strHitW, _mint0doca);
+					      _maxpull,_strHitW, _mint0doca);
         assert(trkhit != 0);
 // allow the hit to update its own ambiguity for now: eventually we should get the resolver to do this, FIXME!!!
         trkhit->setAmbigUpdate(true);
@@ -325,7 +325,7 @@ namespace mu2e
 // check the raw residual: This call works because the HOT isn't yet processed as part of the fit.
         double chi = fabs(trkhit->residual()/trkhit->hitRms());
 //if it's outside limits, deactivate the HOT
-        if(chi > maxchi || trkhit->physicalTime() > maxchi)
+        if(chi > maxchi || (!trkhit->isPhysical(maxchi)))
           trkhit->setActivity(false);
 // now that we've got the residual, we can turn of auto-ambiguity resolution
         trkhit->setAmbigUpdate(false);
@@ -446,7 +446,7 @@ namespace mu2e
       const StrawHit& strawhit(shcol->at(index));
       const Straw& straw = tracker.getStraw(strawhit.strawIndex());
       TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,ths.index(),ths.t0(),ths.trkLen(),
-					    _herr.front(),_maxdriftpull,_strHitW,_mint0doca);
+					    _herr.front(),_maxpull,_strHitW,_mint0doca);
       assert(trkhit != 0);
       // set the initial ambiguity
       trkhit->setAmbig(ths.ambig());
@@ -678,7 +678,7 @@ namespace mu2e
         if(hit->resid(resid, residErr, true)){
           double chival = fabs(resid/residErr);
   // test both for a good chisquared and for the drift radius to be physical
-          if (chival < maxchi && hit->physicalTime() < maxchi && chival < best) {
+          if (chival < maxchi && hit->isPhysical(maxchi) && chival < best) {
             best = chival;
             besthit = hit;
           }

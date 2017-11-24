@@ -82,6 +82,9 @@ namespace mu2e
       double _maxdoca;      // outlier cut
       bool _foutliers; // filter hits far from the helix
       bool _fhoutliers; // filter hits found flagged as outliers in the helix fit
+      double _maxAddDoca;   // rescue hits cut after fit
+      double _maxAddChi;    // cut for KalFit::AddHits
+      int    _rescueHits;   // search for missing hits after the fit is performed
       TrkParticle _tpart; // particle type being searched for
       TrkFitDirection _fdir;  // fit direction in search
       vector<double> _perr; // diagonal parameter errors to use in the fit
@@ -100,6 +103,7 @@ namespace mu2e
       // helper functions
       bool findData(const art::Event& e);
       void filterOutliers(TrkDef& trkdef);
+      void findMissingHits(KalRep* Krep, const HelixSeed*   Hseed, const StrawHitCollection* Shcol, std::vector<StrawHitIndex> &MissingHits);
   };
 
   KalSeedFit::KalSeedFit(fhicl::ParameterSet const& pset) :
@@ -114,6 +118,9 @@ namespace mu2e
     _maxdoca(pset.get<double>("MaxDoca",40.0)),
     _foutliers(pset.get<bool>("FilterOutliers",true)),
     _fhoutliers(pset.get<bool>("FilterHelixOutliers",false)),
+    _maxAddDoca(pset.get<double>("MaxAddDoca")),
+    _maxAddChi(pset.get<double>("MaxAddChi")),
+    _rescueHits(pset.get<int>("rescueHits")),    
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _perr(pset.get<vector<double> >("ParameterErrors")),
@@ -239,6 +246,16 @@ namespace mu2e
 	    cout << "Seed Fit result " << krep->fitStatus()  << endl;
 	}
 	if(krep != 0 && (krep->fitStatus().success() || _saveall)){
+	  if (_rescueHits) { 
+	    int nrescued = 0;
+	    std::vector<StrawHitIndex> missingHits;
+	    findMissingHits(krep, &hseed, _shcol, missingHits);
+	    nrescued = missingHits.size();
+	    if (nrescued > 0) {
+	      _kfit.addHits(krep, _shcol, missingHits, _maxAddChi);
+	    }
+	  }
+
 	// convert the status into a FitFlag
 	  TrkFitFlag seedok(TrkFitFlag::seedOK);
 	  // create a KalSeed object from this fit, recording the particle and fit direction
@@ -334,6 +351,92 @@ namespace mu2e
     }
     // update track
     mydef.strawHitIndices() = goodhits;
+  }
+
+//-----------------------------------------------------------------------------
+// look for hits which were not a part of the helix hit list around the 
+// trajectory found by the seed fit
+// look at all hits included into the corresponding time cluster
+// first reactivate already associated hits
+//-----------------------------------------------------------------------------
+  void KalSeedFit::findMissingHits(KalRep* Krep, const HelixSeed*   Hseed, const StrawHitCollection* Shcol, std::vector<StrawHitIndex> &MissingHits) {
+
+    const char* oname = "KalSeedFit::findMissingHits";
+
+    mu2e::TrkStrawHit*       hit;
+    int                      hit_index;
+    const StrawHit*          sh;
+    const Straw*             straw;
+
+    Hep3Vector               tdir;
+    HepPoint                 tpos;
+    double                   doca, /*rdrift, */fltlen;
+
+    if (_debug > 0) printf("[%s]: BEGIN\n",oname);
+
+    //    const KalRep* krep = KRes._krep;
+
+    //    KRes._missingHits.clear();
+    //    KRes._doca.clear();
+
+    const TrkDifTraj& trajectory = Krep->traj();
+    const vector<TrkHit*>&  trackHits  = Krep->hitVector();
+//-----------------------------------------------------------------------------
+// get track position and direction at S=0
+//-----------------------------------------------------------------------------
+    trajectory.getInfo(0.0,tpos,tdir);
+//-----------------------------------------------------------------------------
+// look for so far unused hits around the trajectory
+//-----------------------------------------------------------------------------
+//    const HelixSeed*   hseed = KRes._helixSeed;
+    const  std::vector<StrawHitIndex>& tchits = Hseed->timeCluster()->hits();
+ 
+    int n = tchits.size();
+    for (int i=0; i<n; ++i) {
+      hit_index = tchits.at(i);
+      sh        = &Shcol->at(hit_index);
+      straw     = &_tracker->getStraw(sh->strawIndex());
+
+      const CLHEP::Hep3Vector& wpos = straw->getMidPoint();
+      const CLHEP::Hep3Vector& wdir = straw->getDirection();
+	    
+      HepPoint      wpt  (wpos.x(),wpos.y(),wpos.z());
+      TrkLineTraj   wire (wpt,wdir,-20,20);
+//-----------------------------------------------------------------------------
+// estimate flightlength along the track for z-coordinate corresponding to the 
+// wire position. This assumes a constant BField!!!
+// in principle, this should work well enough, however, may want to check
+// then determine the distance from the wire to the trajectory
+//-----------------------------------------------------------------------------
+      fltlen = (wpos.z()-tpos.z())/tdir.z();
+      TrkPoca wpoca(trajectory,fltlen,wire,0.0);
+      doca   = wpoca.doca();
+
+      int found(-1);
+
+      if (std::fabs(doca) < _maxAddDoca) {
+	found = 0;
+	for (auto it=trackHits.begin(); it<trackHits.end(); it++) {
+	  hit    = dynamic_cast<mu2e::TrkStrawHit*> (*it);
+	  if (hit == 0)                   continue;     //it means that "hit" is a TrkCaloHit
+	  int shIndex = int(hit->index());
+	  if (hit_index == shIndex) {
+	    found = 1;
+	    break;
+	  }
+	}
+//-----------------------------------------------------------------------------
+// KalSeedFit doesn't look at the hit residuals, only wires
+//-----------------------------------------------------------------------------
+	if (found == 0) {
+	  MissingHits.push_back(hit_index);
+	  //	  KRes._doca.push_back(doca);
+	}
+      }
+
+      if (_debug > 0) printf("[%s] %5i %8.3f %2i \n",oname,hit_index,doca,found);
+
+    }
   }
 
 }// mu2e

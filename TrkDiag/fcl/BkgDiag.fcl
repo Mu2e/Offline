@@ -1,0 +1,64 @@
+#
+#  To run interactively you must define background frame files, ie:
+#  BEGIN_PROLOG
+#  bgHitFiles : [ yourbkgfiles.art ]
+#  END_PROLOG
+# then
+#  > mu2e --config TrkDiag/fcl/BkgDiag.fcl --source-list yourfiles.txt --nevts=100 --TFile BkgDiag.root
+#  use mu2eprodsys to run on the grid
+#
+# David Brown, 13 Nov, 2015
+#
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+#
+process_name : BkgDiag
+
+source :
+{
+  module_type : RootInput
+}
+
+services : @local::Services.SimAndReco
+
+physics :
+{
+producers :
+  {
+    @table::EventMixing.producers
+    @table::Tracking.producers
+  }
+
+filters :
+  {
+    @table::EventMixing.filters
+  }
+
+analyzers :
+  {
+    BkgDiag : {
+      module_type : BkgDiag
+      TimeOffsets : {
+        inputs : [ "protonTimeMap", "muonTimeMap" ] 
+      }
+      StrawHitFlagCollectionTag : "FlagBkgHits"
+      diagLevel : 2
+    }
+  }
+}
+
+physics.BkgEndPath : [BkgDiag]
+physics.BkgTriggerPath  : [
+  @sequence::EventMixing.CD3Mixers,
+  @sequence::EventMixing.TimeMaps,
+  @sequence::Tracking.DigiSim,
+  @sequence::Tracking.PrepareHits ]
+
+
+# the following are needed for interactive running.  They will be overwritten if you submit this job
+# on the grid with mu2eart and do not need to be removed.
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+#include "EventMixing/fcl/epilog.fcl"

@@ -16,6 +16,7 @@
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 // root 
 #include "TVector2.h"
 // data
@@ -24,6 +25,9 @@
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
+//#include "RecoDataProducts/inc/TimeCluster.hh"
+
 // diagnostics
 #include "DataProducts/inc/threevec.hh"
 
@@ -74,12 +78,19 @@ namespace mu2e {
     art::InputTag                       _shTag;
     art::InputTag                       _shfTag;
     art::InputTag                       _shpTag;
+    art::InputTag                       _tpeakTag;
+    int                                 _useTimePeaks;
+    double                              _minCaloDt;
+    double                              _maxCaloDt;
+    double                              _pitchAngle;
     art::InputTag                       _mcDigisTag;
     float                               _minHitTime;           // min hit time
     float                               _maxDt;                // max deltaT
     int                                 _minNFacesWithHits;    // per station per seed
     int                                 _minNSeeds;            // min number of seeds in the delta electron cluster
     float                               _maxElectronHitEnergy; // 
+    float                               _minT;
+    float                               _maxT;
     float                               _maxChi2Stereo;        //
     float                               _maxChi2Neighbor;      //
     float                               _maxChi2Radial;        //
@@ -100,10 +111,11 @@ namespace mu2e {
     const StrawHitCollection*           _shcol ;
     const StrawHitFlagCollection*       _shfcol;
     const StrawHitPositionCollection*   _shpcol;
-
+    const TimeClusterCollection*        _tpeakcol;
     StrawHitFlagCollection*             _bkgfcol;  // output collection
 
     const TTracker*                     _tracker;
+    const DiskCalorimeter*              _calorimeter;
 
     const TrackerCalibrations*          _trackerCalibrations;
 
@@ -111,6 +123,8 @@ namespace mu2e {
     
     DeltaFinderTypes::Data_t            _data;              // all data used
     int                                 _testOrderPrinted;
+
+    double                              _stationToCaloTOF[2][20];
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -162,6 +176,11 @@ namespace mu2e {
     _shTag                 (pset.get<string>       ("strawHitCollectionTag"        )),
     _shfTag                (pset.get<string>       ("strawHitFlagCollectionTag"    )),
     _shpTag                (pset.get<string>       ("strawHitPositionCollectionTag")),
+    _tpeakTag              (pset.get<string>       ("timePeakCollectionTag"        )),
+    _useTimePeaks          (pset.get<int>          ("useTimePeaks"                 )),
+    _minCaloDt             (pset.get<double>       ("minCaloDt"                    )),
+    _maxCaloDt             (pset.get<double>       ("maxCaloDt"                    )),
+    _pitchAngle            (pset.get<double>       ("particleMeanPitchAngle"       )),
     _mcDigisTag            (pset.get<art::InputTag>("strawDigiMCCollectionTag"     )),
     			        
     _minHitTime            (pset.get<float>        ("minHitTime"                   )),
@@ -169,6 +188,8 @@ namespace mu2e {
     _minNFacesWithHits     (pset.get<int>          ("minNFacesWithHits"            )),
     _minNSeeds             (pset.get<int>          ("minNSeeds"                    )),
     _maxElectronHitEnergy  (pset.get<float>        ("maxElectronHitEnergy"         )),
+    _minT                  (pset.get<double>       ("minimumTime"                  )), // nsec
+    _maxT                  (pset.get<double>       ("maximumTime"                  )), // nsec
     _maxChi2Stereo         (pset.get<float>        ("maxChi2Stereo"                )),
     _maxChi2Neighbor       (pset.get<float>        ("maxChi2Neighbor"              )),
     _maxChi2Radial         (pset.get<float>        ("maxChi2Radial"                )),
@@ -214,10 +235,28 @@ namespace mu2e {
     mu2e::ConditionsHandle<TrackerCalibrations> tcal("ignored");
     _trackerCalibrations = tcal.operator ->();
 
+    mu2e::GeomHandle<mu2e::DiskCalorimeter> ch;
+    _calorimeter = ch.get();
+
     ChannelID cx, co;
+    int       nDisks    = _calorimeter->nDisk();
+    double    disk_z[2] = {0};//given in the tracker frame
+
+    for (int i=0; i<nDisks; ++i){ 
+      Hep3Vector gpos = _calorimeter->disk(i).geomInfo().origin();
+      Hep3Vector tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+      disk_z[i] = tpos.z();
+    }
 
     for (int ist=0; ist<_tracker->nStations(); ist++) {
       const Station* st = &_tracker->getStation(ist);
+
+      //calculate the time-of-flight between the station and each calorimeter disk
+      //for a typical Conversion Electron
+      for (int iDisk=0; iDisk<nDisks; ++iDisk){
+	_stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - st->midZ())/sin(_pitchAngle)/CLHEP::c_light;
+      }
+
       for (int ipl=0; ipl<st->nPlanes(); ipl++) {
 	const Plane* pln = &st->getPlane(ipl);
 	for (int ipn=0; ipn<pln->nPanels(); ipn++) {
@@ -278,6 +317,7 @@ namespace mu2e {
       const Straw* straw          = &_tracker->getStraw(si);
 
       if (sh->energyDep() > _maxElectronHitEnergy)         continue;
+      if ( (sh->time() < _minT) || (sh->time() > _maxT) )  continue;
 
       // double tddist = _trackerCalibrations->TimeDiffToDistance(si,sh->dt());
       // double shlen = straw->getDetail().activeHalfLength();
@@ -296,6 +336,30 @@ namespace mu2e {
       int of       = co.Face;
       int op       = co.Panel;
       int ol       = co.Layer;
+
+      if ( _useTimePeaks == 1 ){
+	bool        condition(false);
+	int         nTPeaks  = _tpeakcol->size();
+	double      hitTime  = sh->time();
+	const CaloCluster*cl(0);
+	int         iDisk(-1);
+
+	for (int i=0; i<nTPeaks; ++i){
+	  cl    = _tpeakcol->at(i).caloCluster().get();
+	  if (cl == NULL){
+	    printf(">>> DeltaFinder::orderHits() no CaloCluster found within the time peak %i\n", i);
+	    continue;
+	  }
+	  iDisk = cl->diskId();
+	  double    dt = cl->time() - (hitTime + _stationToCaloTOF[iDisk][os]);
+	  if ( (dt < _maxCaloDt) && (dt > _minCaloDt) ) {
+	    condition = true;
+	    break;
+	  }
+	}
+	if (!condition)                                    continue;
+	  
+      }
 
       PanelZ_t* pz = &_data.oTracker[os][of][op];
 
@@ -497,6 +561,13 @@ namespace mu2e {
     _shcol    = NULL;
     _shpcol   = NULL;
     _shfcol   = NULL;
+    _tpeakcol = NULL;
+
+    if (_useTimePeaks == 1){
+      auto tpeakH    = Evt.getValidHandle<TimeClusterCollection>(_tpeakTag);
+      _tpeakcol      = tpeakH.product();
+      _data.tpeakcol = _tpeakcol;  // FIXME
+    }
 
     auto shH    = Evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol      = shH.product();
@@ -509,7 +580,7 @@ namespace mu2e {
     auto shpH = Evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
     _shpcol   = shpH.product();
 
-    return (_shcol != 0) && (_shcol->size() > 0) && (_shpcol != 0);     
+    return (_shcol != 0) && /*(_shcol->size() > 0) &&*/ (_shpcol != 0);     
   }
 
 //-----------------------------------------------------------------------------
@@ -549,7 +620,8 @@ namespace mu2e {
     unique_ptr<StrawHitFlagCollection> bkgfcol(new StrawHitFlagCollection(*_shfcol));
     _bkgfcol = bkgfcol.get();
 
-    const StrawHit* sh0 = &_shcol->at(0);
+    const StrawHit* sh0(0);
+    if (_shcol->size() > 0) { sh0 = &_shcol->at(0);}
 
     StrawHitFlag deltamask(StrawHitFlag::bkg);
 

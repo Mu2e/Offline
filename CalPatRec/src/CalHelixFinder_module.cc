@@ -73,6 +73,7 @@ namespace mu2e {
     _shpLabel    (pset.get<string>("StrawHitPositionCollectionLabel")),
     _shfLabel    (pset.get<string>("StrawHitFlagCollectionLabel"    )),
     _timeclLabel (pset.get<string>("TimeClusterCollectionLabel"       )),
+    _minNHitsTimeCluster(pset.get<int>("minNHitsTimeCluster"       )),
     _tpart       ((TrkParticle::type)(pset.get<int>("fitparticle"))),
     _fdir        ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
     _hfinder     (pset.get<fhicl::ParameterSet>("HelixFinderAlg",fhicl::ParameterSet()))
@@ -215,8 +216,10 @@ namespace mu2e {
     for (int ipeak=0; ipeak<npeaks; ipeak++) {
       const TimeCluster* tc = &_timeclcol->at(ipeak);
 
-      HelixSeed          helix_seed;
+      if ( goodHitsTimeCluster(tc) < _minNHitsTimeCluster)         continue;
 
+      HelixSeed          helix_seed;
+      
 //-----------------------------------------------------------------------------
 // create track definitions for the helix fit from this initial information
 // track fitting objects for this peak
@@ -351,7 +354,7 @@ namespace mu2e {
       // printf("[CalHelixFinder::initHelixSeed] %4i %10.3f %10.3f %10.3f %10.3f\n", 
       // 	     (int)loc, shpos.pos().x(), shpos.pos().y(), shpos.pos().z(), shphi);
 
-      HelixHit            hhit(shpos,loc,shphi);
+      HelixHit                hhit(shpos,loc,shphi);
       
       hhit._flag.clear(StrawHitFlag::resolvedphi);
 					
@@ -381,6 +384,28 @@ namespace mu2e {
 
     return 0;
   }
+  
+  int  CalHelixFinder::goodHitsTimeCluster(const TimeCluster* TCluster){
+    int   nhits         = TCluster->nhits();
+    int   ngoodhits(0);
+    //    std::vector<string> bkgsel;
+    //    bkgsel.push_back("Background");
+    double     minT(500.), maxT(2000.);
+    for (int i=0; i<nhits; ++i){
+      int          index   = TCluster->hits().at(i);
+      StrawHitFlag flag    = _shfcol->at(index);
+      StrawHit     sh      = _shcol ->at(index);
+      int          bkg_hit = flag.hasAnyProperty(StrawHitFlag::bkg);
+      if (bkg_hit)                              continue;
+      if ( (sh.time() < minT) || (sh.time() > maxT) )  continue;
+
+      ++ngoodhits;
+    }
+    
+    return ngoodhits;
+  }
+
+
 
 }
 

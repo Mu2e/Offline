@@ -84,6 +84,9 @@ namespace mu2e {
     int                  _smartTag;     //flag used to test addiotional layer of rejection after the search for the "best triplet"
     StrawHitFlag         _hsel;         // good hit selection
     StrawHitFlag         _bkgsel;       // background hit selection
+    double               _maxElectronHitEnergy;
+    double               _minT;
+    double               _maxT;    
     int                  _minnhit;      // minimum # of hits to work with
     int                  _minnstereo;   // minimum # of stereo hits, I believe should  not be used
                                         // parameters for AGE center determination
@@ -256,7 +259,8 @@ namespace mu2e {
 
     int    refineHelixParameters(CalHelixFinderData& Trk,
 				 int seedIndex, int *indexVec,
-				 int Print=0, TString Banner="");
+				 int Print=0, 
+				 TString Banner="");
 
                                         // 12-10-2013 Gianipez: new pattern recognition functions
     void   rescueHitsBeforeSeed (CalHelixFinderData&  mytrk);

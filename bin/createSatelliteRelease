@@ -9,30 +9,182 @@
 # This script resides a base release and it will create a satellite
 # release that builds against the base release in which this script
 #
-# The script takes an optional command line argument: the name of the
-# setup file in the base release that you should source when you setup
-# the base release.  By default it is "setup.sh".
 #
 
-set -e
+usage() {
+ cat <<EOF
+Usage: createSatelliteRelease [options]
+   -h, --help
+         usage message
+   -d DIR, --directory=DIR
+         satellite directory will be DIR (default ./Satellite)
+         If directory is "." the files will be created in 
+         the current directory
+   -r, --recreate
+         cd to satellite directory, delete setup.sh and links
+         and run scons -c, then link to the new release.
+         The existing setup.sh must be run first, and 
+         you must log in a new window to use the 
+         reconfigured satellite release.
 
-source "$(dirname $0)/satelliteFuncs"
+EOF
 
-# If the optional argument has been specified, get it.
-setupname="setup.sh"
-if [ $# == 1 ]; then
-  setupname=$1
+}
+
+# needs to be run, not sourced
+if [ "$0" != "$BASH_SOURCE" ]; then
+    echo -e "\nscript must be executed, not sourced\n"
+    usage
+    return 1
 fi
 
-ensure_mu2e_environment
 
-# The candidate base release will be the release in which we find this createSatelliteRelease script.
-export candidate_base_release=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && /bin/pwd | sed 's/\/bin//'`
-ensure_legal_candidate_release ${candidate_base_release}
+# defaults
+dirsat="Satellite"
+recreate=false
 
-# Make sure that we will not overwrite existing files that are managed
-# by the satellite release system.  If this test fails, it is the
-# users responsibility to clean up and retry.
-ensure_no_satellite_release_managed_files
+# parse optional arguments
+params="$(getopt -o hd:r -l help,directory:,recreate --name "$(basename "$0")" -- "$@")"
 
-create_files "yes"
+if [ $? -ne 0 ]; then
+    echo -e "\nerror parsing arguments\n"
+    usage
+    exit 1
+fi
+
+eval set -- "$params"
+unset params
+
+while true
+do
+    case $1 in
+        -h|--help)
+            usage
+            shift
+            ;;
+        -d|--directory)
+	    dirsat="$2"
+            shift 2
+            ;;
+        -r|--recreate)
+	    recreate=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            usage
+	    break
+            ;;
+    esac
+done
+
+if [ "${MU2E}" == "" ];then
+  echo -e "\nThe environment variable MU2E is not set."
+  echo -e "You must setup the local Mu2e environment before sourcing this script. - exiting\n"
+  exit 1
+fi
+
+#
+# The candidate base release will be the release in which 
+# we find this createSatelliteRelease script.
+#
+export candidate_base_release=$(dirname $(readlink -f ${BASH_SOURCE}))
+# remove trailing "/bin"
+export candidate_base_release=`echo $candidate_base_release | sed 's|/bin$||'`
+
+#
+# make the requested directory and cd to it. "." work as expected
+# if directory exists, use it without complaint
+#
+
+# check if a satellite release already exists here
+satellite_exists=false
+[[ -r setup.sh && -L SConstruct  ]] && satellite_exists=true
+
+# if we are already in a satellite release, then refuse to make another one
+if [[ "$satellite_exists" == "true" && "$dirsat" != "." ]]; then
+    echo -e "\nerror - already in a satellite release - don't make a nested one"
+    echo -e "run from parent directory, or set --dirname=.\n"
+    exit 1
+fi
+
+mkdir -p $dirsat
+if [ $? -ne 0 ]; then
+    echo -e "\ncould not mkdir $dirsat -exiting\n"
+    exit 1
+fi
+
+cd $dirsat
+
+# check if a satellite release already exists here
+satellite_exists=false
+[[ -r setup.sh && -L SConstruct  ]] && satellite_exists=true
+
+# don't overwrite an existing satellite setup unless requested
+if [[ "$satellite_exists" == "true" && "$recreate" == "false"  ]]; then
+    echo -e "\nsatellite files exist but recreate not requested -exiting\n"
+    exit 1
+fi
+
+# if satellite files exist and recreate requested, then clean up
+if [[ "$satellite_exists" == "true" && "$recreate" == "true" ]]; then
+  if ! command -v scons; then
+      echo -e "\ncleanup and recreate requested, but scons is not available"
+      echo -e "please run the local setup and try again - exiting\n"
+      exit 1
+  fi
+echo "debug $PWD"
+  scons -c -j 5
+  if [ $? -ne 0 ]; then
+    echo -e "\ncould not run scons -exiting\n"
+    exit 1
+  fi
+  rm -f SConstruct setup.sh .sconsign.dblite
+fi
+
+
+#
+# now make the local Satellite files
+#
+
+ln -s ${candidate_base_release}/SConstruct .
+
+cat >> setup.sh <<EOF
+#! /bin/bash
+#
+# This script was written by the satellite release manager
+# Normally you should not edit it.
+#
+
+# Connect to the base release.
+source $candidate_base_release/setup.sh
+retstat=\$?
+
+if [[ "\$retstat" != "0" ]]; then
+  return \$retstat;
+fi
+
+# Add the satellite release to path variables.
+export MU2E_SATELLITE_RELEASE=$PWD
+export MU2E_SEARCH_PATH=\`dropit -p \$MU2E_SEARCH_PATH -sf \$MU2E_SATELLITE_RELEASE\`
+export FHICL_FILE_PATH=\`dropit -p \$FHICL_FILE_PATH -sf \$MU2E_SATELLITE_RELEASE\`
+
+# paths needed to run from this satellite release
+export LD_LIBRARY_PATH=\`dropit -p \$LD_LIBRARY_PATH -sf \$MU2E_SATELLITE_RELEASE/lib\`
+export PYTHONPATH=\`dropit -p \$PYTHONPATH -sf \$MU2E_SATELLITE_RELEASE/scripts/build/python\`
+export PATH=\`dropit -p \$PATH -sf \$MU2E_SATELLITE_RELEASE/bin\`
+export ROOT_INCLUDE_PATH=\`dropit -p \$ROOT_INCLUDE_PATH -sf \$MU2E_SATELLITE_RELEASE\`
+
+EOF
+
+
+if [[ -n "$MU2E_BASE_RELEASE" && "$MU2E_BASE_RELEASE" != "$candidate_base_release" ]]; then
+  echo -e "\nYou have previously run an offline setup"
+  echo -e "in this window and this creates a conflict"
+  echo -e "You must log in a new window and run this setup:"
+  echo -e "$PWD/setup.sh"
+  echo -e "to use this satellitle release\n"
+fi

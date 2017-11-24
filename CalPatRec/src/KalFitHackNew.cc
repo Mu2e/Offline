@@ -416,7 +416,7 @@ namespace mu2e {
 
         activity = 1;
 // if it's outside limits, deactivate the HOT
-        if ((fabs(chi) > MaxChi) || (trkhit->physicalTime() > MaxChi)) {
+        if ((fabs(chi) > MaxChi) || (!trkhit->isPhysical( MaxChi))) {
           trkhit->setActivity(false);
           activity = 0;
         }
@@ -1039,7 +1039,7 @@ namespace mu2e {
         if(iHot->resid(resid, residErr, true)){
           double chival = fabs(resid/residErr);
   // test both for a good chisquared and for the drift radius to be physical
-          if (chival < maxchi && (iHot->physicalTime() < maxchi) && chival < best) {
+          if (chival < maxchi && iHot->isPhysical(maxchi) && chival < best) {
             best    = chival;
             bestHot = iHot;
           }

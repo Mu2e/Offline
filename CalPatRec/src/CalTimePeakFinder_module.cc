@@ -65,8 +65,9 @@ namespace mu2e {
     _useAsFilter     (pset.get<int>            ("useAsFilter"                    )),    
     _shLabel         (pset.get<string>         ("StrawHitCollectionLabel"        )),
     _shfLabel        (pset.get<string>         ("StrawHitFlagCollectionLabel"    )),
+    _shpLabel        (pset.get<string>         ("StrawHitPositionCollectionLabel")),
     _ccmLabel        (pset.get<string>         ("caloClusterModuleLabel"         )),
-    _hsel            (pset.get<vector<string> >("HelixFitSelectionBits"          )),
+    _hsel            (pset.get<vector<string> >("HitSelectionBits"               )),
     _bkgsel          (pset.get<vector<string> >("BackgroundSelectionBits"        )),
     _mindt           (pset.get<double>         ("DtMin"                          )),
     _maxdt           (pset.get<double>         ("DtMax"                          )),
@@ -132,6 +133,17 @@ namespace mu2e {
              _shLabel.data());
     }
 
+
+    art::Handle<mu2e::StrawHitPositionCollection> shposH;
+    if (evt.getByLabel(_shpLabel,shposH)) {
+      _data.shpcol = shposH.product();
+    }
+    else {
+      _data.shpcol = 0;
+      printf(" >>> ERROR in CalHelixFinder::findData: StrawHitPositionCollection with label=%s not found.\n",
+             _shpLabel.data());
+    }
+
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
     if (evt.getByLabel(_shfLabel,shflagH)) {
       _data.shfcol = shflagH.product();
@@ -151,7 +163,7 @@ namespace mu2e {
              _ccmLabel.data());
     }
 
-    return (_data.shcol != 0) && (_data.shfcol != 0) && (_data.ccCollection != 0);
+    return (_data.shcol != 0) && /*(_data.shfcol != 0) && */(_data.ccCollection != 0);
   }
 
 //-----------------------------------------------------------------------------
@@ -212,6 +224,12 @@ namespace mu2e {
     const Straw*        straw;
     Hep3Vector          gpos, tpos;
 
+    //    using namespace boost::accumulators;
+    static const double pi(M_PI);
+    static const double twopi(2*pi);
+
+    double              mphi(-9999.);
+
     StrawHitFlag        energyFlag(StrawHitFlag::energysel);
     StrawHitFlag        timeFlag  (StrawHitFlag::timesel);
     StrawHitFlag        radiusFlag(StrawHitFlag::radsel);
@@ -241,6 +259,7 @@ namespace mu2e {
           xcl     = tpos.x();
           ycl     = tpos.y();
           zcl     = tpos.z();
+	  mphi    = atan2(ycl, xcl);
 
           //    dz_cl   = zcl; // -_tracker->z0();
           // create time peak
@@ -274,10 +293,19 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
             tof = (zcl-zstraw)/sin(_pitchAngle)/CLHEP::c_light;
             dt  = cl_time-(time+tof-meanDriftTime);
+//--------------------------------------------------------------------------------
+// check the angular distance from the calorimeter cluster
+// 2017-11-17 Gianipez: this selection was present on CalHelixFinderAlg::filterDist
+//--------------------------------------------------------------------------------
+	    double dphi = _data.shpcol->at(istr).pos().phi() - mphi;
+	    
+	    if (dphi >  pi) dphi -= twopi;
+	    if (dphi < -pi) dphi += twopi;
+
 //-----------------------------------------------------------------------------
 // fill some diag histograms
 //-----------------------------------------------------------------------------
-            if ((dt < _maxdt) && (dt >= _mindt)) {
+            if ((dt < _maxdt) && (dt >= _mindt) && (fabs(dphi) <= pi/2.) ) {
 
               if (hit_has_all_properties && !bgr_hit) {
                 tpeak._index.push_back(istr);

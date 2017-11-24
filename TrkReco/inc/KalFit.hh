@@ -65,7 +65,7 @@ namespace mu2e
     // iteration-independent configuration parameters
     int _debug;		    // debug level
     double _maxhitchi;	    // maximum hit chi when adding or weeding
-    double _maxdriftpull;   // maximum drift pull in TrkStrawHit 
+    double _maxpull;   // maximum pull in TrkHit 
     bool _initt0;	    // initialize t0?
     bool _useTrkCaloHit;    //use the TrkCaloHit to initialize the t0?
     bool _updatet0;	    // update t0 ieach iteration?

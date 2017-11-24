@@ -29,26 +29,22 @@ namespace mu2e
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
 
-// caloCluster specific interface
-    const CaloCluster& caloCluster() const { return _caloCluster; }
 // correct the hit time
-    double time                 () const;
-    void   hitPosition          (CLHEP::Hep3Vector& hpos) const;
-    bool   signalPropagationTime(double &propTime, double&Doca, 
+    virtual double time                 () const;
+    virtual void   hitPosition          (CLHEP::Hep3Vector& hpos) const;
+    virtual bool   signalPropagationTime(double &propTime, double&Doca, 
 				 double resid, double &residErr,
 				 CLHEP::Hep3Vector trajDirection);//propagation time
-    void   trackT0Time          (double& htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
-    
-    double physicalTime         () const;
-    
-    //FIXME! THAT FUNCTION NEED TO BE IMPLEMENTED
-    double physicalPosition     () const { return 0;}
+    virtual void   trackT0Time          (double& htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
+     // test the consistincy of this hit with 'physical' limts, with a given # of sigma
+    virtual bool isPhysical         (double maxchi) const;
 
 // intrinsic hit error (mm)
     double hitErr               () const { return _hitErr; }
-    
 
     void print                  (std::ostream& ) const;
+// caloCluster specific interface
+    const CaloCluster& caloCluster() const { return _caloCluster; }
   protected:
     virtual TrkErrCode updateMeasurement(const TrkDifTraj* traj);
 
