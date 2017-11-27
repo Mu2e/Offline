@@ -2,6 +2,48 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_4_0
 
+6)      dnbrow01 27 Nov 2017
+        Create geometry configuration files to create a "Garage Position"
+	geometry for simulation of garage position cosmic commisioning.
+	For this first pass, we assume:  - downstream external shielding
+	is not yet installed; the CRV is not yet installed; the STM is
+	not yet installed; the TTracker, Cal, and MBS are 10 m due east
+	of nominal running position; the rest of the DS is in nominal
+	position.  Some distinct surrealism here:  most notably, detectors
+	that float!  But it is a beginning.  These changes do not affect
+	default geometry or even current geometry.  These are only accessed
+	by pointing your GeometryService at Mu2eG4/geom/geom_common_garage.txt
+
+	Simulation works as expected with these changes, but there is still
+	an issue with conversion of StepPointMCs to digis that must be 
+	resolved.
+ 
+	Utility files to simply remove shielding, if wanted.
+ 	new file:   Mu2eG4/geom/ExtShieldDownstream_NoShields.txt
+ 	new file:   Mu2eG4/geom/ExtShieldUpstream_NoShields.txt
+
+	 The new garage configuration files
+	 new file:   Mu2eG4/geom/ExtShieldDownstream_garage.txt
+ 	 new file:   Mu2eG4/geom/STM_garage.txt
+ 	 new file:   Mu2eG4/geom/calorimeter_CsI_garage.txt
+ 	 new file:   Mu2eG4/geom/crv_counters_garage.txt
+ 	 new file:   Mu2eG4/geom/geom_common_garage.txt
+ 	 new file:   Mu2eG4/geom/mu2eHall_garage.txt
+ 	 new file:   Mu2eG4/geom/muonBeamStop_garage.txt
+ 	 new file:   Mu2eG4/geom/ttracker_garage.txt
+
+	 To make this work, we create a mimic of the DS3Vacuum volume
+ 	 shape and size, but fill it with air and place it 10 m East
+ 	 of the DS3Vacuum.  This now serves as the mother volume
+ 	 for the TTracker, Cal, MBS, and associated VirtualDetectors.
+ 	 The changes below do not affect performance for nominal 
+ 	 running.  All these changes are keyed off the presence of a
+ 	 bool named inGaragePosition.
+ 	 modified:   Mu2eG4/src/Mu2eWorld.cc
+ 	 modified:   Mu2eG4/src/constructDS.cc
+ 	 modified:   Mu2eG4/src/constructMBS.cc
+ 	 modified:   Mu2eG4/src/constructVirtualDetectors.cc
+
 5) 	dnbrow01  14 November 2017
 	Had accidentally removed a setting for older versions of
 	TTracker when putting in corresponding setting for newer version.

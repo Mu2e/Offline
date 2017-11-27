@@ -101,7 +101,9 @@ namespace mu2e {
     }
 
      // mother volumes
-    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("DS3Vacuum");
+    std::string theDS3("DS3Vacuum");
+    if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
+    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo(theDS3);
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " z-extent of DS3Vacuum portion in DS in Mu2e  : " <<

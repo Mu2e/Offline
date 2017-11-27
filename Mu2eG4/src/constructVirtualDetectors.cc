@@ -338,9 +338,10 @@ namespace mu2e {
           }
 
           TubsParams vdParamsSTMUpstream(0.,rvd,vdHalfLength);
-
+	  std::string theDS3("DS3Vacuum");
+	  if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
           VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ?
-            _helper->locateVolInfo("DS3Vacuum") :
+            _helper->locateVolInfo(theDS3) :
             _helper->locateVolInfo("DS2Vacuum"); //DS3Vacuum to move the targets
             
           CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
@@ -431,9 +432,11 @@ namespace mu2e {
           }
 
           TubsParams vdParamsTarget(0.,rvd,vdHalfLength);
+	  std::string theDS3("DS3Vacuum");
+	  if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
 
           VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ?
-            _helper->locateVolInfo("DS3Vacuum") :
+            _helper->locateVolInfo(theDS3) :
             _helper->locateVolInfo("DS2Vacuum"); //DS3Vacuum to move the targets
 
           if (verbosityLevel >0) {
@@ -535,8 +538,9 @@ namespace mu2e {
           // we need to take into account the "overlap" with the TT_InSurf
 
           TubsParams vdParamsTTrackerInner(0.,irvd-2.*vdHalfLength,vdHalfLength);
-
-          VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
+	  std::string theDS3("DS3Vacuum");
+	  if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
+          VolumeInfo const & parent = _helper->locateVolInfo(theDS3);
 
           G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
@@ -601,7 +605,10 @@ namespace mu2e {
           // (we will "subtract" protonAbsorber)
           // and place it (the subtraction solid) in DS3Vacuum
 
-          VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
+	  std::string theDS3("DS3Vacuum");
+	  if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
+
+          VolumeInfo const & parent = _helper->locateVolInfo(theDS3);
 
           G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
@@ -825,7 +832,9 @@ namespace mu2e {
               " z, r : " << vdZ << ", " << orvd << endl;
           }
 
-          VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
+	  std::string theDS3("DS3Vacuum");
+	  if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
+          VolumeInfo const & parent = _helper->locateVolInfo(theDS3);
 
           G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
@@ -871,7 +880,9 @@ namespace mu2e {
             " z, r : " << vdZ << ", " << orvd << endl;
         }
 
-        VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
+	  std::string theDS3("DS3Vacuum");
+	  if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
+        VolumeInfo const & parent = _helper->locateVolInfo(theDS3);
 
         G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
@@ -918,7 +929,9 @@ namespace mu2e {
             " z, r : " << vdZ << ", " << orvd << endl;
         }
 
-        VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
+	  std::string theDS3("DS3Vacuum");
+	  if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
+        VolumeInfo const & parent = _helper->locateVolInfo(theDS3);
 
         G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
@@ -967,7 +980,9 @@ namespace mu2e {
             " z, r : " << vdZ << ", " << irvd << endl;
         }
 
-        VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
+	std::string theDS3("DS3Vacuum");
+	if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";        
+	VolumeInfo const & parent = _helper->locateVolInfo(theDS3);
 
         G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 

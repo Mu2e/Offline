@@ -272,7 +272,9 @@ namespace mu2e {
   VolumeInfo Mu2eWorld::constructTracker(){
 
     // The tracker is built inside this volume.
-    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("DS3Vacuum");
+    std::string theDS3("DS3Vacuum");
+    if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
+    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo(theDS3);
 
     // z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
     double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
@@ -549,14 +551,17 @@ namespace mu2e {
   // Construct calorimeter if needed.
   VolumeInfo Mu2eWorld::constructCal(){
 
-        // The calorimeter is built inside this volume.
-        VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("DS3Vacuum");
+    // The calorimeter is built inside this volume.
+    std::string theDS3("DS3Vacuum");
+    if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
 
-        // Construct one of the calorimeters.
-        VolumeInfo calorimeterInfo;
-        if ( _config.getBool("hasDiskCalorimeter",false) ) {
-           calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config );
-        }
+    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo(theDS3);
+
+    // Construct one of the calorimeters.
+    VolumeInfo calorimeterInfo;
+    if ( _config.getBool("hasDiskCalorimeter",false) ) {
+      calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config );
+    }
 
     return calorimeterInfo;
 

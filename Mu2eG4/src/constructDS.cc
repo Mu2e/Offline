@@ -53,6 +53,7 @@ namespace mu2e {
 
     // Load flags
     int const verbosityLevel = _config.getInt("ds.verbosityLevel",0);
+    bool const inGaragePosition = _config.getBool("inGaragePosition",false);
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( _config, "DS"         , "ds"          );
@@ -468,6 +469,23 @@ namespace mu2e {
 					      G4Colour::Yellow(),
 					      "DSVacuum"
 					      );
+
+    if ( inGaragePosition ) {
+      CLHEP::Hep3Vector relPosFake(0.,0., 10000.);
+      G4Material*  airMaterial = findMaterialOrThrow( _config.getString("hall.insideMaterialName","G4_AIR") );
+
+      VolumeInfo dsShieldParent = nestPolycone( "garageFakeDS3Vacuum",
+						ds3PolyParams,
+						airMaterial,
+						0,
+						ds3positionInMu2e - parent.centerInMu2e() + relPosFake,
+						parent,
+						0,
+						G4Colour::Yellow(),
+						"DSVacuum"
+						);
+    }
+      
 
     // Construct shielding downstream of DS
     for ( const auto & shield : dss->getTubes() ) {
