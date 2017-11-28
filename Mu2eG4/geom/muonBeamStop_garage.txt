@@ -11,8 +11,8 @@
 
 int    mbs.Version            = 5;
 
-// Only change for garage is to add 10000 to the z-position
-double mbs.MBSCZ              = 25273.0;
+// Only change for garage is to add 14000 to the z-position
+double mbs.MBSCZ              = 29273.0;
 
 vector<double> mbs.BSTSInnerRadii = { 437.5, 437.5, 437.5 };
 vector<double> mbs.BSTSOuterRadii = { 450.2, 475.6, 462.9 };

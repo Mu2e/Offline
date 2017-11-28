@@ -17,8 +17,8 @@ bool   ttracker.doSurfaceCheck     = false;
 double ttracker.mother.rIn         =    376.9; // mm
 double ttracker.mother.rOut        =    850.1; // mm
 double ttracker.mother.halfLength  =   1635.1; // mm
-double ttracker.mother.z0          =  20175.0;  // Garage position only
-double ttracker.z0                   = 20171.0; // Garage position only
+double ttracker.mother.z0          =  24175.0;  // Garage position only
+double ttracker.z0                   = 24171.0; // Garage position only
 
 // overall geometry
 string ttracker.mat.vacuum             = "DSVacuum";

@@ -32,8 +32,8 @@ bool hasMBS             = true; // note the two subcomponents, see mbs section b
 // The origin of the detector coordinate system is on the DS axis at the specified z.
 double mu2e.solenoidOffset   =  3904.;   // mm
 // The following is for garage position ONLY and must be matched by 
-// tracker z0.  Note:  added 10000 to nominal position.
-double mu2e.detectorSystemZ0 = 20171.;   // mm  
+// tracker z0.  Note:  added 14000 to nominal position.
+double mu2e.detectorSystemZ0 = 24171.;   // mm  
 
 #include "Mu2eG4/geom/mu2eWorld.txt"
 // mu2eHall.txt should be used with protonBeamDump_v02.txt, below

@@ -1,14 +1,15 @@
 // Crystal calorimeter
+// For garage, just add 14000 mm to z positions
 
 double calorimeter.caloMotherInRadius           = 345;   
 double calorimeter.caloMotherOutRadius          = 718; // 765;   
-double calorimeter.caloMotherZ0                 = 21842;   
-double calorimeter.caloMotherZ1                 = 23220;   
+double calorimeter.caloMotherZ0                 = 24842;   
+double calorimeter.caloMotherZ1                 = 27220;   
 
 // double calorimeter.caloMotherOutRadius          = 856;	      
 
 
-double calorimeter.calorimeterZFront            = 21843.0;     // front posiiton of calo section in mu2e coordinates 
+double calorimeter.calorimeterZFront            = 25843.0;     // front posiiton of calo section in mu2e coordinates 
                                                                // MUST be at least 1 mm larger than caloMotherZ0 for placing virtual detectors
 string calorimeter.vacuumMaterial               = "DSVacuum";
 string calorimeter.fillMaterial                 = "DSVacuum";

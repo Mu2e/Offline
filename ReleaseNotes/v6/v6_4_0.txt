@@ -2,6 +2,16 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_4_0
 
+7)  	dnbrow01 28 Nov 2017
+	Moved detectors another 4 meters east per George Ginther.
+	modified:   Mu2eG4/geom/ExtShieldDownstream_garage.txt
+	modified:   Mu2eG4/geom/calorimeter_CsI_garage.txt
+	modified:   Mu2eG4/geom/geom_common.txt
+	modified:   Mu2eG4/geom/geom_common_garage.txt
+	modified:   Mu2eG4/geom/muonBeamStop_garage.txt
+	modified:   Mu2eG4/geom/ttracker_garage.txt
+
+
 6)      dnbrow01 27 Nov 2017
         Create geometry configuration files to create a "Garage Position"
 	geometry for simulation of garage position cosmic commisioning.

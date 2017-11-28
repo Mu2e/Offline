@@ -12,6 +12,6 @@ int ExtShieldDownstream.verbosityLevel   = 0;
 // Geometry #13 version of external shielding.
 double ExtShieldDownstream.detecHoleX = -3904.0;
 double ExtShieldDownstream.detecHoleY = -249.0;
-double ExtShieldDownstream.detecHoleZ = 28007.0;
+double ExtShieldDownstream.detecHoleZ = 32007.0;
 double ExtShieldDownstream.detecHoleHalflength = 458.0;
 double ExtShieldDownstream.detecHoleRadius = 76.2;
