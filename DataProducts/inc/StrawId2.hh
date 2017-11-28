@@ -14,6 +14,7 @@ namespace mu2e {
   class StrawId2{
 
     friend class TTracker;
+    friend class TTrackerMaker;
     friend class Plane;
     friend class Panel;
 
@@ -26,8 +27,9 @@ namespace mu2e {
       constexpr static uint16_t _panelsft = 7; // shift for panel field
       constexpr static uint16_t _planemsk = 0xFC00; // mask for plane field
       constexpr static uint16_t _planesft = 10; // shift for plane field
-      constexpr static uint16_t _nstraws = 96; // number of straws
-      constexpr static uint16_t _npanels = 6; // number of panels
+      constexpr static uint16_t _nstraws = 96; // number of straws per panel
+      constexpr static uint16_t _nlayers = 2; // number of layers per panel ; do we need it, see below
+      constexpr static uint16_t _npanels = 6; // number of panels per station
       constexpr static uint16_t _nplanes = 36; // number of planes
       constexpr static uint16_t _invalid = 0xFFFF; // invalid identifier
 
@@ -67,11 +69,11 @@ namespace mu2e {
       }
 
       uint16_t layer() const{
-	return _sid % 2 == 0 ? 0 : 1;
+	return _sid % _nlayers == 0 ? 0 : 1; // or just % as it is % 2
       }
 
       uint16_t station() const{
-	return floor(plane()/2);
+	return floor(plane()/_nlayers);
       }
 
       bool operator==( StrawId2 const& rhs) const{
