@@ -90,11 +90,11 @@ namespace mu2e {
                                      // necessarily the same as the center of the instrumented region of the tracker.
 
     // Basic parameters needed to describe the TTracker.
-    int    _numPlanes;                  // Number of planes.
-    int    _panelsPerPlane;            // Number of panels in one plane.
-    int    _layersPerPanel;             // Number of layers in one panel.
-    int    _manifoldsPerEnd;             // Number of manifolds along one end of the wires in a layer.
-    int    _strawsPerManifold;           // Number of straws connected to each manifold.
+    constexpr static int _numPlanes      = StrawId2::_nplanes; // Number of planes.
+    constexpr static int _panelsPerPlane = StrawId2::_npanels; // Number of panels in one plane.
+    constexpr static int _layersPerPanel = StrawId2::_nlayers; // Number of layers in one panel
+    int    _manifoldsPerEnd;             // Number of manifolds along one end of the wires in a layer. 48 = 96/2
+    int    _strawsPerManifold;           // Number of straws connected to each manifold. = 1
     int    _rotationPattern;             // Pattern of rotations from plane to plane.
     int    _panelZPattern;               // Pattern of rotations from plane to plane.
     int    _layerZPattern;               // If 0 then layer 0 is closest to base plane; if 1 then layer 1 is closes to base plane.
@@ -175,8 +175,8 @@ namespace mu2e {
     // Z Location of the first plane.
     double _z0;
 
-    int    _numStations;                  // Number of Stations.
-    int    _planesPerStation;
+    constexpr static int _planesPerStation = 2;
+    constexpr static int _numStations = _numPlanes/_planesPerStation;    // Number of Stations.
 
     // The detailed description of the complete support structure
     SupportModel _supportModel;

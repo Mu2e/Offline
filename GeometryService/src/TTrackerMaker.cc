@@ -44,6 +44,15 @@ namespace mu2e {
       double iang = -36000;
 
       size_t nstraws = (_tt->_allStraws).size();
+      // constexpr size_t nstraws = TTracker::_nstraws;  // fixme
+
+      if (_verbosityLevel>2) {
+        cout << __func__ << " (_tt->_allStraws).size(), TTracker::_nstraws "
+             << fixed << setw(6) << (_tt->_allStraws).size()
+             << fixed << setw(6) << TTracker::_nstraws
+             << endl;
+      }
+
       for (size_t istr=0; istr!=nstraws; ++istr) {
 
         const Straw& straw = _tt->getStraw(StrawIndex(istr));
@@ -107,9 +116,9 @@ namespace mu2e {
     _motherHalfLength = config.getDouble("ttracker.mother.halfLength" )*CLHEP::mm;
     _motherZ0         = config.getDouble("ttracker.mother.z0"         )*CLHEP::mm;
 
-    _numPlanes         = config.getInt("ttracker.numPlanes");
-    _panelsPerPlane   = config.getInt("ttracker.panelsPerPlane");
-    _layersPerPanel    = config.getInt("ttracker.layersPerPanel");
+    //    _numPlanes         = config.getInt("ttracker.numPlanes");
+    //    _panelsPerPlane   = config.getInt("ttracker.panelsPerPlane");
+    //    _layersPerPanel    = config.getInt("ttracker.layersPerPanel");
     _manifoldsPerEnd    = config.getInt("ttracker.manifoldsPerEnd");
     _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
     _rotationPattern    = config.getInt("ttracker.rotationPattern");
@@ -426,10 +435,6 @@ namespace mu2e {
                                     << ": Current TTracker geometry assumes even number of planes  \n";
     }
 
-    // planes per station has to be 2
-    _planesPerStation = 2;
-    _numStations = _numPlanes/_planesPerStation;
-
     makeMother();
 
     computeLayerSpacingAndShift();
@@ -465,6 +470,11 @@ namespace mu2e {
 
     // we need to be able to assign true/false for a given straw index
     _tt->_strawExists.resize(_nStrawsToReserve);
+
+    if (_verbosityLevel>2) {
+      cout << __func__ << " _nStrawsToReserve "
+           << fixed << setw(6) << _nStrawsToReserve << endl;
+    }
 
     _tt->_planes.reserve(_numPlanes);
     // Construct the planes and their internals.
@@ -583,7 +593,7 @@ namespace mu2e {
       throw cet::exception("GEOM")  << "Planes are too close \n";
     }
 
-    makeManifolds( plnId );
+    //    makeManifolds( plnId );
 
     double strawSpacing = _strawGap+2.*_strawOuterRadius;
 
