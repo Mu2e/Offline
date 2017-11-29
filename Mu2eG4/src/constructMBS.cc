@@ -85,7 +85,7 @@ namespace mu2e {
     int  const verbosityLevel      = _config.getInt("mbs.verbosityLevel", 0);
 
     bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
+    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false) || _config.getBool("mbs.doSurfaceCheck",false);
     bool const placePV             = true;
 
 

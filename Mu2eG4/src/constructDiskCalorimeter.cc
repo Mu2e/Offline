@@ -392,7 +392,7 @@ namespace mu2e {
 
 	// -- define required logical volumes
 	//
-	G4LogicalVolume *UnitLog = new G4LogicalVolume(Unit, diskMaterial, "UnitLog");  //<--CHANGE MATAERIAL 
+	G4LogicalVolume *UnitLog = new G4LogicalVolume(Unit, diskMaterial, "UnitLog");  //<--CHANGE MATERIAL 
 	UnitLog->SetVisAttributes(G4VisAttributes::Invisible);
 	//UnitLog->SetVisAttributes(G4Color::Yellow());
 

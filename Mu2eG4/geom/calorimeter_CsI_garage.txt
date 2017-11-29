@@ -3,7 +3,7 @@
 
 double calorimeter.caloMotherInRadius           = 345;   
 double calorimeter.caloMotherOutRadius          = 718; // 765;   
-double calorimeter.caloMotherZ0                 = 24842;   
+double calorimeter.caloMotherZ0                 = 25842;   
 double calorimeter.caloMotherZ1                 = 27220;   
 
 // double calorimeter.caloMotherOutRadius          = 856;	      
@@ -28,7 +28,7 @@ string calorimeter.fillerMaterialName		= "Polyethylene096";
 double calorimeter.fillerInnerRadius		= 400.0; // mm
 double calorimeter.fillerOuterRadius		= 410.0; // mm
 double calorimeter.fillerFullLength		= 400.0; // mm
-double calorimeter.fillerZCenter		= 23010.0; // mm (Cannot cut into disk or MBS)
+double calorimeter.fillerZCenter		= 27010.0; // mm (Cannot cut into disk or MBS)
 
 double calorimeter.caseThicknessIn     = 5.;  
 double calorimeter.caseThicknessOut    = 10.;

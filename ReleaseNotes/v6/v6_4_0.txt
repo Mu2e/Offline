@@ -2,6 +2,28 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_4_0
 
+8)      dnbrow01 29 Nov 2017
+	Apparently, about 25% of the time, I can't add the number 4000	
+	correctly... this fixes some overlaps
+	modified:   Mu2eG4/geom/calorimeter_CsI_garage.txt
+
+	Modify how the shift is	implemented for	building the
+        garageFakeDS3Vacuum object.
+	modified:   Mu2eG4/geom/geom_common_garage.txt
+	modified:   Mu2eG4/src/constructDS.cc
+
+	Make it	    possible to do selective overlap checking on the MBS...
+	modified:   Mu2eG4/src/constructMBS.cc
+
+	This module uses B-field direction to assign "transverse" momentum.
+	Fine, except in	 the garage, where there     is no B-field.	
+	When there is no B-field, now defaults to use z-axis.
+	modified:   TrackerMC/src/StrawDigisFromStepPointMCs_module.cc
+
+        I just have this inability to leave typos in comments alone...
+	modified:   Mu2eG4/src/constructDiskCalorimeter.cc
+
+
 7)  	dnbrow01 28 Nov 2017
 	Moved detectors another 4 meters east per George Ginther.
 	modified:   Mu2eG4/geom/ExtShieldDownstream_garage.txt

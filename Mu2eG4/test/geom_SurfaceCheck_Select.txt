@@ -38,6 +38,7 @@ bool g4.doSurfaceCheck    = false;
 // bool dsVacuum.doSurfaceCheck = true;
 // bool dsShielding.doSurfaceCheck = true;
 // bool protonAbsorber.doSurfaceCheck = true;
+// bool mbs.doSurfaceCheck = true;
 // *** The Tracker and Calorimeter
 // bool ttracker.doSurfaceCheck = true;
 // bool calorimeter.doSurfaceCheck = true;

@@ -6,6 +6,8 @@
 string detector.name  = "g4geom_v00";
 // Special - for garage position!
 bool inGaragePosition   = true;
+double garage.zOffset   = 14000.0;
+// End special
 
 bool hasHall            = true;
 bool hasTarget          = true;
