@@ -16,7 +16,7 @@
 // BaBar
 #include "BTrk/TrkBase/TrkErrCode.hh"
 //root
-#include "TString.h"
+//#include "TString.h"
 
 #include "CalPatRec/inc/LsqSums4.hh"
 #include "CalPatRec/inc/CalTimePeak.hh"
@@ -189,7 +189,7 @@ namespace mu2e {
 				const char*        Banner);
 
     double calculatePhiWeight  (CLHEP::Hep3Vector HitPos, CLHEP::Hep3Vector StrawDir, CLHEP::Hep3Vector HelCenter, 
-				double Radius, int Print, TString Banner);
+				double Radius, int Print, const char*Banner=NULL);
 
     //calculates the residual along the radial direction of the helix-circle
     double calculateRadialDist (const CLHEP::Hep3Vector& HitPos, 
@@ -220,7 +220,7 @@ namespace mu2e {
     // fills the vector Weights which holds the calculated weights of the hits
     void   doWeightedCircleFit (::LsqSums4 &TrkSxy, int SeedIndex,int *IdVec,
                                 CLHEP::Hep3Vector &HelCenter, double &Radius, double *Weights,
-                                int Print=0, TString Banner="");
+                                int Print=0, const char* Banner=NULL);
 
     void doPatternRecognition(CalHelixFinderData& mytrk);
   
@@ -259,8 +259,8 @@ namespace mu2e {
 
     int    refineHelixParameters(CalHelixFinderData& Trk,
 				 int seedIndex, int *indexVec,
-				 int Print=0, 
-				 TString Banner="");
+				 const char*  Banner=NULL,
+				 int Print=0);
 
                                         // 12-10-2013 Gianipez: new pattern recognition functions
     void   rescueHitsBeforeSeed (CalHelixFinderData&  mytrk);

@@ -1270,12 +1270,12 @@ namespace mu2e {
     double dist(0.0), dist2(0.0); //help parameter for storing strawhit position residual
     int    i_last(fSeedIndex), rescuedPoints(0);
 
-    TString banner="CalHelixFinderAlg::rescueHitsBeforeSeed";
+    char banner[]="CalHelixFinderAlg::rescueHitsBeforeSeed";
 
     if (_debug > 0) {
-      printf("[%s] x0 = %5.3f y0 = %5.3f radius = %5.3f phi0 = %5.5f dfdz = %5.6f chi2 = %5.3f \n", banner.Data(),
+      printf("[%s] x0 = %5.3f y0 = %5.3f radius = %5.3f phi0 = %5.5f dfdz = %5.6f chi2 = %5.3f \n", banner,
 	     x0, y0, radius, phi0, dfdz , Helix._sxy.chi2DofCircle());
-      printf("[%s] SeedIndex = %i N-points = %5.3f\n",  banner.Data(), fSeedIndex, Helix._sxy.qn()-1);
+      printf("[%s] SeedIndex = %i N-points = %5.3f\n",  banner, fSeedIndex, Helix._sxy.qn()-1);
     }
 
     for (int i=fSeedIndex-1; i>=0; --i){
@@ -1303,11 +1303,11 @@ namespace mu2e {
       dist  = std::sqrt(dist2);
 
       if (_debug > 0) {
-	printf("[%s]   measured     %10.3f  %10.3f  %10.3f  %8i \n", banner.Data(),
+	printf("[%s]   measured     %10.3f  %10.3f  %10.3f  %8i \n", banner,
 	       shPos.x(), shPos.y(), shPos.z(), i);
-	printf("[%s]  predicted     %10.3f  %10.3f  %10.3f  %8i \n", banner.Data(),
+	printf("[%s]  predicted     %10.3f  %10.3f  %10.3f  %8i \n", banner,
 	       hePos.x(), hePos.y(), hePos.z(), i);
-	printf("[%s] X0 = %5.3f Y0 = %5.3f r = %5.3f dfdz = %5.5f  dist-from-prediction = %5.3f  dist-from-seedXY = %5.3f dz-from-seed = %5.3f\n", banner.Data(),
+	printf("[%s] X0 = %5.3f Y0 = %5.3f r = %5.3f dfdz = %5.5f  dist-from-prediction = %5.3f  dist-from-seedXY = %5.3f dz-from-seed = %5.3f\n", banner,
 	       x0, y0, radius, dfdz, dist, distXY, deltaZ);
       }
 
@@ -1341,7 +1341,7 @@ namespace mu2e {
 	++rescuedPoints;
 
 	if( _debug>0){
-	  printf("[%s] rescued %08x %2i %12.5f %12.5f %12.5f \n", banner.Data(),
+	  printf("[%s] rescued %08x %2i %12.5f %12.5f %12.5f \n", banner,
 		 *((int*) &_xyzp[i]._flag), _indicesTrkCandidate[i],
 		 _xyzp[i]._pos.x(), _xyzp[i]._pos.y(), _xyzp[i]._pos.z()
 		 );
@@ -1358,12 +1358,12 @@ namespace mu2e {
 
     _goodPointsTrkCandidate = Helix._sxy.qn() - 1;//removing the EMC cluster!
 
-    banner += "-results";
+    strcat(banner, "-results");//banner += "-results";
     if (_debug > 5) {
       printf("[%s] x0 = %5.3f y0 = %5.3f radius = %5.3f phi0 = %5.3f dfdz = %5.6f chi2 = %5.3f \n",
-	     banner.Data(),
+	     banner,
 	     x0, y0, radius,  Helix._fz0, dfdz , Helix._sxy.chi2DofCircle());
-      printf("[%s] SeedIndex = %i N rescued points = %i\n",  banner.Data(), fSeedIndex, rescuedPoints);
+      printf("[%s] SeedIndex = %i N rescued points = %i\n",  banner, fSeedIndex, rescuedPoints);
     }
 
     // THackData* hack;
@@ -1659,7 +1659,7 @@ namespace mu2e {
       _debug2 = 0;
     }
 
-    TString banner;
+    const char* banner;
     bool rc;
     int  rc1, refineHelParamRes, rs;
     int  usePhiResid;
@@ -1694,7 +1694,7 @@ namespace mu2e {
 //--------------------------------------------------------------------------------
 
     banner="refineHelixParameters";
-    refineHelParamRes = refineHelixParameters(Helix, 0, _indicesTrkCandidate, _debug, banner);
+    refineHelParamRes = refineHelixParameters(Helix, 0, _indicesTrkCandidate, banner, _debug);
     if ( refineHelParamRes >= 0){
       Helix._center.setX(Helix._sxyw.x0());
       Helix._center.setY(Helix._sxyw.y0());
@@ -1741,7 +1741,7 @@ namespace mu2e {
 
       if (_debug != 0)  printInfo(Helix);
       banner="refineHelixParameters-after-doLinearFitPhiZ";
-      rc1 = refineHelixParameters(Helix, 0, _indicesTrkCandidate, _debug, banner);
+      rc1 = refineHelixParameters(Helix, 0, _indicesTrkCandidate, banner, _debug);
       if (rc1 >=0 ){
 	Helix._center.setX(Helix._sxyw.x0());
 	Helix._center.setY(Helix._sxyw.y0());
@@ -1819,7 +1819,7 @@ namespace mu2e {
 						Hep3Vector HelCenter,
 						double     Radius   ,
 						int        Print    ,
-						TString    Banner   ) {
+						const char*Banner   ) {
     double    rs( 2.5);  // mm
     double    ew(30.0);  // mm - erro along the wire   double x  = HitPos.x();
 
@@ -1837,7 +1837,7 @@ namespace mu2e {
 
     if (Print > 0) {
       double dr = calculateRadialDist( HitPos, HelCenter, Radius);
-      printf("[CalHelixFinderAlg::%s] %10.3f %10.3f %10.5f %10.5f %10.5f %10.5f %12.5e %10.3f\n", Banner.Data(), x, y, dx, dy, costh, sinth2, e2, dr);
+      printf("[CalHelixFinderAlg::%s] %10.3f %10.3f %10.5f %10.5f %10.5f %10.5f %12.5e %10.3f\n", Banner, x, y, dx, dy, costh, sinth2, e2, dr);
     }
 
     return wt;
@@ -1865,7 +1865,7 @@ namespace mu2e {
 					    double&         Radius   ,
 					    double*         Weights  ,
 					    int             Print    ,
-					    TString         Banner   ) {
+					    const char*     Banner   ) {
     Hep3Vector hitPos, strawDir;
     double     wt;
     int        np = _xyzp.size();
@@ -2013,8 +2013,8 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
   int CalHelixFinderAlg::refineHelixParameters(CalHelixFinderData& Trk,
 					       int                 SeedIndex,
 					       int*                IndexVec,
-					       int                 Print,
-					       TString            Banner) {
+					       const char*         Banner,
+					       int                 Print  ) {
     double     x, y, r;
     double     hitChi2Worst;
 
@@ -2559,16 +2559,18 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     sxy.addPoint(p3.x(), p3.y());         //EMC cluster position
     sxy.addPoint(0., 0., 0.1);                 //Target center in the transverse plane
 
-    TString banner="CalHelixFinderAlg::findTrack";
+    char banner[] ="CalHelixFinderAlg::findTrack";
 
 
     double dz_max;
-    TString name;
+    char* name;
 
     if (_debug) {
-      if (UseMPVDfDz ==1) banner += "-UseMPVDfDz";
-      name =  banner;
-      name += "-loop";
+      if (UseMPVDfDz ==1) strcat(banner, "-UseMPVDfDz");//banner += "-UseMPVDfDz";
+      name = banner;
+      strcat(name, "-loop");
+      // name =  banner;
+      // name += "-loop";
     }
 
     int i_last = SeedIndex;
@@ -2581,7 +2583,8 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     for (int i=SeedIndex+1; i<np; i++) {
       if (_debug) {
 	name =  banner;
-	name += "-loop";
+	strcat(name, "-loop");
+	//name += "-loop";
       }
       if (_xyzp[i].isOutlier()) goto NEXT_POINT;
       weight = 1.;
@@ -2592,7 +2595,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
       if (isHitUsed(i) == 1) {
 	if( _debug > 10){
 	  //	  printf("[CalHelixFinderAlg::findTrack-loop]  XYZP-hit number = %i skipped\n", i);
-	  printf("[%s]  XYZP-hit number = %i skipped\n", name.Data(), i);
+	  printf("[%s]  XYZP-hit number = %i skipped\n", name, i);
 	}
 	goto NEXT_POINT;
       }
@@ -2623,26 +2626,26 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 
       if( _debug > 10){
 	if( i==SeedIndex+1) {
-	  printf("[%s]  findTrack() starts with helix parameters derived from these points \n", name.Data());
-	  printf("[%s]   point  type      X         Y         Z       xyzp-index \n", name.Data());
-	  printf("[%s] ----------------------------------------------------------\n", name.Data());
-	  printf("[%s]    seeding      %10.3f   %10.3f   %10.3f   %8i \n", name.Data(),p2.x(), p2.y(), p2.z(),
+	  printf("[%s]  findTrack() starts with helix parameters derived from these points \n", name);
+	  printf("[%s]   point  type      X         Y         Z       xyzp-index \n", name);
+	  printf("[%s] ----------------------------------------------------------\n", name);
+	  printf("[%s]    seeding      %10.3f   %10.3f   %10.3f   %8i \n", name,p2.x(), p2.y(), p2.z(),
 		 SeedIndex);
-	  printf("[%s]   candidate     %10.3f   %10.3f   %10.3f   %8i \n", name.Data(),p1.x(), p1.y(), p1.z(),
+	  printf("[%s]   candidate     %10.3f   %10.3f   %10.3f   %8i \n", name,p1.x(), p1.y(), p1.z(),
 		 fLastIndex);
-	  printf("[%s]  emc cluster    %10.3f   %10.3f   %10.3f   %8i \n", name.Data(),p3.x(), p3.y(), p3.z(),
+	  printf("[%s]  emc cluster    %10.3f   %10.3f   %10.3f   %8i \n", name,p3.x(), p3.y(), p3.z(),
 		 -1);
 	}
 
-	printf("[%s] X0 = %10.3f Y0 = %10.3f r = %10.3f dfdz = %5.5f \n", name.Data(),
+	printf("[%s] X0 = %10.3f Y0 = %10.3f r = %10.3f dfdz = %5.5f \n", name,
 	       p0.x(), p0.y(), radius, dfdz);
-	printf("[%s]   measured      %10.3f %10.3f %10.3f %8i \n", name.Data(),
+	printf("[%s]   measured      %10.3f %10.3f %10.3f %8i \n", name,
 	       shPos.x(), shPos.y(), shPos.z(), i);
-	printf("[%s]  predicted      %10.3f %10.3f %10.3f %8i \n", name.Data(),
+	printf("[%s]  predicted      %10.3f %10.3f %10.3f %8i \n", name,
 	       hePos.x(), hePos.y(), hePos.z(), i);
-	printf("[%s] dist-from-prediction = %10.3f  dist-from-seedXY = %5.3f dz-from-seed = %5.3f\n", name.Data(),
+	printf("[%s] dist-from-prediction = %10.3f  dist-from-seedXY = %5.3f dz-from-seed = %5.3f\n", name,
 	       dist, distXY, deltaZ);
-	printf("[%s] ---------------------------------------------------------\n", name.Data());
+	printf("[%s] ---------------------------------------------------------\n", name);
 
       }
 //-----------------------------------------------------------------------------
@@ -2739,14 +2742,14 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 
 	if (_debug > 10) {
 	  name = banner;
-	  name += "2strawhitsHelixDef";
+	  strcat(name, "2strawhitsHelixDef");//name += "2strawhitsHelixDef";
 	  //	printf(" CalHelixFinderAlg::_debug: %5i TEEEEST\n",_debug);
 
-	  printf("[%s] strawhit type     X        Y        Z     index\n", name.Data());
-	  printf("[%s] ----------------------------------------------------\n", name.Data());
-	  printf("[%s]    seeding     %5.3f  %5.3f  %5.3f   %i  \n", name.Data(),p2.x(), p2.y(), p2.z(), SeedIndex);
-	  printf("[%s]   candidate    %5.3f  %5.3f  %5.3f   %i  \n", name.Data(),p1.x(), p1.y(), p1.z(), goodPoint);
-	  printf("[%s] x0 = %5.3f y0 = %5.3f radius = %5.3f dfdz = %5.6f chi2 = %5.3f \n", name.Data(),
+	  printf("[%s] strawhit type     X        Y        Z     index\n", name);
+	  printf("[%s] ----------------------------------------------------\n", name);
+	  printf("[%s]    seeding     %5.3f  %5.3f  %5.3f   %i  \n", name,p2.x(), p2.y(), p2.z(), SeedIndex);
+	  printf("[%s]   candidate    %5.3f  %5.3f  %5.3f   %i  \n", name,p1.x(), p1.y(), p1.z(), goodPoint);
+	  printf("[%s] x0 = %5.3f y0 = %5.3f radius = %5.3f dfdz = %5.6f chi2 = %5.3f \n", name,
 		 p0.x(), p0.y(), radius, dfdz , sxy.chi2DofCircle());
 
 	}
@@ -2763,7 +2766,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	  }
 
 	  if (_debug > 10) {
-	    printf("[%s] dfdz = %5.5f not in range limits. Continue the search\n",name.Data(),dfdz);
+	    printf("[%s] dfdz = %5.5f not in range limits. Continue the search\n",name,dfdz);
 	  }
 	  p1 = Hep3Vector(0., 0., 0.);
 //----------------------------------------------------------------------//
@@ -2801,7 +2804,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 
     if (_debug) {
       name = banner;
-      name += "-results";
+      strcat(name, "-results");//name += "-results";
     }
 
     Chi2 = sxy.chi2DofCircle();
@@ -2876,14 +2879,14 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     }
 
      if (_debug > 10) {
-      printf("[%s] strawhit type     X        Y        Z     index\n", name.Data());
-      printf("[%s] ----------------------------------------------------\n", name.Data());
-      printf("[%s]    seeding     %5.3f  %5.3f  %5.3f   %i  \n", name.Data(),p2.x(), p2.y(), p2.z(), SeedIndex);
-      printf("[%s]   candidate    %5.3f  %5.3f  %5.3f   %i  \n", name.Data(),p1.x(), p1.y(), p1.z(), goodPoint);
-      printf("[%s]  emc cluster   %5.3f  %5.3f  %5.3f \n", name.Data(),p3.x(), p3.y(), p3.z());
-      printf("[%s] x0 = %5.3f y0 = %5.3f radius = %5.3f phi0 = %5.6fdfdz = %5.6f chi2 = %5.3f \n", name.Data(),
+      printf("[%s] strawhit type     X        Y        Z     index\n", name);
+      printf("[%s] ----------------------------------------------------\n", name);
+      printf("[%s]    seeding     %5.3f  %5.3f  %5.3f   %i  \n", name,p2.x(), p2.y(), p2.z(), SeedIndex);
+      printf("[%s]   candidate    %5.3f  %5.3f  %5.3f   %i  \n", name,p1.x(), p1.y(), p1.z(), goodPoint);
+      printf("[%s]  emc cluster   %5.3f  %5.3f  %5.3f \n", name,p3.x(), p3.y(), p3.z());
+      printf("[%s] x0 = %5.3f y0 = %5.3f radius = %5.3f phi0 = %5.6fdfdz = %5.6f chi2 = %5.3f \n", name,
 	     sxy.x0(), sxy.y0(), radius_end, phi0_end, dfdz_end , sxy.chi2DofCircle());
-      printf("[%s] CountGoodPoints = %i\n", name.Data(), CountGoodPoints);
+      printf("[%s] CountGoodPoints = %i\n", name, CountGoodPoints);
     }
 
     if (mode1GoodPoints>0){
@@ -2898,9 +2901,9 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
       Chi2       = sxy.chi2DofCircle();
       if (_debug > 10) {
 	name = banner;
-	name += "EndFindTrack";
+	strcat(name, "EndFindTrack");//name += "EndFindTrack";
 	printf("[%s] Chi2 = %5.3f nGoodPoints = %d dfdz = %5.5f mode = %i\n",
-	       name.Data(),
+	       name,
 	       sxy.chi2DofCircle(),
 	       CountGoodPoints,
 	       dfdz_end,

@@ -123,8 +123,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   bool CalTimePeakFinder::findData(const art::Event& evt) {
 
-    art::Handle<mu2e::StrawHitCollection> shcolH;
-    if (evt.getByLabel(_shLabel, shcolH)) {
+    //    art::Handle<mu2e::StrawHitCollection> shcolH;
+    auto shcolH = evt.getValidHandle<mu2e::StrawHitCollection>(_shLabel);
+    if (shcolH.product() != 0){
+      //    if (evt.getByLabel(_shLabel, shcolH)) {
       _data.shcol = shcolH.product();
     }
     else {
@@ -134,8 +136,10 @@ namespace mu2e {
     }
 
 
-    art::Handle<mu2e::StrawHitPositionCollection> shposH;
-    if (evt.getByLabel(_shpLabel,shposH)) {
+    //    art::Handle<mu2e::StrawHitPositionCollection> shposH;
+    auto shposH = evt.getValidHandle<mu2e::StrawHitPositionCollection>(_shpLabel);
+    if (shcolH.product() != 0){
+      //    if (evt.getByLabel(_shpLabel,shposH)) {
       _data.shpcol = shposH.product();
     }
     else {
@@ -144,8 +148,10 @@ namespace mu2e {
              _shpLabel.data());
     }
 
-    art::Handle<mu2e::StrawHitFlagCollection> shflagH;
-    if (evt.getByLabel(_shfLabel,shflagH)) {
+    //    art::Handle<mu2e::StrawHitFlagCollection> shflagH;
+    auto shflagH = evt.getValidHandle<mu2e::StrawHitFlagCollection>(_shfLabel);
+    if (shflagH.product() != 0){
+    //    if (evt.getByLabel(_shfLabel,shflagH)) {
       _data.shfcol = shflagH.product();
     }
     else {

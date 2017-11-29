@@ -143,9 +143,11 @@ namespace mu2e {
    // Handle to the conditions service
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
 
-    art::Handle<mu2e::StrawHitCollection> strawhitsH; 
+    //    art::Handle<mu2e::StrawHitCollection> strawhitsH; 
+    auto strawhitsH = event.getValidHandle<mu2e::StrawHitCollection>(_shLabel);
     const StrawHitCollection* strawhits(0);
-    if(event.getByLabel(_shLabel,strawhitsH))
+    if (strawhitsH.product() != 0)
+      //    if(event.getByLabel(_shLabel,strawhitsH))
       strawhits = strawhitsH.product();
     if(strawhits == 0){
       throw cet::exception("RECO")<<"mu2e::MakeStrawHitPositions: No StrawHit collection found for label " <<  _shLabel << endl;

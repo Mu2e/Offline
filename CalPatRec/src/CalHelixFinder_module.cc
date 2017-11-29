@@ -132,7 +132,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   bool CalHelixFinder::findData(const art::Event& evt) {
 
-    //    art::Handle<mu2e::StrawHitCollection> strawhitsH;
     if (evt.getByLabel(_shLabel, _strawhitsH)) {
       _shcol = _strawhitsH.product();
     }
@@ -161,6 +160,7 @@ namespace mu2e {
       printf(" >>> ERROR in CalHelixFinder::findData: StrawHitFlagCollection with label=%s not found.\n",
              _shfLabel.data());
     }
+
 
     if (evt.getByLabel(_timeclLabel, _timeclcolH)) {
       _timeclcol = _timeclcolH.product();
