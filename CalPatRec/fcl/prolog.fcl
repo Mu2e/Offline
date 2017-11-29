@@ -114,28 +114,28 @@ CalPatRec : {
 	DivergeFlt                              : 1000.            #  default: 1000.
 	RdriftMinusDocaTol                      : 1.
 	dtOffset                                : @local::TrackCaloMatching.DtOffset
-	#------------------------------------------------------------------------------
-	# shouldn't be used during the seed fit, only during the hit-based fit 
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# shouldn't be used during the seed fit, only during the hit-based fit 
+#------------------------------------------------------------------------------
 	scaleErrDoublet                         : 1.
 	minDriftDoublet                         : 0.3
 	deltaDriftDoublet                       : 0.3
 	sigmaSlope                              : 0.025
-	#------------------------------------------------------------------------------
-	#  parameters of KalContext 
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#  parameters of KalContext 
+#------------------------------------------------------------------------------
 	MinNDOF                                 : 5 # match 10 hits of HelixFit
-	#------------------------------------------------------------------------------
-	# ambiguity resolver parameters
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# ambiguity resolver parameters
+#------------------------------------------------------------------------------
 	FixedAmbigResolver                      : {}
 	HitAmbigResolver                        : {}
 	PocaAmbigResolver                       : {}
 	PanelAmbigResolver                      : {}
-	#------------------------------------------------------------------------------
-	# provision for doublet ambiguity resolver - SeedFit is not using it, but the
-	# initialization might require
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# provision for doublet ambiguity resolver - SeedFit is not using it, but the
+# initialization might require
+#------------------------------------------------------------------------------
 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
     }
 #------------------------------------------------------------------------------
@@ -273,29 +273,29 @@ CalPatRec : {
 	DivergeFlt                              : 1000.            #  default: 1000.
 #	RdriftMinusDocaTol                      : 1.
 #	daveMode                                : 0
-	#------------------------------------------------------------------------------
-	# shouldn't be used during the seed fit, only during the hit-based fit 
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# shouldn't be used during the seed fit, only during the hit-based fit 
+#------------------------------------------------------------------------------
 #	scaleErrDoublet                         : 1.
 #	minDriftDoublet                         : 0.3
 #	deltaDriftDoublet                       : 0.3
 #	maxDoubletChi2                          : -1    # not used !
 #	sigmaSlope                              : 0.025
-	#------------------------------------------------------------------------------
-	#  parameters of KalContext 
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#  parameters of KalContext 
+#------------------------------------------------------------------------------
 	MinNDOF                                 : 10
-	#------------------------------------------------------------------------------
-	# ambiguity resolver parameters
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# ambiguity resolver parameters
+#------------------------------------------------------------------------------
 	FixedAmbigResolver                      : {}
 	HitAmbigResolver                        : {}
 	PocaAmbigResolver                       : {}
 	PanelAmbigResolver                      : {}
-	#------------------------------------------------------------------------------
-	# provision for doublet ambiguity resolver - SeedFit is not using it, but the
-	# initialization might require
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# provision for doublet ambiguity resolver - SeedFit is not using it, but the
+# initialization might require
+#------------------------------------------------------------------------------
 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
     }
 #------------------------------------------------------------------------------
@@ -331,20 +331,20 @@ CalPatRec : {
 	daveMode                                : 0
 	ZeroDriftPenalty 			: 0.05
 	Neutralize 				: true
-	#------------------------------------------------------------------------------
-	#  KalContext parameters  (there are more to define ! )
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#  KalContext parameters  (there are more to define ! )
+#------------------------------------------------------------------------------
 	MinNDOF                                 : 10 # this means 15 hits min
-	#------------------------------------------------------------------------------
-	# ambiguity resolver parameters
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# ambiguity resolver parameters
+#------------------------------------------------------------------------------
 	FixedAmbigResolver                      : {}
 	HitAmbigResolver                        : {}
 	PocaAmbigResolver                       : {}
 	PanelAmbigResolver                      : {}
-	#------------------------------------------------------------------------------
-	# doublet-based ambiguity resolver parameters
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# doublet-based ambiguity resolver parameters
+#------------------------------------------------------------------------------
 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
 	fieldCorrection				: true
 	scaleErrDoublet                         : 5.
@@ -352,6 +352,8 @@ CalPatRec : {
 	deltaDriftDoublet                       : 0.3
 	maxDoubletChi2                          : 9
 	sigmaSlope                              : 0.025
+	mcTruth                                 : 1
+	mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
     }
 }
 #------------------------------------------------------------------------------

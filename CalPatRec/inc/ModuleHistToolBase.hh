@@ -17,8 +17,8 @@ namespace mu2e {
     virtual ~ModuleHistToolBase()  noexcept = default ;
     
     virtual int bookHistograms(art::ServiceHandle<art::TFileService> & Tfs) ; // = 0 ; 
-    virtual int fillHistograms(void* Data, int Mode=-1   ) ;
-    virtual int debug         (void* Data);
+    virtual int fillHistograms(void* Data, int Mode = -1) ;
+    virtual int debug         (void* Data, int Mode = -1);
   };
 }
 

@@ -33,7 +33,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //  hook for debug printout
 //-----------------------------------------------------------------------------
-  int ModuleHistToolBase::debug(void* Data) {
+  int ModuleHistToolBase::debug(void* Data, int Mode) {
     return 0;
   }
 

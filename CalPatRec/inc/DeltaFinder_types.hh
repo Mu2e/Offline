@@ -9,10 +9,10 @@ namespace fhicl {
   class ParameterSet;
 };
 
-class TH1F;
-class TH2F;
+// class TH1F;
+// class TH2F;
 
-#include "CalPatRec/inc/LsqSums2.hh"
+// #include "CalPatRec/inc/LsqSums2.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
@@ -197,7 +197,7 @@ namespace mu2e {
       int                   fNHits;
       int                   fNHitsMcP;	       // Nhits by the "best" particle"
       int                   fNHitsCE;
-      LsqSums2              fTzSums;
+      // LsqSums2              fTzSums;
       // float                 fT0Min;
       // float                 fT0Max;
 

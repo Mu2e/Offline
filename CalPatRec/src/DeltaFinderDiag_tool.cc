@@ -150,7 +150,7 @@ namespace mu2e {
 
     virtual int bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) override ;
     virtual int fillHistograms(void* Data, int Mode = -1 ) override ;
-    virtual int debug         (void* Data) override ;
+    virtual int debug         (void* Data, int Mode = -1 ) override ;
   };
 
 
@@ -819,7 +819,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // debugLevel > 0: print seeds
 //-----------------------------------------------------------------------------
-  int DeltaFinderDiag::debug(void* Data) {
+  int DeltaFinderDiag::debug(void* Data, int Mode) {
 //-----------------------------------------------------------------------------
 // print DeltaSeeds - pieces of delta electrons reconstructed within one station
 //-----------------------------------------------------------------------------
