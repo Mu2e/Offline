@@ -43,9 +43,9 @@ namespace mu2e {
 
     // =============== NewTracker Public Objects Start ==============
 
-    constexpr static int _nstraws = StrawId2::_nplanes *
-                                    StrawId2::_npanels *
-                                    StrawId2::_nstraws;
+    constexpr static int _nttstraws = StrawId2::_nplanes *
+                                      StrawId2::_npanels *
+                                      StrawId2::_nstraws;
 
     constexpr static int _maxRedirect = std::numeric_limits<uint16_t>::max();
 
@@ -291,7 +291,7 @@ namespace mu2e {
     std::array<Plane,StrawId2::_nplanes> _allPlanes2;
 
     // Dense array.
-    std::array<Straw,TTracker::_nstraws> _allStraws2;
+    std::array<Straw,TTracker::_nttstraws> _allStraws2;
 
     // Sparse array: designed for indexing by StrawId2.
     // For all legal entries in StrawId2, this points to a straw in _straws2;
