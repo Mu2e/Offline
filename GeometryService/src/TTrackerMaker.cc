@@ -15,10 +15,12 @@
 #include "TrackerGeom/inc/Straw.hh"
 #include "cetlib/pow.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+
 #include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <unordered_map>
+#include <bitset>
 
 using cet::square;
 using cet::diff_of_squares;
@@ -46,11 +48,25 @@ namespace mu2e {
       size_t nstraws = (_tt->_allStraws).size();
       // constexpr size_t nstraws = TTracker::_nstraws;  // fixme
 
-      if (_verbosityLevel>2) {
-        cout << __func__ << " (_tt->_allStraws).size(), TTracker::_nstraws "
-             << fixed << setw(6) << (_tt->_allStraws).size()
-             << fixed << setw(6) << TTracker::_nstraws
-             << endl;
+      cout << __func__ << " (_tt->_allStraws).size(), TTracker::_nstraws "
+           << fixed << setw(6) << (_tt->_allStraws).size()
+           << fixed << setw(6) << TTracker::_nstraws
+           << endl;
+
+      size_t istr = -1;
+      for (const auto istr_p : _tt->_allStraws2_p) {
+        cout << __func__ << setw(10) << ++istr
+             << setw(20) << istr_p;
+        if (istr_p != nullptr ) {
+          StrawId2 const & lsid =  (*istr_p).id2();
+          cout << setw(6) << lsid.strawId2()
+               << setw(17) << std::bitset<16>(lsid.strawId2())
+               << " " 
+               << setw(10) << std::showbase << std::hex << lsid.strawId2()
+               << " " << std::dec << std::noshowbase << lsid;
+        } else {
+          cout << endl;
+        }
       }
 
       for (size_t istr=0; istr!=nstraws; ++istr) {
@@ -425,6 +441,9 @@ namespace mu2e {
 
   void TTrackerMaker::buildIt(){
 
+    // as the array has constant size, we need a straw counter during construction
+    _strawConstrCount = -1; // first straw will be at 0
+ 
     // Make an empty TTracker.
     _tt = unique_ptr<TTracker>(new TTracker());
 
@@ -738,9 +757,16 @@ namespace mu2e {
 
     // Get additional bookkeeping info.
     deque<Straw>& allStraws = _tt->_allStraws;
+
+    // array type containers of straws and pointers
+    array<Straw,TTracker::_nstraws>& allStraws2  = _tt->_allStraws2;
+    array<Straw const*,TTracker::_maxRedirect>& allStraws2_p  = _tt->_allStraws2_p;
+
     const Plane& plane = _tt->getPlane( layId.getPlaneId() );
     int ilay = layId.getLayer();
     int ipnl = layId.getPanel();
+
+    int iplane = layId.getPlaneId();
 
     // Is layer zero closest to the straw or farthest from it.
     int factor = ( _layerZPattern == 0 ) ? ilay : (_layersPerPanel - ilay - 1);
@@ -805,6 +831,7 @@ namespace mu2e {
         CLHEP::Hep3Vector offset = RZ*mid;
 
         StrawIndex index(allStraws.size());
+        ++_strawConstrCount;
 
         _tt->_strawExists[index.asInt()] = plane.exists();
 
@@ -816,6 +843,37 @@ namespace mu2e {
                                     unit
                                     )
                              );
+
+
+
+        StrawId2 lsid(iplane, ipnl, _istraw);
+        if (_verbosityLevel>3) {
+          cout << __func__ << " index, strCnt, iplane, ipnl, _istraw, _sid, StrawId2 "
+               << setw(6) << index
+               << setw(6) << _strawConstrCount
+               << setw(6) << iplane
+               << setw(6) << ipnl
+               << setw(6) << _istraw
+               << setw(6) << lsid.strawId2()
+               << setw(17) << std::bitset<16>(lsid.strawId2())
+               << " " 
+               << setw(10) << std::showbase << std::hex << lsid.strawId2()
+               << " " << std::dec << std::noshowbase << lsid;
+        }
+
+
+        allStraws2.at(_strawConstrCount) = 
+          Straw( StrawId( layId, _istraw), 
+                 lsid,
+                 index,
+                 offset,
+                 &_tt->_strawDetails.at(iman*2+ilay%2),
+                 iman*2+ilay%2,
+                 unit
+                 );
+
+        allStraws2_p.at(lsid.strawId2()) = &allStraws2.at(_strawConstrCount);
+
         layer._straws.push_back(&allStraws.back());
         layer._indices.push_back(index);
 
