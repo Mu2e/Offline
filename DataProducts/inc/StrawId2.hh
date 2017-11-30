@@ -6,6 +6,7 @@
 // Re-implemented as integer bitfields by Dave Brown (LBNL)
 //
 #include <ostream>
+#include <iomanip>
 #include <string>
 #include <math.h>
 
@@ -86,10 +87,10 @@ namespace mu2e {
 
       friend std::ostream& operator<<(std::ostream& ost,
 	  const StrawId2& s ){
-	ost << "StrawId with Plane " << s.plane() << " "
-	  << "Panel " << s.panel() << " "
-	  << "Straw " << s.straw() << std::endl;
-	  return ost;
+	ost << "StrawId with Plane " << std::setw(2) << s.plane() << " "
+            << "Panel " << std::setw(1) << s.panel() << " "
+            << "Straw " << std::setw(2) << s.straw() << std::endl;
+        return ost;
       }
 
     private:
