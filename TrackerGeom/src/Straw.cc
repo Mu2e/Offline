@@ -62,6 +62,23 @@ namespace mu2e {
   {
   }
 
+  Straw::Straw( const StrawId& id, const StrawId2& id2,
+                StrawIndex index,
+                CLHEP::Hep3Vector const& c,
+                const StrawDetail* detail,
+                int detailIndex,
+                CLHEP::Hep3Vector const& w
+                ):
+    _id(id),
+    _id2(id2),
+    _index(index),
+    _c(c),
+    _detail(detail),
+    _detailIndex(detailIndex),
+    _w(w.unit())
+  {
+  }
+
   void Straw::fillPointers ( const Tracker& tracker ) const{
     _detail = &tracker.getStrawDetails().at(_detailIndex);
   }
