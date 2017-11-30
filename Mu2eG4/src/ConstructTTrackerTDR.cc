@@ -1029,7 +1029,8 @@ mu2e::ConstructTTrackerTDR::addPanelsAndEBKeys(VolumeInfo& basePanel,
            << phi0/M_PI*180.
            << " rel position "
            << panelPosition
-           << " "
+           << " panel copy number "
+           << baseCopyNo + ipnl
            << endl;
     }
 
