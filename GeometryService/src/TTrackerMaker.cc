@@ -46,11 +46,11 @@ namespace mu2e {
       double iang = -36000;
 
       size_t nstraws = (_tt->_allStraws).size();
-      // constexpr size_t nstraws = TTracker::_nstraws;  // fixme
+      // constexpr size_t nstraws = TTracker::_nttstraws;  // fixme
 
-      cout << __func__ << " (_tt->_allStraws).size(), TTracker::_nstraws "
+      cout << __func__ << " (_tt->_allStraws).size(), TTracker::_nttstraws "
            << fixed << setw(6) << (_tt->_allStraws).size()
-           << fixed << setw(6) << TTracker::_nstraws
+           << fixed << setw(6) << TTracker::_nttstraws
            << endl;
 
       size_t istr = -1;
@@ -759,8 +759,10 @@ namespace mu2e {
     deque<Straw>& allStraws = _tt->_allStraws;
 
     // array type containers of straws and pointers
-    array<Straw,TTracker::_nstraws>& allStraws2  = _tt->_allStraws2;
+    array<Straw,TTracker::_nttstraws>& allStraws2  = _tt->_allStraws2;
     array<Straw const*,TTracker::_maxRedirect>& allStraws2_p  = _tt->_allStraws2_p;
+    // straws per panel
+    constexpr int spp = StrawId2::_nstraws;
 
     const Plane& plane = _tt->getPlane( layId.getPlaneId() );
     int ilay = layId.getLayer();
@@ -798,7 +800,7 @@ namespace mu2e {
     // Straw number within the layer; does not reset to zero at each manifold.
     // we number the straws starting from the most inner one across the two layers in the panel/panel
     // it will be 0 for layer0 and 1 for layer1
-    int _istraw(ilay-2);
+    int listraw(ilay-2);
 
     // we increase the number by 2, not 1
 
@@ -812,7 +814,7 @@ namespace mu2e {
 
       // Add all of the straws connected to this manifold.
       for ( int istr=0; istr<_strawsPerManifold; ++istr ){
-        _istraw +=2;
+        listraw +=2;
 
         // layers with fewer straws would complicate StrawSD, constructTTrackerv, TTrackerMaker
 
@@ -835,7 +837,7 @@ namespace mu2e {
 
         _tt->_strawExists[index.asInt()] = plane.exists();
 
-        allStraws.push_back( Straw( StrawId( layId, _istraw),
+        allStraws.push_back( Straw( StrawId( layId, listraw),
                                     index,
                                     offset,
                                     &_tt->_strawDetails.at(iman*2+ilay%2),
@@ -846,24 +848,38 @@ namespace mu2e {
 
 
 
-        StrawId2 lsid(iplane, ipnl, _istraw);
+        StrawId2 lsid(iplane, ipnl, listraw);
+        // in the new tracker model the straws are placed in the
+        // panels, not layers, so we have to reshuffle them here
+        // before we place them in allStraws2
+
+        // number of panels placed
+        int npp = _strawConstrCount/spp;
+        // current straw in the panel is listraw
+        // we use int in case we "overcount" and rely on at() to tell us that
+        int strawCountReCounted = npp*spp+listraw;
+
         if (_verbosityLevel>3) {
-          cout << __func__ << " index, strCnt, iplane, ipnl, _istraw, _sid, StrawId2 "
+          std::ostringstream osid("",std::ios_base::ate); // to write at the end
+          osid << allStraws.back().id();
+
+          cout << __func__ << " index, strCnt, strCntRc, iplane, ipnl, listraw, _sid, osid, StrawId2:"
                << setw(6) << index
                << setw(6) << _strawConstrCount
-               << setw(6) << iplane
-               << setw(6) << ipnl
-               << setw(6) << _istraw
+               << setw(6) << strawCountReCounted
+               << setw(3) << iplane
+               << setw(2) << ipnl
+               << setw(3) << listraw
                << setw(6) << lsid.strawId2()
                << setw(17) << std::bitset<16>(lsid.strawId2())
                << " " 
-               << setw(10) << std::showbase << std::hex << lsid.strawId2()
+               << setw(6) << std::showbase << std::hex << lsid.strawId2()
+               << setw(10) << osid.str()
                << " " << std::dec << std::noshowbase << lsid;
         }
 
-
-        allStraws2.at(_strawConstrCount) = 
-          Straw( StrawId( layId, _istraw), 
+        allStraws2.at(strawCountReCounted) = 
+          Straw( StrawId( layId, listraw), 
                  lsid,
                  index,
                  offset,
@@ -872,7 +888,7 @@ namespace mu2e {
                  unit
                  );
 
-        allStraws2_p.at(lsid.strawId2()) = &allStraws2.at(_strawConstrCount);
+        allStraws2_p.at(lsid.strawId2()) = &allStraws2.at(strawCountReCounted);
 
         layer._straws.push_back(&allStraws.back());
         layer._indices.push_back(index);
@@ -883,7 +899,7 @@ namespace mu2e {
         //             layId << " | " << setw(3) <<
         //             iman << " " << setw(3) <<
         //             istr                << " | " << setw(3) <<
-        //             _istraw << " " << fixed << setprecision(2) << setw(8) <<
+        //             listraw << " " << fixed << setprecision(2) << setw(8) <<
         //             xstraw << " " << fixed << setprecision(2) << setw(8) <<
         //             2.*_strawHalfLengths.at(iman) << " " << fixed << setprecision(2) <<
         //             mid << " " << fixed << setprecision(2) << setw(8) <<
