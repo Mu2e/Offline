@@ -521,6 +521,7 @@ namespace mu2e {
 	fseed._status.merge(TrkFitFlag::kalmanOK);
 	if(krep->fitStatus().success()==1) fseed._status.merge(TrkFitFlag::kalmanConverged);
 	TrkUtilities::fillHitSeeds(krep, fseed._hits);
+	TrkUtilities::fillStraws(krep,fseed._straws);
 //-----------------------------------------------------------------------------
 // sample the fit at the requested z positions.  This should
 // be in terms of known positions (front of tracker, ...) FIXME!
