@@ -607,7 +607,7 @@ namespace mu2e {
       for (int ns = 0; ns<(layer.nStraws()*2-2); ns+=2) {
 
         if (_verbosityLevel>2) {
-          cout << __func__ << " Checking spacig"
+          cout << __func__ << " Checking spacing"
                << " for layer " << layer.id() << " straw " << layer.getStraw(ns).id()  << endl;
         }
 
@@ -619,7 +619,7 @@ namespace mu2e {
           cout << "It should be                  : " << strawSpacing << " diff: "
                << (layerDeltaMag-strawSpacing) << endl;
 
-          throw cet::exception("GEOM")  << "Incorrect intralayer straw spacing, check manifold sizes rtc..\n";
+          throw cet::exception("GEOM")  << "Incorrect intralayer straw spacing, check manifold sizes etc..\n";
 
         }
       }
@@ -639,7 +639,7 @@ namespace mu2e {
           (layer0.getStraw(ns).getMidPoint() - layer1.getStraw(ns).getMidPoint()).mag();
 
         if (_verbosityLevel>2) {
-          cout << __func__ << " Checking spacig"
+          cout << __func__ << " Checking spacing"
                << " for layer " << layer0.id() << " straw " << layer0.getStraw(ns).id()
                << " and for layer " << layer1.id() << " straw " << layer1.getStraw(ns).id()  << endl;
         }
@@ -670,7 +670,7 @@ namespace mu2e {
           (layer0.getStraw(i0).getMidPoint() - layer1.getStraw(i1).getMidPoint()).mag();
 
         if (_verbosityLevel>2) {
-          cout << __func__ << " Checking spacig"
+          cout << __func__ << " Checking spacing"
                << " for layer " << layer0.id() << " straw " << layer0.getStraw(i0).id()
                << " and for layer " << layer1.id() << " straw " << layer1.getStraw(i1).id()  << endl;
         }

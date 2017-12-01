@@ -2,6 +2,18 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_4_0
 
+9)	dnbrow01 01 Dec 2017
+	Fix some issues related to z-placement in the new "version 5"
+	Tracker.  Makes G4 and TTracker agree about positions of straws.
+	modified:   Mu2eG4/src/ConstructTTrackerDetail5.cc
+
+	Missed one place where StrawSD checks for TTracker version,
+	and throws if not =5.
+	modified:   Mu2eG4/src/StrawSD.cc
+
+	Just my compulsive need to fix spelling...
+	modified:   GeometryService/src/TTrackerMaker.cc
+
 8)      dnbrow01 29 Nov 2017
 	Apparently, about 25% of the time, I can't add the number 4000	
 	correctly... this fixes some overlaps
