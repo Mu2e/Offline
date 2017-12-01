@@ -275,7 +275,7 @@ namespace mu2e {
           ", straw.MidPoint "   << straw.getMidPoint() <<
           //          ", panel.boxOffset " << panel.boxOffset() <<
           ", plane.origin "    << plane.origin() <<
-          ", panel.rotation " << panel.rotation()/M_PI*180. <<
+          ", panel.boxRzAngle " << panel.boxRzAngle()/M_PI*180. <<
           ", plane.rotation "  << plane.rotation() <<
           endl;
 

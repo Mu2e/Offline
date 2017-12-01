@@ -498,8 +498,8 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
          << " preparing panel: "
          << " panelCenterPhi "
          << panelCenterPhi/M_PI*180.
-         << " panel center from the maker "
-         << panel.rotation()/M_PI*180.
+         << " panel.boxRzAngle "
+         << panel.boxRzAngle()/M_PI*180.
          << endl;
   }
 

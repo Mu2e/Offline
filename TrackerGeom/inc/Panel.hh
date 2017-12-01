@@ -83,7 +83,7 @@ namespace mu2e {
 
     // double         boxRxAngle()     const { return _boxRxAngle;     }
     // double         boxRyAngle()     const { return _boxRyAngle;     }
-    double         rotation()     const { return _rotation;     }
+    double         boxRzAngle()     const { return _boxRzAngle;     }
     // const CLHEP::Hep3Vector&    boxOffset()      const { return _boxOffset;      }
 
     std::vector<CLHEP::Hep3Vector> const& getBasePosition() const{
@@ -159,7 +159,7 @@ namespace mu2e {
     //
     // double _boxRxAngle;
     // double _boxRyAngle;
-    double _rotation; // is it really used? needed?
+    double _boxRzAngle; // is it really used? needed?
     // CLHEP::Hep3Vector _boxOffset;
 
     // Position (in tracker coordinates) of the midpoint, and direction

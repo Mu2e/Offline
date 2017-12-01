@@ -84,7 +84,7 @@ namespace mu2e {
         size_t nStrawsPerPanel = panel.nLayers()  * layer.nStraws();
         size_t nStrawsPerPlane = plane.nPanels() * nStrawsPerPanel;
 
-        double cang = panel.rotation()/M_PI*180.;
+        double cang = panel.boxRzAngle()/M_PI*180.;
         double dang = plane.rotation()/M_PI*180.;
         // double sroz = (panel.boxOffset() - plane.origin()).z();
 
@@ -712,7 +712,7 @@ namespace mu2e {
       }
     }
 
-    panel._rotation = panelRotation( panel.id().getPanel(),plane.id() ); //  is it really used? needed?
+    panel._boxRzAngle = panelRotation( panel.id().getPanel(),plane.id() ); //  is it really used? needed?
 
     // make EBkey
 
