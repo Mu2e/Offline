@@ -63,7 +63,7 @@ namespace mu2e {
                << setw(17) << std::bitset<16>(lsid.strawId2())
                << " " 
                << setw(10) << std::showbase << std::hex << lsid.strawId2()
-               << " " << std::dec << std::noshowbase << lsid;
+               << " " << std::dec << std::noshowbase << lsid << endl;
         } else {
           cout << endl;
         }
@@ -591,6 +591,20 @@ namespace mu2e {
 
     for ( int ipnl=0; ipnl<_panelsPerPlane; ++ipnl ){
       makePanel ( PanelId(planeId,ipnl), plane );
+      if (_verbosityLevel>2) {
+        size_t istr = -1;
+        Panel& panel = plane._panels.back();
+        cout << __func__ << " straws in panel " << setw(10) << panel.id() << endl;
+        for (const auto istr_p : panel._straws2_p) {
+          StrawId2 const & lsid =  (*istr_p).id2();
+          cout << setw(3) << ++istr
+               << setw(6) << lsid.strawId2()
+               << setw(17) << std::bitset<16>(lsid.strawId2())
+               << " " 
+               << setw(10) << std::showbase << std::hex << lsid.strawId2()
+               << " " << std::dec << std::noshowbase << lsid << endl;
+        }
+      }
     }
 
 //std::cout << "<-<-<- makePlane\n";
@@ -758,9 +772,12 @@ namespace mu2e {
     // Get additional bookkeeping info.
     deque<Straw>& allStraws = _tt->_allStraws;
 
-    // array type containers of straws and pointers
+    // array type containers of straws and pointers, ttracker ones
     array<Straw,TTracker::_nttstraws>& allStraws2  = _tt->_allStraws2;
     array<Straw const*,TTracker::_maxRedirect>& allStraws2_p  = _tt->_allStraws2_p;
+    // panel ones
+    array<Straw const*, StrawId2::_nstraws>& panelStraws2_p = panel._straws2_p;
+
     // straws per panel
     constexpr int spp = StrawId2::_nstraws;
 
@@ -875,7 +892,7 @@ namespace mu2e {
                << " " 
                << setw(6) << std::showbase << std::hex << lsid.strawId2()
                << setw(10) << osid.str()
-               << " " << std::dec << std::noshowbase << lsid;
+               << " " << std::dec << std::noshowbase << lsid << endl;
         }
 
         allStraws2.at(strawCountReCounted) = 
@@ -889,6 +906,7 @@ namespace mu2e {
                  );
 
         allStraws2_p.at(lsid.strawId2()) = &allStraws2.at(strawCountReCounted);
+        panelStraws2_p.at(listraw) = &allStraws2.at(strawCountReCounted);
 
         layer._straws.push_back(&allStraws.back());
         layer._indices.push_back(index);
