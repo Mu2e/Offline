@@ -86,12 +86,20 @@ namespace mu2e {
       }
 
       friend std::ostream& operator<<(std::ostream& ost,
-	  const StrawId2& s ){
-	ost << "StrawId with Plane " << std::setw(2) << s.plane() << " "
-            << "Panel " << std::setw(1) << s.panel() << " "
-            << "Straw " << std::setw(2) << s.straw() << std::endl;
+                                      const StrawId2& s ){
+	ost << std::setw(2) << s.plane() << "_"
+            << std::setw(1) << s.panel() << "_"
+            << std::setw(2) << s.straw();
         return ost;
       }
+
+      // friend std::ostream& operator<<(std::ostream& ost,
+      //                                 const StrawId2& s ){
+      //   ost << "StrawId with Plane " << std::setw(2) << s.plane() << " "
+      //       << "Panel " << std::setw(1) << s.panel() << " "
+      //       << "Straw " << std::setw(2) << s.straw() << std::endl;
+      //   return ost;
+      // }
 
     private:
       // fill fields
