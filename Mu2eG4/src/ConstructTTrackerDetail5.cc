@@ -647,7 +647,8 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
   // ***************************************
   // Now put in the straw panel already prepared
   // ***************************************
-  CLHEP::Hep3Vector spOffset(0., 0.,  std::abs(pnlPosition.z()) - _ttracker.panelOffset()  );
+
+  CLHEP::Hep3Vector spOffset(0., 0., 0. ); 
   G4VPhysicalVolume* physVol = new G4PVPlacement( 0, spOffset,
 						  strawPanel.logical,
 						  strawPanel.name,
@@ -723,6 +724,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   //                          phiMax);
 
   TubsParams panEnvParams = _ttracker.getPanelEnvelopeParams();
+  double zCorrection = panEnvParams.zHalfLength() - _ttracker.panelOffset();
 
   if (_verbosityLevel>0) {
     cout << __func__
@@ -779,7 +781,6 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
     zPanel += panel.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
   }
   zPanel /= panel.nLayers();
-
   // Is panel 0 on the upstream(+1) or downstream(-z) side of the plane.
   double side = (zPanel-plane.origin().z()) > 0. ? -1. : 1.;
 
@@ -844,11 +845,10 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
 
       // Mid point of the straw in Mu2e coordinates.
       CLHEP::Hep3Vector const& pos(straw.getMidPoint());
-
       // Mid point of the straw, within the panel envelope.
       double r = (CLHEP::Hep3Vector( pos.x(), pos.y(), 0.)).mag();
       CLHEP::Hep3Vector mid = r*unit;
-      mid.setZ(side*(pos.z() - zPanel));
+      mid.setZ(side*(pos.z() - zPanel - zCorrection));
 
       int copyNo=straw.index().asInt();
       bool edgeVisible(true);

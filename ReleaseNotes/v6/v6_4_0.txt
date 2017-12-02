@@ -2,6 +2,23 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_4_0
 
+10)    	   dnbrow01  01 Dec 2017
+      	   Improved managing garage position by consolidating all
+ 	   needed parameters into single file.  Thanks to Rob for the
+	   suggestion.
+	   deleted:    Mu2eG4/geom/ExtShieldDownstream_garage.txt
+	   deleted:    Mu2eG4/geom/STM_garage.txt
+	   deleted:    Mu2eG4/geom/calorimeter_CsI_garage.txt
+	   deleted:    Mu2eG4/geom/crv_counters_garage.txt
+	   modified:   Mu2eG4/geom/geom_common_garage.txt
+	   deleted:    Mu2eG4/geom/mu2eHall_garage.txt
+	   deleted:    Mu2eG4/geom/muonBeamStop_garage.txt
+	   deleted:    Mu2eG4/geom/ttracker_garage.txt
+
+      	   One last improvement to	version	5 of the tracker - right straw
+	   positions without overlaps.
+	   modified:   Mu2eG4/src/ConstructTTrackerDetail5.cc
+
 9)	dnbrow01 01 Dec 2017
 	Fix some issues related to z-placement in the new "version 5"
 	Tracker.  Makes G4 and TTracker agree about positions of straws.
