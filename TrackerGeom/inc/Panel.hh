@@ -143,6 +143,8 @@ namespace mu2e {
     PanelId _id;
     std::vector<Layer> _layers;
 
+    std::array<Straw const*, StrawId2::_nstraws> _straws2_p;
+
     // Vertices of enclosing polygon.
     std::vector<CLHEP::Hep3Vector> corners;
 
