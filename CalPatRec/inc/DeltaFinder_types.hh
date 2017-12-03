@@ -14,11 +14,11 @@ namespace fhicl {
 
 // #include "CalPatRec/inc/LsqSums2.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/StrawHitPosition.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 
 namespace mu2e {
-  class StrawHitPosition;
   class Panel;
   class SimParticle;
 //-----------------------------------------------------------------------------

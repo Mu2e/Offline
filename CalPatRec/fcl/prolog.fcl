@@ -409,7 +409,7 @@ CalPatRec : { @table::CalPatRec
 	    minCaloDt                     : -75.                  # +/-70 to provide 100% efficiency for delta tagging + +/- 5 for taking into account the mean drift time of a delta within a station
 	    maxCaloDt                     :  75.
 	    particleMeanPitchAngle        : 0.67                  # mean pitch for CE
-	    strawDigiMCCollectionTag      : makeSH                # input coll
+	    strawDigiMCCollectionTag      : makeSD                # input coll
 	    minHitTime                    : 450.                  # ns
 	    minNFacesWithHits             : 2                     # 
 	    minNSeeds                     : 2                     #
@@ -431,7 +431,7 @@ CalPatRec : { @table::CalPatRec
 	    debugLevel                    : 0
 	    diagLevel                     : 0
 	    diagPlugin : { tool_type : "DeltaFinderDiag" 
-		stepPointMcCollTag        : makeSH
+		stepPointMcCollTag        : makeSD
 		debugLevel                : 0
 		mcDiag                    : false
 		mcTruth                   : 0 
@@ -448,6 +448,18 @@ CalPatRec : { @table::CalPatRec
 		testOrder                 : 0                     #
 		mcUtils                   : { tool_type : "CalPatRecMcUtils" }
 	    }
+	}
+
+	DeltaFinderAna : { module_type:DeltaFinderAna
+	    strawHitCollectionTag         : makeSH
+	    strawHitFlagCollectionTag     : DeltaFinder
+	    strawDigiMCCollectionTag      : makeSD
+	    debugLevel                    : 0
+	    diagLevel                     : 0
+	    printElectrons                : 1
+	    printElectronsMinNHits        : 0
+	    printElectronsMaxFReco        : 1.1                   # if print, then print all
+	    maxElectronHitEnergy          : 0.0035                # for comparisons
 	}
     }
 }

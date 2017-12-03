@@ -825,6 +825,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     _data = (Data_t*) Data;
 
+    if (Mode != 2) return -1; // beginRun not handled yet
+
     int en = _data->event->event();
     if (_mcDiag) {
       if (_eventNumber != en) {
@@ -980,6 +982,7 @@ namespace mu2e {
 
 	    if (_printElectronsHits > 0) {
 	      int nh = mc->fListOfHits.size();
+	      if (nh > 0) printHitData(NULL,-1);
 	      for (int ih=0; ih<nh; ih++) {
 		printHitData(mc->fListOfHits[ih],ih);
 	      }
@@ -999,21 +1002,22 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::printHitData(const HitData_t* Hd, int Index) {
 
-    if (Index <= 0) {
-      printf("-------------------------------------------------------------------------");
-      printf("-----------------------------------------------------------\n");
-      printf("       SHID  Plane  Panel  Layer   Straw     Time          dt       eDep ");
-      printf("           PDG         ID         p   DeltaID radOK edepOK \n");
-      printf("-------------------------------------------------------------------------");
-      printf("-----------------------------------------------------------\n");
-      if (Index < 0) return;
+    if (Index < 0) {
+      printf("#-------------------------------------------------------------------------------------------------");
+      printf("-------------------------------------------------------------------------------\n");
+      printf("#      SHID  Plane  Panel  Layer   Straw     Time          dt         eDep       wdist     wres   ");
+      printf("     PDG           ID       p      X        Y         Z   DeltaID radOK edepOK \n");
+      printf("#-------------------------------------------------------------------------------------------------");
+      printf("-------------------------------------------------------------------------------\n");
+      return;
     }
 
     const StrawHit* sh0 = &_data->shcol->at(0);
     const StrawHit* sh  = Hd->fHit;
     int loc             = sh-sh0;
 
-    const StrawHitFlag* shf = &_data->shfcol->at(loc);
+    const StrawHitPosition* shp = Hd->fPos;
+    const StrawHitFlag*     shf = &_data->shfcol->at(loc);
    
     int radselOK        = (! shf->hasAnyProperty(StrawHitFlag::radsel));
     int edepOK          = (! shf->hasAnyProperty(StrawHitFlag::energysel));
@@ -1034,7 +1038,7 @@ namespace mu2e {
     printf("%5i ",loc);
     printf("%5i" ,sh->strawIndex().asInt());
 	
-    printf("  %5i  %5i   %5i   %5i   %8.3f   %8.3f   %9.6f   %10i   %10i  %8.3f %5i %5i %5i\n",
+    printf("  %5i  %5i   %5i   %5i   %8.3f   %8.3f   %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
 	   straw->id().getPlane(),
 	   straw->id().getPanel(),
 	   straw->id().getLayer(),
@@ -1042,9 +1046,14 @@ namespace mu2e {
 	   sh->time(),
 	   sh->dt(),
 	   sh->energyDep(),
+	   shp->wireDist(),
+	   shp->posRes(StrawHitPosition::wire),
 	   pdg_id,
 	   sim_id,
 	   mc_mom,
+	   shp->pos().x(),
+	   shp->pos().y(),
+	   shp->pos().z(),
 	   Hd->fDeltaIndex,
 	   radselOK,
 	   edepOK);
@@ -1060,9 +1069,10 @@ namespace mu2e {
       for (int face=0; face<kNFaces; face++) {
 	for (int ip=0; ip<kNPanelsPerFace; ip++) {
 	  PanelZ_t* pz = &_data->oTracker[is][face][ip];
-	  printf("        --------------- station: %2i face: %2i panel: %2i nhits[0]:%3li nhits[1]:%3li \n",
+	  printf("#        --------------- station: %2i face: %2i panel: %2i nhits[0]:%3li nhits[1]:%3li \n",
 		 is,face,ip, pz->fHitData[0].size(),pz->fHitData[1].size());
-
+	  int nh2 = pz->fHitData[0].size()+pz->fHitData[1].size();
+	  if (nh2 > 0) printHitData(NULL,-1);
 	  for (int il=0; il<2; il++) {
 	    int nh = pz->fHitData[il].size();
 	    for (int ih=0; ih<nh; ih++) {
@@ -1081,11 +1091,11 @@ namespace mu2e {
   void DeltaFinderDiag::printStrawHit(const StrawHit* Sh, int Index) {
 
     if (Index <= 0) {
-      printf("--------------------------------------------------------------------------");
+      printf("#-------------------------------------------------------------------------");
       printf("-----------------------------------------------------\n");
-      printf(" S:F  I   SHID  Plane   Panel  Layer   Straw     Time          dt       eDep ");
+      printf("#S:F  I   SHID  Plane   Panel  Layer   Straw     Time          dt       eDep ");
       printf("           PDG         ID         p   radselOK edepOK\n");
-      printf("--------------------------------------------------------------------------");
+      printf("#-------------------------------------------------------------------------");
       printf("-----------------------------------------------------\n");
       if (Index < 0) return;
     }

@@ -4,8 +4,6 @@
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 
-#include "alaha/fcl/prolog.fcl"
-
 BEGIN_PROLOG
 #  meanBackground                      : -1        # fixed at 1
 bgHitFiles                          : ["/pnfs/mu2e/tape/phy-sim/sim/mu2e/cd3-detmix-cut/v566b/art/00/90/sim.mu2e.cd3-detmix-cut.v566b.000004_00000341.art"]
@@ -51,7 +49,7 @@ physics: {
 
 	@table::Tracking.producers
 
-	PrefetchData: { @table::PrefetchData 
+	PrefetchData: { @table::CalPatRec.producers.PrefetchData 
 	    strawHitPositionCollectionTag : MakeStrawHitPositions 
 	    strawHitFlagCollectionTag     : FlagStrawHits
 	}
@@ -87,7 +85,7 @@ physics: {
 	    }
 	}
 
-	SeedFinderAna: { @table::SeedFinderAna
+	DeltaFinderAna: { @table::CalPatRec.producers.DeltaFinderAna
 	    debugLevel                    : 0
 	    strawHitFlagCollectionTag     : DeltaFinder
 	}
@@ -98,11 +96,11 @@ physics: {
     analyzers : {
     }
 
-    p1: [ @sequence::Tracking.PrepareHits, DeltaFinder, SeedFinderAna ]
+    p1: [ @sequence::Tracking.PrepareHits, DeltaFinder, DeltaFinderAna ]
     p2: [ @sequence::Tracking.PrepareHits, DeltaFinder ]
     p3: [ DeltaFinder ]
     p4: [ PrefetchData, DeltaFinder ]
-    p5: [ PrefetchData, DeltaFinder, SeedFinderAna ]
+    p5: [ PrefetchData, DeltaFinder, DeltaFinderAna ]
 
     trigger_paths : [ p5 ]
     out           : []
