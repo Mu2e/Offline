@@ -87,9 +87,9 @@ namespace mu2e {
 
       friend std::ostream& operator<<(std::ostream& ost,
                                       const StrawId2& s ){
-	ost << std::setw(2) << s.plane() << "_"
-            << std::setw(1) << s.panel() << "_"
-            << std::setw(2) << s.straw();
+	ost << s.plane() << "_"
+            << s.panel() << "_"
+            << s.straw();
         return ost;
       }
 

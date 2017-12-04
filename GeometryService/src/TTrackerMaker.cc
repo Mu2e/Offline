@@ -59,11 +59,13 @@ namespace mu2e {
              << setw(20) << istr_p;
         if (istr_p != nullptr ) {
           StrawId2 const & lsid =  (*istr_p).id2();
+          std::ostringstream nsid("",std::ios_base::ate); // to write at the end
+          nsid << lsid; 
           cout << setw(6) << lsid.strawId2()
                << setw(17) << std::bitset<16>(lsid.strawId2())
                << " " 
                << setw(10) << std::showbase << std::hex << lsid.strawId2()
-               << " " << std::dec << std::noshowbase << lsid << endl;
+               << " " << std::dec << std::noshowbase << setw(7) << nsid.str() << endl;
         } else {
           cout << endl;
         }
@@ -597,13 +599,15 @@ namespace mu2e {
         cout << __func__ << " straws in panel " << setw(10) << panel.id() << endl;
         for (const auto istr_p : panel._straws2_p) {
           StrawId2 const & lsid =  (*istr_p).id2();
+          std::ostringstream nsid("",std::ios_base::ate); // to write at the end
+          nsid << lsid;
           cout << setw(3) << ++istr
                << setw(6) << lsid.strawId2()
                << setw(17) << std::bitset<16>(lsid.strawId2())
                << " " 
-               << setw(10) << std::showbase << std::hex << lsid.strawId2()
-               << " " << std::dec << std::noshowbase << lsid << endl;
-        }
+               << setw(6) << std::showbase << std::hex << lsid.strawId2()
+               << " " << std::dec << std::noshowbase << setw(7) << nsid.str() << endl;
+          }
       }
     }
 
@@ -879,6 +883,8 @@ namespace mu2e {
         if (_verbosityLevel>3) {
           std::ostringstream osid("",std::ios_base::ate); // to write at the end
           osid << allStraws.back().id();
+          std::ostringstream nsid("",std::ios_base::ate); // to write at the end
+          nsid << lsid;
 
           cout << __func__ << " index, strCnt, strCntRc, iplane, ipnl, listraw, _sid, osid, StrawId2:"
                << setw(6) << index
@@ -892,7 +898,7 @@ namespace mu2e {
                << " " 
                << setw(6) << std::showbase << std::hex << lsid.strawId2()
                << setw(10) << osid.str()
-               << " " << std::dec << std::noshowbase << lsid << endl;
+               << " " << std::dec << std::noshowbase << setw(7) << nsid.str() << endl;
         }
 
         allStraws2.at(strawCountReCounted) = 
