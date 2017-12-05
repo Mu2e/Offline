@@ -116,15 +116,6 @@ namespace mu2e {
       }
 
 
-
-
-     //-----------------------------------------------------------------------------
-     //int Disk::idxFromPosition(double x, double y) const 
-     // {
-     //      unsigned int mapIdx = crystalMap_->indexFromXY(x/cellSize_,y/cellSize_);
-     //      if (mapIdx > mapToCrystal_.size() ) return -1;
-     //	   return mapToCrystal_.at(mapIdx);
-     //}
      
       //-----------------------------------------------------------------------------
       int Disk::idxFromPosition(double x, double y) const 

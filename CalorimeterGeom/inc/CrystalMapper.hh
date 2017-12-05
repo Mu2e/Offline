@@ -30,7 +30,6 @@ namespace mu2e {
            virtual int                indexFromRowCol(int nRow, int nCol)          const = 0;
 
 	   virtual std::vector<int>   neighbors(int thisIndex, unsigned int level) const = 0;
-
     };
 
 }
