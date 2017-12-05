@@ -73,7 +73,7 @@ namespace mu2e {
     SaveResults_t        _results[6];
 
     int                  fSeedIndex;
-    int                  fCandidateIndex;
+    int                  fCandIndex;   // index of the hit candiate 
     int                  fLastIndex;
     int                  fUseDefaultDfDz;
     double               fHitChi2Max;
@@ -181,12 +181,12 @@ namespace mu2e {
     void   calculateDfDz(double phi0, double phi1, double z0,  double z1, double &dfdz);
 
     //projects the straw hit error along the radial direction of the circle-helix
-    double calculateWeight     (CLHEP::Hep3Vector& HitPos, 
-				CLHEP::Hep3Vector& StrawDir, 
-				CLHEP::Hep3Vector& HelCenter, 
-				double             Radius,
-                                int                Print, 
-				const char*        Banner);
+    double calculateWeight     (const CLHEP::Hep3Vector& HitPos, 
+				const CLHEP::Hep3Vector& StrawDir, 
+				const CLHEP::Hep3Vector& HelCenter, 
+				double                   Radius,
+                                int                      Print, 
+				const char*              Banner);
 
     double calculatePhiWeight  (const CLHEP::Hep3Vector& HitPos   , 
 				const CLHEP::Hep3Vector& StrawDir , 
