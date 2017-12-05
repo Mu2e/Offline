@@ -107,19 +107,7 @@ namespace mu2e
 
   bool
   TrkCaloHit::isPhysical(double maxchi) const {
-    Hep3Vector trjPos(0);
-    hitPosition(trjPos);
-    double     CsI_refractiveIndex(1.8);//FIXME! that should come from the geometryhandle
-    double     extErr  = temperature();
-    double     totErr  = sqrt(_hitErr*_hitErr + extErr*extErr);
-    double     caloClX = _caloCluster.cog3Vector().x();
-    double     caloClY = _caloCluster.cog3Vector().y();
-    double     residx2 = (trjPos.x() - caloClX)*(trjPos.x() - caloClX); 
-    double     residy2 = (trjPos.y() - caloClY)*(trjPos.y() - caloClY); 
-    double     resid   = sqrt( residx2 + residy2)/(CLHEP::c_light/CsI_refractiveIndex)/totErr;
-    // This function should check that the time is within the value expected for a signal in
-    // this crystal, please check the following, it seems to be missing the crystal size FIXME!
-    return resid < maxchi;
+    return true;//FIXME! 
   }
 
   void TrkCaloHit::print(std::ostream& o) const {
