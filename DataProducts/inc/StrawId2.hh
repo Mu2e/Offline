@@ -22,6 +22,8 @@ namespace mu2e {
     private:
       //  data member is a short
       uint16_t _sid;
+
+    // public: is there a reason not to make them public?
       // define the bit field shifts and masks
       constexpr static uint16_t _strawmsk = 0x7F; // mask for straw field
       constexpr static uint16_t _panelmsk = 0x380; // mask for panel field
@@ -30,7 +32,7 @@ namespace mu2e {
       constexpr static uint16_t _planesft = 10; // shift for plane field
       constexpr static uint16_t _nstraws = 96; // number of straws per panel
       constexpr static uint16_t _nlayers = 2; // number of layers per panel ; do we need it, see below
-      constexpr static uint16_t _npanels = 6; // number of panels per station
+      constexpr static uint16_t _npanels = 6; // number of panels per station; ??? ttracker.panelsPerPlane
       constexpr static uint16_t _nplanes = 36; // number of planes
       constexpr static uint16_t _invalid = 0xFFFF; // invalid identifier
 
