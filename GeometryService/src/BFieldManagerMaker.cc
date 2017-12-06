@@ -42,12 +42,16 @@
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
 
+// CSV reader
+#include "BFieldGeom/inc/csv.h"
+
 using namespace std;
 
 namespace mu2e {
 
     namespace {
 
+        typedef std::vector<std::shared_ptr<const BFMap>> SequenceType;
         // To control printouts from helper functions in this file
         int bfieldVerbosityLevel = 0;
 
@@ -83,6 +87,18 @@ namespace mu2e {
         : _resolveFullPath(), _bfmgr(new BFieldManager()) {
         bfieldVerbosityLevel = config.verbosityLevel();
 
+        // break potential mapTypeList into two vectors... kind of ugly right now.
+        // Maybe config should just have two mapTypeLists for inner and outer.
+        // Eventually, each map file should just be paired with a mapType.
+        if (!config.mapTypeList().empty()) {
+            _innerTypes = std::vector<BFMapType>(
+                config.mapTypeList().begin(),
+                config.mapTypeList().begin() + config.innerMapFiles().size());
+            _outerTypes =
+                std::vector<BFMapType>(config.mapTypeList().begin() + config.innerMapFiles().size(),
+                                       config.mapTypeList().end());
+        }
+
         if (config.mapType() == BFMapType::GMC) {
             // Add the field maps.
             for (unsigned i = 0; i < config.gmcDimensions().size(); ++i) {
@@ -97,36 +113,43 @@ namespace mu2e {
             loadG4BL(&_bfmgr->outerMaps_, config.outerMapFiles(), config.scaleFactor(),
                      config.interpolationStyle());
 
+        } else if (config.mapType() == BFMapType::PARAM) {
+            loadParam(&_bfmgr->innerMaps_, config.innerMapFiles(), _innerTypes,
+                      config.interpolationStyle(), config.scaleFactor());
+            loadParam(&_bfmgr->outerMaps_, config.outerMapFiles(), _outerTypes,
+                      config.interpolationStyle(), config.scaleFactor());
+
         } else {
             throw cet::exception("GEOM")
                 << "Unknown format of file with magnetic field maps: " << config.mapType() << "\n";
         }
 
-        _bfmgr->cm_.setMaps(_bfmgr->innerMaps_, _bfmgr->outerMaps_);
+        _bfmgr->cm_.setMaps((const SequenceType&)_bfmgr->innerMaps_,
+                            (const SequenceType&)_bfmgr->outerMaps_);
 
         // The field manager is fully initialized.
         // Some extra stuff that is convenient to do here:
         if (config.flipBFieldMaps()) {
             for (BFieldManager::MapContainerType::iterator i = _bfmgr->getInnerMaps().begin();
                  i != _bfmgr->getInnerMaps().end(); ++i) {
-                flipMap(&*i);
+                flipMap(dynamic_cast<BFGridMap&>(**i));
             }
 
             for (BFieldManager::MapContainerType::iterator i = _bfmgr->getOuterMaps().begin();
                  i != _bfmgr->getOuterMaps().end(); ++i) {
-                flipMap(&*i);
+                flipMap(dynamic_cast<BFGridMap&>(**i));
             }
         }
 
         if (config.writeBinaries()) {
             for (BFieldManager::MapContainerType::const_iterator i = _bfmgr->getInnerMaps().begin();
                  i != _bfmgr->getInnerMaps().end(); ++i) {
-                writeG4BLBinary(*i, i->getKey() + ".bin");
+                writeG4BLBinary(dynamic_cast<const BFGridMap&>(**i), (*i)->getKey() + ".bin");
             }
 
             for (BFieldManager::MapContainerType::const_iterator i = _bfmgr->getOuterMaps().begin();
                  i != _bfmgr->getOuterMaps().end(); ++i) {
-                writeG4BLBinary(*i, i->getKey() + ".bin");
+                writeG4BLBinary(dynamic_cast<const BFGridMap&>(**i), (*i)->getKey() + ".bin");
             }
         }
 
@@ -190,10 +213,10 @@ namespace mu2e {
                              CLHEP::Hep3Vector& offset,
                              bool& extendYFound) {
             // The offset parameter is not present in files earlier than Mau7.
-            // The value set here is the correct value for all G4BL format files earlier than Mau7.
-            // For Mau7 and later, the file will contain a structured comment that contains the
-            // correct value.  If the structured comment is present in the file, let it define
-            // value of the offset;  if not, use the default given here.
+            // The value set here is the correct value for all G4BL format files earlier than
+            // Mau7. For Mau7 and later, the file will contain a structured comment that
+            // contains the correct value.  If the structured comment is present in the file,
+            // let it define value of the offset;  if not, use the default given here.
             static const CLHEP::Hep3Vector offsetDefault(-3904.0, 0.0, 7929.0);
 
             // Open the input file.
@@ -303,7 +326,34 @@ namespace mu2e {
 
     }  // end anonymous namespace
 
+    // Loads a sequence of Parametric files
+    void BFieldManagerMaker::loadParam(BFieldManager::MapContainerType* mapContainer,
+                                       const BFieldConfig::FileSequenceType& files,
+                                       std::vector<BFMapType> mapTypeList,
+                                       BFInterpolationStyle interpStyle,
+                                       double scaleFactor) {
+        // typedef BFieldConfig::FileSequenceType::const_iterator Iter;
+
+        // for (Iter i = files.begin(); i != files.end(); ++i) {
+        for (unsigned i = 0; i < files.size(); ++i) {
+            if (bfieldVerbosityLevel > 0) {
+                cout << "Reading " << files[i] << endl;
+            }
+            const std::string mapkey = basename(files[i]);
+            BFMapType indivMapType(BFMapType::PARAM);
+            if (!mapTypeList.empty())
+                indivMapType = mapTypeList[i];
+            if (indivMapType == BFMapType::PARAM) {
+                loadParam(mapContainer, mapkey, _resolveFullPath(files[i]), scaleFactor);
+            } else {
+                loadG4BL(mapContainer, mapkey, _resolveFullPath(files[i]), scaleFactor,
+                         interpStyle);
+            }
+        }
+    }
+
     // Loads a sequence of G4BL files
+
     void BFieldManagerMaker::loadG4BL(BFieldManager::MapContainerType* mapContainer,
                                       const BFieldConfig::FileSequenceType& files,
                                       double scaleFactor,
@@ -314,9 +364,24 @@ namespace mu2e {
             if (bfieldVerbosityLevel > 0) {
                 cout << "Reading " << *i << endl;
             }
+
             const std::string mapkey = basename(*i);
+
             loadG4BL(mapContainer, mapkey, _resolveFullPath(*i), scaleFactor, interpStyle);
         }
+    }
+
+    // Parse the config file to learn about one magnetic field map.
+    // Create an empty map and call the code to load the map from the file.
+    void BFieldManagerMaker::loadParam(BFieldManager::MapContainerType* mapContainer,
+                                       const std::string& key,
+                                       const std::string& resolvedFileName,
+                                       double scaleFactor) {
+        // Create an empty map.
+        auto dsmap = _bfmgr->addBFParamMap(mapContainer, key, -800, 800, -800, 800, 3500, 14000,
+                                           BFMapType::PARAM, scaleFactor);
+        // Fill the map from the disk file.
+        readParamFile(resolvedFileName, *dsmap);
     }
 
     // Parse the config file to learn about one magnetic field map.
@@ -336,15 +401,15 @@ namespace mu2e {
 
         // Create an empty map.
         BFInterpolationStyle meco(BFInterpolationStyle::meco);
-        BFMap& dsmap =
-            _bfmgr->addBFMap(mapContainer, key, dim[0], X0[0], dX[0], dim[1], X0[1], dX[1], dim[2],
-                             X0[2], dX[2], BFMapType::G4BL, scaleFactor, interpStyle);
-        dsmap._flipy = extendYFound;
+        auto dsmap =
+            _bfmgr->addBFGridMap(mapContainer, key, dim[0], X0[0], dX[0], dim[1], X0[1], dX[1],
+                                 dim[2], X0[2], dX[2], BFMapType::G4BL, scaleFactor, interpStyle);
+        dsmap->_flipy = extendYFound;
         // Fill the map from the disk file.
         if (resolvedFileName.find(".header") != string::npos) {
-            readG4BLBinary(resolvedFileName, dsmap);
+            readG4BLBinary(resolvedFileName, *dsmap);
         } else {
-            readG4BLMap(resolvedFileName, dsmap, G4BL_offset);
+            readG4BLMap(resolvedFileName, *dsmap, G4BL_offset);
         }
     }
 
@@ -470,7 +535,7 @@ namespace mu2e {
         }
 
         // Create an empty map.
-        BFMap& bfmap = _bfmgr->addBFMap(
+        auto bfmap = _bfmgr->addBFGridMap(
             &_bfmgr->outerMaps_, mapKey, nx, mmX.min(), (mmX.max() - mmX.min()) / (nx - 1), ny,
             mmY.min(), (mmY.max() - mmY.min()) / (ny - 1), nz, mmZ.min(),
             (mmZ.max() - mmZ.min()) / (nz - 1), BFMapType::GMC, scaleFactor, interpStyle);
@@ -481,13 +546,13 @@ namespace mu2e {
 
             // Find indices corresponding to this grid point.
             // By construction the indices must be in bounds ( we set the limits above ).
-            std::size_t ix = bfmap.iX(r.x);
-            std::size_t iy = bfmap.iY(r.y);
-            std::size_t iz = bfmap.iZ(r.z);
+            std::size_t ix = bfmap->iX(r.x);
+            std::size_t iy = bfmap->iY(r.y);
+            std::size_t iz = bfmap->iZ(r.z);
 
             // Store the information into the 3d arrays.
-            bfmap._field.set(ix, iy, iz, CLHEP::Hep3Vector(r.bx, r.by, r.bz));
-            bfmap._isDefined.set(ix, iy, iz, true);
+            bfmap->_field.set(ix, iy, iz, CLHEP::Hep3Vector(r.bx, r.by, r.bz));
+            bfmap->_isDefined.set(ix, iy, iz, true);
         }
 
         return;
@@ -497,7 +562,7 @@ namespace mu2e {
     // Read one magnetic field map file in G4BL (TD) format.
     //
     void BFieldManagerMaker::readG4BLMap(const string& filename,
-                                         BFMap& bfmap,
+                                         BFGridMap& bfmap,
                                          CLHEP::Hep3Vector G4BL_offset) {
         // Open the input file.
         ifstream fin(filename.c_str());
@@ -541,7 +606,7 @@ namespace mu2e {
             CLHEP::Hep3Vector pos = CLHEP::Hep3Vector(x[0], x[1], x[2]) - G4BL_offset;
 
             // find out the closest grid point
-            BFMap::GridPoint ipos(bfmap.point2grid(pos));
+            BFGridMap::GridPoint ipos(bfmap.point2grid(pos));
 
             // check the range
             if (!bfmap.isValid(ipos)) {
@@ -584,7 +649,7 @@ namespace mu2e {
         return;
     }
 
-    void BFieldManagerMaker::readG4BLBinary(const string& headerFilename, BFMap& bf) {
+    void BFieldManagerMaker::readG4BLBinary(const string& headerFilename, BFGridMap& bf) {
         // Form the name of the binary file from the name of the header file.
         string::size_type i = headerFilename.find(".header");
         if (i == string::npos) {
@@ -664,7 +729,8 @@ namespace mu2e {
                 << "BFieldManagerMaker:readG4BLBinary endian mismatch" << binFilename
                 << "  returned value: " << std::hex << marker << "  expected value: " << deadbeef
                 << std::dec << "\n"
-                << "Suggestion: change from binary format field maps to the text or gzipped text "
+                << "Suggestion: change from binary format field maps to the text or gzipped "
+                   "text "
                    "format.\n"
                 << "\n";
         }
@@ -706,7 +772,76 @@ namespace mu2e {
 
     }  // end BFieldManagerMaker::readG4BLBinary
 
-    void BFieldManagerMaker::writeG4BLBinary(const BFMap& bf, const std::string& outputfile) {
+    //
+    // Read one magnetic field parameter csv.
+    //
+    void BFieldManagerMaker::readParamFile(const string& filename, BFParamMap& bfmap) {
+        // Open the input file.
+        ifstream fin(filename.c_str());
+        if (!fin.is_open())
+            throw cet::exception("GEOM") << "Could not open file " << filename << "\n";
+
+        // Read in csv, tokenize the parameter name, start filling
+        // the private class members with the correct values.
+        // This assumes the csv is ordered correctly, so I should have some assertions
+        // that raise exceptions when ordering is incorrect.  Read-time is not critical,
+        // as this is only read from file once, then stored in memory.
+        io::CSVReader<2> in(filename);
+        in.set_header("param", "val");
+        string param;
+        double val;
+        int ns;
+        int ms;
+        double Reff;
+        vector<vector<double>> As;
+        vector<vector<double>> Bs;
+        vector<double> Ds;
+        // Grab the first 3 vals
+        while (in.read_row(param, val)) {
+            vector<string> tparams = split(param, '_');
+            if (tparams[0].compare("R") == 0) {
+                Reff = val;
+            } else if (tparams[0].compare("ns") == 0) {
+                ns = val;
+            } else if (tparams[0].compare("ms") == 0) {
+                ms = val;
+            }
+            if (!(ns == -1 || ms == -1 || Reff == -1))
+                break;
+        }
+        // Ready the 2D arrays
+        for (int i = 0; i < ns; ++i) {
+            As.push_back(vector<double>());
+            Bs.push_back(vector<double>());
+        }
+        // Fill the 2D params
+        while (in.read_row(param, val)) {
+            vector<string> tparams = split(param, '_');
+            if (tparams[0].compare("A") == 0) {
+                As[stoi(tparams[1])].push_back(val);
+            } else if (tparams[0].compare("B") == 0) {
+                Bs[stoi(tparams[1])].push_back(val);
+            } else if (tparams[0].compare("D") == 0) {
+                Ds.push_back(val);
+            }
+        }
+
+        bfmap._ns = ns;
+        bfmap._ms = ms;
+        bfmap._Reff = Reff;
+        bfmap._As = As;
+        bfmap._Bs = Bs;
+        bfmap._Ds = Ds;
+
+        bfmap.calcConstants();
+
+        cout << Bs[2][69] << endl;
+        cout << Reff << ns << ms << endl;
+
+        return;
+    }  // namespace mu2e
+
+    void BFieldManagerMaker::writeG4BLBinary(const BFGridMap& bf, const std::string& outputfile) {
         // Number of points in the big array.
         int nPoints = bf.nx() * bf.ny() * bf.nz();
 
@@ -790,15 +925,17 @@ namespace mu2e {
         return nrecords;
     }
 
-    void BFieldManagerMaker::flipMap(BFMap* bf) {
-        std::cout << "Flipping B field vector in map " << bf->getKey() << std::endl;
-        for (int ix = 0; ix < bf->nx(); ++ix) {
-            for (int iy = 0; iy < bf->ny(); ++iy) {
-                for (int iz = 0; iz < bf->nz(); ++iz) {
-                    bf->_field.set(ix, iy, iz, -bf->_field.get(ix, iy, iz));
+    void BFieldManagerMaker::flipMap(BFGridMap& bf) {
+        std::cout << "Flipping B field vector in map " << bf.getKey() << std::endl;
+        for (int ix = 0; ix < bf.nx(); ++ix) {
+            for (int iy = 0; iy < bf.ny(); ++iy) {
+                for (int iz = 0; iz < bf.nz(); ++iz) {
+                    bf._field.set(ix, iy, iz, -bf._field.get(ix, iy, iz));
                 }
             }
         }
     }
+    vector<string>& split(const string& s, char delim, vector<string>& elems);
+    vector<string> split(const string& s, char delim);
 
 }  // end namespace mu2e

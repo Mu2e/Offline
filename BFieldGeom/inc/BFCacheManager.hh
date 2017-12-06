@@ -1,13 +1,15 @@
 // This class implements cache logic that works for overlapping maps.
 //
 // Andrei Gaponenko, 2012
+//
+// Modifed by Brian Pollack to use shared_ptrs to BFMaps for consistent use across classes.
 
 #ifndef BFCacheManager_hh
 #define BFCacheManager_hh
 
-#include <vector>
-#include <map>
 #include <cassert>
+#include <map>
+#include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -15,107 +17,105 @@
 
 namespace mu2e {
 
-  // There are two classes of magnetic field maps in Mu2e: "Inner" and "Outer" maps.
-  // No overlaps are allowed among any of the maps in the "Inner" set.
-  // The maps in the "Outer" set may overlap with the "Inner" maps, and among themselves.
-  // If a space point belongs to an "Inner" map, that map will be used to
-  // compute the field value.   If a point is outside of the "Inner" map set,
-  // then the "Outer" map list will be consulted in order, and the first map
-  // that contains the point will be used.
-  //
+    // There are two classes of magnetic field maps in Mu2e: "Inner" and "Outer" maps.
+    // No overlaps are allowed among any of the maps in the "Inner" set.
+    // The maps in the "Outer" set may overlap with the "Inner" maps, and among themselves.
+    // If a space point belongs to an "Inner" map, that map will be used to
+    // compute the field value.   If a point is outside of the "Inner" map set,
+    // then the "Outer" map list will be consulted in order, and the first map
+    // that contains the point will be used.
+    //
 
-  class BFCacheManager {
+    class BFCacheManager {
+        // typedef std::vector<const BFMap*> SequenceType;
+        typedef std::vector<std::shared_ptr<const BFMap>> SequenceType;
+        // typedef std::vector<std::shared_ptr<BFMap>> MapContainerType;
+        struct MapList : public SequenceType {
+            // return the first matching map or 0
+            std::shared_ptr<const BFMap> findMap(const CLHEP::Hep3Vector& x) const {
+                for (SequenceType::const_iterator i = begin(); i != end(); ++i) {
+                    if ((*i)->isValid(x)) {
+                        return *i;
+                    }
+                }
+                return 0;
+            }
+        };
 
-    typedef std::vector<const BFMap*> SequenceType;
-    struct MapList : public SequenceType {
-      // return the first matching map or 0
-      const BFMap *findMap(const CLHEP::Hep3Vector& x) const {
-        for(SequenceType::const_iterator i = begin(); i!=end(); ++i) {
-          if( (*i)->isValid(x)) {
-            return *i;
-          }
+        // An instance per (any) map, allows to optimize the lookup order of "inner" maps
+        struct CacheElement {
+            std::shared_ptr<const BFMap> myMap;  // the map this instance is attached to
+            // A list of "inner" maps optimized for the "my" map
+            // If "my" map is an inner map, it is not in the list.
+            MapList inner;
+
+            CacheElement(std::shared_ptr<const BFMap> my, const MapList& in)
+                : myMap(my), inner(in) {}
+        };
+
+        // Inner map lists optimized for the last used map
+        mutable const CacheElement* innerForLastInner;
+        mutable const CacheElement* innerForLastOuter;  // never null
+
+        // Outer maps in the user-specified order
+        MapList outer;
+
+        typedef std::map<std::shared_ptr<const BFMap>, CacheElement> CacheType;
+        CacheType innerCache;  // keys are all inner maps
+        CacheType outerCache;  // keys are outer maps and 0
+
+       public:
+        BFCacheManager();
+
+        void setMaps(const SequenceType& innerMaps, const SequenceType& outerMaps);
+
+        // Returns pointers to an appropriate field map, or 0.
+        std::shared_ptr<const BFMap> findMap(const CLHEP::Hep3Vector& x) const {
+            // First try to find if the point belong to any of the inner maps
+
+            if (innerForLastInner) {  // we were in an inner map last time
+
+                if (innerForLastInner->myMap->isValid(x)) {
+                    // Cache update not needed, we are still in the same inner map
+                    return innerForLastInner->myMap;
+                }
+
+                // The lookup order here is optimized
+                std::shared_ptr<const BFMap> newinner = innerForLastInner->inner.findMap(x);
+                if (newinner) {  // Update cache
+                    CacheType::const_iterator p = innerCache.find(newinner);
+                    assert(p != innerCache.end());
+                    innerForLastInner = &p->second;
+                    return newinner;
+                }
+            } else {  // We were not in an inner map last time
+
+                // innerForLastOuter is never null
+                std::shared_ptr<const BFMap> newinner = innerForLastOuter->inner.findMap(x);
+                if (newinner) {  // Update cache
+                    CacheType::const_iterator p = innerCache.find(newinner);
+                    assert(p != innerCache.end());
+                    innerForLastInner = &p->second;
+                    return newinner;
+                }
+            }
+
+            // The current point is not in any of the inner maps
+            innerForLastInner = 0;
+
+            // The lookup order of the outer maps is always the same
+            std::shared_ptr<const BFMap> newouter = outer.findMap(x);
+
+            // Keep the inner map lookup optimized
+            if (innerForLastOuter->myMap != newouter) {
+                CacheType::const_iterator p = outerCache.find(newouter);
+                assert(p != outerCache.end());
+                innerForLastOuter = &p->second;
+            }
+
+            return newouter;
         }
-        return 0;
-      }
     };
+}  // namespace mu2e
 
-    // An instance per (any) map, allows to optimize the lookup order of "inner" maps
-    struct CacheElement {
-      const BFMap *myMap; // the map this instance is attached to
-      // A list of "inner" maps optimized for the "my" map
-      // If "my" map is an inner map, it is not in the list.
-      MapList inner;
-
-      CacheElement(const BFMap *my, const MapList& in) : myMap(my), inner(in) {}
-    };
-
-    // Inner map lists optimized for the last used map
-    mutable const CacheElement *innerForLastInner;
-    mutable const CacheElement *innerForLastOuter; // never null
-
-    // Outer maps in the user-specified order
-    MapList outer;
-
-    typedef std::map<const BFMap*, CacheElement> CacheType;
-    CacheType innerCache; // keys are all inner maps
-    CacheType outerCache; // keys are outer maps and 0
-
-  public:
-
-    BFCacheManager();
-
-    void setMaps(const std::vector<BFMap>& innerMaps, const std::vector<BFMap>& outerMaps);
-
-    // Returns pointers to an appropriate field map, or 0.
-    const BFMap* findMap(const CLHEP::Hep3Vector& x) const {
-
-      // First try to find if the point belong to any of the inner maps
-
-      if(innerForLastInner) { // we were in an inner map last time
-
-        if(innerForLastInner->myMap->isValid(x)) {
-          // Cache update not needed, we are still in the same inner map
-          return innerForLastInner->myMap;
-        }
-
-        // The lookup order here is optimized
-        const BFMap *newinner = innerForLastInner->inner.findMap(x);
-        if(newinner) { // Update cache
-          CacheType::const_iterator p =  innerCache.find(newinner);
-          assert(p != innerCache.end());
-          innerForLastInner = &p->second;
-          return newinner;
-        }
-      }
-      else { // We were not in an inner map last time
-
-        // innerForLastOuter is never null
-        const BFMap *newinner = innerForLastOuter->inner.findMap(x);
-        if(newinner) { // Update cache
-          CacheType::const_iterator p =  innerCache.find(newinner);
-          assert(p != innerCache.end());
-          innerForLastInner = &p->second;
-          return newinner;
-        }
-      }
-
-      // The current point is not in any of the inner maps
-      innerForLastInner = 0;
-
-      // The lookup order of the outer maps is always the same
-      const BFMap *newouter = outer.findMap(x);
-
-      // Keep the inner map lookup optimized
-      if(innerForLastOuter->myMap != newouter) {
-        CacheType::const_iterator p =  outerCache.find(newouter);
-        assert(p != outerCache.end());
-        innerForLastOuter = &p->second;
-      }
-
-      return newouter;
-    }
-
-  };
-}
-
-#endif/*BFCacheManager_hh*/
+#endif /*BFCacheManager_hh*/

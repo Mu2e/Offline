@@ -83,32 +83,32 @@ namespace mu2e {
         MapContainerType outerMaps_;
 
         // Add an empty grid-like map to the list.  Used by BFieldManagerMaker.
-        BFMap& addBFGridMap(MapContainerType* whichMap,
-                            const std::string& key,
-                            int nx,
-                            double xmin,
-                            double dx,
-                            int ny,
-                            double ymin,
-                            double dy,
-                            int nz,
-                            double zmin,
-                            double dz,
-                            BFMapType::enum_type type,
-                            double scaleFactor,
-                            BFInterpolationStyle interpStyle);
+        std::shared_ptr<BFGridMap> addBFGridMap(MapContainerType* whichMap,
+                                                const std::string& key,
+                                                int nx,
+                                                double xmin,
+                                                double dx,
+                                                int ny,
+                                                double ymin,
+                                                double dy,
+                                                int nz,
+                                                double zmin,
+                                                double dz,
+                                                BFMapType::enum_type type,
+                                                double scaleFactor,
+                                                BFInterpolationStyle interpStyle);
 
         // Add an empty parametric map to the list.  Used by BFieldManagerMaker.
-        BFMap& addBFParamMap(MapContainerType* whichMap,
-                             const std::string& key,
-                             double xmin,
-                             double xmax,
-                             double ymin,
-                             double ymax,
-                             double zmin,
-                             double zmax,
-                             BFMapType::enum_type type,
-                             double scaleFactor);
+        std::shared_ptr<BFParamMap> addBFParamMap(MapContainerType* whichMap,
+                                                  const std::string& key,
+                                                  double xmin,
+                                                  double xmax,
+                                                  double ymin,
+                                                  double ymax,
+                                                  double zmin,
+                                                  double zmax,
+                                                  BFMapType::enum_type type,
+                                                  double scaleFactor);
 
         // Handles caching and overlap resolution logic
         BFCacheManager cm_;
