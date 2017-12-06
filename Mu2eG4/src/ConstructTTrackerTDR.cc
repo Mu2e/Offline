@@ -640,7 +640,25 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
       mid.setZ(side*(pos.z() - zPanel));
 
       int copyNo=straw.index().asInt();
+      // int copyNo=straw.index2().asUint16();
+
       bool edgeVisible(true);
+
+      if (_verbosityLevel>2) {
+        cout << __func__ << " placing straw "
+             << straw.id().getStraw()
+             << " id: "
+             << straw.id()
+             << " id2: "
+             << straw.id2()
+             << " index: "
+             << straw.index().asInt()
+             << " index2: "
+             << straw.index2().asUint16()
+             << " with copy number: "
+             << copyNo
+             << endl;
+      }
 
       // The enclosing volume for the straw is made of gas.  The walls and the wire will be placed inside.
       VolumeInfo strawVol =  nestTubs( straw.name("TTrackerStrawGas_"),
