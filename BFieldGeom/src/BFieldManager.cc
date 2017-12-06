@@ -24,7 +24,7 @@ namespace mu2e {
     // and looks up the field in that map.
     bool BFieldManager::getBFieldWithStatus(const CLHEP::Hep3Vector& point,
                                             CLHEP::Hep3Vector& result) const {
-        const BFMap* m = cm_.findMap(point);
+        auto m = cm_.findMap(point);
 
         if (m) {
             m->getBFieldWithStatus(point, result);
@@ -59,20 +59,20 @@ namespace mu2e {
     */
 
     // Create a new BFGridMap in the container of BFMaps.
-    BFMap& BFieldManager::addBFGridMap(MapContainerType* mapContainer,
-                                       const std::string& key,
-                                       int nx,
-                                       double xmin,
-                                       double dx,
-                                       int ny,
-                                       double ymin,
-                                       double dy,
-                                       int nz,
-                                       double zmin,
-                                       double dz,
-                                       BFMapType::enum_type type,
-                                       double scaleFactor,
-                                       BFInterpolationStyle interpStyle) {
+    std::shared_ptr<BFGridMap> BFieldManager::addBFGridMap(MapContainerType* mapContainer,
+                                                           const std::string& key,
+                                                           int nx,
+                                                           double xmin,
+                                                           double dx,
+                                                           int ny,
+                                                           double ymin,
+                                                           double dy,
+                                                           int nz,
+                                                           double zmin,
+                                                           double dz,
+                                                           BFMapType::enum_type type,
+                                                           double scaleFactor,
+                                                           BFInterpolationStyle interpStyle) {
         // If there already was another Map with the same key, then it is a hard error.
         if (!mapKeys_.insert(key).second) {
             throw cet::exception("GEOM")
@@ -81,23 +81,24 @@ namespace mu2e {
         }
 
         // Add an empty BFMap.
-        mapContainer->push_back(std::make_shared<BFGridMap>(
-            key, nx, xmin, dx, ny, ymin, dy, nz, zmin, dz, type, scaleFactor, interpStyle));
+        auto new_map = std::make_shared<BFGridMap>(key, nx, xmin, dx, ny, ymin, dy, nz, zmin, dz,
+                                                   type, scaleFactor, interpStyle);
+        mapContainer->push_back(new_map);
 
-        return *(mapContainer->back());
+        return new_map;
     }
 
     // Create a new BFGridMap in the container of BFMaps.
-    BFMap& BFieldManager::addBFParamMap(MapContainerType* mapContainer,
-                                        const std::string& key,
-                                        double xmin,
-                                        double xmax,
-                                        double ymin,
-                                        double ymax,
-                                        double zmin,
-                                        double zmax,
-                                        BFMapType::enum_type type,
-                                        double scaleFactor) {
+    std::shared_ptr<BFParamMap> BFieldManager::addBFParamMap(MapContainerType* mapContainer,
+                                                             const std::string& key,
+                                                             double xmin,
+                                                             double xmax,
+                                                             double ymin,
+                                                             double ymax,
+                                                             double zmin,
+                                                             double zmax,
+                                                             BFMapType::enum_type type,
+                                                             double scaleFactor) {
         // If there already was another Map with the same key, then it is a hard error.
         if (!mapKeys_.insert(key).second) {
             throw cet::exception("GEOM")
@@ -106,10 +107,11 @@ namespace mu2e {
         }
 
         // Add an empty BFMap.
-        mapContainer->push_back(std::make_shared<BFParamMap>(key, xmin, xmax, ymin, ymax, zmin,
-                                                             zmax, type, scaleFactor));
+        auto new_map = std::make_shared<BFParamMap>(key, xmin, xmax, ymin, ymax, zmin, zmax, type,
+                                                    scaleFactor);
+        mapContainer->push_back(new_map);
 
-        return *(mapContainer->back());
+        return new_map;
     }
 
     void BFieldManager::print(ostream& out) {

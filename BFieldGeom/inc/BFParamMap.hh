@@ -12,14 +12,20 @@
 // Bernstein.
 
 //#include <iosfwd>
-#include <ostream>
+#include <gsl/gsl_sf_bessel.h>
+#include <cmath>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 #include <string>
+#include <vector>
 #include "BFieldGeom/inc/BFInterpolationStyle.hh"
 #include "BFieldGeom/inc/BFMap.hh"
 #include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/Container3D.hh"
 #include "BFieldGeom/inc/fiteval_c2.h"
 #include "CLHEP/Vector/ThreeVector.h"
+#include "csv.h"
 
 namespace mu2e {
     class BFParamMap : public BFMap {
@@ -36,7 +42,7 @@ namespace mu2e {
                    BFMapType::enum_type atype,
                    double scale,
                    bool warnIfOutside = false)
-            : BFMap(filename, xmin, ymin, zmin, xmax, ymax, zmax, atype, scale, warnIfOutside){};
+            : BFMap(filename, xmin, xmax, ymin, ymax, zmin, zmax, atype, scale, warnIfOutside){};
         //_fitFunc = new FitFunctionMaker2(
         //    "/mu2e/app/users/bpollack/BTrk/BTrk_working/Offline/BFieldGeom/test/"
         //    "Mau10_800mm_long.csv");
@@ -51,12 +57,22 @@ namespace mu2e {
         virtual void print(std::ostream& os) const;
 
        private:
-        FitFunctionMaker2* _fitFunc;
+        // objects used to store the fit parameters
+        int _ns;
+        int _ms;
+        double _Reff;
+        vector<vector<double> > _As;
+        vector<vector<double> > _Bs;
+        vector<double> _Ds;
+        vector<vector<double> > _kms;
+        mutable vector<vector<double> > _iv;
+        mutable vector<vector<double> > _ivp;
 
-        // Functions used internally and by the code that populates the maps.
+        // pre calculate additional constants needed for eval
+        void calcConstants();
 
-        // method to store the neighbors
-        bool fitFunction(const CLHEP::Hep3Vector&, CLHEP::Hep3Vector&) const;
+        // evaluate the fit for a given point.
+        bool evalFit(const CLHEP::Hep3Vector&, CLHEP::Hep3Vector&) const;
     };  // namespace mu2e
 
 }  // end namespace mu2e

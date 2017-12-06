@@ -91,7 +91,7 @@ fi
 
 setup -B heppdt   v3_04_01f -q${MU2E_UPS_QUALIFIERS}
 setup -B xerces_c v3_1_4a   -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_02_03  -q${MU2E_UPS_QUALIFIERS} # local copy
+setup -B BTrk   v1_02_03p  -q${MU2E_UPS_QUALIFIERS} # local copy
 echo "MU2E_UPS_QUALIFIERS:    " $MU2E_UPS_QUALIFIERS
 # setup -B BTrk   v1_02_02  -q${MU2E_UPS_QUALIFIERS} # stable copy
 

@@ -21,7 +21,6 @@
 #include "BFieldGeom/inc/BFMap.hh"
 #include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/Container3D.hh"
-#include "BFieldGeom/inc/fiteval_c2.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
@@ -52,10 +51,10 @@ namespace mu2e {
                   bool warnIfOutside = false)
             : BFMap(filename,
                     xmin,
-                    ymin,
-                    zmin,
                     xmin + (nx - 1) * dx,
+                    ymin,
                     ymin + (ny - 1) * dy,
+                    zmin,
                     zmin + (nz - 1) * dz,
                     atype,
                     scale,
