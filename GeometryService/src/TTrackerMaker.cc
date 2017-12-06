@@ -858,17 +858,6 @@ namespace mu2e {
 
         _tt->_strawExists[index.asInt()] = plane.exists();
 
-        allStraws.push_back( Straw( StrawId( layId, listraw),
-                                    index,
-                                    offset,
-                                    &_tt->_strawDetails.at(iman*2+ilay%2),
-                                    iman*2+ilay%2,
-                                    unit
-                                    )
-                             );
-
-
-
         StrawId2 lsid(iplane, ipnl, listraw);
         // in the new tracker model the straws are placed in the
         // panels, not layers, so we have to reshuffle them here
@@ -878,7 +867,20 @@ namespace mu2e {
         int npp = _strawConstrCount/spp;
         // current straw in the panel is listraw
         // we use int in case we "overcount" and rely on at() to tell us that
+        // counter used to place the straws in an order 0..95, not 0,2..93,95
         int strawCountReCounted = npp*spp+listraw;
+        StrawIndex2 index2(strawCountReCounted);
+
+        allStraws.push_back( Straw( StrawId( layId, listraw),
+                                    lsid, // this is a new field, new constructor
+                                    index,
+                                    index2,
+                                    offset,
+                                    &_tt->_strawDetails.at(iman*2+ilay%2),
+                                    iman*2+ilay%2,
+                                    unit
+                                    )
+                             );
 
         if (_verbosityLevel>3) {
           std::ostringstream osid("",std::ios_base::ate); // to write at the end
@@ -886,10 +888,11 @@ namespace mu2e {
           std::ostringstream nsid("",std::ios_base::ate); // to write at the end
           nsid << lsid;
 
-          cout << __func__ << " index, strCnt, strCntRc, iplane, ipnl, listraw, _sid, osid, StrawId2:"
+          cout << __func__ << " index, strCnt, strCntRc, npp, iplane, ipnl, listraw, _sid, osid, StrawId2:"
                << setw(6) << index
                << setw(6) << _strawConstrCount
                << setw(6) << strawCountReCounted
+               << setw(6) << npp
                << setw(3) << iplane
                << setw(2) << ipnl
                << setw(3) << listraw
@@ -905,6 +908,7 @@ namespace mu2e {
           Straw( StrawId( layId, listraw), 
                  lsid,
                  index,
+                 index2,
                  offset,
                  &_tt->_strawDetails.at(iman*2+ilay%2),
                  iman*2+ilay%2,
