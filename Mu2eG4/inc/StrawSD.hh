@@ -40,6 +40,10 @@ namespace mu2e {
     int _nStrawsPerPanel;
     int _TrackerVersion;
 
+    uint16_t _npanels;
+    uint16_t _panelsft;
+    uint16_t _planesft;
+
     SupportModel _supportModel;
     int _verbosityLevel;
 

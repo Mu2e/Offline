@@ -75,10 +75,15 @@ namespace mu2e {
       const Panel& panel = plane.getPanel(0);
       const Layer&  layer  = panel.getLayer(0);
 
-      _nStrawsPerPanel = panel.nLayers()  * layer.nStraws();
+      _nStrawsPerPanel = panel.nLayers()  * layer.nStraws(); // fixme: use StrawId2
       _nStrawsPerPlane = plane.nPanels() * _nStrawsPerPanel;
 
       _TrackerVersion = config.getInt("TTrackerVersion",3);
+
+      _npanels  = TTracker::_npanels;
+      _panelsft = TTracker::_panelsft;
+      _planesft = TTracker::_planesft;
+
       _verbosityLevel = max(verboseLevel,config.getInt("ttracker.verbosityLevel",0)); // Geant4 SD verboseLevel
       _supportModel   = ttracker->getSupportModel();
 
@@ -193,6 +198,49 @@ namespace mu2e {
       } else {
         sdcn = touchableHandle->GetCopyNumber(0) +
           _nStrawsPerPanel*(touchableHandle->GetCopyNumber(1));
+
+        // sdcn calculated for the use with _allStraws2_p
+        // from panel copy number (0..215) and straw number
+        // can also use plane copy number;
+
+        // given how StrawId is calculated we need to extract the
+        // plane number and panel number in that plane (why does  strawid2 say station??? <---
+
+        // uint16_t sdcn = 1024*planeNumber + 128*panelNumber + strawNumber;
+
+        if (_verbosityLevel>3) {
+
+          GeomHandle<TTracker> ttracker;
+          // print out info based on the old StrawID etc... first
+          uint16_t panelNumber = touchableHandle->GetCopyNumber(1)%_npanels;
+          uint16_t planeNumber = touchableHandle->GetCopyNumber(1)/_npanels;
+          uint16_t panelNumberShifted = panelNumber << _panelsft;
+          uint16_t planeNumberShifted = planeNumber << _planesft;
+          uint16_t sdcn2 = planeNumberShifted + panelNumberShifted +
+            touchableHandle->GetCopyNumber(0);
+
+          // need the equivalent of:
+          // const Straw&  straw = ttracker->getStraw( StrawIndex(sdcn) );
+          cout << __func__ <<  " sdcn, sdcn2, panelNumber, panelNumberShifted, planeNumber, planeNumberShifted, sid2, osid : "
+               << setw(6) << sdcn
+               << setw(6) << sdcn2
+               << setw(6) << panelNumber
+               << setw(6) << panelNumberShifted
+               << setw(6) << planeNumber
+               << setw(6) << planeNumberShifted;
+          const Straw& straw = ttracker->getStraw( StrawIndex(sdcn) );
+          cout << setw(7) <<  straw.id2()
+               << setw(10) << straw.id()
+               << endl;
+
+          // print out info based on the new StrawID2 etc...
+          cout << __func__ << " sid2, osid : ";
+          const Straw& straw2 = ttracker->straw(StrawIndex2(sdcn2));
+          cout << setw(7) <<  straw2.id2()
+               << setw(10) << straw2.id()
+               << endl;
+        }
+
       }
 
     } else {
@@ -212,6 +260,7 @@ namespace mu2e {
         setw(6) << sdcn << endl;
 
       cout << __func__ << " sdcn " << sdcn << endl;
+      //      cout << __func__ << " sdcn2 " << sdcn2 << endl;
 
     }
 
