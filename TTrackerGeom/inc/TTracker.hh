@@ -17,7 +17,8 @@
 #include <array>
 #include <limits>
 
-#include "DataProducts/inc/StrawId2.hh"
+//#include "DataProducts/inc/StrawId2.hh"  included via Straw via Tracker (-> Straw)
+//#include "DataProducts/inc/StrawIndex2.hh"
 
 #include "TTrackerGeom/inc/Manifold.hh"
 #include "TTrackerGeom/inc/Support.hh"
@@ -47,7 +48,12 @@ namespace mu2e {
                                       StrawId2::_npanels *
                                       StrawId2::_nstraws;
 
+    constexpr static uint16_t _npanels = StrawId2:: _npanels;
+
     constexpr static int _maxRedirect = std::numeric_limits<uint16_t>::max();
+    constexpr static uint16_t _panelsft = StrawId2::_panelsft;
+    constexpr static uint16_t _planesft = StrawId2::_planesft;
+
 
     // =============== NewTracker Public Objects End   ==============
 
@@ -183,6 +189,26 @@ namespace mu2e {
     bool strawExists(StrawIndex const index) const {
       return _strawExists[index.asInt()];
     }
+
+    // =============== NewTracker Accessors Start ==============
+
+    Straw const& straw( StrawId2 const id) const{
+      return *(_allStraws2_p.at(id.strawId2()));
+    }
+
+    Straw const& straw( StrawIndex2 const i) const{
+      return *(_allStraws2_p.at(i.asUint16()));
+    }
+
+    Plane const& plane( int id ) const{
+      return _allPlanes2.at(id);
+    }
+
+    bool strawExists( StrawId2 const id) const{
+      return _allStraws2_p.at(id.strawId2()) != nullptr;
+    }
+
+    // =============== NewTracker Accessors End   ==============
 
 #ifndef __CINT__
 
