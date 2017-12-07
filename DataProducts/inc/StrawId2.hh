@@ -24,7 +24,6 @@ namespace mu2e {
       //  data member is a short
       uint16_t _sid;
 
-    // public: is there a reason not to make them public?
       // define the bit field shifts and masks
       constexpr static uint16_t _strawmsk = 0x7F; // mask for straw field
       constexpr static uint16_t _panelmsk = 0x380; // mask for panel field
@@ -43,7 +42,7 @@ namespace mu2e {
       static bool validPanel(uint16_t ipanel) { return ipanel < _npanels; }
       static bool validPlane(uint16_t iplane) { return iplane < _nplanes; }
 
-      StrawId2(std::string const& asstring);
+      explicit StrawId2(std::string const& asstring);
 
       StrawId2(): _sid(_invalid) {}
 
@@ -52,13 +51,20 @@ namespace mu2e {
 	  uint16_t panel,
 	  uint16_t straw);
 
+      // No automatic conversion of uint16_t to StrawId2.
+      explicit StrawId2(uint16_t sid):
+        _sid(sid){
+      }
+
       // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
-    // test validity
+      // test validity
       bool valid() const { return validStraw(straw()) &&
 	validPanel(panel()) && validPlane(plane()); }
 
-      uint16_t strawId2() const { return _sid; }
+      StrawId2 strawId2() const { return  static_cast<StrawId2>(_sid); }
+
+      uint16_t asUint16() const { return _sid;}
 
       uint16_t plane() const{
 	return (_sid & _planemsk) >> _planesft;
@@ -112,7 +118,7 @@ namespace mu2e {
 
   };
   inline std::ostream& operator<<(std::ostream& ost,
-      const StrawId2& s );
+                                  const StrawId2& s );
 
 }
 #endif /* TrackerGeom_StrawId2_hh */
