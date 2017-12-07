@@ -329,7 +329,7 @@ namespace mu2e {
 
           tpeak._tpeak = stime/(tpeak.NHits()+1.e-12);
 
-          if (tpeak.NHits() > _data.minNHits) {
+          if (tpeak.NHits() >= _data.minNHits) {
 	    TimePeakColl->push_back(tpeak);
 
 					//fill seed information

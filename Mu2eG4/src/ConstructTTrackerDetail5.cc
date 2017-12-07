@@ -427,7 +427,7 @@ mu2e::ConstructTTrackerDetail5::constructPlanes(){
 
     if ( plnDraw > -1 && ipln > plnDraw ) continue;
 
-    if (_verbosityLevel > 0 ) {
+    if (_verbosityLevel > 0 ) { 
       cout << "Debugging pln: " << ipln << " plnDraw: " << plnDraw << endl;
       cout << __func__ << " working on plane:   " << ipln << endl;
     }
@@ -435,15 +435,15 @@ mu2e::ConstructTTrackerDetail5::constructPlanes(){
     const Plane& plane = _ttracker.getPlane(ipln);
 
     if (!plane.exists()) continue;
-    if (_verbosityLevel > 0 ) {
+    if (_verbosityLevel > 0 ) { 
       cout << __func__ << " existing   plane:   " << ipln << endl;
     }
 
     // plane.origin() is in the detector coordinate system.
     // plnPosition - is in the coordinate system of the Tracker mother volume.
-    CLHEP::Hep3Vector plnPosition = plane.origin()+ _offset;
+    CLHEP::Hep3Vector plnPosition = plane.origin() + _offset;
 
-    if ( _verbosityLevel > 1 ){
+    if ( _verbosityLevel > 1 ){ 
       cout << "Debugging -plane.rotation(): " << -plane.rotation() << " " << endl;
       cout << "Debugging plane.origin():    " << plane.origin() << " " << endl;
       cout << "Debugging position in mother: " << plnPosition << endl;
@@ -539,7 +539,7 @@ mu2e::VolumeInfo
 mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane, 
 					     const int& iPanel, 
 					     VolumeInfo& thePlane, 
-					     VolumeInfo& strawPanel,
+					     VolumeInfo& strawPanel,	
 					     CLHEP::Hep3Vector& pnlPosition, 
 					     G4RotationMatrix* rot ){
 
@@ -627,13 +627,15 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
   // Now modify the position vector and rotation with the Alignment info
   // *********************************************************
 
+  int baseCopyNo = iPlane * _ttracker.getPlane(0).nPanels();
+
   VolumeInfo pnl0Info = nestTubs( panel.name("Panel"),
                                   panEnvParams,
                                   envelopeMaterial,
                                   rot,
                                   pnlPosition,
                                   thePlane.logical, // logical volume of plane
-                                  0,                     // copyNo
+                                  0,               // copyNo
                                   panelEnvelopeVisible,
                                   G4Colour::Magenta(),
                                   panelEnvelopeSolid,
@@ -646,12 +648,13 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
   // Now put in the straw panel already prepared
   // ***************************************
 
-  G4VPhysicalVolume* physVol = new G4PVPlacement( 0, G4ThreeVector(0,0,0),
+  CLHEP::Hep3Vector spOffset(0., 0., 0. ); 
+  G4VPhysicalVolume* physVol = new G4PVPlacement( 0, spOffset,
 						  strawPanel.logical,
 						  strawPanel.name,
 						  pnl0Info.logical,
 						  false,
-						  iPanel,
+						  baseCopyNo + iPanel,
 						  false );
   if ( _doSurfaceCheck ) {
     checkForOverlaps( physVol, _config, _verbosityLevel>0);
@@ -721,6 +724,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   //                          phiMax);
 
   TubsParams panEnvParams = _ttracker.getPanelEnvelopeParams();
+  double zCorrection = panEnvParams.zHalfLength() - _ttracker.panelOffset();
 
   if (_verbosityLevel>0) {
     cout << __func__
@@ -777,7 +781,6 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
     zPanel += panel.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
   }
   zPanel /= panel.nLayers();
-
   // Is panel 0 on the upstream(+1) or downstream(-z) side of the plane.
   double side = (zPanel-plane.origin().z()) > 0. ? -1. : 1.;
 
@@ -842,11 +845,10 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
 
       // Mid point of the straw in Mu2e coordinates.
       CLHEP::Hep3Vector const& pos(straw.getMidPoint());
-
       // Mid point of the straw, within the panel envelope.
       double r = (CLHEP::Hep3Vector( pos.x(), pos.y(), 0.)).mag();
       CLHEP::Hep3Vector mid = r*unit;
-      mid.setZ(side*(pos.z() - zPanel));
+      mid.setZ(side*(pos.z() - zPanel - zCorrection));
 
       int copyNo=straw.index().asInt();
       bool edgeVisible(true);

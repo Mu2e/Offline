@@ -38,6 +38,7 @@
 
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
@@ -154,6 +155,7 @@ namespace mu2e {
     produces<AlgorithmIDCollection>  ();
     produces<KalRepPtrCollection>    ();
     produces<TrkQualCollection>      ();
+    produces<KalSeedCollection>      ();
 
     _kalDiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet()));
     _dar     = new DoubletAmbigResolver (pset.get<fhicl::ParameterSet>("DoubletAmbigResolver"),0.,0,0);
@@ -241,6 +243,7 @@ namespace mu2e {
     int         tpr_flag[max_ntrk], cpr_flag[max_ntrk], ntpr(0), ncpr(0);
 
     art::Handle<mu2e::KalRepPtrCollection>    htpr, hcpr;
+    art::Handle<mu2e::KalSeedCollection>      hstpr, hscpr;
 
     mu2e::GeomHandle<mu2e::DetectorSystem>      ds;
     mu2e::GeomHandle<mu2e::VirtualDetector>     vdet;
@@ -248,15 +251,21 @@ namespace mu2e {
     unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection );
     unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection   );
     unique_ptr<TrkQualCollection>      tqcol    (new TrkQualCollection()   );
+    unique_ptr<KalSeedCollection>      kscol    (new KalSeedCollection()   );
 
     if (_debugLevel > 0) ObjectDumpUtils::printEventHeader(&AnEvent,"MergePatRec::produce");
 
     AnEvent.getByLabel(_trkPatRecModuleLabel,htpr);
     AnEvent.getByLabel(_calPatRecModuleLabel,hcpr);
     
+    AnEvent.getByLabel(_trkPatRecModuleLabel,hstpr);
+    AnEvent.getByLabel(_calPatRecModuleLabel,hscpr);
+    
     _data.event = &AnEvent;
     _data.list_of_kreps_tpr = NULL;
     _data.list_of_kreps_cpr = NULL;
+    _data.list_of_kseed_tpr = NULL;
+    _data.list_of_kseed_cpr = NULL;
 
     if (htpr.isValid()) { 
       _data.list_of_kreps_tpr = htpr.product();
@@ -268,6 +277,14 @@ namespace mu2e {
       ncpr                    = _data.list_of_kreps_cpr->size();
     }
 
+    if (hstpr.isValid()) { 
+      _data.list_of_kseed_tpr = hstpr.product();
+    }
+
+    if (hscpr.isValid()) {
+      _data.list_of_kseed_cpr = hscpr.product();
+    }
+
     for (int i=0; i<max_ntrk; i++) {
       tpr_flag[i] = 1;
       cpr_flag[i] = 1;
@@ -275,6 +292,7 @@ namespace mu2e {
 
     const art::Ptr<KalRep>    *tpr, *cpr;
     const KalRep              *krep_tpr, *krep_cpr;
+    const KalSeed             *tpr_kseed, *cpr_kseed;
     Hep3Vector                cpr_mom, tpr_mom;
     short                     best(-1),  mask;
     double                    best_MVAQual(-1);
@@ -287,6 +305,7 @@ namespace mu2e {
     TrkInfo                   tpr_trkinfo, cpr_trkinfo;
 
     for (int i1=0; i1<ntpr; i1++) {
+      tpr_kseed = &_data.list_of_kseed_tpr->at(i1);
       tpr       = &_data.list_of_kreps_tpr->at(i1);
       tpr_mom   = (*tpr)->momentum();
       //      tpr_chisq = (*tpr)->chisq();
@@ -302,6 +321,7 @@ namespace mu2e {
       tpr_qual    = tpr_trkinfo._trkqual;
 
       for (int i2=0; i2<ncpr; i2++) {
+	cpr_kseed = &_data.list_of_kseed_cpr->at(i2);
 	cpr       = &_data.list_of_kreps_cpr->at(i2);
 	krep_cpr  = cpr->get();
 
@@ -435,11 +455,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	    if (tpr_prob >= cpr_prob) {
 	      trackPtrs->push_back(*tpr);
+	      kscol    ->push_back(*tpr_kseed);
 	      best    = AlgorithmID::TrkPatRecBit;
 	      best_MVAQual = tpr_qual;
 	    }
 	    else {
 	      trackPtrs->push_back(*cpr);
+	      kscol    ->push_back(*cpr_kseed);
 	      best    = AlgorithmID::CalPatRecBit;
 	      best_MVAQual = cpr_qual;
 	    }
@@ -449,6 +471,7 @@ namespace mu2e {
 // only TrkPatRec track is "good", choose it
 //-----------------------------------------------------------------------------
 	    trackPtrs->push_back(*tpr);
+	    kscol    ->push_back(*tpr_kseed);
 	    best    = AlgorithmID::TrkPatRecBit; 
 	    best_MVAQual = tpr_qual;
 	  }
@@ -457,6 +480,7 @@ namespace mu2e {
 // only CalPatRec track is "good", choose it
 //-----------------------------------------------------------------------------
 	    trackPtrs->push_back(*cpr);
+	    kscol    ->push_back(*cpr_kseed);
 	    best    = AlgorithmID::CalPatRecBit; 
 	    best_MVAQual = cpr_qual;
 	  }
@@ -466,11 +490,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	    if (tpr_prob >= cpr_prob) {
 	      trackPtrs->push_back(*tpr);
+	      kscol    ->push_back(*tpr_kseed);
 	      best    = AlgorithmID::TrkPatRecBit; 
 	      best_MVAQual = tpr_qual;
 	    }
 	    else {
 	      trackPtrs->push_back(*cpr);
+	      kscol    ->push_back(*cpr_kseed);
 	      best    = AlgorithmID::CalPatRecBit; 
 	      best_MVAQual = cpr_qual;
 	    }
@@ -484,6 +510,7 @@ namespace mu2e {
 
       if (tpr_flag[i1] == 1) {
 	trackPtrs->push_back(*tpr);
+	kscol    ->push_back(*tpr_kseed);
 	best = AlgorithmID::TrkPatRecBit;
 	best_MVAQual = tpr_qual;
       }
@@ -504,8 +531,10 @@ namespace mu2e {
     for (int i=0; i<ncpr; i++) {
       if (cpr_flag[i] == 1) {
 	cpr = &_data.list_of_kreps_cpr->at(i);
+	cpr_kseed = &_data.list_of_kseed_cpr->at(i);
 
 	trackPtrs->push_back(*cpr);
+	kscol    ->push_back(*cpr_kseed);
 
 	best = AlgorithmID::CalPatRecBit;
 	mask = 1 << AlgorithmID::CalPatRecBit;
@@ -621,6 +650,7 @@ namespace mu2e {
     AnEvent.put(std::move(trackPtrs));
     AnEvent.put(std::move(algs     ));
     AnEvent.put(std::move(tqcol    ));
+    AnEvent.put(std::move(kscol    ));
 //-----------------------------------------------------------------------------
 // in the end of event processing fill diagnostic histograms
 //-----------------------------------------------------------------------------

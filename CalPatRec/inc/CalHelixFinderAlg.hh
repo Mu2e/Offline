@@ -73,7 +73,7 @@ namespace mu2e {
     SaveResults_t        _results[6];
 
     int                  fSeedIndex;
-    int                  fCandidateIndex;
+    int                  fCandIndex;   // index of the hit candiate 
     int                  fLastIndex;
     int                  fUseDefaultDfDz;
     double               fHitChi2Max;
@@ -178,49 +178,66 @@ namespace mu2e {
                                         // cached bfield accessor
     double bz() const;
 
-    void   calculateDfDz(double &phi0, double &phi1, double &z0,  double &z1, double &dfdz);
+    void   calculateDfDz(double phi0, double phi1, double z0,  double z1, double &dfdz);
 
     //projects the straw hit error along the radial direction of the circle-helix
-    double calculateWeight     (CLHEP::Hep3Vector& HitPos, 
-				CLHEP::Hep3Vector& StrawDir, 
-				CLHEP::Hep3Vector& HelCenter, 
-				double             Radius,
-                                int                Print, 
-				const char*        Banner);
+    double calculateWeight     (const CLHEP::Hep3Vector& HitPos, 
+				const CLHEP::Hep3Vector& StrawDir, 
+				const CLHEP::Hep3Vector& HelCenter, 
+				double                   Radius,
+                                int                      Print, 
+				const char*              Banner);
 
-    double calculatePhiWeight  (CLHEP::Hep3Vector HitPos, CLHEP::Hep3Vector StrawDir, CLHEP::Hep3Vector HelCenter, 
-				double Radius, int Print, const char*Banner=NULL);
+    double calculatePhiWeight  (const CLHEP::Hep3Vector& HitPos   , 
+				const CLHEP::Hep3Vector& StrawDir , 
+				const CLHEP::Hep3Vector& HelCenter, 
+				double                   Radius   , 
+				int                      Print    , 
+				const char*              Banner=NULL);
 
     //calculates the residual along the radial direction of the helix-circle
     double calculateRadialDist (const CLHEP::Hep3Vector& HitPos, 
 				const CLHEP::Hep3Vector& HelCenter, 
 				double                   Radius);
 
-    void   calculateTrackParameters(CLHEP::Hep3Vector& p0, double&radius,
-                                    double& phi0, double& tanLambda,
-                                    CLHEP::Hep3Vector p1, CLHEP::Hep3Vector p2,
-                                    CLHEP::Hep3Vector p3, CalHelixFinderData& mytrk,
-                                    bool cleanPattern=false);
+    void   calculateTrackParameters(const CLHEP::Hep3Vector& p1, 
+				    const CLHEP::Hep3Vector& p2,
+                                    const CLHEP::Hep3Vector& p3,
+				    CLHEP::Hep3Vector&       Center, 
+				    double&                  Radius,
+                                    double&                  Phi0, 
+				    double&                  TanLambda);
+
+				    // CalHelixFinderData&      mytrk,
+                                    // bool                     cleanPattern=false);
 
     static double deltaPhi   (double phi1, double phi2);
 
    // returns the index of the hit which provides the highest contribute to the chi2
-    void   doCleanUpWeightedCircleFit(::LsqSums4     &TrkSxy,
-                                       int            SeedIndex,
-                                       int            *IdVec,
-                                       CLHEP::Hep3Vector     &HelCenter,
-                                       double         &Radius,
-                                       double         *Weights,
-                                       int            &Iworst);
+    void   doCleanUpWeightedCircleFit(::LsqSums4&         TrkSxy,
+                                       int                SeedIndex,
+                                       int*               IdVec,
+                                       CLHEP::Hep3Vector& HelCenter,
+                                       double&            Radius,
+                                       double*            Weights,
+                                       int&               Iworst);
 
-    bool   doLinearFitPhiZ     (CalHelixFinderData& Helix, int SeedIndex, int *indexVec,
-				int UseInteligentWeight=0, int DoCleanUp=1);
+    bool   doLinearFitPhiZ     (CalHelixFinderData& Helix, 
+				int                 SeedIndex, 
+				int*                indexVec,
+				int                 UseInteligentWeight=0, 
+				int                 DoCleanUp =1);
 
    //perfoms the weighted circle fit, update the helix parameters (HelicCenter, Radius) and
     // fills the vector Weights which holds the calculated weights of the hits
-    void   doWeightedCircleFit (::LsqSums4 &TrkSxy, int SeedIndex,int *IdVec,
-                                CLHEP::Hep3Vector &HelCenter, double &Radius, double *Weights,
-                                int Print=0, const char* Banner=NULL);
+    void   doWeightedCircleFit (::LsqSums4&        TrkSxy, 
+				int                SeedIndex,
+				int*               IdVec,
+                                CLHEP::Hep3Vector& HelCenter, 
+				double&            Radius, 
+				double*            Weights,
+                                int                Print=0, 
+				const char*        Banner=NULL);
 
     void doPatternRecognition(CalHelixFinderData& mytrk);
   
@@ -253,6 +270,7 @@ namespace mu2e {
 // diagnostics
 //-----------------------------------------------------------------------------
     void   plotXY               (int ISet);
+
     void   plotZPhi             (int ISet);
     void   printInfo            (CalHelixFinderData& myhel);
     void   printXYZP            (const char* Title);
@@ -268,7 +286,7 @@ namespace mu2e {
     void   rescueHits           (CalHelixFinderData&  mytrk, int seedIndex       ,
 				 int *indexVec             , int UsePhiResiduals = 0);
 
-    void   resolve2PiAmbiguity  (CLHEP::Hep3Vector Center, double DfDz, double Phi0);
+    void   resolve2PiAmbiguity  (const CLHEP::Hep3Vector& Center, double DfDz, double Phi0);
 
     void   resetTrackParamters  ();
 //-----------------------------------------------------------------------------
@@ -278,13 +296,13 @@ namespace mu2e {
 					   CalHelixFinderData&         Helix, 
 					   int                         Index);
 
-    void   searchWorstHitWeightedCircleFit(int               SeedIndex,
-                                           int               *IdVec,
-                                           CLHEP::Hep3Vector &HelCenter,
-                                           double            &Radius,
-                                           double            *Weights,
-                                           int               &Iworst ,
-                                           double            &HitChi2Worst);
+    void   searchWorstHitWeightedCircleFit(int                SeedIndex,
+                                           int*               IdVec,
+                                           const CLHEP::Hep3Vector& HelCenter,
+                                           double&            Radius,
+                                           double*            Weights,
+                                           int&               Iworst ,
+                                           double&            HitChi2Worst);
 
   };
 }

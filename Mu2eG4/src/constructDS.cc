@@ -471,7 +471,8 @@ namespace mu2e {
 					      );
 
     if ( inGaragePosition ) {
-      CLHEP::Hep3Vector relPosFake(0.,0., 10000.);
+      double zOffGarage = _config.getDouble("garage.zOffset",14000.0);
+      CLHEP::Hep3Vector relPosFake(0.,0., zOffGarage);
       G4Material*  airMaterial = findMaterialOrThrow( _config.getString("hall.insideMaterialName","G4_AIR") );
 
       VolumeInfo dsShieldParent = nestPolycone( "garageFakeDS3Vacuum",

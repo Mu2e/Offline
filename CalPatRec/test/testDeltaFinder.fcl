@@ -4,8 +4,6 @@
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 
-#include "alaha/fcl/prolog.fcl"
-
 BEGIN_PROLOG
 #  meanBackground                      : -1        # fixed at 1
 bgHitFiles                          : ["/pnfs/mu2e/tape/phy-sim/sim/mu2e/cd3-detmix-cut/v566b/art/00/90/sim.mu2e.cd3-detmix-cut.v566b.000004_00000341.art"]
@@ -16,7 +14,7 @@ END_PROLOG
 
 services : {
     message               : @local::default_message
-    TFileService          : { fileName : "delta_finder_arpan.root" }
+    TFileService          : { fileName : "delta_delta_finder.root" }
     RandomNumberGenerator : { }
     #   Timing                : { }
     GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"      }
@@ -40,7 +38,7 @@ services : {
 
 services.scheduler.wantSummary     : true
 
-process_name : TestSeedFinder
+process_name : TestDeltaFinder
 
 source       : { 
     module_type : RootInput 

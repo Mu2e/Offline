@@ -33,7 +33,7 @@
 
 #include "CalPatRec/inc/DeltaFinder_types.hh"
 
-#include "CalPatRec/inc/LsqSums2.hh"
+// #include "CalPatRec/inc/LsqSums2.hh"
 #include "CalPatRec/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 
@@ -298,10 +298,12 @@ namespace mu2e {
       testdeOrderID();
       _testOrderPrinted = 1;
     }
+
+    if (_diagLevel != 0) _hmanager->debug(&_data,1);
   }
 
 //------------------------------------------------------------------------------
-// I'd love to use teh hit flags, however that is confusing:
+// I'd love to use the hit flags, however that is confusing:
 // - hits with very large deltaT get placed to teh middle of the wire and not flagged,
 // - however, some hits within the fiducial get flagged with the ::radsel flag...
 // use only "good" hits 
@@ -621,7 +623,7 @@ namespace mu2e {
     _bkgfcol = bkgfcol.get();
 
     const StrawHit* sh0(0);
-    if (_shcol->size() > 0) { sh0 = &_shcol->at(0);}
+    if (_shcol->size() > 0) sh0 = &_shcol->at(0);
 
     StrawHitFlag deltamask(StrawHitFlag::bkg);
 
@@ -652,7 +654,7 @@ namespace mu2e {
 // in the end of event processing fill diagnostic histograms
 //-----------------------------------------------------------------------------
     if (_diagLevel  > 0) _hmanager->fillHistograms(&_data);
-    if (_debugLevel > 0) _hmanager->debug(&_data);
+    if (_debugLevel > 0) _hmanager->debug(&_data,2);
   }
 
 //-----------------------------------------------------------------------------

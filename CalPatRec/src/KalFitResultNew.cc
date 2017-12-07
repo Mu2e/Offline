@@ -15,54 +15,55 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   KalFitResultNew::KalFitResultNew() {
-    _helixTraj   = NULL;
-    _tpart       = TrkParticle::e_minus;        // 11
-    _fdir        = TrkFitDirection::downstream; // = 0
-    _shcol       = 0;
-    _shpos       = 0;
-    _shfcol      = 0;
-    _krep        = 0;
-    _fit         = TrkErrCode::fail;
-    _nt0iter     = 0;
-    _nweediter   = 0;
-    _nunweediter = 0;
+    helixTraj   = NULL;
+    tpart       = TrkParticle::e_minus;        // 11
+    fdir        = TrkFitDirection::downstream; // = 0
+    shcol       = 0;
+    shpos       = 0;
+    shfcol      = 0;
+    krep        = 0;
+    fit         = TrkErrCode::fail;
+    nt0iter     = 0;
+    nweediter   = 0;
+    nunweediter = 0;
 
-    _hitIndices  = new vector<StrawHitIndex>;
+    hitIndices  = new vector<StrawHitIndex>;
 
     static unsigned icount(0);
 
-    while(++icount<10){
-      std::cout << "KalFitResultNew is DEPRECATED and this constructor should never be called.  " 
-		<< "This message will repeat " << 10-icount << " more times." << std::endl;
+    while (++icount < 10) {
+      std::cout << "Hi Pasha, KalFitResultNew is DEPRECATED, please work on it." 
+		<< " This message will repeat " << 10-icount << " more times."
+		<< " In each job. Cheers, Dave." << std::endl;
     }
   }
 
 //-----------------------------------------------------------------------------
   KalFitResultNew::~KalFitResultNew() {
-    if (_helixTraj) delete _helixTraj;
-    delete _hitIndices;
+    if (helixTraj) delete helixTraj;
+    delete hitIndices;
   }
 
 //-----------------------------------------------------------------------------
   void KalFitResultNew::deleteTrack() {
-    if(_krep != 0){
-      delete _krep;
-      _krep = NULL; 
+    if(krep != NULL) {
+      delete krep;
+      krep = NULL; 
     }
   } 
 
 //-----------------------------------------------------------------------------
   void KalFitResultNew::init() {
     deleteTrack();
-    _hitIndices->clear();
-    _missingHits.clear();
-    _doca.clear();
+    hitIndices->clear();
+    missingHits.clear();
+    //    doca.clear();
   } 
 
 //-----------------------------------------------------------------------------
   KalRep*  KalFitResultNew::stealTrack() { 
-    KalRep* retval = _krep; 
-    _krep          = 0; 
+    KalRep* retval = krep; 
+    krep           = 0; 
     return retval; 
   }
 

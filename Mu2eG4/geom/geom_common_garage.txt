@@ -1,150 +1,258 @@
-//
-// Top level geometry file first used in pass 2 of (stage 4 and after) of the CD3c simulation campagin.
+// Top level geometry file for Garage cosmics running
 //
 // Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
 
-string detector.name  = "g4geom_v00";
+// Start from recent baseline geometry
+#include "Mu2eG4/geom/geom_common_current.txt"
+
 // Special - for garage position!
 bool inGaragePosition   = true;
+double garage.zOffset   = 14000.0;  // for creating special garageFakeDS3Vacuum
+                                    // volume
+// End special
 
-bool hasHall            = true;
-bool hasTarget          = true;
-bool hasProtonAbsorber  = true;
-bool hasTSdA           = true;
-bool hasExternalShielding = true;
-bool hasDiskCalorimeter = true;
-bool hasBFieldManager   = true;
-bool hasBeamline        = true;
-bool hasVirtualDetector = true; // some components, e.g. ProtonAbsorber assume vd presence now;
-bool hasCosmicRayShield = true;
+//bool hasCosmicRayShield = false;  // It would be nice to be able to turn
+// CRV off like this, but that breaks things downstream - LOOK INTO THIS!
+// Turn off CRV below for now.
 bool hasSTM             = false;
-bool hasMBS             = true; // note the two subcomponents, see mbs section below;
-                                // no MBS implies no downstream hole in Cosmic Ray Passive Shield
-                                // Magnetic field may be affected as well
 
-#include "Mu2eG4/geom/g4_visOptions.txt"
-
-//-------------------------------------------
-// Mu2e geometry includes
-//-------------------------------------------
-
-// X-offset of the PS(+x) and DS(-x) from the Mu2e origin.
-// The origin of the detector coordinate system is on the DS axis at the specified z.
-double mu2e.solenoidOffset   =  3904.;   // mm
-// The following is for garage position ONLY and must be matched by 
-// tracker z0.  Note:  added 14000 to nominal position.
+// Offset the detector system
 double mu2e.detectorSystemZ0 = 24171.;   // mm  
 
-#include "Mu2eG4/geom/mu2eWorld.txt"
-// mu2eHall.txt should be used with protonBeamDump_v02.txt, below
-//#include "Mu2eG4/geom/mu2eHall.txt"
-// whereas mu2eHall_v02.txt should be used with protonBeamDump_v03.txt, below
-#include "Mu2eG4/geom/mu2eHall_garage.txt"
-
-// Solenoids
-#include "Mu2eG4/geom/DetectorSolenoid_v03.txt"
-#include "Mu2eG4/geom/DSShielding_v01.txt"
-#include "Mu2eG4/geom/ProductionSolenoid_v02.txt"
-#include "Mu2eG4/geom/psEnclosure_v01.txt"
-#include "Mu2eG4/geom/PSShield_v06.txt"
-//#include "Mu2eG4/geom/PSExternalShielding_v01.txt"
-#include "Mu2eG4/geom/TransportSolenoid_v03.txt"
-
-// External Shielding
-#include "Mu2eG4/geom/ExtShieldUpstream_v04.txt"
-// Special for garage position...
-#include "Mu2eG4/geom/ExtShieldDownstream_garage.txt"
-#include "Mu2eG4/geom/Saddle_v02.txt"
-#include "Mu2eG4/geom/Pipe_v03.txt"
-#include "Mu2eG4/geom/ElectronicRack_v01.txt"
-
-//#include "Mu2eG4/geom/stoppingTarget_TDR.txt" // 17 foil tapered muon stopping target used for the TDR simulations
-#include "Mu2eG4/geom/stoppingTarget_CD3C_34foils.txt" // 34 foil muon stopping target to be used for the CDC3 simulations
-
-#include "Mu2eG4/geom/TSdA_v01.txt"
-#include "Mu2eG4/geom/muonBeamStop_garage.txt"
-
-//#include "Mu2eG4/geom/STM_garage.txt" // (muon) stopping target monitor
-
-// Proton Absorber
-#include "Mu2eG4/geom/protonAbsorber_cylindrical_v02.txt"
-#include "Mu2eG4/geom/degrader_v01.txt"
-
-#include "Mu2eG4/geom/ProductionTargetInPS.txt"
-//#include "Mu2eG4/geom/protonBeamDump_v02.txt"
-#include "Mu2eG4/geom/protonBeamDump_v03.txt"
-#include "Mu2eG4/geom/extmon_fnal_v02.txt"
-
-#include "Mu2eG4/geom/ttracker_garage.txt"
-
-// Crystal calorimeter
-#include "Mu2eG4/geom/calorimeter_CsI_garage.txt"
-
-//CRV counters
-#include "Mu2eG4/geom/crv_counters_garage.txt"
-
-//-------------------------------------------
-// Magnetic field
-//-------------------------------------------
-
-// Form of DS field: 0 is full field;
-//                   1 is full upstream, const downstream;
-//                   2 is const throughout
-int detSolFieldForm = 0;
-vector<string> bfield.innerMaps = {
-  "BFieldMaps/GA05/DSMap.header",
-  "BFieldMaps/GA05/PSMap.header",
-  "BFieldMaps/GA05/TSuMap.header",
-  "BFieldMaps/GA05/TSdMap.header",
-  "BFieldMaps/Mau9/PStoDumpAreaMap.header",
-  "BFieldMaps/Mau9/ProtonDumpAreaMap.header",
-  "BFieldMaps/Mau9/DSExtension.header"
+// Turn off the pit ceiling - you can look into the pit in the garage posn.
+vector<string> bldg.prefix.list = { 
+  "building.beamline",
+  "building.beamline.block.wall.E",
+  "building.beamline.block.wall.S",
+  "building.beamline.block.wall.top",
+  "building.beamline.ceiling",
+  "building.beamline.ceiling.E",
+  "building.beamline.lower.south",
+  "building.beamline.NW",
+  "building.beamline.escape.door.header",
+  "building.beamline.foundation.upper",
+  "building.beamline.foundation.s01",
+  "building.beamline.foundation.s02",
+  "building.beamline.foundation.s03",
+  "building.beamline.foundation.s04",
+  "building.beamline.foundation.s05",
+  "building.beamline.foundation.s06",
+  "building.beamline.upper.E",
+  "building.beamline.upper.NW",
+  "building.beamline.upper.S",
+  "building.backfill.beamline",
+  "building.backfill.foundation.N",
+  "building.backfill.beamline.foundation.s01",
+  "building.backfill.beamline.foundation.s02",
+  "building.backfill.beamline.foundation.s03",
+  "building.backfill.beamline.foundation.s04",
+  "building.backfill.beamline.foundation.s05",
+  "building.backfill.beamline.foundation.s06",
+  "building.backfill.beamline.south",
+  "building.backfill.beamline.north",
+  "building.backfill.escape.inner.01",
+  "building.backfill.escape.inner.02",
+  "building.backfill.escape.inner.03",
+  "building.backfill.escape.stair.01",
+  "building.backfill.escape.stair.02",
+  "building.backfill.escape.stair.03",
+  "building.backfill.escape.stair.W01",
+  "building.backfill.escape.stair.W02",
+  "building.backfill.escape.stair.W03",
+  "building.backfill.escape.stair.W04",
+  "building.backfill.escape.stair.E01",
+  "building.backfill.escape.stair.E02",
+  "building.backfill.escape.stair.E03",
+  "building.backfill.escape.stair.E04",
+  "building.backfill.psArea.baselevel",
+  "building.backfill.psArea.Inter",
+  "building.backfill.psArea.Lower",
+  "building.backfill.psArea.RWallFootLevel",
+  "building.backfill.psArea.TopLayer",
+  "building.backfill.psHatch.E",
+  "building.backfill.psHatch.S",
+  "building.backfill.TSarea-W.1Lower",
+  "building.backfill.TSarea-W.1UpperNotchLower",
+  "building.backfill.TSarea-W.1UpperNotchUpper1",
+  "building.backfill.TSarea-W.1UpperNotchUpper2",
+  "building.backfill.TSarea-W.2",
+  "building.backfill.TSarea-W.2Upper",
+  "building.dsArea",
+  "building.dsArea.alcove1.ceiling",
+  "building.dsArea.alcove2.ceiling",
+  "building.dsArea.alcove3.ceiling",
+  "building.dsArea.alcove4.ceiling",
+  "building.dsArea.alcove5.ceiling",
+  "building.dsArea.downstreamCeiling",
+  "building.dsArea.downstreamCeiling.vslab1",
+  "building.dsArea.downstreamCeiling.vslab2",
+  "building.dsArea.downstreamCeiling.vslab3",
+  "building.dsArea.downstreamCeiling.vslab4",
+  "building.dsArea.downstreamCeiling.vslab5",
+  "building.dsArea.downstreamCeiling.vslab6",
+  "building.dsArea.downstreamUpstairs.floor",
+  "building.dsArea.elevator.ceiling",
+  "building.dsArea.elevator.upper",
+  "building.dsArea.elevator.interior",
+  "building.dsArea.elevator.interior.lower",
+  "building.dsArea.firstFloor.S",
+  "building.dsArea.trench.cover",
+  "building.dsArea.trench.floor",
+  "building.dsArea.upper",
+  "building.escape.ceiling.W",
+  "building.escape.ceiling.E",
+  "building.escape.hatch.N",
+  "building.escape.hatch.S",
+  "building.escape.hatch.lid",
+  "building.escape.stair.01",
+  "building.escape.stair.02",
+  "building.escape.stair.03",
+  "building.escape.stair.04",
+  "building.escape.stair.05",
+  "building.escape.stair.06",
+  "building.escape.stair.07",
+  "building.escape.stair.08",
+  "building.escape.stair.09",
+  "building.escape.stair.10",
+  "building.escape.stair.11",
+  "building.escape.stair.12",
+  "building.escape.stair.13",
+  "building.escape.stair.brick",
+  "building.escape.stair.foundation.01",
+  "building.escape.stair.foundation.02",
+  "building.escape.stair.foundation.03",
+  "building.escape.stair.foundation.04",
+  "building.escape.stair.wall.E01",
+  "building.escape.stair.wall.E02",
+  "building.escape.stair.wall.E03",
+  "building.escape.stair.wall.E04",
+  "building.escape.stair.wall.W01",
+  "building.escape.stair.wall.W02",
+  "building.escape.stair.wall.W03",
+  "building.escape.stair.wall.W04",
+  "building.escape.wall.E",
+  "building.extMon",
+  "building.extMon.bit.N",
+  "building.extMon.bit.S",
+  "building.extMon.ceiling",
+  "building.extMon.upper",
+  "building.exteriorWall.E",
+  "building.exteriorWall.N",
+  "building.exteriorWall.S",
+  "building.firstFloor.wall",
+  "building.firstFloor.wall.extension",
+  "building.floor.N",
+  "building.floor.Sd",
+  "building.floor.Su",
+  "building.floor.passage",
+  "building.floor.remote",
+  "building.foundation.N",
+  "building.foundation.Sd",
+  "building.foundation.Smid",
+  "building.foundation.Su",
+  "building.foundation.extMon",
+  "building.foundation.extMonPSarea.1",
+  "building.foundation.extMonPSarea.2",
+  "building.foundation.extMonPSarea.3",
+  "building.foundation.extMonPSarea.4",
+  "building.foundation.extMonPSarea.5",
+  "building.foundation.extMonPSarea.6",
+  "building.foundation.extMonPSarea.7",
+  "building.foundation.extMonPSarea.8",
+  "building.foundation.extMonPSarea.9",
+  "building.foundation.extMonPSarea.10",
+  "building.foundation.extMonPSarea.11",
+  "building.island.N",
+  "building.island.N.upper",
+  "building.island.S",
+  "building.island.S.upper",
+  "building.passage.E",
+  "building.passage.W",
+  "building.passage.ceiling",
+  "building.psArea",
+  "building.psArea.ceiling",
+  "building.psArea.ceiling.E",
+  "building.psArea.ceiling.N",
+  "building.psArea.ceiling.SW",
+  "building.psAreaCF1",
+  "building.psAreaCF2",
+  "building.psAreaCF3",
+  "building.psAreaCF4",
+  "building.psArea.hatch.block",
+  "building.psArea.hatch.lid",
+  "building.psArea.hatch.lip.N",
+  "building.psArea.hatch.lip.S",
+  "building.psArea.hatch.lower",
+  "building.psArea.hatch.upper",
+  "building.psArea.ShieldingBlock",
+  "building.psArea.upper.N",
+  "building.psArea.upper.S",
+  "building.psWall.upper",
+  "building.radiation.slab1",
+  "building.radiation.slab2",
+  "building.radiation.slab3",
+  "building.remote.handling",
+  "building.remote.handling.ceiling",
+  "building.remote.handling.ceiling.Sliver",
+  "building.remote.handling.ceiling.strip",
+  "building.remote.handling.hatch.block",
+  "building.remote.handling.Hatch.Lower",
+  "building.remote.handling.Hatch.Upper",
+  "building.remote.handling.Hatch.Lid",
+  "building.remote.handling.Interior.Beam",
+  "building.remote.handling.Interior.Wall.1",
+  "building.remote.handling.Interior.Wall.2",
+  "building.remote.handling.Interior.Wall.3",
+  "building.remote.handling.Interior.Wall.4",
+  "building.remote.handling.Interior.WallNotch.1",
+  "building.remote.handling.Interior.WallNotch.2",
+  "building.tsArea.W",
+  "building.tsArea.alcove.lowerRoof",
+  "building.tsArea.alcove.vertical.N",
+  "building.tsArea.alcove.vertical.S",
+  "building.tsArea.stairwell",
+  "building.tsArea.stairwell.ceiling",
+  "building.tsArea.trench.floor",
+  "building.tsArea.upper.W",
+  "building.tsArea.upper2.W",
+  "building.tsDsArea.firstFloorEdge.N",
+  "building.tsDsArea.wallinsert.N",
+  "building.W.TSareaCF1",
+  "building.W.TSareaCF1notch",
+  "building.W.TSareaCF2",
+  "building.W.TSareaCF2notch",
+  "building.W.TSareaCFbeam",
+  "building.N.retaining.Wall.aboveRH",
+  "building.N.retaining.Wall.W.extension",
+  "building.N.retaining.Wall.extension.foot.1",
+  "building.S.retaining.Wall",
+  "building.S.retaining.Wall.Foot"
 };
 
-// Value of the uniform magnetic field with the DS volume (only for
-// detSolFieldForm>0)
-double toyDS.bz            = 1.0;
+// Turn off downstream external shields
+int ExtShieldDownstream.numberOfBoxTypes = 0;
+double ExtShieldDownstream.detecHoleZ = 32007.0;
 
-// Gradient of field in DS2 volume. Applied only in the case
-// of detSolFieldForm=1 or detSolFieldForm=2.
-double toyDS.gradient      = 0.0; // Tesla/m
+// Put MBS in garage position
+double mbs.MBSCZ              = 29273.0;
 
-// This is recommended field map. See geom_mecofield.txt to use the meco field.
-string bfield.format  = "G4BL";
-
-// The other option is "meco"
-string bfield.interpolationStyle = trilinear;
-
-int  bfield.verbosityLevel =  0;
-bool bfield.writeG4BLBinaries     =  false;
-
-vector<string> bfield.outerMaps = {
-  "BFieldMaps/Mau9/ExtMonUCIInternal1AreaMap.header",
-  "BFieldMaps/Mau9/ExtMonUCIInternal2AreaMap.header",
-  "BFieldMaps/Mau9/ExtMonUCIAreaMap.header",
-  "BFieldMaps/Mau9/PSAreaMap.header"
-};
-
-// This scale factor is of limited use.
-// It can make approximate sense to scale the PS field to get a rough
-// answer; the answer will be wrong in detail.
-// It never makes sense to scale the TS field.
-// Not sure if it ever makes sense to scale the PS field.
-double bfield.scaleFactor = 1.0;
-
-//---------------------------------------
-// Virtual detectors
-//---------------------------------------
-double vd.halfLength     = 0.01; //mm
-int    vd.verbosityLevel = 0;
-bool   vd.visible        = true;
-bool   vd.solid          = false;
-
-// // VD right in front of a hall wall
-// double vd.ExtMonCommonPlane.z = -11999.99;
+// Put TTracker in garage
+double ttracker.mother.z0          =  24175.0;  // Garage position only
+double ttracker.z0                   = 24171.0; // Garage position only
 
 
-//
+// Put Crystal calorimeter in garage
+double calorimeter.caloMotherZ0                 = 25842;   
+double calorimeter.caloMotherZ1                 = 27220; 
+double calorimeter.calorimeterZFront            = 25843.0;
+
+// Turn off the CRV here
+int  crs.nSectors = 0;
+int  crs.nLayers  = 0;
+vector<string>  crs.sectorNames = {};
+int  crs.nSupportStructures     =  0;
+vector<string> crs.supportStructureNames = {};
+
 //
 // End notes:
 //

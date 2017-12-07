@@ -7,7 +7,7 @@ BEGIN_PROLOG
 # has to go before the CalPatRec prolog
 #------------------------------------------------------------------------------
 TrackCaloMatching : { 
-    DtOffset : 2.9  # track-cluster offset, ns v5_7_6 # 1.2  # 1.4   
+    DtOffset : 6.4 # v6_3: was 2.9  # track-cluster offset, ns v5_7_6 # 1.2  # 1.4   
 }
 END_PROLOG
 

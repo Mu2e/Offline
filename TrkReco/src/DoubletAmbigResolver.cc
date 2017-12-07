@@ -91,9 +91,9 @@ namespace mu2e {
     double            endTrk(0.0);//Krep->endFoundRange();
 
     if (_debugLevel > 1){
-      printf("[KalFitHack::findDoublets]-------------------------------------------------\n");
-      printf("[KalFitHack::findDoublets]  i  shId  ch  panel  il   iw   driftR       doca\n");
-      printf("[KalFitHack::findDoublets]-------------------------------------------------\n");
+      printf("[DoubletAmbigResolver::findDoublets]-------------------------------------------------\n");
+      printf("[DoubletAmbigResolver::findDoublets]  i  shId  ch  panel  il   iw   driftR       doca\n");
+      printf("[DoubletAmbigResolver::findDoublets]-------------------------------------------------\n");
     }
 
     dcol = DCol;
@@ -145,7 +145,7 @@ namespace mu2e {
       if (_debugLevel > 1) {
 	layer  = straw.id().getLayer();
 	istraw = straw.id().getStraw();
-	printf("[KalFitHack::findDoublets] %2i  %5i %3i  %4i  %3i %3i %8.3f %8.3f\n",
+	printf("[DoubletAmbigResolver::findDoublets] %2i  %5i %3i  %4i  %3i %3i %8.3f %8.3f\n",
 	       i, shId, station, panel, layer, istraw, rdrift, doca);
       }
 //-----------------------------------------------------------------------------
@@ -240,12 +240,12 @@ namespace mu2e {
 
     if (_debugLevel > 1) {
 
-      printf("[KalFitHack::findDoublets] iherr:%i: found %i multiplets\n",_iter,ndoublets);
-      printf("----------------------------------------------------------------");
+      printf("[DoubletAmbigResolver::findDoublets] _iter:%i: found %i multiplets\n",_iter,ndoublets);
+      printf("--------------------------------------------------------------");
       printf("------------------------------------------------------------------------\n");
-      printf("  i  shId ch pnl lay str      x        y         z      sinphi  ");
+      printf("  i  shId pl pn il  is      x        y         z      sinphi  ");
       printf("tksphi    xtrk     ytrk      ztrk      xr      yr     zr      doca   rdr\n");
-      printf("----------------------------------------------------------------");
+      printf("--------------------------------------------------------------");
       printf("------------------------------------------------------------------------\n");
 
       for (int i=0; i<ndoublets; ++i){
@@ -293,7 +293,7 @@ namespace mu2e {
 	  trkpos  = rot*trkpos;
 	  tdir    = rot*tdir;
 
-	  printf(" %2i %5i %2i %3i %3i %3i %9.3f %9.3f %9.3f  %6.3f  ",
+	  printf(" %2i %5i %2i %2i %2i %3i %9.3f %9.3f %9.3f  %6.3f  ",
 		 i, shId, doublet->fStationId, doublet->fPanelId, 
 		 straw.id().getLayer(),
 		 straw.id().getStraw(),
@@ -371,7 +371,7 @@ namespace mu2e {
 // want the best solution to be consistent with the trajectory, another one - 
 // to be inconsistent, and the two - significantly different
 //-----------------------------------------------------------------------------
-      if ((fabs(xbest) < 5.) && (fabs(xnext) > 5) && (fabs(xbest/xnext) < 0.2)) {
+      if ((fabs(xbest) < 5.) && (fabs(xnext) > 5) && (fabs(xbest/xnext) < 0.25)) {
 //-----------------------------------------------------------------------------
 // hit is close enough to the trajectory
 //-----------------------------------------------------------------------------
@@ -380,10 +380,10 @@ namespace mu2e {
       }
       else {
 //-----------------------------------------------------------------------------
-// can't tell
+// can't tell which one is better, just set ambiguity to zero
 //-----------------------------------------------------------------------------
 	if (_Final == 0) {
-	  Hit->setTemperature(Hit->driftRadius()/Hit->driftVelocity());
+	  //	  Hit->setTemperature(Hit->driftRadius()/Hit->driftVelocity());
 	  Hit->setAmbig(0);
 	}
 	else {
@@ -394,23 +394,36 @@ namespace mu2e {
 	  else            Hit->setAmbig(-1);
 	}
       }
+      if (_debugLevel > 0) {
+	CLHEP::Hep3Vector hpos;
+	Hit->hitPosition(hpos);
+	printf(" %2i %5i %2i %2i %2i %2i %8.3f %8.3f %9.3f, %2i %2i %8.3f %8.3f\n",
+	       -1, Hit->strawHit().strawIndex().asInt(), 
+	       straw.id().getPlane(),
+	       straw.id().getPanel(),
+	       straw.id().getLayer(),
+	       straw.id().getStraw(),
+	       hpos.x(), hpos.y(), hpos.z(), ibest, inext, xbest, xnext);
+      }
     }
     else {
 //-----------------------------------------------------------------------------
 // couldn't determine doca
 //-----------------------------------------------------------------------------
+      printf(" ***** DoubletAmbigResolver::resolveSingleHit warning: cant determine POCA\n");
       Hit->setTemperature(Hit->driftRadius()/Hit->driftVelocity());
       Hit->setAmbig(0);
     }
 
     Hit->setAmbigUpdate(false);
+
   }
 
 //-----------------------------------------------------------------------------
 // 2015-02-25 P.Murat: new resolver
 // assume that coordinates are rotated into the coordinate system where Y axis 
 // is pointed along the wire by a rotation along the Z axis
-// sign ordering convention:    ++, +-, --, -+ is defined by KalFitHack::_sign
+// sign ordering convention:    ++, +-, --, -+ is defined by DoubletAmbigResolver::_sign
 //-----------------------------------------------------------------------------
   void DoubletAmbigResolver::findLines(Hep3Vector* Pos, double* R, double* Slopes) const {
 //-----------------------------------------------------------------------------
@@ -1059,7 +1072,7 @@ namespace mu2e {
     
     if (_debugLevel > 0) {
       for (int i=0; i<2; i++) {
-	printf(" %2i %5i %2i %3i %2i %2i %8.3f %8.3f %9.3f %6.3f",
+	printf(" %2i %5i %2i %2i %2i %2i %8.3f %8.3f %9.3f %6.3f",
 	       i, r.straw[i]->index().asInt(), 
 	       HitDoublet->fStationId, HitDoublet->fPanelId, 
 	       r.straw[i]->id().getLayer(),
@@ -1097,14 +1110,14 @@ namespace mu2e {
     ndoublets  = dcol->size();
 
     if (_debugLevel > 0) {
-      printf("[KalFitHack::markMultiplets] BEGIN iherr:%i\n",_iter);
-      printf("----------------------------------------------------");
+      printf("[DoubletAmbigResolver::markMultiplets] BEGIN _iter:%i\n",_iter);
+      printf("---------------------------------------------------");
       printf("------------------------------------------------------------------------------");
       printf("------------------------------------------------------------------------------------------\n");
-      printf("  i  shId ch pnl il is      x       y        z      ");
-      printf("  cth   trkth    xtrk     ytrk     ztrk       xr      xtrkr   doca    rdr am  ");
+      printf("  i  shId pl pn il is      x       y        z      ");
+      printf(" cth    trkth   xtrk     ytrk      ztrk       xr      xtrkr   doca    rdr am  ");
       printf(" s++  doca++   chi2++   s+-  doca+-   chi2+-   s--  doca--   chi2--   s-+  doca-+   chi2-+\n");
-      printf("----------------------------------------------------");
+      printf("---------------------------------------------------");
       printf("------------------------------------------------------------------------------");
       printf("------------------------------------------------------------------------------------------\n");
     }    

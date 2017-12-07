@@ -184,7 +184,7 @@ namespace mu2e {
     // getting the panel/plane number
 
     G4int sdcn = 0;
-    if ( _TrackerVersion == 3) {
+    if ( _TrackerVersion >= 3) {
 
       if ( _supportModel == SupportModel::simple ){
         sdcn = touchableHandle->GetCopyNumber(1) +

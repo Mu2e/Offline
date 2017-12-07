@@ -26,6 +26,9 @@ namespace mu2e {
     TH1D* _hN;
     ValId _id;
     TH1D* _hp;
+    TH1D* _het1;
+    TH1D* _het2;
+    TH1D* _ht;
     ValPosition _pos;
   };
 }

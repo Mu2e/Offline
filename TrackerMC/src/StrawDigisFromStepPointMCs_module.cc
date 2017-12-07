@@ -64,6 +64,7 @@
 #include <map>
 #include <algorithm>
 #include <array>
+#include <iostream>
 using namespace std;
 using CLHEP::Hep3Vector;
 namespace mu2e {
@@ -141,7 +142,7 @@ namespace mu2e {
 	const string _messageCategory;
 	// Give some informationation messages only on the first event.
 	bool _firstEvent;
-	// record the BField directionat the tracker center
+	// record the BField direction at the tracker center
 	Hep3Vector _bdir;
 	// minimum pt (perp to bfield) to assume straight trajectory in a starw
 	double _ptmin, _ptfac;
@@ -344,6 +345,7 @@ namespace mu2e {
       GeomHandle<DetectorSystem> det;
       Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
       Hep3Vector b0 = bfmgr->getBField(vpoint_mu2e);
+      if ( b0.mag() < 1.0e-4 ) b0.set(0.,0.,1.);
       _bdir = b0.unit();
       // compute the transverse momentum for which a particle will curl up in a straw
       const Tracker& tracker = getTrackerOrThrow();
@@ -474,6 +476,7 @@ namespace mu2e {
 	    // Skip steps that occur in the deadened region near the end of each wire,
 	    // or in dead regions of the straw
 	    double wpos = fabs((steps[ispmc].position()-straw.getMidPoint()).dot(straw.getDirection()));
+
 	    if(wpos <  straw.getDetail().activeHalfLength() &&
 		_strawStatus.isAlive(strawind,wpos) &&
 		steps[ispmc].ionizingEdep() > _minstepE){
@@ -565,7 +568,8 @@ namespace mu2e {
 	  double mass = pdt->particle(step.simParticle()->pdgId()).ref().mass();
 	  double mom = step.momentum().mag();
 	  // approximate pt
-	  double apt = step.momentum().perpPart(_bdir).mag();
+	  double apt = 0.;
+	  if ( _bdir.mag() > 0 ) apt = step.momentum().perpPart(_bdir).mag();
 	  double bg = mom/mass; // beta x gamma
 	  minion = bg > _bgcut && apt > _ptmin;
 	}
@@ -1075,6 +1079,7 @@ namespace mu2e {
 	// find the local field vector at this step
 	Hep3Vector vpoint_mu2e = det->toMu2e(step.position());
 	Hep3Vector bf = bfmgr->getBField(vpoint_mu2e);
+	if ( bf.mag() < 1.0e-4 ) bf.set(0.,0.,1.);
 	// compute transverse radius of particle
 	double rcurl = fabs(charge*(mom.perpPart(bf).mag())/BField::mmTeslaToMeVc*bf.mag());
 	// basis using local Bfield direction

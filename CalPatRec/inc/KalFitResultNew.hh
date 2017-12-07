@@ -29,6 +29,12 @@ namespace art {
 }
 
 namespace mu2e {
+  struct MissingHit_t {
+    StrawHitIndex  index;
+    double         doca;
+    double         dr;
+  };
+
 //-----------------------------------------------------------------------------
 // struct defining the Kalman fit inputs and output
 // an internal CalPatRec data structure
@@ -37,54 +43,48 @@ namespace mu2e {
 // otherwise, a deletion of the list of KalFitResultNews (a data product) resutls in a crash
 //-----------------------------------------------------------------------------
   struct KalFitResultNew {
-    const art::Event*                 _event;
-    KalRep*                           _krep;           // Kalman rep, owned by the collection
-    const StrawHitCollection*         _shcol;          // 
-    const StrawHitPositionCollection* _shpos;          //
-    const StrawHitFlagCollection*     _shfcol;         //
-    std::string                       _shDigiLabel;    // 
-    TrkParticle                       _tpart;
-    TrkFitDirection                   _fdir;
-    const CaloCluster*                _caloCluster;    //
+    const art::Event*                 event;
+    KalRep*                           krep;           // Kalman rep, owned by the collection
+    const StrawHitCollection*         shcol;          // 
+    const StrawHitPositionCollection* shpos;          //
+    const StrawHitFlagCollection*     shfcol;         //
+    std::string                       shDigiLabel;    // 
+    TrkParticle                       tpart;
+    TrkFitDirection                   fdir;
+    const CaloCluster*                caloCluster;    //
 
-    const HelixSeed*                  _helixSeed;      //
-    KalSeed*                          _kalSeed;        // 
-    TrkT0                             _t0;             // estimate of the track t0
-    HelixTraj*                        _helixTraj;      // initial parameterization of the track
-    std::vector<StrawHitIndex>*       _hitIndices;     // list of hit indices, updates during the fit
-    std::vector<StrawHitIndex>*       _savedHits;      // list of hit indices, updates during the fit
+    const HelixSeed*                  helixSeed;      //
+    KalSeed*                          kalSeed;        // 
+    TrkT0                             t0;             // estimate of the track t0
+    HelixTraj*                        helixTraj;      // initial parameterization of the track
+    std::vector<StrawHitIndex>*       hitIndices;     // list of hit indices, updates during the fit
+    std::vector<StrawHitIndex>*       savedHits;      // list of hit indices, updates during the fit
 
-    TrkErrCode                        _fit;            // error code from last fit
-    unsigned                          _nt0iter;        // number of times t0 was iterated
-    unsigned                          _nweediter;      // number of iterations on hit weeding
-    unsigned                          _nunweediter;    // number of iterations on hit unweeding
-    std::vector <Doublet>             _listOfDoublets; // list of hist multiplets
-    int                               _nrescued;       // N rescued hits
-    std::vector<StrawHitIndex>        _missingHits;    // used by findMissingHits and addHits
-    std::vector<double>               _doca;           // used by findMissingHits and addHits
-    int                               _fitType;        // 0:seed 1:final
+    TrkErrCode                        fit;            // error code from last fit
+    unsigned                          nt0iter;        // number of times t0 was iterated
+    unsigned                          nweediter;      // number of iterations on hit weeding
+    unsigned                          nunweediter;    // number of iterations on hit unweeding
+    std::vector <Doublet>             listOfDoublets; // list of hist multiplets
+    int                               nrescued;       // N rescued hits
+    // std::vector<StrawHitIndex>        missingHits;    // used by findMissingHits and addHits
+    // std::vector<double>               doca;           // used by findMissingHits and addHits
+    std::vector<MissingHit_t>         missingHits; 
+    int                               fitType;        // 0:seed 1:final
 //-----------------------------------------------------------------------------
 // constructors and destructor
 //-----------------------------------------------------------------------------
     KalFitResultNew();
     ~KalFitResultNew();
 
-    void    removeFailed() { if(_fit.failure()) deleteTrack(); }
+    void    removeFailed() { if(fit.failure()) deleteTrack(); }
     void    deleteTrack ();
     KalRep* stealTrack  ();
     void    init        ();
 
-    const StrawHitCollection*         shcol () { return _shcol;  }
-    const StrawHitPositionCollection* shpos () { return _shpos ; }
-    const StrawHitFlagCollection*     shfcol() { return _shfcol; }
+    int                               nHelixHits     () { return helixSeed->hits().size(); }
+    std::vector<StrawHitIndex>*       strawHitIndices() { return hitIndices; }
 
-    const CaloCluster*                caloCluster() { return _caloCluster; }
-
-    int                               nHelixHits     () { return _helixSeed->hits().size(); }
-    std::vector<StrawHitIndex>*       strawHitIndices() { return _hitIndices; }
-    TrkT0&                            t0()              { return _t0; }
-
-    const HelixTraj*                  helixTraj      () { return _helixTraj; }
+    //    const HelixTraj*                  helixTraj      () { return _helixTraj; }
   };
 
 } 

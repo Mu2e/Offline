@@ -5,15 +5,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "fhiclcpp/ParameterSet.h"
 
-#include "CalPatRec/inc/CalTrkFit_module.hh"
-#include "CalPatRec/inc/AlgorithmIDCollection.hh"
-
 // framework
 #include "art/Framework/Principal/Handle.h"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Core/EDFilter.h"
+#include "art/Framework/Principal/Event.h"
+
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 
 // conditions
 #include "ConditionsService/inc/AcceleratorParams.hh"
@@ -24,18 +24,45 @@
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-// #include "CalPatRec/inc/KalFitResult.hh"
+// data
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
+#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/Doublet.hh"
+
+//TrkReco
+#include "TrkReco/inc/TrkUtilities.hh"
+#include "TrkReco/inc/DoubletAmbigResolver.hh"
+
+#include "CalPatRec/inc/AlgorithmIDCollection.hh"
+#include "CalPatRec/inc/KalFitHackNew.hh"
+#include "CalPatRec/inc/CalTrkFit_types.hh"
 #include "CalPatRec/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 
 // Mu2e BaBar
-#include "BTrk/ProbTools/ChisqConsistency.hh"
+#include "BTrk/BaBar/BaBar.hh"
+// #include "BTrk/BaBar/BbrStringUtils.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
+// #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 
-//TrkReco
-#include "TrkReco/inc/TrkUtilities.hh"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
@@ -43,9 +70,16 @@
 #include <boost/accumulators/statistics/moment.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "TSystem.h"
-#include "TInterpreter.h"
-#include "TVector2.h"
+// C++
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <memory>
+#include <functional>
+#include <float.h>
+#include <vector>
+#include <set>
+#include <map>
 
 using namespace std;
 using namespace boost::accumulators;
@@ -54,13 +88,99 @@ using CLHEP::HepSymMatrix;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
-  //-----------------------------------------------------------------------------
-  // comparison functor for sorting by Z(wire)
-  //-----------------------------------------------------------------------------
+
+  using namespace CalTrkFitTypes;
+  
+  class Calorimeter;
+  class TTracker;
+
+  class CalTrkFit : public art::EDFilter {
+  protected:
+//-----------------------------------------------------------------------------
+// data members
+//-----------------------------------------------------------------------------
+    unsigned            _iev;
+	    	  	  		// configuration parameters
+    int                 _diagLevel; 
+    int                 _debugLevel;
+    int                 _printfreq;
+    int                 _useAsFilter;   // allows to use the module as a produer or as a filter
+    bool                _addhits; 
+    std::vector<double> _zsave;
+//-----------------------------------------------------------------------------
+// event object labels
+//-----------------------------------------------------------------------------
+    std::string         _shLabel ;      // MakeStrawHit label (makeSH)
+    std::string         _shDigiLabel;
+    std::string         _shpLabel;
+    std::string         _shfLabel;
+    std::string         _trkseedLabel;
+    std::string         _tpeaksLabel;
+
+    double              _maxdtmiss;
+					// outlier cuts
+    double              _maxadddoca;
+    double              _maxaddchi;
+    TrkFitFlag          _goodseed;
+    
+    TrkParticle         _tpart;	        // particle type being searched for
+    TrkFitDirection     _fdir;		// fit direction in search
+//-----------------------------------------------------------------------------
+// cache of event objects
+//-----------------------------------------------------------------------------
+    const StrawHitCollection*             _shcol;
+    const StrawHitFlagCollection*         _shfcol;
+    const StrawHitPositionCollection*     _shpcol;
+
+    const KalSeedCollection*              _trkseeds;
+
+    KalFitHackNew                         _fitter;      // full-blown src/Kalman filter
+
+    KalFitResultNew                       _result;      // full fit result
+
+    std::vector<StrawHitIndex>            _hitIndices;
+    int                                   _nindex;
+    int                                   _nrescued;    // by the seed fit
+
+    const TrackerCalibrations*            _trackerCalib;
+
+    //    TFolder*                              _folder;
+    int                                   _eventid;
+//-----------------------------------------------------------------------------
+// diagnostics histograms
+//-----------------------------------------------------------------------------
+    Data_t                                _data;
+    std::unique_ptr<ModuleHistToolBase>   _hmanager;
+    vector<Doublet>*                      _listOfDoublets;
+
+    double                                _mbtime;      // period of 1 microbunch
+//-----------------------------------------------------------------------------
+// functions
+//-----------------------------------------------------------------------------
+  public:
+    enum fitType {helixFit=0,seedFit,kalFit};
+    explicit CalTrkFit(const fhicl::ParameterSet& PSet);
+    virtual ~CalTrkFit();
+    
+    virtual void beginJob();
+    virtual bool beginRun(art::Run&);
+    virtual bool filter (art::Event& event ); 
+    virtual void endJob();
+//-----------------------------------------------------------------------------
+// helper functions
+//-----------------------------------------------------------------------------
+    bool findData         (const art::Event& e);
+    void findMissingHits  (KalFitResultNew&  KRes);
+  };
+
+
+//-----------------------------------------------------------------------------
+// comparison functor for sorting by Z(wire)
+//-----------------------------------------------------------------------------
   struct straw_zcomp : public binary_function<StrawHitIndex,StrawHitIndex,bool> {
     bool operator()(StrawHitIndex const& h1, StrawHitIndex const& h2) {
 
-      mu2e::GeomHandle<mu2e::TTracker> handle;
+      GeomHandle<TTracker> handle;
       const TTracker* t = handle.get();
       const Straw* s1 = &t->getStraw(StrawIndex(h1));
       const Straw* s2 = &t->getStraw(StrawIndex(h2));
@@ -224,7 +344,6 @@ namespace mu2e {
 
     _data.event   = &event;
     _data.result  = &_result;
-    //    _data.ntracks = 0;
     _data.kscol   = kscol.get();
     _data.tracks  = tracks.get();
     
@@ -232,14 +351,14 @@ namespace mu2e {
 
     shfcol.reset(new StrawHitFlagCollection(*_shfcol));
 
-    _result._fitType     = 1;               // final fit
-    _result._event       = &event ;
-    _result._shcol       = _shcol ;
-    _result._shpos       = _shpcol;
-    _result._shfcol      = _shfcol;
-    _result._tpart       = _tpart ;
-    _result._fdir        = _fdir  ;
-    _result._shDigiLabel = _shDigiLabel;
+    _result.fitType     = 1;               // final fit
+    _result.event       = &event ;
+    _result.shcol       = _shcol ;
+    _result.shpos       = _shpcol;
+    _result.shfcol      = _shfcol;
+    _result.tpart       = _tpart ;
+    _result.fdir        = _fdir  ;
+    _result.shDigiLabel = _shDigiLabel;
 //-----------------------------------------------------------------------------
 // loop over track "seeds" found by CalSeedFit
 //-----------------------------------------------------------------------------
@@ -285,16 +404,16 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // form a list of hits starting KalSeed hits
 //-----------------------------------------------------------------------------
-      _result._hitIndices->clear();
+      _result.hitIndices->clear();
 
       for (auto ihit=kalSeed->hits().begin(); ihit!=kalSeed->hits().end(); ihit++) {
 	if (ihit->flag().hasAllProperties(StrawHitFlag::active)) {
 	StrawHitIndex hi = ihit->index();
-	_result._hitIndices->push_back(hi);
+	_result.hitIndices->push_back(hi);
 	}
       }
 
-      _result._caloCluster = kalSeed->caloCluster().get();
+      _result.caloCluster = kalSeed->caloCluster().get();
 //-----------------------------------------------------------------------------
 // create a trajectory from the seed. This should be a general utility function that
 // can work with multi-segment seeds FIXME!
@@ -307,8 +426,8 @@ namespace mu2e {
       kseg->covar().symMatrix(pcov);
 					// create trajectory from these
 
-      if (_result._helixTraj == 0) _result._helixTraj = new HelixTraj(pvec, pcov);
-      else                        *_result._helixTraj = HelixTraj(pvec, pcov);
+      if (_result.helixTraj == 0) _result.helixTraj = new HelixTraj(pvec, pcov);
+      else                       *_result.helixTraj = HelixTraj(pvec, pcov);
 //--------------------------------------------------------------------------------
 // 2015-03-23 G. Pezzu: fill info about the doca
 //--------------------------------------------------------------------------------
@@ -317,11 +436,11 @@ namespace mu2e {
       _fitter.makeTrack(_result);
 
       if (_debugLevel > 0) {
-	printf("[CalTrkFit::produce] after _fitter.makeTrack fit status = %i\n", _result._fit.success());
+	printf("[CalTrkFit::produce] after _fitter.makeTrack fit status = %i\n", _result.fit.success());
 	_fitter.printHits(_result,"CalTrkFit::produce kalfit_001");
       }
 
-      if (_result._fit.success()) {
+      if (_result.fit.success()) {
 	if (_addhits) {
 //-----------------------------------------------------------------------------
 // this is the default. First, add back the hits on this track
@@ -330,8 +449,8 @@ namespace mu2e {
 // assume this is the last iteration
 //-----------------------------------------------------------------------------
 	  //	      int last_iteration = _fitter.maxIteration();
-	  int last_iteration   = -1;
-	  _result._nunweediter = 0;
+	  int last_iteration  = -1;
+	  _result.nunweediter = 0;
 	  _fitter.unweedHits(_result,_maxaddchi);
 	  if (_debugLevel > 0) _fitter.printHits(_result,"CalTrkFit::produce after unweedHits");
 	      
@@ -340,7 +459,7 @@ namespace mu2e {
 // if new hits have been added, add them and refit the track.
 // Otherwise - just refit the track one last time in both cases
 //-----------------------------------------------------------------------------
-	  if (_result._missingHits.size() > 0) {
+	  if (_result.missingHits.size() > 0) {
 	    _fitter.addHits(_result,_maxaddchi);
 	  }
 	  else {
@@ -356,12 +475,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // now evaluate the T0 and its error using the straw hits
 //-----------------------------------------------------------------------------
-	_fitter.updateT0(_result);
+	_fitter.updateT0(_result.krep);
 
 	if (_debugLevel > 0) _fitter.printHits(_result,"CalTrkFit::produce : final, after weedHits");
       }
 
-      if (_result._fit.success()) {
+      if (_result.fit.success()) {
 //-----------------------------------------------------------------------------
 // save successful kalman fits in the event.
 // start from _result, as stealTrack clears the hit pointers
@@ -402,6 +521,7 @@ namespace mu2e {
 	fseed._status.merge(TrkFitFlag::kalmanOK);
 	if(krep->fitStatus().success()==1) fseed._status.merge(TrkFitFlag::kalmanConverged);
 	TrkUtilities::fillHitSeeds(krep, fseed._hits);
+	TrkUtilities::fillStraws(krep,fseed._straws);
 //-----------------------------------------------------------------------------
 // sample the fit at the requested z positions.  This should
 // be in terms of known positions (front of tracker, ...) FIXME!
@@ -464,12 +584,11 @@ namespace mu2e {
 
     const char* oname = "CalTrkFit::findMissingHits";
 
-    //  Trajectory info
     Hep3Vector tdir;
     HepPoint   tpos;
     double     dt;
 
-    KalRep* krep =  KRes._krep;
+    KalRep* krep =  KRes.krep;
 
     krep->pieceTraj().getInfo(0.0,tpos,tdir);
 
@@ -477,21 +596,24 @@ namespace mu2e {
 
     if (_debugLevel > 0) printf("[%s]      shId    sec     panel       doca        drift     dr added\n",oname);
 
-    KRes._missingHits.clear();
-    KRes._doca.clear();
+    KRes.missingHits.clear();
+    //    KRes.doca.clear();
 
-    int nstrs = KRes._shcol->size();
+    MissingHit_t mh;
+
+    int nstrs = KRes.shcol->size();
     for (int istr=0; istr<nstrs; ++istr) {
+      mh.index = istr;
 //----------------------------------------------------------------------
 // 2015-02-11 change the selection bit for searching for missed hits
 //----------------------------------------------------------------------
-      StrawHit const&   sh    = _shcol->at(istr);
+      StrawHit const& sh    = _shcol->at(istr);
 //-----------------------------------------------------------------------------
 // I think, we want to check the radial bit: if it is set, than at least one of
 // the two measured times is wrong...
 //-----------------------------------------------------------------------------
       //      int radius_ok = _shfcol->at(istr).hasAllProperties(StrawHitFlag::radsel);
-      dt        = _shcol->at(istr).time()-KRes._krep->t0()._t0;
+      dt        = _shcol->at(istr).time()-KRes.krep->t0()._t0;
 
       //      if (radius_ok && (fabs(dt) < _maxdtmiss)) {
       if (fabs(dt) < _maxdtmiss) {
@@ -521,7 +643,6 @@ namespace mu2e {
 	  if (fabs(dz) < fabs(dz_max)) {
 	    closest   = tsh;
 	    dz_max    = dz;
-	    //	    closest_z = ztrk;
 	  }
 	}
 
@@ -552,7 +673,7 @@ namespace mu2e {
 
           TrkPoca     hitpoca(krep->pieceTraj(),fltlen,htraj,0.0);
 
-	  double      doca, rdrift, dr, hit_error(0.2);
+	  double      rdrift, hit_error(0.2);
 
 	  TrkStrawHit hit(sh,straw,istr,hitt0,hflt,hit_error,10.,1.,_maxadddoca);
 	  
@@ -565,16 +686,16 @@ namespace mu2e {
 	  tcal->TimeToDistance(straw.index(),tdrift,tdir,t2d);
 
 	  rdrift = t2d._rdrift;
-	  doca   = hitpoca.doca();
-	  if (doca > 0) dr = doca-rdrift;
-	  else          dr = doca+rdrift;
+	  mh.doca   = hitpoca.doca();
+	  if (mh.doca > 0) mh.dr = mh.doca-rdrift;
+	  else             mh.dr = mh.doca+rdrift;
 //-----------------------------------------------------------------------------
 // flag hits with small residuals
 //-----------------------------------------------------------------------------
 	  int added (0);
-          if (fabs(dr) < _maxadddoca) {
-            KRes._missingHits.push_back(istr);
-            KRes._doca.push_back(doca);
+          if (fabs(mh.dr) < _maxadddoca) {
+            KRes.missingHits.push_back(mh);
+	    //            KRes.doca.push_back(doca);
 	    added = 1;
           }
 
@@ -583,7 +704,7 @@ namespace mu2e {
                    straw.index().asInt(),
                    straw.id().getPlane(),
                    straw.id().getPanel(),
-                   doca, rdrift, dr,added);
+                   mh.doca, rdrift, mh.dr,added);
           }
         }
       }
@@ -591,7 +712,23 @@ namespace mu2e {
 	if (_debugLevel > 0) {
 	  printf("[%s] rejected hit: i, index, flag, dt: %5i %5i %s %10.3f\n",
 		 oname,istr,sh.strawIndex().asInt(),
-		 KRes._shfcol->at(istr).hex().data(),sh.dt());
+		 KRes.shfcol->at(istr).hex().data(),sh.dt());
+	}
+      }
+    }
+    //-----------------------------------------------------------------------------
+    // sort hits in accending |dr|, such that the first hit has the smallest |dr|
+    //-----------------------------------------------------------------------------
+    int nmiss = KRes.missingHits.size();
+    for (int i1=0; i1<nmiss-1; i1++) {
+      MissingHit_t* h1 = &KRes.missingHits[i1];
+      for (int i2=i1+1; i2<nmiss; i2++) {
+	MissingHit_t* h2 = &KRes.missingHits[i2];
+	if (fabs(h1->dr) > fabs(h2->dr)) {
+					// swap hits
+	  MissingHit_t tmp = *h1;
+	  *h1 = *h2;
+	  *h2 = tmp;
 	}
       }
     }
