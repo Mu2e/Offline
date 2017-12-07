@@ -16,7 +16,6 @@
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawId2.hh"
 #include "DataProducts/inc/StrawIndex.hh"
-#include "DataProducts/inc/StrawIndex2.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -63,7 +62,7 @@ namespace mu2e {
 
     // (Intermediate) Constructor using the new type of StrawId2
     Straw( const StrawId& id, const StrawId2& id2,
-           StrawIndex index, StrawIndex2 index2,
+           StrawIndex index,
            const CLHEP::Hep3Vector& c,
            const StrawDetail* detail,
            int detailIndex,
@@ -82,7 +81,6 @@ namespace mu2e {
     const StrawId2& id2() const { return _id2;}
 
     StrawIndex index() const { return _index;}
-    StrawIndex2 index2() const { return _index2;}
 
     int detailIndex() const { return _detailIndex;}
 
@@ -170,9 +168,6 @@ namespace mu2e {
 
     // Index into the array of all straws.
     StrawIndex _index;
-
-    // Index into the array of all straw pointers.
-    StrawIndex2 _index2;
 
     // Mid-point of the straw.
     CLHEP::Hep3Vector _c;

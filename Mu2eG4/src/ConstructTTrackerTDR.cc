@@ -640,7 +640,9 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
       mid.setZ(side*(pos.z() - zPanel));
 
       int copyNo=straw.index().asInt();
-      // int copyNo=straw.index2().asUint16();
+      // this is the straw number in a given panel; not a global straw id
+      // it will be converted to the global one in StrawSD::ProcessHits
+      // int copyNo=straw.id2().asUint16();
 
       bool edgeVisible(true);
 
@@ -651,10 +653,12 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
              << straw.id()
              << " id2: "
              << straw.id2()
+             << " straw#inpanel: "
+             << straw.id2().straw()
              << " index: "
              << straw.index().asInt()
              << " index2: "
-             << straw.index2().asUint16()
+             << straw.id2().asUint16()
              << " with copy number: "
              << copyNo
              << endl;

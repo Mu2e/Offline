@@ -18,7 +18,6 @@
 #include <limits>
 
 //#include "DataProducts/inc/StrawId2.hh"  included via Straw via Tracker (-> Straw)
-//#include "DataProducts/inc/StrawIndex2.hh"
 
 #include "TTrackerGeom/inc/Manifold.hh"
 #include "TTrackerGeom/inc/Support.hh"
@@ -192,11 +191,7 @@ namespace mu2e {
     // =============== NewTracker Accessors Start ==============
 
     Straw const& straw( StrawId2 const id) const{
-      return *(_allStraws2_p.at(id.strawId2()));
-    }
-
-    Straw const& straw( StrawIndex2 const i) const{
-      return *(_allStraws2_p.at(i.asUint16()));
+      return *(_allStraws2_p.at(id.asUint16()));
     }
 
     Plane const& plane( int id ) const{
@@ -204,7 +199,7 @@ namespace mu2e {
     }
 
     bool strawExists( StrawId2 const id) const{
-      return _allStraws2_p.at(id.strawId2()) != nullptr;
+      return _allStraws2_p.at(id.asUint16()) != nullptr;
     }
 
     // =============== NewTracker Accessors End   ==============

@@ -61,10 +61,10 @@ namespace mu2e {
           StrawId2 const & lsid =  (*istr_p).id2();
           std::ostringstream nsid("",std::ios_base::ate); // to write at the end
           nsid << lsid; 
-          cout << setw(6) << lsid.strawId2()
-               << setw(17) << std::bitset<16>(lsid.strawId2())
+          cout << setw(6) << lsid.asUint16()
+               << setw(17) << std::bitset<16>(lsid.asUint16())
                << " " 
-               << setw(10) << std::showbase << std::hex << lsid.strawId2()
+               << setw(10) << std::showbase << std::hex << lsid.asUint16()
                << " " << std::dec << std::noshowbase << setw(7) << nsid.str() << endl;
         } else {
           cout << endl;
@@ -602,10 +602,10 @@ namespace mu2e {
           std::ostringstream nsid("",std::ios_base::ate); // to write at the end
           nsid << lsid;
           cout << setw(3) << ++istr
-               << setw(6) << lsid.strawId2()
-               << setw(17) << std::bitset<16>(lsid.strawId2())
+               << setw(6) << lsid.asUint16()
+               << setw(17) << std::bitset<16>(lsid.asUint16())
                << " " 
-               << setw(6) << std::showbase << std::hex << lsid.strawId2()
+               << setw(6) << std::showbase << std::hex << lsid.asUint16()
                << " " << std::dec << std::noshowbase << setw(7) << nsid.str() << endl;
           }
       }
@@ -865,16 +865,18 @@ namespace mu2e {
 
         // number of panels placed
         int npp = _strawConstrCount/spp;
-        // current straw in the panel is listraw
+        // current straw in the panel is listraw (same as StrawId2::straw())
         // we use int in case we "overcount" and rely on at() to tell us that
         // counter used to place the straws in an order 0..95, not 0,2..93,95
         int strawCountReCounted = npp*spp+listraw;
-        StrawIndex2 index2(strawCountReCounted);
+
+        if (!plane.exists()) {
+          _tt->_allStraws2_p.at(lsid.asUint16()) = nullptr;
+        }
 
         allStraws.push_back( Straw( StrawId( layId, listraw),
-                                    lsid, // this is a new field, new constructor
+                                    lsid, // this is a new/tmp field, new constructor
                                     index,
-                                    index2,
                                     offset,
                                     &_tt->_strawDetails.at(iman*2+ilay%2),
                                     iman*2+ilay%2,
@@ -896,10 +898,10 @@ namespace mu2e {
                << setw(3) << iplane
                << setw(2) << ipnl
                << setw(3) << listraw
-               << setw(6) << lsid.strawId2()
-               << setw(17) << std::bitset<16>(lsid.strawId2())
+               << setw(6) << lsid.asUint16()
+               << setw(17) << std::bitset<16>(lsid.asUint16())
                << " " 
-               << setw(6) << std::showbase << std::hex << lsid.strawId2()
+               << setw(6) << std::showbase << std::hex << lsid.asUint16()
                << setw(10) << osid.str()
                << " " << std::dec << std::noshowbase << setw(7) << nsid.str() << endl;
         }
@@ -908,14 +910,13 @@ namespace mu2e {
           Straw( StrawId( layId, listraw), 
                  lsid,
                  index,
-                 index2,
                  offset,
                  &_tt->_strawDetails.at(iman*2+ilay%2),
                  iman*2+ilay%2,
                  unit
                  );
 
-        allStraws2_p.at(lsid.strawId2()) = &allStraws2.at(strawCountReCounted);
+        allStraws2_p.at(lsid.asUint16()) = &allStraws2.at(strawCountReCounted);
         panelStraws2_p.at(listraw) = &allStraws2.at(strawCountReCounted);
 
         layer._straws.push_back(&allStraws.back());
