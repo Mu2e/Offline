@@ -18,6 +18,7 @@ namespace mu2e {
     friend class TTrackerMaker;
     friend class Plane;
     friend class Panel;
+    friend class StrawSD;
 
     private:
       //  data member is a short
@@ -32,7 +33,7 @@ namespace mu2e {
       constexpr static uint16_t _planesft = 10; // shift for plane field
       constexpr static uint16_t _nstraws = 96; // number of straws per panel
       constexpr static uint16_t _nlayers = 2; // number of layers per panel ; do we need it, see below
-      constexpr static uint16_t _npanels = 6; // number of panels per station; ??? ttracker.panelsPerPlane
+      constexpr static uint16_t _npanels = 6; // number of panels per plane
       constexpr static uint16_t _nplanes = 36; // number of planes
       constexpr static uint16_t _invalid = 0xFFFF; // invalid identifier
 
