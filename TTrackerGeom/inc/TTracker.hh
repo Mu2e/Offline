@@ -48,12 +48,11 @@ namespace mu2e {
                                       StrawId2::_npanels *
                                       StrawId2::_nstraws;
 
-    constexpr static uint16_t _npanels = StrawId2:: _npanels;
-
-    constexpr static int _maxRedirect = std::numeric_limits<uint16_t>::max();
-    constexpr static uint16_t _panelsft = StrawId2::_panelsft;
-    constexpr static uint16_t _planesft = StrawId2::_planesft;
-
+    // constexpr static int _maxRedirect = std::numeric_limits<uint16_t>::max();
+    constexpr static uint16_t _maxRedirect = 
+      ((StrawId2::_nplanes -1) << StrawId2::_planesft) +
+      ((StrawId2::_npanels -1) << StrawId2::_panelsft) +
+      StrawId2::_nstraws;
 
     // =============== NewTracker Public Objects End   ==============
 
