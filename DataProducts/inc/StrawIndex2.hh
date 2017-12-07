@@ -2,8 +2,8 @@
 #define TrackerGeom_StrawIndex2_hh
 
 //
-// Non uint16_t identifier of one straw used to access 
-// std::array<Straw const*, StrawId2::_nstraws> _straws2_p
+// Non contiguous uint16_t identifier of one straw used to access 
+// std::array<Straw const*,TTracker::_maxRedirect> _allStraws2_p;
 //
 // Original author Krzysztof Genser based on StrawIndex by Rob Kutschke
 //
