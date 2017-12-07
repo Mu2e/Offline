@@ -654,7 +654,7 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
              << " id2: "
              << straw.id2()
              << " straw#inpanel: "
-             << straw.id2().straw()
+             << straw.id2().getStraw()
              << " index: "
              << straw.index().asInt()
              << " index2: "

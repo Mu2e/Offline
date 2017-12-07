@@ -190,12 +190,12 @@ namespace mu2e {
 
     // =============== NewTracker Accessors Start ==============
 
-    Straw const& straw( StrawId2 const id) const{
+    Straw const& getStraw( StrawId2 const id) const{
       return *(_allStraws2_p.at(id.asUint16()));
     }
 
-    Plane const& plane( int id ) const{
-      return _allPlanes2.at(id);
+    Plane const& getPlane( StrawId2 id ) const{
+      return _allPlanes2.at(id.getPlane());
     }
 
     bool strawExists( StrawId2 const id) const{

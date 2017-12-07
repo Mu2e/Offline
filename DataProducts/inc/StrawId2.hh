@@ -59,31 +59,31 @@ namespace mu2e {
       // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
       // test validity
-      bool valid() const { return validStraw(straw()) &&
-	validPanel(panel()) && validPlane(plane()); }
+      bool valid() const { return validStraw(getStraw()) &&
+	validPanel(getPanel()) && validPlane(getPlane()); }
 
       StrawId2 strawId2() const { return  static_cast<StrawId2>(_sid); }
 
       uint16_t asUint16() const { return _sid;}
 
-      uint16_t plane() const{
+      uint16_t getPlane() const{
 	return (_sid & _planemsk) >> _planesft;
       }
 
-      uint16_t panel() const{
+      uint16_t getPanel() const{
 	return (_sid & _panelmsk) >> _panelsft;
       }
 
-      uint16_t straw() const{
+      uint16_t getStraw() const{
 	return (_sid & _strawmsk);
       }
 
-      uint16_t layer() const{
-	return _sid % _nlayers == 0 ? 0 : 1; // or just % as it is % 2
+      uint16_t getLayer() const{
+	return _sid % _nlayers;
       }
 
-      uint16_t station() const{
-	return floor(plane()/_nlayers);
+      uint16_t getStation() const{
+	return floor(getPlane()/_nlayers);
       }
 
       bool operator==( StrawId2 const& rhs) const{
@@ -96,9 +96,9 @@ namespace mu2e {
 
       friend std::ostream& operator<<(std::ostream& ost,
                                       const StrawId2& s ){
-	ost << s.plane() << "_"
-            << s.panel() << "_"
-            << s.straw();
+	ost << s.getPlane() << "_"
+            << s.getPanel() << "_"
+            << s.getStraw();
         return ost;
       }
 
