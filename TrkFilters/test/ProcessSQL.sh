@@ -1,5 +1,5 @@
 #!/bin/bash
-FCount = 0
+FCOUNT=0
 for mod in "makeSH" "MakeStereoHits" "FlagBkgHits" "TimeClusterFinder"  "HelixFinder" "KSFDeM" ; do
 echo Processing module $mod
 FCOUNT=`expr $FCOUNT + 1`
