@@ -476,7 +476,7 @@ namespace mu2e {
 
     _tt->_z0                  = _zCenter;
     _tt->_envelopeInnerRadius = _envelopeInnerRadius;
-    //    _tt->_manifoldHalfLengths = _manifoldHalfLengths;  //These are gone
+    _tt->_manifoldHalfLengths = _manifoldHalfLengths;
     _tt->_envelopeMaterial    = _envelopeMaterial;
 
     // Z location of the first plane.
