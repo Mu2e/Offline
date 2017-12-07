@@ -44,8 +44,9 @@ void PlotAllTimes(const char* dirname, double maxtime) {
       plots.push_back(plot);
     }
     TCanvas* acan = new TCanvas("alltimes","times",1200,1200);
-    int ncel = (int)ceil(sqrt(plots.size()));
-    acan->Divide(ncel,ncel);
+    int nxcel = (int)ceil(sqrt(plots.size()));
+    int nycel = (int)ceil(plots.size()/nxcel);
+    acan->Divide(nxcel,nycel);
     for(unsigned iplot=0;iplot<plots.size();++iplot){
       acan->cd(iplot+1);
       plots[iplot]->Draw();
