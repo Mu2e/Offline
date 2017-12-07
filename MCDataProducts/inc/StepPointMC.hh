@@ -35,7 +35,7 @@ namespace mu2e {
   public:
 
     // This might change some day.
-    typedef unsigned long VolumeId_type;
+    typedef uint16_t VolumeId_type;
 
     StepPointMC():
       _track(),
