@@ -86,19 +86,46 @@ namespace mu2e {
 	return floor(getPlane()/_nlayers);
       }
 
+      uint16_t plane() const{
+	return (_sid & _planemsk) >> _planesft;
+      }
+
+      uint16_t panel() const{
+	return (_sid & _panelmsk) >> _panelsft;
+      }
+
+      uint16_t straw() const{
+	return (_sid & _strawmsk);
+      }
+
+      uint16_t layer() const{
+	return _sid % _nlayers;
+      }
+
+      uint16_t station() const{
+	return floor(plane()/_nlayers);
+      }
+
       bool operator==( StrawId2 const& rhs) const{
 	return ( _sid == rhs._sid );
       }
 
       bool operator!=( StrawId2 const& rhs) const{
-	return !( *this == rhs);
+	return (  _sid != rhs._sid );
+      }
+
+      bool operator<( StrawId2 const& rhs) const{
+        return ( _sid < rhs._sid);
+      }
+      bool operator>( StrawId2 const& rhs) const{
+        return ( _sid > rhs._sid);
       }
 
       friend std::ostream& operator<<(std::ostream& ost,
                                       const StrawId2& s ){
-	ost << s.getPlane() << "_"
-            << s.getPanel() << "_"
-            << s.getStraw();
+	ost << s.plane() << "_"
+            << s.panel() << "_"
+            << s.straw();
         return ost;
       }
 
