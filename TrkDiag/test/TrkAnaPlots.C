@@ -106,6 +106,57 @@ void Draw(TTree* ta) {
   leg->Draw();
 }
 
+void MomResp(TTree* ta, double tqcut, double nmu) {
+// cuts
+  TCut reco("dem.status>0");
+  char ctext[80];
+  snprintf(ctext,80,"dem.trkqual>%f",tqcut);
+  TCut goodfit(ctext);
+  double tdlow(0.57735027);
+  double tdhigh(1.0);
+  double t0min(700.0);
+  double t0max(1695.0);
+  snprintf(ctext,80,"dem.td>%5.5f&&dem.td<%5.5f",tdlow,tdhigh);
+  TCut rpitch = TCut(ctext);
+  snprintf(ctext,80,"dem.t0>%f&&dem.t0<%f",t0min,t0max);
+  TCut livegate = TCut(ctext);
+  TCut cosmic = TCut("dem.d0<105 && dem.d0>-80 && (dem.d0+2/dem.om)>450 && (dem.d0+2/dem.om)<680");
+  TCut rmomloose("dem.mom>100.0");
+  TCut physics = rpitch+cosmic+livegate+rmomloose;
+
+  TF1* dscb = new TF1("dscb",fnc_dscb,-10.0,5,7);
+  dscb->SetParName(0,"Norm");
+  dscb->SetParName(1,"x0");
+  dscb->SetParName(2,"sigma");
+  dscb->SetParName(3,"ANeg");
+  dscb->SetParName(4,"PNeg");
+  dscb->SetParName(5,"APos");
+  dscb->SetParName(6,"PPos");
+
+  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",600,600);
+  rcan->Clear();
+  gStyle->SetOptFit(111111);
+  gStyle->SetOptStat("oumr");
+  gPad->SetLogy();
+  TH1F* momresp = new TH1F("momresp","momentum response at tracker;MeV/c",251,-10.0,4.0);
+  momresp->Sumw2();
+  TCut final = reco+goodfit;
+  ta->Project("momresp","dem.mom-demmcgen.mom","evtinfo.evtwt"*final);
+  //momresp->Scale(1.0/nmu);
+  //    ta->Project(mname,"fit.mom-mcent.mom",final);
+  double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
+  cout << "Integral = " << integral << " mean = " << momresp->GetMean() << " rms = " << momresp->GetRMS() << endl;
+  dscb->SetParameters(0.05*integral,-0.6,0.3,0.7,3.0,3.0,3.0);
+  dscb->SetNpx(1000);
+  dscb->SetParLimits(3,0.0,50.0);
+  dscb->SetParLimits(4,1.0,50.0);
+  dscb->SetParLimits(5,0.0,50.0);
+  dscb->SetParLimits(6,1.0,50.0);
+
+  momresp->SetMinimum(0.5);
+  momresp->Fit("dscb","LRQ");
+  momresp->Fit("dscb","LRM");
+}
 void MomRes(TTree* ta, double tqcut) {
 // cuts
   TCut reco("dem.status>0");
@@ -133,7 +184,7 @@ void MomRes(TTree* ta, double tqcut) {
   dscb->SetParName(5,"APos");
   dscb->SetParName(6,"PPos");
 
-  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
+  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",600,600);
   rcan->Clear();
   gStyle->SetOptFit(111111);
   gStyle->SetOptStat("oumr");
@@ -141,7 +192,7 @@ void MomRes(TTree* ta, double tqcut) {
   TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
   momres->Sumw2();
   TCut final = reco+goodfit+physics;
-  ta->Project("momres","dem.mom-demmcent.mom","evtinfo.evtwt"*final);
+  ta->Project("momres","dem.mom-","evtinfo.evtwt"*final);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momres->GetEntries()*momres->GetBinWidth(1);
   cout << "Integral = " << integral << " mean = " << momres->GetMean() << " rms = " << momres->GetRMS() << endl;
