@@ -75,6 +75,10 @@ physics :{
         verbose: 3
       }
 
+      PhysicalVolumePrinter : {
+        verbose: 1
+      }
+
     } # printModule
 
 

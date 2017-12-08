@@ -29,6 +29,7 @@
 #include "Print/inc/StereoHitPrinter.hh"
 #include "Print/inc/TimeClusterPrinter.hh"
 #include "Print/inc/KalSeedPrinter.hh"
+#include "Print/inc/PhysicalVolumePrinter.hh"
 
 namespace mu2e {
 
@@ -38,6 +39,7 @@ namespace mu2e {
 
     explicit PrintModule(fhicl::ParameterSet const& );
     void analyze  ( art::Event const&  event  ) override;
+    void beginSubRun( art::SubRun const& subrun) override;
 
   private:
 
@@ -74,11 +76,11 @@ mu2e::PrintModule::PrintModule(fhicl::ParameterSet const& pset ):
   _printers.push_back( new StereoHitPrinter(pset) );
   _printers.push_back( new TimeClusterPrinter(pset) );
   _printers.push_back( new KalSeedPrinter(pset) );
+  _printers.push_back( new PhysicalVolumePrinter(pset) );
 }
 
 
-void
-mu2e::PrintModule::analyze(art::Event const& event) {
+void mu2e::PrintModule::analyze(art::Event const& event) {
   std::cout 
     << "\n"
     << " ###############  PrintModule Run/Subrun/Event " 
@@ -88,6 +90,20 @@ mu2e::PrintModule::analyze(art::Event const& event) {
     << std::endl;
 
   for(auto& prod_printer: _printers) prod_printer->Print(event);
+
+  std::cout << std::endl;
+
+}
+
+void mu2e::PrintModule::beginSubRun(art::SubRun const& subrun) {
+  std::cout 
+    << "\n"
+    << " ###############  PrintModule Run/Subrun " 
+    << std::setw(9) << subrun.run()
+    << std::setw(9) << subrun.subRun()
+    << std::endl;
+
+  for(auto& prod_printer: _printers) prod_printer->PrintSubRun(subrun);
 
   std::cout << std::endl;
 
