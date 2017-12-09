@@ -16,6 +16,10 @@
 #include <vector>
 #include <array>
 #include <limits>
+//#include <iomanip>
+//#include <iostream>
+
+#include "cetlib_except/exception.h"
 
 //#include "DataProducts/inc/StrawId2.hh"  included via Straw via Tracker (-> Straw)
 
@@ -55,7 +59,11 @@ namespace mu2e {
 
     // =============== NewTracker Public Objects End   ==============
 
-    TTracker(){}  // TODO: insert proper initializer list, starting w/ base class
+    TTracker(){
+      if (StrawId2::_nlayers != 2)
+        throw cet::exception("GEOM")
+          << "Expect configuration with 2 layers per panel\n";
+    }  // TODO: insert proper initializer list, starting w/ base class
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
@@ -134,6 +142,32 @@ namespace mu2e {
 
     const Straw& getStraw ( StrawIndex i ) const{
       return _allStraws.at(i.asInt());
+    }
+
+    const Straw& getStraw2 ( StrawIndex i ) const{
+      return _allStraws2.at(i.asInt());
+    }
+
+    const Straw& getStraw3 ( StrawIndex i ) const{
+      // recalculation from the old to new straw layout
+      uint16_t seqPanelNumber = i.asInt()/StrawId2::_nstraws;
+      uint16_t panelNumber = seqPanelNumber%StrawId2::_npanels;
+      uint16_t planeNumber = seqPanelNumber/StrawId2::_npanels;
+      uint16_t panelNumberShifted = panelNumber << StrawId2::_panelsft;
+      uint16_t planeNumberShifted = planeNumber << StrawId2::_planesft;
+      uint16_t strawNumberInPanel = i.asInt()%StrawId2::_nstraws;
+      constexpr static uint16_t strawsPerLayer =
+        StrawId2::_nstraws/StrawId2::_nlayers;
+      uint16_t sn = (strawNumberInPanel<strawsPerLayer) ?
+        (strawNumberInPanel << 1 ) :
+        (( strawNumberInPanel - strawsPerLayer) << 1 ) + 1;
+      uint16_t i2 = planeNumberShifted + panelNumberShifted + sn;
+      // std::cout << __func__ << " i, sn, i2 "
+      //           << std::setw(6) << i
+      //           << std::setw(6) << sn
+      //           << std::setw(6) << i2
+      //           << std::endl;
+      return *(_allStraws2_p.at(i2));
     }
 
     int nStations() const{
