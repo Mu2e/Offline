@@ -74,6 +74,8 @@ namespace mu2e {
       for (size_t istr=0; istr!=nstraws; ++istr) {
 
         const Straw& straw = _tt->getStraw(StrawIndex(istr));
+        const Straw& straw2 = _tt->getStraw2(StrawIndex(istr));
+        const Straw& straw3 = _tt->getStraw3(StrawIndex(istr));
 
         int cpln = straw.id().getPlane();
         int cpnl = straw.id().getPanel();
@@ -95,7 +97,10 @@ namespace mu2e {
         cout << __func__ << " Straw "
              << fixed << setw(6) << istr
              << " plnfloor " << setw(6) << ipnlf << " "
-             << straw.id()
+             << straw.id() << " "
+             << straw.id2() << " "
+             << straw2.id2() << " "
+             << straw3.id2()
              << " mid point " << straw.getMidPoint()
              << " r " << sqrt(straw.getMidPoint()[0]*straw.getMidPoint()[0]+
                               straw.getMidPoint()[1]*straw.getMidPoint()[1])
@@ -444,7 +449,7 @@ namespace mu2e {
   void TTrackerMaker::buildIt(){
 
     // as the array has constant size, we need a straw counter during construction
-    _strawConstrCount = -1; // first straw will be at 0
+    _strawTrckrConstrCount = -1; // first straw will be at 0
  
     // Make an empty TTracker.
     _tt = unique_ptr<TTracker>(new TTracker());
@@ -607,7 +612,7 @@ namespace mu2e {
                << " " 
                << setw(6) << std::showbase << std::hex << lsid.asUint16()
                << " " << std::dec << std::noshowbase << setw(7) << nsid.str() << endl;
-          }
+        }
       }
     }
 
@@ -619,8 +624,9 @@ namespace mu2e {
 
     plane._panels.push_back( Panel(plnId) );
     Panel& panel = plane._panels.back();
+    
     panel._layers.reserve(_layersPerPanel);
-
+    _strawPanelConstrCount = -1;
     // check if the opposite panels do not overlap
     static double const tolerance = 1.e-6; // this should be in a config file
 
@@ -854,7 +860,8 @@ namespace mu2e {
         CLHEP::Hep3Vector offset = RZ*mid;
 
         StrawIndex index(allStraws.size());
-        ++_strawConstrCount;
+        ++_strawTrckrConstrCount;
+        ++_strawPanelConstrCount;
 
         _tt->_strawExists[index.asInt()] = plane.exists();
 
@@ -864,10 +871,10 @@ namespace mu2e {
         // before we place them in allStraws2
 
         // number of panels placed
-        int npp = _strawConstrCount/spp;
+        int npp = _strawTrckrConstrCount/spp;
         // current straw in the panel is listraw (same as StrawId2::straw())
         // we use int in case we "overcount" and rely on at() to tell us that
-        // counter used to place the straws in an order 0..95, not 0,2..93,95
+        // counter used to *place* the straws in an order 0..95, not 0,2..93,95
         int strawCountReCounted = npp*spp+listraw;
 
         if (!plane.exists()) {
@@ -890,13 +897,14 @@ namespace mu2e {
           std::ostringstream nsid("",std::ios_base::ate); // to write at the end
           nsid << lsid;
 
-          cout << __func__ << " index, strCnt, strCntRc, npp, iplane, ipnl, listraw, _sid, osid, StrawId2:"
+          cout << __func__ << " index, strCnt, strCntRc, npp, iplane, ipnl, opsc, listraw, _sid, osid, StrawId2:"
                << setw(6) << index
-               << setw(6) << _strawConstrCount
+               << setw(6) << _strawTrckrConstrCount
                << setw(6) << strawCountReCounted
                << setw(6) << npp
                << setw(3) << iplane
                << setw(2) << ipnl
+               << setw(3) << _strawPanelConstrCount
                << setw(3) << listraw
                << setw(6) << lsid.asUint16()
                << setw(17) << std::bitset<16>(lsid.asUint16())
@@ -906,7 +914,8 @@ namespace mu2e {
                << " " << std::dec << std::noshowbase << setw(7) << nsid.str() << endl;
         }
 
-        allStraws2.at(strawCountReCounted) = 
+        //  allStraws2.at(strawCountReCounted) = 
+        allStraws2.at(_strawTrckrConstrCount) = 
           Straw( StrawId( layId, listraw), 
                  lsid,
                  index,
@@ -916,8 +925,10 @@ namespace mu2e {
                  unit
                  );
 
-        allStraws2_p.at(lsid.asUint16()) = &allStraws2.at(strawCountReCounted);
-        panelStraws2_p.at(listraw) = &allStraws2.at(strawCountReCounted);
+        // allStraws2_p.at(lsid.asUint16()) = &allStraws2.at(strawCountReCounted);
+        allStraws2_p.at(lsid.asUint16()) = &allStraws2.at(_strawTrckrConstrCount);
+        // panelStraws2_p.at(listraw) = &allStraws2.at(strawCountReCounted);
+        panelStraws2_p.at(_strawPanelConstrCount) = &allStraws2.at(_strawTrckrConstrCount);
 
         layer._straws.push_back(&allStraws.back());
         layer._indices.push_back(index);
