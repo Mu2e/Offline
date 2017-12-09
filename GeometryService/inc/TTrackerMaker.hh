@@ -268,8 +268,9 @@ namespace mu2e {
 
     std::vector<int>  _nonExistingPlanes;
 
-    // straw construction counter when using the std::array
-    int _strawConstrCount; // first straw will be at 0
+    // straw construction counters when using the std::array
+    int _strawTrckrConstrCount; // first straw will be at 0
+    int _strawPanelConstrCount; // first straw will be at 0
 
   };
 
