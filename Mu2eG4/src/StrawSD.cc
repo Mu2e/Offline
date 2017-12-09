@@ -383,7 +383,9 @@ namespace mu2e {
 
     // make sure it works with the constructTTrackerv3
     //    int copy = touchableHandle->GetCopyNumber();
-    int copy = sdcn2;
+    int copy = sdcn;
+    // int copy = sdcn2;
+
     /*
     int eventNo = event->GetEventID();
     // Works for both TTracker.
