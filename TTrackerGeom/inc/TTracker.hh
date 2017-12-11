@@ -52,7 +52,7 @@ namespace mu2e {
                                       StrawId2::_nstraws;
 
     // constexpr static int _maxRedirect = std::numeric_limits<uint16_t>::max();
-    constexpr static uint16_t _maxRedirect = 
+    constexpr static uint16_t _maxRedirect =
       ((StrawId2::_nplanes -1) << StrawId2::_planesft) +
       ((StrawId2::_npanels -1) << StrawId2::_panelsft) +
       StrawId2::_nstraws;
@@ -144,32 +144,6 @@ namespace mu2e {
       return _allStraws.at(i.asInt());
     }
 
-    const Straw& getStraw2 ( StrawIndex i ) const{
-      return _allStraws2.at(i.asInt());
-    }
-
-    const Straw& getStraw3 ( StrawIndex i ) const{
-      // recalculation from the old to new straw layout
-      uint16_t seqPanelNumber = i.asInt()/StrawId2::_nstraws;
-      uint16_t panelNumber = seqPanelNumber%StrawId2::_npanels;
-      uint16_t planeNumber = seqPanelNumber/StrawId2::_npanels;
-      uint16_t panelNumberShifted = panelNumber << StrawId2::_panelsft;
-      uint16_t planeNumberShifted = planeNumber << StrawId2::_planesft;
-      uint16_t strawNumberInPanel = i.asInt()%StrawId2::_nstraws;
-      constexpr static uint16_t strawsPerLayer =
-        StrawId2::_nstraws/StrawId2::_nlayers;
-      uint16_t sn = (strawNumberInPanel<strawsPerLayer) ?
-        (strawNumberInPanel << 1 ) :
-        (( strawNumberInPanel - strawsPerLayer) << 1 ) + 1;
-      uint16_t i2 = planeNumberShifted + panelNumberShifted + sn;
-      // std::cout << __func__ << " i, sn, i2 "
-      //           << std::setw(6) << i
-      //           << std::setw(6) << sn
-      //           << std::setw(6) << i2
-      //           << std::endl;
-      return *(_allStraws2_p.at(i2));
-    }
-
     int nStations() const{
       return _stations.size();
     }
@@ -234,6 +208,41 @@ namespace mu2e {
 
     bool strawExists( StrawId2 const id) const{
       return _allStraws2_p.at(id.asUint16()) != nullptr;
+    }
+
+    const Straw& getStraw2 ( StrawIndex i ) const{
+      // shold be correct by construction
+      return _allStraws2.at(i.asInt());
+    }
+
+    const Straw& getStraw3 ( StrawIndex i ) const{
+      // recalculation from the old to new straw layout
+      uint16_t seqPanelNumber = i.asInt()/StrawId2::_nstraws;
+      uint16_t panelNumber = seqPanelNumber%StrawId2::_npanels;
+      uint16_t planeNumber = seqPanelNumber/StrawId2::_npanels;
+      uint16_t panelNumberShifted = panelNumber << StrawId2::_panelsft;
+      uint16_t planeNumberShifted = planeNumber << StrawId2::_planesft;
+      uint16_t strawNumberInPanel = i.asInt()%StrawId2::_nstraws;
+      constexpr static uint16_t strawsPerLayer =
+        StrawId2::_nstraws/StrawId2::_nlayers;
+      uint16_t sn = (strawNumberInPanel<strawsPerLayer) ?
+        (strawNumberInPanel << 1 ) :
+        (( strawNumberInPanel - strawsPerLayer) << 1 ) + 1;
+      uint16_t i2 = planeNumberShifted + panelNumberShifted + sn;
+      // std::cout << __func__ << " i, sn, i2 "
+      //           << std::setw(6) << i
+      //           << std::setw(6) << sn
+      //           << std::setw(6) << i2
+      //           << std::endl;
+      return *(_allStraws2_p.at(i2));
+    }
+
+    const StrawId2 getStrawId2 ( StrawIndex i ) const{
+      return (_allStraws2.at(i.asInt())).id2();
+    }
+
+    const StrawIndex getStrawIndex (  const StrawId2& id ) const{
+      return (_allStraws2_p.at(id.asUint16()))-> index();
     }
 
     // =============== NewTracker Accessors End   ==============
@@ -301,14 +310,14 @@ namespace mu2e {
     // There will be pointers to the objects in this container.
     std::deque<Straw>  _allStraws;
 
-    // Deprecated: part of the ancient MECO TTracker design.  
+    // Deprecated: part of the ancient MECO TTracker design.
     // A few vestiges not yet removed.
     std::vector<Manifold> _allManifolds;
 
     // Outer envelope that holds the new style support structure.
     PlacedTubs _mother;
 
-    // The envelope that holds all of the planes in the tracker, 
+    // The envelope that holds all of the planes in the tracker,
     // including the plane supports.
     TubsParams _innerTrackerEnvelopeParams;
 

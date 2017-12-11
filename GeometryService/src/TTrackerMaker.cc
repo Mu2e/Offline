@@ -95,11 +95,15 @@ namespace mu2e {
         size_t ipnlf = nStrawsPerPanel*cpnl + nStrawsPerPlane*cpln;
 
         cout << __func__ << " Straw "
-             << fixed << setw(6) << istr
+             << fixed << setw(6) << istr << " "
+             << straw.index() << " "
+             << straw2.index() << " "
+             << _tt->getStrawIndex(straw.id2()) << " "
              << " plnfloor " << setw(6) << ipnlf << " "
              << straw.id() << " "
              << straw.id2() << " "
              << straw2.id2() << " "
+             << _tt->getStrawId2(StrawIndex(istr)) << " "
              << straw3.id2()
              << " mid point " << straw.getMidPoint()
              << " r " << sqrt(straw.getMidPoint()[0]*straw.getMidPoint()[0]+
