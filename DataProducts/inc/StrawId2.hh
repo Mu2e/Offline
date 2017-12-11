@@ -6,7 +6,6 @@
 // Re-implemented as integer bitfields by Dave Brown (LBNL)
 //
 #include <ostream>
-#include <iomanip>
 #include <string>
 #include <math.h>
 
