@@ -12,6 +12,7 @@
 //
 
 #include <deque>
+#include <array>
 #include <vector>
 
 #include "Mu2eInterfaces/inc/Detector.hh"
@@ -33,10 +34,13 @@ namespace mu2e {
     //virtual bool isLegal(const PanelId& pnlid) const = 0;
     //vitrual bool isLegal(const LayerId& layid ) const = 0;
     //virtual bool isLegal(const StrawId& strid) const =0;
+    constexpr static int _nttstraws = StrawId2::_nplanes *
+                                      StrawId2::_npanels *
+                                      StrawId2::_nstraws;
 
     virtual const Straw& getStraw ( const StrawId& strid ) const=0;
     virtual const Straw& getStraw ( StrawIndex i ) const=0;
-    virtual const std::deque<Straw>& getAllStraws() const=0;
+    virtual const std::array<Straw,_nttstraws>& getAllStraws() const=0;
     virtual const std::vector<StrawDetail>& getStrawDetails() const=0;
 
   };

@@ -12,7 +12,7 @@
 // Original author Rob Kutschke
 //
 
-#include <deque>
+//#include <deque>
 #include <vector>
 #include <array>
 #include <limits>
@@ -47,9 +47,9 @@ namespace mu2e {
 
     // =============== NewTracker Public Objects Start ==============
 
-    constexpr static int _nttstraws = StrawId2::_nplanes *
-                                      StrawId2::_npanels *
-                                      StrawId2::_nstraws;
+    // constexpr static int _nttstraws = StrawId2::_nplanes *
+    //                                   StrawId2::_npanels *
+    //                                   StrawId2::_nstraws; // uncomment after eliminating Tracker
 
     // constexpr static int _maxRedirect = std::numeric_limits<uint16_t>::max();
     constexpr static uint16_t _maxRedirect =
@@ -140,9 +140,9 @@ namespace mu2e {
       return _planes.at(strid.getPlane()).getStraw(strid);
     }
 
-    const Straw& getStraw ( StrawIndex i ) const{
-      return _allStraws.at(i.asInt());
-    }
+    // const Straw& getStraw ( StrawIndex i ) const{
+    //   return _allStraws.at(i.asInt());
+    // }
 
     int nStations() const{
       return _stations.size();
@@ -156,7 +156,9 @@ namespace mu2e {
       return _stations.at(id);
     }
 
-    const std::deque<Straw>& getAllStraws() const {return _allStraws;}
+    //    const std::deque<Straw>& getAllStraws() const {return _allStraws;}
+    const std::array<Straw,TTracker::_nttstraws>& getAllStraws() const 
+    {return _allStraws2;}
 
     const std::vector<StrawDetail>& getStrawDetails() const{
       return _strawDetails;
@@ -193,7 +195,8 @@ namespace mu2e {
 
     // presence info for each straw.
     bool strawExists(StrawIndex const index) const {
-      return _strawExists[index.asInt()];
+      //      return _strawExists[index.asInt()];
+      return _allStraws2_p.at(((_allStraws2.at(index.asInt())).id2()).asUint16()) != nullptr;
     }
 
     // =============== NewTracker Accessors Start ==============
@@ -210,7 +213,7 @@ namespace mu2e {
       return _allStraws2_p.at(id.asUint16()) != nullptr;
     }
 
-    const Straw& getStraw2 ( StrawIndex i ) const{
+    const Straw& getStraw ( StrawIndex i ) const{
       // shold be correct by construction
       return _allStraws2.at(i.asInt());
     }
@@ -308,7 +311,7 @@ namespace mu2e {
     std::vector<Station> _stations;
 
     // There will be pointers to the objects in this container.
-    std::deque<Straw>  _allStraws;
+    //    std::deque<Straw>  _allStraws;
 
     // Deprecated: part of the ancient MECO TTracker design.
     // A few vestiges not yet removed.
@@ -346,7 +349,7 @@ namespace mu2e {
     double _envelopeInnerRadius;
 
     // presence info for each straw.
-    std::vector<bool> _strawExists;
+    //    std::vector<bool> _strawExists;
 
     // =============== NewTracker Private Objects Start ==============
 
