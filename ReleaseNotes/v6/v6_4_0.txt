@@ -2,6 +2,17 @@ Still under construction
 
            Release notes for Mu2e Offline software, v6_4_0
 
+13)	   dnbrow01 12 Dec 2017
+	   Add ribs to the new TTracker description.  Forgot to check these
+	   in with some previous commits.
+	   modified:   GeometryService/inc/TTrackerMaker.hh
+	   modified:   GeometryService/src/TTrackerMaker.cc
+	   modified:   Mu2eG4/geom/geom_common_current.txt
+	   modified:   Mu2eG4/geom/ttracker_v5.txt
+	   modified:   Mu2eG4/src/ConstructTTrackerDetail5.cc
+	   modified:   TTrackerGeom/inc/SupportStructure.hh
+
+
 12)        dnbrow01  12 Dec 2017
 	   Move the DS trench to the as-built position of 1 inch south of
 	   nominal.  This does not affect any reconstruction, so can be

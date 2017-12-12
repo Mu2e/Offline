@@ -1189,10 +1189,57 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
 				       place,
 				       _doSurfaceCheck
 				       );
+
+    // Rib 1
+    TubsParams rib1Params ( ring.outerRadius(), 
+			    sup.outerRingDownstream().tubsParams().innerRadius(), 
+			    sup.coverDownstream().tubsParams().zHalfLength(),
+			    maxPhi1-sup.ribHalfAngle(),
+			    2*sup.ribHalfAngle());
+    CLHEP::Hep3Vector ribPosition(0.,0.,sup.coverDownstream().position().z() + 
+				  2.0 * sup.coverDownstream().tubsParams().zHalfLength());
+    VolumeInfo theRib1 = nestTubs( "Rib1",
+				   rib1Params,
+				   findMaterialOrThrow(sup.outerRingDownstream().materialName()),
+				   noRotation,
+				   ribPosition,
+				   spnl0Info.logical,
+				   0,
+				   supportVisible,
+				   G4Colour::Red(),
+				   supportSolid,
+				   _forceAuxEdgeVisible,
+				   place,
+				   _doSurfaceCheck
+				   );
+
+
+    // Rib 2
+    TubsParams rib2Params ( ring.outerRadius(), 
+			    sup.outerRingDownstream().tubsParams().innerRadius(), 
+			    sup.coverDownstream().tubsParams().zHalfLength(),
+			    maxPhi1+sup.panelPhiRibs() -sup.ribHalfAngle(),
+			    2*sup.ribHalfAngle());
+    VolumeInfo theRib2 = nestTubs( "Rib2",
+				   rib2Params,
+				   findMaterialOrThrow(sup.outerRingDownstream().materialName()),
+				   noRotation,
+				   ribPosition,
+				   spnl0Info.logical,
+				   0,
+				   supportVisible,
+				   G4Colour::Red(),
+				   supportSolid,
+				   _forceAuxEdgeVisible,
+				   place,
+				   _doSurfaceCheck
+				   );
+
   }
-  // Did the inner ring, now we've got it all for the panel!
+  // Did the inner ring and the ribs, now complete.  Return the panel.
 
   return spnl0Info;
+
 } // end of prepareStrawPanel()
   // ***************************************
 

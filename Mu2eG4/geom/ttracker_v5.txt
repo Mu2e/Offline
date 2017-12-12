@@ -98,7 +98,7 @@ double ttrackerSupport.midRing.Phi0       = 0.0;   // in degrees
 double ttrackerSupport.midRing.dPhi       = 360.0; // degrees
 string ttrackerSupport.midRing.material   = "BrassC360"; 
 
-// steves are called beams now
+// staves are called beams now
 // in doc-db 888.v7 the one at the top is different one from the ones
 // on the sides
 
@@ -133,7 +133,8 @@ vector<string> ttrackerSupport.beam1.serviceMaterialsCov =
 // A panel's support ring structure covers 120 degrees of the circle
 double ttrackerSupport.phiCoverage            = 120.0;
 // Angle between ribs at the top of the panel arc
-double ttrackerSupport.dphiRibs               = 27.0; // degrees
+double ttrackerSupport.dphiRibs               = 27.0; // degrees.  Between ribs
+double ttrackerSupport.ribHalfAngle           = 1.0; // degree.  Span of rib
 double ttracker.planePadding                  = 0.5; // mm
 double ttracker.panelPadding                  = 0.25; // mm
 
