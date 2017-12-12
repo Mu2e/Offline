@@ -835,7 +835,7 @@ namespace mu2e {
     //    cout << "Debugging TTrackerMaker ilay: " << ilay << endl;
 
     // Start to populate the layer.
-    // layer._nStraws      = _manifoldsPerEnd*_strawsPerManifold; // not really needed
+    // layer._nStraws      = _manifoldsPerEnd*_strawsPerManifold; // not really used
     layer._straws.reserve(_manifoldsPerEnd*_strawsPerManifold);
 
     // |z| of straw center, relative to the center of the plane.
@@ -967,7 +967,7 @@ namespace mu2e {
 
         // layer._straws.push_back(&allStraws.back());
         layer._straws.push_back(&allStraws2.at(_strawTrckrConstrCount));
-        layer._indices.push_back(index);
+        // layer._indices.push_back(index);
 
 
         //         if ( layId.getPlane() != -1 ){

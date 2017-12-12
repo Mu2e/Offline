@@ -70,12 +70,10 @@ namespace mu2e {
     //        << endl;
     // }
 
-    _straws.clear();
-    for ( size_t i=0; i<_indices.size(); ++i ){
-      StrawIndex idx = _indices[i];
-      const Straw* straw =  &tracker.getStraw(idx);
-      _straws.push_back(straw);
-      straw->fillPointers(tracker);
+    // _straws.clear(); // we fill mutable info except _straws; we assume _straws to be correct
+    for (int ist=0; ist<nStraws(); ++ist ){
+      const Straw& straw  = getStraw(ist*2); // specific straw
+      straw.fillPointers(tracker);
     }
     _straw0Direction = _straws[0]->getDirection();
     _straw0MidPoint  = _straws[0]->getMidPoint();

@@ -137,7 +137,7 @@ namespace mu2e {
     // These are not persisted and may need to be recomputed after readback.
     mutable std::vector<const Straw*> _straws;
 
-    std::vector<StrawIndex> _indices;
+    // std::vector<StrawIndex> _indices;
 
   };
 }
