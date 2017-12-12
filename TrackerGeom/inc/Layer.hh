@@ -33,13 +33,13 @@ namespace mu2e {
 
     Layer();
 
-    Layer(const LayerId& id);
+    explicit Layer(const LayerId& id);
 
-    Layer(const LayerId&   id,
-          int        nStraws
-          // const CLHEP::Hep3Vector& origin,
-          // const CLHEP::Hep3Vector& delta
-          );
+    // Layer(const LayerId&   id
+    //       // int        nStraws
+    //       // const CLHEP::Hep3Vector& origin,
+    //       // const CLHEP::Hep3Vector& delta
+    //       );
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
@@ -117,7 +117,7 @@ namespace mu2e {
     // Number of straws.  Needed because of 2 phase construction.
     // The member _straws is not filled until the second phase
     // but this is neede beforehand. Keep it strictly private.
-    int _nStraws;
+    // int _nStraws; // see nStraws() above
 
     // Nominal position of wire 0 and offset from wire 0 to wire 1.
     // This is exactly only all wires are in their nominal positions.

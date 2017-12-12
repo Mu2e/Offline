@@ -513,7 +513,7 @@ namespace mu2e {
     }
 
     // Fill all of the non-persistent information.
-    _tt->fillPointers();
+    _tt->fillPointers(); // fixme; is it needed ?
 
     identifyNeighbourStraws();
 
@@ -835,7 +835,7 @@ namespace mu2e {
     //    cout << "Debugging TTrackerMaker ilay: " << ilay << endl;
 
     // Start to populate the layer.
-    layer._nStraws = _manifoldsPerEnd*_strawsPerManifold;
+    // layer._nStraws      = _manifoldsPerEnd*_strawsPerManifold; // not really needed
     layer._straws.reserve(_manifoldsPerEnd*_strawsPerManifold);
 
     // |z| of straw center, relative to the center of the plane.
@@ -1184,7 +1184,7 @@ namespace mu2e {
 
       LayerId lId = i.id().getLayerId();
       int layer = lId.getLayer();
-      int nStrawLayer = _tt->getLayer(lId)._nStraws;
+      int nStrawLayer = _tt->getLayer(lId).nStraws();
 
       if ( _verbosityLevel>2 ) {
         cout << __func__ << " layer " << lId << " has " << nStrawLayer << " straws" << endl;
@@ -1207,9 +1207,6 @@ namespace mu2e {
       // add the "same layer" n+2 neighbours straw (if exist)
       // in the new model straw numbers increase by 2 in a given layer
 
-      // is there anything which uses the straw number to look up the position in a container?
-      // looks like it is done in many places
-
       if ( i.id().getStraw() < (2*nStrawLayer-2) ) {
         const StrawId nsId(lId, (i.id().getStraw()) + 2 );
         i._nearestById.push_back( nsId );
@@ -1226,7 +1223,7 @@ namespace mu2e {
 
         // throw exception if the two layer of the same panel have different
         // number of straws
-        if (_tt->getLayer(lId)._nStraws != nStrawLayer) {
+        if (_tt->getLayer(lId).nStraws() != nStrawLayer) { // fixme: always? the same lId for both?
           throw cet::exception("GEOM")
             << "The code works only with the same number of straws "
             << "per layer in the same panel. \n";

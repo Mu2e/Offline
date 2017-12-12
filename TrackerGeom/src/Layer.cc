@@ -24,24 +24,24 @@ using CLHEP::Hep3Vector;
 namespace mu2e {
 
   Layer::Layer():
-    _id(LayerId()),
-    _nStraws(0)
-    //    _orig(CLHEP::Hep3Vector(0.,0.,0.)),
-    //_delta(CLHEP::Hep3Vector(0.,0.,0.))
+    _id(LayerId())
+    // _nStraws(0)
+    // _orig(CLHEP::Hep3Vector(0.,0.,0.)),
+    // _delta(CLHEP::Hep3Vector(0.,0.,0.))
     {
   }
 
-  Layer::Layer(const LayerId& id,
-               int      nStraws
-               // const CLHEP::Hep3Vector& origin,
-               // const CLHEP::Hep3Vector& delta
-               ):
-    _id(id),
-    _nStraws(nStraws)
-    // _orig(origin),
-    // _delta(delta)
-  {
-  }
+  // Layer::Layer(const LayerId& id
+  //              // int      nStraws
+  //              // const CLHEP::Hep3Vector& origin,
+  //              // const CLHEP::Hep3Vector& delta
+  //              ):
+  //   _id(id)
+  //   // _nStraws(nStraws)
+  //   // _orig(origin),
+  //   // _delta(delta)
+  // {
+  // }
 
   Layer::Layer(const LayerId& id ):
     _id(id){
