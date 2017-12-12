@@ -10,6 +10,7 @@
 //
 
 #include <sstream>
+#include <iomanip>
 
 #include "TrackerGeom/inc/Layer.hh"
 #include "TrackerGeom/inc/Tracker.hh"
@@ -24,20 +25,22 @@ namespace mu2e {
 
   Layer::Layer():
     _id(LayerId()),
-    _nStraws(0),
-    _orig(CLHEP::Hep3Vector(0.,0.,0.)),
-    _delta(CLHEP::Hep3Vector(0.,0.,0.)){
+    _nStraws(0)
+    //    _orig(CLHEP::Hep3Vector(0.,0.,0.)),
+    //_delta(CLHEP::Hep3Vector(0.,0.,0.))
+    {
   }
 
   Layer::Layer(const LayerId& id,
-               int      nStraws,
-               const CLHEP::Hep3Vector& origin,
-               const CLHEP::Hep3Vector& delta
+               int      nStraws
+               // const CLHEP::Hep3Vector& origin,
+               // const CLHEP::Hep3Vector& delta
                ):
     _id(id),
-    _nStraws(nStraws),
-    _orig(origin),
-    _delta(delta){
+    _nStraws(nStraws)
+    // _orig(origin),
+    // _delta(delta)
+  {
   }
 
   Layer::Layer(const LayerId& id ):
@@ -55,6 +58,18 @@ namespace mu2e {
   }
 
   void Layer::fillPointers ( const Tracker& tracker ) const{
+
+    // cout << __func__ << " Printing Layer nStraws before: " << nStraws() << endl;
+    // for (int is = 0; is<(nStraws()*2); is+=2) {
+    //   const Straw& straw = getStraw(is);
+    //   cout << __func__ << " Printing Layer _straws info before: " << id()
+    //        << setw(3) << is
+    //        << " " << straw.id()
+    //        << " " << straw.id2()
+    //        << " " << straw.index()
+    //        << endl;
+    // }
+
     _straws.clear();
     for ( size_t i=0; i<_indices.size(); ++i ){
       StrawIndex idx = _indices[i];
@@ -64,6 +79,18 @@ namespace mu2e {
     }
     _straw0Direction = _straws[0]->getDirection();
     _straw0MidPoint  = _straws[0]->getMidPoint();
+
+    // cout << __func__ << " Printing Layer nStraws after: " << nStraws() << endl;
+    // for (int is = 0; is<(nStraws()*2); is+=2) {
+    //   const Straw& straw = getStraw(is);
+    //   cout << __func__ << " Printing Layer _straws info after: " << id()
+    //        << setw(3) << is
+    //        << " " << straw.id()
+    //        << " " << straw.id2()
+    //        << " " << straw.index()
+    //        << endl;
+    // }
+
   }
 
 } // namespace mu2e

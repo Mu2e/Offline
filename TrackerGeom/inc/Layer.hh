@@ -36,9 +36,9 @@ namespace mu2e {
     Layer(const LayerId& id);
 
     Layer(const LayerId&   id,
-          int        nStraws,
-          const CLHEP::Hep3Vector& origin,
-          const CLHEP::Hep3Vector& delta
+          int        nStraws
+          // const CLHEP::Hep3Vector& origin,
+          // const CLHEP::Hep3Vector& delta
           );
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
@@ -47,8 +47,8 @@ namespace mu2e {
 
     int nStraws() const { return _straws.size(); }
 
-    const CLHEP::Hep3Vector getOrigin() const {return _orig;}
-    const CLHEP::Hep3Vector getDelta()  const {return _delta;}
+    // const CLHEP::Hep3Vector getOrigin() const {return _orig;}
+    // const CLHEP::Hep3Vector getDelta()  const {return _delta;}
 
     const Straw& getStraw( int n ) const {
       return *_straws.at(n/2); // new model requires division by 2
@@ -121,8 +121,8 @@ namespace mu2e {
 
     // Nominal position of wire 0 and offset from wire 0 to wire 1.
     // This is exactly only all wires are in their nominal positions.
-    CLHEP::Hep3Vector _orig;
-    CLHEP::Hep3Vector _delta;
+    // CLHEP::Hep3Vector _orig;
+    // CLHEP::Hep3Vector _delta;
 
     // Position (in tracker coordinates) of the midpoint, and direction
     // of the primary straw.  Mutable for the same reason as _straws:
