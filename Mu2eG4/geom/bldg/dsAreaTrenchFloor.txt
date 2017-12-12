@@ -22,10 +22,10 @@ vector<double> building.dsArea.trench.floor.xPositions = {
 };
 
 vector<double> building.dsArea.trench.floor.yPositions = {
-  -4394.2,   // T0
-  -4394.2,   // T1
-  -5308.6,   // T2
-  -5308.6,   // T3
+  -4419.6,   // T0
+  -4419.6,   // T1
+  -5334.0,   // T2
+  -5334.0,   // T3
   -11303,   // T4
   -11303   // T5
 };
