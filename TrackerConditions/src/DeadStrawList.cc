@@ -175,8 +175,7 @@ namespace mu2e {
     }
 
     if(_verbosity > 1) {
-      std::deque<Straw> straws = tracker.getAllStraws();
-      for(auto straw: straws){
+      for(auto straw: tracker.getAllStraws()){
 	std::cout << "Straw Index " << straw.index() << " Id " << straw.id() << endl;
       }
     }

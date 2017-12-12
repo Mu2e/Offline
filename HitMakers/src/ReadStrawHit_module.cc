@@ -189,11 +189,11 @@ namespace mu2e {
     // Get the persistent data about the StrawHits.
 
     if (ncalls==1){
-      const std::deque<Straw>& allstraws = tracker.getAllStraws();
+      const auto & allstraws = tracker.getAllStraws();
       float detnt[11];
-      for (size_t i = 0;i<allstraws.size();i++)
+      for ( const auto & str : allstraws)
         {
-          Straw str = allstraws[i];
+          //          Straw str = allstraws[i];
           StrawId sid = str.id();
           LayerId lid = sid.getLayerId();
           PlaneId did = sid.getPlaneId();
@@ -218,7 +218,7 @@ namespace mu2e {
             endl;
           */
           // Fill the ntuple.
-          detnt[0]  = i;
+          detnt[0]  = str.index().asInt();
           detnt[1]  = lid.getLayer();
           detnt[2]  = did;
           detnt[3]  = secid.getPanel();
