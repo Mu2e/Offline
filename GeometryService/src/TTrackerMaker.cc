@@ -654,18 +654,46 @@ namespace mu2e {
 
       Layer const & layer = panel.getLayer(ilay);
       //      cout << "Debugging looking at the layer   : " << layer.id() << endl;
-      for (int ns = 0; ns<(layer.nStraws()*2-2); ns+=2) {
+
+      // print out the Layer containers (or thier equivalence)
+      if (_verbosityLevel>2) {
+        // by _straws
+        for (int is = 0; is<(layer.nStraws()*2); is+=2) {
+          const Straw& straw = layer.getStraw(is);
+          cout << __func__ << " Printing Layer _straws info: " << layer.id()
+               << setw(3) << is
+               << " " << straw.id()
+               << " " << straw.id2()
+               << " " << straw.index()
+               << endl;
+        }
+        // by _indices
+        // auto const& allStraws = _tt->_allStraws2;
+        // for (int istr = 0; istr<layer.nStraws(); ++istr) {
+        //   int idx            = layer._indices.at(istr).asInt();
+        //   const Straw& straw = allStraws.at(idx);
+        //   cout << __func__ << " Printing Layer _indices info: " << layer.id()
+        //        << setw(3) << istr
+        //        << setw(3) << idx
+        //        << " " << straw.id()
+        //        << " " << straw.id2()
+        //        << " " << straw.index()
+        //        << endl;
+        // }
+      }
+      
+      for (int is = 0; is<(layer.nStraws()*2-2); is+=2) {
 
         if (_verbosityLevel>2) {
           cout << __func__ << " Checking spacing"
-               << " for layer " << layer.id() << " straw " << layer.getStraw(ns).id()  << endl;
+               << " for layer " << layer.id() << " straw " << layer.getStraw(is).id()  << endl;
         }
 
         double layerDeltaMag =
-          (layer.getStraw(ns+2).getMidPoint() - layer.getStraw(ns).getMidPoint()).mag();
+          (layer.getStraw(is+2).getMidPoint() - layer.getStraw(is).getMidPoint()).mag();
         if ( abs(layerDeltaMag-strawSpacing)> tolerance ) {
           cout << "Layer straw spacing is (mm)   : " << layerDeltaMag
-               << " for layer " << layer.id() << " straw " << layer.getStraw(ns).id()  << endl;
+               << " for layer " << layer.id() << " straw " << layer.getStraw(is).id()  << endl;
           cout << "It should be                  : " << strawSpacing << " diff: "
                << (layerDeltaMag-strawSpacing) << endl;
 
@@ -684,21 +712,21 @@ namespace mu2e {
       Layer const & layer0 = panel.getLayer(0);
       Layer const & layer1 = panel.getLayer(1);
 
-      for (int ns = 0; ns<layer0.nStraws()*2; ns+=2) {
+      for (int is = 0; is<layer0.nStraws()*2; is+=2) {
         double xLayerDeltaMag =
-          (layer0.getStraw(ns).getMidPoint() - layer1.getStraw(ns).getMidPoint()).mag();
+          (layer0.getStraw(is).getMidPoint() - layer1.getStraw(is).getMidPoint()).mag();
 
         if (_verbosityLevel>2) {
           cout << __func__ << " Checking spacing"
-               << " for layer " << layer0.id() << " straw " << layer0.getStraw(ns).id()
-               << " and for layer " << layer1.id() << " straw " << layer1.getStraw(ns).id()  << endl;
+               << " for layer " << layer0.id() << " straw " << layer0.getStraw(is).id()
+               << " and for layer " << layer1.id() << " straw " << layer1.getStraw(is).id()  << endl;
         }
 
         if ( abs(xLayerDeltaMag-strawSpacing)> tolerance ) {
           cout << "xLayer straw spacing is (mm)   : "
                << xLayerDeltaMag
                << " for straws: "
-               << layer0.getStraw(ns).id() << ", " << layer1.getStraw(ns).id()
+               << layer0.getStraw(is).id() << ", " << layer1.getStraw(is).id()
                << endl;
           cout << "It should be                   : "
                << strawSpacing << " diff: "
@@ -709,12 +737,12 @@ namespace mu2e {
         }
       }
 
-      for (int ns = 1; ns<layer0.nStraws()*2; ns+=2) {
-        int i0 = ns;
-        int i1 = ns-2;
+      for (int is = 1; is<layer0.nStraws()*2; is+=2) {
+        int i0 = is;
+        int i1 = is-2;
         if ( _innermostLayer == 1 ){
-          i0 = ns-2;
-          i1 = ns;
+          i0 = is-2;
+          i1 = is;
         }
         double xLayerDeltaMag =
           (layer0.getStraw(i0).getMidPoint() - layer1.getStraw(i1).getMidPoint()).mag();
@@ -1831,9 +1859,14 @@ namespace mu2e {
       Layer& lay(lays.at(ilay));
 
       // straws in layer are layed out contiguously, only their numbers increase by 2
+      // this is going over straws in the layer
       for (int ist=0; ist<lay.nStraws(); ++ist ){
-        int idx             = lay._indices.at(ist).asInt();
-        Straw& straw        = allStraws.at(idx);
+
+        // int idx             = lay._indices.at(ist).asInt(); // straw index
+        // Straw& straw        = allStraws.at(idx);            // specific straw
+
+        const Straw& straw  = lay.getStraw(ist*2);          // specific straw
+        int idx             = straw.index().asInt(); // straw index
 
         if (_verbosityLevel>2) {
           cout << __func__ << " recomputing: ist, idx "
