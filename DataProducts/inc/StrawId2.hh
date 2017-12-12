@@ -13,6 +13,7 @@ namespace mu2e {
 
   class StrawId2{
 
+    friend class Tracker;
     friend class TTracker;
     friend class TTrackerMaker;
     friend class Plane;
@@ -110,7 +111,7 @@ namespace mu2e {
       }
 
       bool operator!=( StrawId2 const& rhs) const{
-	return (  _sid != rhs._sid );
+	return !( *this == rhs);
       }
 
       bool operator<( StrawId2 const& rhs) const{
