@@ -51,6 +51,10 @@ namespace mu2e {
       return _layers;
     }
 
+    const auto& getStrawPointers() const{
+      return _straws2_p;
+    }
+
     int nLayers() const{
       return _layers.size();
     }
