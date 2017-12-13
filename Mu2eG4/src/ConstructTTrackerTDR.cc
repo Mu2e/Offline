@@ -593,14 +593,8 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
     FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
 
   // Place the straws into the panel envelope.
-  for ( std::vector<Layer>::const_iterator i=panel.getLayers().begin(); i != panel.getLayers().end(); ++i ){
-
-    Layer const& lay(*i);
-
-    for ( std::vector<Straw const*>::const_iterator j=lay.getStraws().begin();
-          j != lay.getStraws().end(); ++j ){
-
-      Straw const&       straw(**j);
+  for (const auto straw_p : panel.getStrawPointers() ) {
+      Straw const&       straw(*straw_p);
       StrawDetail const& detail(straw.getDetail());
 
       if (_verbosityLevel>2) {
@@ -790,8 +784,7 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
         innerMetal2Vol.logical->SetSensitiveDetector(strawWallSD);
       }
 
-    } // end loop over straws within a layer
-  } // end loop over layers
+  } // end loop over straws within a panel
 
   return pnl0Info;
 
