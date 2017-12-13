@@ -54,6 +54,7 @@ namespace mu2e {
       // No automatic conversion of uint16_t to StrawId2.
       explicit StrawId2(uint16_t sid):
         _sid(sid){
+        valid();
       }
 
       // Use compiler-generated copy c'tor, copy assignment, and d'tor.
