@@ -105,7 +105,7 @@ namespace mu2e {
     bool isLegal(const StrawId& strid) const{
       return ( isLegal(strid.getLayerId()) &&
                strid.getStraw() > -1       &&
-               std::vector<Straw>::size_type(strid.getStraw()) < getLayer(strid.getLayerId()).getStraws().size()
+               strid.getStraw() < getLayer(strid.getLayerId()).nStraws()
                );
     }
 
