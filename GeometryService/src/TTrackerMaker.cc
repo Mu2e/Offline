@@ -428,8 +428,7 @@ namespace mu2e {
 
   void lptest( const Layer& lay){
     cout << lay.id() << " |  "
-         << lay.nStraws()  <<  " |  "
-         << lay.getStraws().capacity() << " "
+         << lay.nStraws()  <<  " "
          << endl;
   }
 
@@ -442,7 +441,7 @@ namespace mu2e {
   }
 
   void positionTest( const Layer& lay){
-    const Straw& straw(**(lay.getStraws().cbegin()));
+    const Straw& straw((lay.getStraw(0)));
     cout << "Layer: "
          << lay.id() << " "
          << straw.getMidPoint().z() <<  " "
