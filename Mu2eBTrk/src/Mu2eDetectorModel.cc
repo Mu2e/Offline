@@ -52,15 +52,12 @@ namespace mu2e {
     for(auto plane : ttracker.getPlanes()){
   // loop over panels
       for(auto panel : plane.getPanels()){
-  // loop over layers: this shouldn't be here, FIXME!!!
-	for(auto layer : panel.getLayers()){
-  // finally loop over straws
-	  for(auto straw : layer.getStraws()){
+  // loop over straws
+        for (const auto straw : panel.getStrawPointers()) {
   // build the straw elements from this
-	    DetStrawElem* elem = new DetStrawElem(_strawtype,straw);
+          DetStrawElem* elem = new DetStrawElem(_strawtype,straw);
 // push this into the map
-	    _strawmap[straw->index()] = elem;
-	  }
+          _strawmap[straw->index()] = elem;
 	}
       }
     }
