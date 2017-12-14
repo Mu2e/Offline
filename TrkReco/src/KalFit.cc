@@ -538,19 +538,23 @@ namespace mu2e
 
           std::cout << __func__ << " printing all straws in layer 0 " << std::endl;
           std::cout << __func__ << " ";
-          for ( std::vector<Straw const*>::const_iterator j=panel.getLayer(0).getStraws().cbegin();
-                j != panel.getLayer(0).getStraws().cend(); ++j ){
+          for (const auto straw_p : panel.getStrawPointers() ) {
+            Straw const&       straw(*straw_p);
+            StrawId sid = straw.id();
+            if ( sid.getLayer() != 0 ) continue;
             std::cout.width(10);
-            std::cout  << (**j).id() << ", ";
+            std::cout  << sid << ", ";
           }
           std::cout << std::endl;
 
           std::cout << __func__ << " printing all straws in layer 1 " << std::endl;
           std::cout << __func__ << " ";
-          for ( std::vector<Straw const*>::const_iterator j=panel.getLayer(1).getStraws().cbegin();
-                j != panel.getLayer(1).getStraws().cend(); ++j ){
+          for (const auto straw_p : panel.getStrawPointers() ) {
+            Straw const&       straw(*straw_p);
+            StrawId sid = straw.id();
+            if ( sid.getLayer() != 1 ) continue;
             std::cout.width(10);
-            std::cout << (**j).id() << ", ";
+            std::cout  << sid << ", ";
           }
           std::cout << std::endl;
 
