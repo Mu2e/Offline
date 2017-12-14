@@ -502,7 +502,7 @@ namespace mu2e {
     }
 
     // ProductID for the SimParticleCollection.
-    art::ProductID simPartId(getProductID<SimParticleCollection>(event));
+    art::ProductID simPartId(getProductID<SimParticleCollection>());
     SimParticleHelper spHelper(multiStagePars_.simParticleNumberOffset(), simPartId, event);
     SimParticlePrimaryHelper parentHelper(event, simPartId, gensHandle);
 

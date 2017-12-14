@@ -546,7 +546,7 @@ namespace mu2e {
     _flags = new StrawHitFlagCollection();
     unique_ptr<StrawHitFlagCollection> flags (_flags);
 
-    art::ProductID kalRepsID(getProductID<KalRepCollection>(event));
+    art::ProductID kalRepsID(getProductID<KalRepCollection>());
 
     double pEntrance(.0), step_time(-9999.);
     double time_threshold(500.);

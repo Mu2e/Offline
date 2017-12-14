@@ -55,7 +55,7 @@ namespace mu2e {
     std::unique_ptr<TrackSummaryCollection> output(new TrackSummaryCollection());
     std::unique_ptr<TrackSummaryRecoMap> recomap(new TrackSummaryRecoMap());
 
-    const art::ProductID trackSummaryPID = getProductID<TrackSummaryCollection>(event);
+    const art::ProductID trackSummaryPID = getProductID<TrackSummaryCollection>();
     const art::EDProductGetter *trackSummaryGetter = event.productGetter(trackSummaryPID);
 
     auto ih = event.getValidHandle<KalRepPtrCollection>(trackInput_);

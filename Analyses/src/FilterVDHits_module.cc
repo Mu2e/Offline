@@ -165,7 +165,7 @@ namespace mu2e {
     // The case when parents are stored is supported by compressSimParticleCollection()
     // otherwise we need to prepare the output SimParticleCollection by hand
     std::unique_ptr<SimParticleCollection> outparts(new SimParticleCollection());
-    art::ProductID newProductId(getProductID<SimParticleCollection>(event));
+    art::ProductID newProductId(getProductID<SimParticleCollection>());
     const art::EDProductGetter *newProductGetter(event.productGetter(newProductId));
     if(!_storeParents) {
 
