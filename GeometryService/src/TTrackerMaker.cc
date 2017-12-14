@@ -83,9 +83,9 @@ namespace mu2e {
 
         const Plane& plane = _tt->getPlane(cpln);
         const Panel& panel = plane.getPanel(cpnl);
-        const Layer&  layer  = panel.getLayer(clay);
+        // const Layer&  layer  = panel.getLayer(clay);
 
-        size_t nStrawsPerPanel = panel.nLayers()  * layer.nStraws();
+        size_t nStrawsPerPanel = panel.nStraws();
         size_t nStrawsPerPlane = plane.nPanels() * nStrawsPerPanel;
 
         double cang = panel.boxRzAngle()/M_PI*180.;
@@ -426,11 +426,11 @@ namespace mu2e {
 
   } // end TTrackerMaker::parseConfig
 
-  void lptest( const Layer& lay){
-    cout << lay.id() << " |  "
-         << lay.nStraws()  <<  " "
-         << endl;
-  }
+  // void lptest( const Layer& lay){
+  //   cout << lay.id() << " |  "
+  //        << lay.nStraws()  <<  " "
+  //        << endl;
+  // }
 
   void plntest( const Plane& plane){
     cout << "Plane: "
@@ -440,14 +440,14 @@ namespace mu2e {
          << endl;
   }
 
-  void positionTest( const Layer& lay){
-    const Straw& straw((lay.getStraw(0)));
-    cout << "Layer: "
-         << lay.id() << " "
-         << straw.getMidPoint().z() <<  " "
-         << straw.getDirection().z() << " "
-         << endl;
-  }
+  // void positionTest( const Layer& lay){
+  //   const Straw& straw((lay.getStraw(0)));
+  //   cout << "Layer: "
+  //        << lay.id() << " "
+  //        << straw.getMidPoint().z() <<  " "
+  //        << straw.getDirection().z() << " "
+  //        << endl;
+  // }
 
   void TTrackerMaker::buildIt(){
 
@@ -1168,10 +1168,10 @@ namespace mu2e {
     for (auto& i : _tt->_allStraws2) {
 
       // throw exception if more than 2 layers per panel
-      if (_tt->getPanel(i.id().getPanelId()).nLayers() > 2 ) {
+      if (_tt->getPanel(i.id().getPanelId()).nLayers() != 2 ) {
         throw cet::exception("GEOM")
-          << "The code works with no more than 2 layers per panel. \n";
-      }
+          << "The code works with 2 layers per panel. \n";
+      } // fixme: rewrite using panels
 
       if (_verbosityLevel>2) {
         cout << __func__ << " "
@@ -1183,7 +1183,8 @@ namespace mu2e {
 
       LayerId lId = i.id().getLayerId();
       int layer = lId.getLayer();
-      int nStrawLayer = _tt->getLayer(lId).nStraws();
+      // int nStrawLayer = _tt->getLayer(lId).nStraws();
+      int nStrawLayer = StrawId2::_nstraws/StrawId2::_nlayers;
 
       if ( _verbosityLevel>2 ) {
         cout << __func__ << " layer " << lId << " has " << nStrawLayer << " straws" << endl;
@@ -1222,11 +1223,12 @@ namespace mu2e {
 
         // throw exception if the two layer of the same panel have different
         // number of straws
-        if (_tt->getLayer(lId).nStraws() != nStrawLayer) { // fixme: always? the same lId for both?
-          throw cet::exception("GEOM")
-            << "The code works only with the same number of straws "
-            << "per layer in the same panel. \n";
-        }
+        // fixme rewrite the check using panels only
+        // if (_tt->getLayer(lId).nStraws() != nStrawLayer) { // fixme: always? the same lId for both?
+        //   throw cet::exception("GEOM")
+        //     << "The code works only with the same number of straws "
+        //     << "per layer in the same panel. \n";
+        // }
 
         // add all straws sharing a preamp
         // assumes current two channel preamps
