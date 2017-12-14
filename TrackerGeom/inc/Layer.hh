@@ -58,9 +58,9 @@ namespace mu2e {
       return getStraw(id.getStraw());
     }
 
-    const std::vector<const Straw*>& getStraws() const {
-      return _straws;
-    }
+    // const std::vector<const Straw*>& getStraws() const {
+    //   return _straws;
+    // }
 
     // Mid-point position of the primary straw, and (collective) straw direction
     // (The primary straw is the straw used to establish position, with other
