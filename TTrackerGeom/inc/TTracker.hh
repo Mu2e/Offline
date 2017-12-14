@@ -94,18 +94,25 @@ namespace mu2e {
               );
     }
 
-    typedef std::vector<Panel>::size_type stypeLayer;
-    bool isLegal(const LayerId& lid ) const{
-      return ( isLegal(lid.getPanelId()) &&
-               lid.getLayer() > -1   &&
-               std::vector<Layer>::size_type(lid.getLayer()) < getPanel(lid.getPanelId()).getLayers().size()
-               );
-    }
+    // typedef std::vector<Panel>::size_type stypeLayer;
+    // bool isLegal(const LayerId& lid ) const{
+    //   return ( isLegal(lid.getPanelId()) &&
+    //            lid.getLayer() > -1   &&
+    //            std::vector<Layer>::size_type(lid.getLayer()) < getPanel(lid.getPanelId()).getLayers().size()
+    //            );
+    // }
+
+    // bool isLegal(const StrawId& strid) const{
+    //   return ( isLegal(strid.getLayerId()) &&
+    //            strid.getStraw() > -1       &&
+    //            strid.getStraw() < getLayer(strid.getLayerId()).nStraws()
+    //            );
+    // }
 
     bool isLegal(const StrawId& strid) const{
-      return ( isLegal(strid.getLayerId()) &&
+      return ( isLegal(strid.getPanelId()) &&
                strid.getStraw() > -1       &&
-               strid.getStraw() < getLayer(strid.getLayerId()).nStraws()
+               strid.getStraw() < getPanel(strid.getPanelId()).nStraws()
                );
     }
 
@@ -132,9 +139,9 @@ namespace mu2e {
 
     double panelOffset() const { return _panelZOffset; }
 
-    const Layer& getLayer ( const LayerId& lid ) const{
-      return _planes.at(lid.getPlane()).getLayer(lid);
-    }
+    // const Layer& getLayer ( const LayerId& lid ) const{
+    //   return _planes.at(lid.getPlane()).getLayer(lid);
+    // }
 
     const Straw& getStraw ( const StrawId& strid ) const{
       return _planes.at(strid.getPlane()).getStraw(strid);
