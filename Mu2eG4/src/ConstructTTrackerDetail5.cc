@@ -781,6 +781,13 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
     zPanel += panel.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
   }
   zPanel /= panel.nLayers();
+
+  if (_verbosityLevel>2) {
+    cout << __func__ << " zPanel: "
+         << zPanel
+         << endl;
+  }
+
   // Is panel 0 on the upstream(+1) or downstream(-z) side of the plane.
   double side = (zPanel-plane.origin().z()) > 0. ? -1. : 1.;
 
@@ -805,14 +812,8 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
     FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
 
   // Place the straws into the panel envelope.
-  for ( std::vector<Layer>::const_iterator i=panel.getLayers().begin(); i != panel.getLayers().end(); ++i ){
-
-    Layer const& lay(*i);
-
-    for ( std::vector<Straw const*>::const_iterator j=lay.getStraws().begin();
-          j != lay.getStraws().end(); ++j ){
-
-      Straw const&       straw(**j);
+  for (const auto straw_p : panel.getStrawPointers() ) {
+      Straw const&       straw(*straw_p);
       StrawDetail const& detail(straw.getDetail());
 
       if (_verbosityLevel>2) {
@@ -979,8 +980,8 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
         innerMetal2Vol.logical->SetSensitiveDetector(strawWallSD);
       }
 
-    } // end loop over straws within a layer
-  } // end loop over layers
+  } // end loop over straws within a panel
+
 
 
   // We have now placed all the straws in the panel.
