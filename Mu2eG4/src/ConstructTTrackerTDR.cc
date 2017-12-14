@@ -569,6 +569,12 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
   }
   zPanel /= panel.nLayers();
 
+  if (_verbosityLevel>2) {
+    cout << __func__ << " zPanel: "
+         << zPanel
+         << endl;
+  }
+
   // Is panel 0 on the upstream(+1) or downstream(-z) side of the plane.
   double side = (zPanel-plane.origin().z()) > 0. ? -1. : 1.;
 
