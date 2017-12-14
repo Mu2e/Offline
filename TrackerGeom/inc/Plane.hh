@@ -70,9 +70,9 @@ namespace mu2e {
       return _panels.at(pnlid.getPanel());
     }
 
-    const Layer& getLayer ( const LayerId& layid ) const{
-      return _panels.at(layid.getPanel()).getLayer(layid);
-    }
+    // const Layer& getLayer ( const LayerId& layid ) const{
+    //   return _panels.at(layid.getPanel()).getLayer(layid);
+    // }
 
     const Straw& getStraw ( const StrawId& strid ) const{
       return _panels.at(strid.getPanel()).getStraw(strid);
