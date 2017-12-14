@@ -47,17 +47,19 @@ namespace mu2e {
 
     const PanelId& id() const { return _id;}
 
-    const std::vector<Layer>& getLayers() const{
-      return _layers;
-    }
+    // const std::vector<Layer>& getLayers() const{
+    //   return _layers;
+    // }
 
     const auto& getStrawPointers() const{
       return _straws2_p;
     }
 
     int nLayers() const{
-      return _layers.size();
+      return StrawId2::_nlayers;
     }
+
+    int nStraws() const { return StrawId2::_nstraws; }
 
     const Layer& getLayer ( int n ) const {
       return _layers.at(n);
