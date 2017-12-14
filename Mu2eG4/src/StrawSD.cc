@@ -73,9 +73,8 @@ namespace mu2e {
 
       const Plane& plane = ttracker->getPlane(0);
       const Panel& panel = plane.getPanel(0);
-      const Layer&  layer  = panel.getLayer(0);
 
-      _nStrawsPerPanel = panel.nLayers()  * layer.nStraws(); // fixme: use StrawId2
+      _nStrawsPerPanel = panel.nStraws();
       _nStrawsPerPlane = plane.nPanels() * _nStrawsPerPanel;
 
       _TrackerVersion = config.getInt("TTrackerVersion",3);
