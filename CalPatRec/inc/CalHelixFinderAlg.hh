@@ -104,6 +104,8 @@ namespace mu2e {
     double               _sigmaPhi;     // hit phi resolution (wrt the trajectory axis, assume R=25-30cm)
     double               _weightXY;     //scale factor for makeing the xy-chi2 with a mean close to 1
     double               _weightZPhi;
+    double               _weight3D;
+    double               _ew;           //error along the wire (mm)
     double               _maxXDPhi;     // max normalized hit residual in phi (findRZ)
 
     double               _hdfdz;        // estimated d(phi)/dz value
@@ -148,6 +150,7 @@ namespace mu2e {
                                         // thresholds for XY and ZPhi chi2 fits
     double    _chi2xyMax;
     double    _chi2zphiMax;
+    double    _chi2hel3DMax;
 
     // indices, distance from prediction and distance along z axis from the seeding hit
     // of the hits found in the pattern recognition
@@ -186,7 +189,7 @@ namespace mu2e {
 				const CLHEP::Hep3Vector& HelCenter, 
 				double                   Radius,
                                 int                      Print, 
-				const char*              Banner);
+				const char*              Banner=NULL);
 
     double calculatePhiWeight  (const CLHEP::Hep3Vector& HitPos   , 
 				const CLHEP::Hep3Vector& StrawDir , 

@@ -41,15 +41,17 @@ CalPatRec : {
 	debugLevel2                             : 0
 	diagLevel                               : 0
 	minNHit                                 : 10      # minimal number of hits on found helix
-	hitChi2Max                              : 25.
+	hitChi2Max                              : 9.
 	mostProbableDfDz                        : 0.00475
 	minNActiveStationPairs                  : 10
 	dzOverHelPitchCut                       : 0.7
 	maxDfDz                                 : 0.01
 	minDfDz                                 : 0.002
 	sigmaPhi                                : 0.1636  # radians
-	weightXY                                : 0.2941
+	weightXY                                : 0.14705
 	weightZPhi                              : 0.174
+	weight3D                                : 1
+	errorAlongWire                          : 30.  # mm
 	maxXDPhi                                : 5    #
 	distPatRec                              : 100. # mm
 	maxChi2TrkCandidate                     : 1500
@@ -58,6 +60,7 @@ CalPatRec : {
 	# confirmed on 2015-02-07
 	chi2xyMax                               : 5.0    # default value is 300
 	chi2zphiMax                             : 5.0    # 0.1 #default is 0.1, use 0.05 for debugging purposes
+	chi2hel3DMax                            : 9.0
 	dfdzErr                                 : 0.1
     }
 
@@ -72,15 +75,17 @@ CalPatRec : {
 	minimumTime                             : 500.    #ns
 	maximumTime                             : 2000.   #ns
 	minNHit                                 : 10      # minimal number of hits on found helix
-	hitChi2Max                              : 25.
+	hitChi2Max                              : 9.
 	mostProbableDfDz                        : 0.00475
 	minNActiveStationPairs                  : 10
 	dzOverHelPitchCut                       : 0.7
 	maxDfDz                                 : 0.01
 	minDfDz                                 : 0.002
 	sigmaPhi                                : 0.1636  # radians
-	weightXY                                : 0.1018
+	weightXY                                : 0.0509
 	weightZPhi                              : 0.0502
+	weight3D                                : 1
+	errorAlongWire                          : 30.  # mm
 	maxXDPhi                                : 5    #
 	distPatRec                              : 100. # mm
 	maxChi2TrkCandidate                     : 1500
@@ -89,6 +94,7 @@ CalPatRec : {
 	# confirmed on 2015-02-07
 	chi2xyMax                               : 5.0    # default value is 300
 	chi2zphiMax                             : 5.0    # 0.1 #default is 0.1, use 0.05 for debugging puposes
+	chi2hel3DMax                            : 9.0
 	dfdzErr                                 : 0.1
     }
 #------------------------------------------------------------------------------
