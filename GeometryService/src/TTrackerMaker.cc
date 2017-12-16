@@ -592,8 +592,10 @@ namespace mu2e {
 
     // plane rotation is no longer used.
     double phi = 0.0;
-    _tt->_planes.push_back(Plane(planeId, origin, phi));
+    StrawId2 pid2(planeId, 0, 0);
+    _tt->_planes.push_back(Plane(planeId, pid2,origin, phi));
     Plane& plane = _tt->_planes.back();
+    cout << __func__ << " making plane " <<  plane.id2() << endl;
     plane._exists = ( find ( _nonExistingPlanes.begin(), _nonExistingPlanes.end(), ipln) ==
                       _nonExistingPlanes.end() );
 
@@ -602,9 +604,18 @@ namespace mu2e {
     for ( int ipnl=0; ipnl<_panelsPerPlane; ++ipnl ){
       makePanel ( PanelId(planeId,ipnl), plane );
       if (_verbosityLevel>2) {
-        size_t istr = -1;
+        size_t istr = -1; // local index in the panel
         Panel& panel = plane._panels.back();
-        cout << __func__ << " straws in panel " << setw(10) << panel.id() << endl;
+        std::ostringstream pnlid("",std::ios_base::ate); // to write at the end
+        pnlid << panel.id();
+        cout << __func__ << " straws in panel "
+             << setw(7) << pnlid.str();
+        pnlid.str("");
+        pnlid << panel.id2();
+        cout << setw(8) << pnlid.str();
+        // test of Plane, Panel functions
+        cout << setw(4) << panel.id2().getPlane();
+        cout << setw(2) << panel.id2().getPanel() << endl;
         for (const auto istr_p : panel._straws2_p) {
           StrawId2 const & lsid =  (*istr_p).id2();
           std::ostringstream nsid("",std::ios_base::ate); // to write at the end
@@ -614,7 +625,16 @@ namespace mu2e {
                << setw(17) << std::bitset<16>(lsid.asUint16())
                << " " 
                << setw(6) << std::showbase << std::hex << lsid.asUint16()
-               << " " << std::dec << std::noshowbase << setw(7) << nsid.str() << endl;
+               << " " << std::dec << std::noshowbase << setw(7) << nsid.str();
+          // now the straw by the Panel::getStraw(const StrawId2& strid2) which uses local index
+          nsid.str("");
+          nsid << panel.getStraw(lsid).id2();
+          cout << setw(8) << nsid.str();
+          nsid.str("");
+          StrawId sid  = (*istr_p).id();
+          nsid << panel.getStraw(sid).id(); // old id of the straw in the old container
+          cout << setw(10) << nsid.str()
+               << endl;
         }
       }
     }
@@ -625,7 +645,8 @@ namespace mu2e {
   void TTrackerMaker::makePanel( const PanelId& plnId, Plane& plane ){
 //std::cout << "->->-> makePanel\n";
 
-    plane._panels.push_back( Panel(plnId) );
+    StrawId2 pid2(plnId.getPlane(), plnId.getPanel(), 0);
+    plane._panels.push_back( Panel(plnId,pid2) );
     Panel& panel = plane._panels.back();
     
     panel._layers.reserve(_layersPerPanel);
