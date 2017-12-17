@@ -8,9 +8,11 @@
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeomPrimitives/inc/Tube.hh"
+#include "GeomPrimitives/inc/Cone.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/nestCons.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "G4Helper/inc/G4Helper.hh"
@@ -33,21 +35,48 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     std::string sName = "PSEnclosureShell";
-    nestTubs(sName,
-             pse->shell().getTubsParams(),
-             findMaterialOrThrow(pse->shell().materialName()),
-             0,
-             pse->shell().originInMu2e() - parent.centerInMu2e(),
-             parent,
-             0,
-             config.getBool("PSEnclosure.visible"),
-             G4Colour::Blue(),
-             config.getBool("PSEnclosure.solid"),
-             forceAuxEdgeVisible,
-             placePV,
-             doSurfaceCheck
-             );
+    if ( pse->version() > 1 ) {
+      double consParams[7] = { pse->shellCone().innerRadius1(),
+			       pse->shellCone().outerRadius1(),
+			       pse->shellCone().innerRadius2(),
+			       pse->shellCone().outerRadius2(),
+			       pse->shellCone().halfLength(),
+			       pse->shellCone().phi0(),
+			       pse->shellCone().deltaPhi() };
+      CLHEP::Hep3Vector extraOffset(0.,0.,pse->getExtraOffset());
+      nestCons( sName,
+		consParams,
+		findMaterialOrThrow(pse->shellCone().materialName()),
+		0,
+		pse->shellCone().originInMu2e() - parent.centerInMu2e()
+		+ extraOffset,
+		parent,
+		0,
+	       config.getBool("PSEnclosure.visible"),
+	       G4Colour::Blue(),
+	       config.getBool("PSEnclosure.solid"),
+	       forceAuxEdgeVisible,
+	       placePV,
+	       doSurfaceCheck
+	       );
+		
 
+    } else {
+      nestTubs(sName,
+	       pse->shell().getTubsParams(),
+	       findMaterialOrThrow(pse->shell().materialName()),
+	       0,
+	       pse->shell().originInMu2e() - parent.centerInMu2e(),
+	       parent,
+	       0,
+	       config.getBool("PSEnclosure.visible"),
+	       G4Colour::Blue(),
+	       config.getBool("PSEnclosure.solid"),
+	       forceAuxEdgeVisible,
+	       placePV,
+	       doSurfaceCheck
+	       );
+    }
 
     // get the mass of the Shell
     G4Helper* _helper = &(*art::ServiceHandle<G4Helper>());

@@ -31,6 +31,14 @@ namespace mu2e {
       aRotation.rotateY(45.0*CLHEP::degree);
       return;
     }
+    if ( orient == "400" ) { // Special 45 degree turn around x
+      aRotation.rotateX(45.0*CLHEP::degree);
+      return;
+    }
+    if ( orient == "500" ) { // Special 45 degree turn around x
+      aRotation.rotateX(-45.0*CLHEP::degree);
+      return;
+    }
     if ( orient == "060" ) { // Special -32 degree turn around y for pipe in TS
       aRotation.rotateY(-32.0*CLHEP::degree);
       return;

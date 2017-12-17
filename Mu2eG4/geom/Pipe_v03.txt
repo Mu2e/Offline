@@ -51,7 +51,7 @@ string Pipe.flavorType4 = "straight";
 string Pipe.fillMaterialType1 = "G10Lite";
 string Pipe.fillMaterialType2 = "G10Lite";
 string Pipe.fillMaterialType3 = "DC704"; // pump oil - crude model, excuse pun
-string Pipe.fillMaterialType4 = "G4_AIR";
+string Pipe.fillMaterialType4 = "PSVacuum";
 
 // The position of the piece in Mu2e Offline coordinates
 // Pipes added from PS-TS_Shield.txt of g4beamline
@@ -138,7 +138,7 @@ string Pipe.orientationType2Pipe12 = "320";
 string Pipe.orientationType2Pipe13 = "100";
 string Pipe.orientationType2Pipe14 = "300";
 string Pipe.orientationType2Pipe15 = "030";
-string Pipe.orientationType2Pipe16 = "0b0";
+string Pipe.orientationType2Pipe16 = "0b0"; // special for this pipe
 string Pipe.orientationType3Pipe1 = "100";
 string Pipe.orientationType3Pipe2 = "100";
 string Pipe.orientationType3Pipe3 = "100";
@@ -175,7 +175,7 @@ double Pipe.rInType2Comp10 = 9.464;
 
 double Pipe.rInType3Comp1 = 190.0;
 
-double Pipe.rInType4Comp1 = 300.05;
+double Pipe.rInType4Comp1 = 295.3; // 11 5/8 inches
 
 // next, outer radii
 double Pipe.rOutType1Comp1 = 127.0; 
@@ -229,7 +229,7 @@ string Pipe.materialType2Comp10   = "G4_Al";
 
 string Pipe.materialType3Comp1 = "StainlessSteel";
 
-string Pipe.materialType4Comp1 ="StainlessSteel";
+string Pipe.materialType4Comp1 ="StainlessSteel316L";
 
 // Now the offsets, defining the positions of the components relative
 // to the mother pipe
