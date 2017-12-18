@@ -122,6 +122,14 @@ namespace mu2e {
         return ( _sid > rhs._sid);
       }
 
+      bool samePlane( StrawId2 const& sid) const{
+	return ((_sid & _planemsk) == (sid._sid & _planemsk));
+      }
+
+      bool samePanel( StrawId2 const& sid) const{
+	return ((_sid & _panelmsk) == (sid._sid & _panelmsk));
+      }
+
       friend std::ostream& operator<<(std::ostream& ost,
                                       const StrawId2& s ){
 	ost << s.plane() << "_"
