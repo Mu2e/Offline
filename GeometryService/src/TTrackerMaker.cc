@@ -627,6 +627,7 @@ namespace mu2e {
                << setw(6) << std::showbase << std::hex << lsid.asUint16()
                << " " << std::dec << std::noshowbase << setw(7) << nsid.str();
           // now the straw by the Panel::getStraw(const StrawId2& strid2) which uses local index
+          // panel.getStraw(StrawId2(0,0,0)); // test
           nsid.str("");
           nsid << panel.getStraw(lsid).id2();
           cout << setw(8) << nsid.str();
@@ -930,10 +931,6 @@ namespace mu2e {
         // counter used to *place* the straws in an order 0..95, not 0,2..93,95
         int strawCountReCounted = npp*spp+listraw;
 
-        if (!plane.exists()) {
-          allStraws2_p.at(lsid.asUint16()) = nullptr;
-        }
-
         // allStraws.push_back( Straw( StrawId( layId, listraw),
         //                             lsid, // this is a new/tmp field, new constructor
         //                             index,
@@ -956,10 +953,17 @@ namespace mu2e {
                  unit
                  );
 
-        // allStraws2_p.at(lsid.asUint16()) = &allStraws2.at(strawCountReCounted);
-        allStraws2_p.at(lsid.asUint16()) = &allStraws2.at(_strawTrckrConstrCount);
-        // panelStraws2_p.at(listraw) = &allStraws2.at(strawCountReCounted);
-        panelStraws2_p.at(_strawPanelConstrCount) = &allStraws2.at(_strawTrckrConstrCount);
+        if (plane.exists()) {
+          // allStraws2_p.at(lsid.asUint16()) = &allStraws2.at(strawCountReCounted);
+          // straw pointers are always stored by StrawId2 order
+          allStraws2_p.at(lsid.asUint16()) = &allStraws2.at(_strawTrckrConstrCount);
+          panelStraws2_p.at((lsid.asUint16() & StrawId2::_strawmsk)) =
+            &allStraws2.at(_strawTrckrConstrCount);
+        } else {
+          allStraws2_p.at(lsid.asUint16()) = nullptr;
+          panelStraws2_p.at((lsid.asUint16() & StrawId2::_strawmsk)) = nullptr;
+        }
+
         if (_verbosityLevel>3) {
           std::ostringstream osid("",std::ios_base::ate); // to write at the end
           // osid << allStraws.back().id();

@@ -80,34 +80,14 @@ namespace mu2e {
       return _layers.at(strid.getLayer()).getStraw(strid);
     }
 
-    static uint16_t indexInPanel ( const StrawId2& strid2 ) {
-      // Fixme if possible: This is construction specific (see TTrackerMaker)
-      uint16_t strawInPanel = strid2.getStraw();
-      uint16_t sipdb2 = strid2.getStraw() >> 1; // straw number in panel divided by 2
-      constexpr static uint16_t strawsPerLayer =
-        StrawId2::_nstraws/StrawId2::_nlayers;
-      uint16_t iip = (strawInPanel%StrawId2::_nlayers == 0 ) ? sipdb2 : strawsPerLayer+sipdb2;
-      // std::cout << " " << __func__ << " sid2, indexInPanel "
-      //           << std::setw(6) << strid2
-      //           << std::setw(6) << iip
-      //           << std::endl;
-      return iip;
-    }
-
-    // const Straw& getStraw ( const StrawId2& strid2 ) const{
-    //   return *(_straws2_p.at(indexInPanel(strid2)));
-    // }
-
     // this getStraw checks if this is the right panel
     const Straw& getStraw ( const StrawId2& strid2 ) const{
-      // fixme: optimize this at the StrawId2 level
-      if (strid2.getPlane() == _id2.getPlane() &&
-          strid2.getPanel() == _id2.getPanel() ) {
-        return *(_straws2_p.at(indexInPanel(strid2)));
+      if ( _id2.samePlane(strid2) && _id2.samePanel(strid2) ) {
+        return *(_straws2_p.at((strid2.asUint16() & StrawId2::_strawmsk)));
       } else {
         throw cet::exception("RANGE")
-          << __func__ << " Inconsisten straw request " << strid2 << " " << id2();
-
+          << __func__ << " Inconsistent straw/panel request " << strid2
+          << "/" << id2();
       }
     }
 
