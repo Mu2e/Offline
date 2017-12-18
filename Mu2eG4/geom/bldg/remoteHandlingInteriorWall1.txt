@@ -39,8 +39,8 @@ vector<double> building.remote.handling.Interior.Wall.1.yPositions = {
 };
 
 int building.remote.handling.Interior.Wall.1.Notch.numberOfNotches = 1;
-vector<double> building.remote.handling.Interior.Wall.1.Notch.halfDims.1 = {305.,325.,305.};
-vector<double> building.remote.handling.Interior.Wall.1.Notch.position.1 = {-4100.,6553.,0.0};
+vector<double> building.remote.handling.Interior.Wall.1.Notch.halfDims.1 = {406.,325.,406.};
+vector<double> building.remote.handling.Interior.Wall.1.Notch.position.1 = {-4318.,6553.,-266.7};
 string  building.remote.handling.Interior.Wall.1.Notch.orientation.1 = "000";
 
 // Local Variables:

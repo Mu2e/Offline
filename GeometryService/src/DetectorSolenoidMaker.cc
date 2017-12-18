@@ -122,6 +122,10 @@ namespace mu2e {
 	ds->_BBlockCenters2.push_back(center);
       }
     }
+    ds->_widthCoupler = c.getDouble("ds.widthCoupler",0.0);
+    ds->_heightCoupler = c.getDouble("ds.heightCoupler",0.0);
+    ds->_yCenterCoupler = c.getDouble("ds.yCenterCoupler",0.0);
+    ds->_couplerScheme = c.getInt("ds.couplerScheme",0);
 
     // MBS spherical support structure
     ds->_hasMBSS = c.getBool("ds.hasMBSSupport",false);

@@ -21,6 +21,7 @@
 #include "MBSGeom/inc/MBS.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/constructDS.hh"
+#include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestPolycone.hh"
 #include "Mu2eG4/inc/nestExtrudedSolid.hh"
@@ -513,7 +514,7 @@ namespace mu2e {
     std::vector<double> vRailOutline = ds->vOutlineRail();
 
     const bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
+    const bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false)|| _config.getBool("ds.doSurfaceCheck",false);
     const bool placePV             = true;
     CLHEP::HepRotation* nRailRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
     CLHEP::HepRotation* sRailRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
@@ -567,9 +568,15 @@ namespace mu2e {
      double lenBB3 = ds->lengthBBlock3()/2.0*CLHEP::mm;
      std::vector<CLHEP::Hep3Vector> BBCenters2 = ds->BBlockCenters2();
      std::vector<CLHEP::Hep3Vector> BBCenters3 = ds->BBlockCenters3();
+     int cScheme = ds->couplerScheme();
+
      // First in DS2Vacuum region
      int nB2 = BBCenters2.size();
      CLHEP::Hep3Vector DS2Offset(0,0,ds2Z0);
+     int coupleCounter = 0;
+     double widCoupler = ds->widthCoupler();
+     double hCoupler = ds->heightCoupler();
+     double yCoupler = ds->yCenterCoupler();
      for ( int iB2 = 0; iB2 < nB2; iB2++ ) {
        std::stringstream sstm;
        sstm << "BearingBlock_DS2_" << iB2+1;
@@ -578,14 +585,38 @@ namespace mu2e {
 	   uBBlockOutline, vBBlockOutline, 
 	   findMaterialOrThrow(ds->BBlockMaterial()),
 	   BBRotat, BBCenters2[iB2] - DS2Offset,
-	   ds2VacInfo.logical, 0, _config.getBool("ds.visible"),
+	   ds2VacInfo.logical, 
+	   0, _config.getBool("ds.visible"),
 	   G4Colour::Blue(), _config.getBool("ds.solid"),
 	   forceAuxEdgeVisible, placePV, doSurfaceCheck );
-
+       // Now add Couplers
+       if (iB2 < nB2 - 2 && (cScheme == 0 || (cScheme == 1 && BBCenters2[iB2].x() > 0.0) || (cScheme == 2 && BBCenters2[iB2].x() < 0) ) ) {
+	 coupleCounter++;
+	 std::stringstream couplerName;
+	 couplerName << "Coupler_DS2_" << coupleCounter;
+	 double lenCoupler = BBCenters2[iB2+2].z() - BBCenters2[iB2].z() 
+	   - 2.*lenBB2 - 0.2; // The 0.2 is to avoid accidental overlaps. 
+	 // The 2.* is because lenBB2 is actually halfLength
+	 CLHEP::Hep3Vector cenCoupler( (BBCenters2[iB2] + BBCenters2[iB2+2] )*0.5 + CLHEP::Hep3Vector(0.0,yCoupler,0.0));
+	 std::vector<double> halfDims = { widCoupler/2.0, 
+					  hCoupler/2.0, 
+					  lenCoupler/2.0 };
+	 nestBox( couplerName.str(),
+		  halfDims,
+		  findMaterialOrThrow(ds->BBlockMaterial()),
+		  BBRotat,
+		  cenCoupler - DS2Offset,
+		  ds2VacInfo.logical,
+		  0, _config.getBool("ds.visible"),
+		  G4Colour::Blue(), _config.getBool("ds.solid"),
+		  forceAuxEdgeVisible, placePV, doSurfaceCheck );
+		  
+       } // end of if for adding coupler if not last bearing block
      }
 
      // Now in DS3Vacuum region
      int nB3 = BBCenters3.size();
+     coupleCounter = 0;
      for ( int iB3 = 0; iB3 < nB3; iB3++ ) {
        std::stringstream sstm;
        sstm << "BearingBlock_DS3_" << iB3+1;
@@ -598,6 +629,30 @@ namespace mu2e {
 	   dsShieldParent, 0, _config.getBool("ds.visible"),
 	   G4Colour::Blue(), _config.getBool("ds.solid"),
 	   forceAuxEdgeVisible, placePV, doSurfaceCheck );
+       // Now add Couplers
+       if (iB3 < nB3 - 2 && (cScheme == 0 || (cScheme == 1 && BBCenters3[iB3].x() > 0.0) || (cScheme == 2 && BBCenters3[iB3].x() < 0) ) ) {
+	 coupleCounter++;
+	 std::stringstream couplerName;
+	 couplerName << "Coupler_DS3_" << coupleCounter;
+	 double lenCoupler = BBCenters3[iB3+2].z() - BBCenters3[iB3].z() 
+	   - 2.*lenBB3 - 0.2; // The 0.2 is to avoid accidental overlaps.
+	 // The 2.* is because lenBB3 is actually halfLength
+	 CLHEP::Hep3Vector cenCoupler( (BBCenters3[iB3] + BBCenters3[iB3+2] )*0.5 + CLHEP::Hep3Vector(0.0,yCoupler,0.0));
+	 std::vector<double> halfDims = { widCoupler/2.0, 
+					  hCoupler/2.0, 
+					  lenCoupler/2.0 };
+	 nestBox( couplerName.str(),
+		  halfDims,
+		  findMaterialOrThrow(ds->BBlockMaterial()),
+		  BBRotat,
+		  cenCoupler,
+		  dsShieldParent,
+		  0, _config.getBool("ds.visible"),
+		  G4Colour::Blue(), _config.getBool("ds.solid"),
+		  forceAuxEdgeVisible, placePV, doSurfaceCheck );
+		  
+       } // end of if for adding coupler if not last bearing block
+
  
      }
 
