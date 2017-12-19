@@ -72,6 +72,10 @@ namespace mu2e {
       return _layers.at(n);
     }
 
+    const Straw& getStraw( uint16_t n ) const {
+      return *(_straws2_p.at(n));
+    }
+
     const Layer& getLayer ( const LayerId& layid) const {
       return _layers.at(layid.getLayer());
     }
