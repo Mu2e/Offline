@@ -33,7 +33,7 @@ namespace mu2e {
       constexpr static uint16_t _nstraws = 96; // number of straws per panel
       constexpr static uint16_t _nlayers = 2; // number of layers per panel ; do we need it, see below
       constexpr static uint16_t _npanels = 6; // number of panels per plane
-      constexpr static uint16_t _nplanes = 36; // number of planes
+      constexpr static uint16_t _nplanes = 36; // number of planes (36 or 40 for cd3)
       constexpr static uint16_t _invalid = 0xFFFF; // invalid identifier
 
     public:
