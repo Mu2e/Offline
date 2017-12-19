@@ -68,16 +68,8 @@ namespace mu2e {
 
     int nStraws() const { return StrawId2::_nstraws; }
 
-    const Layer& getLayer ( int n ) const {
-      return _layers.at(n);
-    }
-
     const Straw& getStraw( uint16_t n ) const {
       return *(_straws2_p.at(n));
-    }
-
-    const Layer& getLayer ( const LayerId& layid) const {
-      return _layers.at(layid.getLayer());
     }
 
     const Straw& getStraw ( const StrawId& strid ) const{
@@ -170,7 +162,16 @@ namespace mu2e {
 
     PanelId _id;
     StrawId2 _id2;
+
     std::vector<Layer> _layers;
+
+    const Layer& getLayer ( int n ) const {
+      return _layers.at(n);
+    }
+
+    const Layer& getLayer ( const LayerId& layid) const {
+      return _layers.at(layid.getLayer());
+    }
 
     std::array<Straw const*, StrawId2::_nstraws> _straws2_p;
 

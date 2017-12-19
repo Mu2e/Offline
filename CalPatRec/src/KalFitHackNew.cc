@@ -644,11 +644,10 @@ namespace mu2e {
     unsigned nadded(0);
     for(auto plane : ttracker.getPlanes()){
       // crappy access to # of straws in a panel
-      int nstraws = 2*plane.getPanel(0).getLayer(0).nStraws();
+      int nstraws = plane.getPanel(0).nStraws();
       // get an approximate z position for this plane from the average position of the 1st and last straws
-      Hep3Vector s0 = plane.getPanel(0).getLayer(0).getStraw(0).getMidPoint();
-      // funky convention for straw numbering in a layer FIXME!!!!
-      Hep3Vector sn = plane.getPanel(0).getLayer(1).getStraw(2*plane.getPanel(0).getLayer(1).nStraws()-1).getMidPoint();
+      Hep3Vector s0 = plane.getPanel(0).getStraw(0).getMidPoint();
+      Hep3Vector sn = plane.getPanel(0).getStraw(nstraws-1).getMidPoint();
       double pz = 0.5*(s0.z() + sn.z());
       // find the transverse position at this z using the reference trajectory
       double flt = zFlight(KRep,pz);
@@ -662,7 +661,7 @@ namespace mu2e {
 	// loop over panels
         for(auto panel : plane.getPanels()){
 	  // get the straw direction for this panel
-          Hep3Vector sdir = panel.getLayer(0).getStraw(0).getDirection();
+          Hep3Vector sdir = panel.getStraw(0).getDirection();
 	  // get the transverse direction to this and z
           static Hep3Vector zdir(0,0,1.0);
           Hep3Vector pdir = sdir.cross(zdir);
@@ -674,10 +673,8 @@ namespace mu2e {
             int istraw = (int)rint(nstraws*(prho-s0.perp())/(sn.perp()-s0.perp()));
             // take a few straws around this
             for(int is = max(0,istraw-2); is<min(nstraws-1,istraw+2); ++is){
-            // must do this twice due to intrusion of layer on hierarchy FIXME!!!
-              matstraws.insert(StrawFlight(panel.getLayer(0).getStraw(is).index(),flt));
-              matstraws.insert(StrawFlight(panel.getLayer(1).getStraw(is).index(),flt));
-              nadded += 2;
+              matstraws.insert(StrawFlight(panel.getStraw(is).index(),flt));
+              ++nadded;
             }
           }
         }

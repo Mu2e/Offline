@@ -264,7 +264,7 @@ namespace mu2e {
 	  int face;
 	  if (panel->id().getPanel() % 2 == 0) face = 0;
 	  else                                 face = 1;
-	  for (int il=0; il<panel->nLayers(); il++) {
+	  for (int il=0; il<panel->nLayers(); ++il) {
 	    cx.Station = ist;
 	    cx.Plane   = ipl;
 	    cx.Face    = face;
@@ -282,7 +282,9 @@ namespace mu2e {
 	    pz->wx  = panel->straw0Direction().x();
 	    pz->wy  = panel->straw0Direction().y();
 	    pz->phi = panel->straw0MidPoint().phi();
-	    pz->z   = (panel->getLayer(0).straw0MidPoint().z()+panel->getLayer(1).straw0MidPoint().z())/2.;
+	    // pz->z   = (panel->getLayer(0).straw0MidPoint().z()+panel->getLayer(1).straw0MidPoint().z())/2.;
+	    pz->z   = (panel->getStraw(0).getMidPoint().z()+
+                       panel->getStraw(1).getMidPoint().z())/2.;
 	  }
 	}	
       }

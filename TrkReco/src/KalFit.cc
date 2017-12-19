@@ -521,16 +521,12 @@ namespace mu2e
        _debug>2 && std::cout << __func__ << " nstraws " << nstraws << std::endl;
 // get an approximate z position for this plane from the average position of the 1st and last straws
       // Hep3Vector s0 = plane.getPanel(0).getLayer(0).getStraw(0).getMidPoint();
-       _debug>2 && std::cout << __func__ << " s0 via layer "
-                << plane.getPanel(0).getLayer(0).getStraw(0).getMidPoint() << std::endl;
       // plane id2 is id2 of 0th straw
       Hep3Vector s0 = plane.getPanel(0).getStraw(StrawId2(plane.id2())).getMidPoint();
        _debug>2 && std::cout << __func__ << " s0 via panel " << s0 << std::endl;
       // funky convention for straw numbering in a layer FIXME!!!!
       // Hep3Vector sn = plane.getPanel(0).getLayer(1).getStraw(2*plane.getPanel(0).getLayer(1).nStraws()-1).getMidPoint();
-      _debug>2 && std::cout << __func__ << " sn via layer "
-                << plane.getPanel(0).getLayer(1).getStraw(2*plane.getPanel(0).getLayer(1).nStraws()-1).getMidPoint() << std::endl;
-      Hep3Vector sn = plane.getPanel(0).getStraw(StrawId2(plane.id2().getPlane(),0,nstraws-1)).getMidPoint();
+      Hep3Vector sn = plane.getPanel(0).getStraw(nstraws-1).getMidPoint();
       _debug>2 && std::cout << __func__ << " sn via panel " << sn << std::endl;
       double pz = 0.5*(s0.z() + sn.z());
       _debug>2 && std::cout << __func__ << " an approximate z position for this plane " << plane.id2() << " " << pz << std::endl;
