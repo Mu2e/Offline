@@ -131,61 +131,66 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
 }
 
 double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
+  //find the true momentum of the conversion electron
+  //by finding the relevant steppoint at the entrance of the tracker
+  double p = -1;
 
-  art::Handle<SimParticleCollection> simsHandle;
-  event.getByLabel("g4run",simsHandle);
-  if (!simsHandle.isValid()) return -1.0;
+  // this will be the simparticle numbers which belong to the conv ele
+  std::vector<mu2e::SimParticle::key_type> cea;
 
-  SimParticleCollection const& simpcoll = *simsHandle;
-
-  art::Handle<StepPointMCCollection> mcVDstepsHandle;
-  event.getByLabel("g4run","virtualdetector",mcVDstepsHandle);
-  if (!mcVDstepsHandle.isValid()) return -1.0;
-  StepPointMCCollection const& spmccoll = *mcVDstepsHandle;
-
-  double p = -1.0;
-  double td,p0;
-  for(auto sp : simpcoll) {
-    const mu2e::SimParticle& part = sp.second;
-    p0 = 0.0;
-    td = 0.0;
-    if(part.pdgId()==11) {
-
-      bool found = false;
-      double t0 = 1e10;
-      CLHEP::Hep3Vector pv;
-
-      for(auto step : spmccoll) {
-	if( step.trackId() == part.id() && 
-	    // front of tracker
-	    (step.volumeId()==VirtualDetectorId::TT_FrontHollow ||
-	    step.volumeId()==VirtualDetectorId::TT_FrontPA) ) {
-  	    // middle of tracker
-	    //(step.volumeId()==VirtualDetectorId::TT_Mid ||
-	    // step.volumeId()==VirtualDetectorId::TT_MidInner) ) {
-	  if(step.time()<t0) {
-	    t0 = step.time();
-	    found = true;
-	    pv = step.momentum();
-	  }
-	}
+  std::vector< art::Handle<SimParticleCollection> > vah;
+  event.getManyByType(vah);
+  for (auto const & ah : vah) { // loop over all SimParticle coll
+    auto const& simpcoll = *ah; //SimParticleCollection
+    for(auto sp : simpcoll) { // loop over SimParticles
+      auto const& part = sp.second; // mu2e::SimParticle
+      // the earliest stage this simparticle appears
+      auto const& opart = part.originParticle(); //mu2e::SimParticle
+      auto const& gptr = opart.genParticle(); //art::Ptr<GenParticle> 
+      if(part.pdgId()==11 && gptr.isNonnull()) { // e- pointing to GenParticle
+	cea.push_back(part.id());
       }
-      if(found) {
-	p0 = pv.mag();
-	double pz = pv.z();
-	double pt = pv.perp();
-	if(pt!=0.0) {
-	  td = pz/pt;
-	} else {
-	  td = 1e14;
-	}
-
-	if(p0>p && p0>100.0 && td>0.527 && td<1.2) {
-	  p = p0;
-	}
-      } // if found
-    } // if electron
+    }
   }
-  return p;
 
+  // now loop over all StepPointMC's and look for a step
+  // at the virtual front of the tracker which points to the SimParticle
+
+  CLHEP::Hep3Vector pv;
+
+  std::vector< art::Handle<StepPointMCCollection> > vah2;
+  event.getManyByType(vah2);
+  for (auto const & ah : vah2) { // loop over SPMC colls
+    if(ah.provenance()->productInstanceName()=="virtualdetector") {
+      auto const& spmccoll = *ah; //StepPointMCCollection
+      
+      double t0 = 1e10;
+      for(auto step : spmccoll) {
+	// this step points to the conversion electron
+	bool goodp = std::find(std::begin(cea), std::end(cea), 
+			       step.trackId()) != std::end(cea);
+	// is at the front of the tracker
+	bool goodv = (step.volumeId()==VirtualDetectorId::TT_FrontHollow ||
+		      step.volumeId()==VirtualDetectorId::TT_FrontPA);
+	// middle of tracker
+	//(step.volumeId()==VirtualDetectorId::TT_Mid ||
+	// step.volumeId()==VirtualDetectorId::TT_MidInner) ) {
+	// t0 check here finds earliest crossing
+	if( goodp && goodv && step.time()<t0) {
+	  pv = step.momentum();
+	  double p0 = pv.mag();
+	  double pz = pv.z();
+	  double pt = pv.perp();
+	  double td = ( pt!=0.0 ? pz/pt : 1e14 );
+	  if(p0>p && p0>100.0 && td>0.527 && td<1.2) {
+	    p = p0;
+	  }
+	} // if good
+      } // loop over steppoints
+    } // if virtualdetector
+  } // loop over SPMC collections
+  
+  return p;
+  
 }
+
