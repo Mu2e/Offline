@@ -18,7 +18,7 @@
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 
 // art includes.
 #include "canvas/Persistency/Common/Ptr.h"
@@ -76,6 +76,7 @@ namespace mu2e {
     // Diagnostics level.
     int _debugLevel;
     int _printHits;
+    bool _misscluster; // allow missing cluster for time division
     // Name of the StrawHit collection
     string _shLabel;
     //    THackData* fHackData;
@@ -86,6 +87,7 @@ namespace mu2e {
     // Parameters
     _debugLevel(pset.get<int>("debugLevel",0)),
     _printHits(pset.get<int>("printHits",0)),
+    _misscluster(pset.get<bool>("AllowMissingClusters",true)),
     _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH"))
  {
     // Tell the framework what we make.
@@ -137,11 +139,9 @@ namespace mu2e {
 
   void MakeStrawHitPositions::produce(art::Event& event) {
     Tracker const& tracker = getTrackerOrThrow();
+    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
 
     if ( _debugLevel > 0 ) cout << "MakeStrawHitPositions: produce() begin; event " << event.id().event() << endl;
-
-   // Handle to the conditions service
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
 
     //    art::Handle<mu2e::StrawHitCollection> strawhitsH; 
     auto strawhitsH = event.getValidHandle<mu2e::StrawHitCollection>(_shLabel);
@@ -159,24 +159,24 @@ namespace mu2e {
 
  //01 - 13 - 2014 gianipez added some printout
     int banner(0);
-    SHInfo shinfo;
     static const double invsqrt12 = 1.0/sqrt(12.0);
 
     for(size_t ish=0;ish<nsh;++ish){
       StrawHit const& hit = strawhits->at(ish);
       Straw const& straw = tracker.getStraw(hit.strawIndex());
-      tcal->StrawHitInfo(straw,hit,shinfo);
+// get distance along wire from the straw center and it's estimated error
+      float dw, dwerr;
+      bool td = srep->wireDistance(hit,straw.getHalfLength(),dw,dwerr);
 // create and fill the position struct
       StrawHitPosition shp;
-      shp._pos = shinfo._pos;
+      shp._pos = straw.getMidPoint()+dw*straw.getDirection();
       shp._wdir = straw.getDirection();
-      shp._wdist = shinfo._tddist;
-      shp._wres = shinfo._tdres;
+      shp._wdist = dw;
+      shp._wres = dwerr;
+      // crude initial estimate of the 
       shp._tres = straw.getRadius()*invsqrt12;
 // if time division worked, flag the position accordingly
-      if(shinfo._tdiv)
-	shp._flag.merge(StrawHitFlag::tdiv); 
-
+      if(td || _misscluster)shp._flag.merge(StrawHitFlag::tdiv); 
       if (_printHits>0) {
 	printHits(hit,shp, banner);
 	banner=1;
