@@ -63,7 +63,7 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
 fi
 
 # Setup the framework and its dependent products
-setup -B art v2_09_02 -q${MU2E_UPS_QUALIFIERS}
+setup -B art v2_09_03 -q${MU2E_UPS_QUALIFIERS}
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
@@ -71,14 +71,14 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_02_00b -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
+setup -B mu2e_artdaq_core v1_02_01a -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
 
 # Other libraries we need.
 
 setup -B heppdt   v3_04_01g -q${MU2E_UPS_QUALIFIERS}
 setup -B xerces_c v3_1_4b   -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_02_07  -q${MU2E_UPS_QUALIFIERS}
-setup -B cry   v1_7h  -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_02_08  -q${MU2E_UPS_QUALIFIERS}
+setup -B cry   v1_7i  -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v3_0_0  -q p2714
