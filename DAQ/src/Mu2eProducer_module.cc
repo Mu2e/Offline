@@ -210,19 +210,19 @@ void
 	adc_t strawIdx = cc.DBT_StrawIndex(pos);
 	unsigned long TDC0  = cc.DBT_TDC0(pos);
 	unsigned long TDC1  = cc.DBT_TDC1(pos);
+	unsigned long TOT0  = cc.DBT_TOT0(pos);
+	unsigned long TOT1  = cc.DBT_TOT1(pos);
 
 	std::vector<adc_t> waveform = cc.DBT_Waveform(pos);
 
 	// Create the StrawDigi data products
+	mu2e::StrawIndex sid(strawIdx);
 	mu2e::TrkTypes::TDCValues tdc;
 	tdc[0] = TDC0;
 	tdc[1] = TDC1;
-	mu2e::StrawIndex sid(strawIdx);
-
-	// TOT needs to be added to the bytestream format FIXME!!!
 	mu2e::TrkTypes::TOTValues tot;
-	tot[0] = 0;
-	tot[1] = 0;
+	tot[0] = TOT0;
+	tot[1] = TOT1;
 	
 	if( debug_ ) {
 	  std::cout << "MAKEDIGI: " << sid << " " << tdc[0] << " " << tdc[1] << " "
@@ -244,8 +244,6 @@ void
 
 	// Fill the StrawDigiCollection
 	straw_digis->push_back(mu2e::StrawDigi( sid, tdc, tot, wf));
-
-	
 
 	if( debug_ ) {
 	  std::cout << "timestamp: " << timestamp << std::endl;
@@ -272,6 +270,8 @@ void
 	  std::cout << "strawIdx: " << strawIdx << std::endl;
 	  std::cout << "TDC0: " << TDC0 << std::endl;
 	  std::cout << "TDC1: " << TDC1 << std::endl;
+	  std::cout << "TOT0: " << TDC0 << std::endl;
+	  std::cout << "TOT1: " << TDC1 << std::endl;
 	  std::cout << "Waveform: {";
 	  for(size_t i=0; i<waveform.size(); i++) {
 	    std::cout << waveform[i];
@@ -289,6 +289,8 @@ void
 	  std::cout << strawIdx << " ";
 	  std::cout << TDC0 << " ";
 	  std::cout << TDC1 << " ";
+	  std::cout << TOT0 << " ";
+	  std::cout << TOT1 << " ";
 	  std::cout << waveform.size() << " ";
 	  for(size_t i=0; i<waveform.size(); i++) {
 	    std::cout << waveform[i];
