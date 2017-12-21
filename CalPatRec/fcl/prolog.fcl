@@ -492,39 +492,6 @@ CalPatRec : { @table::CalPatRec
 	    strawHitFlagCollectionTag     : FlagStrawHits
 	}
 
-	# CalPatRecFSHP : {
-	#     module_type                     : FlagStrawHits
-	#     StrawHitCollectionTag           : makeSH
-	#     StrawHitPositionCollectionTag   : ""
-	#     maximumEnergy                   : 0.005   # 5 KeV, in MeV
-	#     UseCaloCluster           : false
-	#     UseCaloClusterXYPosition : false
-	#     CaloClusterMinE          : 50.
-	#     CaloClusterMinSize       : 2
-	#     CaloClusterMinDt         : -40
-	#     CaloClusterMaxDt         : 40
-	#     pitchAngle               : 0.67   # mean pitch for CE
-	#     beta                     : 1.
-	#     dtOffset                 : @local::TrackCaloMatching.DtOffset	
-	# }
-
-	# CalPatRecMakeStrawHitPositions : {
-	#     module_type                 : MakeStrawHitPositions
-	#     StrawHitCollection          : makeSH
-	#     diagLevel                   : 0
-	#     printHits                   : 0
-	# }
-
-	# CalPatRecMakeStereoHits         : {
-	#     module_type                 : MakeStereoHits
-	#     StrawHitCollectionLabel     : makeSH
-	#     StrawHitPositionCollection  : MakeStrawHitPositions
-	#     StrawHitFlagCollection      : CalPatRecFSHP
-	#     MVATool                     : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
-	#     diagLevel                   : 0
-	#     printHits                   : 0
-	# }
-
 	# CalPatRecFlagStrawHits              : {
 	#     module_type                     : FlagStrawHits
 	#     StrawHitCollectionTag           : makeSH
@@ -541,15 +508,6 @@ CalPatRec : { @table::CalPatRec
 	#     pitchAngle               : 0.67   # mean pitch for CE
 	#     beta                     : 1.
 	#     dtOffset                 : @local::TrackCaloMatching.DtOffset
-	# }
-
-	# CalPatRecFlagBkgHits                : { @table::FlagBkgHits
-	#     StrawHitCollectionLabel         : makeSH
-	#     StrawHitFlagCollectionLabel     : CalPatRecFlagStrawHits
-	#     StrawHitPositionCollectionLabel : CalPatRecMakeStereoHits
-	#     # make sure the stereo hit collection name is undefined , 
-	#     # according to the  comments this shouldn't change anything
-	#     StereoHitCollectionLabel        : ""
 	# }
 #------------------------------------------------------------------------------
 # default configuration: DEM
@@ -751,11 +709,6 @@ CalPatRec : { @table::CalPatRec
     }
 }
 
-# CalPatRecFSHP                  : { @table::CalPatRec.producers.CalPatRecFSHP                  }
-# CalPatRecMakeStrawHitPositions : { @table::CalPatRec.producers.CalPatRecMakeStrawHitPositions }
-# CalPatRecMakeStereoHits        : { @table::CalPatRec.producers.CalPatRecMakeStereoHits        }
-# CalPatRecFlagStrawHits         : { @table::CalPatRec.producers.CalPatRecFlagStrawHits         }
-# CalPatRecFlagBkgHits           : { @table::CalPatRec.producers.CalPatRecFlagBkgHits           }
 #------------------------------------------------------------------------------
 # calorimeter-seeded tracking makes sense only for downstream particles
 #------------------------------------------------------------------------------
@@ -801,26 +754,6 @@ CalPatRec: { @table::CalPatRec
 	    TimeClusterCollectionLabel : CalTimePeakFinderDmp
 	}
 
-	# CalSeedFitDem                  : { @table::CalPatRec.filters.CalSeedFit        
-	#     HelixSeedModuleLabel       : CalHelixFinderDem
-	#     CalTimePeakModuleLabel     : CalTimePeakFinderDem
-	# }
-	# CalSeedFitDmm                  : { @table::CalPatRec.filters.CalSeedFit 
-	#     fitparticle                : @local::Particle.muminus
-	#     HelixSeedModuleLabel       : CalHelixFinderDmm
-	#     CalTimePeakModuleLabel     : CalTimePeakFinderDmm
-	# }
-	# CalSeedFitDep                  : { @table::CalPatRec.filters.CalSeedFit 
-	#     fitparticle                : @local::Particle.eplus  
-	#     HelixSeedModuleLabel       : CalHelixFinderDep
-	#     CalTimePeakModuleLabel     : CalTimePeakFinderDep
-	# }
-	# CalSeedFitDmp                  : { @table::CalPatRec.filters.CalSeedFit 
-	#     fitparticle                : @local::Particle.muplus
-	#     HelixSeedModuleLabel       : CalHelixFinderDmp
-	#     CalTimePeakModuleLabel     : CalTimePeakFinderDmp
-	# }
-
 	CalTrkFitDem                   : { @table::CalPatRec.filters.CalTrkFit         
 	    TrackSeedModuleLabel       : CalSeedFitDem
 	    CalTimePeakModuleLabel     : CalTimePeakFinderDem
@@ -843,17 +776,7 @@ CalPatRec: { @table::CalPatRec
    }
 }
 
-
-# MergePatRecDem  : { @table::CalPatRec.producers.MergePatRecDem }
-# MergePatRecDmm  : { @table::CalPatRec.producers.MergePatRecDmm }
-# MergePatRecDep  : { @table::CalPatRec.producers.MergePatRecDep }
-# MergePatRecDmp  : { @table::CalPatRec.producers.MergePatRecDmp }
-# MergePatRecUem  : { @table::CalPatRec.producers.MergePatRecUem }
-# MergePatRecUmm  : { @table::CalPatRec.producers.MergePatRecUmm }
-# MergePatRecUep  : { @table::CalPatRec.producers.MergePatRecUep }
-# MergePatRecUmp  : { @table::CalPatRec.producers.MergePatRecUmp }
-
-CalPatRec.prepare_hits : [ makeSH, CalPatRecMakeStrawHitPositions, CalTimePeakFinder, DeltaFinder]
+CalPatRec.prepare_hits : [ makeSH, MakeStrawHitPositions, CalTimePeakFinder, DeltaFinder]
 
 CalPatRec.reco     : [ @sequence::CalPatRec.prepare_hits, CalHelixFinder   , CalSeedFit   , CalTrkFit    ]
 CalPatRec.dem_reco : [ @sequence::CalPatRec.prepare_hits, CalHelixFinderDem, CalSeedFitDem, CalTrkFitDem ]
