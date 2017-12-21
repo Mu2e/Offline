@@ -717,9 +717,11 @@ vector<double> ExtShieldDownstream.notchDimType25Box1Notch4 = {4928,154,559};
 
 
 // PS Shielding extrusion notch
-int ExtShieldDownstream.nNotchesType17Box1 = 1;
+int ExtShieldDownstream.nNotchesType17Box1 = 2;
 vector<double> ExtShieldDownstream.notchCenterType17Box1Notch1 = {-1775,1277.9,2118.11};
 vector<double> ExtShieldDownstream.notchDimType17Box1Notch1 = {560,508,1011.78};
+vector<double> ExtShieldDownstream.notchCenterType17Box1Notch2 = {1775,0.0,-2400.0};
+vector<double> ExtShieldDownstream.notchDimType17Box1Notch2 = {762.,762.,762.};
 
 
 // Hole information 

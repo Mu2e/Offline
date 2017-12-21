@@ -29,9 +29,11 @@ namespace mu2e {
     GeomHandle<PSVacuum> psv;
 
     const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false) 
+      || config.getBool("ps.doSurfaceCheck",false);
     const bool placePV             = true;
     const int  verbosityLevel      = config.getInt("PSEnclosure.verbosityLevel",0);
+    CLHEP::Hep3Vector extraOffset(0.,0.,pse->getExtraOffset());
 
     //----------------------------------------------------------------
     std::string sName = "PSEnclosureShell";
@@ -43,7 +45,6 @@ namespace mu2e {
 			       pse->shellCone().halfLength(),
 			       pse->shellCone().phi0(),
 			       pse->shellCone().deltaPhi() };
-      CLHEP::Hep3Vector extraOffset(0.,0.,pse->getExtraOffset());
       nestCons( sName,
 		consParams,
 		findMaterialOrThrow(pse->shellCone().materialName()),
@@ -90,7 +91,7 @@ namespace mu2e {
                                          pse->endPlate().getTubsParams(),
                                          findMaterialOrThrow(pse->endPlate().materialName()),
                                          0,
-                                         pse->endPlate().originInMu2e() - parent.centerInMu2e(),
+                                         pse->endPlate().originInMu2e() - parent.centerInMu2e() + extraOffset,
                                          parent,
                                          0,
                                          config.getBool("PSEnclosure.visible"),
@@ -114,7 +115,7 @@ namespace mu2e {
       // Hole in the endPlate for the window
       const CLHEP::Hep3Vector vacCenter =
         pse->windows()[i].originInMu2e() +
-        CLHEP::Hep3Vector(0,0, pse->endPlate().halfLength() + pse->windows()[i].halfLength())
+        CLHEP::Hep3Vector(0,0, pse->endPlate().halfLength() + pse->windows()[i].halfLength()) + extraOffset
         ;
 
       const TubsParams vacTubs(pse->windows()[i].innerRadius(),
@@ -146,7 +147,7 @@ namespace mu2e {
                pse->windows()[i].getTubsParams(),
                findMaterialOrThrow(pse->windows()[i].materialName()),
                0,
-               pse->windows()[i].originInMu2e() - parent.centerInMu2e(),
+               pse->windows()[i].originInMu2e() - parent.centerInMu2e() + extraOffset,
                parent,
                0,
                config.getBool("PSEnclosure.visible"),
