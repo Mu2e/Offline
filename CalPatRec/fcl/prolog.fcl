@@ -525,32 +525,32 @@ CalPatRec : { @table::CalPatRec
 	#     printHits                   : 0
 	# }
 
-	CalPatRecFlagStrawHits              : {
-	    module_type                     : FlagStrawHits
-	    StrawHitCollectionTag           : makeSH
-	    StrawHitPositionCollectionTag   : CalPatRecMakeStereoHits
-	    minimumRadius                   : 380.            # mm
-	    maximumRadius                   : 700.  # mm
-	    maximumEnergy                   : 0.005           # 5 KeV, in MeV
-	    UseCaloCluster           : false
-	    UseCaloClusterXYPosition : false
-	    CaloClusterMinE          : 50.
-	    CaloClusterMinSize       : 2
-	    CaloClusterMinDt         : -40
-	    CaloClusterMaxDt         : 40
-	    pitchAngle               : 0.67   # mean pitch for CE
-	    beta                     : 1.
-	    dtOffset                 : @local::TrackCaloMatching.DtOffset
-	}
+	# CalPatRecFlagStrawHits              : {
+	#     module_type                     : FlagStrawHits
+	#     StrawHitCollectionTag           : makeSH
+	#     StrawHitPositionCollectionTag   : CalPatRecMakeStereoHits
+	#     minimumRadius                   : 380.            # mm
+	#     maximumRadius                   : 700.  # mm
+	#     maximumEnergy                   : 0.005           # 5 KeV, in MeV
+	#     UseCaloCluster           : false
+	#     UseCaloClusterXYPosition : false
+	#     CaloClusterMinE          : 50.
+	#     CaloClusterMinSize       : 2
+	#     CaloClusterMinDt         : -40
+	#     CaloClusterMaxDt         : 40
+	#     pitchAngle               : 0.67   # mean pitch for CE
+	#     beta                     : 1.
+	#     dtOffset                 : @local::TrackCaloMatching.DtOffset
+	# }
 
-	CalPatRecFlagBkgHits                : { @table::FlagBkgHits
-	    StrawHitCollectionLabel         : makeSH
-	    StrawHitFlagCollectionLabel     : CalPatRecFlagStrawHits
-	    StrawHitPositionCollectionLabel : CalPatRecMakeStereoHits
-	    # make sure the stereo hit collection name is undefined , 
-	    # according to the  comments this shouldn't change anything
-	    StereoHitCollectionLabel        : ""
-	}
+	# CalPatRecFlagBkgHits                : { @table::FlagBkgHits
+	#     StrawHitCollectionLabel         : makeSH
+	#     StrawHitFlagCollectionLabel     : CalPatRecFlagStrawHits
+	#     StrawHitPositionCollectionLabel : CalPatRecMakeStereoHits
+	#     # make sure the stereo hit collection name is undefined , 
+	#     # according to the  comments this shouldn't change anything
+	#     StereoHitCollectionLabel        : ""
+	# }
 #------------------------------------------------------------------------------
 # default configuration: DEM
 # CalPatRec, so far, has been validated only for e- 
@@ -751,11 +751,11 @@ CalPatRec : { @table::CalPatRec
     }
 }
 
-CalPatRecFSHP                  : { @table::CalPatRec.producers.CalPatRecFSHP                  }
-CalPatRecMakeStrawHitPositions : { @table::CalPatRec.producers.CalPatRecMakeStrawHitPositions }
-CalPatRecMakeStereoHits        : { @table::CalPatRec.producers.CalPatRecMakeStereoHits        }
-CalPatRecFlagStrawHits         : { @table::CalPatRec.producers.CalPatRecFlagStrawHits         }
-CalPatRecFlagBkgHits           : { @table::CalPatRec.producers.CalPatRecFlagBkgHits           }
+# CalPatRecFSHP                  : { @table::CalPatRec.producers.CalPatRecFSHP                  }
+# CalPatRecMakeStrawHitPositions : { @table::CalPatRec.producers.CalPatRecMakeStrawHitPositions }
+# CalPatRecMakeStereoHits        : { @table::CalPatRec.producers.CalPatRecMakeStereoHits        }
+# CalPatRecFlagStrawHits         : { @table::CalPatRec.producers.CalPatRecFlagStrawHits         }
+# CalPatRecFlagBkgHits           : { @table::CalPatRec.producers.CalPatRecFlagBkgHits           }
 #------------------------------------------------------------------------------
 # calorimeter-seeded tracking makes sense only for downstream particles
 #------------------------------------------------------------------------------
