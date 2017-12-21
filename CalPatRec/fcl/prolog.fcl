@@ -716,62 +716,62 @@ CalPatRec: { @table::CalPatRec
     producers : { @table::CalPatRec.producers
 	
 	CalSeedFitDem                  : { @table::CalPatRec.producers.CalSeedFit        
-	    SeedCollectionTag       : CalHelixFinderDem
+	    SeedCollectionTag          : CalHelixFinderDem
 	}
 	CalSeedFitDmm                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.muminus
-	    SeedCollectionTag       : CalHelixFinderDmm
+	    SeedCollectionTag          : CalHelixFinderDmm
 	}
 	CalSeedFitDep                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.eplus  
-	    SeedCollectionTag       : CalHelixFinderDep
+	    SeedCollectionTag          : CalHelixFinderDep
 	}
 	CalSeedFitDmp                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.muplus
-	    SeedCollectionTag       : CalHelixFinderDmp
+	    SeedCollectionTag          : CalHelixFinderDmp
 	}
     }
     
     filters : { @table::CalPatRec.filters
-	CalTimePeakFinderDem           : { @table::CalPatRec.filters.CalTimePeakFinder }
-	CalTimePeakFinderDmm           : { @table::CalPatRec.filters.CalTimePeakFinder fitparticle: @local::Particle.muminus }
-	CalTimePeakFinderDep           : { @table::CalPatRec.filters.CalTimePeakFinder fitparticle: @local::Particle.eplus   }
-	CalTimePeakFinderDmp           : { @table::CalPatRec.filters.CalTimePeakFinder fitparticle: @local::Particle.muplus  } 
-
+# 	CalTimePeakFinderDem           : { @table::CalPatRec.filters.CalTimePeakFinder }
+# 	CalTimePeakFinderDmm           : { @table::CalPatRec.filters.CalTimePeakFinder fitparticle: @local::Particle.muminus }
+# 	CalTimePeakFinderDep           : { @table::CalPatRec.filters.CalTimePeakFinder fitparticle: @local::Particle.eplus   }
+# 	CalTimePeakFinderDmp           : { @table::CalPatRec.filters.CalTimePeakFinder fitparticle: @local::Particle.muplus  } 
+# 
 	CalHelixFinderDem              : { @table::CalPatRec.filters.CalHelixFinder    
-	    TimeClusterCollectionLabel : CalTimePeakFinderDem
+	    TimeClusterCollectionLabel : CalTimePeakFinder
 	}
 	CalHelixFinderDmm              : { @table::CalPatRec.filters.CalHelixFinder 
 	    fitparticle                : @local::Particle.muminus 
-	    TimeClusterCollectionLabel : CalTimePeakFinderDmm
+	    TimeClusterCollectionLabel : CalTimePeakFinder
 	}
 	CalHelixFinderDep              : { @table::CalPatRec.filters.CalHelixFinder 
 	    fitparticle                : @local::Particle.eplus
-	    TimeClusterCollectionLabel : CalTimePeakFinderDep
+	    TimeClusterCollectionLabel : CalTimePeakFinder
 	}
 	CalHelixFinderDmp              : { @table::CalPatRec.filters.CalHelixFinder 
 	    fitparticle                : @local::Particle.muplus 
-	    TimeClusterCollectionLabel : CalTimePeakFinderDmp
+	    TimeClusterCollectionLabel : CalTimePeakFinder
 	}
 
 	CalTrkFitDem                   : { @table::CalPatRec.filters.CalTrkFit         
 	    TrackSeedModuleLabel       : CalSeedFitDem
-	    CalTimePeakModuleLabel     : CalTimePeakFinderDem
+	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
 	CalTrkFitDmm                   : { @table::CalPatRec.filters.CalTrkFit 
 	    fitparticle                : @local::Particle.muminus 
 	    TrackSeedModuleLabel       : CalSeedFitDmm
-	    CalTimePeakModuleLabel     : CalTimePeakFinderDmm
+	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
 	CalTrkFitDep                   : { @table::CalPatRec.filters.CalTrkFit 
 	    fitparticle                : @local::Particle.eplus  
 	    TrackSeedModuleLabel       : CalSeedFitDep
-	    CalTimePeakModuleLabel     : CalTimePeakFinderDep
+	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
 	CalTrkFitDmp                   : { @table::CalPatRec.filters.CalTrkFit 
 	    fitparticle                : @local::Particle.muplus 
 	    TrackSeedModuleLabel       : CalSeedFitDmp
-	    CalTimePeakModuleLabel     : CalTimePeakFinderDmp
+	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
    }
 }

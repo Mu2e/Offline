@@ -18,6 +18,7 @@
 //root
 //#include "TString.h"
 
+#include "CalPatRec/inc/LsqSums2.hh"
 #include "CalPatRec/inc/LsqSums4.hh"
 #include "CalPatRec/inc/CalTimePeak.hh"
 #include "CalPatRec/inc/CalHelixPoint.hh"
@@ -181,7 +182,8 @@ namespace mu2e {
                                         // cached bfield accessor
     double bz() const;
 
-    void   calculateDfDz(double phi0, double phi1, double z0,  double z1, double &dfdz);
+    void   calculateDfDz    (double phi0, double phi1, double z0,  double z1, double &dfdz);
+    void   calculateDphiDz_2(const int* HitIndex, int NHits, double X0, double Y0, double& DphiDz);
 
     //projects the straw hit error along the radial direction of the circle-helix
     double calculateWeight     (const CLHEP::Hep3Vector& HitPos, 
