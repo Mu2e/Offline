@@ -70,44 +70,92 @@ void TDTest(TTree* sh,const char* page="edep") {
   } else if(spage == "TDlen"){
     gStyle->SetOptFit(1);
     gStyle->SetOptStat(0);
-    std::vector<TH2F*> tdvec;
-    std::vector<TProfile*> tdpvec;
+    TH2F* ctdlen = new TH2F("ctdlen","Ce TDRes vs reco wire position;reco wire position (mm);reco - mc wire position (mm)",20,0.0,400.0,50,-100.0,100.0);
+    TH2F* ptdlen = new TH2F("ptdlen","Proton TDRes vs reco wire position;reco wire position (mm);reco - mc wire position (mm)",20,0.0,400.0,50,-80.0,80.0);
+    sh->Project("ctdlen","shlen-mcshlen:abs(shlen)",conv);
+    sh->Project("ptdlen","shlen-mcshlen:abs(shlen)",proton);
+    ctdlen->FitSlicesY(0,0,-1);
+    ptdlen->FitSlicesY(0,0,-1);
+    TCanvas* tdlcan = new TCanvas("tdlcan","tdlcan",700,700);
+    tdlcan->Divide(2,2);
+    tdlcan->cd(1);
+    ctdlen->Draw("colorz");
+    tdlcan->cd(2);
+    ptdlen->Draw("colorz");
+    tdlcan->cd(3);
+    TH1D *ctdlen_2 = (TH1D*)gDirectory->Get("ctdlen_2");
+    ctdlen_2->SetLineColor(kRed);
+    ctdlen_2->Fit("pol3");
+    ctdlen_2->SetStats(1);
+    tdlcan->cd(4);
+    TH1D *ptdlen_2 = (TH1D*)gDirectory->Get("ptdlen_2");
+    ptdlen_2->SetLineColor(kRed);
+    ptdlen_2->Fit("pol3");
+    ptdlen_2->SetStats(1);
+    TH2F* ctdlenp = new TH2F("ctdlenp","Ce TD pull vs reco wire position;reco wire position (mm);TD pull",15,0.0,450.0,50,-6.0,6.0);
+    TH2F* ptdlenp = new TH2F("ptdlenp","Proton TD pull vs reco wire position;reco wire position (mm);TD pull",15,0.0,450.0,50,-6.0,6.0);
+    sh->Project("ctdlenp","(shlen-mcshlen)/wres:abs(shlen)",conv);
+    sh->Project("ptdlenp","(shlen-mcshlen)/wres:abs(shlen)",proton);
+    ctdlenp->FitSlicesY(0,0,-1);
+    ptdlenp->FitSlicesY(0,0,-1);
+    TCanvas* tdlpcan = new TCanvas("tdlpcan","tdlpcan",700,700);
+    tdlpcan->Divide(2,2);
+    tdlpcan->cd(1);
+    ctdlenp->Draw("colorz");
+    tdlpcan->cd(2);
+    ptdlenp->Draw("colorz");
+    tdlpcan->cd(3);
+    TH1D *ctdlenp_2 = (TH1D*)gDirectory->Get("ctdlenp_2");
+    ctdlenp_2->SetLineColor(kRed);
+    ctdlenp_2->Fit("pol3");
+    ctdlenp_2->SetStats(1);
+    tdlpcan->cd(4);
+    TH1D *ptdlenp_2 = (TH1D*)gDirectory->Get("ptdlenp_2");
+    ptdlenp_2->SetLineColor(kRed);
+    ptdlenp_2->Fit("pol3");
+    ptdlenp_2->SetStats(1);
+  } else if(spage == "TDREdep"){
+    gStyle->SetOptFit(1);
+    gStyle->SetOptStat(0);
+    std::vector<TH2F*> tdrvec;
     char cut[50];
     char name[50];
-    char pname[50];
     char title[80];
     unsigned nplots(0);
-    float smin(200.0);
-    float sbin(50.0);
-    float smax = smin+sbin;
-    while(smax < 601.0){
+    float emin(0.0);
+    float ebin(0.5);
+    float emax = emin+ebin;
+    while(emax < 7.0){
       ++nplots;
-      snprintf(cut,50,"slen>%3.0f&&slen<%3.0f",smin,smax);
+      snprintf(cut,50,"1000.0*edep>%3.1f&&1000.0*edep<%3.1f",emin,emax);
       TCut slcut(cut);
-      cout << "cut = " << slcut << endl;
-      snprintf(name,50,"td%3.0f",smin);
-      cout << "name = " << name << endl;
-      snprintf(title,80,"Ce #Delta t vs true wire position, %3.0f < straw length < %3.0f",smin,smax);
-      cout << "title = " << title << endl;
-      TH2F* hist = new TH2F(name,title,40,-600.0,600.0,50,-10.0,10.0);
-      tdvec.push_back(hist);
-      snprintf(pname,50,"tdp%3.0f",smin);
-      TProfile* prof = new TProfile(pname,title,40,-600.0,600.0,-10.0,10.0);
-      tdpvec.push_back(prof);
-      sh->Project(name,"tcal-thv:mcshlen",cut+conv);
-      sh->Project(pname,"tcal-thv:mcshlen",cut+conv);
-      smin += sbin;
-      smax += sbin;
+      snprintf(name,50,"tdr%3.1f",emin);
+      snprintf(title,80,"TD pull vs reco wire position, %3.1fKeV < edep < %3.1fKeV;reco wire position (mm);TD pull",emin,emax);
+      TH2F* hist = new TH2F(name,title,10,0.0,450.0,50,-6.0,6.0);
+      tdrvec.push_back(hist);
+      sh->Project(name,"(shlen-mcshlen)/wres:abs(shlen)",cut);
+      emin += ebin;
+      emax += ebin;
     }
-    TCanvas* tdlcan = new TCanvas("tdlcan","tdlcan",700,700);
+    TCanvas* tdrcan = new TCanvas("tdrcan","tdrcan",700,700);
     unsigned nx = (unsigned)ceil(sqrt(nplots));
     unsigned ny = ceil(nplots/nx);
-    tdlcan->Divide(nx,ny);
+    tdrcan->Divide(nx,ny);
     for(unsigned iplot=0;iplot<nplots;++iplot){
-      tdlcan->cd(iplot+1);
-      tdvec[iplot]->Draw("colorz");
-      tdpvec[iplot]->Fit("pol1","Q","sames");
-//      tdpvec[iplot]->Draw("sames");
+      tdrcan->cd(iplot+1);
+      tdrvec[iplot]->Draw("colorz");
+    }
+    TCanvas* tdrfcan = new TCanvas("tdrfcan","tdrfcan",700,700);
+    tdrfcan->Divide(nx,ny);
+    for(unsigned iplot=0;iplot<nplots;++iplot){
+      tdrfcan->cd(iplot+1);
+      tdrvec[iplot]->FitSlicesY(0,0,-1);
+      std::string fname(tdrvec[iplot]->GetName());
+      fname += "_2";
+      TH1D *tdr_2 = (TH1D*)gDirectory->Get(fname.c_str());
+      tdr_2->SetLineColor(kRed);
+      tdr_2->Fit("pol3");
+      tdr_2->SetStats(1);
     }
   } else if(spage == "TDEdep"){
     gStyle->SetOptFit(1);
@@ -125,13 +173,13 @@ void TDTest(TTree* sh,const char* page="edep") {
     char rtitle[80];
     char resname[80];
     unsigned nplots(0);
-    float emin(0.0);
-    float ebin(0.5);
+    float emin(0.2);
+    float ebin(0.2);
 //    float ebin(1.0);
     float emax = emin+ebin;
     while(emax < 7.0){
       ++nplots;
-      snprintf(cut,50,"1000.0*edep>%3.1f&&1000.0*edep<%3.1f",emin,emax);
+      snprintf(cut,50,"1000.0*edep>%3.1f&&1000.0*edep<%3.1f&&abs(shlen)<450.0",emin,emax);
       TCut slcut(cut);
       snprintf(name,50,"td%3.1f",emin);
       snprintf(title,80,"True wire position vs #Delta t, %3.1fKeV < edep < %3.1fKeV",emin,emax);
