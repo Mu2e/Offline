@@ -32,12 +32,12 @@ namespace mu2e {
   }
 
   float StrawResponse::halfPropV(float kedep) const {
-    float hvp = min(_pvParams[2],_pvParams[2]+(kedep-_pvParams[0])*_pvParams[1]);
+    float hvp = min(_pvParams[1],_pvParams[1]+(kedep-_pvParams[0])*_pvParams[2]);
     return hvp;
   }
 
   float StrawResponse::wpRes(float kedep) const {
-    float wpr = max(_wpresParams[2],_wpresParams[2]+(kedep-_wpresParams[0])*_wpresParams[1]);
+    float wpr = max(_wpresParams[1],_wpresParams[1]+(kedep-_wpresParams[0])*_wpresParams[2]);
     return wpr;
   }
 
