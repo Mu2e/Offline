@@ -17,6 +17,7 @@ namespace mu2e {
     ValKalSeed(std::string name):_name(name){}
     int declare( art::TFileDirectory tfs);
     int fill(const KalSeedCollection & coll, art::Event const& event);
+    double mcTrkP(art::Event const& event);
     std::string& name() { return _name; }
 
   private:
@@ -40,6 +41,8 @@ namespace mu2e {
     TH1D* _hOmega;
     TH1D* _hZ0;
     TH1D* _hTan;
+    TH1D* _hCuts;
+    TH1D* _hPRes;
   };
 }
 

@@ -432,7 +432,11 @@ namespace mu2e {
 	} // end of if...else...
 
       } // end of for loop over boxes
-
+    // Do a bit of cleanup
+    if ( 0 != OR ) {
+      delete OR;
+      OR = 0;
+    }
   } // end of constructExternalShielding fn
 
 } // namespace mu2e
