@@ -70,11 +70,11 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind, std::ostr
 
   art::Ptr<SimParticle> const& pptr = obj.originParticle().parent();
   long unsigned int pkey = 0;
-  if(pptr.isNonnull()) pkey = pptr->id().asUint();
+  if(pptr) pkey = pptr->id().asUint();
 
   art::Ptr<GenParticle> const& gptr = obj.genParticle();
   std::string gid("none");
-  if(gptr.isNonnull()) gid = gptr->generatorId().name();
+  if(gptr) gid = gptr->generatorId().name();
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;

@@ -1,9 +1,9 @@
 
-#ifndef ValCaloDigi_HH_
-#define ValCaloDigi_HH_
+#ifndef ValStrawDigi_HH_
+#define ValStrawDigi_HH_
 
 #include "art/Framework/Principal/Event.h"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "Validation/inc/ValId.hh"
 #include "Validation/inc/ValPosition.hh"
 #include "TH1D.h"
@@ -11,12 +11,12 @@
 
 namespace mu2e {
 
-  class ValCaloDigi {
+  class ValStrawDigi {
 
   public:
-    ValCaloDigi(std::string name):_name(name){}
+    ValStrawDigi(std::string name):_name(name){}
     int declare( art::TFileDirectory tfs);
-    int fill(const CaloDigiCollection & coll, art::Event const& event);
+    int fill(const StrawDigiCollection & coll, art::Event const& event);
     std::string& name() { return _name; }
 
   private:
@@ -25,10 +25,9 @@ namespace mu2e {
     TH1D* _hVer;
     TH1D* _hN;
     TH1D* _hN2;
-    TH1D* _hI;
-    TH1D* _ht;
-    TH1D* _hm;
-    TH1D* _hE;
+    TH1D* _htdc;
+    TH1D* _hadc;
+    TH1D* _hSI;
   };
 }
 

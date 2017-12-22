@@ -68,7 +68,7 @@ mu2e::TrkCaloIntersectPrinter::Print(const mu2e::TrkCaloIntersect& obj, int ind,
 
   KalRepPtr const&  tptr = obj.trk();
   KalRepPtr::key_type tkey = 0;
-  if(tptr.isNonnull()) tkey = tptr.key();
+  if(tptr) tkey = tptr.key();
 
   os 
     << " " << std::setw(5) << obj.diskId()

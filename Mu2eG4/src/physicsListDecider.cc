@@ -36,6 +36,7 @@
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
+#include "Mu2eG4/inc/MinDEDXPhysicsList.hh"
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "Mu2eG4/inc/setMinimumRangeCut.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -115,6 +116,10 @@ namespace mu2e{
     // special cases
     if ( name  == "Minimal" ) {
       tmpPL = new MinimalPhysicsList;
+    }
+
+    else if ( name  == "MinDEDX" ) {
+      tmpPL = new MinDEDXPhysicsList;
     }
 
 #if G4VERSION<4099

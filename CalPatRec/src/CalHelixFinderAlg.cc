@@ -166,6 +166,8 @@ namespace mu2e {
     _sigmaPhi         (pset.get<double>("sigmaPhi")),
     _weightXY         (pset.get<double>("weightXY")),
     _weightZPhi       (pset.get<double>("weightZPhi")),
+    _weight3D         (pset.get<double>("weight3D")),
+    _ew               (pset.get<double>("errorAlongWire")),
     _maxXDPhi         (pset.get<double>("maxXDPhi",5.)),
     _distPatRec       (pset.get<double>("distPatRec")),
     _rbias            (pset.get<double>("radialBias",0.0)),
@@ -198,6 +200,7 @@ namespace mu2e {
     _markCandidateHits     (pset.get<int>("markCandidateHits")),
     _chi2xyMax             (pset.get<double>("chi2xyMax")),
     _chi2zphiMax           (pset.get<double>("chi2zphiMax")),
+    _chi2hel3DMax          (pset.get<double>("chi2hel3DMax")),
     _dfdzErr               (pset.get<double>("dfdzErr")){
 
     CalHelixPoint::_efac = _efac;
@@ -393,14 +396,14 @@ namespace mu2e {
     double phi, phi_ref(-1e10), z, z_ref, dphi, dz, dzOverHelPitch;
 
     CLHEP::Hep3Vector center = Helix._center;
-    CLHEP::Hep3Vector pos_ref, pos;
+    CLHEP::Hep3Vector pos_ref;
 
     _hDfDzRes->Reset();
     _hPhi0Res->Reset();
 					// 2015 - 03 -30 G. Pezzu changed the value of tollMax.
 					// using the initial value of dfdz we can set it more accuratelly:
 					// tollMax = half-helix-step = Pi / dfdz
-    double tollMin(100.), tollMax;	// (800.);
+    double tollMin(100.);
 //-----------------------------------------------------------------------------
 // 2017-09-26 gianipez fixed a bug: in case the Helix phi-z fit didn't converge yet, 
 // Helix._dfdz is set to -1e6, so we need to make a check here!
@@ -408,9 +411,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     double helix_dfdz(_mpDfDz);
     //2017-11-14 gianipez: findDfDz shoudl use the dfdz value obtained only from the linearFit
-    if (Helix._srphi.qn() > 0) helix_dfdz = Helix._srphi.dfdz();
+    if (Helix._srphi.qn() >= 10) helix_dfdz = Helix._srphi.dfdz();
     //    if (Helix._dfdz > 0) helix_dfdz =  Helix._dfdz;
-    tollMax = 2.*M_PI / helix_dfdz; 
+    double tollMax = 2.*M_PI / helix_dfdz; 
 
     //avoid the use of the couple of points which have dz %(mod) HelPitch less than 0.8
     // still the value need to be optimized, this is just out of lots of debugging
@@ -429,6 +432,7 @@ namespace mu2e {
     nstations = _tracker->nStations();
 
     double    phiVec[30], zVec[30];
+    double    weight(0), weight_cl(0);
     int       nhits [30];
 
     for (int i=0; i<nstations; i++) {
@@ -442,11 +446,14 @@ namespace mu2e {
     for (int i=seedIndex; i<np; i++) {
       if ((!_xyzp[i].isOutlier()) && (indexVec[i] >0)) {
 	// didn't find an accessor returning the station number, hack
-	ist = _xyzp[i]._straw->id().getPlane()/2;
-	pos = _xyzp[i]._pos;
-	phi = CLHEP::Hep3Vector(pos - center).phi();
-	phi = TVector2::Phi_0_2pi(phi);
-	zVec  [ist] += pos.z();
+	//	ist = _xyzp[i]._straw->id().getPlane()/2;
+	ist = _xyzp[i]._straw->id().getStation();
+	CLHEP::Hep3Vector* pos = &_xyzp[i]._pos;
+	// phi = CLHEP::Hep3Vector(pos - center).phi();
+	// phi = TVector2::Phi_0_2pi(phi);
+	phi = atan2(pos->y()-center.y(),pos->x()-center.x()); // atan2 returns its result in [-pi,pi], convert to [0,2pi]
+	if (phi < 0) phi += 2*M_PI;
+	zVec  [ist] += pos->z();
 	if (nhits == 0) phiVec[ist] = phi;
 	else {
 	  while (phi-phiVec[ist] >  M_PI) phi -= 2*M_PI;
@@ -478,9 +485,10 @@ namespace mu2e {
     int i0(-1), first_point(1);
 					// add the cluster phi
     double zCl   = fCaloZ;
-    pos          =  Hep3Vector(fCaloX, fCaloY, fCaloZ);
-    double phiCl = CLHEP::Hep3Vector(pos - center).phi();
-    phiCl        = TVector2::Phi_0_2pi(phiCl);
+    //    pos          =  Hep3Vector(fCaloX, fCaloY, fCaloZ);
+    double phiCl = atan2(fCaloY-center.y(),fCaloX-center.x()); // CLHEP::Hep3Vector(pos - center).phi();
+    //    phiCl        = TVector2::Phi_0_2pi(phiCl);
+    if (phiCl < 0) phiCl += 2*M_PI;
 
     for (int i=0; i<nstations; i++) {
       if (nhits[i] == 0)                                    continue; 
@@ -498,8 +506,9 @@ namespace mu2e {
 	phi = phiVec[j];
 	z   = zVec  [j];
 	dz  = z - z_ref;
-
+	
 	dzOverHelPitch = dz/tollMax - int(dz/tollMax);
+	weight         = nhits[i] + nhits[j];
 
 	if ((phi_ref > -9999) && (dzOverHelPitch < _dzOverHelPitchCut) && (dz > tollMin)){
 	  dphi = phi-phi_ref;
@@ -516,7 +525,7 @@ namespace mu2e {
 	    dphi    = dphi+2.*M_PI;
 	    dphidz  = dphi/dz;
 	  }
-	  _hDfDzRes->Fill(dphidz);
+	  _hDfDzRes->Fill(dphidz, weight);
 
 	  double tmpphi0 = phi_ref - dphidz*z_ref;
 	  tmpphi0        = TVector2::Phi_0_2pi(tmpphi0);
@@ -530,14 +539,15 @@ namespace mu2e {
 // in case dfdz is out of limits set tmpphi0 as negative
 //-----------------------------------------------------------------------------
 	  if ((dphidz < _minDfDz) || (dphidz >  _maxDfDz)) tmpphi0 = -1;
-	  _hPhi0Res->Fill(tmpphi0);
+	  _hPhi0Res->Fill(tmpphi0, weight);
 	}
       }
 					// use the calorimeter cluster phi
       dz             = zCl - z_ref;
       dzOverHelPitch = dz/tollMax - int(dz/tollMax);
+      weight_cl      =  nhits[i];
 
-      if ((phi_ref > -9999 ) && (dz > tollMin)) {
+      if ((phi_ref > -9999 ) && (dzOverHelPitch < _dzOverHelPitchCut) && (dz > tollMin)) {
 	dphi  = phiCl - phi_ref;
 	dphi  = TVector2::Phi_0_2pi(dphi);
 //-----------------------------------------------------------------------------
@@ -561,9 +571,9 @@ namespace mu2e {
 	}
 
 	if (dzOverHelPitch < _dzOverHelPitchCut ) {
-	  _hDfDzRes->Fill(dphidz);
+	  _hDfDzRes->Fill(dphidz, weight_cl);
 	  if ((dphidz < _minDfDz) || (dphidz >  _maxDfDz)) tmpphi0 = -1;
-	  _hPhi0Res->Fill(tmpphi0);
+	  _hPhi0Res->Fill(tmpphi0, weight_cl);
 	}
       }
     }
@@ -630,7 +640,7 @@ namespace mu2e {
 
     ::LsqSums4 srphi;
 
-    double weight = 1./(_sigmaPhi*_sigmaPhi);
+    weight = 1./(_sigmaPhi*_sigmaPhi);
 
     double zLast(z0), zdist;
 
@@ -678,15 +688,15 @@ namespace mu2e {
 	dz   = z-z0;
 	pred = phi0 + dz*dphidz;
 	phi  = phiVec[i];
-	dphi = pred - phi;
+	dphi = phi - pred;//pred - phi;
 
 	while (dphi > M_PI){
-	  phi += 2*M_PI;
-	  dphi = pred - phi;
+	  phi -= 2*M_PI;//+= 2*M_PI;
+	  dphi = phi - pred;//pred - phi;
 	}
 	while (dphi < -M_PI){
-	  phi -= 2*M_PI;
-	  dphi = pred - phi;
+	  phi += 2*M_PI;//-= 2*M_PI;
+	  dphi = phi - pred;//pred - phi;
 	}
 
 	xdphi = fabs(dphi)/_sigmaPhi;
@@ -736,22 +746,15 @@ namespace mu2e {
     if (Diag_flag > 0){
       Helix._diag.nStationPairs = nActive_stations;
     }
-    
-    //2017-11-14 gianipez: in case we have less than X active stations we should probaly 
+    //----------------------------------------------------------------------------- 
+// 2017-11-14 gianipez: in case we have less than X active stations we should probaly 
     //                     use the _mpDfDz
-    //    if ( nActive_stations == 0) _hdfdz = _mpDfDz;
-    if (  nActive_stations < _minNSt ) {
+    if (nActive_stations < _minNSt) {
       _hdfdz = _mpDfDz;
       return 0;
     }
 
     return 1;
-    // if ( (nentries - overflows) > 8 ) {
-//       return 1;
-//     } else {
-//       _hdfdz = _mpDfDz;
-//       return 0;
-//     }
   }
 
 
@@ -1182,8 +1185,8 @@ namespace mu2e {
 
 	if (good_hit && (! bkg_hit) && (! used_hit)) {
 
-	  const StrawHit& sh = Helix.shcol()->at(loc);
-	  const Straw& straw = _tracker->getStraw(sh.strawIndex());
+	  const StrawHit& sh          = Helix.shcol()->at(loc);
+	  const Straw& straw          = _tracker->getStraw(sh.strawIndex());
 	  const StrawHitPosition& shp = Helix.shpos()->at(loc);
 
 	  if (sh.energyDep() > _maxElectronHitEnergy)         continue;
@@ -1247,8 +1250,8 @@ namespace mu2e {
 	     x0, y0, radius, phi0, dfdz , Helix._sxy.chi2DofCircle());
       printf("[%s] SeedIndex = %i N-points = %5.3f\n",  banner, fSeedIndex, Helix._sxy.qn()-1);
       if (fSeedIndex > 0) {
-	printf("[%s] index      Z        xi      yi       xp       yp       X0        Y0         R        dfdZ  dXY(pred) dXY(seed) dZ(seed)\n",banner);
-	printf("[%s]------------------------------------------------------------------------------------------------------------------------\n",banner);
+	printf("[%s] index      Z        xi      yi       xp       yp       X0        Y0         R        dfdZ  dXY(pred) dXY(seed) dZ(seed)     wt\n",banner);
+	printf("[%s]-------------------------------------------------------------------------------------------------------------------------------\n",banner);
       }
     }
 //-----------------------------------------------------------------------------
@@ -1275,9 +1278,9 @@ namespace mu2e {
       dist  = std::sqrt(dist2);
 
       if (_debug > 0) {
-	printf("[%s] %5i %9.3f %8.3f %8.3f %8.3f %8.3f %9.3f %9.3f %9.3f %8.5f %8.3f %8.3f %8.3f\n",
+	printf("[%s] %5i %9.3f %8.3f %8.3f %8.3f %8.3f %9.3f %9.3f %9.3f %8.5f %8.3f %8.3f %8.3f %8.3f\n",
 	       banner,i,shPos.z(),shPos.x(),shPos.y(),hePos.x(),hePos.y(),
-	       x0,y0,radius,dfdz,dist,distXY,deltaZ);
+	       x0,y0,radius,dfdz,dist,distXY,deltaZ,weight);
       }
 
       max_dist = _distPatRec + _dfdzErr*fabs(deltaZ);
@@ -1369,8 +1372,12 @@ namespace mu2e {
 
     if (fSeedIndex < 0) return;
 
-    int    nActive(0);
+    int    nActive(0), nActive_hel(0);
     int    np = _xyzp.size();
+
+    double      straw_mean_radius(0), chi2_global_helix(0), total_weight(0);
+    double      x_center(Helix._center.x()), y_center(Helix._center.y()), radius(Helix._radius), fz0(Helix._fz0), lambda(1./Helix._dfdz);
+    Hep3Vector  hel_pred(0);
 
     for (int i=0; i<np; ++i) {
       if (_debug > 0) {
@@ -1395,7 +1402,29 @@ namespace mu2e {
       double dz   = _dzTrkCandidate  [i];
 
       if (_indicesTrkCandidate[i] <= 0) _xyzp[i].setOutlier();
-      else                              ++nActive;
+      else  {
+	++nActive;
+	double  x         = _xyzp[i]._pos.x();
+	double  y         = _xyzp[i]._pos.y();
+	double  z         = _xyzp[i]._pos.z();
+	double  phi_pred  = fz0 + z/lambda;
+	double  x_pred    = x_center + radius*cos(phi_pred);
+	double  y_pred    = y_center + radius*sin(phi_pred);
+	hel_pred.setX(x_pred);
+	hel_pred.setY(y_pred);
+	double  weight    = calculateWeight(_xyzp[i]._pos, _xyzp[i]._sdir, hel_pred, radius, 0)*_weight3D;
+	double  x_resid2  = (x - x_pred)*(x - x_pred);
+	double  y_resid2  = (y - y_pred)*(y - y_pred);
+	double  hitResi2  = (x_resid2 + y_resid2)*weight;
+	if (hitResi2 > _chi2hel3DMax) {
+	  _xyzp[i].setOutlier();
+	} else {
+	  ++nActive_hel;
+	  chi2_global_helix = chi2_global_helix + hitResi2;
+	  straw_mean_radius = straw_mean_radius + sqrt(x*x + y*y)*weight;
+	  total_weight      = total_weight + weight;	
+	}
+      }
 
       if (_debug > 0) {
 	Hep3Vector* shPos = &_xyzp[i]._pos;
@@ -1413,8 +1442,11 @@ namespace mu2e {
       printf("[CalHelixFinderAlg::filterUsingPatternRecognition] END  : N active point = %i over N-hits = %i\n", nActive, np);
     }
 
-    _goodPointsTrkCandidate = nActive;
-    Helix._diag.n_active_11 = nActive;
+    _goodPointsTrkCandidate = nActive_hel;//nActive
+
+    Helix._diag.n_active_11       = nActive_hel;
+    Helix._diag.straw_mean_radius = (nActive > 0) ? straw_mean_radius/total_weight : -1;
+    Helix._diag.chi2d_helix       = (nActive > 0) ? chi2_global_helix/double(nActive_hel - 5.): -1;
   }
 
 //-----------------------------------------------------------------------------
@@ -1527,7 +1559,7 @@ namespace mu2e {
     }
     else {
 //-----------------------------------------------------------------------------
-// SeedIndex < 0 means that no cancidate has been found
+// SeedIndex < 0 means that no candidate has been found
 // usually it happens when the cluster is not on the trajectory or the time peak 
 // has very low number of hits
 // maybe we should set a threshold on the time peak size to avoid such?
@@ -1581,7 +1613,7 @@ namespace mu2e {
     int  usePhiResid;
     int  useInteligentWeight(1);
 
-    if ( (fSeedIndex<0) || (_goodPointsTrkCandidate < 5) )                     goto  PATTERN_RECOGNITION_END;
+    if ( (fSeedIndex<0) || (Helix._sxy.qn() < 5) )          goto  PATTERN_RECOGNITION_END;
 
     // 2015-01-17 G. Pezzullo added the following procedure to rescue points with z-coordinate
     // less than the seed hit
@@ -1594,7 +1626,7 @@ namespace mu2e {
     rc = doLinearFitPhiZ(Helix, 0, _indicesTrkCandidate, useInteligentWeight);
 
     //2017-10-05 Gianipez added the following line to make some tests
-    if ( (_smartTag == 1) && (Helix._srphi.qn() == 0.) )                      goto  PATTERN_RECOGNITION_END;
+    if ( (_smartTag == 1) && (Helix._srphi.qn() == 0.) )    goto  PATTERN_RECOGNITION_END;
 
 
     rescueHitsBeforeSeed(Helix);
@@ -1622,7 +1654,7 @@ namespace mu2e {
 //---------------------------------------------------------------------------------------
 // use the results of the helix search to see if points along the track can be rescued
 //---------------------------------------------------------------------------------------
-    if (Helix._srphi.qn() < 10) {
+    if ( (Helix._srphi.qn() < 10) || (!rc) ) {
       usePhiResid = 0;
     }else {
       usePhiResid = 1;
@@ -1639,7 +1671,7 @@ namespace mu2e {
 //--------------------------------------------------------------------------------------------------------------
                                                     //re-evaluate the df/dz and phi0 using also new hits rescued
                                                     // and new helix parameters
-    if (Helix._srphi.qn() < 10){
+    if (Helix._srphi.qn() < 10 || (!rc)){
       rs = findDfDz(Helix, 0, _indicesTrkCandidate);
       
       if (rs == 1) { //update Helix values
@@ -1680,6 +1712,11 @@ namespace mu2e {
     Helix._diag.rdfdz_7            = Helix._dfdz*Helix._radius;
     Helix._diag.dfdz_8             = Helix._dfdz;
 
+    //evaluate the radius withour using the target center
+    Helix._sxy.removePoint(0., 0., 1./900.);
+    Helix._diag.dr                 = Helix._radius - Helix._sxy.radius();
+    Helix._sxy.addPoint(0., 0., 1./900.);
+    
     filterUsingPatternRecognition(Helix);
 
   PATTERN_RECOGNITION_END:;
@@ -1702,7 +1739,7 @@ namespace mu2e {
 					     const char*       Banner   ) {
 
     double    rs(2.5);   // straw radius, mm
-    double    ew(30.0);  // assumed resolution along the wire, mm
+    //    double    ew(30.0);  // assumed resolution along the wire, mm
 
     double x  = HitPos.x();
     double y  = HitPos.y();
@@ -1712,18 +1749,18 @@ namespace mu2e {
     double costh  = (dx*StrawDir.x()+dy*StrawDir.y())/sqrt(dx*dx+dy*dy);
     double sinth2 = 1-costh*costh;
 
-    double e2     = ew*ew*sinth2+rs*rs*costh*costh;
+    double e2     = _ew*_ew*sinth2+rs*rs*costh*costh;
     double wt     = 1./e2;
                                                     //scale the weight for having chi2/ndof distribution peaking at 1
     //    wt /= 1.57;
     //    wt /= 2.83;
     wt *= _weightXY;
 
-    if (Print > 0) {
-      double dr = calculateRadialDist(HitPos,HelCenter,Radius);
-      printf("[%s:calculateWeight] %10.3f %10.3f %10.5f %10.5f %10.5f %10.5f %12.5e %10.3f\n",
-	     Banner,x,y,dx,dy,costh,sinth2,e2,dr);
-    }
+    // if (Print > 0) {
+    //   double dr = calculateRadialDist(HitPos,HelCenter,Radius);
+    //   printf("[%s:calculateWeight] %10.3f %10.3f %10.5f %10.5f %10.5f %10.5f %12.5e %10.3f\n",
+    // 	     Banner,x,y,dx,dy,costh,sinth2,e2,dr);
+    // }
 
     return wt;
   }
@@ -1738,7 +1775,7 @@ namespace mu2e {
 						int                Print    ,
 						const char*        Banner   ) {
     double    rs( 2.5);  // mm
-    double    ew(30.0);  // mm - erro along the wire   double x  = HitPos.x();
+    //    double    ew(30.0);  // mm - erro along the wire   double x  = HitPos.x();
 
     double x  = HitPos.x();
     double y  = HitPos.y();
@@ -1748,7 +1785,7 @@ namespace mu2e {
     double costh  = (dx*StrawDir.x()+dy*StrawDir.y())/sqrt(dx*dx+dy*dy);
     double sinth2 = 1-costh*costh;
 
-    double e2     = ew*ew*costh*costh+rs*rs*sinth2;
+    double e2     = _ew*_ew*costh*costh+rs*rs*sinth2;
     double wt     = Radius*Radius/e2;
     wt           *= _weightZPhi;
 
@@ -1800,19 +1837,18 @@ namespace mu2e {
     if (_debug > 6) {
       printf("[CalHelixFinderAlg::doWeightedCircleFit] BEGIN: x0 = %8.3f y0 = %8.3f radius = %8.3f chi2dof = %8.3f\n",
 	     HelCenter.x(),HelCenter.y(),Radius,TrkSxy.chi2DofCircle());
-      printf("[CalHelixFinderAlg::doWeightedCircleFit] Index      X          Y         Z          W         wireNx     wireNy\n");
+      printf("[CalHelixFinderAlg::doWeightedCircleFit] Index      X          Y         Z          wt        wireNx     wireNy\n");
     }
 
     for (int i=SeedIndex; i<np; i++) {
-      if ( _xyzp[i].isOutlier())           continue;
+      if ( IdVec[i] < 1)                                    continue;
+      if ( _xyzp[i].isOutlier())                            continue;
 
       hitPos     = &_xyzp[i]._pos;
       strawDir   = &_xyzp[i]._sdir;
 
       wt         = calculateWeight(*hitPos,*strawDir,HelCenter,Radius,Print > 0 ? IdVec[i] : 0,Banner);
       Weights[i] = wt;
-
-      if ( IdVec[i] < 1)                  continue;
 
       TrkSxy.addPoint(hitPos->x(),hitPos->y(),Weights[i]);
       if (_debug > 6) {
@@ -1826,8 +1862,8 @@ namespace mu2e {
     HelCenter.setY(TrkSxy.y0());
 
     if (_debug > 6) {
-      printf("[CalHelixFinderAlg::doWeightedCircleFit] END  : x0 = %8.3f y0 = %8.3f radius = %8.3f chi2dof = %8.3f\n",
-	     HelCenter.x(),HelCenter.y(),Radius,TrkSxy.chi2DofCircle());
+      printf("[CalHelixFinderAlg::doWeightedCircleFit] END  : x0 = %8.3f y0 = %8.3f radius = %8.3f chi2dof = %8.3f npt = %3.0f\n",
+	     HelCenter.x(),HelCenter.y(),Radius,TrkSxy.chi2DofCircle(),TrkSxy.qn());
     }
   }
 
@@ -1846,58 +1882,49 @@ namespace mu2e {
 
     int        np = _xyzp.size();
     double     wt, e2, dr, hitChi2;
-    //    Hep3Vector hitPos;
 
     for (int i=SeedIndex; i<np; i++) {
-      if (_xyzp[i].isOutlier())           continue;
+      if (IdVec[i] < 1)                                     continue;
+      if (_xyzp[i].isOutlier())                             continue;
 
-      wt = Weights[i];
-      e2 = 1./wt;
-
-      //      hitPos = _xyzp[i]._pos;
-      dr = calculateRadialDist(_xyzp[i]._pos,HelCenter,Radius);
-
+      wt      = Weights[i];
+      e2      = 1./wt;
+      dr      = calculateRadialDist(_xyzp[i]._pos,HelCenter,Radius);
       hitChi2 = dr*dr/e2;
-
-      // store info aout the radial residual
-      if (SeedIndex == 0){
+					// store info aout the radial residual
+      if (SeedIndex == 0) {
 	_distTrkCandidate[i] = hitChi2;
       }
-					// avoid the use of hit rejected by the helix search
-      if (IdVec[i] < 1) continue;
 
       if (hitChi2 > HitChi2Worst) {
 	HitChi2Worst = hitChi2;
 	Iworst       = i;
       }
-
     }
-
   }
 
 //--------------------------------------------------------------------------------
 // returns the index of the hit which provides the highest contribute to the chi2
 //--------------------------------------------------------------------------------
-void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
-						 int             SeedIndex,
-						 int*            IdVec,
-						 Hep3Vector&     HelCenter,
-						 double&         Radius,
-						 double*         Weights,
-						 int&            Iworst)
-{
+  void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
+							int             SeedIndex,
+							int*            IdVec,
+							Hep3Vector&     HelCenter,
+							double&         Radius,
+							double*         Weights,
+							int&            Iworst)
+  {
     Iworst     = -1;
 
-    ::LsqSums4 sxy;
+    LsqSums4   sxy;
     double     chi2_min = 1e6;
     int        np = _xyzp.size();
     double     wt, chi2, x, y;
 
     for (int i=SeedIndex; i<np; i++) {
-      if (_xyzp[i].isOutlier())           goto NEXT_P;
-
       // avoid the use of hit rejected by the helix search
-      if ( IdVec[i] < 1)                  goto NEXT_P;
+      if ( IdVec[i] < 1)                                    continue;
+      if (_xyzp[i].isOutlier())                             continue;
 
       sxy.init(TrkSxy);
 
@@ -1913,7 +1940,6 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	chi2_min    = chi2;
 	Iworst      = i;
       }
-    NEXT_P: ;
     }
   }
 
@@ -1936,7 +1962,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     double     chi2, chi2_min;
     int        np = _xyzp.size();
 
-    //crete a temporary vector housing the indexVec information
+    //create a temporary vector housing the indexVec information
     int       idVec[np];
     for (int i=0; i<np; ++i){
       idVec[i] = IndexVec[i];
@@ -1947,7 +1973,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     double weights[np];
     int    success = -1;
 
-    //initialize helix info
+    // initialize helix info
     r  = Trk._sxy.radius();
     helCenter.setX( Trk._sxy.x0());
     helCenter.setY( Trk._sxy.y0());
@@ -1959,20 +1985,18 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
       printf("[CalHelixFinderAlg::refineHelixParameters] i       X        Y        dx        dy         costh        sinth2         e2     radial-dist\n");
     }
 
-    doWeightedCircleFit (sxyw, SeedIndex, idVec,  helCenter,  r,  weights, Print, Banner);
+    doWeightedCircleFit (sxyw,SeedIndex,idVec,helCenter,r,weights,Print,Banner);
+//-----------------------------------------------------------------------------
+// recalcute the weights using the most recent helix parameters
+//-----------------------------------------------------------------------------
+    doWeightedCircleFit (sxyw,SeedIndex,idVec,helCenter,r,weights,Print,Banner);
 
-    //now recalcute the weights using the most recent
-    //helix parameters
-    //-----------------------------------------------------------------------------
-    doWeightedCircleFit (sxyw, SeedIndex, idVec,  helCenter,  r,  weights, Print, Banner);
-
-    searchWorstHitWeightedCircleFit(SeedIndex, idVec, helCenter, r, weights,
-				    iworst, hitChi2Worst);
+    searchWorstHitWeightedCircleFit(SeedIndex,idVec,helCenter,r,weights,iworst,hitChi2Worst);
 
     chi2     = sxyw.chi2DofCircle();
     chi2_min = chi2;
 
-    if ((chi2 <= _chi2xyMax) && ( hitChi2Worst  <= 25.)) {
+    if ((chi2 <= _chi2xyMax) && (hitChi2Worst  <= fHitChi2Max)){ //25.)) {
       success = 0;
       goto F_END;
     }
@@ -2094,12 +2118,6 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	IndexVec[i] = idVec[i];
       }
     }
-   //  if (SeedIndex ==0){
-//       THackData* hack;
-//       hack = (THackData*) gROOT->GetRootFolder()->FindObject("HackData");
-//       hack->fData[14] = Trk._rw ;
-//       hack->fData[15] = Trk._chi2w ;
-//     }
 
     return success;
   }
@@ -2110,15 +2128,15 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 // small radial residual, so this function is devoted for rescueing these
 //-----------------------------------------------------------------------------
   void CalHelixFinderAlg::rescueHits(CalHelixFinderData& Helix          ,
-				  int                 SeedIndex      ,
-				  int*                IndexVec       ,
-				  int                 UsePhiResiduals) {
+				     int                 SeedIndex      ,
+				     int*                IndexVec       ,
+				     int                 UsePhiResiduals) {
 
     const char  banner[] = "rescueHits";
     double      wt, e2, x, y, r;
     double      phiwt(-9999.);
 
-    Hep3Vector  hitPos, strawDir, helCenter;
+    Hep3Vector  hitPos, strawDir, helCenter, hel_pred(0);
 
     int         np = _xyzp.size();
     double      weights[np];
@@ -2131,6 +2149,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     double      wtBest, phiwtBest;
     double      chi2, chi2_min, dr, hitChi2, drChi2;
 
+    double      x_pred(0), y_pred(0), weight_hel(0), x_resid2(0), y_resid2(0);
     //set  dfdz and phi0
     dfdz = Helix._dfdz;
     phi0 = Helix._fz0;
@@ -2170,7 +2189,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     }
   NEXT_ITERATION:;
     if (UsePhiResiduals == 1) {
-      chi2_min    = 2.*fHitChi2Max;
+      chi2_min    = fHitChi2Max;//2.*fHitChi2Max;
     } else{
       chi2_min    = fHitChi2Max;
     }
@@ -2201,14 +2220,26 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	dphi     = phi_pred - _phiCorrected[i];
 	phiwt    = calculatePhiWeight(hitPos, strawDir, helCenter, r, 0, banner);
 	dphiChi2 = dphi*dphi*phiwt;
-	hitChi2  = drChi2 + dphiChi2;
-      } else {
+
+	//calculate now the distance to the from predicted point
+	x         = hitPos.x();
+	y         = hitPos.y();
+	x_pred    = helCenter.x() + r*cos(phi_pred);
+	y_pred    = helCenter.y() + r*sin(phi_pred);
+	hel_pred.setX(x_pred);
+	hel_pred.setY(y_pred);
+	weight_hel = calculateWeight(hitPos, strawDir, hel_pred, r, 0)*_weight3D;
+	x_resid2  = (x - x_pred)*(x - x_pred);
+	y_resid2  = (y - y_pred)*(y - y_pred);
+	hitChi2   = (x_resid2 + y_resid2)*weight_hel;//drChi2 + dphiChi2;
+      } 
+      else {
 	hitChi2  = drChi2;
       }
 
       if (_debug > 5) {
-	printf("[CalHelixFinderAlg::%s] sigmaphi2 = %10.3f drChi2 = %5.3f dphiChi2 = %5.3f chi2 = %5.3f\n",
-	       banner, 1./phiwt, drChi2, dphiChi2, hitChi2);
+	printf("[CalHelixFinderAlg::%s] sigmaphi2 = %10.3f drChi2 = %5.3f dphiChi2 = %5.3f chi2 = %5.3f wt = %8.3f\n",
+	       banner, 1./phiwt, drChi2, dphiChi2, hitChi2,wt);
       }
 //-----------------------------------------------------------------------------
 // require chi2 < fHitChi2Max, identify the closest point
@@ -2348,14 +2379,14 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 //-----------------------------------------------------------------------------
     int np = _xyzp.size();
 
-    int candidateList[np];
+    int hitIndex     [np];  // index in _xyzp of the i-th hit of the candidate
     int markIndexList[np];
 
     double dzList  [np];
     double distList[np];
 
     for(int i=0; i<np; ++i){
-      candidateList[i] = -9999;
+      //      candidateList[i] = -9999;
       markIndexList[i] = -9999;
       dzList[i]        = -9999;
       distList[i]      = -9999;
@@ -2369,27 +2400,17 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 // calculated could be affected by several effects which lead on the
 // wrong estimation.
 // We are asking that the candidate straw must be at a distance along
-// the z axes greateer than tollMin and less than tollMax.
+// the z axes greater than tollMin and less than tollMax.
 // These parameters still need to be optimized
 //-----------------------------------------------------------------------------
     double tollMin(100.), tollMax(500.);
 
-
-    //2014-03-10 gianipez changed the values of the following tollerance
-    // for X and Y distance to avoid delta electron for corrupting the pattern-reco
-    //     double tollXYdist(100.);//require a dist in the transverse plane > 10 cm
-
-
-    int goodPoint(-999); // index of the strawhit candidate for dfdz and helix paramters recalculation
-    //2014-01-29 gianipez added the followign line
-
-    //few paramterss used for calculating strawhit position residuals
+    int goodPoint(-999);                // index of the strawhit candidate for dfdz and helix paramters recalculation
+					// parameters used to calculate the strawhit position residuals
     double weight(0.);
     double deltaZ(0.), deltaZfromSeed(0.), deltaX(0.), deltaY(0.);
     double distXY(0.);
-    double dist  (0.), dist2(0.); //help parameter for storing strawhit position residual
-
-    double z0,z1,phi_0,phi_1;
+    double dist  (0.), dist2(0.);
 //----------------------------------------------------------------------//
 // 2014-11-05 gianipez set dfdz equal to the most probable value for CE //
 //----------------------------------------------------------------------//
@@ -2413,7 +2434,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 
     calculateTrackParameters(p1,p2,p3,center,radius,phi0,tanLambda);
 //------------------------------------------------------------------------------
-// helix parameters are defined at Z=p2.z()
+// helix parameters, in particular, phi0, are defined at Z=p2.z()
 // 2014-11-05 gianipez set dfdz equal to the most probable value for CE 
 //------------------------------------------------------------------------------
     if (UseMPVDfDz ==1 ) dfdz = _hdfdz;			// _mpDfDz;
@@ -2441,6 +2462,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     int     i_z0 (-1);
     double  dz_z0(1e10);
 
+    hitIndex[0] = SeedIndex;
     for (int i=SeedIndex+1; i<np; i++) {
       if (_xyzp[i].isOutlier())                             continue;
       weight = 1.;
@@ -2449,7 +2471,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 // been used by a previous search
 //-----------------------------------------------------------------------------
       if (isHitUsed(i) == 1) {
-	if( _debug > 10){
+	if ( _debug > 10) {
 	  printf("[%s]  XYZP-hit number = %i is already used, skip it\n",name,i);
 	}
 	                                                    continue;
@@ -2459,9 +2481,9 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
       deltaZ         = shPos.z() - _xyzp[i_last]._pos.z(); // distance from the last found hit
       deltaZfromSeed = shPos.z() - p2.z();
 //-----------------------------------------------------------------------------
-// dfdz = tanLambda/radius;
+// dfdz = tanLambda/radius; phi0 is the phi of the _xyzp[i_last]
 //-----------------------------------------------------------------------------
-      phi            = phi0 + deltaZfromSeed*dfdz;                 
+      phi            = phi0 + deltaZ*dfdz;                 
 
       hePos.set(center.x()+radius*cos(phi),center.y()+radius*sin(phi),shPos.z());
 					                  // calculate residuals in XY
@@ -2494,94 +2516,76 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	       name,i,shPos.z(),shPos.x(),shPos.y(),hePos.x(),hePos.y(),dist,distXY,deltaZ,center.x(),center.y(),radius,phi0,dfdz,chi2) ;
       }
 //-----------------------------------------------------------------------------
-// max_dist: running search window accounts for the finite extrapolation accuracy
+// dxy_max: running search window accounts for the finite extrapolation accuracy
 //-----------------------------------------------------------------------------
-					// true, if a straw hit has been already used
-                                        // for dfdz and helix recalculation
-      bool   isStored(false);
-
       double dxy_max = _distPatRec + _dfdzErr*deltaZ;
 
       if ( dist <= dxy_max ) {
 	++CountGoodPoints;
-					// 2014-11-12 gianipez:
-					// update the helix center coordinates and the radius
-					// if the dfdz value has already been evaluated
-	if (Mode == 1) {
-	  center.setX(sxy.x0());
-	  center.setY(sxy.y0());
-	  radius  = sxy.radius();
-	}
-					// index of the last good point
-	i_last = i;
-
-	if (fabs(shPos.z()) < dz_z0){
+	hitIndex[CountGoodPoints] = i;
+	if (_debug < -1000) printf("%i\n",hitIndex[0]); // *FIXME* add just to compile
+	i_last = i;                                      // index of the last found point
+	phi0   = CLHEP::Hep3Vector(shPos - center).phi();
+	
+					// Z, closest to Z=0. what this is used for ? - diagnostics
+	if (fabs(shPos.z()) < dz_z0) {
 	  dz_z0 = fabs(shPos.z());
 	  i_z0  = i;
 	}
 
-	phi0   = CLHEP::Hep3Vector(shPos - center).phi();
+	sxy.addPoint(shPos.x(),shPos.y(),weight); // add point to the helix candidate
 
-					//add point to the helix candidate
-
-	sxy.addPoint(shPos.x(),shPos.y(), weight);
+	if (Mode == 1) {
+					// 2014-11-12 gianipez: update the helix center coordinates and the radius
+					// if the dfdz value has already been evaluated
+	  center.setX(sxy.x0());
+	  center.setY(sxy.y0());
+	  radius  = sxy.radius();
+	}
 
 	markIndexList[i] = 1;		// mark point as good
 	dzList       [i] = deltaZ;      // Z-distance from the last point
 	distList     [i] = dist;        // distance from prediction in XY
 
-	if (Mode == 0) {
-	  ++mode0GoodPoints;
-	}
-	else if ((Mode == 1) && (i<= fLastIndex)){
-	  ++mode1GoodPoints;
-	}
+	if      (Mode == 0                      ) ++mode0GoodPoints;
+	else if ((Mode == 1) && (i<= fLastIndex)) ++mode1GoodPoints;
 
-	for(int j=0; j<np; ++j){
-	  if (candidateList[j] == i)
-	    isStored = true;
+	if ((deltaZfromSeed > tollMin) && (deltaZfromSeed < tollMax)) {
+	  if (removeTarget) goodPoint = i;
 	}
-
-	if (!isStored) {
-	  if ((deltaZfromSeed > tollMin) && (deltaZfromSeed < tollMax)) {
-	    if (removeTarget) goodPoint = i;
-	  }
-	}
-      } 
+      }
       else {
 //-----------------------------------------------------------------------------
 // hit outside the search road
 //-----------------------------------------------------------------------------
 	markIndexList[i] = 0;
-	distList[i]      = 0;
-	dzList[i]        = 0;
+	distList     [i] = 0;
+	dzList       [i] = 0;
       }
 
       if (_debug > 10) printf (" %3i\n",markIndexList[i]);
 
-      // 2014-04-23     gianipez fixed a bug
-      if (CountGoodPoints >= 2 &&
-	  removeTarget         &&
-	  (goodPoint >=0)      &&
-	  (goodPoint != fLastIndex) ) {
-
-// recalculate helix parameters using the strawhit candidate "goodPoint"
+      if ((goodPoint       >= 0         ) &&
+	  (goodPoint       != fLastIndex) && 
+	  (CountGoodPoints >= 2         )    ) {
+//-----------------------------------------------------------------------------
+// the first point separated from the seed one by more than 10 cm has been found
+// recalculate helix parameters: for XY part use accumulated sxy sums
+//-----------------------------------------------------------------------------
 	p1 = _xyzp[goodPoint]._pos;
 
 	center.setX(sxy.x0());
 	center.setY(sxy.y0());
 	radius = sxy.radius();
+//-----------------------------------------------------------------------------
+// now calculate more accuratelly the value of dfdz using just the two strawhit positions
+// change in the circle parameterization changes the phi0 value
+//-----------------------------------------------------------------------------
+	phi0 = CLHEP::Hep3Vector(p1 - center).phi();
 
-//now calculate more accuratelly the value of dfdz using just the two strawhit positions
-	z0    = p2.z();  // z-coordinate of the seed
-	z1    = p1.z();
-	phi_0 = CLHEP::Hep3Vector(p2 - center).phi();
-	phi_1 = CLHEP::Hep3Vector(p1 - center).phi();
-
-//2015-01-14 G. Pezzullo added the following condition because in case
-// we have a MPV for dfdz from the procedure findDfDZ we want just to use it
 	if (UseMPVDfDz == 0) {
-	  calculateDfDz(phi_0,phi_1,z0,z1,dfdz);
+	  //	  calculateDfDz(phi_0,phi_1,p2.z(),p1.z(),dfdz);
+	  calculateDphiDz_2(hitIndex,CountGoodPoints+1,center.x(),center.y(),dfdz);
 	}
 	else if (UseMPVDfDz ==1) {
 	  dfdz = _hdfdz;                   // _mpDfDz;
@@ -2595,30 +2599,23 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	  printf("[%s] ----------------------------------------------------\n", name);
 	  printf("[%s] %3i %9.3f %8.3f %8.3f seed \n", name,SeedIndex,p2.z(),p2.x(),p2.y());
 	  printf("[%s] %3i %9.3f %8.3f %8.3f seed \n", name,goodPoint,p1.z(),p1.x(),p1.y());
-	  printf("[%s] candidate   %9.3f %9.3f %9.3f %5i  \n", name,p1.x(), p1.y(), p1.z(), goodPoint);
 	}
 //-----------------------------------------------------------------------------
-// what to do if dfdz is negative?
+// what to do if dfdz is negative? - the case of negative helicity is not covered yet
 //-----------------------------------------------------------------------------
 	if ((dfdz > _maxDfDz) || (dfdz < _minDfDz)) {
-
-	  for(int j=0; j<np; ++j){
-	    if(candidateList[j]<0){
-	      candidateList[j] = goodPoint;
-	      break;
-	    }
-	  }
-
-	  if (_debug > 10) {
-	    printf("[%s] dfdz = %8.5f outside the limits. Continue the search\n",name,dfdz);
-	  }
+//-----------------------------------------------------------------------------
+// 2014-11-05 dPhi/Dz doesn't make sense, back to ground zero: 
+// gianipez set dfdz equal to the most probable value for CE, 
+//-----------------------------------------------------------------------------
+	  if (_debug > 10) printf("[%s] dfdz = %8.5f outside the limits. Continue the search\n",name,dfdz);
 	  p1.set(0.,0.,0.);
-//----------------------------------------------------------------------//
-// 2014-11-05 gianipez set dfdz equal to the most probable value for CE //
-//----------------------------------------------------------------------//
 	  dfdz = _mpDfDz;
 	}
 	else {
+//-----------------------------------------------------------------------------
+// dPhi/Dz makes sense, exclude the stopping target
+//-----------------------------------------------------------------------------
 	  removeTarget = false;
 	  Mode         = 1;
 	  fLastIndex   = goodPoint;
@@ -2627,21 +2624,23 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     }
 
     if (CountGoodPoints < 3) return;
-
-    // temporary variables to store dfdz values out of the method 'calculateDfDz(...)'
+//-----------------------------------------------------------------------------
+// 3 or more points have been found on a helix candidate
+// temporary variables to store dfdz values out of the method 'calculateDfDz(...)'
+//-----------------------------------------------------------------------------
     double dfdzRes  [3] = {   -1.,    -1.,    -1.};
     double dphi0Res [3] = {-9999., -9999., -9999.};
     double radiusRes[2] = {   -1.,    -1.};
 
-    shPos        = _xyzp[i_z0]._pos;
-    phi0         = CLHEP::Hep3Vector(shPos - center).phi();
+    if (_diag > 0) {
+      shPos        = _xyzp[i_z0]._pos;
+      phi0         = CLHEP::Hep3Vector(shPos - center).phi();
 
-    if (UseMPVDfDz == 0) {
-      dfdzRes[0] = dfdz;
+      if (UseMPVDfDz == 0) dfdzRes[0] = dfdz;
+
+      dphi0Res [0] = phi0 - shPos.z()*dfdz;
+      radiusRes[0] = sxy.radius();
     }
-
-    dphi0Res [0] = phi0 - shPos.z()*dfdz;
-    radiusRes[0] = sxy.radius();
 
     if (_debug) {
       strcpy(name,banner);
@@ -2655,7 +2654,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     CalHelixFinderData tmp1HelFitRes(Helix);
     CalHelixFinderData tmp2HelFitRes(Helix);
 
-    //2015-01-27 G. Pezzu and P. Murat: initialize only the xy part, z-phi part is not needed here
+    // 2015-01-27 G. Pezzu and P. Murat: initialize only the xy part, z-phi part is not needed here
 
     tmp1HelFitRes._sxy.init(sxy);
     tmp1HelFitRes._radius = sxy.radius();
@@ -2668,7 +2667,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     tmp2HelFitRes._dfdz   = dfdz;
 
     int rc0 = refineHelixParameters(tmp1HelFitRes, SeedIndex, markIndexList);
-    if ( rc0 >=0){
+    if (rc0 >= 0) {
       tmp2HelFitRes._center.set(tmp1HelFitRes._cw.x(), tmp1HelFitRes._cw.y(), 0.0);
       tmp2HelFitRes._radius = tmp1HelFitRes._rw;
       radius_end            = tmp1HelFitRes._rw;
@@ -2679,8 +2678,8 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 					// diagnostics
       radiusRes[1] = tmp2HelFitRes._radius;
 
-      for (int i=SeedIndex; i<np; ++i){
-	if ( markIndexList[i] > 0) ++CountGoodPoints;
+      for (int i=SeedIndex; i<np; ++i) {
+	if (markIndexList[i] > 0) ++CountGoodPoints;
       }
     }
 
@@ -2714,7 +2713,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	  ++CountGoodPoints;
       }
 
-    }else {
+    } else {
       dfdz_end = _hdfdz;
       phi0_end = _hphi0;
     }
@@ -2730,15 +2729,13 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
       printf("[%s] CountGoodPoints = %i\n", name, CountGoodPoints);
     }
 
-    if (mode1GoodPoints>0){
-      rescuedPoints = mode1GoodPoints - mode0GoodPoints ;
-    } else{
-      rescuedPoints = -1;
-    }
-
+    if (mode1GoodPoints > 0) rescuedPoints = mode1GoodPoints - mode0GoodPoints ;
+    else                     rescuedPoints = -1;
+//-----------------------------------------------------------------------------
+// all points in the time window checked
 //----------------------------------------------------------------------
     if (CountGoodPoints > 2) {
-      //2014-01-29 gianipez added the following line
+      // 2014-01-29 gianipez added the following line
       Chi2       = sxy.chi2DofCircle();
       if (_debug > 10) {
 	strcpy(name,banner);
@@ -2801,49 +2798,51 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	Helix._sxy.init(sxy);
 	Helix._srphi.init(srphi);
 //-----------------------------------------------------------------------------
-// fill diagnostics information for histogramming
+// if needed, fill diagnostics information for histogramming
 //-----------------------------------------------------------------------------
-	int loopId(0);
-	if (UseDefaultDfDz == 0) {
-	  if (UseMPVDfDz) loopId = 2;
-	  else            loopId = 0;
-	}
-	else {
-	  loopId = 1;
-	}
-
-	Helix._diag.loopId_4           = loopId;
-	Helix._diag.radius_5           = _radius;
-	Helix._diag.n_rescued_points_9 = rescuedPoints;
-
-	double dz = p1.z() - p2.z();
-
-	Helix._diag.dz_10              = (Mode == 1) ? dz : -1.;
-	Helix._diag.n_active_11        = CountGoodPoints;
-	Helix._diag.chi2_dof_circle_12 = sxy.chi2DofCircle();
-	Helix._diag.chi2_dof_line_13   = srphi.chi2DofLine();
-
-	Helix._diag.dfdzres_17 = dfdzRes[0];
-	Helix._diag.dfdzres_18 = dfdzRes[1];
-	Helix._diag.dfdzres_19 = dfdzRes[2];
-
-	Helix._diag.dr_20 = radiusRes[0];
-	Helix._diag.dr_21 = radiusRes[1];
-
-	Helix._diag.dphi0res_22 = dphi0Res[0];
-	Helix._diag.dphi0res_23 = dphi0Res[1];
-	Helix._diag.dphi0res_24 = dphi0Res[2];
-
-	int j=0;
-	for (int i=SeedIndex; i<np; ++i){
-	  if (_indicesTrkCandidate[i] != 1) continue;
-	  if (j < Helix.maxIndex()) {
-	    Helix._diag.dist[j] = _distTrkCandidate[i];
-	    Helix._diag.dz[j]   = _dzTrkCandidate[i];
-	    ++j;
+	if (_diag > 0) {
+	  int loopId(0);
+	  if (UseDefaultDfDz == 0) {
+	    if (UseMPVDfDz) loopId = 2;
+	    else            loopId = 0;
 	  }
 	  else {
-	    printf("ERROR in CalHelixFinderAlg::findTrack : index out limits. IGNORE; \n");
+	    loopId = 1;
+	  }
+
+	  Helix._diag.loopId_4           = loopId;
+	  Helix._diag.radius_5           = _radius;
+	  Helix._diag.n_rescued_points_9 = rescuedPoints;
+
+	  double dz = p1.z() - p2.z();
+
+	  Helix._diag.dz_10              = (Mode == 1) ? dz : -1.;
+	  Helix._diag.n_active_11        = CountGoodPoints;
+	  Helix._diag.chi2_dof_circle_12 = sxy.chi2DofCircle();
+	  Helix._diag.chi2_dof_line_13   = srphi.chi2DofLine();
+
+	  Helix._diag.dfdzres_17 = dfdzRes[0];
+	  Helix._diag.dfdzres_18 = dfdzRes[1];
+	  Helix._diag.dfdzres_19 = dfdzRes[2];
+
+	  Helix._diag.dr_20 = radiusRes[0];
+	  Helix._diag.dr_21 = radiusRes[1];
+
+	  Helix._diag.dphi0res_22 = dphi0Res[0];
+	  Helix._diag.dphi0res_23 = dphi0Res[1];
+	  Helix._diag.dphi0res_24 = dphi0Res[2];
+
+	  int j=0;
+	  for (int i=SeedIndex; i<np; ++i){
+	    if (_indicesTrkCandidate[i] != 1) continue;
+	    if (j < Helix.maxIndex()) {
+	      Helix._diag.dist[j] = _distTrkCandidate[i];
+	      Helix._diag.dz  [j] = _dzTrkCandidate  [i];
+	      ++j;
+	    }
+	    else {
+	      printf("ERROR in CalHelixFinderAlg::findTrack : index out limits. IGNORE; \n");
+	    }
 	  }
 	}
       }
@@ -2851,7 +2850,7 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
   }
 
 //-----------------------------------------------------------------------------
-// Phi0 corresponds to the second point
+// helix parameters are defined at Z=p2.z, Phi0 corresponds to p2
 //-----------------------------------------------------------------------------
   void CalHelixFinderAlg::calculateTrackParameters(const Hep3Vector&   p1       ,
 						   const Hep3Vector&   p2       ,
@@ -2902,15 +2901,35 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     double dy2  = (p2.y() - y0);
 
     Phi0        = std::atan2(dy2,dx2);
-
+//-----------------------------------------------------------------------------
+// this assumes that the helix is right-handed, *FIXME*
+// make sure that we are lookign for a particle which makes the number of turns
+// close to the expected 
+//-----------------------------------------------------------------------------
     double dphi32 = std::atan2(dy3,dx3) - Phi0;
     if (dphi32 < 0.) dphi32 += 2.*M_PI;
 
-    TanLambda = (Radius/dz32)*dphi32; 
+    double exp_dphi = _mpDfDz*dz32;
+
+    while (dphi32-exp_dphi < -M_PI) dphi32 += 2*M_PI;
+
+    TanLambda = (Radius*dphi32)/dz32; 
 
     if (_debug > 5) {
-      printf("[CalHelixFinderAlg:calculateTrackParameters] phi0: %8.5f p1.z = %9.3f p2.z = %9.3f p3.z = %9.3f dphi32 = %8.5f dfdz = %8.5f\n",
-	     Phi0,p1.z(),p2.z(),p3.z(),dphi32,TanLambda/Radius);
+//-----------------------------------------------------------------------------
+// in debug mode also want to print the helix parameters, calculate them
+//-----------------------------------------------------------------------------
+      double d0     = sqrt(x0*x0+y0*y0)-Radius;
+      double phi00  = atan2(y0,x0)+M_PI/2;   // for negatively charged particle
+      double tandip = TanLambda;
+      double dphi   = phi00-Phi0-M_PI/2;
+      if (dphi < 0) dphi += 2*M_PI;           // *FIXME* right-handed ellipse
+
+      double z0     = p2.z()-dphi*dz32/dphi32;
+
+      printf("[CalHelixFinderAlg:calculateTrackParameters] X0: %9.3f Y0: %9.3f phi0: %8.5f p1.z = %9.3f p2.z = %9.3f p3.z = %9.3f dphi32 = %8.5f dfdz = %8.5f\n",
+	     Center.x(),Center.y(),Phi0,p1.z(),p2.z(),p3.z(),dphi32,TanLambda/Radius);
+      printf("[CalHelixFinderAlg:calculateTrackParameters] z0 = %9.3f d0 = %8.4f  phi00 = %8.5f omega = %8.5f tandip = %8.4f\n",z0,d0,phi00,1/Radius,tandip);
     }
   }
 
@@ -2920,6 +2939,41 @@ void    CalHelixFinderAlg::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
   void  CalHelixFinderAlg::calculateDfDz(double phi0, double phi1, double z0, double z1, double& DfDz) {
     double deltaPhi = TVector2::Phi_mpi_pi(phi1-phi0);
     DfDz            = deltaPhi/(z1-z0);
+  }
+
+//-----------------------------------------------------------------------------
+// assume particle makes less than a full turn
+//-----------------------------------------------------------------------------
+  void  CalHelixFinderAlg::calculateDphiDz_2(const int* HitIndex, int NHits, double X0, double Y0, double& DphiDz) {
+    LsqSums2 sphiz;
+
+    double phi, phi0, phiCl;
+    
+    phiCl = atan2(fCaloY-Y0,fCaloX-X0);
+    if (phiCl < 0) phiCl += 2*M_PI;
+
+    if (_debug > 0) printf("CalHelixFinderAlg::calculateDphiDz_2: i,ind,phi,z=%3i %3i %8.5f %9.3f\n",-1,-1,fCaloZ,phiCl);
+
+    for (int i=0; i<NHits; i++) {
+      int ind         = HitIndex[i];
+      Hep3Vector* pos = &_xyzp[ind]._pos;
+      phi = atan2(pos->y()-Y0,pos->x()-X0);
+      if (i == 0) phi0 = phi;
+
+      if (phi-phi0 >  M_PI) phi -= 2*M_PI;
+      if (phi-phi0 < -M_PI) phi += 2*M_PI;
+
+      sphiz.addPoint(pos->z(),phi);
+
+      if (_debug > 0) printf("CalHelixFinderAlg::calculateDphiDz_2: i,ind,phi,z=%3i %3i %8.5f %9.3f\n",i,ind,pos->z(),phi);
+    }
+//-----------------------------------------------------------------------------
+// define straight line phi = phi0+dPhi/Dz*z , where phi0 = phi(z=0)
+//-----------------------------------------------------------------------------
+    phi0   = sphiz.yMean();
+    DphiDz = sphiz.dydx();
+
+    if (_debug > 0) printf("CalHelixFinderAlg::calculateDphiDz_2: phi0,DphiDz = %9.5f %9.5f\n",phi0,DphiDz);
   }
 
 //-----------------------------------------------------------------------------

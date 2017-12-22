@@ -149,16 +149,16 @@ namespace mu2e {
     }
 
     //    art::Handle<mu2e::StrawHitFlagCollection> shflagH;
-    auto shflagH = evt.getValidHandle<mu2e::StrawHitFlagCollection>(_shfLabel);
-    if (shflagH.product() != 0){
-    //    if (evt.getByLabel(_shfLabel,shflagH)) {
-      _data.shfcol = shflagH.product();
-    }
-    else {
-      _data.shfcol = 0;
-      printf(" >>> ERROR in CalTimePeakFinder::findData: StrawHitFlagCollection with label=%s not found.\n",
-             _shfLabel.data());
-    }
+    // auto shflagH = evt.getValidHandle<mu2e::StrawHitFlagCollection>(_shfLabel);
+    // if (shflagH.product() != 0){
+    // //    if (evt.getByLabel(_shfLabel,shflagH)) {
+    //   _data.shfcol = shflagH.product();
+    // }
+    // else {
+    //   _data.shfcol = 0;
+    //   printf(" >>> ERROR in CalTimePeakFinder::findData: StrawHitFlagCollection with label=%s not found.\n",
+    //          _shfLabel.data());
+    // }
 
     if (evt.getByLabel(_ccmLabel, _ccH)) {
       _data.ccCollection = _ccH.product();
@@ -220,7 +220,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void CalTimePeakFinder::findTimePeaks(CalTimePeakCollection* TimePeakColl, TimeClusterCollection& OutSeeds) {
 
-    const char* oname = "CalTimePeakFinder::findTimePeaks";
+    //    const char* oname = "CalTimePeakFinder::findTimePeaks";
 
     int                 ncl, nsh;
     double              time, dt, tof, zstraw, cl_time, stime;
@@ -272,7 +272,7 @@ namespace mu2e {
           CalTimePeak tpeak(cl,xcl,ycl,zcl);
 
           tpeak._shcol  = _data.shcol;
-          tpeak._shfcol = _data.shfcol;
+          tpeak._shfcol = NULL; // _data.shfcol;
           tpeak._tmin   = cl_time+_mindt;
           tpeak._tmax   = cl_time+_maxdt;
 //-----------------------------------------------------------------------------
@@ -284,10 +284,10 @@ namespace mu2e {
           double meanDriftTime = 1.25/0.06;// half straw tube radius / drift velocity
 
           for(int istr=0; istr<nsh;++istr) {
-            flag = _data.shfcol->at(istr);
+	    //            flag = _data.shfcol->at(istr);
 
-            int hit_has_all_properties = flag.hasAllProperties(_hsel);
-            int bgr_hit                = flag.hasAnyProperty(_bkgsel);
+            // int hit_has_all_properties = flag.hasAllProperties(_hsel);
+            // int bgr_hit                = flag.hasAnyProperty(_bkgsel);
 
             hit    = &_data.shcol->at(istr);
             time   = hit->time();
@@ -313,17 +313,17 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
             if ((dt < _maxdt) && (dt >= _mindt) && (fabs(dphi) <= pi/2.) ) {
 
-              if (hit_has_all_properties && !bgr_hit) {
-                tpeak._index.push_back(istr);
-                stime += time;
-              }
-	      else if (_debugLevel > 0) {
+	      //              if (hit_has_all_properties && !bgr_hit) {
+	      tpeak._index.push_back(istr);
+	      stime += time;
+		//              }
+	      //else if (_debugLevel > 0) {
 //-----------------------------------------------------------------------------
 // print diagnostics on rejected hits
 //-----------------------------------------------------------------------------
-		printf("[%s] rejected hit: index: %5i flag: %10s  time:  %8.3f   dt: %8.3f energy: %8.5f\n",
-		       oname, istr, flag.hex().data(), hit->time(), hit->dt(), hit->energyDep());
-	      }
+		// printf("[%s] rejected hit: index: %5i flag: %10s  time:  %8.3f   dt: %8.3f energy: %8.5f\n",
+		//        oname, istr, flag.hex().data(), hit->time(), hit->dt(), hit->energyDep());
+	      // }
             }
           }
 

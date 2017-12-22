@@ -60,6 +60,11 @@ namespace mu2e {
       double    resid[kMaxResidIndex];
       double    dist [kMaxResidIndex];
       double    dz   [kMaxResidIndex];
+
+      double    dr;
+      double    straw_mean_radius;
+      double    chi2d_helix;
+
     };
     
     const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices

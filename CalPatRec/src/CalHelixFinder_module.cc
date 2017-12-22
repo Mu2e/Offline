@@ -266,6 +266,10 @@ namespace mu2e {
 	      _data.good[loc] = 1;
 	    }
 	    _data.nStationPairs[loc] = hf_result._diag.nStationPairs;
+	    
+	    _data.dr           [loc] = hf_result._diag.dr;
+	    _data.shmeanr      [loc] = hf_result._diag.straw_mean_radius;
+	    _data.chi2d_helix  [loc] = hf_result._diag.chi2d_helix;
 	  }
 	  else {
 	    printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());

@@ -30,7 +30,13 @@ namespace mu2e {
     TH1D* _hN2;
     ValId _id;
     TH1D* _hp;
-    ValPosition _pos;
+    TH1D* _hpe;
+    TH1D* _hpm;
+    TH1D* _hp0;
+    TH1D* _hpi;
+    TH1D* _hpn;
+    ValPosition _spos;
+    ValPosition _epos;
     TH1D* _hscode;
     TH1D* _hecode;
     ValId _idh;
