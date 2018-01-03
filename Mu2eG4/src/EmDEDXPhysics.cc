@@ -98,6 +98,7 @@ EmDEDXPhysics::EmDEDXPhysics(G4int ver)
   G4EmParameters* param = G4EmParameters::Instance();
   param->SetDefaults();
   param->SetVerbose(verbose);
+  param->SetLossFluctuations(false); // special case
   SetPhysicsType(bElectromagnetic);
 }
 
