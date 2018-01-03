@@ -200,21 +200,23 @@ public :
   float _emin, _emax, _ebin;
   float _central;
 
-  TCanvas *_tdecan, *_edcan, *_tdrcan, *_rescan, *_resfitcan, *_fits, *_rfits, *_pullcan, *_pullfitcan;
+  std::vector<TCanvas*> _cans;
   std::vector<TH1F*> _evec;
   std::vector<TH2F*> _tdevec;
   std::vector<TH2F*> _resvec;
+  TH1F *_ceedep, *_pedep, *_oedep;
   TH2F *_pulledep, *_pullwlen, *_pulltedep, *_pulltwlen, *_pullsfrac, *_pulltsfrac;
   TH1F *_cepull, *_ppull, *_ceres, *_pres;
   std::vector<TProfile*> _tdpevec;
   std::vector<float> _emean, _eerr;
-  std::vector<float> _rmean, _rerr;
   std::vector<float> _smean, _serr;
   std::vector<float> _cres, _creserr;
   std::vector<float> _sres, _sreserr;
   TGraphErrors *_cresg, *_sresg;
  
   void MakeHists();
+  void SaveCans(const char* suffix);
+  void SaveData(const char* datafile);
 };
 
 #endif
