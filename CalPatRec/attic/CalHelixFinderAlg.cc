@@ -1683,7 +1683,14 @@ namespace mu2e {
 
     rescueHits(Helix, 0, _indicesTrkCandidate, usePhiResid);
     
-    if (Helix._sxy.qn() != Helix._srphi.qn())     rc = doLinearFitPhiZ(Helix, 0, _indicesTrkCandidate, useInteligentWeight);
+    if (Helix._sxy.qn() != Helix._srphi.qn()) {
+      // rs = findDfDz(Helix, 0, _indicesTrkCandidate);
+      // if (rs == 1) {                       //update Helix values
+      // 	Helix._dfdz = _hdfdz;
+      // 	Helix._fz0  = _hphi0;
+      // }
+      rc = doLinearFitPhiZ(Helix, 0, _indicesTrkCandidate, useInteligentWeight);
+    }
 
     if (_debug != 0)  printInfo(Helix);
 //--------------------------------------------------------------------------------------------------------------
@@ -2605,7 +2612,7 @@ namespace mu2e {
       }
     }
 
-    if (NPoints < 3) return;
+    if (NPoints < _minnhit)                 return;
 //-----------------------------------------------------------------------------
 // 3 or more points have been found on a helix candidate, update Chi2
 //-----------------------------------------------------------------------------
