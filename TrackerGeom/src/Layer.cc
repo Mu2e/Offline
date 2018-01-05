@@ -31,18 +31,6 @@ namespace mu2e {
     {
   }
 
-  // Layer::Layer(const LayerId& id
-  //              // int      nStraws
-  //              // const CLHEP::Hep3Vector& origin,
-  //              // const CLHEP::Hep3Vector& delta
-  //              ):
-  //   _id(id)
-  //   // _nStraws(nStraws)
-  //   // _orig(origin),
-  //   // _delta(delta)
-  // {
-  // }
-
   Layer::Layer(const LayerId& id ):
     _id(id){
   }
@@ -51,8 +39,8 @@ namespace mu2e {
     ostringstream os;
 
     os << base
-       << _id.getPlane() << "_"
-       << _id.getPanel() << "_"
+       << _id.getPlane() << ":"
+       << _id.getPanel() << ":"
        << _id.getLayer();
     return os.str();
   }

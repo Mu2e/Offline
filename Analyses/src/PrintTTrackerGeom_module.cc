@@ -49,15 +49,15 @@ namespace mu2e {
     TTracker const& tracker(*GeomHandle<TTracker>());
 
     cout << "Tracker: " << tracker.nPlanes() << endl;
-    for ( auto const& dev : tracker.getPlanes() ){
-      for ( auto const& sec : dev.getPanels() ){
-        StrawId sid( sec.id(), 0, 0 );
-        Straw const& straw = sec.getStraw(sid);
+    for ( auto const& pln : tracker.getPlanes() ){
+      for ( auto const& pnl : pln.getPanels() ){
+        StrawId sid( pnl.id() ); // first straw id is equal to its panel id
+        Straw const& straw = pnl.getStraw(sid);
         double phi  = straw.direction().phi();
-        double z    = straw.getMidPoint().z() - dev.origin().z();
+        double z    = straw.getMidPoint().z() - pln.origin().z();
         double phi1 = phi/M_PI*180.;
         cout << "panel: "
-             << sec.id()      << " "
+             << pnl.id()      << " "
              << sid           << " "
              << straw.index() << " : "
              << z             << " "

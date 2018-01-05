@@ -349,7 +349,7 @@ namespace mu2e {
       _bdir = b0.unit();
       // compute the transverse momentum for which a particle will curl up in a straw
       const Tracker& tracker = getTrackerOrThrow();
-      const Straw& straw = tracker.getStraw(StrawId(0,0,0,0));
+      const Straw& straw = tracker.getStraw(StrawId(0,0,0));
       double rstraw = straw.getRadius();
       _ptmin = _ptfac*BField::mmTeslaToMeVc*b0.mag()*rstraw;
       if ( _printLevel > 0 ) {

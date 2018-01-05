@@ -22,8 +22,10 @@
 #include "DataProducts/inc/StrawId2.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 
-
 #include "CLHEP/Vector/ThreeVector.h"
+
+#include "cetlib_except/exception.h"
+
 #ifndef __CINT__
 #include "boost/bind.hpp"
 #endif
@@ -43,7 +45,7 @@ namespace mu2e {
 
   public:
 
-    Panel():_id(PanelId(-1,-1)),
+    Panel():_id(StrawId2()),
             _id2(StrawId2())
     {}
     Panel( const PanelId& id ):_id(id){}
@@ -51,7 +53,7 @@ namespace mu2e {
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
-    const PanelId&  id() const { return _id;}
+    const StrawId2&  id() const { return _id;}
     const StrawId2& id2() const { return _id2;}
 
     // const std::vector<Layer>& getLayers() const{
@@ -72,12 +74,12 @@ namespace mu2e {
       return *(_straws2_p.at(n));
     }
 
-    const Straw& getStraw ( const StrawId& strid ) const{
-      return _layers.at(strid.getLayer()).getStraw(strid);
-    }
+    // const Straw& getStraw ( const StrawId& strid ) const{
+    //   return _layers.at(strid.getLayer()).getStraw(strid);
+    // }
 
     // this getStraw checks if this is the right panel
-    const Straw& getStraw ( const StrawId2& strid2 ) const{
+    const Straw& getStraw ( const StrawId& strid2 ) const{
       if ( _id2.samePlane(strid2) && _id2.samePanel(strid2) ) {
         return *(_straws2_p.at((strid2.asUint16() & StrawId2::_strawmsk)));
       } else {

@@ -137,14 +137,14 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
     unsigned const id      = si.asUint();
     Straw const& str       = tracker.getStraw(si);
     StrawId const& sid     = str.id();
-    LayerId const& lid     = sid.getLayerId();
-    PlaneId const& did     = sid.getPlaneId();
-    PanelId const& panelid = sid.getPanelId();
+    unsigned const lno     = sid.getLayer();
+    unsigned const plno    = sid.getPlane();
+    unsigned const pnno     = sid.getPanel();
 
     _hStrawNumber->Fill(sid.getStraw());
-    _hLayerNumber->Fill(lid.getLayer());
-    _hPanelNumber->Fill(panelid.getPanel());
-    _hPlaneNumber->Fill(did);
+    _hLayerNumber->Fill(lno);
+    _hPanelNumber->Fill(pnno);
+    _hPlaneNumber->Fill(plno);
 
     double halfLen                  = str.getHalfLength();
 
@@ -168,9 +168,9 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
     nt[0]  = evt.id().event();
     nt[1]  = id;
     nt[2]  = sid.getStraw();
-    nt[3]  = lid.getLayer();
-    nt[4]  = did;
-    nt[5]  = panelid.getPanel();
+    nt[3]  = lno;
+    nt[4]  = plno;
+    nt[5]  = pnno;
     nt[6]  = hit.time();
     nt[7]  = hit.dt();
     nt[8]  = hit.energyDep();

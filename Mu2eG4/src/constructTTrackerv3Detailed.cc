@@ -118,7 +118,7 @@ namespace {
       //if ( pnlDraw > -1  && ipnl%2 == 0 ) continue;
 
       // Choose a representative straw from this this (plane,panel).
-      Straw const& straw = ttracker.getStraw( StrawId(ipln,ipnl,0,0) );
+      Straw const& straw = ttracker.getStraw( StrawId(ipln,ipnl,0) );
 
       // Azimuth of the midpoint of the wire.
       CLHEP::Hep3Vector const& mid = straw.getMidPoint();
@@ -493,7 +493,7 @@ namespace {
     // In this model, panel envelopes are arcs of a disk.
 
     // Panels are identical other than placement - so get required properties from plane 0, panel 0.
-    Panel const& pnl00(ttracker.getPanel(PanelId(0,0)));
+    Panel const& pnl00(ttracker.getPanel(StrawId(0,0,0)));
 
     // Azimuth of the centerline of a the panel enveleope: panelCenterPhi
     // Upon construction and before placement, the panel envelope occupies [0,phiMax].
@@ -540,7 +540,7 @@ namespace {
     // This carries a sign, depending on upstream/downstream.
     double zPanel(0.);
     for ( int i=0; i<pnl00.nLayers(); ++i){
-      zPanel += pnl00.getStraw(StrawId(0,0,i,i)).getMidPoint().z();
+      zPanel += pnl00.getStraw(StrawId(0,0,i)).getMidPoint().z();
     }
     zPanel /= pnl00.nLayers();
 

@@ -480,8 +480,8 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     StrawId nsid;
     Straw str;
     StrawId sid;
-    LayerId lid;
-    PanelId secid;
+    // LayerId lid;
+    // PanelId secid;
     // mf study 1
     int panel;
     // --- mf
@@ -685,7 +685,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                     StrawHit const& hit        = info.hit();
                     Straw const& str           = tracker.getStraw(hit.strawIndex());
                     sid = str.id();
-                    PlaneId did = sid.getPlaneId();
+                    int did = sid.getPlane();
                     std::vector<StepPointMC const *> const& steps = info.steps();
                     // mf study 1
                     panel = sid.getPanel();
@@ -824,7 +824,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     //cout << "[[  5 ]]\n";
 
     for ( size_t i=0; i<clusters.size(); ++i ) { // Apparently a loop over clusters
-      PlaneId did = -1;
+      int did = -1;
       double hlen=9999999.;
       StrawCluster      const& cluster(clusters.at(i));
       StrawHitPtrVector const& strawHits(cluster.strawHits());
@@ -840,9 +840,9 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
         totalEnergy=totalEnergy+Energy;
         str = tracker.getStraw(strawhit.strawIndex());
         sid = str.id();
-        lid = sid.getLayerId();
-        did = sid.getPlaneId();
-        secid = sid.getPanelId();
+        // lid = sid.getLayerId();
+        did = sid.getPlane();
+        // secid = sid.getPanelId();
         const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
         const CLHEP::Hep3Vector dirvec = str.getDirection();
         dvec = CLHEP::Hep3Vector(dirvec.getX(),dirvec.getY(),dirvec.getZ());
@@ -857,9 +857,9 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       pvec = pvec*a;
       //pvec = pvec/totalEnergy;             // mean weighted by energy deposition
       pstraw pstr;
-      pstr.lay=lid.getLayer();
+      pstr.lay=sid.getLayer();
       pstr.did=did;
-      pstr.sec=secid.getPanel();
+      pstr.sec=sid.getPanel();
       pstr.hl=hlen;
       pstr.mpx=pvec.getX();
       pstr.mpy=pvec.getY();

@@ -477,8 +477,8 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
   SupportStructure const& sup     = _ttracker.getSupportStructure();
 
   // Panels are identical other than placement - so get required properties from plane 0, panel 0.
-  Plane const& plane(_ttracker.getPlane(PlaneId(0)));
-  Panel const& panel(_ttracker.getPanel(PanelId(0,0)));
+  Plane const& plane(_ttracker.getPlane(PlaneId(0,0,0)));
+  Panel const& panel(_ttracker.getPanel(PanelId(0,0,0)));
 
   bool panelEnvelopeVisible = _config.getBool("ttracker.panelEnvelopeVisible",false);
   bool panelEnvelopeSolid   = _config.getBool("ttracker.panelEnvelopeSolid",true);
@@ -564,8 +564,8 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
   // This carries a sign, depending on upstream/downstream.
   double zPanel(0.);
   for ( int i=0; i<panel.nLayers(); ++i){
-    // note that the straw numbers follow a special pattern now, requiring 1 for layer 1 here:
-    zPanel += panel.getStraw(StrawId(0,0,i,i)).getMidPoint().z();
+    // straw 0 is in layer 0, 1 in 1
+    zPanel += panel.getStraw(StrawId(0,0,i)).getMidPoint().z();
   }
   zPanel /= panel.nLayers();
 
@@ -813,7 +813,7 @@ mu2e::ConstructTTrackerTDR::prepareEBKey(bool keyItself){
 
   // Internally all keys are the same.
   // Create one logical volume for now, do not place it.
-  Panel const& panel(_ttracker.getPanel(PanelId(0,0)));
+  Panel const& panel(_ttracker.getPanel(StrawId(0,0,0)));
 
   TubsParams  keyParams  = keyItself ? panel.getEBKeyParams() : panel.getEBKeyShieldParams();
 
@@ -986,7 +986,7 @@ mu2e::ConstructTTrackerTDR::addPanelsAndEBKeys(VolumeInfo& basePanel,
 
   Plane const& pln = _ttracker.getPlane(ipln);
   // to get the key info from the base panel
-  Panel const& panel(_ttracker.getPanel(PanelId(0,0)));
+  Panel const& panel(_ttracker.getPanel(StrawId(0,0,0)));
 
   // to prevent the overlaps
   SupportStructure const& sup = _ttracker.getSupportStructure();
@@ -1007,7 +1007,7 @@ mu2e::ConstructTTrackerTDR::addPanelsAndEBKeys(VolumeInfo& basePanel,
     //if ( pnlDraw > -1  && ipnl%2 == 0 ) continue;
 
     // Choose a representative straw from this this (plane,panel).
-    Straw const& straw = _ttracker.getStraw( StrawId(ipln,ipnl,0,0) );
+    Straw const& straw = _ttracker.getStraw( StrawId(ipln,ipnl,0) );
 
     // Azimuth of the midpoint of the wire.
     CLHEP::Hep3Vector const& mid = straw.getMidPoint();

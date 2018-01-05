@@ -49,7 +49,7 @@ namespace mu2e {
     _wd1 = pca.s1();
     _wd2 = pca.s2();
     _wdot = wdir1.dot(wdir2);
-    _isep = s1(strawhits,tracker).id().getPanelId().separation(s2(strawhits,tracker).id().getPanelId());
+    _isep = s1(strawhits,tracker).id().separation(s2(strawhits,tracker).id());
   }
 
   void StereoHit::position(StrawHitCollection const& strawhits,Tracker const& tracker,

@@ -40,7 +40,7 @@ namespace mu2e {
     double Halflength(StrawCluster const& cluster,art::Event const& event) const;
     double averageT(StrawCluster const& cluster,art::Event const& event) const;
     double averagedT(StrawCluster const& cluster,art::Event const & event) const;
-    PlaneId did(StrawCluster const& cluster,art::Event const & event) const;
+    int did(StrawCluster const& cluster,art::Event const & event) const;
     PanelId secid(StrawCluster const& cluster,art::Event const & event) const;
     int Station(StrawCluster const& cluster,art::Event const & event) const;
 

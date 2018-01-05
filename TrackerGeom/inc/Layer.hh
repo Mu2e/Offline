@@ -35,15 +35,9 @@ namespace mu2e {
 
     explicit Layer(const LayerId& id);
 
-    // Layer(const LayerId&   id
-    //       // int        nStraws
-    //       // const CLHEP::Hep3Vector& origin,
-    //       // const CLHEP::Hep3Vector& delta
-    //       );
-
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
-    const LayerId& id() const { return _id;}
+    const LayerId& id() const { return _id;} // this assumes proper StrawId used in construction!
 
     int nStraws() const { return _straws.size(); }
 
@@ -72,15 +66,6 @@ namespace mu2e {
     // Formatted string embedding the id of the layer.
     std::string name( std::string const& base ) const;
 
-    // Return Id of the last straw in the layer.
-    // Return an illegal id if there are no straws.
-    //  - which should never happen.
-    StrawId getIdLastStraw() const{
-
-      return ( _straws.size() != 0 )?
-        _straws.back()->id():
-        StrawId();
-    }
 
     /*
     // Options:

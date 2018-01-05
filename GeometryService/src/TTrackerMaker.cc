@@ -502,10 +502,9 @@ namespace mu2e {
            << fixed << setw(6) << _nStrawsToReserve << endl;
     }
 
-    _tt->_planes.reserve(_numPlanes);
     // Construct the planes and their internals.
     for ( int ipln=0; ipln<_numPlanes; ++ipln ){
-      makePlane( PlaneId(ipln) );
+      makePlane( StrawId(ipln,0,0) );
     }
 
     // Fill all of the non-persistent information.
@@ -560,8 +559,8 @@ namespace mu2e {
 
     // Only do this test for the new model(s).
 
-    StrawId s0(0,1,0,0);
-    StrawId s1(0,1,1,1);
+    StrawId s0(0,1,0);
+    StrawId s1(0,1,1);
     double ztest = 0.5*(_tt->getStraw ( s0 ).getMidPoint().z()+_tt->getStraw ( s1 ).getMidPoint().z())
       -  _tt->getPlane( PlaneId(0) ).origin().z();
     ztest *= panelZSide(1,0);
@@ -579,20 +578,21 @@ namespace mu2e {
   }
 
 
-  void TTrackerMaker::makePlane( PlaneId planeId ){
+  void TTrackerMaker::makePlane( StrawId planeId ){
 
 //std::cout << "->->-> makePlane\n";
-    int ipln = planeId;
+    int ipln = planeId.getPlane();
 
     double planeDeltaZ = choosePlaneSpacing(ipln);
     CLHEP::Hep3Vector origin( 0., 0., _z0+planeDeltaZ);
 
+    auto& planes = _tt->_planes;
+
     // plane rotation is no longer used.
     double phi = 0.0;
-    StrawId2 pid2(planeId, 0, 0);
-    _tt->_planes.push_back(Plane(planeId, pid2,origin, phi));
-    Plane& plane = _tt->_planes.back();
-    cout << __func__ << " making plane " <<  plane.id2();
+    planes.at(ipln) = Plane(planeId,origin, phi);
+    Plane& plane = planes.at(ipln);
+    cout << __func__ << " making plane " <<  plane.id();
     plane._exists = ( find ( _nonExistingPlanes.begin(), _nonExistingPlanes.end(), ipln) ==
                       _nonExistingPlanes.end() );
 
@@ -600,7 +600,7 @@ namespace mu2e {
 
     cout << ", exists " << plane._exists  << endl;
     for ( int ipnl=0; ipnl<_panelsPerPlane; ++ipnl ){
-      makePanel ( PanelId(planeId,ipnl), plane );
+      makePanel ( StrawId(ipln,ipnl,0), plane );
       if (_verbosityLevel>2) {
         size_t istr = -1; // local index in the panel
         Panel& panel = plane._panels.back();
@@ -642,11 +642,11 @@ namespace mu2e {
 //std::cout << "<-<-<- makePlane\n";
   }
 
-  void TTrackerMaker::makePanel( const PanelId& plnId, Plane& plane ){
+  void TTrackerMaker::makePanel( const StrawId& pnlId, Plane& plane ){
 //std::cout << "->->-> makePanel\n";
 
-    StrawId2 pid2(plnId.getPlane(), plnId.getPanel(), 0);
-    plane._panels.push_back( Panel(plnId,pid2) );
+    StrawId2 pid2(pnlId.getPlane(), pnlId.getPanel(), 0);
+    plane._panels.push_back( Panel(pnlId,pid2) );
     Panel& panel = plane._panels.back();
     
     panel._layers.reserve(_layersPerPanel);
@@ -667,7 +667,8 @@ namespace mu2e {
     }
 
     for ( int ilay=0; ilay<_layersPerPanel; ++ilay ){
-      makeLayer( LayerId(plnId,ilay), panel );
+      // we use the straw field to indicate the layer
+      makeLayer(StrawId(pnlId.getPlane(),pnlId.getPanel(),ilay), panel);
 
       // checking spacing of the individual layers
       // are the manifolds sized correctly for the straws?
@@ -788,7 +789,7 @@ namespace mu2e {
       }
     }
 
-    panel._boxRzAngle = panelRotation( panel.id().getPanel(),plane.id() ); //  is it really used? needed?
+    panel._boxRzAngle = panelRotation( panel.id().getPanel(),plane.id().getPlane() ); //  is it really used? needed?
 
     // make EBkey
 
@@ -824,15 +825,14 @@ namespace mu2e {
 //std::cout << "<-<-<- makePanel\n";
   }  // makePanel
 
-  void TTrackerMaker::makeLayer ( const LayerId& layId, Panel& panel ){
+  void TTrackerMaker::makeLayer ( const StrawId& layId, Panel& panel ){
 //std::cout << "->->-> makeLayer\n";
 
     // Make an empty layer object.
     panel._layers.push_back( Layer(layId) );
-    Layer& layer = panel._layers.back();
+    Layer& layer = panel._layers.back(); // fixme: try to avoid this construction
 
     // Get additional bookkeeping info.
-    //    deque<Straw>& allStraws = _tt->_allStraws;
 
     // array type containers of straws and pointers, ttracker ones
     array<Straw,TTracker::_nttstraws>& allStraws2  = _tt->_allStraws2;
@@ -843,11 +843,11 @@ namespace mu2e {
     // straws per panel
     constexpr int spp = StrawId2::_nstraws;
 
-    const Plane& plane = _tt->getPlane( layId.getPlaneId() );
+    const Plane& plane = _tt->getPlane( layId );
     int ilay = layId.getLayer();
     int ipnl = layId.getPanel();
 
-    int iplane = layId.getPlaneId();
+    int iplane = layId.getPlane();
 
     // Is layer zero closest to the straw or farthest from it.
     int factor = ( _layerZPattern == 0 ) ? ilay : (_layersPerPanel - ilay - 1);
@@ -871,7 +871,7 @@ namespace mu2e {
     // Rotation that puts wire direction and wire mid-point into their
     // correct orientations.
     // CLHEP::HepRotationZ RZ(_panelBaseRotations.at(ipnl));
-    CLHEP::HepRotationZ RZ(panelRotation(ipnl,layId.getPlaneId()));
+    CLHEP::HepRotationZ RZ(panelRotation(ipnl,layId.getPlane()));
 
     // Unit vector in the wire direction. (nominal is the panel 0 to the right?)
     CLHEP::Hep3Vector unit = RZ*CLHEP::Hep3Vector(0.,1.,0.);
@@ -905,7 +905,7 @@ namespace mu2e {
           xA + (2*istr)*_strawOuterRadius + istr*_strawGap :
           xA + (2*istr)*_strawOuterRadius + istr*_strawGap + 2.0*_layerHalfShift;
 
-        CLHEP::Hep3Vector mid( xstraw, 0., zOffset*panelZSide(ipnl, plane.id()) );
+        CLHEP::Hep3Vector mid( xstraw, 0., zOffset*panelZSide(ipnl, plane.id().getPlane()) );
         mid += plane.origin();
 
         // Rotate straw midpoint to its actual location.
@@ -943,7 +943,7 @@ namespace mu2e {
 
         //  allStraws2.at(strawCountReCounted) = 
         allStraws2.at(_strawTrckrConstrCount) = 
-          Straw( StrawId( layId, listraw), 
+          Straw( StrawId( layId.getPlane(), layId.getPanel(), listraw),
                  lsid,
                  index,
                  offset,
@@ -1189,27 +1189,31 @@ namespace mu2e {
 
     for (auto& i : _tt->_allStraws2) {
 
-      // throw exception if more than 2 layers per panel
-      if (_tt->getPanel(i.id().getPanelId()).nLayers() != 2 ) {
-        throw cet::exception("GEOM")
-          << "The code works with 2 layers per panel. \n";
-      } // fixme: rewrite using panels
-
       if (_verbosityLevel>2) {
         cout << __func__ << " "
              << i.id() << ", index "
              << i.index()
              << " Straw " << i.id().getStraw()
+             << " plane: "
+             << _tt->getPlane(i.id()).id()
              << endl;
       }
 
-      LayerId lId = i.id().getLayerId();
-      int layer = lId.getLayer();
+      // throw exception if more than 2 layers per panel
+      if (_tt->getPlane(i.id()).getPanel(i.id()).nLayers() != 2 ) {
+        throw cet::exception("GEOM")
+          << "The code works with 2 layers per panel. \n";
+      } // fixme: rewrite using panels
+
+      //      LayerId lId = i.id().getLayerId();
+      int layer = i.id().getLayer();
       // int nStrawLayer = _tt->getLayer(lId).nStraws();
       int nStrawLayer = StrawId2::_nstraws/StrawId2::_nlayers;
 
       if ( _verbosityLevel>2 ) {
-        cout << __func__ << " layer " << lId << " has " << nStrawLayer << " straws" << endl;
+        cout << __func__ << " layer " << layer 
+             << " of panel "  << i.id().getPanelId()
+             << " has " << nStrawLayer << " straws" << endl;
         cout << __func__ << " Analyzed straw: " << i.id() << '\t' << i.index() << endl;
       }
 
@@ -1217,7 +1221,8 @@ namespace mu2e {
       // in the new model straw numbers increase by 2 in a given layer
 
       if ( i.id().getStraw() > 1 ) {
-        const StrawId nsId(lId, (i.id().getStraw()) - 2 );
+        // const StrawId nsId(i.id().getPlane(), i.id().getPanel(), i.id().getStraw() - 2 );
+        const StrawId nsId( i.id().asUint16() - 2 );
         i._nearestById.push_back( nsId );
         if ( _verbosityLevel>2 ) {
           const Straw& temp = _tt->getStraw( nsId );
@@ -1230,10 +1235,10 @@ namespace mu2e {
       // in the new model straw numbers increase by 2 in a given layer
 
       if ( i.id().getStraw() < (2*nStrawLayer-2) ) {
-        const StrawId nsId(lId, (i.id().getStraw()) + 2 );
+        const StrawId nsId( i.id().asUint16() + 2 );
         i._nearestById.push_back( nsId );
         if ( _verbosityLevel>2 ) {
-          const Straw& temp = _tt->getStraw( nsId );// is this correct for the new model? <------------
+          const Straw& temp = _tt->getStraw( nsId );
           cout << __func__ << setw(34) << " Neighbour right straw: " << temp.id() << '\t' << temp.index() << endl;
         }
         i._nearestByIndex.push_back( _tt->getStraw(nsId).index() );
@@ -1256,11 +1261,11 @@ namespace mu2e {
         // assumes current two channel preamps
       
         if ( i.id().getStraw() % 2 == 0){
-          const StrawId nsId(i.id().getPanelId(), 1, (i.id().getStraw()) + 1); 
+          const StrawId nsId( i.id().asUint16() + 1 );
           i._preampById.push_back( nsId );
           i._preampByIndex.push_back( _tt->getStraw(nsId).index());
         }else{
-          const StrawId nsId(i.id().getPanelId(), 0, (i.id().getStraw()) - 1); 
+          const StrawId nsId( i.id().asUint16() - 1 );
           i._preampById.push_back( nsId );
           i._preampByIndex.push_back( _tt->getStraw(nsId).index());
         }
@@ -1268,7 +1273,7 @@ namespace mu2e {
         // add neighbors
 
         if (layer==0 && i.id().getStraw()<2*nStrawLayer) {
-          const StrawId nsId( i.id().getPanelId(), 1 , i.id().getStraw() + 1 );
+          const StrawId nsId( i.id().asUint16() + 1 );
           i._nearestById.push_back( nsId );
           i._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
@@ -1278,7 +1283,7 @@ namespace mu2e {
         }
 
         if (layer==1 && i.id().getStraw()<2*nStrawLayer-1) {
-          const StrawId nsId( i.id().getPanelId(), 0 , i.id().getStraw() + 1 );
+          const StrawId nsId( i.id().asUint16() + 1 );
           i._nearestById.push_back( nsId );
           i._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
@@ -1288,7 +1293,7 @@ namespace mu2e {
         }
 
         if (layer==0 && i.id().getStraw()>0) {
-          const StrawId nsId( i.id().getPanelId(), 1 , i.id().getStraw() - 1 );
+          const StrawId nsId( i.id().asUint16() - 1 );
           i._nearestById.push_back( nsId );
           i._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
@@ -1298,7 +1303,7 @@ namespace mu2e {
         }
 
         if (layer==1 && i.id().getStraw()>0) { // layer 1 straw 1 is ok
-          const StrawId nsId( i.id().getPanelId(), 0 , i.id().getStraw() - 1 );
+          const StrawId nsId( i.id().asUint16() - 1 );
           i._nearestById.push_back( nsId );
           i._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
@@ -1995,8 +2000,9 @@ namespace mu2e {
     for ( auto& straw : allStraws ){
 
       // These are already done:
-      if ( straw.id().getPanelId() == PanelId(0,0) ) continue;
-      if ( straw.id().getLayer()    ==            0  ) continue;
+      if ( (straw.id().getPlane() == 0 ) &&
+           straw.id().getPanel() == 0 ) continue;
+      if ( straw.id().getLayer()   ==           0  ) continue;
 
       // Get the new detail object for this straw.
       int idx = straw.id().getStraw();

@@ -34,23 +34,12 @@ namespace mu2e {
     // A free function, returning void, that takes a const Plane& as an argument.
     typedef void (*PlaneFunction)( const Plane& s);
 
-    Plane():_id(-1),_id2(StrawId2()),_rotation(0.),_origin(),_panels(),_exists(true){}
+    Plane():_id(StrawId2()),_rotation(0.),_origin(),_panels(),_exists(true){}
 
     explicit Plane( const PlaneId& id,
             CLHEP::Hep3Vector const& origin = CLHEP::Hep3Vector(0.,0.,0.),
             double rotation = 0., bool exists = true ):
       _id(id),
-      _id2(StrawId2()),
-      _rotation(rotation),
-      _origin(origin),
-      _exists(exists) {
-    }
-
-    Plane( const PlaneId& id, const StrawId2& sid2,
-            CLHEP::Hep3Vector const& origin = CLHEP::Hep3Vector(0.,0.,0.),
-            double rotation = 0., bool exists = true ):
-      _id(id),
-      _id2(sid2),
       _rotation(rotation),
       _origin(origin),
       _exists(exists) {
@@ -60,7 +49,6 @@ namespace mu2e {
 
     // Accessors
     const PlaneId&  id()  const { return _id;}
-    const StrawId2& id2() const { return _id2;}
 
     double rotation() const { return _rotation; }
 
@@ -81,10 +69,6 @@ namespace mu2e {
     const Panel& getPanel ( const PanelId& pnlid ) const{
       return _panels.at(pnlid.getPanel());
     }
-
-    // const Layer& getLayer ( const LayerId& layid ) const{
-    //   return _panels.at(layid.getPanel()).getLayer(layid);
-    // }
 
     const Straw& getStraw ( const StrawId& strid ) const{
       return _panels.at(strid.getPanel()).getStraw(strid);
@@ -135,7 +119,6 @@ namespace mu2e {
   protected:
 
     PlaneId            _id;
-    StrawId2           _id2;
     double              _rotation;
     CLHEP::Hep3Vector   _origin;
     std::vector<Panel> _panels;

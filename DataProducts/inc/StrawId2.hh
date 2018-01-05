@@ -63,12 +63,20 @@ namespace mu2e {
       bool valid() const { return validStraw(getStraw()) &&
 	validPanel(getPanel()) && validPlane(getPlane()); }
 
-      StrawId2 strawId2() const { return  static_cast<StrawId2>(_sid); }
+      StrawId2 strawId2() const { return static_cast<StrawId2>(_sid); }
 
       uint16_t asUint16() const { return _sid;}
 
       uint16_t getPlane() const{
 	return (_sid & _planemsk) >> _planesft;
+      }
+
+      StrawId2 getPlaneId() const{
+	return static_cast<StrawId2>(_sid & _planemsk);
+      }
+
+      StrawId2 getPanelId() const{
+	return static_cast<StrawId2>(_sid & (_planemsk+_panelmsk) );
       }
 
       uint16_t getPanel() const{
@@ -145,6 +153,35 @@ namespace mu2e {
       //       << "Straw " << std::setw(2) << s.straw() << std::endl;
       //   return ost;
       // }
+
+// qualify how close 2 panels are by their Z separation.  This needs to be a logical
+// separation, in case there are alignment constants applied
+    enum isep{same=0,plane1,station1,station2,station3,apart};
+
+    isep separation(StrawId2 const& other) const { // was PanelId
+      isep retval=apart;
+      // same station
+      if(other.getPlane()/2 == getPlane()/2){
+        int pln1 = getPanel()%2;
+        int pln2 = other.getPanel()%2;
+        int dp = pln2 - pln1;
+        if(other.getPlane() == getPlane()){
+          if(dp == 0)
+            retval = same;
+          else
+            retval = plane1;
+        } else {
+          int dd = other.getPlane() - getPlane();
+          if(dp == 0)
+            retval = station2;
+          else if(dd*dp>0)
+            retval = station3;
+          else
+            retval = station1;
+        }
+      }
+      return retval;
+    }
 
     private:
       // fill fields
