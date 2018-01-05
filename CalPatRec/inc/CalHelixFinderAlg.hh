@@ -71,13 +71,12 @@ namespace mu2e {
       CalHelixFinderData         _helix;   // helix, found at this stage
     };
 
-    SaveResults_t        _results[6];
+    SaveResults_t        _results[6];      // diagnostic buffers
 
-    int                  fSeedIndex;
-    int                  fCandIndex;   // index of the hit candiate 
-    int                  fLastIndex;
+    //    int                  fSeedIndex;
+    //    int                  fCandIndex;   // index of the hit candiate 
+    //    int                  fLastIndex;
     int                  fUseDefaultDfDz;
-    double               fHitChi2Max;
 
     int                  _diag;
     int                  _debug;
@@ -86,27 +85,20 @@ namespace mu2e {
     StrawHitFlag         _hsel;         // good hit selection
     StrawHitFlag         _bkgsel;       // background hit selection
     double               _maxElectronHitEnergy;
-    double               _minT;
-    double               _maxT;    
-    int                  _minnhit;      // minimum # of hits to work with
-    int                  _minnstereo;   // minimum # of stereo hits, I believe should  not be used
-                                        // parameters for AGE center determination
-    double               _minzsep;
-    double               _maxzsep;      // Z separation of points for pitch estimate
-    double               _maxdz;        // stereo selection parameters
-    double               _maxdot;
+    int                  _minNHits;     // minimum # of hits for a helix candidate
+    //    double               _maxDz;        // stereo selection parameters
                                         // 2014-03-10 Gianipez and P. Murat: limit
                                         // the dfdz value in the pattern-recognition stage
     double               _mpDfDz;
-    int                  _minNSt;       //minimum number of active stations found in the ::findDfDZ(...) function
+    int                  _minNSt;       // minimum number of active stations found in the ::findDfDZ(...) function
     double               _dzOverHelPitchCut; //cut on the ratio between the Dz and the predicted helix-pitch used in ::findDfDz(...)
     double               _maxDfDz;
     double               _minDfDz;
     double               _sigmaPhi;     // hit phi resolution (wrt the trajectory axis, assume R=25-30cm)
-    double               _weightXY;     //scale factor for makeing the xy-chi2 with a mean close to 1
+    double               _weightXY;     // scale factor for makeing the xy-chi2 with a mean close to 1
     double               _weightZPhi;
     double               _weight3D;
-    double               _ew;           //error along the wire (mm)
+    double               _ew;           // error along the wire (mm)
     double               _maxXDPhi;     // max normalized hit residual in phi (findRZ)
 
     double               _hdfdz;        // estimated d(phi)/dz value
@@ -117,8 +109,6 @@ namespace mu2e {
 					// position used in the patter recognition procedure
     double               _distPatRec;
 
-    double               _rbias;         // robust fit parameter bias
-    double               _efac;          // error factor
     double               _rhomin;
     double               _rhomax;        // crude cuts on tranvservse radius for stereo hits
     double               _mindist;       // minimum distance between points used in circle initialization
@@ -132,7 +122,6 @@ namespace mu2e {
     bool                 _filter;        // filter hits
     bool                 _plotall;       // plot also failed fits
     bool                 _usetarget;     // constrain to target when initializing
-    bool                 _allstereo;     // Use all stereo combinations (true) or only use each hit once
     mutable double       _bz;            // cached value of Field Z component at the tracker origin
 //-----------------------------------------------------------------------------
 // cached value of radius and pitch sign: these depend on the particle type
@@ -142,13 +131,17 @@ namespace mu2e {
 //-----------------------------------------------------------------------------//
 // store the paramters value of the most reliable track candidate
 //-----------------------------------------------------------------------------//
-    double    _x0, _y0, _phi0, _radius, _dfdz;
+    //    double  _x0, _y0;
+    //    double _phi0;
+    //    double  _radius;
+    //    double  _dfdz;
     int       _goodPointsTrkCandidate;
     int       _minPointsTrkCandidate;
     double    _chi2TrkCandidate;
     double    _maxChi2TrkCandidate;
-    int       _markCandidateHits;
-                                        // thresholds for XY and ZPhi chi2 fits
+    int       _markCandidateHits;        // apparently, always set to 0
+                                         // thresholds for the worst hit chi2, total XY and ZPhi fit chi2's
+    double    _hitChi2Max;
     double    _chi2xyMax;
     double    _chi2zphiMax;
     double    _chi2hel3DMax;
@@ -189,9 +182,7 @@ namespace mu2e {
     double calculateWeight     (const CLHEP::Hep3Vector& HitPos, 
 				const CLHEP::Hep3Vector& StrawDir, 
 				const CLHEP::Hep3Vector& HelCenter, 
-				double                   Radius,
-                                int                      Print, 
-				const char*              Banner=NULL);
+				double                   Radius);
 
     double calculatePhiWeight  (const CLHEP::Hep3Vector& HitPos   , 
 				const CLHEP::Hep3Vector& StrawDir , 
@@ -219,13 +210,13 @@ namespace mu2e {
     static double deltaPhi   (double phi1, double phi2);
 
    // returns the index of the hit which provides the highest contribute to the chi2
-    void   doCleanUpWeightedCircleFit(::LsqSums4&         TrkSxy,
-                                       int                SeedIndex,
-                                       int*               IdVec,
-                                       CLHEP::Hep3Vector& HelCenter,
-                                       double&            Radius,
-                                       double*            Weights,
-                                       int&               Iworst);
+    void   cleanUpWeightedCircleFit(::LsqSums4&         TrkSxy,
+				    int                SeedIndex,
+				    int*               IdVec,
+				    // CLHEP::Hep3Vector& HelCenter,
+				    // double&            Radius,
+				    double*            Weights,
+				    int&               Iworst);
 
     bool   doLinearFitPhiZ     (CalHelixFinderData& Helix, 
 				int                 SeedIndex, 
@@ -252,6 +243,7 @@ namespace mu2e {
 
     int   isHitUsed(int index);
 
+    void fillHitLayer                 (CalHelixFinderData& Helix);
     void fillXYZP                     (CalHelixFinderData& Helix);
     void filterDist                   ();
     void filterUsingPatternRecognition(CalHelixFinderData& Helix);
@@ -259,13 +251,10 @@ namespace mu2e {
     bool findHelix                    (CalHelixFinderData& Helix, const CalTimePeak* TimePeak);
     bool findHelix                    (CalHelixFinderData& Helix, const TimeCluster* TimePeak );
     int  findDfDz                     (CalHelixFinderData& Helix, int SeedIndex, int *indexVec, int  Diag_flag=0);
-    void findTrack                    (int                  seedIndex,
-			               double&              chi2,
-			               int&                 countGoodPoint,
-			               CalHelixFinderData&  mytrk,
-			               int&                 mode,
-			               bool                 useDefaultDfDz=false,
-			               int                  useMPVdfdz = 0);
+    void findTrack                    (int                 SeedIndex,
+			               CalHelixFinderData& Helix,
+			               bool                UseDefaultDfDz = false,
+			               int                 UseMPVdfdz     = 0);
 //-----------------------------------------------------------------------------
 // setters
 //-----------------------------------------------------------------------------
@@ -277,18 +266,18 @@ namespace mu2e {
     void   plotXY               (int ISet);
 
     void   plotZPhi             (int ISet);
-    void   printInfo            (CalHelixFinderData& myhel);
-    void   printXYZP            (const char* Title);
+    void   printInfo            (CalHelixFinderData& Helix);
+    void   printXYZP            (CalHelixFinderData& Helix);
 
-    int    refineHelixParameters(CalHelixFinderData& Trk,
+    int    refineHelixParameters(CalHelixFinderData& Helix,
 				 int seedIndex, int *indexVec,
 				 const char*  Banner=NULL,
 				 int Print=0);
 
                                         // 12-10-2013 Gianipez: new pattern recognition functions
-    void   rescueHitsBeforeSeed (CalHelixFinderData&  mytrk);
+    void   rescueHitsBeforeSeed (CalHelixFinderData&  Helix);
 
-    void   rescueHits           (CalHelixFinderData&  mytrk, int seedIndex       ,
+    void   rescueHits           (CalHelixFinderData&  Helix, int   seedIndex       ,
 				 int *indexVec             , int UsePhiResiduals = 0);
 
     void   resolve2PiAmbiguity  (const CLHEP::Hep3Vector& Center, double DfDz, double Phi0);
