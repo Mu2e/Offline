@@ -149,9 +149,7 @@ namespace mu2e {
 
     // presence info for each straw.
     bool strawExists(StrawIndex const index) const {
-      // return _strawExists[index.asInt()];
-      // return _allStraws2_p.at(((_allStraws2.at(index.asInt())).id2()).asUint16()) != nullptr;
-      return _strawExists2.at(((_allStraws2.at(index.asInt())).id2()).asUint16());
+      return _strawExists2.at(((_allStraws2.at(index.asInt())).id()).asUint16());
     }
 
     // =============== NewTracker Accessors Start ==============
@@ -183,7 +181,7 @@ namespace mu2e {
     }
 
     const StrawId2 getStrawId2( StrawIndex i ) const{
-      return (_allStraws2.at(i.asInt())).id2();
+      return (_allStraws2.at(i.asInt())).id();
     }
 
     // tmp function to be deprecated

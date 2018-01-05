@@ -225,15 +225,13 @@ namespace mu2e {
                << setw(6) << planeNumber
                << setw(6) << planeNumberShifted;
           const Straw& straw = ttracker->getStraw( StrawIndex(sdcn) );
-          cout << setw(7) <<  straw.id2()
-               << setw(10) << straw.id()
+          cout << setw(7) << straw.id()
                << endl;
 
           // print out info based on the new StrawID2 etc...
           cout << __func__ << " sid2, osid : ";
           const Straw& straw2 = ttracker->getStraw(StrawId2(sdcn2));
-          cout << setw(7) <<  straw2.id2()
-               << setw(10) << straw2.id()
+          cout << setw(7) <<  straw2.id()
                << endl;
         }
 

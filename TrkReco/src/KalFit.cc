@@ -585,13 +585,13 @@ namespace mu2e
               // must do this twice due to intrusion of layer on hierarchy FIXME!!!
               // std::cout << __func__ << " straw id l0 " << panel.getLayer(0).getStraw(is).id() << std::endl;
               // std::cout << __func__ << " straw id l1 " << panel.getLayer(1).getStraw(is).id() << std::endl;
-               _debug>2 && std::cout << __func__ << " straw id l0 " << panel.getStraw(is).id2() << std::endl;
-              if ( panel.getStraw(is).id2().getLayer()==0) {
+               _debug>2 && std::cout << __func__ << " straw id l0 " << panel.getStraw(is).id() << std::endl;
+              if ( panel.getStraw(is).id().getLayer()==0) {
                  _debug>2 && std::cout << __func__ << " straw id l0 by id "
-                          << panel.getStraw(StrawId2(panel.id2().asUint16()+is)).id2() << std::endl;
+                          << panel.getStraw(StrawId2(panel.id().asUint16()+is)).id() << std::endl;
               } else {
                  _debug>2 && std::cout << __func__ << " straw id l1 by id "
-                          << panel.getStraw(StrawId2(panel.id2().asUint16()+is)).id2() << std::endl;
+                          << panel.getStraw(StrawId2(panel.id().asUint16()+is)).id() << std::endl;
               }
               matstraws.insert(StrawFlight(panel.getStraw(is).index(),flt));
               ++nadded;

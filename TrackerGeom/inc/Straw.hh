@@ -60,15 +60,6 @@ namespace mu2e {
            CLHEP::Hep3Vector const& t
            );
 
-    // (Intermediate) Constructor using the new type of StrawId2
-    Straw( const StrawId& id, const StrawId2& id2,
-           StrawIndex index,
-           const CLHEP::Hep3Vector& c,
-           const StrawDetail* detail,
-           int detailIndex,
-           CLHEP::Hep3Vector const& t
-           );
-
     // Accept the compiler copy constructor and assignment operators
 
     // I don't think that this class should have virtual functions but 
@@ -77,8 +68,6 @@ namespace mu2e {
 
 
     const StrawId& id() const { return _id;}
-
-    const StrawId2& id2() const { return _id2;}
 
     StrawIndex index() const { return _index;}
 
@@ -164,7 +153,6 @@ namespace mu2e {
 
     // Identifier
     StrawId _id;
-    StrawId2 _id2;
 
     // Index into the array of all straws.
     StrawIndex _index;

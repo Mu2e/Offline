@@ -21,7 +21,6 @@ namespace mu2e {
 
   Straw::Straw():
     _id(StrawId()),
-    _id2(StrawId2()),
     _index(StrawIndex(0)),
     _c(CLHEP::Hep3Vector(0.,0.,0.)),
     _detail(0),
@@ -39,7 +38,6 @@ namespace mu2e {
                 double wty
                 ):
     _id(id),
-    _id2(StrawId2()),
     _index(index),
     _c(c),
     _detail(detail),
@@ -56,24 +54,6 @@ namespace mu2e {
                 CLHEP::Hep3Vector const& w
                 ):
     _id(id),
-    _id2(StrawId2()),
-    _index(index),
-    _c(c),
-    _detail(detail),
-    _detailIndex(detailIndex),
-    _w(w.unit())
-  {
-  }
-
-  Straw::Straw( const StrawId& id, const StrawId2& id2,
-                StrawIndex index,
-                CLHEP::Hep3Vector const& c,
-                const StrawDetail* detail,
-                int detailIndex,
-                CLHEP::Hep3Vector const& w
-                ):
-    _id(id),
-    _id2(id2),
     _index(index),
     _c(c),
     _detail(detail),

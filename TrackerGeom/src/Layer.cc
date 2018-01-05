@@ -53,7 +53,6 @@ namespace mu2e {
     //   cout << __func__ << " Printing Layer _straws info before: " << id()
     //        << setw(3) << is
     //        << " " << straw.id()
-    //        << " " << straw.id2()
     //        << " " << straw.index()
     //        << endl;
     // }
@@ -72,7 +71,6 @@ namespace mu2e {
     //   cout << __func__ << " Printing Layer _straws info after: " << id()
     //        << setw(3) << is
     //        << " " << straw.id()
-    //        << " " << straw.id2()
     //        << " " << straw.index()
     //        << endl;
     // }
