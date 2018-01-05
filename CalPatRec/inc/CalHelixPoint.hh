@@ -14,7 +14,7 @@ namespace mu2e {
 // utility struct
 //-----------------------------------------------------------------------------
   struct CalHelixPoint {
-    //    static double       _efac;
+    static double       _efac;
     static StrawHitFlag _useflag;	// flag bits to define use
 
     size_t             _ind;		// straw hit index
