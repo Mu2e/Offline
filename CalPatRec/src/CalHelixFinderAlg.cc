@@ -2551,7 +2551,7 @@ namespace mu2e {
 
 	if (UseMPVDfDz == 0) {
 	  //	  calculateDfDz(phi_0,phi_1,p2.z(),p1.z(),dfdz);
-	  calculateDphiDz_2(hitIndex,NPoints+1,center.x(),center.y(),dfdz);
+	  calculateDphiDz_2(hitIndex,NPoints,center.x(),center.y(),dfdz);
 	}
 	else if (UseMPVDfDz ==1) {
 	  dfdz = _hdfdz;
