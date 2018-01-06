@@ -64,14 +64,14 @@ namespace mu2e
       SimParticleTimeOffset _toff;
       // strawhit tuple variables
       TTree *_shdiag;
-      Int_t _eventid;
+      Int_t _eventid, _subrunid, _runid;
       Hep3Vector _shp;
       Float_t _shlen, _slen; 
       Float_t _edep;
       Float_t _time[2], _tot[2];
       Float_t _rho;
       Int_t _mcnsteps;
-      Int_t _mcpdg,_mcgen,_mcproc;
+      Int_t _mcpdg,_mcgen,_mcproc, _mcid;
       Int_t _mcppdg,_mcpproc;
       Int_t _mcgid, _mcgpdg;
       Float_t _mcge, _mcgt;
@@ -107,6 +107,8 @@ namespace mu2e
 
   void StrawHitDiag::analyze(const art::Event& event ) {
     _eventid = event.event();
+    _subrunid = event.subRun();
+    _runid = event.run();
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::TrkPatRec: data missing or incomplete"<< endl;
     }
@@ -142,6 +144,8 @@ namespace mu2e
     // straw hit tuple
     _shdiag=tfs->make<TTree>("shdiag","strawhit diagnostics");
     _shdiag->Branch("eventid",&_eventid,"eventid/I");
+    _shdiag->Branch("subrunid",&_subrunid,"subrunid/I");
+    _shdiag->Branch("runid",&_runid,"runid/I");
     _shdiag->Branch("shpos.",&_shp);
     _shdiag->Branch("shlen",&_shlen,"shlen/F");
     _shdiag->Branch("slen",&_slen,"slen/F");
@@ -196,6 +200,7 @@ namespace mu2e
       _shdiag->Branch("mcpproc",&_mcpproc,"mcpproc/I");
       _shdiag->Branch("mcptime",&_mcptime,"mcptime/D");
       _shdiag->Branch("mcgid",&_mcgid,"mcgid/I");
+      _shdiag->Branch("mcid",&_mcid,"mcid/I");
       _shdiag->Branch("mcgpdg",&_mcgpdg,"mcgpdg/I");
       _shdiag->Branch("mcge",&_mcge,"mcge/F");
       _shdiag->Branch("mcgt",&_mcgt,"mcgt/F");
@@ -240,6 +245,7 @@ namespace mu2e
       _rho = shp.pos().perp();
       // summarize the MC truth for this strawhit.  Preset the values in case MC is missing/incomplete
       _mcgid = -1;
+      _mcid = -1;
       _mcgpdg = -1;
       _mcge = -1.0;
       _mcgt = -1.0;
@@ -315,7 +321,8 @@ namespace mu2e
         }
 // generator information
         if(spp.isNonnull()){
-        art::Ptr<SimParticle> sp = spp;
+	  _mcid = spp->id().asInt();
+	  art::Ptr<SimParticle> sp = spp;
         // find the first parent which comes from a generator
           while(sp->genParticle().isNull() && sp->parent().isNonnull()){
             sp = sp->parent();
@@ -329,7 +336,6 @@ namespace mu2e
           }
         }
         _mcxtalk = spmcp->strawIndex() != sh.strawIndex();
-
       }
       _shwres = _shpcol->at(istr).posRes(StrawHitPosition::wire);
       _shtres = _shpcol->at(istr).posRes(StrawHitPosition::trans);
