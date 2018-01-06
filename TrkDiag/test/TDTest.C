@@ -30,6 +30,7 @@ void TDTest(TTree* sh,const char* page="edep") {
   std::string spage(page);
   TCut conv("mcproc==56&&mcgen==2");
   TCut proton("mcpdg==2212");
+  TCut other("mcpdg==11&&mcgen!=2");
   if(spage == "edep"){
     TH1F* cedep = new TH1F("cedep","Ce Straw Energy Deposit;Edep (KeV)",50,0,8.0);
     TH1F* pedep = new TH1F("pedep","Proton Straw Energy Deposit;Edep (KeV)",50,0,8.0);
@@ -160,21 +161,53 @@ void TDTest(TTree* sh,const char* page="edep") {
       tdr_2->SetLineColor(kRed);
       tdr_2->Draw();
     }
-  } else if(spage == "Ce"){
-    TH2F* ocomp = new TH2F("ocomp","Ce TD Reco wire distance vs true;True TD distance (mm);Reco wire distance (mm)",50,-650,650,50,-650,650);
-    sh->Project("ocomp","shlen:mcshlen",conv);
-    TH1F* ores = new TH1F("ores","Ce TD Wire Distance Resolution; Resolution (mm)",50,-300,300);
-    sh->Project("ores","shlen-mcshlen",conv);
-    TH1F* opull = new TH1F("opull","Ce TD Pull;Pull",100,-10,10);
-    sh->Project("opull","(shlen-mcshlen)/wres",conv);
+  } else if(spage == "Proton"){
+    TH2F* pcomp = new TH2F("pcomp","Proton TD Reco wire distance vs true;True TD distance (mm);Reco wire distance (mm)",50,-650,650,50,-650,650);
+    sh->Project("pcomp","shlen:mcshlen",proton);
+    TH1F* pres = new TH1F("pres","Proton TD Wire Distance Resolution; Resolution (mm)",50,-300,300);
+    sh->Project("pres","shlen-mcshlen",proton);
+    TH1F* ppull = new TH1F("ppull","Proton TD Pull;Pull",100,-10,10);
+    sh->Project("ppull","(shlen-mcshlen)/wres",proton);
     gStyle->SetOptStat(1111);
-    TCanvas* occan = new TCanvas("occan","occan",700,700);
-    occan->Divide(2,2);
-    occan->cd(1);
-    ocomp->Draw("colorz");
-    occan->cd(2);
-    ores->Fit("gaus","","",-2.0*ores->GetRMS(),2.0*ores->GetRMS());
-    occan->cd(3);
-    opull->Fit("gaus","","",-2.0*opull->GetRMS(),2.0*opull->GetRMS());
+    TCanvas* pcan = new TCanvas("pcan","pcan",700,700);
+    pcan->Divide(2,2);
+    pcan->cd(1);
+    pcomp->Draw("colorz");
+    pcan->cd(2);
+    pres->Fit("gaus","","",-2.0*pres->GetRMS(),2.0*pres->GetRMS());
+    pcan->cd(3);
+    ppull->Fit("gaus","","",-2.0*ppull->GetRMS(),2.0*ppull->GetRMS());
+  } else if(spage == "Ce"){
+    TH2F* cecomp = new TH2F("cecomp","Ce TD Reco wire distance vs true;True TD distance (mm);Reco wire distance (mm)",50,-650,650,50,-650,650);
+    sh->Project("cecomp","shlen:mcshlen",conv);
+    TH1F* ceres = new TH1F("ceres","Ce TD Wire Distance Resolution; Resolution (mm)",50,-300,300);
+    sh->Project("ceres","shlen-mcshlen",conv);
+    TH1F* cepull = new TH1F("cepull","Ce TD Pull;Pull",100,-10,10);
+    sh->Project("cepull","(shlen-mcshlen)/wres",conv);
+    gStyle->SetOptStat(1111);
+    TCanvas* cecan = new TCanvas("cecan","cecan",700,700);
+    cecan->Divide(2,2);
+    cecan->cd(1);
+    cecomp->Draw("colorz");
+    cecan->cd(2);
+    ceres->Fit("gaus","","",-2.0*ceres->GetRMS(),2.0*ceres->GetRMS());
+    cecan->cd(3);
+    cepull->Fit("gaus","","",-2.0*cepull->GetRMS(),2.0*cepull->GetRMS());
+  } else if(spage == "Other"){
+    TH2F* otcomp = new TH2F("otcomp","Other TD Reco wire distanot vs true;True TD distanot (mm);Reco wire distanot (mm)",50,-650,650,50,-650,650);
+    sh->Project("otcomp","shlen:mcshlen",other);
+    TH1F* otres = new TH1F("otres","Other TD Wire Distanot Resolution; Resolution (mm)",50,-300,300);
+    sh->Project("otres","shlen-mcshlen",other);
+    TH1F* otpull = new TH1F("otpull","Other TD Pull;Pull",100,-10,10);
+    sh->Project("otpull","(shlen-mcshlen)/wres",other);
+    gStyle->SetOptStat(1111);
+    TCanvas* otcan = new TCanvas("otcan","otcan",700,700);
+    otcan->Divide(2,2);
+    otcan->cd(1);
+    otcomp->Draw("colorz");
+    otcan->cd(2);
+    otres->Fit("gaus","","",-2.0*otres->GetRMS(),2.0*otres->GetRMS());
+    otcan->cd(3);
+    otpull->Fit("gaus","","",-2.0*otpull->GetRMS(),2.0*otpull->GetRMS());
   }
 }
