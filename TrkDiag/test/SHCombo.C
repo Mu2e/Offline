@@ -3,6 +3,7 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+#include <TPaveStats.h>
 #include <TLegend.h>
 #include <math.h>
 #include <iostream>
@@ -10,14 +11,21 @@
 #include <array>
 
 void SHCombo::MakeHists(){
-  _ds = new TH1F("ds","StrawId difference",101,-0.5,100.5);
+  _dsa = new TH1F("dsa","StrawId difference",101,-0.5,100.5);
   _dst = new TH1F("dst","StrawId difference",101,-0.5,100.5);
-  _dt = new TH1F("dt","Time difference",100,-100.0,100.0);
+  _dso = new TH1F("dso","StrawId difference",101,-0.5,100.5);
+  _dta = new TH1F("dta","Time difference",100,-100.0,100.0);
   _dtt = new TH1F("dtt","Time difference",100,-100.0,100.0);
-  _dwd = new TH1F("dwd","Wire length difference",100,-400.0,400.0);
+  _dto = new TH1F("dto","Time difference",100,-100.0,100.0);
+  _dwda = new TH1F("dwda","Wire length difference",100,-400.0,400.0);
   _dwdt = new TH1F("dwdt","Wire length difference",100,-400.0,400.0);
-  _dwdp = new TH1F("dwdp","Wire length difference pull",100,-10.0,10.0);
+  _dwdo = new TH1F("dwdo","Wire length difference",100,-400.0,400.0);
+  _dedepa = new TH1F("dedepa","EDep difference",100,-10.0,10.0);
+  _dedept = new TH1F("dedept","EDep difference",100,-10.0,10.0);
+  _dedepo = new TH1F("dedepo","EDep difference",100,-10.0,10.0);
+  _dwdpa = new TH1F("dwdpa","Wire length difference pull",100,-10.0,10.0);
   _dwdpt = new TH1F("dwdpt","Wire length difference pull",100,-10.0,10.0);
+  _dwdpo = new TH1F("dwdpo","Wire length difference pull",100,-10.0,10.0);
   _np = new TH1F("np","N hits/panel",100,-0.5,99.5);
   _mcdwd = new TH1F("mcdwd","MC Wire length difference",100,-200.0,200.0);
   _wres = new TH1F("wres","Wire Resolution",100,-400.0,400.0);
@@ -27,17 +35,37 @@ void SHCombo::MakeHists(){
   _nmatch = new TH1F("nmatch","N Matching",10,-0.5,9.5);
   _nmatcht = new TH1F("nmatcht","N Matching",10,-0.5,9.5);
   _nmatchst = new TH1F("nmatchstt","N Matching",10,-0.5,9.5);
+
+  _dsa->SetStats(0);
+  _dta->SetStats(0);
+  _dwda->SetStats(0);
+  _dwdpa->SetStats(0);
+  _dedepa->SetStats(0);
+
+  _dsa->SetLineColor(kRed);
+  _dta->SetLineColor(kRed);
+  _dwda->SetLineColor(kRed);
+  _dwdpa->SetLineColor(kRed);
+  _dedepa->SetLineColor(kRed);
+  _dso->SetLineColor(kGreen);
+  _dto->SetLineColor(kGreen);
+  _dwdo->SetLineColor(kGreen);
+  _dwdpo->SetLineColor(kGreen);
+  _dedepo->SetLineColor(kGreen);
   _dst->SetLineColor(kBlue);
   _dtt->SetLineColor(kBlue);
   _dwdt->SetLineColor(kBlue);
   _dwdpt->SetLineColor(kBlue);
-  _mcdwd->SetLineColor(kRed);
+  _dedept->SetLineColor(kBlue);
+
   _nmatch->SetLineColor(kGreen);
   _nmatcht->SetLineColor(kBlue);
-  _nmatchst->SetLineColor(kRed);
-  _wres->SetLineColor(kRed);
+  _nmatchst->SetLineColor(kOrange);
+
+  _mcdwd->SetLineColor(kRed);
+  _wres->SetLineColor(kOrange);
+  _wpull->SetLineColor(kOrange);
   _awres->SetLineColor(kCyan);
-  _wpull->SetLineColor(kRed);
   _awpull->SetLineColor(kCyan);
 
 }
@@ -72,7 +100,7 @@ void SHCombo::Loop()
       event = eventid;
       subrun = subrunid;
       run = runid;
-      _plane.clear(); _panel.clear(); _straw.clear(); _mcid.clear(); _wd.clear(); _wderr.clear(); _time.clear(); _mcwd.clear();
+      _plane.clear(); _panel.clear(); _straw.clear(); _mcid.clear(); _wd.clear(); _wderr.clear(); _time.clear(); _mcwd.clear(); _edep.clear();
     }
     // store data for this straw hit
     _plane.push_back(plane);
@@ -80,6 +108,7 @@ void SHCombo::Loop()
     _straw.push_back(straw);
     _mcid.push_back(mcid);
     _mcwd.push_back(mcshlen);
+    _edep.push_back(1000.0*edep);
     _wd.push_back(shlen);
     _wderr.push_back(wres);
     _time.push_back(std::min(time_tcal,time_thv));
@@ -103,39 +132,44 @@ void SHCombo::processEvent() {
       if(_plane[ihit] == _plane[jhit] &&
 	  _panel[ihit] == _panel[jhit]){
 	bool mcmatch = _mcid[ihit] == _mcid[jhit];
+	int ds = abs( (int)_straw[ihit]-(int)_straw[jhit]);
+	float dt = _time[ihit]-_time[jhit];
+	float dw = _wd[ihit]-_wd[jhit];
+	float dwe1 = _wderr[ihit]*_wderr[ihit];
+	float dwe2 = _wderr[jhit]*_wderr[jhit];
+	float dwerr = sqrt(dwe1+dwe2);
+	float awerr = 1.0/sqrt(1.0/dwe1+1.0/dwe2);
+	float dwp = dw/dwerr;
+	float wa = (_wd[ihit]/dwe1 + _wd[jhit]/dwe2)/(1.0/dwe1+1.0/dwe2);
+	float mcwa = 0.5*(_mcwd[ihit]+_mcwd[jhit]);
+	float dedep = _edep[ihit]-_edep[jhit];
+	_dsa->Fill(ds);
+	_dta->Fill(dt);
+	_dwdpa->Fill(dwp);
+	_dwda->Fill(dw);
+	_dedepa->Fill(dedep);
 	if(mcmatch){
 	  _mcdwd->Fill(_mcwd[ihit]-_mcwd[jhit]);
 	  nmatcht++;
+	  _dst->Fill(ds);
+	  _dtt->Fill(dt);
+	  _dwdpt->Fill(dwp);
+	  _dwdt->Fill(dw);
+	  _dedept->Fill(dedep);
 	}
-	int ds = abs( (int)_straw[ihit]-(int)_straw[jhit]);
-	_ds->Fill(ds);
-	if(mcmatch) _dst->Fill(ds);
-	if(ds !=0 && ds <= _maxds){
-	  float dt = _time[ihit]-_time[jhit];
-	  _dt->Fill(dt);
-	  if(mcmatch) _dtt->Fill(dt);
-	  if(fabs(dt) < _maxdt){
-	    float dw = _wd[ihit]-_wd[jhit];
-	    float dwe1 = _wderr[ihit]*_wderr[ihit];
-	    float dwe2 = _wderr[jhit]*_wderr[jhit];
-	    float dwerr = sqrt(dwe1+dwe2);
-	    float awerr = 1.0/sqrt(1.0/dwe1+1.0/dwe2);
-	    float dwp = dw/dwerr;
-	    float wa = (_wd[ihit]/dwe1 + _wd[jhit]/dwe2)/(1.0/dwe1+1.0/dwe2);
-	    float mcwa = 0.5*(_mcwd[ihit]+_mcwd[jhit]);
-	    _dwdp->Fill(dwp);
-	    if(mcmatch)_dwdpt->Fill(dwp);
-	    if(fabs(dwp) < _maxdwp) {
-	      _dwd->Fill(dw);
-	      ++nmatch;
-	      _awres->Fill(wa-mcwa);
-	      _awpull->Fill((wa-mcwa)/awerr);
-	      if(mcmatch){
-		_dwdt->Fill(dw);
-		++nmatchst;
-	      }
-	    }
-	  }
+	bool goodds = ds !=0 && ds <= _maxds;
+	bool gooddt = fabs(dt) < _maxdt;
+	bool gooddwp = abs(dwp) < _maxdwp;
+	if(goodds&&gooddt) _dwdpo->Fill(dwp);
+	if(goodds&&gooddwp) _dto->Fill(dt);
+	if(gooddt&&gooddwp) _dso->Fill(ds);
+	if(gooddt&&gooddwp&&goodds){
+	  _dwdo->Fill(dw);
+	  _dedepo->Fill(dedep);
+	  ++nmatch;
+	  _awpull->Fill((wa-mcwa)/awerr);
+	  _awres->Fill(wa-mcwa);
+	  if(mcmatch)++nmatchst;
 	}
       }
     }
@@ -148,31 +182,62 @@ void SHCombo::processEvent() {
 }  
 void SHCombo::Draw() {
   // draw results
-  TCanvas* selcan = new TCanvas("selcan","selcan",700,700);
+  TCanvas* selcan = new TCanvas("selcan","selcan",1000,700);
   _cans.push_back(selcan);
-  selcan->Divide(2,2);
+
+  TLegend* sleg = new TLegend(0.4,0.6,0.9,0.9);
+  sleg->AddEntry(_dsa,"All Panel Hit Pairs","L");
+  sleg->AddEntry(_dso,"Selected Hit Pairs","L");
+  sleg->AddEntry(_dst,"True Panel Hit Pairs","L");
+  selcan->Divide(3,2);
   selcan->cd(1);
-  _ds->Draw();
+  _dsa->Draw();
   _dst->Draw("same");
+  _dso->Draw("same");
+  sleg->Draw();
   selcan->cd(2);
-  _dt->Draw();
+  _dta->Draw();
   _dtt->Draw("same");
+  _dto->Draw("same");
   selcan->cd(3);
-  _dwdp->Draw();
+  _dwdpa->Draw();
   _dwdpt->Draw("same");
+  _dwdpo->Draw("same");
   selcan->cd(4);
-  _dwd->Draw();
+  _dwda->Draw();
   _dwdt->Draw("same");
+  _dwdo->Draw("same");
+  selcan->cd(5);
+  _dedepa->Draw();
+  _dedept->Draw("same");
+  _dedepo->Draw("same");
+
 
   TCanvas* rcan = new TCanvas("rcan","rcan",700,700);
   _cans.push_back(rcan);
   rcan->Divide(2,2);
   rcan->cd(1);
   _wres->Draw();
-  _awres->Draw("same");
+  _awres->Draw("sames");
+  gPad->Update();
+  TPaveStats *st = (TPaveStats*)_wres->FindObject("stats");
+  Coord_t dx = st->GetX2NDC()-st->GetX1NDC();
+  st->SetX2NDC(st->GetX1NDC());
+  st->SetX1NDC(st->GetX1NDC()-dx);
+  st->Draw();
+  TLegend* rleg = new TLegend(0.1,0.6,0.4,0.9);
+  rleg->AddEntry(_wres,"Single Hit","L");
+  rleg->AddEntry(_awres,"Pair Average","L");
+  rleg->Draw();
   rcan->cd(2);
   _wpull->Draw();
-  _awpull->Draw("same");
+  _awpull->Draw("sames");
+  gPad->Update();
+  st = (TPaveStats*)_wpull->FindObject("stats");
+  dx = st->GetX2NDC()-st->GetX1NDC();
+  st->SetX2NDC(st->GetX1NDC());
+  st->SetX1NDC(st->GetX1NDC()-dx);
+  st->Draw();
   rcan->cd(3);
   _mcdwd->Draw();
 
@@ -183,6 +248,11 @@ void SHCombo::Draw() {
   _nmatcht->Draw();
   _nmatch->Draw("same");
   _nmatchst->Draw("same");
+  TLegend* nleg = new TLegend(0.3,0.6,0.8,0.9);
+  nleg->AddEntry(_nmatcht,"MC True","L"); 
+  nleg->AddEntry(_nmatch,"Reco","L"); 
+  nleg->AddEntry(_nmatchst,"True Reco","L");
+  nleg->Draw();
   ncan->cd(2);
   _np->Draw();
 }

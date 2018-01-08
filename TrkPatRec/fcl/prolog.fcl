@@ -296,6 +296,7 @@ Tracking : {
     makeSH	    : @local::makeSHfromSD
     FSHPreStereo    : @local::FSHPreStereo
     MakeStrawHitPositions  : @local::MakeStrawHitPositions
+    CombineStrawHits  : @local::CombineStrawHits
     MakeStereoHits  : @local::MakeStereoHits
     FlagStrawHits   : @local::FlagStrawHits
     FlagBkgHits	    : @local::FlagBkgHits

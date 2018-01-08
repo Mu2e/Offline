@@ -11,5 +11,6 @@
 #include "TrkDiag/inc/HitInfoMC.hh"
 #include "TrkDiag/inc/HelixHitInfo.hh"
 #include "TrkDiag/inc/BkgHitInfo.hh"
+#include "TrkDiag/inc/ComboHitInfo.hh"
 #include "CRVAnalysis/inc/CrvHitInfoReco.hh"
 #include "CRVAnalysis/inc/CrvHitInfoMC.hh"

@@ -21,6 +21,8 @@ namespace mu2e {
     // accessors
     CLHEP::Hep3Vector const& pos() const { return _pos; }
     CLHEP::Hep3Vector const& wdir() const { return _wdir; }
+    // center of the wire
+    CLHEP::Hep3Vector centerPos() const;
     Float_t wireDist() const { return _wdist; }
     Float_t posRes(edir dir) const;
     Int_t stereoHitIndex() const { return _stindex; } // negative if there's no stereo hit

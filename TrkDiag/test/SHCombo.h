@@ -212,10 +212,15 @@ public :
    std::vector<float> _wderr;
    std::vector<float> _time;
    std::vector<float> _mcwd;
+   std::vector<float> _edep;
 
-   TH1F *_ds, *_dt, *_dwd, *_dwdp, *_np;
-   TH1F *_dst, *_dtt, *_dwdt, *_dwdpt;
+   TH1F *_dsa, *_dso, *_dst;
+   TH1F *_dta, *_dto, *_dtt;
+   TH1F *_dwda, *_dwdo, *_dwdt;
+   TH1F *_dwdpa, *_dwdpo, *_dwdpt;
+   TH1F *_dedepa, *_dedepo, *_dedept;
    TH1F *_mcdwd;
+   TH1F *_np;
    TH1F *_wres, *_awres, *_wpull, *_awpull;
    TH1F *_nmatch, *_nmatcht, *_nmatchst;
    std::vector<TCanvas*> _cans;

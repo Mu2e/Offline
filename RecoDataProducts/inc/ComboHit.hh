@@ -11,9 +11,6 @@
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/XYZVec.hh"
 #include <stdint.h>
-// temporary kludge around broken std::Array support in art persistence
-constexpr static size_t MaxNStraws = 8;
-typedef StrawHitIndex SHIArray[MaxNStraws];
 // root includes
 #include "Rtypes.h"
 // C++ includes
@@ -36,14 +33,18 @@ namespace mu2e {
       if(ish < _nsh)
 	return _sh[ish];
       else
-	return 0;
+	return 0; // should throw here FIXME!
     }
     //
     XYZVec _pos; // average position
     XYZVec _wdir; // direction at this position (typically the wire direction)
+    Float_t _wdist; // distance from wire center along this direction
     Float_t _wres; // resolution along this direction
     Float_t _tres; // resolution perpendicular to this direction
     uint16_t _nsh; // number of associated straw hits
+// temporary kludge around broken std::Array support in art persistence
+    constexpr static size_t MaxNStraws = 8;
+    typedef StrawHitIndex SHIArray[MaxNStraws];
     SHIArray _sh; // Indices back to straw hits
     Float_t _time; // Average time for these
     Float_t _edep; // average energy deposit for these

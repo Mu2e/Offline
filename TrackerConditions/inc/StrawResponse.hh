@@ -34,7 +34,9 @@ namespace mu2e {
       float _central; // max wire distance for central wire region
       std::vector<float> _centres; // wire center resolution by edep
       std::vector<float> _resslope; // resolution slope vs position by edep
-      float _wbuf; // buffer at the edge of the straws
+      float _wbuf; // buffer at the edge of the straws, in terms of sigma
+      float _slfac; // factor of straw length to set 'missing cluster' hits
+      float _errfac; // error inflation for 'missing cluster' hits
   };
 }
 #endif
