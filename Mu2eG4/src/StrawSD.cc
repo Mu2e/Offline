@@ -188,7 +188,7 @@ namespace mu2e {
     // getting the panel/plane number
 
     G4int sdcn(0);
-    uint16_t sdcn2(0);
+    // uint16_t sdcn2(0);
     if ( _TrackerVersion >= 3) {
 
       if ( _supportModel == SupportModel::simple ){
@@ -207,36 +207,36 @@ namespace mu2e {
         // given how StrawId is calculated we need to extract the
         // plane number and panel number in that plane
         // effectively: sdcn2 = 1024*planeNumber + 128*panelNumber + strawNumber;
-        uint16_t panelNumber = touchableHandle->GetCopyNumber(1)%_npanels;
-        uint16_t planeNumber = touchableHandle->GetCopyNumber(1)/_npanels;
-        uint16_t panelNumberShifted = panelNumber << _panelsft;
-        uint16_t planeNumberShifted = planeNumber << _planesft;
-        sdcn2 = planeNumberShifted + panelNumberShifted +
-          touchableHandle->GetCopyNumber(0);
+        // uint16_t panelNumber = touchableHandle->GetCopyNumber(1)%_npanels;
+        // uint16_t planeNumber = touchableHandle->GetCopyNumber(1)/_npanels;
+        // uint16_t panelNumberShifted = panelNumber << _panelsft;
+        // uint16_t planeNumberShifted = planeNumber << _planesft;
+        // sdcn2 = planeNumberShifted + panelNumberShifted +
+        //   touchableHandle->GetCopyNumber(0);
         // since the straw number is in their construction order, 
         // so sdcn2 is not what is used as of now
         // see TTrackerMaker::makeLayer
         // and ConstrucTTracker::preparePanel int copyNo=straw.index().asInt();
         // and then how StepPointMCs are used on read
 
-        if (_verbosityLevel>3) {
+        // if (_verbosityLevel>3) {
 
-          GeomHandle<TTracker> ttracker;
-          // print out info based on the old StrawID etc... first
-          cout << __func__ <<  " sdcn, sdcn2, panelNumber, panelNumberShifted, planeNumber, planeNumberShifted, sid, sid2 : "
-               << setw(6) << sdcn
-               << setw(6) << sdcn2
-               << setw(6) << panelNumber
-               << setw(6) << panelNumberShifted
-               << setw(6) << planeNumber
-               << setw(6) << planeNumberShifted;
-          const Straw& straw = ttracker->getStraw( StrawIndex(sdcn) );
-          cout << setw(7) << straw.id();
-          // print out info based on the StrawID etc...
-          const Straw& straw2 = ttracker->getStraw(StrawId(sdcn2));
-          cout << setw(7) << straw2.id()
-               << endl;
-        }
+        //   GeomHandle<TTracker> ttracker;
+        //   // print out info based on the old StrawID etc... first
+        //   cout << __func__ <<  " sdcn, sdcn2, panelNumber, panelNumberShifted, planeNumber, planeNumberShifted, sid, sid2 : "
+        //        << setw(6) << sdcn
+        //        << setw(6) << sdcn2
+        //        << setw(6) << panelNumber
+        //        << setw(6) << panelNumberShifted
+        //        << setw(6) << planeNumber
+        //        << setw(6) << planeNumberShifted;
+        //   const Straw& straw = ttracker->getStraw( StrawIndex(sdcn) );
+        //   cout << setw(7) << straw.id();
+        //   // print out info based on the StrawID etc...
+        //   const Straw& straw2 = ttracker->getStraw(StrawId(sdcn2));
+        //   cout << setw(7) << straw2.id()
+        //        << endl;
+        // }
 
       }
 
@@ -257,7 +257,7 @@ namespace mu2e {
         setw(6) << sdcn << endl;
 
       cout << __func__ << " sdcn " << sdcn << endl;
-      cout << __func__ << " sdcn2 " << sdcn2 << endl;
+      // cout << __func__ << " sdcn2 " << sdcn2 << endl;
 
     }
 
@@ -313,14 +313,14 @@ namespace mu2e {
           setw(4) << straw.id().getPanel() << " " <<
           setw(4) << straw.id().getPlane() << " " <<
           setw(6) << sdcn << " " <<
-          setw(6) << sdcn2 << " " <<
+          // setw(6) << sdcn2 << " " <<
           straw.id() << endl;
 
         cout << __func__ << " straw pos     "
              << en << " "
              << ti << " "       <<
           " sdcn: "             << sdcn <<
-          " sdcn2: "             << sdcn2 <<
+          // " sdcn2: "             << sdcn2 <<
           ", straw.MidPoint "   << straw.getMidPoint() <<
           //          ", panel.boxOffset " << panel.boxOffset() <<
           ", plane.origin "    << plane.origin() <<
@@ -332,7 +332,7 @@ namespace mu2e {
              << en << " "
              << ti << " "       <<
           " sdcn: "             << sdcn <<
-          " sdcn2: "             << sdcn2 <<
+          // " sdcn2: "             << sdcn2 <<
           ", straw.MidPoint "   << strawInTracker <<
           ", diff magnitude "   << scientific << diffMag  << fixed <<
           endl;
