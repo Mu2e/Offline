@@ -22,7 +22,6 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "DataProducts/inc/StrawIndex.hh"
-#include "DataProducts/inc/StrawId2.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -37,7 +36,6 @@ namespace mu2e {
 
     // This might change some day.
     typedef unsigned long VolumeId_type;
-    typedef uint16_t VolumeId2_type;
 
     StepPointMC():
       _track(),
@@ -65,32 +63,6 @@ namespace mu2e {
                  ):
       _track(atrack),
       _volumeId(volumeId),
-      _totalEnergyDeposit(totalEDep),
-      _nonIonizingEnergyDeposit(nonIonizingEDep),
-      _position(position),
-      _momentum(momentum),
-      _time(time),
-      _proper(proper),
-      _stepLength(stepLength),
-      _endProcessCode(endProcessCode){
-
-    }
-
-    StepPointMC( art::Ptr<SimParticle> const& atrack,
-                 VolumeId_type                volumeId,
-                 VolumeId2_type               volumeId2,
-                 double                       totalEDep,
-                 double                       nonIonizingEDep,
-                 double                       time,
-                 double                       proper,
-                 CLHEP::Hep3Vector const&     position,
-                 CLHEP::Hep3Vector const&     momentum,
-                 double                       stepLength,
-                 ProcessCode                  endProcessCode
-                 ):
-      _track(atrack),
-      _volumeId(volumeId),
-      _volumeId2(volumeId2),
       _totalEnergyDeposit(totalEDep),
       _nonIonizingEnergyDeposit(nonIonizingEDep),
       _position(position),
@@ -137,7 +109,6 @@ namespace mu2e {
     // This only makes sense for StepPointMCs from the tracker collection.
     // It's the user's job to know if this is a reasonable thing to do.
     StrawIndex strawIndex() const { return static_cast<StrawIndex>(_volumeId); }
-    StrawId2   strawId2()   const { return static_cast<StrawId2>(_volumeId2); }
 
     // Return the volumeId as a VirtualDetectorId.
     // This only makes sense for StepPointMCs from the virtual detector collection.
@@ -154,7 +125,6 @@ namespace mu2e {
     cet::map_vector_key   _trackId;
     art::Ptr<SimParticle> _track;
     VolumeId_type         _volumeId;
-    VolumeId2_type        _volumeId2; // tmp
     double                _totalEnergyDeposit;
     double                _nonIonizingEnergyDeposit;
     CLHEP::Hep3Vector     _position;

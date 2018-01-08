@@ -212,6 +212,11 @@ namespace mu2e {
         uint16_t planeNumberShifted = planeNumber << _planesft;
         sdcn2 = planeNumberShifted + panelNumberShifted +
           touchableHandle->GetCopyNumber(0);
+        // since the straw number is in their construction order, 
+        // so sdcn2 is not what is used as of now
+        // see TTrackerMaker::makeLayer
+        // and ConstrucTTracker::preparePanel int copyNo=straw.index().asInt();
+        // and then how StepPointMCs are used on read
 
         if (_verbosityLevel>3) {
 
@@ -267,7 +272,6 @@ namespace mu2e {
 
     _collection->push_back( StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                         sdcn,
-                                        sdcn2,
                                         edep,
                                         aStep->GetNonIonizingEnergyDeposit(),
                                         aStep->GetPreStepPoint()->GetGlobalTime(),
