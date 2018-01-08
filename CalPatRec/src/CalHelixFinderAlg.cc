@@ -1575,7 +1575,7 @@ namespace mu2e {
 // look for a track candidate using the default value of dfdz and the target center
 //-----------------------------------------------------------------------------
     if (fUseDefaultDfDz == 0) {
-      int useMPVdfdz = 0;
+      useMPVdfdz = 1;
       for (int i=0; i<np; i++) {
 	if (_xyzp[i].isOutlier())                           continue;
 	if ((np -i) > _goodPointsTrkCandidate) {
@@ -1592,43 +1592,43 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     if (_debug > 5) printf("[CalHelixFinderAlg::doPatternRecognition]: ------------ calling findDfDz\n");
 
-    int    diag_flag(1);
-    if (Helix._seedIndex >= 0) {
-      findDfDz(Helix,Helix._seedIndex,_indicesTrkCandidate, diag_flag);
-      if (_debug > 5) printf("[CalHelixFinderAlg::doPatternRecognition]: findDfDz ----> phi0 = %5.5f dfdz = %5.5f \n",
-			      _hphi0, _hdfdz);
-    }
-    else {
-//-----------------------------------------------------------------------------
-// Helix._seedIndex < 0 means that no candidate has been found
-// usually it happens when the cluster is not on the trajectory or the time peak 
-// has very low number of hits
-// maybe we should set a threshold on the time peak size to avoid such?
-//-----------------------------------------------------------------------------
-      int vIndices[np];
-      for (int i=0; i<np; ++i) vIndices[i] = 1;
+//     int    diag_flag(1);
+//     if (Helix._seedIndex >= 0) {
+//       findDfDz(Helix,Helix._seedIndex,_indicesTrkCandidate, diag_flag);
+//       if (_debug > 5) printf("[CalHelixFinderAlg::doPatternRecognition]: findDfDz ----> phi0 = %5.5f dfdz = %5.5f \n",
+// 			      _hphi0, _hdfdz);
+//     }
+//     else {
+// //-----------------------------------------------------------------------------
+// // Helix._seedIndex < 0 means that no candidate has been found
+// // usually it happens when the cluster is not on the trajectory or the time peak 
+// // has very low number of hits
+// // maybe we should set a threshold on the time peak size to avoid such?
+// //-----------------------------------------------------------------------------
+//       int vIndices[np];
+//       for (int i=0; i<np; ++i) vIndices[i] = 1;
 
-      findDfDz(Helix, 0, vIndices, diag_flag);
-      if (_debug > 5) {
-	printf("[CalHelixFinderAlg::doPatternRecognition]: findDfDz called using SeedIndex = 0 and using all hits (expect outliers!) \n");
-	printf("[CalHelixFinderAlg::doPatternRecognition]: findDfDz ----> phi0 = %5.5f dfdz = %5.5f \n",
-	       _hphi0, _hdfdz);
-      }
-    }
-//-----------------------------------------------------------------------------
-// 3rd loop - what is its role? 
-//-----------------------------------------------------------------------------
-    useMPVdfdz = 1;
-    for (int i=0; i<np; i++) {
-      if (_xyzp[i].isOutlier())                             continue;
-      if ((np -i) > _goodPointsTrkCandidate) {
-	if (_debug > 5) { 
-	  printf("[CalHelixFinderAlg::doPatternRecognition]: calling findTrack(i=%i,Helix,useDefaltDfDz=FALSE,useMPVdfdz=%i)",i,useMPVdfdz);
-	  printf(" : np=%3i _goodPointsTrkCandidate=%3i\n",np,_goodPointsTrkCandidate);
-	}
-	findTrack(i,Helix,false,useMPVdfdz);
-      }
-    }
+//       findDfDz(Helix, 0, vIndices, diag_flag);
+//       if (_debug > 5) {
+// 	printf("[CalHelixFinderAlg::doPatternRecognition]: findDfDz called using SeedIndex = 0 and using all hits (expect outliers!) \n");
+// 	printf("[CalHelixFinderAlg::doPatternRecognition]: findDfDz ----> phi0 = %5.5f dfdz = %5.5f \n",
+// 	       _hphi0, _hdfdz);
+//       }
+//     }
+// //-----------------------------------------------------------------------------
+// // 3rd loop - what is its role? 
+// //-----------------------------------------------------------------------------
+//     useMPVdfdz = 1;
+//     for (int i=0; i<np; i++) {
+//       if (_xyzp[i].isOutlier())                             continue;
+//       if ((np -i) > _goodPointsTrkCandidate) {
+// 	if (_debug > 5) { 
+// 	  printf("[CalHelixFinderAlg::doPatternRecognition]: calling findTrack(i=%i,Helix,useDefaltDfDz=FALSE,useMPVdfdz=%i)",i,useMPVdfdz);
+// 	  printf(" : np=%3i _goodPointsTrkCandidate=%3i\n",np,_goodPointsTrkCandidate);
+// 	}
+// 	findTrack(i,Helix,false,useMPVdfdz);
+//       }
+//     }
 
     if (_debug == 0){
       _debug  = _debug2;
@@ -2427,7 +2427,10 @@ namespace mu2e {
 // helix parameters, in particular, phi0, are defined at Z=p2.z()
 // 2014-11-05 gianipez set dfdz equal to the most probable value for CE 
 //------------------------------------------------------------------------------
-    if (UseMPVDfDz ==1 ) dfdz = _hdfdz;			// _mpDfDz;
+    if (UseMPVDfDz ==1 ) {
+      dfdz    = _mpDfDz;                   // _hdfdz;
+      tollMax = 2.*M_PI/dfdz;
+    }
 
     int lastIndex = -9999;
 
@@ -3308,7 +3311,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
     //    fCandIndex      = -9999;
     //    fLastIndex      = -9999;
     fUseDefaultDfDz = 0;
-
+    _hdfdz          = _mpDfDz;
     // _x0             = -9999.;
     // _y0             = -9999.;
     //_phi0           = -9999.;
