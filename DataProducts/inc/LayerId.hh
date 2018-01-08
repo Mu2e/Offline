@@ -12,7 +12,7 @@
 
 namespace mu2e {
 
-  typedef StrawId2 LayerId;
+  typedef StrawId LayerId;
 
 } //namespace mu2e
 

@@ -79,9 +79,9 @@ namespace mu2e {
 
       _TrackerVersion = config.getInt("TTrackerVersion",3);
 
-      _npanels  = StrawId2::_npanels;
-      _panelsft = StrawId2::_panelsft;
-      _planesft = StrawId2::_planesft;
+      _npanels  = StrawId::_npanels;
+      _panelsft = StrawId::_panelsft;
+      _planesft = StrawId::_planesft;
 
       _verbosityLevel = max(verboseLevel,config.getInt("ttracker.verbosityLevel",0)); // Geant4 SD verboseLevel
       _supportModel   = ttracker->getSupportModel();
@@ -203,6 +203,7 @@ namespace mu2e {
         // from panel copy number (0..215) and straw number
         // can also use plane copy number;
 
+        // possible future approach
         // given how StrawId is calculated we need to extract the
         // plane number and panel number in that plane
         // effectively: sdcn2 = 1024*planeNumber + 128*panelNumber + strawNumber;
@@ -222,7 +223,7 @@ namespace mu2e {
 
           GeomHandle<TTracker> ttracker;
           // print out info based on the old StrawID etc... first
-           cout << __func__ <<  " sdcn, sdcn2, panelNumber, panelNumberShifted, planeNumber, planeNumberShifted, sid2, osid : "
+          cout << __func__ <<  " sdcn, sdcn2, panelNumber, panelNumberShifted, planeNumber, planeNumberShifted, sid, sid2 : "
                << setw(6) << sdcn
                << setw(6) << sdcn2
                << setw(6) << panelNumber
@@ -230,13 +231,10 @@ namespace mu2e {
                << setw(6) << planeNumber
                << setw(6) << planeNumberShifted;
           const Straw& straw = ttracker->getStraw( StrawIndex(sdcn) );
-          cout << setw(7) << straw.id()
-               << endl;
-
-          // print out info based on the new StrawID2 etc...
-          cout << __func__ << " sid2, osid : ";
-          const Straw& straw2 = ttracker->getStraw(StrawId2(sdcn2));
-          cout << setw(7) <<  straw2.id()
+          cout << setw(7) << straw.id();
+          // print out info based on the StrawID etc...
+          const Straw& straw2 = ttracker->getStraw(StrawId(sdcn2));
+          cout << setw(7) << straw2.id()
                << endl;
         }
 
@@ -289,7 +287,7 @@ namespace mu2e {
       art::ServiceHandle<GeometryService> geom;
       GeomHandle<TTracker> ttracker;
       const Straw&  straw = ttracker->getStraw( StrawIndex(sdcn) );
-      // const Straw& straw = ttracker->getStraw(StrawId2(sdcn2));
+      // const Straw& straw = ttracker->getStraw(StrawId(sdcn2));
 
       // will compare straw.getMidPoint() with the straw position according to Geant4
 
@@ -405,7 +403,7 @@ namespace mu2e {
 
       GeomHandle<TTracker> ttracker;
       Straw const& straw = ttracker->getStraw( StrawIndex(copy) );
-      // const Straw& straw = ttracker->getStraw(StrawId2(copy));
+      // const Straw& straw = ttracker->getStraw(StrawId(copy));
       G4ThreeVector mid  = straw.getMidPoint();
       G4ThreeVector w    = straw.getDirection();
 

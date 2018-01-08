@@ -16,7 +16,7 @@
 
 #include "cetlib_except/exception.h"
 
-//#include "DataProducts/inc/StrawId2.hh"  included via Straw via Tracker (-> Straw)
+//#include "DataProducts/inc/StrawId.hh"  included via Straw via Tracker (-> Straw)
 
 #include "TTrackerGeom/inc/Manifold.hh"
 #include "TTrackerGeom/inc/Support.hh"
@@ -45,20 +45,20 @@ namespace mu2e {
 
     // =============== NewTracker Public Objects Start ==============
 
-    // constexpr static int _nttstraws = StrawId2::_nplanes *
-    //                                   StrawId2::_npanels *
-    //                                   StrawId2::_nstraws; // uncomment after eliminating Tracker
+    // constexpr static int _nttstraws = StrawId::_nplanes *
+    //                                   StrawId::_npanels *
+    //                                   StrawId::_nstraws; // uncomment after eliminating Tracker
 
     // constexpr static int _maxRedirect = std::numeric_limits<uint16_t>::max();
     constexpr static uint16_t _maxRedirect =
-      ((StrawId2::_nplanes -1) << StrawId2::_planesft) +
-      ((StrawId2::_npanels -1) << StrawId2::_panelsft) +
-      StrawId2::_nstraws;
+      ((StrawId::_nplanes -1) << StrawId::_planesft) +
+      ((StrawId::_npanels -1) << StrawId::_panelsft) +
+      StrawId::_nstraws;
 
     // =============== NewTracker Public Objects End   ==============
 
     TTracker(){
-      if (StrawId2::_nlayers != 2)
+      if (StrawId::_nlayers != 2)
         throw cet::exception("GEOM")
           << "Expect configuration with 2 layers per panel\n";
     }  // TODO: insert proper initializer list, starting w/ base class
@@ -85,10 +85,10 @@ namespace mu2e {
 
     // Accessors
     int nPlanes() const{
-      return StrawId2::_nplanes;
+      return StrawId::_nplanes;
     }
 
-    const std::array<Plane,StrawId2::_nplanes>& getPlanes() const{
+    const std::array<Plane,StrawId::_nplanes>& getPlanes() const{
       return _planes;
     }
 
@@ -154,7 +154,7 @@ namespace mu2e {
 
     // =============== NewTracker Accessors Start ==============
 
-    const Straw& getStraw( const StrawId2& id) const{
+    const Straw& getStraw( const StrawId& id) const{
       return *(_allStraws2_p.at(id.asUint16()));
     }
 
@@ -163,7 +163,7 @@ namespace mu2e {
       return _allStraws2.at(i.asInt());
     }
 
-    const Plane& getPlane( const StrawId2& id ) const{
+    const Plane& getPlane( const StrawId& id ) const{
       return _planes.at(id.getPlane());
     }
 
@@ -171,21 +171,21 @@ namespace mu2e {
       return _planes.at(n);
     }
 
-    const Panel& getPanel ( const StrawId2& id ) const{
+    const Panel& getPanel ( const StrawId& id ) const{
       return _planes.at(id.getPlane()).getPanel(id);
     }
 
-    bool strawExists( StrawId2 const id) const{
+    bool strawExists( StrawId const id) const{
       // return _allStraws2_p.at(id.asUint16()) != nullptr;
       return _strawExists2.at(id.asUint16());
     }
 
-    const StrawId2 getStrawId2( StrawIndex i ) const{
+    const StrawId getStrawId( StrawIndex i ) const{
       return (_allStraws2.at(i.asInt())).id();
     }
 
     // tmp function to be deprecated
-    const StrawIndex getStrawIndex(  const StrawId2& id ) const{
+    const StrawIndex getStrawIndex(  const StrawId& id ) const{
       return strawExists(id) ?
         (_allStraws2_p.at(id.asUint16()))->index() :
         StrawIndex(StrawIndex::NO_STRAW);
@@ -293,13 +293,13 @@ namespace mu2e {
     // =============== NewTracker Private Objects Start ==============
 
     // Dense array.
-    std::array<Plane,StrawId2::_nplanes> _planes;
+    std::array<Plane,StrawId::_nplanes> _planes;
 
     // Dense array.
     std::array<Straw,TTracker::_nttstraws> _allStraws2;
 
-    // Sparse array: designed for indexing by StrawId2.
-    // For all legal entries in StrawId2, this points to a straw in _straws2;
+    // Sparse array: designed for indexing by StrawId.
+    // For all legal entries in StrawId, this points to a straw in _straws2;
     // All other entries are null.
     std::array<Straw const*,TTracker::_maxRedirect> _allStraws2_p;
 

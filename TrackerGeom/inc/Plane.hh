@@ -34,7 +34,7 @@ namespace mu2e {
     // A free function, returning void, that takes a const Plane& as an argument.
     typedef void (*PlaneFunction)( const Plane& s);
 
-    Plane():_id(StrawId2()),_rotation(0.),_origin(),_panels(),_exists(true){}
+    Plane():_id(PlaneId()),_rotation(0.),_origin(),_panels(),_exists(true){}
 
     explicit Plane( const PlaneId& id,
             CLHEP::Hep3Vector const& origin = CLHEP::Hep3Vector(0.,0.,0.),

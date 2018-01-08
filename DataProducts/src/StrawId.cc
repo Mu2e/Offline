@@ -4,7 +4,7 @@
 // art includes
 #include "cetlib_except/exception.h"
 // Mu2e includes
-#include "DataProducts/inc/StrawId2.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include "GeneralUtilities/inc/splitLine.hh"
 
 using namespace std;
@@ -13,7 +13,7 @@ namespace mu2e {
 // statics
 //
 //
-  StrawId2::StrawId2( unsigned short plane,
+  StrawId::StrawId( unsigned short plane,
       unsigned short panel,
       unsigned short straw) : _sid(0) {
     setPlane(plane);
@@ -23,7 +23,7 @@ namespace mu2e {
 
   // anonymous namespace for string functions
   namespace {
-    StrawId2 strawIdFromString ( std::string const& s ){
+    StrawId strawIdFromString ( std::string const& s ){
       vector<string> v;
       splitLine( s, "_", v);
       if ( v.size() != 3 ){
@@ -40,29 +40,29 @@ namespace mu2e {
       sdev >> plane;
       ssec >> panel;
       sstr >> straw;
-      return StrawId2(plane,panel,straw);
+      return StrawId(plane,panel,straw);
     }
   }
 
-  StrawId2::StrawId2(std::string const& asstring) {
+  StrawId::StrawId(std::string const& asstring) {
     *this = strawIdFromString(asstring);
   }
 
-  void StrawId2::setStraw(unsigned short istraw) {
+  void StrawId::setStraw(unsigned short istraw) {
     if(validStraw(istraw))
       _sid |= istraw;
     else
       throw cet::exception("CONFIG") << "invalid straw " << istraw << "\n";
   }
 
-  void StrawId2::setPanel(unsigned short ipanel) {
+  void StrawId::setPanel(unsigned short ipanel) {
     if(validPanel(ipanel))
       _sid |= ipanel << _panelsft;
     else
       throw cet::exception("CONFIG") << "invalid panel " << ipanel << "\n";
   }
 
-  void StrawId2::setPlane(unsigned short iplane) {
+  void StrawId::setPlane(unsigned short iplane) {
     if(validPlane(iplane))
       _sid |= iplane << _planesft;
     else

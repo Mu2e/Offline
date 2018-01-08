@@ -11,7 +11,7 @@
 
 namespace mu2e {
 
-  typedef StrawId2 PanelId;
+  typedef StrawId PanelId;
 
 }  //namespace mu2e
 

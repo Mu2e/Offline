@@ -522,7 +522,7 @@ namespace mu2e
 // get an approximate z position for this plane from the average position of the 1st and last straws
       // Hep3Vector s0 = plane.getPanel(0).getLayer(0).getStraw(0).getMidPoint();
       // plane id is id of 0th straw
-      Hep3Vector s0 = plane.getPanel(0).getStraw(StrawId2(plane.id())).getMidPoint();
+      Hep3Vector s0 = plane.getPanel(0).getStraw(StrawId(plane.id())).getMidPoint();
        _debug>2 && std::cout << __func__ << " s0 via panel " << s0 << std::endl;
       // funky convention for straw numbering in a layer FIXME!!!!
       // Hep3Vector sn = plane.getPanel(0).getLayer(1).getStraw(2*plane.getPanel(0).getLayer(1).nStraws()-1).getMidPoint();
@@ -588,10 +588,10 @@ namespace mu2e
                _debug>2 && std::cout << __func__ << " straw id l0 " << panel.getStraw(is).id() << std::endl;
               if ( panel.getStraw(is).id().getLayer()==0) {
                  _debug>2 && std::cout << __func__ << " straw id l0 by id "
-                          << panel.getStraw(StrawId2(panel.id().asUint16()+is)).id() << std::endl;
+                          << panel.getStraw(StrawId(panel.id().asUint16()+is)).id() << std::endl;
               } else {
                  _debug>2 && std::cout << __func__ << " straw id l1 by id "
-                          << panel.getStraw(StrawId2(panel.id().asUint16()+is)).id() << std::endl;
+                          << panel.getStraw(StrawId(panel.id().asUint16()+is)).id() << std::endl;
               }
               matstraws.insert(StrawFlight(panel.getStraw(is).index(),flt));
               ++nadded;

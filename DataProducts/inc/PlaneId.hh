@@ -9,7 +9,7 @@
 
 namespace mu2e {
 
-  typedef StrawId2 PlaneId;
+  typedef StrawId PlaneId;
 
 }
 

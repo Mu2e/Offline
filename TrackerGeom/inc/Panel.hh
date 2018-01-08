@@ -19,7 +19,6 @@
 
 #include "TrackerGeom/inc/Layer.hh"
 #include "DataProducts/inc/PanelId.hh"
-#include "DataProducts/inc/StrawId2.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -45,13 +44,12 @@ namespace mu2e {
 
   public:
 
-    Panel():_id(StrawId2())
-    {}
+    Panel():_id(PanelId()){}
     Panel( const PanelId& id ):_id(id){}
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
-    const StrawId2&  id() const { return _id;}
+    const PanelId& id() const { return _id;}
 
     // const std::vector<Layer>& getLayers() const{
     //   return _layers;
@@ -62,10 +60,10 @@ namespace mu2e {
     }
 
     int nLayers() const{
-      return StrawId2::_nlayers;
+      return StrawId::_nlayers;
     }
 
-    int nStraws() const { return StrawId2::_nstraws; }
+    int nStraws() const { return StrawId::_nstraws; }
 
     const Straw& getStraw( uint16_t n ) const {
       return *(_straws2_p.at(n));
@@ -78,7 +76,7 @@ namespace mu2e {
     // this getStraw checks if this is the right panel
     const Straw& getStraw ( const StrawId& strid2 ) const{
       if ( _id.samePlane(strid2) && _id.samePanel(strid2) ) {
-        return *(_straws2_p.at((strid2.asUint16() & StrawId2::_strawmsk)));
+        return *(_straws2_p.at((strid2.asUint16() & StrawId::_strawmsk)));
       } else {
         throw cet::exception("RANGE")
           << __func__ << " Inconsistent straw/panel request " << strid2
@@ -171,7 +169,7 @@ namespace mu2e {
       return _layers.at(layid.getLayer());
     }
 
-    std::array<Straw const*, StrawId2::_nstraws> _straws2_p;
+    std::array<Straw const*, StrawId::_nstraws> _straws2_p;
 
     // Vertices of enclosing polygon.
     std::vector<CLHEP::Hep3Vector> corners;

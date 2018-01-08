@@ -89,9 +89,9 @@ namespace mu2e {
                                      // necessarily the same as the center of the instrumented region of the tracker.
 
     // Basic parameters needed to describe the TTracker.
-    constexpr static int _numPlanes      = StrawId2::_nplanes; // Number of planes.
-    constexpr static int _panelsPerPlane = StrawId2::_npanels; // Number of panels in one plane.
-    constexpr static int _layersPerPanel = StrawId2::_nlayers; // Number of layers in one panel
+    constexpr static int _numPlanes      = StrawId::_nplanes; // Number of planes.
+    constexpr static int _panelsPerPlane = StrawId::_npanels; // Number of panels in one plane.
+    constexpr static int _layersPerPanel = StrawId::_nlayers; // Number of layers in one panel
     int    _manifoldsPerEnd;             // Number of manifolds along one end of the wires in a layer. 48 = 96/2
     int    _strawsPerManifold;           // Number of straws connected to each manifold. = 1
     int    _rotationPattern;             // Pattern of rotations from plane to plane.
