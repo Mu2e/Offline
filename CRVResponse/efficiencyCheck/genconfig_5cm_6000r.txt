@@ -14,14 +14,14 @@ double cosmicDYB.mean =  -1.1;
 double cosmicDYB.muEMin = 0.5e3;
 double cosmicDYB.muEMax = 5000e3;
 double cosmicDYB.muThMax = 1.4;  //no horizontal tracks
-double cosmicDYB.dx     = 2500.0; 
+double cosmicDYB.dx     = 3000.0; 
 double cosmicDYB.dy     = 0;
 double cosmicDYB.dz     = 807.3;
 double cosmicDYB.tMin   = 500.0;
 double cosmicDYB.tMax   = 1300.0;
 
 string cosmicDYB.direction = "Negative_y";
-vector<double> cosmicDYB.productionCenterInMu2e = {-4204.0, 2699.175, 1616.5};
+vector<double> cosmicDYB.productionCenterInMu2e = {-3904.0, 2699.175, 1616.5};
 
 bool   cosmicDYB.dontProjectToSurface = true;
 
@@ -30,3 +30,4 @@ bool   cosmicDYB.dontProjectToSurface = true;
 // Local Variables:
 // mode:c++
 // End:
+
