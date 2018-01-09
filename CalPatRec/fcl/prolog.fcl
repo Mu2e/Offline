@@ -492,32 +492,10 @@ CalPatRec : { @table::CalPatRec
 	    strawHitFlagCollectionTag     : FlagStrawHits
 	}
 
-	# CalPatRecFlagStrawHits              : {
-	#     module_type                     : FlagStrawHits
-	#     StrawHitCollectionTag           : makeSH
-	#     StrawHitPositionCollectionTag   : CalPatRecMakeStereoHits
-	#     minimumRadius                   : 380.            # mm
-	#     maximumRadius                   : 700.  # mm
-	#     maximumEnergy                   : 0.005           # 5 KeV, in MeV
-	#     UseCaloCluster           : false
-	#     UseCaloClusterXYPosition : false
-	#     CaloClusterMinE          : 50.
-	#     CaloClusterMinSize       : 2
-	#     CaloClusterMinDt         : -40
-	#     CaloClusterMaxDt         : 40
-	#     pitchAngle               : 0.67   # mean pitch for CE
-	#     beta                     : 1.
-	#     dtOffset                 : @local::TrackCaloMatching.DtOffset
-	# }
 #------------------------------------------------------------------------------
 # default configuration: DEM
 # CalPatRec, so far, has been validated only for e- 
 #------------------------------------------------------------------------------
-# 	CalTrkFitDem : { @table::CalPatRec.producers.CalPatRec fitparticle: 11 fitdirection:0 }
-# 	CalTrkFitDmm : { @table::CalPatRec.producers.CalPatRec fitparticle: 13 fitdirection:0 }
-# 	CalTrkFitDep : { @table::CalPatRec.producers.CalPatRec fitparticle:-11 fitdirection:0 }
-# 	CalTrkFitDmp : { @table::CalPatRec.producers.CalPatRec fitparticle:-13 fitdirection:0 }
-# 
 	CalSeedFit : { module_type:KalSeedFit   
 	    debugLevel                                  : 0
 	    printFrequency                              : 100
