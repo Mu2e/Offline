@@ -1,8 +1,7 @@
-#layerOffset=42
 timeWindow=10
 sides=2
-PEthreshold=18
-moduleGap=5
+PEthreshold=12
+moduleGap="4.5"
 
     for photonYield in {3189,3781,4359}  # 24,28,32 PE/SiPM 1m away from SiPM for 5cm wide / 3m long counter
     do
@@ -37,7 +36,7 @@ moduleGap=5
 
                 searchString="SUMMARY CrvCoincidencePE$PEthreshold""T$timeWindow"
 #                searchCommand="grep '$searchString' $file"
-                searchCommand="tail -n 150 $file | grep '$searchString'"
+                searchCommand="timeout 10 tail -n 200 $file | grep '$searchString'"
                 searchResult=`eval $searchCommand`
                 if [ $? -ne 0 ]; then
                   continue

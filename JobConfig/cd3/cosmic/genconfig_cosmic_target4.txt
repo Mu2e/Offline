@@ -14,19 +14,12 @@ bool piEplusNuGun.do = false;
 double cosmicDYB.mean =  -1.1; 
 double cosmicDYB.muEMin = 0.5e3;
 double cosmicDYB.muEMax = 5000e3;
-double cosmicDYB.muCosThMin = 0.0;
-double cosmicDYB.muCosThMax = 1.0;
-int    cosmicDYB.nBinsE = 20000;
-int    cosmicDYB.nBinsTheta = 100;
 double cosmicDYB.dx     = 0;
 double cosmicDYB.dy     = 2000;
 double cosmicDYB.dz     = 2000;
 double cosmicDYB.constTime = 800;
-
-string cosmicDYB.refPointChoice  = "Customized";
-bool   cosmicDYB.vertical        = true;
-string cosmicDYB.directionChoice = "Positive_x";
-vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-6418.6,1098.3,12932.4};  //x: -3904.0-2514.6=-6418.6
+string cosmicDYB.direction = "Positive_x";
+vector<double> cosmicDYB.productionCenterInMu2e = {-6418.6,1098.3,12932.4};  //x: -3904.0-2514.6=-6418.6
 
 //
 // This tells emacs to view this file in c++ mode.

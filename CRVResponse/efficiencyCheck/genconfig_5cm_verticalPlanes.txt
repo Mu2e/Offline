@@ -1,37 +1,15 @@
-//
-// Run-time test config for CosmicDYB
-//
-// Original author Yury Kolomensky
+bool cosmicFromTH2.do = true;
 
-bool conversionGun.do = false;
-bool cosmicDYB.do = true;
-bool picapture.do = false;
-bool ejectedProtonGun.do = false;
-bool decayinorbitGun.do = false;
-bool piEplusNuGun.do = false;
+string cosmicFromTH2.histogram = "CRVResponse/efficiencyCheck/cosmicR.root";
+//string cosmicFromTH2.histogram = "CRVResponse/efficiencyCheck/cosmicL.root";
 
-double cosmicDYB.mean =  -1.1; 
-double cosmicDYB.muEMin = 0.5e3;
-double cosmicDYB.muEMax = 5000e3;
-double cosmicDYB.muCosThMin = 0.0;
-double cosmicDYB.muCosThMax = 1.0;
-int    cosmicDYB.nBinsE = 20000;
-int    cosmicDYB.nBinsTheta = 100;
-double cosmicDYB.dx     = 0.0;
-double cosmicDYB.dy     = 2250;
-double cosmicDYB.dz     = 807.3;
-double cosmicDYB.y0     = 212.8;
-double cosmicDYB.tMin   = 500.0;
-double cosmicDYB.tMax   = 1300.0;
+double cosmicFromTH2.energy =    1e3;  //MeV 
+double cosmicFromTH2.time   =  800.0;  //ns
+double cosmicFromTH2.dx     =    0.0;  //mm
+double cosmicFromTH2.dy     = 2250.0;    //mm
+double cosmicFromTH2.dz     =  807.3;  //mm
 
-string cosmicDYB.refPointChoice  = "Customized";
-bool   cosmicDYB.vertical        = true;
-string cosmicDYB.directionChoice = "Phi_Range";
-double cosmicDYB.muPhiMin = -1.371;
-double cosmicDYB.muPhiMax = 1.371;
-vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-6527.975, 212.8, 1616.5};
-
-bool   cosmicDYB.dontProjectToSurface = true;
+vector<double> cosmicFromTH2.cosmicReferencePointInMu2e = {-6527.975, 212.8, 1616.5};
 
 //
 // This tells emacs to view this file in c++ mode.

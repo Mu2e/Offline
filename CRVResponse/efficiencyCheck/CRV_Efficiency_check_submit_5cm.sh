@@ -18,7 +18,7 @@ i=0
 
         genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig_5cm'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/genconfig_5cm.txt\"" >| $genconfigfile
-        echo "double cosmicDYB.dz = $dz;" >> $genconfigfile
+        echo "double cosmicFromTH2.dz = $dz;" >> $genconfigfile
 
         geomfile=CRVResponse/efficiencyCheck/submit/geom_5cm'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/geom_5cm.txt\"" >| $geomfile

@@ -73,6 +73,9 @@ namespace mu2e {
 
     SaveResults_t        _results[6];      // diagnostic buffers
 
+    int                  fSeedIndex;
+    int                  fCandIndex;   // index of the hit candiate 
+    int                  fLastIndex;
     int                  fUseDefaultDfDz;
 
     int                  _diag;
@@ -82,7 +85,8 @@ namespace mu2e {
     StrawHitFlag         _hsel;         // good hit selection
     StrawHitFlag         _bkgsel;       // background hit selection
     double               _maxElectronHitEnergy;
-    int                  _minNHits;     // minimum # of hits for a helix candidate
+    int                  _minnhit;      // minimum # of hits to work with parameters for AGE center determination
+    double               _maxdz;        // stereo selection parameters
                                         // 2014-03-10 Gianipez and P. Murat: limit
                                         // the dfdz value in the pattern-recognition stage
     double               _mpDfDz;
@@ -127,6 +131,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------//
 // store the paramters value of the most reliable track candidate
 //-----------------------------------------------------------------------------//
+    double    _x0, _y0, _phi0, _radius, _dfdz;
     int       _goodPointsTrkCandidate;
     int       _minPointsTrkCandidate;
     double    _chi2TrkCandidate;
@@ -156,10 +161,6 @@ namespace mu2e {
     double    _eventToLook;
     TH1F*     _hDfDzRes;
     TH1F*     _hPhi0Res;
-//-----------------------------------------------------------------------------
-// checkpoints, used for debugging
-//-----------------------------------------------------------------------------
-    int       _findTrackLoopIndex;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -247,8 +248,6 @@ namespace mu2e {
     bool findHelix                    (CalHelixFinderData& Helix, const CalTimePeak* TimePeak);
     bool findHelix                    (CalHelixFinderData& Helix, const TimeCluster* TimePeak );
     int  findDfDz                     (CalHelixFinderData& Helix, int SeedIndex, int *indexVec, int  Diag_flag=0);
-    int  findDfDz_1                   (CalHelixFinderData& Helix, int SeedIndex, int *indexVec, int  Diag_flag=0);
-    int  findDfDz_2                   (CalHelixFinderData& Helix, int SeedIndex, int *indexVec, int  Diag_flag=0);
     void findTrack                    (int                 SeedIndex,
 			               CalHelixFinderData& Helix,
 			               bool                UseDefaultDfDz = false,

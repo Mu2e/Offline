@@ -17,7 +17,6 @@
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "EventGenerator/inc/hrndg2.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/WorldG4.hh"

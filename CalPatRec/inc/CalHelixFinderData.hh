@@ -74,6 +74,10 @@ namespace mu2e {
 
     std::vector<StrawHitIndex>        _goodhits;
 
+    int                               _seedIndex;
+    int                               _candIndex;
+    int                               _nPoints;      // n(hits)
+
     TrkParticle                       _tpart;
     TrkFitDirection                   _fdir;
 
