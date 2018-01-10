@@ -79,6 +79,12 @@ namespace mu2e {
 	return static_cast<StrawId>(_sid & (_planemsk+_panelmsk) );
       }
 
+      // Id of the first straw in a layer assuming 0 is in 0th etc...
+      StrawId getLayerId() const{
+	return static_cast<StrawId>( (_sid & (_planemsk+_panelmsk)) +
+                                     (_sid & _strawmsk)%_nlayers);
+      }
+
       uint16_t getPanel() const{
 	return (_sid & _panelmsk) >> _panelsft;
       }
