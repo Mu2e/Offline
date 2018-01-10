@@ -17,26 +17,23 @@
 #include <iomanip>
 #include <iostream>
 
-#include "TrackerGeom/inc/Layer.hh"
-#include "DataProducts/inc/PanelId.hh"
-#include "GeomPrimitives/inc/TubsParams.hh"
+#ifndef __CINT__
+#include "boost/bind.hpp"
+#endif
 
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "cetlib_except/exception.h"
 
-#ifndef __CINT__
-#include "boost/bind.hpp"
-#endif
-
-#include <iostream>
+#include "TrackerGeom/inc/Layer.hh"
+#include "DataProducts/inc/PanelId.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
 
 namespace mu2e {
 
   class Tracker;
 
   class Panel{
-
 
     friend class Plane;
     friend class TTracker;
@@ -78,9 +75,10 @@ namespace mu2e {
       if ( _id.samePlane(strid2) && _id.samePanel(strid2) ) {
         return *(_straws2_p.at((strid2.asUint16() & StrawId::_strawmsk)));
       } else {
-        throw cet::exception("RANGE")
-          << __func__ << " Inconsistent straw/panel request " << strid2
-          << "/" << id();
+        std::ostringstream msg;
+        msg << __func__ << " Inconsistent straw/panel request " 
+            << strid2 << " / " << _id << std::endl;
+        throw cet::exception("RANGE") << msg.str();
       }
     }
 
@@ -139,9 +137,8 @@ namespace mu2e {
     // F can be a class with an operator() or a free function.
     template <class F>
     inline void forAllStraws ( F& f) const{
-      for ( std::vector<Layer>::const_iterator i=_layers.begin(), e=_layers.end();
-            i !=e; ++i){
-        i->forAllStraws(f);
+      for ( const auto& sp : _straws2_p ) {
+        f(*sp);
       }
     }
 
@@ -161,13 +158,13 @@ namespace mu2e {
 
     std::vector<Layer> _layers;
 
-    const Layer& getLayer ( int n ) const {
-      return _layers.at(n);
-    }
+    // const Layer& getLayer ( int n ) const {
+    //   return _layers.at(n);
+    // }
 
-    const Layer& getLayer ( const LayerId& layid) const {
-      return _layers.at(layid.getLayer());
-    }
+    // const Layer& getLayer ( const LayerId& layid) const {
+    //   return _layers.at(layid.getLayer());
+    // }
 
     std::array<Straw const*, StrawId::_nstraws> _straws2_p;
 

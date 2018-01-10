@@ -1450,9 +1450,9 @@ void mu2e::ConstructTTrackerTDR::addPlaneSupports( std::vector<VolumeInfo>& supp
     if ( _verbosityLevel > 0 ) {
       cout << "Plane Support: "
            << info.name      << " "
-           << info.solid     << " "
-           << info.logical   << " "
-           << info.physical  << " "
+           // << info.solid     << " "
+           // << info.logical   << " "
+           // << info.physical  << " "
            << info.centerInParent << " "
            << info.centerInWorld  << " "
            << endl;

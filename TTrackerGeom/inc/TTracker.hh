@@ -66,7 +66,6 @@ namespace mu2e {
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
     void fillPointers () const;
-    void fillPointers2 () const;
 
     double rOut() const { return _rOut;}
     double z0()   const { return _z0;}
@@ -201,13 +200,6 @@ namespace mu2e {
     inline void forAllStraws ( F& f) const{
       for ( const auto& plane : _planes ) {
         plane.forAllStraws(f);
-      }
-    }
-
-    template <class F>
-    inline void forAllLayers ( F& f) const{
-      for ( const auto& plane : _planes ) {
-        plane.forAllLayers(f);
       }
     }
 

@@ -21,10 +21,4 @@ namespace mu2e {
     }
   }
 
-  // void TTracker::fillPointers2 () const{
-  //   for ( size_t i=0; i<_planes.size(); ++i){
-  //     _planes[i].fillPointers(*this);
-  //   }
-  // }
-
 } // namespace mu2e

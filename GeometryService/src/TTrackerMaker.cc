@@ -56,16 +56,17 @@ namespace mu2e {
       size_t istr = -1;
       for (const auto& istr_p : _tt->_allStraws2_p) {
         cout << __func__ << setw(10) << ++istr
-             << setw(20) << istr_p;
+          // << setw(20) << istr_p;
+             << setw(20) << " ";
         if (istr_p != nullptr ) {
           StrawId const & lsid =  (*istr_p).id();
           std::ostringstream nsid("",std::ios_base::ate); // to write at the end
-          nsid << lsid; 
+          nsid << lsid;
           cout << setw(6) << lsid.asUint16()
                << setw(17) << std::bitset<16>(lsid.asUint16())
-               << " " 
+               << " "
                << setw(10) << std::showbase << std::hex << lsid.asUint16()
-               << " " << std::dec << std::noshowbase << setw(7) << nsid.str() 
+               << " " << std::dec << std::noshowbase << setw(7) << nsid.str()
                << " " << _tt->_strawExists2.at(lsid.asUint16())
                << endl;
         } else {
@@ -106,7 +107,8 @@ namespace mu2e {
                               straw.getMidPoint()[1]*straw.getMidPoint()[1])
              << " direction " << straw.getDirection()
              << " panel rotation: " << cang
-          //             << " origin " << panel.boxOffset()
+             << " straw0MidPoint  " << panel.straw0MidPoint()
+             << " straw0Direction " << panel.straw0Direction()
              << " plane rotation: " << dang
              << " origin " << plane.origin()
           //             << " pln rel origin z " << sroz
@@ -449,7 +451,7 @@ namespace mu2e {
 
     // as the array has constant size, we need a straw counter during construction
     _strawTrckrConstrCount = -1; // first straw will be at 0
- 
+
     // Make an empty TTracker.
     _tt = unique_ptr<TTracker>(new TTracker());
 
@@ -507,7 +509,7 @@ namespace mu2e {
     }
 
     // Fill all of the non-persistent information.
-    _tt->fillPointers(); // fixme; is it needed ?
+    _tt->fillPointers();
 
     identifyNeighbourStraws();
 
@@ -610,6 +612,7 @@ namespace mu2e {
         // test of Plane, Panel functions
         cout << setw(4) << panel.id().getPlane();
         cout << setw(2) << panel.id().getPanel() << endl;
+
         for (const auto istr_p : panel._straws2_p) {
           if ( istr_p == nullptr ) continue;
           StrawId const & lsid =  (*istr_p).id();
@@ -618,7 +621,7 @@ namespace mu2e {
           cout << setw(3) << ++istr
                << setw(6) << lsid.asUint16()
                << setw(17) << std::bitset<16>(lsid.asUint16())
-               << " " 
+               << " "
                << setw(6) << std::showbase << std::hex << lsid.asUint16()
                << " " << std::dec << std::noshowbase << setw(7) << nsid.str();
           // now the straw by the Panel::getStraw(const StrawId& strid2) which uses local index
@@ -643,7 +646,7 @@ namespace mu2e {
 
     plane._panels.push_back( Panel(pnlId) );
     Panel& panel = plane._panels.back();
-    
+
     panel._layers.reserve(_layersPerPanel);
     _strawPanelConstrCount = -1;
     // check if the opposite panels do not overlap
@@ -664,50 +667,48 @@ namespace mu2e {
     for ( int ilay=0; ilay<_layersPerPanel; ++ilay ){
       // we use the straw field to indicate the layer
       makeLayer(StrawId(pnlId.getPlane(),pnlId.getPanel(),ilay), panel);
+    }
+
+    for ( int ilay=0; ilay<_layersPerPanel; ++ilay ){
 
       // checking spacing of the individual layers
       // are the manifolds sized correctly for the straws?
 
-      Layer const & layer = panel.getLayer(ilay);
-      //      cout << "Debugging looking at the layer   : " << layer.id() << endl;
-
       // print out the Layer containers (or thier equivalence)
+
       if (_verbosityLevel>2) {
-        // by _straws
-        for (int is = 0; is<(layer.nStraws()*2); is+=2) {
-          const Straw& straw = layer.getStraw(is);
-          cout << __func__ << " Printing Layer _straws info: " << layer.id()
+        uint16_t is = -1;
+        for (const auto straw_p : panel.getStrawPointers() ) {
+          const Straw& straw(*straw_p);
+          ++is;
+          if ( ( straw.id().getStraw())%2 != ilay ) continue;
+          StrawId lid = straw.id().getLayerId();
+          cout << __func__ << " Printing Layer _straws info: " << lid
                << setw(3) << is
                << " " << straw.id()
                << " " << straw.index()
                << endl;
         }
-        // by _indices
-        // auto const& allStraws = _tt->_allStraws2;
-        // for (int istr = 0; istr<layer.nStraws(); ++istr) {
-        //   int idx            = layer._indices.at(istr).asInt();
-        //   const Straw& straw = allStraws.at(idx);
-        //   cout << __func__ << " Printing Layer _indices info: " << layer.id()
-        //        << setw(3) << istr
-        //        << setw(3) << idx
-        //        << " " << straw.id()
-        //        << " " << straw.index()
-        //        << endl;
-        // }
-      }
-      
-      for (int is = 0; is<(layer.nStraws()*2-2); is+=2) {
 
+      }
+
+      for (  panelStrawPointerConstIter is =
+               panel.getStrawPointers().begin();
+             is < (panel.getStrawPointers().end()-2); ++is) {
+        const Straw& straw0(**is);
+        uint16_t sn = straw0.id().getStraw();
+        if ( sn%2 != ilay ) continue;
+        StrawId lid = straw0.id().getLayerId();
         if (_verbosityLevel>2) {
           cout << __func__ << " Checking spacing"
-               << " for layer " << layer.id() << " straw " << layer.getStraw(is).id()  << endl;
+               << " for layer " << lid << " straw " << straw0.id()  << endl;
         }
-
+        const Straw& straw1(**(is+2));
         double layerDeltaMag =
-          (layer.getStraw(is+2).getMidPoint() - layer.getStraw(is).getMidPoint()).mag();
+          (straw1.getMidPoint() - straw0.getMidPoint()).mag();
         if ( abs(layerDeltaMag-strawSpacing)> tolerance ) {
           cout << "Layer straw spacing is (mm)   : " << layerDeltaMag
-               << " for layer " << layer.id() << " straw " << layer.getStraw(is).id()  << endl;
+               << " for layer " << lid << " straw " << straw0.id()  << endl;
           cout << "It should be                  : " << strawSpacing << " diff: "
                << (layerDeltaMag-strawSpacing) << endl;
 
@@ -721,26 +722,30 @@ namespace mu2e {
 
     if (_layersPerPanel>1) {
 
-      // we should do this using iterators
+      for (  panelStrawPointerConstIter is =
+               panel.getStrawPointers().begin();
+             is < (panel.getStrawPointers().end()-1); ++is) {
+        const Straw& straw0(**is);
+        uint16_t sn = straw0.id().getStraw();
+        if ( sn%2 != 0 ) continue;
+        const Straw& straw1(**(is+1));
+        StrawId lid0 = straw0.id().getLayerId();
+        StrawId lid1 = straw1.id().getLayerId();
 
-      Layer const & layer0 = panel.getLayer(0);
-      Layer const & layer1 = panel.getLayer(1);
-
-      for (int is = 0; is<layer0.nStraws()*2; is+=2) {
         double xLayerDeltaMag =
-          (layer0.getStraw(is).getMidPoint() - layer1.getStraw(is).getMidPoint()).mag();
+          (straw0.getMidPoint() - straw1.getMidPoint()).mag();
 
         if (_verbosityLevel>2) {
           cout << __func__ << " Checking spacing"
-               << " for layer " << layer0.id() << " straw " << layer0.getStraw(is).id()
-               << " and for layer " << layer1.id() << " straw " << layer1.getStraw(is).id()  << endl;
+               << " for layer " << lid0 << " straw " << straw0.id()
+               << " and for layer " << lid1 << " straw " << straw1.id()  << endl;
         }
 
         if ( abs(xLayerDeltaMag-strawSpacing)> tolerance ) {
           cout << "xLayer straw spacing is (mm)   : "
                << xLayerDeltaMag
                << " for straws: "
-               << layer0.getStraw(is).id() << ", " << layer1.getStraw(is).id()
+               << straw0.id() << ", " << straw1.id()
                << endl;
           cout << "It should be                   : "
                << strawSpacing << " diff: "
@@ -751,26 +756,34 @@ namespace mu2e {
         }
       }
 
-      for (int is = 1; is<layer0.nStraws()*2; is+=2) {
-        int i0 = is;
-        int i1 = is-2;
+      for (  panelStrawPointerConstIter is =
+               panel.getStrawPointers().begin()+2;
+             is < (panel.getStrawPointers().end()); ++is) {
+        const Straw& straw(**is);
+        uint16_t sn = straw.id().getStraw();
+        if ( sn%2 != 0 ) continue;
+        panelStrawPointerConstIter i0 = is;
+        panelStrawPointerConstIter i1 = is-1;
         if ( _innermostLayer == 1 ){
-          i0 = is-2;
+          i0 = is-1;
           i1 = is;
         }
+        const Straw& straw0(**i0);
+        const Straw& straw1(**i1);
         double xLayerDeltaMag =
-          (layer0.getStraw(i0).getMidPoint() - layer1.getStraw(i1).getMidPoint()).mag();
-
+          (straw0.getMidPoint() - straw1.getMidPoint()).mag();
+        StrawId lid0 = straw0.id().getLayerId();
+        StrawId lid1 = straw1.id().getLayerId();
         if (_verbosityLevel>2) {
           cout << __func__ << " Checking spacing"
-               << " for layer " << layer0.id() << " straw " << layer0.getStraw(i0).id()
-               << " and for layer " << layer1.id() << " straw " << layer1.getStraw(i1).id()  << endl;
+               << " for layer " << lid0 << " straw " << straw0.id()
+               << " and for layer " << lid1 << " straw " << straw1.id()  << endl;
         }
         if ( abs(xLayerDeltaMag-strawSpacing)> tolerance ) {
           cout << "xLayer straw spacing is (mm)   : "
                << xLayerDeltaMag
                << " for straws: "
-               << layer0.getStraw(i0).id() << ", " << layer1.getStraw(i1).id()
+               << straw0.id() << ", " << straw1.id()
                << endl;
           cout << "It should be                   : "
                << strawSpacing << " diff: "
@@ -934,8 +947,8 @@ namespace mu2e {
         //                      );
 
 
-        //  allStraws2.at(strawCountReCounted) = 
-        allStraws2.at(_strawTrckrConstrCount) = 
+        //  allStraws2.at(strawCountReCounted) =
+        allStraws2.at(_strawTrckrConstrCount) =
           Straw( lsid,
                  index,
                  offset,
@@ -968,9 +981,12 @@ namespace mu2e {
                << setw(3) << listraw
                << setw(6) << lsid.asUint16()
                << setw(17) << std::bitset<16>(lsid.asUint16())
-               << " " 
+               << " "
                << setw(6) << std::showbase << std::hex << lsid.asUint16()
-               << " " << std::dec << std::noshowbase << setw(7) << nsid.str() << endl;
+               << " " << std::dec << std::noshowbase << setw(7) << nsid.str()
+               // << " " << std::showbase << std::hex << setw(10) << &allStraws2.at(_strawTrckrConstrCount)
+               // << std::dec << std::noshowbase
+               << endl;
         }
 
         layer._straws.push_back(&allStraws2.at(_strawTrckrConstrCount));
@@ -1176,7 +1192,7 @@ namespace mu2e {
       int nStrawLayer = StrawId::_nstraws/StrawId::_nlayers;
 
       if ( _verbosityLevel>2 ) {
-        cout << __func__ << " layer " << layer 
+        cout << __func__ << " layer " << layer
              << " of panel "  << i.id().getPanelId()
              << " has " << nStrawLayer << " straws" << endl;
         cout << __func__ << " Analyzed straw: " << i.id() << '\t' << i.index() << endl;
@@ -1224,7 +1240,7 @@ namespace mu2e {
 
         // add all straws sharing a preamp
         // assumes current two channel preamps
-      
+
         if ( i.id().getStraw() % 2 == 0){
           const StrawId nsId( i.id().asUint16() + 1 );
           i._preampById.push_back( nsId );
@@ -1641,7 +1657,7 @@ namespace mu2e {
 
     // Positions for the next two are in the coordinates of the electronics space.
     { // G10 (now just "Electronics" )
-      TubsParams g10Tubs( _innerRingOuterRadius, _outerRingInnerRadius, _electronicsG10HalfLength, 0., _panelPhi );      
+      TubsParams g10Tubs( _innerRingOuterRadius, _outerRingInnerRadius, _electronicsG10HalfLength, 0., _panelPhi );
       sup._g10Upstream   = PlacedTubs ( "TTrackerSupportElecG10Upstream",   g10Tubs, CLHEP::Hep3Vector(0.,0.,-_electronicsG10HalfLength), _electronicsG10Material );
       sup._g10Downstream = PlacedTubs ( "TTrackerSupportElecG10Downstream", g10Tubs, CLHEP::Hep3Vector(0.,0.,-_electronicsG10HalfLength), _electronicsG10Material );
     }
@@ -1713,24 +1729,24 @@ namespace mu2e {
   void TTrackerMaker::computePlaneEnvelope(){
 
     if ( _supportModel == SupportModel::simple ){
-      double halfThick = _tt->_supportParams.halfThickness() + 
+      double halfThick = _tt->_supportParams.halfThickness() +
 	2.*_tt->_manifoldHalfLengths[2];
       _tt->_planeEnvelopeParams = TubsParams( _tt->_envelopeInnerRadius,
 					      _tt->_supportParams.outerRadius(),
 					      halfThick);
     } else if ( _supportModel == SupportModel::detailedv0 ){
-      // This is new for version 5, its existence doesn't affect earlier 
+      // This is new for version 5, its existence doesn't affect earlier
       // versions.
       _tt->_panelEnvelopeParams = TubsParams( _envelopeInnerRadius,
                                                _outerRingOuterRadius,
                                                _innerRingHalfLength
 					      + _panelPadding,
 					      0., _panelPhi);
-      if ( _ttVersion > 3 ) { 
+      if ( _ttVersion > 3 ) {
 	_tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
 						_outerRingOuterRadius,
 						2.0 * (_innerRingHalfLength
-						       + _panelPadding ) 
+						       + _panelPadding )
 						+ _planePadding );
       } else {
 	_tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
@@ -1844,23 +1860,28 @@ namespace mu2e {
     //         For layers > 0:
     //            - create a new StrawDetail object to hold the new length.
     //            - Reseat the _detail and _detailIndex objects in the Straw object.
-    vector<Layer>& lays = _tt->_planes.at(ipln0)._panels.at(ipnl0)._layers;
-    for ( size_t ilay=0; ilay<lays.size(); ++ilay){
-      Layer& lay(lays.at(ilay));
+    //    vector<Layer>& lays = _tt->_planes.at(ipln0)._panels.at(ipnl0)._layers;
+
+    Panel& panel = _tt->_planes.at(ipln0)._panels.at(ipnl0);
+
+    for ( size_t ilay=0; ilay<_layersPerPanel; ++ilay){
+      // Layer& lay(lays.at(ilay));
 
       // straws in layer are layed out contiguously, only their numbers increase by 2
       // this is going over straws in the layer
-      for (int ist=0; ist<lay.nStraws(); ++ist ){
+      uint16_t uist = -1;
+      for (  panelStrawPointerConstIter ist =
+               panel.getStrawPointers().begin();
+             ist < panel.getStrawPointers().end(); ++ist) {
 
-        // int idx             = lay._indices.at(ist).asInt(); // straw index
-        // Straw& straw        = allStraws.at(idx);            // specific straw
-
-        const Straw& straw  = lay.getStraw(ist*2);          // specific straw
+        const Straw& straw(**ist);
+        uint16_t sn = straw.id().getStraw();
+        if ( sn%2 != ilay ) continue;
         int idx             = straw.index().asInt(); // straw index
 
         if (_verbosityLevel>2) {
           cout << __func__ << " recomputing: ist, idx "
-               << ist << ", "
+               << ++uist << ", "
                << idx
                << " Straw " << straw._id.getStraw()
                << " id: "
@@ -1919,7 +1940,7 @@ namespace mu2e {
 
         if (_verbosityLevel>2) {
           cout << __func__ << " after recomputing: ist, idx "
-               << ist << ", "
+               << uist << ", "
                << idx
                << " Straw " << straw._id.getStraw()
                << " id: "

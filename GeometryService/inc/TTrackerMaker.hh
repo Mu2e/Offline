@@ -177,6 +177,8 @@ namespace mu2e {
     constexpr static int _planesPerStation = 2;
     constexpr static int _numStations = _numPlanes/_planesPerStation;    // Number of Stations.
 
+    typedef std::array<Straw const*, StrawId::_nstraws>::const_iterator panelStrawPointerConstIter;
+
     // The detailed description of the complete support structure
     SupportModel _supportModel;
     double       _endRingOuterRadius;
