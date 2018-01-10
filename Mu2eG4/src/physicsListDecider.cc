@@ -36,6 +36,7 @@
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
+#include "Mu2eG4/inc/MinDEDXPhysicsList.hh"
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "Mu2eG4/inc/setMinimumRangeCut.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -54,6 +55,7 @@
 #include "G4PhysListFactory.hh"
 #include "G4VUserPhysicsList.hh"
 #include "G4RadioactiveDecayPhysics.hh"
+#include "G4ErrorPhysicsList.hh"
 #if G4VERSION<4099
 #include "QGSP.hh"
 #endif
@@ -114,7 +116,18 @@ namespace mu2e{
 
     // special cases
     if ( name  == "Minimal" ) {
-      tmpPL = new MinimalPhysicsList;
+      tmpPL = new MinimalPhysicsList();
+    }
+
+    else if ( name  == "MinDEDX" ) {
+      tmpPL = new MinDEDXPhysicsList(); // limited EM Processes
+    }
+
+    else if ( name  == "ErrorPhysicsList" ) {
+      // rather special case of G4VUserPhysicsList for Track Error
+      // Propagation, with special Energy Loss implementation 
+      // (see User's Guide: For Application Developers)
+      return new G4ErrorPhysicsList(); 
     }
 
 #if G4VERSION<4099

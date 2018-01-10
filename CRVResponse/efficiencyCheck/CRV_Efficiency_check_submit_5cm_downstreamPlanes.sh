@@ -1,10 +1,13 @@
 i=0
-layerOffset=10
-moduleGap=5
-#  for moduleGap in {3,5}
-#  do
+layerOffset=0
+  for moduleGap in {"4.5","6.5"}
+  do
 
     dy=`echo "804.3+$moduleGap" | bc -l`
+echo "*****************************"
+echo "WIDER INNER AND OUTER GAP!!!!"
+echo "*****************************"
+    dy=`echo "818.5+$moduleGap" | bc -l`
 
 #    for layerOffset in {0..62..1}
 #    do
@@ -18,12 +21,13 @@ moduleGap=5
 
         genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig_5cm_downstreamPlanes'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/genconfig_5cm_downstreamPlanes.txt\"" >| $genconfigfile
-        echo "double cosmicDYB.dy = $dy;" >> $genconfigfile
-        echo "double cosmicDYB.muCosThMax = 0.707;" >> $genconfigfile
+        echo "double cosmicFromTH2.dy = $dy;" >> $genconfigfile
 
         geomfile=CRVResponse/efficiencyCheck/submit/geom_5cm_downstreamPlanes'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/geom_5cm_downstreamPlanes.txt\"" >| $geomfile
         echo "double crs.gapBetweenModules = $moduleGap;" >> $geomfile
+        echo "double crs.gapSmall          = 0.5;" >> $geomfile
+        echo "double crs.gapLarge          = 1.0;" >> $geomfile
         echo "double crs.layerOffset       = $layerOffset;" >> $geomfile
 
 #### for adjacentPulseTimeDifference = 5ns
@@ -44,4 +48,4 @@ moduleGap=5
 
       done
 #    done
-#  done
+  done

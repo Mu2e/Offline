@@ -210,6 +210,7 @@ namespace mu2e {
 
       _panelPhi  = config.getDouble("ttrackerSupport.phiCoverage",120.0)*CLHEP::degree;
       _dphiRibs = config.getDouble("ttrackerSupport.dphiRibs",27.0)*CLHEP::degree;
+      _ribHalfAngle = config.getDouble("ttrackerSupport.ribHalfAngle",1.0)*CLHEP::degree;
 
       _innerRingInnerRadius    = config.getDouble( "ttrackerSupport.innerRing.innerRadius" );
       _innerRingOuterRadius    = config.getDouble( "ttrackerSupport.innerRing.outerRadius" );
@@ -1778,10 +1779,11 @@ namespace mu2e {
 
     }
 
-    // Special for two items added to sup for v5
+    // Special for three items added to sup for v5
     {
       sup._panelPhiRange = _panelPhi;
       sup._panelPhiRibs  = _dphiRibs;
+      sup._ribHalfAngle = _ribHalfAngle;
     }
 
     // Positions from here onward are in the coordinates of the plane envelope.
@@ -1830,8 +1832,8 @@ namespace mu2e {
       double halfLength = (_innerRingHalfLength - _centerPlateHalfLength - 2.*_coverHalfLength)/2.;
       double dz         = _centerPlateHalfLength + halfLength;
       if ( _ttVersion > 3 ) {
-	halfLength = _innerRingHalfLength - _centerPlateHalfLength - _coverHalfLength;
-	dz = _coverHalfLength - _centerPlateHalfLength;
+	halfLength = _innerRingHalfLength - _centerPlateHalfLength - 2.0 * _coverHalfLength;
+	dz = 2.0 * _coverHalfLength - _centerPlateHalfLength;
       }
 
       TubsParams gasTubs( _innerRingOuterRadius, _outerRingInnerRadius, halfLength, 0., _panelPhi );

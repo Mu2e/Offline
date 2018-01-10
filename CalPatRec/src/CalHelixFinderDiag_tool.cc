@@ -83,6 +83,18 @@ int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tf
   _hist.nhitsvspT     = Tfs->make<TH2F>("nhitsvspT", "nhits vs pT"                               , 100, 0, 100, 400, 0, 200);
   _hist.nhitsvsp      = Tfs->make<TH2F>("nhitsvsp" , "nhits vs p"                                , 100, 0, 100, 400, 0, 200);
   _hist.nStationPairs = Tfs->make<TH1F>("nstpairs" , "n-station pairs used in findDfDz"          , 200, 0, 200);
+  _hist.dr  [0]       = Tfs->make<TH1F>("dr0"      , "dr; r - r_{no-target} [mm]"                , 800, -200, 200);
+  _hist.dr  [1]       = Tfs->make<TH1F>("dr1"      , "dr: nhits>15; r - r_{no-target} [mm]"      , 800, -200, 200);
+  _hist.shmeanr  [0]  = Tfs->make<TH1F>("shmeanr0" , "straw hit mean radius; r_{sh} [mm]"          , 1800, 0, 900);
+  _hist.shmeanr  [1]  = Tfs->make<TH1F>("shmeanr1" , "straw hit mean radius: nhits>15; r_{sh} [mm]", 1800, 0, 900);
+  _hist.chi2d_helix[0]= Tfs->make<TH1F>("chi2dhel0" , "global chi2d; #chi^{2}/ndof"              , 1000, 0, 100); 
+  _hist.chi2d_helix[1]= Tfs->make<TH1F>("chi2dhel1" , "global chi2d: nhits>15; #chi^{2}/ndof"    , 1000, 0, 100); 
+  _hist.chi2d_loop0[0] = Tfs->make<TH1F>("chi2dloop0", "XY chi2d: loop 0; #chi^{2}/ndof"          , 1000, 0, 100); 
+  _hist.chi2d_loop0[1] = Tfs->make<TH1F>("chi2dloop0Good", "XY chi2d: loop 0: nhits>15; #chi^{2}/ndof"          , 1000, 0, 100); 
+  _hist.chi2d_loop1[0] = Tfs->make<TH1F>("chi2dloop1", "XY chi2d: loop 1; #chi^{2}/ndof"          , 1000, 0, 100); 
+  _hist.chi2d_loop1[1] = Tfs->make<TH1F>("chi2dloop1Good", "XY chi2d: loop 1: nhits>15; #chi^{2}/ndof"          , 1000, 0, 100); 
+  _hist.loopId[0]     = Tfs->make<TH1F>("loopAll"   , "loopId; loopId"                           , 10, 0, 10); 
+  _hist.loopId[1]     = Tfs->make<TH1F>("loopGood"  , "loopId: nhits>15: loopId"                 , 10, 0, 10); 
   return 0;
 }
 
@@ -118,13 +130,25 @@ int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tf
       _hist.radius[0]->Fill(_data->radius[i]);
       _hist.chi2XY[0]->Fill(_data->chi2XY[i]);
       _hist.chi2ZPhi[0]->Fill(_data->chi2ZPhi[i]);
+      _hist.dr[0]->Fill(_data->dr[i]);
+      _hist.shmeanr[0]->Fill(_data->shmeanr[i]);
+      _hist.chi2d_helix[0]->Fill(_data->chi2d_helix[i]);
+      _hist.loopId     [0]->Fill(_data->loopId[i]);
+      if (_data->loopId[i] == 0) _hist.chi2d_loop0 [0]->Fill(_data->chi2d_loop0[i]);
+      if (_data->loopId[i] == 1) _hist.chi2d_loop1 [0]->Fill(_data->chi2d_loop1[i]);
 
       if (_data->good[i] != 0) {
-	_hist.p[1]->Fill(_data->p[i]);
-	_hist.pT[1]->Fill(_data->pT[i]);
-	_hist.radius[1]->Fill(_data->radius[i]);
-	_hist.chi2XY[1]->Fill(_data->chi2XY[i]);
+	_hist.loopId  [1]->Fill(_data->loopId[i]);
+	_hist.p       [1]->Fill(_data->p[i]);
+	_hist.pT      [1]->Fill(_data->pT[i]);
+	_hist.radius  [1]->Fill(_data->radius[i]);
+	_hist.chi2XY  [1]->Fill(_data->chi2XY[i]);
 	_hist.chi2ZPhi[1]->Fill(_data->chi2ZPhi[i]);
+	_hist.dr      [1]->Fill(_data->dr[i]);
+	_hist.shmeanr [1]->Fill(_data->shmeanr[i]);
+	_hist.chi2d_helix[1]->Fill(_data->chi2d_helix[i]);
+	if (_data->loopId[i] == 0) _hist.chi2d_loop0 [1]->Fill(_data->chi2d_loop0[i]);
+	if (_data->loopId[i] == 1) _hist.chi2d_loop1 [1]->Fill(_data->chi2d_loop1[i]);
       }
 
       _hist.nhitsvspT ->Fill(_data->nhits[i],_data->pT[i]);

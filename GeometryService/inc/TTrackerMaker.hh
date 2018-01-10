@@ -202,9 +202,10 @@ namespace mu2e {
     double           _midRingdPhi;
     std::string      _midRingMaterial;
 
-    //  These two for all panels
+    //  These for all panels
     double         _panelPhi;
     double         _dphiRibs;
+    double         _ribHalfAngle;
 
     double      _innerRingInnerRadius;
     double      _innerRingOuterRadius;

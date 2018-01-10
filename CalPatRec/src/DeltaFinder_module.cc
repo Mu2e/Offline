@@ -575,9 +575,8 @@ namespace mu2e {
     _shcol      = shH.product();
     _data.shcol = _shcol;  // FIXME
 
-    auto shfH    = Evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
-    _shfcol      = shfH.product();
-    _data.shfcol = _shfcol;  // FIXME
+    // auto shfH    = Evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+    // _shfcol      = shfH.product();
 
     auto shpH = Evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
     _shpcol   = shpH.product();
@@ -619,11 +618,15 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // form output - copy input flag collection - do we need it ?
 //-----------------------------------------------------------------------------
-    unique_ptr<StrawHitFlagCollection> bkgfcol(new StrawHitFlagCollection(*_shfcol));
+    unique_ptr<StrawHitFlagCollection> bkgfcol(new StrawHitFlagCollection());
     _bkgfcol = bkgfcol.get();
-
+    int nsh = _shcol->size();
+    _bkgfcol->reserve(nsh); // add initialization loop *FIXME* 
+    for (int i=0; i<nsh; i++) _bkgfcol->push_back(StrawHitFlag());
+    _data.shfcol = _bkgfcol; 
+    
     const StrawHit* sh0(0);
-    if (_shcol->size() > 0) sh0 = &_shcol->at(0);
+    if (nsh > 0) sh0 = &_shcol->at(0);
 
     StrawHitFlag deltamask(StrawHitFlag::bkg);
 

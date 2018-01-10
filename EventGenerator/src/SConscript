@@ -11,9 +11,6 @@ Import('mu2e_helper')
 
 helper=mu2e_helper(env);
 
-env.Append(FORTRANFLAGS = '-fno-automatic -finit-local-zero -fcheck=bounds' )
-do_fortran=True
-
 rootlibs  = env['ROOTLIBS']
 
 mainlib = helper.make_mainlib ( [
@@ -49,10 +46,9 @@ mainlib = helper.make_mainlib ( [
         'HepPDT',
         'HepPID',
         rootlibs,
-        'boost_system',
-        'gfortran'
-        ], [],[],
-        do_fortran )
+        'boost_system'
+        ], [],[]
+        )
 
 helper.make_plugins( [ mainlib,
                        'mu2e_SeedService_SeedService_service',

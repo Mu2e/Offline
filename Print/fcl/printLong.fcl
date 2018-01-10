@@ -107,6 +107,10 @@ physics :{
 	#inputTags : [ "KFFDeM" ] # select instances
       }
 
+      PhysicalVolumePrinter : {
+        verbose: 2   # 0,1,2
+        #inputTags : [ "KFFDeM" ] # select instances
+      }
     }
 
   } # analyzers
@@ -119,6 +123,8 @@ physics :{
 outputs: {
   printProductList : {
     module_type : DataProductDump
+    # temporary patch for crash until art 2_10 or 2_11
+    wantResolvedOnly: true
   }
 }
 

@@ -32,7 +32,12 @@ namespace mu2e {
       double  pT       [kMaxSeeds];
       double  p        [kMaxSeeds];
       int     nStationPairs[kMaxSeeds];
- 
+      double  dr       [kMaxSeeds];
+      double  shmeanr  [kMaxSeeds];
+      double  chi2d_helix[kMaxSeeds];
+      double  chi2d_loop0[kMaxSeeds];
+      double  chi2d_loop1[kMaxSeeds];
+      int     loopId[kMaxSeeds];
       int maxSeeds() { return kMaxSeeds; }
     };
 
@@ -47,6 +52,12 @@ namespace mu2e {
       TH2F*  nhitsvspT;
       TH2F*  nhitsvsp;
       TH1F*  nStationPairs;
+      TH1F*  dr[2];
+      TH1F*  shmeanr[2];
+      TH1F*  chi2d_helix[2];
+      TH1F*  chi2d_loop0[2];
+      TH1F*  chi2d_loop1[2];
+      TH1F*  loopId[2];
     };
 
   }

@@ -31,10 +31,11 @@ make_digis   : [ @sequence::CaloDigiMC.DigiSim, @sequence::Tracking.DigiSim ]
 calRecoSeq    : [ @sequence::CaloReco.Reco,@sequence::CaloDigiMC.TruthMatch,@sequence::CaloCluster.Reco,@sequence::CaloCluster.TruthMatch ]
 
 # hit making for CalPatRec
-cprMakeHitSeq : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
-		  CalPatRecFlagStrawHits, CalPatRecFlagBkgHits ]
+# cprMakeHitSeq : [ @sequence::CalPatRec.prepare_hits] # 
+
+# CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  CalPatRecFlagStrawHits, CalPatRecFlagBkgHits ]
 # 
-calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
+# calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
 
 #------------------------------------------------------------------------------
 # downstream electron and downstream muon reconstruction - needed for particle ID
@@ -47,7 +48,7 @@ calPatRecDemDmmSeq  : [ @sequence::CalPatRec.dem_reco, @sequence::CalPatRec.dmm_
 
 allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDeM, 
 			@sequence::Tracking.TPRDmuM,
-			@sequence::cprMakeHitSeq, 
+#			@sequence::cprMakeHitSeq, 
 			@sequence::CalPatRec.dem_reco, @sequence::CalPatRec.dmm_reco, 
 			MergePatRecDem, MergePatRecDmm ]
 

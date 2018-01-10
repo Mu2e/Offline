@@ -22,12 +22,12 @@ vector<double> building.dsArea.trench.cover.xPositions = {
 };
 
 vector<double> building.dsArea.trench.cover.yPositions = {
-  -4394.2,   // FSD03
-  -5308.6,   // FSD02
-  -5308.6,   // FSD01
+  -4419.6,   // FSD03
+  -5334.0,   // FSD02
+  -5334.0,   // FSD01
   -11303,   // FSU13
   -11303,   // FSU14
-  -4394.2   // FSU15
+  -4419.6   // FSU15
 };
 
 // Local Variables:

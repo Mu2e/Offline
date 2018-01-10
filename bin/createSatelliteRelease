@@ -167,8 +167,12 @@ if [[ "\$retstat" != "0" ]]; then
   return \$retstat;
 fi
 
+# This variable contains the physical path to the directory
+# that contains this file  (regardless of cwd when this script is sourced ).
+SCRIPTDIR=\`dirname \$(readlink -f \$BASH_SOURCE)\`
+
 # Add the satellite release to path variables.
-export MU2E_SATELLITE_RELEASE=$PWD
+export MU2E_SATELLITE_RELEASE=\$SCRIPTDIR
 export MU2E_SEARCH_PATH=\`dropit -p \$MU2E_SEARCH_PATH -sf \$MU2E_SATELLITE_RELEASE\`
 export FHICL_FILE_PATH=\`dropit -p \$FHICL_FILE_PATH -sf \$MU2E_SATELLITE_RELEASE\`
 
