@@ -113,7 +113,7 @@ source : {
 outputs: {
     detectorOutput : {
         module_type : RootOutput
-#        SelectEvents: { SelectEvents: [p1] }
+#        SelectEvents: [p1]
         outputCommands:   [ "keep *_*_*_*",
                             "drop mu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]

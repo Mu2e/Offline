@@ -221,7 +221,7 @@ physics : {
 outputs: {
    mothersOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: [motherFilter] }
+      SelectEvents: [motherFilter]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -234,7 +234,7 @@ outputs: {
 
    crvOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: [trigCRV] }
+      SelectEvents: [trigCRV]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -247,7 +247,7 @@ outputs: {
 
    tgtStopOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: [tgtFilter] }
+      SelectEvents: [tgtFilter]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -260,7 +260,7 @@ outputs: {
 
    ootStopOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: [ootFilter] }
+      SelectEvents: [ootFilter]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -273,7 +273,7 @@ outputs: {
 
    truncatedEvtsOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: [g4StatusFilter] }
+      SelectEvents: [g4StatusFilter]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",

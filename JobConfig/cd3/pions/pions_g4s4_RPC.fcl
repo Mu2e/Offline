@@ -110,7 +110,7 @@ physics : {
 outputs : {
     detectorOutput : {
         module_type  : RootOutput
-        SelectEvents : { SelectEvents : ["p1"] }
+        SelectEvents : ["p1"]
         fileName     : "sim.owner.cd3-pions-g4s4-RPC.version.sequencer.art"
     }
 }

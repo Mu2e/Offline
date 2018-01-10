@@ -263,7 +263,7 @@ outputs: {
 
    mubeamout : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigmubeam"] }
+      SelectEvents: ["trigmubeam"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -276,7 +276,7 @@ outputs: {
 
    dsout : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigdsregion"] }
+      SelectEvents: ["trigdsregion"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -289,7 +289,7 @@ outputs: {
 
    extmonbeamout : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigextmonbeam"] }
+      SelectEvents: ["trigextmonbeam"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -302,7 +302,7 @@ outputs: {
 
    extmonregionout : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigextmonregion"] }
+      SelectEvents: ["trigextmonregion"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -315,7 +315,7 @@ outputs: {
 
    truncatedEvtsOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["g4StatusFilter"] }
+      SelectEvents: ["g4StatusFilter"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",

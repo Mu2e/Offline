@@ -222,7 +222,7 @@ physics : {
 outputs: {
    mothersOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: [motherFilter] }
+      SelectEvents: [motherFilter]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",

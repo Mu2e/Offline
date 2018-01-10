@@ -171,7 +171,7 @@ dra.filteredOutputDef: {
    filteredOutput: {
       fileName: @nil
       module_type    : RootOutput
-      SelectEvents   : { SelectEvents: ["draCutAndCountTrigSeq"] }
+      SelectEvents   : ["draCutAndCountTrigSeq"]
    }
 }
 
