@@ -20,7 +20,7 @@ namespace mu2e {
     const art::Ptr<HelixSeed>&  helix() const { return _helix; }
     const art::Ptr<TimeCluster>&  hitCluster() const { return _hitCluster; }
 
-    TriggerFlag	       _triggerBits; 
+    TriggerFlag	       _triggerBits{}; 
     art::Ptr<CaloCluster>  _caloCluster; 
     art::Ptr<KalSeed> _track; // associated track
     art::Ptr<HelixSeed> _helix; // associated helix

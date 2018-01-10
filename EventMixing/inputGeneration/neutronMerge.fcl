@@ -76,7 +76,7 @@ outputs: {
   trackerOut :  {
     module_type    : RootOutput
     fileName       : "../neutronBG_Tracker_data.root"
-    SelectEvents   : { SelectEvents : [ p1 ] }
+    SelectEvents   : [ p1 ]
     outputCommands : [  "keep *_*_*_*"
                       ,"drop *_makeSH_*_*"
                       ,"drop *_CaloReadoutHitsMaker_*_*"

@@ -36,14 +36,14 @@ outputs: {
     outVD16: {
 	module_type: RootOutput
 	fileName: "vd16.root"
-	SelectEvents: { SelectEvents: [t16] }
+	SelectEvents: [t16]
 	outputCommands:   [ "keep *_fvd16_*_*" ]
     }
 
 //usable:    outVD16: {
 //usable:	module_type: RootOutput
 //usable:	fileName: "vd16-dropmc2.root"
-//usable:	SelectEvents: { SelectEvents: [t16] }
+//usable:	SelectEvents: [t16]
 //usable:
 //usable:	outputCommands:   [ "keep *_*_*_*"
 //usable:                            ,"drop mu2e::PointTrajectorymv_*_*_*"

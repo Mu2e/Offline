@@ -149,7 +149,7 @@ physics : {
 outputs: {
    tgtStopOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: [tgtFilter] }
+      SelectEvents: [tgtFilter]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",

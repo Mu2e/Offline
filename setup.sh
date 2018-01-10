@@ -55,7 +55,7 @@ build=$($MU2E_BASE_RELEASE/buildopts --build)
 # and is therefore different from the value shown in
 # SETUP_<productname> environment vars, or by the "ups active" command.
 export MU2E_UPS_QUALIFIERS=+e14:+${build}
-export MU2E_ART_SQUALIFIER=s50
+export MU2E_ART_SQUALIFIER=s61
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
 if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
@@ -63,28 +63,25 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
 fi
 
 # Setup the framework and its dependent products
-setup -B art v2_07_03 -q${MU2E_UPS_QUALIFIERS}
-
-# The interface to SAM - conflicts with ifdhc from the grid runtime environment
-#setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
+setup -B art v2_09_04 -q${MU2E_UPS_QUALIFIERS}
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
-  setup -B geant4 v4_10_2_p03b -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
+  setup -B geant4 v4_10_2_p03d -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_02_00 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
+setup -B mu2e_artdaq_core v1_02_01c -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 
 # Other libraries we need.
 
-setup -B heppdt   v3_04_01f -q${MU2E_UPS_QUALIFIERS}
-setup -B xerces_c v3_1_4a   -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_02_03  -q${MU2E_UPS_QUALIFIERS}
-setup -B cry   v1_7h  -q${MU2E_UPS_QUALIFIERS}
+setup -B heppdt   v3_04_01g -q${MU2E_UPS_QUALIFIERS}
+setup -B xerces_c v3_1_4b   -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_02_08  -q${MU2E_UPS_QUALIFIERS}
+setup -B cry   v1_7i  -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
-setup -B scons v2_5_1a -q p2713d
+setup -B scons v3_0_0  -q p2714
 
 # The debugger
 setup -B gdb v8_0_1

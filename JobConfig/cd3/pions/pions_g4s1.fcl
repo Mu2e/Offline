@@ -125,7 +125,7 @@ physics : {
 outputs : {
     filteredOutput     : {
         module_type    : RootOutput
-        SelectEvents   : { SelectEvents:["trigFilter"] }
+        SelectEvents   : ["trigFilter"]
         outputCommands : [ "drop *_*_*_*",
                            "keep mu2e::GenParticles_*_*_*",
                            "keep mu2e::GenEventCount_*_*_*",

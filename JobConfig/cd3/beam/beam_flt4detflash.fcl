@@ -113,7 +113,7 @@ physics : {
 outputs: {
     beamFlashOutput : {
         module_type : RootOutput
-        SelectEvents: { SelectEvents: [detPath] }
+        SelectEvents: [detPath]
         outputCommands:   [ "drop *_*_*_*",
                             "keep mu2e::GenParticles_*_*_*",
                             "keep mu2e::GenEventCount_*_*_*",

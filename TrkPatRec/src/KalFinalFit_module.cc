@@ -148,7 +148,7 @@ namespace mu2e
     // copy in the existing flags
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(*_shfcol));
     // lookup productID for payload saver
-    art::ProductID kalRepsID(getProductID<KalRepCollection>(event));
+    art::ProductID kalRepsID(getProductID<KalRepCollection>());
     // loop over the seed fits.  I need an index loop here to build the Ptr
     for(size_t ikseed=0; ikseed < _kscol->size(); ++ikseed) {
       const auto& kseed = _kscol->at(ikseed);

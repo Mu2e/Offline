@@ -262,7 +262,7 @@ outputs:
    filteredOutput : 
    {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigFilter"] }
+      SelectEvents: ["trigFilter"]
       outputCommands:   
       [ 
          "drop *_*_*_*",
@@ -277,7 +277,7 @@ outputs:
    truncatedEvtsOutput : 
    {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["g4StatusFilter"] }
+      SelectEvents: ["g4StatusFilter"]
       outputCommands:   
       [ 
          "drop *_*_*_*",
