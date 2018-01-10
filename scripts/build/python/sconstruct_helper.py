@@ -177,12 +177,12 @@ def extraCleanup():
     for top, dirs, files in os.walk("./lib"):
         for name in files:
             ff =  os.path.join(top, name)
-            print ("removing file ", ff)
+            print "removing file ", ff
             os.unlink (ff)
 
     for top, dirs, files in os.walk("./tmp"):
         for name in files:
             ff =  os.path.join(top, name)
-            print ("removing file ", ff)
+            print "removing file ", ff
             os.unlink (ff)
 
