@@ -25,7 +25,7 @@
 
 #include "cetlib_except/exception.h"
 
-#include "TrackerGeom/inc/Layer.hh"
+#include "TrackerGeom/inc/Straw.hh"
 #include "DataProducts/inc/PanelId.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 
@@ -142,13 +142,13 @@ namespace mu2e {
       }
     }
 
-    template <class F>
-    inline void forAllLayers ( F& f) const{
-      for ( std::vector<Layer>::const_iterator i=_layers.begin(), e=_layers.end();
-            i !=e; ++i){
-        f(*i);
-      }
-    }
+    // template <class F>
+    // inline void forAllLayers ( F& f) const{
+    //   for ( std::vector<Layer>::const_iterator i=_layers.begin(), e=_layers.end();
+    //         i !=e; ++i){
+    //     f(*i);
+    //   }
+    // }
 
 #endif
 
@@ -156,7 +156,7 @@ namespace mu2e {
 
     PanelId _id;
 
-    std::vector<Layer> _layers;
+    // std::vector<Layer> _layers;
 
     // const Layer& getLayer ( int n ) const {
     //   return _layers.at(n);

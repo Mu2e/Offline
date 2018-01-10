@@ -11,11 +11,9 @@
 #include <vector>
 
 #include "TTrackerGeom/inc/TTracker.hh"
-
-#include "TrackerGeom/inc/Plane.hh"
-#include "TrackerGeom/inc/Layer.hh"
+#include "DataProducts/inc/LayerId.hh"
 #include "TrackerGeom/inc/Panel.hh"
-
+#include "TrackerGeom/inc/Plane.hh"
 #include "TTrackerGeom/inc/Station.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"

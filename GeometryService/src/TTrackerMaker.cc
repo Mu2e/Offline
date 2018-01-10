@@ -11,7 +11,6 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "GeometryService/inc/TTrackerMaker.hh"
-#include "TrackerGeom/inc/Panel.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "cetlib/pow.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -647,7 +646,7 @@ namespace mu2e {
     plane._panels.push_back( Panel(pnlId) );
     Panel& panel = plane._panels.back();
 
-    panel._layers.reserve(_layersPerPanel);
+    // panel._layers.reserve(_layersPerPanel);
     _strawPanelConstrCount = -1;
     // check if the opposite panels do not overlap
     static double const tolerance = 1.e-6; // this should be in a config file
@@ -835,8 +834,8 @@ namespace mu2e {
 //std::cout << "->->-> makeLayer\n";
 
     // Make an empty layer object.
-    panel._layers.push_back( Layer(layId) );
-    Layer& layer = panel._layers.back(); // fixme: try to avoid this construction
+    // panel._layers.push_back( Layer(layId) );
+    // Layer& layer = panel._layers.back(); // fixme: try to avoid this construction
 
     // Get additional bookkeeping info.
 
@@ -862,7 +861,7 @@ namespace mu2e {
 
     // Start to populate the layer.
     // layer._nStraws      = _manifoldsPerEnd*_strawsPerManifold; // not really used
-    layer._straws.reserve(_manifoldsPerEnd*_strawsPerManifold);
+    // layer._straws.reserve(_manifoldsPerEnd*_strawsPerManifold);
 
     // |z| of straw center, relative to the center of the plane.
     // Sign is taken care of elsewhere.
@@ -989,7 +988,7 @@ namespace mu2e {
                << endl;
         }
 
-        layer._straws.push_back(&allStraws2.at(_strawTrckrConstrCount));
+        // layer._straws.push_back(&allStraws2.at(_strawTrckrConstrCount));
       }
     }
 

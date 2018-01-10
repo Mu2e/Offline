@@ -98,13 +98,13 @@ namespace mu2e {
 
     // Loop over all straws and call F.
     // F can be a class with an operator() or a free function.
-    template <class F>
-    inline void forAllLayers ( F& f) const{
-      for ( std::vector<Panel>::const_iterator i=_panels.begin(), e=_panels.end();
-            i !=e; ++i){
-        i->forAllLayers(f);
-      }
-    }
+    // template <class F>
+    // inline void forAllLayers ( F& f) const{
+    //   for ( std::vector<Panel>::const_iterator i=_panels.begin(), e=_panels.end();
+    //         i !=e; ++i){
+    //     i->forAllLayers(f);
+    //   }
+    // }
 
     template <class F>
     inline void forAllPanels ( F& f) const{
