@@ -3563,6 +3563,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 //-----------------------------------------------------------------------------
     _goodPointsTrkCandidate = 0;
     _chi2TrkCandidate       = 1e10;
+    _hdfdz                  = _mpDfDz;
 //-----------------------------------------------------------------------------
 // vector which holds indices of the strawhit far from the predicted position
 //-----------------------------------------------------------------------------

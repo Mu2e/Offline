@@ -87,12 +87,12 @@ int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tf
   _hist.dr  [1]       = Tfs->make<TH1F>("dr1"      , "dr: nhits>15; r - r_{no-target} [mm]"      , 800, -200, 200);
   _hist.shmeanr  [0]  = Tfs->make<TH1F>("shmeanr0" , "straw hit mean radius; r_{sh} [mm]"          , 1800, 0, 900);
   _hist.shmeanr  [1]  = Tfs->make<TH1F>("shmeanr1" , "straw hit mean radius: nhits>15; r_{sh} [mm]", 1800, 0, 900);
-  _hist.chi2d_helix[0]= Tfs->make<TH1F>("chi2dhel0" , "global chi2d; #chi^{2}/ndof"              , 1000, 0, 100); 
-  _hist.chi2d_helix[1]= Tfs->make<TH1F>("chi2dhel1" , "global chi2d: nhits>15; #chi^{2}/ndof"    , 1000, 0, 100); 
-  _hist.chi2d_loop0[0] = Tfs->make<TH1F>("chi2dloop0", "XY chi2d: loop 0; #chi^{2}/ndof"          , 1000, 0, 100); 
-  _hist.chi2d_loop0[1] = Tfs->make<TH1F>("chi2dloop0Good", "XY chi2d: loop 0: nhits>15; #chi^{2}/ndof"          , 1000, 0, 100); 
-  _hist.chi2d_loop1[0] = Tfs->make<TH1F>("chi2dloop1", "XY chi2d: loop 1; #chi^{2}/ndof"          , 1000, 0, 100); 
-  _hist.chi2d_loop1[1] = Tfs->make<TH1F>("chi2dloop1Good", "XY chi2d: loop 1: nhits>15; #chi^{2}/ndof"          , 1000, 0, 100); 
+  _hist.chi2d_helix[0]= Tfs->make<TH1F>("chi2dhel0" , "global chi2d; #chi^{2}/ndof"                   , 1000, 0, 10); 
+  _hist.chi2d_helix[1]= Tfs->make<TH1F>("chi2dhel1" , "global chi2d: nhits>15; #chi^{2}/ndof"         , 1000, 0, 10); 
+  _hist.chi2d_loop0[0] = Tfs->make<TH1F>("chi2dloop0", "XY chi2d: loop 0; #chi^{2}/ndof"              , 1000, 0, 10); 
+  _hist.chi2d_loop0[1] = Tfs->make<TH1F>("chi2dloop0Good", "XY chi2d: loop 0: nhits>15; #chi^{2}/ndof", 1000, 0, 10); 
+  _hist.chi2d_loop1[0] = Tfs->make<TH1F>("chi2dloop1", "XY chi2d: loop 1; #chi^{2}/ndof"              , 1000, 0, 10); 
+  _hist.chi2d_loop1[1] = Tfs->make<TH1F>("chi2dloop1Good", "XY chi2d: loop 1: nhits>15; #chi^{2}/ndof", 1000, 0, 10); 
   _hist.loopId[0]     = Tfs->make<TH1F>("loopAll"   , "loopId; loopId"                           , 10, 0, 10); 
   _hist.loopId[1]     = Tfs->make<TH1F>("loopGood"  , "loopId: nhits>15: loopId"                 , 10, 0, 10); 
   return 0;

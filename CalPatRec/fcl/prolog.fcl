@@ -82,8 +82,8 @@ CalPatRec : {
 	maxDfDz                                 : 0.01
 	minDfDz                                 : 0.002
 	sigmaPhi                                : 0.1636  # radians
-	weightXY                                : 0.0509
-	weightZPhi                              : 0.0502
+	weightXY                                : 0.0808    # 0.0509
+	weightZPhi                              : 0.0743    # 0.0502
 	weight3D                                : 1
 	errorAlongWire                          : 30.  # mm
 	maxXDPhi                                : 5    #
