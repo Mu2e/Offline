@@ -151,6 +151,7 @@ namespace mu2e
 	  StrawHitPosition const& shp = _shpcol->at(ch._sh[ish]);
 	  XYZVec chpos(shp.pos().x(), shp.pos().y(), shp.pos().z());
 	  chi._dwire = (chpos-ch._pos).Dot(ch._wdir);
+	  chi._dwerr = shp.posRes(StrawHitPosition::wire);
 	  chi._dperp = sqrt((chpos-ch._pos).mag2() - chi._dwire*chi._dwire);
 	  chi._dtime = std::min(sh.time(TrkTypes::cal),sh.time(TrkTypes::hv)) - ch._time; 
 	  chi._dedep = sh.energyDep() - ch._edep;
