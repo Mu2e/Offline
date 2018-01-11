@@ -139,12 +139,40 @@ namespace mu2e {
     _motherROut       = config.getDouble("ttracker.mother.rOut"       )*CLHEP::mm;
     _motherHalfLength = config.getDouble("ttracker.mother.halfLength" )*CLHEP::mm;
     _motherZ0         = config.getDouble("ttracker.mother.z0"         )*CLHEP::mm;
-
-    //    _numPlanes         = config.getInt("ttracker.numPlanes");
-    //    _panelsPerPlane   = config.getInt("ttracker.panelsPerPlane");
-    //    _layersPerPanel    = config.getInt("ttracker.layersPerPanel");
+    _numPlanes         = config.getInt("ttracker.numPlanes");
+    if ( _numPlanes != StrawId::_nplanes ){
+      throw cet::exception("GEOM")
+        << " Inconsistent TTracker parameters: "
+        << " ttracker.numPlanes !=  StrawId::_nplanes "
+        << _numPlanes << " != " << StrawId::_nplanes
+        << " please double check and act accordingly " << endl;
+    }
+    _panelsPerPlane    = config.getInt("ttracker.panelsPerPlane");
+    if ( _panelsPerPlane != StrawId::_npanels ){
+      throw cet::exception("GEOM")
+        << " Inconsistent TTracker parameters: "
+        << " ttracker.numPlanes !=  StrawId::_npanels "
+        << _panelsPerPlane << " != " << StrawId::_npanels
+        << " please double check and act accordingly " << endl;
+    }
+    _layersPerPanel    = config.getInt("ttracker.layersPerPanel");
+    if ( _layersPerPanel != StrawId::_nlayers ){
+      throw cet::exception("GEOM")
+        << " Inconsistent TTracker parameters: "
+        << " ttracker.numPlanes !=  StrawId::_nlayers "
+        << _layersPerPanel << " != " << StrawId::_nlayers
+        << " please double check and act accordingly " << endl;
+    }
     _manifoldsPerEnd    = config.getInt("ttracker.manifoldsPerEnd");
     _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
+    if ( _manifoldsPerEnd*_layersPerPanel*_strawsPerManifold != StrawId::_nstraws ){
+      throw cet::exception("GEOM")
+        << " Inconsistent TTracker parameters: "
+        << " ttracker.strawsPerManifold*ttracker.manifoldsPerEnd*ttracker.layersPerPanel !=  StrawId::_nstraws "
+        << _manifoldsPerEnd*_layersPerPanel*_strawsPerManifold
+        << " != " << StrawId::_nstraws
+        << " please double check and act accordingly " << endl;
+    }
     _rotationPattern    = config.getInt("ttracker.rotationPattern");
     _panelZPattern      = config.getInt("ttracker.panelZPattern");
     _layerZPattern      = config.getInt("ttracker.layerZPattern");
@@ -290,6 +318,12 @@ namespace mu2e {
       _wirePlateMaterial        = config.getString("ttracker.straw.wirePlate.material");
 
     }
+
+    if ( _numPlanes%2 != 0 ) {
+      throw cet::exception("GEOM")  << "_numPlanes = " << _numPlanes
+                                    << ": Current TTracker geometry assumes even number of planes  \n";
+    }
+    _numStations = _numPlanes/_planesPerStation;
 
     //string ttracker.mat.manifold  = "G4_Al";  // Placeholder.
 
@@ -454,13 +488,6 @@ namespace mu2e {
     // Make an empty TTracker.
     _tt = unique_ptr<TTracker>(new TTracker());
 
-    // Stations
-    // Construct the stations and their internals based on planes internals
-    if ( _numPlanes%2 != 0 ) {
-      throw cet::exception("GEOM")  << "_numPlanes = " << _numPlanes
-                                    << ": Current TTracker geometry assumes even number of planes  \n";
-    }
-
     makeMother();
 
     computeLayerSpacingAndShift();
@@ -512,8 +539,14 @@ namespace mu2e {
 
     identifyNeighbourStraws();
 
+    // Stations
+    // Construct the stations and their internals based on planes internals
+
+    if (_verbosityLevel>2) {
+      cout << __func__ << " _numStations: " << _numStations << endl;
+    }
     _tt->_stations.reserve(_numStations);
-    // Construct the planes and their internals.
+
     for ( int istation=0; istation<_numStations; ++istation ){
       makeStation( StationId(istation) );
     }
@@ -592,13 +625,15 @@ namespace mu2e {
     double phi = 0.0;
     planes.at(ipln) = Plane(planeId,origin, phi);
     Plane& plane = planes.at(ipln);
-    cout << __func__ << " making plane " <<  plane.id();
+    if (_verbosityLevel>2) {
+      cout << __func__ << " making plane " <<  plane.id();
+    }
     plane._exists = ( find ( _nonExistingPlanes.begin(), _nonExistingPlanes.end(), ipln) ==
                       _nonExistingPlanes.end() );
-
     plane._panels.reserve(_panelsPerPlane);
-
-    cout << ", exists " << plane._exists  << endl;
+    if (_verbosityLevel>2) {
+      cout << ", exists " << plane._exists  << endl;
+    }
     for ( int ipnl=0; ipnl<_panelsPerPlane; ++ipnl ){
       makePanel ( StrawId(ipln,ipnl,0), plane );
       if (_verbosityLevel>2) {
@@ -691,9 +726,8 @@ namespace mu2e {
 
       }
 
-      for (  panelStrawPointerConstIter is =
-               panel.getStrawPointers().begin();
-             is < (panel.getStrawPointers().end()-2); ++is) {
+      for (  auto is = panel.getStrawPointers().cbegin();
+             is < (panel.getStrawPointers().cend()-2); ++is) {
         const Straw& straw0(**is);
         uint16_t sn = straw0.id().getStraw();
         if ( sn%2 != ilay ) continue;
@@ -721,9 +755,8 @@ namespace mu2e {
 
     if (_layersPerPanel>1) {
 
-      for (  panelStrawPointerConstIter is =
-               panel.getStrawPointers().begin();
-             is < (panel.getStrawPointers().end()-1); ++is) {
+      for (  auto is = panel.getStrawPointers().cbegin();
+             is < (panel.getStrawPointers().cend()-1); ++is) {
         const Straw& straw0(**is);
         uint16_t sn = straw0.id().getStraw();
         if ( sn%2 != 0 ) continue;
@@ -755,14 +788,13 @@ namespace mu2e {
         }
       }
 
-      for (  panelStrawPointerConstIter is =
-               panel.getStrawPointers().begin()+2;
-             is < (panel.getStrawPointers().end()); ++is) {
+      for (  auto is = panel.getStrawPointers().cbegin()+2;
+             is < (panel.getStrawPointers().cend()); ++is) {
         const Straw& straw(**is);
         uint16_t sn = straw.id().getStraw();
         if ( sn%2 != 0 ) continue;
-        panelStrawPointerConstIter i0 = is;
-        panelStrawPointerConstIter i1 = is-1;
+        auto i0 = is;
+        auto i1 = is-1;
         if ( _innermostLayer == 1 ){
           i0 = is-1;
           i1 = is;
@@ -999,11 +1031,19 @@ namespace mu2e {
 // ======= Station view makers ============
 
   void TTrackerMaker::makeStation( StationId stationId ){
-    //    std::cout << "->->-> makeStation\n";
 
     int ist = stationId;
-    int ipln1 = _planesPerStation*ist; // it has to be 2 anyway
+    int ipln1 = _planesPerStation*ist; // _planesPerStation is/has to be 2
     int ipln2 = ipln1 + 1;
+
+    if (_verbosityLevel>2) {
+      cout << __func__ << " StationId, plane1, plane2 :"
+           << stationId << ", "
+           << ipln1 << ", "
+           << ipln2 << ", "
+           << endl;
+    }
+
     double stationZ = 0.5 *
         ( _tt->_planes.at(ipln1).origin().z() +
           _tt->_planes.at(ipln2).origin().z() );
@@ -1014,12 +1054,6 @@ namespace mu2e {
     st._planes.push_back(_tt->_planes.at(ipln1));
     st._planes.push_back(_tt->_planes.at(ipln2));
 
-    // std::cout << __func__ << "StationId, plane1, plane2 :"
-    //           << stationId << ", "
-    //           << ipln1 << ", "
-    //           << ipln2 << ", "
-    //           << std::endl;
-    // std::cout << "<-<-<- makeStation\n";
   }
 
   // Assumes all planes and all panels are the same.
@@ -1869,9 +1903,8 @@ namespace mu2e {
       // straws in layer are layed out contiguously, only their numbers increase by 2
       // this is going over straws in the layer
       uint16_t uist = -1;
-      for (  panelStrawPointerConstIter ist =
-               panel.getStrawPointers().begin();
-             ist < panel.getStrawPointers().end(); ++ist) {
+      for (  auto ist = panel.getStrawPointers().cbegin();
+             ist < panel.getStrawPointers().cend(); ++ist) {
 
         const Straw& straw(**ist);
         uint16_t sn = straw.id().getStraw();
