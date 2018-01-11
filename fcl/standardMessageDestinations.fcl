@@ -121,8 +121,12 @@ mf_coutInfo:
    }   
    default:             
    {
-     limit : 10        
+     limit : 100
    } 
+   ArtSummary:  # allow the path and modules summaries (TrigReport)
+   { 
+     limit : -1
+   }
  } # end categories
 } # end mf_coutInfo
 mf_coutInfoStats : 
