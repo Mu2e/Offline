@@ -58,7 +58,7 @@ namespace mu2e {
       return _panels.size();
     }
 
-    const std::vector<Panel>& getPanels () const{
+    const std::array<Panel,StrawId::_npanels>& getPanels () const{
       return _panels;
     }
 
@@ -90,27 +90,15 @@ namespace mu2e {
     // F can be a class with an operator() or a free function.
     template <class F>
     inline void forAllStraws ( F& f) const{
-      for ( std::vector<Panel>::const_iterator i=_panels.begin(), e=_panels.end();
-            i !=e; ++i){
-        i->forAllStraws(f);
+      for ( const auto& panel : _panels ){
+        panel.forAllStraws(f);
       }
     }
 
-    // Loop over all straws and call F.
-    // F can be a class with an operator() or a free function.
-    // template <class F>
-    // inline void forAllLayers ( F& f) const{
-    //   for ( std::vector<Panel>::const_iterator i=_panels.begin(), e=_panels.end();
-    //         i !=e; ++i){
-    //     i->forAllLayers(f);
-    //   }
-    // }
-
     template <class F>
     inline void forAllPanels ( F& f) const{
-      for ( std::vector<Panel>::const_iterator i=_panels.begin(), e=_panels.end();
-            i !=e; ++i){
-        f(*i);
+      for ( const auto& panel : _panels ) {
+        f(panel);
       }
     }
 
@@ -118,10 +106,10 @@ namespace mu2e {
 
   protected:
 
-    PlaneId            _id;
+    PlaneId             _id;
     double              _rotation;
     CLHEP::Hep3Vector   _origin;
-    std::vector<Panel> _panels;
+    std::array<Panel,StrawId::_npanels> _panels;
     bool                _exists;
   };
 

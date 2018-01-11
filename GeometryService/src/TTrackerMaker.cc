@@ -630,7 +630,6 @@ namespace mu2e {
     }
     plane._exists = ( find ( _nonExistingPlanes.begin(), _nonExistingPlanes.end(), ipln) ==
                       _nonExistingPlanes.end() );
-    plane._panels.reserve(_panelsPerPlane);
     if (_verbosityLevel>2) {
       cout << ", exists " << plane._exists  << endl;
     }
@@ -638,7 +637,7 @@ namespace mu2e {
       makePanel ( StrawId(ipln,ipnl,0), plane );
       if (_verbosityLevel>2) {
         size_t istr = -1; // local index in the panel
-        Panel& panel = plane._panels.back();
+        Panel& panel = plane._panels.at(ipnl);
         std::ostringstream pnlid("",std::ios_base::ate); // to write at the end
         pnlid << panel.id();
         cout << __func__ << " straws in panel "
@@ -675,13 +674,12 @@ namespace mu2e {
 //std::cout << "<-<-<- makePlane\n";
   }
 
-  void TTrackerMaker::makePanel( const StrawId& pnlId, Plane& plane ){
+  void TTrackerMaker::makePanel( const PanelId& pnlId, Plane& plane ){
 //std::cout << "->->-> makePanel\n";
 
-    plane._panels.push_back( Panel(pnlId) );
-    Panel& panel = plane._panels.back();
+    plane._panels.at(pnlId.getPanel()) = Panel(pnlId);
+    Panel& panel = plane._panels.at(pnlId.getPanel());
 
-    // panel._layers.reserve(_layersPerPanel);
     _strawPanelConstrCount = -1;
     // check if the opposite panels do not overlap
     static double const tolerance = 1.e-6; // this should be in a config file

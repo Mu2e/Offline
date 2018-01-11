@@ -319,7 +319,7 @@ namespace mu2e
       flist->Add(sleg);
       for(int iplane=0;iplane<2;++iplane){
 	const Plane& pln = tt.getPlane(2*ista+iplane);
-	const vector<Panel>& panels = pln.getPanels();
+	const auto& panels = pln.getPanels();
 	for(size_t ipnl=0;ipnl<panels.size();++ipnl){
 	  int iface = ipnl%2;
 	  const Panel& pnl = panels[ipnl];
