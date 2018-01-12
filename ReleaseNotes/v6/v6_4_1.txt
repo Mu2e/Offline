@@ -1,5 +1,5 @@
 
-           Release notes for Mu2e Offline software, v6_4_1 (in progress)
+           Release notes for Mu2e Offline software, v6_4_1
 1)        brownd 11 Jan 2018
 	  merged triggerDev and TDReco branches back into master.  This includes the work of B. Echenard and R. Bonventre.
 	  - repackaging and reloaction of straw hit reconstruction modules
