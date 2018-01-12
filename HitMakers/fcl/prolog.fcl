@@ -19,6 +19,10 @@ makeDcH : {
   zZoneMinLiveTime     : [ 0.0 ]
 }
 
+CombineStrawHits : {
+  module_type : CombineStrawHits
+}
+
 #------------------------------------------------------------------------------
 # Form DCHHits turning off some cells (DcH).
 # 2015-01-22 P.Murat: is this module obsolete ?

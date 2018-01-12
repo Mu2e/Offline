@@ -32,4 +32,8 @@
  <class name="std::vector<mu2e::CrvHitInfoReco>" />
  <class name="mu2e::BkgHitInfo" />
  <class name="std::vector<mu2e::BkgHitInfo>" />
+ <class name="mu2e::ComboHitInfo" />
+ <class name="std::vector<mu2e::ComboHitInfo>" />
+ <class name="mu2e::ComboHitInfoMC" />
+ <class name="std::vector<mu2e::ComboHitInfoMC>" />
 </lcgdict>

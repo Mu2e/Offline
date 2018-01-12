@@ -17,6 +17,7 @@
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 
 #include "TrkReco/inc/TrkUtilities.hh"
 
@@ -41,15 +42,15 @@ namespace mu2e
     _maxdriftpull(maxdriftpull),
     _mint0doca(minT0doca)
   {
-// is there an efficiency issue fetching the calibration object for every hit???
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    SHInfo shinfo;
-    tcal->StrawHitInfo(straw,strawhit,shinfo);
-    _wpos = shinfo._pos;
-    _tddist = shinfo._tddist;
-    _tddist_err = shinfo._tdres;
-    Hep3Vector const& wiredir = _straw.getDirection();
-    Hep3Vector const& mid = _straw.getMidPoint();
+// The position information should come from the StrawHitPosition collection, FIXME!!! 
+    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
+    float dw, dwerr;
+    srep->wireDistance(strawhit,straw.getHalfLength(),dw,dwerr);
+    _wpos = straw.getMidPoint()+dw*straw.getDirection();
+    _tddist = dw; 
+    _tddist_err = dwerr;
+    Hep3Vector const& wiredir = straw.getDirection();
+    Hep3Vector const& mid = straw.getMidPoint();
 // the hit trajectory is defined as a line segment directed along the wire direction starting from the wire center
     _hittraj = new TrkLineTraj(HepPoint(mid.x(),mid.y(),mid.z()),wiredir,_tddist-_tddist_err,_tddist+_tddist_err);
     setHitLen(_tddist);

@@ -21,6 +21,8 @@ namespace mu2e {
     // accessors
     CLHEP::Hep3Vector const& pos() const { return _pos; }
     CLHEP::Hep3Vector const& wdir() const { return _wdir; }
+    // center of the wire
+    CLHEP::Hep3Vector centerPos() const;
     Float_t wireDist() const { return _wdist; }
     Float_t posRes(edir dir) const;
     Float_t phi() const { return _phi;}

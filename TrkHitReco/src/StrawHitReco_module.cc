@@ -30,6 +30,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 
 #include "TrkHitReco/inc/PeakFit.hh"
 #include "TrkHitReco/inc/PeakFitRoot.hh"
@@ -154,7 +155,7 @@ namespace mu2e {
       
       ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
       ConditionsHandle<StrawPhysics> strawphys = ConditionsHandle<StrawPhysics>("ignored");
-      ConditionsHandle<TrackerCalibrations> tcal("ignored");
+      ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
 
       
       art::Handle<StrawDigiCollection> strawdigisHandle;
@@ -172,16 +173,11 @@ namespace mu2e {
       std::unique_ptr<StrawHitPositionCollection> strawHitPositions(new StrawHitPositionCollection);
       strawHitPositions->reserve(strawdigis.size());      
 
-
       std::vector<std::vector<size_t> > hits_by_panel(nplanes*npanels,std::vector<size_t>());    
       std::vector<size_t> largeHits, largeHitPanels;
       largeHits.reserve(strawdigis.size());
       largeHitPanels.reserve(strawdigis.size());
       
-      SHInfo shinfo;
-
-
-
       for (size_t isd=0;isd<strawdigis.size();++isd)
       {
           const StrawDigi& digi = strawdigis[isd];          
@@ -202,11 +198,9 @@ namespace mu2e {
                if (std::abs(time-cluster.time())<clusterDt_) {outsideCaloTime=false; break;}
              if (outsideCaloTime) continue;
           }
-	  
           
           //prefiltering on time if needed
           if (trigMode_ && (time < minT_ ||time > maxT_)) continue;
-
 
           //extract energy from waveform
 	  // note: pedestal is being subtracting inside strawele, in the real experiment we will need
@@ -226,16 +220,20 @@ namespace mu2e {
           if (time > minT_ && time < maxT_)     flag.merge(StrawHitFlag::timesel);
           if (usecc_)                           flag.merge(StrawHitFlag::calosel);
           
-          StrawHitPosition shp;
-          tcal->StrawHitInfo(straw,hit,shinfo);
-          shp._pos   = shinfo._pos;
-          shp._phi   = shinfo._pos.phi();
-          shp._wdir  = straw.getDirection();
-          shp._wdist = shinfo._tddist;
-          shp._wres  = shinfo._tdres;
-          shp._tres  = straw.getRadius()*0.288675135; //0.28867 = 1/sqrt(12)          
-          if (shinfo._tdiv) shp._flag.merge(StrawHitFlag::tdiv); 
-                         
+	  StrawHitPosition shp;
+	  // get distance along wire from the straw center and it's estimated error
+	  float dw, dwerr;
+	  bool td = srep->wireDistance(hit,straw.getHalfLength(),dw,dwerr);
+
+	  shp._pos = straw.getMidPoint()+dw*straw.getDirection();
+          shp._phi   = shp._pos.phi(); // cache phi: this shouldn't be necessary in single precision FIXME!
+	  shp._wdir = straw.getDirection();
+	  shp._wdist = dw;
+	  shp._wres = dwerr;
+	  // crude initial estimate of the transverse error
+	  static const double invsqrt12 = 1.0/sqrt(12.0);
+	  shp._tres = straw.getRadius()*invsqrt12;
+	  if (td) shp._flag.merge(StrawHitFlag::tdiv); 
 
           //buffer large hit for cross-talk analysis
           size_t iplane       = straw.id().getPlane();
@@ -249,7 +247,6 @@ namespace mu2e {
           strawHitFlags->push_back(std::move(flag));          
           strawHitPositions->push_back(std::move(shp));
       }
-      
       
       //flag straw and electronic cross-talk
       for (size_t ilarge=0; ilarge < largeHits.size();++ilarge)
