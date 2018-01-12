@@ -97,7 +97,7 @@ namespace mu2e
 // construct from a parameter set
   KalFit::KalFit(fhicl::ParameterSet const& pset) :
 // KalFit parameters
-    _debug(pset.get<int>("debugLevel",3)),
+    _debug(pset.get<int>("debugLevel",0)),
     _maxhitchi(pset.get<double>("maxhitchi",3.5)),
     _maxpull(pset.get<double>("maxPull",5)),
     // t0 parameters
