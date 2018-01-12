@@ -36,7 +36,7 @@ namespace mu2e
   virtual void findClusters(BkgClusterCollection& clusters,
       StrawHitCollection const& shcol,
       StrawHitPositionCollection const& shpcol,
-      StrawHitFlagCollection const& shfcol) const;
+      StrawHitFlagCollection const& shfcol);
   private:
   // functions to define the distance between a hit and cluster
   // this is the variable against which the clustering thresholds are applied

@@ -220,7 +220,8 @@ namespace mu2e {
         flag.merge(StrawHitFlag::strawxtalk);
       if (is_ct_straw_preamp[ish])
         flag.merge(StrawHitFlag::elecxtalk);
-      if(sh.time() > _minT && sh.time() < _maxT)
+      float time = std::min(sh.time(TrkTypes::cal),sh.time(TrkTypes::hv));
+      if(time > _minT && time < _maxT)
         flag.merge(StrawHitFlag::timesel);
       // if(_usecc && goodTime(sh.time(),timeranges))
       // 	flag.merge(StrawHitFlag::calosel);

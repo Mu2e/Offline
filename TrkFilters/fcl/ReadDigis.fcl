@@ -39,6 +39,10 @@ physics :
     }
   }
 }
+
+# overwrite some defaults for trigger
+physics.producers.HelixFinder.UpdateStereoHits : false
+physics.producers.HelixFinder.UseHitMVA : false
 # create a trigger test path.  Note that physics.trigger_paths and physics.end_paths are not used, art will
 # create those automatically from all the defined paths
 

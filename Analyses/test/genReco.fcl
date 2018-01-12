@@ -152,7 +152,6 @@ physics : {
 #------------------------------------------------------------------------------
 	@table::Mu2eG4.producers
         @table::EventMixing.producers 
-	@table::HitMakers.producers        
 	@table::CaloDigiMC.producers
         @table::CaloReco.producers
         @table::CaloDigiMC.producersMC

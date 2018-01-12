@@ -8,6 +8,7 @@
 #include "DataProducts/inc/PanelId.hh"
 #include "DataProducts/inc/LayerId.hh"
 #include "DataProducts/inc/PlaneId.hh"
+#include "DataProducts/inc/Helicity.hh"
 #include "DataProducts/inc/ExtMonFNALModuleId.hh"
 #include "DataProducts/inc/ExtMonFNALChipId.hh"
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"

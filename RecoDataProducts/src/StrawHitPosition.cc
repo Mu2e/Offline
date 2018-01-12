@@ -24,4 +24,7 @@ namespace mu2e {
 
   StrawHitPosition::StrawHitPosition() : _wdist(0.0), _wres(-1.0),_tres(-1.0), _stindex(-1) {}
 
+  CLHEP::Hep3Vector StrawHitPosition::centerPos() const {
+    return _pos - _wdist*_wdir;
+  }
 }

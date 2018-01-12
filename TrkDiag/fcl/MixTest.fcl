@@ -58,7 +58,7 @@ physics :
       HelixDiag : {
 	module_type : HelixDiag
 	MinimumCEHits : 10
-	HelixSeedCollectionTag : "PosHelixFinder"
+	HelixSeedCollectionTag : "HelixFinder:Positive"
 	StrawHitFlagCollectionTag : "TimeClusterFinder"
 	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
       }
@@ -103,5 +103,6 @@ physics.analyzers.HelixDiag.DiagLevel : 2
 physics.analyzers.HelixDiag.MonteCarloSelection : true
 physics.producers.TimeClusterFinder.printFrequency : 1
 
+physics.producers.makeSH.doMC : true
 physics.producers.makeSD.TimeOffsets.inputs : [ "protonTimeMap", "muonTimeMap" ] 
 #include "EventMixing/fcl/epilog.fcl"

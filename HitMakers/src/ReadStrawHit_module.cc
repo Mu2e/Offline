@@ -41,6 +41,7 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 
 using namespace std;
 
@@ -355,8 +356,10 @@ namespace mu2e {
       const CLHEP::Hep3Vector sdir   = str.getDirection();
 
       // calculate the hit position
-      SHInfo strawHitInfo;
-      trackerCalibrations->StrawHitInfo(str, hit, strawHitInfo);
+      ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
+      float dw, dwerr;
+      srep->wireDistance(hit,str.getHalfLength(),dw,dwerr);
+      CLHEP::Hep3Vector pos = str.getMidPoint()+dw*str.getDirection();
 
       // we may also need the truth hit position, do we need another function?
 
@@ -380,9 +383,9 @@ namespace mu2e {
       nt[15] = gblSHMCresult ? SHtruth->driftDistance() : SDtruth.driftDistance(itdc);
       nt[16] = gblSHMCresult ? SHtruth->distanceToMid() : SDtruth.distanceToMid(itdc);
       nt[17] = id;
-      nt[18] = strawHitInfo._pos.getX();
-      nt[19] = strawHitInfo._pos.getY();
-      nt[20] = strawHitInfo._pos.getZ();
+      nt[18] = pos.getX();
+      nt[19] = pos.getY();
+      nt[20] = pos.getZ();
       nt[21] = fracDist;
 
       _ntup->Fill(nt);
