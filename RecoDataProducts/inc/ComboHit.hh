@@ -14,6 +14,7 @@
 // root includes
 #include "Rtypes.h"
 // C++ includes
+#include <array>
 #include <vector>
 namespace mu2e {
 
@@ -42,9 +43,8 @@ namespace mu2e {
     Float_t _wres; // resolution along this direction
     Float_t _tres; // resolution perpendicular to this direction
     uint16_t _nsh; // number of associated straw hits
-// temporary kludge around broken std::Array support in art persistence
     constexpr static size_t MaxNStraws = 8;
-    typedef StrawHitIndex SHIArray[MaxNStraws];
+    typedef std::array<StrawHitIndex,MaxNStraws> SHIArray;
     SHIArray _sh; // Indices back to straw hits
     Float_t _time; // Average time for these
     Float_t _edep; // average energy deposit for these
