@@ -350,7 +350,7 @@ namespace mu2e
          if (chit.flag().hasAllProperties(StrawHitFlag::active))
          {
             const StrawHit& sh = shcol.at(chit.index());
-	    unsigned iplane = (unsigned)(tracker.getStraw(sh.strawIndex()).id().getPlaneId());
+	    unsigned iplane = tracker.getStraw(sh.strawIndex()).id().getPlane();
 	    ++hitplanes[iplane];
          }
       }
@@ -363,7 +363,7 @@ namespace mu2e
       unsigned npexp(0);
       unsigned np(0);
       double nphits(0.0);
-      const std::vector<Plane>& planes = tracker.getPlanes();
+      const auto& planes = tracker.getPlanes();
 
       for(unsigned ip = ipmin; ip <= ipmax; ++ip)
       {

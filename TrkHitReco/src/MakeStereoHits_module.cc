@@ -361,7 +361,7 @@ namespace mu2e {
       _nStations = tt.nPlanes()/2;
       _nPanels = tt.getPlane(0).nPanels(); 
 
-      const Straw& straw = tt.getStraw(StrawId(0,0,0,0));
+      const Straw& straw = tt.getStraw(StrawId(0,0,0));
       double phi0 = (straw.getMidPoint()-straw.getHalfLength()*straw.getDirection()).phi();
       double phi1 = (straw.getMidPoint()+straw.getHalfLength()*straw.getDirection()).phi();
       double lophi = std::min(phi0,phi1);
