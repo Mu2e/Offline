@@ -23,9 +23,9 @@
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 
-generatorSeq  : [ generate, g4run, @sequence::EventMixing.TimeMaps ]
+generatorSeq  : [ generate, g4run ]
 
-make_digis   : [ @sequence::CaloDigiMC.DigiSim, @sequence::Tracking.DigiSim ]
+make_digis   : [ @sequence::CommonDigiSim.DigiSim, @sequence::CaloDigiMC.DigiSim, @sequence::Tracking.DigiSim ]
 
 # calorimeter cluster reconstruction
 calRecoSeq    : [ @sequence::CaloReco.Reco,@sequence::CaloDigiMC.TruthMatch,@sequence::CaloCluster.Reco,@sequence::CaloCluster.TruthMatch ]
@@ -152,6 +152,7 @@ physics : {
 #------------------------------------------------------------------------------
 	@table::Mu2eG4.producers
         @table::EventMixing.producers 
+	@table::CommonDigiSim.producers
 	@table::CaloDigiMC.producers
         @table::CaloReco.producers
         @table::CaloDigiMC.producersMC

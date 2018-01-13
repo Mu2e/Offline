@@ -36,4 +36,18 @@ makeDcHWTOff : {
   makerModuleLabel     : makeDcH
 }
 
+#------------------------------------------------------------------------------
+# This belongs to digitization, not reco hit making
+
+CommonDigiSim: {
+    producers: {
+	protonTimeMap: { module_type : GenerateProtonTimes }
+	muonTimeMap: { module_type : GenerateMuonLife }
+    }
+
+    DigiSim: [ protonTimeMap, muonTimeMap ]
+}
+
+#------------------------------------------------------------------------------
+
 END_PROLOG
