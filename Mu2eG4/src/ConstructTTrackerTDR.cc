@@ -599,8 +599,21 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
     FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
 
   // Place the straws into the panel envelope.
-  for (const auto straw_p : panel.getStrawPointers() ) {
+
+  // We preserve per layer construction order to ensure compatibility
+  // with the old construction to ease comaprisons and due to
+  // potential Geant4 geometry optimization effects
+
+  uint16_t nlayers = panel.nLayers();
+
+  for ( uint16_t ilay=0; ilay<nlayers; ++ilay ){
+
+    for (const auto straw_p : panel.getStrawPointers() ) {
+
       Straw const&       straw(*straw_p);
+
+      if ( ( straw.id().getStraw())%nlayers != ilay ) continue;
+
       StrawDetail const& detail(straw.getDetail());
 
       if (_verbosityLevel>2) {
@@ -785,6 +798,8 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
         innerMetal1Vol.logical->SetSensitiveDetector(strawWallSD);
         innerMetal2Vol.logical->SetSensitiveDetector(strawWallSD);
       }
+
+    }
 
   } // end loop over straws within a panel
 
