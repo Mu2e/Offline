@@ -82,8 +82,8 @@ CalPatRec : {
 	maxDfDz                                 : 0.01
 	minDfDz                                 : 0.002
 	sigmaPhi                                : 0.1636  # radians
-	weightXY                                : 0.0808    # 0.0509
-	weightZPhi                              : 0.0743    # 0.0502
+	weightXY                                : 0.4527    #0.0808
+	weightZPhi                              : 0.4423    #0.0743
 	weight3D                                : 1
 	errorAlongWire                          : 30.  # mm
 	maxXDPhi                                : 5    #
@@ -409,7 +409,7 @@ CalPatRec : { @table::CalPatRec
 	DeltaFinder : { module_type:DeltaFinder
 	    strawHitCollectionTag         : makeSH                # input coll
 	    strawHitFlagCollectionTag     : shouldNotBeUsed       # input coll
-	    strawHitPositionCollectionTag : MakeStrawHitPositions # input coll
+	    strawHitPositionCollectionTag : makeSH                # input coll
 	    timePeakCollectionTag         : CalTimePeakFinder
 	    useTimePeaks                  : 1
 	    minCaloDt                     : -75.                  # +/-70 to provide 100% efficiency for delta tagging + +/- 5 for taking into account the mean drift time of a delta within a station
@@ -487,7 +487,7 @@ CalPatRec : { @table::CalPatRec
 
 	    strawHitCollectionTag         : makeSH
 	    stereoHitCollectionTag        : MakeStereoHits
-	    strawHitPositionCollectionTag : MakeStrawHitPositions
+	    strawHitPositionCollectionTag : makeSH
 	    strawDigiCollection           : makeSD
 	    strawHitFlagCollectionTag     : FlagStrawHits
 	}
@@ -592,7 +592,7 @@ CalPatRec : { @table::CalPatRec
 	    useAsFilter                                 : 0
 	    StrawHitCollectionLabel                     : makeSH
 	    StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
-	    StrawHitPositionCollectionLabel             : MakeStrawHitPositions
+	    StrawHitPositionCollectionLabel             : makeSH
 	    caloClusterModuleLabel                      : CaloClusterFromProtoCluster
 	    HitSelectionBits                            : [] # ["EnergySelection","TimeSelection"]
 	    BackgroundSelectionBits                     : [] # ["Background"]
@@ -617,7 +617,7 @@ CalPatRec : { @table::CalPatRec
 	    useAsFilter                                 : 0
 	    StrawHitCollectionLabel                     : makeSH
 	    StrawHitFlagCollectionLabel                 : DeltaFinder
-	    StrawHitPositionCollectionLabel             : MakeStrawHitPositions
+	    StrawHitPositionCollectionLabel             : makeSH
 	    TimeClusterCollectionLabel                  : CalTimePeakFinder
 	    minNHitsTimeCluster                         : 15
 	    fitparticle                                 : @local::Particle.eminus
@@ -667,7 +667,7 @@ CalPatRec : { @table::CalPatRec
 	    addhits                                     : true
 	    StrawHitCollectionLabel                     : makeSH
 	    StrawDigiCollectionLabel                    : makeSD
-	    StrawHitPositionCollectionLabel             : MakeStrawHitPositions	 
+	    StrawHitPositionCollectionLabel             : makeSH	 
 	    StrawHitFlagCollectionLabel                 : DeltaFinder
 	    TrackSeedModuleLabel                        : CalSeedFit
 	    CalTimePeakModuleLabel                      : CalTimePeakFinder
@@ -754,7 +754,7 @@ CalPatRec: { @table::CalPatRec
    }
 }
 
-CalPatRec.prepare_hits : [ makeSH, MakeStrawHitPositions, CalTimePeakFinder, DeltaFinder]
+CalPatRec.prepare_hits : [ makeSH, CalTimePeakFinder, DeltaFinder]
 
 CalPatRec.reco     : [ @sequence::CalPatRec.prepare_hits, CalHelixFinder   , CalSeedFit   , CalTrkFit    ]
 CalPatRec.dem_reco : [ @sequence::CalPatRec.prepare_hits, CalHelixFinderDem, CalSeedFitDem, CalTrkFitDem ]
