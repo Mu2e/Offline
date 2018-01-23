@@ -28,6 +28,9 @@ physics :{
         #emPCut : -1.0       # cut on +/-11,22
         #primaryOnly : true  # only first particles
       }
+      SimParticlePtrPrinter : {
+        verbose : 0   # 0, 1
+      }
       StepPointMCPrinter : {
         verbose: 2   # 0, 1, 2
 	#inputTags : [ "mothersFilter", "virtualdetector" ] # select instances
@@ -40,10 +43,16 @@ physics :{
         verbose: 2   # 0, 1, 2
 	#inputTags : [ "g4run" ] # select instances
       }
+
+      CaloShowerStepPrinter : {
+        verbose: 0   # 0, 1
+        #eCut : 10.0          # cut on hits
+	#inputTags : [ "CaloShowerStepFromShowerStep" ] # select instances
+      }
       CaloHitPrinter : {
         verbose: 1   # 0, 1
         #eCut : 10.0          # cut on hits
-	#inputTags : [ "CaloShowerStepROFromShowerStep" ] # select instances
+	#inputTags : [ "CaloShowerStepFromShowerStep" ] # select instances
       }
       CaloDigiPrinter : {
         verbose: 1   # 0, 1
@@ -66,6 +75,14 @@ physics :{
 
       StrawDigiPrinter : {
         verbose: 1   # 0, 1
+	#inputTags : [ "MakeSD" ] # select instances
+      }
+      StrawDigiMCPrinter : {
+        verbose: 2   # 0, 1
+	#inputTags : [ "MakeSD" ] # select instances
+      }
+       StrawDigiMCPrinter : {
+        verbose: 1   # 0, 1, 2
 	#inputTags : [ "MakeSD" ] # select instances
       }
       StrawHitPrinter : {
