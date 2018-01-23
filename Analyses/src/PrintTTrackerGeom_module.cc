@@ -49,7 +49,9 @@ namespace mu2e {
     TTracker const& tracker(*GeomHandle<TTracker>());
 
     cout << "Tracker: " << tracker.nPlanes() << endl;
-    for ( auto const& pln : tracker.getPlanes() ){
+    // for ( auto const& pln : tracker.getPlanes() ){
+    for ( size_t i=0; i!= tracker.nPlanes(); ++i){
+      const auto& pln = tracker.getPlane(i);
       for ( auto const& pnl : pln.getPanels() ){
         StrawId sid( pnl.id() ); // first straw id is equal to its panel id
         Straw const& straw = pnl.getStraw(sid);

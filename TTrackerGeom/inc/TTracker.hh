@@ -83,9 +83,12 @@ namespace mu2e {
     }
 
     // Accessors
-    int nPlanes() const{
-      return StrawId::_nplanes;
+    uint16_t nPlanes() const{
+      // return StrawId::_nplanes;
+      return _nPlanes; // tmp till we process cd3
     }
+
+    uint16_t nStraws() const { return _nStraws; } // tmp till we process cd3
 
     const std::array<Plane,StrawId::_nplanes>& getPlanes() const{
       return _planes;
@@ -198,22 +201,31 @@ namespace mu2e {
     // F can be a class with an operator() or a free function.
     template <class F>
     inline void forAllStraws ( F& f) const{
-      for ( const auto& plane : _planes ) {
-        plane.forAllStraws(f);
+      // for ( const auto& plane : _planes ) { // fixme: should be used after cd3 is processed
+      //   plane.forAllStraws(f);
+      // }
+      for ( size_t i=0; i<_nPlanes; ++i){
+        _planes[i].forAllStraws(f);
       }
     }
 
     template <class F>
     inline void forAllPanels ( F& f) const{
-      for ( const auto& plane : _planes ) {
-        plane.forAllPanels(f);
+      // for ( const auto& plane : _planes ) {
+      //   plane.forAllPanels(f);
+      // }
+      for ( size_t i=0; i<_nPlanes; ++i){
+        _planes[i].forAllPanels(f);
       }
     }
 
     template <class F>
     inline void forAllPlanes ( F& f) const{
-      for ( const auto& plane : _planes ) {
-        f(plane);
+      // for ( const auto& plane : _planes ) {
+      //   f(plane);
+      // }
+      for ( size_t i=0; i<_nPlanes; ++i){
+        f(_planes[i]);
       }
     }
 
@@ -282,6 +294,8 @@ namespace mu2e {
     // presence info for each straw.
     //    std::vector<bool> _strawExists;
 
+    uint16_t _nPlanes; // fixme tmp till we process cd3
+    uint16_t _nStraws; // fixme tmp till we process cd3
     // =============== NewTracker Private Objects Start ==============
 
     // Dense array.

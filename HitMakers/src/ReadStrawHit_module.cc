@@ -191,9 +191,10 @@ namespace mu2e {
     if (ncalls==1){
       const auto & allstraws = tracker.getAllStraws();
       float detnt[11];
-      for ( const auto & str : allstraws)
+      // for ( const auto & str : allstraws)
+      for (size_t i = 0; i<tracker.nStraws(); ++i)
         {
-          //          Straw str = allstraws[i];
+          const Straw & str = allstraws[i];
           StrawId sid = str.id();
           int lid = sid.getLayer();
           int did = sid.getPlane();

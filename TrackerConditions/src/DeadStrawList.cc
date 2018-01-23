@@ -175,7 +175,10 @@ namespace mu2e {
     }
 
     if(_verbosity > 1) {
-      for(auto straw: tracker.getAllStraws()){
+      const auto & allstraws = tracker.getAllStraws();
+      // for(const auto & straw: tracker.getAllStraws())
+      for (size_t i = 0; i<tracker.nStraws(); ++i) {
+        const Straw & straw = allstraws[i];
 	std::cout << "Straw Index " << straw.index() << " Id " << straw.id() << endl;
       }
     }

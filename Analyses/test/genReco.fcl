@@ -130,7 +130,7 @@ services : {
     RandomNumberGenerator : { }
 
     # Mu2e services
-    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common_current.txt" }
+    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt" }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
     G4Helper               : { }
@@ -232,3 +232,4 @@ services.scheduler.wantSummary: true
 physics.analyzers.RKFDeM.KalDiag.MCStepsLabel     : "g4run"
 physics.analyzers.RKFDeM.KalDiag.SimParticleLabel : "g4run"
 physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
+#physics.producers.KFFDeM.KalFit.debugLevel : 4

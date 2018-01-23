@@ -44,12 +44,14 @@ namespace mu2e {
       int ilay = -1;
       double iang = -36000;
 
-      //      size_t nstraws = (_tt->_allStraws).size();
-      constexpr size_t nstraws = TTracker::_nttstraws;
+      // size_t nstraws = (_tt->_allStraws).size();
+      // constexpr size_t nstraws = TTracker::_nttstraws;
+      size_t nstraws = _tt->_nStraws;
 
-      cout << __func__ << " (_tt->_allStraws2).size(), TTracker::_nttstraws "
-           << fixed << setw(6) << (_tt->_allStraws2).size()
+      cout << __func__ << " (_tt->_allStraws2).size(), TTracker::_nttstraws, _tt->_nStraws "
+           << fixed << setw(6) << _tt->_allStraws2.size()
            << fixed << setw(6) << TTracker::_nttstraws
+           << fixed << setw(6) << _tt->_nStraws
            << endl;
 
       size_t istr = -1;
@@ -141,11 +143,18 @@ namespace mu2e {
     _motherZ0         = config.getDouble("ttracker.mother.z0"         )*CLHEP::mm;
     _numPlanes         = config.getInt("ttracker.numPlanes");
     if ( _numPlanes != StrawId::_nplanes ){
-      throw cet::exception("GEOM")
-        << " Inconsistent TTracker parameters: "
-        << " ttracker.numPlanes !=  StrawId::_nplanes "
-        << _numPlanes << " != " << StrawId::_nplanes
-        << " please double check and act accordingly " << endl;
+      if ( StrawId::_nplanes == 40 && _numPlanes == 36 ) {
+        _verbosityLevel > -1 &&
+          cout << __func__ << " Running with ttracker.numPlanes !=  StrawId::_nplanes "
+               << _numPlanes << " != " << StrawId::_nplanes
+               << " please make sure it is intended " << endl;
+      } else {
+        throw cet::exception("GEOM")
+          << " Inconsistent TTracker parameters: "
+          << " ttracker.numPlanes !=  StrawId::_nplanes "
+          << _numPlanes << " != " << StrawId::_nplanes
+          << " please double check and act accordingly " << endl;
+      } 
     }
     _panelsPerPlane    = config.getInt("ttracker.panelsPerPlane");
     if ( _panelsPerPlane != StrawId::_npanels ){
@@ -487,6 +496,10 @@ namespace mu2e {
 
     // Make an empty TTracker.
     _tt = unique_ptr<TTracker>(new TTracker());
+    _tt->_nPlanes = _numPlanes;
+    _tt->_nStraws = _numPlanes *
+      StrawId::_npanels *
+      StrawId::_nstraws;
 
     makeMother();
 
@@ -1199,61 +1212,64 @@ namespace mu2e {
   // Identify the neighbour straws for all straws in the tracker
   void TTrackerMaker::identifyNeighbourStraws() {
 
-    for (auto& i : _tt->_allStraws2) {
+    // fixme try avoiding the StrawIndex approach throughout here
+    // for (auto& i : _tt->_allStraws2) {
+    for (size_t istr=0; istr!=_tt->_nStraws; ++istr) {
+      Straw& straw = _tt->_allStraws2.at(istr);
 
       if (_verbosityLevel>2) {
         cout << __func__ << " "
-             << i.id() << ", index "
-             << i.index()
-             << " Straw " << i.id().getStraw()
+             << straw.id() << ", index "
+             << straw.index()
+             << " Straw " << straw.id().getStraw()
              << " plane: "
-             << _tt->getPlane(i.id()).id()
+             << _tt->getPlane(straw.id()).id()
              << endl;
       }
 
       // throw exception if more than 2 layers per panel
-      if (_tt->getPlane(i.id()).getPanel(i.id()).nLayers() != 2 ) {
+      if (_tt->getPlane(straw.id()).getPanel(straw.id()).nLayers() != 2 ) {
         throw cet::exception("GEOM")
           << "The code works with 2 layers per panel. \n";
       } // fixme: rewrite using panels
 
-      //      LayerId lId = i.id().getLayerId();
-      int layer = i.id().getLayer();
+      //      LayerId lId = straw.id().getLayerId();
+      int layer = straw.id().getLayer();
       // int nStrawLayer = _tt->getLayer(lId).nStraws();
       int nStrawLayer = StrawId::_nstraws/StrawId::_nlayers;
 
       if ( _verbosityLevel>2 ) {
         cout << __func__ << " layer " << layer
-             << " of panel "  << i.id().getPanelId()
+             << " of panel "  << straw.id().getPanelId()
              << " has " << nStrawLayer << " straws" << endl;
-        cout << __func__ << " Analyzed straw: " << i.id() << '\t' << i.index() << endl;
+        cout << __func__ << " Analyzed straw: " << straw.id() << '\t' << straw.index() << endl;
       }
 
       // add the "same layer" n-2 neighbours straw (if exist)
       // in the new model straw numbers increase by 2 in a given layer
 
-      if ( i.id().getStraw() > 1 ) {
-        // const StrawId nsId(i.id().getPlane(), i.id().getPanel(), i.id().getStraw() - 2 );
-        const StrawId nsId( i.id().asUint16() - 2 );
-        i._nearestById.push_back( nsId );
+      if ( straw.id().getStraw() > 1 ) {
+        // const StrawId nsId(straw.id().getPlane(), straw.id().getPanel(), straw.id().getStraw() - 2 );
+        const StrawId nsId( straw.id().asUint16() - 2 );
+        straw._nearestById.push_back( nsId );
         if ( _verbosityLevel>2 ) {
           const Straw& temp = _tt->getStraw( nsId );
           cout << __func__ << setw(34) << " Neighbour left straw: " << temp.id() << '\t' << temp.index() << endl;
         }
-        i._nearestByIndex.push_back( _tt->getStraw(nsId).index() );
+        straw._nearestByIndex.push_back( _tt->getStraw(nsId).index() );
       }
 
       // add the "same layer" n+2 neighbours straw (if exist)
       // in the new model straw numbers increase by 2 in a given layer
 
-      if ( i.id().getStraw() < (2*nStrawLayer-2) ) {
-        const StrawId nsId( i.id().asUint16() + 2 );
-        i._nearestById.push_back( nsId );
+      if ( straw.id().getStraw() < (2*nStrawLayer-2) ) {
+        const StrawId nsId( straw.id().asUint16() + 2 );
+        straw._nearestById.push_back( nsId );
         if ( _verbosityLevel>2 ) {
           const Straw& temp = _tt->getStraw( nsId );
           cout << __func__ << setw(34) << " Neighbour right straw: " << temp.id() << '\t' << temp.index() << endl;
         }
-        i._nearestByIndex.push_back( _tt->getStraw(nsId).index() );
+        straw._nearestByIndex.push_back( _tt->getStraw(nsId).index() );
       }
 
       // add the "opposite layer" n neighbours straw (if more than 1 layer)
@@ -1272,55 +1288,55 @@ namespace mu2e {
         // add all straws sharing a preamp
         // assumes current two channel preamps
 
-        if ( i.id().getStraw() % 2 == 0){
-          const StrawId nsId( i.id().asUint16() + 1 );
-          i._preampById.push_back( nsId );
-          i._preampByIndex.push_back( _tt->getStraw(nsId).index());
+        if ( straw.id().getStraw() % 2 == 0){
+          const StrawId nsId( straw.id().asUint16() + 1 );
+          straw._preampById.push_back( nsId );
+          straw._preampByIndex.push_back( _tt->getStraw(nsId).index());
         }else{
-          const StrawId nsId( i.id().asUint16() - 1 );
-          i._preampById.push_back( nsId );
-          i._preampByIndex.push_back( _tt->getStraw(nsId).index());
+          const StrawId nsId( straw.id().asUint16() - 1 );
+          straw._preampById.push_back( nsId );
+          straw._preampByIndex.push_back( _tt->getStraw(nsId).index());
         }
 
         // add neighbors
 
-        if (layer==0 && i.id().getStraw()<2*nStrawLayer) {
-          const StrawId nsId( i.id().asUint16() + 1 );
-          i._nearestById.push_back( nsId );
-          i._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+        if (layer==0 && straw.id().getStraw()<2*nStrawLayer) {
+          const StrawId nsId( straw.id().asUint16() + 1 );
+          straw._nearestById.push_back( nsId );
+          straw._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
             cout << __func__ << setw(34) << " Neighbour opposite up straw: "
-                 << i._nearestById.back() << '\t' <<  i._nearestByIndex.back() << endl;
+                 << straw._nearestById.back() << '\t' <<  straw._nearestByIndex.back() << endl;
           }
         }
 
-        if (layer==1 && i.id().getStraw()<2*nStrawLayer-1) {
-          const StrawId nsId( i.id().asUint16() + 1 );
-          i._nearestById.push_back( nsId );
-          i._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+        if (layer==1 && straw.id().getStraw()<2*nStrawLayer-1) {
+          const StrawId nsId( straw.id().asUint16() + 1 );
+          straw._nearestById.push_back( nsId );
+          straw._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
             cout << __func__ << setw(34) << " Neighbour opposite up straw: "
-                 << i._nearestById.back() << '\t' <<  i._nearestByIndex.back() << endl;
+                 << straw._nearestById.back() << '\t' <<  straw._nearestByIndex.back() << endl;
           }
         }
 
-        if (layer==0 && i.id().getStraw()>0) {
-          const StrawId nsId( i.id().asUint16() - 1 );
-          i._nearestById.push_back( nsId );
-          i._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+        if (layer==0 && straw.id().getStraw()>0) {
+          const StrawId nsId( straw.id().asUint16() - 1 );
+          straw._nearestById.push_back( nsId );
+          straw._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
             cout << __func__ << setw(34) << " Neighbour opposite down straw: "
-                 << i._nearestById.back() << '\t' <<  i._nearestByIndex.back() << endl;
+                 << straw._nearestById.back() << '\t' <<  straw._nearestByIndex.back() << endl;
           }
         }
 
-        if (layer==1 && i.id().getStraw()>0) { // layer 1 straw 1 is ok
-          const StrawId nsId( i.id().asUint16() - 1 );
-          i._nearestById.push_back( nsId );
-          i._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+        if (layer==1 && straw.id().getStraw()>0) { // layer 1 straw 1 is ok
+          const StrawId nsId( straw.id().asUint16() - 1 );
+          straw._nearestById.push_back( nsId );
+          straw._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
             cout << __func__ << setw(34) << " Neighbour opposite down straw: "
-                 << i._nearestById.back() << '\t' <<  i._nearestByIndex.back() << endl;
+                 << straw._nearestById.back() << '\t' <<  straw._nearestByIndex.back() << endl;
           }
         }
 
@@ -1850,10 +1866,10 @@ namespace mu2e {
 
     // Step 1: Check that the pattern of _detailIndex is as expected.
     int nBad(0);
-    auto& allStraws = _tt->_allStraws2;
-
-    for ( const auto& i : allStraws ){
-      Straw const & straw(i);
+    // auto& allStraws = _tt->_allStraws2;
+    // for ( const auto& straw : allStraws ){
+    for (size_t istr=0; istr!=_tt->_nStraws; ++istr) {
+     const Straw& straw  = _tt->getStraw(StrawIndex(istr));
 
       if (_verbosityLevel>2) {
         cout << __func__ << " checking straw "
@@ -2013,7 +2029,9 @@ namespace mu2e {
     }
 
     // Step 4: reseat _detail and _detailIndex for all other straws.
-    for ( auto& straw : allStraws ){
+    // for ( auto& straw : allStraws ){
+    for (size_t istr=0; istr!=_tt->_nStraws; ++istr) {
+      Straw& straw = _tt->_allStraws2.at(istr);
 
       // These are already done:
       if ( (straw.id().getPlane() == 0 ) &&

@@ -642,7 +642,9 @@ namespace mu2e {
     // loop over Planes
     double strawradius = ttracker.strawRadius();
     unsigned nadded(0);
-    for(auto const& plane : ttracker.getPlanes()){
+    // for(auto const& plane : ttracker.getPlanes()){
+    for ( size_t i=0; i!= ttracker.nPlanes(); ++i){
+      const auto& plane = ttracker.getPlane(i);
       int nstraws = plane.getPanel(0).nStraws();
       // get an approximate z position for this plane from the average position of the 1st and last straws
       Hep3Vector s0 = plane.getPanel(0).getStraw(0).getMidPoint();
