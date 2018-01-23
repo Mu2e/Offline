@@ -13,10 +13,12 @@
 #include "Validation/inc/ValSimParticle.hh"
 #include "Validation/inc/ValStepPointMC.hh"
 #include "Validation/inc/ValCaloCrystalHit.hh"
+#include "Validation/inc/ValCaloShowerStep.hh"
 #include "Validation/inc/ValCaloDigi.hh"
 #include "Validation/inc/ValCaloRecoDigi.hh"
 #include "Validation/inc/ValCaloCluster.hh"
 #include "Validation/inc/ValStrawDigi.hh"
+#include "Validation/inc/ValStrawDigiMC.hh"
 #include "Validation/inc/ValStrawHit.hh"
 #include "Validation/inc/ValTrackSummary.hh"
 #include "Validation/inc/ValTrackClusterMatch.hh"
@@ -50,10 +52,12 @@ namespace mu2e {
     std::vector<std::shared_ptr<ValSimParticle>>       _simp;
     std::vector<std::shared_ptr<ValStepPointMC>>       _spmc;
     std::vector<std::shared_ptr<ValCaloCrystalHit>>    _calh;
+    std::vector<std::shared_ptr<ValCaloShowerStep>>    _cals;
     std::vector<std::shared_ptr<ValCaloDigi>>          _cald;
     std::vector<std::shared_ptr<ValCaloRecoDigi>>      _calr;
     std::vector<std::shared_ptr<ValCaloCluster>>       _ccls;
     std::vector<std::shared_ptr<ValStrawDigi>>         _stdg;
+    std::vector<std::shared_ptr<ValStrawDigiMC>>       _stdm;
     std::vector<std::shared_ptr<ValStrawHit>>          _stwh;
     std::vector<std::shared_ptr<ValTrackSummary>>      _trks;
     std::vector<std::shared_ptr<ValTrackClusterMatch>> _mtch;
@@ -93,10 +97,12 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<SimParticleCollection,ValSimParticle>        (_simp,event);
   analyzeProduct<StepPointMCCollection,ValStepPointMC>        (_spmc,event);
   analyzeProduct<CaloCrystalHitCollection,ValCaloCrystalHit>  (_calh,event);
+  analyzeProduct<CaloShowerStepCollection,ValCaloShowerStep>  (_cals,event);
   analyzeProduct<CaloDigiCollection,ValCaloDigi>              (_cald,event);
   analyzeProduct<CaloRecoDigiCollection,ValCaloRecoDigi>      (_calr,event);
   analyzeProduct<CaloClusterCollection,ValCaloCluster>        (_ccls,event);
   analyzeProduct<StrawDigiCollection,ValStrawDigi>            (_stdg,event);
+  analyzeProduct<StrawDigiMCCollection,ValStrawDigiMC>        (_stdm,event);
   analyzeProduct<StrawHitCollection,ValStrawHit>              (_stwh,event);
   analyzeProduct<TrackSummaryCollection,ValTrackSummary>      (_trks,event);
   analyzeProduct<TrackClusterMatchCollection,ValTrackClusterMatch>(_mtch,event);
