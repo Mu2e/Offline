@@ -11,14 +11,17 @@
 #include "Print/inc/ProductPrinter.hh"
 #include "Print/inc/GenParticlePrinter.hh"
 #include "Print/inc/SimParticlePrinter.hh"
+#include "Print/inc/SimParticlePtrPrinter.hh"
 #include "Print/inc/StepPointMCPrinter.hh"
 #include "Print/inc/MCTrajectoryPrinter.hh"
+#include "Print/inc/CaloShowerStepPrinter.hh"
 #include "Print/inc/CaloHitPrinter.hh"
 #include "Print/inc/CaloDigiPrinter.hh"
 #include "Print/inc/CaloRecoDigiPrinter.hh"
 #include "Print/inc/CaloCrystalHitPrinter.hh"
 #include "Print/inc/CaloClusterPrinter.hh"
 #include "Print/inc/StrawDigiPrinter.hh"
+#include "Print/inc/StrawDigiMCPrinter.hh"
 #include "Print/inc/StrawHitPrinter.hh"
 #include "Print/inc/TrackClusterMatchPrinter.hh"
 #include "Print/inc/TrkCaloIntersectPrinter.hh"
@@ -58,14 +61,17 @@ mu2e::PrintModule::PrintModule(fhicl::ParameterSet const& pset ):
 
   _printers.push_back( new GenParticlePrinter(pset) );
   _printers.push_back( new SimParticlePrinter(pset) );
+  _printers.push_back( new SimParticlePtrPrinter(pset) );
   _printers.push_back( new StepPointMCPrinter(pset) );
   _printers.push_back( new MCTrajectoryPrinter(pset) );
+  _printers.push_back( new CaloShowerStepPrinter(pset) );
   _printers.push_back( new CaloHitPrinter(pset) );
   _printers.push_back( new CaloDigiPrinter(pset) );
   _printers.push_back( new CaloRecoDigiPrinter(pset) );
   _printers.push_back( new CaloCrystalHitPrinter(pset) );
   _printers.push_back( new CaloClusterPrinter(pset) );
   _printers.push_back( new StrawDigiPrinter(pset) );
+  _printers.push_back( new StrawDigiMCPrinter(pset) );
   _printers.push_back( new StrawHitPrinter(pset) );
   _printers.push_back( new TrackClusterMatchPrinter(pset) );
   _printers.push_back( new TrkCaloIntersectPrinter(pset) );
