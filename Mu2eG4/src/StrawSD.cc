@@ -67,6 +67,8 @@ namespace mu2e {
         << "Expected one of Trackers but did not find it.\n";
     }
 
+      //cout << "We have a STRAWSD!" << endl;
+      
     if ( geom->hasElement<TTracker>() ) {
 
       GeomHandle<TTracker> ttracker;
@@ -80,6 +82,7 @@ namespace mu2e {
 
       _TrackerVersion = config.getInt("TTrackerVersion",3);
       _verbosityLevel = max(verboseLevel,config.getInt("ttracker.verbosityLevel",0)); // Geant4 SD verboseLevel
+                
       _supportModel   = ttracker->getSupportModel();
 
       if ( _TrackerVersion != 3) {
@@ -99,6 +102,8 @@ namespace mu2e {
 
   G4bool StrawSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
+      //cout << "CALLING PROCESSHITS from STRAWSD" << endl;
+      
     _currentSize += 1;
 
     if ( _sizeLimit>0 && _currentSize>_sizeLimit ) {
@@ -114,9 +119,18 @@ namespace mu2e {
     G4double edep = aStep->GetTotalEnergyDeposit();
     G4double step = aStep->GetStepLength();
 
+      
+      
+      
+      
+      
+      
+      
     // Skip most points with no energy.
     if ( edep == 0 ) {
 
+        //cout << "in PROCESSHITS from STRAWSD, edep = 0" << endl;
+        
       // I am not sure why we get these cases but we do.  Skip them.
       if ( step == 0. ) {
         //ProcessCode endCode(_processInfo->

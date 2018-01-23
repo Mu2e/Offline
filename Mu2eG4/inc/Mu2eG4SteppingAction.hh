@@ -9,7 +9,6 @@
 #include <string>
 
 // Mu2e includes
-#include "Mu2eG4/inc/IMu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -37,8 +36,7 @@ namespace mu2e {
   class Mu2eG4ResourceLimits;
   class Mu2eG4TrajectoryControl;
 
-  class Mu2eG4SteppingAction : public G4UserSteppingAction,
-                               virtual public IMu2eG4SteppingAction
+  class Mu2eG4SteppingAction : public G4UserSteppingAction
   {
 
   public:
@@ -53,25 +51,25 @@ namespace mu2e {
 
     void BeginOfEvent(StepPointMCCollection& outputHits, const SimParticleHelper& spHelper);
 
-    virtual void BeginOfTrack() override;
-    virtual void EndOfTrack() override;
+    void BeginOfTrack();
+    void EndOfTrack();
 
     int nKilledStepLimit() const { return numKilledTracks_; }
 
     // Called by G4_plugin.
-    void beginRun(PhysicsProcessInfo&, CLHEP::Hep3Vector const& mu2eOrigin );
+    void beginRun(PhysicsProcessInfo*, CLHEP::Hep3Vector const& mu2eOrigin );
 
     // Called by G4_plugin: the final phase of the c'tor cannot be completed until after
     // G4 has initialized itself.
     void finishConstruction();
 
-    virtual std::vector<CLHEP::HepLorentzVector> const&  trajectory() override;
+    std::vector<CLHEP::HepLorentzVector> const&  trajectory();
 
     // Give away ownership of the trajectory information ( to the data product ).
     // This is called from TrackingAction::addTrajectory which is called from
     // TrackingAction::PostUserTrackingAction.  The result is that the
     // _trajectory data member is empty.
-    virtual void swapTrajectory( std::vector<CLHEP::HepLorentzVector>& trajectory) override;
+    void swapTrajectory( std::vector<CLHEP::HepLorentzVector>& trajectory);
 
     // A helper function to manage the printout.
     static void printit( G4String const& s,

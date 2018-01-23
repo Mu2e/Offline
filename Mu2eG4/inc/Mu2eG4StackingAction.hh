@@ -14,7 +14,7 @@ namespace mu2e {
   class Mu2eG4StackingAction: public G4UserStackingAction{
   public:
     Mu2eG4StackingAction(const fhicl::ParameterSet& pset, IMu2eG4Cut& stackingCuts, IMu2eG4Cut& commonCuts);
-    G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* aTrack) override;
+      G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* aTrack) override;
 
   private:
     // owned by Mu2eG4 module.

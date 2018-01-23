@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 namespace mu2e {
 
@@ -12,16 +13,20 @@ namespace mu2e {
                                              IMu2eG4Cut& commonCuts)
     : stackingCuts_(&stackingCuts)
     , commonCuts_(&commonCuts)
-  {}
-
-  G4ClassificationOfNewTrack Mu2eG4StackingAction::ClassifyNewTrack(const G4Track* trk){
-    if(stackingCuts_->stackingActionCut(trk)) {
-        return fKill;
-    }
-    if(commonCuts_->stackingActionCut(trk)) {
-        return fKill;
-    }
-    return fUrgent;
+  {
+      //std::cout << "AT Mu2eG4StackingAction::c'tor" << std::endl;
   }
+    
+    G4ClassificationOfNewTrack Mu2eG4StackingAction::ClassifyNewTrack(const G4Track* trk){
+        if(stackingCuts_->stackingActionCut(trk)) {
+            return fKill;
+        }
+        if(commonCuts_->stackingActionCut(trk)) {
+            return fKill;
+        }
+        return fUrgent;
+    }
+
+
 
 } // end namespace mu2e

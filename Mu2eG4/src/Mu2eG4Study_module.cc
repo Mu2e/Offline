@@ -392,8 +392,8 @@ namespace mu2e {
     // The Study module does not support multi-stage simulations.
     // Still need to create a parentHelper and use it along with the
     // emtpy HitHandles to satisfy the PrimaryGeneratorAction method signature.
-    SimParticlePrimaryHelper parentHelper(event, simPartId, gensHandle);
-    _genAction->setEventData(&*gensHandle, HitHandles(), &parentHelper);
+    SimParticlePrimaryHelper parentHelper(&event, simPartId, gensHandle, event.productGetter(simPartId));
+    _genAction->setEventData_forStudy(&*gensHandle, HitHandles(), &parentHelper);
 
     _steppingAction->BeginOfEvent(*tvdHits, *steppingPoints, simPartId, event );
 

@@ -39,7 +39,7 @@ namespace mu2e {
 
   // Forward declarations in mu2e namespace
   class SimpleConfig;
-  class IMu2eG4SteppingAction;
+  class Mu2eG4SteppingAction;
   class SimParticleHelper;
   class SimParticlePrimaryHelper;
   class Mu2eG4ResourceLimits;
@@ -49,10 +49,10 @@ namespace mu2e {
 
   public:
 
-    TrackingAction( const SimpleConfig& config, IMu2eG4SteppingAction *);
+    TrackingAction( const SimpleConfig& config, Mu2eG4SteppingAction *);
 
     TrackingAction(const fhicl::ParameterSet& pset,
-                   IMu2eG4SteppingAction *,
+                   Mu2eG4SteppingAction *,
                    const Mu2eG4TrajectoryControl& trajectoryControl,
                    const Mu2eG4ResourceLimits &lim);
 
@@ -68,7 +68,7 @@ namespace mu2e {
     void beginEvent( const art::Handle<SimParticleCollection>& inputSims,
                      const art::Handle<MCTrajectoryCollection>& inputMCTraj,
                      const SimParticleHelper& spHelper,
-                     const SimParticlePrimaryHelper& primaryHelperm,
+                     const SimParticlePrimaryHelper& primaryHelper,
                      MCTrajectoryCollection& mcTrajectories,
                      SimParticleRemapping& simsRemap
                      );
@@ -81,8 +81,8 @@ namespace mu2e {
     void saveSimParticleEnd  (const G4Track* trk);
 
     // Receive persistent volume information and save it for the duration of the run.
-    void beginRun( const PhysicalVolumeHelper& physVolHelper,
-                   PhysicsProcessInfo& processInfo,
+    void beginRun( const PhysicalVolumeHelper* physVolHelper,
+                   PhysicsProcessInfo* processInfo,
                    CLHEP::Hep3Vector const& mu2eOrigin );
 
     // Clean up at end of run.
@@ -127,7 +127,7 @@ namespace mu2e {
     int    _mcTrajectoryMinSteps;
 
     // Non-owning pointer to stepping action; lifetime of pointee is one run.
-    IMu2eG4SteppingAction * _steppingAction;
+    Mu2eG4SteppingAction * _steppingAction;
 
     // Non-owning pointer to the information about physical processes;
     // lifetime of pointee is one run.
@@ -144,6 +144,15 @@ namespace mu2e {
     // If the track passes, the min hits cut and the momentum cut, add the
     // trajectory information to the output data product.
     void swapTrajectory( const G4Track* trk );
+      
+      
+      
+      
+      
+      
+      int counter;
+      
+      
 
   };
 

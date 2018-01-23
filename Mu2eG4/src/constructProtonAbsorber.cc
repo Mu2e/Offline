@@ -241,7 +241,10 @@ namespace mu2e {
                                             placePV,
                                             doSurfaceCheck
                                             );
-      if(paSD) protonabs1Info.logical->SetSensitiveDetector (paSD);
+        
+        
+      //if(paSD) protonabs1Info.logical->SetSensitiveDetector (paSD);
+        
 
       if ( verbosityLevel > 0) {
         double pzhl   = static_cast<G4Cons*>(protonabs1Info.solid)->GetZHalfLength();
@@ -271,7 +274,11 @@ namespace mu2e {
                                             placePV,
                                             doSurfaceCheck
                                             );
-      if(paSD) protonabs2Info.logical->SetSensitiveDetector (paSD);
+        
+        
+      //if(paSD) protonabs2Info.logical->SetSensitiveDetector (paSD);
+        
+        
       if ( verbosityLevel > 0) {
         double pzhl   = static_cast<G4Cons*>(protonabs2Info.solid)->GetZHalfLength();
         double pabs2Z = protonabs2Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
@@ -360,7 +367,11 @@ namespace mu2e {
                                               placePV,
                                               doSurfaceCheck
                                               );
-        if(paSD) protonabs1Info.logical->SetSensitiveDetector (paSD);
+          
+          
+        //if(paSD) protonabs1Info.logical->SetSensitiveDetector (paSD);
+          
+          
   
         if ( verbosityLevel > 0) {
           double pzhl   = static_cast<G4Cons*>(protonabs1Info.solid)->GetZHalfLength();
@@ -401,7 +412,9 @@ namespace mu2e {
                                               placePV,
                                               doSurfaceCheck
                                               );
-        if(paSD) protonabs2Info.logical->SetSensitiveDetector (paSD);
+          
+          
+        //if(paSD) protonabs2Info.logical->SetSensitiveDetector (paSD);
   
   
   
@@ -467,7 +480,11 @@ namespace mu2e {
                                               placePV,
                                               doSurfaceCheck
                                               );
-        if(paSD) protonabs3Info.logical->SetSensitiveDetector (paSD);
+          
+          
+        //if(paSD) protonabs3Info.logical->SetSensitiveDetector (paSD);
+          
+          
   
 /*        mf::LogInfo log("GEOM");
         log << "Constructing Proton Absorber -- \n";
@@ -528,7 +545,11 @@ namespace mu2e {
                                               placePV,
                                               doSurfaceCheck
                                               );
-        if(paSD) protonabs4Info.logical->SetSensitiveDetector (paSD);
+          
+          
+        //if(paSD) protonabs4Info.logical->SetSensitiveDetector (paSD);
+          
+          
   
         if ( verbosityLevel > 0) {
           double pzhl   = static_cast<G4Cons*>(protonabs4Info.solid)->GetZHalfLength();

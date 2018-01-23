@@ -27,6 +27,7 @@
 #include "G4RunManager.hh"
 #include "G4Step.hh"
 #include "G4ios.hh"
+#include "G4Threading.hh"
 
 using namespace std;
 
@@ -57,7 +58,11 @@ namespace mu2e {
       config.getVectorInt(key,list);
       _debugList.add(list);
     }
-
+      
+      
+//      std::cout << "in Mu2eSD::c'tor, creating a " << this->GetName() << " with address "
+//                << this << std::endl;
+    
   }
 
   void Mu2eSensitiveDetector::Initialize(G4HCofThisEvent* HCE){
@@ -81,18 +86,31 @@ namespace mu2e {
       return false;
     }
 
+      
+//  REMOVED BY LG ON 8/30/17 TO SIMPLIFY THINGS
+      //put back in on Jan 9th, 2018, but causing occasional seg fault
+      //taking it out
+/*
     if ( _debugList.inList() )  {
             G4cout<<"edep "<<aStep->GetTotalEnergyDeposit()
                   <<" nidep "<<aStep->GetNonIonizingEnergyDeposit()
                   <<" step "<<aStep->GetStepLength()<<G4endl;
             G4cout<<"Step vol name "<<aStep->GetTrack()->GetVolume()->GetName()<<G4endl;
     }
+*/
 
-
+      
+      //std::cout << "in Mu2eSD::ProcessHits" << std::endl;
+      //std::cout << "Step vol name " << aStep->GetTrack()->GetVolume()->GetName() << std::endl;
+      
     // Which process caused this step to end?
-    ProcessCode endCode(_processInfo->
-                        findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
+      
+      ProcessCode endCode(_processInfo->
+                findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
+      //ProcessCode endCode( ProcessCode::unknown );
+      //std::cout << "NEED TO PUT CORRECT PROCESS CODE BACK IN Mu2eSD::ProcessHits" << std::endl;
+      
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
@@ -108,7 +126,9 @@ namespace mu2e {
                             endCode
                             ));
 
-    return true;
+      //std::cout << "in Mu2eSD::ProcessHits, ProcessHits COMPLETE!" << std::endl;
+      
+      return true;
 
   }
 
@@ -148,7 +168,15 @@ namespace mu2e {
     _collection  = &outputHits;
     _processInfo = &processInfo;
     _spHelper    = &spHelper;
-
+     
+      if(G4Threading::G4GetThreadId() <= 0)
+      {
+      
+    //  std::cout << "at Mu2eSD::beforeG4Event, received StepPtMCCollection address of: " << _collection
+    //        << " in " << this->GetName() << std::endl;
+          
+      }
+      
     return;
 
   }

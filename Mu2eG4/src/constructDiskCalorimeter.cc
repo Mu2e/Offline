@@ -284,9 +284,11 @@ namespace mu2e {
 
 	// --add sensitive detector    
 	//
+      
+/*
 	G4VSensitiveDetector* ccSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal());
 	if (ccSD) CrystalLog->SetSensitiveDetector(ccSD);
-
+*/
 
 
     //------------------------------------------------------------
@@ -363,12 +365,14 @@ namespace mu2e {
 
 	// --add sensitive detector    
 	//
+      
+/*
 	G4VSensitiveDetector* crSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadout());
 	if (crSD) ROLog->SetSensitiveDetector(crSD);
 	
 	G4VSensitiveDetector* crCardSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadoutCard());
 	if (crCardSD) ROElectronicsLog->SetSensitiveDetector(crCardSD);
-       
+*/
        
 
     //---------------------------------------------------------------
@@ -610,8 +614,12 @@ namespace mu2e {
 		 {
 		   std::ostringstream boardPV; boardPV<<"boardPV_" <<ibrd;
 
+             
+/*
 		   G4VSensitiveDetector* crCrate = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrate());
 		   if (crCrate) activeStripBoardLog->SetSensitiveDetector(crCrate);
+ 
+ */
 
 		   pv = new G4PVPlacement(0,G4ThreeVector(0.0,boardPosY,boardPosZ), boardCrateLog, boardPV.str(), crateBoxLog, true, ibrd,false);
 		   doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);

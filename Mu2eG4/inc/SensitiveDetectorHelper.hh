@@ -34,49 +34,66 @@ namespace mu2e {
 
   class SimpleConfig;
   class SimParticleHelper;
+  class EventStash;
 
   class SensitiveDetectorHelper{
 
   public:
 
-    SensitiveDetectorHelper( fhicl::ParameterSet const& pset );
-    // Accept compiler generator d'tor, copy c'tor and assignment operator.
+      SensitiveDetectorHelper(fhicl::ParameterSet const& pset);
+      // Accept compiler generator copy c'tor and assignment operator.
+      
+      ~SensitiveDetectorHelper();
+      
+      // Register the sensitive detector with this class; to be called after G4 Initialize.
+      void registerSensitiveDetectors();
 
-    // Register the sensitive detector with this class; to be called after G4 Initialize.
-    void registerSensitiveDetectors();
+      void declareProducts(art::EDProducer *parent);
 
-    void declareProducts(art::EDProducer *parent);
+      // Create data products and pre-fill with input hits if any;
+      // to be called at the start of each event.
+      void createProducts(const art::Event& evt, const SimParticleHelper& spHelper);
 
-    // Create data  products and pre-fill with input hits if any; to be called at the start of each event.
-    void createProducts(const art::Event& evt, const SimParticleHelper& spHelper);
+      // Attach the new per-event data products to the corresponding sensitive detector objects.
+      void updateSensitiveDetectors(PhysicsProcessInfo& info,
+                                    const SimParticleHelper& spHelper);
 
-    // Attach the new per-event data products to the corresponding sensitive detector objects.
-    void updateSensitiveDetectors( PhysicsProcessInfo&   info,
-                                   const SimParticleHelper& spHelper);
+      
+      // put data into the stash
+      void insertSDDataIntoStash(int position_to_insert,
+                                 EventStash* stash_for_event_data);
+      
+      
+      
+      // Put the data products into the event.
+      //NO LONGER USED
+      //void put(art::Event& event);
 
-    // Put the data products into the event.
-    void put( art::Event& event);
+      // Query the same info
+      bool enabled(StepInstanceName::enum_type instance) const;
 
-    // Query the same info
-    bool enabled(StepInstanceName::enum_type instance) const;
+      // Return one of the StepPointMCCollections.
+      cet::maybe_ref<StepPointMCCollection> steps(StepInstanceName::enum_type id);
 
-    // Return one of the StepPointMCCollections.
-    cet::maybe_ref<StepPointMCCollection> steps( StepInstanceName::enum_type id );
+      // create SDs for arbitrary logical volumes as requiested
+      void instantiateLVSDs(const SimpleConfig& config);
 
-    // create SDs for arbitrary logical volumes as requiested
-    void instantiateLVSDs(const SimpleConfig& config);
-
-    bool extMonPixelsEnabled() const { return extMonPixelsEnabled_; }
+      bool extMonPixelsEnabled() const { return extMonPixelsEnabled_; }
+      
+      //void test_func() {std::cout << "SDH::testfunc COMPLETE" << std::endl; };
+      
+      
+      std::vector<std::string> stepInstanceNamesToBeProduced() const;
 
   private:
 
     // A helper class to hold information about each sensitive detector object.
     struct StepInstance {
-      explicit StepInstance(StepInstanceName::enum_type astepName ):
+        explicit StepInstance(StepInstanceName::enum_type astepName):
         p(),
         stepName(StepInstanceName(astepName).name()),
-        sensitiveDetector(0){
-      }
+        sensitiveDetector(0)
+        {}
 
       explicit StepInstance(const std::string &name)  : stepName(name) {}
 
@@ -95,23 +112,24 @@ namespace mu2e {
       Mu2eSensitiveDetector *  sensitiveDetector;
     };
 
-    // Enabled pre-defined StepPointMC collections, except the timevd.
-    typedef std::map<StepInstanceName::enum_type,StepInstance> InstanceMap;
-    InstanceMap stepInstances_;
+      // Enabled pre-defined StepPointMC collections, except the timevd.
+      typedef std::map<StepInstanceName::enum_type,StepInstance> InstanceMap;
+      InstanceMap stepInstances_;
 
-    // Logical volumes requested to be sensitive
-    typedef std::map<std::string,StepInstance> LVSDMap;
-    LVSDMap lvsd_;
+      // Logical volumes requested to be sensitive
+      typedef std::map<std::string,StepInstance> LVSDMap;
+      LVSDMap lvsd_;
 
-    // Existing hit collections that should be merged into the output
-    typedef std::vector<art::InputTag> InputTags;
-    InputTags preSimulatedHits_;
+      // Existing hit collections that should be merged into the output
+      typedef std::vector<art::InputTag> InputTags;
+      InputTags preSimulatedHits_;
 
-    // Return all of the instances names of the data products to be produced.
-    std::vector<std::string> stepInstanceNamesToBeProduced() const;
+      // Return all of the instances names of the data products to be produced.
+      //std::vector<std::string> stepInstanceNamesToBeProduced() const;
 
-    // Separate handling as this detector does not produced StepPointMCs
-    bool extMonPixelsEnabled_;
+      // Separate handling as this detector does not produced StepPointMCs
+      bool extMonPixelsEnabled_;
+      
   };
 
 

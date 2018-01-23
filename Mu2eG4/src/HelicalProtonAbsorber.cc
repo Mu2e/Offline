@@ -123,10 +123,13 @@ HelicalProtonAbsorber::HelicalProtonAbsorber(double z_start, double length_i, do
         pabs_phys = new G4PVPlacement(0,position,pabs_logic,"helical_pabs_phys", World, false, 0);
         pabs_logic->SetVisAttributes(G4VisAttributes::Invisible);
 
-        if (paSD!=0x0) {
-                pabs_logic->SetSensitiveDetector(paSD);
-
-        }
+    
+    
+//        if (paSD!=0x0) { pabs_logic->SetSensitiveDetector(paSD); }
+    
+    
+    
+    
 //        //specifying sensitive detectors.
 //        myPAbsSD = new PAbsSD("pabs");
 //        G4SDManager* SDMan = G4SDManager::GetSDMpointer();

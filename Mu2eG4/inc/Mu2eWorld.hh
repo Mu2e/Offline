@@ -28,6 +28,8 @@
 #include <memory>
 #include <vector>
 #include <map>
+#include <list>
+
 
 #include "fhiclcpp/ParameterSet.h"
 
@@ -42,6 +44,8 @@ class G4UserLimits;
 #include "Mu2eG4/inc/FieldMgr.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
+#include "BFieldGeom/inc/BFieldConfig.hh"
+
 
 //G4 includes
 #include "G4String.hh"
@@ -50,6 +54,9 @@ class G4UserLimits;
 #include "G4RotationMatrix.hh"
 #include "G4VisAttributes.hh"
 
+class G4VPhysicalVolume;
+class G4LogicalVolume;
+class G4VSensitiveDetector;
 
 namespace mu2e {
 
@@ -60,51 +67,70 @@ namespace mu2e {
   class Mu2eWorld : public Mu2eUniverse {
   public:
 
-    explicit Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/);
+      explicit Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/);
 
-    Mu2eWorld(const fhicl::ParameterSet& pset,
-              SensitiveDetectorHelper *sdHelper/*no ownership passing*/);
+      Mu2eWorld(const fhicl::ParameterSet& pset,
+                SensitiveDetectorHelper *sdHelper//,/*no ownership passing*/
+                //BFieldConfig *bfieldconf
+                );
 
-    // Construct everything.
-    // The non-const return type is eventually required 
-    // by G4VUserDetectorConstruction::Construct();
-    virtual G4VPhysicalVolume * construct() override;
+      // Construct everything.
+      // The non-const return type is eventually required
+      // by G4VUserDetectorConstruction::Construct();
+      virtual G4VPhysicalVolume * construct() override;
+      
+      virtual void constructSDandField() override;
 
   private:
+      
+      typedef std::list<G4LogicalVolume*> LVList;
+      typedef std::map<G4VSensitiveDetector*, LVList> DetList;
+            
+      // Do all of the work.
+      G4VPhysicalVolume * constructWorld();
+      
+      void constructWorldSD();
+      void constructWorldField();
 
-    // Do all of the work.
-    G4VPhysicalVolume * constructWorld();
+      // Break the big task into many smaller ones.
+      VolumeInfo constructTracker();
+      VolumeInfo constructTarget();
+      VolumeInfo constructCal();
+      void constructMagnetYoke();
+      void constructBFieldAndManagers();
+      void constructStepLimiters();
+      void constructITStepLimiters();
 
-    // Break the big task into many smaller ones.
-    VolumeInfo constructTracker();
-    VolumeInfo constructTarget();
-    VolumeInfo constructCal();
-    void constructMagnetYoke();
-    void constructBFieldAndManagers();
-    void constructStepLimiters();
-    void constructITStepLimiters();
+      void instantiateSensitiveDetectors();
 
-    void instantiateSensitiveDetectors();
+      // Field managers for the different regions of magnetic field.
+      // These have a lifetime equal to that of the G4 geometry.
+      std::unique_ptr<FieldMgr> _dsUniform;
+      std::unique_ptr<FieldMgr> _dsGradient;
 
-    // Field managers for the different regions of magnetic field.
-    // These have a lifetime equal to that of the G4 geometry.
-    std::unique_ptr<FieldMgr> _dsUniform;
-    std::unique_ptr<FieldMgr> _dsGradient;
+      SensitiveDetectorHelper *sdHelper_; // Non-owning
 
-    SensitiveDetectorHelper *sdHelper_; // Non-owning
+      fhicl::ParameterSet pset_;
+      
+      BFieldConfig* bfConfig;
 
-    fhicl::ParameterSet pset_;
+      // Values of the following variables are taken from either
+      // ParameterSet or SimpleConfig, depending on the constructor
+      // called.
 
-    // Values of the following variables are taken from either
-    // ParameterSet or SimpleConfig, depending on the constructor
-    // called.
+      // _verbosityLevel in the base class, and
+      bool activeWr_Wl_SD_;
+      bool writeGDML_;
+      std::string gdmlFileName_;
+      std::string g4stepperName_;
+      double bfieldMaxStep_;
+      
+      G4VPhysicalVolume * worldVolume_;
+      
+      //returned from constructPS
+      G4LogicalVolume* psVacuumLogical_;
 
-    // _verbosityLevel in the base class, and
-    bool activeWr_Wl_SD_;
-    bool writeGDML_;
-    std::string gdmlFileName_;
-    std::string g4stepperName_;
-    double bfieldMaxStep_;
+      
   };
 
 } // end namespace mu2e

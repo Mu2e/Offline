@@ -80,9 +80,13 @@ namespace mu2e{
 
     // The more detailed version has its own function.
     if ( ttracker.getSupportModel() == SupportModel::detailedv0 ) {
+        
+        std::cout <<"Constructing TDR version of tracker" << std::endl;
       ConstructTTrackerTDR tt(ds3Vac, config);
       return tt.motherInfo();
     }
+      
+      //std::cout <<"We are getting past point A in constructTTrackerv3" << std::endl;
 
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
@@ -407,6 +411,9 @@ namespace mu2e{
                                              doSurfaceCheck
                                              );
 
+          
+          /*
+          
         // Make gas of this straw a sensitive detector.
         G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
           FindSensitiveDetector(SensitiveDetectorName::TrackerGas());
@@ -419,6 +426,8 @@ namespace mu2e{
         sd = G4SDManager::GetSDMpointer()->
           FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
         if (sd) strawWallInfo.logical->SetSensitiveDetector(sd);
+           
+           */
 
       }   // end loop over straws
     }     // end loop over layers
@@ -525,9 +534,14 @@ namespace mu2e{
 
       // Make TTrackerPlaneSupport a sensitive detector for radiation damage studies
 
+        
+/*
+        
       G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
         FindSensitiveDetector(SensitiveDetectorName::TTrackerPlaneSupport());
       if(sd) supportInfoVect[ipln].logical->SetSensitiveDetector(sd);
+ 
+ */
 
       verbosityLevel > 1 &&
         cout << __func__ << " plane: " << ipln << " " 

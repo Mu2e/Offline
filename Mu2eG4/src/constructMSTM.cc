@@ -938,9 +938,13 @@ namespace mu2e {
 
 
     // Make mstmCrystal a sensitive detector.
+      
+    /*
     G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::STMDet());
 
     if(sd) mstmCrystal.logical->SetSensitiveDetector(sd);
+     
+     */
 
     if ( verbosityLevel > 0) {
       std::cout << __func__ << " mstmMotherPositionInMu2e = " << mstmMotherPositionInMu2e << endl;       

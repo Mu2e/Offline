@@ -401,17 +401,25 @@ namespace {
     }
 
     // Pick one of the tubs that represents mocked-up electronics and make it a senstive detector.
+
+/*
+      //COMMENTED OUT BY LISA G FOR MT
     G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
       FindSensitiveDetector(SensitiveDetectorName::TTrackerPlaneSupport());
 
     for ( std::deque<VolHelper>::iterator i=vols.begin(), e=vols.end();
           i != e; ++i ){
       PlacedTubs const& part = *i->part;
+
       if ( part.name().find("TTrackerSupportElecCu") != string::npos ){
         if(sd) i->info.logical->SetSensitiveDetector(sd);
       }
+
+        
     }
 
+*/ 
+ 
     // The last part of the support structure is the inner ring; Construct it as a polycone
     // that includes the two channels to receive the straws.
     // FixME: use the other c'tor of Polycone that takes points in the rz plane.

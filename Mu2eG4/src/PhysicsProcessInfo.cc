@@ -41,9 +41,18 @@ namespace mu2e{
     _allProcesses(),
     _longestName(0){
   }
+    
+    
+    int PhysicsProcessInfo::test_int(){
+        
+        return  _allProcesses.size();
+        
+    }
 
   void PhysicsProcessInfo::beginRun(){
 
+      //std::cout << "AT PPI::beginRun, address of PPI is " << this << std::endl;
+      
     _allProcesses.clear();
 
     // Number of processes that are not known to the ProcessCode enum.
@@ -133,6 +142,12 @@ namespace mu2e{
       _allProcesses.insert(std::make_pair(name,ProcInfo(code.name(),code) ));
     }
     // printAll(cout);
+      
+      
+      
+      //std::cout << "AT PPI::beginRun COMPLETE, the size of _allProcesses is "
+      //          << _allProcesses.size() << std::endl;
+      
 
   } // PhysicsProcessInfo::beginRun
 
@@ -143,6 +158,10 @@ namespace mu2e{
 
   // This can possibly be sped up considerably by checking frequently occuring names first.
   ProcessCode PhysicsProcessInfo::findAndCount( G4String const& name ){
+      
+      //std::cout << "AT PPI::findAndCount, the size of _allProcesses is "
+      //<< _allProcesses.size() << std::endl;
+      
     map_type::iterator i = _allProcesses.find(name);
     if ( i == _allProcesses.end() ){
       throw cet::exception("RANGE")

@@ -15,15 +15,15 @@ namespace mu2e {
     os<<" id = "<<p.id()
       <<", parent="<<p.parentId()
       <<", pdgId="<<p.pdgId()
-      <<", start="<<p.startPosition()
-      <<", pstart="<<p.startMomentum()
-      <<", end="<<p.endPosition()
-      <<", pend="<<p.endMomentum()
-      <<", nSteps = "<<p.nSteps()
-      <<", preLastStepKE = "<<p.preLastStepKineticEnergy()
+      //<<", start="<<p.startPosition()
+      //<<", pstart="<<p.startMomentum()
+      //<<", end="<<p.endPosition()
+      //<<", pend="<<p.endMomentum()
+      //<<", nSteps = "<<p.nSteps()
+      //<<", preLastStepKE = "<<p.preLastStepKineticEnergy()
       <<", creationCode = "<<p.creationCode()
-      <<", stoppingCode = "<<p.stoppingCode()
-      <<", startG4Status = "<<p.startG4Status()
+      //<<", stoppingCode = "<<p.stoppingCode()
+      //<<", startG4Status = "<<p.startG4Status()
       <<", endG4Status = "<<p.endG4Status();
     return os;
   }
@@ -34,9 +34,17 @@ namespace mu2e {
       for(const auto& i: particles) {
         const SimParticle& p{i.second};
         if(!primariesOnly_ || p.isPrimary()) {
-          os<<prefix_;
-          print(os, p);
-          os<<std::endl;
+            
+            if (p.id().asUint() <=20) {
+                os<<prefix_;
+                print(os, p);
+                os<<std::endl;
+
+            }
+            
+            
+            
+            
         }
       }
     }

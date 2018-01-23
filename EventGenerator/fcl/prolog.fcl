@@ -57,6 +57,12 @@ StoppedMuonConversionGun: {
     // Also phimin and phimax defaulting to [0,2pi]
 }
 
+StoppedMuonConversionGunN: {
+    @table::StoppedMuonConversionGun
+    module_type    : StoppedMuonConversionGunN
+    stashSize      : @nil
+}
+
 StoppedParticleReactionGun: {
     module_type    : StoppedParticleReactionGun
     czmin          : -1.0
@@ -91,6 +97,7 @@ randomsaver: {
 EventGenerator : {
     producers : {
 	StoppedMuonConversionGun   : { @table::StoppedMuonConversionGun   }
+	StoppedMuonConversionGunN  : { @table::StoppedMuonConversionGunN  }
 	StoppedParticleReactionGun : { @table::StoppedParticleReactionGun }
     }
 }

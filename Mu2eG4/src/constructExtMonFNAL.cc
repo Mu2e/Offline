@@ -126,9 +126,10 @@ namespace mu2e {
       G4Material* vacuumMaterial     = findMaterialOrThrow(ds->insideMaterial());
 
       GeomHandle<VirtualDetector> vdg;
-
+/*
       G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
         FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
+ */
 
       for(int vdId = entranceVD; vdId <= 1 + entranceVD; ++vdId) {
         if( vdg->exist(vdId) ) {
@@ -179,7 +180,7 @@ namespace mu2e {
             checkForOverlaps( vdInfo.physical, config, verbosityLevel>0);
           }
 
-          if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
+          //if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
         }
       } // for(vdId-1)
     } // detector VD block
@@ -288,10 +289,13 @@ namespace mu2e {
                                      doSurfaceCheck
                                      );
 
-         G4VSensitiveDetector* emSD = G4SDManager::GetSDMpointer()->
+/*
+        G4VSensitiveDetector* emSD = G4SDManager::GetSDMpointer()->
            FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL());
          
-         if(emSD) vsensor.logical->SetSensitiveDetector(emSD);
+        if(emSD) vsensor.logical->SetSensitiveDetector(emSD);
+ 
+ */
         
          G4ThreeVector coffset0 = {stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + .065 + offset[0], // +/- .065 to achieve the designed .13mm gap
                                    stack.planes()[iplane].module_yoffset()[imodule] + offset[1] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835),
@@ -354,8 +358,10 @@ namespace mu2e {
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 
+/*
     G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
       FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
+ */
 
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<ExtMonFNALBuilding> emfb;
@@ -397,7 +403,7 @@ namespace mu2e {
 
         // vd are very thin, a more thorough check is needed
         doSurfaceCheck && checkForOverlaps( vdInfo.physical, config, verbosityLevel>0);
-        if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
+        //if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
       }
     } // for(vdId-2)
   }
@@ -460,10 +466,12 @@ namespace mu2e {
     // vd are very thin, a more thorough check is needed
     doSurfaceCheck && checkForOverlaps( boxFront.physical, config, verbosityLevel>0);
 
+/*
     G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
       FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
 
     if(vdSD) boxFront.logical->SetSensitiveDetector(vdSD);
+ */
 
   }
 

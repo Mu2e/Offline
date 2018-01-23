@@ -23,8 +23,16 @@ namespace mu2e {
   // and looks up the field in that map.
   bool BFieldManager::getBFieldWithStatus(const CLHEP::Hep3Vector& point,
                                           CLHEP::Hep3Vector& result) const {
+    return getBFieldWithStatus( point, cm_, result);
+  }
 
-    const BFMap *m = cm_.findMap(point);
+  // Get field at an arbitrary point. This code figures out which map to use
+  // and looks up the field in that map.
+  bool BFieldManager::getBFieldWithStatus(const CLHEP::Hep3Vector& point,
+                                          BFCacheManager const& cmgr,
+                                          CLHEP::Hep3Vector& result) const {
+
+    const BFMap *m = cmgr.findMap(point);
 
     if(m) {
       m->getBFieldWithStatus(point, result);
@@ -34,10 +42,11 @@ namespace mu2e {
     }
 
     return (m != 0);
-}
+  }
+
 
   bool BFieldManager::getNeighborPointBF (const CLHEP::Hep3Vector & testpoint, CLHEP::Hep3Vector neighborPoints[3], CLHEP::Hep3Vector neighborBF[3][3][3]) const {
-    
+
     const BFMap *m = cm_.findMap(testpoint);
 
     if(m) {

@@ -38,6 +38,9 @@ namespace mu2e {
     // Locate a process by its name, return the corresponding process code and
     // increment the counter.
     ProcessCode findAndCount( G4String const& name );
+      
+      int test_int();
+      
 
     void printAll ( std::ostream& os) const;
     void printSummary ( std::ostream& os) const;

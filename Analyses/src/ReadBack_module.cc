@@ -187,6 +187,7 @@ namespace mu2e {
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
+    //_calorimeterStepPoints(pset.get<string>("calorimeterStepPoints","calorimeter1")),
     _calorimeterStepPoints(pset.get<string>("calorimeterStepPoints","calorimeter")),
     _caloShowerSimModuleLabel(pset.get<string>("caloShowerSimModuleLabel","CaloShowerStepROFromShowerStep")),
     _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalHitFromHit")),
@@ -807,6 +808,7 @@ namespace mu2e {
     // deposition in the target, total path length and the number of
     // foils, crossed by the electron.
 
+      
     int id_start = -1;
     double eDep=0.0, pathLength=0.0;
     map<int,int> foils;
@@ -854,7 +856,7 @@ namespace mu2e {
 
     // Number of crossed foils
     int nfoil = foils.size();
-
+      
     // Fill histograms
     if( id_start>=0 ) {
       _hTargetEdep->Fill(eDep);
@@ -1001,6 +1003,7 @@ namespace mu2e {
 
       _hCRVMultiplicity->Fill(hit.volumeId());
 
+
       // Print out limited to the first few events.
       if ( _nAnalyzed < _maxFullPrint ){
 
@@ -1020,6 +1023,7 @@ namespace mu2e {
              << hit.stepLength()
              << endl;
       }
+
 
     } // end loop over hits.
 

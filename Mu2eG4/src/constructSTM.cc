@@ -1176,9 +1176,12 @@ namespace mu2e {
       std::cout << __func__ << " Warning: Gas not implemented inside STM detector1 can! (so that VD inside can does not overlap with can gas)" << std::endl; 
     }
 
+/*
     // Make stmDet1 a sensitive detector.
     G4VSensitiveDetector *sd1 = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::STMDet());
     if(sd1) stmDet1.logical->SetSensitiveDetector(sd1);
+ 
+ */
     
     
     //===================== STM Detector 2 ==========================
@@ -1277,11 +1280,13 @@ namespace mu2e {
       std::cout << __func__ << " Warning: Gas not implemented inside STM detector1 can! (so that VD inside can does not overlap with can gas)" << std::endl; 
     }
 
+      
+/*
     // Make stmDet2 a sensitive detector.
     G4VSensitiveDetector *sd2 = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::STMDet());
-    if(sd1) stmDet2.logical->SetSensitiveDetector(sd2);
+    if(sd2) stmDet2.logical->SetSensitiveDetector(sd2);
     
-    
+ */
     
     
     //===================== Shield Pipe/Wall to prevent michel electrons from causing deadtime in the CRV  ==========================
