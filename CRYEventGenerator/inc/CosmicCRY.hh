@@ -13,6 +13,7 @@ class TH1D;
 class TH2D;
 class TH1I;
 class TTree;
+
 namespace art{
   class Run;
 }
@@ -89,14 +90,17 @@ namespace mu2e {
     CRYSetup * _crySetup;
     std::shared_ptr<CRYGenerator> _cryGen;
 
-    enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL, CALO, CUSTOMIZED};
-    enum DirectionChoice {ALL, POSITIVE_X, NEGATIVE_X, POSITIVE_Z, NEGATIVE_Z,
-      PHI_RANGE};
-    RefPointChoice    _refPointChoice;
-    DirectionChoice   _directionChoice;
+    // enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL, CALO, CUSTOMIZED};
+    // enum DirectionChoice {ALL, POSITIVE_X, NEGATIVE_X, POSITIVE_Z, NEGATIVE_Z,
+      // PHI_RANGE};
+    double _refY0;
+    std::string _refPointChoice;
+    std::string _directionChoice;
     CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
     bool _vertical;
-    bool _dontProjectToSurface;
+    bool _projectToSurface;
+    // int _projSurfaceY;
+    // double _projSurface
 
     int _evtId0;
     int _pdgId0;
