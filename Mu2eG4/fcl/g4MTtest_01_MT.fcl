@@ -19,13 +19,13 @@ process_name : G4MTTest01
 # Start form an empty source
 source : {
   module_type : EmptyEvent
-  maxEvents : 500
+  maxEvents : 50
 }
 
 services : {
 
   message               : @local::default_message
-  TFileService          : { fileName : "g4MTtest_01.root" }
+  TFileService          : { fileName : "g4MTtest_01_MT.root" }
   RandomNumberGenerator : { }
 
   GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt"            }
@@ -41,18 +41,17 @@ physics : {
   producers: {
 
     # Generate the event.
-#    generate: @local::StoppedMuonConversionGun
 
     generate: {
       @table::EventGenerator.producers.StoppedMuonConversionGunN
-      stashSize : 100
+      stashSize : 25
     }
 
 
     # Run G4 and add its output to the event.
     g4run : {
       @table::g4run
-      numberOfEventsToProcess : 100 	# THIS MUST BE EQUAL TO stashSize!
+      numberOfEventsToProcess : 25 	# THIS MUST BE EQUAL TO stashSize!
       runinMTMode : true
       numberOfThreads : 2
 
@@ -94,7 +93,6 @@ physics : {
       diagLevel              : 0
       minimumEnergy          : 0.000
       maxFullPrint           : 0
-#      maxFullPrint           : 201
     }
 
     readStrawHits: {
@@ -102,7 +100,6 @@ physics : {
       makerModuleLabel : makeSH
       diagLevel        : 0
       maxFullPrint     : 0
-#      maxFullPrint     : 100
     }
 
     checkMT: {
@@ -128,7 +125,7 @@ outputs: {
 
   outfile : {
     module_type : RootOutput
-    fileName    : "data_g4MTtest_01.root"
+    fileName    : "data_g4MTtest_01_MT.root"
   }
 
 }
@@ -140,18 +137,13 @@ services.SeedService.maxUniqueEngines :  20
 # physics.producers.g4run.SDConfig.enableAllSDs : true
 #physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
 physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, stoppingtarget ]
-# physics.producers.g4run.BirksConsts : { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV }
 
 
 
 // Enable diagnsotic printout for pedagogical purposes.
 physics.producers.makeSH.diagLevel : 0
-#physics.producers.makeSH.maxFullPrint : 5
 physics.producers.makeSH.maxFullPrint : 0
-#physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
 physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
-#physics.producers.g4run.physics.turnOffRadioactiveDecay: true
-#physics.producers.g4run.debug.writeGDML: true
 
 // Print out sim particles
 physics.producers.g4run.SimParticlePrinter : {

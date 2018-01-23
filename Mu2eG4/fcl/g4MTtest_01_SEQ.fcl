@@ -14,19 +14,18 @@
 #include "standardServices.fcl"
 
 # Give this job a name.
-process_name : G4Test03
+process_name : G4MTTest01
 
 # Start form an empty source
 source : {
   module_type : EmptyEvent
-#  maxEvents : 200
-  maxEvents : 20
+  maxEvents : 50
 }
 
 services : {
 
   message               : @local::default_message
-  TFileService          : { fileName : "g4test_03.root" }
+  TFileService          : { fileName : "g4MTtest_01_SEQ.root" }
   RandomNumberGenerator : { }
 
   GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt"            }
@@ -46,13 +45,24 @@ physics : {
 
     generate: {
       @table::EventGenerator.producers.StoppedMuonConversionGunN
-      stashSize : 20
+      stashSize : 1
     }
 
 
     # Run G4 and add its output to the event.
-    g4run : @local::g4run
+    g4run : {
+      @table::g4run
+      numberOfEventsToProcess : 100 	# THIS MUST BE EQUAL TO stashSize!
+      runinMTMode : false
+      numberOfThreads : 1
 
+      Mu2eG4CommonCut: {
+	          type: inVolume
+		  #pars: [HallAir,TS5Vacuum,TS5InnerCryoShell, TS5OuterCryoShell, TS5CryoInsVac]
+                  pars:	[HallAir, TS5Vacuum, TS5InnerCryoShell, TS5OuterCryoShell]
+         }
+
+    }
 
     protonTimeMap        : { module_type : GenerateProtonTimes }
     muonTimeMap          : { module_type : GenerateMuonLife }
@@ -83,14 +93,21 @@ physics : {
       g4ModuleLabel          : g4run
       diagLevel              : 0
       minimumEnergy          : 0.000
-      maxFullPrint           : 201
+      maxFullPrint           : 0
     }
 
     readStrawHits: {
       module_type      : ReadStrawHit
       makerModuleLabel : makeSH
-      diagLevel        : 3
-      maxFullPrint     : 100
+      diagLevel        : 0
+      maxFullPrint     : 0
+    }
+
+    checkMT: {
+      module_type            : MTVerification
+      generatorModuleLabel   : generate
+      g4ModuleLabel          : g4run
+
     }
 
 
@@ -98,7 +115,7 @@ physics : {
 
   p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,
          @sequence::CaloReco.Reco,randomsaver ]
-  e1 : [readGens, checkhits, readStrawHits, outfile]
+  e1 : [readGens, checkhits, readStrawHits, checkMT, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -109,7 +126,7 @@ outputs: {
 
   outfile : {
     module_type : RootOutput
-    fileName    : "data_03.root"
+    fileName    : "data_g4MTtest_01_SEQ.root"
   }
 
 }
@@ -120,17 +137,14 @@ services.SeedService.maxUniqueEngines :  20
 
 # physics.producers.g4run.SDConfig.enableAllSDs : true
 #physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
-physics.producers.g4run.SDConfig.enableSD     : [tracker, stoppingtarget ]
-# physics.producers.g4run.BirksConsts : { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV }
+physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, stoppingtarget ]
 
 
 
 // Enable diagnsotic printout for pedagogical purposes.
 physics.producers.makeSH.diagLevel : 0
-physics.producers.makeSH.maxFullPrint : 5
-#physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
+physics.producers.makeSH.maxFullPrint : 0
 physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
-#physics.producers.g4run.physics.turnOffRadioactiveDecay: true
 
 // Print out sim particles
 physics.producers.g4run.SimParticlePrinter : {
