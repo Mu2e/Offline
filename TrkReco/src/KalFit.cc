@@ -545,26 +545,22 @@ namespace mu2e
         for(auto const& panel : plane.getPanels()){
           if (_debug>4) {
             std::cout << __func__ << " panel " << panel.id() << std::endl;
-
             std::cout << __func__ << " printing all straws in layer 0 " << std::endl;
-            std::cout << __func__ << " ";
             for (const auto straw_p : panel.getStrawPointers() ) {
               Straw const& straw(*straw_p);
               StrawId sid = straw.id();
               if ( sid.getLayer() != 0 ) continue;
-              std::cout.width(10);
-              std::cout  << sid << ", ";
+              std::cout.width(7);
+              std::cout << sid << ", ";
             }
             std::cout << std::endl;
-
             std::cout << __func__ << " printing all straws in layer 1 " << std::endl;
-            std::cout << __func__ << " ";
             for (const auto straw_p : panel.getStrawPointers() ) {
               Straw const& straw(*straw_p);
               StrawId sid = straw.id();
               if ( sid.getLayer() != 1 ) continue;
-              std::cout.width(10);
-              std::cout  << sid << ", ";
+              std::cout.width(7);
+              std::cout << sid << ", ";
             }
             std::cout << std::endl;
           }
@@ -585,16 +581,18 @@ namespace mu2e
             for(int is = max(0,istraw-3); is<min(nstraws,istraw+3); ++is){
               _debug>3 && std::cout << __func__ << " taking a few straws, istraw, is "
                                     << istraw << ", " << is << std::endl;
-              _debug>3 && std::cout << __func__ << " straw id l0 "
+              _debug>3 && std::cout << __func__ << " straw id "
                                     << panel.getStraw(is).id() << std::endl;
-              if ( panel.getStraw(is).id().getLayer()==0) {
-                _debug>3 && std::cout << __func__ << " straw id l0 by id "
-                                      << panel.getStraw(StrawId(panel.id().asUint16()+is)).id()
-                                      << std::endl;
-              } else {
-                _debug>3 && std::cout << __func__ << " straw id l1 by id "
-                                      << panel.getStraw(StrawId(panel.id().asUint16()+is)).id()
-                                      << std::endl;
+              if (_debug>4) {
+                if ( panel.getStraw(is).id().getLayer()==0) {
+                  std::cout << __func__ << " straw id l0 by id "
+                            << panel.getStraw(StrawId(panel.id().asUint16()+is)).id()
+                            << std::endl;
+                } else {
+                  std::cout << __func__ << " straw id l1 by id "
+                            << panel.getStraw(StrawId(panel.id().asUint16()+is)).id()
+                            << std::endl;
+                }
               }
               matstraws.insert(StrawFlight(panel.getStraw(is).index(),flt));
               ++nadded;
