@@ -63,8 +63,7 @@ namespace mu2e {
       bool valid() const { return validStraw(getStraw()) &&
 	validPanel(getPanel()) && validPlane(getPlane()); }
 
-      StrawId strawId2() const { return static_cast<StrawId>(_sid); }
-
+      // various accessors
       uint16_t asUint16() const { return _sid;}
 
       uint16_t getPlane() const{
@@ -121,6 +120,8 @@ namespace mu2e {
 	return floor(plane()/_nlayers);
       }
 
+      // operators
+
       bool operator==( StrawId const& rhs) const{
 	return ( _sid == rhs._sid );
       }
@@ -136,14 +137,6 @@ namespace mu2e {
         return ( _sid > rhs._sid);
       }
 
-      bool samePlane( StrawId const& sid) const{
-	return ((_sid & _planemsk) == (sid._sid & _planemsk));
-      }
-
-      bool samePanel( StrawId const& sid) const{
-	return ((_sid & _panelmsk) == (sid._sid & _panelmsk));
-      }
-
       friend std::ostream& operator<<(std::ostream& ost,
                                       const StrawId& s ){
 	ost << s.plane() << "_"
@@ -152,13 +145,16 @@ namespace mu2e {
         return ost;
       }
 
-      // friend std::ostream& operator<<(std::ostream& ost,
-      //                                 const StrawId& s ){
-      //   ost << "StrawId with Plane " << std::setw(2) << s.plane() << " "
-      //       << "Panel " << std::setw(1) << s.panel() << " "
-      //       << "Straw " << std::setw(2) << s.straw() << std::endl;
-      //   return ost;
-      // }
+      // helpers
+
+      bool samePlane( StrawId const& sid) const{
+	return ((_sid & _planemsk) == (sid._sid & _planemsk));
+      }
+
+      bool samePanel( StrawId const& sid) const{
+	return ((_sid & _panelmsk) == (sid._sid & _panelmsk));
+      }
+
 
 // qualify how close 2 panels are by their Z separation.  This needs to be a logical
 // separation, in case there are alignment constants applied
