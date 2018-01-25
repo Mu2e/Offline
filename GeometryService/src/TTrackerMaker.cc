@@ -149,39 +149,43 @@ namespace mu2e {
                << _numPlanes << " != " << StrawId::_nplanes
                << " please make sure it is intended " << endl;
       } else {
-        throw cet::exception("GEOM")
-          << " Inconsistent TTracker parameters: "
-          << " ttracker.numPlanes !=  StrawId::_nplanes "
-          << _numPlanes << " != " << StrawId::_nplanes
-          << " please double check and act accordingly " << endl;
+        cout << __func__
+             << " Inconsistent TTracker parameters: "
+             << " ttracker.numPlanes !=  StrawId::_nplanes "
+             << _numPlanes << " != " << StrawId::_nplanes
+             << " please double check and act accordingly " << endl;
+        throw cet::exception("GEOM") << "See above for the message from " << __func__;
       } 
     }
     _panelsPerPlane    = config.getInt("ttracker.panelsPerPlane");
     if ( _panelsPerPlane != StrawId::_npanels ){
-      throw cet::exception("GEOM")
-        << " Inconsistent TTracker parameters: "
-        << " ttracker.numPlanes !=  StrawId::_npanels "
-        << _panelsPerPlane << " != " << StrawId::_npanels
-        << " please double check and act accordingly " << endl;
+      cout << __func__
+           << " Inconsistent TTracker parameters: "
+           << " ttracker.numPlanes !=  StrawId::_npanels "
+           << _panelsPerPlane << " != " << StrawId::_npanels
+           << " please double check and act accordingly " << endl;
+      throw cet::exception("GEOM") << "See above for the message from " << __func__;
     }
     _layersPerPanel    = config.getInt("ttracker.layersPerPanel");
     if ( _layersPerPanel != StrawId::_nlayers ){
-      throw cet::exception("GEOM")
-        << " Inconsistent TTracker parameters: "
-        << " ttracker.numPlanes !=  StrawId::_nlayers "
-        << _layersPerPanel << " != " << StrawId::_nlayers
-        << " please double check and act accordingly " << endl;
+      cout << __func__
+           << " Inconsistent TTracker parameters: "
+           << " ttracker.numPlanes !=  StrawId::_nlayers "
+           << _layersPerPanel << " != " << StrawId::_nlayers
+           << " please double check and act accordingly " << endl;
+      throw cet::exception("GEOM") << "See above for the message from " << __func__;
     }
     _manifoldsPerEnd    = config.getInt("ttracker.manifoldsPerEnd");
     _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
     if ( _manifoldsPerEnd*_layersPerPanel*_strawsPerManifold != StrawId::_nstraws ){
-      throw cet::exception("GEOM")
-        << " Inconsistent TTracker parameters: "
-        << " ttracker.strawsPerManifold*ttracker.manifoldsPerEnd*ttracker.layersPerPanel !=  StrawId::_nstraws "
-        << _manifoldsPerEnd*_layersPerPanel*_strawsPerManifold
-        << " != " << StrawId::_nstraws
-        << " please double check and act accordingly " << endl;
-    }
+      cout << __func__
+           << " Inconsistent TTracker parameters: "
+           << " ttracker.strawsPerManifold*ttracker.manifoldsPerEnd*ttracker.layersPerPanel !=  StrawId::_nstraws "
+           << _manifoldsPerEnd*_layersPerPanel*_strawsPerManifold
+           << " != " << StrawId::_nstraws
+           << " please double check and act accordingly " << endl;
+      throw cet::exception("GEOM") << "See above for the message from " << __func__;
+   }
     _rotationPattern    = config.getInt("ttracker.rotationPattern");
     _panelZPattern      = config.getInt("ttracker.panelZPattern");
     _layerZPattern      = config.getInt("ttracker.layerZPattern");
