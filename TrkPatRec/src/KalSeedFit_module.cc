@@ -187,9 +187,10 @@ namespace mu2e
 // build a time cluster: exclude the outlier hits
 	TimeCluster tclust;
 	tclust._t0 = hseed._t0;
-	for(auto hhit : hseed._hhits){
-	  if((!_fhoutliers) || (!hhit._flag.hasAnyProperty(StrawHitFlag::outlier)))	
-	    tclust._strawHitIdxs.push_back(hhit._shidx);
+	for(uint16_t ihit=0;ihit < hseed.hits().size(); ++ihit){
+	  ComboHit const& ch = hseed.hits()[ihit];
+	  if((!_fhoutliers) || (!ch.flag().hasAnyProperty(StrawHitFlag::outlier)))
+	    hseed.hits().fillStrawIds(event,ihit,tclust._strawHitIdxs);
 	}
 // create a TrkDef; it should be possible to build a fit from the helix seed directly FIXME!
 	TrkDef seeddef(tclust,hstraj,_tpart,_fdir);

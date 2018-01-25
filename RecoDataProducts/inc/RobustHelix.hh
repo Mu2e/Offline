@@ -6,8 +6,7 @@
 #define RecoDataProducts_RobustHelix_HH
 // Mu2e
 #include "DataProducts/inc/Helicity.hh"
-// CLHEP
-#include "CLHEP/Vector/ThreeVector.h"
+#include "RecoDataProducts/inc/XYZVec.hh"
 // Root
 #include "Rtypes.h"
 // C++
@@ -27,25 +26,25 @@ namespace mu2e {
     Float_t fz0() const { return _fz0; }
     // simple functions that can be derived from the data members
     // scalar 'momentum' in units of mm
-    double momentum() const { return sqrt(_radius*_radius+_lambda*_lambda); }
+    float momentum() const { return sqrt(_radius*_radius+_lambda*_lambda); }
     Helicity helicity() const { return _helicity; }
-    double centerx() const { return _rcent*cos(_fcent); }
-    double centery() const { return _rcent*sin(_fcent); }
-    CLHEP::Hep3Vector center() const { return CLHEP::Hep3Vector(centerx(),centery(),0.0); }
+    float centerx() const { return _rcent*cos(_fcent); }
+    float centery() const { return _rcent*sin(_fcent); }
+    XYZVec center() const { return XYZVec(centerx(),centery(),0.0); }
     // azimuth wrt the circle center expected for a given z position
     Float_t circleAzimuth( double zpos) const { return _lambda != 0.0 ? _fz0 + zpos/_lambda : 0.0; }
     // position in space given the Z position of the input vector
-    void position(CLHEP::Hep3Vector& pos) const {
-      pos.setX(centerx() + _radius*cos(circleAzimuth(pos.z())));
-      pos.setY(centery() + _radius*sin(circleAzimuth(pos.z())));
+    void position(XYZVec& pos) const {
+      pos.SetX(centerx() + _radius*cos(circleAzimuth(pos.z())));
+      pos.SetY(centery() + _radius*sin(circleAzimuth(pos.z())));
     //  pos.setZ(0.0);  Not sure why this was here
     }
     // unit vector in direction at the given z
-    void direction(double zval,CLHEP::Hep3Vector& dir) const {
-      double mom = momentum();
-      dir.setX(-_radius*sin(circleAzimuth(zval))/mom);
-      dir.setY(_radius*cos(circleAzimuth(zval))/mom);
-      dir.setZ(_lambda/mom);
+    void direction(float zval,XYZVec& dir) const {
+      float mom = momentum();
+      dir.SetX(-_radius*sin(circleAzimuth(zval))/mom);
+      dir.SetY(_radius*cos(circleAzimuth(zval))/mom);
+      dir.SetZ(_lambda/mom);
     }
     // test self-consistency
     bool validHelicity() const { return Helicity(_lambda) == _helicity; }

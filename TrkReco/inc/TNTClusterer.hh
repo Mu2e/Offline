@@ -7,6 +7,7 @@
 #define TNTClusterer_HH
 
 #include "TrkReco/inc/BkgClusterer.hh"
+#include "RecoDataProducts/inc/XYZVec.hh"
 #include "fhiclcpp/ParameterSet.h"
 #include "TTree.h"
 
@@ -15,17 +16,17 @@ namespace mu2e {
 
    struct ClusterStrawHit 
    {      
-       ClusterStrawHit(size_t index, const StrawHit& sh, const StrawHitPosition& shp, double psig2inv) : 
-         _index(index),_dist(10000),_time(sh.time()),_itime(int(_time/10.0)),_pos(shp.pos()),_wdir(shp.wdir()),
-         _phi(shp.phi()),_psig2inv(psig2inv),_posResInv(1.0/shp.posRes(StrawHitPosition::wire)),_nchanged(0)
+       ClusterStrawHit(size_t index, const ComboHit& ch, double psig2inv) : 
+         _index(index),_dist(10000),_time(ch.time()),_itime(int(_time/10.0)),_pos(ch.pos()),_wdir(ch.wdir()),
+         _phi(ch.phi()),_psig2inv(psig2inv),_posResInv(1.0/ch.posRes(ComboHit::wire)),_nchanged(0)
        {}   
 
        size_t            _index;
        double            _dist;
        double            _time;
        int               _itime;
-       CLHEP::Hep3Vector _pos;
-       CLHEP::Hep3Vector _wdir;
+       XYZVec _pos;
+       XYZVec _wdir;
        double            _phi;
        double            _psig2inv;
        double            _posResInv;
@@ -40,7 +41,7 @@ namespace mu2e {
         ClusterStraw(ClusterStrawHit& hit);
         virtual ~ClusterStraw() {};
 
-        inline const  CLHEP::Hep3Vector& pos()              const { return _pos; }
+        inline const  XYZVec& pos()              const { return _pos; }
         inline double time()                                const { return _time; }
         inline int    itime()                               const { return _itime; }
         inline bool   hasChanged()                          const { return _hasChanged;}
@@ -52,7 +53,7 @@ namespace mu2e {
   
   
      private:
-        CLHEP::Hep3Vector             _pos;
+        XYZVec             _pos;
         double                        _time;
         int                           _itime;
         std::vector<ClusterStrawHit*> _hitsPtr; 
@@ -70,15 +71,12 @@ namespace mu2e {
          virtual ~TNTClusterer() {};
 
          void init();
-         virtual void findClusters(BkgClusterCollection& clusterColl,const StrawHitCollection& shcol,
-                                   const StrawHitPositionCollection& shpcol,const StrawHitFlagCollection& shfcol);
+         virtual void findClusters(BkgClusterCollection& clusterColl,const ComboHitCollection& shcol);
 
      private:
 
-         void     initClu(const StrawHitCollection& shcol, const StrawHitPositionCollection& shpcol, 
-                          const StrawHitFlagCollection& shfcol, std::vector<ClusterStrawHit>& chits); 
-         void     initCluMerge(const StrawHitCollection& shcol, const StrawHitPositionCollection& shpcol, 
-                               const StrawHitFlagCollection& shfcol, std::vector<ClusterStrawHit>& chits, 
+         void     initClu(const ComboHitCollection& shcol, std::vector<ClusterStrawHit>& chits); 
+         void     initCluMerge(const ComboHitCollection& shcol, std::vector<ClusterStrawHit>& chits, 
                                std::list<ClusterStraw>& clusters); 
          unsigned formClusters(std::vector<ClusterStrawHit>& chits, std::list<ClusterStraw>& clusters);
          double   distance(const ClusterStraw&, ClusterStrawHit&) const;

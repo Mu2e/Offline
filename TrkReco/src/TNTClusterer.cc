@@ -27,10 +27,10 @@
 #include <boost/accumulators/statistics/weighted_median.hpp>
 
 #include "TTree.h"
-
+#include "Math/VectorUtil.h"
 
 using namespace boost::accumulators;
-
+using namespace ROOT::Math::VectorUtil;
 
 // Note 1: The list allows you to take pointer of its elements, a vector will reallocate and invalidate the pointers
 //         The code with the vector version is much more complicated and has a tiny performwnce improvement.
@@ -52,7 +52,7 @@ namespace mu2e
        if (_hitsPtr.size()==1)
        {
           _pos = _hitsPtr.at(0)->_pos;
-          _pos.setZ(0);
+          _pos.SetZ(0);
           _time = _hitsPtr.at(0)->_time;
           _itime = int(_time/10.0);
           return;
@@ -62,21 +62,21 @@ namespace mu2e
        //accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > racc, pacc, tacc;      
        //double racc(0),tacc(0),pacc(0),rweight(0),tweight(0),pweight(0);
              
-       double crho = _pos.perp();
+       double crho = sqrt(_pos.perp2());
        double cphi = _pos.phi();
-       CLHEP::Hep3Vector rdir = _pos.perpPart().unit();
-       CLHEP::Hep3Vector pdir(-rdir.y(),rdir.x(),0.0);
+       XYZVec rdir = PerpVector(_pos,Geom::ZDir()).unit();
+       XYZVec pdir(-rdir.y(),rdir.x(),0.0);
 
        for (auto& hitPtr : _hitsPtr)
        {
           double dt  = hitPtr->_time -_time;
-	  double dr  = hitPtr->_pos.perp() - crho;
+	  double dr  = sqrt(hitPtr->_pos.perp2()) - crho;
 	  double dp = Angles::deltaPhi(hitPtr->_phi,cphi);
 
           // weight according to the wire direction error, linearly for now
 	  double twt = std::min(_maxwt,hitPtr->_posResInv);	
-	  double rwt = std::min(_maxwt,std::abs(rdir.dot(hitPtr->_wdir))*hitPtr->_posResInv);
-	  double pwt = std::min(_maxwt,std::abs(pdir.dot(hitPtr->_wdir))*hitPtr->_posResInv);
+	  double rwt = std::min(_maxwt,std::abs(rdir.Dot(hitPtr->_wdir))*hitPtr->_posResInv);
+	  double pwt = std::min(_maxwt,std::abs(pdir.Dot(hitPtr->_wdir))*hitPtr->_posResInv);
 	  tacc(dt,weight=twt);
 	  racc(dr,weight=rwt);
 	  pacc(dp,weight=pwt);          
@@ -91,7 +91,7 @@ namespace mu2e
        //if (rweight>1e-6) crho  += racc/rweight;
        //if (pweight>1e-6) cphi  += pacc/pweight;
        //if (tweight>1e-6) _time += tacc/tweight;
-       _pos = CLHEP::Hep3Vector(crho*cos(cphi),crho*sin(cphi),0.0);
+       _pos = XYZVec(crho*cos(cphi),crho*sin(cphi),0.0);
        _itime = int(_time/10.0);
    }
 
@@ -148,30 +148,20 @@ namespace mu2e
 
    //-------------------------------------------------------------------------------------------------------------------
    void TNTClusterer::findClusters(BkgClusterCollection& clusterColl,
-                                   const StrawHitCollection& shcol,
-                                   const StrawHitPositionCollection& shpcol, 
-                                   const StrawHitFlagCollection& shfcol) 
+                                   const ComboHitCollection& chcol)
    {
-       //require consistency
-       if (shcol.size() != shpcol.size() || shcol.size() != shfcol.size())
-       {
-          std::ostringstream os;
-          os <<  " TNTClusterer: inconsistent collection lengths ";
-          throw std::out_of_range( os.str() );
-       }
-
       //reset stuff
-      _cptrs = std::vector<ClusterStraw*>(shcol.size(),nullptr);
+      _cptrs = std::vector<ClusterStraw*>(chcol.size(),nullptr);
       for (auto& vec: _hitIndex) vec.clear();
       std::list<ClusterStraw> clusters; //see Note 1
 
 
       // loop over the straw hits and create ClusterHits          
       std::vector<ClusterStrawHit> chits;
-      chits.reserve(shcol.size());
+      chits.reserve(chcol.size());
 
-      if (_mergeInit) initCluMerge(shcol, shpcol, shfcol, chits, clusters);
-      else            initClu(shcol, shpcol, shfcol, chits);
+      if (_mergeInit) initCluMerge(chcol, chits, clusters);
+      else            initClu(chcol, chits);
 
 
       if (chits.size()==0) return;
@@ -213,75 +203,74 @@ namespace mu2e
 
          BkgCluster& sclust = clusterColl.back();
          for (const auto& hitPtr : cluster.hits())
-           sclust._hits.emplace_back(BkgClusterHit(hitPtr->_dist, hitPtr->_index, shfcol[hitPtr->_index]));
+           sclust._hits.emplace_back(BkgClusterHit(hitPtr->_dist, hitPtr->_index, chcol[hitPtr->_index].flag()));
       }
    }
 
 
    //-------------------------------------------------------------------------------------------------------------------
-   void TNTClusterer::initClu(const StrawHitCollection& shcol, const StrawHitPositionCollection& shpcol, 
-                              const StrawHitFlagCollection& shfcol, std::vector<ClusterStrawHit>& chits) 
+   void TNTClusterer::initClu(const ComboHitCollection& chcol, std::vector<ClusterStrawHit>& chits) 
    {
       StrawHitFlag stflag(StrawHitFlag::stereo);    
       
       if (_stereoInit) 
       {
-         for(size_t ish=0;ish<shcol.size();++ish)
-            if (shfcol[ish].hasAllProperties(_sigmask) && !shfcol[ish].hasAnyProperty(_bkgmask) && shfcol[ish].hasAllProperties(stflag))
-                    chits.emplace_back(ClusterStrawHit(ish,shcol[ish],shpcol[ish],_srms2inv));
+         for(size_t ish=0;ish<chcol.size();++ish)
+            if (chcol[ish].flag().hasAllProperties(_sigmask) && !chcol[ish].flag().hasAnyProperty(_bkgmask) && chcol[ish].flag().hasAllProperties(stflag))
+                    chits.emplace_back(ClusterStrawHit(ish,chcol[ish],_srms2inv));
 
-         for(size_t ish=0;ish<shcol.size();++ish)
-            if (shfcol[ish].hasAllProperties(_sigmask) && !shfcol[ish].hasAnyProperty(_bkgmask) && !shfcol[ish].hasAllProperties(stflag))
-                    chits.emplace_back(ClusterStrawHit(ish,shcol[ish],shpcol[ish],_nsrms2inv));
+         for(size_t ish=0;ish<chcol.size();++ish)
+            if (chcol[ish].flag().hasAllProperties(_sigmask) && !chcol[ish].flag().hasAnyProperty(_bkgmask) && !chcol[ish].flag().hasAllProperties(stflag))
+                    chits.emplace_back(ClusterStrawHit(ish,chcol[ish],_nsrms2inv));
       } 
       else 
       {
-         for(size_t ish=0;ish<shcol.size();++ish)
+         for(size_t ish=0;ish<chcol.size();++ish)
          {
-            if (!shfcol[ish].hasAllProperties(_sigmask) || shfcol[ish].hasAnyProperty(_bkgmask)) continue;
-            if (shfcol[ish].hasAllProperties(stflag))
-                chits.emplace_back(ClusterStrawHit(ish,shcol[ish],shpcol[ish],_srms2inv));
+            if (!chcol[ish].flag().hasAllProperties(_sigmask) || chcol[ish].flag().hasAnyProperty(_bkgmask)) continue;
+            if (chcol[ish].flag().hasAllProperties(stflag))
+                chits.emplace_back(ClusterStrawHit(ish,chcol[ish],_srms2inv));
             else 
-                chits.emplace_back(ClusterStrawHit(ish,shcol[ish],shpcol[ish],_nsrms2inv));         
+                chits.emplace_back(ClusterStrawHit(ish,chcol[ish],_nsrms2inv));         
          }
       }
    }  
 
 
    //-------------------------------------------------------------------------------------------------------------------
-   void TNTClusterer::initCluMerge(const StrawHitCollection& shcol, const StrawHitPositionCollection& shpcol, 
-                                   const StrawHitFlagCollection& shfcol, std::vector<ClusterStrawHit>& chits,
+   void TNTClusterer::initCluMerge(const ComboHitCollection& chcol, 
+                                   std::vector<ClusterStrawHit>& chits,
                                    std::list<ClusterStraw>& clusters) 
    {
       StrawHitFlag stflag(StrawHitFlag::stereo);    
 
       if (_stereoInit)
       {
-          for(size_t ish=0;ish<shcol.size();++ish)
+          for(size_t ish=0;ish<chcol.size();++ish)
           {
-             if (!shfcol[ish].hasAllProperties(_sigmask) || shfcol[ish].hasAnyProperty(_bkgmask)) continue;
+             if (!chcol[ish].flag().hasAllProperties(_sigmask) || chcol[ish].flag().hasAnyProperty(_bkgmask)) continue;
 
-             if (shfcol[ish].hasAllProperties(stflag))
+             if (chcol[ish].flag().hasAllProperties(stflag))
              {
-                 chits.emplace_back(ClusterStrawHit(ish,shcol[ish],shpcol[ish],_srms2inv));            
+                 chits.emplace_back(ClusterStrawHit(ish,chcol[ish],_srms2inv));            
                  clusters.emplace_back(ClusterStraw(chits.back()));
              }
              else 
-                 chits.emplace_back(ClusterStrawHit(ish,shcol[ish],shpcol[ish],_nsrms2inv));         
+                 chits.emplace_back(ClusterStrawHit(ish,chcol[ish],_nsrms2inv));         
           }
           if (chits.size()==0) return;
           mergeClusters(clusters,_maxdt, _md2); 
       }
       else 
       {     
-          for(size_t ish=0;ish<shcol.size();++ish)
+          for(size_t ish=0;ish<chcol.size();++ish)
           {
-             if (!shfcol[ish].hasAllProperties(_sigmask) || shfcol[ish].hasAnyProperty(_bkgmask)) continue;
+             if (!chcol[ish].flag().hasAllProperties(_sigmask) || chcol[ish].flag().hasAnyProperty(_bkgmask)) continue;
 
-             if (shfcol[ish].hasAllProperties(stflag)) 
-                 chits.emplace_back(ClusterStrawHit(ish,shcol[ish],shpcol[ish],_srms2inv));            
+             if (chcol[ish].flag().hasAllProperties(stflag)) 
+                 chits.emplace_back(ClusterStrawHit(ish,chcol[ish],_srms2inv));            
              else 
-                 chits.emplace_back(ClusterStrawHit(ish,shcol[ish],shpcol[ish],_nsrms2inv));                    
+                 chits.emplace_back(ClusterStrawHit(ish,chcol[ish],_nsrms2inv));                    
           }
       }
 
@@ -457,7 +446,7 @@ namespace mu2e
        double dt = std::abs(hit._time-cluster.time());
        if (dt > _maxdt) return _dseed+1.0;           
 
-       CLHEP::Hep3Vector psep = (hit._pos-cluster.pos()).perpPart();
+       XYZVec psep = PerpVector(hit._pos-cluster.pos(),Geom::ZDir());
        double d2 = psep.mag2();
        if (d2 > _md2) return _dseed+1.0; 
 
@@ -465,9 +454,9 @@ namespace mu2e
        if (dt > _dt) {double tdist = dt -_dt;  retval = tdist*tdist*_trms2inv;}      
        if (d2 > _dd2) 
        {	
-           double dw = std::max(0.0,hit._wdir.dot(psep)-_dd)*hit._posResInv;
-	   CLHEP::Hep3Vector that(-hit._wdir.y(),hit._wdir.x(),0.0);
-	   double dp = std::max(0.0,that.dot(psep)-_dd)*_maxwt;  //maxwt = 1/minerr
+           double dw = std::max(0.0,hit._wdir.Dot(psep)-_dd)*hit._posResInv;
+	   XYZVec that(-hit._wdir.y(),hit._wdir.x(),0.0);
+	   double dp = std::max(0.0,that.Dot(psep)-_dd)*_maxwt;  //maxwt = 1/minerr
 	   retval += dw*dw + dp*dp;
        }      
        return retval;

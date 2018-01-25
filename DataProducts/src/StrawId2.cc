@@ -48,6 +48,11 @@ namespace mu2e {
     *this = strawIdFromString(asstring);
   }
 
+  StrawId2::StrawId2(uint16_t sid) : _sid(sid) {
+    if(!valid())
+      throw cet::exception("CONFIG") << "invalid straw " << sid << "\n";
+  }
+
   void StrawId2::setStraw(unsigned short istraw) {
     if(validStraw(istraw))
       _sid |= istraw;
@@ -68,5 +73,6 @@ namespace mu2e {
     else
       throw cet::exception("CONFIG") << "invalid plane " << iplane << "\n";
   }
+
 }
 

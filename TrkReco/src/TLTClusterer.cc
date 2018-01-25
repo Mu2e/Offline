@@ -17,20 +17,20 @@
 #include <boost/accumulators/statistics/weighted_median.hpp>
 // root, for diagnostics
 #include "TTree.h"
+#include "Math/VectorUtil.h"
 // C++
 #include <vector>
 #include <set>
 #include <algorithm>
 using namespace boost::accumulators;
 using namespace std;
-using CLHEP::Hep3Vector;
+using namespace ROOT::Math::VectorUtil;
 namespace mu2e
 {
-
  TLTClusterer::TLTClusterer(fhicl::ParameterSet const& pset) :
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
-    _palg(static_cast<PosAlgorithm>(pset.get<int>("ClusterPositionAlgorith",median))),
+    _palg(static_cast<PosAlgorithm>(pset.get<int>("ClusterPositionAlgorithm",median))),
     _bkgmask(pset.get<vector<string> >("BackgroundMask",vector<string>())),
     _sigmask(pset.get<vector<string> >("SignalMask",vector<string>())),
     _dseed(pset.get<double>("SeedDistance",100.0)), // minimum 'chisquared' to define a new cluster
@@ -58,14 +58,13 @@ namespace mu2e
   TLTClusterer::~TLTClusterer()
   {}
 
-  double TLTClusterer::distance(BkgCluster const& cluster, StrawHit const& sh,
-    StrawHitPosition const& shp) const {
+  double TLTClusterer::distance(BkgCluster const& cluster, ComboHit const& ch) const {
     double retval = _dseed+1.0; // default return is above seed threshold
     // compute the simplest parts first to avoid expensive calculations on distant hits
-    double dt = fabs(sh.time()-cluster.time());
+    double dt = fabs(ch.time()-cluster.time());
     if( dt < _maxdt){
 // compute spatial distance
-      Hep3Vector psep = (shp.pos()-cluster.pos()).perpPart();
+      XYZVec psep = PerpVector(ch.pos()-cluster.pos(),Geom::ZDir());
       // work in squared magnitudes for efficiency
       double d2 = psep.mag2();
       if( d2 < _md2) {
@@ -78,10 +77,10 @@ namespace mu2e
 	if(d2 > _dd2){
 	  // project separation along wire and transverse directions.  Only count distance beyond
 	  // the natural cluster size
-	  double dw = std::max(0.0,shp.wdir().dot(psep)-_dd)/shp.posRes(StrawHitPosition::wire);
-	  Hep3Vector that(-shp.wdir().y(),shp.wdir().x(),0.0);
+	  double dw = std::max(0.0,ch.wdir().Dot(psep)-_dd)/ch.posRes(ComboHit::wire);
+	  XYZVec that(-ch.wdir().y(),ch.wdir().x(),0.0);
 	  // minimum error is always larger than the transverse error
-	  double dp = std::max(0.0,that.dot(psep)-_dd)/_minerr;
+	  double dp = std::max(0.0,that.Dot(psep)-_dd)/_minerr;
 	// add these contributions
 	  retval += dw*dw + dp*dp;
 	}
@@ -106,35 +105,27 @@ namespace mu2e
   }
 
   void TLTClusterer::findClusters(BkgClusterCollection& clusters,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol,
-      StrawHitFlagCollection const& shfcol ) {
-// require consistency
-    if(shcol.size() != shpcol.size() || shcol.size() != shfcol.size()){
-      ostringstream os;
-      os <<  " TLTClusterer: inconsistent collection lengths ";
-      throw out_of_range( os.str() );
-    }
+      ComboHitCollection const& chcol) {
 // initialize the clusters
-    initClusters(clusters, shcol, shpcol, shfcol );
+    initClusters(clusters, chcol);
     _tdist = _odist = 0.0;
     _niter = 0;
     if(_diag > 0){
       countClusters(clusters, _nclu, _nchits, _tdist);
       _nhits = 0;
-      for( auto const& shf : shfcol )
-	  if(shf.hasAllProperties(_sigmask) && !shf.hasAnyProperty(_bkgmask))++_nhits;
+      for( auto const& ch : chcol )
+	if(ch.flag().hasAllProperties(_sigmask) && !ch.flag().hasAnyProperty(_bkgmask))++_nhits;
       _idiag->Fill();
     }
 // iterate between assigning/creating clusters, updating and merging
     do {
       ++_niter;
       // assign hits to these clusters
-      assignHits(clusters, shcol, shpcol, shfcol );
+      assignHits(clusters, chcol );
       // update the cluster positions for these new
-      updateClusters(clusters, shcol, shpcol);
+      updateClusters(clusters, chcol);
       // check for merging
-      _nmerge = mergeClusters(clusters, _dt, _dd2, shcol, shpcol);
+      _nmerge = mergeClusters(clusters, _dt, _dd2, chcol);
       // measure convergence
       _odist = _tdist;
       countClusters(clusters, _nclu, _nchits, _tdist);
@@ -146,39 +137,35 @@ namespace mu2e
   }
 
   void TLTClusterer::initClusters( BkgClusterCollection& clusters,
-	StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol,
-      StrawHitFlagCollection const& shfcol) const {
+	ComboHitCollection const& chcol) const {
 // reset
     clusters.clear();
 // dimension clusters proportional to the number of hits
-    clusters.reserve( (unsigned)rint(shcol.size()/3.0) );
+    clusters.reserve( (unsigned)rint(chcol.size()/3.0) );
    // stereo init means take every stereo hit as a cluster seed, then merge
    // A more efficient implementation would loop over stereo hits themselves FIXME!
     if(_stereoinit){
-      for(size_t ish = 0; ish < shcol.size(); ++ish) {
-	StrawHitFlag const& shf = shfcol.at(ish);
+      for(size_t ish = 0; ish < chcol.size(); ++ish) {
+	ComboHit const& ch = chcol.at(ish);
+	StrawHitFlag const& shf = ch.flag();
 	if(shf.hasAllProperties(_stereo) && !shf.hasAnyProperty(_bkgmask)){
-	  StrawHit const& sh = shcol.at(ish);
-	  StrawHitPosition const& shp = shpcol.at(ish);
-	  BkgCluster sclust(shp.pos(), sh.time());
+	  BkgCluster sclust(ch.pos(), ch.time());
 	  sclust._hits.push_back(BkgClusterHit(0.0,ish,shf));
 	  clusters.push_back(sclust);
 	}
       }
       // merge with wide windows
-      mergeClusters(clusters, _maxdt, _md2, shcol, shpcol);
+      mergeClusters(clusters, _maxdt, _md2, chcol);
       // this process leaves lots of empties; flush them out to improve
       // efficiency later
       cleanClusters(clusters);
     } else {
       // otherwise, just take the 1st hit as a cluster and work from there
-      for(size_t ish = 0; ish < shcol.size(); ++ish) {
-	StrawHitFlag const& shf = shfcol.at(ish);
+      for(size_t ish = 0; ish < chcol.size(); ++ish) {
+	ComboHit const& ch = chcol.at(ish);
+	StrawHitFlag const& shf = ch.flag();
 	if(shf.hasAllProperties(_sigmask) && !shf.hasAnyProperty(_bkgmask)){
-	  StrawHit const& sh = shcol.at(ish);
-	  StrawHitPosition const& shp = shpcol.at(ish);
-	  BkgCluster sclust(shp.pos(), sh.time());
+	  BkgCluster sclust(ch.pos(), ch.time());
 	  sclust._hits.push_back(BkgClusterHit(0.0,ish,shf));
 	  clusters.push_back(sclust);
 	  break;
@@ -188,11 +175,9 @@ namespace mu2e
   }
 
   void TLTClusterer::assignHits( BkgClusterCollection& clusters,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol,
-      StrawHitFlagCollection const& shfcol) const {
+      ComboHitCollection const& chcol) const {
   // create a set of hits which are assigned to clusters
-    set<StrawHitIndex> assigned;
+    set<uint16_t> assigned;
     // re-assign hits already assigned to the clusters.  This improves efficiency
     // loop over the clusters
     for(auto& clu : clusters) {
@@ -215,9 +200,10 @@ namespace mu2e
       }
     }
     // loop over the hits and find the closest cluster
-    for(size_t ish = 0; ish < shcol.size(); ++ish) {
+    for(size_t ish = 0; ish < chcol.size(); ++ish) {
+      ComboHit const& ch = chcol[ish];
       // select hits
-      StrawHitFlag const& shf = shfcol.at(ish);
+      StrawHitFlag const& shf = ch.flag();
       if(shf.hasAllProperties(_sigmask) && !shf.hasAnyProperty(_bkgmask)){
 	// skip hits already assigned
 	auto ifind = assigned.find(ish);
@@ -226,7 +212,7 @@ namespace mu2e
 	  for(auto& clu : clusters) {
 	    // loop over all non-empty clusters
 	    if(clu.hits().size() > 0){
-	      double dist = distance(clu,shcol.at(ish), shpcol.at(ish));
+	      double dist = distance(clu,ch);
 	      mindist = std::min(dist,mindist);
 	      if(dist < _dhit){
 		clu._hits.push_back(BkgClusterHit(dist,ish,shf));
@@ -238,7 +224,7 @@ namespace mu2e
 	  }
 	  // hit isn't assigned and has minimal distance from other clusters, create a cluster from it
 	  if(mindist > _dseed){
-	    BkgCluster sclust(shpcol.at(ish).pos(), shcol.at(ish).time());
+	    BkgCluster sclust(ch.pos(), ch.time());
 	    sclust._hits.push_back(BkgClusterHit(0.0,ish,shf));
 	    clusters.push_back(sclust);
 	  }
@@ -249,8 +235,7 @@ namespace mu2e
 
   unsigned TLTClusterer::mergeClusters(BkgClusterCollection& clusters,
       double dt, double dd2,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol) const {
+      ComboHitCollection const& chcol) const {
 // note: this algorithm merges pairwise iteratively. 
 // More efficient could be to merge groups of clusters in a single iteration
     unsigned retval(0);
@@ -288,7 +273,7 @@ namespace mu2e
 	    clusters[ipair.second]._hits.begin(),clusters[ipair.second]._hits.end());
 	  clusters[ipair.second]._hits.clear();
 	  // re-compute the position for the merged cluster
-	  updateCluster(clusters[ipair.first], shcol, shpcol);
+	  updateCluster(clusters[ipair.first], chcol);
 	}
       }
       retval += tomerge.size();
@@ -299,45 +284,42 @@ namespace mu2e
 
 // update local cache (position, time)
   void TLTClusterer::updateClusters(BkgClusterCollection& clusters,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol) const {
+      ComboHitCollection const& chcol) const {
     for (auto& clu : clusters) {
       if(clu.hits().size() > 0)
-	updateCluster(clu,shcol, shpcol);
+	updateCluster(clu,chcol);
     }
   }
 
   void TLTClusterer::updateCluster(BkgCluster& cluster,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol) const {
+      ComboHitCollection const& chcol) const {
     // accumulators for position calculation.  For now just median,
     // should implement full 2-d finding including different errors FIXME!
     if(_palg == median) {
       accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > racc, pacc, tacc;
       // work relative to the current cluster position
       // calculate cluster info
-      double crho = cluster.pos().perp();
+      double crho = sqrt(cluster.pos().perp2());
       double cphi = cluster.pos().phi();
       // choose local cylindrical coordinates WRT the cluster; these map roughly onto the straw directions
-      Hep3Vector rdir = cluster.pos().perpPart().unit();
-      Hep3Vector pdir(-rdir.y(),rdir.x(),0.0);
+      XYZVec rdir = PerpVector(cluster.pos(),Geom::ZDir()).unit();
+      XYZVec pdir(-rdir.y(),rdir.x(),0.0);
       for(auto const& chit : cluster.hits()) {
-	StrawHit const& sh = shcol.at(chit.index());
-	StrawHitPosition const& shp = shpcol.at(chit.index());
-	double dt = sh.time() - cluster.time();
-	double dr = shp.pos().perp() - crho;
-	double phi = shp.pos().phi();
+	ComboHit const& ch = chcol.at(chit.index());
+	double dt = ch.time() - cluster.time();
+	double dr = sqrt(ch.pos().perp2()) - crho;
+	double phi = ch.pos().phi();
 	double dp = Angles::deltaPhi(phi,cphi);
-	Hep3Vector const& wdir = shp.wdir();
+	XYZVec const& wdir = ch.wdir();
 	// weight according to the wire direction error, linearly for now
-	double dw = 1.0/shp.posRes(StrawHitPosition::wire);
+	double dw = 1.0/ch.posRes(ComboHit::wire);
 	// limit to a maximum weight
 	// should have an option for geometric sum of errors FIXME!
 	// Not clear if time should be weighted FIXME!
 	double twt = std::min(_maxwt,dw);
 	// project weight along radial and azimuthal airections
-	double rwt = std::min(_maxwt,fabs(rdir.dot(wdir))*dw);
-	double pwt = std::min(_maxwt,fabs(pdir.dot(wdir))*dw);
+	double rwt = std::min(_maxwt,fabs(rdir.Dot(wdir))*dw);
+	double pwt = std::min(_maxwt,fabs(pdir.Dot(wdir))*dw);
 	tacc(dt,weight=twt);
 	racc(dr,weight=rwt);
 	pacc(dp,weight=pwt);
@@ -348,13 +330,13 @@ namespace mu2e
       cluster._time += dt;
       crho += dr;
       cphi += dp;
-      cluster._pos = Hep3Vector(crho*cos(cphi),crho*sin(cphi),0.0);
+      cluster._pos = XYZVec(crho*cos(cphi),crho*sin(cphi),0.0);
     } else {
       throw cet::exception("RECO")<<"mu2e::TLTClusterer: algorithm not implemented"<< endl;
     }
     // update hit distances
     for(auto& hit : cluster._hits)
-      hit._dist = distance(cluster,shcol.at(hit.index()), shpcol.at(hit.index()));
+      hit._dist = distance(cluster,chcol[hit.index()]);
   }
 
   void TLTClusterer::cleanClusters(BkgClusterCollection& clusters) const {

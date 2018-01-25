@@ -15,15 +15,21 @@ namespace mu2e {
     private:
       //  data member is a short
       uint16_t _sid;
-      // define the bit field shifts and masks
+    public:
+      // define the bit field shifts and masks.  Primary fields are straw, panel, plane
+      // stationand and layer are secondary fields and can only be used for accessing, not creating
+      constexpr static uint16_t _layermsk = 0x1; // mask for layer field
       constexpr static uint16_t _strawmsk = 0x7F; // mask for straw field
       constexpr static uint16_t _panelmsk = 0x380; // mask for panel field
       constexpr static uint16_t _panelsft = 7; // shift for panel field
       constexpr static uint16_t _planemsk = 0xFC00; // mask for plane field
       constexpr static uint16_t _planesft = 10; // shift for plane field
+      constexpr static uint16_t _stationmsk = 0xF800; // mask for station field
+      constexpr static uint16_t _stationsft = 11; // shift for station field
       constexpr static uint16_t _nstraws = 96; // number of straws
       constexpr static uint16_t _npanels = 6; // number of panels
-      constexpr static uint16_t _nplanes = 36; // number of planes
+      constexpr static uint16_t _nplanes = 40; // number of planes CD3 FIXME!
+      constexpr static uint16_t _nupanels = _npanels * _nplanes; // number of unique panels
       constexpr static uint16_t _invalid = 0xFFFF; // invalid identifier
 
     public:
@@ -35,7 +41,8 @@ namespace mu2e {
       StrawId2(std::string const& asstring);
 
       StrawId2(): _sid(_invalid) {}
-
+      // construct from raw data
+      StrawId2( uint16_t sid);
       // construct from fields
       StrawId2( uint16_t plane,
 	  uint16_t panel,
@@ -57,16 +64,20 @@ namespace mu2e {
 	return (_sid & _panelmsk) >> _panelsft;
       }
 
+      uint16_t uniquePanel() const{
+	return plane()*_npanels + panel();
+      }
+
       uint16_t straw() const{
 	return (_sid & _strawmsk);
       }
 
       uint16_t layer() const{
-	return _sid % 2 == 0 ? 0 : 1;
+	return (_sid & _layermsk);
       }
 
       uint16_t station() const{
-	return floor(plane()/2);
+	return (_sid & _stationmsk) >> _stationsft;
       }
 
       bool operator==( StrawId2 const& rhs) const{

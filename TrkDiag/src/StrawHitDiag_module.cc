@@ -127,8 +127,10 @@ namespace mu2e
     _shpcol = shpH.product();
     auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
     _shfcol = shfH.product();
-    auto hsH = evt.getValidHandle<StereoHitCollection>(_stTag);
-    _stcol = hsH.product();
+    if(_stTag != "none") {
+      auto hsH = evt.getValidHandle<StereoHitCollection>(_stTag);
+      _stcol = hsH.product();
+    }
     if(_mcdiag){
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
       _mcdigis = mcdH.product();

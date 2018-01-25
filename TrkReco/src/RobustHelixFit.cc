@@ -19,9 +19,10 @@
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/median.hpp>
 #include <boost/accumulators/statistics/weighted_median.hpp>
-
+// root
 #include "TH1F.h"
-
+#include "Math/VectorUtil.h"
+//c++
 #include <vector>
 #include <utility>
 #include <string>
@@ -30,23 +31,24 @@
 
 using namespace std;
 using namespace boost::accumulators;
-
+using namespace ROOT::Math::VectorUtil;
 
 namespace {
   
   // struct for weighted positions
-  class WPos : public CLHEP::Hep3Vector {
+  class WPos : public XYZVec {
     public :
-      WPos(CLHEP::Hep3Vector pos,double weight=1.0) : CLHEP::Hep3Vector(pos), _weight(weight) {}
+      WPos(XYZVec pos,double weight=1.0) : XYZVec(pos), _weight(weight) {}
       double weight() const { return _weight; }
     private :
-      CLHEP::Hep3Vector _pos; //position
+      XYZVec _pos; //position
       double _weight; // weight for this position
   };
 
 }
 namespace mu2e
 {
+ 
  
   typedef std::pair<double,double> WVal;
 
@@ -136,15 +138,15 @@ namespace mu2e
 
       unsigned niter(0);
       double age;
-      CLHEP::Hep3Vector center = rhel.center();
+      XYZVec center = rhel.center();
       double rmed = rhel.radius();
       // initialize step
       double lambda = _lambda0;
       // find median and AGE for the initial center
       findAGE(hseed,center,rmed,age);
       // loop while step is large
-      CLHEP::Hep3Vector descent(1.0,0.0,0.0);
-      while(lambda*descent.mag() > _minlambda && niter < _maxniter)
+      XYZVec descent(1.0,0.0,0.0);
+      while(lambda*sqrt(descent.mag2()) > _minlambda && niter < _maxniter)
       {
 	// fill the sums for computing the descent vector
 	AGESums sums;
@@ -157,10 +159,10 @@ namespace mu2e
 	  dx += (sums._sco < sums._sci) ? -sums._scc : sums._scc;
 	if(fabs(dy) < sums._ssc)
 	  dy += (sums._sso < sums._ssi) ? -sums._ssc : sums._ssc;
-	descent = CLHEP::Hep3Vector(dx,dy,0.0);
+	descent = XYZVec(dx,dy,0.0);
 	// compute error function, decreasing lambda until this is better than the previous
 	double agenew;
-	CLHEP::Hep3Vector cnew = center + lambda*descent;
+	XYZVec cnew = center + lambda*descent;
 	findAGE(hseed,cnew,rmed,agenew);
 	// if we've improved, increase the step size and iterate
 	if(agenew < age){
@@ -168,7 +170,7 @@ namespace mu2e
 	} else {
 	  // if we haven't improved, keep reducing the step till we do
 	  unsigned miter(0);
-	  while(agenew > age && miter < _maxniter && lambda*descent.mag() > _minlambda){
+	  while(agenew > age && miter < _maxniter && lambda*sqrt(descent.mag2()) > _minlambda){
 	    lambda *= (1.0-_lstep);
 	    cnew = center + lambda*descent;
 	    findAGE(hseed,cnew,rmed,agenew);
@@ -204,7 +206,7 @@ namespace mu2e
 	std::cout << "AGE didn't converge!!! " << std::endl;
       }
       // update parameters
-      rhel._rcent = center.perp();
+      rhel._rcent = sqrt(center.perp2());
       rhel._fcent = center.phi();
       rhel._radius = rmed;
       // update flag
@@ -213,9 +215,9 @@ namespace mu2e
   }
 
 
-  void RobustHelixFit::forceTargetInter(CLHEP::Hep3Vector& center, double& radius)
+  void RobustHelixFit::forceTargetInter(XYZVec& center, double& radius)
   {    
-     double rperigee = center.perp()-radius;    
+     double rperigee = sqrt(center.perp2())-radius;    
      if (fabs(rperigee) > _targetradius)
      {
         // adjust both center position and radius till they touch the target, holding phi constant.  
@@ -228,7 +230,7 @@ namespace mu2e
         radius += dr;
 
         // direction radially outwards from origin to the center, the center moves opposite the radius
-        CLHEP::Hep3Vector pdir = CLHEP::Hep3Vector(center.x(),center.y(),0.0).unit();
+        XYZVec pdir = XYZVec(center.x(),center.y(),0.0).unit();
         center -= dr*pdir;
      }
   }
@@ -261,7 +263,7 @@ namespace mu2e
           {
 	      double dz = (*jhit)->_pos.z() - (*ihit)->_pos.z();
 	      if (dz < _minzsep || dz > _maxzsep) continue;
-              double dphi = (*jhit)->_phi-(*ihit)->_phi; 
+              double dphi = (*jhit)->_hphi-(*ihit)->_hphi; 
 	      if (dphi < _mindphi || dphi > _maxdphi) continue;
 
               double lambda = dz/dphi;
@@ -285,7 +287,7 @@ namespace mu2e
       for(const auto& hhit : validHhits) 
       {
 	  double phiex = rhel.circleAzimuth(hhit->_pos.z());
-	  double dphi = deltaPhi(phiex,hhit->_phi);
+	  double dphi = deltaPhi(phiex,hhit->helixPhi());
 	  _hphi.Fill(dphi);
 	  _hphi.Fill(dphi-CLHEP::twopi);
 	  _hphi.Fill(dphi+CLHEP::twopi);
@@ -349,7 +351,7 @@ namespace mu2e
               for(auto jhit = std::next(ihit); jhit != validHhits.end(); ++jhit)
               {
 	          double dz = (*jhit)->_pos.z() - (*ihit)->_pos.z();
-	          double dphi = (*jhit)->_phi-(*ihit)->_phi; 
+	          double dphi = (*jhit)->helixPhi()-(*ihit)->helixPhi(); 
 	          if (dz < _minzsep || fabs(dphi) < _mindphi) continue;
 
                   double lambda = dz/dphi;
@@ -366,7 +368,7 @@ namespace mu2e
           for (const auto & hhit : validHhits)
           {
 	      double phiex = rhel.circleAzimuth(hhit->_pos.z());
-	      double dphi = deltaPhi(phiex,hhit->_phi);
+	      double dphi = deltaPhi(phiex,hhit->helixPhi());
 	      double wt = hitWeight(*hhit);
 	      acci(dphi,weight = wt);// accumulate the difference WRT the current intercept
           }
@@ -401,16 +403,14 @@ namespace mu2e
      pos.reserve(hhits.size()+1);
 
      for (const auto& hhit : hhits) 
-         if (use(hhit) && (stereo(hhit) || (!_stereoinit)) )        	                
-               pos.push_back(WPos(hhit._pos.perpPart(),hitWeight(hhit)));        
-
-     
+       if (use(hhit) && (stereo(hhit) || (!_stereoinit)) )
+	 pos.push_back(WPos(PerpVector(hhit._pos,Geom::ZDir()),hitWeight(hhit)));        
      if ( _usecc && hseed.caloCluster().isNonnull())
      {
         mu2e::GeomHandle<mu2e::Calorimeter> ch;
         const Calorimeter* calo = ch.get();
-        CLHEP::Hep3Vector cog = calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector()));
-        pos.push_back(WPos(cog.perpPart(),_ccwt));
+        XYZVec cog = toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector())));
+        pos.push_back(WPos(PerpVector(cog,Geom::ZDir()),_ccwt));
      }
 
      if (pos.size()<3) return;
@@ -423,14 +423,14 @@ namespace mu2e
          double ri2 = pos[ip].perp2();
          for(size_t jp=ip+1; jp<np-1; ++jp)
          {                
-	     double dist2ij = pos[ip].diff2(pos[jp]);
+	     double dist2ij = (pos[ip]-pos[jp]).mag2();
 	     if (dist2ij < mind2 || dist2ij > maxd2) continue;	  
 
              double rj2 = pos[jp].perp2();
              for(size_t kp=jp+1; kp<np; ++kp)
              {
-	         double dist2ik = pos[ip].diff2(pos[kp]);
-	         double dist2jk = pos[jp].diff2(pos[kp]);
+	         double dist2ik = (pos[ip]-pos[kp]).mag2();
+	         double dist2jk = (pos[jp]-pos[kp]).mag2();
                  if (dist2ik < mind2 ||  dist2jk < mind2 || dist2ik > maxd2 || dist2jk > maxd2) continue;
 
                  // this effectively measures the slope difference
@@ -487,8 +487,8 @@ namespace mu2e
         //double centy = ycmean/sumWeights;
         //double rho = rcmean/sumWeights;
 
-        CLHEP::Hep3Vector center(centx,centy,0.0);
-        rhel._rcent = center.perp();
+        XYZVec center(centx,centy,0.0);
+        rhel._rcent = sqrt(center.perp2());
         rhel._fcent = center.phi();
         rhel._radius = rho;
 
@@ -500,7 +500,7 @@ namespace mu2e
 
 
 
-  void RobustHelixFit::findAGE(HelixSeed const& hseed, CLHEP::Hep3Vector const& center,double& rmed, double& age)
+  void RobustHelixFit::findAGE(HelixSeed const& hseed, XYZVec const& center,double& rmed, double& age)
   {     
       const HelixHitCollection& hhits = hseed._hhits;
 
@@ -512,7 +512,7 @@ namespace mu2e
          if(use(hhit))
          {
 	    // find radial information for this point
-	    double rad = CLHEP::Hep3Vector(hhit._pos - center).perp();
+	    double rad = sqrt(XYZVec(hhit._pos - center).perp2());
 	    double wt = hitWeight(hhit);
 	    radii.push_back(make_pair(rad,wt));
 	    wtot += wt;
@@ -524,8 +524,8 @@ namespace mu2e
       {
           mu2e::GeomHandle<mu2e::Calorimeter> ch;
           const Calorimeter* calo = ch.get();
-          CLHEP::Hep3Vector cog = calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector()));
-          double rad = CLHEP::Hep3Vector(cog - center).perp();
+          XYZVec cog = toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector())));
+          double rad = sqrt(XYZVec(cog - center).perp2());
           radii.push_back(make_pair(rad,_ccwt));
       }
 
@@ -549,7 +549,7 @@ namespace mu2e
   }
 
 
-  void RobustHelixFit::fillSums(HelixSeed const& hseed, CLHEP::Hep3Vector const& center,double rmed, AGESums& sums)
+  void RobustHelixFit::fillSums(HelixSeed const& hseed, XYZVec const& center,double rmed, AGESums& sums)
   {    
      HelixHitCollection const& hhits = hseed._hhits;
      sums.clear();
@@ -560,7 +560,7 @@ namespace mu2e
 
          if (!use(hhit)) continue;
 	 // find radial information for this point
-	 double rad = CLHEP::Hep3Vector(hhit._pos - center).perp();
+	 double rad = sqrt(XYZVec(hhit._pos - center).perp2());
 	 double wt = hitWeight(hhit);
 	 // now x,y projections
 	 double pcos = (hhit._pos.x()-center.x())/rad;
@@ -622,15 +622,15 @@ namespace mu2e
   void RobustHelixFit::initPhi(HelixHit& hhit, const RobustHelix& rhel) const 
   {
      // ray from the circle center to the point
-     hhit._phi = CLHEP::Hep3Vector(hhit._pos - rhel.center()).phi();
+     hhit._hphi = XYZVec(hhit._pos - rhel.center()).phi();
   }
 
   bool RobustHelixFit::resolvePhi(HelixHit& hhit, const RobustHelix& rhel) const
   {
      // find phi expected
      double phiex = rhel.circleAzimuth(hhit._pos.z());
-     int nloop = (int)rint((phiex-hhit._phi)/CLHEP::twopi);
-     hhit._phi += nloop*CLHEP::twopi;
+     int nloop = (int)rint((phiex-hhit.helixPhi())/CLHEP::twopi);
+     hhit._hphi += nloop*CLHEP::twopi;
 
      static StrawHitFlag resphi(StrawHitFlag::resolvedphi);
      hhit._flag.merge(resphi);
@@ -656,7 +656,7 @@ namespace mu2e
   {
      double retval(1.0);
      if (hhit.flag().hasAnyProperty(StrawHitFlag::stereo)) retval = _stwt;
-     if (_hqwt) retval*= std::max(0.0,(double)hhit._hqual);
+     if (_hqwt) retval*= std::max(0.0,(double)hhit._qual);
      return retval;
   }
 

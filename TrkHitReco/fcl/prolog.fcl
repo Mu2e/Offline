@@ -80,10 +80,17 @@ FlagBkgHits : {
   }
 }
 
+CombineStrawHits : {
+  module_type : CombineStrawHits
+  StrawHitPositionCollection : makeSH
+  StrawHitFlagCollection : makeSH
+}
+
 TrkHitReco : {
     producers : { 
 	makeSH                    : { @table::makeSHfromSD              }
 	MakeStrawHitPositions     : { @table::MakeStrawHitPositions     } 
+	CombineStrawHits            : { @table::CombineStrawHits            }
 	MakeStereoHits            : { @table::MakeStereoHits            }
 	FlagStrawwHits            : { @table::FlagStrawHits            }
 	FlagBkgHits		  : { @table::FlagBkgHits            }

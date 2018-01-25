@@ -34,49 +34,32 @@ namespace mu2e
   virtual void init();
   //  base class function: given the straw hits and associated data, find the clusters.
   virtual void findClusters(BkgClusterCollection& clusters,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol,
-      StrawHitFlagCollection const& shfcol);
+      ComboHitCollection const& chcol);
   private:
   // functions to define the distance between a hit and cluster
   // this is the variable against which the clustering thresholds are applied
-  double distance(BkgCluster const&, StrawHit const& sh, StrawHitPosition const& shp) const; 
+  double distance(BkgCluster const&, ComboHit const& ch) const; 
   // merge overlapping clusters
   unsigned mergeClusters(BkgClusterCollection& bkgcol,
       double dt, double drho2,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol ) const;
+      ComboHitCollection const& chcol ) const;
  // compress out empties
   void cleanClusters(BkgClusterCollection& bkgcol ) const;
   // initialize clusters.  Different strategeis can be tried
-  void initClusters( BkgClusterCollection& clusters,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol,
-      StrawHitFlagCollection const& shfcol) const;
+  void initClusters( BkgClusterCollection& clusters, ComboHitCollection const& chcol) const;
   // assign hits to the given clusters.  Hits already assigned
   // are tested first, for efficiency
-  void assignHits(BkgClusterCollection& bkgcol,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol,
-      StrawHitFlagCollection const& shfcol) const;
+  void assignHits(BkgClusterCollection& bkgcol, ComboHitCollection const& chcol) const;
   // compute the total distance between hits and clusters
-  double hitDistance(BkgClusterCollection const& bkgcol,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol) const;
+  double hitDistance(BkgClusterCollection const& bkgcol, ComboHitCollection const& chcol) const;
   // update the cluster state (position, distances)
-  void updateClusters(BkgClusterCollection& clusters,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol) const;
+  void updateClusters(BkgClusterCollection& clusters, ComboHitCollection const& chcol) const;
   //
-  void updateCluster(BkgCluster& cluster,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol) const;
-
+  void updateCluster(BkgCluster& cluster, ComboHitCollection const& chcol) const;
+  //
   void countClusters(BkgClusterCollection const& clusters, unsigned& nclu, unsigned& nchits, double& tdist) const;
-  void refineClusters(BkgClusterCollection& clusters, StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol) const;
-  void refineCluster(BkgCluster& cluster, StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol) const;
+  void refineClusters(BkgClusterCollection& clusters, ComboHitCollection const& chcol) const;
+  void refineCluster(BkgCluster& cluster, ComboHitCollection const& chcol ) const;
 
   // configuration parameters
   int _diag,_debug;

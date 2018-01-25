@@ -227,7 +227,7 @@ namespace mu2e {
       // 	flag.merge(StrawHitFlag::calosel);
       if(_shpcol != 0){
         StrawHitPosition const& shp = _shpcol->at(ish);
-        double rad = shp.pos().perp();
+        double rad = sqrt(shp.pos().perp2());
         if(rad > _minR && rad < _maxR)
           flag.merge(StrawHitFlag::radsel);
       }

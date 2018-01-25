@@ -25,7 +25,7 @@ namespace mu2e
   {
     double _phi;
     double _z;
-    FZ(CLHEP::Hep3Vector const& hpos, CLHEP::Hep3Vector const& center);
+    FZ(XYZVec const& hpos, XYZVec const& center);
   };
 
   // struct to hold AGE sums
@@ -59,13 +59,13 @@ namespace mu2e
       void fitCircleMedian(HelixSeed& hseed);
       void fitCircleAGE(HelixSeed& hseed);
       bool initFZ(HelixHitCollection& hhits,RobustHelix& myhel);
-      void findAGE(HelixSeed const& hseed, CLHEP::Hep3Vector const& center,double& rmed, double& age);
-      void fillSums(HelixSeed const& hseed, CLHEP::Hep3Vector const& center,double rmed,AGESums& sums);
+      void findAGE(HelixSeed const& hseed, XYZVec const& center,double& rmed, double& age);
+      void fillSums(HelixSeed const& hseed, XYZVec const& center,double rmed,AGESums& sums);
 
       bool goodCircle(RobustHelix const& rhel);
       bool goodFZ(RobustHelix const& rhel);
 
-      void forceTargetInter(CLHEP::Hep3Vector& center, double& radius);
+      void forceTargetInter(XYZVec& center, double& radius);
 
       bool use(HelixHit const&) const;
       bool stereo(HelixHit const&) const;
