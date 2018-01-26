@@ -39,7 +39,7 @@ namespace mu2e {
     _ADCPeriod(pset.get<double>("ADCPeriod",20.0)), // nsec
     _ADCOffset(pset.get<double>("ADCOffset",2.0)), // nsec
     _maxtsep(pset.get<unsigned>("MaxThreshTimeSeparation",2)), // ADC clock ticks
-    _TDCLSB(pset.get<double>("TDCLSB",0.015625)),  // nsec
+    _TDCLSB(pset.get<double>("TDCLSB",0.03125)),  // nsec
     _maxTDC(pset.get<unsigned>("maxTDC",16777216)),
     _TOTLSB(pset.get<double>("TOTLSB",4.0)), //ns
     _maxTOT(pset.get<unsigned>("maxTOT",16)),
