@@ -28,6 +28,12 @@ namespace mu2e {
 
   ComboHit::ComboHit() : _wres(-1.0),_tres(-1.0), _wdist(0.), _time(0.0), _edep(0.0), _qual(0.0), _ncombo(0), _nsh(0) {}
 
+  ComboHit::ComboHit(ComboHit const& shp, StrawHitIndex hi, double phi) : ComboHit(shp)
+  {
+//    addIndex(hi); should already be set
+    _hphi = phi;
+  }
+
   void ComboHit::init(ComboHit const& other, uint16_t index) {
     *this = other;
     _ncombo = 1;

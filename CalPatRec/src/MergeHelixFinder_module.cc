@@ -205,7 +205,7 @@ namespace mu2e {
 
     static const CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
 
-    helix_center = robustHel->center();
+    helix_center = robustHel->centerCLHEP();
 
     ::LsqSums4 sxy;
     //add the stopping target center as in CalHeliFinderAlg.cc
@@ -213,8 +213,8 @@ namespace mu2e {
 
     for (int i=0; i<nhits; ++i){
       hit       = &hits->at(i);
-      pos       = hit->pos();
-      wdir      = hit->wdir();
+      pos       = hit->posCLHEP();
+      wdir      = hit->wdirCLHEP();
       sdir      = zdir.cross(wdir);
       helix_pos = pos;
       robustHel->position(helix_pos);
@@ -261,12 +261,12 @@ namespace mu2e {
     ::LsqSums4 srphi;
     static const CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
     
-    helix_center = robustHel->center();
+    helix_center = robustHel->centerCLHEP();
 
     for (int i=0; i<nhits; ++i){
       hit       = &hits->at(i);
-      pos       = hit->pos();
-      wdir      = hit->wdir();
+      pos       = hit->posCLHEP();
+      wdir      = hit->wdirCLHEP();
       sdir      = zdir.cross(wdir);
       phi       = hit->phi();
       helix_phi = robustHel->fz0() + pos.z()/robustHel->lambda();

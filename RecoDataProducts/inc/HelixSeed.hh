@@ -8,6 +8,7 @@
 // Mu2e includes
 #include "BTrk/TrkBase/TrkT0.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
+#include "RecoDataProducts/inc/HelixHit.hh"
 #include "RecoDataProducts/inc/RobustHelix.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"

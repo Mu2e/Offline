@@ -31,13 +31,14 @@ namespace mu2e {
     float centerx() const { return _rcent*cos(_fcent); }
     float centery() const { return _rcent*sin(_fcent); }
     XYZVec center() const { return XYZVec(centerx(),centery(),0.0); }
+    CLHEP::Hep3Vector centerCLHEP() const { return CLHEP::Hep3Vector(centerx(),centery(),0.0); }
     // azimuth wrt the circle center expected for a given z position
     Float_t circleAzimuth( double zpos) const { return _lambda != 0.0 ? _fz0 + zpos/_lambda : 0.0; }
     // position in space given the Z position of the input vector
     void position(XYZVec& pos) const {
       pos.SetX(centerx() + _radius*cos(circleAzimuth(pos.z())));
       pos.SetY(centery() + _radius*sin(circleAzimuth(pos.z())));
-    //  pos.setZ(0.0);  Not sure why this was here
+    //  pos.setz(0.0);  not sure why this was here
     }
     // unit vector in direction at the given z
     void direction(float zval,XYZVec& dir) const {
@@ -45,6 +46,18 @@ namespace mu2e {
       dir.SetX(-_radius*sin(circleAzimuth(zval))/mom);
       dir.SetY(_radius*cos(circleAzimuth(zval))/mom);
       dir.SetZ(_lambda/mom);
+    }
+    void position(CLHEP::Hep3Vector& pos) const {
+      pos.setX(centerx() + _radius*cos(circleAzimuth(pos.z())));
+      pos.setX(centery() + _radius*sin(circleAzimuth(pos.z())));
+    //  pos.setz(0.0);  not sure why this was here
+    }
+    // unit vector in direction at the given z
+    void direction(float zval,CLHEP::Hep3Vector& dir) const {
+      float mom = momentum();
+      dir.setX(-_radius*sin(circleAzimuth(zval))/mom);
+      dir.setY(_radius*cos(circleAzimuth(zval))/mom);
+      dir.setZ(_lambda/mom);
     }
     // test self-consistency
     bool validHelicity() const { return Helicity(_lambda) == _helicity; }

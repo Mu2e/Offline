@@ -18,8 +18,8 @@ namespace mu2e {
 			       Straw const&            straw,
 			       StrawHitFlag const&     flag) :
     _ind (index), 
-    _pos (shp.pos()), 
-    _phi (shp.pos().phi()), 
+    _pos (shp.posCLHEP()), 
+    _phi (shp.posCLHEP().phi()), 
     _flag(flag),
     _used(0),
     _wdir(straw.getDirection()),

@@ -246,8 +246,8 @@ namespace mu2e {
 	art::Ptr<SimParticle> pspp;
 	_nused = 0;
 	for(auto const& hhit : hhits){
-	  hits.push_back(hhit._shidx);
-	  if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))++_nused;
+	  hits.push_back(hhit.index(0)); // THIS IS AN ERROR FIXME!!
+	  if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))++_nused;
 	}
 	if(_mcdiag) {
 	  // get information about the primary particle (produced most hits)
@@ -265,7 +265,7 @@ namespace mu2e {
 	  unsigned nmc = 0;
 	  _npused = 0;
 	  for(auto const& hhit : hhits) {
-	    StrawDigiMC const& mcdigi = _mcdigis->at(hhit._shidx);
+	    StrawDigiMC const& mcdigi = _mcdigis->at(hhit.index(0)); // this is an error FIXME!
 	    art::Ptr<StepPointMC> spmcp;
 	    if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
 	      spmcp->simParticle() == pspp ){
@@ -276,15 +276,15 @@ namespace mu2e {
 	    if(_diag > 1){
 	      HelixHitInfoMC hhinfomc;
 	      fillHitInfoMC(pspp,mcdigi,hhinfomc);
-	      Hep3Vector mchpos = hhit.pos(); // sets z position
+	      Hep3Vector mchpos = hhit.posCLHEP(); // sets z position
 	      _mch.position(mchpos);
 	      hhinfomc._hpos = mchpos;
 	      hhinfomc._hphi = _mch.circleAzimuth(hhit.pos().z());
 
-	      Hep3Vector mcdh = hhit.pos() - mchpos;
-	      hhinfomc._dwire = mcdh.dot(hhit.wdir());
+	      Hep3Vector mcdh = hhit.posCLHEP() - mchpos;
+	      hhinfomc._dwire = mcdh.dot(hhit.wdirCLHEP());
 	      static Hep3Vector zaxis(0.0,0.0,1.0); // unit in z direction
-	      Hep3Vector wtdir = zaxis.cross(hhit.wdir()); // transverse direction to the wire
+	      Hep3Vector wtdir = zaxis.cross(hhit.wdirCLHEP()); // transverse direction to the wire
 	      hhinfomc._dtrans = mcdh.dot(wtdir);
 
 	      _hhinfomc.push_back(hhinfomc);
@@ -310,27 +310,27 @@ namespace mu2e {
 	    hhinfo._delta = hhit._flag.hasAnyProperty(StrawHitFlag::bkg);
 	    hhinfo._esel = hhit._flag.hasAnyProperty(StrawHitFlag::energysel);
 	    hhinfo._resphi = hhit._flag.hasAnyProperty(StrawHitFlag::resolvedphi);
-	    hhinfo._hhphi = hhit._phi;
-	    hhinfo._hhpos = hhit.pos();
+	    hhinfo._hhphi = hhit.helixPhi();
+	    hhinfo._hhpos = hhit.posCLHEP();
 	    hhinfo._werr = hhit.posRes(StrawHitPosition::wire);
 	    hhinfo._terr = hhit.posRes(StrawHitPosition::trans);
-	    hhinfo._dt = _shcol->at(hhit._shidx).time() - hseed._t0.t0() -_ttcalc.strawHitTimeOffset(hhit.pos().z());
-	    Hep3Vector hpos = hhit.pos(); // this sets the z to the correct value
+	    hhinfo._dt = _shcol->at(hhit.index(0)).time() - hseed._t0.t0() -_ttcalc.strawHitTimeOffset(hhit.pos().z());
+	    Hep3Vector hpos = hhit.posCLHEP(); // this sets the z to the correct value
 	    rhel.position(hpos);
 	    hhinfo._hpos = hpos;
 	    hhinfo._hphi = rhel.circleAzimuth(hhit.pos().z());
 // compute the chisquared componentes for this hit
 	    static Hep3Vector zaxis(0.0,0.0,1.0); // unit in z direction
-	    Hep3Vector const& wdir = hhit.wdir();
+	    Hep3Vector const& wdir = hhit.wdirCLHEP();
 	    Hep3Vector wtdir = zaxis.cross(wdir); // transverse direction to the wire
-	    Hep3Vector cvec = (hhit.pos() - rhel.center()).perpPart(); // vector from the circle center to the hit
+	    Hep3Vector cvec = (hhit.posCLHEP() - rhel.centerCLHEP()).perpPart(); // vector from the circle center to the hit
 	    Hep3Vector cdir = cvec.unit(); // direction from the circle center to the hit
 	    Hep3Vector cperp = zaxis.cross(cdir); // direction perp to the radius
 	    hhinfo._whdot = wdir.dot(cdir); // compare wire and circle radius direction
 	    hhinfo._hrho = cvec.mag(); // radius of this hit WRT the circle center
 
 	    // positions
-	    Hep3Vector dh = hhit.pos() - hpos;
+	    Hep3Vector dh = hhit.posCLHEP() - hpos;
 	    double dwire = dh.dot(wdir); // projection along wire direction
 	    double dtrans = dh.dot(wtdir); // transverse projection
 
@@ -346,7 +346,7 @@ namespace mu2e {
 	    hhinfo._wres = sqrt(wres2);
 	    hhinfo._wtres = sqrt(wtres2);
 	    hhinfo._chisq = dwire*dwire/wres2 + dtrans*dtrans/wtres2;
-	    hhinfo._hqual = hhit._hqual;
+	    hhinfo._hqual = hhit.qual();
 
 	    _hhinfo.push_back(hhinfo);
 	  }
@@ -448,12 +448,12 @@ namespace mu2e {
     for(auto const& hhit : hhits ) {
     // compute the projected phi (y) error for this elipse.  Z error is always the straw width
     // create an elipse for this hit
-      Hep3Vector that = Hep3Vector(-(hhit.pos().y()-rhel.centery()),(hhit.pos().x()-rhel.centerx()),0.0).unit(); // local phi direction at this hit
-      double proj = that.dot(hhit.wdir());
-      double fcent = rhel.circleAzimuth(hhit.pos().z());
-      TEllipse* te = new TEllipse(hhit.pos().z(),hhit.phi()-fcent,
+      Hep3Vector that = Hep3Vector(-(hhit.posCLHEP().y()-rhel.centery()),(hhit.posCLHEP().x()-rhel.centerx()),0.0).unit(); // local phi direction at this hit
+      double proj = that.dot(hhit.wdirCLHEP());
+      double fcent = rhel.circleAzimuth(hhit.posCLHEP().z());
+      TEllipse* te = new TEllipse(hhit.posCLHEP().z(),hhit.phi()-fcent,
 	hhit._tres, hhit._wres*proj/rhel.radius());
-      if(primary(pspp,hhit._shidx)){
+      if(primary(pspp,hhit.index(0))){
 	if (use(hhit) ) {
 	  te->SetFillColor(kRed);
 	  te->SetLineColor(kRed);
@@ -477,13 +477,13 @@ namespace mu2e {
     if(timec.isNonnull()){
       for(auto ih : timec->hits()){
 	auto const& shp = _shpcol->at(ih);
-	Hep3Vector rpos(shp.pos().x()-rhel.centerx(), shp.pos().y()-rhel.centery(), shp.pos().z());
+	Hep3Vector rpos(shp.posCLHEP().x()-rhel.centerx(), shp.posCLHEP().y()-rhel.centery(), shp.posCLHEP().z());
 	// resolve phi
 	double dphi = atan2(rpos.y(),rpos.x()) - rhel.circleAzimuth(rpos.z());
 	dphi -= rint(dphi/CLHEP::twopi)*CLHEP::twopi;
 	Hep3Vector that = Hep3Vector(-rpos.y(),rpos.x(),0.0).unit(); // local phi direction at this hit
-	double proj = that.dot(shp.wdir());
-	TEllipse* te = new TEllipse(shp.pos().z(),dphi,
+	double proj = that.dot(shp.wdirCLHEP());
+	TEllipse* te = new TEllipse(shp.posCLHEP().z(),dphi,
 	    shp._tres, shp._wres*proj/rhel.radius());
 	te->SetLineColor(kGreen);
 	te->SetFillColor(kGreen);
@@ -493,19 +493,19 @@ namespace mu2e {
   // background hits
     for(size_t ishp = 0; ishp< _shpcol->size();++ishp) {
       auto const& shp = _shpcol->at(ishp);
-      Hep3Vector rpos(shp.pos().x()-rhel.centerx(), shp.pos().y()-rhel.centery(), shp.pos().z());
+      Hep3Vector rpos(shp.posCLHEP().x()-rhel.centerx(), shp.posCLHEP().y()-rhel.centery(), shp.posCLHEP().z());
       // resolve phi
       double dphi = atan2(rpos.y(),rpos.x()) - rhel.circleAzimuth(rpos.z());
       dphi -= rint(dphi/CLHEP::twopi)*CLHEP::twopi;
       Hep3Vector that = Hep3Vector(-rpos.y(),rpos.x(),0.0).unit(); // local phi direction at this hit
-      double proj = that.dot(shp.wdir());
-      TEllipse* te = new TEllipse(shp.pos().z(),dphi,
+      double proj = that.dot(shp.wdirCLHEP());
+      TEllipse* te = new TEllipse(shp.posCLHEP().z(),dphi,
 	  shp._tres, shp._wres*proj/rhel.radius());
       te->SetLineColor(kYellow);
       te->SetFillColor(kYellow);
       notselected_list->Add(te);
       if(selectedHit(ishp)){
-	TEllipse* tes = new TEllipse(shp.pos().z(),dphi,
+	TEllipse* tes = new TEllipse(shp.posCLHEP().z(),dphi,
 	  shp._tres, shp._wres*proj/rhel.radius());
 	tes->SetLineColor(kOrange);
 	tes->SetFillColor(kOrange);
@@ -631,8 +631,8 @@ namespace mu2e {
     for(auto const& hhit : hhits ) {
     // create an elipse for this hit
       TEllipse* te = new TEllipse(hhit.pos().x()-pcent.x(),hhit.pos().y()-pcent.y(),
-	hhit._wres, hhit._tres,0.0,360.0, hhit.wdir().phi()*180.0/TMath::Pi());
-      if(primary(pspp,hhit._shidx)){
+	hhit._wres, hhit._tres,0.0,360.0, hhit.wdirCLHEP().phi()*180.0/TMath::Pi());
+      if(primary(pspp,hhit.index(0))){
 	if (use(hhit) ) {
 	  te->SetFillColor(kRed);
 	  te->SetLineColor(kRed);

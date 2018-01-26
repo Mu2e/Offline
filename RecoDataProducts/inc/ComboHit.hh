@@ -26,10 +26,17 @@ namespace mu2e {
   struct ComboHit {
     enum edir{wire=0,trans};
     ComboHit();
+    // compatibility constructor (deprecated)
+    ComboHit(const ComboHit&, StrawHitIndex, double);
     // accessors
     XYZVec centerPos() const { return _pos - _wdist*_wdir; }
     XYZVec const& pos() const { return _pos; }
     XYZVec const& wdir() const { return _wdir; }
+// CLHEP-versions of these for backwards compatibilty
+    CLHEP::Hep3Vector centerPosCLHEP() const { return Geom::Hep3Vec(_pos - _wdist*_wdir); }
+    CLHEP::Hep3Vector posCLHEP() const { return Geom::Hep3Vec(_pos); }
+    CLHEP::Hep3Vector wdirCLHEP() const { return Geom::Hep3Vec(_wdir); }
+//
     Float_t posRes(edir dir) const;
     Float_t energyDep() const { return _edep; }
     Float_t phi() const { return _pos.phi();}

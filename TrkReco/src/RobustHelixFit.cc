@@ -409,7 +409,7 @@ namespace mu2e
      {
         mu2e::GeomHandle<mu2e::Calorimeter> ch;
         const Calorimeter* calo = ch.get();
-        XYZVec cog = toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector())));
+        XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector())));
         pos.push_back(WPos(PerpVector(cog,Geom::ZDir()),_ccwt));
      }
 
@@ -524,7 +524,7 @@ namespace mu2e
       {
           mu2e::GeomHandle<mu2e::Calorimeter> ch;
           const Calorimeter* calo = ch.get();
-          XYZVec cog = toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector())));
+          XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector())));
           double rad = sqrt(XYZVec(cog - center).perp2());
           radii.push_back(make_pair(rad,_ccwt));
       }

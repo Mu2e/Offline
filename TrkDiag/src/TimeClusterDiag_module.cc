@@ -258,7 +258,7 @@ namespace mu2e {
       size_t ish = idx;
       tchi._time = _shcol->at(ish).time();
       tchi._dt = _ttcalc.strawHitTime(_shcol->at(ish),_shpcol->at(ish)) -tc._t0._t0;
-      Hep3Vector const& pos = _shpcol->at(ish).pos();
+      Hep3Vector const& pos = _shpcol->at(ish).posCLHEP();
       double phi = pos.phi();
       tchi._dphi = Angles::deltaPhi(phi,tc._pos.phi());
       tchi._rho = pos.perp();

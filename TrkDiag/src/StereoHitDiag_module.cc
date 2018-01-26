@@ -192,7 +192,7 @@ namespace mu2e
       _deltat->Fill(sth.dt());
       double de = fabs(sh1.energyDep()-sh2.energyDep())/sth.energy();
       _deltaE->Fill(de);
-      CLHEP::Hep3Vector dpos = shp1.pos() -shp2.pos();
+      CLHEP::Hep3Vector dpos = shp1.posCLHEP() -shp2.posCLHEP();
       _deltaz->Fill(dpos.z());
       _sep->Fill(sth.panelSeparation());
       _ddoth->Fill(sth.wdot());
@@ -212,8 +212,8 @@ namespace mu2e
 	_dperp = dpos.perp();
 	_dl1 = dl1;
 	_dl2 = dl2;
-	_dc1 = (shp1.pos()-sth.pos()).perp()/shp1.posRes(StrawHitPosition::wire);
-	_dc2 = (shp2.pos()-sth.pos()).perp()/shp2.posRes(StrawHitPosition::wire);
+	_dc1 = (shp1.posCLHEP()-sth.pos()).perp()/shp1.posRes(StrawHitPosition::wire);
+	_dc2 = (shp2.posCLHEP()-sth.pos()).perp()/shp2.posRes(StrawHitPosition::wire);
 	_tdiv1 = shp1.flag().hasAllProperties(StrawHitFlag::tdiv);
 	_tdiv2 = shp2.flag().hasAllProperties(StrawHitFlag::tdiv);
 	_chi2 = sth.chisq();
@@ -241,8 +241,8 @@ namespace mu2e
       for (size_t ish = 0; ish < _shpcol->size(); ++ish) {
 	StrawHitPosition const& sthp = _sthpcol->at(ish);
 	StrawHitPosition const& shp = _shpcol->at(ish);
-	CLHEP::Hep3Vector shpos = shp.pos(); 
-	CLHEP::Hep3Vector sthpos = sthp.pos(); 
+	CLHEP::Hep3Vector shpos = shp.posCLHEP(); 
+	CLHEP::Hep3Vector sthpos = sthp.posCLHEP(); 
 	_shphi = shpos.phi();
 	_shrho = shpos.perp();
 	_stphi = sthpos.phi();
@@ -250,16 +250,16 @@ namespace mu2e
 	_stereo = sthp.flag().hasAllProperties(StrawHitFlag::stereo);
 	_mcr = _sfs = -1;
 	_schi2 = _sdist = _sdz = _sddot = -1.0;
-	if(sthp.stereoHitIndex() > 0){
-	  StereoHit const& sth = _stcol->at(sthp.stereoHitIndex());
+	if(sthp.index(0) > 0){
+	  StereoHit const& sth = _stcol->at(sthp.index(0));
 	  _schi2 = sth.chisq();
 	  _smvaout = sth.mvaout();
 	  _sfs = sth.panelSeparation();
 	  StrawHitPosition const& shp1 = _shpcol->at(sth.hitIndex1());
 	  StrawHitPosition const& shp2 = _shpcol->at(sth.hitIndex2());
-	  _sdist = (shp1.pos()-shp2.pos()).mag();
+	  _sdist = (shp1.posCLHEP()-shp2.posCLHEP()).mag();
 	  _sddot = sth.wdot();
-	  _sdz = fabs(shp1.pos().z()-shp2.pos().z());
+	  _sdz = fabs(shp1.posCLHEP().z()-shp2.posCLHEP().z());
 	  StrawDigiMC const& mcd1 = _mcdigis->at(sth.hitIndex1());
 	  StrawDigiMC const& mcd2 = _mcdigis->at(sth.hitIndex2());
 	  _mcr = MCRelationship::relationship(mcd1,mcd2);

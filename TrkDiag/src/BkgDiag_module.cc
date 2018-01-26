@@ -22,6 +22,7 @@
 #include "TMath.h"
 #include "TH1F.h"
 #include "TTree.h"
+#include "Math/VectorUtil.h"
 // data
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
@@ -40,6 +41,7 @@
 #include "DataProducts/inc/threevec.hh"
 using namespace std;
 using CLHEP::Hep3Vector;
+using namespace ROOT::Math::VectorUtil;
 namespace mu2e 
 {
 
@@ -181,7 +183,7 @@ namespace mu2e
       BkgCluster const& cluster = _bkgccol->at(ibkg);
       BkgQual const& qual = _bkgqcol->at(ibkg);
       // fill cluster info
-      _cpos = cluster.pos(); 
+      _cpos = Geom::Hep3Vec(cluster.pos()); 
       _ctime = cluster.time();
       _isbkg = cluster.flag().hasAllProperties(BkgClusterFlag::bkg);
       _isref = cluster.flag().hasAllProperties(BkgClusterFlag::refined);
@@ -199,7 +201,7 @@ namespace mu2e
 	if(ibkg != jbkg){
 	  BkgCluster const& ocluster = _bkgccol->at(jbkg);
 	  double dt = fabs(ocluster.time() - cluster.time());
-	  double drho = (ocluster.pos()-cluster.pos()).perp();
+	  double drho = sqrt((ocluster.pos()-cluster.pos()).Perp2());
 	  // only look at differences whtn the other dimension difference is small
 	  if(drho < _maxdrho && dt < _mindt) _mindt = dt;
 	  if(dt < _maxdt && drho < _mindrho) _mindrho = drho;
@@ -254,12 +256,12 @@ namespace mu2e
 	bkghinfo._gdist = chit.distance();
 	bkghinfo._index = ish;
 	// calculate separation to cluster
-	Hep3Vector psep = (shp.pos()-cluster.pos()).perpPart();
+	Hep3Vector psep = Geom::Hep3Vec(PerpVector(shp.pos()-cluster.pos(),Geom::ZDir()));
 	double rho = psep.mag();
 	Hep3Vector pdir = psep.unit();
 	bkghinfo._rpos = psep;
 	bkghinfo._rrho = rho;
-	bkghinfo._rerr = std::max(2.5,shp.posRes(StrawHitPosition::wire)*fabs(pdir.dot(shp.wdir())));
+	bkghinfo._rerr = std::max(2.5,shp.posRes(StrawHitPosition::wire)*fabs(pdir.dot(shp.wdirCLHEP())));
 	//global counting for the cluster
 	if(bkghinfo._relation==0)++_nprimary;
 	if(bkghinfo._mcgen == 2)++_nconv;
@@ -430,21 +432,21 @@ namespace mu2e
     shinfo._isolated = shf.hasAllProperties(StrawHitFlag::isolated);
     shinfo._bkg = shf.hasAllProperties(StrawHitFlag::bkg);
 
-    shinfo._pos = shp.pos();
+    shinfo._pos = shp.posCLHEP();
     shinfo._time = sh.time();
-    shinfo._rho = shp.pos().perp();
+    shinfo._rho = shp.posCLHEP().perp();
     shinfo._wres = shp.posRes(StrawHitPosition::wire);
     shinfo._tres = shp.posRes(StrawHitPosition::trans);
     // info depending on stereo hits
-    if(shp.stereoHitIndex() >= 0){
-      shinfo._chisq = _stcol->at(shp.stereoHitIndex()).chisq();
-      shinfo._stdt = _stcol->at(shp.stereoHitIndex()).dt();
-      shinfo._dist = _stcol->at(shp.stereoHitIndex()).dist();
-    } else {
-      shinfo._chisq = -1.0;
-      shinfo._stdt = 0.0;
-      shinfo._dist = -1.0;
-    }
+//    if(shp.stereoHitIndex() >= 0){
+//      shinfo._chisq = _stcol->at(shp.stereoHitIndex()).chisq();
+//      shinfo._stdt = _stcol->at(shp.stereoHitIndex()).dt();
+//      shinfo._dist = _stcol->at(shp.stereoHitIndex()).dist();
+//    } else {
+//      shinfo._chisq = -1.0;
+//      shinfo._stdt = 0.0;
+//      shinfo._dist = -1.0;
+//    }
     shinfo._edep = sh.energyDep();
     const Straw& straw = tracker.getStraw( sh.strawIndex() );
     shinfo._plane = straw.id().getPlane();

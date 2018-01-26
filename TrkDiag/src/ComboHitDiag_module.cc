@@ -147,8 +147,8 @@ namespace mu2e
       if(_diag > 1){
 	for(size_t ish=0;ish < ch._nsh; ++ish) {
 	  ComboHitInfo chi;
-	  StrawHit const& sh = _shcol->at(ch._sh[ish]);
-	  StrawHitPosition const& shp = _shpcol->at(ch._sh[ish]);
+	  StrawHit const& sh = _shcol->at(ch.index(ish));
+	  StrawHitPosition const& shp = _shpcol->at(ch.index(ish));
 	  XYZVec chpos(shp.pos().x(), shp.pos().y(), shp.pos().z());
 	  chi._dwire = (chpos-ch._pos).Dot(ch._wdir);
 	  chi._dwerr = shp.posRes(StrawHitPosition::wire);
@@ -161,7 +161,7 @@ namespace mu2e
       if(_mcdiag){
 	_chinfomc.clear();
 	// use the 1st hit to define the MC match; this is arbitrary but adequate
-	StrawDigiMC const& mcd1 = _mcdigis->at(ch._sh[0]);
+	StrawDigiMC const& mcd1 = _mcdigis->at(ch.index(0));
 	art::Ptr<StepPointMC> const& spmcp = mcd1.stepPointMC(TrkTypes::cal);
 	art::Ptr<SimParticle> spp = spmcp->simParticle();
 	_mctime = _toff.timeWithOffsetsApplied(*spmcp);
@@ -173,7 +173,7 @@ namespace mu2e
 	_mcpos = XYZVec(0.0,0.0,0.0);
 	for(size_t ish=0;ish < ch._nsh; ++ish) {
 	  ComboHitInfoMC chimc;
-	  StrawDigiMC const& mcd = _mcdigis->at(ch._sh[ish]);
+	  StrawDigiMC const& mcd = _mcdigis->at(ch.index(ish));
 	  chimc._rel = MCRelationship::relationship(mcd,mcd1);
 	  _chinfomc.push_back(chimc);
 	  // find average MC properties

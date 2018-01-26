@@ -230,8 +230,8 @@ namespace mu2e
 	_time[iend] = sh.time(_end[iend]);
 	_tot[iend] = sh.TOT(_end[iend]);
       }
-      _shp = shp.pos();
-      _shlen =(shp.pos()-straw.getMidPoint()).dot(straw.getDirection());
+      _shp = shp.posCLHEP();
+      _shlen =(shp.posCLHEP()-straw.getMidPoint()).dot(straw.getDirection());
       _slen = straw.getHalfLength(); 
       _stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
       _tdiv = shp.flag().hasAllProperties(StrawHitFlag::tdiv);
@@ -244,7 +244,7 @@ namespace mu2e
       _isolated = shf.hasAllProperties(StrawHitFlag::isolated);
       _bkg = shf.hasAllProperties(StrawHitFlag::bkg);
       _bkgclust = shf.hasAllProperties(StrawHitFlag::bkgclust);
-      _rho = shp.pos().perp();
+      _rho = shp.posCLHEP().perp();
       // summarize the MC truth for this strawhit.  Preset the values in case MC is missing/incomplete
       _mcgid = -1;
       _mcid = -1;
@@ -342,10 +342,10 @@ namespace mu2e
       _shwres = _shpcol->at(istr).posRes(StrawHitPosition::wire);
       _shtres = _shpcol->at(istr).posRes(StrawHitPosition::trans);
 //  Info depending on stereo hits
-      if(_stcol != 0 && _shpcol->at(istr).stereoHitIndex() >= 0){
-        _shchisq = _stcol->at(_shpcol->at(istr).stereoHitIndex()).chisq();
-        _shdt = _stcol->at(_shpcol->at(istr).stereoHitIndex()).dt();
-        _shdist = _stcol->at(_shpcol->at(istr).stereoHitIndex()).dist();
+      if(_stcol != 0 && _shpcol->at(istr).index(0) >= 0){
+        _shchisq = _stcol->at(_shpcol->at(istr).index(0)).chisq();
+        _shdt = _stcol->at(_shpcol->at(istr).index(0)).dt();
+        _shdist = _stcol->at(_shpcol->at(istr).index(0)).dist();
       } else {
         _shchisq = -1.0;
         _shdt = 0.0;
