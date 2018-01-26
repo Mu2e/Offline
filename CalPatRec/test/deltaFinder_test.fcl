@@ -59,17 +59,10 @@ physics: {
     producers : { 
 	@table::producers
 
-	PrefetchData: { @table::producers.PrefetchData 
-	    strawHitPositionCollectionTag : MakeStrawHitPositions 
-	    strawHitFlagCollectionTag     : FlagStrawHits
-	}
-
 	DeltaFinder: { @table::producers.DeltaFinder
-	    StrawHitPositionCollectionTag : MakeStrawHitPositions
 	    diagLevel                     : 0
 	    debugLevel                    : 0
 	    useTimePeaks                  : 0
-	    maxElectronHitEnergy          : 0.007
 	    diagPlugin : { @table::producers.DeltaFinder.diagPlugin
 		mcDiag                    : true
 		printElectrons            : 1
