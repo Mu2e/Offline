@@ -44,31 +44,39 @@ source       : {
     module_type : RootInput 
 }
 
+producers: { 
+    @table::CaloCluster.producers
+    @table::CaloCluster.producersMC
+    @table::Tracking.producers
+    @table::CalPatRec.producers
+}
+
+filters: {
+    @table::CalPatRec.filters
+}
+
 physics: { 
     producers : { 
 
-	@table::Tracking.producers
+	@table::producers
 
-	PrefetchData: { @table::CalPatRec.producers.PrefetchData 
+	PrefetchData: { @table::producers.PrefetchData 
 	    strawHitPositionCollectionTag : MakeStrawHitPositions 
 	    strawHitFlagCollectionTag     : FlagStrawHits
 	}
 
-	DeltaFinder: { @table::CalPatRec.producers.DeltaFinder
-	    maxElectronHitEnergy          : 0.007
-	    maxChi2Stereo                 : 10.
-#	    maxChi2Neighbor               : 25.                   # 
-#	    maxChi2Radial                 : 25.                   # 
-#	    maxDriftTime                  : 50.
-	    StrawHitPositionCollectionTag : MakeStrawHitPositions
+	DeltaFinder: { @table::producers.DeltaFinder
+	    useTimePeaks                  : 0
+	    maxElectronHitEnergy          : 0.0035
+	    StrawHitPositionCollectionTag : makeSH # MakeStrawHitPositions
 	    debugLevel                    : 1
 	    diagLevel                     : 1
-	    diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
+	    diagPlugin : { @table::producers.DeltaFinder.diagPlugin
 		mcDiag                        : true
 		printElectrons                : 1
 		printElectronsHits            : 1
 
-		printElectronsMinMom          : 100.
+		printElectronsMinMom          : -1. # 100.
 		printElectronsMaxMom          : 110.
 		printElectronsMinNHits        : 0
 		printElectronsMaxFReco        : 1.1 # 0.5
@@ -85,24 +93,25 @@ physics: {
 	    }
 	}
 
-	DeltaFinderAna: { @table::CalPatRec.producers.DeltaFinderAna
+	DeltaFinderAna: { @table::producers.DeltaFinderAna
 	    debugLevel                    : 0
 	    strawHitFlagCollectionTag     : DeltaFinder
 	}
     }
 
-    filters : { }
+    filters : { @table::filters}
 
     analyzers : {
     }
 
-    p1: [ @sequence::Tracking.PrepareHits, DeltaFinder, DeltaFinderAna ]
-    p2: [ @sequence::Tracking.PrepareHits, DeltaFinder ]
-    p3: [ DeltaFinder ]
-    p4: [ PrefetchData, DeltaFinder ]
-    p5: [ PrefetchData, DeltaFinder, DeltaFinderAna ]
+    p1: [ @sequence::Tracking.PrepareHits, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+    p2: [ @sequence::Tracking.PrepareHits, CalTimePeakFinder, DeltaFinder ]
+    p3: [               CalTimePeakFinder, DeltaFinder ]
+    p4: [ PrefetchData, CalTimePeakFinder, DeltaFinder ]
+    p5: [ PrefetchData, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+    p6: [ PrefetchData, @sequence::CaloCluster.Reco, @sequence::CaloCluster.TruthMatch, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
 
-    trigger_paths : [ p5 ]
+    trigger_paths : [ p6 ]
     out           : []
     end_paths     : [ out ]
 }

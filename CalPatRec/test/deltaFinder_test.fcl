@@ -14,7 +14,7 @@ END_PROLOG
 
 services : {
     message               : @local::default_message
-    TFileService          : { fileName : "delta_delta_finder.root" }
+    TFileService          : { fileName : "deltaFinder_test.root" }
     RandomNumberGenerator : { }
     #   Timing                : { }
     GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"      }
@@ -44,22 +44,33 @@ source       : {
     module_type : RootInput 
 }
 
+producers: { 
+    @table::CaloCluster.producers
+    @table::CaloCluster.producersMC
+    @table::Tracking.producers
+    @table::CalPatRec.producers
+}
+
+filters: {
+    @table::CalPatRec.filters
+}
+
 physics: { 
     producers : { 
+	@table::producers
 
-	@table::Tracking.producers
-
-	PrefetchData: { @table::PrefetchData 
+	PrefetchData: { @table::producers.PrefetchData 
 	    strawHitPositionCollectionTag : MakeStrawHitPositions 
 	    strawHitFlagCollectionTag     : FlagStrawHits
 	}
 
-	DeltaFinder: { @table::CalPatRec.producers.DeltaFinder
+	DeltaFinder: { @table::producers.DeltaFinder
 	    StrawHitPositionCollectionTag : MakeStrawHitPositions
 	    diagLevel                     : 0
 	    debugLevel                    : 0
+	    useTimePeaks                  : 0
 	    maxElectronHitEnergy          : 0.007
-	    diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
+	    diagPlugin : { @table::producers.DeltaFinder.diagPlugin
 		mcDiag                    : true
 		printElectrons            : 1
 		printElectronsMinMom      : 0.
@@ -69,24 +80,24 @@ physics: {
 	    }
 	}
 
-	SeedFinderAna: { @table::SeedFinderAna
+	DeltaFinderAna: { @table::producers.DeltaFinderAna
 	    debugLevel                    : 0
 	    strawHitFlagCollectionTag     : DeltaFinder
 	}
     }
 
-    filters : { }
+    filters   : { @table::filters }
 
-    analyzers : {
-    }
+    analyzers : { }
 
-    p1: [ @sequence::Tracking.PrepareHits, DeltaFinder, SeedFinderAna ]
-    p2: [ @sequence::Tracking.PrepareHits, DeltaFinder ]
-    p3: [ DeltaFinder ]
-    p4: [ PrefetchData, DeltaFinder ]
-    p5: [ PrefetchData, DeltaFinder, SeedFinderAna ]
+    p1: [ @sequence::Tracking.PrepareHits, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+    p2: [ @sequence::Tracking.PrepareHits, CalTimePeakFinder, DeltaFinder ]
+    p3: [               CalTimePeakFinder, DeltaFinder ]
+    p4: [ PrefetchData, CalTimePeakFinder, DeltaFinder ]
+    p5: [ PrefetchData, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+    p6: [ PrefetchData, @sequence::CaloCluster.Reco, @sequence::CaloCluster.TruthMatch, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
 
-    trigger_paths : [ p5 ]
+    trigger_paths : [ p6 ]
     out           : []
     end_paths     : [ out ]
 }

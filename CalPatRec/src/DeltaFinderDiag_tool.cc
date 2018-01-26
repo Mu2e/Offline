@@ -38,8 +38,11 @@ namespace mu2e {
     };
 
     struct SeedHist_t {
-      TH1F*  fChi2;
+      TH1F*  fChi2N;
       TH1F*  fChi2Tot;
+      TH1F*  fHitChi2Min;			// chi2 of the first two hits along the wire
+      TH1F*  fChi2Neighbour;
+      TH1F*  fChi2Radial;
       TH1F*  fNFacesWithHits;
       TH1F*  fNHitsPerFace;
       TH1F*  fNHitsPerSeed;
@@ -218,14 +221,17 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::bookSeedHistograms(SeedHist_t* Hist, art::TFileDirectory* Dir) {
 
-    Hist->fChi2            = Dir->make<TH1F>("chi2d"       , "Chi (first 2 hits)", 1000, 0., 100.);
+    Hist->fChi2N           = Dir->make<TH1F>("chi2n"       , "Chi2/N"            , 1000, 0., 100.);
     Hist->fChi2Tot         = Dir->make<TH1F>("chi2t"       , "Chi (all 2 hits)"  , 1000, 0., 100.);
+    Hist->fHitChi2Min      = Dir->make<TH1F>("hitchi2min"  , "Hit Chi (min)"     , 1000, 0.,  50.);
+    Hist->fChi2Neighbour   = Dir->make<TH1F>("chi2_nb"     , "Chi2 neighbour"    , 1000, 0.,  50.);
+    Hist->fChi2Radial      = Dir->make<TH1F>("chi2_r"      , "Chi2 radial"       , 1000, 0.,  50.);
     Hist->fNFacesWithHits  = Dir->make<TH1F>("nfaces_wh"   , "Number of faces with hits", 5, 0., 5.);
     Hist->fNHitsPerFace    = Dir->make<TH1F>("nhits_face"  , "Number of hits per face", 20, 0., 20.);
     Hist->fNHitsPerSeed    = Dir->make<TH1F>("nhits_seed"  , "Number of hits per seed", 40, 0., 40.);
     Hist->fSeedRadius      = Dir->make<TH1F>("rad"         , "Seed radius", 500, 0., 1000.);
     Hist->fSeedMomentum    = Dir->make<TH1F>("mom"         , "Seed momentum", 400, 0., 400.);
-    Hist->fSeedSize        = Dir->make<TH2F>("preseed_size", "Seed (nh2+1):(nh1+1)", 20, 0., 20.,20,0,20);
+    Hist->fSeedSize        = Dir->make<TH2F>("seed_size"   , "Seed (nh2+1):(nh1+1)", 20, 0., 20.,20,0,20);
   }
 
 //-----------------------------------------------------------------------------
@@ -397,18 +403,74 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void  DeltaFinderDiag::fillSeedHistograms(SeedHist_t* Hist, DeltaSeed* Seed) {
 
-    Hist->fChi2->Fill(Seed->chi2dof);
+    DeltaFinderTypes::Intersection_t res;
+
+    Hist->fChi2N->Fill(Seed->Chi2N());
     Hist->fChi2Tot->Fill(Seed->Chi2Tot());
 
-    int loc1 = Seed->fType/10;
-    int loc2 = Seed->fType % 10;
+    if (Seed->fType != 0) {
+      int face1 = Seed->fType/10;
+      int face2 = Seed->fType % 10;
 
-    int nh1 = Seed->hitlist[loc1].size();
-    int nh2 = Seed->hitlist[loc2].size();
+      int nh1 = Seed->hitlist[face1].size();
+      int nh2 = Seed->hitlist[face2].size();
 
-    Hist->fSeedSize->Fill(nh1+1,nh2+1);
+      const HitData_t* hd1 = Seed->hitlist[face1].at(0);
+      const HitData_t* hd2 = Seed->hitlist[face2].at(0);
+
+      DeltaFinderTypes::findIntersection(hd1,hd2,&res);
+
+      double chi1 = res.wd1/hd1->fSigW;
+      double chi2 = res.wd2/hd2->fSigW;
+
+      Hist->fHitChi2Min->Fill(chi1*chi1);
+      Hist->fHitChi2Min->Fill(chi2*chi2);
+      Hist->fSeedSize->Fill(nh1,nh2);
+
+      for (int i=1; i<nh2; i++) {
+	const HitData_t* hd  = Seed->hitlist[face2][i];
+	DeltaFinderTypes::findIntersection(hd,hd1,&res);
+	float chi = res.wd1/hd->fSigW;
+	Hist->fChi2Neighbour->Fill(chi*chi);
+      }
+
+      for (int i=1; i<nh1; i++) {
+	const HitData_t* hd  = Seed->hitlist[face1][i];
+	DeltaFinderTypes::findIntersection(hd,hd2,&res);
+	float chi = res.wd1/hd->fSigW;
+	Hist->fChi2Neighbour->Fill(chi*chi);
+      }
+
+      double _sigmaR = 10;
+
+      for (int face=0; face<kNFaces; face++) {
+	if ((face == face1) || (face == face2)) continue;
+	int nh = Seed->hitlist[face].size();
+	for (int ih=0; ih<nh; ih++) {
+	  const HitData_t* hd  = Seed->hitlist[face][ih];
+//-----------------------------------------------------------------------------
+// reproduce DeltaFinder algorithm
+//-----------------------------------------------------------------------------
+	  const StrawHitPosition* shp  = hd->fPos;
+	  CLHEP::Hep3Vector       dxyz = shp->pos()-Seed->CofM; // distance from hit to preseed
+//-----------------------------------------------------------------------------
+// split into wire parallel and perpendicular components
+//-----------------------------------------------------------------------------
+	  const CLHEP::Hep3Vector& wdir = hd->fStraw->getDirection();
+	  CLHEP::Hep3Vector d_par    = (dxyz.dot(wdir))/(wdir.dot(wdir))*wdir; 
+	  CLHEP::Hep3Vector d_perp_z = dxyz-d_par;
+	  float  d_perp              = d_perp_z.perp();
+	  double sigw                = hd->fSigW;
+	  float  chi2_par            = (d_par.mag()/sigw)*(d_par.mag()/sigw);
+	  float  chi2_perp           = (d_perp/_sigmaR)*(d_perp/_sigmaR);
+	  float  chi2r               = chi2_par + chi2_perp;
+	  Hist->fChi2Radial->Fill(chi2r);
+	}
+      }
+    }
+
     Hist->fNFacesWithHits->Fill(Seed->fNFacesWithHits);
-    Hist->fSeedRadius->Fill(Seed->CofM.perp());
+    Hist->fSeedRadius->Fill    (Seed->CofM.perp());
 
     double mom (-1.);
     if (Seed->fPreSeedMcPart[0]) mom = Seed->fPreSeedMcPart[0]->Momentum();
@@ -843,7 +905,7 @@ namespace mu2e {
 	printf("station: %2i N(seeds): %3i\n",st,nseeds);
 	if (nseeds > 0) {
 	  printf("------------------------------------------------------------------------------------------------------------------------------\n");
-	  printf("      st  i good type   SHID:MCID(0)    SHID:MCID(1)       chi2    chi2t mintime  maxtime      X        Y         Z   nfwh nht\n");
+	  printf("      st  i good type   SHID:MCID(0)    SHID:MCID(1)       chi21   chi22 mintime  maxtime      X        Y         Z   nfwh nht\n");
 	  printf("------------------------------------------------------------------------------------------------------------------------------\n");
 	  for (int ps=0; ps<nseeds; ++ps) {
 	    DeltaSeed* seed = _data->seedHolder[st].at(ps);
@@ -857,7 +919,7 @@ namespace mu2e {
 	      printf("(%5i:%9i)",-1,-1);
 	      printf("(%5i:%9i)",-1,-1);
 	    }
-	    printf(" %8.2f %8.2f",seed->chi2dof,seed->Chi2Tot());
+	    printf(" %8.2f %8.2f",seed->fChi21,seed->fChi22);
 	    printf("%8.1f %8.1f",seed->fMinTime,seed->fMaxTime);
 	    printf(" %8.3f %8.3f %9.3f",seed->CofM.x(),seed->CofM.y(),seed->CofM.z());
 	    printf("%4i",seed->fNFacesWithHits);
@@ -909,7 +971,7 @@ namespace mu2e {
 	  int pdg_id = -1;
 	  if (dc->fMcPart) pdg_id = dc->fMcPart->fPdgID;
 	  printf("----------------------------------------------------------------------------------\n");
-	  printf("      i  nh n(CE) ns s1 s2     X        Y        Z    chi2s   chi2t   htmin   htmax   t0min   t0max   PdgID \n");
+	  printf("      i  nh n(CE) ns s1 s2     X        Y        Z    chi21   chi22   htmin   htmax   t0min   t0max   PdgID \n");
 	  printf("----------------------------------------------------------------------------------\n");
 	  printf(":dc:%3i %3i  %3i",i,dc->fNHits,dc->fNHitsCE);
 	  printf(" %3i",dc->n_seeds);
@@ -924,7 +986,7 @@ namespace mu2e {
 	      printf("        %3i  %3i    %2i:%03i",ds->fNHitsTot,ds->fNHitsCE,is,ds->fNumber);
 	      printf(" %7.2f %7.2f %8.2f",
 		     ds->CofM.x(),ds->CofM.y(),ds->CofM.z());
-	      printf(" %7.1f %7.1f",ds->chi2dof, ds->chi2tot);
+	      printf(" %7.1f %7.1f",ds->fChi21, ds->fChi22);
 	      printf(" %7.1f %7.1f",ds->fMinTime,ds->fMaxTime);
 	      printf(" %7.1f %7.1f",dc->fT0Min[is],dc->fT0Max[is]);
 	      if (ds->fType != 0) {
@@ -998,7 +1060,7 @@ namespace mu2e {
 
     return 0;
   }
-    
+
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::printHitData(const HitData_t* Hd, int Index) {
 

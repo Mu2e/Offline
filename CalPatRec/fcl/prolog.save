@@ -409,11 +409,7 @@ CalPatRec : { @table::CalPatRec
 	DeltaFinder : { module_type:DeltaFinder
 	    strawHitCollectionTag         : makeSH                # input coll
 	    strawHitFlagCollectionTag     : shouldNotBeUsed       # input coll
-<<<<<<< Updated upstream
 	    strawHitPositionCollectionTag : makeSH                # input coll
-=======
-	    strawHitPositionCollectionTag : makeSH # MakeStrawHitPositions # input coll
->>>>>>> Stashed changes
 	    timePeakCollectionTag         : CalTimePeakFinder
 	    useTimePeaks                  : 1
 	                                                          # +/-70 to provide 100% efficiency for delta tagging + +/- 5 
@@ -493,11 +489,7 @@ CalPatRec : { @table::CalPatRec
 
 	    strawHitCollectionTag         : makeSH
 	    stereoHitCollectionTag        : MakeStereoHits
-<<<<<<< Updated upstream
 	    strawHitPositionCollectionTag : makeSH
-=======
-	    strawHitPositionCollectionTag : makeSH # MakeStrawHitPositions
->>>>>>> Stashed changes
 	    strawDigiCollection           : makeSD
 	    strawHitFlagCollectionTag     : FlagStrawHits
 	}
@@ -602,11 +594,7 @@ CalPatRec : { @table::CalPatRec
 	    useAsFilter                                 : 0
 	    StrawHitCollectionLabel                     : makeSH
 	    StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
-<<<<<<< Updated upstream
 	    StrawHitPositionCollectionLabel             : makeSH
-=======
-	    StrawHitPositionCollectionLabel             : makeSH # MakeStrawHitPositions
->>>>>>> Stashed changes
 	    caloClusterModuleLabel                      : CaloClusterFromProtoCluster
 	    HitSelectionBits                            : [] # ["EnergySelection","TimeSelection"]
 	    BackgroundSelectionBits                     : [] # ["Background"]
@@ -631,11 +619,7 @@ CalPatRec : { @table::CalPatRec
 	    useAsFilter                                 : 0
 	    StrawHitCollectionLabel                     : makeSH
 	    StrawHitFlagCollectionLabel                 : DeltaFinder
-<<<<<<< Updated upstream
 	    StrawHitPositionCollectionLabel             : makeSH
-=======
-	    StrawHitPositionCollectionLabel             : makeSH # MakeStrawHitPositions
->>>>>>> Stashed changes
 	    TimeClusterCollectionLabel                  : CalTimePeakFinder
 	    minNHitsTimeCluster                         : 15
 	    fitparticle                                 : @local::Particle.eminus
@@ -685,11 +669,7 @@ CalPatRec : { @table::CalPatRec
 	    addhits                                     : true
 	    StrawHitCollectionLabel                     : makeSH
 	    StrawDigiCollectionLabel                    : makeSD
-<<<<<<< Updated upstream
 	    StrawHitPositionCollectionLabel             : makeSH	 
-=======
-	    StrawHitPositionCollectionLabel             : makeSH # MakeStrawHitPositions	 
->>>>>>> Stashed changes
 	    StrawHitFlagCollectionLabel                 : DeltaFinder
 	    TrackSeedModuleLabel                        : CalSeedFit
 	    CalTimePeakModuleLabel                      : CalTimePeakFinder
@@ -776,13 +756,6 @@ CalPatRec: { @table::CalPatRec
    }
 }
 
-<<<<<<< Updated upstream
-=======
-# CalPatRec.prepare_hits : [ makeSH, MakeStrawHitPositions, CalTimePeakFinder, DeltaFinder]
-
-# StrawHitPositions are made by the new makeSH module now
-
->>>>>>> Stashed changes
 CalPatRec.prepare_hits : [ makeSH, CalTimePeakFinder, DeltaFinder]
 
 CalPatRec.reco     : [ @sequence::CalPatRec.prepare_hits, CalHelixFinder   , CalSeedFit   , CalTrkFit    ]
