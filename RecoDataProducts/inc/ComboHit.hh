@@ -77,9 +77,9 @@ namespace mu2e {
       enum sort{none=0,panel};
       ComboHitCollection() : _sorted(none) {}
       typedef std::vector<ComboHitCollection::const_iterator> CHCIter;
-      // fill a vector of StrawIds from a given ComboHit by tracking back its parents to the original
+      // fill a vector of StrawHitIds from a given ComboHit by tracking back its parents to the original
       // This function is called recursively, so the the vector must be empty on the top-most call
-      void fillStrawIds(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
+      void fillStrawHitIds(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
       // fill a vector of iterators to the ComboHits 1 layer below a given ComboHit.  This is NOT RECURSIVE
       // return value says whether there's a layer below or not (if not, output is blank)
       bool fillComboHits(art::Event const& event, uint16_t chindex, CHCIter& iters) const;

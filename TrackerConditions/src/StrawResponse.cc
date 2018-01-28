@@ -18,7 +18,7 @@ namespace mu2e {
     int imax = int(xvals.size()-1);
     // approximate constant binning to get initial guess
     float xbin = (xvals.back()-xvals.front())/(xvals.size()-1);
-    int ibin = int(floor((xval-xvals.front())/xbin));
+    int ibin = min(imax,max(0,int(floor((xval-xvals.front())/xbin))));
     // scan to exact bin
     while(ibin > 0 && xval < xvals[ibin])
       --ibin;

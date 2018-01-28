@@ -26,7 +26,7 @@ namespace mu2e {
     }
   }
 
-  ComboHit::ComboHit() : _wres(-1.0),_tres(-1.0), _wdist(0.), _time(0.0), _edep(0.0), _qual(0.0), _ncombo(0), _nsh(0) {}
+  ComboHit::ComboHit() : _wres(-1.0),_tres(-1.0), _wdist(0.), _time(0.0), _edep(0.0), _qual(0.0), _hphi(0.0), _ncombo(0), _nsh(0), _pind{0} {}
 
   ComboHit::ComboHit(ComboHit const& shp, StrawHitIndex hi, double phi) : ComboHit(shp)
   {
@@ -78,8 +78,8 @@ namespace mu2e {
     }
   }
 
-  void ComboHitCollection::fillStrawIds(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const {
-    ComboHit const& ch = (*this)[chindex];
+  void ComboHitCollection::fillStrawHitIds(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const {
+    ComboHit const& ch = this->at(chindex);
    // see if this collection references other collections: if so, go down 1 layer
     if(_parent.isValid()){
     // get the parent handle
@@ -90,16 +90,16 @@ namespace mu2e {
 	const ComboHitCollection *pc = ph.product();
 	// recursive calls on the ComboHits in the parent collection referenced by the specified ComboHit
 	for(uint16_t iind = 0;iind < ch.nCombo(); ++iind){
-	  pc->fillStrawIds(event,ch.index(iind),shids);
+	  pc->fillStrawHitIds(event,ch.index(iind),shids);
 	}
       } else {
 	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: Can't find parent collection" << std::endl;
       }
     } else {
+      if(ch.nCombo() != 1 || ch.nStrawHits() != 1)
+	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHit" << std::endl;
       // if not, it is the bottom and references StrawHits; fill the index vector with the content
-      for(uint16_t iind = 0;iind < ch.nCombo(); ++iind){
-	shids.push_back(ch.index(iind));
-      }
+      shids.push_back(ch.index(0));
     }
   }
 

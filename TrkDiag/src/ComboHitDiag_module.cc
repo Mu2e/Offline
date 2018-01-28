@@ -24,7 +24,7 @@
 #include "TTree.h"
 // data
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitPosition.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
@@ -48,13 +48,9 @@ namespace mu2e
       int _diag;
       bool _mcdiag;
       // event object Tags
-      art::InputTag   _shtag;
-      art::InputTag   _shptag;
       art::InputTag   _chtag;
       art::InputTag   _mcdigistag;
       // event data cache
-      const StrawHitCollection* _shcol;
-      const StrawHitPositionCollection* _shpcol;
       const ComboHitCollection* _chcol;
       const StrawDigiMCCollection *_mcdigis;
         // time offset
@@ -69,7 +65,8 @@ namespace mu2e
       Float_t _time; // Average time for these
       Float_t _edep; // average energy deposit for these
       Float_t _qual; // quality of combination
-      Int_t _nsh; // number of associated straw hits
+      Int_t _nsh, _nch; // number of associated straw hits
+      Int_t _strawid; // strawid info
       // mc diag
       XYZVec _mcpos; // average MC hit position
       Float_t _mctime, _mcdist;
@@ -85,9 +82,7 @@ namespace mu2e
     art::EDAnalyzer(pset),
     _diag		(pset.get<int>("diagLevel",1)),
     _mcdiag		(pset.get<bool>("MCdiag",true)),
-    _shtag		(pset.get<art::InputTag>("StrawHitCollection","makeSH")),
-    _shptag		(pset.get<art::InputTag>("StrawHitPositionCollection","MakeStrawHitPositions")),
-    _chtag		(pset.get<art::InputTag>("ComboHitCollection","CombineHits")),
+    _chtag		(pset.get<art::InputTag>("ComboHitCollection","CombineStrawHits")),
     _mcdigistag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
 
@@ -110,6 +105,8 @@ namespace mu2e
       _chdiag->Branch("edep",&_edep,"edep/F");
       _chdiag->Branch("qual",&_qual,"qual/F");
       _chdiag->Branch("nsh",&_nsh,"nsh/I");
+      _chdiag->Branch("nch",&_nch,"nch/I");
+      _chdiag->Branch("strawid",&_strawid,"strawid/I");
       if(_diag > 1)
 	_chdiag->Branch("chinfo",&_chinfo);
       if(_mcdiag){
@@ -129,39 +126,49 @@ namespace mu2e
     // find data in event
     findData(evt);
     // loop over combo hits
-    for(auto ch : *_chcol) {
+    for(size_t ich = 0;ich < _chcol->size(); ++ich){
+      ComboHit const& ch =(*_chcol)[ich];
       // general information
-      _nsh = ch._nsh;
-      _pos = ch._pos;
-      _wdir = ch._wdir;
-      _wdist = ch._wdist;
-      _wres = ch._wres;
-      _tres = ch._tres;
-      _time = ch._time;
-      _edep = ch._edep;
-      _qual = ch._qual;
+      _nsh = ch.nStrawHits();
+      _nch = ch.nCombo();
+      _strawid = ch.sid().strawId2();
+      _pos = ch.pos();
+      _wdir = ch.wdir();
+      _wdist = ch.wireDist();
+      _wres = ch.wireRes();
+      _tres = ch.transRes();
+      _time = ch.time();
+      _edep = ch.energyDep();
+      _qual = ch.qual();
       // center of this wire
       XYZVec cpos = _pos - _wdist*_wdir;
       // now hit-by-hit info
       _chinfo.clear();
       if(_diag > 1){
-	for(size_t ish=0;ish < ch._nsh; ++ish) {
+      // loop over comopnents (also ComboHits)
+	ComboHitCollection::CHCIter compis;
+	_chcol->fillComboHits(evt,ich,compis);
+	for(auto compi : compis) {
+	  ComboHit const& comp = *compi;
 	  ComboHitInfo chi;
-	  StrawHit const& sh = _shcol->at(ch.index(ish));
-	  StrawHitPosition const& shp = _shpcol->at(ch.index(ish));
-	  XYZVec chpos(shp.pos().x(), shp.pos().y(), shp.pos().z());
-	  chi._dwire = (chpos-ch._pos).Dot(ch._wdir);
-	  chi._dwerr = shp.posRes(StrawHitPosition::wire);
-	  chi._dperp = sqrt((chpos-ch._pos).mag2() - chi._dwire*chi._dwire);
-	  chi._dtime = std::min(sh.time(TrkTypes::cal),sh.time(TrkTypes::hv)) - ch._time; 
-	  chi._dedep = sh.energyDep() - ch._edep;
+	  XYZVec dpos = comp.pos()-ch.pos();
+	  chi._dwire = dpos.Dot(ch.wdir());
+	  chi._dwerr = comp.posRes(ComboHit::wire);
+	  chi._dperp = sqrt(dpos.mag2() - chi._dwire*chi._dwire);
+	  chi._dtime = comp.time()- ch.time(); 
+	  chi._dedep = comp.energyDep() - ch.energyDep();
+	  chi._ds = comp.sid().straw() - compis.front()->sid().straw();
+	  chi._dp = comp.sid().panel() - compis.front()->sid().panel();
 	  _chinfo.push_back(chi);
 	}
       }
       if(_mcdiag){
 	_chinfomc.clear();
-	// use the 1st hit to define the MC match; this is arbitrary but adequate
-	StrawDigiMC const& mcd1 = _mcdigis->at(ch.index(0));
+	// get the list of StrawHit indices associated with this ComboHit
+	std::vector<StrawHitIndex> shids;
+	_chcol->fillStrawHitIds(evt,ich,shids);
+	// use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
+	StrawDigiMC const& mcd1 = _mcdigis->at(shids[0]);
 	art::Ptr<StepPointMC> const& spmcp = mcd1.stepPointMC(TrkTypes::cal);
 	art::Ptr<SimParticle> spp = spmcp->simParticle();
 	_mctime = _toff.timeWithOffsetsApplied(*spmcp);
@@ -171,9 +178,9 @@ namespace mu2e
 	  _mcgen = spp->genParticle()->generatorId().id();
 	// find the relation with each hit
 	_mcpos = XYZVec(0.0,0.0,0.0);
-	for(size_t ish=0;ish < ch._nsh; ++ish) {
+	for(auto shi : shids) {
 	  ComboHitInfoMC chimc;
-	  StrawDigiMC const& mcd = _mcdigis->at(ch.index(ish));
+	  StrawDigiMC const& mcd = _mcdigis->at(shi);
 	  chimc._rel = MCRelationship::relationship(mcd,mcd1);
 	  _chinfomc.push_back(chimc);
 	  // find average MC properties
@@ -188,11 +195,7 @@ namespace mu2e
   }
 
   bool ComboHitDiag::findData(const art::Event& evt){
-    _shcol = 0; _shpcol = 0; _chcol = 0;  _mcdigis = 0;
-    auto shH = evt.getValidHandle<StrawHitCollection>(_shtag);
-    _shcol = shH.product();
-    auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shptag);
-    _shpcol = shpH.product();
+    _chcol = 0;  _mcdigis = 0;
     auto chH = evt.getValidHandle<ComboHitCollection>(_chtag);
     _chcol = chH.product();
     if(_mcdiag){
@@ -201,7 +204,7 @@ namespace mu2e
       // update time offsets
       _toff.updateMap(evt);
     }
-    return _shcol != 0 && _chcol != 0 && (_mcdigis != 0 || !_mcdiag);
+    return _chcol != 0 && (_mcdigis != 0 || !_mcdiag);
   }
 }
 // Part of the magic that makes this class a module.

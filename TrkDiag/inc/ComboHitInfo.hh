@@ -8,6 +8,8 @@ namespace mu2e {
     Float_t _dwerr; // estimated error on distance to center
     Float_t _dtime; // time diference to average
     Float_t _dedep; // energy dep difference
+    Int_t _ds; // straw difference
+    Int_t _dp; // panel difference
   };
   struct ComboHitInfoMC {
     Int_t _rel; // relation to the 1st hit
