@@ -4,7 +4,7 @@
 //  Specify a subset of StrawId fields, and provide a set of
 //  accessors accordingly
 //
-#include "DataProducts/inc/StrawId2.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include <vector>
 namespace mu2e {
   class StrawIdMask {
@@ -27,15 +27,15 @@ namespace mu2e {
       for(auto fval :fields ) _mask |= fieldMask(fval);
     }
     // comare StrawIds at the given field.
-    bool lessthan (StrawId2 const& sid1, StrawId2 const& sid2) const {
-      return (sid1.strawId2() & _mask) < (sid2.strawId2() & _mask); }
-    bool equal (StrawId2 const& sid1, StrawId2 const& sid2) const {
-      return (sid1.strawId2() & _mask) == (sid2.strawId2() & _mask); }
-    bool notequal (StrawId2 const& sid1, StrawId2 const& sid2) const {
+    bool lessthan (StrawId const& sid1, StrawId const& sid2) const {
+      return (sid1.asUint16() & _mask) < (sid2.asUint16() & _mask); }
+    bool equal (StrawId const& sid1, StrawId const& sid2) const {
+      return (sid1.asUint16() & _mask) == (sid2.asUint16() & _mask); }
+    bool notequal (StrawId const& sid1, StrawId const& sid2) const {
       return (! equal(sid1,sid2)); }
     // return a truncated StrawID.  This is returned by value
-    StrawId2 maskStrawId(StrawId2 const& sid) const {
-      return StrawId2(sid.strawId2() & _mask); }
+    StrawId maskStrawId(StrawId const& sid) const {
+      return StrawId(sid.asUint16() & _mask); }
     private:
     uint16_t _mask;
   };

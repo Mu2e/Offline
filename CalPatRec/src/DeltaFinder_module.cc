@@ -149,7 +149,7 @@ namespace mu2e {
 
     void         runDeltaFinder();
 
-    //    int          findIntersection(const HitData_t* Hit1, const HitData_t* Hit2, Intersection_t* Result);
+    int          findIntersection(const HitData_t* Hit1, const HitData_t* Hit2, Intersection_t* Result);
 //-----------------------------------------------------------------------------
 // overloaded methods of the module class
 //-----------------------------------------------------------------------------
@@ -802,7 +802,6 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-<<<<<<< HEAD
   int DeltaFinder::findIntersection(const HitData_t* Hd1, const HitData_t* Hd2, Intersection_t* Result) {
     double x1, y1, x2, y2, nx1, ny1, nx2, ny2;
     

@@ -452,7 +452,7 @@ namespace mu2e {
 // reproduce DeltaFinder algorithm
 //-----------------------------------------------------------------------------
 	  const StrawHitPosition* shp  = hd->fPos;
-	  CLHEP::Hep3Vector       dxyz = shp->pos()-Seed->CofM; // distance from hit to preseed
+	  CLHEP::Hep3Vector       dxyz = shp->posCLHEP()-Seed->CofM; // distance from hit to preseed
 //-----------------------------------------------------------------------------
 // split into wire parallel and perpendicular components
 //-----------------------------------------------------------------------------

@@ -87,7 +87,7 @@ namespace mu2e {
     chcol->setParent(chH);
  
  // sort hits by panel
-    std::array<std::vector<uint16_t>,StrawId2::_nupanels> panels;
+    std::array<std::vector<uint16_t>,StrawId::_nupanels> panels;
     size_t nsh = _chcol->size();
     for(uint16_t ish=0;ish<nsh;++ish){
       ComboHit const& ch = (*_chcol)[ish];

@@ -4,15 +4,15 @@ namespace mu2e {
   uint16_t StrawIdMask::fieldMask(StrawIdMask::field fval) {
     switch (fval) {
       case plane :
-	return StrawId2::_planemsk;
+	return StrawId::_planemsk;
       case panel :
-	return StrawId2::_panelmsk;
+	return StrawId::_panelmsk;
       case straw :
-	return StrawId2::_strawmsk;
+	return StrawId::_strawmsk;
       case station :
-	return StrawId2::_stationmsk;
+	return StrawId::_stationmsk;
       case layer :
-	return StrawId2::_layermsk;
+	return StrawId::_layermsk;
       default:
 	return 0;
     }

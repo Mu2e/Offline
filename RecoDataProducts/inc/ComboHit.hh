@@ -7,7 +7,7 @@
 // Original author David Brown Dec 2017
 //
 // Mu2e includes
-#include "DataProducts/inc/StrawId2.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawIdMask.hh"
 #include "RecoDataProducts/inc/XYZVec.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
@@ -44,7 +44,7 @@ namespace mu2e {
     Float_t time() const { return _time; }
     Float_t qual() const { return _qual; }
     StrawHitFlag const& flag() const { return _flag; }
-    StrawId2 const& sid() const { return _sid; }
+    StrawId const& sid() const { return _sid; }
     Float_t wireRes() const { return _wres; }
     Float_t transRes() const { return _tres; }
     Float_t wireErr2() const { return _wres*_wres; }
@@ -68,7 +68,7 @@ namespace mu2e {
     typedef std::array<uint16_t,MaxNCombo> PIArray; // array of indices into parent collection
     PIArray _pind; // Indices back to parent objects
     StrawHitFlag _flag; // flag condition of this hit (agregate)
-    StrawId2 _sid; // straw identifier; some fields may not be complete, use in conjunction with mask
+    StrawId _sid; // straw identifier; some fields may not be complete, use in conjunction with mask
     StrawIdMask _mask; // mask for valid StrawId fields
   };
 //  typedef std::vector<mu2e::ComboHit> ComboHitCollection;

@@ -229,7 +229,7 @@ namespace mu2e {
 	  ch._time = time;
 	  ch._edep = energy;
 	  ch.addIndex(isd);
-	  ch._sid = StrawId2(straw.id().getPlane(),straw.id().getPanel(),straw.id().getStraw());
+	  ch._sid = StrawId(straw.id().getPlane(),straw.id().getPanel(),straw.id().getStraw());
 	  ch._mask = _mask;
 	  // crude initial estimate of the transverse error
 	  static const double invsqrt12 = 1.0/sqrt(12.0);

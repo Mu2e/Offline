@@ -131,7 +131,7 @@ namespace mu2e
       // general information
       _nsh = ch.nStrawHits();
       _nch = ch.nCombo();
-      _strawid = ch.sid().strawId2();
+      _strawid = ch.sid().asUint16();
       _pos = ch.pos();
       _wdir = ch.wdir();
       _wdist = ch.wireDist();

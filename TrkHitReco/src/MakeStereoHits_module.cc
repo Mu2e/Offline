@@ -254,7 +254,7 @@ namespace mu2e {
   // initialize
     const TTracker& tt(*GeomHandle<TTracker>());
     // establihit the extent of a panel using the longest straw (0)
-    Straw const& straw = tt.getStraw(StrawId(0,0,0,0));
+    Straw const& straw = tt.getStraw(StrawId(0,0,0));
     double phi0 = (straw.getMidPoint()-straw.getHalfLength()*straw.getDirection()).phi();
     double phi1 = (straw.getMidPoint()+straw.getHalfLength()*straw.getDirection()).phi();
     double lophi = std::min(phi0,phi1);
@@ -266,7 +266,7 @@ namespace mu2e {
       for(int ipan=0;ipan<StrawId::_npanels;++ipan){
 	StrawId sid2(ipla,ipan,0);
 	uint16_t upan = sid2.uniquePanel();
-	Straw const& straw = tt.getStraw(StrawId(ipla,ipan,0,0));
+	Straw const& straw = tt.getStraw(StrawId(ipla,ipan,0));
 	float phi = straw.getMidPoint().phi();
 	  // loop over nearby panels and check for an overlap
 	size_t minpla(ipla), maxpla(ipla);
@@ -278,7 +278,7 @@ namespace mu2e {
 	  for(int jpan=0;jpan<StrawId::_npanels;++jpan){
 	    StrawId osid2(jpla,jpan,0);
 	    if(osid2.uniquePanel() != sid2.uniquePanel() && osid2.station() == sid2.station()){
-	      Straw const& ostraw = tt.getStraw(StrawId(ipla,ipan,0,0));
+	      Straw const& ostraw = tt.getStraw(StrawId(ipla,ipan,0));
 	      float dphi = fabs(phi - ostraw.getMidPoint().phi());
 	      if (dphi > M_PI) dphi = 2*M_PI-dphi;
 	      if (dphi < phiwidth) _panelOverlap[upan].push_back(osid2);
