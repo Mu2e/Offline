@@ -180,77 +180,76 @@ namespace mu2e {
       
       for (size_t isd=0;isd<strawdigis.size();++isd)
       {
-          const StrawDigi& digi = strawdigis[isd];          
-          TDCTimes times;
-          strawele->tdcTimes(digi.TDC(),times);
-	  TOTTimes tots{0.0,0.0};
-	  for(size_t iend=0;iend<2;++iend){
-	    tots[iend] = digi.TOT(_end[iend])*strawele->totLSB();
-	  }
-	  // take the earliest of the 2 end times
-	  float time = std::min(times[0],times[1]);
-	  if (_filter && ( time < _minT || time > _maxT ) )continue;
+	const StrawDigi& digi = strawdigis[isd];          
+	TDCTimes times;
+	strawele->tdcTimes(digi.TDC(),times);
+	TOTTimes tots{0.0,0.0};
+	for(size_t iend=0;iend<2;++iend){
+	  tots[iend] = digi.TOT(_end[iend])*strawele->totLSB();
+	}
+	// take the earliest of the 2 end times
+	float time = std::min(times[0],times[1]);
+	if (_filter && ( time < _minT || time > _maxT ) )continue;
 
-          //calorimeter filtering
-          if (_usecc && caloClusters)
-          {
-             bool outsideCaloTime(true);
-             for (const auto& cluster : *caloClusters) 
-               if (std::abs(time-cluster.time())<_clusterDt) {outsideCaloTime=false; break;}
-             if (outsideCaloTime) continue;
-          }
-          
+	//calorimeter filtering
+	if (_usecc && caloClusters)
+	{
+	  bool outsideCaloTime(true);
+	  for (const auto& cluster : *caloClusters) 
+	    if (std::abs(time-cluster.time())<_clusterDt) {outsideCaloTime=false; break;}
+	  if (outsideCaloTime) continue;
+	}
 
-          //extract energy from waveform
-	  // note: pedestal is being subtracting inside strawele, in the real experiment we will need
-	  // per-channel version of this FIXME!!!
-	  TrkHitReco::PeakFitParams params;
-	  pfit_->process(digi.adcWaveform(),params);
- 	  double energy = strawphys->ionizationEnergy(params._charge/strawphys->strawGain());
-	  if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
-	                                 << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
-                                                  
-	  if(_filter && ( energy < _minE  || energy > _maxE) ) continue;
 
-          //create straw hit
-          const Straw& straw  = tracker.getStraw( digi.strawIndex() );
-          StrawHit hit(digi.strawIndex(),times,tots,energy);
-          shCol->push_back(std::move(hit));
-	  // create combo hit.  this include 
-	  ComboHit ch;
-	  ch._nsh = 1; // 'combo' of 1 hit
-	  // get distance along wire from the straw center and it's estimated error
-	  float dw, dwerr;
-	  bool td = srep->wireDistance(hit,straw.getHalfLength(),dw,dwerr);
-	  ch._pos = straw.getMidPoint()+dw*straw.getDirection();
-	  ch._wdir = straw.getDirection();
-	  ch._wdist = dw;
-	  ch._wres = dwerr;
-	  ch._time = time;
-	  ch._edep = energy;
-	  ch.addIndex(isd);
-	  ch._sid = StrawId(straw.id().getPlane(),straw.id().getPanel(),straw.id().getStraw());
-	  ch._mask = _mask;
-	  // crude initial estimate of the transverse error
-	  static const double invsqrt12 = 1.0/sqrt(12.0);
-	  ch._tres = straw.getRadius()*invsqrt12;
-	  // set flags
-	  if (energy > _minE && energy < _maxE) ch._flag.merge(StrawHitFlag::energysel);
-	  if (time > _minT && time < _maxT)     ch._flag.merge(StrawHitFlag::timesel);
-          if (_usecc)                           ch._flag.merge(StrawHitFlag::calosel);
-	  if (td) ch._flag.merge(StrawHitFlag::tdiv); 
-	  if(_flagXT){
-	    //buffer large hit for cross-talk analysis
-	    size_t iplane       = straw.id().getPlane();
-	    size_t ipnl         = straw.id().getPanel();
-	    size_t global_panel = ipnl + iplane*npanels;
-	    hits_by_panel[global_panel].push_back(shCol->size());          
-	    if (energy >= _ctE) {largeHits.push_back(shCol->size()); largeHitPanels.push_back(global_panel);}
-	  }
+	//extract energy from waveform
+	// note: pedestal is being subtracting inside strawele, in the real experiment we will need
+	// per-channel version of this FIXME!!!
+	TrkHitReco::PeakFitParams params;
+	pfit_->process(digi.adcWaveform(),params);
+	double energy = strawphys->ionizationEnergy(params._charge/strawphys->strawGain());
+	if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
+	  << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
 
-          chCol->push_back(std::move(ch));
+	if(_filter && ( energy < _minE  || energy > _maxE) ) continue;
+
+	//create straw hit
+	const Straw& straw  = tracker.getStraw( digi.strawIndex() );
+	StrawHit hit(digi.strawIndex(),times,tots,energy);
+	shCol->push_back(std::move(hit));
+	// create combo hit.  this include 
+	ComboHit ch;
+	ch._nsh = 1; // 'combo' of 1 hit
+	// get distance along wire from the straw center and it's estimated error
+	float dw, dwerr;
+	bool td = srep->wireDistance(hit,straw.getHalfLength(),dw,dwerr);
+	ch._pos = straw.getMidPoint()+dw*straw.getDirection();
+	ch._wdir = straw.getDirection();
+	ch._wdist = dw;
+	ch._wres = dwerr;
+	ch._time = time;
+	ch._edep = energy;
+	ch._sid = straw.id();
+	ch.addIndex(isd); // reference the digi; this allows MC truth matching to work
+	ch._mask = _mask;
+	// crude initial estimate of the transverse error
+	static const double invsqrt12 = 1.0/sqrt(12.0);
+	ch._tres = straw.getRadius()*invsqrt12;
+	// set flags
+	if (energy > _minE && energy < _maxE) ch._flag.merge(StrawHitFlag::energysel);
+	if (time > _minT && time < _maxT)     ch._flag.merge(StrawHitFlag::timesel);
+	if (_usecc)                           ch._flag.merge(StrawHitFlag::calosel);
+	if (td) ch._flag.merge(StrawHitFlag::tdiv); 
+	if(_flagXT){
+	  //buffer large hit for cross-talk analysis
+	  size_t iplane       = straw.id().getPlane();
+	  size_t ipnl         = straw.id().getPanel();
+	  size_t global_panel = ipnl + iplane*npanels;
+	  hits_by_panel[global_panel].push_back(shCol->size());          
+	  if (energy >= _ctE) {largeHits.push_back(shCol->size()); largeHitPanels.push_back(global_panel);}
+	}
+	chCol->push_back(std::move(ch));
       }
-      
+
       //flag straw and electronic cross-talk
       if(_flagXT){
 	for (size_t ilarge=0; ilarge < largeHits.size();++ilarge)
@@ -273,7 +272,7 @@ namespace mu2e {
       event.put(std::move(shCol));
       event.put(std::move(chCol));
 
-   }
+  }
 
 }
 

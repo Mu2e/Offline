@@ -107,7 +107,7 @@ namespace mu2e {
 	  ComboHit const& hit1 = (*_chcol)[phits[ihit]];
 	  // create a combo hit for every hit; initialize it with this hit
 	  ComboHit combohit;
-	  combohit.init(hit1,hit1.index(0));
+	  combohit.init(hit1,phits[ihit]);
 	  // loop over other hits in this panel
 	  for(size_t jhit=ihit+1;jhit < phits.size(); ++jhit){
 	    if(!used[jhit]){
@@ -124,7 +124,7 @@ namespace mu2e {
 		  if(wdchi < _maxwdchi){
 		    // add a neural net selection here someday for Offline use  FIXME!
 		    // these hits match: add the 2nd to the combo hit
-		    bool ok = combohit.addIndex(hit2.index(0));
+		    bool ok = combohit.addIndex(phits[jhit]);
 		    if(!ok)std::cout << "CombineStrawHits past limit" << std::endl;
 		    used[jhit]= true;
 		  } // consistent positions along wire
@@ -133,7 +133,7 @@ namespace mu2e {
 	    } // 2nd hit not used
 	  } // 2nd panel hit
 	  // compute floating point info for this combo hit and save it
-	  combineHits(combohit);
+	  if(combohit.nCombo() > 1)combineHits(combohit);
 	  chcol->push_back(combohit);
 	} // 1st hit not used
       } // 1st panel hit
@@ -147,47 +147,47 @@ namespace mu2e {
     // if there's only 1 hit, take the info from the orginal collections
     // This is because the boost accumulators sometimes don't work for low stats
     // init from the 0th hit
-    if(combohit.nCombo() > 1){
-      combohit._mask = _mask;
-      // add the flag
-      combohit._flag.merge(StrawHitFlag::panelcombo);
-      accumulator_set<float, stats<tag::mean> > eacc;
-      accumulator_set<float, stats<tag::mean> > tacc;
-      accumulator_set<float, stats<tag::weighted_variance(lazy)>, float> wacc;
-      accumulator_set<float, stats<tag::mean> > wtacc;
-      accumulator_set<float, stats<tag::mean> > werracc;
-      XYZVec midpos;
-      combohit._nsh = 0;
-      if(_debug > 2)std::cout << "Combining " << combohit.nCombo() << " hits: ";
-      for(unsigned ich = 0; ich < combohit.nCombo(); ++ich){
-	// get back the original information
-	size_t index = combohit.index(ich);
-	if(_debug > 3)std::cout << index << ", ";
-	if(index > _chcol->size())
-	  throw cet::exception("RECO")<<"mu2e::CombineStrawHits: inconsistent index "<< endl;
-	ComboHit const& ch = (*_chcol)[index];
-	combohit._flag.merge(ch.flag());
-	eacc(ch.energyDep());
-	tacc(ch.time());// time is an unweighted average
-	float wt = 1.0/(ch.wireErr2());
-	wacc(ch.wireDist(),weight=wt); // wire position is weighted
-	wtacc(wt);
-	werracc(ch.wireRes());
-	midpos += ch.centerPos(); // simple average for position
-	combohit._nsh += ch.nStrawHits();
-      }
-      if(_debug > 2)std::cout << std::endl;
-      combohit._time = extract_result<tag::mean>(tacc);
-      combohit._edep = extract_result<tag::mean>(eacc);
-      combohit._wdist = extract_result<tag::weighted_mean>(wacc);
-      midpos /= combohit._nsh;
-      combohit._pos = midpos + combohit._wdist*combohit._wdir;
-      combohit._wres = 1.0/sqrt(extract_result<tag::mean>(wtacc));
-      combohit._tres = 6.0/sqrt(12.0); // FIXME!
-      float wvar = sqrt(std::max(extract_result<tag::variance>(wacc),float(0.0)));
-      // for now, define the quality as the ratio of the variance to the average
-      combohit._qual = wvar/extract_result<tag::mean>(werracc);
+    combohit._mask = _mask;
+    // add the flag
+    combohit._flag.merge(StrawHitFlag::panelcombo);
+    accumulator_set<float, stats<tag::mean> > eacc;
+    accumulator_set<float, stats<tag::mean> > tacc;
+    accumulator_set<float, stats<tag::weighted_variance(lazy)>, float> wacc;
+    accumulator_set<float, stats<tag::mean> > wtacc;
+    accumulator_set<float, stats<tag::mean> > werracc;
+    XYZVec midpos;
+    combohit._nsh = 0;
+    if(_debug > 2)std::cout << "Combining " << combohit.nCombo() << " hits: ";
+    for(size_t ich = 0; ich < combohit.nCombo(); ++ich){
+      // get back the original information
+      size_t index = combohit.index(ich);
+      if(_debug > 3)std::cout << index << ", ";
+      if(index > _chcol->size())
+	throw cet::exception("RECO")<<"mu2e::CombineStrawHits: inconsistent index "<< endl;
+      ComboHit const& ch = (*_chcol)[index];
+      combohit._flag.merge(ch.flag());
+      eacc(ch.energyDep());
+      tacc(ch.time());// time is an unweighted average
+      float wt = 1.0/(ch.wireErr2());
+      wacc(ch.wireDist(),weight=wt); // wire position is weighted
+      wtacc(wt);
+      werracc(ch.wireRes());
+      midpos += ch.centerPos(); // simple average for position
+      combohit._nsh += ch.nStrawHits();
     }
+    if(combohit.nStrawHits() < combohit.nCombo())
+      throw cet::exception("RECO")<<"mu2e::CombineStrawHits: inconsistent count "<< endl;
+    if(_debug > 2)std::cout << std::endl;
+    combohit._time = extract_result<tag::mean>(tacc);
+    combohit._edep = extract_result<tag::mean>(eacc);
+    combohit._wdist = extract_result<tag::weighted_mean>(wacc);
+    midpos /= combohit._nsh;
+    combohit._pos = midpos + combohit._wdist*combohit._wdir;
+    combohit._wres = 1.0/sqrt(extract_result<tag::mean>(wtacc));
+    combohit._tres = 6.0/sqrt(12.0); // FIXME!
+    float wvar = sqrt(std::max(extract_result<tag::variance>(wacc),float(0.0)));
+    // for now, define the quality as the ratio of the variance to the average
+    combohit._qual = wvar/extract_result<tag::mean>(werracc);
   }
 } // end namespace mu2e
 
