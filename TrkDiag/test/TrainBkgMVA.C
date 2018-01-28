@@ -15,8 +15,8 @@
 // We recommend processing 10K events, fully mixed with backgrounds,
 // as training sample.
 // As an exanmple, to run this script from the command line to train stereo clusters, invoke as:
-//  root -b -q "TrkPatRec/test/TrainMVA.C+(\"files.txt\",3,\"tmva\")"
-// where 'files.txt' should include the names of all the TFiles created by FlagBkgHits
+//  root -b -q "TrkDiag/test/TrainBkgMVA.C+(\"files.txt\")"
+// where 'files.txt' should list the names of the TFiles created by FlagBkgHits you want to process
 // when run on mixed Conversion Electron + background frames, with diagLevel >=2.
 // All files will go to appropriately named subdirectories in the
 // 'tmva' directory in your offline release.  The weight files can be copied into the
@@ -526,7 +526,7 @@ CreateMVAFactory(TTree* inputTree,
   // ---- Now you can tell the factory to train, test, and evaluate the MVAs
   return factory;
 }
-void TrainMVA(const char* files="bkgfiles.txt",const char* basedir="bkg") {
+void TrainBkgMVA(const char* files="bkgfiles.txt",const char* basedir="bkg") {
   // fill TChain from files
   TChain* mytree = new TChain("BkgDiag/bkgdiag");
   std::ifstream fs(files,std::ifstream::in);

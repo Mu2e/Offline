@@ -214,7 +214,7 @@ namespace mu2e
   void StrawHitDiag::fillStrawHitDiag() {
     GeomHandle<DetectorSystem> det;
     const Tracker& tracker = getTrackerOrThrow();
-    static const double rstraw = tracker.getStraw(StrawId(0,0,0,0)).getRadius();
+    static const double rstraw = tracker.getStraw(StrawId(0,0,0)).getRadius();
     unsigned nstrs = _shcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawHit const& sh = _shcol->at(istr);

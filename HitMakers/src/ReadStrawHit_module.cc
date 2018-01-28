@@ -189,15 +189,16 @@ namespace mu2e {
     // Get the persistent data about the StrawHits.
 
     if (ncalls==1){
-      const std::deque<Straw>& allstraws = tracker.getAllStraws();
+      const auto & allstraws = tracker.getAllStraws();
       float detnt[11];
-      for (size_t i = 0;i<allstraws.size();i++)
+      // for ( const auto & str : allstraws)
+      for (size_t i = 0; i<tracker.nStraws(); ++i)
         {
-          Straw str = allstraws[i];
+          const Straw & str = allstraws[i];
           StrawId sid = str.id();
-          LayerId lid = sid.getLayerId();
-          PlaneId did = sid.getPlaneId();
-          PanelId secid = sid.getPanelId();
+          int lid = sid.getLayer();
+          int did = sid.getPlane();
+          int secid = sid.getPanel();
 
           // cout <<  __func__ << " index: "  << i << " Layer: "<< lid.getLayer()<< " Plane: "<< did <<"  Panel:  "<<secid.getPanel()<<endl;
           // cout<<str.getHalfLength()<<endl;
@@ -218,10 +219,10 @@ namespace mu2e {
             endl;
           */
           // Fill the ntuple.
-          detnt[0]  = i;
-          detnt[1]  = lid.getLayer();
+          detnt[0]  = str.index().asInt();
+          detnt[1]  = lid;
           detnt[2]  = did;
-          detnt[3]  = secid.getPanel();
+          detnt[3]  = secid;
           detnt[4]  = str.getHalfLength();
           detnt[5]  = vec3j.getX();
           detnt[6]  = vec3j.getY();
@@ -325,9 +326,9 @@ namespace mu2e {
       const  unsigned id = si.asUint();
       Straw str = tracker.getStraw(si);
       StrawId sid = str.id();
-      LayerId lid = sid.getLayerId();
-      PlaneId did = sid.getPlaneId();
-      PanelId secid = sid.getPanelId();
+      int lid = sid.getLayer();
+      int did = sid.getPlane();
+      int secid = sid.getPanel();
 
       double fracDist = 0.0;
       StrawEnd itdc(TrkTypes::cal);
@@ -366,9 +367,9 @@ namespace mu2e {
       // Fill the ntuple:
       float nt[_ntup->GetNvar()];
       nt[0]  = evt.id().event();
-      nt[1]  = lid.getLayer();
+      nt[1]  = lid;
       nt[2]  = did;
-      nt[3]  = secid.getPanel();
+      nt[3]  = secid;
       nt[4]  = str.getHalfLength();
       nt[5]  = smidp.getX();
       nt[6]  = smidp.getY();

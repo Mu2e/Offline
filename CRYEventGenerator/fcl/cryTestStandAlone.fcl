@@ -1,13 +1,13 @@
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
 
 process_name : testCry
 
 source : {
   module_type : EmptyEvent
   maxEvents : -1
-  firstRun : 5
+  firstRun : 1
 }
 services : {
   message               : @local::default_message
@@ -42,3 +42,7 @@ outputs : {
 
 services.SeedService.baseSeed         :  10307
 services.SeedService.maxUniqueEngines :  20
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300
+

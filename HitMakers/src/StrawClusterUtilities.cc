@@ -125,16 +125,13 @@ namespace mu2e {
     dT=dT/double(strawHits.size());
     return dT;
   }
-  PlaneId StrawClusterUtilities::did(StrawCluster const & cluster,art::Event const & event) const
+  int StrawClusterUtilities::did(StrawCluster const & cluster,art::Event const & event) const
   {
     const Tracker& tracker = getTrackerOrThrow();
     StrawHitPtrVector const & strawHits = cluster.strawHits();
     StrawHit const& strawhit = *strawHits[0];
     Straw    str = tracker.getStraw(strawhit.strawIndex());
-    StrawId  sid = str.id();
-    PlaneId did = sid.getPlaneId();
-    return did;
-
+    return str.id().getPlane();
   }
   PanelId StrawClusterUtilities::secid(StrawCluster const & cluster,art::Event const & event) const
   {
@@ -142,21 +139,16 @@ namespace mu2e {
     StrawHitPtrVector const & strawHits = cluster.strawHits();
     StrawHit const& strawhit = *strawHits[0];
     Straw    str = tracker.getStraw(strawhit.strawIndex());
-    StrawId  sid = str.id();
-    PanelId secid = sid.getPanelId();
-    return secid;
+    return str.id();
   }
-  PlaneId StrawClusterUtilities::Station(StrawCluster const & cluster,art::Event const & event) const
+  int StrawClusterUtilities::Station(StrawCluster const & cluster,art::Event const & event) const
   {
     const Tracker& tracker = getTrackerOrThrow();
     StrawHitPtrVector const & strawHits = cluster.strawHits();
     StrawHit const& strawhit = *strawHits[0];
     Straw    str = tracker.getStraw(strawhit.strawIndex());
     StrawId  sid = str.id();
-    PlaneId did = sid.getPlaneId();
-    int station = (int)(did*0.5);
-    return station;
-
+    return (int)(sid.getPlane()*0.5);
   }
 
 

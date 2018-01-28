@@ -304,7 +304,7 @@ namespace mu2e
 
   void FlagBkgHits::countPlanes(const BkgCluster& cluster, BkgQual& cqual ) const 
   {
-    std::array<int,StrawId2::_nplanes> hitplanes{0};
+    std::array<int,StrawId::_nplanes> hitplanes{0};
     for (const auto& chit : cluster.hits()) 
     {
       if (chit.flag().hasAllProperties(StrawHitFlag::active))
@@ -315,7 +315,7 @@ namespace mu2e
     }
 
     unsigned ipmin = 0;
-    unsigned ipmax = StrawId2::_nplanes-1; 
+    unsigned ipmax = StrawId::_nplanes-1; 
     while (hitplanes[ipmin]==0) ++ipmin;
     while (hitplanes[ipmax]==0) --ipmax;
 

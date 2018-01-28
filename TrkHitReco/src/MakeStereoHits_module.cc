@@ -93,7 +93,7 @@ namespace mu2e {
       MVATools _mvatool;
       StereoMVA _vmva; 
 
-      std::vector <std::vector<StrawId2> > _panelOverlap;   // which panels overlap each other
+      std::vector <std::vector<StrawId> > _panelOverlap;   // which panels overlap each other
       void genMap();    
       void combineHits(ComboHit& combohit);
   };
@@ -119,7 +119,7 @@ namespace mu2e {
     _doMVA(pset.get<bool>(  "doMVA",true)),
     _match(static_cast<matchtype>(pset.get<int>("MatchType",station))),
     _mvatool(pset.get<fhicl::ParameterSet>("MVATool",fhicl::ParameterSet())),
-    _panelOverlap(StrawId2::_nupanels)
+    _panelOverlap(StrawId::_nupanels)
     {
       _maxChi = sqrt(_maxChisq);
       // define the mask: straws are in the same unique panel
@@ -162,7 +162,7 @@ namespace mu2e {
     // reference the parent in the new collection
     chcol->setParent(chH);
     // sort hits by unique panel.  This should be built in by construction upstream FIXME!!
-    std::array<std::vector<uint16_t>,StrawId2::_nupanels> phits;
+    std::array<std::vector<uint16_t>,StrawId::_nupanels> phits;
     size_t nsh = _chcol->size();
     std::vector<bool> used(nsh,false);
     for(uint16_t ihit=0;ihit<nsh;++ihit){
@@ -262,9 +262,9 @@ namespace mu2e {
     double phiwidth = hiphi-lophi;
     if (phiwidth>M_PI) phiwidth = 2*M_PI-phiwidth;
     // loop over all unique panels
-    for(size_t ipla = 0;ipla < StrawId2::_nplanes; ++ipla) {
-      for(int ipan=0;ipan<StrawId2::_npanels;++ipan){
-	StrawId2 sid2(ipla,ipan,0);
+    for(size_t ipla = 0;ipla < StrawId::_nplanes; ++ipla) {
+      for(int ipan=0;ipan<StrawId::_npanels;++ipan){
+	StrawId sid2(ipla,ipan,0);
 	uint16_t upan = sid2.uniquePanel();
 	Straw const& straw = tt.getStraw(StrawId(ipla,ipan,0,0));
 	float phi = straw.getMidPoint().phi();
@@ -272,11 +272,11 @@ namespace mu2e {
 	size_t minpla(ipla), maxpla(ipla);
 	if(_match==station){
 	  minpla = (size_t)std::max(0,(int)ipla-1);
-	  maxpla = (size_t)std::min(StrawId2::_nplanes-1,(int)ipla+1);
+	  maxpla = (size_t)std::min(StrawId::_nplanes-1,(int)ipla+1);
 	}
 	for(size_t jpla = minpla; jpla <= maxpla;++jpla){
-	  for(int jpan=0;jpan<StrawId2::_npanels;++jpan){
-	    StrawId2 osid2(jpla,jpan,0);
+	  for(int jpan=0;jpan<StrawId::_npanels;++jpan){
+	    StrawId osid2(jpla,jpan,0);
 	    if(osid2.uniquePanel() != sid2.uniquePanel() && osid2.station() == sid2.station()){
 	      Straw const& ostraw = tt.getStraw(StrawId(ipla,ipan,0,0));
 	      float dphi = fabs(phi - ostraw.getMidPoint().phi());
@@ -290,7 +290,7 @@ namespace mu2e {
 
     if (_debug >0)
     {
-      for(uint16_t ipan = 0; ipan < StrawId2::_nupanels; ++ipan) {
+      for(uint16_t ipan = 0; ipan < StrawId::_nupanels; ++ipan) {
 	std::cout << "Unique Panel " << ipan << " Overlaps with the panels: ";
 	for(auto sid : _panelOverlap[ipan])
 	  std::cout << sid.uniquePanel() << ", ";

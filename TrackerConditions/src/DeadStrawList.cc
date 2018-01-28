@@ -77,29 +77,29 @@ namespace mu2e {
 
     }
 
+    // fixme: rewrite using panels if needed
+    // void addDeadLayers( TTracker const& tracker,
+    //                     fhicl::ParameterSet const& pset,
+    //                     set<DeadStrawRange>& dead,
+    //                      bool verbosity  ){
 
-    void addDeadLayers( TTracker const& tracker,
-                        fhicl::ParameterSet const& pset,
-                        set<DeadStrawRange>& dead,
-                         bool verbosity  ){
+    //   vector<string> lays = pset.get<vector<string> >( "deadLayers", vector<string>() );
+    //   vector<LayerId> layIds;
 
-      vector<string> lays = pset.get<vector<string> >( "deadLayers", vector<string>() );
-      vector<LayerId> layIds;
+    //   for ( vector<string>::const_iterator i=lays.begin(), e=lays.end();
+    //         i != e; ++i ){
+    //     layIds.push_back( LayerId(*i) );
+    //   }
 
-      for ( vector<string>::const_iterator i=lays.begin(), e=lays.end();
-            i != e; ++i ){
-        layIds.push_back( LayerId(*i) );
-      }
+    //   MarkAsDead marker(dead);
 
-      MarkAsDead marker(dead);
+    //   for ( vector<LayerId>::const_iterator i=layIds.begin(), e=layIds.end();
+    //         i != e; ++i ){
+    //     if ( verbosity > 0 ) cout << "Deadening straws in Layer: " << *i << endl;
+    //     tracker.getLayer(*i).forAllStraws( marker );
+    //   }
 
-      for ( vector<LayerId>::const_iterator i=layIds.begin(), e=layIds.end();
-            i != e; ++i ){
-        if ( verbosity > 0 ) cout << "Deadening straws in Layer: " << *i << endl;
-        tracker.getLayer(*i).forAllStraws( marker );
-      }
-
-    }
+    // }
 
     void addDeadStraws( TTracker const& tracker,
                         fhicl::ParameterSet const& pset,
@@ -161,7 +161,7 @@ namespace mu2e {
     // first, mark completely dead straws
     addDeadPlanes( tracker, pset, _deadstraws, _verbosity );
     addDeadPanels( tracker, pset, _deadstraws, _verbosity );
-    addDeadLayers( tracker, pset, _deadstraws, _verbosity );
+    //    addDeadLayers( tracker, pset, _deadstraws, _verbosity );
     addDeadStraws( tracker, pset, _deadstraws, _verbosity );
 
     // Then, add dead straw ranges.  set semantics insures a
@@ -175,8 +175,10 @@ namespace mu2e {
     }
 
     if(_verbosity > 1) {
-      std::deque<Straw> straws = tracker.getAllStraws();
-      for(auto straw: straws){
+      const auto & allstraws = tracker.getAllStraws();
+      // for(const auto & straw: tracker.getAllStraws())
+      for (size_t i = 0; i<tracker.nStraws(); ++i) {
+        const Straw & straw = allstraws[i];
 	std::cout << "Straw Index " << straw.index() << " Id " << straw.id() << endl;
       }
     }

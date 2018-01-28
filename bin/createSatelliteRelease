@@ -60,7 +60,7 @@ do
     case $1 in
         -h|--help)
             usage
-            shift
+            exit 0
             ;;
         -d|--directory)
 	    dirsat="$2"
@@ -136,7 +136,7 @@ if [[ "$satellite_exists" == "true" && "$recreate" == "true" ]]; then
       echo -e "please run the local setup and try again - exiting\n"
       exit 1
   fi
-echo "debug $PWD"
+
   scons -c -j 5
   if [ $? -ne 0 ]; then
     echo -e "\ncould not run scons -exiting\n"

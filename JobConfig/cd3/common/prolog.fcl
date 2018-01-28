@@ -90,8 +90,7 @@ draTopLevelDefs: {
 	 //------------------------------------------------------------------------------
 	 // digitization
          
-         protonTimeMap: @local::protonTimeMap
-         muonTimeMap: @local::muonTimeMap
+	 @table::CommonDigiSim.producers
 
          //----------------------------------------------------------------
          // calorimeter
@@ -138,8 +137,7 @@ draTopLevelDefs: {
       //==============================================================================
       draDigiTrigSeq : [
 	 @sequence::draEventMixing.CD3Mixers
-	 , protonTimeMap
-	 , muonTimeMap
+	 , @sequence::CommonDigiSim.DigiSim
 	 , @sequence::CaloDigiMC.DigiSim
 	 , @sequence::Tracking.DigiSim
       ]

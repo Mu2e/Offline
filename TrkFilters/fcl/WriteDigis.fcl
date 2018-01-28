@@ -38,8 +38,8 @@ outputs: {
   WriteDigis : {
     module_type: RootOutput
     outputCommands: [ "drop *_*_*_*",
-    @sequence::Tracking.Output.Digis
-#   "keep mu2e::CaloDigis_*_*_*" 
+    @sequence::Tracking.Output.Digis,
+   "keep mu2e::CaloDigis_*_*_*" 
     ]
   }
 }
@@ -49,13 +49,13 @@ outputs: {
 
 physics.WriteDigisTrigPath : [   @sequence::EventMixing.CD3Mixers,
   @sequence::EventMixing.TimeMaps, 
-  @sequence::Tracking.DigiSim
-#  @sequence::CaloDigiMC.DigiSim 
+  @sequence::Tracking.DigiSim,
+  @sequence::CaloDigiMC.DigiSim 
   ]
 physics.WriteDigisEndPath : [ WriteDigis ]
 
 # finish output configuration: this needs to be done after the path exists
-outputs.WriteDigis.fileName: "TrkDigis.art"
+outputs.WriteDigis.fileName: "Digis.art"
 # setup mixers
 physics.producers.makeSD.TimeOffsets.inputs : [ "protonTimeMap", "muonTimeMap" ] 
 physics.filters.flashMixer.fileNames : @local::bgHitFiles

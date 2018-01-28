@@ -325,11 +325,13 @@ namespace mu2e {
     Hep3Vector center(x0, y0, 0);
     					//define the reconstructed helix parameters
 
-    HelSeed._helix._rcent  = center.perp();
-    HelSeed._helix._fcent  = center.phi();
-    HelSeed._helix._radius = helixRadius;
-    HelSeed._helix._lambda = 1./dfdz;
-    HelSeed._helix._fz0    = -z0*dfdz + phi0 - M_PI/2.;
+    HelSeed._helix._rcent    = center.perp();
+    HelSeed._helix._fcent    = center.phi();
+    HelSeed._helix._radius   = helixRadius;
+    HelSeed._helix._lambda   = 1./dfdz;
+    HelSeed._helix._fz0      = -z0*dfdz + phi0 - M_PI/2.;
+    HelSeed._helix._helicity = Helicity::poshel;
+
                                         //now evaluate the helix T0 using the calorimeter cluster
     double   mm2MeV        = 3/10.;//FIX ME!
     double   tandip        = hel->tanDip();
