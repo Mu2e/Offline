@@ -9,11 +9,10 @@
 #
 # David Brown, 13 Nov, 2015
 #
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
-#
 process_name : BkgDiag
 
 source :

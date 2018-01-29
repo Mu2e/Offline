@@ -15,7 +15,7 @@ namespace mu2e {
     // separately describe the 2 analog paths
     enum Path{thresh=0,adc,npaths};
     // typedefs used for tracker data structures 
-    typedef std::array<uint32_t,nends> TDCValues;
+    typedef std::array<uint16_t,nends> TDCValues;
     typedef std::array<uint16_t,nends> TOTValues;
     typedef std::array<float,nends> TDCTimes;
     typedef std::array<float,nends> TOTTimes;

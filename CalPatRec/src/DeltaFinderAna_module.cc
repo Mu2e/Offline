@@ -1,10 +1,16 @@
 //////////////////////////////////////////////////////////////////////////////
 // framework
 //
-// parameter defaults: alaha/fcl/prolog.fcl
+// parameter defaults: CalPatRec/fcl/prolog.fcl
 // this module doesn't do reconstruction
 // on input, it takes a list  of StrawHitFlags flags and eveluates performance 
 // of the delta electron tagging
+//
+// hit type = 0 : proton
+//            1 : ele 0 < p < 20
+//            2 : ele 20 < p < 90
+//            3 : ele 90 < p < 110
+//            4 : everything else
 //////////////////////////////////////////////////////////////////////////////
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -260,11 +266,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::bookMcHistograms(McHist_t* Hist, int HistSet, art::TFileDirectory* Dir) {
 
-    Hist->fPDGCode   = Dir->make<TH1F>("pdg"  , "PDG code"        , 500, -250., 250.);
-    Hist->fMom       = Dir->make<TH1F>("mom"  , "momentum"        , 200, 0., 200.);
-    Hist->fNHits     = Dir->make<TH1F>("nhits", "N(hits)"         , 200, 0., 200.);
+    Hist->fPDGCode    = Dir->make<TH1F>("pdg"  , "PDG code"        , 500, -250., 250.);
+    Hist->fMom        = Dir->make<TH1F>("mom"  , "momentum"        , 200, 0., 200.);
+    Hist->fNHits      = Dir->make<TH1F>("nhits", "N(hits)"         , 200, 0., 200.);
     Hist->fNHitsDelta = Dir->make<TH1F>("nhitsr", "N(hits reco)"   , 200, 0., 200.);
-    Hist->fFractReco = Dir->make<TH1F>("fractr", "NR/N"           , 100, 0.,   1.);
+    Hist->fFractReco  = Dir->make<TH1F>("fractr", "NR/N"           , 100, 0.,   1.);
 
     Hist->fFractRecoVsNHits = Dir->make<TH2F>("freco_vs_nhits", "F(Reco) vs nhits", 100, 0., 200.,100,0,1);
   }
@@ -314,10 +320,12 @@ namespace mu2e {
 
     book_straw_hit_histset[  0] = 1;		// all hits
     book_straw_hit_histset[  1] = 1;		// all hits t>500
-    book_straw_hit_histset[  2] = 1;		// all hits t>500 radiusOK
-    book_straw_hit_histset[  3] = 1;		// all hits t>500 radius)K edepOK
-    book_straw_hit_histset[  4] = 1;		// all hits t>500 radiusOK edepOK non-delta
-    book_straw_hit_histset[  5] = 1;		// all hits t>500 radiusOK edepOK non-delta MC=delta (type 1)
+    book_straw_hit_histset[  2] = 1;		// all hits t>500 
+    book_straw_hit_histset[  3] = 1;		// all hits t>500 edepOK
+    book_straw_hit_histset[  4] = 1;		// all hits t>500 edepOK non-delta
+    book_straw_hit_histset[  5] = 1;		// all hits t>500 edepOK non-delta MC=delta (type 1)
+    book_straw_hit_histset[  6] = 1;		// all hits t>500 edepOK delta
+    book_straw_hit_histset[  7] = 1;		// all hits t>500 edepOK delta MC=delta (type 1)
 
     book_straw_hit_histset[ 10] = 1;		// all hits type=0
     book_straw_hit_histset[ 20] = 1;		// all hits type=1
@@ -453,18 +461,30 @@ namespace mu2e {
 	fillStrawHitHistograms(_hist.fStrawHit[1],sh,mc_hit_info);
 	
 	const StrawHitFlag* flag = mc_hit_info->fFlag;
-	if (flag->hasAllProperties(StrawHitFlag::radsel)) {
-	  fillStrawHitHistograms(_hist.fStrawHit[2],sh,mc_hit_info);
-	  int edepOK = flag->hasAllProperties(StrawHitFlag::energysel);
-	  if (edepOK) {
-	    fillStrawHitHistograms(_hist.fStrawHit[3],sh,mc_hit_info);
-	    int delta = flag->hasAllProperties(StrawHitFlag::bkg);
-	    //	    int delta = flag->hasAllProperties(StrawHitFlag::delta);
-	    if (! delta) {
-	      fillStrawHitHistograms(_hist.fStrawHit[4],sh,mc_hit_info);
-	      if (mc_hit_info->fType == 1) { // low-energy electrons
-		fillStrawHitHistograms(_hist.fStrawHit[5],sh,mc_hit_info);
-	      }
+
+	fillStrawHitHistograms(_hist.fStrawHit[2],sh,mc_hit_info);
+	int edepOK = flag->hasAllProperties(StrawHitFlag::energysel);
+	if (edepOK) {
+	  fillStrawHitHistograms(_hist.fStrawHit[3],sh,mc_hit_info);
+	  int delta = flag->hasAllProperties(StrawHitFlag::bkg);
+	  if (! delta) {
+//-----------------------------------------------------------------------------
+// StrawHit SET 4: hits not marked as delta electron hits
+//          SET 5: hits of low energy electrons not marked as delta electron hits
+//-----------------------------------------------------------------------------
+	    fillStrawHitHistograms(_hist.fStrawHit[4],sh,mc_hit_info);
+	    if (mc_hit_info->fType == 1) { // low-energy electrons
+	      fillStrawHitHistograms(_hist.fStrawHit[5],sh,mc_hit_info);
+	    }
+	  }
+	  else {
+//-----------------------------------------------------------------------------
+// StrawHit SET 6: hits marked as delta electron hits
+//          SET 7: hits of low energy electrons marked as such
+//-----------------------------------------------------------------------------
+	    fillStrawHitHistograms(_hist.fStrawHit[6],sh,mc_hit_info);
+	    if (mc_hit_info->fType == 1) { // low-energy electrons
+	      fillStrawHitHistograms(_hist.fStrawHit[7],sh,mc_hit_info);
 	    }
 	  }
 	}
@@ -581,8 +601,8 @@ namespace mu2e {
       }
       mc->fListOfHits.push_back(sh);
 
-      StrawIndex shid = sh->strawIndex();
-      const Straw& straw  = _tracker->getStraw(shid);
+      StrawIndex   shid  = sh->strawIndex();
+      const Straw& straw = _tracker->getStraw(shid);
       int station = straw.id().getStation();
       if (station < mc->fFirstStation) mc->fFirstStation = station;
       if (station > mc->fLastStation ) mc->fLastStation  = station;
@@ -611,7 +631,6 @@ namespace mu2e {
       else                       mc_hit_info->fType = 4;
 
       int flagged_as_delta = shf->hasAnyProperty(StrawHitFlag::bkg);
-      //      int flagged_as_delta = shf->hasAnyProperty(StrawHitFlag::delta);
 	
       if (flagged_as_delta) fNHitsDeltaReco++;
     }
@@ -637,15 +656,12 @@ namespace mu2e {
 // form a list of MC particles with hits in the tracker
 //-----------------------------------------------------------------------------
   int DeltaFinderAna::associateMcTruth() {
-
-    //    const StrawHit* hit0 = &_shcol->at(0);
 //-----------------------------------------------------------------------------
 // for each MC electron calculate the number of reconstructed hits
 //-----------------------------------------------------------------------------
     int nmc    = _list_of_mc_particles.size();
 
     StrawHitFlag        deltamask(StrawHitFlag::bkg);
-    //    StrawHitFlag        deltamask(StrawHitFlag::delta);
 
     for (int i=0; i<nmc; i++) {
       McPart_t* mc    = _list_of_mc_particles.at(i);
@@ -660,9 +676,7 @@ namespace mu2e {
 
 	int flagged_as_delta = flag->hasAnyProperty(deltamask);
 
-	if (flagged_as_delta) {
-	  mc->fNHitsDelta += 1;
-	}
+	if (flagged_as_delta) mc->fNHitsDelta += 1;
       }
 
       int pdg_id = mc->fSim->pdgId();

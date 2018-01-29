@@ -136,7 +136,6 @@ if [[ "$satellite_exists" == "true" && "$recreate" == "true" ]]; then
       echo -e "please run the local setup and try again - exiting\n"
       exit 1
   fi
-
   scons -c -j 5
   if [ $? -ne 0 ]; then
     echo -e "\ncould not run scons -exiting\n"
@@ -156,11 +155,17 @@ cat >> setup.sh <<EOF
 #! /bin/bash
 #
 # This script was written by the satellite release manager
-# Normally you should not edit it.
+#  - Normally you should not edit it.
+#  - The first line in this block is used as key by the gridExport
+#    script to identify satellite releases - do not edit it.
 #
 
 # Connect to the base release.
-source $candidate_base_release/setup.sh
+if [[ "\${MU2E_GRID_BASE_RELEASE_OVERRIDE}" == '' ]]; then
+  source $candidate_base_release/setup.sh
+else
+  source \${MU2E_GRID_BASE_RELEASE_OVERRIDE}/setup.sh
+fi
 retstat=\$?
 
 if [[ "\$retstat" != "0" ]]; then

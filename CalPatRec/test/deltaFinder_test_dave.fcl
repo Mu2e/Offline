@@ -1,8 +1,8 @@
 # -*- mode:tcl -*-
 
-#include "CalPatRec/test/testDeltaFinder.fcl"
+#include "CalPatRec/test/deltaFinder_test.fcl"
 
-services.TFileService.fileName                            : "delta_finder_dave.root"
+services.TFileService.fileName                            : "deltaFinder_test_dave.root"
 
 physics.trigger_paths                                     : [ p1 ]
 

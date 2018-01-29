@@ -412,20 +412,22 @@ CalPatRec : { @table::CalPatRec
 	    strawHitPositionCollectionTag : makeSH                # input coll
 	    timePeakCollectionTag         : CalTimePeakFinder
 	    useTimePeaks                  : 1
-	    minCaloDt                     : -75.                  # +/-70 to provide 100% efficiency for delta tagging + +/- 5 for taking into account the mean drift time of a delta within a station
+	                                                          # +/-70 to provide 100% efficiency for delta tagging + +/- 5 
+                                                                  # accounting for the drift time of a delta electron
+	    minCaloDt                     : -75.
 	    maxCaloDt                     :  75.
 	    particleMeanPitchAngle        : 0.67                  # mean pitch for CE
 	    strawDigiMCCollectionTag      : makeSD                # input coll
 	    minHitTime                    : 450.                  # ns
 	    minNFacesWithHits             : 2                     # 
 	    minNSeeds                     : 2                     #
-	    maxElectronHitEnergy          : 0.020                 # means: use all hits
-	    minimumTime                   : 500.    #ns
-	    maximumTime                   : 2000.   #ns
-	    maxChi2Stereo                 : 10. # 50.                   #
-	    maxChi2Neighbor               : 25.                   # 
-	    maxChi2Radial                 : 25.                   # 
-	    maxChi2Tot                    : 25.                   # 
+	    maxElectronHitEnergy          : 0.0200                # means: use all hits
+	    minimumTime                   : 500.                  # ns
+	    maximumTime                   : 2000.                 # ns
+	    maxChi2Stereo                 : 10.                   # 50.                   #
+	    maxChi2Neighbor               : 15.                   # 2018-01-24: 25 --> 15
+	    maxChi2Radial                 : 15.                   # 2018-01-24: 25 --> 15
+	    maxChi2Tot                    : 15.                   # 2018-01-24: 25 --> 15
 	    maxDt                         : 40.                   # ns
 	    maxDxy                        : 40.                   # mm
 	    maxGap                        : 1                     # gap in missing stations along the candidate
@@ -479,17 +481,17 @@ CalPatRec : { @table::CalPatRec
 	PrefetchData : { module_type:PrefetchData
 	    mcDiag                        : true
 
-	    fetchStrawHits                : 0
-	    fetchStrawHitFlags            : 0
-	    fetchStrawHitPositions        : 0
-	    fetchStereoHits               : 0
 	    fetchStrawDigis               : 1
+	    fetchStrawHits                : 1
+	    fetchStrawHitFlags            : 1
+	    fetchStrawHitPositions        : 1
+	    fetchStereoHits               : 0
 
-	    strawHitCollectionTag         : makeSH
-	    stereoHitCollectionTag        : MakeStereoHits
-	    strawHitPositionCollectionTag : makeSH
 	    strawDigiCollection           : makeSD
-	    strawHitFlagCollectionTag     : FlagStrawHits
+	    strawHitCollectionTag         : makeSH
+	    strawHitPositionCollectionTag : makeSH
+	    strawHitFlagCollectionTag     : makeSH
+	    stereoHitCollectionTag        : shouldNotBeUsed # MakeStereoHits
 	}
 
 #------------------------------------------------------------------------------
@@ -640,7 +642,7 @@ CalPatRec : { @table::CalPatRec
 # #	    rescueHits                                  : 1
 # 	    StrawHitCollectionTag                       : makeSH			 
 # #	    StrawDigiCollectionLabel                    : makeSD
-# #	    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions	 
+# #	    StrawHitPositionCollectionLabel             : makeSH # CalPatRecMakeStrawHitPositions	 
 # 	    StrawHitFlagCollectionTag                   : CalPatRecFlagBkgHits 
 # 	    SeedCollectionTag                           : CalHelixFinder
 # #	    CalTimePeakModuleLabel                      : CalTimePeakFinder

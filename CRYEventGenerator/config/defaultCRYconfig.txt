@@ -3,14 +3,18 @@
 // Verbose
 int cosmicCRY.verbose = 0;
 
+string cosmicCRY.refPoint = "CALO";
+double cosmicCRY.refY0 = 10000; // 10 meter above nominal beam height
+
+bool cosmicCRY.projectToEnvelope = true;
+
 // histogram settings
 bool cosmicCRY.doHistograms = true;
-bool cosmicCRY.saveTree = false;
-
 double cosmicCRY.muCosThMin = 0.00366518;
 double cosmicCRY.muCosThMax = 1.0;
 double cosmicCRY.muEMin = 3000.;
 double cosmicCRY.muEMax = 1.e5;
+bool cosmicCRY.saveTree = false;
 
 // Enable all particles by default
 bool cosmicCRY.returnMuons = true;

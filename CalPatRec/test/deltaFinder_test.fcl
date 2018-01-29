@@ -14,8 +14,8 @@ END_PROLOG
 
 services : {
     message               : @local::default_message
-    TFileService          :  { fileName       : "debugDeltaFinder.root" }
-    RandomNumberGenerator :  { }
+    TFileService          : { fileName : "deltaFinder_test.root" }
+    RandomNumberGenerator : { }
     #   Timing                : { }
     GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"      }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
@@ -38,71 +38,59 @@ services : {
 
 services.scheduler.wantSummary     : true
 
-process_name : TestSeedFinder
+process_name : TestDeltaFinder
 
 source       : { 
     module_type : RootInput 
 }
 
+producers: { 
+    @table::CaloCluster.producers
+    @table::CaloCluster.producersMC
+    @table::Tracking.producers
+    @table::CalPatRec.producers
+}
+
+filters: {
+    @table::CalPatRec.filters
+}
+
 physics: { 
     producers : { 
+	@table::producers
 
-	@table::Tracking.producers
-
-	PrefetchData: { @table::CalPatRec.producers.PrefetchData 
-	    strawHitPositionCollectionTag : MakeStrawHitPositions 
-	    strawHitFlagCollectionTag     : FlagStrawHits
-	}
-
-	DeltaFinder: { @table::CalPatRec.producers.DeltaFinder
-	    maxElectronHitEnergy          : 0.007
-	    maxChi2Stereo                 : 10.
-#	    maxChi2Neighbor               : 25.                   # 
-#	    maxChi2Radial                 : 25.                   # 
-#	    maxDriftTime                  : 50.
-	    StrawHitPositionCollectionTag : MakeStrawHitPositions
-	    debugLevel                    : 1
-	    diagLevel                     : 1
-	    diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
-		mcDiag                        : true
-		printElectrons                : 1
-		printElectronsHits            : 1
-
-		printElectronsMinMom          : 100.
-		printElectronsMaxMom          : 110.
-		printElectronsMinNHits        : 0
-		printElectronsMaxFReco        : 1.1 # 0.5
-
-#		printElectronsMinMom          : 0.
-#		printElectronsMaxMom          : 20.
-#		printElectronsMinNHits        : 40
-#		printElectronsMaxFReco        : 1.1
-
-		printDeltaSeeds               : 1
-		printDeltaCandidates          : 1
-		printOTracker                 : 1
-#		printShcol                    : 0
+	DeltaFinder: { @table::producers.DeltaFinder
+	    diagLevel                     : 0
+	    debugLevel                    : 0
+	    useTimePeaks                  : 0
+	    diagPlugin : { @table::producers.DeltaFinder.diagPlugin
+		mcDiag                    : true
+		printElectrons            : 1
+		printElectronsMinMom      : 0.
+		printElectronsMaxMom      : 20.
+		printElectronsMinNHits    : 30
+		printElectronsMaxFReco    : 0.5
 	    }
 	}
 
-	DeltaFinderAna: { @table::CalPatRec.producers.DeltaFinderAna
+	DeltaFinderAna: { @table::producers.DeltaFinderAna
 	    debugLevel                    : 0
 	    strawHitFlagCollectionTag     : DeltaFinder
 	}
     }
 
-    filters : { }
+    filters   : { @table::filters }
 
-    analyzers : {
-    }
+    analyzers : { }
 
-    p1: [ @sequence::Tracking.PrepareHits, DeltaFinder, DeltaFinderAna ]
-    p2: [ @sequence::Tracking.PrepareHits, DeltaFinder ]
-    p3: [ DeltaFinder ]
-    p4: [ PrefetchData, DeltaFinder ]
-    p5: [ PrefetchData, DeltaFinder, DeltaFinderAna ]
+    p1: [ @sequence::Tracking.PrepareHits, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+    p2: [ @sequence::Tracking.PrepareHits, CalTimePeakFinder, DeltaFinder ]
+    p3: [               CalTimePeakFinder, DeltaFinder ]
+    p4: [ PrefetchData, CalTimePeakFinder, DeltaFinder ]
+    p5: [ PrefetchData, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+    p6: [ PrefetchData, @sequence::CaloCluster.Reco, @sequence::CaloCluster.TruthMatch, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
 
-    trigger_paths : [ p5 ]
+    trigger_paths : [ p6 ]
     out           : []
     end_paths     : [ out ]
 }

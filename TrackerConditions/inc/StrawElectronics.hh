@@ -53,23 +53,23 @@ namespace mu2e {
       // relative time when linear response is maximal
       double maxResponseTime(TrkTypes::Path ipath,double distance) const;
   // digization
-      unsigned short adcResponse(double mvolts) const; // ADC response to analog inputs
-      unsigned long tdcResponse(double time) const; // TDC response to a given time
+      uint16_t adcResponse(double mvolts) const; // ADC response to analog inputs
+      uint16_t tdcResponse(double time) const; // TDC response to a given time
       void digitizeWaveform(TrkTypes::ADCVoltages const& wf,TrkTypes::ADCWaveform& adc) const; // digitize an array of voltages at the ADC
       void digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc) const;
       bool combineEnds(double t1, double t2) const; // are times from 2 ends combined into a single digi?
   // interpretation of digital data
       void tdcTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes& times) const;
-      double adcVoltage(unsigned short adcval) const; // mVolts
-      double adcCurrent(unsigned short adcval) const; // microAmps
+      double adcVoltage(uint16_t adcval) const; // mVolts
+      double adcCurrent(uint16_t adcval) const; // microAmps
 // accessors
       double adcLSB() const { return _ADCLSB; } //LSB in mvolts
       double tdcLSB() const { return _TDCLSB; } //LSB in nseconds
       double totLSB() const { return _TOTLSB; } //LSB in nseconds
-      unsigned short maxADC() const { return _maxADC; }
-      unsigned long maxTDC() const { return _maxTDC; }
-      unsigned short maxTOT() const { return _maxTOT; }
-      unsigned short ADCPedestal() const { return _ADCped; };
+      uint16_t maxADC() const { return _maxADC; }
+      uint16_t maxTDC() const { return _maxTDC; }
+      uint16_t maxTOT() const { return _maxTOT; }
+      uint16_t ADCPedestal() const { return _ADCped; };
       size_t nADCSamples() const { return _nADC; }
       size_t nADCPreSamples() const { return _nADCpre; }
       double adcPeriod() const { return _ADCPeriod; } // period of ADC clock in nsec
@@ -108,17 +108,17 @@ namespace mu2e {
       double _snoise; // straw noise at threshold
       double _analognoise[TrkTypes::npaths]; //noise (mVolt) from the straw itself
       double _ADCLSB; // least-significant bit of ADC (mVolts)
-      unsigned short _maxADC; // maximum ADC value
-      unsigned short _ADCped; // ADC pedestal (reading for 0 volts)
+      uint16_t _maxADC; // maximum ADC value
+      uint16_t _ADCped; // ADC pedestal (reading for 0 volts)
       size_t _nADC,_nADCpre; // Number of ADC samples, presamples
       double _ADCPeriod; // ADC period in nsec
       double _ADCOffset; // Offset of 1st ADC sample WRT threshold crossing (nsec)
       unsigned _maxtsep; // maximum # of ADC clock ticks between straw end threshold crossings to form a digi
       unsigned _TCoince; // maxing threshold xing pair time separation to create a digi, in number of ADC clock cycles
       double _TDCLSB; // least-significant bit of TDC (nsecs)
-      unsigned long _maxTDC; // maximum TDC value
+      uint16_t _maxTDC; // maximum TDC value
       double _TOTLSB; // least-significant bit of TOT (nsecs)
-      unsigned short _maxTOT; // maximum TOT value
+      uint16_t _maxTOT; // maximum TOT value
       double _clockStart, _clockJitter; // time TDC clock starts, and its error (common to both ends!!)
       double _flashStart, _flashEnd; // flash blanking period (no digitizations during this time!!!)
       double _pmpEnergyScale; // fudge factor for peak minus pedestal energy method
