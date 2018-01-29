@@ -153,7 +153,7 @@ namespace mu2e {
     _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
     _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
     _shfTag(pset.get<string>("StrawHitFlagCollectionTag","TimeClusterFinder")),
-    _hsTag(pset.get<string>("HelixSeedCollectionTag","PosHelixFinder")),
+    _hsTag(pset.get<string>("HelixSeedCollectionTag","HelixFinder:Positive")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
     _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),

@@ -120,7 +120,7 @@ namespace mu2e
   {
     GeomHandle<CosmicRayShield> CRS;
 
-    art::ProductID simPartId(getProductID<SimParticleCollection>(event));
+    art::ProductID simPartId(getProductID<SimParticleCollection>());
     SimParticleHelper spHelper(0, simPartId, event);
 
     std::unique_ptr<StepPointMCCollection> stepPointMCs(new StepPointMCCollection);

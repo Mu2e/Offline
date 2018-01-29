@@ -279,7 +279,7 @@ outputs:
    filteredOutput : 
    {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigFilter"] }
+      SelectEvents: ["trigFilter"]
       outputCommands:   
       [ 
          "drop *_*_*_*",

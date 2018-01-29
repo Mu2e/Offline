@@ -93,7 +93,7 @@ outputs: {
   outfile :  {
     module_type   :   RootOutput
     fileName      :   "dioBG_data.root"
-    SelectEvents : { SelectEvents : [ p1 ] }
+    SelectEvents : [ p1 ]
   }
 
 }

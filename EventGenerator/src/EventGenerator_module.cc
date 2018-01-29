@@ -38,6 +38,7 @@
 #include "EventGenerator/inc/ConversionGun.hh"
 #include "EventGenerator/inc/StoppedMuonGun.hh"
 #include "EventGenerator/inc/CosmicDYB.hh"
+#include "EventGenerator/inc/CosmicFromTH2.hh"
 #include "EventGenerator/inc/DecayInOrbitGun.hh"
 #include "EventGenerator/inc/EjectedNeutronGun.hh"
 #include "EventGenerator/inc/EjectedProtonGun.hh"
@@ -179,6 +180,7 @@ namespace mu2e {
     bool doConv                 = config.getBool( "conversionGun.do",    false );
     bool doParticleGun          = config.getBool( "particleGun.do",      false );
     bool doCosmicDYB            = config.getBool( "cosmicDYB.do",        false );
+    bool doCosmicFromTH2        = config.getBool( "cosmicFromTH2.do",    false );
     bool doPiCapture            = config.getBool( "picapture.do",        false );
     bool doEjectedProton        = config.getBool( "ejectedProtonGun.do", false );
     bool doEjectedNeutron       = config.getBool( "ejectedNeutronGun.do",false );
@@ -198,6 +200,7 @@ namespace mu2e {
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );
     if ( doConv)                 _generators.push_back( GeneratorBasePtr( new ConversionGun(    run, config)) );
     if ( doCosmicDYB)            _generators.push_back( GeneratorBasePtr( new CosmicDYB(        run, config)) );
+    if ( doCosmicFromTH2)        _generators.push_back( GeneratorBasePtr( new CosmicFromTH2(    run, config)) );
     if ( doPiCapture)            _generators.push_back( GeneratorBasePtr( new PiCapture(        run, config)) );
     if ( doDIO)                  _generators.push_back( GeneratorBasePtr( new DecayInOrbitGun(  run, config)) );
     if ( doEjectedProton)        _generators.push_back( GeneratorBasePtr( new EjectedProtonGun( run, config)) );

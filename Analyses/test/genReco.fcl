@@ -23,18 +23,19 @@
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 
-generatorSeq  : [ generate, g4run, @sequence::EventMixing.TimeMaps ]
+generatorSeq  : [ generate, g4run ]
 
-make_digis   : [ @sequence::CaloDigiMC.DigiSim, @sequence::Tracking.DigiSim ]
+make_digis   : [ @sequence::CommonDigiSim.DigiSim, @sequence::CaloDigiMC.DigiSim, @sequence::Tracking.DigiSim ]
 
 # calorimeter cluster reconstruction
 calRecoSeq    : [ @sequence::CaloReco.Reco,@sequence::CaloDigiMC.TruthMatch,@sequence::CaloCluster.Reco,@sequence::CaloCluster.TruthMatch ]
 
 # hit making for CalPatRec
-cprMakeHitSeq : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
-		  CalPatRecFlagStrawHits, CalPatRecFlagBkgHits ]
+# cprMakeHitSeq : [ @sequence::CalPatRec.prepare_hits] # 
+
+# CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  CalPatRecFlagStrawHits, CalPatRecFlagBkgHits ]
 # 
-calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
+# calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
 
 #------------------------------------------------------------------------------
 # downstream electron and downstream muon reconstruction - needed for particle ID
@@ -47,7 +48,7 @@ calPatRecDemDmmSeq  : [ @sequence::CalPatRec.dem_reco, @sequence::CalPatRec.dmm_
 
 allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDeM, 
 			@sequence::Tracking.TPRDmuM,
-			@sequence::cprMakeHitSeq, 
+#			@sequence::cprMakeHitSeq, 
 			@sequence::CalPatRec.dem_reco, @sequence::CalPatRec.dmm_reco, 
 			MergePatRecDem, MergePatRecDmm ]
 
@@ -112,7 +113,7 @@ source : {
 outputs: {
     detectorOutput : {
         module_type : RootOutput
-#        SelectEvents: { SelectEvents: [p1] }
+#        SelectEvents: [p1]
         outputCommands:   [ "keep *_*_*_*",
                             "drop mu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]
@@ -151,7 +152,7 @@ physics : {
 #------------------------------------------------------------------------------
 	@table::Mu2eG4.producers
         @table::EventMixing.producers 
-	@table::HitMakers.producers        
+	@table::CommonDigiSim.producers
 	@table::CaloDigiMC.producers
         @table::CaloReco.producers
         @table::CaloDigiMC.producersMC
@@ -231,3 +232,4 @@ services.scheduler.wantSummary: true
 physics.analyzers.RKFDeM.KalDiag.MCStepsLabel     : "g4run"
 physics.analyzers.RKFDeM.KalDiag.SimParticleLabel : "g4run"
 physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
+#physics.producers.KFFDeM.KalFit.debugLevel : 4

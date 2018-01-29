@@ -41,6 +41,7 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 
 using namespace std;
 
@@ -188,15 +189,16 @@ namespace mu2e {
     // Get the persistent data about the StrawHits.
 
     if (ncalls==1){
-      const std::deque<Straw>& allstraws = tracker.getAllStraws();
+      const auto & allstraws = tracker.getAllStraws();
       float detnt[11];
-      for (size_t i = 0;i<allstraws.size();i++)
+      // for ( const auto & str : allstraws)
+      for (size_t i = 0; i<tracker.nStraws(); ++i)
         {
-          Straw str = allstraws[i];
+          const Straw & str = allstraws[i];
           StrawId sid = str.id();
-          LayerId lid = sid.getLayerId();
-          PlaneId did = sid.getPlaneId();
-          PanelId secid = sid.getPanelId();
+          int lid = sid.getLayer();
+          int did = sid.getPlane();
+          int secid = sid.getPanel();
 
           // cout <<  __func__ << " index: "  << i << " Layer: "<< lid.getLayer()<< " Plane: "<< did <<"  Panel:  "<<secid.getPanel()<<endl;
           // cout<<str.getHalfLength()<<endl;
@@ -217,10 +219,10 @@ namespace mu2e {
             endl;
           */
           // Fill the ntuple.
-          detnt[0]  = i;
-          detnt[1]  = lid.getLayer();
+          detnt[0]  = str.index().asInt();
+          detnt[1]  = lid;
           detnt[2]  = did;
-          detnt[3]  = secid.getPanel();
+          detnt[3]  = secid;
           detnt[4]  = str.getHalfLength();
           detnt[5]  = vec3j.getX();
           detnt[6]  = vec3j.getY();
@@ -324,9 +326,9 @@ namespace mu2e {
       const  unsigned id = si.asUint();
       Straw str = tracker.getStraw(si);
       StrawId sid = str.id();
-      LayerId lid = sid.getLayerId();
-      PlaneId did = sid.getPlaneId();
-      PanelId secid = sid.getPanelId();
+      int lid = sid.getLayer();
+      int did = sid.getPlane();
+      int secid = sid.getPanel();
 
       double fracDist = 0.0;
       StrawEnd itdc(TrkTypes::cal);
@@ -355,17 +357,19 @@ namespace mu2e {
       const CLHEP::Hep3Vector sdir   = str.getDirection();
 
       // calculate the hit position
-      SHInfo strawHitInfo;
-      trackerCalibrations->StrawHitInfo(str, hit, strawHitInfo);
+      ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
+      float dw, dwerr;
+      srep->wireDistance(hit,str.getHalfLength(),dw,dwerr);
+      CLHEP::Hep3Vector pos = str.getMidPoint()+dw*str.getDirection();
 
       // we may also need the truth hit position, do we need another function?
 
       // Fill the ntuple:
       float nt[_ntup->GetNvar()];
       nt[0]  = evt.id().event();
-      nt[1]  = lid.getLayer();
+      nt[1]  = lid;
       nt[2]  = did;
-      nt[3]  = secid.getPanel();
+      nt[3]  = secid;
       nt[4]  = str.getHalfLength();
       nt[5]  = smidp.getX();
       nt[6]  = smidp.getY();
@@ -380,9 +384,9 @@ namespace mu2e {
       nt[15] = gblSHMCresult ? SHtruth->driftDistance() : SDtruth.driftDistance(itdc);
       nt[16] = gblSHMCresult ? SHtruth->distanceToMid() : SDtruth.distanceToMid(itdc);
       nt[17] = id;
-      nt[18] = strawHitInfo._pos.getX();
-      nt[19] = strawHitInfo._pos.getY();
-      nt[20] = strawHitInfo._pos.getZ();
+      nt[18] = pos.getX();
+      nt[19] = pos.getY();
+      nt[20] = pos.getZ();
       nt[21] = fracDist;
 
       _ntup->Fill(nt);

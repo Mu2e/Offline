@@ -19,6 +19,9 @@ physics :{
       SimParticlePrinter : {
         pCut : 10.0
       }
+      SimParticlePtrPrinter : {
+        verbose : 0
+      }
       SimParticleTimeMapPrinter : {
         verbose : 1
       }
@@ -26,6 +29,9 @@ physics :{
         pCut : 10.0
       }
 
+      CaloShowerStepPrinter : {
+        verbose: 0
+      }
       CaloHitPrinter : {
         verbose: 0
       }
@@ -43,6 +49,9 @@ physics :{
       }
 
       StrawDigiPrinter : {
+        verbose: 0
+      }
+      StrawDigiMCPrinter : {
         verbose: 0
       }
       StrawHitPrinter : {

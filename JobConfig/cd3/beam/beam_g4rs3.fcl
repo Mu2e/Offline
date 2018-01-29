@@ -152,7 +152,7 @@ physics : {
 outputs: {
    mothersOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: [trigMothers] }
+      SelectEvents: [trigMothers]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -165,7 +165,7 @@ outputs: {
 
    crvOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: [trigCRV] }
+      SelectEvents: [trigCRV]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -178,7 +178,7 @@ outputs: {
 
    truncatedEvtsOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: [g4StatusFilter] }
+      SelectEvents: [g4StatusFilter]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",

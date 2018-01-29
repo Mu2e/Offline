@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -28,12 +29,12 @@ namespace mu2e {
 
     class BFCacheManager {
         // typedef std::vector<const BFMap*> SequenceType;
-        typedef std::vector<std::shared_ptr<const BFMap>> SequenceType;
-        // typedef std::vector<std::shared_ptr<BFMap>> MapContainerType;
-        struct MapList : public SequenceType {
+        // typedef std::vector<std::shared_ptr<const BFMap>> SequenceType;
+        typedef std::vector<std::shared_ptr<BFMap>> MapContainerType;
+        struct MapList : public MapContainerType {
             // return the first matching map or 0
             std::shared_ptr<const BFMap> findMap(const CLHEP::Hep3Vector& x) const {
-                for (SequenceType::const_iterator i = begin(); i != end(); ++i) {
+                for (MapContainerType::const_iterator i = begin(); i != end(); ++i) {
                     if ((*i)->isValid(x)) {
                         return *i;
                     }
@@ -67,7 +68,7 @@ namespace mu2e {
        public:
         BFCacheManager();
 
-        void setMaps(const SequenceType& innerMaps, const SequenceType& outerMaps);
+        void setMaps(const MapContainerType& innerMaps, const MapContainerType& outerMaps);
 
         // Returns pointers to an appropriate field map, or 0.
         std::shared_ptr<const BFMap> findMap(const CLHEP::Hep3Vector& x) const {

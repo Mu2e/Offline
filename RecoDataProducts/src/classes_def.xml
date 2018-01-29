@@ -31,8 +31,10 @@
  <class name="mu2e::StereoHit"/>
  <class name="mu2e::StereoHitCollection"/>
  <class name="mu2e::StrawHitPosition"/>
- <class name="mu2e::HelixHit"/>
  <class name="mu2e::StrawHitPositionCollection"/>
+ <class name="mu2e::ComboHit"/>
+ <class name="mu2e::ComboHitCollection"/>
+ <class name="mu2e::HelixHit"/>
  <class name="mu2e::HelixHitCollection"/>
  <class name="mu2e::StrawHitFlag"/>
  <class name="mu2e::StrawHitFlagDetail"/>
@@ -105,8 +107,10 @@
  <class name="art::Ptr<mu2e::StereoHit>"/>
  <class name="std::vector<art::Ptr<mu2e::StereoHit> >"/>
  <class name="art::Ptr<mu2e::StrawHitPosition>"/>
+ <class name="art::Ptr<mu2e::ComboHit>"/>
  <class name="art::Ptr<mu2e::HelixHit>"/>
  <class name="std::vector<art::Ptr<mu2e::StrawHitPosition> >"/>
+ <class name="std::vector<art::Ptr<mu2e::ComboHit> >"/>
  <class name="std::vector<art::Ptr<mu2e::HelixHit> >"/>
  <class name="art::Ptr<mu2e::StrawHitFlag>"/>
  <class name="std::vector<art::Ptr<mu2e::StrawHitFlag> >"/>
@@ -149,6 +153,7 @@
  <class name="art::Wrapper<mu2e::CaloClusterCollection>"/>
  <class name="art::Wrapper<mu2e::StereoHitCollection>"/>
  <class name="art::Wrapper<mu2e::StrawHitPositionCollection>"/>
+ <class name="art::Wrapper<mu2e::ComboHitCollection>"/>
  <class name="art::Wrapper<mu2e::StrawHitFlagCollection>"/>
  <class name="art::Wrapper<mu2e::StrawClusterCollection>"/>
  <class name="art::Wrapper<mu2e::TrkCaloIntersectCollection>"/>
@@ -199,14 +204,13 @@
  <class name="mu2e::ExtMonFNALTrkFitCollection" />
  <class name="art::Wrapper<mu2e::ExtMonFNALTrkFitCollection>" />
 
- <class name="mu2e::TrkTypes::ADCWaveform" />
- <!-- <class name="std::array<unsigned short,16>"/>
+<!-- <class name="mu2e::TrkTypes::ADCWaveform" />
+ <class name="std::array<unsigned short,16>"/>
  <class name="std::array<unsigned long,2>"/>  -->
-
- <class name="mu2e::TrkTypes::TDCValues"/>
+ <!--<class name="mu2e::TrkTypes::TDCValues"/>
  <class name="mu2e::TrkTypes::TOTValues"/>
  <class name="mu2e::TrkTypes::TDCTimes"/>
- <class name="mu2e::TrkTypes::TOTTimes"/>
+ <class name="mu2e::TrkTypes::TOTTimes"/> -->
  <class name="mu2e::StrawDigi"/>
  <class name="mu2e::StrawDigiCollection"/>
  <class name="art::Ptr<mu2e::StrawDigi>"/>

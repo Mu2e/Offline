@@ -232,7 +232,7 @@ outputs: {
     outfile : {
 	module_type    : RootOutput
 	fileName       : "calPatRec_outFile.root"
-	SelectEvents  : { SelectEvents: [ p1 ] }
+	SelectEvents  : [ p1 ]
 	outputCommands : ['keep *_*_*_*'
 			  #                   , 'drop mu2eStrawDigis_*_*_*'
 			  #                   , 'drop mu2eStrawHits_*_*_*'

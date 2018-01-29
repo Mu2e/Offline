@@ -73,7 +73,7 @@ outputs: {
   outfile : {
     module_type    : RootOutput
     fileName       : "cosmics.root"
-    SelectEvents  : { SelectEvents: [ p1 ] }
+    SelectEvents  : [ p1 ]
     outputCommands : ['keep *_*_*_*'
 #                   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
 #                   , 'drop mu2eSimParticles_*_*_*'

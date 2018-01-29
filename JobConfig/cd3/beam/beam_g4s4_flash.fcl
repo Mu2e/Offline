@@ -14,10 +14,6 @@ services: { @table::mu2e.services.cd3simServices }
 physics: { @table::mu2e.physics.g4s4Flash }
 outputs: { @table::mu2e.outputs.g4s4Defs }
 
-// We guarantee that our subruns are atomic. The following line is
-// supposed to prevent excessive memory use.
-services.scheduler.fileMode: MERGE
-
 // The 20-station tracker
 services.GeometryService.inputFile: "Mu2eG4/geom/geom_common_cd3_s4p2_backgroundSim.txt"
 

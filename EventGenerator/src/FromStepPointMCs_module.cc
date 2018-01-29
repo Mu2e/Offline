@@ -96,7 +96,7 @@ namespace mu2e {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     std::unique_ptr<GenParticleSPMHistory> history(new GenParticleSPMHistory);
 
-    art::ProductID gpc_pid = getProductID<GenParticleCollection>(event);
+    art::ProductID gpc_pid = getProductID<GenParticleCollection>();
 
     for(const auto& tag : inputs_) {
       auto ih = event.getValidHandle<mu2e::StepPointMCCollection>(tag);

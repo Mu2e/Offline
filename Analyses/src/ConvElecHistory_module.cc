@@ -357,9 +357,9 @@ namespace mu2e {
       for (size_t i=0; i<strawvec.size(); ++i) {
 	Straw stw = tracker.getStraw(strawvec[i]);
 	B_strawidx[i] = stw.id().getStraw();
-	B_strawlay[i] = stw.id().getLayerId().getLayer();
-	B_strawplane[i] = stw.id().getPlaneId();
-	B_strawsec[i] = stw.id().getPanelId().getPanel();
+	B_strawlay[i] = stw.id().getLayer();
+	B_strawplane[i] = stw.id().getPlane();
+	B_strawsec[i] = stw.id().getPanel();
 	const CLHEP::Hep3Vector stMidPoint3 = stw.getMidPoint();
 	B_strawx[i] = stMidPoint3.getX();
 	B_strawy[i] = stMidPoint3.getY();

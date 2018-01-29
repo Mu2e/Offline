@@ -113,7 +113,7 @@ physics : {
 outputs: {
     beamFlashOutput : {
         module_type : RootOutput
-        SelectEvents: { SelectEvents: [detPath] }
+        SelectEvents: [detPath]
         outputCommands:   [ "drop *_*_*_*",
                             "keep mu2e::GenParticles_*_*_*",
                             "keep mu2e::GenEventCount_*_*_*",
@@ -125,9 +125,6 @@ outputs: {
     }
 
 }
-
-// We guarantee that our subruns are atomic. The following line is to not run out of memory.
-services.scheduler.fileMode: MERGE
 
 // Limit the amount of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1

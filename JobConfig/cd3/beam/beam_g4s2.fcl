@@ -141,7 +141,7 @@ outputs: {
 
    mubeamout : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigmubeam"] }
+      SelectEvents: ["trigmubeam"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -154,7 +154,7 @@ outputs: {
 
    crvout : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigcrv"] }
+      SelectEvents: ["trigcrv"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -167,7 +167,7 @@ outputs: {
 
   truncatedEvtsOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["g4StatusFilter"] }
+      SelectEvents: ["g4StatusFilter"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",

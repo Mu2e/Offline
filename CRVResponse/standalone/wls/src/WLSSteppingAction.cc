@@ -44,7 +44,7 @@ WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName
     _crvPhotons->LoadVisibleEnergyAdjustmentTable(visibleEnergyAdjustmentFileName);
   }
 
-  _ntuple = new TNtuple("CRVPhotons","CRVPhotons","SiPM:Energy:Length:StartZ"); //WLS fiber test
+  _ntuple = new TNtuple("CRVPhotons","CRVPhotons","SiPM:Energy:Length:StartZ:x:y:time:angle"); //WLS fiber test
   Reset();
 }
 
@@ -83,7 +83,11 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
            _ntuple->Fill((float)(thePostPV->GetCopyNo()),
                                  theStep->GetTrack()->GetTotalEnergy(),
                                  theStep->GetTrack()->GetTrackLength(),
-                                 theStep->GetTrack()->GetVertexPosition().z()); //WLS fiber test
+                                 theStep->GetTrack()->GetVertexPosition().z(),
+                                 theStep->GetPostStepPoint()->GetPosition().x(),
+                                 theStep->GetPostStepPoint()->GetPosition().y(), //WLS fiber test
+                                 theStep->GetPostStepPoint()->GetGlobalTime(),
+                                 theStep->GetPostStepPoint()->GetMomentum().dot(CLHEP::Hep3Vector(0.0,0.0,1.0)));
            _arrivalTimes[0][thePostPV->GetCopyNo()].push_back(theStep->GetPostStepPoint()->GetGlobalTime());
            if(_mode==-1)
            {

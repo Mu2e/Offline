@@ -43,7 +43,7 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 // CSV reader
-#include "BFieldGeom/inc/csv.h"
+#include "Sandbox/inc/csv.h"
 
 using namespace std;
 
@@ -51,7 +51,7 @@ namespace mu2e {
 
     namespace {
 
-        typedef std::vector<std::shared_ptr<const BFMap>> SequenceType;
+        typedef std::vector<std::shared_ptr<BFMap>> MapContainerType;
         // To control printouts from helper functions in this file
         int bfieldVerbosityLevel = 0;
 
@@ -124,8 +124,8 @@ namespace mu2e {
                 << "Unknown format of file with magnetic field maps: " << config.mapType() << "\n";
         }
 
-        _bfmgr->cm_.setMaps((const SequenceType&)_bfmgr->innerMaps_,
-                            (const SequenceType&)_bfmgr->outerMaps_);
+        _bfmgr->cm_.setMaps((const MapContainerType&)_bfmgr->innerMaps_,
+                            (const MapContainerType&)_bfmgr->outerMaps_);
 
         // The field manager is fully initialized.
         // Some extra stuff that is convenient to do here:
@@ -324,6 +324,22 @@ namespace mu2e {
 
         }  // end parseHeader
 
+        // string split functions for parsing from csv for param fields
+        vector<string>& split(const string& s, char delim, vector<string>& elems) {
+            stringstream ss(s);
+            string item;
+            while (getline(ss, item, delim)) {
+                elems.push_back(item);
+            }
+            return elems;
+        }
+
+        vector<string> split(const string& s, char delim) {
+            vector<string> elems;
+            split(s, delim, elems);
+            return elems;
+        }
+
     }  // end anonymous namespace
 
     // Loads a sequence of Parametric files
@@ -378,7 +394,7 @@ namespace mu2e {
                                        const std::string& resolvedFileName,
                                        double scaleFactor) {
         // Create an empty map.
-        auto dsmap = _bfmgr->addBFParamMap(mapContainer, key, -800, 800, -800, 800, 3500, 14000,
+        auto dsmap = _bfmgr->addBFParamMap(mapContainer, key, -4696, -3096, -800, 800, 3500, 14000,
                                            BFMapType::PARAM, scaleFactor);
         // Fill the map from the disk file.
         readParamFile(resolvedFileName, *dsmap);
@@ -789,10 +805,10 @@ namespace mu2e {
         io::CSVReader<2> in(filename);
         in.set_header("param", "val");
         string param;
-        double val;
-        int ns;
-        int ms;
-        double Reff;
+        double val(-1);
+        int ns(-1);
+        int ms(-1);
+        double Reff(-1);
         vector<vector<double>> As;
         vector<vector<double>> Bs;
         vector<double> Ds;
@@ -935,7 +951,4 @@ namespace mu2e {
             }
         }
     }
-    vector<string>& split(const string& s, char delim, vector<string>& elems);
-    vector<string> split(const string& s, char delim);
-
 }  // end namespace mu2e

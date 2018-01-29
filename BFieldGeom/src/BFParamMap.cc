@@ -61,11 +61,6 @@ namespace mu2e {
 
     bool BFParamMap::evalFit(const CLHEP::Hep3Vector& p, CLHEP::Hep3Vector& result) const {
         // Check validity.  Return a zero field and optionally print a warning.
-        if (p.x() > (800 - 3896) or p.x() < (-800 - 3896) or p.y() > 800 or p.y() < -800 or
-            p.z() < 4500 or p.z() > 13500) {
-            return false;
-        }
-
         if (!isValid(p)) {
             if (_warnIfOutside) {
                 mf::LogWarning("GEOM")
@@ -84,8 +79,8 @@ namespace mu2e {
         double sin_nphi, sin_kmsz;
         double abp, abm;
         vector<double> out(3, 0);
-        phi = atan2(p.y(), p.x());
-        r = sqrt(pow(p.x(), 2) + pow(p.y(), 2));
+        phi = atan2(p.y(), p.x() + 3896);
+        r = sqrt(pow(p.x() + 3896, 2) + pow(p.y(), 2));
         double abs_r = abs(r);
 
         for (int n = 0; n < _ns; ++n) {

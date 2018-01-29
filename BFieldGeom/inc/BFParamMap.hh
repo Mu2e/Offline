@@ -23,9 +23,10 @@
 #include "BFieldGeom/inc/BFMap.hh"
 #include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/Container3D.hh"
-#include "BFieldGeom/inc/fiteval_c2.h"
 #include "CLHEP/Vector/ThreeVector.h"
-#include "csv.h"
+#include "Sandbox/inc/csv.h"
+
+using namespace std;
 
 namespace mu2e {
     class BFParamMap : public BFMap {

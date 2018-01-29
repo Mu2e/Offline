@@ -304,13 +304,13 @@ namespace mu2e {
       StrawIndex si = hit.strawIndex();
       Straw str = tracker.getStraw(si);
       StrawId sid = str.id();
-      LayerId lid = sid.getLayerId();
-      PlaneId did = sid.getPlaneId();
-      PanelId secid = sid.getPanelId();
+      // LayerId lid = sid.getLayerId();
+      // PlaneId did = sid.getPlaneId();
+      // PanelId secid = sid.getPanelId();
 
-      tntpArray[idx++] = lid.getLayer(); //leaf 6
-      tntpArray[idx++] = did; //leaf 7
-      tntpArray[idx++] = secid.getPanel(); //leaf 8
+      tntpArray[idx++] = sid.getLayer(); //leaf 6
+      tntpArray[idx++] = sid.getPlane(); //leaf 7
+      tntpArray[idx++] = sid.getPanel(); //leaf 8
       tntpArray[idx++] = sid.getStraw(); //leaf 9
 
 

@@ -83,7 +83,7 @@ BEGIN_PROLOG
 
   HelixDiag : {
 	module_type : HelixDiag
-	HelixSeedCollectionTag : "PosHelixFinder"
+	HelixSeedCollectionTag : "HelixFinder:Positive"
 	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
   }
 
@@ -178,7 +178,9 @@ BEGIN_PROLOG
 		     @sequence::Tracking.TPRUeM,
 		     @sequence::Tracking.TPRDmuM,
 		     @sequence::TrackCaloMatching.matching_dem_TRF ]
-    EndSequence : [ TrkAna, genCountLogger ]
+# temporarily remove due to art 2_9 compatibility issues FIXME!
+#    EndSequence : [ TrkAna, genCountLogger ]
+    EndSequence : [ TrkAna ]
 
   }
   # aggregate these for convenience

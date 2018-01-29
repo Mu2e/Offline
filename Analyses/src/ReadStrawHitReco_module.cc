@@ -10,6 +10,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Utilities/Exception.h"
@@ -136,29 +137,29 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
     unsigned const id      = si.asUint();
     Straw const& str       = tracker.getStraw(si);
     StrawId const& sid     = str.id();
-    LayerId const& lid     = sid.getLayerId();
-    PlaneId const& did     = sid.getPlaneId();
-    PanelId const& panelid = sid.getPanelId();
+    unsigned const lno     = sid.getLayer();
+    unsigned const plno    = sid.getPlane();
+    unsigned const pnno     = sid.getPanel();
 
     _hStrawNumber->Fill(sid.getStraw());
-    _hLayerNumber->Fill(lid.getLayer());
-    _hPanelNumber->Fill(panelid.getPanel());
-    _hPlaneNumber->Fill(did);
+    _hLayerNumber->Fill(lno);
+    _hPanelNumber->Fill(pnno);
+    _hPlaneNumber->Fill(plno);
 
-    const CLHEP::Hep3Vector& smidp  = str.getMidPoint();
-    const CLHEP::Hep3Vector& sdir   = str.getDirection();
     double halfLen                  = str.getHalfLength();
 
     // Calculate the hit position; it's a point on the wire
     // (for now wire is modeled as a straight line).
-    SHInfo strawHitInfo;
-    trackerCalibrations->StrawHitInfo(str, hit, strawHitInfo);
-    _hTDivOK->Fill( strawHitInfo._tdiv );
+    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
+    float dw, dwerr;
+    bool td = srep->wireDistance(hit,str.getHalfLength(),dw,dwerr);
+    _hTDivOK->Fill( td );
 
     // Fractional length along the wire.
     // Only fill the histogram if time division info is useful.
-    double frac = (strawHitInfo._pos-smidp).dot(sdir)/halfLen;
-    if ( strawHitInfo._tdiv ) {
+    double frac = dw/halfLen;
+    CLHEP::Hep3Vector pos = str.getMidPoint()+dw*str.getDirection();
+    if ( td ) {
       _hFractionOnWire->Fill(frac);
     }
 
@@ -167,17 +168,17 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
     nt[0]  = evt.id().event();
     nt[1]  = id;
     nt[2]  = sid.getStraw();
-    nt[3]  = lid.getLayer();
-    nt[4]  = did;
-    nt[5]  = panelid.getPanel();
+    nt[3]  = lno;
+    nt[4]  = plno;
+    nt[5]  = pnno;
     nt[6]  = hit.time();
     nt[7]  = hit.dt();
     nt[8]  = hit.energyDep();
-    nt[9]  = strawHitInfo._pos.getX();
-    nt[10] = strawHitInfo._pos.getY();
-    nt[11] = strawHitInfo._pos.getZ();
+    nt[9]  = pos.getX();
+    nt[10] = pos.getY();
+    nt[11] = pos.getZ();
     nt[12] = frac;
-    nt[13] = strawHitInfo._tdiv;
+    nt[13] = td;
 
     _ntup->Fill(nt);
 

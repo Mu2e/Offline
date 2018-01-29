@@ -24,7 +24,7 @@ physics: {
         bftest: {
            module_type: BFieldTest
            //beamdump_Mau10_fit : { x : -3904 y : 0  zmin : 14000 zmax : 6000 npoints : 100000 }
-           beamdump_Mau10_fit : { csv_name : "/mu2e/app/users/bpollack/BTrk/BTrk_working/Offline/BFieldTest/test/bfield_rand_csv.txt"}
+           beamdump_Mau10_fit3 : { csv_name : "/mu2e/app/users/bpollack/BTrk/BTrk_working/Offline/BFieldTest/test/bfield_rand_csv.txt"}
 
            // Points near the PS map boundary: one inside, one outside of the "inner" map
            // boundary : { x : 3904 y : 0  zmin :  -9929.01 zmax :  -9928.99  npoints : 2 }

@@ -26,6 +26,7 @@
 // sources of served objects
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 
 using namespace std;
 
@@ -91,6 +92,7 @@ namespace mu2e {
     addEntity( std::move(std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config))) );
     addEntity(std::move(std::unique_ptr<StrawElectronics>(new StrawElectronics(_pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet())))) );
     addEntity(std::move(std::unique_ptr<StrawPhysics>(new StrawPhysics(_pset.get<fhicl::ParameterSet>("StrawPhysics",fhicl::ParameterSet())))) );
+    addEntity(std::move(std::unique_ptr<StrawResponse>(new StrawResponse(_pset.get<fhicl::ParameterSet>("StrawResponse",fhicl::ParameterSet())))) );
   }
 
   // Check that the configuration is self consistent.

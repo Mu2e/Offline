@@ -11,8 +11,9 @@ namespace mu2e {
         innerForLastOuter = &p->second;
     }
 
-    void BFCacheManager::setMaps(const SequenceType& innerMaps, const SequenceType& outerMaps) {
-        typedef SequenceType::const_iterator Iter;
+    void BFCacheManager::setMaps(const MapContainerType& innerMaps,
+                                 const MapContainerType& outerMaps) {
+        typedef MapContainerType::const_iterator Iter;
 
         // All inner maps in the input order
         MapList defaultInnerList;

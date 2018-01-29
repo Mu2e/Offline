@@ -1,10 +1,14 @@
 i=0
 layerOffset=42
-moduleGap=5
-#  for moduleGap in {3,5}
-#  do
+moduleGap="4.5"
+  for moduleGap in {"4.5","6.5"}
+  do
 
     dz=`echo "804.3+$moduleGap" | bc -l`
+echo "*****************************"
+echo "WIDER INNER AND OUTER GAP!!!!"
+echo "*****************************"
+    dz=`echo "818.5+$moduleGap" | bc -l`
 
 #    for layerOffset in {0..62..1}
 #    do
@@ -18,11 +22,13 @@ moduleGap=5
 
         genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig_5cm_verticalPlanes'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/genconfig_5cm_verticalPlanes.txt\"" >| $genconfigfile
-        echo "double cosmicDYB.dz = $dz;" >> $genconfigfile
+        echo "double cosmicFromTH2.dz = $dz;" >> $genconfigfile
 
         geomfile=CRVResponse/efficiencyCheck/submit/geom_5cm_verticalPlanes'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/geom_5cm_verticalPlanes.txt\"" >| $geomfile
         echo "double crs.gapBetweenModules = $moduleGap;" >> $geomfile
+        echo "double crs.gapSmall          = 0.5;" >> $geomfile
+        echo "double crs.gapLarge          = 1.0;" >> $geomfile
         echo "double crs.layerOffset       = $layerOffset;" >> $geomfile
 
         name=CRV_Efficiency_check_5cm_verticalPlanes
@@ -34,11 +40,11 @@ moduleGap=5
         echo "physics.producers.CrvPhotons.scintillationYield         : $photonYield" >> $fclfile
         echo "physics.producers.backgroundOverlay.overlayFactor       : $overlayFactor" >> $fclfile
 
-        generate_fcl --description=$name --dsconf=$i --run=1 --events=20000 --njobs=50 $fclfile
+        generate_fcl --description=$name --dsconf=$i --run=1 --events=50000 --njobs=20 $fclfile
         ls $PWD/000/cnf.$USER.$name.$i.*.fcl > $fcllist
         clustername=$name'_'gap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield
         mu2eprodsys --setup=./setup.sh --fcllist=$fcllist --clustername=$clustername --dsconf=$i --wfproject=$name
 
       done
 #    done
-#  done
+  done

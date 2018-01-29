@@ -108,7 +108,7 @@ namespace mu2e {
     // Return the volumeId as a StrawIndex.
     // This only makes sense for StepPointMCs from the tracker collection.
     // It's the user's job to know if this is a reasonable thing to do.
-    StrawIndex strawIndex() const { return StrawIndex(_volumeId); }
+    StrawIndex strawIndex() const { return static_cast<StrawIndex>(_volumeId); }
 
     // Return the volumeId as a VirtualDetectorId.
     // This only makes sense for StepPointMCs from the virtual detector collection.

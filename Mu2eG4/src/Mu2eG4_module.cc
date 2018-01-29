@@ -348,9 +348,9 @@ namespace mu2e {
 
     if ( _rmvlevel > 0 ) {
       mf::LogInfo logInfo("GEOM");
-      logInfo << "Initializing Geant 4 for " << run.id()
+      logInfo << "Initializing Geant4 for " << run.id()
               << " with verbosity " << _rmvlevel << endl;
-      logInfo << "Configured simParticleNumberOffset = "<< multiStagePars_.simParticleNumberOffset() << endl;
+      logInfo << " Configured simParticleNumberOffset = "<< multiStagePars_.simParticleNumberOffset() << endl;
     }
 
     // Create user actions and register them with G4.
@@ -502,7 +502,7 @@ namespace mu2e {
     }
 
     // ProductID for the SimParticleCollection.
-    art::ProductID simPartId(getProductID<SimParticleCollection>(event));
+    art::ProductID simPartId(getProductID<SimParticleCollection>());
     SimParticleHelper spHelper(multiStagePars_.simParticleNumberOffset(), simPartId, event);
     SimParticlePrimaryHelper parentHelper(event, simPartId, gensHandle);
 

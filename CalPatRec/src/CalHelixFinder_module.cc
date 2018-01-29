@@ -256,7 +256,7 @@ namespace mu2e {
 	    _data.pT[loc]      = mm2MeV*_data.radius[loc];
 	    _data.p[loc]       = _data.pT[loc]/std::cos( std::atan(helix_seed.helix().lambda()/_data.radius[loc]));
 	
-	    _data.chi2XY[loc]   = hf_result._sxyw.chi2DofCircle();
+	    _data.chi2XY[loc]   = hf_result._sxy.chi2DofCircle();
 	    _data.chi2ZPhi[loc] = hf_result._srphi.chi2DofLine();
 	    
 	    _data.nseeds[0]++;
@@ -266,6 +266,15 @@ namespace mu2e {
 	      _data.good[loc] = 1;
 	    }
 	    _data.nStationPairs[loc] = hf_result._diag.nStationPairs;
+	    
+	    _data.dr           [loc] = hf_result._diag.dr;
+	    _data.shmeanr      [loc] = hf_result._diag.straw_mean_radius;
+	    _data.chi2d_helix  [loc] = hf_result._diag.chi2d_helix;
+	                                                                 // info of the track candidate after the first loop with findtrack on CalHelixFinderAlg::doPatternRecognition
+	    _data.loopId       [loc] = hf_result._diag.loopId_4;
+	    if (hf_result._diag.loopId_4 == 0) _data.chi2d_loop0  [loc] = hf_result._diag.chi2_dof_circle_12;
+	    if (hf_result._diag.loopId_4 == 1) _data.chi2d_loop1  [loc] = hf_result._diag.chi2_dof_circle_12;
+	    
 	  }
 	  else {
 	    printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());
@@ -316,11 +325,13 @@ namespace mu2e {
     Hep3Vector center(x0, y0, 0);
     					//define the reconstructed helix parameters
 
-    HelSeed._helix._rcent  = center.perp();
-    HelSeed._helix._fcent  = center.phi();
-    HelSeed._helix._radius = helixRadius;
-    HelSeed._helix._lambda = 1./dfdz;
-    HelSeed._helix._fz0    = -z0*dfdz + phi0 - M_PI/2.;
+    HelSeed._helix._rcent    = center.perp();
+    HelSeed._helix._fcent    = center.phi();
+    HelSeed._helix._radius   = helixRadius;
+    HelSeed._helix._lambda   = 1./dfdz;
+    HelSeed._helix._fz0      = -z0*dfdz + phi0 - M_PI/2.;
+    HelSeed._helix._helicity = Helicity::poshel;
+
                                         //now evaluate the helix T0 using the calorimeter cluster
     double   mm2MeV        = 3/10.;//FIX ME!
     double   tandip        = hel->tanDip();

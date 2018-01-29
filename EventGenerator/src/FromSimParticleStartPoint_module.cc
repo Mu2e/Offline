@@ -163,7 +163,7 @@ namespace mu2e {
 
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     std::unique_ptr<GenSimParticleLink> history(new GenSimParticleLink);
-    art::ProductID gpc_pid = (getProductID<GenParticleCollection>(event));
+    art::ProductID gpc_pid = (getProductID<GenParticleCollection>());
 
     if (_firstevent) {
 

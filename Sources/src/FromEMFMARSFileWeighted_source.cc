@@ -29,7 +29,7 @@
 #include "art/Framework/Principal/SubRunPrincipal.h"
 #include "art/Framework/Principal/EventPrincipal.h"
 #include "art/Framework/IO/Sources/put_product_in_principal.h"
-#include "art/Framework/Principal/get_BranchDescription.h"
+#include "art/Framework/Principal/get_ProductDescription.h"
 #include "canvas/Persistency/Provenance/ProductID.h"
 
 #include "MCDataProducts/inc/GenParticle.hh"
@@ -70,17 +70,15 @@ namespace mu2e {
       unsigned currentEventNumber_;
 
       //----------------------------------------------------------------
-      template <typename PROD, art::BranchType B, typename TRANS>
+      template <typename PROD, art::BranchType B>
       art::ProductID
-      getProductID(TRANS const &translator) const {
+      getProductID() const {
         return
-          translator.branchIDToProductID
-          (art::get_BranchDescription<PROD>(B,
+          art::get_ProductDescription<PROD>(B,
                                             myModuleLabel_,
                                             ""/*emtpy instance name*/
                                             )
-           .branchID()
-           );
+	  .productID();
       }
 
     public:
@@ -197,10 +195,10 @@ namespace mu2e {
 
         outE = pm_.makeEventPrincipal(runNumber_, currentSubRunNumber_, ++currentEventNumber_, ts, false);
 
-        art::ProductID particlesPID = getProductID<GenParticleCollection,art::InEvent>(*outE );
+        art::ProductID particlesPID = getProductID<GenParticleCollection,art::InEvent>();
         const art::EDProductGetter* particlesGetter = outE->productGetter(particlesPID);
 
-        art::ProductID infoPID = getProductID<MARSInfoCollection,art::InEvent>(*outE );
+        art::ProductID infoPID = getProductID<MARSInfoCollection,art::InEvent>();
         const art::EDProductGetter* infoGetter = outE->productGetter(infoPID);
 
         const unsigned nj = currentLine_.protonNumber;

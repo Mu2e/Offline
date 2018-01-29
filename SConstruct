@@ -25,18 +25,18 @@ moreOpts = sch.mu2eEnvironment()
 mu2eOpts.update(moreOpts)
 
 if mu2ePrint > 1:
-    print "mu2eOpts:"
-    print mu2eOpts
+    print ("mu2eOpts:")
+    print (mu2eOpts)
 
 
 if mu2ePrint > 5:
-    print "building Evironment:"
-    print "\nCPPPATH = ",sch.cppPath(mu2eOpts)
-    print "\nLIBPATH = ",sch.libPath(mu2eOpts)
-    print "\nENV = ",sch.exportedOSEnvironment()
-    print "\nFORTRAN = 'gfortran'"
-    print "\nBABARLIBS = ", sch.BaBarLibs()
-    print "\nmerge Flags =",sch.mergeFlags(mu2eOpts)
+    print ("building Evironment:")
+    print ("\nCPPPATH = ",sch.cppPath(mu2eOpts))
+    print ("\nLIBPATH = ",sch.libPath(mu2eOpts))
+    print ("\nENV = ",sch.exportedOSEnvironment())
+    print ("\nFORTRAN = 'gfortran'")
+    print ("\nBABARLIBS = ", sch.BaBarLibs())
+    print ("\nmerge Flags =",sch.mergeFlags(mu2eOpts))
 
 # this the scons object which contains the methods to build code
 env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...

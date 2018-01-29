@@ -20,7 +20,6 @@
 #include "BFieldGeom/inc/BFInterpolationStyle.hh"
 #include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/Container3D.hh"
-#include "BFieldGeom/inc/fiteval_c2.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {

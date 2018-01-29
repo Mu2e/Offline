@@ -1,10 +1,10 @@
 layerOffset=42
-#layerOffset=10
+#layerOffset=0
 timeWindow=10
 #timeWindow=20
 sides=2
 #PEthreshold=12
-moduleGap=5
+moduleGap="4.5"
 
 #for PEthreshold in {10..24..2}
 for PEthreshold in {10..40..2}
@@ -19,6 +19,7 @@ do
 #              name=CRV_Efficiency_check_5cm0_6000r
 #              name=CRV_Efficiency_check_5cm0_6000
 #              name=CRV_Efficiency_check_5cm0_upstreamPlanes
+#              name=CRV_Efficiency_check_5cm_5000
 #              name=CRV_Efficiency_check_5cm_5000r
 #              name=CRV_Efficiency_check_5cm_6000r
               name=CRV_Efficiency_check_5cm_6000
@@ -40,7 +41,7 @@ do
 
                 searchString="SUMMARY CrvCoincidencePE$PEthreshold""T$timeWindow"
 #                searchCommand="grep '$searchString' $file"
-                searchCommand="tail -n 200 $file | grep '$searchString'"
+                searchCommand="timeout 10 tail -n 200 $file | grep '$searchString'"
                 searchResult=`eval $searchCommand`
                 if [ $? -ne 0 ]; then
                   continue

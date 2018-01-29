@@ -11,7 +11,7 @@
 #include "RecoDataProducts/inc/BkgClusterFlag.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 // c++ includes
-#include <list>
+#include <vector>
 namespace mu2e 
 {
 // hit reference for us in the cluster.  The principle payload is the 'distance', which measures

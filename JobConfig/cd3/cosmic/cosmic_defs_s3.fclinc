@@ -73,7 +73,7 @@ outputs:
     filteredOutput:
     {
         module_type    : RootOutput
-        SelectEvents   : { SelectEvents: ["trigFilter"] }
+        SelectEvents   : ["trigFilter"]
         outputCommands : [
             "drop *_*_*_*",
             "keep *_*_*_cosmics1",
@@ -93,6 +93,3 @@ services.message.destinations.log.categories.ArtReport.timespan : 300
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  0
 services.SeedService.maxUniqueEngines :  20
-
-// We guarantee that our subruns are atomic. The following line is to not run out of memory.
-services.scheduler.fileMode: MERGE

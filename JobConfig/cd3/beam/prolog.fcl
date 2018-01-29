@@ -119,7 +119,7 @@ mu2e.filters.g4StatusDefs: {
 mu2e.outputs.g4s4Defs: {
    detectorOutput: {
       module_type: RootOutput
-      SelectEvents: { SelectEvents: [detPath] }
+      SelectEvents: [detPath]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -132,7 +132,7 @@ mu2e.outputs.g4s4Defs: {
 
    crvOutput: {
       module_type: RootOutput
-      SelectEvents: { SelectEvents: [crvPath] }
+      SelectEvents: [crvPath]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -145,7 +145,7 @@ mu2e.outputs.g4s4Defs: {
 
    truncatedEvtsOutput: {
       module_type: RootOutput
-      SelectEvents: { SelectEvents: [g4StatusPath] }
+      SelectEvents: [g4StatusPath]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",

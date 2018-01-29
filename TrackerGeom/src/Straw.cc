@@ -25,11 +25,7 @@ namespace mu2e {
     _c(CLHEP::Hep3Vector(0.,0.,0.)),
     _detail(0),
     _detailIndex(0),
-    _w(CLHEP::Hep3Vector(0.,0.,1.)),
-    _nextOuterL(StrawIndex::NO_STRAW),
-    _nextInnerL(StrawIndex::NO_STRAW),
-    _nextOuterP(StrawIndex::NO_STRAW),
-    _nextInnerP(StrawIndex::NO_STRAW)
+    _w(CLHEP::Hep3Vector(0.,0.,1.))
   {
   }
 
@@ -45,11 +41,7 @@ namespace mu2e {
     _index(index),
     _c(c),
     _detail(detail),
-    _detailIndex(detailIndex),
-    _nextOuterL(StrawIndex::NO_STRAW),
-    _nextInnerL(StrawIndex::NO_STRAW),
-    _nextOuterP(StrawIndex::NO_STRAW),
-    _nextInnerP(StrawIndex::NO_STRAW)
+    _detailIndex(detailIndex)
   {
     _w = CLHEP::Hep3Vector(wtx,wty,1.).unit();
   }
@@ -66,11 +58,7 @@ namespace mu2e {
     _c(c),
     _detail(detail),
     _detailIndex(detailIndex),
-    _w(w.unit()),
-    _nextOuterL(StrawIndex::NO_STRAW),
-    _nextInnerL(StrawIndex::NO_STRAW),
-    _nextOuterP(StrawIndex::NO_STRAW),
-    _nextInnerP(StrawIndex::NO_STRAW)
+    _w(w.unit())
   {
   }
 

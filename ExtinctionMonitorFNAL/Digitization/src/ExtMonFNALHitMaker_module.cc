@@ -350,7 +350,7 @@ namespace mu2e {
       // Hits near microbunch boundaries are duplicated.
       foldHitTimes(&pixcharges);
 
-      const art::ProductID hitsPID = getProductID<ExtMonFNALRawHitCollection>(event);
+      const art::ProductID hitsPID = getProductID<ExtMonFNALRawHitCollection>();
       const art::EDProductGetter *hitsGetter = event.productGetter(hitsPID);
       discriminate(&*outHits, &*outTruth, hitsPID, hitsGetter, pixcharges);
 

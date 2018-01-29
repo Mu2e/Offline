@@ -334,7 +334,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // output collections should always be created
 //-----------------------------------------------------------------------------
-    art::ProductID   kalRepsID(getProductID<KalRepCollection>(event));
+    art::ProductID   kalRepsID(getProductID<KalRepCollection>());
 
     unique_ptr<KalRepCollection>       tracks   (new KalRepCollection        );
     unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection     );

@@ -143,7 +143,7 @@ physics : {
 outputs: {
    extmonbeamout : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigextmonbeam"] }
+      SelectEvents: ["trigextmonbeam"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -156,10 +156,6 @@ outputs: {
 }
 
 physics.producers.g4run.physics.minRangeCut : 1. // mm
-
-// We guarantee that our subruns are atomic. The following line is
-// supposed to prevent excessive memory use.
-services.scheduler.fileMode: MERGE
 
 // Limit the amount of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1

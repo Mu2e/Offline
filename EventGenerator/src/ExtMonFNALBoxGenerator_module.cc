@@ -434,10 +434,10 @@ namespace mu2e {
                                                           MARSInfoCollection *info,
                                                           GenParticleMARSAssns *assns) {
 
-      const art::ProductID particlesPID = getProductID<GenParticleCollection>(event);
+      const art::ProductID particlesPID = getProductID<GenParticleCollection>();
       const art::EDProductGetter *particlesGetter = event.productGetter(particlesPID);
 
-      const art::ProductID marsPID = getProductID<MARSInfoCollection>(event);
+      const art::ProductID marsPID = getProductID<MARSInfoCollection>();
       const art::EDProductGetter *marsGetter = event.productGetter(marsPID);
 
       const int numStopProtons = randPoisson_.fire(numPrimaryProtonsPerMicrobunch_ * primaryProtonStopEfficiency_);
@@ -500,10 +500,10 @@ namespace mu2e {
                                                     MARSInfoCollection *info,
                                                     GenParticleMARSAssns *assns) {
 
-      const art::ProductID particlesPID = getProductID<GenParticleCollection>(event);
+      const art::ProductID particlesPID = getProductID<GenParticleCollection>();
       const art::EDProductGetter *particlesGetter = event.productGetter(particlesPID);
 
-      const art::ProductID marsPID = getProductID<MARSInfoCollection>(event);
+      const art::ProductID marsPID = getProductID<MARSInfoCollection>();
       const art::EDProductGetter *marsGetter = event.productGetter(marsPID);
 
       const int numHitProtons = randPoisson_.fire(numPrimaryProtonsPerMicrobunch_ * primaryProtonHitEfficiency_);

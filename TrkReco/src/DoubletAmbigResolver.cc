@@ -384,6 +384,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	if (_Final == 0) {
 	  //	  Hit->setTemperature(Hit->driftRadius()/Hit->driftVelocity());
+	  Hit->setPenalty(Hit->driftRadius()/sqrt(3));
 	  Hit->setAmbig(0);
 	}
 	else {
@@ -392,6 +393,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	  if (ibest == 0) Hit->setAmbig( 1);
 	  else            Hit->setAmbig(-1);
+	  Hit->setPenalty(Hit->driftRadius()/(2*sqrt(3)));
 	}
       }
       if (_debugLevel > 0) {
@@ -411,7 +413,8 @@ namespace mu2e {
 // couldn't determine doca
 //-----------------------------------------------------------------------------
       printf(" ***** DoubletAmbigResolver::resolveSingleHit warning: cant determine POCA\n");
-      Hit->setTemperature(Hit->driftRadius()/Hit->driftVelocity());
+      //      Hit->setTemperature(Hit->driftRadius()/Hit->driftVelocity());
+      Hit->setPenalty(fabs(Hit->driftRadius()));
       Hit->setAmbig(0);
     }
 
@@ -706,7 +709,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // all 4 chi2s are "of the same order", nothing to fish
 //-----------------------------------------------------------------------------
-	Hit->setTemperature(err);
+//	Hit->setTemperature(err);
+	Hit->setPenalty(err*Hit->driftVelocity()); 
 	Hit->setAmbig(0);
       }
     }
@@ -715,7 +719,8 @@ namespace mu2e {
 // the best and the next solutions correspond to different drift directions 
 // of this hit. Can't choose, assign large error
 //-----------------------------------------------------------------------------
-      Hit->setTemperature(err);
+//      Hit->setTemperature(err);
+      Hit->setPenalty(err*Hit->driftVelocity());
       Hit->setAmbig(0);
     }
   }
@@ -767,9 +772,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	    if (r.rdrift[i] > _minDriftDoublet) {
 //-----------------------------------------------------------------------------
-// the hit drift radius is large - reduce the external error
+// the hit drift radius is large - reduce the external error (no penalty in this case)
 //-----------------------------------------------------------------------------
-	      hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+//	      hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+	      //	      hit[i]->setPenalty(AmbigResolver::_tmpErr/_scaleErrDoublet);
+	      hit[i]->setPenalty(0);
 	      hit[i]->setAmbig(_sign[r.ibest][i]);
 	    }
 	    else {
@@ -778,7 +785,8 @@ namespace mu2e {
 // the ambiguity to zero to use the wire coordinate
 //-----------------------------------------------------------------------------
 	      if (_Final == 0) {
-		hit[i]->setTemperature(r.rdrift[i]/hit[i]->driftVelocity());
+		//		hit[i]->setTemperature(r.rdrift[i]/hit[i]->driftVelocity());
+		hit[i]->setPenalty(r.rdrift[i]);
 		hit[i]->setAmbig(0);
 	      }
 	      else {
@@ -846,7 +854,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // make the best choice possible, external error should be zero at this point
 //-----------------------------------------------------------------------------
-	      hit[i]->setTemperature(AmbigResolver::_tmpErr);
+//	      hit[i]->setTemperature(AmbigResolver::_tmpErr);
+	      hit[i]->setPenalty(0);
 	      hit[i]->setAmbig (_sign[r.ibest][i]);
 	    }
 	  }
@@ -865,7 +874,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // however, the best chi2 is good enough to be reliable under any circumstances
 //-----------------------------------------------------------------------------
-	      hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+//	      hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+//	      hit[i]->setPenalty(AmbigResolver::_tmpErr/_scaleErrDoublet);
+	      hit[i]->setPenalty(0);
 	      hit[i]->setAmbig (_sign[r.ibest][i]);
 	    }
 	    else {
@@ -916,7 +927,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // ... but finally decide
 //-----------------------------------------------------------------------------
-		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+//		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+//		hit[i]->setPenalty(AmbigResolver::_tmpErr/_scaleErrDoublet);
+		hit[i]->setPenalty(0);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
 	    }
@@ -931,8 +944,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // don't have to make a decision, scale of uncertainty is defined by the radius
 //-----------------------------------------------------------------------------
-	      double err = fabs(r.rdrift[i])/hit[i]->driftVelocity();
-	      hit[i]->setTemperature(err);
+	      //	      double err = fabs(r.rdrift[i])/hit[i]->driftVelocity();
+	      //	      hit[i]->setTemperature(err);
+	      hit[i]->setPenalty(fabs(r.rdrift[i]));
 	      hit[i]->setAmbig(0);
 	    }
 	    else {
@@ -940,12 +954,15 @@ namespace mu2e {
 // need to make final decision: consider 400 um a limit
 //-----------------------------------------------------------------------------
 	      if (fabs(r.doca[r.ibest][i]) < 0.4) {
-		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+		//		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+		//		hit[i]->setPenalty(AmbigResolver::_tmpErr/_scaleErrDoublet);
+		hit[i]->setPenalty(0);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
 	      else {
-		double err = fabs(r.rdrift[i])/hit[i]->driftVelocity();
-		hit[i]->setTemperature(err);
+		//		double err = fabs(r.rdrift[i])/hit[i]->driftVelocity();
+		//		hit[i]->setTemperature(err);
+		hit[i]->setPenalty(fabs(r.rdrift[i]));
 		hit[i]->setAmbig(0);
 	      }
 	    }
@@ -961,7 +978,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	    if (r.chi2min/r.chi2next < _minChi2Ratio) {
 	      if (r.rdrift[i] > _minDriftDoublet) {
-		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+		//		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+		//		hit[i]->setPenalty(AmbigResolver::_tmpErr/_scaleErrDoublet);
+ 		hit[i]->setPenalty(0);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
 	      else {
@@ -970,7 +989,8 @@ namespace mu2e {
 // 2015-04-15 P.Murat: for well-resolved doublets it may be possible to decide 
 //                     in all cases - need to check
 //-----------------------------------------------------------------------------
-		hit[i]->setTemperature(AmbigResolver::_tmpErr);
+//		hit[i]->setTemperature(AmbigResolver::_tmpErr);
+		hit[i]->setPenalty(AmbigResolver::_tmpErr/2/sqrt(3));
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
 	    }
@@ -988,7 +1008,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // final decision
 //-----------------------------------------------------------------------------
-		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+//		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+//		hit[i]->setPenalty(AmbigResolver::_tmpErr/_scaleErrDoublet);
+		hit[i]->setPenalty(0);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
 	    }
@@ -1055,12 +1077,15 @@ namespace mu2e {
 
 	      double herr = hit[i]->hitErr();
 	      if (max_res/herr < 4) {
-		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+		//		hit[i]->setTemperature(AmbigResolver::_tmpErr/_scaleErrDoublet);
+		//		hit[i]->setPenalty(AmbigResolver::_tmpErr/_scaleErrDoublet);
+		hit[i]->setPenalty(0);
 		hit[i]->setAmbig (_sign[best_dd][i]);
 	      }
 	      else {
-		double err = fabs(r.rdrift[i])/hit[i]->driftVelocity();
-		hit[i]->setTemperature(err);
+		//              double err = fabs(r.rdrift[i])/hit[i]->driftVelocity();
+		//		hit[i]->setTemperature(err);
+		hit[i]->setPenalty(fabs(r.rdrift[i]));
 		hit[i]->setAmbig(0);
 					// hit residual is large - try to disable?
 		hit[i]->setActivity(false);
@@ -1235,7 +1260,8 @@ namespace mu2e {
 	      else {
 		if (_Final == 0) {
 		  hit->setAmbig(0);
-		  hit->setTemperature(rdrift/hit->driftVelocity());
+		  //		  hit->setTemperature(rdrift/hit->driftVelocity());
+		  hit->setPenalty(fabs(rdrift));
 		  hit->setAmbigUpdate(false);
 		}
 		else {
