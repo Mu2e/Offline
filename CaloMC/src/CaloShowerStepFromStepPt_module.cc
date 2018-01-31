@@ -292,13 +292,14 @@ namespace mu2e {
 
          // Collect the StepPointMC's produced by each SimParticle Ancestor
          //-----------------------------------------------------------------
-
          std::map<SimPtr,CaloCompressUtil> crystalAncestorsMap; 
          collectStepBySimAncestor(cal,vi,crystalStepsHandles,crystalAncestorsMap);
 
 
+
          //Loop over ancestor simParticles, check if they are compressible, and produce the corresponding caloShowerStepMC
          //---------------------------------------------------------------------------------------------------------------
+         std::set<SimPtr> setSimstoKeep;
          int nCompress(0),nCompressAll(0);
 
          for (const auto& iter : crystalAncestorsMap )
@@ -318,7 +319,7 @@ namespace mu2e {
 
                    if ( doCompress )
                    {
-                        simsToKeep.push_back(sim);
+                        setSimstoKeep.insert(sim); //use a set because same sim might have multiple crid
                         compressSteps(cal, caloShowerStepMCs, true, crid, sim, steps);
 
                         if (diagLevel_ > 2)
@@ -345,7 +346,7 @@ namespace mu2e {
                         for (auto& iter : newSimStepMap)
                         { 
                            compressSteps(cal, caloShowerStepMCs, true, crid, iter.first, iter.second);
-                           simsToKeep.push_back(iter.first);
+                           setSimstoKeep.insert(iter.first);
                         }   
                    }
               }   
@@ -355,7 +356,6 @@ namespace mu2e {
 
          // Do the same for the readouts, but there is no need to compress
          //---------------------------------------------------------------
-
          std::map<SimPtr,std::vector<const StepPointMC*> > simStepROMap;
          collectStepBySim(readoutStepsHandles, simStepROMap);
 
@@ -366,6 +366,7 @@ namespace mu2e {
 
               std::map<int,std::vector<const StepPointMC*> > crystalMap;            
               for (const StepPointMC* step : steps) crystalMap[step->volumeId()].push_back(step);
+              setSimstoKeep.insert(iter.first);
 
               for (const auto& iterCrystal : crystalMap)
               {
@@ -376,17 +377,26 @@ namespace mu2e {
          }
          
          
-         if (diagLevel_ > 2) hEtot_->Fill(totalEdep_);
+         // Finally, transfer the set of Sims to Keep into the final vector
+         //---------------------------------------------------------------
+         simsToKeep.reserve(setSimstoKeep.size());
+         for (const auto& sim : setSimstoKeep) simsToKeep.push_back(sim);
+                  
          
-         if (diagLevel_ > 2)
-         { 
-            std::cout<<"CaloShowerStepFromStepPt summary"<<std::endl;
-            for (auto caloShowerStepMC : caloShowerStepMCs) std::cout<<caloShowerStepMC.volumeId()<<" "<<caloShowerStepMC.nCompress()<<"  "<<caloShowerStepMC.energyMC()<<std::endl;
+         //Final stats
+         //---------------------------------------------------------------
+         if (diagLevel_ > 1)
+         {
+             std::cout<<"[CaloShowerStepFromStepPt::makeCompressedHits] compressed "<<nCompress<<" / "<<nCompressAll<<" incoming SimParticles"<<std::endl;
+             std::cout<<"[CaloShowerStepFromStepPt::makeCompressedHits] keeping "<<simsToKeep.size()<<" CaloShowerSteps"<<std::endl;
+
+             if (diagLevel_ > 2)
+             { 
+                hEtot_->Fill(totalEdep_);
+                std::cout<<"CaloShowerStepFromStepPt summary"<<std::endl;
+                for (auto caloShowerStepMC : caloShowerStepMCs) std::cout<<caloShowerStepMC.volumeId()<<" "<<caloShowerStepMC.nCompress()<<"  "<<caloShowerStepMC.energyMC()<<std::endl;
+             }
          }
-         
-         //Final statistics
-         if (diagLevel_ > 1) std::cout<<"[CaloShowerStepFromStepPt::makeCompressedHits] compressed "<<nCompress<<" / "<<nCompressAll<<" incoming SimParticles"<<std::endl;
-         if (diagLevel_ > 1) std::cout<<"[CaloShowerStepFromStepPt::makeCompressedHits] keeping "<<simsToKeep.size()<<" CaloShowerSteps"<<std::endl;
 
     } 
 
@@ -440,7 +450,6 @@ namespace mu2e {
                     totalEdep_ += step.totalEDep();
               }
          }
-         
     }
 
 
