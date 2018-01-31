@@ -433,6 +433,7 @@ CalPatRec : { @table::CalPatRec
 	    maxGap                        : 1                     # gap in missing stations along the candidate
 	    sigmaR                        : 10.                   # mm, roughly 3 MeV/c
 	    maxDriftTime                  : 40.                   # ns
+	    maxStrawDt                    : 50.                   # max sensible time difference for a straw, ns, off by default
 	    maxDtDs                       :  5.                   # ns, max allowed T0 shift per station
 	    # debugging/diagnostics
 	    testOrder                     : 0
@@ -467,7 +468,7 @@ CalPatRec : { @table::CalPatRec
 	    printElectrons                : 1
 	    printElectronsMinNHits        : 0
 	    printElectronsMaxFReco        : 1.1                   # if print, then print all
-	    maxElectronHitEnergy          : 0.0035                # for comparisons
+#	    maxElectronHitEnergy          : 0.0035                # for comparisons
 	}
     }
 }
