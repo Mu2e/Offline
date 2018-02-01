@@ -24,6 +24,8 @@
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
 
+#include "TrackerConditions/inc/StrawDrift.hh"
+
 namespace mu2e {
   class StrawPhysics : virtual public ConditionsEntity {
     public:
@@ -49,6 +51,7 @@ namespace mu2e {
       double meanElectronCount() const { return _NAverage; }
       void print(std::ostream& os) const;
     private:
+      StrawDrift *strawDrift;
       std::vector<double> _EIonize; // cumulative energy to create N ionization electrons (MeV)
       double _meanpath; // mean free path (mm)
       double _eKin; // average kinetic energy of ioniztion electrons (MeV)
@@ -66,6 +69,7 @@ namespace mu2e {
     // parameters describing cluster DtoT
       std::vector<double> _cdpoly;
       double _dtvar; // variance depencence on drift time
+      std::string _driftFile;
   };
 }
 #endif

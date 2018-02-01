@@ -26,8 +26,11 @@ namespace mu2e {
     _nggauss(pset.get<unsigned>("NGainGauss",30)), // number of electrons/cluster to switch to a Gaussian model of the gain fluctuations
     _vprop(pset.get<double>("PropagationVelocity",299.0)), //mm/nsec
     _cdpoly(pset.get<vector<double> >("ClusterDriftPolynomial",vector<double>{0.0,16.0})), // linear term has units nanoseconds/mm
-    _dtvar(pset.get<double>("DriftTimeVariance",0.22)) // Drift time variance linear dependence on drift time (ns)
+    _dtvar(pset.get<double>("DriftTimeVariance",0.22)), // Drift time variance linear dependence on drift time (ns)
+    _driftFile(pset.get<string>("DriftFile","TrackerConditions/data/E2v.tbl"))
   {
+    this->strawDrift = new StrawDrift(_driftFile);
+
     // integrate the number of ionizations
     double ptot(0.0);
     std::vector<double> nProb = pset.get<vector<double> >("ProbPerCharge",vector<double>{0.656,0.15,0.064,0.035,0.0225,0.0155,0.0105,
