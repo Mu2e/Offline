@@ -305,7 +305,7 @@ namespace mu2e {
     if (_usecc) {
       for(auto const& calo : *_cccol) {
 	if (calo.energyDep() < _ccmine) continue;
-	double time = _ttcalc.caloClusterTime(calo);
+	float time = _ttcalc.caloClusterTime(calo);
 	_timespec.Fill(time, _ccwt);	
       }
     }
@@ -326,8 +326,8 @@ namespace mu2e {
     for (const auto& bc : bcv) {
       if (alreadyUsed[bc.second]) continue;
 
-      double tctime(0.0);
-      double norm(0.0);
+      float tctime(0.0);
+      float norm(0.0);
       for (int ibin = std::max(1,bc.second-_deltaNbins);ibin < std::min(nbins,bc.second+_deltaNbins+1); ++ibin) {
 	norm += _timespec.GetBinContent(ibin);
 	tctime += _timespec.GetBinCenter(ibin)*_timespec.GetBinContent(ibin);
@@ -430,7 +430,7 @@ namespace mu2e {
 	ComboHit const& ch = (*_chcol)[ish];
 	float dt = _ttcalc.comboHitTime(ch) - ptime;
 
-	float rho = sqrt(ch.pos().Perp2());
+	float rho = sqrtf(ch.pos().Perp2());
 	double phi = ch.phi(); 
 	float dphi = Angles::deltaPhi(phi,pphi);
 
@@ -458,9 +458,9 @@ namespace mu2e {
       {
 	unsigned ish = tc._strawHitIdxs[ips];
 	ComboHit const& ch = (*_chcol)[ish];
-	float  time = _ttcalc.comboHitTime(ch);
-	float    wt = ch.nStrawHits()*std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
-	double phi = ch.phi();
+	float time = _ttcalc.comboHitTime(ch);
+	float wt = ch.nStrawHits()*std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
+	float phi = ch.phi();
 	Angles::deltaPhi(phi,pphi);
 	tacc(time,weight=wt);
 	facc(phi);
@@ -471,10 +471,10 @@ namespace mu2e {
 
     // final pass: hard cut on dt 
     std::vector<size_t> toremove;
-    accumulator_set<double, stats<tag::mean > > facc;
-    accumulator_set<double, stats<tag::weighted_variance(lazy)>, double > terr;
-    accumulator_set<double, stats<tag::mean > > racc;
-    accumulator_set<double, stats<tag::mean > > zacc;
+    accumulator_set<float, stats<tag::mean > > facc;
+    accumulator_set<float, stats<tag::weighted_variance(lazy)>, float > terr;
+    accumulator_set<float, stats<tag::mean > > racc;
+    accumulator_set<float, stats<tag::mean > > zacc;
     for(size_t ips=0;ips<tc._strawHitIdxs.size();++ips)
     {
       unsigned ish = tc._strawHitIdxs[ips];
@@ -482,8 +482,8 @@ namespace mu2e {
       float  time = _ttcalc.comboHitTime(ch);
       float  dt = time - ptime;
       float  wt = ch.nStrawHits()*std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
-      double  phi = ch.phi();
-      float rho = sqrt(ch.pos().Perp2());
+      float  phi = ch.phi();
+      float rho = sqrtf(ch.pos().Perp2());
       Angles::deltaPhi(phi,pphi);
       if (fabs(dt) < _maxpeakdt)
       {
@@ -503,7 +503,7 @@ namespace mu2e {
     }
 
     tc._t0._t0 = extract_result<tag::weighted_mean>(terr);
-    tc._t0._t0err = sqrt(std::max(0.0,extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
+    tc._t0._t0err = sqrtf(std::max(float(0.0),extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
     pphi = extract_result<tag::mean>(facc);
     double prho = extract_result<tag::mean>(racc);
     double zpos = extract_result<tag::mean>(zacc);

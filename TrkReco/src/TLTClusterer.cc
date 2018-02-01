@@ -33,21 +33,21 @@ namespace mu2e
     _palg(static_cast<PosAlgorithm>(pset.get<int>("ClusterPositionAlgorithm",median))),
     _bkgmask(pset.get<vector<string> >("BackgroundMask",vector<string>())),
     _sigmask(pset.get<vector<string> >("SignalMask",vector<string>())),
-    _dseed(pset.get<double>("SeedDistance",100.0)), // minimum 'chisquared' to define a new cluster
+    _dseed(pset.get<float>("SeedDistance",100.0)), // minimum 'chisquared' to define a new cluster
     _dhit(pset.get<unsigned>("HitDistance",25.0)), // maximum 'chisquared' to add hit to a cluster
-    _dd(pset.get<double>("ClusterDiameter",10.0)), // the natural cluster transverse size (mm)
-    _dt(pset.get<double>("TimeDifference",30.0)), // the natural time spread (nsec)
-    _maxdt(pset.get<double>("MaxTimeDifference",50.0)), // Maximum time difference (nsec)
-    _maxdsum(pset.get<double>("MaxDistanceSum",100.0)), // iteration convergence
+    _dd(pset.get<float>("ClusterDiameter",10.0)), // the natural cluster transverse size (mm)
+    _dt(pset.get<float>("TimeDifference",30.0)), // the natural time spread (nsec)
+    _maxdt(pset.get<float>("MaxTimeDifference",50.0)), // Maximum time difference (nsec)
+    _maxdsum(pset.get<float>("MaxDistanceSum",100.0)), // iteration convergence
     _maxniter(pset.get<unsigned>("MaxNIterations",50)),
     _stereoinit(pset.get<bool>("StereoInit",true)), // initialize using stereo hits
-    _minerr(pset.get<double>("MinHitError",5.0)), // corresponds to an error of the straw diameter
+    _minerr(pset.get<float>("MinHitError",5.0)), // corresponds to an error of the straw diameter
     _idiag(0)
   {
     // cache some values to avoid repeating FP operations on fixed numbers
-    double trms(pset.get<double>("TimeRMS",2.0)); // effective individual hit time resolution (nsec)
+    float trms(pset.get<float>("TimeRMS",2.0)); // effective individual hit time resolution (nsec)
     _trms2 = trms*trms;
-    double maxdist(pset.get<double>("MaxDistance",50.0)); // Maximum transverse distance (mm)
+    float maxdist(pset.get<float>("MaxDistance",50.0)); // Maximum transverse distance (mm)
     _md2 = maxdist*maxdist;
     _dd2 = _dd*_dd;
     _stereo = StrawHitFlag(StrawHitFlag::stereo);
@@ -58,29 +58,29 @@ namespace mu2e
   TLTClusterer::~TLTClusterer()
   {}
 
-  double TLTClusterer::distance(BkgCluster const& cluster, ComboHit const& ch) const {
-    double retval = _dseed+1.0; // default return is above seed threshold
+  float TLTClusterer::distance(BkgCluster const& cluster, ComboHit const& ch) const {
+    float retval = _dseed+1.0; // default return is above seed threshold
     // compute the simplest parts first to avoid expensive calculations on distant hits
-    double dt = fabs(ch.time()-cluster.time());
+    float dt = fabs(ch.time()-cluster.time());
     if( dt < _maxdt){
 // compute spatial distance
       XYZVec psep = PerpVector(ch.pos()-cluster.pos(),Geom::ZDir());
       // work in squared magnitudes for efficiency
-      double d2 = psep.mag2();
+      float d2 = psep.mag2();
       if( d2 < _md2) {
 	retval = 0.0; // if separation is inside natural size, count distance as 0
 	// only count differences above the natural hit size (drift time, cluster size)
 	if(dt > _dt){
-	  double tdist = dt -_dt;
+	  float tdist = dt -_dt;
 	  retval += tdist*tdist/_trms2;
 	}
 	if(d2 > _dd2){
 	  // project separation along wire and transverse directions.  Only count distance beyond
 	  // the natural cluster size
-	  double dw = std::max(0.0,ch.wdir().Dot(psep)-_dd)/ch.posRes(ComboHit::wire);
+	  float dw = std::max(float(0.0),ch.wdir().Dot(psep)-_dd)/ch.posRes(ComboHit::wire);
 	  XYZVec that(-ch.wdir().y(),ch.wdir().x(),0.0);
 	  // minimum error is always larger than the transverse error
-	  double dp = std::max(0.0,that.Dot(psep)-_dd)/_minerr;
+	  float dp = std::max(float(0.0),that.Dot(psep)-_dd)/_minerr;
 	// add these contributions
 	  retval += dw*dw + dp*dp;
 	}
@@ -208,11 +208,11 @@ namespace mu2e
 	// skip hits already assigned
 	auto ifind = assigned.find(ish);
 	if(ifind == assigned.end()){
-	  double mindist(FLT_MAX);
+	  float mindist(FLT_MAX);
 	  for(auto& clu : clusters) {
 	    // loop over all non-empty clusters
 	    if(clu.hits().size() > 0){
-	      double dist = distance(clu,ch);
+	      float dist = distance(clu,ch);
 	      mindist = std::min(dist,mindist);
 	      if(dist < _dhit){
 		clu._hits.push_back(BkgClusterHit(dist,ish,shf));
@@ -234,7 +234,7 @@ namespace mu2e
   }
 
   unsigned TLTClusterer::mergeClusters(BkgClusterCollection& clusters,
-      double dt, double dd2,
+      float dt, float dd2,
       ComboHitCollection const& chcol) const {
 // note: this algorithm merges pairwise iteratively. 
 // More efficient could be to merge groups of clusters in a single iteration
@@ -249,7 +249,7 @@ namespace mu2e
 	  for(size_t jc = ic+1; jc < clusters.size(); ++jc){
 	    if(clusters[jc].hits().size()>0){
 	      if(fabs(clusters[ic].time() - clusters[jc].time()) < dt) {
-		double d2 = (clusters[ic].pos() - clusters[jc].pos()).perp2();
+		float d2 = (clusters[ic].pos() - clusters[jc].pos()).perp2();
 		if(d2 < dd2){
 		  tomerge.push_back(make_pair(ic,jc));
 		}
@@ -296,37 +296,37 @@ namespace mu2e
     // accumulators for position calculation.  For now just median,
     // should implement full 2-d finding including different errors FIXME!
     if(_palg == median) {
-      accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > racc, pacc, tacc;
+      accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > racc, pacc, tacc;
       // work relative to the current cluster position
       // calculate cluster info
-      double crho = sqrt(cluster.pos().perp2());
-      double cphi = cluster.pos().phi();
+      float crho = sqrtf(cluster.pos().perp2());
+      float cphi = cluster.pos().phi();
       // choose local cylindrical coordinates WRT the cluster; these map roughly onto the straw directions
       XYZVec rdir = PerpVector(cluster.pos(),Geom::ZDir()).unit();
       XYZVec pdir(-rdir.y(),rdir.x(),0.0);
       for(auto const& chit : cluster.hits()) {
 	ComboHit const& ch = chcol.at(chit.index());
-	double dt = ch.time() - cluster.time();
-	double dr = sqrt(ch.pos().perp2()) - crho;
-	double phi = ch.pos().phi();
-	double dp = Angles::deltaPhi(phi,cphi);
+	float dt = ch.time() - cluster.time();
+	float dr = sqrtf(ch.pos().perp2()) - crho;
+	float phi = ch.pos().phi();
+	float dp = Angles::deltaPhi(phi,cphi);
 	XYZVec const& wdir = ch.wdir();
 	// weight according to the wire direction error, linearly for now
-	double dw = 1.0/ch.posRes(ComboHit::wire);
+	float dw = 1.0/ch.posRes(ComboHit::wire);
 	// limit to a maximum weight
 	// should have an option for geometric sum of errors FIXME!
 	// Not clear if time should be weighted FIXME!
-	double twt = std::min(_maxwt,dw);
+	float twt = std::min(_maxwt,dw);
 	// project weight along radial and azimuthal airections
-	double rwt = std::min(_maxwt,fabs(rdir.Dot(wdir))*dw);
-	double pwt = std::min(_maxwt,fabs(pdir.Dot(wdir))*dw);
+	float rwt = std::min(_maxwt,fabs(rdir.Dot(wdir))*dw);
+	float pwt = std::min(_maxwt,fabs(pdir.Dot(wdir))*dw);
 	tacc(dt,weight=twt);
 	racc(dr,weight=rwt);
 	pacc(dp,weight=pwt);
       }
-      double dt = extract_result<tag::weighted_median>(tacc);
-      double dr = extract_result<tag::weighted_median>(racc);
-      double dp = extract_result<tag::weighted_median>(pacc);
+      float dt = extract_result<tag::weighted_median>(tacc);
+      float dr = extract_result<tag::weighted_median>(racc);
+      float dp = extract_result<tag::weighted_median>(pacc);
       cluster._time += dt;
       crho += dr;
       cphi += dp;
@@ -353,7 +353,7 @@ namespace mu2e
   }
 
   void TLTClusterer::countClusters(BkgClusterCollection const& clusters,
-      unsigned& nclu, unsigned& nchits, double& tdist) const {
+      unsigned& nclu, unsigned& nchits, float& tdist) const {
     nclu = nchits = 0;
     tdist = 0.0;
     for (auto const& clu : clusters) {

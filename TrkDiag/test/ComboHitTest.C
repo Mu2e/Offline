@@ -117,7 +117,33 @@ void ComboHitTest(TTree* CHD, const char* page="count"){
     swpullb->Draw("samehs");
     swpulls->Draw("samehs");
 
+  } else if(spage == "res") {
+    TH1F* rresc = new TH1F("rresc","Radial Resolution:R_{reco}-R_{MC} (mm)",100,-100.0,100.0);
+    TH1F* fresc = new TH1F("fresc","#phi Resolution:#phi_{reco}-#phi_{MC} (mm)",100,-0.5,0.5);
+    TH1F* rresb = new TH1F("rresb","Radial Resolution:R_{reco}-R_{MC} (mm)",100,-100.0,100.0);
+    TH1F* fresb = new TH1F("fresb","#phi Resolution:#phi_{reco}-#phi_{MC} (mm)",100,-0.5,0.5);
+    rresc->SetLineColor(kRed);
+    rresb->SetLineColor(kBlue);
+    fresc->SetLineColor(kRed);
+    fresb->SetLineColor(kBlue);
+    CHD->Project("rresc","sqrt(pos.fCoordinates.fY^2+pos.fCoordinates.fX^2)-sqrt(mcpos.fCoordinates.fY^2+mcpos.fCoordinates.fX^2)",multi+Ce);
+    CHD->Project("fresc","atan2(pos.fCoordinates.fY,pos.fCoordinates.fX)-atan2(mcpos.fCoordinates.fY,mcpos.fCoordinates.fX)",multi+Ce);
+    CHD->Project("rresb","sqrt(pos.fCoordinates.fY^2+pos.fCoordinates.fX^2)-sqrt(mcpos.fCoordinates.fY^2+mcpos.fCoordinates.fX^2)",multi+Bkg);
+    CHD->Project("fresb","atan2(pos.fCoordinates.fY,pos.fCoordinates.fX)-atan2(mcpos.fCoordinates.fY,mcpos.fCoordinates.fX)",multi+Bkg);
+    rresc->Scale(rresb->GetEntries()/rresc->GetEntries());
+    fresc->Scale(fresb->GetEntries()/fresc->GetEntries());
+    TCanvas* rescan = new TCanvas("rescan","rescan",800,600);
+    rescan->Divide(2,1);
+    rescan->cd(1);
+    rresb->Draw();
+    rresc->Draw("samehs");
+    rescan->cd(2);
+    fresb->Draw();
+    fresc->Draw("samehs");
   }
+
+
+
 
 
 }

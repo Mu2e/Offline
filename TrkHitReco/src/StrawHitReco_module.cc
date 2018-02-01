@@ -74,6 +74,7 @@ namespace mu2e {
        double _minT;                    // minimum hit time
        double _maxT;                    // maximum hit time
        bool   _filter;                // trigger mode cut on dt and other thing 
+       bool  _writesh;		      // write straw hits or not
        bool _flagXT; // flag cross-talk
        int    _printLevel;
        int    _diagLevel;
@@ -103,6 +104,7 @@ namespace mu2e {
       _minT(pset.get<double>(        "minimumTime",500)), // nsec
       _maxT(pset.get<double>(        "maximumTime",2000)), // nsec
       _filter(pset.get<bool>(      "FilterHits",true)),
+      _writesh(pset.get<bool>(      "WriteStrawHitCollection",true)),
       _flagXT(pset.get<bool>(      "FlagCrossTalk",false)),
       _printLevel(pset.get<int>(     "printLevel",0)),
       _diagLevel(pset.get<int>(      "diagLevel",0)),
@@ -111,7 +113,6 @@ namespace mu2e {
       caloClusterModuleLabel_(pset.get<std::string>("caloClusterModuleLabel","CaloClusterFast")),
       peakfit_(pset.get<fhicl::ParameterSet>("PeakFitter",fhicl::ParameterSet()))
   {
-      produces<StrawHitCollection>();
       produces<ComboHitCollection>();
       // each hit is a unique straw
       std::vector<StrawIdMask::field> fields{StrawIdMask::plane,StrawIdMask::panel,StrawIdMask::straw};
@@ -168,8 +169,11 @@ namespace mu2e {
       art::Handle<CaloClusterCollection> caloClusterHandle;
       if (event.getByLabel(caloClusterModuleLabel_, caloClusterHandle)) caloClusters = caloClusterHandle.product();
 
-      std::unique_ptr<StrawHitCollection> shCol(new StrawHitCollection);
-      shCol->reserve(strawdigis.size());
+      std::unique_ptr<StrawHitCollection> shCol;
+      if(_writesh){
+	shCol = std::unique_ptr<StrawHitCollection>(new StrawHitCollection);
+	shCol->reserve(strawdigis.size());
+      }
       std::unique_ptr<ComboHitCollection> chCol(new ComboHitCollection);
       chCol->reserve(strawdigis.size());      
 
@@ -215,7 +219,8 @@ namespace mu2e {
 	//create straw hit
 	const Straw& straw  = tracker.getStraw( digi.strawIndex() );
 	StrawHit hit(digi.strawIndex(),times,tots,energy);
-	shCol->push_back(std::move(hit));
+	if(_writesh)
+	  shCol->push_back(std::move(hit));
 	// create combo hit.  this include 
 	ComboHit ch;
 	ch._nsh = 1; // 'combo' of 1 hit
@@ -269,7 +274,7 @@ namespace mu2e {
 	}
       }
 
-      event.put(std::move(shCol));
+      if(_writesh)event.put(std::move(shCol));
       event.put(std::move(chCol));
 
   }

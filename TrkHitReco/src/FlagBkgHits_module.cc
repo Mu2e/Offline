@@ -79,16 +79,15 @@ namespace mu2e
       bool _savebkg;
       const ComboHitCollection* _chcol;
       BkgClusterer* _clusterer;
-      double        _cperr2;
+      float        _cperr2;
       bool          _useMVA;
-      double        _bkgMVAcut;
+      float        _bkgMVAcut;
+      bool	    _filter;
       MVATools      _bkgMVA;
 
       // use TMVA Reader until problems with MVATools is resolved
       mutable TMVA::Reader _reader;
       mutable std::vector<float> _mvavars;
-      TH1F *_v1a,*_v2a,*_v3a,*_v4a,*_v5a,*_v6a,*_v7a,*_v8a,*_v9a;
-      TH1F *_v1b,*_v2b,*_v3b,*_v4b,*_v5b,*_v6b,*_v7b,*_v8b,*_v9b;
 
       void classifyClusters(BkgClusterCollection& clusters,BkgQualCollection& cquals) const; 
       void fillBkgQual(const BkgCluster& cluster,BkgQual& cqual) const;
@@ -107,12 +106,18 @@ namespace mu2e
     _maxisolated(pset.get<unsigned>("MaxIsolated",0)),
     _savebkg(pset.get<bool>("SaveBkgClusters",false)),
     _useMVA(pset.get<bool>(         "UseBkgMVA",true)),
-    _bkgMVAcut(pset.get<double>(    "BkgMVACut",0.8)),
+    _bkgMVAcut(pset.get<float>(    "BkgMVACut",0.8)),
+    _filter(pset.get<bool>(  "FilterOutput",true)),
     _bkgMVA(pset.get<fhicl::ParameterSet>("BkgMVA",fhicl::ParameterSet()))
   {
-    produces<StrawHitFlagCollection>();
-    produces<BkgClusterCollection>();
-    produces<BkgQualCollection>();
+    if(_filter)
+      produces<ComboHitCollection>();
+    else
+      produces<StrawHitFlagCollection>();
+    if(_savebkg) {
+      produces<BkgClusterCollection>();
+      produces<BkgQualCollection>();
+    }
 
     clusterer ctype = static_cast<clusterer>(pset.get<int>("Clusterer",TwoLevelThreshold));
     switch ( ctype ) {
@@ -129,7 +134,7 @@ namespace mu2e
 	throw cet::exception("RECO")<< "Unknown clusterer" << ctype << std::endl;
     }
 
-    double cperr = pset.get<double>("ClusterPositionError",10.0); 
+    float cperr = pset.get<float>("ClusterPositionError",10.0); 
     _cperr2 = cperr*cperr;
 
     std::vector<std::string> varnames(pset.get<std::vector<std::string> >("MVANames"));
@@ -163,53 +168,60 @@ namespace mu2e
     art::Handle<ComboHitCollection> comboHitHandle;
     event.getByLabel(_chtag,comboHitHandle);
     _chcol = comboHitHandle.product();
-
-    std::unique_ptr<StrawHitFlagCollection> bkgfcol(new StrawHitFlagCollection(_chcol->size()));
-    std::unique_ptr<BkgClusterCollection> bkgccol(new BkgClusterCollection);
-    std::unique_ptr<BkgQualCollection> bkgqcol(new BkgQualCollection);
-    // guess on the size.
-    bkgccol->reserve(_chcol->size()/2);
-    _clusterer->findClusters(*bkgccol,*_chcol);
-    bkgqcol->reserve(bkgccol->size());
-    classifyClusters(*bkgccol, *bkgqcol );
-
-    for (auto const& cluster : *bkgccol)
-    {  
-      for (auto const& chit : cluster.hits()) 
-	(*bkgfcol)[chit.index()].merge(StrawHitFlag::bkgclust);
-      if (cluster.flag().hasAllProperties(BkgClusterFlag::bkg))
-      {
-	for (const auto& chit : cluster.hits()) 
-	{
-	  if (_flagall || chit.flag().hasAllProperties(StrawHitFlag::active))
-	    (*bkgfcol)[chit.index()].merge(StrawHitFlag::bkg);	
-	}
-      }
-
-      if (cluster.hits().size() < _maxisolated)
-	for (auto const& chit : cluster.hits()) 
-	  (*bkgfcol)[chit.index()].merge(StrawHitFlag::isolated);      
+// the primary output is either a deep copy of selected inputs or a flag collection on those
+    std::unique_ptr<ComboHitCollection> chcol;    
+    std::unique_ptr<StrawHitFlagCollection> bkgfcol;
+// intermediate results: keep these on the heap unless requested for diagnostics later
+    BkgClusterCollection bkgccol;
+    BkgQualCollection bkgqcol;
+ 
+    if(_filter){
+      chcol = std::unique_ptr<ComboHitCollection>( new ComboHitCollection);
+      chcol->reserve(_chcol->size());
+    } else {
+      bkgfcol = std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection(_chcol->size()));
     }
-
-    event.put(std::move(bkgccol));
-    event.put(std::move(bkgqcol));
-    event.put(std::move(bkgfcol));
-  }
-
-  void FlagBkgHits::classifyClusters(BkgClusterCollection& clusters,BkgQualCollection& cquals) const {
-    for (auto& cluster : clusters)
-    { 
+    // guess on the size.
+    bkgccol.reserve(_chcol->size()/2);
+    // find clusters
+    _clusterer->findClusters(bkgccol,*_chcol);
+    if(_savebkg)bkgqcol.reserve(bkgccol.size());
+    for (auto& cluster : bkgccol) {  
       BkgQual cqual;
       fillBkgQual(cluster,cqual);
+      if(_savebkg)bkgqcol.push_back(cqual);
+      if(cqual.MVAOutput() < _bkgMVAcut && cluster.hits().size() > _maxisolated ){
+	if(_filter){
+	  for (auto const& chit : cluster.hits())
+	    chcol->push_back((*_chcol)[chit.index()]);
+	}
+      } else {
+	StrawHitFlag flag;
+	if(cluster.hits().size() <= _maxisolated){
+	  cluster._flag.merge(BkgClusterFlag::iso);
+	  flag.merge(StrawHitFlag::isolated);      
+	}
+	if(cqual.MVAOutput() > _bkgMVAcut){
+	  cluster._flag.merge(BkgClusterFlag::bkg);
+	  flag.merge(StrawHitFlag::bkgclust);
+	}
+	if(!_filter){
+	  for (auto const& chit : cluster.hits())
+	    (*bkgfcol)[chit.index()] = flag;
+	}
+      }
+    }
 
-      if(cqual.MVAOutput() > _bkgMVAcut) 
-	cluster._flag.merge(BkgClusterFlag::bkg);
+    if(_filter)
+      event.put(std::move(chcol));
+    else
+      event.put(std::move(bkgfcol));
 
-      // ALWAYS record a quality to keep the vectors in sync.
-      cquals.push_back(cqual);
+    if(_savebkg){
+      event.put(std::unique_ptr<BkgClusterCollection>(new BkgClusterCollection(bkgccol)));
+      event.put(std::unique_ptr<BkgQualCollection>(new BkgQualCollection(bkgqcol)));
     }
   }
-
 
   void FlagBkgHits::fillBkgQual(const BkgCluster& cluster, BkgQual& cqual) const {
 
@@ -220,39 +232,39 @@ namespace mu2e
     if (nactive >= _minnhits && nstereo >= _minnstereo)
     {
       cqual[BkgQual::nhits] = nactive;
-      cqual[BkgQual::sfrac] = static_cast<double>(nstereo)/nactive;
-      cqual[BkgQual::crho] = sqrt(cluster.pos().perp2());
+      cqual[BkgQual::sfrac] = static_cast<float>(nstereo)/nactive;
+      cqual[BkgQual::crho] = sqrtf(cluster.pos().perp2());
 
       countPlanes(cluster,cqual);
       if (cqual[BkgQual::np] >= _minnp)
       {
-	accumulator_set<double, stats<tag::weighted_variance>, double> racc;
-	accumulator_set<double, stats<tag::variance(lazy)> > tacc;
-	std::vector<double> hz;
+	accumulator_set<float, stats<tag::weighted_variance>, float> racc;
+	accumulator_set<float, stats<tag::variance(lazy)> > tacc;
+	std::vector<float> hz;
 	for (const auto& chit : cluster.hits())
 	{
 	  if (chit.flag().hasAllProperties(StrawHitFlag::active))
 	  {
 	    const ComboHit& ch = (*_chcol)[chit.index()];
 	    hz.push_back(ch.pos().z());
-	    double dt = ch.time() - cluster.time();
+	    float dt = ch.time() - cluster.time();
 	    tacc(dt);
 	    // compute the transverse radius of this hit WRT the cluster center
 	    XYZVec psep = PerpVector(ch.pos()-cluster.pos(),Geom::ZDir());
-	    double rho = sqrt(psep.mag2());
+	    float rho = sqrtf(psep.mag2());
 	    // project the hit position error along the radial direction to compute the weight
 	    XYZVec pdir = psep.unit();
 	    XYZVec tdir(-ch.wdir().y(),ch.wdir().x(),0.0);
-	    double rwerr = ch.posRes(ComboHit::wire)*pdir.Dot(ch.wdir());
-	    double rterr = ch.posRes(ComboHit::trans)*pdir.Dot(tdir);
+	    float rwerr = ch.posRes(ComboHit::wire)*pdir.Dot(ch.wdir());
+	    float rterr = ch.posRes(ComboHit::trans)*pdir.Dot(tdir);
 	    // include the cluster center position error when computing the weight
-	    double rwt = 1.0/sqrt(rwerr*rwerr + rterr*rterr + _cperr2/nactive);
+	    float rwt = 1.0/sqrtf(rwerr*rwerr + rterr*rterr + _cperr2/nactive);
 	    racc(rho,weight=rwt);
 	  }
 	}
 	cqual[BkgQual::hrho] = extract_result<tag::weighted_mean>(racc);
-	cqual[BkgQual::shrho] = sqrt(std::max(extract_result<tag::weighted_variance>(racc),0.0));
-	cqual[BkgQual::sdt] = sqrt(std::max(extract_result<tag::variance>(tacc),0.0));
+	cqual[BkgQual::shrho] = sqrtf(std::max(extract_result<tag::weighted_variance>(racc),float(0.0)));
+	cqual[BkgQual::sdt] = sqrtf(std::max(extract_result<tag::variance>(tacc),float(0.0)));
 
 	// find the min, max and gap from the sorted Z positions
 	std::sort(hz.begin(),hz.end());
@@ -260,7 +272,7 @@ namespace mu2e
 	cqual[BkgQual::zmax] = hz.back();
 
 	// find biggest Z gap
-	double zgap = 0.0;
+	float zgap = 0.0;
 	for(unsigned iz=1;iz<hz.size();++iz)
 	  if(hz[iz]-hz[iz-1] > zgap)zgap = hz[iz]-hz[iz-1]; 
 	cqual[BkgQual::zgap] = zgap;
@@ -280,11 +292,11 @@ namespace mu2e
 	  _mvavars[6] = cqual.varValue(BkgQual::np);
 	  _mvavars[7] = cqual.varValue(BkgQual::npfrac);
 	  _mvavars[8] = cqual.varValue(BkgQual::nhits);
-	  double readerout = _reader.EvaluateMVA( "MLP method" );
-	  // std::vector<double> mvavars(9,0.0);
+	  float readerout = _reader.EvaluateMVA( "MLP method" );
+	  // std::vector<float> mvavars(9,0.0);
 	  // for(size_t ivar =0;ivar<_mvavars.size(); ++ivar)
 	  // mvavars[ivar] = _mvavars[ivar];
-	  // double toolout = _bkgMVA.evalMVA(mvavars);
+	  // float toolout = _bkgMVA.evalMVA(mvavars);
 	  // if(fabs(toolout - readerout) > 0.01) 
 	  // std::cout << "mva disagreement: MVATool " << toolout << " TMVA::Reader: " << readerout << std::endl;
 	  cqual.setMVAValue(readerout);
@@ -321,7 +333,7 @@ namespace mu2e
 
     unsigned npexp(0);
     unsigned np(0);
-    unsigned nphits(0.0);
+    unsigned nphits(0);
 
     for(unsigned ip = ipmin; ip <= ipmax; ++ip)
     {

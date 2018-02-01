@@ -19,7 +19,7 @@ namespace mu2e
 // interpretation is algorithm dependent.
   struct BkgClusterHit {
     BkgClusterHit() : _dist(0.0), _index(0) {}
-    BkgClusterHit(double dist, uint16_t index, StrawHitFlag const& flag) : _dist(dist), _index(index), _flag(flag) {
+    BkgClusterHit(float dist, uint16_t index, StrawHitFlag const& flag) : _dist(dist), _index(index), _flag(flag) {
       _flag.merge(StrawHitFlag::active); }// initial hits are active
     float distance() const { return _dist; }
     uint16_t const& index() const { return _index; }
@@ -33,7 +33,7 @@ namespace mu2e
   // default constructor.  Default hit count chosen for compuational efficiency
     BkgCluster() : _time(0.0)  { _hits.reserve(16); }
 // construct from a position and time
-    BkgCluster(XYZVec const& pos, double time) : _pos(pos), _time(time) { _hits.reserve(16); }
+    BkgCluster(XYZVec const& pos, float time) : _pos(pos), _time(time) { _hits.reserve(16); }
 // accessors
     XYZVec const& pos() const { return _pos; }
     float time() const { return _time; }
@@ -47,13 +47,6 @@ namespace mu2e
   };
 
   typedef std::vector<mu2e::BkgCluster> BkgClusterCollection;
-//  class BkgClusterCollection : public std::vector<mu2e::BkgCluster> {
-//    public:
-//      BkgClusterCollection(art::Ptr<ComboHitCollection> const& hits) : _hits(hits) {}
-//      art::Ptr<ComboHitCollection> const& hits() const { return _hits;}
-//    private:
-//      art::Ptr<ComboHitCollection> _hits; // reference back to hit collection
-//   };
 } 
 #endif
 

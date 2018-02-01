@@ -46,7 +46,7 @@ namespace mu2e
    {}
 
 
-   void ClusterStraw::updateCache(double _maxwt)
+   void ClusterStraw::updateCache(float _maxwt)
    {      
        
        if (_hitsPtr.size()==1)
@@ -58,25 +58,25 @@ namespace mu2e
           return;
        } 
               
-       accumulator_set<double, stats<tag::weighted_median>, double > racc, pacc, tacc;      
-       //accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > racc, pacc, tacc;      
-       //double racc(0),tacc(0),pacc(0),rweight(0),tweight(0),pweight(0);
+       accumulator_set<float, stats<tag::weighted_median>, float > racc, pacc, tacc;      
+       //accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > racc, pacc, tacc;      
+       //float racc(0),tacc(0),pacc(0),rweight(0),tweight(0),pweight(0);
              
-       double crho = sqrt(_pos.perp2());
-       double cphi = _pos.phi();
+       float crho = sqrtf(_pos.perp2());
+       float cphi = _pos.phi();
        XYZVec rdir = PerpVector(_pos,Geom::ZDir()).unit();
        XYZVec pdir(-rdir.y(),rdir.x(),0.0);
 
        for (auto& hitPtr : _hitsPtr)
        {
-          double dt  = hitPtr->_time -_time;
-	  double dr  = sqrt(hitPtr->_pos.perp2()) - crho;
-	  double dp = Angles::deltaPhi(hitPtr->_phi,cphi);
+          float dt  = hitPtr->_time -_time;
+	  float dr  = sqrtf(hitPtr->_pos.perp2()) - crho;
+	  float dp = Angles::deltaPhi(hitPtr->_phi,cphi);
 
           // weight according to the wire direction error, linearly for now
-	  double twt = std::min(_maxwt,hitPtr->_posResInv);	
-	  double rwt = std::min(_maxwt,std::abs(rdir.Dot(hitPtr->_wdir))*hitPtr->_posResInv);
-	  double pwt = std::min(_maxwt,std::abs(pdir.Dot(hitPtr->_wdir))*hitPtr->_posResInv);
+	  float twt = std::min(_maxwt,hitPtr->_posResInv);	
+	  float rwt = std::min(_maxwt,std::abs(rdir.Dot(hitPtr->_wdir))*hitPtr->_posResInv);
+	  float pwt = std::min(_maxwt,std::abs(pdir.Dot(hitPtr->_wdir))*hitPtr->_posResInv);
 	  tacc(dt,weight=twt);
 	  racc(dr,weight=rwt);
 	  pacc(dp,weight=pwt);          
@@ -104,22 +104,22 @@ namespace mu2e
      _stereoInit(pset.get<bool>(     "StereoInit",true)),        // # of sigma to define a new cluster
      _mergeInit(pset.get<bool>(      "MergeInit",true)),         // # of sigma to define a new cluster
      _mergeAlong(pset.get<bool>(     "MergeAlong",false)),       // # of sigma to define a new cluster
-     _dseed(pset.get<double>(        "SeedDistance")),           // # of sigma to define a new cluster
+     _dseed(pset.get<float>(        "SeedDistance")),           // # of sigma to define a new cluster
      _dhit(pset.get<unsigned>(       "HitDistance")),            // # of sigma to add hits
-     _dd(pset.get<double>(           "ClusterDiameter",10.0)),   // mm: the natural cluster size
-     _dt(pset.get<double>(           "TimeDifference",30.0)),    // nsec: the natural time spread
-     _maxdt(pset.get<double>(        "MaxTimeDifference")),      // Maximum time difference
-     _maxdsum(pset.get<double>(      "MaxDistanceSum",100.0)),   // iteration convergence
-     _maxdist(pset.get<double>(      "MaxDistance")),            // Maximum transverse distance (mm)    
+     _dd(pset.get<float>(           "ClusterDiameter",10.0)),   // mm: the natural cluster size
+     _dt(pset.get<float>(           "TimeDifference",30.0)),    // nsec: the natural time spread
+     _maxdt(pset.get<float>(        "MaxTimeDifference")),      // Maximum time difference
+     _maxdsum(pset.get<float>(      "MaxDistanceSum",100.0)),   // iteration convergence
+     _maxdist(pset.get<float>(      "MaxDistance")),            // Maximum transverse distance (mm)    
      _maxniter(pset.get<unsigned>(   "MaxNIterations")),
      _maxnchanged(pset.get<unsigned>("MaxNChanged",5)),
      _hitIndex(200,std::vector<ClusterStraw*>()),
      _cptrs()
    {
        // cache a maximum of values
-       double minerr(pset.get<double>("MinHitError",5.0));
-       double maxdist(pset.get<double>("MaxDistance",50.0));
-       double trms(pset.get<double>("TimeRMS",2.0));            
+       float minerr(pset.get<float>("MinHitError",5.0));
+       float maxdist(pset.get<float>("MaxDistance",50.0));
+       float trms(pset.get<float>("TimeRMS",2.0));            
 
        _trms2inv  = 1.0/trms/trms;     
        _ditime = int(_maxdt/10.0)+1;
@@ -287,7 +287,7 @@ namespace mu2e
 
 
    //-------------------------------------------------------------------------------------------------------------------
-   void TNTClusterer::mergeClusters(std::list<ClusterStraw>& clusters, double dt, double dd2, bool recalculateDist)
+   void TNTClusterer::mergeClusters(std::list<ClusterStraw>& clusters, float dt, float dd2, bool recalculateDist)
    {
        unsigned niter(0);    
        while (niter < _maxniter)
@@ -358,13 +358,13 @@ namespace mu2e
               continue;
           }
 
-          double mindist(FLT_MAX);         
+          float mindist(FLT_MAX);         
           ClusterStraw* minc(nullptr);                  
           for (int i=std::max(0,chit._itime-_ditime);i<chit._itime+_ditime;++i)
           {
              for (const auto& ic : _hitIndex[i])
              {                
-                 double dist = distance(*ic,chit);
+                 float dist = distance(*ic,chit);
                  if (dist < mindist) {mindist = dist; minc = ic;}
                  if (mindist < _dhit) break;               
              }          
@@ -440,23 +440,23 @@ namespace mu2e
 
    //---------------------------------------------------------------------------------------
    // only count differences if they are above the natural hit size (drift time, straw size)      
-   double TNTClusterer::distance(const ClusterStraw& cluster, ClusterStrawHit& hit) const 
+   float TNTClusterer::distance(const ClusterStraw& cluster, ClusterStrawHit& hit) const 
    {     
 
-       double dt = std::abs(hit._time-cluster.time());
+       float dt = std::abs(hit._time-cluster.time());
        if (dt > _maxdt) return _dseed+1.0;           
 
        XYZVec psep = PerpVector(hit._pos-cluster.pos(),Geom::ZDir());
-       double d2 = psep.mag2();
+       float d2 = psep.mag2();
        if (d2 > _md2) return _dseed+1.0; 
 
-       double retval(0.0);
-       if (dt > _dt) {double tdist = dt -_dt;  retval = tdist*tdist*_trms2inv;}      
+       float retval(0.0);
+       if (dt > _dt) {float tdist = dt -_dt;  retval = tdist*tdist*_trms2inv;}      
        if (d2 > _dd2) 
        {	
-           double dw = std::max(0.0,hit._wdir.Dot(psep)-_dd)*hit._posResInv;
+           float dw = std::max(float(0.0),hit._wdir.Dot(psep)-_dd)*hit._posResInv;
 	   XYZVec that(-hit._wdir.y(),hit._wdir.x(),0.0);
-	   double dp = std::max(0.0,that.Dot(psep)-_dd)*_maxwt;  //maxwt = 1/minerr
+	   float dp = std::max(float(0.0),that.Dot(psep)-_dd)*_maxwt;  //maxwt = 1/minerr
 	   retval += dw*dw + dp*dp;
        }      
        return retval;

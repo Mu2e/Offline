@@ -65,6 +65,7 @@ namespace mu2e
       Float_t _time; // Average time for these
       Float_t _edep; // average energy deposit for these
       Float_t _qual; // quality of combination
+      Float_t _dz; // z extent
       Int_t _nsh, _nch; // number of associated straw hits
       Int_t _strawid; // strawid info
       // mc diag
@@ -104,6 +105,7 @@ namespace mu2e
       _chdiag->Branch("time",&_time,"time/F");
       _chdiag->Branch("edep",&_edep,"edep/F");
       _chdiag->Branch("qual",&_qual,"qual/F");
+      _chdiag->Branch("dz",&_dz,"dz/F");
       _chdiag->Branch("nsh",&_nsh,"nsh/I");
       _chdiag->Branch("nch",&_nch,"nch/I");
       _chdiag->Branch("strawid",&_strawid,"strawid/I");
@@ -140,6 +142,7 @@ namespace mu2e
       _time = ch.time();
       _edep = ch.energyDep();
       _qual = ch.qual();
+      _dz = 0.0;
       // center of this wire
       XYZVec cpos = _pos - _wdist*_wdir;
       // now hit-by-hit info
@@ -148,19 +151,26 @@ namespace mu2e
       // loop over comopnents (also ComboHits)
 	ComboHitCollection::CHCIter compis;
 	_chcol->fillComboHits(evt,ich,compis);
+	float minz(1.0e6),maxz(-1.0);
 	for(auto compi : compis) {
 	  ComboHit const& comp = *compi;
+	  if(comp.pos().z() > maxz) maxz = comp.pos().z();
+	  if(comp.pos().z() < minz) minz = comp.pos().z();
 	  ComboHitInfo chi;
 	  XYZVec dpos = comp.pos()-ch.pos();
 	  chi._dwire = dpos.Dot(ch.wdir());
-	  chi._dwerr = comp.posRes(ComboHit::wire);
+	  chi._dwerr = comp.wireRes();
+	  chi._dterr = comp.transRes();
 	  chi._dperp = sqrt(dpos.mag2() - chi._dwire*chi._dwire);
 	  chi._dtime = comp.time()- ch.time(); 
 	  chi._dedep = comp.energyDep() - ch.energyDep();
 	  chi._ds = comp.sid().straw() - compis.front()->sid().straw();
 	  chi._dp = comp.sid().panel() - compis.front()->sid().panel();
+	  chi._nch = comp.nCombo();
+	  chi._nsh = comp.nStrawHits();
 	  _chinfo.push_back(chi);
 	}
+	_dz = maxz-minz;
       }
       if(_mcdiag){
 	_chinfomc.clear();

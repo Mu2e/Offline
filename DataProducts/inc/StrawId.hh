@@ -71,7 +71,7 @@ namespace mu2e {
       uint16_t asUint16() const { return _sid;}
 
       uint16_t getPlane() const{
-	return (_sid & _planemsk) >> _planesft;
+	return plane();
       }
 
       StrawId getPlaneId() const{
@@ -89,19 +89,19 @@ namespace mu2e {
       }
 
       uint16_t getPanel() const{
-	return (_sid & _panelmsk) >> _panelsft;
+	return panel();
       }
 
       uint16_t getStraw() const{
-	return (_sid & _strawmsk);
+	return straw();
       }
 
       uint16_t getLayer() const{
-	return _sid % _nlayers;
+	return layer();
       }
 
       uint16_t getStation() const{
-	return floor(getPlane()/_nlayers);
+	return station(); 
       }
 
       uint16_t plane() const{

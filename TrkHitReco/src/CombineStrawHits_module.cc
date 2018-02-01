@@ -49,8 +49,10 @@ namespace mu2e {
       // Parameters
       StrawHitFlag _shsel; // flag selection
       StrawHitFlag _shmask; // flag anti-selection 
-      double _maxdt; // maximum time separation between hits
-      double _maxwdchi; // maximum wire distance separation chi
+      float _maxdt; // maximum time separation between hits
+      float _maxwdchi; // maximum wire distance separation chi
+      float _werr2; // intrinsic error on wire distance squared
+      float _terr; // intrinsic error transverse to wire (per straw)
       int _maxds; // maximum straw number difference
       StrawIdMask _mask; 
   };
@@ -61,10 +63,13 @@ namespace mu2e {
     _chTag		(pset.get<art::InputTag>("ComboHitCollection","makeSH")),
     _shsel(pset.get<vector<string> >("StrawHitSelectionBits",vector<string>{"EnergySelection","TimeSelection"} )),
     _shmask(pset.get<vector<string> >("StrawHitMaskBits",vector<string>{} )),
-    _maxdt(pset.get<double>("MaxDt",40.0)), // nsec
-    _maxwdchi(pset.get<double>("MaxWireDistDiffPull",4.0)), //units of resolution sigma
+    _maxdt(pset.get<float>("MaxDt",40.0)), // nsec
+    _maxwdchi(pset.get<float>("MaxWireDistDiffPull",4.0)), //units of resolution sigma
+    _terr(pset.get<float>("TransError",45.0)), //mm
     _maxds(pset.get<int>("MaxDS",3)) // how far away 2 straws can be, in 0-95 numbering (including layers!!)
   {
+    float werr = pset.get<float>("WireError",10.0); // mm
+    _werr2 = werr*werr;
     produces<ComboHitCollection>();
     // define the mask: straws are in the same unique panel
    std::vector<StrawIdMask::field> fields{StrawIdMask::plane,StrawIdMask::panel};
@@ -119,7 +124,7 @@ namespace mu2e {
 		float dt = fabs(hit1.time() - hit2.time());
 		if(dt < _maxdt){
 		  // compute the chi of the differnce in wire positions
-		  float wderr = sqrt(hit1.wireErr2() + hit2.wireErr2());
+		  float wderr = sqrtf(hit1.wireErr2() + hit2.wireErr2());
 		  float wdchi = fabs(hit1.wireDist() - hit2.wireDist())/wderr;
 		  if(wdchi < _maxwdchi){
 		    // add a neural net selection here someday for Offline use  FIXME!
@@ -153,7 +158,6 @@ namespace mu2e {
     accumulator_set<float, stats<tag::mean> > eacc;
     accumulator_set<float, stats<tag::mean> > tacc;
     accumulator_set<float, stats<tag::weighted_variance(lazy)>, float> wacc;
-    accumulator_set<float, stats<tag::mean> > wtacc;
     accumulator_set<float, stats<tag::mean> > werracc;
     XYZVec midpos;
     combohit._nsh = 0;
@@ -170,7 +174,6 @@ namespace mu2e {
       tacc(ch.time());// time is an unweighted average
       float wt = 1.0/(ch.wireErr2());
       wacc(ch.wireDist(),weight=wt); // wire position is weighted
-      wtacc(wt);
       werracc(ch.wireRes());
       midpos += ch.centerPos(); // simple average for position
       combohit._nsh += ch.nStrawHits();
@@ -183,10 +186,10 @@ namespace mu2e {
     combohit._wdist = extract_result<tag::weighted_mean>(wacc);
     midpos /= combohit._nsh;
     combohit._pos = midpos + combohit._wdist*combohit._wdir;
-    combohit._wres = 1.0/sqrt(extract_result<tag::mean>(wtacc));
-    combohit._tres = 6.0/sqrt(12.0); // FIXME!
-    float wvar = sqrt(std::max(extract_result<tag::variance>(wacc),float(0.0)));
+    combohit._wres = sqrt(1.0/extract_result<tag::sum_of_weights>(wacc) + _werr2);
+    combohit._tres = _terr*combohit._nsh; // error proportional to # of straws (roughly)
     // for now, define the quality as the ratio of the variance to the average
+    float wvar = sqrtf(std::max(extract_result<tag::variance>(wacc),float(0.0)));
     combohit._qual = wvar/extract_result<tag::mean>(werracc);
   }
 } // end namespace mu2e
