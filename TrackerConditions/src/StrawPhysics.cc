@@ -27,9 +27,10 @@ namespace mu2e {
     _vprop(pset.get<double>("PropagationVelocity",299.0)), //mm/nsec
     _cdpoly(pset.get<vector<double> >("ClusterDriftPolynomial",vector<double>{0.0,16.0})), // linear term has units nanoseconds/mm
     _dtvar(pset.get<double>("DriftTimeVariance",0.22)), // Drift time variance linear dependence on drift time (ns)
-    _driftFile(pset.get<string>("DriftFile","TrackerConditions/data/E2v.tbl"))
+    _driftFile(pset.get<string>("DriftFile","TrackerConditions/data/E2v.tbl")), //JB DriftFile is essentially a handle for the fcl file to change the default that is set here
+    _wirevoltage(pset.get<double>("WireVoltage",1500)) //set the default to 1500 V
   {
-    this->strawDrift = new StrawDrift(_driftFile);
+    this->strawDrift = new StrawDrift(_driftFile, _wirevoltage); //JB this is in the beginning of the constructor. "this" is a pointer of StrawPhysics, to StrawPhysics. it can likely be ommited
 
     // integrate the number of ionizations
     double ptot(0.0);
@@ -89,13 +90,15 @@ namespace mu2e {
   }
 
   double StrawPhysics::driftDistanceToTime(double ddist, double phi) const {
-    double retval(0.0);
-    double arg(1.0);
-    for(size_t ipow=0;ipow<_cdpoly.size();++ipow){
-      retval += arg*_cdpoly[ipow];
-      arg*=ddist;
-    }
-    return max(0.0,retval);
+    double effectiveVelocity = this->strawDrift->getEffectiveVelocity(ddist);
+    //double retval(0.0);
+    //double arg(1.0);
+    //for(size_t ipow=0;ipow<_cdpoly.size();++ipow){
+    //  retval += arg*_cdpoly[ipow];
+    //  arg*=ddist;
+    //}
+    //return max(0.0,retval);
+    return ddist/effectiveVelocity;
   }
 
   double StrawPhysics::driftTimeSpread(double dtime) const {

@@ -15,7 +15,7 @@
 
 
 //Efield Speed (80:20)
-//kV/cm  cm/ns
+//kV/cm  cm/us
         
 0.070   0.21
 0.140   0.46

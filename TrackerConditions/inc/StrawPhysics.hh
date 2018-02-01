@@ -70,6 +70,7 @@ namespace mu2e {
       std::vector<double> _cdpoly;
       double _dtvar; // variance depencence on drift time
       std::string _driftFile;
+      float _wirevoltage; //JB
   };
 }
 #endif
