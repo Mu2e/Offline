@@ -423,16 +423,15 @@ CalPatRec : { @table::CalPatRec
 	    minNSeeds                     : 2                     #
 	    maxElectronHitEnergy          : 0.0200                # means: use all hits
 	    minimumTime                   : 500.                  # ns
-	    maximumTime                   : 2000.                 # ns
+	    maximumTime                   : 1750.                 # ns
 	    maxChi2Stereo                 : 10.                   # 50.                   #
 	    maxChi2Neighbor               : 15.                   # 2018-01-24: 25 --> 15
 	    maxChi2Radial                 : 15.                   # 2018-01-24: 25 --> 15
 	    maxChi2Tot                    : 15.                   # 2018-01-24: 25 --> 15
-	    maxDt                         : 40.                   # ns
 	    maxDxy                        : 40.                   # mm
 	    maxGap                        : 1                     # gap in missing stations along the candidate
 	    sigmaR                        : 10.                   # mm, roughly 3 MeV/c
-	    maxDriftTime                  : 40.                   # ns
+	    maxDriftTime                  : 50.                   # ns, includes some tolerance
 	    maxStrawDt                    : 50.                   # max sensible time difference for a straw, ns, off by default
 	    maxDtDs                       :  5.                   # ns, max allowed T0 shift per station
 	    # debugging/diagnostics

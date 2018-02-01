@@ -904,9 +904,9 @@ namespace mu2e {
 	int nseeds = _data->seedHolder[st].size();
 	printf("station: %2i N(seeds): %3i\n",st,nseeds);
 	if (nseeds > 0) {
-	  printf("------------------------------------------------------------------------------------------------------------------------------\n");
-	  printf("      st  i  good:type   SHID:MCID(0)    SHID:MCID(1)       chi21    chi22 mintime  maxtime      X        Y         Z  nfwh nht\n");
-	  printf("------------------------------------------------------------------------------------------------------------------------------\n");
+	  printf("---------------------------------------------------------------------------------------------------------------------------------------\n");
+	  printf("      st  i  good:type   SHID:MCID(0)    SHID:MCID(1)    chi2all/N  chi21    chi22 mintime  maxtime      X        Y         Z  nfwh nht\n");
+	  printf("---------------------------------------------------------------------------------------------------------------------------------------\n");
 	  for (int ps=0; ps<nseeds; ++ps) {
 	    DeltaSeed* seed = _data->seedHolder[st].at(ps);
 
@@ -919,7 +919,7 @@ namespace mu2e {
 	      printf("(%5i:%9i)",-1,-1);
 	      printf("(%5i:%9i)",-1,-1);
 	    }
-	    printf(" %8.2f %8.2f",seed->fChi21,seed->fChi22);
+	    printf(" %8.2f %8.2f %8.2f",seed->Chi2AllDof(),seed->fChi21,seed->fChi22);
 	    printf("%8.1f %8.1f",seed->fMinTime,seed->fMaxTime);
 	    printf(" %8.3f %8.3f %9.3f",seed->CofM.x(),seed->CofM.y(),seed->CofM.z());
 	    printf("%4i",seed->fNFacesWithHits);
@@ -976,7 +976,7 @@ namespace mu2e {
 	  printf("--------------------------------------------------------------------------------------------------------------------------\n");
 	  printf("      i  nh n(CE) ns s1  s2     X        Y        Z     chi21   chi22   htmin   htmax   t0min   t0max     PdgID N(MC hits)\n");
 	  printf("--------------------------------------------------------------------------------------------------------------------------\n");
-	  printf(":dc:%3i %3i  %3i",i,dc->fNHits,dc->fNHitsCE);
+	  printf(":dc:%03i %3i  %3i",i,dc->fNHits,dc->fNHitsCE);
 	  printf(" %3i",dc->n_seeds);
 	  printf(" %2i  %2i %7.2f %7.2f %9.2f",dc->fFirstStation,dc->fLastStation,
 		 dc->CofM.x(),dc->CofM.y(),dc->CofM.z());

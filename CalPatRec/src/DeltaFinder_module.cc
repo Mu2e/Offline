@@ -75,7 +75,6 @@ namespace mu2e {
     double                              _pitchAngle;
     art::InputTag                       _mcDigisTag;
     float                               _minHitTime;           // min hit time
-    float                               _maxDt;                // max deltaT
     int                                 _minNFacesWithHits;    // per station per seed
     int                                 _minNSeeds;            // min number of seeds in the delta electron cluster
     float                               _maxElectronHitEnergy; // 
@@ -90,7 +89,7 @@ namespace mu2e {
     float                               _sigmaR;
     float                               _maxDriftTime;
     float                               _maxStrawDt;
-    float                               _maxDtDs;              // max T0 difference between two stations
+    float                               _maxDtDs;              // low-P electron travel time between two stations
 
     int                                 _debugLevel;
     int                                 _diagLevel;
@@ -175,7 +174,6 @@ namespace mu2e {
     _mcDigisTag            (pset.get<art::InputTag>("strawDigiMCCollectionTag"     )),
     			        
     _minHitTime            (pset.get<float>        ("minHitTime"                   )),
-    _maxDt                 (pset.get<float>        ("maxDt"                        )),
     _minNFacesWithHits     (pset.get<int>          ("minNFacesWithHits"            )),
     _minNSeeds             (pset.get<int>          ("minNSeeds"                    )),
     _maxElectronHitEnergy  (pset.get<float>        ("maxElectronHitEnergy"         )),
@@ -824,8 +822,6 @@ namespace mu2e {
 	if (hd == hd1) continue ;
 	const StrawHit* sh = hd->fHit;
 
-	//	if ((sh->time()-Seed->fMinTime > _maxDt) || (Seed->fMaxTime-sh->time() > _maxDt)) continue;
-
 	if (sh->time()-Seed->T0Max() > _maxDriftTime          ) continue;
 	if (sh->time()               < Seed->T0Min()          ) continue;
 
@@ -938,7 +934,7 @@ namespace mu2e {
 		  float t2 = sh2->time();
 		  if (t2 < _minHitTime)                           continue;
 		  float dt = abs(t2 - ct);
-		  if (dt >= _maxDt)                               continue;
+		  if (dt >= _maxDriftTime)                        continue;
 		  ++counter; 	                                    // number of hits close to the first one
 //-----------------------------------------------------------------------------
 // intersect the two straws, we need coordinates of the intersection point and 
@@ -1061,7 +1057,7 @@ namespace mu2e {
       if (ds1->fGood < 0) continue;
 
       if (ds1->Chi2Tot() > _maxChi2Tot) {
-	ds1->fGood = -i1;
+	ds1->fGood = -1000-i1;
 	continue;
       }
 
@@ -1072,7 +1068,7 @@ namespace mu2e {
 	if (ds2->fGood < 0) continue;
 
 	if (ds2->Chi2Tot() > _maxChi2Tot) {
-	  ds2->fGood = -i2;
+	  ds2->fGood = -1000-i2;
 	  continue;
 	}
 
@@ -1104,14 +1100,52 @@ namespace mu2e {
 	  noverlap += nov;
 	  if (nov != 0) nfaces_with_overlap += 1;
 	}
+//-----------------------------------------------------------------------------
+// special treatment of 2-hit seeds to reduce the number of ghosts
+//-----------------------------------------------------------------------------
+	if (ds1->fNHitsTot == 2) {
+	  if (nfaces_with_overlap > 0) {
+	    if (ds2->fNFacesWithHits > 2) {
+	      ds1->fGood = -1000-i2;
+	      break;
+	    }
+	    else {
+					// the second one also has 2 faces with hits
+
+	      if (ds1->Chi2AllDof() <  ds2->Chi2AllDof()) ds2->fGood = -1000-i1;
+	      else {
+		ds1->fGood = -1000-i2;
+		break;
+	      }
+	    }
+	  }
+	}
+
+	if (ds2->fNHitsTot == 2) {
+	  if (nfaces_with_overlap > 0) {
+//-----------------------------------------------------------------------------
+// the 2nd seed has only 2 hits and there is an overlap
+//-----------------------------------------------------------------------------
+	    if (ds1->fNFacesWithHits > 2)                 ds2->fGood = -1000-i1;
+	    else {
+					// the second one also has 2 faces with hits
+
+	      if (ds1->Chi2AllDof() <  ds2->Chi2AllDof()) ds2->fGood = -1000-i1;
+	      else {
+		ds1->fGood = -1000-i2;
+		break;
+	      }
+	    }
+	  }
+	}
 
 	if (nfaces_with_overlap > 1) {
 	  if ((noverlap >= ds1->fNHitsTot*0.6) || (noverlap >= 0.6*ds2->fNHitsTot)) {
 //-----------------------------------------------------------------------------
 // overlap significant, leave in only one DeltaSeed - which one? 
 //-----------------------------------------------------------------------------
-	    if      (ds1->Chi2Tot() <  ds2->Chi2Tot()) ds2->fGood = -1000-i1;
-	    else if (ds1->Chi2Tot() >= ds2->Chi2Tot()) {
+	    if      (ds1->Chi2AllDof() <  ds2->Chi2AllDof()) ds2->fGood = -1000-i1;
+	    else if (ds1->Chi2AllDof() >= ds2->Chi2AllDof()) {
 	      ds1->fGood = -1000-i2;
 	      break;
 	    }
@@ -1120,7 +1154,7 @@ namespace mu2e {
 // the same number of hits, choose candidate with lower chi2
 // should not be getting here
 //-----------------------------------------------------------------------------
-	      if (ds1->Chi2Tot() < ds2->Chi2Tot()) ds2->fGood = -1000-i1;
+	      if (ds1->Chi2AllDof() < ds2->Chi2AllDof()) ds2->fGood = -1000-i1;
 	      else {
 		ds1->fGood = -1000-i2;
 		break;
@@ -1201,8 +1235,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // 2017-10-05 PM: consider all hits 
 // hit time should be consistent with the already existing times - the difference
-// between any two measured hit times should not exceed _maxDt 
-// (_maxDt of the order of maximal drift time in the straw, slightly higher)
+// between any two measured hit times should not exceed _maxDriftTime 
+// (_maxDriftTime represents the maximal drift time in the straw, should there be some tolerance?)
 //-----------------------------------------------------------------------------
 		  HitData_t* hd      = &panelz->fHitData[l][h];
 		  const StrawHit* sh = hd->fHit;
@@ -1215,7 +1249,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // split into wire parallel and perpendicular components
 //-----------------------------------------------------------------------------
-		  const CLHEP::Hep3Vector& wdir = panelz->fPanel->straw0Direction();
+		  const CLHEP::Hep3Vector& wdir = hd->fStraw->getDirection();
 		  CLHEP::Hep3Vector d_par    = (dxyz.dot(wdir))/(wdir.dot(wdir))*wdir; 
 		  CLHEP::Hep3Vector d_perp_z = dxyz-d_par;
 		  float  d_perp              = d_perp_z.perp();
@@ -1279,12 +1313,38 @@ namespace mu2e {
 	    if (seed->hitlist[f2].size() > 0) seed->fNFacesWithHits++;
 	    seed->fFaceProcessed[f2] = 1;
 	  }
+//-----------------------------------------------------------------------------
+// calculate chi2 of the found seed
+//-----------------------------------------------------------------------------
+	  seed->fChi2All = 0;
+	  for (int face=0; face<kNFaces; face++) {
+	    int nh = seed->NHits(face);
+	    for (int ih=0; ih<nh; ih++) {
+	      const HitData_t* hd = seed->HitData(face,ih);
+
+	      const StrawHitPosition* shp  = hd->fPos;
+	      CLHEP::Hep3Vector       dxyz = shp->pos()-seed->CofM; // distance from hit to the center-of-gravity
+//-----------------------------------------------------------------------------
+// split into wire parallel and perpendicular components
+//-----------------------------------------------------------------------------
+	      const CLHEP::Hep3Vector& wdir = hd->fStraw->getDirection();
+	      CLHEP::Hep3Vector d_par       = (dxyz.dot(wdir))/(wdir.dot(wdir))*wdir; 
+	      CLHEP::Hep3Vector d_perp_z    = dxyz-d_par;
+	      float  d_perp                 = d_perp_z.perp();
+	      double sigw                   = hd->fSigW;
+	      float  chi2_par               = (d_par.mag()/sigw)*(d_par.mag()/sigw);
+	      float  chi2_perp              = (d_perp/_sigmaR)*(d_perp/_sigmaR);
+	      float  chi2                   = chi2_par + chi2_perp;
+	      seed->fChi2All               += chi2;
+	    }
+	  }
+	  seed->fChi2All = seed->fChi2All/seed->fNHitsTot;
 	}
-      }
 //-----------------------------------------------------------------------------
 // prune list of found seeds
 //-----------------------------------------------------------------------------
-      pruneSeeds(s);
+	pruneSeeds(s);
+      }
     }
   }
 
@@ -1363,7 +1423,7 @@ namespace mu2e {
 	    if (seed2->fGood < 0)                            continue;
 	    if (seed2->Used()   )                            continue;
 	    if (seed2->fNFacesWithHits < _minNFacesWithHits) continue;
-	    if (seed2->T0Max() - t0min < -10.)               continue;
+	    if (seed2->T0Max() - t0min < -10.)               continue; // *FIXME* make a parameter
 	    if (seed2->T0Min() - t0max >  10.)               continue;
 //-----------------------------------------------------------------------------
 // seed2 T0 is consistent with the predicted T0
