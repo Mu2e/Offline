@@ -528,7 +528,7 @@ CreateMVAFactory(TTree* inputTree,
 }
 void TrainBkgMVA(const char* files="bkgfiles.txt",const char* basedir="bkg") {
   // fill TChain from files
-  TChain* mytree = new TChain("BkgDiag/bkgdiag");
+  TChain* mytree = new TChain("BD/bkgdiag");
   std::ifstream fs(files,std::ifstream::in);
   char file[100];
   fs.getline(file,100);
@@ -538,7 +538,7 @@ void TrainBkgMVA(const char* files="bkgfiles.txt",const char* basedir="bkg") {
     fs.getline(file,100);
   }
 //selection cuts
-  TCut goodclu("mvastat>0 && ppdg==11 && nprimary/nhits>0.8");
+  TCut goodclu("mvastat>0 && ppdg==11 && nprimary/nchits>0.8");
   TCut signalclu("pproc<20"); // signal are electrons from electromagnetic processes (Compton, delta, ...)
   TCut bkgclu("pgen==2&&pmom>100"); // background are conversion electron hits
   TCut sigCut = goodclu + signalclu;

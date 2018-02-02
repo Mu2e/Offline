@@ -13,11 +13,6 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-// conditions
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
 // root 
 #include "TMath.h"
 #include "TH1F.h"
@@ -25,8 +20,7 @@
 #include "Math/VectorUtil.h"
 // data
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
-#include "RecoDataProducts/inc/StrawHitPosition.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/BkgCluster.hh"
 #include "RecoDataProducts/inc/BkgQual.hh"
@@ -38,7 +32,6 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
 #include "TrkDiag/inc/StrawHitInfo.hh"
-#include "DataProducts/inc/threevec.hh"
 using namespace std;
 using CLHEP::Hep3Vector;
 using namespace ROOT::Math::VectorUtil;
@@ -54,29 +47,26 @@ namespace mu2e
 
     private:
       // helper functions
-      void fillStrawHitInfo(size_t ish, art::Ptr<SimParticle>const& pptr, StrawHitInfo& bkghinfo) const;
+      void fillStrawHitInfo(size_t ich, StrawHitInfo& bkghinfo) const;
+      void fillStrawHitInfoMC(StrawDigiMC const& mcdigi, art::Ptr<SimParticle>const& pptr, StrawHitInfo& shinfo) const;
       bool findData(const art::Event& e);
-      void findPrimary(BkgCluster const& cluster,art::Ptr<SimParticle>& pptr,double& pmom) const;
+      void findPrimary(std::vector<uint16_t>const& dids, art::Ptr<SimParticle>& pptr,double& pmom) const;
 
       // control flags
       int _diag,_debug;
       bool _mcdiag;
       float _maxdt, _maxdrho;
   // data tags
-      art::InputTag _shTag;
-      art::InputTag _shpTag;
+      art::InputTag _chTag;
       art::InputTag _shfTag;
-      art::InputTag _stTag;
       art::InputTag _bkgcTag;
       art::InputTag _bkgqTag;
       art::InputTag _mcdigisTag;
       // time offset
       SimParticleTimeOffset _toff;
       // cache of event objects
-      const StrawHitCollection* _shcol;
-      const StrawHitPositionCollection* _shpcol;
+      const ComboHitCollection* _chcol;
       const StrawHitFlagCollection* _shfcol;
-      const StereoHitCollection* _stcol;
       const StrawDigiMCCollection *_mcdigis;
       const BkgClusterCollection *_bkgccol;
       const BkgQualCollection *_bkgqcol;
@@ -88,7 +78,7 @@ namespace mu2e
       Float_t _ctime;
       Float_t _mindt, _mindrho;
       Bool_t _isbkg, _isref, _isolated, _stereo;
-      Int_t _nactive, _nhits, _nstereo, _nsactive, _nbkg;
+      Int_t _nactive, _nchits, _nshits, _nstereo, _nsactive, _nbkg;
 // BkgQual vars
       float _bkgqualvars[BkgQual::n_vars];
       Int_t _mvastat;
@@ -109,12 +99,10 @@ namespace mu2e
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
     _maxdt(pset.get<double>("MaxTimeDifference",50.0)), // Maximum time difference (nsec)
     _maxdrho(pset.get<double>("MaxRhoDifference",50.0)), // Maximum transverse distance difference (mm)
-    _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
-    _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
-    _shfTag(pset.get<string>("StrawHitFlagCollectionTag","FlagBkgHits")),
-    _stTag(pset.get<string>("StereoHitCollectionTag","MakeStereoHits")),
-    _bkgcTag(pset.get<string>("BackgroundClusterCollectionTag","FlagBkgHits")),
-    _bkgqTag(pset.get<string>("BackgroundQualCollectionTag","FlagBkgHits")),
+    _chTag(pset.get<string>("ComboHitCollection","MakeStereoHits")),
+    _shfTag(pset.get<string>("StrawHitFlagCollection","FlagBkgHits")),
+    _bkgcTag(pset.get<string>("BackgroundClusterCollection","FlagBkgHits")),
+    _bkgqTag(pset.get<string>("BackgroundQualCollection","FlagBkgHits")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {}
@@ -137,7 +125,8 @@ namespace mu2e
       _bdiag->Branch("stereo",&_stereo,"stereo/B");
       _bdiag->Branch("mindt",&_mindt,"mindt/F");
       _bdiag->Branch("mindrho",&_mindrho,"mindrho/F");
-      _bdiag->Branch("nhits",&_nhits,"nhits/I");
+      _bdiag->Branch("nchits",&_nchits,"nchits/I");
+      _bdiag->Branch("nshits",&_nshits,"nshits/I");
       _bdiag->Branch("nactive",&_nactive,"nactive/I");
       _bdiag->Branch("nstereo",&_nstereo,"nstereo/I");
       _bdiag->Branch("nsactive",&_nsactive,"nsactive/I");
@@ -209,7 +198,7 @@ namespace mu2e
       }
       // fill mc info
       art::Ptr<SimParticle> pptr;
-      // loop over hits in this delta and classify them
+      // loop over hits in this cluster and classify them
       _nconv = 0;
       _nprot = 0;
       _ndelta= 0;
@@ -220,8 +209,16 @@ namespace mu2e
       _pmom = 0.0;
       _ppid = _ppdg = _pgen = _pproc = 0;
       if(_mcdiag){
+      // fill vector of indices to all digis used in this cluster's hits 
+      // this goes recursively through the ComboHit chain
+	std::vector<StrawHitIndex> cdids;
+	for(auto const& chit : cluster.hits()){
+	  size_t ich = chit.index();
+	  // get the list of StrawHit indices associated with this ComboHit
+	  _chcol->fillStrawHitIds(event,ich,cdids);
+	}	
 	double pmom(0.0);
-	findPrimary(cluster,pptr,pmom);
+	findPrimary(cdids,pptr,pmom);
 	_pmom = pmom;
 	if(pptr.isNonnull()){
 	  _ppid = pptr->id().asInt();
@@ -234,48 +231,61 @@ namespace mu2e
       // fill cluster hit info
       _bkghinfo.clear();
       _bkghinfo.reserve(cluster.hits().size());
-      _nhits = cluster.hits().size();
+      _nchits = cluster.hits().size();
+      _nshits = 0;
       _nactive = _nstereo = _nsactive = _nbkg = 0;
+      bool pce = _pgen==2; // primary from a CE
       for(auto const& chit : cluster.hits()){
-	size_t ish = chit.index();
-	StrawHitPosition const& shp = _shpcol->at(ish);
+	size_t ich = chit.index();
+	ComboHit const& ch = _chcol->at(ich);
+	_nshits += ch.nStrawHits();
 	StrawHitFlag const& shf = chit.flag();
 	if(shf.hasAllProperties(StrawHitFlag::active)){
-	  ++_nactive;
-	  if(shf.hasAllProperties(StrawHitFlag::stereo))++_nsactive;
+	  _nactive += ch.nStrawHits();
+	  if(shf.hasAllProperties(StrawHitFlag::stereo))_nsactive+= ch.nStrawHits();
 	}
-	if(shf.hasAllProperties(StrawHitFlag::stereo))++_nstereo;
-	if(shf.hasAllProperties(StrawHitFlag::bkg))++_nbkg;
+	if(shf.hasAllProperties(StrawHitFlag::stereo))_nstereo+= ch.nStrawHits();
+	if(shf.hasAllProperties(StrawHitFlag::bkg))_nbkg+= ch.nStrawHits();
 	// fill hit-specific information
 	BkgHitInfo bkghinfo;
 	// fill basic straw hit info
-	fillStrawHitInfo(chit.index(),pptr,bkghinfo);
+	fillStrawHitInfo(chit.index(),bkghinfo);
+	if(_mcdiag){
+	  std::vector<uint16_t> dids;
+	  _chcol->fillStrawHitIds(event,ich,dids);
+	  StrawDigiMC const& mcdigi = _mcdigis->at(dids[0]);// taking 1st digi: is there a better idea??
+	  fillStrawHitInfoMC(mcdigi,pptr,bkghinfo);
+	}
 	// background hit specific information
 	bkghinfo._active = shf.hasAllProperties(StrawHitFlag::active);
 	bkghinfo._cbkg = shf.hasAllProperties(StrawHitFlag::bkg);
 	bkghinfo._gdist = chit.distance();
-	bkghinfo._index = ish;
+	bkghinfo._index = ich;
 	// calculate separation to cluster
-	Hep3Vector psep = Geom::Hep3Vec(PerpVector(shp.pos()-cluster.pos(),Geom::ZDir()));
+	Hep3Vector psep = Geom::Hep3Vec(PerpVector(ch.pos()-cluster.pos(),Geom::ZDir()));
 	double rho = psep.mag();
 	Hep3Vector pdir = psep.unit();
 	bkghinfo._rpos = psep;
 	bkghinfo._rrho = rho;
-	bkghinfo._rerr = std::max(2.5,shp.posRes(StrawHitPosition::wire)*fabs(pdir.dot(shp.wdirCLHEP())));
-	//global counting for the cluster
-	if(bkghinfo._relation==0)++_nprimary;
-	if(bkghinfo._mcgen == 2)++_nconv;
+	bkghinfo._rerr = std::max(2.5,ch.posRes(ComboHit::wire)*fabs(pdir.dot(ch.wdirCLHEP())));
+	//global counting for the cluster: count signal hits only, but background from background is OK
+	if(pce){
+	  if(bkghinfo._relation==0) _nprimary += ch.nStrawHits(); // couunt only true primary
+	} else {
+	  if(bkghinfo._relation>=0 && bkghinfo._relation <=3) _nprimary += ch.nStrawHits(); // count primar + mother/daughter/sibling
+	}
+	if(bkghinfo._mcgen == 2)_nconv += ch.nStrawHits();
 	if(abs(bkghinfo._mcpdg) == PDGCode::e_minus && bkghinfo._mcgen <0){
-	  _nebkg++;
+	  _nebkg += ch.nStrawHits();
 	  if(bkghinfo._mcproc == ProcessCode::eIoni ||bkghinfo._mcproc == ProcessCode::hIoni ){
-	    ++_ndelta;
+	    _ndelta += ch.nStrawHits();
 	  } else if(bkghinfo._mcproc == ProcessCode::compt){
-	    ++_ncompt;
+	    _ncompt += ch.nStrawHits();
 	  } else if(bkghinfo._mcproc == ProcessCode::conv){
-	    ++_ngconv;
+	    _ngconv += ch.nStrawHits();
 	  }
 	}
-	if(bkghinfo._mcpdg == 2212)++_nprot;
+	if(bkghinfo._mcpdg == 2212)_nprot+= ch.nStrawHits();
 	_bkghinfo.push_back(bkghinfo);
       }
       _bdiag->Fill();
@@ -283,16 +293,12 @@ namespace mu2e
   }
 
   bool BkgDiag::findData(const art::Event& evt){
-    _shcol = 0; _shpcol = 0; _shfcol = 0; _stcol = 0; _bkgccol = 0; _bkgqcol = 0; _mcdigis = 0;
+    _chcol = 0; _shfcol = 0; _bkgccol = 0; _bkgqcol = 0; _mcdigis = 0;
     // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
-    auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
-    _shcol = shH.product();
-    auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
-    _shpcol = shpH.product();
+    auto chH = evt.getValidHandle<ComboHitCollection>(_chTag);
+    _chcol = chH.product();
     auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
     _shfcol = shfH.product();
-    auto stH = evt.getValidHandle<StereoHitCollection>(_stTag);
-    _stcol = stH.product();
     auto bkgcH = evt.getValidHandle<BkgClusterCollection>(_bkgcTag);
     _bkgccol = bkgcH.product();
     auto bkgqH = evt.getValidHandle<BkgQualCollection>(_bkgqTag);
@@ -303,18 +309,17 @@ namespace mu2e
       // update time offsets
       _toff.updateMap(evt);
     }
-    return _shcol != 0 && _shpcol != 0 && _shfcol != 0 && _stcol != 0 && _bkgccol != 0 && _bkgqcol != 0
+    return _chcol != 0 && _shfcol != 0 && _bkgccol != 0 && _bkgqcol != 0
       && (_mcdigis != 0  || !_mcdiag);
   }
 
 
-  void BkgDiag::findPrimary(BkgCluster const& bkgc, art::Ptr<SimParticle>& pptr,double& pmom) const { 
+  void BkgDiag::findPrimary(std::vector<uint16_t>const& dids, art::Ptr<SimParticle>& pptr,double& pmom) const { 
+    static StrawEnd itdc(TrkTypes::cal);
     // find the unique simparticles which produced these hits
     std::set<art::Ptr<SimParticle> > pp;
-    for(auto const& chit : bkgc.hits()){
-      size_t ish = chit.index();
-      StrawDigiMC const& mcdigi = _mcdigis->at(ish);
-      StrawEnd itdc(TrkTypes::cal);
+    for(auto id : dids) {
+      StrawDigiMC const& mcdigi = _mcdigis->at(id);
       art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       if(spp.isNonnull()){
@@ -401,11 +406,9 @@ namespace mu2e
       }
     }
     // find the momentum for the first step point from the primary particle in this delta
-    for(auto const& chit : bkgc.hits()){
-      size_t ish = chit.index();
-      StrawDigiMC const& mcdigi = _mcdigis->at(ish);
+    for(auto id : dids) {
+      StrawDigiMC const& mcdigi = _mcdigis->at(id);
       // use TDC channel 0 to define the MC match
-      StrawEnd itdc(TrkTypes::cal);
       art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
 
@@ -416,14 +419,42 @@ namespace mu2e
     }
   }
 
-  void BkgDiag::fillStrawHitInfo(size_t ish, art::Ptr<SimParticle>const& pptr, StrawHitInfo& shinfo) const {
-    const Tracker& tracker = getTrackerOrThrow();
-    StrawHit const& sh = _shcol->at(ish);
-    StrawHitPosition const& shp = _shpcol->at(ish);
-    StrawHitFlag const& shf = _shfcol->at(ish);
+  void BkgDiag::fillStrawHitInfoMC(StrawDigiMC const& mcdigi, art::Ptr<SimParticle>const& pptr, StrawHitInfo& shinfo) const {
+    // use TDC channel 0 to define the MC match
+    StrawEnd itdc(TrkTypes::cal);
+    art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+    art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+    shinfo._mct0 = _toff.timeWithOffsetsApplied(*spmcp);
+    shinfo._mcht = mcdigi.wireEndTime(itdc);
+    shinfo._mcpdg = spp->pdgId();
+    shinfo._mcproc = spp->creationCode();
+    shinfo._mcedep = mcdigi.energySum();
+    shinfo._mcgen = -1;
+    if(spp->genParticle().isNonnull())
+      shinfo._mcgen = spp->genParticle()->generatorId().id();
 
-    shinfo._stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
-    shinfo._tdiv = shp.flag().hasAllProperties(StrawHitFlag::tdiv);
+    shinfo._mcpos = spmcp->position();
+    shinfo._mctime = shinfo._mct0;
+    shinfo._mcedep = mcdigi.energySum();;
+    shinfo._mcmom = spmcp->momentum().mag();
+    double cosd = spmcp->momentum().cosTheta();
+    shinfo._mctd = cosd/sqrt(1.0-cosd*cosd);
+    // relationship to parent
+    shinfo._relation=MCRelationship::none;
+    if(spmcp.isNonnull() && pptr.isNonnull()){
+      art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+      if(spp.isNonnull()){
+	shinfo._relation = MCRelationship::relationship(spp,pptr);
+      }
+    }
+  }
+
+  void BkgDiag::fillStrawHitInfo(size_t ich, StrawHitInfo& shinfo) const {
+    ComboHit const& ch = _chcol->at(ich);
+    StrawHitFlag const& shf = _shfcol->at(ich);
+
+    shinfo._stereo = ch.flag().hasAllProperties(StrawHitFlag::stereo);
+    shinfo._tdiv = ch.flag().hasAllProperties(StrawHitFlag::tdiv);
     shinfo._esel = shf.hasAllProperties(StrawHitFlag::energysel);
     shinfo._rsel = shf.hasAllProperties(StrawHitFlag::radsel);
     shinfo._tsel = shf.hasAllProperties(StrawHitFlag::timesel);
@@ -432,60 +463,22 @@ namespace mu2e
     shinfo._isolated = shf.hasAllProperties(StrawHitFlag::isolated);
     shinfo._bkg = shf.hasAllProperties(StrawHitFlag::bkg);
 
-    shinfo._pos = shp.posCLHEP();
-    shinfo._time = sh.time();
-    shinfo._rho = shp.posCLHEP().perp();
-    shinfo._wres = shp.posRes(StrawHitPosition::wire);
-    shinfo._tres = shp.posRes(StrawHitPosition::trans);
+    shinfo._pos = ch.posCLHEP();
+    shinfo._time = ch.time();
+    shinfo._rho = ch.posCLHEP().perp();
+    shinfo._wres = ch.posRes(ComboHit::wire);
+    shinfo._tres = ch.posRes(ComboHit::trans);
     // info depending on stereo hits
-//    if(shp.stereoHitIndex() >= 0){
-//      shinfo._chisq = _stcol->at(shp.stereoHitIndex()).chisq();
-//      shinfo._stdt = _stcol->at(shp.stereoHitIndex()).dt();
-//      shinfo._dist = _stcol->at(shp.stereoHitIndex()).dist();
-//    } else {
-//      shinfo._chisq = -1.0;
-//      shinfo._stdt = 0.0;
-//      shinfo._dist = -1.0;
-//    }
-    shinfo._edep = sh.energyDep();
-    const Straw& straw = tracker.getStraw( sh.strawIndex() );
-    shinfo._plane = straw.id().getPlane();
-    shinfo._panel = straw.id().getPanel();
-    shinfo._layer = straw.id().getLayer();
-    shinfo._straw = straw.id().getStraw();
-    shinfo._stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
-    shinfo._tdiv = shp.flag().hasAllProperties(StrawHitFlag::tdiv);
-    // mc truth
-    if(_mcdigis != 0) {
-      StrawDigiMC const& mcdigi = _mcdigis->at(ish);
-      // use TDC channel 0 to define the MC match
-      StrawEnd itdc(TrkTypes::cal);
-      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
-      art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-      shinfo._mct0 = _toff.timeWithOffsetsApplied(*spmcp);
-      shinfo._mcht = mcdigi.wireEndTime(itdc);
-      shinfo._mcpdg = spp->pdgId();
-      shinfo._mcproc = spp->creationCode();
-      shinfo._mcedep = mcdigi.energySum();
-      shinfo._mcgen = -1;
-      if(spp->genParticle().isNonnull())
-	shinfo._mcgen = spp->genParticle()->generatorId().id();
+      shinfo._chisq = ch.qual();
+    shinfo._edep = ch.energyDep();
+    StrawId const& sid = ch.sid();
+    shinfo._plane = sid.plane();
+    shinfo._panel = sid.panel();
+    shinfo._layer = sid.layer();
+    shinfo._straw = sid.straw();
+    shinfo._stereo = ch.flag().hasAllProperties(StrawHitFlag::stereo);
+    shinfo._tdiv = ch.flag().hasAllProperties(StrawHitFlag::tdiv);
 
-      shinfo._mcpos = spmcp->position();
-      shinfo._mctime = shinfo._mct0;
-      shinfo._mcedep = mcdigi.energySum();;
-      shinfo._mcmom = spmcp->momentum().mag();
-      double cosd = spmcp->momentum().cosTheta();
-      shinfo._mctd = cosd/sqrt(1.0-cosd*cosd);
-      // relationship to parent
-      shinfo._relation=MCRelationship::none;
-      if(spmcp.isNonnull() && pptr.isNonnull()){
-	art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-	if(spp.isNonnull()){
-	  shinfo._relation = MCRelationship::relationship(spp,pptr);
-	}
-      }
-    }
   }
 } // mu2e namespace
 
