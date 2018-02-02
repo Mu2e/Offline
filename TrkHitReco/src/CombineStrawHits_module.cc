@@ -43,10 +43,11 @@ namespace mu2e {
       // configuration
       int _debug;
       // event object Tags
-      art::InputTag _shTag, _chTag, _shfTag;
+      art::InputTag _chTag;
       // input event collection cache
-      const ComboHitCollection*     _chcol;
+      const ComboHitCollection* _chcol;
       // Parameters
+      bool _testflag; //test flag or not
       StrawHitFlag _shsel; // flag selection
       StrawHitFlag _shmask; // flag anti-selection 
       float _maxdt; // maximum time separation between hits
@@ -61,6 +62,7 @@ namespace mu2e {
     // Parameters
     _debug(pset.get<int>("debugLevel",0)),
     _chTag		(pset.get<art::InputTag>("ComboHitCollection","makeSH")),
+    _testflag(pset.get<bool>("TestFlag",false)),
     _shsel(pset.get<vector<string> >("StrawHitSelectionBits",vector<string>{"EnergySelection","TimeSelection"} )),
     _shmask(pset.get<vector<string> >("StrawHitMaskBits",vector<string>{} )),
     _maxdt(pset.get<float>("MaxDt",40.0)), // nsec
@@ -97,7 +99,7 @@ namespace mu2e {
     for(uint16_t ish=0;ish<nsh;++ish){
       ComboHit const& ch = (*_chcol)[ish];
           // select hits based on flag
-      if(ch.flag().hasAllProperties(_shsel) && (!ch.flag().hasAnyProperty(_shmask)) ){
+      if((!_testflag) || (ch.flag().hasAllProperties(_shsel) && (!ch.flag().hasAnyProperty(_shmask))) ){
 	panels[ch.sid().uniquePanel()].push_back(ish);
       }
     }
