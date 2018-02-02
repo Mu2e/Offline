@@ -178,6 +178,8 @@ namespace mu2e
     if(_filter){
       chcol = std::unique_ptr<ComboHitCollection>( new ComboHitCollection);
       chcol->reserve(_chcol->size());
+      // same parent as the original collection
+      chcol->setParent(_chcol->parent());
     } else {
       bkgfcol = std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection(_chcol->size()));
     }
@@ -350,12 +352,13 @@ namespace mu2e
   void FlagBkgHits::countHits(const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo) const 
   {
     nactive = nstereo = 0;
-    for (const auto& chit : cluster.hits()) 
-    {
+    for (const auto& chit : cluster.hits()) {
+      const ComboHit& ch = (*_chcol)[chit.index()];
       if (chit.flag().hasAllProperties(StrawHitFlag::active))
       {
-	++nactive;
-	if (chit.flag().hasAllProperties(StrawHitFlag::stereo))++nstereo;
+	nactive += ch.nStrawHits();
+	if (chit.flag().hasAllProperties(StrawHitFlag::stereo))
+	  nstereo += ch.nStrawHits();
       }
     }
   }
