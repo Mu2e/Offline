@@ -31,6 +31,7 @@ namespace mu2e
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
     _palg(static_cast<PosAlgorithm>(pset.get<int>("ClusterPositionAlgorithm",median))),
+    _testflag(pset.get<bool>("TestFlag",false)),
     _bkgmask(pset.get<vector<string> >("BackgroundMask",vector<string>())),
     _sigmask(pset.get<vector<string> >("SignalMask",vector<string>())),
     _dseed(pset.get<float>("SeedDistance",100.0)), // minimum 'chisquared' to define a new cluster
@@ -114,7 +115,7 @@ namespace mu2e
       countClusters(clusters, _nclu, _nchits, _tdist);
       _nhits = 0;
       for( auto const& ch : chcol )
-	if(ch.flag().hasAllProperties(_sigmask) && !ch.flag().hasAnyProperty(_bkgmask))++_nhits;
+	if((!_testflag) || (ch.flag().hasAllProperties(_sigmask) && !ch.flag().hasAnyProperty(_bkgmask)))++_nhits;
       _idiag->Fill();
     }
 // iterate between assigning/creating clusters, updating and merging
@@ -148,7 +149,7 @@ namespace mu2e
       for(size_t ish = 0; ish < chcol.size(); ++ish) {
 	ComboHit const& ch = chcol.at(ish);
 	StrawHitFlag const& shf = ch.flag();
-	if(shf.hasAllProperties(_stereo) && !shf.hasAnyProperty(_bkgmask)){
+	if((!_testflag) || (shf.hasAllProperties(_stereo) && !shf.hasAnyProperty(_bkgmask))){
 	  BkgCluster sclust(ch.pos(), ch.time());
 	  sclust._hits.push_back(BkgClusterHit(0.0,ish,shf));
 	  clusters.push_back(sclust);
@@ -164,7 +165,7 @@ namespace mu2e
       for(size_t ish = 0; ish < chcol.size(); ++ish) {
 	ComboHit const& ch = chcol.at(ish);
 	StrawHitFlag const& shf = ch.flag();
-	if(shf.hasAllProperties(_sigmask) && !shf.hasAnyProperty(_bkgmask)){
+	if((!_testflag) || (shf.hasAllProperties(_sigmask) && !shf.hasAnyProperty(_bkgmask))){
 	  BkgCluster sclust(ch.pos(), ch.time());
 	  sclust._hits.push_back(BkgClusterHit(0.0,ish,shf));
 	  clusters.push_back(sclust);
@@ -204,7 +205,7 @@ namespace mu2e
       ComboHit const& ch = chcol[ish];
       // select hits
       StrawHitFlag const& shf = ch.flag();
-      if(shf.hasAllProperties(_sigmask) && !shf.hasAnyProperty(_bkgmask)){
+      if((!_testflag) || (shf.hasAllProperties(_sigmask) && !shf.hasAnyProperty(_bkgmask))){
 	// skip hits already assigned
 	auto ifind = assigned.find(ish);
 	if(ifind == assigned.end()){

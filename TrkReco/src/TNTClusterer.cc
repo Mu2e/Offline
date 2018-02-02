@@ -99,6 +99,7 @@ namespace mu2e
    //---------------------------------------------------------------------------------------
    TNTClusterer::TNTClusterer(const fhicl::ParameterSet& pset) :
      _diag(pset.get<int>("diagLevel",0)),
+     _testflag(pset.get<bool>("TestFlag",false)),
      _bkgmask(pset.get<std::vector<std::string> >("BackgroundMask",std::vector<std::string>())),
      _sigmask(pset.get<std::vector<std::string> >("SignalMask",std::vector<std::string>())),
      _stereoInit(pset.get<bool>(     "StereoInit",true)),        // # of sigma to define a new cluster
@@ -216,18 +217,18 @@ namespace mu2e
       if (_stereoInit) 
       {
          for(size_t ish=0;ish<chcol.size();++ish)
-            if (chcol[ish].flag().hasAllProperties(_sigmask) && !chcol[ish].flag().hasAnyProperty(_bkgmask) && chcol[ish].flag().hasAllProperties(stflag))
+            if ( (!_testflag) || (chcol[ish].flag().hasAllProperties(_sigmask) && !chcol[ish].flag().hasAnyProperty(_bkgmask) && chcol[ish].flag().hasAllProperties(stflag)))
                     chits.emplace_back(ClusterStrawHit(ish,chcol[ish],_srms2inv));
 
          for(size_t ish=0;ish<chcol.size();++ish)
-            if (chcol[ish].flag().hasAllProperties(_sigmask) && !chcol[ish].flag().hasAnyProperty(_bkgmask) && !chcol[ish].flag().hasAllProperties(stflag))
+            if ((!_testflag) || (chcol[ish].flag().hasAllProperties(_sigmask) && !chcol[ish].flag().hasAnyProperty(_bkgmask) && !chcol[ish].flag().hasAllProperties(stflag)))
                     chits.emplace_back(ClusterStrawHit(ish,chcol[ish],_nsrms2inv));
       } 
       else 
       {
          for(size_t ish=0;ish<chcol.size();++ish)
          {
-            if (!chcol[ish].flag().hasAllProperties(_sigmask) || chcol[ish].flag().hasAnyProperty(_bkgmask)) continue;
+            if (_testflag && (!chcol[ish].flag().hasAllProperties(_sigmask) || chcol[ish].flag().hasAnyProperty(_bkgmask))) continue;
             if (chcol[ish].flag().hasAllProperties(stflag))
                 chits.emplace_back(ClusterStrawHit(ish,chcol[ish],_srms2inv));
             else 
@@ -248,7 +249,7 @@ namespace mu2e
       {
           for(size_t ish=0;ish<chcol.size();++ish)
           {
-             if (!chcol[ish].flag().hasAllProperties(_sigmask) || chcol[ish].flag().hasAnyProperty(_bkgmask)) continue;
+             if (_testflag && (!chcol[ish].flag().hasAllProperties(_sigmask) || chcol[ish].flag().hasAnyProperty(_bkgmask))) continue;
 
              if (chcol[ish].flag().hasAllProperties(stflag))
              {
@@ -265,7 +266,7 @@ namespace mu2e
       {     
           for(size_t ish=0;ish<chcol.size();++ish)
           {
-             if (!chcol[ish].flag().hasAllProperties(_sigmask) || chcol[ish].flag().hasAnyProperty(_bkgmask)) continue;
+             if (_testflag && (!chcol[ish].flag().hasAllProperties(_sigmask) || chcol[ish].flag().hasAnyProperty(_bkgmask))) continue;
 
              if (chcol[ish].flag().hasAllProperties(stflag)) 
                  chits.emplace_back(ClusterStrawHit(ish,chcol[ish],_srms2inv));            

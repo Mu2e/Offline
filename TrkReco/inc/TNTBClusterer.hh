@@ -81,6 +81,7 @@ namespace mu2e {
          void     dump(std::list<ClusterStraw2>& clusters);
 
          int          _diag;
+	 bool	      _testflag; // test background flag
          StrawHitFlag _bkgmask; // mask for background hits
          StrawHitFlag _sigmask; // mask for selecting signals
          bool         _stereoInit;  // Start with stereo hits

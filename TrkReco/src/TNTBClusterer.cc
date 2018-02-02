@@ -90,6 +90,7 @@ namespace mu2e
 
    TNTBClusterer::TNTBClusterer(const fhicl::ParameterSet& pset) :
      _diag(pset.get<int>("diagLevel",0)),
+     _testflag(pset.get<bool>("TestFlag",false)),
      _bkgmask(pset.get<std::vector<std::string> >("BackgroundMask",std::vector<std::string>())),
      _sigmask(pset.get<std::vector<std::string> >("SignalMask",std::vector<std::string>())),
      _stereoInit(pset.get<bool>("StereoInit",true)),        // # of sigma to define a new cluster
@@ -187,7 +188,7 @@ namespace mu2e
 
       
       for(size_t ish=0;ish<chcol.size();++ish)
-         if (chcol[ish].flag().hasAllProperties(_sigmask) && !chcol[ish].flag().hasAnyProperty(_bkgmask) && chcol[ish].flag().hasAllProperties(stflag))
+         if ((!_testflag) || (chcol[ish].flag().hasAllProperties(_sigmask) && !chcol[ish].flag().hasAnyProperty(_bkgmask) && chcol[ish].flag().hasAllProperties(stflag)))
                  chits.emplace_back(ClusterStrawHit2(ish,chcol[ish],_srms2inv));
       
       if (chits.size()==0) return;
@@ -210,12 +211,8 @@ namespace mu2e
       } 
 
 
-
-
-
-
       for(size_t ish=0;ish<chcol.size();++ish)
-         if (chcol[ish].flag().hasAllProperties(_sigmask) && !chcol[ish].flag().hasAnyProperty(_bkgmask) && !chcol[ish].flag().hasAllProperties(stflag))
+         if ((!_testflag) || (chcol[ish].flag().hasAllProperties(_sigmask) && !chcol[ish].flag().hasAnyProperty(_bkgmask) && !chcol[ish].flag().hasAllProperties(stflag)))
                  chits.emplace_back(ClusterStrawHit2(ish,chcol[ish],_nsrms2inv));
 
       _nhits = chits.size();

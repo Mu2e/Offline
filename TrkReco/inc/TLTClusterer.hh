@@ -64,6 +64,7 @@ namespace mu2e
   // configuration parameters
   int _diag,_debug;
   PosAlgorithm _palg;
+  bool _testflag;
   StrawHitFlag _bkgmask; // mask for hits to ignore
   StrawHitFlag _sigmask; // mask for hits to use
   StrawHitFlag _stereo; // mask for selecting stereo hits
