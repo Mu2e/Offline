@@ -756,12 +756,16 @@ CalPatRec: { @table::CalPatRec
    }
 }
 
-CalPatRec.prepare_hits : [ makeSH, CalTimePeakFinder, DeltaFinder]
+# if needed, makeSH should be added explicitly, so far assume that it is included 
+# by some hit reco sequence
 
-CalPatRec.reco     : [ @sequence::CalPatRec.prepare_hits, CalHelixFinder   , CalSeedFit   , CalTrkFit    ]
-CalPatRec.dem_reco : [ @sequence::CalPatRec.prepare_hits, CalHelixFinderDem, CalSeedFitDem, CalTrkFitDem ]
-CalPatRec.dep_reco : [ @sequence::CalPatRec.prepare_hits, CalHelixFinderDep, CalSeedFitDep, CalTrkFitDep ]
-CalPatRec.dmm_reco : [ @sequence::CalPatRec.prepare_hits, CalHelixFinderDmm, CalSeedFitDmm, CalTrkFitDmm ]
-CalPatRec.dmp_reco : [ @sequence::CalPatRec.prepare_hits, CalHelixFinderDmp, CalSeedFitDmp, CalTrkFitDmp ]
+# CalPatRec.prepare_hits : [ makeSH, CalTimePeakFinder, DeltaFinder]
+# CalPatRec.prepare_hits : [ CalTimePeakFinder, DeltaFinder]
+
+CalPatRec.reco     : [ CalTimePeakFinder, DeltaFinder, CalHelixFinder   , CalSeedFit   , CalTrkFit    ]
+CalPatRec.dem_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDem, CalSeedFitDem, CalTrkFitDem ]
+CalPatRec.dep_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDep, CalSeedFitDep, CalTrkFitDep ]
+CalPatRec.dmm_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDmm, CalSeedFitDmm, CalTrkFitDmm ]
+CalPatRec.dmp_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDmp, CalSeedFitDmp, CalTrkFitDmp ]
 
 END_PROLOG
