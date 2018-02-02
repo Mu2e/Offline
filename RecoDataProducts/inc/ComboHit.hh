@@ -87,6 +87,9 @@ namespace mu2e {
       void setParentHandle(art::Event const& event, art::Handle<ComboHitCollection>& phandle) const;
       // set the parent Id given a handle to the parent collection
       void setParent(art::Handle<ComboHitCollection> const& phandle);
+      // or directly from the product ID
+      void setParent(art::ProductID const& par){ _parent = par; }
+      art::ProductID const& parent() const { return _parent; }
       // accessors
       sort sorted() const { return _sorted; }
     private:
