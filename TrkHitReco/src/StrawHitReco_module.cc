@@ -60,19 +60,15 @@ namespace mu2e {
 
 
      private:
-       double _mbbuffer;                // buffer on that for ghost hits (wrapping)
-       double _maxdt;                   // maximum time difference between end times
-       bool   _singledigi;              // turn single-end digitizations into hits
        TrkHitReco::FitType _fittype; // peak Fitter
        bool   _usecc;                   // use calorimeter cluster filtering
-       double _clusterDt;               // maximum hit-calo lcuster time difference
-       double _minE;                    // minimum charge (units??)
-       double _maxE;                    // maximum charge (units??)
-       double _ctE;                     // minimum charge to flag neighbors as cross talk
-       double _ctMinT;                  // time relative to proton hit to flag cross talk (ns)
-       double _ctMaxT;                  // time relative to proton hit to flag cross talk (ns)
-       double _minT;                    // minimum hit time
-       double _maxT;                    // maximum hit time
+       float _clusterDt;               // maximum hit-calo lcuster time difference
+       float _minE, _maxE;             // energy range (MeV)
+       float _ctE;                     // minimum charge to flag neighbors as cross talk
+       float _ctMinT;                  // time relative to proton hit to flag cross talk (ns)
+       float _ctMaxT;                  // time relative to proton hit to flag cross talk (ns)
+       float _minT, _maxT;             // time range
+       float _maxR2;	      // transverse radius (squared) range
        bool   _filter;                // trigger mode cut on dt and other thing 
        bool  _writesh;		      // write straw hits or not
        bool _flagXT; // flag cross-talk
@@ -85,24 +81,21 @@ namespace mu2e {
        std::string caloClusterModuleLabel_;
        fhicl::ParameterSet peakfit_;       
        
-       std::unique_ptr<TrkHitReco::PeakFit> pfit_;
+       std::unique_ptr<TrkHitReco::PeakFit> _pfit;
        
  };
 
   StrawHitReco::StrawHitReco(fhicl::ParameterSet const& pset) :
-      _mbbuffer(pset.get<double>(    "TimeBuffer",100.0)), 
-      _maxdt(pset.get<double>(       "MaxTimeDifference",8.0)), 
-      _singledigi(pset.get<bool>(    "UseSingleDigis",false)), 
       _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminusped)),
       _usecc(pset.get<bool>(         "UseCalorimeter",false)),     
-      _clusterDt(pset.get<double>(   "clusterDt",100)),
-      _minE(pset.get<double>(        "minimumEnergy",0.0)), // Minimum deposited straw energy (MeV)
-      _maxE(pset.get<double>(        "maximumEnergy",0.01)), // MeV
-      _ctE(pset.get<double>(         "crossTalkEnergy",0.007)), // MeV
-      _ctMinT(pset.get<double>(      "crossTalkMinimumTime",-1)), // nsec
-      _ctMaxT(pset.get<double>(      "crossTalkMaximumTime",100)), // nsec
-      _minT(pset.get<double>(        "minimumTime",500)), // nsec
-      _maxT(pset.get<double>(        "maximumTime",2000)), // nsec
+      _clusterDt(pset.get<float>(   "clusterDt",100)),
+      _minE(pset.get<float>(        "minimumEnergy",0.0)), // Minimum deposited straw energy (MeV)
+      _maxE(pset.get<float>(        "maximumEnergy",0.003)), // MeV
+      _ctE(pset.get<float>(         "crossTalkEnergy",0.007)), // MeV
+      _ctMinT(pset.get<float>(      "crossTalkMinimumTime",-1)), // nsec
+      _ctMaxT(pset.get<float>(      "crossTalkMaximumTime",100)), // nsec
+      _minT(pset.get<float>(        "minimumTime",500)), // nsec
+      _maxT(pset.get<float>(        "maximumTime",2000)), // nsec
       _filter(pset.get<bool>(      "FilterHits",true)),
       _writesh(pset.get<bool>(      "WriteStrawHitCollection",true)),
       _flagXT(pset.get<bool>(      "FlagCrossTalk",false)),
@@ -114,9 +107,12 @@ namespace mu2e {
       peakfit_(pset.get<fhicl::ParameterSet>("PeakFitter",fhicl::ParameterSet()))
   {
       produces<ComboHitCollection>();
+      if(_writesh)produces<StrawHitCollection>();
       // each hit is a unique straw
       std::vector<StrawIdMask::field> fields{StrawIdMask::plane,StrawIdMask::panel,StrawIdMask::straw};
       _mask = StrawIdMask(fields);
+      float maxR = pset.get<float>("maximumRadius",650); // mm
+      _maxR2 = maxR*maxR;
 
       if (_printLevel > 0) std::cout << "In StrawHitReco constructor " << std::endl;
   }
@@ -134,13 +130,13 @@ namespace mu2e {
       ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
                  
       // this must be done here because strawele is not accessible at startup and it 
-      // contains a const refenence to pfit_, so this can't be instanciated earliere
+      // contains a const refenence to _pfit, so this can't be instanciated earliere
       if (_fittype == TrkHitReco::FitType::peakminusped)
-         pfit_ = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFit(*strawele,peakfit_) );
+         _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFit(*strawele,peakfit_) );
       else if (_fittype == TrkHitReco::FitType::combopeakfit)
-	 pfit_ = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::ComboPeakFitRoot(*strawele,peakfit_) );
+	 _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::ComboPeakFitRoot(*strawele,peakfit_) );
       else
-	 pfit_ = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFitRoot(*strawele,peakfit_) );
+	 _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFitRoot(*strawele,peakfit_) );
                       
       if (_printLevel > 0) std::cout << "In StrawHitReco begin Run " << std::endl;
   }
@@ -184,50 +180,64 @@ namespace mu2e {
       
       for (size_t isd=0;isd<strawdigis.size();++isd)
       {
-	const StrawDigi& digi = strawdigis[isd];          
+	const StrawDigi& digi = strawdigis[isd];
+	StrawHitFlag flag;
+	// start by reconstructing the times
 	TDCTimes times;
 	strawele->tdcTimes(digi.TDC(),times);
+	// take the earliest of the 2 end times
+	float time = std::min(times[0],times[1]);
+	if (time < _minT || time > _maxT ){
+	  if(_filter)continue;
+	} else
+	  flag.merge(StrawHitFlag::timesel);
+
+	//calorimeter filtering
+	if (_usecc && caloClusters) {
+	  bool outsideCaloTime(true);
+	  for (const auto& cluster : *caloClusters) 
+	    if (std::abs(time-cluster.time())<_clusterDt) {outsideCaloTime=false; break;}
+	  if (outsideCaloTime){
+	    if(_filter)continue;
+	  } else
+	    flag.merge(StrawHitFlag::calosel);
+	}
+
+	//extract energy from waveform
+	TrkHitReco::PeakFitParams params;
+	_pfit->process(digi.adcWaveform(),params);
+	float energy = strawphys->ionizationEnergy(params._charge/strawphys->strawGain());
+	if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
+	  << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
+
+	if( energy < _minE  || energy > _maxE){
+	  if(_filter) continue;
+	} else
+	  flag.merge(StrawHitFlag::energysel);
+	// time-over-threshold
 	TOTTimes tots{0.0,0.0};
 	for(size_t iend=0;iend<2;++iend){
 	  tots[iend] = digi.TOT(_end[iend])*strawele->totLSB();
 	}
-	// take the earliest of the 2 end times
-	float time = std::min(times[0],times[1]);
-	if (_filter && ( time < _minT || time > _maxT ) )continue;
-
-	//calorimeter filtering
-	if (_usecc && caloClusters)
-	{
-	  bool outsideCaloTime(true);
-	  for (const auto& cluster : *caloClusters) 
-	    if (std::abs(time-cluster.time())<_clusterDt) {outsideCaloTime=false; break;}
-	  if (outsideCaloTime) continue;
-	}
-
-
-	//extract energy from waveform
-	// note: pedestal is being subtracting inside strawele, in the real experiment we will need
-	// per-channel version of this FIXME!!!
-	TrkHitReco::PeakFitParams params;
-	pfit_->process(digi.adcWaveform(),params);
-	double energy = strawphys->ionizationEnergy(params._charge/strawphys->strawGain());
-	if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
-	  << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
-
-	if(_filter && ( energy < _minE  || energy > _maxE) ) continue;
-
-	//create straw hit
-	const Straw& straw  = tracker.getStraw( digi.strawIndex() );
+	//create straw hit; this is required for the time division calculation but isn't otherwise needed, FIXME!
 	StrawHit hit(digi.strawIndex(),times,tots,energy);
-	if(_writesh)
-	  shCol->push_back(std::move(hit));
-	// create combo hit.  this include 
-	ComboHit ch;
-	ch._nsh = 1; // 'combo' of 1 hit
 	// get distance along wire from the straw center and it's estimated error
+	const Straw& straw  = tracker.getStraw( digi.strawIndex() );
 	float dw, dwerr;
 	bool td = srep->wireDistance(hit,straw.getHalfLength(),dw,dwerr);
-	ch._pos = straw.getMidPoint()+dw*straw.getDirection();
+	XYZVec pos = Geom::toXYZVec(straw.getMidPoint()+dw*straw.getDirection());
+	float rad2 = pos.Perp2();
+	if(rad2 > _maxR2) {
+	  if(_filter)continue;
+	} else
+	  flag.merge(StrawHitFlag::radsel);
+	if(_writesh){
+	  shCol->push_back(std::move(hit));
+	}
+	// create combo hit
+	ComboHit ch;
+	ch._nsh = 1; // 'combo' of 1 hit
+	ch._pos = pos;
 	ch._wdir = straw.getDirection();
 	ch._wdist = dw;
 	ch._wres = dwerr;
@@ -235,16 +245,14 @@ namespace mu2e {
 	ch._edep = energy;
 	ch._sid = straw.id();
 	ch.addIndex(isd); // reference the digi; this allows MC truth matching to work
-	ch._mask = _mask;
 	// crude initial estimate of the transverse error
-	static const double invsqrt12 = 1.0/sqrt(12.0);
+	static const float invsqrt12 = 1.0/sqrt(12.0);
 	ch._tres = straw.getRadius()*invsqrt12;
 	// set flags
-	if (energy > _minE && energy < _maxE) ch._flag.merge(StrawHitFlag::energysel);
-	if (time > _minT && time < _maxT)     ch._flag.merge(StrawHitFlag::timesel);
-	if (_usecc)                           ch._flag.merge(StrawHitFlag::calosel);
+	ch._mask = _mask;
+	ch._flag = flag;
 	if (td) ch._flag.merge(StrawHitFlag::tdiv); 
-	if(_flagXT){
+	if(!_filter && _flagXT){
 	  //buffer large hit for cross-talk analysis
 	  size_t iplane       = straw.id().getPlane();
 	  size_t ipnl         = straw.id().getPanel();
@@ -252,23 +260,24 @@ namespace mu2e {
 	  hits_by_panel[global_panel].push_back(shCol->size());          
 	  if (energy >= _ctE) {largeHits.push_back(shCol->size()); largeHitPanels.push_back(global_panel);}
 	}
+
 	chCol->push_back(std::move(ch));
       }
 
       //flag straw and electronic cross-talk
-      if(_flagXT){
+      if(!_filter && _flagXT){
 	for (size_t ilarge=0; ilarge < largeHits.size();++ilarge)
 	{
-	  const StrawHit& sh = shCol->at(largeHits[ilarge]);
+	  const StrawHit& sh = (*shCol)[largeHits[ilarge]];
 	  const Straw& straw = tracker.getStraw( sh.strawIndex() );
 	  for (size_t jsh : hits_by_panel[largeHitPanels[ilarge]])
 	  {
 	    if (jsh==largeHits[ilarge]) continue;              
-	    const StrawHit& sh2 = shCol->at(jsh);              
+	    const StrawHit& sh2 = (*shCol)[jsh]; 
 	    if (sh2.time()-sh.time() > _ctMinT && sh2.time()-sh.time() < _ctMaxT)
 	    {
-	      if (straw.isSamePreamp(sh2.strawIndex()))       chCol->at(jsh)._flag.merge(StrawHitFlag::elecxtalk);
-	      if (straw.isNearestNeighbour(sh2.strawIndex())) chCol->at(jsh)._flag.merge(StrawHitFlag::strawxtalk);
+	      if (straw.isSamePreamp(sh2.strawIndex()))       (*chCol)[jsh]._flag.merge(StrawHitFlag::elecxtalk);
+	      if (straw.isNearestNeighbour(sh2.strawIndex())) (*chCol)[jsh]._flag.merge(StrawHitFlag::strawxtalk);
 	    }           
 	  }
 	}
@@ -276,7 +285,6 @@ namespace mu2e {
 
       if(_writesh)event.put(std::move(shCol));
       event.put(std::move(chCol));
-
   }
 
 }
