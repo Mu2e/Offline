@@ -30,14 +30,17 @@ namespace mu2e {
       constexpr static uint16_t _strawmsk = 0x7F; // mask for straw field
       constexpr static uint16_t _panelmsk = 0x380; // mask for panel field
       constexpr static uint16_t _panelsft = 7; // shift for panel field
+      constexpr static uint16_t _facemsk = 0x80; // mask for face field
+      constexpr static uint16_t _facesft = 7; // shift for face field
       constexpr static uint16_t _planemsk = 0xFC00; // mask for plane field
+      constexpr static uint16_t _planesft = 10; // shift for plane field
       constexpr static uint16_t _stationmsk = 0xF800; // mask for station field
       constexpr static uint16_t _stationsft = 11; // shift for station field
-      constexpr static uint16_t _planesft = 10; // shift for plane field
       constexpr static uint16_t _invalid = 0xFFFF; // invalid identifier
       constexpr static uint16_t _nstraws = 96; // number of straws per panel
       constexpr static uint16_t _nlayers = 2; // number of layers per panel ; do we need it, see below
       constexpr static uint16_t _npanels = 6; // number of panels per plane
+      constexpr static uint16_t _nfaces = 2; // number of faces in a plane 
       constexpr static uint16_t _nplanes = 40; // number of planes (36 or 40 for cd3)
       constexpr static uint16_t _nupanels = _npanels * _nplanes; // number of unique panels
 
@@ -106,6 +109,14 @@ namespace mu2e {
 
       uint16_t plane() const{
 	return (_sid & _planemsk) >> _planesft;
+      }
+
+      uint16_t face() const {
+	return (_sid & _facemsk) >> _facesft;
+      }
+
+      uint16_t uniqueFace() const {
+	return plane()*_nfaces + face();
       }
 
       uint16_t panel() const{

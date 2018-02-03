@@ -118,32 +118,43 @@ void ComboHitTest(TTree* CHD, const char* page="count"){
     swpulls->Draw("samehs");
 
   } else if(spage == "res") {
-    TH1F* rresc = new TH1F("rresc","Radial Resolution:R_{reco}-R_{MC} (mm)",100,-100.0,100.0);
-    TH1F* fresc = new TH1F("fresc","#phi Resolution:#phi_{reco}-#phi_{MC} (mm)",100,-0.5,0.5);
-    TH1F* rresb = new TH1F("rresb","Radial Resolution:R_{reco}-R_{MC} (mm)",100,-100.0,100.0);
-    TH1F* fresb = new TH1F("fresb","#phi Resolution:#phi_{reco}-#phi_{MC} (mm)",100,-0.5,0.5);
+    TH1F* rresc = new TH1F("rresc","Radial Resolution;R_{reco}-R_{MC} (mm)",100,-100.0,100.0);
+    TH1F* fresc = new TH1F("fresc","#phi Resolution;R_{MC}#times(#phi_{reco}-#phi_{MC}) (mm)",100,-300.0,300.0);
+    TH1F* rresb = new TH1F("rresb","Radial Resolution;R_{reco}-R_{MC} (mm)",100,-100.0,100.0);
+    TH1F* fresb = new TH1F("fresb","#phi Resolution;R_{MC}#times(#phi_{reco}-#phi_{MC}) (mm)",100,-300.0,300.0);
     rresc->SetLineColor(kRed);
     rresb->SetLineColor(kBlue);
     fresc->SetLineColor(kRed);
     fresb->SetLineColor(kBlue);
-    CHD->Project("rresc","sqrt(pos.fCoordinates.fY^2+pos.fCoordinates.fX^2)-sqrt(mcpos.fCoordinates.fY^2+mcpos.fCoordinates.fX^2)",multi+Ce);
-    CHD->Project("fresc","atan2(pos.fCoordinates.fY,pos.fCoordinates.fX)-atan2(mcpos.fCoordinates.fY,mcpos.fCoordinates.fX)",multi+Ce);
-    CHD->Project("rresb","sqrt(pos.fCoordinates.fY^2+pos.fCoordinates.fX^2)-sqrt(mcpos.fCoordinates.fY^2+mcpos.fCoordinates.fX^2)",multi+Bkg);
-    CHD->Project("fresb","atan2(pos.fCoordinates.fY,pos.fCoordinates.fX)-atan2(mcpos.fCoordinates.fY,mcpos.fCoordinates.fX)",multi+Bkg);
+    CHD->Project("rresc","sqrt(pos.fCoordinates.fY^2+pos.fCoordinates.fX^2)-sqrt(mcpos.fCoordinates.fY^2+mcpos.fCoordinates.fX^2)",Ce);
+    CHD->Project("fresc","sqrt(mcpos.fCoordinates.fY^2+mcpos.fCoordinates.fX^2)*(atan2(pos.fCoordinates.fY,pos.fCoordinates.fX)-atan2(mcpos.fCoordinates.fY,mcpos.fCoordinates.fX))",Ce);
+    CHD->Project("rresb","sqrt(pos.fCoordinates.fY^2+pos.fCoordinates.fX^2)-sqrt(mcpos.fCoordinates.fY^2+mcpos.fCoordinates.fX^2)",Bkg);
+    CHD->Project("fresb","sqrt(mcpos.fCoordinates.fY^2+mcpos.fCoordinates.fX^2)*(atan2(pos.fCoordinates.fY,pos.fCoordinates.fX)-atan2(mcpos.fCoordinates.fY,mcpos.fCoordinates.fX))",Bkg);
     rresc->Scale(rresb->GetEntries()/rresc->GetEntries());
     fresc->Scale(fresb->GetEntries()/fresc->GetEntries());
+    TLegend* resleg = new TLegend(0.1,0.6,0.4,0.9);
+    resleg->AddEntry(rresb,"Background","L");
+    resleg->AddEntry(rresc,"Ce (scaled)","L");
     TCanvas* rescan = new TCanvas("rescan","rescan",800,600);
     rescan->Divide(2,1);
     rescan->cd(1);
-    rresb->Draw();
-    rresc->Draw("samehs");
+    rresc->Draw("h");
+    rresb->Draw("samesh");
+    gPad->Update();
+    TPaveStats *st = (TPaveStats*)rresc->FindObject("stats");
+    Coord_t dx = st->GetX2NDC()-st->GetX1NDC();
+    st->SetX2NDC(st->GetX1NDC());
+    st->SetX1NDC(st->GetX1NDC()-dx);
+    st->Draw();
+    resleg->Draw();
     rescan->cd(2);
-    fresb->Draw();
-    fresc->Draw("samehs");
+    fresc->Draw("h");
+    fresb->Draw("samesh");
+    gPad->Update();
+    st = (TPaveStats*)fresc->FindObject("stats");
+    dx = st->GetX2NDC()-st->GetX1NDC();
+    st->SetX2NDC(st->GetX1NDC());
+    st->SetX1NDC(st->GetX1NDC()-dx);
+    st->Draw();
   }
-
-
-
-
-
 }
