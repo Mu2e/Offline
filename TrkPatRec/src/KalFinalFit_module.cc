@@ -103,9 +103,9 @@ namespace mu2e
     _saveall(pset.get<bool>("saveall",false)),
     _addhits(pset.get<bool>("addhits",true)),
     _zsave(pset.get<vector<double> >("ZSavePositions",vector<double>{-1522.0,0.0,1522.0})), // front, middle and back of the tracker
-    _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makeSH")),
-    _shfTag(pset.get<art::InputTag>("StrawHitFlagCollectionTag","FlagBkgHits")),
-    _ksTag(pset.get<art::InputTag>("SeedCollectionTag","KalSeedFit")),
+    _shTag(pset.get<art::InputTag>("StrawHitCollection","makeSH")),
+    _shfTag(pset.get<art::InputTag>("StrawHitFlagCollection","FlagBkgHits")),
+    _ksTag(pset.get<art::InputTag>("SeedCollection","KalSeedFit")),
     _addsel(pset.get<vector<string> >("AddHitSelectionBits",vector<string>{} )),
     _addbkg(pset.get<vector<string> >("AddHitBackgroundBits",vector<string>{})),
     _goodseed(pset.get<vector<string> >("GoodKalSeedFitBits",vector<string>{})),

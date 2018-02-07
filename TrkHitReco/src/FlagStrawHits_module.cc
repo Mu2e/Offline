@@ -85,9 +85,9 @@ namespace mu2e {
   FlagStrawHits::FlagStrawHits(fhicl::ParameterSet const& pset) :
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
-    _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
-    _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
-    _ccTag(pset.get<string>("CaloClusterTag","CaloClusterFromProtoCluster")),
+    _shTag(pset.get<string>("StrawHitCollection","makeSH")),
+    _shpTag(pset.get<string>("StrawHitPositionCollection","MakeStereoHits")),
+    _ccTag(pset.get<string>("CaloCluster","CaloClusterFromProtoCluster")),
     _usecc(pset.get<bool>("UseCaloCluster",false)),
     _useccxy(pset.get<bool>("UseCaloClusterXYPosition",false)),
     _ccmine(pset.get<float>("CaloClusterMinE",50.0)), // minimum energy required to a calorimeter cluster

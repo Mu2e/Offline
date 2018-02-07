@@ -45,7 +45,6 @@
 #include <utility>
 using namespace std; 
 using namespace boost::accumulators;
-using CLHEP::Hep3Vector;
 
 namespace {
 
@@ -88,7 +87,7 @@ namespace mu2e {
       int               _debug;
       int               _printfreq;
       ClusterAlgorithm  _algo;
-      Mode		  _mode;
+      bool		_testflag;
       art::InputTag     _chTag;
       art::InputTag     _shfTag;
       art::InputTag     _ccTag;
@@ -133,7 +132,7 @@ namespace mu2e {
     _debug             (pset.get<int>("debugLevel",0)),
     _printfreq         (pset.get<int>("printFrequency",101)),
     _algo	       (static_cast<ClusterAlgorithm>(pset.get<int>("ClusterAlgorithm",peak))),
-    _mode	       (static_cast<Mode>(pset.get<int>("Mode",flag))),
+    _testflag(pset.get<bool>("TestFlag",false)),
     _chTag	       (pset.get<art::InputTag>("ComboHitCollection","makeSH")),
     _shfTag	       (pset.get<art::InputTag>("StrawHitFlagCollection","FlagBkgHits")),
     _ccTag             (pset.get<art::InputTag>("caloClusterModuleLabel","CaloClusterFast")),
@@ -162,7 +161,6 @@ namespace mu2e {
       _deltaNbins = int(_maxdt/_tbin)-1;
 
       produces<TimeClusterCollection>();
-      if(_mode == flag)produces<StrawHitFlagCollection>();
 
     }
 
@@ -192,24 +190,13 @@ namespace mu2e {
       _cccol = _ccH.product();
     }
 
-    if(_mode == flag){
+    if(_testflag){
       auto shfH = event.getValidHandle<StrawHitFlagCollection>(_shfTag);
       _shfcol = shfH.product();
     }
 
     std::unique_ptr<TimeClusterCollection> tccol(new TimeClusterCollection);
     findClusters(*tccol);
-    event.put(std::move(tccol));
-
-    if(_mode == flag){
-      std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(*_shfcol));
-      for(auto const& tc : *tccol) {
-	for (auto shi : tc._strawHitIdxs ) {
-	  (*shfcol)[shi].merge(StrawHitFlag::tclust);
-	}
-      }
-      event.put(std::move(shfcol));
-    }
 
     if (_debug > 0) std::cout << "Found " << tccol->size() << " Time Clusters " << std::endl;
 
@@ -224,6 +211,7 @@ namespace mu2e {
 	}
       }
     }
+    event.put(std::move(tccol));
   }
 
 
@@ -247,7 +235,7 @@ namespace mu2e {
 
       for(size_t istr=0; istr<_chcol->size(); ++istr)
       {
-	if (_mode==flag && goodHit((*_shfcol)[istr]))
+	if ((!_testflag) || goodHit((*_shfcol)[istr]))
 	{
 	  float time = _ttcalc.comboHitTime((*_chcol)[istr]);
 	  if (fabs(time-tctime) < _maxdt)tc._strawHitIdxs.push_back(StrawHitIndex(istr));	  
@@ -295,7 +283,7 @@ namespace mu2e {
   void TimeClusterFinder::fillTimeSpectrum() {
     _timespec.Reset();
     for (unsigned istr=0; istr<_chcol->size();++istr) {
-      if (_mode == flag && !goodHit((*_shfcol)[istr])) continue;
+      if (_testflag && !goodHit((*_shfcol)[istr])) continue;
       ComboHit const& ch = (*_chcol)[istr];
       float time = _ttcalc.comboHitTime((*_chcol)[istr]);
       _timespec.Fill(time,ch.nStrawHits());
@@ -354,7 +342,7 @@ namespace mu2e {
     unsigned nstrs = tc._strawHitIdxs.size();
     for(auto ish :tc._strawHitIdxs)
     { 
-      if (_mode == flag && !goodHit((*_shfcol)[ish])) continue;
+      if (_testflag && !goodHit((*_shfcol)[ish])) continue;
       ComboHit const& ch = (*_chcol)[ish];
       const XYZVec& pos = ch.pos();
       float htime = _ttcalc.comboHitTime(ch);
@@ -370,17 +358,17 @@ namespace mu2e {
 
     if (tc._caloCluster.isNonnull())
     {
-      double ctime = _ttcalc.caloClusterTime(*tc._caloCluster);
-      double wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tc._caloCluster->diskId()),2);
+      float ctime = _ttcalc.caloClusterTime(*tc._caloCluster);
+      float wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tc._caloCluster->diskId()),2);
       tacc(ctime,weight=wt);
     }
 
-    static double invsqrt12(1.0/sqrt(12.0));
+    static float invsqrt12(1.0/sqrt(12.0));
     tc._t0._t0 = extract_result<tag::weighted_median>(tacc);
     tc._t0._t0err = ( boost::accumulators::extract::max(tmax)-boost::accumulators::extract::min(tmin))*invsqrt12/sqrt(nstrs);
-    tc._pos = Hep3Vector(extract_result<tag::weighted_median>(xacc),
-	extract_result<tag::weighted_median>(xacc),
-	extract_result<tag::weighted_median>(xacc));
+    tc._pos = XYZVec(extract_result<tag::weighted_median>(xacc),
+	extract_result<tag::weighted_median>(yacc),
+	extract_result<tag::weighted_median>(zacc));
 
     if (_debug > 0) std::cout<<"Init time peak "<<tc._t0._t0<<std::endl;    
   }
@@ -404,7 +392,7 @@ namespace mu2e {
 	{
 	  unsigned ish = tc._strawHitIdxs[ips];
 	  ComboHit const& ch = (*_chcol)[ish];
-	  double phi   = ch.phi();  // should be float FIXME!
+	  float phi   = ch.phi();  // should be float FIXME!
 	  float dphi  = Angles::deltaPhi(phi,pphi);
 	  float adphi = std::abs(dphi);
 	  sumphi += phi;
@@ -431,7 +419,7 @@ namespace mu2e {
 	float dt = _ttcalc.comboHitTime(ch) - ptime;
 
 	float rho = sqrtf(ch.pos().Perp2());
-	double phi = ch.phi(); 
+	float phi = ch.phi(); 
 	float dphi = Angles::deltaPhi(phi,pphi);
 
 	_pmva._dt = dt;
@@ -505,9 +493,9 @@ namespace mu2e {
     tc._t0._t0 = extract_result<tag::weighted_mean>(terr);
     tc._t0._t0err = sqrtf(std::max(float(0.0),extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
     pphi = extract_result<tag::mean>(facc);
-    double prho = extract_result<tag::mean>(racc);
-    double zpos = extract_result<tag::mean>(zacc);
-    tc._pos = Hep3Vector(prho*cos(pphi),prho*sin(pphi),zpos);
+    float prho = extract_result<tag::mean>(racc);
+    float zpos = extract_result<tag::mean>(zacc);
+    tc._pos = XYZVec(prho*cos(pphi),prho*sin(pphi),zpos);
 
     //if (_debug > 0) std::cout<<"final time "<<tc._t0._t0<<std::endl;    
   }
@@ -518,7 +506,7 @@ namespace mu2e {
     for (auto icc = _cccol->begin();icc != _cccol->end(); ++icc)
     {
       if (icc->energyDep() > _ccmine) continue;
-      double time = _ttcalc.caloClusterTime(*icc);
+      float time = _ttcalc.caloClusterTime(*icc);
       if (fabs(tc._t0._t0-time) > _maxdt) continue;
       if (bestcc == _cccol->end() || icc->energyDep() > bestcc->energyDep()) bestcc = icc;
     }

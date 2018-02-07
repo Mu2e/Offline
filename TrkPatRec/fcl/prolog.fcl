@@ -24,7 +24,7 @@ TimeClusterFinder : {
 
 RobustHelixFinder : {
    module_type		: RobustHelixFinder
-   HitSelectionBits	    : ["Stereo","TimeDivision"]
+   HitSelectionBits	    : ["TimeDivision"]
    HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
    HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
    trigMode : true
@@ -104,124 +104,124 @@ KalFinalFit : {
 # seed Fit configuration for specific particles
 #  First, downstream electrons
 KSFDeM			      : @local::KalSeedFit
-KSFDeM.SeedCollectionTag      : "HelixFinder:Positive"
+KSFDeM.SeedCollection      : "HelixFinder:Positive"
 KSFDeM.fitparticle	      : @local::Particle.eminus
 KSFDeM.fitdirection	      : @local::FitDir.downstream 
 # upstream electrons
 KSFUeM			      : @local::KalSeedFit
-KSFUeM.SeedCollectionTag      : "HelixFinder:Negative"
+KSFUeM.SeedCollection      : "HelixFinder:Negative"
 KSFUeM.fitparticle	      : @local::Particle.eminus
 KSFUeM.fitdirection	      : @local::FitDir.upstream 
 #  downstream positrons
 KSFDeP			      : @local::KalSeedFit
-KSFDeP.SeedCollectionTag      : "HelixFinder:Negative"
+KSFDeP.SeedCollection      : "HelixFinder:Negative"
 KSFDeP.fitparticle	      : @local::Particle.eplus
 KSFDeP.fitdirection	      : @local::FitDir.downstream 
 # upstream positrons
 KSFUeP			      : @local::KalSeedFit
-KSFUeP.SeedCollectionTag      : "HelixFinder:Positive"
+KSFUeP.SeedCollection      : "HelixFinder:Positive"
 KSFUeP.fitparticle	      : @local::Particle.eplus
 KSFUeP.fitdirection	      : @local::FitDir.upstream 
 # downstream mu minus
 KSFDmuM			      : @local::KalSeedFit
-KSFDmuM.SeedCollectionTag     : "HelixFinder:Positive"
+KSFDmuM.SeedCollection     : "HelixFinder:Positive"
 KSFDmuM.fitparticle	      : @local::Particle.muminus
 KSFDmuM.fitdirection	      : @local::FitDir.downstream 
 # upstream mu minus
 KSFUmuM			      : @local::KalSeedFit
-KSFUmuM.SeedCollectionTag     : "HelixFinder:Negative"
+KSFUmuM.SeedCollection     : "HelixFinder:Negative"
 KSFUmuM.fitparticle	      : @local::Particle.muminus
 KSFUmuM.fitdirection	      : @local::FitDir.upstream 
 # downstream mu plus
 KSFDmuP			      : @local::KalSeedFit
-KSFDmuP.SeedCollectionTag     : "HelixFinder:Negative"
+KSFDmuP.SeedCollection     : "HelixFinder:Negative"
 KSFDmuP.fitparticle	      : @local::Particle.muplus
 KSFDmuP.fitdirection	      : @local::FitDir.downstream 
 # upstream mu plus
 KSFUmuP			      : @local::KalSeedFit
-KSFUmuP.SeedCollectionTag     : "HelixFinder:Positive"
+KSFUmuP.SeedCollection     : "HelixFinder:Positive"
 KSFUmuP.fitparticle	      : @local::Particle.muplus
 KSFUmuP.fitdirection	      : @local::FitDir.upstream 
 # downstream pi minus
 KSFDpiM			      : @local::KalSeedFit
-KSFDpiM.SeedCollectionTag     : "HelixFinder:Positive"
+KSFDpiM.SeedCollection     : "HelixFinder:Positive"
 KSFDpiM.fitparticle	      : @local::Particle.piminus
 KSFDpiM.fitdirection	      : @local::FitDir.downstream 
 # upstream pi minus
 KSFUpiM			      : @local::KalSeedFit
-KSFUpiM.SeedCollectionTag     : "HelixFinder:Negative"
+KSFUpiM.SeedCollection     : "HelixFinder:Negative"
 KSFUpiM.fitparticle	      : @local::Particle.piminus
 KSFUpiM.fitdirection	      : @local::FitDir.upstream 
 # downstream pi plus
 KSFDpiP			      : @local::KalSeedFit
-KSFDpiP.SeedCollectionTag     : "HelixFinder:Negative"
+KSFDpiP.SeedCollection     : "HelixFinder:Negative"
 KSFDpiP.fitparticle	      : @local::Particle.piplus
 KSFDpiP.fitdirection	      : @local::FitDir.downstream 
 # upstream pi plus
 KSFUpiP			      : @local::KalSeedFit
-KSFUpiP.SeedCollectionTag     : "HelixFinder:Positive"
+KSFUpiP.SeedCollection     : "HelixFinder:Positive"
 KSFUpiP.fitparticle	      : @local::Particle.piplus
 KSFUpiP.fitdirection	      : @local::FitDir.upstream
 
 # Final Fit configuration for specific particles
 #  First, downstream electrons
 KFFDeM			      : @local::KalFinalFit
-KFFDeM.SeedCollectionTag      : "KSFDeM"
+KFFDeM.SeedCollection      : "KSFDeM"
 KFFDeM.fitparticle	      : @local::Particle.eminus
 KFFDeM.fitdirection	      : @local::FitDir.downstream 
 # upstream electrons
 KFFUeM			      : @local::KalFinalFit
-KFFUeM.SeedCollectionTag      : "KSFUeM"
+KFFUeM.SeedCollection      : "KSFUeM"
 KFFUeM.fitparticle	      : @local::Particle.eminus
 KFFUeM.fitdirection	      : @local::FitDir.upstream 
 #  downstream positrons
 KFFDeP			      : @local::KalFinalFit
-KFFDeP.SeedCollectionTag      : "KSFDeP"
+KFFDeP.SeedCollection      : "KSFDeP"
 KFFDeP.fitparticle	      : @local::Particle.eplus
 KFFDeP.fitdirection	      : @local::FitDir.downstream 
 # upstream positrons
 KFFUeP			      : @local::KalFinalFit
-KFFUeP.SeedCollectionTag      : "KSFUeP"
+KFFUeP.SeedCollection      : "KSFUeP"
 KFFUeP.fitparticle	      : @local::Particle.eplus
 KFFUeP.fitdirection	      : @local::FitDir.upstream 
 # downstream mu minus
 KFFDmuM			      : @local::KalFinalFit
-KFFDmuM.SeedCollectionTag     : "KSFDmuM"
+KFFDmuM.SeedCollection     : "KSFDmuM"
 KFFDmuM.fitparticle	      : @local::Particle.muminus
 KFFDmuM.fitdirection	      : @local::FitDir.downstream 
 # upstream mu minus
 KFFUmuM			      : @local::KalFinalFit
-KFFUmuM.SeedCollectionTag     : "KSFUmuM"
+KFFUmuM.SeedCollection     : "KSFUmuM"
 KFFUmuM.fitparticle	      : @local::Particle.muminus
 KFFUmuM.fitdirection	      : @local::FitDir.upstream 
 # downstream mu plus
 KFFDmuP			      : @local::KalFinalFit
-KFFDmuP.SeedCollectionTag     : "KSFDmuP"
+KFFDmuP.SeedCollection     : "KSFDmuP"
 KFFDmuP.fitparticle	      : @local::Particle.muplus
 KFFDmuP.fitdirection	      : @local::FitDir.downstream 
 # upstream mu plus
 KFFUmuP			      : @local::KalFinalFit
-KFFUmuP.SeedCollectionTag     : "KSFUmuP"
+KFFUmuP.SeedCollection     : "KSFUmuP"
 KFFUmuP.fitparticle	      : @local::Particle.muplus
 KFFUmuP.fitdirection	      : @local::FitDir.upstream 
 # downstream pi minus
 KFFDpiM			      : @local::KalFinalFit
-KFFDpiM.SeedCollectionTag     : "KSFDpiM"
+KFFDpiM.SeedCollection     : "KSFDpiM"
 KFFDpiM.fitparticle	      : @local::Particle.piminus
 KFFDpiM.fitdirection	      : @local::FitDir.downstream 
 # upstream pi minus
 KFFUpiM			      : @local::KalFinalFit
-KFFUpiM.SeedCollectionTag     : "KSFUpiM"
+KFFUpiM.SeedCollection     : "KSFUpiM"
 KFFUpiM.fitparticle	      : @local::Particle.piminus
 KFFUpiM.fitdirection	      : @local::FitDir.upstream 
 # downstream pi plus
 KFFDpiP			      : @local::KalFinalFit
-KFFDpiP.SeedCollectionTag     : "KSFDpiP"
+KFFDpiP.SeedCollection     : "KSFDpiP"
 KFFDpiP.fitparticle	      : @local::Particle.piplus
 KFFDpiP.fitdirection	      : @local::FitDir.downstream 
 # upstream pi plus
 KFFUpiP			      : @local::KalFinalFit
-KFFUpiP.SeedCollectionTag     : "KSFUpiP"
+KFFUpiP.SeedCollection     : "KSFUpiP"
 KFFUpiP.fitparticle	      : @local::Particle.piplus
 KFFUpiP.fitdirection	      : @local::FitDir.upstream
 

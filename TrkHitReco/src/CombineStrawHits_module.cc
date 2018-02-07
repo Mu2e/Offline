@@ -67,7 +67,7 @@ namespace mu2e {
     _shmask(pset.get<vector<string> >("StrawHitMaskBits",vector<string>{} )),
     _maxdt(pset.get<float>("MaxDt",40.0)), // nsec
     _maxwdchi(pset.get<float>("MaxWireDistDiffPull",4.0)), //units of resolution sigma
-    _terr(pset.get<float>("TransError",45.0)), //mm
+    _terr(pset.get<float>("TransError",16.0)), //mm
     _maxds(pset.get<int>("MaxDS",3)) // how far away 2 straws can be, in 0-95 numbering (including layers!!)
   {
     float werr = pset.get<float>("WireError",10.0); // mm
@@ -141,7 +141,7 @@ namespace mu2e {
 	  } // 2nd panel hit
 	  // compute floating point info for this combo hit and save it
 	  if(combohit.nCombo() > 1)combineHits(combohit);
-	  chcol->push_back(combohit);
+	  chcol->push_back(std::move(combohit));
 	} // 1st hit not used
       } // 1st panel hit
     } // panels
@@ -189,7 +189,7 @@ namespace mu2e {
     midpos /= combohit._nsh;
     combohit._pos = midpos + combohit._wdist*combohit._wdir;
     combohit._wres = sqrt(1.0/extract_result<tag::sum_of_weights>(wacc) + _werr2);
-    combohit._tres = _terr*combohit._nsh; // error proportional to # of straws (roughly)
+    combohit._tres = _terr/sqrt(combohit._nsh); // error proportional to # of straws (roughly)
     // for now, define the quality as the ratio of the variance to the average
     float wvar = sqrtf(std::max(extract_result<tag::variance>(wacc),float(0.0)));
     combohit._qual = wvar/extract_result<tag::mean>(werracc);

@@ -226,7 +226,7 @@ namespace mu2e {
 	}
       }
       finalize(combohit);
-      chcol->push_back(combohit);
+      chcol->push_back(std::move(combohit));
     }
     event.put(std::move(chcol));
   } 

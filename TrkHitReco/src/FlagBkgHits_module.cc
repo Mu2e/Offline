@@ -15,6 +15,8 @@
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
+#include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/BkgCluster.hh"
 #include "RecoDataProducts/inc/BkgQual.hh"
@@ -71,18 +73,20 @@ namespace mu2e
       int _debug;
       int _printfreq;
       art::InputTag _chtag;
-      bool          _flagall;
+      art::InputTag _shtag;
+      bool          _flagch, _flagsh;
       unsigned _minnhits;
       unsigned _minnstereo;
       unsigned _minnp;
       unsigned _maxisolated;
       bool _savebkg;
+      StrawHitFlag _bkgmsk;
       const ComboHitCollection* _chcol;
       BkgClusterer* _clusterer;
       float        _cperr2;
       bool          _useMVA;
       float        _bkgMVAcut;
-      bool	    _filter;
+      bool	    _deepcopy;
       MVATools      _bkgMVA;
 
       // use TMVA Reader until problems with MVATools is resolved
@@ -99,21 +103,24 @@ namespace mu2e
     _debug(pset.get<int>(           "debugLevel",0)),
     _printfreq(pset.get<int>(       "printFrequency",101)),
     _chtag(pset.get<art::InputTag>("ComboHitCollection","MakeStereoHits")),
-    _flagall(pset.get<bool>(        "FlagAllHits",true)), 
+    _shtag(pset.get<art::InputTag>("StrawHitCollection","makeSH")),
+    _flagch(pset.get<bool>(        "FlagComboHits",true)), 
+    _flagsh(pset.get<bool>(        "FlagStrawHits",false)), 
     _minnhits(pset.get<unsigned>(   "MinActiveHits",5)),
     _minnstereo(pset.get<unsigned>( "MinStereoHits",2)),
     _minnp(pset.get<unsigned>(      "MinNPlanes",4)),
     _maxisolated(pset.get<unsigned>("MaxIsolated",0)),
     _savebkg(pset.get<bool>("SaveBkgClusters",false)),
+    _bkgmsk(pset.get<std::vector<std::string> >("BackgroundMask",std::vector<std::string>{"Background","Isolated"})),
     _useMVA(pset.get<bool>(         "UseBkgMVA",true)),
     _bkgMVAcut(pset.get<float>(    "BkgMVACut",0.8)),
-    _filter(pset.get<bool>(  "FilterOutput",true)),
+    _deepcopy(pset.get<bool>(  "FilterOutput",true)),
     _bkgMVA(pset.get<fhicl::ParameterSet>("BkgMVA",fhicl::ParameterSet()))
   {
-    if(_filter)
+    if(_flagch)produces<StrawHitFlagCollection>("ComboHit");
+    if(_flagsh)produces<StrawHitFlagCollection>("StrawHit");
+    if(_deepcopy)
       produces<ComboHitCollection>();
-    else
-      produces<StrawHitFlagCollection>();
     if(_savebkg) {
       produces<BkgClusterCollection>();
       produces<BkgQualCollection>();
@@ -159,69 +166,82 @@ namespace mu2e
     if(_useMVA) _bkgMVA.initMVA();
   }
 
-
   void FlagBkgHits::produce(art::Event& event )
   {
     unsigned iev=event.id().event();
     if(_debug > 0 && (iev%_printfreq)==0) std::cout<<"FlagBkgHits: event="<<iev<<std::endl;
-
-    art::Handle<ComboHitCollection> comboHitHandle;
-    event.getByLabel(_chtag,comboHitHandle);
-    _chcol = comboHitHandle.product();
+    auto chH = event.getValidHandle<ComboHitCollection>(_chtag);
+    _chcol = chH.product();
+    unsigned nch = _chcol->size(); 
 // the primary output is either a deep copy of selected inputs or a flag collection on those
-    std::unique_ptr<ComboHitCollection> chcol;    
-    std::unique_ptr<StrawHitFlagCollection> bkgfcol;
 // intermediate results: keep these on the heap unless requested for diagnostics later
     BkgClusterCollection bkgccol;
-    BkgQualCollection bkgqcol;
- 
-    if(_filter){
-      chcol = std::unique_ptr<ComboHitCollection>( new ComboHitCollection);
-      chcol->reserve(_chcol->size());
-      // same parent as the original collection
-      chcol->setParent(_chcol->parent());
-    } else {
-      bkgfcol = std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection(_chcol->size()));
-    }
     // guess on the size.
-    bkgccol.reserve(_chcol->size()/2);
+    bkgccol.reserve(nch/2);
+    BkgQualCollection bkgqcol;
+    ComboHitCollection chcol;
+    chcol.reserve(nch);
+    // same parent as the original collection
+    chcol.setParent(_chcol->parent());
+    StrawHitFlagCollection chfcol(nch);
     // find clusters
     _clusterer->findClusters(bkgccol,*_chcol);
     if(_savebkg)bkgqcol.reserve(bkgccol.size());
+    // evaluate results and put in the data products
     for (auto& cluster : bkgccol) {  
       BkgQual cqual;
       fillBkgQual(cluster,cqual);
-      if(_savebkg)bkgqcol.push_back(cqual);
-      if(cqual.MVAOutput() < _bkgMVAcut && cluster.hits().size() > _maxisolated ){
-	if(_filter){
-	  for (auto const& chit : cluster.hits())
-	    chcol->push_back((*_chcol)[chit.index()]);
-	}
-      } else {
-	StrawHitFlag flag;
-	if(cluster.hits().size() <= _maxisolated){
-	  cluster._flag.merge(BkgClusterFlag::iso);
-	  flag.merge(StrawHitFlag::isolated);      
-	}
-	if(cqual.MVAOutput() > _bkgMVAcut){
-	  cluster._flag.merge(BkgClusterFlag::bkg);
-	  flag.merge(StrawHitFlag::bkgclust);
-	}
-	if(!_filter){
-	  for (auto const& chit : cluster.hits())
-	    (*bkgfcol)[chit.index()] = flag;
-	}
+      StrawHitFlag flag(StrawHitFlag::bkgclust);
+      if(cluster.hits().size() <= _maxisolated){
+	flag.merge(StrawHitFlag::isolated);
+	if(_savebkg)cluster._flag.merge(BkgClusterFlag::iso);
       }
+      if(cqual.MVAOutput() > _bkgMVAcut){
+	flag.merge(StrawHitFlag::bkg);
+	if(_savebkg)cluster._flag.merge(BkgClusterFlag::bkg);
+      }
+      for (auto const& chit : cluster.hits())
+	chfcol[chit.index()] = flag;
+      if(_savebkg)bkgqcol.push_back(std::move(cqual));
     }
 
-    if(_filter)
-      event.put(std::move(chcol));
-    else
-      event.put(std::move(bkgfcol));
-
+    if(_deepcopy){
+      for(size_t ich=0;ich < nch; ++ich){
+	StrawHitFlag const& flag = chfcol[ich];
+	if(!flag.hasAnyProperty(_bkgmsk)) {
+	  chcol.push_back((*_chcol)[ich]);
+	  chcol.back()._flag.merge(flag);
+	}
+      }
+      event.put(std::move(std::unique_ptr<ComboHitCollection>(new ComboHitCollection(chcol))));
+    }
+    if(_flagch){
+    // copy in original combohit flags
+      for(size_t ich=0;ich < nch; ++ich)
+	chfcol[ich].merge((*_chcol)[ich].flag());
+      event.put(std::move(std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection(chfcol))),"ComboHit");
+    }
+    if(_flagsh){
+      auto shH = event.getValidHandle<StrawHitCollection>(_shtag);
+      const StrawHitCollection* shcol = shH.product();
+      unsigned nsh = shcol->size(); 
+      StrawHitFlagCollection shfcol(nsh); 
+    // copy combo-hit flag content down to straw hit level
+      std::vector<StrawHitIndex> shids;
+      for(size_t ich=0;ich < nch; ++ich){
+	StrawHitFlag flag = chfcol[ich];
+	// merge in original combohit flag
+	flag.merge((*_chcol)[ich].flag());
+	shids.clear();
+	_chcol->fillStrawHitIds(event,ich,shids);
+	for(auto shid : shids)
+	  shfcol[shid] = flag;
+      }
+      event.put(std::move(std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection(shfcol))),"StrawHit");
+    }
     if(_savebkg){
-      event.put(std::unique_ptr<BkgClusterCollection>(new BkgClusterCollection(bkgccol)));
-      event.put(std::unique_ptr<BkgQualCollection>(new BkgQualCollection(bkgqcol)));
+      event.put(std::move(std::unique_ptr<BkgClusterCollection>(new BkgClusterCollection(bkgccol))));
+      event.put(std::move(std::unique_ptr<BkgQualCollection>(new BkgQualCollection(bkgqcol))));
     }
   }
 

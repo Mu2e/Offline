@@ -229,16 +229,17 @@ namespace mu2e {
     for (size_t index=0;index< tccol.size();++index) {
       const auto& tclust = tccol[index];
       HelixSeed hseed;
+      hseed._hhits.setParent(chcol.parent());;
       hseed._t0 = tclust._t0;
       hseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
-// convert combo hits to helix hits
+// copy combo hits
       for (const auto& ind : tclust._strawHitIdxs) {
 	ComboHit const& ch = chcol[ind];
 	if(ch.flag().hasAnyProperty(_hsel) && !ch.flag().hasAnyProperty(_hbkg)) {
 	  ComboHit hhit(ch);
 	  hhit._flag.clear(StrawHitFlag::resolvedphi);
-	  hseed._hhits.push_back(std::move(hhit));        
-	}  
+	  hseed._hhits.push_back(hhit);        
+	}
       }
       // filter hits and test
       if (_prefilter) prefilterHits(hseed);
