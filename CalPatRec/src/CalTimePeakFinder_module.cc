@@ -148,18 +148,6 @@ namespace mu2e {
              _shpLabel.data());
     }
 
-    //    art::Handle<mu2e::StrawHitFlagCollection> shflagH;
-    // auto shflagH = evt.getValidHandle<mu2e::StrawHitFlagCollection>(_shfLabel);
-    // if (shflagH.product() != 0){
-    // //    if (evt.getByLabel(_shfLabel,shflagH)) {
-    //   _data.shfcol = shflagH.product();
-    // }
-    // else {
-    //   _data.shfcol = 0;
-    //   printf(" >>> ERROR in CalTimePeakFinder::findData: StrawHitFlagCollection with label=%s not found.\n",
-    //          _shfLabel.data());
-    // }
-
     if (evt.getByLabel(_ccmLabel, _ccH)) {
       _data.ccCollection = _ccH.product();
     }
@@ -313,11 +301,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
             if ((dt < _maxdt) && (dt >= _mindt) && (fabs(dphi) <= pi/2.) ) {
 
-	      //              if (hit_has_all_properties && !bgr_hit) {
 	      tpeak._index.push_back(istr);
 	      stime += time;
-		//              }
-	      //else if (_debugLevel > 0) {
 //-----------------------------------------------------------------------------
 // print diagnostics on rejected hits
 //-----------------------------------------------------------------------------
@@ -332,7 +317,7 @@ namespace mu2e {
           if (tpeak.NHits() >= _data.minNHits) {
 	    TimePeakColl->push_back(tpeak);
 
-					//fill seed information
+					// fill seed information
 	    TimeCluster    tmpseed;
 	    initTimeCluster(tmpseed, tpeak, ic);
 	    OutSeeds.push_back(tmpseed);
