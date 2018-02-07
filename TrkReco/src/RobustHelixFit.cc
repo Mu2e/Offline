@@ -237,7 +237,7 @@ namespace mu2e
 
 
 
-  bool RobustHelixFit::initFZ(HelixHitCollection& hhits,RobustHelix& rhel)
+  bool RobustHelixFit::initFZ(ComboHitCollection& hhits,RobustHelix& rhel)
   {      
       bool retval(false);
 
@@ -246,10 +246,10 @@ namespace mu2e
       static TrkFitFlag circleOK(TrkFitFlag::circleOK);
       static TrkFitFlag helixOK(TrkFitFlag::helixOK);
 
-      std::sort(hhits.begin(),hhits.end(),[](const HelixHit& p1, const HelixHit& p2){return p1._pos.z() < p2._pos.z();});    
+      std::sort(hhits.begin(),hhits.end(),[](const ComboHit& p1, const ComboHit& p2){return p1._pos.z() < p2._pos.z();});    
       for(auto& hhit : hhits)initPhi(hhit,rhel); 
 
-      std::vector<const HelixHit*> validHhits;
+      std::vector<const ComboHit*> validHhits;
       validHhits.reserve(hhits.size());
       for (const auto& hhit: hhits) 
          if (use(hhit) && ( (!_stereoinit) || stereo(hhit))) validHhits.push_back(&hhit);
@@ -318,7 +318,7 @@ namespace mu2e
 
   void RobustHelixFit::fitFZ(HelixSeed& hseed) 
   {
-      HelixHitCollection& hhits = hseed._hhits;
+      ComboHitCollection& hhits = hseed._hhits;
       RobustHelix& rhel         = hseed._helix;
 
       // if required, initialize
@@ -332,7 +332,7 @@ namespace mu2e
       }
 
 
-      std::vector<const HelixHit*> validHhits;
+      std::vector<const ComboHit*> validHhits;
       validHhits.reserve(hhits.size());
       for (const auto& hhit: hhits) if (use(hhit)) validHhits.push_back(&hhit);
       if (validHhits.empty()) return;
@@ -344,7 +344,7 @@ namespace mu2e
       while(changed && niter < _maxniter)
       {
           changed = false;
-          accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accf;
+          accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, uint16_t > accf;
 
           for (auto ihit=validHhits.begin(); ihit != std::prev(validHhits.end()); ++ihit) 
           {
@@ -356,7 +356,7 @@ namespace mu2e
 
                   float lambda = dz/dphi;
 	          if (goodLambda(rhel.helicity(),lambda)){
-		    float wt = hitWeight(**ihit)*hitWeight(**jhit);
+		    uint16_t wt = (*ihit)->nStrawHits()*(*jhit)->nStrawHits();
 		    accf(lambda, weight=wt);
 		  }
 	      }
@@ -364,12 +364,12 @@ namespace mu2e
           rhel._lambda = extract_result<tag::weighted_median>(accf);
 
           // now extract intercept.  Here we solve for the difference WRT the previous value
-          accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > acci;
+          accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, uint16_t > acci;
           for (const auto & hhit : validHhits)
           {
 	      float phiex = rhel.circleAzimuth(hhit->_pos.z());
 	      float dphi = deltaPhi(phiex,hhit->helixPhi());
-	      float wt = hitWeight(*hhit);
+	      uint16_t wt = hhit->nStrawHits();
 	      acci(dphi,weight = wt);// accumulate the difference WRT the current intercept
           }
           // enforce convention on azimuth phase
@@ -392,7 +392,7 @@ namespace mu2e
      const float mind2 = _mindist*_mindist;
      const float maxd2 = _maxdist*_maxdist;
       
-     HelixHitCollection& hhits = hseed._hhits;
+     ComboHitCollection& hhits = hseed._hhits;
      RobustHelix& rhel         = hseed._helix;
      accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accx, accy, accr;
      //float xcmean(0),ycmean(0),rcmean(0),sumWeights(0);
@@ -502,7 +502,7 @@ namespace mu2e
 
   void RobustHelixFit::findAGE(HelixSeed const& hseed, XYZVec const& center,float& rmed, float& age)
   {     
-      const HelixHitCollection& hhits = hseed._hhits;
+      const ComboHitCollection& hhits = hseed._hhits;
 
       // fill radial information for all points, given this center
       std::vector<WVal> radii;
@@ -551,7 +551,7 @@ namespace mu2e
 
   void RobustHelixFit::fillSums(HelixSeed const& hseed, XYZVec const& center,float rmed, AGESums& sums)
   {    
-     HelixHitCollection const& hhits = hseed._hhits;
+     ComboHitCollection const& hhits = hseed._hhits;
      sums.clear();
 
      float wtot(0.0);
@@ -601,31 +601,31 @@ namespace mu2e
      return dphi;
   }
 
-  bool RobustHelixFit::use(const HelixHit& hhit) const 
+  bool RobustHelixFit::use(const ComboHit& hhit) const 
   {
      return (!hhit._flag.hasAnyProperty(_dontuseflag))
       && (hhit._flag.hasAllProperties(_useflag) || _useflag.empty());
   }
 
-  bool RobustHelixFit::stereo(const HelixHit& hhit) const 
+  bool RobustHelixFit::stereo(const ComboHit& hhit) const 
   {
     static StrawHitFlag stereo(StrawHitFlag::stereo);
     return hhit._flag.hasAllProperties(stereo);
   }
 
-  void RobustHelixFit::setOutlier(HelixHit& hhit) const 
+  void RobustHelixFit::setOutlier(ComboHit& hhit) const 
   {
      static StrawHitFlag outlier(StrawHitFlag::outlier);
      hhit._flag.merge(outlier);
   }
 
-  void RobustHelixFit::initPhi(HelixHit& hhit, const RobustHelix& rhel) const 
+  void RobustHelixFit::initPhi(ComboHit& hhit, const RobustHelix& rhel) const 
   {
      // ray from the circle center to the point
      hhit._hphi = XYZVec(hhit._pos - rhel.center()).phi();
   }
 
-  bool RobustHelixFit::resolvePhi(HelixHit& hhit, const RobustHelix& rhel) const
+  bool RobustHelixFit::resolvePhi(ComboHit& hhit, const RobustHelix& rhel) const
   {
      // find phi expected
      float phiex = rhel.circleAzimuth(hhit._pos.z());
@@ -652,11 +652,12 @@ namespace mu2e
      return goodCircle(rhel) && goodFZ(rhel);
   }
 
-  float RobustHelixFit::hitWeight(const HelixHit& hhit) const 
+  float RobustHelixFit::hitWeight(const ComboHit& hhit) const 
   {
-     float retval(1.0);
-     if (hhit.flag().hasAnyProperty(StrawHitFlag::stereo)) retval = _stwt;
-     if (_hqwt) retval*= std::max(float(0.0),(float)hhit._qual);
+     float retval(hhit.nStrawHits());
+     // add an option to evaluate the error relative to the current center FIXME
+//     if (hhit.flag().hasAnyProperty(StrawHitFlag::stereo)) retval = _stwt;
+//     if (_hqwt) retval*= std::max(float(0.0),(float)hhit._qual);
      return retval;
   }
 

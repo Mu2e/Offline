@@ -12,7 +12,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "DataProducts/inc/Helicity.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/HelixHit.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "TH1F.h"
@@ -58,7 +58,7 @@ namespace mu2e
       void fitHelix(HelixSeed& hseed);
       void fitCircleMedian(HelixSeed& hseed);
       void fitCircleAGE(HelixSeed& hseed);
-      bool initFZ(HelixHitCollection& hhits,RobustHelix& myhel);
+      bool initFZ(ComboHitCollection& hhits,RobustHelix& myhel);
       void findAGE(HelixSeed const& hseed, XYZVec const& center,float& rmed, float& age);
       void fillSums(HelixSeed const& hseed, XYZVec const& center,float rmed,AGESums& sums);
 
@@ -67,14 +67,14 @@ namespace mu2e
 
       void forceTargetInter(XYZVec& center, float& radius);
 
-      bool use(HelixHit const&) const;
-      bool stereo(HelixHit const&) const;
-      void setOutlier(HelixHit&) const;
+      bool use(ComboHit const&) const;
+      bool stereo(ComboHit const&) const;
+      void setOutlier(ComboHit&) const;
 
       static float deltaPhi(float phi1, float phi2);
-      void initPhi(HelixHit& hh, RobustHelix const& myhel) const;
-      bool resolvePhi(HelixHit& hh, RobustHelix const& myhel) const;
-      float hitWeight(HelixHit const& hhit) const;
+      void initPhi(ComboHit& hh, RobustHelix const& myhel) const;
+      bool resolvePhi(ComboHit& hh, RobustHelix const& myhel) const;
+      float hitWeight(ComboHit const& hhit) const;
       bool goodLambda(Helicity const& h, float lambda) const;
 
       int _debug;
