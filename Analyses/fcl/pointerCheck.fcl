@@ -1,0 +1,39 @@
+#
+#  check that art::Ptr's are valid in certain products 
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : pointerCheck
+
+services : {
+   message : @local::mf_interactive
+}
+
+physics :{
+  analyzers: {
+
+    checkModule : {
+      module_type : PointerCheck
+
+	 skipDerference : false
+	 # 0 (quiet) or 1 (print every event)
+	 verbose : 1
+         # skip certain known problematic collections
+         # - these aren't implemeted yet
+         #skipSimParticle     : []
+         #skipSimParticlePtr  : []
+         #skipStepPointMC     : []
+         #skipMCTracjectory   : []
+         #skipStrawDigiMC     : []
+         #skipCaloDigiMC      : []
+         #skipCaloShowerStep  : []
+    }
+
+  }  # analyzers
+
+  ana       : [ checkModule ]
+  end_paths : [ ana ]
+
+}
+
