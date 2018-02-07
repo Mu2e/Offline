@@ -20,6 +20,8 @@
 #include "TH2F.h"
 #include "TVector2.h"
 // data
+#include "RecoDataProducts/inc/CaloDigi.hh"
+#include "RecoDataProducts/inc/CaloDigiCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawDigi.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -59,6 +61,8 @@ namespace mu2e {
     virtual void beginJob();
     virtual void produce( art::Event& e);
 
+    void   fake_access(const CaloDigi&    Digi);
+
     void   fake_access(const StrawHit& Hit, const StrawHitFlag& Flag, const StrawHitPosition& Pos);
     void   fake_access(const StereoHit&   Hit);
     void   fake_access(const StrawDigi&   Digi);
@@ -69,18 +73,23 @@ namespace mu2e {
     bool findData(const art::Event& e);
 					// control flags
     bool          _mcDiag;
+    int           _fetchCaloDigis;
     int           _fetchStrawHits;
     int           _fetchStrawHitFlags;
     int           _fetchStrawHitPositions;
     int           _fetchStereoHits;
     int           _fetchStrawDigis;
 					// data tags
+    art::InputTag _cdTag;
+
     art::InputTag _shTag;
     art::InputTag _sthTag;
     art::InputTag _shfTag;
     art::InputTag _shpTag;
     art::InputTag _sdTag;
 					// cache of event objects
+    const CaloDigiCollection*                   _cdcol;
+
     const StrawHitCollection*                   _shcol;
     const StereoHitCollection*                  _sthcol;
     const StrawHitFlagCollection*               _shfcol;
@@ -95,12 +104,14 @@ namespace mu2e {
     //    art::EDProducer(pset), 
     _mcDiag    (pset.get<bool>         ("mcDiag"                       )),
 
+    _fetchCaloDigis (pset.get<int>         ("fetchCaloDigis" )),
     _fetchStrawHits (pset.get<int>         ("fetchStrawHits" )),
     _fetchStrawHitFlags (pset.get<int>     ("fetchStrawHitFlags" )),
     _fetchStrawHitPositions (pset.get<int> ("fetchStrawHitPositions" )),
     _fetchStereoHits (pset.get<int>        ("fetchStereoHits" )),
     _fetchStrawDigis(pset.get<int>         ("fetchStrawDigis")),
 
+    _cdTag     (pset.get<string>       ("caloDigiCollectionTag"        )),
     _shTag     (pset.get<string>       ("strawHitCollectionTag"        )),
     _sthTag    (pset.get<string>       ("stereoHitCollectionTag"       )),
     _shfTag    (pset.get<string>       ("strawHitFlagCollectionTag"    )),
@@ -113,6 +124,10 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void PrefetchData::beginJob() {
+  }
+ 
+//-----------------------------------------------------------------------------
+  void PrefetchData::fake_access(const CaloDigi& Hit) {
   }
  
 //-----------------------------------------------------------------------------
@@ -135,11 +150,18 @@ namespace mu2e {
  
 //-----------------------------------------------------------------------------
   bool PrefetchData::findData(const art::Event& evt){
+    _cdcol   = 0;
+
     _shcol   = 0;
     _sthcol  = 0;
     _shfcol  = 0;
     _shpcol  = 0;
     _sdcol   = 0;
+
+    if (_fetchCaloDigis) {
+      auto cdH = evt.getValidHandle<CaloDigiCollection>(_cdTag);
+      _cdcol = cdH.product();
+    }
 
     if (_fetchStrawHits) {
       auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
@@ -173,6 +195,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // prefetch data
 //-----------------------------------------------------------------------------
+    if (_cdcol) {
+      int ncd = _cdcol->size();
+      for(int i=0;i<ncd;++i){
+	const CaloDigi& cd = _cdcol->at(i);
+	fake_access(cd);
+      }
+    }
+
     if (_sdcol) {
       int nsd = _sdcol->size();
       for(int i=0;i<nsd;++i){

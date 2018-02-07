@@ -481,12 +481,14 @@ CalPatRec : { @table::CalPatRec
 	PrefetchData : { module_type:PrefetchData
 	    mcDiag                        : true
 
+	    fetchCaloDigis                : 1
 	    fetchStrawDigis               : 1
 	    fetchStrawHits                : 1
 	    fetchStrawHitFlags            : 1
 	    fetchStrawHitPositions        : 1
 	    fetchStereoHits               : 0
 
+	    caloDigiCollectionTag         : CaloDigiFromShower
 	    strawDigiCollection           : makeSD
 	    strawHitCollectionTag         : makeSH
 	    strawHitPositionCollectionTag : makeSH
