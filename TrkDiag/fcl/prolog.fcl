@@ -83,7 +83,7 @@ BEGIN_PROLOG
 
   HelixDiag : {
 	module_type : HelixDiag
-	HelixSeedCollectionTag : "HelixFinder:Positive"
+	HelixSeedCollection : "HelixFinder:Positive"
 	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
   }
 

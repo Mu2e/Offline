@@ -68,7 +68,8 @@ namespace mu2e
       Float_t _dz; // z extent
       Int_t _nsh, _nch; // number of associated straw hits
       Int_t _strawid; // strawid info
-      // mc diag
+      Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
+    // mc diag
       XYZVec _mcpos; // average MC hit position
       Float_t _mctime, _mcdist;
       Int_t _mcpdg, _mcproc, _mcgen; 
@@ -86,7 +87,6 @@ namespace mu2e
     _chtag		(pset.get<art::InputTag>("ComboHitCollection","CombineStrawHits")),
     _mcdigistag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
-
   {}
 
   ComboHitDiag::~ComboHitDiag(){}
@@ -108,6 +108,17 @@ namespace mu2e
       _chdiag->Branch("dz",&_dz,"dz/F");
       _chdiag->Branch("nsh",&_nsh,"nsh/I");
       _chdiag->Branch("nch",&_nch,"nch/I");
+      _chdiag->Branch("esel",&_esel,"esel/I");
+      _chdiag->Branch("rsel",&_rsel,"rsel/I");
+      _chdiag->Branch("tsel",&_tsel,"tsel/I");
+      _chdiag->Branch("bkgclust",&_bkgclust,"bkgclust/I");
+      _chdiag->Branch("bkg",&_bkg,"bkg/I");
+      _chdiag->Branch("stereo",&_stereo,"stereo/I");
+      _chdiag->Branch("tdiv",&_tdiv,"tdiv/I");
+      _chdiag->Branch("strawxtalk",&_strawxtalk,"strawxtalk/I");
+      _chdiag->Branch("elecxtalk",&_elecxtalk,"elecxtalk/I");
+      _chdiag->Branch("isolated",&_isolated,"isolated/I");
+      _chdiag->Branch("calosel",&_calosel,"calosel/I");
       _chdiag->Branch("strawid",&_strawid,"strawid/I");
       if(_diag > 1)
 	_chdiag->Branch("chinfo",&_chinfo);
@@ -142,6 +153,18 @@ namespace mu2e
       _time = ch.time();
       _edep = ch.energyDep();
       _qual = ch.qual();
+      StrawHitFlag const& flag = ch.flag();
+      _stereo = flag.hasAllProperties(StrawHitFlag::stereo);
+      _tdiv = flag.hasAllProperties(StrawHitFlag::tdiv);
+      _esel = flag.hasAllProperties(StrawHitFlag::energysel);
+      _rsel = flag.hasAllProperties(StrawHitFlag::radsel);
+      _tsel = flag.hasAllProperties(StrawHitFlag::timesel);
+      _calosel = flag.hasAllProperties(StrawHitFlag::calosel);
+      _strawxtalk = flag.hasAllProperties(StrawHitFlag::strawxtalk);
+      _elecxtalk = flag.hasAllProperties(StrawHitFlag::elecxtalk);
+      _isolated = flag.hasAllProperties(StrawHitFlag::isolated);
+      _bkg = flag.hasAllProperties(StrawHitFlag::bkg);
+      _bkgclust = flag.hasAllProperties(StrawHitFlag::bkgclust);
       _dz = 0.0;
       // center of this wire
       XYZVec cpos = _pos - _wdist*_wdir;
@@ -177,6 +200,8 @@ namespace mu2e
 	// get the list of StrawHit indices associated with this ComboHit
 	std::vector<StrawHitIndex> shids;
 	_chcol->fillStrawHitIds(evt,ich,shids);
+	if(shids.size() != ch.nStrawHits())
+	  throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit" << std::endl;
 	// use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
 	StrawDigiMC const& mcd1 = _mcdigis->at(shids[0]);
 	art::Ptr<StepPointMC> const& spmcp = mcd1.stepPointMC(TrkTypes::cal);
@@ -186,6 +211,8 @@ namespace mu2e
 	_mcproc = spp->creationCode();
 	if(spp->genParticle().isNonnull())
 	  _mcgen = spp->genParticle()->generatorId().id();
+	else
+	  _mcgen = -1;
 	// find the relation with each hit
 	_mcpos = XYZVec(0.0,0.0,0.0);
 	for(auto shi : shids) {
@@ -196,7 +223,7 @@ namespace mu2e
 	  // find average MC properties
 	  _mcpos += XYZVec(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
 	}
-	_mcpos /= ch._nsh;
+	_mcpos /= shids.size();
 	_mcdist = (_mcpos - cpos).Dot(_wdir);
 
       }

@@ -65,37 +65,39 @@ void PlotHelices::plot(int nmax, int nps,const char* canname){
       if(iplot ==1){
 	if(xyplot != 0) leg->AddEntry(xyplot,xyplot->GetTitle(),"l");
       }
-    } 
-    div_t divide = div(iplot-1,nps);
-    if(divide.rem == 0){
-      if(canname != 0 && ican>=0){
-	char fname[100];
-	snprintf(fname,100,"%s.png",cans[ican]->GetTitle());
-	cans[ican]->SaveAs(fname);
+    }
+    if(xyplots.size() > 0){
+      div_t divide = div(iplot-1,nps);
+      if(divide.rem == 0){
+	if(canname != 0 && ican>=0){
+	  char fname[100];
+	  snprintf(fname,100,"%s.png",cans[ican]->GetTitle());
+	  cans[ican]->SaveAs(fname);
+	}
+	++ican;
+	char cname[50];
+	snprintf(cname,20,"%s_%i",canname,ican);
+	cans[ican] = new TCanvas(cname,cname,_csize*nps,_csize*ny);
+	cans[ican]->Clear();
+	cans[ican]->Divide(nps,ny);
       }
-      ++ican;
-      char cname[50];
-      snprintf(cname,20,"%s_%i",canname,ican);
-      cans[ican] = new TCanvas(cname,cname,_csize*nps,_csize*ny);
-      cans[ican]->Clear();
-      cans[ican]->Divide(nps,ny);
-    }
-    cans[ican]->cd(divide.rem+1);
-    for(size_t ixy = 0;ixy < xyplots.size(); ++ixy){
-      if(ixy == 0)
-	xyplots[ixy]->Draw();
-      else
-	xyplots[ixy]->Draw("same");
-    }
-    leg->Draw();
-
-    if(_drawfz){
-      cans[ican]->cd(divide.rem+nps+1);
-      for(size_t ifz = 0;ifz < fzplots.size(); ++ifz){
-	if(ifz == 1)
-	  fzplots[ifz]->Draw();
+      cans[ican]->cd(divide.rem+1);
+      for(size_t ixy = 0;ixy < xyplots.size(); ++ixy){
+	if(ixy == 0)
+	  xyplots[ixy]->Draw();
 	else
-	  fzplots[ifz]->Draw("same");
+	  xyplots[ixy]->Draw("same");
+      }
+      leg->Draw();
+
+      if(_drawfz && fzplots.size() > 0){
+	cans[ican]->cd(divide.rem+nps+1);
+	for(size_t ifz = 0;ifz < fzplots.size(); ++ifz){
+	  if(ifz == 1)
+	    fzplots[ifz]->Draw();
+	  else
+	    fzplots[ifz]->Draw("same");
+	}
       }
     }
   }
