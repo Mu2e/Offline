@@ -192,6 +192,7 @@ namespace mu2e {
          if (seed->val_ < 1) continue; 
 
          int cluEnergy(seed->val_);
+         unsigned ncry(1);
          double xc = cal->crystal(seed->crId_).localPositionFF().x();
          double yc = cal->crystal(seed->crId_).localPositionFF().y();
          seed->val_ = 0; 
@@ -202,18 +203,21 @@ namespace mu2e {
             {
                if (hit.crId_ != nid) continue;
                cluEnergy += hit.val_;
+               ++ncry;
                hit.val_=0;
             }
             for (auto& hit : hitList_[seed->index_-1])
             {
                if (hit.crId_ != nid) continue;
                cluEnergy += hit.val_;
+               ++ncry;
                hit.val_=0;
             }
             for (auto& hit : hitList_[seed->index_+1])
             {
                if (hit.crId_ != nid) continue;
                cluEnergy += hit.val_;
+               ++ncry;
                hit.val_=0;
             }
          } 
@@ -224,18 +228,21 @@ namespace mu2e {
             {
                if (hit.crId_ != nid) continue;
                cluEnergy += hit.val_;
+               ++ncry;
                hit.val_=0;
             }
             for (auto& hit : hitList_[seed->index_-1])
             {
                if (hit.crId_ != nid) continue;
                cluEnergy += hit.val_;
+               ++ncry;
                hit.val_=0;
             }
             for (auto& hit : hitList_[seed->index_+1])
             {
                if (hit.crId_ != nid) continue;
                cluEnergy += hit.val_;
+               ++ncry;
                hit.val_=0;
             }
          } 
@@ -246,7 +253,7 @@ namespace mu2e {
 	     double time  = (seed->index_+offsetT0_)*digiSampling_-timeCorrection_;
              int iSection = cal->crystal(seed->crId_).diskId(); 
 
-	     CaloCluster cluster(iSection,time,0.0,eDep,0.0,hits,0.0);
+	     CaloCluster cluster(iSection,time,0.0,eDep,0.0,hits,ncry,0.0);
 	     cluster.cog3Vector(CLHEP::Hep3Vector(xc,yc,0));
 
 	     recoClusters.emplace_back(std::move(cluster));
