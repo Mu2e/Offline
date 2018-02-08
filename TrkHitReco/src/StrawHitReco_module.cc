@@ -170,7 +170,7 @@ namespace mu2e {
 	shCol = std::unique_ptr<StrawHitCollection>(new StrawHitCollection);
 	shCol->reserve(strawdigis.size());
       }
-      std::unique_ptr<ComboHitCollection> chCol(new ComboHitCollection);
+      std::unique_ptr<ComboHitCollection> chCol(new ComboHitCollection());
       chCol->reserve(strawdigis.size());      
 
       std::vector<std::vector<size_t> > hits_by_panel(nplanes*npanels,std::vector<size_t>());    

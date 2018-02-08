@@ -117,8 +117,8 @@ namespace mu2e
     _deepcopy(pset.get<bool>(  "FilterOutput",true)),
     _bkgMVA(pset.get<fhicl::ParameterSet>("BkgMVA",fhicl::ParameterSet()))
   {
-    if(_flagch)produces<StrawHitFlagCollection>("ComboHit");
-    if(_flagsh)produces<StrawHitFlagCollection>("StrawHit");
+    if(_flagch)produces<StrawHitFlagCollection>("ComboHits");
+    if(_flagsh)produces<StrawHitFlagCollection>("StrawHits");
     if(_deepcopy)
       produces<ComboHitCollection>();
     if(_savebkg) {
@@ -215,29 +215,29 @@ namespace mu2e
       }
       event.put(std::move(std::unique_ptr<ComboHitCollection>(new ComboHitCollection(chcol))));
     }
-    if(_flagch){
-    // copy in original combohit flags
-      for(size_t ich=0;ich < nch; ++ich)
-	chfcol[ich].merge((*_chcol)[ich].flag());
-      event.put(std::move(std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection(chfcol))),"ComboHit");
-    }
     if(_flagsh){
       auto shH = event.getValidHandle<StrawHitCollection>(_shtag);
       const StrawHitCollection* shcol = shH.product();
       unsigned nsh = shcol->size(); 
       StrawHitFlagCollection shfcol(nsh); 
-    // copy combo-hit flag content down to straw hit level
+      // copy combo-hit flag content down to straw hit level
       std::vector<StrawHitIndex> shids;
       for(size_t ich=0;ich < nch; ++ich){
 	StrawHitFlag flag = chfcol[ich];
 	// merge in original combohit flag
 	flag.merge((*_chcol)[ich].flag());
 	shids.clear();
-	_chcol->fillStrawHitIds(event,ich,shids);
+	_chcol->fillStrawHitIndices(event,ich,shids);
 	for(auto shid : shids)
-	  shfcol[shid] = flag;
+	  shfcol.at(shid) = flag; // check range here for safety
       }
-      event.put(std::move(std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection(shfcol))),"StrawHit");
+      event.put(std::move(std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection(shfcol))),"StrawHits");
+    }
+    if(_flagch){
+      // copy in original combohit flags
+      for(size_t ich=0;ich < nch; ++ich)
+	chfcol[ich].merge((*_chcol)[ich].flag());
+      event.put(std::move(std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection(chfcol))),"ComboHits");
     }
     if(_savebkg){
       event.put(std::move(std::unique_ptr<BkgClusterCollection>(new BkgClusterCollection(bkgccol))));

@@ -265,7 +265,8 @@ Tracking : {
 # simulation sequence to create digis.  Currently just one module, but that might change
   DigiSim : [ makeSD ]
 # production sequence to prepare hits for tracking
-  PrepareHits : [ makeSH, MakeStereoHits, FlagBkgHits ]
+  #PrepareHits : [ makeSH, MakeStereoHits, FlagBkgHits ]
+  PrepareHits : [ makeSH, CombineStrawHits, FlagBkgHits ]
 # production sequence to find helices
   FindHelices : [ TimeClusterFinder, HelixFinder ]
 # define standard outputs 

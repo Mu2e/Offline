@@ -190,7 +190,7 @@ namespace mu2e
 	for(uint16_t ihit=0;ihit < hseed.hits().size(); ++ihit){
 	  ComboHit const& ch = hseed.hits()[ihit];
 	  if((!_fhoutliers) || (!ch.flag().hasAnyProperty(StrawHitFlag::outlier)))
-	    hseed.hits().fillStrawHitIds(event,ihit,tclust._strawHitIdxs);
+	    hseed.hits().fillStrawHitIndices(event,ihit,tclust._strawHitIdxs);
 	}
 // create a TrkDef; it should be possible to build a fit from the helix seed directly FIXME!
 	TrkDef seeddef(tclust,hstraj,_tpart,_fdir);

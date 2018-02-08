@@ -80,8 +80,6 @@ namespace mu2e {
 
   void CombineStrawHits::produce(art::Event& event) {
     // find event data
-//    auto chH = event.getValidHandle<ComboHitCollection>(_chTag);
-//    Can't use ValidHandles so do this manually: what a hack!!
     art::Handle<ComboHitCollection> chH;
     if(!event.getByLabel(_chTag, chH))
       throw cet::exception("RECO")<<"mu2e::CombineStrawHits: No ComboHit collection found for tag" <<  _chTag << endl;
