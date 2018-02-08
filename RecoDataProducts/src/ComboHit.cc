@@ -114,7 +114,7 @@ namespace mu2e {
 	const ComboHitCollection *pc = ph.product();
 	// recursive calls on the ComboHits in the parent collection referenced by the specified ComboHit
 	for(uint16_t iind = 0;iind < ch.nCombo(); ++iind){
-	  pc->fillStrawDigiIndices(event,ch.index(iind),shids);
+	  pc->fillStrawHitIndices(event,ch.index(iind),shids);
 	}
       } else {
 	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: Can't find parent collection" << std::endl;
