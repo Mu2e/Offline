@@ -73,28 +73,55 @@ BEGIN_PROLOG
   ReadKalFitsMix.eventWeightModules : [ protonBunchSummarizer  ]
   ReadKalFitsMix.beamWeightModule : protonBunchSummarizer
 # Diagnostic modules    
-  TimeClusterDiag : {
+  BD : {
+	module_type : BkgDiag
+	ComboHitCollection : "makePH"
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	UseFlagCollection : true
+	TimeOffsets : {
+	  inputs : [ "protonTimeMap", "muonTimeMap" ]
+	}
+   }
+
+  TCD : {
 	module_type : TimeClusterDiag
+	ComboHitCollection : "makePH"
+	UseFlagCollection : true
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
 	HitBackgroundBits	    : ["Background"]
 	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
   }
 
-  HelixDiag : {
+  HD : {
 	module_type : HelixDiag
 	HelixSeedCollection : "HelixFinder:Positive"
+	ComboHitCollection : "makePH"
+	PlotHelices : true
+	SaveHelixFlag : ["HitsOK"]
 	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
   }
 
-  StrawHitDiag : {
+  SHD : {
 	module_type : StrawHitDiag
+	StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 	TimeOffsets : {
 	  inputs : [ "protonTimeMap", "muonTimeMap" ] 
 	}
   }
-  
-  TrkRecoDiag : {
+
+  CHD : {
+	module_type : ComboHitDiag
+	ComboHitCollection : "makePH"
+	diagLevel : 2
+	TimeOffsets : {
+	  inputs : [ "protonTimeMap", "muonTimeMap" ]
+	}
+  }
+
+
+  TRD : {
     module_type : TrkRecoDiag
     TimeOffsets : {
       inputs : [ "protonTimeMap", "muonTimeMap" ] 
@@ -135,10 +162,11 @@ BEGIN_PROLOG
 
   TrkDiag : {
     analyzers : {
-      TimeClusterDiag : @local::TimeClusterDiag
-      StrawHitDiag : @local::StrawHitDiag
-      HelixDiag : @local::HelixDiag
-      TrkRecoDiag : @local::TrkRecoDiag
+      TCD : @local::TCD
+      CHD : @local::CHD
+      SHD : @local::SHD
+      HD : @local::HD
+      TRD : @local::TRD
     }
   }
 

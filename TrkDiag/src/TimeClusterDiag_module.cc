@@ -55,7 +55,7 @@ namespace mu2e {
   private:
 
     int           _diag;
-    bool	  _mcdiag;
+    bool _mcdiag, _useflagcol;
     bool	  _plotts;
     unsigned _minnce; // minimum # CE hits to make plots
     double _ccmine; // min calo cluster energy to plot
@@ -64,6 +64,7 @@ namespace mu2e {
     // event object Tags
     art::InputTag   _chTag;
     art::InputTag   _tcTag;
+    art::InputTag   _shfTag;
     art::InputTag   _ccTag;
     art::InputTag   _mcdigisTag;
     // hit selectors
@@ -81,7 +82,8 @@ namespace mu2e {
     const TimeClusterCollection*	  _tccol;
     const CaloClusterCollection*	  _cccol;
     const StrawDigiMCCollection*          _mcdigis;
-    StrawHitFlagCollection _shfcol; // local flag collection
+    const StrawHitFlagCollection*	  _evtshfcol;
+    StrawHitFlagCollection _shfcol; // local copy of flag collection
     StrawHitFlag _cesel; // flag bit for Ce (from truth)
 // TTree variables
     TTree*                                _tcdiag;
@@ -114,12 +116,14 @@ namespace mu2e {
     art::EDAnalyzer(pset),
     _diag		(pset.get<int>("diagLevel",1)),
     _mcdiag		(pset.get<bool>("MCdiag",true)),
+    _useflagcol		(pset.get<bool>("UseFlagCollection")),
     _plotts		(pset.get<bool>("PlotTimeSpectra",false)),
     _minnce		(pset.get<unsigned>("MinimumCEHits",15)),
     _ccmine		(pset.get<double>("CaloClusteriMinE",50.0)),
     _ccwt		(pset.get<double>("CaloClusterWeight",10.0)),
-    _chTag		(pset.get<art::InputTag>("ComboHitCollection","MakeStereoHits")),
+    _chTag		(pset.get<art::InputTag>("ComboHitCollection")),
     _tcTag		(pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
+    _shfTag		(pset.get<string>("StrawHitFlagCollection")),
     _ccTag              (pset.get<art::InputTag>("caloClusterModuleLabel","MakeCaloCluster")),
     _mcdigisTag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _hsel		(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
@@ -181,7 +185,7 @@ namespace mu2e {
 
   // find the input data objects
   bool TimeClusterDiag::findData(art::Event const& evt){
-    _chcol = 0; _tccol = 0; _mcdigis = 0;
+    _evtshfcol = 0; _chcol = 0; _tccol = 0; _mcdigis = 0;
     auto chH = evt.getValidHandle<ComboHitCollection>(_chTag);
     _chcol = chH.product();
     auto tcH = evt.getValidHandle<TimeClusterCollection>(_tcTag);
@@ -190,6 +194,10 @@ namespace mu2e {
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
       _mcdigis = mcdH.product();
       _toff.updateMap(evt);
+    }
+    if(_useflagcol){
+      auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+      _evtshfcol = shfH.product();
     }
     // calorimeter data may or may not be present
     art::Handle<CaloClusterCollection> ccH;
@@ -211,6 +219,7 @@ namespace mu2e {
     for(unsigned ich=0; ich<nch;++ich){
       ComboHit const& ch = _chcol->at(ich);
       _shfcol.push_back(ch.flag());
+      if(_useflagcol)_shfcol.back().merge(_evtshfcol->at(ich));
       if(_mcdiag){
 	std::vector<StrawDigiIndex> shids;
 	_chcol->fillStrawDigiIndices(event,ich,shids);

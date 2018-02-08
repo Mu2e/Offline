@@ -93,8 +93,6 @@ namespace mu2e {
     int                                 _printfreq;
     bool				_prefilter; // prefilter hits based on sector
     bool				_updatestereo; // update the stereo hit positions each iteration
-    float				_dhit; // distance between hit position updates to consider changed' (mm)
-    float				_dhit2;
     unsigned				_minnhit; // minimum # of hits to work with
     float				_maxdr; // maximum hit-helix radius difference
     float				_maxrpull; // maximum hit-helix radius difference pull
@@ -150,8 +148,7 @@ namespace mu2e {
     _debug       (pset.get<int>("debugLevel",0)),
     _printfreq   (pset.get<int>("printFrequency",101)),
     _prefilter   (pset.get<bool>("PrefilterHits",true)),
-    _updatestereo(pset.get<bool>("UpdateStereoHits",true)),
-    _dhit	 (pset.get<float>("HitDistanceChange",10.0)), // mm
+    _updatestereo(pset.get<bool>("UpdateStereoHits",false)),
     _minnhit	 (pset.get<unsigned>("minNHit",5)),
     _maxdr	 (pset.get<float>("MaxRadiusDiff",100.0)), // mm
     _maxrpull	 (pset.get<float>("MaxRPull",5.0)), // unitless
@@ -164,12 +161,12 @@ namespace mu2e {
     _maxdtrans   (pset.get<float>("MaxTransDistance",80.0)), // max distance perp to wire (and z)
     _maxchisq    (pset.get<float>("MaxChisquared",100.0)), // max chisquared
     _minrerr     (pset.get<float>("MinRadiusErr",20.0)), // mm
-    _usemva      (pset.get<bool>("UseHitMVA",true)),
+    _usemva      (pset.get<bool>("UseHitMVA",false)),
     _minmva      (pset.get<float> ("MinMVA",0.1)), // min MVA output to define an outlier
     _ccTag	 (pset.get<art::InputTag>("CaloClusterCollection","CaloClusterFast")),
-    _chTag	 (pset.get<art::InputTag>("ComboHitCollection","makeSH")),
-    _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
-    _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits")),
+    _chTag	 (pset.get<art::InputTag>("ComboHitCollection")),
+    _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection")),
+    _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector<string>{"TimeDivision"})),
     _hbkg        (pset.get<std::vector<std::string> >("HitBackgroundBits",std::vector<std::string>{"Background"})),
     _stmva       (pset.get<fhicl::ParameterSet>("HelixStereoHitMVA",fhicl::ParameterSet())),
     _nsmva       (pset.get<fhicl::ParameterSet>("HelixNonStereoHitMVA",fhicl::ParameterSet())),
@@ -181,7 +178,6 @@ namespace mu2e {
   {
     _maxrwdot[0] = pset.get<float>("MaxStereoRWDot",1.0);
     _maxrwdot[1] = pset.get<float>("MaxNonStereoRWDot",1.0);
-    _dhit2 = _dhit*_dhit;
     std::vector<int> helvals = pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel});
     for(auto hv : helvals) {
       Helicity hel(hv);

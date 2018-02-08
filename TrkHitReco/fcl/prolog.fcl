@@ -1,27 +1,123 @@
 BEGIN_PROLOG
-#  straw hit making from straw digis
-makeSHfromSD : {
+# Normal reco seqence module: this produces a hit for every digi, and uses
+# flags to keep track of which hits to use
+# Reconstruct hits: this produces StrawHits and ComboHits
+makeSH : {
   module_type : StrawHitReco
-  StrawDigis : makeSD
-  #UseCalorimeter : true
+  FilterHits : false
+  WriteStrawHitCollection : true
 }
-
+# combine hits in a panel
+makePH : {
+  module_type : CombineStrawHits
+  TestFlag : true
+  ComboHitCollection : "makeSH"
+}
+# combine panel hits in a station
+makeSTH : {
+  module_type : MakeStereoHits
+  MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
+  ComboHitCollection : "makePH"
+}
+# flag hits from low-energy electrons (Compton electrons, delta rays, ...)
+# First, configure the clusters
+# Original 2-level clusterer
+TLTClusterer : { 
+    MaxNIterations : 10
+    TimeDifference : 25.0
+    MaxDistance : 100.0
+    HitDistance : 5.0
+    SeedDistance : 25.0
+    MaxTimeDifference : 40.0
+    BackgroundMask : []
+    SignalMask : ["TimeSelection", "EnergySelection","RadiusSelection"]
+}
+# Bertrand's faster version
+TNTClusterer : { 
+    MaxNIterations : 10
+    TimeDifference : 25.0
+    MaxDistance : 100.0
+    HitDistance : 5.0
+    SeedDistance : 25.0
+    MaxTimeDifference : 40.0
+    BackgroundMask : []
+    SignalMask : ["TimeSelection", "EnergySelection","RadiusSelection"]
+}
+# Bertrand's other version
+TNTBClusterer : { 
+    MaxNIterations : 1
+    TimeDifference : 25.0
+    MaxDistance : 100.0
+    HitDistance : 5.0
+    SeedDistance : 25.0
+    MaxTimeDifference : 40.0
+    BackgroundMask : []
+    SignalMask : ["TimeSelection", "EnergySelection","RadiusSelection"]
+}
+# Now configure the module
+FlagBkgHits : {
+  module_type : FlagBkgHits
+  ComboHitCollection : "makePH"
+  StrawHitCollection : "makeSH"
+  BkgMVA : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
+  MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
+  TLTClusterer : { @table::TLTClusterer }
+  TNTClusterer : { @table::TNTClusterer }
+  TNTBClusterer : { @table::TNTBClusterer }
+  # use TNTClusterer
+  Clusterer : 2
+  FilterOutput : false
+  FlagComboHits : true
+  FlagStrawHits : true
+  ComboHitCollection : "makePH"
+  BkgMVA : {
+    MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml"
+  }
+}
+# now trigger-specific versions; these make deep copies
+TTmakeSH : {
+  module_type : StrawHitReco
+  FilterHits : true
+  WriteStrawHitCollection : true
+}
+# combine hits in a panel
+TTmakePH : {
+  module_type : CombineStrawHits
+  TestFlag : false
+  ComboHitCollection : "TTmakeSH"
+}
+# combine panel hits in a station
+TTmakeSTH : {
+  module_type : MakeStereoHits
+  MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
+  ComboHitCollection : "TTmakePH"
+}
+TTflagBkgHits : {
+  module_type : FlagBkgHits
+  ComboHitCollection : "makePH"
+  StrawHitCollection : "makeSH"
+  BkgMVA : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
+  MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
+  TLTClusterer : { @table::TLTClusterer }
+  TNTClusterer : { @table::TNTClusterer }
+  TNTBClusterer : { @table::TNTBClusterer }
+  # use TNTClusterer
+  Clusterer : 2
+  FilterOutput : true
+  FlagComboHits : false
+  FlagStrawHits : true
+  ComboHitCollection : "TTmakePH"
+  BkgMVA : {
+    MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml"
+  }
+}
+# Legacy: don't use these in any new sequences!
 MakeStrawHitPositions : {
   module_type             : MakeStrawHitPositions
   StrawHitCollectionLabel : "makeSH"
   StrawHitFlagCollectionLabel : "FSHPreStereo"
-
 }
 
-MakeStereoHits : {
-  module_type : MakeStereoHits
-  MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
-  WriteStereoPairs : true
-  maxChisquared : 20
-}
-
-# Hit Flagging these are producer modules
-   
 FlagStrawHits  : {
   module_type : FlagStrawHits
   maximumEnergy : 0.0035
@@ -36,67 +132,24 @@ FlagStrawHits  : {
   dtOffset                 : @local::TrackCaloMatching.DtOffset
 }
 
-FlagBkgHits : {
 
-  module_type : FlagBkgHits
-  UseBkgMVA : true
-  BkgMVA : { MVAWeights : "TrkHitReco/data/BkgMVA.weights.xml" }
-  MinActiveHits : 3
-  MinStereoHits : 0
-  MinNPlanes : 2
-  MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
-  BkgMVACut : 0.5
-  debugLevel : 0
-  Clusterer : 2
-  TLTClusterer : { 
-    MaxNIterations : 10
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection"]
-  }
-  TNTClusterer : { 
-    MaxNIterations : 10
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection"]
-  }
-  TNTBClusterer : { 
-    MaxNIterations : 1
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection"]
-  }
-}
-
-CombineStrawHits : {
-  module_type : CombineStrawHits
-  StrawHitPositionCollection : makeSH
-  StrawHitFlagCollection : makeSH
-}
-
+# combine together
 TrkHitReco : {
     producers : { 
-	makeSH                    : { @table::makeSHfromSD              }
-	MakeStrawHitPositions     : { @table::MakeStrawHitPositions     } 
-	CombineStrawHits            : { @table::CombineStrawHits            }
-	MakeStereoHits            : { @table::MakeStereoHits            }
-	FlagStrawwHits            : { @table::FlagStrawHits            }
+	# normal reco
+	makeSH            : { @table::makeSH              }
+	makePH            : { @table::makePH            }
+	makeSTH            : { @table::makeSTH            }
 	FlagBkgHits		  : { @table::FlagBkgHits            }
+	# track trigger modules
+	TTmakeSH            : { @table::TTmakeSH              }
+	TTmakePH            : { @table::TTmakePH            }
+	TTmakeSTH            : { @table::TTmakeSTH            }
+	TTlagBkgHits		  : { @table::TTflagBkgHits            }
+	#legacy: don't use these!
+	makeSHP  : { @table::MakeStrawHitPositions}
+	FlagStrawHits : { @table::FlagStrawHits}
     }
 }
-
-
 
 END_PROLOG

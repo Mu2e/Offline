@@ -54,7 +54,7 @@ namespace mu2e
 
       // control flags
       int _diag,_debug;
-      bool _mcdiag;
+      bool _mcdiag, _useflagcol;
       float _maxdt, _maxdrho;
   // data tags
       art::InputTag _chTag;
@@ -97,9 +97,10 @@ namespace mu2e
     _diag(pset.get<int>("diagLevel",1)),
     _debug(pset.get<int>("debugLevel",0)),
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
+    _useflagcol(pset.get<bool>("UseFlagCollection")),
     _maxdt(pset.get<double>("MaxTimeDifference",50.0)), // Maximum time difference (nsec)
     _maxdrho(pset.get<double>("MaxRhoDifference",50.0)), // Maximum transverse distance difference (mm)
-    _chTag(pset.get<string>("ComboHitCollection","MakeStereoHits")),
+    _chTag(pset.get<string>("ComboHitCollection")),
     _shfTag(pset.get<string>("StrawHitFlagCollection","FlagBkgHits")),
     _bkgcTag(pset.get<string>("BackgroundClusterCollection","FlagBkgHits")),
     _bkgqTag(pset.get<string>("BackgroundQualCollection","FlagBkgHits")),
@@ -451,10 +452,14 @@ namespace mu2e
 
   void BkgDiag::fillStrawHitInfo(size_t ich, StrawHitInfo& shinfo) const {
     ComboHit const& ch = _chcol->at(ich);
-    StrawHitFlag const& shf = _shfcol->at(ich);
+    StrawHitFlag shf;
+    if(_useflagcol)
+      shf = _shfcol->at(ich);
+    else
+      shf = ch.flag();
 
-    shinfo._stereo = ch.flag().hasAllProperties(StrawHitFlag::stereo);
-    shinfo._tdiv = ch.flag().hasAllProperties(StrawHitFlag::tdiv);
+    shinfo._stereo = shf.hasAllProperties(StrawHitFlag::stereo);
+    shinfo._tdiv = shf.hasAllProperties(StrawHitFlag::tdiv);
     shinfo._esel = shf.hasAllProperties(StrawHitFlag::energysel);
     shinfo._rsel = shf.hasAllProperties(StrawHitFlag::radsel);
     shinfo._tsel = shf.hasAllProperties(StrawHitFlag::timesel);

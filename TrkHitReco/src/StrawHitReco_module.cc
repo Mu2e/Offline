@@ -68,20 +68,18 @@ namespace mu2e {
        float _ctMinT;                  // time relative to proton hit to flag cross talk (ns)
        float _ctMaxT;                  // time relative to proton hit to flag cross talk (ns)
        float _minT, _maxT;             // time range
-       float _maxR2;	      // transverse radius (squared) range
-       bool   _filter;                // trigger mode cut on dt and other thing 
+       float _maxR2;		      // maximum transverse radius (squared) 
+       bool   _filter;                // filter the output, or just flag 
        bool  _writesh;		      // write straw hits or not
        bool _flagXT; // flag cross-talk
        int    _printLevel;
        int    _diagLevel;
        StrawIdMask _mask; 
        StrawEnd _end[2]; // helper
- 
-       std::string strawDigis_;
-       std::string caloClusterModuleLabel_;
-       fhicl::ParameterSet peakfit_;       
-       
-       std::unique_ptr<TrkHitReco::PeakFit> _pfit;
+
+       art::InputTag _sdtag, _cctag;
+       fhicl::ParameterSet _peakfit;  // peak fit (charge reconstruction) parameters
+       std::unique_ptr<TrkHitReco::PeakFit> _pfit; // peak fitting algorithm
        
  };
 
@@ -96,15 +94,15 @@ namespace mu2e {
       _ctMaxT(pset.get<float>(      "crossTalkMaximumTime",100)), // nsec
       _minT(pset.get<float>(        "minimumTime",500)), // nsec
       _maxT(pset.get<float>(        "maximumTime",2000)), // nsec
-      _filter(pset.get<bool>(      "FilterHits",true)),
-      _writesh(pset.get<bool>(      "WriteStrawHitCollection",true)),
+      _filter(pset.get<bool>(      "FilterHits")),
+      _writesh(pset.get<bool>(      "WriteStrawHitCollection")),
       _flagXT(pset.get<bool>(      "FlagCrossTalk",false)),
       _printLevel(pset.get<int>(     "printLevel",0)),
       _diagLevel(pset.get<int>(      "diagLevel",0)),
-      _end{TrkTypes::cal,TrkTypes::hv},
-      strawDigis_(pset.get<std::string>("StrawDigis","makeSD")),
-      caloClusterModuleLabel_(pset.get<std::string>("caloClusterModuleLabel","CaloClusterFast")),
-      peakfit_(pset.get<fhicl::ParameterSet>("PeakFitter",fhicl::ParameterSet()))
+      _end{TrkTypes::cal,TrkTypes::hv}, // this should be in a general place, FIXME!
+      _sdtag  (pset.get<art::InputTag>("StrawDigiCollection","makeSD")),
+      _cctag  (pset.get<art::InputTag>("caloClusterModuleLabel","CaloClusterFast")),
+      _peakfit(pset.get<fhicl::ParameterSet>("PeakFitter",fhicl::ParameterSet()))
   {
       produces<ComboHitCollection>();
       if(_writesh)produces<StrawHitCollection>();
@@ -119,7 +117,6 @@ namespace mu2e {
 
   StrawHitReco::~StrawHitReco() {}
 
-  
   //------------------------------------------------------------------------------------------
   void StrawHitReco::beginJob()
   {
@@ -128,20 +125,15 @@ namespace mu2e {
   void StrawHitReco::beginRun(art::Run& run)
   {    
       ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
-                 
-      // this must be done here because strawele is not accessible at startup and it 
-      // contains a const refenence to _pfit, so this can't be instanciated earliere
+      // this must be done here because strawele is not accessible at startup and pfit references it
       if (_fittype == TrkHitReco::FitType::peakminusped)
-         _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFit(*strawele,peakfit_) );
+         _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFit(*strawele,_peakfit) );
       else if (_fittype == TrkHitReco::FitType::combopeakfit)
-	 _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::ComboPeakFitRoot(*strawele,peakfit_) );
+	 _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::ComboPeakFitRoot(*strawele,_peakfit) );
       else
-	 _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFitRoot(*strawele,peakfit_) );
-                      
+	 _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFitRoot(*strawele,_peakfit) );
       if (_printLevel > 0) std::cout << "In StrawHitReco begin Run " << std::endl;
   }
-
-
 
   //------------------------------------------------------------------------------------------
   void StrawHitReco::produce(art::Event& event)
@@ -156,31 +148,31 @@ namespace mu2e {
       ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
       ConditionsHandle<StrawPhysics> strawphys = ConditionsHandle<StrawPhysics>("ignored");
       ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
-      
-      art::Handle<StrawDigiCollection> strawdigisHandle;
-      event.getByLabel(strawDigis_,strawdigisHandle);
-      const StrawDigiCollection& strawdigis(*strawdigisHandle);
+      auto sdH = event.getValidHandle<StrawDigiCollection>(_sdtag);
+      const StrawDigiCollection& sdcol(*sdH);
       
       const CaloClusterCollection* caloClusters(0);
-      art::Handle<CaloClusterCollection> caloClusterHandle;
-      if (event.getByLabel(caloClusterModuleLabel_, caloClusterHandle)) caloClusters = caloClusterHandle.product();
+      if(_usecc){
+	auto ccH = event.getValidHandle<CaloClusterCollection>(_cctag);
+	caloClusters = ccH.product();
+      }
 
       std::unique_ptr<StrawHitCollection> shCol;
       if(_writesh){
 	shCol = std::unique_ptr<StrawHitCollection>(new StrawHitCollection);
-	shCol->reserve(strawdigis.size());
+	shCol->reserve(sdcol.size());
       }
       std::unique_ptr<ComboHitCollection> chCol(new ComboHitCollection());
-      chCol->reserve(strawdigis.size());      
+      chCol->reserve(sdcol.size());      
 
       std::vector<std::vector<size_t> > hits_by_panel(nplanes*npanels,std::vector<size_t>());    
       std::vector<size_t> largeHits, largeHitPanels;
-      largeHits.reserve(strawdigis.size());
-      largeHitPanels.reserve(strawdigis.size());
+      largeHits.reserve(sdcol.size());
+      largeHitPanels.reserve(sdcol.size());
       
-      for (size_t isd=0;isd<strawdigis.size();++isd)
+      for (size_t isd=0;isd<sdcol.size();++isd)
       {
-	const StrawDigi& digi = strawdigis[isd];
+	const StrawDigi& digi = sdcol[isd];
 	StrawHitFlag flag;
 	// start by reconstructing the times
 	TDCTimes times;
@@ -219,7 +211,7 @@ namespace mu2e {
 	for(size_t iend=0;iend<2;++iend){
 	  tots[iend] = digi.TOT(_end[iend])*strawele->totLSB();
 	}
-	//create straw hit; this is required for the time division calculation but isn't otherwise needed, FIXME!
+	//create straw hit; this is currently required by the wireDistance function FIXME!
 	StrawHit hit(digi.strawIndex(),times,tots,energy);
 	// get distance along wire from the straw center and it's estimated error
 	const Straw& straw  = tracker.getStraw( digi.strawIndex() );

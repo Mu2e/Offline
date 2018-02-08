@@ -61,13 +61,13 @@ namespace mu2e {
   CombineStrawHits::CombineStrawHits(fhicl::ParameterSet const& pset) :
     // Parameters
     _debug(pset.get<int>("debugLevel",0)),
-    _chTag		(pset.get<art::InputTag>("ComboHitCollection","makeSH")),
-    _testflag(pset.get<bool>("TestFlag",false)),
-    _shsel(pset.get<vector<string> >("StrawHitSelectionBits",vector<string>{"EnergySelection","TimeSelection"} )),
+    _chTag		(pset.get<art::InputTag>("ComboHitCollection")),
+    _testflag(pset.get<bool>("TestFlag")),
+    _shsel(pset.get<vector<string> >("StrawHitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"} )),
     _shmask(pset.get<vector<string> >("StrawHitMaskBits",vector<string>{} )),
     _maxdt(pset.get<float>("MaxDt",40.0)), // nsec
     _maxwdchi(pset.get<float>("MaxWireDistDiffPull",4.0)), //units of resolution sigma
-    _terr(pset.get<float>("TransError",16.0)), //mm
+    _terr(pset.get<float>("TransError",8.0)), //mm
     _maxds(pset.get<int>("MaxDS",3)) // how far away 2 straws can be, in 0-95 numbering (including layers!!)
   {
     float werr = pset.get<float>("WireError",10.0); // mm
@@ -79,7 +79,8 @@ namespace mu2e {
   }
 
   void CombineStrawHits::produce(art::Event& event) {
-    // find event data
+    // find event data.  Note I have to get a Handle, not a ValidHandle,
+    // as a literal handle is needed to find the productID
     art::Handle<ComboHitCollection> chH;
     if(!event.getByLabel(_chTag, chH))
       throw cet::exception("RECO")<<"mu2e::CombineStrawHits: No ComboHit collection found for tag" <<  _chTag << endl;

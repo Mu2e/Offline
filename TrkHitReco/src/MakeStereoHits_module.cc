@@ -95,8 +95,8 @@ namespace mu2e {
 
   MakeStereoHits::MakeStereoHits(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>(           "debugLevel",0)),
-    _chTag(pset.get<art::InputTag>("ComboHitCollection","CombineStrawHits")),
-    _shsel(pset.get<std::vector<std::string> >("StrawHitSelectionBits",std::vector<std::string>{"EnergySelection","TimeSelection"} )),
+    _chTag(pset.get<art::InputTag>("ComboHitCollection")),
+    _shsel(pset.get<std::vector<std::string> >("StrawHitSelectionBits",std::vector<std::string>{"EnergySelection","TimeSelection","RadiusSelection"} )),
     _shmask(pset.get<std::vector<std::string> >("StrawHitMaskBits",std::vector<std::string>{} )),
     _maxDt(pset.get<double>(   "maxDt",40.0)), // nsec
     _maxDPerp(pset.get<double>("maxDPerp",500.)), // mm, maximum perpendicular distance between time-division points
@@ -106,9 +106,9 @@ namespace mu2e {
     _minMVA(pset.get<double>(  "minMVA",0.6)), // MVA cut
     _wfac(pset.get<double>(    "ZErrorFactor",0.3)), // error component due to z separation
     _tfac(pset.get<double>(    "ZErrorFactor",1.0)), // error component due to z separation
-    _doMVA(pset.get<bool>(  "doMVA",true)),
+    _doMVA(pset.get<bool>(  "doMVA",false)),
     _maxfsep(pset.get<unsigned>("MaxFaceSeparation",3)), // max separation between faces in a station
-    _testflag(pset.get<bool>("TestFlag",false)),
+    _testflag(pset.get<bool>("TestFlag")),
     _mvatool(pset.get<fhicl::ParameterSet>("MVATool",fhicl::ParameterSet()))
     {
       // define the mask: straws are in the same unique panel
@@ -133,7 +133,7 @@ namespace mu2e {
   }
 
   void MakeStereoHits::produce(art::Event& event) {
-// find input
+// find input: I have to get a Handle, not ValidHandle, to get the productID
     art::Handle<ComboHitCollection> chH;
     if(!event.getByLabel(_chTag, chH))
       throw cet::exception("RECO")<<"mu2e::MakeStereoHits: No ComboHit collection found for tag" <<  _chTag << endl;

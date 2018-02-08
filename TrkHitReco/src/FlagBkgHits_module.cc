@@ -74,7 +74,7 @@ namespace mu2e
       int _printfreq;
       art::InputTag _chtag;
       art::InputTag _shtag;
-      bool          _flagch, _flagsh;
+      bool  _filter, _flagch, _flagsh;
       unsigned _minnhits;
       unsigned _minnstereo;
       unsigned _minnp;
@@ -86,8 +86,7 @@ namespace mu2e
       float        _cperr2;
       bool          _useMVA;
       float        _bkgMVAcut;
-      bool	    _deepcopy;
-      MVATools      _bkgMVA;
+       MVATools      _bkgMVA;
 
       // use TMVA Reader until problems with MVATools is resolved
       mutable TMVA::Reader _reader;
@@ -102,24 +101,24 @@ namespace mu2e
   FlagBkgHits::FlagBkgHits(const fhicl::ParameterSet& pset) :
     _debug(pset.get<int>(           "debugLevel",0)),
     _printfreq(pset.get<int>(       "printFrequency",101)),
-    _chtag(pset.get<art::InputTag>("ComboHitCollection","MakeStereoHits")),
-    _shtag(pset.get<art::InputTag>("StrawHitCollection","makeSH")),
-    _flagch(pset.get<bool>(        "FlagComboHits",true)), 
-    _flagsh(pset.get<bool>(        "FlagStrawHits",false)), 
-    _minnhits(pset.get<unsigned>(   "MinActiveHits",5)),
-    _minnstereo(pset.get<unsigned>( "MinStereoHits",2)),
-    _minnp(pset.get<unsigned>(      "MinNPlanes",4)),
+    _chtag(pset.get<art::InputTag>("ComboHitCollection")),
+    _shtag(pset.get<art::InputTag>("StrawHitCollection")),
+    _filter(pset.get<bool>(  "FilterOutput")),
+    _flagch(pset.get<bool>(        "FlagComboHits")),
+    _flagsh(pset.get<bool>(        "FlagStrawHits")), 
+    _minnhits(pset.get<unsigned>(   "MinActiveHits",3)),
+    _minnstereo(pset.get<unsigned>( "MinStereoHits",0)),
+    _minnp(pset.get<unsigned>(      "MinNPlanes",2)),
     _maxisolated(pset.get<unsigned>("MaxIsolated",0)),
     _savebkg(pset.get<bool>("SaveBkgClusters",false)),
-    _bkgmsk(pset.get<std::vector<std::string> >("BackgroundMask",std::vector<std::string>{"Background","Isolated"})),
+    _bkgmsk(pset.get<std::vector<std::string> >("BackgroundMask",std::vector<std::string>{"Background"})),
     _useMVA(pset.get<bool>(         "UseBkgMVA",true)),
-    _bkgMVAcut(pset.get<float>(    "BkgMVACut",0.8)),
-    _deepcopy(pset.get<bool>(  "FilterOutput",true)),
+    _bkgMVAcut(pset.get<float>(    "BkgMVACut",0.5)),
     _bkgMVA(pset.get<fhicl::ParameterSet>("BkgMVA",fhicl::ParameterSet()))
   {
     if(_flagch)produces<StrawHitFlagCollection>("ComboHits");
     if(_flagsh)produces<StrawHitFlagCollection>("StrawHits");
-    if(_deepcopy)
+    if(_filter)
       produces<ComboHitCollection>();
     if(_savebkg) {
       produces<BkgClusterCollection>();
@@ -205,7 +204,7 @@ namespace mu2e
       if(_savebkg)bkgqcol.push_back(std::move(cqual));
     }
 
-    if(_deepcopy){
+    if(_filter){
       for(size_t ich=0;ich < nch; ++ich){
 	StrawHitFlag const& flag = chfcol[ich];
 	if(!flag.hasAnyProperty(_bkgmsk)) {

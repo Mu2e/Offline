@@ -84,7 +84,7 @@ namespace mu2e
     art::EDAnalyzer(pset),
     _diag		(pset.get<int>("diagLevel",1)),
     _mcdiag		(pset.get<bool>("MCdiag",true)),
-    _chtag		(pset.get<art::InputTag>("ComboHitCollection","CombineStrawHits")),
+    _chtag		(pset.get<art::InputTag>("ComboHitCollection")),
     _mcdigistag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {}
