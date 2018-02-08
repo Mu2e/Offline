@@ -74,14 +74,15 @@ namespace mu2e {
 //  typedef std::vector<mu2e::ComboHit> ComboHitCollection;
   class ComboHitCollection : public std::vector<mu2e::ComboHit> {
     public:
-      enum sort{none=0,panel};
-      ComboHitCollection() : _sorted(none) {}
+      ComboHitCollection(bool sorted=false) : _sorted(sorted) {}
       typedef std::vector<ComboHitCollection::const_iterator> CHCIter;
-      // fill a vector of StrawHitIds from a given ComboHit by tracking back its parents to the original
+      // fill a vector of indices to the underlying digis used in a given ComboHit
       // This function is called recursively, so the the vector must be empty on the top-most call
-      void fillStrawHitIds(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
+      void fillStrawDigiIndices(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
+      // similarly fill to the StrawHit level
+      void fillStrawHitIndices(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
       // fill a vector of iterators to the ComboHits 1 layer below a given ComboHit.  This is NOT RECURSIVE
-      // return value says whether there's a layer below or not (if not, output is blank)
+      // return value says whether there's a layer below or not (if not, output is empty)
       bool fillComboHits(art::Event const& event, uint16_t chindex, CHCIter& iters) const;
       // recover the parent collection handle from the event
       void setParentHandle(art::Event const& event, art::Handle<ComboHitCollection>& phandle) const;
@@ -89,14 +90,14 @@ namespace mu2e {
       void setParent(art::Handle<ComboHitCollection> const& phandle);
       // or directly from the product ID
       void setParent(art::ProductID const& par){ _parent = par; }
-      art::ProductID const& parent() const { return _parent; }
       // accessors
-      sort sorted() const { return _sorted; }
+      art::ProductID const& parent() const { return _parent; }
+      bool sorted() const { return _sorted; }
     private:
       // reference back to the input ComboHit collection this one references
       // This can be used to chain back to the original StrawHit indices
       art::ProductID _parent;
-      sort _sorted; // record if and how this collection was sorted
+      bool _sorted; // record if this collection was sorted
   };
 }
 #endif

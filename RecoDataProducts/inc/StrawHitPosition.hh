@@ -4,7 +4,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 namespace mu2e {
   typedef ComboHit StrawHitPosition;
-  typedef std::vector<ComboHit> StrawHitPositionCollection;
+  typedef ComboHitCollection StrawHitPositionCollection;
 }
 #endif
 
