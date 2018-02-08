@@ -197,9 +197,9 @@ namespace mu2e
       }
       if(_mcdiag){
 	_chinfomc.clear();
-	// get the list of StrawHit indices associated with this ComboHit
-	std::vector<StrawHitIndex> shids;
-	_chcol->fillStrawHitIds(evt,ich,shids);
+	// get the StrawDigi indices associated with this ComboHit
+	std::vector<StrawDigiIndex> shids;
+	_chcol->fillStrawDigiIndices(evt,ich,shids);
 	if(shids.size() != ch.nStrawHits())
 	  throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit" << std::endl;
 	// use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!

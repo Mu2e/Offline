@@ -50,7 +50,7 @@ namespace mu2e
       void fillStrawHitInfo(size_t ich, StrawHitInfo& bkghinfo) const;
       void fillStrawHitInfoMC(StrawDigiMC const& mcdigi, art::Ptr<SimParticle>const& pptr, StrawHitInfo& shinfo) const;
       bool findData(const art::Event& e);
-      void findPrimary(std::vector<uint16_t>const& dids, art::Ptr<SimParticle>& pptr,double& pmom) const;
+      void findPrimary(std::vector<StrawDigiIndex>const& dids, art::Ptr<SimParticle>& pptr,double& pmom) const;
 
       // control flags
       int _diag,_debug;
@@ -211,11 +211,11 @@ namespace mu2e
       if(_mcdiag){
       // fill vector of indices to all digis used in this cluster's hits 
       // this goes recursively through the ComboHit chain
-	std::vector<StrawHitIndex> cdids;
+	std::vector<StrawDigiIndex> cdids;
 	for(auto const& chit : cluster.hits()){
 	  size_t ich = chit.index();
 	  // get the list of StrawHit indices associated with this ComboHit
-	  _chcol->fillStrawHitIds(event,ich,cdids);
+	  _chcol->fillStrawDigiIndices(event,ich,cdids);
 	}	
 	double pmom(0.0);
 	findPrimary(cdids,pptr,pmom);
@@ -251,8 +251,8 @@ namespace mu2e
 	// fill basic straw hit info
 	fillStrawHitInfo(chit.index(),bkghinfo);
 	if(_mcdiag){
-	  std::vector<uint16_t> dids;
-	  _chcol->fillStrawHitIds(event,ich,dids);
+	  std::vector<StrawDigiIndex> dids;
+	  _chcol->fillStrawDigiIndices(event,ich,dids);
 	  StrawDigiMC const& mcdigi = _mcdigis->at(dids[0]);// taking 1st digi: is there a better idea??
 	  fillStrawHitInfoMC(mcdigi,pptr,bkghinfo);
 	}

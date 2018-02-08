@@ -236,17 +236,17 @@ namespace mu2e {
 	_circleConverged = status.hasAllProperties(TrkFitFlag::circleConverged);
 	_phizConverged = status.hasAllProperties(TrkFitFlag::phizConverged);
 	_helixConverged = status.hasAllProperties(TrkFitFlag::helixConverged);
-	vector<StrawHitIndex> hits;
 	art::Ptr<SimParticle> pspp;
 	_nused = 0;
+	std::vector<StrawDigiIndex> sdis;
 	for(size_t ihh = 0;ihh < hhits.size(); ++ihh) {
 	  ComboHit const& hhit = hhits[ihh];
-	  hhits.fillStrawHitIds(evt,ihh,hits);
+	  hhits.fillStrawDigiIndices(evt,ihh,sdis);
 	  if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_nused += hhit.nStrawHits();
 	}
 	if(_mcdiag) {
 	  // get information about the primary particle (produced most hits)
-	  _nprimary = TrkMCTools::primaryParticle(pspp,hits,_mcdigis);
+	  _nprimary = TrkMCTools::primaryParticle(pspp,sdis,_mcdigis);
 	  _nptot = TrkMCTools::countDigis(pspp,_mcdigis);
 	  _pdg = pspp->pdgId();
 	  _proc = pspp->originParticle().creationCode();
@@ -261,9 +261,9 @@ namespace mu2e {
 	  _npused = 0;
 	  for(size_t ihh = 0;ihh < hhits.size(); ++ihh) {
 	    ComboHit const& hhit = hhits[ihh];
-	    vector<StrawHitIndex> shids;
-	    hhits.fillStrawHitIds(evt,ihh,shids);
-	    StrawDigiMC const& mcdigi = _mcdigis->at(shids[0]);
+	    vector<StrawDigiIndex> sdis;
+	    hhits.fillStrawDigiIndices(evt,ihh,sdis);
+	    StrawDigiMC const& mcdigi = _mcdigis->at(sdis[0]);
 	    art::Ptr<StepPointMC> spmcp;
 	    if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
 		spmcp->simParticle() == pspp ){

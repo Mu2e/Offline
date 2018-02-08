@@ -212,8 +212,8 @@ namespace mu2e {
       ComboHit const& ch = _chcol->at(ich);
       _shfcol.push_back(ch.flag());
       if(_mcdiag){
-	std::vector<StrawHitIndex> shids;
-	_chcol->fillStrawHitIds(event,ich,shids);
+	std::vector<StrawDigiIndex> shids;
+	_chcol->fillStrawDigiIndices(event,ich,shids);
 	unsigned nce(0);
 	for(auto idigi : shids) {
 	  StrawDigiMC const& mcdigi = _mcdigis->at(idigi);
@@ -283,8 +283,8 @@ namespace mu2e {
       tchi._mva = _peakMVA.evalMVA(pars);
 // MC truth
       if(_mcdiag){
-     	std::vector<StrawHitIndex> shids;
-	_chcol->fillStrawHitIds(event,ich,shids);
+     	std::vector<StrawDigiIndex> shids;
+	_chcol->fillStrawDigiIndices(event,ich,shids);
 	StrawDigiMC const& mcdigi = _mcdigis->at(shids[0]);// FIXME!
 	StrawEnd itdc;
 	tchi._mctime = _toff.timeWithOffsetsApplied( *mcdigi.stepPointMC(itdc));
