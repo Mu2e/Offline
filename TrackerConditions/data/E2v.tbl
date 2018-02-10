@@ -17,11 +17,11 @@
 //Efield Speed (80:20)
 //kV/cm  cm/us
         
-0.070   0.21
-0.140   0.46
-0.210   0.71
-0.280   0.97
-0.350   1.26
+//0.070   0.21 // remove low field
+//0.140   0.46 // remove low field 
+//0.210   0.71 // remove low field
+//0.280   0.97 // remove low field 
+//0.350   1.26 //removed low field 
 0.420   1.57
 0.490   1.90
 0.559   2.26
@@ -51,8 +51,4 @@
 4.895   6.87
 5.245   6.89
 5.735   6.85
-500   6.85     //this last point is not from data; it assumes saturation near the wire "near" the wire is < 0.3 mm, assuming 1500 V
-        
-
-
-
+500   6.85     //This last point is not from data. It assumes saturation near the wire. "near" the wire is < 0.3 mm, assuming ~1400 V
