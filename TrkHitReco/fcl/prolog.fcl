@@ -150,6 +150,9 @@ TrkHitReco : {
 	makeSHP  : { @table::MakeStrawHitPositions}
 	FlagStrawHits : { @table::FlagStrawHits}
     }
+# sequences
+# production sequence to prepare hits for tracking
+  PrepareHits : [ makeSH, makePH, FlagBkgHits ]
 }
 
 END_PROLOG

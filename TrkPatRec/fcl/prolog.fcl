@@ -269,8 +269,6 @@ KFFUpiP.fitdirection	      : @local::FitDir.upstream
 Tracking : {
   producers : {
 # the following should be independently sourced FIXME!
-    @table::TrkHitReco.producers
-    @table::TrackerMC.producers
     TimeClusterFinder  : @local::TimeClusterFinder
     HelixFinder  : @local::RobustHelixFinder
 # now all the different track fits based on these inputs
@@ -301,10 +299,14 @@ Tracking : {
     KFFDpiP	  : @local::KFFDpiP
     KFFUpiP	  : @local::KFFUpiP
   }
-# simulation sequence to create digis.  Currently just one module, but that might change
-  DigiSim : [ makeSD ]
-# production sequence to prepare hits for tracking
-  PrepareHits : [ makeSH, makePH, FlagBkgHits ]
+  # now for triggering
+  TrkTrigger : {
+    producers : {
+      TTtimeClusterFinder  : @local::TTtimeClusterFinder
+      TThelixFinder  : @local::TTrobustHelixFinder
+    }
+  }
+
 # production sequence to find helices
   FindHelices : [ TimeClusterFinder, HelixFinder ]
 # define standard outputs 
@@ -329,19 +331,19 @@ Tracking : {
   }
 }
 # production sequences for tracking specific paricles; first electrons
-Tracking.TPRDeM  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFDeM, KFFDeM ]
-Tracking.TPRUeM  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFUeM, KFFUeM ]
-Tracking.TPRDeP  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFDeP, KFFDeP ]
-Tracking.TPRUeP  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFUeP, KFFUeP ]
+Tracking.TPRDeM  : [ TimeClusterFinder, HelixFinder, KSFDeM, KFFDeM ]
+Tracking.TPRUeM  : [ TimeClusterFinder, HelixFinder, KSFUeM, KFFUeM ]
+Tracking.TPRDeP  : [ TimeClusterFinder, HelixFinder, KSFDeP, KFFDeP ]
+Tracking.TPRUeP  : [ TimeClusterFinder, HelixFinder, KSFUeP, KFFUeP ]
 #muons
-Tracking.TPRDmuM  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFDmuM, KFFDmuM ]
-Tracking.TPRUmuM  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFUmuM, KFFUmuM ]
-Tracking.TPRDmuP  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFDmuP, KFFDmuP ]
-Tracking.TPRUmuP  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFUmuP, KFFUmuP ]
+Tracking.TPRDmuM  : [ TimeClusterFinder, HelixFinder, KSFDmuM, KFFDmuM ]
+Tracking.TPRUmuM  : [ TimeClusterFinder, HelixFinder, KSFUmuM, KFFUmuM ]
+Tracking.TPRDmuP  : [ TimeClusterFinder, HelixFinder, KSFDmuP, KFFDmuP ]
+Tracking.TPRUmuP  : [ TimeClusterFinder, HelixFinder, KSFUmuP, KFFUmuP ]
 #pions
-Tracking.TPRDpiM  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFDpiM, KFFDpiM ]
-Tracking.TPRUpiM  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFUpiM, KFFUpiM ]
-Tracking.TPRDpiP  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFDpiP, KFFDpiP ]
-Tracking.TPRUpiP  : [ @sequence::Tracking.PrepareHits, @sequence::Tracking.FindHelices, KSFUpiP, KFFUpiP ]
+Tracking.TPRDpiM  : [ TimeClusterFinder, HelixFinder, KSFDpiM, KFFDpiM ]
+Tracking.TPRUpiM  : [ TimeClusterFinder, HelixFinder, KSFUpiM, KFFUpiM ]
+Tracking.TPRDpiP  : [ TimeClusterFinder, HelixFinder, KSFDpiP, KFFDpiP ]
+Tracking.TPRUpiP  : [ TimeClusterFinder, HelixFinder, KSFUpiP, KFFUpiP ]
 
 END_PROLOG

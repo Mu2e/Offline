@@ -46,7 +46,7 @@ namespace mu2e
       void fillStrawHitDiag();
       bool findData(const art::Event& e);
       // control flags
-      bool _mcdiag;
+      bool _mcdiag, _chflag;
   // data tags
       art::InputTag _shTag;
       art::InputTag _chTag;
@@ -92,6 +92,7 @@ namespace mu2e
   StrawHitDiag::StrawHitDiag(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
+    _chflag(pset.get<bool>("ComboHitFlag",false)),
     _shTag(pset.get<string>("StrawHitCollection","makeSH")),
     _chTag(pset.get<string>("ComboHitCollection","makeSH")),
     _shfTag(pset.get<string>("StrawHitFlagCollection","FlagBkgHits")),
@@ -122,15 +123,17 @@ namespace mu2e
     _shcol = shH.product();
     auto chH = evt.getValidHandle<ComboHitCollection>(_chTag);
     _chcol = chH.product();
-    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
-    _shfcol = shfH.product();
+    if(!_chflag){
+      auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+      _shfcol = shfH.product();
+    }
     if(_mcdiag){
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
       _mcdigis = mcdH.product();
       // update time offsets
       _toff.updateMap(evt);
     }
-    return _shcol != 0 && _chcol != 0 && _shfcol != 0 && (_mcdigis != 0  || !_mcdiag);
+    return _shcol != 0 && _chcol != 0 && (_chflag || _shfcol != 0) && (_mcdigis != 0  || !_mcdiag);
   }
 
   void StrawHitDiag::beginJob(){
@@ -208,7 +211,11 @@ namespace mu2e
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawHit const& sh = _shcol->at(istr);
       ComboHit const& ch = _chcol->at(istr);
-      StrawHitFlag const& shf = _shfcol->at(istr);
+      StrawHitFlag shf;
+      if(_chflag)
+	shf = ch.flag();
+      else
+	shf = _shfcol->at(istr);
       const Straw& straw = tracker.getStraw( ch.sid() );
       _plane = straw.id().getPlane();
       _panel = straw.id().getPanel();

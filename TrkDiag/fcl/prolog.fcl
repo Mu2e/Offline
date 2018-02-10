@@ -2,6 +2,8 @@
 #include "CaloMC/fcl/prolog.fcl"
 #include "CaloReco/fcl/prolog.fcl"
 #include "CaloCluster/fcl/prolog.fcl"
+#include "TrkHitReco/fcl/prolog.fcl"
+#include "TrkPatRec/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
@@ -178,6 +180,8 @@ BEGIN_PROLOG
     }
     producers : {
       @table::EventMixing.producers
+      @table::TrackerMC.producers
+      @table::TrkHitReco.producers
       @table::Tracking.producers
       @table::CaloDigiMC.producers
       @table::CaloReco.producers
@@ -198,10 +202,11 @@ BEGIN_PROLOG
   
     # separate out the sime and reco parts of the sequence
     SimSequence	: [ @sequence::EventMixing.TimeMaps,
-		    @sequence::Tracking.DigiSim,
+		    @sequence::TrackerMC.DigiSim,
 		    @sequence::CaloDigiMC.DigiSim ]
     RecoSequence : [ @sequence::CaloReco.Reco,
 	             @sequence::CaloCluster.Reco, 
+		     @sequence::TrkHitReco.PrepareHits,
 		     @sequence::Tracking.TPRDeM,
 		     @sequence::Tracking.TPRUeM,
 		     @sequence::Tracking.TPRDmuM,

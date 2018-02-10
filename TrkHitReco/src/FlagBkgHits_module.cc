@@ -217,18 +217,25 @@ namespace mu2e
     if(_flagsh){
       auto shH = event.getValidHandle<StrawHitCollection>(_shtag);
       const StrawHitCollection* shcol = shH.product();
+      // corresponding ComboHitCollection
+      auto chH = event.getValidHandle<ComboHitCollection>(_shtag);
+      const ComboHitCollection* shchcol = chH.product();
+      if(shcol->size() != shchcol->size())
+	throw cet::exception("RECO")<< "FlagBkgHits: Collection sizes don't match" << std::endl;
+      // first, copy over the original flags
       unsigned nsh = shcol->size(); 
-      StrawHitFlagCollection shfcol(nsh); 
-      // copy combo-hit flag content down to straw hit level
+      StrawHitFlagCollection shfcol(nsh);
+      for(size_t ish =0;ish < shcol->size(); ++ish){
+	shfcol[ish] = (*shchcol)[ish].flag();
+      }
+      // then copy the background flag content down to straw hit level
       std::vector<StrawHitIndex> shids;
       for(size_t ich=0;ich < nch; ++ich){
 	StrawHitFlag flag = chfcol[ich];
-	// merge in original combohit flag
-	flag.merge((*_chcol)[ich].flag());
 	shids.clear();
 	_chcol->fillStrawHitIndices(event,ich,shids);
 	for(auto shid : shids)
-	  shfcol.at(shid) = flag; // check range here for safety
+	  shfcol.at(shid).merge(flag); // check range here for safety
       }
       event.put(std::move(std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection(shfcol))),"StrawHits");
     }

@@ -513,25 +513,25 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     cetime->SetFillColor(kRed);
 
     double scale = 0.1/nevents;
-    hits->Project("cetime","mctime",conv+hitsel);
+    hits->Project("cetime","time",conv+hitsel);
     cetime->Scale(scale);
     sorigin->Add(cetime);
-     hits->Project("dtime","mctime",dioorigin+hitsel);
+     hits->Project("dtime","time",dioorigin+hitsel);
     dtime->Scale(scale);
     sorigin->Add(dtime);
-    hits->Project("mtime","mctime",ootmuonorigin+hitsel);
+    hits->Project("mtime","time",ootmuonorigin+hitsel);
     mtime->Scale(scale);
     sorigin->Add(mtime);
-    hits->Project("gtime","mctime",porigin+hitsel);
+    hits->Project("gtime","time",porigin+hitsel);
     gtime->Scale(scale);
     sorigin->Add(gtime);
-    hits->Project("stptime","mctime",stpprotonorigin+hitsel);
+    hits->Project("stptime","time",stpprotonorigin+hitsel);
     stptime->Scale(scale);
     sorigin->Add(stptime);
-    hits->Project("pptime","mctime",pprotonorigin+hitsel);
+    hits->Project("pptime","time",pprotonorigin+hitsel);
     pptime->Scale(scale);
     sorigin->Add(pptime);
-    hits->Project("ntime","mctime",norigin+hitsel);
+    hits->Project("ntime","time",norigin+hitsel);
     ntime->Scale(scale);
     sorigin->Add(ntime);
 
@@ -610,14 +610,14 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 // normalize by row
     for(int ibin=1;ibin <= myhp->GetXaxis()->GetNbins();++ibin){
       double norm = 100.0/hsel->GetBinContent(ibin,1);
-//      cout << "Normalization for " << hsel->GetYaxis()->GetBinLabel(ibin)  << " = " << norm << endl;
+      cout << "Normalization for " << hsel->GetYaxis()->GetBinLabel(ibin)  << " = " << norm << endl;
       for(int jbin=1;jbin <= hsel->GetYaxis()->GetNbins(); ++jbin) {
 	double val =hsel->GetBinContent(ibin,jbin);
-//	cout << "value for ibin " << ibin <<" jbin " << jbin << " val " << val << endl;
+	cout << "value for ibin " << ibin <<" jbin " << jbin << " val " << val << endl;
 	hsel->SetBinContent(ibin,jbin,val*norm);
       }
     }
-    TCanvas* hscan = new TCanvas("hscan","hscan",1200,1200);
+    TCanvas* hscan = new TCanvas("hscan","hscan",800,800);
     hscan->Divide(1,2);
     hscan->cd(1);
     hsel->Draw("boxtext0");
