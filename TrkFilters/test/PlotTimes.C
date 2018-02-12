@@ -22,7 +22,6 @@ void PlotAllTimes(const char* dirname, double maxtime) {
   // find all the csv files in this directory
   static const string csv(".csv");
   vector<TH1F*> plots;
-//  auto dir`p = opendir(dirname);
   void* dirp = gSystem->OpenDirectory(dirname);
   std::vector<string> fnames;
   if(dirp != 0){
@@ -43,20 +42,13 @@ void PlotAllTimes(const char* dirname, double maxtime) {
       PlotTime(dirname,fname.c_str(),plot);
       plots.push_back(plot);
     }
-    TCanvas* acan = new TCanvas("alltimes","times",1200,1200);
+    TCanvas* atcan = new TCanvas("atcan","times",800,800);
     int nxcel = (int)ceil(sqrt(plots.size()));
-    int nycel = (int)ceil(plots.size()/nxcel);
-    acan->Divide(nxcel,nycel);
+    int nycel = (int)ceil(plots.size()/float(nxcel));
+    atcan->Divide(nxcel,nycel);
     for(unsigned iplot=0;iplot<plots.size();++iplot){
-      acan->cd(iplot+1);
+      atcan->cd(iplot+1);
       plots[iplot]->Draw();
-//      TCanvas* can = new TCanvas(plots[iplot]->GetName(),plots[iplot]->GetName(),400,400);
-//      can->Divide(1,1);
-//      can->cd(1);
-//      plots[iplot]->Draw();
-//      char rname[100];
-//      snprintf(rname,100,"%s%s",plots[iplot]->GetName(),".root");
-//      can->SaveAs(rname);
     }
   }
 }

@@ -7,6 +7,8 @@
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 #include "TrkFilters/fcl/prolog.fcl"
+#include "TrkHitReco/fcl/prolog.fcl"
+#include "TrkPatRec/fcl/prolog.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 
 process_name : ReadDigis
@@ -28,10 +30,13 @@ services.TimeTracker : {
 physics :
 {
   producers : {
+    @table::TrkHitReco.producers
     @table::Tracking.TrkTrigger.producers
+     TTKSFDeM : @local::TTKSF
+     TTKSFUeM : @local::TTKSF
   }
   filters : {
-    @table::Tracking.filters
+    @table::TrkTrigger.Filters
   }
   analyzers : {
     TrkTriggerDiag : {
@@ -39,21 +44,25 @@ physics :
     }
   }
 }
+TTKSFDeM.SeedCollection      : "TThelixFinder:Positive"
+TTKSFDeM.fitparticle	      : @local::Particle.eminus
+TTKSFDeM.fitdirection	      : @local::FitDir.downstream 
 
-# overwrite some defaults for trigger
-physics.producers.HelixFinder.UpdateStereoHits : false
-physics.producers.HelixFinder.UseHitMVA : false
+TTKSFUeM.SeedCollection      : "TThelixFinder:Negative"
+TTKSFUeM.fitparticle	      : @local::Particle.eminus
+TTKSFUeM.fitdirection	      : @local::FitDir.upstream 
+
 # create a trigger test path.  Note that physics.trigger_paths and physics.end_paths are not used, art will
 # create those automatically from all the defined paths
 
-physics.TCTrigPath : [ @sequence::Tracking.Trigger.TCFilterSequence ]
+physics.TCTrigPath : [ @sequence::TrkTrigger.Sequences.TCFilterSequence ]
 
-physics.PHTrigPath : [ @sequence::Tracking.Trigger.PosHelixFilterSequence ]
+physics.PHTrigPath : [ @sequence::TrkTrigger.Sequences.PosHelixFilterSequence ]
 
-physics.DeMSeedTrigPath : [ @sequence::Tracking.Trigger.DeMSeedFilterSequence ]
+physics.DeMSeedTrigPath : [ @sequence::TrkTrigger.Sequences.DeMSeedFilterSequence ]
 
 #physics.DeMKalTrigPath : [ @sequence::Tracking.Trigger.DeMKalFilterSequence ]
-physics.UeMSeedTrigPath : [ @sequence::Tracking.Trigger.UeMSeedFilterSequence ] 
+physics.UeMSeedTrigPath : [ @sequence::TrkTrigger.Sequences.UeMSeedFilterSequence ] 
 
 # analysis path: this is for monitoring only
 physics.ReadDigisEndPath : [ TrkTriggerDiag ]

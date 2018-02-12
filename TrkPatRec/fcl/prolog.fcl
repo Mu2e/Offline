@@ -121,7 +121,7 @@ TTKSF : {
   module_type                 : KalSeedFit
   StrawHitCollection	      : "TTmakeSH"
   StrawHitFlagCollection      : "TTflagBkgHits:StrawHits"
-  SeedCollection	      : "TTrobustHelixFinder"
+  SeedCollection	      : "TThelixFinder:Positive"
   KalFit		      : @local::KFSeed
   ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
 #  ParameterErrors	      : [1.0,1.0,1.0,1.0,1.0]
