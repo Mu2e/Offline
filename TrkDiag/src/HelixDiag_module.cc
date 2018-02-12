@@ -28,6 +28,7 @@
 #include "MCDataProducts/inc/MCRelationship.hh"
 // data
 #include "RecoDataProducts/inc/ComboHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
@@ -66,7 +67,7 @@ namespace mu2e {
 // config parameters
       int _diag;
       StrawHitFlag _dontuseflag;
-      bool _mcdiag, _mcsel;
+      bool _mcdiag, _mcsel, _useshfcol;
       StrawHitFlag  _hsel, _hbkg;
       int _minnprimary; // minimum # Primary hits to make plots
       int _mcgen; // MC generator code of primary
@@ -81,11 +82,13 @@ namespace mu2e {
       // event object tags      art::InputTag _shTag;
       art::InputTag _chTag;
       art::InputTag _hsTag;
+      art::InputTag   _shfTag;
       art::InputTag _mcdigisTag;
       art::InputTag _vdmcstepsTag;
       // cache of event objects
       const ComboHitCollection* _chcol;
       const HelixSeedCollection* _hscol;
+      const StrawHitFlagCollection*	  _shfcol;
       const StrawDigiMCCollection* _mcdigis;
       const StepPointMCCollection* _vdmcsteps;
       // reco offsets
@@ -129,9 +132,10 @@ namespace mu2e {
   HelixDiag::HelixDiag(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
     _diag(pset.get<int>("DiagLevel",1)),
-    _dontuseflag(pset.get<vector<string>>("UseFlag",vector<string>{"Outlier"})),
+    _dontuseflag(pset.get<vector<string>>("DontUseFlag",vector<string>{"Outlier"})),
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
     _mcsel(pset.get<bool>("MonteCarloSelection",true)),
+    _useshfcol		(pset.get<bool>("UseFlagCollection")),
     _hsel(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
     _hbkg(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
     _minnprimary(pset.get<int>("MinimumPrimaryHits",10)),
@@ -148,6 +152,7 @@ namespace mu2e {
     _cperpres	 (pset.get<double>("CenterPerpResolution",12.0)),
     _chTag(pset.get<string>("ComboHitCollection","MakeStereoHits")),
     _hsTag(pset.get<string>("HelixSeedCollection","HelixFinder:Positive")),
+    _shfTag		(pset.get<string>("StrawHitFlagCollection")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
     _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
@@ -357,6 +362,7 @@ namespace mu2e {
 
   bool HelixDiag::findData(const art::Event& evt){
     _chcol = 0;
+    _shfcol = 0;
     _hscol = 0;
     _mcdigis = 0;
     _vdmcsteps = 0;
@@ -373,9 +379,14 @@ namespace mu2e {
       // update time offsets
       _toff.updateMap(evt);
     }
+    if(_useshfcol){
+      auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+      _shfcol = shfH.product();
+    }
 
     return _chcol != 0 && _hscol != 0 
-      && ((_mcdigis != 0 && _vdmcsteps != 0 ) || !_mcdiag);
+      && ((_mcdigis != 0 && _vdmcsteps != 0 ) || !_mcdiag)
+      && (_shfcol != 0 || (!_useshfcol));
   }
 
 
@@ -791,7 +802,11 @@ namespace mu2e {
 
   bool
   HelixDiag::selectedHit(size_t index) {
-    StrawHitFlag const& flag = _chcol->at(index).flag();
+    StrawHitFlag flag;
+    if(_useshfcol)
+      flag = _shfcol->at(index);
+    else
+      flag = _chcol->at(index).flag();
     return flag.hasAllProperties(_hsel) && !flag.hasAnyProperty(_hbkg);
   }
 
