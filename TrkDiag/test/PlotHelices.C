@@ -71,7 +71,7 @@ void PlotHelices::plot(int nmax, int nps,const char* canname){
       if(divide.rem == 0){
 	if(canname != 0 && ican>=0){
 	  char fname[100];
-	  snprintf(fname,100,"%s.png",cans[ican]->GetTitle());
+	  snprintf(fname,100,"%s.pdf",cans[ican]->GetTitle());
 	  cans[ican]->SaveAs(fname);
 	}
 	++ican;
@@ -104,7 +104,7 @@ void PlotHelices::plot(int nmax, int nps,const char* canname){
   // save last canvas
   if(ican > 0){
     char fname[100];
-    snprintf(fname,100,"%s.png",cans[ican]->GetTitle());
+    snprintf(fname,100,"%s.pdf",cans[ican]->GetTitle());
     cans[ican]->Update();
     cans[ican]->SaveAs(fname);
   }

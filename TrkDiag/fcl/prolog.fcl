@@ -83,8 +83,26 @@ BEGIN_PROLOG
 	TimeOffsets : {
 	  inputs : [ "protonTimeMap", "muonTimeMap" ]
 	}
-   }
+  }
+  
+  TRD : {
+    module_type : TrkRecoDiag
+    TimeOffsets : {
+      inputs : [ "protonTimeMap", "muonTimeMap" ] 
+    }
+  }
 
+  SHD : {
+	module_type : StrawHitDiag
+	ComboHitFlag : false
+	StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+	TimeOffsets : {
+	  inputs : [ "protonTimeMap", "muonTimeMap" ] 
+	}
+  }
+
+
+# reco path
   TCD : {
 	module_type : TimeClusterDiag
 	ComboHitCollection : "makePH"
@@ -94,41 +112,52 @@ BEGIN_PROLOG
 	HitBackgroundBits	    : ["Background"]
 	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
-	PlotTimeSpectra : false
+	PlotTimeSpectra : true
       }
 
   HD : {
 	module_type : HelixDiag
 	HelixSeedCollection : "HelixFinder:Positive"
 	ComboHitCollection : "makePH"
-	PlotHelices : false
+	UseFlagCollection : true
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	PlotHelices : true
 	SaveHelixFlag : ["HitsOK"]
 	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-  }
-
-  SHD : {
-	module_type : StrawHitDiag
-	StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-	TimeOffsets : {
-	  inputs : [ "protonTimeMap", "muonTimeMap" ] 
-	}
   }
 
   CHD : {
 	module_type : ComboHitDiag
 	ComboHitCollection : "makePH"
+	UseFlagCollection : true
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	diagLevel : 2
 	TimeOffsets : {
 	  inputs : [ "protonTimeMap", "muonTimeMap" ]
 	}
   }
 
+# track trigger path
+  TTTCD : {
+	@table::TCD
+	UseFlagCollection : false
+	StrawHitFlagCollection : none
+	ComboHitCollection : TTflagBkgHits
+	TimeClusterCollection : TTtimeClusterFinder
+  }
 
-  TRD : {
-    module_type : TrkRecoDiag
-    TimeOffsets : {
-      inputs : [ "protonTimeMap", "muonTimeMap" ] 
-    }
+  TTHD : {
+	@table::HD
+	ComboHitCollection : TTflagBkgHits
+	HelixSeedCollection : "TThelixFinder:Positive"
+	UseFlagCollection : false
+	StrawHitFlagCollection : none
+  }
+
+  TTCHD : {
+	@table::CHD
+	UseStrawHitFlagCollection : false
+	ComboHitCollection : TTflagBkgHits
   }
 
 # Prototype track analysis config.
@@ -170,6 +199,9 @@ BEGIN_PROLOG
       SHD : @local::SHD
       HD : @local::HD
       TRD : @local::TRD
+      TTCHD : @local::TTTCD
+      TTTCD : @local::TTTCD
+      TTHD : @local::TTHD
     }
   }
 
