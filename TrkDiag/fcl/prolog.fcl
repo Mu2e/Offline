@@ -94,13 +94,14 @@ BEGIN_PROLOG
 	HitBackgroundBits	    : ["Background"]
 	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
-  }
+	PlotTimeSpectra : false
+      }
 
   HD : {
 	module_type : HelixDiag
 	HelixSeedCollection : "HelixFinder:Positive"
 	ComboHitCollection : "makePH"
-	PlotHelices : true
+	PlotHelices : false
 	SaveHelixFlag : ["HitsOK"]
 	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
   }
@@ -207,6 +208,7 @@ BEGIN_PROLOG
     RecoSequence : [ @sequence::CaloReco.Reco,
 	             @sequence::CaloCluster.Reco, 
 		     @sequence::TrkHitReco.PrepareHits,
+		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,
 		     @sequence::Tracking.TPRUeM,
 		     @sequence::Tracking.TPRDmuM,

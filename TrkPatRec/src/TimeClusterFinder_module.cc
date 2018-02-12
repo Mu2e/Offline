@@ -7,7 +7,6 @@
 //
 // Original author D. Brown and G. Tassielli
 //
-
 // framework
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -186,13 +185,15 @@ namespace mu2e {
 
     if(_usecc){
       if(!event.getByLabel(_ccTag, _ccH))
-	throw cet::exception("RECO")<<"RobustHelixFinder: No CaloCluster collection found for tag" <<  _ccTag << endl;
+	throw cet::exception("RECO")<<"TimeClusterFinder: No CaloCluster collection found for tag" <<  _ccTag << endl;
       _cccol = _ccH.product();
     }
 
     if(_testflag){
       auto shfH = event.getValidHandle<StrawHitFlagCollection>(_shfTag);
       _shfcol = shfH.product();
+      if(_shfcol->size() != _chcol->size())
+	throw cet::exception("RECO")<<"TimeClusterFinder: inconsistent flag collection length " << endl;
     }
 
     std::unique_ptr<TimeClusterCollection> tccol(new TimeClusterCollection);

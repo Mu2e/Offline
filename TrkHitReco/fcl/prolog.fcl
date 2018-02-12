@@ -94,8 +94,8 @@ TTmakeSTH : {
 }
 TTflagBkgHits : {
   module_type : FlagBkgHits
-  ComboHitCollection : "makePH"
-  StrawHitCollection : "makeSH"
+  ComboHitCollection : "TTmakePH"
+  StrawHitCollection : "TTmakeSH"
   BkgMVA : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
   MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
   TLTClusterer : { @table::TLTClusterer }
@@ -105,7 +105,7 @@ TTflagBkgHits : {
   Clusterer : 2
   FilterOutput : true
   FlagComboHits : false
-  FlagStrawHits : true
+  FlagStrawHits : true #false??
   ComboHitCollection : "TTmakePH"
   BkgMVA : {
     MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml"
@@ -145,7 +145,7 @@ TrkHitReco : {
 	TTmakeSH            : { @table::TTmakeSH              }
 	TTmakePH            : { @table::TTmakePH            }
 	TTmakeSTH            : { @table::TTmakeSTH            }
-	TTlagBkgHits		  : { @table::TTflagBkgHits            }
+	TTflagBkgHits		  : { @table::TTflagBkgHits            }
 	#legacy: don't use these!
 	makeSHP  : { @table::MakeStrawHitPositions}
 	FlagStrawHits : { @table::FlagStrawHits}
@@ -153,6 +153,7 @@ TrkHitReco : {
 # sequences
 # production sequence to prepare hits for tracking
   PrepareHits : [ makeSH, makePH, FlagBkgHits ]
+  TTprepareHits : [ TTmakeSH, TTmakePH,TTflagBkgHits ]
 }
 
 END_PROLOG

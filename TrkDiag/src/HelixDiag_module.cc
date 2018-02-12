@@ -101,8 +101,8 @@ namespace mu2e {
       void fillHitInfoMC(art::Ptr<SimParticle> const& pspp, StrawDigiMC const& digimc, HitInfoMC& hinfomc);
       bool fillMCHelix(art::Ptr<SimParticle> const& pspp);
       // display functions
-      void plotXY(art::Ptr<SimParticle> const& pspp, HelixSeed const& myseed, unsigned ihel);
-      void plotZ(art::Ptr<SimParticle> const& pspp, HelixSeed const& myseed, unsigned ihel);
+      void plotXY(const art::Event& e, art::Ptr<SimParticle> const& pspp, HelixSeed const& myseed, unsigned ihel);
+      void plotZ(const art::Event& e, art::Ptr<SimParticle> const& pspp, HelixSeed const& myseed, unsigned ihel);
       bool use(ComboHit const& hhit) const;
       bool stereo(ComboHit const& hhit) const;
       bool primary(art::Ptr<SimParticle> const& pspp,size_t index);
@@ -294,8 +294,8 @@ namespace mu2e {
 	    (!hseed._status.hasAnyProperty(_plotexc))  &&
 	    _nprimary >= _minnprimary && _mcgen == _gen) {
 	    // fill graphs for display
-	    plotXY(pspp,hseed,ihel);
-	    plotZ(pspp,hseed,ihel);
+	    plotXY(evt,pspp,hseed,ihel);
+	    plotZ(evt,pspp,hseed,ihel);
 	}
 	
 	if(_diag > 1){
@@ -379,7 +379,7 @@ namespace mu2e {
   }
 
 
-  void HelixDiag::plotZ(art::Ptr<SimParticle> const& pspp, HelixSeed const& hseed, unsigned ihel) {
+  void HelixDiag::plotZ(art::Event const& evt, art::Ptr<SimParticle> const& pspp, HelixSeed const& hseed, unsigned ihel) {
     RobustHelix const& rhel = hseed._helix;
     ComboHitCollection const& hhits = hseed._hhits;
 
@@ -434,7 +434,8 @@ namespace mu2e {
       mct_list = mct->GetListOfFunctions();
     }
 
-    for(auto const& hhit : hhits ) {
+    for(size_t ihit=0;ihit < hhits.size(); ++ihit) {
+      ComboHit const& hhit = hhits[ihit];
     // compute the projected phi (y) error for this elipse.  Z error is always the straw width
     // create an elipse for this hit
       XYZVec that = XYZVec(-(hhit.pos().y()-rhel.centery()),(hhit.pos().x()-rhel.centerx()),0.0).unit(); // local phi direction at this hit
@@ -442,23 +443,31 @@ namespace mu2e {
       double fcent = rhel.circleAzimuth(hhit.pos().z());
       TEllipse* te = new TEllipse(hhit.pos().z(),hhit.helixPhi()-fcent,
 	hhit._tres, hhit._wres*proj/rhel.radius());
-      if(primary(pspp,hhit.index(0))){
-	if (use(hhit) ) {
-	  te->SetFillColor(kRed);
-	  te->SetLineColor(kRed);
-	  pri_used_list->Add(te);
-	} else {
-	  te->SetFillColor(kCyan);
-	  te->SetLineColor(kCyan);
-	  pri_notused_list->Add(te);
+
+      // mc truth
+      if(_mcdiag){
+	std::vector<StrawDigiIndex> sdis;
+	hhits.fillStrawDigiIndices(evt,ihit,sdis);
+
+	if(primary(pspp,sdis[0])){
+
+	  if (use(hhit) ) {
+	    te->SetFillColor(kRed);
+	    te->SetLineColor(kRed);
+	    pri_used_list->Add(te);
+	  } else {
+	    te->SetFillColor(kCyan);
+	    te->SetLineColor(kCyan);
+	    pri_notused_list->Add(te);
+	  }
 	}
-      }
-      else {
-	if (use(hhit)) {
-	  te->SetFillColor(kMagenta);
-	  te->SetLineColor(kMagenta);
-	  bkg_used_list->Add(te);
-	} 
+	else {
+	  if (use(hhit)) {
+	    te->SetFillColor(kMagenta);
+	    te->SetLineColor(kMagenta);
+	    bkg_used_list->Add(te);
+	  } 
+	}
       }
     }
   // TC hits
@@ -501,25 +510,30 @@ namespace mu2e {
 	selected_list->Add(tes);
       }
       if(_mcdiag){
-	StrawDigiMC const& mcdigi = _mcdigis->at(ich);
-	art::Ptr<StepPointMC> spmcp;
-	if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && spmcp->simParticle() == pspp){
-	  double mcdphi = atan2(spmcp->position().y()-_mch.centery(),spmcp->position().x()-_mch.centerx()) - _mch.circleAzimuth(spmcp->position().z());
-	  mcdphi -= rint(mcdphi/CLHEP::twopi)*CLHEP::twopi;
-	  TMarker* mch = new TMarker(spmcp->position().z(),mcdphi,20);
-	  mch->SetMarkerColor(kBlue);
-	  mch->SetMarkerSize(1);
-	  mct_list->Add(mch);
-    	  if(!selectedHit(ich)){
-	    te->SetLineColor(kBlue);
-	    te->SetFillColor(kBlue);
+	// get digi pointers from combo hits
+	std::vector<StrawDigiIndex> sdis;
+	_chcol->fillStrawDigiIndices(evt,ich,sdis);
+	for(auto isd : sdis) { 
+	  StrawDigiMC const& mcdigi = _mcdigis->at(isd);
+	  art::Ptr<StepPointMC> spmcp;
+	  if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && spmcp->simParticle() == pspp){
+	    double mcdphi = atan2(spmcp->position().y()-_mch.centery(),spmcp->position().x()-_mch.centerx()) - _mch.circleAzimuth(spmcp->position().z());
+	    mcdphi -= rint(mcdphi/CLHEP::twopi)*CLHEP::twopi;
+	    TMarker* mch = new TMarker(spmcp->position().z(),mcdphi,20);
+	    mch->SetMarkerColor(kBlue);
+	    mch->SetMarkerSize(1);
+	    mct_list->Add(mch);
+	    if(!selectedHit(ich)){
+	      te->SetLineColor(kBlue);
+	      te->SetFillColor(kBlue);
+	    }
 	  }
 	}
       }
     }
   }
 
-  void HelixDiag::plotXY(art::Ptr<SimParticle> const& pspp, HelixSeed const& hseed, unsigned ihel) {
+  void HelixDiag::plotXY(art::Event const& evt, art::Ptr<SimParticle> const& pspp, HelixSeed const& hseed, unsigned ihel) {
     RobustHelix const& rhel = hseed._helix;
     ComboHitCollection const& hhits = hseed._hhits;
 
@@ -617,27 +631,33 @@ namespace mu2e {
     trk_list->Add(indet);
     trk_list->Add(target);
 
-    for(auto const& hhit : hhits ) {
+    for(size_t ihit=0;ihit <  hhits.size(); ++ihit ) {
+      ComboHit const& hhit = hhits[ihit];
     // create an elipse for this hit
       TEllipse* te = new TEllipse(hhit.pos().x()-pcent.x(),hhit.pos().y()-pcent.y(),
-	hhit._wres, hhit._tres,0.0,360.0, hhit.wdir().phi()*180.0/TMath::Pi());
-      if(primary(pspp,hhit.index(0))){
-	if (use(hhit) ) {
-	  te->SetFillColor(kRed);
-	  te->SetLineColor(kRed);
-	  pri_used_list->Add(te);
+	  hhit._wres, hhit._tres,0.0,360.0, hhit.wdir().phi()*180.0/TMath::Pi());
+      // mc truth
+      if(_mcdiag){
+	std::vector<StrawDigiIndex> sdis;
+	hhits.fillStrawDigiIndices(evt,ihit,sdis);
+
+	if(primary(pspp,sdis[0])){
+	  if (use(hhit) ) {
+	    te->SetFillColor(kRed);
+	    te->SetLineColor(kRed);
+	    pri_used_list->Add(te);
+	  } else {
+	    te->SetFillColor(kCyan);
+	    te->SetLineColor(kCyan);
+	    pri_notused_list->Add(te);
+	  }
 	} else {
-	  te->SetFillColor(kCyan);
-	  te->SetLineColor(kCyan);
-	  pri_notused_list->Add(te);
+	  if (use(hhit)) {
+	    te->SetFillColor(kMagenta);
+	    te->SetLineColor(kMagenta);
+	    bkg_used_list->Add(te);
+	  } 
 	}
-      }
-      else {
-	if (use(hhit)) {
-	  te->SetFillColor(kMagenta);
-	  te->SetLineColor(kMagenta);
-	  bkg_used_list->Add(te);
-	} 
       }
     }
   // TC hits
@@ -654,7 +674,6 @@ namespace mu2e {
     }
   // all hits
     for(size_t ich = 0; ich< _chcol->size();++ich) {
-      //      if(std::find(timec->hits().begin(),timec->hits().end(),ich) == timec->hits().end() && !primary(pspp,ich)){
       auto const& ch = _chcol->at(ich);
       // create an elipse for this hit
       TEllipse* te = new TEllipse(ch._pos.x()-pcent.x(),ch._pos.y()-pcent.y(),
@@ -672,16 +691,21 @@ namespace mu2e {
 	selected_list->Add(tes);
       }
       if(_mcdiag){
-	StrawDigiMC const& mcdigi = _mcdigis->at(ich);
-	art::Ptr<StepPointMC> spmcp;
-	if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && spmcp->simParticle() == pspp){
-	  TMarker* mch = new TMarker(spmcp->position().x()-pcent.x(),spmcp->position().y()-pcent.y(),20);
-	  mch->SetMarkerColor(kBlue);
-	  mch->SetMarkerSize(1);
-	  mct_list->Add(mch);
-	  if(!selectedHit(ich)){
-	    te->SetLineColor(kBlue);
-	    te->SetFillColor(kBlue);
+	// get digi pointers from combo hits
+	std::vector<StrawDigiIndex> sdis;
+	_chcol->fillStrawDigiIndices(evt,ich,sdis);
+	for(auto isd : sdis) { 
+	  StrawDigiMC const& mcdigi = _mcdigis->at(isd);
+	  art::Ptr<StepPointMC> spmcp;
+	  if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && spmcp->simParticle() == pspp){
+	    TMarker* mch = new TMarker(spmcp->position().x()-pcent.x(),spmcp->position().y()-pcent.y(),20);
+	    mch->SetMarkerColor(kBlue);
+	    mch->SetMarkerSize(1);
+	    mct_list->Add(mch);
+	    if(!selectedHit(ich)){
+	      te->SetLineColor(kBlue);
+	      te->SetFillColor(kBlue);
+	    }
 	  }
 	}
       }

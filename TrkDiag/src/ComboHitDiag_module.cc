@@ -24,6 +24,7 @@
 #include "TTree.h"
 // data
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
@@ -46,12 +47,14 @@ namespace mu2e
     private:
       // configuration
       int _diag;
-      bool _mcdiag;
+      bool _mcdiag, _useshfcol;
       // event object Tags
       art::InputTag   _chtag;
+      art::InputTag   _shftag;
       art::InputTag   _mcdigistag;
       // event data cache
       const ComboHitCollection* _chcol;
+      const StrawHitFlagCollection* _shfcol;
       const StrawDigiMCCollection *_mcdigis;
         // time offset
       SimParticleTimeOffset _toff;
@@ -84,7 +87,9 @@ namespace mu2e
     art::EDAnalyzer(pset),
     _diag		(pset.get<int>("diagLevel",1)),
     _mcdiag		(pset.get<bool>("MCdiag",true)),
+    _useshfcol		(pset.get<bool>("UseStrawHitFlagCollection",false)),
     _chtag		(pset.get<art::InputTag>("ComboHitCollection")),
+    _shftag		(pset.get<art::InputTag>("StrawHitFlagCollection","none")),
     _mcdigistag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {}
@@ -153,7 +158,11 @@ namespace mu2e
       _time = ch.time();
       _edep = ch.energyDep();
       _qual = ch.qual();
-      StrawHitFlag const& flag = ch.flag();
+      StrawHitFlag flag;
+      if(_useshfcol)
+	flag = _shfcol->at(ich);
+      else
+	flag = ch.flag();
       _stereo = flag.hasAllProperties(StrawHitFlag::stereo);
       _tdiv = flag.hasAllProperties(StrawHitFlag::tdiv);
       _esel = flag.hasAllProperties(StrawHitFlag::energysel);
@@ -232,16 +241,20 @@ namespace mu2e
   }
 
   bool ComboHitDiag::findData(const art::Event& evt){
-    _chcol = 0;  _mcdigis = 0;
+    _chcol = 0;  _shfcol = 0; _mcdigis = 0;
     auto chH = evt.getValidHandle<ComboHitCollection>(_chtag);
     _chcol = chH.product();
+    if(_useshfcol){
+      auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shftag);
+      _shfcol = shfH.product();
+    }
     if(_mcdiag){
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigistag);
       _mcdigis = mcdH.product();
       // update time offsets
       _toff.updateMap(evt);
     }
-    return _chcol != 0 && (_mcdigis != 0 || !_mcdiag);
+    return _chcol != 0 && (!_useshfcol || _shfcol != 0) && (_mcdigis != 0 || !_mcdiag);
   }
 }
 // Part of the magic that makes this class a module.

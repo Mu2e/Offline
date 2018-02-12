@@ -17,7 +17,7 @@ TimeClusterFinder : {
   module_type               : TimeClusterFinder
   PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
   ComboHitCollection : "makePH"
-  StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   TestFlag : true
 }
 
@@ -32,13 +32,14 @@ RobustHelixFinder : {
 TTtimeClusterFinder : {
   module_type               : TimeClusterFinder
   PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
-  ComboHitCollection : "TTmakePH"
-  TestFlag : true
+  ComboHitCollection : "TTflagBkgHits"
+  StrawHitFlagCollection : "none"
+  TestFlag : false
 }
 
 TTrobustHelixFinder : {
    module_type		: RobustHelixFinder
-   ComboHitCollection : "TTmakePH"
+   ComboHitCollection : "TTflagBkgHits"
    TimeClusterCollection : "TTtimeClusterFinder"
    HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
    HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
@@ -309,6 +310,7 @@ Tracking : {
 
 # production sequence to find helices
   FindHelices : [ TimeClusterFinder, HelixFinder ]
+  TTfindHelices : [ TTtimeClusterFinder, TThelixFinder ]
 # define standard outputs 
   Output : {
     Digis : [ "keep mu2e::StrawDigis_*_*_*" ]

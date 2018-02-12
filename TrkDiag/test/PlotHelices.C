@@ -12,7 +12,7 @@
 
 class PlotHelices {
   public:
-  PlotHelices(TDirectory* tdir) : _drawfz(true), _csize(400), _tdir(tdir)
+  PlotHelices(TDirectory* tdir) : _drawfz(true), _csize(250), _tdir(tdir)
   {
   // standard names
     _names.push_back("trk_sh");
@@ -24,7 +24,7 @@ class PlotHelices {
     _names.push_back("pri_notused_sh");
     _names.push_back("pri_used_sh");
   }
-  PlotHelices(TDirectory* tdir, std::vector<std::string>const& pnames) : _drawfz(true), _csize(400) ,_tdir(tdir),  _names(pnames) {}
+  PlotHelices(TDirectory* tdir, std::vector<std::string>const& pnames) : _drawfz(true), _csize(250) ,_tdir(tdir),  _names(pnames) {}
   
   void plot(int nmax=20, int nps=3,const char* canname="hcan");
 
@@ -100,6 +100,13 @@ void PlotHelices::plot(int nmax, int nps,const char* canname){
 	}
       }
     }
+  }
+  // save last canvas
+  if(ican > 0){
+    char fname[100];
+    snprintf(fname,100,"%s.png",cans[ican]->GetTitle());
+    cans[ican]->Update();
+    cans[ican]->SaveAs(fname);
   }
 }
 

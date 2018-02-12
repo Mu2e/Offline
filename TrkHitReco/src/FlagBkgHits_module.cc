@@ -178,10 +178,6 @@ namespace mu2e
     // guess on the size.
     bkgccol.reserve(nch/2);
     BkgQualCollection bkgqcol;
-    ComboHitCollection chcol;
-    chcol.reserve(nch);
-    // same parent as the original collection
-    chcol.setParent(_chcol->parent());
     StrawHitFlagCollection chfcol(nch);
     // find clusters
     _clusterer->findClusters(bkgccol,*_chcol);
@@ -205,14 +201,18 @@ namespace mu2e
     }
 
     if(_filter){
+      std::unique_ptr<ComboHitCollection> chcol(new ComboHitCollection);
+      chcol->reserve(nch);
+      // same parent as the original collection
+      chcol->setParent(_chcol->parent());
       for(size_t ich=0;ich < nch; ++ich){
 	StrawHitFlag const& flag = chfcol[ich];
 	if(!flag.hasAnyProperty(_bkgmsk)) {
-	  chcol.push_back((*_chcol)[ich]);
-	  chcol.back()._flag.merge(flag);
+	  chcol->push_back((*_chcol)[ich]);
+	  chcol->back()._flag.merge(flag);
 	}
       }
-      event.put(std::move(std::unique_ptr<ComboHitCollection>(new ComboHitCollection(chcol))));
+      event.put(std::move(std::move(chcol)));
     }
     if(_flagsh){
       auto shH = event.getValidHandle<StrawHitCollection>(_shtag);
@@ -223,10 +223,10 @@ namespace mu2e
       if(shcol->size() != shchcol->size())
 	throw cet::exception("RECO")<< "FlagBkgHits: Collection sizes don't match" << std::endl;
       // first, copy over the original flags
-      unsigned nsh = shcol->size(); 
-      StrawHitFlagCollection shfcol(nsh);
+      unsigned nsh = shcol->size();
+      std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(nsh));
       for(size_t ish =0;ish < shcol->size(); ++ish){
-	shfcol[ish] = (*shchcol)[ish].flag();
+	(*shfcol)[ish] = (*shchcol)[ish].flag();
       }
       // then copy the background flag content down to straw hit level
       std::vector<StrawHitIndex> shids;
@@ -235,15 +235,15 @@ namespace mu2e
 	shids.clear();
 	_chcol->fillStrawHitIndices(event,ich,shids);
 	for(auto shid : shids)
-	  shfcol.at(shid).merge(flag); // check range here for safety
+	  shfcol->at(shid).merge(flag); // check range here for safety
       }
-      event.put(std::move(std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection(shfcol))),"StrawHits");
+      event.put(std::move(shfcol),"StrawHits");
     }
     if(_flagch){
       // copy in original combohit flags
       for(size_t ich=0;ich < nch; ++ich)
 	chfcol[ich].merge((*_chcol)[ich].flag());
-      event.put(std::move(std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection(chfcol))),"ComboHits");
+      event.put(std::move(std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection(std::move(chfcol)))),"ComboHits");
     }
     if(_savebkg){
       event.put(std::move(std::unique_ptr<BkgClusterCollection>(new BkgClusterCollection(bkgccol))));
