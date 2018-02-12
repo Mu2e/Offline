@@ -27,6 +27,9 @@ physics :
 producers :
   {
     @table::EventMixing.producers
+    @table::TrackerMC.producers
+    @table::TrkHitReco.producers
+    @table::EventMixing.producers
     @table::Tracking.producers
   }
 
@@ -37,25 +40,19 @@ filters :
 
 analyzers :
   {
-    BkgDiag : {
-      module_type : BkgDiag
-      TimeOffsets : {
-        inputs : [ "protonTimeMap", "muonTimeMap" ] 
-      }
-      StrawHitFlagCollectionTag : "FlagBkgHits"
-      diagLevel : 2
-    }
+    BD: @local::BD
   }
 }
 
-physics.BkgEndPath : [BkgDiag]
+physics.BkgEndPath : [BD]
 physics.BkgTriggerPath  : [
   @sequence::EventMixing.CD3Mixers,
   @sequence::EventMixing.TimeMaps,
-  @sequence::Tracking.DigiSim,
-  @sequence::Tracking.PrepareHits ]
+  @sequence::TrackerMC.DigiSim,
+  @sequence::TrkHitReco.PrepareHits   
+]
 
-
+physics.producers.FlagBkgHits.SaveBkgClusters : true
 # the following are needed for interactive running.  They will be overwritten if you submit this job
 # on the grid with mu2eart and do not need to be removed.
 services.SeedService.baseSeed         :  773651
