@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <string>
 #include <vector>
+#include <boost/functional/hash.hpp>
 
 // Framework includes
 #include "cetlib_except/exception.h"
@@ -48,10 +49,13 @@ namespace mu2e {
   SimpleConfig::SimpleConfig( const string& filename,
                               bool allowReplacement,
                               bool messageOnReplacement,
-                              bool messageOnDefault ):
+                              bool messageOnDefault):
+    _inputFileString(filename),
+    _inputFileHash(0),
+    _inputFileLines(0),
     _allowReplacement(allowReplacement),
     _messageOnReplacement(messageOnReplacement),
-    _messageOnDefault(messageOnDefault){
+    _messageOnDefault(messageOnDefault)     {
 
     ConfigFileLookupPolicy configFile;
     _inputfile = configFile(filename);
@@ -551,6 +555,10 @@ namespace mu2e {
         break;
       }
 
+      // collect contribution to the hash
+      boost::hash_combine<string>(_inputFileHash,line);
+      _inputFileLines++;
+
       // Remove comments.
       line = StripComment(line);
 
@@ -567,6 +575,10 @@ namespace mu2e {
             // ?? Check eofbit to be sure.  Could also be failbit or badbit.
             break;
           }
+
+	  // collect contribution to the hash
+	  boost::hash_combine<string>(_inputFileHash,line);
+	  _inputFileLines++;
 
           nextline = StripComment(nextline);
           if ( WantsExtension(nextline) ){
@@ -766,6 +778,9 @@ namespace mu2e {
 
     // Read the included file; copy verbosity control from this object.
     SimpleConfig nestedFile(fname,_allowReplacement,_messageOnReplacement,_messageOnDefault);
+    // collect contribution to the hash
+    boost::hash_combine<std::size_t>(_inputFileHash,nestedFile.inputFileHash());
+    _inputFileLines += nestedFile.inputFileLines();
 
     // Copy the contents of the included file into this one.
     for ( Image_type::const_iterator i=nestedFile._image.begin();
@@ -811,6 +826,12 @@ namespace mu2e {
 
   } // end maxKeySize
 
+
+  void SimpleConfig::printOpen( std::ostream& ost, std::string tag ) const{
+    std::cout << tag << " file: "<< _inputfile << std::endl;
+    std::cout << tag << " lines: "<< _inputFileLines 
+	      <<"  hash: " << _inputFileHash << std::endl;
+  }
 
   void SimpleConfig::printStatisticsByType ( std::ostream& ost, std::string tag ) const{
 
