@@ -11,30 +11,30 @@ Tracking.filters : {
 # filters for track hit clustering
   TCFilter : {
     module_type : TimeClusterFilter
-    TimeClusterCollection : "TimeClusterFinder"
+    TimeClusterCollection : "TTtimeClusterFinder"
   }
 # filters for either positive or negative helicity tracks near the CE energy
   PosHelixFilter : {
     module_type : HelixFilter
-    HelixSeedCollection : "HelixFinder:Positive"
+    HelixSeedCollection : "TThelixFinder:Positive"
   }
   NegHelixFilter : {
     module_type : HelixFilter
-    HelixSeedCollection : "HelixFinder:Negative"
+    HelixSeedCollection : "TThelixFinder:Negative"
   }
 # filters for CE candidates (downstream eminus near 100 MeV/c)
   DeMSeedFilter : {
     module_type : SeedFilter
-    KalSeedCollection : "KSFDeM"
+    KalSeedCollection : "TTKSFDeM"
   }
   DeMKalFilter : {
     module_type : SeedFilter
-    KalSeedCollection : "KFFDeM"
+    KalSeedCollection : "TTKFFDeM"
   }
 # filters for upstream electron backgrounds (cosmic rays)
   UeMSeedFilter : {
     module_type : SeedFilter
-    KalSeedCollection : "KSFUeM"
+    KalSeedCollection : "TTKSFUeM"
   }
 # Other filters FIXME!!
 # calibration filters
@@ -55,11 +55,11 @@ Tracking.filters : {
 
 # sequences for different trigger paths.  Early triggers are prescaled
 Tracking.Trigger : {
-  TCFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter,  TCPrescale  ]
-  PosHelixFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, HelixFinder, PosHelixFilter, PosHelixPrescale   ]
-  DeMSeedFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, HelixFinder, PosHelixFilter, KSFDeM, DeMSeedFilter ]
-  UeMSeedFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, HelixFinder, NegHelixFilter, KSFUeM, UeMSeedFilter ]
-  DeMKalFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, HelixFinder, PosHelixFilter, KSFDeM, DeMSeedFilter, KFFDeM, DeMKalFilter ]
+  TCFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter,  TCPrescale  ]
+  PosHelixFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, PosHelixPrescale   ]
+  DeMSeedFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, TTKSFDeM, DeMSeedFilter ]
+  UeMSeedFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, NegHelixFilter, TTKSFUeM, UeMSeedFilter ]
+  DeMKalFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, TTKSFDeM, DeMSeedFilter, TTKFFDeM, DeMKalFilter ]
 # add sequences for upstream, calibration, ...  FIXME!
 }
 END_PROLOG

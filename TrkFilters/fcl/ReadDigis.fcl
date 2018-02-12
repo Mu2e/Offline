@@ -28,7 +28,7 @@ services.TimeTracker : {
 physics :
 {
   producers : {
-    @table::Tracking.producers
+    @table::Tracking.TrkTrigger.producers
   }
   filters : {
     @table::Tracking.filters

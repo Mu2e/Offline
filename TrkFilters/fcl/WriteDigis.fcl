@@ -25,7 +25,9 @@ physics :
 {
   producers : {
     @table::EventMixing.producers
-    @table::Tracking.producers
+    @table::TrackerMC.producers
+    @table::TrkHitReco.producers
+    @table::Tracking.TrkTrigger.producers
     @table::CaloDigiMC.producers
   }
   filters : {
@@ -49,7 +51,7 @@ outputs: {
 
 physics.WriteDigisTrigPath : [   @sequence::EventMixing.CD3Mixers,
   @sequence::EventMixing.TimeMaps, 
-  @sequence::Tracking.DigiSim,
+  @sequence::TrackerMC.DigiSim,
   @sequence::CaloDigiMC.DigiSim 
   ]
 physics.WriteDigisEndPath : [ WriteDigis ]
