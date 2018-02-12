@@ -448,16 +448,6 @@ namespace mu2e {
       art::ProductInstanceNameSelector selector(_trackerStepPoints);
       HandleVector stepsHandles;
       event.getMany( selector, stepsHandles);
-      // Informational message on the first event.
-      if ( _firstEvent ) {
-	mf::LogInfo log(_messageCategory);
-	log << "StrawDigisFromStepPointMCs::fillHitMap will use StepPointMCs from: \n";
-	for ( HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end();
-	    i != e; ++i ){
-	  art::Provenance const& prov(*(i->provenance()));
-	  log  << "   " << prov.branchName() << "\n";
-	}
-      }
       if(stepsHandles.empty()){
 	throw cet::exception("SIM")<<"mu2e::StrawDigisFromStepPointMCs: No StepPointMC collections found for tracker" << endl;
       }

@@ -457,9 +457,6 @@ namespace mu2e {
       mvi->reserve(1 + ih->size());
       mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
     }
-    cout << __func__ << " Append volume info " <<  endl;
-    cout << __func__ << " multiStagePars_.simParticleNumberOffset() " 
-         << multiStagePars_.simParticleNumberOffset() <<  endl;
 
     // Append info for the current stage
     mvi->emplace_back(std::make_pair(multiStagePars_.simParticleNumberOffset(), _physVolHelper.persistentSingleStageInfo()));

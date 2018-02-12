@@ -61,10 +61,6 @@ namespace mu2e {
 
     const string format = config.getString("bfield.format","GMC");
 
-    if ( style != BFInterpolationStyle::meco ){
-      cout << "Changing magnetic field interpolation style to: " << style << endl;
-    }
-
     if ( format == "GMC" && style != BFInterpolationStyle::meco ){
         throw cet::exception("GEOM")
           << "The GMC magnetic field model must use the meco style interpolation: "
