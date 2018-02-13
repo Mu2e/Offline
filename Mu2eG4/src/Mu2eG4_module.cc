@@ -78,6 +78,8 @@
 #include "G4Run.hh"
 #include "G4Timer.hh"
 #include "G4VUserPhysicsList.hh"
+#include "G4ParticleHPManager.hh"
+#include "G4HadronicProcessStore.hh"
 #include "G4RunManagerKernel.hh"
 #include "G4RunManager.hh"
 #include "G4SDManager.hh"
@@ -374,11 +376,14 @@ namespace mu2e {
  
     _runManager->SetVerboseLevel(_rmvlevel);
 
-
     _runManager->SetUserInitialization(allMu2e);
 
     G4VUserPhysicsList* pL = physicsListDecider(pset_);
     pL->SetVerboseLevel(_rmvlevel);
+
+    G4ParticleHPManager::GetInstance()->SetVerboseLevel(_rmvlevel);
+
+    G4HadronicProcessStore::Instance()->SetVerbose(_rmvlevel);
 
     _runManager->SetUserInitialization(pL);
 

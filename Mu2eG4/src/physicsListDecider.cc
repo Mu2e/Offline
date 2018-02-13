@@ -185,6 +185,7 @@ namespace mu2e{
     // General case
     else {
       G4PhysListFactory physListFactory;
+      physListFactory.SetVerbose(getDiagLevel(config)+1);
       tmpPL = physListFactory.GetReferencePhysList(name);
 
     }
