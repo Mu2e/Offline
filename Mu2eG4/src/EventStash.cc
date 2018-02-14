@@ -70,9 +70,9 @@ void EventStash::insertData(int position_to_insert, int instance_num,
         //_myVectorOfPerEventData.at(position_to_insert) = StashPerEventData(integer_to_insert);
         _myVectorOfPerEventData.at(position_to_insert).instanceNumber = instance_num;
         
-        if (position_to_insert%10 == 0) {
-        std::cout << "calling EventStash::insertData() for the --" << position_to_insert << "-- element of the stash"  << std::endl;
-        }
+//        if (position_to_insert%10 == 0) {
+//        std::cout << "calling EventStash::insertData() for the --" << position_to_insert << "-- element of the stash"  << std::endl;
+//        }
         
         _myVectorOfPerEventData.at(position_to_insert).sims = std::move(sim_collection);
         _myVectorOfPerEventData.at(position_to_insert).status = std::move(g4_status);

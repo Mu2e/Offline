@@ -41,7 +41,7 @@ void Mu2eG4MasterRunAction::BeginOfRunAction(const G4Run* aRun)
         for (unsigned i = 0; i < PhysicsProcessInfoVector->size(); i++) {
             PhysicsProcessInfoVector->at(i).beginRun();
             
-            std::cout << "calling PPI.beginRun() for PPI.at " << i << std::endl;
+            //std::cout << "calling PPI.beginRun() for PPI.at " << i << std::endl;
             
         }
         //_processInfo->beginRun();
