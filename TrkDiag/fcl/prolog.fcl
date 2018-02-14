@@ -131,7 +131,6 @@ BEGIN_PROLOG
 	ComboHitCollection : "makePH"
 	UseFlagCollection : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-	diagLevel : 2
 	TimeOffsets : {
 	  inputs : [ "protonTimeMap", "muonTimeMap" ]
 	}

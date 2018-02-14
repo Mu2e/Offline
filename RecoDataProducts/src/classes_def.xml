@@ -29,6 +29,7 @@
  <class name="mu2e::CaloCluster"/>
  <class name="mu2e::CaloClusterCollection"/>
  <class name="mu2e::ComboHit"/>
+ <class name="std::vector<mu2e::ComboHit>"/>
  <class name="mu2e::ComboHitCollection"/>
  <class name="mu2e::HelixHit"/>
  <class name="mu2e::HelixHitCollection"/>
