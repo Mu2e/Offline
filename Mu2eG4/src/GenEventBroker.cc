@@ -51,7 +51,7 @@ void GenEventBroker::loadEvent(HitHandles const& gen_input_hits,
                                )
     {
 
-        std::cout << "we are in GEB::loadEvent()" << std::endl;
+        //std::cout << "we are in GEB::loadEvent()" << std::endl;
 
         _genInputHits = &gen_input_hits;
         _simParticleID = sim_part_ID;
@@ -88,11 +88,10 @@ void GenEventBroker::loadEvent(HitHandles const& gen_input_hits,
         {
             if (genCollectionsHandle.isValid())
             {
-                std::cout << "in GEB genCollectionsHandle is valid" << std::endl;
+                //std::cout << "in GEB genCollectionsHandle is valid" << std::endl;
                 //size of stash is based on size of input GenParticleCollections
                 eventStashSize = genCollectionsHandle.product()->size();
-                std::cout << "The Collection of GenParticleCollections has " << eventStashSize
-                << " elements" << std::endl;
+                //std::cout << "The Collection of GenParticleCollections has " << eventStashSize << " elements" << std::endl;
             }
             else
             {

@@ -530,7 +530,7 @@ void Mu2eG4::produce(art::Event& event) {
         _genEventBroker.loadEvent(genInputHits, simPartId, &event, _generatorModuleLabel, &_StashForEventData, simProductGetter);
         
         //getStashSize() can only be called after loadEvent is called
-        cout << "In produce, the size of the GPC stash is " << _genEventBroker.getStashSize() << endl;
+        //cout << "In produce, the size of the GPC stash is " << _genEventBroker.getStashSize() << endl;
 
         
         //I think that, ultimately, the event stash size will be determined by the GenParticleCollection (gen particle stash size)
@@ -542,11 +542,11 @@ void Mu2eG4::produce(art::Event& event) {
         {
             //_StashForEventData.initializeStash(_genEventBroker.getStashSize());
             _StashForEventData.initializeStash(numberOfEventsToBeProcessed);
-            std::cout << "in MT mode, the EVENT STASH is initialized to " << _StashForEventData.getStashSize() <<  " elements long" << std::endl;
+            //std::cout << "in MT mode, the EVENT STASH is initialized to " << _StashForEventData.getStashSize() <<  " elements long" << std::endl;
         }
         else//in sequential mode, the stash size is 1
         {
-            std::cout << "in sequential mode, the stash is initialized to 1 element long" << std::endl;
+            //std::cout << "in sequential mode, the stash is initialized to 1 element long" << std::endl;
             _StashForEventData.initializeStash(1);
             
         }
@@ -559,7 +559,7 @@ void Mu2eG4::produce(art::Event& event) {
 
         // Run G4 for this event and access the completed event.
         BeamOnDoOneArtEvent( event.id().event(), numberOfEventsToBeProcessed );
-        std::cout << "WE GOT PAST BeamOn in produce! " << std::endl;
+//        std::cout << "WE GOT PAST BeamOn in produce! " << std::endl;
         
         _genEventBroker.setEventPtrToZero();
 
@@ -567,12 +567,11 @@ void Mu2eG4::produce(art::Event& event) {
     }//end if stash is empty, simulate events
 
     
-    if (stashInstanceToStore%10 == 0){
-    std::cout << "___________________________________________________________" << endl;
-    std::cout << "In produce, EVENT STASH IS NOT EMPTY at event #" << event.id() << ". We have an event stash of size = " << _StashForEventData.getStashSize() << endl;
-    std::cout << "in produce, putting the --" << stashInstanceToStore << "-- element of the stash into the event " << std::endl;
-        
-    }
+//    if (stashInstanceToStore%10 == 0){
+//    std::cout << "___________________________________________________________" << endl;
+//    std::cout << "In produce, EVENT STASH IS NOT EMPTY at event #" << event.id() << ". We have an event stash of size = " << _StashForEventData.getStashSize() << endl;
+//    std::cout << "in produce, putting the --" << stashInstanceToStore << "-- element of the stash into the event " << std::endl;
+//    }
     
     event.put(std::move(_StashForEventData.getG4Status(stashInstanceToStore)));
     
@@ -728,7 +727,7 @@ void Mu2eG4::produce(art::Event& event) {
     
     if (stashInstanceToStore == _StashForEventData.getStashSize()) {
         _StashForEventData.clearStash();
-        std::cout << "AFTER Clear, size of stash = " << _StashForEventData.getStashSize() << endl;
+        //std::cout << "AFTER Clear, size of stash = " << _StashForEventData.getStashSize() << endl;
 
     }
 

@@ -152,7 +152,10 @@ namespace mu2e{
   } // PhysicsProcessInfo::beginRun
 
   void PhysicsProcessInfo::endRun(){
-    printSummary(cout);
+      
+      //NEED TO PUT IN SOME PRINT SUMMARY FOR SEQUENTIAL MODE OR A SINGLE SUMMARRY IN MT
+      //MODE.  RIGHT NOW WE GET ONE SUMMARY FOR EACH TRHEAD.
+      //printSummary(cout);
     // printAll(cout);
   }
 

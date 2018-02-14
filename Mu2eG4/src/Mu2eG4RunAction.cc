@@ -53,9 +53,9 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
         if (use_G4MT_ == true)//MT mode
         {
             
-            if (G4Threading::G4GetThreadId() == 0) {
-                std::cout << "AT Mu2eG4RunAction::BeginOfRunAction in MT mode in Thread#0" << std::endl;
-            }
+            //if (G4Threading::G4GetThreadId() == 0) {
+            //    std::cout << "AT Mu2eG4RunAction::BeginOfRunAction in MT mode in Thread#0" << std::endl;
+            //}
             
 
             if(IsMaster() == false)//do only in Worker Threads if in MT mode
@@ -78,7 +78,7 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
         }//MT mode
         else//sequential mode
         {
-            std::cout << "AT Mu2eG4RunAction::BeginOfRunAction in sequential mode" << std::endl;
+            //std::cout << "AT Mu2eG4RunAction::BeginOfRunAction in sequential mode" << std::endl;
 
             _sensitiveDetectorHelper->registerSensitiveDetectors();
             /* THIS NEEDS TO BE ACTIVATED ONCE EVERYTHING IS WORKING
@@ -106,7 +106,7 @@ void Mu2eG4RunAction::EndOfRunAction(const G4Run* aRun)
     {
         if (use_G4MT_ == false)//sequential mode
         {
-        std::cout << "calling Mu2eG4RA::EndOfRunAction()" << std::endl;
+        //std::cout << "calling Mu2eG4RA::EndOfRunAction()" << std::endl;
         _processInfo->endRun();
         // _physVolHelper.endRun(); is this really an endJob action that can be done in module?
         }

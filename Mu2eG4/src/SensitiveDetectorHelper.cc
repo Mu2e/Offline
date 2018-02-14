@@ -167,10 +167,9 @@ void SensitiveDetectorHelper::registerSensitiveDetectors(){
         {
             StepInstance& step(i->second);
             
-            if (G4Threading::G4GetThreadId() <= 0) {
-
-                std::cout << "in SDH::registerSDs, registering SD: " << step.stepName <<std::endl;
-            }
+            //if (G4Threading::G4GetThreadId() <= 0) {
+            //    std::cout << "in SDH::registerSDs, registering SD: " << step.stepName <<std::endl;
+            //}
             
             step.sensitiveDetector =
             dynamic_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str()));
