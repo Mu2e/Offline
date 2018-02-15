@@ -207,7 +207,7 @@ void
       // Parse phyiscs information from TRK packets
       if(mode_ == "TRK" && packetCount>0) {
 
-	adc_t strawIdx = cc.DBT_StrawIndex(pos);
+	uint16_t strawIdx = cc.DBT_StrawIndex(pos);
 	unsigned long TDC0  = cc.DBT_TDC0(pos);
 	unsigned long TDC1  = cc.DBT_TDC1(pos);
 
@@ -217,7 +217,7 @@ void
 	mu2e::TrkTypes::TDCValues tdc;
 	tdc[0] = TDC0;
 	tdc[1] = TDC1;
-	mu2e::StrawIndex sid(strawIdx);
+	mu2e::StrawId sid(strawIdx);
 
 	// TOT needs to be added to the bytestream format FIXME!!!
 	mu2e::TrkTypes::TOTValues tot;

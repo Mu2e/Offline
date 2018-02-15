@@ -26,7 +26,7 @@ int mu2e::ValStrawDigi::fill(const mu2e::StrawDigiCollection & coll,
       _htdc->Fill(sd.TDC()[ie]);
     }
     for(auto const& a : sd.adcWaveform()) _hadc->Fill(a); // ADC values (ints)
-    _hSI->Fill(sd.strawIndex().asInt()); // <23,040
+    _hSI->Fill(sd.strawId().asUint16()); // <23,040
   }
   return 0;
 }

@@ -212,9 +212,9 @@ namespace mu2e {
 	  tots[iend] = digi.TOT(_end[iend])*strawele->totLSB();
 	}
 	//create straw hit; this is currently required by the wireDistance function FIXME!
-	StrawHit hit(digi.strawIndex(),times,tots,energy);
+	StrawHit hit(tt.getStrawIndex(digi.strawId()),times,tots,energy);
 	// get distance along wire from the straw center and it's estimated error
-	const Straw& straw  = tracker.getStraw( digi.strawIndex() );
+	const Straw& straw  = tracker.getStraw( digi.strawId() );
 	float dw, dwerr;
 	bool td = srep->wireDistance(hit,straw.getHalfLength(),dw,dwerr);
 	XYZVec pos = Geom::toXYZVec(straw.getMidPoint()+dw*straw.getDirection());

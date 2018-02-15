@@ -23,6 +23,8 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 // helpers
 #include "TrkHitReco/inc/PeakFit.hh"
 #include "TrkHitReco/inc/PeakFitRoot.hh"
@@ -117,8 +119,8 @@ namespace mu2e {
 
   void StrawHitsFromStrawDigis::produce(art::Event& event) {
     if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis produce " << endl;
+    const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
 // update conditions
-    
     ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
     ConditionsHandle<StrawPhysics> strawphys = ConditionsHandle<StrawPhysics>("ignored");
     unique_ptr<StrawHitCollection>             strawHits(new StrawHitCollection);
@@ -160,7 +162,8 @@ namespace mu2e {
       // the gain should come from a straw-dependent database FIXME!!
       double energy = strawphys->ionizationEnergy(params._charge/strawphys->strawGain());
       // crate the straw hit and append it to the list
-      StrawHit newhit(digi.strawIndex(),times,tots,energy);
+      // translate to strawIndex FIXME!
+      StrawHit newhit(tracker.getStrawIndex(digi.strawId()),times,tots,energy);
       strawHits->push_back(newhit);
     }
     // put objects into event

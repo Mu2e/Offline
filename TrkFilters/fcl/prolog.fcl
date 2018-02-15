@@ -32,10 +32,14 @@ TrkTrigger : {
       module_type : SeedFilter
       KalSeedCollection : "TTKFFDeM"
     }
-# filters for upstream electron backgrounds (cosmic rays)
-    UeMSeedFilter : {
+# filters for downstream positrons (mu- -> e+ conversion) 
+    DePSeedFilter : {
       module_type : SeedFilter
-      KalSeedCollection : "TTKSFUeM"
+      KalSeedCollection : "TTKSFDeP"
+    }
+    DePKalFilter : {
+      module_type : SeedFilter
+      KalSeedCollection : "TTKFFDeP"
     }
 # Other filters FIXME!!
 # calibration filters
@@ -59,7 +63,7 @@ TrkTrigger : {
     TCFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter,  TCPrescale  ]
     PosHelixFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, PosHelixPrescale   ]
     DeMSeedFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, TTKSFDeM, DeMSeedFilter ]
-    UeMSeedFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, NegHelixFilter, TTKSFUeM, UeMSeedFilter ]
+    DePSeedFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, NegHelixFilter, TTKSFDeP, DePSeedFilter ]
     DeMKalFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, TTKSFDeM, DeMSeedFilter, TTKFFDeM, DeMKalFilter ]
 # add sequences for upstream, calibration, ...  FIXME!
   }

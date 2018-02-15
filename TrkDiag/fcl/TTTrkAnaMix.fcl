@@ -1,0 +1,117 @@
+#
+#  This script runs the TrackAnalsys module to create a prototype track-based analysis TTree with background mixing.
+#  To run interactively, this file must be sourced after the prolog declaration of bkgHitFiles.  It can be run
+#  on the grid by specifying that parameter in the mu2eart or mu2eSysProd command.
+#
+# David Brown (LBNL) 13 July 2016
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+# list mixed background frames in the following file
+#include "bkgfiles.fcl"
+
+process_name : TrkAnaMix
+
+source :
+{
+  module_type : RootInput
+}
+
+services : @local::Services.SimAndReco
+
+physics :
+{
+  filters : @local::TrkAna.filters
+  producers :
+  {
+    @table::EventMixing.producers
+    @table::TrackerMC.producers
+    @table::TrkHitReco.producers
+    @table::Tracking.producers
+    @table::Tracking.TrkTrigger.producers
+    TTKSFDeM : @local::TTKSF
+    TTKSFUeM : @local::TTKSF
+    TTKSFDmuM : @local::TTKSF
+    TTKFFDeM : @local::TTKFF
+    TTKFFUeM : @local::TTKFF
+    TTKFFDmuM : @local::TTKFF
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
+    @table::CaloCluster.producers
+    TTTCIDem : {
+      @table::TrackCaloMatching.producers.TrackCaloIntersectionDem
+      fitterModuleLabel : "TTKFFDeM"
+    }
+    TTTCMDem : { 
+      @table::TrackCaloMatching.producers.TrackCaloMatchingDem
+      fitterModuleLabel : "TTKFFDeM"
+      trkToCaloExtrapolModuleLabel : "TTTCIDem"
+    }
+  }
+   
+    analyzers :
+  {
+    @table::TrkDiag.analyzers
+    TTTrkAna: @local::TrackAnalysis
+  }
+}
+
+physics.producers.TTKSFDeM.SeedCollection      : "TThelixFinder:Positive"
+physics.producers.TTKSFDeM.fitparticle	      : @local::Particle.eminus
+physics.producers.TTKSFDeM.fitdirection	      : @local::FitDir.downstream 
+
+physics.producers.TTKSFUeM.SeedCollection      : "TThelixFinder:Negative"
+physics.producers.TTKSFUeM.fitparticle	      : @local::Particle.eminus
+physics.producers.TTKSFUeM.fitdirection	      : @local::FitDir.upstream 
+
+physics.producers.TTKSFDmuM.SeedCollection    : "TThelixFinder:Positive"
+physics.producers.TTKSFDmuM.fitparticle	      : @local::Particle.muminus
+physics.producers.TTKSFDmuM.fitdirection      : @local::FitDir.downstream 
+
+physics.producers.TTKFFDeM.SeedCollection      : "TTKSFDeM"
+physics.producers.TTKFFDeM.fitparticle	      : @local::Particle.eminus
+physics.producers.TTKFFDeM.fitdirection	      : @local::FitDir.downstream 
+
+physics.producers.TTKFFUeM.SeedCollection      : "TTKSFUeM"
+physics.producers.TTKFFUeM.fitparticle	      : @local::Particle.eminus
+physics.producers.TTKFFUeM.fitdirection	      : @local::FitDir.upstream 
+
+physics.producers.TTKFFDmuM.SeedCollection    : "TTKSFDmuM"
+physics.producers.TTKFFDmuM.fitparticle	      : @local::Particle.muminus
+physics.producers.TTKFFDmuM.fitdirection      : @local::FitDir.downstream 
+
+
+
+
+physics.analyzers.TTTrkAna.DownstreameMinusTrackTag : "TTKFFDeM"
+physics.analyzers.TTTrkAna.UpstreameMinusTrackTag : "TTKFFUeM"
+physics.analyzers.TTTrkAna.DownstreammuMinusTrackTag : "TTKFFDmuM"
+physics.analyzers.TTTrkAna.TrkCaloDiag.caloMatchingRoot : "TTTCM"
+physics.analyzers.TTTrkAna.diagLevel : 2
+# setup paths.  Art will handle these automatically
+physics.TrigPath: [ 
+  @sequence::EventMixing.CD3Mixers,
+  @sequence::EventMixing.TimeMaps,
+  @sequence::TrackerMC.DigiSim,
+  @sequence::CaloDigiMC.DigiSim,
+  @sequence::CaloReco.Reco,
+  @sequence::CaloCluster.Reco, 
+  @sequence::TrkHitReco.TTprepareHits,
+  @sequence::Tracking.TTfindHelices,
+  TTKSFDeM, TTKFFDeM,
+  TTKSFUeM, TTKFFUeM,
+  TTKSFDmuM, TTKFFDmuM,
+  TTTCIDem, TTTCMDem ]
+physics.EndPath : [ TTTrkAna ]
+
+# You can add detailed (hit) information to the TTree by setting diagLevel to 2
+# background mixing files must be specified after all prolog, outside this file, either as additional
+# fcl in a grid job, or by nesting this script.
+#include "EventMixing/fcl/epilog.fcl"
+# the following are needed for interactive running
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+
+

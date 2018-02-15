@@ -19,13 +19,13 @@ namespace mu2e {
 
   // Default constructor is required for persistable classes
   StrawDigiMC::StrawDigiMC()
-    : _strawIndex(StrawIndex::NO_STRAW)
+    : _strawid(StrawId::_invalid)
   {}
 
-  StrawDigiMC::StrawDigiMC(StrawIndex index, double wetime[2],
+  StrawDigiMC::StrawDigiMC(StrawId sid, double wetime[2],
       CLHEP::HepLorentzVector cpos[2], 
       art::Ptr<StepPointMC> stepMC[2], vector<art::Ptr<StepPointMC> > const& stepMCs) :
-    _strawIndex(index), _stepMCs(stepMCs)
+    _strawid(sid), _stepMCs(stepMCs)
   {
     for(size_t strawend=0;strawend<2;++strawend){
       _wetime[strawend] = wetime[strawend];
@@ -35,7 +35,7 @@ namespace mu2e {
   }
 
   StrawDigiMC::StrawDigiMC(StrawDigiMC const& other ) : 
-    _strawIndex(other._strawIndex), _stepMCs(other._stepMCs) {
+    _strawid(other._strawid), _stepMCs(other._stepMCs) {
     for(size_t strawend=0;strawend<2;++strawend){
       _wetime[strawend] = other._wetime[strawend];
       _cpos[strawend] = other._cpos[strawend];
@@ -47,7 +47,7 @@ namespace mu2e {
     double retval = -100.0;
     if(!_stepMC[strawend].isNull()){
       const Tracker& tracker = getTrackerOrThrow();
-      // use the MC true index, not the straws index (digi could be from x-talk)
+      // use the MC true sid, not the straws sid (digi could be from x-talk)
       Straw const& straw = tracker.getStraw(_stepMC[strawend]->strawIndex());
       retval = (_cpos[strawend] - straw.getMidPoint()).perp(straw.getDirection());
     }
@@ -67,7 +67,8 @@ namespace mu2e {
   bool StrawDigiMC::isCrossTalk(StrawEnd strawend) const {
     bool retval(false);
     if(!_stepMC[strawend].isNull()){
-      retval = _strawIndex == _stepMC[strawend]->strawIndex();
+    // this is currently broken till we replace starwIndex with strawId FIXME!!
+      //retval = _strawid == _stepMC[strawend]->strawIndex();
     }
     return retval;
   }

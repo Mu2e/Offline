@@ -58,7 +58,7 @@ int mu2e::ValStrawDigiMC::fill(const mu2e::StrawDigiMCCollection & coll,
       _henerT->Fill(sd.triggerEnergySum(TrkTypes::hv));
       if(sd.isCrossTalk(TrkTypes::cal)) _hcross->Fill(0.0);
       if(sd.isCrossTalk(TrkTypes::hv) ) _hcross->Fill(1.0);
-      _hSI->Fill(sd.strawIndex().asInt()); // <23,040
+      _hSI->Fill(sd.strawId().asUint16()); // <23,040
     }
   }
   return 0;

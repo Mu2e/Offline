@@ -90,7 +90,7 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
   }
 
   if (verbose()==1) {
-    os << " " << std::setw(5) << obj.strawIndex().asInt()
+    os << " " << std::setw(5) << obj.strawId().asUint16()
        << " " 
        << " " << std::setw(8) << std::setprecision(2) 
            << obj.wireEndTime(TrkTypes::cal)
@@ -107,7 +107,7 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
     os << std::endl;
   } else if (verbose()==2) {
 
-    os << " index :" << std::setw(5) << obj.strawIndex().asInt()
+    os << " index :" << std::setw(5) << obj.strawId().asUint16()
        << " " 
        << " time0: " << std::setw(8) << std::setprecision(2) 
                   << obj.wireEndTime(TrkTypes::cal)

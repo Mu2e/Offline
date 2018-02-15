@@ -233,27 +233,28 @@ namespace mu2e {
       if(_debug > 1) std::cout << "Peak Time " << tctime  << std::endl;
       TimeCluster tc;
       tc._t0 = TrkT0(tctime,1.0);
-
-      for(size_t istr=0; istr<_chcol->size(); ++istr)
-      {
-	if ((!_testflag) || goodHit((*_shfcol)[istr]))
-	{
-	  float time = _ttcalc.comboHitTime((*_chcol)[istr]);
-	  if (fabs(time-tctime) < _maxdt)tc._strawHitIdxs.push_back(StrawHitIndex(istr));	  
+      for(size_t istr=0; istr<_chcol->size(); ++istr) {
+	if ((!_testflag) || goodHit((*_shfcol)[istr])) {
+	  ComboHit const& ch =(*_chcol)[istr];
+	  float time = _ttcalc.comboHitTime(ch);
+	  if (fabs(time-tctime) < _maxdt){
+	    tc._strawHitIdxs.push_back(StrawHitIndex(istr));
+	    tc._nsh += ch.nStrawHits();
+	  }
 	}
       }
 
       if (_usecc) addCaloCluster(tc);
 
       initCluster(tc);
-      if (_refine) refineCluster(tc);
+      if (_refine && tc.nStrawHits() >= _minnhits) refineCluster(tc);
 
-      if (tc._strawHitIdxs.size() >= _minnhits) {
+      if (tc.nStrawHits() >= _minnhits) {
 	bool overl(false);
 	for (auto itc = tccol.begin(); itc < tccol.end(); ++itc)
 	{
 	  if (TrkUtilities::overlap(tc,*itc) < _maxover) continue;          
-	  if (tc._strawHitIdxs.size() > itc->_strawHitIdxs.size())
+	  if (tc.nStrawHits() > itc->nStrawHits())
 	  { 
 	    tccol.erase(itc);
 	    break;
@@ -341,27 +342,27 @@ namespace mu2e {
     accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > tacc, xacc, yacc, zacc;
 
     unsigned nstrs = tc._strawHitIdxs.size();
-    for(auto ish :tc._strawHitIdxs)
-    { 
+    tc._nsh = 0;
+    for(auto ish :tc._strawHitIdxs) { 
       if (_testflag && !goodHit((*_shfcol)[ish])) continue;
       ComboHit const& ch = (*_chcol)[ish];
+      unsigned nsh = ch.nStrawHits();
+      tc._nsh += nsh;
       const XYZVec& pos = ch.pos();
       float htime = _ttcalc.comboHitTime(ch);
-      float twt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
       float pwt = ch.nStrawHits();
       tmin(htime);
       tmax(htime);
-      tacc(htime,weight=twt);
+      tacc(htime,weight=pwt);
       xacc(pos.x(),weight=pwt);
       yacc(pos.y(),weight=pwt);
       zacc(pos.z(),weight=pwt);      
     }
 
-    if (tc._caloCluster.isNonnull())
-    {
+    if (tc._caloCluster.isNonnull()) {
       float ctime = _ttcalc.caloClusterTime(*tc._caloCluster);
-      float wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(tc._caloCluster->diskId()),2);
-      tacc(ctime,weight=wt);
+      tacc(ctime,weight=_ccwt);
+      // add calo cluster position FIXME!!!
     }
 
     static float invsqrt12(1.0/sqrt(12.0));
@@ -376,128 +377,138 @@ namespace mu2e {
 
   void TimeClusterFinder::refineCluster(TimeCluster& tc) 
   {
+    tc._nsh = 0;
+
     float pphi(tc._pos.phi());
     float ptime(tc._t0.t0());              
-    meanAccumulator faccu,taccu;
 
-    if (_preFilter)
-    {
+    bool enoughhits(true);
+    bool changed(true);
+    if (_preFilter) {
       //prefilter one after another         
-      while (tc._strawHitIdxs.size() >= _minnhits)
-      {                    
+      while (enoughhits && changed) {
+	changed = false;
 	int iworst(-1);
 	float maxadPhi(0);
-	float maxdPhi(0),sumphi(0);
-
-	for (size_t ips=0; ips<tc._strawHitIdxs.size(); ++ips)
-	{
+	float worstphi(0),sumphi(0), sumt(0);
+	unsigned nhits(0);
+	for (size_t ips=0; ips<tc._strawHitIdxs.size(); ++ips) {
 	  unsigned ish = tc._strawHitIdxs[ips];
 	  ComboHit const& ch = (*_chcol)[ish];
+	  unsigned nsh = ch.nStrawHits();
 	  float phi   = ch.phi();  // should be float FIXME!
 	  float dphi  = Angles::deltaPhi(phi,pphi);
 	  float adphi = std::abs(dphi);
-	  sumphi += phi;
-
-	  if (adphi > maxadPhi) {iworst=ips; maxadPhi=adphi; maxdPhi=phi;}             
+	  sumphi += nsh*phi;
+	  sumt += nsh *_ttcalc.comboHitTime(ch);
+	  nhits += nsh;
+	  if (adphi > maxadPhi) {iworst=ips; maxadPhi=adphi; worstphi=phi;}
 	}
-
-	if (maxadPhi<_maxdPhi) break;
-
-	std::swap(tc._strawHitIdxs[iworst],tc._strawHitIdxs.back());
-	tc._strawHitIdxs.pop_back();      
-	pphi  = (sumphi-maxdPhi)/float(tc._strawHitIdxs.size());
+	if (maxadPhi>_maxdPhi){
+	  changed = true;
+// remove the worst hit
+	  std::swap(tc._strawHitIdxs[iworst],tc._strawHitIdxs.back());
+	  ComboHit const& ch = (*_chcol)[tc._strawHitIdxs.back()];
+	  unsigned nsh = ch.nStrawHits();
+	  nhits -= nsh;
+	  sumphi -= nsh * worstphi;
+	  sumt -= nsh *_ttcalc.comboHitTime(ch);
+	  tc._strawHitIdxs.pop_back();
+	}
+	enoughhits = nhits >= _minnhits;
+	pphi  = sumphi/float(nhits);
+	ptime = sumt/float(nhits);
       }
     }
-    while (tc._strawHitIdxs.size() >= _minnhits)
-    {
+    // mva filtering
+    changed = true;
+    while (enoughhits && changed) {                    
+      changed = false;
       size_t iworst(0);
       float worstmva(100.0);
-
-      for (size_t ips=0;ips<tc._strawHitIdxs.size();++ips)
-      {
+      float worstphi(0.0);
+      float sumphi(0), sumt(0);
+      unsigned nhits(0);
+      for (size_t ips=0;ips<tc._strawHitIdxs.size();++ips) {
 	unsigned ish = tc._strawHitIdxs[ips];
 	ComboHit const& ch = (*_chcol)[ish];
-	float dt = _ttcalc.comboHitTime(ch) - ptime;
+	unsigned nsh = ch.nStrawHits();
+	float time = _ttcalc.comboHitTime(ch);
 
 	float rho = sqrtf(ch.pos().Perp2());
 	float phi = ch.phi(); 
 	float dphi = Angles::deltaPhi(phi,pphi);
+	sumphi += nsh*phi;
+	sumt += nsh*time;
 
-	_pmva._dt = dt;
+	_pmva._dt = time - ptime;
 	_pmva._dphi = dphi;
-	_pmva._rho = rho;
+	_pmva._rho = rho; // change this to use radius^2 FIXME!
 
 	float mvaout = _peakMVA.evalMVA(_pmva._pars);
-	if (mvaout < worstmva)
-	{
+	if (mvaout < worstmva) {
 	  worstmva = mvaout;
+	  worstphi = phi;
 	  iworst = ips;
+	}
+	nhits += nsh;
+      }
+
+      if (worstmva < _minpeakmva) {
+	changed = true;
+	std::swap(tc._strawHitIdxs[iworst],tc._strawHitIdxs.back());
+	ComboHit const& ch = (*_chcol)[tc._strawHitIdxs.back()];
+	unsigned nsh = ch.nStrawHits();
+	nhits -= nsh;
+	sumphi -= nsh * worstphi;
+	sumt -= nsh *_ttcalc.comboHitTime(ch);
+	tc._strawHitIdxs.pop_back();
+      }
+      enoughhits = nhits >= _minnhits;
+      pphi  = sumphi/float(nhits);
+      ptime = sumt/float(nhits);
+    }
+
+    if(enoughhits){
+      // final pass: hard cut on dt 
+      std::vector<size_t> toremove;
+      accumulator_set<float, stats<tag::weighted_mean >,unsigned > facc;
+      accumulator_set<float, stats<tag::weighted_variance(lazy)>, unsigned > terr;
+      accumulator_set<float, stats<tag::weighted_mean >,unsigned > racc;
+      accumulator_set<float, stats<tag::weighted_mean >,unsigned > zacc;
+      for(size_t ips=0;ips<tc._strawHitIdxs.size();++ips) {
+	unsigned ish = tc._strawHitIdxs[ips];
+	ComboHit const& ch = (*_chcol)[ish];
+	unsigned nsh = ch.nStrawHits();
+	float  time = _ttcalc.comboHitTime(ch);
+	float  dt = time - ptime;
+	float  phi = ch.phi();
+	float rho = sqrtf(ch.pos().Perp2());
+	Angles::deltaPhi(phi,pphi);
+	if (fabs(dt) < _maxpeakdt) {
+	  terr(time,weight=nsh);
+	  facc(phi,weight=nsh);
+	  racc(rho,weight=nsh);
+	  zacc(ch.pos().z(),weight=nsh);
+	  tc._nsh += nsh;
+	} else {
+	  toremove.push_back(ips);
 	}
       }
 
-      if (worstmva > _minpeakmva) break;
-
-      std::swap(tc._strawHitIdxs[iworst],tc._strawHitIdxs.back());
-      tc._strawHitIdxs.pop_back();      
-
-      // re-compute the average phi and range
-      accumulator_set<float, stats<tag::mean > > facc;
-      accumulator_set<float, stats<tag::weighted_mean >, float > tacc;
-      for (size_t ips=0;ips<tc._strawHitIdxs.size();++ips)
+      for (auto irm=toremove.rbegin();irm!=toremove.rend();++irm)
       {
-	unsigned ish = tc._strawHitIdxs[ips];
-	ComboHit const& ch = (*_chcol)[ish];
-	float time = _ttcalc.comboHitTime(ch);
-	float wt = ch.nStrawHits()*std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
-	float phi = ch.phi();
-	Angles::deltaPhi(phi,pphi);
-	tacc(time,weight=wt);
-	facc(phi);
+	std::swap(tc._strawHitIdxs[*irm],tc._strawHitIdxs.back());
+	tc._strawHitIdxs.pop_back();
       }
-      pphi  = extract_result<tag::mean>(facc);
-      ptime = extract_result<tag::weighted_mean>(tacc);
+
+      tc._t0._t0 = extract_result<tag::weighted_mean>(terr);
+      tc._t0._t0err = sqrtf(std::max(float(0.0),extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
+      pphi = extract_result<tag::weighted_mean>(facc);
+      float prho = extract_result<tag::weighted_mean>(racc);
+      float zpos = extract_result<tag::weighted_mean>(zacc);
+      tc._pos = XYZVec(prho*cos(pphi),prho*sin(pphi),zpos);
     }
-
-    // final pass: hard cut on dt 
-    std::vector<size_t> toremove;
-    accumulator_set<float, stats<tag::mean > > facc;
-    accumulator_set<float, stats<tag::weighted_variance(lazy)>, float > terr;
-    accumulator_set<float, stats<tag::mean > > racc;
-    accumulator_set<float, stats<tag::mean > > zacc;
-    for(size_t ips=0;ips<tc._strawHitIdxs.size();++ips)
-    {
-      unsigned ish = tc._strawHitIdxs[ips];
-      ComboHit const& ch = (*_chcol)[ish];
-      float  time = _ttcalc.comboHitTime(ch);
-      float  dt = time - ptime;
-      float  wt = ch.nStrawHits()*std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
-      float  phi = ch.phi();
-      float rho = sqrtf(ch.pos().Perp2());
-      Angles::deltaPhi(phi,pphi);
-      if (fabs(dt) < _maxpeakdt)
-      {
-	terr(time,weight=wt);
-	facc(phi);
-	racc(rho);
-	zacc(ch.pos().z());
-      } else {
-	toremove.push_back(ips);
-      }
-    }
-
-    for (auto irm=toremove.rbegin();irm!=toremove.rend();++irm)
-    {
-      std::swap(tc._strawHitIdxs[*irm],tc._strawHitIdxs.back());
-      tc._strawHitIdxs.pop_back();
-    }
-
-    tc._t0._t0 = extract_result<tag::weighted_mean>(terr);
-    tc._t0._t0err = sqrtf(std::max(float(0.0),extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
-    pphi = extract_result<tag::mean>(facc);
-    float prho = extract_result<tag::mean>(racc);
-    float zpos = extract_result<tag::mean>(zacc);
-    tc._pos = XYZVec(prho*cos(pphi),prho*sin(pphi),zpos);
-
     //if (_debug > 0) std::cout<<"final time "<<tc._t0._t0<<std::endl;    
   }
 

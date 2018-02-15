@@ -33,7 +33,7 @@ physics :
     @table::TrkHitReco.producers
     @table::Tracking.TrkTrigger.producers
      TTKSFDeM : @local::TTKSF
-     TTKSFUeM : @local::TTKSF
+     TTKSFDeP : @local::TTKSF
   }
   filters : {
     @table::TrkTrigger.Filters
@@ -48,9 +48,9 @@ TTKSFDeM.SeedCollection      : "TThelixFinder:Positive"
 TTKSFDeM.fitparticle	      : @local::Particle.eminus
 TTKSFDeM.fitdirection	      : @local::FitDir.downstream 
 
-TTKSFUeM.SeedCollection      : "TThelixFinder:Negative"
-TTKSFUeM.fitparticle	      : @local::Particle.eminus
-TTKSFUeM.fitdirection	      : @local::FitDir.upstream 
+TTKSFDeP.SeedCollection      : "TThelixFinder:Negative"
+TTKSFDeP.fitparticle	      : @local::Particle.eplus
+TTKSFDeP.fitdirection	      : @local::FitDir.downstream 
 
 # create a trigger test path.  Note that physics.trigger_paths and physics.end_paths are not used, art will
 # create those automatically from all the defined paths

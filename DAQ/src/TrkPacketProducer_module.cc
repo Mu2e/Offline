@@ -170,7 +170,7 @@ namespace mu2e {
       // Fill struct with info for current hit
       trkhit curHit;
       curHit.evt = eventNum;
-      curHit.strawIdx = SD.strawIndex().asInt();
+      curHit.strawIdx = SD.strawId().asUint16();
       curHit.recoDigiT0 = SD.TDC(TrkTypes::cal);
       curHit.recoDigiT1 = SD.TDC(TrkTypes::hv);
       curHit.recoDigiToT1 = SD.TOT(TrkTypes::cal);
@@ -351,7 +351,7 @@ namespace mu2e {
 	  
 	  // Fill the data packets:
 	  // Assume the 0th apd is always read out before the second
-	  adc_t strawIndex = curHit.strawIdx;
+	  uint16_t strawIndex = curHit.strawIdx;
 	  
 	  adc_t TDC0 = curHit.recoDigiT0 & 0xFFFF;
 	  adc_t TDC1 = curHit.recoDigiT1 & 0xFFFF;

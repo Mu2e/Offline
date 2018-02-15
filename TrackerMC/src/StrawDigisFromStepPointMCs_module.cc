@@ -721,6 +721,7 @@ namespace mu2e {
 	StrawIndex index,
 	StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
 	PtrStepPointMCVectorCollection* mcptrs ){
+      const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
       // loop over crossings
       for(auto xpair : xings) {
 	// create a digi from this pair
@@ -762,7 +763,8 @@ namespace mu2e {
 	for(auto ixmcsp=xmcsp.begin();ixmcsp!=xmcsp.end();++ixmcsp)
 	  mcptr.push_back(*ixmcsp);
 	mcptrs->push_back(mcptr);
-	mcdigis->push_back(StrawDigiMC(index,wetime,cpos,stepMC,stepMCs));
+	StrawId sid = tracker.getStrawId(index); // FIXME!
+	mcdigis->push_back(StrawDigiMC(sid,wetime,cpos,stepMC,stepMCs));
 	// diagnostics
 	if(_diag > 1)digiDiag(wf,xpair,digis->back(),mcdigis->back());
       }
@@ -808,7 +810,10 @@ namespace mu2e {
       TrkTypes::TDCValues tdc;
       _strawele->digitizeTimes(xtimes,tdc);
       // create the digi from this
-      digis->push_back(StrawDigi(index,tdc,tot,adc));
+      // convert the index to a StarwId first! FIXME!!!
+      const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
+      StrawId sid = tracker.getStrawId(index);
+      digis->push_back(StrawDigi(sid,tdc,tot,adc));
     }
 
     // find straws which couple to the given one, and record them and their couplings in XTalk objects.
@@ -960,8 +965,8 @@ namespace mu2e {
     }
 
     void StrawDigisFromStepPointMCs::digiDiag(SWFP const& wfs, WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi) {
-      const Tracker& tracker = getTrackerOrThrow();
-      const Straw& straw = tracker.getStraw( digi.strawIndex() );
+      const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
+      const Straw& straw = tracker.getStraw( digi.strawId() );
       _sdplane = straw.id().getPlane();
       _sdpanel = straw.id().getPanel();
       _sdlayer = straw.id().getLayer();
@@ -1039,8 +1044,9 @@ namespace mu2e {
       }
       _mcthreshpdg = threshpart->simParticle()->pdgId();
       _mcthreshproc = threshpart->simParticle()->creationCode();
-
-      _xtalk = digi.strawIndex() != spmc->strawIndex();
+	
+      StrawId mcsid = tracker.getStrawId(spmc->strawIndex());
+      _xtalk = digi.strawId() != mcsid; 
       // fill the tree entry
       _sddiag->Fill();
     }
