@@ -131,7 +131,8 @@ void TValHistE::Summary(Option_t* Opt) {
 void TValHistE::Draw(Option_t* Opt) {
 
   TString opt1 = Opt; opt1.ToLower();
-  bool qLog = (opt1.Index("log") >= 0);
+  // TEfficiency doesn't handle log scale option, so ignore it
+  bool qLog = false;
 
   if(fEff1->GetDimension()!=1) {
     printf("Draw for 2D efficiency is not implemented\n");
@@ -186,28 +187,9 @@ void TValHistE::Draw(Option_t* Opt) {
   ymean1 = (n1>0 ? ymean1/n1 : 0.0 );
   ymean2 = (n2>0 ? ymean2/n2 : 0.0 );
 
-
-  //int optstat = gStyle->GetOptStat();
-
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   gStyle->SetErrorX(0);
-  //if(gPad==nullptr) {
-  //  TCanvas* cc = new TCanvas();
-  //}
-  /*
-  if(qLog) {
-    //gPad->SetLogy(1);
-    float xh = (xmax>1.0e-20 ? xmax : 1.0 );
-    float xl = (xmnz<1.0e19 ? xmnz : 0.1 );
-    fEff1->SetMaximum(xh*TMath::Power(xh/xl,0.14));
-    fEff1->SetMinimum(xl/TMath::Power(xh/xl,0.05));
-  } else {
-    //gPad->SetLogy(0);
-    fEff1->SetMaximum(xmax*1.14);
-    fEff1->SetMinimum(0.0);
-  }
-  */
 
   if(qLog) {
     gPad->SetLogy(1);
