@@ -71,6 +71,8 @@ namespace mu2e {
 
     virtual void beginJob() override;
 
+    virtual void endJob();
+
     void produce( art::Event & ) override;
 
   private:
@@ -141,6 +143,13 @@ namespace mu2e {
            << endl;
     }
 
+  }
+
+  void CrvPacketProducer::endJob(){
+    if(_generateTextFile>0) {
+      outputStream << flush;
+      outputStream.close();
+    }
   }
 
   void CrvPacketProducer::produce(art::Event & evt) {
