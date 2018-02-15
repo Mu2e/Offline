@@ -22,7 +22,8 @@ namespace mu2e {
       fhicl::ParameterSet* timeOffsets;
 
       enum  { kMaxSeeds = 100 };
-
+      
+      int     nTimePeaks;               // number of time peaks (input)
       int     nseeds   [        2]; // 0:all, 1:nhits > nhitsMin; assume nseeds <= 100
       int     nhits    [kMaxSeeds];
       int     good     [kMaxSeeds];
@@ -42,6 +43,7 @@ namespace mu2e {
     };
 
     struct Hist_t {
+      TH1F*  nTimePeaks;
       TH1F*  nhits;           // number of hits on a helix  
       TH1F*  nseeds  [2];
       TH1F*  radius  [2];   

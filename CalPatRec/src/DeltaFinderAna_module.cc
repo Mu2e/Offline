@@ -177,7 +177,7 @@ namespace mu2e {
     int                       _printElectrons;         //
     int                       _printElectronsMinNHits;
     float                     _printElectronsMaxFReco;
-    float                     _maxElectronHitEnergy;
+    //    float                     _maxElectronHitEnergy;
 //-----------------------------------------------------------------------------
 // cache of event or geometry objects
 //-----------------------------------------------------------------------------
@@ -240,8 +240,8 @@ namespace mu2e {
     _diagLevel             (pset.get<int>          ("diagLevel"                    )),
     _printElectrons        (pset.get<int>          ("printElectrons"               )),
     _printElectronsMinNHits(pset.get<int>          ("printElectronsMinNHits"       )),
-    _printElectronsMaxFReco(pset.get<float>        ("printElectronsMaxFReco"       )),
-    _maxElectronHitEnergy  (pset.get<float>        ("maxElectronHitEnergy"         ))
+    _printElectronsMaxFReco(pset.get<float>        ("printElectronsMaxFReco"       ))
+    //    _maxElectronHitEnergy  (pset.get<float>        ("maxElectronHitEnergy"         ))
   {
   }
 

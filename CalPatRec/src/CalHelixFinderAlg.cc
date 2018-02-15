@@ -940,7 +940,7 @@ namespace mu2e {
       if (nhits[i] == 0) continue;
 
       if (sn == 0) { // first station with hits gives the "2*PI normalization";
-	phi0 = phiVec[i]-zVec[0]*_hdfdz;
+	phi0 = phiVec[i]-zVec[i]*_hdfdz;
 	sdphi = 0;
 	sn    = 1;
       }

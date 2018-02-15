@@ -1,0 +1,72 @@
+#
+# run tracker and cal reco from a file of digis
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "fcl/standardProducers.fcl"
+#include "Validation/fcl/prolog.fcl"
+
+process_name : reco
+
+services : {
+    @table::service.all
+}
+
+source: { module_type: RootInput }
+
+physics : {
+   producers: {
+      @table::reco.cal.mod
+      @table::reco.straw.mod      # digi to straw hit, flagBgHits
+      @table::reco.cstraw.mod     # CPR version of straw reco
+      #@table::reco.trk.all.mod   # all species and toplogies
+      #@table::reco.trk.ele.mod   # all electron toplogies
+      @table::reco.trk.eleDMUP.mod    # DeM and UeP
+      @table::reco.ctrk.mod
+      @table::reco.pid.mod
+    }
+   filters: {
+      @table::reco.ctrk.flt
+   }
+
+    all_path : [ 
+      @sequence::reco.cal.seq ,
+      @sequence::reco.straw.seq ,
+      @sequence::reco.cstraw.seq ,
+      #@sequence::reco.trk.all.seq ,   # all species and toplogies
+      #@sequence::reco.trk.ele.seq ,   # all electron toplogies
+      @sequence::reco.trk.eleDMUP.seq , # DeM and UeP
+      @sequence::reco.ctrk.seq , 
+      @sequence::reco.pid.seq 
+   ]
+
+    trigger_paths  : [ all_path ]
+    out : [ fullOutput ]
+    end_paths      : [ out ]
+
+}
+
+outputs: {
+    fullOutput : {
+	module_type : RootOutput
+	fileName    : @nil
+    }
+}
+
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
+# histogram file
+services.TFileService.fileName : "nts.owner.val-reco.dsconf.seq.art"
+# art file
+outputs.fullOutput.fileName : "mcs.owner.val-reco.dsconf.seq.art"
+
+# Initialze seeding of random engines
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+
+# use the default cd3 geometry
+services.GeometryService.inputFile : "JobConfig/cd3/geom_baseline.txt"
+

@@ -181,13 +181,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   bool CalHelixFinder::filter(art::Event& event ) {
     const char*             oname = "CalHelixFinder::filter";
-    int                     npeaks;
     CalHelixFinderData      hf_result;
-
-    
-    //    static StrawHitFlag     esel(StrawHitFlag::energysel), flag;
-    
-					// diagnostic info
+  					// diagnostic info
     _data.event     = &event;
     _data.nseeds[0] = 0;
     _data.nseeds[1] = 0;
@@ -212,14 +207,13 @@ namespace mu2e {
     hf_result._shpos  = _shpcol;
     hf_result._shfcol = _shfcol;
    
-    npeaks = _timeclcol->size();
-    for (int ipeak=0; ipeak<npeaks; ipeak++) {
+    _data.nTimePeaks  = _timeclcol->size();
+    for (int ipeak=0; ipeak<_data.nTimePeaks; ipeak++) {
       const TimeCluster* tc = &_timeclcol->at(ipeak);
 
       if ( goodHitsTimeCluster(tc) < _minNHitsTimeCluster)         continue;
 
       HelixSeed          helix_seed;
-      
 //-----------------------------------------------------------------------------
 // create track definitions for the helix fit from this initial information
 // track fitting objects for this peak
@@ -270,7 +264,9 @@ namespace mu2e {
 	    _data.dr           [loc] = hf_result._diag.dr;
 	    _data.shmeanr      [loc] = hf_result._diag.straw_mean_radius;
 	    _data.chi2d_helix  [loc] = hf_result._diag.chi2d_helix;
-	                                                                 // info of the track candidate after the first loop with findtrack on CalHelixFinderAlg::doPatternRecognition
+//-----------------------------------------------------------------------------
+// info of the track candidate after the first loop with findtrack on CalHelixFinderAlg::doPatternRecognition
+//-----------------------------------------------------------------------------
 	    _data.loopId       [loc] = hf_result._diag.loopId_4;
 	    if (hf_result._diag.loopId_4 == 0) _data.chi2d_loop0  [loc] = hf_result._diag.chi2_dof_circle_12;
 	    if (hf_result._diag.loopId_4 == 1) _data.chi2d_loop1  [loc] = hf_result._diag.chi2_dof_circle_12;

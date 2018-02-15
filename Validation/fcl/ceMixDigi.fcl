@@ -1,0 +1,96 @@
+#
+# mix conversion electrons and detmix-cut backgrounds, write out digis
+# datasets:
+# sim.mu2e.cd3-beam-g4s4-detconversion.v566.art
+# sim.mu2e.cd3-detmix-cut.v566b.art
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/KalDiag.fcl"
+#include "Validation/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+bgHitFiles: ["/pnfs/mu2e/tape/phy-sim/sim/mu2e/cd3-detmix-cut/v566b/art/ce/cf/sim.mu2e.cd3-detmix-cut.v566b.000004_00001952.art"]
+END_PROLOG
+
+
+process_name : ceMixDigi
+
+source: { module_type: RootInput }
+
+services : {
+    @table::service.all
+}
+
+physics : {
+   producers: {
+      @table::EventMixing.producers
+      @table::digis.straw.mod
+      @table::digis.cal.mod
+   }
+
+   filters: {
+      @table::EventMixing.filters
+   }
+
+   mixTrigSeq : [
+      @sequence::EventMixing.CD3Mixers ,
+      @sequence::timeSimulation.beam.seq , 
+      @sequence::digis.straw.seq , 
+      @sequence::digis.cal.seq 
+   ]
+
+   trigger_paths: [mixTrigSeq]
+
+   out : [fullOutput]
+   end_paths: [out]
+}
+
+outputs: {
+    fullOutput : {
+      module_type : RootOutput
+      fileName    : @nil
+      outputCommands:
+      [ 
+         //"keep *_*_*_*"
+         "keep *",
+         "drop *_*Mixer_*_*",
+         "drop *_*CaloShowerStep*_*_*",
+         "drop *_protonBunchSummarizer_*_*",
+         "drop *_*TimeMap_*_*",
+         "drop mu2e::StrawDigiMCs_makeSD_*_*",
+         "drop mu2e::StepPointMCart::Ptrss_makeSD_*_*",
+         "drop *_TriggerResults_*_*"
+      ]
+   }
+
+}
+
+
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
+# histogram file
+services.TFileService.fileName: "nts.owner.val-ceMixDigi.dsconf.seq.root"
+# art file 
+outputs.fullOutput.fileName : "dig.owner.val-ceMixDigi.dsconf.seq.art"
+
+# Digitization uses random numbers
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+
+# use the default cd3 geometry
+services.GeometryService.inputFile : "JobConfig/cd3/geom_baseline.txt"
+
+# specify background frame files: these must be define outside this script, 
+# before it is included
+physics.filters.flashMixer.fileNames : @local::bgHitFiles
+physics.filters.ootMixer.fileNames : @local::bgHitFiles
+physics.filters.dioMixer.fileNames : @local::bgHitFiles
+physics.filters.neutronMixer.fileNames : @local::bgHitFiles
+physics.filters.photonMixer.fileNames : @local::bgHitFiles
+physics.filters.protonMixer.fileNames : @local::bgHitFiles
+physics.filters.deuteronMixer.fileNames : @local::bgHitFiles
+
