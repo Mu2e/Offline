@@ -330,7 +330,7 @@ namespace mu2e {
 					// event printout
     _data.eventNumber = event.event();
 
-    if ((_data.eventNumber%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
+    if ((_debugLevel > 0) && (_data.eventNumber%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 //-----------------------------------------------------------------------------
 // output collections should always be created
 //-----------------------------------------------------------------------------
