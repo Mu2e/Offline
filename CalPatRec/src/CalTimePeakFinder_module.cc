@@ -168,7 +168,7 @@ namespace mu2e {
 
                                         // event printout
     _iev     = event.id().event();
-    if ((_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
+    if ((_debugLevel > 0) && (_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 
     _data._event = &event;
     _data._tpeaks = new CalTimePeakCollection;
