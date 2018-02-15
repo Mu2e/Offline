@@ -4,7 +4,7 @@
 int cosmicCRY.verbose = 0;
 
 string cosmicCRY.refPoint = "CALO";
-double cosmicCRY.refY0 = 10000; // 10 meter above nominal beam height
+double cosmicCRY.refY0 = 20000; // 20 meter above nominal beam height
 
 bool cosmicCRY.projectToEnvelope = true;
 
