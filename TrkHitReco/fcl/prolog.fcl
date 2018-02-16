@@ -43,17 +43,6 @@ TNTClusterer : {
     BackgroundMask : []
     SignalMask : ["TimeSelection", "EnergySelection","RadiusSelection"]
 }
-# Bertrand's other version
-TNTBClusterer : { 
-    MaxNIterations : 1
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection","RadiusSelection"]
-}
 # Now configure the module
 FlagBkgHits : {
   module_type : FlagBkgHits
@@ -63,7 +52,6 @@ FlagBkgHits : {
   MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
   TLTClusterer : { @table::TLTClusterer }
   TNTClusterer : { @table::TNTClusterer }
-  TNTBClusterer : { @table::TNTBClusterer }
   # use TNTClusterer
   Clusterer : 2
   FilterOutput : false
@@ -100,7 +88,6 @@ TTflagBkgHits : {
   MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
   TLTClusterer : { @table::TLTClusterer }
   TNTClusterer : { @table::TNTClusterer }
-  TNTBClusterer : { @table::TNTBClusterer }
   # use TNTClusterer
   Clusterer : 2
   FilterOutput : true

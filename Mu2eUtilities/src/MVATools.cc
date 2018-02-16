@@ -1,285 +1,377 @@
-
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"
 
-// Xerces XML Parser
+#include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/sax/HandlerBase.hpp>
-
-#include <vector>
 #include <iostream>
 #include <iomanip>
+#include <string>
+#include <vector>
+#include <sstream>
 #include <limits>
 
-using namespace std;
 using namespace xercesc;
 
 namespace mu2e 
 {
-  MVATools::MVATools(fhicl::ParameterSet const& pset){
-    // location-independent files
-    ConfigFileLookupPolicy configFile;
-    string weights = pset.get<std::string>("MVAWeights");
-    _mvaWgtsFile = configFile(weights);
-  }
-  MVATools::~MVATools()
-  {}
 
-  // Initialize Xerces and the MVA
-  void MVATools::initMVA(){
-    // Initialize xerces
-    try{
-      XMLPlatformUtils::Initialize();
-    }catch( XMLException& e ){
-      char* message = XMLString::transcode( e.getMessage() ) ;
-      throw cet::exception("RECO")<<"mu2e::MVATools: XML initialization error: " <<  message << endl;
-      XMLString::release( &message ) ;
+
+MVATools::MVATools(fhicl::ParameterSet const& pset) : 
+  mvaWgtsFile_(), 
+  wgts_(), 
+  voffset_(), 
+  vscale_(), 
+  title_(), 
+  label_(),
+  activeType_(aType::null),
+  oldMVA_(false),
+  isNorm_(false), 
+  layerToNeurons_(), 
+  synapsessPerLayer_(), 
+  x_(), 
+  y_()
+{
+   ConfigFileLookupPolicy configFile;
+   std::string weights = pset.get<std::string>("MVAWeights");
+   mvaWgtsFile_ = configFile(weights);
+}
+
+MVATools::~MVATools() {}
+
+
+
+void MVATools::initMVA()
+{
+    if (wgts_.size()>0) throw cet::exception("RECO")<<"mu2e::MVATools: already initialized" << std::endl;
+
+    try
+    {
+       XMLPlatformUtils::Initialize();
+    } 
+    catch (XMLException& e)
+    {
+       char* message = XMLString::transcode( e.getMessage() ) ;
+       throw cet::exception("RECO")<<"mu2e::MVATools: XML initialization error: " <<  message << std::endl;
+       XMLString::release( &message ) ;
     }
 
-    // Create the parser
     XercesDOMParser* parser = new XercesDOMParser();
     parser->setValidationScheme(XercesDOMParser::Val_Never);
     parser->setDoNamespaces(false);
     parser->setDoSchema(false);
     parser->setLoadExternalDTD( false );
-  
-    XMLCh *xmlFile = XMLString::transcode(_mvaWgtsFile.c_str());
+
+    XMLCh *xmlFile = XMLString::transcode(mvaWgtsFile_.c_str());
     parser->parse(xmlFile);
     XMLString::release( &xmlFile ) ;
+ 
+    xercesc::DOMDocument* xmlDoc = parser->getDocument() ;
 
-    _xmlDoc = parser->getDocument() ;
+    getGen(xmlDoc);
+    getOpts(xmlDoc);
+    getNorm(xmlDoc);
+    getWgts(xmlDoc);
+}
 
-    // get the normalization for the mva weights
-    getNorm();
-    for(vector<double> norm : _wn){
-      _wnr2.push_back(0.5*(norm[1]-norm[0]));
-    }
-    // get the weights
-    getWgts();
-  }
+void MVATools::getGen(xercesc::DOMDocument* xmlDoc)
+{       
+    XMLCh* ATT_GENERAL = XMLString::transcode("GeneralInfo");
+    XMLCh* ATT_INFO = XMLString::transcode("Info");
+    XMLCh* TAG_NAME = XMLString::transcode("name");
+    XMLCh* TAG_VALUE = XMLString::transcode("value");
+    
+    XMLCh *xpathStr = XMLString::transcode("/MethodSetup/GeneralInfo");
+    DOMXPathResult* xpathRes = xmlDoc->evaluate(xpathStr,xmlDoc->getDocumentElement(),NULL,
+                                                DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
+    XMLString::release(&xpathStr) ;
+    DOMElement* optElem = dynamic_cast<DOMElement* >(xpathRes->getNodeValue());    
+    xpathRes->release();
+    
+    
+    DOMNodeList* children = optElem->getElementsByTagName(ATT_INFO);
+    for (XMLSize_t ix = 0 ; ix < children->getLength() ; ++ix )
+    {
+        DOMNode* childNode = children->item(ix) ;
+        DOMNamedNodeMap* attrs = childNode->getAttributes();
 
-  // Find normalization ranges
-  void MVATools::getNorm() {
-    XMLCh* TAG_CLASS = XMLString::transcode("Class");
+        std::string label,value;
+        for( XMLSize_t ia = 0 ; ia < attrs->getLength() ; ++ia )
+        {
+	   DOMNode* attr = attrs->item(ia);
+	   char* attValue = XMLString::transcode(attr->getNodeValue());
+	   if (XMLString::equals(TAG_NAME,attr->getNodeName()) )     label = std::string(attValue);          
+	   if (XMLString::equals(TAG_VALUE,attr->getNodeName()) )    value = std::string(attValue);          
+           XMLString::release(&attValue);
+        }
+	if (label.find("TMVA Release") != std::string::npos)
+	{
+ 	   std::string code = value.substr(value.find("[")+1,value.find("]")-value.find("[")-1);
+	   int iversion = atoi(code.c_str());
+           if (iversion < 262657) oldMVA_ = true;
+	}      
+    }   
+        
+    XMLString::release(&ATT_GENERAL);
+    XMLString::release(&ATT_INFO);
+    XMLString::release(&TAG_NAME);
+    XMLString::release(&TAG_VALUE);
+}
+
+void MVATools::getOpts(xercesc::DOMDocument* xmlDoc)
+{       
+    XMLCh* ATT_OPTION = XMLString::transcode("Option");
+    XMLCh* TAG_NAME = XMLString::transcode("name");
+    XMLCh* TAG_MODIFIED = XMLString::transcode("modified");
+    
+    XMLCh *xpathStr = XMLString::transcode("/MethodSetup/Options");
+    DOMXPathResult* xpathRes = xmlDoc->evaluate(xpathStr,xmlDoc->getDocumentElement(),NULL,
+                                                DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
+    XMLString::release(&xpathStr) ;
+    DOMElement* optElem = dynamic_cast<DOMElement* >(xpathRes->getNodeValue());    
+    xpathRes->release();
+    
+    DOMNodeList* children = optElem->getElementsByTagName(ATT_OPTION);
+    for (XMLSize_t ix = 0 ; ix < children->getLength() ; ++ix )
+    {
+        DOMNode* childNode = children->item(ix) ;
+        DOMNamedNodeMap* attrs = childNode->getAttributes();
+        char* value = XMLString::transcode(childNode->getFirstChild()->getNodeValue());
+
+        std::string label, modified;
+        for( XMLSize_t ia = 0 ; ia < attrs->getLength() ; ++ia )
+        {
+	   DOMNode* attr = attrs->item(ia);
+	   char* attValue = XMLString::transcode(attr->getNodeValue());
+	   if (XMLString::equals(TAG_NAME,attr->getNodeName()) ) label = std::string(attValue);          
+	   if (XMLString::equals(TAG_MODIFIED,attr->getNodeName()) ) modified = std::string(attValue);          
+           XMLString::release(&attValue);
+        }
+        if (label.find("NeuronType") != std::string::npos)
+	{
+	   std::string val(value);
+	   if (val.find("tanh") != std::string::npos) activeType_ = aType::tanh;  
+	   if (val.find("sigmoid") != std::string::npos) activeType_ = aType::sigmoid;  
+	   if (val.find("ReLU") != std::string::npos) activeType_ = aType::relu;  	   
+	}      
+        if (label.find("VarTransform") != std::string::npos)
+	{
+	   std::string val(value);
+	   if (modified.find("Yes") != std::string::npos) isNorm_=true;
+	   if (isNorm_ && val.find("N") == std::string::npos) 
+             throw cet::exception("RECO")<<"mu2e::MVATools: unknown normalization mode" << std::endl;
+	}      
+    }   
+    
+    if (activeType_ == aType::null) throw cet::exception("RECO")<<"mu2e::MVATools: unknown activation function" << std::endl;
+    
+    XMLString::release(&ATT_OPTION);
+    XMLString::release(&TAG_NAME);
+    XMLString::release(&TAG_MODIFIED);
+}
+
+void MVATools::getNorm(xercesc::DOMDocument* xmlDoc)
+{
     XMLCh* TAG_VARIABLE = XMLString::transcode("Variable");
-    XMLCh* TAG_VARINDEX = XMLString::transcode("VarIndex");
-    XMLCh* TAG_CLASSINDEX = XMLString::transcode("ClassIndex");
-    XMLCh* VAL_2 = XMLString::transcode("2");
-    XMLCh* TAG_RANGE = XMLString::transcode("Range");
-    XMLCh* ATT_NVARS = XMLString::transcode("NVar");
-    XMLCh* ATT_INDEX = XMLString::transcode("Index");
     XMLCh* ATT_MIN = XMLString::transcode("Min");
     XMLCh* ATT_MAX = XMLString::transcode("Max");
     XMLCh* ATT_TITLE = XMLString::transcode("Title");
     XMLCh* ATT_LABEL = XMLString::transcode("Label");
-
-    // Get the number of ANN(MLP) input variables
+    
     XMLCh *xpathStr = XMLString::transcode("/MethodSetup/Variables");
-    DOMXPathResult* xpathRes = _xmlDoc->evaluate(xpathStr,_xmlDoc->getDocumentElement(),NULL,
-                               DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
-    XMLString::release( &xpathStr ) ;
-
+    DOMXPathResult* xpathRes = xmlDoc->evaluate(xpathStr,xmlDoc->getDocumentElement(),NULL,
+                                                DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
+    XMLString::release(&xpathStr);
     DOMElement* varElem = dynamic_cast<DOMElement* >(xpathRes->getNodeValue()) ;
-
-    char* attValue = XMLString::transcode(varElem->getAttribute(ATT_NVARS));
-    int nVars = atoi(attValue);
-//    XMLString::release( &attValue );
-//    cout << "found " << nVars << " variables" << endl; 
-    _wn.resize(nVars);
-    _x.resize(nVars);
-    _y.resize(nVars);
-    _title.resize(nVars);
-    _label.resize(nVars);
-
-    DOMNodeList* children = varElem->getElementsByTagName(TAG_VARIABLE) ;
-//    cout << "found " << children->getLength() << " children" << endl;
-    for( XMLSize_t ix = 0 ; ix < children->getLength() ; ++ix ){
-      DOMNode* childNode = children->item( ix ) ;
-      DOMNamedNodeMap* attrs = childNode->getAttributes();
-      int ivar=0;
-      double vmin=std::numeric_limits<double>::max();
-      double vmax=0.;
-      string label,title;
-      for( XMLSize_t ia = 0 ; ia < attrs->getLength() ; ++ia ){
-	DOMNode* attr = attrs->item(ia);
-	char* attValue = XMLString::transcode(attr->getNodeValue());
-	if(XMLString::equals(TAG_VARINDEX,attr->getNodeName()) ){
-	  ivar = atoi(attValue);
-	}else if(XMLString::equals(ATT_MIN,attr->getNodeName()) ){
-	  vmin = strtod(attValue,NULL);
-	}else if(XMLString::equals(ATT_MAX,attr->getNodeName()) ){
-	  vmax = strtod(attValue,NULL);
-	}else if(XMLString::equals(ATT_TITLE,attr->getNodeName()) ){
-	  title = string(attValue);
-	}else if(XMLString::equals(ATT_LABEL,attr->getNodeName()) ){
-	  label = string(attValue);
-	}
-        XMLString::release( &attValue ) ;
-      }
-      _wn[ivar].push_back(vmin);
-      _wn[ivar].push_back(vmax);
-      _title[ivar] = title;
-      _label[ivar] = label;
-    }
     xpathRes->release();
+                
+    DOMNodeList* children = varElem->getElementsByTagName(TAG_VARIABLE);
+    for( XMLSize_t ix = 0 ; ix < children->getLength() ; ++ix )
+    {       
+       float vmin(std::numeric_limits<float>::max());
+       float vmax(0.0);
+       std::string label,title;
+       
+       DOMNode* childNode = children->item( ix ) ;
+       DOMNamedNodeMap* attrs = childNode->getAttributes();
+       for( XMLSize_t ia = 0 ; ia < attrs->getLength() ; ++ia )
+       {
+	  DOMNode* attr = attrs->item(ia);
+	  char* attValue = XMLString::transcode(attr->getNodeValue());
 
-    XMLString::release(&TAG_CLASS);
-    XMLString::release(&TAG_CLASSINDEX);
-    XMLString::release(&TAG_RANGE);
-    XMLString::release(&VAL_2);
-    XMLString::release(&ATT_NVARS);
-    XMLString::release(&TAG_VARINDEX);
-    XMLString::release(&ATT_INDEX);
+	  if (XMLString::equals(ATT_MIN,attr->getNodeName()) )      vmin = strtof(attValue,NULL);
+	  if (XMLString::equals(ATT_MAX,attr->getNodeName()) )      vmax = strtof(attValue,NULL);
+	  if (XMLString::equals(ATT_TITLE,attr->getNodeName()) )    title = std::string(attValue);
+	  if (XMLString::equals(ATT_LABEL,attr->getNodeName()) )    label = std::string(attValue);
+
+          XMLString::release( &attValue ) ;
+       }
+       voffset_.push_back(vmin);
+       vscale_.push_back(2.0/(vmax-vmin));
+       title_.push_back(title);
+       label_.push_back(label);
+    }
+    
+    XMLString::release(&TAG_VARIABLE);
     XMLString::release(&ATT_MIN);
     XMLString::release(&ATT_MAX);
     XMLString::release(&ATT_LABEL);
     XMLString::release(&ATT_TITLE);
-  }
-
-  // Find the layer weights
-  void MVATools::getWgts(){
-    XMLCh* ATT_INDEX = XMLString::transcode("Index");
-    XMLCh* ATT_NLYRS = XMLString::transcode("NLayers");
-
-    // Get the number of ANN(MLP) layers
-    XMLCh *xpathStr = XMLString::transcode("/MethodSetup/Weights/Layout");
-    DOMXPathResult* xpathRes = _xmlDoc->evaluate(xpathStr,_xmlDoc->getDocumentElement(),NULL,
-                               DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
-    XMLString::release( &xpathStr ) ;
-
-    DOMElement* layoutElem = dynamic_cast<DOMElement* >(xpathRes->getNodeValue()) ;
-    xpathRes->release();
-
-    char* attValue = XMLString::transcode(layoutElem->getAttribute(ATT_NLYRS));
-    int nLyrs = atoi(attValue);
-    XMLString::release( &attValue ) ;
-
-    int iLastLyr = nLyrs - 1;
-    _wgts.resize(iLastLyr);
-
-    // Now get the weights for each layer
-    xpathStr = XMLString::transcode("/MethodSetup/Weights/Layout/Layer/Neuron");
-    xpathRes = _xmlDoc->evaluate(xpathStr,_xmlDoc->getDocumentElement(), NULL,
-                                              DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
-    XMLString::release( &xpathStr ) ;
-
-    for(XMLSize_t i=0;i<xpathRes->getSnapshotLength();i++) {
-      xpathRes->snapshotItem(i);
-      DOMNode* nNeuron = xpathRes->getNodeValue();
-
-      DOMNode* parentNode = nNeuron->getParentNode();
-      DOMElement* parentElement = dynamic_cast<DOMElement* >(parentNode);
-
-      char* layerIndex = XMLString::transcode(parentElement->getAttribute(ATT_INDEX));
-      int ilayer = atoi(layerIndex);
-
-      vector<double> wv;
-      if(ilayer<iLastLyr){
-        char* cw = XMLString::transcode(nNeuron->getFirstChild()->getNodeValue());
-        string sw(cw);
-        stringstream ss (sw);
-        string temp;
-        while(ss>>temp){
-          wv.push_back(strtod(temp.c_str(),NULL));
-        }
-        _wgts[ilayer].push_back(wv);
-        XMLString::release(&cw);
-      }
-    }
-
-    _twgts.resize(iLastLyr);
-
-    // Get transpose of 2d vector in each layer
-    for(vector<vector<vector<double> > >::size_type i = 0; i != _wgts.size(); ++i){
-      for(vector<vector<double> >::size_type col=0; col != _wgts[i][0].size(); ++col){
-        vector<double>vrow;
-        for(vector<double>vtmp: _wgts[i] ){
-          vrow.push_back(vtmp[col]);
-        }
-        _twgts[i].push_back(vrow);
-      }
-    }
-    xpathRes->release();
-    XMLString::release(&ATT_NLYRS);
-    XMLString::release(&ATT_INDEX);
-  }
-
-  double MVATools::evalMVA(vector<double>const &v) const {
-
-    // Normalize
-    for(vector<double>::size_type i = 0; i != _wn.size(); ++i){
-      _x[i] = ((v[i]-_wn[i][0])/_wnr2[i]) - 1.;
-    }
-
-    // do internal layers
-    size_t klast = _twgts.size()-1;
-    for(size_t k = 0; k != klast; ++k){
-      for(vector<vector<double> >::size_type j = 0; j != _twgts[k].size(); ++j){
-        _y[j]=0.;
-        size_t ilast = _twgts[k][j].size()-1;
-        for(size_t i = 0; i != ilast; ++i){
-          _y[j] += _x[i]*_twgts[k][j][i];
-        }
-        _y[j]+=_twgts[k][j][ilast];
-        _y[j]=1./(1.+exp(-_y[j]));
-      }
-      _x=_y;
-    }
-
-    // do output
-    double mva=0.;
-    size_t ilast = _twgts[klast][0].size()-1;
-    for(size_t i=0;i<ilast;i++){
-      mva+=_y[i]*_twgts[klast][0][i];
-    }
-    mva+=_twgts[klast][0][ilast];
-    return mva;
-    
-  }
-
-  void MVATools::showMVA()const{
-    
-    cout << "MVA weights from file:" <<     _mvaWgtsFile << endl;
-    cout << "MVA NLayers: " << _wgts.size() << endl;
-    cout << "MVA NVars: " << _title.size() << endl;
-
-    ios_base::fmtflags origflags = cout.flags();
-    streamsize prec = cout.precision();
-    streamsize width = cout.width(); 
-    cout.setf(ios::scientific);
-    cout.precision(7);
-
-    const string stars1(12,'*');
-    const string label1 = " MVA Normalization ";
-    cout << stars1 << label1 << stars1 << endl;
-    for(vector< vector<double> >::size_type i = 0; i != _wn.size(); ++i){
-      cout << "Var " << i << _label[i] << " " << _title[i] << ": min=" << _wn[i][0] << " max=" << _wn[i][1] << endl;
-    }
-    const string morestars1(24+label1.size(),'*');
-    cout << morestars1 << endl;
-
-    const string stars2(23,'*');
-    const string label2 = " MVA Weights ";
-    cout << stars2 << label2 << stars2 << endl;
-    cout << "From file: " << _mvaWgtsFile << endl;
-    for(vector <vector< vector<double> > >::size_type k = 0; k != _twgts.size(); ++k){
-      cout << "Layer " << k << ":" << endl;
-      for(vector< vector<double> >::size_type j = 0; j != _twgts[k].size(); j++) {
-        for(vector<double>::size_type i = 0; i != _twgts[k][j].size(); i++) {
-          cout << _twgts[k][j][i] << " ";
-        }
-        cout << endl;
-      }
-    }
-    const string morestars2(46+label2.size(),'*');
-    cout << morestars2 << endl;
-
-    cout.flags(origflags);
-    cout.precision(prec);
-    cout.width(width);
-  }
 }
+
+
+
+void MVATools::getWgts(xercesc::DOMDocument* xmlDoc)
+{
+    XMLCh* ATT_NSYNAPSES = XMLString::transcode("NSynapses");
+    XMLCh* ATT_INDEX = XMLString::transcode("Index");
+
+    XMLCh *xpathStr = XMLString::transcode("/MethodSetup/Weights/Layout");
+    DOMXPathResult* xpathRes = xmlDoc->evaluate(xpathStr,xmlDoc->getDocumentElement(),NULL,
+                                                DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
+    XMLString::release(&xpathStr) ;
+    xpathRes->release();
+
+
+    xpathStr = XMLString::transcode("/MethodSetup/Weights/Layout/Layer/Neuron");
+    xpathRes = xmlDoc->evaluate(xpathStr,xmlDoc->getDocumentElement(), NULL,
+                                DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
+    XMLString::release(&xpathStr);
+   
+   
+    int iCurrentLayer(-1);
+    unsigned nNeurons(0);
+    std::vector<std::vector<float> > wtemp;
+    for (XMLSize_t i=0;i<xpathRes->getSnapshotLength();i++)
+    {
+        xpathRes->snapshotItem(i);
+
+        DOMNode* nNeuron = xpathRes->getNodeValue();
+        DOMElement* neuronElement = dynamic_cast<DOMElement* >(nNeuron);
+        DOMNode* parentNode = nNeuron->getParentNode();
+        DOMElement* parentElement = dynamic_cast<DOMElement* >(parentNode);
+
+        char* layerIndex = XMLString::transcode(parentElement->getAttribute(ATT_INDEX));
+        int   iLayer     = atoi(layerIndex);
+        char* nSynapses  = XMLString::transcode(neuronElement->getAttribute(ATT_NSYNAPSES));
+        unsigned iSynapses  = atoi(nSynapses);
+
+        if (iLayer != iCurrentLayer) 
+	{
+	    layerToNeurons_.push_back(nNeurons); 
+	    if (iSynapses) synapsessPerLayer_.push_back(iSynapses); 
+	    iCurrentLayer=iLayer;
+	} 
+
+	if (nNeuron->getFirstChild()==NULL) continue; //output neuron has no children        
+	
+	char* cw = XMLString::transcode(nNeuron->getFirstChild()->getNodeValue());        
+	std::string sw(cw),temp;
+        std::stringstream ss(sw);
+        std::vector<float> w;
+	while(ss >> temp) w.push_back(strtof(temp.c_str(),NULL));        
+	if (w.size() != iSynapses) throw cet::exception("RECO")<<"mu2e::MVATools: internal error" << std::endl;
+	wtemp.push_back(std::move(w));
+	
+	XMLString::release(&cw);
+	++nNeurons;      
+    }
+
+    for (unsigned iLayer=1;iLayer < layerToNeurons_.size(); ++iLayer)
+    {    
+	for (unsigned iOut=0;iOut<synapsessPerLayer_[iLayer-1];++iOut)
+	{        
+	   std::vector<float> temp;
+	   for (unsigned iIn=layerToNeurons_[iLayer-1];iIn<layerToNeurons_[iLayer];++iIn) 
+              temp.push_back(wtemp[iIn][iOut]);                    
+	   wgts_.push_back(std::move(temp));       
+	}
+    }
+    
+    unsigned maxSynapses=*std::max_element(layerToNeurons_.begin(),layerToNeurons_.end());
+    for (unsigned i=0;i<layerToNeurons_[1];++i) x_.push_back(1);
+    for (unsigned i=0;i<=maxSynapses;++i) y_.push_back(0);
+    
+    XMLString::release(&ATT_INDEX);
+    XMLString::release(&ATT_NSYNAPSES);    
+}
+
+
+
+
+float MVATools::evalMVA(const std::vector<double >& v) const 
+{
+   std::vector<float> fv(v.begin(), v.end());
+   return evalMVA(fv);
+}
+
+float MVATools::evalMVA(const std::vector<float>& v) const 
+{
+    
+    if (v.size() != layerToNeurons_[1]-1) 
+      throw cet::exception("RECO")<<"mu2e::MVATools: mismatch input dimension and network architecture" << std::endl;
+    
+    // Normalize the bias node is 
+    unsigned vsize = voffset_.size();
+    for (unsigned i=0; i != vsize; ++i) 
+       x_[i]= isNorm_ ? (v[i]-voffset_[i])*vscale_[i] - 1.0 : v[i];
+    x_[vsize] = 1.0;
+        
+    //forward propagation of internal layers
+    unsigned idxWeight(0);
+    for (unsigned k=0;k<synapsessPerLayer_.size()-1;++k)
+    {          
+      for (unsigned j=0;j<synapsessPerLayer_[k];++j)
+      {
+	y_[j]=0.0;
+	for (unsigned i=0;i<wgts_[idxWeight].size();++i) y_[j] += wgts_[idxWeight][i]*x_[i];
+        y_[j] = activation(y_[j]);
+        ++idxWeight;
+      }      
+      x_ = y_;
+      x_[synapsessPerLayer_[k]] = 1.0; //add bias neuron
+    }   
+    
+    //output layer
+    float y(0.0);
+    for (unsigned i=0;i<wgts_[idxWeight].size();++i) y += wgts_[idxWeight][i]*x_[i];
+
+    if (oldMVA_) return y;
+    return  1.0/(1.0+exp(-y));
+}
+
+
+
+
+float MVATools::activation(float arg) const
+{
+   if (activeType_== aType::tanh)
+   {
+     if (oldMVA_) return std::tanh(arg);
+     if (arg > 4.97) return 1;
+     if (arg < -4.97) return -1;
+     float arg2 = arg * arg;
+     float a = arg * (135135.0f + arg2 * (17325.0f + arg2 * (378.0f + arg2)));
+     float b = 135135.0f + arg2 * (62370.0f + arg2 * (3150.0f + arg2 * 28.0f));
+     return a/b;
+   }
+   if (activeType_== aType::sigmoid) return 1.0/(1.0+exp(-arg));
+   if (activeType_== aType::relu) return std::max(0.0f,arg);
+   
+   return -999.0;
+}
+
+
+void MVATools::showMVA() const 
+{
+   std::cout<<"Nothing yet"<<std::endl;
+}
+
+
+
+}
+
