@@ -169,17 +169,15 @@ void TValHistH::Draw(Option_t* Opt) {
 
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
-  //if(gPad==nullptr) {
-  //  TCanvas* cc = new TCanvas();
-  //}
+
   if(qLog) {
-    //gPad->SetLogy(1);
     float xh = (xmax>1.0e-20 ? xmax : 1.0 );
     float xl = (xmnz<1.0e19 ? xmnz : 0.1 );
     fHist1->SetMaximum(xh*TMath::Power(xh/xl,0.14));
     fHist1->SetMinimum(xl/TMath::Power(xh/xl,0.05));
+    // if 2's min is 0, log scale will give an error, so set it up too
+    fHist2->SetMinimum(fHist1->GetMinimum());
   } else {
-    //gPad->SetLogy(0);
     float xh = (xmax>1.0e-20 ? xmax : 1.0 );
     fHist1->SetMaximum(xh*1.14);
     fHist1->SetMinimum(0.0);

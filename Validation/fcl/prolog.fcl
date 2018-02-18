@@ -1,0 +1,331 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "fcl/standardProducers.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
+
+
+BEGIN_PROLOG
+
+service : {
+   all : {
+      message		    : @local::default_message
+      GeometryService	    : @nil
+      ConditionsService	    : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+      GlobalConstantsService  : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+      
+      RandomNumberGenerator   : { }
+      G4Helper                : { }
+      SeedService	      : @local::automaticSeeds
+
+      BTrkHelper : @local::BTrkHelperDefault
+   }
+}
+
+
+
+generation : {
+   CE: {
+      mod : {
+	 generate : { @table::StoppedParticleReactionGun }
+      }
+      seq : [ generate ]
+   }
+
+   POT: {
+      mod : {
+	 generate: {
+            module_type          : EventGenerator
+            inputfile            : "JobConfig/cd3/genconfig_PrimaryProtons.txt"
+	 }
+      }
+      seq : [ generate ]
+   }
+   cosmic: {
+      mod : {
+	 generate: {
+            module_type          : EventGenerator
+            inputfile            : "JobConfig/cd3/cosmic/genconfig_cosmic_general.txt"
+	 }
+      }
+      seq : [ generate ]
+   }
+
+}
+
+simulation : {
+   default: {
+      mod : {
+	 @table::Mu2eG4.producers
+      }
+      seq : [ g4run ]
+   }
+}
+simulation.default.mod.g4run.TrajectoryControl: @local::mu2eg4NoTrajectories
+
+timeSimulation : {
+   beam: {
+      mod : {
+	 protonTimeMap: { module_type : GenerateProtonTimes }
+	 muonTimeMap: { module_type : GenerateMuonLife }
+      }
+      seq : [ @sequence::EventMixing.TimeMaps ]
+   }
+}
+
+protonBunch : {
+   mod : {
+      protonBunchSummarizer: { module_type : ProtonBunchIntensitySummarizer }
+   }
+   seq : [ protonBunchSummarizer]
+}
+
+digis : {
+   straw : { 
+      mod : {
+	 makeSD : {
+	    @table::TrackerMC.producers.makeSD 
+	 }
+      }
+      seq : [ makeSD ]
+   }
+
+   cal : {
+      mod : {
+	 @table::CaloDigiMC.producers
+      }
+      seq : [ @sequence::CaloDigiMC.DigiSim ]
+   }
+
+   crv : {
+      mod : {
+	 @table::CrvDAQPackage.producers
+      }
+      seq : [ @sequence::CrvDAQPackage.CrvResponseSequence ]
+   }
+} 
+
+# these need to be run after CalHitReco
+#	 @table::CaloDigiMC.producersMC
+# @sequence::CaloDigiMC.TruthMatch
+
+reco : {
+
+   # make straw hits, flag bg hits, make stereo hits
+   straw : { 
+      mod : {
+	 makeSH : { @table::TrkHitReco.producers.makeSH }
+#	 FSHPreStereo    : { @table::Tracking.producers.FSHPreStereo }
+#	 MakeStrawHitPositions  : { @table::TrkHitReco.producers.MakeStrawHitPositions }
+	 MakeStereoHits  : { @table::TrkHitReco.producers.MakeStereoHits }
+#	 FlagStrawHits   : { @table::TrkHitReco.producers.FlagStrawHits }
+	 FlagBkgHits	    : { @table::TrkHitReco.producers.FlagBkgHits }
+      }
+      seq : [ makeSH, MakeStereoHits, FlagBkgHits]
+#      seq : [ makeSH, FSHPreStereo, MakeStrawHitPositions, 
+#	 MakeStereoHits, FlagStrawHits, FlagBkgHits]
+#      seq : [ makeSH, MakeStrawHitPositions, MakeStereoHits ]
+   } # end straw
+
+   # tracking (inside reco braces)
+   trk : {
+
+      all : {
+	 mod : {
+	    TimeClusterFinder  : { @table::Tracking.producers.TimeClusterFinder }
+	    HelixFinder  : { @table::Tracking.producers.HelixFinder }
+#	    PosHelixFinder  : { @table::Tracking.producers.PosHelixFinder }
+#	    NegHelixFinder  : { @table::Tracking.producers.NegHelixFinder }
+	    # First, seed fits
+	    KSFDeM	  : { @table::Tracking.producers.KSFDeM }
+	    KSFUeM	  : { @table::Tracking.producers.KSFUeM }
+	    KSFDeP	  : { @table::Tracking.producers.KSFDeP }
+	    KSFUeP	  : { @table::Tracking.producers.KSFUeP }
+	    KSFDmuM	  : { @table::Tracking.producers.KSFDmuM }
+	    KSFUmuM	  : { @table::Tracking.producers.KSFUmuM }
+	    KSFDmuP	  : { @table::Tracking.producers.KSFDmuP }
+	    KSFUmuP	  : { @table::Tracking.producers.KSFUmuP }
+	    KSFDpiM	  : { @table::Tracking.producers.KSFDpiM }
+	    KSFUpiM	  : { @table::Tracking.producers.KSFUpiM }
+	    KSFDpiP	  : { @table::Tracking.producers.KSFDpiP }
+	    KSFUpiP	  : { @table::Tracking.producers.KSFUpiP }
+	    # Final Kalman fit
+	    KFFDeM	  : { @table::Tracking.producers.KFFDeM }
+	    KFFUeM	  : { @table::Tracking.producers.KFFUeM }
+	    KFFDeP	  : { @table::Tracking.producers.KFFDeP }
+	    KFFUeP	  : { @table::Tracking.producers.KFFUeP }
+	    KFFDmuM	  : { @table::Tracking.producers.KFFDmuM }
+	    KFFUmuM	  : { @table::Tracking.producers.KFFUmuM }
+	    KFFDmuP	  : { @table::Tracking.producers.KFFDmuP }
+	    KFFUmuP	  : { @table::Tracking.producers.KFFUmuP }
+	    KFFDpiM	  : { @table::Tracking.producers.KFFDpiM }
+	    KFFUpiM	  : { @table::Tracking.producers.KFFUpiM }
+	    KFFDpiP	  : { @table::Tracking.producers.KFFDpiP }
+	    KFFUpiP	  : { @table::Tracking.producers.KFFUpiP }
+	 }
+#	 seq : [TimeClusterFinder, PosHelixFinder, NegHelixFinder, 
+	 seq : [TimeClusterFinder, HelixFinder, 
+	 KSFDeM, KSFUeM, KSFDeP, KSFUeP, 
+	 KSFDmuM, KSFUmuM, KSFDmuP, KSFUmuP, 
+	 KSFDpiM, KSFUpiM, KSFDpiP, KSFUpiP,
+	 KFFDeM, KFFUeM, KFFDeP, KFFUeP, 
+	 KFFDmuM, KFFUmuM, KFFDmuP, KFFUmuP, 
+	 KFFDpiM, KFFUpiM, KFFDpiP, KFFUpiP
+	 ]
+
+      }
+
+      # inside reco.trk
+      ele : {
+	 mod : {
+	    TimeClusterFinder  : { @table::Tracking.producers.TimeClusterFinder }
+	    HelixFinder  : { @table::Tracking.producers.HelixFinder }
+	    # First, seed fits
+	    KSFDeM	  : { @table::Tracking.producers.KSFDeM }
+	    KSFUeM	  : { @table::Tracking.producers.KSFUeM }
+	    KSFDeP	  : { @table::Tracking.producers.KSFDeP }
+	    KSFUeP	  : { @table::Tracking.producers.KSFUeP }
+	    # Final Kalman fit
+	    KFFDeM	  : { @table::Tracking.producers.KFFDeM }
+	    KFFUeM	  : { @table::Tracking.producers.KFFUeM }
+	    KFFDeP	  : { @table::Tracking.producers.KFFDeP }
+	    KFFUeP	  : { @table::Tracking.producers.KFFUeP }
+	 }
+	 seq : [TimeClusterFinder, HelixFinder, 
+	 KSFDeM, KSFUeM, KSFDeP, KSFUeP, 
+	 KFFDeM, KFFUeM, KFFDeP, KFFUeP
+	 ]
+
+      }
+
+      eleDMUP : {
+	 mod : {
+	    TimeClusterFinder  : { @table::Tracking.producers.TimeClusterFinder }
+	    HelixFinder  : { @table::Tracking.producers.HelixFinder }
+	    # First, seed fits
+	    KSFDeM	  : { @table::Tracking.producers.KSFDeM }
+	    KSFUeP	  : { @table::Tracking.producers.KSFUeP }
+	    # Final Kalman fit
+	    KFFDeM	  : { @table::Tracking.producers.KFFDeM }
+	    KFFUeP	  : { @table::Tracking.producers.KFFUeP }
+	 }
+	 seq : [ TimeClusterFinder, HelixFinder, 
+	    KSFDeM, KSFUeP, KFFDeM, KFFUeP
+	 ]
+
+      }
+
+   } # end trk reco
+
+
+   # still inside reco
+   cal : { 
+      mod : {
+	 @table::CaloReco.producers
+	 @table::CaloCluster.producers
+      }
+      seq : [ @sequence::CaloReco.Reco, @sequence::CaloCluster.Reco ]
+   } # end cal reco
+
+
+   # CalPatRec version, make straw hits, flag bg hits, make stereo hits
+   cstraw : { 
+      mod : {
+	 # CalPatRec uses the standard tracking makeSH
+	 makeSH : { @table::Tracking.producers.makeSH }
+	 MakeStrawHitPositions  : { @table::Tracking.producers.MakeStrawHitPositions }
+
+	 DeltaFinder    : { @table::CalPatRec.producers.DeltaFinder }
+      }
+      seq : [  makeSH, MakeStrawHitPositions, CalTimePeakFinder, DeltaFinder ]
+   } # end cstraw reco
+
+   ctrk : {
+      mod : {
+	 MergePatRecDem : { @table::CalPatRec.producers.MergePatRecDem }
+	 CalSeedFitDem  : { @table::CalPatRec.producers.CalSeedFitDem }
+      }
+      flt : {
+	 CalTimePeakFinder  : { @table::CalPatRec.filters.CalTimePeakFinder }
+	 CalHelixFinderDem : { @table::CalPatRec.filters.CalHelixFinderDem }
+	 CalTrkFitDem  : { @table::CalPatRec.filters.CalTrkFitDem }
+      }
+      seq : [ CalHelixFinderDem, CalSeedFitDem, CalTrkFitDem, MergePatRecDem ]
+   } # end ctrk reco
+
+   pid : {
+      mod : {
+	 TrackCaloIntersectionDem : { @table::TrackCaloMatching.producers.TrackCaloIntersectionDem }
+	 TrackCaloMatchingDem : { @table::TrackCaloMatching.producers.TrackCaloMatchingDem }
+#	 AvikPID : { @table::ParticleID.producers.AvikPID }
+      }
+#      seq : [ TrackCaloIntersectionDem, TrackCaloMatchingDem, AvikPID ]
+      seq : [ TrackCaloIntersectionDem, TrackCaloMatchingDem ]
+   } # end pid reco
+
+   # CRV coincidences
+   crv : { 
+      mod : {
+	 CrvRecoPulses               : @local::CrvRecoPulses
+	 CrvCoincidence              : @local::CrvCoincidence
+	 CrvCoincidenceClusterFinder : @local::CrvCoincidenceClusterFinder
+      }
+      seq : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
+   } # end crv reco
+
+}
+
+# Below are cuts for use in cosmic generation
+
+# stop simulation of low-energy electrons far from the detector
+CosmicOuterShower: 
+{
+   type: intersection
+   pars: 
+   [
+      { type: plane normal: [  0,  0, -1 ] point : [ -3904, 0, 17000 ] }, //-z
+      { type: plane normal: [  0,  0,  1 ] point : [ -3904, 0, 25000 ] }, //+z
+      { type: plane normal: [  1,  0,  0 ] point : [ -1900, 0, 21000 ] }, //+x
+      { type: plane normal: [ -1,  0,  0 ] point : [ -5900, 0, 21000 ] }, //-x
+      { type: plane normal: [  0,  1,  0 ] point : [ -3904, 1000, 21000 ] }, //+y
+      { type: plane normal: [  0, -1,  0 ] point : [ -3904, -1000, 21000 ] }, //-y
+      { type: kineticEnergy cut: 80.0 }, 
+      { type: pdgId pars: [ 22, 11, -11 ] }
+   ]
+}
+
+inDirt: 
+{
+   type: inVolume
+   pars: [ worldDirtBottom, worldDirtNW, worldDirtSW, worldDirtSE, worldDirtNE ]
+}
+
+SpeedUpCosmics: {
+   type: union
+   pars: 
+   [
+      @local::CosmicOuterShower ,
+      @local::inDirt
+   ]
+}
+ 
+# only accpet events that have hits in the CRV, 
+# and only save related SimParticles - saves space
+cosmicFilter: 
+{
+   mod : {
+      cosmicFilter: 
+      {
+	 module_type: FilterG4Out
+	 noInstanceName : true
+	 mainHitInputs : [ "g4run:CRV" ]
+	 extraHitInputs : []
+	 mcTrajectoryInputs : [ ]
+	 numSimParticleCollections : 1
+	 vetoDaughters: []
+      }
+   }
+   seq : [ cosmicFilter ]
+}
+
+
+END_PROLOG

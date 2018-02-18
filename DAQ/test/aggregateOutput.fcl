@@ -24,6 +24,7 @@ physics : {
       includeTracker : 1
       includeCalorimeter : 1
       includeCosmicRayVeto: 0
+      includeDMAHeaders: 1
       # Cosmic ray veto module is currently incomplete
 
       generateTimestampTable : 1
@@ -42,6 +43,6 @@ outputs:  {
 
 }
 
-services.message.destinations.log.categories.ArtReport.reportEvery : 1
-services.message.destinations.log.categories.ArtReport.limit : 1
-services.message.destinations.log.categories.ArtReport.timespan : 300
+#services.message.destinations.log.categories.ArtReport.reportEvery : 1
+#services.message.destinations.log.categories.ArtReport.limit : 1
+#services.message.destinations.log.categories.ArtReport.timespan : 300

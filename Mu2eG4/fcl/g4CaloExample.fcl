@@ -34,11 +34,11 @@ physics: {
 
     producers: {
         
-        generate             : @local::generate
-        g4run                : @local::g4run
+        generate: @local::StoppedMuonConversionGun
+        g4run : @local::g4run
 
-        protonTimeMap        : @local::protonTimeMap
-        muonTimeMap          : @local::muonTimeMap
+        protonTimeMap        : { module_type : GenerateProtonTimes }
+        muonTimeMap          : { module_type : GenerateMuonLife }
         
         @table::Tracking.producers
 

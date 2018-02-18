@@ -48,5 +48,7 @@ physics :
     dump:
     {
       module_type   : DataProductDump
+      # temporary patch for crash until art 2_10 or 2_11
+      wantResolvedOnly: true
     }
   }
