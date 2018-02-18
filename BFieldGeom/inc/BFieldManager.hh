@@ -43,15 +43,27 @@ namespace mu2e {
 
         // Get field at an arbitrary point.
         bool getBFieldWithStatus(const CLHEP::Hep3Vector&, CLHEP::Hep3Vector&) const;
+        bool getBFieldWithStatus(const CLHEP::Hep3Vector&,
+                                 BFCacheManager const&,
+                                 CLHEP::Hep3Vector&) const;
 
         // Just return zero for out of range.
         CLHEP::Hep3Vector getBField(const CLHEP::Hep3Vector& pos) const {
+            // Default c'tor sets all components to zero - which is what we need here.
             CLHEP::Hep3Vector result;
-            if (!getBFieldWithStatus(pos, result)) {
-                result = CLHEP::Hep3Vector(0, 0, 0);
-            }
-            return result;  // make sure NRVO can be applied
+            getBFieldWithStatus(pos, result);
+            return result;
         }
+
+        CLHEP::Hep3Vector getBField(const CLHEP::Hep3Vector& pos,
+                                    BFCacheManager const& cmgr) const {
+            // Default c'tor sets all components to zero - which is what we need here.
+            CLHEP::Hep3Vector result;
+            getBFieldWithStatus(pos, cmgr, result);
+            return result;
+        }
+
+        BFCacheManager cacheManager() const { return cm_; }
 
         const MapContainerType& getInnerMaps() const { return innerMaps_; }
         MapContainerType& getInnerMaps() { return innerMaps_; }
@@ -60,10 +72,6 @@ namespace mu2e {
         MapContainerType& getOuterMaps() { return outerMaps_; }
 
         void print(std::ostream& out);
-
-        // bool getNeighborPointBF(const CLHEP::Hep3Vector&,
-        //                         CLHEP::Hep3Vector neighborPoints[3],
-        //                         CLHEP::Hep3Vector neighborBF[3][3][3]) const;
 
        private:
         // Private ctr.  An instance of BFieldManager should be obtained

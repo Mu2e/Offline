@@ -64,6 +64,7 @@ namespace mu2e {
         typedef std::map<std::shared_ptr<const BFMap>, CacheElement> CacheType;
         CacheType innerCache;  // keys are all inner maps
         CacheType outerCache;  // keys are outer maps and 0
+        int counter;
 
        public:
         BFCacheManager();

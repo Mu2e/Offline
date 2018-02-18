@@ -97,8 +97,8 @@ namespace mu2e {
                                              const CLHEP::Hep3Vector& frac) const {
         // Create vecs and vectors
         double x1d[3], y1d[3], z1d[3];
-        static CLHEP::Hep3Vector vecx[9];
-        static CLHEP::Hep3Vector vecxy[3];
+        CLHEP::Hep3Vector vecx[9];
+        CLHEP::Hep3Vector vecxy[3];
         double xin = frac[0];
         double yin = frac[1];
         double zin = frac[2];
@@ -338,7 +338,7 @@ namespace mu2e {
         }
 
         // Get the BField values of the nearest grid neighbors to the point
-        static CLHEP::Hep3Vector neighborsBF[3][3][3];
+        CLHEP::Hep3Vector neighborsBF[3][3][3];
         if (!getNeighbors(ix, iy, iz, neighborsBF)) {
             if (_warnIfOutside) {
                 mf::LogWarning("GEOM")
