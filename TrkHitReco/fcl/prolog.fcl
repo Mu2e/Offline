@@ -3,6 +3,7 @@ BEGIN_PROLOG
 makeSHfromSD : {
   module_type : StrawHitReco
   StrawDigis : makeSD
+  trigMode : false
   #UseCalorimeter : true
 }
 
