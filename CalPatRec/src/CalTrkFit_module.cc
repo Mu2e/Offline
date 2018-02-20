@@ -330,7 +330,7 @@ namespace mu2e {
 					// event printout
     _data.eventNumber = event.event();
 
-    if ((_data.eventNumber%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
+    if ((_debugLevel > 0) && (_data.eventNumber%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 //-----------------------------------------------------------------------------
 // output collections should always be created
 //-----------------------------------------------------------------------------
@@ -510,7 +510,9 @@ namespace mu2e {
 	algs->push_back(AlgorithmID(best,mask));
 
 	// convert successful fits into 'seeds' for persistence.  Start with the input
-	KalSeed fseed(*kalSeed);
+	//	KalSeed fseed(*kalSeed);
+	KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kalSeed->status());
+	fseed._helix = kalSeed->helix();
 	// reference the seed fit in this fit
 	art::Handle<KalSeedCollection> ksH;
 	event.getByLabel(_trkseedLabel, ksH);

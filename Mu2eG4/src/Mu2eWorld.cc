@@ -119,6 +119,9 @@
 #include "G4SimpleHeum.hh"
 #include "G4HelixImplicitEuler.hh"
 #include "G4HelixSimpleRunge.hh"
+#if G4VERSION>4103
+#include "G4DormandPrince745.hh"
+#endif
 #include "G4GDMLParser.hh"
 
 #include "Mu2eG4/inc/Mu2eGlobalField.hh"
@@ -370,6 +373,7 @@ namespace mu2e {
     G4MagneticField * _field = new Mu2eGlobalField(worldGeom->mu2eOriginInWorld());
     G4Mag_EqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
+    if ( _verbosityLevel > 0 ) cout << "Setting up " << g4stepperName_ << " stepper" << endl;
     if ( g4stepperName_  == "G4ClassicalRK4" ) {
       _stepper = new G4ClassicalRK4(_rhs);
     } else if ( g4stepperName_  == "G4ClassicalRK4WSpin" ) {
@@ -390,8 +394,13 @@ namespace mu2e {
       _stepper = new G4HelixImplicitEuler(_rhs);
     } else if ( g4stepperName_  == "G4HelixSimpleRunge" ) {
       _stepper = new G4HelixSimpleRunge(_rhs);
+#if G4VERSION>4103
+    } else if ( g4stepperName_  == "G4DormandPrince745" ) {
+      _stepper = new G4DormandPrince745(_rhs);
+#endif
     } else {
       _stepper = new G4SimpleRunge(_rhs);
+      if ( _verbosityLevel > 0 ) cout << "Using default G4SimpleRunge stepper" << endl;
     }
     G4ChordFinder * _chordFinder = new G4ChordFinder(_field,1.0e-2*CLHEP::mm,_stepper);
     G4FieldManager * _manager = new G4FieldManager(_field,_chordFinder,true);
@@ -679,6 +688,12 @@ namespace mu2e {
       Mu2eSensitiveDetector* EBKeySD =
         new Mu2eSensitiveDetector(    SensitiveDetectorName::panelEBKey(),  _config);
       SDman->AddNewDetector(EBKeySD);
+    }
+
+    if(sdHelper_->enabled(StepInstanceName::DSCableRun)) {
+      Mu2eSensitiveDetector* cableRunSD =
+        new Mu2eSensitiveDetector(    SensitiveDetectorName::DSCableRun(),  _config);
+      SDman->AddNewDetector(cableRunSD);
     }
 
   } // instantiateSensitiveDetectors

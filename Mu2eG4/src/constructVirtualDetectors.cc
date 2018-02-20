@@ -1018,9 +1018,9 @@ namespace mu2e {
 
       VolumeInfo const & trckrParent = _helper->locateVolInfo("TrackerMother");
 
-      double tModInRd = ((G4Tubs *)trckrParent.solid)->GetInnerRadius();
-      double tModOtRd = ((G4Tubs *)trckrParent.solid)->GetOuterRadius();
-      double tModDz   = ((G4Tubs *)trckrParent.solid)->GetDz();
+      double tModInRd = (static_cast<G4Tubs*>(trckrParent.solid))->GetInnerRadius();
+      double tModOtRd = (static_cast<G4Tubs*>(trckrParent.solid))->GetOuterRadius();
+      double tModDz   = (static_cast<G4Tubs*>(trckrParent.solid))->GetZHalfLength();
 
 
       vdId = VirtualDetectorId::IT_VD_InSurf;
@@ -1257,11 +1257,11 @@ namespace mu2e {
             if ( vdg->exist(vdId) )
             {
                     const VolumeInfo& parent = _helper->locateVolInfo("ProductionTargetMother");
-                    G4Tubs *PTMoth = (G4Tubs *) parent.solid;
+                    G4Tubs *PTMoth = static_cast<G4Tubs*>(parent.solid);
 
                     TubsParams vdParams(0., PTMoth->GetOuterRadius(), vdg->getHalfLength());
 
-                    G4ThreeVector vdCenterInParent(0., 0., -PTMoth->GetDz() + vdg->getHalfLength());
+                    G4ThreeVector vdCenterInParent(0., 0., -PTMoth->GetZHalfLength() + vdg->getHalfLength());
 
                     VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                     vdParams,
@@ -1289,11 +1289,11 @@ namespace mu2e {
             if ( vdg->exist(vdId) )
             {
                     const VolumeInfo& parent = _helper->locateVolInfo("ProductionTargetMother");
-                    G4Tubs *PTMoth = (G4Tubs *) parent.solid;
+                    G4Tubs *PTMoth = static_cast<G4Tubs*>(parent.solid);
 
                     TubsParams vdParams(0., PTMoth->GetOuterRadius(), vdg->getHalfLength());
 
-                    G4ThreeVector vdCenterInParent(0., 0., PTMoth->GetDz() - vdg->getHalfLength());
+                    G4ThreeVector vdCenterInParent(0., 0., PTMoth->GetZHalfLength() - vdg->getHalfLength());
 
                     VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                     vdParams,

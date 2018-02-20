@@ -62,7 +62,18 @@ physics: {
 
 	DeltaFinder: { @table::producers.DeltaFinder
 	    useTimePeaks                  : 0
-#	    maxElectronHitEnergy          : 0.0035
+
+	    maxChi2Stereo                 : 4.                    # 50.                   #
+	    maxChi2Neighbor               : 9.                    # 2018-01-24: 25 --> 15
+	    maxChi2Radial                 : 9.                    # 2018-01-24: 25 --> 15
+	    maxChi2Tot                    : 9.                    # 2018-01-24: 25 --> 15
+	    maxDxy                        : 30.                   # mm
+	    maxGap                        : 1                     # gap in missing stations along the candidate
+	    sigmaR                        : 10.                   # mm, roughly 3 MeV/c
+	    maxDriftTime                  : 40.                   # ns, includes some tolerance
+	    maxStrawDt                    : 50.                   # max sensible time difference for a straw, ns, off by default
+	    maxDtDs                       :  5.                   # ns, max allowed T0 shift per station
+
 	    debugLevel                    : 1
 	    diagLevel                     : 1
 	    diagPlugin : { @table::producers.DeltaFinder.diagPlugin
@@ -70,7 +81,7 @@ physics: {
 		printElectrons                : 1
 		printElectronsHits            : 1
 
-		printElectronsMinMom          : -1. # 100.
+		printElectronsMinMom          : 100.
 		printElectronsMaxMom          : 110.
 		printElectronsMinNHits        : 0
 		printElectronsMaxFReco        : 1.1 # 0.5
@@ -89,7 +100,6 @@ physics: {
 
 	DeltaFinderAna: { @table::producers.DeltaFinderAna
 	    debugLevel                    : 0
-	    strawHitFlagCollectionTag     : DeltaFinder
 	}
     }
 

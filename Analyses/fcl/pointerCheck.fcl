@@ -19,8 +19,7 @@ physics :{
 	 skipDerference : false
 	 # 0 (quiet) or 1 (print every event)
 	 verbose : 1
-         # skip certain known problematic collections
-         # - these aren't implemeted yet
+         # skip any known problematic collections with these inputTags
          #skipSimParticle     : []
          #skipSimParticlePtr  : []
          #skipStepPointMC     : []

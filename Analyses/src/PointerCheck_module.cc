@@ -194,7 +194,19 @@ namespace mu2e {
 
   bool PointerCheck::excludedCollection(art::Provenance const& p, 
 					InputTags const& tags) {
-    // waiting for some advice here
+
+    // a tag has four fields, Classname already determined
+    // treat empty fields as wildcards that match
+    bool exclude = true;
+    for(auto const& tag : tags) {
+      if( !tag.label().empty() && 
+	  tag.label() != p.moduleLabel() ) exclude = false;
+      if( !tag.instance().empty() && 
+	  tag.instance() != p.productInstanceName() ) exclude = false;
+      if( !tag.process().empty() &&
+	  tag.process() != p.processName() ) exclude = false;
+      if(exclude) return true;
+    }
     return false;
   }
 
