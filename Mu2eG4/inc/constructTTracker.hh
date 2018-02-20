@@ -10,22 +10,26 @@
 // Original author Rob Kutschke
 //
 
-#include "G4Helper/inc/VolumeInfo.hh"
 
 class G4LogicalVolume;
 
 namespace mu2e{
 
+  class VOlumeInfo;
   class SimpleConfig;
+  class SensitiveDetectorHelper;
 
-  VolumeInfo constructTTrackerv3( VolumeInfo const& mother,
-                                  SimpleConfig const& config );
+  VolumeInfo constructTTrackerv3( VolumeInfo const& parent,
+                                  SimpleConfig const& config,
+                                  SensitiveDetectorHelper const& sdHelper);
 
-  VolumeInfo constructTTrackerv3Detailed( VolumeInfo const& mother,
-                                          SimpleConfig const& config );
+  VolumeInfo constructTTrackerv3Detailed( VolumeInfo const& parent,
+                                          SimpleConfig const& config,
+                                          SensitiveDetectorHelper const& sdHelper );
 
-  VolumeInfo constructTTrackerv5( VolumeInfo const& mother,
-				  SimpleConfig const& config );
+  VolumeInfo constructTTrackerv5( VolumeInfo const& parent,
+				  SimpleConfig const& config,
+                                  SensitiveDetectorHelper const& sdHelper );
 
 }  // end namespace mu2e
 

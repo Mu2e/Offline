@@ -29,6 +29,7 @@
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 
@@ -48,7 +49,10 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructPS(VolumeInfo const & parent, SimpleConfig const & _config) {
+  void constructPS( const VolumeInfo& parent,
+                    const SimpleConfig& _config,
+                    const SensitiveDetectorHelper& sdHelper
+                    ) {
     
     ProductionSolenoid const & psgh = *(GeomHandle<ProductionSolenoid>());
 
@@ -306,8 +310,9 @@ namespace mu2e {
                                           );
 
     if(psVacuumSensitive) {
-      G4VSensitiveDetector* psVacuumSD = G4SDManager::GetSDMpointer()->
-        FindSensitiveDetector(SensitiveDetectorName::PSVacuum());
+      G4VSensitiveDetector* psVacuumSD = (sdHelper.enabled(StepInstanceName::PSVacuum)) ?
+        G4SDManager::GetSDMpointer()->
+        FindSensitiveDetector(SensitiveDetectorName::PSVacuum()) : nullptr;
       if(psVacuumSD) psVacuumInfo.logical->SetSensitiveDetector(psVacuumSD);
     }
 

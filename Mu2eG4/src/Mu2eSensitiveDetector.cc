@@ -50,6 +50,7 @@ namespace mu2e {
     std::ostringstream sdKeyName;
     sdKeyName<<"g4."<< SensitiveDetectorName << "SDEventList";
     //G4cout << __func__ << " sdKeyName: " << sdKeyName.str() << G4endl;
+    G4cout << __func__ << " sd name: " << name << G4endl;
  
     string key(sdKeyName.str());
     if ( config.hasName(key) ){

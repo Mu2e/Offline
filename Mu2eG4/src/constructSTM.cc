@@ -34,6 +34,7 @@
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "GeomPrimitives/inc/PolyconsParams.hh"
 
 // G4 includes
@@ -59,7 +60,9 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructSTM(SimpleConfig const & _config){
+  void constructSTM(const SimpleConfig& _config,
+                    const SensitiveDetectorHelper& sdHelper
+                    ){
 
     STM const & stmgh = *(GeomHandle<STM>());
 
@@ -1177,7 +1180,9 @@ namespace mu2e {
     }
 
     // Make stmDet1 a sensitive detector.
-    G4VSensitiveDetector *sd1 = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::STMDet());
+    G4VSensitiveDetector *sd1 = (sdHelper.enabled(StepInstanceName::STMDet)) ?
+      G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::STMDet()) : nullptr;
     if(sd1) stmDet1.logical->SetSensitiveDetector(sd1);
     
     
@@ -1278,7 +1283,9 @@ namespace mu2e {
     }
 
     // Make stmDet2 a sensitive detector.
-    G4VSensitiveDetector *sd2 = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::STMDet());
+    G4VSensitiveDetector *sd2 = (sdHelper.enabled(StepInstanceName::STMDet)) ?
+      G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::STMDet()) : nullptr;
     if(sd1) stmDet2.logical->SetSensitiveDetector(sd2);
     
     
