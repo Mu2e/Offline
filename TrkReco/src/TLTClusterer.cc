@@ -41,7 +41,7 @@ namespace mu2e
     _maxdt(pset.get<float>("MaxTimeDifference",50.0)), // Maximum time difference (nsec)
     _maxdsum(pset.get<float>("MaxDistanceSum",100.0)), // iteration convergence
     _maxniter(pset.get<unsigned>("MaxNIterations",50)),
-    _stereoinit(pset.get<bool>("StereoInit",true)), // initialize using stereo hits
+    _stereoinit(pset.get<bool>("StereoInit",false)), // initialize using stereo hits
     _minerr(pset.get<float>("MinHitError",5.0)), // corresponds to an error of the straw diameter
     _idiag(0)
   {
@@ -297,33 +297,25 @@ namespace mu2e
     // accumulators for position calculation.  For now just median,
     // should implement full 2-d finding including different errors FIXME!
     if(_palg == median) {
-      accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > racc, pacc, tacc;
+      accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, unsigned > racc, pacc, tacc;
       // work relative to the current cluster position
       // calculate cluster info
       float crho = sqrtf(cluster.pos().perp2());
       float cphi = cluster.pos().phi();
       // choose local cylindrical coordinates WRT the cluster; these map roughly onto the straw directions
-      XYZVec rdir = PerpVector(cluster.pos(),Geom::ZDir()).unit();
-      XYZVec pdir(-rdir.y(),rdir.x(),0.0);
+//      XYZVec rdir = PerpVector(cluster.pos(),Geom::ZDir()).unit();
+//      XYZVec pdir(-rdir.y(),rdir.x(),0.0);
       for(auto const& chit : cluster.hits()) {
 	ComboHit const& ch = chcol.at(chit.index());
 	float dt = ch.time() - cluster.time();
 	float dr = sqrtf(ch.pos().perp2()) - crho;
 	float phi = ch.pos().phi();
 	float dp = Angles::deltaPhi(phi,cphi);
-	XYZVec const& wdir = ch.wdir();
-	// weight according to the wire direction error, linearly for now
-	float dw = 1.0/ch.posRes(ComboHit::wire);
-	// limit to a maximum weight
-	// should have an option for geometric sum of errors FIXME!
-	// Not clear if time should be weighted FIXME!
-	float twt = std::min(_maxwt,dw);
+	// weight according to the # of hits
 	// project weight along radial and azimuthal airections
-	float rwt = std::min(_maxwt,fabs(rdir.Dot(wdir))*dw);
-	float pwt = std::min(_maxwt,fabs(pdir.Dot(wdir))*dw);
-	tacc(dt,weight=twt);
-	racc(dr,weight=rwt);
-	pacc(dp,weight=pwt);
+	tacc(dt,weight=ch.nStrawHits());
+	racc(dr,weight=ch.nStrawHits());
+	pacc(dp,weight=ch.nStrawHits());
       }
       float dt = extract_result<tag::weighted_median>(tacc);
       float dr = extract_result<tag::weighted_median>(racc);

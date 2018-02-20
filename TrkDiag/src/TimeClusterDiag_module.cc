@@ -262,6 +262,7 @@ namespace mu2e {
     for(unsigned ich=0; ich<nstrs;++ich){
       ComboHit const& ch = _chcol->at(ich);
       if(_shfcol[ich].hasAllProperties(_cesel)){
+	++_ceclust._nce;
 	XYZVec cpos = ch.pos();
 	float hrho = sqrt(cpos.Perp2());
 	double hphi = cpos.phi();
@@ -269,6 +270,10 @@ namespace mu2e {
 	_ceclust._maxdphi = std::max(dphi,_ceclust._maxdphi);
 	_ceclust._minrho = std::min(hrho,_ceclust._minrho);
 	_ceclust._maxrho = std::max(hrho,_ceclust._maxrho);
+	if(_shfcol[ich].hasAllProperties(_hsel) && !_shfcol[ich].hasAnyProperty(_hbkg))
+	  ++_ceclust._ncesel;
+	if(_shfcol[ich].hasAllProperties(_tcsel))
+	    ++_ceclust._nceclust;
       }
     }
   }

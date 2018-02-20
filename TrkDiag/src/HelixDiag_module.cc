@@ -268,16 +268,19 @@ namespace mu2e {
 	    ComboHit const& hhit = hhits[ihh];
 	    vector<StrawDigiIndex> sdis;
 	    hhits.fillStrawDigiIndices(evt,ihh,sdis);
-	    StrawDigiMC const& mcdigi = _mcdigis->at(sdis[0]);
-	    art::Ptr<StepPointMC> spmcp;
-	    if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
-		spmcp->simParticle() == pspp ){
-	      ++nmc;
-	      _mct0 += _toff.timeWithOffsetsApplied(*spmcp);
-	      if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))++_npused;
+	    for(auto idigi : sdis) {
+	      StrawDigiMC const& mcdigi = _mcdigis->at(idigi);
+	      art::Ptr<StepPointMC> spmcp;
+	      if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
+		  spmcp->simParticle() == pspp ){
+		++nmc;
+		_mct0 += _toff.timeWithOffsetsApplied(*spmcp);
+		if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))++_npused;
+	      }
 	    }
 	    if(_diag > 1){
 	      HelixHitInfoMC hhinfomc;
+	      StrawDigiMC const& mcdigi = _mcdigis->at(sdis[0]);
 	      fillHitInfoMC(pspp,mcdigi,hhinfomc);
 	      XYZVec mchpos = hhit.pos(); // sets z position
 	      _mch.position(mchpos);

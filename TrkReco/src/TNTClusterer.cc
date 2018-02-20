@@ -59,30 +59,27 @@ namespace mu2e
           return;
        } 
               
-       accumulator_set<float, stats<tag::weighted_median>, float > racc, pacc, tacc;      
+       accumulator_set<float, stats<tag::weighted_median>, unsigned> racc, pacc, tacc;      
              
        float crho  = sqrtf(_pos.perp2());
        float cphi  = _pos.phi();
-       XYZVec rdir = PerpVector(_pos,Geom::ZDir()).unit();
-       XYZVec pdir(-rdir.y(),rdir.x(),0.0);
+//       XYZVec rdir = PerpVector(_pos,Geom::ZDir()).unit();
+//       XYZVec pdir(-rdir.y(),rdir.x(),0.0);
 
        for (auto& hitPtr : _hitsPtr)
        {
           int idx         = hitPtr->index();
           float hphi      = chcol[idx].phi();
-          float invPosRes = 1.0/chcol[idx].posRes(ComboHit::wire);
           
           float dt  = chcol[idx].time() -_time;
 	  float dr  = sqrtf(chcol[idx].pos().perp2()) - crho;
 	  float dp = Angles::deltaPhi(hphi,cphi);
 
-          // weight according to the wire direction error, linearly for now
-	  float twt = std::min(maxwt,invPosRes);	
-	  float rwt = std::min(maxwt,std::abs(rdir.Dot(chcol[idx].wdir()))*invPosRes);
-	  float pwt = std::min(maxwt,std::abs(pdir.Dot(chcol[idx].wdir()))*invPosRes);
-	  tacc(dt,weight=twt);
-	  racc(dr,weight=rwt);
-	  pacc(dp,weight=pwt);          
+          // weight according to the # of hits
+
+	  tacc(dt,weight=chcol[idx].nStrawHits());
+	  racc(dr,weight=chcol[idx].nStrawHits());
+	  pacc(dp,weight=chcol[idx].nStrawHits());
        }
 
        crho  += extract_result<tag::weighted_median>(racc);

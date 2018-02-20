@@ -63,12 +63,11 @@ namespace mu2e {
        TrkHitReco::FitType _fittype; // peak Fitter
        bool   _usecc;                   // use calorimeter cluster filtering
        float _clusterDt;               // maximum hit-calo lcuster time difference
-       float _minE, _maxE;             // energy range (MeV)
+       float _maxE;             // energy range (MeV)
        float _ctE;                     // minimum charge to flag neighbors as cross talk
        float _ctMinT;                  // time relative to proton hit to flag cross talk (ns)
        float _ctMaxT;                  // time relative to proton hit to flag cross talk (ns)
        float _minT, _maxT;             // time range
-       float _maxR2;		      // maximum transverse radius (squared) 
        bool   _filter;                // filter the output, or just flag 
        bool  _writesh;		      // write straw hits or not
        bool _flagXT; // flag cross-talk
@@ -87,8 +86,7 @@ namespace mu2e {
       _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminusped)),
       _usecc(pset.get<bool>(         "UseCalorimeter",false)),     
       _clusterDt(pset.get<float>(   "clusterDt",100)),
-      _minE(pset.get<float>(        "minimumEnergy",0.0)), // Minimum deposited straw energy (MeV)
-      _maxE(pset.get<float>(        "maximumEnergy",0.003)), // MeV
+      _maxE(pset.get<float>(        "maximumEnergy",0.0035)), // MeV
       _ctE(pset.get<float>(         "crossTalkEnergy",0.007)), // MeV
       _ctMinT(pset.get<float>(      "crossTalkMinimumTime",-1)), // nsec
       _ctMaxT(pset.get<float>(      "crossTalkMaximumTime",100)), // nsec
@@ -109,8 +107,6 @@ namespace mu2e {
       // each hit is a unique straw
       std::vector<StrawIdMask::field> fields{StrawIdMask::plane,StrawIdMask::panel,StrawIdMask::straw};
       _mask = StrawIdMask(fields);
-      float maxR = pset.get<float>("maximumRadius",650); // mm
-      _maxR2 = maxR*maxR;
 
       if (_printLevel > 0) std::cout << "In StrawHitReco constructor " << std::endl;
   }
@@ -202,7 +198,7 @@ namespace mu2e {
 	if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
 	  << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
 
-	if( energy < _minE  || energy > _maxE){
+	if( energy > _maxE){
 	  if(_filter) continue;
 	} else
 	  flag.merge(StrawHitFlag::energysel);
@@ -218,11 +214,6 @@ namespace mu2e {
 	float dw, dwerr;
 	bool td = srep->wireDistance(hit,straw.getHalfLength(),dw,dwerr);
 	XYZVec pos = Geom::toXYZVec(straw.getMidPoint()+dw*straw.getDirection());
-	float rad2 = pos.Perp2();
-	if(rad2 > _maxR2) {
-	  if(_filter)continue;
-	} else
-	  flag.merge(StrawHitFlag::radsel);
 	if(_writesh){
 	  shCol->push_back(std::move(hit));
 	}

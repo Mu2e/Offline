@@ -54,6 +54,7 @@ namespace mu2e {
       float _maxwdchi; // maximum wire distance separation chi
       float _werr2; // intrinsic error on wire distance squared
       float _terr; // intrinsic error transverse to wire (per straw)
+      float _minR2, _maxR2; // transverse radius (squared) 
       int _maxds; // maximum straw number difference
       StrawIdMask _mask; 
   };
@@ -63,7 +64,7 @@ namespace mu2e {
     _debug(pset.get<int>("debugLevel",0)),
     _chTag		(pset.get<art::InputTag>("ComboHitCollection")),
     _testflag(pset.get<bool>("TestFlag")),
-    _shsel(pset.get<vector<string> >("StrawHitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"} )),
+    _shsel(pset.get<vector<string> >("StrawHitSelectionBits",vector<string>{"EnergySelection","TimeSelection"} )),
     _shmask(pset.get<vector<string> >("StrawHitMaskBits",vector<string>{} )),
     _maxdt(pset.get<float>("MaxDt",40.0)), // nsec
     _maxwdchi(pset.get<float>("MaxWireDistDiffPull",4.0)), //units of resolution sigma
@@ -76,6 +77,10 @@ namespace mu2e {
     // define the mask: straws are in the same unique panel
    std::vector<StrawIdMask::field> fields{StrawIdMask::plane,StrawIdMask::panel};
    _mask = StrawIdMask(fields);
+   float minR = pset.get<float>("minimumRadius",395); // mm
+   _minR2 = minR*minR;
+   float maxR = pset.get<float>("maximumRadius",650); // mm
+   _maxR2 = maxR*maxR;
   }
 
   void CombineStrawHits::produce(art::Event& event) {
@@ -140,7 +145,12 @@ namespace mu2e {
 	  } // 2nd panel hit
 	  // compute floating point info for this combo hit and save it
 	  if(combohit.nCombo() > 1)combineHits(combohit);
-	  chcol->push_back(std::move(combohit));
+	  // /final test
+	  float r2 = combohit.pos().Perp2();
+	  if(r2 < _maxR2 && r2 > _minR2){
+	    combohit._flag.merge(StrawHitFlag::radsel);
+	    chcol->push_back(std::move(combohit));
+	  }
 	} // 1st hit not used
       } // 1st panel hit
     } // panels

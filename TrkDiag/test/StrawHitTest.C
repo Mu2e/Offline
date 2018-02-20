@@ -99,7 +99,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
   TCut stpprotonorigin("mcgpdg==2212&&mcgid==28");
   TCut pprotonorigin("mcgpdg==2212&&mcgid==16");
 
-  TCut hitsel("esel&&rsel&&tsel&&(!bkg)&&(!isolated)");
+  TCut hitsel("esel&&rsel&&tsel&&(!bkg)");
 
   TCut goodevt("mcom>100");
   TCut goodpeak("abs(tpeak-mct0-25)<30");
@@ -572,9 +572,9 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     TH2F* hsel = new TH2F("hsel","Hit Selection;Producing Particle;Cut efficiency (%)",5,-0.5,4.5,4,-0.5,3.5);
     TAxis* yax = hsel->GetYaxis();
     unsigned ibin(1);
-    yax->SetBinLabel(ibin++,"Hit Time>500ns");
-    yax->SetBinLabel(ibin++,"Hit Radius");
+    yax->SetBinLabel(ibin++,"Hit Time");
     yax->SetBinLabel(ibin++,"Hit Energy");
+    yax->SetBinLabel(ibin++,"Hit Radius");
     yax->SetBinLabel(ibin++,"Bkg Hit");
     TAxis* xax = hsel->GetXaxis();
     ibin = 1;
@@ -600,7 +600,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     myhpg->Scale(pscale);
     myhpg->SetFillColor(kGreen);
     // now loop over selections
-    std::vector<TCut> selcuts = {"tsel","tsel&&rsel","tsel&&rsel&&esel",hitsel};
+    std::vector<TCut> selcuts = {"tsel","tsel&&esel","tsel&&esel&&rsel",hitsel};
     for(size_t icut=0;icut< selcuts.size();++icut){
       char val[100];
       cout << "Projecting cut " << selcuts[icut] << endl;
