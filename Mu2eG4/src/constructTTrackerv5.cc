@@ -61,13 +61,14 @@ using namespace std;
 namespace mu2e{
 
   VolumeInfo constructTTrackerv5( VolumeInfo const& ds3Vac,
-                                  SimpleConfig const& config ){
+                                  SimpleConfig const& config,
+                                  SensitiveDetectorHelper const& sdHelper ){
 
     // Master geometry for the TTracker.
     //    TTracker const & ttracker = *(GeomHandle<TTracker>());
 
     // The more detailed version has its own function.
-    ConstructTTrackerDetail5 tt(ds3Vac, config);
+    ConstructTTrackerDetail5 tt(ds3Vac, config, sdHelper);
     return tt.motherInfo();
     // Temporary until I can do more...
 

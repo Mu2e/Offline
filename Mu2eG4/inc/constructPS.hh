@@ -10,16 +10,16 @@
 // Original author KLG
 //
 
-// G4 includes
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
-
 namespace mu2e {
 
   class VolumeInfo;
   class SimpleConfig;
+  class SensitiveDetectorHelper;
 
-  void constructPS(VolumeInfo const & parent, SimpleConfig const & _config);
+  void constructPS( const VolumeInfo& parent,
+                    const SimpleConfig& _config,
+                    const SensitiveDetectorHelper& sdHelper
+                    );
 
 }
 

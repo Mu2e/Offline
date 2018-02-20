@@ -422,10 +422,11 @@ namespace mu2e {
     // Mu2e specific customizations that must be done after the call to Initialize.
     postG4InitializeTasks(pset_,pL);
     _sensitiveDetectorHelper.registerSensitiveDetectors();
-    if (standardMu2eDetector_) _extMonFNALPixelSD =
-                                 dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
-                                       ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
-
+    _extMonFNALPixelSD = ( standardMu2eDetector_ &&
+                           _sensitiveDetectorHelper.extMonPixelsEnabled()) ?
+      dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()->
+                                       FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
+      : nullptr;
 
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
     // Setup the graphics if requested.

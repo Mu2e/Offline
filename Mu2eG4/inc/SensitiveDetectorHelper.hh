@@ -68,6 +68,8 @@ namespace mu2e {
 
     bool extMonPixelsEnabled() const { return extMonPixelsEnabled_; }
 
+    int verbosityLevel() const { return verbosityLevel_; }
+
   private:
 
     // A helper class to hold information about each sensitive detector object.
@@ -112,6 +114,9 @@ namespace mu2e {
 
     // Separate handling as this detector does not produced StepPointMCs
     bool extMonPixelsEnabled_;
+
+    int  verbosityLevel_;
+
   };
 
 
