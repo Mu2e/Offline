@@ -690,6 +690,12 @@ namespace mu2e {
       SDman->AddNewDetector(EBKeySD);
     }
 
+    if(sdHelper_->enabled(StepInstanceName::DSCableRun)) {
+      Mu2eSensitiveDetector* cableRunSD =
+        new Mu2eSensitiveDetector(    SensitiveDetectorName::DSCableRun(),  _config);
+      SDman->AddNewDetector(cableRunSD);
+    }
+
   } // instantiateSensitiveDetectors
 
 } // end namespace mu2e
