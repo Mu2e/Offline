@@ -1,9 +1,9 @@
 
            Release notes for Mu2e Offline software, v6_5_3 (in progress)
 
-2) genser, 21 Feb 2018
-   Removed explicit setup of xerces_c (done by setup of geant4)
-   from setup.sh
+2) genser, 22 Feb 2018
+   Moved explicit setup of xerces_c (also done by setup of geant4)
+   to an if else branch in setup.sh
 
 1) genser, 21 Feb 2018
    Corrected unit in G4Tubs construction
