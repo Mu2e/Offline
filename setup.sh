@@ -86,9 +86,6 @@ setup -B scons v3_0_1  -q p2714b
 # The debugger
 setup -B gdb v8_0_1
 
-# Clang (for useful tools, not compiler)
-setup -B clang v5_0_1 -q e15
-
 # satellite releases run this setup, then add itself to the following
 
 # where to search for geometry and other configuration
