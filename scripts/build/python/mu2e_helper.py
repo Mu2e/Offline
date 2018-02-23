@@ -101,6 +101,7 @@ class mu2e_helper:
         if mainlib_cc:
             self.env.SharedLibrary( "#/"+self.lib_file(),
                                mainlib_cc,
+                               # LIBS=[ userlibs],
                                LIBS=[ userlibs, 'pthread', 'gsl', 'gslcblas' ],
                                CPPFLAGS=cppf,
                                parse_flags=pf

@@ -81,6 +81,7 @@ setup -B heppdt   v3_04_01g -q${MU2E_UPS_QUALIFIERS}
 setup -B xerces_c v3_1_4b   -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_02_11  -q${MU2E_UPS_QUALIFIERS}
 setup -B cry   v1_7i  -q${MU2E_UPS_QUALIFIERS}
+setup -B gsl v2_4  -q${build}
 
 # The build system.
 setup -B scons v3_0_1  -q p2714b
