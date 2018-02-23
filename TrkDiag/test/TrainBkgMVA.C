@@ -306,11 +306,6 @@ CreateMVAFactory(TTree* inputTree,
   //
   // --- end of tree registration 
 
-  // Set individual event weights (the variables must exist in the original TTree)
-  //    for signal    : factory->SetSignalWeightExpression    ("weight1*weight2");
-  //    for background: factory->SetBackgroundWeightExpression("weight1*weight2");
-
-
   // Apply additional cuts on the signal and background samples (can be different)
 
 
@@ -538,9 +533,9 @@ void TrainBkgMVA(const char* files="bkgfiles.txt",const char* basedir="bkg") {
     fs.getline(file,100);
   }
 //selection cuts
-  TCut goodclu("mvastat>0 && ppdg==11 && nprimary/nchits>0.8");
+  TCut goodclu("mvastat>0 && nprimary/nactive>0.5");
   TCut signalclu("pproc<20"); // signal are electrons from electromagnetic processes (Compton, delta, ...)
-  TCut bkgclu("pgen==2&&pmom>100"); // background are conversion electron hits
+  TCut bkgclu("pgen==2&&pmom>80"); // background are conversion electron hits
   TCut sigCut = goodclu + signalclu;
   TCut bkgCut = goodclu + bkgclu;
   
@@ -568,7 +563,7 @@ void TrainBkgMVA(const char* files="bkgfiles.txt",const char* basedir="bkg") {
   vardescrip.push_back("Plane Fraction");
   vardescrip.push_back("Number of hits");
   sigweight = "nebkg"; // weight each cluster by the # of background hits
-  bkgweight = "nconv"; // weight each cluster by the # of conversion
+  bkgweight = "nprimary"; // weight each cluster by the # of conversion
   // check base dir
   int stat = mkdir(baseDir.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
   if (!stat)

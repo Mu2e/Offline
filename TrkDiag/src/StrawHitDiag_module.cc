@@ -95,7 +95,7 @@ namespace mu2e
     _useshfcol(pset.get<bool>("UseStrawHitFlagCollection",true)),
     _shTag(pset.get<string>("StrawHitCollection","makeSH")),
     _chTag(pset.get<string>("ComboHitCollection","makeSH")),
-    _shfTag(pset.get<string>("StrawHitFlagCollection","FlagBkgHits")),
+    _shfTag(pset.get<string>("StrawHitFlagCollection")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
     _end{TrkTypes::cal,TrkTypes::hv}
