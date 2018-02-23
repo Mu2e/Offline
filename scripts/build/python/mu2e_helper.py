@@ -1,4 +1,4 @@
-# 
+#
 # This class defines procedures that most SConscript files will use
 # for building. In an SConscript it is created:
 #
@@ -6,12 +6,12 @@
 # Import('mu2e_helper')
 # helper=mu2e_helper(env)
 #
-# Then the typical functions used are 
+# Then the typical functions used are
 #
 # helper.make_mainlib(...)
 # helper.make_plugins(...)
 # helper.make_dict_and_map(...)
-# 
+#
 
 import os
 import string
@@ -36,11 +36,11 @@ class mu2e_helper:
 
         # A few places we use ClassDef in order to enable a class
         # to be fully capable at the root prompt
-        # Using ClassDef forces the dictionary to be linked with the main 
+        # Using ClassDef forces the dictionary to be linked with the main
         # class code.  Set this True to make this happen
         self.classdef = False
 
-    # set true if ClassDef is used, to force dictionary 
+    # set true if ClassDef is used, to force dictionary
     # to be linked in mainlib
     def classDef(self, tf=True):
         self.classdef = tf
@@ -78,7 +78,7 @@ class mu2e_helper:
         return self.env.Glob('*_main.cc', strings=True)
 
     #
-    #   Build a list of .cc files that are not plugings or bins; 
+    #   Build a list of .cc files that are not plugings or bins;
     #   these go into the library named after the directory.
     #
     def mainlib_cc(self):
@@ -101,7 +101,7 @@ class mu2e_helper:
         if mainlib_cc:
             self.env.SharedLibrary( "#/"+self.lib_file(),
                                mainlib_cc,
-                               LIBS=[ userlibs ],
+                               LIBS=[ userlibs, 'pthread', 'gsl', 'gslcblas' ],
                                CPPFLAGS=cppf,
                                parse_flags=pf
                               )
@@ -115,7 +115,7 @@ class mu2e_helper:
     def make_plugin( self, cc, userlibs, cppf = [], pf = []):
         self.env.SharedLibrary( "#/"+self.plugin_lib_file(cc),
                            cc,
-                           LIBS=[ userlibs, ],
+                           LIBS=[ userlibs, 'pthread', 'gsl', 'gslcblas'],
                            CPPFLAGS=cppf,
                            parse_flags=pf
                            )
@@ -140,7 +140,7 @@ class mu2e_helper:
                        "#/"+self.rootmap_file(),
                        "#/"+self.pcm_file() ]
             dflag = ""
-            if self.env["BUILD"] == "debug": 
+            if self.env["BUILD"] == "debug":
                 dflag = ""
             else:
                 dflag = "-DNDEBUG"

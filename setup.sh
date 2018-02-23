@@ -68,6 +68,8 @@ setup -B art v2_10_02 -q${MU2E_UPS_QUALIFIERS}
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
   setup -B geant4 v4_10_2_p03e -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
+else
+  setup -B xerces_c v3_1_4b   -q${MU2E_UPS_QUALIFIERS}
 fi
 
 # Get access to raw data formats.
@@ -76,7 +78,8 @@ setup -B mu2e_artdaq_core v1_02_01e -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIF
 # Other libraries we need.
 
 setup -B heppdt   v3_04_01g -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_02_10  -q${MU2E_UPS_QUALIFIERS}
+setup -B xerces_c v3_1_4b   -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_02_11  -q${MU2E_UPS_QUALIFIERS}
 setup -B cry   v1_7i  -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.

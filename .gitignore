@@ -28,7 +28,9 @@ tmp
 *.log.*
 *.pdf
 *.pyc
+*.orig
 BaBar/include
 EMFCAnalysis
 .tup
 .buildopts
+tags

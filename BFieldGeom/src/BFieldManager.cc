@@ -5,6 +5,7 @@
 // $Author: kutschke $
 // $Date: 2013/08/30 22:25:58 $
 //
+// Modified by Brian Pollack to allow for polymorphic BField class.
 
 // Includes from C++
 #include <iostream>
@@ -19,82 +20,96 @@ using namespace std;
 
 namespace mu2e {
 
-  // Get field at an arbitrary point. This code figures out which map to use
-  // and looks up the field in that map.
-  bool BFieldManager::getBFieldWithStatus(const CLHEP::Hep3Vector& point,
-                                          CLHEP::Hep3Vector& result) const {
-
-    const BFMap *m = cm_.findMap(point);
-
-    if(m) {
-      m->getBFieldWithStatus(point, result);
-    }
-    else {
-      result = CLHEP::Hep3Vector(0.,0.,0.);
+    // Get field at an arbitrary point. This code figures out which map to use
+    // and looks up the field in that map.
+    bool BFieldManager::getBFieldWithStatus(const CLHEP::Hep3Vector& point,
+                                            CLHEP::Hep3Vector& result) const {
+        return getBFieldWithStatus(point, cm_, result);
     }
 
-    return (m != 0);
-}
+    // Get field at an arbitrary point. This code figures out which map to use
+    // and looks up the field in that map.
+    bool BFieldManager::getBFieldWithStatus(const CLHEP::Hep3Vector& point,
+                                            BFCacheManager const& cmgr,
+                                            CLHEP::Hep3Vector& result) const {
+        auto m = cmgr.findMap(point);
 
-  bool BFieldManager::getNeighborPointBF (const CLHEP::Hep3Vector & testpoint, CLHEP::Hep3Vector neighborPoints[3], CLHEP::Hep3Vector neighborBF[3][3][3]) const {
-    
-    const BFMap *m = cm_.findMap(testpoint);
-
-    if(m) {
-      m->getNeighborPointBF(testpoint, neighborPoints, neighborBF);
-    }
-    else {
-      for (int i = 0 ; i <3 ; ++i) {
-        for (int j = 0 ; j <3 ; ++j) {
-          for (int k = 0 ; k <3 ; ++k) {
-            neighborBF[i][j][k] = CLHEP::Hep3Vector(0.,0.,0.);
-          }
+        if (m) {
+            m->getBFieldWithStatus(point, result);
+        } else {
+            result = CLHEP::Hep3Vector(0., 0., 0.);
         }
-        neighborPoints[i] = CLHEP::Hep3Vector(0., 0., 0.);
-      }
+
+        return (m != 0);
     }
 
-    return (m != 0);
-  }
+    std::shared_ptr<BFGridMap> BFieldManager::addBFGridMap(MapContainerType* mapContainer,
+                                                           const std::string& key,
+                                                           int nx,
+                                                           double xmin,
+                                                           double dx,
+                                                           int ny,
+                                                           double ymin,
+                                                           double dy,
+                                                           int nz,
+                                                           double zmin,
+                                                           double dz,
+                                                           BFMapType::enum_type type,
+                                                           double scaleFactor,
+                                                           BFInterpolationStyle interpStyle) {
+        // If there already was another Map with the same key, then it is a hard error.
+        if (!mapKeys_.insert(key).second) {
+            throw cet::exception("GEOM")
+                << "Trying to add a new magnetic field when the named field map already exists: "
+                << key << "\n";
+        }
 
+        // Add an empty BFMap.
+        auto new_map = std::make_shared<BFGridMap>(key, nx, xmin, dx, ny, ymin, dy, nz, zmin, dz,
+                                                   type, scaleFactor, interpStyle);
+        mapContainer->push_back(new_map);
 
-
-  // Create a new BFMap in the container of BFMaps.
-  BFMap& BFieldManager::addBFMap(MapContainerType *mapContainer,
-                                 const std::string& key,
-                                 int nx, double xmin, double dx,
-                                 int ny, double ymin, double dy,
-                                 int nz, double zmin, double dz,
-                                 BFMapType::enum_type type,
-                                 double scaleFactor,
-                                 BFInterpolationStyle interpStyle)
-  {
-    // If there already was another Map with the same key, then it is a hard error.
-    if(!mapKeys_.insert(key).second) {
-      throw cet::exception("GEOM")
-        << "Trying to add a new magnetic field when the named field map already exists: "
-        << key
-        << "\n";
+        return new_map;
     }
 
-    // Add an empty BFMap.
-    mapContainer->push_back(BFMap(key, nx, xmin, dx, ny, ymin, dy, nz, zmin, dz, type, scaleFactor, interpStyle));
+    // Create a new BFGridMap in the container of BFMaps.
+    std::shared_ptr<BFParamMap> BFieldManager::addBFParamMap(MapContainerType* mapContainer,
+                                                             const std::string& key,
+                                                             double xmin,
+                                                             double xmax,
+                                                             double ymin,
+                                                             double ymax,
+                                                             double zmin,
+                                                             double zmax,
+                                                             BFMapType::enum_type type,
+                                                             double scaleFactor) {
+        // If there already was another Map with the same key, then it is a hard error.
+        if (!mapKeys_.insert(key).second) {
+            throw cet::exception("GEOM")
+                << "Trying to add a new magnetic field when the named field map already exists: "
+                << key << "\n";
+        }
 
-    return mapContainer->back();
-  }
+        // Add an empty BFMap.
+        auto new_map = std::make_shared<BFParamMap>(key, xmin, xmax, ymin, ymax, zmin, zmax, type,
+                                                    scaleFactor);
+        mapContainer->push_back(new_map);
 
-  void BFieldManager::print( ostream& out){
-    out<<"================ BFieldManager: innerMaps ================\n";
-    for ( MapContainerType::iterator i =innerMaps_.begin(); i != innerMaps_.end(); ++i ){
-      i->print(out);
+        return new_map;
     }
 
-    out<<"================ BFieldManager: outerMaps ================\n";
-    for ( MapContainerType::iterator i =innerMaps_.begin(); i != innerMaps_.end(); ++i ){
-      i->print(out);
+    void BFieldManager::print(ostream& out) {
+        out << "================ BFieldManager: innerMaps ================\n";
+        for (MapContainerType::iterator i = innerMaps_.begin(); i != innerMaps_.end(); ++i) {
+            (*i)->print(out);
+        }
+
+        out << "================ BFieldManager: outerMaps ================\n";
+        for (MapContainerType::iterator i = innerMaps_.begin(); i != innerMaps_.end(); ++i) {
+            (*i)->print(out);
+        }
+
+        out << "================     BFieldManager end    ================\n";
     }
 
-    out<<"================     BFieldManager end    ================\n";
-  }
-
-} // end namespace mu2e
+}  // end namespace mu2e

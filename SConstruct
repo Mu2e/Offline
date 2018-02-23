@@ -4,9 +4,9 @@
 import os, re, string, sys
 
 # Functions that do small tasks and build lists
-from sconstruct_helper import *
+import sconstruct_helper as sch
 # handles how the input files are collected and the output files are named
-from mu2e_helper import *
+from mu2e_helper import mu2e_helper
 
 # this will contain global config info about the build
 mu2eOpts = {}
@@ -21,7 +21,7 @@ mu2eOpts["mu2ePrint"] = mu2ePrint
 
 # Check that some important environment variables have been set; 
 # result is a dictionary of the options
-moreOpts = mu2eEnvironment()
+moreOpts = sch.mu2eEnvironment()
 mu2eOpts.update(moreOpts)
 
 if mu2ePrint > 1:
@@ -31,19 +31,19 @@ if mu2ePrint > 1:
 
 if mu2ePrint > 5:
     print ("building Evironment:")
-    print ("\nCPPPATH = ",cppPath(mu2eOpts))
-    print ("\nLIBPATH = ",libPath(mu2eOpts))
-    print ("\nENV = ",exportedOSEnvironment())
+    print ("\nCPPPATH = ",sch.cppPath(mu2eOpts))
+    print ("\nLIBPATH = ",sch.libPath(mu2eOpts))
+    print ("\nENV = ",sch.exportedOSEnvironment())
     print ("\nFORTRAN = 'gfortran'")
-    print ("\nBABARLIBS = ", BaBarLibs())
-    print ("\nmerge Flags =",mergeFlags(mu2eOpts))
+    print ("\nBABARLIBS = ", sch.BaBarLibs())
+    print ("\nmerge Flags =",sch.mergeFlags(mu2eOpts))
 
 # this the scons object which contains the methods to build code
-env = Environment( CPPPATH = cppPath(mu2eOpts),   # $ART_INC ...
-                   LIBPATH = libPath(mu2eOpts),   # /lib, $ART_LIB ...
-                   ENV = exportedOSEnvironment(), # LD_LIBRARY_PATH, ROOTSYS, ...
+env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...
+                   LIBPATH = sch.libPath(mu2eOpts),   # /lib, $ART_LIB ...
+                   ENV = sch.exportedOSEnvironment(), # LD_LIBRARY_PATH, ROOTSYS, ...
                    FORTRAN = 'gfortran',
-                   BABARLIBS = BaBarLibs()
+                   BABARLIBS = sch.BaBarLibs()
                  )
 
 # Define and register the rule for building dictionaries.
@@ -55,11 +55,13 @@ env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
 # this sets the build flags, like -std=c++14 -Wall -O3, etc
 SetOption('warn', 'no-fortran-cxx-mix')
-env.MergeFlags( mergeFlags(mu2eOpts) )
+env.MergeFlags( sch.mergeFlags(mu2eOpts) )
+env.MergeFlags('-lpthread')
+env.MergeFlags('-lgsl')
 
 # env construction variables, in SConscript: var=env['VARNAME']
-env.Append( ROOTLIBS = rootLibs() )
-env.Append( BABARLIBS = BaBarLibs() )
+env.Append( ROOTLIBS = sch.rootLibs() )
+env.Append( BABARLIBS = sch.BaBarLibs() )
 env.Append( MU2EBASE = mu2eOpts["base"] )
 env.Append( BINDIR = mu2eOpts['bindir'] )
 env.Append( BUILD = mu2eOpts["build"] )
@@ -74,10 +76,10 @@ Export('env')
 Export('mu2e_helper')
 
 # the list of SConscript files in the directory tree
-ss = sconscriptList(mu2eOpts)
+ss = sch.sconscriptList(mu2eOpts)
 
 # make sure lib, bin and tmp are there
-makeSubDirs(mu2eOpts)
+sch.makeSubDirs(mu2eOpts)
 
 # operate on the SConscript files
 # regular python commands like os.path() are executed immediately as they are encontered, 
@@ -88,9 +90,10 @@ env.SConscript(ss)
 #  with -c, scons will remove all dependant files it knows about.
 #  this code removes orphan files caused by a parent that was removed
 if ( GetOption('clean') and not COMMAND_LINE_TARGETS):
-    extraCleanup()
+    sch.extraCleanup()
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
 # mode:python
 # End:
+# vi:syntax=python
