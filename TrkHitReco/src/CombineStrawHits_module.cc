@@ -48,6 +48,7 @@ namespace mu2e {
       const ComboHitCollection* _chcol;
       // Parameters
       bool _testflag; //test flag or not
+      bool _testrad; // test position radius
       StrawHitFlag _shsel; // flag selection
       StrawHitFlag _shmask; // flag anti-selection 
       float _maxdt; // maximum time separation between hits
@@ -64,6 +65,7 @@ namespace mu2e {
     _debug(pset.get<int>("debugLevel",0)),
     _chTag		(pset.get<art::InputTag>("ComboHitCollection")),
     _testflag(pset.get<bool>("TestFlag")),
+    _testrad(pset.get<bool>("TestRadius")),
     _shsel(pset.get<vector<string> >("StrawHitSelectionBits",vector<string>{"EnergySelection","TimeSelection"} )),
     _shmask(pset.get<vector<string> >("StrawHitMaskBits",vector<string>{} )),
     _maxdt(pset.get<float>("MaxDt",40.0)), // nsec
@@ -145,12 +147,12 @@ namespace mu2e {
 	  } // 2nd panel hit
 	  // compute floating point info for this combo hit and save it
 	  if(combohit.nCombo() > 1)combineHits(combohit);
-	  // /final test
+	  // radius test
 	  float r2 = combohit.pos().Perp2();
-	  if(r2 < _maxR2 && r2 > _minR2){
-	    combohit._flag.merge(StrawHitFlag::radsel);
+	  bool goodrad = r2 < _maxR2 && r2 > _minR2;
+	  if(goodrad) combohit._flag.merge(StrawHitFlag::radsel);
+	  if(!_testrad || goodrad)
 	    chcol->push_back(std::move(combohit));
-	  }
 	} // 1st hit not used
       } // 1st panel hit
     } // panels
