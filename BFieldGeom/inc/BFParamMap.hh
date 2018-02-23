@@ -11,7 +11,8 @@
 // Original Brian Pollack, based on work by Krzysztof Genser, Rob Kutschke, Julie Managan, Bob
 // Bernstein.
 
-// #include <iosfwd>
+//#include <iosfwd>
+// #include <gsl/gsl_sf_bessel.h>
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -43,10 +44,6 @@ namespace mu2e {
                    double scale,
                    bool warnIfOutside = false)
             : BFMap(filename, xmin, xmax, ymin, ymax, zmin, zmax, atype, scale, warnIfOutside){};
-        //_fitFunc = new FitFunctionMaker2(
-        //    "/mu2e/app/users/bpollack/BTrk/BTrk_working/Offline/BFieldGeom/test/"
-        //    "Mau10_800mm_long.csv");
-        //};
 
         ~BFParamMap(){};
 
