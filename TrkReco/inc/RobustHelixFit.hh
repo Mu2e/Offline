@@ -8,10 +8,8 @@
 #ifndef TrkReco_RobustHelixFit_HH
 #define TrkReco_RobustHelixFit_HH
 
-
 #include "fhiclcpp/ParameterSet.h"
 #include "DataProducts/inc/Helicity.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "BTrk/TrkBase/TrkErrCode.hh"
@@ -43,7 +41,7 @@ namespace mu2e
   {
     public:
       
-      enum CircleFit {median=0, AGE=1, chisq=2 };
+      enum CircleFit {median=0, AGE=1 };
 
       explicit RobustHelixFit(fhicl::ParameterSet const&);
       virtual ~RobustHelixFit();
@@ -91,17 +89,16 @@ namespace mu2e
       float _mindist; // minimum distance between points used in circle initialization
       float _maxdist; // maximum distance in hits
       float _rmin,_rmax; // circle radius range
-      float _mindelta; // minimum slope difference to use a triple in circle center initialization
+//      float _mindelta; // minimum slope difference to use a triple in circle center initialization
+      float _minarea2; // minimum triangle area for triple (squared)
       float _lmin, _lmax; // range of lambda = dz/dphi
-      bool _stereoinit; // require stereo hits to initialize
-      bool _stereofit; // require stereo hits 
       bool _targetpoint; // use target as a point in the circle fit
-      bool _targetinit; // require consistency with target when initializing circle
+      bool _targetcon; // require consistency with target
       bool _targetinter; // require fit to intersect the target
+      bool _tripler; // use triples to compute r
+      bool _errrwt; // use hit errors to weight radius calculation 
       bool _usecc; // use the calorimeter cluster in the fit (transverse only)
       float _ccwt; // weight of a calorimeter cluster in non-stereo hit units
-      float _stwt; // weight of a stereo hit (wrt non-stereo)
-      bool _hqwt; // weight hits by 'quality'
       float _targetradius; // target size to use in constraint or init
       float _trackerradius; // tracker radius to use in init
       float _rwind; // raidus window for defining points to be 'on' the helix

@@ -22,6 +22,7 @@
 // root
 #include "TH1F.h"
 #include "Math/VectorUtil.h"
+#include "Math/Vector2D.h"
 //c++
 #include <vector>
 #include <utility>
@@ -34,14 +35,14 @@ using namespace boost::accumulators;
 using namespace ROOT::Math::VectorUtil;
 
 namespace {
-  
+  typedef ROOT::Math::XYVectorF  XYVec;
   // struct for weighted positions
-  class WPos : public XYZVec {
+  class XYWVec : public XYVec {
     public :
-      WPos(XYZVec pos,float weight=1.0) : XYZVec(pos), _weight(weight) {}
+      XYWVec(XYZVec pos,float weight=1.0) : XYVec(pos.x(),pos.y()), _weight(weight) {}
       float weight() const { return _weight; }
+
     private :
-      XYZVec _pos; //position
       float _weight; // weight for this position
   };
 
@@ -68,28 +69,27 @@ namespace mu2e
     _maxzsep(pset.get<float>("maxzsep",500.0)),
     _mindphi(pset.get<float>("mindphi",0.5)),
     _maxdphi(pset.get<float>("maxdphi",2.5)),
-    _mindist(pset.get<float>("mindist",50.0)), // mm
+    _mindist(pset.get<float>("mindist",100.0)), // mm
     _maxdist(pset.get<float>("maxdist",500.0)), // mm
     _rmin(pset.get<float>("minR",150.0)), // mm
     _rmax(pset.get<float>("maxR",400.0)), // mm
-    _mindelta(pset.get<float>("minDelta",500.0)),
+//    _mindelta(pset.get<float>("minDelta",500.0)),
     _lmin(pset.get<float>("minAbsLambda",100.0)),
     _lmax(pset.get<float>("maxAbsLambda",400.0)),
-    _stereoinit(pset.get<bool>("stereoinit",false)),
-    _stereofit(pset.get<bool>("stereofit",false)),
-    _targetinit(pset.get<bool>("targetinit",true)),
+    _targetcon(pset.get<bool>("targeconsistent",true)),
     _targetinter(pset.get<bool>("targetintersect",false)),
+    _tripler(pset.get<bool>("TripleRadius",false)),
+    _errrwt(pset.get<bool>("HitErrorWeight",false)),
     _usecc(pset.get<bool>("UseCaloCluster",false)),
     _ccwt(pset.get<float>("CaloClusterWeight",10.0)), // Cluster weight in units of non-stereo hits
-    _stwt(pset.get<float>("StereoHitWeight",1.0)), // Stereo hit weight in units of non-stereo hits
-    _hqwt(pset.get<bool>("HitQualityWeight",false)), // weight hits by 'quality' = MVA value
     _targetradius(pset.get<float>("targetradius",150.0)), // effective target radius (mm)
     _trackerradius(pset.get<float>("trackerradius",750.0)), // tracker out radius; include some buffer (mm)
     _rwind(pset.get<float>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix in the AGG fit (mm)
     _hphi("hphi","phi value",_nphibins,-_phifactor*CLHEP::pi,_phifactor*CLHEP::pi),
     _ntripleMax(pset.get<unsigned>("ntripleMax",100000))
   {
-    if (_stereofit)_useflag = StrawHitFlag(StrawHitFlag::stereo);
+    float minarea(pset.get<float>("minArea",2000.0));
+    _minarea2 = minarea*minarea;
   }
 
   RobustHelixFit::~RobustHelixFit()
@@ -118,9 +118,6 @@ namespace mu2e
 	  break;
         case AGE :
 	  fitCircleAGE(hseed);
-	  break;
-        case chisq :
-	  throw cet::exception("Reco") << "mu2e::RobustHelixFit: Chisq fit not yet implemented " << std::endl;
 	  break;
      }
   }
@@ -252,7 +249,7 @@ namespace mu2e
       std::vector<const ComboHit*> validHhits;
       validHhits.reserve(hhits.size());
       for (const auto& hhit: hhits) 
-         if (use(hhit) && ( (!_stereoinit) || stereo(hhit))) validHhits.push_back(&hhit);
+         if (use(hhit) ) validHhits.push_back(&hhit);
       if (validHhits.empty()) return retval;
 
       // make initial estimate of dfdz using 'nearby' pairs.  This insures they are on the same loop
@@ -268,7 +265,8 @@ namespace mu2e
 
               float lambda = dz/dphi;
 	      if(goodLambda(rhel.helicity(),lambda)){
-		float wt = hitWeight(**ihit)*hitWeight(**jhit);
+		float wt = sqrtf((*ihit)->nStrawHits()*(*jhit)->nStrawHits());
+//		float wt = (*ihit)->nStrawHits() + (*jhit)->nStrawHits();
 		accf(lambda, weight=wt);
 	      }
 	  }
@@ -344,7 +342,7 @@ namespace mu2e
       while(changed && niter < _maxniter)
       {
           changed = false;
-          accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, uint16_t > accf;
+          accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accf;
 
           for (auto ihit=validHhits.begin(); ihit != std::prev(validHhits.end()); ++ihit) 
           {
@@ -356,7 +354,8 @@ namespace mu2e
 
                   float lambda = dz/dphi;
 	          if (goodLambda(rhel.helicity(),lambda)){
-		    uint16_t wt = (*ihit)->nStrawHits()*(*jhit)->nStrawHits();
+		    float wt = sqrtf((*ihit)->nStrawHits()*(*jhit)->nStrawHits());
+//		    float wt = (*ihit)->nStrawHits() + (*jhit)->nStrawHits();
 		    accf(lambda, weight=wt);
 		  }
 	      }
@@ -364,12 +363,12 @@ namespace mu2e
           rhel._lambda = extract_result<tag::weighted_median>(accf);
 
           // now extract intercept.  Here we solve for the difference WRT the previous value
-          accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, uint16_t > acci;
+          accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > acci;
           for (const auto & hhit : validHhits)
           {
 	      float phiex = rhel.circleAzimuth(hhit->_pos.z());
 	      float dphi = deltaPhi(phiex,hhit->helixPhi());
-	      uint16_t wt = hhit->nStrawHits();
+	      float wt = hhit->nStrawHits();
 	      acci(dphi,weight = wt);// accumulate the difference WRT the current intercept
           }
           // enforce convention on azimuth phase
@@ -399,77 +398,81 @@ namespace mu2e
 
 
      // pick out a subset of hits. I can aford to be choosy
-     std::vector<WPos> pos;
-     pos.reserve(hhits.size()+1);
+     std::vector<XYWVec> wpos;
+     wpos.reserve(hhits.size()+1);
 
-     for (const auto& hhit : hhits) 
-       if (use(hhit) && (stereo(hhit) || (!_stereoinit)) )
-	 pos.push_back(WPos(PerpVector(hhit._pos,Geom::ZDir()),hitWeight(hhit)));        
+     for (const auto& hhit : hhits) {
+       if (use(hhit) ){
+	 wpos.push_back(XYWVec(hhit.pos(),hhit.nStrawHits()));
+       }
+     }
+     XYZVec cog;
      if ( _usecc && hseed.caloCluster().isNonnull())
      {
-        mu2e::GeomHandle<mu2e::Calorimeter> ch;
-        const Calorimeter* calo = ch.get();
-        XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector())));
-        pos.push_back(WPos(PerpVector(cog,Geom::ZDir()),_ccwt));
+       mu2e::GeomHandle<mu2e::Calorimeter> ch;
+       const Calorimeter* calo = ch.get();
+       cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(hseed.caloCluster()->diskId(),hseed.caloCluster()->cog3Vector())));
+       wpos.push_back(XYWVec(cog,_ccwt));
      }
 
-     if (pos.size()<3) return;
+     if (wpos.size()<3) return;
 
      // loop over all triples
      unsigned ntriple(0);
-     size_t np = pos.size();    
+     size_t np = wpos.size();    
      for(size_t ip=0; ip<np-2; ++ip)
-     {      
-         float ri2 = pos[ip].perp2();
+     { 
+         float ri2 = wpos[ip].Mag2();
          for(size_t jp=ip+1; jp<np-1; ++jp)
          {                
-	     float dist2ij = (pos[ip]-pos[jp]).mag2();
+	     float dist2ij = (wpos[ip]-wpos[jp]).Mag2();
 	     if (dist2ij < mind2 || dist2ij > maxd2) continue;	  
 
-             float rj2 = pos[jp].perp2();
+             float rj2 = wpos[jp].Mag2();
              for(size_t kp=jp+1; kp<np; ++kp)
              {
-	         float dist2ik = (pos[ip]-pos[kp]).mag2();
-	         float dist2jk = (pos[jp]-pos[kp]).mag2();
+	         float dist2ik = (wpos[ip]-wpos[kp]).Mag2();
+	         float dist2jk = (wpos[jp]-wpos[kp]).Mag2();
                  if (dist2ik < mind2 ||  dist2jk < mind2 || dist2ik > maxd2 || dist2jk > maxd2) continue;
+		 // Heron's formula
+		 float area2 = (dist2ij*dist2jk + dist2ik*dist2jk + dist2ij*dist2ik) - 0.5*(dist2ij*dist2ij + dist2jk*dist2jk + dist2ik*dist2ik);
 
                  // this effectively measures the slope difference
-	         float delta = (pos[kp].x() - pos[jp].x())*(pos[jp].y() - pos[ip].y()) -
-		                (pos[jp].x() - pos[ip].x())*(pos[kp].y() - pos[jp].y());
-	         if (fabs(delta) < _mindelta) continue;
+	         float delta = (wpos[kp].x() - wpos[jp].x())*(wpos[jp].y() - wpos[ip].y()) -
+		                (wpos[jp].x() - wpos[ip].x())*(wpos[kp].y() - wpos[jp].y());
+//	         if (fabs(delta) < _mindelta) continue;
+	         if(area2 < _minarea2)continue;
 
-                 float rk2 = pos[kp].perp2();
+                 float rk2 = wpos[kp].Mag2();
 
                  // find circle center for this triple
 	         float cx = 0.5* (
-		     (pos[kp].y() - pos[jp].y())*ri2 +
-		     (pos[ip].y() - pos[kp].y())*rj2 +
-		     (pos[jp].y() - pos[ip].y())*rk2 ) / delta;
+		     (wpos[kp].y() - wpos[jp].y())*ri2 +
+		     (wpos[ip].y() - wpos[kp].y())*rj2 +
+		     (wpos[jp].y() - wpos[ip].y())*rk2 ) / delta;
 	         float cy = -0.5* (
-		     (pos[kp].x() - pos[jp].x())*ri2 +
-		     (pos[ip].x() - pos[kp].x())*rj2 +
-		     (pos[jp].x() - pos[ip].x())*rk2 ) / delta;
-	         float rho = sqrtf(std::pow(pos[ip].x()-cx,(int)2)+std::pow(pos[ip].y()-cy,(int)2));
-	         float rc = sqrtf(cx*cx + cy*cy);
+		     (wpos[kp].x() - wpos[jp].x())*ri2 +
+		     (wpos[ip].x() - wpos[kp].x())*rj2 +
+		     (wpos[jp].x() - wpos[ip].x())*rk2 ) / delta;
+		 XYVec cent(cx,cy);
+	         float rho = sqrtf((wpos[ip]-cent).Mag2());
+	         float rc = sqrtf(cent.Mag2());
 	         float rmin = fabs(rc-rho);
 	         float rmax = rc+rho;
 
         	 // test circle parameters for this triple: should be inside the tracker,
 		 // optionally consistent with the target
 		 if (rho > _rmin && rho < _rmax && rmax < _trackerradius && 
-                     ( !_targetinit || rmin < _targetradius) )
+                     ( !_targetcon || rmin < _targetradius) )
                  {
 		    ++ntriple;
-		    float wt = pos[ip].weight()*pos[jp].weight()*pos[kp].weight();
+
+		    float wt = cbrt(wpos[ip].weight()*wpos[jp].weight()*wpos[kp].weight());
+//		    float wt = wpos[ip].weight() + wpos[jp].weight() + wpos[kp].weight();
+//		    wt *= sqrtf(area2);
 		    accx(cx,weight = wt);
 		    accy(cy,weight = wt);
-		    accr(rho,weight = wt);
-                    //xcmean  += cx*wt;
-                    //ycmean  += cy*wt;
-                    //sumWeights += wt;
-                    //rcmean  += rho*wt;
-
-                    //if (ntriple>50) stride=2;		  
+		    if(_tripler) accr(rho,weight = wt);
 		    if (ntriple>_ntripleMax) {ip=np;jp=np;kp=np;}
 		 } 
 	     } 
@@ -482,14 +485,36 @@ namespace mu2e
      {
         float centx = extract_result<tag::weighted_median>(accx);
         float centy = extract_result<tag::weighted_median>(accy);
-        float rho = extract_result<tag::weighted_median>(accr);
-        //float centx = xcmean/sumWeights;
-        //float centy = ycmean/sumWeights;
-        //float rho = rcmean/sumWeights;
-
-        XYZVec center(centx,centy,0.0);
-        rhel._rcent = sqrtf(center.perp2());
-        rhel._fcent = center.phi();
+	XYVec center(centx,centy);
+	if(!_tripler) {
+	  if(!_errrwt) {
+	    for(auto const& wp : wpos ) {
+	      float rho = sqrtf((wp - center).Mag2());
+	      accr(rho,weight = wp.weight()); 
+	    }
+	  } else {
+// set weight according to the errors
+	    for (const auto& hhit : hhits) {
+	      if (use(hhit) ){
+	      // compute the projection to the radius
+		XYVec rvec = (XYVec(hhit.pos().x(),hhit.pos().y())-center);
+		XYVec rdir = rvec.unit();
+		float wdot = rdir.Dot(XYVec(hhit.wdir().x(),hhit.wdir().y()));
+		float wdot2 = wdot*wdot;
+		float tdot2 = 1.0 - wdot2;
+		float err2 = wdot2*hhit.wireErr2() + tdot2*hhit.transErr2();
+		float wt = 1.0/sqrtf(err2); // or 1/err2?
+		float rho = sqrtf(rvec.Mag2());
+		accr(rho,weight=wt);
+	      }
+	    }
+	    if ( _usecc && hseed.caloCluster().isNonnull()){
+	    }
+	  }
+	}
+	float rho = extract_result<tag::weighted_median>(accr);
+        rhel._rcent = sqrtf(center.Mag2());
+        rhel._fcent = center.Phi();
         rhel._radius = rho;
 
         hseed._status.merge(TrkFitFlag::circleInit);
@@ -557,7 +582,6 @@ namespace mu2e
      float wtot(0.0);
      for (const auto& hhit : hhits)
      {
-
          if (!use(hhit)) continue;
 	 // find radial information for this point
 	 float rad = sqrtf(XYZVec(hhit._pos - center).perp2());
@@ -603,20 +627,7 @@ namespace mu2e
 
   bool RobustHelixFit::use(const ComboHit& hhit) const 
   {
-     return (!hhit._flag.hasAnyProperty(_dontuseflag))
-      && (hhit._flag.hasAllProperties(_useflag) || _useflag.empty());
-  }
-
-  bool RobustHelixFit::stereo(const ComboHit& hhit) const 
-  {
-    static StrawHitFlag stereo(StrawHitFlag::stereo);
-    return hhit._flag.hasAllProperties(stereo);
-  }
-
-  void RobustHelixFit::setOutlier(ComboHit& hhit) const 
-  {
-     static StrawHitFlag outlier(StrawHitFlag::outlier);
-     hhit._flag.merge(outlier);
+     return (!hhit._flag.hasAnyProperty(_dontuseflag));
   }
 
   void RobustHelixFit::initPhi(ComboHit& hhit, const RobustHelix& rhel) const 
@@ -656,8 +667,6 @@ namespace mu2e
   {
      float retval(hhit.nStrawHits());
      // add an option to evaluate the error relative to the current center FIXME
-//     if (hhit.flag().hasAnyProperty(StrawHitFlag::stereo)) retval = _stwt;
-//     if (_hqwt) retval*= std::max(float(0.0),(float)hhit._qual);
      return retval;
   }
 
