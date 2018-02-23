@@ -101,8 +101,8 @@ class mu2e_helper:
         if mainlib_cc:
             self.env.SharedLibrary( "#/"+self.lib_file(),
                                mainlib_cc,
-                               # LIBS=[ userlibs],
-                               LIBS=[ userlibs, 'pthread', 'gsl', 'gslcblas' ],
+                               LIBS=[ userlibs],
+                               # LIBS=[ userlibs, 'pthread', 'gsl', 'gslcblas' ],
                                CPPFLAGS=cppf,
                                parse_flags=pf
                               )
@@ -116,7 +116,8 @@ class mu2e_helper:
     def make_plugin( self, cc, userlibs, cppf = [], pf = []):
         self.env.SharedLibrary( "#/"+self.plugin_lib_file(cc),
                            cc,
-                           LIBS=[ userlibs, 'pthread', 'gsl', 'gslcblas'],
+                           LIBS=[ userlibs],
+                           # LIBS=[ userlibs, 'pthread', 'gsl', 'gslcblas'],
                            CPPFLAGS=cppf,
                            parse_flags=pf
                            )

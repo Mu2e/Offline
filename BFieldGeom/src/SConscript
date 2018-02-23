@@ -16,9 +16,9 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeomPrimitives',
                                   'cetlib_except',
                                   'CLHEP',
                                   'boost_iostreams',
-                                  'pthread',
-                                  'gsl',
-                                  'gslcblas',
+                                  # 'pthread',
+                                  # 'gsl',
+                                  # 'gslcblas',
                                   ] )
 
 # This tells emacs to view this file in python mode.
