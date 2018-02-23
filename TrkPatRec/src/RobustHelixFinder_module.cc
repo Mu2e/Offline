@@ -63,16 +63,16 @@ namespace {
 
   struct HelixHitMVA
   {
-    std::vector <Double_t> _pars,_pars2;
-    Double_t& _dtrans; // distance from hit to helix perp to the wrire
-    Double_t& _dwire;  // distance from hit to helix along the wrire
-    Double_t& _chisq;  // chisq of spatial information, using average errors
-    Double_t& _dt;     // time difference of hit WRT average
-    Double_t& _drho;   // hit transverse radius minus helix radius
-    Double_t& _dphi;   // hit azimuth minus helix azimuth (at the hit z)
-    Double_t& _rwdot;  // dot product between circle radial direction and wire direction
-    Double_t& _hrho;   // helix transverse radius (at the hit z)
-    Double_t& _hhrho;  // hit transverse radius
+    std::vector <float> _pars,_pars2;
+    float& _dtrans; // distance from hit to helix perp to the wrire
+    float& _dwire;  // distance from hit to helix along the wrire
+    float& _chisq;  // chisq of spatial information, using average errors
+    float& _dt;     // time difference of hit WRT average
+    float& _drho;   // hit transverse radius minus helix radius
+    float& _dphi;   // hit azimuth minus helix azimuth (at the hit z)
+    float& _rwdot;  // dot product between circle radial direction and wire direction
+    float& _hrho;   // helix transverse radius (at the hit z)
+    float& _hhrho;  // hit transverse radius
     //HelixHitMVA() : _pars(9,0.0),_dtrans(_pars[0]),_dwire(_pars[1]),_chisq(_pars[2]),_dt(_pars[3]),
     // _drho(_pars[4]),_dphi(_pars[5]),_rwdot(_pars[6]),_hrho(_pars[7]),_hhrho(_pars[8]){}
     HelixHitMVA() : _pars(7,0.0),_pars2(2,0.0),_dtrans(_pars[0]),_dwire(_pars[1]),_chisq(_pars[2]),_dt(_pars[3]),
