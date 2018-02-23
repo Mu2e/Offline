@@ -106,7 +106,7 @@ namespace mu2e {
     float				_maxdwire; // outlier cut on distance between hit and helix along wire
     float				_maxdtrans; // outlier cut on distance between hit and helix perp to wire
     float				_maxchisq; // outlier cut on chisquared
-    float				_maxrwdot[2]; // outlier cut on angle between radial direction and wire: smaller is better
+    float				_maxrwdot; // outlier cut on angle between radial direction and wire: smaller is better
     float				_minrerr; // minimum radius error
 
     bool				_usemva; // use MVA to cut outliers
@@ -162,6 +162,7 @@ namespace mu2e {
     _maxdwire    (pset.get<float>("MaxWireDistance",200.0)), // max distance along wire
     _maxdtrans   (pset.get<float>("MaxTransDistance",80.0)), // max distance perp to wire (and z)
     _maxchisq    (pset.get<float>("MaxChisquared",100.0)), // max chisquared
+    _maxrwdot	(pset.get<float>("MaxRWDot",1.0)),
     _minrerr     (pset.get<float>("MinRadiusErr",20.0)), // mm
     _usemva      (pset.get<bool>("UseHitMVA",false)),
     _minmva      (pset.get<float> ("MinMVA",0.1)), // min MVA output to define an outlier
@@ -178,8 +179,6 @@ namespace mu2e {
     _outlier     (StrawHitFlag::outlier),
     _updateStereo    (pset.get<bool>("UpdateStereo",true))
   {
-    _maxrwdot[0] = pset.get<float>("MaxStereoRWDot",1.0);
-    _maxrwdot[1] = pset.get<float>("MaxNonStereoRWDot",1.0);
     std::vector<int> helvals = pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel});
     for(auto hv : helvals) {
       Helicity hel(hv);
@@ -336,31 +335,39 @@ namespace mu2e {
     static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
     RobustHelix& helix = hseed._helix;
 
-    for(auto& hhit : hseed._hhits)
-    {
+    for(auto& hhit : hseed._hhits) {
       bool oldout = hhit._flag.hasAnyProperty(_outlier);
+      hhit._flag.clear(_outlier);
 
       const XYZVec& wdir = hhit.wdir();
       XYZVec cvec = PerpVector(hhit.pos() - helix.center(),Geom::ZDir()); // direction from the circle center to the hit
       XYZVec cdir = cvec.Unit(); // direction from the circle center to the hit
       float rwdot = wdir.Dot(cdir); // compare directions of radius and wire
+      if(rwdot > _maxrwdot){
+	hhit._flag.merge(_outlier);
+	if(!oldout) ++changed;
+	continue;
+      }
+      float dr = sqrtf(cvec.mag2())-helix.radius();
+      if ( fabs(dr) > _maxdr ) {
+	hhit._flag.merge(_outlier);
+	if(!oldout) ++changed;
+	continue;
+      }
+	
       float rwdot2 = rwdot*rwdot;
       // compute radial difference and pull
-      float dr = sqrtf(cvec.mag2())-helix.radius();
       float werr = hhit.posRes(StrawHitPosition::wire);
       float terr = hhit.posRes(StrawHitPosition::trans);
       // the resolution is dominated the resolution along the wire
       float rres = std::max(sqrtf(werr*werr*rwdot2 + terr*terr*(1.0-rwdot2)),_minrerr);
       float rpull = dr/rres;
-      unsigned ist = hhit._flag.hasAnyProperty(StrawHitFlag::stereo) ? 0 : 1;
-
-      if ( std::abs(dr) > _maxdr || fabs(rpull) > _maxrpull || rwdot > _maxrwdot[ist])
-      {
+      if ( fabs(rpull) > _maxrpull ) {
 	hhit._flag.merge(_outlier);
-      } else {
-	hhit._flag.clear(_outlier);
+	if(!oldout) ++changed;
+	continue;
       }
-      if (oldout != hhit._flag.hasAnyProperty(_outlier)) ++changed;
+      if (oldout) ++changed;
     }
     return changed;
   }
@@ -585,7 +592,7 @@ namespace mu2e {
 // local helix direction at the average z of this hit
 	  XYZVec hdir;
 	  hseed.helix().direction(ch.pos().z(),hdir);
-	  
+// needs re-implementing with ComboHits FIXME!	  
 //	XYZVec pos1, pos2;
 //	sthit.position(shcol,tracker,pos1,pos2,hdir);
       }

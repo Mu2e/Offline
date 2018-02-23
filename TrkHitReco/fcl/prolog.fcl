@@ -11,11 +11,13 @@ makeSH : {
 makePH : {
   module_type : CombineStrawHits
   TestFlag : true
+  TestRadius : true
   ComboHitCollection : "makeSH"
 }
 # combine panel hits in a station
 makeSTH : {
   module_type : MakeStereoHits
+  TestFlag : true
   MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
   ComboHitCollection : "makePH"
 }
@@ -50,18 +52,24 @@ FlagBkgHits : {
   StrawHitCollection : "makeSH"
   BkgMVA : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
   MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
-  TLTClusterer : { @table::TLTClusterer }
-  TNTClusterer : { @table::TNTClusterer }
+  TLTClusterer : { @table::TLTClusterer
+		    TestFlag : true }
+  TNTClusterer : { @table::TNTClusterer
+		    TestFlag : true}
   # use TNTClusterer
   Clusterer : 2
   FilterOutput : false
   FlagComboHits : true
   FlagStrawHits : true
-  ComboHitCollection : "makePH"
   BkgMVA : {
     MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml"
   }
 }
+SflagBkgHits : {
+  @table::FlagBkgHits
+  ComboHitCollection : "makeSTH"
+}
+
 # now trigger-specific versions; these make deep copies
 TTmakeSH : {
   module_type : StrawHitReco
@@ -72,13 +80,19 @@ TTmakeSH : {
 TTmakePH : {
   module_type : CombineStrawHits
   TestFlag : false
+  TestRadius : true
   ComboHitCollection : "TTmakeSH"
+}
+# stereo version: defer the radius test
+TTSmakePH : {
+  @table::TTmakePH
+  TestRadius : false
 }
 # combine panel hits in a station
 TTmakeSTH : {
-  module_type : MakeStereoHits
-  MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
-  ComboHitCollection : "TTmakePH"
+  @table::makeSTH
+  TestFlag : false
+  ComboHitCollection : "TTSmakePH"
 }
 TTflagBkgHits : {
   module_type : FlagBkgHits
@@ -86,8 +100,10 @@ TTflagBkgHits : {
   StrawHitCollection : "TTmakeSH"
   BkgMVA : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
   MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
-  TLTClusterer : { @table::TLTClusterer }
-  TNTClusterer : { @table::TNTClusterer }
+  TLTClusterer : { @table::TLTClusterer 
+		  TestFlag : false}
+  TNTClusterer : { @table::TNTClusterer
+		  TestFlag : false}
   # use TNTClusterer
   Clusterer : 2
   FilterOutput : true
@@ -97,6 +113,11 @@ TTflagBkgHits : {
   BkgMVA : {
     MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml"
   }
+}
+# stereo versions
+TTSflagBkgHits : {
+  @table::TTflagBkgHits
+  ComboHitCollection : TTSmakePH
 }
 # Legacy: don't use these in any new sequences!
 MakeStrawHitPositions : {
@@ -128,6 +149,7 @@ TrkHitReco : {
 	makePH            : { @table::makePH            }
 	makeSTH            : { @table::makeSTH            }
 	FlagBkgHits		  : { @table::FlagBkgHits            }
+	SflagBkgHits		  : { @table::SflagBkgHits            }
 	# track trigger modules
 	TTmakeSH            : { @table::TTmakeSH              }
 	TTmakePH            : { @table::TTmakePH            }
@@ -140,7 +162,9 @@ TrkHitReco : {
 # sequences
 # production sequence to prepare hits for tracking
   PrepareHits : [ makeSH, makePH, FlagBkgHits ]
+  SPrepareHits : [ makeSH, makePH, makeSTH, SflagBkgHits ]
   TTprepareHits : [ TTmakeSH, TTmakePH,TTflagBkgHits ]
+  TTSprepareHits : [ TTmakeSH, TTSmakePH, TTmakeSTH ,TTSflagBkgHits ]
 }
 
 END_PROLOG

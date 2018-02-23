@@ -80,7 +80,7 @@ namespace mu2e
       unsigned _minnp;
       unsigned _maxisolated;
       bool _savebkg;
-      StrawHitFlag _bkgmsk;
+      StrawHitFlag _bkgmsk, _stereo;
       const ComboHitCollection* _chcol;
       BkgClusterer* _clusterer;
       float        _cperr2;
@@ -109,6 +109,7 @@ namespace mu2e
     _maxisolated(pset.get<unsigned>(            "MaxIsolated",0)),
     _savebkg(pset.get<bool>(                    "SaveBkgClusters",false)),
     _bkgmsk(pset.get<std::vector<std::string> >("BackgroundMask",std::vector<std::string>{"Background"})),
+    _stereo(pset.get<std::vector<std::string> >("StereoSelection",std::vector<std::string>{"Stereo","PanelCombo"})),
     _useMVA(pset.get<bool>(                     "UseBkgMVA",true)),
     _bkgMVAcut(pset.get<float>(                 "BkgMVACut",0.5)),
     _bkgMVA(pset.get<fhicl::ParameterSet>(      "BkgMVA",fhicl::ParameterSet()))
@@ -203,26 +204,19 @@ namespace mu2e
 
      if(_flagsh){
        auto shH = event.getValidHandle<StrawHitCollection>(_shtag);
-       auto chH = event.getValidHandle<ComboHitCollection>(_shtag);
        const StrawHitCollection* shcol  = shH.product();
-       const ComboHitCollection* shchcol = chH.product();
-       if (shcol->size() != shchcol->size())
-	 throw cet::exception("RECO")<< "FlagBkgHits: Collection sizes don't match" << std::endl;       
        // first, copy over the original flags
        unsigned nsh = shcol->size();
        std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(nsh));
-       for(size_t ish =0;ish < shcol->size(); ++ish){
-	 (*shfcol)[ish] = (*shchcol)[ish].flag();
+       for(size_t ich = 0;ich < _chcol->size();++ich) {
+	 StrawHitFlag flag = chfcol[ich];
+	 flag.merge((*_chcol)[ich].flag());
+	 std::vector<StrawHitIndex> shids;
+	 _chcol->fillStrawHitIndices(event,ich,shids);
+	 for(auto ish : shids)
+	   (*shfcol)[ish] = flag;
        }
-       // then copy the background flag content down to straw hit level
-       std::vector<StrawHitIndex> shids;
-       for (size_t ich=0;ich < nch; ++ich){
-	  StrawHitFlag flag = chfcol[ich];
-	  shids.clear();
-	  _chcol->fillStrawHitIndices(event,ich,shids);
-	  for(auto shid : shids) shfcol->at(shid).merge(flag); // check range here for safety
-       }
-      
+
        event.put(std::move(shfcol),"StrawHits");
      }
 
@@ -237,7 +231,7 @@ namespace mu2e
      }
 
      return;
-   }
+  }
 
 
   void FlagBkgHits::fillBkgQual(const BkgCluster& cluster, BkgQual& cqual) const
@@ -260,24 +254,24 @@ namespace mu2e
 	std::vector<float> hz;
 	for (const auto& chit : cluster.hits())
 	{
-	   if (chit.flag().hasAllProperties(StrawHitFlag::active))
-	   {
-	      const ComboHit& ch = (*_chcol)[chit.index()];
-	      hz.push_back(ch.pos().z());
-	      float dt = ch.time() - cluster.time();
-	      tacc(dt);
-	      // compute the transverse radius of this hit WRT the cluster center
-	      XYZVec psep = PerpVector(ch.pos()-cluster.pos(),Geom::ZDir());
-	      float rho = sqrtf(psep.mag2());
-	      // project the hit position error along the radial direction to compute the weight
-	      XYZVec pdir = psep.unit();
-	      XYZVec tdir(-ch.wdir().y(),ch.wdir().x(),0.0);
-	      float rwerr = ch.posRes(ComboHit::wire)*pdir.Dot(ch.wdir());
-	      float rterr = ch.posRes(ComboHit::trans)*pdir.Dot(tdir);
-	      // include the cluster center position error when computing the weight
-	      float rwt = 1.0/sqrtf(rwerr*rwerr + rterr*rterr + _cperr2/nactive);
-	      racc(rho,weight=rwt);
-	   }
+	  if (chit.flag().hasAllProperties(StrawHitFlag::active))
+	  {
+	    const ComboHit& ch = (*_chcol)[chit.index()];
+	    hz.push_back(ch.pos().z());
+	    float dt = ch.time() - cluster.time();
+	    tacc(dt);
+	    // compute the transverse radius of this hit WRT the cluster center
+	    XYZVec psep = PerpVector(ch.pos()-cluster.pos(),Geom::ZDir());
+	    float rho = sqrtf(psep.mag2());
+	    // project the hit position error along the radial direction to compute the weight
+	    XYZVec pdir = psep.unit();
+	    XYZVec tdir(-ch.wdir().y(),ch.wdir().x(),0.0);
+	    float rwerr = ch.posRes(ComboHit::wire)*pdir.Dot(ch.wdir());
+	    float rterr = ch.posRes(ComboHit::trans)*pdir.Dot(tdir);
+	    // include the cluster center position error when computing the weight
+	    float rwt = 1.0/sqrtf(rwerr*rwerr + rterr*rterr + _cperr2/nactive);
+	    racc(rho,weight=rwt);
+	  }
 	}
 	cqual[BkgQual::hrho]  = extract_result<tag::weighted_mean>(racc);
 	cqual[BkgQual::shrho] = sqrtf(std::max(extract_result<tag::weighted_variance>(racc),float(0.0)));
@@ -300,7 +294,7 @@ namespace mu2e
 	  // reduce values down to what's actually used in the MVA.  This functionality
 	  // should be in MVATool, FIXME!
 	  std::vector<float> mvavars(9,0.0);
-          mvavars[0] = cqual.varValue(BkgQual::hrho);
+	  mvavars[0] = cqual.varValue(BkgQual::hrho);
 	  mvavars[1] = cqual.varValue(BkgQual::shrho);
 	  mvavars[2] = cqual.varValue(BkgQual::crho);
 	  mvavars[3] = cqual.varValue(BkgQual::zmin);
@@ -315,12 +309,12 @@ namespace mu2e
 	  cqual.setMVAStatus(BkgQual::calculated);
 	}
       } else {
-	 cqual[BkgQual::hrho] = -1.0;
-	 cqual[BkgQual::shrho] = -1.0;
-	 cqual[BkgQual::sdt] = -1.0;
-	 cqual[BkgQual::zmin] = -1.0;
-	 cqual[BkgQual::zmax] = -1.0;
-	 cqual[BkgQual::zgap] = -1.0;
+	cqual[BkgQual::hrho] = -1.0;
+	cqual[BkgQual::shrho] = -1.0;
+	cqual[BkgQual::sdt] = -1.0;
+	cqual[BkgQual::zmin] = -1.0;
+	cqual[BkgQual::zmax] = -1.0;
+	cqual[BkgQual::zgap] = -1.0;
       }
     }
   }
@@ -331,9 +325,9 @@ namespace mu2e
     std::array<int,StrawId::_nplanes> hitplanes{0};
     for (const auto& chit : cluster.hits()) 
     {
-        if (!chit.flag().hasAllProperties(StrawHitFlag::active)) continue;
-	const ComboHit& ch = (*_chcol)[chit.index()];
-	hitplanes[ch.sid().plane()] += ch.nStrawHits();
+      if (!chit.flag().hasAllProperties(StrawHitFlag::active)) continue;
+      const ComboHit& ch = (*_chcol)[chit.index()];
+      hitplanes[ch.sid().plane()] += ch.nStrawHits();
     }
 
     unsigned ipmin(0),ipmax(StrawId::_nplanes-1); 
@@ -343,11 +337,11 @@ namespace mu2e
     unsigned npexp(0),np(0),nphits(0);
     for(unsigned ip = ipmin; ip <= ipmax; ++ip)
     {
-       npexp++; // should use TTracker to see if plane is physically present FIXME!
-       if (hitplanes[ip]> 0)++np;
-       nphits += hitplanes[ip];
+      npexp++; // should use TTracker to see if plane is physically present FIXME!
+      if (hitplanes[ip]> 0)++np;
+      nphits += hitplanes[ip];
     }
-    
+
     cqual[BkgQual::np] = np; 
     cqual[BkgQual::npexp] = npexp; 
     cqual[BkgQual::npfrac] = static_cast<float>(np)/static_cast<float>(npexp); 
@@ -362,7 +356,7 @@ namespace mu2e
       if (chit.flag().hasAllProperties(StrawHitFlag::active))
       {
 	nactive += ch.nStrawHits();
-	if (chit.flag().hasAllProperties(StrawHitFlag::stereo)) nstereo += ch.nStrawHits();
+	if (chit.flag().hasAnyProperty(_stereo) ) nstereo += ch.nStrawHits();
       }
     }
   }

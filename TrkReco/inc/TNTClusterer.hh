@@ -83,7 +83,7 @@ namespace mu2e {
 	 bool	      _testflag;    // test background flag
          StrawHitFlag _bkgmask;     // mask for background hits
          StrawHitFlag _sigmask;     // mask for selecting signals
-         bool         _comobInit;   // Start with stereo hits
+         bool         _comboInit;   // Start with stereo hits
          bool         _mergeInit;   // Start with stereo merge 
          float        _dseed;       // Minimum separation to seed a new cluster
          float        _dhit;        // Maximum separation to include a hit in a cluster

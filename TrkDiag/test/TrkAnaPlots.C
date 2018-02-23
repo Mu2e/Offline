@@ -192,7 +192,7 @@ void MomRes(TTree* ta, double tqcut) {
   TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
   momres->Sumw2();
   TCut final = reco+goodfit+physics;
-  ta->Project("momres","dem.mom-","evtinfo.evtwt"*final);
+  ta->Project("momres","dem.mom-demmcent.mom","evtinfo.evtwt"*final);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momres->GetEntries()*momres->GetBinWidth(1);
   cout << "Integral = " << integral << " mean = " << momres->GetMean() << " rms = " << momres->GetRMS() << endl;

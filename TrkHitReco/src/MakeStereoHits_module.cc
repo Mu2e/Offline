@@ -25,7 +25,6 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
 // boost
 #include <boost/accumulators/accumulators.hpp>
@@ -46,11 +45,11 @@ namespace {
   {
     StereoMVA() : _pars(4,0.0),_dt(_pars[0]),_chisq(_pars[1]),_rho(_pars[2]),_ndof(_pars[3]){}
 
-    std::vector <Double_t> _pars;
-    Double_t& _dt; 
-    Double_t& _chisq; 
-    Double_t& _rho;  
-    Double_t& _ndof; 
+    std::vector <float> _pars;
+    float& _dt; 
+    float& _chisq; 
+    float& _rho;  
+    float& _ndof; 
   };
 }
 
@@ -72,14 +71,14 @@ namespace mu2e {
 
       StrawHitFlag   _shsel;      // flag selection
       StrawHitFlag   _shmask;     // flag anti-selection 
-      double         _maxDt;      // maximum time separation between hits
-      double         _maxDPerp;   // maximum transverse separation
-      double         _minDdot;    // minimum dot product of straw directions
-      double         _rmax;      // maximum radius for stereo to be in active volume
-      double         _maxChisq;   // maximum chisquared to allow making stereo hits
-      double         _minMVA;     // minimum MVA output
-      double         _wfac;       // resolution factor along the wire
-      double         _tfac;       // resolution transverse to the wire
+      float         _maxDt;      // maximum time separation between hits
+      float         _maxDPerp;   // maximum transverse separation
+      float         _minDdot;    // minimum dot product of straw directions
+      float _minR2, _maxR2; // transverse radius (squared) 
+      float         _maxChisq;   // maximum chisquared to allow making stereo hits
+      float         _minMVA;     // minimum MVA output
+      float         _wfac;       // resolution factor along the wire
+      float         _tfac;       // resolution transverse to the wire
       bool           _doMVA;      // do MVA eval or simply use chi2 cut
       unsigned      _maxfsep;	  // max face separation
       bool	    _testflag; // test the flag or not
@@ -96,21 +95,24 @@ namespace mu2e {
   MakeStereoHits::MakeStereoHits(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>(           "debugLevel",0)),
     _chTag(pset.get<art::InputTag>("ComboHitCollection")),
-    _shsel(pset.get<std::vector<std::string> >("StrawHitSelectionBits",std::vector<std::string>{"EnergySelection","TimeSelection","RadiusSelection"} )),
+    _shsel(pset.get<std::vector<std::string> >("StrawHitSelectionBits",std::vector<std::string>{"EnergySelection","TimeSelection"} )),
     _shmask(pset.get<std::vector<std::string> >("StrawHitMaskBits",std::vector<std::string>{} )),
-    _maxDt(pset.get<double>(   "maxDt",40.0)), // nsec
-    _maxDPerp(pset.get<double>("maxDPerp",500.)), // mm, maximum perpendicular distance between time-division points
-    _minDdot(pset.get<double>( "minDdot",0.6)), // minimum angle between straws
-    _rmax(pset.get<double>(   "maxRadius",680.0)), // maximum radius (mm)
-    _maxChisq(pset.get<double>("maxChisquared",5.0)), // position matching
-    _minMVA(pset.get<double>(  "minMVA",0.6)), // MVA cut
-    _wfac(pset.get<double>(    "ZErrorFactor",0.3)), // error component due to z separation
-    _tfac(pset.get<double>(    "ZErrorFactor",1.0)), // error component due to z separation
+    _maxDt(pset.get<float>(   "maxDt",40.0)), // nsec
+    _maxDPerp(pset.get<float>("maxDPerp",500.)), // mm, maximum perpendicular distance between time-division points
+    _minDdot(pset.get<float>( "minDdot",0.6)), // minimum angle between straws
+    _maxChisq(pset.get<float>("maxChisquared",5.0)), // position matching
+    _minMVA(pset.get<float>(  "minMVA",0.6)), // MVA cut
+    _wfac(pset.get<float>(    "ZErrorFactor",0.3)), // error component due to z separation
+    _tfac(pset.get<float>(    "ZErrorFactor",1.0)), // error component due to z separation
     _doMVA(pset.get<bool>(  "doMVA",false)),
     _maxfsep(pset.get<unsigned>("MaxFaceSeparation",3)), // max separation between faces in a station
     _testflag(pset.get<bool>("TestFlag")),
     _mvatool(pset.get<fhicl::ParameterSet>("MVATool",fhicl::ParameterSet()))
     {
+      float minR = pset.get<float>("minimumRadius",395); // mm
+      _minR2 = minR*minR;
+      float maxR = pset.get<float>("maximumRadius",650); // mm
+      _maxR2 = maxR*maxR;
       // define the mask: straws are in the same unique panel
       std::vector<StrawIdMask::field> fields;
       fields.push_back(StrawIdMask::station);
@@ -180,12 +182,12 @@ namespace mu2e {
 	  const ComboHit& ch2 = (*_chcol)[jhit];
 	  if(_debug > 3) cout << " comparing hits " << ch1.sid().uniquePanel() << " and " << ch2.sid().uniquePanel();
 	  if (!used[jhit] ){
-	    double dt = fabs(ch1.time()-ch2.time());
+	    float dt = fabs(ch1.time()-ch2.time());
 	    if(_debug > 3) cout << " dt = " << dt;
 	    if (dt < _maxDt){
-	      double ddot = ch1.wdir().Dot(ch2.wdir());
+	      float ddot = ch1.wdir().Dot(ch2.wdir());
 	      XYZVec dp = ch1.pos()-ch2.pos();
-	      double dperp = sqrt(dp.perp2());
+	      float dperp = sqrt(dp.perp2());
 	      // negative crosings are in opposite quadrants and longitudinal separation isn't too big
 	      if(_debug > 3) cout << " ddot = " << ddot << " dperp = " << dperp;
 	      if (ddot > _minDdot && dperp < _maxDPerp ) {
@@ -195,9 +197,9 @@ namespace mu2e {
 		  cet::exception("RECO")<<"mu2e::StereoHit: parallel wires" << std::endl;
 		}
 		// check the points are inside the tracker active volume; these are all the same as the
-		double rho = sqrt(pca.point1().Perp2());
-		if(_debug > 3) cout << " rho = " << rho;
-		if(rho < _rmax){
+		float rho2 = pca.point1().Perp2();
+		if(_debug > 3) cout << " rho2 = " << rho2;
+		if(rho2 < _maxR2 && rho2 > _minR2 ){
 		  // compute chisquared; include error for particle angle
 		  // should be a cumulative linear regression FIXME!
 		  float terr = _tfac*fabs(ch1.pos().z()-ch2.pos().z());
@@ -235,6 +237,7 @@ namespace mu2e {
     combohit._mask = _smask;
     if(combohit.nCombo() > 1){
       combohit._flag.merge(StrawHitFlag::stereo);
+      combohit._flag.merge(StrawHitFlag::radsel);
       accumulator_set<float, stats<tag::weighted_mean>, unsigned > eacc;
       accumulator_set<float, stats<tag::weighted_mean>, unsigned > tacc;
       accumulator_set<float, stats<tag::min > > zmin;
@@ -276,11 +279,11 @@ namespace mu2e {
       const TTracker& tt(*GeomHandle<TTracker>());
       // establihit the extent of a panel using the longest straw (0)
       Straw const& straw = tt.getStraw(StrawId(0,0,0));
-      double phi0 = (straw.getMidPoint()-straw.getHalfLength()*straw.getDirection()).phi();
-      double phi1 = (straw.getMidPoint()+straw.getHalfLength()*straw.getDirection()).phi();
-      double lophi = std::min(phi0,phi1);
-      double hiphi = std::max(phi0,phi1);
-      double phiwidth = hiphi-lophi;
+      float phi0 = (straw.getMidPoint()-straw.getHalfLength()*straw.getDirection()).phi();
+      float phi1 = (straw.getMidPoint()+straw.getHalfLength()*straw.getDirection()).phi();
+      float lophi = std::min(phi0,phi1);
+      float hiphi = std::max(phi0,phi1);
+      float phiwidth = hiphi-lophi;
       if (phiwidth>M_PI) phiwidth = 2*M_PI-phiwidth;
       if(_debug > 0)std::cout << "Panel Phi width = " << phiwidth << std::endl;
       // loop over all unique panels

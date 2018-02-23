@@ -47,6 +47,7 @@ namespace mu2e {
     StrawId const& sid() const { return _sid; }
     Float_t wireRes() const { return _wres; }
     Float_t transRes() const { return _tres; }
+    Float_t transErr2() const { return _tres*_tres; }
     Float_t wireErr2() const { return _wres*_wres; }
     Float_t wireDist() const { return _wdist; }
     uint16_t nCombo() const { return _ncombo; }

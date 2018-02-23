@@ -146,11 +146,11 @@ namespace mu2e {
     _xysize(pset.get<double>("PlotXYSize",300.0)),
     _zsize(pset.get<double>("PlotZSize",1500.0)),
     _fsize(pset.get<double>("PlotPhiSize",2.0)),
-    _plotinc              (pset.get<vector<string> >("InclusivePlotFlagBits",vector<string>{"HitsOK"})),
+    _plotinc              (pset.get<vector<string> >("InclusivePlotFlagBits",vector<string>{})),
     _plotexc              (pset.get<vector<string> >("ExclusivePlotFlagBits",vector<string>{})),
     _cradres	 (pset.get<double>("CenterRadialResolution",20.0)),
     _cperpres	 (pset.get<double>("CenterPerpResolution",12.0)),
-    _chTag(pset.get<string>("ComboHitCollection","MakeStereoHits")),
+    _chTag(pset.get<string>("ComboHitCollection")),
     _hsTag(pset.get<string>("HelixSeedCollection","HelixFinder:Positive")),
     _shfTag		(pset.get<string>("StrawHitFlagCollection")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
@@ -268,16 +268,19 @@ namespace mu2e {
 	    ComboHit const& hhit = hhits[ihh];
 	    vector<StrawDigiIndex> sdis;
 	    hhits.fillStrawDigiIndices(evt,ihh,sdis);
-	    StrawDigiMC const& mcdigi = _mcdigis->at(sdis[0]);
-	    art::Ptr<StepPointMC> spmcp;
-	    if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
-		spmcp->simParticle() == pspp ){
-	      ++nmc;
-	      _mct0 += _toff.timeWithOffsetsApplied(*spmcp);
-	      if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))++_npused;
+	    for(auto idigi : sdis) {
+	      StrawDigiMC const& mcdigi = _mcdigis->at(idigi);
+	      art::Ptr<StepPointMC> spmcp;
+	      if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
+		  spmcp->simParticle() == pspp ){
+		++nmc;
+		_mct0 += _toff.timeWithOffsetsApplied(*spmcp);
+		if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))++_npused;
+	      }
 	    }
 	    if(_diag > 1){
 	      HelixHitInfoMC hhinfomc;
+	      StrawDigiMC const& mcdigi = _mcdigis->at(sdis[0]);
 	      fillHitInfoMC(pspp,mcdigi,hhinfomc);
 	      XYZVec mchpos = hhit.pos(); // sets z position
 	      _mch.position(mchpos);

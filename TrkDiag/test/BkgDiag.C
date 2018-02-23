@@ -238,7 +238,7 @@ void BDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     nhleg->AddEntry(nshitsbkg,"Background clusters","L");
     nhleg->AddEntry(nshitscon,"Conversion clusters (X10)","L");
 
-    TCanvas* nhcan = new TCanvas("nhcan","nhcan",1200,800);
+    TCanvas* nhcan = new TCanvas("nhcan","nhcan",800,800);
     nhcan->Divide(2,2);
     nhcan->cd(1);
     nshitsbkg->Draw();
@@ -314,7 +314,7 @@ void BDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     chibkgu->Scale(100);
     dtbkgu->Scale(100);
 
-    TCanvas* dhcan = new TCanvas("dhcan","Delta hits",1200,800);
+    TCanvas* dhcan = new TCanvas("dhcan","Delta hits",800,800);
     dhcan->Divide(2,2);
     dhcan->cd(1);
     drhobkgp->Draw();

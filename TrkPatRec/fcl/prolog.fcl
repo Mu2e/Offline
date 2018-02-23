@@ -20,13 +20,24 @@ TimeClusterFinder : {
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   TestFlag : true
 }
-
+# stereo version
+STimeClusterFinder : {
+  @table::TimeClusterFinder
+  ComboHitCollection : "makeSTH"
+  StrawHitFlagCollection :"SflagBkgHits:ComboHits"
+}
 RobustHelixFinder : {
    module_type		: RobustHelixFinder
    ComboHitCollection : "makePH"
    TimeClusterCollection : "TimeClusterFinder"
    HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
    HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
+}
+SRobustHelixFinder : {
+  @table::RobustHelixFinder
+   ComboHitCollection : "makeSTH"
+   TimeClusterCollection : "STimeClusterFinder"
+   HitSelectionBits : ["TimeDivision","Stereo"]
 }
 #same for trigger
 TTtimeClusterFinder : {
@@ -272,6 +283,8 @@ Tracking : {
 # the following should be independently sourced FIXME!
     TimeClusterFinder  : @local::TimeClusterFinder
     HelixFinder  : @local::RobustHelixFinder
+    STimeClusterFinder  : @local::STimeClusterFinder
+    SHelixFinder  : @local::SRobustHelixFinder
 # now all the different track fits based on these inputs
 # First, seed fits
     KSFDeM	  : @local::KSFDeM
@@ -310,6 +323,7 @@ Tracking : {
 
 # production sequence to find helices
   FindHelices : [ TimeClusterFinder, HelixFinder ]
+  SFindHelices : [ STimeClusterFinder, SHelixFinder ]
   TTfindHelices : [ TTtimeClusterFinder, TThelixFinder ]
 # define standard outputs 
   Output : {
