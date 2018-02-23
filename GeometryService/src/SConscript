@@ -46,6 +46,7 @@ mainlib = helper.make_mainlib ( [
     'boost_iostreams',
     'boost_regex',
     'boost_system',
+    'pthread',
     'Core'
     ] )
 
