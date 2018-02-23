@@ -31,7 +31,7 @@ namespace mu2e
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
     _palg(static_cast<PosAlgorithm>(pset.get<int>("ClusterPositionAlgorithm",median))),
-    _testflag(pset.get<bool>("TestFlag",false)),
+    _testflag(pset.get<bool>("TestFlag")),
     _bkgmask(pset.get<vector<string> >("BackgroundMask",vector<string>())),
     _sigmask(pset.get<vector<string> >("SignalMask",vector<string>())),
     _dseed(pset.get<float>("SeedDistance",100.0)), // minimum 'chisquared' to define a new cluster

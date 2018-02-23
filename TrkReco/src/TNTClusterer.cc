@@ -22,6 +22,7 @@
 #include <vector>
 #include <algorithm>
 #include <iterator>
+#include <functional>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/median.hpp>
@@ -41,7 +42,17 @@ using namespace ROOT::Math::VectorUtil;
 
 namespace mu2e
 {
-   int ClusterStraw::idCounter_=0;
+// std::sort sorts in ascending order, so the following will put the best hits first
+  struct BkgComp : public std::binary_function<BkgClusterHit,BkgClusterHit, bool> {
+    BkgComp(ComboHitCollection const& chcol) : _chcol(chcol){}
+    bool operator()(BkgClusterHit const& x, BkgClusterHit const& y) {
+      return _chcol[x.index()].wireRes() < _chcol[y.index()].wireRes();
+//      return _chcol[x.index()].nStrawHits() > _chcol[y.index()].nStrawHits();
+    }
+    ComboHitCollection const& _chcol;
+  };
+
+  int ClusterStraw::idCounter_=0;
 
    ClusterStraw::ClusterStraw(BkgClusterHit& hit, const ComboHit& chit) : 
       _id(idCounter_++),_pos(chit.pos()),_time(chit.time()),_hasChanged(true),_hitsPtr(std::vector<BkgClusterHit*>(1,&hit))
@@ -92,10 +103,10 @@ namespace mu2e
    //---------------------------------------------------------------------------------------
    TNTClusterer::TNTClusterer(const fhicl::ParameterSet& pset) :
      _diag(pset.get<int>(                         "diagLevel",0)),
-     _testflag(pset.get<bool>(                    "TestFlag",false)),
+     _testflag(pset.get<bool>(                    "TestFlag")),
      _bkgmask(pset.get<std::vector<std::string> >("BackgroundMask",std::vector<std::string>())),
      _sigmask(pset.get<std::vector<std::string> >("SignalMask",std::vector<std::string>())),
-     _comobInit(pset.get<bool>(                   "ComboInit",true)),         
+     _comboInit(pset.get<bool>(                   "ComboInit",true)),         
      _mergeInit(pset.get<bool>(                   "MergeInit",false)),        
      _dseed(pset.get<float>(                      "SeedDistance")),           
      _dhit(pset.get<unsigned>(                    "HitDistance")),            
@@ -257,26 +268,16 @@ namespace mu2e
    //-------------------------------------------------------------------------------------------------------------------
    void TNTClusterer::initClu(const ComboHitCollection& chcol, std::vector<BkgClusterHit>& chits) 
    {      
-      if (_comobInit) 
-      {
-         for (size_t ish=0; ish<chcol.size(); ++ish){         
-           if (_testflag && (!chcol[ish].flag().hasAllProperties(_sigmask) || chcol[ish].flag().hasAnyProperty(_bkgmask))) continue;           
-           if (chcol.at(ish).nCombo()>1) chits.emplace_back(BkgClusterHit(ish,chcol[ish].flag()));         
-         }   
-         for (size_t ish=0; ish<chcol.size(); ++ish){
-            if (_testflag && (!chcol[ish].flag().hasAllProperties(_sigmask) || chcol[ish].flag().hasAnyProperty(_bkgmask))) continue;           
-            if (chcol.at(ish).nCombo()<2) chits.emplace_back(BkgClusterHit(ish,chcol[ish].flag()));
-         }   
-      } 
-      else 
-      {
-         for (size_t ish=0;ish<chcol.size();++ish) {
-            if (_testflag && (!chcol[ish].flag().hasAllProperties(_sigmask) || chcol[ish].flag().hasAnyProperty(_bkgmask))) continue;           
-            chits.emplace_back(BkgClusterHit(ish,chcol[ish].flag()));         
-         }   
-      }
+     for (size_t ish=0; ish<chcol.size(); ++ish){         
+       if (_testflag && (!chcol[ish].flag().hasAllProperties(_sigmask) || chcol[ish].flag().hasAnyProperty(_bkgmask))) continue;           
+       chits.emplace_back(BkgClusterHit(ish,chcol[ish].flag()));         
+     }
+     if (_comboInit) 
+     {
+       BkgComp chsort(chcol);
+       std::sort(chits.begin(),chits.end(),chsort);
+     } 
    }  
-
 
 
    //-------------------------------------------------------------------------------------------------------------------
