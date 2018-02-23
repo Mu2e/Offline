@@ -4,11 +4,11 @@
 #  > mu2e --config TrkFilters/fcl/ReadDigis.fcl --source "your digis file" --TFile ReadDigis.root --nevts=100
 #
 #include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
-#include "TrkFilters/fcl/prolog.fcl"
+#include "fcl/standardProducers.fcl"
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
+#include "TrkFilters/fcl/prolog.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 
 process_name : ReadDigis
@@ -34,6 +34,9 @@ physics :
     @table::Tracking.TrkTrigger.producers
      TTKSFDeM : @local::TTKSF
      TTKSFDeP : @local::TTKSF
+     RSD : {
+	module_type : ReadStrawDigi
+      }
   }
   filters : {
     @table::TrkTrigger.Filters
@@ -55,14 +58,14 @@ TTKSFDeP.fitdirection	      : @local::FitDir.downstream
 # create a trigger test path.  Note that physics.trigger_paths and physics.end_paths are not used, art will
 # create those automatically from all the defined paths
 
-physics.TCTrigPath : [ @sequence::TrkTrigger.Sequences.TCFilterSequence ]
+physics.TCTrigPath : [ RSD, @sequence::TrkTrigger.Sequences.TCFilterSequence ]
 
-physics.PHTrigPath : [ @sequence::TrkTrigger.Sequences.PosHelixFilterSequence ]
+physics.PHTrigPath : [ RSD, @sequence::TrkTrigger.Sequences.PosHelixFilterSequence ]
 
-physics.DeMSeedTrigPath : [ @sequence::TrkTrigger.Sequences.DeMSeedFilterSequence ]
+physics.DeMSeedTrigPath : [RSD,  @sequence::TrkTrigger.Sequences.DeMSeedFilterSequence ]
 
 #physics.DeMKalTrigPath : [ @sequence::Tracking.Trigger.DeMKalFilterSequence ]
-physics.UeMSeedTrigPath : [ @sequence::TrkTrigger.Sequences.UeMSeedFilterSequence ] 
+physics.DePSeedTrigPath : [RSD,  @sequence::TrkTrigger.Sequences.DePSeedFilterSequence ] 
 
 # analysis path: this is for monitoring only
 physics.ReadDigisEndPath : [ TrkTriggerDiag ]
