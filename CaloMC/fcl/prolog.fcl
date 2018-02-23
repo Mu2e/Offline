@@ -20,8 +20,10 @@ CaloShowerStepFromStepPt  :
     deltaTime               : 0.2
     calorimeterStepPoints   : calorimeter
     calorimeterROStepPoints : calorimeterRO
+    usePhysVolInfo          : false
     physVolInfoInput        : "compressPVDetector"
     caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092"]
+    compressMuons           : false 
     diagLevel               : 0
 }
 
