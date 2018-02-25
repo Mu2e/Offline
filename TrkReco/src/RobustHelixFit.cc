@@ -260,8 +260,8 @@ namespace mu2e
           {
 	      float dz = (*jhit)->_pos.z() - (*ihit)->_pos.z();
 	      if (dz < _minzsep || dz > _maxzsep) continue;
-              float dphi = (*jhit)->_hphi-(*ihit)->_hphi; 
-	      if (dphi < _mindphi || dphi > _maxdphi) continue;
+              float dphi = (*jhit)->_hphi-(*ihit)->_hphi;
+	      if (dphi*int(rhel.helicity()._value) < 0 || fabs(dphi) < _mindphi || fabs(dphi) > _maxdphi) continue;
 
               float lambda = dz/dphi;
 	      if(goodLambda(rhel.helicity(),lambda)){
