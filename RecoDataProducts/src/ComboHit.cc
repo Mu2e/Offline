@@ -9,7 +9,7 @@
 #include "cetlib_except/exception.h"
 // c++ includes
 #include <iostream>
-
+using std::vector;
 namespace mu2e {
 
   Float_t ComboHit::posRes(edir dir) const {
@@ -58,7 +58,7 @@ namespace mu2e {
   void ComboHitCollection::setParentHandle(art::Event const& event, art::Handle<ComboHitCollection>& phandle) const  {
     // set the handle to an invalid state in case we find no such
     phandle = art::Handle<ComboHitCollection>();
-    std::vector<art::Handle<ComboHitCollection> > all_handles;
+    vector<art::Handle<ComboHitCollection> > all_handles;
     // exhaustive search is fast enough
     event.getManyByType(all_handles);
     for (auto const& handle : all_handles) {
@@ -77,7 +77,7 @@ namespace mu2e {
     }
   }
 
-  void ComboHitCollection::fillStrawDigiIndices(art::Event const& event, uint16_t chindex, std::vector<StrawDigiIndex>& shids) const {
+  void ComboHitCollection::fillStrawDigiIndices(art::Event const& event, uint16_t chindex, vector<StrawDigiIndex>& shids) const {
     ComboHit const& ch = this->at(chindex);
    // see if this collection references other collections: if so, go down 1 layer
     if(_parent.isValid()){
@@ -102,7 +102,7 @@ namespace mu2e {
     }
   }
 
-  void ComboHitCollection::fillStrawHitIndices(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const {
+  void ComboHitCollection::fillStrawHitIndices(art::Event const& event, uint16_t chindex, vector<StrawHitIndex>& shids) const {
     ComboHit const& ch = this->at(chindex);
    // see if this collection references other collections: if so, go down 1 layer
     if(_parent.isValid()){
@@ -124,6 +124,44 @@ namespace mu2e {
 	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHit" << std::endl;
       // if not, it is the bottom and the combo hit index is the same as the StrawHit index
       shids.push_back(chindex);
+    }
+  }
+
+  void ComboHitCollection::fillStrawHitIndices(art::Event const& event, vector<vector<StrawHitIndex> >& shids) const {
+  // reset
+    shids = vector<vector<StrawHitIndex> >(size());
+   // see if this collection references other collections: if so, go down 1 layer
+    if(parent().isValid()){
+    // get the parent handle
+      art::Handle<ComboHitCollection> ph;
+      setParentHandle(event,ph);
+      if(ph.isValid()){
+	const ComboHitCollection *pc = ph.product();
+	// check down 1 more layer
+	if(pc->parent().isValid()){
+	// call down 1 layer
+	  vector<vector<StrawHitIndex>> pshids(size());
+	  pc->fillStrawHitIndices(event,pshids);
+	// roll these up
+	  for(size_t ich=0;ich < size();++ich){
+	    ComboHit const& ch = (*this)[ich];
+	    for(auto iph : ch.indexArray())
+	      shids[ich].insert(shids[ich].end(),pshids[iph].begin(),pshids[iph].end());
+	  }
+	} else {
+	  // can skip a step in the hierarchy since the parent of this collection is at the top
+	  for(size_t ich=0;ich < size();++ich){
+	    ComboHit const& ch = (*this)[ich];
+	    shids[ich].insert(shids[ich].end(),ch.indexArray().begin(),ch.indexArray().end());
+	  }
+	}
+      } else {
+	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: Can't find parent collection" << std::endl;
+      }
+    } else {
+    // already at the top: fill with self index
+      for(size_t ich = 0;ich < size(); ++ich)
+	shids[ich].push_back(ich);
     }
   }
 

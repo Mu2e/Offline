@@ -25,6 +25,8 @@ namespace mu2e {
 
   struct ComboHit {
     enum edir{wire=0,trans};
+    constexpr static size_t MaxNCombo = 8; // needs tuning FIXME!
+    typedef std::array<uint16_t,MaxNCombo> PIArray; // array of indices into parent collection
     ComboHit();
     // compatibility constructor (deprecated)
     ComboHit(const ComboHit&, StrawHitIndex, double);
@@ -56,6 +58,7 @@ namespace mu2e {
     void init(ComboHit const& other, uint16_t index);
     uint16_t index(uint16_t ish=0) const;
     bool addIndex(uint16_t shi); // append an index to the
+    PIArray const& indexArray() const { return _pind; }
     //
     XYZVec _pos; // position of this hit
     XYZVec _wdir; // 'direction' of this hit, used to define error elipsoid axis
@@ -65,8 +68,6 @@ namespace mu2e {
     Float_t _hphi; // azimuth relative to a helix center
     uint16_t _ncombo; // number of associated input objects
     uint16_t _nsh; // number of underlying straw hits
-    constexpr static size_t MaxNCombo = 8; // needs tuning FIXME!
-    typedef std::array<uint16_t,MaxNCombo> PIArray; // array of indices into parent collection
     PIArray _pind; // Indices back to parent objects
     StrawHitFlag _flag; // flag condition of this hit (agregate)
     StrawId _sid; // straw identifier; some fields may not be complete, use in conjunction with mask
@@ -82,6 +83,8 @@ namespace mu2e {
       void fillStrawDigiIndices(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
       // similarly fill to the StrawHit level
       void fillStrawHitIndices(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
+      // do this for all the hits in the collection
+      void fillStrawHitIndices(art::Event const& event, std::vector<std::vector<StrawHitIndex> >& shids) const;
       // fill a vector of iterators to the ComboHits 1 layer below a given ComboHit.  This is NOT RECURSIVE
       // return value says whether there's a layer below or not (if not, output is empty)
       bool fillComboHits(art::Event const& event, uint16_t chindex, CHCIter& iters) const;

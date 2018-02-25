@@ -208,12 +208,12 @@ namespace mu2e
        // first, copy over the original flags
        unsigned nsh = shcol->size();
        std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(nsh));
+       std::vector<std::vector<StrawHitIndex> > shids;
+       _chcol->fillStrawHitIndices(event,shids);
        for(size_t ich = 0;ich < _chcol->size();++ich) {
 	 StrawHitFlag flag = chfcol[ich];
 	 flag.merge((*_chcol)[ich].flag());
-	 std::vector<StrawHitIndex> shids;
-	 _chcol->fillStrawHitIndices(event,ich,shids);
-	 for(auto ish : shids)
+	 for(auto ish : shids[ich])
 	   (*shfcol)[ish] = flag;
        }
 
