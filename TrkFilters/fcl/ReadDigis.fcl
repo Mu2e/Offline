@@ -47,13 +47,13 @@ physics :
     }
   }
 }
-TTKSFDeM.SeedCollection      : "TThelixFinder:Positive"
-TTKSFDeM.fitparticle	      : @local::Particle.eminus
-TTKSFDeM.fitdirection	      : @local::FitDir.downstream 
+physics.producers.TTKSFDeM.SeedCollection      : "TThelixFinder:Positive"
+physics.producers.TTKSFDeM.fitparticle	      : @local::Particle.eminus
+physics.producers.TTKSFDeM.fitdirection	      : @local::FitDir.downstream 
 
-TTKSFDeP.SeedCollection      : "TThelixFinder:Negative"
-TTKSFDeP.fitparticle	      : @local::Particle.eplus
-TTKSFDeP.fitdirection	      : @local::FitDir.downstream 
+physics.producers.TTKSFDeP.SeedCollection      : "TThelixFinder:Negative"
+physics.producers.TTKSFDeP.fitparticle	      : @local::Particle.eplus
+physics.producers.TTKSFDeP.fitdirection	      : @local::FitDir.downstream 
 
 # create a trigger test path.  Note that physics.trigger_paths and physics.end_paths are not used, art will
 # create those automatically from all the defined paths
