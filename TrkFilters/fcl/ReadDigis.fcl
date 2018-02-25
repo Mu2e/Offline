@@ -47,6 +47,12 @@ physics :
     }
   }
 }
+
+physics.filters.PosHelixFilter.MinMomentum	      : 225.0
+physics.filters.NegHelixFilter.MinMomentum	      : 225.0
+physics.filters.DeMSeedFilter.MinMomentum	      : 80.0
+physics.filters.DePSeedFilter.MinMomentum	      : 80.0
+
 physics.producers.TTKSFDeM.SeedCollection      : "TThelixFinder:Positive"
 physics.producers.TTKSFDeM.fitparticle	      : @local::Particle.eminus
 physics.producers.TTKSFDeM.fitdirection	      : @local::FitDir.downstream 
