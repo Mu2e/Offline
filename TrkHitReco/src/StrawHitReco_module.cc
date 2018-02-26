@@ -43,6 +43,8 @@
 #include "RecoDataProducts/inc/StrawHitPosition.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
+#include "Mu2eUtilities/inc/polyAtan2.hh"
+
 #include <memory>
 
  
@@ -58,7 +60,8 @@ namespace mu2e {
        virtual void produce( art::Event& e);
        virtual void beginRun( art::Run& run );
        virtual void beginJob();
-
+               // float   ApproxAtan(float z);
+               // float   polyAtan2(float y, float x);
 
      private:
        double mbbuffer_;                // buffer on that for ghost hits (wrapping)
@@ -158,12 +161,15 @@ namespace mu2e {
       ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
 
       
-      art::Handle<StrawDigiCollection> strawdigisHandle;
-      event.getByLabel(strawDigis_,strawdigisHandle);
+      // art::Handle<StrawDigiCollection> strawdigisHandle;
+      // event.getByLabel(strawDigis_,strawdigisHandle);
+      auto strawdigisHandle = event.getValidHandle<StrawDigiCollection>(strawDigis_);
       const StrawDigiCollection& strawdigis(*strawdigisHandle);
       
       const CaloClusterCollection* caloClusters(0);
       art::Handle<CaloClusterCollection> caloClusterHandle;
+      //      auto caloClusterHandle = event.getValidHandle<CaloClusterCollection>(caloClusterModuleLabel_);
+      //      if (caloClusterHandle.product() != 0) caloClusters = caloClusterHandle.product();
       if (event.getByLabel(caloClusterModuleLabel_, caloClusterHandle)) caloClusters = caloClusterHandle.product();
 
       std::unique_ptr<StrawHitCollection> strawHits(new StrawHitCollection);
@@ -226,7 +232,9 @@ namespace mu2e {
 	  bool td = srep->wireDistance(hit,straw.getHalfLength(),dw,dwerr);
 
 	  shp._pos = straw.getMidPoint()+dw*straw.getDirection();
-          shp._phi   = shp._pos.phi(); // cache phi: this shouldn't be necessary in single precision FIXME!
+	  float  dx = shp._pos.x();
+	  float  dy = shp._pos.y();
+          shp._phi   = polyAtan2(dy, dx);//shp._pos.phi(); // cache phi: this shouldn't be necessary in single precision FIXME!
 	  shp._wdir = straw.getDirection();
 	  shp._wdist = dw;
 	  shp._wres = dwerr;
@@ -248,22 +256,22 @@ namespace mu2e {
           strawHitPositions->push_back(std::move(shp));
       }
       
-      //flag straw and electronic cross-talk
-      for (size_t ilarge=0; ilarge < largeHits.size();++ilarge)
-      {
-          const StrawHit& sh = strawHits->at(largeHits[ilarge]);
-          const Straw& straw = tracker.getStraw( sh.strawIndex() );
-          for (size_t jsh : hits_by_panel[largeHitPanels[ilarge]])
-          {
-              if (jsh==largeHits[ilarge]) continue;              
-              const StrawHit& sh2 = strawHits->at(jsh);              
-              if (sh2.time()-sh.time() > ctMinT_ && sh2.time()-sh.time() < ctMaxT_)
-              {
-                 if (straw.isSamePreamp(sh2.strawIndex()))       strawHitFlags->at(jsh).merge(StrawHitFlag::elecxtalk);
-                 if (straw.isNearestNeighbour(sh2.strawIndex())) strawHitFlags->at(jsh).merge(StrawHitFlag::strawxtalk);
-              }           
-          }
-      }
+      // //flag straw and electronic cross-talk
+      // for (size_t ilarge=0; ilarge < largeHits.size();++ilarge)
+      // {
+      //     const StrawHit& sh = strawHits->at(largeHits[ilarge]);
+      //     const Straw& straw = tracker.getStraw( sh.strawIndex() );
+      //     for (size_t jsh : hits_by_panel[largeHitPanels[ilarge]])
+      //     {
+      //         if (jsh==largeHits[ilarge]) continue;              
+      //         const StrawHit& sh2 = strawHits->at(jsh);              
+      //         if (sh2.time()-sh.time() > ctMinT_ && sh2.time()-sh.time() < ctMaxT_)
+      //         {
+      //            if (straw.isSamePreamp(sh2.strawIndex()))       strawHitFlags->at(jsh).merge(StrawHitFlag::elecxtalk);
+      //            if (straw.isNearestNeighbour(sh2.strawIndex())) strawHitFlags->at(jsh).merge(StrawHitFlag::strawxtalk);
+      //         }           
+      //     }
+      // }
              
 
       event.put(std::move(strawHits));
@@ -272,6 +280,71 @@ namespace mu2e {
 
 
    }
+
+
+//--------------------------------------------------------------------------------------
+// source (last access 2018-02-19): https://www.dsprelated.com/showarticle/1052.php 
+//--------------------------------------------------------------------------------------
+  // float     StrawHitReco::ApproxAtan(float z)
+  // {
+  //   const float n1 = 0.97239411f;
+  //   const float n2 = -0.19194795f;
+  //   return (n1 + n2 * z * z) * z;
+  // }
+  
+  // float     StrawHitReco::polyAtan2(float y, float x){
+  //   float   PI_2 = M_PI/2.;
+  //   if (x != 0.0f)
+  //     {
+  //       if (fabsf(x) > fabsf(y))
+  // 	  {
+  //           const float z = y / x;
+  //           if (x > 0.0)
+  // 	      {
+  //               // atan2(y,x) = atan(y/x) if x > 0
+  //               return ApproxAtan(z);
+  // 	      }
+  //           else if (y >= 0.0)
+  // 	      {
+  //               // atan2(y,x) = atan(y/x) + PI if x < 0, y >= 0
+  //               return ApproxAtan(z) + M_PI;
+  // 	      }
+  //           else
+  // 	      {
+  //               // atan2(y,x) = atan(y/x) - PI if x < 0, y < 0
+  //               return ApproxAtan(z) - M_PI;
+  // 	      }
+  // 	  }
+  //       else // Use property atan(y/x) = PI/2 - atan(x/y) if |y/x| > 1.
+  // 	  {
+  //           const float z = x / y;
+  //           if (y > 0.0)
+  // 	      {
+  //               // atan2(y,x) = PI/2 - atan(x/y) if |y/x| > 1, y > 0
+  //               return -ApproxAtan(z) + PI_2;
+  // 	      }
+  //           else
+  // 	      {
+  //               // atan2(y,x) = -PI/2 - atan(x/y) if |y/x| > 1, y < 0
+  //               return -ApproxAtan(z) - PI_2;
+  // 	      }
+  // 	  }
+  //     }
+  //   else
+  //     {
+  //       if (y > 0.0f) // x = 0, y > 0
+  // 	  {
+  //           return PI_2;
+  // 	  }
+  //       else if (y < 0.0f) // x = 0, y < 0
+  // 	  {
+  //           return -PI_2;
+  // 	  }
+  //     }
+  //   return 0.0f; // x,y = 0. Could return NaN instead.
+  // }
+
+
 
 }
 

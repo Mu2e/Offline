@@ -268,8 +268,17 @@ namespace mu2e {
 // info of the track candidate after the first loop with findtrack on CalHelixFinderAlg::doPatternRecognition
 //-----------------------------------------------------------------------------
 	    _data.loopId       [loc] = hf_result._diag.loopId_4;
-	    if (hf_result._diag.loopId_4 == 0) _data.chi2d_loop0  [loc] = hf_result._diag.chi2_dof_circle_12;
-	    if (hf_result._diag.loopId_4 == 1) _data.chi2d_loop1  [loc] = hf_result._diag.chi2_dof_circle_12;
+	    if (hf_result._diag.loopId_4 == 1) {
+	      _data.chi2d_loop0       [loc] = hf_result._diag.chi2_dof_circle_12;
+	      _data.chi2d_line_loop0  [loc] = hf_result._diag.chi2_dof_line_13;
+	      _data.npoints_loop0     [loc] = hf_result._diag.n_active_11;
+	      
+	    }
+	    if (hf_result._diag.loopId_4 == 2){
+	      _data.chi2d_loop1       [loc] = hf_result._diag.chi2_dof_circle_12;
+	      _data.chi2d_line_loop1  [loc] = hf_result._diag.chi2_dof_line_13;
+	      _data.npoints_loop1     [loc] = hf_result._diag.n_active_11;
+	    }
 	    
 	  }
 	  else {

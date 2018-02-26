@@ -54,6 +54,7 @@
 #include <algorithm>
 
 #include "CalPatRec/inc/CalHelixFinderAlg.hh"
+#include "Mu2eUtilities/inc/polyAtan2.hh"
 
 using CLHEP::HepVector;
 using CLHEP::Hep3Vector;
@@ -71,12 +72,66 @@ namespace mu2e {
     bool operator()(CalHelixPoint const& p1, CalHelixPoint const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
 
-//--------------------------------------------------------------------------------
-// 
-//--------------------------------------------------------------------------------
-  // double     CalHelixFinderAlg::evalApproximatePhi(double& Y, double& x){
-
-
+//--------------------------------------------------------------------------------------
+// source (last access 2018-02-19): https://www.dsprelated.com/showarticle/1052.php 
+//--------------------------------------------------------------------------------------
+  // float     CalHelixFinderAlg::ApproxAtan(float z)
+  // {
+  //   const float n1 = 0.97239411f;
+  //   const float n2 = -0.19194795f;
+  //   return (n1 + n2 * z * z) * z;
+  // }
+  
+  // float     CalHelixFinderAlg::polyAtan2(float y, float x){
+  //   float   PI_2 = M_PI/2.;
+  //   if (x != 0.0f)
+  //     {
+  //       if (fabsf(x) > fabsf(y))
+  // 	  {
+  //           const float z = y / x;
+  //           if (x > 0.0)
+  // 	      {
+  //               // atan2(y,x) = atan(y/x) if x > 0
+  //               return ApproxAtan(z);
+  // 	      }
+  //           else if (y >= 0.0)
+  // 	      {
+  //               // atan2(y,x) = atan(y/x) + PI if x < 0, y >= 0
+  //               return ApproxAtan(z) + M_PI;
+  // 	      }
+  //           else
+  // 	      {
+  //               // atan2(y,x) = atan(y/x) - PI if x < 0, y < 0
+  //               return ApproxAtan(z) - M_PI;
+  // 	      }
+  // 	  }
+  //       else // Use property atan(y/x) = PI/2 - atan(x/y) if |y/x| > 1.
+  // 	  {
+  //           const float z = x / y;
+  //           if (y > 0.0)
+  // 	      {
+  //               // atan2(y,x) = PI/2 - atan(x/y) if |y/x| > 1, y > 0
+  //               return -ApproxAtan(z) + PI_2;
+  // 	      }
+  //           else
+  // 	      {
+  //               // atan2(y,x) = -PI/2 - atan(x/y) if |y/x| > 1, y < 0
+  //               return -ApproxAtan(z) - PI_2;
+  // 	      }
+  // 	  }
+  //     }
+  //   else
+  //     {
+  //       if (y > 0.0f) // x = 0, y > 0
+  // 	  {
+  //           return PI_2;
+  // 	  }
+  //       else if (y < 0.0f) // x = 0, y < 0
+  // 	  {
+  //           return -PI_2;
+  // 	  }
+  //     }
+  //   return 0.0f; // x,y = 0. Could return NaN instead.
   // }
 
 
@@ -98,7 +153,9 @@ namespace mu2e {
     // phi0 is the azimuthal angle of the particle velocity vector at the point
     // of closest approach to the origin.  It's sign also depends on the angular
     // momentum.  To translate from the center, we need to reverse coordinates
-    pvec[HelixTraj::phi0Index] = atan2(-amsign*Helix._center.x(),amsign*Helix._center.y());
+    float  dx     = amsign*Helix._center.y();
+    float  dy     = -amsign*Helix._center.x();
+    pvec[HelixTraj::phi0Index] = atan2(dy, dx);//-amsign*Helix._center.x(),amsign*Helix._center.y());
     // d0 describes the distance to the origin at closest approach.
     // It is signed by the particle angular momentum WRT the origin.
     // The Helix fit radial bias is anti-correlated with d0; correct for it here.
@@ -211,16 +268,16 @@ namespace mu2e {
     _chi2nFindZ    = 0.0,
     _eventToLook   = -1;
 
-    _hDfDzRes = new TH1F("hDfDzRes","dfdz residuals" , 20, _minDfDz, _maxDfDz);
-    _hPhi0Res = new TH1F("hPhi0Res", "phi0 residuals", 20, 0., 2.*M_PI);
+    // _hDfDzRes = new TH1F("hDfDzRes","dfdz residuals" , 20, _minDfDz, _maxDfDz);
+    // _hPhi0Res = new TH1F("hPhi0Res", "phi0 residuals", 20, 0., 2.*M_PI);
 
   }
 
 
 //-----------------------------------------------------------------------------
   CalHelixFinderAlg::~CalHelixFinderAlg() {
-    delete _hDfDzRes;
-    delete _hPhi0Res;
+    // delete _hDfDzRes;
+    // delete _hPhi0Res;
   }
 
 //-----------------------------------------------------------------------------
@@ -440,7 +497,7 @@ namespace mu2e {
       if ((IndexVec[i] <= 0) || hit->isOutlier())           continue;
 
       int ist = hit->_straw->id().getStation();                   // station number
-      phi     = atan2(hit->y()-center->y(),hit->x()-center->x()); // atan2 returns its result in [-pi,pi], convert to [0,2pi]
+      phi     = polyAtan2(hit->y()-center->y(),hit->x()-center->x()); // atan2 returns its result in [-pi,pi], convert to [0,2pi]
       if (phi < 0) phi += 2*M_PI;
       zVec  [ist] += hit->z();
 //-----------------------------------------------------------------------------
@@ -473,7 +530,7 @@ namespace mu2e {
     int i0(-1), first_point(1);
 					// add the cluster phi
     double zCl   = fCaloZ;
-    double phiCl = atan2(fCaloY-center->y(),fCaloX-center->x());
+    double phiCl = polyAtan2(fCaloY-center->y(),fCaloX-center->x());
     if (phiCl < 0) phiCl += 2*M_PI;
 
     for (int i=0; i<nstations; i++) {
@@ -782,7 +839,7 @@ namespace mu2e {
 // calorimeter cluster - point number nstations+1
 //-----------------------------------------------------------------------------
     double zCl   = fCaloZ;
-    double phiCl = atan2(fCaloY-center->y(),fCaloX-center->x());
+    double phiCl = polyAtan2(fCaloY-center->y(),fCaloX-center->x());
     if (phiCl < 0) phiCl += 2*M_PI;
 
     phiVec[nstations] = phiCl;
@@ -797,7 +854,7 @@ namespace mu2e {
       if ((IndexVec[i] <= 0) || hit->isOutlier())           continue;
 
       int ist = hit->_straw->id().getStation();                   // station number
-      phi     = atan2(hit->y()-center->y(),hit->x()-center->x()); // atan2 returns its result in [-pi,pi], convert to [0,2pi]
+      phi     = polyAtan2(hit->y()-center->y(),hit->x()-center->x()); // atan2 returns its result in [-pi,pi], convert to [0,2pi]
       if (phi < 0) phi += 2*M_PI;
       zVec  [ist] += hit->z();
 //-----------------------------------------------------------------------------
@@ -1046,7 +1103,9 @@ namespace mu2e {
 
     double zCl   = fCaloZ;
     pos          =  Hep3Vector(fCaloX, fCaloY, fCaloZ);
-    double phiCl = CLHEP::Hep3Vector(pos - helCenter).phi();//center).phi();
+    double dx    = (pos.x() - helCenter.x());
+    double dy    = (pos.y() - helCenter.y());
+    double phiCl = polyAtan2(dy, dx);//CLHEP::Hep3Vector(pos - helCenter).phi();//center).phi();
     phiCl        = TVector2::Phi_0_2pi(phiCl);
 
     deltaPhi = zCl*dfdz + phi0 - phiCl;
@@ -1077,7 +1136,7 @@ namespace mu2e {
     }
 
     count = 0;
-    double zlast, dz;
+    double zlast, dz, dx2, dy2;
 
     if (_debug > 5) {
       printf("[CalHelixFinderAlg::doLinearFitPhiZ:BEGIN] phi0 = %10.6f dfdz = %10.6f chi2N = %10.3f DoCleanup = %i\n",
@@ -1094,7 +1153,9 @@ namespace mu2e {
       z                    = pos.z();
       strawDir             = _xyzp[i]._sdir;
 
-      phi      = CLHEP::Hep3Vector(pos - helCenter).phi();//center).phi();
+      dx2      = (pos.x() - helCenter.x());
+      dy2      = (pos.y() - helCenter.y());
+      phi      = polyAtan2(dy2, dx2);//CLHEP::Hep3Vector(pos - helCenter).phi();//center).phi();
       phi      = TVector2::Phi_0_2pi(phi);
       dz       = z - zlast;
                                     
@@ -1584,7 +1645,9 @@ namespace mu2e {
 
 	helCenter.setX(x0);
 	helCenter.setY(y0);
-	phi0    = CLHEP::Hep3Vector(shPos - helCenter).phi();
+	double dx  = (shPos.x() - helCenter.x());
+	double dy  = (shPos.y() - helCenter.y());
+	phi0    =  polyAtan2(dy,dx);//CLHEP::Hep3Vector(shPos - helCenter).phi();
 	++rescuedPoints;
 
 	if (_debug > 0) {
@@ -1739,7 +1802,7 @@ namespace mu2e {
     double clPhi(-9999.);
 
     int np = _xyzp.size();
-    if (fCaloTime > 0) clPhi = atan2(fCaloY,fCaloX);
+    if (fCaloTime > 0) clPhi = polyAtan2(fCaloY,fCaloX);
 
     if (_debug > 0) {
       printf("[CalHelixFinderAlg::filterDist]----------------------------------------------------------------------------------------------\n");
@@ -1789,7 +1852,7 @@ namespace mu2e {
 
     int useMPVdfdz(0), useDefaultDfDz(false), useIntelligentWeight(1);
     int np = _xyzp.size();
-
+ 
     if (_debug != 0) printf("[CalHelixFinderAlg::doPatternRecognition:BEGIN] fUseDefaultDfDz = %i\n",fUseDefaultDfDz);
 
     if (_debug2 == 0){
@@ -1800,12 +1863,6 @@ namespace mu2e {
     _findTrackLoopIndex = 1; 		// debugging
     for (int i=0; i<np; i++) {
       if (_xyzp[i].isOutlier())                             continue;
-//----------------------------------------------------------------------
-// 2014-12-26 gianipez: don't start the search from an already used hit
-// 2018-01-03 PM : for a long time, hits are never marked as used
-//-----------------------------------------------------------------------------
-//      if ( isHitUsed(i) == 1 )                              continue;
-
       if ((np-i) > _goodPointsTrkCandidate) {
 	if (_debug > 5) {
 	  printf("[CalHelixFinderAlg::doPatternRecognition]: calling findTrack(i=%i,Helix,useDefaltDfDz=FALSE,useMPVdfdz=%i)",i,useMPVdfdz);
@@ -1840,48 +1897,8 @@ namespace mu2e {
 	}
       }
     }
-//-----------------------------------------------------------------------------
-// 2015-01-14 G. Pezzullo added the findDfDz procedure
-//-----------------------------------------------------------------------------
-    if (_debug > 5) printf("[CalHelixFinderAlg::doPatternRecognition]: ------------ calling findDfDz#1\n");
 
-//     int    diag_flag(1);
-//     if (Helix._seedIndex >= 0) {
-//       findDfDz(Helix,Helix._seedIndex,_indicesTrkCandidate, diag_flag);
-//       if (_debug > 5) printf("[CalHelixFinderAlg::doPatternRecognition]: findDfDz ----> phi0 = %5.5f dfdz = %5.5f \n",
-// 			      _hphi0, _hdfdz);
-//     }
-//     else {
-// //-----------------------------------------------------------------------------
-// // Helix._seedIndex < 0 means that no candidate has been found
-// // usually it happens when the cluster is not on the trajectory or the time peak 
-// // has very low number of hits
-// // maybe we should set a threshold on the time peak size to avoid such?
-// //-----------------------------------------------------------------------------
-//       int vIndices[np];
-//       for (int i=0; i<np; ++i) vIndices[i] = 1;
-
-//       findDfDz(Helix, 0, vIndices, diag_flag);
-//       if (_debug > 5) {
-// 	printf("[CalHelixFinderAlg::doPatternRecognition]: findDfDz called using SeedIndex = 0 and using all hits (expect outliers!) \n");
-// 	printf("[CalHelixFinderAlg::doPatternRecognition]: findDfDz ----> phi0 = %5.5f dfdz = %5.5f \n",
-// 	       _hphi0, _hdfdz);
-//       }
-//     }
-// //-----------------------------------------------------------------------------
-// // 3rd loop - what is its role? 
-// //-----------------------------------------------------------------------------
-//     useMPVdfdz = 1;
-//     for (int i=0; i<np; i++) {
-//       if (_xyzp[i].isOutlier())                             continue;
-//       if ((np -i) > _goodPointsTrkCandidate) {
-// 	if (_debug > 5) { 
-// 	  printf("[CalHelixFinderAlg::doPatternRecognition]: calling findTrack(i=%i,Helix,useDefaltDfDz=FALSE,useMPVdfdz=%i)",i,useMPVdfdz);
-// 	  printf(" : np=%3i _goodPointsTrkCandidate=%3i\n",np,_goodPointsTrkCandidate);
-// 	}
-// 	findTrack(i,Helix,false,useMPVdfdz);
-//       }
-//     }
+    if (_debug != 0) printf("[CalHelixFinderAlg::doPatternRecognition:STEP1] useDefaultDfDz = %i\n",useDefaultDfDz);
 
     if (_debug == 0){
       _debug  = _debug2;
@@ -1905,7 +1922,7 @@ namespace mu2e {
     rc = doLinearFitPhiZ(Helix, 0, _indicesTrkCandidate, useIntelligentWeight);
 
     //2017-10-05 Gianipez added the following line to make some tests
-    if ((_smartTag == 1) && (Helix._srphi.qn() == 0.))      goto  PATTERN_RECOGNITION_END;
+    if (Helix._srphi.qn() == 0.)                            goto  PATTERN_RECOGNITION_END;
 
     rescueHitsBeforeSeed(Helix);
 //-----------------------------------------------------------------------------
@@ -2673,7 +2690,10 @@ namespace mu2e {
 // helix parameters, in particular, phi0, are defined at Z=p2.z()
 // 2014-11-05 gianipez set dfdz equal to the most probable value for CE 
 //------------------------------------------------------------------------------
-    if (UseMPVDfDz ==1 ) dfdz = _hdfdz;			// _mpDfDz;
+    if (UseMPVDfDz ==1 ) {
+      dfdz    = _hdfdz;			// _mpDfDz;
+      tollMax = 2.*M_PI/dfdz;
+    }
 
     int lastIndex = -9999;
 
@@ -2751,7 +2771,7 @@ namespace mu2e {
 	  radius = sxy.radius();
 	}
 
-	phi0    = atan2(hit->y()-center.y(),hit->x()-center.x());  // *DOUBLE_CHECK*
+	phi0    = polyAtan2(hit->y()-center.y(),hit->x()-center.x());  // *DOUBLE_CHECK*
 	z_phi0  = hitz;			                           // *DOUBLE_CHECK*
 	lastHit = hit; 
 
@@ -2793,7 +2813,7 @@ namespace mu2e {
 // now calculate more accuratelly the value of dfdz using just the two strawhit positions
 // change in the circle parameterization changes the phi0 value
 //-----------------------------------------------------------------------------
-	phi0 = atan2(hit->y()-center.y(),hit->x()-center.x());
+	phi0 = polyAtan2(hit->y()-center.y(),hit->x()-center.x());
 
 	if (UseMPVDfDz == 0) {
 	  //	  calculateDfDz(phi_0,phi_1,p2.z(),p1.z(),dfdz);
@@ -3087,13 +3107,13 @@ namespace mu2e {
     double dx2  = (p2.x() - x0);
     double dy2  = (p2.y() - y0);
 
-    Phi0        = std::atan2(dy2,dx2);
+    Phi0        = polyAtan2(dy2,dx2);
 //-----------------------------------------------------------------------------
 // this assumes that the helix is right-handed, *FIXME*
 // make sure that we are lookign for a particle which makes the number of turns
 // close to the expected 
 //-----------------------------------------------------------------------------
-    double dphi32 = std::atan2(dy3,dx3) - Phi0;
+    double dphi32 = polyAtan2(dy3,dx3) - Phi0;
     if (dphi32 < 0.) dphi32 += 2.*M_PI;
 
     //    double exp_dphi = _mpDfDz*dz32;
@@ -3116,12 +3136,16 @@ namespace mu2e {
       diff       = fabs(DfDz23 - _mpDfDz);
       diff_minus = fabs( (dphi32 - 2.*M_PI)/dz32 -_mpDfDz );
     }
+
+    //check id DfDz is within the range 
+    if ( (DfDz23 < _minDfDz) || (DfDz23 > _maxDfDz)) DfDz23 = _mpDfDz;
+
     if (_debug > 5) {
 //-----------------------------------------------------------------------------
 // in debug mode also want to print the helix parameters, calculate them
 //-----------------------------------------------------------------------------
       double d0     = sqrt(x0*x0+y0*y0)-Radius;
-      double phi00  = atan2(y0,x0)+M_PI/2;   // for negatively charged particle
+      double phi00  = polyAtan2(y0,x0)+M_PI/2;   // for negatively charged particle
       double tandip = DfDz23*Radius;
       double dphi   = phi00-Phi0-M_PI/2;
       if (dphi < 0) dphi += 2*M_PI;           // *FIXME* right-handed ellipse
@@ -3168,13 +3192,13 @@ namespace mu2e {
 
     double phi, phi0, phiCl;
     
-    phiCl = atan2(fCaloY-Y0,fCaloX-X0);
+    phiCl = polyAtan2(fCaloY-Y0,fCaloX-X0);
     if (phiCl < 0) phiCl += 2*M_PI;
 
     for (int i=0; i<NHits; i++) {
       int ind         = HitIndex[i];
       Hep3Vector* pos = &_xyzp[ind]._pos;
-      phi = atan2(pos->y()-Y0,pos->x()-X0);
+      phi = polyAtan2(pos->y()-Y0,pos->x()-X0);
       if (i == 0) phi0 = phi;
 
       if (phi-phi0 >  M_PI) phi -= 2*M_PI;
@@ -3371,9 +3395,9 @@ void CalHelixFinderAlg::plotXY(int ISet) {
       y[i]    = hit->_pos.y();
       z[i]    = hit->_pos.z();
       flag[i] = *((int*) &hit->_flag);
-      phi [i] = hit->_pos.phi();
+      phi [i] = polyAtan2(hit->_pos.y(), hit->_pos.x());//hit->_pos.phi();
 
-      phi1[i] = atan2(y[i]-helx->_center.y(),x[i]-helx->_center.x());
+      phi1[i] = polyAtan2(y[i]-helx->_center.y(),x[i]-helx->_center.x());
 
       printf("i: %3i ind: %5i x: %10.3f y: %10.3f z: %10.3f phi: %10.3f phi1: %10.3f 0x%08x %5i\n",
 	     i,(int) hit->_ind,
@@ -3509,7 +3533,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
   void CalHelixFinderAlg::resolve2PiAmbiguity(const CLHEP::Hep3Vector& Center, double DfDz, double Phi0){
   
     const CLHEP::Hep3Vector* pos;
-    double                   z, phi, phi_ref, dphi;
+    double                   z, phi, phi_ref, dphi, dx, dy;
 
     int np = _xyzp.size();
 
@@ -3517,7 +3541,9 @@ void CalHelixFinderAlg::plotXY(int ISet) {
       pos = &_xyzp[i]._pos;
       z   = pos->z();
 
-      phi = CLHEP::Hep3Vector(*pos - Center).phi();
+      dx  = (pos->x() - Center.x());
+      dy  = (pos->y() - Center.y());
+      phi = polyAtan2(dy, dx);//CLHEP::Hep3Vector(*pos - Center).phi();
       phi = TVector2::Phi_0_2pi(phi);
                                     // predicted value of phi
       phi_ref = z*DfDz + Phi0;
@@ -3576,3 +3602,5 @@ void CalHelixFinderAlg::plotXY(int ISet) {
   }
 
 }
+
+

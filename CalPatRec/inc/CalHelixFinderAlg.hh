@@ -253,6 +253,10 @@ namespace mu2e {
 			               CalHelixFinderData& Helix,
 			               bool                UseDefaultDfDz = false,
 			               int                 UseMPVdfdz     = 0);
+    
+    // float ApproxAtan                  (float z);
+    // float polyAtan2                   (float y, float x);
+
 //-----------------------------------------------------------------------------
 // setters
 //-----------------------------------------------------------------------------

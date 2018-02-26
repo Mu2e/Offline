@@ -94,6 +94,12 @@ int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tf
   _hist.chi2d_loop0[1] = Tfs->make<TH1F>("chi2dloop0Good", "XY chi2d: loop 0: nhits>15; #chi^{2}/ndof", 1000, 0, 10); 
   _hist.chi2d_loop1[0] = Tfs->make<TH1F>("chi2dloop1", "XY chi2d: loop 1; #chi^{2}/ndof"              , 1000, 0, 10); 
   _hist.chi2d_loop1[1] = Tfs->make<TH1F>("chi2dloop1Good", "XY chi2d: loop 1: nhits>15; #chi^{2}/ndof", 1000, 0, 10); 
+  _hist.chi2d_line_loop0[0] = Tfs->make<TH1F>("chi2dZPhiloop0", "Z#phi chi2d: loop 0; {#chi^{2}/ndof}_{z#phi}"              , 1000, 0, 10); 
+  _hist.chi2d_line_loop0[1] = Tfs->make<TH1F>("chi2dZPhiloop0Good", "Z#phi chi2d: loop 0: nhits>15; {#chi^{2}/ndof}_{z#phi}", 1000, 0, 10); 
+  _hist.chi2d_line_loop1[0] = Tfs->make<TH1F>("chi2dZPhiloop1", "Z#phi chi2d: loop 1; {#chi^{2}/ndof}_{z#phi}"              , 1000, 0, 10); 
+  _hist.chi2d_line_loop1[1] = Tfs->make<TH1F>("chi2dZPhiloop1Good", "Z#phi chi2d: loop 1: nhits>15; {#chi^{2}/ndof}_{z#phi}", 1000, 0, 10); 
+  _hist.npoints_loop0 = Tfs->make<TH1F>("npointsloop0", "XY npoints: loop 0; nhits"           , 101, -0.5, 100.5);
+  _hist.npoints_loop1 = Tfs->make<TH1F>("npointsloop1", "XY npoints: loop 1; nhits"           , 101, -0.5, 100.5);
   _hist.loopId[0]     = Tfs->make<TH1F>("loopAll"   , "loopId; loopId"                           , 10, 0, 10); 
   _hist.loopId[1]     = Tfs->make<TH1F>("loopGood"  , "loopId: nhits>15: loopId"                 , 10, 0, 10); 
   return 0;
@@ -136,8 +142,16 @@ int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tf
       _hist.shmeanr[0]->Fill(_data->shmeanr[i]);
       _hist.chi2d_helix[0]->Fill(_data->chi2d_helix[i]);
       _hist.loopId     [0]->Fill(_data->loopId[i]);
-      if (_data->loopId[i] == 0) _hist.chi2d_loop0 [0]->Fill(_data->chi2d_loop0[i]);
-      if (_data->loopId[i] == 1) _hist.chi2d_loop1 [0]->Fill(_data->chi2d_loop1[i]);
+      if (_data->loopId[i] == 1){
+	_hist.chi2d_loop0 [0]->Fill(_data->chi2d_loop0[i]);
+	_hist.chi2d_line_loop0 [0]->Fill(_data->chi2d_line_loop0[i]);
+	_hist.npoints_loop0  ->Fill(_data->npoints_loop0[i]);
+      }
+      if (_data->loopId[i] == 2) {
+	_hist.chi2d_loop1 [0]->Fill(_data->chi2d_loop1[i]);
+	_hist.chi2d_line_loop1 [0]->Fill(_data->chi2d_line_loop1[i]);
+	_hist.npoints_loop1  ->Fill(_data->npoints_loop1[i]);	
+      }
 
       if (_data->good[i] != 0) {
 	_hist.loopId  [1]->Fill(_data->loopId[i]);
@@ -149,8 +163,12 @@ int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tf
 	_hist.dr      [1]->Fill(_data->dr[i]);
 	_hist.shmeanr [1]->Fill(_data->shmeanr[i]);
 	_hist.chi2d_helix[1]->Fill(_data->chi2d_helix[i]);
-	if (_data->loopId[i] == 0) _hist.chi2d_loop0 [1]->Fill(_data->chi2d_loop0[i]);
-	if (_data->loopId[i] == 1) _hist.chi2d_loop1 [1]->Fill(_data->chi2d_loop1[i]);
+	if (_data->loopId[i] == 1) {
+	  _hist.chi2d_loop0   [1]->Fill(_data->chi2d_loop0[i]);
+	}
+	if (_data->loopId[i] == 2) {
+	  _hist.chi2d_loop1   [1]->Fill(_data->chi2d_loop1[i]);
+	}
       }
 
       _hist.nhitsvspT ->Fill(_data->nhits[i],_data->pT[i]);
