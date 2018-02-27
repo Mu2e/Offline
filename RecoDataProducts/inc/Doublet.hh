@@ -27,7 +27,7 @@ namespace mu2e {
 
   class Doublet{
   public:
-    enum { kMaxNHits = 5,
+    enum { kMaxNHits = 9,
 	   kMaxNComb = 4
     } ;
 

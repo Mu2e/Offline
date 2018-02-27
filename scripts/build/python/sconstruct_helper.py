@@ -1,6 +1,6 @@
 #
 # Define some helper functions which provide text such as build options
-# and library lists to be used in SConstruct.  Also there are a few functions 
+# and library lists to be used in SConstruct.  Also there are a few functions
 # that perform little tasks - put here to keep SConstruct more readable.
 #
 
@@ -58,7 +58,7 @@ def rootLibs():
 
 # the include path
 def cppPath(mu2eOpts):
-    path = [ 
+    path = [
         mu2eOpts["primaryBase"],
         os.environ['ART_INC'],
         os.environ['CANVAS_INC'],
@@ -77,7 +77,9 @@ def cppPath(mu2eOpts):
         os.environ['TBB_INC'],
         os.environ['MU2E_ARTDAQ_CORE_INC'],
         os.environ['ARTDAQ_CORE_INC'],
-        os.environ['TRACE_INC'] 
+        os.environ['TRACE_INC'],
+        # os.environ['GSL_INC'],
+        # os.environ['PTHREAD_INC']
         ]
 
     if mu2eOpts['satellite']:
@@ -105,12 +107,14 @@ def libPath(mu2eOpts):
         os.environ['HEPPDT_LIB'],
         os.environ['ROOTSYS']+'/lib',
         os.environ['XERCESCROOT']+'/lib',
-        os.environ['TBB_LIB']
+        os.environ['TBB_LIB'],
+        # os.environ['GSL_LIB'],
+        # os.environ['PTHREAD_LIB']
         ]
-    
+
     if mu2eOpts['satellite']:
         path = [ mu2eOpts['satelliteBase']+'/lib' ] + path
-        
+
     return path
 
 # Define the compiler and linker options.
@@ -127,11 +131,11 @@ def mergeFlags(mu2eOpts):
     return flags
 
 
-# Prepare some shell environmentals in a form to be pushed 
+# Prepare some shell environmentals in a form to be pushed
 # into the scons environment.
 def exportedOSEnvironment():
     osenv = {}
-    for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',  
+    for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',
                  'ROOTSYS', 'PYTHON_ROOT', 'PYTHON_DIR' ]:
         if var in os.environ.keys():
             osenv[var] = os.environ[var]
@@ -139,8 +143,8 @@ def exportedOSEnvironment():
 
 # list of BaBar libs
 def BaBarLibs():
-    return [ 'BTrk_KalmanTrack', 'BTrk_DetectorModel', 'BTrk_TrkBase', 
-             'BTrk_BField','BTrk_BbrGeom', 'BTrk_difAlgebra', 
+    return [ 'BTrk_KalmanTrack', 'BTrk_DetectorModel', 'BTrk_TrkBase',
+             'BTrk_BField','BTrk_BbrGeom', 'BTrk_difAlgebra',
              'BTrk_ProbTools','BTrk_BaBar', 'BTrk_MatEnv' ]
 
 # Walk the directory tree to locate all SConscript files.
@@ -168,7 +172,7 @@ def makeSubDirs(mu2eOpts):
         subprocess.call(cmd, shell=True)
 
 
-# with -c, scons will remove all dependant files it knows about 
+# with -c, scons will remove all dependant files it knows about
 # but when a source file is deleted:
 # - the .os file is harmless since it will be ignored
 # - the dict and lib now contain extra objects but scons can't
