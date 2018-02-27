@@ -1,6 +1,6 @@
 mu2eart --setup=setup.sh  --outstage=/mu2e/data/outstage \
 	--jobsub-arg --OS=SL6 \
-	--fcl=JobConfig/cd3/beam/MixPBI.fcl \
+	--fcl=JobConfig/beam/MixPBI.fcl \
 	--events-per-job=100  --njobs=100 \
 	--fclinput=1:physics.filters.dioMixer.fileNames:detdio.txt \
 	--fclinput=1:physics.filters.flashMixer.fileNames:detflash.txt \

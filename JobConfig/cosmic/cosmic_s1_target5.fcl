@@ -141,7 +141,7 @@ services :
    TFileService          : { }
    RandomNumberGenerator : { }
 
-   GeometryService        : { inputFile      : "JobConfig/cd3/cosmic/geom_cosmic.txt" }
+   GeometryService        : { inputFile      : "JobConfig/cosmic/geom_cosmic.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
    G4Helper               : { }
@@ -312,9 +312,9 @@ services.SeedService.maxUniqueEngines :  20
 services.scheduler.wantSummary: true
 
 
-physics.producers.generate.inputfile : "JobConfig/cd3/cosmic/genconfig_cosmic_target5.txt"
-services.TFileService.fileName       : "nts.owner.cd3-cosmic-g4s1-target5.version.sequencer.root"
-outputs.filteredOutput.fileName      : "sim.owner.cd3-cosmic-g4s1-target5.version.sequencer.art"
+physics.producers.generate.inputfile : "JobConfig/cosmic/genconfig_cosmic_target5.txt"
+services.TFileService.fileName       : "nts.owner.cosmic-g4s1-target5.version.sequencer.root"
+outputs.filteredOutput.fileName      : "sim.owner.cosmic-g4s1-target5.version.sequencer.art"
 
 
 //

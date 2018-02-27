@@ -9,7 +9,7 @@ source : { module_type : RootInput }
 
 services : {
    message: @local::default_message
-   TFileService: { fileName: "nts.owner.cd3-beam-nts3-ootstops.version.sequencer.root" }
+   TFileService: { fileName: "nts.owner.beam-nts3-ootstops.version.sequencer.root" }
 }
 
 physics: {

@@ -19,10 +19,10 @@ source : {
 services : {
 
    message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.cd3-extmonbeam-g4s2.version.sequencer.root" }
+   TFileService          : { fileName : "nts.owner.extmonbeam-g4s2.version.sequencer.root" }
    RandomNumberGenerator : { }
 
-   GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
+   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
    G4Helper               : { }
@@ -151,7 +151,7 @@ outputs: {
          "keep *_extmonBeamFilter_*_extmonbeamg4s2",
          "keep *_compressPVextmonBeam_*_extmonbeamg4s2"
       ]
-      fileName    : "sim.owner.cd3-extmonbeam-g4s2.version.sequencer.art"
+      fileName    : "sim.owner.extmonbeam-g4s2.version.sequencer.art"
    }
 }
 

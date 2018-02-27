@@ -5,7 +5,7 @@
 //
 // For use examples, see
 //
-//          JobConfig/cd3/beam/dra_mix_baseline.fcl
+//          JobConfig/beam/dra_mix_baseline.fcl
 //
 // Andrei Gaponenko, 2016
 
@@ -22,7 +22,7 @@ draEventMixing: {
 }
 END_PROLOG
 
-#include "JobConfig/cd3/common/prolog.fcl"
+#include "JobConfig/common/prolog.fcl"
 
 process_name: dram
 

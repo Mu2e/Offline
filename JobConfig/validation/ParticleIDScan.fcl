@@ -11,7 +11,7 @@ draEventMixing: {
 }
 END_PROLOG
 
-#include "JobConfig/cd3/common/prolog.fcl"
+#include "JobConfig/common/prolog.fcl"
 
 process_name: ParticleIDScan
 

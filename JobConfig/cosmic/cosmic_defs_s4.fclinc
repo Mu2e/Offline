@@ -2,7 +2,7 @@
 // cosmic ray simulations.  It is included by top level files
 // (like cosmic_s4_target1.fcl), which define output file names.
 
-#include "JobConfig/cd3/common/dra_pure_defs.fcl"
+#include "JobConfig/common/dra_pure_defs.fcl"
 
 source.inputCommands: ["keep *", "drop *CaloCrystalOnlyHit*_*_*_*"]
 physics.producers.CaloShowerStepFromStepPt.physVolInfoInput: "compressPV"

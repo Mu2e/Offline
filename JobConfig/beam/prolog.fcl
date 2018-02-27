@@ -4,11 +4,11 @@
 
 BEGIN_PROLOG
 
-mu2e.services.cd3simServices: {
+mu2e.services.simServices: {
    message: @local::default_message
    TFileService: { fileName: @nil }
    RandomNumberGenerator: { }
-   GeometryService: { inputFile: "JobConfig/cd3/geom_baseline.txt" }
+   GeometryService: { inputFile: "JobConfig/common/geom_baseline.txt" }
    ConditionsService: { conditionsfile: "Mu2eG4/test/conditions_01.txt" }
    GlobalConstantsService: { inputFile: "Mu2eG4/test/globalConstants_01.txt" }
    G4Helper: {}
@@ -16,16 +16,16 @@ mu2e.services.cd3simServices: {
 }
 
 // Default seeding of random engines - the seed will be overwritten in grid jobs
-mu2e.services.cd3simServices.SeedService.baseSeed:  0
-mu2e.services.cd3simServices.SeedService.maxUniqueEngines:  20
+mu2e.services.simServices.SeedService.baseSeed:  0
+mu2e.services.simServices.SeedService.maxUniqueEngines:  20
 
 // Limit the amount of "Begin processing the ... record" messages
-mu2e.services.cd3simServices.message.destinations.log.categories.ArtReport.reportEvery: 1
-mu2e.services.cd3simServices.message.destinations.log.categories.ArtReport.limit: 1
-mu2e.services.cd3simServices.message.destinations.log.categories.ArtReport.timespan: 300
+mu2e.services.simServices.message.destinations.log.categories.ArtReport.reportEvery: 1
+mu2e.services.simServices.message.destinations.log.categories.ArtReport.limit: 1
+mu2e.services.simServices.message.destinations.log.categories.ArtReport.timespan: 300
 
 // We guarantee that our subruns are atomic. The following line is to not run out of memory.
-mu2e.services.cd3simServices.scheduler.fileMode: MERGE
+mu2e.services.simServices.scheduler.fileMode: MERGE
 
 #================================================================
 mu2e.physics.producers.g4run.flash: {

@@ -1,4 +1,4 @@
-#include "JobConfig/cd3/geom_baseline.txt"
+#include "JobConfig/common/geom_baseline.txt"
 
 // Cosmis s1 samples for CD3 were generated with the TDR target geometry.
 // Keep using it for the subsequent stages.

@@ -18,7 +18,7 @@ source : {
 }
 
 services : {
-    TFileService          : { fileName : "nts.owner.cd3-beam-flt4detflash.version.sequencer.root" }
+    TFileService          : { fileName : "nts.owner.beam-flt4detflash.version.sequencer.root" }
     message               : @local::default_message
 }
 
@@ -121,7 +121,7 @@ outputs: {
                             "keep *_detectorFilter_*_beamflt4detflash",
                             "keep *_compressPVDetector_*_beamflt4detflash"
                           ]
-        fileName: "sim.owner.cd3-beam-flt4detflash.version.sequencer.art"
+        fileName: "sim.owner.beam-flt4detflash.version.sequencer.art"
     }
 
 }

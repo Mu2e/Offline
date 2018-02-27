@@ -3,7 +3,7 @@
 # from CD3.  PLEASE USE THIS AS AN EXAMPLE ONLY
 #
 mu2eart --setup=./setup.sh 
- --fcl=JobConfig/cd3/beam/MixPremixedPBIAndTrack.fcl \
+ --fcl=JobConfig/beam/MixPremixedPBIAndTrack.fcl \
  --fclinput=1:@bgHitFiles:CD3BGHitFiles.txt \
  --inputs=CD3CE.txt \
  --outstage=/mu2e/data/outstage \

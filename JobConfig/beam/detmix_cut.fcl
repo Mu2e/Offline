@@ -44,7 +44,7 @@ source : { module_type : EmptyEvent maxEvents :  @nil }
 services :
 {
    message : @local::default_message
-   TFileService : { fileName : "nts.owner.cd3-detmix-cut.version.sequencer.root" }
+   TFileService : { fileName : "nts.owner.detmix-cut.version.sequencer.root" }
    RandomNumberGenerator: { }
    SeedService: @local::automaticSeeds
 }
@@ -92,7 +92,7 @@ physics :
 outputs: {
    fullOutput : {
       module_type : RootOutput
-      fileName    : "sim.owner.cd3-detmix-cut.version.sequencer.art"
+      fileName    : "sim.owner.detmix-cut.version.sequencer.art"
    }
 }
 

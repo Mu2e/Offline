@@ -2,7 +2,7 @@ BEGIN_PROLOG
 //bgHitFiles: ["/pnfs/mu2e/tape/phy-sim/sim/mu2e/cd3-detmix-cut/v566/e4/c6/sim.mu2e.cd3-detmix-cut.v566.000003_00000000.art"]
 END_PROLOG
 
-#include "JobConfig/cd3/common/dra_mix_defs.fcl"
+#include "JobConfig/common/dra_mix_defs.fcl"
 
 physics.trigger_paths: [ draCommonTrigSeq ]
 

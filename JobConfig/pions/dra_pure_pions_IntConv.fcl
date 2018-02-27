@@ -1,2 +1,2 @@
-#include "JobConfig/cd3/pions/dra_pure_pions_defs.fclinc"
-services.TFileService.fileName: "nts.owner.cd3-dra-pure-pions-IntConv.ver.seq.root"
+#include "JobConfig/pions/dra_pure_pions_defs.fclinc"
+services.TFileService.fileName: "nts.owner.dra-pure-pions-IntConv.ver.seq.root"

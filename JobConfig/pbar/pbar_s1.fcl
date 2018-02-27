@@ -28,10 +28,10 @@ source : {
 
 services : {
    message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.cd3-pbar-g4s1.version.sequencer.root" }
+   TFileService          : { fileName : "nts.owner.pbar-g4s1.version.sequencer.root" }
    RandomNumberGenerator : { }
 
-   GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt"    }
+   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"    }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
    G4Helper               : { }
@@ -42,7 +42,7 @@ physics : {
    producers : {
       generate : {
          module_type : EventGenerator
-         inputfile   : "JobConfig/cd3/genconfig_PrimaryProtons.txt"
+         inputfile   : "JobConfig/beam/genconfig_PrimaryProtons.txt"
       }
 
       genCounter: { module_type : GenEventCounter }
@@ -127,7 +127,7 @@ outputs: {
          "keep mu2e::StatusG4_*_*_*",
          "keep *_g4filter_*_*",
          "keep *_compressPV_*_*" ]
-      fileName       : "sim.owner.cd3-pbar-g4s1.version.sequencer.art"
+      fileName       : "sim.owner.pbar-g4s1.version.sequencer.art"
    }
 }
 

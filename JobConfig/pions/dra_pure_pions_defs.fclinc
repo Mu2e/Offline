@@ -1,4 +1,4 @@
-#include "JobConfig/cd3/common/dra_pure_defs.fcl"
+#include "JobConfig/common/dra_pure_defs.fcl"
 
 physics.trigger_paths: [ draCommonTrigSeq ]
 

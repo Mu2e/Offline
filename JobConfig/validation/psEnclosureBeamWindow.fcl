@@ -20,7 +20,7 @@ services : {
    TFileService          : { fileName : "hist_beam_psebeamwin.root" }
    RandomNumberGenerator : { }
 
-   GeometryService        : { inputFile      : "JobConfig/cd3/validation/geom_psEnclosure.txt" }
+   GeometryService        : { inputFile      : "JobConfig/validation/geom_psEnclosure.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
    G4Helper               : { }
@@ -50,7 +50,7 @@ physics : {
    producers: {
       generate: {
          module_type          : EventGenerator
-         inputfile            : "JobConfig/cd3/genconfig_PrimaryProtons.txt"
+         inputfile            : "JobConfig/beam/genconfig_PrimaryProtons.txt"
       }
 
       genCounter: {

@@ -15,10 +15,10 @@ source : {
 services : {
 
    message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.cd3-beam-g4s2.version.sequencer.root" }
+   TFileService          : { fileName : "nts.owner.beam-g4s2.version.sequencer.root" }
    RandomNumberGenerator : { }
 
-   GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
+   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
    G4Helper               : { }
@@ -149,7 +149,7 @@ outputs: {
          "keep *_muonBeamFilter_*_beamg4s2",
          "keep *_compressPVmuonBeam_*_beamg4s2"
       ]
-      fileName    : "sim.owner.cd3-beam-g4s2-mubeam.version.sequencer.art"
+      fileName    : "sim.owner.beam-g4s2-mubeam.version.sequencer.art"
    }
 
    crvout : {
@@ -162,7 +162,7 @@ outputs: {
          "keep *_crvFilter_*_beamg4s2",
          "keep *_compressPVCRV_*_beamg4s2"
       ]
-      fileName    : "sim.owner.cd3-beam-g4s2-crv.version.sequencer.art"
+      fileName    : "sim.owner.beam-g4s2-crv.version.sequencer.art"
    }
 
   truncatedEvtsOutput : {
@@ -176,7 +176,7 @@ outputs: {
          "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
          "keep *_compressPVFull_*_*"
       ]
-      fileName    : "sim.owner.cd3-beam-g4s2-truncated.version.sequencer.art"
+      fileName    : "sim.owner.beam-g4s2-truncated.version.sequencer.art"
    }
 
 }
