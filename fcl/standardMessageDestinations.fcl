@@ -132,7 +132,8 @@ mf_coutInfo:
    MF_INIT_OK : { limit : 0 }
    DeactivatedPath : { limit : 0 }
    PathConfiguration : { limit : 0 }
-   GEOM : { limit : 0 }
+   GEOM_MINRANGECUT : { limit : 0 }
+   GEOM_PARTICLECUT : { limit : 0 }
  } # end categories
 } # end mf_coutInfo
 mf_coutInfoStats : 

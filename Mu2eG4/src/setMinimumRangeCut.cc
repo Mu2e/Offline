@@ -17,7 +17,7 @@
 namespace mu2e{
 
   void setMinimumRangeCut(double minRangeCut,G4VUserPhysicsList* mPL ){
-    mf::LogInfo("GEOM")
+    mf::LogInfo("GEOM_MINRANGECUT")
       << "Setting minRange cut to " << minRangeCut << " mm";
     //setCutCmd equivalent:
     mPL->SetDefaultCutValue(minRangeCut);
