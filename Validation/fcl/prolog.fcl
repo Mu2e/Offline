@@ -35,7 +35,7 @@ generation : {
       mod : {
 	 generate: {
             module_type          : EventGenerator
-            inputfile            : "JobConfig/cd3/genconfig_PrimaryProtons.txt"
+            inputfile            : "JobConfig/beam/genconfig_PrimaryProtons.txt"
 	 }
       }
       seq : [ generate ]
@@ -44,7 +44,7 @@ generation : {
       mod : {
 	 generate: {
             module_type          : EventGenerator
-            inputfile            : "JobConfig/cd3/cosmic/genconfig_cosmic_general.txt"
+            inputfile            : "JobConfig/cosmic/genconfig_cosmic_general.txt"
 	 }
       }
       seq : [ generate ]
