@@ -78,7 +78,6 @@ setup -B mu2e_artdaq_core v1_02_01e -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIF
 # Other libraries we need.
 
 setup -B heppdt   v3_04_01g -q${MU2E_UPS_QUALIFIERS}
-setup -B xerces_c v3_1_4b   -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_02_11  -q${MU2E_UPS_QUALIFIERS}
 setup -B cry   v1_7i  -q${MU2E_UPS_QUALIFIERS}
 # setup -B gsl v2_4  -q${build}
