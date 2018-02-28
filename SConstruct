@@ -56,8 +56,7 @@ env.Append(BUILDERS = {'DictionarySource' : genreflex})
 # this sets the build flags, like -std=c++14 -Wall -O3, etc
 SetOption('warn', 'no-fortran-cxx-mix')
 env.MergeFlags( sch.mergeFlags(mu2eOpts) )
-env.MergeFlags('-lpthread')
-env.MergeFlags('-lgsl')
+env.MergeFlags( '-lpthread' )
 
 # env construction variables, in SConscript: var=env['VARNAME']
 env.Append( ROOTLIBS = sch.rootLibs() )

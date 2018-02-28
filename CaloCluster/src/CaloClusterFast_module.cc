@@ -184,21 +184,23 @@ namespace mu2e {
       std::sort(seeds_.begin(),seeds_.end(),[](const FastHit* a, const FastHit* b) {return a->val_ > b->val_;});
       
       
+      
       //loop over seeds
       std::vector<art::Ptr< CaloCrystalHit>> hits;
       
       for (auto& seed : seeds_)
       {
          if (seed->val_ < 1) continue; 
-
+         
          int cluEnergy(seed->val_);
-         unsigned ncry(1);
+         unsigned ncry(1), ninsp(1);
          double xc = cal->crystal(seed->crId_).localPositionFF().x();
          double yc = cal->crystal(seed->crId_).localPositionFF().y();
          seed->val_ = 0; 
          
          for (const auto& nid : cal->neighbors(seed->crId_))
          {
+            ++ninsp;
             for (auto& hit : hitList_[seed->index_])
             {
                if (hit.crId_ != nid) continue;
@@ -224,6 +226,7 @@ namespace mu2e {
          
          for (const auto& nid : cal->nextNeighbors(seed->crId_))
          {
+            ++ninsp;
             for (auto& hit : hitList_[seed->index_])
             {
                if (hit.crId_ != nid) continue;

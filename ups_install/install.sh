@@ -6,11 +6,11 @@
 # same product+version+qualifiers: use with care.
 #
 
-export COMPILER_CODE=e10
+export COMPILER_CODE=e15
 export DEBUG_LEVEL=prof
 export PACKAGE_NAME=offline
 export PACKAGE_SOURCE=${MU2E_BASE_RELEASE}
-export PACKAGE_VERSION=trig_0_0_2
+export PACKAGE_VERSION=trig_0_2_0
 
 # Check that the installation directoy has been defined.
 if [ "${PRODUCTS_INSTALL}" = '' ];then
