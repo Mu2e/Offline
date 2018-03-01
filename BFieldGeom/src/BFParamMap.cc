@@ -20,6 +20,7 @@
 #include "BFieldGeom/inc/BFParamMap.hh"
 
 // Other includes
+#include <gsl/gsl_sf_bessel.h>
 #include "CLHEP/Vector/ThreeVector.h"
 #include "cetlib_except/exception.h"
 #include "math.h"
@@ -86,14 +87,11 @@ namespace mu2e {
         for (int n = 0; n < _ns; ++n) {
             for (int m = 1; m <= _ms; ++m) {
                 tmp_rho = _kms[n][m - 1] * abs_r;
-                // bessels[0] = gsl_sf_bessel_In(n, tmp_rho);
-                // bessels[1] = gsl_sf_bessel_In(n + 1, tmp_rho);
-                bessels[0] = -1;
-                bessels[1] = -1;
+                bessels[0] = gsl_sf_bessel_In(n, tmp_rho);
+                bessels[1] = gsl_sf_bessel_In(n + 1, tmp_rho);
                 _iv[n][m - 1] = bessels[0];
                 if (tmp_rho == 0) {
-                    //_ivp[n][m - 1] = 0.5 * (gsl_sf_bessel_In(n - 1, 0) + bessels[1]);
-                    _ivp[n][m - 1] = -1;
+                    _ivp[n][m - 1] = 0.5 * (gsl_sf_bessel_In(n - 1, 0) + bessels[1]);
                 } else {
                     _ivp[n][m - 1] = (n / tmp_rho) * bessels[0] + bessels[1];
                 }
