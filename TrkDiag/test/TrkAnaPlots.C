@@ -215,6 +215,8 @@ void MomRes(TTree* ta, double tqcut) {
   rtext->AddText(line);
   sprintf(line,"%s",goodfit.GetTitle());
   rtext->AddText(line);
+  sprintf(line,"%5.0f Tracks",momres->GetEntries());
+  rtext->AddText(line);
   rtext->Draw();
 
 }
