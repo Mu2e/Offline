@@ -617,7 +617,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 	hsel->SetBinContent(ibin,jbin,val*norm);
       }
     }
-    TCanvas* hscan = new TCanvas("hscan","hscan",800,800);
+    TCanvas* hscan = new TCanvas("hscan","hscan",750,750);
     hscan->Divide(1,2);
     hscan->cd(1);
     hsel->Draw("boxtext0");
