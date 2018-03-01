@@ -162,6 +162,7 @@ namespace mu2e
   void
   TrkStrawHit::updateDrift() {
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
+    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
 // deal with ambiguity updating.  This is a DEPRECATED OPTION, use external ambiguity resolution algorithms instead!!!
     if(_ambigupdate) {
       int iamb = poca().doca() > 0 ? 1 : -1;
@@ -172,7 +173,15 @@ namespace mu2e
 // find the track direction at this hit
     Hep3Vector tdir = getParentRep()->traj().direction(fltLen());
 // convert time to distance.  This computes the intrinsic drift radius error as well
-    tcal->TimeToDistance(straw().index(),tdrift,tdir,_t2d);
+// replace with StrawResponse cluster T2D function FIXME!  
+   tcal->TimeToDistance(straw().index(),tdrift,tdir,_t2d);
+   // Correct the mean drift for the waveform slewing effects: ignore for now FIXME!
+   // Calculate the drift error based on the current estimate of DOCA.  This should
+   // eventually include a term for the uncertainty in DOCA FIXME!
+    double tdrifterr = srep->driftError(fabs(poca().doca()));
+    // need instantaneous velocity to transform from time error to 
+    // For now take the global velocity radial distance error FIXME!
+    _t2d._rdrifterr = tdrifterr*tcal->driftVelocity();
 // Propogate error in t0, using local drift velocity
     double rt0err = hitT0()._t0err*_t2d._vdrift;
     // annealing error depends on the 'temperature'
