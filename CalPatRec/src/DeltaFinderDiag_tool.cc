@@ -736,9 +736,9 @@ namespace mu2e {
       int nseeds = _data->seedHolder[is].size();
       for (int i=0; i<nseeds; ++i) {
 	DeltaSeed* seed = _data->seedHolder[is].at(i);
-	//-----------------------------------------------------------------------------
-	// define MC pointers (SimParticle's) for the first two, "pre-seed", hits
-	//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// define MC pointers (SimParticle's) for the first two, "pre-seed", hits
+//-----------------------------------------------------------------------------
 	if (seed->fType != 0) {
 	  int loc1 = seed->fHitData[0]->fHit-hit0;
 	  int loc2 = seed->fHitData[1]->fHit-hit0;
@@ -750,9 +750,9 @@ namespace mu2e {
 	  seed->fPreSeedMcPart[0] = NULL;
 	  seed->fPreSeedMcPart[1] = NULL;
 	}
-	//-----------------------------------------------------------------------------
-	// define MC pointers (McPart_t's) for hits in all faces
-	//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// define MC pointers (McPart_t's) for hits in all faces
+//-----------------------------------------------------------------------------
 	for (int face=0; face<kNFaces; face++) {
 	  int nh = seed->hitlist[face].size();
 	  for (int ih=0; ih<nh; ih++) {
@@ -760,9 +760,9 @@ namespace mu2e {
 	    int loc = hit-hit0;
 	    McPart_t* mc = _list_of_mc_part_hit.at(loc);
 	    seed->fMcPart[face].push_back(mc);
-	    //-----------------------------------------------------------------------------
-	    // count CE hits 
-	    //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// count CE hits 
+//-----------------------------------------------------------------------------
 	    if ((mc->fPdgID == 11) && (mc->fStartMom > 95) && (mc->fStartMom <110)) {
 	      seed->fNHitsCE += 1;
 	      if (seed->fDeltaIndex >= 0) {
@@ -904,13 +904,13 @@ namespace mu2e {
 	int nseeds = _data->seedHolder[st].size();
 	printf("station: %2i N(seeds): %3i\n",st,nseeds);
 	if (nseeds > 0) {
-	  printf("------------------------------------------------------------------------------------------------------------------------------\n");
-	  printf("      st  i good type   SHID:MCID(0)    SHID:MCID(1)       chi21   chi22 mintime  maxtime      X        Y         Z   nfwh nht\n");
-	  printf("------------------------------------------------------------------------------------------------------------------------------\n");
+	  printf("---------------------------------------------------------------------------------------------------------------------------------------\n");
+	  printf("      st  i  good:type   SHID:MCID(0)    SHID:MCID(1)    chi2all/N  chi21    chi22 mintime  maxtime      X        Y         Z  nfwh nht\n");
+	  printf("---------------------------------------------------------------------------------------------------------------------------------------\n");
 	  for (int ps=0; ps<nseeds; ++ps) {
 	    DeltaSeed* seed = _data->seedHolder[st].at(ps);
 
-	    printf("seed %3i:%03i %3i %2i ",st,ps,seed->fGood,seed->fType);
+	    printf("seed %2i:%03i %5i %2i ",st,ps,seed->fGood,seed->fType);
 	    if (seed->fType != 0) {
 	      printf("(%5i:%9i)",seed->fHitData[0]->fHit->strawIndex().asInt(),seed->fPreSeedMcPart[0]->fID);
 	      printf("(%5i:%9i)",seed->fHitData[1]->fHit->strawIndex().asInt(),seed->fPreSeedMcPart[1]->fID);
@@ -919,29 +919,32 @@ namespace mu2e {
 	      printf("(%5i:%9i)",-1,-1);
 	      printf("(%5i:%9i)",-1,-1);
 	    }
-	    printf(" %8.2f %8.2f",seed->fChi21,seed->fChi22);
+	    printf(" %8.2f %8.2f %8.2f",seed->Chi2AllDof(),seed->fChi21,seed->fChi22);
 	    printf("%8.1f %8.1f",seed->fMinTime,seed->fMaxTime);
 	    printf(" %8.3f %8.3f %9.3f",seed->CofM.x(),seed->CofM.y(),seed->CofM.z());
 	    printf("%4i",seed->fNFacesWithHits);
 	    printf("%4i",seed->fNHitsTot);
 	    printf("\n");
-	    //-----------------------------------------------------------------------------
-	    // print hit ID's in each face
-	    //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// print hit ID's in each face
+//-----------------------------------------------------------------------------
 	    for (int face=0; face<kNFaces; face++) {
+	      int first_line=1;
 	      printf("       ");
 	      int nh = seed->NHits(face);
-	      printf("        %i:%2i ",face,nh);
+	      printf("         %i:%2i ",face,nh);
 	      int nprinted = 0;
 	      for (int ih=0; ih<nh; ih++) {
 		const StrawHit* hit =  seed->hitlist[face][ih]->fHit;
 
 		McPart_t* mcp = seed->fMcPart[face][ih];
 		int mcid = mcp->fID;
+		if ((nprinted == 0) && (first_line == 0)) printf("%21s","");
 		printf("(%5i:%9i)",hit->strawIndex().asInt(),mcid);
 		nprinted++;
 		if (nprinted == 5) {
 		  printf("\n");
+		  first_line = 0;
 		  nprinted = 0;
 		}
 	      }
@@ -970,21 +973,21 @@ namespace mu2e {
 	  DeltaCandidate* dc = &_data->deltaCandidateHolder.at(i);
 	  int pdg_id = -1;
 	  if (dc->fMcPart) pdg_id = dc->fMcPart->fPdgID;
-	  printf("----------------------------------------------------------------------------------\n");
-	  printf("      i  nh n(CE) ns s1 s2     X        Y        Z    chi21   chi22   htmin   htmax   t0min   t0max   PdgID \n");
-	  printf("----------------------------------------------------------------------------------\n");
-	  printf(":dc:%3i %3i  %3i",i,dc->fNHits,dc->fNHitsCE);
+	  printf("--------------------------------------------------------------------------------------------------------------------------\n");
+	  printf("      i  nh n(CE) ns s1  s2     X        Y        Z     chi21   chi22   htmin   htmax   t0min   t0max     PdgID N(MC hits)\n");
+	  printf("--------------------------------------------------------------------------------------------------------------------------\n");
+	  printf(":dc:%03i %3i  %3i",i,dc->fNHits,dc->fNHitsCE);
 	  printf(" %3i",dc->n_seeds);
-	  printf(" %2i %2i %9.2f %9.2f %9.2f",dc->fFirstStation,dc->fLastStation,
+	  printf(" %2i  %2i %7.2f %7.2f %9.2f",dc->fFirstStation,dc->fLastStation,
 		 dc->CofM.x(),dc->CofM.y(),dc->CofM.z());
-	  printf("                   %i5 %i3",pdg_id,dc->fNHitsMcP);
+	  printf("                            %30i %5i",pdg_id,dc->fNHitsMcP);
 	  printf("\n");
 
 	  for (int is=dc->fFirstStation;is<=dc->fLastStation; is++) {
 	    DeltaSeed* ds = dc->seed[is];
 	    if (ds != NULL) {
-	      printf("        %3i  %3i    %2i:%03i",ds->fNHitsTot,ds->fNHitsCE,is,ds->fNumber);
-	      printf(" %7.2f %7.2f %8.2f",
+	      printf("        %3i  %3i    %3i:%03i",ds->fNHitsTot,ds->fNHitsCE,is,ds->fNumber);
+	      printf(" %7.2f %7.2f %9.2f",
 		     ds->CofM.x(),ds->CofM.y(),ds->CofM.z());
 	      printf(" %7.1f %7.1f",ds->fChi21, ds->fChi22);
 	      printf(" %7.1f %7.1f",ds->fMinTime,ds->fMaxTime);
@@ -1033,7 +1036,7 @@ namespace mu2e {
 	      nseeds   = mc->fDelta->n_seeds;
 	    }
 
-	    printf(" event: %3i electron.sim.id: %10i",_data->event->event(),mc->fID);
+	    printf(" event: %4i electron.sim.id: %10i",_data->event->event(),mc->fID);
 	    printf(" mom = %7.3f time: %8.3f deltaID: %3i nseeds: %2i nhits: %3i/%3i stations:%2i:%2i",
 		   mc->Momentum(), mc->Time(), 
 		   delta_id, nseeds,
@@ -1065,12 +1068,12 @@ namespace mu2e {
   void DeltaFinderDiag::printHitData(const HitData_t* Hd, int Index) {
 
     if (Index < 0) {
-      printf("#-------------------------------------------------------------------------------------------------");
-      printf("-------------------------------------------------------------------------------\n");
-      printf("#      SHID  Plane  Panel  Layer   Straw     Time          dt         eDep       wdist     wres   ");
-      printf("     PDG           ID       p      X        Y         Z   DeltaID radOK edepOK \n");
-      printf("#-------------------------------------------------------------------------------------------------");
-      printf("-------------------------------------------------------------------------------\n");
+      printf("#-----------------------------------------------------------------------------");
+      printf("------------------------------------------------------------------------------\n");
+      printf("#      SHID  St:Pl P L Str     Time     dt        eDep       wdist     wres   ");
+      printf("     PDG           ID       p      X        Y         Z   DeltaID radOK edepOK\n");
+      printf("#-----------------------------------------------------------------------------");
+      printf("------------------------------------------------------------------------------\n");
       return;
     }
 
@@ -1100,7 +1103,8 @@ namespace mu2e {
     printf("%5i ",loc);
     printf("%5i" ,sh->strawIndex().asInt());
 	
-    printf("  %5i  %5i   %5i   %5i   %8.3f   %8.3f   %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
+    printf("  %2i:%2i %1i %1i %2i   %8.3f %7.3f  %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
+	   straw->id().getStation(),
 	   straw->id().getPlane(),
 	   straw->id().getPanel(),
 	   straw->id().getLayer(),

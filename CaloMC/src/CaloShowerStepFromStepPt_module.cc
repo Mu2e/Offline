@@ -110,13 +110,15 @@ namespace mu2e {
        public:
 
           explicit CaloShowerStepFromStepPt(fhicl::ParameterSet const& pset) :
-             numZSlices_(              pset.get<int>        ("numZSlices") ),
-             deltaTime_(               pset.get<double>     ("deltaTime") ),
+             numZSlices_(              pset.get<int>(        "numZSlices") ),
+             deltaTime_(               pset.get<double>(     "deltaTime") ),
              calorimeterStepPoints_(   pset.get<std::string>("calorimeterStepPoints") ),
              calorimeterROStepPoints_( pset.get<std::string>("calorimeterROStepPoints") ),
+             usePhysVol_(              pset.get<bool>(       "usePhysVolInfo") ),
              physVolInfoInput_(        pset.get<std::string>("physVolInfoInput") ),
              caloMaterial_(            pset.get<std::vector<std::string> >("caloMaterial") ),
-             diagLevel_(               pset.get<int>        ("diagLevel",0) ),
+             compressMuons_(           pset.get<bool>(       "compressMuons") ),
+             diagLevel_(               pset.get<int>(        "diagLevel",0) ),
              messageCategory_("CaloCompressHits"),
              vols_(),
              procCodes_(),
@@ -143,8 +145,10 @@ namespace mu2e {
           double                                         deltaTime_;
           std::string                                    calorimeterStepPoints_;
           std::string                                    calorimeterROStepPoints_;
+          bool                                           usePhysVol_;
           art::InputTag                                  physVolInfoInput_;
           std::vector<std::string>                       caloMaterial_;
+          bool                                           compressMuons_;
           int                                            diagLevel_;  
           const std::string                              messageCategory_;
           const PhysicalVolumeInfoMultiCollection*       vols_;
@@ -163,6 +167,7 @@ namespace mu2e {
           TH1F*  hGenId_;
           double totalEdep_;
           int    totalStep_;
+          int    totalSim_;
 
 
 
@@ -171,7 +176,7 @@ namespace mu2e {
          void collectStepBySimAncestor(const Calorimeter&, const PhysicalVolumeMultiHelper& , 
                                        const HandleVector&, std::map<SimPtr,CaloCompressUtil>&);
          void collectStepBySim(const HandleVector&, std::map<SimPtr,std::vector<const StepPointMC*> >&);
-         bool isInsideCalorimeter(const PhysicalVolumeMultiHelper&, const art::Ptr<SimParticle>&);
+         bool isInsideCalorimeter(const Calorimeter& cal, const PhysicalVolumeMultiHelper&, const art::Ptr<SimParticle>&);
          bool isCompressible(int simPdgId, const  std::unordered_set<int>&, const  SimParticlePtrCollection&);
          void compressSteps(const Calorimeter&, CaloShowerStepCollection&, bool isCrystal,
                             int volId, const SimPtr&, std::vector<const StepPointMC*>&);
@@ -195,8 +200,10 @@ namespace mu2e {
         procCodes_[-11].insert(  {2,16,17,21,23,29,40,49,58} );    // positron
         procCodes_[22].insert(   {2,12,16,17,21,23,29,40,49,58} ); // photon
         procCodes_[2112].insert( {2,16,17,21,23,29,40,49,58,74} ); // neutron
-        procCodes_[2212].insert( {16,17,21,23,29,40,45,49,58} );   // proton      
-
+        procCodes_[2212].insert( {16,17,21,23,29,40,45,49,58} );   // proton              
+        if (compressMuons_) procCodes_[13].insert(  {2,12, 16,17,21,23,29,30,31,34,40,49,58,59} );    // mu-
+        if (compressMuons_) procCodes_[-13].insert( {2,12, 16,17,21,23,29,30,31,34,40,49,58,59} );    // mu-
+                        
         if (diagLevel_ > 2)
 	{
 	   art::ServiceHandle<art::TFileService> tfs;
@@ -213,12 +220,13 @@ namespace mu2e {
 
     void CaloShowerStepFromStepPt::beginSubRun(art::SubRun& sr) 
     {
-        /*
-        art::Handle<PhysicalVolumeInfoMultiCollection> volh;
-        sr.getByLabel(physVolInfoInput_, volh);
-        vols_ = &*volh;
-        
         mapPhysVol_.clear();
+        
+        art::Handle<PhysicalVolumeInfoMultiCollection> volh;
+        sr.getByLabel(physVolInfoInput_, volh);        
+        if (!volh.isValid()) return;
+        
+        vols_ = volh.product();        
         for (const auto& vol : *volh)
         {        
            for (const auto& mv : vol.second) 
@@ -228,8 +236,6 @@ namespace mu2e {
                    if (material == caloMaterial) mapPhysVol_.insert(&mv.second);
            }                  
         }
-        */
-        
     }
 
 
@@ -264,15 +270,16 @@ namespace mu2e {
 
 
         makeCompressedHits(crystalStepsHandles,readoutStepsHandles,*caloShowerStepMCs,*caloROShowerStepMCs,*simsToKeep);
+ 
+        if ( diagLevel_ > 0) std::cout << "[CaloShowerStepFromStepPt::produce] Total energy deposited / number of stepPointMC: " <<totalEdep_<<" / "<<totalStep_<<std::endl;
+        if ( diagLevel_ > 0) std::cout << "[CaloShowerStepFromStepPt::produce] Total sims init: " <<totalSim_<<std::endl;
+        if ( diagLevel_ > 0) std::cout << "[CaloShowerStepFromStepPt::produce] Total caloShower steps: " <<caloShowerStepMCs->size()<<std::endl;
+        if ( diagLevel_ > 0) std::cout << "[CaloShowerStepFromStepPt::produce] end" << std::endl;
 
         // Add the output hit collection to the event
         event.put(std::move(caloShowerStepMCs),"calorimeter");
         event.put(std::move(caloROShowerStepMCs),"calorimeterRO");
         event.put(std::move(simsToKeep));
-
-        if ( diagLevel_ > 0) std::cout << "[CaloShowerStepFromStepPt::produce] Total energy deposited / number of stepPointMC: " <<totalEdep_<<" / "<<totalStep_<<std::endl;
-        if ( diagLevel_ > 0) std::cout << "[CaloShowerStepFromStepPt::produce] end" << std::endl;
-
     } 
 
 
@@ -307,6 +314,7 @@ namespace mu2e {
               const CaloCompressUtil& info = iter.second;
 
               bool doCompress = isCompressible(sim->pdgId(),info.processCodes(),info.sims());
+              totalSim_ +=info.sims().size();
 
               std::map<int,std::vector<const StepPointMC*> > crystalMap;            
               for (const StepPointMC* step : info.steps()) crystalMap[step->volumeId()].push_back(step);
@@ -421,8 +429,7 @@ namespace mu2e {
                     SimPtr sim = step.simParticle();
 
                     SimParticlePtrCollection inspectedSims;              
-                    //while (sim->hasParent() && isInsideCalorimeter(vi,sim) )  
-                    while (sim->hasParent() && cal.geomUtil().isInsideCalorimeter(sim->startPosition()) )  
+                    while (sim->hasParent() && isInsideCalorimeter(cal, vi,sim) )  
                     {
                         //simparticle starting in one section and ending in another one see note above
                         if (!cal.geomUtil().isContainedSection(sim->startPosition(),sim->endPosition()) ) break; 
@@ -444,10 +451,17 @@ namespace mu2e {
     }
 
 
+    
+    
+    
     //-------------------------------------------------------------------------------------------------------------------------
-    bool CaloShowerStepFromStepPt::isInsideCalorimeter(const PhysicalVolumeMultiHelper& vi, const art::Ptr<SimParticle>& thisSimPtr)
+    bool CaloShowerStepFromStepPt::isInsideCalorimeter(const Calorimeter& cal, const PhysicalVolumeMultiHelper& vi, const art::Ptr<SimParticle>& thisSimPtr)
     {        
-        return mapPhysVol_.find(&vi.startVolume(*thisSimPtr)) != mapPhysVol_.end();
+        if (usePhysVol_) 
+          return mapPhysVol_.find(&vi.startVolume(*thisSimPtr)) != mapPhysVol_.end();
+        else 
+          return cal.geomUtil().isInsideCalorimeter(thisSimPtr->startPosition());
+        
     }
 
 

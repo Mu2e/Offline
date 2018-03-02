@@ -31,8 +31,11 @@ namespace mu2e {
     StrawDigiMC(StrawId sid, double wetime[2], 
     CLHEP::HepLorentzVector cpos[2], 
     art::Ptr<StepPointMC> stepMC[2], std::vector<art::Ptr<StepPointMC> > const& stepMCs);
-    // copy constructor, for filter
-    StrawDigiMC(StrawDigiMC const& other);
+
+    // copy construcors
+    StrawDigiMC(const StrawDigiMC& rhs); // default: don't copy art::Ptrs
+    StrawDigiMC(const StrawDigiMC& rhs, art::Ptr<StepPointMC> stepMC[2], std::vector<art::Ptr<StepPointMC> > const& stepMCs);
+
     // Accessors
     StrawId strawId() const { return _strawid; }
     double wireEndTime(StrawEnd strawend) const { return _wetime[strawend]; }

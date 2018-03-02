@@ -68,7 +68,7 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind, std::ostr
       obj.startMomentum().vect().mag() < _emPCut ) return;
   if( _primaryOnly && (!obj.isPrimary()) ) return;
 
-  art::Ptr<SimParticle> const& pptr = obj.originParticle().parent();
+  art::Ptr<SimParticle> const& pptr = obj.parent();
   long unsigned int pkey = 0;
   if(pptr) pkey = pptr->id().asUint();
 

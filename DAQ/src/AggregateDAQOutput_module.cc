@@ -62,6 +62,7 @@ namespace mu2e {
     void flushBuffer();
 
     std::vector<DataBlock::adc_t> generateDMABlockHeader(size_t theCount) const;
+    std::vector<DataBlock::adc_t> generateEventByteHeader(size_t theCount) const;
 
     string                _outputFile;
     ofstream              outputStream;
@@ -95,6 +96,8 @@ namespace mu2e {
     int _includeCalorimeter;
     int _includeCosmicRayVeto;
 
+    int _includeDMAHeaders;
+
     // Diagnostics level.
     int _diagLevel;
 
@@ -119,6 +122,7 @@ namespace mu2e {
     _includeTracker(pset.get<int>("includeTracker",1)),
     _includeCalorimeter(pset.get<int>("includeCalorimeter",1)),
     _includeCosmicRayVeto(pset.get<int>("includeCosmicRayVeto",0)),
+    _includeDMAHeaders(pset.get<int>("includeDMAHeaders",1)),
     _diagLevel(pset.get<int>("diagLevel",0)),
     _maxFullPrint(pset.get<int>("maxFullPrint",5))
   {
@@ -131,6 +135,10 @@ namespace mu2e {
            << _diagLevel << " "
            << _maxFullPrint
            << endl;
+    }
+
+    if ( _includeDMAHeaders == 0 ) {
+      cout << "WARNING: Not including DMA headers" << endl;
     }
   }
 
@@ -172,6 +180,19 @@ namespace mu2e {
   }
 
   std::vector<DataBlock::adc_t> AggregateDAQOutput::generateDMABlockHeader(size_t theCount) const {
+
+    uint64_t byteCount = theCount;
+
+    std::vector<DataBlock::adc_t> header;
+    header.push_back(static_cast<DataBlock::adc_t>( byteCount        & 0xFFFF));
+    header.push_back(static_cast<DataBlock::adc_t>((byteCount >> 16) & 0xFFFF));
+    header.push_back(static_cast<DataBlock::adc_t>((byteCount >> 32) & 0xFFFF));
+    header.push_back(static_cast<DataBlock::adc_t>((byteCount >> 48) & 0xFFFF));
+    
+    return header;
+  }
+
+  std::vector<DataBlock::adc_t> AggregateDAQOutput::generateEventByteHeader(size_t theCount) const {
 
     uint64_t byteCount = theCount;
 
@@ -299,8 +320,9 @@ namespace mu2e {
 
 	if(numDataBlocksInCurDMABlock == 0) {
 	  // Starting a new DMA Block, so allocate
-	  // space for a new DMA block header
-	  curDMABlockSize = 8;
+	  // space for a new DMA block header (64 bits)
+	  // and a new event byte count header (64 bits)
+	  curDMABlockSize = 8 + 8;
 	}
 
 	numDataBlocksInCurDMABlock++; // Increment number of DataBlocks in the current DMA block
@@ -373,11 +395,21 @@ namespace mu2e {
 	  DMABlockVector.clear();
 	  
 	  curDataBlockCount = 0;
-	    
-	  std::vector<DataBlock::adc_t> header = generateDMABlockHeader( dataBlockPartitionSizes[curDMABlockIdx] );
-	  DMABlockVector.insert(DMABlockVector.end(), header.begin(), header.end());
 
-	  curDMABlockByteCount = 8;
+	  if(_includeDMAHeaders>0) {
+	    std::vector<DataBlock::adc_t> dma_header = generateDMABlockHeader( dataBlockPartitionSizes[curDMABlockIdx] );
+	    DMABlockVector.insert(DMABlockVector.end(), dma_header.begin(), dma_header.end());
+
+	    std::vector<DataBlock::adc_t> event_header = generateEventByteHeader( dataBlockPartitionSizes[curDMABlockIdx] - 8 - 8 );
+	    DMABlockVector.insert(DMABlockVector.end(), event_header.begin(), event_header.end());	  
+	    // The *exclusive* event byte count is equal to the *inclusive* DMA byte
+	    // count minus the size of the DMA byte header (8 bytes)
+	    // minus the size of the event byte count header (8 bytes)
+	    // NOTE: Under the current specification, each DMA block contains only 1 event
+	    
+	    curDMABlockByteCount = 8 + 8;
+	  }
+
 	}
 
 	// Add the current DataBlock to the current SuperBlock

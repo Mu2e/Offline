@@ -54,8 +54,8 @@ build=$($MU2E_BASE_RELEASE/buildopts --build)
 # products that need qualifiers.  Note it includes the '+' character
 # and is therefore different from the value shown in
 # SETUP_<productname> environment vars, or by the "ups active" command.
-export MU2E_UPS_QUALIFIERS=+e14:+${build}
-export MU2E_ART_SQUALIFIER=s62
+export MU2E_UPS_QUALIFIERS=+e15:+${build}
+export MU2E_ART_SQUALIFIER=s64
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
 if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
@@ -63,25 +63,27 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
 fi
 
 # Setup the framework and its dependent products
-setup -B art v2_09_06 -q${MU2E_UPS_QUALIFIERS}
+setup -B art v2_10_02 -q${MU2E_UPS_QUALIFIERS}
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
-  setup -B geant4 v4_10_2_p03d -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
+  setup -B geant4 v4_10_2_p03e -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
+else
+  setup -B xerces_c v3_1_4b   -q${MU2E_UPS_QUALIFIERS}
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_02_01d -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
+setup -B mu2e_artdaq_core v1_02_01e -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 
 # Other libraries we need.
 
 setup -B heppdt   v3_04_01g -q${MU2E_UPS_QUALIFIERS}
-setup -B xerces_c v3_1_4b   -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_02_08  -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_02_11  -q${MU2E_UPS_QUALIFIERS}
 setup -B cry   v1_7i  -q${MU2E_UPS_QUALIFIERS}
+setup -B gsl v2_4  -q${build}
 
 # The build system.
-setup -B scons v3_0_0  -q p2714
+setup -B scons v3_0_1  -q p2714b
 
 # The debugger
 setup -B gdb v8_0_1

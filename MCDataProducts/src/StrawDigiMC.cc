@@ -34,13 +34,23 @@ namespace mu2e {
     }
   }
 
-  StrawDigiMC::StrawDigiMC(StrawDigiMC const& other ) : 
-    _strawid(other._strawid), _stepMCs(other._stepMCs) {
-    for(size_t strawend=0;strawend<2;++strawend){
-      _wetime[strawend] = other._wetime[strawend];
-      _cpos[strawend] = other._cpos[strawend];
-      _stepMC[strawend] = other._stepMC[strawend];
+  StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs) : _strawid(rhs.strawId()), _stepMCs(rhs.stepPointMCs()) {
+    for(int i_end=0;i_end<TrkTypes::nends;++i_end){
+      TrkTypes::End end = static_cast<TrkTypes::End>(i_end);
+      _wetime[end] = rhs.wireEndTime(end);
+      _cpos[end] = rhs.clusterPosition(end);
+      _stepMC[end] = rhs.stepPointMC(end);
     }
+  }
+
+  StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, art::Ptr<StepPointMC> stepMC[2], std::vector<art::Ptr<StepPointMC> > const& stepMCs) : _strawid(rhs.strawId()) {
+    for(int i_end=0;i_end<TrkTypes::nends;++i_end){
+      TrkTypes::End end = static_cast<TrkTypes::End>(i_end);
+      _wetime[end] = rhs.wireEndTime(end);
+      _cpos[end] = rhs.clusterPosition(end);
+      _stepMC[end] = stepMC[i_end];
+    }
+    _stepMCs = stepMCs;
   }
 
   double StrawDigiMC::driftDistance(StrawEnd strawend) const {

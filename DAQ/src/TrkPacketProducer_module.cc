@@ -68,6 +68,8 @@ namespace mu2e {
 
     virtual void beginJob() override;
 
+    virtual void endJob();
+
     void produce( art::Event & ) override;
 
   private:
@@ -105,6 +107,9 @@ namespace mu2e {
     // Diagnostics level.
     int _diagLevel;
 
+    // Option to use new StrawIndex format
+    int _usePhysicalStrawIndex;
+
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
 
@@ -117,6 +122,7 @@ namespace mu2e {
     _outputFile                    (pset.get<string>("outputFile","artdaq_trk.txt")),
     _generateTextFile(pset.get<int>("generateTextFile",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
+    _usePhysicalStrawIndex(pset.get<int>("usePhysicalStrawIndex",0)),
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
     _makerModuleLabel(pset.get<std::string>("makerModuleLabel","makeSD")) {
 
@@ -136,6 +142,17 @@ namespace mu2e {
            << endl;
     }
 
+    if(_usePhysicalStrawIndex==1) {
+      cout << "WARNING: Using physically meaningful (i.e., non-standard) straw indices" << endl;
+    }
+
+  }
+
+  void TrkPacketProducer::endJob(){
+    if(_generateTextFile>0) {
+      outputStream << flush;
+      outputStream.close();
+    }
   }
 
   void TrkPacketProducer::produce(art::Event & evt) {
@@ -171,6 +188,34 @@ namespace mu2e {
       trkhit curHit;
       curHit.evt = eventNum;
       curHit.strawIdx = SD.strawId().asUint16();
+      if(_usePhysicalStrawIndex!=0) {
+	int tempIndex = curHit.strawIdx;
+
+	int layer = (tempIndex/48) % 2;                                                                                                                                 
+	
+	int plane = (tempIndex/576);    // 6 bits
+	int panel = (tempIndex/96) % 6; // 3 bits
+	int sid = 0;
+	if (layer == 0) {
+	  sid = (tempIndex % 96)*2;
+	} else {
+	  sid = ((tempIndex % 96) - 48)*2 + 1;
+	}
+	
+	// Physically Meaningful Format:
+	// A) 6 bits for plane (range 0 to 39)
+	// B) 3 bits for panel (range 0 to 5)
+	// C) 7 bits for strawID (range 0 to 95)
+	
+	adc_t msID = ((plane << 10) & 0xFC00) |
+	             ((panel << 7 ) & 0x0380) |
+	             ((sid        ) & 0x007F);
+
+	curHit.strawIdx = msID;
+
+	// std::cout << "GREPME MSID: " << msID << "\t" << plane << "\t" << panel << "\t" << sid << std::endl;
+      }
+      
       curHit.recoDigiT0 = SD.TDC(TrkTypes::cal);
       curHit.recoDigiT1 = SD.TDC(TrkTypes::hv);
       curHit.recoDigiToT1 = SD.TOT(TrkTypes::cal);
@@ -180,19 +225,25 @@ namespace mu2e {
 	curHit.waveform.push_back(theWaveform[j]);
       }
 
+      // Note: For now, ring, rocID, and dtcID are arbitrarily generated based on
+      // the non-physically-meaningful straw index.
+
       // 240 ROCs total
-      if(curHit.strawIdx>= abs(number_of_rings * rocs_per_ring * number_of_straws_per_roc) ) {
-	throw cet::exception("DATA") << " Straw index " << curHit.strawIdx
-				     << " exceeds limit of " <<  number_of_rings << "*"
-				     << rocs_per_ring << "*" << number_of_straws_per_roc
-				     << "=" << number_of_rings * rocs_per_ring * number_of_straws_per_roc;
-      }
+//      if(SD.strawId().asUint16() >= abs(number_of_rings * rocs_per_ring * number_of_straws_per_roc) ) {
+//	throw cet::exception("DATA") << " Straw index " << SD.strawId().asUint16()
+//				     << " exceeds limit of " <<  number_of_rings << "*"
+//				     << rocs_per_ring << "*" << number_of_straws_per_roc
+//				     << "=" << number_of_rings * rocs_per_ring * number_of_straws_per_roc;
+//      }
 
       // Ring ID, counting from 0, across all (for the tracker)
-      size_t globalRingID = int(curHit.strawIdx / (rocs_per_ring * number_of_straws_per_roc));
+//      size_t globalRingID = int(SD.strawId().asUint16() / (rocs_per_ring * number_of_straws_per_roc));
+// DNB my crude understanding of what a 'global ring' is supposed to be FIXME!!!
+      size_t globalRingID = SD.strawId().uniqueFace();
 
       curHit.ringID = globalRingID % rings_per_dtc;
-      curHit.rocID = (curHit.strawIdx - (rocs_per_ring * number_of_straws_per_roc) * globalRingID) / number_of_straws_per_roc;  
+//      curHit.rocID = (SD.strawId().asUint16() - (rocs_per_ring * number_of_straws_per_roc) * globalRingID) / number_of_straws_per_roc;  
+      curHit.rocID = SD.strawId().uniquePanel();
       curHit.dtcID = dtc_id(globalRingID/rings_per_dtc);
       
       trkHitVector.push_back(curHit);

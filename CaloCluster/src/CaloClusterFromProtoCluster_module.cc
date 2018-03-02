@@ -207,7 +207,7 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
 
 
              auto timeEnergy = clusterTimeEnergy(caloCrystalHitsPtrVector); 
-             CaloCluster caloCluster(diskId,timeEnergy[0],timeEnergy[1],timeEnergy[2],timeEnergy[3],caloCrystalHitsPtrVector,isSplit);              
+             CaloCluster caloCluster(diskId,timeEnergy[0],timeEnergy[1],timeEnergy[2],timeEnergy[3],caloCrystalHitsPtrVector,caloCrystalHitsPtrVector.size(),isSplit);              
 
              //calculate a lot of fancy useful things
              auto EnerLayer = calcEnergyLayer(cal,caloCrystalHitsPtrVector);                

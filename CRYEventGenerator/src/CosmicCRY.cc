@@ -119,7 +119,8 @@ namespace mu2e
         , _directionChoice(config.getString("cosmicCRY.directionChoice", "ALL"))
         , _cosmicReferencePointInMu2e()
         , _vertical(false)
-        , _projectToSurface(config.getBool("cosmicCRY.projectToSurface", false))
+        , _projectToEnvelope(config.getBool("cosmicCRY.projectToEnvelope", false))
+        , _geomInfoObtained(false)
 
         {
           mf::LogInfo log("CosmicCRY");
@@ -198,26 +199,38 @@ namespace mu2e
   void CosmicCRY::generate( GenParticleCollection& genParts )
   {
     // Ref point, need to be here so that geometry info can be obtained
-    GeomHandle<Mu2eEnvelope> env;
-    GeomHandle<WorldG4>  worldGeom;
-    GeomHandle<ExtMonFNAL::ExtMon> extMonFNAL;
-    GeomHandle<DetectorSystem> detsys;
+    // , but let's do this only once
+    if (!_geomInfoObtained) {
+      GeomHandle<Mu2eEnvelope> env;
+      GeomHandle<WorldG4>  worldGeom;
+      GeomHandle<ExtMonFNAL::ExtMon> extMonFNAL;
+      GeomHandle<DetectorSystem> detsys;
 
-    if (_refPointChoice == "TRACKER") 
-      _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(),
-          _refY0, detsys->getOrigin().z());
-    else if (_refPointChoice == "EXTMONFNAL") 
-      _cosmicReferencePointInMu2e = 
-        Hep3Vector(extMonFNAL->detectorCenterInMu2e().x(),
-            _refY0, extMonFNAL->detectorCenterInMu2e().z());
-    else if (_refPointChoice == "CALO") 
-    {
-      GeomHandle<Calorimeter> calorimeter;
-      _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(),
-          _refY0, calorimeter->disk(0).geomInfo().origin().z());
+      _envXmin = env->xmin();
+      _envXmax = env->xmax();
+      _envYmin = env->ymin();
+      _envYmax = env->ymax();
+      _envZmin = env->zmin();
+      _envZmax = env->zmax();
+
+      if (_refPointChoice == "TRACKER") 
+        _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(),
+            _refY0, detsys->getOrigin().z());
+      else if (_refPointChoice == "EXTMONFNAL") 
+        _cosmicReferencePointInMu2e = 
+          Hep3Vector(extMonFNAL->detectorCenterInMu2e().x(),
+              _refY0, extMonFNAL->detectorCenterInMu2e().z());
+      else if (_refPointChoice == "CALO") 
+      {
+        GeomHandle<Calorimeter> calorimeter;
+        _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(),
+            _refY0, calorimeter->disk(0).geomInfo().origin().z());
+      }
+      else if (_refPointChoice == "UNDEFINED") 
+        _cosmicReferencePointInMu2e = Hep3Vector(0., _refY0, 0.);
+      
+      _geomInfoObtained = true;
     }
-    else if (_refPointChoice == "UNDEFINED") 
-      _cosmicReferencePointInMu2e = Hep3Vector(0., _refY0, 0.);
 
     // std::cout << _cosmicReferencePointInMu2e << std::endl;
     // Getting CRY particles
@@ -252,6 +265,10 @@ namespace mu2e
       double totalP = safeSqrt(totalE * totalE - mass * mass);
 
       secondPtot += totalP;
+
+      // Moving the CRY particle around: find all intersections with Mu2e
+      // envelope, then set the position at the *first* intersection
+
       secondXZ.push_back(
           CLHEP::Hep2Vector(secondary->x() * 1000, secondary->y() * 1000));
 
@@ -263,10 +280,29 @@ namespace mu2e
           secondary->x() * 1000 + _cosmicReferencePointInMu2e.z()); // to mm
       CLHEP::HepLorentzVector mom4(totalP*secondary->v(), totalP*secondary->w(),
           totalP*secondary->u(), totalE);
-      genParts.push_back(
-          GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
-            GenId::cosmicCRY,
-            position, mom4, secondary->t() - _t0));
+
+      if (_projectToEnvelope) {
+        _envIntersections.clear();
+        calIntersections(position, CLHEP::Hep3Vector(secondary->v(),
+              secondary->w(), secondary->u()));
+      }
+
+      if (_envIntersections.size() > 0) {
+        int idx = 0;
+        double highestY = _envIntersections.at(idx).y();
+        for (unsigned i = 0; i < _envIntersections.size(); ++i) {
+          if (_envIntersections.at(i).y() > highestY) {
+            idx = i;
+            highestY = _envIntersections.at(idx).y();
+          }
+        }
+
+        genParts.push_back(
+            GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
+              GenId::cosmicCRY,
+              _envIntersections.at(idx),
+              mom4, secondary->t() - _t0));
+      }
 
       if (_doHistograms) {
         _hXZ->Fill(position.x(), position.z());
@@ -497,5 +533,69 @@ namespace mu2e
       radius = maxDistance;
     }
     return radius;
+  }
+
+  void CosmicCRY::calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir)
+  {
+    // roof: _envYmax, _envXmin, _envXmax, _envZmin, _envZmax
+    // skip projection if the particle goes parallely to the plane
+    if (dir.y() != 0.) {
+      double t = (_envYmax - orig.y()) / dir.y();
+      double x1 = dir.x() * t + orig.x();
+      double z1 = dir.z() * t + orig.z();
+      if (pointInBox(x1, z1, _envXmin, _envXmax, _envZmin, _envZmax)) {
+        _envIntersections.push_back(CLHEP::Hep3Vector(x1, _envYmax, z1));
+      }
+    }
+
+    //east: _envZmin, _envXmin, _envXmax, _envZmin, _envZmax
+    if (dir.z() != 0.) {
+      double t = (_envZmin - orig.z()) / dir.z();
+      double x1 = dir.x() * t + orig.x();
+      double y1 = dir.y() * t + orig.y();
+      if (pointInBox(x1, y1, _envXmin, _envYmin, _envXmax, _envYmax)) {
+        _envIntersections.push_back(CLHEP::Hep3Vector(x1, y1, _envZmin));
+      }
+    }
+
+    //west: _envZmax, _envXmin, _envXmax, _envZmin, _envZmax
+    if (dir.z() != 0.) {
+      double t = (_envZmax - orig.z()) / dir.z();
+      double x1 = dir.x() * t + orig.x();
+      double y1 = dir.y() * t + orig.y();
+      if (pointInBox(x1, y1, _envXmin, _envYmin, _envXmax, _envYmax)) {
+        _envIntersections.push_back(CLHEP::Hep3Vector(x1, y1, _envZmax));
+      }
+    }
+
+    //south: _envXmin, _envYmin, _envYmax, _envZmin, _envZmax
+    if (dir.x() != 0.) {
+      double t = (_envXmin - orig.x()) / dir.x();
+      double z1 = dir.z() * t + orig.z();
+      double y1 = dir.y() * t + orig.y();
+      if (pointInBox(z1, y1, _envZmin, _envYmin, _envZmax, _envYmax)) {
+        _envIntersections.push_back(CLHEP::Hep3Vector(_envXmin, y1, z1));
+      }
+    }
+
+    //north: _envXmax, _envYmin, _envYmax, _envZmin, _envZmax
+    if (dir.x() != 0.) {
+      double t = (_envXmax - orig.x()) / dir.x();
+      double z1 = dir.z() * t + orig.z();
+      double y1 = dir.y() * t + orig.y();
+      if (pointInBox(z1, y1, _envZmin, _envYmin, _envZmax, _envYmax)) {
+        _envIntersections.push_back(CLHEP::Hep3Vector(_envXmax, y1, z1));
+      }
+    }
+  }
+
+  bool CosmicCRY::pointInBox(double x, double y, double x0, double y0,
+      double x1, double y1)
+  {
+    bool ret = false;
+    if ((x >= x0) && (x <= x1) && (y >= y0) && (y <= y1)) {
+      ret = true;
+    }
+    return ret;
   }
 }
