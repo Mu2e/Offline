@@ -100,7 +100,7 @@ Int_t TValCompare::Analyze(Option_t* Opt) {
 
     if ( ! dj ) {
       if(fVerbose > 0) 
-	printf("Error: did not find directory %s in file 2\n",path.Data());
+	printf("Warning: did not find directory %s in file 2\n",path.Data());
       continue;
     }
 
