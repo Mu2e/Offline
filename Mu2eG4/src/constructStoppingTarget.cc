@@ -30,6 +30,7 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
@@ -48,8 +49,10 @@ using namespace std;
 
 namespace mu2e {
 
-  VolumeInfo constructStoppingTarget( VolumeInfo   const& parent,
-                                      SimpleConfig const& config ){
+  VolumeInfo constructStoppingTarget(const VolumeInfo& parent,
+                                     const SimpleConfig& config,
+                                     const SensitiveDetectorHelper& sdHelper
+                                     ){
 
     const bool forceAuxEdgeVisible  = config.getBool("g4.forceAuxEdgeVisible",false);
     const bool doSurfaceCheck       = config.getBool("g4.doSurfaceCheck",false);
@@ -61,8 +64,9 @@ namespace mu2e {
     // Master geometry for the Target assembly
     GeomHandle<StoppingTarget> target;
 
-    G4VSensitiveDetector* stSD = G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector(SensitiveDetectorName::StoppingTarget());
+    G4VSensitiveDetector* stSD = (sdHelper.enabled(StepInstanceName::stoppingtarget)) ?
+      G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::StoppingTarget()) : nullptr;
 
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();

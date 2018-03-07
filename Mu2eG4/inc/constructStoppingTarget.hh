@@ -11,15 +11,16 @@
 //
 // Notes:
 
-#include "G4Helper/inc/VolumeInfo.hh"
-
 namespace mu2e{
 
+  class VolumeInfo;
   class SimpleConfig;
+  class SensitiveDetectorHelper;
 
-  VolumeInfo constructStoppingTarget( VolumeInfo   const& mother,
-                                      SimpleConfig const& config );
-
+  VolumeInfo constructStoppingTarget(const VolumeInfo& parent,
+                                     const SimpleConfig& _config,
+                                     const SensitiveDetectorHelper& sdHelper
+                                     );
 
 }  // end namespace mu2e
 

@@ -17,8 +17,8 @@
 namespace mu2e{
 
   void setMinimumRangeCut(double minRangeCut,G4VUserPhysicsList* mPL ){
-    mf::LogInfo("GEOM")
-      << "Setting minRange cut to " << minRangeCut << " mm\n";
+    mf::LogInfo("GEOM_MINRANGECUT")
+      << "Setting minRange cut to " << minRangeCut << " mm";
     //setCutCmd equivalent:
     mPL->SetDefaultCutValue(minRangeCut);
     mPL->SetCuts(); // does not work for proton production cut when

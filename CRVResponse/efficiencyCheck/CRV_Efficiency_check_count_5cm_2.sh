@@ -1,5 +1,5 @@
-layerOffset=42
-#layerOffset=0
+#layerOffset=42
+layerOffset=0
 timeWindow=10
 #timeWindow=20
 sides=2
@@ -20,9 +20,9 @@ do
 #              name=CRV_Efficiency_check_5cm0_6000
 #              name=CRV_Efficiency_check_5cm0_upstreamPlanes
 #              name=CRV_Efficiency_check_5cm_5000
-#              name=CRV_Efficiency_check_5cm_5000r
+              name=CRV_Efficiency_check_5cm_5000r
 #              name=CRV_Efficiency_check_5cm_6000r
-              name=CRV_Efficiency_check_5cm_6000
+#              name=CRV_Efficiency_check_5cm_6000
 #              name=CRV_Efficiency_check_5cm_upstreamPlanes
 #              name=CRV_Efficiency_check_5cm_6600
 #              name=CRV_Efficiency_check_5cm10_6600

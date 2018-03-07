@@ -33,6 +33,7 @@
 #include "TMath.h"
 #include "TH1F.h"
 #include "TMVA/Reader.h"
+#include "TMVA/Config.h"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
@@ -140,6 +141,9 @@ namespace mu2e
     
       double cperr = pset.get<double>("ClusterPositionError",10.0); 
       _cperr2 = cperr*cperr;
+
+      // stop the default TMVA::Reader print
+      TMVA::gConfig().SetSilent(true);
 
       std::vector<std::string> varnames(pset.get<std::vector<std::string> >("MVANames"));
       _mvavars.reserve(varnames.size());

@@ -59,7 +59,7 @@ services.scheduler.wantSummary: true
 services.TimeTracker.printSummary: true
 
 # histogram file
-services.TFileService.fileName : "nts.owner.val-reco.dsconf.seq.art"
+services.TFileService.fileName : "nts.owner.val-reco.dsconf.seq.root"
 # art file
 outputs.fullOutput.fileName : "mcs.owner.val-reco.dsconf.seq.art"
 

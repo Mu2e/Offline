@@ -1,7 +1,9 @@
 i=0
 layerOffset=0
-  for moduleGap in {"4.5","6.5"}
-  do
+moduleGap="4.5"
+joblist=CRVResponse/efficiencyCheck/jobs.sh
+#  for moduleGap in {"4.5","6.5"}
+#  do
 
     dy=`echo "804.3+$moduleGap" | bc -l`
 echo "*****************************"
@@ -50,7 +52,6 @@ echo "*****************************"
 
         name=CRV_Efficiency_check_5cm_upstreamPlanes
         fclfile=CRVResponse/efficiencyCheck/submit/$name'_'$i.fcl
-        fcllist=CRVResponse/efficiencyCheck/submit/$name'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm_upstreamPlanes.fcl\"" >| $fclfile
         echo "services.GeometryService.inputFile                      : \"$geomfile\"" >> $fclfile
         echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
@@ -58,26 +59,28 @@ echo "*****************************"
         echo "physics.producers.backgroundOverlay.overlayFactor       : $overlayFactor" >> $fclfile
 
         generate_fcl --description=$name --dsconf=$i --run=1 --events=50000 --njobs=20 $fclfile
-        ls $PWD/000/cnf.$USER.$name.$i.*.fcl > $fcllist
+        tar -zcvf fcls.$name.$i.tar.gz 000/cnf.$USER.$name.$i.*.fcl
+        rm -rf 000
+        mv fcls.$name.$i.tar.gz /pnfs/mu2e/scratch/outstage/ehrlich/fcls/.
         clustername=$name'_'gap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield
-        mu2eprodsys --setup=./setup.sh --fcllist=$fcllist --clustername=$clustername --dsconf=$i --wfproject=$name
+        echo "mu2eprodsys --code=\$CODELOCATION --fcllist=/pnfs/mu2e/scratch/outstage/ehrlich/fcls/fcls.$name.$i.tar.gz --clustername=$clustername --dsconf=$i --wfproject=$name" >> $joblist
 
 #### for adjacentPulseTimeDifference = 10ns
 
-        name=CRV_Efficiency_check_5cm10_upstreamPlanes
-        fclfile=CRVResponse/efficiencyCheck/submit/$name'_'$i.fcl
-        fcllist=CRVResponse/efficiencyCheck/submit/$name'_'$i.txt
-        echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm10_upstreamPlanes.fcl\"" >| $fclfile
-        echo "services.GeometryService.inputFile                      : \"$geomfile\"" >> $fclfile
-        echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
-        echo "physics.producers.CrvPhotons.scintillationYield         : $photonYield" >> $fclfile
-        echo "physics.producers.backgroundOverlay.overlayFactor       : $overlayFactor" >> $fclfile
+#        name=CRV_Efficiency_check_5cm10_upstreamPlanes
+#        fclfile=CRVResponse/efficiencyCheck/submit/$name'_'$i.fcl
+#        fcllist=CRVResponse/efficiencyCheck/submit/$name'_'$i.txt
+#        echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm10_upstreamPlanes.fcl\"" >| $fclfile
+#        echo "services.GeometryService.inputFile                      : \"$geomfile\"" >> $fclfile
+#        echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
+#        echo "physics.producers.CrvPhotons.scintillationYield         : $photonYield" >> $fclfile
+#        echo "physics.producers.backgroundOverlay.overlayFactor       : $overlayFactor" >> $fclfile
 
-        generate_fcl --description=$name --dsconf=$i --run=1 --events=50000 --njobs=20 $fclfile
-        ls $PWD/000/cnf.$USER.$name.$i.*.fcl > $fcllist
-        clustername=$name'_'gap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield
-        mu2eprodsys --setup=./setup.sh --fcllist=$fcllist --clustername=$clustername --dsconf=$i --wfproject=$name
+#        generate_fcl --description=$name --dsconf=$i --run=1 --events=50000 --njobs=20 $fclfile
+#        ls $PWD/000/cnf.$USER.$name.$i.*.fcl > $fcllist
+#        clustername=$name'_'gap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield
+#        mu2eprodsys --setup=./setup.sh --fcllist=$fcllist --clustername=$clustername --dsconf=$i --wfproject=$name
 
       done
 #    done
-  done
+#  done

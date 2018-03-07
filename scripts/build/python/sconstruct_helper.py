@@ -78,8 +78,7 @@ def cppPath(mu2eOpts):
         os.environ['MU2E_ARTDAQ_CORE_INC'],
         os.environ['ARTDAQ_CORE_INC'],
         os.environ['TRACE_INC'],
-        # os.environ['GSL_INC'],
-        # os.environ['PTHREAD_INC']
+        os.environ['GSL_INC'],
         ]
 
     if mu2eOpts['satellite']:
@@ -108,8 +107,7 @@ def libPath(mu2eOpts):
         os.environ['ROOTSYS']+'/lib',
         os.environ['XERCESCROOT']+'/lib',
         os.environ['TBB_LIB'],
-        # os.environ['GSL_LIB'],
-        # os.environ['PTHREAD_LIB']
+        os.environ['GSL_LIB'],
         ]
 
     if mu2eOpts['satellite']:

@@ -33,7 +33,7 @@ helper.make_plugins( [
         rootlibs,
         'boost_filesystem',
         'boost_system',
-        'pthread',
+        # 'pthread',
         ] )
 
 # This tells emacs to view this file in python mode.

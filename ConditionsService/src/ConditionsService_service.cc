@@ -47,6 +47,7 @@ namespace mu2e {
     _entities(),
     _run_count()
   {
+    _config.printOpen(std::cout, "Conditions");
     iRegistry.sPreBeginRun.watch(this, &ConditionsService::preBeginRun);
     iRegistry.sPostEndJob.watch (this, &ConditionsService::postEndJob   );
   }
@@ -74,8 +75,6 @@ namespace mu2e {
       mf::LogPrint("CONDITIONS") << "This test version does not change geometry on run boundaries.";
       return;
     }
-
-    cout << "Conditions input file is: " << _conditionsFile << "\n";
 
     if ( _printConfig ){ _config.print(cout, "Conditions: "); }
 
