@@ -71,6 +71,7 @@ namespace mu2e
     bool        _muonsOnly;  
     double      _muonMinTime, _muonMaxTime;
     std::string _genParticleModuleLabel;
+    bool        _useFourLayers;
 
     struct CrvHit
     {
@@ -124,7 +125,8 @@ namespace mu2e
     _acceptThreeAdjacentCounters(pset.get<bool>("acceptThreeAdjacentCounters")),
     _timeWindowStart(pset.get<double>("timeWindowStart")),
     _timeWindowEnd(pset.get<double>("timeWindowEnd")),
-    _muonsOnly(pset.get<bool>("muonsOnly",false))
+    _muonsOnly(pset.get<bool>("muonsOnly",false)),
+    _useFourLayers(pset.get<bool>("useFourLayers",false))
   {
     produces<CrvCoincidenceCheckResult>();
     _totalEvents=0;
@@ -346,6 +348,60 @@ namespace mu2e
         else {if(PEs_thisCounter+PEs_adjacentCounter2>=PEthreshold) crvHitsFiltered[layer].push_back(*iterHit);}
       }
 
+      if(_useFourLayers)
+      {
+      //find coincidences using 4 hits in 4 layers
+        const std::vector<CrvHit> &layer0Hits=crvHitsFiltered[0];
+        const std::vector<CrvHit> &layer1Hits=crvHitsFiltered[1];
+        const std::vector<CrvHit> &layer2Hits=crvHitsFiltered[2];
+        const std::vector<CrvHit> &layer3Hits=crvHitsFiltered[3];
+        std::vector<CrvHit>::const_iterator layer0Iter;
+        std::vector<CrvHit>::const_iterator layer1Iter;
+        std::vector<CrvHit>::const_iterator layer2Iter;
+        std::vector<CrvHit>::const_iterator layer3Iter;
+
+        for(layer0Iter=layer0Hits.begin(); layer0Iter!=layer0Hits.end(); layer0Iter++)
+        for(layer1Iter=layer1Hits.begin(); layer1Iter!=layer1Hits.end(); layer1Iter++)
+        for(layer2Iter=layer2Hits.begin(); layer2Iter!=layer2Hits.end(); layer2Iter++)
+        for(layer3Iter=layer3Hits.begin(); layer3Iter!=layer3Hits.end(); layer3Iter++)
+        {
+          double maxTimeDifferences[4]={layer0Iter->_maxTimeDifference,layer1Iter->_maxTimeDifference,layer2Iter->_maxTimeDifference,layer3Iter->_maxTimeDifference};
+          double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+4); 
+
+          double times[4]={layer0Iter->_time,layer1Iter->_time,layer2Iter->_time,layer3Iter->_time};
+          double timeMin = *std::min_element(times,times+4);
+          double timeMax = *std::max_element(times,times+4);
+          if(timeMax-timeMin>maxTimeDifference) continue;  //hits don't fall within the time window
+      
+          double x[4]={layer0Iter->_x,layer1Iter->_x,layer2Iter->_x,layer3Iter->_x};
+          double y[4]={layer0Iter->_y,layer1Iter->_y,layer2Iter->_y,layer3Iter->_y};
+
+          bool coincidenceFound=true;
+          double slope[3];
+          for(int d=0; d<3; d++)
+          {
+            slope[d]=(x[d+1]-x[d])/(y[d+1]-y[d]);
+            if(fabs(slope[d])>_maxSlope) coincidenceFound=false;   //not more than maxSlope allowed for coincidence;
+          }
+
+          if(fabs(slope[0]-slope[1])>_maxSlopeDifference) coincidenceFound=false;   //slope most not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
+          if(fabs(slope[0]-slope[2])>_maxSlopeDifference) coincidenceFound=false;   //slope most not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
+          if(fabs(slope[1]-slope[2])>_maxSlopeDifference) coincidenceFound=false;   //slope most not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
+
+          if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens within e.g. 20ns and 120ns
+          {
+            art::Handle<GenParticleCollection> genParticleCollection;
+            event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
+            double genTime = genParticleCollection->at(0).time();
+            if(timeMax>genTime+_muonMaxTime || timeMin<genTime+_muonMinTime) coincidenceFound=false;
+          }
+
+          if(coincidenceFound) AddCoincidence(crvCoincidenceCheckResult,iterHitMap->first,*layer1Iter,*layer2Iter,*layer3Iter);  //FIXME: store only 3 out of 4 hits for the time being
+        }
+      } //_useFourLayers
+      else
+      { //not _useFourLayers
+
       //find coincidences using 3 hits in 3 layers
       for(int layer1=0; layer1<4; layer1++) 
       for(int layer2=layer1+1; layer2<4; layer2++) 
@@ -400,6 +456,7 @@ namespace mu2e
         }
       }
 
+
       //find coincidences using 3 hits in adjacent counters in one layer
       if(_acceptThreeAdjacentCounters)
       {
@@ -441,6 +498,9 @@ namespace mu2e
           }
         }
       }
+
+      } //not _useFourLayers
+
     }
 
     _totalEvents++;

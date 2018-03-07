@@ -516,14 +516,14 @@ namespace mu2e {
       if (_diagLevel > 1){
 	std::cout << "haveSimPart = " << haveSimPart << std::endl;
       }
-      if (haveSimPart){
-	for (auto iSim : simParticles){
-	  //	  mu2e::SimParticle& obj = iSim;
-	  const auto& p = iSim.second;
-	  //
-	  // check this is the initial pbar and add what I need to the ntuple.
-	  // very unfortunately implementation dependent: how many stages
-	  if (_writeVertexFile){
+      if (_writeVertexFile){
+	if (haveSimPart){
+	  for (auto iSim : simParticles){
+	    //	  mu2e::SimParticle& obj = iSim;
+	    const auto& p = iSim.second;
+	    //
+	    // check this is the initial pbar and add what I need to the ntuple.
+	    // very unfortunately implementation dependent: how many stages
 	    if (p.id().asInt() == 2000001 && p.pdgId() == -2212){
 	      //	      if (p.pdgId() == -2212){
 	      _xStart = p.startPosition().x();
@@ -541,22 +541,23 @@ namespace mu2e {
 			     << _pzStart << " " 
 			     << _endGlobalTime << std::endl; 
 	    }
-	  }
-	  if (_diagLevel > 2 && p.id().asInt() == 1000001 && p.pdgId() == -2212){
-	    std::cout<<" id = "<<p.id()
-		     <<", parent="<<p.parentId()
-		     <<", pdgId="<<p.pdgId()
-		     <<", start="<<p.startPosition()
-		     <<", pstart="<<p.startMomentum()
-		     <<", end="<<p.endPosition()
-		     <<", pend="<<p.endMomentum()
-		     <<", nSteps = "<<p.nSteps()
-		     <<", preLastStepKE = "<<p.preLastStepKineticEnergy()
-		     <<", creationCode = "<<p.creationCode()
-		     <<", stoppingCode = "<<p.stoppingCode()
-		     <<", startG4Status = "<<p.startG4Status()
-		     <<", endG4Status = "<<p.endG4Status() 
-		     <<", _endGlobalTime = " << p.endGlobalTime() << std::endl;
+	  
+	    if (_diagLevel > 2 && p.id().asInt() == 1000001 && p.pdgId() == -2212){
+	      std::cout<<" id = "<<p.id()
+		       <<", parent="<<p.parentId()
+		       <<", pdgId="<<p.pdgId()
+		       <<", start="<<p.startPosition()
+		       <<", pstart="<<p.startMomentum()
+		       <<", end="<<p.endPosition()
+		       <<", pend="<<p.endMomentum()
+		       <<", nSteps = "<<p.nSteps()
+		       <<", preLastStepKE = "<<p.preLastStepKineticEnergy()
+		       <<", creationCode = "<<p.creationCode()
+		       <<", stoppingCode = "<<p.stoppingCode()
+		       <<", startG4Status = "<<p.startG4Status()
+		       <<", endG4Status = "<<p.endG4Status() 
+		       <<", _endGlobalTime = " << p.endGlobalTime() << std::endl;
+	    }
 	  }
  	}
       }
@@ -568,20 +569,25 @@ namespace mu2e {
     CLHEP::HepLorentzVector initialProtonFourMomentum(0.,0.,0.,0.);
     //
     // look at the genParticles and see that the geantino with the initial proton is still there.
-    if (haveGenPart)
-      {
-	for (auto iGen : genParticles )
-	  {
-	    if (_diagLevel > 0)
-	      {
-		std::cout << " particle id " << iGen.pdgId() << " particle momentum " << iGen.momentum() << " position " << iGen.position() << std::endl;
-	      }
-	    if (iGen.pdgId() == 0)
-	      {
-		initialProtonFourMomentum = iGen.momentum();
-	      }
+    if (haveGenPart){
+      for (auto iGen : genParticles )
+	{
+	  if (_diagLevel > 0){
+	    std::cout << " particle id " << iGen.pdgId() << " particle momentum " << iGen.momentum() << " position " << iGen.position() << std::endl;
 	  }
-      } 
+	  //
+	  // if reading from file, the gen particle has the incoming pbar info
+	  if (iGen.pdgId() == -2212){
+	    _xStart = iGen.position().x();
+	    _yStart = iGen.position().y();
+	    _zStart = iGen.position().z();
+	  }
+	  if (iGen.pdgId() == 0)
+	    {
+	      initialProtonFourMomentum = iGen.momentum();
+	    }
+	}
+    } 
 
 
 
