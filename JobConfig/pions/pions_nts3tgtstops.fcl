@@ -1,0 +1,41 @@
+// Andrei Gaponenko, 2016
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name : pionsnts3tgtstops
+
+source : { module_type : RootInput }
+
+services : {
+   message                : @local::default_message
+   TFileService           : { fileName : "nts.owner.pions-nts3.version.sequencer.root" }
+   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
+   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+}
+
+physics : {
+   analyzers: {
+      stoppedPionDumper: {
+         module_type: StoppedParticlesDumper
+         inputCollection: "stopFilter"
+	 dumpSimParticleLeaves: true
+         writeProperTime: true
+         decayOffPDGCodes: [ -211, 211 ]
+         hitCollections: [ "stopFilter:vacuuas1", "stopFilter:vacuuas2" ]
+      }
+      genCountLogger: {
+         module_type: GenEventCountReader
+      }
+   }
+
+   stops: [stoppedPionDumper, genCountLogger]
+   end_paths: [stops]
+}
+
+// Limit the rate of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300

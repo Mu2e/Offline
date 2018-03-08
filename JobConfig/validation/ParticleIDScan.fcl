@@ -1,0 +1,37 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/KalDiag.fcl"
+
+BEGIN_PROLOG
+draEventMixing: {
+   producers: {}
+   filters: {}
+   CD3Mixers: []
+}
+END_PROLOG
+
+#include "JobConfig/common/prolog.fcl"
+
+process_name: ParticleIDScan
+
+source: { module_type: EmptyEvent   maxEvents : 1 }
+
+services: { message: @local::default_message TFileService: {fileName: "nts.particleIDScan.root" } }
+
+physics: {
+   analyzers: {
+
+      scan: {
+	 module_type: ParticleIDScan
+
+	 PIDEp: @local::signalTrackCuts.caloCuts.PIDEp
+
+	 nPathBins: 8  pathMin: 0.  pathMax: 400. 
+	 neopbins: 100  eopmin: 0.  eopmax:  1.5
+      }
+   }
+
+   e1: [scan]
+   end_paths: [e1]
+}

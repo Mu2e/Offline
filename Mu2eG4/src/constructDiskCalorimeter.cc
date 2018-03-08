@@ -16,6 +16,7 @@
 
 #include "Mu2eG4/inc/constructDiskCalorimeter.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -54,7 +55,8 @@
 
 namespace mu2e {
 
-  VolumeInfo constructDiskCalorimeter( const VolumeInfo&  mother, const SimpleConfig& config )
+  VolumeInfo constructDiskCalorimeter( const VolumeInfo&  mother, const SimpleConfig& config,
+                                       SensitiveDetectorHelper const& sdHelper)
   {
 
 
@@ -289,7 +291,9 @@ namespace mu2e {
 
 	// --add sensitive detector    
 	//
-	G4VSensitiveDetector* ccSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal());
+	G4VSensitiveDetector* ccSD = (sdHelper.enabled(StepInstanceName::calorimeter)) ?
+          G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal()) :
+          nullptr;
 	if (ccSD) CrystalLog->SetSensitiveDetector(ccSD);
 
 
@@ -368,10 +372,14 @@ namespace mu2e {
 
 	// --add sensitive detector    
 	//
-	G4VSensitiveDetector* crSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadout());
+	G4VSensitiveDetector* crSD = (sdHelper.enabled(StepInstanceName::calorimeterRO)) ?
+          G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadout()) :
+          nullptr;
 	if (crSD) ROLog->SetSensitiveDetector(crSD);
 	
-	G4VSensitiveDetector* crCardSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadoutCard());
+	G4VSensitiveDetector* crCardSD = (sdHelper.enabled(StepInstanceName::calorimeterROCard)) ?
+          G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadoutCard()) :
+          nullptr;
 	if (crCardSD) ROElectronicsLog->SetSensitiveDetector(crCardSD);
        
        
@@ -615,7 +623,9 @@ namespace mu2e {
 		 {
 		   std::ostringstream boardPV; boardPV<<"boardPV_" <<ibrd;
 
-		   G4VSensitiveDetector* crCrate = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrate());
+		   G4VSensitiveDetector* crCrate = (sdHelper.enabled(StepInstanceName::calorimeterCrate)) ?
+                     G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrate()) :
+                     nullptr;
 		   if (crCrate) activeStripBoardLog->SetSensitiveDetector(crCrate);
 
 		   pv = new G4PVPlacement(0,G4ThreeVector(0.0,boardPosY,boardPosZ), boardCrateLog, boardPV.str(), crateBoxLog, true, ibrd,false);

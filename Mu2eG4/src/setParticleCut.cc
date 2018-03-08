@@ -36,7 +36,7 @@ namespace mu2e{
   }
 
   void setParticleCut(double theCut,  std::string const& pName, G4VUserPhysicsList* mPL ) {
-    mf::LogInfo("GEOM")
+    mf::LogInfo("GEOM_PARTICLECUT")
       << "Setting "<< pName << " cut to " << theCut << " mm\n";
     // we have e+,e-,gamma range cuts and proton production cut;
     // one can write now the functions for the specific range cuts if needed,

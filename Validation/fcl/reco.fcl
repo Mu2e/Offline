@@ -68,5 +68,5 @@ services.SeedService.baseSeed         :  0
 services.SeedService.maxUniqueEngines :  20
 
 # use the default cd3 geometry
-services.GeometryService.inputFile : "JobConfig/cd3/geom_baseline.txt"
+services.GeometryService.inputFile : "JobConfig/common/geom_baseline.txt"
 

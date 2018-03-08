@@ -114,6 +114,8 @@ namespace mu2e{
 
     const string name = getPhysicsListName(config);
 
+    std::cout << "PhysicsListDecider configured with " << name << std::endl;
+
     // special cases
     if ( name  == "Minimal" ) {
       tmpPL = new MinimalPhysicsList();
@@ -185,6 +187,7 @@ namespace mu2e{
     // General case
     else {
       G4PhysListFactory physListFactory;
+      physListFactory.SetVerbose(getDiagLevel(config));
       tmpPL = physListFactory.GetReferencePhysList(name);
 
     }

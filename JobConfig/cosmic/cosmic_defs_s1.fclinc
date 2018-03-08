@@ -1,0 +1,314 @@
+// This file contains the common part of job configuration for stage 1
+// cosmic ray simulations.  It is included by top level files
+// (like cosmic_s1_target1.fcl), which configure event generator and 
+// define output file names.
+// 
+// Ralf Ehrlich and Andrei Gaponenko, 2015
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+#----------------------------------------------------------------
+# Mu2eG4 cuts
+
+crvStage1End: 
+{
+   type: inVolume
+   pars: [ TrackerMother, CalorimeterMother ]
+   write: crvStage1
+}
+
+crvOuterBox: 
+{
+   type: union
+   pars: 
+   [
+      // Upstream plane
+      { type: plane normal: [  0, 0, -1 ] point : [ 0, 0, -2440 ] },
+
+      // Downstream plane
+      { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, 18910 ] },
+
+      // +x plane
+      { type: plane normal: [  1, 0, 0 ] point : [ 0, 0, 0 ] },
+
+      // -x plane (outside of cryo box)
+      { type: plane normal: [  -1, 0, 0 ] point : [ -7390, 0, 0 ] },
+
+      // +y plane
+      { type: plane normal: [  0, 1, 0 ] point : [ 0, 2760, 0 ] },
+
+      // -y plane
+      { type: plane normal: [  0, -1, 0 ] point : [ 0, -2100, 0 ] }
+   ]
+}
+
+crvInnerBox: 
+{
+   type: intersection
+   pars: 
+   [
+      // Upstream plane
+      { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -2240 ] },
+
+      // Downstream plane
+      { type: plane normal: [  0, 0, -1 ] point : [ 0, 0, 18720 ] },
+
+      // +x plane
+      { type: plane normal: [  -1, 0, 0 ] point : [ -1430, 0, 0 ] },
+
+      // -x plane
+      { type: plane normal: [  1, 0, 0 ] point : [ -6370, 0, 0 ] },
+
+      // +y plane
+      { type: plane normal: [  0, -1, 0 ] point : [ 0, 2470, 0 ] },
+
+      // -y plane
+      { type: plane normal: [  0, 1, 0 ] point : [ 0, -2100, 0 ] }
+   ]
+}
+
+cosmicKineticEnergyCuts: 
+{
+   type: union
+   pars:
+   [
+      {
+        type: intersection
+        pars: 
+        [ 
+          { type: union pars: [ @local::crvOuterBox, @local::crvInnerBox ] },
+          { type: kineticEnergy cut: 80.0 }, 
+          { type: pdgId pars: [ 22, 11, -11 ] }
+        ]
+      },
+      {
+        type: intersection
+        pars: 
+        [ 
+          { type: union pars: [ @local::crvOuterBox, @local::crvInnerBox ] },
+          { type: kineticEnergy cut: 3.4 }, 
+          { type: pdgId pars: [ 2212, 2112 ] }
+        ]
+      }
+   ]
+}
+#----------------------------------------------------------------
+END_PROLOG
+
+#================================================================
+# Give this job a name.
+process_name :  cosmics1
+
+source : 
+{
+   module_type : EmptyEvent
+   maxEvents : @nil
+}
+
+services : 
+{
+
+   message               : @local::default_message
+   TFileService          : { }
+   RandomNumberGenerator : { }
+
+   GeometryService        : { inputFile      : "JobConfig/cosmic/geom_cosmic.txt" }
+   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+   G4Helper               : { }
+   SeedService            : @local::automaticSeeds
+}
+
+physics : 
+{
+   analyzers: 
+   {
+      genCountLogger: 
+      { 
+         module_type: GenEventCountReader 
+      }
+
+      collectionSizes: 
+      {
+	 module_type: CollectionSizeAnalyzer
+         useModuleLabel: true 
+         useInstanceName: true 
+         useProcessName: false
+      }
+
+      statusG4: { module_type: StatusG4Analyzer input: g4run }
+   }
+
+   producers: 
+   {
+      generate: 
+      {
+         module_type          : EventGenerator
+         # inputfile is defined in top level fcl files
+      }
+
+      genCounter: 
+      {
+         module_type: GenEventCounter
+      }
+
+      g4run : 
+      {
+         module_type: Mu2eG4
+         physics: @local::mu2eg4DefaultPhysics
+         ResourceLimits: @local::mu2eg4DefaultResourceLimits
+	 TrajectoryControl: @local::mu2eg4DefaultTrajectories 
+         debug: @local::mu2eg4DefaultDebug
+         visualization: @local::mu2eg4NoVisualization
+
+         generatorModuleLabel: generate
+         MultiStageParameters: {} // this is the first stage
+
+         SDConfig: 
+         {
+            enableSD: [ CRV ]  // activate just the explicitly listed SDs  //for the StepPoints which will be stored
+            TimeVD: { times: [] }
+         }
+
+         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
+
+         Mu2eG4SteppingOnlyCut: {}
+
+         // Mu2eG4 cuts are evaluated in the listed order.
+         // The first match wins.  For the "intersection"
+         // type, the first false stops the evaluation.
+         // For the "union" type the first true stops the evaluation.
+         Mu2eG4CommonCut: 
+         {
+            type: union
+            pars: 
+            [
+               @local::cosmicKineticEnergyCuts,
+               @local::crvStage1End,
+               {
+	          type: inVolume
+                  pars: [ worldDirtBottom ]
+               }
+            ]
+         }
+      }
+
+      compressPV : 
+      {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "cosmicFilter" ]
+      }
+
+      compressPVFull : 
+      {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "g4run" ]
+      }
+   }
+
+   filters: 
+   {
+      stepPointMomentumFilter: 
+      {
+        module_type: FilterStepPointMomentum
+        inputs : [ "g4run:crvStage1" ]
+        cutMomentumMin: 45. // MeV/c to accommodate muons decaying into electrons with a momentum of 80 MeV/c
+      }
+
+      cosmicFilter: 
+      {
+         module_type: FilterG4Out
+         noInstanceName : true
+         mainHitInputs : [ "g4run:crvStage1", "g4run:CRV" ]
+         extraHitInputs : []               //stores only StepPoints of tracks which also have StepPoints in the mainHitInputs
+         mcTrajectoryInputs : [ "g4run" ]
+         numSimParticleCollections : 1
+         vetoDaughters: []
+      }
+
+      g4status: 
+      {
+         module_type: FilterStatusG4
+         input: "g4run"
+      }
+
+      g4consistent: {
+         module_type: FilterStatusG4
+         input: "g4run"
+	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+      }
+   }
+
+   trigFilter     : [generate, genCounter, g4run, g4consistent, stepPointMomentumFilter, cosmicFilter, compressPV]
+   g4StatusFilter : [generate, genCounter, g4run, "!g4status", compressPVFull ]
+   trigger_paths  : [trigFilter, g4StatusFilter]
+
+   outputs: [truncatedEvtsOutput, filteredOutput]
+   an: [ genCountLogger, collectionSizes, statusG4 ]
+   end_paths: [outputs, an]
+}
+
+outputs: 
+{
+
+   filteredOutput : 
+   {
+      module_type : RootOutput
+      SelectEvents: ["trigFilter"]
+      outputCommands:   
+      [ 
+         "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_cosmicFilter_*_*",
+         "keep *_compressPV_*_*"
+      ]
+   }
+
+   truncatedEvtsOutput : 
+   {
+      module_type : RootOutput
+      SelectEvents: ["g4StatusFilter"]
+      outputCommands:   
+      [ 
+         "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_g4run_*_*",
+         "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
+         "keep *_compressPVFull_*_*"
+      ]
+   }
+
+}
+
+// Larger range cut for the first stage
+physics.producers.g4run.physics.minRangeCut : 1.0 // mm
+
+//allow more sim particles
+physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
+
+// Limit the amount of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+
+//
+// This tells emacs to view this file in the art-fhicl mode.
+// Local Variables:
+// mode:art-fhicl
+// End:
