@@ -22,7 +22,7 @@ namespace mu2e {
       virtual ~StrawResponse();
       bool wireDistance(StrawHit const& strawhit, float shlen, float& wdist, float& wderr) const;
       float driftError(float DOCA) const;  // time domain error
-     
+      bool useDriftError() const { return _usederr; } 
       void print(std::ostream& os) const;
     private:
 // helper functions
@@ -39,6 +39,7 @@ namespace mu2e {
       float _central; // max wire distance for central wire region
       std::vector<float> _centres; // wire center resolution by edep
       std::vector<float> _resslope; // resolution slope vs position by edep
+      bool _usederr; // flag to use the doca-dependent calibration of the drift error
       std::vector<float> _derr; // parameters describing the drift error function
       float _wbuf; // buffer at the edge of the straws, in terms of sigma
       float _slfac; // factor of straw length to set 'missing cluster' hits

@@ -162,6 +162,7 @@ namespace mu2e
   void
   TrkStrawHit::updateDrift() {
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
+    // tcal is deprecated, all calibration info should come from StrawResponse FIXME!
     ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
 // deal with ambiguity updating.  This is a DEPRECATED OPTION, use external ambiguity resolution algorithms instead!!!
     if(_ambigupdate) {
@@ -178,10 +179,12 @@ namespace mu2e
    // Correct the mean drift for the waveform slewing effects: ignore for now FIXME!
    // Calculate the drift error based on the current estimate of DOCA.  This should
    // eventually include a term for the uncertainty in DOCA FIXME!
-    double tdrifterr = srep->driftError(fabs(poca().doca()));
+    if(srep->useDriftError()){
+      double tdrifterr = srep->driftError(fabs(poca().doca()));
     // need instantaneous velocity to transform from time error to 
     // For now take the global velocity radial distance error FIXME!
-    _t2d._rdrifterr = tdrifterr*tcal->driftVelocity();
+      _t2d._rdrifterr = tdrifterr*tcal->driftVelocity();
+    }
 // Propogate error in t0, using local drift velocity
     double rt0err = hitT0()._t0err*_t2d._vdrift;
     // annealing error depends on the 'temperature'
