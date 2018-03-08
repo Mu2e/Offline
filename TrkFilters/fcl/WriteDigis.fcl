@@ -59,14 +59,9 @@ physics.WriteDigisEndPath : [ WriteDigis ]
 # finish output configuration: this needs to be done after the path exists
 outputs.WriteDigis.fileName: "Digis.art"
 # setup mixers
+
 physics.producers.makeSD.TimeOffsets.inputs : [ "protonTimeMap", "muonTimeMap" ] 
-physics.filters.flashMixer.fileNames : @local::bgHitFiles
-physics.filters.ootMixer.fileNames : @local::bgHitFiles
-physics.filters.dioMixer.fileNames : @local::bgHitFiles
-physics.filters.neutronMixer.fileNames : @local::bgHitFiles
-physics.filters.photonMixer.fileNames : @local::bgHitFiles
-physics.filters.protonMixer.fileNames : @local::bgHitFiles
-physics.filters.deuteronMixer.fileNames : @local::bgHitFiles
+#include "EventMixing/fcl/epilog.fcl
 # the following are needed for interactive running.  They will be overwritten if you submit this job
 # on the grid so do not need to be removed.
 services.SeedService.baseSeed         :  773651
