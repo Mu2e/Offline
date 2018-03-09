@@ -1,19 +1,21 @@
 //
-// This module will take a set of product and re-write them
-// after updating the Simpartile and StepPointMC art::Ptr's.
-// It would typically be run after FilterG4Out reduces and 
-// rewrites the SimParticle and StepPointMC's.  This usually leaves
-// other products pointed to the old collections.  This modules
-// makes them point to the filtered collections
+// This module will take a set of products and re-write them
+// after updating the Simparticle and StepPointMC art::Ptr's.
 //   The algorithm assumes there are only unique Simparticle
-// numbers (keys), even if there are multiple collecitons.
+// numbers (keys), even if there are multiple collections.
 // This is the case for production-style multi-stage jobs, 
 // but you can make a mess where this is not true.
-//
-// The input is the new Simparticle and StepPointMC collection 
-// tags and the tags of the collections to read, repoint, and write.  
+//   The main input, determining what should be saved is based on
+// three collections:
+//   strawDigiMCs, caloShowerSteps, and CRV StepPointMC's
+// this is a natural choice for calibration cosmics, but not
+// very general.
+//   The rest of input is the SimParticle and StepPointMC collection 
+// tags of the collections to read, repoint the Ptr's, and write.  
 // Only certain products are implemented, since each product 
 // requires custom code.
+//   Optionally, you can filter based on the inputs.
+//
 //
 
 #include <iostream>
