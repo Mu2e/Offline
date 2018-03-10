@@ -1,6 +1,7 @@
 
-           Release notes for Mu2e Offline software, v6_5_3 (in progress)
+           Release notes for Mu2e Offline software, v6_5_3
 
+5) rlc,  07 Mar 2018.  reduce printout, reconfigure JobConfig
 4) pollack, 01 Feb 2018
    added gsl library ups product, for bessel functions
    added standalone csv reader (see https://github.com/ben-strasser/fast-cpp-csv-parser):
