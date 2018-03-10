@@ -12,6 +12,7 @@ namespace mu2e {
    // find difference between 2 angles in the range (-pi,pi]
    // Note that this also updates the input angle phase so that dphi = phi - refphi
     double deltaPhi(double& phi, double refphi=0.0);
+    float deltaPhi(float& phi, float refphi=0.0);
   }
 }
 #endif

@@ -110,9 +110,9 @@ namespace mu2e
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
     _saveall(pset.get<bool>("saveall",false)),
-    _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makeSH")),
-    _shfTag(pset.get<art::InputTag>("StrawHitFlagCollectionTag","FlagBkgHits")),
-    _hsTag(pset.get<art::InputTag>("SeedCollectionTag","RobustHelixFinder")),
+    _shTag(pset.get<art::InputTag>("StrawHitCollection")),
+    _shfTag(pset.get<art::InputTag>("StrawHitFlagCollection")),
+    _hsTag(pset.get<art::InputTag>("SeedCollection")),
     _seedflag(pset.get<vector<string> >("HelixFitFlag",vector<string>{"HelixOK"})),
     _minnhits(pset.get<unsigned>("MinNHits",10)),
     _maxdoca(pset.get<double>("MaxDoca",40.0)),
@@ -187,9 +187,10 @@ namespace mu2e
 // build a time cluster: exclude the outlier hits
 	TimeCluster tclust;
 	tclust._t0 = hseed._t0;
-	for(auto hhit : hseed._hhits){
-	  if((!_fhoutliers) || (!hhit._flag.hasAnyProperty(StrawHitFlag::outlier)))	
-	    tclust._strawHitIdxs.push_back(hhit._shidx);
+	for(uint16_t ihit=0;ihit < hseed.hits().size(); ++ihit){
+	  ComboHit const& ch = hseed.hits()[ihit];
+	  if((!_fhoutliers) || (!ch.flag().hasAnyProperty(StrawHitFlag::outlier)))
+	    hseed.hits().fillStrawHitIndices(event,ihit,tclust._strawHitIdxs);
 	}
 // create a TrkDef; it should be possible to build a fit from the helix seed directly FIXME!
 	TrkDef seeddef(tclust,hstraj,_tpart,_fdir);

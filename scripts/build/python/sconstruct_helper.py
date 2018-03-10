@@ -52,7 +52,7 @@ def mu2eEnvironment():
 # the list of root libraries
 # This comes from: root-config --cflags --glibs
 def rootLibs():
-    return [ 'Core', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
+    return [ 'GenVector', 'Core', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
              'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
 
 

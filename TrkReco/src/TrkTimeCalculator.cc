@@ -84,6 +84,10 @@ namespace mu2e
     return sh.time() - strawHitTimeOffset(shp.pos().z());
   }
 
+  double TrkTimeCalculator::comboHitTime(ComboHit const& ch) {
+    return ch.time() - strawHitTimeOffset(ch.pos().z());
+  }
+
   double TrkTimeCalculator::caloClusterTime(CaloCluster const& cc) const {
     return cc.time() - caloClusterTimeOffset(cc.diskId());
   }

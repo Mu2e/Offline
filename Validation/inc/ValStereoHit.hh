@@ -29,7 +29,6 @@ namespace mu2e {
     TH1D* _ht;
     TH1D* _hE;
     TH1D* _hchi2;
-    TH1D* _hmva;
 
   };
 }

@@ -464,7 +464,8 @@ namespace mu2e
     tshinfomc._dist = fabs(dperp);
     tshinfomc._ambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
     tshinfomc._len = mcsep.dot(straw.getDirection());
-    tshinfomc._xtalk = spmcp->strawIndex() != mcdigi.strawIndex();
+    tshinfomc._xtalk = false; // FIXME! 
+//    tshinfomc._xtalk = spmcp->strawIndex() != mcdigi.strawIndex();
   }
 
   void KalDiag::fillTrkInfoMC(art::Ptr<SimParticle> const&  spp,const KalRep* krep,

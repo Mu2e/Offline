@@ -20,418 +20,308 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "GeneralUtilities/inc/TwoLinePCA_XYZ.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitPosition.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
+// boost
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/weighted_variance.hpp> 
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/min.hpp>
+using namespace boost::accumulators;
 
 #include <iostream>
 #include <float.h>
-
-
+using namespace std;
 
 namespace {
 
-   struct StereoMVA 
-   {
-      StereoMVA() : _pars(4,0.0),_dt(_pars[0]),_chisq(_pars[1]),_rho(_pars[2]),_ndof(_pars[3]){}
+  struct StereoMVA 
+  {
+    StereoMVA() : _pars(4,0.0),_dt(_pars[0]),_chisq(_pars[1]),_rho(_pars[2]),_ndof(_pars[3]){}
 
-      std::vector <Double_t> _pars;
-      Double_t& _dt; 
-      Double_t& _chisq; 
-      Double_t& _rho;  
-      Double_t& _ndof; 
-   };
+    std::vector <float> _pars;
+    float& _dt; 
+    float& _chisq; 
+    float& _rho;  
+    float& _ndof; 
+  };
 }
 
-
-
 namespace mu2e {
-
-
   class MakeStereoHits : public art::EDProducer {
+    public:
+      explicit MakeStereoHits(fhicl::ParameterSet const& pset);
+      void produce( art::Event& e);
+      virtual void beginJob();
+      virtual void beginRun(art::Run & run);
+    private:
+      typedef std::vector<uint16_t> ComboHits;
 
-     public:
+      int            _debug;
+      art::InputTag  _shTag;
+      art::InputTag  _chTag;
+      art::InputTag  _shfTag;
+      ComboHitCollection const* _chcol;
 
-       explicit MakeStereoHits(fhicl::ParameterSet const& pset);
+      StrawHitFlag   _shsel;      // flag selection
+      StrawHitFlag   _shmask;     // flag anti-selection 
+      float         _maxDt;      // maximum time separation between hits
+      float         _maxDPerp;   // maximum transverse separation
+      float         _minDdot;    // minimum dot product of straw directions
+      float _minR2, _maxR2; // transverse radius (squared) 
+      float         _maxChisq;   // maximum chisquared to allow making stereo hits
+      float         _minMVA;     // minimum MVA output
+      float         _wfac;       // resolution factor along the wire
+      float         _tfac;       // resolution transverse to the wire
+      bool           _doMVA;      // do MVA eval or simply use chi2 cut
+      unsigned      _maxfsep;	  // max face separation
+      bool	    _testflag; // test the flag or not
+      StrawIdMask _smask; // define matches inside a station
 
-       void produce( art::Event& e);
-       virtual void beginJob();
-       virtual void beginRun(art::Run & run);
+      MVATools _mvatool;
+      StereoMVA _vmva; 
 
-
-     private:
-
-       typedef std::vector<size_t> PanelHits;
-       typedef std::vector<PanelHits> StationPanels;
-       typedef std::vector< StationPanels > TrackerStations;
-
-       int            _debug;
-       art::InputTag  _shTag;
-       art::InputTag  _shpTag;
-       art::InputTag  _shfTag;
-
-       StrawHitFlag   _shsel;      // flag selection
-       StrawHitFlag   _shmask;     // flag anti-selection 
-       double         _maxDt;      // maximum time separation between hits
-       double         _maxDE;      // maximum deposited energy deference: this excludes inconsistent hits
-       double         _maxDZ;      // maximum longitudinal separation
-       double         _maxDPerp;   // maximum transverse separation
-       double         _minDdot;    // minimum dot product of straw directions
-       double         _minDL;      // minimum distance from end of active straw;
-       double         _maxChi;     // maximum # of TimeDivision sigmas past the active edge of a wire to allow making stereo hits
-       double         _maxChisq;   // maximum # of TimeDivision consistency chisquared to allow making stereo hits
-       double         _minMVA;     // minimum MVA output
-       double         _wres;       // resolution to assign along the wire
-       double         _minR;       // min radius flag
-       double         _maxR;       // max radius flag
-       double         _minE;       // min hit energy
-       double         _maxE;       // max hit energy
-       bool           _doMVA;      // do MVA eval or simply use chi2 cut
-       bool           _bestpair;   // require both hits agree as to the best pair
-       bool           _writepairs; // write out the stereo pairs
-
-       MVATools _mvatool;
-       StereoMVA _vmva; 
-
-       size_t _nStations; 
-       size_t _nPanels; 
-       std::vector <std::pair<int,int> > _panelOverlap;  
-
-       void genMap();    
-       double longRes(const StereoHit& sthit) const; 
-       bool betterPair(const StereoHit& newpair, const StereoHit& oldpair) const;
-       void reportInsertedHits(const TrackerStations& stax);
+      std::array<std::vector<StrawId>,StrawId::_nupanels > _panelOverlap;   // which panels overlap each other
+      void genMap();    
+      void finalize(ComboHit& combohit);
   };
 
   MakeStereoHits::MakeStereoHits(fhicl::ParameterSet const& pset) :
-     _debug(pset.get<int>(           "debugLevel",0)),
-     _shTag(pset.get<art::InputTag>( "StrawHitCollection","makeSH")),
-     _shpTag(pset.get<art::InputTag>("StrawHitPositionCollection","makeSH")),
-     _shfTag(pset.get<art::InputTag>("StrawHitFlagCollection","makeSH")),
-     _shsel(pset.get<std::vector<std::string> >("StrawHitSelectionBits",std::vector<std::string>{"EnergySelection","TimeSelection"} )),
-     _shmask(pset.get<std::vector<std::string> >("StrawHitMaskBits",std::vector<std::string>{} )),
-     _maxDt(pset.get<double>(   "maxDt",40.0)), // nsec
-     _maxDE(pset.get<double>(   "maxDE",0.99)), // dimensionless, from 0 to 1
-     _maxDZ(pset.get<double>(   "maxDZ",1000.)), // mm, maximum longitudinal distance between straws
-     _maxDPerp(pset.get<double>("maxDPerp",500.)), // mm, maximum perpendicular distance between time-division points
-     _minDdot(pset.get<double>( "minDdot",0.6)), // minimum angle between straws
-     _minDL(pset.get<double>(   "minDL",-20.0)), // extent along straw
-     _maxChisq(pset.get<double>("maxChisquared",80.0)), // position matching
-     _minMVA(pset.get<double>(  "minMVA",0.6)), // MVA cut
-     _wres(pset.get<double>(    "LongitudinalResolution",20.0)), // estimated resolution of stereo reco
-     _minR(pset.get<double>("minimumRadius",395.0)), // mm
-     _maxR(pset.get<double>("maximumRadius",650.0)), // mm
-     _minE(pset.get<double>("minimumEnergy",0.0)), // Minimum deposited straw energy (MeV)
-     _maxE(pset.get<double>("maximumEnergy",0.0035)), // MeV
-     _doMVA(pset.get<bool>(  "doMVA",true)),
-     _bestpair(pset.get<bool>(  "BestStereoPair",false)),
-     _writepairs(pset.get<bool>("WriteStereoPairs",true)),
-     _mvatool(pset.get<fhicl::ParameterSet>("MVATool",fhicl::ParameterSet()))
-  {
-      _maxChi = sqrt(_maxChisq);
-
-      if (_writepairs) produces<StereoHitCollection>();
-      produces<StrawHitPositionCollection>();
-      produces<StrawHitFlagCollection>();
-  }
+    _debug(pset.get<int>(           "debugLevel",0)),
+    _chTag(pset.get<art::InputTag>("ComboHitCollection")),
+    _shsel(pset.get<std::vector<std::string> >("StrawHitSelectionBits",std::vector<std::string>{"EnergySelection","TimeSelection"} )),
+    _shmask(pset.get<std::vector<std::string> >("StrawHitMaskBits",std::vector<std::string>{} )),
+    _maxDt(pset.get<float>(   "maxDt",40.0)), // nsec
+    _maxDPerp(pset.get<float>("maxDPerp",500.)), // mm, maximum perpendicular distance between time-division points
+    _minDdot(pset.get<float>( "minDdot",0.6)), // minimum angle between straws
+    _maxChisq(pset.get<float>("maxChisquared",5.0)), // position matching
+    _minMVA(pset.get<float>(  "minMVA",0.6)), // MVA cut
+    _wfac(pset.get<float>(    "ZErrorFactor",0.3)), // error component due to z separation
+    _tfac(pset.get<float>(    "ZErrorFactor",1.0)), // error component due to z separation
+    _doMVA(pset.get<bool>(  "doMVA",false)),
+    _maxfsep(pset.get<unsigned>("MaxFaceSeparation",3)), // max separation between faces in a station
+    _testflag(pset.get<bool>("TestFlag")),
+    _mvatool(pset.get<fhicl::ParameterSet>("MVATool",fhicl::ParameterSet()))
+    {
+      float minR = pset.get<float>("minimumRadius",395); // mm
+      _minR2 = minR*minR;
+      float maxR = pset.get<float>("maximumRadius",650); // mm
+      _maxR2 = maxR*maxR;
+      // define the mask: straws are in the same unique panel
+      std::vector<StrawIdMask::field> fields;
+      fields.push_back(StrawIdMask::station);
+      _smask = StrawIdMask(fields);
+      produces<ComboHitCollection>();
+    }
 
   void MakeStereoHits::beginJob()
   {
-     _mvatool.initMVA();    
-     if (_debug > 0) std::cout << "MakeStereoHits MVA parameters: " << std::endl;
-     if (_debug > 0) _mvatool.showMVA();
+    if(_doMVA){
+      _mvatool.initMVA();    
+      if (_debug > 0) std::cout << "MakeStereoHits MVA parameters: " << std::endl;
+      if (_debug > 0) _mvatool.showMVA();
+    }
   }
 
   void MakeStereoHits::beginRun(art::Run & run)
   {
-      genMap();
+    genMap();
   }
 
-
-  void MakeStereoHits::produce(art::Event& event) 
-  {    
-     const TTracker& tt(*GeomHandle<TTracker>());
-     
-     art::Handle<StrawHitCollection> strawHitsHandle;
-     event.getByLabel(_shTag,strawHitsHandle);
-     const StrawHitCollection& _shcol(*strawHitsHandle);
-     size_t nsh = _shcol.size();
-
-     art::Handle<StrawHitPositionCollection> strawHitPosHandle;
-     event.getByLabel(_shpTag,strawHitPosHandle);
-     const StrawHitPositionCollection& _shpcol(*strawHitPosHandle);
-
-     art::Handle<StrawHitFlagCollection> strawHitFlagsHandle;
-     event.getByLabel(_shfTag,strawHitFlagsHandle);
-     const StrawHitFlagCollection& _shfcol(*strawHitFlagsHandle);
-
-
-     std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection);      
-     std::unique_ptr<StrawHitPositionCollection> shpcol(new StrawHitPositionCollection(_shpcol));
-     std::unique_ptr<StereoHitCollection> stereohits(new StereoHitCollection);
-     shfcol->reserve(nsh);
-     stereohits->reserve(3*nsh);
-     std::vector<int> ibest(nsh,-1);
-
-     size_t nres = std::max(size_t(32),nsh/10);
-     PanelHits hpstax;
-     hpstax.reserve(nres);
-     StationPanels pstax(2*_nPanels,hpstax);
-     TrackerStations stax(_nStations,pstax);
-
-     for (size_t ish=0;ish<nsh;++ish)
-     {
-         StrawHitFlag shf = _shfcol.at(ish);
-         shf.merge(shpcol->at(ish).flag());
-         if (!shf.hasAllProperties(_shsel) || shf.hasAnyProperty(_shmask) ) continue;
-
-	 const StrawHit& hit = _shcol.at(ish);
-	 const Straw& straw  = tt.getStraw(hit.strawIndex());
-
-         size_t iplane  = straw.id().getPlane();
-         size_t ipnl    = straw.id().getPanel();
-         size_t station = iplane/2;
-
-         // define a 'global' panel for the station.  This changes sign with odd-even stations
-	 size_t jpnl = (station%2==0) ? ipnl + (iplane%2)*_nPanels : ipnl + (1-iplane%2)*_nPanels;
-	 if ( _debug > 2) std::cout << "Inserting hit " << ish << " into station " << station << " panel " << jpnl << std::endl;
-         stax[station][jpnl].push_back(ish);      
-     }
-
-
-    // should be able to rewrite the loop to avoid the loop on station and overlaps
-    
-    // loop over stations
-    for (const StationPanels& pstax : stax)
-    {                                
-       for (const auto& ij : _panelOverlap)
-       {
-          int ipnl = ij.first;
-          int jpnl = ij.second;
-          if (pstax[jpnl].empty()) continue;	      
-
-          for (size_t ish : pstax[ipnl])
-          {                                    		
-             const StrawHit& sh1 = _shcol.at(ish);
-	     const Straw& straw1 = tt.getStraw(sh1.strawIndex());
-	     const StrawHitPosition& shp1 = _shpcol.at(ish);
-             double t1 = sh1.time();
-
-             for (size_t jsh : pstax[jpnl])
-             {                              
- 	        double dt = fabs(t1-_shcol.at(jsh).time());
-                if (dt > _maxDt) continue;
-
-                const StrawHit& sh2 = _shcol.at(jsh);
-	        const Straw& straw2 = tt.getStraw(sh2.strawIndex());
-	        const StrawHitPosition& shp2 = _shpcol.at(jsh);
-
-                float de = std::min(1.0f,std::abs((sh1.energyDep() - sh2.energyDep())/(sh1.energyDep()+sh2.energyDep())));
-                if (de > _maxDE ) continue;
-
-
-                PanelId::isep sep = straw1.id().getPanelId().separation(straw2.id().getPanelId());
-                // hits are in the same station but not the same panel
-                if ( sep == PanelId::same || sep >= PanelId::apart) continue;
-
-
-                double ddot = straw1.direction().dot(straw2.direction());
-	        CLHEP::Hep3Vector dp = shp1.pos()-shp2.pos();
-	        double dperp = dp.perp();
-	        double dz = fabs(dp.z());
-
-                // negative crosings are in opposite quadrants and longitudinal separation isn't too big
-                if (ddot < _minDdot || dz > _maxDZ || dperp > _maxDPerp ) continue;
-
-
-	        // tentative stereo hit: this solves for the POCA
-	        StereoHit sth(_shcol,tt,ish,jsh);
-	        double dl1 = straw1.getDetail().activeHalfLength()-fabs(sth.wdist1());
-	        double dl2 = straw2.getDetail().activeHalfLength()-fabs(sth.wdist2());
-                if (dl1 < _minDL || dl2 < _minDL) continue;
-
-		double chi1(0.0), chi2(0.0);
-		unsigned ndof(0);
-		if (shp1.flag().hasAllProperties(StrawHitFlag::tdiv))
-                {
-		  chi1 = (shp1.wireDist()-sth.wdist1())/shp1.posRes(StrawHitPosition::wire);
-		  ++ndof;
-		}
-		if (shp2.flag().hasAllProperties(StrawHitFlag::tdiv)){
-		  chi2 = (shp2.wireDist()-sth.wdist2())/shp2.posRes(StrawHitPosition::wire);
-		  ++ndof;
-		}
-		if (fabs(chi1) >_maxChi || fabs(chi2) > _maxChi) continue;
-
-		double chisq = chi1*chi1+chi2*chi2; 
-		if (chisq > _maxChisq) continue;
-		sth.setChisquared(chisq);
-
-                double mvaout(-1.0);
-                if (_doMVA)
-                {
-                   _vmva._dt = dt;
-		   _vmva._chisq = chisq;
-		   _vmva._rho = sth.pos().perp();
-		   _vmva._ndof = ndof;
-		   mvaout = _mvatool.evalMVA(_vmva._pars);
-                   if (mvaout < _minMVA) continue;
-                }
-		
-		sth.setMVAOut(mvaout);
-		stereohits->push_back(sth);
-		size_t isth = stereohits->size()-1;
-
-		if (ibest[ish] < 0 || betterPair(sth,stereohits->at(ibest[ish]))) ibest[ish] = isth;
-		if (ibest[jsh] < 0 || betterPair(sth,stereohits->at(ibest[jsh]))) ibest[jsh] = isth;
-	     } 
-	  } 
-       } 
-    } 
-    
-
-    // overwrite the positions for stereoHits and update flags
-    for (size_t ish=0; ish<nsh;++ish)
-    {
-       if (ibest[ish] > 0)
-       {
-	  const StereoHit& sthit = stereohits->at(ibest[ish]);
-	  // optionally require this be the best pairing for both hits
-	  if( (!_bestpair) || ibest[sthit.hitIndex1()] == ibest[sthit.hitIndex2()])
-          {
-	     StrawHitPosition& shpos = shpcol->at(ish);
-	     shpos._flag.merge(StrawHitFlag::stereo);
-	     shpos._stindex = ibest[ish];
-	     shpos._pos = sthit.pos();
-	     shpos._phi = sthit.pos().phi();
-	     shpos._wres = longRes(sthit);
-          }
-       }
-
-       //recreate full flag list and update the position / energy flag. The energy flag must be cleared first
-       const StrawHitPosition& shp = shpcol->at(ish);
-       double rad = shp.pos().perp();
-       double energy = _shcol.at(ish).energyDep();
-
-       StrawHitFlag flag(_shfcol.at(ish));  //merge old flag 
-       flag.merge(_shpcol.at(ish).flag());  //merge old straw hitposition flag
-       flag.merge(shpcol->at(ish)._flag);   //merge stereo flag     
-       flag.clear(StrawHitFlag::energysel); //clear energysel flag
-       if (rad > _minR && rad < _maxR) flag.merge(StrawHitFlag::radsel);
-       if (energy > _minE && energy < _maxE) flag.merge(StrawHitFlag::energysel);
-       shfcol->push_back(std::move(flag));
+  void MakeStereoHits::produce(art::Event& event) {
+// find input: I have to get a Handle, not ValidHandle, to get the productID
+    art::Handle<ComboHitCollection> chH;
+    if(!event.getByLabel(_chTag, chH))
+      throw cet::exception("RECO")<<"mu2e::MakeStereoHits: No ComboHit collection found for tag" <<  _chTag << endl;
+    _chcol = chH.product();
+    // setup output
+    std::unique_ptr<ComboHitCollection> chcol(new ComboHitCollection());
+    chcol->reserve(_chcol->size());
+    // reference the parent in the new collection
+    chcol->setParent(chH);
+    // sort hits by unique panel.  This should be built in by construction upstream FIXME!!
+    std::array<std::vector<uint16_t>,StrawId::_nupanels> phits;
+    size_t nch = _chcol->size();
+    if(_debug > 1)cout << "MakeStereoHits found " << nch << " Input hits" << endl;
+    std::vector<bool> used(nch,false);
+    for(uint16_t ihit=0;ihit<nch;++ihit){
+      ComboHit const& ch = (*_chcol)[ihit];
+      // select hits based on flag
+      if( (!_testflag) ||( ch.flag().hasAllProperties(_shsel) && (!ch.flag().hasAnyProperty(_shmask))) ){
+	phits[ch.sid().uniquePanel()].push_back(ihit);
+      }
     }
-
-
-
-    if (_writepairs) event.put(std::move(stereohits));
-    event.put(std::move(shpcol));
-    event.put(std::move(shfcol));
+    if(_debug > 2){
+      for (unsigned ipan=0; ipan < StrawId::_nupanels; ++ipan) {
+	if(phits[ipan].size() > 0 ){
+	  cout << "Panel " << ipan << " has " << phits[ipan].size() << " hits "<< endl;
+	}
+      }
+    }
+    //  Loop over all hits.  Every one must appear somewhere in the output 
+    for (size_t ihit=0;ihit<nch;++ihit) {
+      if(used[ihit])continue;
+      used[ihit] = true;
+      // create an output combo hit for every hit; initialize it with this hit
+      ComboHit const& ch1 = (*_chcol)[ihit];
+      ComboHit combohit;
+      combohit.init(ch1,ihit);
+      // zero values that accumulate in pairs
+      combohit._qual = 0.0;
+      combohit._pos = XYZVec(0.0,0.0,0.0);
+      // loop over the panels which overlap this hit's panel
+      for (auto sid : _panelOverlap[ch1.sid().uniquePanel()]) {
+      // loop over hits in the overlapping panel
+	for (auto jhit : phits[sid.uniquePanel()]) {
+	  const ComboHit& ch2 = (*_chcol)[jhit];
+	  if(_debug > 3) cout << " comparing hits " << ch1.sid().uniquePanel() << " and " << ch2.sid().uniquePanel();
+	  if (!used[jhit] ){
+	    float dt = fabs(ch1.time()-ch2.time());
+	    if(_debug > 3) cout << " dt = " << dt;
+	    if (dt < _maxDt){
+	      float ddot = ch1.wdir().Dot(ch2.wdir());
+	      XYZVec dp = ch1.pos()-ch2.pos();
+	      float dperp = sqrt(dp.perp2());
+	      // negative crosings are in opposite quadrants and longitudinal separation isn't too big
+	      if(_debug > 3) cout << " ddot = " << ddot << " dperp = " << dperp;
+	      if (ddot > _minDdot && dperp < _maxDPerp ) {
+		// solve for the POCA.
+		TwoLinePCA_XYZ pca(ch1.pos(),ch1.wdir(),ch2.pos(),ch2.wdir());
+		if(pca.closeToParallel()){  
+		  cet::exception("RECO")<<"mu2e::StereoHit: parallel wires" << std::endl;
+		}
+		// check the points are inside the tracker active volume; these are all the same as the
+		float rho2 = pca.point1().Perp2();
+		if(_debug > 3) cout << " rho2 = " << rho2;
+		if(rho2 < _maxR2 && rho2 > _minR2 ){
+		  // compute chisquared; include error for particle angle
+		  // should be a cumulative linear regression FIXME!
+		  float terr = _tfac*fabs(ch1.pos().z()-ch2.pos().z());
+		  float terr2 = terr*terr;
+		  float dw1 = pca.s1();
+		  float dw2 = pca.s2();
+		  float chisq = dw1*dw1/(ch1.wireErr2()+terr2) + dw2*dw2/(ch2.wireErr2()+terr2);
+		  if(_debug > 3) cout << " chisq = " << chisq;
+		  if (chisq < _maxChisq){
+		    if(_debug > 3) cout << " added ";
+		    // if we get to here, try to add the hit
+		    // accumulate the chisquared
+		    if(combohit.addIndex(jhit)) {
+		      // average z 
+		      combohit._qual += chisq;
+		      combohit._pos += XYZVec(pca.point1().x(),pca.point1().y(),0.5*(pca.point1().z()+pca.point2().z()));	    
+		    } else
+		      std::cout << "MakeStereoHits can't add hit" << std::endl;
+		    used[jhit] = true;
+		  }	
+		}
+	      }
+	    }
+	  }
+	  if(_debug > 3) cout << endl;
+	}
+      }
+      finalize(combohit);
+      chcol->push_back(std::move(combohit));
+    }
+    event.put(std::move(chcol));
   } 
 
-  
-  // estimate the resolution on the stereo hit position projection along a wire direction
-  double MakeStereoHits::longRes(StereoHit const& sthit) const 
-  {
-     return _wres; // this should be a real calculation FIXME!!!
+  void MakeStereoHits::finalize(ComboHit& combohit) {
+    combohit._mask = _smask;
+    if(combohit.nCombo() > 1){
+      combohit._flag.merge(StrawHitFlag::stereo);
+      combohit._flag.merge(StrawHitFlag::radsel);
+      accumulator_set<float, stats<tag::weighted_mean>, unsigned > eacc;
+      accumulator_set<float, stats<tag::weighted_mean>, unsigned > tacc;
+      accumulator_set<float, stats<tag::min > > zmin;
+      accumulator_set<float, stats<tag::max > > zmax;
+      combohit._nsh = 0;
+      for(size_t ich = 0; ich < combohit.nCombo(); ++ich){
+	size_t index = combohit.index(ich);
+	ComboHit const& ch = (*_chcol)[index];
+	combohit._flag.merge(ch.flag());
+	eacc(ch.energyDep(),weight=ch.nStrawHits());
+	tacc(ch.time(),weight=ch.nStrawHits());
+	zmin(ch.pos().z());
+	zmax(ch.pos().z());
+	combohit._nsh += ch.nStrawHits();
+      }
+      float maxz = extract_result<tag::max>(zmax);
+      float minz = extract_result<tag::min>(zmin);
+      combohit._time = extract_result<tag::weighted_mean>(tacc);
+      combohit._edep = extract_result<tag::weighted_mean>(eacc);
+      float dz = (maxz-minz);
+      combohit._wdist = dz; 
+      combohit._tres = dz*_tfac;
+      combohit._wres = dz*_wfac;
+      combohit._qual /= (combohit.nCombo()-1);// normalize by # of pairs
+      combohit._pos /= (combohit.nCombo()-1);
+      combohit._wdir = XYZVec(0.0,0.0,1.0);
+    } else {
+      size_t index = combohit.index(0);
+      combohit._pos = (*_chcol)[index].pos();// put back original position
+    }
   }
 
-
-  bool MakeStereoHits::betterPair(StereoHit const& newpair, StereoHit const& oldpair) const 
-  {
-     // choose the best pair as:
-     // 1) take the pair with the minimum plane separation
-     // 2) otherwise, take the pair with the maximum MVA output
-     if(newpair.panelSeparation() == oldpair.panelSeparation() ) {
-       return newpair.mvaout() > oldpair.mvaout();
-     } else {
-       return newpair.panelSeparation() < oldpair.panelSeparation();
-     }
-  }
-
-
-  void MakeStereoHits::genMap()
-  {
+  // generate the overlap map
+  void MakeStereoHits::genMap() {
+    static bool init(false);
+    if(!init){
+      init = true;
+      // initialize
       const TTracker& tt(*GeomHandle<TTracker>());
-
-      _nStations = tt.nPlanes()/2;
-      _nPanels = tt.getPlane(0).nPanels(); 
-
-      const Straw& straw = tt.getStraw(StrawId(0,0,0));
-      double phi0 = (straw.getMidPoint()-straw.getHalfLength()*straw.getDirection()).phi();
-      double phi1 = (straw.getMidPoint()+straw.getHalfLength()*straw.getDirection()).phi();
-      double lophi = std::min(phi0,phi1);
-      double hiphi = std::max(phi0,phi1);
-      double phiwidth = hiphi-lophi;
+      // establihit the extent of a panel using the longest straw (0)
+      Straw const& straw = tt.getStraw(StrawId(0,0,0));
+      float phi0 = (straw.getMidPoint()-straw.getHalfLength()*straw.getDirection()).phi();
+      float phi1 = (straw.getMidPoint()+straw.getHalfLength()*straw.getDirection()).phi();
+      float lophi = std::min(phi0,phi1);
+      float hiphi = std::max(phi0,phi1);
+      float phiwidth = hiphi-lophi;
       if (phiwidth>M_PI) phiwidth = 2*M_PI-phiwidth;
-
-      std::vector<double> panphi(2*_nPanels);
-
-      for(int ipla=0;ipla<2;++ipla)
-      {
-         Plane const& plane = tt.getPlane(ipla);
-         for(int ipan=0;ipan<plane.nPanels();++ipan)
-         {
-	    Panel const& panel = plane.getPanel(ipan);
-	    // expand to station-wide 'panel' number.  This changes sign with station
-	    int jpan = ipan + (ipla%2)*_nPanels;
-	    panphi[jpan] = panel.straw0MidPoint().phi();
-         }
-      }
-      
-      for (size_t iphi = 0;iphi<2*_nPanels;++iphi)
-      {
-	  double phi = panphi[iphi];
-	  for (size_t jphi=iphi+1;jphi<2*_nPanels;++jphi)
-          {
-	     double dphi = fabs(phi - panphi[jphi]);
-	     if (dphi > M_PI) dphi = 2*M_PI-dphi;
-	     if (dphi < phiwidth) _panelOverlap.emplace_back(std::make_pair<int,int>(iphi,jphi));
+      if(_debug > 0)std::cout << "Panel Phi width = " << phiwidth << std::endl;
+      // loop over all unique panels
+      for(size_t ipla = 0;ipla < StrawId::_nplanes; ++ipla) {
+	for(int ipan=0;ipan<StrawId::_npanels;++ipan){
+	  StrawId sid(ipla,ipan,0);
+	  uint16_t upan = sid.uniquePanel();
+	  Straw const& straw = tt.getStraw(StrawId(ipla,ipan,0));
+	  float phi = straw.getMidPoint().phi();
+	  if(_debug > 1)std::cout << "Plane " << ipla << " Panel " << ipan << " phi = " << phi << " z = " << straw.getMidPoint().z() << endl;
+	  // loop over nearby panels and check for an overlap
+	  size_t minpla = (size_t)std::max(0,(int)ipla-1);
+	  size_t maxpla = (size_t)std::min(StrawId::_nplanes-1,(int)ipla+1);
+	  for(size_t jpla = minpla; jpla <= maxpla;++jpla){
+	    for(int jpan=0;jpan<StrawId::_npanels;++jpan){
+	      StrawId osid(jpla,jpan,0);
+	      Straw const& ostraw = tt.getStraw(StrawId(jpla,jpan,0));
+	      if(_smask.equal(osid,sid) && osid.uniqueFace() != sid.uniqueFace() && (unsigned)abs(osid.uniqueFace() - sid.uniqueFace()) <= _maxfsep ) {
+		float dphi = fabs(phi - ostraw.getMidPoint().phi());
+		if (dphi > M_PI) dphi = 2*M_PI-dphi;
+		if (dphi < phiwidth) _panelOverlap[upan].push_back(osid);
+	      }
+	    }
 	  }
+	}
       }
-
-      if (_debug >0)
-      {
-         // for testing, assume every panel overlaps
-         if (_debug > 9) 
-         {          
-            _panelOverlap.clear();
-            for (size_t iphi = 0;iphi<2*_nPanels;++iphi)
-	      for (size_t jphi=iphi+1;jphi<2*_nPanels;++jphi) 
-                _panelOverlap.emplace_back(std::make_pair<int,int>(iphi,jphi));
-         }
-                  
-         std::cout << "panel phi width = " << phiwidth << "  panel phi positions = ";
-         for(auto pphi : panphi) std::cout << pphi << " ";
-         std::cout << std::endl;
- 
-         for (auto& kv : _panelOverlap)         
-	   std::cout << "Panel " << kv.first << " Overlaps with panel "<<kv.second<<std::endl;         
+      if (_debug >0) {
+	for(uint16_t ipan = 0; ipan < StrawId::_nupanels; ++ipan) {
+	  std::cout << "Unique Panel " << ipan << " Overlaps with the panels: ";
+	  for(auto sid : _panelOverlap[ipan])
+	    std::cout << sid.uniquePanel() << ", ";
+	  std::cout << std::endl;
+	}
       }
-  
+    }
   }
 
-
-  void MakeStereoHits::reportInsertedHits(const TrackerStations& stax)
-  {
-      if (stax.empty()) return;
-      if ( !stax[0].empty()) std::cout << "Built PanelHits size = " << stax[0][0].size() << std::endl;
-      std::cout << "Built StationPanels size = " << stax[0].size() << std::endl;
-
-      std::cout << "Built TrackerStations size = " << stax.size() << std::endl;
-      for( size_t station =0; station < stax.size(); ++station)     
-	  for(size_t ipnl = 0; ipnl < stax[station].size(); ++ipnl) 
-	    for(size_t ish : stax[station][ipnl]) 	   
- 	       std::cout << "Inserted hit " << ish << " into station " << station << " panel " << ipnl << std::endl;	 	
-
-  }
-
-
-} 
+}
 
 using mu2e::MakeStereoHits;
 DEFINE_ART_MODULE(MakeStereoHits)

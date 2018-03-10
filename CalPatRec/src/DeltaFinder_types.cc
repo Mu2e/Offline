@@ -45,10 +45,10 @@ namespace mu2e {
       //-----------------------------------------------------------------------------
       // now define distances to the hits
       //-----------------------------------------------------------------------------
-      const CLHEP::Hep3Vector* h1 = &Hd1->fPos->pos();
-      Result->wd1 = (h1->x()-Result->x)*nx1+(h1->y()-Result->y)*ny1;
-      const CLHEP::Hep3Vector* h2 = &Hd2->fPos->pos();
-      Result->wd2 = (h2->x()-Result->x)*nx2+(h2->y()-Result->y)*ny2;
+      CLHEP::Hep3Vector h1 = Hd1->fPos->posCLHEP();
+      Result->wd1 = (h1.x()-Result->x)*nx1+(h1.y()-Result->y)*ny1;
+      CLHEP::Hep3Vector h2 = Hd2->fPos->posCLHEP();
+      Result->wd2 = (h2.x()-Result->x)*nx2+(h2.y()-Result->y)*ny2;
 
       return 0;
     }

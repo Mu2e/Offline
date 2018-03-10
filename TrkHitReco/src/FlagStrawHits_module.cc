@@ -40,7 +40,7 @@
 using namespace std;
 
 namespace mu2e {
-  //  typedef pair<double,double> TimeRange;
+  //  typedef pair<float,float> TimeRange;
   class FlagStrawHits : public art::EDProducer {
 
   public:
@@ -61,51 +61,51 @@ namespace mu2e {
     const CaloClusterCollection*	  _cccol;
     bool  _usecc;
     bool   _useccxy;
-    double _ccmine; // calo cluster energy minimum
+    float _ccmine; // calo cluster energy minimum
     int    _ccminsize;// calo cluster minimum size given in crystal units
-    double _ccmindt, _ccmaxdt;
-    double _pitchangle;
-    double _beta;
-    double _dtoffset;//time offset between the strawHits and CaloCrystalHits
+    float _ccmindt, _ccmaxdt;
+    float _pitchangle;
+    float _beta;
+    float _dtoffset;//time offset between the strawHits and CaloCrystalHits
 // Parameters; these are vectors for the number of quality selections
-    double _minE, _maxE;  // minimum and maximum charge (units??)
-    double _ctE; // minimum charge to flag neighbors as cross talk
-    double _ctMinT, _ctMaxT; // time relative to proton hit to flag cross talk (ns)
-    double _minT, _maxT; // minimum and maximum hit time
-    double _minR, _maxR; // minimum and maximum transverse radius
+    float _minE, _maxE;  // minimum and maximum charge (units??)
+    float _ctE; // minimum charge to flag neighbors as cross talk
+    float _ctMinT, _ctMaxT; // time relative to proton hit to flag cross talk (ns)
+    float _minT, _maxT; // minimum and maximum hit time
+    float _minR, _maxR; // minimum and maximum transverse radius
     // T0 calcuator
     TrkTimeCalculator _ttcalc;
-    double _hmaxtdrift; // cache of 1/2 the maximum drift time
+    float _hmaxtdrift; // cache of 1/2 the maximum drift time
   // helper functions
     bool goodCaloCluster(CaloCluster const& cc) const;
-    //    bool goodTime(double hittime,vector<TimeRange> const& timeranges) const;
+    //    bool goodTime(float hittime,vector<TimeRange> const& timeranges) const;
     bool findData(const art::Event& evt);
   };
 
   FlagStrawHits::FlagStrawHits(fhicl::ParameterSet const& pset) :
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
-    _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
-    _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
-    _ccTag(pset.get<string>("CaloClusterTag","CaloClusterFromProtoCluster")),
+    _shTag(pset.get<string>("StrawHitCollection","makeSH")),
+    _shpTag(pset.get<string>("StrawHitPositionCollection","MakeStereoHits")),
+    _ccTag(pset.get<string>("CaloCluster","CaloClusterFromProtoCluster")),
     _usecc(pset.get<bool>("UseCaloCluster",false)),
     _useccxy(pset.get<bool>("UseCaloClusterXYPosition",false)),
-    _ccmine(pset.get<double>("CaloClusterMinE",50.0)), // minimum energy required to a calorimeter cluster
+    _ccmine(pset.get<float>("CaloClusterMinE",50.0)), // minimum energy required to a calorimeter cluster
     _ccminsize(pset.get<int>("CaloClusterMinSize")), // minimum calorimetercluster size
-    _ccmindt(pset.get<double>("CaloClusterMinDt")), // minimum time residual of a stawhit from a calo cluster
-    _ccmaxdt(pset.get<double>("CaloClusterMaxDt")), // maximum time residual of a stawhit from a calo cluster
-    _pitchangle(pset.get<double>("pitchAngle")), //mean pitch angle of the particle we want to reconstruct
-    _beta(pset.get<double>("beta")), //approximate relativistic beta of the particle we search
-    _dtoffset(pset.get<double>("dtOffset")), //time offset of the strawhit form the calocluster
-    _minE(pset.get<double>("minimumEnergy",0.0)), // Minimum deposited straw energy (MeV)
-    _maxE(pset.get<double>("maximumEnergy",0.0035)), // MeV
-    _ctE(pset.get<double>("crossTalkEnergy",0.007)), // MeV
-    _ctMinT(pset.get<double>("crossTalkMinimumTime",-1)), // nsec
-    _ctMaxT(pset.get<double>("crossTalkMaximumTime",100)), // nsec
-    _minT(pset.get<double>("minimumTime",500)), // nsec
-    _maxT(pset.get<double>("maximumTime",2000)), // nsec
-    _minR(pset.get<double>("minimumRadius",395.0)), // mm
-    _maxR(pset.get<double>("maximumRadius",650.0)), // mm
+    _ccmindt(pset.get<float>("CaloClusterMinDt")), // minimum time residual of a stawhit from a calo cluster
+    _ccmaxdt(pset.get<float>("CaloClusterMaxDt")), // maximum time residual of a stawhit from a calo cluster
+    _pitchangle(pset.get<float>("pitchAngle")), //mean pitch angle of the particle we want to reconstruct
+    _beta(pset.get<float>("beta")), //approximate relativistic beta of the particle we search
+    _dtoffset(pset.get<float>("dtOffset")), //time offset of the strawhit form the calocluster
+    _minE(pset.get<float>("minimumEnergy",0.0)), // Minimum deposited straw energy (MeV)
+    _maxE(pset.get<float>("maximumEnergy",0.0035)), // MeV
+    _ctE(pset.get<float>("crossTalkEnergy",0.007)), // MeV
+    _ctMinT(pset.get<float>("crossTalkMinimumTime",-1)), // nsec
+    _ctMaxT(pset.get<float>("crossTalkMaximumTime",100)), // nsec
+    _minT(pset.get<float>("minimumTime",500)), // nsec
+    _maxT(pset.get<float>("maximumTime",2000)), // nsec
+    _minR(pset.get<float>("minimumRadius",395.0)), // mm
+    _maxR(pset.get<float>("maximumRadius",650.0)), // mm
     _ttcalc(pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet()))
   {
     produces<StrawHitFlagCollection>();
@@ -151,7 +151,7 @@ namespace mu2e {
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection);
     shfcol->reserve(nsh);
 // A more efficient algorithm is to first find all big hits, then
-// loop over only those in the double loop.  It avoids the search for indices FIXME!!
+// loop over only those in the float loop.  It avoids the search for indices FIXME!!
 
     size_t nplanes = tt.nPlanes();
     size_t npanels = tt.getPlane(0).nPanels();
@@ -198,12 +198,12 @@ namespace mu2e {
     //   for(auto const& cc : *_cccol ) {
     // 	if(goodCaloCluster(cc)){
     // 	// calculate the cluster time in the tracker reference
-    // 	  double ctime = _ttcalc.caloClusterTime(cc);
+    // 	  float ctime = _ttcalc.caloClusterTime(cc);
     // 	  // add 1/2 the maximum drift time to center the selection
     // 	  ctime += _hmaxtdrift;
     // 	  // calculate the range around this that it's reasonable to search for tracks.  
-    // 	  double tmin = ctime-_hctwin;
-    // 	  double tmax = ctime+_hctwin;
+    // 	  float tmin = ctime-_hctwin;
+    // 	  float tmax = ctime+_hctwin;
     // 	  timeranges.push_back(make_pair(tmin,tmax));
     // 	}
     //   }
@@ -227,7 +227,7 @@ namespace mu2e {
       // 	flag.merge(StrawHitFlag::calosel);
       if(_shpcol != 0){
         StrawHitPosition const& shp = _shpcol->at(ish);
-        double rad = shp.pos().perp();
+        float rad = sqrtf(shp.pos().perp2());
         if(rad > _minR && rad < _maxR)
           flag.merge(StrawHitFlag::radsel);
       }
@@ -236,17 +236,17 @@ namespace mu2e {
 
     if(_usecc && _cccol != 0){
       int   ncl   =  _cccol->size();
-      static const double pi(M_PI);
-      static const double halfpi(pi/2.);
-      static const double twopi(2*pi);
-      double meanDriftTime = 1.25/0.06;// half straw tube radius / drift velocity; ugly hack, replace with conditions access FIXME!
+      static const float pi(M_PI);
+      static const float halfpi(pi/2.);
+      static const float twopi(2*pi);
+      float meanDriftTime = 1.25/0.06;// half straw tube radius / drift velocity; ugly hack, replace with conditions access FIXME!
 
       const CaloCluster*  cl(0);
       const StrawHit*     hit;
       const Straw*        straw;
       CLHEP::Hep3Vector   gpos, tpos;
-      double              time, dt, tof, zstraw, cl_time;
-      double              xcl, ycl, zcl, phicl;
+      float              time, dt, tof, zstraw, cl_time;
+      float              xcl, ycl, zcl, phicl;
 
       for (int ic=0; ic<ncl; ic++) {
 	cl      = &_cccol->at(ic);
@@ -265,7 +265,7 @@ namespace mu2e {
 	xcl     = tpos.x();
 	ycl     = tpos.y();
 	zcl     = tpos.z();
-	phicl   = atan2(ycl, xcl);
+	phicl   = atan2f(ycl, xcl);
 
 	//-----------------------------------------------------------------------------
 	// record hits in time with each peak, and accept them if they have a minimum # of hits
@@ -291,8 +291,8 @@ namespace mu2e {
 
 	  //use or not the calorimeter cluster XY coordinates to imrpove the selection?
 	  if (_useccxy && (_shpcol != 0)){
-	    double  phistraw = _shpcol->at(istr).pos().phi();
-	    double  dphi     = phistraw - phicl; 
+	    float  phistraw = _shpcol->at(istr).pos().phi();
+	    float  dphi     = phistraw - phicl; 
 	    if (dphi >  pi) dphi -= twopi;
 	    if (dphi < -pi) dphi += twopi;
 	    caloCondition    = caloCondition && ( fabs(dphi) < halfpi );
@@ -314,7 +314,7 @@ namespace mu2e {
     return cc.energyDep() > _ccmine;
   }
 
-  // bool FlagStrawHits::goodTime(double hittime,vector<TimeRange> const& timeranges) const {
+  // bool FlagStrawHits::goodTime(float hittime,vector<TimeRange> const& timeranges) const {
   //   bool retval(false);
   //   for(auto const& trange : timeranges ){
   //     if(hittime > trange.first && hittime < trange.second){

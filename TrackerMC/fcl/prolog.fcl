@@ -18,6 +18,8 @@ TrackerMC : {
     producers : { 
 	makeSD                    : { @table::makeSD                    }
     }
+    DigiSim : [ makeSD ]
+      
 }
 
 

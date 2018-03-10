@@ -355,8 +355,8 @@ namespace mu2e {
       const StrawHitPosition& shpos  = _shpcol->at(loc);
       if ( i==0 ) z_start = shpos.pos().z();
       
-      double                  shphi  = Hep3Vector(shpos.pos() - HelSeed._helix.center()).phi();
-      int                     nLoops = (shpos.pos().z() - z_start)/(2.*M_PI/dfdz);
+      double                  shphi  = Hep3Vector(shpos.posCLHEP() - HelSeed._helix.centerCLHEP()).phi();
+      int                     nLoops = (shpos.posCLHEP().z() - z_start)/(2.*M_PI/dfdz);
       shphi = shphi + double(nLoops)*2.*M_PI;
       // printf("[CalHelixFinder::initHelixSeed] %4i %10.3f %10.3f %10.3f %10.3f\n", 
       // 	     (int)loc, shpos.pos().x(), shpos.pos().y(), shpos.pos().z(), shphi);

@@ -5,6 +5,7 @@
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "DataProducts/inc/StrawIndex.hh"
 #include "DataProducts/inc/StrawId.hh"
+#include "DataProducts/inc/StrawIdMask.hh"
 #include "DataProducts/inc/PanelId.hh"
 #include "DataProducts/inc/LayerId.hh"
 #include "DataProducts/inc/PlaneId.hh"

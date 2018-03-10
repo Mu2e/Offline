@@ -20,9 +20,9 @@ void PlotTime(const char* dirname, const char* name, TH1F* timeplot) {
 
 void PlotAllTimes(const char* dirname, double maxtime) {
   // find all the csv files in this directory
+  float ttime(0.0);
   static const string csv(".csv");
   vector<TH1F*> plots;
-//  auto dir`p = opendir(dirname);
   void* dirp = gSystem->OpenDirectory(dirname);
   std::vector<string> fnames;
   if(dirp != 0){
@@ -35,6 +35,8 @@ void PlotAllTimes(const char* dirname, double maxtime) {
 	fnames.push_back(fname);
       }
     }
+    bool first(true);
+    float norm(0.0);
     std::sort(fnames.begin(),fnames.end());
     for(auto const& fname : fnames ){
       string name = fname.substr(1,fname.find_last_of(".")-1);
@@ -42,21 +44,20 @@ void PlotAllTimes(const char* dirname, double maxtime) {
       TH1F* plot = new TH1F(name.c_str(),title.c_str(),500,0.0,maxtime);
       PlotTime(dirname,fname.c_str(),plot);
       plots.push_back(plot);
+      if(first){
+	first = false;
+	norm = plot->GetEntries();
+      }
+      ttime += plot->GetMean()*plot->GetEntries()/norm;
     }
-    TCanvas* acan = new TCanvas("alltimes","times",1200,1200);
+    TCanvas* atcan = new TCanvas("atcan","times",800,800);
     int nxcel = (int)ceil(sqrt(plots.size()));
-    int nycel = (int)ceil(plots.size()/nxcel);
-    acan->Divide(nxcel,nycel);
+    int nycel = (int)ceil(plots.size()/float(nxcel));
+    atcan->Divide(nxcel,nycel);
     for(unsigned iplot=0;iplot<plots.size();++iplot){
-      acan->cd(iplot+1);
+      atcan->cd(iplot+1);
       plots[iplot]->Draw();
-//      TCanvas* can = new TCanvas(plots[iplot]->GetName(),plots[iplot]->GetName(),400,400);
-//      can->Divide(1,1);
-//      can->cd(1);
-//      plots[iplot]->Draw();
-//      char rname[100];
-//      snprintf(rname,100,"%s%s",plots[iplot]->GetName(),".root");
-//      can->SaveAs(rname);
     }
+    cout << "Total time = " << ttime << endl;
   }
 }

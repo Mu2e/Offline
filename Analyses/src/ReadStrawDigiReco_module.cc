@@ -17,6 +17,8 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Principal/Provenance.h"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 
@@ -111,10 +113,11 @@ void mu2e::ReadStrawDigiReco::analyze(art::Event const& evt) {
 
   // Counter for number of digis on each wire.
   std::map<StrawIndex,int> nhperwire;
+  const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
 
   for ( StrawDigi const& digi : digis ) {
 
-    StrawIndex index = digi.strawIndex();
+    StrawIndex index = tracker.getStrawIndex(digi.strawId());
 
     _hStrawIndex->Fill(index.asInt());
 

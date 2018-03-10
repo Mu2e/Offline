@@ -187,8 +187,7 @@ namespace mu2e {
       // Fill struct with info for current hit
       trkhit curHit;
       curHit.evt = eventNum;
-
-      curHit.strawIdx = SD.strawIndex().asInt();
+      curHit.strawIdx = SD.strawId().asUint16();
       if(_usePhysicalStrawIndex!=0) {
 	int tempIndex = curHit.strawIdx;
 
@@ -230,18 +229,21 @@ namespace mu2e {
       // the non-physically-meaningful straw index.
 
       // 240 ROCs total
-      if(SD.strawIndex().asInt() >= abs(number_of_rings * rocs_per_ring * number_of_straws_per_roc) ) {
-	throw cet::exception("DATA") << " Straw index " << SD.strawIndex().asInt()
-				     << " exceeds limit of " <<  number_of_rings << "*"
-				     << rocs_per_ring << "*" << number_of_straws_per_roc
-				     << "=" << number_of_rings * rocs_per_ring * number_of_straws_per_roc;
-      }
+//      if(SD.strawId().asUint16() >= abs(number_of_rings * rocs_per_ring * number_of_straws_per_roc) ) {
+//	throw cet::exception("DATA") << " Straw index " << SD.strawId().asUint16()
+//				     << " exceeds limit of " <<  number_of_rings << "*"
+//				     << rocs_per_ring << "*" << number_of_straws_per_roc
+//				     << "=" << number_of_rings * rocs_per_ring * number_of_straws_per_roc;
+//      }
 
       // Ring ID, counting from 0, across all (for the tracker)
-      size_t globalRingID = int(SD.strawIndex().asInt() / (rocs_per_ring * number_of_straws_per_roc));
+//      size_t globalRingID = int(SD.strawId().asUint16() / (rocs_per_ring * number_of_straws_per_roc));
+// DNB my crude understanding of what a 'global ring' is supposed to be FIXME!!!
+      size_t globalRingID = SD.strawId().uniqueFace();
 
       curHit.ringID = globalRingID % rings_per_dtc;
-      curHit.rocID = (SD.strawIndex().asInt() - (rocs_per_ring * number_of_straws_per_roc) * globalRingID) / number_of_straws_per_roc;  
+//      curHit.rocID = (SD.strawId().asUint16() - (rocs_per_ring * number_of_straws_per_roc) * globalRingID) / number_of_straws_per_roc;  
+      curHit.rocID = SD.strawId().uniquePanel();
       curHit.dtcID = dtc_id(globalRingID/rings_per_dtc);
       
       trkHitVector.push_back(curHit);
@@ -400,7 +402,7 @@ namespace mu2e {
 	  
 	  // Fill the data packets:
 	  // Assume the 0th apd is always read out before the second
-	  adc_t strawIndex = curHit.strawIdx;
+	  uint16_t strawIndex = curHit.strawIdx;
 	  
 	  adc_t TDC0 = curHit.recoDigiT0 & 0xFFFF;
 	  adc_t TDC1 = curHit.recoDigiT1 & 0xFFFF;

@@ -67,16 +67,15 @@ mu2e::StereoHitPrinter::Print(const mu2e::StereoHit& obj, int ind, std::ostream&
   if(ind>=0) os << std::setw(4) << ind;
 
   os 
-    << " " << std::setw(5) << obj.hitIndex1()
-    << " " << std::setw(5) << obj.hitIndex2()
+    << " " << std::setw(5) << obj.nCombo()
+    << " " << std::setw(5) << obj.nStrawHits()
     << " " 
     << " " << std::setw(8) << std::setprecision(3) << obj.pos().x()
     << " " << std::setw(8) << std::setprecision(3) << obj.pos().y()
     << " " << std::setw(9) << std::setprecision(3) << obj.pos().z()
     << " " << std::setw(7) << std::setprecision(1) << obj.time()
-    << " " << std::setw(8) << std::setprecision(5) << obj.energy()
-    << " " << std::setw(6) << std::setprecision(2) << obj.chisq()
-    << " " << std::setw(6) << std::setprecision(3) << obj.mvaout()
+    << " " << std::setw(8) << std::setprecision(5) << obj.energyDep()
+    << " " << std::setw(6) << std::setprecision(2) << obj.qual()
     << std::endl;
 
 }
