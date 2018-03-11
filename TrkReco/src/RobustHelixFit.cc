@@ -55,6 +55,7 @@ namespace mu2e
 
   RobustHelixFit::RobustHelixFit(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
+    _cinit(static_cast<CircleFit>(pset.get<int>("CircleInitType",median))),
     _cfit(static_cast<CircleFit>(pset.get<int>("CircleFitType",median))),
     _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier"})),
     _minnhit(pset.get<unsigned>("minNHit",5)),
@@ -73,6 +74,8 @@ namespace mu2e
     _maxdist(pset.get<float>("maxdist",500.0)), // mm
     _rmin(pset.get<float>("minR",150.0)), // mm
     _rmax(pset.get<float>("maxR",400.0)), // mm
+    _rcmin(pset.get<float>("minCenterR",200.0)), // mm
+    _rcmax(pset.get<float>("maxCenterR",400.0)), // mm
 //    _mindelta(pset.get<float>("minDelta",500.0)),
     _lmin(pset.get<float>("minAbsLambda",100.0)),
     _lmax(pset.get<float>("maxAbsLambda",400.0)),
@@ -86,6 +89,7 @@ namespace mu2e
     _trackerradius(pset.get<float>("trackerradius",750.0)), // tracker out radius; include some buffer (mm)
     _rwind(pset.get<float>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix in the AGG fit (mm)
     _hphi("hphi","phi value",_nphibins,-_phifactor*CLHEP::pi,_phifactor*CLHEP::pi),
+    _ntripleMin(pset.get<unsigned>("ntripleMin",10)),
     _ntripleMax(pset.get<unsigned>("ntripleMax",100000))
   {
     float minarea(pset.get<float>("minArea",2000.0));
@@ -96,8 +100,7 @@ namespace mu2e
   {}
 
 
-  void RobustHelixFit::fitHelix(HelixSeed& hseed)
-  {
+  void RobustHelixFit::fitHelix(HelixSeed& hseed) {
     hseed._status.clear(TrkFitFlag::helixOK);
 
     fitCircle(hseed);
@@ -107,228 +110,251 @@ namespace mu2e
       if (goodHelix(hseed._helix)) hseed._status.merge(TrkFitFlag::helixOK);
     }
   }
-  
-  void RobustHelixFit::fitCircle(HelixSeed& hseed)
-  {
-     hseed._status.clear(TrkFitFlag::circleOK);
-     switch ( _cfit )
-     {
-        case median : default :
-	  fitCircleMedian(hseed);
-	  break;
-        case AGE :
-	  fitCircleAGE(hseed);
-	  break;
-     }
+
+  bool RobustHelixFit::initCircle(HelixSeed& hseed) {
+    bool retval(false);
+
+    switch ( _cinit ) {
+      case median : default :
+	fitCircleMedian(hseed);
+	retval = hseed._status.hasAllProperties(TrkFitFlag::circleOK);
+	break;
+    }
+    return retval;
   }
 
-  void RobustHelixFit::fitCircleAGE(HelixSeed& hseed) 
-  {
-    // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
-    // This algorithm requires a reasonable initial estimate: use the median fit
-    // this algorithm needs extension to use the calorimeter cluster position FIXME!
-    if (!hseed._status.hasAllProperties(TrkFitFlag::circleInit)) fitCircleMedian(hseed);
-    
-    if (hseed._status.hasAllProperties(TrkFitFlag::circleInit))
-    {
-      RobustHelix& rhel = hseed._helix;
+  void RobustHelixFit::fitCircle(HelixSeed& hseed) {
+    hseed._status.clear(TrkFitFlag::circleOK);
 
-      unsigned niter(0);
-      float age;
-      XYZVec center = rhel.center();
-      float rmed = rhel.radius();
-      // initialize step
-      float lambda = _lambda0;
-      // find median and AGE for the initial center
-      findAGE(hseed,center,rmed,age);
-      // loop while step is large
-      XYZVec descent(1.0,0.0,0.0);
-      while(lambda*sqrtf(descent.mag2()) > _minlambda && niter < _maxniter)
-      {
-	// fill the sums for computing the descent vector
-	AGESums sums;
-	fillSums(hseed,center,rmed,sums);
-	// descent vector cases: if the inner vs outer difference is significant (compared to the median), damp using the median sums,
-	// otherwise not.  These expressions take care of the undiferentiable condition on the boundary.
-	float dx(sums._sco-sums._sci);
-	float dy(sums._sso-sums._ssi);
-	if(fabs(dx) < sums._scc)
-	  dx += (sums._sco < sums._sci) ? -sums._scc : sums._scc;
-	if(fabs(dy) < sums._ssc)
-	  dy += (sums._sso < sums._ssi) ? -sums._ssc : sums._ssc;
-	descent = XYZVec(dx,dy,0.0);
-	// compute error function, decreasing lambda until this is better than the previous
-	float agenew;
-	XYZVec cnew = center + lambda*descent;
-	findAGE(hseed,cnew,rmed,agenew);
-	// if we've improved, increase the step size and iterate
-	if(agenew < age){
-	  lambda *= (1.0+_lstep);
-	} else {
-	  // if we haven't improved, keep reducing the step till we do
-	  unsigned miter(0);
-	  while(agenew > age && miter < _maxniter && lambda*sqrtf(descent.mag2()) > _minlambda){
-	    lambda *= (1.0-_lstep);
-	    cnew = center + lambda*descent;
-	    findAGE(hseed,cnew,rmed,agenew);
-	    ++miter;
-	  }
-	  // if this fails, reverse the descent drection and try again
-	  if(agenew > age){
-	    descent *= -1.0;
-	    lambda *= (1.0 +_lstep);
-	    cnew = center + lambda*descent;
-	    findAGE(hseed,cnew,rmed,agenew);
-	  }
-	}
-	// prepare for next iteration
-	if(agenew < age){
-	  center = cnew;
-	  age = agenew;
-	} else {
-	  static const float minage(0.1);
-	  if(_debug > 0 && agenew-age>minage)
-	    std::cout << "iteration did not improve AGE!!! lambda = "
-	      << lambda  << " age = " << age << " agenew = " << agenew << std::endl;
+    // if required, initialize
+    bool init(false);
+    if (!hseed._status.hasAllProperties(TrkFitFlag::circleInit)) {
+      init = true;
+      if (initCircle(hseed))
+	hseed._status.merge(TrkFitFlag::circleInit);
+      else
+	return;
+    }
+    // if we initialized and the initialization is the same as the fit type, we're done
+    // make sure to refit (iterate) otherwise
+    if(!init || _cfit != _cinit) {
+      switch ( _cfit ) {
+	case median : default :
+	  fitCircleMedian(hseed);
 	  break;
-	}
-	// if we're constraining to intersect the target, adjust the center and radius if necessary
-	if(_targetinter) {
-	  forceTargetInter(center,rmed);
-	}
-	++niter;
+	case mean :
+	  fitCircleMean(hseed);
+	  break;
+	case AGE :
+	  fitCircleAGE(hseed);
+	  break;
       }
-      // check for convergence
-      if(_debug > 0 && niter > _maxniter ){
-	std::cout << "AGE didn't converge!!! " << std::endl;
+    }
+  }
+
+  void RobustHelixFit::fitCircleMean(HelixSeed& hseed) {
+
+  }
+
+  void RobustHelixFit::fitCircleAGE(HelixSeed& hseed) {
+    // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
+    // this algorithm needs extension to use the calorimeter cluster position FIXME!
+
+    RobustHelix& rhel = hseed._helix;
+
+    unsigned niter(0);
+    float age;
+    XYZVec center = rhel.center();
+    float rmed = rhel.radius();
+    // initialize step
+    float lambda = _lambda0;
+    // find median and AGE for the initial center
+    findAGE(hseed,center,rmed,age);
+    // loop while step is large
+    XYZVec descent(1.0,0.0,0.0);
+    while(lambda*sqrtf(descent.mag2()) > _minlambda && niter < _maxniter)
+    {
+      // fill the sums for computing the descent vector
+      AGESums sums;
+      fillSums(hseed,center,rmed,sums);
+      // descent vector cases: if the inner vs outer difference is significant (compared to the median), damp using the median sums,
+      // otherwise not.  These expressions take care of the undiferentiable condition on the boundary.
+      float dx(sums._sco-sums._sci);
+      float dy(sums._sso-sums._ssi);
+      if(fabs(dx) < sums._scc)
+	dx += (sums._sco < sums._sci) ? -sums._scc : sums._scc;
+      if(fabs(dy) < sums._ssc)
+	dy += (sums._sso < sums._ssi) ? -sums._ssc : sums._ssc;
+      descent = XYZVec(dx,dy,0.0);
+      // compute error function, decreasing lambda until this is better than the previous
+      float agenew;
+      XYZVec cnew = center + lambda*descent;
+      findAGE(hseed,cnew,rmed,agenew);
+      // if we've improved, increase the step size and iterate
+      if(agenew < age){
+	lambda *= (1.0+_lstep);
+      } else {
+	// if we haven't improved, keep reducing the step till we do
+	unsigned miter(0);
+	while(agenew > age && miter < _maxniter && lambda*sqrtf(descent.mag2()) > _minlambda){
+	  lambda *= (1.0-_lstep);
+	  cnew = center + lambda*descent;
+	  findAGE(hseed,cnew,rmed,agenew);
+	  ++miter;
+	}
+	// if this fails, reverse the descent drection and try again
+	if(agenew > age){
+	  descent *= -1.0;
+	  lambda *= (1.0 +_lstep);
+	  cnew = center + lambda*descent;
+	  findAGE(hseed,cnew,rmed,agenew);
+	}
       }
-      // update parameters
-      rhel._rcent = sqrtf(center.perp2());
-      rhel._fcent = center.phi();
-      rhel._radius = rmed;
-      // update flag
-      if(goodCircle(rhel)) hseed._status.merge(TrkFitFlag::circleOK);
+      // prepare for next iteration
+      if(agenew < age){
+	center = cnew;
+	age = agenew;
+      } else {
+	static const float minage(0.1);
+	if(_debug > 0 && agenew-age>minage)
+	  std::cout << "iteration did not improve AGE!!! lambda = "
+	    << lambda  << " age = " << age << " agenew = " << agenew << std::endl;
+	break;
+      }
+      // if we're constraining to intersect the target, adjust the center and radius if necessary
+      if(_targetinter) {
+	forceTargetInter(center,rmed);
+      }
+      ++niter;
+    }
+    // check for convergence
+    if(_debug > 0 && niter > _maxniter ){
+      std::cout << "AGE didn't converge!!! " << std::endl;
+    }
+    // update parameters
+    rhel._rcent = sqrtf(center.perp2());
+    rhel._fcent = center.phi();
+    rhel._radius = rmed;
+    // update flag
+    if(goodCircle(rhel)) hseed._status.merge(TrkFitFlag::circleOK);
+  }
+
+
+  void RobustHelixFit::forceTargetInter(XYZVec& center, float& radius) {    
+    float rperigee = sqrtf(center.perp2())-radius;    
+    if (fabs(rperigee) > _targetradius)
+    {
+      // adjust both center position and radius till they touch the target, holding phi constant.  
+      // This keeps the circle near the hits.  Sign matters!
+      float dr;
+      if(rperigee > 0)
+	dr = 0.5*(rperigee - _targetradius);  // change is 1/2 the difference
+      else
+	dr = 0.5*(rperigee + _targetradius);
+      radius += dr;
+
+      // direction radially outwards from origin to the center, the center moves opposite the radius
+      XYZVec pdir = XYZVec(center.x(),center.y(),0.0).unit();
+      center -= dr*pdir;
     }
   }
 
 
-  void RobustHelixFit::forceTargetInter(XYZVec& center, float& radius)
-  {    
-     float rperigee = sqrtf(center.perp2())-radius;    
-     if (fabs(rperigee) > _targetradius)
-     {
-        // adjust both center position and radius till they touch the target, holding phi constant.  
-        // This keeps the circle near the hits.  Sign matters!
-        float dr;
-        if(rperigee > 0)
-	  dr = 0.5*(rperigee - _targetradius);  // change is 1/2 the difference
-        else
-	  dr = 0.5*(rperigee + _targetradius);
-        radius += dr;
 
-        // direction radially outwards from origin to the center, the center moves opposite the radius
-        XYZVec pdir = XYZVec(center.x(),center.y(),0.0).unit();
-        center -= dr*pdir;
-     }
+  bool RobustHelixFit::initFZ(HelixSeed& hseed){
+    bool retval(false);
+    ComboHitCollection& hhits = hseed._hhits;
+    RobustHelix& rhel         = hseed._helix;
+
+    rhel._lambda = 1.0e12; //infinite slope for now
+    rhel._fz0 = 0.0;
+    static TrkFitFlag circleOK(TrkFitFlag::circleOK);
+    static TrkFitFlag helixOK(TrkFitFlag::helixOK);
+
+    std::sort(hhits.begin(),hhits.end(),[](const ComboHit& p1, const ComboHit& p2){return p1._pos.z() < p2._pos.z();});    
+    for(auto& hhit : hhits)initPhi(hhit,rhel); 
+
+    std::vector<const ComboHit*> validHhits;
+    validHhits.reserve(hhits.size());
+    for (const auto& hhit: hhits) 
+      if (use(hhit) ) validHhits.push_back(&hhit);
+    if (validHhits.empty()) return retval;
+
+    // make initial estimate of dfdz using 'nearby' pairs.  This insures they are on the same loop
+    accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accf;
+    for (auto ihit=validHhits.begin(); ihit != std::prev(validHhits.end()); ++ihit) 
+    {
+      for(auto jhit = std::next(ihit); jhit != validHhits.end(); ++jhit)
+      {
+	float dz = (*jhit)->_pos.z() - (*ihit)->_pos.z();
+	if (dz < _minzsep || dz > _maxzsep) continue;
+	float dphi = (*jhit)->_hphi-(*ihit)->_hphi;
+	if (dphi*int(rhel.helicity()._value) < 0 || fabs(dphi) < _mindphi || fabs(dphi) > _maxdphi) continue;
+
+	float lambda = dz/dphi;
+	if(goodLambda(rhel.helicity(),lambda)){
+	  float wt = sqrtf((*ihit)->nStrawHits()*(*jhit)->nStrawHits());
+	  //		float wt = (*ihit)->nStrawHits() + (*jhit)->nStrawHits();
+	  accf(lambda, weight=wt);
+	}
+      }
+    }
+
+    if(boost::accumulators::extract::count(accf) < _minnhit) return retval;
+
+    float lambda = extract_result<tag::weighted_median>(accf);
+
+    if(!goodLambda( rhel.helicity(),lambda) ) return retval;
+    rhel._lambda = lambda;
+
+    // find phi at z intercept.  Use a histogram technique since phi looping
+    // hasn't been resolved yet, and to avoid inefficiency at the phi wrapping edge
+    _hphi.Reset();
+    for(const auto& hhit : validHhits) 
+    {
+      float phiex = rhel.circleAzimuth(hhit->_pos.z());
+      float dphi = deltaPhi(phiex,hhit->helixPhi());
+      _hphi.Fill(dphi);
+      _hphi.Fill(dphi-CLHEP::twopi);
+      _hphi.Fill(dphi+CLHEP::twopi);
+    }
+
+    // take the average of the maximum bin +- 1
+    int imax = _hphi.GetMaximumBin();
+    float count(0.0);
+    float fz0(0.0);
+    for (int ibin=std::max((int)0,imax-1); ibin <= std::min((int)imax+1,(int)_nphibins); ++ibin)
+    {
+      count += _hphi.GetBinContent(ibin);
+      fz0 += _hphi.GetBinContent(ibin)*_hphi.GetBinCenter(ibin);
+    }
+
+    if(count > _minnphi)
+    {
+      fz0 /= count;
+      rhel._fz0 = deltaPhi(0.0,fz0);
+      for (auto& hhit : hhits) resolvePhi(hhit,rhel);
+      retval = true;
+    }
+
+    return retval;
   }
 
 
 
-  bool RobustHelixFit::initFZ(ComboHitCollection& hhits,RobustHelix& rhel)
-  {      
-      bool retval(false);
+  void RobustHelixFit::fitFZ(HelixSeed& hseed) {
+    // if required, initialize
+    hseed._status.clear(TrkFitFlag::phizOK);
+    if (!hseed._status.hasAllProperties(TrkFitFlag::phizInit))
+    {
+      if (initFZ(hseed))
+	hseed._status.merge(TrkFitFlag::phizInit);
+      else
+	return;
+    }
 
-      rhel._lambda = 1.0e12; //infinite slope for now
-      rhel._fz0 = 0.0;
-      static TrkFitFlag circleOK(TrkFitFlag::circleOK);
-      static TrkFitFlag helixOK(TrkFitFlag::helixOK);
-
-      std::sort(hhits.begin(),hhits.end(),[](const ComboHit& p1, const ComboHit& p2){return p1._pos.z() < p2._pos.z();});    
-      for(auto& hhit : hhits)initPhi(hhit,rhel); 
-
-      std::vector<const ComboHit*> validHhits;
-      validHhits.reserve(hhits.size());
-      for (const auto& hhit: hhits) 
-         if (use(hhit) ) validHhits.push_back(&hhit);
-      if (validHhits.empty()) return retval;
-
-      // make initial estimate of dfdz using 'nearby' pairs.  This insures they are on the same loop
-      accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accf;
-      for (auto ihit=validHhits.begin(); ihit != std::prev(validHhits.end()); ++ihit) 
-      {
-          for(auto jhit = std::next(ihit); jhit != validHhits.end(); ++jhit)
-          {
-	      float dz = (*jhit)->_pos.z() - (*ihit)->_pos.z();
-	      if (dz < _minzsep || dz > _maxzsep) continue;
-              float dphi = (*jhit)->_hphi-(*ihit)->_hphi;
-	      if (dphi*int(rhel.helicity()._value) < 0 || fabs(dphi) < _mindphi || fabs(dphi) > _maxdphi) continue;
-
-              float lambda = dz/dphi;
-	      if(goodLambda(rhel.helicity(),lambda)){
-		float wt = sqrtf((*ihit)->nStrawHits()*(*jhit)->nStrawHits());
-//		float wt = (*ihit)->nStrawHits() + (*jhit)->nStrawHits();
-		accf(lambda, weight=wt);
-	      }
-	  }
-      }
-
-      if(boost::accumulators::extract::count(accf) < _minnhit) return retval;
-
-      float lambda = extract_result<tag::weighted_median>(accf);
-
-      if(!goodLambda( rhel.helicity(),lambda) ) return retval;
-      rhel._lambda = lambda;
-
-      // find phi at z intercept.  Use a histogram technique since phi looping
-      // hasn't been resolved yet, and to avoid inefficiency at the phi wrapping edge
-      _hphi.Reset();
-      for(const auto& hhit : validHhits) 
-      {
-	  float phiex = rhel.circleAzimuth(hhit->_pos.z());
-	  float dphi = deltaPhi(phiex,hhit->helixPhi());
-	  _hphi.Fill(dphi);
-	  _hphi.Fill(dphi-CLHEP::twopi);
-	  _hphi.Fill(dphi+CLHEP::twopi);
-      }
-
-      // take the average of the maximum bin +- 1
-      int imax = _hphi.GetMaximumBin();
-      float count(0.0);
-      float fz0(0.0);
-      for (int ibin=std::max((int)0,imax-1); ibin <= std::min((int)imax+1,(int)_nphibins); ++ibin)
-      {
-         count += _hphi.GetBinContent(ibin);
-         fz0 += _hphi.GetBinContent(ibin)*_hphi.GetBinCenter(ibin);
-      }
-
-      if(count > _minnphi)
-      {
-         fz0 /= count;
-         rhel._fz0 = deltaPhi(0.0,fz0);
-         for (auto& hhit : hhits) resolvePhi(hhit,rhel);
-         retval = true;
-      }
-
-      return retval;
-  }
-
-
-
-  void RobustHelixFit::fitFZ(HelixSeed& hseed) 
-  {
-      ComboHitCollection& hhits = hseed._hhits;
-      RobustHelix& rhel         = hseed._helix;
-
-      // if required, initialize
-      hseed._status.clear(TrkFitFlag::phizOK);
-      if (!hseed._status.hasAllProperties(TrkFitFlag::phizInit))
-      {
-        if (initFZ(hhits,rhel))
-	  hseed._status.merge(TrkFitFlag::phizInit);
-        else
-	  return;
-      }
-
+    ComboHitCollection& hhits = hseed._hhits;
+    RobustHelix& rhel         = hseed._helix;
 
       std::vector<const ComboHit*> validHhits;
       validHhits.reserve(hhits.size());
@@ -462,7 +488,8 @@ namespace mu2e
 
         	 // test circle parameters for this triple: should be inside the tracker,
 		 // optionally consistent with the target
-		 if (rho > _rmin && rho < _rmax && rmax < _trackerradius && 
+		 if (rc > _rcmin && rc < _rcmax &&
+		    rho > _rmin && rho < _rmax && rmax < _trackerradius && 
                      ( !_targetcon || rmin < _targetradius) )
                  {
 		    ++ntriple;
@@ -481,7 +508,7 @@ namespace mu2e
 
 
      // median calculation needs a reasonable number of points to function
-     if (ntriple > _minnhit)
+     if (ntriple > _ntripleMin)
      {
         float centx = extract_result<tag::weighted_median>(accx);
         float centy = extract_result<tag::weighted_median>(accy);
@@ -517,7 +544,6 @@ namespace mu2e
         rhel._fcent = center.Phi();
         rhel._radius = rho;
 
-        hseed._status.merge(TrkFitFlag::circleInit);
         if (goodCircle(rhel)) hseed._status.merge(TrkFitFlag::circleOK);
      }
   
