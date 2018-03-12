@@ -91,7 +91,7 @@ draTopLevelDefs: {
 	 // digitization
          
 	 @table::CommonDigiSim.producers
-
+	 @table::TrackerMC.producers
          //----------------------------------------------------------------
          // calorimeter
          @table::CaloDigiMC.producers     // calo MC digi
@@ -101,6 +101,7 @@ draTopLevelDefs: {
 	 //------------------------------------------------------------------------------
 	 // Track reco - multiple hypotheses
 	 @table::Tracking.producers
+	 @table::TrkHitReco.producers
 
 	 MergePatRecDem: { @table::CalPatRec.producers.MergePatRecDem }
 
@@ -139,10 +140,11 @@ draTopLevelDefs: {
 	 @sequence::draEventMixing.CD3Mixers
 	 , @sequence::CommonDigiSim.DigiSim
 	 , @sequence::CaloDigiMC.DigiSim
-	 , @sequence::Tracking.DigiSim
+	 , @sequence::TrackerMC.DigiSim
       ]
 
       draRecoTrigSeq : [
+	 @sequence::TrkHitReco.PrepareHits
 	 , @sequence::Tracking.TPRDeM
 	 , @sequence::Tracking.TPRUeM
 
