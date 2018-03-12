@@ -72,27 +72,27 @@ namespace mu2e
     _maxdphi(pset.get<float>("maxdphi",2.5)),
     _mindist(pset.get<float>("mindist",100.0)), // mm
     _maxdist(pset.get<float>("maxdist",500.0)), // mm
-    _rmin(pset.get<float>("minR",150.0)), // mm
-    _rmax(pset.get<float>("maxR",400.0)), // mm
-    _rcmin(pset.get<float>("minCenterR",200.0)), // mm
-    _rcmax(pset.get<float>("maxCenterR",400.0)), // mm
+    _rmin(pset.get<float>("minR",160.0)), // mm
+    _rmax(pset.get<float>("maxR",320.0)), // mm
+    _rcmin(pset.get<float>("minCenterR",140.0)), // mm
+    _rcmax(pset.get<float>("maxCenterR",410.0)), // mm
 //    _mindelta(pset.get<float>("minDelta",500.0)),
-    _lmin(pset.get<float>("minAbsLambda",100.0)),
-    _lmax(pset.get<float>("maxAbsLambda",400.0)),
+    _lmin(pset.get<float>("minAbsLambda",130.0)),
+    _lmax(pset.get<float>("maxAbsLambda",320.0)),
     _targetcon(pset.get<bool>("targeconsistent",true)),
     _targetinter(pset.get<bool>("targetintersect",false)),
     _tripler(pset.get<bool>("TripleRadius",false)),
     _errrwt(pset.get<bool>("HitErrorWeight",false)),
     _usecc(pset.get<bool>("UseCaloCluster",false)),
     _ccwt(pset.get<float>("CaloClusterWeight",10.0)), // Cluster weight in units of non-stereo hits
-    _targetradius(pset.get<float>("targetradius",150.0)), // effective target radius (mm)
-    _trackerradius(pset.get<float>("trackerradius",750.0)), // tracker out radius; include some buffer (mm)
+    _targetradius(pset.get<float>("targetradius",100.0)), // effective target radius (mm)
+    _trackerradius(pset.get<float>("trackerradius",700.0)), // tracker out radius; (mm)
     _rwind(pset.get<float>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix in the AGG fit (mm)
     _hphi("hphi","phi value",_nphibins,-_phifactor*CLHEP::pi,_phifactor*CLHEP::pi),
-    _ntripleMin(pset.get<unsigned>("ntripleMin",10)),
-    _ntripleMax(pset.get<unsigned>("ntripleMax",100000))
+    _ntripleMin(pset.get<unsigned>("ntripleMin",5)),
+    _ntripleMax(pset.get<unsigned>("ntripleMax",500))
   {
-    float minarea(pset.get<float>("minArea",2000.0));
+    float minarea(pset.get<float>("minArea",5000.0));
     _minarea2 = minarea*minarea;
   }
 
