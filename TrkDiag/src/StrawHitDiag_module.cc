@@ -75,7 +75,7 @@ namespace mu2e
       Float_t _mcge, _mcgt;
       Hep3Vector _mcshp, _mcop, _mcpop, _mcgpos;
       Float_t _mcoe, _mcpoe, _mcom, _mcpom;
-      Float_t _mcshlen,_mcshd, _mcplen;
+      Float_t _mcshlen,_mcshd, _mcsphi, _mcplen;
       Float_t _mcedep, _mcetrig;
       Float_t _mcct[2];
       Float_t _pdist,_pperp,_pmom;
@@ -181,6 +181,7 @@ namespace mu2e
       _shdiag->Branch("mcpom",&_mcpom,"mcpom/F");
       _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
       _shdiag->Branch("mcshd",&_mcshd,"mcshd/F");
+      _shdiag->Branch("mcsphi",&_mcsphi,"mcsphi/F");
       _shdiag->Branch("mcplen",&_mcplen,"mcplen/F");
       _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
       _shdiag->Branch("mcetrig",&_mcetrig,"mcetrig/F");
@@ -262,6 +263,7 @@ namespace mu2e
       _mcom = -1;
       _mcshlen = -1;
       _mcshd = -1;
+      _mcsphi = 0.0;
       _mcplen = -1;
       _mcpproc=-1;
       _mcptime=0.0;
@@ -303,6 +305,7 @@ namespace mu2e
         _mcshd = (spmcp->position()-straw.getMidPoint()).dot(tdir);
 	double scos = mdir.dot(straw.getDirection());
         _mcplen = 2.0*sqrt( (rstraw*rstraw -_mcshd*_mcshd)/(1.0-scos*scos) );
+	_mcsphi = atan2(tdir.perp(),tdir.z()); // 'azimuth' around the straw of the POCA
 	// immediate parent information
 	art::Ptr<SimParticle> psp = osp.parent();
 	if(psp.isNonnull()){
