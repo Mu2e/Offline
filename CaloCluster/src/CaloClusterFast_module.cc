@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <string>
+#include <queue>
 
 
 namespace {
@@ -44,6 +45,7 @@ namespace mu2e {
           windowPeak_(         pset.get<unsigned>("windowPeak")),
           minAmp_(             pset.get<unsigned>("minAmplitude")),
           minSeedAmp_(         pset.get<unsigned>("minSeedAmplitude")),
+          extendSecond_(       pset.get<bool>("extendSecond")),
           blindTime_(          pset.get<double>("blindTime")),
           endTimeBuffer_(      pset.get<double>("endTimeBuffer")),
           minEnergy_(          pset.get<double>("minEnergy")),
@@ -69,6 +71,7 @@ namespace mu2e {
        unsigned     windowPeak_;
        double       minAmp_;
        double       minSeedAmp_;
+       bool         extendSecond_;
        double       blindTime_;
        double       endTimeBuffer_; 
        double       minEnergy_; 
@@ -123,7 +126,7 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------------------
   void CaloClusterFast::extractRecoDigi(const art::Handle<CaloDigiCollection>& caloDigisHandle,
-                                     CaloClusterCollection& recoClusters)
+                                         CaloClusterCollection& recoClusters)
   {
 
       const CaloDigiCollection& caloDigis(*caloDigisHandle);
@@ -180,80 +183,79 @@ namespace mu2e {
 	   }            
       }
       
-      if (seeds_.empty()) return;          
-      std::sort(seeds_.begin(),seeds_.end(),[](const FastHit* a, const FastHit* b) {return a->val_ > b->val_;});
-      
-      
-      
-      //loop over seeds
+      if (seeds_.empty()) return;                      
       std::vector<art::Ptr< CaloCrystalHit>> hits;
       
+      
+      
+      /* In this version, we do the usual seed + neighbors clustering. There is the option to look at next-to-neighbors crystals
+         instead of simply neighbors crystals (extended = true). 
+         For the trigger, it might be useful to look at the energy in the first / second rings. In that case, it would be 
+         better to start the clustering considering only those crystals, and then continu egrowing the clusters by looking at 
+         neighbors. 
+         One could also implement a split-off cluyster recovery if it is fast enough.
+      */  
       for (auto& seed : seeds_)
       {
          if (seed->val_ < 1) continue; 
-         
-         int cluEnergy(seed->val_);
-         unsigned ncry(1), ninsp(1);
-         double xc = cal->crystal(seed->crId_).localPositionFF().x();
-         double yc = cal->crystal(seed->crId_).localPositionFF().y();
+
+         unsigned ncry(1);
+         int      cluEnergy(seed->val_);
+         double   xc = cal->crystal(seed->crId_).localPositionFF().x()*seed->val_;
+         double   yc = cal->crystal(seed->crId_).localPositionFF().y()*seed->val_;
          seed->val_ = 0; 
          
-         for (const auto& nid : cal->neighbors(seed->crId_))
+         std::queue<int> crystalToVisit;
+         for (const auto& nid : cal->neighbors(seed->crId_)) crystalToVisit.push(nid);
+                  
+         while (!crystalToVisit.empty())
          {
-            ++ninsp;
+            int nid = crystalToVisit.front();
+            
             for (auto& hit : hitList_[seed->index_])
             {
-               if (hit.crId_ != nid) continue;
+               if (hit.crId_ != nid || hit.val_ <0.5) continue;
                cluEnergy += hit.val_;
+               xc += cal->crystal(nid).localPositionFF().x()*hit.val_;
+               yc += cal->crystal(nid).localPositionFF().y()*hit.val_;
                ++ncry;
-               hit.val_=0;
+               hit.val_ = 0;
+               for (const auto& neighbor : cal->neighbors(nid)) crystalToVisit.push(neighbor);                
+               if (extendSecond_) for (const auto& nneighbor : cal->nextNeighbors(nid)) crystalToVisit.push(nneighbor);                
             }
             for (auto& hit : hitList_[seed->index_-1])
             {
-               if (hit.crId_ != nid) continue;
+               if (hit.crId_ != nid || hit.val_ <0.5) continue;
                cluEnergy += hit.val_;
+               xc += cal->crystal(nid).localPositionFF().x()*hit.val_;
+               yc += cal->crystal(nid).localPositionFF().y()*hit.val_;
                ++ncry;
-               hit.val_=0;
-            }
+               hit.val_ = 0;
+               for (const auto& neighbor : cal->neighbors(nid)) crystalToVisit.push(neighbor);                
+               if (extendSecond_) for (const auto& nneighbor : cal->nextNeighbors(nid)) crystalToVisit.push(nneighbor);                
+           }
             for (auto& hit : hitList_[seed->index_+1])
             {
-               if (hit.crId_ != nid) continue;
+               if (hit.crId_ != nid || hit.val_ <0.5) continue;
                cluEnergy += hit.val_;
+               xc += cal->crystal(nid).localPositionFF().x()*hit.val_;
+               yc += cal->crystal(nid).localPositionFF().y()*hit.val_;
                ++ncry;
-               hit.val_=0;
+               hit.val_ = 0;
+               for (const auto& neighbor : cal->neighbors(nid)) crystalToVisit.push(neighbor);                
+               if (extendSecond_) for (const auto& nneighbor : cal->nextNeighbors(nid)) crystalToVisit.push(nneighbor);                
             }
-         } 
-         
-         for (const auto& nid : cal->nextNeighbors(seed->crId_))
-         {
-            ++ninsp;
-            for (auto& hit : hitList_[seed->index_])
-            {
-               if (hit.crId_ != nid) continue;
-               cluEnergy += hit.val_;
-               ++ncry;
-               hit.val_=0;
-            }
-            for (auto& hit : hitList_[seed->index_-1])
-            {
-               if (hit.crId_ != nid) continue;
-               cluEnergy += hit.val_;
-               ++ncry;
-               hit.val_=0;
-            }
-            for (auto& hit : hitList_[seed->index_+1])
-            {
-               if (hit.crId_ != nid) continue;
-               cluEnergy += hit.val_;
-               ++ncry;
-               hit.val_=0;
-            }
-         } 
+            
+            crystalToVisit.pop();
+         }
          
          double eDep = cluEnergy*adcToEnergy_;
          if (eDep > minEnergy_)
 	 {
-	     double time  = (seed->index_+offsetT0_)*digiSampling_-timeCorrection_;
+	     xc /= cluEnergy;
+	     yc /= cluEnergy;
+             
+             double time  = (seed->index_+offsetT0_)*digiSampling_-timeCorrection_;
              int iSection = cal->crystal(seed->crId_).diskId(); 
 
 	     CaloCluster cluster(iSection,time,0.0,eDep,0.0,hits,ncry,0.0);
@@ -261,7 +263,15 @@ namespace mu2e {
 
 	     recoClusters.emplace_back(std::move(cluster));
 	 }
+         
       } 
+      
+       
+      
+      
+      
+      
+      
 
   }
 
