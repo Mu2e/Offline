@@ -40,6 +40,7 @@
 
 #include "CalPatRec/inc/CalHelixFinder_types.hh"
 #include "CalPatRec/inc/CalHelixFinderAlg.hh"
+#include "CalPatRec/inc/CalHelixFinderData.hh"
 
 // Mu2e
 #include "ConditionsService/inc/TrackerCalibrations.hh"
@@ -116,6 +117,7 @@ namespace mu2e {
 
     HelixTraj*                            _helTraj;
     CalHelixFinderAlg                     _hfinder;	
+    CalHelixFinderData                    _hfResult;
 
     const TTracker*                       _tracker     ; // straw tracker geometry
     const TrackerCalibrations*            _trackerCalib; // 

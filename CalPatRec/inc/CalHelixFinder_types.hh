@@ -15,7 +15,7 @@ class TH2F;
 namespace mu2e {
 
   namespace CalHelixFinderTypes {
-    
+
     struct Data_t {
       const art::Event*    event;
       std::string          shLabel;
