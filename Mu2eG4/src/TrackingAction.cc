@@ -53,7 +53,6 @@
 #include "G4Ions.hh"
 #include "G4RunManager.hh"
 #include "G4EventManager.hh"
-#include "G4Threading.hh"
 
 using namespace std;
 
@@ -78,14 +77,7 @@ namespace mu2e {
     _printTrackTiming(pset.get<bool>("debug.printTrackTiming")),
     _spHelper(),
     _primaryHelper()
-  {
-  
-  //cout << "TRACKING ACTION C'TOR is being called from thread " << G4Threading::G4GetThreadId() << endl;
-      
-    //  cout << "This is the Master Thread: " << G4Threading::IsMasterThread() << endl;
-    //  cout << "Address of this trackingAction is " << std::addressof(*this) << endl;
-  
-  }
+  {}
 
   TrackingAction::TrackingAction( const SimpleConfig& config,
                                   Mu2eG4SteppingAction     * steppingAction ):
@@ -310,12 +302,7 @@ void TrackingAction::beginEvent(const art::Handle<SimParticleCollection>& inputS
       }
     }
     
-    
-    
-    
-    counter = 0;
-      
-}
+}//beginEvent
 
     
 void TrackingAction::endEvent(SimParticleCollection& persistentSims ){
@@ -429,20 +416,7 @@ void TrackingAction::saveSimParticleStart(const G4Track* trk){
       }
 
     }
-
-      
-    //*****FOR MY TESTING
-/*    if (kid.asUint() <= 20) {
-    std::cout << "kid = " << kid << ", ppdgId = " << ppdgId << ", parentId = " << parentId
-                << ", creationcode = " << creationCode << std::endl;
-        
-        counter++;
-    }
-*/    //*****FOR MY TESTING
-
     
-      
-      
     _transientMap.insert(std::make_pair(kid,SimParticle( kid,
                                                          parentPtr,
                                                          ppdgId,
@@ -468,7 +442,7 @@ void TrackingAction::saveSimParticleStart(const G4Track* trk){
       }
       i->second.addDaughter(_spHelper->particlePtr(trk));
     }
-}
+}//saveSimParticleStart
 
     
 // Append end of track information to the existing SimParticle.
@@ -509,7 +483,7 @@ void TrackingAction::saveSimParticleEnd(const G4Track* trk){
                           nSteps
                           );
 
-}
+}//saveSimParticleEnd
 
     
 // If the track passes the cuts needed to store the trajectory object, then store
@@ -558,6 +532,6 @@ void TrackingAction::swapTrajectory(const G4Track* trk){
     // Add the end point of the last step.
     traj.points().emplace_back( trk->GetPosition()-_mu2eOrigin, trk->GetGlobalTime() );
 
-}
+}//swapTrajectory
 
 } // end namespace mu2e

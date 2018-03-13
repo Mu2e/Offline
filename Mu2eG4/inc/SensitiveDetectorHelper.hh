@@ -58,31 +58,22 @@ namespace mu2e {
       void updateSensitiveDetectors(PhysicsProcessInfo& info,
                                     const SimParticleHelper& spHelper);
 
-      
       // put data into the stash
       void insertSDDataIntoStash(int position_to_insert,
                                  EventStash* stash_for_event_data);
       
-      
-      
-      // Put the data products into the event.
-      //NO LONGER USED
-      //void put(art::Event& event);
-
       // Query the same info
       bool enabled(StepInstanceName::enum_type instance) const;
 
       // Return one of the StepPointMCCollections.
       cet::maybe_ref<StepPointMCCollection> steps(StepInstanceName::enum_type id);
 
-      // create SDs for arbitrary logical volumes as requiested
+      // create SDs for arbitrary logical volumes as requested
       void instantiateLVSDs(const SimpleConfig& config);
 
       bool extMonPixelsEnabled() const { return extMonPixelsEnabled_; }
       
-      //void test_func() {std::cout << "SDH::testfunc COMPLETE" << std::endl; };
-      
-      
+      //LG: I made this public to use it in testing something
       std::vector<std::string> stepInstanceNamesToBeProduced() const;
 
   private:
@@ -125,6 +116,7 @@ namespace mu2e {
       InputTags preSimulatedHits_;
 
       // Return all of the instances names of the data products to be produced.
+      //LG: I made this public to use it in testing something
       //std::vector<std::string> stepInstanceNamesToBeProduced() const;
 
       // Separate handling as this detector does not produced StepPointMCs

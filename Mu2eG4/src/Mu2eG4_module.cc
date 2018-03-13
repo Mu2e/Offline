@@ -36,8 +36,7 @@
 #include "Mu2eG4/inc/checkConfigRelics.hh"
 #include "Mu2eG4/inc/GenEventBroker.hh"
 #include "Mu2eG4/inc/EventStash.hh"
-
-#include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
+#include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -70,16 +69,6 @@
 #include "G4SDManager.hh"
 #include "G4EventManager.hh"
 #include "G4Threading.hh"
-
-//MT or sequential mode?
-#define MU2EG4MT
-
-#ifdef MU2EG4MT
-    #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
-#else 
-    #include "Mu2eG4/inc/Mu2eG4RunManager.hh"
-#endif
-
 
 // C++ includes.
 #include <iostream>
@@ -116,27 +105,12 @@ private:
         Mu2eG4TrajectoryControl trajectoryControl_;
         Mu2eG4MultiStageParameters multiStagePars_;
       
-
         // The THREE functions that call new G4RunManger functions and break G4's BeamOn() into 3 pieces
         void BeamOnBeginRun( unsigned int runNumber);
         void BeamOnDoOneArtEvent( int eventNumber, G4int, const char* macroFile=0, G4int n_select=-1 );
         void BeamOnEndRun();
-      
-#ifdef MU2EG4MT
-        unique_ptr<Mu2eG4MTRunManager> _runManager;
-        //in MT mode, this is the number of G4 events per art event
-        //it must be equal to the size of GenParticleCollections
-        //const G4int numberOfEventsToBeProcessed = 15;
-        //const bool _use_G4MT = true;
-        //const G4int _nThreads = 3;
-#else
-        unique_ptr<Mu2eG4RunManager> _runManager;
-        // number of events initialized in sequential mode
-        //const G4int numberOfEventsToBeProcessed = std::numeric_limits<int>::max(); // largest int for now
-        //const G4int numberOfEventsToBeProcessed = 14;
-        //const bool _use_G4MT = false;
-        //const G4int _nThreads = 1;//this has no MT meaning in sequential mode but is needed to help reserve a vector in ActionInitialization
-#endif
+        
+        unique_ptr<G4RunManager> _runManager;
         
         const G4int numberOfEventsToBeProcessed;
         const bool _use_G4MT;
@@ -149,18 +123,14 @@ private:
         bool  _exportPDTStart;
         bool  _exportPDTEnd;
       
-      
+        
         ActionInitialization const * _actionInit;
         
-        //needs to be thread-level
-        //incorporate into PerEventObjectManager
+        //these cut objects are used in the master thread to indicate what data product is produced
+        //additional thread-local cut objects are owned by ActionInitialization
         unique_ptr<IMu2eG4Cut> stackingCuts_;
         unique_ptr<IMu2eG4Cut> steppingCuts_;
         unique_ptr<IMu2eG4Cut> commonCuts_;
-        
-        
-        //SimParticleCollectionPrinter simParticlePrinter_;
-
       
         int _rmvlevel;
         int _tmvlevel;
@@ -201,14 +171,11 @@ private:
         G4ThreeVector originInWorld;
         
         std::vector< SensitiveDetectorHelper > SensitiveDetectorHelpers;
-        //SensitiveDetectorHelper _sensitiveDetectorHelper;
         EventStash _StashForEventData;
         int stashInstanceToStore;
         
-        //this is the mutex protecting the art::event in calls such as 'getByLabel'
-        //G4Mutex artEventMutex = G4MUTEX_INITIALIZER;
-        
-        int event_counter = 0;
+        //used in testing code
+        //int event_counter = 0;
         
   }; // end G4 header
 
@@ -219,13 +186,6 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     mu2elimits_(pSet.get<fhicl::ParameterSet>("ResourceLimits")),
     trajectoryControl_(pSet.get<fhicl::ParameterSet>("TrajectoryControl")),
     multiStagePars_(pSet.get<fhicl::ParameterSet>("MultiStageParameters")),
-    
-    //_runManager(_use_G4MT ? std::make_unique<Mu2eG4MTRunManager>() : std::make_unique<G4RunManager>()),
-    
-    /* make RunManager choice */
-    _runManager(std::make_unique<Mu2eG4MTRunManager>()),
-    //_runManager(std::make_unique<Mu2eG4RunManager>()),
-    
     
     numberOfEventsToBeProcessed(pSet.get<int>("numberOfEventsToProcess",0)),
     _use_G4MT(pSet.get<bool>("runinMTMode",false)),
@@ -238,10 +198,6 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     stackingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", fhicl::ParameterSet()), mu2elimits_)),
     steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", fhicl::ParameterSet()), mu2elimits_)),
     commonCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4CommonCut", fhicl::ParameterSet()), mu2elimits_)),
-    
-
-    //simParticlePrinter_(pSet.get<fhicl::ParameterSet>("SimParticlePrinter", SimParticleCollectionPrinter::defaultPSet())),
-
     
     // FIXME:  naming of pset parameters
     _rmvlevel(pSet.get<int>("debug.diagLevel",0)),
@@ -263,33 +219,31 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     _StashForEventData(pSet),
     stashInstanceToStore(-1)
     {
-    
-    if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
-      throw cet::exception("CONFIG")
-        << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
+        //get the right type of RunManager depending on whether we are in MT mode or not
+        if (_use_G4MT) {
+            _runManager.reset(new Mu2eG4MTRunManager());
+        }
+        else {
+            _runManager.reset(new G4RunManager());
+        }
+
+        if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
+            throw cet::exception("CONFIG")
+            << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
     }
 
     //we need one SDHelper for each Worker thread, plus one extra for the Master
+    //in the ActionInitialization, each worker thread is given one of these SDHs to hold its SD-related data
+    //the "0th" worker thread gets the "0th" element of the vector, etc
+    //we give the "_nThreads" element to the Master thread through Mu2eG4World to setup the InstanceMap in the ctor of the SDH class
+    //we need only one of these SDHs to declare to art the list of products that will be produced
     SensitiveDetectorHelpers.reserve(_nThreads+1);
     
     for (int i = 0; i <= _nThreads; i++) {
         SensitiveDetectorHelpers.emplace_back(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet()));
-        //SensitiveDetectorHelpers.push_back( SensitiveDetectorHelper(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())) );
-        
-        //cout << "address of this SDH is " << &SensitiveDetectorHelpers.back() << endl;
-        
-        //in the ActionInitialization, each worker thread is given one of these SDHs to hold its SD-related data
-        //the "0th" worker thread gets the "0th" element of the vector, etc
-        //we give the "_nThreads" element to the Master thread through Mu2eG4World to setup the InstanceMap in the ctor of the SDH class
-        //we need only one of these SDHs to declare to art the list of products that will be produced
-        
-        //if (i==0) {
-        //    SensitiveDetectorHelpers.at(i).declareProducts(this);
-        //}
-        
     }
     
-    SensitiveDetectorHelpers.at(0).declareProducts(this);
+    SensitiveDetectorHelpers[0].declareProducts(this);
 
     produces<StatusG4>();
     produces<SimParticleCollection>();
@@ -306,15 +260,14 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
       produces<SimParticleRemapping>();
     }
 
-    //right now we don't want to produce these, since we need to incorporate them into the PerEventObjectsManager
-    //stackingCuts_->declareProducts(this);
-    //steppingCuts_->declareProducts(this);
-    //commonCuts_->declareProducts(this);
-
+    //can we simplify this and directly declare the relevent products
+    //rather than contructing these unneccesary object?
+    stackingCuts_->declareProducts(this);
+    steppingCuts_->declareProducts(this);
+    commonCuts_->declareProducts(this);
     
     produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
-    
- 
+     
     // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
     createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
 
@@ -351,19 +304,18 @@ void Mu2eG4::beginRun( art::Run &run){
 
     // Tell G4 that we are starting a new run.
     BeamOnBeginRun( run.id().run() );
-    //_runManager->RunInitialization(); happens here, among other things.
-    //this is where BeginOfRunAction is called
 
     // A few more things that only need to be done only once per job,
     // not once per run, but which need to be done after the call to
     // BeamOnReadyToBeginRun.
+    
+    //since the cuts used by the individual threads, do we need to do this?
     if ( ncalls == 1 ) {
-      //steppingAction->finishConstruction();//once per thread
-      stackingCuts_->finishConstruction(originInWorld);//once per thread or job? OK to make once per thread
+      stackingCuts_->finishConstruction(originInWorld);
       steppingCuts_->finishConstruction(originInWorld);
       commonCuts_->finishConstruction(originInWorld);
 
-        //can only be run in single-threaded mode, but at this point the code is still single-threaded
+        //can only be run in single-threaded mode
       if( _checkFieldMap>0 && !(_use_G4MT)) generateFieldMap(originInWorld,_checkFieldMap);
 
       if ( _exportPDTStart ) exportG4PDT( "Start:" );//once per job
@@ -373,9 +325,10 @@ void Mu2eG4::beginRun( art::Run &run){
     
 void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     
-    //if running in Mt mode, set number of threads
+    //if running in MT mode, set number of threads.
+    //need to downcast the ptr to the RunManager, which was defined as a ptr to G4RunManager
     if (_use_G4MT) {
-        _runManager->SetNumberOfThreads(_nThreads);
+        dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->SetNumberOfThreads(_nThreads);
     }
     
     if (standardMu2eDetector_) {
@@ -397,13 +350,13 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     if (standardMu2eDetector_) {
 
         allMu2e =
-            (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &(SensitiveDetectorHelpers.at(_nThreads))),
+            (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &(SensitiveDetectorHelpers[_nThreads])  ),
                                        std::make_unique<ConstructMaterials>(pset_)) );
     }
     else {
 
         allMu2e =
-            (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(pset_, &(SensitiveDetectorHelpers.at(_nThreads)) ),
+            (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(pset_, &(SensitiveDetectorHelpers[_nThreads]) ),
                                             std::make_unique<ConstructMaterials>(pset_)) );
     }
     
@@ -423,24 +376,24 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     pL->SetVerboseLevel(_rmvlevel);
 
     _runManager->SetUserInitialization(pL);
-      
     
-     ActionInitialization* actioninit = new ActionInitialization(pset_, _extMonFNALPixelSD, SensitiveDetectorHelpers,
-                                                                 *stackingCuts_, *steppingCuts_, *commonCuts_,
-                                                                 &_genEventBroker, &_physVolHelper,
-                                                                 _use_G4MT, _nThreads, originInWorld);
 
+    //this is where the UserActions are instantiated
+    ActionInitialization* actioninit = new ActionInitialization(pset_, _extMonFNALPixelSD, SensitiveDetectorHelpers,
+                                                                &_genEventBroker, &_physVolHelper,
+                                                                _use_G4MT, _nThreads, originInWorld,
+                                                                mu2elimits_);
+    
     //in MT mode, this is where BuildForMaster is called for master thread
     // in sequential mode, this is where Build() is called for main thread
     _runManager->SetUserInitialization(actioninit);
     
       
-      // setting tracking/stepping verbosity level; tracking manager
-      // sets stepping verbosity level as well;
-      G4RunManagerKernel const * rmk = G4RunManagerKernel::GetRunManagerKernel();
-      G4TrackingManager* tm  = rmk->GetTrackingManager();
-      tm->SetVerboseLevel(_tmvlevel);
-    
+    // setting tracking/stepping verbosity level; tracking manager
+    // sets stepping verbosity level as well;
+    G4RunManagerKernel const * rmk = G4RunManagerKernel::GetRunManagerKernel();
+    G4TrackingManager* tm  = rmk->GetTrackingManager();
+    tm->SetVerboseLevel(_tmvlevel);
     
     // Initialize G4 for this run.
     _runManager->Initialize();
@@ -481,12 +434,12 @@ void Mu2eG4::beginSubRun(art::SubRun& sr) {
 // Create one G4 event and copy its output to the art::event.
 void Mu2eG4::produce(art::Event& event) {
     
-    //confirm that if we are running in MT mode we do not have inputs from previous simulation stages
+    //confirm that IF we are running in MT mode we do not have inputs from previous simulation stages
     //otherwsie, throw an exception
     if (_use_G4MT) {
         
-        if (   art::InputTag() != multiStagePars_.inputSimParticles()
-            || art::InputTag() != multiStagePars_.inputMCTrajectories()
+        if (   multiStagePars_.inputSimParticles() != art::InputTag()
+            || multiStagePars_.inputMCTrajectories() != art::InputTag()
             || !(multiStagePars_.genInputHits().empty()) ) {
         
             throw cet::exception("CONFIG")
@@ -494,33 +447,24 @@ void Mu2eG4::produce(art::Event& event) {
         }
     }
     
-    event_counter++;
+    //event_counter++;
     
     art::Handle<GenParticleCollection> gensHandle;
     if(!(_generatorModuleLabel == art::InputTag())) {
         event.getByLabel(_generatorModuleLabel, gensHandle);
     }
 
-    
-    // ProductID for the SimParticleCollection.
-    // can we get this at constructor time?, same for all art events
+    // ProductID and ProductGetter for the SimParticleCollection.
     art::ProductID simPartId(getProductID<SimParticleCollection>(event));
     art::EDProductGetter const* simProductGetter = event.productGetter(simPartId);
-
     
     //stash is empty, we need to simulate events
     if (_StashForEventData.getStashSize() == 0)
     {
-        cout << "_________________________________________________________________________" << endl;
-        cout << "In produce, EVENT STASH IS EMPTY at event #" << event.id() << ". We are going to simulate some particles!" << endl;
         
         stashInstanceToStore = 0;
 
-        
-
-
-        //these are per art::event quantities
-
+        //******** these are per art::event quantities ********
         // StepPointMCCollection of input hits from the previous simulation stage
         HitHandles genInputHits;
         for(const auto& i : multiStagePars_.genInputHits()) {
@@ -528,50 +472,26 @@ void Mu2eG4::produce(art::Event& event) {
         }
    
         _genEventBroker.loadEvent(genInputHits, simPartId, &event, _generatorModuleLabel, &_StashForEventData, simProductGetter);
-        
-        //getStashSize() can only be called after loadEvent is called
-        //cout << "In produce, the size of the GPC stash is " << _genEventBroker.getStashSize() << endl;
+    
 
-        
-        //I think that, ultimately, the event stash size will be determined by the GenParticleCollection (gen particle stash size)
-        //and that will ALSO determine numberOfEventsToBeProcessed!
-        //however, for now, since there is only ONE GenParticle in the collection for each art event
-        //and I am simulating the SAME event in each thread (using the same GenParticle)
-        //I will set the stash size to be equal to numberOfEventsToBeProcessed
-        if (_use_G4MT)//MT mode, stash size is given by the size of input GenParticleCollection
+        if (_use_G4MT)//in MT mode, stash size is given by the size of input GenParticleCollection
         {
+            //getStashSize() can only be called after loadEvent is called
             //_StashForEventData.initializeStash(_genEventBroker.getStashSize());
             _StashForEventData.initializeStash(numberOfEventsToBeProcessed);
-            //std::cout << "in MT mode, the EVENT STASH is initialized to " << _StashForEventData.getStashSize() <<  " elements long" << std::endl;
         }
         else//in sequential mode, the stash size is 1
         {
-            //std::cout << "in sequential mode, the stash is initialized to 1 element long" << std::endl;
             _StashForEventData.initializeStash(1);
-            
         }
         
-        //this is just a check on the stash
-//        for (int i = 0; i < _StashForEventData.getStashSize(); i++) {
-//            std::cout << "the " << i << "th element of the stash is " << _StashForEventData.getInstanceNumber(i) << std::endl;
-//        }
-        
-
         // Run G4 for this event and access the completed event.
         BeamOnDoOneArtEvent( event.id().event(), numberOfEventsToBeProcessed );
-//        std::cout << "WE GOT PAST BeamOn in produce! " << std::endl;
         
         _genEventBroker.setEventPtrToZero();
 
         
     }//end if stash is empty, simulate events
-
-    
-//    if (stashInstanceToStore%10 == 0){
-//    std::cout << "___________________________________________________________" << endl;
-//    std::cout << "In produce, EVENT STASH IS NOT EMPTY at event #" << event.id() << ". We have an event stash of size = " << _StashForEventData.getStashSize() << endl;
-//    std::cout << "in produce, putting the --" << stashInstanceToStore << "-- element of the stash into the event " << std::endl;
-//    }
     
     event.put(std::move(_StashForEventData.getG4Status(stashInstanceToStore)));
     
@@ -583,14 +503,7 @@ void Mu2eG4::produce(art::Event& event) {
     
     //***** BEGIN HACK to reseat the SimPart Ptr, Parent Ptr, and Daughter Ptrs to point at the right place in the current art::Event
     
-    //SimParticleCollection* tempSims = _StashForEventData.getSimPartCollection(stashInstanceToStore).get();//DOESN'T WORK
-    //SimParticleCollection* tempSims_II = _StashForEventData.getSimPartCollection_II(stashInstanceToStore);
     std::unique_ptr<SimParticleCollection> tempSims = std::move(_StashForEventData.getSimPartCollection(stashInstanceToStore));
-    
-    
-    //testing stuff ********************************
-//    std::cout << "printing sim info from module" << std::endl;
-//    simParticlePrinter_.print(std::cout, *tempSims);
     
     for ( SimParticleCollection::iterator i=tempSims->begin(); i!=tempSims->end(); ++i )
     {
@@ -598,18 +511,13 @@ void Mu2eG4::produce(art::Event& event) {
         SimParticle& sim = i->second;
         
         if ( sim.isPrimary() ){
-            
             art::Ptr<GenParticle> reseat(gensHandle, sim.genParticle().key());
-            //std::cout << "for event #" << event_counter << ", is Primary, simID=" << sim->id() << ", sim->genParticle().get()=" << sim->genParticle().get() << "&gensHandle->front()=" << &gensHandle->front() << ", reseat.get()=" << reseat.get() << std::endl;
-            
             sim.genParticle() = reseat;
-            //std::cout << "for event #" << event_counter << ", is Primary, simID=" << sim->id() << ", sim->genParticle().get()=" << sim->genParticle().get() << "&gensHandle->front()=" << &gensHandle->front() << ", reseat.get()=" << reseat.get() << std::endl;
         }
         
-  
         sim.parent() = art::Ptr<SimParticle>(sim.parent().id(),
-                                              sim.parent().key(),
-                                              event.productGetter( sim.parent().id() ) );
+                                             sim.parent().key(),
+                                             simProductGetter );
         
         //the following is copied from MixMCEvents_module.cc
         std::vector<art::Ptr<SimParticle> > const& daughters = sim.daughters();
@@ -619,8 +527,8 @@ void Mu2eG4::produce(art::Event& event) {
             newDaughters.reserve(daughters.size());
             
             for ( size_t i=0; i != daughters.size(); ++i){
-                art::Ptr<SimParticle> const& dau = art::Ptr<SimParticle>(daughters.at(i).id(), daughters.at(i).key(),
-                                                                         event.productGetter( daughters.at(i).id() ) );
+                art::Ptr<SimParticle> const& dau = art::Ptr<SimParticle>(daughters[i].id(), daughters[i].key(),
+                                                                         simProductGetter );
                 newDaughters.push_back( dau );
             }
             
@@ -631,11 +539,8 @@ void Mu2eG4::produce(art::Event& event) {
     //***** END HACK to reseat SimPart Ptrs
     
     event.put(std::move(tempSims));
-    //event.put(std::move(_StashForEventData.getSimPartCollection(stashInstanceToStore)));
-    
     
     if(!timeVDtimes_.empty()) {
-        //OLD event.put(std::move(_StashForEventData.getTVDHits(stashInstanceToStore)),_StashForEventData.getTVDName(stashInstanceToStore));
         std::unique_ptr<StepPointMCCollection> tempTVD = std::move(_StashForEventData.getTVDHits(stashInstanceToStore));
         
         for ( StepPointMCCollection::iterator i=tempTVD->begin(); i!=tempTVD->end(); ++i ){
@@ -644,93 +549,55 @@ void Mu2eG4::produce(art::Event& event) {
             if ( step.simParticle().isNonnull() ){
                 step.simParticle() = art::Ptr<SimParticle>(step.simParticle().id(),
                                                            step.simParticle().key(),
-                                                           event.productGetter( step.simParticle().id() ) );
+                                                           simProductGetter );
             }
         }
         event.put(std::move(tempTVD),_StashForEventData.getTVDName(stashInstanceToStore));
     }// if !timeVDtimes_.empty()
     
     if(trajectoryControl_.produce()) {
-        //OLD event.put(std::move(_StashForEventData.getMCTrajCollection(stashInstanceToStore)));
-        
         //get the MCTrajCollection from the Stash and create a new one to put stuff into
         std::unique_ptr<MCTrajectoryCollection> tempTrajs = std::move(_StashForEventData.getMCTrajCollection(stashInstanceToStore));
         std::unique_ptr<MCTrajectoryCollection> outTrajectory(new MCTrajectoryCollection());
         
         for ( MCTrajectoryCollection::iterator i=tempTrajs->begin(); i!=tempTrajs->end(); ++i ){
-            
-            art::Ptr<SimParticle> newParticle(i->second.sim().id(), i->second.sim().key(), event.productGetter( i->second.sim().id() ) );
-            //art::Ptr<SimParticle> const& sim_ptr = i->first;
-            //cout << "sim_ptr.id() = " << sim_ptr.id() << endl;
-            
-            //these two lines worked for modifying just the traj object
-            //MCTrajectory& traj(i->second);
-            //traj.sim() = art::Ptr<SimParticle>(traj.sim().id(), traj.sim().key(), event.productGetter( traj.sim().id() ) );
-            //cout << "traj.sim().id() = " << traj.sim().id() << endl;
-            
+            art::Ptr<SimParticle> newParticle(i->second.sim().id(), i->second.sim().key(), simProductGetter );
             (*outTrajectory)[newParticle] = i->second;
             (*outTrajectory)[newParticle].sim() = newParticle;
-
         }
 
         event.put(std::move(outTrajectory));
         
     }// if trajectoryControl
     
-    //THINK I NEED TO RESEAT THE SimParticles in the Remap
+    //DO I NEED TO RESEAT THE SimParticles in the Remap?  maybe no, becasue these are only produced in sequential mode where the stash isn't used
     if(multiStagePars_.multiStage()) {
         event.put(std::move(_StashForEventData.getSimParticleRemap(stashInstanceToStore)));
     }
     
-    //ask Andrei about if this needs any modification like other SimParticleCollections
-    if(SensitiveDetectorHelpers.at(0).extMonPixelsEnabled()) {
-        //OLD event.put(std::move(_StashForEventData.getExtMonFNALSimHitCollection(stashInstanceToStore)));
-        
+    if(SensitiveDetectorHelpers[0].extMonPixelsEnabled()) {
         std::unique_ptr<ExtMonFNALSimHitCollection> tempExtMonHits = std::move((_StashForEventData.getExtMonFNALSimHitCollection(stashInstanceToStore)));
         
         for ( ExtMonFNALSimHitCollection::iterator i=tempExtMonHits->begin(); i!=tempExtMonHits->end(); ++i ){
             ExtMonFNALSimHit& hit = *i;
             
             if ( hit.simParticle().isNonnull() ){
-                hit.simParticle() = art::Ptr<SimParticle>(hit.simParticle().id(), hit.simParticle().key(),
-                                                          event.productGetter( hit.simParticle().id() ) );
+                hit.simParticle() = art::Ptr<SimParticle>(hit.simParticle().id(), hit.simParticle().key(), simProductGetter );
             }
         }
         event.put(std::move(tempExtMonHits));
     }//if extMonPixelsEnabled
     
     
-    _StashForEventData.putSensitiveDetectorData(stashInstanceToStore, event);
-
-        
-        //FOR CUTS, TRY THIS!  I think this is ultimately the correct way to do this
-        //also need to add cuts puts in the 'else; below
-        //_StashForEventData.putCutsData(stashInstanceToStore, event);
-        
-        //I DON'T THINK WE NEED TO DO IT THIS WAY
-        //_StashForEventData.putCutsData(stashInstanceToStore, event, stackingCuts_.get());
-        //_StashForEventData.putCutsData(stashInstanceToStore, event, steppingCuts_.get());
-        //_StashForEventData.putCutsData(stashInstanceToStore, event, commonCuts_.get());
-        
-        //THIS MIGHT BE OVERLY SPECIFIC
-        //stackingCuts_->put(stashInstanceToStore, _StashForEventData, event);
-        //steppingCuts_->put(stashInstanceToStore, _StashForEventData, event);
-        //commonCuts_->put(stashInstanceToStore, _StashForEventData, event);
-
-        //OLD
-        //stackingCuts_->put(event);
-        //steppingCuts_->put(event);
-        //commonCuts_->put(event);
+    _StashForEventData.putSensitiveDetectorData(stashInstanceToStore, event, simProductGetter);
+    _StashForEventData.putCutsData(stashInstanceToStore, event, simProductGetter);
     
     //increment the instance of the EventStash to store
     stashInstanceToStore++;
     
     if (stashInstanceToStore == _StashForEventData.getStashSize()) {
         _StashForEventData.clearStash();
-        //std::cout << "AFTER Clear, size of stash = " << _StashForEventData.getStashSize() << endl;
-
     }
-
 
     
 }//end Mu2eG4::produce
@@ -790,8 +657,6 @@ void Mu2eG4::BeamOnBeginRun( unsigned int runNumber){
     
         _runManager->ConstructScoringWorlds();
         _runManager->RunInitialization();
-        
-        cout << "numberOfEventsToBeProcessed = " << numberOfEventsToBeProcessed << endl;
 
 }
 
@@ -803,11 +668,11 @@ void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber, G4int num_events, const char*
         {
             //this is where the events are actually processed
             //num_events is # of G4 events processed per art event
-            _runManager->InitializeEventLoop(num_events,macroFile,n_select);
             
-            _runManager->Mu2eG4WaitForEndEventLoopWorkers(); //USE THIS!
-            //_runManager->Mu2eG4TerminateWorkers(); DOES NOT WORK - CAUSES A HANG
-            
+            //NOTE: G4MTRunManager::WaitForEndEventLoopWorkers() is a protected function in G4 code, so we MUST have our own MTRunManager
+            //in order to access this function
+            dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->InitializeEventLoop(num_events,macroFile,n_select);
+            dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4WaitForEndEventLoopWorkers();
             
         }
         else//sequential mode
@@ -840,14 +705,14 @@ void Mu2eG4::BeamOnEndRun(){
         _runManager->RunTermination();
         
         //if in sequential mode
-        if (!_use_G4MT)
-        {
+//        if (!_use_G4MT)
+//        {
         G4cout << "  Event processing inside ProcessOneEvent time summary" << G4endl;
         G4cout << "  User="  << _userElapsed
         << "s Real="  << _realElapsed
         << "s Sys="   << _systemElapsed
         << "s" << G4endl;
-        }
+//        }
         
 }
  

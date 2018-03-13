@@ -104,15 +104,6 @@ namespace mu2e
         scintillatorBarLogical->SetVisAttributes(visAtt);
       }
 
-        
-/*
-        
-      // Make each scintillatorBar a sensitive detector.
-      G4VSensitiveDetector *sd = 
-                     G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar());
-      if(sd) scintillatorBarLogical->SetSensitiveDetector(sd);
- 
- */
 
       if (verbosityLevel > 1) 
       {

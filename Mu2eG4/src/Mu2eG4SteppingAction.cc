@@ -58,9 +58,6 @@ namespace mu2e {
 
     _spHelper()
   {
-      
-    //std::cout << "AT Mu2eG4SteppingAction::c'tor" << std::endl;
-      
       if( (mu2elimits_->maxStepsPerTrack() > 0) && (G4Threading::G4GetThreadId() <= 0) ) {
         cout << "Limit maximum number of steps per track in Mu2eG4SteppingAction to "
              << mu2elimits_->maxStepsPerTrack() << endl;
@@ -71,7 +68,6 @@ namespace mu2e {
         for( unsigned int i=0; i<tvd_time_.size(); ++i ) cout << " " << tvd_time_[i];
             cout << " ns" << endl;
     }
-      
   }
 
   // A helper function to manage the printout.
@@ -94,8 +90,6 @@ namespace mu2e {
   void Mu2eG4SteppingAction::beginRun(PhysicsProcessInfo* processInfo,
                                       CLHEP::Hep3Vector const& mu2eOrigin ){
       
-      //std::cout << "AT Mu2eG4SteppingAction::beginRun" << std::endl;
-
     _processInfo    = processInfo;
     _mu2eOrigin     =  mu2eOrigin;
   }
@@ -106,25 +100,17 @@ namespace mu2e {
     // to get phys volume pointers that are used in the
     // volume to cut value map.
       
-      /*REMOVE THIS TO REDUCE PRINTOUT
-      
       if (G4Threading::G4GetThreadId() <= 0) {
-          
           std::cout << "Mu2eG4SteppingAction: mcTrajectoryDefaultMinPointDistance = "
                     << trajectoryControl_->defaultMinPointDistance() << std::endl;
       
           for(const auto& spec: trajectoryControl_->perVolumeMinDistance()) {
               auto vol = getPhysicalVolumeOrThrow(spec.first);
               double cut = mcTrajectoryVolumePtDistances_[vol] = spec.second;
-          
               std::cout << "Mu2eG4SteppingAction: mcTrajectory distance cut = "
                         << cut <<" for volume " << spec.first << std::endl;
-
-          }
-          
-      }
-     */
-    
+          }//for
+      }//if
   }
 
     

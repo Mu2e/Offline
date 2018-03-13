@@ -99,6 +99,8 @@ SensitiveDetectorHelper::SensitiveDetectorHelper(fhicl::ParameterSet const& pset
         }
 
         //----------------
+        //from LG: is this part of the code deprecated?
+        //it seems that no one uses the "sensitiveVolumes" configuration parameter anymore
         std::vector<string> lvlist(pset.get<vector<string>>("sensitiveVolumes", {}));
         for(const auto& name : lvlist) {
             lvsd_[name] = StepInstance(name);
@@ -120,19 +122,6 @@ SensitiveDetectorHelper::SensitiveDetectorHelper(fhicl::ParameterSet const& pset
             }//if
         }//for
 
-        //***************************************************
-        
-/*
-            std::cout << "the names of the data products to be produced: " << std::endl;
-            vector<string> const& instanceNamesTEST = stepInstanceNamesToBeProduced();
-            for (unsigned i = 0 ; i<instanceNamesTEST.size(); i++) {
-                cout << instanceNamesTEST.at(i) << endl;
-            }
-*/
-            
-        
-        
-        
         //----------------
   }//end c'tor
 
@@ -140,6 +129,8 @@ SensitiveDetectorHelper::SensitiveDetectorHelper(fhicl::ParameterSet const& pset
     SensitiveDetectorHelper::~SensitiveDetectorHelper()
     {};
     
+    //from LG: is this part of the code deprecated?
+    //it seems that no one uses the "sensitiveVolumes" configuration parameter anymore
 void SensitiveDetectorHelper::instantiateLVSDs(const SimpleConfig& config){
     
         G4SDManager* SDman = G4SDManager::GetSDMpointer();
@@ -156,24 +147,14 @@ void SensitiveDetectorHelper::instantiateLVSDs(const SimpleConfig& config){
 // Find the sensitive detector objects and attach them to each StepInstance object.
 // Must not be called until G4 has been initialized.
 void SensitiveDetectorHelper::registerSensitiveDetectors(){
-    
-        //std::cout << "in SDH::registerSDs, address of stepInstances_ is "
-        //          << &stepInstances_ << std::endl;
 
         G4SDManager* sdManager = G4SDManager::GetSDMpointer();
     
         for ( InstanceMap::iterator i=stepInstances_.begin();
-             i != stepInstances_.end(); ++i )
-        {
+             i != stepInstances_.end(); ++i ) {
             StepInstance& step(i->second);
-            
-            //if (G4Threading::G4GetThreadId() <= 0) {
-            //    std::cout << "in SDH::registerSDs, registering SD: " << step.stepName <<std::endl;
-            //}
-            
             step.sensitiveDetector =
             dynamic_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str()));
-        
         }
 }
 
@@ -196,12 +177,6 @@ void SensitiveDetectorHelper::createProducts(const art::Event& event,
         //----------------
         // Clean and pre-fill pre-defined SD collections in stepInstances_
 
-//    if (G4Threading::G4GetThreadId() <= 0) {
-//        std::cout << "in SDH::createProducts, address of stepInstances_ is "
-//                  << &stepInstances_ << std::endl;
-//    }
-    
-    
         for (auto& i : stepInstances_) {
             
             auto& out = i.second.p;
@@ -213,25 +188,12 @@ void SensitiveDetectorHelper::createProducts(const art::Event& event,
                 out.insert(out.end(), in->second->cbegin(), in->second->cend());
             }
             
-//            if (G4Threading::G4GetThreadId() <= 0) {
-//            std::cout << "in SDH::createProducts, setting SimPartPtr for  "
-//                    << i.second.stepName << std::endl;
-            
-//            std::cout << "address of StepPtMC is   "
-//                << &out << ", size is " << out.size() << std::endl;
-//            }
-            
-            
-
             // Update SimParticle ptr to point to the new collection
             for(auto& hit : out) {
                 hit.simParticle() =
                 art::Ptr<SimParticle>(spHelper.productID(),
                                       hit.simParticle()->id().asUint(),
                                       spHelper.productGetter());
-                
-                //std::cout << "address of new SimPart is   "
-                //<< &hit.simParticle() << std::endl;
                 
             }//for auto& hit
         }//for auto& i
@@ -264,31 +226,12 @@ void SensitiveDetectorHelper::createProducts(const art::Event& event,
 // Also hand it the information needed to create art::Ptr objects.
 void SensitiveDetectorHelper::updateSensitiveDetectors( PhysicsProcessInfo&   info,
                                                         const SimParticleHelper& spHelper){
-    /*
-    std::cout << "in SDH::updateSensitiveDetectors, address of stepInstances_ is "
-              << &stepInstances_ << std::endl;
-
-    std::cout << "SDH::updateSensitiveDetectors() is being called from Thread #"
-              << G4Threading::G4GetThreadId() << std::endl;
-    
-    std::cout << "length of stepInstances_ is: " << stepInstances_.size() << std::endl;
-    */
-    
+  
     for ( InstanceMap::iterator i=stepInstances_.begin();
          i != stepInstances_.end(); ++i ){
         
         StepInstance& instance(i->second);
-        
         if ( instance.sensitiveDetector ){
-            
-   /*         if (G4Threading::G4GetThreadId() <= 0) {
-
-            std::cout << "CALLING beforeG4Event from SDHelper::updateSDs for SD: "
-                      << instance.sensitiveDetector->GetName() << std::endl;
-            std::cout << "giving StepPtMCCollection address: " << &instance.p << std::endl;
-        }
-    */
-        
             instance.sensitiveDetector->beforeG4Event(instance.p, info, spHelper);
         }//if
     }//for
@@ -300,14 +243,10 @@ void SensitiveDetectorHelper::updateSensitiveDetectors( PhysicsProcessInfo&   in
 }
 
     
-    
-//NEW!
-void SensitiveDetectorHelper::insertSDDataIntoStash(int position_to_insert, EventStash* stash_for_event_data)
-    {
+void SensitiveDetectorHelper::insertSDDataIntoStash(int position_to_insert, EventStash* stash_for_event_data){
         
         for ( InstanceMap::iterator i=stepInstances_.begin();
-             i != stepInstances_.end(); ++i )
-        {
+             i != stepInstances_.end(); ++i ) {
             unique_ptr<StepPointMCCollection> p(new StepPointMCCollection);
             StepInstance& instance(i->second);
             std::swap( instance.p, *p);
@@ -315,40 +254,15 @@ void SensitiveDetectorHelper::insertSDDataIntoStash(int position_to_insert, Even
                                                              instance.stepName);
         }
         
-        for (auto& i: lvsd_)
-        {
+        for (auto& i: lvsd_) {
             unique_ptr<StepPointMCCollection> p(new StepPointMCCollection);
             std::swap( i.second.p, *p);
             stash_for_event_data->insertSDStepPointMC(position_to_insert, std::move(p),
                                                              i.second.stepName);
         }
-        
-    }
-
-//NO LONGER USED!
-// Put all of the data products into the event.
-// To be called at the end of each event.
-/*
-void SensitiveDetectorHelper::put( art::Event& event ){
-
-    for ( InstanceMap::iterator i=stepInstances_.begin();
-         i != stepInstances_.end(); ++i ){
-        unique_ptr<StepPointMCCollection> p(new StepPointMCCollection);
-        StepInstance& instance(i->second);
-        std::swap( instance.p, *p);
-        event.put(std::move(p), instance.stepName );
-    }
-
-    for (auto& i: lvsd_) {
-        unique_ptr<StepPointMCCollection> p(new StepPointMCCollection);
-        std::swap( i.second.p, *p);
-        event.put(std::move(p), i.second.stepName );
-    }
-
 }
- */
 
-    
+
 // Return all of the instances names of the data products to be produced.
 vector<string> SensitiveDetectorHelper::stepInstanceNamesToBeProduced() const{
     

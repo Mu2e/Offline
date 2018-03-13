@@ -411,23 +411,6 @@ namespace mu2e{
                                              doSurfaceCheck
                                              );
 
-          
-          /*
-          
-        // Make gas of this straw a sensitive detector.
-        G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
-          FindSensitiveDetector(SensitiveDetectorName::TrackerGas());
-        if(sd) strawGasInfo.logical->SetSensitiveDetector(sd);
-
-        sd = G4SDManager::GetSDMpointer()->
-          FindSensitiveDetector(SensitiveDetectorName::TrackerSWires());
-        if(sd) strawWireInfo.logical->SetSensitiveDetector(sd);
-
-        sd = G4SDManager::GetSDMpointer()->
-          FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
-        if (sd) strawWallInfo.logical->SetSensitiveDetector(sd);
-           
-           */
 
       }   // end loop over straws
     }     // end loop over layers
@@ -532,17 +515,7 @@ namespace mu2e{
         cout.width(oldWidth);
       }
 
-      // Make TTrackerPlaneSupport a sensitive detector for radiation damage studies
-
-        
-/*
-        
-      G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
-        FindSensitiveDetector(SensitiveDetectorName::TTrackerPlaneSupport());
-      if(sd) supportInfoVect[ipln].logical->SetSensitiveDetector(sd);
- 
- */
-
+    
       verbosityLevel > 1 &&
         cout << __func__ << " plane: " << ipln << " " 
              << planeInfoVect[ipln].name << " planeDraw: " << planeDraw << endl;

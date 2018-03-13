@@ -61,16 +61,13 @@ namespace mu2e {
 
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) = 0;
 
-      // Create data  products and pre-fill with input hits, if any; to be called at the start of each event.
+      // Create data products and pre-fill with input hits, if any; to be called at the start of each event.
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) = 0;
 
-      
       // put data into the stash
       virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) = 0;
-
       
       // Put the data products into the event.
-      //virtual void put(int g4event_identifier, EventStash* stash_for_event_data, art::Event& event) = 0;
       //virtual void put(art::Event& event) = 0;
       
       virtual ~IMu2eG4Cut() {}

@@ -27,7 +27,5 @@ namespace mu2e {
                               art::Ptr<SimParticle>(simProdID_,
                                                     simId.asUint(),
                                                     simProductGetter_));
-   
-        
     }
 }

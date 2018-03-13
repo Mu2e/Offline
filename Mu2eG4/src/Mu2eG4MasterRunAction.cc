@@ -14,22 +14,16 @@ using namespace std;
 namespace mu2e {
 
 Mu2eG4MasterRunAction::Mu2eG4MasterRunAction(PhysicalVolumeHelper* phys_volume_helper,
-                                             //PhysicsProcessInfo* phys_process_info
                                              std::vector< PhysicsProcessInfo >* phys_process_info_vec)
     :
     G4UserRunAction(),
     _physVolHelper(phys_volume_helper),
-    //_processInfo(phys_process_info)
     PhysicsProcessInfoVector(phys_process_info_vec)
-    {
-        std::cout << "AT Mu2eG4MasterRunAction c'tor" << std::endl;
-    }
+    {}
     
     
 Mu2eG4MasterRunAction::~Mu2eG4MasterRunAction()
-    {
-        std::cout << "AT Mu2eG4MasterRunAction destructor" << std::endl;
-    }
+    {}
     
     
 void Mu2eG4MasterRunAction::BeginOfRunAction(const G4Run* aRun)
@@ -40,27 +34,15 @@ void Mu2eG4MasterRunAction::BeginOfRunAction(const G4Run* aRun)
         
         for (unsigned i = 0; i < PhysicsProcessInfoVector->size(); i++) {
             PhysicsProcessInfoVector->at(i).beginRun();
-            
-            //std::cout << "calling PPI.beginRun() for PPI.at " << i << std::endl;
-            
         }
-        //_processInfo->beginRun();
-
     }
     
     
 void Mu2eG4MasterRunAction::EndOfRunAction(const G4Run* aRun)
-    {
-        std::cout << "calling Mu2eG4MasterRA::EndOfRunAction()" << std::endl;
-        
+    {        
         for (unsigned i = 0; i < PhysicsProcessInfoVector->size(); i++) {
             PhysicsProcessInfoVector->at(i).endRun();
         }
-        //_processInfo->endRun();
-        
-        //nothing for this
-        // _physVolHelper.endRun();
-        
     }
 
     

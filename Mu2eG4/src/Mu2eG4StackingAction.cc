@@ -13,9 +13,7 @@ namespace mu2e {
                                              IMu2eG4Cut& commonCuts)
     : stackingCuts_(&stackingCuts)
     , commonCuts_(&commonCuts)
-  {
-      //std::cout << "AT Mu2eG4StackingAction::c'tor" << std::endl;
-  }
+  {}
     
     G4ClassificationOfNewTrack Mu2eG4StackingAction::ClassifyNewTrack(const G4Track* trk){
         if(stackingCuts_->stackingActionCut(trk)) {

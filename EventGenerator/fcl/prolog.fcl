@@ -63,6 +63,12 @@ StoppedMuonConversionGunN: {
     stashSize      : @nil
 }
 
+PrimaryProtonGunN: {
+module_type          : PrimaryProtonGunN
+inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
+stashSize     : @nil
+}
+
 StoppedParticleReactionGun: {
     module_type    : StoppedParticleReactionGun
     czmin          : -1.0
@@ -99,6 +105,7 @@ EventGenerator : {
 	StoppedMuonConversionGun   : { @table::StoppedMuonConversionGun   }
 	StoppedMuonConversionGunN  : { @table::StoppedMuonConversionGunN  }
 	StoppedParticleReactionGun : { @table::StoppedParticleReactionGun }
+        PrimaryProtonGunN          : { @table::PrimaryProtonGunN          }
     }
 }
 

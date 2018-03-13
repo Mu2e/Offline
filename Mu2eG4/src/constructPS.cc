@@ -283,22 +283,6 @@ namespace mu2e {
 					  "PS"
                                           );
       
-/*TAKEN OUT and MOVED TO MU2EWORLD.CC FOR MT
- 
- 
-    bool psVacuumSensitive = _config.getBool("PS.Vacuum.Sensitive", false);
- 
-    if(psVacuumSensitive) {
-      G4VSensitiveDetector* psVacuumSD = G4SDManager::GetSDMpointer()->
-        FindSensitiveDetector(SensitiveDetectorName::PSVacuum());
-      if(psVacuumSD) psVacuumInfo.logical->SetSensitiveDetector(psVacuumSD);
-    }
- 
- 
- 
- */
- 
- 
 
 //    // Build the production target.
 //    GeomHandle<ProductionTarget> tgt;

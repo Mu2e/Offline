@@ -26,7 +26,6 @@
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
@@ -40,7 +39,6 @@
 // G4 includes
 #include "G4Material.hh"
 #include "G4SDManager.hh"
-#include "G4VSensitiveDetector.hh"
 #include "G4Color.hh"
 #include "G4Tubs.hh"
 #include "G4Cons.hh"
@@ -82,9 +80,6 @@ namespace mu2e {
 
     // Virtual Detectors Coll1_In, COll1_Out are placed inside TS1
 
-    G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
-
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
 
     if(verbosityLevel>0) {
@@ -115,7 +110,6 @@ namespace mu2e {
 
         doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
 
-        vd.logical->SetSensitiveDetector(vdSD);
       }
 
     // ************************** DNB (Lou) Jan 2016 **********
@@ -145,7 +139,6 @@ namespace mu2e {
         doSurfaceCheck && checkForOverlaps(myvd.physical, 
 					   _config, verbosityLevel>0);
 
-        myvd.logical->SetSensitiveDetector(vdSD);
     }
 
     // Virtual Detector TS4_Bend is placed inside TS4
@@ -173,7 +166,6 @@ namespace mu2e {
         doSurfaceCheck && checkForOverlaps(myvd.physical, 
 					   _config, verbosityLevel>0);
 
-        myvd.logical->SetSensitiveDetector(vdSD);
     }
 
     //***************************
@@ -198,7 +190,6 @@ namespace mu2e {
 
         doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
 
-        vd.logical->SetSensitiveDetector(vdSD);
       }
 
     // Virtual Detectors Coll5_In, Coll5_Out are placed inside TS5
@@ -222,7 +213,6 @@ namespace mu2e {
 
         doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
 
-        vd.logical->SetSensitiveDetector(vdSD);
       }
 
     // Virtual Detectors Coll5_OutSurf surrounds the outer cylindrical surface of collimator in TS5
@@ -256,8 +246,6 @@ namespace mu2e {
                                 false);
 
       doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
-
-      vd.logical->SetSensitiveDetector(vdSD);
 
     }
 
@@ -331,8 +319,6 @@ namespace mu2e {
                                     false);
 
           doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
-
-          vd.logical->SetSensitiveDetector(vdSD);
           
           if ( verbosityLevel > 0) {
             cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
@@ -422,7 +408,6 @@ namespace mu2e {
 
           doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
 
-          vd.logical->SetSensitiveDetector(vdSD);
         }
     }
 
@@ -483,8 +468,6 @@ namespace mu2e {
 
         doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
 
-        vd.logical->SetSensitiveDetector(vdSD);
-
         vdId = VirtualDetectorId::TT_MidInner;
         if( vdg->exist(vdId) ) {
 
@@ -526,7 +509,6 @@ namespace mu2e {
 
           doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
 
-          vd.logical->SetSensitiveDetector(vdSD);
         }
 
       }
@@ -689,8 +671,6 @@ namespace mu2e {
               protonabs2Info.centerInMu2e()-vdg->getGlobal(vdId) << endl;
           }
 
-          vdHollowInfo.logical->SetSensitiveDetector(vdSD);
-
           //  now the complementary solid, it has to be placed in protonabs2
 
           vdId = VirtualDetectorId::TT_FrontPA;
@@ -763,9 +743,6 @@ namespace mu2e {
                 protonabs2Info.centerInMu2e()-vdg->getGlobal(vdId) << endl;
             }
 
-
-            vdIntersectionInfo.logical->SetSensitiveDetector(vdSD);
-
           }
         }
       }
@@ -815,8 +792,6 @@ namespace mu2e {
 
           doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-          vdInfo.logical->SetSensitiveDetector(vdSD);
-
         }
 
       }
@@ -861,8 +836,6 @@ namespace mu2e {
                                      false);
 
         doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-        vdInfo.logical->SetSensitiveDetector(vdSD);
 
       }
 
@@ -911,8 +884,6 @@ namespace mu2e {
 
         doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-        vdInfo.logical->SetSensitiveDetector(vdSD);
-
       }
 
       vdId = VirtualDetectorId::TT_InSurf;
@@ -959,8 +930,6 @@ namespace mu2e {
                                      false);
 
         doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-        vdInfo.logical->SetSensitiveDetector(vdSD);
 
       }
 
@@ -1013,8 +982,6 @@ namespace mu2e {
                                      false);
 
         doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-        vdInfo.logical->SetSensitiveDetector(vdSD);
       }
 
       vdId = VirtualDetectorId::IT_VD_EndCap_Front;
@@ -1057,7 +1024,6 @@ namespace mu2e {
 
         doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-        vdInfo.logical->SetSensitiveDetector(vdSD);
       }
 
       vdId = VirtualDetectorId::IT_VD_EndCap_Back;
@@ -1100,7 +1066,6 @@ namespace mu2e {
 
         doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-        vdInfo.logical->SetSensitiveDetector(vdSD);
       }
 
     } // end hasITracker
@@ -1165,7 +1130,6 @@ namespace mu2e {
 
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-      vdInfo.logical->SetSensitiveDetector(vdSD);
       */
     }
 
@@ -1200,7 +1164,6 @@ namespace mu2e {
 
         doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-        vdInfo.logical->SetSensitiveDetector(vdSD);
       }
 
     if (_config.getBool("targetPS.hasVD.backward", false)) {
@@ -1231,7 +1194,6 @@ namespace mu2e {
 
                     doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-                    vdInfo.logical->SetSensitiveDetector(vdSD);
             }
     }
 
@@ -1263,7 +1225,6 @@ namespace mu2e {
 
                     doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-                    vdInfo.logical->SetSensitiveDetector(vdSD);
             }
     }
 
@@ -1308,7 +1269,6 @@ namespace mu2e {
 
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-      vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
     // ExtMonFNAL detector VDs - created in constructExtMonFNAL()
@@ -1349,8 +1309,6 @@ namespace mu2e {
                                    );
 
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-      vdInfo.logical->SetSensitiveDetector(vdSD);
       
       if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
@@ -1452,8 +1410,6 @@ namespace mu2e {
 
                doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
                doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
-               vdInfo.logical->SetSensitiveDetector(vdSD);
-               vdInfo2.logical->SetSensitiveDetector(vdSD);
            }
 
            
@@ -1491,8 +1447,6 @@ namespace mu2e {
 
                doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
                // doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
-               vdInfo.logical->SetSensitiveDetector(vdSD);
-               // vdInfo2.logical->SetSensitiveDetector(vdSD);
            }
            
            if( vdg->exist(vdIdFEBSurf) )
@@ -1529,8 +1483,6 @@ namespace mu2e {
 
 	       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 	       doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
-	       vdInfo.logical->SetSensitiveDetector(vdSD);
-	       vdInfo2.logical->SetSensitiveDetector(vdSD);
            }
            
            if( vdg->exist(vdIdFEBEdge) )
@@ -1567,8 +1519,6 @@ namespace mu2e {
 
                doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 	       doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
-               vdInfo.logical->SetSensitiveDetector(vdSD);
-	       vdInfo2.logical->SetSensitiveDetector(vdSD);
            }
 
        }// end loop on disks
@@ -1613,7 +1563,6 @@ namespace mu2e {
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-      vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
 //     vdId = VirtualDetectorId::STM_CRVShieldDnStr;
@@ -1651,8 +1600,7 @@ namespace mu2e {
 //           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
 //       }
 //       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-//       vdInfo.logical->SetSensitiveDetector(vdSD);
-//     }    
+//     }
 
     vdId = VirtualDetectorId::STM_FieldOfViewCollDnStr;
     if ( vdg->exist(vdId) ) {
@@ -1689,8 +1637,7 @@ namespace mu2e {
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-      vdInfo.logical->SetSensitiveDetector(vdSD);
-    }    
+    }
     
     vdId = VirtualDetectorId::STM_MagDnStr;
     if ( vdg->exist(vdId) ) {
@@ -1737,7 +1684,6 @@ namespace mu2e {
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-      vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
     vdId = VirtualDetectorId::STM_SpotSizeCollUpStr;
@@ -1772,8 +1718,7 @@ namespace mu2e {
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-      vdInfo.logical->SetSensitiveDetector(vdSD);
-    }    
+    }
     
     vdId = VirtualDetectorId::STM_CollDnStr;
     if ( vdg->exist(vdId) ) {
@@ -1807,7 +1752,6 @@ namespace mu2e {
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-      vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
     
@@ -1843,7 +1787,6 @@ namespace mu2e {
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-      vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
     
@@ -1879,7 +1822,6 @@ namespace mu2e {
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-      vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
 
@@ -1937,7 +1879,6 @@ namespace mu2e {
 
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-      vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
     vdId = VirtualDetectorId::PSPbarOut;
@@ -1994,7 +1935,6 @@ namespace mu2e {
 
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-      vdInfo.logical->SetSensitiveDetector(vdSD);
     }
 
     GeomHandle<CosmicRayShield> CRS;
@@ -2036,7 +1976,6 @@ namespace mu2e {
 
         doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-        vdInfo.logical->SetSensitiveDetector(vdSD);
       }
     }
    

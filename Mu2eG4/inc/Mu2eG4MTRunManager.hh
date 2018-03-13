@@ -21,9 +21,7 @@ namespace mu2e {
     virtual ~Mu2eG4MTRunManager();
     
     void Mu2eG4WaitForEndEventLoopWorkers();
-    void Mu2eG4TerminateWorkers();
-    
-    
+        
   private:
     
     // Private and unimplemented to prevent copying.

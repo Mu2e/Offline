@@ -26,8 +26,6 @@ namespace mu2e {
 class Mu2eG4MasterRunAction : public G4UserRunAction
 {
   public:
-    //Mu2eG4MasterRunAction(PhysicalVolumeHelper*, PhysicsProcessInfo*);
-
     Mu2eG4MasterRunAction(PhysicalVolumeHelper*,
                           std::vector< PhysicsProcessInfo >*);
 
@@ -40,9 +38,7 @@ class Mu2eG4MasterRunAction : public G4UserRunAction
     
    private:
     //data members
-    
     PhysicalVolumeHelper* _physVolHelper;
-    //PhysicsProcessInfo* _processInfo;
     std::vector< PhysicsProcessInfo >* PhysicsProcessInfoVector;
     
 };

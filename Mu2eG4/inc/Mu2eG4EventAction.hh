@@ -65,7 +65,8 @@ class Mu2eG4EventAction : public G4UserEventAction
                       IMu2eG4Cut&,
                       GenEventBroker*,
                       PerEventObjectsManager*,
-                      PhysicsProcessInfo*
+                      PhysicsProcessInfo*,
+                      const CLHEP::Hep3Vector&
                       );
     
     virtual ~Mu2eG4EventAction();
@@ -91,9 +92,10 @@ class Mu2eG4EventAction : public G4UserEventAction
     ExtMonFNALPixelSD* _extMonFNALPixelSD;
     SensitiveDetectorHelper* _sensitiveDetectorHelper;
     
-    IMu2eG4Cut& _stackingCuts;
-    IMu2eG4Cut& _steppingCuts;
-    IMu2eG4Cut& _commonCuts;
+    IMu2eG4Cut* _stackingCuts;
+    IMu2eG4Cut* _steppingCuts;
+    IMu2eG4Cut* _commonCuts;
+    const CLHEP::Hep3Vector& _originInWorld;
     
     GenEventBroker *_genEventBroker;
     PerEventObjectsManager* perEvtObjManager;
@@ -118,12 +120,9 @@ class Mu2eG4EventAction : public G4UserEventAction
     art::Event *_artEvent;
     EventStash *_stashForEventData;
     int eventNumberInProcess;
-    
-    
-    // products for the g4study
-    //std::unique_ptr<StepPointMCCollection> steppingPoints;
 
-    
+    // products for the g4study
+    //std::unique_ptr<StepPointMCCollection> steppingPoints;    
 };
 
 }  // end namespace mu2e

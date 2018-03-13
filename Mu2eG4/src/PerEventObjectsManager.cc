@@ -29,14 +29,10 @@ namespace mu2e {
     :
     multiStagePars_(pset.get<fhicl::ParameterSet>("MultiStageParameters")),
     eventInstanceNumber(-1)
-    {
-        //std::cout << "We are in PerEventObjectsManager c'tor" << std::endl;
-    
-    }
+    {}
     
     PerEventObjectsManager::~PerEventObjectsManager()
-    {
-    }
+    {}
     
 
 void PerEventObjectsManager::createSimParticleHelpers(const art::ProductID& sim_part_ID,
@@ -44,18 +40,13 @@ void PerEventObjectsManager::createSimParticleHelpers(const art::ProductID& sim_
                                                       const art::Handle<GenParticleCollection>* genparthandle,
                                                       const art::EDProductGetter* sim_product_getter)
     {
-
         //_spHelper = new SimParticleHelper(multiStagePars_.simParticleNumberOffset(), sim_part_ID, evt);
         //_parentHelper = new SimParticlePrimaryHelper(evt, sim_part_ID, *genparthandle);
         
-        //TRY THIS SOMETIME - IT IS SUPPOSED TO BE FASTER
-//        _spHelper = std::shared_ptr<SimParticleHelper> ( make_shared(multiStagePars_.simParticleNumberOffset(), sim_part_ID, evt) );
-
+        //_spHelper = std::make_unique<SimParticleHelper> ( SimParticleHelper(multiStagePars_.simParticleNumberOffset(), sim_part_ID, evt) );
         
-//        _spHelper = std::make_unique<SimParticleHelper> ( SimParticleHelper(multiStagePars_.simParticleNumberOffset(), sim_part_ID, evt) );
-        
-        _spHelper = std::shared_ptr<SimParticleHelper> ( new SimParticleHelper(multiStagePars_.simParticleNumberOffset(), sim_part_ID, evt, sim_product_getter) );
-        _parentHelper = std::shared_ptr<SimParticlePrimaryHelper> ( new SimParticlePrimaryHelper(evt, sim_part_ID, *genparthandle, sim_product_getter) );
+        _spHelper = std::make_shared<SimParticleHelper> ( multiStagePars_.simParticleNumberOffset(), sim_part_ID, evt, sim_product_getter );
+        _parentHelper = std::make_shared<SimParticlePrimaryHelper> ( evt, sim_part_ID, *genparthandle, sim_product_getter );
     }
     
 
@@ -63,7 +54,6 @@ void PerEventObjectsManager::storeEventInstanceNumber(int instance_number)
     {
         eventInstanceNumber = instance_number;
     }
-    
 
 
 } // end namespace mu2e

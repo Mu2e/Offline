@@ -13,7 +13,7 @@
 //G4 includes
 #include "G4UserRunAction.hh"
 #include "G4Run.hh"
-
+#include "G4SDManager.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -26,6 +26,7 @@ namespace mu2e {
     class TrackingAction;
     class Mu2eG4SteppingAction;
     class SensitiveDetectorHelper;
+    class ExtMonFNALPixelSD;
 
 class Mu2eG4RunAction : public G4UserRunAction
 {
@@ -36,7 +37,8 @@ class Mu2eG4RunAction : public G4UserRunAction
                     PhysicsProcessInfo*,
                     TrackingAction*,
                     Mu2eG4SteppingAction*,
-                    SensitiveDetectorHelper*
+                    SensitiveDetectorHelper*,
+                    ExtMonFNALPixelSD*
                     );
     
     virtual ~Mu2eG4RunAction();
@@ -57,6 +59,9 @@ class Mu2eG4RunAction : public G4UserRunAction
     Mu2eG4SteppingAction* _steppingAction;
     
     SensitiveDetectorHelper* _sensitiveDetectorHelper;
+    ExtMonFNALPixelSD* _extMonFNALPixelSD;
+    
+    const bool standardMu2eDetector_;
     
     
 };

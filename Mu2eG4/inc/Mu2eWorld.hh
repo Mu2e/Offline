@@ -70,8 +70,7 @@ namespace mu2e {
       explicit Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/);
 
       Mu2eWorld(const fhicl::ParameterSet& pset,
-                SensitiveDetectorHelper *sdHelper//,/*no ownership passing*/
-                //BFieldConfig *bfieldconf
+                SensitiveDetectorHelper *sdHelper/*no ownership passing*/
                 );
 
       // Construct everything.
@@ -89,9 +88,6 @@ namespace mu2e {
       // Do all of the work.
       G4VPhysicalVolume * constructWorld();
       
-      void constructWorldSD();
-      void constructWorldField();
-
       // Break the big task into many smaller ones.
       VolumeInfo constructTracker();
       VolumeInfo constructTarget();
@@ -112,8 +108,6 @@ namespace mu2e {
 
       fhicl::ParameterSet pset_;
       
-      BFieldConfig* bfConfig;
-
       // Values of the following variables are taken from either
       // ParameterSet or SimpleConfig, depending on the constructor
       // called.

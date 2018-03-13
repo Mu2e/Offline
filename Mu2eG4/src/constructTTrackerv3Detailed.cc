@@ -31,7 +31,6 @@
 // Mu2e includes
 #include "G4Helper/inc/G4Helper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/constructTTracker.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -400,25 +399,6 @@ namespace {
 
     }
 
-    // Pick one of the tubs that represents mocked-up electronics and make it a senstive detector.
-
-/*
-      //COMMENTED OUT BY LISA G FOR MT
-    G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector(SensitiveDetectorName::TTrackerPlaneSupport());
-
-    for ( std::deque<VolHelper>::iterator i=vols.begin(), e=vols.end();
-          i != e; ++i ){
-      PlacedTubs const& part = *i->part;
-
-      if ( part.name().find("TTrackerSupportElecCu") != string::npos ){
-        if(sd) i->info.logical->SetSensitiveDetector(sd);
-      }
-
-        
-    }
-
-*/ 
  
     // The last part of the support structure is the inner ring; Construct it as a polycone
     // that includes the two channels to receive the straws.
@@ -596,12 +576,7 @@ namespace {
                                          doSurfaceCheck
                                          );
         /*
-        // Make the gas volume of this straw a sensitive detector.
-        G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
-          FindSensitiveDetector(SensitiveDetectorName::TrackerGas());
-        if(sd) strawVol.logical->SetSensitiveDetector(sd);
-
-
+   
         // Wall has 4 layers; the three metal layers sit inside the plastic layer.
         // The plastic layer sits inside the gas.
         VolumeInfo wallVol =  nestTubs( straw.name("TTrackerStrawWall_"),
@@ -693,24 +668,6 @@ namespace {
                                            placeIt,
                                            doSurfaceCheck
                                            );
-        if (ttrackerActiveWr_Wl_SD) {
-	        G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
-                                FindSensitiveDetector(SensitiveDetectorName::TrackerSWires());
-                if (sd) {
-                        wireVol.logical->SetSensitiveDetector(sd);
-                        platingVol.logical->SetSensitiveDetector(sd);
-                }
-
-                sd = nullptr;
-                sd = G4SDManager::GetSDMpointer()->
-                                FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
-                if (sd) {
-                        wallVol.logical->SetSensitiveDetector(sd);
-                        outerMetalVol.logical->SetSensitiveDetector(sd);
-                        innerMetal1Vol.logical->SetSensitiveDetector(sd);
-                        innerMetal2Vol.logical->SetSensitiveDetector(sd);
-                }
-        }
         */
 
         if ( verbosityLevel > 1 ){

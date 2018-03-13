@@ -28,18 +28,11 @@ namespace mu2e {
     Mu2eG4MTRunManager::~Mu2eG4MTRunManager()
         {}
     
+    //this function is a protected member of G4MTRunManager but we need to access it
+    //from Mu2eG4_module, so we must make it piblic here
     void Mu2eG4MTRunManager::Mu2eG4WaitForEndEventLoopWorkers()
     {
         WaitForEndEventLoopWorkers();
-        
     }
-    
-    void Mu2eG4MTRunManager::Mu2eG4TerminateWorkers()
-    {
-        TerminateWorkers();
-    
-    }
-  
-  
   
 } // end namespace artg4

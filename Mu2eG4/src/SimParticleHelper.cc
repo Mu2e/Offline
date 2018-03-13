@@ -15,24 +15,7 @@ namespace mu2e {
     , simID_(simID)
     , event_(event)
     , simProductGetter_(sim_prod_getter)
-  {
-  
-      //std::cout << "in SPH::c'tor, ProcessIndex is " << simID_.processIndex() << std::endl;
-      //std::cout << "in SPH::c'tor, ProductIndex is " << simID_.productIndex() << std::endl;
-      
-/*      if (G4Threading::G4GetThreadId() == 0) {
-
-          std::cout << "in SPH, event_ address is " << event_ << std::endl;
-          std::cout << "event # is: " << event_->event() << std::endl;
-          if(simProductGetter_)
-              std::cout << "in SPH, we got simProductGetter_!" << std::endl;
-
-          if(!simProductGetter_)
-              std::cout << "NO simProductGetter_!" << std::endl;
-      }
- */
-
-  }
+  {}
 
   art::Ptr<SimParticle> SimParticleHelper::particlePtr(const G4Track *trk) const {
     return particlePtrFromG4TrackID(trk->GetTrackID());

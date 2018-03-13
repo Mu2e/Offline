@@ -47,12 +47,13 @@ namespace mu2e {
         Mu2eG4SteppingAction* stepping_action,
         ExtMonFNALPixelSD* extmon_FNAL_pixelSD,
         SensitiveDetectorHelper* sensitive_detectorhelper,
-        IMu2eG4Cut &stacking_cuts,
-        IMu2eG4Cut &stepping_cuts,
-        IMu2eG4Cut &common_cuts,
+        IMu2eG4Cut& stacking_cuts,
+        IMu2eG4Cut& stepping_cuts,
+        IMu2eG4Cut& common_cuts,
         GenEventBroker *gen_eventbroker,
         PerEventObjectsManager *per_evtobjmanager,
-        PhysicsProcessInfo* phys_process_info)
+        PhysicsProcessInfo* phys_process_info,
+        const CLHEP::Hep3Vector& origin_in_world)
         :
     
         G4UserEventAction(),
@@ -64,9 +65,10 @@ namespace mu2e {
         _steppingAction(stepping_action),
         _extMonFNALPixelSD(extmon_FNAL_pixelSD),
         _sensitiveDetectorHelper(sensitive_detectorhelper),
-        _stackingCuts(stacking_cuts),
-        _steppingCuts(stepping_cuts),
-        _commonCuts(common_cuts),
+        _stackingCuts(&stacking_cuts),
+        _steppingCuts(&stepping_cuts),
+        _commonCuts(&common_cuts),
+        _originInWorld(origin_in_world),
         _genEventBroker(gen_eventbroker),
         perEvtObjManager(per_evtobjmanager),
         _tvdOutputName(StepInstanceName::timeVD),
@@ -79,33 +81,20 @@ namespace mu2e {
         _stashForEventData(),
         eventNumberInProcess(-1)
         {
-            if (G4Threading::G4GetThreadId()<= 0){
-                
+            /*if (G4Threading::G4GetThreadId()<= 0){
                 std::cout << "From EventAction" << std::endl;
                 G4SDManager* SDman = G4SDManager::GetSDMpointer();
                 SDman->ListTree();
-            }
+            }*/
         
         }
     
 Mu2eG4EventAction::~Mu2eG4EventAction()
-    {
-        //std::cout << "AT Mu2eG4EventAction destructor" << std::endl;
-    }
+    {}
 
 
 void Mu2eG4EventAction::BeginOfEventAction(const G4Event *evt)
     {
-    
-//        if (G4Threading::G4GetThreadId()<= 0)
-//        {
-//            std::cout << "***** AT EA::BeginOfEventAction *****" << std::endl;
-//        }
-        
-        //G4RunManagerKernel const * rmk = G4RunManagerKernel::GetRunManagerKernel();
-        //G4TrackingManager* tm  = rmk->GetTrackingManager();
-        //tm->SetVerboseLevel(2);
-    
         setEventData();
         
         _spHelper = perEvtObjManager->getSimParticleHelper();
@@ -119,7 +108,6 @@ void Mu2eG4EventAction::BeginOfEventAction(const G4Event *evt)
         mcTrajectories = unique_ptr<MCTrajectoryCollection>( new MCTrajectoryCollection );
         simsRemap = unique_ptr<SimParticleRemapping>( new SimParticleRemapping );
         extMonFNALHits = unique_ptr<ExtMonFNALSimHitCollection>( new ExtMonFNALSimHitCollection );
-    
 
         //these will NEVER be run in MT mode, so we don't need a mutex and lock
         //on the _artEvent->getByLabel call, even though the call is not thread-safe
@@ -144,27 +132,22 @@ void Mu2eG4EventAction::BeginOfEventAction(const G4Event *evt)
                 << multiStagePars_.inputMCTrajectories() <<"\n";
             }
         }
-        
-        
-        // NEW!  moved from module in order to make SDs that are accessible to the thread
-        // the ones associated with the SDH
-        //01/10/18: moved to RunAction, so that it is only called once per run,
-        //not once per event
-        //_sensitiveDetectorHelper->registerSensitiveDetectors();
-        
-        //also moved to RunAction
-/* THIS NEEDS TO BE ACTIVATED ONCE EVERYTHING IS WORKING
-        if (standardMu2eDetector_) _extMonFNALPixelSD =
-            dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
-                                             ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
-*/
-        
 
         //these are OK, nothing put into or defined for event
         _sensitiveDetectorHelper->createProducts(*_artEvent, *_spHelper);
-        _stackingCuts.beginEvent(*_artEvent, *_spHelper);
-        _steppingCuts.beginEvent(*_artEvent, *_spHelper);
-        _commonCuts.beginEvent(*_artEvent, *_spHelper);
+        
+        //note: these calls to finishConstruction() must happen AFTER the call to userDetector->Construct().
+        //This call occurs in G4RunManager::InitializeGeometry(), which occurs in _runManager->Initialize() in Mu2eG4_module.
+        //We cannot put these calls to finishConstruction() in ActionInitialization::Build(), because in sequential mode
+        //Build() is called at the call to _runManager->SetUserInitialization(actioninit), which happens BEFORE _runManager->Initialize().
+        
+        _stackingCuts->finishConstruction(_originInWorld);
+        _steppingCuts->finishConstruction(_originInWorld);
+        _commonCuts->finishConstruction(_originInWorld);
+        
+        _stackingCuts->beginEvent(*_artEvent, *_spHelper);
+        _steppingCuts->beginEvent(*_artEvent, *_spHelper);
+        _commonCuts->beginEvent(*_artEvent, *_spHelper);
         
         _trackingAction->beginEvent(inputSimHandle, inputMCTrajectoryHandle, *_spHelper,
                                 *_parentHelper, *mcTrajectories, *simsRemap);
@@ -177,26 +160,17 @@ void Mu2eG4EventAction::BeginOfEventAction(const G4Event *evt)
             _extMonFNALPixelSD->beforeG4Event(extMonFNALHits.get(), *_spHelper);
         }
         
-        
-//       if (G4Threading::G4GetThreadId()<= 0){
-
-//          std::cout << "From EventAction" << std::endl;
-//            G4SDManager* SDman = G4SDManager::GetSDMpointer();
-//            SDman->ListTree();
-//        }
     }
 
     
 void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
     {
-        
         // Run self consistency checks if enabled.
         _trackingAction->endEvent(*simParticles);
         
         _timer->Stop();
     
         // Populate the output data products.
-    
         // Fill the status object.
         float cpuTime  = _timer->GetSystemElapsed() + _timer->GetUserElapsed();
     
@@ -213,27 +187,9 @@ void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
                                                  )
                                     );
         
-        //NEED TO PUT THIS BACK IN ONCE EVERYTHING IS DONE
-        //std::cout << "PRINTING INFO ABOUT SIMS from EventAction" << std::endl;
-        //simParticlePrinter_.print(std::cout, *simParticles);
+        simParticlePrinter_.print(std::cout, *simParticles);
         
         // Add data products to the Stash
-        
-        //this will become the instance# corresponding to the generated particle
-        //don't think this is needed in current design
-        int instance_number = G4Threading::G4GetThreadId()+20;
-        
-/*        if (G4Threading::G4GetThreadId()<= 0)
-        {
-            std::cout << "completed art::event #" << _artEvent->id()
-            << " in thread #" << G4Threading::G4GetThreadId() << std::endl;
-
-            std::cout << "in EA::EndOfEventAction, the event instance # is " << eventNumberInProcess << std::endl;
-            std::cout << "---------------------------------------------------" << std::endl;
-
-        }
-*/
-        
         if (eventNumberInProcess == -1) {
             throw cet::exception("EVENTACTION")
             << "Invalid event number from generator stash being processed." << "\n"
@@ -243,13 +199,12 @@ void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
         else
         {
             //we don't need a lock here because each thread accesses a different element of the stash
-            _stashForEventData->insertData(eventNumberInProcess, instance_number,
+            _stashForEventData->insertData(eventNumberInProcess,
                                            std::move(g4stat),
                                            std::move(simParticles));
         
         
             if(!timeVDtimes_.empty()) {
-                std::cout << "timeVDtimes not EMPTY" << std::endl;
                 _stashForEventData->insertTVDHits(eventNumberInProcess, std::move(tvdHits), _tvdOutputName.name());
             }
         
@@ -269,10 +224,9 @@ void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
         
             _sensitiveDetectorHelper->insertSDDataIntoStash(eventNumberInProcess,_stashForEventData);
     
-            _stackingCuts.insertCutsDataIntoStash(eventNumberInProcess,_stashForEventData);
-            _steppingCuts.insertCutsDataIntoStash(eventNumberInProcess,_stashForEventData);
-            _commonCuts.insertCutsDataIntoStash(eventNumberInProcess,_stashForEventData);
-            
+            _stackingCuts->insertCutsDataIntoStash(eventNumberInProcess,_stashForEventData);
+            _steppingCuts->insertCutsDataIntoStash(eventNumberInProcess,_stashForEventData);
+            _commonCuts->insertCutsDataIntoStash(eventNumberInProcess,_stashForEventData);
         
         }
     

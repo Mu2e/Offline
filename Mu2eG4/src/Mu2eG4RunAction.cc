@@ -12,8 +12,14 @@
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
+#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
+#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
+//G4 includes
 #include "G4Threading.hh"
+
+//Mu2e includes
+#include "GeometryService/inc/GeometryService.hh"
 
 
 using namespace std;
@@ -26,7 +32,8 @@ Mu2eG4RunAction::Mu2eG4RunAction(const bool using_MT,
                                  PhysicsProcessInfo* phys_process_info,
                                  TrackingAction *tracking_action,
                                  Mu2eG4SteppingAction *stepping_action,
-                                 SensitiveDetectorHelper* sensitive_detectorhelper)
+                                 SensitiveDetectorHelper* sensitive_detectorhelper,
+                                 ExtMonFNALPixelSD* extmon_FNAL_pixelSD)
     :
     G4UserRunAction(),
     use_G4MT_(using_MT),
@@ -35,38 +42,29 @@ Mu2eG4RunAction::Mu2eG4RunAction(const bool using_MT,
     _processInfo(phys_process_info),
     _trackingAction(tracking_action),
     _steppingAction(stepping_action),
-    _sensitiveDetectorHelper(sensitive_detectorhelper)
-
-    {
-        //std::cout << "AT Mu2eG4RunAction c'tor" << std::endl;
-    }
+    _sensitiveDetectorHelper(sensitive_detectorhelper),
+    _extMonFNALPixelSD(extmon_FNAL_pixelSD),
+    standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector())
+    {}
     
     
 Mu2eG4RunAction::~Mu2eG4RunAction()
-    {
-        //std::cout << "AT Mu2eG4RunAction destructor" << std::endl;
-    }
+    {}
     
     
 void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
     {
-        if (use_G4MT_ == true)//MT mode
-        {
-            
-            //if (G4Threading::G4GetThreadId() == 0) {
-            //    std::cout << "AT Mu2eG4RunAction::BeginOfRunAction in MT mode in Thread#0" << std::endl;
-            //}
-            
-
-            if(IsMaster() == false)//do only in Worker Threads if in MT mode
-            {
+        if (use_G4MT_ == true){//MT mode
+        
+            if(IsMaster() == false) {//do only in Worker Threads if in MT mode
+                
                 _sensitiveDetectorHelper->registerSensitiveDetectors();
-                /* THIS NEEDS TO BE ACTIVATED ONCE EVERYTHING IS WORKING
-                 if (standardMu2eDetector_) _extMonFNALPixelSD =
-                 dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
-                 ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
-                 */
-
+                
+                if (standardMu2eDetector_) {
+                    _extMonFNALPixelSD =
+                    dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
+                     ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
+                }
 
                 _trackingAction->beginRun( _physVolHelper, _processInfo, originInWorld );
                 _steppingAction->beginRun( _processInfo, originInWorld );
@@ -76,17 +74,15 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
             }//if !Master
             
         }//MT mode
-        else//sequential mode
-        {
-            //std::cout << "AT Mu2eG4RunAction::BeginOfRunAction in sequential mode" << std::endl;
+        else{//sequential mode
 
             _sensitiveDetectorHelper->registerSensitiveDetectors();
-            /* THIS NEEDS TO BE ACTIVATED ONCE EVERYTHING IS WORKING
-             if (standardMu2eDetector_) _extMonFNALPixelSD =
-             dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
-             ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
-             */
-
+            
+            if (standardMu2eDetector_){
+                _extMonFNALPixelSD =
+                dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
+                ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
+            }
 
             _physVolHelper->beginRun();//map w/~20,000 entries
             _processInfo->beginRun();
@@ -104,16 +100,11 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
     
 void Mu2eG4RunAction::EndOfRunAction(const G4Run* aRun)
     {
-        if (use_G4MT_ == false)//sequential mode
-        {
-        //std::cout << "calling Mu2eG4RA::EndOfRunAction()" << std::endl;
-        _processInfo->endRun();
-        // _physVolHelper.endRun(); is this really an endJob action that can be done in module?
+        if (use_G4MT_ == false){//sequential mode
+            _processInfo->endRun();
+            //_physVolHelper.endRun(); is this really an endJob action that can be done in module?
         }
-        
     }
-
-    
 
 }  // end namespace mu2e
 

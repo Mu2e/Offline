@@ -145,15 +145,6 @@ namespace mu2e {
     // trajectory information to the output data product.
     void swapTrajectory( const G4Track* trk );
       
-      
-      
-      
-      
-      
-      int counter;
-      
-      
-
   };
 
 } // end namespace mu2e

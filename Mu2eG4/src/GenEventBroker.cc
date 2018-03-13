@@ -8,7 +8,6 @@
 
 //Mu2e includes
 #include "Mu2eG4/inc/GenEventBroker.hh"
-//#include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "Mu2eG4/inc/EventStash.hh"
 
 
@@ -37,9 +36,7 @@ namespace mu2e {
     eventInstanceToGet(0),
     usingG4MT(using_MT)
     
-    {
-            std::cout << "AT new GenEventBroker c'tor" << std::endl;
-    }
+    {}
   
 
 void GenEventBroker::loadEvent(HitHandles const& gen_input_hits,
@@ -50,8 +47,6 @@ void GenEventBroker::loadEvent(HitHandles const& gen_input_hits,
                                art::EDProductGetter const* sim_prod_getter
                                )
     {
-
-        //std::cout << "we are in GEB::loadEvent()" << std::endl;
 
         _genInputHits = &gen_input_hits;
         _simParticleID = sim_part_ID;
@@ -88,10 +83,7 @@ void GenEventBroker::loadEvent(HitHandles const& gen_input_hits,
         {
             if (genCollectionsHandle.isValid())
             {
-                //std::cout << "in GEB genCollectionsHandle is valid" << std::endl;
-                //size of stash is based on size of input GenParticleCollections
                 eventStashSize = genCollectionsHandle.product()->size();
-                //std::cout << "The Collection of GenParticleCollections has " << eventStashSize << " elements" << std::endl;
             }
             else
             {
@@ -110,9 +102,7 @@ void GenEventBroker::setEventPtrToZero()
     
 art::Handle<GenParticleCollection> const& GenEventBroker::getGenParticleHandle() const
     {
-        //do I need a lock here to protect from multiple threads accessing at the same time?
-        //no!
-        //ask Paul, ok to inline this?
+        //no lock needed here
         return gensHandle;
     }
     

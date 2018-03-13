@@ -50,8 +50,6 @@ namespace mu2e{
     }
 
   void PhysicsProcessInfo::beginRun(){
-
-      //std::cout << "AT PPI::beginRun, address of PPI is " << this << std::endl;
       
     _allProcesses.clear();
 
@@ -59,7 +57,6 @@ namespace mu2e{
     int nUnknownProcesses(0);
 
     // Get an iterator over existing particles. See note 1.
-
     G4ParticleTable* ptable = G4ParticleTable::GetParticleTable();
     G4ParticleTable::G4PTblDicIterator* iter = ptable->GetIterator();
     iter->reset();
@@ -142,12 +139,6 @@ namespace mu2e{
       _allProcesses.insert(std::make_pair(name,ProcInfo(code.name(),code) ));
     }
     // printAll(cout);
-      
-      
-      
-      //std::cout << "AT PPI::beginRun COMPLETE, the size of _allProcesses is "
-      //          << _allProcesses.size() << std::endl;
-      
 
   } // PhysicsProcessInfo::beginRun
 
@@ -161,9 +152,6 @@ namespace mu2e{
 
   // This can possibly be sped up considerably by checking frequently occuring names first.
   ProcessCode PhysicsProcessInfo::findAndCount( G4String const& name ){
-      
-      //std::cout << "AT PPI::findAndCount, the size of _allProcesses is "
-      //<< _allProcesses.size() << std::endl;
       
     map_type::iterator i = _allProcesses.find(name);
     if ( i == _allProcesses.end() ){

@@ -105,7 +105,7 @@ namespace mu2e {
 void PrimaryGeneratorAction::setEventData()
     {
         
-        if (G4Threading::IsWorkerThread())//if we are in MT mode
+        if (G4Threading::IsWorkerThread())//if this is being called by a worker thread, we are in MT mode
         {
             //get the instance of the GenParticleCollection that we need for this event
             GenEventBroker::GenParticleCollectionInstance genCollectionInstance = genEventBroker_->getNextGenPartCollectionInstance();
@@ -116,18 +116,11 @@ void PrimaryGeneratorAction::setEventData()
             //here's the ptr to the GPC
             genParticles_ = genCollectionInstance.genCollection;
 
-//            if (G4Threading::G4GetThreadId()== 0) {
-//                std::cout << "*** FROM Thread #" << G4Threading::G4GetThreadId()
-//                << " IN PGA *** \n the instance number being processed is "
-//                << genCollectionInstance.instanceNumber << std::endl;
-//                std::cout << "WE ARE USING THE GPC-COLLECTIONS object" << std::endl;
-//            }
         }
         else//we are in sequential mode
         {
             genParticles_ = genEventBroker_->getGenParticleHandle().product();
             perEvtObjManager->storeEventInstanceNumber(0);
-            //std::cout << "In PGA, WE ARE USING THE GPC in sequential mode" << std::endl;
         }
         
         hitInputs_ = genEventBroker_->getHitHandles();
@@ -150,10 +143,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     {
         //load the GenParticleCollection etc for the event
         setEventData();
-        
-//        if (G4Threading::G4GetThreadId()<= 0)
-//        {std::cout << "completed PGA::setEventData" << std::endl;}
-        
+
         // For debugging.
         //testTrack(anEvent);
 
@@ -179,12 +169,6 @@ void PrimaryGeneratorAction::fromEvent(G4Event* event)
         
         // For each generated particle, add it to the event.
         if(genParticles_) {
-          
-//            if (G4Threading::G4GetThreadId()<= 0)
-//            {
-//                std::cout << "in PGA::fromEvent() genParticles_->size() is: " << genParticles_->size() << std::endl;
-//            }
-            
             for (unsigned i=0; i < genParticles_->size(); ++i) {
                 const GenParticle& genpart = (*genParticles_)[i];
                 addG4Particle(event,
@@ -195,16 +179,6 @@ void PrimaryGeneratorAction::fromEvent(G4Event* event)
                               genpart.properTime(),
                               genpart.momentum());
                 
-/*                if (G4Threading::G4GetThreadId()<= 0)
-                {
-                    std::cout   << "in PGA::fromEvent() genParticles_ info is: \n"
-                            << genpart.pdgId() << ", "
-                            << genpart.position() + mu2eOrigin << ", "
-                            << genpart.time() << ", "
-                            << genpart.momentum()
-                            << std::endl;
-                }
-*/                
                 parentMapping_->addEntryFromGenParticle(i);
             }
         }

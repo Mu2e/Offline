@@ -14,7 +14,6 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollections.hh"
-//#include "Mu2eG4/inc/EventStash.hh"
 
 
 //art includes
@@ -32,10 +31,7 @@ namespace art { class EDProductGetter; }
 
 namespace mu2e {
     
-    //typedef std::vector<mu2e::GenParticle> GenParticleCollection;
     typedef std::vector< art::ValidHandle<StepPointMCCollection> > HitHandles;
-    
-    //class SimParticlePrimaryHelper;
     class EventStash;
     
 class GenEventBroker
@@ -44,40 +40,27 @@ class GenEventBroker
     GenEventBroker(const bool using_MT);
         
     // called in Mu2eG4::produce, takes in the GenParticleCollection for the event
-
     void loadEvent(HitHandles const&, art::ProductID const&,
                    art::Event*, art::InputTag, EventStash*,
                    art::EDProductGetter const*);
 
-    
-    
     void setEventPtrToZero();
     
     //we need this handle to give to the SimParticlePrimaryHelper in PrimaryGenAction
     art::Handle<GenParticleCollection> const& getGenParticleHandle() const;
     
-    
     inline HitHandles const* getHitHandles() const { return _genInputHits; }
     inline art::ProductID getproductID() const { return _simParticleID; }
     inline art::Event* getartEvent() const { return _artEvent; }
-    
-    //inline G4Mutex* getArtEventMutex() { return &artEventMutex; }
-
     inline EventStash* getEventStash() const { return _stashForEventData; }
-    //inline size_t getHackOffset() const { return hackOffset; }
-    
-    //this can only be called after loadEvent is called in produce
-    inline int getStashSize() const { return eventStashSize; }
-    
+    inline int getStashSize() const { return eventStashSize; }//this can only be called after loadEvent is called in produce
     inline art::EDProductGetter const* getSimProductGetter() const { return _simProductGetter; }
     
-
   private:
     
     const HitHandles* _genInputHits;    
     art::ProductID _simParticleID;
     art::Event* _artEvent;
-    //G4Mutex artEventMutex;
     EventStash* _stashForEventData;
     const art::EDProductGetter* _simProductGetter;
     
@@ -92,9 +75,6 @@ class GenEventBroker
     GenParticleCollections genParticleCollectionStash;
     G4Mutex GenParticleCollectionsMutex = G4MUTEX_INITIALIZER;
     
-    //G4Mutex artEventMutex = G4MUTEX_INITIALIZER;
-    
-    //size_t hackOffset;
     const bool usingG4MT;
     
 
@@ -111,7 +91,6 @@ class GenEventBroker
         
         };
 
-    
     GenParticleCollectionInstance getNextGenPartCollectionInstance();
     
     

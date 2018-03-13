@@ -52,10 +52,7 @@ namespace mu2e {
       explicit PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
                                       GenEventBroker *gen_eventbroker,
                                       PerEventObjectsManager *per_evtobjmanager);
-                                      
       
-//OLD      explicit PrimaryGeneratorAction(const fhicl::ParameterSet& pset);
-
       // This is the interface specified by G4.
       void GeneratePrimaries(G4Event*);
 
@@ -67,10 +64,6 @@ namespace mu2e {
       
   private:
 
-/*OLD      explicit PrimaryGeneratorAction(bool fillHistograms,
-                                      int verbosityLevel=0,
-                                      GenEventBroker *gen_eventbroker = nullptr);
-*/
       explicit PrimaryGeneratorAction(bool fillHistograms,
                                       int verbosityLevel,
                                       GenEventBroker *gen_eventbroker,
@@ -92,8 +85,6 @@ namespace mu2e {
       // Input event kinematics
       // Must be set before the call to GeneratePrimaries.
       
-      //art::Handle<GenParticleCollection> _handletoGPColl;
-
       const GenParticleCollection* genParticles_;
       const HitHandles* hitInputs_;
       SimParticlePrimaryHelper* parentMapping_;
