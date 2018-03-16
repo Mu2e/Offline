@@ -68,5 +68,31 @@ namespace mu2e {
     else
       throw cet::exception("CONFIG") << "invalid plane " << iplane << "\n";
   }
+
+  StrawId::isep StrawId::separation(StrawId const& other) const { // was PanelId
+    isep retval=apart;
+    // same station
+    if(other.getPlane()/2 == getPlane()/2){
+      int pln1 = getPanel()%2;
+      int pln2 = other.getPanel()%2;
+      int dp = pln2 - pln1;
+      if(other.getPlane() == getPlane()){
+	if(dp == 0)
+	  retval = same;
+	else
+	  retval = plane1;
+      } else {
+	int dd = other.getPlane() - getPlane();
+	if(dp == 0)
+	  retval = station2;
+	else if(dd*dp>0)
+	  retval = station3;
+	else
+	  retval = station1;
+      }
+    }
+    return retval;
+  }
+
 }
 

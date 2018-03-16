@@ -19,6 +19,7 @@ mu2eg4DefaultPhysics: {
     physicsListName:  "ShieldingM"
     turnOffRadioactiveDecay:  false
     turnOnRadioactiveDecay:  false
+    modifyEMOption4: false
     addProcesses: []
     captureDModel: ""
 
@@ -120,6 +121,7 @@ mu2eg4runDefaultSingleStage: {
     MultiStageParameters : {}
 
     SDConfig : {
+        verbosityLevel : 0
 	enableAllSDs : false  # this would activate all SDs listed in StepInstanceName enum
 	# activate minimal set of sensitive detectors used by everybody
 	enableSD : [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]

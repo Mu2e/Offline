@@ -22,6 +22,7 @@ CaloClusterFast :
     endTimeBuffer         : 80
     windowPeak            : 2
     minAmplitude          : 20
+    extendSecond          : false
     minSeedAmplitude      : 200
     minEnergy             : 50
     timeCorrection        : 20.0

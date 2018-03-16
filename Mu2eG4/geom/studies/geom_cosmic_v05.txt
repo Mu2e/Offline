@@ -1,4 +1,4 @@
-#include "JobConfig/cd3/geom_baseline.txt"
+#include "JobConfig/common/geom_baseline.txt"
 #include "Mu2eG4/geom/studies/crv_counters_v05.txt"
 vector<double>  crs.gapBetweenLayers = {9.525, 9.525, 9.525}; //mm
 

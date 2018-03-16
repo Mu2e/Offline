@@ -120,7 +120,7 @@ private:
       newStepMCs.push_back(copyStepPointMC(*i_step_mc));
     }
 
-    StrawDigiMC new_straw_digi_mc(old_straw_digi_mc.strawIndex(),
+    StrawDigiMC new_straw_digi_mc(old_straw_digi_mc.strawId(),
 				  wetime,
 				  cpos,
 				  newStepMCPtrs,

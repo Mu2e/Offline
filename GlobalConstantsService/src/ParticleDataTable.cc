@@ -214,10 +214,6 @@ namespace mu2e {
     if ( units == 2 ){
       _unitsChanged = true;
 
-      mf::LogPrint("CONDITIONS")
-        << "The HepPDT particle data table has masses in GeV. Changing to MeV.\n"
-        << "  ( This leaves the lifetimes in a screwed up state: they are in kilo-seconds."
-        << "    This does not affect Geant4 which has its own table of lifetimes. )";
 
       for ( HepPDT::ParticleDataTable::const_iterator i=_pdt.begin(), e=_pdt.end();
             i!=e; ++i ){

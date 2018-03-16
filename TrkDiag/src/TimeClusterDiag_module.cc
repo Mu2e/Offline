@@ -24,12 +24,11 @@
 #include "TrkDiag/inc/TimeClusterInfo.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
 // data
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMC.hh"
 // root
 #include "TH1F.h"
 #include "TTree.h"
@@ -39,7 +38,6 @@
 #include <iostream>
 #include <algorithm>
 using namespace std; 
-using CLHEP::Hep3Vector;
 
 namespace mu2e {
 // ttree structs
@@ -57,17 +55,16 @@ namespace mu2e {
   private:
 
     int           _diag;
-    bool	  _mcdiag;
+    bool _mcdiag, _useflagcol;
     bool	  _plotts;
     unsigned _minnce; // minimum # CE hits to make plots
     double _ccmine; // min calo cluster energy to plot
     double _ccwt;
 
     // event object Tags
-    art::InputTag   _shTag;
-    art::InputTag   _shpTag;
-    art::InputTag   _shfTag;
+    art::InputTag   _chTag;
     art::InputTag   _tcTag;
+    art::InputTag   _shfTag;
     art::InputTag   _ccTag;
     art::InputTag   _mcdigisTag;
     // hit selectors
@@ -81,12 +78,13 @@ namespace mu2e {
     double        _tbin;
     unsigned      _nbins;
     // cache of event objects
-    const StrawHitCollection*             _shcol;
-    const StrawHitFlagCollection*         _shfcol;
-    const StrawHitPositionCollection*     _shpcol;
+    const ComboHitCollection*		  _chcol;
     const TimeClusterCollection*	  _tccol;
     const CaloClusterCollection*	  _cccol;
     const StrawDigiMCCollection*          _mcdigis;
+    const StrawHitFlagCollection*	  _evtshfcol;
+    StrawHitFlagCollection _shfcol; // local copy of flag collection
+    StrawHitFlag _cesel; // flag bit for Ce (from truth)
 // TTree variables
     TTree*                                _tcdiag;
     // event number
@@ -103,10 +101,11 @@ namespace mu2e {
 // helper functions
     void createDiagnostics();
     bool findData(art::Event const& evt);
+    void setFlags(art::Event const& evt);
     void plotTimeSpectra ();
     void fillClusterInfo ();
     void fillClusterInfo (TimeCluster const& tc,TimeClusterInfo& tcinfo);
-    void fillClusterHitInfo (TimeCluster const& besttc); 
+    void fillClusterHitInfo (TimeCluster const& besttc,art::Event const& evt); 
     void fillCECluster();
   };
 
@@ -117,14 +116,14 @@ namespace mu2e {
     art::EDAnalyzer(pset),
     _diag		(pset.get<int>("diagLevel",1)),
     _mcdiag		(pset.get<bool>("MCdiag",true)),
+    _useflagcol		(pset.get<bool>("UseFlagCollection")),
     _plotts		(pset.get<bool>("PlotTimeSpectra",false)),
     _minnce		(pset.get<unsigned>("MinimumCEHits",15)),
     _ccmine		(pset.get<double>("CaloClusteriMinE",50.0)),
     _ccwt		(pset.get<double>("CaloClusterWeight",10.0)),
-    _shTag		(pset.get<art::InputTag>("StrawHitCollection","makeSH")),
-    _shpTag		(pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
-    _shfTag		(pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
+    _chTag		(pset.get<art::InputTag>("ComboHitCollection")),
     _tcTag		(pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
+    _shfTag		(pset.get<string>("StrawHitFlagCollection")),
     _ccTag              (pset.get<art::InputTag>("caloClusterModuleLabel","MakeCaloCluster")),
     _mcdigisTag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _hsel		(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
@@ -139,6 +138,7 @@ namespace mu2e {
     // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
     _tcsel = StrawHitFlag(StrawHitFlag::tclust); 
+    _cesel = StrawHitFlag(StrawHitFlag::track0);
   }
 
   void TimeClusterDiag::beginJob(){
@@ -150,13 +150,11 @@ namespace mu2e {
   void TimeClusterDiag::analyze(art::Event const& event ) {
     _iev=event.id().event();
     // find the data
-    if(!findData(event) || _shcol->size() != _shfcol->size() 
-    || _shcol->size() != _shpcol->size()
-    || (_mcdigis !=0 && _shcol->size() != _mcdigis->size())){
+    if(!findData(event) )
       throw cet::exception("RECO")<<"mu2e::TimeClusterDiag: data missing or inconsistent"<< endl;
-      return;
-    }
     _ntc = _tccol->size();
+    //
+    setFlags(event);
     // fill MC info
     if(_mcdiag){
       fillCECluster();
@@ -170,7 +168,7 @@ namespace mu2e {
       _besttc.reset();
     if(_diag > 1 && _besttc._tcindex >= 0 && _besttc._tcindex < static_cast<int>(_tccol->size())){
       _tchinfo.clear();
-      fillClusterHitInfo(_tccol->at(_besttc._tcindex));
+      fillClusterHitInfo(_tccol->at(_besttc._tcindex),event);
     }
     // fill the tree
     _tcdiag->Fill();
@@ -187,19 +185,19 @@ namespace mu2e {
 
   // find the input data objects
   bool TimeClusterDiag::findData(art::Event const& evt){
-    _shcol = 0; _shfcol = 0; _shpcol = 0; _tccol = 0; _mcdigis = 0;
-    auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
-    _shcol = shH.product();
-    auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
-    _shpcol = shpH.product();
-    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
-    _shfcol = shfH.product();
+    _evtshfcol = 0; _chcol = 0; _tccol = 0; _mcdigis = 0;
+    auto chH = evt.getValidHandle<ComboHitCollection>(_chTag);
+    _chcol = chH.product();
     auto tcH = evt.getValidHandle<TimeClusterCollection>(_tcTag);
     _tccol = tcH.product();
     if(_mcdiag){
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
       _mcdigis = mcdH.product();
       _toff.updateMap(evt);
+    }
+    if(_useflagcol){
+      auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+      _evtshfcol = shfH.product();
     }
     // calorimeter data may or may not be present
     art::Handle<CaloClusterCollection> ccH;
@@ -209,59 +207,87 @@ namespace mu2e {
     else
       _cccol = 0;
 
-    return _shcol != 0 && _shfcol != 0 && _shpcol != 0 && _tccol != 0 && (_mcdigis != 0 || !_mcdiag);
+    return _chcol != 0 && _tccol != 0 && (_mcdigis != 0 || !_mcdiag);
+  }
+
+  void TimeClusterDiag::setFlags(art::Event const& event ) {
+    _shfcol.clear();
+    _shfcol.reserve(_chcol->size());
+  // loop over all hits 
+    unsigned nch = _chcol->size();
+    XYZVec cpos;
+    for(unsigned ich=0; ich<nch;++ich){
+      ComboHit const& ch = _chcol->at(ich);
+      _shfcol.push_back(ch.flag());
+      if(_useflagcol)_shfcol.back().merge(_evtshfcol->at(ich));
+      if(_mcdiag){
+	std::vector<StrawDigiIndex> shids;
+	_chcol->fillStrawDigiIndices(event,ich,shids);
+	unsigned nce(0);
+	for(auto idigi : shids) {
+	  StrawDigiMC const& mcdigi = _mcdigis->at(idigi);
+	  if(TrkMCTools::CEDigi(mcdigi))
+	    ++nce;
+	}
+	if(nce/float(shids.size()) >= 0.5)
+	  _shfcol.back().merge(_cesel);
+      }
+    }
+    // flag hits in clusters
+    //
+    for(auto const& tc : *_tccol) {
+      for (auto ich : tc._strawHitIdxs) {
+	_shfcol[ich].merge(_tcsel);
+      }
+    }
   }
 
   void TimeClusterDiag::fillCECluster() {
     _ceclust.reset();
   // loop over all straw hits 
-    unsigned nstrs = _shcol->size();
-    Hep3Vector cpos;
-    for(unsigned istr=0; istr<nstrs;++istr){
-      StrawDigiMC const& mcdigi = _mcdigis->at(istr);
-      StrawHitFlag const& shflag =_shfcol->at(istr);
-      if(TrkMCTools::CEDigi(mcdigi)){
-	++_ceclust._nce;
-	StrawEnd itdc(TrkTypes::cal);
-	cpos += mcdigi.clusterPosition(itdc).vect();
-	_ceclust._time += mcdigi.clusterPosition(itdc).t();
-	bool selected = shflag.hasAllProperties(_hsel) && !shflag.hasAnyProperty(_hbkg);
-	bool tclust = shflag.hasAllProperties(_tcsel);
-	if(selected)++_ceclust._ncesel;
-	if(tclust)++_ceclust._nceclust;
+    unsigned nstrs = _chcol->size();
+    unsigned nce(0);
+    for(unsigned ich=0; ich<nstrs;++ich){
+      ComboHit const& ch = _chcol->at(ich);
+      if(_shfcol[ich].hasAllProperties(_cesel)){
+	++nce;
+	_ceclust._pos += ch.pos();
+	_ceclust._time +=  _ttcalc.comboHitTime(ch);
       }
     }
-    if(_ceclust._nce > 0){
-      _ceclust._pos = cpos/_ceclust._nce;
-      _ceclust._time /=_ceclust._nce;
-    }
-// 2nd pass to get extents {
-    double cphi = cpos.phi();
-    for(unsigned istr=0; istr<nstrs;++istr){
-      StrawDigiMC const& mcdigi = _mcdigis->at(istr);
-      if(TrkMCTools::CEDigi(mcdigi)){
-	StrawEnd itdc(TrkTypes::cal);
-	Hep3Vector hpos = mcdigi.clusterPosition(itdc).vect();
-	double hphi = hpos.phi();
-	float hrho = hpos.perp();
+    _ceclust._pos /= nce;
+    _ceclust._time /= nce;
+    // 2nd pass to get extents {
+    double cphi = _ceclust._pos.phi();
+    for(unsigned ich=0; ich<nstrs;++ich){
+      ComboHit const& ch = _chcol->at(ich);
+      if(_shfcol[ich].hasAllProperties(_cesel)){
+	++_ceclust._nce;
+	XYZVec cpos = ch.pos();
+	float hrho = sqrt(cpos.Perp2());
+	double hphi = cpos.phi();
 	float dphi = fabs(Angles::deltaPhi(hphi,cphi));
 	_ceclust._maxdphi = std::max(dphi,_ceclust._maxdphi);
 	_ceclust._minrho = std::min(hrho,_ceclust._minrho);
 	_ceclust._maxrho = std::max(hrho,_ceclust._maxrho);
+	if(_shfcol[ich].hasAllProperties(_hsel) && !_shfcol[ich].hasAnyProperty(_hbkg))
+	  ++_ceclust._ncesel;
+	if(_shfcol[ich].hasAllProperties(_tcsel))
+	    ++_ceclust._nceclust;
       }
     }
   }
 
-  void TimeClusterDiag::fillClusterHitInfo(TimeCluster const& tc) {
-    for (auto const& idx : tc._strawHitIdxs) {
+  void TimeClusterDiag::fillClusterHitInfo(TimeCluster const& tc, art::Event const& event) {
+    for (auto ich : tc._strawHitIdxs) {
+      ComboHit const& ch = _chcol->at(ich);
       TimeClusterHitInfo tchi;
-      size_t ish = idx;
-      tchi._time = _shcol->at(ish).time();
-      tchi._dt = _ttcalc.strawHitTime(_shcol->at(ish),_shpcol->at(ish)) -tc._t0._t0;
-      Hep3Vector const& pos = _shpcol->at(ish).pos();
-      double phi = pos.phi();
+      tchi._time = ch.time();
+      tchi._dt = _ttcalc.comboHitTime(ch) -tc._t0._t0;
+      XYZVec const& pos = ch.pos();
+      double phi = ch.phi();
       tchi._dphi = Angles::deltaPhi(phi,tc._pos.phi());
-      tchi._rho = pos.perp();
+      tchi._rho = sqrt(pos.Perp2());
       tchi._z = pos.z();
 // compute MVA
       std::vector<Double_t> pars(3);
@@ -271,7 +297,9 @@ namespace mu2e {
       tchi._mva = _peakMVA.evalMVA(pars);
 // MC truth
       if(_mcdiag){
-	StrawDigiMC const& mcdigi = _mcdigis->at(idx);
+     	std::vector<StrawDigiIndex> shids;
+	_chcol->fillStrawDigiIndices(event,ich,shids);
+	StrawDigiMC const& mcdigi = _mcdigis->at(shids[0]);// FIXME!
 	StrawEnd itdc;
 	tchi._mctime = _toff.timeWithOffsetsApplied( *mcdigi.stepPointMC(itdc));
 	tchi._mcmom = mcdigi.stepPointMC(itdc)->momentum().mag();
@@ -324,24 +352,21 @@ namespace mu2e {
     catsp = tfs->make<TH1F>(casname,"time spectrum;nsec",_nbins,_tmin,_tmax);
     catsp->SetLineColor(kMagenta);
 
-    unsigned nstrs = _shcol->size();
-    for(unsigned istr=0; istr<nstrs;++istr){
-      double time = _ttcalc.strawHitTime(_shcol->at(istr),_shpcol->at(istr));
-      bool conversion(false);
-      if(_mcdigis != 0) {
-	StrawDigiMC const& mcdigi = _mcdigis->at(istr);
-	conversion = TrkMCTools::CEDigi(mcdigi);
-      }
-      bool selected = _shfcol->at(istr).hasAllProperties(_hsel) && !_shfcol->at(istr).hasAnyProperty(_hbkg);
-      bool tclust = _shfcol->at(istr).hasAllProperties(_tcsel);
+    unsigned nstrs = _chcol->size();
+    for(unsigned ich=0; ich<nstrs;++ich){
+      ComboHit const& ch = _chcol->at(ich);
+      float time = _ttcalc.comboHitTime(ch);
+      bool conversion = _shfcol[ich].hasAllProperties(_cesel);
+      bool selected = _shfcol[ich].hasAllProperties(_hsel) && !_shfcol[ich].hasAnyProperty(_hbkg);
+      bool tclust = _shfcol[ich].hasAllProperties(_tcsel);
       // fill plots
-      rtsp->Fill(time);
-      if(selected)stsp->Fill(time);
-      if(tclust)ctsp->Fill(time);
+      rtsp->Fill(time,ch.nStrawHits());
+      if(selected)stsp->Fill(time,ch.nStrawHits());
+      if(tclust)ctsp->Fill(time,ch.nStrawHits());
       if(conversion){
-	actsp->Fill(time);
-	if(selected)sctsp->Fill(time);
-	if(tclust)cctsp->Fill(time);
+	actsp->Fill(time,ch.nStrawHits());
+	if(selected)sctsp->Fill(time,ch.nStrawHits());
+	if(tclust)cctsp->Fill(time,ch.nStrawHits());
       }
     }
     // clusters if available
@@ -357,11 +382,18 @@ namespace mu2e {
     // change marker if calo cluster is present
       int imark = 23;
       if(itclust->_caloCluster.isNonnull()) imark = 34;
-      TMarker* smark = new TMarker(itclust->_t0._t0,ctsp->GetBinContent(ctsp->FindBin(itclust->_t0._t0)),imark);
-      smark->SetMarkerColor(kRed);
+      TMarker* smark = new TMarker(itclust->_t0._t0,ctsp->GetMaximum()*1.05,imark);
+      smark->SetMarkerColor(kBlue);
       smark->SetMarkerSize(1.5);
       flist->Add(smark);
     }
+    // MC true marker
+    TList* clist = cctsp->GetListOfFunctions();
+    // change marker if calo cluster is present
+    TMarker* cmark = new TMarker(_ceclust._time,actsp->GetMaximum()*1.05,29);
+    cmark->SetMarkerColor(kRed);
+    cmark->SetMarkerSize(1.5);
+    clist->Add(cmark);
   }
 
   void TimeClusterDiag::fillClusterInfo () {
@@ -394,7 +426,7 @@ namespace mu2e {
       tcinfo._tcalo = tp._caloCluster->time();
       tcinfo._dtcalo = _ttcalc.caloClusterTime(*tp._caloCluster) - tp._t0._t0;
       // calculate the cluster position.  Currently the Z is in disk coordinates and must be translated, FIXME!
-      Hep3Vector cog = calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(tp._caloCluster->diskId(),tp._caloCluster->cog3Vector()));
+      XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(tp._caloCluster->diskId(),tp._caloCluster->cog3Vector())));
       tcinfo._cog = cog;
     }
     // hit summary
@@ -403,14 +435,14 @@ namespace mu2e {
     tcinfo._ncehits = 0;
     // count CE hits 
     for (auto const& idx : tp._strawHitIdxs) {
-      float ht = _ttcalc.strawHitTime(_shcol->at(idx),_shpcol->at(idx));
+      ComboHit const& ch = _chcol->at(idx);
+      float ht = _ttcalc.comboHitTime(ch);
       tcinfo._maxhtime = std::max( ht , tcinfo._maxhtime);
       tcinfo._minhtime = std::min( ht , tcinfo._minhtime);
       if(_mcdiag){
       // mc truth info
-	StrawDigiMC const& mcdigi = _mcdigis->at(idx);
-	bool conversion = TrkMCTools::CEDigi(mcdigi);
-	if(conversion)++tcinfo._ncehits;
+	bool conversion = _shfcol[idx].hasAllProperties(_cesel);
+	if(conversion)tcinfo._ncehits += ch.nStrawHits();
       }
     }
     // look for overlaps

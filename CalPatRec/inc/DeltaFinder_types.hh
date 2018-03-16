@@ -11,8 +11,11 @@ namespace fhicl {
 
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitPosition.hh"
+#include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
+#include "TrackerGeom/inc/Straw.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 
 namespace mu2e {
   class Panel;

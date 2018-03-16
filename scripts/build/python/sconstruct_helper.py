@@ -52,7 +52,7 @@ def mu2eEnvironment():
 # the list of root libraries
 # This comes from: root-config --cflags --glibs
 def rootLibs():
-    return [ 'Core', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
+    return [ 'GenVector', 'Core', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
              'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
 
 
@@ -78,8 +78,7 @@ def cppPath(mu2eOpts):
         os.environ['MU2E_ARTDAQ_CORE_INC'],
         os.environ['ARTDAQ_CORE_INC'],
         os.environ['TRACE_INC'],
-        # os.environ['GSL_INC'],
-        # os.environ['PTHREAD_INC']
+        os.environ['GSL_INC'],
         ]
 
     if mu2eOpts['satellite']:
@@ -108,8 +107,7 @@ def libPath(mu2eOpts):
         os.environ['ROOTSYS']+'/lib',
         os.environ['XERCESCROOT']+'/lib',
         os.environ['TBB_LIB'],
-        # os.environ['GSL_LIB'],
-        # os.environ['PTHREAD_LIB']
+        os.environ['GSL_LIB'],
         ]
 
     if mu2eOpts['satellite']:

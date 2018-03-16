@@ -5,15 +5,15 @@ int mu2e::ValStrawDigiMC::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NHit", "N Straw Hits", 101, -0.5, 100.0);
   _hN2 = tfs.make<TH1D>( "NHit2", "N Straw Hits", 100, -0.5, 9999.5);
-  _htime0 = tfs.make<TH1D>( "time0", "time0", 100, 0.0, 1000.0);
-  _htime1 = tfs.make<TH1D>( "time1", "time1", 100, 0.0, 1000.0);
+  _htime0 = tfs.make<TH1D>( "time0", "time0", 100, 0.0, 2000.0);
+  _htime1 = tfs.make<TH1D>( "time1", "time1", 100, 0.0, 2000.0);
   _hdrift = tfs.make<TH1D>( "drift", "drift distance",50, -0.5, 1000.0);
   _hdriftM = tfs.make<TH1D>( "driftM", "drift to Mid",50, -0.5, 1000.0);
-  _hener = tfs.make<TH1D>( "ener", "energy",50, -0.5, 1000.0);
-  _henerT = tfs.make<TH1D>( "enerT", "trigger energy",50, -0.5, 1000.0);
+  _hener = tfs.make<TH1D>( "ener", "energy",50, -1.0e-6, 0.01);
+  _henerT = tfs.make<TH1D>( "enerT", "trigger energy",50, -1.0e-6, 0.01);
   _hcross = tfs.make<TH1D>( "cross", "cross talk flag",2, -0.5, 1.5);
   _hgStep = tfs.make<TH1D>( "gStep", "N good step pointers",3, -0.5, 2.5);
-  _hSI = tfs.make<TH1D>( "Straw", "Straw Index",96, -0.5, 23039.5);
+  _hSI = tfs.make<TH1D>( "Straw", "Straw Index",100, -0.5, 40960.0);
 
   return 0;
 }
@@ -23,7 +23,7 @@ int mu2e::ValStrawDigiMC::fill(const mu2e::StrawDigiMCCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(0.0);
+  _hVer->Fill(2.0);
 
   _hN->Fill(coll.size()); 
   _hN2->Fill(coll.size()); 
@@ -58,7 +58,7 @@ int mu2e::ValStrawDigiMC::fill(const mu2e::StrawDigiMCCollection & coll,
       _henerT->Fill(sd.triggerEnergySum(TrkTypes::hv));
       if(sd.isCrossTalk(TrkTypes::cal)) _hcross->Fill(0.0);
       if(sd.isCrossTalk(TrkTypes::hv) ) _hcross->Fill(1.0);
-      _hSI->Fill(sd.strawIndex().asInt()); // <23,040
+      _hSI->Fill(sd.strawId().asUint16()); // <40960
     }
   }
   return 0;

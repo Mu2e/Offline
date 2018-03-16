@@ -10,7 +10,7 @@
 void BDiag(TTree* bdiag, const char* page="rho",bool train=false) {
   TString spage(page);
   TCut cluster("mvastat>0");
-  if(train)cluster += TCut("ppdg==11&&nprimary/nhits>0.8");
+  if(train)cluster += TCut("ppdg==11&&nprimary/nshits>0.8");
   TCut con("pgen==2&&pmom>90");
   TCut bkg("pproc<20");
   // hit cuts
@@ -195,52 +195,62 @@ void BDiag(TTree* bdiag, const char* page="rho",bool train=false) {
 
   } else if(spage == "nhits"){
 
-    TH1F* nhitscon = new TH1F("nhitscon","N Hits",100,0.5,99.5);
-    TH1F* nhitsbkg = new TH1F("nhitsbkg","N Hits",100,0.5,99.5);
+    TH1F* nshitscon = new TH1F("nshitscon","N Straw Hits",100,0.5,99.5);
+    TH1F* nshitsbkg = new TH1F("nshitsbkg","N Straw Hits",100,0.5,99.5);
+    TH1F* nchitscon = new TH1F("nchitscon","N ComboHits",100,0.5,99.5);
+    TH1F* nchitsbkg = new TH1F("nchitsbkg","N ComboHits",100,0.5,99.5);
     TH1F* nphitscon = new TH1F("nphitscon","N Plane Hits",100,0.0,5.0);
     TH1F* nphitsbkg = new TH1F("nphitsbkg","N Plane Hits",100,0.0,5.0);
     TH1F* sfraccon = new TH1F("sfraccon","Stereo Fraction",100,0.0,1.0);
     TH1F* sfracbkg = new TH1F("sfracbkg","Stereo Fraction",100,0.0,1.0);
 
-    nhitscon->SetLineColor(kRed);
-    nhitsbkg->SetLineColor(kBlue);
+    nshitscon->SetLineColor(kRed);
+    nshitsbkg->SetLineColor(kBlue);
+    nchitscon->SetLineColor(kRed);
+    nchitsbkg->SetLineColor(kBlue);
     nphitscon->SetLineColor(kRed);
     nphitsbkg->SetLineColor(kBlue);
     sfraccon->SetLineColor(kRed);
     sfracbkg->SetLineColor(kBlue);
 
-    nhitscon->SetStats(0);
-    nhitsbkg->SetStats(0);
+    nshitscon->SetStats(0);
+    nshitsbkg->SetStats(0);
     nphitscon->SetStats(0);
     nphitsbkg->SetStats(0);
     sfraccon->SetStats(0);
     sfracbkg->SetStats(0);
     
-    bdiag->Project("nhitscon","NHits",con+cluster);
-    bdiag->Project("nhitsbkg","NHits",bkg+cluster);
+    bdiag->Project("nshitscon","nshits",con+cluster);
+    bdiag->Project("nshitsbkg","nshits",bkg+cluster);
+    bdiag->Project("nchitscon","nchits",con+cluster);
+    bdiag->Project("nchitsbkg","nchits",bkg+cluster);
     bdiag->Project("nphitscon","NPlaneHits",con+cluster);
     bdiag->Project("nphitsbkg","NPlaneHits",bkg+cluster);
     bdiag->Project("sfraccon","StereoFraction",con+cluster);
     bdiag->Project("sfracbkg","StereoFraction",bkg+cluster);
 
-    nhitscon->Scale(10);
+    nshitscon->Scale(10);
+    nchitscon->Scale(10);
     nphitscon->Scale(10);
     sfraccon->Scale(10);
 
     TLegend* nhleg = new TLegend(0.2,0.7,0.8,0.9);
-    nhleg->AddEntry(nhitsbkg,"Background clusters","L");
-    nhleg->AddEntry(nhitscon,"Conversion clusters (X10)","L");
+    nhleg->AddEntry(nshitsbkg,"Background clusters","L");
+    nhleg->AddEntry(nshitscon,"Conversion clusters (X10)","L");
 
-    TCanvas* nhcan = new TCanvas("nhcan","nhcan",1200,800);
+    TCanvas* nhcan = new TCanvas("nhcan","nhcan",800,800);
     nhcan->Divide(2,2);
     nhcan->cd(1);
-    nhitsbkg->Draw();
-    nhitscon->Draw("same");
+    nshitsbkg->Draw();
+    nshitscon->Draw("same");
     nhleg->Draw();
     nhcan->cd(2);
+    nchitsbkg->Draw();
+    nchitscon->Draw("same");
+    nhcan->cd(3);
     nphitsbkg->Draw();
     nphitscon->Draw("same");
-    nhcan->cd(3);
+    nhcan->cd(4);
     sfracbkg->Draw();
     sfraccon->Draw("same");
  } else if (spage=="mva") {
@@ -304,7 +314,7 @@ void BDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     chibkgu->Scale(100);
     dtbkgu->Scale(100);
 
-    TCanvas* dhcan = new TCanvas("dhcan","Delta hits",1200,800);
+    TCanvas* dhcan = new TCanvas("dhcan","Delta hits",800,800);
     dhcan->Divide(2,2);
     dhcan->cd(1);
     drhobkgp->Draw();

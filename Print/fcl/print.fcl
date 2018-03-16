@@ -63,7 +63,13 @@ physics :{
       StrawHitFlagPrinter : {
         verbose: 0
       }
-      StereoHitPrinter : {
+      BkgClusterPrinter : {
+        verbose: 0
+      }
+      BkgQualPrinter : {
+        verbose: 0
+      }
+       ComboHitPrinter : {
         verbose: 0
       }
 

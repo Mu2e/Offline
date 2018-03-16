@@ -24,7 +24,7 @@ physics : {
     }
 
     all_path : [ 
-      @sequence::generation.CE.seq , 
+      @sequence::generation.POT.seq , 
       @sequence::simulation.default.seq
    ]
 

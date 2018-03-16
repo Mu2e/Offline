@@ -7,57 +7,48 @@
 #define TNTClusterer_HH
 
 #include "TrkReco/inc/BkgClusterer.hh"
+#include "RecoDataProducts/inc/XYZVec.hh"
 #include "fhiclcpp/ParameterSet.h"
 #include "TTree.h"
+#include "TH2.h"
+#include "TH1.h"
 
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "RecoDataProducts/inc/StrawDigiCollection.hh"
 
 namespace mu2e {
-
-   struct ClusterStrawHit 
-   {      
-       ClusterStrawHit(size_t index, const StrawHit& sh, const StrawHitPosition& shp, double psig2inv) : 
-         _index(index),_dist(10000),_time(sh.time()),_itime(int(_time/10.0)),_pos(shp.pos()),_wdir(shp.wdir()),
-         _phi(shp.phi()),_psig2inv(psig2inv),_posResInv(1.0/shp.posRes(StrawHitPosition::wire)),_nchanged(0)
-       {}   
-
-       size_t            _index;
-       double            _dist;
-       double            _time;
-       int               _itime;
-       CLHEP::Hep3Vector _pos;
-       CLHEP::Hep3Vector _wdir;
-       double            _phi;
-       double            _psig2inv;
-       double            _posResInv;
-       unsigned          _nchanged;
-   };
 
 
   class ClusterStraw {  
   
      public:
 
-        ClusterStraw(ClusterStrawHit& hit);
+        ClusterStraw(BkgClusterHit& hit, const ComboHit& chit);
         virtual ~ClusterStraw() {};
 
-        inline const  CLHEP::Hep3Vector& pos()              const { return _pos; }
-        inline double time()                                const { return _time; }
-        inline int    itime()                               const { return _itime; }
-        inline bool   hasChanged()                          const { return _hasChanged;}
-        inline void   flagChanged(bool val)                       { _hasChanged = val;}
-        inline const  std::vector<ClusterStrawHit*>& hits() const { return _hitsPtr; }
-        inline        std::vector<ClusterStrawHit*>& hits()       { return _hitsPtr; }
-                
-        void updateCache(double _maxwt);
+        inline const  XYZVec& pos()                       const { return _pos; }
+        inline float  time()                              const { return _time; }
+        inline int    itime()                             const { return int(_time/10.0); }
+        inline int    id()                                const { return _id; }
+        inline bool   hasChanged()                        const { return _hasChanged;}
+        inline void   flagChanged(bool val)                     { _hasChanged = val;}
+        inline const  std::vector<BkgClusterHit*>& hits() const { return _hitsPtr; }
+        inline        std::vector<BkgClusterHit*>& hits()       { return _hitsPtr; }
+        static void   resetCounter()                            { idCounter_ = 0; }
+
+        void updateCache(const ComboHitCollection& chcol, float _maxwt);
   
   
      private:
-        CLHEP::Hep3Vector             _pos;
-        double                        _time;
-        int                           _itime;
-        std::vector<ClusterStrawHit*> _hitsPtr; 
-        bool                          _hasChanged;
+	int                         _id;
+        XYZVec                      _pos;
+        float                       _time;
+        bool                        _hasChanged;
+        std::vector<BkgClusterHit*> _hitsPtr; 
+
+        static int idCounter_;  
   };
+
 
 
     
@@ -70,57 +61,60 @@ namespace mu2e {
          virtual ~TNTClusterer() {};
 
          void init();
-         virtual void findClusters(BkgClusterCollection& clusterColl,const StrawHitCollection& shcol,
-                                   const StrawHitPositionCollection& shpcol,const StrawHitFlagCollection& shfcol);
+         virtual void findClusters(BkgClusterCollection& clusters, ComboHitCollection const& shcol);
 
      private:
 
-         void     initClu(const StrawHitCollection& shcol, const StrawHitPositionCollection& shpcol, 
-                          const StrawHitFlagCollection& shfcol, std::vector<ClusterStrawHit>& chits); 
-         void     initCluMerge(const StrawHitCollection& shcol, const StrawHitPositionCollection& shpcol, 
-                               const StrawHitFlagCollection& shfcol, std::vector<ClusterStrawHit>& chits, 
-                               std::list<ClusterStraw>& clusters); 
-         unsigned formClusters(std::vector<ClusterStrawHit>& chits, std::list<ClusterStraw>& clusters);
-         double   distance(const ClusterStraw&, ClusterStrawHit&) const;
-         void     mergeClusters(std::list<ClusterStraw>& clusters, double dt, double dd2, bool recalculateDist=false);
+         unsigned formClusters(const ComboHitCollection& chcol, std::vector<BkgClusterHit>& chits, std::list<ClusterStraw>& clusters);
+         void     algo1(const ComboHitCollection& chcol,std::list<ClusterStraw>& clusters, std::vector<BkgClusterHit>& chits);
+         void     algo2(const ComboHitCollection& chcol,std::list<ClusterStraw>& clusters, std::vector<BkgClusterHit>& chits);
+
+         void     initClu(const ComboHitCollection& shcol, std::vector<BkgClusterHit>& chits); 
+         void     initCluMerge(const ComboHitCollection& shcol, std::vector<BkgClusterHit>& chits, std::list<ClusterStraw>& clusters); 
+         void     mergeClusters(std::list<ClusterStraw>& clusters, const ComboHitCollection& chcol, float dt, float dd2);
          void     mergeTwoClu(ClusterStraw& clu1, ClusterStraw& clu2);
+         float    distance(const ClusterStraw& cluster, const ComboHit& hit) const;
+         
          void     dump(std::list<ClusterStraw> clusters);
+         void     fillHitTree(const ComboHitCollection& chcol);
+         void     fillCluTree(const ComboHitCollection& chcol, std::list<ClusterStraw>& clusters, int npass, float odist, float tdist, int nChanged);
 
          int          _diag;
-         StrawHitFlag _bkgmask; // mask for background hits
-         StrawHitFlag _sigmask; // mask for selecting signals
-         bool         _stereoInit;  // Start with stereo hits
+	 bool	      _testflag;    // test background flag
+         StrawHitFlag _bkgmask;     // mask for background hits
+         StrawHitFlag _sigmask;     // mask for selecting signals
+         bool         _comboInit;   // Start with stereo hits
          bool         _mergeInit;   // Start with stereo merge 
-         bool         _mergeAlong;  // Merge during clustering 
-         double       _dseed;       // Minimum separation to seed a new cluster
-         double       _dhit;        // Maximum separation to include a hit in a cluster
-         double       _dmerge;      // distance to merge 2 clusters
-         double       _dd;          // cluster diameter
-         double       _dt;          // natural time spread
-         double       _maxdt;       // maximum time difference
-         double       _trms;        // time RMS
-         double       _maxdsum; 
-         double       _minerr; // Spatial RMS for stereo, non-stereo hits
-         double       _maxdist; // Maximum transverse distance (mm)
-         double       _trms2inv, _srms2inv, _nsrms2inv; // squares of rms
-         unsigned     _maxniter;    // maximum number of iterations
-         unsigned     _maxnchanged;   
+         float        _dseed;       // Minimum separation to seed a new cluster
+         float        _dhit;        // Maximum separation to include a hit in a cluster
+         float        _dd;          // cluster diameter
+         float        _dt;          // natural time spread
+         float        _maxdt;       // maximum time difference
+         float        _maxdsum; 
+         unsigned     _maxNiter;    
+         unsigned     _maxNchanged;   
 
          std::vector<std::vector<ClusterStraw*>> _hitIndex;
-         std::vector<ClusterStraw*> _cptrs;
+         std::vector<ClusterStraw*>              _cptrs;
+         float      _trms2inv; 
 	 int        _ditime;
-         unsigned   _niter;  
-         unsigned   _nchanged; 
-         double     _md2;
-         double     _dd2; 
-         double     _maxwt; 
-         double     _tdist;
-         double     _odist;
-         int        _nclu;
-         int        _nhits, _nchits;
+         float      _dd2; 
+         float      _maxwt; 
+         float      _md2;
+
         
-         TTree*     _idiag; 
-         
+         TTree* _idiag;          
+         int    nhits_,hitNcombo_[8192];
+         float  hitRad_[8192],hitPhi_[8192],hitTime_[8192];
+         int    ncluIter_,cluId_[8192],cluNpass_[8192],cluNhit_[8192];
+         float  cluRad_[8192],cluPhi_[8192],cluTime_[8192];
+         float  cluR2diff_[8192],cluRdiff_[8192],cluPdiff_[8192],cluTdiff_[8192],cluTRdiff_[8192];
+         int    nhitClu_, hcIdxClu_[8192], hcIdxHit_[8192], hcNpass_[8192];
+         int    niter_, nclu_[8192],nChanged_[8192];
+         float  odist_[8192],tdist_[8192];
+
+	 std::map<int,int> hmap_;
+	 
          
   };
 }

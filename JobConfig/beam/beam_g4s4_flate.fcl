@@ -1,0 +1,28 @@
+// Start with particles hitting the detector mother volumes and
+// write out StepPoints in the detectors.
+//
+// Zoom on the DIO tail by generating electrons flat in energy.
+//
+// Andrei Gaponenko, 2015
+
+#include "JobConfig/beam/prolog.fcl"
+
+process_name: beamg4s4flate
+
+source: { module_type : EmptyEvent }
+services: { @table::mu2e.services.simServices }
+physics: { @table::mu2e.physics.g4s4Muons }
+outputs: { @table::mu2e.outputs.g4s4Defs }
+
+physics.producers.generate.physics: {
+    pdgId : 11
+    spectrumShape: flat
+    spectrumVariable: totalEnergy
+    elow: 95.0 // MeV
+    ehi: 105.0  // MeV
+}
+
+services.TFileService.fileName: "nts.owner.beam-g4s4-flate.version.sequencer.root"
+outputs.detectorOutput.fileName: "sim.owner.beam-g4s4-detflate.version.sequencer.art"
+outputs.crvOutput.fileName: "sim.owner.beam-g4s4-crvflate.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName: "sim.owner.beam-g4s4-flate-truncated.version.sequencer.art"

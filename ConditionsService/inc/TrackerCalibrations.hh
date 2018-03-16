@@ -46,6 +46,8 @@ namespace mu2e
 
     double CrossTalk(StrawIndex strawIndex0, StrawIndex strawIndexN) const;
 
+    double driftVelocity() const { return _vdrift; }
+
     // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
     double Mint0doca() const;
   protected:

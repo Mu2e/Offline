@@ -24,6 +24,7 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 
@@ -57,7 +58,8 @@ using namespace std;
 namespace mu2e {
 
   void constructMSTM( const VolumeInfo& parent,
-                      SimpleConfig const & _config
+                      const SimpleConfig& _config,
+                      const SensitiveDetectorHelper& sdHelper
                       ){
 
     MaterialFinder materialFinder(_config);
@@ -938,7 +940,9 @@ namespace mu2e {
 
 
     // Make mstmCrystal a sensitive detector.
-    G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::STMDet());
+    G4VSensitiveDetector *sd = (sdHelper.enabled(StepInstanceName::STMDet)) ?
+      G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::STMDet()) : nullptr;
 
     if(sd) mstmCrystal.logical->SetSensitiveDetector(sd);
 

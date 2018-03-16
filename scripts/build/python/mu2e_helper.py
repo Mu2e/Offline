@@ -55,7 +55,10 @@ class mu2e_helper:
     def dict_file(self):
         return self.tmpdir+"/mu2e_"+self.libstub + '_dict.cpp'
     def dict_lib_file(self):
-        return "lib/libmu2e_"+self.libstub + '_dict.so'
+        if self.classdef : # dictionary is in the main lib
+            return "lib/libmu2e_"+self.libstub + '.so'
+        else :  # dictionary is in its own lib
+            return "lib/libmu2e_"+self.libstub + '_dict.so'
     def rootmap_file(self):
         return "lib/libmu2e_"+self.libstub + "_dict.rootmap"
     def pcm_file(self):

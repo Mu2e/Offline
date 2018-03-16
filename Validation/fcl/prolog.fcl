@@ -35,7 +35,7 @@ generation : {
       mod : {
 	 generate: {
             module_type          : EventGenerator
-            inputfile            : "JobConfig/cd3/genconfig_PrimaryProtons.txt"
+            inputfile            : "JobConfig/beam/genconfig_PrimaryProtons.txt"
 	 }
       }
       seq : [ generate ]
@@ -44,7 +44,7 @@ generation : {
       mod : {
 	 generate: {
             module_type          : EventGenerator
-            inputfile            : "JobConfig/cd3/cosmic/genconfig_cosmic_general.txt"
+            inputfile            : "JobConfig/cosmic/genconfig_cosmic_general.txt"
 	 }
       }
       seq : [ generate ]
@@ -82,11 +82,9 @@ protonBunch : {
 digis : {
    straw : { 
       mod : {
-	 makeSD : {
-	    @table::TrackerMC.producers.makeSD 
-	 }
+	 @table::TrackerMC.producers
       }
-      seq : [ makeSD ]
+      seq : [ @sequence::TrackerMC.DigiSim ]
    }
 
    cal : {
@@ -113,108 +111,29 @@ reco : {
    # make straw hits, flag bg hits, make stereo hits
    straw : { 
       mod : {
-	 makeSH : { @table::TrkHitReco.producers.makeSH }
-#	 FSHPreStereo    : { @table::Tracking.producers.FSHPreStereo }
-#	 MakeStrawHitPositions  : { @table::TrkHitReco.producers.MakeStrawHitPositions }
-	 MakeStereoHits  : { @table::TrkHitReco.producers.MakeStereoHits }
-#	 FlagStrawHits   : { @table::TrkHitReco.producers.FlagStrawHits }
-	 FlagBkgHits	    : { @table::TrkHitReco.producers.FlagBkgHits }
+	 @table::TrkHitReco.producers
       }
-      seq : [ makeSH, MakeStereoHits, FlagBkgHits]
-#      seq : [ makeSH, FSHPreStereo, MakeStrawHitPositions, 
-#	 MakeStereoHits, FlagStrawHits, FlagBkgHits]
-#      seq : [ makeSH, MakeStrawHitPositions, MakeStereoHits ]
+      seq : [ @sequence::TrkHitReco.PrepareHits ]
    } # end straw
 
    # tracking (inside reco braces)
    trk : {
-
-      all : {
-	 mod : {
-	    TimeClusterFinder  : { @table::Tracking.producers.TimeClusterFinder }
-	    HelixFinder  : { @table::Tracking.producers.HelixFinder }
-#	    PosHelixFinder  : { @table::Tracking.producers.PosHelixFinder }
-#	    NegHelixFinder  : { @table::Tracking.producers.NegHelixFinder }
-	    # First, seed fits
-	    KSFDeM	  : { @table::Tracking.producers.KSFDeM }
-	    KSFUeM	  : { @table::Tracking.producers.KSFUeM }
-	    KSFDeP	  : { @table::Tracking.producers.KSFDeP }
-	    KSFUeP	  : { @table::Tracking.producers.KSFUeP }
-	    KSFDmuM	  : { @table::Tracking.producers.KSFDmuM }
-	    KSFUmuM	  : { @table::Tracking.producers.KSFUmuM }
-	    KSFDmuP	  : { @table::Tracking.producers.KSFDmuP }
-	    KSFUmuP	  : { @table::Tracking.producers.KSFUmuP }
-	    KSFDpiM	  : { @table::Tracking.producers.KSFDpiM }
-	    KSFUpiM	  : { @table::Tracking.producers.KSFUpiM }
-	    KSFDpiP	  : { @table::Tracking.producers.KSFDpiP }
-	    KSFUpiP	  : { @table::Tracking.producers.KSFUpiP }
-	    # Final Kalman fit
-	    KFFDeM	  : { @table::Tracking.producers.KFFDeM }
-	    KFFUeM	  : { @table::Tracking.producers.KFFUeM }
-	    KFFDeP	  : { @table::Tracking.producers.KFFDeP }
-	    KFFUeP	  : { @table::Tracking.producers.KFFUeP }
-	    KFFDmuM	  : { @table::Tracking.producers.KFFDmuM }
-	    KFFUmuM	  : { @table::Tracking.producers.KFFUmuM }
-	    KFFDmuP	  : { @table::Tracking.producers.KFFDmuP }
-	    KFFUmuP	  : { @table::Tracking.producers.KFFUmuP }
-	    KFFDpiM	  : { @table::Tracking.producers.KFFDpiM }
-	    KFFUpiM	  : { @table::Tracking.producers.KFFUpiM }
-	    KFFDpiP	  : { @table::Tracking.producers.KFFDpiP }
-	    KFFUpiP	  : { @table::Tracking.producers.KFFUpiP }
-	 }
-#	 seq : [TimeClusterFinder, PosHelixFinder, NegHelixFinder, 
-	 seq : [TimeClusterFinder, HelixFinder, 
-	 KSFDeM, KSFUeM, KSFDeP, KSFUeP, 
-	 KSFDmuM, KSFUmuM, KSFDmuP, KSFUmuP, 
-	 KSFDpiM, KSFUpiM, KSFDpiP, KSFUpiP,
-	 KFFDeM, KFFUeM, KFFDeP, KFFUeP, 
-	 KFFDmuM, KFFUmuM, KFFDmuP, KFFUmuP, 
-	 KFFDpiM, KFFUpiM, KFFDpiP, KFFUpiP
-	 ]
-
+      mod : {
+	 @table::Tracking.producers
       }
+      seq : {
+	 all : [ @sequence::Tracking.TPRDeM, @sequence::Tracking.TPRUeM,
+	    @sequence::Tracking.TPRDeP, @sequence::Tracking.TPRUeP,
+            @sequence::Tracking.TPRDmuM,@sequence::Tracking.TPRUmuM,
+            @sequence::Tracking.TPRDmuP,@sequence::Tracking.TPRUmuP,
+            @sequence::Tracking.TPRDpiM,@sequence::Tracking.TPRUpiM,
+            @sequence::Tracking.TPRDpiP,@sequence::Tracking.TPRUpiP ]
+	 ele : [ @sequence::Tracking.TPRDeM, @sequence::Tracking.TPRUeM,
+	    @sequence::Tracking.TPRDeP, @sequence::Tracking.TPRUeP ]
+	 eleDMUP : [ @sequence::Tracking.TPRDeM, @sequence::Tracking.TPRUeP ]
+      } # end reco.trk.seq
 
-      # inside reco.trk
-      ele : {
-	 mod : {
-	    TimeClusterFinder  : { @table::Tracking.producers.TimeClusterFinder }
-	    HelixFinder  : { @table::Tracking.producers.HelixFinder }
-	    # First, seed fits
-	    KSFDeM	  : { @table::Tracking.producers.KSFDeM }
-	    KSFUeM	  : { @table::Tracking.producers.KSFUeM }
-	    KSFDeP	  : { @table::Tracking.producers.KSFDeP }
-	    KSFUeP	  : { @table::Tracking.producers.KSFUeP }
-	    # Final Kalman fit
-	    KFFDeM	  : { @table::Tracking.producers.KFFDeM }
-	    KFFUeM	  : { @table::Tracking.producers.KFFUeM }
-	    KFFDeP	  : { @table::Tracking.producers.KFFDeP }
-	    KFFUeP	  : { @table::Tracking.producers.KFFUeP }
-	 }
-	 seq : [TimeClusterFinder, HelixFinder, 
-	 KSFDeM, KSFUeM, KSFDeP, KSFUeP, 
-	 KFFDeM, KFFUeM, KFFDeP, KFFUeP
-	 ]
-
-      }
-
-      eleDMUP : {
-	 mod : {
-	    TimeClusterFinder  : { @table::Tracking.producers.TimeClusterFinder }
-	    HelixFinder  : { @table::Tracking.producers.HelixFinder }
-	    # First, seed fits
-	    KSFDeM	  : { @table::Tracking.producers.KSFDeM }
-	    KSFUeP	  : { @table::Tracking.producers.KSFUeP }
-	    # Final Kalman fit
-	    KFFDeM	  : { @table::Tracking.producers.KFFDeM }
-	    KFFUeP	  : { @table::Tracking.producers.KFFUeP }
-	 }
-	 seq : [ TimeClusterFinder, HelixFinder, 
-	    KSFDeM, KSFUeP, KFFDeM, KFFUeP
-	 ]
-
-      }
-
-   } # end trk reco
+   } # end reco.trk
 
 
    # still inside reco
@@ -227,39 +146,22 @@ reco : {
    } # end cal reco
 
 
-   # CalPatRec version, make straw hits, flag bg hits, make stereo hits
-   cstraw : { 
-      mod : {
-	 # CalPatRec uses the standard tracking makeSH
-	 makeSH : { @table::Tracking.producers.makeSH }
-	 MakeStrawHitPositions  : { @table::Tracking.producers.MakeStrawHitPositions }
-
-	 DeltaFinder    : { @table::CalPatRec.producers.DeltaFinder }
-      }
-      seq : [  makeSH, MakeStrawHitPositions, CalTimePeakFinder, DeltaFinder ]
-   } # end cstraw reco
-
+   # CalPatRec tracking. Requires hits are make by straw reco
    ctrk : {
       mod : {
-	 MergePatRecDem : { @table::CalPatRec.producers.MergePatRecDem }
-	 CalSeedFitDem  : { @table::CalPatRec.producers.CalSeedFitDem }
+	    @table::CalPatRec.producers
       }
       flt : {
-	 CalTimePeakFinder  : { @table::CalPatRec.filters.CalTimePeakFinder }
-	 CalHelixFinderDem : { @table::CalPatRec.filters.CalHelixFinderDem }
-	 CalTrkFitDem  : { @table::CalPatRec.filters.CalTrkFitDem }
+	    @table::CalPatRec.filters
       }
-      seq : [ CalHelixFinderDem, CalSeedFitDem, CalTrkFitDem, MergePatRecDem ]
+      seq : [ @sequence::CalPatRec.dem_reco, MergePatRecDem ]
    } # end ctrk reco
 
    pid : {
       mod : {
-	 TrackCaloIntersectionDem : { @table::TrackCaloMatching.producers.TrackCaloIntersectionDem }
-	 TrackCaloMatchingDem : { @table::TrackCaloMatching.producers.TrackCaloMatchingDem }
-#	 AvikPID : { @table::ParticleID.producers.AvikPID }
+	    @table::TrackCaloMatching.producers
       }
-#      seq : [ TrackCaloIntersectionDem, TrackCaloMatchingDem, AvikPID ]
-      seq : [ TrackCaloIntersectionDem, TrackCaloMatchingDem ]
+      seq : [ @sequence::TrackCaloMatching.matching_dem ]
    } # end pid reco
 
    # CRV coincidences

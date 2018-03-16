@@ -39,7 +39,7 @@ physics : {
     muonTimeMap          : { module_type : GenerateMuonLife }
 
     makeSD               : @local::makeSD
-    makeSH               : @local::makeSHfromSD
+    makeSH               : @local::makeSH
 
     @table::CaloDigiMC.producers
     @table::CaloReco.producers
@@ -98,6 +98,8 @@ outputs:  {
 // Disable all physics except transport.
 physics.producers.g4run.physics.physicsListName: "Minimal"
 physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
+#physics.producers.g4run.SDConfig.enableSD     : @erase
+#physics.producers.g4run.SDConfig.enableAllSDs     : true
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  0

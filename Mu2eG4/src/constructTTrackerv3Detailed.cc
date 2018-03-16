@@ -32,6 +32,7 @@
 #include "G4Helper/inc/G4Helper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/constructTTracker.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -163,8 +164,10 @@ namespace {
 } // end anonymous namespace
 
 
-  VolumeInfo constructTTrackerv3Detailed( VolumeInfo const& ds3Vac,
-                                          SimpleConfig const& config ){
+  VolumeInfo constructTTrackerv3Detailed( VolumeInfo const& parent,
+                                          SimpleConfig const& config,
+                                          SensitiveDetectorHelper const& sdHelper
+                                          ){
 
     cout << "Mark Detailed. " << endl;
 
@@ -219,9 +222,9 @@ namespace {
     //G4ThreeVector trackerOffset( 0., 0., ttracker.z0() );
     // Offset of the center of the tracker within its mother volume.
 
-    // Offset of the center of the tracker within its mother volume.
     CLHEP::Hep3Vector motherOffset(0., 0., ttracker.z0()-mother.position().z() );
-    cout << "Centers: " << mother.position() << " " << ds3Vac.centerInWorld << " " << ttracker.z0() << endl;
+    cout << "Centers: " << mother.position() << " "
+         << parent.centerInWorld << " " << ttracker.z0() << endl;
     cout << "         " << motherOffset << endl;
 
     // All mother/envelope volumes are made of this material.
@@ -231,8 +234,8 @@ namespace {
                                       mother.tubsParams(),
                                       envelopeMaterial,
                                       noRotation,
-                                      mother.position() - ds3Vac.centerInWorld,
-                                      ds3Vac,
+                                      mother.position() - parent.centerInWorld,
+                                      parent,
                                       0,
                                       config.getBool("ttracker.envelopeVisible",false),
                                       G4Colour::Blue(),
@@ -403,8 +406,9 @@ namespace {
     }
 
     // Pick one of the tubs that represents mocked-up electronics and make it a senstive detector.
-    G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector(SensitiveDetectorName::TTrackerPlaneSupport());
+    G4VSensitiveDetector *sd = (sdHelper.enabled(StepInstanceName::ttrackerDS)) ?
+      G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::TTrackerPlaneSupport()) : nullptr;
 
     for ( std::deque<VolHelper>::iterator i=vols.begin(), e=vols.end();
           i != e; ++i ){
@@ -798,7 +802,7 @@ namespace {
                envelopeMaterial,
                noRotation,
                xAxisPos,
-               ds3Vac,
+               parent,
                copyNo,
                isVisible,
                G4Colour::Blue(),
@@ -820,7 +824,7 @@ namespace {
                envelopeMaterial,
                noRotation,
                yAxisPos,
-               ds3Vac,
+               parent,
                copyNo,
                isVisible,
                G4Colour::Red(),
@@ -842,7 +846,7 @@ namespace {
                envelopeMaterial,
                noRotation,
                zAxisPos,
-               ds3Vac,
+               parent,
                copyNo,
                isVisible,
                G4Colour::Green(),

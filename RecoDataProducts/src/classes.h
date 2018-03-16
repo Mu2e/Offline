@@ -15,8 +15,6 @@
 #include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
-#include "RecoDataProducts/inc/StrawHitPosition.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/HelixHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"

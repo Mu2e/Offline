@@ -1,5 +1,11 @@
 
-           Release notes for Mu2e Offline software, v6_5_3 (in progress)
+           Release notes for Mu2e Offline software, v6_5_3
+
+5) rlc,  07 Mar 2018.  reduce printout, reconfigure JobConfig
+4) pollack, 01 Feb 2018
+   added gsl library ups product, for bessel functions
+   added standalone csv reader (see https://github.com/ben-strasser/fast-cpp-csv-parser):
+   GeneralUtilities/inc/csv.h
 
 3) pollack, 22 Feb 2018
    merged in `pollack` branch:
@@ -12,7 +18,6 @@
    BFieldGeom/src/* and associated headers
    GeometryService/src/BFieldConfigMaker.cc
    GeometryService/src/BFieldManagerMaker.cc
-
 
 2) genser, 22 Feb 2018
    Moved explicit setup of xerces_c (also done by setup of geant4)

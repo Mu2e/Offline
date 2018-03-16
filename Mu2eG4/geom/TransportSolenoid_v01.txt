@@ -67,7 +67,7 @@ bool   ts.polyliner.isSolid        = true;
 // Pbar absorber at TS3 center, disk always built, wedge optional plus
 bool   pbar.isVisible = true;
 bool   pbar.isSolid   = false;
-int    pbar.verbosityLevel = 1;
+int    pbar.verbosityLevel = 0;
 double pbar.halfLength = 100.0e-3; // 0.06->0.1
 string pbar.Type       = "wedge"; // "disk"
 string pbar.materialName = "G4_KAPTON";

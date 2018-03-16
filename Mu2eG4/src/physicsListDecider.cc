@@ -37,6 +37,9 @@
 #include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
 #include "Mu2eG4/inc/MinDEDXPhysicsList.hh"
+#if G4VERSION>4103
+#include "Mu2eG4/inc/Mu2eEmStandardPhysics_option4.hh"
+#endif
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "Mu2eG4/inc/setMinimumRangeCut.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -104,6 +107,16 @@ namespace mu2e{
       return pset.get<std::string>("physics.stepper");
     }
 
+#if G4VERSION>4103
+    bool modifyEMOption4(const SimpleConfig& config) {
+      return config.getBool("g4.modifyEMOption4",false);
+    }
+
+    bool modifyEMOption4(const fhicl::ParameterSet& pset) {
+      return pset.get<bool>("physics.modifyEMOption4",false);
+    }
+#endif
+
   }
 
 
@@ -113,6 +126,8 @@ namespace mu2e{
     G4VModularPhysicsList* tmpPL(nullptr);
 
     const string name = getPhysicsListName(config);
+
+    std::cout << __func__ << " invoked with " << name << std::endl;
 
     // special cases
     if ( name  == "Minimal" ) {
@@ -185,6 +200,7 @@ namespace mu2e{
     // General case
     else {
       G4PhysListFactory physListFactory;
+      physListFactory.SetVerbose(getDiagLevel(config));
       tmpPL = physListFactory.GetReferencePhysList(name);
 
     }
@@ -202,7 +218,15 @@ namespace mu2e{
     if (turnOffRadioactiveDecay(config)) {
       tmpPL->RemovePhysics("G4RadioactiveDecay");
     }
-
+#if G4VERSION>4103
+    if ( modifyEMOption4(config) && (name.find("_EMZ") != std::string::npos) ) {
+      tmpPL->RemovePhysics(("G4EmStandard_opt4"));
+      if (getDiagLevel(config)>0) {
+        G4cout << __func__ << " Registering Mu2eEmStandardPhysics_option4" << G4endl;
+      }
+      tmpPL->RegisterPhysics( new Mu2eEmStandardPhysics_option4(getDiagLevel(config)));
+    }
+#endif
     if ( turnOffRadioactiveDecay(config) && turnOnRadioactiveDecay(config) ) {
       mf::LogError("Config") << "Inconsistent config";
       G4cout << "Error: turnOnRadioactiveDecay & turnOffRadioactiveDecay on" << G4endl;
