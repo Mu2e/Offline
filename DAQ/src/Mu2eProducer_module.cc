@@ -19,7 +19,8 @@
 
 #include <artdaq-core/Data/Fragment.hh>
 #include "TrackerConditions/inc/Types.hh"
-#include "RecoDataProducts/inc/StrawDigi.hh"
+#include "RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigiCollection.hh"
 
 #include <iostream>
 
@@ -56,6 +57,9 @@ public:
 private:
   int   diagLevel_;
 
+  int   parseCAL_;
+  int   parseTRK_;
+
   art::InputTag trkFragmentsTag_;
   art::InputTag caloFragmentsTag_;
 
@@ -66,11 +70,14 @@ private:
 Mu2eProducer::Mu2eProducer(fhicl::ParameterSet const& pset)
   : EDProducer( )
   , diagLevel_(pset.get<int>("diagLevel",0))
+  , parseCAL_(pset.get<int>("parseCAL",1))
+  , parseTRK_(pset.get<int>("parseTRK",1))
   , trkFragmentsTag_{"daq:trk"}
   , caloFragmentsTag_{"daq:calo"}
 {
   produces<EventNumber_t>(); 
   produces<mu2e::StrawDigiCollection>();
+  produces<mu2e::CaloDigiCollection>();
 }
 
 // ----------------------------------------------------------------------
@@ -112,6 +119,8 @@ void
   // Collection of StrawDigis for the event
   std::unique_ptr<mu2e::StrawDigiCollection> straw_digis(new mu2e::StrawDigiCollection);
 
+  // Collection of CaloDigis for the event
+  std::unique_ptr<mu2e::CaloDigiCollection> calo_digis(new mu2e::CaloDigiCollection);
 
   std::string curMode = "TRK";
 
@@ -197,7 +206,7 @@ void
       }
 
       // Parse phyiscs information from TRK packets
-      if(mode_ == "TRK" && packetCount>0) {
+      if(mode_ == "TRK" && packetCount>0 && parseTRK_>0) {
 
 	uint16_t strawIdx = cc.DBT_StrawIndex(pos);
 	unsigned long TDC0  = cc.DBT_TDC0(pos);
@@ -301,15 +310,23 @@ void
 	
 	
 	
-      } else if(mode_ == "CAL" && packetCount>0) {	// Parse phyiscs information from CAL packets
+      } else if(mode_ == "CAL" && packetCount>0 && parseCAL_>0) {	// Parse phyiscs information from CAL packets
 	
 	adc_t crystalID  = cc.DBC_CrystalID(pos);
 	adc_t apdID      = cc.DBC_apdID(pos);
 	adc_t time       = cc.DBC_Time(pos);
 	adc_t numSamples = cc.DBC_NumSamples(pos);
-	// this typedef belongs somewhere else FIXME!
-	typedef std::vector<unsigned short> CalWaveform;
-	CalWaveform waveform = cc.DBC_Waveform(pos);
+	//adc_t peakIdx    = cc.DBC_PeakSampleIdx(pos);
+	std::vector<unsigned short> waveform = cc.DBC_Waveform(pos);
+
+	std::vector<int> cwf;
+	for(size_t i=0; i<waveform.size(); i++) {
+	  cwf.push_back((int)waveform[i]);
+	}
+
+	// Fill the CaloDigiCollection
+	calo_digis->push_back(mu2e::CaloDigi(crystalID*2 + apdID, time, cwf));
+	//calo_digis->push_back(mu2e::CaloDigi(crystalID*2 + apdID, time, cwf, peakIdx));
 	
 	if( diagLevel_ > 1 ) {
 	  std::cout << "timestamp: " << timestamp << std::endl;
@@ -378,8 +395,9 @@ void
 
   event.put(std::unique_ptr<EventNumber_t>(new EventNumber_t( eventNumber )));
   
-  // Store the straw digis in the event
+  // Store the straw digis and calo digis in the event
   event.put(std::move(straw_digis));
+  event.put(std::move(calo_digis));
 
 }  // produce()
 
