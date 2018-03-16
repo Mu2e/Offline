@@ -20,6 +20,8 @@
 #include "Validation/inc/ValStrawDigi.hh"
 #include "Validation/inc/ValStrawDigiMC.hh"
 #include "Validation/inc/ValStrawHit.hh"
+#include "Validation/inc/ValBkgCluster.hh"
+#include "Validation/inc/ValBkgQual.hh"
 #include "Validation/inc/ValTrackSummary.hh"
 #include "Validation/inc/ValTrackClusterMatch.hh"
 #include "Validation/inc/ValKalSeed.hh"
@@ -59,6 +61,8 @@ namespace mu2e {
     std::vector<std::shared_ptr<ValStrawDigi>>         _stdg;
     std::vector<std::shared_ptr<ValStrawDigiMC>>       _stdm;
     std::vector<std::shared_ptr<ValStrawHit>>          _stwh;
+    std::vector<std::shared_ptr<ValBkgCluster>>        _bgcl;
+    std::vector<std::shared_ptr<ValBkgQual>>           _bgql;
     std::vector<std::shared_ptr<ValTrackSummary>>      _trks;
     std::vector<std::shared_ptr<ValTrackClusterMatch>> _mtch;
     std::vector<std::shared_ptr<ValKalSeed>>           _klsd;
@@ -106,6 +110,8 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<StrawDigiMCCollection,ValStrawDigiMC>        (_stdm,event);
   analyzeProduct<StrawHitCollection,ValStrawHit>              (_stwh,event);
   analyzeProduct<StrawHitFlagCollection,ValStrawHitFlag>      (_shfl,event);
+  analyzeProduct<BkgClusterCollection,ValBkgCluster>          (_bgcl,event);
+  analyzeProduct<BkgQualCollection,ValBkgQual>                (_bgql,event);
   analyzeProduct<ComboHitCollection,ValComboHit>              (_stht,event);
   analyzeProduct<TimeClusterCollection,ValTimeCluster>        (_tmcl,event);
   analyzeProduct<KalSeedCollection,ValKalSeed>                (_klsd,event);
@@ -149,7 +155,8 @@ int mu2e::Validation::analyzeProduct(
       fcn="TrkQual";
     if(fcn=="mu2e::SimParticleart::Ptrdoublestd::map") 
       fcn="SimParticleTimeMap";
-
+    if(fcn=="mu2e::BkgQualDetailmu2e::MVAStructs") 
+      fcn="BkgQual";
     if(fcn.find("mu2e::",0)==0) fcn.erase(0,6);
 
     std::string inst = prov->productInstanceName();

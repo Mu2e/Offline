@@ -81,10 +81,6 @@ physics :{
 	#inputTags : [ "MakeSD" ] # select instances
       }
       StrawDigiMCPrinter : {
-        verbose: 2   # 0, 1
-	#inputTags : [ "MakeSD" ] # select instances
-      }
-       StrawDigiMCPrinter : {
         verbose: 1   # 0, 1, 2
 	#inputTags : [ "MakeSD" ] # select instances
       }
@@ -95,9 +91,19 @@ physics :{
       }
       StrawHitFlagPrinter : {
         verbose: 0   # 0, 1
+	#inputTags : [ "MakeSH" ] # select instances
+      }
+      BkgClusterPrinter : {
+        verbose: 0   # 0, 1
+	#inputTags : [ "MakeSH" ] # select instances
+      }
+      BkgQualPrinter : {
+        verbose: 0   # 0, 1
+	#inputTags : [ "MakeSH" ] # select instances
       }
       ComboHitPrinter : {
         verbose: 1   # 0, 1
+	#inputTags : [ "MakeSH" ] # select instances
       }
 
       TimeClusterPrinter : {

@@ -23,12 +23,14 @@
 #include "Print/inc/StrawDigiPrinter.hh"
 #include "Print/inc/StrawDigiMCPrinter.hh"
 #include "Print/inc/StrawHitPrinter.hh"
+#include "Print/inc/StrawHitFlagPrinter.hh"
+#include "Print/inc/BkgClusterPrinter.hh"
+#include "Print/inc/BkgQualPrinter.hh"
 #include "Print/inc/TrackClusterMatchPrinter.hh"
 #include "Print/inc/TrkCaloIntersectPrinter.hh"
 #include "Print/inc/TrackSummaryPrinter.hh"
 #include "Print/inc/KalRepPrinter.hh"
 #include "Print/inc/SimParticleTimeMapPrinter.hh"
-#include "Print/inc/StrawHitFlagPrinter.hh"
 #include "Print/inc/ComboHitPrinter.hh"
 #include "Print/inc/TimeClusterPrinter.hh"
 #include "Print/inc/KalSeedPrinter.hh"
@@ -73,6 +75,8 @@ mu2e::PrintModule::PrintModule(fhicl::ParameterSet const& pset ):
   _printers.push_back( new StrawDigiPrinter(pset) );
   _printers.push_back( new StrawDigiMCPrinter(pset) );
   _printers.push_back( new StrawHitPrinter(pset) );
+  _printers.push_back( new BkgClusterPrinter(pset) );
+  _printers.push_back( new BkgQualPrinter(pset) );
   _printers.push_back( new TrackClusterMatchPrinter(pset) );
   _printers.push_back( new TrkCaloIntersectPrinter(pset) );
   _printers.push_back( new TrackSummaryPrinter(pset) );
