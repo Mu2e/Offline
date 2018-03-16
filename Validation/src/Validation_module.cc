@@ -26,7 +26,7 @@
 #include "Validation/inc/ValStrawHitFlag.hh"
 #include "Validation/inc/ValSimParticleTimeMap.hh"
 #include "Validation/inc/ValTimeCluster.hh"
-#include "Validation/inc/ValStereoHit.hh"
+#include "Validation/inc/ValComboHit.hh"
 
 namespace mu2e {
 
@@ -65,7 +65,7 @@ namespace mu2e {
     std::vector<std::shared_ptr<ValStrawHitFlag>>      _shfl;
     std::vector<std::shared_ptr<ValSimParticleTimeMap>> _sptm;
     std::vector<std::shared_ptr<ValTimeCluster>>        _tmcl;
-    std::vector<std::shared_ptr<ValStereoHit>>          _stht;
+    std::vector<std::shared_ptr<ValComboHit>>           _stht;
 
     // Loop over the products of type T and 
     // call fill() on validation histogram class V to make histograms.
@@ -95,6 +95,7 @@ void mu2e::Validation::beginJob(){
 void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<GenParticleCollection,ValGenParticle>        (_genp,event);
   analyzeProduct<SimParticleCollection,ValSimParticle>        (_simp,event);
+  analyzeProduct<SimParticleTimeMap,ValSimParticleTimeMap>    (_sptm,event);
   analyzeProduct<StepPointMCCollection,ValStepPointMC>        (_spmc,event);
   analyzeProduct<CaloCrystalHitCollection,ValCaloCrystalHit>  (_calh,event);
   analyzeProduct<CaloShowerStepCollection,ValCaloShowerStep>  (_cals,event);
@@ -104,13 +105,12 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<StrawDigiCollection,ValStrawDigi>            (_stdg,event);
   analyzeProduct<StrawDigiMCCollection,ValStrawDigiMC>        (_stdm,event);
   analyzeProduct<StrawHitCollection,ValStrawHit>              (_stwh,event);
+  analyzeProduct<StrawHitFlagCollection,ValStrawHitFlag>      (_shfl,event);
+  analyzeProduct<ComboHitCollection,ValComboHit>              (_stht,event);
+  analyzeProduct<TimeClusterCollection,ValTimeCluster>        (_tmcl,event);
+  analyzeProduct<KalSeedCollection,ValKalSeed>                (_klsd,event);
   analyzeProduct<TrackSummaryCollection,ValTrackSummary>      (_trks,event);
   analyzeProduct<TrackClusterMatchCollection,ValTrackClusterMatch>(_mtch,event);
-  analyzeProduct<KalSeedCollection,ValKalSeed>                (_klsd,event);
-  analyzeProduct<StrawHitFlagCollection,ValStrawHitFlag>      (_shfl,event);
-  analyzeProduct<SimParticleTimeMap,ValSimParticleTimeMap>    (_sptm,event);
-  analyzeProduct<TimeClusterCollection,ValTimeCluster>        (_tmcl,event);
-  analyzeProduct<StereoHitCollection,ValStereoHit>            (_stht,event);
 
 }
 

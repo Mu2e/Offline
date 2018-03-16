@@ -96,7 +96,7 @@ physics :{
       StrawHitFlagPrinter : {
         verbose: 0   # 0, 1
       }
-      StereoHitPrinter : {
+      ComboHitPrinter : {
         verbose: 1   # 0, 1
       }
 

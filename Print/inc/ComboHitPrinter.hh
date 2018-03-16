@@ -1,31 +1,31 @@
 //
-//  Utility class to print StereoHit
+//  Utility class to print ComboHit
 // 
-#ifndef Print_inc_StereoHitPrinter_hh
-#define Print_inc_StereoHitPrinter_hh
+#ifndef Print_inc_ComboHitPrinter_hh
+#define Print_inc_ComboHitPrinter_hh
 
 #include <cstring>
 #include <iostream>
 
 #include "Print/inc/ProductPrinter.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
 namespace mu2e {
 
-  class StereoHitPrinter : public ProductPrinter {
+  class ComboHitPrinter : public ProductPrinter {
   public:
 
     typedef std::vector<std::string> vecstr;
 
-    StereoHitPrinter() { set( fhicl::ParameterSet() ); }
-    StereoHitPrinter(const fhicl::ParameterSet& pset) { set(pset); }
+    ComboHitPrinter() { set( fhicl::ParameterSet() ); }
+    ComboHitPrinter(const fhicl::ParameterSet& pset) { set(pset); }
 
     // tags to select which product instances to process
     void setTags(const vecstr& tags) { _tags = tags; }
 
-    // pset should contain a table called StereoHitPrinter
+    // pset should contain a table called ComboHitPrinter
     void set(const fhicl::ParameterSet& pset);
 
     // the vector<string> list of inputTags
@@ -34,15 +34,15 @@ namespace mu2e {
     // all the ways to request a printout
     void Print(art::Event const& event,
 	       std::ostream& os = std::cout) override;
-    void Print(const art::Handle<StereoHitCollection>& handle, 
+    void Print(const art::Handle<ComboHitCollection>& handle, 
 	       std::ostream& os = std::cout);
-    void Print(const art::ValidHandle<StereoHitCollection>& handle, 
+    void Print(const art::ValidHandle<ComboHitCollection>& handle, 
 	       std::ostream& os = std::cout);
-    void Print(const StereoHitCollection& coll, 
+    void Print(const ComboHitCollection& coll, 
 	       std::ostream& os = std::cout);
-    void Print(const art::Ptr<StereoHit>& ptr, 
+    void Print(const art::Ptr<ComboHit>& ptr, 
 	       int ind = -1, std::ostream& os = std::cout);
-    void Print(const mu2e::StereoHit& obj, 
+    void Print(const mu2e::ComboHit& obj, 
 	       int ind = -1, std::ostream& os = std::cout);
 
     void PrintHeader(const std::string& tag, 
