@@ -91,7 +91,7 @@ namespace mu2e {
 
 
       //--------------------------------------------------------------------------------
-      std::vector<int> SquareMapper::neighbors(int thisIndex, unsigned int level)  const
+      std::vector<int> SquareMapper::neighbors(int thisIndex, int level)  const
       {
 	  std::vector<int> thisNeighbour;
 	  thisNeighbour.reserve(12);
@@ -99,9 +99,9 @@ namespace mu2e {
           SquLK init = lk(thisIndex);
 	  SquLK lk(init.l_ - level, init.k_ + level);
 
-          for (unsigned int i=0;i<step_.size();++i)
+          for (size_t i=0;i<step_.size();++i)
 	  {
-	      for (unsigned int iseg=0;iseg<2*level;++iseg)
+	      for (int iseg=0;iseg<2*level;++iseg)
 	      {
 		 lk.add(step_[i]);
 		 thisNeighbour.push_back( index(lk) );
@@ -150,8 +150,5 @@ namespace mu2e {
       {
 	  return std::max(std::abs(thisLK.l_),std::abs(thisLK.k_));
       }
-
-
-
 
 }

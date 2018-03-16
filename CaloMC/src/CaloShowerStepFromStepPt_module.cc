@@ -294,7 +294,7 @@ namespace mu2e {
          PhysicalVolumeMultiHelper vi(*vols_);
 
          const Calorimeter& cal = *(GeomHandle<Calorimeter>());
-         zSliceSize_             = (cal.caloInfo().crystalZLength()+0.01)/float(numZSlices_);
+         zSliceSize_             = (cal.caloInfo().getDouble("crystalZLength")+0.01)/float(numZSlices_);
 
 
          // Collect the StepPointMC's produced by each SimParticle Ancestor

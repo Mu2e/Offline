@@ -1,251 +1,86 @@
 //
-// Contains data for the calorimeter class. This is temporary, the data should move to a DB when available
+// Contains data for the calorimeter class. The non-critical fields are saved into maps, and a few performance critical fields
+// accessed throughout the code are cached for efficiency.
 //
 // Original author B. Echenard
 //
 #ifndef CalorimeterGeom_CaloInfo_hh
 #define CalorimeterGeom_CaloInfo_hh
 
+#include "cetlib_except/exception.h"
+
 #include <vector>
+#include <map>
+#include <string>
+
 
 namespace mu2e {
+   
+    //helper class
+    template <typename T> class CaloInfoData
+    {
+       public:     
+          CaloInfoData() : data_() {};
+          ~CaloInfoData() {};
 
+          const T& get(const std::string& key) const
+          { 
+             auto iter = data_.find(key); 
+             if (iter == data_.end()) throw cet::exception("CaloInfo") << " unknown element "<<key<<"\n";
+             return iter->second;
+          };
+
+          void set(const std::string key, const T& value) {data_[key] = value;} 
+
+
+       private:    
+          std::map<std::string,T> data_;
+    };
+
+    
+    
+    
+    
+    
+    
     class CaloInfo {
 
        public:
 
-           CaloInfo(): 
-	      envelopeRadiusIn_(0),envelopeRadiusOut_(0),envelopeZ0_(0),envelopeZ1_(0),             
-              crystalShift_(0),crystalXYLength_(0),crystalZLength_(0),crystalVolume_(0),
-              wrapperThickness_(0),refractiveIndex_(0),crystalDecayTime_(0),
-	      nROPerCrystal_(0),roXLength_(0),roYLength_(0),roZLength_(0),
-              FEEXLength_(0),FEEYLength_(0),FEEZLength_(0),FEEBoxThickness_(0),
-              BPHoleXLength_(0),BPHoleYLength_(0),BPHoleZLenght_(0),stripThickness_(0),stripLengthY_(0),coolBPPipeRadius_(0),
-              outerRingEdgeZLength_(0),outerRingEdgeRLength_(0),caseThicknessIn_(0),caseThicknessOut_(0),
-              chimeInsideX_(),chimeInsideY_(),chimeOutsideX_(),chimeOutsideY_(),
-              FPInnerRadius_(0),FPStyrofoamZLength_(0),FPCarbonZLength_(0),coolFPPipeRadius_(0),
-	      nPipes_(0),pipeRadius_(0), pipeThickness_(0),pipeTorRadius_(),pipeSeparation_(0),              
-              nCrate_(0),nBoard_(0),nCrateBeforeSpace_(0),crateXLength_(0),crateYLength_(0),crateZLength_(0),
-              crateFShieldThick_(0),crateBShieldThick_(0),crateTThick_(0),crateSThick_(0),crateFShieldYLength_(0),
-              crateFShieldDeltaZ_(0),crateRadiusIn_(0),cratephi0_(0),crateDeltaPhi_(0),
-              radiatorThickness_(0),activeStripThickness_(0),passiveStripThickness_(0)
+           CaloInfo() : dataBool_(),dataInt_(),dataDouble_(),dataVDouble_(),nROPerCrystal_(0)
            {}
 	     
            ~CaloInfo() {}
            
-	   int crystalByRO(int roid)          const  {return (roid/nROPerCrystal_);}
-	   int ROBaseByCrystal(int crystalId) const  {return (crystalId*nROPerCrystal_);}
+	   void nROPerCrystal(int value)             {nROPerCrystal_ = value;}
+  	   int  nROPerCrystal()                const {return nROPerCrystal_;}         
+	   int  crystalByRO(int roid)          const {return (roid/nROPerCrystal_);}
+	   int  ROBaseByCrystal(int crystalId) const {return (crystalId*nROPerCrystal_);}
 
-
-           void envelopeRadiusIn(double value)     {envelopeRadiusIn_ = value;}
-           void envelopeRadiusOut(double value)    {envelopeRadiusOut_ = value;}
-           void envelopeZ0(double value)           {envelopeZ0_ = value;}
-           void envelopeZ1(double value)           {envelopeZ1_ = value;} 
+           void set(const std::string& key, int value)                       {dataInt_.set(key,value);}
+           void set(const std::string& key, double value)                    {dataDouble_.set(key,value);}
+           void set(const std::string& key, const std::vector<double>& value){dataVDouble_.set(key,value);}
            
-           void crystalShift(bool value)           {crystalShift_ = value;}
-           void crystalZLength(double value)       {crystalZLength_ = value;}
-           void crystalXYLength(double value)      {crystalXYLength_ = value;}
-           void crystalVolume(double value)        {crystalVolume_ = value;}
-	   void wrapperThickness(double value)     {wrapperThickness_ = value;}
-	   void refractiveIndex(double value)      {refractiveIndex_ = value;}
-	   void crystalDecayTime(double value)     {crystalDecayTime_ = value;}
-           
-	   void nROPerCrystal(int value)           {nROPerCrystal_ = value;}
-           void roXLength(double value)            {roXLength_ = value;}
-           void roYLength(double value)            {roYLength_ = value;}
-           void roZLength(double value)            {roZLength_ = value;}
-           void FEEXLength(double value)           {FEEXLength_ = value;}
-           void FEEYLength(double value)           {FEEYLength_ = value;}
-           void FEEZLength(double value)           {FEEZLength_ = value;}
-           void FEEBoxThickness(double value)      {FEEBoxThickness_=value;}
-           void BPHoleXLength(double value)        {BPHoleXLength_ = value;}
-           void BPHoleYLength(double value)        {BPHoleYLength_ = value;}
-           void BPHoleZLength(double value)        {BPHoleZLenght_ = value;}
-           void stripThickness(double value)       {stripThickness_=value;}
-           void stripYLength(double value)         {stripLengthY_ = value;}
-           void coolBPPipeRadius(double value)     {coolBPPipeRadius_ = value;}
-           
-           void outerRingEdgeZLength(double value) {outerRingEdgeZLength_ = value;}
-           void outerRingEdgeRLength(double value) {outerRingEdgeRLength_ = value;}
-           void caseThicknessIn(double value)      {caseThicknessIn_ = value;}
-           void caseThicknessOut(double value)     {caseThicknessOut_ = value;}
-           void chimesInsideX(std::vector<double>& value)   {chimeInsideX_ = value;}
-	   void chimesInsideY(std::vector<double>& value)   {chimeInsideY_ = value;}
-	   void chimesOutsideX(std::vector<double>& value)  {chimeOutsideX_ = value;}
-	   void chimesOutsideY(std::vector<double>& value)  {chimeOutsideY_ = value;}
-
-           void FPInnerRadius(double value)               {FPInnerRadius_ = value;}
-           void FPstyrofoamZLength(double value)          {FPStyrofoamZLength_ = value;}
-           void FPCarbonZLength(double value)             {FPCarbonZLength_ = value;}
-           void coolFPPipeRadius(double value)            {coolFPPipeRadius_ = value;}
-           void nPipes(int value)                         {nPipes_ = value;}
-           void pipeRadius(double value)                  {pipeRadius_ = value;}
-           void pipeThickness(double value)               {pipeThickness_ = value;}           
-	   void pipeTorRadius(std::vector<double>& value) {pipeTorRadius_ = value;}
-           void pipeSeparation(double value)              {pipeSeparation_=value;}
+           const bool                getBool(const std::string& key)    const {return dataBool_.get(key);}
+           const int                 getInt(const std::string& key)     const {return dataInt_.get(key);}
+           const double              getDouble(const std::string& key)  const {return dataDouble_.get(key);}
+           const std::vector<double> getVDouble(const std::string& key) const {return dataVDouble_.get(key);}
           
-           void nCrate(int value)                   {nCrate_ = value;}
-           void nBoard(int value)                   {nBoard_ = value;}
-           void nCrateBeforeSpace(int value)        {nCrateBeforeSpace_ = value;}
-           void crateXLength(double value)          {crateXLength_ = value;}
-           void crateYLength(double value)          {crateYLength_ = value;}
-           void crateZLength(double value)          {crateZLength_ = value;}
-           void crateFShieldThickness(double value) {crateFShieldThick_ = value;}
-           void crateBShieldThickness(double value) {crateBShieldThick_ = value;}
-           void crateTThickness(double value)       {crateTThick_ = value;}
-           void crateSThickness(double value)       {crateSThick_ = value;}
-           void crateFShieldYLength(double value)   {crateFShieldYLength_ = value;}
-           void crateFShieldDeltaZ(double value)    {crateFShieldDeltaZ_ = value;}
-           void crateRadiusIn(double value)         {crateRadiusIn_ = value;}
-           void cratephi0(double value)             {cratephi0_ = value;}
-           void crateDeltaPhi(double value)         {crateDeltaPhi_ = value;}
-           void radiatorThickness(double value)     {radiatorThickness_ = value;}
-           void activeStripThickness(double value)  {activeStripThickness_ = value;}
-           void passiveStripThickness(double value) {passiveStripThickness_ = value;}
-           
-           
-	   
-           
-           
-           
-           double envelopeRadiusIn()      const {return envelopeRadiusIn_;}
-           double envelopeRadiusOut()     const {return envelopeRadiusOut_;}
-           double envelopeZ0()            const {return envelopeZ0_;}
-           double envelopeZ1()            const {return envelopeZ1_;}
-                      
-           bool   crystalShift()          const {return crystalShift_;}
-           double crystalZLength()        const {return crystalZLength_;}
-           double crystalXYLength()       const {return crystalXYLength_;}
-           double crystalVolume()         const {return crystalVolume_;}
-           double wrapperThickness()      const {return wrapperThickness_;}
-	   double refractiveIndex()       const {return refractiveIndex_; }
-	   double crystalDecayTime()      const {return crystalDecayTime_; }
-           
-	   int    nROPerCrystal()         const {return nROPerCrystal_;}
-           double roXLength()             const {return roXLength_;}
-           double roYLength()             const {return roYLength_;}
-           double roZLength()             const {return roZLength_;}
-           double FEEXLength()            const {return FEEXLength_;}
-           double FEEYLength()            const {return FEEYLength_;}
-           double FEEZLength()            const {return FEEZLength_;}
-           double FEEBoxThickness()       const {return FEEBoxThickness_;}
-           double BPHoleXLength()         const {return BPHoleXLength_;}
-           double BPHoleYLength()         const {return BPHoleYLength_;}
-           double BPHoleZLength()         const {return BPHoleZLenght_;}
-           double stripThickness()        const {return stripThickness_;}
-           double stripYLength()          const {return stripLengthY_;}
-           double coolBPPipeRadius()      const {return coolBPPipeRadius_;}
-
-           double outerRingEdgeZLength()  const {return outerRingEdgeZLength_;}
-           double outerRingEdgeRLength()  const {return outerRingEdgeRLength_;}
-           double caseThicknessIn()       const {return caseThicknessIn_;}
-           double caseThicknessOut()      const {return caseThicknessOut_;}
-           const  std::vector<double>& chimesInsideX()  const {return chimeInsideX_;}
-           const  std::vector<double>& chimesInsideY()  const {return chimeInsideY_;}
-           const  std::vector<double>& chimesOutsideX() const {return chimeOutsideX_;}
-           const  std::vector<double>& chimesOutsideY() const {return chimeOutsideY_;}
+           //helper function
+           double crystalVolume() const {return dataDouble_.get("crystalXYLength")*dataDouble_.get("crystalXYLength")*dataDouble_.get("crystalZLength");}
 
 
-           double FPInnerRadius()         const {return FPInnerRadius_;}
-           double FPStyrofoamZLength()    const {return FPStyrofoamZLength_;}
-           double FPCarbonZLength()       const {return FPCarbonZLength_;}
-           double coolFPPipeRadius()      const {return coolFPPipeRadius_;}
-           int    nPipes()                const {return nPipes_;}
-           double pipeRadius()            const {return pipeRadius_;}
-           double pipeThickness()         const {return pipeThickness_;}
-           const std::vector<double>& pipeTorRadius() const {return pipeTorRadius_;}
-           double pipeSeparation()        const {return pipeSeparation_;}
-                
-
-           int    nCrate()                const {return nCrate_;}
-           int    nBoard()                const {return nBoard_;}
-           int    nCrateBeforeSpace()     const {return nCrateBeforeSpace_;}
-           double crateXLength()          const {return crateXLength_;}
-	   double crateYLength()          const {return crateYLength_;}
-	   double crateZLength()          const {return crateZLength_;}
-           double crateFShieldThickness() const {return crateFShieldThick_;}
-           double crateBShieldThickness() const {return crateBShieldThick_;}
-           double crateTThickness()       const {return crateTThick_;}
-           double crateSThickness()       const {return crateSThick_;}
-           double crateFShieldYLength()   const {return crateFShieldYLength_;}
-           double crateFShieldDeltaZ()    const {return crateFShieldDeltaZ_;}
-           double crateRadiusIn()         const {return crateRadiusIn_;}
-           double cratephi0()             const {return cratephi0_;}
-           double crateDeltaPhi()         const {return crateDeltaPhi_;}          
-           double radiatorThickness()     const {return radiatorThickness_;}
-           double activeStripThickness()  const {return activeStripThickness_;}
-           double passiveStripThickness() const {return passiveStripThickness_;}
-           
-           
-            
-           
        private:
 
-          double envelopeRadiusIn_;
-          double envelopeRadiusOut_;
-          double envelopeZ0_;
-          double envelopeZ1_;
+          CaloInfoData<bool>                dataBool_;
+          CaloInfoData<int>                 dataInt_;
+          CaloInfoData<double>              dataDouble_;
+          CaloInfoData<std::vector<double>> dataVDouble_;
+          int                               nROPerCrystal_;
           
-          bool   crystalShift_;
-	  double crystalXYLength_;
-	  double crystalZLength_;
-	  double crystalVolume_;
-          double wrapperThickness_;
-          double refractiveIndex_;
-          double crystalDecayTime_;
-
-          int    nROPerCrystal_;
-          double roXLength_;
-          double roYLength_;
-          double roZLength_;
-          double FEEXLength_;
-          double FEEYLength_;
-          double FEEZLength_;
-          double FEEBoxThickness_;
-          double BPHoleXLength_;
-          double BPHoleYLength_;
-          double BPHoleZLenght_;
-          double stripThickness_;
-          double stripLengthY_;
-          double coolBPPipeRadius_;
-          	  
-          double outerRingEdgeZLength_;
-          double outerRingEdgeRLength_;
-          double caseThicknessIn_;
-          double caseThicknessOut_;
-          std::vector<double>  chimeInsideX_;          
-          std::vector<double>  chimeInsideY_;          
-          std::vector<double>  chimeOutsideX_;          
-          std::vector<double>  chimeOutsideY_;          
-
-          double FPInnerRadius_;
-          double FPStyrofoamZLength_;
-          double FPCarbonZLength_;
-          double coolFPPipeRadius_;
-	  unsigned int         nPipes_;
-	  double               pipeRadius_;
-	  double               pipeThickness_;
-	  std::vector<double>  pipeTorRadius_;
-          double               pipeSeparation_;
           
-          int    nCrate_;
-          int    nBoard_;
-          int    nCrateBeforeSpace_;
-          double crateXLength_;
-          double crateYLength_;
-          double crateZLength_;
-          double crateFShieldThick_;
-          double crateBShieldThick_;
-          double crateTThick_;
-          double crateSThick_;
-          double crateFShieldYLength_;
-          double crateFShieldDeltaZ_;
-	  double crateRadiusIn_;
-          double cratephi0_;
-          double crateDeltaPhi_;
-          double radiatorThickness_;
-          double activeStripThickness_;
-          double passiveStripThickness_;           
+          
+                   
      };
 
 }    

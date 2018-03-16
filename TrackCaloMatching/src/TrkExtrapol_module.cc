@@ -475,8 +475,8 @@ namespace mu2e {
     _solenoidOffSetX = geom->config().getDouble("mu2e.solenoidOffset");//3904.;//[mm]
     _solenoidOffSetZ = -geom->config().getDouble("mu2e.detectorSystemZ0");//-10200.;
     
-    _ZfrontFaceCalo = cg->geomInfo().origin().z() + _solenoidOffSetZ;
-    _ZbackFaceCalo = cg->geomInfo().origin().z() + _solenoidOffSetZ;
+    _ZfrontFaceCalo = cg->geomUtil().origin().z() + _solenoidOffSetZ;
+    _ZbackFaceCalo = cg->geomUtil().origin().z() + _solenoidOffSetZ;
 
 
     const char* oname = "TrkExtrapol::doExtrapolation";

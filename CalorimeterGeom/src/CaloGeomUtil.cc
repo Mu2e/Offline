@@ -17,13 +17,12 @@ namespace mu2e {
 
 
     CaloGeomUtil::CaloGeomUtil(const std::vector<std::shared_ptr<Disk>>& disks, 
-                               const CaloInfo& caloInfo,
-                               const CaloGeomInfo& geomInfo,
-                               const std::vector<Crystal const*>& fullCrystalList) : 
-      disks_(disks),
-      caloInfo_(caloInfo),
-      geomInfo_(geomInfo),
-      fullCrystalList_(fullCrystalList)
+                               const std::vector<const Crystal*>& fullCrystalList) : 
+       disks_(disks),
+       fullCrystalList_(fullCrystalList),
+       origin_(),
+       trackerCenter_(),
+       crystalZLength_(0.0)
     {}
 
 
@@ -48,7 +47,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector CaloGeomUtil::mu2eToTracker(const CLHEP::Hep3Vector& pos) const 
     {   
-        return pos - geomInfo_.trackerCenter();
+        return pos - trackerCenter_;
     }
 
 
@@ -74,13 +73,13 @@ namespace mu2e {
 
     CLHEP::Hep3Vector CaloGeomUtil::trackerToMu2e(const CLHEP::Hep3Vector& pos) const 
     {   
-        return pos + geomInfo_.trackerCenter();
+        return pos + trackerCenter_;
     }
 
 
    bool CaloGeomUtil::isInsideCalorimeter(const CLHEP::Hep3Vector& pos) const 
    {   
-       for (unsigned int idisk=0;idisk<disks_.size();++idisk) if (isInsideSection(idisk, pos)) return true;	
+       for (size_t idisk=0;idisk<disks_.size();++idisk) if (isInsideSection(idisk, pos)) return true;	
        return false;    
    }
 
@@ -88,22 +87,21 @@ namespace mu2e {
    {   
 	CLHEP::Hep3Vector posInSection = mu2eToDiskFF(idisk, pos);
 	double posZ = posInSection.z();
-	double zlim = caloInfo_.crystalZLength()+1e-6;
 
-	if ( posZ < -1e-6 || posZ > zlim )                                          return false;
-	if ( disk(idisk).idxFromPosition(posInSection.x(),posInSection.y()) == -1)  return false;	
+	if ( posZ < -1e-6 || posZ > crystalZLength_+1e-6 )                      return false;
+	if ( disk(idisk).idxFromPosition(posInSection.x(),posInSection.y()) <0) return false;	
 
 	return true;
     }
             
     bool CaloGeomUtil::isContainedSection(const CLHEP::Hep3Vector& front, const CLHEP::Hep3Vector& back) const 
     {   
-	//for (unsigned int idisk=0;idisk<disks_.size();++idisk) 
-	//   if (isInsideSection(idisk,start) && isInsideSection(idisk,stop)) return true;
+	//for (size_t idisk=0;idisk<disks_.size();++idisk) 
+	//   if (isInsideSection(idisk,front) && isInsideSection(idisk,back)) return true;
 	//return false;
 
 	//this is a more efficient way of doing this in the case of two disks
-	for (unsigned int idisk=0;idisk<disks_.size();++idisk) 
+	for (size_t idisk=0;idisk<disks_.size();++idisk) 
 	{
 	  if ( abs(front.z()-back.z()) < (*disks_.at(idisk)).geomInfo().size().z() ) return true;
 	}

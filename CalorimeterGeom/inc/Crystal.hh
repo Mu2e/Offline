@@ -1,6 +1,6 @@
 //
 // Hold information about a crystal
-// Neighbors and position are given in the "Mu2e" frame
+// Neighbors and position are given in the "Mu2e" frame, i.e the global frame
 // localId and localPosition are given in the disk frame (i.e. local frame)
 // Front face is sometimes abreviated FF (yes, I am lazy)
 //
@@ -19,44 +19,46 @@ namespace mu2e {
 
 	  public:
 
-             Crystal(int localId, int diskId, const CLHEP::Hep3Vector& localPosition, const CLHEP::Hep3Vector& localPositionIdeal) : 
+             Crystal(int localId, int diskId, const CLHEP::Hep3Vector& localPosition, const CLHEP::Hep3Vector& size) : 
 	        localId_(localId), 
 	        diskId_(diskId), 
 	        localPosition_(localPosition), 
-	        localPositionIdeal_(localPositionIdeal), 
-	        position_(), 
-	        neighbors_(), 
-	        nextNeighbors_(),
-                neighborsRaw_(),
-                nextNeighborsRaw_()
+	        position_(),
+                size_(size), 
+	        neighborsGlobal_(), 
+	        nextNeighborsGlobal_(),
+                neighborsGlobalRaw_(),
+                nextNeighborsGlobalRaw_()
 	     {}
 
 
-             int   localId()                                        const {return localId_;}
-             int   diskId()                                         const {return diskId_;}
+             int localId()                                          const {return localId_;}
+             int diskId()                                           const {return diskId_;}
              const CLHEP::Hep3Vector& localPosition()               const {return localPosition_;}
-             const CLHEP::Hep3Vector& localPositionIdeal()          const {return localPositionIdeal_;}
-             const CLHEP::Hep3Vector& position()                    const {return position_;}
-             const std::vector<int>&  neighbors(bool raw=false)     const {return raw ? neighborsRaw_ : neighbors_;}	     
-             const std::vector<int>&  nextNeighbors(bool raw=false) const {return raw ? nextNeighborsRaw_: nextNeighbors_;}	     
-           
+             const CLHEP::Hep3Vector& size()                        const {return size_;}
+             
+             //pre-computed global position and global neignbors to speed up code
+             const CLHEP::Hep3Vector& position()                    const        {return position_;}
+             const std::vector<int>&  neighbors(bool raw=false)     const        {return raw ? neighborsGlobalRaw_    : neighborsGlobal_;}	     
+             const std::vector<int>&  nextNeighbors(bool raw=false) const        {return raw ? nextNeighborsGlobalRaw_: nextNeighborsGlobal_;}	     
              
              void setPosition(const CLHEP::Hep3Vector& pos)                      {position_ = pos;}
-             void setNeighbors(const std::vector<int>& list, bool raw=false)     {raw ? neighborsRaw_=list : neighbors_=list;}
-             void setNextNeighbors(const std::vector<int>& list, bool raw=false) {raw ? nextNeighborsRaw_=list : nextNeighbors_=list;}    
+             void setNeighbors(const std::vector<int>& list, bool raw=false)     {raw ? neighborsGlobalRaw_=list     : neighborsGlobal_=list;}
+             void setNextNeighbors(const std::vector<int>& list, bool raw=false) {raw ? nextNeighborsGlobalRaw_=list : nextNeighborsGlobal_=list;}    
+             void adjustSize(const CLHEP::Hep3Vector& size)                      {size_ = size;}
 
 
 	 private:
 	 
-	     int                 localId_;
-	     int                 diskId_;
-             CLHEP::Hep3Vector   localPosition_;
-             CLHEP::Hep3Vector   localPositionIdeal_;
-             CLHEP::Hep3Vector   position_;
-             std::vector<int>    neighbors_;
-             std::vector<int>    nextNeighbors_;
-	     std::vector<int>    neighborsRaw_;
-	     std::vector<int>    nextNeighborsRaw_;
+	     int               localId_;
+	     int               diskId_;
+             CLHEP::Hep3Vector localPosition_;
+             CLHEP::Hep3Vector position_;
+             CLHEP::Hep3Vector size_;
+             std::vector<int>  neighborsGlobal_;
+             std::vector<int>  nextNeighborsGlobal_;
+	     std::vector<int>  neighborsGlobalRaw_;
+	     std::vector<int>  nextNeighborsGlobalRaw_;
 
 
      };

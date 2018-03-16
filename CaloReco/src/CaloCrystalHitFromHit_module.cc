@@ -124,9 +124,9 @@ namespace mu2e {
 
 
       //extend hitMap_ if needed and clear it
-      if (cal.nRO() > hitMap_.size()) 
-         for (unsigned int i=hitMap_.size(); i<= cal.nRO(); ++i) hitMap_.push_back(std::vector<const CaloRecoDigi*>());     
-      for (unsigned int i=0; i<hitMap_.size(); ++i) hitMap_[i].clear();
+      if (cal.nRO() > int(hitMap_.size())) 
+         for (int i = hitMap_.size(); i<= cal.nRO(); ++i) hitMap_.push_back(std::vector<const CaloRecoDigi*>());     
+      for (size_t i=0; i<hitMap_.size(); ++i) hitMap_[i].clear();
 
 
       // fill the map that associate for each crystal the corresponding CaloRecoDigi indexes

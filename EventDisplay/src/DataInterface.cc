@@ -373,8 +373,8 @@ void DataInterface::fillGeometry()
   if(geom->hasElement<mu2e::DiskCalorimeter>())
   {
     mu2e::GeomHandle<mu2e::DiskCalorimeter> calo;
-    double rmax = calo->caloInfo().crystalXYLength()/2.0;
-    double crystalHalflength = calo->caloInfo().crystalZLength()/2.0;
+    double rmax = calo->caloInfo().getDouble("crystalXYLength")/2.0;
+    double crystalHalflength = calo->caloInfo().getDouble("crystalZLength")/2.0;
 
 
     int crystalIdOffset=0;

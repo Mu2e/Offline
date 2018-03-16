@@ -1,7 +1,10 @@
 #ifndef CalorimeterGeom_CrystalMapper_hh
 #define CalorimeterGeom_CrystalMapper_hh
 //
-// Interface for classes describing the layout of the crystals in the disk
+// Interface for classes describing the layout of the crystals in the disk.
+// 
+// Crystals could be square, hexagonal or triangular. 
+//   Need to describe tesselation and shape
 //
 // Original author B. Echenard
 //
@@ -19,17 +22,15 @@ namespace mu2e {
 	   //no constructor for this interface
 	   virtual ~CrystalMapper() {};
 
-           virtual int                nCrystalMax(int maxRing)                     const = 0;
+           virtual int                  nCrystalMax(int maxRing)                     const = 0;
 
-           virtual int                nApex()                                      const = 0;
-           virtual double             apexX(int i)                                 const = 0;
-           virtual double             apexY(int i)                                 const = 0;
+	   virtual CLHEP::Hep2Vector    xyFromIndex(int thisIndex)                   const = 0;
+           virtual int                  indexFromXY(double x, double y)              const = 0;
+           virtual int                  indexFromRowCol(int nRow, int nCol)          const = 0;
 
-	   virtual CLHEP::Hep2Vector  xyFromIndex(int thisIndex)                   const = 0;
-           virtual int                indexFromXY(double x, double y)              const = 0;
-           virtual int                indexFromRowCol(int nRow, int nCol)          const = 0;
-
-	   virtual std::vector<int>   neighbors(int thisIndex, unsigned int level) const = 0;
+	   virtual std::vector<int>     neighbors(int thisIndex,  int level)         const = 0;
+           virtual const std::vector<double>& apexX()                                const = 0; 
+           virtual const std::vector<double>& apexY()                                const = 0; 
     };
 
 }

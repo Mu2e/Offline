@@ -1,29 +1,32 @@
 // Crystal calorimeter - all length in mm, angles in degres
 
-double calorimeter.caloMotherRadiusIn           = 345;   
-double calorimeter.caloMotherRadiusOut          = 718; // 856;   
+double calorimeter.caloMotherRadiusIn           = 330;   
+double calorimeter.caloMotherRadiusOut          = 720; // 856;   
 double calorimeter.caloMotherZ0                 = 11842;   
 double calorimeter.caloMotherZ1                 = 13220;   
 
 
-int    calorimeter.numberOfDisks               =  1;
-vector<double> calorimeter.diskCaseRadiusIn    = {374.}; 
-vector<double> calorimeter.diskCaseRadiusOut   = {660.}; 
-vector<double> calorimeter.diskRotationAngle   = {0.};     
-vector<double> calorimeter.diskZ0MotherShift   = {1.};   //separation w.r.t caloMotherZ0, at lest 1 mm for virtual detectors
-double calorimeter.caseThicknessIn             = 5.;  
-double calorimeter.caseThicknessOut            = 10.;
-double calorimeter.outerRingEdgeZLength        = 30.;
-double calorimeter.outerRingEdgeRLength        = 48.;    
 
+int    calorimeter.numberOfDisks               = 2;
+double calorimeter.diskCaseZLength             = 206.; 
+double calorimeter.diskCaseRadiusIn            = 356.; 
+double calorimeter.diskInnerRingThickness      = 5.;    //innner ring stops at 356+5 = 361
+double calorimeter.diskCrystalRadiusIn         = 374.; 
+double calorimeter.diskCrystalRadiusOut        = 660.; 
+double calorimeter.diskOuterRingThickness      = 10.;   //outer ring start at 672-10 = 662
+double calorimeter.diskCaseRadiusOut           = 672.; 
+double calorimeter.diskOutRingEdgeZLength      = 30.;
+double calorimeter.diskOutRingEdgeRLength      = 47.;    
+double calorimeter.diskStepThickness           = 5.;    
+vector<double> calorimeter.diskZ0MotherShift   = {1.,701.};  //separation w.r.t caloMotherZ0, at lest 1 mm for virtual detectors
 
 bool   calorimeter.crystalShift                = true;
 double calorimeter.crystalXYLength             = 34.0;
 double calorimeter.crystalZLength              = 200.0;
-double calorimeter.refractiveIndex             = 1.8;
-//double calorimeter.crystalDecayTime            = 30.0;
-double calorimeter.crystalDecayTime            = 0.1;
+double calorimeter.crystalFrameZLength         = 2.0;
+double calorimeter.crystalFrameThickness       = 1.0;
 double calorimeter.wrapperThickness            = 0.150; 
+double calorimeter.refractiveIndex             = 1.8;
 
 
 int    calorimeter.readoutPerCrystal           = 2; 
@@ -34,67 +37,75 @@ double calorimeter.FEEXLength                  = 3;
 double calorimeter.FEEYLength                  = 30;
 double calorimeter.FEEZLength                  = 54;
 double calorimeter.FEEBoxThickness             = 1;
-double calorimeter.BPHoleXLength               = 29;
-double calorimeter.BPHoleYLength               = 20.5;
-double calorimeter.BPHoleZLength               = 15;
-double calorimeter.stripThickness              = 5;
-double calorimeter.stripYLength                = 12;
-double calorimeter.coolBPPipeRadius            = 5;
+double calorimeter.BPHoleXLength               = 30.2;
+double calorimeter.BPHoleYLength               = 21.8;
+double calorimeter.BPHoleZLength               = 25;
+double calorimeter.BPStripThickness            = 5;
+double calorimeter.BPOuterRadius               = 714;  //inner radius same as FP
+double calorimeter.BPPipeRadiusHigh            = 13.45;
+double calorimeter.BPPipeRadiusLow             = 8.60;
+double calorimeter.BPPipeThickness             = 1.5;
+double calorimeter.BPPipeZOffset               = 43.0;
 
-double calorimeter.FPInnerRadius               = 360;
-double calorimeter.FPStyrofoamZLength          = 21.75;
+double calorimeter.FPInnerRadius               = 336;
+double calorimeter.FPOuterRadius               = 680;
+double calorimeter.FPFoamZLength               = 21.75;
 double calorimeter.FPCarbonZLength             = 3;
-double calorimeter.coolFPPipeRadius            = 5;
+double calorimeter.FPCoolPipeTorRadius         = 698.5;
+double calorimeter.FPCoolPipeRadius            = 16.85;
+double calorimeter.FPCoolPipeThickness         = 0.9;
 int    calorimeter.nPipes                      = 5;   
-vector<double> calorimeter.pipeTorRadius       = {400,460,520,580,640}; 
-double calorimeter.pipeRadius                  = 5;    
+vector<double> calorimeter.pipeTorRadius       = {397,457,517,577,637}; 
+double calorimeter.pipeRadius                  = 4.75;    
 double calorimeter.pipeThickness               = 0.5; 
-double calorimeter.pipeSeparation              = 60;
+double calorimeter.pipeInitSeparation          = 25.4;
 
 
-int calorimeter.crateVersion             = 2; 
-int calorimeter.numberOfCrates           = 10;
-int calorimeter.numberOfBoards           = 9;
-int calorimeter.nCrateBeforeSpace        = 3;
-double calorimeter.crateXLength          = 190.;
-double calorimeter.crateZLength          = 350.;
-double calorimeter.crateYLength          = 183;	
-double calorimeter.crateFShieldThickness = 8;  // front shield thickness
-double calorimeter.crateBShieldThickness = 8;  // bottom shield thickness
-double calorimeter.crateTThickness       = 8;  // top panel thickness
-double calorimeter.crateSThickness       = 8;  // side panel thickness
-double calorimeter.crateFShieldYLength   = 100;
-double calorimeter.crateFShieldDeltaZ    = 60;
-double calorimeter.crateInnerRadius      = 719;  //must be 1 mm larger than caloMotherRadiusOut for VD   
-double calorimeter.cratephi0             = 30;
-double calorimeter.crateDeltaPhi         = 16;
-double calorimeter.radiatorThickness     = 3.0;
-double calorimeter.activeStripThickness  = 1.0;
-double calorimeter.passiveStripThickness = 1.6;
+int calorimeter.crateVersion                   = 2; 
+int calorimeter.numberOfCrates                 = 10;
+int calorimeter.numberOfBoards                 = 9;
+int calorimeter.nCrateBeforeSpace              = 3;
+double calorimeter.crateXLength                = 190.;
+double calorimeter.crateZLength                = 350.;
+double calorimeter.crateYLength                = 183;	
+double calorimeter.crateFShieldThickness       = 8;  // front shield thickness
+double calorimeter.crateBShieldThickness       = 8;  // bottom shield thickness
+double calorimeter.crateTThickness             = 8;  // top panel thickness
+double calorimeter.crateSThickness             = 8;  // side panel thickness
+double calorimeter.crateFShieldYLength         = 100;
+double calorimeter.crateFShieldDeltaZ          = 60;
+double calorimeter.crateInnerRadius            = 721;  //must be 1 mm larger than caloMotherRadiusOut for VD   
+double calorimeter.cratephi0                   = 30;
+double calorimeter.crateDeltaPhi               = 16;
+double calorimeter.radiatorThickness           = 3.0;
+double calorimeter.activeStripThickness        = 1.0;
+double calorimeter.passiveStripThickness       = 1.6;
 
 
-string calorimeter.vacuumMaterial        = "DSVacuum";
-string calorimeter.crystalMaterial       = "G4_CESIUM_IODIDE"; 
-string calorimeter.wrapperMaterial       = "Polyethylene092";
-//string calorimeter.shimeMaterial         = "Polyetheretherketone";
-string calorimeter.shimeMaterial         = "G4_Al";
-string calorimeter.readoutMaterial       = "G4_Si";
-string calorimeter.pipeMaterial          = "G4_Al";
-string calorimeter.innerRingMaterial     = "CarbonFiber";
-string calorimeter.outerRingMaterial     = "G4_Al";
+string calorimeter.vacuumMaterial              = "DSVacuum";
+string calorimeter.crystalMaterial             = "G4_CESIUM_IODIDE"; 
+string calorimeter.crystalFrameMaterial        = "Polyethylene092"; 
+string calorimeter.wrapperMaterial             = "Polyethylene092";
+string calorimeter.innerRingMaterial           = "CarbonFiber";
+string calorimeter.outerRingMaterial           = "G4_Al";
 
-string calorimeter.FPStyrofoamMaterial   = "PET_P100";
-string calorimeter.FPCarbonMaterial      = "CarbonFiber";
-string calorimeter.FEEBoxMaterial        = "G4_Cu";
-string calorimeter.stripBPMaterial       = "G4_Cu";
-string calorimeter.BackPlateMaterial     = "Polyetheretherketone";
-string calorimeter.BackPipeMaterial      = "StainlessSteel";
-string calorimeter.crateMaterial         = "G4_Al";
-string calorimeter.shieldMaterial        = "G4_W";
+string calorimeter.readoutMaterial             = "G4_Si";
+string calorimeter.FEEMaterial                 = "G4_Si";
 
-string calorimeter.radiatorMaterial      = "G4_Al";
-string calorimeter.activeStripMaterial   = "G4_Si"; // need to be changed with a mixed material (combination of Copper, Plexiglass and Silicon)
-string calorimeter.passiveStripMaterial  = "Electronics2"; 
+string calorimeter.coolPipeMaterial            = "StainlessSteel";
+string calorimeter.pipeMaterial                = "G4_Al";
+string calorimeter.FPFoamMaterial              = "PET_P100";
+string calorimeter.FPCarbonMaterial            = "CarbonFiber";
+
+string calorimeter.BackPlateMaterial           = "Polyetheretherketone";
+string calorimeter.FEEBoxMaterial              = "G4_Cu";
+string calorimeter.BPStripMaterial             = "G4_Cu";
+
+string calorimeter.crateMaterial               = "G4_Al";
+string calorimeter.shieldMaterial              = "G4_W";
+string calorimeter.radiatorMaterial            = "G4_Al";
+string calorimeter.activeStripMaterial         = "G4_Si"; // need to be changed with a mixed material (combination of Copper, Plexiglass and Silicon)
+string calorimeter.passiveStripMaterial        = "Electronics2"; 
 
 
 
@@ -111,5 +122,5 @@ bool calorimeter.pipeSolid                    = false;
 bool calorimeter.crateVisible                 = false;
 bool calorimeter.crateBoardVisible            = false;
 
-int  calorimeter.verbosityLevel               = 1;
+int  calorimeter.verbosityLevel               = 0;
 bool  calorimeter.doSurfaceCheck              = false;

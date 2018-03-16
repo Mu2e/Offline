@@ -281,11 +281,11 @@ namespace mu2e {
     cout << "Information about the disk Calorimeter: "  << endl;
     cout << "Number of disks:    " << cal.nDisk()      << endl;
     cout << "Number of Readouts: " << cal.nRO() << " "  << cal.caloInfo().nROPerCrystal() << " " << cal.nRO()/cal.caloInfo().nROPerCrystal() << endl;
-    cout << "Hex side size:      " << 2.0*cal.caloInfo().crystalXYLength() << endl;
+    cout << "Hex side size:      " << 2.0*cal.caloInfo().getDouble("crystalXYLength") << endl;
 
-    cout << "Depth:              " << cal.caloInfo().crystalZLength()   << endl;
-    cout << "Origin:             " << cal.geomInfo().origin()      << endl;
-    for ( unsigned int i=0; i<cal.nDisk(); ++i){
+    cout << "Depth:              " << cal.caloInfo().getDouble("crystalZLength")   << endl;
+    cout << "Origin:             " << cal.geomUtil().origin()      << endl;
+    for (unsigned i=0; i<cal.nDisk(); ++i){
       Disk const& disk = cal.disk(i);
       cout << "Disk: " << i << " " << "origin: " << disk.geomInfo().origin() << endl;
     }

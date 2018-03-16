@@ -111,7 +111,7 @@ namespace mu2e {
 
 
       //--------------------------------------------------------------------------------
-      std::vector<int> SquareShiftMapper::neighbors(int thisIndex, unsigned int level)  const
+      std::vector<int> SquareShiftMapper::neighbors(int thisIndex, int level)  const
       {
 	  std::vector<int> thisNeighbour;
 	  thisNeighbour.reserve(12);
@@ -119,9 +119,9 @@ namespace mu2e {
 	  SquShiftLK init = lk(thisIndex);
 	  SquShiftLK lk(init.l_, init.k_ - level);
 
-	  for (unsigned int i=0;i<step_.size();++i)
+	  for (size_t i=0;i<step_.size();++i)
 	  {
-	      for (unsigned int iseg=0;iseg<level;++iseg)
+	      for (int iseg=0;iseg<level;++iseg)
 	      {
 		 lk.add(step_[i]);
 		 thisNeighbour.push_back( index(lk) );

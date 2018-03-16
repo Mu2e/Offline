@@ -241,8 +241,8 @@ namespace mu2e {
 
        const Calorimeter& cal  = *(GeomHandle<Calorimeter>());
        int    nROs             = cal.caloInfo().nROPerCrystal();
-       double cryhalflength    = cal.caloInfo().crystalZLength()/2.0;
-       double refractiveIndex  = cal.caloInfo().refractiveIndex();
+       double cryhalflength    = cal.caloInfo().getDouble("crystalZLength")/2.0;
+       double refractiveIndex  = cal.caloInfo().getDouble("refractiveIndex");
        double lightSpeed       = 300; // mm/ns
 
 
