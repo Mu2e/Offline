@@ -150,7 +150,7 @@ namespace mu2e {
       pName<<"Mu2eGenerated_" << id.pid();
       tpd.tempParticleName = pName.str();
 
-      if ( _verbosityLevel > -1 ) {
+      if ( _verbosityLevel > 0 ) {
         cout << __func__ << ": Added nuclei: " << tpd.tempParticleName << endl;
       }
 
