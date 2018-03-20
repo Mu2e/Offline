@@ -363,6 +363,7 @@ namespace mu2e {
 	int  nhits          = panelz->fNHits;
 	for (int i=0; i<nhits; ++i){   
 	  hit = &panelz->fHitData.at(i);
+	  if (hit->_used <= 0)                 continue;
 	  Helix._goodhits.push_back(hit->_ind);
 	}
       }

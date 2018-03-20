@@ -217,7 +217,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //    PanelZ_t             _oTracker[kNStations][kNFaces][kNPanelsPerFace];
     PanelZ_t             _oTracker[kNTotalPanels];
-    int                  _hitsUsed[kNTotalPanels];
+    std::vector<int>     _hitsUsed[kNTotalPanels];
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
