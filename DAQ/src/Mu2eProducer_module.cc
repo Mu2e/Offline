@@ -228,7 +228,7 @@ void
 	tot[1] = TOT1;
 	
 	if( diagLevel_ > 1 ) {
-	  std::cout << "MAKEDIGI: " << sid << " " << tdc[0] << " " << tdc[1] << " "
+	  std::cout << "MAKEDIGI: " << sid.asUint16() << " " << tdc[0] << " " << tdc[1] << " "
 	    << tot[0] << " " << tot[1] << " ";
 	  for(size_t i=0; i<waveform.size(); i++) {
 	    std::cout << waveform[i];
@@ -273,6 +273,7 @@ void
 	  std::cout << std::endl;
 	  
 	  std::cout << "strawIdx: " << strawIdx << std::endl;
+	  std::cout << "sid: "      << sid.asUint16() << std::endl;
 	  std::cout << "TDC0: " << TDC0 << std::endl;
 	  std::cout << "TDC1: " << TDC1 << std::endl;
 	  std::cout << "TOT0: " << TOT0 << std::endl;
