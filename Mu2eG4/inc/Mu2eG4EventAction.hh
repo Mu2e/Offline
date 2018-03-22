@@ -15,6 +15,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
@@ -42,7 +43,6 @@ namespace mu2e {
     class SimParticleHelper;
     class SimParticlePrimaryHelper;
     class PhysicsProcessInfo;
-    class ExtMonFNALSimHitCollection;
     class IMu2eG4Cut;
     class GenEventBroker;
     class PerEventObjectsManager;

@@ -11,6 +11,8 @@
 //
 // Notes:
 
+#include "G4Helper/inc/VolumeInfo.hh"
+
 namespace mu2e{
 
     class SimpleConfig;

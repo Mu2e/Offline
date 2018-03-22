@@ -42,9 +42,7 @@ namespace mu2e {
 
       SensitiveDetectorHelper(fhicl::ParameterSet const& pset);
       // Accept compiler generator copy c'tor and assignment operator.
-      
-      ~SensitiveDetectorHelper();
-      
+            
       // Register the sensitive detector with this class; to be called after G4 Initialize.
       void registerSensitiveDetectors();
 

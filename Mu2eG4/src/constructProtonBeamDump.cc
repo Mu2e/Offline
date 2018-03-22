@@ -57,8 +57,7 @@
 
 namespace mu2e {
 
-  void constructProtonBeamDump(const VolumeInfo& parent, const SimpleConfig& config,
-                               const SensitiveDetectorHelper& sdHelper) {
+  void constructProtonBeamDump(const VolumeInfo& parent, const SimpleConfig& config) {
 
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<ExtMonFNALBuilding> emfb;

@@ -66,9 +66,6 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
                                                  FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
                 : nullptr;
                 
-                std::cout << "from RunAction: EXTMON SD address is " << &_extMonFNALPixelSD << std::endl;
-                
-
                 _trackingAction->beginRun( _physVolHelper, _processInfo, originInWorld );
                 _steppingAction->beginRun( _processInfo, originInWorld );
                 
@@ -86,13 +83,6 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
             dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()->
                                              FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
             : nullptr;
-            
-            /*
-            if (standardMu2eDetector_){
-                _extMonFNALPixelSD =
-                dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
-                ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
-            }*/
 
             _physVolHelper->beginRun();//map w/~20,000 entries
             _processInfo->beginRun();

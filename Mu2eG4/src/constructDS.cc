@@ -618,7 +618,7 @@ namespace mu2e {
      // End of MBS spherical shielding, begin cable runs for Cal and Tracker
      // Each is modeled as a thin wedge of a ring
 
-     bool cableRunSensitive = _config.getBool("ds.CableRun.sensitive",false);
+     //bool cableRunSensitive = _config.getBool("ds.CableRun.sensitive",false);
 
      if ( ds->hasCableRunCal() ) {
 
