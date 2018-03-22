@@ -457,7 +457,7 @@ void Mu2eG4::produce(art::Event& event) {
     }
 
     // ProductID and ProductGetter for the SimParticleCollection.
-    art::ProductID simPartId(getProductID<SimParticleCollection>(event));
+    art::ProductID simPartId(getProductID<SimParticleCollection>());
     art::EDProductGetter const* simProductGetter = event.productGetter(simPartId);
     
     //stash is empty, we need to simulate events
