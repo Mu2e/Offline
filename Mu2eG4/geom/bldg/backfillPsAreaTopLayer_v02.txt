@@ -1,0 +1,45 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_FillpsAreaTopLayer.ccl
+
+string building.backfill.psArea.TopLayer.name     = "backfillPsAreaTopLayer";
+
+string building.backfill.psArea.TopLayer.material = "CA7Backfill";
+
+double building.backfill.psArea.TopLayer.offsetFromMu2eOrigin.x   = 947.4;
+double building.backfill.psArea.TopLayer.offsetFromFloorSurface.y = 8788.4;
+double building.backfill.psArea.TopLayer.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.backfill.psArea.TopLayer.yHalfThickness           = 1930.4;
+
+vector<double> building.backfill.psArea.TopLayer.xPositions = {
+  -2921,   // P0
+  -6254.75,   // P1
+  -11709.4,   // inside corner psHatchLower leg
+  -12318.9,   // SW corner psHatchLower
+  -12343.4,   // P2
+  -12319.3,   // P3
+  -16841.4,   // P4
+  -16817.3,   // P5
+  -17853.7,   // P6
+  -17853.7,   // p5
+  -2921   // P6
+};
+
+vector<double> building.backfill.psArea.TopLayer.yPositions = {
+  -609.6,   // P0
+  -609.6,   // P1
+  -1943.1,  // inside corner psHatchLower left "leg"
+  -2091.9,  // SW corner psHatchLower
+  -2096.1,   // P2
+  -2194.8,   // P3
+  -3297.85,   // P4
+  -3396.55,   // P5
+  -3649.57,   // P6
+  -7505.7,   // p5
+  -7505.7   // P6
+};
+
+// Local Variables:
+// mode:c++
+// End:

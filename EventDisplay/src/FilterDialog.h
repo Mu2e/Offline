@@ -241,6 +241,8 @@ class FilterDialog : public TGMainFrame
     }
     return kTRUE;
   }
+
+  ClassDef(FilterDialog,1);
 };
 
 }

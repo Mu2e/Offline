@@ -1,0 +1,43 @@
+#
+#  This script runs the TrackAnalsys module to create a prototype track-based analysis TTree.  For example:
+#  > mu2e --config TrkDiag/test/TrkAna.fcl --source-list (your files) --TFile TrkAna.root --nevts=100
+# will process 100 events from (your files).  Note that background mixing requires different scripts
+# for interactive and grid processing
+#
+# David Brown (LBNL) 13 July 2016
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "Mu2eReco/fcl/standardServices.fcl"
+#include "Mu2eReco/fcl/prolog.fcl"
+
+process_name : TrkAna
+
+source :
+{
+  module_type : RootInput
+}
+
+services : @local::Services.SimAndReco
+
+physics :
+{
+  producers : @local::TrkAna.producers
+  analyzers : @local::TrkAna.analyzers
+}
+
+physics.TrkAnaTriggerPath : [ @sequence::TrkAna.SimAndRecoSequence ]
+physics.trigger_paths  : [ TrkAnaTriggerPath ]
+
+physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence ]
+physics.end_paths : [ TrkAnaEndPath ]
+
+# You can add detailed (hit) information to the TTree by setting diagLevel to 2
+physics.analyzers.TrkAna.diagLevel : 1
+#
+# the following are needed for interactive running
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+
+# patch Calo
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : compressPVDetector

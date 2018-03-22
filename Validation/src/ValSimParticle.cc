@@ -10,7 +10,13 @@ int mu2e::ValSimParticle::declare(art::TFileDirectory tfs) {
   _hN2 = tfs.make<TH1D>( "Nsim2", "log10(N particle)", 100, 0.0, 6.00);
   _id.declare(tfs,"id","id fold");
   _hp = tfs.make<TH1D>( "p", "P", 100, 0.0, 200.0);
-  _pos.declare(tfs,"end","end");
+  _hpe = tfs.make<TH1D>( "pe", "P ele", 100, 0.0, 200.0);
+  _hpm = tfs.make<TH1D>( "pm", "P muon", 100, 0.0, 600.0);
+  _hp0 = tfs.make<TH1D>( "p0", "P pi0", 100, 0.0, 600.0);
+  _hpi = tfs.make<TH1D>( "pi", "P pi+/-", 100, 0.0, 600.0);
+  _hpn = tfs.make<TH1D>( "pn", "P nuclei", 100, 0.0, 200.0);
+  _spos.declare(tfs,"start","start");
+  _epos.declare(tfs,"end","end");
   _hscode = tfs.make<TH1D>( "scode", "start code", 151, -0.5, 150.0);
   _hecode = tfs.make<TH1D>( "ecode", "end code", 151, -0.5, 150.0);
   _idh.declare(tfs,"idh","id fold, p>10");
@@ -29,7 +35,7 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(2.0);
+  _hVer->Fill(3.0);
 
   _hN->Fill(coll.size()); 
   double x = (coll.size()<=0 ? 0 : log10(coll.size()) );
@@ -47,9 +53,16 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
     const mu2e::SimParticle& part = sp.second;
     double pstart = part.startMomentum().vect().mag();
     //int idc = _id.fill(part.pdgId());
-    _id.fill(part.pdgId());
-    _hp->Fill(part.startMomentum().vect().mag()); 
-    _pos.fill(part.endPosition());
+    int idc =_id.fill(part.pdgId());
+    double p = part.startMomentum().vect().mag();
+    _hp->Fill(p);
+    if(abs(idc)==11) _hpe->Fill(p);
+    if(abs(idc)==13) _hpm->Fill(p);
+    if(abs(idc)==30) _hp0->Fill(p);
+    if(abs(idc)==31) _hpi->Fill(p);
+    if(abs(idc)==51) _hpn->Fill(p);
+    _spos.fill(part.startPosition());
+    _epos.fill(part.endPosition());
     _hscode->Fill(part.originParticle().creationCode().id());
     _hecode->Fill(part.stoppingCode().id());
     

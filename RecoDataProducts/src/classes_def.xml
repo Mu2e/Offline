@@ -28,11 +28,10 @@
  <class name="mu2e::CaloProtoClusterCollection"/>
  <class name="mu2e::CaloCluster"/>
  <class name="mu2e::CaloClusterCollection"/>
- <class name="mu2e::StereoHit"/>
- <class name="mu2e::StereoHitCollection"/>
- <class name="mu2e::StrawHitPosition"/>
+ <class name="mu2e::ComboHit"/>
+ <class name="std::vector<mu2e::ComboHit>"/>
+ <class name="mu2e::ComboHitCollection"/>
  <class name="mu2e::HelixHit"/>
- <class name="mu2e::StrawHitPositionCollection"/>
  <class name="mu2e::HelixHitCollection"/>
  <class name="mu2e::StrawHitFlag"/>
  <class name="mu2e::StrawHitFlagDetail"/>
@@ -43,16 +42,18 @@
  <class name="mu2e::TrkFitFlagDetail"/>
  <class name="mu2e::StrawCluster"/>
  <class name="mu2e::StrawClusterCollection"/>
+<!--
  <class name="mu2e::KalRepPayload">
     <field name="transientTrack_" transient="true"/>
  </class>
- <class name="mu2e::KalRepPayloadCollection"/>
- <class name="mu2e::LocalHelixPayload"/>
- <class name="std::vector<mu2e::LocalHelixPayload>"/>
- <class name="mu2e::HOTPayload"/>
- <class name="std::vector<mu2e::HOTPayload>"/>
- <class name="mu2e::KalRepExtensionPayload"/>
- <class name="mu2e::KalRepExtensionPayloadCollection"/>
+-->
+<!-- <class name="mu2e::KalRepPayloadCollection"/>  -->
+<!-- <class name="mu2e::LocalHelixPayload"/> -->
+<!-- <class name="std::vector<mu2e::LocalHelixPayload>"/> -->
+<!-- <class name="mu2e::HOTPayload"/> -->
+<!-- <class name="std::vector<mu2e::HOTPayload>"/> -->
+<!-- <class name="mu2e::KalRepExtensionPayload"/> -->
+<!-- <class name="mu2e::KalRepExtensionPayloadCollection"/> -->
 
  <class name="mu2e::ExtMonUCITofHit"/>
  <class name="mu2e::ExtMonUCITofHitCollection"/>
@@ -100,11 +101,9 @@
  <class name="std::vector<art::Ptr<mu2e::ExtMonUCITofHit> >"/>
  <class name="art::Ptr<mu2e::StrawHit>"/>
  <class name="std::vector<art::Ptr<mu2e::StrawHit> >"/>
- <class name="art::Ptr<mu2e::StereoHit>"/>
- <class name="std::vector<art::Ptr<mu2e::StereoHit> >"/>
- <class name="art::Ptr<mu2e::StrawHitPosition>"/>
+ <class name="art::Ptr<mu2e::ComboHit>"/>
  <class name="art::Ptr<mu2e::HelixHit>"/>
- <class name="std::vector<art::Ptr<mu2e::StrawHitPosition> >"/>
+ <class name="std::vector<art::Ptr<mu2e::ComboHit> >"/>
  <class name="std::vector<art::Ptr<mu2e::HelixHit> >"/>
  <class name="art::Ptr<mu2e::StrawHitFlag>"/>
  <class name="std::vector<art::Ptr<mu2e::StrawHitFlag> >"/>
@@ -145,14 +144,13 @@
  <class name="art::Wrapper<mu2e::CaloCrystalHitCollection>"/>
  <class name="art::Wrapper<mu2e::CaloProtoClusterCollection>"/>
  <class name="art::Wrapper<mu2e::CaloClusterCollection>"/>
- <class name="art::Wrapper<mu2e::StereoHitCollection>"/>
- <class name="art::Wrapper<mu2e::StrawHitPositionCollection>"/>
+ <class name="art::Wrapper<mu2e::ComboHitCollection>"/>
  <class name="art::Wrapper<mu2e::StrawHitFlagCollection>"/>
  <class name="art::Wrapper<mu2e::StrawClusterCollection>"/>
  <class name="art::Wrapper<mu2e::TrkCaloIntersectCollection>"/>
  <class name="art::Wrapper<mu2e::TrkCaloMatchCollection>"/>
- <class name="art::Wrapper<mu2e::KalRepPayloadCollection>"/>
- <class name="art::Wrapper<mu2e::KalRepExtensionPayloadCollection>"/>
+<!-- <class name="art::Wrapper<mu2e::KalRepPayloadCollection>"/> -->
+<!--  <class name="art::Wrapper<mu2e::KalRepExtensionPayloadCollection>"/> -->
  <class name="art::Wrapper<mu2e::TimeClusterCollection>"/>
  <class name="art::Wrapper<mu2e::HelixSeedCollection>"/>
 
@@ -197,8 +195,6 @@
  <class name="mu2e::ExtMonFNALTrkFitCollection" />
  <class name="art::Wrapper<mu2e::ExtMonFNALTrkFitCollection>" />
 
-<!--  <class name="std::array<unsigned short,10>"/>
- <class name="std::array<unsigned long,2>"/> -->
  <class name="mu2e::StrawDigi"/>
  <class name="mu2e::StrawDigiCollection"/>
  <class name="art::Ptr<mu2e::StrawDigi>"/>
@@ -213,6 +209,15 @@
  <class name="art::Wrapper<std::vector<mu2e::TrackSummary> >"/>
  <class name="art::Ptr<mu2e::TrackSummary>" />
 
+ <class name="mu2e::CrvDigi::CrvSingleWaveform" />
+ <class name="std::vector<mu2e::CrvDigi::CrvSingleWaveform>" />
+
+ <class name="mu2e::CrvDigi" />
+ <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigi>" />
+ <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigi>" />
+ <class name="mu2e::CrvDigiCollection" />
+ <class name="art::Wrapper<mu2e::CrvDigiCollection>" />
+
  <class name="mu2e::CrvRecoPulses::CrvSingleRecoPulse" />
  <class name="std::vector<mu2e::CrvRecoPulses::CrvSingleRecoPulse>" />
 
@@ -226,6 +231,13 @@
  <class name="std::vector<mu2e::CrvCoincidenceCheckResult::CoincidenceCombination>" />
  <class name="mu2e::CrvCoincidenceCheckResult" />
  <class name="art::Wrapper<mu2e::CrvCoincidenceCheckResult>" />
+
+ <class name="mu2e::CrvCoincidenceClusters::Hit" />
+ <class name="mu2e::CrvCoincidenceClusters::Cluster" />
+ <class name="std::vector<mu2e::CrvCoincidenceClusters::Hit>" />
+ <class name="std::vector<mu2e::CrvCoincidenceClusters::Cluster>" />
+ <class name="mu2e::CrvCoincidenceClusters" />
+ <class name="art::Wrapper<mu2e::CrvCoincidenceClusters>" />
 
  <class name="mu2e::KalRepPtr"/>
  <class name="mu2e::KalRepPtrCollection" persistent="false"/>
@@ -269,5 +281,18 @@
  <class name="mu2e::TrkQualCollection"/>
  <class name="mu2e::TrkQualDetail"/>
  <class name="art::Wrapper<mu2e::TrkQualCollection>"/>
+
+ <class name="mu2e::BkgQual"/>
+ <class name="mu2e::BkgQualCollection"/>
+ <class name="mu2e::BkgQualDetail"/>
+ <class name="art::Wrapper<mu2e::BkgQualCollection>"/>
+
+ <class name="mu2e::BkgCluster"/>
+ <class name="mu2e::BkgClusterCollection"/>
+ <class name="mu2e::BkgClusterHit"/>
+ <class name="std::vector<mu2e::BkgClusterHit>"/>
+ <class name="art::Wrapper<mu2e::BkgClusterCollection>"/>
+ <class name="mu2e::BkgClusterFlag"/>
+ <class name="mu2e::BkgClusterFlagDetail"/>
 
 </lcgdict>

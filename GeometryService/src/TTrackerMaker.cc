@@ -3,9 +3,6 @@
 //
 // Original author Rob Kutschke
 //
-// Significant change mf 5/30/11:
-//    Insertion into the Straw objects data useful for early (hit/miss
-//    based) pattern recognition.  See identifyDirectionalNeighborStraws().
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/RotationY.h"
@@ -14,14 +11,15 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "GeometryService/inc/TTrackerMaker.hh"
-#include "TrackerGeom/inc/Panel.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "cetlib/pow.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+
 #include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <unordered_map>
+#include <bitset>
 
 using cet::square;
 using cet::diff_of_squares;
@@ -46,10 +44,40 @@ namespace mu2e {
       int ilay = -1;
       double iang = -36000;
 
-      size_t nstraws = (_tt->_allStraws).size();
+      // size_t nstraws = (_tt->_allStraws).size();
+      // constexpr size_t nstraws = TTracker::_nttstraws;
+      size_t nstraws = _tt->_nStraws;
+
+      cout << __func__ << " (_tt->_allStraws2).size(), TTracker::_nttstraws, _tt->_nStraws "
+           << fixed << setw(6) << _tt->_allStraws2.size()
+           << fixed << setw(6) << TTracker::_nttstraws
+           << fixed << setw(6) << _tt->_nStraws
+           << endl;
+
+      size_t istr = -1;
+      for (const auto& istr_p : _tt->_allStraws2_p) {
+        cout << __func__ << setw(10) << ++istr
+          // << setw(20) << istr_p;
+             << setw(20) << " ";
+        if (istr_p != nullptr ) {
+          StrawId const & lsid =  (*istr_p).id();
+          std::ostringstream nsid("",std::ios_base::ate); // to write at the end
+          nsid << lsid;
+          cout << setw(6) << lsid.asUint16()
+               << setw(17) << std::bitset<16>(lsid.asUint16())
+               << " "
+               << setw(10) << std::showbase << std::hex << lsid.asUint16()
+               << " " << std::dec << std::noshowbase << setw(7) << nsid.str()
+               << " " << _tt->_strawExists2.at(lsid.asUint16())
+               << endl;
+        } else {
+          cout << endl;
+        }
+      }
+
       for (size_t istr=0; istr!=nstraws; ++istr) {
 
-        const Straw& straw = _tt->getStraw(StrawIndex(istr));
+        const Straw& straw  = _tt->getStraw(StrawIndex(istr));
 
         int cpln = straw.id().getPlane();
         int cpnl = straw.id().getPanel();
@@ -57,37 +85,41 @@ namespace mu2e {
 
         const Plane& plane = _tt->getPlane(cpln);
         const Panel& panel = plane.getPanel(cpnl);
-        const Layer&  layer  = panel.getLayer(clay);
+        // const Layer&  layer  = panel.getLayer(clay);
 
-        size_t nStrawsPerPanel = panel.nLayers()  * layer.nStraws();
+        size_t nStrawsPerPanel = panel.nStraws();
         size_t nStrawsPerPlane = plane.nPanels() * nStrawsPerPanel;
 
         double cang = panel.boxRzAngle()/M_PI*180.;
         double dang = plane.rotation()/M_PI*180.;
-        double sroz = (panel.boxOffset() - plane.origin()).z();
+        // double sroz = (panel.boxOffset() - plane.origin()).z();
 
         size_t ipnlf = nStrawsPerPanel*cpnl + nStrawsPerPlane*cpln;
 
         cout << __func__ << " Straw "
-             << fixed << setw(6) << istr
+             << fixed << setw(6) << istr << " "
+             << straw.index() << " "
+             << _tt->getStrawIndex(straw.id()) << " "
              << " plnfloor " << setw(6) << ipnlf << " "
-             << straw.id()
+             << straw.id() << " "
+             << _tt->getStrawId(StrawIndex(istr)) << " "
              << " mid point " << straw.getMidPoint()
              << " r " << sqrt(straw.getMidPoint()[0]*straw.getMidPoint()[0]+
                               straw.getMidPoint()[1]*straw.getMidPoint()[1])
              << " direction " << straw.getDirection()
              << " panel rotation: " << cang
-             << " origin " << panel.boxOffset()
+             << " straw0MidPoint  " << panel.straw0MidPoint()
+             << " straw0Direction " << panel.straw0Direction()
              << " plane rotation: " << dang
              << " origin " << plane.origin()
-             << " pln rel origin z " << sroz
+          //             << " pln rel origin z " << sroz
              << " straw exists " << _tt->strawExists(StrawIndex(istr))
              << " plane exists " << plane.exists();
 
         if (ipnl>cpnl && ipln==cpln) cout << " <--S";
         if (iang>cang && ipln==cpln) cout << " <--A";
         if (ilay>clay && ipnl==cpnl) cout << " <--L";
-        if ((cpnl%2 == 0 && sroz>0.) || (cpnl%2 != 0 && sroz<0.)) cout << " <--Z";
+        //  if ((cpnl%2 == 0 && sroz>0.) || (cpnl%2 != 0 && sroz<0.)) cout << " <--Z";
         if (ipln!=cpln) ipln=cpln;
         if (ipnl!=cpnl) ipnl=cpnl;
         if (ilay!=clay) ilay=clay;
@@ -103,23 +135,65 @@ namespace mu2e {
   void TTrackerMaker::parseConfig( const SimpleConfig& config ){
 
     _verbosityLevel     = config.getInt("ttracker.verbosityLevel",0);
-
+    _ttVersion          = config.getInt("TTrackerVersion",3);
 
     _motherRIn        = config.getDouble("ttracker.mother.rIn"        )*CLHEP::mm;
     _motherROut       = config.getDouble("ttracker.mother.rOut"       )*CLHEP::mm;
     _motherHalfLength = config.getDouble("ttracker.mother.halfLength" )*CLHEP::mm;
     _motherZ0         = config.getDouble("ttracker.mother.z0"         )*CLHEP::mm;
-
     _numPlanes         = config.getInt("ttracker.numPlanes");
-    _panelsPerPlane   = config.getInt("ttracker.panelsPerPlane");
+    if ( _numPlanes != StrawId::_nplanes ){
+      if ( StrawId::_nplanes == 40 && _numPlanes == 36 ) {
+        _verbosityLevel > -1 &&
+          cout << __func__ << " Running with ttracker.numPlanes !=  StrawId::_nplanes "
+               << _numPlanes << " != " << StrawId::_nplanes
+               << " please make sure it is intended " << endl;
+      } else {
+        cout << __func__
+             << " Inconsistent TTracker parameters: "
+             << " ttracker.numPlanes !=  StrawId::_nplanes "
+             << _numPlanes << " != " << StrawId::_nplanes
+             << " please double check and act accordingly " << endl;
+        throw cet::exception("GEOM") << "See above for the message from " << __func__;
+      } 
+    }
+    _panelsPerPlane    = config.getInt("ttracker.panelsPerPlane");
+    if ( _panelsPerPlane != StrawId::_npanels ){
+      cout << __func__
+           << " Inconsistent TTracker parameters: "
+           << " ttracker.numPlanes !=  StrawId::_npanels "
+           << _panelsPerPlane << " != " << StrawId::_npanels
+           << " please double check and act accordingly " << endl;
+      throw cet::exception("GEOM") << "See above for the message from " << __func__;
+    }
     _layersPerPanel    = config.getInt("ttracker.layersPerPanel");
+    if ( _layersPerPanel != StrawId::_nlayers ){
+      cout << __func__
+           << " Inconsistent TTracker parameters: "
+           << " ttracker.numPlanes !=  StrawId::_nlayers "
+           << _layersPerPanel << " != " << StrawId::_nlayers
+           << " please double check and act accordingly " << endl;
+      throw cet::exception("GEOM") << "See above for the message from " << __func__;
+    }
     _manifoldsPerEnd    = config.getInt("ttracker.manifoldsPerEnd");
     _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
+    if ( _manifoldsPerEnd*_layersPerPanel*_strawsPerManifold != StrawId::_nstraws ){
+      cout << __func__
+           << " Inconsistent TTracker parameters: "
+           << " ttracker.strawsPerManifold*ttracker.manifoldsPerEnd*ttracker.layersPerPanel !=  StrawId::_nstraws "
+           << _manifoldsPerEnd*_layersPerPanel*_strawsPerManifold
+           << " != " << StrawId::_nstraws
+           << " please double check and act accordingly " << endl;
+      throw cet::exception("GEOM") << "See above for the message from " << __func__;
+   }
     _rotationPattern    = config.getInt("ttracker.rotationPattern");
     _panelZPattern      = config.getInt("ttracker.panelZPattern");
     _layerZPattern      = config.getInt("ttracker.layerZPattern");
     _spacingPattern     = config.getInt("ttracker.spacingPattern");
     _innermostLayer     = config.getInt("ttracker.innermostLayer");
+
+    _planePadding      = config.getDouble("ttracker.planePadding",0.5)*CLHEP::mm;
+    _panelPadding      = config.getDouble("ttracker.panelPadding",0.25)*CLHEP::mm;
 
     _oddStationRotation   =  config.getDouble("ttracker.oddStationRotation")*CLHEP::degree;
     _zCenter              =  config.getDouble("ttracker.z0")*CLHEP::mm;
@@ -168,9 +242,20 @@ namespace mu2e {
       _endRingZOffset          = config.getDouble( "ttrackerSupport.endRing.zOffset"     );
       _endRingMaterial         = config.getString( "ttrackerSupport.endRing.material"    );
 
+      _hasDownRing    = config.getBool( "ttrackerSupport.downRing.build",false);
+      if ( _hasDownRing ) {
+	_downRingOuterRadius      = config.getDouble( "ttrackerSupport.downRing.outerRadius" );
+	_downRingInnerRadius      = config.getDouble( "ttrackerSupport.downRing.innerRadius" );
+	_downRingHalfLength       = config.getDouble( "ttrackerSupport.downRing.halfLength"  );
+	_downRingZOffset          = config.getDouble( "ttrackerSupport.downRing.zOffset"     );
+	_downRingMaterial         = config.getString( "ttrackerSupport.downRing.material"    );
+      }
+
       config.getVectorInt( "ttrackerSupport.midRing.slot", _midRingSlot );
       _midRingHalfLength       = config.getDouble(    "ttrackerSupport.midRing.halfLength" );
-
+      _midRingPhi0 = config.getDouble( "ttrackerSupport.midRing.Phi0",180.0)*CLHEP::degree;
+      _midRingdPhi = config.getDouble( "ttrackerSupport.midRing.dPhi",180.0)*CLHEP::degree;
+      _midRingMaterial = config.getString( "ttrackerSupport.midRing.material", "StainlessSteel316");
       // support beams;
       // fixme use vectors to contain them all (e.g. vector<SupportBeamParams>)
 
@@ -193,6 +278,11 @@ namespace mu2e {
       config.getVectorDouble( "ttrackerSupport.beam1.serviceCovRelThickness", _beam1_serviceCovRelThickness );
       config.getVectorString( "ttrackerSupport.beam1.serviceMaterialsCov", _beam1_serviceMaterialsCov );
 
+
+      _panelPhi  = config.getDouble("ttrackerSupport.phiCoverage",120.0)*CLHEP::degree;
+      _dphiRibs = config.getDouble("ttrackerSupport.dphiRibs",27.0)*CLHEP::degree;
+      _ribHalfAngle = config.getDouble("ttrackerSupport.ribHalfAngle",1.0)*CLHEP::degree;
+
       _innerRingInnerRadius    = config.getDouble( "ttrackerSupport.innerRing.innerRadius" );
       _innerRingOuterRadius    = config.getDouble( "ttrackerSupport.innerRing.outerRadius" );
       _innerRingHalfLength     = config.getDouble( "ttrackerSupport.innerRing.halfLength"  );
@@ -212,6 +302,7 @@ namespace mu2e {
       _electronicsCuHhalfLength = config.getDouble( "ttrackerSupport.electronics.cu.halfLength"  );
       _electronicsCuMaterial    = config.getString( "ttrackerSupport.electronics.cu.material"    );
       _channelZOffset           = config.getDouble( "ttrackerSupport.channel.zOffset"            );
+      _panelZOffset             = config.getDouble( "ttrackerSupport.panel.zOffset", 0.0 );
       _channelDepth             = config.getDouble( "ttrackerSupport.channel.depth"              );
       _channelMaterial          = config.getString( "ttrackerSupport.channel.material"           );
       _electronicsSpaceMaterial = config.getString( "ttrackerSupport.electronicsSpace.material"  );
@@ -240,6 +331,12 @@ namespace mu2e {
       _wirePlateMaterial        = config.getString("ttracker.straw.wirePlate.material");
 
     }
+
+    if ( _numPlanes%2 != 0 ) {
+      throw cet::exception("GEOM")  << "_numPlanes = " << _numPlanes
+                                    << ": Current TTracker geometry assumes even number of planes  \n";
+    }
+    _numStations = _numPlanes/_planesPerStation;
 
     //string ttracker.mat.manifold  = "G4_Al";  // Placeholder.
 
@@ -366,8 +463,6 @@ namespace mu2e {
       }
     }
 
-    _panelBoxXOffsetMag = 0.0;
-    _panelBoxZOffsetMag = 0.0;
     _layerHalfSpacing = 0.0;
     _layerHalfShift = 0.0;
     _manifoldXEdgeExcessSpace = 0.0;
@@ -375,12 +470,11 @@ namespace mu2e {
 
   } // end TTrackerMaker::parseConfig
 
-  void lptest( const Layer& lay){
-    cout << lay.id() << " |  "
-         << lay.nStraws()  <<  " |  "
-         << lay.getStraws().capacity() << " "
-         << endl;
-  }
+  // void lptest( const Layer& lay){
+  //   cout << lay.id() << " |  "
+  //        << lay.nStraws()  <<  " "
+  //        << endl;
+  // }
 
   void plntest( const Plane& plane){
     cout << "Plane: "
@@ -390,30 +484,26 @@ namespace mu2e {
          << endl;
   }
 
-  void positionTest( const Layer& lay){
-    const Straw& straw = lay.getStraw( 0 );
-    cout << "Layer: "
-         << lay.id() << " "
-         << straw.getMidPoint().z() <<  " "
-         << straw.getDirection().z() << " "
-         << endl;
-  }
+  // void positionTest( const Layer& lay){
+  //   const Straw& straw((lay.getStraw(0)));
+  //   cout << "Layer: "
+  //        << lay.id() << " "
+  //        << straw.getMidPoint().z() <<  " "
+  //        << straw.getDirection().z() << " "
+  //        << endl;
+  // }
 
   void TTrackerMaker::buildIt(){
 
+    // as the array has constant size, we need a straw counter during construction
+    _strawTrckrConstrCount = -1; // first straw will be at 0
+
     // Make an empty TTracker.
     _tt = unique_ptr<TTracker>(new TTracker());
-
-    // Stations
-    // Construct the stations and their internals based on planes internals
-    if ( _numPlanes%2 != 0 ) {
-      throw cet::exception("GEOM")  << "_numPlanes = " << _numPlanes
-                                    << ": Current TTracker geometry assumes even number of planes  \n";
-    }
-
-    // planes per station has to be 2
-    _planesPerStation = 2;
-    _numStations = _numPlanes/_planesPerStation;
+    _tt->_nPlanes = _numPlanes;
+    _tt->_nStraws = _numPlanes *
+      StrawId::_npanels *
+      StrawId::_nstraws;
 
     makeMother();
 
@@ -446,25 +536,34 @@ namespace mu2e {
     // Reserve space for straws so that pointers are valid.
     _nStrawsToReserve = _numPlanes * _panelsPerPlane * _layersPerPanel *
       _manifoldsPerEnd * _strawsPerManifold;
-    //_tt->_allStraws.reserve(_nStrawsToReserve); // see makeLayer
+    //_tt->_allStraws.reserve(_nStrawsToReserve); // see makeLayer, obsolete
 
     // we need to be able to assign true/false for a given straw index
-    _tt->_strawExists.resize(_nStrawsToReserve);
+    //    _tt->_strawExists.resize(_nStrawsToReserve);
 
-    _tt->_planes.reserve(_numPlanes);
+    if (_verbosityLevel>2) {
+      cout << __func__ << " _nStrawsToReserve "
+           << fixed << setw(6) << _nStrawsToReserve << endl;
+    }
+
     // Construct the planes and their internals.
     for ( int ipln=0; ipln<_numPlanes; ++ipln ){
-      makePlane( PlaneId(ipln) );
+      makePlane( StrawId(ipln,0,0) );
     }
 
     // Fill all of the non-persistent information.
     _tt->fillPointers();
 
     identifyNeighbourStraws();
-    identifyDirectionalNeighbourStraws();
 
+    // Stations
+    // Construct the stations and their internals based on planes internals
+
+    if (_verbosityLevel>2) {
+      cout << __func__ << " _numStations: " << _numStations << endl;
+    }
     _tt->_stations.reserve(_numStations);
-    // Construct the planes and their internals.
+
     for ( int istation=0; istation<_numStations; ++istation ){
       makeStation( StationId(istation) );
     }
@@ -509,10 +608,9 @@ namespace mu2e {
   void TTrackerMaker::finalCheck( ){
 
     // Only do this test for the new model(s).
-    if ( _supportModel == SupportModel::simple ) return;
 
-    StrawId s0(0,1,0,0);
-    StrawId s1(0,1,1,1);
+    StrawId s0(0,1,0);
+    StrawId s1(0,1,1);
     double ztest = 0.5*(_tt->getStraw ( s0 ).getMidPoint().z()+_tt->getStraw ( s1 ).getMidPoint().z())
       -  _tt->getPlane( PlaneId(0) ).origin().z();
     ztest *= panelZSide(1,0);
@@ -530,37 +628,76 @@ namespace mu2e {
   }
 
 
-  void TTrackerMaker::makePlane( PlaneId planeId ){
+  void TTrackerMaker::makePlane( StrawId planeId ){
 
 //std::cout << "->->-> makePlane\n";
-    int ipln = planeId;
+    int ipln = planeId.getPlane();
 
     double planeDeltaZ = choosePlaneSpacing(ipln);
     CLHEP::Hep3Vector origin( 0., 0., _z0+planeDeltaZ);
 
+    auto& planes = _tt->_planes;
+
     // plane rotation is no longer used.
     double phi = 0.0;
-    _tt->_planes.push_back(Plane(planeId, origin, phi));
-    Plane& plane = _tt->_planes.back();
+    planes.at(ipln) = Plane(planeId,origin, phi);
+    Plane& plane = planes.at(ipln);
+    if (_verbosityLevel>2) {
+      cout << __func__ << " making plane " <<  plane.id();
+    }
     plane._exists = ( find ( _nonExistingPlanes.begin(), _nonExistingPlanes.end(), ipln) ==
                       _nonExistingPlanes.end() );
-
-    plane._panels.reserve(_panelsPerPlane);
-
+    if (_verbosityLevel>2) {
+      cout << ", exists " << plane._exists  << endl;
+    }
     for ( int ipnl=0; ipnl<_panelsPerPlane; ++ipnl ){
-      makePanel ( PanelId(planeId,ipnl), plane );
+      makePanel ( StrawId(ipln,ipnl,0), plane );
+      if (_verbosityLevel>2) {
+        size_t istr = -1; // local index in the panel
+        Panel& panel = plane._panels.at(ipnl);
+        std::ostringstream pnlid("",std::ios_base::ate); // to write at the end
+        pnlid << panel.id();
+        cout << __func__ << " straws in panel "
+             << setw(7) << pnlid.str();
+        // test of Plane, Panel functions
+        cout << setw(4) << panel.id().getPlane();
+        cout << setw(2) << panel.id().getPanel() << endl;
+
+        for (const auto istr_p : panel._straws2_p) {
+          if ( istr_p == nullptr ) continue;
+          StrawId const & lsid =  (*istr_p).id();
+          std::ostringstream nsid("",std::ios_base::ate); // to write at the end
+          nsid << lsid;
+          cout << setw(3) << ++istr
+               << setw(6) << lsid.asUint16()
+               << setw(17) << std::bitset<16>(lsid.asUint16())
+               << " "
+               << setw(6) << std::showbase << std::hex << lsid.asUint16()
+               << " " << std::dec << std::noshowbase << setw(7) << nsid.str();
+          // now the straw by the Panel::getStraw(const StrawId& strid2) which uses local index
+          // panel.getStraw(StrawId(0,0,0)); // test
+          nsid.str("");
+          nsid << panel.getStraw(lsid).id();
+          cout << setw(8) << nsid.str();
+          nsid.str("");
+          StrawId sid  = (*istr_p).id();
+          nsid << panel.getStraw(sid).id(); // old id of the straw in the old container
+          cout << setw(10) << nsid.str()
+               << endl;
+        }
+      }
     }
 
 //std::cout << "<-<-<- makePlane\n";
   }
 
-  void TTrackerMaker::makePanel( const PanelId& plnId, Plane& plane ){
+  void TTrackerMaker::makePanel( const PanelId& pnlId, Plane& plane ){
 //std::cout << "->->-> makePanel\n";
 
-    plane._panels.push_back( Panel(plnId) );
-    Panel& panel = plane._panels.back();
-    panel._layers.reserve(_layersPerPanel);
+    plane._panels.at(pnlId.getPanel()) = Panel(pnlId);
+    Panel& panel = plane._panels.at(pnlId.getPanel());
 
+    _strawPanelConstrCount = -1;
     // check if the opposite panels do not overlap
     static double const tolerance = 1.e-6; // this should be in a config file
 
@@ -570,8 +707,6 @@ namespace mu2e {
       throw cet::exception("GEOM")  << "Planes are too close \n";
     }
 
-    makeManifolds( plnId );
-
     double strawSpacing = _strawGap+2.*_strawOuterRadius;
 
     if (_verbosityLevel>2) {
@@ -579,29 +714,53 @@ namespace mu2e {
     }
 
     for ( int ilay=0; ilay<_layersPerPanel; ++ilay ){
-      makeLayer( LayerId(plnId,ilay), panel );
+      // we use the straw field to indicate the layer
+      makeLayer(StrawId(pnlId.getPlane(),pnlId.getPanel(),ilay), panel);
+    }
+
+    for ( int ilay=0; ilay<_layersPerPanel; ++ilay ){
 
       // checking spacing of the individual layers
       // are the manifolds sized correctly for the straws?
 
-      Layer const & layer = panel.getLayer(ilay);
-      //      cout << "Debugging looking at the layer   : " << layer.id() << endl;
-      for (int ns = 0; ns<(layer.nStraws()*2-2); ns+=2) {
+      // print out the Layer containers (or thier equivalence)
 
-        if (_verbosityLevel>2) {
-          cout << __func__ << " Checking spacig"
-               << " for layer " << layer.id() << " straw " << layer.getStraw(ns).id()  << endl;
+      if (_verbosityLevel>2) {
+        uint16_t is = -1;
+        for (const auto straw_p : panel.getStrawPointers() ) {
+          const Straw& straw(*straw_p);
+          ++is;
+          if ( ( straw.id().getStraw())%2 != ilay ) continue;
+          StrawId lid = straw.id().getLayerId();
+          cout << __func__ << " Printing Layer _straws info: " << lid
+               << setw(3) << is
+               << " " << straw.id()
+               << " " << straw.index()
+               << endl;
         }
 
+      }
+
+      for (  auto is = panel.getStrawPointers().cbegin();
+             is < (panel.getStrawPointers().cend()-2); ++is) {
+        const Straw& straw0(**is);
+        uint16_t sn = straw0.id().getStraw();
+        if ( sn%2 != ilay ) continue;
+        StrawId lid = straw0.id().getLayerId();
+        if (_verbosityLevel>2) {
+          cout << __func__ << " Checking spacing"
+               << " for layer " << lid << " straw " << straw0.id()  << endl;
+        }
+        const Straw& straw1(**(is+2));
         double layerDeltaMag =
-          (layer.getStraw(ns+2).getMidPoint() - layer.getStraw(ns).getMidPoint()).mag();
+          (straw1.getMidPoint() - straw0.getMidPoint()).mag();
         if ( abs(layerDeltaMag-strawSpacing)> tolerance ) {
           cout << "Layer straw spacing is (mm)   : " << layerDeltaMag
-               << " for layer " << layer.id() << " straw " << layer.getStraw(ns).id()  << endl;
+               << " for layer " << lid << " straw " << straw0.id()  << endl;
           cout << "It should be                  : " << strawSpacing << " diff: "
                << (layerDeltaMag-strawSpacing) << endl;
 
-          throw cet::exception("GEOM")  << "Incorrect intralayer straw spacing, check manifold sizes rtc..\n";
+          throw cet::exception("GEOM")  << "Incorrect intralayer straw spacing, check manifold sizes etc..\n";
 
         }
       }
@@ -611,26 +770,29 @@ namespace mu2e {
 
     if (_layersPerPanel>1) {
 
-      // we should do this using iterators
+      for (  auto is = panel.getStrawPointers().cbegin();
+             is < (panel.getStrawPointers().cend()-1); ++is) {
+        const Straw& straw0(**is);
+        uint16_t sn = straw0.id().getStraw();
+        if ( sn%2 != 0 ) continue;
+        const Straw& straw1(**(is+1));
+        StrawId lid0 = straw0.id().getLayerId();
+        StrawId lid1 = straw1.id().getLayerId();
 
-      Layer const & layer0 = panel.getLayer(0);
-      Layer const & layer1 = panel.getLayer(1);
-
-      for (int ns = 0; ns<layer0.nStraws()*2; ns+=2) {
         double xLayerDeltaMag =
-          (layer0.getStraw(ns).getMidPoint() - layer1.getStraw(ns).getMidPoint()).mag();
+          (straw0.getMidPoint() - straw1.getMidPoint()).mag();
 
         if (_verbosityLevel>2) {
-          cout << __func__ << " Checking spacig"
-               << " for layer " << layer0.id() << " straw " << layer0.getStraw(ns).id()
-               << " and for layer " << layer1.id() << " straw " << layer1.getStraw(ns).id()  << endl;
+          cout << __func__ << " Checking spacing"
+               << " for layer " << lid0 << " straw " << straw0.id()
+               << " and for layer " << lid1 << " straw " << straw1.id()  << endl;
         }
 
         if ( abs(xLayerDeltaMag-strawSpacing)> tolerance ) {
           cout << "xLayer straw spacing is (mm)   : "
                << xLayerDeltaMag
                << " for straws: "
-               << layer0.getStraw(ns).id() << ", " << layer1.getStraw(ns).id()
+               << straw0.id() << ", " << straw1.id()
                << endl;
           cout << "It should be                   : "
                << strawSpacing << " diff: "
@@ -641,26 +803,33 @@ namespace mu2e {
         }
       }
 
-      for (int ns = 1; ns<layer0.nStraws()*2; ns+=2) {
-        int i0 = ns;
-        int i1 = ns-2;
+      for (  auto is = panel.getStrawPointers().cbegin()+2;
+             is < (panel.getStrawPointers().cend()); ++is) {
+        const Straw& straw(**is);
+        uint16_t sn = straw.id().getStraw();
+        if ( sn%2 != 0 ) continue;
+        auto i0 = is;
+        auto i1 = is-1;
         if ( _innermostLayer == 1 ){
-          i0 = ns-2;
-          i1 = ns;
+          i0 = is-1;
+          i1 = is;
         }
+        const Straw& straw0(**i0);
+        const Straw& straw1(**i1);
         double xLayerDeltaMag =
-          (layer0.getStraw(i0).getMidPoint() - layer1.getStraw(i1).getMidPoint()).mag();
-
+          (straw0.getMidPoint() - straw1.getMidPoint()).mag();
+        StrawId lid0 = straw0.id().getLayerId();
+        StrawId lid1 = straw1.id().getLayerId();
         if (_verbosityLevel>2) {
-          cout << __func__ << " Checking spacig"
-               << " for layer " << layer0.id() << " straw " << layer0.getStraw(i0).id()
-               << " and for layer " << layer1.id() << " straw " << layer1.getStraw(i1).id()  << endl;
+          cout << __func__ << " Checking spacing"
+               << " for layer " << lid0 << " straw " << straw0.id()
+               << " and for layer " << lid1 << " straw " << straw1.id()  << endl;
         }
         if ( abs(xLayerDeltaMag-strawSpacing)> tolerance ) {
           cout << "xLayer straw spacing is (mm)   : "
                << xLayerDeltaMag
                << " for straws: "
-               << layer0.getStraw(i0).id() << ", " << layer1.getStraw(i1).id()
+               << straw0.id() << ", " << straw1.id()
                << endl;
           cout << "It should be                   : "
                << strawSpacing << " diff: "
@@ -672,8 +841,7 @@ namespace mu2e {
       }
     }
 
-    // calculate/make a panel envelope
-    computePanelBoxParams(panel, plane);
+    panel._boxRzAngle = panelRotation( panel.id().getPanel(),plane.id().getPlane() ); //  is it really used? needed?
 
     // make EBkey
 
@@ -709,18 +877,29 @@ namespace mu2e {
 //std::cout << "<-<-<- makePanel\n";
   }  // makePanel
 
-  void TTrackerMaker::makeLayer ( const LayerId& layId, Panel& panel ){
+  void TTrackerMaker::makeLayer ( const StrawId& layId, Panel& panel ){
 //std::cout << "->->-> makeLayer\n";
 
     // Make an empty layer object.
-    panel._layers.push_back( Layer(layId) );
-    Layer& layer = panel._layers.back();
+    // panel._layers.push_back( Layer(layId) );
+    // Layer& layer = panel._layers.back(); // fixme: try to avoid this construction
 
     // Get additional bookkeeping info.
-    deque<Straw>& allStraws = _tt->_allStraws;
-    const Plane& plane = _tt->getPlane( layId.getPlaneId() );
+
+    // array type containers of straws and pointers, ttracker ones
+    array<Straw,TTracker::_nttstraws>& allStraws2  = _tt->_allStraws2;
+    array<Straw const*,TTracker::_maxRedirect>& allStraws2_p  = _tt->_allStraws2_p;
+    // panel ones
+    array<Straw const*, StrawId::_nstraws>& panelStraws2_p = panel._straws2_p;
+    array<bool,TTracker::_maxRedirect>& strawExists2 = _tt->_strawExists2;
+    // straws per panel
+    constexpr int spp = StrawId::_nstraws;
+
+    const Plane& plane = _tt->getPlane( layId );
     int ilay = layId.getLayer();
     int ipnl = layId.getPanel();
+
+    int iplane = layId.getPlane();
 
     // Is layer zero closest to the straw or farthest from it.
     int factor = ( _layerZPattern == 0 ) ? ilay : (_layersPerPanel - ilay - 1);
@@ -728,8 +907,8 @@ namespace mu2e {
     //    cout << "Debugging TTrackerMaker ilay: " << ilay << endl;
 
     // Start to populate the layer.
-    layer._nStraws = _manifoldsPerEnd*_strawsPerManifold;
-    layer._straws.reserve(_manifoldsPerEnd*_strawsPerManifold);
+    // layer._nStraws      = _manifoldsPerEnd*_strawsPerManifold; // not really used
+    // layer._straws.reserve(_manifoldsPerEnd*_strawsPerManifold);
 
     // |z| of straw center, relative to the center of the plane.
     // Sign is taken care of elsewhere.
@@ -744,7 +923,7 @@ namespace mu2e {
     // Rotation that puts wire direction and wire mid-point into their
     // correct orientations.
     // CLHEP::HepRotationZ RZ(_panelBaseRotations.at(ipnl));
-    CLHEP::HepRotationZ RZ(panelRotation(ipnl,layId.getPlaneId()));
+    CLHEP::HepRotationZ RZ(panelRotation(ipnl,layId.getPlane()));
 
     // Unit vector in the wire direction. (nominal is the panel 0 to the right?)
     CLHEP::Hep3Vector unit = RZ*CLHEP::Hep3Vector(0.,1.,0.);
@@ -752,7 +931,7 @@ namespace mu2e {
     // Straw number within the layer; does not reset to zero at each manifold.
     // we number the straws starting from the most inner one across the two layers in the panel/panel
     // it will be 0 for layer0 and 1 for layer1
-    int _istraw(ilay-2);
+    int listraw(ilay-2);
 
     // we increase the number by 2, not 1
 
@@ -766,7 +945,7 @@ namespace mu2e {
 
       // Add all of the straws connected to this manifold.
       for ( int istr=0; istr<_strawsPerManifold; ++istr ){
-        _istraw +=2;
+        listraw +=2;
 
         // layers with fewer straws would complicate StrawSD, constructTTrackerv, TTrackerMaker
 
@@ -778,108 +957,108 @@ namespace mu2e {
           xA + (2*istr)*_strawOuterRadius + istr*_strawGap :
           xA + (2*istr)*_strawOuterRadius + istr*_strawGap + 2.0*_layerHalfShift;
 
-        CLHEP::Hep3Vector mid( xstraw, 0., zOffset*panelZSide(ipnl, plane.id()) );
+        CLHEP::Hep3Vector mid( xstraw, 0., zOffset*panelZSide(ipnl, plane.id().getPlane()) );
         mid += plane.origin();
 
         // Rotate straw midpoint to its actual location.
         CLHEP::Hep3Vector offset = RZ*mid;
 
-        StrawIndex index(allStraws.size());
+        // StrawIndex index(allStraws.size());
+        ++_strawTrckrConstrCount;
+        ++_strawPanelConstrCount;
+        StrawIndex index(_strawTrckrConstrCount);
 
-        _tt->_strawExists[index.asInt()] = plane.exists();
+        // _tt->_strawExists[index.asInt()] = plane.exists();
 
-        allStraws.push_back( Straw( StrawId( layId, _istraw),
-                                    index,
-                                    offset,
-                                    &_tt->_strawDetails.at(iman*2+ilay%2),
-                                    iman*2+ilay%2,
-                                    unit
-                                    )
-                             );
-        layer._straws.push_back(&allStraws.back());
-        layer._indices.push_back(index);
+        StrawId lsid(iplane, ipnl, listraw);
+        // in the new tracker model the straws are placed in the
+        // panels, not layers, so we have to reshuffle them here
+        // before we place them in allStraws2
+
+        // number of panels placed
+        int npp = _strawTrckrConstrCount/spp;
+        // current straw in the panel is listraw (same as StrawId::straw())
+        // we use int in case we "overcount" and rely on at() to tell us that
+        // counter used to *place* the straws in an order 0..95, not 0,2..93,95
+        int strawCountReCounted = npp*spp+listraw;
+
+        // allStraws.push_back( Straw( StrawId( layId, listraw),
+        //                             lsid, // this is a new/tmp field, new constructor
+        //                             index,
+        //                             offset,
+        //                             &_tt->_strawDetails.at(iman*2+ilay%2),
+        //                             iman*2+ilay%2,
+        //                             unit
+        //                             )
+        //                      );
 
 
-        //         if ( layId.getPlane() != -1 ){
-        //           cout << "Position: " << setw(3) <<
-        //             layId << " | " << setw(3) <<
-        //             iman << " " << setw(3) <<
-        //             istr                << " | " << setw(3) <<
-        //             _istraw << " " << fixed << setprecision(2) << setw(8) <<
-        //             xstraw << " " << fixed << setprecision(2) << setw(8) <<
-        //             2.*_strawHalfLengths.at(iman) << " " << fixed << setprecision(2) <<
-        //             mid << " " << fixed << setprecision(2) << setw(8) <<
-        //             plane.origin() << " | "  << setw(3) <<
-        //             index <<  " " << setw(3) <<
-        //             allStraws.size() << " "  << setw(3) <<
-        //             layer._straws.size() << " | " << setw(5) <<
-        //             (allStraws.back()).id() << ", " << setw(5) <<
-        //             (allStraws.back()).index()
-        //           << endl;
-        //           }
+        //  allStraws2.at(strawCountReCounted) =
+        allStraws2.at(_strawTrckrConstrCount) =
+          Straw( lsid,
+                 index,
+                 offset,
+                 &_tt->_strawDetails.at(iman*2+ilay%2),
+                 iman*2+ilay%2,
+                 unit
+                 );
 
+        // allStraws2_p.at(lsid.asUint16()) = &allStraws2.at(strawCountReCounted);
+        // straw pointers are always stored by StrawId order
+        allStraws2_p.at(lsid.asUint16()) = &allStraws2.at(_strawTrckrConstrCount);
+        panelStraws2_p.at((lsid.asUint16() & StrawId::_strawmsk)) =
+          &allStraws2.at(_strawTrckrConstrCount);
+        // allStraws2_p.at(lsid.asUint16()) = nullptr;
+        // panelStraws2_p.at((lsid.asUint16() & StrawId::_strawmsk)) = nullptr;
+        strawExists2.at(lsid.asUint16()) = plane.exists() ? true : false;
+
+        if (_verbosityLevel>3) {
+          std::ostringstream nsid("",std::ios_base::ate); // to write at the end
+          nsid << lsid;
+
+          cout << __func__ << " index, strCnt, strCntRc, npp, iplane, ipnl, opsc, listraw, _sid, StrawId:"
+               << setw(6) << index
+               << setw(6) << _strawTrckrConstrCount
+               << setw(6) << strawCountReCounted
+               << setw(6) << npp
+               << setw(3) << iplane
+               << setw(2) << ipnl
+               << setw(3) << _strawPanelConstrCount
+               << setw(3) << listraw
+               << setw(6) << lsid.asUint16()
+               << setw(17) << std::bitset<16>(lsid.asUint16())
+               << " "
+               << setw(6) << std::showbase << std::hex << lsid.asUint16()
+               << " " << std::dec << std::noshowbase << setw(7) << nsid.str()
+               // << " " << std::showbase << std::hex << setw(10) << &allStraws2.at(_strawTrckrConstrCount)
+               // << std::dec << std::noshowbase
+               << endl;
+        }
+
+        // layer._straws.push_back(&allStraws2.at(_strawTrckrConstrCount));
       }
     }
 
 //std::cout << "<-<-<- makeLayer\n";
   } // end TTrackerMaker::makeLayer
 
-  void TTrackerMaker::makeManifolds( const PanelId& plnId){
-//std::cout << "->->-> makeManifolds\n";
-
-    if ( _panelsPerPlane != 4 && _panelsPerPlane != 6 ) {
-      throw cet::exception("GEOM")
-        << "This code only knows how to do 4 or 6 panels per plane.\n";
-    }
-
-//    double phi = _tt->getPlane(plnId.getPlane()).rotation();
-//    CLHEP::HepRotationZ RZ(phi);
-
-
-    // manifold objects are not used for now...
-
-    for ( int i=0; i<_manifoldsPerEnd; ++i){
-
-      // First compute everything in their nominal positions: panel 0, right ?
-      double x0 = _envelopeInnerRadius +
-        _strawsPerManifold*_strawOuterRadius +
-        _manifoldHalfLengths.at(0);
-
-      double y0 = _tt->_strawDetails.at(i).halfLength() + _manifoldHalfLengths.at(2);
-
-      double z0 = ( _supportHalfThickness + _manifoldHalfLengths.at(2) );
-      //if ( plnId.getPanel() <= 1 ) z0 = -z0; // is this correct for the 6 panels?
-      // why not *_panelZSide.at(plnId.getPanel())
-
-      z0 = z0*panelZSide(plnId.getPanel(),plnId.getPlane());
-
-      // is the above assuming correct Z? why not plnId.getPanel()%2?
-      // are manifolds ever used?
-      // is it correct at all? I mean the origin? It is always the same for each plane...
-      // x never changes
-
-      CLHEP::Hep3Vector origin(x0,y0,z0);
-
-      //       cout << "Manifold plane, panel, origin, length[0] :" <<
-      //         _tt->getPlane(plnId.getPlane()).id() << ", " <<
-      //         plnId.getPanel() << ", " <<
-      //         origin << ", " << _manifoldHalfLengths.at(0) <<endl;
-
-
-      _tt->_allManifolds.push_back( Manifold( origin, _manifoldHalfLengths) );
-    }
-
-//std::cout << "<-<-<- makeManifolds\n";
-  }
 
 // ======= Station view makers ============
 
   void TTrackerMaker::makeStation( StationId stationId ){
-    //    std::cout << "->->-> makeStation\n";
 
     int ist = stationId;
-    int ipln1 = _planesPerStation*ist; // it has to be 2 anyway
+    int ipln1 = _planesPerStation*ist; // _planesPerStation is/has to be 2
     int ipln2 = ipln1 + 1;
+
+    if (_verbosityLevel>2) {
+      cout << __func__ << " StationId, plane1, plane2 :"
+           << stationId << ", "
+           << ipln1 << ", "
+           << ipln2 << ", "
+           << endl;
+    }
+
     double stationZ = 0.5 *
         ( _tt->_planes.at(ipln1).origin().z() +
           _tt->_planes.at(ipln2).origin().z() );
@@ -890,12 +1069,6 @@ namespace mu2e {
     st._planes.push_back(_tt->_planes.at(ipln1));
     st._planes.push_back(_tt->_planes.at(ipln2));
 
-    // std::cout << __func__ << "StationId, plane1, plane2 :"
-    //           << stationId << ", "
-    //           << ipln1 << ", "
-    //           << ipln2 << ", "
-    //           << std::endl;
-    // std::cout << "<-<-<- makeStation\n";
   }
 
   // Assumes all planes and all panels are the same.
@@ -944,7 +1117,7 @@ namespace mu2e {
 
   void TTrackerMaker::makeDetails(){
 
-    computeConstantPanelBoxParams();
+    computeStrawHalfLengths();
 
     if ( _supportModel == SupportModel::simple ){
       _tt->_strawDetails.reserve(_manifoldsPerEnd);
@@ -969,55 +1142,6 @@ namespace mu2e {
     }
 
   } // end TTrackerMaker::makeDetails
-
-  void  TTrackerMaker::computePanelBoxParams(Panel& panel, Plane& plane){
-
-    // get panel number
-    int ipnl = panel.id().getPanel();
-    //    int ipln = plane.id();
-    //    cout << "Debugging TTrackerMaker ipnl,ipln: " << ipnl << ", " << ipln << endl;
-
-    // we copy precalculated _panelBoxHalfLengths etc.. into the panel
-
-    panel._boxHalfLengths = _panelBoxHalfLengths;
-    double xOffset = _panelBoxXOffsetMag;
-    double zOffset = _panelBoxZOffsetMag * panelZSide(ipnl,plane.id());
-
-    // Now calculate the rotations and placement of the panel envelope
-
-    panel._boxRxAngle = 0.;
-    panel._boxRyAngle = 0.;
-    panel._boxRzAngle = panelRotation(ipnl,plane.id() );
-
-    CLHEP::HepRotationZ RZ(panel._boxRzAngle);
-
-    panel._boxOffset  = RZ*(CLHEP::Hep3Vector( xOffset, 0., zOffset) + plane.origin());
-
-    // we set to 0.0  values smaller than a small number
-    static const double max0val = 1.e-06;
-    for (int ii=0; ii!=panel._boxOffset.SIZE; ++ii) {
-      if (abs(panel._boxOffset[ii])<max0val) panel._boxOffset[ii]=0.0;
-    }
-
-    //     cout << "Debugging panel box ipnl, by, bz, bxl, bxs, boxRzAngle, boxOffset: " <<
-    //       ipnl << ", " <<
-    //       by << ", " <<
-    //       bz << ", " <<
-    //       bxl << ", " <<
-    //       bxs << ", " <<
-    //       panel._boxRzAngle << ", " <<
-    //       panel._boxOffset <<
-    //       endl;
-
-    //     cout << "Debugging panel box ipnl, straw lengths: ";
-    //     for ( int i=0; i<_manifoldsPerEnd; ++i ){
-    //       cout << i << " " << _strawHalfLengths.at(i);
-    //     }
-    //     cout << endl;
-
-    return;
-
-  } // end TTrackerMaker::computePanelBoxParams
 
   void TTrackerMaker::computeLayerSpacingAndShift(){
 
@@ -1047,135 +1171,6 @@ namespace mu2e {
     }
 
   }
-
-  void TTrackerMaker::computeConstantPanelBoxParams() {
-
-    computeStrawHalfLengths();
-
-    // we do not use the trapezoid any more; but it is a good check while renumbering the straws
-
-    // the box is a trapezoid ;
-
-    // note that G4 has it own coordinate convention for each solid
-    // (see mu2e<->G4 translation below):
-
-    // trapezoid y dimensions (or x in G4)
-    // trapezoid x dimension  (or z in G4)
-    // trapezoid z dimension  (or y in G4)
-
-    // shorter y             is the length of the straws in the top/last (shortest) manifold
-    // longer  y is longer than the length of the straws in the longest manifold
-    // the other dimentions are "x", the combined manifold width + _manifoldXEdgeExcessSpace
-    // the "thickness" of the trpezoid z, ~ the layer thickness * number of layers
-
-    // x
-
-    // if there are more than one layer per panel, manifolds have a
-    // straw "sticking out" by a straw radius (and half of the straw
-    // gap), but only the last one extends beyond the entire structure
-    // in the z direction; remember that those are "halfLengths", so
-    // the sticking out straw radius has to be divided by 2 and the gap by 4
-
-    // _layerHalfShift is 0 in one layer case
-    double bx = _manifoldHalfLengths.at(0)*double(_manifoldsPerEnd) + _layerHalfShift;
-
-    // calculating "longer" x;
-    // starting from the tng of the slope
-
-    // calculate the largest slope starting from the longest straws manifold
-    double maxtg = 0.0;
-
-    // the code below looks at the slope "seen" from the longest set of straws
-    for (int i=1; i!=_manifoldsPerEnd; ++i) {
-
-      // _strawHalfLengths has changed its indexing
-
-      double ttg = ( _manifoldHalfLengths.at(0) + _layerHalfShift )*double(i) /
-        ( _strawHalfLengths.at(0) - _strawHalfLengths.at(i*2) ) ;
-
-      if (maxtg < ttg ) {
-        maxtg = ttg;
-      }
-
-    }
-
-    // finally y (long, short)
-    double byl = (_manifoldHalfLengths.at(0) + _layerHalfShift)/maxtg + _strawHalfLengths.at(0);
-
-    double bys = byl - bx/maxtg;
-
-    // z
-    // manifold better be thicker than the straws:
-
-    double bz = _manifoldHalfLengths.at(2);
-
-    // now push it all back into the vector
-    // std::vector<double> _panelBoxHalfLengths;
-
-    static const size_t panelBoxHalfLengthsSize= 5;
-
-    _panelBoxHalfLengths.reserve(panelBoxHalfLengthsSize);
-
-    // Pad the trapezoid to be slightly larger than it needs to be
-    static const double pad = 0.0; // this needs to be in the geom file... if to be non-zero
-
-    // the order is forced by the nestTrp/G4Trd and Panel data
-
-    _panelBoxHalfLengths.push_back(0.0); //dummy to be compatible with LTracker
-    _panelBoxHalfLengths.push_back(bx+pad);
-    _panelBoxHalfLengths.push_back(bz+pad);
-
-    _panelBoxHalfLengths.push_back(bys+pad);
-    _panelBoxHalfLengths.push_back(byl+pad);
-
-    if (_panelBoxHalfLengths.size()!=panelBoxHalfLengthsSize) {
-      cout << " _panelBoxHalfLengths.size() sould be " << panelBoxHalfLengthsSize <<
-        ", but is : " << _panelBoxHalfLengths.size() << endl;
-      throw cet::exception("GEOM")
-        << "something is wrong with panel _panelBoxHalfLengths calculations \n";
-    }
-
-    _panelBoxXOffsetMag = _envelopeInnerRadius  + _panelBoxHalfLengths.at(1); // bx + pad
-    _panelBoxZOffsetMag = _supportHalfThickness + _panelBoxHalfLengths.at(2); // bz + pad
-
-    // we need to make sure the trapezoids do not extend beyond the plane envelope...
-    // we will check if the plane envelope radius acomodates the newly created box
-
-    double outerSupportRadiusRequireds =
-      sqrt( sum_of_squares(_envelopeInnerRadius + 2.0*_panelBoxHalfLengths.at(1),
-                           _panelBoxHalfLengths.at(3)
-                           )
-            );
-    double outerSupportRadiusRequiredl =
-      max( outerSupportRadiusRequireds,
-           sqrt( sum_of_squares(_envelopeInnerRadius-pad,
-                                _panelBoxHalfLengths.at(4))
-                 )
-           );
-
-    //     if (true) {
-    //       cout << "Debugging _strawHalfLengths: ";
-    //       for (size_t i=0; i!=_manifoldsPerEnd; ++i) {
-    //         cout << _strawHalfLengths.at(i)  << ", ";
-    //       }
-    //       cout << endl;
-    //       cout << "Debugging _supportParams.innerRadius   :   " << _tt->_supportParams.innerRadius() << endl;
-    //       cout << "Debugging _supportParams.outerRadius   :   " << _tt->_supportParams.outerRadius() << endl;
-    //       cout << "Debugging _supportParams.outerRadius rs:   " << outerSupportRadiusRequireds << endl;
-    //       cout << "Debugging _supportParams.outerRadius rl:   " << outerSupportRadiusRequiredl << endl;
-    //     }
-
-    if (_tt->_supportParams.outerRadius() < outerSupportRadiusRequiredl) {
-      cout << " _supportParams.outerRadius         :   " << _tt->_supportParams.outerRadius() << endl;
-      cout << " _supportParams.outerRadius required:   " << outerSupportRadiusRequiredl << endl;
-      throw cet::exception("GEOM")
-        << "outerSupportRadius is to small given other paramters \n";
-    }
-
-    return;
-
-  } // end TTrackerMaker::computeConstantPanelBoxParams
-
 
   // Compute the spacing for the given plane.
   double TTrackerMaker::choosePlaneSpacing( int ipln ) const {
@@ -1221,61 +1216,64 @@ namespace mu2e {
   // Identify the neighbour straws for all straws in the tracker
   void TTrackerMaker::identifyNeighbourStraws() {
 
-    deque<Straw>& allStraws = _tt->_allStraws;
-
-    for (deque<Straw>::iterator i = allStraws.begin();
-         i != allStraws.end(); ++i) {
-      // throw exception if more than 2 layers per panel
-
-      if (_tt->getPanel(i->id().getPanelId()).nLayers() > 2 ) {
-        throw cet::exception("GEOM")
-          << "The code works with no more than 2 layers per panel. \n";
-      }
+    // fixme try avoiding the StrawIndex approach throughout here
+    // for (auto& i : _tt->_allStraws2) {
+    for (size_t istr=0; istr!=_tt->_nStraws; ++istr) {
+      Straw& straw = _tt->_allStraws2.at(istr);
 
       if (_verbosityLevel>2) {
         cout << __func__ << " "
-             << i->id() << ", index "
-             << i->index()
-             << " Straw " << i->id().getStraw()
+             << straw.id() << ", index "
+             << straw.index()
+             << " Straw " << straw.id().getStraw()
+             << " plane: "
+             << _tt->getPlane(straw.id()).id()
              << endl;
       }
 
-      LayerId lId = i->id().getLayerId();
-      int layer = lId.getLayer();
-      int nStrawLayer = _tt->getLayer(lId)._nStraws;
+      // throw exception if more than 2 layers per panel
+      if (_tt->getPlane(straw.id()).getPanel(straw.id()).nLayers() != 2 ) {
+        throw cet::exception("GEOM")
+          << "The code works with 2 layers per panel. \n";
+      } // fixme: rewrite using panels
+
+      //      LayerId lId = straw.id().getLayerId();
+      int layer = straw.id().getLayer();
+      // int nStrawLayer = _tt->getLayer(lId).nStraws();
+      int nStrawLayer = StrawId::_nstraws/StrawId::_nlayers;
 
       if ( _verbosityLevel>2 ) {
-        cout << __func__ << " layer " << lId << " has " << nStrawLayer << " straws" << endl;
-        cout << __func__ << " Analyzed straw: " << i->id() << '\t' << i->index() << endl;
+        cout << __func__ << " layer " << layer
+             << " of panel "  << straw.id().getPanelId()
+             << " has " << nStrawLayer << " straws" << endl;
+        cout << __func__ << " Analyzed straw: " << straw.id() << '\t' << straw.index() << endl;
       }
 
       // add the "same layer" n-2 neighbours straw (if exist)
       // in the new model straw numbers increase by 2 in a given layer
 
-      if ( i->id().getStraw() > 1 ) {
-        const StrawId nsId(lId, (i->id().getStraw()) - 2 );
-        i->_nearestById.push_back( nsId );
+      if ( straw.id().getStraw() > 1 ) {
+        // const StrawId nsId(straw.id().getPlane(), straw.id().getPanel(), straw.id().getStraw() - 2 );
+        const StrawId nsId( straw.id().asUint16() - 2 );
+        straw._nearestById.push_back( nsId );
         if ( _verbosityLevel>2 ) {
           const Straw& temp = _tt->getStraw( nsId );
-          cout << __func__ << " Neighbour left straw: " << temp.id() << '\t' << temp.index() << endl;
+          cout << __func__ << setw(34) << " Neighbour left straw: " << temp.id() << '\t' << temp.index() << endl;
         }
-        i->_nearestByIndex.push_back( _tt->getStraw(nsId).index() );
+        straw._nearestByIndex.push_back( _tt->getStraw(nsId).index() );
       }
 
       // add the "same layer" n+2 neighbours straw (if exist)
       // in the new model straw numbers increase by 2 in a given layer
 
-      // is there anything which uses the straw number to look up the position in a container?
-      // looks like it is done in many places
-
-      if ( i->id().getStraw() < (2*nStrawLayer-2) ) {
-        const StrawId nsId(lId, (i->id().getStraw()) + 2 );
-        i->_nearestById.push_back( nsId );
+      if ( straw.id().getStraw() < (2*nStrawLayer-2) ) {
+        const StrawId nsId( straw.id().asUint16() + 2 );
+        straw._nearestById.push_back( nsId );
         if ( _verbosityLevel>2 ) {
-          const Straw& temp = _tt->getStraw( nsId );// is this correct for the new model? <------------
-          cout << __func__ << " Neighbour right straw: " << temp.id() << '\t' << temp.index() << endl;
+          const Straw& temp = _tt->getStraw( nsId );
+          cout << __func__ << setw(34) << " Neighbour right straw: " << temp.id() << '\t' << temp.index() << endl;
         }
-        i->_nearestByIndex.push_back( _tt->getStraw(nsId).index() );
+        straw._nearestByIndex.push_back( _tt->getStraw(nsId).index() );
       }
 
       // add the "opposite layer" n neighbours straw (if more than 1 layer)
@@ -1284,64 +1282,65 @@ namespace mu2e {
 
         // throw exception if the two layer of the same panel have different
         // number of straws
-        if (_tt->getLayer(lId)._nStraws != nStrawLayer) {
-          throw cet::exception("GEOM")
-            << "The code works only with the same number of straws "
-            << "per layer in the same panel. \n";
-        }
+        // fixme rewrite the check using panels only
+        // if (_tt->getLayer(lId).nStraws() != nStrawLayer) { // fixme: always? the same lId for both?
+        //   throw cet::exception("GEOM")
+        //     << "The code works only with the same number of straws "
+        //     << "per layer in the same panel. \n";
+        // }
 
         // add all straws sharing a preamp
         // assumes current two channel preamps
-      
-        if ( i->id().getStraw() % 2 == 0){
-          const StrawId nsId(i->id().getPanelId(), 1, (i->id().getStraw()) + 1); 
-          i->_preampById.push_back( nsId );
-          i->_preampByIndex.push_back( _tt->getStraw(nsId).index());
+
+        if ( straw.id().getStraw() % 2 == 0){
+          const StrawId nsId( straw.id().asUint16() + 1 );
+          straw._preampById.push_back( nsId );
+          straw._preampByIndex.push_back( _tt->getStraw(nsId).index());
         }else{
-          const StrawId nsId(i->id().getPanelId(), 0, (i->id().getStraw()) - 1); 
-          i->_preampById.push_back( nsId );
-          i->_preampByIndex.push_back( _tt->getStraw(nsId).index());
+          const StrawId nsId( straw.id().asUint16() - 1 );
+          straw._preampById.push_back( nsId );
+          straw._preampByIndex.push_back( _tt->getStraw(nsId).index());
         }
 
         // add neighbors
 
-        if (layer==0 && i->id().getStraw()<2*nStrawLayer) {
-          const StrawId nsId( i->id().getPanelId(), 1 , i->id().getStraw() + 1 );
-          i->_nearestById.push_back( nsId );
-          i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+        if (layer==0 && straw.id().getStraw()<2*nStrawLayer) {
+          const StrawId nsId( straw.id().asUint16() + 1 );
+          straw._nearestById.push_back( nsId );
+          straw._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
-            cout << __func__ << " Neighbour opposite up straw: "
-                 << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
+            cout << __func__ << setw(34) << " Neighbour opposite up straw: "
+                 << straw._nearestById.back() << '\t' <<  straw._nearestByIndex.back() << endl;
           }
         }
 
-        if (layer==1 && i->id().getStraw()<2*nStrawLayer-1) {
-          const StrawId nsId( i->id().getPanelId(), 0 , i->id().getStraw() + 1 );
-          i->_nearestById.push_back( nsId );
-          i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+        if (layer==1 && straw.id().getStraw()<2*nStrawLayer-1) {
+          const StrawId nsId( straw.id().asUint16() + 1 );
+          straw._nearestById.push_back( nsId );
+          straw._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
-            cout << __func__ << " Neighbour opposite up straw: "
-                 << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
+            cout << __func__ << setw(34) << " Neighbour opposite up straw: "
+                 << straw._nearestById.back() << '\t' <<  straw._nearestByIndex.back() << endl;
           }
         }
 
-        if (layer==0 && i->id().getStraw()>0) {
-          const StrawId nsId( i->id().getPanelId(), 1 , i->id().getStraw() - 1 );
-          i->_nearestById.push_back( nsId );
-          i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+        if (layer==0 && straw.id().getStraw()>0) {
+          const StrawId nsId( straw.id().asUint16() - 1 );
+          straw._nearestById.push_back( nsId );
+          straw._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
-            cout << __func__ << " Neighbour opposite down straw: "
-                 << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
+            cout << __func__ << setw(34) << " Neighbour opposite down straw: "
+                 << straw._nearestById.back() << '\t' <<  straw._nearestByIndex.back() << endl;
           }
         }
 
-        if (layer==1 && i->id().getStraw()>0) { // layer 1 straw 1 is ok
-          const StrawId nsId( i->id().getPanelId(), 0 , i->id().getStraw() - 1 );
-          i->_nearestById.push_back( nsId );
-          i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+        if (layer==1 && straw.id().getStraw()>0) { // layer 1 straw 1 is ok
+          const StrawId nsId( straw.id().asUint16() - 1 );
+          straw._nearestById.push_back( nsId );
+          straw._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
-            cout << __func__ << " Neighbour opposite down straw: "
-                 << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
+            cout << __func__ << setw(34) << " Neighbour opposite down straw: "
+                 << straw._nearestById.back() << '\t' <<  straw._nearestByIndex.back() << endl;
           }
         }
 
@@ -1350,123 +1349,10 @@ namespace mu2e {
 
   } // identifyNeighborStraws
 
-  // Identify the neighbour straws in inner/outer same-layer or zig-zag order
-  void TTrackerMaker::identifyDirectionalNeighbourStraws() {
-
-    // TODO:  The following algorithm relies on a few more geometry assumptions
-    //        than would strictly be necessary.  For example, it relies on
-    //        the layer labelling such that leayer 0 lies half a straw to the
-    //        inner side of layer 1, in each panel.  Some of these assumptions
-    //        can be lifted, and others at least checked, so that if the
-    //        geometry changes, the code will still produce the right results,
-    //        or will at least throw to indicate a serious problem.
-
-    deque<Straw>& allStraws = _tt->_allStraws;
-
-    for (deque<Straw>::iterator straw = allStraws.begin();
-         straw != allStraws.end(); ++straw) {
-
-      // throw exception if more than 2 layers in the panel of this straw
-      if (_tt->getPanel(straw->id().getPanelId()).nLayers() != 2 ) {
-        throw cet::exception("GEOM")
-          << "The code expects exactly 2 layers per panel. \n";
-      }
-
-      LayerId layerId = straw->id().getLayerId();
-      int layerNumber = layerId.getLayer();
-      bool layerStaggeredToInside = (layerNumber == 0);
-
-      // In all cases, layer 0 is staggered to the inside,
-      // layer 1 is staggered to the outside.  We will now check this:
-      // FIXME the above is probably not true
-      // TODO -- Do the check
-
-      LayerId otherLayerId ( layerId.getPanelId(), 1-layerNumber );
-
-      int nStrawLayer = _tt->getLayer(layerId)._nStraws;
-
-      // since the logic relies on the index and the straw number
-
-      int strawNumberWithinLayer = straw->id().getStraw();
-      int incrementedStrawNumber =
-        ( strawNumberWithinLayer + 2 < 2*nStrawLayer )
-        ? strawNumberWithinLayer + 2
-        : StrawIndex::NO_STRAW;
-      int decrementedStrawNumber =
-        ( strawNumberWithinLayer - 2 >=  0)
-        ? strawNumberWithinLayer - 2
-        : StrawIndex::NO_STRAW;
-
-      straw->_nextOuterL = ttStrawIndex (layerId, incrementedStrawNumber);
-      straw->_nextInnerL = ttStrawIndex (layerId, decrementedStrawNumber);
-      if (layerStaggeredToInside) {
-        straw->_nextOuterP = ttStrawIndex(otherLayerId, strawNumberWithinLayer);
-        straw->_nextInnerP = ttStrawIndex(otherLayerId, decrementedStrawNumber);
-      } else {
-        straw->_nextOuterP = ttStrawIndex(otherLayerId, incrementedStrawNumber);
-        straw->_nextInnerP = ttStrawIndex(otherLayerId, strawNumberWithinLayer);
-      }
-
-      if ( _verbosityLevel>2 ) {
-
-        cout << "Straw " << straw->id() << ": " << straw->id().getStraw() << endl;
-
-        cout << " _nextOuterL: "   << setw(5) << straw->_nextOuterL.asInt() << " : ";
-        if ( straw->_nextOuterL.asInt()!=StrawIndex::NO_STRAW ) {
-          cout << _tt->getStraw(straw->_nextOuterL).id();
-        }
-        cout << endl;
-
-        cout << " _nextInnerL: " << setw(5) << straw->_nextInnerL.asInt() << " : ";
-        if ( straw->_nextInnerL.asInt()!=StrawIndex::NO_STRAW ) {
-          cout << _tt->getStraw(straw->_nextInnerL).id();
-        }
-        cout << endl;
-
-        cout << " _nextOuterP: " << setw(5) << straw->_nextOuterP.asInt() << " : " ;
-        if ( straw->_nextOuterP.asInt()!=StrawIndex::NO_STRAW ) {
-          cout << _tt->getStraw(straw->_nextOuterP).id();
-        }
-        cout << endl;
-
-        cout << " _nextInnerP: " << setw(5) << straw->_nextInnerP.asInt() << " : " ;
-        if ( straw->_nextInnerP.asInt()!=StrawIndex::NO_STRAW ) {
-          cout << _tt->getStraw(straw->_nextInnerP).id();
-        }
-        cout << endl;
-
-        // now print _nearestById & _nearestByIndex
-
-        for (auto const& s : straw->nearestNeighboursByIndex()) {
-          cout << s << endl;
-        }
-
-        for (auto const& s : straw->nearestNeighboursById()) {
-          cout << s << endl;
-        }
-
-      }
-
-      // TODO -- Insert logic to check that the radius of the purported
-      // next straw differs by the right amount and sign, in each of these
-      // four cases.
-
-    } // end of loop over all straws
-
-  } // identifyDirectionalNeighbourStraws
-
-  StrawIndex TTrackerMaker::ttStrawIndex(LayerId const & layerId, int snum)
-  {
-    if ( snum == StrawIndex::NO_STRAW ) {
-      return  StrawIndex(StrawIndex::NO_STRAW);
-    }
-    StrawId sid ( layerId, snum );
-    return _tt->getStraw(sid).index();
-  } //; ttStrawIndex
-
   void TTrackerMaker::makeSupportStructure(){
 
     SupportStructure& sup  = _tt->_supportStructure;
+    _tt->_panelZOffset = _panelZOffset;
 
     // Positions for the next few objects in Mu2e coordinates.
     TubsParams endRingTubs( _endRingInnerRadius, _endRingOuterRadius, _endRingHalfLength);
@@ -1474,15 +1360,25 @@ namespace mu2e {
     //    TubsParams midRingTubs ( _endRingInnerRadius, _endRingOuterRadius, _midRingHalfLength);
     sup._stiffRings.push_back(PlacedTubs ( "TTrackerEndRingUpstream",   endRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter-_endRingZOffset), _endRingMaterial ));
 
+    if ( _hasDownRing ) {
+      TubsParams downRingTubs( _downRingInnerRadius, _downRingOuterRadius, _downRingHalfLength);
+      sup._stiffRings.push_back(PlacedTubs ( "TTrackerEndRingDownstream",
+					     downRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter + _downRingZOffset),
+					     _downRingMaterial ));
+    }
+
     {
       if ( _numPlanes%2 !=0 ){
         throw cet::exception("GEOM")
-          << "TTrackerMaker::makeSupportStructure expected and even number of planes. Saw " << _numPlanes << " planes.\n";
+          << "TTrackerMaker::makeSupportStructure expected an even number of planes. Saw " << _numPlanes << " planes.\n";
       }
 
       // From upstream end of most upstream station to the downstream end of the most downstream station.
       // Including all materials.
       double overallLength = (_numPlanes/2-1)*_planeSpacing + 2.*_planeHalfSeparation + 2.* _innerRingHalfLength;
+      if ( _ttVersion > 3 ) overallLength = (_numPlanes/2-1)*_planeSpacing +
+			      2.*_planeHalfSeparation + 4.*_innerRingHalfLength
+			      + _planePadding + 2.*_panelPadding;
 
       // we make support beams here (they used to be called staves)
 
@@ -1491,6 +1387,7 @@ namespace mu2e {
 
       double z1 = -(_endRingZOffset-_endRingHalfLength);
       double z2 = overallLength/2.;
+      if ( _hasDownRing ) z2 = _downRingZOffset - _downRingHalfLength;
       double zoff = (z1+z2)/2.;
       double zHalf = ( z2-z1)/2.;
 
@@ -1747,69 +1644,91 @@ namespace mu2e {
 
     }
 
-    // Positions from here onward are in the coordinates of the plane envelope.
+    // Special for three items added to sup for v5
     {
-      TubsParams centerPlateTubs( _innerRingOuterRadius, _outerRingOuterRadius, _centerPlateHalfLength);
-      sup._centerPlate = PlacedTubs( "TTrackerSupportCenterPlate", centerPlateTubs, CLHEP::Hep3Vector(0.,0.,0.), _centerPlateMaterial);
+      sup._panelPhiRange = _panelPhi;
+      sup._panelPhiRibs  = _dphiRibs;
+      sup._ribHalfAngle = _ribHalfAngle;
     }
 
-    {
-      TubsParams innerRingTubs( _innerRingInnerRadius, _innerRingOuterRadius, _innerRingHalfLength);
+    // Positions from here onward are in the coordinates of the plane envelope.
+    // For versions above 3, coordinates of the panel envelope
+    { // Build and place the "center" plate
+      TubsParams centerPlateTubs( _innerRingOuterRadius, _outerRingOuterRadius, _centerPlateHalfLength,0., _panelPhi);
+      CLHEP::Hep3Vector centerSpot(0.,0.,0.);
+      if ( _ttVersion > 3) centerSpot.set(0.,0.,_innerRingHalfLength - _centerPlateHalfLength );
+      sup._centerPlate = PlacedTubs( "TTrackerSupportCenterPlate", centerPlateTubs, centerSpot, _centerPlateMaterial);
+    }
+
+    { // This is the inner ring
+      TubsParams innerRingTubs( _innerRingInnerRadius, _innerRingOuterRadius, _innerRingHalfLength,0., _panelPhi);
       sup._innerRing = PlacedTubs( "TTrackerSupportInnerRing", innerRingTubs, CLHEP::Hep3Vector(0.,0.,0), _innerRingMaterial );
     }
 
-    {
+    { // This is the channel info for the inner ring
       double outerRadius        = _innerRingInnerRadius + _channelDepth;
       double channelHalfLength  = (_layerHalfSpacing-_strawOuterRadius) + 2.*_strawOuterRadius;
-      TubsParams innerChannelTubs( _innerRingInnerRadius, outerRadius, channelHalfLength );
-      sup._innerChannelUpstream   = PlacedTubs( "TTrackerSupportInnerChannelUpstream",   innerChannelTubs, CLHEP::Hep3Vector(0.,0.,-_channelZOffset), _envelopeMaterial );
-      sup._innerChannelDownstream = PlacedTubs( "TTrackerSupportInnerChannelDownstream", innerChannelTubs, CLHEP::Hep3Vector(0.,0., _channelZOffset), _envelopeMaterial );
+      TubsParams innerChannelTubs( _innerRingInnerRadius, outerRadius, channelHalfLength, 0., _panelPhi );
+      sup._innerChannelUpstream   = PlacedTubs( "TTrackerSupportInnerChannelUpstream",   innerChannelTubs, CLHEP::Hep3Vector(0.,0.,-_channelZOffset+_panelZOffset), _envelopeMaterial );
+      sup._innerChannelDownstream = PlacedTubs( "TTrackerSupportInnerChannelDownstream", innerChannelTubs, CLHEP::Hep3Vector(0.,0., _channelZOffset-_panelZOffset), _envelopeMaterial );
     }
 
-    {
+    { // This is the Outer ring
       double halfLength = (_innerRingHalfLength - _centerPlateHalfLength)/2.;
       double dz         = _centerPlateHalfLength + halfLength;
-      TubsParams outerRingTubs( _outerRingInnerRadius, _outerRingOuterRadius, halfLength);
+      if ( _ttVersion > 3 ) {
+	halfLength *= 2.0;
+	dz = -_centerPlateHalfLength;
+      }
+      TubsParams outerRingTubs( _outerRingInnerRadius, _outerRingOuterRadius, halfLength,0.0, _panelPhi);
       sup._outerRingUpstream   = PlacedTubs ( "TTrackerSupportOuterRingUpstream",   outerRingTubs, CLHEP::Hep3Vector(0.,0.,-dz), _outerRingMaterial );
       sup._outerRingDownstream = PlacedTubs ( "TTrackerSupportOuterRingDownstream", outerRingTubs, CLHEP::Hep3Vector(0.,0., dz), _outerRingMaterial );
     }
 
-    {
+    { // Cover plate
       double dz = _innerRingHalfLength-_coverHalfLength;
-      TubsParams coverTubs( _innerRingOuterRadius, _outerRingInnerRadius, _coverHalfLength);
+      if ( _ttVersion > 3 ) dz = -dz;
+      TubsParams coverTubs( _innerRingOuterRadius, _outerRingInnerRadius, _coverHalfLength,0., _panelPhi);
       sup._coverUpstream   = PlacedTubs( "TTrackerSupportCoverUpstream",   coverTubs, CLHEP::Hep3Vector(0.,0.,-dz), _coverMaterial );
       sup._coverDownstream = PlacedTubs( "TTrackerSupportCoverDownstream", coverTubs, CLHEP::Hep3Vector(0.,0., dz), _coverMaterial );
     }
 
-    {
+    { // Gas volume
       double halfLength = (_innerRingHalfLength - _centerPlateHalfLength - 2.*_coverHalfLength)/2.;
       double dz         = _centerPlateHalfLength + halfLength;
-      TubsParams gasTubs( _innerRingOuterRadius, _outerRingInnerRadius, halfLength );
+      if ( _ttVersion > 3 ) {
+	halfLength = _innerRingHalfLength - _centerPlateHalfLength - 2.0 * _coverHalfLength;
+	dz = 2.0 * _coverHalfLength - _centerPlateHalfLength;
+      }
+
+      TubsParams gasTubs( _innerRingOuterRadius, _outerRingInnerRadius, halfLength, 0., _panelPhi );
       sup._gasUpstream   = PlacedTubs ( "TTrackerSupportGasUpstream",  gasTubs, CLHEP::Hep3Vector(0.,0.,-dz), _electronicsSpaceMaterial );
       sup._gasDownstream = PlacedTubs ( "TTrackerSupportGasDownstream", gasTubs, CLHEP::Hep3Vector(0.,0., dz), _electronicsSpaceMaterial );
     }
 
     // Positions for the next two are in the coordinates of the electronics space.
-    {
-      TubsParams g10Tubs( _innerRingOuterRadius, _outerRingInnerRadius, _electronicsG10HalfLength );
+    { // G10 (now just "Electronics" )
+      TubsParams g10Tubs( _innerRingOuterRadius, _outerRingInnerRadius, _electronicsG10HalfLength, 0., _panelPhi );
       sup._g10Upstream   = PlacedTubs ( "TTrackerSupportElecG10Upstream",   g10Tubs, CLHEP::Hep3Vector(0.,0.,-_electronicsG10HalfLength), _electronicsG10Material );
       sup._g10Downstream = PlacedTubs ( "TTrackerSupportElecG10Downstream", g10Tubs, CLHEP::Hep3Vector(0.,0.,-_electronicsG10HalfLength), _electronicsG10Material );
     }
 
     {
-      TubsParams cuTubs( _innerRingOuterRadius, _outerRingInnerRadius, _electronicsCuHhalfLength);
+      TubsParams cuTubs( _innerRingOuterRadius, _outerRingInnerRadius, _electronicsCuHhalfLength, 0., _panelPhi);
       sup._cuUpstream   = PlacedTubs ( "TTrackerSupportElecCuUpstream",   cuTubs, CLHEP::Hep3Vector(0.,0.,_electronicsCuHhalfLength), _electronicsCuMaterial);
       sup._cuDownstream = PlacedTubs ( "TTrackerSupportElecCuDownstream", cuTubs, CLHEP::Hep3Vector(0.,0.,_electronicsCuHhalfLength), _electronicsCuMaterial);
     }
 
-  }
+  } // end of makeSupportStructure()
+  // *******************************
 
-  // This needs to know the z positions of the
+
+  // This needs to know the z positions of the support rings
   void TTrackerMaker::makeThinSupportRings(){
     SupportStructure& sup  = _tt->_supportStructure;
 
     TubsParams thinRingTubs ( _endRingInnerRadius, _outerRingOuterRadius, _midRingHalfLength,
-                              CLHEP::pi, CLHEP::pi); // half rings, on the bottom part
+                              _midRingPhi0, _midRingdPhi); // by default, half rings, on the bottom part, but user-configurable
 
     for ( size_t i=0; i< _midRingSlot.size(); ++i){
       std::ostringstream name;
@@ -1831,7 +1750,7 @@ namespace mu2e {
 
       // Center the support in the gap between two stations.
       double z = 0.5*( _tt->getPlane(ipln1).origin().z() +  _tt->getPlane(ipln2).origin().z());
-      sup._stiffRings.push_back(PlacedTubs ( name.str(),  thinRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter+z), _endRingMaterial ));
+      sup._stiffRings.push_back(PlacedTubs ( name.str(),  thinRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter+z), _midRingMaterial ));
     }
 
   }
@@ -1861,14 +1780,30 @@ namespace mu2e {
   void TTrackerMaker::computePlaneEnvelope(){
 
     if ( _supportModel == SupportModel::simple ){
-      double halfThick = _tt->_supportParams.halfThickness() + 2.*_tt->_manifoldHalfLengths[2];
+      double halfThick = _tt->_supportParams.halfThickness() +
+	2.*_tt->_manifoldHalfLengths[2];
       _tt->_planeEnvelopeParams = TubsParams( _tt->_envelopeInnerRadius,
-                                               _tt->_supportParams.outerRadius(),
-                                               halfThick);
+					      _tt->_supportParams.outerRadius(),
+					      halfThick);
     } else if ( _supportModel == SupportModel::detailedv0 ){
-      _tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
+      // This is new for version 5, its existence doesn't affect earlier
+      // versions.
+      _tt->_panelEnvelopeParams = TubsParams( _envelopeInnerRadius,
                                                _outerRingOuterRadius,
-                                               _innerRingHalfLength );
+                                               _innerRingHalfLength
+					      + _panelPadding,
+					      0., _panelPhi);
+      if ( _ttVersion > 3 ) {
+	_tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
+						_outerRingOuterRadius,
+						2.0 * (_innerRingHalfLength
+						       + _panelPadding )
+						+ _planePadding );
+      } else {
+	_tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
+						_outerRingOuterRadius,
+						_innerRingHalfLength);
+      } // end of if on version in assigning plane envelope params
     }else{
       throw cet::exception("GEOM")
         << "Unknown value of _supportModel in TTrackerMaker::computePlaneEnvelopeParams "
@@ -1924,7 +1859,6 @@ namespace mu2e {
     size_t ipln0(0);
     size_t ipnl0(0);
 
-    deque<Straw>& allStraws              = _tt->_allStraws;
     std::vector<StrawDetail>& allDetails = _tt->_strawDetails;
     //    size_t originalSize                  = allDetails.size();
 
@@ -1936,9 +1870,10 @@ namespace mu2e {
 
     // Step 1: Check that the pattern of _detailIndex is as expected.
     int nBad(0);
-    for ( deque<Straw>::const_iterator i=allStraws.begin();
-          i != allStraws.end(); ++i ){
-      Straw const & straw(*i);
+    // auto& allStraws = _tt->_allStraws2;
+    // for ( const auto& straw : allStraws ){
+    for (size_t istr=0; istr!=_tt->_nStraws; ++istr) {
+     const Straw& straw  = _tt->getStraw(StrawIndex(istr));
 
       if (_verbosityLevel>2) {
         cout << __func__ << " checking straw "
@@ -1976,18 +1911,27 @@ namespace mu2e {
     //         For layers > 0:
     //            - create a new StrawDetail object to hold the new length.
     //            - Reseat the _detail and _detailIndex objects in the Straw object.
-    vector<Layer>& lays = _tt->_planes.at(ipln0)._panels.at(ipnl0)._layers;
-    for ( size_t ilay=0; ilay<lays.size(); ++ilay){
-      Layer& lay(lays.at(ilay));
+    //    vector<Layer>& lays = _tt->_planes.at(ipln0)._panels.at(ipnl0)._layers;
+
+    Panel& panel = _tt->_planes.at(ipln0)._panels.at(ipnl0);
+
+    for ( size_t ilay=0; ilay<_layersPerPanel; ++ilay){
+      // Layer& lay(lays.at(ilay));
 
       // straws in layer are layed out contiguously, only their numbers increase by 2
-      for (int ist=0; ist<lay.nStraws(); ++ist ){
-        int idx             = lay._indices.at(ist).asInt();
-        Straw& straw        = allStraws.at(idx);
+      // this is going over straws in the layer
+      uint16_t uist = -1;
+      for (  auto ist = panel.getStrawPointers().cbegin();
+             ist < panel.getStrawPointers().cend(); ++ist) {
+
+        const Straw& straw(**ist);
+        uint16_t sn = straw.id().getStraw();
+        if ( sn%2 != ilay ) continue;
+        int idx             = straw.index().asInt(); // straw index
 
         if (_verbosityLevel>2) {
           cout << __func__ << " recomputing: ist, idx "
-               << ist << ", "
+               << ++uist << ", "
                << idx
                << " Straw " << straw._id.getStraw()
                << " id: "
@@ -2046,7 +1990,7 @@ namespace mu2e {
 
         if (_verbosityLevel>2) {
           cout << __func__ << " after recomputing: ist, idx "
-               << ist << ", "
+               << uist << ", "
                << idx
                << " Straw " << straw._id.getStraw()
                << " id: "
@@ -2089,13 +2033,14 @@ namespace mu2e {
     }
 
     // Step 4: reseat _detail and _detailIndex for all other straws.
-    for ( deque<Straw>::iterator i=allStraws.begin();
-          i != allStraws.end(); ++i ){
-      Straw& straw(*i);
+    // for ( auto& straw : allStraws ){
+    for (size_t istr=0; istr!=_tt->_nStraws; ++istr) {
+      Straw& straw = _tt->_allStraws2.at(istr);
 
       // These are already done:
-      if ( straw.id().getPanelId() == PanelId(0,0) ) continue;
-      if ( straw.id().getLayer()    ==            0  ) continue;
+      if ( (straw.id().getPlane() == 0 ) &&
+           straw.id().getPanel() == 0 ) continue;
+      if ( straw.id().getLayer()   ==           0  ) continue;
 
       // Get the new detail object for this straw.
       int idx = straw.id().getStraw();

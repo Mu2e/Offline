@@ -58,17 +58,12 @@ namespace mu2e {
 
     _spHelper()
   {
-      if( (mu2elimits_->maxStepsPerTrack() > 0) && (G4Threading::G4GetThreadId() <= 0) ) {
-        cout << "Limit maximum number of steps per track in Mu2eG4SteppingAction to "
-             << mu2elimits_->maxStepsPerTrack() << endl;
-    }
-      
     if( (!tvd_time_.empty()) && (G4Threading::G4GetThreadId() <= 0) ) {
         cout << "Time virtual detector is enabled. Particles are recorded at";
         for( unsigned int i=0; i<tvd_time_.size(); ++i ) cout << " " << tvd_time_[i];
             cout << " ns" << endl;
     }
-  }
+  }//end ctor
 
   // A helper function to manage the printout.
   void Mu2eG4SteppingAction::printit( G4String const& s,
@@ -99,20 +94,11 @@ namespace mu2e {
     // We have to wait until G4 geometry is constructed
     // to get phys volume pointers that are used in the
     // volume to cut value map.
-      
-      if (G4Threading::G4GetThreadId() <= 0) {
-          std::cout << "Mu2eG4SteppingAction: mcTrajectoryDefaultMinPointDistance = "
-                    << trajectoryControl_->defaultMinPointDistance() << std::endl;
-      
-          for(const auto& spec: trajectoryControl_->perVolumeMinDistance()) {
-              auto vol = getPhysicalVolumeOrThrow(spec.first);
-              double cut = mcTrajectoryVolumePtDistances_[vol] = spec.second;
-              std::cout << "Mu2eG4SteppingAction: mcTrajectory distance cut = "
-                        << cut <<" for volume " << spec.first << std::endl;
-          }//for
-      }//if
+      for(const auto& spec: trajectoryControl_->perVolumeMinDistance()) {
+          auto vol = getPhysicalVolumeOrThrow(spec.first);
+          mcTrajectoryVolumePtDistances_[vol] = spec.second;
+      }
   }
-
     
   void Mu2eG4SteppingAction::BeginOfTrack() {
       numTrackSteps_ = 0;

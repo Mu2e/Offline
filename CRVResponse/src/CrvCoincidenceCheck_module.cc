@@ -16,6 +16,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
 
@@ -47,6 +48,7 @@ namespace mu2e
 
     private:
     int         _verboseLevel;
+    std::string _crvWaveformsModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
     std::vector<std::string> _CRVSectors;
     std::vector<int>         _PEthresholds;
@@ -60,10 +62,6 @@ namespace mu2e
     double      _microBunchPeriod;
 
     //the following variable are only used to print out results and summaries
-    double      _leadingVetoTime;
-    double      _trailingVetoTime;
-    double      _totalTime;
-    double      _totalDeadTime;
     int         _totalEvents;
     int         _totalEventsCoincidence;
     std::string _moduleLabel;  //for this instance of the CrvCoincidenceCheck module
@@ -73,6 +71,7 @@ namespace mu2e
     bool        _muonsOnly;  
     double      _muonMinTime, _muonMaxTime;
     std::string _genParticleModuleLabel;
+    bool        _useFourLayers;
 
     struct CrvHit
     {
@@ -115,6 +114,7 @@ namespace mu2e
 
   CrvCoincidenceCheck::CrvCoincidenceCheck(fhicl::ParameterSet const& pset) :
     _verboseLevel(pset.get<int>("verboseLevel")),
+    _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel","")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _CRVSectors(pset.get<std::vector<std::string> >("CRVSectors")),
     _PEthresholds(pset.get<std::vector<int> >("PEthresholds")),
@@ -125,13 +125,10 @@ namespace mu2e
     _acceptThreeAdjacentCounters(pset.get<bool>("acceptThreeAdjacentCounters")),
     _timeWindowStart(pset.get<double>("timeWindowStart")),
     _timeWindowEnd(pset.get<double>("timeWindowEnd")),
-    _leadingVetoTime(pset.get<double>("leadingVetoTime")),
-    _trailingVetoTime(pset.get<double>("trailingVetoTime")),
-    _muonsOnly(pset.get<bool>("muonsOnly",false))
+    _muonsOnly(pset.get<bool>("muonsOnly",false)),
+    _useFourLayers(pset.get<bool>("useFourLayers",false))
   {
     produces<CrvCoincidenceCheckResult>();
-    _totalTime=0;
-    _totalDeadTime=0;
     _totalEvents=0;
     _totalEventsCoincidence=0;
     if(_muonsOnly)
@@ -192,6 +189,9 @@ namespace mu2e
 
     GeomHandle<CosmicRayShield> CRS;
 
+    art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
+    if(!_crvWaveformsModuleLabel.empty()) event.getByLabel(_crvWaveformsModuleLabel,"",crvDigiMCCollection);
+
     art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
     event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
 
@@ -234,6 +234,10 @@ namespace mu2e
       double x=CRSbar.getPosition()[sector.widthDirection];
       double y=CRSbar.getPosition()[sector.thicknessDirection];
 
+      //get DigiMC
+      CrvDigiMCCollection::const_iterator digiMCIter;
+      if(crvDigiMCCollection.isValid()) digiMCIter=crvDigiMCCollection->find(barIndex);
+
       //get the reco pulses for this counter
       const CrvRecoPulses &crvRecoPulses = iter->second;
       for(int SiPM=0; SiPM<4; SiPM++)
@@ -255,6 +259,19 @@ namespace mu2e
           const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector[i];
           int PEs=pulse._PEs;
           double time=pulse._pulseTime;
+
+/*
+          if(crvDigiMCCollection.isValid())
+          {
+            if(digiMCIter!=crvDigiMCCollection->end())
+            {
+              size_t singleWaveformIndex=pulse._singleWaveformIndex; 
+              const CrvDigiMC::CrvSingleWaveform &singleWaveform = digiMCIter->second.GetSingleWaveforms(SiPM)[singleWaveformIndex];
+              if(singleWaveform._simparticle) std::cout<<singleWaveform._simparticle->id()<<"   "<<singleWaveform._simparticle->pdgId()<<std::endl;
+            }
+          }
+*/
+
           if(_verboseLevel>4)
           {
             std::cout<<"sector: "<<sectorNumber<<"  module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  counter: "<<counterNumber<<"  SiPM: "<<SiPM<<"      ";
@@ -331,6 +348,60 @@ namespace mu2e
         else {if(PEs_thisCounter+PEs_adjacentCounter2>=PEthreshold) crvHitsFiltered[layer].push_back(*iterHit);}
       }
 
+      if(_useFourLayers)
+      {
+      //find coincidences using 4 hits in 4 layers
+        const std::vector<CrvHit> &layer0Hits=crvHitsFiltered[0];
+        const std::vector<CrvHit> &layer1Hits=crvHitsFiltered[1];
+        const std::vector<CrvHit> &layer2Hits=crvHitsFiltered[2];
+        const std::vector<CrvHit> &layer3Hits=crvHitsFiltered[3];
+        std::vector<CrvHit>::const_iterator layer0Iter;
+        std::vector<CrvHit>::const_iterator layer1Iter;
+        std::vector<CrvHit>::const_iterator layer2Iter;
+        std::vector<CrvHit>::const_iterator layer3Iter;
+
+        for(layer0Iter=layer0Hits.begin(); layer0Iter!=layer0Hits.end(); layer0Iter++)
+        for(layer1Iter=layer1Hits.begin(); layer1Iter!=layer1Hits.end(); layer1Iter++)
+        for(layer2Iter=layer2Hits.begin(); layer2Iter!=layer2Hits.end(); layer2Iter++)
+        for(layer3Iter=layer3Hits.begin(); layer3Iter!=layer3Hits.end(); layer3Iter++)
+        {
+          double maxTimeDifferences[4]={layer0Iter->_maxTimeDifference,layer1Iter->_maxTimeDifference,layer2Iter->_maxTimeDifference,layer3Iter->_maxTimeDifference};
+          double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+4); 
+
+          double times[4]={layer0Iter->_time,layer1Iter->_time,layer2Iter->_time,layer3Iter->_time};
+          double timeMin = *std::min_element(times,times+4);
+          double timeMax = *std::max_element(times,times+4);
+          if(timeMax-timeMin>maxTimeDifference) continue;  //hits don't fall within the time window
+      
+          double x[4]={layer0Iter->_x,layer1Iter->_x,layer2Iter->_x,layer3Iter->_x};
+          double y[4]={layer0Iter->_y,layer1Iter->_y,layer2Iter->_y,layer3Iter->_y};
+
+          bool coincidenceFound=true;
+          double slope[3];
+          for(int d=0; d<3; d++)
+          {
+            slope[d]=(x[d+1]-x[d])/(y[d+1]-y[d]);
+            if(fabs(slope[d])>_maxSlope) coincidenceFound=false;   //not more than maxSlope allowed for coincidence;
+          }
+
+          if(fabs(slope[0]-slope[1])>_maxSlopeDifference) coincidenceFound=false;   //slope most not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
+          if(fabs(slope[0]-slope[2])>_maxSlopeDifference) coincidenceFound=false;   //slope most not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
+          if(fabs(slope[1]-slope[2])>_maxSlopeDifference) coincidenceFound=false;   //slope most not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
+
+          if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens within e.g. 20ns and 120ns
+          {
+            art::Handle<GenParticleCollection> genParticleCollection;
+            event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
+            double genTime = genParticleCollection->at(0).time();
+            if(timeMax>genTime+_muonMaxTime || timeMin<genTime+_muonMinTime) coincidenceFound=false;
+          }
+
+          if(coincidenceFound) AddCoincidence(crvCoincidenceCheckResult,iterHitMap->first,*layer1Iter,*layer2Iter,*layer3Iter);  //FIXME: store only 3 out of 4 hits for the time being
+        }
+      } //_useFourLayers
+      else
+      { //not _useFourLayers
+
       //find coincidences using 3 hits in 3 layers
       for(int layer1=0; layer1<4; layer1++) 
       for(int layer2=layer1+1; layer2<4; layer2++) 
@@ -373,9 +444,18 @@ namespace mu2e
 
           if(fabs(slope[0]-slope[1])>_maxSlopeDifference) coincidenceFound=false;   //slope most not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
 
+          if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens within e.g. 20ns and 120ns
+          {
+            art::Handle<GenParticleCollection> genParticleCollection;
+            event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
+            double genTime = genParticleCollection->at(0).time();
+            if(timeMax>genTime+_muonMaxTime || timeMin<genTime+_muonMinTime) coincidenceFound=false;
+          }
+
           if(coincidenceFound) AddCoincidence(crvCoincidenceCheckResult,iterHitMap->first,*layer1Iter,*layer2Iter,*layer3Iter);
         }
       }
+
 
       //find coincidences using 3 hits in adjacent counters in one layer
       if(_acceptThreeAdjacentCounters)
@@ -406,7 +486,7 @@ namespace mu2e
             if(counters.size()<3) coincidenceFound=false;
             if(*counters.rbegin()-*counters.begin()!=2) coincidenceFound=false;
 
-            if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens with 20ns and 120ns
+            if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens within e.g. 20ns and 120ns
             {
               art::Handle<GenParticleCollection> genParticleCollection;
               event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
@@ -418,50 +498,20 @@ namespace mu2e
           }
         }
       }
+
+      } //not _useFourLayers
+
     }
 
     _totalEvents++;
     if(crvCoincidenceCheckResult->CoincidenceFound()) _totalEventsCoincidence++;
     _moduleLabel = *this->currentContext()->moduleLabel();
 
-/*************************************************/
-//This section is used only to print out results
-
     if(_verboseLevel>0)
     {
       std::cout<<_moduleLabel<<"   run "<<event.id().run()<<"  subrun "<<event.id().subRun()<<"  event "<<event.id().event()<<"    ";
       std::cout<<(crvCoincidenceCheckResult->CoincidenceFound()?"Coincidence satisfied":"No coincidence found")<<std::endl;
-
-      std::vector<CrvCoincidenceCheckResult::DeadTimeWindow> deadTimeWindows;
-      deadTimeWindows = crvCoincidenceCheckResult->GetDeadTimeWindows(_leadingVetoTime,_trailingVetoTime);
-
-      double deadTime = 0;
-      for(unsigned int i=0; i < deadTimeWindows.size(); i++)
-      {
-        double t1 = deadTimeWindows[i]._startTime;
-        double t2 = deadTimeWindows[i]._endTime;
-        if(t1<_timeWindowStart) t1=_timeWindowStart;
-        if(t2<_timeWindowStart) continue;
-        if(t1>_timeWindowEnd)   continue;
-        if(t2>_timeWindowEnd)   t2=_timeWindowEnd;
-        deadTime = t2 - t1;
-        std::cout << "   Found Dead time: " << deadTime << " (" << deadTimeWindows[i]._startTime << " ... " << deadTimeWindows[i]._endTime << ")" << std::endl;
-        _totalDeadTime += deadTime;
-        if(_verboseLevel>1)
-        {
-          const std::vector<CrvCoincidenceCheckResult::CoincidenceHit> &hits = deadTimeWindows[i]._hits;
-          for(unsigned int j=0; j<hits.size(); j++)
-          {
-            std::cout<<"time: "<<hits[j]._time<<"   PEs: "<<hits[j]._PEs<<"   bar index: "<<hits[j]._counter<<"   SiPM: "<<hits[j]._SiPM<<std::endl;
-          }
-        }
-      }
-      _totalTime += _timeWindowEnd - _timeWindowStart;
-      double fractionDeadTime = _totalDeadTime / _totalTime;
-      std::cout << "Dead time so far: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%" << std::endl;
     }
-
-/*************************************************/
 
     event.put(std::move(crvCoincidenceCheckResult));
 

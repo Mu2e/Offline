@@ -28,13 +28,14 @@
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
+#include "GeomPrimitives/inc/PolyhedraParams.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestCons.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/nestPolyhedra.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/HelicalProtonAbsorber.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
@@ -52,21 +53,19 @@
 #include "G4Tubs.hh"
 #include "G4BooleanSolid.hh"
 #include "G4VPhysicalVolume.hh"
+#include "G4SubtractionSolid.hh"
 #include "G4SDManager.hh"
 
 using namespace std;
 
 namespace mu2e {
 
-  void constructProtonAbsorber( SimpleConfig const & _config
-                                ){
+  void constructProtonAbsorber( const SimpleConfig& _config ){
 
     if( !_config.getBool("hasProtonAbsorber", true) ) return;
     
     int  const verbosityLevel           = _config.getInt("protonabsorber.verbosityLevel", 0);
-    
-    G4VSensitiveDetector *paSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector (SensitiveDetectorName::ProtonAbsorber());
-    
+      
     // Access to the G4HelperService.
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
     
@@ -104,7 +103,7 @@ namespace mu2e {
       outerPhis[1] = _config.getDouble("protonabsorber.phiOuter_1");
       outerPhis[2] = _config.getDouble("protonabsorber.phiOuter_2");
       
-      bool addSD   = _config.getBool("protonabsorber.saveStepPnts",false);
+      //bool addSD   = _config.getBool("protonabsorber.saveStepPnts",false);
       
       HelicalProtonAbsorber* hpabs = 
         new HelicalProtonAbsorber( ds2HalfLen-helPabsLength,
@@ -112,9 +111,9 @@ namespace mu2e {
                                    innerRadii, outerRadii, innerPhis, outerPhis,
                                    helPabsThickness, /*numOfTurns,*/
                                    _config.getInt("protonabsorber.NumOfVanes"), 
-                                   pabsMaterial, parent1Info.logical, (addSD) ? paSD : 0x0 );
+                                   pabsMaterial, parent1Info.logical );
       
-      if ( _config.getBool("g4.doSurfaceCheck",false) ) {
+      if ( _config.getBool("g4.doSurfaceCheck",false) || _config.getBool("protonAbsorber.doSurfaceCheck",false) ) {
         checkForOverlaps( hpabs->GetPhys(), _config, verbosityLevel>0);
       }
       
@@ -211,7 +210,8 @@ namespace mu2e {
       bool pabsIsSolid   = _config.getBool("protonabsorber.solid",true);
 
       bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-      bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
+      bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false) ||
+	_config.getBool("protonAbsorber.doSurfaceCheck",false);
       bool const placePV       = true;
 
       if ( verbosityLevel > 0 ) {
@@ -333,7 +333,8 @@ namespace mu2e {
       bool pabsIsSolid   = _config.getBool("protonabsorber.solid",true);
   
       bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-      bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
+      bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false) 
+	|| _config.getBool("protonAbsorber.doSurfaceCheck",false);
       bool const placePV       = true;
       // proton absorber in DS2
       if (pabs->isAvailable(0)) {
@@ -438,62 +439,149 @@ namespace mu2e {
       }*/
       //TODO
   
-
+      // ****************** OPA! *******************
       // outer proton absorber
+      // ****************** OPA! *******************
+
       if (pabs->isAvailable(2)) {
         double pabs3rIn0  = pabs->part(2).innerRadiusAtStart();
         double pabs3rOut0 = pabs->part(2).outerRadiusAtStart();
         double pabs3rIn1  = pabs->part(2).innerRadiusAtEnd();
         double pabs3rOut1 = pabs->part(2).outerRadiusAtEnd();
         double pabs3len   = pabs->part(2).halfLength() * 2.;
+	int    pabs3nS    = pabs->part(2).nSides();
+	double pabs3SlotWidth = pabs->slotWidth();
+	double pabs3SlotLength = pabs->slotLength();
+	double pabs3SlotOffset = pabs->slotOffset();
+
         G4Material* pabs3Material = materialFinder.get("protonabsorber.outerPAMaterialName");
   
-        double pabs3Param[7] = { pabs3rIn0, pabs3rOut0, pabs3rIn1, pabs3rOut1, pabs3len*0.5,
+	if ( 0 == pabs3nS ) {
+	  // This is the "classic" implementation as a conical frustrum
+	  double pabs3Param[7] = { pabs3rIn0, pabs3rOut0, pabs3rIn1, pabs3rOut1, pabs3len*0.5,
                                  0.0, 360.0*CLHEP::degree };
   
-        VolumeInfo protonabs3Info = nestCons( "protonabs3",
-                                              pabs3Param,
-                                              pabs3Material,
-                                              0,
-                                              pabs3Offset,
-                                              parent1Info,
-                                              0,
-                                              pabsIsVisible,
-                                              G4Color::Yellow(),
-                                              pabsIsSolid,
-                                              forceAuxEdgeVisible,
-                                              placePV,
-                                              doSurfaceCheck
-                                              );
-          
-  
-/*        mf::LogInfo log("GEOM");
-        log << "Constructing Proton Absorber -- \n";
-        log << "Proton Abs Offset in DS2:  " << pabs1Offset <<"\n";
-        log << "rIn,  rOut (-z): "<< pabs1rIn0 <<"  "<< pabs1rOut0<<"  ";
-        log << "rIn,  rOut (+z): "<< pabs1rIn1 <<"  "<< pabs1rOut1<<"  ";
-        log << "halflength: "<< pabs1len*0.5 <<"\n";
-        log << "Proton Abs Offset in DS3:  " << pabs3Offset <<"\n";
-        log << "rIn,  rOut (-z): "<< pabs3rIn0 <<"  "<< pabs3rOut0<<"  ";
-        log << "rIn,  rOut (+z): "<< pabs3rIn1 <<"  "<< pabs3rOut1<<"  ";
-        log << "halflength: "<< pabs3len*0.5 <<"\n";
+	  VolumeInfo protonabs3Info = nestCons( "protonabs3",
+						pabs3Param,
+						pabs3Material,
+						0,
+						pabs3Offset,
+						parent1Info,
+						0,
+						pabsIsVisible,
+						G4Color::Yellow(),
+						pabsIsSolid,
+						forceAuxEdgeVisible,
+						placePV,
+						doSurfaceCheck
+						);
+	} else {
+	  // This is an implementation as a polyhedron - like a barrel of
+	  // slats.  We also put slots in it for stopping target support
+	  // wires to go through
+	  double zs[2] = { -pabs3len/2.0, pabs3len/2.0 };
+	  double rins[2] = { pabs3rIn0, pabs3rIn1 };
+	  double rous[2] = { pabs3rOut0, pabs3rOut1 };
 
-        if ( verbosityLevel > 0) {
-          double pzhl   = static_cast<G4Cons*>(protonabs2Info.solid)->GetZHalfLength();
-          double pabs3Z = protonabs2Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
-          cout << __func__ << " " << protonabs2Info.name << " Z offset in Mu2e    : " <<
-            pabs3Z << endl;
-          cout << __func__ << " " << protonabs2Info.name << " Z extent in Mu2e    : " <<
-            pabs3Z - pzhl  << ", " <<  pabs3Z + pzhl  << endl;
+	  VolumeInfo protonabs3Info("protonabs3",
+				    pabs3Offset,
+				    parent1Info.centerInWorld);
+
+	  double turn = 180.0*CLHEP::degree/((double)pabs3nS);
+
+	  G4Polyhedra* anOPApolyhedron = new G4Polyhedra("protonabs3PH",
+							 turn,
+							 360.0*CLHEP::degree,
+							 pabs3nS,
+							 2,
+							 zs,
+							 rins,
+							 rous);
+
+
+	  G4Box* slot = new G4Box ( "slotBox",
+				     pabs3SlotWidth/2.0,
+				     400*CLHEP::mm, pabs3SlotLength/2.0 );
+
+	  CLHEP::HepRotation* slot1Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	  slot1Rotat->rotateZ(120.0*CLHEP::degree);
+
+	  CLHEP::Hep3Vector slot1spot(300.0*CLHEP::mm*sin(120.0*CLHEP::degree),
+				      300.0*CLHEP::mm*cos(120.0*CLHEP::degree),
+				      pabs3SlotOffset*CLHEP::mm);
+
+	  G4SubtractionSolid* aSolid = new G4SubtractionSolid( "FirstStep",
+							       anOPApolyhedron,
+							       slot,
+							       slot1Rotat,
+							       slot1spot );
+
+	  CLHEP::HepRotation* slot2Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+
+	  CLHEP::Hep3Vector slot2spot(0., 300.0*CLHEP::mm, pabs3SlotOffset*CLHEP::mm );
+
+	  G4SubtractionSolid* bSolid = new G4SubtractionSolid( "Step2",
+							       aSolid,
+							       slot,
+							       slot2Rotat,
+							       slot2spot );
+
+	  CLHEP::HepRotation* slot3Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	  slot3Rotat->rotateZ(240.0*CLHEP::degree);
+
+	  CLHEP::Hep3Vector slot3spot(300.0*CLHEP::mm*sin(240.0*CLHEP::degree),
+				      300.0*CLHEP::mm*cos(240.0*CLHEP::degree),
+				      pabs3SlotOffset*CLHEP::mm);
+
+	  G4SubtractionSolid* cSolid = new G4SubtractionSolid( protonabs3Info.name,
+							       bSolid,
+							       slot,
+							       slot3Rotat,
+							       slot3spot );
+
+	  protonabs3Info.solid = cSolid;
+
+	  finishNesting( protonabs3Info,
+			 pabs3Material,
+			 0,
+			 pabs3Offset,
+			 parent1Info.logical,
+			 0,
+			 pabsIsVisible,
+			 G4Color::Yellow(),
+			 pabsIsSolid,
+			 forceAuxEdgeVisible,
+			 placePV,
+			 doSurfaceCheck);
+	}
+
+   //      mf::LogInfo log("GEOM");
+   //      log << "Constructing Proton Absorber -- \n";
+   //      log << "Proton Abs Offset in DS2:  " << pabs1Offset <<"\n";
+   //      log << "rIn,  rOut (-z): "<< pabs1rIn0 <<"  "<< pabs1rOut0<<"  ";
+   //      log << "rIn,  rOut (+z): "<< pabs1rIn1 <<"  "<< pabs1rOut1<<"  ";
+   //      log << "halflength: "<< pabs1len*0.5 <<"\n";
+   //      log << "Proton Abs Offset in DS3:  " << pabs3Offset <<"\n";
+   //      log << "rIn,  rOut (-z): "<< pabs3rIn0 <<"  "<< pabs3rOut0<<"  ";
+   //      log << "rIn,  rOut (+z): "<< pabs3rIn1 <<"  "<< pabs3rOut1<<"  ";
+   //      log << "halflength: "<< pabs3len*0.5 <<"\n";
+
+   //      if ( verbosityLevel > 0) {
+   //        double pzhl   = static_cast<G4Cons*>(protonabs2Info.solid)->GetZHalfLength();
+   //        double pabs3Z = protonabs2Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
+   //        cout << __func__ << " " << protonabs2Info.name << " Z offset in Mu2e    : " <<
+   //          pabs3Z << endl;
+   //        cout << __func__ << " " << protonabs2Info.name << " Z extent in Mu2e    : " <<
+   //          pabs3Z - pzhl  << ", " <<  pabs3Z + pzhl  << endl;
   
-          // we also check how the offsets are handled
+   //        // we also check how the offsets are handled
   
-          cout << __func__ << " " << protonabs2Info.name << " local input offset in G4                  : " <<
-            pabs3Offset << endl;
-          cout << __func__ << " " << protonabs2Info.name << " local GetTranslation()       offset in G4 : " <<
-            protonabs2Info.physical->GetTranslation() << endl; // const &
-        }
-  */ //TODO turn on logging
+   //        cout << __func__ << " " << protonabs2Info.name << " local input offset in G4                  : " <<
+   //          pabs3Offset << endl;
+   //        cout << __func__ << " " << protonabs2Info.name << " local GetTranslation()       offset in G4 : " <<
+   //          protonabs2Info.physical->GetTranslation() << endl; // const &
+   //      }
+   // //TODO turn on logging
   
       }
       else {
@@ -507,26 +595,57 @@ namespace mu2e {
         double pabs4rIn1  = pabs->part(3).innerRadiusAtEnd();
         double pabs4rOut1 = pabs->part(3).outerRadiusAtEnd();
         double pabs4len   = pabs->part(3).halfLength() * 2.;
+	int    pabs4nS    = pabs->part(3).nSides();
         G4Material* pabs4Material = materialFinder.get("protonabsorber.outerPAMaterialName");
+	VolumeInfo protonabs4Info;
+
+	if ( 0 == pabs4nS ) {
+	  double pabs4Param[7] = { pabs4rIn0, pabs4rOut0, pabs4rIn1, pabs4rOut1, pabs4len*0.5,
+				   0.0, 360.0*CLHEP::degree };
   
-        double pabs4Param[7] = { pabs4rIn0, pabs4rOut0, pabs4rIn1, pabs4rOut1, pabs4len*0.5,
-                                 0.0, 360.0*CLHEP::degree };
-  
-        VolumeInfo protonabs4Info = nestCons( "protonabs4",
-                                              pabs4Param,
-                                              pabs4Material,
-                                              0,
-                                              pabs4Offset,
-                                              parent2Info,
-                                              0,
-                                              pabsIsVisible,
-                                              G4Color::Yellow(),
-                                              pabsIsSolid,
-                                              forceAuxEdgeVisible,
-                                              placePV,
-                                              doSurfaceCheck
-                                              );
-  
+	  protonabs4Info = nestCons( "protonabs4",
+				     pabs4Param,
+				     pabs4Material,
+				     0,
+				     pabs4Offset,
+				     parent2Info,
+				     0,
+				     pabsIsVisible,
+				     G4Color::Yellow(),
+				     pabsIsSolid,
+				     forceAuxEdgeVisible,
+				     placePV,
+				     doSurfaceCheck
+				     );
+	} else {
+	  std::vector<double> zs = { -pabs4len/2.0, pabs4len/2.0 };
+	  std::vector<double> rins = { pabs4rIn0, pabs4rIn1 };
+	  std::vector<double> rous = { pabs4rOut0, pabs4rOut1 };
+	  double turn = 180.0*CLHEP::degree/((double)pabs4nS);
+
+	  PolyhedraParams pabs4Param( pabs4nS,
+				      zs,
+				      rins,
+				      rous,
+				      turn );
+	  
+	  protonabs4Info = nestPolyhedra( "protonabs4",
+					  pabs4Param,
+					  pabs4Material,
+					  0,
+					  pabs4Offset,
+					  parent2Info,
+					  0,
+					  pabsIsVisible,
+					  G4Color::Yellow(),
+					  pabsIsSolid,
+					  forceAuxEdgeVisible,
+					  placePV,
+					  doSurfaceCheck
+					  );
+	}
+
+
         if ( verbosityLevel > 0) {
           double pzhl   = static_cast<G4Cons*>(protonabs4Info.solid)->GetZHalfLength();
           double pabs4Z = protonabs4Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
@@ -575,51 +694,197 @@ namespace mu2e {
 	  ostringstream myName2;
 	  myName2 << "OPAsupportExtra_" << iSup+1;
 
-	  if ( zm < pabs1EndInMu2eZ ) {
-	    nestTubs( myName.str(),
-		      TubsParams( rin, rou, hl ),
-		      oPAsupportMaterial,
-		      0,
-		      location - parent1Info.centerInMu2e(),
-		      parent1Info,
-		      0,
-		      pabsIsVisible,
-		      G4Color::Blue(),
-		      pabsIsSolid,
-		      forceAuxEdgeVisible,
-		      placePV,
-		      doSurfaceCheck );
+	  if ( iSup == 1 ) {
+	    // Make notches in this one for the Stopping target support slats
+	    VolumeInfo ring2Info(myName.str(),
+				 location - parent1Info.centerInMu2e(),
+				 parent1Info.centerInWorld);
+
+	    G4Tubs* aRingTub = new G4Tubs("TheRing",
+					  rin, rou, hl,
+					  0.0, 360.0*CLHEP::degree);
+
+	    G4Box* notch = new G4Box("notch", 35.0*CLHEP::mm,
+				      25.0*CLHEP::mm, hl*1.1 );
+
+	    CLHEP::HepRotation* notch1Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	    
+	    CLHEP::Hep3Vector notch1Locat(0,rin+22.0*CLHEP::mm,0);
+
+	    G4SubtractionSolid* aSolid = new G4SubtractionSolid("firstTry",
+								aRingTub,
+								notch,
+								notch1Rotat,
+								notch1Locat);
+	      
+	    CLHEP::HepRotation* notch2Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	    notch2Rotat->rotateZ(120.0*CLHEP::degree);
+
+	    CLHEP::Hep3Vector notch2Locat((rin+22.0)*CLHEP::mm*sin(120.0*CLHEP::degree),
+					  (rin+22.0)*CLHEP::mm*cos(120.0*CLHEP::degree),
+					  0.0 );
+
+	    G4SubtractionSolid* bSolid = new G4SubtractionSolid("secondTry",
+							       aSolid,
+							       notch,
+							       notch2Rotat,
+							       notch2Locat);
+
+	    CLHEP::HepRotation* notch3Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	    notch3Rotat->rotateZ(240.0*CLHEP::degree);
+
+	    CLHEP::Hep3Vector notch3Locat((rin+22.0)*CLHEP::mm*sin(240.0*CLHEP::degree),
+					  (rin+22.0)*CLHEP::mm*cos(240.0*CLHEP::degree),
+					  0.0 );
+
+	    G4SubtractionSolid* cSolid = new G4SubtractionSolid(ring2Info.name,
+							       bSolid,
+							       notch,
+							       notch3Rotat,
+							       notch3Locat);
+
+	    ring2Info.solid = cSolid;
+
+	    finishNesting( ring2Info,
+			   oPAsupportMaterial,
+			   0,
+			   location - parent1Info.centerInMu2e(),
+			   parent1Info.logical,
+			   0,
+			   pabsIsVisible,
+			   G4Color::Blue(),
+			   pabsIsSolid,
+			   forceAuxEdgeVisible,
+			   placePV,
+			   doSurfaceCheck);
 	    if ( hasExtra ) {
-	    nestTubs( myName2.str(),
-		      TubsParams( rou, rou+xRad, hl, (270-dPhiX/2.)*CLHEP::deg,
-				  dPhiX*CLHEP::deg),
-		      oPAsupportMaterial,
-		      0,
-		      location - parent1Info.centerInMu2e(),
-		      parent1Info,
-		      0,
-		      pabsIsVisible,
-		      G4Color::Blue(),
-		      pabsIsSolid,
-		      forceAuxEdgeVisible,
-		      placePV,
-		      doSurfaceCheck );	      
-	    }
+	      nestTubs( myName2.str(),
+			TubsParams( rou, rou+xRad, hl, (270-dPhiX/2.)*CLHEP::deg,
+				    dPhiX*CLHEP::deg),
+			oPAsupportMaterial,
+			0,
+			location - parent1Info.centerInMu2e(),
+			parent1Info,
+			0,
+			pabsIsVisible,
+			G4Color::Blue(),
+			pabsIsSolid,
+			forceAuxEdgeVisible,
+			placePV,
+			doSurfaceCheck );	      
+	    } 
 	  } else {
-	    nestTubs( myName.str(),
-		      TubsParams( rin, rou, hl ),
-		      oPAsupportMaterial,
-		      0,
-		      location - parent2Info.centerInMu2e(),
-		      parent2Info,
-		      0,
-		      pabsIsVisible,
-		      G4Color::Blue(),
-		      pabsIsSolid,
-		      forceAuxEdgeVisible,
-		      placePV,
-		      doSurfaceCheck );
-	  } // end of if for placing in DS2Vac or DS3Vac
+	    if ( zm < pabs1EndInMu2eZ ) {
+	      nestTubs( myName.str(),
+			TubsParams( rin, rou, hl ),
+			oPAsupportMaterial,
+			0,
+			location - parent1Info.centerInMu2e(),
+			parent1Info,
+			0,
+			pabsIsVisible,
+			G4Color::Blue(),
+			pabsIsSolid,
+			forceAuxEdgeVisible,
+			placePV,
+			doSurfaceCheck );
+	      if ( hasExtra ) {
+		nestTubs( myName2.str(),
+			  TubsParams( rou, rou+xRad, hl, (270-dPhiX/2.)*CLHEP::deg,
+				      dPhiX*CLHEP::deg),
+			  oPAsupportMaterial,
+			  0,
+			  location - parent1Info.centerInMu2e(),
+			  parent1Info,
+			  0,
+			  pabsIsVisible,
+			  G4Color::Blue(),
+			  pabsIsSolid,
+			  forceAuxEdgeVisible,
+			  placePV,
+			  doSurfaceCheck );	      
+	      } // end of adding extra for ds2Vac area support ring
+	      if ( iSup == 2 ) {
+		// Add slats to support ST
+		double sHigh = pabs->slatHeight();
+		double sWide = pabs->slatWidth();
+		double sLong = pabs->slatLength();  // full length, not half...
+		if ( sHigh > 1e-02 && sWide > 1e-02 && sLong > 1e-02 ) {
+		  double boxPars[3] = {sWide/2.0,sHigh/2.0,sLong/2.0};
+		  CLHEP::Hep3Vector slat1Loc(-3904.0,rin+sHigh/2.0,zm-hl-sLong/2.0);
+		  nestBox ( "STsupportSlat1",
+			    boxPars,
+			    oPAsupportMaterial,
+			    0,
+			    slat1Loc - parent1Info.centerInMu2e(),
+			    parent1Info,
+			    0,
+			    pabsIsVisible,
+			    G4Colour::Blue(),
+			    pabsIsSolid,
+			    forceAuxEdgeVisible,
+			    placePV,
+			    doSurfaceCheck);
+
+		  CLHEP::HepRotation* slat2Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+		  slat2Rotat->rotateZ(120.0*CLHEP::degree);
+
+		  CLHEP::Hep3Vector slat2Loc(-3904.0 + (rin+sHigh/2.0)*sin(120.0*CLHEP::degree),
+					     (rin+sHigh/2.0)*cos(120.0*CLHEP::degree),
+					     zm - hl - sLong/2.0 );
+		  nestBox ( "STsupportSlat2",
+			    boxPars,
+			    oPAsupportMaterial,
+			    slat2Rotat,
+			    slat2Loc - parent1Info.centerInMu2e(),
+			    parent1Info,
+			    0,
+			    pabsIsVisible,
+			    G4Colour::Blue(),
+			    pabsIsSolid,
+			    forceAuxEdgeVisible,
+			    placePV,
+			    doSurfaceCheck);
+
+		  CLHEP::HepRotation* slat3Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+		  slat3Rotat->rotateZ(240.0*CLHEP::degree);
+
+		  CLHEP::Hep3Vector slat3Loc(-3904.0 + (rin+sHigh/2.0)*sin(240.0*CLHEP::degree),
+					     (rin+sHigh/2.0)*cos(240.0*CLHEP::degree),
+					     zm - hl - sLong/2.0 );
+		  nestBox ( "STsupportSlat3",
+			    boxPars,
+			    oPAsupportMaterial,
+			    slat3Rotat,
+			    slat3Loc - parent1Info.centerInMu2e(),
+			    parent1Info,
+			    0,
+			    pabsIsVisible,
+			    G4Colour::Blue(),
+			    pabsIsSolid,
+			    forceAuxEdgeVisible,
+			    placePV,
+			    doSurfaceCheck);
+
+		} // end if dimensions > 0 
+
+	      } // end if iSub == 2  (adding slats for ST support)
+	    } else {
+	      nestTubs( myName.str(),
+			TubsParams( rin, rou, hl ),
+			oPAsupportMaterial,
+			0,
+			location - parent2Info.centerInMu2e(),
+			parent2Info,
+			0,
+			pabsIsVisible,
+			G4Color::Blue(),
+			pabsIsSolid,
+			forceAuxEdgeVisible,
+			placePV,
+			doSurfaceCheck );
+	    } // end of if for placing in DS2Vac or DS3Vac
+	  } // end of if else for support 2 (iSup == 1)
 	}// end for loop over OPA supports
 
       } // end if nSupports > 0 for OPA

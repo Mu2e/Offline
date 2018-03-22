@@ -4,8 +4,8 @@
 # $Author: knoepfel $
 # $Date: 2014/08/29 16:16:17 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this job a name.
 process_name : PiENu01
@@ -75,6 +75,7 @@ physics :
     }
 
     # Form StrawHits (SH).
+    makeSD : @local::makeSD
     makeSH : @local::makeSH
 
     @table::CaloDigiMC.producers
@@ -104,14 +105,15 @@ physics :
     readStrawHits:
     {
       module_type          : ReadStrawHit
-      makerMduleLabel      : makeStrawHits
+      recoMduleLabel      : makeSH
+      simModuleLabel      : makeSD
       diagLevel            : 3
       maxFullPrint         : 100
     }
 
   }
 
-  p1 : [readfile , decay , g4run , makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
+  p1 : [readfile , decay , g4run , makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
   e1 : [checkhits, readStrawHits, outfile]
 
   trigger_paths  : [p1]

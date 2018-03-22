@@ -9,17 +9,17 @@ int   crs.nLayers  = 4;
 
 vector<string>  crs.sectorNames = {"Test"};
 
-double          crs.scintillatorBarLengthTest    =  5600;
+double          crs.scintillatorBarLengthTest    =  6000;
 
 double          crs.scintillatorBarThickness     =  20.0; //mm   //is actually only 19.8mm, while the lookup tables have 20.0mm
 double          crs.scintillatorBarWidth         =  50.0; //mm   //current Offline has 49.5mm, while the lookup tables have 50.0mm
-double          crs.layerOffset                  =  10.0; //mm
-double          crs.gapLarge                     =   1.0; //mm
-double          crs.gapSmall                     =   0.5; //mm
+double          crs.layerOffset                  =   0.0; //mm
+double          crs.gapLarge                     =   0.5; //mm
+double          crs.gapSmall                     =   0.1; //mm
 double          crs.gapBetweenModules            =   3.0; //mm
-vector<double>  crs.gapBetweenLayers             =   {9.525, 12.7, 9.525}; //mm
+vector<double>  crs.gapBetweenLayers             =   {9.525, 9.525, 9.525}; //mm
 
-int             crs.nModulesTest                 =   4;
+int             crs.nModulesTest                 =   6;
 int             crs.nCountersPerModuleTest       =   16;
 vector<double>  crs.firstCounterTest             =  {-3904.0, 2710.75, 18771.0}; //next modules start at y=1896.75, 1082.75, 268.75
 

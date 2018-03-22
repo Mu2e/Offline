@@ -11,9 +11,9 @@
 #  mu2e -c Analyses/test/genReco.fcl -n 1000 >| results/2014-12-19-Analyses_test_genReco.log 2>&1 &
 #------------------------------------------------------------------------------
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 #include "CaloCluster/fcl/prolog.fcl"
 #include "Analyses/fcl/prolog.fcl"
@@ -23,31 +23,34 @@
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 
-generatorSeq  : [ generate, g4run, @sequence::EventMixing.TimeMaps ]
+generatorSeq  : [ generate, g4run ]
 
-make_digis   : [ @sequence::CaloDigiMC.DigiSim, @sequence::Tracking.DigiSim ]
+make_digis   : [ @sequence::CommonDigiSim.DigiSim, @sequence::CaloDigiMC.DigiSim, @sequence::TrackerMC.DigiSim ]
 
 # calorimeter cluster reconstruction
 calRecoSeq    : [ @sequence::CaloReco.Reco,@sequence::CaloDigiMC.TruthMatch,@sequence::CaloCluster.Reco,@sequence::CaloCluster.TruthMatch ]
 
 # hit making for CalPatRec
-cprMakeHitSeq : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
-		  CalPatRecFlagStrawHits, CalPatRecFlagBkgHits ]
+# cprMakeHitSeq : [ @sequence::CalPatRec.prepare_hits] # 
+
+# CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  CalPatRecFlagStrawHits, CalPatRecFlagBkgHits ]
 # 
-calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
+# calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
 
 #------------------------------------------------------------------------------
 # downstream electron and downstream muon reconstruction - needed for particle ID
 #------------------------------------------------------------------------------
-trkPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDeM, 
+trkPatRecDemDmmSeq  : [ @sequence::TrkHitReco.PrepareHits,
+			@sequence::Tracking.TPRDeM, 
 			@sequence::Tracking.TPRDmuM,
 			MergePatRecDem, MergePatRecDmm ]
 
-calPatRecDemDmmSeq  : [ @sequence::CalPatRec.dem_reco, @sequence::CalPatRec.dmm_reco, MergePatRecDem, MergePatRecDmm ]
+calPatRecDemDmmSeq  : [ @sequence::TrkHitReco.PrepareHits, @sequence::CalPatRec.dem_reco, @sequence::CalPatRec.dmm_reco, MergePatRecDem, MergePatRecDmm ]
 
-allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDeM, 
+allPatRecDemDmmSeq  : [	@sequence::TrkHitReco.PrepareHits,
+			@sequence::Tracking.TPRDeM, 
 			@sequence::Tracking.TPRDmuM,
-			@sequence::cprMakeHitSeq, 
+#			@sequence::cprMakeHitSeq, 
 			@sequence::CalPatRec.dem_reco, @sequence::CalPatRec.dmm_reco, 
 			MergePatRecDem, MergePatRecDmm ]
 
@@ -112,7 +115,7 @@ source : {
 outputs: {
     detectorOutput : {
         module_type : RootOutput
-#        SelectEvents: { SelectEvents: [p1] }
+#        SelectEvents: [p1]
         outputCommands:   [ "keep *_*_*_*",
                             "drop mu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]
@@ -129,7 +132,7 @@ services : {
     RandomNumberGenerator : { }
 
     # Mu2e services
-    GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt" }
+    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt" }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
     G4Helper               : { }
@@ -151,13 +154,15 @@ physics : {
 #------------------------------------------------------------------------------
 	@table::Mu2eG4.producers
         @table::EventMixing.producers 
-	@table::HitMakers.producers        
+	@table::CommonDigiSim.producers
 	@table::CaloDigiMC.producers
         @table::CaloReco.producers
         @table::CaloDigiMC.producersMC
         @table::CaloCluster.producers
         @table::CaloCluster.producersMC
+	@table::TrackerMC.producers
 	@table::Tracking.producers
+	@table::TrkHitReco.producers
 	@table::CalPatRec.producers
 	@table::TrackCaloMatching.producers
 	@table::ParticleID.producers
@@ -231,3 +236,4 @@ services.scheduler.wantSummary: true
 physics.analyzers.RKFDeM.KalDiag.MCStepsLabel     : "g4run"
 physics.analyzers.RKFDeM.KalDiag.SimParticleLabel : "g4run"
 physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
+#physics.producers.KFFDeM.KalFit.debugLevel : 4

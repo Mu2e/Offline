@@ -26,7 +26,7 @@ class KalRep;
 
 namespace mu2e {
   class StrawHit;
-  class StrawHitPosition;
+//  class StrawHitPosition;
   class StrawHitMCTruth;
   class CaloCluster;
   class CaloProtoCluster;

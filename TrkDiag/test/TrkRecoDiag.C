@@ -10,8 +10,12 @@ TrkRecoDiag::TrkRecoDiag(TTree *tree, double norm) : fChain(0) ,_tffval(32,0), _
   _eff(0), _acc(0), _effcan(0), _tcseln(10), 
   _hseln(10), _hselminm(280.0),_hselmaxm(380.0),
   _sselminm(95.0), _sselmaxm(110.0), _sselmerr(1.2), _sselchi2(9.0), 
-  _pseltq(0.4), _pselminm(95.0), _pselmaxm(110.0)
-{
+  _pseltq(0.4), _pselminm(95.0), _pselmaxm(110.0),
+  _mincost(0.45), _maxcost(0.7571),
+  _mint0(700.0),
+  _tdlow(0.57735027), _tdhigh(1.0)
+ 
+ {
 // build branches 
    Init(tree);
    // setup flag value vector: this should come from TrkFitFlag FIXME!!
@@ -32,6 +36,7 @@ void TrkRecoDiag::Loop()
    Long64_t nentries = fChain->GetEntries();
 
    Long64_t nbytes = 0, nb = 0;
+   
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
@@ -43,11 +48,10 @@ void TrkRecoDiag::Loop()
       float mctime = fmod(mcmidt0,1695.0);
       effcuts.push_back(mctime > 500.0 ); // primary track passed the tracker during 
       float  mccost = mcmidpz/mcmidmom;
-      static float highcost = 1.0/sqrt(2.0)+0.05;
       float hd0 = hsh__rcent - hsh__radius;
       float hrmax  = hsh__rcent + hsh__radius;
       float hmom = sqrt(hsh__radius*hsh__radius + hsh__lambda*hsh__lambda);
-      effcuts.push_back(mccost > 0.45 && mccost < highcost ); // track direction (with buffer)
+      effcuts.push_back(mccost > _mincost && mccost < _maxcost ); // track direction (with buffer)
       effcuts.push_back(tcn>_tcseln); acccuts.push_back(effcuts.back());// reconstructed time cluster associated with primary track
       effcuts.push_back((hsf__value&_tffval[circleOK])>0);
       effcuts.push_back((hsf__value&_tffval[helixOK])>0);acccuts.push_back(effcuts.back());
@@ -55,8 +59,14 @@ void TrkRecoDiag::Loop()
       effcuts.push_back((ksf__value&_tffval[seedOK])>0);acccuts.push_back(effcuts.back());
       effcuts.push_back(ksm > _sselminm && ksm < _sselmaxm && kschisq/(ksna-5)<_sselchi2 && ksmerr < _sselmerr);acccuts.push_back(effcuts.back());
       effcuts.push_back((kff__value&_tffval[kalmanOK])>0);acccuts.push_back(effcuts.back());
-      effcuts.push_back(kfm > _pselminm && kfm < _pselmaxm && kftq > _pseltq);acccuts.push_back(effcuts.back());
-
+      // physics cuts
+      bool ptqual = kftq > _pseltq;
+      bool ppitch = kfh__pars[3] > _tdlow && kfh__pars[3] < _tdhigh;
+      bool ptime = kft0> _mint0;
+      bool pmom = kfm > _pselminm && kfm < _pselmaxm;
+      bool pd0 = kfh__pars[0]<105&&kfh__pars[0]>-80;
+      bool prmax =  (kfh__pars[0]+2/kfh__pars[2])>450 && (kfh__pars[0]+2/kfh__pars[2])<680;
+      effcuts.push_back(ptqual && ppitch && ptime && pmom && pd0 && prmax );acccuts.push_back(effcuts.back());
       // efficiency 
       if((int)effcuts.size() != _eff->GetNbinsX())
 	cout << "Error: Efficiency cuts size " << effcuts.size() << " != " << _eff->GetNbinsX() << endl;
@@ -151,7 +161,7 @@ void TrkRecoDiag::createHistos() {
   effbins.push_back("Seed Fit");accbins.push_back(effbins.back());
   effbins.push_back("Seed Cuts");accbins.push_back(effbins.back());
   effbins.push_back("Kalman Fit");accbins.push_back(effbins.back());
-  effbins.push_back("Physics Sel");accbins.push_back(effbins.back());
+  effbins.push_back("TrkQual Sel");accbins.push_back(effbins.back());
 
   _eff = new TH1F("eff",title("Efficiency"),effbins.size(),-0.5,effbins.size()-0.5);
   _acc = new TH1F("acc",title("Acceptance"),accbins.size(),-0.5,accbins.size()-0.5);

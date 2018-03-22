@@ -94,7 +94,7 @@ namespace mu2e {
       const art::Event *evt_;
       art::ProductID pid_;
       virtual bool doMatch(const art::BranchDescription& p) const override {
-        return evt_->branchIDToProductID(p.branchID()) == pid_;
+        return p.productID() == pid_;
       }
     public:
       ProductIDSelector(const art::Event& evt, const art::ProductID& pid) : evt_(&evt), pid_(pid) {}
@@ -366,7 +366,7 @@ namespace mu2e {
     PIDMap partCollMap;
 
     std::unique_ptr<GenParticleCollection> genParts(new GenParticleCollection());
-    art::ProductID newGenPID(compressGenParticles_ ? getProductID<GenParticleCollection>(event) : art::ProductID());
+    art::ProductID newGenPID(compressGenParticles_ ? getProductID<GenParticleCollection>() : art::ProductID());
     const art::EDProductGetter *newGenGetter(compressGenParticles_ ? event.productGetter(newGenPID) : nullptr);
 
     for(const auto& iopair : spim) {
@@ -374,7 +374,7 @@ namespace mu2e {
       const auto& outInstance = iopair.second;
 
       std::unique_ptr<SimParticleCollection> outparts(new SimParticleCollection());
-      art::ProductID newParticlesPID(getProductID<SimParticleCollection>(event, outInstance));
+      art::ProductID newParticlesPID(getProductID<SimParticleCollection>(outInstance));
       const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
 
       // Is there anything to copy into this output?

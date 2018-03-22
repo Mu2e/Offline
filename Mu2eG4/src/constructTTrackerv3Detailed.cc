@@ -101,7 +101,8 @@ namespace {
     Plane const& pln        = ttracker.getPlane(ipln);
 
     int pnlDraw         = config.getInt ("ttracker.pnlDraw",-1);
-    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+    bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false)
+      || config.getBool("ttracker.doSurfaceCheck",false);
     int verbosityLevel  = config.getInt ("ttracker.verbosityLevel",0);
 
 
@@ -116,7 +117,7 @@ namespace {
       //if ( pnlDraw > -1  && ipnl%2 == 0 ) continue;
 
       // Choose a representative straw from this this (plane,panel).
-      Straw const& straw = ttracker.getStraw( StrawId(ipln,ipnl,0,0) );
+      Straw const& straw = ttracker.getStraw( StrawId(ipln,ipnl,0) );
 
       // Azimuth of the midpoint of the wire.
       CLHEP::Hep3Vector const& mid = straw.getMidPoint();
@@ -161,7 +162,7 @@ namespace {
 } // end anonymous namespace
 
 
-  VolumeInfo constructTTrackerv3Detailed( VolumeInfo const& ds3Vac,
+  VolumeInfo constructTTrackerv3Detailed( VolumeInfo const& parent,
                                           SimpleConfig const& config ){
 
     cout << "Mark Detailed. " << endl;
@@ -175,7 +176,8 @@ namespace {
     // Only instantiate panels to be drawn.
     int plnDraw = config.getInt("ttracker.plnDraw",-1);
     //int pnlDraw = config.getInt("ttracker.pnlDraw",-1);
-    bool const doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
+    bool const doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false)
+      || config.getBool("ttracker.doSurfaceCheck",false);
     bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
 
     G4ThreeVector const zeroVector(0.0,0.0,0.0);
@@ -216,9 +218,9 @@ namespace {
     //G4ThreeVector trackerOffset( 0., 0., ttracker.z0() );
     // Offset of the center of the tracker within its mother volume.
 
-    // Offset of the center of the tracker within its mother volume.
     CLHEP::Hep3Vector motherOffset(0., 0., ttracker.z0()-mother.position().z() );
-    cout << "Centers: " << mother.position() << " " << ds3Vac.centerInWorld << " " << ttracker.z0() << endl;
+    cout << "Centers: " << mother.position() << " "
+         << parent.centerInWorld << " " << ttracker.z0() << endl;
     cout << "         " << motherOffset << endl;
 
     // All mother/envelope volumes are made of this material.
@@ -228,8 +230,8 @@ namespace {
                                       mother.tubsParams(),
                                       envelopeMaterial,
                                       noRotation,
-                                      mother.position() - ds3Vac.centerInWorld,
-                                      ds3Vac,
+                                      mother.position() - parent.centerInWorld,
+                                      parent,
                                       0,
                                       config.getBool("ttracker.envelopeVisible",false),
                                       G4Colour::Blue(),
@@ -399,7 +401,6 @@ namespace {
 
     }
 
- 
     // The last part of the support structure is the inner ring; Construct it as a polycone
     // that includes the two channels to receive the straws.
     // FixME: use the other c'tor of Polycone that takes points in the rz plane.
@@ -479,7 +480,7 @@ namespace {
     // In this model, panel envelopes are arcs of a disk.
 
     // Panels are identical other than placement - so get required properties from plane 0, panel 0.
-    Panel const& pnl00(ttracker.getPanel(PanelId(0,0)));
+    Panel const& pnl00(ttracker.getPanel(StrawId(0,0,0)));
 
     // Azimuth of the centerline of a the panel enveleope: panelCenterPhi
     // Upon construction and before placement, the panel envelope occupies [0,phiMax].
@@ -526,7 +527,7 @@ namespace {
     // This carries a sign, depending on upstream/downstream.
     double zPanel(0.);
     for ( int i=0; i<pnl00.nLayers(); ++i){
-      zPanel += pnl00.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
+      zPanel += pnl00.getStraw(StrawId(0,0,i)).getMidPoint().z();
     }
     zPanel /= pnl00.nLayers();
 
@@ -534,16 +535,12 @@ namespace {
     CLHEP::Hep3Vector unit( cos(panelCenterPhi), sin(panelCenterPhi), 0.);
 
     // Place the straws into the panel envelope.
-    for ( std::vector<Layer>::const_iterator i=pnl00.getLayers().begin(); i != pnl00.getLayers().end(); ++i ){
+    for (const auto straw_p : pnl00.getStrawPointers() ) {
+        Straw const&       straw(*straw_p);
 
-      Layer const& lay(*i);
+        // if ( lay.id().getLayer() != 0 ) continue;
+        if ( straw.id().getLayer() != 0 ) continue; // fixme: why a single layer?
 
-      if ( lay.id().getLayer() != 0 ) continue;
-
-      for ( std::vector<Straw const*>::const_iterator j=lay.getStraws().begin();
-            j != lay.getStraws().end(); ++j ){
-
-        Straw const&       straw(**j);
         StrawDetail const& detail(straw.getDetail());
 
         //if ( straw.id().getStraw()%8 != 0 ) continue;
@@ -683,8 +680,7 @@ namespace {
           cout << "           wireCore:        " << detail.wireCore()           << detail.wireCoreMaterialName()        << endl;
         }
 
-      } // end loop over straws within a layer
-    } // end loop over layers
+    } // end loop over straws within a panel
 
 
     // Place the plane envelopes into the tracker mother.
@@ -766,7 +762,7 @@ namespace {
                envelopeMaterial,
                noRotation,
                xAxisPos,
-               ds3Vac,
+               parent,
                copyNo,
                isVisible,
                G4Colour::Blue(),
@@ -788,7 +784,7 @@ namespace {
                envelopeMaterial,
                noRotation,
                yAxisPos,
-               ds3Vac,
+               parent,
                copyNo,
                isVisible,
                G4Colour::Red(),
@@ -810,7 +806,7 @@ namespace {
                envelopeMaterial,
                noRotation,
                zAxisPos,
-               ds3Vac,
+               parent,
                copyNo,
                isVisible,
                G4Colour::Green(),

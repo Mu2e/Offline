@@ -19,8 +19,8 @@
 namespace mu2e {
   typedef std::vector<TrkStrawHit*>::iterator TSHI;
 
-  PocaAmbigResolver::PocaAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr): 
-    AmbigResolver(ExtErr)
+  PocaAmbigResolver::PocaAmbigResolver(fhicl::ParameterSet const& pset,double tmpErr) :
+  AmbigResolver(tmpErr)
   {}
   
   PocaAmbigResolver::~PocaAmbigResolver() {}

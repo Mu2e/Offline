@@ -32,15 +32,21 @@ int            mu2e.studyEnvVersion      = 4;
 bool           mu2e.printParticleDataTable = false;
 
 // Use a decent physics list
-string g4.physicsListName      = "Shielding";
+string g4.physicsListName      = "ShieldingM";
 // string g4.physicsListName = "FTFP_BERT_EMZ";
 int g4.physicsListVerbosity = 1;
 
 // Use a specific range cut
 double g4.minRangeCut = 0.01; // mm
 
+// Proton, ion production cut; 0. means no cut
+double physics.protonProductionCut = 0.; // mm
+
 // Disable mu2e MuMinusConversionAtRest
 bool g4.doMuMinusConversionAtRest = false;
+
+// Diagnostic info
+int g4.diagLevel = 1;
 
 // make the volume mesh visible
 bool g4.forceAuxEdgeVisible    = true;

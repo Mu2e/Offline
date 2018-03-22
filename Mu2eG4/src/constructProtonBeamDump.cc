@@ -46,6 +46,7 @@
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
 
 #include "Mu2eG4/inc/finishNesting.hh"
@@ -56,7 +57,8 @@
 
 namespace mu2e {
 
-  void constructProtonBeamDump(const VolumeInfo& parent, const SimpleConfig& config) {
+  void constructProtonBeamDump(const VolumeInfo& parent, const SimpleConfig& config,
+                               const SensitiveDetectorHelper& sdHelper) {
 
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<ExtMonFNALBuilding> emfb;

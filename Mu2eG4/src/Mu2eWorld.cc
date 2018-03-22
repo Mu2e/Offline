@@ -39,6 +39,7 @@
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
 #include "Mu2eG4/inc/constructCRV.hh"
 #include "Mu2eG4/inc/constructExternalShielding.hh"
+#include "Mu2eG4/inc/constructSaddles.hh"
 #include "Mu2eG4/inc/constructServicesGeom.hh"
 #include "Mu2eG4/inc/constructTSdA.hh"
 #include "Mu2eG4/inc/constructMBS.hh"
@@ -120,6 +121,9 @@
 #include "G4SimpleHeum.hh"
 #include "G4HelixImplicitEuler.hh"
 #include "G4HelixSimpleRunge.hh"
+#if G4VERSION>4103
+#include "G4DormandPrince745.hh"
+#endif
 #include "G4GDMLParser.hh"
 
 #include "Mu2eG4/inc/Mu2eGlobalField.hh"
@@ -133,13 +137,11 @@ namespace mu2e {
   Mu2eWorld::Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
     : sdHelper_(sdHelper)
     , pset_(fhicl::ParameterSet())
-
     , activeWr_Wl_SD_(_config.getBool("ttracker.ActiveWr_Wl_SD",false))
     , writeGDML_(_config.getBool("writeGDML",false))
     , gdmlFileName_(_config.getString("GDMLFileName","mu2e.gdml"))
     , g4stepperName_(_config.getString("g4.stepper","G4SimpleRunge"))
     , bfieldMaxStep_(_config.getDouble("bfield.maxStep", 20.))
-    , worldVolume_(NULL)
   {
     _verbosityLevel = _config.getInt("world.verbosityLevel", 0);
   }
@@ -148,13 +150,12 @@ namespace mu2e {
                        SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
     : sdHelper_(sdHelper)
     , pset_(pset)
-
     , activeWr_Wl_SD_(true)
     , writeGDML_(pset.get<bool>("debug.writeGDML"))
     , gdmlFileName_(pset.get<std::string>("debug.GDMLFileName"))
     , g4stepperName_(pset.get<std::string>("physics.stepper"))
     , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep"))
-    , worldVolume_(NULL)
+    , limitStepInAllVolumes_(pset.get<bool>("physics.limitStepInAllVolumes"))
   {
     _verbosityLevel = pset.get<int>("debug.worldVerbosityLevel");
   }
@@ -179,7 +180,6 @@ namespace mu2e {
 
   // Construct all of the Mu2e world, hall, detectors, beamline ...
   G4VPhysicalVolume * Mu2eWorld::constructWorld(){
-
       
       // If you play with the order of these calls, you may break things.
       GeomHandle<WorldG4> worldGeom;
@@ -188,7 +188,6 @@ namespace mu2e {
       if (activeWr_Wl_SD_) {
           TrackerWireSD::setMu2eDetCenterInWorld( tmpTrackercenter );
       }
-      
       
       VolumeInfo worldVInfo = constructWorldVolume(_config);
 
@@ -230,6 +229,9 @@ namespace mu2e {
           constructExternalShielding(hallInfo, _config);
       }
 
+      // This is for saddles holding up cryostats
+      constructSaddles(hallInfo, _config);
+
       // This is for pipes, cable runs, Electronics racks, etc.
       constructServicesGeom(hallInfo, _config);
 
@@ -249,14 +251,13 @@ namespace mu2e {
           constructSTM(_config);
       }
       
-      
       // _geom is member data of Mu2eG4Universe, from which this inherits
       // it is a ref to a const GeometryService object
       if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
           GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
           constructCRV(hallInfo,_config);
       }
-
+ 
       constructVirtualDetectors(_config); // beware of the placement order of this function
 
       constructVisualizationRegions(worldVInfo, _config);
@@ -266,7 +267,6 @@ namespace mu2e {
           log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";
       }
 
-      
       constructStepLimiters();
 
       // Write out mu2e geometry into a gdml file.
@@ -275,9 +275,7 @@ namespace mu2e {
           parser.Write(gdmlFileName_, worldVInfo.logical);
       }
 
-      //return worldVInfo.physical;
-      worldVolume_ = worldVInfo.physical;
-      return worldVolume_;
+      return worldVInfo.physical;
     
   }//Mu2eWorld::constructWorld()
 
@@ -286,7 +284,9 @@ namespace mu2e {
   VolumeInfo Mu2eWorld::constructTracker(){
 
     // The tracker is built inside this volume.
-    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("DS3Vacuum");
+    std::string theDS3("DS3Vacuum");
+    if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
+    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo(theDS3);
 
     // z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
     double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
@@ -297,7 +297,9 @@ namespace mu2e {
     if ( _config.getBool("hasTTracker",false) ) {
       int ver = _config.getInt("TTrackerVersion",3);
       if ( ver == 3 ){
-        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, _config );
+        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, _config);
+      } else if ( ver == 5 ) {
+	trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config);
       }
     } else {
       trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, _config );
@@ -384,6 +386,7 @@ namespace mu2e {
     G4MagneticField * _field = new Mu2eGlobalField(worldGeom->mu2eOriginInWorld());
     G4Mag_EqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
+    if ( _verbosityLevel > 0 ) cout << "Setting up " << g4stepperName_ << " stepper" << endl;
     if ( g4stepperName_  == "G4ClassicalRK4" ) {
       _stepper = new G4ClassicalRK4(_rhs);
     } else if ( g4stepperName_  == "G4ClassicalRK4WSpin" ) {
@@ -404,8 +407,13 @@ namespace mu2e {
       _stepper = new G4HelixImplicitEuler(_rhs);
     } else if ( g4stepperName_  == "G4HelixSimpleRunge" ) {
       _stepper = new G4HelixSimpleRunge(_rhs);
+#if G4VERSION>4103
+    } else if ( g4stepperName_  == "G4DormandPrince745" ) {
+      _stepper = new G4DormandPrince745(_rhs);
+#endif
     } else {
       _stepper = new G4SimpleRunge(_rhs);
+      if ( _verbosityLevel > 0 ) cout << "Using default G4SimpleRunge stepper" << endl;
     }
     G4ChordFinder * _chordFinder = new G4ChordFinder(_field,1.0e-2*CLHEP::mm,_stepper);
     G4FieldManager * _manager = new G4FieldManager(_field,_chordFinder,true);
@@ -458,16 +466,16 @@ namespace mu2e {
   } // end Mu2eWorld::constructBFieldAndManagers
 
 
-  namespace {
-
     // A helper function for Mu2eWorld::constructStepLimiters().
     // Find all logical volumes matching a wildcarded name and add steplimiters to them.
-    void stepLimiterHelper ( std::string const& regexp, G4UserLimits* stepLimit ){
-      boost::regex expression(regexp.c_str());
-      std::vector<mu2e::VolumeInfo const*> vols =
-        art::ServiceHandle<mu2e::G4Helper>()->locateVolInfo(expression);
-      for ( auto v : vols ){
-        v->logical->SetUserLimits( stepLimit );
+  void Mu2eWorld::stepLimiterHelper ( std::string const& regexp, G4UserLimits* stepLimit ) {
+    boost::regex expression(regexp.c_str());
+    std::vector<mu2e::VolumeInfo const*> vols =
+      art::ServiceHandle<mu2e::G4Helper>()->locateVolInfo(expression);
+    for ( auto v : vols ){
+      v->logical->SetUserLimits( stepLimit );
+      if(_verbosityLevel > 1)  {
+        std::cout<<"Activated step limit for volume "<<v->logical->GetName() <<std::endl;
       }
     }
   }
@@ -506,6 +514,9 @@ namespace mu2e {
     // limits.  For now that is not necessary.
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     G4UserLimits* stepLimit = reg.add( G4UserLimits(bfieldMaxStep_) );
+    if(_verbosityLevel > 1) {
+      std::cout<<"Using step limit = "<<bfieldMaxStep_/CLHEP::mm<<" mm"<<std::endl;
+    }
 
     // Add the step limiters to the interesting volumes.
     // Keep them separated so that we can add different step limits should we decide to.
@@ -551,20 +562,28 @@ namespace mu2e {
     //
     // ==== END COMMENT-OUT
 
+    // Activate step limiter everywhere for spectial studies
+    if(limitStepInAllVolumes_) {
+      stepLimiterHelper("^.*$", stepLimit);
+    }
+
   } // end Mu2eWorld::constructStepLimiters(){
 
 
   // Construct calorimeter if needed.
   VolumeInfo Mu2eWorld::constructCal(){
 
-        // The calorimeter is built inside this volume.
-        VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("DS3Vacuum");
+    // The calorimeter is built inside this volume.
+    std::string theDS3("DS3Vacuum");
+    if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
 
-        // Construct one of the calorimeters.
-        VolumeInfo calorimeterInfo;
-        if ( _config.getBool("hasDiskCalorimeter",false) ) {
-           calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config );
-        }
+    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo(theDS3);
+
+    // Construct one of the calorimeters.
+    VolumeInfo calorimeterInfo;
+    if ( _config.getBool("hasDiskCalorimeter",false) ) {
+      calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config );
+    }
 
     return calorimeterInfo;
 
@@ -587,6 +606,7 @@ namespace mu2e {
       
       // G4 takes ownership and will delete the detectors at the job end
 
+      
 /************************** Tracker **************************/
       //done
     if(sdHelper_->enabled(StepInstanceName::tracker)) {
@@ -910,13 +930,52 @@ namespace mu2e {
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++) {
             G4String LVname = (*pos)->GetName();
         
+            //we need the PanelEBKey, but NOT the PanelEBKeyShield
             if ((LVname.find("PanelEBKey") != std::string::npos) &&
                 (LVname.find("PanelEBKeyShield") == std::string::npos)) {
                 store->GetVolume(LVname)->SetSensitiveDetector(EBKeySD);
             }
         }//for
     }//if panelEBKey
+ 
+      
+/************************** DSCableRun **************************/
+      //if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) )
+      if(sdHelper_->enabled(StepInstanceName::DSCableRun)) {
+          Mu2eSensitiveDetector* cableRunSD =
+          new Mu2eSensitiveDetector( SensitiveDetectorName::DSCableRun(), _config );
+          SDman->AddNewDetector(cableRunSD);
+          
+          //NOTE: THIS 'if' test seems redundant to me, but I am just copying the format from constructDS.cc
+          if ( _config.getBool("ds.CableRun.sensitive",false) ) {
+              for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++) {
+                  G4String LVname = (*pos)->GetName();
+              
+                  //will pick up names like CalCableRun, CalCableRunUpGap1, CalCableRunUpGap2, calCableRunFall
+                  //but not CalCableRunLogInCalFeb, CalCableRunInCalFeb
+                  if ( (LVname.find("alCableRun") != std::string::npos) &&
+                       (LVname.find("CalCableRunLog") == std::string::npos) &&
+                       (LVname.find("CalCableRunIn") == std::string::npos) )
+                  {
+                      store->GetVolume(LVname)->SetSensitiveDetector(cableRunSD);
+                  }
+              
+                  //will pick up names like TrkCableRun1, TrkCableRun2, TrkCableRunGap1, TrkCableRunGap1a, TrkCableRunGap2, TrkCableRunGap2a
+                  //but not TrkCableRun1LogInCalFeb, TrkCableRun2LogInCalFeb, TrkCableRun1InCalFeb, TrkCableRun2InCalFeb
+                  if ( (LVname.find("TrkCableRun") != std::string::npos) &&
+                       (LVname.find("TrkCableRun1Log") == std::string::npos) &&
+                       (LVname.find("TrkCableRun2Log") == std::string::npos) &&
+                       (LVname.find("TrkCableRun1In") == std::string::npos) &&
+                       (LVname.find("TrkCableRun2In") == std::string::npos) )
+                  {
+                      store->GetVolume(LVname)->SetSensitiveDetector(cableRunSD);
+                  }
+              }//for
+          }//if ds.CableRun.sensitive
+      }//if DSCableRun
 
   }//instantiateSensitiveDetectors
+
+
 
 } // end namespace mu2e

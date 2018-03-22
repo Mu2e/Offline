@@ -15,31 +15,23 @@ namespace fhicl {
   class ParameterSet;
 };
 
+#include "RecoDataProducts/inc/KalSeed.hh"
+
 namespace mu2e {
 
   class KalFitResultNew;
 
-  struct CalSeedFit_Data_t : public TObject {
-    enum  { kMaxSeeds = 100 };
-
-    const art::Event*    event;
-    KalFitResultNew*     result;
-    fhicl::ParameterSet* timeOffsets;
-
-    int                 ntracks;           // 0:all, 1:nhits > nhitsMin; assume nseeds <= 100
-    std::vector<int>    nrescued;
-
-    int maxSeeds() { return kMaxSeeds; }
-  };
-
-  struct CalSeedFit_Hist_t : public TObject {
-    TH1F*  nhits;           // number of hits on a htrack candidate
-    TH1F*  seeddoca   [3];
-    TH1F*  chi2       [2];
-    TH1F*  p          [2];
-    TH1F*  NpointsSeed[2]; //
-    TH1F*  ntracks    [2];
-  };
-
+  namespace CalSeedFitTypes {
+  
+    struct Data_t {
+      const art::Event*               event;
+      KalFitResultNew*                result;
+      fhicl::ParameterSet*            timeOffsets;
+      
+      KalSeedCollection*              tracks;        // these report their momentum very unwillingly
+      std::vector<int>                nrescued;	     // per track
+      std::vector<float>              mom;
+    };
+  }
 }
 #endif

@@ -1,0 +1,44 @@
+#
+#  This script runs the TrackAnalsys module to create a prototype track-based analysis TTree with background mixing.
+#  To run interactively, this file must be sourced after the prolog declaration of bkgHitFiles.  It can be run
+#  on the grid by specifying that parameter in the mu2eart or mu2eSysProd command.
+#
+# David Brown (LBNL) 13 July 2016
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+# list mixed background frames in the following file
+#include "bkgfiles.fcl"
+
+process_name : TrkAnaMix
+
+source :
+{
+  module_type : RootInput
+}
+
+services : @local::Services.SimAndReco
+
+physics :
+{
+  filters : @local::TrkAna.filters
+  producers : @local::TrkAna.producers
+  analyzers : @local::TrkAna.analyzers
+}
+
+# setup paths.  Art will handle these automatically
+physics.TrkAnaTriggerPath : [ @sequence::TrkAna.SimAndRecoMixSequence ]
+physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence ]
+
+# You can add detailed (hit) information to the TTree by setting diagLevel to 2
+physics.analyzers.TrkAna.diagLevel : 1
+# background mixing files must be specified after all prolog, outside this file, either as additional
+# fcl in a grid job, or by nesting this script.
+#include "EventMixing/fcl/epilog.fcl"
+# the following are needed for interactive running
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+
+

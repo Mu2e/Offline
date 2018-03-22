@@ -21,7 +21,7 @@ namespace mu2e {
     public:
 // construct from parameter set
 #ifndef __GCCXML__
-    explicit FixedAmbigResolver(fhicl::ParameterSet const& pset, double extErr);
+    explicit FixedAmbigResolver(fhicl::ParameterSet const& pset,double tmpErr);
 #endif/*__GCCXML__*/
       virtual ~FixedAmbigResolver();
     virtual bool resolveTrk(KalRep* kfit) const;

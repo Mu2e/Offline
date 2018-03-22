@@ -7,6 +7,7 @@
 #ifndef TrkStrawHitInfo_HH
 #define TrkStrawHitInfo_HH
 #include "Rtypes.h"
+#include "CLHEP/Vector/ThreeVector.h"
 namespace mu2e 
 {
   struct TrkStrawHitInfo {
@@ -15,7 +16,10 @@ namespace mu2e
     Bool_t _dactive;  // is this hit one of a panel pair that are both used in the track
     Int_t _plane, _panel, _layer, _straw;  // StrawId fields for the straw hit
     Int_t _ambig;     // left-right amibiguity.  This signes the angular momentum of the track WRT the wire
-    Float_t _z, _phi, _rho; // cylindrical coordinates of the hit Point Of Closest Approach (POCA)
+    Int_t _driftend; // which end(s) was used in computing the drift
+    Float_t _tdcal, _tdhv; // drift times for the 2 ends
+    Float_t _totcal, _tothv; // TOT for the 2 ends
+    CLHEP::Hep3Vector _poca; // Position of Point Of Closest Approach (POCA)
     Float_t _resid;	  // residual = Distance Of Closest Approach (DOCA) between the drift cylinder and the track, signed by the track angular momentum WRT the wire
     Float_t _residerr;	  // error on the residual, including components from the hit, the track, and potentially other effects 
     Float_t _rdrift, _rdrifterr;	  // drift radius and error of this hit
@@ -31,8 +35,8 @@ namespace mu2e
     Float_t _edep;    // reconstructed energy deposition from ADC measurement
     Float_t _dx;      // estimated distance through the straw gas traversed by this particle, given the DOCA and track parameters
     TrkStrawHitInfo() : _active(false), _dhit(false), _dactive(false), 
-    _plane(-1), _panel(-1), _layer(-1), _straw(-1), _ambig(-1),
-    _z(-1000.0), _phi(-1000.0), _rho(-1000.0),
+    _plane(-1), _panel(-1), _layer(-1), _straw(-1), _ambig(-1),_driftend(-1),
+    _tdcal(-1000.0),_tdhv(-1000.0),
     _resid(-1000.0), _residerr(-1000.0), _rdrift(-1000.0), _rdrifterr(-1000.0),_trklen(-1000.0),
     _doca(-1000.0), _exerr(-1000.0), _penerr(-1000.0), _t0(-1000.0), _t0err(-1000.0),
     _ht(-1000.0), _dt(-1000.0), _tddist(-1000.0), _tdderr(-1000.0), _hlen(-1000.0), _wdot(-1000.0), _bdot(-1000.0),

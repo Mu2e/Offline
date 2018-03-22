@@ -17,7 +17,6 @@ vector<double> building.beamline.ceiling.xPositions = {
   -2006.6,   // b1
   -2006.6,   // A
   1193.8,   // B
-  1413.82,   // C
   2787.8,   // J
   15158.4,   // K
   15086.6,   // L
@@ -31,7 +30,6 @@ vector<double> building.beamline.ceiling.yPositions = {
   2438.4,   // b1
   6248.4,   // A
   6248.4,   // B
-  6468.42,   // C
   7842.4,   // J
   10853.4,   // K
   11148.4,   // L

@@ -10,9 +10,11 @@
 namespace mu2eCrv
 {
 
-void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double singlePEWaveformPrecision, double singlePEWaveformMaxTime) 
+void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double singlePEWaveformPrecision, double singlePEWaveformMaxTime, 
+                                                                                                           double singlePEReferenceCharge) 
 {
   _singlePEWaveformPrecision = singlePEWaveformPrecision;
+  _singlePEReferenceCharge = singlePEReferenceCharge;
   std::ifstream f(filename.c_str());
   if(!f.good()) throw std::logic_error("Could not open single PE waveform file. "+filename);
 
@@ -21,7 +23,7 @@ void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double 
   unsigned int index=0;
   while(f >> currentTime >> currentVoltage)
   {
-    if(!isnan(previousTime))
+    if(!std::isnan(previousTime))
     {
       double t=index*singlePEWaveformPrecision;  
       while(currentTime>=t && index*singlePEWaveformPrecision<singlePEWaveformMaxTime)
@@ -59,7 +61,7 @@ void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times,
   for(; iterTime!=times.end() && iterCharge!=charges.end(); iterTime++, iterCharge++)
   {
     double timeOfCharge=*iterTime;  //the time when the charge happened
-    double charge=*iterCharge;
+    double charge=*iterCharge/_singlePEReferenceCharge;  //scale it to the 1PE reference charge used for the single PE waveform
     unsigned int waveformIndex = (timeOfCharge>startTime ? ceil((timeOfCharge-startTime)/digitizationPrecision) : 0);  //waveform index of the first digitization point for this particular charge
     double waveformTime = waveformIndex*digitizationPrecision + startTime;  //the time for this waveform index
 
@@ -67,7 +69,7 @@ void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times,
     {
       double singlePEWaveformTime = waveformTime - timeOfCharge;
       if(singlePEWaveformTime<0) continue;  //this shouldn't happen
-      unsigned int singlePEwaveformIndex=static_cast<unsigned int>(singlePEWaveformTime/_singlePEWaveformPrecision + 0.5);
+      unsigned int singlePEwaveformIndex=static_cast<unsigned int>(lrint(singlePEWaveformTime/_singlePEWaveformPrecision));
       if(singlePEwaveformIndex>=_singlePEWaveform.size()) break; 
 
       if(waveform.size()<waveformIndex+1) waveform.resize(waveformIndex+1);

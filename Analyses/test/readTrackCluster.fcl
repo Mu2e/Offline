@@ -7,9 +7,9 @@
 # so need to define input and 
 #------------------------------------------------------------------------------
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 #include "CaloCluster/fcl/prolog.fcl"
 #include "Analyses/fcl/prolog.fcl"
@@ -176,7 +176,7 @@ physics : {
 outputs: {
     detectorOutput : {
         module_type : RootOutput
-#        SelectEvents: { SelectEvents: [p1] }
+#        SelectEvents: [p1]
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]
@@ -211,7 +211,7 @@ physics.producers.CaloReadoutHitsMaker.g4ModuleLabel : g4run
 physics.producers.CalPatRec.minClusterEnergy         : 60.
 physics.producers.CalPatRec. minClusterSize          : 2
 physics.producers.CalPatRec.HelixFit.distPatRec      : 100.
-physics.producers.CalPatRec.BackgroundSelectionBits  : ["DeltaRay","Isolated"]
+physics.producers.CalPatRec.BackgroundSelectionBits  : ["Background","Isolated"]
 
 
 physics.producers.TrkExtrapol.fitterModuleLabel      : MergePatRec

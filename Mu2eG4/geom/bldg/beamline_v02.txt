@@ -1,0 +1,87 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_beamline.ccl
+
+string building.beamline.name     = "beamline";
+
+string building.beamline.material = "CONCRETE_MARS";
+
+double building.beamline.offsetFromMu2eOrigin.x   = 947.4;
+double building.beamline.offsetFromFloorSurface.y = 3733.8;
+double building.beamline.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.beamline.yHalfThickness           = 1447.8;
+
+vector<double> building.beamline.xPositions = {
+  17500.6,   // O
+  17500.6,   // O1
+  27397.7,   // B0
+  27337.9,   // B1
+  37483.7,   // B2
+  36574.6,   // B3
+  26379.4,   // B4
+  24561.1,   // B5
+  20660.7,   // B6
+  19356.8,   // B7
+  15900.8,   // B8
+  17204.7,   // B9
+  13106.9,   // B10
+  13585.5,   // SW0
+  14029.8,   // SW1
+  13635,   // C1
+  14912.5,   // C2
+  14934.9,   // C3
+  15243.5,   // C4
+  15221,   // C5
+  17880.9,   // C6
+  16636.8,   // C7
+  18907.9,   // C8
+  20152,   // C9
+  24299.2,   // C10
+  25555.3,   // C11
+  25462.7,   // C12
+  25642.2,   // C13
+  25734.7,   // C14
+  26129.5,   // C15
+  36645.6,   // C16
+  37363.3   // C17
+};
+
+vector<double> building.beamline.yPositions = {
+  6874.92,   // O
+  6195.2,   // O1
+  8593.43,   // B0
+  8840.29,   // B1
+  11298.6,   // B2
+  15050.8,   // B3
+  12580.6,   // B4
+  20085,   // B5
+  19140,   // B6
+  24521.5,   // B7
+  23684.1,   // B8
+  18302.6,   // B9
+  17309.7,   // B10
+  15334.8,   // SW0
+  15442.5,   // SW1
+  17071.8,   // C1
+  17381.3,   // C2
+  17288.7,   // C3
+  17363.5,   // C4
+  17456.1,   // C5
+  18100.6,   // C6
+  23235.2,   // C7
+  23785.5,   // C8
+  18650.8,   // C9
+  19655.7,   // C10
+  14471.7,   // C11
+  14449.2,   // C12
+  13708.7,   // C13
+  13731.1,   // C14
+  12101.8,   // C15
+  14649.9,   // C16
+  11687.6   // C17
+};
+
+// Local Variables:
+// mode:c++
+// End:

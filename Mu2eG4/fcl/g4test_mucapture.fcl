@@ -13,9 +13,9 @@
 # $Author: knoepfel $
 # $Date: 2014/08/29 16:16:17 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 # Give this job a name.
 process_name : G4TestMuCapture
@@ -69,6 +69,7 @@ physics : {
     g4run : @local::g4run
 
     # Form StrawHits (SH).
+    makeSD : @local::makeSD
     makeSH : @local::makeSH
 
     @table::CaloDigiMC.producers
@@ -93,14 +94,15 @@ physics : {
 
     readStrawHits: {
       module_type      : ReadStrawHit
-      makerModuleLabel : makeSH
+      recoModuleLabel : makeSH
+      simModuleLabel : makeSD
       diagLevel        : 0
       maxFullPrint     : 100
     }
 
   }
 
-  p1 : [generate, g4run, makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
+  p1 : [generate, g4run, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
   e1 : [checkhits, readStrawHits, outfile]
 
   trigger_paths  : [p1]

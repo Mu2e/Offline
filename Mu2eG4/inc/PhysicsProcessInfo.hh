@@ -39,9 +39,6 @@ namespace mu2e {
     // increment the counter.
     ProcessCode findAndCount( G4String const& name );
       
-      int test_int();
-      
-
     void printAll ( std::ostream& os) const;
     void printSummary ( std::ostream& os) const;
 

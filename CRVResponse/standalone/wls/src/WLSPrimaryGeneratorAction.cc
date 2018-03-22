@@ -23,7 +23,7 @@
 #include "G4TransportationManager.hh"
 #include "G4Navigator.hh"
 
-#include "TH3D.h"
+//#include "TH3D.h"
 
 #include <stdexcept>
 
@@ -240,7 +240,7 @@ int WLSPrimaryGeneratorAction::GeneratePhotonsInScintillator(G4Event *anEvent, i
     double cost = 1. - 2.*G4UniformRand();
     double sint = std::sqrt((1.-cost)*(1.+cost));
 
-    double phi = twopi*G4UniformRand();
+    double phi = CLHEP::twopi*G4UniformRand();
     double sinp = std::sin(phi);
     double cosp = std::cos(phi);
 
@@ -258,7 +258,7 @@ int WLSPrimaryGeneratorAction::GeneratePhotonsInScintillator(G4Event *anEvent, i
     G4ThreeVector photonPolarization(sx, sy, sz);
     G4ThreeVector perp = photonMomentum.cross(photonPolarization);
 
-    phi = twopi*G4UniformRand();
+    phi = CLHEP::twopi*G4UniformRand();
     sinp = std::sin(phi);
     cosp = std::cos(phi);
     photonPolarization = cosp * photonPolarization + sinp * perp;
@@ -312,7 +312,7 @@ int WLSPrimaryGeneratorAction::GenerateCerenkovPhotonsInFiber(G4Event *anEvent, 
 //random direction of photon on cone surface defined by Theta 
 //(in coordinate system with primary particle direction aligned with the z axis)
 
-    double phi = twopi*G4UniformRand();
+    double phi = CLHEP::twopi*G4UniformRand();
     double sinPhi = std::sin(phi);
     double cosPhi = std::cos(phi);
 

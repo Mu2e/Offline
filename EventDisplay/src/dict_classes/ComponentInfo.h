@@ -168,7 +168,6 @@ namespace mu2e_eventdisplay
         }
       }
     }
-
 #endif
     ClassDef(ComponentInfo,0);
   };

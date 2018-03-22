@@ -100,7 +100,7 @@ Int_t TValCompare::Analyze(Option_t* Opt) {
 
     if ( ! dj ) {
       if(fVerbose > 0) 
-	printf("Error: did not find directory %s in file 2\n",path.Data());
+	printf("Warning: did not find directory %s in file 2\n",path.Data());
       continue;
     }
 
@@ -372,8 +372,8 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
     inf <<"<title>valCompare</title>\n";
     inf << "<BR><BR>\n";
     inf <<"<h2>"<< fFileN1 
-	<< "<BR>&nbsp&nbsp vs &nbsp&nbsp<BR>";
-    inf <<fFileN2 <<"</h2>\n";
+	<< " (hist)<BR>&nbsp&nbsp vs &nbsp&nbsp<BR>";
+    inf <<fFileN2 <<" (dots)</h2>\n";
     inf << "<BR><BR>\n";
     inf << "<TABLE>\n";
     inf << "<TR><TD width=120 align=left>KS</TD>\n";
@@ -389,6 +389,8 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
     TString gifFile,gifName;
     TString gifFileLog,gifNameLog;
     while ( (hh = (TValHist*) it.Next()) ) {
+      // TEfficiency does not handle log scale well 
+      bool qDoLog = (hh->ClassName()!=TString("TValHistE"));
       if(hh->GetStatus()>=fMinStat && hh->GetStatus()<=fMaxStat) {
 	hh->Draw();
 	gifName = hh->GetTag()+"/"+hh->GetName();
@@ -399,8 +401,10 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
 	gifFile = dir+gifName;
 	gifFileLog = dir+gifNameLog;
 	ccc->SaveAs(gifFile);
-	hh->Draw("log");
-	ccc->SaveAs(gifFileLog);
+	if(qDoLog) {
+	  hh->Draw("log");
+	  ccc->SaveAs(gifFileLog);
+	}
 	
 	inf << "<TR><TD>";
 	for(int io=0; io<2; io++) {
@@ -421,7 +425,9 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
 	inf << hh->GetStatus() << "</TD><TD>";
 	inf<< "<a href=\""<<gifName << "\">" << hh->GetTag() << "/" <<
 	  hh->GetName() <<"</a> ";
-	inf<< " &nbsp <a href=\""<<gifNameLog << "\">log</a> ";
+	if(qDoLog) {
+	  inf<< " &nbsp <a href=\""<<gifNameLog << "\">log</a> ";
+	}
 	inf << "</TD><TD>";
 	inf << hh->GetTitle();
 	inf << "</TD></TR>\n";

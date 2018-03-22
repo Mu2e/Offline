@@ -53,8 +53,10 @@ namespace mu2e {
     bool printMaterials_;
 
     // Construct materials specific to Mu2e.
-    void constructMu2eMaterials();
-
+    void constructMu2eMaterials();  // Don't add any more materials here.
+    void constructMu2eMaterials2(); // Because of the number of variables
+    // created to hold the many materials used, we move some of the
+    // material creation into a new function.  Add new materials to this function.
     // Wrapper around FindOrBuildElement.
     G4Element* getElementOrThrow( G4String const& name);
 

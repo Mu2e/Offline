@@ -151,6 +151,8 @@ class Hexagon: public VirtualShape
     }
     else start();
   }
+
+  ClassDef(Hexagon,1);
 };
 
 }

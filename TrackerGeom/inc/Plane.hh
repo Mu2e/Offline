@@ -34,7 +34,7 @@ namespace mu2e {
     // A free function, returning void, that takes a const Plane& as an argument.
     typedef void (*PlaneFunction)( const Plane& s);
 
-    Plane():_id(-1),_rotation(0.),_origin(),_panels(),_exists(true){}
+    Plane():_id(PlaneId()),_rotation(0.),_origin(),_panels(),_exists(true){}
 
     explicit Plane( const PlaneId& id,
             CLHEP::Hep3Vector const& origin = CLHEP::Hep3Vector(0.,0.,0.),
@@ -48,7 +48,7 @@ namespace mu2e {
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
     // Accessors
-    PlaneId id() const { return _id;}
+    const PlaneId&  id()  const { return _id;}
 
     double rotation() const { return _rotation; }
 
@@ -58,7 +58,7 @@ namespace mu2e {
       return _panels.size();
     }
 
-    const std::vector<Panel>& getPanels () const{
+    const std::array<Panel,StrawId::_npanels>& getPanels () const{
       return _panels;
     }
 
@@ -68,10 +68,6 @@ namespace mu2e {
 
     const Panel& getPanel ( const PanelId& pnlid ) const{
       return _panels.at(pnlid.getPanel());
-    }
-
-    const Layer& getLayer ( const LayerId& layid ) const{
-      return _panels.at(layid.getPanel()).getLayer(layid);
     }
 
     const Straw& getStraw ( const StrawId& strid ) const{
@@ -94,27 +90,15 @@ namespace mu2e {
     // F can be a class with an operator() or a free function.
     template <class F>
     inline void forAllStraws ( F& f) const{
-      for ( std::vector<Panel>::const_iterator i=_panels.begin(), e=_panels.end();
-            i !=e; ++i){
-        i->forAllStraws(f);
-      }
-    }
-
-    // Loop over all straws and call F.
-    // F can be a class with an operator() or a free function.
-    template <class F>
-    inline void forAllLayers ( F& f) const{
-      for ( std::vector<Panel>::const_iterator i=_panels.begin(), e=_panels.end();
-            i !=e; ++i){
-        i->forAllLayers(f);
+      for ( const auto& panel : _panels ){
+        panel.forAllStraws(f);
       }
     }
 
     template <class F>
     inline void forAllPanels ( F& f) const{
-      for ( std::vector<Panel>::const_iterator i=_panels.begin(), e=_panels.end();
-            i !=e; ++i){
-        f(*i);
+      for ( const auto& panel : _panels ) {
+        f(panel);
       }
     }
 
@@ -122,10 +106,10 @@ namespace mu2e {
 
   protected:
 
-    PlaneId            _id;
+    PlaneId             _id;
     double              _rotation;
     CLHEP::Hep3Vector   _origin;
-    std::vector<Panel> _panels;
+    std::array<Panel,StrawId::_npanels> _panels;
     bool                _exists;
   };
 

@@ -189,7 +189,7 @@ namespace mu2e {
           addtime = getNegativeExpoRndTime();
           if (_posAlgo == muonFileInputPos) {
             _muDelay = time;
-          } 
+          }
           time += addtime;
           break;
         default:
@@ -199,7 +199,7 @@ namespace mu2e {
           _pulseDelay = includePulseDelay();
           time += _pulseDelay;
         }
-      
+
         _pulseDelay += _pPulseShift;
         time += _pPulseShift;
 
@@ -216,15 +216,15 @@ namespace mu2e {
     }
 
   }
-  
+
   double FoilParticleGenerator::muDelay() {
     return _muDelay;
   }
-  
+
   double FoilParticleGenerator::pulseDelay() {
     return _pulseDelay;
   }
-  
+
 
   int FoilParticleGenerator::iFoil() {
     return _ifoil;
@@ -363,16 +363,16 @@ namespace mu2e {
     string line;
     int counter = 0;
     while (counter < _ntoskip) {
-      bool readok = getline(STfile(_STinfilename), line);
+      bool readok = getline(STfile(_STinfilename), line).good();
       //      cout << "In skippstartinglines I'm reading " << line << endl;
       ++counter;
       if (!readok) {
       STfile(_STinfilename).clear();
       STfile(_STinfilename).seekg(0, ios::beg);
-      PointToBeginData();   
+      PointToBeginData();
       }
     }
-    //    cout << "And then I'm out of the skipping cycle" << endl;    
+    //    cout << "And then I'm out of the skipping cycle" << endl;
     return;
   }
 
@@ -398,9 +398,9 @@ namespace mu2e {
       }
       STfile(_STinfilename).clear();
       STfile(_STinfilename).seekg(0, ios::beg);
-      PointToBeginData();   
+      PointToBeginData();
     }
-    
+
     return;
   }
 
@@ -464,7 +464,7 @@ namespace mu2e {
 
 
   FoilParticleGenerator::posGen_enum  FoilParticleGenerator::findPosGenByName (std::string const& name){
-   
+
     size_t theSize = lastPos_enum;
     for (size_t i=0; i<theSize; ++i) {
       if (_posName[i] == name) {
@@ -489,5 +489,3 @@ namespace mu2e {
   }
 
 }
-
-

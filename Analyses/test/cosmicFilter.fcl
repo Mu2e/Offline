@@ -3,8 +3,8 @@
 # Configuration file for CosmicFilter
 #
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this process a name.
 process_name : CosmicFilter
@@ -30,7 +30,7 @@ services : {
   }
 
   GeometryService : {
-    inputFile : "Mu2eG4/test/geom_01.txt"
+    inputFile : "Mu2eG4/geom/geom_common.txt"
   }
   
   ConditionsService : {
@@ -73,7 +73,7 @@ outputs: {
   outfile : {
     module_type    : RootOutput
     fileName       : "cosmics.root"
-    SelectEvents  : { SelectEvents: [ p1 ] }
+    SelectEvents  : [ p1 ]
     outputCommands : ['keep *_*_*_*'
 #                   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
 #                   , 'drop mu2eSimParticles_*_*_*'

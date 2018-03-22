@@ -154,6 +154,8 @@
  <class name="art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,void>" />
  <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRawHit,mu2e::ExtMonFNALHitTruthBits>" />
  <class name="art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,mu2e::ExtMonFNALHitTruthBits>" />
+ <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRawHit,void> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,void> >" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRawHit,mu2e::ExtMonFNALHitTruthBits> >" />
  <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,mu2e::ExtMonFNALHitTruthBits> >" />
 
@@ -165,6 +167,8 @@
  <class name="art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,void>" />
  <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoCluster,mu2e::ExtMonFNALRecoClusterTruthBits>" />
  <class name="art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,mu2e::ExtMonFNALRecoClusterTruthBits>" />
+ <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoCluster,void> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,void> >" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALRecoCluster,mu2e::ExtMonFNALRecoClusterTruthBits> >" />
  <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRecoCluster,mu2e::SimParticle,mu2e::ExtMonFNALRecoClusterTruthBits> >" />
 
@@ -177,6 +181,8 @@
  <class name="art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,void>" />
  <class name="art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,mu2e::ExtMonFNALTrkMatchInfo>" />
  <class name="art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo>" />
+ <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,void> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,void> >" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::ExtMonFNALTrkFit,mu2e::ExtMonFNALTrkMatchInfo> >" />
  <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,mu2e::ExtMonFNALTrkMatchInfo> >" />
 
@@ -220,11 +226,8 @@
  <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,void > >" /> 
 
  <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,art::Ptr<mu2e::CaloShowerSim> >" />
- <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,void >" />
- <class name="art::Assns<mu2e::CaloCrystalHit,mu2e::SimParticle,void >" />
  <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,art::Ptr<mu2e::CaloShowerSim> > >" /> 
- <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCrystalHit,void > >" /> 
- <class name="art::Wrapper< mu2e::CaloCrystalHit,art::Assns<mu2e::SimParticle,void > >" /> 
+<!--  <class name="art::Wrapper< mu2e::CaloCrystalHit,art::Assns<mu2e::SimParticle,void > >" />  -->
 
  <class name="art::Assns<mu2e::CaloCluster,mu2e::SimParticle,art::Ptr<mu2e::CaloShowerSim> >" />
  <class name="art::Assns<mu2e::CaloCluster,mu2e::SimParticle,void >" />
@@ -234,35 +237,34 @@
  <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCluster,void > >" />
 
  <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCluster,art::Ptr<mu2e::CaloShowerSim> >" />
- <class name="art::Assns<mu2e::SimParticle,mu2e::CaloCluster,void >" />
- <class name="art::Assns<mu2e::CaloCluster,mu2e::SimParticle,void >" />
  <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCluster,art::Ptr<mu2e::CaloShowerSim> > >" />
- <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCluster,void > >" />
- <class name="art::Wrapper< art::Assns<mu2e::CaloCluster,mu2e::SimParticle,void > >" />
 
- <class name="mu2e::CrvPhotonArrivals" />
- <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvPhotonArrivals>" />
- <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvPhotonArrivals>" />
- <class name="mu2e::CrvPhotonArrivalsCollection" />
- <class name="art::Wrapper<mu2e::CrvPhotonArrivalsCollection>" />
+ <class name="mu2e::CrvPhotons" />
+ <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvPhotons>" />
+ <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvPhotons>" />
+ <class name="mu2e::CrvPhotonsCollection" />
+ <class name="art::Wrapper<mu2e::CrvPhotonsCollection>" />
+
+ <class name="mu2e::CrvPhotons::SinglePhoton" />
+ <class name="std::vector<mu2e::CrvPhotons::SinglePhoton>" />
  
- <class name="mu2e::CrvSiPMResponses" />
- <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvSiPMResponses>" />
- <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvSiPMResponses>" />
- <class name="mu2e::CrvSiPMResponsesCollection" />
- <class name="art::Wrapper<mu2e::CrvSiPMResponsesCollection>" />
+ <class name="mu2e::CrvSiPMCharges" />
+ <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvSiPMCharges>" />
+ <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvSiPMCharges>" />
+ <class name="mu2e::CrvSiPMChargesCollection" />
+ <class name="art::Wrapper<mu2e::CrvSiPMChargesCollection>" />
 
- <class name="mu2e::CrvSiPMResponses::CrvSingleSiPMResponse" />
- <class name="std::vector<mu2e::CrvSiPMResponses::CrvSingleSiPMResponse>" />
+ <class name="mu2e::CrvSiPMCharges::CrvSingleCharge" />
+ <class name="std::vector<mu2e::CrvSiPMCharges::CrvSingleCharge>" />
 
- <class name="mu2e::CrvWaveforms" />
- <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvWaveforms>" />
- <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvWaveforms>" />
- <class name="mu2e::CrvWaveformsCollection" />
- <class name="art::Wrapper<mu2e::CrvWaveformsCollection>" />
+ <class name="mu2e::CrvDigiMC" />
+ <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigiMC>" />
+ <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigiMC>" />
+ <class name="mu2e::CrvDigiMCCollection" />
+ <class name="art::Wrapper<mu2e::CrvDigiMCCollection>" />
 
- <class name="mu2e::CrvWaveforms::CrvSingleWaveform" />
- <class name="std::vector<mu2e::CrvWaveforms::CrvSingleWaveform>" />
+ <class name="mu2e::CrvDigiMC::CrvSingleWaveform" />
+ <class name="std::vector<mu2e::CrvDigiMC::CrvSingleWaveform>" />
 
  <class name="mu2e::ProtonBunchIntensity" />
  <class name="art::Wrapper<mu2e::ProtonBunchIntensity>"/>

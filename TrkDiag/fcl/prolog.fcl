@@ -2,14 +2,15 @@
 #include "CaloMC/fcl/prolog.fcl"
 #include "CaloReco/fcl/prolog.fcl"
 #include "CaloCluster/fcl/prolog.fcl"
+#include "TrkHitReco/fcl/prolog.fcl"
+#include "TrkPatRec/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
 # Note that KalDiag must be configured differently depending on whether you are
 # reading data generated inline, or are reading data output through Read
   KalDiag : {
-    MCPtrLabel	      : makeSH
-    StrawHitMCLabel   : makeSH
+    StrawDigiMCLabel   : makeSD
     TimeOffsets       :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
   }
 
@@ -74,34 +75,88 @@ BEGIN_PROLOG
   ReadKalFitsMix.eventWeightModules : [ protonBunchSummarizer  ]
   ReadKalFitsMix.beamWeightModule : protonBunchSummarizer
 # Diagnostic modules    
-  TimeClusterDiag : {
-	module_type : TimeClusterDiag
-	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
-	HitBackgroundBits	    : ["DeltaRay"]
-	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
-  }
-
-  HelixDiag : {
-	module_type : HelixDiag
-	MinimumCEHits : 10
-	HelixSeedCollectionTag : "PosHelixFinder"
-	StrawHitFlagCollectionTag : "TimeClusterFinder"
-	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-  }
-
-  StrawHitDiag : {
-	module_type : StrawHitDiag
+  BD : {
+	module_type : BkgDiag
+	ComboHitCollection : "makePH"
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	UseFlagCollection : true
 	TimeOffsets : {
-	  inputs : [ "protonTimeMap", "muonTimeMap" ] 
+	  inputs : [ "protonTimeMap", "muonTimeMap" ]
 	}
   }
   
-  TrkRecoDiag : {
+  TRD : {
     module_type : TrkRecoDiag
     TimeOffsets : {
       inputs : [ "protonTimeMap", "muonTimeMap" ] 
     }
+  }
+
+  SHD : {
+	module_type : StrawHitDiag
+	ComboHitFlag : false
+	StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+	TimeOffsets : {
+	  inputs : [ "protonTimeMap", "muonTimeMap" ] 
+	}
+  }
+
+
+# reco path
+  TCD : {
+	module_type : TimeClusterDiag
+	ComboHitCollection : "makePH"
+	UseFlagCollection : true
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
+	HitBackgroundBits	    : ["Background"]
+	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
+	PlotTimeSpectra : true
+      }
+
+  HD : {
+	module_type : HelixDiag
+	HelixSeedCollection : "HelixFinder:Positive"
+	ComboHitCollection : "makePH"
+	UseFlagCollection : true
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	PlotHelices : true
+	SaveHelixFlag : ["HitsOK"]
+	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+  }
+
+  CHD : {
+	module_type : ComboHitDiag
+	ComboHitCollection : "makePH"
+	UseFlagCollection : true
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	TimeOffsets : {
+	  inputs : [ "protonTimeMap", "muonTimeMap" ]
+	}
+  }
+
+# track trigger path
+  TTTCD : {
+	@table::TCD
+	UseFlagCollection : false
+	StrawHitFlagCollection : none
+	ComboHitCollection : TTflagBkgHits
+	TimeClusterCollection : TTtimeClusterFinder
+  }
+
+  TTHD : {
+	@table::HD
+	ComboHitCollection : TTflagBkgHits
+	HelixSeedCollection : "TThelixFinder:Positive"
+	UseFlagCollection : false
+	StrawHitFlagCollection : none
+  }
+
+  TTCHD : {
+	@table::CHD
+	UseStrawHitFlagCollection : false
+	ComboHitCollection : TTflagBkgHits
   }
 
 # Prototype track analysis config.
@@ -114,9 +169,11 @@ BEGIN_PROLOG
     # change this if reading cosmic data or generating inline
     TrkCaloDiag : @local::TrkCaloDiag
     CrvCoincidenceModuleLabel : "CrvCoincidence"
-    eventWeightModules : [ ]
+    # note that these weights will only be applied if the module which
+    # produces them is run
+    beamWeightTag : protonBunchSummarizer
+    generatorWeightTag : DIOWeight
   }
-
 
 # TrkCaloIntersection by default looks for merged tracks; repoint to the tracker-found tracks
   TrackCaloMatching : { @table::TrackCaloMatching 
@@ -136,9 +193,14 @@ BEGIN_PROLOG
 
   TrkDiag : {
     analyzers : {
-      TimeClusterDiag : @local::TimeClusterDiag
-      StrawHitDiag : @local::StrawHitDiag
-      HelixDiag : @local::HelixDiag
+      TCD : @local::TCD
+      CHD : @local::CHD
+      SHD : @local::SHD
+      HD : @local::HD
+      TRD : @local::TRD
+      TTCHD : @local::TTTCD
+      TTTCD : @local::TTTCD
+      TTHD : @local::TTHD
     }
   }
 
@@ -150,12 +212,14 @@ BEGIN_PROLOG
     }
     producers : {
       @table::EventMixing.producers
+      @table::TrackerMC.producers
+      @table::TrkHitReco.producers
       @table::Tracking.producers
       @table::CaloDigiMC.producers
       @table::CaloReco.producers
       @table::CaloCluster.producers
       @table::TrackCaloMatching.producers
-      @table::CrvResponsePackage.producers
+#      @table::CrvResponsePackage.producers
   # DIO weighting for flat spectrum electrons
       DIOWeight: {
 	module_type: DecayInOrbitWeight
@@ -165,27 +229,24 @@ BEGIN_PROLOG
     }
     analyzers : {
       genCountLogger: { module_type: GenEventCountReader }
-      TrkAna: {
-	@table::TrackAnalysis
-	# note that these weights will only be applied if the module which
-	# produces them is run
-	beamWeightTag : protonBunchSummarizer
-	generatorWeightTag : DIOWeight
-      }
+      TrkAna: @local::TrackAnalysis
     }
   
     # separate out the sime and reco parts of the sequence
     SimSequence	: [ @sequence::EventMixing.TimeMaps,
-		    @sequence::Tracking.DigiSim,
-		    @sequence::CaloDigiMC.DigiSim,
-                    @sequence::CrvResponsePackage.CrvResponseSequence ]
+		    @sequence::TrackerMC.DigiSim,
+		    @sequence::CaloDigiMC.DigiSim ]
     RecoSequence : [ @sequence::CaloReco.Reco,
 	             @sequence::CaloCluster.Reco, 
+		     @sequence::TrkHitReco.PrepareHits,
+		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,
 		     @sequence::Tracking.TPRUeM,
 		     @sequence::Tracking.TPRDmuM,
 		     @sequence::TrackCaloMatching.matching_dem_TRF ]
-    EndSequence : [ TrkAna, genCountLogger ]
+# temporarily remove due to art 2_9 compatibility issues FIXME!
+#    EndSequence : [ TrkAna, genCountLogger ]
+    EndSequence : [ TrkAna ]
 
   }
   # aggregate these for convenience

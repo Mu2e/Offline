@@ -12,21 +12,13 @@ namespace mu2e {
 
     int stepPoint(art::Ptr<StepPointMC>& sp, StrawDigiMC const& mcdigi) {
       int retval(-1);
-      if(mcdigi.hasTDC(StrawDigi::zero) && mcdigi.hasTDC(StrawDigi::one)) {
-	if(mcdigi.wireEndTime(StrawDigi::zero) < mcdigi.wireEndTime(StrawDigi::one)) {
-	  sp = mcdigi.stepPointMC(StrawDigi::zero);
-	  retval = StrawDigi::zero;
-	} else {
-	  sp = mcdigi.stepPointMC(StrawDigi::one);
-	  retval = StrawDigi::one;
-	};
-      } else if (mcdigi.hasTDC(StrawDigi::zero)) {
-	sp = mcdigi.stepPointMC(StrawDigi::zero);
-	retval = StrawDigi::zero;
-      } else if (mcdigi.hasTDC(StrawDigi::one)) {
-	sp = mcdigi.stepPointMC(StrawDigi::one);
-	retval = StrawDigi::one;
-      }
+      if(mcdigi.wireEndTime(TrkTypes::cal) < mcdigi.wireEndTime(TrkTypes::hv)) {
+	sp = mcdigi.stepPointMC(TrkTypes::cal);
+	retval = TrkTypes::cal;
+      } else {
+	sp = mcdigi.stepPointMC(TrkTypes::hv);
+	retval = TrkTypes::hv;
+      };
       return retval;
     }
 
@@ -38,9 +30,9 @@ namespace mu2e {
 	int gid(-1);
 	if(spp->genParticle().isNonnull())
 	  gid = spp->genParticle()->generatorId().id();
-      // a conversion electron is an electron from the CE generator.  The momentum requirement
-      // removes cases where the CE loses a catastrophic amount of energy (ie albedo backsplash
-      // from the calorimeter).
+	// a conversion electron is an electron from the CE generator.  The momentum requirement
+	// removes cases where the CE loses a catastrophic amount of energy (ie albedo backsplash
+	// from the calorimeter).
 	conversion = (spp->pdgId() == 11 && gid == 2 && spmcp->momentum().mag()>90.0);
       }
       return conversion;
@@ -83,18 +75,10 @@ namespace mu2e {
 
     unsigned simParticle(art::Ptr<SimParticle>& spp, StrawDigiMC const& mcdigi) {
       unsigned retval(0);
-      if(mcdigi.hasTDC(StrawDigi::zero) &&
-	  mcdigi.hasTDC(StrawDigi::one) &&
-	  mcdigi.stepPointMC(StrawDigi::zero)->simParticle() ==
-	  mcdigi.stepPointMC(StrawDigi::one)->simParticle() ) {
-	spp = mcdigi.stepPointMC(StrawDigi::zero)->simParticle();
+      if( mcdigi.stepPointMC(TrkTypes::cal)->simParticle() ==
+	  mcdigi.stepPointMC(TrkTypes::hv)->simParticle() ) {
+	spp = mcdigi.stepPointMC(TrkTypes::cal)->simParticle();
 	retval = 2;
-      } else if(mcdigi.hasTDC(StrawDigi::zero)) {
-	spp = mcdigi.stepPointMC(StrawDigi::zero)->simParticle();
-	retval = 1;
-      } else if(mcdigi.hasTDC(StrawDigi::one)) {
-	spp = mcdigi.stepPointMC(StrawDigi::one)->simParticle();
-	retval = 1;
       }
       return retval;
     }

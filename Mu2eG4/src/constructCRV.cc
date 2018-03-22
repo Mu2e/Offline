@@ -22,7 +22,6 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 
@@ -46,7 +45,7 @@ using namespace std;
 
 namespace mu2e 
 {
-  void constructCRV( VolumeInfo const & parent, SimpleConfig const &  _config)
+  void constructCRV( VolumeInfo const & parent, SimpleConfig const & _config)
   {
     GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
@@ -103,7 +102,6 @@ namespace mu2e
         visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
         scintillatorBarLogical->SetVisAttributes(visAtt);
       }
-
 
       if (verbosityLevel > 1) 
       {

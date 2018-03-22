@@ -29,7 +29,7 @@
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestPolycone.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
+//#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 

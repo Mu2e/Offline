@@ -7,9 +7,11 @@ namespace mu2e {
   
   class VolumeInfo;
   class SimpleConfig;
+  class SensitiveDetectorHelper;
   
   void constructProtonBeamDump(const VolumeInfo& parent,
-			       const SimpleConfig& config
+			       const SimpleConfig& config,
+                               const SensitiveDetectorHelper& sdHelper
 			       );
 }
 

@@ -10,10 +10,6 @@
 // Original author KLG
 //
 
-// G4 includes
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
-
 //Mu2e includes
 #include "G4Helper/inc/VolumeInfo.hh"
 

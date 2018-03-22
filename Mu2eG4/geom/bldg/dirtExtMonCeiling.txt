@@ -12,7 +12,7 @@ double dirt.extMon.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.extMon.ceiling.yHalfThickness           = 228.6;
 
-vector<int>    dirt.extMon.ceiling.xreplace   = { 11, 12, 13 }; 
+vector<int>    dirt.extMon.ceiling.xreplace   = { 11, 12 }; 
 vector<double> dirt.extMon.ceiling.xPositions = {
   -17108.7,   // c
   -27322.5,   // d
@@ -26,7 +26,6 @@ vector<double> dirt.extMon.ceiling.xPositions = {
   -18300.1,   // e6
   -18300.1,   // e6_to_S
   -50000,   // SWcorner
-  -50000,   // d_to_W
   -50000,   // NWcorner
   -17108.7,   // c_to_N
   -17108.7,   // Down to WextWallFoot
@@ -35,7 +34,7 @@ vector<double> dirt.extMon.ceiling.xPositions = {
   -17108.7    // c to N again
 };
 
-vector<int>    dirt.extMon.ceiling.yreplace   = { 10, 11, 13, 14 }; 
+vector<int>    dirt.extMon.ceiling.yreplace   = { 10, 11, 12, 13 }; 
 vector<double> dirt.extMon.ceiling.yPositions = {
   1760.03,   // c
   -714.699,   // d
@@ -49,7 +48,6 @@ vector<double> dirt.extMon.ceiling.yPositions = {
   -3253.33,   // e6
   -50000,   // e6_to_S
   -50000,   // SWcorner
-  -714.699,   // d_to_W
   50000,   // NWcorner
   50000,   // c_to_N
   10335.55, // To top of WextWallFoot

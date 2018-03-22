@@ -18,10 +18,9 @@
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StereoHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
 // BaBar
@@ -38,8 +37,6 @@
 
 #include "Mu2eBTrk/inc/BaBarMu2eField.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
-#include "TrkPatRec/inc/TrkHitFilter.hh"
-#include "TrkPatRec/inc/StrawHitInfo.hh"
 
 #include "CalPatRec/inc/CalHelixFinder_types.hh"
 #include "CalPatRec/inc/CalHelixFinderAlg.hh"
@@ -75,10 +72,11 @@ namespace fhicl {
 }
 
 namespace mu2e {
+  using namespace CalHelixFinderTypes;
 
   class Calorimeter;
   class TTracker;
-  class CprModuleHistBase;
+  class ModuleHistToolBase;
 
   class CalHelixFinder : public art::EDFilter {
   protected:
@@ -86,7 +84,7 @@ namespace mu2e {
 // data members
 //-----------------------------------------------------------------------------
     unsigned                              _iev;
-					// configuration parameters
+					                // configuration parameters
     int                                   _diagLevel; 
     int                                   _debugLevel;
     int                                   _printfreq;
@@ -98,6 +96,8 @@ namespace mu2e {
     std::string                           _shpLabel;
     std::string                           _shfLabel;
     std::string                           _timeclLabel;
+    
+    int                                   _minNHitsTimeCluster; //min nhits within a TimeCluster after check of Delta-ray hits
 
     TrkParticle                           _tpart;	        // particle type being searched for
     TrkFitDirection                       _fdir;		// fit direction in search
@@ -123,10 +123,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // diagnostics 
 //-----------------------------------------------------------------------------
-    CalHelixFinder_Hist_t                 _hist;
-    CalHelixFinder_Data_t                 _data;
+    CalHelixFinderTypes::Data_t           _data;
 
-    std::unique_ptr<CprModuleHistBase>    _hmanager;
+    std::unique_ptr<ModuleHistToolBase>   _hmanager;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -154,7 +153,9 @@ namespace mu2e {
 			     const StrawHitCollection*          StrawCollection ,
 			     const StrawHitPositionCollection*  ShPosCollection , 
 			     const StrawHitFlagCollection*      ShFlagCollection);
-
+    
+    int  goodHitsTimeCluster(const TimeCluster* TimeCluster);
+    
   };
 }
 #endif

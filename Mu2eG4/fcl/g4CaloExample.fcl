@@ -1,8 +1,8 @@
 //Example fcl showing hoe to use the calorimeter information
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name: g4CaloExample
 
@@ -34,13 +34,13 @@ physics: {
 
     producers: {
         
-        generate             : @local::generate
-        g4run                : @local::g4run
+        generate: @local::StoppedMuonConversionGun
+        g4run : @local::g4run
 
-        protonTimeMap        : @local::protonTimeMap
-        muonTimeMap          : @local::muonTimeMap
+        protonTimeMap        : { module_type : GenerateProtonTimes }
+        muonTimeMap          : { module_type : GenerateMuonLife }
         
-        //@table::Tracking.producers
+        @table::Tracking.producers
 
 	@table::CaloDigiMC.producers
 	@table::CaloReco.producers
@@ -73,12 +73,12 @@ physics: {
 
 
     p1: [ generate, g4run, protonTimeMap, muonTimeMap, 
-    //@sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM,           
-         @sequence::CaloDigiMC.DigiSim,
-         @sequence::CaloReco.Reco,	 
-	 @sequence::CaloDigiMC.TruthMatch,
-	 @sequence::CaloCluster.Reco, 
-	 @sequence::CaloCluster.TruthMatch 	 
+          @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM,           
+          @sequence::CaloDigiMC.DigiSim,
+          @sequence::CaloReco.Reco,	 
+	  @sequence::CaloDigiMC.TruthMatch,
+	  @sequence::CaloCluster.Reco, 
+	  @sequence::CaloCluster.TruthMatch 	 
        ]
 
     e1: [CaloExample]

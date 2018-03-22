@@ -5,19 +5,6 @@
 // $Author: ehrlich $
 // $Date: 2014/03/22 21:40:44 $
 //
-// Original author Yury Kolomensky
-//
-// Notes:
-// 1) The hrndg2 generator takes a very long time during initialization if the
-//    22 seconds on ilcsim2 if muEMin = 10,000 MeV.
-//    31 seconds on ilcsim2 if muEMin =  5,000 MeV.
-//    41 seconds on ilcsim2 if muEMin =  3,001 MeV.
-//    52 seconds on ilcsim2 if muEmin =  1,000 MeV (same for 1,001 MeV and for 999 MeV).
-//    68 seconds on ilcsim2 if muEmin =    601 MeV
-//
-//    45 seconds on ilcsim  if muEMin = 10,001 MeV.
-//    62 seconds on ilcsim  if muEMin =  5,001 MeV.
-//
 
 // C++ includes.
 #include <cmath>
@@ -38,7 +25,6 @@
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/CosmicDYB.hh"
-#include "EventGenerator/inc/hrndg2.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/WorldG4.hh"
@@ -46,7 +32,6 @@
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 #include "DataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eUtilities/inc/rm48.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
@@ -87,36 +72,36 @@ namespace mu2e
   , _mean      ( config.getDouble("cosmicDYB.mean") )
   , _muEMin    ( config.getDouble("cosmicDYB.muEMin") )   //in MeV
   , _muEMax    ( config.getDouble("cosmicDYB.muEMax") )   //in MeV
-  , _muCosThMin( config.getDouble("cosmicDYB.muCosThMin") )
-  , _muCosThMax( config.getDouble("cosmicDYB.muCosThMax") )
-  , _muPhiMin(0)
-  , _muPhiMax(2.0*M_PI)
+  , _muThMin   ( config.getDouble("cosmicDYB.muThMin", 0.0) )
+  , _muThMax   ( config.getDouble("cosmicDYB.muThMax", M_PI/2.0) )
+  , _muPhiMin  ( config.getDouble("cosmicDYB.muPhiMin", 0.0) )
+  , _muPhiMax  ( config.getDouble("cosmicDYB.muPhiMax", 2.0*M_PI) )
 
+    // Half lengths [mm]
   , _dx(config.getDouble("cosmicDYB.dx"))
-  , _dy(0)
+  , _dy(config.getDouble("cosmicDYB.dy"))
   , _dz(config.getDouble("cosmicDYB.dz"))
-  , _y0(0)
 
-    // Dimensions of the 2d working space for hrndg2.
-  , _ne ( config.getInt("cosmicDYB.nBinsE") )
-  , _nth( config.getInt("cosmicDYB.nBinsTheta") )
+    // Number of lookup bins for DYBGenerator.
+  , _ne ( config.getInt("cosmicDYB.nBinsE", 2000) )
+  , _nth( config.getInt("cosmicDYB.nBinsTheta", 200) )
 
     // Time range (in ns) over which to generate events.
-  ,_dt  ( 0.0 )
+  , _dt ( 0.0 )
 
     // Random number distributions; getEngine comes from the base class.
-  ,_randFlat( getEngine() )
-  ,_randPoissonQ( getEngine(), std::abs(_mean) )
+  , _randFlat( getEngine() )
+  , _randPoissonQ( getEngine(), std::abs(_mean) )
 
-    // Working space for hrndg2 (working space will be on the heap).
-  , _workingSpace( )
-  , _createdProductionPlane(false)
-
-  , _choice(UNDEFINED)
-  , _directionChoice(ALL)
-  , _cosmicReferencePointInMu2e()
-  , _vertical(false)
+    /*
+      TRACKER:(-3904,0,10200)
+      EXTMONFNAL:(-642.571,0,-27524.8)
+      CALO:(-3904,0,11976.1)
+    */
+  , _productionCenterInMu2e(config.getHep3Vector("cosmicDYB.productionCenterInMu2e"))
+  , _direction(DYBGenerator::Direction::UNDEFINED)
   , _dontProjectToSurface(config.getBool("cosmicDYB.dontProjectToSurface",false))
+  , _checkedProductionPlanes(false)
   {
     mf::LogInfo log("COSMIC");
 
@@ -125,82 +110,65 @@ namespace mu2e
     const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus).ref();
     _mMu = mu_data.mass().value();
 
-    //set _choice to desired cosmic ray generator coordinates
-    const std::string refPointChoice = config.getString("cosmicDYB.refPointChoice");
-    log << "cosmicDYB.refPointChoice = " << refPointChoice << "\n";
 
-    if (refPointChoice == "Tracker")         _choice = TRACKER;
-    else if(refPointChoice == "ExtMonFNAL")  _choice = EXTMONFNAL;
-    else if(refPointChoice == "Calorimeter") _choice = CALO;
-    else if(refPointChoice == "Customized") 
+    bool box=false;
+    std::string directionString = "Undefined";
+    if(_dx!=0 && _dy!=0 && _dz!=0) 
     {
-      _choice = CUSTOMIZED;
-      _cosmicReferencePointInMu2e = config.getHep3Vector("cosmicDYB.cosmicReferencePointInMu2e");
-      const std::string directionChoice = config.getString("cosmicDYB.directionChoice");
-      log << "cosmicDYB.directionChoice = " << directionChoice << "\n";
-      if(directionChoice=="All") _directionChoice=ALL;
-      else if(directionChoice=="Positive_x") {_directionChoice=POSITIVE_X; _muPhiMin=-M_PI/2.0; _muPhiMax=M_PI/2.0;}
-      else if(directionChoice=="Negative_x") {_directionChoice=NEGATIVE_X; _muPhiMin=M_PI/2.0;  _muPhiMax=3*M_PI/2.0;}
-      else if(directionChoice=="Positive_z") {_directionChoice=POSITIVE_Z; _muPhiMin=0.0;       _muPhiMax=M_PI;}
-      else if(directionChoice=="Negative_z") {_directionChoice=NEGATIVE_Z; _muPhiMin=M_PI;      _muPhiMax=2.0*M_PI;}
-      else if(directionChoice=="Phi_Range") 
-      {
-        _directionChoice=PHI_RANGE;
-        _muPhiMin = config.getDouble("cosmicDYB.muPhiMin");
-        _muPhiMax = config.getDouble("cosmicDYB.muPhiMax");
-        if(_muPhiMax-_muPhiMin>2.0*M_PI) throw cet::exception("Configuration")<<"Phi range can't be more than 2*pi\n";
-      }
+       log << "Since dx, dy, and dz are non-zero, the generator uses 5 production planes arranged in a box around the reference point\n";
+       log << "The cosmicDYB.direction gets set automatically for all 5 production planes\n";
+       log << "The setting for the phi limits get ignored and get set to 0 ... 2*pi\n";
+       box=true;
+    }
+    else
+    {
+      directionString = config.getString("cosmicDYB.direction");
+      if(directionString=="Negative_y")      {_direction=DYBGenerator::Direction::NEGATIVE_Y; _muPhiMin=0.0;       _muPhiMax=2.0*M_PI;}
+      else if(directionString=="Positive_x") {_direction=DYBGenerator::Direction::POSITIVE_X; _muPhiMin=-M_PI/2.0; _muPhiMax=M_PI/2.0;}
+      else if(directionString=="Positive_z") {_direction=DYBGenerator::Direction::POSITIVE_Z; _muPhiMin=0.0;       _muPhiMax=M_PI;}
+      else if(directionString=="Negative_x") {_direction=DYBGenerator::Direction::NEGATIVE_X; _muPhiMin=M_PI/2.0;  _muPhiMax=3*M_PI/2.0;}
+      else if(directionString=="Negative_z") {_direction=DYBGenerator::Direction::NEGATIVE_Z; _muPhiMin=M_PI;      _muPhiMax=2.0*M_PI;}
       else throw cet::exception("Configuration")<<"Unknown cosmicDYB.directionChoice\n";
-    }
-    else 
-    {
-      throw cet::exception("Configuration") << "Unknown CosmicDYB.refPointChoice\n";
-    }
 
-    log << "Phi range: " << _muPhiMin << " ... " << _muPhiMax << "\n";
-
-    _vertical = config.getBool("cosmicDYB.vertical", false);
-    if(_vertical)
-    {
-      if(_choice!=CUSTOMIZED) throw cet::exception("Configuration")<<"Vertical production planes require cosmicDYB.refPointChoice: Customized\n";
-      if(_directionChoice==ALL) throw cet::exception("Configuration")<<"Vertical production planes require a cosmicDYB.directionChoice other than All e.g. Positive_z or Negative_x\n";
-      if(_dx!=0 && _dz!=0) throw cet::exception("Configuration")<<"Vertical production planes must have either cosmicDYB.dx:0 or cosmicDYB.dz:0 \n";
-      if(_dx==0 && _dz==0) throw cet::exception("Configuration")<<"Vertical production planes cannot have both cosmicDYB.dx:0 and cosmicDYB.dz:0 \n";
-      if((_directionChoice==POSITIVE_X || _directionChoice==NEGATIVE_X) && _dx!=0) throw cet::exception("Configuration")<<"Orientation of the production plane doesn't match cosmicDYB.directionChoice\n";
-      if((_directionChoice==POSITIVE_Z || _directionChoice==NEGATIVE_Z) && _dz!=0) throw cet::exception("Configuration")<<"Orientation of the production plane doesn't match cosmicDYB.directionChoice\n";
-      if(_directionChoice==PHI_RANGE && _dz==0)
+      if(_dx!=0 && _dz!=0) 
       {
-        if(_muPhiMin<0.0) throw cet::exception("Configuration")<<"muPhiMin can't be less than 0 for this plane orientation\n";
-        if(_muPhiMax>2.0*M_PI) throw cet::exception("Configuration")<<"muPhiMax can't be more than 2 pi for this plane orientation\n";
-        if(_muPhiMin<M_PI && _muPhiMax>M_PI) throw cet::exception("Configuration")<<"muPhiMax can't be more than pi, if muPhiMin<pi for this plane orientation\n";
+        if(_direction!=DYBGenerator::Direction::NEGATIVE_Y) 
+        cet::exception("Configuration")<<"dx!=0 and dz!=0 requires a negative_y direction\n";
       }
-      if(_directionChoice==PHI_RANGE && _dx==0)
+      if(_dx!=0 && _dy!=0) 
       {
-        if(_muPhiMin<-M_PI/2.0) throw cet::exception("Configuration")<<"muPhiMin can't be less than -1/2 pi for this plane orientation\n";
-        if(_muPhiMax>3.0*M_PI/2.0) throw cet::exception("Configuration")<<"muPhiMax can't be more than 3/2 pi for this plane orientation\n";
-        if(_muPhiMin<M_PI/2.0 && _muPhiMax>M_PI/2.0) throw cet::exception("Configuration")<<"muPhiMax can't be more than pi/2, if muPhiMin<pi/2 for this plane orientation\n";
+        if(_direction!=DYBGenerator::Direction::NEGATIVE_Z && _direction!=DYBGenerator::Direction::POSITIVE_Z) 
+        cet::exception("Configuration")<<"dx!=0 and dy!=0 requires a negative_z or positive_z direction\n";
       }
-      _dy=config.getDouble("cosmicDYB.dy");
+      if(_dy!=0 && _dz!=0) 
+      {
+        if(_direction!=DYBGenerator::Direction::NEGATIVE_X && _direction!=DYBGenerator::Direction::POSITIVE_X) 
+        cet::exception("Configuration")<<"dy!=0 and dz!=0 requires a negative_x or positive_x direction\n";
+      }
+
+      if((_dx==0 && _dy==0) || (_dx==0 && _dz==0) || (_dy==0 && _dz==9)) 
+        cet::exception("Configuration")<<"At least two of the dx, dy, and dz needs to be non-zero\n";
+
+      //azimuth angle can be overriden
+      _muPhiMin=config.getDouble("cosmicDYB.muPhiMin", _muPhiMin);
+      _muPhiMax=config.getDouble("cosmicDYB.muPhiMax", _muPhiMax);
     }
 
-    if(_choice!=CUSTOMIZED) _y0=config.getDouble("cosmicDYB.y0");
-
-    // Allocate hrndg2 working space on the heap.
-    _workingSpace.resize(_ne*_nth);
 
     log << "cosmicDYB.mean = " << _mean << "\n"
         << "cosmicDYB.muEMin = " << _muEMin <<" MeV, "
         << "cosmicDYB.muEMax = " << _muEMax << " MeV\n"
-        << "cosmicDYB.muCosThMin = " << _muCosThMin << ", "
-        << "cosmicDYB.muCosThMax = " << _muCosThMax << "\n"
-        << "working space dimenions (" << _ne << "," << _nth << ")" << "\n"
-        << "cosmicDYB.vertical = " << _vertical <<"\n"
+        << "cosmicDYB.ThMin = " << _muThMin << ", "
+        << "cosmicDYB.ThMax = " << _muThMax << "\n"
+        << "cosmicDYB.PhiMin = " << _muPhiMin << ", "
+        << "cosmicDYB.PhiMax = " << _muPhiMax << "\n"
+        << "number of lookup bins (E:" << _ne << ", theta:" << _nth << ")" << "\n"
+        << "cosmicDYB.direction = " << directionString << "\n"
         << "halflengths: "
-        << "cosmicDYB.dx = " << _dx <<", "
-        << "cosmicDYB.dy = " << _dy <<", "
-        << "cosmicDYB.dz = " << _dz <<"\n";
-    if(_choice!=CUSTOMIZED) log << "cosmicDYB.y0 = " << _y0 <<"\n";
-    else log << "cosmicDYB.cosmicReferencePointInMu2e = " << _cosmicReferencePointInMu2e << "\n";
+        << "cosmicDYB.dx = " << _dx <<"mm, "
+        << "cosmicDYB.dy = " << _dy <<"mm, "
+        << "cosmicDYB.dz = " << _dz <<"mm\n"
+        << "cosmicDYB.productionCenterInMu2e = " << _productionCenterInMu2e << "\n";
 
     // Access conditions data.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
@@ -224,62 +192,60 @@ namespace mu2e
 
     _dt   = _tmax - _tmin;
 
-
-    // Initialize fake RM48 that is used by DYB code.
-    setRm48Distribution(_randFlat);
-
-    // initialize DYB generator
-    float par = 1.;
-
     // convert to GeV
     _muEMin /= GeV;
     _muEMax /= GeV;
 
-    double dim_sum=0;
-    double E=0;
-    double cosTh=0;
-    hrndg2(_workingSpace,_ne,_muEMin,_muEMax,_nth,_muCosThMin,_muCosThMax, dim_sum,E,cosTh,par,_vertical);  //energy is in GeV
-
-    // dim_sum (as returned from the Daya Bay code) is
-    // - for horizontal planes: the integral of I(theta,E)*cos(theta)*sin(theta)*dtheta*dE from E0 to E1 and 0 to pi/2 
-    // - for vertical planes: the integral of I(theta,E)*sin(theta)^2*dtheta*dE from E0 to E1 and 0 to pi/2 
-    // dim_sum has the unit s^-1 * cm^-2
-    // I(theta,E) is the intensity from the modified Gaisser formula
-    //
-    // the rate is (assuming no user defined phi range) 
-    // - for horizontal planes: 2*pi*area*integral
-    // - for vertical planes: 2*area*integral (only tracks from one direction through the plane are considered)
-    //
-    // the area is 
-    // - for horizontal planes: 4*_dx*_dz
-    // - for vertical planes: 4*_dx*_dy or 4*_dz*_dy 
-    //
-    // the unit is in mm^2 (needs to be multiplied by 0.01 to get it to cm^2 [like in dim_sum])
-    // 
-    double tRate = dim_sum*(_muPhiMax-_muPhiMin)*0.04*_dx*_dz;   //for horizontal planes
-    if(_vertical)
+    if(box)
     {
-      if(_dz==0) tRate = dim_sum*fabs(cos(_muPhiMax)-cos(_muPhiMin))*0.04*_dx*_dy;
-      if(_dx==0) tRate = dim_sum*fabs(sin(_muPhiMax)-sin(_muPhiMin))*0.04*_dz*_dy;
+      _generators.emplace_back(boost::shared_ptr<DYBGenerator>(new DYBGenerator(DYBGenerator::Direction::NEGATIVE_Y, _muThMin, _muThMax, _muEMin, _muEMax, 0.0,       2.0*M_PI,     _nth, _ne)));
+      _generators.emplace_back(boost::shared_ptr<DYBGenerator>(new DYBGenerator(DYBGenerator::Direction::POSITIVE_X, _muThMin, _muThMax, _muEMin, _muEMax, -M_PI/2.0, M_PI/2.0,     _nth, _ne)));
+      _generators.emplace_back(boost::shared_ptr<DYBGenerator>(new DYBGenerator(DYBGenerator::Direction::POSITIVE_Z, _muThMin, _muThMax, _muEMin, _muEMax, 0.0,       M_PI,         _nth, _ne)));
+      _generators.emplace_back(boost::shared_ptr<DYBGenerator>(new DYBGenerator(DYBGenerator::Direction::NEGATIVE_X, _muThMin, _muThMax, _muEMin, _muEMax, M_PI/2.0,  3.0/2.0*M_PI, _nth, _ne)));
+      _generators.emplace_back(boost::shared_ptr<DYBGenerator>(new DYBGenerator(DYBGenerator::Direction::NEGATIVE_Z, _muThMin, _muThMax, _muEMin, _muEMax, M_PI,      2.0*M_PI,     _nth, _ne)));
     }
-    log << "Total cosmic rate = " << tRate << " Hz\n";
-
-    if(_directionChoice!=ALL)
+    else
     {
-      if(_directionChoice!=PHI_RANGE) log << "NOTE: The rate above takes into account that only half of the azimuth angles are considered.\n";
-      else log << "NOTE: The rate above takes into account that only the azimuth angles between "<<_muPhiMin<<" and "<<_muPhiMax<<" are considered.\n";
+      _generators.emplace_back(boost::shared_ptr<DYBGenerator>(new DYBGenerator(_direction, _muThMin, _muThMax, _muEMin, _muEMax, _muPhiMin, _muPhiMax, _nth, _ne)));
     }
+
+    double totalRate=0;
+    for(unsigned int i=0; i<_generators.size(); i++)
+    {
+      double rate = _generators[i]->GetRate();  //in cm^-2 * s^-1
+      switch(_generators[i]->GetDirection())
+      {
+        case DYBGenerator::Direction::NEGATIVE_Y: rate*=0.04*_dx*_dz; break;
+        case DYBGenerator::Direction::POSITIVE_X: 
+        case DYBGenerator::Direction::NEGATIVE_X: rate*=0.04*_dy*_dz; break;
+        case DYBGenerator::Direction::POSITIVE_Z: 
+        case DYBGenerator::Direction::NEGATIVE_Z: rate*=0.04*_dx*_dy; break;
+                                         default: throw cet::exception("Configuration")<<"Invalid direction in DYB generator\n";
+      };
+      _boxFraction.push_back(rate);
+      totalRate+=rate;
+    }
+    for(unsigned int i=0; i<_generators.size(); i++)
+    {
+      _boxFraction[i]/=totalRate;
+      if(i>0) _boxFraction[i]+=_boxFraction[i-1];
+    }
+    _boxFraction.back()=1; //to counteract rounding errors;
+
+    log << "Total cosmic rate = " << totalRate << " Hz\n";
+
     if(_doHistograms)
     {
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir("CosmicDYB");
-      _hStartXZ    = tfdir.make<TH2D>( "StartXZ",    "StartXZ",     500, -6.0e5,  6.0e5, 500, -6.0e5, 6.0e5 );
-      _hStartY     = tfdir.make<TH1D>( "StartY",     "StartY",     2000, -5.0e3, 15.0e3 );
+      _hStartXZ    = tfdir.make<TH2D>( "StartXZ",    "StartXZ",    1000, -6.0e5,  6.0e5, 1000, -6.0e5, 6.0e5 );
+      _hStartY     = tfdir.make<TH1D>( "StartY",     "StartY",     1000, -5.0e3, 20.0e3 );
       _hStartPlane = tfdir.make<TH1D>( "StartPlane", "StartPlane",    5,  0,      5);
-      _hStartE     = tfdir.make<TH1D>( "StartE",     "StartE",      500,  0,      _muEMax*GeV );
-      _hStartTheta = tfdir.make<TH1D>( "StartTheta", "StartTheta",  100, -M_PI,   M_PI);
-      _hStartPhi   = tfdir.make<TH1D>( "StartPhi",   "StartPhi",    100, -M_PI,   M_PI);
+      _hStartE     = tfdir.make<TH1D>( "StartE",     "StartE",     1000,  0,      1.0e6);
+      _hStartTheta = tfdir.make<TH1D>( "StartTheta", "StartTheta", 1000, -M_PI,   M_PI);
+      _hStartPhi   = tfdir.make<TH1D>( "StartPhi",   "StartPhi",   1000, -M_PI,   M_PI);
     }
+
   }  // CosmicDYB()
 
   CosmicDYB::~CosmicDYB() { }
@@ -289,34 +255,13 @@ namespace mu2e
     GeomHandle<Mu2eEnvelope> env;
     GeomHandle<WorldG4>  worldGeom;
 
-    if(!_createdProductionPlane)
+    if(!_checkedProductionPlanes)
     {
-      _createdProductionPlane=true;
+      _checkedProductionPlanes=true;
     
-      GeomHandle<ExtMonFNAL::ExtMon> extMonFNAL;
-      GeomHandle<DetectorSystem> detsys;
-
-      switch (_choice)
-      {
-        case TRACKER:    _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(), _y0, detsys->getOrigin().z());
-                         break;
-        case EXTMONFNAL: _cosmicReferencePointInMu2e = Hep3Vector(extMonFNAL->detectorCenterInMu2e().x(), _y0, extMonFNAL->detectorCenterInMu2e().z());
-                         break;
-        case CALO:      
-	  {
-	    GeomHandle<Calorimeter> calorimeter;
-	    _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(), _y0, calorimeter->disk(0).geomInfo().origin().z());
-	  }
-                        
-                         break;
-        case CUSTOMIZED: break;  //already set above
-        default:         throw cet::exception("Configuration")<< "Should never occur: unknown CosmicDYB.refPointChoice\n";
-                         break;
-      }
-
       const Hep3Vector halfLengths(_dx,_dy,_dz);
 
-      std::cout<<"center of production plane in Mu2e coordinated = "<<_cosmicReferencePointInMu2e<<std::endl;
+      std::cout<<"production center in Mu2e coordinates = "<<_productionCenterInMu2e<<std::endl;
       std::cout<<"production plane half lengths = "<<halfLengths<<std::endl;
       std::cout<<"Mu2e Origin in the the GEANT world = "<<worldGeom->mu2eOriginInWorld()<<std::endl;
       std::cout<<"GEANT world half lengths = ("
@@ -324,8 +269,8 @@ namespace mu2e
                <<worldGeom->halfLengths()[1]<<", "
                <<worldGeom->halfLengths()[2]<<")"<<std::endl;
 
-      if(!worldGeom->inWorld(_cosmicReferencePointInMu2e+halfLengths) || 
-         !worldGeom->inWorld(_cosmicReferencePointInMu2e-halfLengths))
+      if(!worldGeom->inWorld(_productionCenterInMu2e+halfLengths) || 
+         !worldGeom->inWorld(_productionCenterInMu2e-halfLengths))
       {
         throw cet::exception("GEOM")<<"Cosmic ray production plane is outside of the world volume! Increase the world margins or change production plane\n";
       }
@@ -336,40 +281,49 @@ namespace mu2e
 
     for(int i=0; i<n; i++)
     {
-      float par = 111.;  // double precision
-      double dim_sum,E,cosTh;
-      hrndg2(_workingSpace,_ne,_muEMin,_muEMax,_nth,_muCosThMin,_muCosThMax, dim_sum,E,cosTh,par,_vertical);
+      double theta, phi, E;
+      unsigned int side=0;
+      if(_generators.size()==1) _generators[0]->GenerateMuon(theta, E, phi, _randFlat);
+      else
+      {
+        double uSide = _randFlat.fire();
+        for(; side<_boxFraction.size(); side++)
+        {
+          if(uSide<_boxFraction[side]) {_generators[side]->GenerateMuon(theta, E, phi, _randFlat); break;}
+        }
+      }
 
       // energy is in GeV, convert to MeV
       E *= GeV;
 
-      double p = safeSqrt(E*E-_mMu*_mMu);
+      double p = safeSqrt(E*E-_mMu*_mMu);   //TODO: Is E really the total energy?
       if(E<=_mMu) E = _mMu;
 
       // Cosine and sin of polar angle wrt y axis.
-      double cy = cosTh;
-      double sy = safeSqrt(1. - cosTh*cosTh);
+      double cosTh = cos(theta);
+      double sinTh = safeSqrt(1. - cosTh*cosTh);
 
-      double phi = _randFlat.fire(_muPhiMin,_muPhiMax);                     //0...2pi for full range
-      if(_vertical && _dz==0) 
-      {
-        phi = acos(cos(_muPhiMin)+(cos(_muPhiMax)-cos(_muPhiMin))*_randFlat.fire());   //0...pi
-        if(_muPhiMin>=M_PI) phi = 2.0*M_PI - phi;                                      //pi...2*pi
-      }
-      if(_vertical && _dx==0) 
-      {
-        phi = M_PI/2.0 - acos(sin(_muPhiMin)+(sin(_muPhiMax)-sin(_muPhiMin))*_randFlat.fire());   //-pi/2...pi/2
-        if(_muPhiMin>=M_PI/2.0) phi = M_PI - phi;                                                 //pi/2...-3*pi/2
-      }
-
-      CLHEP::HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), E);
+      CLHEP::HepLorentzVector mom(p*sinTh*cos(phi), -p*cosTh, p*sinTh*sin(phi), E);
 
       // Position in reference plane
       double x = (1.-2.*_randFlat.fire())*_dx;
-      double y = (1.-2.*_randFlat.fire())*_dy;  //_dy is 0 for horizontal production planes
+      double y = (1.-2.*_randFlat.fire())*_dy;
       double z = (1.-2.*_randFlat.fire())*_dz;
+      if(_generators.size()>1)
+      {
+        switch(_generators[side]->GetDirection())
+        {
+          case DYBGenerator::Direction::NEGATIVE_Y: y= _dy; break;
+          case DYBGenerator::Direction::POSITIVE_X: x=-_dx; break;
+          case DYBGenerator::Direction::NEGATIVE_X: x= _dx; break;
+          case DYBGenerator::Direction::POSITIVE_Z: z=-_dz; break;
+          case DYBGenerator::Direction::NEGATIVE_Z: z= _dz; break;
+                                           default: throw cet::exception("Configuration")<<"Invalid direction in DYB generator\n";
+        };
+      }
+
       CLHEP::Hep3Vector delta(x, y, z);
-      CLHEP::Hep3Vector pos = delta + _cosmicReferencePointInMu2e;
+      CLHEP::Hep3Vector pos = delta + _productionCenterInMu2e;
       if(_verbose>1) std::cout << "position on production plane = " << pos << std::endl;
 
 // project start position (pos) to the surface

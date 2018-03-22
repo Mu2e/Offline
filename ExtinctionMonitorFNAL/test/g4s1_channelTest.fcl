@@ -2,9 +2,9 @@
 //
 // Andrei Gaponenko, 2011
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 // Give this job a name.
 process_name : channelTest
@@ -56,7 +56,7 @@ physics : {
 }
 
 //----------------------------------------------------------------
-physics.producers.g4run.visMacro : "ExtinctionMonitorFNAL/test/vis_extMonFNAL_channelTest.mac"
+physics.producers.g4run.visualization.initMacro: "ExtinctionMonitorFNAL/test/vis_extMonFNAL_channelTest.mac"
 
 services.SeedService.baseSeed         :  0
 services.SeedService.maxUniqueEngines :  20

@@ -2,9 +2,9 @@
 # output is the same as for the text maps.
 #
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name : ReadBinaryMaps
 
@@ -57,7 +57,8 @@ physics : {
 
     readStrawHits: {
       module_type      : ReadStrawHit
-      makerModuleLabel : makeSH
+      recoModuleLabel : makeSH
+      simModuleLabel : makeSD
       diagLevel        : 3
       maxFullPrint     : 100
     }

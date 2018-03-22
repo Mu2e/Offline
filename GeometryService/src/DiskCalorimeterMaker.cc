@@ -267,8 +267,10 @@ namespace mu2e {
                  calo_->fullCrystalList_.push_back(&thisCrystal);
 
                  //precompute the neighbors in the global frame
-                 thisCrystal.setNeighbors(calo_->neighborsByLevel(icry+crystalOffset,1));
-                 thisCrystal.setNextNeighbors(calo_->neighborsByLevel(icry+crystalOffset,2));
+                 thisCrystal.setNeighbors(calo_->neighborsByLevel(icry+crystalOffset,1,false),false);
+                 thisCrystal.setNeighbors(calo_->neighborsByLevel(icry+crystalOffset,1,true),true);
+                 thisCrystal.setNextNeighbors(calo_->neighborsByLevel(icry+crystalOffset,2,false),false);
+                 thisCrystal.setNextNeighbors(calo_->neighborsByLevel(icry+crystalOffset,2,true),true);
 
                  //pre-compute the crystal position in the mu2e frame (aka global frame), taken from BaseCalorimeter.cc
                  CLHEP::Hep3Vector globalPosition = thisDisk->geomInfo().origin() + thisDisk->geomInfo().inverseRotation()*(thisCrystal.localPosition());

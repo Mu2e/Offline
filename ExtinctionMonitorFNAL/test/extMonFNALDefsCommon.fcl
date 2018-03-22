@@ -13,9 +13,9 @@ filterModule : {
 }
 END_PROLOG
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 services : {
     message: @local::default_message
@@ -60,8 +60,8 @@ outputs:
 {
     outVDFiltered: {
         module_type: RootOutput
-        //fileName: "gvdFiltered.root"
-        SelectEvents: { SelectEvents: [trigFilter] }
+        //fileName: "gvdFiltered.art"
+        SelectEvents: [trigFilter]
         outputCommands:   [ "keep *_fvd*_*_*", "keep *_fromVD*_*_*", "keep *_randomsaver_*_*", "keep *_geom*_*_*" ]
     }
 }

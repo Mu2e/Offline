@@ -9,7 +9,7 @@ import os
 Import('env')
 Import('mu2e_helper')
 
-helper=mu2e_helper();
+helper=mu2e_helper(env);
 
 # Libraries need
 common = [ 'mu2e_SeedService_SeedService_service',
@@ -142,6 +142,7 @@ helper.make_plugins( [ mainlib,
                        'Core',
                        'boost_filesystem',
                        'boost_system',
+                       'tbb',
                      ],
                      services,
                      )

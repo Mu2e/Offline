@@ -24,15 +24,14 @@
 // diagnostics
 #include "TrkDiag/inc/TrkMCTools.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
-#include "RecoDataProducts/inc/HelixHit.hh"
 #include "TrkDiag/inc/HelixHitInfo.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
 // data
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMC.hh"
+#include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
@@ -46,12 +45,14 @@
 #include "TEllipse.h"
 #include "TMath.h"
 #include "TMarker.h"
+#include "Math/VectorUtil.h"
 // C++
 #include <functional>
 #include <algorithm>
 #include <iostream>
 using namespace std; 
 using CLHEP::Hep3Vector;
+using namespace ROOT::Math::VectorUtil;
 
 namespace mu2e {
 
@@ -66,30 +67,28 @@ namespace mu2e {
 // config parameters
       int _diag;
       StrawHitFlag _dontuseflag;
-      bool _mcdiag, _mcsel;
+      bool _mcdiag, _mcsel, _useshfcol;
       StrawHitFlag  _hsel, _hbkg;
       int _minnprimary; // minimum # Primary hits to make plots
       int _mcgen; // MC generator code of primary
       double _targetradius;
       bool _plot;
       bool _hcenter;
-      double _psize;
+      double _xysize, _zsize, _fsize;
       TrkFitFlag _plotinc; // inclusive conditions for plotting
       TrkFitFlag _plotexc; // exclusive conditions for plotting
       double				_cradres; // average center resolution along center position (mm)
       double				_cperpres; // average center resolution perp to center position (mm)
       // event object tags      art::InputTag _shTag;
-      art::InputTag _shTag;
-      art::InputTag _shpTag;
-      art::InputTag _shfTag;
+      art::InputTag _chTag;
       art::InputTag _hsTag;
+      art::InputTag   _shfTag;
       art::InputTag _mcdigisTag;
       art::InputTag _vdmcstepsTag;
       // cache of event objects
-      const StrawHitCollection* _shcol;
-      const StrawHitPositionCollection* _shpcol;
-      const StrawHitFlagCollection* _shfcol;
+      const ComboHitCollection* _chcol;
       const HelixSeedCollection* _hscol;
+      const StrawHitFlagCollection*	  _shfcol;
       const StrawDigiMCCollection* _mcdigis;
       const StepPointMCCollection* _vdmcsteps;
       // reco offsets
@@ -105,10 +104,10 @@ namespace mu2e {
       void fillHitInfoMC(art::Ptr<SimParticle> const& pspp, StrawDigiMC const& digimc, HitInfoMC& hinfomc);
       bool fillMCHelix(art::Ptr<SimParticle> const& pspp);
       // display functions
-      void plotXY(art::Ptr<SimParticle> const& pspp, HelixSeed const& myseed, unsigned ihel);
-      void plotZ(art::Ptr<SimParticle> const& pspp, HelixSeed const& myseed, unsigned ihel);
-      bool use(HelixHit const& hhit) const;
-      bool stereo(HelixHit const& hhit) const;
+      void plotXY(const art::Event& e, art::Ptr<SimParticle> const& pspp, HelixSeed const& myseed, unsigned ihel);
+      void plotZ(const art::Event& e, art::Ptr<SimParticle> const& pspp, HelixSeed const& myseed, unsigned ihel);
+      bool use(ComboHit const& hhit) const;
+      bool stereo(ComboHit const& hhit) const;
       bool primary(art::Ptr<SimParticle> const& pspp,size_t index);
       bool selectedHit(size_t index);
        // TTree and branch variables
@@ -133,26 +132,28 @@ namespace mu2e {
   HelixDiag::HelixDiag(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
     _diag(pset.get<int>("DiagLevel",1)),
-    _dontuseflag(pset.get<vector<string>>("UseFlag",vector<string>{"Outlier"})),
+    _dontuseflag(pset.get<vector<string>>("DontUseFlag",vector<string>{"Outlier"})),
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
     _mcsel(pset.get<bool>("MonteCarloSelection",true)),
-    _hsel(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"Stereo","TimeDivision"})),
-    _hbkg(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
+    _useshfcol		(pset.get<bool>("UseFlagCollection")),
+    _hsel(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
+    _hbkg(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
     _minnprimary(pset.get<int>("MinimumPrimaryHits",10)),
     _mcgen(pset.get<int>("MCGeneratorCode",2)),
     _targetradius(pset.get<double>("TargetRadius",75)),
     _plot(pset.get<bool>("PlotHelices",false)),
     _hcenter(pset.get<bool>("CenterPlotOnHelix",true)),
-    _psize(pset.get<double>("PlotSize",300.0)),
-    _plotinc              (pset.get<vector<string> >("InclusivePlotFlagBits",vector<string>{"HitsOK"})),
+    _xysize(pset.get<double>("PlotXYSize",300.0)),
+    _zsize(pset.get<double>("PlotZSize",1500.0)),
+    _fsize(pset.get<double>("PlotPhiSize",2.0)),
+    _plotinc              (pset.get<vector<string> >("InclusivePlotFlagBits",vector<string>{})),
     _plotexc              (pset.get<vector<string> >("ExclusivePlotFlagBits",vector<string>{})),
     _cradres	 (pset.get<double>("CenterRadialResolution",20.0)),
     _cperpres	 (pset.get<double>("CenterPerpResolution",12.0)),
-    _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
-    _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
-    _shfTag(pset.get<string>("StrawHitFlagCollectionTag","PosHelixFinder")),
-    _hsTag(pset.get<string>("HelixSeedCollectionTag","PosHelixFinder")),
-    _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH")),
+    _chTag(pset.get<string>("ComboHitCollection")),
+    _hsTag(pset.get<string>("HelixSeedCollection","HelixFinder:Positive")),
+    _shfTag		(pset.get<string>("StrawHitFlagCollection")),
+    _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
     _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
@@ -223,7 +224,7 @@ namespace mu2e {
 	_nprimary = _nptot = _npused = 0;
 
 	RobustHelix const& rhel = hseed._helix;
-	HelixHitCollection const& hhits = hseed._hhits;
+	ComboHitCollection const& hhits = hseed._hhits;
 	_nhits = hhits.size();
 	TrkFitFlag const& status = hseed._status;
 	_rhel = rhel;
@@ -240,16 +241,17 @@ namespace mu2e {
 	_circleConverged = status.hasAllProperties(TrkFitFlag::circleConverged);
 	_phizConverged = status.hasAllProperties(TrkFitFlag::phizConverged);
 	_helixConverged = status.hasAllProperties(TrkFitFlag::helixConverged);
-	vector<StrawHitIndex> hits;
 	art::Ptr<SimParticle> pspp;
 	_nused = 0;
-	for(auto const& hhit : hhits){
-	  hits.push_back(hhit._shidx);
-	  if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))++_nused;
+	std::vector<StrawDigiIndex> sdis;
+	for(size_t ihh = 0;ihh < hhits.size(); ++ihh) {
+	  ComboHit const& hhit = hhits[ihh];
+	  hhits.fillStrawDigiIndices(evt,ihh,sdis);
+	  if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_nused += hhit.nStrawHits();
 	}
 	if(_mcdiag) {
 	  // get information about the primary particle (produced most hits)
-	  _nprimary = TrkMCTools::primaryParticle(pspp,hits,_mcdigis);
+	  _nprimary = TrkMCTools::primaryParticle(pspp,sdis,_mcdigis);
 	  _nptot = TrkMCTools::countDigis(pspp,_mcdigis);
 	  _pdg = pspp->pdgId();
 	  _proc = pspp->originParticle().creationCode();
@@ -262,29 +264,34 @@ namespace mu2e {
 	  _mct0 = 0.0;
 	  unsigned nmc = 0;
 	  _npused = 0;
-	  for(auto const& hhit : hhits) {
-	    StrawDigiMC const& mcdigi = _mcdigis->at(hhit._shidx);
-	    art::Ptr<StepPointMC> spmcp;
-	    if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
-	      spmcp->simParticle() == pspp ){
-	      ++nmc;
-	      _mct0 += _toff.timeWithOffsetsApplied(*spmcp);
-	      if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))++_npused;
+	  for(size_t ihh = 0;ihh < hhits.size(); ++ihh) {
+	    ComboHit const& hhit = hhits[ihh];
+	    vector<StrawDigiIndex> sdis;
+	    hhits.fillStrawDigiIndices(evt,ihh,sdis);
+	    for(auto idigi : sdis) {
+	      StrawDigiMC const& mcdigi = _mcdigis->at(idigi);
+	      art::Ptr<StepPointMC> spmcp;
+	      if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
+		  spmcp->simParticle() == pspp ){
+		++nmc;
+		_mct0 += _toff.timeWithOffsetsApplied(*spmcp);
+		if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))++_npused;
+	      }
 	    }
 	    if(_diag > 1){
 	      HelixHitInfoMC hhinfomc;
+	      StrawDigiMC const& mcdigi = _mcdigis->at(sdis[0]);
 	      fillHitInfoMC(pspp,mcdigi,hhinfomc);
-	      Hep3Vector mchpos = hhit.pos(); // sets z position
+	      XYZVec mchpos = hhit.pos(); // sets z position
 	      _mch.position(mchpos);
 	      hhinfomc._hpos = mchpos;
 	      hhinfomc._hphi = _mch.circleAzimuth(hhit.pos().z());
 
-	      Hep3Vector mcdh = hhit.pos() - mchpos;
-	      hhinfomc._dwire = mcdh.dot(hhit.wdir());
-	      static Hep3Vector zaxis(0.0,0.0,1.0); // unit in z direction
-	      Hep3Vector wtdir = zaxis.cross(hhit.wdir()); // transverse direction to the wire
-	      hhinfomc._dtrans = mcdh.dot(wtdir);
-
+	      XYZVec mcdh = hhit.pos() - mchpos;
+	      hhinfomc._dwire = mcdh.Dot(hhit.wdir());
+	      static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
+	      XYZVec wtdir = zaxis.Cross(hhit.wdir()); // transverse direction to the wire
+	      hhinfomc._dtrans = mcdh.Dot(wtdir);
 	      _hhinfomc.push_back(hhinfomc);
 	    }
 	  }
@@ -295,56 +302,54 @@ namespace mu2e {
 	    (!hseed._status.hasAnyProperty(_plotexc))  &&
 	    _nprimary >= _minnprimary && _mcgen == _gen) {
 	    // fill graphs for display
-	    plotXY(pspp,hseed,ihel);
-	    plotZ(pspp,hseed,ihel);
+	    plotXY(evt,pspp,hseed,ihel);
+	    plotZ(evt,pspp,hseed,ihel);
 	}
 	
 	if(_diag > 1){
 	  for(auto const& hhit : hhits) {
 	    HelixHitInfo hhinfo;
-	    hhinfo._outlier = hhit._flag.hasAnyProperty(StrawHitFlag::outlier);
-	    hhinfo._stereo = hhit._flag.hasAnyProperty(StrawHitFlag::stereo);
-	    hhinfo._tdiv = hhit._flag.hasAnyProperty(StrawHitFlag::tdiv);
-	    hhinfo._delta = hhit._flag.hasAnyProperty(StrawHitFlag::delta);
-	    hhinfo._esel = hhit._flag.hasAnyProperty(StrawHitFlag::energysel);
-	    hhinfo._resphi = hhit._flag.hasAnyProperty(StrawHitFlag::resolvedphi);
-	    hhinfo._hhphi = hhit._phi;
+	    hhinfo._outlier = hhit.flag().hasAnyProperty(StrawHitFlag::outlier);
+	    hhinfo._stereo = hhit.flag().hasAnyProperty(StrawHitFlag::stereo);
+	    hhinfo._tdiv = hhit.flag().hasAnyProperty(StrawHitFlag::tdiv);
+	    hhinfo._delta = hhit.flag().hasAnyProperty(StrawHitFlag::bkg);
+	    hhinfo._esel = hhit.flag().hasAnyProperty(StrawHitFlag::energysel);
+	    hhinfo._resphi = hhit.flag().hasAnyProperty(StrawHitFlag::resolvedphi);
+	    hhinfo._hhphi = hhit.helixPhi();
 	    hhinfo._hhpos = hhit.pos();
-	    hhinfo._werr = hhit.posRes(StrawHitPosition::wire);
-	    hhinfo._terr = hhit.posRes(StrawHitPosition::trans);
-	    hhinfo._dt = _shcol->at(hhit._shidx).time() - hseed._t0.t0() -_ttcalc.strawHitTimeOffset(hhit.pos().z());
-	    Hep3Vector hpos = hhit.pos(); // this sets the z to the correct value
+	    hhinfo._werr = hhit.posRes(ComboHit::wire);
+	    hhinfo._terr = hhit.posRes(ComboHit::trans);
+	    XYZVec hpos = hhit.pos(); // this sets the z to the correct value
 	    rhel.position(hpos);
 	    hhinfo._hpos = hpos;
 	    hhinfo._hphi = rhel.circleAzimuth(hhit.pos().z());
 // compute the chisquared componentes for this hit
-	    static Hep3Vector zaxis(0.0,0.0,1.0); // unit in z direction
-	    Hep3Vector const& wdir = hhit.wdir();
-	    Hep3Vector wtdir = zaxis.cross(wdir); // transverse direction to the wire
-	    Hep3Vector cvec = (hhit.pos() - rhel.center()).perpPart(); // vector from the circle center to the hit
-	    Hep3Vector cdir = cvec.unit(); // direction from the circle center to the hit
-	    Hep3Vector cperp = zaxis.cross(cdir); // direction perp to the radius
-	    hhinfo._whdot = wdir.dot(cdir); // compare wire and circle radius direction
-	    hhinfo._hrho = cvec.mag(); // radius of this hit WRT the circle center
+	    XYZVec const& wdir = hhit.wdir();
+	    XYZVec wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire
+	    XYZVec cvec = PerpVector(hhit.pos() - rhel.center(),Geom::ZDir()); // vector from the circle center to the hit
+	    XYZVec cdir = cvec.unit(); // direction from the circle center to the hit
+	    XYZVec cperp = Geom::ZDir().Cross(cdir); // direction perp to the radius
+	    hhinfo._whdot = wdir.Dot(cdir); // compare wire and circle radius direction
+	    hhinfo._hrho = sqrt(cvec.Mag2()); // radius of this hit WRT the circle center
 
 	    // positions
-	    Hep3Vector dh = hhit.pos() - hpos;
-	    double dwire = dh.dot(wdir); // projection along wire direction
-	    double dtrans = dh.dot(wtdir); // transverse projection
+	    XYZVec dh = hhit.pos() - hpos;
+	    double dwire = dh.Dot(wdir); // projection along wire direction
+	    double dtrans = dh.Dot(wtdir); // transverse projection
 
-	    double wres2 = std::pow(hhit.posRes(StrawHitPosition::wire),(int)2) +
-	      std::pow(_cradres*cdir.dot(wdir),(int)2) +
-	      std::pow(_cperpres*cperp.dot(wdir),(int)2);
-	    double wtres2 = std::pow(hhit.posRes(StrawHitPosition::trans),(int)2) +
-	      std::pow(_cradres*cdir.dot(wtdir),(int)2) +
-	      std::pow(_cperpres*cperp.dot(wtdir),(int)2);
+	    double wres2 = std::pow(hhit.posRes(ComboHit::wire),(int)2) +
+	      std::pow(_cradres*cdir.Dot(wdir),(int)2) +
+	      std::pow(_cperpres*cperp.Dot(wdir),(int)2);
+	    double wtres2 = std::pow(hhit.posRes(ComboHit::trans),(int)2) +
+	      std::pow(_cradres*cdir.Dot(wtdir),(int)2) +
+	      std::pow(_cperpres*cperp.Dot(wtdir),(int)2);
 
 	    hhinfo._dwire = dwire;
 	    hhinfo._dtrans = dtrans;
 	    hhinfo._wres = sqrt(wres2);
 	    hhinfo._wtres = sqrt(wtres2);
 	    hhinfo._chisq = dwire*dwire/wres2 + dtrans*dtrans/wtres2;
-	    hhinfo._hqual = hhit._hqual;
+	    hhinfo._hqual = hhit.qual();
 
 	    _hhinfo.push_back(hhinfo);
 	  }
@@ -359,19 +364,14 @@ namespace mu2e {
   }
 
   bool HelixDiag::findData(const art::Event& evt){
-    _shcol = 0;
-    _shpcol = 0;
+    _chcol = 0;
     _shfcol = 0;
     _hscol = 0;
     _mcdigis = 0;
     _vdmcsteps = 0;
 // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
-    auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
-    _shcol = shH.product();
-    auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
-    _shpcol = shpH.product();
-    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
-    _shfcol = shfH.product();
+    auto chH = evt.getValidHandle<ComboHitCollection>(_chTag);
+    _chcol = chH.product();
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     _hscol = hsH.product();
     if(_mcdiag){
@@ -382,23 +382,191 @@ namespace mu2e {
       // update time offsets
       _toff.updateMap(evt);
     }
+    if(_useshfcol){
+      auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+      _shfcol = shfH.product();
+    }
 
-    return _shcol != 0 && _shpcol != 0 && _shfcol != 0 && _hscol != 0 
-      && ((_mcdigis != 0 && _vdmcsteps != 0 ) || !_mcdiag);
+    return _chcol != 0 && _hscol != 0 
+      && ((_mcdigis != 0 && _vdmcsteps != 0 ) || !_mcdiag)
+      && (_shfcol != 0 || (!_useshfcol));
   }
 
 
-  void HelixDiag::plotXY(art::Ptr<SimParticle> const& pspp, HelixSeed const& hseed, unsigned ihel) {
+  void HelixDiag::plotZ(art::Event const& evt, art::Ptr<SimParticle> const& pspp, HelixSeed const& hseed, unsigned ihel) {
     RobustHelix const& rhel = hseed._helix;
-      HelixHitCollection const& hhits = hseed._hhits;
+    ComboHitCollection const& hhits = hseed._hhits;
 
     static unsigned igraph = 0;
     igraph++;
     art::ServiceHandle<art::TFileService> tfs;
-    char ce_used_name[100];
-    snprintf(ce_used_name,100,"ce_used_shxy%i",igraph);
-    char ce_notused_name[100];
-    snprintf(ce_notused_name,100,"ce_notused_shxy%i",igraph);
+    char pri_used_name[100];
+    snprintf(pri_used_name,100,"pri_used_shfz%i",igraph);
+    char pri_notused_name[100];
+    snprintf(pri_notused_name,100,"pri_notused_shfz%i",igraph);
+    char bkg_used_name[100];
+    snprintf(bkg_used_name,100,"bkg_used_shfz%i",igraph);
+    char notselected_name[100];
+    snprintf(notselected_name,100,"notselected_shfz%i",igraph);
+    char selected_name[100];
+    snprintf(selected_name,100,"selected_shfz%i",igraph);
+    char tc_name[100];
+    snprintf(tc_name,100,"tc_shfz%i",igraph);
+    char trk_name[100];
+    snprintf(trk_name,100,"trk_shfz%i",igraph);
+    char title[100];
+    snprintf(title,100,"StrawHit #PhiZ evt %i hel %i;mm;rad",_iev,ihel);
+    TH2F* pri_used = tfs->make<TH2F>(pri_used_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
+    TH2F* pri_notused = tfs->make<TH2F>(pri_notused_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
+    TH2F* bkg_used = tfs->make<TH2F>(bkg_used_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
+    TH2F* notselected = tfs->make<TH2F>(notselected_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
+    TH2F* selected = tfs->make<TH2F>(selected_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
+    TH2F* tc = tfs->make<TH2F>(tc_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
+    TH2F* trk = tfs->make<TH2F>(trk_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
+    pri_used->SetStats(0);
+    pri_notused->SetStats(0);
+    bkg_used->SetStats(0);
+    notselected->SetStats(0);
+    selected->SetStats(0);
+    tc->SetStats(0);
+    trk->SetStats(0);
+// get the 'function' lists for these (can be any TObject)
+    TList* pri_used_list = pri_used->GetListOfFunctions();
+    TList* pri_notused_list = pri_notused->GetListOfFunctions();
+    TList* bkg_used_list = bkg_used->GetListOfFunctions();
+    TList* notselected_list = notselected->GetListOfFunctions();
+    TList* selected_list = selected->GetListOfFunctions();
+    TList* tc_list = tc->GetListOfFunctions();
+//    TList* trk_list = trk->GetListOfFunctions();
+    // MC true hit positions
+    TH2F* mct(0);
+    TList* mct_list(0);
+    if(_mcdiag){
+      char mctruth_name[100];
+      snprintf(mctruth_name,100,"mctshfz%i",igraph);
+      mct = tfs->make<TH2F>(mctruth_name,title,100,-_zsize,_zsize,100,-_fsize,_fsize);
+      mct_list = mct->GetListOfFunctions();
+    }
+
+    for(size_t ihit=0;ihit < hhits.size(); ++ihit) {
+      ComboHit const& hhit = hhits[ihit];
+    // compute the projected phi (y) error for this elipse.  Z error is always the straw width
+    // create an elipse for this hit
+      XYZVec that = XYZVec(-(hhit.pos().y()-rhel.centery()),(hhit.pos().x()-rhel.centerx()),0.0).unit(); // local phi direction at this hit
+      double proj = that.Dot(hhit.wdir());
+      double fcent = rhel.circleAzimuth(hhit.pos().z());
+      TEllipse* te = new TEllipse(hhit.pos().z(),hhit.helixPhi()-fcent,
+	hhit._tres, hhit._wres*proj/rhel.radius());
+
+      // mc truth
+      if(_mcdiag){
+	std::vector<StrawDigiIndex> sdis;
+	hhits.fillStrawDigiIndices(evt,ihit,sdis);
+
+	if(primary(pspp,sdis[0])){
+
+	  if (use(hhit) ) {
+	    te->SetFillColor(kRed);
+	    te->SetLineColor(kRed);
+	    pri_used_list->Add(te);
+	  } else {
+	    te->SetFillColor(kCyan);
+	    te->SetLineColor(kCyan);
+	    pri_notused_list->Add(te);
+	  }
+	}
+	else {
+	  if (use(hhit)) {
+	    te->SetFillColor(kMagenta);
+	    te->SetLineColor(kMagenta);
+	    bkg_used_list->Add(te);
+	  } 
+	}
+      }
+    }
+  // TC hits
+    auto timec = hseed.timeCluster();
+    if(timec.isNonnull()){
+      for(auto ih : timec->hits()){
+	auto const& ch = _chcol->at(ih);
+	XYZVec rpos(ch.pos().x()-rhel.centerx(), ch.pos().y()-rhel.centery(), ch.pos().z());
+	// resolve phi
+	double dphi = atan2(rpos.y(),rpos.x()) - rhel.circleAzimuth(rpos.z());
+	dphi -= rint(dphi/CLHEP::twopi)*CLHEP::twopi;
+	XYZVec that = XYZVec(-rpos.y(),rpos.x(),0.0).unit(); // local phi direction at this hit
+	double proj = that.Dot(ch.wdir());
+	TEllipse* te = new TEllipse(ch.pos().z(),dphi,
+	    ch._tres, ch._wres*proj/rhel.radius());
+	te->SetLineColor(kGreen);
+	te->SetFillColor(kGreen);
+	tc_list->Add(te);
+      }
+    }
+  // background hits
+    for(size_t ich = 0; ich< _chcol->size();++ich) {
+      auto const& ch = _chcol->at(ich);
+      XYZVec rpos(ch.pos().x()-rhel.centerx(), ch.pos().y()-rhel.centery(), ch.pos().z());
+      // resolve phi
+      double dphi = atan2(rpos.y(),rpos.x()) - rhel.circleAzimuth(rpos.z());
+      dphi -= rint(dphi/CLHEP::twopi)*CLHEP::twopi;
+      XYZVec that = XYZVec(-rpos.y(),rpos.x(),0.0).unit(); // local phi direction at this hit
+      double proj = that.Dot(ch.wdir());
+      TEllipse* te = new TEllipse(ch.pos().z(),dphi,
+	  ch._tres, ch._wres*proj/rhel.radius());
+      te->SetLineColor(kYellow);
+      te->SetFillColor(kYellow);
+      notselected_list->Add(te);
+      if(selectedHit(ich)){
+	TEllipse* tes = new TEllipse(ch.pos().z(),dphi,
+	  ch._tres, ch._wres*proj/rhel.radius());
+	tes->SetLineColor(kOrange);
+	tes->SetFillColor(kOrange);
+	selected_list->Add(tes);
+      }
+      if(_mcdiag){
+	// get digi pointers from combo hits
+	std::vector<StrawDigiIndex> sdis;
+	_chcol->fillStrawDigiIndices(evt,ich,sdis);
+	for(auto isd : sdis) { 
+	  StrawDigiMC const& mcdigi = _mcdigis->at(isd);
+	  art::Ptr<StepPointMC> spmcp;
+	  if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && spmcp->simParticle() == pspp){
+	    double mcdphi = atan2(spmcp->position().y()-_mch.centery(),spmcp->position().x()-_mch.centerx()) - _mch.circleAzimuth(spmcp->position().z());
+	    mcdphi -= rint(mcdphi/CLHEP::twopi)*CLHEP::twopi;
+	    TMarker* mch = new TMarker(spmcp->position().z(),mcdphi,20);
+	    mch->SetMarkerColor(kBlue);
+	    mch->SetMarkerSize(1);
+	    mct_list->Add(mch);
+	    if(!selectedHit(ich)){
+	      te->SetLineColor(kBlue);
+	      te->SetFillColor(kBlue);
+	    }
+	  }
+	}
+      }
+    }
+  }
+
+  void HelixDiag::plotXY(art::Event const& evt, art::Ptr<SimParticle> const& pspp, HelixSeed const& hseed, unsigned ihel) {
+    RobustHelix const& rhel = hseed._helix;
+    ComboHitCollection const& hhits = hseed._hhits;
+
+    static std::string pri_used_title("Pri Used;x(mm);y(mm)");
+    static std::string pri_notused_title("Pri Not Used;x(mm);y(mm)");
+    static std::string bkg_used_title("Bkg Used;x(mm);y(mm)");
+    static std::string notselected_title("Not Selected;x(mm);y(mm)");
+    static std::string selected_title("Selected;x(mm);y(mm)");
+    static std::string tc_title("Time Cluster;x(mm);y(mm)");
+    static std::string trk_title("Tracker XY;x(mm);y(mm)");
+    static std::string mctruth_title("MC Truth;x(mm);y(mm)");
+
+    static unsigned igraph = 0;
+    igraph++;
+    art::ServiceHandle<art::TFileService> tfs;
+    char pri_used_name[100];
+    snprintf(pri_used_name,100,"pri_used_shxy%i",igraph);
+    char pri_notused_name[100];
+    snprintf(pri_notused_name,100,"pri_notused_shxy%i",igraph);
     char bkg_used_name[100];
     snprintf(bkg_used_name,100,"bkg_used_shxy%i",igraph);
     char notselected_name[100];
@@ -411,23 +579,30 @@ namespace mu2e {
     snprintf(trk_name,100,"trk_shxy%i",igraph);
     char title[100];
     snprintf(title,100,"StrawHit XY evt %i hel %i;mm;rad",_iev,ihel);
-    TH2F* ce_used = tfs->make<TH2F>(ce_used_name,title,100,-_psize,_psize,100,-_psize,_psize);
-    TH2F* ce_notused = tfs->make<TH2F>(ce_notused_name,title,100,-_psize,_psize,100,-_psize,_psize);
-    TH2F* bkg_used = tfs->make<TH2F>(bkg_used_name,title,100,-_psize,_psize,100,-_psize,_psize);
-    TH2F* notselected = tfs->make<TH2F>(notselected_name,title,100,-_psize,_psize,100,-_psize,_psize);
-    TH2F* selected = tfs->make<TH2F>(selected_name,title,100,-_psize,_psize,100,-_psize,_psize);
-    TH2F* tc = tfs->make<TH2F>(tc_name,title,100,-_psize,_psize,100,-_psize,_psize);
-    TH2F* trk = tfs->make<TH2F>(trk_name,title,100,-_psize,_psize,100,-_psize,_psize);
-    ce_used->SetStats(0);
-    ce_notused->SetStats(0);
+    TH2F* pri_used = tfs->make<TH2F>(pri_used_name,pri_used_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* pri_notused = tfs->make<TH2F>(pri_notused_name,pri_notused_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* bkg_used = tfs->make<TH2F>(bkg_used_name,bkg_used_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* notselected = tfs->make<TH2F>(notselected_name,notselected_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* selected = tfs->make<TH2F>(selected_name,selected_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* tc = tfs->make<TH2F>(tc_name,tc_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    TH2F* trk = tfs->make<TH2F>(trk_name,trk_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+    pri_used->SetStats(0);
+    pri_notused->SetStats(0);
     bkg_used->SetStats(0);
     notselected->SetStats(0);
     selected->SetStats(0);
     tc->SetStats(0);
     trk->SetStats(0);
+
+    pri_used->SetLineColor(kRed);
+    pri_notused->SetLineColor(kCyan);
+    bkg_used->SetLineColor(kMagenta);
+    notselected->SetLineColor(kYellow);
+    selected->SetLineColor(kOrange);
+    tc->SetLineColor(kGreen);
 // get the 'function' lists for these (can be any TObject)
-    TList* ce_used_list = ce_used->GetListOfFunctions();
-    TList* ce_notused_list = ce_notused->GetListOfFunctions();
+    TList* pri_used_list = pri_used->GetListOfFunctions();
+    TList* pri_notused_list = pri_notused->GetListOfFunctions();
     TList* bkg_used_list = bkg_used->GetListOfFunctions();
     TList* notselected_list = notselected->GetListOfFunctions();
     TList* selected_list = selected->GetListOfFunctions();
@@ -439,12 +614,16 @@ namespace mu2e {
     if(_mcdiag){
       char mctruth_name[100];
       snprintf(mctruth_name,100,"mctshxy%i",igraph);
-      mct = tfs->make<TH2F>(mctruth_name,title,100,-_psize,_psize,100,-_psize,_psize);
+      mct = tfs->make<TH2F>(mctruth_name,mctruth_title.c_str(),100,-_xysize,_xysize,100,-_xysize,_xysize);
+      mct->SetStats(0);
+      mct->SetLineColor(kBlue);
+      mct->SetMarkerStyle(20);
+      mct->SetMarkerColor(kBlue);
       mct_list = mct->GetListOfFunctions();
     }
     // define plot center
-    Hep3Vector pcent;
-    if(_hcenter) pcent = Hep3Vector( rhel.centerx(), rhel.centery(), 0.0);
+    XYZVec pcent;
+    if(_hcenter) pcent = XYZVec( rhel.centerx(), rhel.centery(), 0.0);
     // draw the detector boundaries
     static double innerrad(380.0);
     static double outerrad(680.0);
@@ -466,66 +645,83 @@ namespace mu2e {
     trk_list->Add(indet);
     trk_list->Add(target);
 
-    for(auto const& hhit : hhits ) {
+    for(size_t ihit=0;ihit <  hhits.size(); ++ihit ) {
+      ComboHit const& hhit = hhits[ihit];
     // create an elipse for this hit
-      TEllipse* te = new TEllipse(hhit._pos.x()-pcent.x(),hhit._pos.y()-pcent.y(),
-	hhit._wres, hhit._tres,0.0,360.0, hhit._wdir.phi()*180.0/TMath::Pi());
-      if(primary(pspp,hhit._shidx)){
-	if (use(hhit) ) {
-	  te->SetFillColor(kRed);
-	  te->SetLineColor(kRed);
-	  ce_used_list->Add(te);
-	} else {
-	  te->SetFillColor(kCyan);
-	  te->SetLineColor(kCyan);
-	  ce_notused_list->Add(te);
-	}
-	if(_mcdiag){
-	  StrawDigiMC const& mcdigi = _mcdigis->at(hhit._shidx);
-	  art::Ptr<StepPointMC> spmcp;
-	  if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && spmcp->simParticle() == pspp){
-	    TMarker* mch = new TMarker(spmcp->position().x()-pcent.x(),spmcp->position().y()-pcent.y(),20);
-	    mch->SetMarkerColor(kBlue);
-	    mch->SetMarkerSize(1);
-	    mct_list->Add(mch);
+      TEllipse* te = new TEllipse(hhit.pos().x()-pcent.x(),hhit.pos().y()-pcent.y(),
+	  hhit._wres, hhit._tres,0.0,360.0, hhit.wdir().phi()*180.0/TMath::Pi());
+      // mc truth
+      if(_mcdiag){
+	std::vector<StrawDigiIndex> sdis;
+	hhits.fillStrawDigiIndices(evt,ihit,sdis);
+
+	if(primary(pspp,sdis[0])){
+	  if (use(hhit) ) {
+	    te->SetFillColor(kRed);
+	    te->SetLineColor(kRed);
+	    pri_used_list->Add(te);
+	  } else {
+	    te->SetFillColor(kCyan);
+	    te->SetLineColor(kCyan);
+	    pri_notused_list->Add(te);
 	  }
+	} else {
+	  if (use(hhit)) {
+	    te->SetFillColor(kMagenta);
+	    te->SetLineColor(kMagenta);
+	    bkg_used_list->Add(te);
+	  } 
 	}
-      }
-      else {
-	if (use(hhit)) {
-	  te->SetFillColor(kMagenta);
-	  te->SetLineColor(kMagenta);
-	  bkg_used_list->Add(te);
-	} 
       }
     }
   // TC hits
     auto timec = hseed.timeCluster();
     if(timec.isNonnull()){
       for(auto ih : timec->hits()){
-	auto const& shp = _shpcol->at(ih);
-	TEllipse* te = new TEllipse(shp._pos.x()-pcent.x(),shp._pos.y()-pcent.y(),
-	    shp._wres, shp._tres,0.0,360.0, shp._wdir.phi()*180.0/TMath::Pi());
+	auto const& ch = _chcol->at(ih);
+	TEllipse* te = new TEllipse(ch._pos.x()-pcent.x(),ch._pos.y()-pcent.y(),
+	    ch._wres, ch._tres,0.0,360.0, ch._wdir.phi()*180.0/TMath::Pi());
 	te->SetLineColor(kGreen);
 	te->SetFillColor(kGreen);
 	tc_list->Add(te);
       }
     }
-  // background hits
-    for(size_t ishp = 0; ishp< _shpcol->size();++ishp) {
-      //      if(std::find(timec->hits().begin(),timec->hits().end(),ishp) == timec->hits().end() && !primary(pspp,ishp)){
-      auto const& shp = _shpcol->at(ishp);
+  // all hits
+    for(size_t ich = 0; ich< _chcol->size();++ich) {
+      auto const& ch = _chcol->at(ich);
       // create an elipse for this hit
-      TEllipse* te = new TEllipse(shp._pos.x()-pcent.x(),shp._pos.y()-pcent.y(),
-	  shp._wres, shp._tres,0.0,360.0, shp._wdir.phi()*180.0/TMath::Pi());
-      if(selectedHit(ishp)){
-	te->SetLineColor(kOrange);
-	te->SetFillColor(kOrange);
-	selected_list->Add(te);
-      } else {
-	te->SetLineColor(kYellow);
-	te->SetFillColor(kYellow);
-	notselected_list->Add(te);
+      TEllipse* te = new TEllipse(ch._pos.x()-pcent.x(),ch._pos.y()-pcent.y(),
+	  ch._wres, ch._tres,0.0,360.0, ch._wdir.phi()*180.0/TMath::Pi());
+      // draw all hits
+      te->SetLineColor(kYellow);
+      te->SetFillColor(kYellow);
+      notselected_list->Add(te);
+      // selected hits; this overlaps with those below
+      if(selectedHit(ich)){
+	TEllipse* tes = new TEllipse(ch._pos.x()-pcent.x(),ch._pos.y()-pcent.y(),
+	  ch._wres, ch._tres,0.0,360.0, ch._wdir.phi()*180.0/TMath::Pi());
+ 	tes->SetLineColor(kOrange);
+	tes->SetFillColor(kOrange);
+	selected_list->Add(tes);
+      }
+      if(_mcdiag){
+	// get digi pointers from combo hits
+	std::vector<StrawDigiIndex> sdis;
+	_chcol->fillStrawDigiIndices(evt,ich,sdis);
+	for(auto isd : sdis) { 
+	  StrawDigiMC const& mcdigi = _mcdigis->at(isd);
+	  art::Ptr<StepPointMC> spmcp;
+	  if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && spmcp->simParticle() == pspp){
+	    TMarker* mch = new TMarker(spmcp->position().x()-pcent.x(),spmcp->position().y()-pcent.y(),20);
+	    mch->SetMarkerColor(kBlue);
+	    mch->SetMarkerSize(1);
+	    mct_list->Add(mch);
+	    if(!selectedHit(ich)){
+	      te->SetLineColor(kBlue);
+	      te->SetFillColor(kBlue);
+	    }
+	  }
+	}
       }
     }
     // add fit circle
@@ -533,7 +729,7 @@ namespace mu2e {
     fitarc->SetLineColor(kRed);
     fitarc->SetLineWidth(2);
     fitarc->SetFillStyle(0);
-    ce_used_list->Add(fitarc);
+    pri_used_list->Add(fitarc);
     if (_mcdiag) {
       // mc true circle
       TArc* mcarc = new TArc(_mch.centerx()-pcent.x(),_mch.centery()-pcent.y(),_mch.radius());
@@ -541,126 +737,6 @@ namespace mu2e {
       mcarc->SetLineWidth(2);
       mcarc->SetFillStyle(0);
       mct_list->Add(mcarc);
-    }
-  }
-
-  void HelixDiag::plotZ(art::Ptr<SimParticle> const& pspp, HelixSeed const& hseed, unsigned ihel) {
-    RobustHelix const& rhel = hseed._helix;
-    HelixHitCollection const& hhits = hseed._hhits;
-
-    static unsigned igraph = 0;
-    igraph++;
-    art::ServiceHandle<art::TFileService> tfs;
-
-    char ce_stereo_used_name[100];
-    snprintf(ce_stereo_used_name,100,"ce_stereo_used_shphiz%i",igraph);
-    char ce_stereo_notused_name[100];
-    snprintf(ce_stereo_notused_name,100,"ce_stereo_notused_shphiz%i",igraph);
-    char ce_notstereo_used_name[100];
-    snprintf(ce_notstereo_used_name,100,"ce_notstereo_used_shphiz%i",igraph);
-    char ce_notstereo_notused_name[100];
-    snprintf(ce_notstereo_notused_name,100,"ce_notstereo_notused_shphiz%i",igraph);
-    char bkg_stereo_used_name[100];
-    snprintf(bkg_stereo_used_name,100,"bkg_stereo_used_shphiz%i",igraph);
-    char bkg_stereo_notused_name[100];
-    snprintf(bkg_stereo_notused_name,100,"bkg_stereo_notused_shphiz%i",igraph);
-    char bkg_notstereo_used_name[100];
-    snprintf(bkg_notstereo_used_name,100,"bkg_notstereo_used_shphiz%i",igraph);
-    char bkg_notstereo_notused_name[100];
-    snprintf(bkg_notstereo_notused_name,100,"bkg_notstereo_notused_shphiz%i",igraph);
-    char title[100];
-    snprintf(title,100,"StrawHit #phi Z evt %i hel %i;mm;rad",_iev, ihel);
-    TH2F* ce_stereo_used = tfs->make<TH2F>(ce_stereo_used_name,title,100,-1500,1500,100,-12.5,12.5);
-    TH2F* ce_stereo_notused = tfs->make<TH2F>(ce_stereo_notused_name,title,100,-1500,1500,100,-12.5,12.5);
-    TH2F* ce_notstereo_used = tfs->make<TH2F>(ce_notstereo_used_name,title,100,-1500,1500,100,-12.5,12.5);
-    TH2F* ce_notstereo_notused = tfs->make<TH2F>(ce_notstereo_notused_name,title,100,-1500,1500,100,-12.5,12.5);
-    TH2F* bkg_stereo_used = tfs->make<TH2F>(bkg_stereo_used_name,title,100,-1500,1500,100,-12.5,12.5);
-    TH2F* bkg_stereo_notused = tfs->make<TH2F>(bkg_stereo_notused_name,title,100,-1500,1500,100,-12.5,12.5);
-    TH2F* bkg_notstereo_used = tfs->make<TH2F>(bkg_notstereo_used_name,title,100,-1500,1500,100,-12.5,12.5);
-    TH2F* bkg_notstereo_notused = tfs->make<TH2F>(bkg_notstereo_notused_name,title,100,-1500,1500,100,-12.5,12.5);
-
-    ce_stereo_used->SetMarkerStyle(kFullTriangleUp);
-    ce_stereo_used->SetMarkerColor(kRed);
-    ce_stereo_notused->SetMarkerStyle(kOpenTriangleUp);
-    ce_stereo_notused->SetMarkerColor(kRed);
-    ce_notstereo_used->SetMarkerStyle(kFullCircle);
-    ce_notstereo_used->SetMarkerColor(kRed);
-    ce_notstereo_notused->SetMarkerStyle(kOpenCircle);
-    ce_notstereo_notused->SetMarkerColor(kRed);
-    bkg_stereo_used->SetMarkerStyle(kFullTriangleUp);
-    bkg_stereo_used->SetMarkerColor(kGreen);
-    bkg_stereo_notused->SetMarkerStyle(kOpenTriangleUp);
-    bkg_stereo_notused->SetMarkerColor(kGreen);
-    bkg_notstereo_used->SetMarkerStyle(kFullCircle);
-    bkg_notstereo_used->SetMarkerColor(kGreen);
-    bkg_notstereo_notused->SetMarkerStyle(kOpenCircle);
-    bkg_notstereo_notused->SetMarkerColor(kGreen);
-
-    for(auto const& hhit : hhits) {
-      if(primary(pspp,hhit._shidx)){
-	if (use(hhit)) {
-	  if (stereo(hhit)) {
-	    ce_stereo_used->Fill(hhit._pos.z(),hhit._phi);
-	  }
-	  else {
-	    ce_notstereo_used->Fill(hhit._pos.z(),hhit._phi);
-	  }	      
-	}
-	else {
-	  if (stereo(hhit)) {
-	    ce_stereo_notused->Fill(hhit._pos.z(),hhit._phi);
-	  }
-	  else {
-	    ce_notstereo_notused->Fill(hhit._pos.z(),hhit._phi);
-	  }
-	}
-      }
-      else {
-	if (use(hhit)) {
-	  if (stereo(hhit)) {
-	    bkg_stereo_used->Fill(hhit._pos.z(),hhit._phi);
-	  }
-	  else {
-	    bkg_notstereo_used->Fill(hhit._pos.z(),hhit._phi);
-	  }	      
-	}
-	else {
-	  if (stereo(hhit)) {
-	    bkg_stereo_notused->Fill(hhit._pos.z(),hhit._phi);
-	  }
-	  else {
-	    bkg_notstereo_notused->Fill(hhit._pos.z(),hhit._phi);
-	  }
-	}
-      }
-    }
-    TF1* fitline = new TF1("fitline","[0]+[1]*x",-1500,1500);
-    fitline->SetParameter(0,rhel.fz0());
-    fitline->SetParameter(1,1.0/rhel.lambda());
-    fitline->SetLineColor(kRed);
-    TList* flist = ce_stereo_used->GetListOfFunctions();
-    flist->Add(fitline);
-
-    if (_mcdiag) {
-      TF1* mcline = new TF1("mcline","[0]+[1]*x",-1500,1500);
-      mcline->SetParameter(0,_mch.fz0());
-      mcline->SetParameter(1,1.0/_mch.lambda());
-      mcline->SetLineColor(kBlue);
-      TList* flist = ce_stereo_used->GetListOfFunctions();
-      flist->Add(mcline);
-      // Plot the MC true Primary hits
-      char mctruth_name[100];
-      snprintf(mctruth_name,100,"mctshphiz%i",igraph);
-      TH2F* mct = tfs->make<TH2F>(mctruth_name,title,100,-1500,1500,100,-12.5,12.5);
-      mct->SetMarkerStyle(5);
-      mct->SetMarkerColor(kMagenta);
-
-      for(auto& hhit : hhits ) {
-	StrawDigiMC const& mcdigi = _mcdigis->at(hhit._shidx);
-	art::Ptr<StepPointMC> spmcp;
-	if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && spmcp->simParticle() == pspp)
-	  mct->Fill(spmcp->position().z(),spmcp->position().phi());
-      }
     }
   }
 
@@ -710,12 +786,12 @@ namespace mu2e {
   }
 
   bool
-  HelixDiag::use(HelixHit const& hhit) const {
+  HelixDiag::use(ComboHit const& hhit) const {
      return !hhit._flag.hasAnyProperty(_dontuseflag);
   }
 
   bool
-  HelixDiag::stereo(HelixHit const& hhit) const {
+  HelixDiag::stereo(ComboHit const& hhit) const {
     static StrawHitFlag stereo(StrawHitFlag::stereo);
     return hhit._flag.hasAllProperties(stereo);
   }
@@ -729,7 +805,12 @@ namespace mu2e {
 
   bool
   HelixDiag::selectedHit(size_t index) {
-    return _shfcol->at(index).hasAnyProperty(_hsel) && !_shfcol->at(index).hasAnyProperty(_hbkg);
+    StrawHitFlag flag;
+    if(_useshfcol)
+      flag = _shfcol->at(index);
+    else
+      flag = _chcol->at(index).flag();
+    return flag.hasAllProperties(_hsel) && !flag.hasAnyProperty(_hbkg);
   }
 
 }

@@ -18,6 +18,7 @@
 #include <array>
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -57,6 +58,8 @@
 #include "G4IntersectionSolid.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4LogicalVolume.hh"
+#include "G4TwoVector.hh"
+#include "G4ExtrudedSolid.hh"
 
 using namespace std;
 
@@ -100,7 +103,7 @@ namespace mu2e {
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "TSCryo", "ts.cryo"      );
     geomOptions->loadEntry( config, "TSPoly", "ts.polyliner" );
-
+    geomOptions->loadEntry( config, "TSCA"  , "ts.cas"       );
     // For how all pieces are made from one of two types of material,
     // vacuum or average coils + cryostat material.
     G4Material* downstreamVacuumMaterial  = findMaterialOrThrow(ts->downstreamVacuumMaterial());
@@ -155,6 +158,7 @@ namespace mu2e {
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::IN);
     tssName = "TS1InnerCryoShell";
+    double ts1InsVacRIn = strsec->rOut();
     nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
@@ -182,6 +186,7 @@ namespace mu2e {
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT );
     tssName =  "TS1OuterCryoShell";
+    double ts1InsVacROut = strsec->rIn();
     nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
@@ -235,6 +240,25 @@ namespace mu2e {
            << "," << pos2.z() +ts->endWallU2_halfLength() << "]" << endl;
     }
 
+    // Put in the insulating vacuum, which will serve as the mother volume
+    // for the coils and coil assemblies (CAs).
+    double ts1InsVacHalfLen = strsec->getHalfLength() - ts->endWallU1_halfLength() + ts->endWallU2_halfLength();
+    double ts1InsVacOffset = ts->endWallU1_halfLength() + ts->endWallU2_halfLength();
+    CLHEP::Hep3Vector ts1CIVLoc = strsec->getGlobal()-_hallOriginInMu2e + CLHEP::Hep3Vector(0,0,ts1InsVacOffset);
+    tssName =  "TS1CryoInsVac";
+    nestTubs( tssName,
+              TubsParams( ts1InsVacRIn,
+                          ts1InsVacROut,
+                          ts1InsVacHalfLen ),
+              upstreamVacuumMaterial,
+              strsec->getRotation(),
+              ts1CIVLoc,
+              parent,
+              0,
+              G4Color::Red(),
+	      "TSCryo"
+              );
+
     // Build TS2
     torsec = ts->getTSVacuum<TorusSection>(TransportSolenoid::TSRegion::TS2);
     nestTorus("TS2Vacuum",
@@ -267,6 +291,7 @@ namespace mu2e {
     std::array<double,5> ts2Cryo1Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
 
     tssName = "TS2InnerCryoShell";
+    double ts2InsVacRIn = torsec->rOut();
     nestTorus(tssName,
               ts2Cryo1Params,
               cryoMaterial,
@@ -287,6 +312,7 @@ namespace mu2e {
     std::array<double,5> ts2Cryo2Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
 
     tssName = "TS2OuterCryoShell";
+    double ts2InsVacROut = torsec->rIn();
     nestTorus(tssName,
               ts2Cryo2Params,
               cryoMaterial,
@@ -303,6 +329,25 @@ namespace mu2e {
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
                 << std::endl;
 
+
+    // Put in the insulating vacuum, which will serve as the mother volume
+    // for the coils and coil assemblies (CAs).
+    std::array<double,5> ts2CIVParams { { ts2InsVacRIn, ts2InsVacROut, torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
+
+
+    tssName = "TS2CryoInsVac";
+    nestTorus(tssName,
+              ts2CIVParams,
+              upstreamVacuumMaterial,
+              torsec->getRotation(),
+              torsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              G4Color::Red(),
+	      "TSCryo"
+              );
+
+
     // Build TS3
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS3,TransportSolenoid::TSRadialPart::IN );
     nestTubs( "TS3Vacuum",
@@ -316,6 +361,7 @@ namespace mu2e {
 	      "TSCryo"
               );
 
+    double ts3InsVacRIn = strsec->rOut();
     tssName = "TS3InnerCryoShell";
     nestTubs( tssName,
               TubsParams( strsec->rIn(),
@@ -338,6 +384,7 @@ namespace mu2e {
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS3,TransportSolenoid::TSRadialPart::OUT );
 
     tssName = "TS3OuterCryoShell";
+    double ts3InsVacROut = strsec->rIn();
     nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
@@ -360,6 +407,24 @@ namespace mu2e {
       cout << __func__ << " TS3  OffsetInMu2e : " << strsec->getGlobal()   << endl;
       cout << __func__ << " TS3  rotation     : " << strsec->getRotation() << endl;
     }
+
+    // Put in the insulating vacuum, which will serve as the mother volume
+    // for the coils and coil assemblies (CAs).
+
+    tssName =  "TS3CryoInsVac";
+    nestTubs( tssName,
+              TubsParams( ts3InsVacRIn,
+                          ts3InsVacROut,
+                          strsec->getHalfLength() ),
+              upstreamVacuumMaterial,
+              strsec->getRotation(),
+              strsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              G4Color::Red(),
+	      "TSCryo"
+              );
+
 
     // Build TS4
     torsec = ts->getTSVacuum<TorusSection>(TransportSolenoid::TSRegion::TS4);
@@ -392,6 +457,7 @@ namespace mu2e {
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::IN );
     std::array<double,5> ts4Cryo1Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
     tssName = "TS4InnerCryoShell";
+    double ts4InsVacRIn = torsec->rOut();
     nestTorus(tssName,
               ts4Cryo1Params,
               cryoMaterial,
@@ -411,6 +477,7 @@ namespace mu2e {
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::OUT );
     std::array<double,5> ts4Cryo2Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
     tssName = "TS4OuterCryoShell";
+    double ts4InsVacROut = torsec->rIn();
     nestTorus(tssName,
               ts4Cryo2Params,
               cryoMaterial,
@@ -426,6 +493,25 @@ namespace mu2e {
       std::cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
                 << std::endl;
+
+    // Put in the insulating vacuum, which will serve as the mother volume
+    // for the coils and coil assemblies (CAs).
+    std::array<double,5> ts4CIVParams { { ts4InsVacRIn, ts4InsVacROut, torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
+
+    tssName = "TS4CryoInsVac";
+    nestTorus(tssName,
+              ts4CIVParams,
+              upstreamVacuumMaterial,
+              torsec->getRotation(),
+              torsec->getGlobal()-_hallOriginInMu2e,
+              parent,
+              0,
+              G4Color::Red(),
+	      "TSCryo"
+              );
+
+
+
 
     // Build TS5.
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::IN );    
@@ -444,6 +530,7 @@ namespace mu2e {
 	      "TSCryo"
               );
 
+    double ts5InsVacRIn = strsec->rOut();
     tssName = "TS5InnerCryoShell";
     nestTubs( tssName,
               TubsParams( strsec->rIn(),
@@ -465,6 +552,7 @@ namespace mu2e {
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::OUT );
     tssName = "TS5OuterCryoShell";
+    double ts5InsVacROut = strsec->rIn();
     nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
@@ -488,6 +576,30 @@ namespace mu2e {
       cout << __func__ << " TS5  rotation     : " << strsec->getRotation() << endl;
     }
 
+
+    // Put in the insulating vacuum, which will serve as the mother volume
+    // for the coils and coil assemblies (CAs).
+
+    double ts5InsVacHalfLen = strsec->getHalfLength() - ts->endWallD_halfLength();// - ts->getColl53().halfLength();
+    double ts5InsVacOffset = ts->endWallD_halfLength();// + ts->getColl53().halfLength();
+    CLHEP::Hep3Vector ts5CIVLoc = strsec->getGlobal()-_hallOriginInMu2e - CLHEP::Hep3Vector(0,0,ts5InsVacOffset);
+    tssName =  "TS5CryoInsVac";
+    nestTubs( tssName,
+              TubsParams( ts5InsVacRIn,
+                          ts5InsVacROut,
+                          ts5InsVacHalfLen ),
+              upstreamVacuumMaterial,
+              strsec->getRotation(),
+              ts5CIVLoc,
+              parent,
+              0,
+              G4Color::Red(),
+	      "TSCryo"
+              );
+
+
+
+
     // Build Rings (added April 1, 2015, David Norvil Brown)
     double rirs = ts->rInRingSide();
     double rors = ts->rOutRingSide();
@@ -499,24 +611,41 @@ namespace mu2e {
     std::vector<double> xr = ts->xRing();
     std::vector<double> yr = ts->yRing();
     std::vector<double> zr = ts->zRing();
-    
+    std::vector<double> thetasRing = ts->thetaRing();
+
     for ( unsigned int iRing = 0; iRing < xr.size(); iRing++ ) {
+      // Let's make a mother volume first for each ring.
+      std::ostringstream ringMotherName;
+      ringMotherName << "TSRingMother" << iRing;
+      CLHEP::HepRotation* ringRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      double ringRotTheta = thetasRing[iRing]*CLHEP::degree;
+      ringRotat->rotateY(ringRotTheta);
+      CLHEP::HepRotation* noRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+
+      double motherx = xr[iRing];
+      double mothery = yr[iRing];
+      double motherz = zr[iRing];
+
+      VolumeInfo motherVol = nestTubs( ringMotherName.str(),
+				       TubsParams( rirs, rors, trs + lr/2.0 ),
+				       findMaterialOrThrow("G4_AIR"),
+				       ringRotat, 
+				       CLHEP::Hep3Vector(motherx,mothery,motherz
+							 ) - _hallOriginInMu2e,
+				       parent, 0, G4Color::Blue(),
+				       "TSCryo" );
       std::ostringstream leftName;
       leftName << "leftSideRing" << iRing;
-      CLHEP::HepRotation* ringRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-      double ringRotTheta = 0.0;
-      if ( iRing == 1 || iRing == 4 ) ringRotTheta = 45.0*CLHEP::degree;
-      if ( iRing == 2 || iRing == 3 ) ringRotTheta = 90.0*CLHEP::degree;
-      ringRotat->rotateY(ringRotTheta);
-      double lx = xr[iRing] + lr*sin(ringRotTheta)/2.0 + trs*sin(ringRotTheta)/2.0;
-      double ly = yr[iRing];
-      double lz = zr[iRing] - lr*cos(ringRotTheta)/2.0 - trs*cos(ringRotTheta)/2.0; 
+
+      double lx = 0.0;
+      double ly = 0.0;
+      double lz = - lr/2.0 - trs/2.0; 
       nestTubs( leftName.str(),
 		TubsParams( rirs, rors, trs/2.0 ),
 		ringMaterial,
-                ringRotat,
-		CLHEP::Hep3Vector(lx,ly,lz)-_hallOriginInMu2e,
-		parent,
+                noRotat,
+		CLHEP::Hep3Vector(lx,ly,lz),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"TSCryo"
@@ -528,9 +657,9 @@ namespace mu2e {
       nestTubs( centerName.str(),
 		TubsParams( rir, ror, lr/2.0 ),
 		ringMaterial,
-                ringRotat,
-		CLHEP::Hep3Vector(xr[iRing],yr[iRing],zr[iRing])-_hallOriginInMu2e,
-		parent,
+                noRotat,
+		CLHEP::Hep3Vector(0,0,0),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"TSCryo"
@@ -540,22 +669,71 @@ namespace mu2e {
       std::ostringstream rightName;
       rightName << "rightSideRing" << iRing;
 
-      double rx = xr[iRing] - lr*sin(ringRotTheta)/2.0 - trs*sin(ringRotTheta)/2.0;
-      double ry = yr[iRing];
-      double rz = zr[iRing] + lr*cos(ringRotTheta)/2.0 + trs*cos(ringRotTheta)/2.0; 
+      double rx = 0.0;
+      double ry = 0.0;
+      double rz = lr/2.0 + trs/2.0; 
 
       nestTubs( rightName.str(),
 		TubsParams( rirs, rors, trs/2.0 ),
 		ringMaterial,
-                ringRotat,
-		CLHEP::Hep3Vector(rx,ry,rz)-_hallOriginInMu2e,
-		parent,
+                noRotat,
+		CLHEP::Hep3Vector(rx,ry,rz),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"TSCryo"
 		);
 
-    }
+    } // End of building rings
+
+    // Build outer portion of support for TS3 antiproton stopping window
+    // Will model for now as solid tubes
+
+    int pbarAbsTS3Version = config.getInt("pbar.version",1);
+      if ( pbarAbsTS3Version > 1 ) {
+
+	std::ostringstream PabsSupOutName;
+	PabsSupOutName << "PabsTS3SupOut";
+	CLHEP::HepRotation* pasubRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	pasubRotat->rotateY(90.0*CLHEP::degree);
+
+	nestTubs( PabsSupOutName.str(),
+		  TubsParams( rirs, rors, trs ),
+		  ringMaterial,
+		  pasubRotat, 
+		  CLHEP::Hep3Vector(0,0,0)-_hallOriginInMu2e,
+		  parent,
+		  0,
+		  G4Color::Blue(),
+		  "TSCryo"
+		  );
+
+	// Now do the next level in for the TS3 pabs window support - in cryo
+	// (acts as endwall for TSu and TSd cryo sections.
+	double rinner = config.getDouble("pbar.support.midRin")*CLHEP::mm;
+	double router = config.getDouble("pbar.support.midRout")*CLHEP::mm;
+	double halflen = config.getDouble("pbar.support.midThickness")*CLHEP::mm/2.0;
+
+	G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+	VolumeInfo useAsParent = _helper->locateVolInfo( "TS3CryoInsVac" );
+
+	std::ostringstream PabsSupMidName;
+	PabsSupMidName << "PabsTS3MidOut";
+	nestTubs( PabsSupMidName.str(),
+		  TubsParams( rinner, router, halflen ),
+		  ringMaterial,
+		  0, 
+		  CLHEP::Hep3Vector(0,0,0)- useAsParent.centerInMu2e(),
+		  useAsParent,
+		  0,
+		  G4Color::Blue(),
+		  "TSCryo"
+		  );
+
+      } //end of " if pbarAbsTS3Version..."
+
+
+
 
     // Build downstream end wall of TS5
     CLHEP::Hep3Vector pos3( strsec->getGlobal().x(), 
@@ -612,59 +790,94 @@ namespace mu2e {
       std::string const & caName  = its.name()+"CA";
       verbosityLevel && std::cout << __func__ << " constructing " << caName << std::endl;
 
+      VolumeInfo useAsParent;
+      G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+
       if ( its==tsCAReg_enum::TS2 || its==tsCAReg_enum::TS4 ) {
         
-        // those sections are toruses
+        // these sections are toruses
         // fixme, make the base class TSSection more general to be used here instead the two
         caTorsec = ts.getTSCA<TorusSection>(its);
+
+	if ( its == tsCAReg_enum::TS2 ) {
+	  useAsParent = _helper->locateVolInfo( "TS2CryoInsVac" );
+	} else if ( its == tsCAReg_enum::TS4 ) {
+	  useAsParent = _helper->locateVolInfo( "TS4CryoInsVac" );
+	} else {  // Should never get here
+	  useAsParent = parent;
+	}
+
+
         nestTorus(caName,
                   caTorsec->getParameters(),
                   findMaterialOrThrow(caTorsec->getMaterial()),
-                  caTorsec->getRotation(),
-                  caTorsec->getGlobal()-parentCenterInMu2e,
-                  parent,
+		  0,
+                  caTorsec->getGlobal()-useAsParent.centerInMu2e(),
+                  useAsParent,
                   0,
                   G4Color::Yellow(),
                   "TSCA"
                   );
-
+	//                  caTorsec->getRotation(),
       } else if ( its==tsCAReg_enum::TS1 
                   || its==tsCAReg_enum::TS3u 
                   || its==tsCAReg_enum::TS3d 
                   || its==tsCAReg_enum::TS5
                   ) {
 
+	if ( its == tsCAReg_enum::TS1 ) {
+	  useAsParent = _helper->locateVolInfo( "TS1CryoInsVac" );
+	} else if ( its == tsCAReg_enum::TS3u || its == tsCAReg_enum::TS3d ) {
+	  useAsParent = _helper->locateVolInfo( "TS3CryoInsVac" );
+	} else if ( its == tsCAReg_enum::TS5 ) {
+	  useAsParent = _helper->locateVolInfo( "TS5CryoInsVac" );
+	} else { // Should never get here
+	  useAsParent = parent;
+	}
+
         caConsec = ts.getTSCA<ConeSection>(its);
+
+	CLHEP::Hep3Vector V = caConsec->getGlobal() - useAsParent.centerInMu2e();
+	CLHEP::HepRotation* rot = useAsParent.physical->GetRotation();
+	V = (*rot) * V;
+
+
         nestCons(caName,
                  caConsec->getParameters(),
                  findMaterialOrThrow(caConsec->getMaterial()),
-                 caConsec->getRotation(),
-                 caConsec->getGlobal()-parentCenterInMu2e,
-                 parent,
+		 0,
+                 V,
+                 useAsParent,
                  0,
                  G4Color::Yellow(),
                  "TSCA"
                  );
-
+	//                 caConsec->getRotation(),
       } else {
 
-        caStrsec = ts.getTSCA<StraightSection>(its);
-        nestTubs(caName,
-                 TubsParams(caStrsec->rIn(),
-                            caStrsec->rOut(),
-                            caStrsec->getHalfLength()),
-                 findMaterialOrThrow(caStrsec->getMaterial()),
-                 caStrsec->getRotation(),
-                 caStrsec->getGlobal()-parentCenterInMu2e,
-                 parent,
-                 0,
-                 G4Color::Cyan(),
-                 "TSCA"
-                 );
+	useAsParent = _helper->locateVolInfo("TS3CryoInsVac");
+	caStrsec = ts.getTSCA<StraightSection>(its);
+	CLHEP::Hep3Vector V = caStrsec->getGlobal() - useAsParent.centerInMu2e();
+	CLHEP::HepRotation* rot = useAsParent.physical->GetRotation();
+	V = (*rot) * V;
+
+	nestTubs(caName,
+		 TubsParams(caStrsec->rIn(),
+			    caStrsec->rOut(),
+			    caStrsec->getHalfLength()),
+		 findMaterialOrThrow(caStrsec->getMaterial()),
+		 0,
+		 V,
+		 useAsParent,
+		 0,
+		 G4Color::Cyan(),
+		 "TSCA"
+		 );
+
+	//caStrsec->getRotation(),
 
       }
 
-      G4Helper* _helper = &(*art::ServiceHandle<G4Helper>());
       verbosityLevel 
         && std::cout << __func__ << " " << caName << " Mass in kg: " 
                      << _helper->locateVolInfo(caName).logical->GetMass()/CLHEP::kg 
@@ -697,17 +910,51 @@ namespace mu2e {
         
         ostringstream coilname ; coilname << "TS" << iTS << "_Coil" << ++iC ;
 
-        nestTubs( coilname.str(),
-                  TubsParams( coil.rIn(), coil.rOut(), coil.halfLength() ),
-                  coilMaterial,
-                  coil.getRotation(),
-                  coil.getGlobal()-parent.centerInMu2e(),
-                  parent,
-                  0,
-                  G4Color::Green(),
-		  "TSCoils"
-                  );
+	// Use insulating vacuums as mother volumes
+	ostringstream ivName;
+	ivName << "TS" << iTS << "CryoInsVac";
 
+	G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+	VolumeInfo useAsParent = _helper->locateVolInfo( ivName.str() );
+
+	CLHEP::Hep3Vector V = coil.getGlobal() - useAsParent.centerInMu2e();
+
+
+	CLHEP::HepRotation* rot = useAsParent.physical->GetRotation();
+	V = (*rot) * V;
+	CLHEP::HepRotation invrot = rot->inverse();
+
+	if ( iTS == TransportSolenoid::TSRegion::TS2 || 
+	     iTS == TransportSolenoid::TSRegion::TS4 ) {
+
+	  CLHEP::HepRotation* twist = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	  twist->rotateX(90.0*CLHEP::degree);
+	  twist->rotateY(-coil.getRotation()->theta());
+
+
+	  nestTubs( coilname.str(),
+		    TubsParams( coil.rIn(), coil.rOut(), coil.halfLength() ),
+		    coilMaterial,
+		    twist,
+		    V,
+		    useAsParent,
+		    0,
+		    G4Color::Green(),
+		    "TSCoils"
+		    );
+	} else {
+
+	  nestTubs( coilname.str(),
+		    TubsParams( coil.rIn(), coil.rOut(), coil.halfLength() ),
+		    coilMaterial,
+		    0,
+		    V,
+		    useAsParent,
+		    0,
+		    G4Color::Green(),
+		    "TSCoils"
+		    );
+	}
         if ( verbosityLevel > 0 ) {
           cout << __func__ << " " << coilname.str() << " placed at: " << coil.getGlobal() << endl;
           cout << __func__ << "            rotation: " << -coil.getRotation()->getTheta()/CLHEP::degree << endl;
@@ -776,7 +1023,10 @@ namespace mu2e {
 	      "TSColl"
               );
 
-    TubsParams coll1Param2 ( coll1.rIn3(),  ts.innerRadius(), coll1.halfLength()-2.*vdHalfLength);
+    double tmpRout = ts.innerRadius();
+    if ( coll1.rIn4() > 1.0 ) tmpRout = coll1.rIn4();
+
+    TubsParams coll1Param2 ( coll1.rIn3(),  tmpRout, coll1.halfLength()-2.*vdHalfLength);
  
     nestTubs( "Coll12",
               coll1Param2,
@@ -788,7 +1038,24 @@ namespace mu2e {
               G4Color::Blue(),
 	      "TSColl"
               );
-    
+
+    if ( coll1.rIn4() > 1.0 && coll1.rOu4() > coll1.rIn4() ) {
+      // Make the sheath
+      TubsParams coll1Param3 ( coll1.rIn4(),  coll1.rOu4(), coll1.halfLength()-2.*vdHalfLength);
+      nestTubs( "Coll13",
+		coll1Param3,
+		findMaterialOrThrow( coll1.material3() ),
+		0,
+		coll1.getLocal(),
+		_helper->locateVolInfo("TS1Vacuum"),
+		0,
+		G4Color::Blue(),
+		"TSColl"
+		);
+
+    } // end of adding sheath to Coll1
+
+
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS1  OffsetInMu2e    : " << ts1in->getGlobal()       << endl;
       cout << __func__ << " Coll1 local offset   : " << ts.getColl1().getLocal() << endl;
@@ -800,7 +1067,7 @@ namespace mu2e {
     // Collimator 3 has peculiar shape, described in doc_db 853.
     // Construct this shape using boolean functions on solids
 
-    // First, construct hole; make it slightly longer that any collimator
+    // First, construct hole; make it slightly longer than any collimator
     double hDz = coll31.halfLength();
     if( hDz<coll32.halfLength() ) hDz=coll32.halfLength();
     // Hole is the intersection of box and tube
@@ -811,8 +1078,9 @@ namespace mu2e {
                                            0.0,coll31.holeRadius(),hDz+2.0,
                                            0.0, CLHEP::twopi );
     G4IntersectionSolid* coll3_hole = new G4IntersectionSolid("coll3_hole",
-                                                              coll3_hole_box,
-                                                              coll3_hole_circle);
+							   coll3_hole_box,
+							   coll3_hole_circle);
+
 
     // Make collimators themselves. At this moment the collimators
     // coll31 and coll32 are the same size. But it is possible to make them
@@ -870,6 +1138,51 @@ namespace mu2e {
                   0,
                   G4Color::Gray(),
 		  "TSColl");
+
+    // **************************************************************
+    // Now place the "flashblocks" for tests of mitigating beam flash
+    // **************************************************************
+
+    if (coll31.useFlashBlock()) {
+      std::vector<double> boxPars = { coll31.flashBlockWidth()/2.0*CLHEP::mm,
+				      coll31.flashBlockHeight()/2.0*CLHEP::mm,
+				      coll31.flashBlockLength()/2.0*CLHEP::mm};
+
+      CLHEP::Hep3Vector displaceFB(coll31.flashBlockTranOff()*CLHEP::mm,
+				   coll31.holeDisplacement() - coll31.holeHalfHeight() + coll31.flashBlockHeight()/2.0*CLHEP::mm, 
+				   coll31.flashBlockLength()/2.0 - coll31.halfLength());
+
+      nestBox( "flashBlockUp",
+	       boxPars,
+	       findMaterialOrThrow(coll31.flashBlockMaterial()),
+	       coll31Rot,
+	       coll31.getLocal()+displaceFB,
+	       _helper->locateVolInfo("TS3Vacuum").logical,
+	       0,
+	       G4Colour::Gray(),
+	       "TSColl");
+    } 
+
+    if (coll32.useFlashBlock()) {
+      std::vector<double> boxPars = { coll32.flashBlockWidth()/2.0*CLHEP::mm,
+				      coll32.flashBlockHeight()/2.0*CLHEP::mm,
+				      coll32.flashBlockLength()/2.0*CLHEP::mm};
+
+      CLHEP::Hep3Vector displaceFB(coll32.flashBlockTranOff()*CLHEP::mm,
+				   coll32.holeDisplacement() - coll32.holeHalfHeight() + coll32.flashBlockHeight()/2.0*CLHEP::mm, 
+				   coll32.flashBlockLength()/2*CLHEP::mm - coll32.halfLength());
+
+      nestBox( "flashBlockDn",
+	       boxPars,
+	       findMaterialOrThrow(coll32.flashBlockMaterial()),
+	       coll32Rot,
+	       coll32.getLocal()+displaceFB,
+	       _helper->locateVolInfo("TS3Vacuum").logical,
+	       0,
+	       G4Colour::Gray(),
+	       "TSColl");
+    } 
+
 
     // Now add a Recorder at the Coll31 exit and Coll32 entrance
     // (do not use VirtualDetector because of _ in its volume name)
@@ -956,16 +1269,18 @@ namespace mu2e {
     
     TubsParams coll5Param3 ( coll53.rIn(),  coll53.rOut(), coll53.halfLength()-2.*vdHalfLength);
     
-    // Build Coll53 flange outsie the TS5Vacuum
-    G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
+    // Build Coll53 flange outside the TS5Vacuum
+    VolumeInfo useAsParent = _helper->locateVolInfo("TS5CryoInsVac");
+    //    G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
+    G4ThreeVector _useParentOriginInMu2e = useAsParent.centerInMu2e();
     StraightSection   const * strsec (nullptr);
     strsec = ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS5);
     nestTubs( "Coll53",
               coll5Param3,
               findMaterialOrThrow( coll53.material() ),
 	      0,
-              strsec->getGlobal()-_hallOriginInMu2e+coll53.getLocal(),
-              parent,
+              strsec->getGlobal()-_useParentOriginInMu2e+coll53.getLocal(),
+              useAsParent,
               0,
               G4Color::Blue(),
 	      "TSColl"
@@ -1073,127 +1388,438 @@ namespace mu2e {
   void constructPbarWindow( VolumeInfo const& parent,
                             SimpleConfig const& config,
                             Beamline const& bl ) {
-
+    // ******* These are notes for version 1 of the pbar window ********
     // Place Pbar absorber between Coll31 and Coll32
     // Pbar absorber is made of two pieces:
     //  -- vacuum wall, which covers the whole inner part of TS3
     //     it is controlled by pbar.* parameters
     //  -- wedge, which starts near center and extends upward
     //     it is controlled by pbarwedge.* parameters
-
-    // -- vacuum wall
-    int const verbosityLevel = config.getInt("pbar.verbosityLevel", 0);
+    // ******* In version two, there are changes *****
+    // - support structure is ~1 cm thick stainless with a window shaped
+    //   like that of the COL3u and Col3d windows.
+    // - wedge is shaped like the 
+    //   hole in the support structure.
+    // ******* In version three, there are some more changes
+    // - The window in the support structure is circular with the circular 
+    //   disk to be placed inside, with a radius less than the inner cryo
+    //   shell.  
+    // - The wedge has a rectangular projection in the y-z plane.  
+    //   It is made of a series of rectangular sheets forming a 
+    //   "stairstep" structure.
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "PbarAbs", "pbar" );
     
 
-    // Throw exception if pbarwedge.build is used
+    // Throw exception if pbarwedge.build is used - way out of date!
     if ( config.hasName("pbarwedge.build") )
       {
-        throw cet::exception("GEOM")<<
-          " Variable pbarwedge.build is now deprecated. \n" <<
-          " To use pbar wedge specify: pbar.Type = \"wedge\" \n" ;
+	throw cet::exception("GEOM")<<
+	  " Variable pbarwedge.build is now deprecated. \n" <<
+	  " To use pbar wedge specify: pbar.Type = \"wedge\" \n" ;
       }
-
 
     PbarWindow const & pbarWindow = bl.getTS().getPbarWindow();
     G4Material* pbarMaterial  = findMaterialOrThrow( pbarWindow.material() );
-    if (verbosityLevel > 0) std::cout << "TS3 pbar windows HalfLength : " << pbarWindow.halfLength() << std::endl; 
-        
-    if ( pbarWindow.shape() == "wedge" ||
-         pbarWindow.shape() == "disk" ) {
 
-      double pbarParams[5]  = { 0.0, pbarWindow.rOut(), pbarWindow.halfLength(), 0.0, CLHEP::twopi };
+    // First, ascertain which version this is, along with other config info
+    int pbarAbsTS3Version = pbarWindow.version();
+    int const verbosityLevel = config.getInt("pbar.verbosityLevel", 0);
 
-      nestTubs( "PbarAbs",
-                pbarParams,
-                pbarMaterial,
-                0,
-                pbarWindow.getLocal(),
-                parent,
-                0,
-                G4Color::Yellow()
-                );
-      
-    }
-        
-    if( pbarWindow.shape() == "wedge" ) 
-      {
-        // -- pbar wedge        
-        double pbarWedge_y0  = pbarWindow.getY0();
-        double pbarWedge_y1  = pbarWindow.getY1();
-        double pbarWedge_dz0 = pbarWindow.getDZ0();
-        double pbarWedge_dz1 = pbarWindow.getDZ1();
-      
-        VolumeInfo pbarWedgeInfo;
-      
-        pbarWedgeInfo.name = "PbarAbsWedge";
-      
-        double pbarWedge_dz = ( pbarWedge_dz0<pbarWedge_dz1 ) ? pbarWedge_dz1 : pbarWedge_dz0;
-        double pbarWedge_h = pbarWedge_y1 - pbarWedge_y0;
-      
-        double pbarWedge_dy = (pbarWedge_y1 + pbarWedge_y0)/2.;
-      
-        G4Tubs *pbarWedge_disk = new G4Tubs("PbarAbsWedge_disk",
-                                            0,bl.getTS().innerRadius(),pbarWedge_dz/2.,0,CLHEP::twopi);
-      
-        G4Trd *pbarWedge_trd = new G4Trd("PbarAbsWedge_trd",
-                                         bl.getTS().innerRadius(),bl.getTS().innerRadius(),
-                                         pbarWedge_dz0/2.,pbarWedge_dz1/2.,
-                                         pbarWedge_h/2.);
-      
-        AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
-        G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
-        pbarWedgeRot->rotateX(90.0*CLHEP::degree);
-        G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_dy,0.0);
-      
-        pbarWedgeInfo.solid = new G4IntersectionSolid(pbarWedgeInfo.name,
-                                                      pbarWedge_disk,
-                                                      pbarWedge_trd,
-                                                      pbarWedgeRot,
-                                                      pbarWedgeTrans);
-      
-        finishNesting(pbarWedgeInfo,
-                      pbarMaterial,
-                      0,
-                      G4ThreeVector(0.,0.,pbarWedge_dz/2+pbarWindow.halfLength()),
-                      parent.logical,
-                      0,
-                      G4Color::Yellow(),
-		      "PbarAbs"
-                      );
 
-      } 
-    else if ( pbarWindow.shape() == "polycone" ) 
-      {
-        // Define polycone parameters
-        vector<double> tmp_zPlanesDs3 {-0.50,-0.06,0.06,0.50};
-        vector<double> tmp_rOuterDs3  (4,239.5);
-        vector<double> tmp_rInnerDs3  {239.5,0.,0.,239.5};
+    if ( pbarAbsTS3Version == 1 ) {
+      // -- vacuum wall
+
+      if (verbosityLevel > 0) std::cout << "TS3 pbar windows HalfLength : " << pbarWindow.halfLength() << std::endl; 
         
-        
-        CLHEP::Hep3Vector polyPositionInMu2e = bl.getTS().getTSCryo(TransportSolenoid::TSRegion::TS3,
-                                                                    TransportSolenoid::TSRadialPart::IN)->getGlobal();
-        
-        nestPolycone( "PbarAbsPolycone",
-                      PolyconsParams(tmp_zPlanesDs3,
-                                     tmp_rInnerDs3,
-                                     tmp_rOuterDs3 ),
-                      pbarMaterial,
-                      0,
-                      polyPositionInMu2e - parent.centerInMu2e(),
-                      parent,
-                      0,
-                      G4Colour::Yellow(),
-		      "PbarAbs"
-                      );
+      if ( pbarWindow.shape() == "wedge" ||
+	   pbarWindow.shape() == "disk" ) {
+
+	double pbarParams[5]  = { 0.0, pbarWindow.rOut(), pbarWindow.halfLength(), 0.0, CLHEP::twopi };
+
+	nestTubs( "PbarAbs",
+		  pbarParams,
+		  pbarMaterial,
+		  0,
+		  pbarWindow.getLocal(),
+		  parent,
+		  0,
+		  G4Color::Yellow()
+		  );
+      
       }
-    else 
-      {
-        throw cet::exception("GEOM")<<
-          " Incorrect pbar window geometry requested! \n " ;
+        
+      if( pbarWindow.shape() == "wedge" ) 
+	{
+	  // -- pbar wedge        
+	  double pbarWedge_y0  = pbarWindow.getY0();
+	  double pbarWedge_y1  = pbarWindow.getY1();
+	  double pbarWedge_dz0 = pbarWindow.getDZ0();
+	  double pbarWedge_dz1 = pbarWindow.getDZ1();
+
+	  VolumeInfo pbarWedgeInfo;
+      
+	  pbarWedgeInfo.name = "PbarAbsWedge";
+      
+	  double pbarWedge_dz = ( pbarWedge_dz0<pbarWedge_dz1 ) ? pbarWedge_dz1 : pbarWedge_dz0;
+	  double pbarWedge_h = pbarWedge_y1 - pbarWedge_y0;
+	  
+	  double pbarWedge_dy = (pbarWedge_y1 + pbarWedge_y0)/2.;
+      
+	  G4Tubs *pbarWedge_disk = new G4Tubs("PbarAbsWedge_disk",
+					      0,bl.getTS().innerRadius(),pbarWedge_dz/2.,0,CLHEP::twopi);
+      
+	  G4Trd *pbarWedge_trd = new G4Trd("PbarAbsWedge_trd",
+					   bl.getTS().innerRadius(),bl.getTS().innerRadius(),
+					   pbarWedge_dz0/2.,pbarWedge_dz1/2.,
+					   pbarWedge_h/2.);
+      
+	  AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+	  G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
+	  pbarWedgeRot->rotateX(90.0*CLHEP::degree);
+	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_dy,0.0);
+	  
+	  pbarWedgeInfo.solid = new G4IntersectionSolid(pbarWedgeInfo.name,
+							pbarWedge_disk,
+							pbarWedge_trd,
+							pbarWedgeRot,
+							pbarWedgeTrans);
+	  
+	  finishNesting(pbarWedgeInfo,
+			pbarMaterial,
+			0,
+			G4ThreeVector(0.,0.,pbarWedge_dz/2+pbarWindow.halfLength() ),
+			parent.logical,
+			0,
+			G4Color::Yellow(),
+			"PbarAbs"
+			);
+	  
+	}
+      else if ( pbarWindow.shape() == "polycone" ) 
+	{
+	  // Define polycone parameters
+	  vector<double> tmp_zPlanesDs3 {-0.50,-0.06,0.06,0.50};
+	  vector<double> tmp_rOuterDs3  (4,239.5);
+	  vector<double> tmp_rInnerDs3  {239.5,0.,0.,239.5};
+	  
+	  
+	  CLHEP::Hep3Vector polyPositionInMu2e = bl.getTS().getTSCryo(TransportSolenoid::TSRegion::TS3,
+								      TransportSolenoid::TSRadialPart::IN)->getGlobal();
+        
+	  nestPolycone( "PbarAbsPolycone",
+			PolyconsParams(tmp_zPlanesDs3,
+				       tmp_rInnerDs3,
+				       tmp_rOuterDs3 ),
+			pbarMaterial,
+			0,
+			polyPositionInMu2e - parent.centerInMu2e(),
+			parent,
+			0,
+			G4Colour::Yellow(),
+			"PbarAbs"
+			);
+	}
+      else 
+	{
+	  throw cet::exception("GEOM")<<
+	    " Incorrect pbar window geometry requested! \n " ;
+	}
+    }  // end of if ( pbarAbsTS3Version == 1 )
+    else if ( pbarAbsTS3Version == 2 ) {
+      // =============== Now Version 2 of pbarAbs in TS3! ==============
+      // First, build the subtraction shape to represent the hole in the 
+      // support.  Based on code in Collimator build function
+      // Get collimators
+      TransportSolenoid const& ts = bl.getTS();
+      CollimatorTS3 const& coll31  = ts.getColl31();
+      // First, construct hole; make it slightly longer than the support
+      double hDz = config.getDouble("pbar.support.innerHalflength")* CLHEP::mm;
+
+      VolumeInfo supportInfo;
+      supportInfo.name = "pBarAbsSupport";
+
+      // Hole is the intersection of box and tube
+      G4Box* support_hole_box = new G4Box("support_hole_box",
+					coll31.holeRadius()+5.0,coll31.holeHalfHeight(),hDz+1.0);
+      // make the tube longer than the box to avoid overlapping surfaces 
+      G4Tubs* support_hole_circle = new G4Tubs("support_hole_circle",
+					     0.0,coll31.holeRadius(),hDz+2.0,
+					     0.0, CLHEP::twopi );
+      G4IntersectionSolid* support_hole = new G4IntersectionSolid("support_hole",
+								support_hole_box,
+								support_hole_circle);
+
+      // Now make the actual support
+      G4Tubs* support_mother = new G4Tubs("PbarSupport_mother",
+					  0, ts.innerRadius(), hDz,
+					  0.0, CLHEP::twopi );
+
+      supportInfo.solid = new G4SubtractionSolid("pBarTS3Support",
+                                              support_mother,
+                                              support_hole,
+                                              0,
+                                              G4ThreeVector(0,
+							    config.getDouble("pbar.support.holeDisp"),0));
+
+      CLHEP::HepRotation * supportRot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      //      supportRot->rotateY(90.0*CLHEP::degree);
+
+      finishNesting(supportInfo,
+		    findMaterialOrThrow(config.getString("pbar.support.material")),
+		    supportRot,
+		    G4ThreeVector(0,0,0),
+		    parent.logical,
+		    0,
+		    G4Color::Gray(),
+		    "PbarAbs");
+
+      // -- vacuum wall
+
+      if (verbosityLevel > 0) std::cout << "TS3 pbar windows HalfLength : " << pbarWindow.halfLength() << std::endl; 
+        
+      if ( pbarWindow.shape() == "wedge" ||
+	   pbarWindow.shape() == "disk" ) {
+
+	VolumeInfo pbarDiskInfo;
+	pbarDiskInfo.name = "PbarAbsDisk";
+
+	// Helper info
+	double pbarWedge_y0  = pbarWindow.getY0();
+	double pbarWedge_y1  = pbarWindow.getY1();
+	double pbarWedge_dy = (pbarWedge_y1 + pbarWedge_y0)/2.;
+
+	G4Tubs *pbarAbs_disk = new G4Tubs("PbarAbs_disk",
+					  0.0 ,pbarWindow.rOut(),
+					  pbarWindow.halfLength(),
+					  0.0,CLHEP::twopi);
+
+	pbarDiskInfo.solid = new G4IntersectionSolid(pbarDiskInfo.name,
+						     support_hole,
+						     pbarAbs_disk,
+						     0,
+						     G4ThreeVector(0,0,0));
+	  
+	  finishNesting(pbarDiskInfo,
+			pbarMaterial,
+			0,
+			G4ThreeVector(0,pbarWedge_dy,0),
+			parent.logical,
+			0,
+			G4Color::Yellow(),
+			"PbarAbs"
+			);
+	// nestTubs( "PbarAbs",
+	// 	  pbarParams,
+	// 	  pbarMaterial,
+	// 	  0,
+	// 	  pbarWindow.getLocal(),
+	// 	  parent,
+	// 	  0,
+	// 	  G4Color::Yellow()
+	// 	  );
       }
+
+      if( pbarWindow.shape() == "wedge" ) 
+	{
+	  // -- pbar wedge        
+	  double pbarWedge_y0  = pbarWindow.getY0();
+	  double pbarWedge_y1  = pbarWindow.getY1();
+	  double pbarWedge_dz0 = pbarWindow.getDZ0();
+	  double pbarWedge_dz1 = pbarWindow.getDZ1();
+	  double pbarWedge_dz = ( pbarWedge_dz0<pbarWedge_dz1 ) ? pbarWedge_dz1 : pbarWedge_dz0;
+	  double pbarWedge_offsetZ = pbarWindow.getWedgeZOffset() + pbarWedge_dz/2.0;
+      
+	  VolumeInfo pbarWedgeInfo;
+      
+	  pbarWedgeInfo.name = "PbarAbsWedge";
+      
+	  double pbarWedge_h = pbarWedge_y1 - pbarWedge_y0;
+	  
+	  double pbarWedge_dy = (pbarWedge_y1 + pbarWedge_y0)/2.;
+            
+	  G4Trd *pbarWedge_trd = new G4Trd("PbarAbsWedge_trd",
+					   bl.getTS().innerRadius(),bl.getTS().innerRadius(),
+					   pbarWedge_dz0/2.,pbarWedge_dz1/2.,
+					   pbarWedge_h/2.);
+
+	  AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+	  G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
+	  pbarWedgeRot->rotateX(90.0*CLHEP::degree);
+	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_dy,pbarWedge_offsetZ);
+	  
+	  pbarWedgeInfo.solid = new G4IntersectionSolid(pbarWedgeInfo.name,
+							support_hole,
+							pbarWedge_trd,
+							pbarWedgeRot,
+							G4ThreeVector(0,0,0));
+	  
+	  finishNesting(pbarWedgeInfo,
+			pbarMaterial,
+			0,
+			pbarWedgeTrans,
+			parent.logical,
+			0,
+			G4Color::Yellow(),
+			"PbarAbs"
+			);
+	} //end of if ( pbarWindow.shape == wedge )
+    }  else if ( pbarAbsTS3Version == 3 ) {
+      // =============== Now Version 3 of pbarAbs in TS3! ==============
+      // Get collimators
+      TransportSolenoid const& ts = bl.getTS();
+      // First, construct hole; make it slightly longer than the support
+      double hDz = config.getDouble("pbar.support.innerHalflength")* CLHEP::mm;
+
+      VolumeInfo supportInfo;
+      supportInfo.name = "pBarAbsSupport";
+
+
+      // Now make the actual support
+      G4Tubs* support_mother = new G4Tubs("PbarSupport_mother",
+					  pbarWindow.diskRadius(), 
+					  ts.innerRadius(), hDz,
+					  0.0, CLHEP::twopi );
+
+      supportInfo.solid = support_mother;
+
+      CLHEP::HepRotation * supportRot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+
+      finishNesting(supportInfo,
+		    findMaterialOrThrow(config.getString("pbar.support.material")),
+		    supportRot,
+		    G4ThreeVector(0,0,0),
+		    parent.logical,
+		    0,
+		    G4Color::Gray(),
+		    "PbarAbs");
+
+      // -- vacuum wall
+
+        
+      if ( pbarWindow.shape() == "wedge" ||
+	   pbarWindow.shape() == "disk" ) {
+
+	VolumeInfo pbarDiskInfo;
+	pbarDiskInfo.name = "PbarAbsDisk";
+
+      if (verbosityLevel > 0) std::cout << "TS3 pbar window thickness : " << pbarWindow.halfLength()*2. << std::endl; 
+
+
+	pbarDiskInfo.solid = new G4Tubs("PbarAbs_disk",
+					  0.0 ,pbarWindow.diskRadius(),
+					  pbarWindow.halfLength(),
+					  0.0,CLHEP::twopi);
+	  
+	  finishNesting(pbarDiskInfo,
+			pbarMaterial,
+			0,
+			G4ThreeVector(0,0,0),
+			parent.logical,
+			0,
+			G4Color::Yellow(),
+			"PbarAbs"
+			);
+
+      }
+
+      if( pbarWindow.shape() == "wedge" ) 
+	{
+	  // Helper info
+	  // -- pbar wedge        
+	  double pbarWedge_y1  = pbarWindow.getY1();
+          double pbarWedge_offsetZ = pbarWindow.getWedgeZOffset();
+	  VolumeInfo pbarWedgeInfo;
+      
+	  pbarWedgeInfo.name = "PbarAbsWedge";
+      	  
+	  // The plan here is to make the new wedge design as a 
+	  // "staircase".  That is, an extrusion whose face looks like
+	  // a series of steps.  
+
+	  // First, get the extrusion HALF length
+	  double exHL = pbarWindow.width()*CLHEP::mm/2.0;
+
+	  // Now the thickness of each step
+	  double stepThck = pbarWindow.stripThickness()*CLHEP::mm;
+
+	  // The number of steps
+	  int nSteps = pbarWindow.nStrips();
+
+	  // The height of the strips, which is like the length of the
+	  // steps if you look at it as steps.
+	  std::vector<double> stepLength = pbarWindow.heights();
+
+	  // Sanity check.  There is no way we should get to this point
+	  // and have a stepLength vector with the wrong number of 
+	  // steps, so just check...
+
+	  if ( (unsigned int) nSteps != stepLength.size() ) {
+	    throw cet::exception("GEOM")<<
+	      " The size of the PbarWedge stripHeight vector, " 
+					<< stepLength.size() <<
+	      "\n Does not match the expected number of strips, "
+					<< nSteps << "\n" ;
+	  }
+
+
+	  // Now we'll map out the vertices.  If you imagine our wedge
+	  // as a staircase leading up to a building, the origin of our
+	  // coordinate system will be the corner of the stairs on the bottom
+	  // and against the wall of the building.  The x-axis will point
+	  // up, against the wall, and the y-axis will run along the ground,
+	  // perpendicularly outward from the building.
+
+	  std::vector<G4TwoVector> stairOutline;
+	  stairOutline.reserve(2*nSteps + 2);  // # of vertices to describe 
+
+	  // First point is (0,0)
+	  G4TwoVector tmpVertex(0,0);
+	  stairOutline.push_back(tmpVertex);
+	  double xCoord = 0.0;
+	  // Now loop over steps
+	  for ( int iStep = 0; iStep < nSteps; iStep++ ) {
+	    stairOutline.push_back(G4TwoVector(xCoord,-stepLength[iStep]));
+	    xCoord += stepThck;
+	    stairOutline.push_back(G4TwoVector(xCoord,-stepLength[iStep]));
+	  }
+	  G4TwoVector tmpVertex2(xCoord,0);
+	  stairOutline.push_back(tmpVertex2);
+
+	  G4ExtrudedSolid * stairCase = new G4ExtrudedSolid( "PbarAbsWedge_ES",
+							     stairOutline,
+							     exHL,
+							     G4TwoVector(0,0),1.,
+							     G4TwoVector(0,0),1. );
+
+
+	  AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+	  G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
+	  pbarWedgeRot->rotateY(90.0*CLHEP::degree);
+	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_y1,pbarWedge_offsetZ);
+	  
+	  pbarWedgeInfo.solid = stairCase;
+	  
+	  finishNesting(pbarWedgeInfo,
+			pbarMaterial,
+			pbarWedgeRot,
+			pbarWedgeTrans,
+			parent.logical,
+			0,
+			G4Color::Yellow(),
+			"PbarAbs"
+			);
+	} //end of if ( pbarWindow.shape == wedge )
+    }  else {
+	throw cet::exception("GEOM")<<
+	  " Incorrect pbar window geometry requested! \n " ;
+    } // end of else for pbarAbsTS3Version == ... 
+
+
+    // =============================================
+    // ======== Now UPSTREAM pbar window ===========
+    // =============================================
 
     // add a pbar window at the TS entrance
     TransportSolenoid const& ts = bl.getTS();
@@ -1498,10 +2124,16 @@ namespace mu2e {
     }
 
     if (is_pbarTS1Out) {
+
+      // Get VDs
+      GeomHandle<VirtualDetector> vdg;
+      double vdHalfLength = vdg->getHalfLength()*CLHEP::mm;
+
       CollimatorTS1 const& coll1  = ts.getColl1() ;
 
       string pbarTS1OutMaterial   = config.getString("pbar.coll1Out.material1Name");
-      double pbarTS1OutHalfLength = config.getDouble("pbar.coll1Out.halfLength", 0.05);
+      //      double pbarTS1OutHalfLength = config.getDouble("pbar.coll1Out.halfLength", 0.05);
+      double pbarTS1OutHalfLength = coll1.collarHalfLength()-2.*vdHalfLength;
       double pbarTS1OutrIn        = config.getDouble("pbar.coll1Out.rIn",        120.0);
       double pbarTS1OutphiBegin   = config.getDouble("pbar.coll1Out.phiBegin",   210.0);
       double pbarTS1OutphiDelta   = config.getDouble("pbar.coll1Out.phiDelta",   120.0);

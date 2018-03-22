@@ -7,7 +7,10 @@
 process_name : print
 
 services : {
-    message : @local::mf_production
+   message : @local::mf_production
+   GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }  
+   ConditionsService :{ conditionsfile : "Mu2eG4/test/conditions_01.txt" } 
+   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
 }
 
 physics :{
@@ -19,11 +22,27 @@ physics :{
       SimParticlePrinter : {
         pCut : 10.0
       }
+      SimParticlePtrPrinter : {
+        verbose : 0
+      }
+      SimParticleTimeMapPrinter : {
+        verbose : 1
+      }
       StepPointMCPrinter : {
         pCut : 10.0
       }
+
+      CaloShowerStepPrinter : {
+        verbose: 0
+      }
       CaloHitPrinter : {
         verbose: 0
+      }
+      CaloDigiPrinter : {
+        verbose: 0
+      }
+      CaloRecoDigiPrinter : {
+        verbose: 1
       }
       CaloCrystalHitPrinter : {
         verbose: 0
@@ -35,10 +54,28 @@ physics :{
       StrawDigiPrinter : {
         verbose: 0
       }
+      StrawDigiMCPrinter : {
+        verbose: 0
+      }
       StrawHitPrinter : {
         verbose: 0
       }
+      StrawHitFlagPrinter : {
+        verbose: 0
+      }
+      BkgClusterPrinter : {
+        verbose: 0
+      }
+      BkgQualPrinter : {
+        verbose: 0
+      }
+       ComboHitPrinter : {
+        verbose: 0
+      }
 
+      TimeClusterPrinter : {
+        verbose: 0
+      }
       TrackClusterMatchPrinter : {
         verbose: 0
       }
@@ -51,6 +88,13 @@ physics :{
       }
       KalRepPrinter : {
         verbose: 3
+      }
+      KalSeedPrinter : {
+        verbose: 3
+      }
+
+      PhysicalVolumePrinter : {
+        verbose: 1
       }
 
     } # printModule
@@ -66,6 +110,8 @@ physics :{
 outputs: {
   printProductList : {
     module_type : DataProductDump
+    # temporary patch for crash until art 2_10 or 2_11
+    wantResolvedOnly: true
   }
 }
 

@@ -6,8 +6,8 @@
 # $Author: gandr $
 # $Date: 2012/03/02 17:16:22 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this job a name.  
 process_name : ReadBack00
@@ -31,7 +31,7 @@ services :
 
   GeometryService :
   {
-    inputFile : "Mu2eG4/test/geom_01"
+    inputFile : "Mu2eG4/geom/geom_common"
   }  
 
   ConditionsService :

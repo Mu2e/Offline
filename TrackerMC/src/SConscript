@@ -5,11 +5,14 @@
 # Original author Rob Kutschke.
 #
 
-import os
+import os, re
 Import('env')
 Import('mu2e_helper')
 
-helper=mu2e_helper();
+helper=mu2e_helper(env);
+rootlibs  = env['ROOTLIBS']
+
+rootlibs = env['ROOTLIBS']
 
 mainlib = helper.make_mainlib ( [ 'mu2e_TrackerConditions',
                                   'mu2e_ConditionsService',
@@ -18,18 +21,21 @@ mainlib = helper.make_mainlib ( [ 'mu2e_TrackerConditions',
                                   'mu2e_DataProducts',
                                   'art_Persistency_Provenance',
                                   'art_Persistency_Common',
+                                  'art_Framework_Services_Optional_TFileService_service',
+                                  'art_Framework_Services_Registry',
+                                  'art_Framework_Services_Optional',
                                   'art_Utilities',
                                   'canvas',
                                   'cetlib',
                                   'cetlib_except',
 				  'CLHEP',
+				  rootlibs,
                                   'boost_system',
+                                  rootlibs
                                 ] )
 
-rootlibs = env['ROOTLIBS']
 helper.make_plugins( [ mainlib,
                        'mu2e_SeedService_SeedService_service',
-		       'mu2e_TrkChargeReco',
                        'mu2e_TrackerConditions',
                        'mu2e_Mu2eUtilities',
                        'mu2e_ConditionsService',
@@ -57,19 +63,25 @@ helper.make_plugins( [ mainlib,
                        'fhiclcpp',
                        'cetlib',
                        'cetlib_except',
-                       'CLHEP',
-                       'boost_filesystem',
-                       'boost_system',
-                       rootlibs,
+		       'BTrk_BField',
+		       'CLHEP',
+		       'HepPDT',
+		       'boost_filesystem',
+		       'boost_system',
+		       rootlibs,
                      ] )
 
-helper.make_dict_and_map( [ mainlib,
-                            'mu2e_TrkChargeReco',
-                            'art_Persistency_Common',
-                            'art_Utilities',
-                            'canvas',
-                            'Core'
-                          ] )
+helper.make_dict_and_map( [
+        mainlib,
+        'art_Persistency_Common',
+        'art_Utilities',
+        'canvas',
+        'cetlib',
+        'cetlib_except',
+        'CLHEP',
+        'Core'
+    ] )
+
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

@@ -12,7 +12,7 @@ double dirt.foundation.N.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.foundation.N.yHalfThickness           = 533.4;
 
-vector<int>    dirt.foundation.N.xreplace   = { 11, 12, 14, 15, 16 }; 
+vector<int>    dirt.foundation.N.xreplace   = { 11, 12, 13, 14 }; 
 vector<double> dirt.foundation.N.xPositions = {
   -18218.8,   // f4
   -19534.7,   // f5
@@ -27,14 +27,12 @@ vector<double> dirt.foundation.N.xPositions = {
   17957.8,   // g5
   50000,   // g5_to_E
   50000,   // NEcorner
-  -12420.6,   // f7_to_N
   -50000,   // NWcorner
-  -50000,   // f5_to_W
   -50000,   // SWcorner
   -18218.8   // f4_to_S
 };
 
-vector<int>    dirt.foundation.N.yreplace   = { 12, 13, 14, 16, 17 }; 
+vector<int>    dirt.foundation.N.yreplace   = { 12, 13, 14, 15 }; 
 vector<double> dirt.foundation.N.yPositions = {
   -3717.61,   // f4
   1713.25,   // f5
@@ -49,9 +47,7 @@ vector<double> dirt.foundation.N.yPositions = {
   6201.81,   // g5
   6201.81,   // g5_to_E
   50000,   // NEcorner
-  50000,   // f7_to_N
   50000,   // NWcorner
-  1713.25,   // f5_to_W
   -50000,   // SWcorner
   -50000   // f4_to_S
 };

@@ -2,8 +2,8 @@
 # Instantiate a second instace of the class that does not have saved engine.
 #
 
-#include "minimalMessageService.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name : random03
 

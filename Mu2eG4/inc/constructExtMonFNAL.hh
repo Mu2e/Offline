@@ -20,7 +20,7 @@ namespace mu2e {
                            const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
                            const VolumeInfo& mainParent,
                            const CLHEP::HepRotation& mainParentRotationInMu2e,
-                           const SimpleConfig& config);
+                           const SimpleConfig& config;
 
   void constructExtMonFNALBuilding(const VolumeInfo& collimator1Parent,
                                    const CLHEP::HepRotation& collimator1ParentRotationInMu2e,

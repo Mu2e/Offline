@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_foundation_ExtMonPSarea_4.ccl
+
+string building.foundation.extMonPSarea.4.name     = "foundationExtMonPSarea4";
+
+string building.foundation.extMonPSarea.4.material = "CONCRETE_MARS";
+
+double building.foundation.extMonPSarea.4.offsetFromMu2eOrigin.x   = 947.4;
+double building.foundation.extMonPSarea.4.offsetFromFloorSurface.y = 2197.1;
+double building.foundation.extMonPSarea.4.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.foundation.extMonPSarea.4.yHalfThickness           = 1130.3;
+
+vector<double> building.foundation.extMonPSarea.4.xPositions = {
+  -20067.3,   // A4
+  -18742,   // A5
+  -19038.1,   // A6
+  -20363.4   // A7
+};
+
+vector<double> building.foundation.extMonPSarea.4.yPositions = {
+  1562.1,   // A4
+  -3866.45,   // A5
+  -3938.74,   // A6
+  1489.81   // A7
+};
+
+// Local Variables:
+// mode:c++
+// End:

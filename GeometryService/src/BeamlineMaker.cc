@@ -74,7 +74,7 @@ namespace mu2e {
     c.getVectorDouble("ts.xRing", ts._xRing, nRing);
     c.getVectorDouble("ts.yRing", ts._yRing, nRing);
     c.getVectorDouble("ts.zRing", ts._zRing, nRing);
-
+    c.getVectorDouble("ts.thetaRing",ts._thetaRing, nRing);
 
     // - end wall parameters
     ts._rIn_endWallU1 = c.getDouble("ts.tsUendWall1.rIn",c.getDouble("ts.ts1in.rOut") );
@@ -486,8 +486,15 @@ namespace mu2e {
     coll1._rIn1      = c.getDouble("ts.coll1.innerRadius1",0.);
     coll1._rIn2      = c.getDouble("ts.coll1.innerRadius2",0.);
     coll1._rIn3      = c.getDouble("ts.coll1.innerRadius3",0.);
+    coll1._rIn4      = c.getDouble("ts.coll1.innerRadius4",0.);
+    coll1._rOut4     = c.getDouble("ts.coll1.outerRadius4",0.);
     coll1._material1 = c.getString("ts.coll1.material1Name");
     coll1._material2 = c.getString("ts.coll1.material2Name");
+    coll1._material3 = c.getString("ts.coll1.material3Name","None");
+
+    coll1._collarHalfLength = c.getDouble("pbar.coll1Out.halfLength",100.0);
+    coll1._collarZ = c.getDouble("pbar.coll1Out.z",-3144.5);
+    coll1._collarMarginZ = c.getDouble("pbar.coll1Out.zDiff",0.5);
 
     // TS3
     coll32._hole             = coll31._hole              = c.getDouble("ts.coll3.hole",0.);
@@ -496,6 +503,26 @@ namespace mu2e {
     coll32._holeDisplacement = coll31._holeDisplacement  = c.getDouble("ts.coll3.holeDisplacement",0.);
     coll32._rotationAngle    = coll31._rotationAngle     = c.getDouble("ts.coll3.rotationAngle",0.);
     coll32._material         = coll31._material          = c.getString("ts.coll3.materialName");
+
+    // For studies of flash mitigation, building a "flashblock", also known
+    // as "Rick's" (Coleman) "Tooth"
+    coll31._useFlashBlock     = c.getBool("ts.useFlashBlockUp",false);
+    coll31._flashBlockHeight  = c.getDouble("ts.flashBlockUp.Height",0.0);
+    coll31._flashBlockWidth   = c.getDouble("ts.flashBlockUp.Width",0.0);
+    coll31._flashBlockLength  = c.getDouble("ts.flashBlockUp.Length",0.0);
+    coll31._flashBlockTO      = c.getDouble("ts.flashBlockUp.TransOffset",0.);
+    coll31._flashBlockLO      = c.getDouble("ts.flashBlockUp.LongOffset",0.);
+    coll31._flashBlockMaterial= c.getString("ts.flashBlockUp.Material","CollCu");
+
+    coll32._useFlashBlock     = c.getBool("ts.useFlashBlockDn",false);
+    coll32._flashBlockHeight  = c.getDouble("ts.flashBlockDn.Height",0.0);
+    coll32._flashBlockWidth   = c.getDouble("ts.flashBlockDn.Width",0.0);
+    coll32._flashBlockLength  = c.getDouble("ts.flashBlockDn.Length",0.0);
+    coll32._flashBlockTO      = c.getDouble("ts.flashBlockDn.TransOffset",0.);
+    coll32._flashBlockLO      = c.getDouble("ts.flashBlockDn.LongOffset",0.);
+    coll32._flashBlockMaterial= c.getString("ts.flashBlockDn.Material","CollCu");
+
+
 
     // TS5
     // TS5
@@ -610,7 +637,7 @@ namespace mu2e {
   void BeamlineMaker::BuildPbarWindow(const SimpleConfig& c, TransportSolenoid* ts){
 
     PbarWindow & pbarWindow ( ts->_pbarWindow );
-
+    pbarWindow._version  = c.getInt("pbar.version",1);
     pbarWindow._shape    = c.getString("pbar.Type","disk");
     pbarWindow._material = c.getString("pbar.materialName");
     pbarWindow.set( c.getDouble("pbar.halfLength"),
@@ -622,7 +649,16 @@ namespace mu2e {
     pbarWindow._y1       = c.getDouble("pbarwedge.y1",0.);
     pbarWindow._dz0      = c.getDouble("pbarwedge.dz0",0.);
     pbarWindow._dz1      = c.getDouble("pbarwedge.dz1",0.);
+    pbarWindow._wedgeZOffset = c.getDouble("pbarwedge.zOffset",0.);
 
+    // for version 3 (made of strips)
+    pbarWindow._diskRadius = c.getDouble("pbar.diskradius", 250.0);
+    pbarWindow._nStrips    = c.getInt("pbarwedge.nStrips", 0);
+    pbarWindow._width      = c.getDouble("pbarwedge.width",0.0);
+    pbarWindow._stripThickness=c.getDouble("pbarwedge.stripThickness",0.0);
+    if ( pbarWindow._nStrips > 0 ) {
+      c.getVectorDouble("pbarwedge.stripHeights",pbarWindow._stripHeights,pbarWindow._nStrips);
+    }
   }
 
 } // namespace mu2e

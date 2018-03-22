@@ -1,0 +1,242 @@
+
+           Release notes for Mu2e Offline software, v6_4_0
+
+18)        rlc 10 Jan 2018
+           move to art v2_09_04
+           coordinated updates to several packages
+	   technical fixes folowing changes in art
+
+17)        ehrlich 09 Jan 2018
+           Rewrote the cosmic DYB event generator in C++, and removed all Fortran references.
+           New DYB generator allows event generation on the surfaces of a box.
+
+16)        genser 02 Jan 2018
+
+           Added another special physics list ErrorPhysicsList for
+           studies done by Peter K (with special energy loss process)
+           modified:   MCDataProducts/inc/ProcessCode.hh
+           modified:   Mu2eG4/src/physicsListDecider.cc
+
+15)        genser 21 Dec 2017
+           
+           Added a special physics list MinDEDX
+           new file:   Mu2eG4/inc/EmDEDXPhysics.hh
+           new file:   Mu2eG4/inc/MinDEDXPhysicsList.hh
+           new file:   Mu2eG4/inc/MinDEDXPhysicsList.icc
+           new file:   Mu2eG4/src/EmDEDXPhysics.cc
+           modified:   Mu2eG4/src/physicsListDecider.cc
+
+14)   	   dnbrow01 15 Dec 2017
+	   Add a piece to represent a layer of blocks over the east end
+	   of the pit to support a scintillating trigger panel for 
+	   "garage" commissioning running.
+	   modified:   Mu2eG4/geom/geom_common_garage.txt
+
+	   Fixed a small memory leak.
+	   modified:   Mu2eG4/src/constructExternalShielding.cc
+
+13)	   dnbrow01 12 Dec 2017
+	   Add ribs to the new TTracker description.  Forgot to check these
+	   in with some previous commits.
+	   modified:   GeometryService/inc/TTrackerMaker.hh
+	   modified:   GeometryService/src/TTrackerMaker.cc
+	   modified:   Mu2eG4/geom/geom_common_current.txt
+	   modified:   Mu2eG4/geom/ttracker_v5.txt
+	   modified:   Mu2eG4/src/ConstructTTrackerDetail5.cc
+	   modified:   TTrackerGeom/inc/SupportStructure.hh
+
+
+12)        dnbrow01  12 Dec 2017
+	   Move the DS trench to the as-built position of 1 inch south of
+	   nominal.  This does not affect any reconstruction, so can be
+	   included in default and later geometries.
+	   modified:   Mu2eG4/geom/bldg/dsAreaTrenchCover.txt
+	   modified:   Mu2eG4/geom/bldg/dsAreaTrenchFloor.txt
+	   modified:   Mu2eG4/geom/bldg/foundationSd.txt
+	   modified:   Mu2eG4/geom/bldg/foundationSmid.txt
+
+11)        lmpyles   04 Dec 2017
+	   Added the PS exchange pipe to the geometry model. Does not affect
+	   default geometry, only accessed via current geometry.  
+	   modified:   Mu2eG4/geom/Pipe_v03.txt
+
+10)    	   dnbrow01  01 Dec 2017
+      	   Improved managing garage position by consolidating all
+ 	   needed parameters into single file.  Thanks to Rob for the
+	   suggestion.
+	   deleted:    Mu2eG4/geom/ExtShieldDownstream_garage.txt
+	   deleted:    Mu2eG4/geom/STM_garage.txt
+	   deleted:    Mu2eG4/geom/calorimeter_CsI_garage.txt
+	   deleted:    Mu2eG4/geom/crv_counters_garage.txt
+	   modified:   Mu2eG4/geom/geom_common_garage.txt
+	   deleted:    Mu2eG4/geom/mu2eHall_garage.txt
+	   deleted:    Mu2eG4/geom/muonBeamStop_garage.txt
+	   deleted:    Mu2eG4/geom/ttracker_garage.txt
+
+      	   One last improvement to	version	5 of the tracker - right straw
+	   positions without overlaps.
+	   modified:   Mu2eG4/src/ConstructTTrackerDetail5.cc
+
+9)	dnbrow01 01 Dec 2017
+	Fix some issues related to z-placement in the new "version 5"
+	Tracker.  Makes G4 and TTracker agree about positions of straws.
+	modified:   Mu2eG4/src/ConstructTTrackerDetail5.cc
+
+	Missed one place where StrawSD checks for TTracker version,
+	and throws if not =5.
+	modified:   Mu2eG4/src/StrawSD.cc
+
+	Just my compulsive need to fix spelling...
+	modified:   GeometryService/src/TTrackerMaker.cc
+
+8)      dnbrow01 29 Nov 2017
+	Apparently, about 25% of the time, I can't add the number 4000	
+	correctly... this fixes some overlaps
+	modified:   Mu2eG4/geom/calorimeter_CsI_garage.txt
+
+	Modify how the shift is	implemented for	building the
+        garageFakeDS3Vacuum object.
+	modified:   Mu2eG4/geom/geom_common_garage.txt
+	modified:   Mu2eG4/src/constructDS.cc
+
+	Make it	    possible to do selective overlap checking on the MBS...
+	modified:   Mu2eG4/src/constructMBS.cc
+
+	This module uses B-field direction to assign "transverse" momentum.
+	Fine, except in	 the garage, where there     is no B-field.	
+	When there is no B-field, now defaults to use z-axis.
+	modified:   TrackerMC/src/StrawDigisFromStepPointMCs_module.cc
+
+        I just have this inability to leave typos in comments alone...
+	modified:   Mu2eG4/src/constructDiskCalorimeter.cc
+
+
+7)  	dnbrow01 28 Nov 2017
+	Moved detectors another 4 meters east per George Ginther.
+	modified:   Mu2eG4/geom/ExtShieldDownstream_garage.txt
+	modified:   Mu2eG4/geom/calorimeter_CsI_garage.txt
+	modified:   Mu2eG4/geom/geom_common.txt
+	modified:   Mu2eG4/geom/geom_common_garage.txt
+	modified:   Mu2eG4/geom/muonBeamStop_garage.txt
+	modified:   Mu2eG4/geom/ttracker_garage.txt
+
+
+6)      dnbrow01 27 Nov 2017
+        Create geometry configuration files to create a "Garage Position"
+	geometry for simulation of garage position cosmic commisioning.
+	For this first pass, we assume:  - downstream external shielding
+	is not yet installed; the CRV is not yet installed; the STM is
+	not yet installed; the TTracker, Cal, and MBS are 10 m due east
+	of nominal running position; the rest of the DS is in nominal
+	position.  Some distinct surrealism here:  most notably, detectors
+	that float!  But it is a beginning.  These changes do not affect
+	default geometry or even current geometry.  These are only accessed
+	by pointing your GeometryService at Mu2eG4/geom/geom_common_garage.txt
+
+	Simulation works as expected with these changes, but there is still
+	an issue with conversion of StepPointMCs to digis that must be 
+	resolved.
+ 
+	Utility files to simply remove shielding, if wanted.
+ 	new file:   Mu2eG4/geom/ExtShieldDownstream_NoShields.txt
+ 	new file:   Mu2eG4/geom/ExtShieldUpstream_NoShields.txt
+
+	 The new garage configuration files
+	 new file:   Mu2eG4/geom/ExtShieldDownstream_garage.txt
+ 	 new file:   Mu2eG4/geom/STM_garage.txt
+ 	 new file:   Mu2eG4/geom/calorimeter_CsI_garage.txt
+ 	 new file:   Mu2eG4/geom/crv_counters_garage.txt
+ 	 new file:   Mu2eG4/geom/geom_common_garage.txt
+ 	 new file:   Mu2eG4/geom/mu2eHall_garage.txt
+ 	 new file:   Mu2eG4/geom/muonBeamStop_garage.txt
+ 	 new file:   Mu2eG4/geom/ttracker_garage.txt
+
+	 To make this work, we create a mimic of the DS3Vacuum volume
+ 	 shape and size, but fill it with air and place it 10 m East
+ 	 of the DS3Vacuum.  This now serves as the mother volume
+ 	 for the TTracker, Cal, MBS, and associated VirtualDetectors.
+ 	 The changes below do not affect performance for nominal 
+ 	 running.  All these changes are keyed off the presence of a
+ 	 bool named inGaragePosition.
+ 	 modified:   Mu2eG4/src/Mu2eWorld.cc
+ 	 modified:   Mu2eG4/src/constructDS.cc
+ 	 modified:   Mu2eG4/src/constructMBS.cc
+ 	 modified:   Mu2eG4/src/constructVirtualDetectors.cc
+
+5) 	dnbrow01  14 November 2017
+	Had accidentally removed a setting for older versions of
+	TTracker when putting in corresponding setting for newer version.
+	Restored the old version with a switch for the new version.
+	Also include the updated new TTracker with the updated inner ring.
+	modified:   GeometryService/inc/TTrackerMaker.hh
+	modified:   GeometryService/src/TTrackerMaker.cc
+	modified:   Mu2eG4/src/ConstructTTrackerDetail5.cc
+	modified:   TTrackerGeom/inc/TTracker.hh
+
+4)      dnbrow01  12 November 2017
+	Improve	  memory footprint by reusing sets of straws among panels.
+	Rationalize some function and object naming.  Prepare for use
+	of Alignment in	 G4 stage of simulation.
+	modified:   Mu2eG4/inc/ConstructTTrackerDetail5.hh
+	modified:   Mu2eG4/src/ConstructTTrackerDetail5.cc
+
+3)      dnbrow01  12 November 2017
+	Created a new version of the TTracker geometry that builds individual
+	panels as they will be built instead of a bunch of copies of an
+	idealized plane with copies of an identical plane of straws.  Here,
+	each panel is built individually, and each straw within.  Will 
+ 	change back to identical bunches of straws in otherwise individually
+	built panels to not hog so much memory.  Wanted to commit this
+	so we have it.  The new version of the TTracker will not yet be
+	seen by anybody unless they go well out of their way to use it.
+	modified:   Analyses/src/TTrackerGeomIntRootPlots_module.cc
+	modified:   GeometryService/inc/TTrackerMaker.hh
+	modified:   GeometryService/src/TTrackerMaker.cc
+	modified:   Mu2eG4/geom/ttracker_v4.txt
+	new file:   Mu2eG4/geom/ttracker_v5.txt
+	new file:   Mu2eG4/inc/ConstructTTrackerDetail5.hh
+	new file:   Mu2eG4/src/ConstructTTrackerDetail5.cc
+	modified:   Mu2eG4/src/Mu2eWorld.cc
+	modified:   Mu2eG4/src/StrawSD.cc
+	modified:   Mu2eG4/src/TTrackerPlaneSupportSD.cc
+	modified:   Mu2eG4/src/constructTTrackerv5.cc
+	modified:   TTrackerGeom/inc/SupportStructure.hh
+	modified:   TTrackerGeom/inc/TTracker.hh
+
+
+2)    dnbrow01  01 November 2017
+      Updated a number of fcl files using StrawHit access that was outdated
+      as of this release.  See item (1) below.
+      modified:   Analyses/test/readback.fcl
+      modified:   BFieldGeom/test/makeBinaryMaps.fcl
+      modified:   BFieldGeom/test/readBinaryMaps.fcl
+      modified:   EventGenerator/test/g4test_FromStepPointMCs.fcl
+      modified:   EventMixing/inputGeneration/dioBG.fcl
+      modified:   EventMixing/inputGeneration/neutronBG.fcl
+      modified:   EventMixing/inputGeneration/photonBG.fcl
+      modified:   EventMixing/inputGeneration/protonBG.fcl
+      modified:   EventMixing/test/mixProducer_01.fcl
+      modified:   Mu2eG4/fcl/g4BremTest.fcl
+      modified:   Mu2eG4/fcl/g4test_mucapture.fcl
+      modified:   Mu2eG4/fcl/g4validate_01.fcl
+      modified:   Mu2eG4/fcl/pi_e_nu.fcl
+      modified:   Mu2eG4/fcl/replayAll.fcl
+
+      Started building the code for handling a more detailed description
+      of the TTracker geometry.
+      modified:   Mu2eG4/inc/constructTTracker.hh
+      new file:   Mu2eG4/src/constructTTrackerv5.cc
+
+
+1)    brownd, rbonventre  30 October 2017
+Major upgrade to the StrawHit response model and simulation, including:
+- refined cluster formation simulation for MIP particles
+- electronics response model using transfer functions
+- added data driven attenuation and dispersion model
+- updated tuning of electronics parameters
+- TimeOverThreshold (TOT) measurement in StrawDigi and downstream
+- require coincidence between straw ends to create a digi as in FPGA
+- Update StrawDigi and downstream interfaces to treat measurements at
+each end of the straw the same
+- use hardware names for the straw ends (cal, HV)
+- remove MC diagnostics in MakeStrawHits module

@@ -4,9 +4,9 @@
 # Original author K.L. Genser
 #
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 BEGIN_PROLOG
 stepperout: {
@@ -106,7 +106,7 @@ services.GeometryService.standardMu2eDetector: false
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/visxz.mac"
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
 
-physics.producers.g4run.physics.physicsListName : "Shielding"
+physics.producers.g4run.physics.physicsListName : "ShieldingM"
 #physics.producers.g4run.physics.bfieldMaxStep   : 500000. // not implemented (no field)
 physics.producers.g4run.debug.diagLevel         : 1
 physics.producers.g4run.debug.printElements     : true
@@ -123,5 +123,7 @@ physics.producers.g4run.SDConfig: {
        enableSD: [] // not implemented
        TimeVD: { times: [0.01] }
       }
+// The line below causes a StepPointMC being stored for each step; comment it out to disable it
 physics.producers.g4run.Mu2eG4SteppingOnlyCut : @local::stepperout
 physics.producers.g4run.Mu2eG4StackingOnlyCut : @local::mu2eg4NoCut
+

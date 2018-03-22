@@ -21,10 +21,11 @@ namespace mu2e {
 // the lower 16 bits are used to flag hit properties.  bits 0-10 refer to track-related
 // properties, 12-15 are for external association (like to a calorimeter cluster)
 // The upper 16 bits are reserved to flag the track number (or cluster) to which these hits are associated.
-    enum bit_type {stereo=0, energysel=1, radsel=2, timesel=3,  delta=6, isolated=7, outlier=8, other=9,
+    enum bit_type {stereo=0, energysel=1, radsel=2, timesel=3, bkgclust=5, bkg=6, isolated=7, outlier=8, other=9,
     tdiv=10, tclust=11,
     calosel=12, strawxtalk=13, elecxtalk=14, trksel=15,
     active=16,doca=17, resolvedphi=18,
+    calopresel=19, panelcombo=21,
     track0=24,track1=25,track2=26,track3=27,track4=28,track5=29,track6=30,track7=31};
 // special function to return the enum value associated with a given track number
     static bit_type trackBit(unsigned itrk);
@@ -37,7 +38,7 @@ namespace mu2e {
     static mask_type bit_to_mask( bit_type b){ return 1<<b; }
   };
   typedef BitMap<StrawHitFlagDetail> StrawHitFlag;
-
+  typedef std::vector<mu2e::StrawHitFlag> StrawHitFlagCollection;
 }
 #endif
 

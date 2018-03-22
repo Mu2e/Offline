@@ -1,0 +1,36 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_beamline_dirtSlab.ccl
+
+string dirt.beamline.slab.NC.name     = "dirtBeamlineSlabNC";
+
+string dirt.beamline.slab.NC.material = "MBOverburden";
+
+double dirt.beamline.slab.NC.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.beamline.slab.NC.offsetFromFloorSurface.y = 5994.4;
+double dirt.beamline.slab.NC.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.beamline.slab.NC.yHalfThickness           = 101.6;
+
+vector<double> dirt.beamline.slab.NC.xPositions = {
+  17288.5,  // SW corner escape hatch    
+  17204.7, //SW corner of escapehatchN
+ 15900.79, // return to escape hatch NW corner   
+ 15900.79, // return N of escape hatch NW corner 
+  9550.51, // E wall of rem hatch
+  9550.51 // SE corner rem hatch
+};
+
+vector<int>    dirt.beamline.slab.NC.yreplace   = { 3, 4 }; 
+vector<double> dirt.beamline.slab.NC.yPositions = {
+  17957,     // SW corner escape hatch                  
+  18302.6, // SW corner of escapehatchN 
+  23684.2,    // return to escape hatch NW corner             
+  50000, // return N of escape hatch NW corner     
+  50000,   // N of rem hatch E wall
+  13055.59 // SE corner rem hatch
+};
+
+// Local Variables:
+// mode:c++
+// End:

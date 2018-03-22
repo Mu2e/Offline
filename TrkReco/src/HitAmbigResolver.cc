@@ -20,8 +20,8 @@
 namespace mu2e {
   typedef std::vector<TrkStrawHit*>::iterator TSHI;
 
-  HitAmbigResolver::HitAmbigResolver(fhicl::ParameterSet const& pset, double extErr) : 
-    AmbigResolver(extErr),
+  HitAmbigResolver::HitAmbigResolver(fhicl::ParameterSet const& pset, double tmpErr) : 
+    AmbigResolver(tmpErr),
     _mindrift(pset.get<double>("HitMinDrift",0.1)),
     _zeropenalty(pset.get<double>("ZeroDriftPenalty",0.05)),
     _penalty(pset.get<bool>("HitAmbigPenalty",false)),

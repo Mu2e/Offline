@@ -23,7 +23,6 @@
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 
@@ -57,7 +56,7 @@ using namespace std;
 namespace mu2e {
 
   void constructMSTM( const VolumeInfo& parent,
-                      SimpleConfig const & _config
+                      const SimpleConfig& _config
                       ){
 
     MaterialFinder materialFinder(_config);
@@ -935,7 +934,6 @@ namespace mu2e {
                                       placePV,
                                       doSurfaceCheck
                                       );
-
 
     if ( verbosityLevel > 0) {
       std::cout << __func__ << " mstmMotherPositionInMu2e = " << mstmMotherPositionInMu2e << endl;       

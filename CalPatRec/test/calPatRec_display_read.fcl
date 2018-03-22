@@ -4,9 +4,9 @@
 # read data from the input file,
 # assume the file contains the digitized hits
 #------------------------------------------------------------------------------
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "CaloCluster/fcl/prolog.fcl"
 #include "HitMakers/fcl/prolog.fcl"
 #include "TrackCaloMatching/fcl/prolog.fcl"
@@ -49,8 +49,8 @@ services : {
     TFileService          : { fileName   : "calPatRec.root" }
     RandomNumberGenerator : { }
 
-    GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt" }
-    #GeometryService        : { inputFile : "murat/test/geom_01_BaF2_r_1_1.txt" }
+    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt" }
+    #GeometryService        : { inputFile : "murat/geom/geom_common_BaF2_r_1_1.txt" }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
     BTrkHelper             : @local::BTrkHelperDefault
@@ -124,7 +124,7 @@ outputs: {
     outfile : {
 	module_type    : RootOutput
 	fileName       : "calPatRec_outFile.root"
-	SelectEvents  : { SelectEvents: [ p1 ] }
+	SelectEvents  : [ p1 ]
 	outputCommands : ['keep *_*_*_*'
 			  #                   , 'drop mu2eStrawDigis_*_*_*'
 			  #                   , 'drop mu2eStrawHits_*_*_*'
@@ -170,7 +170,7 @@ physics.producers.CalPatRec.DtMin                                 : -100.
 physics.producers.CalPatRec.DtMax                                 : +100.
 # physics.producers.CalPatRec.SeedFit.debugLevel                  : 1
 # physics.producers.CalPatRec.HelixFit.debugLevel                 : 1
-# physics.producers.CalPatRec.BackgroundSelectionBits               : ["DeltaRay"]
+# physics.producers.CalPatRec.BackgroundSelectionBits               : ["Background"]
 #------------------------------------------------------------------------------
 # analysis and event display
 #------------------------------------------------------------------------------

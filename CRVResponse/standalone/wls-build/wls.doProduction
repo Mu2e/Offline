@@ -1,0 +1,33 @@
+#! /bin/bash
+
+hostname
+printenv
+
+source /cvmfs/mu2e.opensciencegrid.org/setupmu2e-art.sh
+source /cvmfs/mu2e.opensciencegrid.org/Offline/v6_3_1/SLF6/prof/Offline/setup.sh
+
+setup ifdhc
+
+# set variables
+SIMTYPE=$(($PROCESS/550))
+MINBIN=$(($PROCESS%550*200))
+MAXBIN=$(($MINBIN+199))
+PHOTONS=40000
+if [ $SIMTYPE -ge 2 ]; then
+  PHOTONS=1000
+fi
+
+# run simulation
+/mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/wlsProduction -c -l $LENGTH -t $SIMTYPE -m $MINBIN -M $MAXBIN -n $PHOTONS
+
+# copy lookup table
+printf -v MINBINTMP "%06d\n" $MINBIN
+OUTFILE=LookupTable'_'$SIMTYPE'_'$MINBINTMP
+ifdh cp $OUTFILE /mu2e/data/outstage/ehrlich/tables/$LENGTH/$OUTFILE
+
+# create log file
+LOGFILE=`printf "log_%010d_%05d.log" $CLUSTER $PROCESS`
+cat jsb_tmp/JOBSUB_LOG_FILE >> $LOGFILE
+echo "=========== error log file ==========" >> $LOGFILE
+cat jsb_tmp/JOBSUB_ERR_FILE >> $LOGFILE
+ifdh cp $LOGFILE /pnfs/mu2e/scratch/outstage/ehrlich/tables/$LOGFILE

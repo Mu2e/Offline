@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_PSareaShieldingBlock.ccl
+
+string building.psArea.ShieldingBlock.name     = "psAreaShieldingBlock";
+
+string building.psArea.ShieldingBlock.material = "CONCRETE_MARS";
+
+double building.psArea.ShieldingBlock.offsetFromMu2eOrigin.x   = 947.4;
+double building.psArea.ShieldingBlock.offsetFromFloorSurface.y = 2286;
+double building.psArea.ShieldingBlock.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.psArea.ShieldingBlock.yHalfThickness           = 2133.6;
+
+vector<double> building.psArea.ShieldingBlock.xPositions = {
+  -12319,   // P0 mod AH was -12319.3                                      
+  -12319.3,   // P1                                                        
+  -14757.7,   // P2                                                        
+  -14757.7   // P4    
+};
+
+vector<double> building.psArea.ShieldingBlock.yPositions = {
+  3349.22,   // P0 mod AH was 3327.65                                      
+  6985.25,   // P1                                                         
+  6985.25,   // P2                                                         
+  2753.83   // P4 mod AH was 2751.84   
+};
+
+// Local Variables:
+// mode:c++
+// End:

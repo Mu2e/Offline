@@ -11,6 +11,11 @@
 // 1) This code new's many objects of type G4Material.  The lifeime
 //    of these objects is controlled within G4.  We must never
 //    delete them.
+// 2) (DNB Louisville).  Because of the large number of materials, we
+//    have split the function for building Mu2e material into two
+//    functions, which I have unimaginatively named 
+//    constructMu2eMaterials and constructMu2eMaterials2.  New materials
+//    should be added to the latter.
 //
 
 // C++ includes
@@ -84,6 +89,7 @@ namespace mu2e {
 
     // Construct the requested materials.
     constructMu2eMaterials();
+    constructMu2eMaterials2();
 
     // Print element table, if requested.
     if (printElements_){
@@ -112,7 +118,12 @@ namespace mu2e {
   //    that have G4-specific types (G4double).  Removing the braces would require removing
   //    the G4double typename in front of the variable strings for assignments after the first 
 //    one, possibly making things a little confusing for people needing to define materials.
-
+//  **************** Added Note *********************
+//  Because of warnings from the compiler about too many variables in the
+//  construct function, we have split the constructMu2eMaterials function into
+//  two functions.  New materials should be added to the second function,
+//  named constructMu2eMaterials2.
+//  *************************************************
   void ConstructMaterials::constructMu2eMaterials(){
 
 
@@ -321,6 +332,20 @@ namespace mu2e {
       Polyetheretherketone->AddMaterial(findMaterialOrThrow("G4_O"), 0.081081);
     }
 
+    //  FEP, AKA Teflon FEP, AKA flourinated ethylene propylene.
+    //  Used, among other places, in signal cable insulation.
+    //  Here, specifically treating as an equal mix of 
+    //  tetraflouroethylene and hexaflouropropylene (the manufacturers
+    //  tend to protect the specifics).  So that's C2F4 + C3F6 = C5F10
+
+    mat = uniqueMaterialOrThrow( "TeflonFEP" );
+    {
+      G4Material* TeflonFEP = new G4Material(mat.name, 2.14*CLHEP::g/CLHEP::cm3, 2);
+      TeflonFEP->AddElement( getElementOrThrow("C"), 5 );
+      TeflonFEP->AddElement( getElementOrThrow("F"), 10);
+    }
+
+
     // Stainless Steel (Medical Physics, Vol 25, No 10, Oct 1998) based on brachytherapy example
     // FIXME is there a better reference?
     mat = uniqueMaterialOrThrow( "StainlessSteel");
@@ -373,6 +398,24 @@ namespace mu2e {
       RackSteel->AddMaterial(findMaterialOrThrow("G4_C"), 0.015);
     }
 
+    // Inconel 718 alloy.  Taken from http://www.matweb.com/
+    // Only building from elements that comprise more than 0.1% of it composition
+    mat = uniqueMaterialOrThrow( "Inconel718" );
+    {
+      G4Material* Inconel718 = new G4Material( mat.name, 8.19*CLHEP::g/CLHEP::cm3, 11);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Al"),0.005);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Cr"),0.190);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Co"),0.010);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Cu"),0.003);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Fe"),0.170);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Mn"),0.003);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Mo"),0.030);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Ni"),0.527);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Nb"),0.052);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Si"),0.003);
+      Inconel718->AddMaterial(findMaterialOrThrow("G4_Ti"),0.007);
+    }
+
     // Bronze used in the HRS.  Formally, Bronze C63200.
     mat = uniqueMaterialOrThrow( "HRSBronze" );
     {
@@ -381,6 +424,27 @@ namespace mu2e {
       HRSBronze->AddMaterial(findMaterialOrThrow("G4_Al"),0.090);
       HRSBronze->AddMaterial(findMaterialOrThrow("G4_Fe"),0.040);
       HRSBronze->AddMaterial(findMaterialOrThrow("G4_Ni"),0.050);
+    }
+
+    // Bronze C94300  from www.matweb.com
+    mat = uniqueMaterialOrThrow( "BronzeC943" );
+    {
+      G4Material* BronzeC943 = new G4Material( mat.name, 9.29*CLHEP::g/CLHEP::cm3, 6);
+      BronzeC943->AddMaterial(findMaterialOrThrow("G4_Cu"),0.700);
+      BronzeC943->AddMaterial(findMaterialOrThrow("G4_Pb"),0.240);
+      BronzeC943->AddMaterial(findMaterialOrThrow("G4_Sn"),0.0475);
+      BronzeC943->AddMaterial(findMaterialOrThrow("G4_Sb"),0.005);
+      BronzeC943->AddMaterial(findMaterialOrThrow("G4_Ni"),0.005);
+      BronzeC943->AddMaterial(findMaterialOrThrow("G4_Zn"),0.0025);
+    }
+
+    // C360 brass
+    mat = uniqueMaterialOrThrow( "BrassC360" );
+    {
+      G4Material* BrassC360 = new G4Material(mat.name, 8.50*CLHEP::g/CLHEP::cm3,3);
+      BrassC360->AddMaterial(findMaterialOrThrow("G4_Cu"),0.615);
+      BrassC360->AddMaterial(findMaterialOrThrow("G4_Zn"),0.354);
+      BrassC360->AddMaterial(findMaterialOrThrow("G4_Pb"),0.031);
     }
 
 
@@ -526,6 +590,20 @@ namespace mu2e {
       G10Lite->AddMaterial(findMaterialOrThrow("G10"),1.0);
     }
 
+
+    // DC 704 diffusion pump oil.  The DC stands for Dow-Corning, though
+    // many brands produce the same "704" pump oil.  Chemical
+    // name is tetraphenyl tetramethyl trisiloxane, C28H32O2Si3
+    // Information from http://www.sigmaaldrich.com/catalog/product/aldrich/445975?lang=en&region=US  on 24 June 2017.
+
+    mat = uniqueMaterialOrThrow( "DC704" );
+    {
+      G4Material* DC704 = new G4Material( mat.name, 1.07*CLHEP::g/CLHEP::cm3,4);
+      DC704->AddElement(getElementOrThrow("C"),28);
+      DC704->AddElement(getElementOrThrow("H"),32);
+      DC704->AddElement(getElementOrThrow("O"),2);
+      DC704->AddElement(getElementOrThrow("Si"),3);
+    }
 
     mat = uniqueMaterialOrThrow( "Electronics" );
     {
@@ -993,6 +1071,24 @@ namespace mu2e {
                       density, kStateGas, temperature, pressure);
     }
 
+
+    // Completed constructing Mu2e specific materials, first function.
+    // Now second function for Mu2e specific materials.
+    
+  }
+
+
+  void ConstructMaterials::constructMu2eMaterials2(){
+
+
+    // An alias for the stopping target material
+    CheckedG4String mat = uniqueMaterialOrThrow("StoppingTarget_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial());
+    if ( true /* Always load the stopping target material */ ){
+      G4Material* met = findMaterialOrThrow("G4_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial());
+      G4Material* tgt = new G4Material(mat.name, met->GetDensity(), 1);
+      tgt->AddMaterial(met, 1.);
+    }
+
     mat = uniqueMaterialOrThrow( "CarbonFiber_resin");
     {
       G4double density;
@@ -1042,6 +1138,16 @@ namespace mu2e {
       Lyso_01->AddMaterial( Lyso_00, 99.85*CLHEP::perCent ); 
       Lyso_01->AddElement( Ce, 0.15*CLHEP::perCent );    
     }   
+
+
+    mat = uniqueMaterialOrThrow("CorrugatedPolypropylene");
+    {
+      G4double standardPolypropyleneDensity = 0.946*CLHEP::g/CLHEP::cm3;
+      G4double corrugatedEffectiveDensity = 0.2 * standardPolypropyleneDensity;
+      G4Material* CorrugatedPolypropylene = new G4Material( mat.name, corrugatedEffectiveDensity, 2);
+      CorrugatedPolypropylene->AddElement( getElementOrThrow("C"), 3);
+      CorrugatedPolypropylene->AddElement( getElementOrThrow("H"), 6);
+    }
 
 
     //G10-FR4 used for printed board of the I-Tracker
@@ -1167,27 +1273,14 @@ namespace mu2e {
       stWallEq->AddMaterial(strwMet2, 1.25e-2 );
     }
 
-    // An alias for the stopping target material
-    mat = uniqueMaterialOrThrow("StoppingTarget_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial());
-    if ( true /* Always load the stopping target material */ ){
-      G4Material* met = findMaterialOrThrow("G4_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial());
-      G4Material* tgt = new G4Material(mat.name, met->GetDensity(), 1);
-      tgt->AddMaterial(met, 1.);
-    }
 
-    mat = uniqueMaterialOrThrow("CorrugatedPolypropylene");
-    {
-      G4double standardPolypropyleneDensity = 0.946*CLHEP::g/CLHEP::cm3;
-      G4double corrugatedEffectiveDensity = 0.2 * standardPolypropyleneDensity;
-      G4Material* CorrugatedPolypropylene = new G4Material( mat.name, corrugatedEffectiveDensity, 2);
-      CorrugatedPolypropylene->AddElement( getElementOrThrow("C"), 3);
-      CorrugatedPolypropylene->AddElement( getElementOrThrow("H"), 6);
-    }
+    // Completed constructMu2eMaterials2(), second function for
+    // building all Mu2e materials.
 
-
-    // Completed constructing Mu2e specific materials.
-    
   }
+
+
+
 
   // Check to see if the named material already exists.
   CheckedG4String ConstructMaterials::uniqueMaterialOrThrow( G4String const& name){

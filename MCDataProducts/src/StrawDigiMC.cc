@@ -19,50 +19,66 @@ namespace mu2e {
 
   // Default constructor is required for persistable classes
   StrawDigiMC::StrawDigiMC()
-    : _strawIndex(StrawIndex::NO_STRAW)
+    : _strawid(StrawId::_invalid)
   {}
 
-  StrawDigiMC::StrawDigiMC(StrawIndex index, double wetime[2], CLHEP::HepLorentzVector cpos[2], 
+  StrawDigiMC::StrawDigiMC(StrawId sid, double wetime[2],
+      CLHEP::HepLorentzVector cpos[2], 
       art::Ptr<StepPointMC> stepMC[2], vector<art::Ptr<StepPointMC> > const& stepMCs) :
-    _strawIndex(index), _stepMCs(stepMCs)
+    _strawid(sid), _stepMCs(stepMCs)
   {
-    for(int itdc=0;itdc<StrawEnd::nends;++itdc){
-      size_t jtdc = static_cast<size_t>(itdc);
-      _wetime[jtdc] = wetime[jtdc];
-      _cpos[jtdc] = cpos[jtdc];
-      _stepMC[jtdc] = stepMC[jtdc];
+    for(size_t strawend=0;strawend<2;++strawend){
+      _wetime[strawend] = wetime[strawend];
+      _cpos[strawend] = cpos[strawend];
+      _stepMC[strawend] = stepMC[strawend];
     }
   }
 
+  StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs) : _strawid(rhs.strawId()), _stepMCs(rhs.stepPointMCs()) {
+    for(int i_end=0;i_end<TrkTypes::nends;++i_end){
+      TrkTypes::End end = static_cast<TrkTypes::End>(i_end);
+      _wetime[end] = rhs.wireEndTime(end);
+      _cpos[end] = rhs.clusterPosition(end);
+      _stepMC[end] = rhs.stepPointMC(end);
+    }
+  }
 
-  double StrawDigiMC::driftDistance(StrawDigi::TDCChannel itdc) const {
-    size_t jtdc = static_cast<size_t>(itdc);
+  StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, art::Ptr<StepPointMC> stepMC[2], std::vector<art::Ptr<StepPointMC> > const& stepMCs) : _strawid(rhs.strawId()) {
+    for(int i_end=0;i_end<TrkTypes::nends;++i_end){
+      TrkTypes::End end = static_cast<TrkTypes::End>(i_end);
+      _wetime[end] = rhs.wireEndTime(end);
+      _cpos[end] = rhs.clusterPosition(end);
+      _stepMC[end] = stepMC[i_end];
+    }
+    _stepMCs = stepMCs;
+  }
+
+  double StrawDigiMC::driftDistance(StrawEnd strawend) const {
     double retval = -100.0;
-    if(!_stepMC[jtdc].isNull()){
+    if(!_stepMC[strawend].isNull()){
       const Tracker& tracker = getTrackerOrThrow();
-      // use the MC true index, not the straws index (digi could be from x-talk)
-      Straw const& straw = tracker.getStraw(_stepMC[jtdc]->strawIndex());
-      retval = (_cpos[itdc] - straw.getMidPoint()).perp(straw.getDirection());
+      // use the MC true sid, not the straws sid (digi could be from x-talk)
+      Straw const& straw = tracker.getStraw(_stepMC[strawend]->strawIndex());
+      retval = (_cpos[strawend] - straw.getMidPoint()).perp(straw.getDirection());
     }
     return retval;
   }
 
-  double StrawDigiMC::distanceToMid(StrawDigi::TDCChannel itdc) const {
-    size_t jtdc = static_cast<size_t>(itdc);
+  double StrawDigiMC::distanceToMid(StrawEnd strawend) const {
     double retval = -100.0;
-    if(!_stepMC[jtdc].isNull()){
+    if(!_stepMC[strawend].isNull()){
       const Tracker& tracker = getTrackerOrThrow();
-      Straw const& straw = tracker.getStraw(_stepMC[jtdc]->strawIndex());
-      retval =  (_cpos[itdc] - straw.getMidPoint()).dot(straw.getDirection());
+      Straw const& straw = tracker.getStraw(_stepMC[strawend]->strawIndex());
+      retval =  (_cpos[strawend] - straw.getMidPoint()).dot(straw.getDirection());
     }
     return retval;
   }
 
-  bool StrawDigiMC::isCrossTalk(StrawDigi::TDCChannel itdc) const {
+  bool StrawDigiMC::isCrossTalk(StrawEnd strawend) const {
     bool retval(false);
-    size_t jtdc = static_cast<size_t>(itdc);
-    if(!_stepMC[jtdc].isNull()){
-      retval = _strawIndex == _stepMC[jtdc]->strawIndex();
+    if(!_stepMC[strawend].isNull()){
+    // this is currently broken till we replace starwIndex with strawId FIXME!!
+      //retval = _strawid == _stepMC[strawend]->strawIndex();
     }
     return retval;
   }
@@ -76,14 +92,14 @@ namespace mu2e {
   }
 
 
-  double StrawDigiMC::triggerEnergySum(StrawDigi::TDCChannel itdc) const {
+  double StrawDigiMC::triggerEnergySum(StrawEnd strawend) const {
     double esum(0.0);
-    if(!_stepMC[(size_t)itdc].isNull()){
+    if(!_stepMC[(size_t)strawend].isNull()){
       for(auto imcs = _stepMCs.begin(); imcs!= _stepMCs.end(); ++ imcs){
 	// if the simParticle for this step is the same as the one which fired the discrim, add the energy
-	if( (*imcs)->simParticle() == _stepMC[(size_t)itdc]->simParticle() ||
-	    (*imcs)->simParticle()->parent() == _stepMC[(size_t)itdc]->simParticle() ||
-	    (*imcs)->simParticle() == _stepMC[(size_t)itdc]->simParticle()->parent() )
+	if( (*imcs)->simParticle() == _stepMC[(size_t)strawend]->simParticle() ||
+	    (*imcs)->simParticle()->parent() == _stepMC[(size_t)strawend]->simParticle() ||
+	    (*imcs)->simParticle() == _stepMC[(size_t)strawend]->simParticle()->parent() )
 	  esum += (*imcs)->eDep();
       }
     }
@@ -93,10 +109,10 @@ namespace mu2e {
   // Print the information found in this hit.
   void StrawDigiMC::print( ostream& ost, bool doEndl ) const {
 
-    ost << "Straw Digi MC Truth:"
+    ost << "Straw Digi MC Truth for straw ends " << StrawEnd(TrkTypes::cal) << " : " << StrawEnd(TrkTypes::hv)
       << " cluster times : "      << _cpos[0].t() << " : " << _cpos[1].t()
-      << " drift distance: "      << driftDistance(StrawDigi::zero) << " : " << driftDistance(StrawDigi::one)
-      << " distance to wire center: "     << distanceToMid(StrawDigi::zero) << " : " << distanceToMid(StrawDigi::one)
+      << " drift distance: "      << driftDistance(TrkTypes::cal) << " : " << driftDistance(TrkTypes::hv)
+      << " distance to wire center: "     << distanceToMid(TrkTypes::cal) << " : " << distanceToMid(TrkTypes::hv)
       << " Energy: " << energySum();
 
     if ( doEndl ){

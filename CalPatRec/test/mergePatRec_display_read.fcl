@@ -3,9 +3,9 @@
 #------------------------------------------------------------------------------
 #  mergePatRec02: read input data, remake all hits, do not regenereate events
 #------------------------------------------------------------------------------
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "HitMakers/fcl/prolog.fcl"
 #include "TrackCaloMatching/fcl/prolog.fcl"
 #include "CaloCluster/fcl/prolog.fcl"
@@ -48,7 +48,7 @@ services : {
     TFileService : { fileName   : "mergePatRec.root" }
     RandomNumberGenerator : { }
 
-    GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt" }
+    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt" }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
     BTrkHelper             : @local::BTrkHelperDefault

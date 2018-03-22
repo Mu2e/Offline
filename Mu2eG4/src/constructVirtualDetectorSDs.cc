@@ -50,7 +50,7 @@ namespace mu2e {
           //***************************************************************
 
           
-          //Coll1_In, Coll1_Out
+          //Coll1_In, Coll1_Out and Coll1_pBarCollar_In, Coll1_pBarCollar_Out
           if (LVname.find("Coll1_") != std::string::npos) {
               store->GetVolume(LVname)->SetSensitiveDetector(vdSD);
           }

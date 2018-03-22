@@ -33,7 +33,6 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeomPrimitives/inc/PolyconsParams.hh"
 
 // G4 includes
@@ -59,7 +58,7 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructSTM(SimpleConfig const & _config){
+  void constructSTM(const SimpleConfig& _config){
 
     STM const & stmgh = *(GeomHandle<STM>());
 
@@ -1175,7 +1174,6 @@ namespace mu2e {
     if (verbosityLevel>0){
       std::cout << __func__ << " Warning: Gas not implemented inside STM detector1 can! (so that VD inside can does not overlap with can gas)" << std::endl; 
     }
-
     
     //===================== STM Detector 2 ==========================
     
@@ -1272,7 +1270,6 @@ namespace mu2e {
     if (verbosityLevel>0){
       std::cout << __func__ << " Warning: Gas not implemented inside STM detector1 can! (so that VD inside can does not overlap with can gas)" << std::endl; 
     }
-
     
     //===================== Shield Pipe/Wall to prevent michel electrons from causing deadtime in the CRV  ==========================
 

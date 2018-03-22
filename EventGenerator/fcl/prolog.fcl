@@ -10,7 +10,7 @@ muonStops : {
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
     branchName            : "stops"
-    verbosityLevel        : 1
+    verbosityLevel        : 0
 }
 
 # Files containing the positions and times of stopped muons in target (tgt) and out of target (oot).
@@ -31,14 +31,14 @@ mu2e.tgtMuonStops: {
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
     branchName            : "stops"
-    verbosityLevel        : 1
+    verbosityLevel        : 0
 }
 mu2e.ootMuonStops: {
     inputFiles            : @local::merged_ootStops_cd3
     averageNumRecordsToUse: 500000
     treeName              : "outOfTargetDumper/stops"
     branchName            : "stops"
-    verbosityLevel        : 1
+    verbosityLevel        : 0
 }
 
 # Generate Event
@@ -74,7 +74,7 @@ StoppedParticleReactionGun: {
     czmin          : -1.0
     czmax          :  1.0
     muonStops      : @local::mu2e.tgtMuonStops
-    verbosityLevel : 1
+    verbosityLevel : 0
     physics        : {
 	pdgId            : 11
 	spectrumVariable : "totalEnergy"
@@ -87,7 +87,7 @@ StoppedParticleReactionGun: {
 StoppedMuonXRayGammaRayGun: {
     module_type    : StoppedMuonXRayGammaRayGun
     muonStops      : @local::mu2e.tgtMuonStops
-    verbosityLevel : 1
+    verbosityLevel : 0
     physics        : { }
 }
 

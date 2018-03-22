@@ -2,7 +2,7 @@
 # Run the parameter set viewer
 #
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 process_name : myproc
 

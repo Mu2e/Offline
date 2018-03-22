@@ -150,11 +150,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void TrackCaloMatching::beginJob() {
 
-    printf("---- TrackCaloMatching::beginJob constants used: \n"    );
-    printf("  minClusterEnergy     : %10.3f\n",_minClusterEnergy    );
-    printf("  maxDeltaT            : %10.3f\n",_maxDeltaT           );
-    printf("  meanInteractionDepth : %10.3f\n",_meanInteractionDepth);
-    printf("  dtOffset             : %10.3f\n",_dtOffset            );
+    if (_debugLevel > 0) {
+      printf("---- TrackCaloMatching::beginJob constants used: \n"    );
+      printf("  minClusterEnergy     : %10.3f\n",_minClusterEnergy    );
+      printf("  maxDeltaT            : %10.3f\n",_maxDeltaT           );
+      printf("  meanInteractionDepth : %10.3f\n",_meanInteractionDepth);
+      printf("  dtOffset             : %10.3f\n",_dtOffset            );
+    }
   }
 
 //-----------------------------------------------------------------------------
@@ -530,9 +532,11 @@ namespace mu2e {
     END:;
 
     evt.put(std::move(tcmcoll));
-
-    if (evt.id().event() %100 == 0) {
-      printf("Event %d TrackCaloMatching done...",evt.id().event() );
+//-----------------------------------------------------------------------------
+// diagnostics printout
+//-----------------------------------------------------------------------------
+    if (_debugLevel > 0) {
+      if (evt.id().event() %100 == 0) printf("Event %d TrackCaloMatching done.\n",evt.id().event());
     }
   }
 

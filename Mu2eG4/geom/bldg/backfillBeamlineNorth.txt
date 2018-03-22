@@ -1,0 +1,61 @@
+// AaHill 2017/06/01
+//
+//   
+
+string building.backfill.beamline.north.name     = "backfillBeamlineNorth";
+
+string building.backfill.beamline.north.material = "CA7Backfill";
+
+double building.backfill.beamline.north.offsetFromMu2eOrigin.x   = 947.4;
+double building.backfill.beamline.north.offsetFromFloorSurface.y = 4089.4;
+double building.backfill.beamline.north.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.backfill.beamline.north.yHalfThickness           = 1803.4;
+
+vector<double> building.backfill.beamline.north.xPositions = {
+  36574.6,   // bB08                                                            
+  36526,   // BFDU04                                                            
+  26454.2,   // BFDU05                                                          
+  24635.9,   // BFDU06                                                          
+  20735.6,   // BFDU07                                                          
+  19431.7,   // BFDU08                                                          
+  15778.2,   // BFDU09
+  17082.1,   // BFDU10                                                            
+  12984.2,   // BFDU11      
+  13486.7,   // BFDU12     
+  13585.5,   // SW0 escapeStairWallW01_0 
+  13106.9,   // B10          
+  17204.4,   // B9                                                                
+  15900.7,   // B8                                                                
+  19356.8,   // B7                                                                
+  20660.7,   // B6                                                                
+  24561.1,   // B5                                                                
+  25927.1,   // D1 
+  26379.9   // B4                                                                
+};
+
+vector<double> building.backfill.beamline.north.yPositions = {                    
+  15050.8,   // bB08                                                            
+  15143.6,   // BFDU04                                                          
+  12703.2,   // BFDU05                                                          
+  20207.7,   // BFDU06                                                          
+  19262.7,   // BFDU07                                                          
+  24644.1,   // BFDU08                                                         
+  23758.9,   // BFDU09 
+  18377.4,   // BFDU10                                                            
+  17384.5,   // BFDU11
+  15310.9,   // BFDU12
+  15334.8,   // SW0 escapeStairWallW01_0
+  17309.7,   // B10
+  18303.0,   // B9                                                                
+  23684.2,   // B8                                                                
+  24521.6,   // B7                                                                
+  19140.1,   // B6                                                                  
+  20085,   // B5   
+  14516.4,   // D1                                                                
+  12581.0   // B4                                                                
+};
+
+// Local Variables:
+// mode:c++
+// End:

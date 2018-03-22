@@ -217,6 +217,7 @@ class Track: public VirtualShape
     }
   }
 
+  ClassDef(Track,1);
 };
 
 }

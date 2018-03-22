@@ -1,0 +1,30 @@
+# Read the test file made by MakeTestProduct and
+# modified by ModifyTestProduct
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : readTestProduct
+
+source : {
+  module_type : RootInput
+  fileNames   :  ["testG4S4pionSimDOE_01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics : {
+
+  analyzers : {
+    readTrackSPM : {
+      module_type : ReadTrackSPM
+      productTags : [ "detectorFilter:tracker" ]
+    }
+  }
+
+ e1        : [ readTrackSPM ]
+ end_paths : [ e1 ]
+
+}

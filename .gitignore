@@ -1,4 +1,5 @@
 *~
+\#*
 BaBar/BField/
 BaBar/BaBar/
 BaBar/BbrGeom/
@@ -14,6 +15,7 @@ BaBar/difAlgebra/
 .sconsign.dblite
 bin/artProductSizes
 bin/eventCount
+bin/valCompare
 lib
 tmp
 *.stn
@@ -26,9 +28,10 @@ tmp
 *.log
 *.log.*
 *.pdf
+*.pyc
+*.orig
 BaBar/include
-EventDisplay/src/EventDisplayDict.cc
-EventDisplay/src/EventDisplayDict.h
 EMFCAnalysis
 .tup
 .buildopts
+tags

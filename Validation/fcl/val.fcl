@@ -3,19 +3,20 @@
 #
 
 #include "fcl/minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 
 process_name : validation1
 
+#services : @local::Services.Core
 services : {
-  message : @local::default_message
 #  message : @local::mf_production
+  message : @local::default_message
   TFileService          : { fileName : "validation.root" }
   GeometryService :
   {
-    inputFile : "Mu2eG4/test/geom_01.txt"
+    inputFile : "Mu2eG4/geom/geom_common.txt"
   }  
   ConditionsService :
   {

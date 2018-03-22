@@ -1,0 +1,100 @@
+// Just playing with StepPointMCs
+//
+// Dave Brown (Lou), based on ExtinctionMonitor work by Andrei Gaponenko, 2011
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+// Give this job a name.
+process_name : DNBTest
+
+source : {
+    module_type : EmptyEvent
+    maxEvents : 100
+}
+
+services : {
+    message		   : @local::default_message
+
+//    scheduler: { defaultExceptions : false }
+    TFileService           : { fileName : "g4hists_DNBTest.root" }
+    RandomNumberGenerator  : {}
+
+    GeometryService        : { inputFile : "Mu2eG4/geom/geom_common_current.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    SeedService            : @local::automaticSeeds
+    G4Helper               : { }
+}
+
+physics : {
+    producers : {
+        generate : {
+            module_type   : EventGenerator
+            inputfile     : "JobConfig/beam/genconfig_PrimaryProtons.txt"
+        }
+
+	genCounter  : { module_type : GenEventCounter }
+
+        g4run : {
+            module_type          : Mu2eG4
+            physics              : @local::mu2eg4DefaultPhysics
+            ResourceLimits       : @local::mu2eg4DefaultResourceLimits
+            TrajectoryControl    : @local::mu2eg4NoTrajectories
+            debug                : @local::mu2eg4DefaultDebug
+            visualization        : @local::mu2eg4NoVisualization
+
+            generatorModuleLabel : generate
+            MultiStageParameters : {} // This is the first stage
+
+            SDConfig : {
+                enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
+                TimeVD   : { times : [] }
+            }
+
+            // Mu2eG4 cuts are evaluated in the listed order.
+            // The first match wins.  For the "intersection"
+            // type, the first false stops the evaluation.
+            // For the "union" type the first true stops the evaluation.
+            Mu2eG4StackingOnlyCut : @local::mu2eg4CutNeutrinos
+            Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
+            Mu2eG4CommonCut : {
+                type : union
+                pars : [
+                    { type: inVolume pars: [ HallAir ] },
+                    {
+                        type  : inVolume
+                        pars  : [ TS3Vacuum, TS4Vacuum, TS5Vacuum, DS1Vacuum, DS2Vacuum, DS3Vacuum ]
+                        write : vacuuas1
+                    }
+                ]
+            }
+        } // g4run
+    }
+
+    analyzers: {
+        vdprint: {
+            module_type      :  SelectiveStepPtPrinter
+            inputCollection  : "g4run:virtualdetector"
+	    volumes           : [ 1, 2, 91, 92 ]
+        }
+    }
+
+    tprint : [ generate, genCounter, g4run ]
+    eprint: [ vdprint ]
+
+    trigger_paths  : [tprint]
+    end_paths : [ eprint ]
+}
+
+//----------------------------------------------------------------
+//physics.producers.g4run.visMacro : "Analyses/test/vis_DNBTest.mac"
+
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+
+// This tells emacs to view this file in the JavaScript mode.
+// Local Variables:
+// mode:js
+// End:

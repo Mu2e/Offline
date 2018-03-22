@@ -13,7 +13,7 @@
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
 #include "TrkReco/inc/PanelAmbigStructs.hh"
-#include "DataProducts/inc/LayerId.hh"
+#include "DataProducts/inc/PanelId.hh"
 #ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"
 #endif/*__GCCXML__*/
@@ -32,7 +32,7 @@ namespace mu2e {
       public:
 	// construct from parameter set
 #ifndef __GCCXML__
-	explicit PanelAmbigResolver(fhicl::ParameterSet const&, double ExtErr, size_t iter );
+	explicit PanelAmbigResolver(fhicl::ParameterSet const&, double tmpErr, size_t iter );
 #endif/*__GCCXML__*/
 	virtual ~PanelAmbigResolver();
 	// resolve a track.  Depending on the configuration, this might

@@ -304,13 +304,13 @@ namespace mu2e {
       StrawIndex si = hit.strawIndex();
       Straw str = tracker.getStraw(si);
       StrawId sid = str.id();
-      LayerId lid = sid.getLayerId();
-      PlaneId did = sid.getPlaneId();
-      PanelId secid = sid.getPanelId();
+      // LayerId lid = sid.getLayerId();
+      // PlaneId did = sid.getPlaneId();
+      // PanelId secid = sid.getPanelId();
 
-      tntpArray[idx++] = lid.getLayer(); //leaf 6
-      tntpArray[idx++] = did; //leaf 7
-      tntpArray[idx++] = secid.getPanel(); //leaf 8
+      tntpArray[idx++] = sid.getLayer(); //leaf 6
+      tntpArray[idx++] = sid.getPlane(); //leaf 7
+      tntpArray[idx++] = sid.getPanel(); //leaf 8
       tntpArray[idx++] = sid.getStraw(); //leaf 9
 
 
@@ -576,7 +576,7 @@ namespace mu2e {
       cntpArray[idx++] = diskId;
       cntpArray[idx++] = cryCenter.getX() + 3904.;  //value used to shift in tracker coordinate system
       cntpArray[idx++] = cryCenter.getY();
-      cntpArray[idx++] = cryCenter.getZ() - 10200;  //value used to shift in tracker coordinate system
+      cntpArray[idx++] = cryCenter.getZ() - 10200;  value used to shift in tracker coordinate system.  The hardwired value should be changed to a parametrized version if this is ever uncommented.
       
 
       PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));      

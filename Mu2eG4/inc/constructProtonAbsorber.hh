@@ -10,15 +10,11 @@
 // Original author KLG
 //
 
-// Mu2e includes.
-#include "G4Helper/inc/VolumeInfo.hh"
-
 namespace mu2e {
 
   class SimpleConfig;
 
-  void constructProtonAbsorber(SimpleConfig const & _config
-                               );
+  void constructProtonAbsorber(const SimpleConfig& _config);
 
 }
 

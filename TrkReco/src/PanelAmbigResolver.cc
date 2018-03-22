@@ -42,8 +42,8 @@ namespace mu2e {
     typedef TrkStrawHitVector::const_iterator TSHCI;
 
 
-    PanelAmbigResolver::PanelAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr, size_t iter): 
-      AmbigResolver(ExtErr),
+    PanelAmbigResolver::PanelAmbigResolver(fhicl::ParameterSet const& pset, double tmpErr, size_t iter): 
+      AmbigResolver(tmpErr),
       _minsep(pset.get<double>("minChisqSep",4.0)),
       _inactivepenalty(pset.get<double>("inactivePenalty",16.0)),
       _penaltyres(pset.get<double>("PenaltyResolution",0.25)),
@@ -87,7 +87,7 @@ namespace mu2e {
 
     bool PanelAmbigResolver::resolveTrk(KalRep* krep) const {
       bool retval(false); // assume nothing changes
-      // initialize hit external errors
+      // initialize penalty errors
       initHitErrors(krep);
       // sort by panel
       TrkStrawHitVector tshv;
@@ -97,7 +97,7 @@ namespace mu2e {
       auto ihit=tshv.begin();
       while(ihit!=tshv.end()){
 	PanelId pid = (*ihit)->straw().id().getPanelId();
-	(*ihit)->setExtErr(AmbigResolver::_extErr);
+	(*ihit)->setTemperature(AmbigResolver::_tmpErr);
 	TrkStrawHitVector phits;
 	auto jhit=ihit;
 	while(jhit != tshv.end() && (*jhit)->straw().id().getPanelId() == pid){

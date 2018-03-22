@@ -38,7 +38,6 @@ namespace fhicl { class ParameterSet; }
 namespace mu2e {
 
   // Forward declarations in mu2e namespace
-  class SimpleConfig;
   class Mu2eG4SteppingAction;
   class SimParticleHelper;
   class SimParticlePrimaryHelper;
@@ -49,14 +48,10 @@ namespace mu2e {
 
   public:
 
-    TrackingAction( const SimpleConfig& config, Mu2eG4SteppingAction *);
-
     TrackingAction(const fhicl::ParameterSet& pset,
                    Mu2eG4SteppingAction *,
                    const Mu2eG4TrajectoryControl& trajectoryControl,
                    const Mu2eG4ResourceLimits &lim);
-
-    virtual ~TrackingAction();
 
     // These methods are required by G4
     virtual void PreUserTrackingAction (const G4Track* trk);
@@ -84,9 +79,6 @@ namespace mu2e {
     void beginRun( const PhysicalVolumeHelper* physVolHelper,
                    PhysicsProcessInfo* processInfo,
                    CLHEP::Hep3Vector const& mu2eOrigin );
-
-    // Clean up at end of run.
-    void endRun();
 
     // Accessors for status information.
     unsigned        nG4Tracks() const { return _currentSize;}

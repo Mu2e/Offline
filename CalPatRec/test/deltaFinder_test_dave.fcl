@@ -1,0 +1,11 @@
+# -*- mode:tcl -*-
+
+#include "CalPatRec/test/deltaFinder_test.fcl"
+
+services.TFileService.fileName                            : "deltaFinder_test_dave.root"
+
+physics.trigger_paths                                     : [ p1 ]
+
+# for time profiling
+physics.producers.PrefetchData.mcDiag                     : false
+physics.producers.SeedFinderAna.strawHitFlagCollectionTag : FlagBkgHits

@@ -140,7 +140,7 @@ void HelixDiag::CenterPos() {
 }
 
 void HelixDiag::Radius() {
-  TH2F* rcomp = new TH2F("rcomp","True vs Reco Radius;Reco radius (mm); MC radius (mm)",50,200.0,350.0,50,180.0,320.0);
+  TH2F* rcomp = new TH2F("rcomp","True vs Reco Radius;Reco radius (mm); MC radius (mm)",50,200.0,350.0,50,200.0,350.0);
   TH1F* rres = new TH1F("rres","Radius resolution;reco - MC radius (mm)",100,-100,100);
   TH1F* rresc = new TH1F("rresc","Radius resolution;reco - MC radius (mm)",100,-100,100);
   rres->SetLineColor(kBlue);

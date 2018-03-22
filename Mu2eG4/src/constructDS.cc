@@ -35,7 +35,7 @@
 #include "G4Polycone.hh"
 #include "G4Tubs.hh"
 #include "G4SubtractionSolid.hh"
-
+#include "G4SDManager.hh"
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"
@@ -45,22 +45,23 @@ using namespace std;
 namespace mu2e {
 
   void constructDS( const VolumeInfo& parent,
-                    SimpleConfig const & _config
+                    const SimpleConfig& _config
                     ){
     MaterialFinder materialFinder(_config);
 
     // Load flags
     int const verbosityLevel = _config.getInt("ds.verbosityLevel",0);
+    bool const inGaragePosition = _config.getBool("inGaragePosition",false);
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( _config, "DS"         , "ds"          );
     geomOptions->loadEntry( _config, "DSCoil"     , "dsCoil"      );
+    geomOptions->loadEntry( _config, "DSRing"     , "dsRing"      );
     geomOptions->loadEntry( _config, "DSSpacer"   , "dsSpacer"    );
     geomOptions->loadEntry( _config, "DSSupport"  , "dsSupport"   );
     geomOptions->loadEntry( _config, "DSThShield" , "dsThShield"  );
     geomOptions->loadEntry( _config, "DSVacuum"   , "dsVacuum"    );
     geomOptions->loadEntry( _config, "DSShielding", "dsShielding" );
-    geomOptions->loadEntry( _config, "PiondegAbs" , "piondeg"     );
 
     // Fetch parent (hall) position
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
@@ -85,6 +86,22 @@ namespace mu2e {
               G4Color::Magenta(),
 	      "DS"
               );
+    // ***
+    // Lining for inner cryo shell - for test of shielding
+    // added 11 June 2017
+    // ***
+    if ( ds->hasInnerLining() ) { // only if specifically enabled
+      nestTubs( "DSInnerCryoLining",
+		TubsParams( ds->rIn1()-ds->innerLiningThickness(),ds->rIn1(),ds->halfLength()-2.*ds->endWallHalfLength()),
+		findMaterialOrThrow(ds->innerLiningMaterial()),
+		0,
+		dsInnerCryoPosition-_hallOriginInMu2e,
+		parent,
+		0,
+		G4Color::Magenta(),
+		"DS"
+		);
+    }
 
     // - outer cryo shell
     G4ThreeVector dsOuterCryoPosition( dsP.x(), dsP.y(), dsP.z());
@@ -99,6 +116,25 @@ namespace mu2e {
               G4Color::Magenta(),
 	      "DS"
               );
+
+    // DNB (Lou) May 2017.  Making a vacuum volume inside the cryostat
+    G4Tubs * dsCryoVacTub = new G4Tubs( "DSCryoVacuumTube",
+					ds->rIn2(), ds->rOut1(),
+					ds->halfLength() - 2.*ds->endWallHalfLength(),
+					0.0, 360.0*CLHEP::degree);
+
+    CLHEP::Hep3Vector dsCryoVacLocationInMu2e( dsP.x(), dsP.y(), dsP.z() );
+    VolumeInfo dsCryoVacMother( "DSCryoVacuumRegion",
+				dsCryoVacLocationInMu2e - _hallOriginInMu2e,
+				parent.centerInWorld );
+    dsCryoVacMother.solid = dsCryoVacTub;
+				
+    finishNesting ( dsCryoVacMother,
+		    findMaterialOrThrow("DSVacuum"),
+		    0, dsCryoVacMother.centerInParent,
+		    parent.logical, 0, G4Colour::White(),
+		    "DS" );
+		    
 
     // - end walls
     TubsParams    dsEndWallParams    ( ds->rIn2(), ds->rOut1(), ds->endWallHalfLength() );
@@ -158,8 +194,8 @@ namespace mu2e {
               dsInnerThShieldParams,
               dsThShieldMaterial,
               0,
-              dsInnerThShieldPosition-_hallOriginInMu2e,
-              parent,
+              dsInnerThShieldPosition-dsCryoVacLocationInMu2e,
+              dsCryoVacMother,
               0,
               G4Color::Cyan(),
 	      "DSThShield"
@@ -172,8 +208,8 @@ namespace mu2e {
               dsOuterThShieldParams,
               dsThShieldMaterial,
               0,
-              dsOuterThShieldPosition-_hallOriginInMu2e,
-              parent,
+              dsOuterThShieldPosition-dsCryoVacLocationInMu2e,
+              dsCryoVacMother,
               0,
               G4Color::Cyan(),
 	      "DSThShield"
@@ -204,8 +240,8 @@ namespace mu2e {
                 coilParams,
                 dsCoilMaterial,
                 0,
-                coilPosition-_hallOriginInMu2e,
-                parent,
+                coilPosition-dsCryoVacLocationInMu2e,
+                dsCryoVacMother,
                 0,
                 G4Color::Green(),
 		"DSCoil"
@@ -231,8 +267,8 @@ namespace mu2e {
 		  spacerParams,
 		  dsSpacerMaterial,
 		  0,
-		  spacerPosition-_hallOriginInMu2e,
-		  parent,
+		  spacerPosition-dsCryoVacLocationInMu2e,
+		  dsCryoVacMother,
 		  0,
 		  G4Color::Green(),
 		  "DSSpacer"
@@ -249,8 +285,8 @@ namespace mu2e {
               dsSupportParams,
               dsSupportMaterial,
               0,
-              dsSupportPosition-_hallOriginInMu2e,
-              parent,
+              dsSupportPosition-dsCryoVacLocationInMu2e,
+              dsCryoVacMother,
               0,
               G4Color::Blue(),
 	      "DSSupport"
@@ -271,19 +307,34 @@ namespace mu2e {
     std::vector<double> zr = ds->zRing();
     
     for ( unsigned int iRing = 0; iRing < xr.size(); iRing++ ) {
-      std::ostringstream leftName;
-      leftName << "DSleftSideRing" << iRing;
+
+      // Let's build a mother volume first
+      std::ostringstream ringMotherName;
+      ringMotherName << "DSRingMother" << iRing;
       CLHEP::HepRotation* ringRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-      double lx = xr[iRing];
-      double ly = yr[iRing];
-      double lz = zr[iRing] - lr/2.0 - trs/2.0;
+
+      double motherx = xr[iRing];
+      double mothery = yr[iRing];
+      double motherz = zr[iRing];
+
+      VolumeInfo motherVol = nestTubs( ringMotherName.str(),
+				       TubsParams( rirs, rors, trs + lr/2.0 ),
+				       findMaterialOrThrow("G4_AIR"),
+				       ringRotat, 
+				       CLHEP::Hep3Vector(motherx,mothery,motherz) - _hallOriginInMu2e,
+				       parent, 0, G4Color::Blue(),
+				       "DSRing" );
+ 
+     std::ostringstream leftName;
+      leftName << "DSleftSideRing" << iRing;
+
 
       nestTubs( leftName.str(),
 		TubsParams( rirs, rors, trs/2.0 ),
 		ringMaterial,
                 ringRotat,
-		CLHEP::Hep3Vector(lx,ly,lz)-_hallOriginInMu2e,
-		parent,
+		CLHEP::Hep3Vector(0.0,0.0,-lr/2.0-trs/2.0),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"DSRing"
@@ -296,9 +347,8 @@ namespace mu2e {
 		TubsParams( rir, ror, lr/2.0 ),
 		ringMaterial,
                 ringRotat,
-		CLHEP::Hep3Vector(xr[iRing],yr[iRing],zr[iRing]) 
-		- _hallOriginInMu2e,
-		parent,
+		CLHEP::Hep3Vector(0.0,0.0,0.0),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"DSRing"
@@ -307,16 +357,12 @@ namespace mu2e {
       std::ostringstream rightName;
       rightName << "DSrightSideRing" << iRing;
 
-      double rx = xr[iRing];
-      double ry = yr[iRing];
-      double rz = zr[iRing] + lr/2.0 + trs/2.0; 
-
       nestTubs( rightName.str(),
 		TubsParams( rirs, rors, trs/2.0 ),
 		ringMaterial,
                 ringRotat,
-		CLHEP::Hep3Vector(rx,ry,rz)-_hallOriginInMu2e,
-		parent,
+		CLHEP::Hep3Vector(0.0,0.0,lr/2.0+trs/2.0),
+		motherVol,
 		0,
 		G4Color::Blue(),
 		"DSRing"
@@ -335,7 +381,7 @@ namespace mu2e {
     //   front face, DS1, and TS5
     double ds1Z0     = dsFrontZ0 + ds->frontHalfLength() + ds->vac_halfLengthDs1();
     double ds2Z0     = ds->vac_zLocDs23Split() - ds->vac_halfLengthDs2();
-    double ds2HalfLength     = _config.getDouble("ds2.halfLength");
+    //    double ds2HalfLength     = _config.getDouble("ds2.halfLength");
     
     if ( verbosityLevel > 0 ) {
       cout << __func__ << " DS2 vacuum extent: " 
@@ -421,6 +467,24 @@ namespace mu2e {
 					      G4Colour::Yellow(),
 					      "DSVacuum"
 					      );
+
+    if ( inGaragePosition ) {
+      double zOffGarage = _config.getDouble("garage.zOffset",14000.0);
+      CLHEP::Hep3Vector relPosFake(0.,0., zOffGarage);
+      G4Material*  airMaterial = findMaterialOrThrow( _config.getString("hall.insideMaterialName","G4_AIR") );
+
+      VolumeInfo dsShieldParent = nestPolycone( "garageFakeDS3Vacuum",
+						ds3PolyParams,
+						airMaterial,
+						0,
+						ds3positionInMu2e - parent.centerInMu2e() + relPosFake,
+						parent,
+						0,
+						G4Colour::Yellow(),
+						"DSVacuum"
+						);
+    }
+      
 
     // Construct shielding downstream of DS
     for ( const auto & shield : dss->getTubes() ) {
@@ -549,47 +613,265 @@ namespace mu2e {
 	   dsShieldParent, 0, _config.getBool("ds.visible"),
 	   G4Colour::Blue(), _config.getBool("ds.solid"),
 	   forceAuxEdgeVisible, placePV, doSurfaceCheck );
-     }
+     }  // end of if ( ds->hasMBSS() )
 
-     //************** Begin pion Degrader code *************
+     // End of MBS spherical shielding, begin cable runs for Cal and Tracker
+     // Each is modeled as a thin wedge of a ring
+
+     bool cableRunSensitive = _config.getBool("ds.CableRun.sensitive",false);
+
+     if ( ds->hasCableRunCal() ) {
 
 
-    bool addPionDegrader  = _config.getBool("piondegrader.build",false);
-    double piondegXoffset        = _config.getDouble("piondeg.xoffset");
-    double piondegZoffset        = _config.getDouble("piondeg.zoffset");
-    double piondegHalfLength     = _config.getDouble("piondeg.halfLength");
-    double piondegRadius = _config.getDouble("piondeg.radius");
-    double piondegParams[5]  = { 0.0,  piondegRadius, piondegHalfLength, 0.0, CLHEP::twopi };
+       TubsParams  calCableRunParams  ( ds->rInCableRunCal(), 
+					ds->rOutCableRunCal(), 
+					ds->lengthCableRunCal(),
+					ds->phi0CableRunCal()*CLHEP::degree,
+					ds->dPhiCableRunCal()*CLHEP::degree);
 
-    if( addPionDegrader ) {
-      std::cout<<" pion degrader position:\t"
-	       <<" x offset: "<<piondegXoffset
-	       <<" z position: "<<-ds2HalfLength + piondegZoffset + piondegHalfLength
-	       <<" Pion degrader halflength:"<<piondegHalfLength
-	       <<std::endl;
+       CLHEP::Hep3Vector calCableRunLoc( 0.0, 0.0, ds->zCCableRunCal() );
 
-      G4Material* piondegMaterial  = materialFinder.get("piondeg.materialName");
-      VolumeInfo piondegInfo = nestTubs( "PiondegAbs",
-					 piondegParams,
-					 piondegMaterial,
+       VolumeInfo ccrTemp = nestTubs( "CalCableRun",
+				      calCableRunParams,
+				      findMaterialOrThrow(ds->calCableRunMaterial()),
+				      0,
+				      calCableRunLoc,
+				      dsShieldParent,
+				      0,
+				      G4Color::Magenta(),
+				      "DS"
+				      );
+
+
+       if ( ds->cableRunVersion() > 1 ) {
+
+	 // Now the part between the Calorimeter Disks
+	 TubsParams  upCalCableRunParm1( ds->upRInCableRunCal(), 
+					 ds->upROutCableRunCal(), 
+					 ds->upHL1CableRunCal(),
+					 ds->phi0CableRunCal()*CLHEP::degree,
+					 ds->dPhiCableRunCal()*CLHEP::degree);
+
+	 CLHEP::Hep3Vector upCalCableRunLoc1( 0.0, 0.0,ds->upZC1CableRunCal());
+
+	 VolumeInfo ccrTempUG1 = nestTubs( "CalCableRunUpGap1",
+					   upCalCableRunParm1,
+					   findMaterialOrThrow(ds->calCableRunMaterial()),
+					   0,
+					   upCalCableRunLoc1,
+					   dsShieldParent,
+					   0,
+					   G4Color::Magenta(),
+					   "DS"
+					   );
+
+	 TubsParams  upCalCableRunParm2( ds->upRInCableRunCal(), 
+					 ds->upROutCableRunCal(), 
+					 ds->upHL2CableRunCal(),
+					 ds->phi0CableRunCal()*CLHEP::degree,
+					 ds->dPhiCableRunCal()*CLHEP::degree);
+
+	 CLHEP::Hep3Vector upCalCableRunLoc2( 0.0, 0.0,ds->upZC2CableRunCal());
+	 
+	 VolumeInfo ccrTmpUG2 = nestTubs( "CalCableRunUpGap2",
+					  upCalCableRunParm2,
+					  findMaterialOrThrow(ds->calCableRunMaterial()),
+					  0,
+					  upCalCableRunLoc2,
+					  dsShieldParent,
+					  0,
+					  G4Color::Magenta(),
+					  "DS"
+					  );
+
+	 // And last but not least the connector between the top of the Cal
+	 // and the top of the MBS
+	 // Implement this as a Polycone
+	 std::vector<double> zs = { ds->upZC2CableRunCal() + ds->upHL2CableRunCal() + 4.0, ds->zCCableRunCal() - ds->lengthCableRunCal() };
+	 std::vector<double> rins = { ds->upRInCableRunCal(), ds->rInCableRunCal()};
+	 std::vector<double> routs= { ds->upROutCableRunCal(), ds->rOutCableRunCal()};
+	 PolyconsParams myPars( zs, rins, routs,
+				ds->phi0CableRunCal()*CLHEP::degree,
+				ds->dPhiCableRunCal()*CLHEP::degree );
+	 
+	 VolumeInfo ccrTmpF = nestPolycone ( "calCableRunFall",
+					     myPars,
+					     findMaterialOrThrow(ds->calCableRunMaterial()),
+					     0,
+					     G4ThreeVector(0,0,0),
+					     dsShieldParent,
+					     0,
+					     G4Colour::Magenta(),
+					     "DS" );
+
+       } // end of if ( CableRunVersion > 1 )
+     } // end of if ( ds->hasCableRunCal() )
+
+     if ( ds->hasCableRunTrk() ) {
+
+       TubsParams  trkCableRun1Params ( ds->rInCableRunTrk(), 
+					ds->rOutCableRunTrk(), 
+					ds->lengthCableRunTrk(),
+					ds->phi0CableRunTrk()*CLHEP::degree,
+					ds->dPhiCableRunTrk()*CLHEP::degree);
+
+       CLHEP::Hep3Vector trkCableRunLoc( 0.0, 0.0, ds->zCCableRunTrk() );
+
+       VolumeInfo tcrTmp1 = nestTubs( "TrkCableRun1",
+				      trkCableRun1Params,
+				      findMaterialOrThrow(ds->trkCableRunMaterial()),
+				      0,
+				      trkCableRunLoc,
+				      dsShieldParent,
+				      0,
+				      G4Color::Magenta(),
+				      "DS"
+				      );
+
+       // Now the second one
+       TubsParams  trkCableRun2Params ( ds->rInCableRunTrk(), 
+					ds->rOutCableRunTrk(), 
+					ds->lengthCableRunTrk(),
+					(180.0 - ds->phi0CableRunTrk()
+					 - ds->dPhiCableRunTrk())
+					*CLHEP::degree,
+					ds->dPhiCableRunTrk()*CLHEP::degree);
+
+       VolumeInfo tcrTmp2=nestTubs( "TrkCableRun2",
+				    trkCableRun2Params,
+				    findMaterialOrThrow(ds->trkCableRunMaterial()),
+				    0,
+				    trkCableRunLoc,
+				    dsShieldParent,
+				    0,
+				    G4Color::Magenta(),
+				    "DS"
+				    );
+
+       if ( ds->cableRunVersion() > 1 ) {
+	 // Now the part between the Calorimeter Disks
+	 TubsParams  upTrkCableRunParm1( ds->rInCableRunTrk(), 
+					 ds->rOutCableRunTrk(), 
+					 ds->upHL1CableRunCal(),
+					 ds->phi0CableRunTrk()*CLHEP::degree,
+					 ds->dPhiCableRunTrk()*CLHEP::degree);
+
+	 CLHEP::Hep3Vector upTrkCableRunLoc1( 0.0, 0.0,ds->upZC1CableRunCal());
+
+	 VolumeInfo tcrTmpG1=nestTubs( "TrkCableRunGap1",
+				       upTrkCableRunParm1,
+				       findMaterialOrThrow(ds->trkCableRunMaterial()),
+				       0,
+				       upTrkCableRunLoc1,
+				       dsShieldParent,
+				       0,
+				       G4Color::Magenta(),
+				       "DS"
+				       );
+
+	 TubsParams  upTrkCableRunParm1a( ds->rInCableRunTrk(), 
+					  ds->rOutCableRunTrk(), 
+					  ds->upHL1CableRunCal(),
+					  (180.0 - ds->phi0CableRunTrk()
+					   - ds->dPhiCableRunTrk())
+					  *CLHEP::degree,
+					  ds->dPhiCableRunTrk()*CLHEP::degree);
+
+	 VolumeInfo tcrTmpG1a=nestTubs( "TrkCableRunGap1a",
+					upTrkCableRunParm1a,
+					findMaterialOrThrow(ds->trkCableRunMaterial()),
+					0,
+					upTrkCableRunLoc1,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"DS"
+					);
+
+	 TubsParams  upTrkCableRunParm2( ds->rInCableRunTrk(), 
+					 ds->rOutCableRunTrk(), 
+					 ds->upHL2CableRunCal(),
+					 ds->phi0CableRunTrk()*CLHEP::degree,
+					 ds->dPhiCableRunTrk()*CLHEP::degree);
+
+	 CLHEP::Hep3Vector upTrkCableRunLoc2( 0.0, 0.0,ds->upZC2CableRunCal());
+	 
+	 VolumeInfo tcrTmpG2=nestTubs( "TrkCableRunGap2",
+				       upTrkCableRunParm2,
+				       findMaterialOrThrow(ds->trkCableRunMaterial()),
+				       0,
+				       upTrkCableRunLoc2,
+				       dsShieldParent,
+				       0,
+				       G4Color::Magenta(),
+				       "DS"
+				       );
+
+	 TubsParams  upTrkCableRunParm2a( ds->rInCableRunTrk(), 
+					  ds->rOutCableRunTrk(), 
+					  ds->upHL2CableRunCal(),
+					  (180.0 - ds->phi0CableRunTrk()
+					   - ds->dPhiCableRunTrk())
+					  *CLHEP::degree,
+					  ds->dPhiCableRunTrk()*CLHEP::degree);
+
+	 VolumeInfo tcrTmpG2a= nestTubs( "TrkCableRunGap2a",
+					 upTrkCableRunParm2a,
+					 findMaterialOrThrow(ds->trkCableRunMaterial()),
 					 0,
-					 G4ThreeVector(piondegXoffset,0.,-ds2HalfLength + piondegZoffset + piondegHalfLength),
-					 ds2VacInfo,
+					 upTrkCableRunLoc2,
+					 dsShieldParent,
 					 0,
-					 G4Color::Blue()
+					 G4Color::Magenta(),
+					 "DS"
 					 );
-      
-      if ( verbosityLevel > 0) {
-      cout << __func__ << 
-	" PiondegAbs Z offset in Mu2e       : " << -ds2HalfLength + piondegZoffset + piondegHalfLength << endl;
-      cout << __func__ << 
-	" piondegZoffset                    : " << piondegZoffset    << endl;
-       cout << __func__ << 
-	" piondegHalfLength                : " << piondegHalfLength << endl;
-      }
-	//std::cout<<"piondegInfo\t"<<piondegParams<<std::endl;
 
- }
+       } // end of adding gap runs for trk cable runs
+     } // end of if ( ds->hasCableRunTrk() )
+
+     if ( ds->hasServicePipes() ) {
+       TubsParams pipeMomParms( 0.0, 
+				ds->servicePipeROut(),
+				ds->servicePipeHalfLength());//default phi,dphi
+       TubsParams pipeSelfParms(ds->servicePipeRIn(),
+				ds->servicePipeROut(),
+				ds->servicePipeHalfLength() );
+       std::vector<double>theXs = ds->servicePipeXCs();
+       double theY = ds->servicePipeYC();
+       double theZ = ds->servicePipeZC();
+
+       for ( unsigned int iP = 0; iP < theXs.size(); iP++ ) {
+	 CLHEP::Hep3Vector pipeLoc(theXs[iP],theY, theZ);
+	 ostringstream pmName;
+	 pmName << "DSservicePipeMother" << iP+1;
+	 VolumeInfo DSPipeMother = nestTubs ( pmName.str(),
+					      pipeMomParms,
+					      findMaterialOrThrow(ds->servicePipeFillMat()),
+					      0,
+					      pipeLoc,
+					      dsShieldParent,
+					      0,
+					      G4Color::Magenta(),
+					      "DS"
+					      );
+
+	 // Now make it a real pipe
+	 ostringstream pName;
+	 pName << "DSservicePipe" << iP+1;
+	 nestTubs ( pName.str(),
+		    pipeSelfParms,
+		    findMaterialOrThrow(ds->servicePipeMaterial()),
+		    0,
+		    CLHEP::Hep3Vector(0,0,0),
+		    DSPipeMother,
+		    0,
+		    G4Color::Magenta(),
+		    "DS"
+		    );
+
+       } // End of loop over service pipes
+     } // end of if ( ds->hasServicePipes() )
+
   } // end of Mu2eWorld::constructDS;
 
 }

@@ -1,0 +1,55 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_beamline_foundation_upper.ccl
+
+string building.beamline.foundation.upper.name     = "beamlineFoundationUpper";
+
+string building.beamline.foundation.upper.material = "CONCRETE_MARS";
+
+double building.beamline.foundation.upper.offsetFromMu2eOrigin.x   = 947.4;
+double building.beamline.foundation.upper.offsetFromFloorSurface.y = 1981.2;
+double building.beamline.foundation.upper.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.beamline.foundation.upper.yHalfThickness           = 304.8;
+
+vector<double> building.beamline.foundation.upper.xPositions = {
+  22733.3,   // A0
+  27520.4,   // A1
+  27460.6,   // A2
+  37483,   // A3
+  36526,   // A4
+  26454.2,   // A5
+  24635.9,   // A6
+  20735.6,   // A7
+  19431.7,   // A8
+  15778.2,   // A9
+  17082.1,   // A10
+  12984.2,   // A11
+  13486.7,   // A12
+  23064.7,   // B2
+  23926,   // B3
+  21261.9   // B4
+};
+
+vector<double> building.beamline.foundation.upper.yPositions = {
+  7346.5,   // A0
+  8518.61,   // A1
+  8765.47,   // A2
+  11193.9,   // A3
+  15143.6,   // A4
+  12703.2,   // A5
+  20207.7,   // A6
+  19262.7,   // A7
+  24644.1,   // A8
+  23758.9,   // A9
+  18377.4,   // A10
+  17384.5,   // A11
+  15310.9,   // A12
+  17631.7,   // B2
+  14076.9,   // B3
+  13419.2   // B4
+};
+
+// Local Variables:
+// mode:c++
+// End:

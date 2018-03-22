@@ -1,0 +1,135 @@
+
+           Release notes for Mu2e Offline software, v6_2_3
+
+8)  dnbrow01  28 June 2017
+    Stabilizing geometry to move forward for DOE review and beyond.
+    modified:   GeometryService/src/VirtualDetectorMaker.cc
+    modified:   Mu2eG4/fcl/geomTest_01.fcl
+    modified:   Mu2eG4/geom/ttracker_v4.txt
+    new file:   Mu2eG4/geom/TransportSolenoid_DOErev2017.txt
+    new file:   Mu2eG4/geom/geom_common_DOE_review_2017.txt
+    new file:   Mu2eG4/geom/stoppingTargetHoles_DOE_review_2017.txt
+    modified:   ReleaseNotes/v6/v6_2_3.txt
+
+7)  genser 28 June 2017
+
+    disabled Mu2eG4/src/Mu2eG4Study_module.cc used in the g4study.fcl 
+    g4study2.fcl etc... show how to use Mu2eG4 nodule instead
+    also see ReleaseNotes/v5/v5_7_7.txt#3
+
+6)  dnbrow01  25 June 2017
+    Geometry update.
+    Restructured the logic of the pipe services.  Version 1 in the code
+    works exactly as before.  Version 2 allows specification of default
+    values for the lengths, and pipe-by-pipe overrides.  Thus a bunch of
+    different-length pipes - but otherwise identical - can be specified 
+    together, saving space and time in entering the description of the 
+    pipes.  Pipe_v02.txt (using version 1 of the code) contained 1428 lines.  
+    Pipe_v03.txt (using version 2 of the code) describes 
+    the exact same set of pipes using 282 lines.  Updated geom_common_current
+    to prefer the new version.  Old version still in geom_common for now.
+    modified:   GeometryService/src/PipeMaker.cc
+    modified:   Mu2eG4/geom/geom_common_current.txt
+    modified:   Mu2eG4/src/constructServicesGeom.cc
+    modified:   ServicesGeom/inc/Pipe.hh
+    modified:   ReleaseNotes/v6/v6_2_3.txt
+    new file:   Mu2eG4/geom/Pipe_v03.txt
+
+
+5)  dnbrow01  24 June 2017
+    Geometry updates.
+    Add materials we anticipate needing soon, Inconel718, TeflonFEP, and
+    DC704.
+    Inconel is a tough and stable alloy for support/stabilization rods.
+    TeflonFEP is used in signal cables.  DC704 is diffusion pump oil.
+    modified:   Mu2eG4/src/ConstructMaterials.cc
+    modified:   ReleaseNotes/v6/v6_2_3.txt
+
+    Take snapshots of some recent top-level geometry configurations used
+    for simulation campaigns.  Hopefully the names are clear.
+    Continue to collect most recent geometry changes in geom_common_current.
+    Remove old and no longer used geom_commons (they can be revived by
+    summoning from any Offline v6 tag prior to v6_2_3).
+    new file:   Mu2eG4/geom/geom_common_MARSrunMay17.txt
+    new file:   Mu2eG4/geom/geom_common_TrackerShldStdyJun17.txt
+    deleted:    Mu2eG4/geom/geom_common_cd3_p1.txt
+    modified:   Mu2eG4/geom/geom_common_current.txt
+    deleted:    Mu2eG4/geom/geom_common_tdr.txt
+
+    Add an incredibly crude model of the diffusion pumps adjacent to the 
+    VPSP and in the remote handling room.  Use our new DC704 material!
+    Make it possible to selectively do surfaceChecks on Services.
+    modified:   Mu2eG4/src/constructServicesGeom.cc
+    modified:   Mu2eG4/test/geom_SurfaceCheck_Select.txt
+    New file:   Mu2eG4/geom/Pipe_v02.txt
+
+
+4)  dnbrow01  20 June 2017
+    Simplify the constructions of cryostat saddles and stands.  Improves 
+    heirarchy and reduces the number of geometric pieces needed to describe
+    items.  Not in default geometry, added via geom_common_current.txt
+    modified:   GeometryService/src/SaddleMaker.cc
+    modified:   Mu2eG4/geom/geom_common_current.txt
+    modified:   Mu2eG4/src/constructSaddles.cc
+    modified:   Mu2eG4/test/geom_SurfaceCheck_Select.txt
+    modified:   ReleaseNotes/v6/v6_2_3.txt
+    new file:   Mu2eG4/geom/Saddle_v02.txt
+
+
+3)  dnbrow01  11 June 2017
+    Added an Option for an inner lining on the DS cryostat (inner in the 
+    sense of being on axis side of the inner cryostat shell - toward the
+    detectors).  This is by request for studying shielding.
+    It is turned on and off by a single parameter:
+    bool ds.hasInnerLining = false;  
+    False is the default value and should only be changed by persons
+    deliberately testing this lining.
+    modified:   DetectorSolenoidGeom/inc/DetectorSolenoid.hh
+    modified:   GeometryService/src/DetectorSolenoidMaker.cc
+    modified:   Mu2eG4/geom/DetectorSolenoid_v02.txt
+    modified:   Mu2eG4/src/constructDS.cc
+
+
+2)  dnbrow01  11 June 2017
+    Cleaned out some code that hasn't actually been used in ages.
+    modified:   Mu2eG4/src/constructDS.cc
+    deleted:    Mu2eG4/inc/constructPSExternalShielding.hh
+    deleted:    Mu2eG4/src/constructPSExternalShielding.cc
+
+    Separate saddle/stand construction from external shielding
+    construction.  Prepare the code for a move to a better hierarchy
+    for the saddles/stands.  Make a new Saddle_cd3a.txt file which
+    (a) incorporates mods from UofL student Dustin Cox to update
+    the description of stands in the PS to most recent drawings and
+    (b) make saddles with curved edges rather than polygonal
+    approximations.
+    modified:   ExternalShieldingGeom/inc/Saddle.hh
+    modified:   GeometryService/src/SaddleMaker.cc
+    modified:   Mu2eG4/src/Mu2eWorld.cc
+    modified:   Mu2eG4/geom/geom_common_current.txt
+    modified:   Mu2eG4/src/constructExternalShielding.cc
+    new file:   Mu2eG4/geom/Saddle_cd3a.txt
+    new file:   Mu2eG4/inc/constructSaddles.hh
+    new file:   Mu2eG4/src/constructSaddles.cc
+
+    Put the IFB end window at the actual end of the IFB vacuum region.
+    modified:   Mu2eG4/geom/DSShielding_v01.txt
+
+    Add an option for selective surface checking on saddles/stands
+    modified:   Mu2eG4/test/geom_SurfaceCheck_Select.txt
+
+
+1) brownd 8 June 2017
+  Merge HitFilter branch with master: this includes refactoring of the LowE electron tracker hit filter
+  module FlagBkgHits, with associated changes to data products, diagnostics, and algorithms.  The most
+  important changes are:
+  - Consistent use of 'bkg' to designate background objects and functions (replaces inaccurate 'delta')
+  - Abstract interface to hit clustering
+  - Relocation of relevant modules to TrkFilters and algorithms to TrkReco packages
+  - Introduction of data products to record background clusters and classification
+  - Removal of MC dependence and diagnostics from modules run in the trigger (M. Pettee)
+  - Modernization and simplification of code and algorithms
+  - Reduced memory thrashing and improved convergence in two-level-threshold (TLT) clustering algorithm
+  These changes affect several packages (notably CalPatRec) through changes in include files, but no functional
+  changes are expected there.  Functional changes in the track reconstruction sequence involve improved
+  background filtering and reduced compuational time.

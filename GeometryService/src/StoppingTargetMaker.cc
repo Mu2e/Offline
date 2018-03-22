@@ -38,6 +38,7 @@ namespace mu2e {
 
     // all outer radii must be specified.
     c.getVectorDouble("stoppingTarget.radii", _rOut);
+    _rIn = c.getDouble("stoppingTarget.holeRadius", 0);
 
     // Downstream code counts on this so test it here.
     if ( _rOut.size() < 1 ){

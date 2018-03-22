@@ -1,40 +1,12 @@
-//
-// Run-time test config for CosmicDYB
-//
-// Original author Yury Kolomensky
+bool cosmicFromTH2.do = true;
 
-bool conversionGun.do = false;
-bool cosmicDYB.do = true;
-bool picapture.do = false;
-bool ejectedProtonGun.do = false;
-bool decayinorbitGun.do = false;
-bool piEplusNuGun.do = false;
+string cosmicFromTH2.histogram = "CRVResponse/efficiencyCheck/cosmicD.root";
 
-double cosmicDYB.mean =  -1.1; 
-double cosmicDYB.muEMin = 0.5e3;
-double cosmicDYB.muEMax = 5000e3;
-double cosmicDYB.muCosThMin = 0.0;
-double cosmicDYB.muCosThMax = 1.0;
-int    cosmicDYB.nBinsE = 20000;
-int    cosmicDYB.nBinsTheta = 100;
-double cosmicDYB.dx     = 2800;
-double cosmicDYB.dy     = 814.0;
-double cosmicDYB.dz     = 0.0;
-double cosmicDYB.y0     = 1056.75;
-double cosmicDYB.tMin   = 500.0;
-double cosmicDYB.tMax   = 1300.0;
+double cosmicFromTH2.energy =    1e3;  //MeV 
+double cosmicFromTH2.time   =  800.0;  //ns
+double cosmicFromTH2.dx     = 3000.0;  //mm
+double cosmicFromTH2.dy     =  807.3;    //mm
+double cosmicFromTH2.dz     =    0.0;  //mm
 
-string cosmicDYB.refPointChoice  = "Customized";
-bool   cosmicDYB.vertical        = true;
-string cosmicDYB.directionChoice = "Negative_z";
-vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-3904, 1906.75, 18872.75};  //use a reference point close to the top of the downstream counters
-                                                                                   //to make that tracks make it all the way to the other side of the CRV
-                                                                                   //when they reach the bottom
+vector<double> cosmicFromTH2.cosmicReferencePointInMu2e = {-3904.0, 1600, 18869.575};
 
-bool   cosmicDYB.dontProjectToSurface = true;
-
-//
-// This tells emacs to view this file in c++ mode.
-// Local Variables:
-// mode:c++
-// End:

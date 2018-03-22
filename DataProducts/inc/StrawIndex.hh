@@ -35,7 +35,7 @@ namespace mu2e {
   class StrawIndex{
 
   public: 
-    enum NoStraw {NO_STRAW = -999999};
+    enum NoStraw {NO_STRAW = 0xFFFF};
 
   public:
 

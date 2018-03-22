@@ -6,9 +6,9 @@
 #
 # Original author Gianni Onorato.
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 # Give this process a name.
 process_name : TestTO
@@ -33,7 +33,7 @@ services :
 
   GeometryService :
   {
-    inputFile : "Mu2eG4/test/geom_01_v42_lght_1.txt"
+    inputFile : "Mu2eG4/geom/geom_common_v42_lght_1.txt"
   }
 
   ConditionsService :

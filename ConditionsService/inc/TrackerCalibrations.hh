@@ -41,12 +41,15 @@ namespace mu2e
     virtual double TimeDiffToDistance(StrawIndex strawIndex, double deltaT) const;
     // information about a hit's position and time.  This uses time difference to compute
     // the position along the wire
-    virtual void StrawHitInfo(Straw const& straw, StrawHit const& strawhit, SHInfo& shinfo) const;
     void EnergyToAmplitude(StrawIndex strawIndex, double edep, E2A& e2a) const;
     void AmplitudeToEnergy(StrawIndex strawIndex, double ampl, A2E& a2e) const;
 
     double CrossTalk(StrawIndex strawIndex0, StrawIndex strawIndexN) const;
 
+    double driftVelocity() const { return _vdrift; }
+
+    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
+    double Mint0doca() const;
   protected:
 
     // We want to discourage multi-phase construction.
@@ -66,6 +69,7 @@ namespace mu2e
     double _edepToAmpl; // MeV/mV
     double _amplRes;    // relative
     double _crossTalk;  // amount of crosstalk
+    double _mint0doca;  // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
 
   };
 

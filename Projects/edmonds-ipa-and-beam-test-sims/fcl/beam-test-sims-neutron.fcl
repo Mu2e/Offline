@@ -50,7 +50,7 @@ outputs.detectorOutput.outputCommands:   [ "drop *_*_*_*",
 					   "keep mu2e::SimParticle*_*_*_*"
       					 ]
 
-outputs.detectorOutput.SelectEvents: { SelectEvents: [myPath] }
+outputs.detectorOutput.SelectEvents: [myPath]
 
 physics.analyzers.beamTestAnalysis : { module_type : BeamTestAnalysis }
 

@@ -26,7 +26,6 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
@@ -283,10 +282,10 @@ namespace mu2e {
                                      doSurfaceCheck
                                      );
         
-         G4ThreeVector coffset0 = {stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + .065 + offset[0], // +/- .065 to achieve the designed .13mm gap
-                                   stack.planes()[iplane].module_yoffset()[imodule] + offset[1] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835),
-                                   stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2]) + offset[2]};
-        
+        G4ThreeVector coffset0 = {stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + .065 + offset[0], // +/- .065 to achieve the designed .13mm gap
+                                  stack.planes()[iplane].module_yoffset()[imodule] + offset[1] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835),
+                                  stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2]) + offset[2]};
+
         VolumeInfo vchip0 = nestBox(osm.str() + "chip0",
                                     module.chipHalfSize(),
                                     findMaterialOrThrow("G4_Si"),
@@ -445,7 +444,7 @@ namespace mu2e {
 
     // vd are very thin, a more thorough check is needed
     doSurfaceCheck && checkForOverlaps( boxFront.physical, config, verbosityLevel>0);
-      
+
   }
 
   //================================================================

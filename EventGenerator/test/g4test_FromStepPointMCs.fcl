@@ -1,9 +1,9 @@
 // Run G4 simulation starting from saved hits.
 // Most of the configuration was copied from g4test_03.fcl
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name: g4FromStepPointMCs
 
@@ -22,7 +22,7 @@ services: {
     TFileService          : { fileName : "g4FromStepPointMCs.root" }
     RandomNumberGenerator : { }
 
-    GeometryService   : { inputFile : "Mu2eG4/test/geom_01.txt" }
+    GeometryService   : { inputFile : "Mu2eG4/geom/geom_common.txt" }
     ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt"  }
     GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
     G4Helper          : { }
@@ -42,7 +42,8 @@ physics: {
         g4run : @local::g4run
 
         # Form StrawHits (SH).
-        makeSH : @local::makeSH
+        makeSD : @local::makeSD
+        makeSH : @local::makeSHfromSD
 
         @table::CaloDigiMC.producers
         @table::CaloReco.producers
@@ -66,14 +67,15 @@ physics: {
 
         readStrawHits: {
             module_type      : ReadStrawHit
-            makerModuleLabel : makeSH
+            recoModuleLabel : makeSH
+	    simModuleLabel : makeSD
             diagLevel        : 3
             maxFullPrint     : 100
         }
 
     }
 
-    p1 : [testSPM, g4run, makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
+    p1 : [testSPM, g4run, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
     e1 : [checkhits, readStrawHits, outfile]
 
     trigger_paths  : [p1]

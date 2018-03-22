@@ -12,7 +12,7 @@
 #include "TF1.h"
 #include "TSpline.h"
 #include "TFile.h"
-#include "CalPatRec/inc/THackData.hh"
+// #include "CalPatRec/inc/THackData.hh"
 #include "TROOT.h"
 #include "TFolder.h"
 #include "TTree.h"
@@ -479,7 +479,7 @@ namespace mu2e {
     //    event.get(s_dem,dem_handle);
 
     int      nTraks(0);
-    const mu2e::KalRepCollection* list_of_ele_tracks;
+    const mu2e::KalRepCollection* list_of_ele_tracks = nullptr;
 
     if (dem_handle.isValid()) {
       list_of_ele_tracks = dem_handle.product();
@@ -648,7 +648,7 @@ namespace mu2e {
     int        disk0NSamplesPerEvent[10] = {0};
     int        disk1NSamplesPerEvent[10] = {0};
     double     thresholds           [10] = {1., 2., 3, 4., 5., 6, 7, 8, 9, 10};
-    double     ADC2mV                    = 2000./pow(2.,12);
+    //    double     ADC2mV                    = 2000./pow(2.,12);
     double     radius(0);
 
     //2016-01-27 G. Pezzullo conversion from thresholds given in MeV to mV
@@ -678,9 +678,9 @@ namespace mu2e {
         nHitsRO   [i][j] = 0;
       }
     }
-    
+
     _nRecoDigi = nCaloRecoDigi;
-    
+
     for (int i=0; i< nCaloRecoDigi; ++i){
       recoDigi   = &recoCaloDigiCol->at(i);
       //amplitude  = recoDigi->amplitude()*ADC2mV;
@@ -693,13 +693,18 @@ namespace mu2e {
 
       if (radius < _caloRmin)               continue;
 
-      _recoDigiAmp   [i] = amplitude;
       _recoDigiEnergy[i] = recoDigi->energyDep();
 
       const CaloDigi&	caloDigi = *recoDigi->caloDigiPtr();
-      //nWords     = caloDigi.nSamples();
 
       pulse      = caloDigi.waveform();
+      nWords     = pulse.size();
+      //get the amplitude
+      for (int j=0; j<nWords; ++j){
+	double content = pulse.at(j);
+	if (content > amplitude) amplitude = content;
+      }
+      _recoDigiAmp     [i] = amplitude;
 
       _recoDigiSamples [i] = nWords;
       _recoDigiId      [i] = roId;
@@ -711,7 +716,7 @@ namespace mu2e {
 
       if (_fillWaveforms == 1){
         for (int j=0; j<nWords; ++j){
-          _recoDigiPulse[i][j] = pulse.at(j)*ADC2mV;
+          _recoDigiPulse[i][j] = pulse.at(j);//*ADC2mV;
         }
       }
 
@@ -805,17 +810,17 @@ namespace mu2e {
           //    if ( sim->fromGenerator() ){
           const CLHEP::Hep3Vector genPos = sim->startPosition();
 
-          if (!_calorimeter->geomUtil().isInsideCalorimeter(genPos)){
-            ++nParticles;
+          // if (!_calorimeter->isInsideCalorimeter(genPos)){
+          //   ++nParticles;
 
-            int        pdgId       = sim->pdgId();
-            double     ceEnergy    = 104.9;
-            double     startEnergy = sim->startMomentum().e();
-            if ( (pdgId == 11) && (startEnergy>ceEnergy))
-              {
-                isConversion = 1;
-              }
-          }
+          //   int        pdgId       = sim->pdgId();
+          //   double     ceEnergy    = 104.9;
+          //   double     startEnergy = sim->startMomentum().e();
+          //   if ( (pdgId == 11) && (startEnergy>ceEnergy))
+          //     {
+          //       isConversion = 1;
+          //     }
+          // }
         }//end loop on the particles inside the crystalHit
 
         _cryMCTime    [_nHits] = caloDigiMC->timeFirst();
@@ -851,7 +856,7 @@ namespace mu2e {
 
       	indexMC          = 0;//caloDigi.index();
 
-	
+
       	eDep             = crystalHit->energyDep();
       	psd              = 0;//recoDigi  ->psd();
 
@@ -919,5 +924,3 @@ namespace mu2e {
 }  // end namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::ReadCaloDigi);
-
-

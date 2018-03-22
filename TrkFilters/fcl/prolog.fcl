@@ -1,5 +1,4 @@
 # -*- mode: tcl -*-
-#include "TrkPatRec/fcl/prolog.fcl"
 #
 # Define sequences for track based triggers.  The sequences for hit preparation
 # and the tracking modules configuration must preceede these and are defined elsewhere
@@ -8,53 +7,65 @@
 BEGIN_PROLOG
 # define the filter modules used for track-based trigger
 # filter to require a minimum # of hits in a time slot
-Tracking.filters : {
+TrkTrigger : {
+  Filters : {
 # filters for track hit clustering
-  TCFilter : {
-    module_type : TimeClusterFilter
-    TimeClusterCollection : "TimeClusterFinder"
-  }
+    TCFilter : {
+     module_type : TimeClusterFilter
+     TimeClusterCollection : "TTtimeClusterFinder"
+    }
 # filters for either positive or negative helicity tracks near the CE energy
-  PosHelixFilter : {
-    module_type : HelixFilter
-    HelixSeedCollection : "PosHelixFinder"
-  }
-  NegHelixFilter : {
-    module_type : HelixFilter
-    HelixSeedCollection : "NegHelixFinder"
-  }
+    PosHelixFilter : {
+     module_type : HelixFilter
+     HelixSeedCollection : "TThelixFinder:Positive"
+    }
+    NegHelixFilter : {
+      module_type : HelixFilter
+      HelixSeedCollection : "TThelixFinder:Negative"
+    }
 # filters for CE candidates (downstream eminus near 100 MeV/c)
-  DeMSeedFilter : {
-    module_type : SeedFilter
-    KalSeedCollection : "KSFDeM"
-  }
-  DeMKalFilter : {
-    module_type : SeedFilter
-    KalSeedCollection : "KFFDeM"
-  }
+    DeMSeedFilter : {
+      module_type : SeedFilter
+      KalSeedCollection : "TTKSFDeM"
+    }
+    DeMKalFilter : {
+      module_type : SeedFilter
+      KalSeedCollection : "TTKFFDeM"
+    }
+# filters for downstream positrons (mu- -> e+ conversion) 
+    DePSeedFilter : {
+      module_type : SeedFilter
+      KalSeedCollection : "TTKSFDeP"
+    }
+    DePKalFilter : {
+      module_type : SeedFilter
+      KalSeedCollection : "TTKFFDeP"
+    }
 # Other filters FIXME!!
-# filters for  upstream-going negative electrons near the CE energy
 # calibration filters
 # reflecting cosmic filters
 # low-momentum electron filters
-#low-field running filters
+# low-field running filters
 #  Prescaling filters
-  TCPrescale : {
-    module_type : PrescaleEvent
-    nPrescale : 1000
-  }
-  PosHelixPrescale : {
-    module_type : PrescaleEvent
-    nPrescale : 300
-  }
+    TCPrescale : {
+      module_type : PrescaleEvent
+      nPrescale : 1000
+    }
+    PosHelixPrescale : {
+      module_type : PrescaleEvent
+      nPrescale : 300
+    }
 #
-}
+  }
+
 # sequences for different trigger paths.  Early triggers are prescaled
-Tracking.Trigger : {
-  TCFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter,  TCPrescale  ]
-  PosHelixFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, PosHelixFinder, PosHelixFilter, PosHelixPrescale   ]
-  DeMSeedFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, PosHelixFinder, PosHelixFilter, KSFDeM, DeMSeedFilter ]
-  DeMKalFilterSequence : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, TCFilter, PosHelixFinder, PosHelixFilter, KSFDeM, DeMSeedFilter, KFFDeM, DeMKalFilter ]
+  Sequences : {
+    TCFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter,  TCPrescale  ]
+    PosHelixFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, PosHelixPrescale   ]
+    DeMSeedFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, TTKSFDeM, DeMSeedFilter ]
+    DePSeedFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, NegHelixFilter, TTKSFDeP, DePSeedFilter ]
+    DeMKalFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, TTKSFDeM, DeMSeedFilter, TTKFFDeM, DeMKalFilter ]
 # add sequences for upstream, calibration, ...  FIXME!
+  }
 }
 END_PROLOG

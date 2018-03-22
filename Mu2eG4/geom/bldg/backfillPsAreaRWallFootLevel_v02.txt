@@ -1,0 +1,49 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_FillpsAreaRFoot.ccl
+
+string building.backfill.psArea.RWallFootLevel.name     = "backfillPsAreaRWallFootLevel";
+
+string building.backfill.psArea.RWallFootLevel.material = "CA7Backfill";
+
+double building.backfill.psArea.RWallFootLevel.offsetFromMu2eOrigin.x   = 947.4;
+double building.backfill.psArea.RWallFootLevel.offsetFromFloorSurface.y = 6629.4;
+double building.backfill.psArea.RWallFootLevel.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.backfill.psArea.RWallFootLevel.yHalfThickness           = 228.6;
+
+vector<double> building.backfill.psArea.RWallFootLevel.xPositions = {
+  -2921,   // P0
+  -6254.75,   // P1
+  -11709.4,   // inside corner psHatchLower leg
+  -12318.9,   // SW corner psHatchLower
+  -12343.4,   // P2
+  -12319.3,   // P3
+  -16841.4,   // P4
+  -16817.3,   // P5
+  -17853.7,   // P6
+  -17853.7,   // p5
+  -12213.8,   // p6
+  -12213.8,   // P7
+  -2921   // P8
+};
+
+vector<double> building.backfill.psArea.RWallFootLevel.yPositions = {
+  -609.6,   // P0
+  -609.6,   // P1
+  -1943.1,  // inside corner psHatchLower left "leg"
+  -2091.9,  // SW corner psHatchLower
+  -2096.1,   // P2
+  -2194.8,   // P3
+  -3297.85,  // P4
+  -3396.55,  // P5
+  -3649.57,  // P6
+  -7505.7,   // p5
+  -7505.7,   // p6
+  -4813.3,   // P7
+  -4813.3   // P8
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -15,8 +15,8 @@ namespace mu2e {
   class VolumeInfo;
   class SimpleConfig;
 
-  void constructDS(VolumeInfo   const & parent,
-                   SimpleConfig const & _config
+  void constructDS(const VolumeInfo& parent,
+                   const SimpleConfig& config
                    );
 
 }

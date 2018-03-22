@@ -34,6 +34,8 @@
 #include "RecoDataProducts/inc/Doublet.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 
+#include "CalPatRec/inc/McUtilsToolBase.hh"
+
 //ROOT
 
 namespace fhicl {
@@ -58,9 +60,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   protected:
     // configuration parameters
-    int             
-
-            _debugLevel;
+    int                         _debugLevel;
     unsigned                    _minnstraws;
     double                      _maxmatfltdiff; // maximum difference in track flightlength to separate to intersections of the same material
     vector<bool>                _weedhits;
@@ -70,7 +70,6 @@ namespace mu2e {
     double                      _maxdriftpull;
     fhicl::ParameterSet*        _darPset;         // parameter set for doublet ambig resolver
     std::vector<AmbigResolver*> _ambigresolver;
-    //    bool                        _initt0;
     bool                        _updateT0;
     int                         _updateT0Mode;    // 0: use cluster T0 1:update T0 assuming no cluster time
     double                      _minHitDrift;
@@ -98,16 +97,16 @@ namespace mu2e {
     const CalTimePeak*          fTimePeak;
     int                         _annealingStep;
 
-    const mu2e::PtrStepPointMCVectorCollection*  _listOfMCStrawHits;
-
     const mu2e::Tracker*             _tracker;     // straw tracker geometry
     const mu2e::TrackerCalibrations* _tcal;
-
     const mu2e::Calorimeter*         _calorimeter;
+
+    int                              _mcTruth;
+    std::unique_ptr<McUtilsToolBase> _mcUtils;
 //-----------------------------------------------------------------------------
 // to decouple from MC classes, need a redefinable function here
 //-----------------------------------------------------------------------------
-    double (*_MCDoca) (const art::Event* Event, const char* ShDigiLabel, const Straw* aStraw);
+//    double (*_MCDoca) (const art::Event* Event, const char* ShDigiLabel, const Straw* aStraw);
 //-----------------------------------------------------------------------------
 // constructors and destructor, parameter set should be passed in on construction
 //-----------------------------------------------------------------------------
@@ -129,10 +128,6 @@ namespace mu2e {
     void setTrackerCalib (const TrackerCalibrations* TCal   ) { _tcal        = TCal;    }
 
     void setCalorimeter  (const Calorimeter*         Cal    ) { _calorimeter = Cal;     }
-
-    void setStepPointMCVectorCollection(const mu2e::PtrStepPointMCVectorCollection* List) {
-      _listOfMCStrawHits = List;
-    }
 //-----------------------------------------------------------------------------
 // add a set of hits to an existing fit
 //-----------------------------------------------------------------------------
@@ -160,7 +155,7 @@ namespace mu2e {
     bool unweedHits       (KalFitResultNew& kres, double maxchi);
 
     void updateCalT0      (KalFitResultNew& KRes);
-    bool updateT0         (KalFitResultNew& KRes);
+    bool updateT0         (KalRep* KRep);
 
     bool weedHits         (KalFitResultNew& KRes, int Iteration);
 
@@ -185,13 +180,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // default plugin
 //-----------------------------------------------------------------------------
-    static double MCDoca(const art::Event* Event, const char* ShDigiLabel, const Straw* aStraw) { return -99.; }
+//    static double MCDoca(const art::Event* Event, const char* ShDigiLabel, const Straw* aStraw) { return -99.; }
 //-----------------------------------------------------------------------------
 // setters
 //-----------------------------------------------------------------------------
-    void setMCDocaRoutine(void* Function) { 
-      _MCDoca = (double (*) (const art::Event* Event, const char* ShDigiLabel, const Straw* aStraw)) Function; 
-    }
+    // void setMCDocaRoutine(void* Function) { 
+    //   _MCDoca = (double (*) (const art::Event* Event, const char* ShDigiLabel, const Straw* aStraw)) Function; 
+    // }
   };
 }
 #endif

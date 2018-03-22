@@ -48,20 +48,20 @@ namespace mu2e {
 
 SensitiveDetectorHelper::SensitiveDetectorHelper(fhicl::ParameterSet const& pset)
     :
-    extMonPixelsEnabled_(false)
+    extMonPixelsEnabled_(false),
+    verbosityLevel_(pset.get<int>("verbosityLevel",0))
     {
         // Backward compatible defaults
         bool enableAllSDs = true;
         std::vector<std::string> enabledSDs;
 
         if(!pset.is_empty()) {
-            
             enableAllSDs = pset.get<bool>("enableAllSDs", false);
             const bool explicitList = pset.get_if_present<std::vector<std::string> >("enableSD", enabledSDs);
+            
             if(enableAllSDs && explicitList) {
                 throw cet::exception("CONFIG")<<"SensitiveDetectorHelper: enableAllSDs=true conflicts with explicit list enableSD\n";
             }
-            
             if(!enableAllSDs && !explicitList) {
                 throw cet::exception("CONFIG")<<"SensitiveDetectorHelper: no SDs are defined.  Either say enableAllSDs:true, or enableSD:[list]\n";
             }
@@ -99,8 +99,6 @@ SensitiveDetectorHelper::SensitiveDetectorHelper(fhicl::ParameterSet const& pset
         }
 
         //----------------
-        //from LG: is this part of the code deprecated?
-        //it seems that no one uses the "sensitiveVolumes" configuration parameter anymore
         std::vector<string> lvlist(pset.get<vector<string>>("sensitiveVolumes", {}));
         for(const auto& name : lvlist) {
             lvsd_[name] = StepInstance(name);
@@ -125,12 +123,6 @@ SensitiveDetectorHelper::SensitiveDetectorHelper(fhicl::ParameterSet const& pset
         //----------------
   }//end c'tor
 
-    
-    SensitiveDetectorHelper::~SensitiveDetectorHelper()
-    {};
-    
-    //from LG: is this part of the code deprecated?
-    //it seems that no one uses the "sensitiveVolumes" configuration parameter anymore
 void SensitiveDetectorHelper::instantiateLVSDs(const SimpleConfig& config){
     
         G4SDManager* SDman = G4SDManager::GetSDMpointer();
@@ -147,14 +139,18 @@ void SensitiveDetectorHelper::instantiateLVSDs(const SimpleConfig& config){
 // Find the sensitive detector objects and attach them to each StepInstance object.
 // Must not be called until G4 has been initialized.
 void SensitiveDetectorHelper::registerSensitiveDetectors(){
-
         G4SDManager* sdManager = G4SDManager::GetSDMpointer();
     
         for ( InstanceMap::iterator i=stepInstances_.begin();
              i != stepInstances_.end(); ++i ) {
             StepInstance& step(i->second);
+            if (verbosityLevel_ > 0 ) {
+                std::cout << __func__ << " looking for sd with name: "
+                << step.stepName << std::endl;
+            }
+            bool printWarnings = (verbosityLevel_ > -1) ? true : false;
             step.sensitiveDetector =
-            dynamic_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str()));
+            dynamic_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str(),printWarnings));
         }
 }
 
@@ -162,7 +158,6 @@ void SensitiveDetectorHelper::registerSensitiveDetectors(){
 // Create new data products.  To be called at start of each event.
 void SensitiveDetectorHelper::createProducts(const art::Event& event,
                                              const SimParticleHelper& spHelper){
-
         //----------------
         // Read in pre-simulated hits that we want to merge into the outputs
 
@@ -271,7 +266,6 @@ vector<string> SensitiveDetectorHelper::stepInstanceNamesToBeProduced() const{
          i != stepInstances_.end(); ++i ){
         names.push_back( i->second.stepName );
     }
-
     for(const auto& i : lvsd_) {
         names.emplace_back(i.second.stepName);
     }
@@ -286,10 +280,8 @@ void SensitiveDetectorHelper::declareProducts(art::EDProducer *parent) {
     for(const auto& name: instanceNames) {
         parent->produces<StepPointMCCollection>(name);
     }
-    
     if(extMonPixelsEnabled_)
       parent->produces<ExtMonFNALSimHitCollection>();
-    
 }
 
   
@@ -305,7 +297,6 @@ cet::maybe_ref<StepPointMCCollection> SensitiveDetectorHelper::steps( StepInstan
     if ( i != stepInstances_.end() ) {
         return cet::maybe_ref<StepPointMCCollection>(i->second.p);
     }
-
     // Cannot find the requested id; return an empty maybe_ref.
     return cet::maybe_ref<StepPointMCCollection>();
 }

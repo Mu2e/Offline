@@ -109,7 +109,7 @@ namespace mu2e {
 	  if(detstraw != 0){
 	    // found a straw: create a TrkStraw object from it
 	    // i must recompute POCA since the KalMaterial doesn't cache the hit flight FIXME!
-	    TrkPoca poca(krep->traj(),kmat->detIntersection().pathlen,detstraw->wireTraj(),0);
+	    TrkPoca poca(krep->traj(),kmat->detIntersection().pathlen,*detstraw->wireTraj(),0);
 	    TrkStraw tstraw(detstraw->straw()->id(),
 	      kmat->detIntersection().dist, //poca.doca(),
 	      kmat->detIntersection().pathlen, // poca.flt1(),
@@ -135,8 +135,7 @@ namespace mu2e {
 	if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
 	TrkStrawHitSeed seedhit(tsh->index(), tsh->straw().id(),
 	    tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
-	    tsh->driftRadius(), tsh->poca().doca(),
-	    tsh->ambig(),tsh->driftRadiusErr(), hflag);
+	    tsh->driftRadius(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag);
 	hitseeds.push_back(seedhit);
       }
     }
@@ -235,23 +234,23 @@ namespace mu2e {
     }
 
   // this function belongs in TrkDifTraj, FIXME!!!!
-    double zFlight(TrkDifPieceTraj const& ptraj, double pz) {
-      // get the helix at the middle of the track
-      double loclen;
-      double fltlen(0.0);
-      const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(ptraj.localTrajectory(fltlen,loclen));
-      // Iterate
-      const HelixTraj* oldtraj;
-      unsigned iter(0);
-      do {
-	// remember old traj
-	oldtraj = htraj;
-	// correct the global fltlen for this difference in local trajectory fltlen at this Z position
-	fltlen += (htraj->zFlight(pz)-loclen);
-	htraj = dynamic_cast<const HelixTraj*>(ptraj.localTrajectory(fltlen,loclen));
-      } while(oldtraj != htraj && iter++<10);
-      return fltlen;
-    }
+    // double zFlight(TrkDifPieceTraj const& ptraj, double pz) {
+    //   // get the helix at the middle of the track
+    //   double loclen;
+    //   double fltlen(0.0);
+    //   const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(ptraj.localTrajectory(fltlen,loclen));
+    //   // Iterate
+    //   const HelixTraj* oldtraj;
+    //   unsigned iter(0);
+    //   do {
+    // 	// remember old traj
+    // 	oldtraj = htraj;
+    // 	// correct the global fltlen for this difference in local trajectory fltlen at this Z position
+    // 	fltlen += (htraj->zFlight(pz)-loclen);
+    // 	htraj = dynamic_cast<const HelixTraj*>(ptraj.localTrajectory(fltlen,loclen));
+    //   } while(oldtraj != htraj && iter++<10);
+    //   return fltlen;
+    // }
 
   } // TrkUtilities
 }// mu2e

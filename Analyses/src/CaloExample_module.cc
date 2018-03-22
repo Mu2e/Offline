@@ -127,14 +127,11 @@ namespace mu2e {
        std::string _virtualDetectorLabel;
        std::string _stepPointMCLabel;
        std::string _trkPatRecModuleLabel;
-       std::string _instanceName;
-       TrkParticle _tpart;
-       TrkFitDirection _fdir;
        SimParticleTimeOffset _toff;  // time offset smearing
 
 
        TH1F *_hcryE,*_hcryT,*_hcryX,*_hcryY,*_hcryZ;
-       TH1F *_hcluE,*_hcluT,*_hcluX,*_hcluY,*_hcluZ,*_hcluE1Et,*_hcluE1E9,*_hcluE1E25;
+       TH1F *_hcluE,*_hcluT,*_hcluX,*_hcluY,*_hcluZ,*_hcluE1Et,*_hcluE1E9,*_hcluE1E25,*_hcluEF;
        
        TH2F *_hxy;
 
@@ -147,7 +144,7 @@ namespace mu2e {
        float _genmomX[16384],_genmomY[16384],_genmomZ[16384],_genStartX[16384],_genStartY[16384],_genStartZ[16384],_genStartT[16384];
 
        int   _nHits,_cryId[163840],_crySectionId[163840],_crySimIdx[163840],_crySimLen[163840];
-       float _cryEtot,_cryTime[163840],_cryEdep[163840],_cryDose[163840],_cryPosX[163840],_cryPosY[163840],_cryPosZ[163840],_cryLeak[163840];
+       float _cryEtot,_cryTime[163840],_cryEdep[163840],_cryEdepErr[163840],_cryDose[163840],_cryPosX[163840],_cryPosY[163840],_cryPosZ[163840],_cryLeak[163840];
 
        int   _nSim,_motId[500000],_motPdgId[500000],_motcrCode[500000],_motGenIdx[500000];
        float _motmom[500000],_motStartX[500000],_motStartY[500000],_motStartZ[500000],_motStartT[500000];
@@ -192,13 +189,10 @@ namespace mu2e {
     _virtualDetectorLabel(pset.get<std::string>("virtualDetectorName")),
     _stepPointMCLabel(pset.get<std::string>("stepPointMCLabel")),
     _trkPatRecModuleLabel(pset.get<std::string>("trkPatRecModuleLabel")),
-    _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
-    _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _Ntup(0)
 
   {
-    _instanceName = _fdir.name() + _tpart.name();
   }
 
   void CaloExample::beginJob(){
@@ -231,6 +225,7 @@ namespace mu2e {
        _Ntup->Branch("cryPosY",      &_cryPosY ,     "cryPosY[nCry]/F");
        _Ntup->Branch("cryPosZ",      &_cryPosZ ,     "cryPosZ[nCry]/F");
        _Ntup->Branch("cryEdep",      &_cryEdep ,     "cryEdep[nCry]/F");
+       _Ntup->Branch("cryEdepErr",   &_cryEdepErr ,  "cryEdepErr[nCry]/F");
        _Ntup->Branch("cryTime",      &_cryTime ,     "cryTime[nCry]/F");
        _Ntup->Branch("cryDose",      &_cryDose ,     "cryDose[nCry]/F");
        _Ntup->Branch("crySimIdx",    &_crySimIdx ,   "crySimIdx[nCry]/I");
@@ -322,6 +317,7 @@ namespace mu2e {
        _hcryY     = tfs->make<TH1F>("cryY",     "Y coord of crystal hit",     100,  300., 700.  );
        _hcryZ     = tfs->make<TH1F>("cryZ",     "Z coord of crystal hit",     100,11000., 13000.);
        _hcluE     = tfs->make<TH1F>("cluEdep",  "Energy deposited / clustal", 150,    0., 150.  );
+       _hcluEF    = tfs->make<TH1F>("cluEdepF", "Energy deposited / clustal", 150,    0., 150.  );
        _hcluT     = tfs->make<TH1F>("cluTime",  "Time of clustal hit",        100,    0., 2000. );
        _hcluX     = tfs->make<TH1F>("cluX",     "X coord of clustal hit",     100,  300., 700.  );
        _hcluY     = tfs->make<TH1F>("cluY",     "Y coord of clustal hit",     100,  300., 700.  );
@@ -344,7 +340,7 @@ namespace mu2e {
   void CaloExample::analyze(const art::Event& event) {
 
       ++_nProcess;
-      if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from CaloExample =  "<<_nProcess << " with instance name " << _instanceName <<std::endl;
+      if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from CaloExample =  "<<_nProcess <<std::endl;
 
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       double _mbtime = accPar->deBuncherPeriod;
@@ -380,11 +376,10 @@ namespace mu2e {
       event.getByLabel(_caloHitTruthModuleLabel, caloHitTruthHandle);
       const CaloHitMCTruthAssns& caloHitTruth(*caloHitTruthHandle);
 
-      //art::Handle<KalRepPtrCollection> trksHandle;
-      //event.getByLabel(_trkPatRecModuleLabel,_instanceName, trksHandle);
-      //const KalRepPtrCollection& trks = *trksHandle;
-
-
+      art::Handle<KalRepPtrCollection> trksHandle;
+      event.getByLabel(_trkPatRecModuleLabel, trksHandle);
+      const KalRepPtrCollection& trks = *trksHandle;
+      
 
       const double CrDensity = 4.9*(CLHEP::g/CLHEP::cm3);
       const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
@@ -401,8 +396,7 @@ namespace mu2e {
 	 }
       }
 
-
-
+ 
 
 
 
@@ -412,7 +406,7 @@ namespace mu2e {
        _evt = event.id().event();
        _run = event.run();
 
-       if (_diagLevel == 3){std::cout << "processing event in calo_example " << _nProcess << " run and event  = " << _run << " " << _evt << " with instance name = " << _instanceName << std::endl;}
+       if (_diagLevel == 3){std::cout << "processing event in calo_example " << _nProcess << " run and event  = " << _run << " " << _evt << std::endl;}
 
 
        if (_doGenerated)
@@ -455,6 +449,7 @@ namespace mu2e {
            _cryEtot             += hit.energyDep();
            _cryTime[_nHits]      = hit.time();
            _cryEdep[_nHits]      = hit.energyDep();
+           _cryEdepErr[_nHits]   = hit.energyDepErr();
            _cryDose[_nHits]      = hit.energyDep() / CrMass / (CLHEP::joule/CLHEP::kg); //dose
            _cryPosX[_nHits]      = crystalPos.x();
            _cryPosY[_nHits]      = crystalPos.y();
@@ -617,7 +612,7 @@ namespace mu2e {
 
 
        //--------------------------  Do tracks  --------------------------------
-       /*
+       
        _nTrk = 0;
 
        for ( size_t itrk=0; itrk< trks.size(); ++itrk )
@@ -663,7 +658,7 @@ namespace mu2e {
           ++_nTrk;
 
         }
-        */
+        
 
 
  

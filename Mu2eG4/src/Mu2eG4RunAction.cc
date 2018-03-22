@@ -81,11 +81,18 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
 
             _sensitiveDetectorHelper->registerSensitiveDetectors();
             
+            _extMonFNALPixelSD = ( standardMu2eDetector_ &&
+                                  _sensitiveDetectorHelper->extMonPixelsEnabled()) ?
+            dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()->
+                                             FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
+            : nullptr;
+            
+            /*
             if (standardMu2eDetector_){
                 _extMonFNALPixelSD =
                 dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
                 ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
-            }
+            }*/
 
             _physVolHelper->beginRun();//map w/~20,000 entries
             _processInfo->beginRun();

@@ -17,6 +17,7 @@
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 // HelixFit objects
 #include "RecoDataProducts/inc/HelixSeed.hh"
@@ -43,8 +44,10 @@ namespace mu2e
       double strawHitTimeErr() const { return _shErr; }
       double caloClusterTimeOffset(int diskId) const; // depends on which 
       double caloClusterTimeErr(int diskId) const; // depends on which 
-      // calculate the t0 for a straw hit. This assumes an average drift time
+      // calculate the t0 for a straw hit. This assumes an average drift time (deprecated)
       double strawHitTime(StrawHit const& sh, StrawHitPosition const& shp);
+      // same for a ComboHit
+      double comboHitTime(ComboHit const& ch);
       // calculate the t0 for a calo cluster.
       double caloClusterTime(CaloCluster const& cc) const;
     private:
@@ -53,8 +56,10 @@ namespace mu2e
 //      StrawHitFlag _useflag, _dontuseflag;// flags for which hits to use
       TrkFitDirection _fdir; // fit direction.  This is used to make z-dependent time shifts
       double _shOffset;  // average time offset for straw hits
-      double _shSlope; // dt/dz for straw hits
+      double _shSlope; // dv/dv_z for straw hits
+      double _shBeta;  // beta of the particle-hypothesis used
       double _shErr;
+      double _shDtDz;  // dt/dz for straw hits
       double _caloT0Offset[2]; // time offsets for downstream particls in the 2 disks
       double _caloT0Err[2]; // time offsets errors for downstream particls in the 2 disks
   };

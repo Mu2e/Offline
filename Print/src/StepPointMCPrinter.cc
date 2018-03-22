@@ -27,7 +27,7 @@ mu2e::StepPointMCPrinter::Print(const art::Handle<StepPointMCCollection>& handle
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -38,7 +38,7 @@ mu2e::StepPointMCPrinter::Print(const art::ValidHandle<StepPointMCCollection>& h
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -47,7 +47,7 @@ mu2e::StepPointMCPrinter::Print(const art::ValidHandle<StepPointMCCollection>& h
 void 
 mu2e::StepPointMCPrinter::Print(const StepPointMCCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
-  os << "StepPointMCCollection has " << coll.size() << " particles\n";
+  os << "StepPointMCCollection has " << coll.size() << " steps\n";
   if(verbose()==1) PrintListHeader();
   int i = 0;
   for(const auto& obj: coll) Print(obj, i++);
@@ -75,12 +75,12 @@ mu2e::StepPointMCPrinter::Print(const mu2e::StepPointMC& obj, int ind, std::ostr
     os 
       << " " << std::setw(8) << pkey
       << " " << std::setw(7) << obj.volumeId()
-      << " " << std::setw(8) << std::setprecision(1) << obj.totalEDep()
-      << " " << std::setw(8) << std::setprecision(1) << obj.nonIonizingEDep()
+      << " " << std::setw(10) << std::setprecision(5) << obj.totalEDep()
+      << " " << std::setw(10) << std::setprecision(5) << obj.nonIonizingEDep()
       << "    "
-      << " " << std::setw(8) << obj.position().x()
-      << " " << std::setw(8) << obj.position().y()
-      << " " << std::setw(8) << obj.position().z()
+      << " " << std::setw(10) << std::setprecision(3) << obj.position().x()
+      << " " << std::setw(10) << std::setprecision(3) << obj.position().y()
+      << " " << std::setw(10) << std::setprecision(3) << obj.position().z()
       << " "
       << " " << std::setw(8)  << obj.momentum().mag()
       << " " << std::setw(8)  << obj.time()
@@ -92,8 +92,8 @@ mu2e::StepPointMCPrinter::Print(const mu2e::StepPointMC& obj, int ind, std::ostr
     os 
       << "  parentKey: " << std::setw(8) << pkey
       << "  vol: " << std::setw(5) << obj.volumeId()
-      << "  eDep: " << std::setw(8) << std::setprecision(1) << obj.totalEDep()
-      << "  nonIonEDep: " << std::setw(8) << std::setprecision(1) 
+      << "  eDep: " << std::setw(8) << std::setprecision(5) << obj.totalEDep()
+      << "  nonIonEDep: " << std::setw(8) << std::setprecision(5) 
           << obj.nonIonizingEDep() << "\n";
     os
       << "  pos: " << std::setw(8) << std::setprecision(1) << obj.position().x()
@@ -123,7 +123,7 @@ mu2e::StepPointMCPrinter::PrintHeader(const std::string& tag, std::ostream& os) 
 void 
 mu2e::StepPointMCPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
-  os << "ind     parent     vol    eDep    noIonEDep         Position                 P      time    endProc" << std::endl;
+  os << "ind     parent     vol     eDep     noIonEDep         Position                       P      time    endProc" << std::endl;
 }
 
 void 

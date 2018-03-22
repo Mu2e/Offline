@@ -26,10 +26,10 @@ vector<double> building.foundation.Sd.xPositions = {
 };
 
 vector<double> building.foundation.Sd.yPositions = {
-  -5308.6,   // F1
-  -5308.6,   // F2
-  -4394.2,   // F3
-  -4394.2,   // f4
+  -5334.0,   // F1
+  -5334.0,   // F2
+  -4419.6,   // F3
+  -4419.6,   // f4
   -10668,   // f5
   -10668,   // f6
   -18288,   // f7

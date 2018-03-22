@@ -18,7 +18,9 @@ namespace mu2e {
 
   class SimpleConfig;
 
-  VolumeInfo constructDiskCalorimeter( VolumeInfo const& mother, SimpleConfig const& config );
+  VolumeInfo constructDiskCalorimeter( VolumeInfo const& mother,
+                                      SimpleConfig const& config
+                                      );
 
 }
 

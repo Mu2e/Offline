@@ -29,26 +29,28 @@ bool hasMBS             = true; // note the two subcomponents, see mbs section b
 // X-offset of the PS(+x) and DS(-x) from the Mu2e origin.
 // The origin of the detector coordinate system is on the DS axis at the specified z.
 double mu2e.solenoidOffset   =  3904.;   // mm
-double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
+double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 
 #include "Mu2eG4/geom/mu2eWorld.txt"
-#include "Mu2eG4/geom/mu2eHall.txt"
+// mu2eHall.txt should be used with protonBeamDump_v02.txt, below
+//#include "Mu2eG4/geom/mu2eHall.txt"
+// whereas mu2eHall_v02.txt should be used with protonBeamDump_v03.txt, below
+#include "Mu2eG4/geom/mu2eHall_v02.txt"
 
 // Solenoids
-#include "Mu2eG4/geom/DetectorSolenoid_v02.txt"
+#include "Mu2eG4/geom/DetectorSolenoid_v03.txt"
 #include "Mu2eG4/geom/DSShielding_v01.txt"
-#include "Mu2eG4/geom/ProductionSolenoid_v01.txt"
+#include "Mu2eG4/geom/ProductionSolenoid_v02.txt"
 #include "Mu2eG4/geom/psEnclosure_v01.txt"
 #include "Mu2eG4/geom/PSShield_v06.txt"
 #include "Mu2eG4/geom/PSExternalShielding_v01.txt"
-#include "Mu2eG4/geom/TransportSolenoid_v01.txt"
-#include "Mu2eG4/geom/pionDegrader.txt"
+#include "Mu2eG4/geom/TransportSolenoid_v03.txt"
 
 // External Shielding
-#include "Mu2eG4/geom/ExtShieldUpstream_v02.txt"
-#include "Mu2eG4/geom/ExtShieldDownstream_v02.txt"
-#include "Mu2eG4/geom/Saddle_cd3.txt"
-#include "Mu2eG4/geom/Pipe_v01.txt"
+#include "Mu2eG4/geom/ExtShieldUpstream_v04.txt"
+#include "Mu2eG4/geom/ExtShieldDownstream_v04.txt"
+#include "Mu2eG4/geom/Saddle_v02.txt"
+#include "Mu2eG4/geom/Pipe_v03.txt"
 #include "Mu2eG4/geom/ElectronicRack_v01.txt"
 
 //#include "Mu2eG4/geom/stoppingTarget_TDR.txt" // 17 foil tapered muon stopping target used for the TDR simulations
@@ -62,18 +64,18 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/STM_v02.txt" // (muon) stopping target monitor
 
 // Proton Absorber
-#include "Mu2eG4/geom/protonAbsorber_cylindrical.txt"
+#include "Mu2eG4/geom/protonAbsorber_cylindrical_v02.txt"
 #include "Mu2eG4/geom/degrader_v01.txt"
 
 #include "Mu2eG4/geom/ProductionTargetInPS.txt"
-#include "Mu2eG4/geom/protonBeamDump_v02.txt"
+//#include "Mu2eG4/geom/protonBeamDump_v02.txt"
+#include "Mu2eG4/geom/protonBeamDump_v03.txt"
 #include "Mu2eG4/geom/extmon_fnal_v02.txt"
 
-#include "Mu2eG4/geom/ttracker_cd3_s4p2.txt"
+#include "Mu2eG4/geom/ttracker_v5.txt"
 
 // Crystal calorimeter
 #include "Mu2eG4/geom/calorimeter_CsI.txt"
-//#include "Mu2eG4/geom/calorimeter_BaF2.txt"
 
 //CRV counters
 #include "Mu2eG4/geom/crv_counters_v03.txt"

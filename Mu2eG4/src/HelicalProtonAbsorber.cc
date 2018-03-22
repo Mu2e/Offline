@@ -60,7 +60,7 @@ namespace mu2e {
 
 HelicalProtonAbsorber::HelicalProtonAbsorber(double z_start, double length_i, double *inner_radii,
                 double *outer_radii, double *inner_phis, double *outer_phis, double thickness_i,
-                /*double num_of_turns_i,*/ int vane_num_i, G4Material* plastic, G4LogicalVolume* world, G4VSensitiveDetector *paSD)
+                /*double num_of_turns_i,*/ int vane_num_i, G4Material* plastic, G4LogicalVolume* world)
 {
         //TEST = 400*CLHEP::mm;
 

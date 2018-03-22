@@ -48,6 +48,7 @@ namespace mu2e {
   void constructTSdA(SimpleConfig const & _config){
 
     int const verbosityLevel = _config.getInt("tsda.verbosityLevel",0);
+    double tmpRin = _config.getDouble("tsda.rin",0.0)*CLHEP::mm;
 
     // Extract information from the config file.
     bool NAVisible             = _config.getBool("tsda.visible");
@@ -66,15 +67,16 @@ namespace mu2e {
     // Fetch TSdA geometry
     GeomHandle<TSdA> atsd;
 
-
-  // TS5 outer radius 
-    GeomHandle<Beamline> beamg;
-    const StraightSection * ts5out = beamg->getTS().getTSCryo<StraightSection>( TransportSolenoid::TSRegion::TS5,
-                                                                                TransportSolenoid::TSRadialPart::IN );
-
+    if ( tmpRin < 1.0e-06 ) {  // just a check for zero
+      // TS5 outer radius 
+      GeomHandle<Beamline> beamg;
+      const StraightSection * ts5out = beamg->getTS().getTSCryo<StraightSection>( TransportSolenoid::TSRegion::TS5,
+										  TransportSolenoid::TSRadialPart::IN );
+      tmpRin = ts5out->rIn();
+    }
     if ( verbosityLevel > 0) {
-      cout << __func__ << " TSdA rin                      : " << ts5out->rIn() << endl;
-      cout << __func__ << " TSdA rout			  : " << atsd->r4() << endl;
+      cout << __func__ << " TSdA rin                      : "<< tmpRin << endl;
+      cout << __func__ << " TSdA rout			  : "<< atsd->r4() << endl;
     }
 
     // we need to calculate where the DS2Vacuum volume is;
@@ -107,10 +109,10 @@ namespace mu2e {
       cout << __func__ << " DS3VacuumInfo.centerInMu2e()  : " << ds3VacuumInfo.centerInMu2e() << endl;
       cout << __func__ << " TSdA Offset                     : "  << ATSDOffset  << endl;
       cout << __func__ << " TSdA Offset2			  : "  << ATSD4Offset  << endl;
-      cout << __func__ << " TSdA cencter in Mu2e		  : "  << (ds2VacuumInfo.centerInMu2e() + ATSD4Offset).z()  << endl;
+      cout << __func__ << " TSdA center in Mu2e		  : "  << (ds2VacuumInfo.centerInMu2e() + ATSD4Offset).z()  << endl;
     }
 
-    TubsParams ATSD4Params( ts5out->rIn(), atsd->r4(), atsd->halfLength4() );
+    TubsParams ATSD4Params( tmpRin, atsd->r4(), atsd->halfLength4() );
 
     G4Material* ATSD4Material = findMaterialOrThrow( atsd->material4() );
 

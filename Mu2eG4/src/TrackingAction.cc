@@ -37,7 +37,6 @@
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
@@ -78,38 +77,6 @@ namespace mu2e {
     _spHelper(),
     _primaryHelper()
   {}
-
-  TrackingAction::TrackingAction( const SimpleConfig& config,
-                                  Mu2eG4SteppingAction     * steppingAction ):
-    _debugList(),
-    _physVolHelper(0),
-    _timer(),
-    _trajectories(nullptr),
-    _sizeLimit(config.getInt("g4.particlesSizeLimit",0)),
-    _currentSize(0),
-    _overflowSimParticles(false),
-    _mcTrajectoryMomentumCut(config.getDouble("g4.mcTrajectoryMomentumCut", 50.)),
-    _saveTrajectoryMomentumCut(config.getDouble("g4.saveTrajectoryMomentumCut", 50.)),
-    _mcTrajectoryMinSteps(config.getInt("g4.mcTrajectoryMinSteps", 5)),
-    _steppingAction(steppingAction),
-    _processInfo(0),
-    _printTrackTiming(config.getBool("g4.printTrackTiming",true)),
-     _spHelper(),
-    _primaryHelper()
-  {
-
-    string name("g4.trackingActionEventList");
-    if ( config.hasName(name) ){
-      vector<int> list;
-      config.getVectorInt(name,list);
-      _debugList.add(list);
-    }
-
-  }
-
-  TrackingAction::~TrackingAction(){
-  }
-
     
 // Receive information that has a lifetime of a run.
 void TrackingAction::beginRun(const PhysicalVolumeHelper* physVolHelper,
@@ -120,12 +87,7 @@ void TrackingAction::beginRun(const PhysicalVolumeHelper* physVolHelper,
     _mu2eOrigin    =  mu2eOrigin;
 }
 
-    
-void TrackingAction::endRun(){
-}
-
-    
-void TrackingAction::PreUserTrackingAction(const G4Track* trk){
+  void TrackingAction::PreUserTrackingAction(const G4Track* trk){
 
     G4int trackingVerbosityLevel = fpTrackingManager->GetVerboseLevel();
 

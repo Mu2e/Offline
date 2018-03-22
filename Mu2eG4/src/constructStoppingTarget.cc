@@ -29,11 +29,9 @@
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "G4Helper/inc/G4Helper.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -43,7 +41,6 @@
 #include "G4ThreeVector.hh"
 #include "G4PVPlacement.hh"
 #include "G4VisAttributes.hh"
-//#include "G4SDManager.hh"
 #include "G4LogicalVolumeStore.hh"
 
 using namespace std;

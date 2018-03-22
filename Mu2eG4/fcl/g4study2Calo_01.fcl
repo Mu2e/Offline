@@ -4,9 +4,9 @@
 # Original author K. Genser
 #
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 BEGIN_PROLOG
 stepperout: {
    type: constant
@@ -118,5 +118,6 @@ physics.producers.g4run.SDConfig: {
        enableSD: [] // not implemented
        TimeVD: {times:[0.01]}
       }
+// The line below causes a StepPointMC being stored for each step; comment it out to disable it
 physics.producers.g4run.Mu2eG4SteppingOnlyCut : @local::stepperout
 physics.producers.g4run.Mu2eG4StackingOnlyCut : @local::mu2eg4NoCut

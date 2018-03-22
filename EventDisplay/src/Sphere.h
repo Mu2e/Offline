@@ -146,6 +146,8 @@ class Sphere: public VirtualShape
       }
     }
   }
+
+  ClassDef(Sphere,1);
 };
 
 }

@@ -1,0 +1,268 @@
+
+           Release notes for Mu2e Offline software, v6_3_3
+
+6)    dnbrow01  26 October 2017
+      Update to an unsigned long representation of time in IoVs.
+      modified:   Alignment/inc/AlignmentSequence.hh
+      modified:   Alignment/inc/IoV.hh
+      modified:   Alignment/src/AlignmentSequence.cc
+      modified:   Alignment/src/IoV.cc
+
+      Remote Handling area door added by Lacee Pyles
+      modified:   Mu2eG4/geom/geom_common_current.txt
+      new file:   Mu2eG4/geom/ExtShieldUpstream_v04.txt
+
+
+5)    dnbrow01  18 October 2017
+      Alignment system is now functioning code.  Compiles, links, runs,
+      does reasonable things.  Still needs detector system input
+      for details.  Also needs collaboration decision for time handling.
+      modified:   Alignment/inc/AlignmentMap.hh
+      modified:   Alignment/inc/AlignmentObj.hh
+      modified:   Alignment/inc/AlignmentSequence.hh
+      modified:   Alignment/inc/AlignmentService.hh
+      modified:   Alignment/inc/IoV.hh
+      modified:   Alignment/src/AlignmentMap.cc
+      new file:   Alignment/src/AlignmentObj.cc
+      modified:   Alignment/src/AlignmentSequence.cc
+      modified:   Alignment/src/AlignmentService_service.cc
+      new file:   Alignment/src/IoV.cc
+      modified:   Alignment/src/SConscript
+      modified:   Alignment/test/align_dev.txt
+
+
+4)    dnbrow01  16 October 2017
+      Flesh out more of the Alignment tools.  Compiles, links, runs.
+      Currently just prints out alignment parameters.
+      new file:   Alignment/fcl/alignTest_01.fcl
+      modified:   Alignment/inc/AlignmentMap.hh
+      modified:   Alignment/inc/AlignmentObj.hh
+      new file:   Alignment/inc/AlignmentSequence.hh
+      new file:   Alignment/inc/AlignmentService.hh
+      new file:   Alignment/inc/IoV.hh
+      new file:   Alignment/inc/ShapeDetail.hh
+      new file:   Alignment/src/AlignmentMap.cc
+      new file:   Alignment/src/AlignmentSequence.cc
+      new file:   Alignment/src/AlignmentService_service.cc
+      new file:   Alignment/src/SConscript
+      new file:   Alignment/test/align_dev.txt
+
+3)    dnbrow01  13 October 2017
+      Update the model of the wedge portion of the TS3 pbar absorber
+      to reflect the most likely    way it will be constructed -	strips
+      of Beryllium arranged as steps.	   This is not yet part of the
+      default	     geometry, but will be pulled in   with geom_common_current
+      modified:   BeamlineGeom/inc/PbarWindow.hh
+      modified:   GeometryService/src/BeamlineMaker.cc
+      new file:   Mu2eG4/geom/TransportSolenoid_v03.txt
+      modified:   Mu2eG4/geom/geom_common_current.txt
+      modified:   Mu2eG4/src/constructTS.cc
+
+      Turn the Cable Runs in the DS into sensitive	volumes.
+      modified:   MCDataProducts/inc/StepInstanceName.hh
+      modified:   Mu2eG4/geom/DetectorSolenoid_v03.txt
+      modified:   Mu2eG4/inc/SensitiveDetectorName.hh
+      modified:   Mu2eG4/src/constructDS.cc
+
+      Saw a typo in the comments and couldn't keep myself from fixing it.
+      modified:   Mu2eG4/inc/SensitiveDetectorHelper.hh
+
+      Reorganized the	text to	be more	intuitive, I think.
+      modified:   Mu2eG4/test/geom_SurfaceCheck_Select.txt
+
+2)    dnbrow01  04 October 2017
+      Eliminate use of Mu2eG4/test/geom_01.txt in favor of 
+      Mu2eG4/geom/geom_common.txt.  Since Mu2eG4/test/geom_01.txt
+      has long simply been a pointer to Mu2eG4/geom/geom_common.txt,
+      this is not a functional change - just a cleanup to hopefully
+      avoid confusion down the road.
+      modified:   Analyses/test/BkgRatesCounter.fcl
+      modified:   Analyses/test/ConvElInfo.fcl
+      modified:   Analyses/test/ConversionEnergyLoss.fcl
+      modified:   Analyses/test/InteractiveRoot.fcl
+      modified:   Analyses/test/InteractiveRoot2.fcl
+      modified:   Analyses/test/TTVirtDebug.fcl
+      modified:   Analyses/test/TTrackerSig.fcl
+      modified:   Analyses/test/TestTO.fcl
+      modified:   Analyses/test/cosmicFilter.fcl
+      modified:   Analyses/test/extmon_uci_readback.fcl
+      modified:   Analyses/test/genReco.fcl
+      modified:   Analyses/test/histforpabs.fcl
+      modified:   Analyses/test/hitDisplay.fcl
+      modified:   Analyses/test/isoRPCtest.fcl
+      modified:   Analyses/test/materailsPropStudy.fcl
+      modified:   Analyses/test/printStrawHits.fcl
+      modified:   Analyses/test/printTTrackerGeom.fcl
+      modified:   Analyses/test/psVacuum_readback.fcl
+      modified:   Analyses/test/readCaloDigi.fcl
+      modified:   Analyses/test/readMCTrajectories.fcl
+      modified:   Analyses/test/readStoppedPis.fcl
+      modified:   Analyses/test/readback.fcl
+      modified:   Analyses/test/readback0.fcl
+      modified:   Analyses/test/simParticleCheck00.fcl
+      modified:   Analyses/test/simParticlesWithHitsExample.fcl
+      modified:   Analyses/test/strawHit.fcl
+      modified:   Analyses/test/transportMuonStudy.fcl
+      modified:   Analyses/test/ttrackerGeomPlots.fcl
+      modified:   Analyses/test/vd_readback.fcl
+      modified:   BFieldTest/test/BFieldSymmetry.fcl
+      modified:   BFieldTest/test/BFieldTest.fcl
+      modified:   CalPatRec/test/calPatRec.fcl
+      modified:   CalPatRec/test/calPatRec_01.fcl
+      modified:   CalPatRec/test/calPatRec_02.fcl
+      modified:   CalPatRec/test/calPatRec_display.fcl
+      modified:   CalPatRec/test/calPatRec_display_cnv00502.fcl
+      modified:   CalPatRec/test/calPatRec_display_read.fcl
+      modified:   CalPatRec/test/mergePatRec.fcl
+      modified:   CalPatRec/test/mergePatRec_02.fcl
+      modified:   CalPatRec/test/mergePatRec_03.fcl
+      modified:   CalPatRec/test/mergePatRec_display.fcl
+      modified:   CalPatRec/test/mergePatRec_display_read.fcl
+      modified:   CalPatRec/test/trkPatRec_01.fcl
+      modified:   CalPatRec/test/trkPatRec_02.fcl
+      modified:   CalPatRec/test/trkPatRec_display.fcl
+      modified:   CalPatRec/test/trkPatRec_display_read.fcl
+      modified:   CaloCluster/test/CaloClusterProduction.fcl
+      modified:   CaloCluster/test/ClusterTrajectory.fcl
+      modified:   CaloCluster/test/readCaloCluster.fcl
+      modified:   CaloCluster/test/readCaloClusterEff.fcl
+      modified:   CaloCluster/test/readCaloClusterEnergyResolMap.fcl
+      modified:   CaloCluster/test/readCogRecFunc.fcl
+      modified:   CaloCluster/test/readCrystalHit.fcl
+      modified:   CaloCluster/test/readOffSetCog.fcl
+      modified:   DAQ/test/PacketProducerTestMain.fcl
+      modified:   EventDisplay/test/EventDisplay.fcl
+      modified:   EventDisplay/test/timeWindowDisplay.fcl
+      modified:   EventGenerator/test/FromSPEndPointTest.fcl
+      modified:   EventGenerator/test/g4test_FromStepPointMCs.fcl
+      modified:   EventMixing/inputGeneration/dioBG.fcl
+      modified:   EventMixing/inputGeneration/dioMerge.fcl
+      modified:   EventMixing/inputGeneration/neutronBG.fcl
+      modified:   EventMixing/inputGeneration/neutronMerge.fcl
+      modified:   EventMixing/inputGeneration/photonBG.fcl
+      modified:   EventMixing/inputGeneration/photonMerge.fcl
+      modified:   EventMixing/inputGeneration/protonBG.fcl
+      modified:   EventMixing/inputGeneration/protonMerge.fcl
+      modified:   EventMixing/test/inspectMixed.fcl
+      modified:   EventMixing/test/inspectUnMixed.fcl
+      modified:   EventMixing/test/mixAnalyzer_01.fcl
+      modified:   EventMixing/test/mixProducer_01.fcl
+      modified:   EventMixing/test/mixTest_00.fcl
+      modified:   EventMixing/test/mixTest_01.fcl
+      modified:   HitMakers/test/makeClusters.fcl
+      modified:   HitMakers/test/makeDPIStrawClusters.fcl
+      modified:   HitMakers/test/makeDPIStrawClustersAndTau.fcl
+      modified:   HitMakers/test/makehits.fcl
+      modified:   HitMakers/test/read.fcl
+      modified:   JobConfig/cd3/beam/MixPremixedPBIAndTrack.fcl
+      modified:   Mu2eG4/fcl/g4BremTest.fcl
+      modified:   Mu2eG4/fcl/g4test_01.fcl
+      modified:   Mu2eG4/fcl/g4test_02.fcl
+      modified:   Mu2eG4/fcl/g4test_03.fcl
+      modified:   Mu2eG4/fcl/g4validate_01.fcl
+      modified:   Mu2eG4/fcl/geomTest_01.fcl
+      modified:   Mu2eG4/fcl/rantest.fcl
+      modified:   Mu2eG4/fcl/replayAll.fcl
+      modified:   Mu2eG4/fcl/replayWithSkip.fcl
+      modified:   Mu2eG4/fcl/signalOnly.fcl
+      modified:   Mu2eG4/fcl/transportOnly.fcl
+      modified:   Mu2eG4/geom/geom_common.txt
+      modified:   ParticleID/test/test.fcl
+      modified:   TrackCaloMatching/test/caloMatching.fcl
+      modified:   TrackCaloMatching/test/readCaloMatching.fcl
+      modified:   TrackCaloMatching/test/readExtrapol.fcl
+      modified:   TrackCaloMatching/test/trkExtrapol.fcl
+      modified:   TrkDiag/fcl/MixTest.fcl
+      modified:   TrkExt/test/TrkExt.fcl
+      modified:   Validation/fcl/val.fcl
+      modified:   fcl/standardServices.fcl
+
+1)    dnbrow01  29 September 2017
+        Polycone class definition had apparently originally been designed
+	to hold all the information necessary to describe it as indiviual
+	data elements.  Later is was migrated to hold the same information
+	in a single PolyconsParams object.  But the original, now unused,
+	data elements were still being carried around.  They are now 
+	deleted.      
+	modified:   GeomPrimitives/inc/Polycone.hh 
+
+
+	Created an OPA version number.  Version number 1 builds the OPA
+	as done in the past - as a conical frustrum.  Version 2 builds it
+	as a "barrel" of slats.  The shape is called a G4Polyhedra in GEANT4
+	(yes, they use the plural even for one).  We create a corresponding
+	shape representation in Mu2e code, independent of G4.  Since 
+	G4Polyhedra have been rare in our code to date, made some new 
+	utility functions to help with inserting them into our Geometry
+	model, now that they are being used more prominently in Mu2e.
+	modified:   GeometryService/src/MECOStyleProtonAbsorberMaker.cc
+	modified:   MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh
+	modified:   MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorberPart.hh
+	modified:   Mu2eG4/src/constructProtonAbsorber.cc
+	new file:   GeomPrimitives/inc/Polyhedra.hh
+	new file:   GeomPrimitives/inc/PolyhedraParams.hh
+	new file:   GeomPrimitives/src/Polyhedra.cc
+	new file:   Mu2eG4/inc/nestPolyhedra.hh
+	new file:   Mu2eG4/geom/protonAbsorber_cylindrical_v02.txt
+	new file:   Mu2eG4/src/nestPolyhedra.cc
+
+	Fix the shape and fill the gaps in the Cable runs.  Add four service 
+	pipes along the bottom of the DS.
+	modified:   DetectorSolenoidGeom/inc/DetectorSolenoid.hh
+	modified:   GeometryService/src/DetectorSolenoidMaker.cc
+	modified:   Mu2eG4/src/constructDiskCalorimeter.cc
+	modified:   Mu2eG4/src/constructDS.cc
+	new file:   Mu2eG4/geom/DetectorSolenoid_v03.txt
+
+	Better center the pipe in the hole through the External Shielding.
+	modified:   Mu2eG4/geom/Pipe_v03.txt
+
+	Put the insulating vacuum in the TS cryostat sections.  The code
+	changes were extensive, so did not version this - affects all 
+	versions of the TS.  Should have no affect on any sensitive volumes,
+	reconstruction, etc. 
+	modified:   BeamlineGeom/inc/TransportSolenoid.hh
+	modified:   Mu2eG4/geom/TransportSolenoid_v01.txt
+	modified:   Mu2eG4/geom/TransportSolenoid_v02.txt
+	modified:   Mu2eG4/geom/TransportSolenoid_DOErev2017.txt
+	modified:   Mu2eG4/src/constructTS.cc
+
+
+	Back-propagate a change to the PS cryostat material to Stainless.
+	modified:   Mu2eG4/geom/ProductionSolenoid_v01.txt
+
+	Update the model of the downstream endcap of the External Shielding.
+	new file:   Mu2eG4/geom/ExtShieldDownstream_v04.txt
+
+	Update the "bleeding edge" geometry common file with changes above.
+	modified:   Mu2eG4/geom/geom_common_current.txt
+
+	Add the ability to specify the protonAbsorber for a selective overlap
+	check
+	modified:   Mu2eG4/test/geom_SurfaceCheck_Select.txt
+
+	Add a coordinate transformer class for converting between different
+	coordinate systems (Mu2e<-->Detector), (Mu2e<-->G4Bl), 
+	(Detector<-->G4Bl) for now.  
+	new file:   GeometryService/inc/Mu2eCoordTransform.hh
+	new file:   GeometryService/src/Mu2eCoordTransform.cc
+	
+	Prototype for a new reco geometry service.  Not used in any other
+	code for now and should not be until given a green light.
+	new file:   GeometryService/inc/RecoGeometryService.hh
+	new file:   GeometryService/src/RecoGeometryService_service.cc
+
+	Very early incarnations of some code that might become the basis for
+	Alignment in Mu2e.  Not yet included in any build.
+	new file:   Alignment/inc/AlignmentObj.hh
+	new file:   Alignment/inc/AlignmentMap.hh
+
+
+	We have Mu2eG4 for Geant4-based Mu2e geometry info and standalone
+	test executable.  Mu2eReco could play a similar role for the
+	reco-only geometry service.  Does not affect any other code currently
+	place for 
+	new file:   Mu2eReco/fcl/prolog.fcl
+	new file:   Mu2eReco/fcl/TrkAna.fcl
+	new file:   Mu2eReco/fcl/standardServices.fcl
+	new file:   Mu2eReco/geom/recoGeom_common_current.txt

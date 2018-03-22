@@ -18,12 +18,12 @@ namespace mu2e {
 	StrawClusterSequencePair(StrawIndex index);
 	StrawClusterSequencePair(StrawClusterSequencePair const& other);
 	StrawClusterSequencePair& operator =(StrawClusterSequencePair const& other);
-	StrawClusterSequence& clustSequence(StrawEnd end) { if(end==StrawEnd::plus) return _plus; else return _minus; }
-	StrawClusterSequence const& clustSequence(StrawEnd end) const { if(end==StrawEnd::plus) return _plus; else return _minus; }
+	StrawClusterSequence& clustSequence(StrawEnd end) { return _scseq[end._end]; } 
+	StrawClusterSequence const& clustSequence(StrawEnd end) const { return _scseq[end._end]; } 
 	void insert(StrawClusterPair const& hpair);
-	StrawIndex strawIndex() const { return _plus.strawIndex(); }
+	StrawIndex strawIndex() const { return _scseq[0].strawIndex(); }
       private:
-	StrawClusterSequence _plus, _minus; // plus and minus end sequences
+	StrawClusterSequence _scseq[2];
     };
   }
 }

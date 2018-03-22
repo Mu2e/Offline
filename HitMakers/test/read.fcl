@@ -8,7 +8,7 @@
 #
 
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 # Give this job a name.  
 process_name : ReadTest01
@@ -34,7 +34,7 @@ services :
 
   GeometryService :
   {
-    inputFile : "Mu2eG4/test/geom_01.txt"
+    inputFile : "Mu2eG4/geom/geom_common.txt"
   }  
 
 }

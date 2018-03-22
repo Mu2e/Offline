@@ -5,7 +5,7 @@
 //
 
 // Mu2e includes.
-#include "RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "RecoDataProducts/inc/StrawDigi.hh"
 
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Utilities/Exception.h"
@@ -17,6 +17,8 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Principal/Provenance.h"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 
@@ -111,18 +113,19 @@ void mu2e::ReadStrawDigiReco::analyze(art::Event const& evt) {
 
   // Counter for number of digis on each wire.
   std::map<StrawIndex,int> nhperwire;
+  const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
 
   for ( StrawDigi const& digi : digis ) {
 
-    StrawIndex index = digi.strawIndex();
+    StrawIndex index = tracker.getStrawIndex(digi.strawId());
 
     _hStrawIndex->Fill(index.asInt());
 
     // Calculate number of digis per wire
     ++nhperwire[index];
 
-    auto t0 = digi.TDC(StrawDigi::zero);
-    auto t1 = digi.TDC(StrawDigi::one);
+    auto t0 = digi.TDC(TrkTypes::cal);
+    auto t1 = digi.TDC(TrkTypes::hv);
     auto const& adcs = digi.adcWaveform();
 
     _hDigiTime0 ->Fill(t0);

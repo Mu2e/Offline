@@ -8,7 +8,7 @@ Import('env')
 
 Import('mu2e_helper')
 
-helper=mu2e_helper()
+helper=mu2e_helper(env)
 
 #
 # 1) When I rm lib/libG4_plugin.so and then scons, it also rebuilds
@@ -41,12 +41,12 @@ G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
 
 # Compiler switches if we want to build G4 with OPENGL and possibly Qt
 
-mu2eopts = env['MU2EOPTS'];
+g4vis = env['G4VIS'];
 
-if mu2eopts[1] == 'qt':
+if g4vis == 'qt':
     G4GS_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL',
                       '-DG4UI_USE_QT',          '-DG4VIS_USE_OPENGLQT' ]
-elif  mu2eopts[1] == 'none':
+elif  g4vis == 'none':
     G4GS_CPPFLAGS = []
 else:
     G4GS_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL' ]
@@ -153,7 +153,7 @@ G4GLOBALIBS = [
               'libG4zlib'
               ]
 
-if mu2eopts[1] != 'none':
+if g4vis != 'none':
     G4GLOBALIBS.append('libG4OpenGL')
     G4GLOBALIBS.append('libG4gl2ps')
 
@@ -165,7 +165,7 @@ else:
 # Link libraries needed to build G4 with OPENGL and possibly Qt
 #OPENGL_LIBS = [ 'GLU', 'GL' ]
 
-#if mu2eopts[1] == 'qt':
+#if g4vis == 'qt':
 #    GS_LIBS = [ 'GLU', 'GL', 'QtOpenGL', 'QtGui', 'QtCore' ]
 #else:
 #    GS_LIBS = [ 'GLU', 'GL']
@@ -176,6 +176,7 @@ GS_LIBS = []
 
 # Link libraries needed to build G4 with XERCESC
 XERCESC_LIBS = [ 'xerces-c' ]
+
 
 mainlib = helper.make_mainlib ( [
         'mu2e_G4Helper_G4Helper_service',

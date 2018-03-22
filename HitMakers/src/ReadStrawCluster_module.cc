@@ -87,9 +87,9 @@ namespace mu2e {
   Double_t Pt_outval_si;
   Double_t P_outval_si;
   StrawId sid;
-  LayerId lid;
-  PlaneId did;
-  PanelId secid;
+  int lid;
+  int did;
+  int secid;
   CLHEP::Hep3Vector  X_in;  
   CLHEP::Hep3Vector  P_in_si;
   CLHEP::Hep3Vector  P_out_si;
@@ -386,7 +386,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                     StrawHit const& hit        = info.hit();
                     Straw const& str           = tracker.getStraw(hit.strawIndex());
                     sid = str.id();
-                    did = sid.getPlaneId();
+                    did = sid.getPlane();
                     std::vector<StepPointMC const *> const& steps = info.steps();
                     for ( size_t ks=0; ks<steps.size(); ++ks){
                       StepPointMC const& step = *(steps[ks]);
@@ -411,7 +411,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                     StrawHit const& hit        = info.hit();
                     Straw const& str           = tracker.getStraw(hit.strawIndex());
                     sid = str.id();
-                    did = sid.getPlaneId();
+                    did = sid.getPlane();
                     const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
                     const CLHEP::Hep3Vector dirvec = str.getDirection();
                     double dt =hit.dt();
@@ -421,7 +421,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                     X_straw.push_back(hitpos.getX());
                     Y_straw.push_back(hitpos.getY());
                     Z_straw.push_back(hitpos.getZ());
-                    cout<< "Plane ID: "<<did<<endl;
+                    cout<< "Plane: "<<did<<endl;
                     cout<< "x:  "<<hitpos.getX()<<"  y:  "<<  hitpos.getY()<<"  z:  "<<hitpos.getZ()<<endl;
                     cout<<  MCPoint[did]<<endl;
                     mpoint mp;

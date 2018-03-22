@@ -5,35 +5,36 @@
 // Original author: David Brown (LBNL), 2012
 //
 // $Id: AmbigResolver.hh,v 1.4 2014/08/01 18:56:10 gandr Exp $
-// $Author: gandr $ 
+// $Author: gandr $
 // $Date: 2014/08/01 18:56:10 $
 //
 #ifndef AmbigResolver_HH
 #define AmbigResolver_HH
 #include "BTrk/BaBar/BaBar.hh"
 
+#include <vector>
+
 class KalRep;
 class TrkSimpTraj;
 namespace mu2e {
   class TrkStrawHit;
-
   class AmbigResolver {
     public:
-    explicit AmbigResolver(double extErr);
+    explicit AmbigResolver(double tmpErr);
     virtual ~AmbigResolver() = 0;
 
 // resolve a track.  Depending on the configuration, this might
-// update the hit state and the t0 value. 
+// update the hit state and the t0 value.
 
     virtual bool resolveTrk(KalRep* kfit) const = 0;
 
     protected:
-// init hit external errors for simulated annealing
+// reset penalty errors
     virtual void initHitErrors(KalRep* kfit) const ;
 // find the local trajectory piece computed from the fit excluding a particular set of hits.
 // the hits are assumed to be contiguous
     const TrkSimpTraj* findTraj(std::vector<TrkStrawHit*> const& phits, const KalRep* krep) const;
-    double _extErr; // external hit error
+    double _tmpErr; // hit error associated with annealing 'temperature'
   };
 }
 

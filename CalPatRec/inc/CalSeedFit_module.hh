@@ -22,21 +22,20 @@ namespace art {
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StereoHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruth.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
+// #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+// #include "MCDataProducts/inc/StrawHitMCTruth.hh"
+// #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
+// #include "MCDataProducts/inc/StepPointMCCollection.hh"
+// #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
+// #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
 
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
@@ -48,13 +47,10 @@ namespace art {
 
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "TrkPatRec/inc/TrkHitFilter.hh"
-#include "TrkPatRec/inc/StrawHitInfo.hh"
 
 #include "CalPatRec/inc/KalFitHackNew.hh"
 #include "CalPatRec/inc/KalFitResultNew.hh"
 #include "CalPatRec/inc/CalSeedFit_types.hh"
-#include "CalPatRec/inc/CprModuleHistBase.hh"
 
 // Mu2e
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -91,9 +87,11 @@ namespace fhicl {
 }
 
 namespace mu2e {
-
+  using namespace CalSeedFitTypes;
+  
   class Calorimeter;
   class TTracker;
+  class ModuleHistToolBase;
 
   class CalSeedFit : public art::EDFilter {
   protected:
@@ -153,9 +151,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // diagnostics 
 //-----------------------------------------------------------------------------
-    CalSeedFit_Hist_t                     _hist;
-    CalSeedFit_Data_t                     _data;
-    std::unique_ptr<CprModuleHistBase>    _hmanager;
+//    CalSeedFit_Hist_t                     _hist;
+    Data_t                                _data;
+    std::unique_ptr<ModuleHistToolBase>   _hmanager;
 
     double                                _amsign;   // cached sign of angular momentum WRT the z axis 
     CLHEP::HepSymMatrix                   _hcovar;   // cache of parameter error covariance matrix

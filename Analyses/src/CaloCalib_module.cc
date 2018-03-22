@@ -366,7 +366,7 @@ namespace mu2e {
 	     _motcrCode[_nSim]  = mother->creationCode();
              _motStartX[_nSim]  = mother->startPosition().x() + 3904; //in Mu2e frame
              _motStartY[_nSim]  = mother->startPosition().y();
-             _motStartZ[_nSim]  = mother->startPosition().z() - 10200;
+             _motStartZ[_nSim]  = mother->startPosition().z() - 10200;  if this is uncommented, the hardwired 10200 should be changed to parametrized version
              _motStartT[_nSim]  = mother->startGlobalTime();
              _motPosX[_nSim]    = hitSimPos.x(); // in disk FF frame
              _motPosY[_nSim]    = hitSimPos.y();

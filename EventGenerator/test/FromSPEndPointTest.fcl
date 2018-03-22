@@ -1,6 +1,6 @@
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name: testFromStepPointMCs
 
@@ -23,7 +23,7 @@ services: {
 
     GeometryService :
     {
-      inputFile : "Mu2eG4/test/geom_01.txt"
+      inputFile : "Mu2eG4/geom/geom_common.txt"
     }
 
     ConditionsService :

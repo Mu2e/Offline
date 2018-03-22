@@ -27,28 +27,6 @@ namespace mu2e
       CoincidenceCombination() {}
     };
 
-    struct CoincidenceHit
-    {
-      double                        _time;
-      int                           _PEs;
-      mu2e::CRSScintillatorBarIndex _counter;
-      int                           _SiPM;
-      CoincidenceHit(double time, int PEs, mu2e::CRSScintillatorBarIndex counter, int SiPM): _time(time), _PEs(PEs), _counter(counter), _SiPM(SiPM) {}
-      bool operator<(const CoincidenceHit& rhs) const  //time ordered, 
-      {                                                //identical hits will be removed, 
-        if(_time!=rhs._time) return _time < rhs._time; //but allow for hits with the same time but on different counters/SiPMs
-        if(_counter!=rhs._counter) return _counter < rhs._counter;
-        return _SiPM < rhs._SiPM;
-      }
-    };
-
-    struct DeadTimeWindow
-    {
-      double _startTime, _endTime;
-      std::vector<CoincidenceHit> _hits;
-      DeadTimeWindow(double start, double end, const std::vector<CoincidenceHit> &hits) : _startTime(start), _endTime(end), _hits(hits) {}
-    };
-
     CrvCoincidenceCheckResult() {}
 
     const bool CoincidenceFound() const 
@@ -65,8 +43,6 @@ namespace mu2e
     {
       return _coincidenceCombinations;
     }
-
-    std::vector<DeadTimeWindow> GetDeadTimeWindows(double leadingTime, double trailingTime) const;
 
     private:
 

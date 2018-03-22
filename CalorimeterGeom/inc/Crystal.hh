@@ -27,22 +27,24 @@ namespace mu2e {
 	        localPositionFrontFace_(localPositionFrontFace), 
 	        position_(), 
 	        neighbors_(), 
-	        nextNeighbors_()
+	        nextNeighbors_(),
+                neighborsRaw_(),
+                nextNeighborsRaw_()
 	     {}
 
 
-             int   localId()                             const      {return localId_;}
-             int   diskId()                              const      {return diskId_;}
-             const CLHEP::Hep3Vector& localPosition()    const      {return localPosition_;}
-             const CLHEP::Hep3Vector& localPositionFF()  const      {return localPositionFrontFace_;}
-
-             const CLHEP::Hep3Vector& position()         const      {return position_;}
-             const std::vector<int>&  neighbors()        const      {return neighbors_;}	     
-             const std::vector<int>&  nextNeighbors()    const      {return nextNeighbors_;}	     
-
-             void setPosition(const CLHEP::Hep3Vector& pos)         {position_ = pos;}
-             void setNeighbors(const std::vector<int>& list)        {neighbors_ = list;}
-             void setNextNeighbors(const std::vector<int>& list)    {nextNeighbors_ = list;}
+             int   localId()                                        const {return localId_;}
+             int   diskId()                                         const {return diskId_;}
+             const CLHEP::Hep3Vector& localPosition()               const {return localPosition_;}
+             const CLHEP::Hep3Vector& localPositionFF()             const {return localPositionFrontFace_;}
+             const CLHEP::Hep3Vector& position()                    const  {return position_;}
+             const std::vector<int>&  neighbors(bool raw=false)     const {return raw ? neighborsRaw_ :neighbors_;}	     
+             const std::vector<int>&  nextNeighbors(bool raw=false) const {return raw ? nextNeighborsRaw_: nextNeighbors_;}	     
+           
+             
+             void setPosition(const CLHEP::Hep3Vector& pos)                      {position_ = pos;}
+             void setNeighbors(const std::vector<int>& list, bool raw=false)     {raw ? neighborsRaw_=list : neighbors_=list;}
+             void setNextNeighbors(const std::vector<int>& list, bool raw=false) {raw ? nextNeighborsRaw_=list : nextNeighbors_=list;}    
 
 
 	 private:
@@ -52,8 +54,11 @@ namespace mu2e {
              CLHEP::Hep3Vector   localPosition_;
              CLHEP::Hep3Vector   localPositionFrontFace_;
              CLHEP::Hep3Vector   position_;
-	     std::vector<int>    neighbors_;
-	     std::vector<int>    nextNeighbors_;
+             std::vector<int>    neighbors_;
+             std::vector<int>    nextNeighbors_;
+	     std::vector<int>    neighborsRaw_;
+	     std::vector<int>    nextNeighborsRaw_;
+
 
      };
 

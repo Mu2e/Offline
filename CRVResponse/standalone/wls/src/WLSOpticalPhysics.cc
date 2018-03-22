@@ -116,10 +116,10 @@ void WLSOpticalPhysics::ConstructProcess()
   G4EmSaturation* emSaturation = G4LossTableManager::Instance()->EmSaturation();
   theScintProcess->AddSaturation(emSaturation);
 
-  theParticleIterator->reset();
-  while ( (*theParticleIterator)() ){
+  aParticleIterator->reset();
+  while ( (*aParticleIterator)() ){
 
-    G4ParticleDefinition* particle = theParticleIterator->value();
+    G4ParticleDefinition* particle = aParticleIterator->value();
     G4String particleName = particle->GetParticleName();
 
     pManager = particle->GetProcessManager();

@@ -25,8 +25,8 @@ namespace art {
 
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StereoHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
@@ -49,8 +49,7 @@ namespace art {
 
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "TrkPatRec/inc/TrkHitFilter.hh"
-#include "TrkPatRec/inc/StrawHitInfo.hh"
+//#include "CalPatRec/inc/CalTimePeak.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
 
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
@@ -59,7 +58,7 @@ namespace art {
 #include "TFolder.h"
 #include "CalPatRec/inc/KalFitHackNew.hh"
 #include "CalPatRec/inc/CalTrkFit_types.hh"
-#include "CalPatRec/inc/CprModuleHistBase.hh"
+#include "CalPatRec/inc/ModuleHistToolBase.hh"
 
 //#include "CalPatRec/inc/THackData.hh"
 
@@ -93,14 +92,13 @@ namespace art {
 #include <set>
 #include <map>
 
-class THackData;
-
 namespace fhicl {
   class ParameterSet;
 }
 
 namespace mu2e {
-
+  using namespace CalTrkFitTypes;
+  
   class Calorimeter;
   class TTracker;
 
@@ -144,32 +142,26 @@ namespace mu2e {
 
     const KalSeedCollection*              _trkseeds;
 
-    KalFitHackNew                         _fitter;    // full-blown src/Kalman filter
+    KalFitHackNew                         _fitter;      // full-blown src/Kalman filter
 
-    KalFitResultNew                       _result; // full fit result
+    KalFitResultNew                       _result;      // full fit result
 
     std::vector<StrawHitIndex>            _hitIndices;
     int                                   _nindex;
     int                                   _nrescued;    // by the seed fit
 
-    const TTracker*                       _tracker;     // straw tracker geometry
-    const Calorimeter*                    _calorimeter; // cached pointer to the calorimeter geometry
-
     const TrackerCalibrations*            _trackerCalib;
 
     TFolder*                              _folder;
     int                                   _eventid;
-    int                                   _ntracks[2];
 //-----------------------------------------------------------------------------
 // diagnostics histograms
 //-----------------------------------------------------------------------------
-    CalTrkFit_Data_t                      _data;
-    CalTrkFit_Hist_t                      _hist;
-    std::unique_ptr<CprModuleHistBase>    _hmanager;
-    DoubletAmbigResolver*                 _dar;
+    Data_t                                _data;
+    std::unique_ptr<ModuleHistToolBase>   _hmanager;
     vector<Doublet>*                      _listOfDoublets;
 
-    double                                _mbtime;    // period of 1 microbunch
+    double                                _mbtime;      // period of 1 microbunch
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------

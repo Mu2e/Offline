@@ -10,13 +10,14 @@
 // Original author: Kyle Knoepfel
 
 #include "Mu2eUtilities/inc/Table.hh"
+#include <numeric>
 
 namespace mu2e {
-  
+
   //=========================================================================
   template<> Value<1> Table<2>::getValueAtKey( const double key, const double binCorr ) const {
 
-    // Use linear interpolation algorithm 
+    // Use linear interpolation algorithm
     //
     // - note that in the case of pdfs, if the desired set of keys
     // does not match that of the stored table, it is the
@@ -51,7 +52,7 @@ namespace mu2e {
   template<> TableVec<2> Table<2>::getShape( const std::vector<double>& keys, const double binCorr ) const {
 
     TableVec<2> shape;
-    for ( const auto& k : keys ) 
+    for ( const auto& k : keys )
       shape.emplace_back( k, getValueAtKey( k, binCorr ) );
 
     return shape;
@@ -61,9 +62,9 @@ namespace mu2e {
     template<> TableVec<2> Table<2>::getShape( const double keyLow, const double keyHigh, const double res, const double binCorr ) const {
 
     TableVec<2> shape;
-    for ( double k(keyLow) ; k<=keyHigh ; k += res ) 
+    for ( double k(keyLow) ; k<=keyHigh ; k += res )
       shape.emplace_back( k, getValueAtKey( k, binCorr ) );
-    
+
     return shape;
   }
 
@@ -80,5 +81,3 @@ namespace mu2e {
   }
 
 } // end of namespace mu2e
-
-

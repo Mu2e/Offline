@@ -10,7 +10,9 @@ process_name : FileDumper
 source : {
   module_type : RootInput
   fileNames   : @nil
-  maxEvents   : 5
+
+  # firstEvent  : 500
+  maxEvents   : -1
 }
 
 physics : {
@@ -24,6 +26,7 @@ physics : {
       includeTracker : 1
       includeCalorimeter : 1
       includeCosmicRayVeto: 0
+      includeDMAHeaders: 1
       # Cosmic ray veto module is currently incomplete
 
       generateTimestampTable : 1
@@ -42,6 +45,6 @@ outputs:  {
 
 }
 
-services.message.destinations.log.categories.ArtReport.reportEvery : 1
-services.message.destinations.log.categories.ArtReport.limit : 1
-services.message.destinations.log.categories.ArtReport.timespan : 300
+#services.message.destinations.log.categories.ArtReport.reportEvery : 1
+#services.message.destinations.log.categories.ArtReport.limit : 1
+#services.message.destinations.log.categories.ArtReport.timespan : 300

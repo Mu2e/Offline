@@ -15,18 +15,16 @@
 
 namespace mu2e {
 
-  class BFInterpolationStyleDetail{
-  public:
+    class BFInterpolationStyleDetail {
+       public:
+        enum enum_type { unknown, meco, trilinear, fit };
 
-    enum enum_type { unknown, meco, trilinear };
+        static std::string const& typeName();
 
-    static std::string const& typeName();
+        static std::map<enum_type, std::string> const& names();
+    };
 
-    static std::map<enum_type,std::string> const& names();
-
-  };
-
-  typedef EnumToStringSparse<BFInterpolationStyleDetail> BFInterpolationStyle;
-}
+    typedef EnumToStringSparse<BFInterpolationStyleDetail> BFInterpolationStyle;
+}  // namespace mu2e
 
 #endif

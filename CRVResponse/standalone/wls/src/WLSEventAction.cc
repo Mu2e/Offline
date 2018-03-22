@@ -24,9 +24,10 @@
 #include <TCanvas.h>
 #include <TPaveStats.h>
 
-#include "MakeCrvPhotonArrivals.hh"
-#include "MakeCrvSiPMResponses.hh"
+#include "MakeCrvPhotons.hh"
+#include "MakeCrvSiPMCharges.hh"
 #include "MakeCrvWaveforms.hh"
+#include "MakeCrvDigis.hh"
 #include "MakeCrvRecoPulses.hh"
 
 #include <stdexcept>
@@ -272,56 +273,73 @@ void WLSEventAction::Draw(const G4Event* evt)
 {
   double maxTime=200.0;
 
-  mu2eCrv::MakeCrvSiPMResponses::ProbabilitiesStruct probabilities;
-  probabilities._constGeigerProbCoef = 1;
-  probabilities._constGeigerProbVoltScale = 5.5;
-  probabilities._constTrapType0Prob = 0.0;  
-  probabilities._constTrapType1Prob = 0.0;
-  probabilities._constTrapType0Lifetime = 5;
-  probabilities._constTrapType1Lifetime = 50;
-  probabilities._constThermalProb = 2.9e-3; 
-  probabilities._constPhotonProduction = 0.136; 
+  mu2eCrv::MakeCrvSiPMCharges::ProbabilitiesStruct probabilities;
+  probabilities._avalancheProbParam1 = 0.65;
+  probabilities._avalancheProbParam2 = 2.7;
+  probabilities._trapType0Prob = 0.0;
+  probabilities._trapType1Prob = 0.0;
+  probabilities._trapType0Lifetime = 5;
+  probabilities._trapType1Lifetime = 50;
+  probabilities._thermalRate = 3.0e-4;   
+  probabilities._crossTalkProb = 0.05;
 
-  probabilities._constTrapType0Prob = 0;  
-  probabilities._constTrapType1Prob = 0;
-  probabilities._constThermalProb = 0; 
-  probabilities._constPhotonProduction = 0; 
+  std::vector<std::pair<int,int> > inactivePixels = { {18,18}, {18,19}, {18,20}, {18,21},
+                                                      {19,18}, {19,19}, {19,20}, {19,21},
+                                                      {20,18}, {20,19}, {20,20}, {20,21},
+                                                      {21,18}, {21,19}, {21,20}, {21,21} };
+
+  probabilities._thermalRate = 0; 
+  probabilities._crossTalkProb = 0; 
 
   static CLHEP::HepJamesRandom engine(1);
   static CLHEP::RandFlat randFlat(engine);
   static CLHEP::RandGaussQ randGaussQ(engine);
   static CLHEP::RandPoissonQ randPoissonQ(engine);
-  mu2eCrv::MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
-  sim.SetSiPMConstants(1584, 615, 2.4, 0, 1695, 12.0, probabilities);
+  mu2eCrv::MakeCrvSiPMCharges sim(randFlat,randPoissonQ);
+  sim.SetSiPMConstants(40, 40, 14, 2.1, 500, 1695, 12.0, 8.84e-14, probabilities, inactivePixels);
 
-  mu2eCrv::MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
+  mu2eCrv::MakeCrvWaveforms makeCrvWaveform;
   double digitizationInterval = 12.5; //ns
   double digitizationInterval2 = 1.0; //ns
   double noise = 4.0e-4;
-  makeCrvWaveform.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v2.txt", 1.0, 100);
-  makeCrvWaveform2.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v2.txt", 1.0, 100);
+  double pedestal = 100;
+  makeCrvWaveform.LoadSinglePEWaveform("/mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v2.txt", 1.0, 100, 1.8564e-13);
 
-  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(0.0056, 0.0, false, true, true);
+  mu2eCrv::MakeCrvDigis makeCrvDigis;
+
+  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(11.28, 100.42, false);
 
   double startTime=-G4UniformRand()*digitizationInterval;
   std::vector<double> siPMtimes[4], siPMcharges[4];
   std::vector<double> waveform[4], waveform2[4];
+  std::vector<unsigned int> ADCs[4], ADCs2[4];
+  unsigned int TDC, TDC2;
   for(int SiPM=0; SiPM<4; SiPM++)
   {
-    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(_mode,SiPM);
+    const std::vector<double> &photonTimesTmp = WLSSteppingAction::Instance()->GetArrivalTimes(_mode,SiPM);
+    std::vector<std::pair<double, size_t> > photonTimes;
+    for(size_t i=0; i<photonTimes.size(); i++) photonTimes.emplace_back(std::pair<double,size_t>(photonTimesTmp[i],0));
 
     std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
     sim.Simulate(photonTimes, SiPMresponseVector);
-    for(unsigned int i=0; i<SiPMresponseVector.size(); i++)
+    for(size_t i=0; i<SiPMresponseVector.size(); i++)
     {
       siPMtimes[SiPM].push_back(SiPMresponseVector[i]._time);
       siPMcharges[SiPM].push_back(SiPMresponseVector[i]._charge);
     }
 
     makeCrvWaveform.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform[SiPM], startTime, digitizationInterval);
-    makeCrvWaveform2.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform2[SiPM], startTime, digitizationInterval2);
+    makeCrvWaveform.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform2[SiPM], startTime, digitizationInterval2);
+
     makeCrvWaveform.AddElectronicNoise(waveform[SiPM], noise, randGaussQ);
-    makeCrvWaveform2.AddElectronicNoise(waveform2[SiPM], noise, randGaussQ);
+    makeCrvWaveform.AddElectronicNoise(waveform2[SiPM], noise, randGaussQ);
+
+    makeCrvDigis.SetWaveform(waveform[SiPM], 2000, pedestal, startTime, digitizationInterval);
+    ADCs[SiPM] = makeCrvDigis.GetADCs();
+    TDC = makeCrvDigis.GetTDC();
+    makeCrvDigis.SetWaveform(waveform2[SiPM], 2000, pedestal, startTime, digitizationInterval2);
+    ADCs2[SiPM] = makeCrvDigis.GetADCs();
+    TDC2 = makeCrvDigis.GetTDC();
   }
 
   std::ostringstream s1;
@@ -355,7 +373,7 @@ void WLSEventAction::Draw(const G4Event* evt)
     hist[SiPM]->SetLineColor(kBlue);
     hist[SiPM]->GetXaxis()->SetTitle("t [ns]");
     hist[SiPM]->GetYaxis()->SetTitle("Photons");
-    hist[SiPM]->GetYaxis()->SetTitleOffset(0.5);
+    hist[SiPM]->GetYaxis()->SetTitleOffset(1.0);
     hist[SiPM]->GetYaxis()->SetAxisColor(kBlue);
     hist[SiPM]->GetYaxis()->SetTitleColor(kBlue);
     hist[SiPM]->GetYaxis()->SetLabelColor(kBlue);
@@ -375,17 +393,17 @@ void WLSEventAction::Draw(const G4Event* evt)
     _histPE[SiPM]->Fill(totalPEs);
 
 //waveforms with 1 ns bin width
-    unsigned int n2 = waveform2[SiPM].size();
+    unsigned int n2 = ADCs2[SiPM].size();
     if(n2==0) continue;
     double *t2 = new double[n2];
     double *v2 = new double[n2];
     double histMax = hist[SiPM]->GetMaximum();
-    double waveformMax = *std::max_element(waveform2[SiPM].begin(),waveform2[SiPM].end());
+    double waveformMax = *std::max_element(ADCs2[SiPM].begin(),ADCs2[SiPM].end());
     double scale = histMax/waveformMax;
     for(unsigned int j=0; j<n2; j++)
     {
-      t2[j]=startTime+j*digitizationInterval2;
-      v2[j]=waveform2[SiPM][j];
+      t2[j]=(TDC2+j)*digitizationInterval2;
+      v2[j]=ADCs2[SiPM][j];
       v2[j]*=scale;
     }
     graph2[SiPM]=new TGraph();
@@ -398,14 +416,14 @@ void WLSEventAction::Draw(const G4Event* evt)
     delete[] v2;
 
 //waveforms with 12.5 ns bin width
-    unsigned int n = waveform[SiPM].size();
+    unsigned int n = ADCs[SiPM].size();
     if(n==0) continue;
     double *t = new double[n];
     double *v = new double[n];
     for(unsigned int j=0; j<n; j++)
     {
-      t[j]=startTime+j*digitizationInterval;
-      v[j]=waveform[SiPM][j];
+      t[j]=(TDC+j)*digitizationInterval;
+      v[j]=ADCs[SiPM][j];
       v[j]*=scale;
     }
     graph[SiPM]=new TGraph(n,t,v);
@@ -419,7 +437,7 @@ void WLSEventAction::Draw(const G4Event* evt)
     delete[] v;
 
 //fit
-    makeRecoPulses.SetWaveform(waveform[SiPM], startTime, digitizationInterval);
+    makeRecoPulses.SetWaveform(ADCs[SiPM], TDC, digitizationInterval);
     unsigned int nPulse = makeRecoPulses.GetNPulses();
     for(unsigned int pulse=0; pulse<nPulse; pulse++)
     {
@@ -436,6 +454,7 @@ void WLSEventAction::Draw(const G4Event* evt)
         double p2 = makeRecoPulses.GetFitParam2(pulse);
         tF[iF] = tF1 + iF*1.0;
         vF[iF] = p0*TMath::Exp(-(tF[iF]-p1)/p2-TMath::Exp(-(tF[iF]-p1)/p2));
+        vF[iF]+=pedestal;
         vF[iF]*=scale;
         if(isnan(vF[iF])) nF=0;
       }
@@ -501,7 +520,7 @@ void WLSEventAction::Draw(const G4Event* evt)
 
     TGaxis *axisSiPMResponse = new TGaxis(maxTime,0,maxTime,histMax,0,histMax/scaleSiPMResponse,10,"+L");
     axisVector.push_back(axisSiPMResponse);
-    axisSiPMResponse->SetTitle("SiPM output [PE]");
+    axisSiPMResponse->SetTitle("SiPM charges [PE]");
     axisSiPMResponse->SetTitleOffset(1.0);
     axisSiPMResponse->SetTitleColor(kOrange);
     axisSiPMResponse->SetLineColor(kOrange);

@@ -32,12 +32,15 @@ namespace mu2e {
     virtual void Print(art::Event const& event,
 		       std::ostream& os = std::cout) {}
 
+    virtual void PrintSubRun(art::SubRun const& subrun,
+		       std::ostream& os = std::cout) {}
+
     void PrintMatrix(const CLHEP::HepSymMatrix& matrix, 
 		     std::ostream& os, int mode=0) {
       // when this destructs, it restores the flag state
       boost::io::ios_flags_saver ifs(os);
       // print fixed or scientific
-      os.setf(std::ios::floatfield);
+      os.flags(std::ios::right);
       for(int r=1; r<=matrix.num_row(); r++) {
 	os << "   ";
 	for(int c=1; c<=matrix.num_col(); c++) {

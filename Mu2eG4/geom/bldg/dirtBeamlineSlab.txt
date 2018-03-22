@@ -12,11 +12,9 @@ double dirt.beamline.slab.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.beamline.slab.yHalfThickness           = 101.6;
 
-vector<int>    dirt.beamline.slab.xreplace   = { 24, 25 }; 
+vector<int>    dirt.beamline.slab.xreplace   = { 21, 22 }; 
 vector<double> dirt.beamline.slab.xPositions = {
-  -2006.6,   // h1
   -2006.6,   // h2
-  6705.6,   // h3
   7975.6,   // h4
   7975.6,   // y
   13233.4,   // e
@@ -37,7 +35,6 @@ vector<double> dirt.beamline.slab.xPositions = {
   37820.6,   // y1
   44932.6,   // y2
   44932.6,   // y3
-  45745.4,   // y4
   50000,   // y4_to_E
   50000,   // NEcorner
   9550.51, // E wall of rem hatch
@@ -53,11 +50,9 @@ vector<double> dirt.beamline.slab.xPositions = {
   -2006.6
 };
 
-vector<int>    dirt.beamline.slab.yreplace   = { 25, 26, 31, 32 }; 
+vector<int>    dirt.beamline.slab.yreplace   = { 22, 23, 28, 29 }; 
 vector<double> dirt.beamline.slab.yPositions = {
-  6502.4,   // h1
   2438.4,   // h2
-  2438.4,   // h3
   2438.4,   // h4
   -152.4,   // y
   -152.4,   // e
@@ -78,7 +73,6 @@ vector<double> dirt.beamline.slab.yPositions = {
   -431.8,   // y1
   -431.8,   // y2
   2616.2,   // y3
-  2616.2,   // y4
   2616.2,   // y4_to_E
   50000,   // NEcorner
   50000,   // N of rem hatch E wall

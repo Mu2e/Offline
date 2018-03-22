@@ -1,0 +1,38 @@
+# Make a test input file to be modified by ModifyTestProduct
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : makeTestProduct
+
+source : {
+  module_type          : EmptyEvent
+  maxEvents            :  3
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics : {
+
+  producers : {
+    makeTestProduct : {
+      module_type : MakeTestProduct
+    }
+  }
+
+ t1 : [ makeTestProduct ]
+ e1 : [ out1 ]
+
+ trigger_paths : [ t1 ]
+ end_paths     : [ e1 ]
+
+}
+
+outputs : {
+  out1 : {
+    module_type : RootOutput
+    fileName    : "testProduct01.art"
+  }
+}

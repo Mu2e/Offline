@@ -244,6 +244,8 @@ class Cylinder: public VirtualShape
     }
     else start();
   }
+
+  ClassDef(Cylinder,1);
 };
 
 }

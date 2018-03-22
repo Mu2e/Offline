@@ -1,0 +1,76 @@
+# Calculate the nominal trajectory of incoming beam proton by starting
+# a pbar at the center of the target surface, with reflected beam
+# momentum.  Use transport only physics list.
+#
+# A. Gaponenko, 2017
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name : trajectoryIn
+
+source : { module_type : EmptyEvent maxEvents : 1 }
+
+services : {
+   message               : @local::mf_errorsOnly
+   RandomNumberGenerator : { }
+
+   GeometryService        : { inputFile      : "ExtinctionMonitorFNAL/test/geom_Mau11.txt" }
+   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+   G4Helper               : { }
+   SeedService            : @local::automaticSeeds
+}
+
+physics : {
+   producers:  {
+      generate : {
+         module_type : ExtMonFNALGun
+         guns : [ {
+	       coneAngleMin: 3.14159265358979323844
+	       coneAngleMax: 3.14159265358979323844
+	       pmin: 8888.6000
+	       pmax: 8888.6000
+	       pdgId     : -2212 // antiproton
+	       reference : "productionTargetEntrance"
+	       offset   : [ 0, 0, 0 ]
+	       halfSize : [ 0, 0, 0 ]
+	       tmin     : 0
+	       tmax     : 0
+	       histDirName: ""
+	       multiplicity: -1
+	    } ]
+      }
+
+      g4run : {
+         module_type: Mu2eG4
+         physics: @local::mu2eg4DefaultPhysics
+         ResourceLimits: @local::mu2eg4DefaultResourceLimits
+	 TrajectoryControl: @local::mu2eg4NoTrajectories
+         debug: @local::mu2eg4DefaultDebug
+         visualization: @local::mu2eg4NoVisualization
+         generatorModuleLabel: generate
+         MultiStageParameters: {} // this is the first stage
+         SDConfig: {
+            enableSD: [ ] // activate just the explicitly listed SDs
+            TimeVD: { times: [] }
+         }
+      }
+   }
+
+   p1 : [generate , g4run]
+   trigger_paths  : [p1]
+}
+
+// Disable all physics except transport.
+physics.producers.g4run.physics.physicsListName: "Minimal"
+physics.producers.g4run.physics.bfieldMaxStep: 5. //mm
+physics.producers.g4run.physics.limitStepInAllVolumes: true
+
+physics.producers.g4run.debug.eventList: [ 0, 1 ]
+physics.producers.g4run.debug.worldVerbosityLevel: 2
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

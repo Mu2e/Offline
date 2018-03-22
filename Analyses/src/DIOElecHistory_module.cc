@@ -71,7 +71,8 @@ namespace mu2e {
       _nOverflow(0),
       _nKilled(0),
       _totalcputime(0),
-      _totalrealtime(0)
+      _totalrealtime(0),
+      _mu2eDetectorSystemZ0(pset.get<double>("mu2e.detectorSystemZ0")) // must exist
     {
     }
     virtual ~DIOElecHistory() {
@@ -109,6 +110,8 @@ namespace mu2e {
 
     int _nBadG4Status, _nOverflow, _nKilled;
     float _totalcputime, _totalrealtime;
+
+    double _mu2eDetectorSystemZ0;
 
     Float_t B_evt, B_run; // --2--
     Float_t B_gentime, B_genx, B_geny, B_genz, B_gene, B_genp, B_gencosth, B_genphi, B_genfoil; // --9--
@@ -339,9 +342,9 @@ namespace mu2e {
       for (size_t i=0; i<strawvec.size(); ++i) {
 	Straw stw = tracker.getStraw(strawvec[i]);
 	B_strawidx[i] = stw.id().getStraw();
-	B_strawlay[i] = stw.id().getLayerId().getLayer();
-	B_strawplane[i] = stw.id().getPlaneId();
-	B_strawsec[i] = stw.id().getPanelId().getPanel();
+	B_strawlay[i] = stw.id().getLayer();
+	B_strawplane[i] = stw.id().getPlane();
+	B_strawsec[i] = stw.id().getPanel();
 	const CLHEP::Hep3Vector stMidPoint3 = stw.getMidPoint();
 	B_strawx[i] = stMidPoint3.getX();
 	B_strawy[i] = stMidPoint3.getY();
@@ -354,7 +357,7 @@ namespace mu2e {
       
       B_cry1x     = calo1.position().x() + 3904.;
       B_cry1y     = calo1.position().y();
-      B_cry1z     = calo1.position().z() - 10200.;
+      B_cry1z     = calo1.position().z() - _mu2eDetectorSystemZ0;
       B_cry1p     = calo1.momentum().mag();
       B_cry1costh = calo1.momentum().cosTheta();
       B_cry1phi   = calo1.momentum().phi();
@@ -374,7 +377,7 @@ namespace mu2e {
 
     B_deadx  = simBKG.endPosition().x() + 3904.;
     B_deady  = simBKG.endPosition().y();
-    B_deadz  = simBKG.endPosition().z() - 10200.;
+    B_deadz  = simBKG.endPosition().z() - _mu2eDetectorSystemZ0;
     B_deadtime  = simBKG.endGlobalTime();
     B_deadvol  = simBKG.endVolumeIndex();
 
@@ -407,7 +410,7 @@ namespace mu2e {
     
     B_vdx = vdpos.x() + 3904.;
     B_vdy = vdpos.y();
-    B_vdz = vdpos.z() - 10200.;
+    B_vdz = vdpos.z() - _mu2eDetectorSystemZ0;
     B_vdp = vdmom.mag();
     B_vdcosth = vdmom.cosTheta();
     B_vdphi = vdmom.phi();
@@ -428,13 +431,13 @@ namespace mu2e {
     
       cout << "Daughter n. " << dauidx << ": " << endl;
       cout << "pdg " << d.pdgId() << "'\t pos: "
-	   << d.startPosition().z() - 10200.
+	   << d.startPosition().z() - _mu2eDetectorSystemZ0
 	   << "\t start volume: " << volInfo.name() << endl;
 
   
       B_daux[dauidx] = d.startPosition().x() + 3904.;
       B_dauy[dauidx] = d.startPosition().y();
-      B_dauz[dauidx] = d.startPosition().z() - 10200.;
+      B_dauz[dauidx] = d.startPosition().z() - _mu2eDetectorSystemZ0;
       B_daup[dauidx] = d.startMomentum().mag();
       B_daucosth[dauidx] = d.startMomentum().cosTheta();
       B_dauphi[dauidx] = d.startMomentum().phi();

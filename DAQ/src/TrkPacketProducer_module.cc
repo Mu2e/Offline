@@ -51,8 +51,10 @@ namespace mu2e {
     struct trkhit {
       DataBlock::timestamp evt;
       int strawIdx;
-      int recoDigiT0;
-      int recoDigiT1;
+      unsigned long  recoDigiT0;
+      unsigned long  recoDigiT1;
+      unsigned long  recoDigiToT1;
+      unsigned long  recoDigiToT2;
       int recoDigiSamples;
       std::vector<adc_t> waveform;
       
@@ -65,6 +67,8 @@ namespace mu2e {
     explicit TrkPacketProducer(fhicl::ParameterSet const& pset);
 
     virtual void beginJob() override;
+
+    virtual void endJob();
 
     void produce( art::Event & ) override;
 
@@ -103,6 +107,9 @@ namespace mu2e {
     // Diagnostics level.
     int _diagLevel;
 
+    // Option to use new StrawIndex format
+    int _usePhysicalStrawIndex;
+
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
 
@@ -115,6 +122,7 @@ namespace mu2e {
     _outputFile                    (pset.get<string>("outputFile","artdaq_trk.txt")),
     _generateTextFile(pset.get<int>("generateTextFile",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
+    _usePhysicalStrawIndex(pset.get<int>("usePhysicalStrawIndex",0)),
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
     _makerModuleLabel(pset.get<std::string>("makerModuleLabel","makeSD")) {
 
@@ -134,6 +142,17 @@ namespace mu2e {
            << endl;
     }
 
+    if(_usePhysicalStrawIndex==1) {
+      cout << "WARNING: Using physically meaningful (i.e., non-standard) straw indices" << endl;
+    }
+
+  }
+
+  void TrkPacketProducer::endJob(){
+    if(_generateTextFile>0) {
+      outputStream << flush;
+      outputStream.close();
+    }
   }
 
   void TrkPacketProducer::produce(art::Event & evt) {
@@ -163,32 +182,68 @@ namespace mu2e {
     for ( size_t i=0; i<hits_SD.size(); ++i ) {
 
       StrawDigi const& SD = gblresult ? hits_SD.at(i) : StrawDigi();
-      StrawDigi::ADCWaveform const& theWaveform = SD.adcWaveform();
+      TrkTypes::ADCWaveform const& theWaveform = SD.adcWaveform();
 
       // Fill struct with info for current hit
       trkhit curHit;
       curHit.evt = eventNum;
-      curHit.strawIdx = SD.strawIndex().asInt();
-      curHit.recoDigiT0 = SD.TDC(StrawDigi::zero);
-      curHit.recoDigiT1 = SD.TDC(StrawDigi::one);
+      curHit.strawIdx = SD.strawId().asUint16();
+      if(_usePhysicalStrawIndex!=0) {
+	int tempIndex = curHit.strawIdx;
+
+	int layer = (tempIndex/48) % 2;                                                                                                                                 
+	
+	int plane = (tempIndex/576);    // 6 bits
+	int panel = (tempIndex/96) % 6; // 3 bits
+	int sid = 0;
+	if (layer == 0) {
+	  sid = (tempIndex % 96)*2;
+	} else {
+	  sid = ((tempIndex % 96) - 48)*2 + 1;
+	}
+	
+	// Physically Meaningful Format:
+	// A) 6 bits for plane (range 0 to 39)
+	// B) 3 bits for panel (range 0 to 5)
+	// C) 7 bits for strawID (range 0 to 95)
+	
+	adc_t msID = ((plane << 10) & 0xFC00) |
+	             ((panel << 7 ) & 0x0380) |
+	             ((sid        ) & 0x007F);
+
+	curHit.strawIdx = msID;
+
+	// std::cout << "GREPME MSID: " << msID << "\t" << plane << "\t" << panel << "\t" << sid << std::endl;
+      }
+      
+      curHit.recoDigiT0 = SD.TDC(TrkTypes::cal);
+      curHit.recoDigiT1 = SD.TDC(TrkTypes::hv);
+      curHit.recoDigiToT1 = SD.TOT(TrkTypes::cal);
+      curHit.recoDigiToT2 = SD.TOT(TrkTypes::hv);
       curHit.recoDigiSamples = theWaveform.size();
       for(size_t j = 0; j<theWaveform.size(); j++) {
 	curHit.waveform.push_back(theWaveform[j]);
       }
 
+      // Note: For now, ring, rocID, and dtcID are arbitrarily generated based on
+      // the non-physically-meaningful straw index.
+
       // 240 ROCs total
-      if(curHit.strawIdx>= abs(number_of_rings * rocs_per_ring * number_of_straws_per_roc) ) {
-	throw cet::exception("DATA") << " Straw index " << curHit.strawIdx
-				     << " exceeds limit of " <<  number_of_rings << "*"
-				     << rocs_per_ring << "*" << number_of_straws_per_roc
-				     << "=" << number_of_rings * rocs_per_ring * number_of_straws_per_roc;
-      }
+//      if(SD.strawId().asUint16() >= abs(number_of_rings * rocs_per_ring * number_of_straws_per_roc) ) {
+//	throw cet::exception("DATA") << " Straw index " << SD.strawId().asUint16()
+//				     << " exceeds limit of " <<  number_of_rings << "*"
+//				     << rocs_per_ring << "*" << number_of_straws_per_roc
+//				     << "=" << number_of_rings * rocs_per_ring * number_of_straws_per_roc;
+//      }
 
       // Ring ID, counting from 0, across all (for the tracker)
-      size_t globalRingID = int(curHit.strawIdx / (rocs_per_ring * number_of_straws_per_roc));
+//      size_t globalRingID = int(SD.strawId().asUint16() / (rocs_per_ring * number_of_straws_per_roc));
+// DNB my crude understanding of what a 'global ring' is supposed to be FIXME!!!
+      size_t globalRingID = SD.strawId().uniqueFace();
 
       curHit.ringID = globalRingID % rings_per_dtc;
-      curHit.rocID = (curHit.strawIdx - (rocs_per_ring * number_of_straws_per_roc) * globalRingID) / number_of_straws_per_roc;  
+//      curHit.rocID = (SD.strawId().asUint16() - (rocs_per_ring * number_of_straws_per_roc) * globalRingID) / number_of_straws_per_roc;  
+      curHit.rocID = SD.strawId().uniquePanel();
       curHit.dtcID = dtc_id(globalRingID/rings_per_dtc);
       
       trkHitVector.push_back(curHit);
@@ -198,6 +253,8 @@ namespace mu2e {
 	outputStream << curHit.strawIdx << "\t";
 	outputStream << curHit.recoDigiT0 << "\t";
 	outputStream << curHit.recoDigiT1 << "\t";
+	outputStream << curHit.recoDigiToT1 << "\t";
+	outputStream << curHit.recoDigiToT2 << "\t";
 	outputStream << curHit.recoDigiSamples << "\t";
 	for(size_t j = 0; j<curHit.waveform.size(); j++) {
 	  outputStream << theWaveform[j];
@@ -345,29 +402,41 @@ namespace mu2e {
 	  
 	  // Fill the data packets:
 	  // Assume the 0th apd is always read out before the second
-	  adc_t strawIndex = curHit.strawIdx;
+	  uint16_t strawIndex = curHit.strawIdx;
 	  
-	  uint32_t TDC0 = curHit.recoDigiT0;
-	  uint32_t TDC1 = curHit.recoDigiT1;
+	  adc_t TDC0 = curHit.recoDigiT0 & 0xFFFF;
+	  adc_t TDC1 = curHit.recoDigiT1 & 0xFFFF;
 	  
-	  adc_t TDC0_low = TDC0;
-	  adc_t TDC0_high = TDC0 >> 16;
-	  adc_t TDC1_low = TDC1 << 8;
-	  adc_t TDC1_high = TDC1 >> 8;
-	  
-	  adc_t TDC0_high_TDC1_low = TDC0_high | TDC1_low;
-	  
-	  packetVector.push_back(strawIndex);
-	  packetVector.push_back(TDC0_low);
-	  packetVector.push_back(TDC0_high_TDC1_low);
-	  packetVector.push_back(TDC1_high);
-	  
-	  for (int sampleIdx = 0; sampleIdx < curHit.recoDigiSamples; sampleIdx++){
-	    adc_t scaledVal = static_cast<adc_t>(curHit.waveform[sampleIdx]);
-	    packetVector.push_back(scaledVal);
+      	  packetVector.push_back(strawIndex);
+	  packetVector.push_back(TDC0);
+	  packetVector.push_back(TDC1);
+
+
+	  // Note: We only use 8 bits of each TOT value, and we could
+	  // probably use only 4, though that wouldn't change the number
+	  // of packets required per straw hit
+	  uint32_t TOT0 = curHit.recoDigiToT1;
+	  uint32_t TOT1 = curHit.recoDigiToT2;
+
+	  adc_t TOT_Combined = (TOT1 << 8) | (TOT0 & 0x00FF);
+
+      	  packetVector.push_back(TOT_Combined);	    
+
+	  // Four 12-bit tracker ADC samples fit into every three slots (16 bits * 3)
+	  // when we pack them tightly
+	  for (int sampleIdx = 0; sampleIdx < curHit.recoDigiSamples; sampleIdx+=4){
+	    adc_t sample0 = static_cast<adc_t>(curHit.waveform[sampleIdx]);
+	    adc_t sample1 = (sampleIdx+1<curHit.recoDigiSamples) ? static_cast<adc_t>(curHit.waveform[sampleIdx+1]) : 0x0000;
+	    adc_t sample2 = (sampleIdx+2<curHit.recoDigiSamples) ? static_cast<adc_t>(curHit.waveform[sampleIdx+2]) : 0x0000;
+	    adc_t sample3 = (sampleIdx+3<curHit.recoDigiSamples) ? static_cast<adc_t>(curHit.waveform[sampleIdx+3]) : 0x0000;
+	    
+	    packetVector.push_back((sample1 << 12) | (sample0 & 0x0FFF)      );
+	    packetVector.push_back((sample2 << 8) | ((sample1 >> 4) & 0x00FF));
+	    packetVector.push_back((sample3 << 4) | ((sample2 >> 8) & 0x000F));
 	  }
+
 	  // Pad any empty space in the last packet with 0s
-	  size_t padding_slots = 8 - ((curHit.recoDigiSamples - 4) % 8);
+	  size_t padding_slots = 8 - (packetVector.size() % 8);
 	  if (padding_slots < 8) {
 	    for (size_t i = 0; i < padding_slots; i++) {
 	      packetVector.push_back((adc_t)0);

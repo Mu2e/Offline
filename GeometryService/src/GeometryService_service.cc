@@ -113,9 +113,10 @@ namespace mu2e {
   template <typename DET>
   void GeometryService::addDetector(std::unique_ptr<DET> d)
   {
-    if(_detectors.find(typeid(DET).name())!=_detectors.end())
+    if(_detectors.find(typeid(DET).name())!=_detectors.end()) {
       throw cet::exception("GEOM") << "failed to install detector with type name "
                                    << typeid(DET).name() << "\n";
+    }
 
       DetectorPtr ptr(d.release());
       _detectors[typeid(DET).name()] = ptr;
@@ -144,19 +145,19 @@ namespace mu2e {
       return;
     }
 
-    cout  << "Geometry input file is: " << _inputfile << "\n";
-
     _config = unique_ptr<SimpleConfig>(new SimpleConfig(_inputfile,
                                                       _allowReplacement,
                                                       _messageOnReplacement,
                                                       _messageOnDefault ));
+
+    _config->printOpen(cout,"Geometry");
 
     // Print final state of file after all substitutions.
     if ( _printConfig      ){ _config->print(cout, "Geom: ");       }
 
     // decide if this is standard Mu2e detector or something else ...
 
-    if (!isStandardMu2eDetector() || 
+    if (!isStandardMu2eDetector() ||
         !_config->getBool("mu2e.standardDetector",true)) {
       cout  << "Non standard mu2e configuration, assuming it is intentional" << endl;
       return;
@@ -290,7 +291,7 @@ namespace mu2e {
       MECOStyleProtonAbsorberMaker mecopam( *_config, ds, target);
       addDetector( mecopam.getMECOStyleProtonAbsorberPtr() );
     }
-    
+
     if(_config->getBool("hasSTM",false)){
       STMMaker stm( *_config, beamline.solenoidOffset() );
       addDetector( stm.getSTMPtr() );

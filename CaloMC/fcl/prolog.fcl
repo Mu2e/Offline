@@ -20,8 +20,10 @@ CaloShowerStepFromStepPt  :
     deltaTime               : 0.2
     calorimeterStepPoints   : calorimeter
     calorimeterROStepPoints : calorimeterRO
+    usePhysVolInfo          : false
     physVolInfoInput        : "compressPVDetector"
     caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092"]
+    compressMuons           : false 
     diagLevel               : 0
 }
 
@@ -33,9 +35,9 @@ CaloShowerStepROFromShowerStep :
     caloShowerMCName            : calorimeter
     TimeOffsets                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
     blindTime                   : @local::HitMakerBlindTime
-    caloLRUcorrection           : true
+    caloLRUCorrection           : true
     caloBirksCorrection         : true
-    caloPEStatcorrection        : true
+    caloPEStatCorrection        : true
     addTravelTime               : true	    
     diagLevel                   : 0
 }

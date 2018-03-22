@@ -339,9 +339,9 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
     if ( _rmvlevel > 0 ) {
       mf::LogInfo logInfo("GEOM");
-      logInfo << "Initializing Geant 4 for " << run.id()
+      logInfo << "Initializing Geant4 for " << run.id()
               << " with verbosity " << _rmvlevel << endl;
-      logInfo << "Configured simParticleNumberOffset = "<< multiStagePars_.simParticleNumberOffset() << endl;
+      logInfo << " Configured simParticleNumberOffset = "<< multiStagePars_.simParticleNumberOffset() << endl;
     }
 
     
@@ -411,7 +411,6 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     // Mu2e specific customizations that must be done after the call to Initialize.
     postG4InitializeTasks(pset_,pL);
     
-    
 } // end G4::initializeG4
 
 
@@ -426,9 +425,6 @@ void Mu2eG4::beginSubRun(art::SubRun& sr) {
         mvi->reserve(1 + ih->size());
         mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
     }
-    cout << __func__ << " Append volume info " <<  endl;
-    cout << __func__ << " multiStagePars_.simParticleNumberOffset() " 
-         << multiStagePars_.simParticleNumberOffset() <<  endl;
 
     // Append info for the current stage
     mvi->emplace_back(std::make_pair(multiStagePars_.simParticleNumberOffset(), _physVolHelper.persistentSingleStageInfo()));

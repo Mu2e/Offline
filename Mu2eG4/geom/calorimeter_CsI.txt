@@ -89,6 +89,7 @@ double calorimeter.crateBottomHalfY = 4.;
 double calorimeter.crateSideHalfY   = 85.;
 double calorimeter.crateSideHalfX   = 10.;
 
+string calorimeter.crateBackgroundMaterial = "DSVacuum";
 string calorimeter.crateMaterial     = "G4_Al"; 
 double calorimeter.crateInnerRadius  = 718;       
 double calorimeter.crateOuterRadius  = 950;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
@@ -133,6 +134,6 @@ bool calorimeter.crystalVisible               = true;
 bool calorimeter.crystalSolid                 = false;
 bool calorimeter.absorberBoxVisible           = false;
 bool calorimeter.absorberBoxSolid             = false;
-bool calorimeter.shieldSolid                  = false;
+bool calorimeter.shieldSolid                  = true;
 
 int  calorimeter.verbosityLevel               = 0;

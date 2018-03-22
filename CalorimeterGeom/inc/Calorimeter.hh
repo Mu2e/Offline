@@ -49,10 +49,11 @@ namespace mu2e {
 
 
   	   // neighbors, indexing 
-           virtual const std::vector<int>&  neighbors(int crystalId)                             const = 0;
-           virtual const std::vector<int>&  nextNeighbors(int crystalId)                         const = 0;
-           virtual       std::vector<int>   neighborsByLevel(int crystalId, int level)           const = 0; 
-           virtual int                      crystalIdxFromPosition(const CLHEP::Hep3Vector &pos) const = 0;
+           virtual const std::vector<int>&  neighbors(int crystalId, bool rawMap=false)                     const = 0;
+           virtual const std::vector<int>&  nextNeighbors(int crystalId, bool rawMap=false)                 const = 0;
+           virtual       std::vector<int>   neighborsByLevel(int crystalId, int level, bool rawMap = false) const = 0; 
+           virtual int                      crystalIdxFromPosition(const CLHEP::Hep3Vector &pos)            const = 0;
+           virtual int                      nearestIdxFromPosition(const CLHEP::Hep3Vector &pos)            const = 0;
 
 
            // get to know me!

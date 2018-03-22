@@ -1,0 +1,202 @@
+           Release notes for Mu2e Offline software, v6_2_2
+
+
+9) edmonds 8 June 2017
+   Added the option to put a hole in the target with the geometry
+   parameter: stoppingTarget.holeRadius (defulat = 0)
+
+   Also added the geometry files I used in Mu2eG4/geom/studies
+
+8) genser 31 May 2017
+   enabled switching muon capture nuclear deexcitation model to precompound by
+   using
+   fcl: physics.producers.g4run.physics.captureDModel: "muMinusNuclearCapture"
+   Modified files:
+      Mu2eG4/fcl/g4test_03.fcl
+      Mu2eG4/fcl/prolog.fcl
+      Mu2eG4/inc/toggleProcesses.hh
+      Mu2eG4/src/postG4InitializeTasks.cc
+      Mu2eG4/src/toggleProcesses.cc
+
+7) genser 31 May 2017
+
+   enabled turning on GammaToMuPair, AnnihiToMuPair, ee2hadr processes
+   via fcl: physics.producers.g4run.physics.addProcesses :
+               [ "GammaToMuPair", "AnnihiToMuPair", "ee2hadr" ]
+   Modified files:
+      Mu2eG4/fcl/g4test_03.fcl
+      Mu2eG4/fcl/prolog.fcl
+      Mu2eG4/inc/toggleProcesses.hh
+      Mu2eG4/src/postG4InitializeTasks.cc
+      Mu2eG4/src/toggleProcesses.cc
+      MCDataProducts/inc/ProcessCode.hh
+
+6) dnbrow01  30 May 2017
+   Improve selective overlaps checking for building, dirt, and 
+   External Shielding.  Split ConstructMaterials to use two functions
+   to eschew compiler complaint about too many variables in previous
+   single function.  Add the trench cover for the DS, built by Aaron Hill.
+   modified:   GeometryService/src/Mu2eHallMaker.cc
+   new file:   Mu2eG4/geom/bldg/dsAreaTrenchCover.txt
+   modified:   Mu2eG4/geom/mu2eHall_v02.txt
+   modified:   Mu2eG4/inc/ConstructMaterials.hh
+   modified:   Mu2eG4/src/ConstructMaterials.cc
+   modified:   Mu2eG4/src/constructExternalShielding.cc
+   modified:   Mu2eG4/test/geom_SurfaceCheck_Select.txt
+
+5) edmonds 26 May 2017
+   Added KalSeedFilter module which reduces the payload of persistent tracks
+
+   Added KalSeedToTrkQualTree module, which can use these filtered persistant tracks
+
+   Added a couple of FCL files as examples
+
+4)  dnbrow01  24 May 2017
+    Change name of Brass material to "BrassC360" to avoid confusion.
+    modified:   Mu2eG4/src/ConstructMaterials.cc
+
+3)  murat May 23 2017
+
+    - modify Mu2eG4/src/constructTS.cc to have the beam flash tooth always 
+      position on the upstream end of the TS3 collimators
+
+    - commit optimized parameters of the beam flash 'tooth'
+
+    - modified files: Mu2eG4/geom/studies/studyCOL3FlashBlock.txt
+                      Mu2eG4/src/constructTS.cc
+
+2)  dnbrow01  17 May 2017
+    Make the flash mitigation test block(s) more flexible in specification.
+    Now you can give length, offsets, and material.
+    modified:   BeamlineGeom/inc/Collimator_TS3.hh
+    modified:   GeometryService/src/BeamlineMaker.cc
+    modified:   Mu2eG4/geom/TransportSolenoid_v02.txt
+    modified:   Mu2eG4/geom/studies/studyCOL3FlashBlock.txt
+    modified:   Mu2eG4/src/constructTS.cc
+
+
+1)  dnbrow01  16 May 2017
+    This is a combined note for commits made on May 8, 9, 10, 11, 12, and 16,
+    2017.  The majority of these commits were directed at readiness for a
+    major MARS simulation run.  The last commit is for a study of beam flash
+    reduction.  Details below in reverse chronological order.
+
+    May 16:
+    Added an option to create a block along the bottom of the TS3 collimators.
+    This is for use in studying flash-associated background mitigation.
+    One can either use the new file below as the geometry file in their fcl,
+    or make equivalent modifications in TransportSolenoid_v02.txt.
+    BeamlineGeom/inc/Collimator_TS3.hh          
+    GeometryService/src/BeamlineMaker.cc       
+    Mu2eG4/geom/TransportSolenoid_v02.txt      
+    Mu2eG4/geom/studies/studyCOL3FlashBlock.txt
+    Mu2eG4/src/constructTS.cc                 
+
+    May 12:
+    Fixed another issue found in MARS test jobs:  the insulating vacuum 
+    within the PS/TS/DS cryostats was actually air.  Fixed for PS and DS.
+    Added more options for selective surface checks.
+    Mu2eG4/src/constructDS.cc                 
+    Mu2eG4/src/constructPS.cc                 
+    Mu2eG4/src/constructTTrackerv3Detailed.cc 
+    Mu2eG4/test/geom_SurfaceCheck_Select.txt  
+
+    May 11:
+    Fixed some issues that were missed in visual inspections of geometry in
+    mu2e.gdml files, but were spotted after some MARS test jobs:  the mother 
+    volume for calorimeter crates was solid Aluminum (instead of DS Vacuum) 
+    and the VPSP and IFB were Iron rather than Stainless.
+    Mu2eG4/geom/DSShielding_v01.txt        
+    Mu2eG4/geom/calorimeter_CsI.txt        
+    Mu2eG4/src/constructDiskCalorimeter.cc 
+
+    Added Bronze (C94300) definition and mad the tracker upstream support ring
+    from this material rather than Brass.
+    Mu2eG4/geom/ttracker_cd3_s4p2.txt
+    Mu2eG4/src/ConstructMaterials.cc
+
+    May 10:
+    Added Brass (C36000) definition and made the tracker upstream support ring
+    from this material rather than Al.
+    Mu2eG4/geom/ttracker_cd3_s4p2.txt 
+    Mu2eG4/src/ConstructMaterials.cc 
+
+    Per request, moved the wedge portion of the TS3 antiproton stopping
+    window downstream by an amount controllable by text parameter.
+    Default set to 3 mm.  The separation is a current design preference, 
+    though not finalized.
+    BeamlineGeom/inc/PbarWindow.hh          
+    GeometryService/src/BeamlineMaker.cc    
+    Mu2eG4/geom/TransportSolenoid_v02.txt   
+    Mu2eG4/src/constructTS.cc               
+    Mu2eG4/test/geom_SurfaceCheck_Select.txt
+
+    Fix overlaps caused by previous day's extension of the cable runs into
+    the Calorimeter area.  Unfortunately causes some gaps in the cable run,
+    but best we can do on limited time.
+    Mu2eG4/src/constructDiskCalorimeter.cc
+
+
+    May 9:
+    Made a more continuous set of cable runs from the downstream DSVacuum 
+    area into the Calorimeter area.  Also added some more options for 
+    selective overlaps checking.
+    Mu2eG4/geom/DetectorSolenoid_v02.txt     
+    Mu2eG4/src/constructDiskCalorimeter.cc   
+    Mu2eG4/test/geom_SurfaceCheck_Select.txt 
+
+    Respond to requests for updates to TSdA/OPA/pion degrader in light of new
+    numbers in the design plans.
+    Mu2eG4/geom/DetectorSolenoid_v02.txt      
+    Mu2eG4/geom/TSdA_v01.txt                 
+    Mu2eG4/geom/TransportSolenoid_v02.txt    
+    Mu2eG4/geom/degrader_v01.txt             
+    Mu2eG4/geom/geom_common_current.txt      
+    Mu2eG4/geom/protonAbsorber_cylindrical.txt
+    Mu2eG4/src/constructTSdA.cc       
+
+    Fill in the last dirt/backfill gaps left by the recent major civil 
+    construction update.
+    Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea1.txt  (New)
+    Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea10.txt (New)
+    Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea11.txt (New)
+    Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea2.txt  (New)
+    Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea3.txt  (New)
+    Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea4.txt  (New)
+    Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea5.txt  (New)
+    Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea6.txt  (New)
+    Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea7.txt  (New)
+    Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea8.txt  (New)
+    Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea9.txt  (New)
+    Mu2eG4/geom/bldg/dirtPsAreaWLower.txt             (New)
+    Mu2eG4/geom/geom_common_current.txt               
+    Mu2eG4/geom/mu2eHall_v02.txt                      
+
+
+    May 8:
+    Making sure dirt and backfill fit around recent civil construction 
+    updates, and filling some gaps left by mods.  Make geom_common_current
+    point to all recent changes and put in comments on how to separate off
+    the civil construction changes from the rest of the changes. 
+    Files affected:
+     Mu2eG4/geom/bldg/backfillPsAreaInter_v02.txt       
+     Mu2eG4/geom/bldg/backfillPsAreaRWallFootLevel_v02.txt
+     Mu2eG4/geom/bldg/backfillPsAreaTopLayer_v02.txt   
+     Mu2eG4/geom/bldg/backfillPsHatchE.txt             (New)
+     Mu2eG4/geom/bldg/backfillPsHatchS.txt             (New)
+     Mu2eG4/geom/bldg/dirtExtMonCeiling_v02.txt        
+     Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea_v02.txt  
+     Mu2eG4/geom/bldg/dirtFoundationExtMon_v02.txt     
+     Mu2eG4/geom/bldg/dirtFoundationN_v02.txt          (New)
+     Mu2eG4/geom/bldg/dirtPsAreaDirtSlabN_v02.txt      
+     Mu2eG4/geom/bldg/dirtPsAreaUpper2N_v02.txt        
+     Mu2eG4/geom/bldg/dirtPsAreaUpper2SliverN_v02.txt  
+     Mu2eG4/geom/bldg/dirtPsAreaUpperN_v02.txt         
+     Mu2eG4/geom/bldg/dirtPsAreaW_v02.txt              
+     Mu2eG4/geom/bldg/dirtRemoteHandling_v02.txt       
+     Mu2eG4/geom/bldg/dirtUpToGradeLevelW_v02.txt      
+     Mu2eG4/geom/bldg/extMonBitS.txt                   
+     Mu2eG4/geom/bldg/extMonUpper_v02.txt              
+     Mu2eG4/geom/mu2eHall_v02.txt                      
+     Mu2eG4/geom/ttracker_cd3_s4p2.txt                 
+

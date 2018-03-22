@@ -1,378 +1,98 @@
-#!/usr/bin/env python
 #
-# Build a Mu2e base release or satellite release.
+# Top driver script for scons to build a Mu2e base release or satellite release.
 #
-# Original author Rob Kutschke.
-#
-import os, re, string
-import sys
-import subprocess
+import os, re, string, sys
 
-# Check that the release-specific setup has been run.
-if not os.environ.has_key('MU2E_BASE_RELEASE'):
-    sys.exit('You must setup a Mu2e base release before running scons.\nExiting.')
+# Functions that do small tasks and build lists
+import sconstruct_helper as sch
+# handles how the input files are collected and the output files are named
+from mu2e_helper import mu2e_helper
 
-base = os.environ['MU2E_BASE_RELEASE']
+# this will contain global config info about the build
+mu2eOpts = {}
 
-bopt = base + '/buildopts'
+# add a mu2e debug print option like "--mu2ePrint=5"
+AddOption('--mu2ePrint', dest='mu2ePrint', 
+          type='int',nargs=1,default=1,
+          help='mu2e print level (0-10) default=1')
+mu2ePrint = GetOption("mu2ePrint")
 
-# Make sure that setup.sh was sourced after the last
-# re-configuration with buildopts
-envopts = os.environ['MU2E_SETUP_BUILDOPTS'].strip()
-fsopts  = subprocess.check_output([bopt]).strip()
-if envopts != fsopts:
-    sys.exit("ERROR: Inconsistent build options.\n"
-             +"Please source setup.sh after setting new options with buildopts.\n"
-             +"Exiting.")
-    pass
+mu2eOpts["mu2ePrint"] = mu2ePrint
 
-# Extract information from the shell environment.
-art_inc       = os.environ['ART_INC']
-art_lib       = os.environ['ART_LIB']
-canvas_inc    = os.environ['CANVAS_INC']
-canvas_lib    = os.environ['CANVAS_LIB']
-btrk_inc      = os.environ['BTRK_INC']
-btrk_lib      = os.environ['BTRK_LIB']
-boost_lib     = os.environ['BOOST_LIB']
-boost_inc     = os.environ['BOOST_INC']
-clhep_inc     = os.environ['CLHEP_INC']
-clhep_lib     = os.environ['CLHEP_LIB_DIR']
-cppunit_dir   = os.environ['CPPUNIT_DIR']
-heppdt_lib    = os.environ['HEPPDT_LIB']
-heppdt_inc    = os.environ['HEPPDT_INC']
-root_inc      = os.environ['ROOT_INC']
-root_sys      = os.environ['ROOTSYS']
-fhicl_inc     = os.environ['FHICLCPP_INC']
-fhicl_lib     = os.environ['FHICLCPP_LIB']
-sqlite_inc     = os.environ['SQLITE_INC']
-sqlite_lib     = os.environ['SQLITE_LIB']
-mesfac_inc     = os.environ['MESSAGEFACILITY_INC']
-mesfac_lib     = os.environ['MESSAGEFACILITY_LIB']
-cetlib_inc     = os.environ['CETLIB_INC']
-cetlib_lib     = os.environ['CETLIB_LIB']
-cetlib_except_inc = os.environ['CETLIB_EXCEPT_INC']
-cetlib_except_lib = os.environ['CETLIB_EXCEPT_LIB']
-xercesc_inc    = os.environ['XERCES_C_INC']
-xercesc_root   = os.environ['XERCESCROOT']
-tbb_inc     = os.environ['TBB_INC']
-tbb_lib     = os.environ['TBB_LIB']
+# Check that some important environment variables have been set; 
+# result is a dictionary of the options
+moreOpts = sch.mu2eEnvironment()
+mu2eOpts.update(moreOpts)
 
-# If we are working in a satellite release, extract more information from the environment.
-if os.environ.has_key('MU2E_SATELLITE_RELEASE'):
-    satelliterelease          = os.environ['MU2E_SATELLITE_RELEASE']
-    cpppath_frag         = [ satelliterelease, satelliterelease + '/BaBar/include' ]
-    libpath_frag         = [ satelliterelease+'/lib/' ]
-else:
-    cpppath_frag         = [ ]
-    libpath_frag         = [ ]
+if mu2ePrint > 1:
+    print ("mu2eOpts:")
+    print (mu2eOpts)
 
-# The link libraries needed when building the BaBar code.
-babarlibs = [ 'BTrk_KalmanTrack',     'BTrk_DetectorModel',      'BTrk_TrkBase',    'BTrk_BField',
-              'BTrk_BbrGeom',         'BTrk_difAlgebra', 'BTrk_ProbTools',
-              'BTrk_BaBar',           'BTrk_MatEnv' ]
 
-# Define scons-local environment - it will be exported later.
-osenv = {}
-for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',  'ROOTSYS', 'PYTHON_ROOT', 'PYTHON_DIR', 'SQLITE_DIR', 'SQLITE_FQ_DIR' ]:
-    if var in os.environ.keys():
-        osenv[var] = os.environ[var]
-        pass
-    pass
+if mu2ePrint > 5:
+    print ("building Evironment:")
+    print ("\nCPPPATH = ",sch.cppPath(mu2eOpts))
+    print ("\nLIBPATH = ",sch.libPath(mu2eOpts))
+    print ("\nENV = ",sch.exportedOSEnvironment())
+    print ("\nFORTRAN = 'gfortran'")
+    print ("\nBABARLIBS = ", sch.BaBarLibs())
+    print ("\nmerge Flags =",sch.mergeFlags(mu2eOpts))
 
-env = Environment( CPPPATH=[ cpppath_frag,
-                             base,
-                             base+'//include',
-                             art_inc,
-                             canvas_inc,
-                             btrk_inc,
-                             btrk_inc,
-                             mesfac_inc,
-                             fhicl_inc,
-                             sqlite_inc,
-                             cetlib_inc,
-                             cetlib_except_inc,
-                             boost_inc,
-                             clhep_inc,
-                             cppunit_dir+'/include',
-                             heppdt_inc,
-                             root_inc,
-                             xercesc_inc,
-                             tbb_inc,
-                           ],
-                   LIBPATH=[ libpath_frag,
-                             base+'/lib',
-                             art_lib,
-                             canvas_lib,
-                             btrk_lib,
-                             mesfac_lib,
-                             fhicl_lib,
-                             sqlite_lib,
-                             cetlib_lib,
-                             cetlib_except_lib,
-                             boost_lib,
-                             clhep_lib,
-                             cppunit_dir+'/lib',
-                             heppdt_lib,
-                             root_sys+'/lib',
-                             xercesc_root+'/lib',
-                             tbb_lib,
-                           ],
-                   ENV=osenv,
+# this the scons object which contains the methods to build code
+env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...
+                   LIBPATH = sch.libPath(mu2eOpts),   # /lib, $ART_LIB ...
+                   ENV = sch.exportedOSEnvironment(), # LD_LIBRARY_PATH, ROOTSYS, ...
                    FORTRAN = 'gfortran',
-                   BABARLIBS = [ babarlibs ]
+                   BABARLIBS = sch.BaBarLibs()
                  )
 
 # Define and register the rule for building dictionaries.
-genreflex = Builder(action="mu2e_genreflex $SOURCE $TARGET  \"$_CPPINCFLAGS\" $LIBNAME $DEBUG_LEVEL" )
+# sources are classes.h, classes_def.xml, 
+# targets are dict.cpp, .rootmap and .pcm
+# LIBTEXT is the library for the dict - not a target, only text for names
+genreflex = Builder(action="genreflex ${SOURCES[0]} -s ${SOURCES[1]} $_CPPINCFLAGS -l $LIBTEXT -o ${TARGETS[0]} --fail_on_warnings --rootmap-lib=$LIBTEXT  --rootmap=${TARGETS[1]} $DEBUG_FLAG" )
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
-# Get the flag that controls compiler options. Check that it is legal.
-# There is probably a way to tell AddOption to do this test internally.
-level = subprocess.check_output([bopt, '--build']).strip()
-known_levels = ['prof', 'debug' ]
-if not level in known_levels:
-    print 'Unrecognized value for --mu2elevel ' + level
-    print '   The value must be one of the known levels: '  + str(known_levels)
-    raise Exception('foo')
-
-graphicssys = subprocess.check_output([bopt, '--g4vis']).strip()
-known_gs = ['ogl', 'qt', 'none' ]
-if not graphicssys in known_gs:
-    print 'Unrecognized value for --mu2egs ' + graphicssys
-    print '   The value must be one of the known systems: ' + str(known_gs)
-    raise Exception('gs')
-
-env.Append( MU2EOPTS = [level, graphicssys] );
-
-# Set compile and link flags.
+# this sets the build flags, like -std=c++14 -Wall -O3, etc
 SetOption('warn', 'no-fortran-cxx-mix')
-env.MergeFlags('-std=c++14')
-env.MergeFlags('-Wall')
-env.MergeFlags('-Wno-unused-local-typedefs')
-env.MergeFlags('-g')
-env.MergeFlags('-Werror')
-env.MergeFlags('-Wl,--no-undefined')
-env.MergeFlags('-gdwarf-2')
-env.MergeFlags('-Werror=return-type')
-env.MergeFlags('-Winit-self')
-env.MergeFlags('-Woverloaded-virtual')
-#
-# Fixme: Recommend these once we scrub to the code to make them work,
-#env.MergeFlags('-pedantic')
-#env.MergeFlags('-Wextra')
-#
-# Likely need these if we specify -Wextra or -pedantic
-# (Because underlying packages do not bulid cleanly wiht
-#  -Wextra or -pedantic)
-#env.MergeFlags('-Wno-long-long')
-#env.MergeFlags('-Wno-ignored-qualifiers')
-#env.MergeFlags('-Wno-unused-parameter')
-#env.MergeFlags('-Wno-type-limits')
+env.MergeFlags( sch.mergeFlags(mu2eOpts) )
+# env.MergeFlags( '-lpthread' )
 
-if level == 'prof':
-    env.MergeFlags('-O3')
-    env.MergeFlags('-fno-omit-frame-pointer')
-    env.MergeFlags('-DNDEBUG')
+# env construction variables, in SConscript: var=env['VARNAME']
+env.Append( ROOTLIBS = sch.rootLibs() )
+env.Append( BABARLIBS = sch.BaBarLibs() )
+env.Append( MU2EBASE = mu2eOpts["base"] )
+env.Append( BINDIR = mu2eOpts['bindir'] )
+env.Append( BUILD = mu2eOpts["build"] )
+env.Append( G4VIS = mu2eOpts["g4vis"] )
 
-if level == 'debug':
-    env.MergeFlags('-O0')
-
-# This comes from: root-config --cflags --glibs
-# Fixme: check with root 6
-# Then guess at the correct location of Spectrum and MLP.
-rootlibs = [ 'Core', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
-             'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
-env.Append( ROOTLIBS = rootlibs )
-
-bindir = base+'/bin/'
-env.Append( BINDIR = bindir )
-
-# Make the modified environment visible to all of the SConscript files
+# make the scons environment visible to all SConscript files (Import('env'))
 Export('env')
-
-# Walk the directory tree to locate all SConscript files.
-ss=[]
-for root,dirs,files in os.walk('.'):
-    for file in files:
-        if file == 'SConscript': ss.append('%s/%s'%(root[2:],file))
-        pass
-    pass
-
-# If we are making a build for the trigger, do not build everything.
-trigger = subprocess.check_output([bopt, '--trigger']).strip()
-if trigger == 'on':
-    ss.remove('Mu2eG4/src/SConscript')
-    ss.remove('CRVResponse/src/SConscript')
-    ss.remove('Sandbox/src/SConscript')
-
-# Define a helper class to construct names of .so libaries. Make an
-# instance of it available to the SConscript files.
-class mu2e_helper:
-    """mu2e_helper: class to produce library names"""
-#   This appears to behave like c++ static member and is initialized at class defintion time.
-    sourceroot =  os.path.abspath('.')
-#
-#   Accesor
-#
-    def base(self):
-        return self.sourceroot
-#
-#   Build the name of the shared library into which non-plugin compiled code will be inserted.
-#   Two versions: with and without the '#/lib' path prefix.
-#
-    def libname(self):
-        relpath = os.path.relpath('.',self.sourceroot)
-        tokens = string.split(relpath,'/')
-        if len(tokens) > 1:
-            if tokens[len(tokens)-1] == 'src':
-                tokens.pop()
-                pass
-            pass
-        prefix = 'mu2e_'
-        return prefix + string.join(tokens,'_')
-    def prefixed_libname(self):
-        return '#/lib/' + self.libname()
-#
-#   Build the name of the shared library into which plugin code will be inserted.
-#   Two versions: with and without the '#/lib' path prefix.
-#
-    def plugin_libname(self,sourcename):
-        return self.libname() + '_' + sourcename[:sourcename.find('.cc')]
-    def prefixed_plugin_libname(self,sourcename):
-        return '#/lib/' + self.plugin_libname(sourcename)
-#
-#   Build a list of plugins to be biult.
-#
-    def plugin_cc(self):
-        return Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) \
-            +  Glob('*_source.cc', strings=True) + Glob('*_utils.cc',strings=True)    \
-            +  Glob('*_tool.cc',strings=True);
-#
-#   Build a list of .cc files that are not plugings; these go into the
-#   library named after the directory.
-#
-    def non_plugin_cc(self):
-        tmp = non_plugin_cc = Glob('*.cc', strings=True)
-        for cc in self.plugin_cc(): tmp.remove(cc)
-        return tmp
-#
-#   Names need to build the _dict and _map libraries.
-#
-    def dict_tmp_name(self):
-        relpath = os.path.relpath('.',self.sourceroot)
-        return '#/tmp/src/' + relpath + '/' + self.libname() + '_dict.cpp'
-
-    def map_tmp_name(self):
-        relpath = os.path.relpath('.',self.sourceroot)
-        return '#/tmp/src/' + relpath + '/' + self.libname() + '_map.cpp'
-
-    def dict_libname(self):
-        relpath = os.path.relpath('.',self.sourceroot)
-        return self.libname() + '_dict.so'
-
-    def map_libname(self):
-        relpath = os.path.relpath('.',self.sourceroot)
-        return self.libname() + '_map'
-
-    def prefixed_dict_libname(self):
-        return '#/lib/lib' + self.dict_libname()
-
-    def prefixed_map_libname(self):
-        return '#/lib/' + self.map_libname()
-#
-#   Make the main library.
-#
-    def make_mainlib( self, userlibs, cppf=[], pf=[], addfortran=False ):
-        non_plugin_cc = self.non_plugin_cc()
-        if addfortran:
-            fortran = Glob('*.f', strings=True)
-            non_plugin_cc = [ non_plugin_cc, fortran]
-            pass
-        libs = []
-        if non_plugin_cc:
-            env.SharedLibrary( self.prefixed_libname(),
-                               non_plugin_cc,
-                               LIBS=[ userlibs ],
-                               CPPFLAGS=cppf,
-                               parse_flags=pf
-                              )
-            libs = [ self.libname() ]
-            pass
-        return libs
-#
-#   Make one plugin library ( but does not work for _dict and _map plugins )
-#
-    def make_plugin( self, cc, userlibs, cppf = [], pf = []):
-        env.SharedLibrary( self.prefixed_plugin_libname(cc),
-                           cc,
-                           LIBS=[ userlibs, ],
-                           CPPFLAGS=cppf,
-                           parse_flags=pf
-                           )
-#
-#   Make all plugin libraries, excluding _dict and _map; this works if
-#   all libraries need the same link list.
-#
-    def make_plugins( self, userlibs, exclude_cc = [], cppf = [], pf = [] ):
-        plugin_cc = self.plugin_cc()
-        for cc in exclude_cc: plugin_cc.remove(cc)
-        for cc in plugin_cc:
-            env.SharedLibrary( self.prefixed_plugin_libname(cc),
-                               cc,
-                               LIBS=[ userlibs ],
-                               CPPFLAGS=cppf,
-                               parse_flags=pf
-                               )
-
-#
-#   Make the dictionary and rootmap plugins.
-#
-    def make_dict_and_map( self, userlibs, pf_dict=[] ):
-        if os.path.exists('classes.h'):
-            if os.path.exists('classes_def.xml'):
-                decorated_libname= "lib/lib" + self.dict_libname()
-                # First two arguments to DictionarySource are target file, source file.
-                env.DictionarySource( self.dict_tmp_name(),
-                                      'classes.h',
-                                      LIBNAME=decorated_libname,
-                                      DEBUG_LEVEL=level )
-                env.SharedLibrary( self.prefixed_dict_libname(),
-                                   self.dict_tmp_name(),
-                                   LIBS=[ userlibs ],
-                                   parse_flags=pf_dict
-                                   )
 
 # Export the class so that it can be used in the SConscript files
 # For reasons I don't understand, this must come before the env.SConscript(ss) line.
+# also it is undocumented how you can export a class name, not a variable
 Export('mu2e_helper')
 
-# Tell scons to operate on all of the SConscript files found by walking the directory tree.
+# the list of SConscript files in the directory tree
+ss = sch.sconscriptList(mu2eOpts)
+
+# make sure lib, bin and tmp are there
+sch.makeSubDirs(mu2eOpts)
+
+# operate on the SConscript files
+# regular python commands like os.path() are executed immediately as they are encontered, 
+# scons builder commands like env.SharedLibrary are examined for dependences and scheduled
+# to be executed in parallel, as possible
 env.SConscript(ss)
 
-# for -c remove all files from ./tmp and ./lib directories to avoid stale files
-cleanopt = GetOption('clean')
-if (cleanopt and not COMMAND_LINE_TARGETS):
-    print "running with -c and no specific target"
-    print "will also remove all files in tmp and lib directories"
-
-    for top, dirs, files in os.walk("./lib"):
-        for name in files:
-            ff =  os.path.join(top, name)
-            print "removing file ", ff
-            os.unlink (ff)
-
-    for top, dirs, files in os.walk("./tmp"):
-        for name in files:
-            ff =  os.path.join(top, name)
-            print "removing file ", ff
-            os.unlink (ff)
-
-    for ff in ("EventDisplay/src/EventDisplayDict.cc", "EventDisplay/src/EventDisplayDict.h"):
-        if os.path.exists(ff):
-            print "removing file ", ff
-            os.unlink (ff)
+#  with -c, scons will remove all dependant files it knows about.
+#  this code removes orphan files caused by a parent that was removed
+if ( GetOption('clean') and not COMMAND_LINE_TARGETS):
+    sch.extraCleanup()
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
 # mode:python
 # End:
+# vi:syntax=python

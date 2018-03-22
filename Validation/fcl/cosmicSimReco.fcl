@@ -1,0 +1,88 @@
+#
+# generate and simulate cosmics and reconstruct in the CRV
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "fcl/standardProducers.fcl"
+#include "Validation/fcl/prolog.fcl"
+
+process_name : cosmicSimReco
+
+services : {
+    @table::service.all
+}
+
+source : {
+    module_type : EmptyEvent
+}
+
+physics : {
+   producers: {
+      @table::generation.cosmic.mod
+      @table::simulation.default.mod
+      @table::digis.crv.mod
+      @table::reco.crv.mod
+    }
+
+   filters : {
+      @table::cosmicFilter.mod
+   }
+
+    all_path : [ 
+      @sequence::generation.cosmic.seq , 
+      @sequence::simulation.default.seq , 
+      @sequence::cosmicFilter.seq ,
+      @sequence::digis.crv.seq , 
+      @sequence::reco.crv.seq
+   ]
+
+    trigger_paths  : [ all_path ]
+    out : [ fullOutput ]
+    end_paths      : [ out ]
+
+}
+
+outputs: {
+   fullOutput : {
+      module_type : RootOutput
+      SelectEvents: ["all_path"]
+      fileName    : @nil
+      outputCommands:   
+      [ 
+         "keep *_*_*_*",
+	 "drop mu2e::SimParticlemv_g4run_*_*",
+	 "drop mu2e::StepPointMCs_g4run_CRV_*"
+      ]
+    }
+}
+
+# don't use time simulation
+physics.producers.CrvPhotons.timeOffsets.inputs : []
+# Larger range cut for the first stage - OK for CRV itself
+physics.producers.g4run.physics.minRangeCut : 1.0 // mm
+
+# stop showers outside the detector
+physics.producers.g4run.Mu2eG4CommonCut : @local::SpeedUpCosmics
+# only simulate CRV
+physics.producers.g4run.SDConfig.enableSD : [ CRV ]
+
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
+# histogram file
+services.TFileService.fileName : "nts.owner.val-cosmicSimReco.dsconf.seq.root"
+# art file
+outputs.fullOutput.fileName : "mcs.owner.val-cosmicSimReco.dsconf.seq.art"
+
+# run 1h by default
+source.maxEvents: 50000
+
+// Initialze seeding of random engines
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+
+// use the geometry on the head
+services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"
+

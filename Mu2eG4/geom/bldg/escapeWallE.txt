@@ -1,0 +1,51 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_escape_wall_E.ccl
+
+string building.escape.wall.E.name     = "escapeWallE";
+
+string building.escape.wall.E.material = "CONCRETE_MARS";
+
+double building.escape.wall.E.offsetFromMu2eOrigin.x   = 947.4;
+double building.escape.wall.E.offsetFromFloorSurface.y = 3733.8;
+double building.escape.wall.E.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.escape.wall.E.yHalfThickness           = 1447.8;
+
+vector<double> building.escape.wall.E.xPositions = {
+  16258.2,   // A0
+  24642.4,   // W0
+  24462.9,   // W1
+  24370.4,   // W2
+  23494,   // W3
+  15497,   // W4
+  15474.6,   // W5
+  15177.1,   // W6
+  15307.2,   // W7
+  15659.1,   // SW1
+  15635.2,   // T0
+  23232.1,   // IW0
+  24141.3,   // IW1
+  16102.7   // IW2
+};
+
+vector<double> building.escape.wall.E.yPositions = {
+  11420.1,   // A0
+  13466.4,   // W0
+  14207,   // W1
+  14184.6,   // W2
+  18206.1,   // W3
+  16268.5,   // W4
+  16361,   // W5
+  16289,   // W6
+  15753.3,   // W7
+  15838.4,   // SW1
+  15936,   // T0
+  17776.7,   // IW0
+  14024.5,   // IW1
+  12062   // IW2
+};
+
+// Local Variables:
+// mode:c++
+// End:

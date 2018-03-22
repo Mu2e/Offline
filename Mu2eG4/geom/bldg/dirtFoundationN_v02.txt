@@ -1,0 +1,69 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/dirt_foundation_N.ccl
+
+string dirt.foundation.N.name     = "dirtFoundationN";
+
+string dirt.foundation.N.material = "MBOverburden";
+
+double dirt.foundation.N.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.foundation.N.offsetFromFloorSurface.y = -685.8;
+double dirt.foundation.N.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.foundation.N.yHalfThickness           = 533.4;
+
+vector<int>    dirt.foundation.N.xreplace   = { 17, 18, 19, 20 }; 
+vector<double> dirt.foundation.N.xPositions = {
+  -17853.7,   // dFDN01
+  -18816,   // dFDN02
+  -20141.3,   // dFDN03
+  -19414,   // dFDN04
+  -13411.2,   // dFDN05
+  -13411.2,   // dFDN06
+  11785.6,   // dFDN07
+  12751,   // dFDN08
+  15886.1,   // dFDN09
+  14582.2,   // dFDN10
+  20161.1,   // dFDN11
+  21465,   // dFDN12
+  25365.4,   // dFDN13
+  27183.7,   // dFDN14
+  37255.5,   // dFDN15
+  38679,   // dFDN16
+  24053.8,   // dFDN17
+  50000,   // g5_to_E
+  50000,   // NEcorner
+  -50000,   // NWcorner
+  -50000,   // SWcorner
+  -17853.7   // f4_to_S
+};
+
+vector<int>    dirt.foundation.N.yreplace   = { 18, 19, 20, 21 }; 
+vector<double> dirt.foundation.N.yPositions = {
+  -4640.17,   // dFDN01
+  -3884.52,   // dFDN02
+  1544.03,   // dFDN03
+  2741.32,   // dFDN04
+  4282.26,   // dFDN05
+  17703.8,   // dFDN06
+  17703.8,   // dFDN07
+  18347.3,   // dFDN08
+  19106.9,   // dFDN09
+  24488.4,   // dFDN10
+  25840.2,   // dFDN11
+  20458.7,   // dFDN12
+  21403.7,   // dFDN13
+  13899.2,   // dFDN14
+  16339.6,   // dFDN15
+  10464.4,   // dFDN16
+  6201.81,   // dFDN17
+  6201.81,   // g5_to_E
+  50000,   // NEcorner
+  50000,   // NWcorner
+  -50000,   // SWcorner
+  -50000   // f4_to_S
+};
+
+// Local Variables:
+// mode:c++
+// End:

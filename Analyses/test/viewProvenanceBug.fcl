@@ -4,7 +4,7 @@
 # $Author: kutschke $
 # $Date: 2012/06/12 19:51:35 $
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 process_name : ViewProvenance
 

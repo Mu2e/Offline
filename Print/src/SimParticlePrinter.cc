@@ -27,7 +27,7 @@ mu2e::SimParticlePrinter::Print(const art::Handle<SimParticleCollection>& handle
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -38,7 +38,7 @@ mu2e::SimParticlePrinter::Print(const art::ValidHandle<SimParticleCollection>& h
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -68,13 +68,13 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind, std::ostr
       obj.startMomentum().vect().mag() < _emPCut ) return;
   if( _primaryOnly && (!obj.isPrimary()) ) return;
 
-  art::Ptr<SimParticle> const& pptr = obj.originParticle().parent();
+  art::Ptr<SimParticle> const& pptr = obj.parent();
   long unsigned int pkey = 0;
-  if(pptr.isNonnull()) pkey = pptr->id().asUint();
+  if(pptr) pkey = pptr->id().asUint();
 
   art::Ptr<GenParticle> const& gptr = obj.genParticle();
   std::string gid("none");
-  if(gptr.isNonnull()) gid = gptr->generatorId().name();
+  if(gptr) gid = gptr->generatorId().name();
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;

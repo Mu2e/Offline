@@ -8,7 +8,7 @@
 #
 # Original author Rob Kutschke
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 # Give this process a name.
 process_name : DumpDataProducts
@@ -48,5 +48,7 @@ physics :
     dump:
     {
       module_type   : DataProductDump
+      # temporary patch for crash until art 2_10 or 2_11
+      wantResolvedOnly: true
     }
   }

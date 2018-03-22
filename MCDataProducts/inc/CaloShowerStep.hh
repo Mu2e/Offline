@@ -30,8 +30,8 @@ namespace mu2e {
 	  CaloShowerStep(): volumeId_(-1),sim_(),nCompress_(0),time_(0),energyMC_(0),momentumIn_(0),posIn_(),pos_(),covPos_() {}
 	  
 	  CaloShowerStep(int volumeId, art::Ptr<SimParticle> const& sim, int nCompress, double time,  
-	                   double energy, double momentumIn, const CLHEP::Hep3Vector& posIn, const CLHEP::Hep3Vector& pos, 
-			   const CLHEP::HepSymMatrix& covPos): 
+	                 double energy, double momentumIn, const CLHEP::Hep3Vector& posIn, const CLHEP::Hep3Vector& pos, 
+			 const CLHEP::HepSymMatrix& covPos): 
 	    volumeId_(volumeId),
 	    sim_(sim),
 	    nCompress_(nCompress),
@@ -54,8 +54,11 @@ namespace mu2e {
 	  const CLHEP::Hep3Vector&       position()    const {return pos_;}	  
 	  const CLHEP::HepSymMatrix&     covPosition() const {return covPos_;}	  
 
+          void setSimParticle(const art::Ptr<SimParticle>& sim) {sim_ = sim;}                                                    
+
           void print(std::ostream& ost = std::cout) const {ost<<"Calo Shower content    volumeId = "<<volumeId_<<"  pid="<<sim_->pdgId()
 	                                                      <<"  edep="<<energyMC_<<"  time="<<time_<<" position = "<<pos_<<std::endl;}
+                                                              
 
 
        private:

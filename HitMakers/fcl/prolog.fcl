@@ -6,37 +6,6 @@
 BEGIN_PROLOG
 
 #------------------------------------------------------------------------------
-# time map generation modules, used by the MC digi makers
-#------------------------------------------------------------------------------
-# Form StrawHits (SH).
-protonTimeMap : { 
-    module_type        : GenerateProtonTimes 
-}
-
-muonTimeMap : { 
-    module_type        : GenerateMuonLife 
-}
-
-# straw digis
-makeSD : {
-    module_type : StrawDigisFromStepPointMCs
-    g4ModuleLabel : g4run
-    TimeOffsets   : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-    deadStrawList        : {
-	verbosity   : 0
-	deadPlanes : [ ]
-	deadPanels : [ ]
-	deadLayers  : [ ]
-	deadStraws  : [ ]
-    }
-}
-
-#  straw hit making from straw digis
-makeSHfromSD : {
-  module_type : StrawHitsFromStrawDigis
-  StrawDigis : makeSD
-}
-
 # Form DCHHits (DcH). - 2015-01-23 P.Murat: is it obsolete?
 makeDcH : {
   module_type          : MakeDriftCellHit
@@ -48,18 +17,6 @@ makeDcH : {
   zZoneLimits          : [ 0 ]
   zZoneActive          : [ true ]
   zZoneMinLiveTime     : [ 0.0 ]
-}
-# pattern recognition precursors
-
-MakeStrawHitPositions : {
-  module_type             : MakeStrawHitPositions
-  StrawHitCollectionLabel : "makeSH"
-  StrawHitFlagCollectionLabel : "FSHPreStereo"
-}
-
-MakeStereoHits : {
-  module_type : MakeStereoHits
-  MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
 }
 
 #------------------------------------------------------------------------------
@@ -75,14 +32,18 @@ makeDcHWTOff : {
   makerModuleLabel     : makeDcH
 }
 
+#------------------------------------------------------------------------------
+# This belongs to digitization, not reco hit making
 
-HitMakers : {
-    producers : { 
-	makeSD                    : { @table::makeSD                    }
-	makeSH                    : { @table::makeSHfromSD              }
-	MakeStrawHitPositions     : { @table::MakeStrawHitPositions     } 
-	MakeStereoHits            : { @table::MakeStereoHits            }
+CommonDigiSim: {
+    producers: {
+	protonTimeMap: { module_type : GenerateProtonTimes }
+	muonTimeMap: { module_type : GenerateMuonLife }
     }
+
+    DigiSim: [ protonTimeMap, muonTimeMap ]
 }
+
+#------------------------------------------------------------------------------
 
 END_PROLOG

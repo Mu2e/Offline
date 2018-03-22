@@ -1,0 +1,159 @@
+# Dump StepPointMC-s in a standard mixed file.
+#
+# Andrei Gaponenko, 2015
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name : stepPointsDump
+
+source: { module_type: RootInput }
+
+services: {
+   TFileService: { fileName: "stepPoints.root" }
+   message: @local::default_message
+   RandomNumberGenerator: { }
+   ConditionsService: { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+   GlobalConstantsService: { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+   SeedService: @local::automaticSeeds
+}
+
+physics: {
+   producers: {
+      protonTimeMap : { module_type : GenerateProtonTimes }
+      muonTimeMap : { module_type : GenerateMuonLife verbosityLevel : 1 }
+   }
+
+   analyzers: {
+      genCountLogger: {
+         module_type: GenEventCountReader
+      }
+
+      //================================================================
+      trackerFlash: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "flashMixer:tracker"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      trackerOOT: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "ootMixer:tracker"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      trackerDIO: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "dioMixer:tracker"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      trackerNeutron: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "neutronMixer:tracker"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      trackerPhoton: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "photonMixer:tracker"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      trackerProton: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "protonMixer:tracker"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      trackerDeuteron: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "deuteronMixer:tracker"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+
+      //================================================================
+      calorimeterFlash: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "flashMixer:calorimeter"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      calorimeterOOT: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "ootMixer:calorimeter"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      calorimeterDIO: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "dioMixer:calorimeter"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      calorimeterNeutron: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "neutronMixer:calorimeter"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      calorimeterPhoton: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "photonMixer:calorimeter"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      calorimeterProton: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "protonMixer:calorimeter"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      calorimeterDeuteron: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "deuteronMixer:calorimeter"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+
+
+      //================================================================
+      calorimeterROFlash: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "flashMixer:calorimeterRO"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      calorimeterROOOT: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "ootMixer:calorimeterRO"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      calorimeterRODIO: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "dioMixer:calorimeterRO"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      calorimeterRONeutron: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "neutronMixer:calorimeterRO"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      calorimeterROPhoton: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "photonMixer:calorimeterRO"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      calorimeterROProton: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "protonMixer:calorimeterRO"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+      calorimeterRODeuteron: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "deuteronMixer:calorimeterRO"
+         TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+
+      //================================================================
+   }
+
+   p1 : [protonTimeMap, muonTimeMap]
+   trigger_paths: [p1]
+
+   e1 : [ genCountLogger
+      , trackerFlash, trackerOOT, trackerDIO, trackerNeutron, trackerPhoton, trackerProton, trackerDeuteron
+      , calorimeterFlash, calorimeterOOT, calorimeterDIO, calorimeterNeutron, calorimeterPhoton, calorimeterProton, calorimeterDeuteron
+      , calorimeterROFlash, calorimeterROOOT, calorimeterRODIO, calorimeterRONeutron, calorimeterROPhoton, calorimeterROProton, calorimeterRODeuteron
+   ]
+   end_paths      : [e1]
+}
+
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

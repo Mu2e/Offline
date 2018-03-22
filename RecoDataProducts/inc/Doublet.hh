@@ -12,7 +12,7 @@
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
@@ -27,7 +27,7 @@ namespace mu2e {
 
   class Doublet{
   public:
-    enum { kMaxNHits = 5,
+    enum { kMaxNHits = 9,
 	   kMaxNComb = 4
     } ;
 

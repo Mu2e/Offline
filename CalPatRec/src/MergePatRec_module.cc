@@ -19,7 +19,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
-#include "CalPatRec/inc/TrkDefHack.hh"
+// #include "CalPatRec/inc/TrkDefHack.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
@@ -38,16 +38,22 @@
 
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include "TrkDiag/inc/KalDiag.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
+#include "RecoDataProducts/inc/TrkQual.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 
 #include "CalPatRec/inc/ObjectDumpUtils.hh"
 
+#include "CalPatRec/inc/MergePatRec_types.hh"
 #include "CalPatRec/inc/AlgorithmIDCollection.hh"
+#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "art/Utilities/make_tool.h"
+
 // Xerces XML Parser
 #include <xercesc/dom/DOM.hpp>
 
@@ -75,16 +81,18 @@ using namespace std;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
+  using namespace MergePatRecTypes;
+
   class MergePatRec : public art::EDProducer {
   public:
-    explicit MergePatRec(fhicl::ParameterSet const&);
-    virtual ~MergePatRec();
-    virtual void beginJob();
-    virtual void beginRun(art::Run&);
-    virtual void produce(art::Event& event ); 
-    void endJob();
+    explicit       MergePatRec(fhicl::ParameterSet const&);
+    virtual       ~MergePatRec();
+    virtual void   beginJob();
+    virtual void   beginRun(art::Run&);
+    virtual void   produce(art::Event& event ); 
+    void           endJob();
 
-    double s_at_given_z(const KalRep* Krep, double Z);
+    double         s_at_given_z(const KalRep* Krep, double Z);
 
     class ProbDist {
     public:
@@ -108,7 +116,7 @@ namespace mu2e {
   private:
     unsigned         _iev;
 					// configuration parameters
-    int              _diag;
+    int              _diagLevel;
     int              _debugLevel;
     int              _printfreq;
     bool             _addhits; 
@@ -132,10 +140,13 @@ namespace mu2e {
 
     ProbDist*        _trkPatRecProb;
     ProbDist*        _calPatRecProb;
+
+    Data_t                              _data;              // all data used
+    std::unique_ptr<ModuleHistToolBase> _hmanager;
   };
   
   MergePatRec::MergePatRec(fhicl::ParameterSet const& pset) :
-    _diag                   (pset.get<int>("diagLevel" )),
+    _diagLevel              (pset.get<int>("diagLevel" )),
     _debugLevel             (pset.get<int>("debugLevel")),
     _trkPatRecModuleLabel   (pset.get<std::string>("trkPatRecModuleLabel"   )),
     _calPatRecModuleLabel   (pset.get<std::string>("calPatRecModuleLabel"   ))
@@ -143,7 +154,9 @@ namespace mu2e {
 
     produces<AlgorithmIDCollection>  ();
     produces<KalRepPtrCollection>    ();
-    
+    produces<TrkQualCollection>      ();
+    produces<KalSeedCollection>      ();
+
     _kalDiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet()));
     _dar     = new DoubletAmbigResolver (pset.get<fhicl::ParameterSet>("DoubletAmbigResolver"),0.,0,0);
 
@@ -166,6 +179,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     _calPatRecProb    = new ProbDist(_calPatRecMVAHist.data());
     _trkPatRecProb    = new ProbDist(_trkPatRecMVAHist.data());
+
+    if (_diagLevel != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
+    else                 _hmanager = std::make_unique<ModuleHistToolBase>();
   }
 
   MergePatRec::~MergePatRec() {
@@ -174,6 +190,10 @@ namespace mu2e {
   }
   
   void MergePatRec::beginJob() {
+    if (_diagLevel > 0) {
+      art::ServiceHandle<art::TFileService> tfs;
+      _hmanager->bookHistograms(tfs);
+    }
   }
   
   void MergePatRec::beginRun(art::Run& ) {
@@ -222,29 +242,47 @@ namespace mu2e {
     int const   max_ntrk(100);
     int         tpr_flag[max_ntrk], cpr_flag[max_ntrk], ntpr(0), ncpr(0);
 
-    art::Handle<mu2e::KalRepPtrCollection>    tpr_h, cpr_h;
-
-    mu2e::KalRepPtrCollection  *list_of_kreps_tpr(0), *list_of_kreps_cpr(0);
+    art::Handle<mu2e::KalRepPtrCollection>    htpr, hcpr;
+    art::Handle<mu2e::KalSeedCollection>      hstpr, hscpr;
 
     mu2e::GeomHandle<mu2e::DetectorSystem>      ds;
     mu2e::GeomHandle<mu2e::VirtualDetector>     vdet;
 
     unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection );
     unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection   );
+    unique_ptr<TrkQualCollection>      tqcol    (new TrkQualCollection()   );
+    unique_ptr<KalSeedCollection>      kscol    (new KalSeedCollection()   );
 
     if (_debugLevel > 0) ObjectDumpUtils::printEventHeader(&AnEvent,"MergePatRec::produce");
 
-    AnEvent.getByLabel(_trkPatRecModuleLabel,tpr_h);
-    AnEvent.getByLabel(_calPatRecModuleLabel,cpr_h);
+    AnEvent.getByLabel(_trkPatRecModuleLabel,htpr);
+    AnEvent.getByLabel(_calPatRecModuleLabel,hcpr);
     
-    if (tpr_h.isValid()) { 
-      list_of_kreps_tpr = (mu2e::KalRepPtrCollection*) &(*tpr_h);
-      ntpr              = list_of_kreps_tpr->size();
+    AnEvent.getByLabel(_trkPatRecModuleLabel,hstpr);
+    AnEvent.getByLabel(_calPatRecModuleLabel,hscpr);
+    
+    _data.event = &AnEvent;
+    _data.list_of_kreps_tpr = NULL;
+    _data.list_of_kreps_cpr = NULL;
+    _data.list_of_kseed_tpr = NULL;
+    _data.list_of_kseed_cpr = NULL;
+
+    if (htpr.isValid()) { 
+      _data.list_of_kreps_tpr = htpr.product();
+      ntpr                    = _data.list_of_kreps_tpr->size();
     }
 
-    if (cpr_h.isValid()) {
-      list_of_kreps_cpr = (mu2e::KalRepPtrCollection*) &(*cpr_h);
-      ncpr              = list_of_kreps_cpr->size();
+    if (hcpr.isValid()) {
+      _data.list_of_kreps_cpr = hcpr.product();
+      ncpr                    = _data.list_of_kreps_cpr->size();
+    }
+
+    if (hstpr.isValid()) { 
+      _data.list_of_kseed_tpr = hstpr.product();
+    }
+
+    if (hscpr.isValid()) {
+      _data.list_of_kseed_cpr = hscpr.product();
     }
 
     for (int i=0; i<max_ntrk; i++) {
@@ -252,10 +290,12 @@ namespace mu2e {
       cpr_flag[i] = 1;
     }
 
-    art::Ptr<KalRep>          *tpr, *cpr;
+    const art::Ptr<KalRep>    *tpr, *cpr;
     const KalRep              *krep_tpr, *krep_cpr;
+    const KalSeed             *tpr_kseed, *cpr_kseed;
     Hep3Vector                cpr_mom, tpr_mom;
     short                     best(-1),  mask;
+    double                    best_MVAQual(-1);
     AlgorithmID               alg_id;
     TrkHitVector              tlist, clist;
     int                       nat, nac, natc;
@@ -265,7 +305,8 @@ namespace mu2e {
     TrkInfo                   tpr_trkinfo, cpr_trkinfo;
 
     for (int i1=0; i1<ntpr; i1++) {
-      tpr       = &list_of_kreps_tpr->at(i1);
+      tpr_kseed = &_data.list_of_kseed_tpr->at(i1);
+      tpr       = &_data.list_of_kreps_tpr->at(i1);
       tpr_mom   = (*tpr)->momentum();
       //      tpr_chisq = (*tpr)->chisq();
       mask      = 1 << AlgorithmID::TrkPatRecBit;
@@ -280,10 +321,230 @@ namespace mu2e {
       tpr_qual    = tpr_trkinfo._trkqual;
 
       for (int i2=0; i2<ncpr; i2++) {
-	cpr       = &list_of_kreps_cpr->at(i2);
+	cpr_kseed = &_data.list_of_kseed_cpr->at(i2);
+	cpr       = &_data.list_of_kreps_cpr->at(i2);
 	krep_cpr  = cpr->get();
 
 	_kalDiag->kalDiag(krep_cpr,false);
+	cpr_trkinfo = _kalDiag->_trkinfo;
+
+	cpr_mom   = krep_cpr->momentum();
+	clist     = krep_cpr->hitVector();
+	nac       = krep_cpr->nActive();
+
+	vector<double>  pmva;
+	pmva.resize(10);
+
+	float na = nac;
+
+	pmva[ 0] = na;
+	pmva[ 1] = na/krep_cpr->nHits();
+
+	if      (_calPatRecMVAType == 0) pmva[2] = log10(krep_cpr->chisqConsistency().consistency());
+	else                             pmva[2] = krep_cpr->chisq()/(na-5.);
+//-----------------------------------------------------------------------------
+// determine, approximately, 'sz0' - flight length corresponding to the 
+// virtual detector at the tracker entrance
+//-----------------------------------------------------------------------------
+	double  h1_fltlen, hn_fltlen, entlen;
+	
+	h1_fltlen      = krep_cpr->firstHit()->kalHit()->hit()->fltLen();
+	hn_fltlen      = krep_cpr->lastHit ()->kalHit()->hit()->fltLen();
+	entlen         = std::min(h1_fltlen,hn_fltlen);
+
+	CLHEP::Hep3Vector fitmom = krep_cpr->momentum(entlen);
+//-----------------------------------------------------------------------------
+// pmva[3]: momentum error in the first point
+// for consistency, use helical parameterization in the first point
+//-----------------------------------------------------------------------------
+	CLHEP::Hep3Vector momdir = fitmom.unit();
+	BbrVectorErr      momerr = krep_cpr->momentumErr(entlen);
+	
+	CLHEP::HepVector momvec(3);
+	for (int i=0; i<3; i++) momvec[i] = momdir[i];
+	
+	pmva[ 3] = sqrt(momerr.covMatrix().similarity(momvec));
+	pmva[ 4] = krep_cpr->t0().t0Err();
+
+	Hep3Vector tfront = ds->toDetector(vdet->getGlobal(mu2e::VirtualDetectorId::TT_FrontPA));
+	double     zfront = tfront.z();
+	double     sz0    = s_at_given_z(krep_cpr,zfront);
+
+	HelixParams helx  = krep_cpr->helix(sz0);
+
+	pmva[ 5] = helx.d0();
+	pmva[ 6] = helx.d0()+2/helx.omega();
+
+					// calculate number of doublets 
+
+	vector<mu2e::Doublet> list_of_doublets;
+	_dar->findDoublets(krep_cpr,&list_of_doublets);
+//-----------------------------------------------------------------------------
+// counting only 2+ hit doublets
+//-----------------------------------------------------------------------------
+	mu2e::Doublet*                     d;
+	
+	int   nd_tot(0), nd_os(0), nd_ss(0), ns;
+
+	int nad(0);                     // number of doublets with at least one hit active
+	
+	int nd = list_of_doublets.size();
+	for (int i=0; i<nd; i++) {
+	  d  = (mu2e::Doublet*) &list_of_doublets.at(i);
+	  ns = d->fNStrawHits;
+	  
+	  if (ns > 1) { 
+	    nd_tot += 1;
+	    if (d->isSameSign()) nd_ss += 1;
+	    else                 nd_os += 1;
+
+	    int active = 1;
+	    for (int is=0; is<ns; is++) {
+	      if (!d->fHit[is]->isActive()) {
+		active = 0;
+		break;
+	      }
+	    }
+	    
+	    if (active == 1) {
+	      nad += 1;
+	    }
+	  }
+	}
+	
+	pmva[ 7] = nad/na;
+	pmva[ 8] = cpr_trkinfo._nnullambig/na;
+	pmva[ 9] = cpr_trkinfo._nmatactive/na;
+
+	cpr_qual = _calPatRecQualMVA->evalMVA(pmva);
+//-----------------------------------------------------------------------------
+// primitive check if this is the same track - require delta(p) less than 5 MeV/c
+// ultimately - check the number of common hits
+//-----------------------------------------------------------------------------
+	for(auto itt=tlist.begin(); itt<tlist.end(); itt++) {
+	  hitt = static_cast<const mu2e::TrkStrawHit*> (*itt);
+	  if (hitt->isActive()) {
+	    for(auto itc=clist.begin(); itc<clist.end(); itc++) {
+	      hitc = static_cast<const mu2e::TrkStrawHit*> (*itc);
+	      if (hitc->isActive()) {
+		if (&hitt->strawHit() == &hitc->strawHit()) {
+		  natc += 1;
+		  break;
+		}
+	      }
+	    }
+	  }
+	}
+//-----------------------------------------------------------------------------
+// if > 50% of all hits are common, consider cpr and tpr to be the same
+// logic of the choice: 
+// 1. take the track which has more active hits
+// 2. if two tracks have the same number of active hits, choose the one with 
+//    "higher probability"
+//-----------------------------------------------------------------------------
+	if (natc > (nac+nat)/4.) {
+
+	  mask = mask | (1 << AlgorithmID::CalPatRecBit);
+
+	  double tpr_prob = _trkPatRecProb->prob(tpr_qual);
+	  double cpr_prob = _calPatRecProb->prob(cpr_qual);
+
+	  if ((tpr_trkinfo._trkqual > _minTprQual) && (cpr_qual > _minCprQual)) {
+//-----------------------------------------------------------------------------
+// both tracks are "good", choose the one with higher probability
+//-----------------------------------------------------------------------------
+	    if (tpr_prob >= cpr_prob) {
+	      trackPtrs->push_back(*tpr);
+	      kscol    ->push_back(*tpr_kseed);
+	      best    = AlgorithmID::TrkPatRecBit;
+	      best_MVAQual = tpr_qual;
+	    }
+	    else {
+	      trackPtrs->push_back(*cpr);
+	      kscol    ->push_back(*cpr_kseed);
+	      best    = AlgorithmID::CalPatRecBit;
+	      best_MVAQual = cpr_qual;
+	    }
+	  }
+	  else if (tpr_trkinfo._trkqual > _minTprQual) {
+//-----------------------------------------------------------------------------
+// only TrkPatRec track is "good", choose it
+//-----------------------------------------------------------------------------
+	    trackPtrs->push_back(*tpr);
+	    kscol    ->push_back(*tpr_kseed);
+	    best    = AlgorithmID::TrkPatRecBit; 
+	    best_MVAQual = tpr_qual;
+	  }
+	  else if (cpr_qual > _minCprQual) {
+//-----------------------------------------------------------------------------
+// only CalPatRec track is "good", choose it
+//-----------------------------------------------------------------------------
+	    trackPtrs->push_back(*cpr);
+	    kscol    ->push_back(*cpr_kseed);
+	    best    = AlgorithmID::CalPatRecBit; 
+	    best_MVAQual = cpr_qual;
+	  }
+	  else {
+//-----------------------------------------------------------------------------
+// neither track will be selected for analysis, make a choice anyway
+//-----------------------------------------------------------------------------
+	    if (tpr_prob >= cpr_prob) {
+	      trackPtrs->push_back(*tpr);
+	      kscol    ->push_back(*tpr_kseed);
+	      best    = AlgorithmID::TrkPatRecBit; 
+	      best_MVAQual = tpr_qual;
+	    }
+	    else {
+	      trackPtrs->push_back(*cpr);
+	      kscol    ->push_back(*cpr_kseed);
+	      best    = AlgorithmID::CalPatRecBit; 
+	      best_MVAQual = cpr_qual;
+	    }
+	  }
+
+	  tpr_flag[i1] = 0;
+	  cpr_flag[i2] = 0;
+	  break;
+	}
+      }
+
+      if (tpr_flag[i1] == 1) {
+	trackPtrs->push_back(*tpr);
+	kscol    ->push_back(*tpr_kseed);
+	best = AlgorithmID::TrkPatRecBit;
+	best_MVAQual = tpr_qual;
+      }
+
+      alg_id.Set(best,mask);
+      algs->push_back(alg_id);
+
+      // compute TrkQual for this track and save it
+      // DUMMY FILLING. FIXME!
+      TrkQual trkqual;
+      trkqual.setMVAValue(best_MVAQual);
+
+      tqcol->push_back(trkqual);
+    }
+//-----------------------------------------------------------------------------
+// account for presence of multiple tracks
+//-----------------------------------------------------------------------------
+    for (int i=0; i<ncpr; i++) {
+      if (cpr_flag[i] == 1) {
+	cpr = &_data.list_of_kreps_cpr->at(i);
+	cpr_kseed = &_data.list_of_kseed_cpr->at(i);
+
+	trackPtrs->push_back(*cpr);
+	kscol    ->push_back(*cpr_kseed);
+
+	best = AlgorithmID::CalPatRecBit;
+	mask = 1 << AlgorithmID::CalPatRecBit;
+
+	alg_id.Set(best,mask);
+	algs->push_back(alg_id);
+
+ // compute TrkQual for this track and save it
+ // DUMMY FILLING. FIXME!
+	krep_cpr  = cpr->get();	_kalDiag->kalDiag(krep_cpr,false);
 	cpr_trkinfo = _kalDiag->_trkinfo;
 
 	cpr_mom   = krep_cpr->momentum();
@@ -376,108 +637,11 @@ namespace mu2e {
 	pmva[ 8] = cpr_trkinfo._nnullambig/na;
 	pmva[ 9] = cpr_trkinfo._nmatactive/na;
 
-	cpr_qual = _calPatRecQualMVA->evalMVA(pmva);
-//-----------------------------------------------------------------------------
-// primitive check if this is the same track - require delta(p) less than 5 MeV/c
-// ultimately - check the number of common hits
-//-----------------------------------------------------------------------------
-	for(auto itt=tlist.begin(); itt<tlist.end(); itt++) {
-	  hitt = static_cast<const mu2e::TrkStrawHit*> (*itt);
-	  if (hitt->isActive()) {
-	    for(auto itc=clist.begin(); itc<clist.end(); itc++) {
-	      hitc = static_cast<const mu2e::TrkStrawHit*> (*itc);
-	      if (hitc->isActive()) {
-		if (&hitt->strawHit() == &hitc->strawHit()) {
-		  natc += 1;
-		  break;
-		}
-	      }
-	    }
-	  }
-	}
-//-----------------------------------------------------------------------------
-// if > 50% of all hits are common, consider cpr and tpr to be the same
-// logic of the choice: 
-// 1. take the track which has more active hits
-// 2. if two tracks have the same number of active hits, choose the one with 
-//    "higher probability"
-//-----------------------------------------------------------------------------
-	if (natc > (nac+nat)/4.) {
-
-	  mask = mask | (1 << AlgorithmID::CalPatRecBit);
-
-	  double tpr_prob = _trkPatRecProb->prob(tpr_qual);
-	  double cpr_prob = _calPatRecProb->prob(cpr_qual);
-
-	  if ((tpr_trkinfo._trkqual > _minTprQual) && (cpr_qual > _minCprQual)) {
-//-----------------------------------------------------------------------------
-// both tracks are "good", choose the one with higher probability
-//-----------------------------------------------------------------------------
-	    if (tpr_prob >= cpr_prob) {
-	      trackPtrs->push_back(*tpr);
-	      best    = AlgorithmID::TrkPatRecBit;
-	    }
-	    else {
-	      trackPtrs->push_back(*cpr);
-	      best    = AlgorithmID::CalPatRecBit;
-	    }
-	  }
-	  else if (tpr_trkinfo._trkqual > _minTprQual) {
-//-----------------------------------------------------------------------------
-// only TrkPatRec track is "good", choose it
-//-----------------------------------------------------------------------------
-	    trackPtrs->push_back(*tpr);
-	    best    = AlgorithmID::TrkPatRecBit; 
-	  }
-	  else if (cpr_qual > _minCprQual) {
-//-----------------------------------------------------------------------------
-// only CalPatRec track is "good", choose it
-//-----------------------------------------------------------------------------
-	    trackPtrs->push_back(*cpr);
-	    best    = AlgorithmID::CalPatRecBit; 
-	  }
-	  else {
-//-----------------------------------------------------------------------------
-// neither track will be selected for analysis, make a choice anyway
-//-----------------------------------------------------------------------------
-	    if (tpr_prob >= cpr_prob) {
-	      trackPtrs->push_back(*tpr);
-	      best    = AlgorithmID::TrkPatRecBit; 
-	    }
-	    else {
-	      trackPtrs->push_back(*cpr);
-	      best    = AlgorithmID::CalPatRecBit; 
-	    }
-	  }
-
-	  tpr_flag[i1] = 0;
-	  cpr_flag[i2] = 0;
-	  break;
-	}
-      }
-
-      if (tpr_flag[i1] == 1) {
-	trackPtrs->push_back(*tpr);
-	best = AlgorithmID::TrkPatRecBit;
-      }
-
-      alg_id.Set(best,mask);
-      algs->push_back(alg_id);
-    }
-//-----------------------------------------------------------------------------
-// account for presence of multiple tracks
-//-----------------------------------------------------------------------------
-    for (int i=0; i<ncpr; i++) {
-      if (cpr_flag[i] == 1) {
-	cpr = &list_of_kreps_cpr->at(i);
-
-	trackPtrs->push_back(*cpr);
-
-	best = AlgorithmID::CalPatRecBit;
-	mask = 1 << AlgorithmID::CalPatRecBit;
-
-	alg_id.Set(best,mask);
-	algs->push_back(alg_id);
+	double  cpr_MVAQual = _calPatRecQualMVA->evalMVA(pmva);
+	TrkQual trkqual;
+	trkqual.setMVAValue(cpr_MVAQual);
+	
+	tqcol->push_back(trkqual);
       }
     }
 
@@ -485,6 +649,13 @@ namespace mu2e {
 
     AnEvent.put(std::move(trackPtrs));
     AnEvent.put(std::move(algs     ));
+    AnEvent.put(std::move(tqcol    ));
+    AnEvent.put(std::move(kscol    ));
+//-----------------------------------------------------------------------------
+// in the end of event processing fill diagnostic histograms
+//-----------------------------------------------------------------------------
+    if (_diagLevel  > 0) _hmanager->fillHistograms(&_data);
+    if (_debugLevel > 0) _hmanager->debug(&_data);
   }
 
 

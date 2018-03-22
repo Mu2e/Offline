@@ -41,6 +41,13 @@ namespace mu2e {
     double cryoZMax() const { return _position[CLHEP::Hep3Vector::Z] + _halfLength; }
     const CLHEP::Hep3Vector& position() const { return _position; } // in mu2e coordinates
 
+    // Experimental inner lining on cryostat, requested by Jim Miller for 
+    // studies of shielding.
+    bool hasInnerLining() const { return _hasInnerLining; }
+    double innerLiningThickness() const { return _innerLiningThickness; }
+    std::string innerLiningMaterial() const { return _innerLiningMaterial; }
+
+
     // DS shield
     std::string shield_material() const { return _shield_materialName; }
     std::string shield_insideMaterial() const { return _shield_insideMaterialName; }
@@ -121,6 +128,41 @@ namespace mu2e {
     CLHEP::Hep3Vector MBSSlocation()   const { return _locationMBSS; }
     std::string MBSSmaterial()         const { return _materialMBSS; }
 
+    // Cable Runs
+    int  cableRunVersion()             const { return _cableRunVersion; }
+    bool hasCableRunCal()              const { return _hasCableRunCal; }
+    std::string calCableRunMaterial()  const { return _materialCableRunCal; }
+    double upRInCableRunCal()          const { return _upRInCableRunCal; }
+    double upROutCableRunCal()         const { return _upROutCableRunCal;}
+    double upHL1CableRunCal()          const { return _upHL1CableRunCal; }
+    double upHL2CableRunCal()          const { return _upHL2CableRunCal; }
+    double upZC1CableRunCal()          const { return _upZC1CableRunCal; }
+    double upZC2CableRunCal()          const { return _upZC2CableRunCal; }
+    double rInCableRunCal()            const { return _rInCableRunCal; }
+    double rOutCableRunCal()           const { return _rOutCableRunCal; }
+    double lengthCableRunCal()         const { return _lengthCableRunCal; }
+    double phi0CableRunCal()           const { return _phi0CableRunCal; }
+    double dPhiCableRunCal()           const { return _dPhiCableRunCal; }
+    double zCCableRunCal()             const { return _zCCableRunCal; }
+    bool hasCableRunTrk()              const { return _hasCableRunTrk; }
+    std::string trkCableRunMaterial()  const { return _materialCableRunTrk; }
+    double rInCableRunTrk()            const { return _rInCableRunTrk; }
+    double rOutCableRunTrk()           const { return _rOutCableRunTrk; }
+    double lengthCableRunTrk()         const { return _lengthCableRunTrk; }
+    double phi0CableRunTrk()           const { return _phi0CableRunTrk; }
+    double dPhiCableRunTrk()           const { return _dPhiCableRunTrk; }
+    double zCCableRunTrk()             const { return _zCCableRunTrk; }
+
+    // Services pipes along bottom of DS
+    bool   hasServicePipes()           const { return _hasServicePipes; }
+    double servicePipeRIn()            const { return _servicePipeRIn;  }
+    double servicePipeROut()           const { return _servicePipeROut; }
+    double servicePipeHalfLength()     const { return _servicePipeHL;   }
+    std::string servicePipeMaterial()       const { return _servicePipeMat;}
+    std::string servicePipeFillMat()        const { return _servicePipeFillMat; }
+    double servicePipeZC()             const { return _servicePipeZC;  }
+    double servicePipeYC()             const { return _servicePipeYC;  }
+    std::vector<double> servicePipeXCs() const { return _servicePipeXCs;}
 
     // Vacuum volumes inside DS
     //
@@ -152,6 +194,11 @@ namespace mu2e {
     double _endWallHalfLength; 
     double _frontHalfLength; 
     CLHEP::Hep3Vector _position; 
+
+    // experimental innerLining for shielding studies, req by Jim Miller
+    bool _hasInnerLining;
+    double _innerLiningThickness;
+    std::string _innerLiningMaterial;
 
     // DS shield
     std::string _shield_materialName;
@@ -226,7 +273,43 @@ namespace mu2e {
     CLHEP::Hep3Vector   _locationMBSS;
     std::string         _materialMBSS;
 
+    // Cable Runs
+    int                 _cableRunVersion;
+    bool                _hasCableRunCal;
+    double              _lengthCableRunCal;
+    double              _upRInCableRunCal;
+    double              _upROutCableRunCal;
+    double              _upHL1CableRunCal;
+    double              _upHL2CableRunCal;
+    double              _upZC1CableRunCal;
+    double              _upZC2CableRunCal;
+    double              _rInCableRunCal;
+    double              _rOutCableRunCal;
+    double              _zCCableRunCal;
+    double              _phi0CableRunCal;
+    double              _dPhiCableRunCal;
+    std::string         _materialCableRunCal;
+    bool                _hasCableRunTrk;
+    double              _lengthCableRunTrk;
+    double              _rInCableRunTrk;
+    double              _rOutCableRunTrk;
+    double              _zCCableRunTrk;
+    double              _phi0CableRunTrk;
+    double              _dPhiCableRunTrk;
+    std::string         _materialCableRunTrk;
 
+    // Service pipes
+    bool                  _hasServicePipes;
+    double                _servicePipeRIn;
+    double                _servicePipeROut;
+    double                _servicePipeHL;
+    std::string           _servicePipeMat;
+    std::string           _servicePipeFillMat;
+    double                _servicePipeZC;
+    double                _servicePipeYC;
+    std::vector<double>   _servicePipeXCs;
+
+   
     // Vacuum volumes inside DS
     double _vacuumPressure;
     std::string _vacuumMaterialName; 

@@ -14,7 +14,7 @@ namespace mu2e {
 // utility struct
 //-----------------------------------------------------------------------------
   struct CalHelixPoint {
-    static double       _efac;
+    //    static double       _efac;
     static StrawHitFlag _useflag;	// flag bits to define use
 
     size_t             _ind;		// straw hit index
@@ -47,6 +47,10 @@ namespace mu2e {
     bool         isCalosel () const;
     void         setOutlier();
     void         setUse    (bool use);
+
+    double       x         () const { return _pos.x(); }
+    double       y         () const { return _pos.y(); }
+    double       z         () const { return _pos.z(); }
   };
 
 };

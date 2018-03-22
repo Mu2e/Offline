@@ -3,9 +3,9 @@
 //
 // Andrei Gaponenko, 2012
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "ExtinctionMonitorFNAL/test/marsInputs_monfnal3w1.fcl"
 #include "ExtinctionMonitorFNAL/test/marsInputs_monfnal3w1All.fcl"
 

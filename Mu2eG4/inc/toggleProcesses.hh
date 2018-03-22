@@ -15,7 +15,13 @@ namespace mu2e{
   class SimpleConfig;
 
   void switchDecayOff( const SimpleConfig& config  );
-  void switchDecayOff(const fhicl::ParameterSet& pset);
+  void switchDecayOff( const fhicl::ParameterSet& pset);
+
+  void switchCaptureDModel( const SimpleConfig& config);
+  void switchCaptureDModel( const fhicl::ParameterSet& pset);
+
+  void addUserProcesses( const SimpleConfig& config);
+  void addUserProcesses( const fhicl::ParameterSet& pset);
 
 }  // end namespace mu2e
 

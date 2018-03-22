@@ -9,7 +9,7 @@ Import('env')
 
 Import('mu2e_helper')
 
-helper=mu2e_helper()
+helper=mu2e_helper(env)
 
 mainlib = helper.make_mainlib ( [
     'mu2e_BeamlineGeom',
@@ -46,6 +46,7 @@ mainlib = helper.make_mainlib ( [
     'boost_iostreams',
     'boost_regex',
     'boost_system',
+    # 'pthread',
     'Core'
     ] )
 

@@ -5,15 +5,18 @@
 // a TTracker.  This is intended as a "data only"
 // class.
 //
-// $Id: TTracker.hh,v 1.15 2014/04/11 04:39:44 genser Exp $
-// $Author: genser $
-// $Date: 2014/04/11 04:39:44 $
-//
 // Original author Rob Kutschke
 //
 
-#include <deque>
 #include <vector>
+#include <array>
+#include <limits>
+//#include <iomanip>
+//#include <iostream>
+
+#include "cetlib_except/exception.h"
+
+//#include "DataProducts/inc/StrawId.hh"  included via Straw via Tracker (-> Straw)
 
 #include "TTrackerGeom/inc/Manifold.hh"
 #include "TTrackerGeom/inc/Support.hh"
@@ -29,6 +32,9 @@
 
 #include "TTrackerGeom/inc/Station.hh"
 
+#include "DataProducts/inc/StrawIndex.hh"
+
+
 namespace mu2e {
 
   class TTracker: public Tracker{
@@ -36,7 +42,26 @@ namespace mu2e {
     friend class TTrackerMaker;
 
   public:
-    TTracker(){}  // TODO: insert proper initializer list, starting w/ base class
+
+    // =============== NewTracker Public Objects Start ==============
+
+    // constexpr static int _nttstraws = StrawId::_nplanes *
+    //                                   StrawId::_npanels *
+    //                                   StrawId::_nstraws; // uncomment after eliminating Tracker
+
+    // constexpr static int _maxRedirect = std::numeric_limits<uint16_t>::max();
+    constexpr static uint16_t _maxRedirect =
+      ((StrawId::_nplanes -1) << StrawId::_planesft) +
+      ((StrawId::_npanels -1) << StrawId::_panelsft) +
+      StrawId::_nstraws;
+
+    // =============== NewTracker Public Objects End   ==============
+
+    TTracker(){
+      if (StrawId::_nlayers != 2)
+        throw cet::exception("GEOM")
+          << "Expect configuration with 2 layers per panel\n";
+    }  // TODO: insert proper initializer list, starting w/ base class
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
@@ -47,68 +72,33 @@ namespace mu2e {
     double zHalfLength() const;
 
     double strawRadius() const{
-      return getStraw(StrawId(0,0,0,0)).getDetail().outerRadius();
+      return getStraw(StrawId(0,0,0)).getDetail().outerRadius();
     }
 
     std::string const& envelopeMaterial() const { return _envelopeMaterial; }
 
-    // Check for legal identifiers.
-    bool isLegal(PlaneId d) const{
-      return ( d>-1 &&
-               std::vector<Plane>::size_type(d) <_planes.size()
-               );
-    };
-
-    bool isLegal(const PanelId& pnlid) const{
-      return (isLegal(pnlid.getPlaneId()) &&
-              pnlid.getPanel() >-1   &&
-              std::vector<Panel>::size_type(pnlid.getPanel()) < getPlane(pnlid.getPlaneId()).getPanels().size()
-              );
-    }
-
-    typedef std::vector<Panel>::size_type stypeLayer;
-    bool isLegal(const LayerId& lid ) const{
-      return ( isLegal(lid.getPanelId()) &&
-               lid.getLayer() > -1   &&
-               std::vector<Layer>::size_type(lid.getLayer()) < getPanel(lid.getPanelId()).getLayers().size()
-               );
-    }
-
+    // Check for legal identifiers. (for what decays to StrawId)
     bool isLegal(const StrawId& strid) const{
-      return ( isLegal(strid.getLayerId()) &&
-               strid.getStraw() > -1       &&
-               std::vector<Straw>::size_type(strid.getStraw()) < getLayer(strid.getLayerId()).getStraws().size()
-               );
+       return strid.valid();
     }
 
     // Accessors
-    int nPlanes() const{
-      return _planes.size();
+    uint16_t nPlanes() const{
+      // return StrawId::_nplanes;
+      return _nPlanes; // tmp till we process cd3
     }
 
-    const std::vector<Plane>& getPlanes() const{
+    uint16_t nStraws() const { return _nStraws; } // tmp till we process cd3
+
+    const std::array<Plane,StrawId::_nplanes>& getPlanes() const{
       return _planes;
     }
 
-    const Plane& getPlane ( PlaneId id) const{
-      return _planes.at(id);
+    const std::vector<double>& getManifoldHalfLengths () const{
+      return _manifoldHalfLengths;
     }
 
-    const Panel& getPanel ( const PanelId& pnlid ) const{
-      return _planes.at(pnlid.getPlane()).getPanel(pnlid);
-    }
-
-    const Layer& getLayer ( const LayerId& lid ) const{
-      return _planes.at(lid.getPlane()).getLayer(lid);
-    }
-
-    const Straw& getStraw ( const StrawId& strid ) const{
-      return _planes.at(strid.getPlane()).getStraw(strid);
-    }
-
-    const Straw& getStraw ( StrawIndex i ) const{
-      return _allStraws.at(i.asInt());
-    }
+    double panelOffset() const { return _panelZOffset; }
 
     int nStations() const{
       return _stations.size();
@@ -122,7 +112,9 @@ namespace mu2e {
       return _stations.at(id);
     }
 
-    const std::deque<Straw>& getAllStraws() const {return _allStraws;}
+    //    const std::deque<Straw>& getAllStraws() const {return _allStraws;}
+    const std::array<Straw,TTracker::_nttstraws>& getAllStraws() const 
+    {return _allStraws2;}
 
     const std::vector<StrawDetail>& getStrawDetails() const{
       return _strawDetails;
@@ -140,12 +132,13 @@ namespace mu2e {
       return _supportStructure;
     }
 
-    const std::vector<double>& getManifoldHalfLengths () const{
-      return _manifoldHalfLengths;
-    }
 
     TubsParams getPlaneEnvelopeParams() const{
       return _planeEnvelopeParams;
+    }
+
+    TubsParams getPanelEnvelopeParams() const{
+      return _panelEnvelopeParams;
     }
 
     const TubsParams& getInnerTrackerEnvelopeParams() const{
@@ -158,8 +151,49 @@ namespace mu2e {
 
     // presence info for each straw.
     bool strawExists(StrawIndex const index) const {
-      return _strawExists[index.asInt()];
+      return _strawExists2.at(((_allStraws2.at(index.asInt())).id()).asUint16());
     }
+
+    // =============== NewTracker Accessors Start ==============
+
+    const Straw& getStraw( const StrawId& id) const{
+      return *(_allStraws2_p.at(id.asUint16()));
+    }
+
+    const Straw& getStraw( StrawIndex i ) const{
+      // shold be correct by construction
+      return _allStraws2.at(i.asInt());
+    }
+
+    const Plane& getPlane( const StrawId& id ) const{
+      return _planes.at(id.getPlane());
+    }
+
+    const Plane& getPlane( uint16_t n ) const{
+      return _planes.at(n);
+    }
+
+    const Panel& getPanel ( const StrawId& id ) const{
+      return _planes.at(id.getPlane()).getPanel(id);
+    }
+
+    bool strawExists( StrawId const id) const{
+      // return _allStraws2_p.at(id.asUint16()) != nullptr;
+      return _strawExists2.at(id.asUint16());
+    }
+
+    const StrawId getStrawId( StrawIndex i ) const{
+      return (_allStraws2.at(i.asInt())).id();
+    }
+
+    // tmp function to be deprecated
+    const StrawIndex getStrawIndex(  const StrawId& id ) const{
+      return strawExists(id) ?
+        (_allStraws2_p.at(id.asUint16()))->index() :
+        StrawIndex(StrawIndex::NO_STRAW);
+    }
+
+    // =============== NewTracker Accessors End   ==============
 
 #ifndef __CINT__
 
@@ -167,33 +201,31 @@ namespace mu2e {
     // F can be a class with an operator() or a free function.
     template <class F>
     inline void forAllStraws ( F& f) const{
-      for ( std::vector<Plane>::const_iterator i=_planes.begin(), e=_planes.end();
-            i !=e; ++i){
-        i->forAllStraws(f);
-      }
-    }
-
-    template <class F>
-    inline void forAllLayers ( F& f) const{
-      for ( std::vector<Plane>::const_iterator i=_planes.begin(), e=_planes.end();
-            i !=e; ++i){
-        i->forAllLayers(f);
+      // for ( const auto& plane : _planes ) { // fixme: should be used after cd3 is processed
+      //   plane.forAllStraws(f);
+      // }
+      for ( size_t i=0; i<_nPlanes; ++i){
+        _planes[i].forAllStraws(f);
       }
     }
 
     template <class F>
     inline void forAllPanels ( F& f) const{
-      for ( std::vector<Plane>::const_iterator i=_planes.begin(), e=_planes.end();
-            i !=e; ++i){
-        i->forAllPanels(f);
+      // for ( const auto& plane : _planes ) {
+      //   plane.forAllPanels(f);
+      // }
+      for ( size_t i=0; i<_nPlanes; ++i){
+        _planes[i].forAllPanels(f);
       }
     }
 
     template <class F>
     inline void forAllPlanes ( F& f) const{
-      for ( std::vector<Plane>::const_iterator i=_planes.begin(), e=_planes.end();
-            i !=e; ++i){
-        f(*i);
+      // for ( const auto& plane : _planes ) {
+      //   f(plane);
+      // }
+      for ( size_t i=0; i<_nPlanes; ++i){
+        f(_planes[i]);
       }
     }
 
@@ -215,32 +247,38 @@ namespace mu2e {
     std::vector<StrawDetail> _strawDetails;
 
     // An TTracker is made of two planes, sides and vanes.
-    std::vector<Plane> _planes;
+    // std::vector<Plane> _planes;
 
     // An alternative viewpoint:
     // A TTracker is made of a collection of Stations.
     std::vector<Station> _stations;
 
     // There will be pointers to the objects in this container.
-    std::deque<Straw>  _allStraws;
+    //    std::deque<Straw>  _allStraws;
 
-    // Deprecated: part of the ancient MECO TTracker design.  A few vestiges not yet removed.
+    // Deprecated: part of the ancient MECO TTracker design.
+    // A few vestiges not yet removed.
     std::vector<Manifold> _allManifolds;
 
     // Outer envelope that holds the new style support structure.
     PlacedTubs _mother;
 
-    // The envelope that holds all of the planes in the tracker, including the plane supports.
+    // The envelope that holds all of the planes in the tracker,
+    // including the plane supports.
     TubsParams _innerTrackerEnvelopeParams;
 
     // The envelope that holds all of the pieces in one plane, including supports.
     TubsParams _planeEnvelopeParams;
+
+    // Ditto for Panel
+    TubsParams _panelEnvelopeParams;
 
     // Which level of detail is present in the model of the support structure?
     SupportModel _supportModel;
 
     // All supports are the same shape; only relevant for _supportModel=="simple"
     Support _supportParams;
+    double _panelZOffset; // introduced for version 5
 
     // A more detailed model of the supports; again each plane has identical supports.
     // only relevant for _supportModel == "detailedv0".
@@ -254,7 +292,27 @@ namespace mu2e {
     double _envelopeInnerRadius;
 
     // presence info for each straw.
-    std::vector<bool> _strawExists;
+    //    std::vector<bool> _strawExists;
+
+    uint16_t _nPlanes; // fixme tmp till we process cd3
+    uint16_t _nStraws; // fixme tmp till we process cd3
+    // =============== NewTracker Private Objects Start ==============
+
+    // Dense array.
+    std::array<Plane,StrawId::_nplanes> _planes;
+
+    // Dense array.
+    std::array<Straw,TTracker::_nttstraws> _allStraws2;
+
+    // Sparse array: designed for indexing by StrawId.
+    // For all legal entries in StrawId, this points to a straw in _straws2;
+    // All other entries are null.
+    std::array<Straw const*,TTracker::_maxRedirect> _allStraws2_p;
+
+    // Another sparse array
+    std::array<bool,TTracker::_maxRedirect> _strawExists2;
+
+    // =============== NewTracker Private Objects End ==============
 
   };
 

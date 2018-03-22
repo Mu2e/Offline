@@ -24,8 +24,8 @@ namespace art {
 
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StereoHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -46,7 +46,6 @@ namespace art {
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
-#include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "CalPatRec/inc/CalTimePeak.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
 
@@ -294,7 +293,7 @@ namespace mu2e {
     bool findData         (const art::Event& e);
     void findTimePeaks    (CalTimePeakCollection* TimePeakColl);
     void createTimePeak   (CalTimePeakCollection* TimePeakColl);
-    void filterOutliers   (TrkDefHack& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
+    //    void filterOutliers   (TrkDefHack& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
 //----------------------------------------------------------------------
 // 2015 - 02 - 16 Gianipez added the two following functions
 //----------------------------------------------------------------------

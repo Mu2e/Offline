@@ -7,9 +7,10 @@
 <lcgdict>
  <class name="mu2e::StrawIndex"/>
  <class name="mu2e::StrawId"/>
+ <class name="mu2e::StrawIdMask"/>
  <class name="mu2e::LayerId"/>
  <class name="mu2e::PanelId"/>
- <class name="mu2e::PlaneId"/>
+ <class name="mu2e::Helicity"/>
  <class name="mu2e::ExtMonFNALModuleId"/>
  <class name="mu2e::ExtMonFNALChipId"/>
  <class name="mu2e::ExtMonFNALPixelId"/>
@@ -27,4 +28,7 @@
  <class name="HepGeom::Transform3D"/>
 
  <class name="boost::array<double,5>"/>
+ <class name="boost::array<unsigned char,20>"/>
+ <class name="mu2e::IndexMap"/>
+ <class name="art::Wrapper<mu2e::IndexMap>"/>
 </lcgdict>

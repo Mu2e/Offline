@@ -6,9 +6,9 @@
 #
 # Original author Giovanni Onoratto
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 
 # Give this job a name.  
@@ -35,7 +35,7 @@ services :
 	
   GeometryService :
   {
-    inputFile : "Mu2eG4/test/geom_01.txt"
+    inputFile : "Mu2eG4/geom/geom_common.txt"
   }  
 
   ConditionsService :

@@ -1,0 +1,81 @@
+           Release notes for Mu2e Offline software, v6_2_4
+
+6) 17 July 2017  dnbrow01
+   Fix some of the hard-wired 10200. instances in modules with references
+   to parameterset values.  Update geom_common_DOE_review_2017.txt with
+   the necessary mu2e.detectorSystemZ0 = 10171 value.
+   modified:   Analyses/src/BkgRates_module.cc
+   modified:   Analyses/src/CaloCalib_module.cc
+   modified:   Analyses/src/ConvElecHistory_module.cc
+   modified:   Analyses/src/DIOElecHistory_module.cc
+   modified:   Mu2eG4/geom/geom_common_DOE_review_2017.txt
+
+5) 12 July 2017  dnbrow01
+   Created the new directory UtilityModules to hold the modules and
+   associated fcl files for the StepPointMC corrections from yesterday's
+   notes.  Fleshed out the modules and config files.  Note that the
+   output sections of the config files assume certain process names.
+   These are names from standard jobs, so should be safe, but user beware!
+   This has been tested on the files being used for a sensitivity update
+   for the July 2017 DOE review.
+   renamed:    Sandbox/src/ModifyTrackSPM_module.cc -> UtilityModules/src/ModifyTrackSPM_module.cc
+   renamed:    Sandbox/src/ReadTrackSPM_module.cc -> UtilityModules/src/ReadTrackSPM_module.cc
+   new file:   UtilityModules/src/SConscript
+   renamed:    Sandbox/test/modifyTrackSPM.fcl -> UtilityModules/test/modifyTrackSPM.fcl
+   new file:   UtilityModules/test/modifyTrackSPM_conv.fcl
+   new file:   UtilityModules/test/modifyTrackSPM_detmix.fcl
+   new file:   UtilityModules/test/modifyTrackSPM_flte.fcl
+   renamed:    Sandbox/test/readTrackSPM.fcl -> UtilityModules/test/readTrackSPM.fcl
+   new file:   UtilityModules/test/readTrackSPM_conv.fcl
+   new file:   UtilityModules/test/readTrackSPM_detmix.fcl
+   new file:   UtilityModules/test/readTrackSPM_flate.fcl
+
+
+4) 11 July 2017  dnbrow01
+   Added 4 files to Sandbox based on Rob's 6 new files, mentioned
+   in item (3) below.  These files implement Rob's tests, with specifics 
+   that fix the tracker StepPointMCs.  Will need to be generalized and
+   possibly moved to a more permanent location.
+   new file:   Sandbox/src/ModifyTrackSPM_module.cc
+   new file:   Sandbox/src/ReadTrackSPM_module.cc
+   new file:   Sandbox/test/modifyTrackSPM.fcl
+   new file:   Sandbox/test/readTrackSPM.fcl
+
+
+3) July 10, 2017 kutschke
+   Added 6 new files to Sandbox.  These are used to test a proposal
+   to fix the existing files that were produced with the DetectorSystem
+   z0 bug: https://mu2e-hnews.fnal.gov/HyperNews/Mu2e/get/Sim/343.html
+
+2) July 10, 2017 kutschke
+   TrkDiag/test/ce.C
+   Update the module label used as a TDirectory name to match the
+   new conventions.
+
+
+1) July 10, 2017 kutschke
+   Mu2eG4/geom/geom_common_current.txt
+   The code does not respect the indended difference between the z0 of
+   tracker center and the z0 of the origin of the detector system.  So
+   these two items must have the same value.  Specfically, in
+   Mu2eG4/geom/geom_common_current.txt the line:
+
+     double mu2e.detectorSystemZ0 = 10171.;
+
+   must match:
+
+    double ttracker.z0 = 10171.0;
+
+   from the included ttracker file.  For now this must be maintened by hand.
+
+   The intention is that ttracker.z0 describes the nominal center of the ttracker
+   whereas mu2e.detectorSystemZ0 describes the origin of a coordinate system in
+   which the reco work is done.  When we do alignment on the tracker, its position
+   and orientation can shift but the detector system should stay fixed. This
+   distinction is not respected by the code so, for the time being, the two values
+   must be the same.
+
+   This changed fixes an problem introduced with commit d8b1d154 on June 6, 2017.
+
+
+

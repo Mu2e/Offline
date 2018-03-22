@@ -28,13 +28,19 @@ namespace mu2e {
     std::unique_ptr<ProtonBeamDump> dump(new ProtonBeamDump());
 
     int verbose = c.getInt("protonBeamDump.verbosityLevel", 0);
+    int version = c.getInt("protonBeamDump.version",2);
 
     // Get relevant Hall solids
     ExtrudedSolid psArea  = hall.getBldgSolid("psArea");        // contains front corners of dump slab
     ExtrudedSolid psWall  = hall.getBldgSolid("psWallUpper");   // contains back corners of dump slab
     ExtrudedSolid psWallS = hall.getBldgSolid("psAreaUpperS");  // contains boundary between front and back
     ExtrudedSolid psWallN = hall.getBldgSolid("psAreaUpperN");  // contains boundary between front and back
-    ExtrudedSolid psCeil  = hall.getBldgSolid("psAreaCeiling"); // contains ceiling height
+    ExtrudedSolid psCeil;
+    if ( version > 2 ) {
+      psCeil = hall.getBldgSolid("psAreaCeilingSW");
+    } else {
+      psCeil = hall.getBldgSolid("psAreaCeiling"); // contains ceiling height
+    }
 
     // position
     dump->_coreCenterInMu2e = c.getHep3Vector("protonBeamDump.coreCenterInMu2e");
@@ -145,7 +151,9 @@ namespace mu2e {
 
     // Create deltas (of 1.1 mm, with rotation) to avoid overlaps
     double dW = 1.1;
-    const CLHEP::Hep2Vector deltaNE( -cos(coreRotY)*dW, -sin(coreRotY)*dW );
+    double ccW = cos(coreRotY)*dW;
+    if ( version > 2 ) ccW = -ccW;
+    const CLHEP::Hep2Vector deltaNE( -ccW, -sin(coreRotY)*dW );
     const CLHEP::Hep2Vector deltaNW(  cos(coreRotY)*dW, -sin(coreRotY)*dW );
     const CLHEP::Hep2Vector deltaSW(  cos(coreRotY)*dW,  sin(coreRotY)*dW );
     const CLHEP::Hep2Vector deltaSE( -cos(coreRotY)*dW,  sin(coreRotY)*dW );
@@ -170,25 +178,45 @@ namespace mu2e {
     double xn = dump->_coreCenterInMu2e[0] - dump->_coreHalfSize[2]*sin(coreRotY)
       + dump->_frontShieldingHalfSize[0]*cos(coreRotY);
 
-    dump->_backShieldingOutline.emplace_back(psNVertices[7][0]+psNoffset[2]+deltaNE[0],psNVertices[7][1]+psNoffset[0]+deltaNE[1]);
-    dump->_backShieldingOutline.emplace_back(pswVertices[3][0]+psWoffset[2]+deltaNW[0],pswVertices[3][1]+psWoffset[0]+deltaNW[1]);
-    dump->_backShieldingOutline.emplace_back(pswVertices[2][0]+psWoffset[2]+deltaSW[0],pswVertices[2][1]+psWoffset[0]+deltaSW[1]);
-    // Due to changes in bldg construction, use vertex [7] instead of [2]
+    if (version > 2) {
+      dump->_backShieldingOutline.emplace_back(psNVertices[5][0]+psNoffset[2]+deltaNE[0],psNVertices[5][1]+psNoffset[0]+deltaNE[1]);
+      dump->_backShieldingOutline.emplace_back(pswVertices[14][0]+psWoffset[2]+deltaNW[0],pswVertices[14][1]+psWoffset[0]+deltaNW[1]);
+      dump->_backShieldingOutline.emplace_back(pswVertices[15][0]+psWoffset[2]+deltaSW[0],pswVertices[15][1]+psWoffset[0]+deltaSW[1]);
+
+    } else {
+      dump->_backShieldingOutline.emplace_back(psNVertices[7][0]+psNoffset[2]+deltaNE[0],psNVertices[7][1]+psNoffset[0]+deltaNE[1]);
+      dump->_backShieldingOutline.emplace_back(pswVertices[3][0]+psWoffset[2]+deltaNW[0],pswVertices[3][1]+psWoffset[0]+deltaNW[1]);
+      dump->_backShieldingOutline.emplace_back(pswVertices[2][0]+psWoffset[2]+deltaSW[0],pswVertices[2][1]+psWoffset[0]+deltaSW[1]);
+    }
+      // Due to changes in bldg construction, use vertex [7] instead of [2]
     dump->_backShieldingOutline.emplace_back(psSVertices[7][0]+psSoffset[2]+deltaSE[0],psSVertices[7][1]+psSoffset[0]+deltaSE[1]);
     dump->_backShieldingOutline.emplace_back(zs,xs);
     dump->_backShieldingOutline.emplace_back(zn,xn);
 
-    dump->_frontShieldingOutline.emplace_back(psNVertices[7][0]+psNoffset[2]+deltaNE[0],psNVertices[7][1]+psNoffset[0]+deltaNE[1]);
+    if ( version > 2 ) {
+      dump->_frontShieldingOutline.emplace_back(psNVertices[5][0]+psNoffset[2]+deltaNE[0],psNVertices[5][1]+psNoffset[0]+deltaNE[1]);
+    } else {
+      dump->_frontShieldingOutline.emplace_back(psNVertices[7][0]+psNoffset[2]+deltaNE[0],psNVertices[7][1]+psNoffset[0]+deltaNE[1]);
+    }
+
     dump->_frontShieldingOutline.emplace_back(zn,xn);
     dump->_frontShieldingOutline.emplace_back(zs,xs);
     // Due to changes in bldg construction, use vertex [7] instead of [2]
     dump->_frontShieldingOutline.emplace_back(psSVertices[7][0]+psSoffset[2]+deltaSE[0],psSVertices[7][1]+psSoffset[0]+deltaSE[1]);
     // Temporary workaround while bldg geom is in flux.
     double tempWorkaround = 10.5;
-    dump->_frontShieldingOutline.emplace_back(psaVertices[2][0]+psAoffset[2]+deltaSE[0],psaVertices[2][1]+psAoffset[0]+deltaSE[1]+tempWorkaround);
+    if ( version > 2 ) {
+      dump->_frontShieldingOutline.emplace_back(psaVertices[15][0]+psAoffset[2]+deltaSE[0],psaVertices[15][1]+psAoffset[0]+deltaSE[1]+tempWorkaround);
+    } else {
+      dump->_frontShieldingOutline.emplace_back(psaVertices[2][0]+psAoffset[2]+deltaSE[0],psaVertices[2][1]+psAoffset[0]+deltaSE[1]+tempWorkaround);
+    }
     dump->_frontShieldingOutline.emplace_back(dump->_shieldingFaceZatXmin,dump->_shieldingFaceXmin);
     dump->_frontShieldingOutline.emplace_back(dump->_shieldingFaceZatXmax,dump->_shieldingFaceXmax);
-    dump->_frontShieldingOutline.emplace_back(psaVertices[3][0]+psAoffset[2]+deltaNE[0],psaVertices[3][1]+psAoffset[0]+deltaNE[1]);
+    if ( version > 2 ) {
+      dump->_frontShieldingOutline.emplace_back(psaVertices[14][0]+psAoffset[2]+deltaNE[0],psaVertices[14][1]+psAoffset[0]+deltaNE[1]);
+    } else {
+      dump->_frontShieldingOutline.emplace_back(psaVertices[3][0]+psAoffset[2]+deltaNE[0],psaVertices[3][1]+psAoffset[0]+deltaNE[1]);
+    }
 
     //----------------------------------------------------------------
     if(verbose) {

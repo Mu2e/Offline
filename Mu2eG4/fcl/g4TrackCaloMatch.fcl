@@ -1,42 +1,41 @@
 //Example fcl file to produce the clustering, track calo matching and analyzer modules associated with them
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name: TrackCaloMatchProd
 
-source: { 
-  module_type: EmptyEvent
-  maxEvents : 50000
- }
+source: 
+{ 
+   module_type: RootInput
+   maxEvents : 1000
+}
 
-services : {
-    message               : @local::default_message
+services : 
+{
 
-    TFileService          : { fileName : "testCaloMatch.root" }
-
-    RandomNumberGenerator: { }
+    message                : @local::default_message
     
+    TFileService           : { fileName : "testCaloMatch.root" }
+
+    RandomNumberGenerator  : { }    
     GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common_cd3_s4p2.txt" }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-    SeedService: @local::automaticSeeds
     G4Helper               : { }
+    SeedService            : @local::automaticSeeds
     BTrkHelper             : @local::BTrkHelperDefault  
 
 }
 
+
 physics: {
 
-    producers: {
-        
-        generate             : @local::generate
-        g4run                : @local::g4run
-
-        protonTimeMap        : @local::protonTimeMap
-        muonTimeMap          : @local::muonTimeMap
-        
+     producers :
+     {
+        protonTimeMap        : { module_type : GenerateProtonTimes }
+        muonTimeMap          : { module_type : GenerateMuonLife }
         @table::Tracking.producers
 
         @table::CaloDigiMC.producers
@@ -44,103 +43,66 @@ physics: {
         @table::CaloDigiMC.producersMC
         @table::CaloCluster.producers
         @table::CaloCluster.producersMC
-
-	TrackCaloIntersection :
-	{
-	  module_type            : TrackCaloIntersection
-	  fitterModuleLabel      : TRFDeM
-	  fitparticle            : 11
-	  fitdirection           : 0 
-	  checkExit              : true
-	  pathStep               : 2
-	  tolerance              : 0.5
-	  outputNtup             : false
-	  diagLevel              : 0
-	}  
-
-	TrkCaloMatcherBis :
-	{
-	  module_type             : TrackCaloMatchingBis
-	  caloClusterModuleLabel  : CaloClusterFromProtoCluster
-	  trkIntersectModuleLabel : TrackCaloIntersection
-	  fitterModuleLabel       : TRFDeM
-	  fitparticle             : 11
-	  fitdirection            : 0 
-	  diagLevel               : 0
-	  minClusterEnergy        : 10
-	  maxDeltaT               : 10
-	  meanInteractionLength   : 42.2
-	  dtOffset                : -1.35
-	  sigmaT                  : 1
-	  sigmaX                  : 10
-	  sigmaY                  : 10
-	  saveBestOnly            : false
-	}  
+        @table::TrackCaloMatchingExt.producers
+        @table::TrackCaloMatchingMVA.producers
     }
 
 
     analyzers: {
 
-        CaloExample: {
-            module_type                : CaloExample
-            g4ModuleLabel              : g4run
-            generatorModuleLabel       : generate
-            simParticleTag             : g4run
-            caloCrystalModuleLabel     : CaloCrystalHitFromHit
-            caloClusterModuleLabel     : CaloClusterFromProtoCluster
-            caloClusterTruthModuleLabel: CaloClusterTruthMatch
-            caloHitTruthModuleLabel    : CaloHitTruthMatch
-            virtualDetectorName        : virtualdetector
-            stepPointMCLabel           : g4run
-  	    trkPatRecModuleLabel       : TRFDeM
-	    fitparticle                : 11
-	    fitdirection               : 0 
+	ReadTrackCaloMatchingMVADeM: 
+	{
+            module_type                 : ReadTrackCaloMatchingMVA
+            caloCrystalModuleLabel      : CaloCrystalHitFromHit
+            caloClusterModuleLabel      : CaloClusterFromProtoCluster
+            caloReadoutModuleLabel      : CaloCrystalHitFromHit
+            caloClusterTruthModuleLabel : CaloClusterTruthMatch
+	    trkIntersectModuleLabel     : TrackCaloIntersectionDeM
+	    trkCaloMatchModuleLabel     : TrkCaloMatcherMVADeM
+  	    fitterModuleLabel           : KFFDeM
+	    g4ModuleLabel               : detectorFilter
+	    virtualDetectorName         : virtualdetector	    
 	}
 
-	ReadTrackCaloMatching: 
+	ReadTrackCaloMatchingExtDeM: 
 	{
-            module_type             : ReadTrackCaloMatchingBis
-            caloCrystalModuleLabel  : CaloCrystalHitFromHit
-            caloClusterModuleLabel  : CaloClusterFromProtoCluster
-            caloReadoutModuleLabel  : CaloCrystalHitFromHit
-            caloClusterTruthModuleLabel: CaloClusterTruthMatch
-	    trkIntersectModuleLabel : TrackCaloIntersection
-	    trkCaloMatchModuleLabel : TrkCaloMatcherBis
-  	    fitterModuleLabel       : TRFDeM
-	    fitparticle             : 11
-	    fitdirection            : 0 
-	    g4ModuleLabel           : g4run
-	    virtualDetectorName     : virtualdetector	    
+            module_type                 : ReadTrackCaloMatchingMVA
+            caloCrystalModuleLabel      : CaloCrystalHitFromHit
+            caloClusterModuleLabel      : CaloClusterFromProtoCluster
+            caloReadoutModuleLabel      : CaloCrystalHitFromHit
+            caloClusterTruthModuleLabel : CaloClusterTruthMatch
+	    trkIntersectModuleLabel     : TrackCaloIntersectionDeM
+	    trkCaloMatchModuleLabel     : TrkCaloMatcherExtDeM
+  	    fitterModuleLabel           : KFFDeM
+	    g4ModuleLabel               : detectorFilter
+	    virtualDetectorName         : virtualdetector	    
 	}
 
-	CaloTrackMatchExample: 
+
+	CaloMini: 
 	{
-            module_type             : CaloTrackMatchExample
-  	    fitterModuleLabel       : TRFDeM
-	    fitparticle             : 11
-	    fitdirection            : 0 
-            caloClusterModuleLabel  : CaloClusterFromProtoCluster
-	    trkCaloMatchModuleLabel : TrkCaloMatcherBis
+            module_type             : CaloMini
             caloCrystalModuleLabel  : CaloCrystalHitFromHit
-	    maxChi2Match            : 100    
-	    g4ModuleLabel           : g4run
-	    virtualDetectorName     : virtualdetector	    
+            caloClusterModuleLabel  : CaloClusterFromProtoCluster
 	}
 
    }
 
-    p1: [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM,          
+    p1: [ @sequence::EventMixing.TimeMaps,
+          @sequence::Tracking.DigiSim,
           @sequence::CaloDigiMC.DigiSim,
-          @sequence::CaloReco.Reco,       
+          @sequence::Tracking.TPRDeM,
+          @sequence::Tracking.TPRDmuM,
+          @sequence::CaloReco.Reco,
           @sequence::CaloDigiMC.TruthMatch,
-          @sequence::CaloCluster.Reco, 
-          @sequence::CaloCluster.TruthMatch, 
-	  TrackCaloIntersection, 
-	  TrkCaloMatcherBis]
+          @sequence::CaloCluster.Reco,
+          @sequence::CaloCluster.TruthMatch,
+          @sequence::TrackCaloMatchingMVA.TrkCaloMatchMVA,
+          @sequence::TrackCaloMatchingExt.TrkCaloMatchExt]
 
     trigger_paths: [p1]
 
-    e1: [ CaloExample, CaloTrackMatchExample, ReadTrackCaloMatching ]
+    e1: [ReadTrackCaloMatchingMVADeM,  ReadTrackCaloMatchingExtDeM, CaloMini]
     end_paths: [e1]
 }
 
@@ -148,5 +110,3 @@ physics: {
 
 services.SeedService.baseSeed         :  99
 services.SeedService.maxUniqueEngines :  20
-
-

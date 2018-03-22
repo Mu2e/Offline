@@ -1,0 +1,46 @@
+# kalSeedToTrkQualTree.fcl
+#
+# Takes a collection of KalSeeds and creates a TTree with the variables needed for the 
+# TrkQual testing and training 
+#
+# A. Edmonds April 2017
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name : kalSeedToTrkQualTreeNoFilter
+
+source : {
+  module_type : RootInput
+}
+
+services : { @table::Services.Reco 
+
+	     TFileService : { fileName : "data_dump/trkQualTree_nofilter.root" }
+}
+
+
+physics : {
+  analyzers : {
+    genCountLogger: { module_type: GenEventCountReader }
+    
+    kalSeedToTrkQualTree : { 
+      module_type: KalSeedToTrkQualTree 
+
+      kalFinalTag : "KFFDeM"
+      strawDigiMCTag: "makeSD"
+      stepPointMCTag: "detectorFilter:virtualdetector"
+      trkQualTag : "KFFDeM"
+
+      usingCondensedCollections : false
+#      indexMapTag : "kalSeedFilter"
+
+      beamWeightTag : "protonBunchSummarizer"
+      genWeightTag : ""
+    }
+  }
+}
+
+physics.out : [ genCountLogger, kalSeedToTrkQualTree ]
+physics.end_paths : [ out ]

@@ -1,15 +1,17 @@
+
 #include "TrkDiag/test/FillChain.C+"
 #include "TrkDiag/test/TrkRecoDiag.C+"
-void TRD() {
+
+void TRD(const char* sigfiles,unsigned nsig, const char* bkgfiles) {
   TChain* mtce = new TChain("TrkRecoDiag/trdiag");
-  FillChain(mtce,"/data/mu2e/17837125/files.txt");
+  FillChain(mtce,sigfiles);
   mtce->SetTitle("Sig ");
   mtce->SetLineColor(kRed);
   TChain* mtbk = new TChain("TrkRecoDiag/trdiag");
-  FillChain(mtbk,"/data/mu2e/17837134/files.txt");
+  FillChain(mtbk,bkgfiles);
   mtbk->SetTitle("Bkg ");
   mtbk->SetLineColor(kBlue);
-  TrkRecoDiag trdce(mtce,1e5);
+  TrkRecoDiag trdce(mtce,nsig);
   trdce.Loop();
 //  trdce.drawHistos();
   TrkRecoDiag trdbk(mtbk,mtbk->GetEntries());
@@ -20,13 +22,13 @@ void TRD() {
   acc->cd(1);
   trdce._acc->SetMaximum(1.0); // why is this necessary???
   trdce._acc->SetLabelSize(0.075);
-  trdce._acc->SetMarkerSize(0.075);
+  trdce._acc->SetMarkerSize(2.0);
   
   trdce._acc->Draw("PETEXT0");
   acc->cd(2);
   gPad->SetLogy();
   trdbk._acc->SetLabelSize(0.075);
-  trdbk._acc->SetMarkerSize(0.075);
+  trdbk._acc->SetMarkerSize(2.0);
   trdbk._acc->Draw("PETEXT0");
 
 // helix plots

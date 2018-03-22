@@ -27,7 +27,7 @@ namespace mu2e {
 
   public:
     ConstructTTrackerTDR( VolumeInfo   const& ds3Vac,
-                          SimpleConfig const& config  );
+                          SimpleConfig const& config );
 
     VolumeInfo motherInfo() { return _motherInfo; }
 
@@ -85,6 +85,7 @@ namespace mu2e {
     AntiLeakRegistry & _reg;
 
     TTracker const& _ttracker;
+
 
     int  _verbosityLevel;
     bool _doSurfaceCheck;

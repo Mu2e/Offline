@@ -20,7 +20,6 @@ vector<double> building.floor.N.xPositions = {
   -11706.4,   // F
   -11709.4,   // G
   1193.8,   // H
-  1413.82,   // I
   2787.8,   // J
   15158.4,   // K
   15086.3,   // L
@@ -39,7 +38,6 @@ vector<double> building.floor.N.yPositions = {
   2754.07,   // F
   6248.4,   // G
   6248.4,   // H
-  6468.42,   // I
   7842.4,   // J
   10853.4,   // K
   11149.6,   // L

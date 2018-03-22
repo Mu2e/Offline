@@ -5,8 +5,8 @@
 #
 # Original author Rob Kutschke
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this process a name.
 process_name : HitDisplay
@@ -37,7 +37,7 @@ services :
   RandomNumberGenerator : { }
 
   GeometryService : {
-    inputFile : "Mu2eG4/test/geom_01.txt"
+    inputFile : "Mu2eG4/geom/geom_common.txt"
   }
 
   ConditionsService : {
@@ -100,7 +100,7 @@ physics : {
 
 #      goodHitMask                 : ["EnergySelection","RadiusSelection","TimeSelection"]
       goodHitMask                  : ["EnergySelection", "RadiusSelection"]
-      badHitMask                   : ["DeltaRay", "Isolated"]
+      badHitMask                   : ["Background", "Isolated"]
 
       trackerStepPoints            : tracker
       minHits                      : 5

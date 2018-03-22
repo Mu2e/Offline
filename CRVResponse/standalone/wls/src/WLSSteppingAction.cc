@@ -8,7 +8,7 @@
 #include "WLSEventAction.hh"
 #include "WLSSteppingAction.hh"
 
-#include "MakeCrvPhotonArrivals.hh"
+#include "MakeCrvPhotons.hh"
 
 #include "G4ProcessManager.hh"
 #include "G4OpBoundaryProcess.hh"
@@ -20,7 +20,7 @@
 #include "G4SystemOfUnits.hh"
 #include <sstream>
 
-#include <TH3D.h>
+////#include <TH3D.h>
 #include <TNtuple.h>
 
 #include "G4LossTableManager.hh"
@@ -39,12 +39,12 @@ WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName
   //load lookup tables
   if(_mode==1)
   {
-    _crvPhotonArrivals = std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat, _randGaussQ, _randPoissonQ));
-    _crvPhotonArrivals->LoadLookupTable(lookupFileName);
-    _crvPhotonArrivals->LoadVisibleEnergyAdjustmentTable(visibleEnergyAdjustmentFileName);
+    _crvPhotons = std::unique_ptr<mu2eCrv::MakeCrvPhotons>(new mu2eCrv::MakeCrvPhotons(_randFlat, _randGaussQ, _randPoissonQ));
+    _crvPhotons->LoadLookupTable(lookupFileName);
+    _crvPhotons->LoadVisibleEnergyAdjustmentTable(visibleEnergyAdjustmentFileName);
   }
 
-  _ntuple = new TNtuple("CRVPhotons","CRVPhotons","SiPM:Energy:Length:StartZ"); //WLS fiber test
+  _ntuple = new TNtuple("CRVPhotons","CRVPhotons","SiPM:Energy:Length:StartZ:x:y:time:angle"); //WLS fiber test
   Reset();
 }
 
@@ -83,7 +83,11 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
            _ntuple->Fill((float)(thePostPV->GetCopyNo()),
                                  theStep->GetTrack()->GetTotalEnergy(),
                                  theStep->GetTrack()->GetTrackLength(),
-                                 theStep->GetTrack()->GetVertexPosition().z()); //WLS fiber test
+                                 theStep->GetTrack()->GetVertexPosition().z(),
+                                 theStep->GetPostStepPoint()->GetPosition().x(),
+                                 theStep->GetPostStepPoint()->GetPosition().y(), //WLS fiber test
+                                 theStep->GetPostStepPoint()->GetGlobalTime(),
+                                 theStep->GetPostStepPoint()->GetMomentum().dot(CLHEP::Hep3Vector(0.0,0.0,1.0)));
            _arrivalTimes[0][thePostPV->GetCopyNo()].push_back(theStep->GetPostStepPoint()->GetGlobalTime());
            if(_mode==-1)
            {
@@ -152,17 +156,17 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
       G4MaterialPropertiesTable* fiberPropertiesTable = fiber->GetMaterialPropertiesTable();
       double fiberDecayTime = fiberPropertiesTable->GetConstProperty("WLSTIMECONSTANT");
 
-      _crvPhotonArrivals->SetScintillationYield(scintillationYield);
-      _crvPhotonArrivals->SetScintillatorBirksConstant(scintillatorBirksConstant);
-      _crvPhotonArrivals->SetScintillatorRatioFastSlow(scintillatorRatioFastSlow);
-      _crvPhotonArrivals->SetScintillatorDecayTimeFast(scintillatorDecayTimeFast);
-      _crvPhotonArrivals->SetScintillatorDecayTimeSlow(scintillatorDecayTimeSlow);
-      _crvPhotonArrivals->SetFiberDecayTime(fiberDecayTime);
+      _crvPhotons->SetScintillationYield(scintillationYield);
+      _crvPhotons->SetScintillatorBirksConstant(scintillatorBirksConstant);
+      _crvPhotons->SetScintillatorRatioFastSlow(scintillatorRatioFastSlow);
+      _crvPhotons->SetScintillatorDecayTimeFast(scintillatorDecayTimeFast);
+      _crvPhotons->SetScintillatorDecayTimeSlow(scintillatorDecayTimeSlow);
+      _crvPhotons->SetFiberDecayTime(fiberDecayTime);
     }
 
     if(PDGcode!=0)  //ignore optical photons
     {
-      _crvPhotonArrivals->MakePhotons(p1, p2, t1, t2,  
+      _crvPhotons->MakePhotons(p1, p2, t1, t2,  
                             PDGcode, beta, charge,
                             energyDepositedTotal,
                             energyDepositedNonIonizing,
@@ -170,7 +174,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
  
       for(int SiPM=0; SiPM<4; SiPM++)
       {
-        std::vector<double> times=_crvPhotonArrivals->GetArrivalTimes(SiPM);
+        std::vector<double> times=_crvPhotons->GetArrivalTimes(SiPM);
         _arrivalTimes[1][SiPM].insert(_arrivalTimes[1][SiPM].end(),times.begin(),times.end());
       }
     }
@@ -218,7 +222,7 @@ void WLSSteppingAction::ShowVisibleEnergyTable(const G4Step *theStep)
   std::cout<<"PDGcode: "<<theStep->GetTrack()->GetParticleDefinition()->GetPDGEncoding()<<std::endl;
   std::cout<<"Original Energy Deposition (G4): "<<theStep->GetTotalEnergyDeposit()<<std::endl;
   std::cout<<"Original Nonionizting Energy Deposition (G4): "<<theStep->GetNonIonizingEnergyDeposit()<<std::endl;
-  std::cout<<"Visible Energy Deposition (G4): "<<G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDeposition(theStep)<<std::endl;
+  std::cout<<"Visible Energy Deposition (G4): "<<G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDepositionAtAStep(theStep)<<std::endl;
   std::cout<<"Step Length: "<<theStep->GetStepLength()<<std::endl;
   const G4ThreeVector &p1 = theStep->GetPreStepPoint()->GetPosition();
   const G4ThreeVector &p2 = theStep->GetPostStepPoint()->GetPosition();

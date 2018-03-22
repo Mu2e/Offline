@@ -50,7 +50,8 @@ namespace mu2e {
 
     std::ostringstream sdKeyName;
     sdKeyName<<"g4."<< SensitiveDetectorName << "SDEventList";
-    //G4cout << __func__ << " sdKeyName: " << sdKeyName.str() << G4endl;
+    // G4cout << __func__ << " sdKeyName: " << sdKeyName.str() << G4endl;
+    // G4cout << __func__ << " sd name: " << name << G4endl;
  
     string key(sdKeyName.str());
     if ( config.hasName(key) ){
@@ -91,9 +92,6 @@ namespace mu2e {
             G4cout<<"Step vol name "<<aStep->GetTrack()->GetVolume()->GetName()<<G4endl;
     }
  */
-
-      //std::cout << "in Mu2eSD::ProcessHits" << std::endl;
-      //std::cout << "Step vol name " << aStep->GetTrack()->GetVolume()->GetName() << std::endl;
       
     // Which process caused this step to end?
     ProcessCode endCode(_processInfo->

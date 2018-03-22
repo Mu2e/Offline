@@ -11,7 +11,7 @@ namespace mu2e {
 
   class SimpleConfig;
 
-  void constructSTM(SimpleConfig const & _config);
+  void constructSTM(const SimpleConfig& _config);
 
 }
 

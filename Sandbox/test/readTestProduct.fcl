@@ -1,0 +1,30 @@
+# Read the test file made by MakeTestProduct and
+# modified by ModifyTestProduct
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : readTestProduct
+
+source : {
+  module_type : RootInput
+  fileNames   :  ["testProduct01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics : {
+
+  analyzers : {
+    readTestProduct : {
+      module_type : ReadTestProduct
+      productTag  : "makeTestProduct"
+    }
+  }
+
+ e1        : [ readTestProduct ]
+ end_paths : [ e1 ]
+
+}

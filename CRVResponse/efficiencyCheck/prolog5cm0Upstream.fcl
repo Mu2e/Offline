@@ -1,0 +1,16 @@
+#include "CRVResponse/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+
+CrvCoincidence.verboseLevel                  : 0
+CrvCoincidence.maxSlope                      : 1000.0    //1000mm over 1mm, i.e. infinity
+CrvCoincidence.CRVSectors                    : ["Test"]
+CrvCoincidence.PEthresholds                  : [ 10 ]
+CrvCoincidence.adjacentPulseTimeDifferences  : [ 0 ]
+CrvCoincidence.maxTimeDifferences            : [ 10 ]
+CrvCoincidence.muonsOnly                     : true
+CrvCoincidence.muonMinTime                   :  20.0  //ns
+CrvCoincidence.muonMaxTime                   : 150.0  //ns
+CrvCoincidence.genParticleModuleLabel        : "generate" 
+
+END_PROLOG

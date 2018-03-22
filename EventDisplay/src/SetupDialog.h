@@ -111,6 +111,8 @@ class SetupDialog : public TGMainFrame
     }
     return kTRUE;
   }
+
+  ClassDef(SetupDialog,1);
 };
 
 }

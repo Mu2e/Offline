@@ -14,8 +14,7 @@ namespace mu2e {
 
   class SimpleConfig;
 
-  void constructVirtualDetectors( SimpleConfig const & _config
-                                  );
+  void constructVirtualDetectors( const SimpleConfig& _config );
 
 }
 

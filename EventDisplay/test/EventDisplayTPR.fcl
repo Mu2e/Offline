@@ -4,9 +4,9 @@
 # $Id: TrkPatRecEventDisplay.fcl,v 1.4 2014/05/28 21:02:13 kutschke Exp $
 # $Author: kutschke $
 # $Date: 2014/05/28 21:02:13 $
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "TrkDiag/fcl/KalDiag.fcl"
 
 process_name : TrkPatRecTest
@@ -14,6 +14,9 @@ process_name : TrkPatRecTest
 source :
 {
   module_type : RootInput
+  inputCommands: ["keep *", 
+                  "drop *KalRepPayload*_*_*_*",
+                  "drop *CaloCrystalOnlyHit*_*_*_*"]
 }
 
 services :

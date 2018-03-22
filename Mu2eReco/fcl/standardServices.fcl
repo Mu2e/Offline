@@ -1,0 +1,69 @@
+#
+# This file defines some standard configurations for services
+#
+
+#include "BTrkHelper/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+
+automaticSeeds : {
+    policy            : "autoIncrement"
+    baseSeed          : @nil
+    maxUniqueEngines  : @nil
+
+    # verbosity         : 2
+    # endOfJobSummary   : true
+}
+
+preDefinedSeeds : {
+     policy            : "preDefined"
+     baseSeed          : @nil
+     maxUniqueEngines  : @nil
+
+     # An example that will work with g4test_03
+     # It will create the same seeds as the automaticSeeds configuration.
+     generate          : 0
+     g4run             : 1
+     makeSH            : 2
+
+     # verbosity         : 2
+     # endOfJobSummary   : true
+}
+
+Services : {
+# define services for specific tasks: these are components needed for
+# a complete job
+  Core	    : {
+    message		    : @local::default_message
+    RecoGeometryService	    : { inputFile : "Mu2eReco/geom/recoGeom_common_current.txt" }	
+    ConditionsService	    : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService  : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  }
+
+  SimOnly   : {
+    RandomNumberGenerator   : { }
+    SeedService		    : @local::automaticSeeds
+  }
+
+  RecoOnly  : {
+    BTrkHelper : @local::BTrkHelperDefault
+  }
+}
+# aggregate to make complete sets that can be used to fully configure common jobs
+Services.Sim	    : {
+  @table::Services.Core
+  @table::Services.SimOnly
+}
+
+Services.Reco	    : {
+  @table::Services.Core
+  @table::Services.RecoOnly
+}
+
+Services.SimAndReco : {
+  @table::Services.Core
+  @table::Services.SimOnly
+  @table::Services.RecoOnly
+}
+
+END_PROLOG

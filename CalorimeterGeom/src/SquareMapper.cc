@@ -2,10 +2,10 @@
 // $Author: echenard $
 // $Date: 2013/07/25 23:56:46 $
 //
-// Sqaure position map generator: 
+// Sqaure position map generator:
 //   tesselate a plane with squares starting from the center of the plane
 //
-// Use basis vector, l and k, defined as  
+// Use basis vector, l and k, defined as
 // l = right
 // k = up
 //
@@ -30,8 +30,8 @@
 
 */
 // Tesselation algorithm: tessalate in "rings" from the center
-//   for each ring, start at -l,+l (top left corner), 
-//   then go n time each step to create the ring 
+//   for each ring, start at -l,+l (top left corner),
+//   then go n time each step to create the ring
 //
 // Neighbors add (+-1,0) or (0,+-1)
 // next ring of neighbours, add +(-2,2) and go around the ring,...
@@ -53,43 +53,43 @@
 namespace mu2e {
 
 
-      SquareMapper::SquareMapper() : 
+      SquareMapper::SquareMapper() :
          step_(),
          apexX_({-0.5,0.5,0.5,-0.5,-0.5}),
-	 apexY_({-0.5,-0.5,0.5,0.5,-0.5})    
+	 apexY_({-0.5,-0.5,0.5,0.5,-0.5})
       {
           step_.push_back( SquLK( 1, 0) );  //right
 	  step_.push_back( SquLK( 0,-1) );  //down
 	  step_.push_back( SquLK(-1, 0) );  //left
-	  step_.push_back( SquLK( 0, 1) );  //up 
+	  step_.push_back( SquLK( 0, 1) );  //up
       }
-                       
+
 
 
 
 
       CLHEP::Hep2Vector SquareMapper::xyFromIndex(int thisIndex) const
-      {        
+      {
           SquLK thisLK = lk(thisIndex);
 	  return CLHEP::Hep2Vector(thisLK.l_,thisLK.k_);
       }
-  
+
       int SquareMapper::indexFromXY(double x0, double y0) const
-      {        
+      {
           int l = int( std::abs(x0)+0.5);
           int k = int( std::abs(y0)+0.5 );
 	  if (x0<0) l *= -1;
 	  if (y0<0) k *= -1;
 
-	  SquLK lk(l,k);	 
+	  SquLK lk(l,k);
 	  return index(lk);
       }
 
 
-  
+
 
       std::vector<int> SquareMapper::neighbors(int thisIndex, unsigned int level)  const
-      {	 
+      {
 	  std::vector<int> thisNeighbour;
 	  thisNeighbour.reserve(100);
 
@@ -97,10 +97,10 @@ namespace mu2e {
 	  SquLK lk(init.l_ - level, init.k_ + level);
 
           for (unsigned int i=0;i<step_.size();++i)
-	  {       	     
+	  {
 	      for (unsigned int iseg=0;iseg<2*level;++iseg)
-	      {	  
-		 lk.add(step_[i]);  
+	      {
+		 lk.add(step_[i]);
 		 thisNeighbour.push_back( index(lk) );
 	      }
 	  }
@@ -110,7 +110,7 @@ namespace mu2e {
 
 
       SquLK SquareMapper::lk(int thisIndex) const
-      {         
+      {
 	  if (thisIndex==0) return SquLK(0,0);
 
 	  int nRing = int(0.5*sqrt(thisIndex) + 0.5);
@@ -118,11 +118,11 @@ namespace mu2e {
           int nSeg  = (thisIndex - (2*nRing-1)*(2*nRing-1)) / (2*nRing);
           int nPos  = (thisIndex - (2*nRing-1)*(2*nRing-1)) % (2*nRing);
 
-	  if (nSeg==0) return SquLK( -nRing+nPos ,  nRing     ); 
-	  if (nSeg==1) return SquLK( nRing       ,  nRing-nPos); 
-	  if (nSeg==2) return SquLK( nRing-nPos  , -nRing     ); 	 
-	               return SquLK(-nRing       , -nRing+nPos); 
-      } 
+	  if (nSeg==0) return SquLK( -nRing+nPos ,  nRing     );
+	  if (nSeg==1) return SquLK( nRing       ,  nRing-nPos);
+	  if (nSeg==2) return SquLK( nRing-nPos  , -nRing     );
+          return SquLK(-nRing       , -nRing+nPos);
+      }
 
       int SquareMapper::index(const SquLK &thisLK) const
       {
@@ -131,17 +131,17 @@ namespace mu2e {
 	  int nRing = ring(thisLK);
 	  int pos   = (2*nRing-1)*(2*nRing-1);
 
-	  //add position along segment 
+	  //add position along segment
 	  if ( thisLK.k_ ==  nRing && thisLK.l_ < nRing)   pos +=           nRing + thisLK.l_;
 	  if ( thisLK.l_ ==  nRing && thisLK.k_ > -nRing)  pos += 2*nRing + nRing - thisLK.k_;
 	  if ( thisLK.k_ == -nRing && thisLK.l_ > -nRing)  pos += 4*nRing + nRing - thisLK.l_;
 	  if ( thisLK.l_ == -nRing && thisLK.k_ < nRing)   pos += 6*nRing + nRing + thisLK.k_;
 
-	  return pos;      
+	  return pos;
       }
 
       int SquareMapper::ring(const SquLK &thisLK) const
-      {         
+      {
 	  return std::max(std::abs(thisLK.l_),std::abs(thisLK.k_));
       }
 
@@ -149,6 +149,3 @@ namespace mu2e {
 
 
 }
-
-
-             

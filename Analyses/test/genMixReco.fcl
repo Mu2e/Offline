@@ -20,9 +20,9 @@
 #     --fclinput=@muStops:muStops.txt 
 #------------------------------------------------------------------------------
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 #include "CaloCluster/fcl/prolog.fcl"
 #include "TrackCaloMatching/fcl/prolog.fcl"
@@ -176,7 +176,7 @@ physics : {
 outputs: {
     detectorOutput : {
         module_type : RootOutput
-#        SelectEvents: { SelectEvents: [p1] }
+#        SelectEvents: [p1]
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]

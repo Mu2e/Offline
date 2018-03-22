@@ -40,9 +40,7 @@ namespace mu2e {
                 double zCrystal = cal_.crystal(crId).position().z();
 
                 double weight = energy;
-                if (mode == LinearMod)   weight = 1.01*energy - 6.25;
                 if (mode == Logarithm)   weight = log(energy);
-                if (mode == Sqrt)        weight = sqrt(energy);
 
                 sxi  += xCrystal*weight;
                 sxi2 += xCrystal*xCrystal*weight;

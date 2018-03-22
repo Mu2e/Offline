@@ -55,14 +55,10 @@ using namespace std;
 
 #include <boost/shared_array.hpp>
 
-#ifdef BABARINSTALLED
 using namespace CLHEP;
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#else
-#warning BaBar package is absent. KalRep cannot be displayed in the event display.
-#endif
 
 namespace mu2e_eventdisplay
 {
@@ -230,11 +226,12 @@ void DataInterface::fillGeometry()
   {
 //Straws
     mu2e::GeomHandle<mu2e::TTracker> ttracker;
-    const std::deque<mu2e::Straw>& allStraws = ttracker->getAllStraws();
-    std::deque<mu2e::Straw>::const_iterator iter;
-    for(iter=allStraws.begin(); iter!=allStraws.end(); iter++)
+    const auto& allStraws = ttracker->getAllStraws();
+    // for(const auto & elem : allStraws)
+    for (size_t i = 0; i<ttracker->nStraws(); ++i)
     {
-      const mu2e::Straw &s=*iter;
+      // const mu2e::Straw& s = elem;
+      const mu2e::Straw& s = allStraws[i];
       const CLHEP::Hep3Vector& p = s.getMidPoint();
       const CLHEP::Hep3Vector& d = s.getDirection();
       double x = p.x();
@@ -910,7 +907,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     }
   }
 
-#ifdef BABARINSTALLED
   const mu2e::KalRepCollection *kalRepHits=contentSelector->getSelectedHitCollection<mu2e::KalRepCollection>();
   if(kalRepHits!=nullptr)
   {
@@ -996,7 +992,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       }
     }
   }
-#endif
 
   const mu2e::StepPointMCCollection *calosteppoints=contentSelector->getSelectedCaloHitCollection<mu2e::StepPointMCCollection>();
   if(calosteppoints!=nullptr)
@@ -1203,7 +1198,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     }
   }
 
-#ifdef BABARINSTALLED
   trackInfos.clear();
   std::vector<const mu2e::KalRepCollection*> kalRepCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::KalRepCollection>(trackInfos);
   for(unsigned int i=0; i<kalRepCollectionVector.size(); i++)
@@ -1212,8 +1206,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(unsigned int j=0; j<kalReps->size(); j++)
     {
       KalRep const* kalrep = kalReps->get(j);
-      double t0=kalrep->t0().t0();
-      {
         int trackclass=trackInfos[i].classID;
         int trackclassindex=trackInfos[i].index;
         std::string trackcollection=trackInfos[i].entryText;
@@ -1290,14 +1282,25 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
           track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
         }
+
 	int charge = kalrep->charge();
+        double t0=kalrep->t0().t0();
+        double firsthitfltlen = kalrep->lowFitRange(); 
+        double lasthitfltlen = kalrep->hiFitRange();
+        double entlen = min(firsthitfltlen,lasthitfltlen);
+        double loclen(0.0);
+        const TrkSimpTraj* ltraj = kalrep->localTrajectory(entlen,loclen);
+        const CLHEP::HepVector &params=ltraj->parameters()->parameter();
+        double d0 = params[0];
+        double om = params[2];
+        double rmax = d0+2.0/om;
+
 	sprintf(c2,"Charge %i",charge);
 	info->setText(1,c2);
 	sprintf(c3,"Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV);
-	sprintf(c4,"T0 %gns",t0/CLHEP::ns);
+	sprintf(c4,"t0 %gns  d0 %gmm  rmax %gmm",t0/CLHEP::ns,d0/CLHEP::mm,rmax/CLHEP::mm);
 	info->setText(2,c3);
 	info->setText(3,c4);
-      }
     }
   }
 
@@ -1345,7 +1348,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       }
     }
   }
-#endif
 }
 
 void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &contentSelector,

@@ -103,9 +103,9 @@ namespace mu2e
     _saveall(pset.get<bool>("saveall",false)),
     _addhits(pset.get<bool>("addhits",true)),
     _zsave(pset.get<vector<double> >("ZSavePositions",vector<double>{-1522.0,0.0,1522.0})), // front, middle and back of the tracker
-    _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makeSH")),
-    _shfTag(pset.get<art::InputTag>("StrawHitFlagCollectionTag","FlagBkgHits")),
-    _ksTag(pset.get<art::InputTag>("SeedCollectionTag","KalSeedFit")),
+    _shTag(pset.get<art::InputTag>("StrawHitCollection")),
+    _shfTag(pset.get<art::InputTag>("StrawHitFlagCollection")),
+    _ksTag(pset.get<art::InputTag>("SeedCollection")),
     _addsel(pset.get<vector<string> >("AddHitSelectionBits",vector<string>{} )),
     _addbkg(pset.get<vector<string> >("AddHitBackgroundBits",vector<string>{})),
     _goodseed(pset.get<vector<string> >("GoodKalSeedFitBits",vector<string>{})),
@@ -148,7 +148,7 @@ namespace mu2e
     // copy in the existing flags
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(*_shfcol));
     // lookup productID for payload saver
-    art::ProductID kalRepsID(getProductID<KalRepCollection>(event));
+    art::ProductID kalRepsID(getProductID<KalRepCollection>());
     // loop over the seed fits.  I need an index loop here to build the Ptr
     for(size_t ikseed=0; ikseed < _kscol->size(); ++ikseed) {
       const auto& kseed = _kscol->at(ikseed);
@@ -164,7 +164,6 @@ namespace mu2e
 	}
 	// build a Kalman rep around this seed
 	KalRep *krep(0);
-
 	_kfit.makeTrack(_shcol,kseed,krep);
 	if(_debug > 1){
 	  if(krep == 0)
@@ -228,7 +227,7 @@ namespace mu2e
 	  // standard points, or to sample each unique segment on the fit FIXME!
 	  for(auto zpos : _zsave) {
 	    // compute the flightlength for this z
-	    double fltlen = TrkUtilities::zFlight(krep->pieceTraj(),zpos);
+	    double fltlen = krep->pieceTraj().zFlight(zpos);
 	    // sample the momentum at this flight.  This belongs in a separate utility FIXME
 	    BbrVectorErr momerr = krep->momentumErr(fltlen);
 	    // sample the helix

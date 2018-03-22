@@ -65,6 +65,8 @@ namespace mu2e {
 
     virtual void beginJob() override;
 
+    virtual void endJob();
+
     void produce( art::Event & ) override;
 
   private:
@@ -106,6 +108,9 @@ namespace mu2e {
     // Diagnostics level.
     int _diagLevel;
 
+    // Enable DIRAC emulation
+    int _enableDIRACEmulation;
+
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
 
@@ -118,6 +123,7 @@ namespace mu2e {
     _outputFile                    (pset.get<string>("outputFile","artdaq_cal.txt")),
     _generateTextFile(pset.get<int>("generateTextFile",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
+    _enableDIRACEmulation(pset.get<int>("enableDIRACEmulation",0)),
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
     _makerModuleLabel(pset.get<std::string>("makerModuleLabel","CaloDigiFromShower")) {
 
@@ -138,6 +144,14 @@ namespace mu2e {
     }
 
   }
+
+  void CaloPacketProducer::endJob(){
+    if(_generateTextFile>0) {
+      outputStream << flush;
+      outputStream.close();
+    }
+  }
+
 
   void CaloPacketProducer::produce(art::Event & evt) {
 
@@ -349,7 +363,23 @@ namespace mu2e {
 	  
 	  packetVector.push_back(IDNum);
 	  packetVector.push_back((adc_t)(curHit.recoDigiT0));
-	  packetVector.push_back((adc_t)(curHit.recoDigiSamples));
+
+	  if(_enableDIRACEmulation==0) {
+	    packetVector.push_back((adc_t)(curHit.recoDigiSamples));
+	  } else {
+	    adc_t maxVal = 0;
+	    size_t maxIdx = 0;
+	    for (auto sampleIdx = 0; sampleIdx < curHit.recoDigiSamples; sampleIdx++) {
+	      adc_t scaledVal = static_cast<adc_t>(curHit.waveform[sampleIdx]);
+	      if(scaledVal>=maxVal) {
+		maxVal = scaledVal;
+		maxIdx = sampleIdx;
+	      }
+	    }
+	    packetVector.push_back( (0xFF00 & (adc_t)(maxIdx<<8)) | (0x00FF & (adc_t)(curHit.recoDigiSamples)) );
+	  }
+
+
 	  for (auto sampleIdx = 0; sampleIdx < curHit.recoDigiSamples; sampleIdx++) {
 	      adc_t scaledVal = static_cast<adc_t>(curHit.waveform[sampleIdx]);
 	      packetVector.push_back(scaledVal);

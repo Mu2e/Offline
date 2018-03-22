@@ -6,10 +6,10 @@
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
-#include <string> 
+#include <string>
 #include <vector>
 #include <iostream>
-#include <algorithm> 
+#include <algorithm>
 
 #include "TFile.h"
 #include "TH2F.h"
@@ -18,28 +18,29 @@
 namespace mu2e {
 
 
-   CaloPulseShape::CaloPulseShape(double digiSampling, int pulseIntegralSteps) : 
+   CaloPulseShape::CaloPulseShape(double digiSampling, int pulseIntegralSteps) :
      digiSampling_(digiSampling), pulseIntegralSteps_(pulseIntegralSteps),pulseDigitized_()
    {
-   }       
+   }
 
 
    //----------------------------------------------------------------------------------------------------------------------
    void CaloPulseShape::buildShapes()
    {
+       pulseDigitized_.clear();
        ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
        std::string fileName = calorimeterCalibrations->pulseFileName();
        std::string histName = calorimeterCalibrations->pulseHistName();
-      
+
        TH1F *pshape(0);
        TFile pulseFile(fileName.c_str());
        if (pulseFile.IsOpen()) pshape = (TH1F*) pulseFile.Get(histName.c_str());
-       
+
          if (!pshape) throw cet::exception("CATEGORY")<<"CaloPulseShape:: Hitsogram "<<histName.c_str()
-	                                              <<" from file "<<fileName.c_str()<<" does not exist";        
+	                                              <<" from file "<<fileName.c_str()<<" does not exist";
 
           double  pulseBinWidth = pshape->GetBinWidth(2);
-          int     nBinTimeStamp = digiSampling_ / pulseBinWidth; 
+          int     nBinTimeStamp = digiSampling_ / pulseBinWidth;
           int     integralStep  = digiSampling_ / pulseBinWidth / pulseIntegralSteps_;
 
           int ifirst(1),ilast(pshape->GetNbinsX()); //set bins prior to T0 to zero.
@@ -49,11 +50,11 @@ namespace mu2e {
           int  nTimeStamps = int((ilast-ifirst)*pulseBinWidth/digiSampling_) + 1;
 
           for (int i=0; i<pulseIntegralSteps_; ++i)
-          {        
+          {
                double sum(0);
                std::vector<double> pulseDigi;
 
-               int binInit = ifirst - i*integralStep; //shift start time backward             
+               int binInit = ifirst - i*integralStep; //shift start time backward
                for (int j=0; j<nTimeStamps; ++j)
                {
                   int binMin = binInit+j*nBinTimeStamp;
@@ -62,12 +63,12 @@ namespace mu2e {
                   pulseDigi.push_back(pulseIntegral);
                }
                for (auto &pulse : pulseDigi) pulse /= sum;
-               pulseDigitized_.push_back(pulseDigi);                         
+               pulseDigitized_.push_back(pulseDigi);
           }
 
 	pulseFile.Close();
    }
-   
+
    //----------------------------------------------------------------------------------------------------------------------
    const void CaloPulseShape::printShape() const
    {
@@ -76,11 +77,11 @@ namespace mu2e {
        for (const auto& pulseDigi : pulseDigitized_)
        {
 	  std::cout<<"Pulse "<<ip<<std::endl;
-          for (const auto& pulse : pulseDigi) std::cout<<pulse<<" "; std::cout<<std::endl;       
+          for (const auto& pulse : pulseDigi) {std::cout<<pulse<<" ";} std::cout<<std::endl;
           ++ip;
        }
    }
-   
-   
+
+
 
 }

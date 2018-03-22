@@ -41,10 +41,11 @@ namespace mu2e {
            double                     innerRadius()            const {return radiusIn_;}
            double                     outerRadius()            const {return radiusOut_;}
  	   
-           double                     estimateEmptySpace()                         const;
-	   int                        idxFromPosition(double x, double y)          const;           
-	   std::vector<int>           findLocalNeighbors(int crystalId, int level) const;            
+	   int                        idxFromPosition(double x, double y) const;           
+	   std::vector<int>           findLocalNeighbors(int crystalId, int level,bool raw=false) const;            
+           std::vector<int>           nearestIdxFromPosition(double x, double y) const; 
            
+           double                     estimateEmptySpace() const;
            void                       print(std::ostream& os = std::cout) const;
 
 

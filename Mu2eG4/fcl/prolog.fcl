@@ -19,6 +19,9 @@ mu2eg4DefaultPhysics: {
     physicsListName:  "ShieldingM"
     turnOffRadioactiveDecay:  false
     turnOnRadioactiveDecay:  false
+    modifyEMOption4: false
+    addProcesses: []
+    captureDModel: ""
 
     // current G4 stepper choices in Mu2eWorld.cc are shown below
     // G4ClassicalRK4
@@ -31,6 +34,7 @@ mu2eg4DefaultPhysics: {
     // G4HelixSimpleRunge
     stepper : "G4ClassicalRK4"
     bfieldMaxStep: 20. // mm
+    limitStepInAllVolumes: false
 }
 #----------------
 mu2eg4DefaultResourceLimits: {
@@ -117,9 +121,12 @@ mu2eg4runDefaultSingleStage: {
     MultiStageParameters : {}
 
     SDConfig : {
+        verbosityLevel : 0
 	enableAllSDs : false  # this would activate all SDs listed in StepInstanceName enum
 	# activate minimal set of sensitive detectors used by everybody
 	enableSD : [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]
+        # in the including fcl file set e.g. physics.producers.g4run.SDConfig.enableSD : @erase 
+        # whan setting enableAllSDs : true
 	TimeVD: { times: [] } 
     }
 

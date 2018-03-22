@@ -7,7 +7,10 @@
 process_name : print
 
 services : {
-    message : @local::mf_production
+   message : @local::mf_production
+   GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }  
+   ConditionsService :{ conditionsfile : "Mu2eG4/test/conditions_01.txt" } 
+   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
 }
 
 physics :{
@@ -28,19 +31,39 @@ physics :{
         #emPCut : -1.0       # cut on +/-11,22
         #primaryOnly : true  # only first particles
       }
+      SimParticlePtrPrinter : {
+        verbose : 0   # 0, 1
+      }
       StepPointMCPrinter : {
         verbose: 2   # 0, 1, 2
 	#inputTags : [ "mothersFilter", "virtualdetector" ] # select instances
         #pCut : 10.0          # cut on all particles
       }
+      SimParticleTimeMapPrinter : {
+        verbose : 1  # 0,1
+      }
       MCTrajectoryPrinter : {
         verbose: 2   # 0, 1, 2
 	#inputTags : [ "g4run" ] # select instances
       }
+
+      CaloShowerStepPrinter : {
+        verbose: 0   # 0, 1
+        #eCut : 10.0          # cut on hits
+	#inputTags : [ "CaloShowerStepFromShowerStep" ] # select instances
+      }
       CaloHitPrinter : {
         verbose: 1   # 0, 1
         #eCut : 10.0          # cut on hits
-	#inputTags : [ "CaloShowerStepROFromShowerStep" ] # select instances
+	#inputTags : [ "CaloShowerStepFromShowerStep" ] # select instances
+      }
+      CaloDigiPrinter : {
+        verbose: 1   # 0, 1
+	#inputTags : [ "CaloDigiFromShower" ] # select instances
+      }
+      CaloRecoDigiPrinter : {
+        verbose: 1   # 0, 1
+	#inputTags : [ "CaloRecoDigiFromDigi" ] # select instances
       }
       CaloCrystalHitPrinter : {
         verbose: 1   # 0, 1
@@ -57,12 +80,35 @@ physics :{
         verbose: 1   # 0, 1
 	#inputTags : [ "MakeSD" ] # select instances
       }
+      StrawDigiMCPrinter : {
+        verbose: 1   # 0, 1, 2
+	#inputTags : [ "MakeSD" ] # select instances
+      }
       StrawHitPrinter : {
         verbose: 1   # 0, 1
         eCut : -1.0          # cut, typically 0.002
 	#inputTags : [ "MakeSH" ] # select instances
       }
+      StrawHitFlagPrinter : {
+        verbose: 0   # 0, 1
+	#inputTags : [ "MakeSH" ] # select instances
+      }
+      BkgClusterPrinter : {
+        verbose: 0   # 0, 1
+	#inputTags : [ "MakeSH" ] # select instances
+      }
+      BkgQualPrinter : {
+        verbose: 0   # 0, 1
+	#inputTags : [ "MakeSH" ] # select instances
+      }
+      ComboHitPrinter : {
+        verbose: 1   # 0, 1
+	#inputTags : [ "MakeSH" ] # select instances
+      }
 
+      TimeClusterPrinter : {
+        verbose: 1   # 0, 1
+      }
       TrackClusterMatchPrinter : {
         verbose: 2   # 0, 1, 2
 	#inputTags : [ "TrackCaloMatchingDem" ] # select instances
@@ -78,10 +124,19 @@ physics :{
       }
 
       KalRepPrinter : {
-        verbose: 4   # 0 - 5 (5 is KalRep printAll)
+        verbose: 0   # 0 - 5 (5 is KalRep printAll)
 	#inputTags : [ "TRFDeM" ] # select instances
       }
 
+      KalSeedPrinter : {
+        verbose: 4   # 0,1,2,3,4
+	#inputTags : [ "KFFDeM" ] # select instances
+      }
+
+      PhysicalVolumePrinter : {
+        verbose: 2   # 0,1,2
+        #inputTags : [ "KFFDeM" ] # select instances
+      }
     }
 
   } # analyzers
@@ -94,6 +149,8 @@ physics :{
 outputs: {
   printProductList : {
     module_type : DataProductDump
+    # temporary patch for crash until art 2_10 or 2_11
+    wantResolvedOnly: true
   }
 }
 

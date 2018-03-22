@@ -28,7 +28,6 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
-
 #include "TTrackerGeom/inc/TTracker.hh"
 
 #include "G4Colour.hh"
@@ -48,7 +47,7 @@
 using namespace std;
 
 mu2e::ConstructTTrackerTDR::ConstructTTrackerTDR( VolumeInfo   const& ds3Vac,
-                                                  SimpleConfig const& config  ):
+                                                  SimpleConfig const& config ):
   // References to arguments
   _ds3Vac(ds3Vac),
   _config(config),
@@ -56,6 +55,7 @@ mu2e::ConstructTTrackerTDR::ConstructTTrackerTDR( VolumeInfo   const& ds3Vac,
   // Assorted tools
   _helper(*art::ServiceHandle<G4Helper>()),
   _reg(_helper.antiLeakRegistry()),
+
   _ttracker(*GeomHandle<TTracker>()),
 
   // Switches that affect the entire tracker
@@ -478,8 +478,8 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
   SupportStructure const& sup     = _ttracker.getSupportStructure();
 
   // Panels are identical other than placement - so get required properties from plane 0, panel 0.
-  Plane const& plane(_ttracker.getPlane(PlaneId(0)));
-  Panel const& panel(_ttracker.getPanel(PanelId(0,0)));
+  Plane const& plane(_ttracker.getPlane(PlaneId(0,0,0)));
+  Panel const& panel(_ttracker.getPanel(PanelId(0,0,0)));
 
   bool panelEnvelopeVisible = _config.getBool("ttracker.panelEnvelopeVisible",false);
   bool panelEnvelopeSolid   = _config.getBool("ttracker.panelEnvelopeSolid",true);
@@ -499,7 +499,7 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
          << " preparing panel: "
          << " panelCenterPhi "
          << panelCenterPhi/M_PI*180.
-         << " panel center from the maker "
+         << " panel.boxRzAngle "
          << panel.boxRzAngle()/M_PI*180.
          << endl;
   }
@@ -565,9 +565,16 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
   // This carries a sign, depending on upstream/downstream.
   double zPanel(0.);
   for ( int i=0; i<panel.nLayers(); ++i){
-    zPanel += panel.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
+    // straw 0 is in layer 0, 1 in 1
+    zPanel += panel.getStraw(StrawId(0,0,i)).getMidPoint().z();
   }
   zPanel /= panel.nLayers();
+
+  if (_verbosityLevel>2) {
+    cout << __func__ << " zPanel: "
+         << zPanel
+         << endl;
+  }
 
   // Is panel 0 on the upstream(+1) or downstream(-z) side of the plane.
   double side = (zPanel-plane.origin().z()) > 0. ? -1. : 1.;
@@ -575,16 +582,22 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
   // A unit vector in the direction from the origin to the wire center within the panel envelope.
   CLHEP::Hep3Vector unit( cos(panelCenterPhi), sin(panelCenterPhi), 0.);
 
- 
   // Place the straws into the panel envelope.
-  for ( std::vector<Layer>::const_iterator i=panel.getLayers().begin(); i != panel.getLayers().end(); ++i ){
 
-    Layer const& lay(*i);
+  // We preserve per layer construction order to ensure compatibility
+  // with the old construction to ease comaprisons and due to
+  // potential Geant4 geometry optimization effects
 
-    for ( std::vector<Straw const*>::const_iterator j=lay.getStraws().begin();
-          j != lay.getStraws().end(); ++j ){
+  uint16_t nlayers = panel.nLayers();
 
-      Straw const&       straw(**j);
+  for ( uint16_t ilay=0; ilay<nlayers; ++ilay ){
+
+    for (const auto straw_p : panel.getStrawPointers() ) {
+
+      Straw const&       straw(*straw_p);
+
+      if ( ( straw.id().getStraw())%nlayers != ilay ) continue;
+
       StrawDetail const& detail(straw.getDetail());
 
       if (_verbosityLevel>2) {
@@ -624,7 +637,25 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
       mid.setZ(side*(pos.z() - zPanel));
 
       int copyNo=straw.index().asInt();
+      // this is the straw number in a given panel; not a global straw id
+      // it will be converted to the global one in StrawSD::ProcessHits
+      // int copyNo=straw.id().asUint16();
+
       bool edgeVisible(true);
+
+      if (_verbosityLevel>2) {
+        cout << __func__ << " placing straw "
+             << straw.id().getStraw()
+             << " id: "
+             << straw.id()
+             << " index: "
+             << straw.index().asInt()
+             << " index2: "
+             << straw.id().asUint16()
+             << " with copy number: "
+             << copyNo
+             << endl;
+      }
 
       // The enclosing volume for the straw is made of gas.  The walls and the wire will be placed inside.
       VolumeInfo strawVol =  nestTubs( straw.name("TTrackerStrawGas_"),
@@ -736,9 +767,9 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
                                          place,
                                          _doSurfaceCheck
                                          );
+    }//for strawPointers
 
-    } // end loop over straws within a layer
-  } // end loop over layers
+  } // end loop over straws within a panel
 
   return pnl0Info;
 
@@ -761,7 +792,7 @@ mu2e::ConstructTTrackerTDR::prepareEBKey(bool keyItself){
 
   // Internally all keys are the same.
   // Create one logical volume for now, do not place it.
-  Panel const& panel(_ttracker.getPanel(PanelId(0,0)));
+  Panel const& panel(_ttracker.getPanel(StrawId(0,0,0)));
 
   TubsParams  keyParams  = keyItself ? panel.getEBKeyParams() : panel.getEBKeyShieldParams();
 
@@ -925,7 +956,7 @@ mu2e::ConstructTTrackerTDR::addPanelsAndEBKeys(VolumeInfo& basePanel,
 
   Plane const& pln = _ttracker.getPlane(ipln);
   // to get the key info from the base panel
-  Panel const& panel(_ttracker.getPanel(PanelId(0,0)));
+  Panel const& panel(_ttracker.getPanel(StrawId(0,0,0)));
 
   // to prevent the overlaps
   SupportStructure const& sup = _ttracker.getSupportStructure();
@@ -946,7 +977,7 @@ mu2e::ConstructTTrackerTDR::addPanelsAndEBKeys(VolumeInfo& basePanel,
     //if ( pnlDraw > -1  && ipnl%2 == 0 ) continue;
 
     // Choose a representative straw from this this (plane,panel).
-    Straw const& straw = _ttracker.getStraw( StrawId(ipln,ipnl,0,0) );
+    Straw const& straw = _ttracker.getStraw( StrawId(ipln,ipnl,0) );
 
     // Azimuth of the midpoint of the wire.
     CLHEP::Hep3Vector const& mid = straw.getMidPoint();
@@ -989,7 +1020,8 @@ mu2e::ConstructTTrackerTDR::addPanelsAndEBKeys(VolumeInfo& basePanel,
            << phi0/M_PI*180.
            << " rel position "
            << panelPosition
-           << " "
+           << " panel copy number "
+           << baseCopyNo + ipnl
            << endl;
     }
 
@@ -1392,9 +1424,9 @@ void mu2e::ConstructTTrackerTDR::addPlaneSupports( std::vector<VolumeInfo>& supp
     if ( _verbosityLevel > 0 ) {
       cout << "Plane Support: "
            << info.name      << " "
-           << info.solid     << " "
-           << info.logical   << " "
-           << info.physical  << " "
+           // << info.solid     << " "
+           // << info.logical   << " "
+           // << info.physical  << " "
            << info.centerInParent << " "
            << info.centerInWorld  << " "
            << endl;

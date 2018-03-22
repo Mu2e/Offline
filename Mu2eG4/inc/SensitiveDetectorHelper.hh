@@ -76,6 +76,8 @@ namespace mu2e {
       //LG: I made this public to use it in testing something
       std::vector<std::string> stepInstanceNamesToBeProduced() const;
 
+      int verbosityLevel() const { return verbosityLevel_; }
+
   private:
 
     // A helper class to hold information about each sensitive detector object.
@@ -122,6 +124,8 @@ namespace mu2e {
       // Separate handling as this detector does not produced StepPointMCs
       bool extMonPixelsEnabled_;
       
+      int  verbosityLevel_;
+
   };
 
 
