@@ -4,6 +4,7 @@ double calorimeter.caloMotherRadiusIn           = 330;
 double calorimeter.caloMotherRadiusOut          = 720; // 856;   
 double calorimeter.caloMotherZ0                 = 11842;   
 double calorimeter.caloMotherZ1                 = 13220;   
+double calorimeter.vdThickness                  = 0.02;   
 
 
 
@@ -18,7 +19,7 @@ double calorimeter.diskCaseRadiusOut           = 672.;
 double calorimeter.diskOutRingEdgeZLength      = 30.;
 double calorimeter.diskOutRingEdgeRLength      = 47.;    
 double calorimeter.diskStepThickness           = 3.;    
-vector<double> calorimeter.diskZ0MotherShift   = {1.,701.};  //separation w.r.t caloMotherZ0, at lest 1 mm for virtual detectors
+vector<double> calorimeter.diskZ0MotherShift   = {0.,700.};  //separation w.r.t caloMotherZ0
 
 bool   calorimeter.crystalShift                = true;
 double calorimeter.crystalXYLength             = 34.0;
@@ -74,7 +75,6 @@ double calorimeter.crateTThickness             = 8;  // top panel thickness
 double calorimeter.crateSThickness             = 8;  // side panel thickness
 double calorimeter.crateFShieldYLength         = 100;
 double calorimeter.crateFShieldDeltaZ          = 60;
-double calorimeter.crateInnerRadius            = 721;  //must be 1 mm larger than caloMotherRadiusOut for VD   
 double calorimeter.cratephi0                   = 30;
 double calorimeter.crateDeltaPhi               = 16;
 double calorimeter.radiatorThickness           = 3.0;

@@ -70,6 +70,7 @@ namespace mu2e {
           calo_->caloInfo_.set("envelopeRadiusOut",      config.getDouble("calorimeter.caloMotherRadiusOut") );
           calo_->caloInfo_.set("envelopeZ0",             config.getDouble("calorimeter.caloMotherZ0") );
           calo_->caloInfo_.set("envelopeZ1",             config.getDouble("calorimeter.caloMotherZ1") );
+          calo_->caloInfo_.set("vdThickness",            config.getDouble("calorimeter.vdThickness") );
                     
           calo_->caloInfo_.set("diskCaseRadiusIn",       config.getDouble("calorimeter.diskCaseRadiusIn") );
           calo_->caloInfo_.set("diskCaseRadiusOut",      config.getDouble("calorimeter.diskCaseRadiusOut") );
@@ -137,7 +138,6 @@ namespace mu2e {
 	  calo_->caloInfo_.set("crateSThickness",        config.getDouble("calorimeter.crateSThickness") );
 	  calo_->caloInfo_.set("crateFShieldYLength",    config.getDouble("calorimeter.crateFShieldYLength") );
 	  calo_->caloInfo_.set("crateFShieldDeltaZ",     config.getDouble("calorimeter.crateFShieldDeltaZ") );
-	  calo_->caloInfo_.set("crateInnerRadius",       config.getDouble("calorimeter.crateInnerRadius") );
 	  calo_->caloInfo_.set("cratephi0",              config.getDouble("calorimeter.cratephi0") );
 	  calo_->caloInfo_.set("crateDeltaPhi",          config.getDouble("calorimeter.crateDeltaPhi") );
 	  calo_->caloInfo_.set("radiatorThickness",      config.getDouble("calorimeter.radiatorThickness") );
@@ -188,6 +188,7 @@ namespace mu2e {
           // LOOK AT CONSTRUCTDISKCALORIMETER TO GET THE APPROPRIATE FORMULAS FOR 
           // frontPanelHalfThick, diskCaseHalfZLength, BPFEEHalfZ and crateFullDZ 
           //
+          double vdThickness             = calo_->caloInfo_.getDouble("vdThickness");  
           double FPCarbonThick           = calo_->caloInfo_.getDouble("FPCarbonZLength");  
           double FPFoamThick             = calo_->caloInfo_.getDouble("FPFoamZLength");  
           double FPCoolPipeRadius        = calo_->caloInfo_.getDouble("FPCoolPipeRadius");  
@@ -207,19 +208,19 @@ namespace mu2e {
           FPHalfZLength_        = (FPCarbonThick+FPFoamThick-FPpipeRadius+FPCoolPipeRadius)/2.0;
           diskCaseHalfZLength_  = diskCaseHalfZLength;        
           BPHalfZLength_        = BPHoleHalfZ+FEEBoxHalfZ+2.0*FEEBoxThick+BPPipeHalfZOffset+BPPipeRadiusHigh;        
-          diskHalfZLength_      = FPHalfZLength_+diskCaseHalfZLength_+BPHalfZLength_;
-          FEBHalfZLength_       = (crateZLength+crateFShieldDeltaZ+crateFShieldThick)/2.0;
+          diskHalfZLength_      = FPHalfZLength_+diskCaseHalfZLength_+BPHalfZLength_ + vdThickness;
+          FEBHalfZLength_       = (crateZLength+crateFShieldDeltaZ+crateFShieldThick + 2.0*vdThickness)/2.0;
           motherHalfZ_          = (calo_->caloInfo_.getDouble("envelopeZ1")-calo_->caloInfo_.getDouble("envelopeZ0"))/2.0;
 
           // OFFSET TO ALIGN BEGINNING OF BOTTOM SHIESLDING TO BEGINNING OF CRYSTAL IN Z
-          crateToDiskDeltaZ_ = FEBHalfZLength_ -diskHalfZLength_+2.0*FPHalfZLength_;
+          crateToDiskDeltaZ_ = FEBHalfZLength_ - diskHalfZLength_ + 2.0*FPHalfZLength_ + vdThickness;
 
     
 
       
           // OFFSETS BETWEEN THE DISK AND CRYSTAL CORDINATE SYSTEMS, I.E. DISTANCE BETWEEN FRONT FACE DISK AND FRONT FACE CRYSTALS
           // LOOK AT CRYSTALPOSITION
-          double disp = -diskHalfZLength_+2*FPHalfZLength_+ 2.0*(diskCaseHalfZLength - crystalHalfZLength - crystalFrameHalfZLength);
+          double disp = -diskHalfZLength_+vdThickness + 2*FPHalfZLength_+ 2.0*(diskCaseHalfZLength - crystalHalfZLength - crystalFrameHalfZLength);
           diskOriginToCrystalOrigin_ = CLHEP::Hep3Vector(0,0,disp);
           
          if (verbosityLevel_==99) std::cout<<"Disk components half length FP/Disk/BP "<<FPHalfZLength_<<" "<<diskCaseHalfZLength_<<" "<<BPHalfZLength_<<std::endl;

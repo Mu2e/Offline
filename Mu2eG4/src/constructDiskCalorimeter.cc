@@ -5,12 +5,15 @@
 // Original author Bertrand Echenard
 //
 //
+// Note 1: we include the virtual detectors inside the disk unit
+//
 // Note about steps in the disk. There are two ways to add the steps between the crystals and the disk edges. 
 //      1) create each edge separately (by subtracting the inner hole or as the intersection between the outside edge and the bar)
 //      2) make an union comprising of all the inner steps described as boxes, then subtract the hole inside. For the outer steps
 //         describe the hole inside the disk as a sum of "empty" bars, then remove them from the cylinder.
 //      
-//   It turns out that version 1 is more annoying to code, but produced much faster code, so we picked it.  
+//   Version 1 is faster
+// 
 //
 
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -94,7 +97,7 @@ namespace mu2e {
        G4double mother_z1        = cal.caloInfo().getDouble("envelopeZ1");
        G4double mother_zlength   = mother_z1-mother_z0;
        G4double mother_zCenter   = (mother_z1+mother_z0)/2.0;
-       G4double vdMargin         = 0.5*CLHEP::mm;
+       G4double vdThickness      = cal.caloInfo().getDouble("vdThickness");
 
 
        // Make the mother volume for the calorimeter.
@@ -138,12 +141,12 @@ namespace mu2e {
            G4Tubs* backPlate  = (backPlateLog  != nullptr) ? static_cast<G4Tubs*>(backPlateLog->GetSolid())  : nullptr; 
            G4Tubs* disk       = static_cast<G4Tubs*>(diskLog->GetSolid());
 
-           G4double R0disk    = mother_inRadius +vdMargin;
-           G4double R1disk    = mother_outRadius-vdMargin;
            G4double zHalfDisk = disk->GetZHalfLength();
            G4double zHalfFP   = (frontPlateLog != nullptr) ? frontPlate->GetZHalfLength() : 0;
            G4double zHalfBP   = (backPlateLog  != nullptr) ? backPlate->GetZHalfLength() : 0;
-           G4double zHalftot  = zHalfFP+zHalfDisk+zHalfBP;
+           G4double R0disk    = mother_inRadius;
+           G4double R1disk    = mother_outRadius;
+           G4double zHalftot  = zHalfFP + zHalfDisk + zHalfBP + vdThickness;
            
            double diskpar[5] = {R0disk,R1disk,zHalftot,0,CLHEP::twopi};
            std::ostringstream discname;  discname<<"caloDisk_" <<idisk;
@@ -155,15 +158,15 @@ namespace mu2e {
                                              calorimeterInfo,idisk,
                         		     isCalorimeterVisible,G4Colour::White(),0,forceEdge,true,doSurfaceCheck );
 
-           if (frontPlateLog != nullptr) pv = new G4PVPlacement(0,G4ThreeVector(0,0,-zHalftot+zHalfFP),frontPlateLog,"caloFP_PV",
+           if (frontPlateLog != nullptr) pv = new G4PVPlacement(0,G4ThreeVector(0,0,-zHalftot+vdThickness+zHalfFP),frontPlateLog,"caloFP_PV",
                                                                 calorimeterDisk[idisk].logical,false,0,false);
            if (frontPlateLog != nullptr) doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
 
-           pv = new G4PVPlacement(0,G4ThreeVector(0,0,-zHalftot+2*zHalfFP+zHalfDisk),diskLog,"caloCase_PV",
+           pv = new G4PVPlacement(0,G4ThreeVector(0,0,-zHalftot+vdThickness+2.0*zHalfFP+zHalfDisk),diskLog,"caloCase_PV",
                                   calorimeterDisk[idisk].logical,false,0,false);
            doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
 
-           if (backPlateLog != nullptr) pv = new G4PVPlacement(0,G4ThreeVector(0,0,+zHalftot-zHalfBP),backPlateLog,"caloBP_PV",
+           if (backPlateLog != nullptr) pv = new G4PVPlacement(0,G4ThreeVector(0,0,+zHalftot-vdThickness-zHalfBP),backPlateLog,"caloBP_PV",
                                                                calorimeterDisk[idisk].logical,false,0,false);
            if (backPlateLog != nullptr) doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
 
@@ -171,7 +174,7 @@ namespace mu2e {
 	   if ( crateVersion > 1 )
            {
    	      std::ostringstream cratename; cratename<<"caloFEB_" <<idisk;
-              double FEBpar[5] = {FEB->GetInnerRadius()-vdMargin,FEB->GetOuterRadius()+vdMargin,FEB->GetZHalfLength()+0.5*vdMargin,
+              double FEBpar[5] = {mother_outRadius,FEB->GetOuterRadius()+vdThickness,FEB->GetZHalfLength()+vdThickness,
                                   FEB->GetStartPhiAngle(),FEB->GetDeltaPhiAngle()};
 
               G4ThreeVector posFEB  = posCaloMotherInDS + cal.disk(idisk).geomInfo().originLocal() + G4ThreeVector(0,0,cal.disk(idisk).geomInfo().crateDeltaZ());
@@ -221,7 +224,6 @@ namespace mu2e {
        G4Material* vacuumMaterial        = materialFinder.get("calorimeter.vacuumMaterial");
        G4Material* FPFoamMaterial        = materialFinder.get("calorimeter.FPFoamMaterial");
        G4Material* FPCarbonMaterial      = materialFinder.get("calorimeter.FPCarbonMaterial");
-       G4Material* coolPipeMaterial      = materialFinder.get("calorimeter.coolPipeMaterial");
        G4Material* pipeMaterial          = materialFinder.get("calorimeter.pipeMaterial");
 
        G4double FPInnerRadius            = cal.caloInfo().getDouble("FPInnerRadius");
@@ -272,7 +274,7 @@ namespace mu2e {
        rotFPPipe->rotateY(CLHEP::pi);
        
        G4Torus*         coolFP     = new G4Torus("caloCoolFP",FPCoolPipeRadius-FPCoolPipeThickness, FPCoolPipeRadius, FPCoolPipeTorRadius, angMax, CLHEP::twopi-2.0*angMax);
-       G4LogicalVolume* coolFPLog  = caloBuildLogical(coolFP, coolPipeMaterial, "caloCoolFPLog",isPipeVisible,G4Color::Red(),isPipeSolid,0);
+       G4LogicalVolume* coolFPLog  = caloBuildLogical(coolFP, pipeMaterial, "caloCoolFPLog",isPipeVisible,G4Color::Red(),isPipeSolid,0);
        pv = new G4PVPlacement(rotFPPipe,G4ThreeVector(0.0,0.0,ZposPipe), coolFPLog, "caloCoolFPPV", frontPlateLog, false, 0, false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                
        
@@ -909,13 +911,12 @@ namespace mu2e {
        G4int nCrates            = cal.caloInfo().getInt("numberOfCrates");
        G4int nCratesBeforeSpace = cal.caloInfo().getInt("nCrateBeforeSpace");
        G4double phi0Crate       = cal.caloInfo().getDouble("cratephi0")*CLHEP::degree;
-       G4double deltaPhiCrate   = cal.caloInfo().getDouble("crateDeltaPhi")*CLHEP::degree; 
-       G4double crateRadIn      = cal.caloInfo().getDouble("crateInnerRadius");
+       G4double deltaPhiCrate   = cal.caloInfo().getDouble("crateDeltaPhi")*CLHEP::degree;        
+       G4double crateRadIn      = cal.caloInfo().getDouble("envelopeRadiusOut") + cal.caloInfo().getDouble("vdThickness");
        G4double crateRadOut     = crateRadIn+1.005*sqrt(4.0*crate->GetYHalfLength()*crate->GetYHalfLength()+crate->GetXHalfLength()*crate->GetXHalfLength());
        G4double crateHalfLength = crate->GetZHalfLength();   
        G4double cratePosY       = crateRadIn+1.001*crate->GetYHalfLength();    
        
-      
        G4Tubs* calorimeterFEB = new G4Tubs("caloFEB",crateRadIn, crateRadOut,crateHalfLength,-phi0Crate, CLHEP::pi+2*phi0Crate);       
        G4LogicalVolume* calorimeterFEBLog  = caloBuildLogical(calorimeterFEB, vacuumMaterial, "caloFEBLog",0,G4Color::Black(),0,0);   
   

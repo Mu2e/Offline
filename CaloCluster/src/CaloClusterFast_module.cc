@@ -201,8 +201,8 @@ namespace mu2e {
 
          unsigned ncry(1);
          int      cluEnergy(seed->val_);
-         double   xc = cal->crystal(seed->crId_).localPositionFF().x()*seed->val_;
-         double   yc = cal->crystal(seed->crId_).localPositionFF().y()*seed->val_;
+         double   xc = cal->crystal(seed->crId_).localPosition().x()*seed->val_;
+         double   yc = cal->crystal(seed->crId_).localPosition().y()*seed->val_;
          seed->val_ = 0; 
          
          std::queue<int> crystalToVisit;
@@ -216,8 +216,8 @@ namespace mu2e {
             {
                if (hit.crId_ != nid || hit.val_ <0.5) continue;
                cluEnergy += hit.val_;
-               xc += cal->crystal(nid).localPositionFF().x()*hit.val_;
-               yc += cal->crystal(nid).localPositionFF().y()*hit.val_;
+               xc += cal->crystal(nid).localPosition().x()*hit.val_;
+               yc += cal->crystal(nid).localPosition().y()*hit.val_;
                ++ncry;
                hit.val_ = 0;
                for (const auto& neighbor : cal->neighbors(nid)) crystalToVisit.push(neighbor);                
@@ -227,8 +227,8 @@ namespace mu2e {
             {
                if (hit.crId_ != nid || hit.val_ <0.5) continue;
                cluEnergy += hit.val_;
-               xc += cal->crystal(nid).localPositionFF().x()*hit.val_;
-               yc += cal->crystal(nid).localPositionFF().y()*hit.val_;
+               xc += cal->crystal(nid).localPosition().x()*hit.val_;
+               yc += cal->crystal(nid).localPosition().y()*hit.val_;
                ++ncry;
                hit.val_ = 0;
                for (const auto& neighbor : cal->neighbors(nid)) crystalToVisit.push(neighbor);                
@@ -238,8 +238,8 @@ namespace mu2e {
             {
                if (hit.crId_ != nid || hit.val_ <0.5) continue;
                cluEnergy += hit.val_;
-               xc += cal->crystal(nid).localPositionFF().x()*hit.val_;
-               yc += cal->crystal(nid).localPositionFF().y()*hit.val_;
+               xc += cal->crystal(nid).localPosition().x()*hit.val_;
+               yc += cal->crystal(nid).localPosition().y()*hit.val_;
                ++ncry;
                hit.val_ = 0;
                for (const auto& neighbor : cal->neighbors(nid)) crystalToVisit.push(neighbor);                
