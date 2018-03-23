@@ -38,6 +38,7 @@
 
 #include "CalorimeterGeom/inc/SquareMapper.hh"
 #include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 #include <iostream>
 #include <map>
@@ -82,13 +83,20 @@ namespace mu2e {
       }
 
 
-     //--------------------------------------------------------------------------------
-     int SquareMapper::indexFromRowCol(int nRow, int nCol) const
+      //--------------------------------------------------------------------------------
+      int SquareMapper::indexFromRowCol(int nRow, int nCol) const
       {
 	  SquLK lk(nCol,nRow);
 	  return index(lk);
       }
 
+      
+      //--------------------------------------------------------------------------------
+      bool SquareMapper::isInsideCrystal(double x, double y, const CLHEP::Hep3Vector& pos, 
+                                         const CLHEP::Hep3Vector& size) const 
+      {
+          return (std::abs(x-pos.x()) < 0.5*size.x()) && (std::abs(y-pos.y()) < 0.5*size.y());                 
+      } 
 
       //--------------------------------------------------------------------------------
       std::vector<int> SquareMapper::neighbors(int thisIndex, int level)  const

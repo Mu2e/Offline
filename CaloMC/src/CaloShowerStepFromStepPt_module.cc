@@ -306,6 +306,7 @@ namespace mu2e {
          if (diagLevel_ == 99)  dumpAllInfo(crystalStepsHandles,cal);
 
 
+
          //Loop over ancestor simParticles, check if they are compressible, and produce the corresponding caloShowerStepMC
          //---------------------------------------------------------------------------------------------------------------
          int nCompress(0),nCompressAll(0);
@@ -363,6 +364,7 @@ namespace mu2e {
               if (doCompress) ++nCompress;
          }
 
+
          // Do the same for the readouts, but there is no need to compress
          //---------------------------------------------------------------
 
@@ -385,7 +387,7 @@ namespace mu2e {
               }   
          }
          
-         
+
          if (diagLevel_ > 2) hEtot_->Fill(totalEdep_);
          
          if (diagLevel_ > 2)
@@ -419,6 +421,7 @@ namespace mu2e {
 
          std::map<SimPtr,SimPtr> simToAncestorMap;
 
+
          for ( HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end(); i != e; ++i )
          {     
               const art::Handle<StepPointMCCollection>& handle(*i);
@@ -442,7 +445,7 @@ namespace mu2e {
                         inspectedSims.push_back(sim);
                         sim = sim->parent();
                     }
-                    
+                                        
                     for (const SimPtr& inspectedSim : inspectedSims) simToAncestorMap[inspectedSim] = sim;                    
                     ancestorsMap[sim].fill(&step,inspectedSims);
                     

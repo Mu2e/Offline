@@ -89,7 +89,7 @@ namespace mu2e {
 	double posZ = posInSection.z();
 
 	if ( posZ < -1e-6 || posZ > crystalZLength_+1e-6 )                      return false;
-	if ( disk(idisk).idxFromPosition(posInSection.x(),posInSection.y()) <0) return false;	
+        if ( disk(idisk).idxFromPosition(posInSection.x(),posInSection.y()) <0) return false;	
 
 	return true;
     }

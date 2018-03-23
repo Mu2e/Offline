@@ -153,7 +153,7 @@ namespace mu2e {
 
 	   calorimeterDisk[idisk] = nestTubs(discname.str(),diskpar,vacuumMaterial,&cal.disk(idisk).geomInfo().rotation(),posDisk,
                                              calorimeterInfo,idisk,
-                        		     isCalorimeterVisible,G4Colour::White(),0,forceEdge,true,1 );
+                        		     isCalorimeterVisible,G4Colour::White(),0,forceEdge,true,doSurfaceCheck );
 
            if (frontPlateLog != nullptr) pv = new G4PVPlacement(0,G4ThreeVector(0,0,-zHalftot+zHalfFP),frontPlateLog,"caloFP_PV",
                                                                 calorimeterDisk[idisk].logical,false,0,false);

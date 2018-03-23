@@ -82,13 +82,15 @@ namespace mu2e {
       // fil the crystal from the real position with the measured dimensions
       void Disk::fillCrystals(const CLHEP::Hep3Vector& crystalOriginInDisk)
       {                       
+          /*
           int nCrystal(0);
 	  int nRingsMax   = int(1.5*radiusOut_/nominalCellSize_);
           int nCrystalMap = crystalMap_->nCrystalMax(nRingsMax);
          
           mapToCrystal_.insert(mapToCrystal_.begin(), nCrystalMap, -1);
           
-CrystalCondReader reader("/nfs/home/echenard/crystalCoord.txt");
+          //yes, this will be correctly done later
+          CrystalCondReader reader("/nfs/home/echenard/crystalCoord.txt");
                     
  	  for (int i=0;i<reader.nCrystal();++i)
 	  {
@@ -106,7 +108,8 @@ CrystalCondReader reader("/nfs/home/echenard/crystalCoord.txt");
               crystalToMap_.push_back(mapIdx);
 	      crystalList_.push_back( Crystal(nCrystal, id_, pos, size) );		
 	      ++nCrystal;             
-	  }  
+	  } 
+          */ 
       }
      
 
@@ -198,35 +201,35 @@ CrystalCondReader reader("/nfs/home/echenard/crystalCoord.txt");
       //-----------------------------------------------------------------------------
       int Disk::idxFromPosition(double x, double y) const 
       {
-          unsigned mapIdx = crystalMap_->indexFromXY(x/nominalCellSize_,y/nominalCellSize_);
+          unsigned int mapIdx = crystalMap_->indexFromXY(x/nominalCellSize_,y/nominalCellSize_);
+          if (mapIdx < mapToCrystal_.size() ) return mapToCrystal_.at(mapIdx);
+ 	  return -1;
 
-          if (mapIdx < mapToCrystal_.size() && isInsideCrystal(mapToCrystal_[mapIdx],x,y)) 
-             return mapToCrystal_.at(mapIdx);
+          /*
+          unsigned int mapIdx = crystalMap_->indexFromXY(x/nominalCellSize_,y/nominalCellSize_);          
+          if (mapIdx >= mapToCrystal_.size()) return -1;
 
-          //if not inside the nominal crystal, try the neighbors (use pre-cached neighbors if available)
+          int crystalId = mapToCrystal_.at(mapIdx);
+          if (isInsideCrystal(crystalId,x,y)) return crystalId;
+
           std::vector<int> neighbors;
-          if (mapIdx < mapToCrystal_.size() &&  crystalList_[mapToCrystal_[mapIdx]].neighbors().size()) 
-              neighbors = crystalList_[mapToCrystal_[mapIdx]].neighbors();
-          else
-              neighbors = crystalMap_->neighbors(mapIdx,1);
-          
-          for (unsigned it : neighbors) 
-                if (it < mapToCrystal_.size() && isInsideCrystal(mapToCrystal_[it],x,y)) return mapToCrystal_[it];
+          if (crystalId > -1) neighbors = crystalList_[crystalId].neighbors();
+          else {
+             std::vector<int> temp(crystalMap_->neighbors(mapIdx,1));
+             for (auto val : temp) if (mapToCrystal_.at(val) >-1) neighbors.push_back(mapToCrystal_.at(val));
+          }
 
-          return -1;	 
+          for (unsigned it : neighbors)
+             if (it < mapToCrystal_.size() && isInsideCrystal(mapToCrystal_[it],x,y)) return mapToCrystal_[it];
+
+          return -1;
+          */
       }
 
-
-//part of it should be pushed inside SquareMapper to make it accessible to both suare and hexagonal crystals
       bool Disk::isInsideCrystal(int icry, double x, double y) const
       {
-          //this works only for square crystals, would need to be refined for hexagonal crystals
           if (icry <0) return false;
-          double x0 = crystalList_[icry].localPosition().x();
-          double y0 = crystalList_[icry].localPosition().y();
-          double wx = 0.5*crystalList_[icry].size().x();
-          double wy = 0.5*crystalList_[icry].size().y();
-          return (std::abs(x-x0) < wx) && (std::abs(y-y0) < wy);         
+          return crystalMap_->isInsideCrystal(x, y, crystalList_[icry].localPosition(), crystalList_[icry].size());
       }
 
 

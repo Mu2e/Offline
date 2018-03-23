@@ -41,6 +41,7 @@
 
 #include "CalorimeterGeom/inc/SquareShiftMapper.hh"
 #include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 #include <iostream>
 #include <map>
@@ -108,6 +109,13 @@ namespace mu2e {
       }
 
 
+      //--------------------------------------------------------------------------------
+      bool SquareShiftMapper::isInsideCrystal(double x, double y, const CLHEP::Hep3Vector& pos, 
+                                              const CLHEP::Hep3Vector& size) const 
+      {
+          return (std::abs(x-pos.x()) < 0.5*size.x()) && (std::abs(y-pos.y()) < 0.5*size.y());                 
+      } 
+ 
 
 
       //--------------------------------------------------------------------------------

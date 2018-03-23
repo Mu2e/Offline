@@ -17,7 +17,7 @@ double calorimeter.diskOuterRingThickness      = 10.;   //outer ring start at 67
 double calorimeter.diskCaseRadiusOut           = 672.; 
 double calorimeter.diskOutRingEdgeZLength      = 30.;
 double calorimeter.diskOutRingEdgeRLength      = 47.;    
-double calorimeter.diskStepThickness           = 5.;    
+double calorimeter.diskStepThickness           = 3.;    
 vector<double> calorimeter.diskZ0MotherShift   = {1.,701.};  //separation w.r.t caloMotherZ0, at lest 1 mm for virtual detectors
 
 bool   calorimeter.crystalShift                = true;
