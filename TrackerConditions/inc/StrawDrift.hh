@@ -31,7 +31,14 @@ namespace mu2e {
     ~StrawDrift(){};
     
     double getAverageSpeed(double dist); //grabs the average nominal drift speed
-    double getGamma(double dist, double phi);
+    //double getGamma(double dist, double phi);
+    double GetGammaFromT(double time, double phi);
+    double GetGammaFromD(double dist, double phi);
+    double GetInstantSpeedFromT(double time);
+    double GetInstantSpeedFromD(double dist);
+
+    
+    
     double getEffectiveSpeed(double dist, double phi); //grabs the lorentz corrected radial component of avg speed
     double D2T(double dist, double phi);
     double T2D(double time, double phi);

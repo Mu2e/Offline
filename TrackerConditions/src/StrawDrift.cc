@@ -170,6 +170,18 @@ namespace mu2e {
   
   
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   /////////////////////////////////////////////////////////////////////////////////////////////////
   //look up and return the average speed from vectors
   double StrawDrift::getAverageSpeed(double dist)
@@ -191,6 +203,107 @@ namespace mu2e {
     return vavg;
   }
   
+  
+  
+  
+ 
+  //WARNING: untested function
+  double StrawDrift::GetInstantSpeedFromD(double dist)
+  {
+    int lowerIndex = 0;
+    float vinst = 0;
+    //step through and find distance larger than what is specified
+    for (size_t i=0; i < (this->distances.size() - 1); i++) {
+      if(dist >= this->distances[i]){
+        lowerIndex=i;
+        break;
+      }
+    }
+    vinst = this->instantSpeeds[lowerIndex];
+    return vinst;
+  }
+  
+  
+  //WARNING: untested function
+  double StrawDrift::GetInstantSpeedFromT(double time)
+  {
+    int lowerIndex = 0;
+    float vinst = 0;
+    int fullIndex = 0;
+    //step through and find time larger than what is specified
+    for (size_t i=0; i < (this->distances.size() - 1); i++) {
+      fullIndex = i*(phiSlices) + 0; //map from a 2D index to a 1D index (at phi=0)
+      if(time >= this->D2Tinfos[fullIndex].time){
+        lowerIndex=i;
+        break;
+      }
+    }
+    vinst = this->instantSpeeds[lowerIndex];
+    return vinst;
+  }
+  
+  
+  
+  
+  
+  //WARNING: untested function
+  double StrawDrift::GetGammaFromD(double distance, double phi)
+  {
+    float phiSliceWidth = (Pi/2.0)/float(phiSlices-1);
+    //For the purposes of lorentz corrections, the phi values can be contracted to between 0-90
+    float reducedPhi = ConstrainAngle(phi);
+    //for interpolation, define a high and a low index
+    int upperPhiIndex = ceil(reducedPhi/phiSliceWidth); //rounds the index up to the nearest integer
+    int lowerPhiIndex = floor(reducedPhi/phiSliceWidth); //rounds down
+    //need the weighting factors
+    float lowerPhiWeight = upperPhiIndex - reducedPhi/phiSliceWidth; //a measure of how far the lowerPhiIndex is
+    float upperPhiWeight = 1.0 - lowerPhiWeight;
+    int fullIndex = 0;
+    float upperGamma = 0;
+    float lowerGamma = 0;
+    for (size_t k=0; k < (this->distances.size() - 1); k++) { //loop through only some of the large vector of structs
+      fullIndex = k*(phiSlices)+upperPhiIndex;//mapping from a 2D to a 1D index
+      if (distance >= this->D2Tinfos[fullIndex].distance){
+        upperGamma = this->D2Tinfos[fullIndex].gamma;//set the gamma associated with the higher index
+        fullIndex = k*(phiSlices)+lowerPhiIndex; //mapping from a 2D to a 1D index
+        lowerGamma = this->D2Tinfos[fullIndex].gamma;//set the gamma associated with the lower index
+        break;
+      }
+    }
+    double Gamma = lowerGamma*lowerPhiWeight + upperGamma*upperPhiWeight;//compute the final gamma
+    return Gamma;
+  }
+  
+  
+  
+  
+  //WARNING: untested function
+  double StrawDrift::GetGammaFromT(double time, double phi)
+  {
+    float phiSliceWidth = (Pi/2.0)/float(phiSlices-1);
+    //For the purposes of lorentz corrections, the phi values can be contracted to between 0-90
+    float reducedPhi = ConstrainAngle(phi);
+    //for interpolation, define a high and a low index
+    int upperPhiIndex = ceil(reducedPhi/phiSliceWidth); //rounds the index up to the nearest integer
+    int lowerPhiIndex = floor(reducedPhi/phiSliceWidth); //rounds down
+    //need the weighting factors
+    float lowerPhiWeight = upperPhiIndex - reducedPhi/phiSliceWidth; //a measure of how far the lowerPhiIndex is
+    float upperPhiWeight = 1.0 - lowerPhiWeight;
+    int fullIndex = 0;
+    float upperGamma = 0;
+    float lowerGamma = 0;
+    for (size_t k=0; k < (this->distances.size() - 1); k++) { //loop through only some of the large vector of structs
+      fullIndex = k*(phiSlices)+upperPhiIndex;//mapping from a 2D to a 1D index
+      if (time >= this->D2Tinfos[fullIndex].time){
+        upperGamma = this->D2Tinfos[fullIndex].gamma;//set the gamma associated with the higher index
+        fullIndex = k*(phiSlices)+lowerPhiIndex; //mapping from a 2D to a 1D index
+        lowerGamma = this->D2Tinfos[fullIndex].gamma;//set the gamma associated with the lower index
+        break;
+      }
+    }
+    double Gamma = lowerGamma*lowerPhiWeight + upperGamma*upperPhiWeight;//compute the final gamma
+    return Gamma;
+  }
   
   
   
@@ -340,10 +453,10 @@ namespace mu2e {
   
   
   //look up and return gamma
-  double StrawDrift::getGamma(double dist, double phi){
-    float gamma = 1;
-    return gamma;
-  }
+//  double StrawDrift::getGamma(double dist, double phi){
+//    float gamma = 1;
+//    return gamma;
+//  }
   
   double StrawDrift::ConstrainAngle(double phi){
     if (phi < 0) {
