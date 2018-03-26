@@ -491,3 +491,55 @@ DEFINE_ART_MODULE(TrackCaloIntersectionMVA);
 
 
 
+
+
+/*
+
+//-----------------------------------------------------------------------------
+// This is an old routine to find the exit point for the disk. The mismatch between the true trajectory and the local helix approximation caused
+// an infinite loop. The idea is to try to fast-forward right outside the disk inner / outer boundaries, then backtrack a little bit to be inside. 
+// If the fast-forwarding keeps you inside instead of being outside, you backtrack to the origin, leading to an infinite loop...
+
+double TrackCaloIntersectionMVA::scanOutDisk(Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd)
+{         
+
+     double rangeForward(0);
+     double caloRadiusIn  = cal.disk(iSection).innerEnvelopeR() + 2*cal.diskInfo().crystalXYLength();
+     double caloRadiusOut = cal.disk(iSection).outerEnvelopeR() - 2*cal.diskInfo().crystalXYLength();
+
+     double range(rangeStart);
+
+     CLHEP::Hep3Vector trjVec;
+     updateTrjVec(cal,traj,range,trjVec);
+
+     while ( cal.isInsideSection(iSection,trjVec) )
+     {         	    
+	  double radius = radiusAtRange(traj,range);
+
+	  if (radius > caloRadiusIn &&  radius < caloRadiusOut && fabs(range-rangeForward) > 10*_pathStep )
+	  {
+	      double lenInner = extendToRadius(trkHel, traj, range, caloRadiusIn );
+	      double lenOuter = extendToRadius(trkHel, traj, range, caloRadiusOut );
+	      double deltaLen = std::min(lenInner,lenOuter);
+
+	      //the mismatch between traj and trkHelk causes forwarding to remain at the same point in some instances
+	      if (deltaLen > 0 )
+	      {
+		  range += deltaLen;
+		  if (range > rangeEnd) range = rangeEnd - _pathStep;
+		  rangeForward = range;
+
+		  updateTrjVec(cal,traj,range,trjVec);
+		  while( !cal.isInsideSection(iSection,trjVec) ) {range -= _pathStep; updateTrjVec(cal,traj,range,trjVec);}
+	      }      
+	  }
+
+	range += _pathStep;
+	updateTrjVec(cal,traj,range,trjVec);
+     }         
+
+     return scanBinary(cal, traj, iSection, range - _pathStep, range);
+}
+
+*/
+>>>>>>> refs/remotes/origin/CaloGeom
