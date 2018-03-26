@@ -301,7 +301,7 @@ namespace mu2e
         _mcom = osp.startMomentum().vect().mag();
         _mcshlen = (spmcp->position()-straw.getMidPoint()).dot(straw.getDirection());
 	Hep3Vector mdir = spmcp->momentum().unit();
-	Hep3Vector tdir = straw.getDirection().cross(mdir);
+	Hep3Vector tdir = (straw.getDirection().cross(mdir)).unit();
         _mcshd = (spmcp->position()-straw.getMidPoint()).dot(tdir);
 	double scos = mdir.dot(straw.getDirection());
         _mcplen = 2.0*sqrt( (rstraw*rstraw -_mcshd*_mcshd)/(1.0-scos*scos) );

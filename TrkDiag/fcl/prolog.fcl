@@ -201,6 +201,7 @@ BEGIN_PROLOG
       TTCHD : @local::TTTCD
       TTTCD : @local::TTTCD
       TTHD : @local::TTHD
+      BD : @local::BD
     }
   }
 

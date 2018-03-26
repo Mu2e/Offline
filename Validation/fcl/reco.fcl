@@ -17,12 +17,9 @@ source: { module_type: RootInput }
 
 physics : {
    producers: {
-      @table::reco.cal.mod
       @table::reco.straw.mod      # digi to straw hit, flagBgHits
-      @table::reco.cstraw.mod     # CPR version of straw reco
-      #@table::reco.trk.all.mod   # all species and toplogies
-      #@table::reco.trk.ele.mod   # all electron toplogies
-      @table::reco.trk.eleDMUP.mod    # DeM and UeP
+      @table::reco.trk.mod
+      @table::reco.cal.mod
       @table::reco.ctrk.mod
       @table::reco.pid.mod
     }
@@ -31,12 +28,11 @@ physics : {
    }
 
     all_path : [ 
-      @sequence::reco.cal.seq ,
       @sequence::reco.straw.seq ,
-      @sequence::reco.cstraw.seq ,
-      #@sequence::reco.trk.all.seq ,   # all species and toplogies
-      #@sequence::reco.trk.ele.seq ,   # all electron toplogies
-      @sequence::reco.trk.eleDMUP.seq , # DeM and UeP
+      #@sequence::reco.trk.seq.all ,   # all species and toplogies
+      #@sequence::reco.trk.seq.ele ,   # all electron toplogies
+      @sequence::reco.trk.seq.eleDMUP , # DeM and UeP
+      @sequence::reco.cal.seq ,
       @sequence::reco.ctrk.seq , 
       @sequence::reco.pid.seq 
    ]

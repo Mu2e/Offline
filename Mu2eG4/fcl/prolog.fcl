@@ -19,6 +19,7 @@ mu2eg4DefaultPhysics: {
     physicsListName:  "ShieldingM"
     turnOffRadioactiveDecay:  false
     turnOnRadioactiveDecay:  false
+    modifyEMOption4: false
     addProcesses: []
     captureDModel: ""
 
