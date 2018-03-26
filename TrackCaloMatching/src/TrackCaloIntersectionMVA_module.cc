@@ -542,4 +542,3 @@ double TrackCaloIntersectionMVA::scanOutDisk(Calorimeter const& cal, TrkDifTraj 
 }
 
 */
->>>>>>> refs/remotes/origin/CaloGeom
