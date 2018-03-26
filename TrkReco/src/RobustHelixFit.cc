@@ -494,7 +494,7 @@ namespace mu2e
                  {
 		    ++ntriple;
 
-		    float wt = cbrt(wpos[ip].weight()*wpos[jp].weight()*wpos[kp].weight());
+		    float wt = cbrtf(wpos[ip].weight()*wpos[jp].weight()*wpos[kp].weight());
 //		    float wt = wpos[ip].weight() + wpos[jp].weight() + wpos[kp].weight();
 //		    wt *= sqrtf(area2);
 		    accx(cx,weight = wt);
