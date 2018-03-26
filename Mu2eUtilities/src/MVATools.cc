@@ -29,6 +29,7 @@ MVATools::MVATools(fhicl::ParameterSet const& pset) :
   title_(), 
   label_(),
   activeType_(aType::null),
+  activationTypeString_("none"),
   oldMVA_(false),
   isNorm_(false), 
   layerToNeurons_(), 
@@ -156,7 +157,8 @@ void MVATools::getOpts(xercesc::DOMDocument* xmlDoc)
 	   std::string val(value);
 	   if (val.find("tanh") != std::string::npos) activeType_ = aType::tanh;  
 	   if (val.find("sigmoid") != std::string::npos) activeType_ = aType::sigmoid;  
-	   if (val.find("ReLU") != std::string::npos) activeType_ = aType::relu;  	   
+	   if (val.find("ReLU") != std::string::npos) activeType_ = aType::relu;
+           activationTypeString_ = val;  	   
 	}      
         if (label.find("VarTransform") != std::string::npos)
 	{
@@ -368,7 +370,42 @@ float MVATools::activation(float arg) const
 
 void MVATools::showMVA() const 
 {
-   std::cout<<"Nothing yet"<<std::endl;
+    std::cout << "MVA weights from file:" <<     mvaWgtsFile_ << std::endl;;
+    std::cout << "MVA NLayers: " << synapsessPerLayer_.size() << std::endl;;
+    std::cout << "MVA NVars: " << title_.size() << std::endl;;
+    std::cout << "MVA Activation type: " << activationTypeString_ << std::endl;;
+
+    std::cout.setf(std::ios::scientific);
+    std::cout.precision(7);
+
+    const std::string stars1(12,'*');
+    const std::string label1 = " MVA Normalization ";
+    std::cout << stars1 << label1 << stars1 << std::endl;;
+    for (size_t i = 0; i <label_.size(); ++i)
+      std::cout << "Var " << i << label_[i] << " " << title_[i] << ": min=" << voffset_[i] << " max=" << 2.0/vscale_[i]+voffset_[i] << std::endl;;
+    
+    const std::string morestars1(24+label1.size(),'*');
+    std::cout << morestars1 << std::endl;;
+
+    const std::string stars2(23,'*');
+    unsigned idxWeight(0);
+    const std::string label2 = " MVA Weights ";
+    std::cout << stars2 << label2 << stars2 << std::endl;
+    
+    for (unsigned k=0;k<synapsessPerLayer_.size();++k)
+    {          
+      std::cout<<" Layer : "<<k<<std::endl;
+      for (unsigned j=0;j<synapsessPerLayer_[k];++j)
+      {
+	std::cout<<"Synapses 1.."<<wgts_[idxWeight].size()<<" of current layer to synapse "<<j<<" of next layer"<<std::endl;
+        for (unsigned i=0;i<wgts_[idxWeight].size();++i) std::cout <<wgts_[idxWeight][i]<<" ";
+        std::cout<<std::endl;
+        ++idxWeight;
+      }      
+    }   
+    
+    const std::string morestars2(46+label2.size(),'*');
+    std::cout << morestars2 << std::endl;
 }
 
 

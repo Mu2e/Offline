@@ -50,7 +50,7 @@ namespace mu2e
       void fillStrawHitInfo(size_t ich, StrawHitInfo& bkghinfo) const;
       void fillStrawHitInfoMC(StrawDigiMC const& mcdigi, art::Ptr<SimParticle>const& pptr, StrawHitInfo& shinfo) const;
       bool findData(const art::Event& e);
-      void findPrimary(std::vector<StrawDigiIndex>const& dids, art::Ptr<SimParticle>& pptr,double& pmom) const;
+      void findPrimary(std::vector<StrawDigiIndex>const& dids, art::Ptr<SimParticle>& pptr,double& pmom, std::vector<int>& icontrib) const;
 
       // control flags
       int _diag,_debug;
@@ -72,23 +72,28 @@ namespace mu2e
       const BkgQualCollection *_bkgqcol;
 
       // background diagnostics
-      TTree* _bdiag;
+      TTree* _bdiag,*_bdiag2;
       Int_t _iev;
       CLHEP::Hep3Vector _cpos;
       Float_t _ctime;
       Float_t _mindt, _mindrho;
       Bool_t _isbkg, _isref, _isolated, _stereo;
-      Int_t _nactive, _nchits, _nshits, _nstereo, _nsactive, _nbkg;
+      Int_t _cluIdx, _nactive, _nchits, _nshits, _nstereo, _nsactive, _nbkg;
 // BkgQual vars
       float _bkgqualvars[BkgQual::n_vars];
       Int_t _mvastat;
       Float_t _mvaout;
 
 // MC truth variables
-      Int_t _ppid, _ppdg, _pgen, _pproc;
+      Int_t _ppid, _ppdg, _pgen, _pproc, _ncontrib, _icontrib[512];
       Float_t _pmom;
       Int_t _nconv, _ndelta, _ncompt, _ngconv, _nebkg, _nprot, _nprimary;
       std::vector<BkgHitInfo> _bkghinfo;
+      
+      Int_t   _nindex,_hitidx[8192];      
+      Int_t   _nhits,_hitPdg[8192],_hitCrCode[8192],_hitGen[8192],_hitNcombo[8192];
+      Float_t _hitRad[8192],_hitPhi[8192],_hitTime[8192];
+
   };
  
 
@@ -112,6 +117,7 @@ namespace mu2e
 
   void BkgDiag::beginJob() {
     art::ServiceHandle<art::TFileService> tfs;
+    
     if(_diag > 0){
       // detailed delta diagnostics
       _bdiag=tfs->make<TTree>("bkgdiag","background diagnostics");
@@ -132,6 +138,9 @@ namespace mu2e
       _bdiag->Branch("nstereo",&_nstereo,"nstereo/I");
       _bdiag->Branch("nsactive",&_nsactive,"nsactive/I");
       _bdiag->Branch("nbkg",&_nbkg,"nbkg/I");
+      _bdiag->Branch("cluIdx",&_cluIdx,"cluIdx/I");
+      _bdiag->Branch("nindex",&_nindex,"nindex/I");
+      _bdiag->Branch("hitidx",&_hitidx,"hitidx[nindex]/I");
       // cluster hit info branch
       if(_diag > 1)
 	_bdiag->Branch("bkghinfo",&_bkghinfo);
@@ -157,7 +166,23 @@ namespace mu2e
 	_bdiag->Branch("ngconv",&_ngconv,"ngconv/I");
 	_bdiag->Branch("nebkg",&_nebkg,"nebkg/I");
 	_bdiag->Branch("nprot",&_nprot,"nprot/I");
+	_bdiag->Branch("ncontrib",&_ncontrib,"ncontrib/I");
+        _bdiag->Branch("icontrib",&_icontrib,"icontrib[ncontrib]/I");      
       }
+      
+      _bdiag2 = tfs->make<TTree>("bkgdiag2","background diagnostics");
+      _bdiag2->Branch("iev",        &_iev,          "iev/I");      
+      _bdiag2->Branch("nhits",      &_nhits,        "nhits/I");
+      _bdiag2->Branch("hitRad",     &_hitRad,       "hitRad[nhits]/F");
+      _bdiag2->Branch("hitPhi",     &_hitPhi,       "hitPhi[nhits]/F");
+      _bdiag2->Branch("hitTime",    &_hitTime,      "hitTime[nhits]/F");      
+      _bdiag2->Branch("hitNcombo",  &_hitNcombo,    "hitNcombo[nhits]/I");      
+      if(_mcdiag){
+	_bdiag2->Branch("hitPdg",   &_hitPdg,       "hitPdg[nhits]/I");
+	_bdiag2->Branch("hitCrCode",&_hitCrCode,    "hitCrCode[nhits]/I");
+	_bdiag2->Branch("hitGen",   &_hitGen,       "hitGen[nhits]/I");
+      }
+      
     }
   }
 
@@ -169,7 +194,32 @@ namespace mu2e
     if(_bkgccol->size() != _bkgqcol->size())
       throw cet::exception("RECO")<<"mu2e::BkgDiag: data inconsistent"<< endl;
     // loop over background clusters
-    for(size_t ibkg=0;ibkg<_bkgccol->size();++ibkg){
+    
+
+    _nhits=0;
+    for(size_t ich=0;ich<_chcol->size();++ich){     	
+      _hitRad[_nhits]    = sqrtf(_chcol->at(ich).pos().perp2());
+      _hitPhi[_nhits]    = _chcol->at(ich).pos().phi();
+      _hitTime[_nhits]   = _chcol->at(ich).time();
+      _hitNcombo[_nhits] = _chcol->at(ich).nCombo();	
+      if(_mcdiag){
+        std::vector<StrawDigiIndex> dids;
+        _chcol->fillStrawDigiIndices(event,ich,dids);
+        StrawDigiMC const& mcdigi = _mcdigis->at(dids[0]);// taking 1st digi: is there a better idea??
+        StrawEnd itdc(TrkTypes::cal);
+        art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);     
+        art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+        _hitPdg[_nhits] = spp->pdgId();
+        _hitCrCode[_nhits] = spp->creationCode();
+        _hitGen[_nhits] = -1;
+        if (spp->genParticle().isNonnull()) _hitGen[_nhits] = spp->genParticle()->generatorId().id();      
+      }
+      ++_nhits;
+    }
+    _bdiag2->Fill();
+        
+    _cluIdx=0;
+    for (size_t ibkg=0;ibkg<_bkgccol->size();++ibkg){
       BkgCluster const& cluster = _bkgccol->at(ibkg);
       BkgQual const& qual = _bkgqcol->at(ibkg);
       // fill cluster info
@@ -209,6 +259,7 @@ namespace mu2e
       _nprimary = 0;
       _pmom = 0.0;
       _ppid = _ppdg = _pgen = _pproc = 0;
+      _ncontrib = 0; 
       if(_mcdiag){
       // fill vector of indices to all digis used in this cluster's hits 
       // this goes recursively through the ComboHit chain
@@ -219,8 +270,10 @@ namespace mu2e
 	  _chcol->fillStrawDigiIndices(event,ich,cdids);
 	}	
 	double pmom(0.0);
-	findPrimary(cdids,pptr,pmom);
-	_pmom = pmom;
+        std::vector<int> icontrib;
+	findPrimary(cdids,pptr,pmom,icontrib);
+	for (int ic : icontrib) {_icontrib[_ncontrib]=ic; ++_ncontrib;}
+        _pmom = pmom;
 	if(pptr.isNonnull()){
 	  _ppid = pptr->id().asInt();
 	  _ppdg = pptr->pdgId();
@@ -236,9 +289,12 @@ namespace mu2e
       _nshits = 0;
       _nactive = _nstereo = _nsactive = _nbkg = 0;
       bool pce = _pgen==2; // primary from a CE
+      _nindex=0;
       for(auto const& chit : cluster.hits()){
 	size_t ich = chit.index();
 	ComboHit const& ch = _chcol->at(ich);
+        _hitidx[_nindex]=ich;
+        ++_nindex;
 	_nshits += ch.nStrawHits();
 	StrawHitFlag const& shf = chit.flag();
 	if(shf.hasAllProperties(StrawHitFlag::active)){
@@ -286,10 +342,11 @@ namespace mu2e
 	    _ngconv += ch.nStrawHits();
 	  }
 	}
-	if(bkghinfo._mcpdg == 2212)_nprot+= ch.nStrawHits();
+	if(bkghinfo._mcpdg == 2212)_nprot += ch.nStrawHits();
 	_bkghinfo.push_back(bkghinfo);
-      }
+      }      
       _bdiag->Fill();
+      ++_cluIdx;
     }
   }
 
@@ -315,7 +372,7 @@ namespace mu2e
   }
 
 
-  void BkgDiag::findPrimary(std::vector<uint16_t>const& dids, art::Ptr<SimParticle>& pptr,double& pmom) const { 
+  void BkgDiag::findPrimary(std::vector<uint16_t>const& dids, art::Ptr<SimParticle>& pptr,double& pmom, std::vector<int>& icontrib) const { 
     static StrawEnd itdc(TrkTypes::cal);
     // find the unique simparticles which produced these hits
     std::set<art::Ptr<SimParticle> > pp;
@@ -388,10 +445,11 @@ namespace mu2e
 	++(ifnd->second);
       else
 	mode[mcid] = 1;
-    }
+    }    
     int max(0);
     std::map<int,int>::iterator imax = mode.end();
     for(std::map<int,int>::iterator im=mode.begin();im!=mode.end();++im){
+      icontrib.push_back(im->first);
       if(im->second>max){
 	imax=im;
 	max = im->second;
