@@ -16,6 +16,8 @@
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
+#include <array>
+
 class HelixTraj;
 
 namespace mu2e {
@@ -31,36 +33,9 @@ namespace mu2e {
     //      int Layer;
   };
 
-  struct HitData_t {
-    const StrawHit*         fHit;
-    const StrawHitPosition* fPos;
-    const Straw*            fStraw;
-    int                     fSeedNumber;
-    int                     fNSecondHits;
-    int                     fDeltaIndex;
-    int                     fIsOutlier;
-    float                   fChi2Min;
-    float                   fSigW;     // cached resolution along the wire
-    float                   fRMid;
-    float                   fDr;	// work variable
-
-    HitData_t(const StrawHit* Hit, const StrawHitPosition* Pos, const Straw* aStraw, float SigW) {
-      fHit         = Hit; 
-      fPos         = Pos; 
-      fStraw       = aStraw; 
-      fChi2Min     = 1.1e10; 
-      fSigW        = SigW; 
-      fSeedNumber  = -1; 
-      fNSecondHits = -1;
-      fDeltaIndex  = -1;
-      fIsOutlier   = -1;
-      fRMid        = fStraw->getMidPoint().perp();
-      fDr          = 1.1e10;
-    }
-
-    int Used     () { return (fChi2Min < 1.e10) ; }
-    int isOutlier() { return (fIsOutlier > 0)   ; }
-  };
+  // struct HitFlag_t {
+  //   int                              fUsed[100];
+  // };
     
   
   struct PanelZ_t {
@@ -114,6 +89,7 @@ namespace mu2e {
       kNStations      = 20,
       kNTotalFaces    = 80,
       kNTotalPanels   = 240,
+      kNMaxHitsPerPanel= 20,
       kNFaces         =  4,
       kNPanelsPerFace =  3
     };
@@ -215,9 +191,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // structure used to organize thei strawHits for the pattern recognition
 //-----------------------------------------------------------------------------
-//    PanelZ_t             _oTracker[kNStations][kNFaces][kNPanelsPerFace];
-    PanelZ_t             _oTracker[kNTotalPanels];
-    std::vector<int>     _hitsUsed[kNTotalPanels];
+    PanelZ_t                                           _oTracker[kNTotalPanels];
+    std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------

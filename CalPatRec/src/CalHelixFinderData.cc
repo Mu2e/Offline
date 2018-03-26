@@ -53,10 +53,10 @@ namespace mu2e {
 
     //copy the info relative to the  panels
     for (int p=0; p<kNTotalPanels; ++p){
-      _oTracker[p] = PanelZ_t(Data._oTracker[p]);
-    }
+      _oTracker[p] = Data._oTracker[p];//PanelZ_t(Data._oTracker[p]);
+    }    
     
-
+    _hitsUsed       = Data._hitsUsed;
   }
 
 //-----------------------------------------------------------------------------
@@ -92,48 +92,48 @@ namespace mu2e {
 // set the Helix points as tested according to the last check made
 //-----------------------------------------------------------------------------
   void CalHelixFinderData::setTestHelixPoints(){
-    PanelZ_t*   panel(0);
-    for (int p=0; p<kNTotalPanels; ++p){
-      panel  = &_oTracker[p];
-      int nhits = panel->fHitData.size();
-      for (int i=0; i<nhits; ++i){
-	panel->fHitData.at(i)._tested = panel->fHitData.at(i)._used;
-      }
-    }
+    // PanelZ_t*   panel(0);
+    // for (int p=0; p<kNTotalPanels; ++p){
+    //   panel  = &_oTracker[p];
+    //   int nhits = panel->fHitData.size();
+    //   for (int i=0; i<nhits; ++i){
+    // 	panel->fHitData.at(i)._tested = panel->fHitData.at(i)._used;
+    //   }
+    // }
   }
 //-----------------------------------------------------------------------------
 // set the Helix points as used according to the last test made
 //-----------------------------------------------------------------------------
   void CalHelixFinderData::markHelixPoints(){
-    PanelZ_t*   panel(0);
-    int         counter(0);
-    for (int p=0; p<kNTotalPanels; ++p){
-      panel  = &_oTracker[p];
-      int nhits = panel->fHitData.size();
-      for (int i=0; i<nhits; ++i){
-	panel->fHitData.at(i)._used       = panel->fHitData.at(i)._tested;
-	panel->fHitData.at(i)._dzFromSeed = panel->fHitData.at(i)._testDzFromSeed;
-	panel->fHitData.at(i)._drFromPred = panel->fHitData.at(i)._testDrFromPred;
-	if (panel->fHitData.at(i)._used == 1) ++counter;
-      }
-    }
-    //update the value of the number of good points associated with the helix candidate
-    _nPoints = counter;
+    // PanelZ_t*   panel(0);
+    // int         counter(0);
+    // for (int p=0; p<kNTotalPanels; ++p){
+    //   panel  = &_oTracker[p];
+    //   int nhits = panel->fHitData.size();
+    //   for (int i=0; i<nhits; ++i){
+    // 	panel->fHitData.at(i)._used       = panel->fHitData.at(i)._tested;
+    // 	panel->fHitData.at(i)._dzFromSeed = panel->fHitData.at(i)._testDzFromSeed;
+    // 	panel->fHitData.at(i)._drFromPred = panel->fHitData.at(i)._testDrFromPred;
+    // 	if (panel->fHitData.at(i)._used == 1) ++counter;
+    //   }
+    // }
+    // //update the value of the number of good points associated with the helix candidate
+    // _nPoints = counter;
   }
 //-----------------------------------------------------------------------------
 // reset the "tested" flag of the Helix points
 //-----------------------------------------------------------------------------
   void CalHelixFinderData::resetTestHelixPoints(){
-    PanelZ_t*   panel(0);
-    for (int p=0; p<kNTotalPanels; ++p){
-      panel  = &_oTracker[p];
-      int nhits = panel->fHitData.size();
-      for (int i=0; i<nhits; ++i){
-	panel->fHitData.at(i)._tested     = 0;
-	panel->fHitData.at(i)._dzFromSeed = 0;
-	panel->fHitData.at(i)._drFromPred = 0;
-      }
-    }
+    // PanelZ_t*   panel(0);
+    // for (int p=0; p<kNTotalPanels; ++p){
+    //   panel  = &_oTracker[p];
+    //   int nhits = panel->fHitData.size();
+    //   for (int i=0; i<nhits; ++i){
+    // 	panel->fHitData.at(i)._tested     = 0;
+    // 	panel->fHitData.at(i)._dzFromSeed = 0;
+    // 	panel->fHitData.at(i)._drFromPred = 0;
+    //   }
+    // }
   }
 //-----------------------------------------------------------------------------
 // don't clear the diagnostics part.
@@ -172,7 +172,8 @@ namespace mu2e {
       panelz->fNHits = 0;
       panelz->fHitData.clear() ;
     }
-    
+
+    _hitsUsed =  {0};
   }
 
 //-----------------------------------------------------------------------------
@@ -202,6 +203,7 @@ namespace mu2e {
     _seedIndex   = SeedInfo_t(-1,-1);
     _candIndex   = SeedInfo_t(-1,-1);
     
+    _hitsUsed    = {0};
   }
 
 

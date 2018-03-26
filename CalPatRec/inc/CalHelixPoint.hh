@@ -21,8 +21,6 @@ namespace mu2e {
     CLHEP::Hep3Vector  _pos;		// position
     double             _phi;	        // ambiguity-resolved phi angle
     StrawHitFlag       _flag;		// flag
-    int                _used;           // = 1 if the strawhit is used by another track-candidate
-    int                _tested;         // = 1 if the strawhit is used during the current test
 
     CLHEP::Hep3Vector  _wdir;		// wire direction
     CLHEP::Hep3Vector  _sdir;           // straw radial direction, perp to Z and wire direction
@@ -54,8 +52,6 @@ namespace mu2e {
     CalHelixPoint(const CalHelixPoint& Copy);
 
     bool         use       () const;
-    int          isUsed    () { return _used;}
-    int          isTested  () { return _tested;}
     bool         stereo    () const;
     bool         isOutlier () const;
     bool         isCalosel () const;

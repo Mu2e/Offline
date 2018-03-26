@@ -128,12 +128,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------//
 // store the paramters value of the most reliable track candidate
 //-----------------------------------------------------------------------------//
-    // int       _goodPointsTrkCandidate;
     int       _nHitsMaxPerLayer;
 
-    // double    _chi2TrkCandidate;
-    // double    _maxChi2TrkCandidate;
-    // int       _markCandidateHits;        // apparently, always set to 0
                                          // thresholds for the worst hit chi2, total XY and ZPhi fit chi2's
     double    _hitChi2Max;
     double    _chi2xyMax;
@@ -143,21 +139,9 @@ namespace mu2e {
     // indices, distance from prediction and distance along z axis from the seeding hit
     // of the hits found in the pattern recognition
 
-    // int       _indicesTrkCandidate[kMaxNHits];
-    // double    _distTrkCandidate   [kMaxNHits];
-    // double    _dzTrkCandidate     [kMaxNHits];
-
-    // double    _phiCorrected       [kMaxNHits];
     int       _phiCorrectedDefined;
 
-
     double    _dfdzErr;                 // error on dfdz by ::findDfDz
-
-    TH1F*     _hDist;
-    double    _chi2nFindZ;
-    double    _eventToLook;
-    TH1F*     _hDfDzRes;
-    TH1F*     _hPhi0Res;
 //-----------------------------------------------------------------------------
 // checkpoints, used for debugging
 //-----------------------------------------------------------------------------

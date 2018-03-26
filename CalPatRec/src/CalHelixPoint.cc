@@ -21,7 +21,6 @@ namespace mu2e {
     _pos (shp.pos()), 
     //    _phi (shp.pos().phi()), 
     _flag(flag),
-    _used(0),
     _wdir(straw.getDirection()),
     _straw(&straw),
     _strawhit(&sh),
@@ -49,8 +48,6 @@ namespace mu2e {
     _pos(pos),
     //    _phi(_pos.phi()),
     _flag(),
-    _used(0),
-    _tested(0),
     _wdir(wdir),
     _sdir(wdir.y(),-wdir.x(),0.0),
     _straw(0),
@@ -75,8 +72,6 @@ namespace mu2e {
     _pos     = Copy._pos;		
     _phi     = Copy._phi;	        
     _flag    = Copy._flag;		
-    _used    = Copy._used;           
-    _tested  = Copy._tested;         
     _wdir    = Copy._wdir;		
     _sdir    = Copy._sdir;           
     			
