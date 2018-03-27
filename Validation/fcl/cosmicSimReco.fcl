@@ -23,9 +23,10 @@ physics : {
       @table::simulation.default.mod
       @table::digis.crv.mod
       @table::reco.crv.mod
-    }
+   }
 
    filters : {
+      @table::simulation.default.flt
       @table::cosmicFilter.mod
    }
 
