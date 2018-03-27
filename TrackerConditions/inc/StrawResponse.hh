@@ -56,9 +56,11 @@ namespace mu2e {
       float _slfac; // factor of straw length to set 'missing cluster' hits
       float _errfac; // error inflation for 'missing cluster' hits
 
-      StrawDrift *strawDrift;
+      StrawDrift *_strawDrift;
       std::string _driftFile;
       float _wirevoltage;
+      int _phiBins;
+      int _dIntegrationBins;
       bool _usenonlindrift;
       double _lindriftvel;
       double _rres_min;

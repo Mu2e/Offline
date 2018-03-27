@@ -147,7 +147,7 @@ namespace mu2e
     // Use this to estimate the time for the track to reaches this hit from z=0
     double tprop = hflt/Vflt;
     // estimate signal propagation time on the wire assuming the middle (average)
-    double vwire = srep->halfPropV(straw().index(),strawHit().energyDep()*1000.)*2; //FIXME
+    double vwire = srep->halfPropV(straw().index(),strawHit().energyDep()*1000.)*2;
     double teprop = _straw.getHalfLength()/vwire;
     // correct the measured time for these effects: this gives the aveage time the particle passed this straw, WRT
     // when the track crossed Z=0
@@ -175,10 +175,10 @@ namespace mu2e
 // convert time to distance.  This computes the intrinsic drift radius error as well
 
    Hep3Vector tperp = tdir - tdir.dot(straw().getDirection())*straw().getDirection();
-   double phi = tperp.theta(); 
-   _rdrift = srep->driftTimeToDistance(straw().index(),tdrift,phi);
-   _vdriftinst = srep->driftInstantSpeed(straw().index(),_rdrift,phi);
-   _rdrifterr = srep->driftDistanceError(straw().index(),_rdrift,phi,fabs(poca().doca()));
+   _phi = tperp.theta(); 
+   _rdrift = srep->driftTimeToDistance(straw().index(),tdrift,_phi);
+   _vdriftinst = srep->driftInstantSpeed(straw().index(),fabs(poca().doca()),_phi);
+   _rdrifterr = srep->driftDistanceError(straw().index(),_rdrift,_phi,fabs(poca().doca()));
 
 // Propogate error in t0, using local drift velocity
     double rt0err = hitT0()._t0err*_vdriftinst;
@@ -211,7 +211,7 @@ namespace mu2e
 // compute the electronics propagation time for the 2 ends.
 // note: the wire direction points from cal to HV
     ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
-    double vwire = srep->halfPropV(straw().index(),strawHit().energyDep()*1000.)*2; //FIXME
+    double vwire = srep->halfPropV(straw().index(),strawHit().energyDep()*1000.)*2;
     if( poca().status().success()){
       _stime[TrkTypes::cal] = (straw().getHalfLength()+hitLen())/vwire;
       _stime[TrkTypes::hv] = (straw().getHalfLength()-hitLen())/vwire;

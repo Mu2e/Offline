@@ -36,6 +36,8 @@ namespace mu2e {
     _errfac(pset.get<float>("ErrorFactor",1.0)),
     _driftFile(pset.get<string>("DriftFile","TrackerConditions/data/E2v.tbl")),
     _wirevoltage(pset.get<double>("WireVoltage",1400)),
+    _phiBins(pset.get<int>("DriftPhiBins",20)),
+    _dIntegrationBins(pset.get<int>("DriftIntegrationBins",50)),
     _usenonlindrift(pset.get<bool>("UseNonLinearDrift",false)),
     _lindriftvel(pset.get<double>("LinearDriftVelocity",0.0625)), // mm/ns, only used if nonlindrift==0
     _rres_min(pset.get<double>("MinDriftRadiusResolution",0.2)), //mm
@@ -48,7 +50,7 @@ namespace mu2e {
           CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
           CLHEP::Hep3Vector b0 = bfmgr->getBField(vpoint_mu2e);
           float Bz = b0.z();
-          this->strawDrift = new StrawDrift(_driftFile, _wirevoltage, Bz);
+          _strawDrift = new StrawDrift(_driftFile, _wirevoltage, _phiBins, _dIntegrationBins, Bz);
     }
 
   StrawResponse::~StrawResponse(){}
@@ -88,7 +90,7 @@ namespace mu2e {
 
   double StrawResponse::driftDistanceToTime(StrawIndex strawIndex, double ddist, double phi) const {
     if(_usenonlindrift){
-      return this->strawDrift->D2T(ddist,phi);
+      return _strawDrift->D2T(ddist,phi);
     }
     else{
       return ddist/_lindriftvel; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
@@ -97,16 +99,16 @@ namespace mu2e {
 
   double StrawResponse::driftTimeToDistance(StrawIndex strawIndex, double dtime, double phi) const {
     if(_usenonlindrift){
-      return this->strawDrift->T2D(dtime,phi);
+      return _strawDrift->T2D(dtime,phi);
     }
     else{
       return dtime*_lindriftvel; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
     }
   }
 
-  double StrawResponse::driftInstantSpeed(StrawIndex strawIndex, double ddist, double phi) const {
+  double StrawResponse::driftInstantSpeed(StrawIndex strawIndex, double doca, double phi) const {
     if(_usenonlindrift){
-      return _lindriftvel; //FIXME
+      return _strawDrift->GetInstantSpeedFromD(doca);
     }else{
       return _lindriftvel;
     }
@@ -119,7 +121,7 @@ namespace mu2e {
       DOCA = std::min(DOCA,rstraw);
       // drift errors are modeled as a truncated line + exponential
       float tdrifterr = std::min(_derr[4],_derr[0]+_derr[1]*DOCA + _derr[2]*exp(-DOCA/_derr[3]));
-      double vdriftinst = driftInstantSpeed(strawIndex,ddist,phi);
+      double vdriftinst = driftInstantSpeed(strawIndex,DOCA,phi);
       return tdrifterr*vdriftinst;
     }else{
       double rres = _rres_min;

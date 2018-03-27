@@ -72,6 +72,8 @@ namespace mu2e {
     double _dtvar; // variance depencence on drift time
     std::string _driftFile;
     float _wirevoltage; //JB
+    int _phiBins;
+    int _dIntegrationBins;
     int _nonlindrift;
   };
 }

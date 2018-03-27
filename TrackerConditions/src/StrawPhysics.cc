@@ -39,6 +39,8 @@ namespace mu2e {
   _dtvar(pset.get<double>("DriftTimeVariance",0.22)), // Drift time variance linear dependence on drift time (ns)
   _driftFile(pset.get<string>("DriftFile","TrackerConditions/data/E2v.tbl")), //JB: DriftFile is a handle for the fcl file to change this default
   _wirevoltage(pset.get<double>("WireVoltage",1400)), //JB: set the default sense wire to 1400 V
+  _phiBins(pset.get<int>("DriftPhiBins",20)),
+  _dIntegrationBins(pset.get<int>("DriftIntegrationBins",50)),
   _nonlindrift(pset.get<int>("UseNonLinearDrift",1)) //JB: switch to turn on/off non linear drift for diagnosis
   {
     
@@ -48,7 +50,7 @@ namespace mu2e {
     CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
     CLHEP::Hep3Vector b0 = bfmgr->getBField(vpoint_mu2e);
     float Bz = b0.z();
-    this->strawDrift = new StrawDrift(_driftFile, _wirevoltage, Bz);
+    this->strawDrift = new StrawDrift(_driftFile, _wirevoltage, _phiBins, _dIntegrationBins, Bz);
     
     
     // integrate the number of ionizations

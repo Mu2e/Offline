@@ -51,6 +51,7 @@ namespace mu2e
     double driftTime(StrawEnd end) const; // drift time for a specific end
     double driftTime() const; // drift time for the current end strategy
 
+    double driftPhi() const { return _phi;}
     double driftRadius() const { return _rdrift;}
     double driftRadiusErr() const { return _rdrifterr;}
     double driftVelocity() const { return _vdriftinst; }
@@ -106,6 +107,7 @@ namespace mu2e
     double            _rdrifterr;
     double            _tddist;
     double            _tddist_err;
+    double            _phi;
     double            _vdriftinst;
     double            _maxdriftpull;
     double            _mint0doca;	    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
