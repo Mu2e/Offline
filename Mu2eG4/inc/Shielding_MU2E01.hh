@@ -47,14 +47,13 @@
 #include "CompileTimeConstraints.hh"
 
 // Mu2e include
-#include "ConfigTools/inc/SimpleConfig.hh"
 #include "fhiclcpp/ParameterSet.h"
 
-template<class T, class Config>
+template<class T>
 class TShielding_MU2E01: public T
 {
 public:
-  TShielding_MU2E01(Config const & config,
+  TShielding_MU2E01(const fhicl::ParameterSet& config,
 		    G4int verbose = 1 , G4String low_energy_neutron_model = "HP" );
   virtual ~TShielding_MU2E01();
   

@@ -9,6 +9,7 @@
 //
 // Original author Rob Kutschke
 //
+#include "fhiclcpp/ParameterSet.h"
 
 // Forward declarations
 class G4VUserPhysicsList;
@@ -20,7 +21,7 @@ namespace mu2e{
 
   // The returned pointer should be passed to G4, which will
   // take ownership of it.
-  template<class Config> G4VUserPhysicsList* physicsListDecider (const Config& config);
+  G4VUserPhysicsList* physicsListDecider (const fhicl::ParameterSet& pset);
 
 
 }  // end namespace mu2e
