@@ -31,6 +31,7 @@
 // Framework includes
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "fhiclcpp/ParameterSet.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/physicsListDecider.hh"

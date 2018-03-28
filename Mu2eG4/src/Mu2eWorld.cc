@@ -208,6 +208,13 @@ namespace mu2e {
 
     VolumeInfo calorimeterInfo    = constructCal();
 
+    if (pset_.has_key("physics.minRangeCut2")) {
+      // creating a region to be able to asign special cut and EM options
+      G4Region* regionCalorimeter = new G4Region("Calorimeter");
+      calorimeterInfo.logical->SetRegion(regionCalorimeter);
+      regionCalorimeter->AddRootLogicalVolume(calorimeterInfo.logical);
+    }
+
     // This is just placeholder for now - and might be misnamed.
     constructMagnetYoke();
 
