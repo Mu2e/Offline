@@ -28,7 +28,6 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 // tracker
@@ -79,10 +78,10 @@ namespace mu2e
 
 // struct for finding materials
   struct StrawFlight {
-    StrawIndex _index;  // straw being tested
+    StrawId _id;  // straw being tested
     double _flt; // flight where trajectory comes near this straw
 // construct from pair
-    StrawFlight(StrawIndex strawind, double flt) : _index(strawind), _flt(flt) {}
+    StrawFlight(StrawId strawid, double flt) : _id(strawid), _flt(flt) {}
   };
 
 // comparison operators understand that the same straw could be hit twice, so the flight lengths need
@@ -90,8 +89,8 @@ namespace mu2e
   struct StrawFlightComp : public binary_function<StrawFlight, StrawFlight, bool> {
     double _maxdiff; // maximum flight difference; below this, consider 2 intersections 'the same'
     StrawFlightComp(double maxdiff) : _maxdiff(maxdiff) {}
-    bool operator () (StrawFlight const& a, StrawFlight const& b) { return a._index < b._index ||
-    ( a._index == b._index && a._flt < b._flt && fabs(a._flt-b._flt)>=_maxdiff);}
+    bool operator () (StrawFlight const& a, StrawFlight const& b) { return a._id < b._id ||
+    ( a._id == b._id && a._flt < b._flt && fabs(a._flt-b._flt)>=_maxdiff);}
   };
 
 // construct from a parameter set
@@ -285,7 +284,6 @@ namespace mu2e
     if(krep != 0 && indices.size() > 0 && krep->fitStatus().success()){
       //      TrkHitVector thv;
       //      thv = krep->hitVector();
-      ConditionsHandle<TrackerCalibrations> tcal("ignored");
       const Tracker& tracker = getTrackerOrThrow();
       TrkHitVector::iterator ihigh;
       TrkHitVector::reverse_iterator ilow;
@@ -294,7 +292,7 @@ namespace mu2e
       for(unsigned iind=0;iind<indices.size(); ++iind){
         size_t istraw = indices[iind];
         const StrawHit& strawhit(shcol->at(istraw));
-        const Straw& straw = tracker.getStraw(strawhit.strawIndex());
+        const Straw& straw = tracker.getStraw(strawhit.strawId());
 // estimate  initial flightlength
         double hflt(0.0);
         TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
@@ -444,7 +442,7 @@ namespace mu2e
       // create a TrkStrawHit from this seed.
       size_t index = ths.index();
       const StrawHit& strawhit(shcol->at(index));
-      const Straw& straw = tracker.getStraw(strawhit.strawIndex());
+      const Straw& straw = tracker.getStraw(strawhit.strawId());
       TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,ths.index(),ths.t0(),ths.trkLen(),
 					    _herr.front(),_maxpull,_strHitW,_mint0doca);
       assert(trkhit != 0);
@@ -594,7 +592,7 @@ namespace mu2e
                             << std::endl;
                 }
               }
-              matstraws.insert(StrawFlight(panel.getStraw(is).index(),flt));
+              matstraws.insert(StrawFlight(panel.getStraw(is).id(),flt));
               ++nadded;
             }
           }
@@ -604,7 +602,7 @@ namespace mu2e
 // Now test if the Kalman rep hits these straws
     if(_debug>2)std::cout << "Found " << matstraws.size() << " unique possible straws " << " out of " << nadded << std::endl;
     for(auto const& strawflt : matstraws){
-      const DetStrawElem* strawelem = detmodel.strawElem(strawflt._index);
+      const DetStrawElem* strawelem = detmodel.strawElem(strawflt._id);
       DetIntersection strawinter;
       strawinter.delem = strawelem;
       strawinter.pathlen = strawflt._flt;
@@ -612,14 +610,14 @@ namespace mu2e
 // If the rep already has a material site for this element, skip it
         std::vector<const KalMaterial*> kmats;
         krep->findMaterialSites(strawelem,kmats);
-        if(_debug>2)std::cout << "found intersection with straw " << strawelem->straw()->index() << " with "
+        if(_debug>2)std::cout << "found intersection with straw " << strawelem->straw()->id() << " with "
         << kmats.size() << " materials " << std::endl;
 // test material isn't on the track
         bool hasmat(false);
         for(auto kmat : kmats ){
           const DetStrawElem* kelem = dynamic_cast<const DetStrawElem*>(kmat->detIntersection().delem);
           if(kelem != 0){
-            StrawFlight ksflt(kelem->straw()->index(),kmat->globalLength());
+            StrawFlight ksflt(kelem->straw()->id(),kmat->globalLength());
             if(_debug>2)std::cout << " comparing flights " << kmat->globalLength() << " and " << strawflt._flt << std::endl;
             if(!strawcomp.operator()(strawflt,ksflt)){
               if(_debug>2)std::cout << "operator returned false!!" << std::endl;
@@ -779,7 +777,6 @@ namespace mu2e
     TrkT0 t0;
     using namespace boost::accumulators;
     // make an array of all the hit times, correcting for propagation delay
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
     unsigned nind = krep->hitVector().size();
     std::vector<double> times;
     std::vector<double> timesweight;
@@ -823,7 +820,6 @@ namespace mu2e
     using namespace boost::accumulators;
     TrkHitVector *thv = &(krep->hitVector());
     bool retval(false);
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
 // need to have a valid fit
     if(krep->fitValid()){
 // find the global fltlen associated with z=0.

@@ -279,7 +279,7 @@ namespace mu2e {
 
             hit    = &_data.shcol->at(istr);
             time   = hit->time();
-            straw  = &_tracker->getStraw(hit->strawIndex());
+            straw  = &_tracker->getStraw(hit->strawId());
             zstraw = straw->getMidPoint().z();
 //-----------------------------------------------------------------------------
 // estimate time-of-flight and calculate residual between the predicted and the hit times

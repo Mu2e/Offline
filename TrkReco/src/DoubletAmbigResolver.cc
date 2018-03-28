@@ -400,7 +400,7 @@ namespace mu2e {
 	CLHEP::Hep3Vector hpos;
 	Hit->hitPosition(hpos);
 	printf(" %2i %5i %2i %2i %2i %2i %8.3f %8.3f %9.3f, %2i %2i %8.3f %8.3f\n",
-	       -1, Hit->strawHit().strawIndex().asInt(), 
+	       -1, Hit->strawHit().strawId().asUint16(), 
 	       straw.id().getPlane(),
 	       straw.id().getPanel(),
 	       straw.id().getLayer(),

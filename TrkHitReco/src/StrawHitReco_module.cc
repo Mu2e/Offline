@@ -208,7 +208,7 @@ namespace mu2e {
 	  tots[iend] = digi.TOT(_end[iend])*strawele->totLSB();
 	}
 	//create straw hit; this is currently required by the wireDistance function FIXME!
-	StrawHit hit(tt.getStrawIndex(digi.strawId()),times,tots,energy);
+	StrawHit hit(digi.strawId(),times,tots,energy);
 	// get distance along wire from the straw center and it's estimated error
 	const Straw& straw  = tracker.getStraw( digi.strawId() );
 	float dw, dwerr;
@@ -252,15 +252,14 @@ namespace mu2e {
 	for (size_t ilarge=0; ilarge < largeHits.size();++ilarge)
 	{
 	  const StrawHit& sh = (*shCol)[largeHits[ilarge]];
-	  const Straw& straw = tracker.getStraw( sh.strawIndex() );
 	  for (size_t jsh : hits_by_panel[largeHitPanels[ilarge]])
 	  {
 	    if (jsh==largeHits[ilarge]) continue;              
 	    const StrawHit& sh2 = (*shCol)[jsh]; 
 	    if (sh2.time()-sh.time() > _ctMinT && sh2.time()-sh.time() < _ctMaxT)
 	    {
-	      if (straw.isSamePreamp(sh2.strawIndex()))       (*chCol)[jsh]._flag.merge(StrawHitFlag::elecxtalk);
-	      if (straw.isNearestNeighbour(sh2.strawIndex())) (*chCol)[jsh]._flag.merge(StrawHitFlag::strawxtalk);
+	      if (sh.strawId().samePreamp(sh2.strawId())) (*chCol)[jsh]._flag.merge(StrawHitFlag::elecxtalk);
+	      if (sh.strawId().nearestNeighbor(sh2.strawId())) (*chCol)[jsh]._flag.merge(StrawHitFlag::strawxtalk);
 	    }           
 	  }
 	}

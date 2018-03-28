@@ -333,7 +333,7 @@ namespace mu2e
             _mcgpos = det->toDetector(sp->genParticle()->position());
           }
         }
-        _mcxtalk = spmcp->strawIndex() != sh.strawIndex();
+//        _mcxtalk = spmcp->strawIndex() != sh.strawIndex();
       }
       _shwres = _chcol->at(istr).posRes(ComboHit::wire);
       _shtres = _chcol->at(istr).posRes(ComboHit::trans);

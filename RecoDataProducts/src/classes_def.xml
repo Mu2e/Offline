@@ -57,7 +57,6 @@
 
  <class name="mu2e::ExtMonUCITofHit"/>
  <class name="mu2e::ExtMonUCITofHitCollection"/>
- <class name="mu2e::SubEventCollection" persistent="false"/>
  <class name="mu2e::TimeCluster"/>
  <class name="mu2e::TimeClusterCollection"/>
  <class name="mu2e::ZRotStrawHitMap"/>
@@ -155,7 +154,6 @@
  <class name="art::Wrapper<mu2e::HelixSeedCollection>"/>
 
  <class name="art::Wrapper<mu2e::ExtMonUCITofHitCollection>"/>
- <class name="art::Wrapper<mu2e::SubEventCollection>"/>
  <class name="art::Wrapper<mu2e::ZRotStrawHitMapCollection>"/>
  <class name="art::Wrapper<mu2e::TrackerHitByID>"/>
  <class name="art::Wrapper<mu2e::TrackSeedCollection>"/>

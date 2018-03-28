@@ -59,17 +59,17 @@ namespace mu2e {
   // build the straw elements from this
           DetStrawElem* elem = new DetStrawElem(_strawtype,straw);
 // push this into the map
-          _strawmap[straw->index()] = elem;
+          _strawmap[straw->id()] = elem;
 	}
       }
     }
   }
 
   const DetStrawElem* Mu2eDetectorModel::strawElem(Straw const& straw) const{
-    return strawElem(straw.index());
+    return strawElem(straw.id());
   }
   
-  const DetStrawElem* Mu2eDetectorModel::strawElem(StrawIndex const& istraw) const{
+  const DetStrawElem* Mu2eDetectorModel::strawElem(StrawId const& istraw) const{
     const DetStrawElem* retval(0);
     auto ifnd = _strawmap.find(istraw);
     if(ifnd != _strawmap.end())

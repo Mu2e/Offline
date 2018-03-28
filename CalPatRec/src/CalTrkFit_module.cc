@@ -624,7 +624,7 @@ namespace mu2e {
 	TrkStrawHit  *tsh, *closest(NULL);
 	bool found = false;
 
-	Straw const&      straw = _data.tracker->getStraw(sh.strawIndex());
+	Straw const&      straw = _data.tracker->getStraw(sh.strawId());
 	CLHEP::Hep3Vector hpos  = straw.getMidPoint();
 
 	double            dz_max(1.e12) ; // closest_z(1.e12);
@@ -638,7 +638,7 @@ namespace mu2e {
 	    break;
 	  }
 					// check proximity in Z
-          Straw const&  trk_straw = _data.tracker->getStraw(tsh->strawHit().strawIndex());
+          Straw const&  trk_straw = _data.tracker->getStraw(tsh->strawHit().strawId());
           double        ztrk      = trk_straw.getMidPoint().z();
 
 	  double dz  = ztrk-zhit;
@@ -713,7 +713,7 @@ namespace mu2e {
       else {
 	if (_debugLevel > 0) {
 	  printf("[%s] rejected hit: i, index, flag, dt: %5i %5i %s %10.3f\n",
-		 oname,istr,sh.strawIndex().asInt(),
+		 oname,istr,sh.strawId().asUint16(),
 		 KRes.shfcol->at(istr).hex().data(),sh.dt());
 	}
       }
