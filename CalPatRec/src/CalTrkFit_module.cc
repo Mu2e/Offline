@@ -62,6 +62,7 @@
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
 
 
 #include <boost/accumulators/accumulators.hpp>
@@ -521,10 +522,14 @@ namespace mu2e {
 	fseed._t0 = krep->t0();
 	fseed._flt0 = krep->flt0();
 	fseed._status.merge(TrkFitFlag::kalmanOK);
+	// global fit information
+	fseed._chisq = krep->chisq();
+	// compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
+	fseed._fitcon =  ChisqConsistency(krep->chisq(),krep->nDof()-1).significanceLevel();
 	if(krep->fitStatus().success()==1) fseed._status.merge(TrkFitFlag::kalmanConverged);
 	TrkUtilities::fillHitSeeds(krep, fseed._hits);
 	TrkUtilities::fillStraws(krep,fseed._straws);
-//-----------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------
 // sample the fit at the requested z positions.  This should
 // be in terms of known positions (front of tracker, ...) FIXME!
 //-----------------------------------------------------------------------------

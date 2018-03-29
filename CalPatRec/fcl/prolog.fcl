@@ -484,7 +484,7 @@ CalPatRec : { @table::CalPatRec
 	    fetchCaloDigis                : 1
 	    fetchStrawDigis               : 1
 	    fetchStrawHits                : 1
-	    fetchStrawHitFlags            : 1
+	    fetchStrawHitFlags            : 0
 	    fetchStrawHitPositions        : 1
 	    fetchStereoHits               : 0
 

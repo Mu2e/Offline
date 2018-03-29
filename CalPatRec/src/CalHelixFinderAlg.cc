@@ -946,7 +946,7 @@ namespace mu2e {
       }
       else {
 //-----------------------------------------------------------------------------
-// for all points different from teh first one need to choose the turn number
+// for all points different from the first one need to choose the turn number
 //-----------------------------------------------------------------------------
 	dphi = phiVec[i]-(phi0+zVec[i]*_hdfdz);
 	double dphi_min = dphi;
@@ -3557,7 +3557,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
     // _y0             = -9999.;
     //_phi0           = -9999.;
     //    _radius         = -9999.;
-    //    _dfdz           = -9999.;
+    _hphi0                  = -9999.;
 //-----------------------------------------------------------------------------
 // quality paramters used for doing comparison between several track candidates
 //-----------------------------------------------------------------------------
