@@ -350,4 +350,3 @@ void hitres(TTree* ta) {
   hresall->Fit("gaus","","sames");
 }
 
-

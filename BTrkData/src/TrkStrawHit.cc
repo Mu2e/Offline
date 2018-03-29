@@ -16,7 +16,6 @@
 #include "CLHEP/Vector/ThreeVector.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
 
 #include "TrkReco/inc/TrkUtilities.hh"
@@ -102,9 +101,9 @@ namespace mu2e
     // update the drift distance using this traj direction
     //    updateDrift();
 
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
+    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
     // convert this to a distance to the wire
-    double driftRadius = _t2d._rdrift;
+    double driftRadius = _rdrift;
     Doca = (Resid + driftRadius*_iamb);
     if(_iamb == 0)
       Doca = fabs(Doca);
@@ -112,12 +111,14 @@ namespace mu2e
       Doca *= _iamb;
     // restrict the range, symmetrically to avoid bias
     double rad       = _straw.getRadius();
-    double mint0doca = tcal->Mint0doca(); 
+    double mint0doca = srep->Mint0doca(); 
     if(Doca > mint0doca && Doca < rad-mint0doca){
       // translate the DOCA into a time
-      D2T d2t;
-      tcal->DistanceToTime(_straw.index(), Doca, TrajDirection, d2t);
-      PropTime    = d2t._tdrift;
+      Hep3Vector tperp = TrajDirection - TrajDirection.dot(straw().getDirection())*straw().getDirection();
+      double phi = tperp.theta(); 
+      double tdrift = srep->driftDistanceToTime(straw().index(), Doca, phi);
+      double vdrift = srep->driftInstantSpeed(straw().index(),Doca, phi);
+      PropTime    = tdrift;
       switch(_enduse) {
 	case cal: case hv:
 	  PropTime += _stime[_enduse];
@@ -129,7 +130,7 @@ namespace mu2e
 	  PropTime += 0.5*(_stime[0] + _stime[1]);
 	  break;
       }
-      ResidError /= d2t._vdrift;
+      ResidError /= vdrift;
       return true;
     } else {
       PropTime = 0;
@@ -139,30 +140,28 @@ namespace mu2e
   
   void 
   TrkStrawHit::trackT0Time(double &Htime, double T0flt, const TrkDifPieceTraj* Ptraj, double Vflt){
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
+    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
     // compute the flightlength to this hit from z=0 (can be negative)
     double pz   = _wpos.z();
     double hflt = Ptraj->zFlight(pz) - T0flt;
     // Use this to estimate the time for the track to reaches this hit from z=0
     double tprop = hflt/Vflt;
     // estimate signal propagation time on the wire assuming the middle (average)
-    double vwire = tcal->SignalVelocity(_straw.index());
+    double vwire = srep->halfPropV(straw().index(),strawHit().energyDep()*1000.)*2; //FIXME
     double teprop = _straw.getHalfLength()/vwire;
     // correct the measured time for these effects: this gives the aveage time the particle passed this straw, WRT
     // when the track crossed Z=0
     // assume the average drift time is half the maximum drift distance.  This is a poor approximation, but good enough for now
     // for crude estimates, we only need 1 d2t function
-    D2T d2t;
     CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
-    tcal->DistanceToTime(_straw.index(),0.5*_straw.getRadius(),zdir,d2t);
-    Htime = _strawhit.time() - tprop - teprop - d2t._tdrift;
+    double phi = 0; // FIXME should default phi be 0?
+    double tdrift = srep->driftDistanceToTime(straw().index(), 0.5*straw().getRadius(), phi);
+    Htime = _strawhit.time() - tprop - teprop - tdrift;
   }
 
 
   void
   TrkStrawHit::updateDrift() {
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    // tcal is deprecated, all calibration info should come from StrawResponse FIXME!
     ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
 // deal with ambiguity updating.  This is a DEPRECATED OPTION, use external ambiguity resolution algorithms instead!!!
     if(_ambigupdate) {
@@ -174,23 +173,19 @@ namespace mu2e
 // find the track direction at this hit
     Hep3Vector tdir = getParentRep()->traj().direction(fltLen());
 // convert time to distance.  This computes the intrinsic drift radius error as well
-// replace with StrawResponse cluster T2D function FIXME!  
-   tcal->TimeToDistance(straw().index(),tdrift,tdir,_t2d);
-   // Correct the mean drift for the waveform slewing effects: ignore for now FIXME!
-   // Calculate the drift error based on the current estimate of DOCA.  This should
-   // eventually include a term for the uncertainty in DOCA FIXME!
-    if(srep->useDriftError()){
-      double tdrifterr = srep->driftError(fabs(poca().doca()));
-    // need instantaneous velocity to transform from time error to 
-    // For now take the global velocity radial distance error FIXME!
-      _t2d._rdrifterr = tdrifterr*tcal->driftVelocity();
-    }
+
+   Hep3Vector tperp = tdir - tdir.dot(straw().getDirection())*straw().getDirection();
+   double phi = tperp.theta(); 
+   _rdrift = srep->driftTimeToDistance(straw().index(),tdrift,phi);
+   _vdriftinst = srep->driftInstantSpeed(straw().index(),_rdrift,phi);
+   _rdrifterr = srep->driftDistanceError(straw().index(),_rdrift,phi,fabs(poca().doca()));
+
 // Propogate error in t0, using local drift velocity
-    double rt0err = hitT0()._t0err*_t2d._vdrift;
+    double rt0err = hitT0()._t0err*_vdriftinst;
     // annealing error depends on the 'temperature'
-    double exterr = _t2d._vdrift*temperature();
+    double exterr = _vdriftinst*temperature();
     // total hit error is the sum of all
-    _toterr = sqrt(_t2d._rdrifterr*_t2d._rdrifterr + rt0err*rt0err + exterr*exterr + _penerr*_penerr);
+    _toterr = sqrt(_rdrifterr*_rdrifterr + rt0err*rt0err + exterr*exterr + _penerr*_penerr);
 // If the hit is wildly away from the track , disable it
     double rstraw = _straw.getRadius();
     if(!isPhysical(_maxdriftpull)){
@@ -198,25 +193,25 @@ namespace mu2e
       setFlag(driftFail);
     } else {
 // otherwise restrict to a physical range
-      if (_t2d._rdrift < 0.0){
-        _t2d._rdrift = 0.0;
-      } else if( _t2d._rdrift > rstraw){
-        _t2d._rdrift = rstraw;
+      if (_rdrift < 0.0){
+        _rdrift = 0.0;
+      } else if( _rdrift > rstraw){
+        _rdrift = rstraw;
       }
     }
   }
 
   bool TrkStrawHit::isPhysical(double maxchi) const {
-    return _t2d._rdrift < _straw.getRadius() + maxchi*_toterr &&
-      _t2d._rdrift > -maxchi*_toterr;
+    return _rdrift < _straw.getRadius() + maxchi*_toterr &&
+      _rdrift > -maxchi*_toterr;
   }
 
   void
   TrkStrawHit::updateSignalTime() {
 // compute the electronics propagation time for the 2 ends.
 // note: the wire direction points from cal to HV
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    double vwire = tcal->SignalVelocity(straw().index());
+    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
+    double vwire = srep->halfPropV(straw().index(),strawHit().energyDep()*1000.)*2; //FIXME
     if( poca().status().success()){
       _stime[TrkTypes::cal] = (straw().getHalfLength()+hitLen())/vwire;
       _stime[TrkTypes::hv] = (straw().getHalfLength()-hitLen())/vwire;
@@ -254,7 +249,7 @@ namespace mu2e
 // update the drift distance using this traj direction
       updateDrift();
 // sign drift distance by ambiguity.  Note that an ambiguity of 0 means to ignore the drift
-      double residual = poca().doca() - _t2d._rdrift*_iamb;
+      double residual = poca().doca() - _rdrift*_iamb;
       setHitResid(residual);
       setHitRms(_toterr);
     } else {
@@ -271,7 +266,7 @@ namespace mu2e
   TrkStrawHit::hitPosition(Hep3Vector& hpos) const{
     if( poca().status().success() && _iamb!=0){
       Hep3Vector pdir = (trkTraj()->position(fltLen()) - hitTraj()->position(hitLen())).unit();
-      hpos = _wpos + pdir*_t2d._rdrift*_iamb;
+      hpos = _wpos + pdir*_rdrift*_iamb;
     } else {
       hpos = _wpos;
     }

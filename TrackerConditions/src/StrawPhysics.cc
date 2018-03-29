@@ -118,7 +118,7 @@ namespace mu2e {
       return lorentzTime; //return t based on the physics of the cluster drift
     }
     else{
-      return ddist/0.06; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
+      return ddist/0.0625; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
     }
   }
   
