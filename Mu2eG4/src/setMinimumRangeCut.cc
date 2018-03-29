@@ -40,11 +40,19 @@ namespace mu2e{
       if (region!=nullptr) {
         G4ProductionCuts* cuts = new G4ProductionCuts();
         double minRangeCut2 = pset.get<double>("physics.minRangeCut2");
+        cuts->SetProductionCut(minRangeCut2); // same cut for gamma, e- and e+, proton/ions
+        double protonProductionCut = pset.get<double>("physics.protonProductionCut");
+        cuts->SetProductionCut(protonProductionCut,"proton");
         if (pset.get<int>("debug.diagLevel") > 0) {
-          std::cout << __func__ << " Setting range cut for "
-                    << regName << " to " << minRangeCut2 << " mm"<< std::endl;
+          std::cout << __func__ << " Setting gamma, e- and e+ production cut for "
+                    << regName << " to " << minRangeCut2 << " mm and for proton to "
+                    << protonProductionCut << " mm" << std::endl;
         }
-        cuts->SetProductionCut(minRangeCut2); // same cut for gamma, e- and e+
+        std::cout << __func__ << " Resulting cuts for gamma, e-, e+, proton: " << std::endl;
+        for (auto const& rcut : cuts->GetProductionCuts() ) {
+          std::cout << " " << rcut;
+        }
+        std::cout << std::endl;
         region->SetProductionCuts(cuts);
       }
     }
@@ -54,14 +62,21 @@ namespace mu2e{
       if (region!=nullptr) {
         G4ProductionCuts* cuts = new G4ProductionCuts();
         double minRangeCut3 = pset.get<double>("physics.minRangeCut3");
+        cuts->SetProductionCut(minRangeCut3); // same cut for gamma, e- and e+, proton/ions
+        double protonProductionCut = pset.get<double>("physics.protonProductionCut");
+        cuts->SetProductionCut(protonProductionCut,"proton");
         if (pset.get<int>("debug.diagLevel") > 0) {
-          std::cout << __func__ << " Setting range cut for "
-                    << regName << " to " << minRangeCut3 << " mm"<< std::endl;
+          std::cout << __func__ << " Setting gamma, e- and e+ production cut for "
+                    << regName << " to " << minRangeCut3 << " mm and for proton to "
+                    << protonProductionCut  << " mm" << std::endl;
         }
-        cuts->SetProductionCut(minRangeCut3); // same cut for gamma, e- and e+
+        std::cout << __func__ << " Resulting cuts for gamma, e-, e+, proton: " << std::endl;
+        for (auto const& rcut : cuts->GetProductionCuts() ) {
+          std::cout << " " << rcut;
+        }
+        std::cout << std::endl;
         region->SetProductionCuts(cuts);
       }
     }
   }
-
 }  // end namespace mu2e
