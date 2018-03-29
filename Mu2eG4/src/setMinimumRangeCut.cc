@@ -33,7 +33,7 @@ namespace mu2e{
                     // called during pre_init or after initialization;
                     // the selective SetCutValue does work
 
-    // special cuts per region
+    // special cuts per region (this would need to be generalized if we have many regions)
     if (pset.has_key("physics.minRangeCut2")) {
       std::string regName("Calorimeter");
       G4Region* region = G4RegionStore::GetInstance()->GetRegion(regName);
@@ -41,13 +41,27 @@ namespace mu2e{
         G4ProductionCuts* cuts = new G4ProductionCuts();
         double minRangeCut2 = pset.get<double>("physics.minRangeCut2");
         if (pset.get<int>("debug.diagLevel") > 0) {
-          std::cout << __func__ << " Setting range cut for " << regName << " to " << minRangeCut2 << " mm"<< std::endl;
+          std::cout << __func__ << " Setting range cut for "
+                    << regName << " to " << minRangeCut2 << " mm"<< std::endl;
         }
         cuts->SetProductionCut(minRangeCut2); // same cut for gamma, e- and e+
         region->SetProductionCuts(cuts);
       }
     }
-
+    if (pset.has_key("physics.minRangeCut3")) {
+      std::string regName("Tracker");
+      G4Region* region = G4RegionStore::GetInstance()->GetRegion(regName);
+      if (region!=nullptr) {
+        G4ProductionCuts* cuts = new G4ProductionCuts();
+        double minRangeCut3 = pset.get<double>("physics.minRangeCut3");
+        if (pset.get<int>("debug.diagLevel") > 0) {
+          std::cout << __func__ << " Setting range cut for "
+                    << regName << " to " << minRangeCut3 << " mm"<< std::endl;
+        }
+        cuts->SetProductionCut(minRangeCut3); // same cut for gamma, e- and e+
+        region->SetProductionCuts(cuts);
+      }
+    }
   }
 
 }  // end namespace mu2e

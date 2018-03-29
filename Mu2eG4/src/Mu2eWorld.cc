@@ -215,6 +215,13 @@ namespace mu2e {
       regionCalorimeter->AddRootLogicalVolume(calorimeterInfo.logical);
     }
 
+    if (pset_.has_key("physics.minRangeCut3")) {
+      // creating a region to be able to asign special cut and EM options
+      G4Region* regionTracker = new G4Region("Tracker");
+      trackerInfo.logical->SetRegion(regionTracker);
+      regionTracker->AddRootLogicalVolume(trackerInfo.logical);
+    }
+
     // This is just placeholder for now - and might be misnamed.
     constructMagnetYoke();
 
