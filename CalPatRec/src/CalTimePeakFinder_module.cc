@@ -33,6 +33,8 @@
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 
+#include "Mu2eUtilities/inc/polyAtan2.hh"
+
 using namespace std;
 
 using CLHEP::HepVector;
@@ -88,6 +90,7 @@ namespace mu2e {
 
     _data.minClusterEnergy =  _minClusterEnergy;
     _data.minNHits         =  _minNHits;
+    _sinPitch              = sin(_pitchAngle);
   }
 
 //-----------------------------------------------------------------------------
@@ -234,6 +237,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     nsh   = _data.shcol->size();
     ncl   = _data.ccCollection->size();
+    
+    // double             sinPitch = sin(_pitchAngle)/CLHEP::c_light;
 
     for (int ic=0; ic<ncl; ic++) {
       cl      = &_data.ccCollection->at(ic);
@@ -253,7 +258,7 @@ namespace mu2e {
           xcl     = tpos.x();
           ycl     = tpos.y();
           zcl     = tpos.z();
-	  mphi    = atan2(ycl, xcl);
+	  mphi    = polyAtan2(ycl, xcl);//atan2(ycl, xcl);
 
           //    dz_cl   = zcl; // -_tracker->z0();
           // create time peak
@@ -285,13 +290,13 @@ namespace mu2e {
 // estimate time-of-flight and calculate residual between the predicted and the hit times
 // 2017-03-31 P.M.: this assumes electron (e^- or e^+), not muon
 //-----------------------------------------------------------------------------
-            tof = (zcl-zstraw)/sin(_pitchAngle)/CLHEP::c_light;
+            tof = (zcl-zstraw)/_sinPitch/CLHEP::c_light;
             dt  = cl_time-(time+tof-meanDriftTime);
 //--------------------------------------------------------------------------------
 // check the angular distance from the calorimeter cluster
 // 2017-11-17 Gianipez: this selection was present on CalHelixFinderAlg::filterDist
 //--------------------------------------------------------------------------------
-	    double dphi = _data.shpcol->at(istr).pos().phi() - mphi;
+	    double dphi = _data.shpcol->at(istr).phi() - mphi;
 	    
 	    if (dphi >  pi) dphi -= twopi;
 	    if (dphi < -pi) dphi += twopi;
