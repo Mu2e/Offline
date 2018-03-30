@@ -72,6 +72,7 @@ namespace mu2e {
 
     bool findData(const art::Event& e);
 					// control flags
+    int           _debugLevel; 
     bool          _mcDiag;
     int           _fetchCaloDigis;
     int           _fetchStrawHits;
@@ -102,7 +103,8 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   PrefetchData::PrefetchData(fhicl::ParameterSet const& pset): 
     //    art::EDProducer(pset), 
-    _mcDiag    (pset.get<bool>         ("mcDiag"                       )),
+    _debugLevel     (pset.get<int>          ("debugLevel"              )),
+    _mcDiag         (pset.get<bool>         ("mcDiag"                  )),
 
     _fetchCaloDigis (pset.get<int>         ("fetchCaloDigis" )),
     _fetchStrawHits (pset.get<int>         ("fetchStrawHits" )),
@@ -258,7 +260,9 @@ namespace mu2e {
   void PrefetchData::produce(art::Event& Event) {
 
     _eventNum = Event.event();
-    printf(">>> PrefetchData::produce event number: %10i\n",_eventNum);  
+
+    if (_debugLevel > 0) printf(">>> PrefetchData::produce event number: %10i\n",_eventNum);  
+
     findData(Event);
   }
 
