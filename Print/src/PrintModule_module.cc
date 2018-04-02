@@ -9,6 +9,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "Print/inc/ProductPrinter.hh"
+#include "Print/inc/StatusG4Printer.hh"
 #include "Print/inc/GenParticlePrinter.hh"
 #include "Print/inc/SimParticlePrinter.hh"
 #include "Print/inc/SimParticlePtrPrinter.hh"
@@ -61,6 +62,7 @@ mu2e::PrintModule::PrintModule(fhicl::ParameterSet const& pset ):
   art::EDAnalyzer(pset) {
   //std::cout << "start main pset\n"<< pset.to_string() << "\n end main pset"<< std::endl;
 
+  _printers.push_back( new StatusG4Printer(pset) );
   _printers.push_back( new GenParticlePrinter(pset) );
   _printers.push_back( new SimParticlePrinter(pset) );
   _printers.push_back( new SimParticlePtrPrinter(pset) );

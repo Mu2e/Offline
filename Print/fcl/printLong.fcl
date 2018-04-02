@@ -19,6 +19,9 @@ physics :{
     printModule : {
       module_type : PrintModule
 
+      StatusG4Printer : {
+        verbose : 0
+      }
       GenParticlePrinter : {
         verbose: 1  # only 1 necessary
 	#inputTags : [ "mothersFilter" ] # select instances

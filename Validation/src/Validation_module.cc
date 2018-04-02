@@ -9,6 +9,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
+#include "Validation/inc/ValStatusG4.hh"
 #include "Validation/inc/ValGenParticle.hh"
 #include "Validation/inc/ValSimParticle.hh"
 #include "Validation/inc/ValStepPointMC.hh"
@@ -50,6 +51,7 @@ namespace mu2e {
     // validation of product XYZ.  They are in vectors, since we usually
     // have several instances of a product and we make histograms 
     // for each instance.
+    std::vector<std::shared_ptr<ValStatusG4>>          _stat;
     std::vector<std::shared_ptr<ValGenParticle>>       _genp;
     std::vector<std::shared_ptr<ValSimParticle>>       _simp;
     std::vector<std::shared_ptr<ValStepPointMC>>       _spmc;
@@ -97,6 +99,7 @@ void mu2e::Validation::beginJob(){
 }
 
 void mu2e::Validation::analyze(art::Event const& event){
+  analyzeProduct<StatusG4,ValStatusG4>                        (_stat,event);
   analyzeProduct<GenParticleCollection,ValGenParticle>        (_genp,event);
   analyzeProduct<SimParticleCollection,ValSimParticle>        (_simp,event);
   analyzeProduct<SimParticleTimeMap,ValSimParticleTimeMap>    (_sptm,event);
