@@ -149,6 +149,7 @@ namespace mu2e {
       float                          fMaxDriftTime;
       McPart_t*                      fPreSeedMcPart[2]; // McPart_t's corresponding to initial intersection 
       int                            fDeltaIndex;
+      float                          fChi2All;
 
       DeltaSeed() {
 	fType             =  0;
@@ -169,6 +170,9 @@ namespace mu2e {
 	  panelz        [face] = NULL;
 	}
 	fDeltaIndex       = -1;
+	fChi21            = -1;
+	fChi22            = -1;
+	fChi2All          = 1.e10;
       }
       //------------------------------------------------------------------------------
       // dont need a copy constructor
@@ -177,6 +181,8 @@ namespace mu2e {
 
       float            Chi2N   ()         { return (fChi21+fChi22)/fNHitsTot; }
       float            Chi2Tot ()         { return (fChi21+fChi22); }
+      float            Chi2All ()         { return fChi2All; }
+      float            Chi2AllDof ()      { return fChi2All/fNHitsTot; }
       int              NHits   (int Face) { return hitlist[Face].size(); }
       const HitData_t* HitData (int Face, int I) { return hitlist[Face][I]; } // no boundary check !
       int              NHitsTot()         { return fNHitsTot; }

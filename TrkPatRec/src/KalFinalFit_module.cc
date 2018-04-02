@@ -289,7 +289,7 @@ namespace mu2e
 	  vector<TrkStrawHit*>::iterator ifnd = find_if(tshv.begin(),tshv.end(),FindTrkStrawHit(sh));
 	  if(ifnd == tshv.end()){
 	    // good in-time hit.  Compute DOCA of the wire to the trajectory
-	    Straw const& straw = tracker.getStraw(sh.strawIndex());
+	    Straw const& straw = tracker.getStraw(sh.strawId());
 	    CLHEP::Hep3Vector hpos = straw.getMidPoint();
 	    CLHEP::Hep3Vector hdir = straw.getDirection();
 	    // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!

@@ -39,7 +39,7 @@ physics : {
     generate             : @local::generate
     g4run                : @local::g4run
     makeSD               : @local::makeSD
-    makeSH               : @local::makeSHfromSD
+    makeSH               : @local::makeSH
     @table::CaloDigiMC.producers
     @table::CaloReco.producers
     randomsaver          : @local::randomsaver

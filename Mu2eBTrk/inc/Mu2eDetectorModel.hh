@@ -12,7 +12,7 @@
 #include "fhiclcpp/ParameterSet.h"
 // BTrk includes
 // Mu2eBTrk includes
-#include "DataProducts/inc/StrawIndex.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include "Mu2eBTrk/inc/DetStrawElem.hh"
 #include "Mu2eBTrk/inc/DetStrawType.hh"
 #include "Mu2eInterfaces/inc/Detector.hh"
@@ -31,10 +31,10 @@ namespace mu2e {
 // given a straw, or index, find the associated element.  This will throw
 // if no match is found
     const DetStrawElem* strawElem(Straw const& straw) const;
-    const DetStrawElem* strawElem(StrawIndex const& strawindex) const;
+    const DetStrawElem* strawElem(StrawId const& strawid) const;
     private:
       // map between straw index and detector elements 
-      std::map<StrawIndex,DetStrawElem*> _strawmap;
+      std::map<StrawId,DetStrawElem*> _strawmap;
       // types for straw elements
       DetStrawType* _strawtype; // straw materials description
       // materials

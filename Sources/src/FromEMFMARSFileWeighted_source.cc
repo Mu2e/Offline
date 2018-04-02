@@ -44,7 +44,7 @@ namespace mu2e {
     //================================================================
     class EMFMARSWeightedDetail : private boost::noncopyable {
       std::string myModuleLabel_;
-      art::SourceHelper pm_;
+      art::SourceHelper const& pm_;
       unsigned runNumber_; // from ParSet
       art::SubRunID currentSubRunID_;
       std::set<art::SubRunID> seenSRIDs_;

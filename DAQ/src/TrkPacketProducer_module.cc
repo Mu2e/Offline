@@ -68,6 +68,8 @@ namespace mu2e {
 
     virtual void beginJob() override;
 
+    virtual void endJob();
+
     void produce( art::Event & ) override;
 
   private:
@@ -79,23 +81,17 @@ namespace mu2e {
     const size_t number_of_straws_per_roc = 96; // Each panel in the tracker has 96 straws
     const size_t numADCSamples = 12;
 
-    // 6 optical transceivers per DTC
-    // 2 optical links per ring (readout both ends)
-    // => 3 Rings per DTC/server
-    //
-    // 12 ROCs/server
-    // 3 Rings per server
-    // => 4 ROCs per ring
-    //
-    // 20 Servers
-    // 3 rings per server
-    // => 60 rings
+    // Since the plan is now to use point-to-point connections, the following is
+    // only used for internal consistency and will eventually need to be replaced
     //
     // 20 servers
-    // 12 ROCs/server
+    // 1 DTC/server
+    // 3 rings/DTC
+    // 4 ROCs per ring
     // 96 straws per ROC
     // => MAX 23040 Straws
     //
+
     const size_t number_of_rings = 60;
     const size_t rings_per_dtc = 3;
     const size_t rocs_per_ring = 4;
@@ -138,6 +134,13 @@ namespace mu2e {
 
   }
 
+  void TrkPacketProducer::endJob(){
+    if(_generateTextFile>0) {
+      outputStream << flush;
+      outputStream.close();
+    }
+  }
+
   void TrkPacketProducer::produce(art::Event & evt) {
 
     unique_ptr<DataBlockCollection> dtcPackets(new DataBlockCollection);
@@ -170,7 +173,7 @@ namespace mu2e {
       // Fill struct with info for current hit
       trkhit curHit;
       curHit.evt = eventNum;
-      curHit.strawIdx = SD.strawId().asUint16();
+      curHit.strawIdx = SD.strawId().asUint16();      
       curHit.recoDigiT0 = SD.TDC(TrkTypes::cal);
       curHit.recoDigiT1 = SD.TDC(TrkTypes::hv);
       curHit.recoDigiToT1 = SD.TOT(TrkTypes::cal);
@@ -180,21 +183,40 @@ namespace mu2e {
 	curHit.waveform.push_back(theWaveform[j]);
       }
 
+      // Note: For now, ring, rocID, and dtcID are arbitrarily generated based on
+      // the non-physically-meaningful straw index.
+
+      // 96 straws per ROC/panel
+      // 6 panels / plane
+      // 40 planes => 240 panels/ROCs, 23,040 straws
+      int panel = SD.strawId().getPanel();
+      int plane = SD.strawId().getPlane();
+
+      // ROC ID, counting from 0 across all DTCs (for the tracker)
+      size_t globalROCID = int((panel+1)*(plane+1)) - 1;
+
+      // Ring ID, counting from 0, across all DTCs (for the tracker)
+      size_t globalRingID = int(globalROCID/rocs_per_ring);
+      curHit.ringID = globalRingID % rings_per_dtc;
+      curHit.rocID = globalROCID % rocs_per_ring;
+      curHit.dtcID = dtc_id(globalRingID/rings_per_dtc);
+
       // 240 ROCs total
-      if(curHit.strawIdx>= abs(number_of_rings * rocs_per_ring * number_of_straws_per_roc) ) {
-	throw cet::exception("DATA") << " Straw index " << curHit.strawIdx
+      if(globalROCID >= abs(number_of_rings * rocs_per_ring) ) {
+	throw cet::exception("DATA") << " Global ROC ID " << globalROCID
 				     << " exceeds limit of " <<  number_of_rings << "*"
-				     << rocs_per_ring << "*" << number_of_straws_per_roc
-				     << "=" << number_of_rings * rocs_per_ring * number_of_straws_per_roc;
+				     << rocs_per_ring << "*"
+				     << "=" << number_of_rings * rocs_per_ring;
       }
 
-      // Ring ID, counting from 0, across all (for the tracker)
-      size_t globalRingID = int(curHit.strawIdx / (rocs_per_ring * number_of_straws_per_roc));
-
-      curHit.ringID = globalRingID % rings_per_dtc;
-      curHit.rocID = (curHit.strawIdx - (rocs_per_ring * number_of_straws_per_roc) * globalRingID) / number_of_straws_per_roc;  
-      curHit.dtcID = dtc_id(globalRingID/rings_per_dtc);
-      
+      //      dtc_id max_dtc_id_temp = number_of_rings / rings_per_dtc - 1;
+      //      std::cout << "GREPME GLOBALRINGID " << globalRingID
+      //		<<  " RINGID "            << curHit.ringID << "/" << rings_per_dtc - 1
+      //		<<  " ROCID "             << curHit.rocID  << "/" << rocs_per_ring - 1
+      //		<<  " DTCID "             << (int)curHit.dtcID  << "/" << (int)max_dtc_id_temp 
+      //		<<  " panelID "           << panel
+      //		<<  " planeID "           << plane << std::endl;
+       
       trkHitVector.push_back(curHit);
 
       if(_generateTextFile>0) {
@@ -219,9 +241,10 @@ namespace mu2e {
     }
     
     dtc_id max_dtc_id = number_of_rings / rings_per_dtc - 1;
-    if(number_of_rings % rings_per_dtc > 0) {
-      max_dtc_id += 1;
-    }
+    //    if(number_of_rings % rings_per_dtc > 0) {
+    //      max_dtc_id += 1;
+    //    }
+
     // Create a vector to hold all Ring ID / ROC ID combinations for all DTCs to simulate
     std::vector< std::pair<dtc_id, std::pair<size_t,size_t> > > rocRingVector;
     for(dtc_id curDTCID = 0; curDTCID <= max_dtc_id; curDTCID++) {

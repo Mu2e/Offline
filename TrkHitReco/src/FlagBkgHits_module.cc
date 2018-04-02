@@ -31,6 +31,7 @@
 #include "TMVA/Reader.h"
 #include "Math/VectorUtil.h"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "TMVA/Config.h"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
@@ -138,6 +139,8 @@ namespace mu2e
 
     float cperr = pset.get<float>("ClusterPositionError",10.0); 
     _cperr2 = cperr*cperr;
+      // stop the default TMVA::Reader print
+      TMVA::gConfig().SetSilent(true);
 
   }
 

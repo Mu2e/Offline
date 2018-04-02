@@ -1,0 +1,37 @@
+#include "Mu2eG4/test/geom_01.txt"
+
+// "BFieldMaps/Mau10/Standard_Maps/Mu2e_DSMap.header",
+//  "/mu2e/app/users/bpollack/BTrk/BTrk_working/Offline/BFieldGeom/test/Mau10_800mm_long.csv",
+vector<string> bfield.innerMaps = {
+  "BFieldGeom/test/Mau10_800mm_long.csv",
+  "BFieldMaps/Mau10/Standard_Maps/Mu2e_PSMap.header",
+  "BFieldMaps/Mau10/Standard_Maps/Mu2e_TSuMap.header",
+  "BFieldMaps/Mau10/Standard_Maps/Mu2e_TSdMap.header",
+  "BFieldMaps/Mau9/PStoDumpAreaMap.header",
+  "BFieldMaps/Mau9/ProtonDumpAreaMap.header",
+  "BFieldMaps/Mau9/DSExtension.header"
+};
+
+string bfield.interpolationStyle = trilinear;
+string bfield.format  = "PARAM";
+vector<string> bfield.formatList  = {
+    "PARAM",
+    "G4BL",
+    "G4BL",
+    "G4BL",
+    "G4BL",
+    "G4BL",
+    "G4BL",
+    "G4BL",
+    "G4BL",
+    "G4BL",
+    "G4BL"};
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
+// let vi:syntax=cpp
+
+
+

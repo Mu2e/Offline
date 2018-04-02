@@ -41,13 +41,15 @@ namespace mu2e
   {
     public:
       
-      enum CircleFit {median=0, AGE=1 };
+      enum CircleFit {median=0, mean, AGE };
 
       explicit RobustHelixFit(fhicl::ParameterSet const&);
       virtual ~RobustHelixFit();
 
+      bool initCircle(HelixSeed& hseed);
       void fitCircle(HelixSeed& hseed);
-      void fitFZ(HelixSeed& hseed);
+      bool initFZ(HelixSeed& hseed);
+     void fitFZ(HelixSeed& hseed);
       bool goodHelix(RobustHelix const& rhel);
       Helicity const& helicity() const { return _helicity; }
 
@@ -56,7 +58,7 @@ namespace mu2e
       void fitHelix(HelixSeed& hseed);
       void fitCircleMedian(HelixSeed& hseed);
       void fitCircleAGE(HelixSeed& hseed);
-      bool initFZ(ComboHitCollection& hhits,RobustHelix& myhel);
+      void fitCircleMean(HelixSeed& hseed);
       void findAGE(HelixSeed const& hseed, XYZVec const& center,float& rmed, float& age);
       void fillSums(HelixSeed const& hseed, XYZVec const& center,float rmed,AGESums& sums);
 
@@ -76,7 +78,7 @@ namespace mu2e
       bool goodLambda(Helicity const& h, float lambda) const;
 
       int _debug;
-      CircleFit _cfit; // type of circle fit
+      CircleFit _cinit, _cfit; // type of circle fit
       StrawHitFlag _useflag, _dontuseflag;
       unsigned _minnhit; // minimum # of hits to work with
       float _lambda0,_lstep,_minlambda; // parameters for AGE center determination
@@ -89,6 +91,7 @@ namespace mu2e
       float _mindist; // minimum distance between points used in circle initialization
       float _maxdist; // maximum distance in hits
       float _rmin,_rmax; // circle radius range
+      float _rcmin,_rcmax; // circle centerradius range
 //      float _mindelta; // minimum slope difference to use a triple in circle center initialization
       float _minarea2; // minimum triangle area for triple (squared)
       float _lmin, _lmax; // range of lambda = dz/dphi
@@ -104,7 +107,7 @@ namespace mu2e
       float _rwind; // raidus window for defining points to be 'on' the helix
       Helicity _helicity; // helicity value to look for.  This defines the sign of dphi/dz
       TH1F _hphi;
-      unsigned _ntripleMax;
+      unsigned _ntripleMin, _ntripleMax;
  };
 }
 #endif

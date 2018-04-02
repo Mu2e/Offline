@@ -1,0 +1,58 @@
+BEGIN_PROLOG
+//bgHitFiles: ["/pnfs/mu2e/tape/phy-sim/sim/mu2e/cd3-detmix-cut/v566/e4/c6/sim.mu2e.cd3-detmix-cut.v566.000003_00000000.art"]
+END_PROLOG
+
+#include "JobConfig/common/dra_mix_defs.fcl"
+
+physics.trigger_paths: [ draCommonTrigSeq ]
+
+pionTemplate: { @table::physics.analyzers.cutAndCountAnalyzer }
+pionTemplate.weight: { inputs: ["generate"] }
+
+physics.analyzers.cutAndCount500: { @table::pionTemplate }
+physics.analyzers.cutAndCount500.signalTrackCuts.t0min: 500
+
+physics.analyzers.cutAndCount550: { @table::pionTemplate }
+physics.analyzers.cutAndCount550.signalTrackCuts.t0min: 550
+
+physics.analyzers.cutAndCount600: { @table::pionTemplate }
+physics.analyzers.cutAndCount600.signalTrackCuts.t0min: 600
+
+physics.analyzers.cutAndCount625: { @table::pionTemplate }
+physics.analyzers.cutAndCount625.signalTrackCuts.t0min: 625
+
+physics.analyzers.cutAndCount650: { @table::pionTemplate }
+physics.analyzers.cutAndCount650.signalTrackCuts.t0min: 650
+
+physics.analyzers.cutAndCount660: { @table::pionTemplate }
+physics.analyzers.cutAndCount660.signalTrackCuts.t0min: 660
+
+physics.analyzers.cutAndCount670: { @table::pionTemplate }
+physics.analyzers.cutAndCount670.signalTrackCuts.t0min: 670
+
+physics.analyzers.cutAndCount680: { @table::pionTemplate }
+physics.analyzers.cutAndCount680.signalTrackCuts.t0min: 680
+
+physics.analyzers.cutAndCount690: { @table::pionTemplate }
+physics.analyzers.cutAndCount690.signalTrackCuts.t0min: 690
+
+physics.analyzers.cutAndCount700: { @table::pionTemplate }
+physics.analyzers.cutAndCount700.signalTrackCuts.t0min: 700
+
+physics.analyzers.cutAndCount725: { @table::pionTemplate }
+physics.analyzers.cutAndCount725.signalTrackCuts.t0min: 725
+
+physics.analyzers.cutAndCount750: { @table::pionTemplate }
+physics.analyzers.cutAndCount750.signalTrackCuts.t0min: 750
+
+
+physics.pionAnalyses: [
+   cutAndCount500, cutAndCount550,
+   cutAndCount600, cutAndCount625,
+   cutAndCount650, cutAndCount660,
+   cutAndCount670, cutAndCount680,
+   cutAndCount690, cutAndCount700,
+   cutAndCount725, cutAndCount750
+]
+
+physics.end_paths: [ draCommonEndSeq, pionAnalyses ]

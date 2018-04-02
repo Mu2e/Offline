@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <vector>
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/Rotation.h"
 
 class TrkDifTraj;
 class KalRep;

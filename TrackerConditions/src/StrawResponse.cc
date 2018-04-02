@@ -11,7 +11,7 @@
 using namespace std;
 namespace mu2e {
   // simple line interpolation, this should be a utility function, FIXME!
-  float PieceLine(std::vector<float> const& xvals, std::vector<float> const& yvals, float xval){
+  float StrawResponse::PieceLine(std::vector<float> const& xvals, std::vector<float> const& yvals, float xval){
     float yval;
     if(xvals.size() != yvals.size() || xvals.size() < 2)
       std::cout << "size error " << std::endl;
@@ -42,6 +42,15 @@ namespace mu2e {
     }
     return yval;
   }
+// assumes DOCA is positive
+  float StrawResponse::driftError(float DOCA) const {
+    // maximum drift is the straw radius.  should come from conditions FIXME!
+    static float rstraw(2.5);
+    DOCA = std::min(DOCA,rstraw);
+    // drift errors are modeled as a truncated line + exponential
+    float terr = std::min(_derr[4],_derr[0]+_derr[1]*DOCA + _derr[2]*exp(-DOCA/_derr[3]));
+    return terr;
+  }
 
   StrawResponse::StrawResponse(fhicl::ParameterSet const& pset) :
     _edep(pset.get<vector<float> >("EDep",
@@ -53,6 +62,8 @@ namespace mu2e {
 	  vector<float>{76.2103 , 66.2778 , 58.3431 , 53.2878 , 49.9309 , 47.1836 , 45.13 , 42.9479 , 41.208 , 39.6033 , 38.1616 , 37.1039 , 35.9969 , 35.0815 , 34.0823 , 33.4877 , 32.9431 , 32.3805 , 32.071 , 31.4614 , 31.2776 , 30.635 , 30.1217 , 29.7487 , 29.1309 , 28.4732 , 28.1865 , 27.6331 , 27.5013 , 27.0485 , 26.4937 , 25.9912 , 25.5595 , 25.0649 , 24.0109 , 23.1914 , 22.2386 , 21.7544 , 21.3721 , 21.0055 , 20.5813 , 20.1229 , 20.2912 , 20.615 , 20.4152 , 20.6086 , 20.6452 , 20.6372 , 20.6297 , 20.4731 , 20.401 , 20.174 , 20.2679 , 20.3807 , 20.1217 , 19.7474 , 19.8524 , 19.8093 , 19.8447 , 19.8788 , 19.5326 , 19.1781 , 19.7947 , 19.3696 , 18.6408 , 18.0923 , 18.1123 , 21.371 })),
     _resslope(pset.get<vector<float> >("TDResSlope",
 	  vector<float>{0.0160651 , 0.023741 , 0.0421304 , 0.0537863 , 0.0633849 , 0.0697326 , 0.0725653 , 0.0736391 , 0.0746531 , 0.0745937 , 0.0750631 , 0.0738193 , 0.0740473 , 0.0761049 , 0.0785487 , 0.0783369 , 0.0802156 , 0.081579 , 0.0815734 , 0.0830998 , 0.0824664 , 0.0847393 , 0.0857842 , 0.0846082 , 0.0866494 , 0.0879027 , 0.0883831 , 0.0917368 , 0.0909706 , 0.0899623 , 0.0899677 , 0.0890875 , 0.0888003 , 0.0865446 , 0.0847627 , 0.0794976 , 0.0802735 , 0.0797023 , 0.0798181 , 0.0750883 , 0.073853 , 0.0751729 , 0.0737468 , 0.071133 , 0.0698957 , 0.0661819 , 0.0642328 , 0.0635607 , 0.0623173 , 0.0606496 , 0.0574217 , 0.0562718 , 0.0532419 , 0.0510767 , 0.0493828 , 0.0472257 , 0.0447443 , 0.0425958 , 0.0419509 , 0.0391222 , 0.0372135 , 0.0399352 , 0.0340117 , 0.0375563 , 0.0368355 , 0.052548 , 0.0649657 , 0.168875 })),
+    _usederr(pset.get<bool>("UseDriftErrorCalibration",false)),
+    _derr(pset.get<vector<float> >("DriftErrorParameters",vector<float>{4.2,-0.87, 31.3, 0.22, 9.72})),
     _wbuf(pset.get<float>("WireLengthBuffer",2.0)), //sigma
     _slfac(pset.get<float>("StrawLengthFactor",0.9)),
     _errfac(pset.get<float>("ErrorFactor",1.0))

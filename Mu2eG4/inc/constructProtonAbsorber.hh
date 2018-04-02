@@ -10,14 +10,13 @@
 // Original author KLG
 //
 
-// Mu2e includes.
-#include "G4Helper/inc/VolumeInfo.hh"
-
 namespace mu2e {
 
   class SimpleConfig;
+  class SensitiveDetectorHelper;
 
-  void constructProtonAbsorber(SimpleConfig const & _config
+  void constructProtonAbsorber(const SimpleConfig& _config,
+                               const SensitiveDetectorHelper& sdHelper
                                );
 
 }

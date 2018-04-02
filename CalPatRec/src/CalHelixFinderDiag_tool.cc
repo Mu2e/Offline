@@ -67,6 +67,7 @@ CalHelixFinderDiag::~CalHelixFinderDiag() {
 //-----------------------------------------------------------------------------
 int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) {
 
+  _hist.nTimePeaks    = Tfs->make<TH1F>("ntpeaks"  , "number of time peaks"                      , 11, -0.5, 10.5);
   _hist.nseeds[0]     = Tfs->make<TH1F>("nseeds0"  , "number of track candidates: all events"    , 21, -0.5, 20.5);
   _hist.nseeds[1]     = Tfs->make<TH1F>("nseeds1"  , "number of track candidates: nhits > 15"    , 21, -0.5, 20.5);
   _hist.nhits         = Tfs->make<TH1F>("nhits"    , "number of hits on a track candidate"       , 101, -0.5, 100.5);
@@ -119,6 +120,7 @@ int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tf
 //-----------------------------------------------------------------------------
 // this part is so far simple
 //-----------------------------------------------------------------------------
+    _hist.nTimePeaks->Fill(_data->nTimePeaks);
     _hist.nseeds[0]->Fill(_data->nseeds[0]);
     _hist.nseeds[1]->Fill(_data->nseeds[1]);
 

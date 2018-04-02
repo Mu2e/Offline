@@ -56,7 +56,7 @@ namespace mu2e {
   GenerateProtonTimes::GenerateProtonTimes(fhicl::ParameterSet const& pset)
     : engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()) )
     , protonPset_( pset.get<fhicl::ParameterSet>("randPDFparameters", fhicl::ParameterSet() ) )
-    , verbosityLevel_(pset.get<int>("verbosityLevel", 1)) 
+    , verbosityLevel_(pset.get<int>("verbosityLevel", 0)) 
   {
     produces<SimParticleTimeMap>();
 

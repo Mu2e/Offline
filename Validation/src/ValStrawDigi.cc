@@ -7,7 +7,7 @@ int mu2e::ValStrawDigi::declare(art::TFileDirectory tfs) {
   _hN2 = tfs.make<TH1D>( "NHit2", "N Straw Hits", 100, -0.5, 9999.5);
   _htdc = tfs.make<TH1D>( "TDC", "TDC", 100, 0.0, 120000.0);
   _hadc = tfs.make<TH1D>( "ADC", "ADC",50, -0.5, 5000.0);
-  _hSI = tfs.make<TH1D>( "Straw", "Straw Index",96, -0.5, 23039.5);
+  _hSI = tfs.make<TH1D>( "Straw", "Straw Index",100, -0.5, 40960.0);
 
   return 0;
 }
@@ -17,7 +17,7 @@ int mu2e::ValStrawDigi::fill(const mu2e::StrawDigiCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(0.0);
+  _hVer->Fill(1.0);
 
   _hN->Fill(coll.size()); 
   _hN2->Fill(coll.size()); 
@@ -26,7 +26,7 @@ int mu2e::ValStrawDigi::fill(const mu2e::StrawDigiCollection & coll,
       _htdc->Fill(sd.TDC()[ie]);
     }
     for(auto const& a : sd.adcWaveform()) _hadc->Fill(a); // ADC values (ints)
-    _hSI->Fill(sd.strawId().asUint16()); // <23,040
+    _hSI->Fill(sd.strawId().asUint16()); // <40960
   }
   return 0;
 }

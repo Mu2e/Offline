@@ -4,7 +4,7 @@
 //
 // Calorimeter cluster information
 //
-//
+// Note: set the size independently of the CaloCrystalHitPtrVector to work with fast clustering algorithm
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -29,14 +29,14 @@ namespace mu2e {
 
 	    CaloCluster() : 
 	       diskId_(-1),time_(0.),timeErr_(0.0),energyDep_(0.),energyDepErr_(0.),e1_(0.),e9_(0.),e25_(0.),
-	       secondMoment_(0.),angle_(0),cog3Vector_(CLHEP::Hep3Vector(0,0,0)), caloCrystalHitsPtrVector_(),isSplit_(false)
+	       secondMoment_(0.),angle_(0),cog3Vector_(CLHEP::Hep3Vector(0,0,0)), caloCrystalHitsPtrVector_(),size_(0),isSplit_(false)
 	    {}
 
 	    CaloCluster(int iSection, double time, double timeErr, double energy, double energyErr, 
-	                CaloCrystalHitPtrVector caloCrystalHits, bool isSplit) : 
+	                CaloCrystalHitPtrVector caloCrystalHits, unsigned size, bool isSplit) : 
 	       diskId_(iSection),time_(time),timeErr_(timeErr),energyDep_(energy),energyDepErr_(energyErr),e1_(0),e9_(0),
 	       e25_(0),secondMoment_(-1),angle_(0),cog3Vector_(CLHEP::Hep3Vector(0,0,0)),
-	       caloCrystalHitsPtrVector_(caloCrystalHits),isSplit_(isSplit)
+	       caloCrystalHitsPtrVector_(caloCrystalHits),size_(size),isSplit_(isSplit)
 	    {}
 
 	    void print(std::ostream& ost = std::cout) const;
@@ -44,7 +44,7 @@ namespace mu2e {
 
 	    //Accessors
 	    int                            diskId()                   const{return diskId_;}       
-	    int                            size()                     const{return caloCrystalHitsPtrVector_.size();}
+	    int                            size()                     const{return size_;}
 	    double                         time()                     const{return time_;}            
 	    double                         timeErr()                  const{return timeErr_;}            
 	    double                         energyDep()                const{return energyDep_;}       
@@ -81,7 +81,8 @@ namespace mu2e {
 	    double                   angle_;	      
 	    CLHEP::Hep3Vector        cog3Vector_; 
 	    CaloCrystalHitPtrVector  caloCrystalHitsPtrVector_;
-	    bool                     isSplit_;    
+	    unsigned                 size_;
+            bool                     isSplit_;    
 
    };
 

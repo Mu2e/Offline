@@ -719,7 +719,7 @@ namespace mu2e {
 	mcptr = &hits_mcptr->at(ihit);
 	
 	// Get the straw information:
-	straw = &tracker->getStraw( hit->strawIndex() );
+	straw = &tracker->getStraw( hit->strawId() );
 	mid   = &straw->getMidPoint();
 	w     = &straw->getDirection();
 

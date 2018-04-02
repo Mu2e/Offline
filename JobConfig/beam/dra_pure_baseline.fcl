@@ -1,0 +1,14 @@
+// Baseline job config with no mixing: no event weight.
+//
+// Can be used on conversion electrons and some backgrounds that do not require
+// decated event weights.
+//
+// Andrei Gaponenko, 2016
+
+#include "JobConfig/common/dra_pure_defs.fcl"
+
+physics.trigger_paths: [ draCommonTrigSeq ]
+physics.end_paths: [ draCommonEndSeq, draCutAndCountEndSeq ]
+
+physics.analyzers.cutAndCountAnalyzer.weight: {}
+services.TFileService.fileName: "nts.owner.dra-pure-baseline.ver.seq.root"

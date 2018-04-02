@@ -51,6 +51,7 @@ namespace mu2e
       _nhits = _nactive = _ndouble = _ndactive = _nnullambig = _nmat = _nmatactive = _nbend = _ndof = -1;
       _t0 = _t0err = _chisq = _fitcon = _radlen = _firstflt = _lastflt = -1.0;
       _trkqual=-1000.0;
+      _startvalid = _endvalid = -999999.0;
       _ent.reset();
     }
     static std::string const& leafnames() { static const std::string leaves =

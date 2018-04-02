@@ -70,7 +70,7 @@ physics : {
 
     # Form StrawHits (SH).
     makeSD : @local::makeSD
-    makeSH : @local::makeSHfromSD
+    makeSH : @local::makeSH
 
     @table::CaloDigiMC.producers
     @table::CaloReco.producers

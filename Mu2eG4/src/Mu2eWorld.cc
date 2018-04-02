@@ -119,6 +119,9 @@
 #include "G4SimpleHeum.hh"
 #include "G4HelixImplicitEuler.hh"
 #include "G4HelixSimpleRunge.hh"
+#if G4VERSION>4103
+#include "G4DormandPrince745.hh"
+#endif
 #include "G4GDMLParser.hh"
 
 #include "Mu2eG4/inc/Mu2eGlobalField.hh"
@@ -133,7 +136,6 @@ namespace mu2e {
   Mu2eWorld::Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
     : sdHelper_(sdHelper)
     , pset_(fhicl::ParameterSet())
-
     , activeWr_Wl_SD_(_config.getBool("ttracker.ActiveWr_Wl_SD",false))
     , writeGDML_(_config.getBool("writeGDML",false))
     , gdmlFileName_(_config.getString("GDMLFileName","mu2e.gdml"))
@@ -147,7 +149,6 @@ namespace mu2e {
                        SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
     : sdHelper_(sdHelper)
     , pset_(pset)
-
     , activeWr_Wl_SD_(true)
     , writeGDML_(pset.get<bool>("debug.writeGDML"))
     , gdmlFileName_(pset.get<std::string>("debug.GDMLFileName"))
@@ -193,17 +194,17 @@ namespace mu2e {
       cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << endl;
     }
 
-    constructProtonBeamDump(hallInfo, _config);
+    constructProtonBeamDump(hallInfo, _config, *sdHelper_);
 
-    constructDS(hallInfo, _config);
-    constructPS(hallInfo, _config);
+    constructDS(hallInfo, _config, *sdHelper_);
+    constructPS(hallInfo, _config, *sdHelper_);
     constructPSEnclosure(hallInfo, _config);
     constructTS(hallInfo, _config);
 
     VolumeInfo trackerInfo = constructTracker();
     VolumeInfo targetInfo  = constructTarget();
 
-    constructProtonAbsorber(_config);
+    constructProtonAbsorber(_config, *sdHelper_);
 
     VolumeInfo calorimeterInfo    = constructCal();
 
@@ -231,20 +232,20 @@ namespace mu2e {
     }
 
     if ( _config.getBool("mstm.build", false) ) {
-      constructMSTM(hallInfo, _config);
+      constructMSTM(hallInfo, _config, *sdHelper_);
     }
 
     if ( _config.getBool("hasSTM",false) ) {
-      constructSTM(_config);
+      constructSTM(_config, *sdHelper_);
     }
 
     if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
 
       GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
-      constructCRV(hallInfo,_config);
+      constructCRV(hallInfo,_config,*sdHelper_);
     }
 
-    constructVirtualDetectors(_config); // beware of the placement order of this function
+    constructVirtualDetectors(_config, *sdHelper_); // beware of the placement order of this function
 
     constructVisualizationRegions(worldVInfo, _config);
 
@@ -285,9 +286,9 @@ namespace mu2e {
     if ( _config.getBool("hasTTracker",false) ) {
       int ver = _config.getInt("TTrackerVersion",3);
       if ( ver == 3 ){
-        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, _config );
+        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, _config, *sdHelper_);
       } else if ( ver == 5 ) {
-	trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config );
+	trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config, *sdHelper_);
       }
     } else {
       trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, _config );
@@ -319,7 +320,7 @@ namespace mu2e {
     VolumeInfo targetInfo = ( _config.getBool("hasTarget",false) ) ?
 
       constructStoppingTarget( detSolUpstreamVacInfo,
-                               _config )
+                               _config, *sdHelper_ )
       :
 
       constructDummyStoppingTarget( detSolUpstreamVacInfo,
@@ -370,6 +371,7 @@ namespace mu2e {
     G4MagneticField * _field = new Mu2eGlobalField(worldGeom->mu2eOriginInWorld());
     G4Mag_EqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
+    if ( _verbosityLevel > 0 ) cout << "Setting up " << g4stepperName_ << " stepper" << endl;
     if ( g4stepperName_  == "G4ClassicalRK4" ) {
       _stepper = new G4ClassicalRK4(_rhs);
     } else if ( g4stepperName_  == "G4ClassicalRK4WSpin" ) {
@@ -390,8 +392,13 @@ namespace mu2e {
       _stepper = new G4HelixImplicitEuler(_rhs);
     } else if ( g4stepperName_  == "G4HelixSimpleRunge" ) {
       _stepper = new G4HelixSimpleRunge(_rhs);
+#if G4VERSION>4103
+    } else if ( g4stepperName_  == "G4DormandPrince745" ) {
+      _stepper = new G4DormandPrince745(_rhs);
+#endif
     } else {
       _stepper = new G4SimpleRunge(_rhs);
+      if ( _verbosityLevel > 0 ) cout << "Using default G4SimpleRunge stepper" << endl;
     }
     G4ChordFinder * _chordFinder = new G4ChordFinder(_field,1.0e-2*CLHEP::mm,_stepper);
     G4FieldManager * _manager = new G4FieldManager(_field,_chordFinder,true);
@@ -560,7 +567,7 @@ namespace mu2e {
     // Construct one of the calorimeters.
     VolumeInfo calorimeterInfo;
     if ( _config.getBool("hasDiskCalorimeter",false) ) {
-      calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config );
+      calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config, *sdHelper_ );
     }
 
     return calorimeterInfo;
@@ -679,6 +686,12 @@ namespace mu2e {
       Mu2eSensitiveDetector* EBKeySD =
         new Mu2eSensitiveDetector(    SensitiveDetectorName::panelEBKey(),  _config);
       SDman->AddNewDetector(EBKeySD);
+    }
+
+    if(sdHelper_->enabled(StepInstanceName::DSCableRun)) {
+      Mu2eSensitiveDetector* cableRunSD =
+        new Mu2eSensitiveDetector(    SensitiveDetectorName::DSCableRun(),  _config);
+      SDman->AddNewDetector(cableRunSD);
     }
 
   } // instantiateSensitiveDetectors

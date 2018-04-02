@@ -1,5 +1,0 @@
-#include "JobConfig/cd3/cosmic/cosmic_defs_s2.fclinc"
-
-services.TFileService.fileName       : "nts.owner.cd3-cosmic-g4s2-target4.version.sequencer.root"
-outputs.filteredOutput.fileName      : "sim.owner.cd3-cosmic-g4s2-target4.version.sequencer.art"
-outputs.truncatedEvtsOutput.fileName : "sim.owner.cd3-cosmic-g4s2-truncated-target4.version.sequencer.art"

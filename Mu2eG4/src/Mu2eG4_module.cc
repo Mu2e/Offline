@@ -78,6 +78,8 @@
 #include "G4Run.hh"
 #include "G4Timer.hh"
 #include "G4VUserPhysicsList.hh"
+#include "G4ParticleHPManager.hh"
+#include "G4HadronicProcessStore.hh"
 #include "G4RunManagerKernel.hh"
 #include "G4RunManager.hh"
 #include "G4SDManager.hh"
@@ -374,11 +376,14 @@ namespace mu2e {
  
     _runManager->SetVerboseLevel(_rmvlevel);
 
-
     _runManager->SetUserInitialization(allMu2e);
 
     G4VUserPhysicsList* pL = physicsListDecider(pset_);
     pL->SetVerboseLevel(_rmvlevel);
+
+    G4ParticleHPManager::GetInstance()->SetVerboseLevel(_rmvlevel);
+
+    G4HadronicProcessStore::Instance()->SetVerbose(_rmvlevel);
 
     _runManager->SetUserInitialization(pL);
 
@@ -422,10 +427,11 @@ namespace mu2e {
     // Mu2e specific customizations that must be done after the call to Initialize.
     postG4InitializeTasks(pset_,pL);
     _sensitiveDetectorHelper.registerSensitiveDetectors();
-    if (standardMu2eDetector_) _extMonFNALPixelSD =
-                                 dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
-                                       ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
-
+    _extMonFNALPixelSD = ( standardMu2eDetector_ &&
+                           _sensitiveDetectorHelper.extMonPixelsEnabled()) ?
+      dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()->
+                                       FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
+      : nullptr;
 
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
     // Setup the graphics if requested.
@@ -457,9 +463,6 @@ namespace mu2e {
       mvi->reserve(1 + ih->size());
       mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
     }
-    cout << __func__ << " Append volume info " <<  endl;
-    cout << __func__ << " multiStagePars_.simParticleNumberOffset() " 
-         << multiStagePars_.simParticleNumberOffset() <<  endl;
 
     // Append info for the current stage
     mvi->emplace_back(std::make_pair(multiStagePars_.simParticleNumberOffset(), _physVolHelper.persistentSingleStageInfo()));

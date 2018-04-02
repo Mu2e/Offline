@@ -330,7 +330,7 @@ namespace mu2e {
 					// event printout
     _data.eventNumber = event.event();
 
-    if ((_data.eventNumber%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
+    if ((_debugLevel > 0) && (_data.eventNumber%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 //-----------------------------------------------------------------------------
 // output collections should always be created
 //-----------------------------------------------------------------------------
@@ -510,7 +510,9 @@ namespace mu2e {
 	algs->push_back(AlgorithmID(best,mask));
 
 	// convert successful fits into 'seeds' for persistence.  Start with the input
-	KalSeed fseed(*kalSeed);
+	//	KalSeed fseed(*kalSeed);
+	KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kalSeed->status());
+	fseed._helix = kalSeed->helix();
 	// reference the seed fit in this fit
 	art::Handle<KalSeedCollection> ksH;
 	event.getByLabel(_trkseedLabel, ksH);
@@ -622,7 +624,7 @@ namespace mu2e {
 	TrkStrawHit  *tsh, *closest(NULL);
 	bool found = false;
 
-	Straw const&      straw = _data.tracker->getStraw(sh.strawIndex());
+	Straw const&      straw = _data.tracker->getStraw(sh.strawId());
 	CLHEP::Hep3Vector hpos  = straw.getMidPoint();
 
 	double            dz_max(1.e12) ; // closest_z(1.e12);
@@ -636,7 +638,7 @@ namespace mu2e {
 	    break;
 	  }
 					// check proximity in Z
-          Straw const&  trk_straw = _data.tracker->getStraw(tsh->strawHit().strawIndex());
+          Straw const&  trk_straw = _data.tracker->getStraw(tsh->strawHit().strawId());
           double        ztrk      = trk_straw.getMidPoint().z();
 
 	  double dz  = ztrk-zhit;
@@ -711,7 +713,7 @@ namespace mu2e {
       else {
 	if (_debugLevel > 0) {
 	  printf("[%s] rejected hit: i, index, flag, dt: %5i %5i %s %10.3f\n",
-		 oname,istr,sh.strawIndex().asInt(),
+		 oname,istr,sh.strawId().asUint16(),
 		 KRes.shfcol->at(istr).hex().data(),sh.dt());
 	}
       }

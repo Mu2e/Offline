@@ -26,7 +26,7 @@ namespace mu2e
  
     private:
        
-       enum   aType {null, tanh,sigmoid,relu};
+       enum   aType {null, tanh, sigmoid, relu};
        
        void   getGen(xercesc::DOMDocument* xmlDoc);
        void   getOpts(xercesc::DOMDocument* xmlDoc);
@@ -41,6 +41,7 @@ namespace mu2e
        std::vector<std::string> title_;
        std::vector<std::string> label_;
        aType activeType_;
+       std::string activationTypeString_;
        bool oldMVA_;
        bool isNorm_;
        

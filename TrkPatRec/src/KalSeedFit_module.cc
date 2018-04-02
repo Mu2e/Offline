@@ -211,7 +211,7 @@ namespace mu2e
 	for (int i=0; i< nsh; ++i){
 	  size_t          istraw   = seeddef.strawHitIndices().at(i);
 	  const StrawHit& strawhit(_shcol->at(istraw));
-	  const Straw&    straw    = _tracker->getStraw(strawhit.strawIndex());	  
+	  const Straw&    straw    = _tracker->getStraw(strawhit.strawId());	  
 	  double          fltlen   = htraj->zFlight(straw.getMidPoint().z());
 	  double          propTime = (fltlen-flt0)/vflt;
 
@@ -333,7 +333,7 @@ namespace mu2e
     vector<StrawHitIndex> goodhits;
     for(unsigned ihit=0;ihit<indices.size();++ihit){
       StrawHit const& sh = _shcol->at(indices[ihit]);
-      Straw const& straw = tracker.getStraw(sh.strawIndex());
+      Straw const& straw = tracker.getStraw(sh.strawId());
       CLHEP::Hep3Vector hpos = straw.getMidPoint();
       CLHEP::Hep3Vector hdir = straw.getDirection();
       // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
@@ -396,7 +396,7 @@ namespace mu2e
     for (int i=0; i<n; ++i) {
       hit_index = tchits.at(i);
       sh        = &Shcol->at(hit_index);
-      straw     = &_tracker->getStraw(sh->strawIndex());
+      straw     = &_tracker->getStraw(sh->strawId());
 
       const CLHEP::Hep3Vector& wpos = straw->getMidPoint();
       const CLHEP::Hep3Vector& wdir = straw->getDirection();

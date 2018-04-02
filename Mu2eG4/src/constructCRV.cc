@@ -22,6 +22,7 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 #include "Mu2eG4/inc/nestBox.hh"
@@ -46,7 +47,8 @@ using namespace std;
 
 namespace mu2e 
 {
-  void constructCRV( VolumeInfo const & parent, SimpleConfig const &  _config)
+  void constructCRV( VolumeInfo const & parent, SimpleConfig const & _config,
+                     SensitiveDetectorHelper const& sdHelper_)
   {
     GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
@@ -105,8 +107,8 @@ namespace mu2e
       }
 
       // Make each scintillatorBar a sensitive detector.
-      G4VSensitiveDetector *sd = 
-                     G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar());
+      G4VSensitiveDetector *sd = (sdHelper_.enabled(StepInstanceName::CRV)) ?
+        G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CRSScintillatorBar()) : nullptr;
       if(sd) scintillatorBarLogical->SetSensitiveDetector(sd);
 
       if (verbosityLevel > 1) 

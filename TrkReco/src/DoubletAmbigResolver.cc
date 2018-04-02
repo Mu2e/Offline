@@ -400,7 +400,7 @@ namespace mu2e {
 	CLHEP::Hep3Vector hpos;
 	Hit->hitPosition(hpos);
 	printf(" %2i %5i %2i %2i %2i %2i %8.3f %8.3f %9.3f, %2i %2i %8.3f %8.3f\n",
-	       -1, Hit->strawHit().strawIndex().asInt(), 
+	       -1, Hit->strawHit().strawId().asUint16(), 
 	       straw.id().getPlane(),
 	       straw.id().getPanel(),
 	       straw.id().getLayer(),
@@ -628,7 +628,8 @@ namespace mu2e {
 // chi2 contributions of this hit
 //-----------------------------------------------------------------------------
 	hpos[is][ih]    = spi[ih]+u[ih]*R->rdrift[ih]*_sign[is][ih];
-	R->doca[is][ih] = (hpos[is][ih]-tpi[ih]).dot(u[ih]);
+	//R->doca[is][ih] = (hpos[is][ih]-tpi[ih]).dot(u[ih]);
+	R->doca[is][ih] = static_cast<Hep3Vector>(hpos[is][ih]-tpi[ih]).dot(u[ih]);
 	sig             = sqrt(R->rdrift[ih]*R->rdrift[ih] +0.1*0.1); // 2.5; // 1.; // hit[ih]->hitRms();
 	xdr[is][ih]     = R->doca[is][ih]/sig;
 	R->chi2[is]    += xdr[is][ih]*xdr[is][ih];

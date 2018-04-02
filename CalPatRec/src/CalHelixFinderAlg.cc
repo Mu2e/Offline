@@ -940,7 +940,7 @@ namespace mu2e {
       if (nhits[i] == 0) continue;
 
       if (sn == 0) { // first station with hits gives the "2*PI normalization";
-	phi0 = phiVec[i]-zVec[0]*_hdfdz;
+	phi0 = phiVec[i]-zVec[i]*_hdfdz;
 	sdphi = 0;
 	sn    = 1;
       }
@@ -1126,7 +1126,7 @@ namespace mu2e {
       if (_debug > 10) {
 	printf("[CalHelixFinderAlg::doLinearFitPhiZ:LOOP] %08x %2i %6i %3i %12.5f %12.5f %10.5f %10.3f %10.3f %10.3f %10.5f %10.5f %5.3f\n",
 	       *((int*) &_xyzp[i]._flag), idVec[i] < 0 ? 0 : idVec[i],
-	       _xyzp[i]._strawhit->strawIndex().asInt()/*int(_xyzp[i]._ind)*/, i,
+	       _xyzp[i]._strawhit->strawId().asUint16()/*int(_xyzp[i]._ind)*/, i,
 	       z, phi_corrected[i], dphi,xdphi,zlast,dz,
 	       dfdz, Helix._srphi.dfdz(), Helix._srphi.chi2DofLine());
       }
@@ -1368,7 +1368,7 @@ namespace mu2e {
 
 	  printf("[CalHelixFinderAlg::doLinearFitPhiZ:END2] %08x %2i %6i %12.5f %12.5f %12.5f\n",
 		 *((int*) &_xyzp[i]._flag), idVec[i] < 0 ? 0 : idVec[i],
-		 _xyzp[i]._strawhit->strawIndex().asInt(),  z, phi_corrected[i], deltaPhi);
+		 _xyzp[i]._strawhit->strawId().asUint16(),  z, phi_corrected[i], deltaPhi);
 	}
       }
     }
@@ -1428,7 +1428,7 @@ namespace mu2e {
 // 	if (good_hit && (! bkg_hit) && (! used_hit)) {
 // 
 // 	  const StrawHit*         sh    = &Helix.shcol()->at(loc);
-// 	  const Straw*            straw = &_tracker->getStraw(sh->strawIndex());
+// 	  const Straw*            straw = &_tracker->getStraw(sh->strawId());
 // 	  const StrawHitPosition* shp   = &Helix.shpos()->at(loc);
 //       
 // 	  if (sh->energyDep() > _maxElectronHitEnergy)         continue;
@@ -1474,7 +1474,7 @@ namespace mu2e {
 	if (good_hit && (! bkg_hit) && (! used_hit)) {
 
 	  const StrawHit& sh          = Helix.shcol()->at(loc);
-	  const Straw& straw          = _tracker->getStraw(sh.strawIndex());
+	  const Straw& straw          = _tracker->getStraw(sh.strawId());
 	  const StrawHitPosition& shp = Helix.shpos()->at(loc);
 
 	  if (sh.energyDep() > _maxElectronHitEnergy)         continue;
@@ -1635,7 +1635,7 @@ namespace mu2e {
 	dy = _xyzp[i]._pos.y() - Helix._sxy.y0();
 	dr = sqrt(dx*dx+dy*dy) - Helix._sxy.radius();
 	printf("[%s] %08x %6i %3i %6i %12.5f %12.5f %12.5f %10.3f\n",banner,
-	       *((int*) &_xyzp[i]._flag),  _indicesTrkCandidate[i], i, _xyzp[i]._strawhit->strawIndex().asInt(),
+	       *((int*) &_xyzp[i]._flag),  _indicesTrkCandidate[i], i, _xyzp[i]._strawhit->strawId().asUint16(),
 	       _xyzp[i]._pos.x(), _xyzp[i]._pos.y(), _xyzp[i]._pos.z(), dr
 	       );
       }
@@ -1712,7 +1712,7 @@ namespace mu2e {
 	else if (i == Helix._candIndex) type = "cand";
 
 	printf("[CalHelixFinderAlg::filterUsingPatternRecognition] %5i %5i %4i %4s  %8.3f %8.3f %9.3f %8.3f %8.3f\n",
-	       i,_xyzp[i]._strawhit->strawIndex().asInt(),is_outlier,type.data(),shPos->x(),shPos->y(),shPos->z(),dist,dz);
+	       i,_xyzp[i]._strawhit->strawId().asUint16(),is_outlier,type.data(),shPos->x(),shPos->y(),shPos->z(),dist,dz);
       }
     }
 
@@ -2537,7 +2537,7 @@ namespace mu2e {
 	printf("[CalHelixFinderAlg::%s:PT2] x0 = %8.3f y0 = %8.3f radius = %8.3f  chi2 = %6.3f chi2Maxxy = %6.3f index point added = %i straw-id = %6i hitChi2 = %6.3f x = %8.3f y = %8.3f z = %9.3f\n",
 	       banner,
 	       Helix._sxy.x0(), Helix._sxy.y0(), Helix._sxy.radius(), Helix._sxy.chi2DofCircle(), _chi2xyMax, ibest,
-	       _xyzp[ibest]._strawhit->strawIndex().asInt(), chi2_min,
+	       _xyzp[ibest]._strawhit->strawId().asUint16(), chi2_min,
 	       x, y, _xyzp[ibest]._pos.z());
       }
 					// mark point as active
@@ -3500,7 +3500,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
       const StrawHit& sh          = Helix.shcol()->at(loc);
 
       printf("[CalHelixFinderAlg::printXYZP] %5i %5i %5i   %08x   %2i %9.3f %9.3f %9.3f \n",
-	     i, loc,  sh.strawIndex().asInt(), *((int*) &pt->_flag), pt->use(), pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
+	     i, loc,  sh.strawId().asUint16(), *((int*) &pt->_flag), pt->use(), pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
     }
   }
 //-----------------------------------------------------------------------------

@@ -19,7 +19,8 @@
 
 #include <artdaq-core/Data/Fragment.hh>
 #include "TrackerConditions/inc/Types.hh"
-#include "RecoDataProducts/inc/StrawDigi.hh"
+#include "RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigiCollection.hh"
 
 #include <iostream>
 
@@ -33,7 +34,6 @@ namespace art {
   class Mu2eProducer;
 }
 
-using namespace fhicl;
 using art::Mu2eProducer;
 
 // ======================================================================
@@ -47,21 +47,18 @@ public:
   using EventNumber_t = art::EventNumber_t;
   using adc_t = mu2e::ArtFragmentReader::adc_t;
   
-  // --- Configuration
-  struct Config {
-    Atom<bool>        debug { Name("debug"), false };
-  };
-
   // --- C'tor/d'tor:
-  using Parameters = EDProducer::Table<Config>;
-  explicit  Mu2eProducer( Parameters const & );
+  explicit  Mu2eProducer(fhicl::ParameterSet const& pset);
   virtual  ~Mu2eProducer()  { }
 
   // --- Production:
   virtual void produce( Event & );
 
 private:
-  bool  debug_;
+  int   diagLevel_;
+
+  int   parseCAL_;
+  int   parseTRK_;
 
   art::InputTag trkFragmentsTag_;
   art::InputTag caloFragmentsTag_;
@@ -70,14 +67,17 @@ private:
 
 // ======================================================================
 
-Mu2eProducer::Mu2eProducer( Parameters const & config )
+Mu2eProducer::Mu2eProducer(fhicl::ParameterSet const& pset)
   : EDProducer( )
-  , debug_    ( config().debug() )
+  , diagLevel_(pset.get<int>("diagLevel",0))
+  , parseCAL_(pset.get<int>("parseCAL",1))
+  , parseTRK_(pset.get<int>("parseTRK",1))
   , trkFragmentsTag_{"daq:trk"}
   , caloFragmentsTag_{"daq:calo"}
 {
   produces<EventNumber_t>(); 
   produces<mu2e::StrawDigiCollection>();
+  produces<mu2e::CaloDigiCollection>();
 }
 
 // ----------------------------------------------------------------------
@@ -87,16 +87,15 @@ void
   produce( Event & event )
 {
 
-  //  art::EventNumber_t eventNumber = event.event();
-  art::EventNumber_t eventNumber = 0;
+  art::EventNumber_t eventNumber = event.event();
+  //  art::EventNumber_t eventNumber = 0;
 
   auto trkFragments = event.getValidHandle<artdaq::Fragments>(trkFragmentsTag_);
   auto calFragments = event.getValidHandle<artdaq::Fragments>(caloFragmentsTag_);
   size_t numTrkFrags = trkFragments->size();
   size_t numCalFrags = calFragments->size();
 
-
-  if( debug_ ) {
+  if( diagLevel_ > 1 ) {
     std::cout << std::dec << "Producer: Run " << event.run() << ", subrun " << event.subRun()
 	      << ", event " << eventNumber << " has " << std::endl;
     std::cout << trkFragments->size() << " TRK fragments, and ";
@@ -120,6 +119,8 @@ void
   // Collection of StrawDigis for the event
   std::unique_ptr<mu2e::StrawDigiCollection> straw_digis(new mu2e::StrawDigiCollection);
 
+  // Collection of CaloDigis for the event
+  std::unique_ptr<mu2e::CaloDigiCollection> calo_digis(new mu2e::CaloDigiCollection);
 
   std::string curMode = "TRK";
 
@@ -136,7 +137,7 @@ void
     
     mu2e::ArtFragmentReader cc(fragment);
     
-    if( debug_ ) {
+    if( diagLevel_ > 1 ) {
       std::cout << std::endl;
       std::cout << "ArtFragmentReader: ";
       std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
@@ -158,7 +159,7 @@ void
       size_t blockStartBytes = cc.blockIndexBytes(curBlockIdx);
       size_t blockEndBytes = cc.blockEndBytes(curBlockIdx);
 
-      if( debug_ ) {
+      if( diagLevel_ > 1 ) {
 	std::cout << "BLOCKSTARTEND: " << blockStartBytes << " " << blockEndBytes << " " << cc.blockSizeBytes(curBlockIdx)<< std::endl;
 	std::cout << "IndexComparison: " << cc.blockIndexBytes(0)+16*(0+3*curBlockIdx) << "\t";
 	std::cout                        << cc.blockIndexBytes(curBlockIdx)+16*(0+3*0) << std::endl;
@@ -166,7 +167,7 @@ void
 
       adc_t const *pos = reinterpret_cast<adc_t const *>(cc.dataAtBytes(blockStartBytes));
 
-      if( debug_ ) {
+      if( diagLevel_ > 1 ) {
 	// Print binary contents the first 3 packets starting at the current position
 	// In the case of the tracker simulation, this will be the whole tracker
 	// DataBlock. In the case of the calorimeter, the number of data packets
@@ -205,11 +206,14 @@ void
       }
 
       // Parse phyiscs information from TRK packets
-      if(mode_ == "TRK" && packetCount>0) {
+      if(mode_ == "TRK" && packetCount>0 && parseTRK_>0) {
 
 	uint16_t strawIdx = cc.DBT_StrawIndex(pos);
 	unsigned long TDC0  = cc.DBT_TDC0(pos);
 	unsigned long TDC1  = cc.DBT_TDC1(pos);
+	unsigned long TOT0  = cc.DBT_TOT0(pos);
+	unsigned long TOT1  = cc.DBT_TOT1(pos);
+
 
 	std::vector<adc_t> waveform = cc.DBT_Waveform(pos);
 
@@ -219,13 +223,12 @@ void
 	tdc[1] = TDC1;
 	mu2e::StrawId sid(strawIdx);
 
-	// TOT needs to be added to the bytestream format FIXME!!!
 	mu2e::TrkTypes::TOTValues tot;
-	tot[0] = 0;
-	tot[1] = 0;
+	tot[0] = TOT0;
+	tot[1] = TOT1;
 	
-	if( debug_ ) {
-	  std::cout << "MAKEDIGI: " << sid << " " << tdc[0] << " " << tdc[1] << " "
+	if( diagLevel_ > 1 ) {
+	  std::cout << "MAKEDIGI: " << sid.asUint16() << " " << tdc[0] << " " << tdc[1] << " "
 	    << tot[0] << " " << tot[1] << " ";
 	  for(size_t i=0; i<waveform.size(); i++) {
 	    std::cout << waveform[i];
@@ -247,7 +250,7 @@ void
 
 	
 
-	if( debug_ ) {
+	if( diagLevel_ > 1 ) {
 	  std::cout << "timestamp: " << timestamp << std::endl;
 	  std::cout << "sysID: " << sysID << std::endl;
 	  std::cout << "dtcID: " << dtcID << std::endl;
@@ -270,8 +273,11 @@ void
 	  std::cout << std::endl;
 	  
 	  std::cout << "strawIdx: " << strawIdx << std::endl;
+	  std::cout << "sid: "      << sid.asUint16() << std::endl;
 	  std::cout << "TDC0: " << TDC0 << std::endl;
 	  std::cout << "TDC1: " << TDC1 << std::endl;
+	  std::cout << "TOT0: " << TOT0 << std::endl;
+	  std::cout << "TOT1: " << TOT1 << std::endl;
 	  std::cout << "Waveform: {";
 	  for(size_t i=0; i<waveform.size(); i++) {
 	    std::cout << waveform[i];
@@ -289,6 +295,8 @@ void
 	  std::cout << strawIdx << " ";
 	  std::cout << TDC0 << " ";
 	  std::cout << TDC1 << " ";
+	  std::cout << TOT0 << " ";
+	  std::cout << TOT1 << " ";
 	  std::cout << waveform.size() << " ";
 	  for(size_t i=0; i<waveform.size(); i++) {
 	    std::cout << waveform[i];
@@ -303,17 +311,25 @@ void
 	
 	
 	
-      } else if(mode_ == "CAL" && packetCount>0) {	// Parse phyiscs information from CAL packets
+      } else if(mode_ == "CAL" && packetCount>0 && parseCAL_>0) {	// Parse phyiscs information from CAL packets
 	
 	adc_t crystalID  = cc.DBC_CrystalID(pos);
 	adc_t apdID      = cc.DBC_apdID(pos);
 	adc_t time       = cc.DBC_Time(pos);
 	adc_t numSamples = cc.DBC_NumSamples(pos);
-	// this typedef belongs somewhere else FIXME!
-	typedef std::vector<unsigned short> CalWaveform;
-	CalWaveform waveform = cc.DBC_Waveform(pos);
+	//adc_t peakIdx    = cc.DBC_PeakSampleIdx(pos);
+	std::vector<unsigned short> waveform = cc.DBC_Waveform(pos);
+
+	std::vector<int> cwf;
+	for(size_t i=0; i<waveform.size(); i++) {
+	  cwf.push_back((int)waveform[i]);
+	}
+
+	// Fill the CaloDigiCollection
+	calo_digis->push_back(mu2e::CaloDigi(crystalID*2 + apdID, time, cwf));
+	//calo_digis->push_back(mu2e::CaloDigi(crystalID*2 + apdID, time, cwf, peakIdx));
 	
-	if( debug_ ) {
+	if( diagLevel_ > 1 ) {
 	  std::cout << "timestamp: " << timestamp << std::endl;
 	  std::cout << "sysID: " << sysID << std::endl;
 	  std::cout << "dtcID: " << dtcID << std::endl;
@@ -372,20 +388,17 @@ void
 
   //  }  // Close loop over the TRK and CAL collections
 
-
-  if( debug_ ) {
-    TRACE( 11, "mu2e::Mu2eProducer::produce enter eventNumber=%d", eventNumber );
-    std::cout << "mu2e::Mu2eProducer::produce enter eventNumber=" << (int)eventNumber << std::endl;
+  if( diagLevel_ > 0 ) {
+    TRACE( 11, "mu2e::Mu2eProducer::produce exiting eventNumber=%d / timestamp=%d", (int)(event.event()), eventNumber );
+    std::cout << "mu2e::Mu2eProducer::produce exiting eventNumber=" << (int)(event.event()) << " / timestamp=" << (int)eventNumber <<std::endl;
 
   }
+
   event.put(std::unique_ptr<EventNumber_t>(new EventNumber_t( eventNumber )));
-
-
   
-  // Store the straw digis in the event
+  // Store the straw digis and calo digis in the event
   event.put(std::move(straw_digis));
-
-
+  event.put(std::move(calo_digis));
 
 }  // produce()
 
