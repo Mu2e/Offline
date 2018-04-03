@@ -50,6 +50,7 @@ namespace mu2e
        std::vector<unsigned> synapsessPerLayer_;       
        
        // local workspace variables
+       mutable std::vector<float> fv_;
        mutable std::vector<float> x_;
        mutable std::vector<float> y_;
   };

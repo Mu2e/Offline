@@ -33,7 +33,8 @@ MVATools::MVATools(fhicl::ParameterSet const& pset) :
   oldMVA_(false),
   isNorm_(false), 
   layerToNeurons_(), 
-  synapsessPerLayer_(), 
+  synapsessPerLayer_(),
+  fv_(), 
   x_(), 
   y_()
 {
@@ -298,6 +299,9 @@ void MVATools::getWgts(xercesc::DOMDocument* xmlDoc)
     for (unsigned i=0;i<layerToNeurons_[1];++i) x_.push_back(1);
     for (unsigned i=0;i<=maxSynapses;++i) y_.push_back(0);
     
+    for (unsigned i=0;i<layerToNeurons_[1]-1;++i) fv_.push_back(0);
+    
+    
     XMLString::release(&ATT_INDEX);
     XMLString::release(&ATT_NSYNAPSES);    
 }
@@ -307,8 +311,11 @@ void MVATools::getWgts(xercesc::DOMDocument* xmlDoc)
 
 float MVATools::evalMVA(const std::vector<double >& v) const 
 {
-   std::vector<float> fv(v.begin(), v.end());
-   return evalMVA(fv);
+   if (v.size() != layerToNeurons_[1]-1) 
+     throw cet::exception("RECO")<<"mu2e::MVATools: mismatch input dimension and network architecture" << std::endl;
+   
+   for (size_t i=0;i<v.size();++i)  fv_[i] = static_cast<float>(v[i]);   
+   return evalMVA(fv_);
 }
 
 float MVATools::evalMVA(const std::vector<float>& v) const 
@@ -334,7 +341,8 @@ float MVATools::evalMVA(const std::vector<float>& v) const
         y_[j] = activation(y_[j]);
         ++idxWeight;
       }      
-      x_ = y_;
+            
+      x_.swap(y_); //faster than assignment
       x_[synapsessPerLayer_[k]] = 1.0; //add bias neuron
     }   
     
@@ -343,7 +351,7 @@ float MVATools::evalMVA(const std::vector<float>& v) const
     for (unsigned i=0;i<wgts_[idxWeight].size();++i) y += wgts_[idxWeight][i]*x_[i];
 
     if (oldMVA_) return y;
-    return  1.0/(1.0+exp(-y));
+    return  1.0/(1.0+expf(-y));
 }
 
 
@@ -354,14 +362,14 @@ float MVATools::activation(float arg) const
    if (activeType_== aType::tanh)
    {
      if (oldMVA_) return std::tanh(arg);
-     if (arg > 4.97) return 1;
-     if (arg < -4.97) return -1;
+     if (arg > 4.97) return 1.0;
+     if (arg < -4.97) return -1.0;
      float arg2 = arg * arg;
      float a = arg * (135135.0f + arg2 * (17325.0f + arg2 * (378.0f + arg2)));
      float b = 135135.0f + arg2 * (62370.0f + arg2 * (3150.0f + arg2 * 28.0f));
      return a/b;
    }
-   if (activeType_== aType::sigmoid) return 1.0/(1.0+exp(-arg));
+   if (activeType_== aType::sigmoid) return 1.0/(1.0+expf(-arg));
    if (activeType_== aType::relu) return std::max(0.0f,arg);
    
    return -999.0;
