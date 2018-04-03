@@ -24,6 +24,11 @@ namespace mu2e
 MVATools::MVATools(fhicl::ParameterSet const& pset) : 
   mvaWgtsFile_(), 
   wgts_(), 
+  x_(), 
+  y_(),
+  fv_(), 
+  layerToNeurons_(), 
+  synapsessPerLayer_(),
   voffset_(), 
   vscale_(), 
   title_(), 
@@ -31,12 +36,7 @@ MVATools::MVATools(fhicl::ParameterSet const& pset) :
   activeType_(aType::null),
   activationTypeString_("none"),
   oldMVA_(false),
-  isNorm_(false), 
-  layerToNeurons_(), 
-  synapsessPerLayer_(),
-  fv_(), 
-  x_(), 
-  y_()
+  isNorm_(false)
 {
    ConfigFileLookupPolicy configFile;
    std::string weights = pset.get<std::string>("MVAWeights");

@@ -36,6 +36,11 @@ namespace mu2e
 
        std::string mvaWgtsFile_;
        std::vector<std::vector<float>> wgts_;
+       mutable std::vector<float> x_;
+       mutable std::vector<float> y_;
+       mutable std::vector<float> fv_;       
+       std::vector<unsigned> layerToNeurons_;
+       std::vector<unsigned> synapsessPerLayer_;       
        std::vector<float> voffset_;
        std::vector<float> vscale_;
        std::vector<std::string> title_;
@@ -43,16 +48,7 @@ namespace mu2e
        aType activeType_;
        std::string activationTypeString_;
        bool oldMVA_;
-       bool isNorm_;
-       
-       
-       std::vector<unsigned> layerToNeurons_;
-       std::vector<unsigned> synapsessPerLayer_;       
-       
-       // local workspace variables
-       mutable std::vector<float> fv_;
-       mutable std::vector<float> x_;
-       mutable std::vector<float> y_;
+       bool isNorm_;       
   };
 }
 #endif
