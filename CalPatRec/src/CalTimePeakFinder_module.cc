@@ -292,30 +292,32 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
             tof = (zcl-zstraw)/_sinPitch/CLHEP::c_light;
             dt  = cl_time-(time+tof-meanDriftTime);
-//--------------------------------------------------------------------------------
-// check the angular distance from the calorimeter cluster
-// 2017-11-17 Gianipez: this selection was present on CalHelixFinderAlg::filterDist
-//--------------------------------------------------------------------------------
-	    double dphi = _data.shpcol->at(istr).phi() - mphi;
+	    //--------------------------------------------------------------------------------
+	    // check the angular distance from the calorimeter cluster
+	    // 2017-11-17 Gianipez: this selection was present on CalHelixFinderAlg::filterDist
+	    //--------------------------------------------------------------------------------
+	    if ((dt < _maxdt) && (dt >= _mindt)){
+	      double dphi = polyAtan2(_data.shpcol->at(istr).pos().y(), _data.shpcol->at(istr).pos().x()) - mphi;//phi() - mphi;
 	    
-	    if (dphi >  pi) dphi -= twopi;
-	    if (dphi < -pi) dphi += twopi;
+	      if (dphi >  pi) dphi -= twopi;
+	      if (dphi < -pi) dphi += twopi;
 
-//-----------------------------------------------------------------------------
-// fill some diag histograms
-//-----------------------------------------------------------------------------
-            if ((dt < _maxdt) && (dt >= _mindt) && (fabs(dphi) <= pi/2.) ) {
+	      //-----------------------------------------------------------------------------
+	      // fill some diag histograms
+	      //-----------------------------------------------------------------------------
+	      if (fabs(dphi) <= pi/2.) {
 
-	      tpeak._index.push_back(istr);
-	      stime += time;
-//-----------------------------------------------------------------------------
-// print diagnostics on rejected hits
-//-----------------------------------------------------------------------------
+		tpeak._index.push_back(istr);
+		stime += time;
+		//-----------------------------------------------------------------------------
+		// print diagnostics on rejected hits
+		//-----------------------------------------------------------------------------
 		// printf("[%s] rejected hit: index: %5i flag: %10s  time:  %8.3f   dt: %8.3f energy: %8.5f\n",
 		//        oname, istr, flag.hex().data(), hit->time(), hit->dt(), hit->energyDep());
-	      // }
-            }
-          }
+		// }
+	      }
+	    }
+	  }
 
           tpeak._tpeak = stime/(tpeak.NHits()+1.e-12);
 

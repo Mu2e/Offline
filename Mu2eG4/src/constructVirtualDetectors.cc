@@ -27,6 +27,7 @@
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
@@ -53,7 +54,9 @@ namespace mu2e {
 
   // Construct the virtual detectors
 
-  void constructVirtualDetectors( SimpleConfig const & _config ){
+  void constructVirtualDetectors( const SimpleConfig& _config,
+                                  const SensitiveDetectorHelper& sdHelper
+                                  ){
 
     // Place virtual detectors
 
@@ -84,8 +87,9 @@ namespace mu2e {
 
     // Virtual Detectors Coll1_In, COll1_Out are placed inside TS1
 
-    G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
+    G4VSensitiveDetector* vdSD = (sdHelper.enabled(StepInstanceName::virtualdetector)) ?
+      G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::VirtualDetector()) : nullptr;
 
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
 

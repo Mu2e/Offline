@@ -44,7 +44,7 @@ physics : {
     muonTimeMap          : { module_type : GenerateMuonLife }
 
     makeSD               : @local::makeSD
-    makeSH               : @local::makeSHfromSD
+    makeSH               : @local::makeSH
 
     @table::CaloDigiMC.producers
     @table::CaloReco.producers

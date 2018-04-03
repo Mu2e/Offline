@@ -23,8 +23,12 @@ physics : {
       @table::simulation.default.mod
     }
 
+   filters : {
+      @table::simulation.default.flt
+   }
+
     all_path : [ 
-      @sequence::generation.CE.seq , 
+      @sequence::generation.POT.seq , 
       @sequence::simulation.default.seq
    ]
 

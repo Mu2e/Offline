@@ -4,8 +4,10 @@
 #  > mu2e --config TrkFilters/fcl/ReadDigis.fcl --source "your digis file" --TFile ReadDigis.root --nevts=100
 #
 #include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
+#include "fcl/standardProducers.fcl"
+#include "TrkHitReco/fcl/prolog.fcl"
+#include "TrkPatRec/fcl/prolog.fcl"
 #include "TrkFilters/fcl/prolog.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 
@@ -28,10 +30,16 @@ services.TimeTracker : {
 physics :
 {
   producers : {
-    @table::Tracking.producers
+    @table::TrkHitReco.producers
+    @table::Tracking.TrkTrigger.producers
+     TTKSFDeM : @local::TTKSF
+     TTKSFDeP : @local::TTKSF
+     RSD : {
+	module_type : ReadStrawDigi
+      }
   }
   filters : {
-    @table::Tracking.filters
+    @table::TrkTrigger.Filters
   }
   analyzers : {
     TrkTriggerDiag : {
@@ -40,20 +48,32 @@ physics :
   }
 }
 
-# overwrite some defaults for trigger
-physics.producers.HelixFinder.UpdateStereoHits : false
-physics.producers.HelixFinder.UseHitMVA : false
+physics.filters.PosHelixFilter.MinMomentum	      : 220.0
+physics.filters.NegHelixFilter.MinMomentum	      : 220.0
+physics.filters.DeMSeedFilter.MinMomentum	      : 95.0
+physics.filters.DePSeedFilter.MinMomentum	      : 95.0
+
+physics.producers.TTKSFDeM.SeedCollection      : "TThelixFinder:Positive"
+physics.producers.TTKSFDeM.fitparticle	      : @local::Particle.eminus
+physics.producers.TTKSFDeM.fitdirection	      : @local::FitDir.downstream 
+physics.producers.TTKSFDeM.KalFit.MaxIterations : 1
+
+physics.producers.TTKSFDeP.SeedCollection      : "TThelixFinder:Negative"
+physics.producers.TTKSFDeP.fitparticle	      : @local::Particle.eplus
+physics.producers.TTKSFDeP.fitdirection	      : @local::FitDir.downstream 
+physics.producers.TTKSFDeP.KalFit.MaxIterations : 1
+
 # create a trigger test path.  Note that physics.trigger_paths and physics.end_paths are not used, art will
 # create those automatically from all the defined paths
 
-physics.TCTrigPath : [ @sequence::Tracking.Trigger.TCFilterSequence ]
+physics.TCTrigPath : [ RSD, @sequence::TrkTrigger.Sequences.TCFilterSequence ]
 
-physics.PHTrigPath : [ @sequence::Tracking.Trigger.PosHelixFilterSequence ]
+physics.PHTrigPath : [ RSD, @sequence::TrkTrigger.Sequences.PosHelixFilterSequence ]
 
-physics.DeMSeedTrigPath : [ @sequence::Tracking.Trigger.DeMSeedFilterSequence ]
+physics.DeMSeedTrigPath : [RSD,  @sequence::TrkTrigger.Sequences.DeMSeedFilterSequence ]
 
 #physics.DeMKalTrigPath : [ @sequence::Tracking.Trigger.DeMKalFilterSequence ]
-physics.UeMSeedTrigPath : [ @sequence::Tracking.Trigger.UeMSeedFilterSequence ] 
+physics.DePSeedTrigPath : [RSD,  @sequence::TrkTrigger.Sequences.DePSeedFilterSequence ] 
 
 # analysis path: this is for monitoring only
 physics.ReadDigisEndPath : [ TrkTriggerDiag ]

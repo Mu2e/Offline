@@ -1,6 +1,7 @@
 // Geometry of the production target. This also defines the proton beam direction.
 //
 // Andrei Gaponenko, 2011
+// Update to v2 in 2018 by David Norvil Brown
 
 #ifndef PRODUCTIONTARGET_HH
 #define PRODUCTIONTARGET_HH
@@ -23,9 +24,18 @@ namespace mu2e {
   public:
 
     // cylinder parameters
+    int    version() const { return _version; }
     double rOut() const { return _rOut; }
     double halfLength() const { return _halfLength; }
     double envHalfLength() const { return _envelHalfLength; }
+
+    // Parameters for version 2 for stiffening parts
+    double finHeight() const      { return _finHeight;    }
+    double finThickness() const   { return _finThickness; }
+    double hubDistUS() const      { return _hubDistUS;    }
+    double hubDistDS() const      { return _hubDistDS;    }
+    double hubAngleUS() const     { return _hubAngleUS;   }
+    double hubAngleDS() const     { return _hubAngleDS;   }
 
     // in mu2e coordinates
     const CLHEP::Hep3Vector& position() const { return _prodTargetPosition; }
@@ -54,7 +64,11 @@ namespace mu2e {
     friend class ProductionTargetMaker;
 
     // Private ctr: the class should be only obtained via ProductionTargetFNAL::ProductionTargetMaker.
-    ProductionTarget(double rOut, double halfLength, double rotX, double rotY, const CLHEP::Hep3Vector& position);
+    ProductionTarget(int version, double rOut, double halfLength, double rotX,
+		     double rotY, const CLHEP::Hep3Vector& position, 
+		     double finHeight, double finThickness, 
+		     double hubDistUS, double hubDistDS,
+		     double hubAngleUS, double hubAngleDS );
 
     CLHEP::HepRotation _protonBeamRotation;
 
@@ -69,9 +83,19 @@ namespace mu2e {
     std::map<double,CLHEP::Hep3Vector> _anchoringPntsLft;
 
     CLHEP::Hep3Vector _prodTargetPosition;
+
+    int    _version;
     double _rOut;
     double _halfLength;
     double _envelHalfLength;
+    
+    // version 2 parameters
+    double _finHeight;
+    double _finThickness;
+    double _hubDistUS;
+    double _hubDistDS;
+    double _hubAngleUS;
+    double _hubAngleDS;
 
     // Needed for persistency
     template<class T> friend class art::Wrapper;

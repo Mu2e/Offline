@@ -1,5 +1,5 @@
 #
-# generate conversion electrons from stopd muon file
+# generate conversion electrons from stopped muon file
 # and simulate all the way through the detector
 # run calorimeter and tracker reco
 #
@@ -32,14 +32,13 @@ physics : {
       @table::digis.cal.mod
       #@table::digis.crv.mod      # no CRV digi yet
       @table::reco.straw.mod      # digi to straw hit, flagBgHits
-      @table::reco.cstraw.mod     # CPR version of straw reco
-      #@table::reco.trk.all.mod   # all species and toplogies
-      @table::reco.trk.eleDMUP.mod    # DeM and UeP
+      @table::reco.trk.mod
       @table::reco.cal.mod
       @table::reco.ctrk.mod
       @table::reco.pid.mod
     }
    filters: {
+      @table::simulation.default.flt
       @table::reco.ctrk.flt
    }
 
@@ -51,10 +50,7 @@ physics : {
       @sequence::digis.cal.seq ,
       #@sequence::digis.crv.seq ,
       @sequence::reco.straw.seq ,
-      @sequence::reco.cstraw.seq ,
-      #@sequence::reco.trk.all.seq ,
-      #@sequence::reco.trk.ele.seq ,
-      @sequence::reco.trk.eleDMUP.seq , # DeM and UeP
+      @sequence::reco.trk.seq.eleDMUP , # DeM and UeP
       @sequence::reco.cal.seq ,
       @sequence::reco.ctrk.seq , 
       @sequence::reco.pid.seq 

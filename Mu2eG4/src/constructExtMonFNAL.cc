@@ -27,6 +27,7 @@
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
@@ -49,7 +50,8 @@ namespace mu2e {
                                      VirtualDetectorId::enum_type entranceVD,
                                      const VolumeInfo& parent,
                                      const CLHEP::HepRotation& parentRotationInMu2e,
-                                     const SimpleConfig& config
+                                     const SimpleConfig& config,
+                                     const SensitiveDetectorHelper& sdHelper
                                      )
   {
     bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
@@ -105,6 +107,7 @@ namespace mu2e {
                               stack,
                               volNameSuffix,
                               config,
+                              sdHelper,
                               forceAuxEdgeVisible,
                               doSurfaceCheck,
                               placePV
@@ -127,8 +130,9 @@ namespace mu2e {
 
       GeomHandle<VirtualDetector> vdg;
 
-      G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
-        FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
+      G4VSensitiveDetector* vdSD = (sdHelper.enabled(StepInstanceName::virtualdetector)) ?
+        G4SDManager::GetSDMpointer()->
+        FindSensitiveDetector(SensitiveDetectorName::VirtualDetector()) : nullptr;
 
       for(int vdId = entranceVD; vdId <= 1 + entranceVD; ++vdId) {
         if( vdg->exist(vdId) ) {
@@ -194,6 +198,7 @@ namespace mu2e {
                                  const ExtMonFNALPlaneStack& stack,
                                  const std::string& volNameSuffix,
                                  const SimpleConfig& config,
+                                 const SensitiveDetectorHelper& sdHelper,
                                  bool const forceAuxEdgeVisible,
                                  bool const doSurfaceCheck,
                                  bool const placePV
@@ -232,6 +237,7 @@ namespace mu2e {
                                  stack,
                                  volNameSuffix,
                                  config,
+                                 sdHelper,
                                  forceAuxEdgeVisible,
                                  doSurfaceCheck,
                                  placePV);
@@ -246,6 +252,7 @@ namespace mu2e {
                                   const ExtMonFNALPlaneStack& stack,
                                   const std::string& volNameSuffix,
                                   const SimpleConfig& config,
+                                  const SensitiveDetectorHelper& sdHelper,
                                   bool const forceAuxEdgeVisible,
                                   bool const doSurfaceCheck,
                                   bool const placePV
@@ -288,15 +295,16 @@ namespace mu2e {
                                      doSurfaceCheck
                                      );
 
-         G4VSensitiveDetector* emSD = G4SDManager::GetSDMpointer()->
-           FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL());
-         
-         if(emSD) vsensor.logical->SetSensitiveDetector(emSD);
+        G4VSensitiveDetector* emSD = (sdHelper.extMonPixelsEnabled()) ?
+          G4SDManager::GetSDMpointer()->
+          FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()) : nullptr;
+
+        if(emSD) vsensor.logical->SetSensitiveDetector(emSD);
         
-         G4ThreeVector coffset0 = {stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + .065 + offset[0], // +/- .065 to achieve the designed .13mm gap
-                                   stack.planes()[iplane].module_yoffset()[imodule] + offset[1] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835),
-                                   stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2]) + offset[2]};
-        
+        G4ThreeVector coffset0 = {stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + .065 + offset[0], // +/- .065 to achieve the designed .13mm gap
+                                  stack.planes()[iplane].module_yoffset()[imodule] + offset[1] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835),
+                                  stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2]) + offset[2]};
+
         VolumeInfo vchip0 = nestBox(osm.str() + "chip0",
                                     module.chipHalfSize(),
                                     findMaterialOrThrow("G4_Si"),
@@ -338,7 +346,8 @@ namespace mu2e {
   //================================================================ 
   void constructExtMonFNALVirtualDetectors(const VolumeInfo& roomAir,
                                            const CLHEP::HepRotation& parentRotationInMu2e,
-                                           const SimpleConfig& config
+                                           const SimpleConfig& config,
+                                           const SensitiveDetectorHelper& sdHelper
                                            )
   {
     const int verbosityLevel = config.getInt("vd.verbosityLevel");
@@ -354,8 +363,9 @@ namespace mu2e {
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 
-    G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
+    G4VSensitiveDetector* vdSD =  (sdHelper.enabled(StepInstanceName::virtualdetector)) ?
+      G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::VirtualDetector()) : nullptr;
 
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<ExtMonFNALBuilding> emfb;
@@ -409,7 +419,8 @@ namespace mu2e {
                      const ExtMonFNAL::ExtMon& extmon,
                      const CLHEP::HepRotation& parentRotationInMu2e,
                      const VolumeInfo& parent,
-                     const SimpleConfig& config)
+                     const SimpleConfig& config,
+                     const SensitiveDetectorHelper& sdHelper)
   {
     const int verbosityLevel = config.getInt("vd.verbosityLevel");
     const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
@@ -460,8 +471,9 @@ namespace mu2e {
     // vd are very thin, a more thorough check is needed
     doSurfaceCheck && checkForOverlaps( boxFront.physical, config, verbosityLevel>0);
 
-    G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
+    G4VSensitiveDetector* vdSD = (sdHelper.enabled(StepInstanceName::virtualdetector)) ?
+      G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::VirtualDetector()) : nullptr;
 
     if(vdSD) boxFront.logical->SetSensitiveDetector(vdSD);
 
@@ -471,7 +483,8 @@ namespace mu2e {
   void constructExtMonFNALBoxVirtualDetectors(const ExtMonFNAL::ExtMon& extmon,
                                               const VolumeInfo& parent,
                                               const CLHEP::HepRotation& parentRotationInMu2e,
-                                              const SimpleConfig& config
+                                              const SimpleConfig& config,
+                                              const SensitiveDetectorHelper& sdHelper
                                               )
   {
     if(config.getBool("extMonFNAL.box.vd.enabled", false)) {
@@ -500,14 +513,14 @@ namespace mu2e {
       const CLHEP::Hep3Vector yzOffset(outerHalfSize[0] + vdg->getHalfLength(), 0, 0);
       const CLHEP::Hep3Vector zxOffset(0, outerHalfSize[1] + vdg->getHalfLength(), 0);
 
-      addBoxVDPlane(VirtualDetectorId::EMFBoxFront, boxXY,  xyOffset, extmon, parentRotationInMu2e, parent, config);
-      addBoxVDPlane(VirtualDetectorId::EMFBoxBack,  boxXY, -xyOffset, extmon, parentRotationInMu2e, parent, config);
+      addBoxVDPlane(VirtualDetectorId::EMFBoxFront, boxXY,  xyOffset, extmon, parentRotationInMu2e, parent, config, sdHelper);
+      addBoxVDPlane(VirtualDetectorId::EMFBoxBack,  boxXY, -xyOffset, extmon, parentRotationInMu2e, parent, config, sdHelper);
 
-      addBoxVDPlane(VirtualDetectorId::EMFBoxNE, boxYZ,  yzOffset, extmon, parentRotationInMu2e, parent, config);
-      addBoxVDPlane(VirtualDetectorId::EMFBoxSW, boxYZ, -yzOffset, extmon, parentRotationInMu2e, parent, config);
+      addBoxVDPlane(VirtualDetectorId::EMFBoxNE, boxYZ,  yzOffset, extmon, parentRotationInMu2e, parent, config, sdHelper);
+      addBoxVDPlane(VirtualDetectorId::EMFBoxSW, boxYZ, -yzOffset, extmon, parentRotationInMu2e, parent, config, sdHelper);
 
-      addBoxVDPlane(VirtualDetectorId::EMFBoxTop,     boxZX,  zxOffset, extmon, parentRotationInMu2e, parent, config);
-      addBoxVDPlane(VirtualDetectorId::EMFBoxBottom,  boxZX, -zxOffset, extmon, parentRotationInMu2e, parent, config);
+      addBoxVDPlane(VirtualDetectorId::EMFBoxTop,     boxZX,  zxOffset, extmon, parentRotationInMu2e, parent, config, sdHelper);
+      addBoxVDPlane(VirtualDetectorId::EMFBoxBottom,  boxZX, -zxOffset, extmon, parentRotationInMu2e, parent, config, sdHelper);
     }
   }
 
@@ -516,7 +529,8 @@ namespace mu2e {
                            const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
                            const VolumeInfo& mainParent,
                            const CLHEP::HepRotation& mainParentRotationInMu2e,
-                           const SimpleConfig& config)
+                           const SimpleConfig& config,
+                           const SensitiveDetectorHelper& sdHelper)
   {
     constructExtMonFNALBuilding(collimator1Parent,
                                   collimator1ParentRotationInMu2e,
@@ -535,7 +549,8 @@ namespace mu2e {
                                   VirtualDetectorId::EMFDetectorDnEntrance,
                                   mainParent,
                                   mainParentRotationInMu2e,
-                                  config);
+                                  config,
+                                  sdHelper);
 
     constructExtMonFNALPlaneStack(extmon->module(),
                                   extmon->up(),
@@ -543,7 +558,8 @@ namespace mu2e {
                                   VirtualDetectorId::EMFDetectorUpEntrance,
                                   mainParent,
                                   mainParentRotationInMu2e,
-                                  config);
+                                  config,
+                                  sdHelper);
     
     constructExtMonFNALMagnet(extmon->spectrometerMagnet(),
                               mainParent,
@@ -552,13 +568,14 @@ namespace mu2e {
                               config);
 
     // EMFC2* VDs
-    constructExtMonFNALVirtualDetectors(mainParent, mainParentRotationInMu2e, config);
+    constructExtMonFNALVirtualDetectors(mainParent, mainParentRotationInMu2e, config,sdHelper);
 
     // enclose whole ExtMon magnet+sensors in a set of VDs
     constructExtMonFNALBoxVirtualDetectors(*extmon,
                                            mainParent,
                                            mainParentRotationInMu2e,
-                                           config);
+                                           config,
+                                           sdHelper);
 
   } // constructExtMonFNAL()
 } // namespace mu2e

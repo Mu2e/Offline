@@ -36,7 +36,7 @@ namespace mu2e{
   }
 
   void setParticleCut(double theCut,  std::string const& pName, G4VUserPhysicsList* mPL ) {
-    mf::LogInfo("GEOM")
+    mf::LogInfo("GEOM_PARTICLECUT")
       << "Setting "<< pName << " cut to " << theCut << " mm\n";
     // we have e+,e-,gamma range cuts and proton production cut;
     // one can write now the functions for the specific range cuts if needed,
@@ -54,6 +54,11 @@ namespace mu2e{
     // production cut also applied to nuclei; see "Setting the cuts"
     // section of the Geant4 User's Guide for Application Developers
 
+    // get verbosity and then 
+    if (mPL->GetVerboseLevel()>0) {
+      // std::cout << __func__ << " Requesting another DumpCutValuesTable " << std::endl;
+      mPL->DumpCutValuesTable();
+    }
   }
 
   void setParticleCut( SimpleConfig const& config, std::string const& pName, G4VUserPhysicsList* mPL ){

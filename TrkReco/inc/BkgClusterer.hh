@@ -6,10 +6,7 @@
 #ifndef BkgClusterer_HH
 #define BkgClusterer_HH
 // data
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitPosition.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/BkgCluster.hh"
 //
 namespace mu2e 
@@ -22,9 +19,7 @@ namespace mu2e
     virtual void init() = 0;
 // main function: given the straw hits and associated data, find the clusters.
     virtual void findClusters(BkgClusterCollection& clusters,
-      StrawHitCollection const& shcol,
-      StrawHitPositionCollection const& shpcol,
-      StrawHitFlagCollection const& shfcol) = 0;
+      ComboHitCollection const& shcol) = 0;
   };
 }
 #endif

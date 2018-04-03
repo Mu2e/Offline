@@ -95,7 +95,7 @@ namespace mu2e
     
     void makeTrkStrawHits  (const StrawHitCollection* shcol, HelixTraj const& htraj,
 			    std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv );
-    void makeTrkCaloHit    (KalSeed const& kseed, TrkCaloHit *tch);
+    void makeTrkCaloHit    (KalSeed const& kseed, TrkCaloHit *&tch);
     void makeMaterials     (TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
     unsigned addMaterial   (KalRep* krep);
     bool weedHits          (KalRep* kres, size_t iter);

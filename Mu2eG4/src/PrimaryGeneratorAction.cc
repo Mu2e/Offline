@@ -175,7 +175,7 @@ namespace mu2e {
     // Create a new vertex
     G4PrimaryVertex* vertex = new G4PrimaryVertex(pos, time);
 
-    if ( verbosityLevel_ > 0) {
+    if ( verbosityLevel_ > 1) {
       cout << __func__ << " pdgId   : " <<pdgId << endl;
     }
 

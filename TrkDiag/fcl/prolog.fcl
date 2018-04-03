@@ -2,6 +2,8 @@
 #include "CaloMC/fcl/prolog.fcl"
 #include "CaloReco/fcl/prolog.fcl"
 #include "CaloCluster/fcl/prolog.fcl"
+#include "TrkHitReco/fcl/prolog.fcl"
+#include "TrkPatRec/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
@@ -73,32 +75,88 @@ BEGIN_PROLOG
   ReadKalFitsMix.eventWeightModules : [ protonBunchSummarizer  ]
   ReadKalFitsMix.beamWeightModule : protonBunchSummarizer
 # Diagnostic modules    
-  TimeClusterDiag : {
-	module_type : TimeClusterDiag
-	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
-	HitBackgroundBits	    : ["Background"]
-	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
-  }
-
-  HelixDiag : {
-	module_type : HelixDiag
-	HelixSeedCollectionTag : "HelixFinder:Positive"
-	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-  }
-
-  StrawHitDiag : {
-	module_type : StrawHitDiag
+  BD : {
+	module_type : BkgDiag
+	ComboHitCollection : "makePH"
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	UseFlagCollection : true
 	TimeOffsets : {
-	  inputs : [ "protonTimeMap", "muonTimeMap" ] 
+	  inputs : [ "protonTimeMap", "muonTimeMap" ]
 	}
   }
   
-  TrkRecoDiag : {
+  TRD : {
     module_type : TrkRecoDiag
     TimeOffsets : {
       inputs : [ "protonTimeMap", "muonTimeMap" ] 
     }
+  }
+
+  SHD : {
+	module_type : StrawHitDiag
+	ComboHitFlag : false
+	StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+	TimeOffsets : {
+	  inputs : [ "protonTimeMap", "muonTimeMap" ] 
+	}
+  }
+
+
+# reco path
+  TCD : {
+	module_type : TimeClusterDiag
+	ComboHitCollection : "makePH"
+	UseFlagCollection : true
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
+	HitBackgroundBits	    : ["Background"]
+	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
+	PlotTimeSpectra : true
+      }
+
+  HD : {
+	module_type : HelixDiag
+	HelixSeedCollection : "HelixFinder:Positive"
+	ComboHitCollection : "makePH"
+	UseFlagCollection : true
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	PlotHelices : true
+	SaveHelixFlag : ["HitsOK"]
+	TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+  }
+
+  CHD : {
+	module_type : ComboHitDiag
+	ComboHitCollection : "makePH"
+	UseFlagCollection : true
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	TimeOffsets : {
+	  inputs : [ "protonTimeMap", "muonTimeMap" ]
+	}
+  }
+
+# track trigger path
+  TTTCD : {
+	@table::TCD
+	UseFlagCollection : false
+	StrawHitFlagCollection : none
+	ComboHitCollection : TTflagBkgHits
+	TimeClusterCollection : TTtimeClusterFinder
+  }
+
+  TTHD : {
+	@table::HD
+	ComboHitCollection : TTflagBkgHits
+	HelixSeedCollection : "TThelixFinder:Positive"
+	UseFlagCollection : false
+	StrawHitFlagCollection : none
+  }
+
+  TTCHD : {
+	@table::CHD
+	UseStrawHitFlagCollection : false
+	ComboHitCollection : TTflagBkgHits
   }
 
 # Prototype track analysis config.
@@ -135,10 +193,15 @@ BEGIN_PROLOG
 
   TrkDiag : {
     analyzers : {
-      TimeClusterDiag : @local::TimeClusterDiag
-      StrawHitDiag : @local::StrawHitDiag
-      HelixDiag : @local::HelixDiag
-      TrkRecoDiag : @local::TrkRecoDiag
+      TCD : @local::TCD
+      CHD : @local::CHD
+      SHD : @local::SHD
+      HD : @local::HD
+      TRD : @local::TRD
+      TTCHD : @local::TTTCD
+      TTTCD : @local::TTTCD
+      TTHD : @local::TTHD
+      BD : @local::BD
     }
   }
 
@@ -150,6 +213,8 @@ BEGIN_PROLOG
     }
     producers : {
       @table::EventMixing.producers
+      @table::TrackerMC.producers
+      @table::TrkHitReco.producers
       @table::Tracking.producers
       @table::CaloDigiMC.producers
       @table::CaloReco.producers
@@ -170,10 +235,12 @@ BEGIN_PROLOG
   
     # separate out the sime and reco parts of the sequence
     SimSequence	: [ @sequence::EventMixing.TimeMaps,
-		    @sequence::Tracking.DigiSim,
+		    @sequence::TrackerMC.DigiSim,
 		    @sequence::CaloDigiMC.DigiSim ]
     RecoSequence : [ @sequence::CaloReco.Reco,
 	             @sequence::CaloCluster.Reco, 
+		     @sequence::TrkHitReco.PrepareHits,
+		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,
 		     @sequence::Tracking.TPRUeM,
 		     @sequence::Tracking.TPRDmuM,

@@ -81,23 +81,17 @@ namespace mu2e {
     const size_t number_of_straws_per_roc = 96; // Each panel in the tracker has 96 straws
     const size_t numADCSamples = 12;
 
-    // 6 optical transceivers per DTC
-    // 2 optical links per ring (readout both ends)
-    // => 3 Rings per DTC/server
-    //
-    // 12 ROCs/server
-    // 3 Rings per server
-    // => 4 ROCs per ring
-    //
-    // 20 Servers
-    // 3 rings per server
-    // => 60 rings
+    // Since the plan is now to use point-to-point connections, the following is
+    // only used for internal consistency and will eventually need to be replaced
     //
     // 20 servers
-    // 12 ROCs/server
+    // 1 DTC/server
+    // 3 rings/DTC
+    // 4 ROCs per ring
     // 96 straws per ROC
     // => MAX 23040 Straws
     //
+
     const size_t number_of_rings = 60;
     const size_t rings_per_dtc = 3;
     const size_t rocs_per_ring = 4;
@@ -106,9 +100,6 @@ namespace mu2e {
 
     // Diagnostics level.
     int _diagLevel;
-
-    // Option to use new StrawIndex format
-    int _usePhysicalStrawIndex;
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
@@ -122,7 +113,6 @@ namespace mu2e {
     _outputFile                    (pset.get<string>("outputFile","artdaq_trk.txt")),
     _generateTextFile(pset.get<int>("generateTextFile",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
-    _usePhysicalStrawIndex(pset.get<int>("usePhysicalStrawIndex",0)),
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
     _makerModuleLabel(pset.get<std::string>("makerModuleLabel","makeSD")) {
 
@@ -140,10 +130,6 @@ namespace mu2e {
            << _diagLevel << " "
            << _maxFullPrint
            << endl;
-    }
-
-    if(_usePhysicalStrawIndex==1) {
-      cout << "WARNING: Using physically meaningful (i.e., non-standard) straw indices" << endl;
     }
 
   }
@@ -187,36 +173,7 @@ namespace mu2e {
       // Fill struct with info for current hit
       trkhit curHit;
       curHit.evt = eventNum;
-
-      curHit.strawIdx = SD.strawIndex().asInt();
-      if(_usePhysicalStrawIndex!=0) {
-	int tempIndex = curHit.strawIdx;
-
-	int layer = (tempIndex/48) % 2;                                                                                                                                 
-	
-	int plane = (tempIndex/576);    // 6 bits
-	int panel = (tempIndex/96) % 6; // 3 bits
-	int sid = 0;
-	if (layer == 0) {
-	  sid = (tempIndex % 96)*2;
-	} else {
-	  sid = ((tempIndex % 96) - 48)*2 + 1;
-	}
-	
-	// Physically Meaningful Format:
-	// A) 6 bits for plane (range 0 to 39)
-	// B) 3 bits for panel (range 0 to 5)
-	// C) 7 bits for strawID (range 0 to 95)
-	
-	adc_t msID = ((plane << 10) & 0xFC00) |
-	             ((panel << 7 ) & 0x0380) |
-	             ((sid        ) & 0x007F);
-
-	curHit.strawIdx = msID;
-
-	// std::cout << "GREPME MSID: " << msID << "\t" << plane << "\t" << panel << "\t" << sid << std::endl;
-      }
-      
+      curHit.strawIdx = SD.strawId().asUint16();      
       curHit.recoDigiT0 = SD.TDC(TrkTypes::cal);
       curHit.recoDigiT1 = SD.TDC(TrkTypes::hv);
       curHit.recoDigiToT1 = SD.TOT(TrkTypes::cal);
@@ -229,21 +186,37 @@ namespace mu2e {
       // Note: For now, ring, rocID, and dtcID are arbitrarily generated based on
       // the non-physically-meaningful straw index.
 
+      // 96 straws per ROC/panel
+      // 6 panels / plane
+      // 40 planes => 240 panels/ROCs, 23,040 straws
+      int panel = SD.strawId().getPanel();
+      int plane = SD.strawId().getPlane();
+
+      // ROC ID, counting from 0 across all DTCs (for the tracker)
+      size_t globalROCID = int((panel+1)*(plane+1)) - 1;
+
+      // Ring ID, counting from 0, across all DTCs (for the tracker)
+      size_t globalRingID = int(globalROCID/rocs_per_ring);
+      curHit.ringID = globalRingID % rings_per_dtc;
+      curHit.rocID = globalROCID % rocs_per_ring;
+      curHit.dtcID = dtc_id(globalRingID/rings_per_dtc);
+
       // 240 ROCs total
-      if(SD.strawIndex().asInt() >= abs(number_of_rings * rocs_per_ring * number_of_straws_per_roc) ) {
-	throw cet::exception("DATA") << " Straw index " << SD.strawIndex().asInt()
+      if(globalROCID >= abs(number_of_rings * rocs_per_ring) ) {
+	throw cet::exception("DATA") << " Global ROC ID " << globalROCID
 				     << " exceeds limit of " <<  number_of_rings << "*"
-				     << rocs_per_ring << "*" << number_of_straws_per_roc
-				     << "=" << number_of_rings * rocs_per_ring * number_of_straws_per_roc;
+				     << rocs_per_ring << "*"
+				     << "=" << number_of_rings * rocs_per_ring;
       }
 
-      // Ring ID, counting from 0, across all (for the tracker)
-      size_t globalRingID = int(SD.strawIndex().asInt() / (rocs_per_ring * number_of_straws_per_roc));
-
-      curHit.ringID = globalRingID % rings_per_dtc;
-      curHit.rocID = (SD.strawIndex().asInt() - (rocs_per_ring * number_of_straws_per_roc) * globalRingID) / number_of_straws_per_roc;  
-      curHit.dtcID = dtc_id(globalRingID/rings_per_dtc);
-      
+      //      dtc_id max_dtc_id_temp = number_of_rings / rings_per_dtc - 1;
+      //      std::cout << "GREPME GLOBALRINGID " << globalRingID
+      //		<<  " RINGID "            << curHit.ringID << "/" << rings_per_dtc - 1
+      //		<<  " ROCID "             << curHit.rocID  << "/" << rocs_per_ring - 1
+      //		<<  " DTCID "             << (int)curHit.dtcID  << "/" << (int)max_dtc_id_temp 
+      //		<<  " panelID "           << panel
+      //		<<  " planeID "           << plane << std::endl;
+       
       trkHitVector.push_back(curHit);
 
       if(_generateTextFile>0) {
@@ -268,9 +241,10 @@ namespace mu2e {
     }
     
     dtc_id max_dtc_id = number_of_rings / rings_per_dtc - 1;
-    if(number_of_rings % rings_per_dtc > 0) {
-      max_dtc_id += 1;
-    }
+    //    if(number_of_rings % rings_per_dtc > 0) {
+    //      max_dtc_id += 1;
+    //    }
+
     // Create a vector to hold all Ring ID / ROC ID combinations for all DTCs to simulate
     std::vector< std::pair<dtc_id, std::pair<size_t,size_t> > > rocRingVector;
     for(dtc_id curDTCID = 0; curDTCID <= max_dtc_id; curDTCID++) {
@@ -400,7 +374,7 @@ namespace mu2e {
 	  
 	  // Fill the data packets:
 	  // Assume the 0th apd is always read out before the second
-	  adc_t strawIndex = curHit.strawIdx;
+	  uint16_t strawIndex = curHit.strawIdx;
 	  
 	  adc_t TDC0 = curHit.recoDigiT0 & 0xFFFF;
 	  adc_t TDC1 = curHit.recoDigiT1 & 0xFFFF;

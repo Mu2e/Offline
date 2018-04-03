@@ -483,7 +483,7 @@ CalPatRec : { @table::CalPatRec
 	    fetchCaloDigis                : 1
 	    fetchStrawDigis               : 1
 	    fetchStrawHits                : 1
-	    fetchStrawHitFlags            : 1
+	    fetchStrawHitFlags            : 0
 	    fetchStrawHitPositions        : 1
 	    fetchStereoHits               : 0
 
@@ -502,9 +502,9 @@ CalPatRec : { @table::CalPatRec
 	CalSeedFit : { module_type:KalSeedFit   
 	    debugLevel                                  : 0
 	    printFrequency                              : 100
-	    StrawHitCollectionTag                       : makeSH			 
-	    StrawHitFlagCollectionTag                   : DeltaFinder
-	    SeedCollectionTag                           : CalHelixFinder
+	    StrawHitCollection                       : makeSH			 
+	    StrawHitFlagCollection                   : DeltaFinder
+	    SeedCollection                           : CalHelixFinder
 	    MinNHits                                    : 10
 	    MaxDoca                                     : 40.
 	    FilterOutliers                              : true
@@ -697,19 +697,19 @@ CalPatRec: { @table::CalPatRec
     producers : { @table::CalPatRec.producers
 	
 	CalSeedFitDem                  : { @table::CalPatRec.producers.CalSeedFit        
-	    SeedCollectionTag          : CalHelixFinderDem
+	    SeedCollection          : CalHelixFinderDem
 	}
 	CalSeedFitDmm                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.muminus
-	    SeedCollectionTag          : CalHelixFinderDmm
+	    SeedCollection          : CalHelixFinderDmm
 	}
 	CalSeedFitDep                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.eplus  
-	    SeedCollectionTag          : CalHelixFinderDep
+	    SeedCollection          : CalHelixFinderDep
 	}
 	CalSeedFitDmp                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.muplus
-	    SeedCollectionTag          : CalHelixFinderDmp
+	    SeedCollection          : CalHelixFinderDmp
 	}
     }
     

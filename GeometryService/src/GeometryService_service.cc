@@ -145,12 +145,12 @@ namespace mu2e {
       return;
     }
 
-    cout  << "Geometry input file is: " << _inputfile << "\n";
-
     _config = unique_ptr<SimpleConfig>(new SimpleConfig(_inputfile,
                                                       _allowReplacement,
                                                       _messageOnReplacement,
                                                       _messageOnDefault ));
+
+    _config->printOpen(cout,"Geometry");
 
     // Print final state of file after all substitutions.
     if ( _printConfig      ){ _config->print(cout, "Geom: ");       }

@@ -10,10 +10,10 @@
 
 namespace mu2e {
   using namespace TrkTypes;
-  StrawDigi::StrawDigi() : _strawIndex(0)
+  StrawDigi::StrawDigi() : _strawid(0)
   {
   }
-  StrawDigi::StrawDigi(StrawIndex index, TDCValues tdc, TOTValues tot, ADCWaveform const& adc) : _strawIndex(index),
+  StrawDigi::StrawDigi(StrawId sid, TDCValues tdc, TOTValues tot, ADCWaveform const& adc) : _strawid(sid),
 //  _tdc(tdc),
   _adc(adc)
   {
@@ -23,7 +23,7 @@ namespace mu2e {
     }
   }
   
-  StrawDigi::StrawDigi(StrawDigi const& other) : _strawIndex(other._strawIndex),
+  StrawDigi::StrawDigi(StrawDigi const& other) : _strawid(other._strawid),
   //  _tdc(other._tdc),
      _adc(other._adc)
   {
@@ -35,7 +35,7 @@ namespace mu2e {
 
   StrawDigi& StrawDigi::operator=(StrawDigi const& other) {
     if(this != &other){
-      _strawIndex = other._strawIndex;
+      _strawid = other._strawid;
       for(size_t itdc=0;itdc<2;++itdc){
 	_tdc[itdc] = other._tdc[itdc];
 	_tot[itdc] = other._tot[itdc];

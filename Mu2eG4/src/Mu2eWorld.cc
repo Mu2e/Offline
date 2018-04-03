@@ -136,7 +136,6 @@ namespace mu2e {
   Mu2eWorld::Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
     : sdHelper_(sdHelper)
     , pset_(fhicl::ParameterSet())
-
     , activeWr_Wl_SD_(_config.getBool("ttracker.ActiveWr_Wl_SD",false))
     , writeGDML_(_config.getBool("writeGDML",false))
     , gdmlFileName_(_config.getString("GDMLFileName","mu2e.gdml"))
@@ -150,7 +149,6 @@ namespace mu2e {
                        SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
     : sdHelper_(sdHelper)
     , pset_(pset)
-
     , activeWr_Wl_SD_(true)
     , writeGDML_(pset.get<bool>("debug.writeGDML"))
     , gdmlFileName_(pset.get<std::string>("debug.GDMLFileName"))
@@ -196,19 +194,33 @@ namespace mu2e {
       cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << endl;
     }
 
-    constructProtonBeamDump(hallInfo, _config);
+    constructProtonBeamDump(hallInfo, _config, *sdHelper_);
 
-    constructDS(hallInfo, _config);
-    constructPS(hallInfo, _config);
+    constructDS(hallInfo, _config, *sdHelper_);
+    constructPS(hallInfo, _config, *sdHelper_);
     constructPSEnclosure(hallInfo, _config);
     constructTS(hallInfo, _config);
 
     VolumeInfo trackerInfo = constructTracker();
     VolumeInfo targetInfo  = constructTarget();
 
-    constructProtonAbsorber(_config);
+    constructProtonAbsorber(_config, *sdHelper_);
 
     VolumeInfo calorimeterInfo    = constructCal();
+
+    if (pset_.has_key("physics.minRangeCut2")) {
+      // creating a region to be able to asign special cut and EM options
+      G4Region* regionCalorimeter = new G4Region("Calorimeter");
+      calorimeterInfo.logical->SetRegion(regionCalorimeter);
+      regionCalorimeter->AddRootLogicalVolume(calorimeterInfo.logical);
+    }
+
+    if (pset_.has_key("physics.minRangeCut3")) {
+      // creating a region to be able to asign special cut and EM options
+      G4Region* regionTracker = new G4Region("Tracker");
+      trackerInfo.logical->SetRegion(regionTracker);
+      regionTracker->AddRootLogicalVolume(trackerInfo.logical);
+    }
 
     // This is just placeholder for now - and might be misnamed.
     constructMagnetYoke();
@@ -234,20 +246,20 @@ namespace mu2e {
     }
 
     if ( _config.getBool("mstm.build", false) ) {
-      constructMSTM(hallInfo, _config);
+      constructMSTM(hallInfo, _config, *sdHelper_);
     }
 
     if ( _config.getBool("hasSTM",false) ) {
-      constructSTM(_config);
+      constructSTM(_config, *sdHelper_);
     }
 
     if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
 
       GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
-      constructCRV(hallInfo,_config);
+      constructCRV(hallInfo,_config,*sdHelper_);
     }
 
-    constructVirtualDetectors(_config); // beware of the placement order of this function
+    constructVirtualDetectors(_config, *sdHelper_); // beware of the placement order of this function
 
     constructVisualizationRegions(worldVInfo, _config);
 
@@ -288,9 +300,9 @@ namespace mu2e {
     if ( _config.getBool("hasTTracker",false) ) {
       int ver = _config.getInt("TTrackerVersion",3);
       if ( ver == 3 ){
-        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, _config );
+        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, _config, *sdHelper_);
       } else if ( ver == 5 ) {
-	trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config );
+	trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config, *sdHelper_);
       }
     } else {
       trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, _config );
@@ -322,7 +334,7 @@ namespace mu2e {
     VolumeInfo targetInfo = ( _config.getBool("hasTarget",false) ) ?
 
       constructStoppingTarget( detSolUpstreamVacInfo,
-                               _config )
+                               _config, *sdHelper_ )
       :
 
       constructDummyStoppingTarget( detSolUpstreamVacInfo,
@@ -569,7 +581,7 @@ namespace mu2e {
     // Construct one of the calorimeters.
     VolumeInfo calorimeterInfo;
     if ( _config.getBool("hasDiskCalorimeter",false) ) {
-      calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config );
+      calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config, *sdHelper_ );
     }
 
     return calorimeterInfo;

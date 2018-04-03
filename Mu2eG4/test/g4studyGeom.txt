@@ -1,12 +1,8 @@
 //
 // config file to perform Geant4 studies using the Mu2e framework infrastructure
 //
-
-// $Id: g4studyGeom.txt,v 1.12 2014/08/25 21:24:59 genser Exp $
-// $Author: genser $
-// $Date: 2014/08/25 21:24:59 $
 //
-// Original author K. Genser
+// Original author K.L. Genser
 //
 
 // Units are mm, MeV
@@ -15,38 +11,10 @@
 // Change the name.
 string detector.name           = "g4study";
 
-// Indicate if this is "standard" mu2e experimental setup (when set to
-// true, which is the default) using typical mu2e detector components
-// or a study environment (when set to false)
-
-bool           mu2e.standardDetector = false;
-
 // version of the target geometry configuration
 
 int            mu2e.studyEnvVersion      = 4;
 // 1 tube; 2 box; 3 "calorimeter", 4 tube and a box
-
-// we do not use mu2e materials as they require geometry service detector info
-// vector<string> mu2e.materials = {"G4_Galactic"};
-
-bool           mu2e.printParticleDataTable = false;
-
-// Use a decent physics list
-string g4.physicsListName      = "ShieldingM";
-// string g4.physicsListName = "FTFP_BERT_EMZ";
-int g4.physicsListVerbosity = 1;
-
-// Use a specific range cut
-double g4.minRangeCut = 0.01; // mm
-
-// Proton, ion production cut; 0. means no cut
-double physics.protonProductionCut = 0.; // mm
-
-// Disable mu2e MuMinusConversionAtRest
-bool g4.doMuMinusConversionAtRest = false;
-
-// Diagnostic info
-int g4.diagLevel = 1;
 
 // make the volume mesh visible
 bool g4.forceAuxEdgeVisible    = true;
@@ -54,55 +22,7 @@ bool g4.forceAuxEdgeVisible    = true;
 // do not check for overlaps
 bool g4.doSurfaceCheck         = false;
 
-// print g4 element table
-bool g4.printElements          = true;
-
-// print g4 material table
-bool g4.printMaterials         = false;
-
-// print g4 processe summary (using a mu2e utility class)
-bool g4.printPhysicsProcessSummary = true;
-
-// maximum allowed number of steps per track per event; 0 is unlimited
-int  g4.steppingActionMaxSteps = 0;
-
-// threshold to store trajectories
-double g4.pointTrajectoryMomentumCut = 0.;
-
-// maximum global time per track per event; 0 is unlimited
-double g4.steppingActionMaxGlobalTime = 0.0;
-
-// times for the time virtual detector when particle steps are recorded
-// when the time threshold is crossed in a step
-
-vector<double> g4.steppingActionTimeVD = {0.01};
-
-// list of volumes when tracks are kiled on entry
-vector<string> g4SteppingAction.killInTheseVolumes = {};
-
-// enable killing of low energy particles
-bool   g4.killLowEKine = false;
-
-// global kinetic energy cut (MeV)
-double g4.eKineMin     = 1000000.0;
-
-// a more selective kinetic energy cut depending on the pdg code
-vector<int>    g4.killLowEKinePDG = {};
-vector<double> g4.eKineMinPDG     = {};
-
-// event track debug list
-// vector<int> g4.trackingActionEventList = {};
-bool g4.printTrackTiming = false;
-
-// event track step debug list
-// vector<int> g4.steppingActionEventList = {1,2,3,4,5};
-// empty track list means all if the event list is not empty
-// vector<int> g4.steppingActionTrackList = {};
-
 // the "World Box"
-
-// verbosity flag pertaining to the world construction
-int world.verbosityLevel         = 2;
 
 // a very "thin" vacuum
 string world.materialName        = "G4_Galactic";
@@ -126,6 +46,10 @@ string         tube.wallMaterialName = "G4_W";
 double         tube.rIn        = 0.0;
 double         tube.rOut       = 1.0;
 double         tube.halfLength = 3.0;
+double         tube.phi0       = 0.;
+double         tube.phiSpan    = 360.; // degrees
+double         tube.phiRotZ    =  0.;
+double         tube.sign       =  1.; // for additional 180 deg rotation tests around Y axis (when -1)
 
 int            tube.copyNumber = 3; // non 0 for volume tracking purposes
                                     // 0 & 1 are World and an auxiliary 

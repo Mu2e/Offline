@@ -192,7 +192,7 @@ void MomRes(TTree* ta, double tqcut) {
   TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
   momres->Sumw2();
   TCut final = reco+goodfit+physics;
-  ta->Project("momres","dem.mom-","evtinfo.evtwt"*final);
+  ta->Project("momres","dem.mom-demmcent.mom","evtinfo.evtwt"*final);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momres->GetEntries()*momres->GetBinWidth(1);
   cout << "Integral = " << integral << " mean = " << momres->GetMean() << " rms = " << momres->GetRMS() << endl;
@@ -214,6 +214,8 @@ void MomRes(TTree* ta, double tqcut) {
   snprintf(line,80,"t0>%5.1f nsec",t0min);
   rtext->AddText(line);
   sprintf(line,"%s",goodfit.GetTitle());
+  rtext->AddText(line);
+  sprintf(line,"%5.0f Tracks",momres->GetEntries());
   rtext->AddText(line);
   rtext->Draw();
 
@@ -305,4 +307,47 @@ void Acc(TTree* ta, int ngen) {
   tp->SetBottomMargin(0.15);
   racc->Draw("histtext0");
 }
+
+void hitres(TTree* ta) {
+  TH1F* hresida = new TH1F("hresida","Hit Residual;mm",100,-2,2);
+  TH1F* hresidna = new TH1F("hresidna","Hit Residual;mm",100,-2,2);
+  TH1F* hresidall = new TH1F("hresidall","Hit Residual;mm",100,-2,2);
+  hresida->SetFillColor(kGreen);
+  hresidna->SetFillColor(kBlue);
+  hresida->SetStats(0);
+  hresidna->SetStats(0);
+  THStack* hresidst = new THStack("hresidst","Hit Residual;mm");
+  hresidst->Add(hresida);
+  hresidst->Add(hresidna);
+  ta->Project("hresida","demtsh._resid","dem.status>0&&demtsh._active&&demtsh._ambig!=0");
+  ta->Project("hresidna","demtsh._resid","dem.status>0&&demtsh._active&&demtsh._ambig==0");
+  ta->Project("hresidall","demtsh._resid","dem.status>0&&demtsh._active");
+  
+  TH1F* hresa = new TH1F("hresa","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
+  TH1F* hresna = new TH1F("hresna","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
+  TH1F* hresall = new TH1F("hresall","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
+  hresa->SetFillColor(kGreen);
+  hresna->SetFillColor(kBlue);
+  hresa->SetStats(0);
+  hresna->SetStats(0);
+  THStack* hresst = new THStack("hresst","Hit Drift Resolution;Reco R_{drift}-MC (mm)");
+  hresst->Add(hresa);
+  hresst->Add(hresna);
+  ta->Project("hresa","demtsh._rdrift-demtshmc._dist","dem.status>0&&demtsh._active&&demtsh._ambig!=0");
+  ta->Project("hresna","demtsh._rdrift-demtshmc._dist","dem.status>0&&demtsh._active&&demtsh._ambig==0");
+  ta->Project("hresall","demtsh._rdrift-demtshmc._dist","dem.status>0&&demtsh._active");
+  TCanvas* rescan = new TCanvas("rescan","rescan",800,800);
+  rescan->Divide(1,2);
+  rescan->cd(1);
+  hresidst->Draw("h");
+  hresidall->Fit("gaus","","sames");
+  TLegend* rleg = new TLegend(0.15,0.6,0.4,0.85);
+  rleg->AddEntry(hresida,"Resolved Ambiguity","f");
+  rleg->AddEntry(hresidna,"Null Ambiguity","f");
+  rleg->Draw();
+  rescan->cd(2);
+  hresst->Draw("h");
+  hresall->Fit("gaus","","sames");
+}
+
 

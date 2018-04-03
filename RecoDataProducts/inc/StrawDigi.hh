@@ -21,7 +21,7 @@
 #include <array>
 
 // Mu2e includes
-#include "DataProducts/inc/StrawIndex.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include "TrackerConditions/inc/StrawEnd.hh"
 #include "TrackerConditions/inc/Types.hh"
 // unfortunately the persistence requires this array dimension be
@@ -32,10 +32,10 @@ namespace mu2e {
   class StrawDigi {
     public:
       StrawDigi();
-      StrawDigi( StrawIndex sid, TrkTypes::TDCValues tdc, TrkTypes::TOTValues tot, TrkTypes::ADCWaveform const& adc);
+      StrawDigi( StrawId sid, TrkTypes::TDCValues tdc, TrkTypes::TOTValues tot, TrkTypes::ADCWaveform const& adc);
       StrawDigi(StrawDigi const& other);
       StrawDigi& operator=(StrawDigi const& other);
-      StrawIndex strawIndex() const { return _strawIndex; }
+      StrawId strawId() const { return _strawid; }
 // TDC data are indexed according to straw end
       unsigned long TDC(StrawEnd end) const { return _tdc[end]; }
       unsigned long TOT(StrawEnd end) const { return _tot[end]; }
@@ -43,7 +43,7 @@ namespace mu2e {
       TrkTypes::TOTValues const& TOT() const { return _tot; }
       TrkTypes::ADCWaveform const& adcWaveform() const { return _adc; }
     private:
-      StrawIndex  _strawIndex;      // Straw index
+      StrawId  _strawid;      // Straw id
       TrkTypes::TDCValues _tdc; // TDC values for each end
       TrkTypes::TOTValues _tot;  // TOT values for each end
       TrkTypes::ADCWaveform _adc; // ADC waveform (sum of both ends)

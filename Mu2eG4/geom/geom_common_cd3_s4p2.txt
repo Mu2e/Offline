@@ -153,3 +153,4 @@ bool   vd.solid          = false;
 // Local Variables:
 // mode:c++
 // End:
+// vi: set syntax=cpp:

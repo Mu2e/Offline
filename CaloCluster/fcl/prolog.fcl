@@ -22,11 +22,13 @@ CaloClusterFast :
     endTimeBuffer         : 80
     windowPeak            : 2
     minAmplitude          : 20
+    extendSecond          : false
     minSeedAmplitude      : 200
     minEnergy             : 50
     timeCorrection        : 20.0
     adcToEnergy           : 0.0461333
     diagLevel             : 0
+    includeCrystalHits    : false
 }
 
 

@@ -125,6 +125,16 @@ mf_coutInfo:
    { 
      limit : -1
    }
+   RANDOM : { limit : 0 }
+   FastCloning : { limit : 0 }
+   TransientBranch : { limit : 0 }
+   path : { limit : 0 }
+   MF_INIT_OK : { limit : 0 }
+   DeactivatedPath : { limit : 0 }
+   PathConfiguration : { limit : 0 }
+   GEOM_MINRANGECUT : { limit : 0 }
+   GEOM_PARTICLECUT : { limit : 0 }
+   Configuration : { limit : 0 }
  } # end categories
 } # end mf_coutInfo
 mf_coutInfoStats : 

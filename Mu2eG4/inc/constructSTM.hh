@@ -10,8 +10,11 @@
 namespace mu2e {
 
   class SimpleConfig;
+  class SensitiveDetectorHelper;
 
-  void constructSTM(SimpleConfig const & _config);
+  void constructSTM(const SimpleConfig& _config,
+                    const SensitiveDetectorHelper& sdHelper
+                    );
 
 }
 

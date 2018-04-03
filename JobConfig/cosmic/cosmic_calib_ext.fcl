@@ -1,0 +1,43 @@
+#
+# Generate cosmics on a box around the tracker and calorimeter,
+# when they are in the extracted position (14m to +z).
+# Simulate the cosmic all the way through the detector
+# Make and write out digis for the tracker and cal, and
+# StepPointMC's for CRV.
+#
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+# this defines the calibration cosmic job
+#include "JobConfig/cosmic/cosmic_calib.fclinc"
+# and is customized for detector extended position in this file
+
+
+process_name :  calibCosmicExt
+
+# the trackar and cal in extracted position
+services.GeometryService.inputFile   : "Mu2eG4/geom/geom_common_garage.txt"
+
+# generate cosmics on a box around the tracker+cal in extracted position
+physics.producers.generate.inputfile : "JobConfig/cosmic/genconfig_cosmic_calib_ext.txt"
+
+# sim through the detectors, stop in dirt
+physics.producers.g4run.Mu2eG4CommonCut : @local::CommonCutExt
+
+# filter on tracker and cal, not CRV hits
+physics.filters.calibCosmicFilter.minCrvSteps  : 1000000
+
+services.TFileService.fileName  : "nts.owner.cosmic_calib_ext.version.sequencer.root"
+outputs.filteredOutput.fileName : "sim.owner.cosmic_calib_ext.version.sequencer.art"
+
+
+//
+// This tells emacs to view this file in the art-fhicl mode.
+// Local Variables:
+// mode:art-fhicl
+// End:
+
+
