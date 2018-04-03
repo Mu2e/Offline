@@ -19,6 +19,7 @@
 
 #include "CalPatRec/inc/ModuleHistToolBase.hh"
 #include "CalPatRec/inc/McUtilsToolBase.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 
 using namespace std;
 
@@ -450,16 +451,16 @@ namespace mu2e {
 // reproduce DeltaFinder2 algorithm
 //-----------------------------------------------------------------------------
 	  const StrawHitPosition* shp  = hd->fPos;
-	  CLHEP::Hep3Vector       dxyz = shp->pos()-Seed->CofM; // distance from hit to preseed
+	  XYZVec       dxyz = shp->pos()-Seed->CofM; // distance from hit to preseed
 //-----------------------------------------------------------------------------
 // split into wire parallel and perpendicular components
 //-----------------------------------------------------------------------------
 	  const CLHEP::Hep3Vector& wdir = hd->fStraw->getDirection();
-	  CLHEP::Hep3Vector d_par    = (dxyz.dot(wdir))/(wdir.dot(wdir))*wdir; 
-	  CLHEP::Hep3Vector d_perp_z = dxyz-d_par;
-	  float  d_perp              = d_perp_z.perp();
+	  XYZVec d_par               = Geom::toXYZVec((dxyz.Dot(wdir))/(wdir.dot(wdir))*wdir); 
+	  XYZVec d_perp_z            = dxyz-d_par;
+	  float  d_perp              = sqrt(d_perp_z.perp2());
 	  double sigw                = hd->fSigW;
-	  float  chi2_par            = (d_par.mag()/sigw)*(d_par.mag()/sigw);
+	  float  chi2_par            = d_par.mag2()/(sigw*sigw);
 	  float  chi2_perp           = (d_perp/_sigmaR)*(d_perp/_sigmaR);
 	  float  chi2r               = chi2_par + chi2_perp;
 	  Hist->fChi2Radial->Fill(chi2r);
@@ -468,7 +469,7 @@ namespace mu2e {
     }
 
     Hist->fNFacesWithHits->Fill(Seed->fNFacesWithHits);
-    Hist->fSeedRadius->Fill    (Seed->CofM.perp());
+    Hist->fSeedRadius->Fill    (sqrt(Seed->CofM.perp2()));
 
     double mom (-1.);
     if (Seed->fPreSeedMcPart[0]) mom = Seed->fPreSeedMcPart[0]->Momentum();

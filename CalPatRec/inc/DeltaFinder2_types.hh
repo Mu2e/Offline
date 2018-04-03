@@ -15,12 +15,15 @@ namespace fhicl {
 
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitPosition.hh"
+#include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
+#include "TrackerGeom/inc/Straw.hh"
 
 namespace mu2e {
   class Panel;
   class SimParticle;
+  class TTracker;
 //-----------------------------------------------------------------------------
 // delta-electron seed: structure within the station
 // doesn't own anything, no need to delete any pinters
@@ -144,7 +147,7 @@ namespace mu2e {
       PanelZ_t*                      panelz   [kNFaces];
       std::vector<const HitData_t*>  hitlist  [kNFaces];
       std::vector<McPart_t*>         fMcPart  [kNFaces];
-      CLHEP::Hep3Vector              CofM;
+      XYZVec                         CofM;
       float                          fMinTime;          // min and max times of the included hits
       float                          fMaxTime;
       float                          fMaxDriftTime;
@@ -208,7 +211,7 @@ namespace mu2e {
       float                 dxy    [kNStations];   // used only for diagnostics
       float                 fT0Min [kNStations];
       float                 fT0Max [kNStations];
-      CLHEP::Hep3Vector     CofM;
+      XYZVec                CofM;
       float                 phi;
       int                   n_seeds;
       McPart_t*             fMcPart;

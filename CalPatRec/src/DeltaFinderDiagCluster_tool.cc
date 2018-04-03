@@ -20,6 +20,7 @@
 #include "CalPatRec/inc/ModuleHistToolBase.hh"
 #include "CalPatRec/inc/McUtilsToolBase.hh"
 #include "RecoDataProducts/inc/StrawHitPosition.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 
 using namespace std;
 
