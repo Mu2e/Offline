@@ -1145,6 +1145,11 @@ namespace mu2e {
       Lyso_01->AddElement( Ce, 0.15*CLHEP::perCent );    
     }   
 
+    mat = uniqueMaterialOrThrow( "CuW1090");
+     G4Material* CuW1090 = new G4Material(mat.name, 17.3*CLHEP::g/CLHEP::cm3, 2);
+     CuW1090->AddMaterial( findMaterialOrThrow("G4_W"),0.90); 
+     CuW1090->AddMaterial( findMaterialOrThrow("G4_C"),0.10); 
+
 
     mat = uniqueMaterialOrThrow("CorrugatedPolypropylene");
     {

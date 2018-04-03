@@ -72,13 +72,13 @@ namespace mu2e {
           calo_->caloInfo_.set("envelopeZ1",             config.getDouble("calorimeter.caloMotherZ1") );
           calo_->caloInfo_.set("vdThickness",            config.getDouble("calorimeter.vdThickness") );
                     
-          calo_->caloInfo_.set("diskCaseRadiusIn",       config.getDouble("calorimeter.diskCaseRadiusIn") );
-          calo_->caloInfo_.set("diskCaseRadiusOut",      config.getDouble("calorimeter.diskCaseRadiusOut") );
-          calo_->caloInfo_.set("diskCaseZLength",        config.getDouble("calorimeter.diskCaseZLength") );
+          calo_->caloInfo_.set("diskInnerRingIn",        config.getDouble("calorimeter.diskInnerRingIn") );
+          calo_->caloInfo_.set("diskInnerRingOut",       config.getDouble("calorimeter.diskInnerRingOut") );
           calo_->caloInfo_.set("diskCrystalRadiusIn",    config.getDouble("calorimeter.diskCrystalRadiusIn") );
-          calo_->caloInfo_.set("diskCrystalRadiusOut",   config.getDouble("calorimeter.diskCrystalRadiusOut") );
-          calo_->caloInfo_.set("diskInnerRingThickness", config.getDouble("calorimeter.diskInnerRingThickness") );
-          calo_->caloInfo_.set("diskOuterRingThickness", config.getDouble("calorimeter.diskOuterRingThickness") );
+          calo_->caloInfo_.set("diskCrystalRadiusOut",   config.getDouble("calorimeter.diskCrystalRadiusOut") );          
+          calo_->caloInfo_.set("diskOuterRingIn",        config.getDouble("calorimeter.diskOuterRingIn") );
+          calo_->caloInfo_.set("diskOuterRingOut",       config.getDouble("calorimeter.diskOuterRingOut") );
+          calo_->caloInfo_.set("diskCaseZLength",        config.getDouble("calorimeter.diskCaseZLength") );
 	  calo_->caloInfo_.set("diskOutRingEdgeZLength", config.getDouble("calorimeter.diskOutRingEdgeZLength") );
 	  calo_->caloInfo_.set("diskOutRingEdgeRLength", config.getDouble("calorimeter.diskOutRingEdgeRLength") );
 	  calo_->caloInfo_.set("diskStepThickness",      config.getDouble("calorimeter.diskStepThickness") );
@@ -141,6 +141,7 @@ namespace mu2e {
 	  calo_->caloInfo_.set("cratephi0",              config.getDouble("calorimeter.cratephi0") );
 	  calo_->caloInfo_.set("crateDeltaPhi",          config.getDouble("calorimeter.crateDeltaPhi") );
 	  calo_->caloInfo_.set("radiatorThickness",      config.getDouble("calorimeter.radiatorThickness") );
+	  calo_->caloInfo_.set("radiatorZLength",        config.getDouble("calorimeter.radiatorZLength") );
 	  calo_->caloInfo_.set("activeStripThickness",   config.getDouble("calorimeter.activeStripThickness") );
 	  calo_->caloInfo_.set("passiveStripThickness",  config.getDouble("calorimeter.passiveStripThickness") );
 	  	 	  
@@ -242,8 +243,8 @@ namespace mu2e {
         double crystalHalfXY        = calo_->caloInfo_.getDouble("crystalXYLength")/2.0;
         double wrapperHalfThick     = calo_->caloInfo_.getDouble("wrapperThickness")/2.0;
         double crystalCellRadius    = crystalHalfXY + 2.0*wrapperHalfThick;       
-        double innerCaseRadius      = calo_->caloInfo_.getDouble("diskCaseRadiusIn");
-        double outerCaseRadius      = calo_->caloInfo_.getDouble("diskCaseRadiusOut");
+        double innerCaseRadius      = calo_->caloInfo_.getDouble("diskInnerRingIn");
+        double outerCaseRadius      = calo_->caloInfo_.getDouble("diskOuterRingOut");
         double innerCrysRadius      = calo_->caloInfo_.getDouble("diskCrystalRadiusIn");
         double outerCrysRadius      = calo_->caloInfo_.getDouble("diskCrystalRadiusOut");
         double outerRingEdgeThick   = calo_->caloInfo_.getDouble("diskOutRingEdgeRLength");                                       
@@ -359,13 +360,13 @@ namespace mu2e {
 
 
         //check calorimeter fits inside mother envelope
-        double diskRin            = calo_->caloInfo_.getDouble("diskCaseRadiusIn");
-        double diskRout           = calo_->caloInfo_.getDouble("diskCaseRadiusOut");
+        double diskRin            = calo_->caloInfo_.getDouble("diskInnerRingIn");
+        double diskRout           = calo_->caloInfo_.getDouble("diskOuterRingOut");
         double outerRingEdgeThick = calo_->caloInfo_.getDouble("diskOutRingEdgeRLength");     
         for (int i=0;i<calo_->nDisks_;++i)
         {            
             if (diskRin > diskRout)
-                  throw cet::exception("DiskCaloGeom") << "calorimeter.diskCaseRadiusIn > calorimeter.diskCaseRadiusOut for disk="<<i<<".\n";
+                  throw cet::exception("DiskCaloGeom") << "calorimeter.diskInnerRingIn > calorimeter.diskOuterRingOut for disk="<<i<<".\n";
             
             if (diskRout + outerRingEdgeThick > calo_->caloInfo_.getDouble("envelopeRadiusOut"))
                   throw cet::exception("DiskCaloGeom") << "calorimeter outer radius larger than calorimeter mother for disk="<<i<<".\n";
