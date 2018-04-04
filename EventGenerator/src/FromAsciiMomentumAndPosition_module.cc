@@ -94,6 +94,7 @@ namespace mu2e {
 
   
     double mass_;
+    double protonMass_;
 
     TH1D* hIndexOfParticle;
     TH1D* hTimeOfParticle;
@@ -103,6 +104,8 @@ namespace mu2e {
     std::vector<CLHEP::Hep3Vector> startPos_;
     std::vector<CLHEP::Hep3Vector> startMom_;
     std::vector<double> startTime_;
+    std::vector<CLHEP::Hep3Vector> startInitialProtonMomentum_;
+    std::vector<CLHEP::Hep3Vector> startInitialAntiProtonMomentum_;
  
   public: 
     explicit FromAsciiMomentumAndPosition(Parameters const& config );
@@ -128,6 +131,8 @@ namespace mu2e {
     const HepPDT::ParticleData& p_data = pdt->particle(particlePdgId_).ref();
     mass_ = p_data.mass().value();
 
+    const HepPDT::ParticleData& proton_data = pdt->particle(PDGCode::proton).ref();
+    protonMass_ = proton_data.mass().value();
 
     ConfigFileLookupPolicy findConfig;
     std::string vertexFileString_ = findConfig(vertexFileName_);
@@ -135,18 +140,36 @@ namespace mu2e {
    vertexFile_.open( vertexFileString_.c_str() );
    //
    // read them all in
-   double xStart_,yStart_,zStart_,pxStart_,pyStart_,pzStart_, time_;
+   float xStart_,yStart_,zStart_,pxStart_,pyStart_,pzStart_, time_;
+   float initialProtonMomentumX_,initialProtonMomentumY_,initialProtonMomentumZ_;
+   float initialAntiProtonMomentumX_,initialAntiProtonMomentumY_,initialAntiProtonMomentumZ_;
+   std::string line;
 
-   do
-     {
-       vertexFile_ >> xStart_ >> yStart_ >> zStart_ >> pxStart_ >> pyStart_ >> pzStart_ >> time_;
+      while (std::getline(vertexFile_,line)){
+       std::istringstream is(line);
+       is >> xStart_ >> yStart_ >> zStart_ >> pxStart_ >> pyStart_ >> pzStart_ >> time_ >> initialAntiProtonMomentumX_ >>  initialAntiProtonMomentumY_ >> initialAntiProtonMomentumZ_
+		   >> initialProtonMomentumX_ >>  initialProtonMomentumY_ >> initialProtonMomentumZ_;
+
+       std::cout  << xStart_ << " " << yStart_ << " " << zStart_ << " " << pxStart_ << " " << pyStart_ << " " << pzStart_ << " " << time_ 
+		   << " " << initialAntiProtonMomentumX_ << " " <<  initialAntiProtonMomentumY_ << " " << initialAntiProtonMomentumZ_
+		  << " " << initialProtonMomentumX_ << " " <<  initialProtonMomentumY_ << " " << initialProtonMomentumZ_ << std::endl;
        startPos_.push_back(CLHEP::Hep3Vector(xStart_,yStart_,zStart_));
        startMom_.push_back(CLHEP::Hep3Vector(pxStart_,pyStart_,pzStart_));
        startTime_.push_back(time_);
-     } while (!vertexFile_.eof());
+       startInitialProtonMomentum_.push_back(
+					     CLHEP::Hep3Vector(initialProtonMomentumX_,initialProtonMomentumY_,initialProtonMomentumZ_));
+       startInitialAntiProtonMomentum_.push_back(
+						 CLHEP::Hep3Vector(initialAntiProtonMomentumX_,initialAntiProtonMomentumY_,initialAntiProtonMomentumZ_));
+   }
+   
+     
+   
 
    lengthOfVertexFile_ = startPos_.size();
-   ncalls = 0;
+ 
+      std::cout << "length of vertex file =  " << startPos_.size() << std::endl;
+ 
+  ncalls = 0;
 
 
    produces <mu2e::GenParticleCollection>();
@@ -186,6 +209,14 @@ namespace mu2e {
      CLHEP::HepLorentzVector fourMomInitialParticle
        (eInitialParticle,momInitialParticle);
      double timeTrial_ = startTime_.at(ithPart);
+     CLHEP::Hep3Vector momInitialProton(startInitialProtonMomentum_.at(ithPart));
+     double eInitialProton = sqrt(momInitialProton.mag()*momInitialProton.mag() + protonMass_*protonMass_);
+     CLHEP::HepLorentzVector fourMomInitialProton(eInitialProton,momInitialProton);
+ 
+     CLHEP::Hep3Vector momInitialAntiProton(startInitialAntiProtonMomentum_.at(ithPart));
+     double eInitialAntiProton = sqrt(momInitialAntiProton.mag()*momInitialAntiProton.mag() + protonMass_*protonMass_);
+     CLHEP::HepLorentzVector fourMomInitialAntiProton(eInitialAntiProton,momInitialAntiProton);
+
      if (timeTrial_ > 1695.){
        timeTrial_ = timeTrial_ - static_cast<int>(timeTrial_/1695.)*1695.;
      }
@@ -201,14 +232,31 @@ namespace mu2e {
 				    posInitialParticle,
 				    fourMomInitialParticle,
 				    timeTrial_ ));
+     // 
+     // initial proton; doesn't matter where I put it, just want momentum vector
+     output->push_back( GenParticle( PDGCode::type(PDGCode::proton), GenId::fromAscii,
+				     CLHEP::Hep3Vector(0.,0.,0.),
+				    fourMomInitialProton,
+				     0. ));
+     // 
+     // initial antiproton; doesn't matter where I put it, just want momentum vector
+     output->push_back( GenParticle( PDGCode::type(PDGCode::anti_proton), GenId::fromAscii,
+				     CLHEP::Hep3Vector(0.,0.,0.),
+				    fourMomInitialAntiProton,
+				     0. ));
    
     event.put(std::move(output));
     if (verbosityLevel_ > 0){
+      std::cout << "looking at vertex file entry " << ithPart << std::endl;
       std::cout<< "FromAsciiMomentumAndPosition:  pdgid, position, momentum, time:" << "\n"
 	       << particlePdgId_ << "\n" 
 	       << posInitialParticle << "\n"
 	       << fourMomInitialParticle << "\n" 
 	       << timeTrial_ << std::endl;
+      std::cout<< "FromAsciiMomentumAndPosition:  initialProton:" << "\n"
+	       << fourMomInitialProton << std::endl;
+      std::cout<< "FromAsciiMomentumAndPosition:  initialAntiProton:" << "\n"
+	       << fourMomInitialAntiProton << std::endl;
     }
   }
   // FromAsciiMomentumAndPosition::generate
