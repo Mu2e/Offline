@@ -88,7 +88,7 @@ string calorimeter.crystalMaterial             = "G4_CESIUM_IODIDE";
 string calorimeter.crystalFrameMaterial        = "Polyethylene092"; 
 string calorimeter.wrapperMaterial             = "Polyethylene092";
 string calorimeter.innerRingMaterial           = "CarbonFiber";
-string calorimeter.innerStepMaterial           = "CarbonFiber";
+string calorimeter.innerStepMaterial           = "AluminumHoneycomb";//"CarbonFiber";
 string calorimeter.outerRingMaterial           = "G4_Al";
 
 string calorimeter.readoutMaterial             = "G4_Si";
@@ -96,7 +96,7 @@ string calorimeter.FEEMaterial                 = "Electronics";
 
 string calorimeter.coolPipeMaterial            = "StainlessSteel";
 string calorimeter.pipeMaterial                = "G4_Al";
-string calorimeter.FPFoamMaterial              = "PET_P100";
+string calorimeter.FPFoamMaterial              = "AluminumHoneycomb";//"PET_P100";
 string calorimeter.FPCarbonMaterial            = "CarbonFiber";
 
 string calorimeter.BackPlateMaterial           = "Polyetheretherketone";
@@ -125,4 +125,4 @@ bool calorimeter.crateVisible                 = false;
 bool calorimeter.crateBoardVisible            = false;
 
 int  calorimeter.verbosityLevel               = 1;
-bool calorimeter.doSurfaceCheck               = true;
+bool calorimeter.doSurfaceCheck               = false;
