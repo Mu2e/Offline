@@ -1,4 +1,4 @@
-// Andrei Gaponenko, 2013
+// Robert Bernstein, April 2018
 
 // C++ includes
 #include <iostream>
@@ -66,7 +66,7 @@ namespace mu2e {
     CLHEP::RandGeneral randSpectrum_;
     RandomUnitSphere randomUnitSphere_;
 
-    RootTreeSampler<IO::StoppedParticleTauNormF> stops_;
+    RootTreeSampler<IO::StoppedParticleF> stops_;
 
     bool kMaxUserSet_;
     double kMaxUser_;
@@ -92,8 +92,6 @@ namespace mu2e {
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
     , randomUnitSphere_(eng_)
     , stops_(eng_, pset.get<fhicl::ParameterSet>("muonStops"))
-    , kMaxUserSet_(pset.get<bool>("kMaxUserSet"))
-    , kMaxUser_(pset.get<double>("kMaxUser"))
     , doHistograms_( pset.get<bool>("doHistograms",true ) )
   {
     produces<mu2e::GenParticleCollection>();
@@ -104,7 +102,6 @@ namespace mu2e {
                <<stops_.numRecords()
                <<" stopped particles"
                <<std::endl;
-
       std::cout<<"StoppedMuonRMCGun: producing photon " << std::endl;
     }
 
@@ -112,7 +109,7 @@ namespace mu2e {
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir( "StoppedMuonRMCGun" );
 
-      _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 100,  40.,  140.  );
+      _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 70,  0.,  140.  );
     }
 
   }
@@ -126,11 +123,15 @@ namespace mu2e {
     BinnedSpectrum res;
 
     const std::string spectrumShape(psphys.get<std::string>("spectrumShape"));
+    const int physicsVerbosityLevel_(psphys.get<int>("physicsVerbosityLevel"));
     if (spectrumShape == "ClosureApprox") {
       *elow = psphys.get<double>("elow");
       *ehi = psphys.get<double>("ehi");
       bool kMaxUserSet = psphys.get<bool>("kMaxUserSet");
       double kMaxUser = psphys.get<double>("kMaxUser");
+      if (physicsVerbosityLevel_ > 0){
+	std::cout << "kMaxUserSet_ and kMaxUser_ = " << kMaxUserSet << " " << kMaxUser << std::endl;
+      }
       res.initialize<MuonCaptureSpectrum>( *elow, *ehi, psphys.get<double>("spectrumResolution"),
 					   kMaxUserSet, kMaxUser);
     }
@@ -166,8 +167,8 @@ namespace mu2e {
 
     event.put(std::move(output));
 
-    // Calculate survival probability
-    const double weight = exp(-stop.tauNormalized);
+    // for future normalization
+    const double weight = 1.;
     std::unique_ptr<EventWeight> pw(new EventWeight(weight));
     event.put(std::move(pw));
 
