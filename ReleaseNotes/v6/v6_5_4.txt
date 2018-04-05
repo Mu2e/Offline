@@ -1,6 +1,13 @@
 
            Release notes for Mu2e Offline software, v6_5_4 (in progress)
 
+6) ehrlich, April 5, 2018
+   Changes to the CRVResponse package
+   -The updated code is now using the integral instead of the pulse height 
+    to determine the number of PEs.
+   -The new parameters and lookup tables (v4.0) are tuned to the
+    June 2017 test beam data.
+
 5) genser, March 29, 2018
    Added Calorimeter and Tracker regions and minRangeCut2,3 and
    removed some more templating on config.

@@ -4,16 +4,18 @@ echo "********************************************************************"
 echo "*    Did you copy the updated version of wls to wlsProduction?    *"
 echo "********************************************************************"
 
-for length in "900" "2300" "3000" "4500" "5000" "5600" "6000" "6001" "6600" "7100" "7600" 
+#for length in "900" "2300" "3000" "4500" "5000" "5600" "6000" "6001" "6600" "6900" "7100" "7600" 
+for length in "6600" 
 do
-  mkdir /mu2e/data/outstage/ehrlich/tables/$length
+  mkdir /mu2e/data/outstage/ehrlich/tables_4.0/$length
 
-  jobsub_submit --group=mu2e \
+  jobsub_submit \
   -N $((550*4)) \
   -e LENGTH=$length \
-  --memory=2GB \
-  --disk=1GB \
-  --expected-lifetime=30h \
+  --memory=500MB \
+  --disk=50MB \
+  --expected-lifetime=24h \
   --resource-provides usage_model=OPPORTUNISTIC,DEDICATED \
+  --group=mu2e \
   file:///mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/wls.doProduction
 done

@@ -10,8 +10,8 @@
 namespace mu2eCrv
 {
 
-void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double singlePEWaveformPrecision, double singlePEWaveformMaxTime, 
-                                                                                                           double singlePEReferenceCharge) 
+void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double singlePEWaveformPrecision, double singlePEWaveformStretchFactor,
+                                            double singlePEWaveformMaxTime, double singlePEReferenceCharge) 
 {
   _singlePEWaveformPrecision = singlePEWaveformPrecision;
   _singlePEReferenceCharge = singlePEReferenceCharge;
@@ -23,6 +23,7 @@ void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double 
   unsigned int index=0;
   while(f >> currentTime >> currentVoltage)
   {
+    currentTime*=singlePEWaveformStretchFactor;
     if(!std::isnan(previousTime))
     {
       double t=index*singlePEWaveformPrecision;  
@@ -72,7 +73,7 @@ void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times,
       unsigned int singlePEwaveformIndex=static_cast<unsigned int>(lrint(singlePEWaveformTime/_singlePEWaveformPrecision));
       if(singlePEwaveformIndex>=_singlePEWaveform.size()) break; 
 
-      if(waveform.size()<waveformIndex+1) waveform.resize(waveformIndex+1);
+      if(waveform.size()<waveformIndex+1) waveform.resize(waveformIndex+1,0);  //new vector elements are set to 0
       waveform[waveformIndex]+=_singlePEWaveform[singlePEwaveformIndex]*charge; 
     }
   }

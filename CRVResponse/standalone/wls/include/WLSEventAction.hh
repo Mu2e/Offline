@@ -6,9 +6,9 @@
 #include "G4ThreeVector.hh"
 #include <vector>
 
+#include "WLSSteppingAction.hh"
+
 class TH1D;
-class TH2D;
-class TH3D;
 class TFile;
 class TNtuple;
 
@@ -18,8 +18,9 @@ class WLSEventAction : public G4UserEventAction
 
   public:
 
-    WLSEventAction(int mode, const std::string &singlePEWaveformFilename, int numberOfPhotons=-1, int simType=-1, int minBin=-1, bool verbose=false);  
-                                                                                                                 //numberOfPhotons, simType, minBin, verbose is only needed for mode -1
+    WLSEventAction(WLSSteppingAction::simulationMode mode, const std::string &singlePEWaveformFilename, 
+                   int numberOfPhotons=-1, int simType=-1, int minBin=-1, bool verbose=false);  
+                   //numberOfPhotons, simType, minBin, verbose is only needed for simulationMode::CreateLookupTables
     ~WLSEventAction();
 
   public:
@@ -34,24 +35,28 @@ class WLSEventAction : public G4UserEventAction
   private:
 
     static WLSEventAction*  _fgInstance;  
+
+    WLSSteppingAction::simulationMode _mode;
+
     TH1D*                   _histP[2][4];
     TH1D*                   _histT[2][4];
     TH1D*                   _histPE[4];
-    TH3D*                   _histSurvivalProb[4][4];
-    TH3D*                   _histTimeDifference[4][4];
-    TH3D*                   _histFiberEmissions[4][4];
     TNtuple*                _ntuple;
-    int                     _generatedPhotons;
-    int                     _mode, _numberOfPhotons, _simType, _minBin;
+    int                     _numberOfPhotons, _simType, _minBin;
     std::string             _singlePEWaveformFilename;
     bool                    _verbose;
     bool                    _storeConstants;
-    double                  _startZ;
+
+    int                     _generatedPhotons;  //set by WLSPrimaryGeneratorAction
+    double                  _startZ;            //set by WLSPrimaryGeneratorAction
 
     void                    Draw(const G4Event* evt);
 
     std::vector<double>     _PEs[4];
     std::vector<double>     _recoPEs[4];
+    std::vector<double>     _pulseTimes[4];
+    std::vector<double>     _LETimes[4];
+    std::vector<double>     _pulseWidths[4];
 };
 
 #endif

@@ -56,22 +56,22 @@ namespace mu2e
 
     std::string _crvDigiModuleLabel;
     double      _calibrationFactor, _pedestal;
-    bool        _usePulseArea;  //for PE calculation
     int         _minPEs;
     double      _microBunchPeriod;
+    bool        _darkNoise;
 
 //    TH1F        *_hRecoPulses;
   };
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
     _crvDigiModuleLabel(pset.get<std::string>("crvDigiModuleLabel")),
-    _calibrationFactor(pset.get<double>("calibrationFactor")),   //0.0056 V/PE
-    _pedestal(pset.get<double>("pedestal")),   //0 V
-    _usePulseArea(pset.get<bool>("usePulseArea")),   //still false, but will be changed in the future
-    _minPEs(pset.get<int>("minPEs"))     //6 PEs
+    _calibrationFactor(pset.get<double>("calibrationFactor")),   // 394.9 ADC*ns/PE
+    _pedestal(pset.get<double>("pedestal")),   //100 (ADC)
+    _minPEs(pset.get<int>("minPEs")),          //6 PEs
+    _darkNoise(pset.get<bool>("darkNoise"))    //true for dark noise calibration
   {
     produces<CrvRecoPulsesCollection>();
-    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_calibrationFactor, _pedestal, _usePulseArea));
+    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_calibrationFactor, _pedestal));
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -145,7 +145,7 @@ namespace mu2e
 
         for(size_t i=0; i<ADCs.size(); i++)
         {
-          _makeCrvRecoPulses->SetWaveform(ADCs[i], startTDCs[i], digitizationPrecision);
+          _makeCrvRecoPulses->SetWaveform(ADCs[i], startTDCs[i], digitizationPrecision, _darkNoise);
 
           unsigned int n = _makeCrvRecoPulses->GetNPulses();
           for(unsigned int j=0; j<n; j++)

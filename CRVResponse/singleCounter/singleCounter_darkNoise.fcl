@@ -14,7 +14,7 @@ source :
 services :
 {
   message               : @local::default_message
-  TFileService          : { fileName : "hist.root" }
+  TFileService          : { fileName : "dark_noise.root" }
   RandomNumberGenerator : { }
 
   GeometryService        : { inputFile      : "CRVResponse/singleCounter/geom.txt" }
@@ -58,18 +58,8 @@ physics :
   trig : [generate, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses]
   trigger_paths  : [trig]
 
-#  out: [CrvTest, Output]
   out: [CrvTest]
   end_paths: [out]
-}
-
-outputs: 
-{
-    Output : 
-    {
-        module_type : RootOutput
-        fileName    : "data_crv.root"
-    }
 }
 
 physics.producers.CrvPhotons.g4ModuleLabels           : []   #emtpy so that the module doesn't expect any StepPointMCs
@@ -77,8 +67,9 @@ physics.producers.CrvPhotons.processNames             : []   #the module needs t
 physics.producers.CrvPhotons.CRVSectors               : ["Test"]
 physics.producers.CrvPhotons.lookupTableFileNames     : ["CRVConditions/v3_0/LookupTable_3000"]
 physics.producers.CrvSiPMCharges.deadSiPMProbability  : 0.0
-physics.producers.CrvWaveforms.minVoltage             : 0.0
+physics.producers.CrvWaveforms.minVoltage             : -10.0
 physics.producers.CrvRecoPulses.minPEs                : 0
+physics.producers.CrvRecoPulses.darkNoise             : true
 
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
