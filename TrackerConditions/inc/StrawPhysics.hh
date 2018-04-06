@@ -74,7 +74,7 @@ namespace mu2e {
     float _wirevoltage; //JB
     int _phiBins;
     int _dIntegrationBins;
-    int _nonlindrift;
+    bool _nonlindrift;
   };
 }
 #endif

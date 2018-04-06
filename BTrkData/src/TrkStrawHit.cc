@@ -116,8 +116,8 @@ namespace mu2e
       // translate the DOCA into a time
       Hep3Vector tperp = TrajDirection - TrajDirection.dot(straw().getDirection())*straw().getDirection();
       double phi = tperp.theta(); 
-      double tdrift = srep->driftDistanceToTime(straw().index(), Doca, phi);
-      double vdrift = srep->driftInstantSpeed(straw().index(),Doca, phi);
+      double tdrift = srep->driftDistanceToTime(_strawhit.strawId(), Doca, phi);
+      double vdrift = srep->driftInstantSpeed(_strawhit.strawId(),Doca, phi);
       PropTime    = tdrift;
       switch(_enduse) {
 	case cal: case hv:
@@ -147,7 +147,7 @@ namespace mu2e
     // Use this to estimate the time for the track to reaches this hit from z=0
     double tprop = hflt/Vflt;
     // estimate signal propagation time on the wire assuming the middle (average)
-    double vwire = srep->halfPropV(straw().index(),strawHit().energyDep()*1000.)*2;
+    double vwire = srep->halfPropV(_strawhit.strawId(),strawHit().energyDep()*1000.)*2;
     double teprop = _straw.getHalfLength()/vwire;
     // correct the measured time for these effects: this gives the aveage time the particle passed this straw, WRT
     // when the track crossed Z=0
@@ -155,7 +155,7 @@ namespace mu2e
     // for crude estimates, we only need 1 d2t function
     CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
     double phi = 0; // FIXME should default phi be 0?
-    double tdrift = srep->driftDistanceToTime(straw().index(), 0.5*straw().getRadius(), phi);
+    double tdrift = srep->driftDistanceToTime(_strawhit.strawId(), 0.5*straw().getRadius(), phi);
     Htime = _strawhit.time() - tprop - teprop - tdrift;
   }
 
@@ -176,9 +176,9 @@ namespace mu2e
 
    Hep3Vector tperp = tdir - tdir.dot(straw().getDirection())*straw().getDirection();
    _phi = tperp.theta(); 
-   _rdrift = srep->driftTimeToDistance(straw().index(),tdrift,_phi);
-   _vdriftinst = srep->driftInstantSpeed(straw().index(),fabs(poca().doca()),_phi);
-   _rdrifterr = srep->driftDistanceError(straw().index(),_rdrift,_phi,fabs(poca().doca()));
+   _rdrift = srep->driftTimeToDistance(_strawhit.strawId(),tdrift,_phi);
+   _vdriftinst = srep->driftInstantSpeed(_strawhit.strawId(),fabs(poca().doca()),_phi);
+   _rdrifterr = srep->driftDistanceError(_strawhit.strawId(),_rdrift,_phi,fabs(poca().doca()));
 
 // Propogate error in t0, using local drift velocity
     double rt0err = hitT0()._t0err*_vdriftinst;
@@ -211,7 +211,7 @@ namespace mu2e
 // compute the electronics propagation time for the 2 ends.
 // note: the wire direction points from cal to HV
     ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
-    double vwire = srep->halfPropV(straw().index(),strawHit().energyDep()*1000.)*2;
+    double vwire = srep->halfPropV(_strawhit.strawId(),strawHit().energyDep()*1000.)*2;
     if( poca().status().success()){
       _stime[TrkTypes::cal] = (straw().getHalfLength()+hitLen())/vwire;
       _stime[TrkTypes::hv] = (straw().getHalfLength()-hitLen())/vwire;

@@ -16,7 +16,7 @@
 namespace mu2e {
   class StrawHit;
   class StrawDrift;
-  class StrawIndex;
+  class StrawId;
   class StrawResponse : virtual public ConditionsEntity {
     public:
       // construct from parameters
@@ -27,13 +27,13 @@ namespace mu2e {
       bool useNonLinearDrift() const { return _usenonlindrift; }
       double Mint0doca() const { return _mint0doca;}
 
-      float halfPropV(StrawIndex strawIndex, float kedep) const;
+      float halfPropV(StrawId strawId, float kedep) const;
 
-      double driftDistanceToTime(StrawIndex strawIndex, double ddist, double phi) const;
-      double driftTimeToDistance(StrawIndex strawIndex, double dtime, double phi) const;
-      double driftInstantSpeed(StrawIndex strawIndex, double ddist, double phi) const;
-      double driftDistanceError(StrawIndex strawIndex, double ddist, double phi, float DOCA) const;
-      double driftDistanceOffset(StrawIndex strawIndex, double ddist, double phi, float DOCA) const;
+      double driftDistanceToTime(StrawId strawId, double ddist, double phi) const;
+      double driftTimeToDistance(StrawId strawId, double dtime, double phi) const;
+      double driftInstantSpeed(StrawId strawId, double ddist, double phi) const;
+      double driftDistanceError(StrawId strawId, double ddist, double phi, float DOCA) const;
+      double driftDistanceOffset(StrawId strawId, double ddist, double phi, float DOCA) const;
 
       void print(std::ostream& os) const;
     private:

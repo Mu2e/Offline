@@ -30,7 +30,7 @@ namespace mu2e {
     _resslope(pset.get<vector<float> >("TDResSlope",
 	  vector<float>{0.0160651 , 0.023741 , 0.0421304 , 0.0537863 , 0.0633849 , 0.0697326 , 0.0725653 , 0.0736391 , 0.0746531 , 0.0745937 , 0.0750631 , 0.0738193 , 0.0740473 , 0.0761049 , 0.0785487 , 0.0783369 , 0.0802156 , 0.081579 , 0.0815734 , 0.0830998 , 0.0824664 , 0.0847393 , 0.0857842 , 0.0846082 , 0.0866494 , 0.0879027 , 0.0883831 , 0.0917368 , 0.0909706 , 0.0899623 , 0.0899677 , 0.0890875 , 0.0888003 , 0.0865446 , 0.0847627 , 0.0794976 , 0.0802735 , 0.0797023 , 0.0798181 , 0.0750883 , 0.073853 , 0.0751729 , 0.0737468 , 0.071133 , 0.0698957 , 0.0661819 , 0.0642328 , 0.0635607 , 0.0623173 , 0.0606496 , 0.0574217 , 0.0562718 , 0.0532419 , 0.0510767 , 0.0493828 , 0.0472257 , 0.0447443 , 0.0425958 , 0.0419509 , 0.0391222 , 0.0372135 , 0.0399352 , 0.0340117 , 0.0375563 , 0.0368355 , 0.052548 , 0.0649657 , 0.168875 })),
     _usederr(pset.get<bool>("UseDriftErrorCalibration",false)),
-    _derr(pset.get<vector<float> >("DriftErrorParameters",vector<float>{4.2,-0.87, 31.3, 0.22, 9.72})),
+    _derr(pset.get<vector<float> >("DriftErrorParameters",vector<float>{0.2625,-0.054375, 1.95625, 0.01375, 9.72})),
     _wbuf(pset.get<float>("WireLengthBuffer",2.0)), //sigma
     _slfac(pset.get<float>("StrawLengthFactor",0.9)),
     _errfac(pset.get<float>("ErrorFactor",1.0)),
@@ -88,7 +88,7 @@ namespace mu2e {
     return yval;
   }
 
-  double StrawResponse::driftDistanceToTime(StrawIndex strawIndex, double ddist, double phi) const {
+  double StrawResponse::driftDistanceToTime(StrawId strawId, double ddist, double phi) const {
     if(_usenonlindrift){
       return _strawDrift->D2T(ddist,phi);
     }
@@ -97,7 +97,7 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftTimeToDistance(StrawIndex strawIndex, double dtime, double phi) const {
+  double StrawResponse::driftTimeToDistance(StrawId strawId, double dtime, double phi) const {
     if(_usenonlindrift){
       return _strawDrift->T2D(dtime,phi);
     }
@@ -106,7 +106,7 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftInstantSpeed(StrawIndex strawIndex, double doca, double phi) const {
+  double StrawResponse::driftInstantSpeed(StrawId strawId, double doca, double phi) const {
     if(_usenonlindrift){
       return _strawDrift->GetInstantSpeedFromD(doca);
     }else{
@@ -114,15 +114,13 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftDistanceError(StrawIndex strawIndex, double ddist, double phi, float DOCA) const {
+  double StrawResponse::driftDistanceError(StrawId strawId, double ddist, double phi, float DOCA) const {
     if(useDriftError()){
       // maximum drift is the straw radius.  should come from conditions FIXME!
       static float rstraw(2.5);
       DOCA = std::min(DOCA,rstraw);
       // drift errors are modeled as a truncated line + exponential
-      float tdrifterr = std::min(_derr[4],_derr[0]+_derr[1]*DOCA + _derr[2]*exp(-DOCA/_derr[3]));
-      double vdriftinst = driftInstantSpeed(strawIndex,DOCA,phi);
-      return tdrifterr*vdriftinst;
+      return std::min(_derr[4],_derr[0]+_derr[1]*DOCA + _derr[2]*exp(-DOCA/_derr[3]));
     }else{
       double rres = _rres_min;
       if(ddist < _rres_rad){
@@ -132,7 +130,7 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftDistanceOffset(StrawIndex strawIndex, double ddist, double phi, float DOCA) const {
+  double StrawResponse::driftDistanceOffset(StrawId strawId, double ddist, double phi, float DOCA) const {
     // fixme
     return 0;
   }
@@ -141,7 +139,7 @@ namespace mu2e {
     bool retval(true);
     // convert edep from Mev to KeV (should be standardized, FIXME!)
     float kedep = 1000.0*strawhit.energyDep();
-    wdist = halfPropV(strawhit.strawIndex(),kedep)*(strawhit.dt());
+    wdist = halfPropV(strawhit.strawId(),kedep)*(strawhit.dt());
     wderr = wpRes(kedep,fabs(wdist));
     // truncate positions that exceed the length of the straw (with a buffer): these come from missing a cluster on one end
     if(fabs(wdist) > slen+_wbuf*wderr){
@@ -154,7 +152,7 @@ namespace mu2e {
     return retval;
   }
 
-  float StrawResponse::halfPropV(StrawIndex strawIndex, float kedep) const {
+  float StrawResponse::halfPropV(StrawId strawId, float kedep) const {
     return PieceLine(_edep,_halfvp,kedep);
   }
 

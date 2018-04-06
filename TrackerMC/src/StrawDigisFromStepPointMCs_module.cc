@@ -1039,6 +1039,10 @@ namespace mu2e {
       art::Ptr<StepPointMC> const& spmc = xpair[0]._iclust->stepPointMC();
       if(!spmc.isNull()){
         _mctime = _toff.timeWithOffsetsApplied(*spmc);
+	// compute the doca for this step
+	TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
+	    spmc->position(), spmc->momentum().unit() );
+	_mcdca = pca.dca();
         if(!spmc->simParticle().isNull()){
           _dmcpdg = spmc->simParticle()->pdgId();
           _dmcproc = spmc->simParticle()->creationCode();

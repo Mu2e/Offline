@@ -41,7 +41,7 @@ namespace mu2e {
   _wirevoltage(pset.get<double>("WireVoltage",1400)), //JB: set the default sense wire to 1400 V
   _phiBins(pset.get<int>("DriftPhiBins",20)),
   _dIntegrationBins(pset.get<int>("DriftIntegrationBins",50)),
-  _nonlindrift(pset.get<int>("UseNonLinearDrift",1)) //JB: switch to turn on/off non linear drift for diagnosis
+  _nonlindrift(pset.get<bool>("UseNonLinearDrift",false)) //JB: switch to turn on/off non linear drift for diagnosis
   {
     
     //JB: get the B-field
