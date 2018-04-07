@@ -71,6 +71,8 @@ namespace mu2e {
     bool kMaxUserSet_;
     double kMaxUser_;
     bool doHistograms_;
+ 
+    static double fractionSpectrum ;
 
     double generateEnergy();
 
@@ -80,6 +82,8 @@ namespace mu2e {
     explicit StoppedMuonRMCGun(const fhicl::ParameterSet& pset);
     virtual void produce(art::Event& event);
   };
+
+  double StoppedMuonRMCGun::fractionSpectrum(0.);
 
   //================================================================
   StoppedMuonRMCGun::StoppedMuonRMCGun(const fhicl::ParameterSet& pset)
@@ -115,7 +119,7 @@ namespace mu2e {
   }
 
   //================================================================
-  BinnedSpectrum
+  BinnedSpectrum 
   StoppedMuonRMCGun::parseSpectrumShape(const fhicl::ParameterSet& psphys,
                                                  double *elow,
                                                  double *ehi)
@@ -125,15 +129,76 @@ namespace mu2e {
     const std::string spectrumShape(psphys.get<std::string>("spectrumShape"));
     const int physicsVerbosityLevel_(psphys.get<int>("physicsVerbosityLevel"));
     if (spectrumShape == "ClosureApprox") {
+      bool blind = psphys.get<bool>("blind");
       *elow = psphys.get<double>("elow");
       *ehi = psphys.get<double>("ehi");
       bool kMaxUserSet = psphys.get<bool>("kMaxUserSet");
       double kMaxUser = psphys.get<double>("kMaxUser");
-      if (physicsVerbosityLevel_ > 0){
-	std::cout << "kMaxUserSet_ and kMaxUser_ = " << kMaxUserSet << " " << kMaxUser << std::endl;
+ 
+
+    // in this case just stop
+      if (*elow >= *ehi){
+	// this is wrong
+	throw cet::exception("RANGE") << "energy range in Muon Capture Spectrum is wrong " << *elow << " " << *ehi << std::endl;
       }
+
+      if (physicsVerbosityLevel_ > 0 && !blind){
+	std::cout << "kMaxUserSet and kMaxUser = " << kMaxUserSet << " " << kMaxUser << std::endl;
+      }
+      //
+      // this will allow me to select a region of the RMC spectrum and weight for the fraction of the spectrum
+      const double muonMassFit{105.658};
+      const double bindingEnergyFit{0.464};
+      const double recoilEnergyFit{0.220};
+      const double deltaMassFit{3.121};
+      const double kMaxMax{muonMassFit - bindingEnergyFit - recoilEnergyFit - deltaMassFit};
+ 
+      double kMax;
+      if (kMaxUserSet){
+	kMax = kMaxUser;
+      } 
+      else {
+	kMax = kMaxMax;
+      } 
+ 
+      if (  *elow > kMax ) {
+	//
+	// if I told you what kMax was you could unblind kMax.  Therefore I will set it to something very low and tell you.
+	std::cout << " StoppedMuonGun elow is too high " << *elow << " resetting to 0 MeV" << std::endl;
+
+      }
+
       res.initialize<MuonCaptureSpectrum>( *elow, *ehi, psphys.get<double>("spectrumResolution"),
-					   kMaxUserSet, kMaxUser);
+					   kMaxUserSet, kMaxUser, kMaxMax);
+ 
+ 
+ 
+
+      double lowestEnergy{*elow};
+      double upperEnergy{*ehi};
+
+      if (*ehi > kMax) {
+	upperEnergy = kMax;
+      }
+
+ 
+      double xLower = lowestEnergy/kMax;
+      double xUpper = upperEnergy/kMax;
+    
+      //
+      // integral of closure appoximation is 1/20 over [0,1].  this gives me the fraction of the spectrum we use, 
+      // should weight overall rate by this
+
+      fractionSpectrum = (20.) *  ( pow(xUpper,2)/2. - (4./3.)*pow(xUpper,3) + (7./4.)*pow(xUpper,4) - (6./5.)*pow(xUpper,5) 
+			   + (1./3.)*pow(xUpper,6) )
+	-  
+	( pow(xLower,2)/2. - (4./3.)*pow(xLower,3) + (7./4.)*pow(xLower,4) - (6./5.)*pow(xLower,5) 
+	  + (1./3.)*pow(xLower,6) );
+ 
+      if (physicsVerbosityLevel_ > 0){
+	std::cout << "fraction of spectrum = " << fractionSpectrum << std::endl;
+      }
+
     }
     else if (spectrumShape == "flat") {
       *elow = psphys.get<double>("elow");
@@ -168,7 +233,7 @@ namespace mu2e {
     event.put(std::move(output));
 
     // for future normalization
-    const double weight = 1.;
+    const double weight = fractionSpectrum;
     std::unique_ptr<EventWeight> pw(new EventWeight(weight));
     event.put(std::move(pw));
 
@@ -180,6 +245,7 @@ namespace mu2e {
 
   //================================================================
   double StoppedMuonRMCGun::generateEnergy() {
+
     return elow_ + (ehi_ - elow_)*randSpectrum_.fire();
   }
 

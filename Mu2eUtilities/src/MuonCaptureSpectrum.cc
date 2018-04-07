@@ -28,12 +28,23 @@ namespace mu2e {
   double MuonCaptureSpectrum::getWeight( const double E ) const {
 
     double weight(0.);
+    /*  if I want options can implement later
     if      ( _spectrum == Flat )       weight = getFlat( E );
-    else if ( _spectrum == RMC )        weight = getRMCSpectrum( E , _kMaxUserSet, _kMaxUser);
+    else if ( _spectrum == RMC )        weight = getRMCSpectrum( E , _kMaxUserSet, _kMaxUser, _kMaxMax);
+    */
+
+    weight = getRMCSpectrum( E , _kMaxUserSet, _kMaxUser, _kMaxMax);
+
+
+    //   std::cout << "spectrum is " << _spectrum << std::endl; 
+
+    //    if (_spectrum == Flat) {std::cout << "Flat Spectrum" << std::endl;}
+    //if (_spectrum==RMC) {std::cout << "RMC Spectrum" << std::endl;}
 
     return weight;
 
   }
+
 
   double MuonCaptureSpectrum::get2DWeight( const double x, const double y, const double E ) const {
     
@@ -58,12 +69,7 @@ namespace mu2e {
   //  - see doc-db 4378; use higher kmax
   //=======================================================
 
-  double MuonCaptureSpectrum::getRMCSpectrum( const double e, const bool kMaxUserSet, const double kMaxUser) {
-    static const double muonMassFit       = 105.658;
-    static const double bindingEnergyFit  =   0.464;
-    static const double recoilEnergyFit   =   0.220;
-    static const double deltaMassFit      =   3.121;
-    static const double kMaxMax              = muonMassFit - bindingEnergyFit - recoilEnergyFit - deltaMassFit;
+  double MuonCaptureSpectrum::getRMCSpectrum( const double e, const bool kMaxUserSet, const double kMaxUser, const double kMaxMax) {
     double kMax;
     if (kMaxUserSet){
       kMax = kMaxUser;
@@ -75,9 +81,15 @@ namespace mu2e {
     if ( e > kMax ) return 0.;
 
     double xFit = e/kMax;
+
+   
+    //    double value = (1 - 2*xFit +2*xFit*xFit)*xFit*(1-xFit)*(1-xFit);
+ 
+    //    std::cout << " kMax, xfit, value = " << kMax << " " << xFit << " " << value << std::endl;
     
     return (1 - 2*xFit +2*xFit*xFit)*xFit*(1-xFit)*(1-xFit);
   }
+
 
   //=======================================================
   // Analytic expression for electron/positron energies via 
