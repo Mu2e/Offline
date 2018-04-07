@@ -42,6 +42,8 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
+#include "TH1F.h"
+
 #include <memory>
 
  
@@ -75,11 +77,18 @@ namespace mu2e {
        int    _diagLevel;
        StrawIdMask _mask; 
        StrawEnd _end[2]; // helper
+       float _invnpre; // cache
+       float _invgain; // cache
+       unsigned _npre; //cache
 
        art::InputTag _sdtag, _cctag;
        fhicl::ParameterSet _peakfit;  // peak fit (charge reconstruction) parameters
        std::unique_ptr<TrkHitReco::PeakFit> _pfit; // peak fitting algorithm
-       
+       // diagnostic
+       TH1F* _maxiter;
+       // helper function
+       float peakMinusPed(TrkTypes::ADCWaveform const& adcData) const;
+ 
  };
 
   StrawHitReco::StrawHitReco(fhicl::ParameterSet const& pset) :
@@ -116,17 +125,25 @@ namespace mu2e {
   //------------------------------------------------------------------------------------------
   void StrawHitReco::beginJob()
   {
+    if(_diagLevel > 0){
+      art::ServiceHandle<art::TFileService> tfs;
+      _maxiter   = tfs->make<TH1F>( "maxiter",  "ADC max",16,-0.5,15.5 );
+    }
   }
 
   void StrawHitReco::beginRun(art::Run& run)
   {    
       ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
+      ConditionsHandle<StrawPhysics> strawphys = ConditionsHandle<StrawPhysics>("ignored");
+// set cache for peak-ped calculation (default)
+      _npre = strawele->nADCPreSamples();
+      _invnpre = 1.0/(float)_npre;
+      _invgain = strawele->adcLSB()*strawele->peakMinusPedestalEnergyScale()/strawphys->strawGain();
+ 
       // this must be done here because strawele is not accessible at startup and pfit references it
-      if (_fittype == TrkHitReco::FitType::peakminusped)
-         _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFit(*strawele,_peakfit) );
-      else if (_fittype == TrkHitReco::FitType::combopeakfit)
+      if (_fittype == TrkHitReco::FitType::combopeakfit)
 	 _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::ComboPeakFitRoot(*strawele,_peakfit) );
-      else
+      else if (_fittype == TrkHitReco::FitType::peakfit)
 	 _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFitRoot(*strawele,_peakfit) );
       if (_printLevel > 0) std::cout << "In StrawHitReco begin Run " << std::endl;
   }
@@ -192,11 +209,17 @@ namespace mu2e {
 	}
 
 	//extract energy from waveform
-	TrkHitReco::PeakFitParams params;
-	_pfit->process(digi.adcWaveform(),params);
-	float energy = strawphys->ionizationEnergy(params._charge/strawphys->strawGain());
-	if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
-	  << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
+	float energy(0.0);
+	if (_fittype == TrkHitReco::FitType::peakminusped){
+	  float charge = peakMinusPed(digi.adcWaveform());
+	  energy = strawphys->ionizationEnergy(charge);
+	} else {
+	  TrkHitReco::PeakFitParams params;
+	  _pfit->process(digi.adcWaveform(),params);
+	  energy = strawphys->ionizationEnergy(params._charge/strawphys->strawGain());
+	  if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
+	    << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
+	}
 
 	if( energy > _maxE){
 	  if(_filter) continue;
@@ -267,6 +290,18 @@ namespace mu2e {
 
       if(_writesh)event.put(std::move(shCol));
       event.put(std::move(chCol));
+  }
+
+  float StrawHitReco::peakMinusPed(TrkTypes::ADCWaveform const& adcData) const {
+    auto wfstart = adcData.begin() + _npre;
+    float pedestal = std::accumulate(adcData.begin(), wfstart, 0)*_invnpre;
+//    auto maxIter = std::max_element(wfstart,adcData.end());
+    auto maxIter = wfstart;
+    while(maxIter != adcData.end() && *(maxIter+1) > *maxIter)
+      ++maxIter;
+    float peak = *maxIter;
+    if(_diagLevel > 0)_maxiter->Fill(std::distance(wfstart,maxIter));
+    return (peak-pedestal)*_invgain;
   }
 
 }
