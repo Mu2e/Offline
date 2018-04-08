@@ -46,6 +46,7 @@ namespace mu2e
     void endJob();
 
     private:
+//    std::string _crvStepsModuleLabel;
     std::string _crvSiPMChargesModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
     std::string _genParticleModuleLabel;
@@ -55,6 +56,7 @@ namespace mu2e
 
   CRVTest::CRVTest(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
+//    _crvStepsModuleLabel(pset.get<std::string>("crvStepsModuleLabel")),
     _crvSiPMChargesModuleLabel(pset.get<std::string>("crvSiPMChargesModuleLabel")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _genParticleModuleLabel(pset.get<std::string>("genParticleModuleLabel"))
@@ -62,6 +64,7 @@ namespace mu2e
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("CrvSingleCounter");
     _recoPulses = tfdir.make<TNtuple>("RecoPulses", "RecoPulses", "event:startX:startY:startZ:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseWidth:recoPulseTime:recoLEtime:MCPEs:chi2");
+//    _recoPulses = tfdir.make<TNtuple>("RecoPulses", "RecoPulses", "event:startX:startY:startZ:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseWidth:recoPulseTime:MCPEs:ionizingEnergy:nonIonizingEnergy:energyLoss");
   }
 
   void CRVTest::beginJob()
@@ -74,6 +77,9 @@ namespace mu2e
 
   void CRVTest::analyze(const art::Event& event) 
   {
+//    art::Handle<StepPointMCCollection> crvStepsCollection;
+//    event.getByLabel(_crvStepsModuleLabel,"CRV",crvStepsCollection);
+
     art::Handle<CrvSiPMChargesCollection> crvSiPMChargesCollection;
     event.getByLabel(_crvSiPMChargesModuleLabel,"",crvSiPMChargesCollection);
 
@@ -95,6 +101,22 @@ namespace mu2e
 
       CrvRecoPulsesCollection::const_iterator    iterRecoPulses    = crvRecoPulsesCollection->find(barIndex);
       CrvSiPMChargesCollection::const_iterator   iterSiPMCharges   = crvSiPMChargesCollection->find(barIndex);
+
+/*
+      double ionizingEnergy=0;
+      double nonIonizingEnergy=0;
+      double energyLoss=0;
+      for(size_t istep=0; istep<crvStepsCollection->size(); istep++)
+      {
+        StepPointMC const& step(crvStepsCollection->at(istep));
+        if(step.volumeId()==barIndex.asUint())
+        {
+          nonIonizingEnergy+=step.nonIonizingEDep();
+          ionizingEnergy+=step.ionizingEdep();
+          if(step.simParticle()->id().asUint()==1) energyLoss=step.simParticle()->startMomentum().e()-step.simParticle()->endMomentum().e();
+        }
+      }
+*/
 
       for(int SiPM=0; SiPM<4; SiPM++) 
       {
@@ -141,6 +163,7 @@ namespace mu2e
         }
 
         _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseWidth,recoPulseTime,recoLEtime,MCPEs,chi2);
+//        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseWidth,recoPulseTime,MCPEs,ionizingEnergy,nonIonizingEnergy,energyLoss);
       }
     }
 

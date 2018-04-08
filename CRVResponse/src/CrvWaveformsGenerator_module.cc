@@ -77,7 +77,7 @@ namespace mu2e
     _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
     double singlePEWaveformPrecision(pset.get<double>("singlePEWaveformPrecision"));    //1.0 ns
-    double singlePEWaveformStretchFactor(pset.get<double>("singlePEWaveformStretchFactor"));    //1.08 //TODO????
+    double singlePEWaveformStretchFactor(pset.get<double>("singlePEWaveformStretchFactor"));    //1.047
     double singlePEWaveformMaxTime(pset.get<double>("singlePEWaveformMaxTime"));        //200
     double singlePEReferenceCharge(pset.get<double>("singlePEReferenceCharge")); //1.8564e-13 C (the charge which was used to generate the above 1PE waveform)
     ConfigFileLookupPolicy configFile;

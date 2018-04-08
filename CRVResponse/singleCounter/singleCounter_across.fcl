@@ -75,9 +75,6 @@ physics :
        }
     }
 
-    protonTimeMap: { module_type : GenerateProtonTimes }
-    muonTimeMap: { module_type : GenerateMuonLife }
-
     CrvPhotons       : @local::CrvPhotons
     CrvSiPMCharges   : @local::CrvSiPMCharges
     CrvWaveforms     : @local::CrvWaveforms
@@ -96,7 +93,7 @@ physics :
     }
   }
 
-  trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses ]
+  trig : [generate, g4run, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses ]
   trigger_paths  : [trig]
 
 #  out: [CrvTest, Output]

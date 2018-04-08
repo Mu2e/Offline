@@ -1,7 +1,7 @@
 bool cosmicFromTH2.do = true;
 
-//string cosmicFromTH2.histogram = "CRVResponse/efficiencyCheck/cosmicDS3.root";
-string cosmicFromTH2.histogram = "CRVResponse/efficiencyCheck/cosmicDS.root";
+string cosmicFromTH2.histogram = "CRVResponse/efficiencyCheck/cosmicDS3.root";
+//string cosmicFromTH2.histogram = "CRVResponse/efficiencyCheck/cosmicDS.root";
 
 double cosmicFromTH2.energy =    1e3;  //MeV 
 double cosmicFromTH2.time   =  800.0;  //ns

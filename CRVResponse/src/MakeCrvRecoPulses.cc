@@ -28,15 +28,12 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
   _peakBins.clear();
 
   //find the maxima
-  int nBins = waveform.size();
+  int nBins = static_cast<int>(waveform.size());
   std::vector<std::pair<int,bool> > peaks;
-  for(int bin=0; bin<=nBins; bin++) 
+  for(int bin=2; bin<nBins-2; bin++) 
   {
-    if(bin>1 && bin<nBins-1)  //don't search for peaks too close to the sample start or end
-    {
-      if(waveform[bin-1]<waveform[bin] && waveform[bin]>waveform[bin+1]) peaks.emplace_back(bin,false);
-      if(waveform[bin-1]<waveform[bin] && waveform[bin]==waveform[bin+1] && waveform[bin+1]>waveform[bin+2]) peaks.emplace_back(bin,true);
-    }
+    if(waveform[bin-1]<waveform[bin] && waveform[bin]>waveform[bin+1]) peaks.emplace_back(bin,false);
+    if(waveform[bin-1]<waveform[bin] && waveform[bin]==waveform[bin+1] && waveform[bin+1]>waveform[bin+2]) peaks.emplace_back(bin,true);
   }
 
   for(size_t i=0; i<peaks.size(); i++)
@@ -87,6 +84,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
     double fitParam1 = fr->Parameter(1);
     double fitParam2 = fr->Parameter(2);
     if(fitParam0<=0 || fitParam2<=0) continue;
+    if(fitParam2>50 && waveform[maxBin]-_pedestal<10) continue; //FIXME: need a better way to identify these fake pulse which are caused by electronic noise
 
     int    PEs          = lrint(fitParam0*fitParam2 / _calibrationFactor);
     double pulseTime    = fitParam1;
