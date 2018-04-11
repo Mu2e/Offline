@@ -30,11 +30,13 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "DataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Mu2eUtilities/inc/Random2Dpair.hh"
 #include "Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
 #include "Mu2eUtilities/inc/SimpleSpectrum.hh"
 #include "Mu2eUtilities/inc/BinnedSpectrum.hh"
@@ -66,6 +68,8 @@ namespace mu2e {
     CLHEP::RandGeneral randSpectrum_;
     RandomUnitSphere randomUnitSphere_;
 
+    CLHEP::RandFlat randFlat_;
+
     RootTreeSampler<IO::StoppedParticleF> stops_;
 
     bool kMaxUserSet_;
@@ -74,9 +78,13 @@ namespace mu2e {
  
     static double fractionSpectrum ;
 
+    static double rhoInternal;
+
     double generateEnergy();
 
     TH1F* _hmomentum;
+    TH1F* _hEnergyElectron;
+    TH1F* _hEnergyPositron;
 
   public:
     explicit StoppedMuonRMCGun(const fhicl::ParameterSet& pset);
@@ -84,6 +92,9 @@ namespace mu2e {
   };
 
   double StoppedMuonRMCGun::fractionSpectrum(0.);
+  double StoppedMuonRMCGun::rhoInternal{0.0069};
+  //double StoppedMuonRMCGun::rhoInternal{1.0};
+  //  double StoppedMuonRMCGun::rhoInternal(-1.);
 
   //================================================================
   StoppedMuonRMCGun::StoppedMuonRMCGun(const fhicl::ParameterSet& pset)
@@ -95,6 +106,7 @@ namespace mu2e {
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
     , randomUnitSphere_(eng_)
+    , randFlat_(eng_)
     , stops_(eng_, pset.get<fhicl::ParameterSet>("muonStops"))
     , doHistograms_( pset.get<bool>("doHistograms",true ) )
   {
@@ -113,7 +125,9 @@ namespace mu2e {
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir( "StoppedMuonRMCGun" );
 
-      _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 70,  0.,  140.  );
+      _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum, RMC", 70,  0.,  140.  );
+      _hEnergyElectron     = tfdir.make<TH1F>( "hEnergyElectron", "Produced electron energy, RMC Internal", 70,  0.,  140.  );
+      _hEnergyPositron     = tfdir.make<TH1F>( "hEnergyPositron", "Produced electron energy, RMC Internal", 70,  0.,  140.  );
     }
 
   }
@@ -224,23 +238,69 @@ namespace mu2e {
 
     const double energy = generateEnergy();
 
-    output->emplace_back( PDGCode::gamma, 
-                          GenId::radiativeMuonCapture, 
-                          pos,
-                          CLHEP::HepLorentzVector( randomUnitSphere_.fire(energy), energy), 
-                          stop.t );
+    // two things can now happen with this photon.  It can proceed and possibly convert, or it can internally convert.
+    // the probability of internal conversion is given by rho = 0.0069 (assume same as for RPC).  Throw a flat 
 
-    event.put(std::move(output));
+    if (randFlat_.fire() > rhoInternal) {
+      output->emplace_back( PDGCode::gamma, 
+			    GenId::radiativeMuonCapture, 
+			    pos,
+			    CLHEP::HepLorentzVector( randomUnitSphere_.fire(energy), energy), 
+			    stop.t );
 
-    // for future normalization
-    const double weight = fractionSpectrum;
-    std::unique_ptr<EventWeight> pw(new EventWeight(weight));
-    event.put(std::move(pw));
+      event.put(std::move(output));
 
-    if ( !doHistograms_ ) return;
+      // for future normalization
+      const double weight = fractionSpectrum;
+      std::unique_ptr<EventWeight> pw(new EventWeight(weight));
+      event.put(std::move(pw));
 
-    _hmomentum->Fill(energy);
+      if ( doHistograms_ ) {
 
+	_hmomentum->Fill(energy);
+      }
+    } else {    // internal conversions
+
+      //Need mass of electron
+      static const double massE = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::e_minus).ref().mass().value();
+
+      // Uses energy above as photon energy, assuming distribution created by 
+      static Random2Dpair< MuonCaptureSpectrum > random2dPair( eng_, 2*massE, energy, -1., 1. );
+ 
+      const auto xyPair          = random2dPair.fire( energy );
+      const auto elecPosiVectors = MuonCaptureSpectrum::getElecPosiVectors( energy, xyPair.first, xyPair.second ); 
+ 
+      output->emplace_back( PDGCode::e_minus, 
+			    GenId::radiativeMuonCaptureInternal, 
+			    pos,
+			    elecPosiVectors.first, 
+			    stop.t );
+      output->emplace_back( PDGCode::e_plus, 
+			    GenId::radiativeMuonCaptureInternal, 
+			    pos,
+			    elecPosiVectors.second, 
+			    stop.t );
+
+      event.put(std::move(output));
+
+      // for future normalization
+      const double weight = fractionSpectrum*rhoInternal;
+      std::unique_ptr<EventWeight> pw(new EventWeight(weight));
+      event.put(std::move(pw));
+
+      if ( doHistograms_ ) {
+
+	_hmomentum->Fill(energy);
+	if (verbosityLevel_ > 0) {
+	  std::cout << "original photon energy = " << energy << " and electron mass = " << massE <<  std::endl;
+	  std::cout << "RMC electron/positron energies = " << elecPosiVectors.first.e() << " " << elecPosiVectors.second.e() << std::endl;
+	  std::cout << "and the full 4-vector: " << elecPosiVectors.first << " " << elecPosiVectors.second << std::endl;
+	}
+	_hEnergyElectron->Fill(elecPosiVectors.first.e());
+	_hEnergyPositron->Fill(elecPosiVectors.second.e());
+
+      }
+    }
   }
 
   //================================================================

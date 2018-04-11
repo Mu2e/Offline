@@ -99,9 +99,9 @@ namespace mu2e {
 
   double MuonCaptureSpectrum::get2DMax( const double E ) const {
     static const GlobalConstantsHandle<ParticleDataTable> pdt;
-    static const HepPDT::ParticleData& muon_data  = pdt->particle(PDGCode::mu_minus).ref();
+    static const HepPDT::ParticleData& e_data  = pdt->particle(PDGCode::e_minus).ref();
 
-    return getKrollWadaJosephSpectrum( E, 2*muon_data.mass().value(), 0. );
+    return getKrollWadaJosephSpectrum( E, 2*e_data.mass().value(), 0. );
   }
 
   double MuonCaptureSpectrum::getKrollWadaJosephSpectrum(const double ePhoton,
@@ -109,9 +109,10 @@ namespace mu2e {
                                                          const double y ) const {
 
     static const GlobalConstantsHandle<ParticleDataTable> pdt;
+    static const HepPDT::ParticleData& e_data  = pdt->particle(PDGCode::e_minus).ref();
     static const HepPDT::ParticleData& muon_data = pdt->particle(PDGCode::mu_minus).ref();
 
-    static const double m = muon_data.mass().value();
+    static const double m = e_data.mass().value();
     static const double E = ePhoton;
 
     // Assume muon is not bound to stopped nucleus and there is no
