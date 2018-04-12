@@ -13,7 +13,7 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
 #include <array>
@@ -155,8 +155,8 @@ namespace mu2e {
     TrkParticle                       _tpart;
     TrkFitDirection                   _fdir;
 
-    const StrawHitCollection*         _shcol;
-    const StrawHitPositionCollection* _shpos;
+    const ComboHitCollection*         _chcol;
+    // const StrawHitPositionCollection* _shpos;
     const StrawHitFlagCollection*     _shfcol;
     
     TrkErrCode                        _fit;	    // fit status code from last fit
@@ -166,7 +166,7 @@ namespace mu2e {
     ::LsqSums4         _sxy;
     ::LsqSums4         _srphi;
 
-    CLHEP::Hep3Vector  _center;
+    XYZVec             _center;
     double             _radius;
 
     double             _chi2;
@@ -174,7 +174,7 @@ namespace mu2e {
 // 2015-02-06 P.Murat: fit with non-equal weights - XY-only
 //-----------------------------------------------------------------------------
     ::LsqSums4         _sxyw;
-    CLHEP::Hep3Vector  _cw;
+    XYZVec             _cw;
     double             _rw;
     double             _chi2w;
 //-----------------------------------------------------------------------------
@@ -203,8 +203,8 @@ namespace mu2e {
 
     // CalHelixFinderData& operator =(CalHelixFinderData const& other);
 
-    const StrawHitCollection*         shcol () { return _shcol ; }
-    const StrawHitPositionCollection* shpos () { return _shpos ; }
+    const ComboHitCollection*         chcol () { return _chcol ; }
+    // const StrawHitPositionCollection* shpos () { return _shpos ; }
     const StrawHitFlagCollection*     shfcol() { return _shfcol; }
 
     bool          fitIsValid        () { return _sxy.qn() > 0; }

@@ -27,8 +27,8 @@ namespace mu2e {
     _goodhits       = Data._goodhits;
     _tpart          = Data._tpart;
     _fdir           = Data._fdir;
-    _shcol          = Data._shcol;
-    _shpos          = Data._shpos;
+    _chcol          = Data._chcol;
+    // _shpos          = Data._shpos;
     _shfcol         = Data._shfcol;
     _fit            = Data._fit;
     _sxy            = Data._sxy;

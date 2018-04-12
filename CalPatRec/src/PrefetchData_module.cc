@@ -25,7 +25,8 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawDigi.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
+// #include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
@@ -64,7 +65,8 @@ namespace mu2e {
     void   fake_access(const CaloDigi&    Digi);
 
     void   fake_access(const StrawHit& Hit, /*const StrawHitFlag& Flag,*/ const StrawHitPosition& Pos);
-    void   fake_access(const StereoHit&   Hit);
+    void   fake_access(const ComboHit&    Hit);
+    // void   fake_access(const StereoHit&   Hit);
     void   fake_access(const StrawDigi&   Digi);
     void   fake_access(const StepPointMC* Step);
 
@@ -76,14 +78,16 @@ namespace mu2e {
     bool          _mcDiag;
     int           _fetchCaloDigis;
     int           _fetchStrawHits;
+    int           _fetchComboHits;
     int           _fetchStrawHitFlags;
     int           _fetchStrawHitPositions;
-    int           _fetchStereoHits;
+    // int           _fetchStereoHits;
     int           _fetchStrawDigis;
 					// data tags
     art::InputTag _cdTag;
 
     art::InputTag _shTag;
+    art::InputTag _chTag;
     art::InputTag _sthTag;
     art::InputTag _shfTag;
     art::InputTag _shpTag;
@@ -92,7 +96,8 @@ namespace mu2e {
     const CaloDigiCollection*                   _cdcol;
 
     const StrawHitCollection*                   _shcol;
-    const StereoHitCollection*                  _sthcol;
+    const ComboHitCollection*                   _chcol;
+    // const StereoHitCollection*                  _sthcol;
     const StrawHitFlagCollection*               _shfcol;
     const StrawHitPositionCollection*           _shpcol;
     const StrawDigiCollection*                  _sdcol;
@@ -108,14 +113,16 @@ namespace mu2e {
 
     _fetchCaloDigis (pset.get<int>         ("fetchCaloDigis" )),
     _fetchStrawHits (pset.get<int>         ("fetchStrawHits" )),
+    _fetchComboHits (pset.get<int>         ("fetchComboHits" )),
     _fetchStrawHitFlags (pset.get<int>     ("fetchStrawHitFlags" )),
     _fetchStrawHitPositions (pset.get<int> ("fetchStrawHitPositions" )),
-    _fetchStereoHits (pset.get<int>        ("fetchStereoHits" )),
+    // _fetchStereoHits (pset.get<int>        ("fetchStereoHits" )),
     _fetchStrawDigis(pset.get<int>         ("fetchStrawDigis")),
 
     _cdTag     (pset.get<string>       ("caloDigiCollectionTag"        )),
     _shTag     (pset.get<string>       ("strawHitCollectionTag"        )),
-    _sthTag    (pset.get<string>       ("stereoHitCollectionTag"       )),
+    _chTag     (pset.get<string>       ("comboHitCollectionTag"        )),
+    // _sthTag    (pset.get<string>       ("stereoHitCollectionTag"       )),
     _shfTag    (pset.get<string>       ("strawHitFlagCollectionTag"    )),
     _shpTag    (pset.get<string>       ("strawHitPositionCollectionTag")),
     _sdTag     (pset.get<art::InputTag>("strawDigiCollection"          ))
@@ -139,8 +146,12 @@ namespace mu2e {
   }
  
 //-----------------------------------------------------------------------------
-  void PrefetchData::fake_access(const StereoHit& Hit) {
+  void PrefetchData::fake_access(const ComboHit& Hit) {
   }
+ 
+//-----------------------------------------------------------------------------
+  // void PrefetchData::fake_access(const StereoHit& Hit) {
+  // }
  
 //-----------------------------------------------------------------------------
   void PrefetchData::fake_access(const StepPointMC* Step) {
@@ -155,7 +166,7 @@ namespace mu2e {
     _cdcol   = 0;
 
     _shcol   = 0;
-    _sthcol  = 0;
+    // _sthcol  = 0;
     _shfcol  = 0;
     _shpcol  = 0;
     _sdcol   = 0;
@@ -170,6 +181,11 @@ namespace mu2e {
       _shcol = shH.product();
     }
 
+    if (_fetchComboHits) {
+      auto chH = evt.getValidHandle<ComboHitCollection>(_chTag);
+      _chcol = chH.product();
+    }
+
     if (_fetchStrawHitFlags) {
       auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
       _shfcol = shfH.product();
@@ -179,10 +195,10 @@ namespace mu2e {
       auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
       _shpcol = shpH.product();
     }
-    if (_fetchStereoHits) {
-      auto sthH = evt.getValidHandle<StereoHitCollection>(_sthTag);
-      _sthcol = sthH.product();
-    }
+    // if (_fetchStereoHits) {
+    //   auto sthH = evt.getValidHandle<StereoHitCollection>(_sthTag);
+    //   _sthcol = sthH.product();
+    // }
 
     // if (_fetchStrawDigis) {
     //   auto mcptrHandleStraw = evt.getValidHandle<PtrStepPointMCVectorCollection>(_sdTag);
@@ -233,13 +249,21 @@ namespace mu2e {
       }
     }
 
-    if (_sthcol) {
-      int nsth = _sthcol->size();
-      for(int i=0;i<nsth;++i){
-	const StereoHit& sth = _sthcol->at (i);
-	fake_access(sth);
+    if (_chcol) {
+      int nch = _chcol->size();
+      for(int ish=0;ish<nch;++ish){
+	const ComboHit& ch          = _chcol->at (ish);
+ 	fake_access(ch);
       }
     }
+
+    // if (_sthcol) {
+    //   int nsth = _sthcol->size();
+    //   for(int i=0;i<nsth;++i){
+    // 	const StereoHit& sth = _sthcol->at (i);
+    // 	fake_access(sth);
+    //   }
+    // }
 
     // if(_mcDiag){
     //   auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_sdTag);
