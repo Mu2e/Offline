@@ -57,6 +57,9 @@ namespace mu2e {
 
     double elow_; // BinnedSpectrum does not store emin and emax reliably
     double ehi_;
+
+    double rhoInternal_;
+
     BinnedSpectrum spectrum_;
     static BinnedSpectrum parseSpectrumShape(const fhicl::ParameterSet& psphys,
                                              double *elow,
@@ -77,8 +80,7 @@ namespace mu2e {
     bool doHistograms_;
  
     static double fractionSpectrum ;
-
-    static double rhoInternal;
+    static double omcNormalization;
 
     double generateEnergy();
 
@@ -91,16 +93,16 @@ namespace mu2e {
     virtual void produce(art::Event& event);
   };
 
-  double StoppedMuonRMCGun::fractionSpectrum(0.);
-  double StoppedMuonRMCGun::rhoInternal{0.0069};
-  //double StoppedMuonRMCGun::rhoInternal{1.0};
-  //  double StoppedMuonRMCGun::rhoInternal(-1.);
+  double StoppedMuonRMCGun::fractionSpectrum{0.};
+  double StoppedMuonRMCGun::omcNormalization{0.};
+  //  double StoppedMuonRMCGun::rhoInternal{0.0069};
 
   //================================================================
   StoppedMuonRMCGun::StoppedMuonRMCGun(const fhicl::ParameterSet& pset)
     : psphys_(pset.get<fhicl::ParameterSet>("physics"))
     , elow_()
     , ehi_()
+    , rhoInternal_(psphys_.get<double>("rhoInternal"))
     , spectrum_(parseSpectrumShape(psphys_, &elow_, &ehi_))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
@@ -120,6 +122,8 @@ namespace mu2e {
                <<std::endl;
       std::cout<<"StoppedMuonRMCGun: producing photon " << std::endl;
     }
+
+
 
     if ( doHistograms_ ) {
       art::ServiceHandle<art::TFileService> tfs;
@@ -148,6 +152,7 @@ namespace mu2e {
       *ehi = psphys.get<double>("ehi");
       bool kMaxUserSet = psphys.get<bool>("kMaxUserSet");
       double kMaxUser = psphys.get<double>("kMaxUser");
+      double rmcFrac =  psphys.get<double>("rmcFrac");
  
 
     // in this case just stop
@@ -208,9 +213,17 @@ namespace mu2e {
 	-  
 	( pow(xLower,2)/2. - (4./3.)*pow(xLower,3) + (7./4.)*pow(xLower,4) - (6./5.)*pow(xLower,5) 
 	  + (1./3.)*pow(xLower,6) );
+
+      //
+      // this is a DIFFERENT normalization.  Docdb 4378 and Armstrong et al tell us the rate about 57 MeV normalized to all
+      // ordinary muon captures is 1.43 +-0.12 x 10^{-5}.  See the mathematica notebook in doc-db 16979.  Made configurable.
+
+      omcNormalization = (rmcFrac)/(1/20. - 11432149083/pow(kMax,6) + (3610152342/5.)/pow(kMax,5) - (73892007/4.)/pow(kMax,4) + 246924/pow(kMax,3) - (3249/2.)/pow(kMax,2));
  
       if (physicsVerbosityLevel_ > 0){
 	std::cout << "fraction of spectrum = " << fractionSpectrum << std::endl;
+	std::cout << "rmc fraction         = " << rmcFrac << std::endl;
+	std::cout << "omc normalization    = " << omcNormalization << std::endl;
       }
 
     }
@@ -241,7 +254,7 @@ namespace mu2e {
     // two things can now happen with this photon.  It can proceed and possibly convert, or it can internally convert.
     // the probability of internal conversion is given by rho = 0.0069 (assume same as for RPC).  Throw a flat 
 
-    if (randFlat_.fire() > rhoInternal) {
+    if (randFlat_.fire() > rhoInternal_) {
       output->emplace_back( PDGCode::gamma, 
 			    GenId::radiativeMuonCapture, 
 			    pos,
@@ -251,7 +264,7 @@ namespace mu2e {
       event.put(std::move(output));
 
       // for future normalization
-      const double weight = fractionSpectrum;
+      const double weight = fractionSpectrum * omcNormalization;
       std::unique_ptr<EventWeight> pw(new EventWeight(weight));
       event.put(std::move(pw));
 
@@ -284,7 +297,7 @@ namespace mu2e {
       event.put(std::move(output));
 
       // for future normalization
-      const double weight = fractionSpectrum*rhoInternal;
+      const double weight = fractionSpectrum*rhoInternal_;
       std::unique_ptr<EventWeight> pw(new EventWeight(weight));
       event.put(std::move(pw));
 
