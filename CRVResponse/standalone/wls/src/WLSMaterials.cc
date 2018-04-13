@@ -161,16 +161,16 @@ void WLSMaterials::CreateMaterials()
   natoms.clear();
 
   //--------------------------------------------------
-  // Scintillator Coating - 15% TiO2 and 85% polystyrene by weight.
+  // Scintillator Coating - 30% TiO2 and 70% polystyrene by weight.
   //--------------------------------------------------
 
-  density = 1.52*g/cm3;
+  density = 2.01*g/cm3;
 
   Coating =
           new G4Material("Coating", density, ncomponents=2);
 
-  Coating->AddMaterial(TiO2,        fractionmass = 15*perCent);
-  Coating->AddMaterial(Polystyrene, fractionmass = 85*perCent);
+  Coating->AddMaterial(TiO2,        fractionmass = 30*perCent);
+  Coating->AddMaterial(Polystyrene, fractionmass = 70*perCent);
 
   //
   // ------------ Generate & Add Material Properties Table ------------

@@ -4,7 +4,7 @@ hostname
 printenv
 
 source /cvmfs/mu2e.opensciencegrid.org/setupmu2e-art.sh
-source /cvmfs/mu2e.opensciencegrid.org/Offline/v6_3_1/SLF6/prof/Offline/setup.sh
+source /cvmfs/mu2e.opensciencegrid.org/Offline/v6_5_2/SLF6/prof/Offline/setup.sh
 
 setup ifdhc
 
@@ -18,14 +18,15 @@ if [ $SIMTYPE -ge 2 ]; then
 fi
 
 # copy and run executable
-ifdh cp /mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/wlsProduction wlsProduction 
+mv $CONDOR_DIR_INPUT/wlsProduction wlsProduction 
 chmod 777 wlsProduction
 ./wlsProduction -c -l $LENGTH -t $SIMTYPE -m $MINBIN -M $MAXBIN -n $PHOTONS
 
 # copy lookup table
 printf -v MINBINTMP "%06d\n" $MINBIN
 OUTFILE=LookupTable'_'$SIMTYPE'_'$MINBINTMP
-ifdh cp $OUTFILE /mu2e/data/outstage/ehrlich/tables_4.0/$LENGTH/$OUTFILE
+#ifdh cp $OUTFILE /mu2e/data/outstage/ehrlich/tables_4.0/$LENGTH/$OUTFILE
+ifdh cp $OUTFILE /pnfs/mu2e/scratch/outstage/ehrlich/tables_4.0_out/$LENGTH/$OUTFILE
 
 # create log file
 LOGFILE=`printf "log_%010d_%05d.log" $CLUSTER $PROCESS`

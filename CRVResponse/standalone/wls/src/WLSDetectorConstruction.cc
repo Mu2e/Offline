@@ -74,6 +74,13 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
   _sipmRadius       = 0.70*mm;
   _airGap           = 0.0*mm;
 
+/*
+//FIXME
+_barWidth         = 4.94*cm;
+_coatingThickness = 0.3*mm;
+_extrusionCornerRadius = 3.00*mm;
+*/
+
 #ifdef FIBERTEST
 #pragma message "USING FIBERTEST"
   _mppcReflectivity       = 0.0;

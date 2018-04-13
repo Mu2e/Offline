@@ -101,11 +101,17 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
     }
 */
 /*
-    std::cout<<theStep->GetTrack()->GetTrackID()<<"  "<<theStep->GetTrack()->GetParentID()<<"   ";
-    std::cout<<theStep->GetTrack()->GetParticleDefinition()->GetParticleName()<<"   ";
-    std::cout<<theStep->GetTrack()->GetTrackLength()<<"   "<<theStep->GetTrack()->GetTotalEnergy()<<"   ";
-    std::cout<<theStep->GetPreStepPoint()->GetPosition()<<"   ";
-    std::cout<<theStep->GetPostStepPoint()->GetPosition()<<"   ";
+    if(theStep->GetTrack()->GetParticleDefinition()->GetPDGEncoding()!=0)
+    {
+      std::cout<<theStep->GetTrack()->GetTrackID()<<"  "<<theStep->GetTrack()->GetParentID()<<"   ";
+      std::cout<<theStep->GetTrack()->GetParticleDefinition()->GetParticleName()<<"   ";
+      std::cout<<theStep->GetTrack()->GetTrackLength()<<"   "<<theStep->GetTrack()->GetTotalEnergy()<<"   ";
+      std::cout<<theStep->GetPreStepPoint()->GetPosition()<<"   ";
+      std::cout<<theStep->GetPostStepPoint()->GetPosition()<<"   ";
+      std::cout<<std::endl;
+    }
+*/
+/*
     std::cout<<theStep->GetPreStepPoint()->GetStepStatus()<<"   ";
     std::cout<<theStep->GetPostStepPoint()->GetStepStatus()<<"   ";
     if(theStep->GetTrack()->GetCreatorProcess()!=NULL)

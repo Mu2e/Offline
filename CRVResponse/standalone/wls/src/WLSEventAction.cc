@@ -137,6 +137,12 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
 
     for(int SiPM=0; SiPM<4; SiPM++)
     {
+      if(WLSSteppingAction::Instance()->GetArrivalTimes(SiPM).size()==0)
+      {
+        bin.arrivalProbability[SiPM]=0;
+        continue;
+      }
+
       float arrivalProbability=static_cast<float>(WLSSteppingAction::Instance()->GetArrivalTimes(SiPM).size())/static_cast<float>(_generatedPhotons);
                                                                                                    //_generatedPhotons gets set by WLSPrimaryGeneratorAction
                                                                                                    //after sending out all photons
