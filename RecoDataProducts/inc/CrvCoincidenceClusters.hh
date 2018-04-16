@@ -8,7 +8,9 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "MCDataProducts/inc/SimParticle.hh"
+#include "RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include <vector>
@@ -19,32 +21,22 @@ namespace mu2e
   {
     public:
 
-    struct Hit
-    {
-      double                        _time;
-      int                           _PEs;
-      mu2e::CRSScintillatorBarIndex _counter;
-      int                           _SiPM;
-      double                        _pos;
-      Hit() {}
-      Hit(double time, int PEs, mu2e::CRSScintillatorBarIndex counter, int SiPM, double pos): _time(time), _PEs(PEs), _counter(counter), _SiPM(SiPM), _pos(pos) {}
-    };
-
     struct Cluster
     {
       int                _crvSectorType;
-      CLHEP::Hep3Vector  _avgPos;
+      CLHEP::Hep3Vector  _avgCounterPos;
       double             _startTime;
       double             _endTime;
       int                _PEs;
-      std::vector<Hit>   _hits;
+      std::vector<art::Ptr<CrvRecoPulse> > _crvRecoPulses;
+      std::vector<art::Ptr<SimParticle> >  _simParticles;
 
       Cluster() {}
-      Cluster(int crvSectorType, const CLHEP::Hep3Vector &avgPos, double startTime, double endTime, int PEs, const std::vector<const Hit*> &hits) :
-                                                                                         _crvSectorType(crvSectorType), _avgPos(avgPos), _startTime(startTime), _endTime(endTime), _PEs(PEs)
-      {
-        for(size_t i=0; i<hits.size(); i++) _hits.push_back(*(hits[i]));
-      }
+      Cluster(int crvSectorType, const CLHEP::Hep3Vector &avgCounterPos, double startTime, double endTime, int PEs, 
+              const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses,
+              const std::vector<art::Ptr<SimParticle> > &simParticles) :
+              _crvSectorType(crvSectorType), _avgCounterPos(avgCounterPos), _startTime(startTime), _endTime(endTime), _PEs(PEs), 
+              _crvRecoPulses(crvRecoPulses), _simParticles(simParticles) {}
     };
 
     CrvCoincidenceClusters() {}

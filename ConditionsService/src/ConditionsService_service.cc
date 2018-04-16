@@ -18,6 +18,7 @@
 // Calibration entities.
 // Would like to break the coupling to these.
 #include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/CrvParams.hh"
 #include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "ConditionsService/inc/CalorimeterPhysicalConstants.hh"
@@ -84,6 +85,7 @@ namespace mu2e {
     std::unique_ptr<AcceleratorParams>  acctmp(new AcceleratorParams(_config));
     const AcceleratorParams& accp = *acctmp;
     addEntity( std::move(acctmp) );
+    addEntity( std::move(std::unique_ptr<CrvParams>          ( new CrvParams          (_config))) );
     addEntity( std::move(std::unique_ptr<DAQParams>          ( new DAQParams          (_config))) );
     addEntity( std::move(std::unique_ptr<CalorimeterCalibrations>( new CalorimeterCalibrations(_config))) );
     addEntity( std::move(std::unique_ptr<CalorimeterPhysicalConstants>( new CalorimeterPhysicalConstants(_config))) );

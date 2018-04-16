@@ -83,8 +83,6 @@ BEGIN_PROLOG
       singlePEWaveformMaxTime      : 100    //100 ns
       singlePEReferenceCharge      : 1.8564e-13  //1.8564e-13 C charge which was used to generate the above 1PE waveform
                                                  //capacitance of one pixel (8.84e-14C) * overvoltage (2.1V)
-      digitizationPrecision        : 12.58  //12.58 ns (digitizer sampling rate)
-      digitizationPoints           : 8      //8 points
       FEBtimeSpread                : 2.0    //2.0 ns
       minVoltage                   : 0.0275  //27.5mV (corresponds to 5.5PE)
       noise                        : 4.0e-4 //0.4mV
@@ -131,6 +129,7 @@ BEGIN_PROLOG
       maxDistance                    : 1000 //mm
       maxTimeDifference              : 100  //ns
       crvCoincidenceCheckModuleLabel : "CrvCoincidence"
+      crvWaveformsModuleLabel        : "CrvWaveforms"
       timeWindowStart                : 500  //ns
       timeWindowEnd                  : 1750 //ns
       deadTimeWindowStartMargin      : 0    //ns

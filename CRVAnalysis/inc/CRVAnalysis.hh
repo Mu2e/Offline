@@ -17,6 +17,8 @@ namespace mu2e
 
     CRVAnalysis() {}
 
+//FIXME
+/*
     static void FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterFinderModuleLabel,
                                           const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo);
 
@@ -26,7 +28,7 @@ namespace mu2e
     static void FillCrvHitInfoMCCollection(const std::vector<CrvCoincidenceClusters::Hit> &hits,
                                            const std::vector<art::Handle<mu2e::StepPointMCCollection> > &CrvStepsVector,
                                            CrvHitInfoMCCollection &MCCInfo);
-
+*/
   };
 
 }

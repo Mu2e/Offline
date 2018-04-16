@@ -67,6 +67,11 @@ string calorimeter.pulseFileName = "ConditionsService/data/CsI-waveform-2016-07-
 string calorimeter.pulseHistName = "h_waveform";
 
 
+//CRV information
+int    crv.digitizationSamples = 8;      //8 ADC values
+double crv.digitizationPeriod  = 12.58;  //ns
+
+
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++

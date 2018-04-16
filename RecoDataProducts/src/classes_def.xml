@@ -209,32 +209,22 @@
  <class name="art::Wrapper<std::vector<mu2e::TrackSummary> >"/>
  <class name="art::Ptr<mu2e::TrackSummary>" />
 
- <class name="mu2e::CrvDigi::CrvSingleWaveform" />
- <class name="std::vector<mu2e::CrvDigi::CrvSingleWaveform>" />
-
  <class name="mu2e::CrvDigi" />
- <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigi>" />
- <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigi>" />
+ <class name="std::vector<mu2e::CrvDigi>" />
  <class name="mu2e::CrvDigiCollection" />
  <class name="art::Wrapper<mu2e::CrvDigiCollection>" />
 
- <class name="mu2e::CrvRecoPulses::CrvSingleRecoPulse" />
- <class name="std::vector<mu2e::CrvRecoPulses::CrvSingleRecoPulse>" />
-
- <class name="mu2e::CrvRecoPulses" />
- <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvRecoPulses>" />
- <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvRecoPulses>" />
- <class name="mu2e::CrvRecoPulsesCollection" />
- <class name="art::Wrapper<mu2e::CrvRecoPulsesCollection>" />
+ <class name="mu2e::CrvRecoPulse" />
+ <class name="std::vector<mu2e::CrvRecoPulse>" />
+ <class name="mu2e::CrvRecoPulseCollection" />
+ <class name="art::Wrapper<mu2e::CrvRecoPulseCollection>" />
 
  <class name="mu2e::CrvCoincidenceCheckResult::CoincidenceCombination" />
  <class name="std::vector<mu2e::CrvCoincidenceCheckResult::CoincidenceCombination>" />
  <class name="mu2e::CrvCoincidenceCheckResult" />
  <class name="art::Wrapper<mu2e::CrvCoincidenceCheckResult>" />
 
- <class name="mu2e::CrvCoincidenceClusters::Hit" />
  <class name="mu2e::CrvCoincidenceClusters::Cluster" />
- <class name="std::vector<mu2e::CrvCoincidenceClusters::Hit>" />
  <class name="std::vector<mu2e::CrvCoincidenceClusters::Cluster>" />
  <class name="mu2e::CrvCoincidenceClusters" />
  <class name="art::Wrapper<mu2e::CrvCoincidenceClusters>" />

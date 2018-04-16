@@ -9,6 +9,7 @@
 
 namespace mu2e
 {
+/*
   void CRVAnalysis::FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterFinderModuleLabel,
                                               const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo)
   {
@@ -136,6 +137,7 @@ namespace mu2e
     else MCInfo.emplace_back(CrvHitInfoMC());
 
   }//FillCrvHitInfoMCCollection 
+*/
 
 }
 

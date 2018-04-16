@@ -26,7 +26,7 @@
 #include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
-#include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
@@ -158,7 +158,7 @@ namespace mu2e
     std::string _hitmakerModuleLabel;
     std::string _hitmakerModuleInstance;
     std::string _crvCoincidenceModuleLabel;
-    std::string _crvRecoPulsesModuleLabel;
+    std::string _crvRecoPulseModuleLabel;
     std::string _volumeModuleLabel;
     std::string _filenameSearchPattern;
     EventInfo   _eventinfo;
@@ -178,7 +178,7 @@ namespace mu2e
     _hitmakerModuleLabel(pset.get<std::string>("hitmakerModuleLabel")),
     _hitmakerModuleInstance(pset.get<std::string>("hitmakerModuleInstance")),
     _crvCoincidenceModuleLabel(pset.get<std::string>("crvCoincidenceModuleLabel")),
-    _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
+    _crvRecoPulseModuleLabel(pset.get<std::string>("crvRecoPulseModuleLabel")),
     _volumeModuleLabel(pset.get<std::string>("volumeModuleLabel")),
     _filenameSearchPattern(pset.get<std::string>("filenameSearchPattern"))
   {
@@ -304,6 +304,9 @@ namespace mu2e
 
   void CosmicAnalysis::analyze(const art::Event& event)
   {
+//FIXME
+//Will be fixed later after the update of the CRV code is done
+/*
     _eventinfo.clear();
 
     for(int i=0; i<gROOT->GetListOfFiles()->GetEntries(); i++)
@@ -575,6 +578,7 @@ namespace mu2e
         }
       }
     }
+*/
 
 /***************/
 /* only a test */
@@ -604,7 +608,10 @@ namespace mu2e
 */
 /***************/
 
+//FIXME
+/*
     _tree->Fill();
+*/
   }
 }
 

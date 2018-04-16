@@ -8,8 +8,8 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
-
+#include "RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "canvas/Persistency/Common/Ptr.h"
 #include <vector>
 
 namespace mu2e 
@@ -20,10 +20,8 @@ namespace mu2e
 
     struct CoincidenceCombination
     {
-      double                        _time[3];
-      int                           _PEs[3];
-      mu2e::CRSScintillatorBarIndex _counters[3];
-      int                           _SiPMs[3];
+      std::vector<art::Ptr<CrvRecoPulse> > _crvRecoPulses;
+      int                                  _sectorType;
       CoincidenceCombination() {}
     };
 

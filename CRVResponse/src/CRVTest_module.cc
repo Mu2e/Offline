@@ -17,7 +17,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/CrvPhotonsCollection.hh"
 #include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
-#include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Principal/Event.h"
@@ -83,8 +83,8 @@ namespace mu2e
     art::Handle<CrvSiPMChargesCollection> crvSiPMChargesCollection;
     event.getByLabel(_crvSiPMChargesModuleLabel,"",crvSiPMChargesCollection);
 
-    art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
-    event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
+    art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
+    event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
 
     art::Handle<GenParticleCollection> genParticleCollection;
     event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
@@ -99,7 +99,6 @@ namespace mu2e
     {
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
 
-      CrvRecoPulsesCollection::const_iterator    iterRecoPulses    = crvRecoPulsesCollection->find(barIndex);
       CrvSiPMChargesCollection::const_iterator   iterSiPMCharges   = crvSiPMChargesCollection->find(barIndex);
 
 /*
@@ -130,22 +129,20 @@ namespace mu2e
         double MCPEs=0;
         double chi2=0;
 
-        if(iterRecoPulses!=crvRecoPulsesCollection->end()) 
+        for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++)
         {
-          const CrvRecoPulses &crvRecoPulses = iterRecoPulses->second;
-
-          const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &singlePulses = crvRecoPulses.GetRecoPulses(SiPM);
-          nRecoPulses = singlePulses.size();
-          for(size_t i=0; i<singlePulses.size(); i++)
+          const CrvRecoPulse &crvRecoPulse = crvRecoPulseCollection->at(recoPulseIndex);
+          if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==SiPM) 
           {
-            if(recoPEs<singlePulses[i]._PEs)  //record the largest pulse to remove noise hits, after pulses, ...
+            nRecoPulses++;
+            if(recoPEs<crvRecoPulse.GetPEs())  //record the largest pulse to remove noise hits, after pulses, ...
             {
-              recoPEs            = singlePulses[i]._PEs;
-              recoPulseHeight    = singlePulses[i]._pulseHeight;
-              recoPulseWidth     = singlePulses[i]._pulseWidth;
-              recoPulseTime      = singlePulses[i]._pulseTime;
-              recoLEtime         = singlePulses[i]._LEtime;
-              chi2               = singlePulses[i]._pulseFitChi2;
+              recoPEs            = crvRecoPulse.GetPEs();
+              recoPulseHeight    = crvRecoPulse.GetPulseHeight();
+              recoPulseWidth     = crvRecoPulse.GetPulseWidth();
+              recoPulseTime      = crvRecoPulse.GetPulseTime();
+              recoLEtime         = crvRecoPulse.GetLEtime();
+              chi2               = crvRecoPulse.GetPulseFitChi2();
             }
           }
         }

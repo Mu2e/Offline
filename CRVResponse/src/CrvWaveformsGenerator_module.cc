@@ -11,6 +11,8 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
+#include "ConditionsService/inc/CrvParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -44,6 +46,7 @@ namespace mu2e
     void produce(art::Event& e);
     void beginJob();
     void endJob();
+    void beginRun(art::Run &run);
 
     private:
     std::string _crvSiPMChargesModuleLabel;
@@ -51,8 +54,7 @@ namespace mu2e
 
     boost::shared_ptr<mu2eCrv::MakeCrvWaveforms> _makeCrvWaveforms;
 
-    double                              _digitizationPrecision;
-    int                                 _digitizationPoints;
+    double                              _digitizationPeriod;
     double                              _FEBtimeSpread;
     double                              _minVoltage;
     double                              _noise;
@@ -68,8 +70,6 @@ namespace mu2e
   CrvWaveformsGenerator::CrvWaveformsGenerator(fhicl::ParameterSet const& pset) :
     _crvSiPMChargesModuleLabel(pset.get<std::string>("crvSiPMChargesModuleLabel")),
     _singlePEWaveformFileName(pset.get<std::string>("singlePEWaveformFileName")),
-    _digitizationPrecision(pset.get<double>("digitizationPrecision")),   //12.5 ns
-    _digitizationPoints(pset.get<int>("digitizationPoints")),  //8 points for every single waveform
     _FEBtimeSpread(pset.get<double>("FEBtimeSpread")),         //2.0 ns (due to cable lengths differences, etc.)
     _minVoltage(pset.get<double>("minVoltage")),               //0.022V (corresponds to 3.5PE)
     _noise(pset.get<double>("noise")),
@@ -96,6 +96,12 @@ namespace mu2e
   {
   }
 
+  void CrvWaveformsGenerator::beginRun(art::Run &run)
+  {
+    mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
+    _digitizationPeriod  = crvPar->digitizationPeriod;
+  }
+
   void CrvWaveformsGenerator::produce(art::Event& event) 
   {
     std::unique_ptr<CrvDigiMCCollection> crvDigiMCCollection(new CrvDigiMCCollection);
@@ -103,7 +109,7 @@ namespace mu2e
     art::Handle<CrvSiPMChargesCollection> crvSiPMChargesCollection;
     event.getByLabel(_crvSiPMChargesModuleLabel,"",crvSiPMChargesCollection);
 
-    double samplingPointShift = _randFlat.fire()*_digitizationPrecision;
+    double samplingPointShift = _randFlat.fire()*_digitizationPeriod;
 
     GeomHandle<CosmicRayShield> CRS;
     _timeShiftFEBsSide0.clear();
@@ -122,10 +128,6 @@ namespace mu2e
       const CRSScintillatorBarIndex &barIndex = iter->first;
       const CrvSiPMCharges &siPMCharges = iter->second;
 
-      CrvDigiMC &crvDigiMC = (*crvDigiMCCollection)[barIndex];
-      crvDigiMC.SetDigitizationPrecision(_digitizationPrecision);
-      bool empty=true;
-
       unsigned int FEB=barIndex.asUint()/32.0; //assume that the counters are ordered in the correct way, 
                                                //i.e. that all counters beloning to the same FEB are grouped together
 
@@ -140,9 +142,9 @@ namespace mu2e
 
         firstSiPMChargeTime += timeShiftFEB;  //Ok, since all SiPMCharge times of this SiPM will be shifted by the same timeShiftFEB
 
-        double startTime = floor(firstSiPMChargeTime / _digitizationPrecision) * _digitizationPrecision;  //start time of the waveform 
-                                                                                                          //in multiples of the 
-                                                                                                          //digitization interval (12.5ns)
+        double startTime = floor(firstSiPMChargeTime / _digitizationPeriod) * _digitizationPeriod;  //start time of the waveform 
+                                                                                                    //in multiples of the 
+                                                                                                    //digitization period (12.58ns)
 
         startTime -= samplingPointShift;  //random shift of start time (same shift for all FEBs of this event)
 
@@ -156,48 +158,48 @@ namespace mu2e
 
         //first create the full waveform
         std::vector<double> fullWaveform;
-        _makeCrvWaveforms->MakeWaveform(times, charges, fullWaveform, startTime, _digitizationPrecision);
+        _makeCrvWaveforms->MakeWaveform(times, charges, fullWaveform, startTime, _digitizationPeriod);
         _makeCrvWaveforms->AddElectronicNoise(fullWaveform, _noise, _randGaussQ);
 
-        //break the waveform apart into short pieces (_digitizationPoints)
+        //break the waveform apart into short pieces (CrvDigiMC::NSamples)
         //and apply the zero suppression, i.e. set all waveform digi points to zero which are below the minimum voltage, 
         //if the neighboring digi points are also below the minimum voltage
-        std::vector<CrvDigiMC::CrvSingleWaveform> &singleWaveforms = crvDigiMC.GetSingleWaveforms(SiPM);
-
         for(size_t i=0; i<fullWaveform.size(); i++)
         {
           if(SingleWaveformStart(fullWaveform, i)) //acts as a zero suppression
           {
             //start new single waveform
-            CrvDigiMC::CrvSingleWaveform singleWaveform;
-            singleWaveform._startTime=startTime+i*_digitizationPrecision;
+            double digiStartTime=startTime+i*_digitizationPeriod;
+
             //collect voltages
-            for(int singleWaveformIndex=0; singleWaveformIndex<_digitizationPoints; i++, singleWaveformIndex++)
+            std::array<double,CrvDigiMC::NSamples> voltages;
+            for(size_t singleWaveformIndex=0; singleWaveformIndex<CrvDigiMC::NSamples; i++, singleWaveformIndex++)
             {
-              if(i<fullWaveform.size()) singleWaveform._voltages.push_back(fullWaveform[i]);
-              else singleWaveform._voltages.push_back(0);   //so that all single waveforms have always the right number of entries
+              if(i<fullWaveform.size()) voltages[singleWaveformIndex]=fullWaveform[i];
+              else voltages[singleWaveformIndex]=0.0;  //so that all unused single waveform samples are set to zero
             }
 
             //collect StepPointMCs and SimParticles responsible for this single waveform
-            std::set<art::Ptr<StepPointMC> > steps;
+            std::set<art::Ptr<StepPointMC> > steps;  //use a set to remove dublicate steppoints
             std::map<art::Ptr<SimParticle>, int> simparticles;
             for(size_t j=0; j<timesAndCharges.size(); j++)
             {
-              if(timesAndCharges[j]._time>=singleWaveform._startTime-50.0 && timesAndCharges[j]._time>=singleWaveform._startTime+50.0)  //FIXME
+              if(timesAndCharges[j]._time>=digiStartTime-50.0 && timesAndCharges[j]._time<=digiStartTime+50.0)  //FIXME
               {
                 steps.insert(timesAndCharges[j]._step);
                 if(timesAndCharges[j]._step.isNonnull()) simparticles[timesAndCharges[j]._step->simParticle()]++;
               }
             }
+
             //loop through the steps to fill the single waveform
+            std::vector<art::Ptr<StepPointMC> > stepVector;
             std::set<art::Ptr<StepPointMC> >::iterator stepIter;
-            for(stepIter=steps.begin(); stepIter!=steps.end(); stepIter++)
-            {
-              singleWaveform._steps.push_back(*stepIter);
-            }
+            for(stepIter=steps.begin(); stepIter!=steps.end(); stepIter++) stepVector.push_back(*stepIter);
+
             //find the most likely SimParticle
-            //if no SimParticle was recorded for this single waveform, then it was caused either by noise hits (if the threshold is low enough), or is the tail end of the peak.
-            //in that case, _simparticle will be null (set by the default constructor of art::Ptr)
+            //if no SimParticle was recorded for this single waveform, then it was caused either by noise hits (if the threshold is low enough), 
+            //or is the tail end of the peak. in that case, _simparticle will be null (set by the default constructor of art::Ptr)
+            art::Ptr<SimParticle> simParticle;
             std::map<art::Ptr<SimParticle>,int >::iterator simparticleIter;
             int simparticleCount=0;
             for(simparticleIter=simparticles.begin(); simparticleIter!=simparticles.end(); simparticleIter++)
@@ -205,27 +207,16 @@ namespace mu2e
               if(simparticleIter->second>simparticleCount)
               {
                 simparticleCount=simparticleIter->second;
-                singleWaveform._simparticle=simparticleIter->first;
+                simParticle=simparticleIter->first;
               }
             }
 
             i--;
-            singleWaveforms.push_back(singleWaveform);
-            empty=false;
+            crvDigiMCCollection->emplace_back(voltages, stepVector, simParticle, digiStartTime, barIndex, SiPM);
           }
         }
       } //SiPM
 
-      //2 options:
-      //(1) -create a crvDigiMC object as a reference to a crvDigiMCCollection map entry at the beginning for all counters
-      //    -fill this crvDigiMC object
-      //    -if the crvDigiMC object stays empty, erase the map entry in crvDigiMCCollection
-      //(2) -create a standalone crvDigiMC object
-      //    -fill this crvDigiMC object
-      //    -if the crvDigiMC didn't stay empty, create a new map entry in crvDigiMCCollection and fill its content with
-      //     the new crvDigiMC  <---- too time consuming, therefore use option (1)
-
-      if(empty) crvDigiMCCollection->erase(barIndex);  
     }
 
     event.put(std::move(crvDigiMCCollection));

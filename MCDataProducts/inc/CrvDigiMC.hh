@@ -9,6 +9,7 @@
 //
 
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include <vector>
 
 namespace mu2e 
@@ -17,32 +18,36 @@ namespace mu2e
   {
     public:
 
+    static constexpr size_t NSamples = 8; //FIXME: this is also a parameter in CrvDigi
+
     CrvDigiMC() {}
+    CrvDigiMC(const std::array<double,NSamples> &voltages, const std::vector<art::Ptr<StepPointMC> > &steps, 
+              art::Ptr<SimParticle> simParticle, double startTime, 
+              mu2e::CRSScintillatorBarIndex scintillatorBarIndex, int SiPMNumber) :
+                          _voltages(voltages), 
+                          _steps(steps),
+                          _simParticle(simParticle),
+                          _startTime(startTime),
+                          _scintillatorBarIndex(scintillatorBarIndex),
+                          _SiPMNumber(SiPMNumber) {}
 
-    struct CrvSingleWaveform
-    {
-      std::vector<double>                 _voltages;
-      std::vector<art::Ptr<StepPointMC> > _steps;        //step points responsible for this waveform
-      art::Ptr<SimParticle>               _simparticle;  //most likely sim particle responsible for this waveform
-      double                              _startTime;
-    };
+    const std::array<double,NSamples>         &GetVoltages() const    {return _voltages;}
+    const std::vector<art::Ptr<StepPointMC> > &GetStepPoints() const  {return _steps;}
+    const art::Ptr<SimParticle>               &GetSimParticle() const {return _simParticle;}
+    const double                              &GetStartTime() const   {return _startTime;}
 
-    std::vector<CrvSingleWaveform> &GetSingleWaveforms(int fiberNumber, int side);
-    std::vector<CrvSingleWaveform> &GetSingleWaveforms(int SiPMNumber);
-
-    const std::vector<CrvSingleWaveform> &GetSingleWaveforms(int fiberNumber, int side) const;
-    const std::vector<CrvSingleWaveform> &GetSingleWaveforms(int SiPMNumber) const;
-
-    double GetDigitizationPrecision() const; 
-    void SetDigitizationPrecision(double precision);
+    mu2e::CRSScintillatorBarIndex GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
+    int                           GetSiPMNumber() const           {return _SiPMNumber;}
 
     private:
 
-    static int  FindSiPMNumber(int fiberNumber, int side);
-    static void CheckSiPMNumber(int SiPMNumber);
+    std::array<double,NSamples>         _voltages;
+    std::vector<art::Ptr<StepPointMC> > _steps;        //step points responsible for this waveform
+    art::Ptr<SimParticle>               _simParticle;  //most likely sim particle responsible for this waveform
+    double                              _startTime;
 
-    std::vector<CrvSingleWaveform> _waveforms[4];
-    double _digitizationPrecision;
+    mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
+    int                            _SiPMNumber; 
   };
 }
 
