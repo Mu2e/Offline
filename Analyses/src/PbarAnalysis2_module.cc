@@ -619,8 +619,8 @@ namespace mu2e {
 	// the predecessor put the proton back into the event as a genParticle after reading from file
 	//
 	// protons are a delta fcn at t=0 now.  Can spread these later in later stage job
-	
-	if (iGen.pdgId() == PDGCode::proton){   
+	// huh?  how can this ever worked, pdgid was zero. also why is genid = 38?  4/13/2018  was checking pdgcode pdg code for proton??
+	if (iGen.pdgId() == 0){   
 	  initialProtonFourMomentum = iGen.momentum();
 	  _pxIncomingProton = iGen.momentum().x();
 	  _pyIncomingProton = iGen.momentum().y();
