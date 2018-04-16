@@ -251,8 +251,7 @@ namespace mu2e {
       if(_fillmc) fillMCInfo(demK);
 
       // fill CRV info
-//FIXME
-//      if(_crv)CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, event, _crvinfo, _crvinfomc);
+      if(_crv) CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, event, _crvinfo, _crvinfomc);
 
       // fill this row in the TTree
       _trkana->Fill();

@@ -212,8 +212,12 @@ namespace mu2e
 
           //get MC information, if available
           std::vector<art::Ptr<SimParticle> > simParticles;
+          double energyDeposited = 0;
+          double earliestHitTime = NAN;
+          CLHEP::Hep3Vector earliestHitPos;
           if(crvDigiMCCollection.isValid())
           {
+            //loop through all CrvRecoPulses to find all all CrvDigiMCs belongin to this cluster 
             std::map<art::Ptr<SimParticle>, int> simParticleMap;  //counting all simParticles
             for(size_t i=0; i<crvRecoPulses.size(); i++)
             {
@@ -222,11 +226,27 @@ namespace mu2e
               {
                 size_t waveformIndex = waveformIndices[j];
                 const CrvDigiMC &digi = crvDigiMCCollection->at(waveformIndex);
+
+                //get the SimParticle responsible for this CrvDigiMC
                 const art::Ptr<SimParticle> simParticle = digi.GetSimParticle();
                 //there is a special case in which there is no simParticle:
                 //a reco pulse based on two consecutive single waveforms, 
                 //where the second waveform is either caused by noise, or just the tail end of the first waveform
                 if(simParticle.isNonnull()) simParticleMap[simParticle]++;
+
+                //get the StepPointMCs responsible for this CrvDigiMC
+                const std::vector<art::Ptr<StepPointMC> > &stepPoints = digi.GetStepPoints();
+                for(size_t k=0; k<stepPoints.size(); k++)
+                {
+                  if(!stepPoints[k].isNonnull()) continue;
+                  energyDeposited = stepPoints[k]->totalEDep();
+                  double t=stepPoints[k]->time();
+                  if(t<earliestHitTime || isnan(earliestHitTime))
+                  {
+                    earliestHitTime=t;
+                    earliestHitPos=stepPoints[k]->position();
+                  }
+                }
               }
             }
             //finding the three most frequent simParticles
@@ -246,10 +266,13 @@ namespace mu2e
               }
               if(simParticle.isNonnull()) simParticles.push_back(simParticle);  //need to check whether it actually found e.g. a 2nd or 3rd most frequent particle
             }
+
+
           }//MC information
 
           //insert the cluster information into the vector of the crv coincidence clusters
-          crvCoincidenceClusters->GetClusters().emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, crvRecoPulses, simParticles);
+          crvCoincidenceClusters->GetClusters().emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, 
+                                                             crvRecoPulses, simParticles, energyDeposited, earliestHitTime, earliestHitPos);
 
           if(_verboseLevel>0)
           {

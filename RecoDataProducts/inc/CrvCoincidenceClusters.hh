@@ -30,13 +30,18 @@ namespace mu2e
       int                _PEs;
       std::vector<art::Ptr<CrvRecoPulse> > _crvRecoPulses;
       std::vector<art::Ptr<SimParticle> >  _simParticles;
+      double             _energyDeposited;
+      double             _earliestHitTime;
+      CLHEP::Hep3Vector  _earliestHitPos;
 
       Cluster() {}
       Cluster(int crvSectorType, const CLHEP::Hep3Vector &avgCounterPos, double startTime, double endTime, int PEs, 
               const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses,
-              const std::vector<art::Ptr<SimParticle> > &simParticles) :
+              const std::vector<art::Ptr<SimParticle> > &simParticles,
+              double energyDeposited, double earliestHitTime, const CLHEP::Hep3Vector &earliestHitPos) :
               _crvSectorType(crvSectorType), _avgCounterPos(avgCounterPos), _startTime(startTime), _endTime(endTime), _PEs(PEs), 
-              _crvRecoPulses(crvRecoPulses), _simParticles(simParticles) {}
+              _crvRecoPulses(crvRecoPulses), _simParticles(simParticles), 
+              _energyDeposited(energyDeposited), _earliestHitTime(earliestHitTime), _earliestHitPos(earliestHitPos) {}
     };
 
     CrvCoincidenceClusters() {}
