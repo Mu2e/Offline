@@ -93,8 +93,6 @@ BEGIN_PROLOG
     {
       module_type               : CrvRecoPulsesFinder
       crvDigiModuleLabel        : "CrvDigi"
-      calibrationFactor         : 394.6    //ADC*ns/PE    //from dark noise calibration for an ADCconversionFactor of 2300 ADC/V
-      pedestal                  : 100      //100 ADC      //from dark noise calibration
       minPEs                    : 6        //6 PEs
       darkNoise                 : false    //reduced initial pulse width for the reco pulse fit for dark noise (12.6ns instead of 19.0ns)
     }

@@ -15,6 +15,8 @@ namespace mu2e
 {
   CrvParams::CrvParams( SimpleConfig const& config )
   {
-    digitizationPeriod  = config.getDouble("crv.digitizationPeriod");
+    digitizationPeriod   = config.getDouble("crv.digitizationPeriod");
+    pedestal             = config.getDouble("crv.pedestal");
+    calibrationFactor    = config.getDouble("crv.calibrationFactor");
   }
 }

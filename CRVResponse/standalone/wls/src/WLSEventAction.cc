@@ -319,12 +319,13 @@ void WLSEventAction::Draw(const G4Event* evt)
   double digitizationInterval = 12.58; //ns
   double digitizationInterval2 = 1.0; //ns
   double noise = 4.0e-4;
-  double pedestal = 100;
+  double pedestal = 100; //ADC
+  double calibrationFactor = 394.6 //ADC*ns/PE
   makeCrvWaveform.LoadSinglePEWaveform(_singlePEWaveformFilename.c_str(), 0.5, 1.047, 100, 1.8564e-13);
 
   mu2eCrv::MakeCrvDigis makeCrvDigis;
 
-  mu2eCrv::MakeCrvRecoPulses makeRecoPulses(394.6, pedestal);
+  mu2eCrv::MakeCrvRecoPulses makeRecoPulses;
 
   double startTime=-G4UniformRand()*digitizationInterval;
   std::vector<double> siPMtimes[4], siPMcharges[4], siPMchargesInPEs[4];
@@ -455,7 +456,7 @@ void WLSEventAction::Draw(const G4Event* evt)
     delete[] v;
 
 //fit
-    makeRecoPulses.SetWaveform(ADCs[SiPM], TDC, digitizationInterval, false);
+    makeRecoPulses.SetWaveform(ADCs[SiPM], TDC, digitizationInterval, pedestal, calibrationFactor, false);
     unsigned int nPulse = makeRecoPulses.GetNPulses();
     for(unsigned int pulse=0; pulse<nPulse; pulse++)
     {

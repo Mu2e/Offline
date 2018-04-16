@@ -57,7 +57,8 @@ namespace mu2e
 
     double      _digitizationPeriod;
     std::string _crvDigiModuleLabel;
-    double      _calibrationFactor, _pedestal;
+    double      _pedestal;           //100 ADC
+    double      _calibrationFactor;  //394.6 ADC*ns/PE
     int         _minPEs;
     double      _microBunchPeriod;
     bool        _darkNoise;
@@ -67,13 +68,11 @@ namespace mu2e
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
     _crvDigiModuleLabel(pset.get<std::string>("crvDigiModuleLabel")),
-    _calibrationFactor(pset.get<double>("calibrationFactor")),   // 394.9 ADC*ns/PE
-    _pedestal(pset.get<double>("pedestal")),   //100 (ADC)
     _minPEs(pset.get<int>("minPEs")),          //6 PEs
     _darkNoise(pset.get<bool>("darkNoise"))    //true for dark noise calibration
   {
     produces<CrvRecoPulseCollection>();
-    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_calibrationFactor, _pedestal));
+    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses());
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -90,7 +89,9 @@ namespace mu2e
     _microBunchPeriod = accPar->deBuncherPeriod;
 
     mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
-    _digitizationPeriod  = crvPar->digitizationPeriod;
+    _digitizationPeriod = crvPar->digitizationPeriod;
+    _pedestal           = crvPar->pedestal;
+    _calibrationFactor  = crvPar->calibrationFactor;
   }
 
   void CrvRecoPulsesFinder::produce(art::Event& event) 
@@ -124,7 +125,7 @@ namespace mu2e
         waveformIndices.push_back(waveformIndex);
       }
 
-      _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, _digitizationPeriod, _darkNoise);
+      _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, _digitizationPeriod, _pedestal, _calibrationFactor, _darkNoise);
 
       unsigned int n = _makeCrvRecoPulses->GetNPulses();
       for(unsigned int j=0; j<n; j++)

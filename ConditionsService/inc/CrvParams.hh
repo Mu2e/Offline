@@ -23,7 +23,13 @@ namespace mu2e
   struct CrvParams: virtual public ConditionsEntity{
 
     // CRV digi parameters
-    double digitizationPeriod;
+    double digitizationPeriod;     //ns
+
+    // CRV calibration parameters 
+    // This is only a placeholder. 
+    // In the future, these values need to be a function of time and SiPM number.
+    double pedestal;               //ADC
+    double calibrationFactor;      //ADC*ns/PE
 
     CrvParams ( SimpleConfig const& config );
 
@@ -41,7 +47,9 @@ namespace mu2e
   inline std::ostream& operator<<(std::ostream& ost,
                                   const CrvParams& lw ){
     ost << "( "
-        << lw.digitizationPeriod 
+        << lw.digitizationPeriod <<"ns, " 
+        << lw.pedestal <<"ADC, "
+        << lw.calibrationFactor <<"ADC*ns/PE"
         << " )";
 
     return ost;

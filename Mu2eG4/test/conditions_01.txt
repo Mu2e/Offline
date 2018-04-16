@@ -67,9 +67,13 @@ string calorimeter.pulseFileName = "ConditionsService/data/CsI-waveform-2016-07-
 string calorimeter.pulseHistName = "h_waveform";
 
 
-//CRV information
-int    crv.digitizationSamples = 8;      //8 ADC values
-double crv.digitizationPeriod  = 12.58;  //ns
+//CRV digi parameters
+double crv.digitizationPeriod = 12.58; //ns
+
+//CRV calibration parameters 
+//This is only a placeholder. In the future, these values need to be a function of time and SiPM number.
+double crv.pedestal           = 100;    //ADC
+double crv.calibrationFactor  = 394.6;  //ADC*ns/PE
 
 
 // This tells emacs to view this file in c++ mode.
