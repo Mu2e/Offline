@@ -215,7 +215,9 @@
  <class name="art::Wrapper<mu2e::CrvDigiCollection>" />
 
  <class name="mu2e::CrvRecoPulse" />
+ <class name="art::Ptr<mu2e::CrvRecoPulse>"/>
  <class name="std::vector<mu2e::CrvRecoPulse>" />
+ <class name="std::vector<art::Ptr<mu2e::CrvRecoPulse> >" />
  <class name="mu2e::CrvRecoPulseCollection" />
  <class name="art::Wrapper<mu2e::CrvRecoPulseCollection>" />
 
