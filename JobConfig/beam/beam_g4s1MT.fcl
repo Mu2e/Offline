@@ -1,12 +1,12 @@
-// Lisa Goodenough, 2017
+// Lisa Goodenough, March 2018
+// modified version of beam_g4s1.fcl for running in MT mode
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
-//#include "Mu2eG4/fcl/prolog.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
 
 BEGIN_PROLOG
-
 #----------------------------------------------------------------
 # for the GenParticle and Event Stashes
 stashSize:50
@@ -90,7 +90,7 @@ END_PROLOG
 
 #================================================================
 # Give this job a name.
-process_name :  beamg4s1MT
+process_name :  beamg4s1
 
 source : {
    module_type : EmptyEvent
@@ -100,10 +100,10 @@ source : {
 services : {
 
    message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.cd3-beam-g4s1.version.sequencer.root" }
+   TFileService          : { fileName : "nts.owner.beam-g4s1.version.sequencer.root" }
    RandomNumberGenerator : { }
 
-   GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
+   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
    G4Helper               : { }
@@ -124,6 +124,7 @@ physics : {
    }
 
    producers: {
+
       generate: {
          module_type          : PrimaryProtonGunN
          inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
@@ -273,7 +274,7 @@ outputs: {
 
    mubeamout : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigmubeam"] }
+      SelectEvents: ["trigmubeam"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -281,12 +282,12 @@ outputs: {
          "keep *_muonBeamFilter_*_*",
          "keep *_compressPVmuonBeam_*_*"
       ]
-      fileName    : "sim.owner.cd3-beam-g4s1-mubeam.version.sequencer.art"
+      fileName    : "sim.owner.beam-g4s1-mubeam.version.sequencer.art"
    }
 
    dsout : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigdsregion"] }
+      SelectEvents: ["trigdsregion"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -294,12 +295,12 @@ outputs: {
          "keep *_dsRegionFilter_*_*",
          "keep *_compressPVdsRegion_*_*"
       ]
-      fileName    : "sim.owner.cd3-beam-g4s1-dsregion.version.sequencer.art"
+      fileName    : "sim.owner.beam-g4s1-dsregion.version.sequencer.art"
    }
 
    extmonbeamout : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigextmonbeam"] }
+      SelectEvents: ["trigextmonbeam"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -307,12 +308,12 @@ outputs: {
          "keep *_extmonBeamFilter_*_*",
          "keep *_compressPVextmonBeam_*_*"
       ]
-      fileName    : "sim.owner.cd3-beam-g4s1-extmonbeam.version.sequencer.art"
+      fileName    : "sim.owner.beam-g4s1-extmonbeam.version.sequencer.art"
    }
 
    extmonregionout : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigextmonregion"] }
+      SelectEvents: ["trigextmonregion"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -320,12 +321,12 @@ outputs: {
          "keep *_extmonRegionFilter_*_*",
          "keep *_compressPVextmonRegion_*_*"
       ]
-      fileName    : "sim.owner.cd3-beam-g4s1-extmonregion.version.sequencer.art"
+      fileName    : "sim.owner.beam-g4s1-extmonregion.version.sequencer.art"
    }
 
    truncatedEvtsOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["g4StatusFilter"] }
+      SelectEvents: ["g4StatusFilter"]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -334,7 +335,7 @@ outputs: {
          "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
          "keep *_compressPVFull_*_*"
       ]
-      fileName    : "sim.owner.cd3-beam-g4s1-truncated.version.sequencer.art"
+      fileName    : "sim.owner.beam-g4s1-truncated.version.sequencer.art"
    }
 
 }

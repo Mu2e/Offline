@@ -37,6 +37,9 @@
 #include "Mu2eG4/inc/GenEventBroker.hh"
 #include "Mu2eG4/inc/EventStash.hh"
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
+#include "Mu2eG4/inc/Mu2eVisCommands.hh"
+#endif
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -62,6 +65,11 @@
 #include "canvas/Utilities/InputTag.h"
 
 // Geant4 includes
+#include "G4UIExecutive.hh"
+#include "G4UImanager.hh"
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
+#include "G4VisExecutive.hh"
+#endif
 #include "G4Run.hh"
 #include "G4Timer.hh"
 #include "G4VUserPhysicsList.hh"
@@ -69,7 +77,7 @@
 #include "G4HadronicProcessStore.hh"
 #include "G4RunManagerKernel.hh"
 #include "G4SDManager.hh"
-#include "G4EventManager.hh"
+//#include "G4EventManager.hh"
 #include "G4Threading.hh"
 
 // C++ includes.
@@ -112,7 +120,7 @@ private:
         void BeamOnDoOneArtEvent( int eventNumber, G4int, const char* macroFile=0, G4int n_select=-1 );
         void BeamOnEndRun();
         
-        unique_ptr<G4RunManager> _runManager;
+        std::unique_ptr<G4RunManager> _runManager;
         
         const G4int numberOfEventsToBeProcessed;
         const bool _use_G4MT;
@@ -130,14 +138,23 @@ private:
         
         //these cut objects are used in the master thread to indicate what data product is produced
         //additional thread-local cut objects are owned by ActionInitialization
-        unique_ptr<IMu2eG4Cut> stackingCuts_;
-        unique_ptr<IMu2eG4Cut> steppingCuts_;
-        unique_ptr<IMu2eG4Cut> commonCuts_;
+        std::unique_ptr<IMu2eG4Cut> stackingCuts_;
+        std::unique_ptr<IMu2eG4Cut> steppingCuts_;
+        std::unique_ptr<IMu2eG4Cut> commonCuts_;
+        
+        G4UIsession  *_session;
+        G4UImanager  *_UI;
+#if     ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
+        std::unique_ptr<G4VisManager> _visManager;
+#endif
       
         int _rmvlevel;
         int _tmvlevel;
         int _checkFieldMap;
-
+        
+        // Names of macro files for visualization.
+        string _visMacro;  // init
+        string _visGUIMacro; // end of Event GUI
 
         // Name of a macro file to be used for controling G4 parameters after
         // the initialization phase.
@@ -163,7 +180,7 @@ private:
         // Do the G4 initialization that must be done only once per job, not once per run
         void initializeG4( GeometryService& geom, art::Run const& run );
 
-        unique_ptr<G4Timer> _timer; // local Mu2e per Geant4 event timer
+        std::unique_ptr<G4Timer> _timer; // local Mu2e per Geant4 event timer
         // Counters for cumulative time spent processing events by Geant4
         G4double _realElapsed;
         G4double _systemElapsed;
@@ -201,10 +218,17 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", fhicl::ParameterSet()), mu2elimits_)),
     commonCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4CommonCut", fhicl::ParameterSet()), mu2elimits_)),
     
+    _session(nullptr),
+    _UI(nullptr),
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
+    _visManager(nullptr),
+#endif
     // FIXME:  naming of pset parameters
     _rmvlevel(pSet.get<int>("debug.diagLevel",0)),
     _tmvlevel(pSet.get<int>("debug.trackingVerbosityLevel",0)),
     _checkFieldMap(pSet.get<int>("debug.checkFieldMap",0)),
+    _visMacro(pSet.get<std::string>("visualization.initMacro")),
+    _visGUIMacro(pSet.get<std::string>("visualization.GUIMacro")),
     _g4Macro(pSet.get<std::string>("g4Macro","")),
     _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel", "")),
     _physVolHelper(),
@@ -401,6 +425,17 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     G4TrackingManager* tm  = rmk->GetTrackingManager();
     tm->SetVerboseLevel(_tmvlevel);
     
+    _UI = G4UImanager::GetUIpointer();
+    
+    // Any final G4 interactive commands ...
+    if ( !_g4Macro.empty() ) {
+        G4String command("/control/execute ");
+        ConfigFileLookupPolicy path;
+        command += path(_g4Macro);
+        _UI->ApplyCommand(command);
+        
+    }
+    
     // Initialize G4 for this run.
     _runManager->Initialize();
 
@@ -411,12 +446,29 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     // Mu2e specific customizations that must be done after the call to Initialize.
     postG4InitializeTasks(pset_,pL);
     
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
+    // Setup the graphics if requested.
+    if ( !_visMacro.empty() ) {
+        
+        _visManager = std::unique_ptr<G4VisManager>(new G4VisExecutive());
+        _visManager->Initialize();
+        
+        ConfigFileLookupPolicy visPath;
+        
+        G4String command("/control/execute ");
+        command += visPath(_visMacro);
+        
+        _UI->ApplyCommand( command );
+        
+    }
+#endif
+    
 } // end G4::initializeG4
 
 
 void Mu2eG4::beginSubRun(art::SubRun& sr) {
     
-    unique_ptr<PhysicalVolumeInfoMultiCollection> mvi(new PhysicalVolumeInfoMultiCollection());
+    std::unique_ptr<PhysicalVolumeInfoMultiCollection> mvi(new PhysicalVolumeInfoMultiCollection());
 
     if(multiStagePars_.inputPhysVolumeMultiInfo()  != art::InputTag()) {
         // Copy over data from the previous simulation stages
@@ -675,6 +727,7 @@ void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber, G4int num_events, const char*
             //in order to access this function
             dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->InitializeEventLoop(num_events,macroFile,n_select);
             dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4WaitForEndEventLoopWorkers();
+            //dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4TerminateWorkers();//DID NOT WORK BEFORE
             
         }
         else//sequential mode
@@ -689,6 +742,97 @@ void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber, G4int num_events, const char*
             _realElapsed   += _timer->GetRealElapsed();
             _systemElapsed += _timer->GetSystemElapsed();
             _userElapsed   += _timer->GetUserElapsed();
+            
+            
+            // Pause to see graphics.
+            if ( !_visMacro.empty() ){
+                
+                // Prompt to continue and wait for reply.
+                cout << "Enter a character to go to the next event" << endl;
+                cout << "q quits, s enters G4 interactive session, g enters a GUI session (if available)"
+                << endl;
+                cout << "Once in G4 interactive session to quit it type \"exit\" or use File menu"
+                << endl;
+                
+                string userinput;
+                cin >> userinput;
+                G4cout << userinput << G4endl;
+                
+                // Check if user is requesting an early termination of the event loop.
+                if ( !userinput.empty() ){
+                    // Check only the first character; >> skips whitespace by default
+                    char c = tolower( userinput[0] );
+                    if ( c == 'q' ){
+                        throw cet::exception("CONTROL")
+                        << "Early end of event loop requested inside G4, \n";
+                    } else if ( c == 's' || c == 'g' || c == 'v' ){
+                        // v is for backward compatibility
+                        G4int argc=1;
+                        // Cast away const-ness; required by the G4 interface ...
+                        char* dummy = (char *)"dummy";
+                        char** argv = &dummy;
+                        G4UIExecutive* UIE = ( c == 's' || c == 'v' ) ?
+                        new G4UIExecutive(argc, argv,"tcsh") :
+                        new G4UIExecutive(argc, argv);
+                        
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
+                        
+                        if (UIE->IsGUI()) {
+                            
+                            // we add a command here and initialize it
+                            // (/vis/sceneHandler has to exist prior to this)
+                            Mu2eVisCommandSceneHandlerDrawEvent* drEv =
+                            new Mu2eVisCommandSceneHandlerDrawEvent();
+                            _visManager->RegisterMessenger(drEv); // assumes ownership;
+                            // drEv->SetVisManager(_visManager.get());
+                            // vis manager pointer is static member of the drEv base
+                            // class so the above is not needed
+                            
+                            if ( !_visGUIMacro.empty() ){
+                                G4String command("/control/execute ");
+                                ConfigFileLookupPolicy visPath;
+                                command += visPath(_visGUIMacro);
+                                _UI->ApplyCommand( command );
+                                
+                                cout << "In GUI interactive session use the \"Start Here\" menu "
+                                << "followed by the Viewer commands or redisplaying event"
+                                << endl;
+                                
+                            } else {
+                                cout << __func__ << " WARNING: visGUIMacro empty, may need to be defined in fcl" << endl;
+                            }
+                            
+                        } // end UIE->IsGUI()
+#endif
+                        UIE->SessionStart();
+                        delete UIE;
+                        
+                        //If current scene is scene-0 and if scene-handler-0 has viewer-0 we
+                        //will select it if not current to deal with a case which may occur
+                        //e.g. in a simultaneous use of OGL & Qt
+                        
+                        // basically _UI->ApplyCommand("/vis/viewer/select viewer-0"); // to have tracks drawn
+                        
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
+                        G4String viewerToLookFor("viewer-0");
+                        G4VViewer* pViewer = _visManager->GetViewer(viewerToLookFor);
+                        if (pViewer) {
+                            if (pViewer != _visManager->GetCurrentViewer()) {
+                                _visManager->SetCurrentViewer(pViewer);
+                            }
+                        }
+                        // G4VGraphicsSystem* gsys = _visManager->GetCurrentGraphicsSystem();
+                        // if (gsys) {
+                        //   cout << __func__ << " current GraphicsSystem Name " << gsys->GetName() <<  endl;
+                        // }
+#endif
+                    } // end c == 'q'
+                    
+                } // end !userinput.empty()
+                
+            }   // end !_visMacro.empty()
+            
+            
       
             _runManager->TerminateOneEvent();
             
@@ -700,22 +844,22 @@ void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber, G4int num_events, const char*
 // Do the "end of run" parts of DoEventLoop and BeamOn.
 void Mu2eG4::BeamOnEndRun(){
         
-        //if in sequential mode
-        if (!_use_G4MT) {_runManager->TerminateEventLoop(); }
-        
-        //for either MT or sequential mode
+    if (_use_G4MT)//MT mode
+    {
+        dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4RunTermination();
+    }
+    else//sequential mode
+    {
+        _runManager->TerminateEventLoop();
         _runManager->RunTermination();
         
-        //if in sequential mode
-//        if (!_use_G4MT)
-//        {
         G4cout << "  Event processing inside ProcessOneEvent time summary" << G4endl;
         G4cout << "  User="  << _userElapsed
         << "s Real="  << _realElapsed
         << "s Sys="   << _systemElapsed
         << "s" << G4endl;
-//        }
-        
+    }
+    
 }
  
 } // End of namespace mu2e

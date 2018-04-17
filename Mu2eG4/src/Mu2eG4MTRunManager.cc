@@ -29,10 +29,18 @@ namespace mu2e {
         {}
     
     //this function is a protected member of G4MTRunManager but we need to access it
-    //from Mu2eG4_module, so we must make it piblic here
+    //from Mu2eG4_module, so we must make it public here
     void Mu2eG4MTRunManager::Mu2eG4WaitForEndEventLoopWorkers()
     {
         WaitForEndEventLoopWorkers();
     }
-  
+
+    //we need control of the event loop in order to correctly break up the stages
+    //to fit within the art framework.  we were getting a hang using the G4MTRunManager
+    //version of RunTermination due to the call of WaitForEndEventLoopWorkers()
+    void Mu2eG4MTRunManager::Mu2eG4RunTermination()
+    {
+        G4RunManager::TerminateEventLoop();
+        G4RunManager::RunTermination();
+    }
 } // end namespace artg4

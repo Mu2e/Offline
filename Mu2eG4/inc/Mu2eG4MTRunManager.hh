@@ -20,7 +20,9 @@ namespace mu2e {
     Mu2eG4MTRunManager();
     virtual ~Mu2eG4MTRunManager();
     
+    //we need our own versions of these functions in order to correctly control the event loop
     void Mu2eG4WaitForEndEventLoopWorkers();
+    void Mu2eG4RunTermination();
         
   private:
     
