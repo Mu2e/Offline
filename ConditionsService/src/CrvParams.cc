@@ -18,5 +18,6 @@ namespace mu2e
     digitizationPeriod   = config.getDouble("crv.digitizationPeriod");
     pedestal             = config.getDouble("crv.pedestal");
     calibrationFactor    = config.getDouble("crv.calibrationFactor");
+    calibrationFactorPulseHeight = config.getDouble("crv.calibrationFactorPulseHeight");
   }
 }

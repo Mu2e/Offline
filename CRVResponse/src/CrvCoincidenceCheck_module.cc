@@ -53,6 +53,7 @@ namespace mu2e
     std::vector<double>      _adjacentPulseTimeDifferences;
     std::vector<double>      _maxTimeDifferences;
     std::vector<bool>        _useFourLayers;
+    bool        _usingPEsPulseHeight;
     double      _maxSlope;
     double      _maxSlopeDifference;
     bool        _acceptThreeAdjacentCounters;
@@ -119,6 +120,7 @@ namespace mu2e
     _adjacentPulseTimeDifferences(pset.get<std::vector<double> >("adjacentPulseTimeDifferences")),
     _maxTimeDifferences(pset.get<std::vector<double> >("maxTimeDifferences")),
     _useFourLayers(pset.get<std::vector<bool> >("useFourLayers")),
+    _usingPEsPulseHeight(pset.get<bool>("usingPEsPulseHeight")),
     _maxSlope(pset.get<double>("maxSlope")),
     _maxSlopeDifference(pset.get<double>("maxSlopeDifference")),
     _acceptThreeAdjacentCounters(pset.get<bool>("acceptThreeAdjacentCounters")),
@@ -245,6 +247,7 @@ namespace mu2e
 
       double time=crvRecoPulse->GetPulseTime();
       int    PEs =crvRecoPulse->GetPEs();
+      if(_usingPEsPulseHeight) PEs=crvRecoPulse->GetPEsPulseHeight();
 
       if(_verboseLevel>4)
       {

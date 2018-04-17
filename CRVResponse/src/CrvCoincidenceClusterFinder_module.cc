@@ -49,6 +49,7 @@ namespace mu2e
 
     private:
     int         _verboseLevel;
+    bool        _usingPEsPulseHeight;
     double      _maxDistance;
     double      _maxTimeDifference;
     std::string _crvCoincidenceCheckModuleLabel;  //module label of the CrvCoincidenceCheck module
@@ -94,6 +95,7 @@ namespace mu2e
 
   CrvCoincidenceClusterFinder::CrvCoincidenceClusterFinder(fhicl::ParameterSet const& pset) :
     _verboseLevel(pset.get<int>("verboseLevel")),
+    _usingPEsPulseHeight(pset.get<bool>("usingPEsPulseHeight")),
     _maxDistance(pset.get<double>("maxDistance")),
     _maxTimeDifference(pset.get<double>("maxTimeDifference")),
     _crvCoincidenceCheckModuleLabel(pset.get<std::string>("crvCoincidenceCheckModuleLabel")),
@@ -194,6 +196,7 @@ namespace mu2e
 
           double endTime=ht->_time;
           int PEs=ht->_crvRecoPulse->GetPEs();
+          if(_usingPEsPulseHeight) PEs=ht->_crvRecoPulse->GetPEsPulseHeight();
           CLHEP::Hep3Vector avgCounterPos=ht->_counterPosition;
 
           while(++ht!=posCluster.end())
@@ -202,7 +205,8 @@ namespace mu2e
             crvRecoPulses.push_back(ht->_crvRecoPulse);
 
             endTime=ht->_time;
-            PEs+=ht->_crvRecoPulse->GetPEs();
+            if(_usingPEsPulseHeight) PEs+=ht->_crvRecoPulse->GetPEsPulseHeight();
+            else PEs+=ht->_crvRecoPulse->GetPEs();
             avgCounterPos+=ht->_counterPosition;
           }
           //filled one full position&time cluster

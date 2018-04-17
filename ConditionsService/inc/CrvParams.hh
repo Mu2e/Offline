@@ -30,6 +30,7 @@ namespace mu2e
     // In the future, these values need to be a function of time and SiPM number.
     double pedestal;               //ADC
     double calibrationFactor;      //ADC*ns/PE
+    double calibrationFactorPulseHeight; //ADC/PE  (for calibrations using the pulse height)
 
     CrvParams ( SimpleConfig const& config );
 
@@ -49,7 +50,8 @@ namespace mu2e
     ost << "( "
         << lw.digitizationPeriod <<"ns, " 
         << lw.pedestal <<"ADC, "
-        << lw.calibrationFactor <<"ADC*ns/PE"
+        << lw.calibrationFactor <<"ADC*ns/PE, "
+        << lw.calibrationFactorPulseHeight <<"ADC/PE"
         << " )";
 
     return ost;

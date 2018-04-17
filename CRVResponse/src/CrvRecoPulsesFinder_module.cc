@@ -59,6 +59,7 @@ namespace mu2e
     std::string _crvDigiModuleLabel;
     double      _pedestal;           //100 ADC
     double      _calibrationFactor;  //394.6 ADC*ns/PE
+    double      _calibrationFactorPulseHeight;  //11.4 ADC/PE
     int         _minPEs;
     double      _microBunchPeriod;
     bool        _darkNoise;
@@ -92,6 +93,7 @@ namespace mu2e
     _digitizationPeriod = crvPar->digitizationPeriod;
     _pedestal           = crvPar->pedestal;
     _calibrationFactor  = crvPar->calibrationFactor;
+    _calibrationFactorPulseHeight  = crvPar->calibrationFactorPulseHeight;
   }
 
   void CrvRecoPulsesFinder::produce(art::Event& event) 
@@ -125,13 +127,14 @@ namespace mu2e
         waveformIndices.push_back(waveformIndex);
       }
 
-      _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, _digitizationPeriod, _pedestal, _calibrationFactor, _darkNoise);
+      _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, _digitizationPeriod, _pedestal, _calibrationFactor, _calibrationFactorPulseHeight, _darkNoise);
 
       unsigned int n = _makeCrvRecoPulses->GetNPulses();
       for(unsigned int j=0; j<n; j++)
       {
         double pulseTime   = _makeCrvRecoPulses->GetPulseTime(j);
         int    PEs         = _makeCrvRecoPulses->GetPEs(j);
+        int    PEsPulseHeight = _makeCrvRecoPulses->GetPEsPulseHeight(j);
         double pulseHeight = _makeCrvRecoPulses->GetPulseHeight(j); 
         double pulseWidth  = _makeCrvRecoPulses->GetPulseWidth(j);
         double pulseFitChi2= _makeCrvRecoPulses->GetPulseFitChi2(j);
@@ -139,7 +142,7 @@ namespace mu2e
 //        if(pulseTime<0) continue;
 //        if(pulseTime>_microBunchPeriod) continue;
         if(PEs<_minPEs) continue; 
-        crvRecoPulseCollection->emplace_back(PEs, pulseTime, pulseHeight, pulseWidth, pulseFitChi2, LEtime, 
+        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseWidth, pulseFitChi2, LEtime, 
                                                   waveformIndices, barIndex, SiPM);
       }
     }

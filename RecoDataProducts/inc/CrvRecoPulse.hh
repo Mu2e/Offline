@@ -18,12 +18,13 @@ namespace mu2e
   {
     public:
 
-    CrvRecoPulse() : _PEs(0), _pulseTime(0), _pulseHeight(0), _pulseWidth(0), _pulseFitChi2(0), _LEtime(0), 
+    CrvRecoPulse() : _PEs(0), _PEsPulseHeight(0), _pulseTime(0), _pulseHeight(0), _pulseWidth(0), _pulseFitChi2(0), _LEtime(0), 
                      _scintillatorBarIndex(0), _SiPMNumber(0) {}
 
-    CrvRecoPulse(int PEs, double pulseTime, double pulseHeight, double pulseWidth, double pulseFitChi2, double LEtime, 
+    CrvRecoPulse(int PEs, int PEsPulseHeight, double pulseTime, double pulseHeight, double pulseWidth, double pulseFitChi2, double LEtime, 
                  const std::vector<size_t> &waveformIndices, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, int SiPMNumber) : 
                                                                             _PEs(PEs), 
+                                                                            _PEsPulseHeight(PEsPulseHeight), 
                                                                             _pulseTime(pulseTime), 
                                                                             _pulseHeight(pulseHeight),
                                                                             _pulseWidth(pulseWidth),
@@ -35,6 +36,7 @@ namespace mu2e
                                                                              {}
 
     int    GetPEs() const          {return _PEs;}
+    int    GetPEsPulseHeight() const {return _PEsPulseHeight;}
     double GetPulseTime() const    {return _pulseTime;}
     double GetPulseHeight() const  {return _pulseHeight;}
     double GetPulseWidth() const   {return _pulseWidth;}
@@ -48,6 +50,7 @@ namespace mu2e
     private:
 
     int    _PEs;
+    int    _PEsPulseHeight;  //used for PEs which were calculated using the pulse height and the pulse height calibration factor
     double _pulseTime;
     double _pulseHeight;
     double _pulseWidth;

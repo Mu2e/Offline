@@ -74,6 +74,7 @@ double crv.digitizationPeriod = 12.58; //ns
 //This is only a placeholder. In the future, these values need to be a function of time and SiPM number.
 double crv.pedestal           = 100;    //ADC
 double crv.calibrationFactor  = 394.6;  //ADC*ns/PE
+double crv.calibrationFactorPulseHeight  = 11.4;  //ADC/PE (calibration factor using pulse height)
 
 
 // This tells emacs to view this file in c++ mode.

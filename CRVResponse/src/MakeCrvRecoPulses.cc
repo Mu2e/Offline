@@ -12,7 +12,7 @@ MakeCrvRecoPulses::MakeCrvRecoPulses()
 {}
 
 void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, unsigned int startTDC, double digitizationPeriod, 
-                                    double pedestal, double calibrationFactor, bool darkNoise)
+                                    double pedestal, double calibrationFactor, double calibrationFactorPulseHeight, bool darkNoise)
 {
   _pulseTimes.clear();
   _pulseHeights.clear();
@@ -24,6 +24,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
   _t1s.clear();
   _t2s.clear();
   _PEs.clear();
+  _PEsPulseHeight.clear();
   _LEtimes.clear();
   _peakBins.clear();
 
@@ -42,6 +43,8 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
   //-find up to 5 points before and after the maximum point for which the waveform is stricly decreasing
   //-remove 1 point on each side. this removes potentially "bad points" belonging to a second pulse (i.e. in double pulses)
     int maxBin = peaks[i].first;
+    if(waveform[maxBin]-pedestal<5) continue; //FIXME: need a better way to identify these fake pulse which are caused by electronic noise
+
     int startBin=maxBin;
     int endBin=maxBin;
     for(int bin=maxBin-1; bin>=0 && bin>=maxBin-5; bin--)
@@ -93,6 +96,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
     double pulseFitChi2 = fr->Chi2();
 
     double LEtime=f.GetX(0.5*pulseHeight,pulseTime-50,pulseTime);   //i.e. at 50% of pulse height
+    int    PEsPulseHeight = lrint(pulseHeight / calibrationFactorPulseHeight);
 
     _pulseTimes.push_back(pulseTime);
     _pulseHeights.push_back(pulseHeight);
@@ -104,6 +108,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
     _t1s.push_back(t1);
     _t2s.push_back(t2);
     _PEs.push_back(PEs);
+    _PEsPulseHeight.push_back(PEsPulseHeight);
     _LEtimes.push_back(LEtime);
     _peakBins.push_back(maxBin);
   }
@@ -119,6 +124,13 @@ int MakeCrvRecoPulses::GetPEs(int pulse)
   int n = _PEs.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
   return _PEs[pulse];
+}
+
+int MakeCrvRecoPulses::GetPEsPulseHeight(int pulse)
+{
+  int n = _PEs.size();
+  if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
+  return _PEsPulseHeight[pulse];
 }
 
 double MakeCrvRecoPulses::GetPulseTime(int pulse)
