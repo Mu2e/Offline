@@ -89,8 +89,7 @@ CalPatRec : {
 	maxXDPhi                                : 5    #
 	distPatRec                              : 100. # mm
 	maxChi2TrkCandidate                     : 1500
-	markCandidateHits                       : 0
-	minPointsTrkCandidate                   : 25
+	nHitsMaxPerLayer                        : 1
 	# confirmed on 2015-02-07
 	chi2xyMax                               : 5.0    # default value is 300
 	chi2zphiMax                             : 5.0    # 0.1 #default is 0.1, use 0.05 for debugging puposes
@@ -484,7 +483,7 @@ CalPatRec : { @table::CalPatRec
 	    fetchCaloDigis                : 1
 	    fetchStrawDigis               : 1
 	    fetchStrawHits                : 1
-	    fetchStrawHitFlags            : 1
+	    fetchStrawHitFlags            : 0
 	    fetchStrawHitPositions        : 1
 	    fetchStereoHits               : 0
 

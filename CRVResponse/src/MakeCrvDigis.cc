@@ -8,7 +8,7 @@ void MakeCrvDigis::SetWaveform(const std::vector<double> &waveform, double ADCco
   _ADCs.clear();
   for(size_t i=0; i<waveform.size(); i++)
   {
-    if(waveform[i]*ADCconversionFactor+pedestal>0) _ADCs.push_back(static_cast<unsigned int>(waveform[i]*ADCconversionFactor+pedestal));
+    if(waveform[i]*ADCconversionFactor+pedestal>0) _ADCs.push_back(static_cast<unsigned int>(waveform[i]*ADCconversionFactor+pedestal+0.5));
     else _ADCs.push_back(0);
   }
 

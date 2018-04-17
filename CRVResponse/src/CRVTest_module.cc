@@ -17,7 +17,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/CrvPhotonsCollection.hh"
 #include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
-#include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Principal/Event.h"
@@ -46,6 +46,7 @@ namespace mu2e
     void endJob();
 
     private:
+//    std::string _crvStepsModuleLabel;
     std::string _crvSiPMChargesModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
     std::string _genParticleModuleLabel;
@@ -55,13 +56,15 @@ namespace mu2e
 
   CRVTest::CRVTest(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
+//    _crvStepsModuleLabel(pset.get<std::string>("crvStepsModuleLabel")),
     _crvSiPMChargesModuleLabel(pset.get<std::string>("crvSiPMChargesModuleLabel")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _genParticleModuleLabel(pset.get<std::string>("genParticleModuleLabel"))
   {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("CrvSingleCounter");
-    _recoPulses = tfdir.make<TNtuple>("RecoPulses", "RecoPulses", "event:startX:startY:startZ:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseWidth:recoPulseTime:recoLEtime:MCPEs");
+    _recoPulses = tfdir.make<TNtuple>("RecoPulses", "RecoPulses", "event:startX:startY:startZ:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseWidth:recoPulseTime:recoLEtime:MCPEs:chi2");
+//    _recoPulses = tfdir.make<TNtuple>("RecoPulses", "RecoPulses", "event:startX:startY:startZ:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseWidth:recoPulseTime:MCPEs:ionizingEnergy:nonIonizingEnergy:energyLoss");
   }
 
   void CRVTest::beginJob()
@@ -74,11 +77,14 @@ namespace mu2e
 
   void CRVTest::analyze(const art::Event& event) 
   {
+//    art::Handle<StepPointMCCollection> crvStepsCollection;
+//    event.getByLabel(_crvStepsModuleLabel,"CRV",crvStepsCollection);
+
     art::Handle<CrvSiPMChargesCollection> crvSiPMChargesCollection;
     event.getByLabel(_crvSiPMChargesModuleLabel,"",crvSiPMChargesCollection);
 
-    art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
-    event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
+    art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
+    event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
 
     art::Handle<GenParticleCollection> genParticleCollection;
     event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
@@ -93,8 +99,23 @@ namespace mu2e
     {
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
 
-      CrvRecoPulsesCollection::const_iterator    iterRecoPulses    = crvRecoPulsesCollection->find(barIndex);
       CrvSiPMChargesCollection::const_iterator   iterSiPMCharges   = crvSiPMChargesCollection->find(barIndex);
+
+/*
+      double ionizingEnergy=0;
+      double nonIonizingEnergy=0;
+      double energyLoss=0;
+      for(size_t istep=0; istep<crvStepsCollection->size(); istep++)
+      {
+        StepPointMC const& step(crvStepsCollection->at(istep));
+        if(step.volumeId()==barIndex.asUint())
+        {
+          nonIonizingEnergy+=step.nonIonizingEDep();
+          ionizingEnergy+=step.ionizingEdep();
+          if(step.simParticle()->id().asUint()==1) energyLoss=step.simParticle()->startMomentum().e()-step.simParticle()->endMomentum().e();
+        }
+      }
+*/
 
       for(int SiPM=0; SiPM<4; SiPM++) 
       {
@@ -106,22 +127,22 @@ namespace mu2e
         double recoPulseTime=0;
         double recoLEtime=0;
         double MCPEs=0;
+        double chi2=0;
 
-        if(iterRecoPulses!=crvRecoPulsesCollection->end()) 
+        for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++)
         {
-          const CrvRecoPulses &crvRecoPulses = iterRecoPulses->second;
-
-          const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &singlePulses = crvRecoPulses.GetRecoPulses(SiPM);
-          nRecoPulses = singlePulses.size();
-          for(size_t i=0; i<singlePulses.size(); i++)
+          const CrvRecoPulse &crvRecoPulse = crvRecoPulseCollection->at(recoPulseIndex);
+          if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==SiPM) 
           {
-            if(recoPEs<singlePulses[i]._PEs)  //record the largest pulse to remove noise hits, after pulses, ...
+            nRecoPulses++;
+            if(recoPEs<crvRecoPulse.GetPEs())  //record the largest pulse to remove noise hits, after pulses, ...
             {
-              recoPEs            = singlePulses[i]._PEs;
-              recoPulseHeight    = singlePulses[i]._pulseHeight;
-              recoPulseWidth     = singlePulses[i]._pulseWidth;
-              recoPulseTime      = singlePulses[i]._pulseTime;
-              recoLEtime         = singlePulses[i]._LEtime;
+              recoPEs            = crvRecoPulse.GetPEs();
+              recoPulseHeight    = crvRecoPulse.GetPulseHeight();
+              recoPulseWidth     = crvRecoPulse.GetPulseWidth();
+              recoPulseTime      = crvRecoPulse.GetPulseTime();
+              recoLEtime         = crvRecoPulse.GetLEtime();
+              chi2               = crvRecoPulse.GetPulseFitChi2();
             }
           }
         }
@@ -138,7 +159,8 @@ namespace mu2e
           }
         }
 
-        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseWidth,recoPulseTime,recoLEtime,MCPEs);
+        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseWidth,recoPulseTime,recoLEtime,MCPEs,chi2);
+//        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseWidth,recoPulseTime,MCPEs,ionizingEnergy,nonIonizingEnergy,energyLoss);
       }
     }
 

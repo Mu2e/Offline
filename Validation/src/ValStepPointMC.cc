@@ -23,7 +23,7 @@ int mu2e::ValStepPointMC::fill(const mu2e::StepPointMCCollection & coll,
 
   _hN->Fill(coll.size()); 
   for(auto sp : coll) {
-    _id.fill(sp.simParticle()->pdgId()); 
+    if(sp.simParticle()) _id.fill(sp.simParticle()->pdgId()); 
     _hp->Fill(sp.momentum().mag()); 
     _pos.fill(sp.position());
     _het1->Fill(sp.totalEDep()); 

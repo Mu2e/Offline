@@ -78,6 +78,7 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
+#include "DataProducts/inc/PDGCode.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -239,6 +240,15 @@ namespace mu2e {
     float _pxStart;
     float _pyStart;
     float _pzStart;
+
+    float _pxIncomingProton;
+    float _pyIncomingProton;
+    float _pzIncomingProton;
+
+    float _pxInitialAntiProton;
+    float _pyInitialAntiProton;
+    float _pzInitialAntiProton;
+
     float _endGlobalTime;
 
 
@@ -413,6 +423,14 @@ namespace mu2e {
        _Ntup->Branch("yPbar",                &_yStart,               "yPbar/F");
        _Ntup->Branch("zPbar",                &_zStart,               "zPbar/F");
 
+       _Ntup->Branch("pxIncomingProton",                &_pxIncomingProton,               "pxIncomingProton/F");
+       _Ntup->Branch("pyIncomingProton",                &_pyIncomingProton,               "pyIncomingProton/F");
+       _Ntup->Branch("pzIncomingProton",                &_pzIncomingProton,               "pzIncomingProton/F");
+
+       _Ntup->Branch("pxInitialAntiProton",                &_pxInitialAntiProton,               "pxInitialAntiProton/F");
+       _Ntup->Branch("pyInitialAntiProton",                &_pyInitialAntiProton,               "pyInitialAntiProton/F");
+       _Ntup->Branch("pzInitialAntiProton",                &_pzInitialAntiProton,               "pzInitialAntiProton/F");
+
 
        _hcryE     = tfs->make<TH1F>("cryEdep",  "Energy deposited / crystal", 100,    0., 50.   );
        _hcryT     = tfs->make<TH1F>("cryTime",  "Time of crystal hit",        100,    0., 2000. );
@@ -443,7 +461,6 @@ namespace mu2e {
 
       ++_nProcess;
       if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from PbarAnalysis2 =  "<<_nProcess <<std::endl;
-       std::cout<<"Processing event from PbarAnalysis2 =  "<<_nProcess <<std::endl;
       
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       double _mbtime = accPar->deBuncherPeriod;
@@ -524,6 +541,8 @@ namespace mu2e {
 	    //
 	    // check this is the initial pbar and add what I need to the ntuple.
 	    // very unfortunately implementation dependent: how many stages
+	    //
+	    // set these now, write them and initial proton momentum vector later
 	    if (p.id().asInt() == 2000001 && p.pdgId() == -2212){
 	      //	      if (p.pdgId() == -2212){
 	      _xStart = p.startPosition().x();
@@ -533,13 +552,6 @@ namespace mu2e {
 	      _pyStart = p.startMomentum().y();
 	      _pzStart = p.startMomentum().z();
 	      _endGlobalTime = p.endGlobalTime();
-	      _pbarVertexOut <<  _xStart << " "
-			     <<  _yStart << " " 
-			     <<  _zStart << " " 
-			     << _pxStart << " " 
-			     << _pyStart << " " 
-			     << _pzStart << " " 
-			     << _endGlobalTime << std::endl; 
 	    }
 	  
 	    if (_diagLevel > 2 && p.id().asInt() == 1000001 && p.pdgId() == -2212){
@@ -567,29 +579,79 @@ namespace mu2e {
     GenParticleCollection const& genParticles(*genParticleHandle);
     if ( haveGenPart ) haveGenPart = !(genParticles.empty());
     CLHEP::HepLorentzVector initialProtonFourMomentum(0.,0.,0.,0.);
+    CLHEP::HepLorentzVector initialAntiProtonFourMomentum(0.,0.,0.,0.);
     //
     // look at the genParticles and see that the geantino with the initial proton is still there.
     if (haveGenPart){
-      for (auto iGen : genParticles )
-	{
-	  if (_diagLevel > 0){
-	    std::cout << " particle id " << iGen.pdgId() << " particle momentum " << iGen.momentum() << " position " << iGen.position() << std::endl;
-	  }
-	  //
-	  // if reading from file, the gen particle has the incoming pbar info
-	  if (iGen.pdgId() == -2212){
-	    _xStart = iGen.position().x();
-	    _yStart = iGen.position().y();
-	    _zStart = iGen.position().z();
-	  }
-	  if (iGen.pdgId() == 0)
-	    {
-	      initialProtonFourMomentum = iGen.momentum();
-	    }
+     for (auto iGen : genParticles ) {
+	if (_diagLevel > 0){
+	  std::cout << "  in gen particles: particle id " << iGen.pdgId() << " particle momentum " << iGen.momentum() 
+		    << " position " << iGen.position() 
+		    << "generator id " << iGen.generatorId()<< std::endl;
 	}
-    } 
+ 
+ 	//
+	// if reading from file, the gen particle has the incoming pbar info. Use the fake z to distinguish.  
+	if (iGen.pdgId() == -2212 && !_writeVertexFile && iGen.position().z() > 1000. ){
+	  _xStart = iGen.position().x();
+	  _yStart = iGen.position().y();
+	  _zStart = iGen.position().z();
+	  _pxStart = iGen.momentum().x();
+	  _pyStart = iGen.momentum().y();
+	  _pzStart = iGen.momentum().z();
+	  if (_diagLevel > 2){
+	    std::cout << "initial pbar pos at stopping target = " << _xStart << " " << _yStart << " " << _zStart << std::endl;
+	    std::cout << "initial pbar mom at stopping target = " << _pxStart << " " << _pyStart << " " << _pzStart << std::endl;
+	  }
+	}
+	if (iGen.pdgId() == -2212 && iGen.position().z() < 1000.){
+	  initialAntiProtonFourMomentum = iGen.momentum();
+	  _pxInitialAntiProton = iGen.momentum().x();
+	  _pyInitialAntiProton = iGen.momentum().y();
+	  _pzInitialAntiProton = iGen.momentum().z();
+	  if (_diagLevel > 2){
+	    std::cout << "pos and momentum of initial pbar = " << iGen.momentum()
+		      << " " << iGen.position() << std::endl;
 
-
+	  }
+	}
+	//
+	// the predecessor put the proton back into the event as a genParticle after reading from file
+	//
+	// protons are a delta fcn at t=0 now.  Can spread these later in later stage job
+	// huh?  how can this ever worked, pdgid was zero. also why is genid = 38?  4/13/2018  was checking pdgcode pdg code for proton??
+	if (iGen.pdgId() == 0){   
+	  initialProtonFourMomentum = iGen.momentum();
+	  _pxIncomingProton = iGen.momentum().x();
+	  _pyIncomingProton = iGen.momentum().y();
+	  _pzIncomingProton = iGen.momentum().z();
+	  if (_diagLevel > 2){
+	    std::cout << "initial beam proton momentum = " << _pxIncomingProton << " " << _pyIncomingProton << " " << _pzIncomingProton << std::endl;
+	  }
+	}
+	
+      }
+ 
+     if (_writeVertexFile){
+       _pbarVertexOut <<  _xStart << " "
+		      <<  _yStart << " " 
+		      <<  _zStart << " " 
+		      << _pxStart << " " 
+		      << _pyStart << " " 
+		      << _pzStart << " " 
+		      << _endGlobalTime << " " 
+		      << _pxInitialAntiProton << " " 
+		      << _pyInitialAntiProton << " " 
+		      << _pzInitialAntiProton << " "  
+		      << _pxIncomingProton << " " 
+		      << _pyIncomingProton << " " 
+		      << _pzIncomingProton << std::endl; 
+     }
+    }
+ 
+  
+  
+  
 
        //--------------------------  Do generated particles --------------------------------
 
@@ -598,6 +660,7 @@ namespace mu2e {
        _run = event.run();
 
        if (_diagLevel == 3){std::cout << "processing event in calo_example " << _nProcess << " run and event  = " << _run << " " << _evt << std::endl;}
+  
 
 
        if (_doGenerated)
@@ -608,6 +671,10 @@ namespace mu2e {
            GenParticleCollection const& genParticles(*gensHandle);
 	   
 	   _nGen = genParticles.size();
+
+	   if (_diagLevel > 2){
+	     std::cout << "number of generated particles = " << _nGen << std::endl;
+	   }
 	   for (unsigned int i=0; i < genParticles.size(); ++i)
 	   {
                GenParticle const* gen = &genParticles[i];
@@ -620,10 +687,18 @@ namespace mu2e {
                _genStartY[i]  = gen->position().y();
                _genStartZ[i]  = gen->position().z();
                _genStartT[i]  = gen->time();
+	       if (_diagLevel > 2){
+		 std::cout << "pdgId = " << gen->pdgId() << " " 
+			   << "generator Id = " << gen->generatorId().id() << "\n "
+			   << "momentum     = " << gen->momentum() << "\n " 
+			   << "position     = " << gen->position() << "\n "
+			   << "time         = " << gen->time() 
+			   << std::endl;
+	       }
 	   }
        } else {_nGen=0;}
 
-
+  
        //--------------------------  Do calorimeter hits --------------------------------
 
        _nHits = _nSim = 0;
@@ -681,6 +756,7 @@ namespace mu2e {
 	   _hxy->Fill(crystalPos.x(),crystalPos.y(),hit.energyDep());
            ++_nHits;
        }
+  
 
        // do tracks, old school
       //--------------------------  Do tracks  --------------------------------
@@ -730,7 +806,8 @@ namespace mu2e {
           _trkt0Err[_nTrk] = trkt0Err;
           ++_nTrk;
 
-        }
+       }
+  
         
 
 
@@ -835,6 +912,7 @@ namespace mu2e {
 	  
            ++_nCluster;
        }
+  
 
 
 
@@ -868,7 +946,7 @@ namespace mu2e {
                ++_nVd;
              }             
          }
-
+  
 
 
        //--------------------------  Do tracker hits  --------------------------------
@@ -949,16 +1027,11 @@ namespace mu2e {
 
     //std::cout << " number of good hits = " << _nGoodHits << std::endl;
 
-
+  
 
  
         _Ntup->Fill();
-
-
   }
-
-
-
 
    int PbarAnalysis2::findBestCluster(TrackClusterMatchCollection const& trackClusterMatches, int trkId, double maxChi2)
    {
@@ -1020,8 +1093,7 @@ namespace mu2e {
    }
 
 
-
-}  
+}
 
 DEFINE_ART_MODULE(mu2e::PbarAnalysis2);
 

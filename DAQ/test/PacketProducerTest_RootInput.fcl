@@ -31,7 +31,7 @@ physics : {
       maxFullPrint     : 0
       generateTextFile : 1
 
-      usePhysicalStrawIndex : 1
+      usePhysicalStrawIndex : 0
     }
 
     CosmicRayVetoPacketProducer: {

@@ -4,7 +4,7 @@ hostname
 printenv
 
 source /cvmfs/mu2e.opensciencegrid.org/setupmu2e-art.sh
-source /cvmfs/mu2e.opensciencegrid.org/Offline/v6_3_1/SLF6/prof/Offline/setup.sh
+source /cvmfs/mu2e.opensciencegrid.org/Offline/v6_5_2/SLF6/prof/Offline/setup.sh
 
 setup ifdhc
 
@@ -12,22 +12,25 @@ setup ifdhc
 SIMTYPE=$(($PROCESS/550))
 MINBIN=$(($PROCESS%550*200))
 MAXBIN=$(($MINBIN+199))
-PHOTONS=40000
+PHOTONS=100000
 if [ $SIMTYPE -ge 2 ]; then
-  PHOTONS=1000
+  PHOTONS=2000
 fi
 
-# run simulation
-/mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/wlsProduction -c -l $LENGTH -t $SIMTYPE -m $MINBIN -M $MAXBIN -n $PHOTONS
+# copy and run executable
+mv $CONDOR_DIR_INPUT/wlsProduction wlsProduction 
+chmod 777 wlsProduction
+./wlsProduction -c -l $LENGTH -t $SIMTYPE -m $MINBIN -M $MAXBIN -n $PHOTONS
 
 # copy lookup table
 printf -v MINBINTMP "%06d\n" $MINBIN
 OUTFILE=LookupTable'_'$SIMTYPE'_'$MINBINTMP
-ifdh cp $OUTFILE /mu2e/data/outstage/ehrlich/tables/$LENGTH/$OUTFILE
+#ifdh cp $OUTFILE /mu2e/data/outstage/ehrlich/tables_4.0/$LENGTH/$OUTFILE
+ifdh cp $OUTFILE /pnfs/mu2e/scratch/outstage/ehrlich/tables_4.0_out/$LENGTH/$OUTFILE
 
 # create log file
 LOGFILE=`printf "log_%010d_%05d.log" $CLUSTER $PROCESS`
 cat jsb_tmp/JOBSUB_LOG_FILE >> $LOGFILE
 echo "=========== error log file ==========" >> $LOGFILE
 cat jsb_tmp/JOBSUB_ERR_FILE >> $LOGFILE
-ifdh cp $LOGFILE /pnfs/mu2e/scratch/outstage/ehrlich/tables/$LOGFILE
+ifdh cp $LOGFILE /pnfs/mu2e/scratch/outstage/ehrlich/tables_4.0/$LOGFILE

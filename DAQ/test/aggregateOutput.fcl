@@ -10,7 +10,9 @@ process_name : FileDumper
 source : {
   module_type : RootInput
   fileNames   : @nil
-  maxEvents   : 5
+
+  # firstEvent  : 500
+  maxEvents   : -1
 }
 
 physics : {

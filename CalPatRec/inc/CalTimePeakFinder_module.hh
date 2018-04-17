@@ -110,6 +110,7 @@ namespace mu2e {
     double           _minClusterTime;   // min time of the seeding cluster
 
     double           _pitchAngle;
+    double           _sinPitch;
 					// outlier cuts
 //-----------------------------------------------------------------------------
 // cache of event objects

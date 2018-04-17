@@ -102,7 +102,7 @@ namespace mu2e
     _maxpull(pset.get<double>("maxPull",5)),
     // t0 parameters
     _initt0(pset.get<bool>("initT0",true)),
-    _useTrkCaloHit(pset.get<bool>("useTrkCaloHit",false)),
+    _useTrkCaloHit(pset.get<bool>("useTrkCaloHit")),
     _updatet0(pset.get<bool>("updateT0",true)),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
@@ -462,7 +462,7 @@ namespace mu2e
   }
 
   void 
-  KalFit::makeTrkCaloHit  (KalSeed const& kseed, TrkCaloHit *tch){
+  KalFit::makeTrkCaloHit  (KalSeed const& kseed, TrkCaloHit *&tch){
     if (kseed.caloCluster().get() != 0){
       HitT0 ht0;
       ht0._t0    = kseed.caloCluster()->time();

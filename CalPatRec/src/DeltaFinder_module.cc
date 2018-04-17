@@ -938,14 +938,14 @@ namespace mu2e {
 
     for (int p=0; p<3; ++p) {                        // loop over panels
       PanelZ_t* panelz = &_data.oTracker[Station][Face][p];	  
-      for (int l=0; l<2; ++l) {                     // loop over layers
-	int hitsize1 = panelz->fHitData[l].size(); 
+      for (int l1=0; l1<2; ++l1) {                     // loop over layers
+	int hitsize1 = panelz->fHitData[l1].size(); 
 	for (int h1=0; h1<hitsize1; ++h1) {             // loop over hits/hit positions
 //-----------------------------------------------------------------------------
 // hit has not been used yet to start a seed, 
 // however it could've been used as a second seed
 //-----------------------------------------------------------------------------
-	  HitData_t* hd1 = &panelz->fHitData[l][h1];
+	  HitData_t* hd1 = &panelz->fHitData[l1][h1];
 	  const StrawHit* sh = hd1->fHit; 
 	  //	  if (sh->energyDep() >= _maxElectronHitEnergy)  continue;
 	  if (fabs(sh->dt())  >= _maxStrawDt          )  continue;

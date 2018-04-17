@@ -122,16 +122,6 @@ physics :
        }
     }
 
-    backgroundOverlay :
-    {
-       module_type   : CrvBackgroundOverlay
-       backgroundFile: "CRVResponse/efficiencyCheck/background_6600.root"
-       overlayFactor : 0
-    }
-
-    protonTimeMap: { module_type : GenerateProtonTimes }
-    muonTimeMap: { module_type : GenerateMuonLife }
-
     CrvPhotons       : @local::CrvPhotons
     CrvSiPMCharges   : @local::CrvSiPMCharges
     CrvWaveforms     : @local::CrvWaveforms
@@ -247,7 +237,7 @@ physics :
   }
 
 
-  trig : [generate, g4run, belowCrvFilter, backgroundOverlay, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses,
+  trig : [generate, g4run, belowCrvFilter, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses,
           CrvCoincidencePE10T5,
           CrvCoincidencePE12T5,
           CrvCoincidencePE14T5,
@@ -354,7 +344,7 @@ physics :
 physics.producers.CrvPhotons.timeOffsets    : { inputs : [] }
 physics.producers.CrvPhotons.g4ModuleLabels : ["*"]
 physics.producers.CrvPhotons.processNames   : ["*"]
-physics.producers.CrvPhotons.lookupTableFileNames      : ["CRVConditions/v3_0/LookupTable_6000"]
+physics.producers.CrvPhotons.lookupTableFileNames      : ["CRVConditions/v4_0/LookupTable_6000"]
 physics.producers.CrvPhotons.CRVSectors                : ["Test"]
 
 physics.producers.CrvCoincidencePE10T5.PEthresholds                   : [10]

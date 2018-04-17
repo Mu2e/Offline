@@ -66,7 +66,7 @@ Int_t myhpart(Int_t mcpdg,Int_t mcgen, Int_t mcproc,Float_t mcoe){
 void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) {
 
   TString spage(page);
-  gStyle->SetOptStat(0);
+//  gStyle->SetOptStat(0);
 //  TCut conv("mcpdg==11&&mcgen==2&&mcmom>100.0");
   TCut conv("mcpdg==11&&mcgen==2");
   TCut oele("abs(mcpdg)==11&&mcgen!=2");
@@ -269,6 +269,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     tlegs->Draw();
 
   } else if(spage=="particle"){
+//    gStyle->SetOptStat(111111);
     THStack* estack = new THStack("edep","Reco Hit Energy by Particle;Deposited Energy (KeV)");
     TH1F* econv = new TH1F("econv","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,12.0);
     estack->Add(econv);
@@ -282,7 +283,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     emu->SetFillColor(kCyan);
     egam->SetFillColor(kGreen);
     ehad->SetFillColor(kMagenta);
-    econv->SetStats(0);
+//    econv->SetStats(0);
     emu->SetStats(0);
     egam->SetStats(0);
     ehad->SetStats(0);
@@ -314,7 +315,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     TCanvas* bcan = new TCanvas("bcan","background",1000,800);
     bcan->Divide(1,2);
     bcan->cd(1);
-    gPad->SetLogy();
+//    gPad->SetLogy();
     estack->Draw();
     econv->Draw("same");
     TLegend* leg2 = new TLegend(0.55,0.7,0.9,0.9);
@@ -325,7 +326,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     leg2->Draw();
 
     bcan->cd(2);
-    gPad->SetLogy();
+ //   gPad->SetLogy();
     rstack->Draw();
   } else if (spage == "ccan") {
 
@@ -355,7 +356,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
        leg3->AddEntry(gid,"Selected hits","l");
        leg3->Draw();
      */
-    gStyle->SetOptStat(0);
+//    gStyle->SetOptStat(0);
     ccan->Clear();
     ccan->Divide(1,2);
     /*    ccan->cd(2);
@@ -644,5 +645,11 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     totcan->cd(2);
     ptot->Draw("colorz");
 
+  } else if(spage == "td") {
+    TH1F* tdres = new TH1F("tdres","Time Division Resolution",100,-400,400);
+    hits->Project("tdres","shlen-mcshlen","mcgen==2");
+    TCanvas* tdcan = new TCanvas("tdcan","tdcan",600,600);
+    tdres->Fit("gaus");
   }
+
 }

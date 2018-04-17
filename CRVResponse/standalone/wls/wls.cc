@@ -15,10 +15,10 @@
 #include "WLSRunAction.hh"
 #include "WLSEventAction.hh"
 #include "WLSSteppingAction.hh"
-#include "WLSStackingAction.hh"
 
-#include "G4VisExecutive.hh"
-#include "G4UIExecutive.hh"
+#include "G4StepLimiterPhysics.hh"
+#include "G4TransportationManager.hh"
+#include "G4GDMLParser.hh"
 
 #include "CLHEP/Random/Randomize.h"
 #include "MakeCrvPhotons.hh"
@@ -45,13 +45,9 @@ bool findArgs(int argc, char** argv, const char* c, std::string &value)
     {
       if(i+1<argc)
       {
-        if(argv[i+1][0]!='-')
-        {
-          value=argv[i+1];
-          return true;
-        } 
+        value=argv[i+1];
+        return true;
       }
-      std::cout<<"The argument "<<c<<" requires a value"<<std::endl;
       return false; 
     }
   }
@@ -65,13 +61,9 @@ bool findArgs(int argc, char** argv, const char* c, int &value)
     {
       if(i+1<argc)
       {
-        if(argv[i+1][0]!='-')
-        {
-          value=atoi(argv[i+1]);
-          return true;
-        } 
+        value=atoi(argv[i+1]);
+        return true;
       }
-      std::cout<<"The argument "<<c<<" requires a value"<<std::endl;
       return false; 
     }
   }
@@ -85,13 +77,9 @@ bool findArgs(int argc, char** argv, const char* c, double &value)
     {
       if(i+1<argc)
       {
-        if(argv[i+1][0]!='-')
-        {
-          value=atof(argv[i+1]);
-          return true;
-        } 
+        value=atof(argv[i+1]);
+        return true;
       }
-      std::cout<<"The argument "<<c<<" requires a value"<<std::endl;
       return false; 
     }
   }
@@ -112,7 +100,7 @@ void DrawHistograms(const std::string &lookupFilename)
 
 int main(int argc, char** argv) 
 {
-  int mode=-2;
+  WLSSteppingAction::simulationMode mode=WLSSteppingAction::Undefined;
   int simType=-1;
   int minBin=0;
   int maxBin=-1;
@@ -144,6 +132,7 @@ int main(int argc, char** argv)
     std::cout<<"                  7600  7600 mm (reflector at positive side)"<<std::endl;
     std::cout<<"                  7350  7350 mm (reflector at positive side)"<<std::endl;
     std::cout<<"                  7100  7100 mm (reflector at postiive side)"<<std::endl;
+    std::cout<<"                  6900  6600 mm (reflector at positive side)"<<std::endl;
     std::cout<<"                  6600  6600 mm (reflector at positive side)"<<std::endl;
     std::cout<<"                  6001  6000 mm (reflector at positive side)"<<std::endl;
     std::cout<<"                  6000  6000 mm"<<std::endl;
@@ -163,6 +152,7 @@ int main(int argc, char** argv)
     std::cout<<"                  7600  7600 mm (reflector at positive side)"<<std::endl;
     std::cout<<"                  7350  7350 mm (reflector at positive side)"<<std::endl;
     std::cout<<"                  7100  7100 mm (reflector at postiive side)"<<std::endl;
+    std::cout<<"                  6900  6600 mm (reflector at positive side)"<<std::endl;
     std::cout<<"                  6600  6600 mm (reflector at positive side)"<<std::endl;
     std::cout<<"                  6001  6000 mm (reflector at positive side)"<<std::endl;
     std::cout<<"                  6000  6000 mm"<<std::endl;
@@ -209,11 +199,11 @@ int main(int argc, char** argv)
     return 0;
   }
 
-  if(findArgs(argc, argv, "-c")) mode=-1;
-  if(findArgs(argc, argv, "-s")) mode=0;
-  if(findArgs(argc, argv, "-S")) mode=1;
+  if(findArgs(argc, argv, "-c")) mode=WLSSteppingAction::CreateLookupTables;
+  if(findArgs(argc, argv, "-s")) mode=WLSSteppingAction::UseGeantOnly;
+  if(findArgs(argc, argv, "-S")) mode=WLSSteppingAction::UseGeantAndLookupTables;
 
-  if(mode==-1)
+  if(mode==WLSSteppingAction::CreateLookupTables)
   {
     if(!findArgs(argc, argv, "-t", simType))
     {
@@ -226,7 +216,7 @@ int main(int argc, char** argv)
     findArgs(argc, argv, "-n", n);
   }
 
-  if(mode==0 || mode==1)
+  if(mode==WLSSteppingAction::UseGeantOnly || mode==WLSSteppingAction::UseGeantAndLookupTables)
   {
     findArgs(argc, argv, "-n", n);
   }
@@ -248,6 +238,7 @@ int main(int argc, char** argv)
        lengthOption!=6000 &&
        lengthOption!=6001 &&
        lengthOption!=6600 &&
+       lengthOption!=6900 &&
        lengthOption!=7100 &&
        lengthOption!=7350 &&
        lengthOption!=7600)
@@ -278,39 +269,29 @@ int main(int argc, char** argv)
   runManager->SetUserInitialization(new WLSDetectorConstruction(lengthOption));
   runManager->SetUserInitialization(new WLSPhysicsList(physName));
 
-  WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose, posY, posZ);   //n,simType,minBin not needed in modes 0,1
-                                                                                                                         //posY, posZ has no effect in mode -1
+  WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose, posY, posZ);   
+                                                                       //n,simType,minBin not needed in modes UseGeantOnly, and UseGeantAndLookupTables
+                                                                       //posY, posZ has no effect in mode CreateLookupTables
   WLSRunAction* runAction = new WLSRunAction();
-  std::string singlePEWaveformFilename="/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v2.txt";
-  std::string visibleEnergyAdjustmentFilename="/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/visibleEnergyAdjustment.txt";
+  std::string singlePEWaveformFilename="singlePEWaveform_v3.txt";
+  std::string visibleEnergyAdjustmentFilename="visibleEnergyAdjustment.txt";
   WLSEventAction* eventAction = new WLSEventAction(mode, singlePEWaveformFilename, n, simType, minBin, verbose); 
-  WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename, visibleEnergyAdjustmentFilename);  //filename not needed in modes -1,0
+  WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename, visibleEnergyAdjustmentFilename);  
+                                                                       //lookupFilename not needed in modes CreateLookupTables, and UseGeantOnly
 
   runManager->SetUserAction(generator);
   runManager->SetUserAction(runAction);
   runManager->SetUserAction(eventAction);
   runManager->SetUserAction(steppingAction);
-  runManager->SetUserAction(new WLSStackingAction);
-
-#if 0 
-  G4VisManager *visManager = new G4VisExecutive();
-  G4UImanager *UImanager = G4UImanager::GetUIpointer();
-  G4UIExecutive *ui = new G4UIExecutive(1,argv);
-
-  visManager->Initialize();
-  UImanager->ApplyCommand("/run/initialize");
-  UImanager->ApplyCommand("/control/execute vis.mac");
-  UImanager->ApplyCommand("/run/beamOn");
-
-  ui->SessionStart();
-
-  delete ui;
-  delete visManager;
-
-#else
-
   runManager->Initialize();
-  if(mode==-1)
+
+/*
+  G4GDMLParser parser;
+  parser.SetRegionExport(true);
+  parser.Write("out.gdml", G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->GetWorldVolume()->GetLogicalVolume());
+*/
+
+  if(mode==WLSSteppingAction::CreateLookupTables)
   {
     const std::vector<double> &xBins     = WLSDetectorConstruction::Instance()->GetXBins();
     const std::vector<double> &yBins     = WLSDetectorConstruction::Instance()->GetYBins();
@@ -368,11 +349,10 @@ int main(int argc, char** argv)
       lookupfile.close();
     }
   }
-  else if(mode==0 || mode==1)
+  else if(mode==WLSSteppingAction::UseGeantOnly || mode==WLSSteppingAction::UseGeantAndLookupTables)
   {
     runManager->BeamOn(n);
   }
-#endif
 
   delete runManager;
 

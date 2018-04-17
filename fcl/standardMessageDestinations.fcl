@@ -134,6 +134,7 @@ mf_coutInfo:
    PathConfiguration : { limit : 0 }
    GEOM_MINRANGECUT : { limit : 0 }
    GEOM_PARTICLECUT : { limit : 0 }
+   Configuration : { limit : 0 }
  } # end categories
 } # end mf_coutInfo
 mf_coutInfoStats : 

@@ -11,7 +11,6 @@
 
 #include "Mu2eG4/inc/postG4InitializeTasks.hh"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "Mu2eG4/inc/customizeChargedPionDecay.hh"
@@ -23,31 +22,27 @@
 
 namespace mu2e{
 
- template<class Config>
-  void postG4InitializeTasks(const Config& config, G4VUserPhysicsList* pL) {
+  void postG4InitializeTasks(const fhicl::ParameterSet& pset, G4VUserPhysicsList* pL) {
 
     // G4 does not include pi+ -> e+ nu + cc. Fix that in one of several ways.
-    customizeChargedPionDecay(config);
+    customizeChargedPionDecay(pset);
 
     // Switch off the decay of some particles
-    switchDecayOff(config);
+    switchDecayOff(pset);
 
     // Set the range cut for e+,e-,gamma (& proton but see below)
-    setMinimumRangeCut(config, pL);
+    setMinimumRangeCut(pset, pL);
 
     // set the proton production cut which is special
     std::string pName("proton");
-    setParticleCut(config, pName, pL);
+    setParticleCut(pset, pName, pL);
 
     // add processes if requested
-    addUserProcesses(config);
+    addUserProcesses(pset);
 
     // swap Bertini Cascade with Precompound model in G4MuonMinusCapture
-    switchCaptureDModel(config);
+    switchCaptureDModel(pset);
 
   }
-
-  template void postG4InitializeTasks(const SimpleConfig&, G4VUserPhysicsList* pL);
-  template void postG4InitializeTasks(const fhicl::ParameterSet&, G4VUserPhysicsList* pL);
 
 }  // end namespace mu2e

@@ -20,7 +20,7 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusters.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"

@@ -1,10 +1,6 @@
 //
 // config file to perform Geant4 calorimetric studies using the Mu2e framework infrastructure
 // to be included in g4studyGeom.txt
-
-// $Id: g4studyGeomCalo_01.txt,v 1.3 2013/04/12 20:13:12 genser Exp $
-// $Author: genser $
-// $Date: 2013/04/12 20:13:12 $
 //
 // Original author K. Genser
 //
@@ -16,9 +12,6 @@
 // Change the name.
 string detector.name           = "g4studyCalo_01";
 
-// event track step debug list
-vector<int> g4.steppingActionEventList = {};
-
 // overlaps check
 bool g4.doSurfaceCheck         = true;
 
@@ -27,9 +20,6 @@ bool g4.doSurfaceCheck         = true;
 int            mu2e.studyEnvVersion      = 3;
 
 // the "World Box"
-
-// verbosity flag pertaining to the world construction
-int world.verbosityLevel         = 2;
 
 // a very "thin" vacuum
 string world.materialName        = "G4_Galactic";

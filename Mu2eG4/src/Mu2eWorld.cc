@@ -140,7 +140,12 @@ namespace mu2e {
     , writeGDML_(_config.getBool("writeGDML",false))
     , gdmlFileName_(_config.getString("GDMLFileName","mu2e.gdml"))
     , g4stepperName_(_config.getString("g4.stepper","G4SimpleRunge"))
-    , bfieldMaxStep_(_config.getDouble("bfield.maxStep", 20.))
+    , g4epsilonMin_(_config.getDouble("g4.epsilonMin"))
+    , g4epsilonMax_(_config.getDouble("g4.epsilonMax"))
+    , g4DeltaOneStep_(_config.getDouble("g4.deltaOneStep")*CLHEP::mm)
+    , g4DeltaIntersection_(_config.getDouble("g4.deltaIntersection")*CLHEP::mm)
+    , g4DeltaChord_(_config.getDouble("g4.deltaChord")*CLHEP::mm)
+    , bfieldMaxStep_(_config.getDouble("bfield.maxStep", 20.)*CLHEP::mm)
   {
     _verbosityLevel = _config.getInt("world.verbosityLevel", 0);
   }
@@ -153,7 +158,12 @@ namespace mu2e {
     , writeGDML_(pset.get<bool>("debug.writeGDML"))
     , gdmlFileName_(pset.get<std::string>("debug.GDMLFileName"))
     , g4stepperName_(pset.get<std::string>("physics.stepper"))
-    , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep"))
+    , g4epsilonMin_(pset.get<double>("physics.epsilonMin"))
+    , g4epsilonMax_(pset.get<double>("physics.epsilonMax"))
+    , g4DeltaOneStep_(pset.get<double>("physics.deltaOneStep")*CLHEP::mm)
+    , g4DeltaIntersection_(pset.get<double>("physics.deltaIntersection")*CLHEP::mm)
+    , g4DeltaChord_(pset.get<double>("physics.deltaChord")*CLHEP::mm)
+    , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep")*CLHEP::mm)
     , limitStepInAllVolumes_(pset.get<bool>("physics.limitStepInAllVolumes"))
   {
     _verbosityLevel = pset.get<int>("debug.worldVerbosityLevel");
@@ -207,6 +217,20 @@ namespace mu2e {
     constructProtonAbsorber(_config, *sdHelper_);
 
     VolumeInfo calorimeterInfo    = constructCal();
+
+    if (pset_.has_key("physics.minRangeCut2")) {
+      // creating a region to be able to asign special cut and EM options
+      G4Region* regionCalorimeter = new G4Region("Calorimeter");
+      calorimeterInfo.logical->SetRegion(regionCalorimeter);
+      regionCalorimeter->AddRootLogicalVolume(calorimeterInfo.logical);
+    }
+
+    if (pset_.has_key("physics.minRangeCut3")) {
+      // creating a region to be able to asign special cut and EM options
+      G4Region* regionTracker = new G4Region("Tracker");
+      trackerInfo.logical->SetRegion(regionTracker);
+      regionTracker->AddRootLogicalVolume(trackerInfo.logical);
+    }
 
     // This is just placeholder for now - and might be misnamed.
     constructMagnetYoke();
@@ -429,10 +453,6 @@ namespace mu2e {
     }
 
     // Adjust properties of the integrators to control accuracy vs time.
-    G4double singleValue         = 0.5e-01*CLHEP::mm;
-    G4double newUpstreamDeltaI   = singleValue;
-    G4double deltaOneStep        = singleValue;
-    G4double deltaChord          = singleValue;
 
     if ( _dsUniform.get() != 0 ){
       G4double deltaIntersection = 0.00001*CLHEP::mm;
@@ -444,9 +464,20 @@ namespace mu2e {
       _dsGradient->manager()->SetDeltaIntersection(deltaIntersection);
     }
 
-    _manager->SetDeltaOneStep(deltaOneStep);
-    _manager->SetDeltaIntersection(newUpstreamDeltaI);
-    _chordFinder->SetDeltaChord(deltaChord);
+    _manager->SetMinimumEpsilonStep(g4epsilonMin_);
+    _manager->SetMaximumEpsilonStep(g4epsilonMax_);
+    _manager->SetDeltaOneStep(g4DeltaOneStep_);
+    _manager->SetDeltaIntersection(g4DeltaIntersection_);
+    _chordFinder->SetDeltaChord(g4DeltaChord_);
+
+    if ( _verbosityLevel > 0 ) {
+      cout << __func__ << " Stepper precision parameters: " << endl;
+      cout << __func__ << " g4epsilonMin        " << _manager->GetMinimumEpsilonStep() << endl;
+      cout << __func__ << " g4epsilonMax        " << _manager->GetMaximumEpsilonStep() << endl;
+      cout << __func__ << " g4DeltaOneStep      " << _manager->GetDeltaOneStep() << endl;
+      cout << __func__ << " g4DeltaIntersection " << _manager->GetDeltaIntersection() << endl;
+      cout << __func__ << " g4DeltaChord        " << _chordFinder->GetDeltaChord() << endl;
+    }
 
   } // end Mu2eWorld::constructBFieldAndManagers
 
