@@ -226,6 +226,8 @@
  <class name="mu2e::CrvCoincidenceCheckResult" />
  <class name="art::Wrapper<mu2e::CrvCoincidenceCheckResult>" />
 
+ <class name="mu2e::CrvCoincidenceClusters::PulseInfo" />
+ <class name="std::vector<mu2e::CrvCoincidenceClusters::PulseInfo>" />
  <class name="mu2e::CrvCoincidenceClusters::Cluster" />
  <class name="std::vector<mu2e::CrvCoincidenceClusters::Cluster>" />
  <class name="mu2e::CrvCoincidenceClusters" />

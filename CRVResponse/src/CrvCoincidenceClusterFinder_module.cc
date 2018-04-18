@@ -191,8 +191,8 @@ namespace mu2e
         while(ht!=posCluster.end())
         {
           double startTime=ht->_time;
-          std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses;
-          crvRecoPulses.push_back(ht->_crvRecoPulse);
+          std::vector<CrvCoincidenceClusters::PulseInfo> pulses;
+          pulses.emplace_back(ht->_crvRecoPulse,art::Ptr<SimParticle>(),NAN);
 
           double endTime=ht->_time;
           int PEs=ht->_crvRecoPulse->GetPEs();
@@ -202,7 +202,7 @@ namespace mu2e
           while(++ht!=posCluster.end())
           {
             if(ht->_time-startTime>_maxTimeDifference) break;
-            crvRecoPulses.push_back(ht->_crvRecoPulse);
+            pulses.emplace_back(ht->_crvRecoPulse,art::Ptr<SimParticle>(),NAN);
 
             endTime=ht->_time;
             if(_usingPEsPulseHeight) PEs+=ht->_crvRecoPulse->GetPEsPulseHeight();
@@ -212,27 +212,35 @@ namespace mu2e
           //filled one full position&time cluster
 
           //average counter position
-          avgCounterPos/=crvRecoPulses.size();
+          avgCounterPos/=pulses.size();
 
           //get MC information, if available
-          std::vector<art::Ptr<SimParticle> > simParticles;
-          double energyDeposited = 0;
+          bool hasMCInfo=false;
+          art::Ptr<SimParticle> simParticle;
+          double totalEnergyDeposited = 0;
           double earliestHitTime = NAN;
           CLHEP::Hep3Vector earliestHitPos;
           if(crvDigiMCCollection.isValid())
           {
+            hasMCInfo=true;
             //loop through all CrvRecoPulses to find all all CrvDigiMCs belongin to this cluster 
             std::map<art::Ptr<SimParticle>, int> simParticleMap;  //counting all simParticles
-            for(size_t i=0; i<crvRecoPulses.size(); i++)
+            for(size_t i=0; i<pulses.size(); i++)
             {
-              const std::vector<size_t> &waveformIndices = crvRecoPulses[i]->GetWaveformIndices();
+              const std::vector<size_t> &waveformIndices = pulses[i]._crvRecoPulse->GetWaveformIndices();
               for(size_t j=0; j<waveformIndices.size(); j++)
               {
                 size_t waveformIndex = waveformIndices[j];
                 const CrvDigiMC &digi = crvDigiMCCollection->at(waveformIndex);
 
+                //get the deposited energy for this CrvDigiMC
+                double energyDeposited = digi.GetEnergyDeposited();
+                pulses[i]._energyDeposited = energyDeposited;
+                totalEnergyDeposited+=energyDeposited;
+
                 //get the SimParticle responsible for this CrvDigiMC
                 const art::Ptr<SimParticle> simParticle = digi.GetSimParticle();
+                pulses[i]._simParticle = simParticle;
                 //there is a special case in which there is no simParticle:
                 //a reco pulse based on two consecutive single waveforms, 
                 //where the second waveform is either caused by noise, or just the tail end of the first waveform
@@ -242,8 +250,7 @@ namespace mu2e
                 const std::vector<art::Ptr<StepPointMC> > &stepPoints = digi.GetStepPoints();
                 for(size_t k=0; k<stepPoints.size(); k++)
                 {
-                  if(!stepPoints[k].isNonnull()) continue;
-                  energyDeposited = stepPoints[k]->totalEDep();
+                  if(stepPoints[k].isNull()) continue;
                   double t=stepPoints[k]->time();
                   if(t<earliestHitTime || isnan(earliestHitTime))
                   {
@@ -253,30 +260,24 @@ namespace mu2e
                 }
               }
             }
-            //finding the three most frequent simParticles
-            for(int i=0; i<3; i++)
-            {
-              art::Ptr<SimParticle> simParticle;
-              std::map<art::Ptr<SimParticle>,int >::iterator simParticleIter;
-              int simParticleCount=0;
-              for(simParticleIter=simParticleMap.begin(); simParticleIter!=simParticleMap.end(); simParticleIter++)
-              {
-                if(std::find(simParticles.begin(),simParticles.end(),simParticleIter->first)!=simParticles.end()) continue; //ignore particles which have been found already
-                if(simParticleIter->second>simParticleCount)
-                {
-                  simParticleCount=simParticleIter->second;
-                  simParticle=simParticleIter->first;
-                }
-              }
-              if(simParticle.isNonnull()) simParticles.push_back(simParticle);  //need to check whether it actually found e.g. a 2nd or 3rd most frequent particle
-            }
 
+            //finding the most likely simParticles
+            std::map<art::Ptr<SimParticle>,int >::iterator simParticleIter;
+            int simParticleCount=0;
+            for(simParticleIter=simParticleMap.begin(); simParticleIter!=simParticleMap.end(); simParticleIter++)
+            {
+              if(simParticleIter->second>simParticleCount)
+              {
+                simParticleCount=simParticleIter->second;
+                simParticle=simParticleIter->first;
+              }
+            }
 
           }//MC information
 
           //insert the cluster information into the vector of the crv coincidence clusters
-          crvCoincidenceClusters->GetClusters().emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, 
-                                                             crvRecoPulses, simParticles, energyDeposited, earliestHitTime, earliestHitPos);
+          crvCoincidenceClusters->GetClusters().emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, hasMCInfo, 
+                                                             pulses, simParticle, totalEnergyDeposited, earliestHitTime, earliestHitPos);
 
           if(_verboseLevel>0)
           {
