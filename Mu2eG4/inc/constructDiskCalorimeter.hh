@@ -17,8 +17,10 @@
 namespace mu2e {
 
   class SimpleConfig;
+  class SensitiveDetectorHelper;
 
-  VolumeInfo constructDiskCalorimeter( VolumeInfo const& mother, SimpleConfig const& config );
+  VolumeInfo constructDiskCalorimeter( VolumeInfo const& mother, SimpleConfig const& config,
+                                       SensitiveDetectorHelper const& sdHelper_ );
 
 }
 

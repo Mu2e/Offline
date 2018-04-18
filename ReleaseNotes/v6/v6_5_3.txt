@@ -1,0 +1,28 @@
+
+           Release notes for Mu2e Offline software, v6_5_3
+
+5) rlc,  07 Mar 2018.  reduce printout, reconfigure JobConfig
+4) pollack, 01 Feb 2018
+   added gsl library ups product, for bessel functions
+   added standalone csv reader (see https://github.com/ben-strasser/fast-cpp-csv-parser):
+   GeneralUtilities/inc/csv.h
+
+3) pollack, 22 Feb 2018
+   merged in `pollack` branch:
+   -BField updates, parameterized field map usable for DS.  Default behavior
+   not changed, new maps must be enabled by user.
+   -BFMap class is now pure virtual base class, BFParamMap and BFGridMap daughter classes.
+   -`HepPoint` function calls updated to reflect minor changes in BTrk.
+
+   Affected files:
+   BFieldGeom/src/* and associated headers
+   GeometryService/src/BFieldConfigMaker.cc
+   GeometryService/src/BFieldManagerMaker.cc
+
+2) genser, 22 Feb 2018
+   Moved explicit setup of xerces_c (also done by setup of geant4)
+   to an if else branch in setup.sh
+
+1) genser, 21 Feb 2018
+   Corrected unit in G4Tubs construction
+   in Mu2eG4/src/constructExtMonFNALBuilding.cc

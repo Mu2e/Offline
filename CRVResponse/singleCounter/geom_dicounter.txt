@@ -18,9 +18,9 @@ double          crs.scintillatorBarThickness     =  20;   //mm
 double          crs.scintillatorBarWidth         =  50;   //mm
 vector<double>  crs.gapBetweenLayers             =   {};  //mm
 
-double          crs.gapLarge                     =  .5;   //mm
-double          crs.gapSmall                     =  .1;   //mm
-double          crs.gapBetweenModules            =   5;   //mm
+double          crs.gapLarge                     = 1.0;   //mm
+double          crs.gapSmall                     = 0.5;   //mm
+double          crs.gapBetweenModules            = 4.5;   //mm
 
 int             crs.nModulesTest                 =   1;
 int             crs.nCountersPerModuleTest       =   2;

@@ -11,6 +11,7 @@ helper=mu2e_helper(env);
 
 mainlib = helper.make_mainlib ( [ 'mu2e_GeomPrimitives',
                                   'mu2e_Mu2eInterfaces',
+                                  'cetlib_except',
                                   'CLHEP',
                                   'Core'
                                 ] )

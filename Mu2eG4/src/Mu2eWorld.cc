@@ -119,6 +119,9 @@
 #include "G4SimpleHeum.hh"
 #include "G4HelixImplicitEuler.hh"
 #include "G4HelixSimpleRunge.hh"
+#if G4VERSION>4103
+#include "G4DormandPrince745.hh"
+#endif
 #include "G4GDMLParser.hh"
 
 #include "Mu2eG4/inc/Mu2eGlobalField.hh"
@@ -133,12 +136,16 @@ namespace mu2e {
   Mu2eWorld::Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
     : sdHelper_(sdHelper)
     , pset_(fhicl::ParameterSet())
-
     , activeWr_Wl_SD_(_config.getBool("ttracker.ActiveWr_Wl_SD",false))
     , writeGDML_(_config.getBool("writeGDML",false))
     , gdmlFileName_(_config.getString("GDMLFileName","mu2e.gdml"))
     , g4stepperName_(_config.getString("g4.stepper","G4SimpleRunge"))
-    , bfieldMaxStep_(_config.getDouble("bfield.maxStep", 20.))
+    , g4epsilonMin_(_config.getDouble("g4.epsilonMin"))
+    , g4epsilonMax_(_config.getDouble("g4.epsilonMax"))
+    , g4DeltaOneStep_(_config.getDouble("g4.deltaOneStep")*CLHEP::mm)
+    , g4DeltaIntersection_(_config.getDouble("g4.deltaIntersection")*CLHEP::mm)
+    , g4DeltaChord_(_config.getDouble("g4.deltaChord")*CLHEP::mm)
+    , bfieldMaxStep_(_config.getDouble("bfield.maxStep", 20.)*CLHEP::mm)
   {
     _verbosityLevel = _config.getInt("world.verbosityLevel", 0);
   }
@@ -147,12 +154,16 @@ namespace mu2e {
                        SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
     : sdHelper_(sdHelper)
     , pset_(pset)
-
     , activeWr_Wl_SD_(true)
     , writeGDML_(pset.get<bool>("debug.writeGDML"))
     , gdmlFileName_(pset.get<std::string>("debug.GDMLFileName"))
     , g4stepperName_(pset.get<std::string>("physics.stepper"))
-    , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep"))
+    , g4epsilonMin_(pset.get<double>("physics.epsilonMin"))
+    , g4epsilonMax_(pset.get<double>("physics.epsilonMax"))
+    , g4DeltaOneStep_(pset.get<double>("physics.deltaOneStep")*CLHEP::mm)
+    , g4DeltaIntersection_(pset.get<double>("physics.deltaIntersection")*CLHEP::mm)
+    , g4DeltaChord_(pset.get<double>("physics.deltaChord")*CLHEP::mm)
+    , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep")*CLHEP::mm)
     , limitStepInAllVolumes_(pset.get<bool>("physics.limitStepInAllVolumes"))
   {
     _verbosityLevel = pset.get<int>("debug.worldVerbosityLevel");
@@ -193,19 +204,33 @@ namespace mu2e {
       cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << endl;
     }
 
-    constructProtonBeamDump(hallInfo, _config);
+    constructProtonBeamDump(hallInfo, _config, *sdHelper_);
 
-    constructDS(hallInfo, _config);
-    constructPS(hallInfo, _config);
+    constructDS(hallInfo, _config, *sdHelper_);
+    constructPS(hallInfo, _config, *sdHelper_);
     constructPSEnclosure(hallInfo, _config);
     constructTS(hallInfo, _config);
 
     VolumeInfo trackerInfo = constructTracker();
     VolumeInfo targetInfo  = constructTarget();
 
-    constructProtonAbsorber(_config);
+    constructProtonAbsorber(_config, *sdHelper_);
 
     VolumeInfo calorimeterInfo    = constructCal();
+
+    if (pset_.has_key("physics.minRangeCut2")) {
+      // creating a region to be able to asign special cut and EM options
+      G4Region* regionCalorimeter = new G4Region("Calorimeter");
+      calorimeterInfo.logical->SetRegion(regionCalorimeter);
+      regionCalorimeter->AddRootLogicalVolume(calorimeterInfo.logical);
+    }
+
+    if (pset_.has_key("physics.minRangeCut3")) {
+      // creating a region to be able to asign special cut and EM options
+      G4Region* regionTracker = new G4Region("Tracker");
+      trackerInfo.logical->SetRegion(regionTracker);
+      regionTracker->AddRootLogicalVolume(trackerInfo.logical);
+    }
 
     // This is just placeholder for now - and might be misnamed.
     constructMagnetYoke();
@@ -231,20 +256,20 @@ namespace mu2e {
     }
 
     if ( _config.getBool("mstm.build", false) ) {
-      constructMSTM(hallInfo, _config);
+      constructMSTM(hallInfo, _config, *sdHelper_);
     }
 
     if ( _config.getBool("hasSTM",false) ) {
-      constructSTM(_config);
+      constructSTM(_config, *sdHelper_);
     }
 
     if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
 
       GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
-      constructCRV(hallInfo,_config);
+      constructCRV(hallInfo,_config,*sdHelper_);
     }
 
-    constructVirtualDetectors(_config); // beware of the placement order of this function
+    constructVirtualDetectors(_config, *sdHelper_); // beware of the placement order of this function
 
     constructVisualizationRegions(worldVInfo, _config);
 
@@ -285,9 +310,9 @@ namespace mu2e {
     if ( _config.getBool("hasTTracker",false) ) {
       int ver = _config.getInt("TTrackerVersion",3);
       if ( ver == 3 ){
-        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, _config );
+        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, _config, *sdHelper_);
       } else if ( ver == 5 ) {
-	trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config );
+	trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config, *sdHelper_);
       }
     } else {
       trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, _config );
@@ -319,7 +344,7 @@ namespace mu2e {
     VolumeInfo targetInfo = ( _config.getBool("hasTarget",false) ) ?
 
       constructStoppingTarget( detSolUpstreamVacInfo,
-                               _config )
+                               _config, *sdHelper_ )
       :
 
       constructDummyStoppingTarget( detSolUpstreamVacInfo,
@@ -370,6 +395,7 @@ namespace mu2e {
     G4MagneticField * _field = new Mu2eGlobalField(worldGeom->mu2eOriginInWorld());
     G4Mag_EqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
+    if ( _verbosityLevel > 0 ) cout << "Setting up " << g4stepperName_ << " stepper" << endl;
     if ( g4stepperName_  == "G4ClassicalRK4" ) {
       _stepper = new G4ClassicalRK4(_rhs);
     } else if ( g4stepperName_  == "G4ClassicalRK4WSpin" ) {
@@ -390,8 +416,13 @@ namespace mu2e {
       _stepper = new G4HelixImplicitEuler(_rhs);
     } else if ( g4stepperName_  == "G4HelixSimpleRunge" ) {
       _stepper = new G4HelixSimpleRunge(_rhs);
+#if G4VERSION>4103
+    } else if ( g4stepperName_  == "G4DormandPrince745" ) {
+      _stepper = new G4DormandPrince745(_rhs);
+#endif
     } else {
       _stepper = new G4SimpleRunge(_rhs);
+      if ( _verbosityLevel > 0 ) cout << "Using default G4SimpleRunge stepper" << endl;
     }
     G4ChordFinder * _chordFinder = new G4ChordFinder(_field,1.0e-2*CLHEP::mm,_stepper);
     G4FieldManager * _manager = new G4FieldManager(_field,_chordFinder,true);
@@ -422,10 +453,6 @@ namespace mu2e {
     }
 
     // Adjust properties of the integrators to control accuracy vs time.
-    G4double singleValue         = 0.5e-01*CLHEP::mm;
-    G4double newUpstreamDeltaI   = singleValue;
-    G4double deltaOneStep        = singleValue;
-    G4double deltaChord          = singleValue;
 
     if ( _dsUniform.get() != 0 ){
       G4double deltaIntersection = 0.00001*CLHEP::mm;
@@ -437,9 +464,20 @@ namespace mu2e {
       _dsGradient->manager()->SetDeltaIntersection(deltaIntersection);
     }
 
-    _manager->SetDeltaOneStep(deltaOneStep);
-    _manager->SetDeltaIntersection(newUpstreamDeltaI);
-    _chordFinder->SetDeltaChord(deltaChord);
+    _manager->SetMinimumEpsilonStep(g4epsilonMin_);
+    _manager->SetMaximumEpsilonStep(g4epsilonMax_);
+    _manager->SetDeltaOneStep(g4DeltaOneStep_);
+    _manager->SetDeltaIntersection(g4DeltaIntersection_);
+    _chordFinder->SetDeltaChord(g4DeltaChord_);
+
+    if ( _verbosityLevel > 0 ) {
+      cout << __func__ << " Stepper precision parameters: " << endl;
+      cout << __func__ << " g4epsilonMin        " << _manager->GetMinimumEpsilonStep() << endl;
+      cout << __func__ << " g4epsilonMax        " << _manager->GetMaximumEpsilonStep() << endl;
+      cout << __func__ << " g4DeltaOneStep      " << _manager->GetDeltaOneStep() << endl;
+      cout << __func__ << " g4DeltaIntersection " << _manager->GetDeltaIntersection() << endl;
+      cout << __func__ << " g4DeltaChord        " << _chordFinder->GetDeltaChord() << endl;
+    }
 
   } // end Mu2eWorld::constructBFieldAndManagers
 
@@ -560,7 +598,7 @@ namespace mu2e {
     // Construct one of the calorimeters.
     VolumeInfo calorimeterInfo;
     if ( _config.getBool("hasDiskCalorimeter",false) ) {
-      calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config );
+      calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config, *sdHelper_ );
     }
 
     return calorimeterInfo;
@@ -679,6 +717,12 @@ namespace mu2e {
       Mu2eSensitiveDetector* EBKeySD =
         new Mu2eSensitiveDetector(    SensitiveDetectorName::panelEBKey(),  _config);
       SDman->AddNewDetector(EBKeySD);
+    }
+
+    if(sdHelper_->enabled(StepInstanceName::DSCableRun)) {
+      Mu2eSensitiveDetector* cableRunSD =
+        new Mu2eSensitiveDetector(    SensitiveDetectorName::DSCableRun(),  _config);
+      SDman->AddNewDetector(cableRunSD);
     }
 
   } // instantiateSensitiveDetectors

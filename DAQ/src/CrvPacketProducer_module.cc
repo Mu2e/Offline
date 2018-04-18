@@ -71,6 +71,8 @@ namespace mu2e {
 
     virtual void beginJob() override;
 
+    virtual void endJob();
+
     void produce( art::Event & ) override;
 
   private:
@@ -143,6 +145,13 @@ namespace mu2e {
 
   }
 
+  void CrvPacketProducer::endJob(){
+    if(_generateTextFile>0) {
+      outputStream << flush;
+      outputStream.close();
+    }
+  }
+
   void CrvPacketProducer::produce(art::Event & evt) {
 
     unique_ptr<DataBlockCollection> dtcPackets(new DataBlockCollection);
@@ -172,13 +181,10 @@ namespace mu2e {
     for(CrvDigiCollection::const_iterator iter=hits_CRV.begin(); 
         iter!=hits_CRV.end(); iter++) {
 
-      const CRSScintillatorBarIndex &barIndex = iter->first;
-      const CrvDigi &crvDigi = iter->second;
+	  const CrvDigi &crvDigi = *iter;
+	  const CRSScintillatorBarIndex &barIndex = crvDigi.GetScintillatorBarIndex();
+	  int SiPM = crvDigi.GetSiPMNumber();
       
-      for(int SiPM=0; SiPM<4; SiPM++)  {
-	  //merge single waveforms together if there is no time gap between them
-	  const std::vector<CrvDigi::CrvSingleWaveform> &singleWaveforms = crvDigi.GetSingleWaveforms(SiPM);
-	  
 	  int sipmID = barIndex.asInt()*4 + SiPM;
 	  
 	  // 15 ROCs total
@@ -197,25 +203,23 @@ namespace mu2e {
 	  size_t dtcID = dtc_id(globalRingID/rings_per_dtc);
 	  
 	  
-	  for(size_t i=0; i<singleWaveforms.size(); i++) {
-	    
 	    // Fill struct with info for current hit
-	    crvhit curHit;
-	    curHit.evt = eventNum;
-	    curHit.sipmID = sipmID;
-	    curHit.rocID = rocID;
-	    curHit.ringID = ringID;
-	    curHit.dtcID = dtcID;
+	  crvhit curHit;
+	  curHit.evt = eventNum;
+	  curHit.sipmID = sipmID;
+	  curHit.rocID = rocID;
+	  curHit.ringID = ringID;
+	  curHit.dtcID = dtcID;
 
-	    curHit.time = singleWaveforms[i]._startTDC;
-	    curHit.recoDigiSamples = (singleWaveforms[i]._ADCs).size();
-	    for(size_t j = 0; j<curHit.recoDigiSamples; j++) {
-	      curHit.waveform.push_back((adc_t) ((singleWaveforms[i]._ADCs)[j]) );
-	    }
+	  curHit.time = crvDigi.GetStartTDC();
+	  curHit.recoDigiSamples = crvDigi.GetADCs().size();
+	  for(size_t j = 0; j<curHit.recoDigiSamples; j++) {
+	      curHit.waveform.push_back((adc_t) (crvDigi.GetADCs()[j]) );
+	  }
 	    
-	    crvHitVector.push_back(curHit);
+	  crvHitVector.push_back(curHit);
 	    
-	    if(_generateTextFile>0) {
+	  if(_generateTextFile>0) {
 	      outputStream << curHit.evt << "\t";
 
 	      // Added temporarily for extra debugging info
@@ -233,11 +237,8 @@ namespace mu2e {
 		}
 	      }
 	      outputStream << endl;
-	    }
 	  }
 	  
-	}
-      
     }
 
     dtc_id max_dtc_id = number_of_rings / rings_per_dtc - 1;

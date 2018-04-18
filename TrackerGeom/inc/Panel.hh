@@ -13,19 +13,21 @@
 //
 
 #include <vector>
+#include <array>
+#include <iomanip>
+#include <iostream>
 
-#include "TrackerGeom/inc/Layer.hh"
-#include "DataProducts/inc/PanelId.hh"
-//#include "GeomPrimitives/inc/PlacedTubs.hh"
-#include "GeomPrimitives/inc/TubsParams.hh"
-
-
-#include "CLHEP/Vector/ThreeVector.h"
 #ifndef __CINT__
 #include "boost/bind.hpp"
 #endif
 
-#include <iostream>
+#include "CLHEP/Vector/ThreeVector.h"
+
+#include "cetlib_except/exception.h"
+
+#include "TrackerGeom/inc/Straw.hh"
+#include "DataProducts/inc/PanelId.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
 
 namespace mu2e {
 
@@ -33,38 +35,51 @@ namespace mu2e {
 
   class Panel{
 
-
     friend class Plane;
     friend class TTracker;
     friend class TTrackerMaker;
 
   public:
 
-    Panel():_id(PanelId(-1,-1)){}
+    Panel():_id(PanelId()){}
     Panel( const PanelId& id ):_id(id){}
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
     const PanelId& id() const { return _id;}
 
-    const std::vector<Layer>& getLayers() const{
-      return _layers;
+    // const std::vector<Layer>& getLayers() const{
+    //   return _layers;
+    // }
+
+    const auto& getStrawPointers() const{
+      return _straws2_p;
     }
 
     int nLayers() const{
-      return _layers.size();
+      return StrawId::_nlayers;
     }
 
-    const Layer& getLayer ( int n ) const {
-      return _layers.at(n);
+    int nStraws() const { return StrawId::_nstraws; }
+
+    const Straw& getStraw( uint16_t n ) const {
+      return *(_straws2_p.at(n));
     }
 
-    const Layer& getLayer ( const LayerId& layid) const {
-      return _layers.at(layid.getLayer());
-    }
+    // const Straw& getStraw ( const StrawId& strid ) const{
+    //   return _layers.at(strid.getLayer()).getStraw(strid);
+    // }
 
-    const Straw& getStraw ( const StrawId& strid ) const{
-      return _layers.at(strid.getLayer()).getStraw(strid);
+    // this getStraw checks if this is the right panel
+    const Straw& getStraw ( const StrawId& strid2 ) const{
+      if ( _id.samePlane(strid2) && _id.samePanel(strid2) ) {
+        return *(_straws2_p.at((strid2.asUint16() & StrawId::_strawmsk)));
+      } else {
+        std::ostringstream msg;
+        msg << __func__ << " Inconsistent straw/panel request " 
+            << strid2 << " / " << _id << std::endl;
+        throw cet::exception("RANGE") << msg.str();
+      }
     }
 
     // Mid-point position of the average (over the layers) of the primary
@@ -79,12 +94,12 @@ namespace mu2e {
     // Formatted string embedding the id of the panel.
     std::string name( std::string const& base ) const;
 
-    const std::vector<double>& boxHalfLengths() const { return _boxHalfLengths; }
+    // const std::vector<double>& boxHalfLengths() const { return _boxHalfLengths; }
 
-    double         boxRxAngle()     const { return _boxRxAngle;     }
-    double         boxRyAngle()     const { return _boxRyAngle;     }
+    // double         boxRxAngle()     const { return _boxRxAngle;     }
+    // double         boxRyAngle()     const { return _boxRyAngle;     }
     double         boxRzAngle()     const { return _boxRzAngle;     }
-    const CLHEP::Hep3Vector&    boxOffset()      const { return _boxOffset;      }
+    // const CLHEP::Hep3Vector&    boxOffset()      const { return _boxOffset;      }
 
     std::vector<CLHEP::Hep3Vector> const& getBasePosition() const{
       return _basePosition;
@@ -122,26 +137,36 @@ namespace mu2e {
     // F can be a class with an operator() or a free function.
     template <class F>
     inline void forAllStraws ( F& f) const{
-      for ( std::vector<Layer>::const_iterator i=_layers.begin(), e=_layers.end();
-            i !=e; ++i){
-        i->forAllStraws(f);
+      for ( const auto& sp : _straws2_p ) {
+        f(*sp);
       }
     }
 
-    template <class F>
-    inline void forAllLayers ( F& f) const{
-      for ( std::vector<Layer>::const_iterator i=_layers.begin(), e=_layers.end();
-            i !=e; ++i){
-        f(*i);
-      }
-    }
+    // template <class F>
+    // inline void forAllLayers ( F& f) const{
+    //   for ( std::vector<Layer>::const_iterator i=_layers.begin(), e=_layers.end();
+    //         i !=e; ++i){
+    //     f(*i);
+    //   }
+    // }
 
 #endif
 
   protected:
 
     PanelId _id;
-    std::vector<Layer> _layers;
+
+    // std::vector<Layer> _layers;
+
+    // const Layer& getLayer ( int n ) const {
+    //   return _layers.at(n);
+    // }
+
+    // const Layer& getLayer ( const LayerId& layid) const {
+    //   return _layers.at(layid.getLayer());
+    // }
+
+    std::array<Straw const*, StrawId::_nstraws> _straws2_p;
 
     // Vertices of enclosing polygon.
     std::vector<CLHEP::Hep3Vector> corners;
@@ -149,7 +174,7 @@ namespace mu2e {
     // Properties of the enclosing logical volume (box).
 
     // Half lengths of the logical box.
-    std::vector<double> _boxHalfLengths;
+    // std::vector<double> _boxHalfLengths;
 
     std::vector<CLHEP::Hep3Vector> _basePosition;
     CLHEP::Hep3Vector _baseDelta;
@@ -157,10 +182,10 @@ namespace mu2e {
     // Rotations and offsets to place the logical box.
     // placedshape = ( offset + RZ*RX*RY*shape );
     //
-    double _boxRxAngle;
-    double _boxRyAngle;
-    double _boxRzAngle;
-    CLHEP::Hep3Vector _boxOffset;
+    // double _boxRxAngle;
+    // double _boxRyAngle;
+    double _boxRzAngle; // is it really used? needed?
+    // CLHEP::Hep3Vector _boxOffset;
 
     // Position (in tracker coordinates) of the midpoint, and direction
     // of the average of the primary straw.  Mutable because these are set

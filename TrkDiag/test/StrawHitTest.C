@@ -66,7 +66,7 @@ Int_t myhpart(Int_t mcpdg,Int_t mcgen, Int_t mcproc,Float_t mcoe){
 void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) {
 
   TString spage(page);
-  gStyle->SetOptStat(0);
+//  gStyle->SetOptStat(0);
 //  TCut conv("mcpdg==11&&mcgen==2&&mcmom>100.0");
   TCut conv("mcpdg==11&&mcgen==2");
   TCut oele("abs(mcpdg)==11&&mcgen!=2");
@@ -99,7 +99,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
   TCut stpprotonorigin("mcgpdg==2212&&mcgid==28");
   TCut pprotonorigin("mcgpdg==2212&&mcgid==16");
 
-  TCut hitsel("esel&&rsel&&tsel&&(!bkg)&&(!isolated)");
+  TCut hitsel("esel&&rsel&&tsel&&(!bkg)");
 
   TCut goodevt("mcom>100");
   TCut goodpeak("abs(tpeak-mct0-25)<30");
@@ -269,6 +269,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     tlegs->Draw();
 
   } else if(spage=="particle"){
+//    gStyle->SetOptStat(111111);
     THStack* estack = new THStack("edep","Reco Hit Energy by Particle;Deposited Energy (KeV)");
     TH1F* econv = new TH1F("econv","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,12.0);
     estack->Add(econv);
@@ -282,7 +283,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     emu->SetFillColor(kCyan);
     egam->SetFillColor(kGreen);
     ehad->SetFillColor(kMagenta);
-    econv->SetStats(0);
+//    econv->SetStats(0);
     emu->SetStats(0);
     egam->SetStats(0);
     ehad->SetStats(0);
@@ -314,7 +315,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     TCanvas* bcan = new TCanvas("bcan","background",1000,800);
     bcan->Divide(1,2);
     bcan->cd(1);
-    gPad->SetLogy();
+//    gPad->SetLogy();
     estack->Draw();
     econv->Draw("same");
     TLegend* leg2 = new TLegend(0.55,0.7,0.9,0.9);
@@ -325,7 +326,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     leg2->Draw();
 
     bcan->cd(2);
-    gPad->SetLogy();
+ //   gPad->SetLogy();
     rstack->Draw();
   } else if (spage == "ccan") {
 
@@ -355,7 +356,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
        leg3->AddEntry(gid,"Selected hits","l");
        leg3->Draw();
      */
-    gStyle->SetOptStat(0);
+//    gStyle->SetOptStat(0);
     ccan->Clear();
     ccan->Divide(1,2);
     /*    ccan->cd(2);
@@ -513,25 +514,25 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     cetime->SetFillColor(kRed);
 
     double scale = 0.1/nevents;
-    hits->Project("cetime","mctime",conv+hitsel);
+    hits->Project("cetime","time",conv+hitsel);
     cetime->Scale(scale);
     sorigin->Add(cetime);
-     hits->Project("dtime","mctime",dioorigin+hitsel);
+     hits->Project("dtime","time",dioorigin+hitsel);
     dtime->Scale(scale);
     sorigin->Add(dtime);
-    hits->Project("mtime","mctime",ootmuonorigin+hitsel);
+    hits->Project("mtime","time",ootmuonorigin+hitsel);
     mtime->Scale(scale);
     sorigin->Add(mtime);
-    hits->Project("gtime","mctime",porigin+hitsel);
+    hits->Project("gtime","time",porigin+hitsel);
     gtime->Scale(scale);
     sorigin->Add(gtime);
-    hits->Project("stptime","mctime",stpprotonorigin+hitsel);
+    hits->Project("stptime","time",stpprotonorigin+hitsel);
     stptime->Scale(scale);
     sorigin->Add(stptime);
-    hits->Project("pptime","mctime",pprotonorigin+hitsel);
+    hits->Project("pptime","time",pprotonorigin+hitsel);
     pptime->Scale(scale);
     sorigin->Add(pptime);
-    hits->Project("ntime","mctime",norigin+hitsel);
+    hits->Project("ntime","time",norigin+hitsel);
     ntime->Scale(scale);
     sorigin->Add(ntime);
 
@@ -572,9 +573,9 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     TH2F* hsel = new TH2F("hsel","Hit Selection;Producing Particle;Cut efficiency (%)",5,-0.5,4.5,4,-0.5,3.5);
     TAxis* yax = hsel->GetYaxis();
     unsigned ibin(1);
-    yax->SetBinLabel(ibin++,"Hit Time>500ns");
-    yax->SetBinLabel(ibin++,"Hit Radius");
+    yax->SetBinLabel(ibin++,"Hit Time");
     yax->SetBinLabel(ibin++,"Hit Energy");
+    yax->SetBinLabel(ibin++,"Hit Radius");
     yax->SetBinLabel(ibin++,"Bkg Hit");
     TAxis* xax = hsel->GetXaxis();
     ibin = 1;
@@ -600,7 +601,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     myhpg->Scale(pscale);
     myhpg->SetFillColor(kGreen);
     // now loop over selections
-    std::vector<TCut> selcuts = {"tsel","tsel&&rsel","tsel&&rsel&&esel",hitsel};
+    std::vector<TCut> selcuts = {"tsel","tsel&&esel","tsel&&esel&&rsel",hitsel};
     for(size_t icut=0;icut< selcuts.size();++icut){
       char val[100];
       cout << "Projecting cut " << selcuts[icut] << endl;
@@ -610,14 +611,14 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 // normalize by row
     for(int ibin=1;ibin <= myhp->GetXaxis()->GetNbins();++ibin){
       double norm = 100.0/hsel->GetBinContent(ibin,1);
-//      cout << "Normalization for " << hsel->GetYaxis()->GetBinLabel(ibin)  << " = " << norm << endl;
+      cout << "Normalization for " << hsel->GetYaxis()->GetBinLabel(ibin)  << " = " << norm << endl;
       for(int jbin=1;jbin <= hsel->GetYaxis()->GetNbins(); ++jbin) {
 	double val =hsel->GetBinContent(ibin,jbin);
-//	cout << "value for ibin " << ibin <<" jbin " << jbin << " val " << val << endl;
+	cout << "value for ibin " << ibin <<" jbin " << jbin << " val " << val << endl;
 	hsel->SetBinContent(ibin,jbin,val*norm);
       }
     }
-    TCanvas* hscan = new TCanvas("hscan","hscan",1200,1200);
+    TCanvas* hscan = new TCanvas("hscan","hscan",750,750);
     hscan->Divide(1,2);
     hscan->cd(1);
     hsel->Draw("boxtext0");
@@ -644,5 +645,11 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     totcan->cd(2);
     ptot->Draw("colorz");
 
+  } else if(spage == "td") {
+    TH1F* tdres = new TH1F("tdres","Time Division Resolution",100,-400,400);
+    hits->Project("tdres","shlen-mcshlen","mcgen==2");
+    TCanvas* tdcan = new TCanvas("tdcan","tdcan",600,600);
+    tdres->Fit("gaus");
   }
+
 }

@@ -17,6 +17,7 @@
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 // HelixFit objects
 #include "RecoDataProducts/inc/HelixSeed.hh"
@@ -43,8 +44,10 @@ namespace mu2e
       double strawHitTimeErr() const { return _shErr; }
       double caloClusterTimeOffset(int diskId) const; // depends on which 
       double caloClusterTimeErr(int diskId) const; // depends on which 
-      // calculate the t0 for a straw hit. This assumes an average drift time
+      // calculate the t0 for a straw hit. This assumes an average drift time (deprecated)
       double strawHitTime(StrawHit const& sh, StrawHitPosition const& shp);
+      // same for a ComboHit
+      double comboHitTime(ComboHit const& ch);
       // calculate the t0 for a calo cluster.
       double caloClusterTime(CaloCluster const& cc) const;
     private:

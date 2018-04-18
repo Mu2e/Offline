@@ -27,11 +27,11 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
     char pname[100];
     char caname[100];
     snprintf(rname,100,"rawtspectrum%lu",ievt);
-    snprintf(tname,100,"clusttspectrum%lu",ievt);
     snprintf(lname,100,"seltspectrum%lu",ievt);
+    snprintf(tname,100,"clusttspectrum%lu",ievt);
     snprintf(cname,100,"allconvtspectrum%lu",ievt);
-    snprintf(pname,100,"clustconvtspectrum%i",ievt);
-    snprintf(caname,100,"calotspectrum%i",ievt);
+    snprintf(pname,100,"clustconvtspectrum%lu",ievt);
+    snprintf(caname,100,"calotspectrum%lu",ievt);
     TH1F* rh = (TH1F*)tdir->Get(rname);
     TH1F* th = (TH1F*)tdir->Get(tname);
     TH1F* lh = (TH1F*)tdir->Get(lname);
@@ -39,13 +39,13 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
     TH1F* ph = (TH1F*)tdir->Get(pname);
     TH1F* ca = (TH1F*)tdir->Get(caname);
     if(rh != 0 && th != 0 &&lh != 0 && ch != 0 && ph != 0){
-      if(ch->GetEntries() < 15)break;
+//if(ch->GetEntries() < 15)break;
       div_t divide = div(iplot,nps*nps);
       //      std::cout << "divide " << iplot << " by " << nps << " gives  quot " << divide.quot << " rem " << divide.rem << std::endl;
       if(divide.rem == 0){
 	++ican;
 	snprintf(canname,20,"tcan_%i",ican);
-	cans[ican] = new TCanvas(canname,canname,1200,1000);
+	cans[ican] = new TCanvas(canname,canname,750,750);
 	cans[ican]->Clear();
 	cans[ican]->Divide(nps,nps);
       }
@@ -62,31 +62,28 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
       lh->SetTitle(title);
       lh->GetXaxis()->SetTitle("nsec");
       lh->GetYaxis()->SetTitle("# hits/20 nsec");
- //     rh->SetFillColor(kGreen);
-//      rh->Draw();
-      //        th->SetLineWidth(2);
       ch->SetLineStyle(1);
       ch->SetLineWidth(2);
       ch->SetFillColor(0);
       ch->SetLineColor(kRed);
-      double maxe = max(ch->GetMaximum(), lh->GetMaximum());
+      double maxe = 1.1*max(ch->GetMaximum(), lh->GetMaximum());
       ch->SetMaximum(maxe);
       lh->SetMaximum(maxe);
       lh->SetFillColor(kYellow);
       lh->SetLineColor(kYellow);
-      lh->Draw();
-      ch->Draw("same");
+      lh->Draw("h");
+      ch->Draw("hsame");
       th->SetTitle(title);
       th->GetXaxis()->SetTitle("nsec");
       th->GetYaxis()->SetTitle("# hits/20 nsec");
       th->SetFillColor(kGreen);
-      th->Draw("same");
+      th->Draw("hsame");
 //      th->Draw();
-      ph->Draw("same");
+      ph->Draw("hsame");
       if(ca != 0){
 	ca->SetFillStyle(3001);
 	ca->SetFillColor(kMagenta);
-	ca->Draw("same");
+	ca->Draw("hsame");
       }
       TLegend* leg(0);
       if(ipave==1){
@@ -97,9 +94,9 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
 	leg->AddEntry(ch,"All CE hits","LF");
 	leg->AddEntry(ph,"Clustered CE hits","LF");
 	if(ca)leg->AddEntry(ca,"CaloCluster","LF");
-	leg->AddEntry(tchits,"Hits only Cluster Time","P");
-	leg->AddEntry(tccalo,"Hits+Calo Cluster Time","P");
-	leg->Draw();
+	//leg->AddEntry(tchits,"Hits only Cluster Time","P");
+	//leg->AddEntry(tccalo,"Hits+Calo Cluster Time","P");
+	leg->Draw("h");
       }
       ++iplot;
       if(iplot > nmax)break;

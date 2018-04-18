@@ -61,7 +61,7 @@ outputs:
     outVDFiltered: {
         module_type: RootOutput
         //fileName: "gvdFiltered.art"
-        SelectEvents: { SelectEvents: [trigFilter] }
+        SelectEvents: [trigFilter]
         outputCommands:   [ "keep *_fvd*_*_*", "keep *_fromVD*_*_*", "keep *_randomsaver_*_*", "keep *_geom*_*_*" ]
     }
 }

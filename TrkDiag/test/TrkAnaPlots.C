@@ -106,6 +106,57 @@ void Draw(TTree* ta) {
   leg->Draw();
 }
 
+void MomResp(TTree* ta, double tqcut, double nmu) {
+// cuts
+  TCut reco("dem.status>0");
+  char ctext[80];
+  snprintf(ctext,80,"dem.trkqual>%f",tqcut);
+  TCut goodfit(ctext);
+  double tdlow(0.57735027);
+  double tdhigh(1.0);
+  double t0min(700.0);
+  double t0max(1695.0);
+  snprintf(ctext,80,"dem.td>%5.5f&&dem.td<%5.5f",tdlow,tdhigh);
+  TCut rpitch = TCut(ctext);
+  snprintf(ctext,80,"dem.t0>%f&&dem.t0<%f",t0min,t0max);
+  TCut livegate = TCut(ctext);
+  TCut cosmic = TCut("dem.d0<105 && dem.d0>-80 && (dem.d0+2/dem.om)>450 && (dem.d0+2/dem.om)<680");
+  TCut rmomloose("dem.mom>100.0");
+  TCut physics = rpitch+cosmic+livegate+rmomloose;
+
+  TF1* dscb = new TF1("dscb",fnc_dscb,-10.0,5,7);
+  dscb->SetParName(0,"Norm");
+  dscb->SetParName(1,"x0");
+  dscb->SetParName(2,"sigma");
+  dscb->SetParName(3,"ANeg");
+  dscb->SetParName(4,"PNeg");
+  dscb->SetParName(5,"APos");
+  dscb->SetParName(6,"PPos");
+
+  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",600,600);
+  rcan->Clear();
+  gStyle->SetOptFit(111111);
+  gStyle->SetOptStat("oumr");
+  gPad->SetLogy();
+  TH1F* momresp = new TH1F("momresp","momentum response at tracker;MeV/c",251,-10.0,4.0);
+  momresp->Sumw2();
+  TCut final = reco+goodfit;
+  ta->Project("momresp","dem.mom-demmcgen.mom","evtinfo.evtwt"*final);
+  //momresp->Scale(1.0/nmu);
+  //    ta->Project(mname,"fit.mom-mcent.mom",final);
+  double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
+  cout << "Integral = " << integral << " mean = " << momresp->GetMean() << " rms = " << momresp->GetRMS() << endl;
+  dscb->SetParameters(0.05*integral,-0.6,0.3,0.7,3.0,3.0,3.0);
+  dscb->SetNpx(1000);
+  dscb->SetParLimits(3,0.0,50.0);
+  dscb->SetParLimits(4,1.0,50.0);
+  dscb->SetParLimits(5,0.0,50.0);
+  dscb->SetParLimits(6,1.0,50.0);
+
+  momresp->SetMinimum(0.5);
+  momresp->Fit("dscb","LRQ");
+  momresp->Fit("dscb","LRM");
+}
 void MomRes(TTree* ta, double tqcut) {
 // cuts
   TCut reco("dem.status>0");
@@ -133,7 +184,7 @@ void MomRes(TTree* ta, double tqcut) {
   dscb->SetParName(5,"APos");
   dscb->SetParName(6,"PPos");
 
-  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
+  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",600,600);
   rcan->Clear();
   gStyle->SetOptFit(111111);
   gStyle->SetOptStat("oumr");
@@ -163,6 +214,8 @@ void MomRes(TTree* ta, double tqcut) {
   snprintf(line,80,"t0>%5.1f nsec",t0min);
   rtext->AddText(line);
   sprintf(line,"%s",goodfit.GetTitle());
+  rtext->AddText(line);
+  sprintf(line,"%5.0f Tracks",momres->GetEntries());
   rtext->AddText(line);
   rtext->Draw();
 
@@ -254,4 +307,47 @@ void Acc(TTree* ta, int ngen) {
   tp->SetBottomMargin(0.15);
   racc->Draw("histtext0");
 }
+
+void hitres(TTree* ta) {
+  TH1F* hresida = new TH1F("hresida","Hit Residual;mm",100,-2,2);
+  TH1F* hresidna = new TH1F("hresidna","Hit Residual;mm",100,-2,2);
+  TH1F* hresidall = new TH1F("hresidall","Hit Residual;mm",100,-2,2);
+  hresida->SetFillColor(kGreen);
+  hresidna->SetFillColor(kBlue);
+  hresida->SetStats(0);
+  hresidna->SetStats(0);
+  THStack* hresidst = new THStack("hresidst","Hit Residual;mm");
+  hresidst->Add(hresida);
+  hresidst->Add(hresidna);
+  ta->Project("hresida","demtsh._resid","dem.status>0&&demtsh._active&&demtsh._ambig!=0");
+  ta->Project("hresidna","demtsh._resid","dem.status>0&&demtsh._active&&demtsh._ambig==0");
+  ta->Project("hresidall","demtsh._resid","dem.status>0&&demtsh._active");
+  
+  TH1F* hresa = new TH1F("hresa","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
+  TH1F* hresna = new TH1F("hresna","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
+  TH1F* hresall = new TH1F("hresall","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
+  hresa->SetFillColor(kGreen);
+  hresna->SetFillColor(kBlue);
+  hresa->SetStats(0);
+  hresna->SetStats(0);
+  THStack* hresst = new THStack("hresst","Hit Drift Resolution;Reco R_{drift}-MC (mm)");
+  hresst->Add(hresa);
+  hresst->Add(hresna);
+  ta->Project("hresa","demtsh._rdrift-demtshmc._dist","dem.status>0&&demtsh._active&&demtsh._ambig!=0");
+  ta->Project("hresna","demtsh._rdrift-demtshmc._dist","dem.status>0&&demtsh._active&&demtsh._ambig==0");
+  ta->Project("hresall","demtsh._rdrift-demtshmc._dist","dem.status>0&&demtsh._active");
+  TCanvas* rescan = new TCanvas("rescan","rescan",800,800);
+  rescan->Divide(1,2);
+  rescan->cd(1);
+  hresidst->Draw("h");
+  hresidall->Fit("gaus","","sames");
+  TLegend* rleg = new TLegend(0.15,0.6,0.4,0.85);
+  rleg->AddEntry(hresida,"Resolved Ambiguity","f");
+  rleg->AddEntry(hresidna,"Null Ambiguity","f");
+  rleg->Draw();
+  rescan->cd(2);
+  hresst->Draw("h");
+  hresall->Fit("gaus","","sames");
+}
+
 

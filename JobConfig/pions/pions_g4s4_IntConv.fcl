@@ -1,0 +1,120 @@
+# Configuration file for pions_as1 (internal conversions)
+
+# $Id: pions_as1_IntConv.fcl,v 1.1 2014/03/25 13:58:06 knoepfel Exp $
+# $Author: knoepfel $
+# $Date: 2014/03/25 13:58:06 $
+
+# Jacob Colston and Joseph Brock - edits for CD3 (2015)
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name : pionsg4s4IntConv
+
+source : {
+    module_type : EmptyEvent
+}
+
+services : {
+    message                : @local::default_message
+    TFileService           : { fileName       : "nts.owner.pions-g4s4-IntConv.version.sequencer.root" }
+    RandomNumberGenerator  : {}
+    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"                      }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"                        }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"                   }
+    G4Helper               : {}
+    SeedService            : @local::automaticSeeds
+}
+
+physics : {
+
+    producers : {
+
+        generate : {
+
+            module_type : StoppedParticleIntConvGun
+
+            pionStops : {
+                inputFiles             : [ "nts.owner.pions-nts3.version.sequencer.root" ]
+                averageNumRecordsToUse : 500000
+                treeName               : "stoppedPionDumper/stops"
+                branchName             : "stops"
+                verbosityLevel         : 1
+            }
+
+            physics : {
+                spectrumResolution : 0.001
+                elow               : 100
+                ehi                : 140
+                spectrumShape      : Bistirlich
+            }
+
+        }
+
+        genEventCount : {
+            module_type : GenEventCounter
+        }
+
+        g4run : {
+
+            module_type       : Mu2eG4
+            physics           : @local::mu2eg4DefaultPhysics
+            ResourceLimits    : @local::mu2eg4DefaultResourceLimits
+            TrajectoryControl : @local::mu2eg4NoTrajectories
+            debug             : @local::mu2eg4DefaultDebug
+            visualization     : @local::mu2eg4NoVisualization
+
+	    MultiStageParameters : {}
+
+            generatorModuleLabel        : generate
+            doWriteLegacyPhysVolumeInfo : false
+
+            SDConfig : {
+                // do not want e.g. the "stoppingtarget" SD, thus do not use enableAllSDs
+                // Instead explicitly list all the detectors we want
+                enableSD         : [ tracker, calorimeter, calorimeterRO, virtualdetector ]
+                TimeVD           : { times : [] }
+                sensitiveVolumes : []
+            }
+
+            SimParticlePrinter : {
+                enabled       : false
+                primariesOnly : false
+                prefix        : "SimParticle: "
+            }
+
+        }
+
+    } // producers
+
+    //==========================================================================
+    filters : {
+
+        detectorFilter : {
+            module_type    : FilterStepPointMomentum
+            inputs         : [ "g4run:tracker" ]
+            cutMomentumMin : 100. // MeV/c
+        }
+
+    } //filters
+
+    //==========================================================================
+    p1 : [ generate, genEventCount, g4run, detectorFilter ]
+    e1 : [ detectorOutput ]
+
+    trigger_paths : [p1]
+    end_paths     : [e1]
+}
+
+outputs : {
+    detectorOutput : {
+        module_type  : RootOutput
+        SelectEvents : ["p1"]
+        fileName     : "sim.owner.pions-g4s4-IntConv.version.sequencer.art"
+    }
+}
+
+# Setting the seed values, since automaticSeeds sets to @nil by default.
+services.SeedService.baseSeed         : 0
+services.SeedService.maxUniqueEngines : 20

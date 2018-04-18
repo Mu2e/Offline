@@ -13,6 +13,7 @@
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/CrvParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -49,6 +50,7 @@ namespace mu2e
     private:
     boost::shared_ptr<mu2eCrv::MakeCrvDigis> _makeCrvDigis;
 
+    double      _digitizationPeriod;
     std::string _crvWaveformsModuleLabel;
     double      _ADCconversionFactor;
     int         _pedestal;
@@ -73,6 +75,8 @@ namespace mu2e
 
   void CrvDigitizer::beginRun(art::Run &run)
   {
+    mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
+    _digitizationPeriod  = crvPar->digitizationPeriod;
   }
 
   void CrvDigitizer::produce(art::Event& event) 
@@ -85,31 +89,23 @@ namespace mu2e
     for(CrvDigiMCCollection::const_iterator iter=crvDigiMCCollection->begin(); 
         iter!=crvDigiMCCollection->end(); iter++)
     {
-      const CRSScintillatorBarIndex &barIndex = iter->first;
-      const CrvDigiMC &crvDigiMC = iter->second;
-      double digitizationPrecision = crvDigiMC.GetDigitizationPrecision(); //ns //inverse of TDC rate
+      const CrvDigiMC &crvDigiMC = *iter;
+      const CRSScintillatorBarIndex &barIndex = crvDigiMC.GetScintillatorBarIndex();
+      const int SiPM = crvDigiMC.GetSiPMNumber();
+      const std::array<double,CrvDigiMC::NSamples> &voltages = crvDigiMC.GetVoltages();
+      const double startTime = crvDigiMC.GetStartTime();
 
-      CrvDigi &crvDigi = (*crvDigiCollection)[barIndex];
-      crvDigi.SetDigitizationPrecision(digitizationPrecision);
-      for(int SiPM=0; SiPM<4; SiPM++)
-      {
-        std::vector<CrvDigi::CrvSingleWaveform> &singleWaveforms = crvDigi.GetSingleWaveforms(SiPM);
-        const std::vector<CrvDigiMC::CrvSingleWaveform> &singleWaveformsMC = crvDigiMC.GetSingleWaveforms(SiPM);
-        for(size_t i=0; i<singleWaveformsMC.size(); i++)
-        {
-          //start new single waveform
-          CrvDigi::CrvSingleWaveform singleWaveform;
+      std::vector<double> voltageVector;
+      for(size_t i=0; i<voltages.size(); i++) voltageVector.push_back(voltages[i]); 
 
-          const std::vector<double> &voltages = singleWaveformsMC[i]._voltages;
-          double startTime = singleWaveformsMC[i]._startTime; 
-          _makeCrvDigis->SetWaveform(voltages,_ADCconversionFactor,_pedestal, startTime, digitizationPrecision);
-          singleWaveform._ADCs = _makeCrvDigis->GetADCs();
-          singleWaveform._startTDC = _makeCrvDigis->GetTDC();
+      _makeCrvDigis->SetWaveform(voltageVector,_ADCconversionFactor,_pedestal, startTime, _digitizationPeriod);
+      const std::vector<unsigned int> &ADCs = _makeCrvDigis->GetADCs();
+      int startTDC = _makeCrvDigis->GetTDC();
 
-          singleWaveforms.push_back(singleWaveform);
-        }
+      std::array<unsigned int, CrvDigi::NSamples> ADCArray;
+      for(size_t i=0; i<ADCs.size(); i++) ADCArray[i]=ADCs[i]; 
 
-      }
+      crvDigiCollection->emplace_back(ADCArray, startTDC, barIndex, SiPM);
     }
 
     event.put(std::move(crvDigiCollection));

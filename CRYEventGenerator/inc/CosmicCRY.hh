@@ -13,6 +13,7 @@ class TH1D;
 class TH2D;
 class TH1I;
 class TTree;
+
 namespace art{
   class Run;
 }
@@ -89,14 +90,25 @@ namespace mu2e {
     CRYSetup * _crySetup;
     std::shared_ptr<CRYGenerator> _cryGen;
 
-    enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL, CALO, CUSTOMIZED};
-    enum DirectionChoice {ALL, POSITIVE_X, NEGATIVE_X, POSITIVE_Z, NEGATIVE_Z,
-      PHI_RANGE};
-    RefPointChoice    _refPointChoice;
-    DirectionChoice   _directionChoice;
+    double _refY0;
+    std::string _refPointChoice;
+    std::string _directionChoice;
     CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
     bool _vertical;
-    bool _dontProjectToSurface;
+
+    bool _projectToEnvelope;
+
+    bool _geomInfoObtained;
+    double _envXmin;
+    double _envXmax;
+    double _envYmin;
+    double _envYmax;
+    double _envZmin;
+    double _envZmax;
+
+    std::vector<CLHEP::Hep3Vector> _envIntersections;
+    void calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir);
+    bool pointInBox(double x, double y, double x0, double y0, double x1, double z1);
 
     int _evtId0;
     int _pdgId0;

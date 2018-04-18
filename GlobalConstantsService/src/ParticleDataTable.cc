@@ -150,7 +150,7 @@ namespace mu2e {
       pName<<"Mu2eGenerated_" << id.pid();
       tpd.tempParticleName = pName.str();
 
-      if ( _verbosityLevel > -1 ) {
+      if ( _verbosityLevel > 0 ) {
         cout << __func__ << ": Added nuclei: " << tpd.tempParticleName << endl;
       }
 
@@ -214,10 +214,6 @@ namespace mu2e {
     if ( units == 2 ){
       _unitsChanged = true;
 
-      mf::LogPrint("CONDITIONS")
-        << "The HepPDT particle data table has masses in GeV. Changing to MeV.\n"
-        << "  ( This leaves the lifetimes in a screwed up state: they are in kilo-seconds."
-        << "    This does not affect Geant4 which has its own table of lifetimes. )";
 
       for ( HepPDT::ParticleDataTable::const_iterator i=_pdt.begin(), e=_pdt.end();
             i!=e; ++i ){

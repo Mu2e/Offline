@@ -27,6 +27,7 @@
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
@@ -53,7 +54,9 @@ namespace mu2e {
 
   // Construct the virtual detectors
 
-  void constructVirtualDetectors( SimpleConfig const & _config ){
+  void constructVirtualDetectors( const SimpleConfig& _config,
+                                  const SensitiveDetectorHelper& sdHelper
+                                  ){
 
     // Place virtual detectors
 
@@ -84,8 +87,9 @@ namespace mu2e {
 
     // Virtual Detectors Coll1_In, COll1_Out are placed inside TS1
 
-    G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
+    G4VSensitiveDetector* vdSD = (sdHelper.enabled(StepInstanceName::virtualdetector)) ?
+      G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector(SensitiveDetectorName::VirtualDetector()) : nullptr;
 
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
 
@@ -1018,9 +1022,9 @@ namespace mu2e {
 
       VolumeInfo const & trckrParent = _helper->locateVolInfo("TrackerMother");
 
-      double tModInRd = ((G4Tubs *)trckrParent.solid)->GetInnerRadius();
-      double tModOtRd = ((G4Tubs *)trckrParent.solid)->GetOuterRadius();
-      double tModDz   = ((G4Tubs *)trckrParent.solid)->GetDz();
+      double tModInRd = (static_cast<G4Tubs*>(trckrParent.solid))->GetInnerRadius();
+      double tModOtRd = (static_cast<G4Tubs*>(trckrParent.solid))->GetOuterRadius();
+      double tModDz   = (static_cast<G4Tubs*>(trckrParent.solid))->GetZHalfLength();
 
 
       vdId = VirtualDetectorId::IT_VD_InSurf;
@@ -1257,11 +1261,11 @@ namespace mu2e {
             if ( vdg->exist(vdId) )
             {
                     const VolumeInfo& parent = _helper->locateVolInfo("ProductionTargetMother");
-                    G4Tubs *PTMoth = (G4Tubs *) parent.solid;
+                    G4Tubs *PTMoth = static_cast<G4Tubs*>(parent.solid);
 
                     TubsParams vdParams(0., PTMoth->GetOuterRadius(), vdg->getHalfLength());
 
-                    G4ThreeVector vdCenterInParent(0., 0., -PTMoth->GetDz() + vdg->getHalfLength());
+                    G4ThreeVector vdCenterInParent(0., 0., -PTMoth->GetZHalfLength() + vdg->getHalfLength());
 
                     VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                     vdParams,
@@ -1289,11 +1293,11 @@ namespace mu2e {
             if ( vdg->exist(vdId) )
             {
                     const VolumeInfo& parent = _helper->locateVolInfo("ProductionTargetMother");
-                    G4Tubs *PTMoth = (G4Tubs *) parent.solid;
+                    G4Tubs *PTMoth = static_cast<G4Tubs*>(parent.solid);
 
                     TubsParams vdParams(0., PTMoth->GetOuterRadius(), vdg->getHalfLength());
 
-                    G4ThreeVector vdCenterInParent(0., 0., PTMoth->GetDz() - vdg->getHalfLength());
+                    G4ThreeVector vdCenterInParent(0., 0., PTMoth->GetZHalfLength() - vdg->getHalfLength());
 
                     VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                     vdParams,

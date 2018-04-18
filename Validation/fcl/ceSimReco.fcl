@@ -1,0 +1,90 @@
+#
+# generate conversion electrons from stopped muon file
+# and simulate all the way through the detector
+# run calorimeter and tracker reco
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "fcl/standardProducers.fcl"
+#include "Validation/fcl/prolog.fcl"
+
+process_name : ceSimReco
+
+services : {
+    @table::service.all
+}
+
+source : {
+    module_type : EmptyEvent
+}
+
+physics : {
+   producers: {
+      # generate monoenergetic conversion electrons
+      @table::generation.CE.mod
+      # run g4sim all the way through the detector
+      @table::simulation.default.mod
+      # proton and muon time, proton bunch summarizer
+      @table::timeSimulation.beam.mod
+      #digis
+      @table::digis.straw.mod
+      @table::digis.cal.mod
+      #@table::digis.crv.mod      # no CRV digi yet
+      @table::reco.straw.mod      # digi to straw hit, flagBgHits
+      @table::reco.trk.mod
+      @table::reco.cal.mod
+      @table::reco.ctrk.mod
+      @table::reco.pid.mod
+    }
+   filters: {
+      @table::simulation.default.flt
+      @table::reco.ctrk.flt
+   }
+
+    all_path : [ 
+      @sequence::generation.CE.seq , 
+      @sequence::simulation.default.seq , 
+      @sequence::timeSimulation.beam.seq , 
+      @sequence::digis.straw.seq , 
+      @sequence::digis.cal.seq ,
+      #@sequence::digis.crv.seq ,
+      @sequence::reco.straw.seq ,
+      @sequence::reco.trk.seq.eleDMUP , # DeM and UeP
+      @sequence::reco.cal.seq ,
+      @sequence::reco.ctrk.seq , 
+      @sequence::reco.pid.seq 
+   ]
+
+    trigger_paths  : [ all_path ]
+    out : [ fullOutput ]
+    end_paths      : [ out ]
+
+}
+
+outputs: {
+    fullOutput : {
+	module_type : RootOutput
+	fileName    : @nil
+    }
+}
+
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
+# histogram file
+services.TFileService.fileName: "nts.owner.val-ceSimReco.dsconf.seq.root"
+# art file 
+outputs.fullOutput.fileName : "mcs.owner.val-ceSimReco.dsconf.seq.art"
+
+# run 1h by default
+source.maxEvents: 5000
+
+# Initialze seeding of random engines
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+
+# use the geometry on the head
+services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"
+

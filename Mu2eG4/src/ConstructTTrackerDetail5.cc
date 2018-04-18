@@ -17,6 +17,7 @@
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 
@@ -37,7 +38,8 @@
 using namespace std;
 
 mu2e::ConstructTTrackerDetail5::ConstructTTrackerDetail5( VolumeInfo   const& ds3Vac,
-                                                  SimpleConfig const& config  ):
+                                                          SimpleConfig const& config,
+                                                          SensitiveDetectorHelper const& sdHelper ):
   // References to arguments
   _ds3Vac(ds3Vac),
   _config(config),
@@ -45,6 +47,8 @@ mu2e::ConstructTTrackerDetail5::ConstructTTrackerDetail5( VolumeInfo   const& ds
   // Assorted tools
   _helper(*art::ServiceHandle<G4Helper>()),
   _reg(_helper.antiLeakRegistry()),
+  sdHelper_(sdHelper),
+
   _ttracker(*GeomHandle<TTracker>()),
 
   // Switches that affect the entire tracker
@@ -555,7 +559,7 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
   //  SupportStructure const& sup     = _ttracker.getSupportStructure();
 
   // Panels are identical other than placement - so get required properties from plane 0, panel 0.
-  Panel const& panel(_ttracker.getPanel(PanelId(iPlane,iPanel)));
+  Panel const& panel(_ttracker.getPanel(PanelId(iPlane,iPanel,0)));
 
   bool panelEnvelopeVisible = _config.getBool("ttracker.panelEnvelopeVisible",false);
   bool panelEnvelopeSolid   = _config.getBool("ttracker.panelEnvelopeSolid",true);
@@ -569,7 +573,7 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
          << " preparing panel: "
          << " panelCenterPhi "
          << panelCenterPhi/M_PI*180.
-         << " panel center from the maker "
+         << " panel.boxRzAngle "
          << panel.boxRzAngle()/M_PI*180.
          << endl;
   }
@@ -683,8 +687,8 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
 
   // Straw Panels are identical other than placement - so get required 
   // properties from plane 0, panel 0.
-  Plane const& plane(_ttracker.getPlane(PlaneId(0)));
-  Panel const& panel(_ttracker.getPanel(PanelId(0,0)));
+  Plane const& plane(_ttracker.getPlane(PlaneId(0,0,0)));
+  Panel const& panel(_ttracker.getPanel(PanelId(0,0,0)));
 
   bool panelEnvelopeVisible = _config.getBool("ttracker.panelEnvelopeVisible",
 					      false);
@@ -708,7 +712,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
          << " preparing straw panel: "
          << " panelCenterPhi "
          << panelCenterPhi/M_PI*180.
-         << " panel center from the maker "
+         << " panel.boxRzAngle "
          << panel.boxRzAngle()/M_PI*180.
          << endl;
   }
@@ -778,9 +782,17 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   // This carries a sign, depending on upstream/downstream.
   double zPanel(0.);
   for ( int i=0; i<panel.nLayers(); ++i){
-    zPanel += panel.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
+    // straw 0 is in layer 0, 1 in 1
+    zPanel += panel.getStraw(StrawId(0,0,i)).getMidPoint().z();
   }
   zPanel /= panel.nLayers();
+
+  if (_verbosityLevel>2) {
+    cout << __func__ << " zPanel: "
+         << zPanel
+         << endl;
+  }
+
   // Is panel 0 on the upstream(+1) or downstream(-z) side of the plane.
   double side = (zPanel-plane.origin().z()) > 0. ? -1. : 1.;
 
@@ -788,8 +800,9 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   CLHEP::Hep3Vector unit( cos(panelCenterPhi), sin(panelCenterPhi), 0.);
 
   // Sensitive detector object for the straw gas.
-  G4VSensitiveDetector *strawSD =
-    G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::TrackerGas());
+  G4VSensitiveDetector *strawSD = sdHelper_.enabled(StepInstanceName::tracker) ?
+    G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::TrackerGas()) :
+    nullptr;
   if ( strawSD == nullptr ){
     cout << __func__
          << " Warning: there is no sensitive detector object for the straw gas.  Continuing ..."
@@ -797,22 +810,18 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   }
 
   // Sensitive detector object for the straw sense wires.
-  G4VSensitiveDetector *senseWireSD = G4SDManager::GetSDMpointer()->
-    FindSensitiveDetector(SensitiveDetectorName::TrackerSWires());
+  G4VSensitiveDetector *senseWireSD = sdHelper_.enabled(StepInstanceName::trackerSWires) ?
+    G4SDManager::GetSDMpointer()->
+    FindSensitiveDetector(SensitiveDetectorName::TrackerSWires()) : nullptr;
 
   // Sensitive detector object for the straw walls.
-  G4VSensitiveDetector *strawWallSD = G4SDManager::GetSDMpointer()->
-    FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
+  G4VSensitiveDetector *strawWallSD = sdHelper_.enabled(StepInstanceName::trackerWalls) ?
+    G4SDManager::GetSDMpointer()->
+    FindSensitiveDetector(SensitiveDetectorName::TrackerWalls()) : nullptr;
 
   // Place the straws into the panel envelope.
-  for ( std::vector<Layer>::const_iterator i=panel.getLayers().begin(); i != panel.getLayers().end(); ++i ){
-
-    Layer const& lay(*i);
-
-    for ( std::vector<Straw const*>::const_iterator j=lay.getStraws().begin();
-          j != lay.getStraws().end(); ++j ){
-
-      Straw const&       straw(**j);
+  for (const auto straw_p : panel.getStrawPointers() ) {
+      Straw const&       straw(*straw_p);
       StrawDetail const& detail(straw.getDetail());
 
       if (_verbosityLevel>2) {
@@ -979,8 +988,8 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
         innerMetal2Vol.logical->SetSensitiveDetector(strawWallSD);
       }
 
-    } // end loop over straws within a layer
-  } // end loop over layers
+  } // end loop over straws within a panel
+
 
 
   // We have now placed all the straws in the panel.
@@ -1261,7 +1270,7 @@ mu2e::ConstructTTrackerDetail5::prepareEBKey(bool keyItself){
 
   // Internally all keys are the same.
   // Create one logical volume for now, do not place it.
-  Panel const& panel(_ttracker.getPanel(PanelId(0,0)));
+  Panel const& panel(_ttracker.getPanel(StrawId(0,0,0)));
 
   TubsParams  keyParams  = keyItself ? panel.getEBKeyParams() : panel.getEBKeyShieldParams();
 
@@ -1317,10 +1326,12 @@ mu2e::ConstructTTrackerDetail5::prepareEBKey(bool keyItself){
 
   // Make it sensitive here
   if (keyItself) {
-    G4VSensitiveDetector* EBKeySD = G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector(SensitiveDetectorName::panelEBKey());
-    if (EBKeySD) {
-      key0Info.logical->SetSensitiveDetector(EBKeySD);
+    if(sdHelper_.enabled(StepInstanceName::panelEBKey)) {
+      G4VSensitiveDetector* EBKeySD = G4SDManager::GetSDMpointer()->
+        FindSensitiveDetector(SensitiveDetectorName::panelEBKey());
+      if (EBKeySD) {
+        key0Info.logical->SetSensitiveDetector(EBKeySD);
+      }
     }
   }
 
@@ -1437,7 +1448,7 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
 
   Plane const& pln = _ttracker.getPlane(ipln);
   // to get the key info from the base panel
-  Panel const& panel(_ttracker.getPanel(PanelId(0,0)));
+  Panel const& panel(_ttracker.getPanel(StrawId(0,0,0)));
 
   // to prevent the overlaps
   SupportStructure const& sup = _ttracker.getSupportStructure();
@@ -1458,7 +1469,7 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
     //if ( pnlDraw > -1  && ipnl%2 == 0 ) continue;
 
     // Choose a representative straw from this  (plane,panel).
-    Straw const& straw = _ttracker.getStraw( StrawId(ipln,ipnl,0,0) );
+    Straw const& straw = _ttracker.getStraw( StrawId(ipln,ipnl,0) );
 
     // Azimuth of the midpoint of the wire.
     CLHEP::Hep3Vector const& mid = straw.getMidPoint();

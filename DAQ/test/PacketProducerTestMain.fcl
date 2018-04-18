@@ -65,6 +65,8 @@ physics :
       diagLevel        : 0
       maxFullPrint     : 0
       generateTextFile : 1
+
+      usePhysicalStrawIndex : 0
     }
 
     CosmicRayVetoPacketProducer: {

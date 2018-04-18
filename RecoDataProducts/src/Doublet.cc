@@ -120,8 +120,8 @@ namespace mu2e {
 					// increment the size 
       ++fNStrawHits;
     } 
-    else {
-      printf("[Doublet::addStrawHit] ERROR: trying to add more than %i hits in the same panel!\n",kMaxNHits);
-    }
+    // else {
+    //   printf("[Doublet::addStrawHit] ERROR: trying to add more than %i hits in the same panel!\n",kMaxNHits);
+    // }
   }
 }

@@ -13,7 +13,8 @@ double particleGun.tmin  =  800.0;
 double particleGun.tmax  =  800.0;
 
 // position
-vector<double> particleGun.point = {-3904., 2610.6, 10200.0};  
+//vector<double> particleGun.point = {-3904., 2610.6, 10200.0}; //x=1500 (center) 
+vector<double> particleGun.point = {-4404., 2610.6, 10200.0}; //x=1000 
 
 vector<double> particleGun.halfLength = { 0., 0., 25. };
 
@@ -22,8 +23,8 @@ double particleGun.pmin = 120.0e3;
 double particleGun.pmax = 120.0e3;
 
 // Particle Id
-int particleGun.id = 13;    //muon
-// int particleGun.id = 2212;  //proton
+// int particleGun.id = 13;    //muon
+int particleGun.id = 2212;  //proton
 
 // Mean particle.
 double particleGun.mean =  -1; //only one particle per event

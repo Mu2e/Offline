@@ -113,16 +113,28 @@ mf_coutInfo:
                         # the framework will generate to tell, for example, 
                         # when a next event is started. 
    {
-     reportEvery : 50   # Output only every 50-th message issued in this
-                        # category.
-     limit       : -1   # -1 is a way to say do not impose any limit.
-                        # Alternatively, one could just omit the limit 
-                        # entry, which would mean no limit.
-   }   
+     reportEvery : 1    # start with every one
+     limit       : 1    # start exponential backoff right away
+     timespan    : 300  # report every 5min too, as asymmtotic behavior
+   }
    default:             
    {
-     limit : 10        
+     limit : 100
    } 
+   ArtSummary:  # allow the path and modules summaries (TrigReport)
+   { 
+     limit : -1
+   }
+   RANDOM : { limit : 0 }
+   FastCloning : { limit : 0 }
+   TransientBranch : { limit : 0 }
+   path : { limit : 0 }
+   MF_INIT_OK : { limit : 0 }
+   DeactivatedPath : { limit : 0 }
+   PathConfiguration : { limit : 0 }
+   GEOM_MINRANGECUT : { limit : 0 }
+   GEOM_PARTICLECUT : { limit : 0 }
+   Configuration : { limit : 0 }
  } # end categories
 } # end mf_coutInfo
 mf_coutInfoStats : 

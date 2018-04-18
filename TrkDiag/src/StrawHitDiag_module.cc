@@ -24,8 +24,7 @@
 #include "TTree.h"
 // data
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitPosition.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 // Utilities
@@ -47,37 +46,36 @@ namespace mu2e
       void fillStrawHitDiag();
       bool findData(const art::Event& e);
       // control flags
-      bool _mcdiag;
+      bool _mcdiag, _useshfcol;
   // data tags
       art::InputTag _shTag;
-      art::InputTag _shpTag;
+      art::InputTag _chTag;
       art::InputTag _shfTag;
       art::InputTag _stTag;
       art::InputTag _mcdigisTag;
       // cache of event objects
       const StrawHitCollection* _shcol;
-      const StrawHitPositionCollection* _shpcol;
-      const StereoHitCollection* _stcol;
+      const ComboHitCollection* _chcol;
       const StrawHitFlagCollection* _shfcol;
       const StrawDigiMCCollection *_mcdigis;
       // time offset
       SimParticleTimeOffset _toff;
       // strawhit tuple variables
       TTree *_shdiag;
-      Int_t _eventid;
+      Int_t _eventid, _subrunid, _runid;
       Hep3Vector _shp;
       Float_t _shlen, _slen; 
       Float_t _edep;
       Float_t _time[2], _tot[2];
       Float_t _rho;
       Int_t _mcnsteps;
-      Int_t _mcpdg,_mcgen,_mcproc;
+      Int_t _mcpdg,_mcgen,_mcproc, _mcid;
       Int_t _mcppdg,_mcpproc;
       Int_t _mcgid, _mcgpdg;
       Float_t _mcge, _mcgt;
       Hep3Vector _mcshp, _mcop, _mcpop, _mcgpos;
       Float_t _mcoe, _mcpoe, _mcom, _mcpom;
-      Float_t _mcshlen,_mcshd, _mcplen;
+      Float_t _mcshlen,_mcshd, _mcsphi, _mcplen;
       Float_t _mcedep, _mcetrig;
       Float_t _mcct[2];
       Float_t _pdist,_pperp,_pmom;
@@ -85,7 +83,7 @@ namespace mu2e
       Float_t _mcptime;
       Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
       Int_t _plane, _panel, _layer, _straw;
-      Float_t _shwres, _shtres, _shchisq, _shdt, _shdist;
+      Float_t _shwres, _shtres;
       Bool_t _mcxtalk;
       // helper array
       StrawEnd _end[2];
@@ -94,10 +92,10 @@ namespace mu2e
   StrawHitDiag::StrawHitDiag(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
-    _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
-    _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
-    _shfTag(pset.get<string>("StrawHitFlagCollectionTag","FlagBkgHits")),
-    _stTag(pset.get<string>("StereoHitCollectionTag","MakeStereoHits")),
+    _useshfcol(pset.get<bool>("UseStrawHitFlagCollection",true)),
+    _shTag(pset.get<string>("StrawHitCollection","makeSH")),
+    _chTag(pset.get<string>("ComboHitCollection","makeSH")),
+    _shfTag(pset.get<string>("StrawHitFlagCollection")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
     _end{TrkTypes::cal,TrkTypes::hv}
@@ -107,34 +105,35 @@ namespace mu2e
 
   void StrawHitDiag::analyze(const art::Event& event ) {
     _eventid = event.event();
+    _subrunid = event.subRun();
+    _runid = event.run();
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::TrkPatRec: data missing or incomplete"<< endl;
     }
     fillStrawHitDiag();
   }
+
   bool StrawHitDiag::findData(const art::Event& evt){
     _shcol = 0;
-    _shpcol = 0;
+    _chcol = 0;
     _shfcol = 0;
-    _stcol = 0;
     _mcdigis = 0;
     // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol = shH.product();
-    auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
-    _shpcol = shpH.product();
-    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
-    _shfcol = shfH.product();
-    auto hsH = evt.getValidHandle<StereoHitCollection>(_stTag);
-    _stcol = hsH.product();
+    auto chH = evt.getValidHandle<ComboHitCollection>(_chTag);
+    _chcol = chH.product();
+    if(_useshfcol){
+      auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+      _shfcol = shfH.product();
+    }
     if(_mcdiag){
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
       _mcdigis = mcdH.product();
       // update time offsets
       _toff.updateMap(evt);
     }
-    return _shcol != 0 && _shpcol != 0 && _shfcol != 0 
-      && (_mcdigis != 0  || !_mcdiag);
+    return _shcol != 0 && _chcol != 0 && (_shfcol != 0 || !_useshfcol) && (_mcdigis != 0  || !_mcdiag);
   }
 
   void StrawHitDiag::beginJob(){
@@ -142,6 +141,8 @@ namespace mu2e
     // straw hit tuple
     _shdiag=tfs->make<TTree>("shdiag","strawhit diagnostics");
     _shdiag->Branch("eventid",&_eventid,"eventid/I");
+    _shdiag->Branch("subrunid",&_subrunid,"subrunid/I");
+    _shdiag->Branch("runid",&_runid,"runid/I");
     _shdiag->Branch("shpos.",&_shp);
     _shdiag->Branch("shlen",&_shlen,"shlen/F");
     _shdiag->Branch("slen",&_slen,"slen/F");
@@ -169,9 +170,6 @@ namespace mu2e
     _shdiag->Branch("pmom",&_pmom,"pmom/F");
     _shdiag->Branch("wres",&_shwres,"wres/F");
     _shdiag->Branch("tres",&_shtres,"tres/F");
-    _shdiag->Branch("shchisq",&_shchisq,"shchisq/F");
-    _shdiag->Branch("shdt",&_shdt,"shdt/F");
-    _shdiag->Branch("shdist",&_shdist,"shdist/F");
     if(_mcdiag){
       _shdiag->Branch("mcshpos.",&_mcshp);
       _shdiag->Branch("mcopos.",&_mcop);
@@ -183,6 +181,7 @@ namespace mu2e
       _shdiag->Branch("mcpom",&_mcpom,"mcpom/F");
       _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
       _shdiag->Branch("mcshd",&_mcshd,"mcshd/F");
+      _shdiag->Branch("mcsphi",&_mcsphi,"mcsphi/F");
       _shdiag->Branch("mcplen",&_mcplen,"mcplen/F");
       _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
       _shdiag->Branch("mcetrig",&_mcetrig,"mcetrig/F");
@@ -196,6 +195,7 @@ namespace mu2e
       _shdiag->Branch("mcpproc",&_mcpproc,"mcpproc/I");
       _shdiag->Branch("mcptime",&_mcptime,"mcptime/D");
       _shdiag->Branch("mcgid",&_mcgid,"mcgid/I");
+      _shdiag->Branch("mcid",&_mcid,"mcid/I");
       _shdiag->Branch("mcgpdg",&_mcgpdg,"mcgpdg/I");
       _shdiag->Branch("mcge",&_mcge,"mcge/F");
       _shdiag->Branch("mcgt",&_mcgt,"mcgt/F");
@@ -207,27 +207,28 @@ namespace mu2e
   void StrawHitDiag::fillStrawHitDiag() {
     GeomHandle<DetectorSystem> det;
     const Tracker& tracker = getTrackerOrThrow();
-    static const double rstraw = tracker.getStraw(StrawId(0,0,0,0)).getRadius();
-    unsigned nstrs = _shcol->size();
+    static const double rstraw = tracker.getStraw(StrawId(0,0,0)).getRadius();
+    unsigned nstrs = _chcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawHit const& sh = _shcol->at(istr);
-      StrawHitPosition const& shp = _shpcol->at(istr);
-      StrawHitFlag const& shf = _shfcol->at(istr);
-      const Straw& straw = tracker.getStraw( sh.strawIndex() );
+      ComboHit const& ch = _chcol->at(istr);
+      StrawHitFlag shf = ch.flag();
+      if(_useshfcol) shf.merge(_shfcol->at(istr));
+      const Straw& straw = tracker.getStraw( ch.sid() );
       _plane = straw.id().getPlane();
       _panel = straw.id().getPanel();
       _layer = straw.id().getLayer();
       _straw = straw.id().getStraw();
-      _edep = sh.energyDep();
+      _edep = ch.energyDep();
       for(size_t iend=0;iend<2;++iend){
 	_time[iend] = sh.time(_end[iend]);
 	_tot[iend] = sh.TOT(_end[iend]);
       }
-      _shp = shp.pos();
-      _shlen =(shp.pos()-straw.getMidPoint()).dot(straw.getDirection());
+      _shp = ch.posCLHEP();
+      _shlen =(ch.posCLHEP()-straw.getMidPoint()).dot(straw.getDirection());
       _slen = straw.getHalfLength(); 
-      _stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
-      _tdiv = shp.flag().hasAllProperties(StrawHitFlag::tdiv);
+      _stereo = ch.flag().hasAllProperties(StrawHitFlag::stereo);
+      _tdiv = ch.flag().hasAllProperties(StrawHitFlag::tdiv);
       _esel = shf.hasAllProperties(StrawHitFlag::energysel);
       _rsel = shf.hasAllProperties(StrawHitFlag::radsel);
       _tsel = shf.hasAllProperties(StrawHitFlag::timesel);
@@ -237,9 +238,10 @@ namespace mu2e
       _isolated = shf.hasAllProperties(StrawHitFlag::isolated);
       _bkg = shf.hasAllProperties(StrawHitFlag::bkg);
       _bkgclust = shf.hasAllProperties(StrawHitFlag::bkgclust);
-      _rho = shp.pos().perp();
+      _rho = ch.posCLHEP().perp();
       // summarize the MC truth for this strawhit.  Preset the values in case MC is missing/incomplete
       _mcgid = -1;
+      _mcid = -1;
       _mcgpdg = -1;
       _mcge = -1.0;
       _mcgt = -1.0;
@@ -261,6 +263,7 @@ namespace mu2e
       _mcom = -1;
       _mcshlen = -1;
       _mcshd = -1;
+      _mcsphi = 0.0;
       _mcplen = -1;
       _mcpproc=-1;
       _mcptime=0.0;
@@ -298,10 +301,11 @@ namespace mu2e
         _mcom = osp.startMomentum().vect().mag();
         _mcshlen = (spmcp->position()-straw.getMidPoint()).dot(straw.getDirection());
 	Hep3Vector mdir = spmcp->momentum().unit();
-	Hep3Vector tdir = straw.getDirection().cross(mdir);
+	Hep3Vector tdir = (straw.getDirection().cross(mdir)).unit();
         _mcshd = (spmcp->position()-straw.getMidPoint()).dot(tdir);
 	double scos = mdir.dot(straw.getDirection());
         _mcplen = 2.0*sqrt( (rstraw*rstraw -_mcshd*_mcshd)/(1.0-scos*scos) );
+	_mcsphi = atan2(tdir.perp(),tdir.z()); // 'azimuth' around the straw of the POCA
 	// immediate parent information
 	art::Ptr<SimParticle> psp = osp.parent();
 	if(psp.isNonnull()){
@@ -315,7 +319,8 @@ namespace mu2e
         }
 // generator information
         if(spp.isNonnull()){
-        art::Ptr<SimParticle> sp = spp;
+	  _mcid = spp->id().asInt();
+	  art::Ptr<SimParticle> sp = spp;
         // find the first parent which comes from a generator
           while(sp->genParticle().isNull() && sp->parent().isNonnull()){
             sp = sp->parent();
@@ -329,20 +334,10 @@ namespace mu2e
           }
         }
         _mcxtalk = spmcp->strawIndex() != sh.strawIndex();
-
       }
-      _shwres = _shpcol->at(istr).posRes(StrawHitPosition::wire);
-      _shtres = _shpcol->at(istr).posRes(StrawHitPosition::trans);
+      _shwres = _chcol->at(istr).posRes(ComboHit::wire);
+      _shtres = _chcol->at(istr).posRes(ComboHit::trans);
 //  Info depending on stereo hits
-      if(_stcol != 0 && _shpcol->at(istr).stereoHitIndex() >= 0){
-        _shchisq = _stcol->at(_shpcol->at(istr).stereoHitIndex()).chisq();
-        _shdt = _stcol->at(_shpcol->at(istr).stereoHitIndex()).dt();
-        _shdist = _stcol->at(_shpcol->at(istr).stereoHitIndex()).dist();
-      } else {
-        _shchisq = -1.0;
-        _shdt = 0.0;
-        _shdist = -1.0;
-      }
       _shdiag->Fill();
     }
   }

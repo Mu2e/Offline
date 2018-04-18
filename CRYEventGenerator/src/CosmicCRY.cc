@@ -17,7 +17,6 @@
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "EventGenerator/inc/hrndg2.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/WorldG4.hh"
@@ -53,7 +52,7 @@ using CLHEP::GeV;
 
 namespace mu2e 
 {
-   // The following part is needed for the RNG
+  // The following part is needed for the RNG
   template<class T> class RNGWrapper {
     public:
       static void set(T* object, double (T::*func)(void));
@@ -69,141 +68,179 @@ namespace mu2e
     m_obj = object; m_func = func;
   }
   template<class T> double RNGWrapper<T>::rng(void) { return (m_obj->*m_func)(); }
-            
+
 
   CosmicCRY::CosmicCRY( art::Run& run, const SimpleConfig& config )
-  : _verbose(config.getInt("cosmicCRY.verbose", 0) )
-  , _doHistograms(config.getBool("cosmicCRY.doHistograms", true) )
-  , _saveTree(config.getBool("cosmicCRY.saveTree", false) )
-  , _hXZ(NULL)
-  , _hY(NULL)
-  // , _hPlane(NULL)
-  , _hE(NULL)
-  , _hTheta(NULL)
-  , _hPhi(NULL)
-  , _hPtot(NULL)
-  , _hPyOverPtot(NULL)
-  , _hTime(NULL)
-  , _hNegMuKE(NULL)
-  , _hPosMuKE(NULL)
-  , _hPtypeKE(NULL)
-  , _hNSecondaries(NULL)
-  , _hSecondPtotVsPrimKE(NULL)
-  , _hShowerRadiusVsPrimKE(NULL)
-  , _hNSecondariesVsPrimKE(NULL)
+    : _verbose(config.getInt("cosmicCRY.verbose", 0) )
+      , _doHistograms(config.getBool("cosmicCRY.doHistograms", true) )
+      , _saveTree(config.getBool("cosmicCRY.saveTree", false) )
+      , _hXZ(NULL)
+      , _hY(NULL)
+      // , _hPlane(NULL)
+      , _hE(NULL)
+      , _hTheta(NULL)
+      , _hPhi(NULL)
+      , _hPtot(NULL)
+      , _hPyOverPtot(NULL)
+      , _hTime(NULL)
+      , _hNegMuKE(NULL)
+      , _hPosMuKE(NULL)
+      , _hPtypeKE(NULL)
+      , _hNSecondaries(NULL)
+      , _hSecondPtotVsPrimKE(NULL)
+      , _hShowerRadiusVsPrimKE(NULL)
+      , _hNSecondariesVsPrimKE(NULL)
 
-  , _muEMin    ( config.getDouble("cosmicCRY.muEMin") )   //in MeV
-  , _muEMax    ( config.getDouble("cosmicCRY.muEMax") )   //in MeV
-  , _muCosThMin( config.getDouble("cosmicCRY.muCosThMin") )
-  , _muCosThMax( config.getDouble("cosmicCRY.muCosThMax") )
-  , _muPhiMin(0)
-  , _muPhiMax(2.0*M_PI)
+      , _muEMin    ( config.getDouble("cosmicCRY.muEMin") )   //in MeV
+        , _muEMax    ( config.getDouble("cosmicCRY.muEMax") )   //in MeV
+        , _muCosThMin( config.getDouble("cosmicCRY.muCosThMin") )
+        , _muCosThMax( config.getDouble("cosmicCRY.muCosThMax") )
+        , _muPhiMin(0)
+        , _muPhiMax(2.0*M_PI)
 
-  , _returnMuons( config.getBool("cosmicCRY.returnMuons", true))
-  , _returnNeutrons( config.getBool("cosmicCRY.returnNeutrons", true))
-  , _returnProtons( config.getBool("cosmicCRY.returnProtons", true))
-  , _returnGammas( config.getBool("cosmicCRY.returnGammas", true))
-  , _returnElectrons( config.getBool("cosmicCRY.returnElectrons", true))
-  , _returnPions( config.getBool("cosmicCRY.returnPions", true))
-  , _returnKaons( config.getBool("cosmicCRY.returnKaons", true))
+        , _returnMuons( config.getBool("cosmicCRY.returnMuons", true))
+        , _returnNeutrons( config.getBool("cosmicCRY.returnNeutrons", true))
+        , _returnProtons( config.getBool("cosmicCRY.returnProtons", true))
+        , _returnGammas( config.getBool("cosmicCRY.returnGammas", true))
+        , _returnElectrons( config.getBool("cosmicCRY.returnElectrons", true))
+        , _returnPions( config.getBool("cosmicCRY.returnPions", true))
+        , _returnKaons( config.getBool("cosmicCRY.returnKaons", true))
 
-  , _month(config.getInt("cosmicCRY.month", 6))
-  , _day(config.getInt("cosmicCRY.day", 21))
-  , _year(config.getInt("cosmicCRY.year", 2020))
-  , _latitude( config.getDouble("cosmicCRY.latitude", 41.8))
-  , _altitude( config.getInt("cosmicCRY.altitude", 0))
-  , _subboxLength( config.getDouble("cosmicCRY.subboxLength", 100.))
+        , _month(config.getInt("cosmicCRY.month", 6))
+        , _day(config.getInt("cosmicCRY.day", 21))
+        , _year(config.getInt("cosmicCRY.year", 2020))
+        , _latitude( config.getDouble("cosmicCRY.latitude", 41.8))
+        , _altitude( config.getInt("cosmicCRY.altitude", 0))
+        , _subboxLength( config.getDouble("cosmicCRY.subboxLength", 100.))
 
-  , _setupString("")
-  , _refPointChoice(UNDEFINED)
-  , _directionChoice(ALL)
-  , _cosmicReferencePointInMu2e()
-  , _vertical(false)
-  , _dontProjectToSurface(config.getBool("cosmicCRY.dontProjectToSurface", false))
+        , _setupString("")
+        , _refY0(config.getDouble("cosmicCRY.refY0", 10000.))
+        , _refPointChoice(config.getString("cosmicCRY.refPoint", "UNDEFINED"))
+        , _directionChoice(config.getString("cosmicCRY.directionChoice", "ALL"))
+        , _cosmicReferencePointInMu2e()
+        , _vertical(false)
+        , _projectToEnvelope(config.getBool("cosmicCRY.projectToEnvelope", false))
+        , _geomInfoObtained(false)
 
-  {
-    mf::LogInfo log("CosmicCRY");
+        {
+          mf::LogInfo log("CosmicCRY");
 
-    _cryDataPath = std::string(std::getenv("CRYDATAPATH"));
-    if( _cryDataPath.length() == 0) 
-    {
-      mf::LogError("CosmicCRY") << "no variable CRYDATAPATH set. Exit now.";
-      exit(0);
-    }
+          _cryDataPath = std::string(std::getenv("CRYDATAPATH"));
+          if( _cryDataPath.length() == 0) 
+          {
+            mf::LogError("CosmicCRY") << "no variable CRYDATAPATH set. Exit now.";
+            exit(0);
+          }
 
-    createSetupString();
-    _crySetup = new CRYSetup(_setupString, _cryDataPath);
+          createSetupString();
+          _crySetup = new CRYSetup(_setupString, _cryDataPath);
 
-    RNGWrapper<CLHEP::HepRandomEngine>::set(CLHEP::HepRandom::getTheEngine(),
-        &CLHEP::HepRandomEngine::flat);
-    _crySetup->setRandomFunction(RNGWrapper<CLHEP::HepRandomEngine>::rng);
+          RNGWrapper<CLHEP::HepRandomEngine>::set(CLHEP::HepRandom::getTheEngine(),
+              &CLHEP::HepRandomEngine::flat);
+          _crySetup->setRandomFunction(RNGWrapper<CLHEP::HepRandomEngine>::rng);
 
-    if (_verbose > 1) 
-      CLHEP::HepRandom::getTheEngine()->showStatus();
+          if (_verbose > 1) 
+            CLHEP::HepRandom::getTheEngine()->showStatus();
 
-    _cryGen = std::make_shared<CRYGenerator>(_crySetup);
+          _cryGen = std::make_shared<CRYGenerator>(_crySetup);
 
-    // Histograming
-    if (_doHistograms) {
-      art::ServiceHandle<art::TFileService> tfs;
-      art::TFileDirectory tfdir = tfs->mkdir("CosmicCRY");
-      _hXZ = tfdir.make<TH2D>("XZ", "XZ", 
-          400, -2.0e5,  2.0e5, 400, -2.0e5, 2.0e5 );
-      _hY = tfdir.make<TH1D>("Y", "Y", 100, -1.0e3, 1.0e3 );
+          // Histograming
+          if (_doHistograms) {
+            art::ServiceHandle<art::TFileService> tfs;
+            art::TFileDirectory tfdir = tfs->mkdir("CosmicCRY");
+            _hXZ = tfdir.make<TH2D>("XZ", "XZ", 
+                400, -2.0e5,  2.0e5, 400, -2.0e5, 2.0e5 );
+            _hY = tfdir.make<TH1D>("Y", "Y", 100, -1.0e3, 1.0e3 );
 
-      // _hPlane = tfdir.make<TH1D>("Plane", "Plane", 5, 0, 5);
-      _hE = tfdir.make<TH1D>("E", "E", 4000, 0, _muEMax);
-      _hTheta = tfdir.make<TH1D>("Theta", "Theta",
-          200, -M_PI - 0.5, M_PI + 0.5);
-      _hPhi = tfdir.make<TH1D>("Phi", "Phi",
-          200, -M_PI - 0.5, M_PI + 0.5);
+            // _hPlane = tfdir.make<TH1D>("Plane", "Plane", 5, 0, 5);
+            _hE = tfdir.make<TH1D>("E", "E", 4000, 0, _muEMax);
+            _hTheta = tfdir.make<TH1D>("Theta", "Theta",
+                200, -M_PI - 0.5, M_PI + 0.5);
+            _hPhi = tfdir.make<TH1D>("Phi", "Phi",
+                200, -M_PI - 0.5, M_PI + 0.5);
 
-      _hPtot = tfdir.make<TH1D>("Ptot", "Total momentum", 500, 0., 2E6);
-      _hPyOverPtot = tfdir.make<TH1D>("PyOverPtot", "Py/Ptot", 200, -20., 20.);
-      _hTime = tfdir.make<TH1D>("Time", "Timing of secondary particles",
-          1000, -1.E-3, 1E0);
-      _hNegMuKE = tfdir.make<TH1D>("NegMuKE", "Momenta of #mu^-", 4000, 0., 2E6);
-      _hPosMuKE = tfdir.make<TH1D>("PosMuKE", "Momenta of #mu^+", 4000, 0., 2E6);
-      _hNSecondaries = tfdir.make<TH1D>("nSecondaries", "Number of secondaries",
-          1000, 0, 1000);
+            _hPtot = tfdir.make<TH1D>("Ptot", "Total momentum", 500, 0., 2E6);
+            _hPyOverPtot = tfdir.make<TH1D>("PyOverPtot", "Py/Ptot", 200, -20., 20.);
+            _hTime = tfdir.make<TH1D>("Time", "Timing of secondary particles",
+                1000, -1.E-3, 1E0);
+            _hNegMuKE = tfdir.make<TH1D>("NegMuKE", "Momenta of #mu^-", 4000, 0., 2E6);
+            _hPosMuKE = tfdir.make<TH1D>("PosMuKE", "Momenta of #mu^+", 4000, 0., 2E6);
+            _hNSecondaries = tfdir.make<TH1D>("nSecondaries", "Number of secondaries",
+                1000, 0, 1000);
 
-      _hPtypeKE = tfdir.make<TH2D>("PtypeKE", "Particle type vs energy",
-          2000, 0., 2E6, 7, 0, 7);
-      _hPtypeKE->GetYaxis()->SetBinLabel(1, "mu");
-      _hPtypeKE->GetYaxis()->SetBinLabel(2, "gamma");
-      _hPtypeKE->GetYaxis()->SetBinLabel(3, "electron");
-      _hPtypeKE->GetYaxis()->SetBinLabel(4, "neutron");
-      _hPtypeKE->GetYaxis()->SetBinLabel(5, "proton");
-      _hPtypeKE->GetYaxis()->SetBinLabel(6, "pion");
-      _hPtypeKE->GetYaxis()->SetBinLabel(7, "kaon");
+            _hPtypeKE = tfdir.make<TH2D>("PtypeKE", "Particle type vs energy",
+                2000, 0., 2E6, 7, 0, 7);
+            _hPtypeKE->GetYaxis()->SetBinLabel(1, "mu");
+            _hPtypeKE->GetYaxis()->SetBinLabel(2, "gamma");
+            _hPtypeKE->GetYaxis()->SetBinLabel(3, "electron");
+            _hPtypeKE->GetYaxis()->SetBinLabel(4, "neutron");
+            _hPtypeKE->GetYaxis()->SetBinLabel(5, "proton");
+            _hPtypeKE->GetYaxis()->SetBinLabel(6, "pion");
+            _hPtypeKE->GetYaxis()->SetBinLabel(7, "kaon");
 
-      _hSecondPtotVsPrimKE = tfdir.make<TH2D>("SecondPtotVsPrimKE",
-          "Total momenta of secondaries vs Primary KE", 
-          1000, 1E3, 1E8, 2000, 0., 2E6);
-      _hShowerRadiusVsPrimKE = tfdir.make<TH2D>("primeKEvsShowerRadius", 
-          "Primary KE vs shower radius", 1000, 1E3, 1E8, 300, 0., 300E3*1.42);
-      _hNSecondariesVsPrimKE = tfdir.make<TH2D>("primeKEvsNSecondaries",
-          "Primary KE vs number of secondaries", 1000, 1E3, 1E8, 200, 0., 200);
-    }
+            _hSecondPtotVsPrimKE = tfdir.make<TH2D>("SecondPtotVsPrimKE",
+                "Total momenta of secondaries vs Primary KE", 
+                1000, 1E3, 1E8, 2000, 0., 2E6);
+            _hShowerRadiusVsPrimKE = tfdir.make<TH2D>("primeKEvsShowerRadius", 
+                "Primary KE vs shower radius", 1000, 1E3, 1E8, 300, 0., 300E3*1.42);
+            _hNSecondariesVsPrimKE = tfdir.make<TH2D>("primeKEvsNSecondaries",
+                "Primary KE vs number of secondaries", 1000, 1E3, 1E8, 200, 0., 200);
+          }
 
-    // And tree
-    if (_saveTree) {
-      makeTrees();
-    }
-  }
+          // And tree
+          if (_saveTree) {
+            makeTrees();
+          }
+        }
 
 
   CosmicCRY::~CosmicCRY() { }
 
   void CosmicCRY::generate( GenParticleCollection& genParts )
   {
+    // Ref point, need to be here so that geometry info can be obtained
+    // , but let's do this only once
+    if (!_geomInfoObtained) {
+      GeomHandle<Mu2eEnvelope> env;
+      GeomHandle<WorldG4>  worldGeom;
+      GeomHandle<ExtMonFNAL::ExtMon> extMonFNAL;
+      GeomHandle<DetectorSystem> detsys;
+
+      _envXmin = env->xmin();
+      _envXmax = env->xmax();
+      _envYmin = env->ymin();
+      _envYmax = env->ymax();
+      _envZmin = env->zmin();
+      _envZmax = env->zmax();
+
+      if (_refPointChoice == "TRACKER") 
+        _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(),
+            _refY0, detsys->getOrigin().z());
+      else if (_refPointChoice == "EXTMONFNAL") 
+        _cosmicReferencePointInMu2e = 
+          Hep3Vector(extMonFNAL->detectorCenterInMu2e().x(),
+              _refY0, extMonFNAL->detectorCenterInMu2e().z());
+      else if (_refPointChoice == "CALO") 
+      {
+        GeomHandle<Calorimeter> calorimeter;
+        _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(),
+            _refY0, calorimeter->disk(0).geomInfo().origin().z());
+      }
+      else if (_refPointChoice == "UNDEFINED") 
+        _cosmicReferencePointInMu2e = Hep3Vector(0., _refY0, 0.);
+      
+      _geomInfoObtained = true;
+    }
+
+    // std::cout << _cosmicReferencePointInMu2e << std::endl;
+    // Getting CRY particles
     std::vector<CRYParticle*> *secondaries = new std::vector<CRYParticle*>;
     _cryGen->genEvent(secondaries);
 
-      _pdgId0 = _cryGen->primaryParticle()->PDGid();
-      _ke0 = _cryGen->primaryParticle()->ke(); // MeV
-      _nSecondaries = secondaries->size();
-      _t0 = _cryGen->timeSimulated();
+    _pdgId0 = _cryGen->primaryParticle()->PDGid();
+    _ke0 = _cryGen->primaryParticle()->ke(); // MeV
+    _nSecondaries = secondaries->size();
+    _t0 = _cryGen->timeSimulated();
 
     if (_doHistograms) {
       _hNSecondaries->Fill(secondaries->size());
@@ -228,19 +265,44 @@ namespace mu2e
       double totalP = safeSqrt(totalE * totalE - mass * mass);
 
       secondPtot += totalP;
+
+      // Moving the CRY particle around: find all intersections with Mu2e
+      // envelope, then set the position at the *first* intersection
+
       secondXZ.push_back(
           CLHEP::Hep2Vector(secondary->x() * 1000, secondary->y() * 1000));
 
       // Change coordinate system since y points upward, z points along
       // the beam line; which make cry(xyz) -> mu2e(zxy), uvw -> mu2e(zxy)
-      CLHEP::Hep3Vector position(secondary->y() * 1000, secondary->z() * 1000,
-          secondary->x() * 1000); // to mm
+      CLHEP::Hep3Vector position(
+          secondary->y() * 1000 + _cosmicReferencePointInMu2e.x(),
+          secondary->z() * 1000 + _cosmicReferencePointInMu2e.y(),
+          secondary->x() * 1000 + _cosmicReferencePointInMu2e.z()); // to mm
       CLHEP::HepLorentzVector mom4(totalP*secondary->v(), totalP*secondary->w(),
           totalP*secondary->u(), totalE);
-      genParts.push_back(
-          GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
-            GenId::cosmicCRY,
-            position, mom4, secondary->t() - _t0));
+
+      if (_projectToEnvelope) {
+        _envIntersections.clear();
+        calIntersections(position, CLHEP::Hep3Vector(secondary->v(),
+              secondary->w(), secondary->u()));
+      }
+
+      if (_envIntersections.size() > 0) {
+        int idx = 0;
+        double highestY = _envIntersections.at(idx).y();
+        for (unsigned i = 0; i < _envIntersections.size(); ++i) {
+          if (_envIntersections.at(i).y() > highestY) {
+            idx = i;
+            highestY = _envIntersections.at(idx).y();
+          }
+        }
+
+        genParts.push_back(
+            GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
+              GenId::cosmicCRY,
+              _envIntersections.at(idx),
+              mom4, secondary->t() - _t0));
+      }
 
       if (_doHistograms) {
         _hXZ->Fill(position.x(), position.z());
@@ -358,7 +420,7 @@ namespace mu2e
 
     if (_doHistograms) {
       _hSecondPtotVsPrimKE->Fill(_ke0, secondPtot);
-      // _hShowerRadiusVsPrimKE->Fill(_ke0, calMEC(secondXZ));
+      _hShowerRadiusVsPrimKE->Fill(_ke0, calMEC(secondXZ));
     }
     if (_saveTree) {
       _tCrySecondaries->Fill();
@@ -381,6 +443,7 @@ namespace mu2e
     _tCrySecondaries = tfdir.make<TTree>("crySecondariesTree",
         "crySecondariesTree");
     _tCrySecondaries->Branch("evtId", &_evtId0);
+    _tCrySecondaries->Branch("ke0", &_ke0);
     _tCrySecondaries->Branch("nSecondaries", &_nSecondaries);
     _tCrySecondaries->Branch("pdgId", _pdgId1, "pdgId[nSecondaries]/I");
     _tCrySecondaries->Branch("x", _x1, "x[nSecondaries]/D");
@@ -439,7 +502,7 @@ namespace mu2e
 
     sprintf(tmpStr, "latitude %f ", _latitude);
     _setupString.append(tmpStr);
-    
+
     sprintf(tmpStr, "altitude %d ", _altitude);
     _setupString.append(tmpStr);
 
@@ -467,7 +530,72 @@ namespace mu2e
         }
       }
 
+      radius = maxDistance;
     }
     return radius;
+  }
+
+  void CosmicCRY::calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir)
+  {
+    // roof: _envYmax, _envXmin, _envXmax, _envZmin, _envZmax
+    // skip projection if the particle goes parallely to the plane
+    if (dir.y() != 0.) {
+      double t = (_envYmax - orig.y()) / dir.y();
+      double x1 = dir.x() * t + orig.x();
+      double z1 = dir.z() * t + orig.z();
+      if (pointInBox(x1, z1, _envXmin, _envXmax, _envZmin, _envZmax)) {
+        _envIntersections.push_back(CLHEP::Hep3Vector(x1, _envYmax, z1));
+      }
+    }
+
+    //east: _envZmin, _envXmin, _envXmax, _envZmin, _envZmax
+    if (dir.z() != 0.) {
+      double t = (_envZmin - orig.z()) / dir.z();
+      double x1 = dir.x() * t + orig.x();
+      double y1 = dir.y() * t + orig.y();
+      if (pointInBox(x1, y1, _envXmin, _envYmin, _envXmax, _envYmax)) {
+        _envIntersections.push_back(CLHEP::Hep3Vector(x1, y1, _envZmin));
+      }
+    }
+
+    //west: _envZmax, _envXmin, _envXmax, _envZmin, _envZmax
+    if (dir.z() != 0.) {
+      double t = (_envZmax - orig.z()) / dir.z();
+      double x1 = dir.x() * t + orig.x();
+      double y1 = dir.y() * t + orig.y();
+      if (pointInBox(x1, y1, _envXmin, _envYmin, _envXmax, _envYmax)) {
+        _envIntersections.push_back(CLHEP::Hep3Vector(x1, y1, _envZmax));
+      }
+    }
+
+    //south: _envXmin, _envYmin, _envYmax, _envZmin, _envZmax
+    if (dir.x() != 0.) {
+      double t = (_envXmin - orig.x()) / dir.x();
+      double z1 = dir.z() * t + orig.z();
+      double y1 = dir.y() * t + orig.y();
+      if (pointInBox(z1, y1, _envZmin, _envYmin, _envZmax, _envYmax)) {
+        _envIntersections.push_back(CLHEP::Hep3Vector(_envXmin, y1, z1));
+      }
+    }
+
+    //north: _envXmax, _envYmin, _envYmax, _envZmin, _envZmax
+    if (dir.x() != 0.) {
+      double t = (_envXmax - orig.x()) / dir.x();
+      double z1 = dir.z() * t + orig.z();
+      double y1 = dir.y() * t + orig.y();
+      if (pointInBox(z1, y1, _envZmin, _envYmin, _envZmax, _envYmax)) {
+        _envIntersections.push_back(CLHEP::Hep3Vector(_envXmax, y1, z1));
+      }
+    }
+  }
+
+  bool CosmicCRY::pointInBox(double x, double y, double x0, double y0,
+      double x1, double y1)
+  {
+    bool ret = false;
+    if ((x >= x0) && (x <= x1) && (y >= y0) && (y <= y1)) {
+      ret = true;
+    }
+    return ret;
   }
 }

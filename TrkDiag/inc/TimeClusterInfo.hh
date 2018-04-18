@@ -5,7 +5,7 @@
 #ifndef TrkDiag_TimeClusterInfo_HH
 #define TrkDiag_TimeClusterInfo_HH
 // mu2e includes
-#include "DataProducts/inc/threevec.hh"
+#include "RecoDataProducts/inc/XYZVec.hh"
 // root includes
 #include "Rtypes.h"
 // C++ includes
@@ -21,18 +21,17 @@ namespace mu2e {
     Float_t _terr; // cluster time error
     Float_t _minhtime, _maxhtime; // min and max cluster hit time
     Float_t _maxover; // max overlap with another time cluster this event
-    threevec _pos; // average position of cluster
+    XYZVec _pos; // average position of cluster
     Float_t _ecalo; // calo cluster energy
     Float_t _tcalo; // calo cluster time
     Float_t _dtcalo; // calo cluster time
-    threevec _cog; // calo cluster position
+    XYZVec _cog; // calo cluster position
     
-    void reset() { _tcindex = -1; _nhits = _ncehits = 0; _time = _terr = _maxover = _ecalo = _tcalo = _dtcalo = 0.0; _pos.reset(); _cog.reset(); }
+    void reset() { _tcindex = -1; _nhits = _ncehits = 0; _time = _terr = _maxover = _ecalo = _tcalo = _dtcalo = 0.0;  }
     static std::string leafnames() { 
       static std::string leaves; leaves =
-      std::string("tcindex/I:nhits/I:ncehits/I:time/F:terr/F:minhtime/F:maxhtime/F:maxover/F:") 
-      + threevec::leafnames("pos") + std::string(":ecalo/F:tcalo/F:dtcalo/F:")
-      + threevec::leafnames("cog"); 
+      std::string("tcindex/I:nhits/I:ncehits/I:time/F:terr/F:minhtime/F:maxhtime/F:maxover/F:posx/F:posy/F:posz/F") + std::string(":ecalo/F:tcalo/F:dtcalo/F:")
+      + std::string("cogx/F:cogy/F:cogz/F");
       return leaves;
     } 
   };
@@ -56,15 +55,15 @@ namespace mu2e {
     Int_t	_ncesel; // # of selected conversion electron hits
     Int_t	_nceclust; // # of conversion electron hits found in clusters
     Float_t	_time; // average time of CE hits (doesn't include drift!)
-    threevec	_pos; // average position of cluster
+    XYZVec	_pos; // average position of cluster
     Float_t	_maxdphi; // max dphi WRT average
     Float_t	_minrho; // min rho WRT average
     Float_t	_maxrho; // max rho WRT average
-    void reset() { _nce = _ncesel = _nceclust = 0; _time = _maxdphi = _maxrho = 0.0; _minrho = 1000.0; _pos.reset();}
+    void reset() { _nce = _ncesel = _nceclust = 0; _time = _maxdphi = _maxrho = 0.0; _minrho = 1000.0;}
     static std::string leafnames() {
       static std::string leaves; leaves =
 	std::string("nce/I:ncesel/I:nceclust/I:time/F:")
-	+threevec::leafnames("pos")
+	+std::string("posx/F:posy/F:posz/F")
 	+std::string(":maxdphi/F:minrho/F:maxrho/F");
       return leaves;
     } 

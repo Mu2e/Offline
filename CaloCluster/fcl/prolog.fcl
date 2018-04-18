@@ -2,7 +2,35 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
+
 BEGIN_PROLOG
+  HitMakerBlindTime      : 500. # ns
+  HitMakerDigiSampling   : 5    # ns
+END_PROLOG
+
+
+
+
+BEGIN_PROLOG
+
+CaloClusterFast :
+{ 
+    module_type           : CaloClusterFast
+    caloDigiModuleLabel   : CaloDigiFromShower
+    digiSampling          : @local::HitMakerDigiSampling
+    blindTime             : @local::HitMakerBlindTime
+    endTimeBuffer         : 80
+    windowPeak            : 2
+    minAmplitude          : 20
+    extendSecond          : false
+    minSeedAmplitude      : 200
+    minEnergy             : 50
+    timeCorrection        : 20.0
+    adcToEnergy           : 0.0461333
+    diagLevel             : 0
+    includeCrystalHits    : false
+}
+
 
 CaloProtoClusterFromCrystalHit :
 {
@@ -53,6 +81,17 @@ CaloCluster :
    Reco       : [ CaloProtoClusterFromCrystalHit, CaloClusterFromProtoCluster ]
    TruthMatch : [ CaloClusterTruthMatch ]
 }
+
+
+CaloClusterFast :
+{
+   producers : {
+     CaloClusterFast  : @local::CaloClusterFast
+   }
+
+   Reco : [ CaloClusterFast ]
+}
+
 
 
 END_PROLOG

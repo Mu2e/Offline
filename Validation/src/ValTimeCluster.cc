@@ -21,7 +21,8 @@ int mu2e::ValTimeCluster::fill(const mu2e::TimeClusterCollection & coll,
   _hN->Fill(coll.size()); 
   for(auto tp : coll) {
     _hNhit->Fill(tp.nhits());
-    _pos.fill(tp.position());
+    CLHEP::Hep3Vector pos = Geom::Hep3Vec(tp.position());
+    _pos.fill(pos);
     _ht->Fill(tp.t0().t0());
   }
   return 0;

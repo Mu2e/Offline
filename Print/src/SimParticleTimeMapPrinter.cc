@@ -27,7 +27,7 @@ mu2e::SimParticleTimeMapPrinter::Print(const art::Handle<SimParticleTimeMap>& ha
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -38,7 +38,7 @@ mu2e::SimParticleTimeMapPrinter::Print(const art::ValidHandle<SimParticleTimeMap
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -55,10 +55,14 @@ mu2e::SimParticleTimeMapPrinter::Print(const SimParticleTimeMap& coll, std::ostr
   PrintListHeader();
 
   int i = 0;
+  long unsigned int pkey;
   for(const auto& obj: coll) {
+    pkey = 0;
+    art::Ptr<SimParticle> const& pptr = obj.first;
+    if(pptr) pkey = pptr->id().asUint();
     os 
       << " " << std::setw(5) << i
-      << " " << std::setw(7) << obj.first->id().asUint()
+      << " " << std::setw(7) << pkey
       << " " 
       << " " << std::setw(6) << std::setprecision(1) << obj.second
       << std::endl;

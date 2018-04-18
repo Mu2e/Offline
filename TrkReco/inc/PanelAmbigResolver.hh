@@ -13,7 +13,7 @@
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
 #include "TrkReco/inc/PanelAmbigStructs.hh"
-#include "DataProducts/inc/LayerId.hh"
+#include "DataProducts/inc/PanelId.hh"
 #ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"
 #endif/*__GCCXML__*/

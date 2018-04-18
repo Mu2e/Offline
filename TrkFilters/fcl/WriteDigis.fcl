@@ -25,7 +25,9 @@ physics :
 {
   producers : {
     @table::EventMixing.producers
-    @table::Tracking.producers
+    @table::TrackerMC.producers
+    @table::TrkHitReco.producers
+    @table::Tracking.TrkTrigger.producers
     @table::CaloDigiMC.producers
   }
   filters : {
@@ -38,8 +40,8 @@ outputs: {
   WriteDigis : {
     module_type: RootOutput
     outputCommands: [ "drop *_*_*_*",
-    @sequence::Tracking.Output.Digis
-#   "keep mu2e::CaloDigis_*_*_*" 
+    @sequence::Tracking.Output.Digis,
+   "keep mu2e::CaloDigis_*_*_*" 
     ]
   }
 }
@@ -49,22 +51,17 @@ outputs: {
 
 physics.WriteDigisTrigPath : [   @sequence::EventMixing.CD3Mixers,
   @sequence::EventMixing.TimeMaps, 
-  @sequence::Tracking.DigiSim
-#  @sequence::CaloDigiMC.DigiSim 
+  @sequence::TrackerMC.DigiSim,
+  @sequence::CaloDigiMC.DigiSim 
   ]
 physics.WriteDigisEndPath : [ WriteDigis ]
 
 # finish output configuration: this needs to be done after the path exists
-outputs.WriteDigis.fileName: "TrkDigis.art"
+outputs.WriteDigis.fileName: "Digis.art"
 # setup mixers
+
 physics.producers.makeSD.TimeOffsets.inputs : [ "protonTimeMap", "muonTimeMap" ] 
-physics.filters.flashMixer.fileNames : @local::bgHitFiles
-physics.filters.ootMixer.fileNames : @local::bgHitFiles
-physics.filters.dioMixer.fileNames : @local::bgHitFiles
-physics.filters.neutronMixer.fileNames : @local::bgHitFiles
-physics.filters.photonMixer.fileNames : @local::bgHitFiles
-physics.filters.protonMixer.fileNames : @local::bgHitFiles
-physics.filters.deuteronMixer.fileNames : @local::bgHitFiles
+#include "EventMixing/fcl/epilog.fcl
 # the following are needed for interactive running.  They will be overwritten if you submit this job
 # on the grid so do not need to be removed.
 services.SeedService.baseSeed         :  773651

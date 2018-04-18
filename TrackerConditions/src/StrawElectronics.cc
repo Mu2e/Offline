@@ -39,10 +39,10 @@ namespace mu2e {
     _ADCPeriod(pset.get<double>("ADCPeriod",20.0)), // nsec
     _ADCOffset(pset.get<double>("ADCOffset",2.0)), // nsec
     _maxtsep(pset.get<unsigned>("MaxThreshTimeSeparation",2)), // ADC clock ticks
-    _TDCLSB(pset.get<double>("TDCLSB",0.015625)),  // nsec
-    _maxTDC(pset.get<unsigned>("maxTDC",16777216)),
+    _TDCLSB(pset.get<double>("TDCLSB",0.03125)),  // nsec
+    _maxTDC(pset.get<unsigned>("maxTDC",65535)), // 16 bits
     _TOTLSB(pset.get<double>("TOTLSB",4.0)), //ns
-    _maxTOT(pset.get<unsigned>("maxTOT",16)),
+    _maxTOT(pset.get<unsigned>("maxTOT",15)),
     _clockStart(pset.get<double>("clockStart",10.0)), // nsec
     _clockJitter(pset.get<double>("clockJitter",0.2)), // nsec
     _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
@@ -266,13 +266,13 @@ namespace mu2e {
     return charge * (p0 * distFrac + p1 * (1 - distFrac));
   }
 
-  unsigned short StrawElectronics::adcResponse(double mvolts) const {
-    return min(static_cast<unsigned short>(max(static_cast<int>(floor(mvolts/_ADCLSB)+_ADCped),0)),_maxADC);
+  uint16_t StrawElectronics::adcResponse(double mvolts) const {
+    return min(static_cast<uint16_t>(max(static_cast<int>(floor(mvolts/_ADCLSB)+_ADCped),0)),_maxADC);
   }
 
-  unsigned long StrawElectronics::tdcResponse(double time) const {
+  uint16_t StrawElectronics::tdcResponse(double time) const {
     // Offset to when the TDC clock starts
-    return min(static_cast<unsigned long>(max(static_cast<int>(floor((time-_clockStart)/_TDCLSB)),0)),_maxTDC);
+    return min(static_cast<uint16_t>(max(static_cast<int>(floor((time-_clockStart)/_TDCLSB)),0)),_maxTDC);
   }
 
   
@@ -318,11 +318,11 @@ void StrawElectronics::digitizeWaveform(ADCVoltages const& wf, ADCWaveform& adc)
       times[itime] = tdc[itime]*_TDCLSB+_clockStart;
   }
   
-  double StrawElectronics::adcVoltage(unsigned short adcval) const {
+  double StrawElectronics::adcVoltage(uint16_t adcval) const {
     return (adcval-_ADCped)*_ADCLSB;
   }
 
-  double StrawElectronics::adcCurrent(unsigned short adcval) const {
+  double StrawElectronics::adcCurrent(uint16_t adcval) const {
   // this includes the effects from normalization of the pulse shape
     return adcVoltage(adcval)/_dVdI[adc];
   }

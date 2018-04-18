@@ -102,7 +102,7 @@ namespace mu2e
     _maxpull(pset.get<double>("maxPull",5)),
     // t0 parameters
     _initt0(pset.get<bool>("initT0",true)),
-    _useTrkCaloHit(pset.get<bool>("useTrkCaloHit",false)),
+    _useTrkCaloHit(pset.get<bool>("useTrkCaloHit")),
     _updatet0(pset.get<bool>("updateT0",true)),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
@@ -462,7 +462,7 @@ namespace mu2e
   }
 
   void 
-  KalFit::makeTrkCaloHit  (KalSeed const& kseed, TrkCaloHit *tch){
+  KalFit::makeTrkCaloHit  (KalSeed const& kseed, TrkCaloHit *&tch){
     if (kseed.caloCluster().get() != 0){
       HitT0 ht0;
       ht0._t0    = kseed.caloCluster()->time();
@@ -500,6 +500,7 @@ namespace mu2e
   }
 
   unsigned KalFit::addMaterial(KalRep* krep) {
+    _debug>3 && std::cout << __func__ << " called " << std::endl;
     unsigned retval(0);
 // TTracker geometry
     const Tracker& tracker = getTrackerOrThrow();
@@ -512,14 +513,25 @@ namespace mu2e
 // loop over Planes
     double strawradius = ttracker.strawRadius();
     unsigned nadded(0);
-    for(auto const& plane : ttracker.getPlanes()){
-    // crappy access to # of straws in a panel
-      int nstraws = 2*plane.getPanel(0).getLayer(0).nStraws();
+    // for(auto const& plane : ttracker.getPlanes()){
+    for ( size_t i=0; i!= ttracker.nPlanes(); ++i){
+      const auto& plane = ttracker.getPlane(i);
+       _debug>3 && std::cout << __func__ << " plane " << plane.id() << std::endl;
+      // if (!(plane.exists())) continue;
+      // # of straws in a panel
+      int nstraws = plane.getPanel(0).nStraws();
+       _debug>3 && std::cout << __func__ << " nstraws " << nstraws << std::endl;
 // get an approximate z position for this plane from the average position of the 1st and last straws
-      Hep3Vector s0 = plane.getPanel(0).getLayer(0).getStraw(0).getMidPoint();
+      // Hep3Vector s0 = plane.getPanel(0).getLayer(0).getStraw(0).getMidPoint();
+      // plane id is id of 0th straw
+      Hep3Vector s0 = plane.getPanel(0).getStraw(StrawId(plane.id())).getMidPoint();
+       _debug>3 && std::cout << __func__ << " s0 via panel " << s0 << std::endl;
       // funky convention for straw numbering in a layer FIXME!!!!
-      Hep3Vector sn = plane.getPanel(0).getLayer(1).getStraw(2*plane.getPanel(0).getLayer(1).nStraws()-1).getMidPoint();
+      // Hep3Vector sn = plane.getPanel(0).getLayer(1).getStraw(2*plane.getPanel(0).getLayer(1).nStraws()-1).getMidPoint();
+      Hep3Vector sn = plane.getPanel(0).getStraw(nstraws-1).getMidPoint();
+      _debug>3 && std::cout << __func__ << " sn via panel " << sn << std::endl;
       double pz = 0.5*(s0.z() + sn.z());
+      _debug>3 && std::cout << __func__ << " an approximate z position for this plane " << plane.id() << " " << pz << std::endl;
 // find the transverse position at this z using the reference trajectory
       double flt = krep->referenceTraj()->zFlight(pz);
       HepPoint pos = krep->referenceTraj()->position(flt);
@@ -531,8 +543,30 @@ namespace mu2e
       if(rho > rmin && rho < rmax){
   // loop over panels
         for(auto const& panel : plane.getPanels()){
+          if (_debug>4) {
+            std::cout << __func__ << " panel " << panel.id() << std::endl;
+            std::cout << __func__ << " printing all straws in layer 0 " << std::endl;
+            for (const auto straw_p : panel.getStrawPointers() ) {
+              Straw const& straw(*straw_p);
+              StrawId sid = straw.id();
+              if ( sid.getLayer() != 0 ) continue;
+              std::cout.width(7);
+              std::cout << sid << ", ";
+            }
+            std::cout << std::endl;
+            std::cout << __func__ << " printing all straws in layer 1 " << std::endl;
+            for (const auto straw_p : panel.getStrawPointers() ) {
+              Straw const& straw(*straw_p);
+              StrawId sid = straw.id();
+              if ( sid.getLayer() != 1 ) continue;
+              std::cout.width(7);
+              std::cout << sid << ", ";
+            }
+            std::cout << std::endl;
+          }
       // get the straw direction for this panel
-          Hep3Vector sdir = panel.getLayer(0).getStraw(0).getDirection();
+          // Hep3Vector sdir = panel.getLayer(0).getStraw(0).getDirection();
+          Hep3Vector sdir = panel.getStraw(0).getDirection();
       // get the transverse direction to this and z
           static Hep3Vector zdir(0,0,1.0);
           Hep3Vector pdir = sdir.cross(zdir);
@@ -541,13 +575,27 @@ namespace mu2e
       // test for acceptance of this panel
           if(prho > rmin && prho < rmax) {
           // translate the transverse position into a rough straw number
+          // nstraws is the number of straws in the panel
             int istraw = (int)rint(nstraws*(prho-s0.perp())/(sn.perp()-s0.perp()));
             // take a few straws around this
-            for(int is = max(0,istraw-2); is<min(nstraws-1,istraw+2); ++is){
-            // must do this twice due to intrusion of layer on hierarchy FIXME!!!
-              matstraws.insert(StrawFlight(panel.getLayer(0).getStraw(is).index(),flt));
-              matstraws.insert(StrawFlight(panel.getLayer(1).getStraw(is).index(),flt));
-              nadded += 2;
+            for(int is = max(0,istraw-3); is<min(nstraws,istraw+3); ++is){
+              _debug>3 && std::cout << __func__ << " taking a few straws, istraw, is "
+                                    << istraw << ", " << is << std::endl;
+              _debug>3 && std::cout << __func__ << " straw id "
+                                    << panel.getStraw(is).id() << std::endl;
+              if (_debug>4) {
+                if ( panel.getStraw(is).id().getLayer()==0) {
+                  std::cout << __func__ << " straw id l0 by id "
+                            << panel.getStraw(StrawId(panel.id().asUint16()+is)).id()
+                            << std::endl;
+                } else {
+                  std::cout << __func__ << " straw id l1 by id "
+                            << panel.getStraw(StrawId(panel.id().asUint16()+is)).id()
+                            << std::endl;
+                }
+              }
+              matstraws.insert(StrawFlight(panel.getStraw(is).index(),flt));
+              ++nadded;
             }
           }
         }

@@ -1,0 +1,38 @@
+// A geometry file for using the version 2 Production Target Geometry.
+// Most of the geometry is inherited from the existing Production target
+// geometry, except as below.
+
+// Information on the update of the target geometry design is found in
+// Docdb-15597.  Refer to slide 5 for the definitions of the parameters
+// below.   
+// At this time, the parameters are set to the value from Design #8
+// from the study detailed in the note.  The other strongly considered
+// designs are #13, #16, and #18.
+
+// First, the base geometry to start from...
+#include "Mu2eG4/geom/geom_common_current.txt"
+
+// Now the specific items for version 2 of the Production Target
+int targetPS_version           = 2;
+double targetPS_finHeight      = 5.0; // mm  Parameter "A"
+double targetPS_finThickness   = 1.0; // mm  Parameter "B"
+double targetPS_hubDistanceUS  = 0.0; // mm  Parameter "C"  (Upstream)
+double targetPS_hubDistanceDS  = 60.0;// mm  Parameter "D"  (Downstream)
+double targetPS_hubAngleUS     = 42.0;// deg Parameter "E"
+double targetPS_hubAngleDS     = 26.2;// deg Parameter "F"
+double targetPS_rOut	       = 3.15;// mm  Half of Parameter "G"
+
+double targetPS_Hub_hang_Length = 0.01; // mm
+double targetPS_Hub_overhang_angle = 42.0; // deg
+double targetPS_Hub_thickness = 2.0; // mm
+
+//  For reference, here are the table values for the interesting designs
+//  Parameter    Design 8    Design 13   Design 16   Design 18
+//  A            5.0	     0	    	 5.0	     5.0
+//  B		 1.0	     0		 1.0	     1.0
+//  C		 0	     50.0	 30.0	     50.0
+//  D		 60.0	     50.0	 30.0	     50.0
+//  E		 42.0	     29.2	 34.6	     29.2
+//  F		 26.2	     29.2	 34.6	     29.2
+//  Remember to divide the following by 2
+//  G	     	 6.3   	     6.3     	 6.3	     6.3

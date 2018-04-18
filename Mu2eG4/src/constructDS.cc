@@ -28,6 +28,7 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 
 // G4 includes
 #include "G4ThreeVector.hh"
@@ -48,7 +49,8 @@ using namespace std;
 namespace mu2e {
 
   void constructDS( const VolumeInfo& parent,
-                    SimpleConfig const & _config
+                    const SimpleConfig& _config,
+                    const SensitiveDetectorHelper& sdHelper
                     ){
     MaterialFinder materialFinder(_config);
 
@@ -699,7 +701,7 @@ namespace mu2e {
 				      "DS"
 				      );
 
-       if ( cableRunSensitive ) {
+       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
 	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
 	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
 	 if(cableRunSD) ccrTemp.logical->SetSensitiveDetector(cableRunSD);
@@ -727,7 +729,7 @@ namespace mu2e {
 					   "DS"
 					   );
 
-       if ( cableRunSensitive ) {
+       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
 	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
 	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
 	 if(cableRunSD) ccrTempUG1.logical->SetSensitiveDetector(cableRunSD);
@@ -753,7 +755,7 @@ namespace mu2e {
 					  "DS"
 					  );
 
-       if ( cableRunSensitive ) {
+       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
 	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
 	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
 	 if(cableRunSD) ccrTmpUG2.logical->SetSensitiveDetector(cableRunSD);
@@ -779,7 +781,7 @@ namespace mu2e {
 					     G4Colour::Magenta(),
 					     "DS" );
 
-       if ( cableRunSensitive ) {
+       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
 	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
 	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
 	 if(cableRunSD) ccrTmpF.logical->SetSensitiveDetector(cableRunSD);
@@ -810,7 +812,7 @@ namespace mu2e {
 				      "DS"
 				      );
 
-       if ( cableRunSensitive ) {
+       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
 	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
 	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
 	 if(cableRunSD) tcrTmp1.logical->SetSensitiveDetector(cableRunSD);
@@ -836,7 +838,7 @@ namespace mu2e {
 				    "DS"
 				    );
 
-       if ( cableRunSensitive ) {
+       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
 	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
 	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
 	 if(cableRunSD) tcrTmp2.logical->SetSensitiveDetector(cableRunSD);
@@ -863,7 +865,7 @@ namespace mu2e {
 				       "DS"
 				       );
 
-       if ( cableRunSensitive ) {
+       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
 	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
 	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
 	 if(cableRunSD) tcrTmpG1.logical->SetSensitiveDetector(cableRunSD);
@@ -888,7 +890,7 @@ namespace mu2e {
 					"DS"
 					);
 
-       if ( cableRunSensitive ) {
+       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
 	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
 	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
 	 if(cableRunSD) tcrTmpG1a.logical->SetSensitiveDetector(cableRunSD);
@@ -914,7 +916,7 @@ namespace mu2e {
 				       "DS"
 				       );
 
-	 if ( cableRunSensitive ) {
+	 if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
 	   G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
 	     FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
 	   if(cableRunSD) tcrTmpG2.logical->SetSensitiveDetector(cableRunSD);
@@ -940,7 +942,7 @@ namespace mu2e {
 					 "DS"
 					 );
 
-	 if ( cableRunSensitive ) {
+	 if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
 	   G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
 	     FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
 	   if(cableRunSD) tcrTmpG2a.logical->SetSensitiveDetector(cableRunSD);

@@ -106,6 +106,11 @@ namespace mu2e {
     bool writeGDML_;
     std::string gdmlFileName_;
     std::string g4stepperName_;
+    double g4epsilonMin_;
+    double g4epsilonMax_;
+    double g4DeltaOneStep_;
+    double g4DeltaIntersection_;
+    double g4DeltaChord_;
     double bfieldMaxStep_;
     bool limitStepInAllVolumes_;
   };

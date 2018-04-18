@@ -1,7 +1,7 @@
 #include <cmath>
 #include "Validation/inc/ValKalSeed.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 int mu2e::ValKalSeed::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
@@ -23,6 +23,19 @@ int mu2e::ValKalSeed::declare(art::TFileDirectory tfs) {
   _hZ0 = tfs.make<TH1D>( "Z0", "Z0", 100, -1000.0, 1000.0);
   _hTan = tfs.make<TH1D>( "tanDip", "tanDip", 100, -1.8, 1.8);
 
+  _hCuts = tfs.make<TH1D>( "Cuts", "Cut series", 8, 0.5, 8.5);
+  int ibin=1;
+  _hCuts->GetXaxis()->SetBinLabel(ibin++,"All CE"); // bin 1, first visible
+  _hCuts->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
+  _hCuts->GetXaxis()->SetBinLabel(ibin++,"KalmanOK"); // 3
+  _hCuts->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
+  _hCuts->GetXaxis()->SetBinLabel(ibin++,"Livegate");   // 5
+  _hCuts->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
+  _hCuts->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection"); 
+  _hCuts->GetXaxis()->SetBinLabel(ibin++,"Momentum window");  // 8
+  _hCuts->SetMinimum(0.0);
+  _hPRes = tfs.make<TH1D>( "PRes", "R resolution", 200, -5.0, 3.0);
+
   return 0;
 }
 
@@ -32,42 +45,152 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
   _hVer->Fill(0.0);
+
+
+  // p of highest momentum electron SimParticle with good tanDip
+  double p_mc = mcTrkP(event);
+  // the first of the cut series, number of events
+  _hCuts->Fill(1.0);
+  // MC CE found
+  if(p_mc>100.0) _hCuts->Fill(2.0);
+
   _hN->Fill(coll.size()); 
   for(auto const& ks : coll) {
     _hNStraw->Fill(ks.straws().size());
     _hNSeg->Fill(ks.segments().size());
-    const TrkFitFlag& f = ks.status();
+    const TrkFitFlag& tff = ks.status();
 
     //    for(mu2e::TrkFitFlagDetail::bit_type i=0; i<f.size(); i++) 
     //  if(f.hasAnyProperty(i)) _hStatus->Fill(i); 
 
     int i=0;
-    for(auto sn: f.bitNames()) { 
-      if(f.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(i); 
+    for(auto sn: tff.bitNames()) { 
+      if(tff.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(i); 
       i++;
     }
 
     _hflt0->Fill(ks.flt0());
-    _ht0->Fill(ks.t0().t0());
+    double t0 = ks.t0().t0();
+    _ht0->Fill(t0);
     _hchi2->Fill(ks.chisquared());
     int q = (ks.caloCluster().isNull()?0:1);
     _hhasCal->Fill(q);
     _hfitCon->Fill(ks.fitConsistency());
 
     if( ks.segments().size()>0 ) {
-      std::size_t i = ks.segments().size()/2;
+      // first segment - in default config, this is front of tracker
+      std::size_t i = 0;
+      // middle segment - in default config, this is center of tracker
+      //std::size_t i = ks.segments().size()/2;
       auto const& ss = ks.segments()[i]; //KalSegment
       auto const& h = ss.helix(); // HelixVal
+      double p = ss.mom();
       _hp->Fill(ss.mom());
       _hpce->Fill(ss.mom());
       _hpe->Fill(ss.momerr());
       _hD0->Fill(h.d0());
       _hPhi0->Fill(h.phi0());
+      double om = h.omega();
       _hOmega->Fill(h.omega());
       _hZ0->Fill(h.z0());
-      _hTan->Fill(h.tanDip());
+      double td = h.tanDip();
+      _hTan->Fill(td);
+
+
+      // fill the cut series
+      double d0 = h.d0();
+      bool d0cut = (d0<105 && d0>-80 && (d0+2/om)>450 && (d0+2/om)<680);
+
+      if(p_mc>100.0) {
+	if(tff.hasAllProperties(TrkFitFlag("KalmanOK"))) {
+	  _hCuts->Fill(3.0);
+	  if(ks.fitConsistency()>0.002) {
+	    _hCuts->Fill(4.0);
+	    if(t0>700.0 && t0<1695.0) {
+	      _hCuts->Fill(5.0);
+	      if(td>0.577&&td<1.0) {
+		_hCuts->Fill(6.0);
+		if(d0cut) {
+		  _hCuts->Fill(7.0);
+		  if(p>103.75 && p< 105.0) {
+		    _hCuts->Fill(8.0);
+		    _hPRes->Fill(p-p_mc);
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      } // if(p_mc>100.0) 
+
+
     }
     
   }
   return 0;
 }
+
+double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
+  //find the true momentum of the conversion electron
+  //by finding the relevant steppoint at the entrance of the tracker
+  double p = -1;
+
+  // this will be the simparticle numbers which belong to the conv ele
+  std::vector<mu2e::SimParticle::key_type> cea;
+
+  std::vector< art::Handle<SimParticleCollection> > vah;
+  event.getManyByType(vah);
+  for (auto const & ah : vah) { // loop over all SimParticle coll
+    auto const& simpcoll = *ah; //SimParticleCollection
+    for(auto sp : simpcoll) { // loop over SimParticles
+      auto const& part = sp.second; // mu2e::SimParticle
+      // the earliest stage this simparticle appears
+      auto const& opart = part.originParticle(); //mu2e::SimParticle
+      auto const& gptr = opart.genParticle(); //art::Ptr<GenParticle> 
+      if(part.pdgId()==11 && gptr.isNonnull()) { // e- pointing to GenParticle
+	cea.push_back(part.id());
+      }
+    }
+  }
+
+  // now loop over all StepPointMC's and look for a step
+  // at the virtual front of the tracker which points to the SimParticle
+
+  CLHEP::Hep3Vector pv;
+
+  std::vector< art::Handle<StepPointMCCollection> > vah2;
+  event.getManyByType(vah2);
+  for (auto const & ah : vah2) { // loop over SPMC colls
+    if(ah.provenance()->productInstanceName()=="virtualdetector") {
+      auto const& spmccoll = *ah; //StepPointMCCollection
+      
+      double t0 = 1e10;
+      for(auto step : spmccoll) {
+	// this step points to the conversion electron
+	bool goodp = std::find(std::begin(cea), std::end(cea), 
+			       step.trackId()) != std::end(cea);
+	// is at the front of the tracker
+	bool goodv = (step.volumeId()==VirtualDetectorId::TT_FrontHollow ||
+		      step.volumeId()==VirtualDetectorId::TT_FrontPA);
+	// middle of tracker
+	//(step.volumeId()==VirtualDetectorId::TT_Mid ||
+	// step.volumeId()==VirtualDetectorId::TT_MidInner) ) {
+	// t0 check here finds earliest crossing
+	if( goodp && goodv && step.time()<t0) {
+	  pv = step.momentum();
+	  double p0 = pv.mag();
+	  double pz = pv.z();
+	  double pt = pv.perp();
+	  double td = ( pt!=0.0 ? pz/pt : 1e14 );
+	  if(p0>p && p0>100.0 && td>0.527 && td<1.2) {
+	    p = p0;
+	  }
+	} // if good
+      } // loop over steppoints
+    } // if virtualdetector
+  } // loop over SPMC collections
+  
+  return p;
+  
+}
+

@@ -62,6 +62,7 @@
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
 
 
 #include <boost/accumulators/accumulators.hpp>
@@ -330,11 +331,11 @@ namespace mu2e {
 					// event printout
     _data.eventNumber = event.event();
 
-    if ((_data.eventNumber%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
+    if ((_debugLevel > 0) && (_data.eventNumber%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 //-----------------------------------------------------------------------------
 // output collections should always be created
 //-----------------------------------------------------------------------------
-    art::ProductID   kalRepsID(getProductID<KalRepCollection>(event));
+    art::ProductID   kalRepsID(getProductID<KalRepCollection>());
 
     unique_ptr<KalRepCollection>       tracks   (new KalRepCollection        );
     unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection     );
@@ -510,7 +511,9 @@ namespace mu2e {
 	algs->push_back(AlgorithmID(best,mask));
 
 	// convert successful fits into 'seeds' for persistence.  Start with the input
-	KalSeed fseed(*kalSeed);
+	//	KalSeed fseed(*kalSeed);
+	KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kalSeed->status());
+	fseed._helix = kalSeed->helix();
 	// reference the seed fit in this fit
 	art::Handle<KalSeedCollection> ksH;
 	event.getByLabel(_trkseedLabel, ksH);
@@ -519,10 +522,14 @@ namespace mu2e {
 	fseed._t0 = krep->t0();
 	fseed._flt0 = krep->flt0();
 	fseed._status.merge(TrkFitFlag::kalmanOK);
+	// global fit information
+	fseed._chisq = krep->chisq();
+	// compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
+	fseed._fitcon =  ChisqConsistency(krep->chisq(),krep->nDof()-1).significanceLevel();
 	if(krep->fitStatus().success()==1) fseed._status.merge(TrkFitFlag::kalmanConverged);
 	TrkUtilities::fillHitSeeds(krep, fseed._hits);
 	TrkUtilities::fillStraws(krep,fseed._straws);
-//-----------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------
 // sample the fit at the requested z positions.  This should
 // be in terms of known positions (front of tracker, ...) FIXME!
 //-----------------------------------------------------------------------------

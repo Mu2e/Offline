@@ -1,0 +1,132 @@
+// Andrei Gaponenko, 2014, 2015
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+BEGIN_PROLOG
+stepPointTimeCut: 200
+END_PROLOG
+
+
+# Give this job a name.
+process_name : beamflt4detflash
+
+source : {
+   module_type : RootInput
+   readParameterSets: false
+}
+
+services : {
+    TFileService          : { fileName : "nts.owner.beam-flt4detflash.version.sequencer.root" }
+    message               : @local::default_message
+}
+
+physics : {
+
+    //================================================================
+    producers: {
+        trackerHits: {
+	    module_type: SelectStepPointsByTime
+	    input: "detectorFilter:tracker"
+	    outInstanceName: "tracker"
+	    cutTimeMin: @local::stepPointTimeCut
+	}
+
+        caloHits: {
+	    module_type: SelectStepPointsByTime
+	    input: "detectorFilter:calorimeter"
+	    outInstanceName: "calorimeter"
+	    cutTimeMin: @local::stepPointTimeCut
+	}
+
+        caloROHits: {
+	    module_type: SelectStepPointsByTime
+	    input: "detectorFilter:calorimeterRO"
+	    outInstanceName: "calorimeterRO"
+	    cutTimeMin: @local::stepPointTimeCut
+	}
+
+        compressPVDetector: {
+            module_type: CompressPhysicalVolumes
+            volumesInput : "compressPVDetector"
+            hitInputs : []
+            particleInputs : [ "detectorFilter" ]
+        }
+    } // producers
+
+    //================================================================
+    filters: {
+        detectorFilter: {
+            module_type: FilterG4Out
+            mainHitInputs: [ "trackerHits:tracker", "caloHits:calorimeter", "caloROHits:calorimeterRO"]
+            extraHitInputs: [ "detectorFilter:virtualdetector" ]
+            numSimParticleCollections: 1
+            vetoDaughters: []
+        }
+    }
+
+    //================================================================
+    analyzers: {
+        genCountLogger: {
+            module_type: GenEventCountReader
+        }
+
+        hitTimesTrackerIn: {
+            module_type: ExtremeHitTimes
+	    inputs: [ "detectorFilter:tracker:beamg4s4flash" ]
+        }
+        hitTimesTrackerOut: {
+            module_type: ExtremeHitTimes
+	    inputs: [ "detectorFilter:tracker:beamflt4detflash" ]
+        }
+
+        hitTimesCaloIn: {
+            module_type: ExtremeHitTimes
+	    inputs: [ "detectorFilter:calorimeter:beamg4s4flash",  "detectorFilter:calorimeterRO:beamg4s4flash" ]
+        }
+        hitTimesCaloOut: {
+            module_type: ExtremeHitTimes
+	    inputs: [ "detectorFilter:calorimeter:beamflt4detflash",  "detectorFilter:calorimeterRO:beamflt4detflash" ]
+        }
+
+	// tracker or calo
+        hitTimesTOCIn: {
+            module_type: ExtremeHitTimes
+	    inputs: [ "detectorFilter:tracker:beamg4s4flash", "detectorFilter:calorimeter:beamg4s4flash",  "detectorFilter:calorimeterRO:beamg4s4flash" ]
+        }
+        hitTimesTOCOut: {
+            module_type: ExtremeHitTimes
+	    inputs: [ "detectorFilter:tracker:beamflt4detflash", "detectorFilter:calorimeter:beamflt4detflash",  "detectorFilter:calorimeterRO:beamflt4detflash" ]
+        }
+    }
+
+    //================================================================
+    detPath : [trackerHits, caloHits, caloROHits, detectorFilter, compressPVDetector]
+    trigger_paths  : [detPath]
+
+    out : [beamFlashOutput]
+    an : [genCountLogger, hitTimesTrackerIn, hitTimesTrackerOut, hitTimesCaloIn, hitTimesCaloOut, hitTimesTOCIn, hitTimesTOCOut]
+    end_paths      : [out, an]
+}
+
+outputs: {
+    beamFlashOutput : {
+        module_type : RootOutput
+        SelectEvents: [detPath]
+        outputCommands:   [ "drop *_*_*_*",
+                            "keep mu2e::GenParticles_*_*_*",
+                            "keep mu2e::GenEventCount_*_*_*",
+                            "keep mu2e::StatusG4_*_*_*",
+                            "keep *_detectorFilter_*_beamflt4detflash",
+                            "keep *_compressPVDetector_*_beamflt4detflash"
+                          ]
+        fileName: "sim.owner.beam-flt4detflash.version.sequencer.art"
+    }
+
+}
+
+// Limit the amount of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300

@@ -8,7 +8,9 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "MCDataProducts/inc/SimParticle.hh"
+#include "RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include <vector>
@@ -19,32 +21,37 @@ namespace mu2e
   {
     public:
 
-    struct Hit
+    struct PulseInfo
     {
-      double                        _time;
-      int                           _PEs;
-      mu2e::CRSScintillatorBarIndex _counter;
-      int                           _SiPM;
-      double                        _pos;
-      Hit() {}
-      Hit(double time, int PEs, mu2e::CRSScintillatorBarIndex counter, int SiPM, double pos): _time(time), _PEs(PEs), _counter(counter), _SiPM(SiPM), _pos(pos) {}
+      art::Ptr<CrvRecoPulse> _crvRecoPulse;
+      art::Ptr<SimParticle>  _simParticle;     //MC
+      double                 _energyDeposited; //MC
+      PulseInfo() {}
+      PulseInfo(const art::Ptr<CrvRecoPulse> &crvRecoPulse, const art::Ptr<SimParticle> &simParticle, double energyDeposited) :
+                _crvRecoPulse(crvRecoPulse), _simParticle(simParticle), _energyDeposited(energyDeposited) {}
     };
 
     struct Cluster
     {
       int                _crvSectorType;
-      CLHEP::Hep3Vector  _avgPos;
+      CLHEP::Hep3Vector  _avgCounterPos;
       double             _startTime;
       double             _endTime;
       int                _PEs;
-      std::vector<Hit>   _hits;
+      bool               _hasMCInfo;
+      std::vector<PulseInfo> _pulses;
+      art::Ptr<SimParticle>  _mostLikelySimParticle; //MC
+      double                 _totalEnergyDeposited;  //MC
+      double                 _earliestHitTime;       //MC
+      CLHEP::Hep3Vector      _earliestHitPos;        //MC
 
       Cluster() {}
-      Cluster(int crvSectorType, const CLHEP::Hep3Vector &avgPos, double startTime, double endTime, int PEs, const std::vector<const Hit*> &hits) :
-                                                                                         _crvSectorType(crvSectorType), _avgPos(avgPos), _startTime(startTime), _endTime(endTime), _PEs(PEs)
-      {
-        for(size_t i=0; i<hits.size(); i++) _hits.push_back(*(hits[i]));
-      }
+      Cluster(int crvSectorType, const CLHEP::Hep3Vector &avgCounterPos, double startTime, double endTime, int PEs, 
+              bool hasMCInfo, const std::vector<PulseInfo> &pulses, const art::Ptr<SimParticle> mostLikelySimParticle, 
+              double totalEnergyDeposited, double earliestHitTime, const CLHEP::Hep3Vector &earliestHitPos) :
+              _crvSectorType(crvSectorType), _avgCounterPos(avgCounterPos), _startTime(startTime), _endTime(endTime), _PEs(PEs), 
+              _hasMCInfo(hasMCInfo), _pulses(pulses), _mostLikelySimParticle(mostLikelySimParticle), 
+              _totalEnergyDeposited(totalEnergyDeposited), _earliestHitTime(earliestHitTime), _earliestHitPos(earliestHitPos) {}
     };
 
     CrvCoincidenceClusters() {}

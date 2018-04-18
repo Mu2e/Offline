@@ -4,6 +4,7 @@
 
 #include "TObject.h"
 #include "CalPatRec/inc/LsqSums4.hh"
+#include "CalPatRec/inc/CalHelixPoint.hh"
 
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
@@ -12,18 +13,87 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
+#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/StrawHit.hh"
+
+#include <array>
 
 class HelixTraj;
 
 namespace mu2e {
 
   class TimeCluster;
-//---------------------------------------------------------------------------
-// output struct
-//-----------------------------------------------------------------------------
+  class Panel;
+
+  struct ChannelID {
+    int Station;
+    int Plane; 
+    int Face; 
+    int Panel; 
+    //      int Layer;
+  };
+
+  // struct HitFlag_t {
+  //   int                              fUsed[100];
+  // };
+    
+  
+  struct PanelZ_t {
+    int                              fNHits;      // guess, total number of hits per panel
+    std::vector<CalHelixPoint>       fHitData;
+    const Panel*                     fPanel;      // backward pointer to the tracker panel
+    double                           wx;          // direction cosines of the wires, assumed to be all the same
+    double                           wy;      
+    double                           phi;         // phi angle of the wire
+    double                           z;           // 
+
+    PanelZ_t    (){
+      fNHits  = 0;
+      fPanel  = NULL;
+    }
+
+    PanelZ_t    (const PanelZ_t&Copy){
+      fNHits = Copy.fNHits;  
+      fPanel = Copy.fPanel;  
+      wx     = Copy.wx;      
+      wy     = Copy.wy;      
+      phi    = Copy.phi;     
+      z      = Copy.z;       
+      int nhits = Copy.fHitData.size();
+      for (int i=0; i<nhits; ++i){
+	fHitData.push_back(CalHelixPoint(Copy.fHitData.at(i)));
+      }
+    }
+  }; 
+
+  struct SeedInfo_t {
+    int  Panel;	 
+    int  PanelHitIndex;
+    SeedInfo_t(){
+      Panel         = -1;	 
+      PanelHitIndex = -1;
+    }
+    SeedInfo_t(int P, int H){
+      Panel         = P;	 
+      PanelHitIndex = H;
+    }
+  };
+  //---------------------------------------------------------------------------
+  // output struct
+  //-----------------------------------------------------------------------------
   class CalHelixFinderData : public TObject {
   public:
+   
 
+    enum {
+      kNStations      = 20,
+      kNTotalFaces    = 80,
+      kNTotalPanels   = 240,
+      kNMaxHitsPerPanel= 20,
+      kNFaces         =  4,
+      kNPanelsPerFace =  3
+    };
+    
     enum { kMaxResidIndex = 500 };
     
     struct Diag_t {
@@ -74,6 +144,14 @@ namespace mu2e {
 
     std::vector<StrawHitIndex>        _goodhits;
 
+    SeedInfo_t                        _seedIndex;
+    SeedInfo_t                        _candIndex;
+
+    int                               _nPoints;      // n(hits)
+    int                               _nFiltPoints;
+
+    double                            _helixChi2;
+
     TrkParticle                       _tpart;
     TrkFitDirection                   _fdir;
 
@@ -111,6 +189,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     Diag_t             _diag;
 //-----------------------------------------------------------------------------
+// structure used to organize thei strawHits for the pattern recognition
+//-----------------------------------------------------------------------------
+    PanelZ_t                                           _oTracker[kNTotalPanels];
+    std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
+//-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
     CalHelixFinderData();
@@ -131,8 +214,17 @@ namespace mu2e {
 
     int           nGoodHits         () { return _goodhits.size(); }
 
+    void          orderID           (ChannelID* X, ChannelID* O);
+
     void          print(const char* Title);
     void          clearTempVariables();
+    void          clearResults();
+
+    void          markHelixPoints        ();
+
+    void          setTestHelixPoints     ();
+    void          resetTestHelixPoints   ();
+
   };
 
 };

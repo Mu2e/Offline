@@ -13,7 +13,8 @@ double particleGun.tmin  =  800.0;
 double particleGun.tmax  =  800.0;
 
 // position
-vector<double> particleGun.point = {-3904., 2610.6, 10225.0};  
+//vector<double> particleGun.point = {-3904., 2610.6, 10225.0};  
+vector<double> particleGun.point = {-4404., 2610.6, 10225.0}; //x=1000 
 
 vector<double> particleGun.halfLength = { 0., 0., 60. };
 

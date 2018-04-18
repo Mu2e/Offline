@@ -100,7 +100,7 @@ Int_t TValCompare::Analyze(Option_t* Opt) {
 
     if ( ! dj ) {
       if(fVerbose > 0) 
-	printf("Error: did not find directory %s in file 2\n",path.Data());
+	printf("Warning: did not find directory %s in file 2\n",path.Data());
       continue;
     }
 
@@ -174,22 +174,34 @@ void TValCompare::Report(Option_t* Opt) {
 //_____________________________________________________________________________
 void TValCompare::Summary(Option_t* Opt) {
 
-  int n0=0,n1=0,n2=0,n3=0,n10=0,n11=0,n100=0;
+  int n0=0,ns=0,n1=0,n2=0,n3=0,n10=0,n11=0,n100=0;
   TIter it(&fList);
   TValHist* hh;
 
   while ( (hh = (TValHist*) it.Next()) ) {
-    if(hh->GetStatus()==0) n0++; 
-    else if(hh->GetStatus()==1 ) n1++;
-    else if(hh->GetStatus()==2 ) n2++;
-    else if(hh->GetStatus()==3 ) n3++;
-    else if(hh->GetStatus()==10) n10++;
-    else if(hh->GetStatus()==11) n11++;
-    else n100++;
+
+    // if the title contains "[info]" then it is for info only, 
+    // not in comparison summary, for example, CPU time is expected to change 
+    TString title(hh->GetTitle());
+    bool useInSummary = true;
+    if(title.Index("[info]")>=0) useInSummary = false;
+
+    if(useInSummary) {
+      if(hh->GetStatus()==0) n0++; 
+      else if(hh->GetStatus()==1 ) n1++;
+      else if(hh->GetStatus()==2 ) n2++;
+      else if(hh->GetStatus()==3 ) n3++;
+      else if(hh->GetStatus()==10) n10++;
+      else if(hh->GetStatus()==11) n11++;
+      else n100++;
+    } else {
+      ns++;
+    }
   }
 
   printf("TValCompare Status Summary:\n");
   printf("%5d Compared\n",fList.GetEntries());
+  printf("%5d marked to skip\n",ns);
   printf("%5d had unknown status\n",n100);
   printf("%5d could not be compared\n",n11);
   printf("%5d had at least one histogram empty\n",n10);
@@ -372,8 +384,8 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
     inf <<"<title>valCompare</title>\n";
     inf << "<BR><BR>\n";
     inf <<"<h2>"<< fFileN1 
-	<< "<BR>&nbsp&nbsp vs &nbsp&nbsp<BR>";
-    inf <<fFileN2 <<"</h2>\n";
+	<< " (hist)<BR>&nbsp&nbsp vs &nbsp&nbsp<BR>";
+    inf <<fFileN2 <<" (dots)</h2>\n";
     inf << "<BR><BR>\n";
     inf << "<TABLE>\n";
     inf << "<TR><TD width=120 align=left>KS</TD>\n";
@@ -389,6 +401,8 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
     TString gifFile,gifName;
     TString gifFileLog,gifNameLog;
     while ( (hh = (TValHist*) it.Next()) ) {
+      // TEfficiency does not handle log scale well 
+      bool qDoLog = (hh->ClassName()!=TString("TValHistE"));
       if(hh->GetStatus()>=fMinStat && hh->GetStatus()<=fMaxStat) {
 	hh->Draw();
 	gifName = hh->GetTag()+"/"+hh->GetName();
@@ -399,8 +413,10 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
 	gifFile = dir+gifName;
 	gifFileLog = dir+gifNameLog;
 	ccc->SaveAs(gifFile);
-	hh->Draw("log");
-	ccc->SaveAs(gifFileLog);
+	if(qDoLog) {
+	  hh->Draw("log");
+	  ccc->SaveAs(gifFileLog);
+	}
 	
 	inf << "<TR><TD>";
 	for(int io=0; io<2; io++) {
@@ -421,7 +437,9 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
 	inf << hh->GetStatus() << "</TD><TD>";
 	inf<< "<a href=\""<<gifName << "\">" << hh->GetTag() << "/" <<
 	  hh->GetName() <<"</a> ";
-	inf<< " &nbsp <a href=\""<<gifNameLog << "\">log</a> ";
+	if(qDoLog) {
+	  inf<< " &nbsp <a href=\""<<gifNameLog << "\">log</a> ";
+	}
 	inf << "</TD><TD>";
 	inf << hh->GetTitle();
 	inf << "</TD></TR>\n";

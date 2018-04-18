@@ -67,7 +67,7 @@ namespace mu2e {
       std::unique_ptr<MARSInfoCollection> info(new MARSInfoCollection());
       std::unique_ptr<SimParticleMARSAssns> assns(new SimParticleMARSAssns());
 
-      const art::ProductID infoPID = getProductID<MARSInfoCollection>(event);
+      const art::ProductID infoPID = getProductID<MARSInfoCollection>();
       const art::EDProductGetter *infoGetter = event.productGetter(infoPID);
 
       art::Handle<GenParticleCollection> genpartsh;

@@ -53,17 +53,7 @@ namespace mu2e {
 
   class DeltaFinder: public art::EDProducer {
   public:
-					// intersection of the two hit wires
-    struct Intersection_t {
-      double     x;			// x-coordinate of the intersection point
-      double     y;			// y-coordinate of the intersection point
-      double     t1;			// distanCe from the center of the 1st wire
-      double     t2;			// distance from the center of the 2nd wire
-      double     wd1;                   // distance btw the 1st hit and the intersection
-      double     wd2;		        // distance btw the 2nd hit and the intersection
-    };
 
-  
   protected:
     struct ChannelID {
       int Station;
@@ -85,7 +75,6 @@ namespace mu2e {
     double                              _pitchAngle;
     art::InputTag                       _mcDigisTag;
     float                               _minHitTime;           // min hit time
-    float                               _maxDt;                // max deltaT
     int                                 _minNFacesWithHits;    // per station per seed
     int                                 _minNSeeds;            // min number of seeds in the delta electron cluster
     float                               _maxElectronHitEnergy; // 
@@ -99,7 +88,8 @@ namespace mu2e {
     int                                 _maxGap;
     float                               _sigmaR;
     float                               _maxDriftTime;
-    float                               _maxDtDs;              // max T0 difference between two stations
+    float                               _maxStrawDt;
+    float                               _maxDtDs;              // low-P electron travel time between two stations
 
     int                                 _debugLevel;
     int                                 _diagLevel;
@@ -184,7 +174,6 @@ namespace mu2e {
     _mcDigisTag            (pset.get<art::InputTag>("strawDigiMCCollectionTag"     )),
     			        
     _minHitTime            (pset.get<float>        ("minHitTime"                   )),
-    _maxDt                 (pset.get<float>        ("maxDt"                        )),
     _minNFacesWithHits     (pset.get<int>          ("minNFacesWithHits"            )),
     _minNSeeds             (pset.get<int>          ("minNSeeds"                    )),
     _maxElectronHitEnergy  (pset.get<float>        ("maxElectronHitEnergy"         )),
@@ -198,6 +187,7 @@ namespace mu2e {
     _maxGap                (pset.get<int>          ("maxGap"                       )),
     _sigmaR                (pset.get<float>        ("sigmaR"                       )),
     _maxDriftTime          (pset.get<float>        ("maxDriftTime"                 )),
+    _maxStrawDt            (pset.get<float>        ("maxStrawDt"                   )),
     _maxDtDs               (pset.get<float>        ("maxDtDs"                      )),
 
     _debugLevel            (pset.get<int>          ("debugLevel"                   )),
@@ -264,7 +254,7 @@ namespace mu2e {
 	  int face;
 	  if (panel->id().getPanel() % 2 == 0) face = 0;
 	  else                                 face = 1;
-	  for (int il=0; il<panel->nLayers(); il++) {
+	  for (int il=0; il<panel->nLayers(); ++il) {
 	    cx.Station = ist;
 	    cx.Plane   = ipl;
 	    cx.Face    = face;
@@ -282,7 +272,7 @@ namespace mu2e {
 	    pz->wx  = panel->straw0Direction().x();
 	    pz->wy  = panel->straw0Direction().y();
 	    pz->phi = panel->straw0MidPoint().phi();
-	    pz->z   = (panel->getLayer(0).straw0MidPoint().z()+panel->getLayer(1).straw0MidPoint().z())/2.;
+	    pz->z   = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
 	  }
 	}	
       }
@@ -339,28 +329,27 @@ namespace mu2e {
       int op       = co.Panel;
       int ol       = co.Layer;
 
-      if ( _useTimePeaks == 1 ){
-	bool        condition(false);
-	int         nTPeaks  = _tpeakcol->size();
-	double      hitTime  = sh->time();
-	const CaloCluster*cl(0);
-	int         iDisk(-1);
+      if (_useTimePeaks == 1) {
+	bool               intime(false);
+	int                nTPeaks  = _tpeakcol->size();
+	double             hitTime  = sh->time();
+	const CaloCluster* cl(NULL);
+	int                iDisk(-1);
 
 	for (int i=0; i<nTPeaks; ++i){
 	  cl    = _tpeakcol->at(i).caloCluster().get();
-	  if (cl == NULL){
+	  if (cl == NULL) {
 	    printf(">>> DeltaFinder::orderHits() no CaloCluster found within the time peak %i\n", i);
 	    continue;
 	  }
 	  iDisk = cl->diskId();
 	  double    dt = cl->time() - (hitTime + _stationToCaloTOF[iDisk][os]);
 	  if ( (dt < _maxCaloDt) && (dt > _minCaloDt) ) {
-	    condition = true;
+	    intime = true;
 	    break;
 	  }
 	}
-	if (!condition)                                    continue;
-	  
+	if (!intime)                                    continue;
       }
 
       PanelZ_t* pz = &_data.oTracker[os][of][op];
@@ -378,37 +367,32 @@ namespace mu2e {
   }
   
 //------------------------------------------------------------------------------
-// try to recover hits in a Station
-  // delta candidate doesn't have hits in this station, check all hits here
-  // when predicting time, use the same value of Z for both layers of a given face
+// try to recover hits of a 'Delta' candidate in a given 'Station'
+// the delta candidate doesn't have hits in this station, check all hits here
+// when predicting time, use the same value of Z for both layers of a given face
 //-----------------------------------------------------------------------------
   int DeltaFinder::recoverStation(DeltaCandidate* Delta, int Station) {
 
     DeltaSeed*  new_seed (NULL);
 
     for (int face=0; face<kNFaces; face++) {
-      //      double zface          = _data.oTracker[Station][face][0].z;
-      //      double predicted_time = Delta->PredictedTime(zface);
-
       for (int ip=0; ip<kNPanelsPerFace; ip++) {
 	PanelZ_t* panelz = &_data.oTracker[Station][face][ip];
 	double dphi      = Delta->phi-panelz->phi;
 	if (dphi < -M_PI) dphi += 2*M_PI;
 	if (dphi >  M_PI) dphi -= 2*M_PI;
 	if (fabs(dphi) < M_PI/3) {
-	  //-----------------------------------------------------------------------------
-	  // panel and seed overlap in phi, loop over hits
-	  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// panel and seed overlap in phi, loop over hits
+//-----------------------------------------------------------------------------
 	  for (int l=0; l<2; ++l) {
 	    int nhits = panelz->fHitData[l].size();
 	    for (int h=0; h<nhits; ++h) {
 	      const HitData_t* hd = &panelz->fHitData[l][h];
 	      const StrawHit* sh  = hd->fHit;
-	      //	      if (sh->energyDep() > _maxElectronHitEnergy) continue;
-	      //	      double dt = sh->time()-predicted_time;
-	      //-----------------------------------------------------------------------------
-	      // predicted time is the partticle time, the drift time should be larger
-	      //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// predicted time is the partticle time, the drift time should be larger
+//-----------------------------------------------------------------------------
 	      if (sh->time() < Delta->T0Min(Station))                    continue;
 	      if (sh->time() > Delta->T0Max(Station)+_maxDriftTime)      continue;
 
@@ -427,9 +411,9 @@ namespace mu2e {
 	      double chi2      = chi2_par + chi2_perp;
 		  
 	      if (chi2 >= _maxChi2Radial)          continue;
-	      //-----------------------------------------------------------------------------
-	      // new hit needs to be added, create a new "fake" seed for that
-	      //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// new hit needs to be added, create a new "fake" seed for that
+//-----------------------------------------------------------------------------
 	      if (new_seed == NULL) new_seed = new DeltaSeed();
 
 	      new_seed->panelz[face]  = panelz;
@@ -445,19 +429,22 @@ namespace mu2e {
       }
       if (new_seed) new_seed->fFaceProcessed[face] = 1;
     }
-    //-----------------------------------------------------------------------------
-    // station is processed, see if anything has been found
-    //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// station is processed, see if anything has been found
+// some parameters of seeds found in a recovery mode are not defined because 
+// there was no pre-seeding, for example
+//-----------------------------------------------------------------------------
     if (new_seed) {
       new_seed->fNumber     = _data.seedHolder[Station].size();
       new_seed->fDeltaIndex = Delta->fNumber;
       _data.seedHolder[Station].push_back(new_seed);
+      _data.nseeds_per_station[Station] += 1;
 
       Delta->seed[Station]  = new_seed;
       Delta->fNHits        += new_seed->fNHitsTot;
-      //-----------------------------------------------------------------------------
-      // update T0Min and T0Max
-      //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// update T0Min and T0Max
+//-----------------------------------------------------------------------------
       if (Delta->fT0Min[Station] < new_seed->T0Min()) Delta->fT0Min[Station] = new_seed->T0Min();
       if (Delta->fT0Max[Station] > new_seed->T0Max()) Delta->fT0Max[Station] = new_seed->T0Max();
 
@@ -478,17 +465,17 @@ namespace mu2e {
     int ndelta = _data.deltaCandidateHolder.size();
     for (int idelta=0; idelta<ndelta; idelta++) {
       DeltaCandidate* dc = &_data.deltaCandidateHolder[idelta];
-      //-----------------------------------------------------------------------------
-      // don't extend candidates made out of one segment - but there is no such
-      // start from the first station to define limits
-      //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// don't extend candidates made out of one segment - but there is no such
+// start from the first station to define limits
+//-----------------------------------------------------------------------------
       int s1 = dc->fFirstStation;
       int s2 = dc->fLastStation-1;
       int last(-1);
       float t0min(-1.), t0max(-1.);
-      //-----------------------------------------------------------------------------
-      // first check inside "holes", skip unused stations
-      //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// first check inside "holes", skip unused stations
+//-----------------------------------------------------------------------------
       for (int i=s1; i<=s2; i++) {
 	if (dc->seed[i] != NULL) {
 	  last  = i; 
@@ -497,9 +484,9 @@ namespace mu2e {
 	  continue;
 	}
 	if (_data.stationUsed[i] == 0) continue;
-	//-----------------------------------------------------------------------------
-	// define expected T0 limits
-	//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// define expected T0 limits
+//-----------------------------------------------------------------------------
 	dc->fT0Min[i] = t0min-_maxDtDs*(i-last);
 	dc->fT0Max[i] = t0max+_maxDtDs*(i-last);
 	recoverStation(dc,i);
@@ -507,31 +494,31 @@ namespace mu2e {
 
       last  = dc->fFirstStation; 
       for (int i=last-1; i>=0; i--) {
-	//-----------------------------------------------------------------------------
-	// skip empty stations
-	//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// skip empty stations
+//-----------------------------------------------------------------------------
 	if (_data.stationUsed[i] == 0) continue;
 	dc->fT0Min[i] = dc->fT0Min[dc->fFirstStation]-_maxDtDs*(dc->fFirstStation-i);
 	dc->fT0Max[i] = dc->fT0Max[dc->fFirstStation]+_maxDtDs*(dc->fFirstStation-i);
 	recoverStation(dc,i);
-	//-----------------------------------------------------------------------------
-	// so far, do not allow holes while extending 
-	//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// so far, do not allow holes while extending 
+//-----------------------------------------------------------------------------
 	if (dc->fFirstStation != i) break;
       }
 
       last = dc->fLastStation;
       for (int i=last+1; i<kNStations; i++) {
-	//-----------------------------------------------------------------------------
-	// skip empty stations
-	//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// skip empty stations
+//-----------------------------------------------------------------------------
 	if (_data.stationUsed[i] == 0) continue;
 	dc->fT0Min[i] = dc->fT0Min[dc->fLastStation]-_maxDtDs*(i-dc->fLastStation);
 	dc->fT0Max[i] = dc->fT0Max[dc->fLastStation]+_maxDtDs*(i-dc->fLastStation);
 	recoverStation(dc,i);
-	//-----------------------------------------------------------------------------
-	// so far, do not allow holes while extending 
-	//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// so far, do not allow holes while extending 
+//-----------------------------------------------------------------------------
 	if (dc->fLastStation != i) break;
       }
     }
@@ -575,9 +562,8 @@ namespace mu2e {
     _shcol      = shH.product();
     _data.shcol = _shcol;  // FIXME
 
-    auto shfH    = Evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
-    _shfcol      = shfH.product();
-    _data.shfcol = _shfcol;  // FIXME
+    // auto shfH    = Evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+    // _shfcol      = shfH.product();
 
     auto shpH = Evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
     _shpcol   = shpH.product();
@@ -619,11 +605,20 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // form output - copy input flag collection - do we need it ?
 //-----------------------------------------------------------------------------
-    unique_ptr<StrawHitFlagCollection> bkgfcol(new StrawHitFlagCollection(*_shfcol));
+    unique_ptr<StrawHitFlagCollection> bkgfcol(new StrawHitFlagCollection());
     _bkgfcol = bkgfcol.get();
-
+    int nsh = _shcol->size();
+    _bkgfcol->reserve(nsh); // add initialization loop *FIXME* 
+    for (int i=0; i<nsh; i++) {
+      StrawHitFlag flag;
+      const StrawHit* sh  = &(*_shcol)[i];
+      if (sh->energyDep() < _maxElectronHitEnergy) flag.merge(StrawHitFlag::energysel);
+      _bkgfcol->push_back(flag);
+    }
+    _data.shfcol = _bkgfcol; 
+    
     const StrawHit* sh0(0);
-    if (_shcol->size() > 0) sh0 = &_shcol->at(0);
+    if (nsh > 0) sh0 = &_shcol->at(0);
 
     StrawHitFlag deltamask(StrawHitFlag::bkg);
 
@@ -642,19 +637,21 @@ namespace mu2e {
 	    for (int ih=0; ih<nh; ih++) {
 	      const StrawHit* sh = ds->HitData(face,ih)->fHit;
 	      int loc = sh-sh0;
-	      bkgfcol->at(loc).merge(deltamask);
+	      _bkgfcol->at(loc).merge(deltamask);
 	    }
 	  }
 	}
       }
     }
-
-    Event.put(std::move(bkgfcol));
 //-----------------------------------------------------------------------------
 // in the end of event processing fill diagnostic histograms
 //-----------------------------------------------------------------------------
     if (_diagLevel  > 0) _hmanager->fillHistograms(&_data);
     if (_debugLevel > 0) _hmanager->debug(&_data,2);
+//-----------------------------------------------------------------------------
+// finally, put the output flag collection into the event
+//-----------------------------------------------------------------------------
+    Event.put(std::move(bkgfcol));
   }
 
 //-----------------------------------------------------------------------------
@@ -841,10 +838,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // now define distances to the hits
 //-----------------------------------------------------------------------------
-    const Hep3Vector* h1 = &Hd1->fPos->pos();
-    Result->wd1 = (h1->x()-Result->x)*nx1+(h1->y()-Result->y)*ny1;
-    const Hep3Vector* h2 = &Hd2->fPos->pos();
-    Result->wd2 = (h2->x()-Result->x)*nx2+(h2->y()-Result->y)*ny2;
+    Hep3Vector h1 = Hd1->fPos->posCLHEP();
+    Result->wd1 = (h1.x()-Result->x)*nx1+(h1.y()-Result->y)*ny1;
+    Hep3Vector h2 = Hd2->fPos->posCLHEP();
+    Result->wd2 = (h2.x()-Result->x)*nx2+(h2.y()-Result->y)*ny2;
 
     return 0;
   }
@@ -855,7 +852,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinder::getNeighborHits(DeltaSeed* Seed, int Face, int Face2, PanelZ_t* panelz) {
     
-    Intersection_t     res;
+    DeltaFinderTypes::Intersection_t     res;
 
     vector<HitData_t*> hits;
 
@@ -870,8 +867,6 @@ namespace mu2e {
 	HitData_t* hd  = &panelz->fHitData[l][h];
 	if (hd == hd1) continue ;
 	const StrawHit* sh = hd->fHit;
-
-	//	if ((sh->time()-Seed->fMinTime > _maxDt) || (Seed->fMaxTime-sh->time() > _maxDt)) continue;
 
 	if (sh->time()-Seed->T0Max() > _maxDriftTime          ) continue;
 	if (sh->time()               < Seed->T0Min()          ) continue;
@@ -911,7 +906,8 @@ namespace mu2e {
 // radially we're OK, check distance from the intersection
 //-----------------------------------------------------------------------------
       CLHEP::Hep3Vector pos;
-      findIntersection(hd, hd2, &res);
+
+      DeltaFinderTypes::findIntersection(hd, hd2, &res);
 
       float chi = res.wd1/hd->fSigW;
 
@@ -938,21 +934,21 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinder::findSeeds(int Station, int Face) {
 
-    Intersection_t  res;
+    DeltaFinderTypes::Intersection_t  res;
 
     for (int p=0; p<3; ++p) {                        // loop over panels
       PanelZ_t* panelz = &_data.oTracker[Station][Face][p];	  
-      for (int l=0; l<2; ++l) {                     // loop over layers
-	int hitsize1 = panelz->fHitData[l].size(); 
+      for (int l1=0; l1<2; ++l1) {                     // loop over layers
+	int hitsize1 = panelz->fHitData[l1].size(); 
 	for (int h1=0; h1<hitsize1; ++h1) {             // loop over hits/hit positions
 //-----------------------------------------------------------------------------
 // hit has not been used yet to start a seed, 
 // however it could've been used as a second seed
 //-----------------------------------------------------------------------------
-	  HitData_t* hd1 = &panelz->fHitData[l][h1];
+	  HitData_t* hd1 = &panelz->fHitData[l1][h1];
 	  const StrawHit* sh = hd1->fHit; 
 	  //	  if (sh->energyDep() >= _maxElectronHitEnergy)  continue;
-	  if (fabs(sh->dt())  >= 4.                   )  continue;
+	  if (fabs(sh->dt())  >= _maxStrawDt          )  continue;
 	  float ct = sh->time();
 	  if (ct              <  _minHitTime          )  continue;
 	  const Straw* straw1 = hd1->fStraw;
@@ -963,56 +959,56 @@ namespace mu2e {
 	  for (int f2=Face+1; f2<kNFaces; f2++) {
 	    for (int p2=0; p2<3; ++p2) {	       // loop over panels
 	      PanelZ_t* panelz2 = &_data.oTracker[Station][f2][p2];
-	      //-----------------------------------------------------------------------------
-	      // check if the two panels overlap in XY
-	      // 2D angle between the vectors pointing to the panel centers, can't be greater than pi
-	      //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// check if the two panels overlap in XY
+// 2D angle between the vectors pointing to the panel centers, can't be greater than pi
+//-----------------------------------------------------------------------------
 	      float dphi = panelz2->phi - panelz->phi;
 	      if (dphi < -M_PI) dphi += 2*M_PI;
 	      if (dphi >  M_PI) dphi -= 2*M_PI;
 	      if (abs(dphi) >= 2*M_PI/3.) continue;
-	      //-----------------------------------------------------------------------------
-	      // panels overlap
-	      //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// panels do overlap
+//-----------------------------------------------------------------------------
 	      for (int l2=0; l2<2;++l2) {
 		int hitsize2 = panelz2->fHitData[l2].size();
 		for (int h2=0; h2<hitsize2;++h2) {
 		  HitData_t* hd2 = &panelz2->fHitData[l2][h2];
 		  const StrawHit* sh2 = hd2->fHit;
 		  //		  if (sh2->energyDep() >= _maxElectronHitEnergy)  continue;
-		  if (fabs(sh2->dt())  >= 4.                   )  continue;
+		  if (fabs(sh2->dt())  >= _maxStrawDt)            continue;
 		  float t2 = sh2->time();
 		  if (t2 < _minHitTime)                           continue;
 		  float dt = abs(t2 - ct);
-		  if (dt >= _maxDt)                               continue;
+		  if (dt >= _maxDriftTime)                        continue;
 		  ++counter; 	                                    // number of hits close to the first one
-		  //-----------------------------------------------------------------------------
-		  // intersect two straws, we need coordinates of the intersection point and 
-		  // two distances from hits to the intersection point, 4 numbers in total
-		  //-----------------------------------------------------------------------------
-		  findIntersection(hd1,hd2,&res);
-		  //-----------------------------------------------------------------------------
-		  // make sure the two straws do intersect
-		  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// intersect the two straws, we need coordinates of the intersection point and 
+// two distances from hits to the intersection point, 4 numbers in total
+//-----------------------------------------------------------------------------
+		  DeltaFinderTypes::findIntersection(hd1,hd2,&res);
+//-----------------------------------------------------------------------------
+// make sure the two straws do intersect
+//-----------------------------------------------------------------------------
 		  if (fabs(res.t1) >= straw1->getHalfLength())    continue;
 
 		  const Straw* straw2              = hd2->fStraw;
 		  if (fabs(res.t2) >= straw2->getHalfLength())    continue;
-		  //-----------------------------------------------------------------------------
-		  // both StrawHit's are required to be close enough to the intersection point
-		  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// both StrawHit's are required to be close enough to the intersection point
+//-----------------------------------------------------------------------------
 		  float chi1 = res.wd1/hd1->fSigW;
 		  if (chi1*chi1 >= _maxChi2Stereo)                continue;
 		  float chi2 = res.wd2/hd2->fSigW;
 		  if (chi2*chi2 >= _maxChi2Stereo)                continue;
-		  //-----------------------------------------------------------------------------
-		  // check whether there already is a seed containing both hits
-		  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// check whether there already is a seed containing both hits
+//-----------------------------------------------------------------------------
 		  int is_duplicate = checkDuplicates(Station,Face,hd1,f2,hd2);
 		  if (is_duplicate)                               continue; 
-		  //-----------------------------------------------------------------------------
-		  // new seed
-		  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// new seed
+//-----------------------------------------------------------------------------
 		  DeltaSeed* seed = new DeltaSeed();
 		  seed->fStation             =  Station;
 		  seed->fNumber              =  _data.seedHolder[Station].size();
@@ -1021,7 +1017,7 @@ namespace mu2e {
 		  seed->fFaceProcessed[Face] = 1;
 		  seed->fFaceProcessed[f2  ] = 1;
 		  seed->fMaxDriftTime        = _maxDriftTime;
-
+					// could these be redefined? - in principle, yes...
 		  hd1->fChi2Min    = chi1*chi1;
 		  hd2->fChi2Min    = chi2*chi2;
 		  hd1->fSeedNumber = seed->fNumber;
@@ -1066,16 +1062,16 @@ namespace mu2e {
 		  seed->CofM         = 0.5*(pca.point1() + pca.point2());
 		  seed->fHitData[0]  = hd1;
 		  seed->fHitData[1]  = hd2;
-		  seed->chi2tot      = (chi1*chi1 + chi2*chi2);
-		  seed->chi2dof      = (chi1*chi1 + chi2*chi2);
+		  seed->fChi21       = chi1*chi1;
+		  seed->fChi22       = chi2*chi2;
 		  seed->panelz[Face] = panelz;
 		  seed->panelz[f2]   = panelz2;
 		  seed->fNHitsTot    = nh1+nh2;
 
 		  _data.seedHolder[Station].push_back(seed);
-		  //-----------------------------------------------------------------------------
-		  // book-keeping: increment total number of found seeds
-		  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// book-keeping: increment total number of found seeds
+//-----------------------------------------------------------------------------
 		  _data.nseeds                      += 1;
 		  _data.nseeds_per_station[Station] += 1;
 		}
@@ -1107,7 +1103,7 @@ namespace mu2e {
       if (ds1->fGood < 0) continue;
 
       if (ds1->Chi2Tot() > _maxChi2Tot) {
-	ds1->fGood = -i1;
+	ds1->fGood = -1000-i1;
 	continue;
       }
 
@@ -1118,18 +1114,16 @@ namespace mu2e {
 	if (ds2->fGood < 0) continue;
 
 	if (ds2->Chi2Tot() > _maxChi2Tot) {
-	  ds2->fGood = -i2;
+	  ds2->fGood = -1000-i2;
 	  continue;
 	}
 
 	float tmean2 = (ds2->fMinTime+ds2->fMaxTime)/2.;
 
 	if (fabs(tmean1-tmean2) > _maxDriftTime) continue;
-
-	// double dxy = (ds1->CofM-ds2->CofM).perp();
-	// if (dxy > _maxDxy)                       continue;
 //-----------------------------------------------------------------------------
 // the two segments are close in time and space, check hit overlap
+// *FIXME* didn't check distance !!!!!
 // so far, allow duplicates during the search
 // the two DeltaSeeds share could have significantly overlapping hit content
 //-----------------------------------------------------------------------------
@@ -1152,37 +1146,69 @@ namespace mu2e {
 	  noverlap += nov;
 	  if (nov != 0) nfaces_with_overlap += 1;
 	}
-
-	if (nfaces_with_overlap > 1) {
-	  if ((noverlap >= ds1->fNHitsTot*0.6) || (noverlap >= 0.6*ds2->fNHitsTot)) {
-	    //-----------------------------------------------------------------------------
-	    // overlap significant, leave in only one DeltaSeed - which one? 
-	    //-----------------------------------------------------------------------------
-	    // if      (ds1->fNHitsTot > ds2->fNHitsTot) ds2->fGood = -i1;
-	    // else if (ds1->fNHitsTot < ds2->fNHitsTot) {
-	    //   ds1->fGood = -i2;
-	    //   break;
-	    // }
-	    if      (ds1->Chi2Tot() <  ds2->Chi2Tot()) ds2->fGood = -i1;
-	    else if (ds1->Chi2Tot() >= ds2->Chi2Tot()) {
-	      ds1->fGood = -i2;
+//-----------------------------------------------------------------------------
+// special treatment of 2-hit seeds to reduce the number of ghosts
+//-----------------------------------------------------------------------------
+	if (ds1->fNHitsTot == 2) {
+	  if (nfaces_with_overlap > 0) {
+	    if (ds2->fNFacesWithHits > 2) {
+	      ds1->fGood = -1000-i2;
 	      break;
 	    }
 	    else {
-	      //-----------------------------------------------------------------------------
-	      // the same number of hits, choose candidate with lower chi2
-	      // should not be getting here
-	      //-----------------------------------------------------------------------------
-	      if (ds1->Chi2Tot() < ds2->Chi2Tot()) ds2->fGood = -i1;
+					// the second one also has 2 faces with hits
+
+	      if (ds1->Chi2AllDof() <  ds2->Chi2AllDof()) ds2->fGood = -1000-i1;
 	      else {
-		ds1->fGood = -i2;
+		ds1->fGood = -1000-i2;
+		break;
+	      }
+	    }
+	  }
+	}
+
+	if (ds2->fNHitsTot == 2) {
+	  if (nfaces_with_overlap > 0) {
+//-----------------------------------------------------------------------------
+// the 2nd seed has only 2 hits and there is an overlap
+//-----------------------------------------------------------------------------
+	    if (ds1->fNFacesWithHits > 2)                 ds2->fGood = -1000-i1;
+	    else {
+					// the second one also has 2 faces with hits
+
+	      if (ds1->Chi2AllDof() <  ds2->Chi2AllDof()) ds2->fGood = -1000-i1;
+	      else {
+		ds1->fGood = -1000-i2;
+		break;
+	      }
+	    }
+	  }
+	}
+
+	if (nfaces_with_overlap > 1) {
+	  if ((noverlap >= ds1->fNHitsTot*0.6) || (noverlap >= 0.6*ds2->fNHitsTot)) {
+//-----------------------------------------------------------------------------
+// overlap significant, leave in only one DeltaSeed - which one? 
+//-----------------------------------------------------------------------------
+	    if      (ds1->Chi2AllDof() <  ds2->Chi2AllDof()) ds2->fGood = -1000-i1;
+	    else if (ds1->Chi2AllDof() >= ds2->Chi2AllDof()) {
+	      ds1->fGood = -1000-i2;
+	      break;
+	    }
+	    else {
+//-----------------------------------------------------------------------------
+// the same number of hits, choose candidate with lower chi2
+// should not be getting here
+//-----------------------------------------------------------------------------
+	      if (ds1->Chi2AllDof() < ds2->Chi2AllDof()) ds2->fGood = -1000-i1;
+	      else {
+		ds1->fGood = -1000-i2;
 		break;
 	      }
 	    }
 	  }
 	}
       }
-      //      }
     }
   }
      
@@ -1252,28 +1278,24 @@ namespace mu2e {
 	      for(int l=0; l<2; ++l) {
 		int psize = panelz->fHitData[l].size();
 		for (int h=0; h<psize; ++h) { // find hit
-		  //-----------------------------------------------------------------------------
-		  // 2017-10-05 PM: consider all hits 
-		  // hit time should be consistent with the already existing times - the difference
-		  // between any two measured hit times should not exceed _maxDt 
-		  // (_maxDt of the order of maximal drift time in the straw, slightly higher)
-		  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// 2017-10-05 PM: consider all hits 
+// hit time should be consistent with the already existing times - the difference
+// between any two measured hit times should not exceed _maxDriftTime 
+// (_maxDriftTime represents the maximal drift time in the straw, should there be some tolerance?)
+//-----------------------------------------------------------------------------
 		  HitData_t* hd      = &panelz->fHitData[l][h];
 		  const StrawHit* sh = hd->fHit;
-
-		  //		  if (sh->energyDep()           >= _maxElectronHitEnergy) continue;
-		  // if (seed->fMaxTime-sh->time() >  _maxDt               ) continue;
-		  // if (sh->time()-seed->fMinTime >  _maxDt               ) continue;
 
 		  if (sh->time()-seed->T0Max() > _maxDriftTime          ) continue;
 		  if (sh->time()               < seed->T0Min()          ) continue;
 
 		  const StrawHitPosition* shp  = hd->fPos;
-		  CLHEP::Hep3Vector       dxyz = shp->pos()-seed->CofM; // distance from hit to preseed
-		  //-----------------------------------------------------------------------------
-		  // split into wire parallel and perpendicular components
-		  //-----------------------------------------------------------------------------
-		  const CLHEP::Hep3Vector& wdir = panelz->fPanel->straw0Direction();
+		  CLHEP::Hep3Vector       dxyz = shp->posCLHEP()-seed->CofM; // distance from hit to preseed
+//-----------------------------------------------------------------------------
+// split into wire parallel and perpendicular components
+//-----------------------------------------------------------------------------
+		  const CLHEP::Hep3Vector& wdir = hd->fStraw->getDirection();
 		  CLHEP::Hep3Vector d_par    = (dxyz.dot(wdir))/(wdir.dot(wdir))*wdir; 
 		  CLHEP::Hep3Vector d_perp_z = dxyz-d_par;
 		  float  d_perp              = d_perp_z.perp();
@@ -1282,9 +1304,9 @@ namespace mu2e {
 		  float  chi2_perp           = (d_perp/_sigmaR)*(d_perp/_sigmaR);
 		  float  chi2                = chi2_par + chi2_perp;
 		  if (chi2 >= _maxChi2Radial)                             continue;
-		  //-----------------------------------------------------------------------------
-		  // add hit
-		  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// add hit
+//-----------------------------------------------------------------------------
 		  hd->fChi2Min = chi2;
 		  seed->hitlist[f2].push_back(hd);
 
@@ -1292,9 +1314,9 @@ namespace mu2e {
 		  if (sh->time() > seed->fMaxTime) seed->fMaxTime = sh->time();
 
 		  seed->fNHitsTot++;
-		  //-----------------------------------------------------------------------------
-		  // in parallel, update coordinate sums
-		  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// in parallel, update coordinate sums
+//-----------------------------------------------------------------------------
 		  const Straw* straw  = hd->fStraw;
 
 		  double x0 = straw->getMidPoint().x();
@@ -1337,12 +1359,38 @@ namespace mu2e {
 	    if (seed->hitlist[f2].size() > 0) seed->fNFacesWithHits++;
 	    seed->fFaceProcessed[f2] = 1;
 	  }
+//-----------------------------------------------------------------------------
+// calculate chi2 of the found seed
+//-----------------------------------------------------------------------------
+	  seed->fChi2All = 0;
+	  for (int face=0; face<kNFaces; face++) {
+	    int nh = seed->NHits(face);
+	    for (int ih=0; ih<nh; ih++) {
+	      const HitData_t* hd = seed->HitData(face,ih);
+
+	      const StrawHitPosition* shp  = hd->fPos;
+	      CLHEP::Hep3Vector       dxyz = shp->posCLHEP()-seed->CofM; // distance from hit to the center-of-gravity
+//-----------------------------------------------------------------------------
+// split into wire parallel and perpendicular components
+//-----------------------------------------------------------------------------
+	      const CLHEP::Hep3Vector& wdir = hd->fStraw->getDirection();
+	      CLHEP::Hep3Vector d_par       = (dxyz.dot(wdir))/(wdir.dot(wdir))*wdir; 
+	      CLHEP::Hep3Vector d_perp_z    = dxyz-d_par;
+	      float  d_perp                 = d_perp_z.perp();
+	      double sigw                   = hd->fSigW;
+	      float  chi2_par               = (d_par.mag()/sigw)*(d_par.mag()/sigw);
+	      float  chi2_perp              = (d_perp/_sigmaR)*(d_perp/_sigmaR);
+	      float  chi2                   = chi2_par + chi2_perp;
+	      seed->fChi2All               += chi2;
+	    }
+	  }
+	  seed->fChi2All = seed->fChi2All/seed->fNHitsTot;
 	}
-      }
 //-----------------------------------------------------------------------------
 // prune list of found seeds
 //-----------------------------------------------------------------------------
-      pruneSeeds(s);
+	pruneSeeds(s);
+      }
     }
   }
 
@@ -1400,18 +1448,18 @@ namespace mu2e {
 	  if ((s2 == 6) || (s2 == 13)) sdist += 1;
 	  int gap = s2-delta.fLastStation-1;
 	  if ( gap > _maxGap+sdist) break;
-	  //------------------------------------------------------------------------------
-	  // never extend 1-seg candidates over 2 empty stations
-	  //-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// never extend 1-seg candidates over 2 empty stations
+//-----------------------------------------------------------------------------
 	  if ((s2-delta.fLastStation == delta.fFirstStation) && (gap > 1)) break;
-	  //-----------------------------------------------------------------------------
-	  // predict T0
-	  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// predict T0
+//-----------------------------------------------------------------------------
 	  float t0max  = delta.fT0Max[delta.fLastStation] + _maxDtDs*(s2-delta.fLastStation);
 	  float t0min  = delta.fT0Min[delta.fLastStation] - _maxDtDs*(s2-delta.fLastStation);
-	  //-----------------------------------------------------------------------------
-	  // find the closest seed in station s2
-	  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// find the closest seed in station s2
+//-----------------------------------------------------------------------------
 	  DeltaSeed* closest(NULL);
 	  float      dxy, dxy_min(_maxDxy);
 
@@ -1421,11 +1469,11 @@ namespace mu2e {
 	    if (seed2->fGood < 0)                            continue;
 	    if (seed2->Used()   )                            continue;
 	    if (seed2->fNFacesWithHits < _minNFacesWithHits) continue;
-	    if (seed2->T0Max() < t0min)                      continue;
-	    if (seed2->T0Min() > t0max)                      continue;
-	    //-----------------------------------------------------------------------------
-	    // seed2 T0 is consistent with the predicted T0
-	    //-----------------------------------------------------------------------------
+	    if (seed2->T0Max() - t0min < -10.)               continue; // *FIXME* make a parameter
+	    if (seed2->T0Min() - t0max >  10.)               continue;
+//-----------------------------------------------------------------------------
+// seed2 T0 is consistent with the predicted T0
+//-----------------------------------------------------------------------------
 	    CLHEP::Hep3Vector dxyz = seed2->CofM-delta.CofM;
 	    dxy                    = dxyz.perp();
 
@@ -1442,12 +1490,10 @@ namespace mu2e {
 	    delta.CofM         = (delta.CofM*delta.n_seeds+closest->CofM)/(delta.n_seeds+1);
 	    delta.n_seeds     += 1;
 	    delta.fNHits      += closest->fNHitsTot;
-	    //	    double t1          = (closest->fMaxTime+closest->fMinTime-_maxDriftTime)/2;
-	    //	    delta.fTzSums.addPoint(closest->CofM.z(),t1);
 	    sdist              = 0;
-	    //-----------------------------------------------------------------------------
-	    // redefine T0 limits (in the last station)
-	    //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// redefine T0 limits (in the last station)
+//-----------------------------------------------------------------------------
 	    if (closest->T0Min() < t0min) delta.fT0Min[s2] = t0min;
 	    else                          delta.fT0Min[s2] = closest->T0Min();
 

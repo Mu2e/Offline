@@ -1,4 +1,5 @@
 *~
+\#*
 BaBar/BField/
 BaBar/BaBar/
 BaBar/BbrGeom/
@@ -28,7 +29,9 @@ tmp
 *.log.*
 *.pdf
 *.pyc
+*.orig
 BaBar/include
 EMFCAnalysis
 .tup
 .buildopts
+tags

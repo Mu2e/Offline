@@ -120,7 +120,7 @@ private:
       newStepMCs.push_back(copyStepPointMC(*i_step_mc));
     }
 
-    StrawDigiMC new_straw_digi_mc(old_straw_digi_mc.strawIndex(),
+    StrawDigiMC new_straw_digi_mc(old_straw_digi_mc.strawId(),
 				  wetime,
 				  cpos,
 				  newStepMCPtrs,
@@ -207,7 +207,7 @@ bool mu2e::FilterKalSeed::filter(art::Event & event)
   _newStrawDigiMCs = std::unique_ptr<StrawDigiMCCollection>(new StrawDigiMCCollection);
 
   _newStepPointMCs = std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection);
-  _newStepPointMCsPID = getProductID<StepPointMCCollection>(event);
+  _newStepPointMCsPID = getProductID<StepPointMCCollection>();
   _newStepPointMCGetter = event.productGetter(_newStepPointMCsPID);
 
   // Create all the new collections, ProductIDs and product getters for the SimParticles and GenParticles
@@ -216,11 +216,11 @@ bool mu2e::FilterKalSeed::filter(art::Event & event)
     art::ProductID i_product_id = oldSimParticles.id();
 
     _newSimParticles[i_product_id] = std::unique_ptr<SimParticleCollection>(new SimParticleCollection);
-    _newSimParticlesPID[i_product_id] = getProductID<SimParticleCollection>(event, (*i_tag).label() );
+    _newSimParticlesPID[i_product_id] = getProductID<SimParticleCollection>((*i_tag).label() );
     _newSimParticleGetter[i_product_id] = event.productGetter(_newSimParticlesPID[i_product_id]);
 
     _newGenParticles[i_product_id] = std::unique_ptr<GenParticleCollection>(new GenParticleCollection);
-    _newGenParticlesPID[i_product_id] = getProductID<GenParticleCollection>(event, (*i_tag).label() );
+    _newGenParticlesPID[i_product_id] = getProductID<GenParticleCollection>((*i_tag).label() );
     _newGenParticleGetter[i_product_id] = event.productGetter(_newGenParticlesPID[i_product_id]);
   }
 

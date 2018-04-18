@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "EventGenerator/inc/GeneratorBase.hh"
+#include "EventGenerator/inc/DYBGenerator.hh"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -27,6 +28,7 @@ namespace art{
 namespace mu2e {
 
   // Forward declaratations.
+  class DYBGenerator;
   class SimpleConfig;
 
   class CosmicDYB: public GeneratorBase {
@@ -55,18 +57,17 @@ namespace mu2e {
     double _mean;
     double _muEMin;   // min and max values of muon energy (MeV)
     double _muEMax;
-    double _muCosThMin; // min and max zenith angles
-    double _muCosThMax;
+    double _muThMin; // min and max zenith angles
+    double _muThMax;
     double _muPhiMin;
     double _muPhiMax;
 
-    // half area to generate events (cm)
+    // half lengths to generate events (mm)
     double _dx;
     double _dy;
     double _dz;
-    double _y0;  // reference depth
 
-    // Dimensions of the 2d working space for hrndg2.
+    // Number of lookup bins for DYBGenerator.
     long _ne;
     long _nth;
 
@@ -79,20 +80,13 @@ namespace mu2e {
     CLHEP::RandFlat     _randFlat;
     CLHEP::RandPoissonQ _randPoissonQ;
 
-    // Working space for hrndg2 ( working space will be on the heap).
-    std::vector<double> _workingSpace;
+    CLHEP::Hep3Vector        _productionCenterInMu2e;
+    DYBGenerator::Direction  _direction;
+    bool                     _dontProjectToSurface;
+    bool                     _checkedProductionPlanes;
 
-    // production will be created only once.
-    bool _createdProductionPlane;
-
-    enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL, CALO, CUSTOMIZED};
-    enum DirectionChoice {ALL, POSITIVE_X, NEGATIVE_X, POSITIVE_Z, NEGATIVE_Z, PHI_RANGE};
-    RefPointChoice    _choice;
-    DirectionChoice   _directionChoice;
-    CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
-    bool _vertical;
-    bool _dontProjectToSurface;
-
+    std::vector<boost::shared_ptr<DYBGenerator> > _generators;
+    std::vector<double>                           _boxFraction;
   };  // CosmicDYB
 
 }  // namespace mu2e

@@ -18,6 +18,7 @@
 // Calibration entities.
 // Would like to break the coupling to these.
 #include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/CrvParams.hh"
 #include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "ConditionsService/inc/CalorimeterPhysicalConstants.hh"
@@ -26,6 +27,7 @@
 // sources of served objects
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 
 using namespace std;
 
@@ -46,6 +48,7 @@ namespace mu2e {
     _entities(),
     _run_count()
   {
+    _config.printOpen(std::cout, "Conditions");
     iRegistry.sPreBeginRun.watch(this, &ConditionsService::preBeginRun);
     iRegistry.sPostEndJob.watch (this, &ConditionsService::postEndJob   );
   }
@@ -74,8 +77,6 @@ namespace mu2e {
       return;
     }
 
-    cout << "Conditions input file is: " << _conditionsFile << "\n";
-
     if ( _printConfig ){ _config.print(cout, "Conditions: "); }
 
     checkConsistency();
@@ -84,6 +85,7 @@ namespace mu2e {
     std::unique_ptr<AcceleratorParams>  acctmp(new AcceleratorParams(_config));
     const AcceleratorParams& accp = *acctmp;
     addEntity( std::move(acctmp) );
+    addEntity( std::move(std::unique_ptr<CrvParams>          ( new CrvParams          (_config))) );
     addEntity( std::move(std::unique_ptr<DAQParams>          ( new DAQParams          (_config))) );
     addEntity( std::move(std::unique_ptr<CalorimeterCalibrations>( new CalorimeterCalibrations(_config))) );
     addEntity( std::move(std::unique_ptr<CalorimeterPhysicalConstants>( new CalorimeterPhysicalConstants(_config))) );
@@ -91,6 +93,7 @@ namespace mu2e {
     addEntity( std::move(std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config))) );
     addEntity(std::move(std::unique_ptr<StrawElectronics>(new StrawElectronics(_pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet())))) );
     addEntity(std::move(std::unique_ptr<StrawPhysics>(new StrawPhysics(_pset.get<fhicl::ParameterSet>("StrawPhysics",fhicl::ParameterSet())))) );
+    addEntity(std::move(std::unique_ptr<StrawResponse>(new StrawResponse(_pset.get<fhicl::ParameterSet>("StrawResponse",fhicl::ParameterSet())))) );
   }
 
   // Check that the configuration is self consistent.

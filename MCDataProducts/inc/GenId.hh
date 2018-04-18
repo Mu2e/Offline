@@ -44,7 +44,7 @@ namespace mu2e {
       MARS, StoppedParticleReactionGun, bremElectronGun, muonicXRayGun,
       fromSimParticleStartPoint, fromSimParticleCompact, StoppedParticleG4Gun,
       CaloCalib, InFlightParticleSampler, muplusDecayGun, StoppedMuonXRayGammaRayGun,
-      cosmicCRY,
+      cosmicCRY, pbarFlat, fromAscii, radiativeMuonCapture, radiativeMuonCaptureInternal,
       lastEnum
     };
 
@@ -60,7 +60,7 @@ namespace mu2e {
       "MARS", "StoppedParticleReactionGun","bremElectronGun", "muonicXRayGun", \
       "fromSimParticleStartPoint", "fromSimParticleCompact", "StoppedParticleG4Gun", \
       "CaloCalib", "InFlightParticleSampler","muplusDecayGun", "StoppedMuonXRayGammaRayGun", \
-      "CosmicCRY"
+      "CosmicCRY","pbarFlat","fromAscii","radiativeMuonCapture","radiativeMuonCaptureInternal"
 
   public:
 

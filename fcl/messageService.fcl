@@ -38,8 +38,8 @@ mf_production :
                                    # messages of ERROR severity (that is,
                                    # messages issued via LogError,
                                    # LogProblem, or LogImportant).
+    statistics :   { stats: @local::mf_errorStats }
   }
-  statistics :   { stats: @local::mf_errorStats }
 }
 
 # This one is similar to mf_production, but it does not create files.
@@ -51,9 +51,8 @@ mf_errorsOnly :
             type: cerr
             threshold: ERROR
         }
+      statistics :   { stats: @local::mf_null }
     }
-
-    statistics :   { stats: @local::mf_null }
 }
 
 
@@ -67,8 +66,8 @@ mf_batch :
                                    # messages of ERROR or WARNING severity 
                                    # (WARNING severity is LogWarning or
                                    # LogPrint).
+    statistics :  { stats: @local::mf_warningStats }
   }
-  statistics :  { stats: @local::mf_warningStats }
 }
 
 # interactive -- intended for developers running a job, sending the output
@@ -82,8 +81,8 @@ mf_interactive :
                                    # INFO severity, but not DEBUG severity                                      # LogPrint).
                                    # (INFO severity is LogInfo or
                                    # LogVerbatim).
+    statistics : { stats : @local::mf_coutInfoStats }
   }
-  statistics :  @local::mf_coutInfoStats
 }
 
 # debugging -- intended for debugging one or more modules; every message
@@ -102,8 +101,8 @@ mf_debugging :
     log:      @local::mf_debug     # a destination which will react to all
                                    # messages, even those issued by  
                                    # LogDebug or LogTrace.
+    statistics :  { stats: @local::mf_debugStats }
   }
-  statistics :  { stats: @local::mf_debugStats }
 }
 
 END_PROLOG

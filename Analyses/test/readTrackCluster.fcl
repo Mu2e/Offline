@@ -176,7 +176,7 @@ physics : {
 outputs: {
     detectorOutput : {
         module_type : RootOutput
-#        SelectEvents: { SelectEvents: [p1] }
+#        SelectEvents: [p1]
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]

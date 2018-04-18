@@ -226,11 +226,12 @@ void DataInterface::fillGeometry()
   {
 //Straws
     mu2e::GeomHandle<mu2e::TTracker> ttracker;
-    const std::deque<mu2e::Straw>& allStraws = ttracker->getAllStraws();
-    std::deque<mu2e::Straw>::const_iterator iter;
-    for(iter=allStraws.begin(); iter!=allStraws.end(); iter++)
+    const auto& allStraws = ttracker->getAllStraws();
+    // for(const auto & elem : allStraws)
+    for (size_t i = 0; i<ttracker->nStraws(); ++i)
     {
-      const mu2e::Straw &s=*iter;
+      // const mu2e::Straw& s = elem;
+      const mu2e::Straw& s = allStraws[i];
       const CLHEP::Hep3Vector& p = s.getMidPoint();
       const CLHEP::Hep3Vector& d = s.getDirection();
       double x = p.x();

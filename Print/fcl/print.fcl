@@ -7,7 +7,10 @@
 process_name : print
 
 services : {
-    message : @local::mf_production
+   message : @local::mf_production
+   GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }  
+   ConditionsService :{ conditionsfile : "Mu2eG4/test/conditions_01.txt" } 
+   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
 }
 
 physics :{
@@ -16,8 +19,18 @@ physics :{
     printModule : {
       module_type : PrintModule
 
+      StatusG4Printer : {
+        verbose : 0
+      }
+      GenParticlePrinter : {
+        verbose : 1
+      }
+
       SimParticlePrinter : {
         pCut : 10.0
+      }
+      SimParticlePtrPrinter : {
+        verbose : 0
       }
       SimParticleTimeMapPrinter : {
         verbose : 1
@@ -26,6 +39,9 @@ physics :{
         pCut : 10.0
       }
 
+      CaloShowerStepPrinter : {
+        verbose: 0
+      }
       CaloHitPrinter : {
         verbose: 0
       }
@@ -45,13 +61,22 @@ physics :{
       StrawDigiPrinter : {
         verbose: 0
       }
+      StrawDigiMCPrinter : {
+        verbose: 0
+      }
       StrawHitPrinter : {
         verbose: 0
       }
       StrawHitFlagPrinter : {
         verbose: 0
       }
-      StereoHitPrinter : {
+      BkgClusterPrinter : {
+        verbose: 0
+      }
+      BkgQualPrinter : {
+        verbose: 0
+      }
+       ComboHitPrinter : {
         verbose: 0
       }
 

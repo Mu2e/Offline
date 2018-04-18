@@ -276,11 +276,16 @@ namespace mu2e {
      */
     void printFullImage( std::ostream& ost) const;
 
+
+    // print a summary of what was read
+    void printOpen( std::ostream& ost, std::string tag="SimpleConfig" ) const;
+
     /**
      * Print statistics about the configuration information.
      *
      * @return
      */
+
     void printStatisticsByType ( std::ostream& ost, std::string tag="" ) const;
 
     /**
@@ -289,6 +294,12 @@ namespace mu2e {
      * @return name of the input file.
      */
     std::string inputFile() const;
+
+    // hash of input file contents, available after construction
+    std::size_t inputFileHash() const {return _inputFileHash;}
+
+    // count of input file lines, available after construction
+    std::size_t inputFileLines() const {return _inputFileLines;}
 
     /**
      * Print access counts for each record.
@@ -333,8 +344,14 @@ namespace mu2e {
     // A type used for some internal record keeping.
     typedef std::map<std::string, int> DefaultCounter_type;
 
-    // Name of the input file.
+    // input file string
+    std::string _inputFileString;
+    // Nname of the input file after lookup
     std::string _inputfile;
+    // hash of input file computed as it is read
+    std::size_t _inputFileHash;
+    // count of input lines
+    std::size_t _inputFileLines;
 
     // If a parameter is repeated in the input file, one two things can happen:
     // true  - the latest value over writes the previous value.

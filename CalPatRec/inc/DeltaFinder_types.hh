@@ -9,14 +9,13 @@ namespace fhicl {
   class ParameterSet;
 };
 
-// class TH1F;
-// class TH2F;
-
-// #include "CalPatRec/inc/LsqSums2.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitPosition.hh"
+#include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
+#include "TrackerGeom/inc/Straw.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 
 namespace mu2e {
   class Panel;
@@ -26,6 +25,18 @@ namespace mu2e {
 // doesn't own anything, no need to delete any pinters
 //-----------------------------------------------------------------------------
   namespace DeltaFinderTypes {
+//-----------------------------------------------------------------------------
+// intersection of the two hit wires
+//-----------------------------------------------------------------------------
+    struct Intersection_t {
+      double     x;			// x-coordinate of the intersection point
+      double     y;			// y-coordinate of the intersection point
+      double     t1;			// distanCe from the center of the 1st wire
+      double     t2;			// distance from the center of the 2nd wire
+      double     wd1;                   // distance btw the 1st hit and the intersection
+      double     wd2;		        // distance btw the 2nd hit and the intersection
+    };
+
     struct DeltaCandidate;
     
     enum {
@@ -113,7 +124,7 @@ namespace mu2e {
       float Time     () { return fTime; }
       float HitDt    () { return fHitTMax-fHitTMin; }
     }; 
-//
+
     class DeltaSeed {
     public:
       int                            fNumber;		// number within the station
@@ -127,8 +138,8 @@ namespace mu2e {
       int                            fNHitsCE;
       const HitData_t*               fHitData[2];       // stereo hit seeding the seed search
       const StrawHitPosition*        fPos[2];
-      float                          chi2dof;           // for two initial hits
-      float                          chi2tot;
+      float                          fChi21;             // chi2's of the two initial hits
+      float                          fChi22;
       PanelZ_t*                      panelz   [kNFaces];
       std::vector<const HitData_t*>  hitlist  [kNFaces];
       std::vector<McPart_t*>         fMcPart  [kNFaces];
@@ -138,6 +149,7 @@ namespace mu2e {
       float                          fMaxDriftTime;
       McPart_t*                      fPreSeedMcPart[2]; // McPart_t's corresponding to initial intersection 
       int                            fDeltaIndex;
+      float                          fChi2All;
 
       DeltaSeed() {
 	fType             =  0;
@@ -158,14 +170,19 @@ namespace mu2e {
 	  panelz        [face] = NULL;
 	}
 	fDeltaIndex       = -1;
+	fChi21            = -1;
+	fChi22            = -1;
+	fChi2All          = 1.e10;
       }
       //------------------------------------------------------------------------------
       // dont need a copy constructor
       //------------------------------------------------------------------------------
       ~DeltaSeed() {}
 
-      float            Chi2    ()         { return chi2dof; }
-      float            Chi2Tot ()         { return chi2tot/fNHitsTot ; }
+      float            Chi2N   ()         { return (fChi21+fChi22)/fNHitsTot; }
+      float            Chi2Tot ()         { return (fChi21+fChi22); }
+      float            Chi2All ()         { return fChi2All; }
+      float            Chi2AllDof ()      { return fChi2All/fNHitsTot; }
       int              NHits   (int Face) { return hitlist[Face].size(); }
       const HitData_t* HitData (int Face, int I) { return hitlist[Face][I]; } // no boundary check !
       int              NHitsTot()         { return fNHitsTot; }
@@ -197,9 +214,6 @@ namespace mu2e {
       int                   fNHits;
       int                   fNHitsMcP;	       // Nhits by the "best" particle"
       int                   fNHitsCE;
-      // LsqSums2              fTzSums;
-      // float                 fT0Min;
-      // float                 fT0Max;
 
       DeltaCandidate() {
 	fNumber = -1;
@@ -212,10 +226,8 @@ namespace mu2e {
 	fMcPart       = NULL;
 	fNHits        = 0;
 	fNHitsCE      = 0;
-	//	fTzSums.clear();
       }
 
-      //      double     PredictedTime(double Z) { return fTzSums.yMean()+fTzSums.dydx()*(Z-CofM.z()); }
       int        NSeeds               () { return n_seeds; }
       DeltaSeed* Seed            (int I) { return seed[I]; }
       bool       StationUsed     (int I) { return (seed[I] != NULL); }
@@ -241,6 +253,11 @@ namespace mu2e {
       const TimeClusterCollection*  tpeakcol;
       int                           debugLevel;	     // printout level
     };
+
+//-----------------------------------------------------------------------------
+// finally, utility functions
+//-----------------------------------------------------------------------------
+    int findIntersection(const HitData_t* Hd1, const HitData_t* Hd2, Intersection_t* Result);
   }
 }
 #endif

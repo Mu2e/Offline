@@ -33,6 +33,8 @@
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 
+#include "Mu2eUtilities/inc/polyAtan2.hh"
+
 using namespace std;
 
 using CLHEP::HepVector;
@@ -88,6 +90,7 @@ namespace mu2e {
 
     _data.minClusterEnergy =  _minClusterEnergy;
     _data.minNHits         =  _minNHits;
+    _sinPitch              = sin(_pitchAngle);
   }
 
 //-----------------------------------------------------------------------------
@@ -148,18 +151,6 @@ namespace mu2e {
              _shpLabel.data());
     }
 
-    //    art::Handle<mu2e::StrawHitFlagCollection> shflagH;
-    auto shflagH = evt.getValidHandle<mu2e::StrawHitFlagCollection>(_shfLabel);
-    if (shflagH.product() != 0){
-    //    if (evt.getByLabel(_shfLabel,shflagH)) {
-      _data.shfcol = shflagH.product();
-    }
-    else {
-      _data.shfcol = 0;
-      printf(" >>> ERROR in CalTimePeakFinder::findData: StrawHitFlagCollection with label=%s not found.\n",
-             _shfLabel.data());
-    }
-
     if (evt.getByLabel(_ccmLabel, _ccH)) {
       _data.ccCollection = _ccH.product();
     }
@@ -180,7 +171,7 @@ namespace mu2e {
 
                                         // event printout
     _iev     = event.id().event();
-    if ((_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
+    if ((_debugLevel > 0) && (_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 
     _data._event = &event;
     _data._tpeaks = new CalTimePeakCollection;
@@ -220,7 +211,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void CalTimePeakFinder::findTimePeaks(CalTimePeakCollection* TimePeakColl, TimeClusterCollection& OutSeeds) {
 
-    const char* oname = "CalTimePeakFinder::findTimePeaks";
+    //    const char* oname = "CalTimePeakFinder::findTimePeaks";
 
     int                 ncl, nsh;
     double              time, dt, tof, zstraw, cl_time, stime;
@@ -246,6 +237,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     nsh   = _data.shcol->size();
     ncl   = _data.ccCollection->size();
+    
+    // double             sinPitch = sin(_pitchAngle)/CLHEP::c_light;
 
     for (int ic=0; ic<ncl; ic++) {
       cl      = &_data.ccCollection->at(ic);
@@ -265,14 +258,14 @@ namespace mu2e {
           xcl     = tpos.x();
           ycl     = tpos.y();
           zcl     = tpos.z();
-	  mphi    = atan2(ycl, xcl);
+	  mphi    = polyAtan2(ycl, xcl);//atan2(ycl, xcl);
 
           //    dz_cl   = zcl; // -_tracker->z0();
           // create time peak
           CalTimePeak tpeak(cl,xcl,ycl,zcl);
 
           tpeak._shcol  = _data.shcol;
-          tpeak._shfcol = _data.shfcol;
+          tpeak._shfcol = NULL; // _data.shfcol;
           tpeak._tmin   = cl_time+_mindt;
           tpeak._tmax   = cl_time+_maxdt;
 //-----------------------------------------------------------------------------
@@ -284,10 +277,10 @@ namespace mu2e {
           double meanDriftTime = 1.25/0.06;// half straw tube radius / drift velocity
 
           for(int istr=0; istr<nsh;++istr) {
-            flag = _data.shfcol->at(istr);
+	    //            flag = _data.shfcol->at(istr);
 
-            int hit_has_all_properties = flag.hasAllProperties(_hsel);
-            int bgr_hit                = flag.hasAnyProperty(_bkgsel);
+            // int hit_has_all_properties = flag.hasAllProperties(_hsel);
+            // int bgr_hit                = flag.hasAnyProperty(_bkgsel);
 
             hit    = &_data.shcol->at(istr);
             time   = hit->time();
@@ -297,42 +290,41 @@ namespace mu2e {
 // estimate time-of-flight and calculate residual between the predicted and the hit times
 // 2017-03-31 P.M.: this assumes electron (e^- or e^+), not muon
 //-----------------------------------------------------------------------------
-            tof = (zcl-zstraw)/sin(_pitchAngle)/CLHEP::c_light;
+            tof = (zcl-zstraw)/_sinPitch/CLHEP::c_light;
             dt  = cl_time-(time+tof-meanDriftTime);
-//--------------------------------------------------------------------------------
-// check the angular distance from the calorimeter cluster
-// 2017-11-17 Gianipez: this selection was present on CalHelixFinderAlg::filterDist
-//--------------------------------------------------------------------------------
-	    double dphi = _data.shpcol->at(istr).pos().phi() - mphi;
+	    //--------------------------------------------------------------------------------
+	    // check the angular distance from the calorimeter cluster
+	    // 2017-11-17 Gianipez: this selection was present on CalHelixFinderAlg::filterDist
+	    //--------------------------------------------------------------------------------
+	    if ((dt < _maxdt) && (dt >= _mindt)){
+	      double dphi = polyAtan2(_data.shpcol->at(istr).pos().y(), _data.shpcol->at(istr).pos().x()) - mphi;//phi() - mphi;
 	    
-	    if (dphi >  pi) dphi -= twopi;
-	    if (dphi < -pi) dphi += twopi;
+	      if (dphi >  pi) dphi -= twopi;
+	      if (dphi < -pi) dphi += twopi;
 
-//-----------------------------------------------------------------------------
-// fill some diag histograms
-//-----------------------------------------------------------------------------
-            if ((dt < _maxdt) && (dt >= _mindt) && (fabs(dphi) <= pi/2.) ) {
+	      //-----------------------------------------------------------------------------
+	      // fill some diag histograms
+	      //-----------------------------------------------------------------------------
+	      if (fabs(dphi) <= pi/2.) {
 
-              if (hit_has_all_properties && !bgr_hit) {
-                tpeak._index.push_back(istr);
-                stime += time;
-              }
-	      else if (_debugLevel > 0) {
-//-----------------------------------------------------------------------------
-// print diagnostics on rejected hits
-//-----------------------------------------------------------------------------
-		printf("[%s] rejected hit: index: %5i flag: %10s  time:  %8.3f   dt: %8.3f energy: %8.5f\n",
-		       oname, istr, flag.hex().data(), hit->time(), hit->dt(), hit->energyDep());
+		tpeak._index.push_back(istr);
+		stime += time;
+		//-----------------------------------------------------------------------------
+		// print diagnostics on rejected hits
+		//-----------------------------------------------------------------------------
+		// printf("[%s] rejected hit: index: %5i flag: %10s  time:  %8.3f   dt: %8.3f energy: %8.5f\n",
+		//        oname, istr, flag.hex().data(), hit->time(), hit->dt(), hit->energyDep());
+		// }
 	      }
-            }
-          }
+	    }
+	  }
 
           tpeak._tpeak = stime/(tpeak.NHits()+1.e-12);
 
           if (tpeak.NHits() >= _data.minNHits) {
 	    TimePeakColl->push_back(tpeak);
 
-					//fill seed information
+					// fill seed information
 	    TimeCluster    tmpseed;
 	    initTimeCluster(tmpseed, tpeak, ic);
 	    OutSeeds.push_back(tmpseed);

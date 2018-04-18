@@ -26,7 +26,7 @@ mu2e::TrackSummaryPrinter::Print(const art::Handle<TrackSummaryCollection>& hand
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -37,7 +37,7 @@ mu2e::TrackSummaryPrinter::Print(const art::ValidHandle<TrackSummaryCollection>&
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);

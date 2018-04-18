@@ -37,6 +37,7 @@
 #include "Mu2eG4/inc/nestPolyhedra.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/HelicalProtonAbsorber.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
@@ -61,14 +62,17 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructProtonAbsorber( SimpleConfig const & _config
+  void constructProtonAbsorber( const SimpleConfig& _config,
+                                const SensitiveDetectorHelper& sdHelper
                                 ){
 
     if( !_config.getBool("hasProtonAbsorber", true) ) return;
     
     int  const verbosityLevel           = _config.getInt("protonabsorber.verbosityLevel", 0);
     
-    G4VSensitiveDetector *paSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector (SensitiveDetectorName::ProtonAbsorber());
+    G4VSensitiveDetector *paSD = (sdHelper.enabled(StepInstanceName::protonabsorber)) ?
+      G4SDManager::GetSDMpointer()->
+      FindSensitiveDetector (SensitiveDetectorName::ProtonAbsorber()) : nullptr;
     
     // Access to the G4HelperService.
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));

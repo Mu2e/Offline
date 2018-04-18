@@ -73,7 +73,6 @@ namespace mu2e {
     const double pabsRegionLength = 2500.;
     std::string materialName = _config.getString("protonabsorber.materialName", "Polyethylene092");
     if (distFromTargetEnd > pabsRegionLength || distFromTargetEnd <0) {
-      std::cerr <<"MECOStyleProtonAbsorberMaker: Wrong value for distFromTargetEnd. Set to 0" << std::endl;
       distFromTargetEnd = 0;
     }
 
@@ -140,23 +139,19 @@ namespace mu2e {
 
     // if pabs starts from DS3 region
     if (distFromTargetEnd > targetEndToDS2End) {
-      std::cerr <<"MECOStyleProtonAbsorberMaker: pabs1 turned off." << std::endl;
       pabs1 = false;
     }
 
     // if pabs is short enouhg to locate at DS2 region only
     if (distFromTargetEnd + pabsZHalfLen*2.< targetEndToDS2End) {
-      std::cerr <<"MECOStyleProtonAbsorberMaker: pabs2 turned off." << std::endl;
       pabs2 = false;
     }
     if (!pabs1 && !pabs2) {
-      std::cerr <<"MECOStyleProtonAbsorberMaker: no pabs can be built." << std::endl;
       return;
     }
 
     // if opa2 is short enough to locate at DS2 region only
     if (oPAzcenter + oPAhl< ds23split) {
-      std::cerr <<"MECOStyleProtonAbsorberMaker: opa2 turned off." << std::endl;
       opa2 = false;
     }
 

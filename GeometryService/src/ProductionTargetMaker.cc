@@ -15,7 +15,8 @@ namespace mu2e {
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::make(const SimpleConfig& c, double solenoidOffset) {
 
     std::unique_ptr<ProductionTarget> tgtPS
-      (new ProductionTarget(c.getDouble("targetPS_rOut"),
+      (new ProductionTarget(c.getInt("targetPS_version",1),
+			    c.getDouble("targetPS_rOut"),
                             c.getDouble("targetPS_halfLength"),
                             c.getDouble("targetPS_rotX") * CLHEP::degree,
                             c.getDouble("targetPS_rotY") * CLHEP::degree,
@@ -23,8 +24,14 @@ namespace mu2e {
                                               0,
                                               c.getDouble("productionTarget.zNominal")
                                               )
-                            + c.getHep3Vector("productionTarget.offset", CLHEP::Hep3Vector(0,0,0))
-                            )
+                            + c.getHep3Vector("productionTarget.offset", CLHEP::Hep3Vector(0,0,0)),
+                            
+			    c.getDouble("targetPS_finHeight",0.0),
+			    c.getDouble("targetPS_finThickness",0.0),
+			    c.getDouble("targetPS_hubDistanceUS",0.0),
+			    c.getDouble("targetPS_hubDistanceDS",0.0),
+			    c.getDouble("targetPS_hubAngleUS",0.0)*CLHEP::degree,
+			    c.getDouble("targetPS_hubAngleDS",0.0)*CLHEP::degree )
        );
 
     double trgtMaxAngle = c.getDouble("targetPS_rotY");

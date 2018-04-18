@@ -27,7 +27,7 @@ mu2e::TrkCaloIntersectPrinter::Print(const art::Handle<TrkCaloIntersectCollectio
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -38,7 +38,7 @@ mu2e::TrkCaloIntersectPrinter::Print(const art::ValidHandle<TrkCaloIntersectColl
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -68,7 +68,7 @@ mu2e::TrkCaloIntersectPrinter::Print(const mu2e::TrkCaloIntersect& obj, int ind,
 
   KalRepPtr const&  tptr = obj.trk();
   KalRepPtr::key_type tkey = 0;
-  if(tptr.isNonnull()) tkey = tptr.key();
+  if(tptr) tkey = tptr.key();
 
   os 
     << " " << std::setw(5) << obj.diskId()
