@@ -30,8 +30,8 @@ namespace mu2e {
 			    c.getDouble("targetPS_finThickness",0.0),
 			    c.getDouble("targetPS_hubDistanceUS",0.0),
 			    c.getDouble("targetPS_hubDistanceDS",0.0),
-			    c.getDouble("targetPS_hubAngleUS",0.0),
-			    c.getDouble("targetPS_hubAngleDS",0.0) )
+			    c.getDouble("targetPS_hubAngleUS",0.0)*CLHEP::degree,
+			    c.getDouble("targetPS_hubAngleDS",0.0)*CLHEP::degree )
        );
 
     double trgtMaxAngle = c.getDouble("targetPS_rotY");
