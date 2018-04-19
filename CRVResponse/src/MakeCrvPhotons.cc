@@ -288,9 +288,9 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //they ne
           //start time of photons
           double arrivalTime = t;
 
-          //add straigt line travel time
-          double zSiPM=(SiPM%2==0?-_LC.halfLength:_LC.halfLength);
-          double straightLineTravelTime=fabs(p.z()-zSiPM)/_LC.speedOfLightFiber;
+          //add straigt line travel time (between the z component of the photon start position and the edge of the scintillator)
+          double zScintillatorEnd=(SiPM%2==0?-_LC.halfLength:_LC.halfLength);
+          double straightLineTravelTime=fabs(p.z()-zScintillatorEnd)/_LC.speedOfLightFiber;
           arrivalTime+=straightLineTravelTime;
 
           //add fiber decay times depending on the number of emissions
