@@ -13,6 +13,7 @@
 // C++ includes
 #include <iostream>
 #include <sstream>
+#include <cmath>
 
 // Mu2e includes.
 #include "BeamlineGeom/inc/Beamline.hh"
@@ -27,6 +28,7 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/constructTargetPS.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestPolycone.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
@@ -39,7 +41,7 @@
 #include "G4Color.hh"
 #include "G4Polycone.hh"
 #include "G4SDManager.hh"
-
+#include "G4Trd.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 
 using namespace std;
@@ -147,6 +149,122 @@ namespace mu2e {
                                             0,
                                             G4Colour::Magenta()
                                             );
+
+    // Now add fins for version 2
+    if ( tgt->version() > 1 ) {
+      // Length of fins must be calculated:
+      double finHalfLength = (tgt->halfLength() * 2.0 - tgt->hubDistUS() 
+			      - tgt->hubDistDS())/2.0;  // on the inner side, 
+                                         // adjacent to the main target body.
+
+      // Use the steeper of the two hub angles to angle the ends of the fin
+      double theAngle = tgt->hubAngleUS();
+      if ( tgt->hubAngleDS() > theAngle ) theAngle = tgt->hubAngleDS();
+
+      double finHalfLengthOut = finHalfLength + tgt->finHeight()*std::cos(theAngle);  
+
+      G4Trd * myTrd = new G4Trd("FinTrapezoid",
+				finHalfLength, finHalfLengthOut,
+				tgt->finThickness()/2.0, tgt->finThickness()/2.0,
+				tgt->finHeight()/2.0);
+
+      // std::vector<double> finDims = {tgt->finThickness()/2.0,tgt->finHeight()/2.0,finHalfLength};
+      double finZoff = (tgt->hubDistUS() - tgt->hubDistDS())/2.0; // z-offset for fin
+      double rToFin = tgt->rOut()+tgt->finHeight()/2.0+0.01;
+
+      double xMove = finZoff * sin(tgt->productionTargetRotation().theta());
+      CLHEP::Hep3Vector finOffset1(xMove,rToFin,finZoff);
+      CLHEP::Hep3Vector finOffset2(rToFin*cos(-M_PI/6.0)+xMove,rToFin*sin(-M_PI/6.0),finZoff);
+      CLHEP::Hep3Vector finOffset3(rToFin*cos(-5.0*M_PI/6.0)+xMove,rToFin*sin(-5.0*M_PI/6.0),finZoff);
+      CLHEP::HepRotation* rotFinBase = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      rotFinBase->rotateX(90.0*CLHEP::degree);
+      rotFinBase->rotateZ(90.0*CLHEP::degree);
+
+      CLHEP::HepRotation* rotFin1 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+      CLHEP::HepRotation* rotFin2 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+      CLHEP::HepRotation* rotFin3 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+      rotFin2->rotateX(2.0*M_PI/3.0);
+      rotFin3->rotateX(4.0*M_PI/3.0);
+      VolumeInfo fin1Vol("ProductionTargetFin1",
+			 _loclCenter,
+			 prodTargetMotherInfo.centerInWorld);
+
+      VolumeInfo fin2Vol("ProductionTargetFin2",
+			 _loclCenter,
+			 prodTargetMotherInfo.centerInWorld);
+
+      VolumeInfo fin3Vol("ProductionTargetFin3",
+			 _loclCenter,
+			 prodTargetMotherInfo.centerInWorld);
+
+      fin1Vol.solid = myTrd;
+      fin2Vol.solid = myTrd;
+      fin3Vol.solid = myTrd;
+
+      finishNesting( fin1Vol,
+		     prodTargetMaterial,
+		     rotFin1,
+		     finOffset1,
+		     prodTargetMotherInfo.logical,
+		     0,
+		     G4Colour::Magenta(),
+		     "PS"
+		     );
+
+      finishNesting( fin2Vol,
+		     prodTargetMaterial,
+		     rotFin2,
+		     finOffset2,
+		     prodTargetMotherInfo.logical,
+		     0,
+		     G4Colour::Magenta(),
+		     "PS"
+		     );
+
+      finishNesting( fin3Vol,
+		     prodTargetMaterial,
+		     rotFin3,
+		     finOffset3,
+		     prodTargetMotherInfo.logical,
+		     0,
+		     G4Colour::Magenta(),
+		     "PS"
+		     );
+		     
+		   
+      // VolumeInfo prodTargetFin1Info = nestBox( "ProductionTargetFin1",
+      // 					       finDims,
+      // 					       prodTargetMaterial,
+      // 					       &tgt->productionTargetRotation(),
+      // 					       _loclCenter+finOffset1,
+      // 					       prodTargetMotherInfo,
+      // 					       0,
+      // 					       G4Colour::Magenta()
+      // 					       );
+					       
+
+      // VolumeInfo prodTargetFin2Info = nestBox( "ProductionTargetFin2",
+      // 					       finDims,
+      // 					       prodTargetMaterial,
+      // 					       rotFin2,
+      // 					       _loclCenter+finOffset2,
+      // 					       prodTargetMotherInfo,
+      // 					       0,
+      // 					       G4Colour::Magenta()
+      // 					       );
+					       
+      // VolumeInfo prodTargetFin3Info = nestBox( "ProductionTargetFin3",
+      // 					       finDims,
+      // 					       prodTargetMaterial,
+      // 					       rotFin3,
+      // 					       _loclCenter+finOffset3,
+      // 					       prodTargetMotherInfo,
+      // 					       0,
+      // 					       G4Colour::Magenta()
+      // 					       );
+					       
+
+    }
 
     Polycone const & pHubRgtParams = *tgt->getHubsRgtPtr();
     VolumeInfo prodTargetHubRgtInfo  = nestPolycone("ProductionTargetHubRgt",

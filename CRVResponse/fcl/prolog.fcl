@@ -28,6 +28,7 @@ BEGIN_PROLOG
                                    "CRVConditions/v4_0/LookupTable_2300", //D3
                                    "CRVConditions/v4_0/LookupTable_5600"] //D4
       scintillationYield                : 47000 //for 68 PE/SiPM @ 1 m away from SiPM (Test beam June 2017)
+                                                //using the pulse height calibration, this value gives 45 PE/SiPM @ 1 m away from SiPM
       scintillationYieldVariation       : 0.2   //gaussian distribution with sigma equal to 20% of the mean
       scintillationYieldVariationCutoff : 0.4   //the scintillation yield variation is cut off at 40% below the mean
       scintillatorBirksConstant : 0.126    //0.126 mm/Mev
@@ -108,6 +109,7 @@ BEGIN_PROLOG
       maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 10 , 10 , 10 , 10 , 20 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
       useFourLayers                 : [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false] 
 //      useFourLayers                 : [ true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true] 
+      usingPEsPulseHeight           : false  //using the PEs which were calculated using the pulse height
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
       maxSlopeDifference            : 2.0    //
       acceptThreeAdjacentCounters   : false  //use hits in three adjacent counters in one layer to form a coincidence
@@ -121,6 +123,7 @@ BEGIN_PROLOG
     {
       module_type                    : CrvCoincidenceClusterFinder
       verboseLevel                   : 1
+      usingPEsPulseHeight            : false  //using the PEs which were calculated using the pulse height
       maxDistance                    : 1000 //mm
       maxTimeDifference              : 100  //ns
       crvCoincidenceCheckModuleLabel : "CrvCoincidence"
@@ -129,6 +132,12 @@ BEGIN_PROLOG
       timeWindowEnd                  : 1750 //ns
       deadTimeWindowStartMargin      : 0    //ns
       deadTimeWindowEndMargin        : 125  //ns
+    }
+    CrvCoincidenceClusterSummarizer:
+    {
+      module_type                            : CrvCoincidenceClusterSummarizer
+      crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
+      crvWaveformsModuleLabel                : "CrvWaveforms"
     }
 
 CrvResponsePackage : 
@@ -142,8 +151,9 @@ CrvResponsePackage :
      CrvRecoPulses               : @local::CrvRecoPulses
      CrvCoincidence              : @local::CrvCoincidence
      CrvCoincidenceClusterFinder : @local::CrvCoincidenceClusterFinder
+     CrvCoincidenceClusterSummarizer : @local::CrvCoincidenceClusterSummarizer
    }
-   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
+   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
 }
 
 CrvDAQPackage : 

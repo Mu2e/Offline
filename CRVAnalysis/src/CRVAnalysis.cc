@@ -9,36 +9,37 @@
 
 namespace mu2e
 {
-  void CRVAnalysis::FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterFinderModuleLabel,
+  void CRVAnalysis::FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterSummarizerModuleLabel,
                                               const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo)
   {
-    art::Handle<CrvCoincidenceClusters> crvCoincidenceClusters;
-    event.getByLabel(crvCoincidenceClusterFinderModuleLabel,"",crvCoincidenceClusters);
+    art::Handle<CrvCoincidenceClustersSummary> crvCoincidenceClustersSummary;
+    event.getByLabel(crvCoincidenceClusterSummarizerModuleLabel,"",crvCoincidenceClustersSummary);
 
-    if(crvCoincidenceClusters.product()==NULL) return;
+    if(crvCoincidenceClustersSummary.product()==NULL) return;
 
-    const std::vector<CrvCoincidenceClusters::Cluster> &clusters = crvCoincidenceClusters->GetClusters();
-    std::vector<CrvCoincidenceClusters::Cluster>::const_iterator iter;
+    const std::vector<CrvCoincidenceClustersSummary::Cluster> &clusters = crvCoincidenceClustersSummary->GetClusters();
+    std::vector<CrvCoincidenceClustersSummary::Cluster>::const_iterator iter;
     for(iter=clusters.begin(); iter!=clusters.end(); iter++)
     {
-      const CrvCoincidenceClusters::Cluster &cluster = *iter;
+      const CrvCoincidenceClustersSummary::Cluster &cluster = *iter;
 
       //fill the Reco collection
       recoInfo.emplace_back(cluster._crvSectorType, cluster._avgCounterPos, cluster._startTime, cluster._endTime, cluster._PEs, 
-                            cluster._crvRecoPulses.size());
+                            cluster._pulses.size());
 
       //fill the MC collection
-      if(cluster._simParticles.size()>0)
+      if(cluster._hasMCInfo)
       {
-        const art::Ptr<SimParticle> simParticle = cluster._simParticles[0]; //FIXME: checking only the most frequent particle
+        const art::Ptr<SimParticle> &simParticle = cluster._mostLikelySimParticle;
         MCInfo.emplace_back(true, 
                             simParticle->pdgId(), 
                             simParticle->genParticle()->pdgId(),
                             simParticle->genParticle()->generatorId().id(),
                             cluster._earliestHitPos,
                             cluster._earliestHitTime,
-                            cluster._energyDeposited);
+                            cluster._totalEnergyDeposited);
       }
+      else MCInfo.emplace_back();
     }//loop through all clusters
   }//FillCrvInfoStructure
 

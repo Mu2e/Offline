@@ -23,6 +23,7 @@
 #include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusters.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceClustersSummary.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "RecoDataProducts/inc/ExtMonUCITofHitCollection.hh"

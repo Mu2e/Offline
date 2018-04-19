@@ -192,9 +192,14 @@ namespace mu2e
             }
 
             //loop through the steps to fill the single waveform
+            double energyDeposited=0;
             std::vector<art::Ptr<StepPointMC> > stepVector;
             std::set<art::Ptr<StepPointMC> >::iterator stepIter;
-            for(stepIter=steps.begin(); stepIter!=steps.end(); stepIter++) stepVector.push_back(*stepIter);
+            for(stepIter=steps.begin(); stepIter!=steps.end(); stepIter++)
+            {
+              stepVector.push_back(*stepIter);
+              if(stepIter->isNonnull()) energyDeposited+=(*stepIter)->totalEDep();
+            }
 
             //find the most likely SimParticle
             //if no SimParticle was recorded for this single waveform, then it was caused either by noise hits (if the threshold is low enough), 
@@ -212,7 +217,7 @@ namespace mu2e
             }
 
             i--;
-            crvDigiMCCollection->emplace_back(voltages, stepVector, simParticle, digiStartTime, barIndex, SiPM);
+            crvDigiMCCollection->emplace_back(voltages, stepVector, simParticle, energyDeposited, digiStartTime, barIndex, SiPM);
           }
         }
       } //SiPM

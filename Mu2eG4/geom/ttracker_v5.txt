@@ -140,7 +140,7 @@ double ttracker.panelPadding                  = 0.25; // mm
 
 
 // innerRing =? composite manifold of plastic and Al
-double ttrackerSupport.innerRing.innerRadius  = 700.;
+double ttrackerSupport.innerRing.innerRadius  = 701.;
 double ttrackerSupport.innerRing.outerRadius  = 712.7;
 double ttrackerSupport.innerRing.halfLength   =  12.1;//24.067; // was 23.8
 string ttrackerSupport.innerRing.material     =  "TrackerManifold";
@@ -168,7 +168,7 @@ string ttrackerSupport.electronics.cu.material     =  "Electronics";
 // channel =? gap for modeling where the staws go through the manifold
 double ttrackerSupport.channel.zOffset  = 11.267; // was 11.0
 double ttrackerSupport.panel.zOffset = 11.267;
-double ttrackerSupport.channel.depth    =  5.0;
+double ttrackerSupport.channel.depth    =  5.8;
 string ttrackerSupport.channel.material =  "DSVacuum";
 string ttrackerSupport.electronicsSpace.material =  "StrawGas";
 

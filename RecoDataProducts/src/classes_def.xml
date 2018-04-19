@@ -231,6 +231,13 @@
  <class name="mu2e::CrvCoincidenceClusters" />
  <class name="art::Wrapper<mu2e::CrvCoincidenceClusters>" />
 
+ <class name="mu2e::CrvCoincidenceClustersSummary::PulseInfo" />
+ <class name="std::vector<mu2e::CrvCoincidenceClustersSummary::PulseInfo>" />
+ <class name="mu2e::CrvCoincidenceClustersSummary::Cluster" />
+ <class name="std::vector<mu2e::CrvCoincidenceClustersSummary::Cluster>" />
+ <class name="mu2e::CrvCoincidenceClustersSummary" />
+ <class name="art::Wrapper<mu2e::CrvCoincidenceClustersSummary>" />
+
  <class name="mu2e::KalRepPtr"/>
  <class name="mu2e::KalRepPtrCollection" persistent="false"/>
  <class name="art::Wrapper<mu2e::KalRepPtrCollection>"/>
