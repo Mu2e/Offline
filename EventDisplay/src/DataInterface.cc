@@ -875,7 +875,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=strawhits->begin(); iter!=strawhits->end(); iter++, hitnumber++)
     {
       const mu2e::StrawHit& hit = *iter;
-      int strawindex = hit.strawIndex().asInt();
+      int strawindex = hit.strawId().asUint16();
       double time = hit.time();
       double dt = hit.dt();
       double energy = hit.energyDep();

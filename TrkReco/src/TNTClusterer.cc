@@ -153,9 +153,9 @@ namespace mu2e
 	_idiag->Branch("cluPhi",     &cluPhi_,       "cluPhi[ncluIter]/F");
 	_idiag->Branch("cluTime",    &cluTime_,      "cluTime[ncluIter]/F");	
 	_idiag->Branch("cluR2diff",  &cluR2diff_,    "cluR2diff[ncluIter]/F");	
-	_idiag->Branch("cluRdiff",   &cluRdiff_,    "cluRdiff[ncluIter]/F");	
-	_idiag->Branch("cluPdiff",   &cluPdiff_,    "cluPdiff[ncluIter]/F");	
-	_idiag->Branch("cluTdiff",   &cluTdiff_,    "cluTdiff[ncluIter]/F");	
+	_idiag->Branch("cluRdiff",   &cluRdiff_,     "cluRdiff[ncluIter]/F");	
+	_idiag->Branch("cluPdiff",   &cluPdiff_,     "cluPdiff[ncluIter]/F");	
+	_idiag->Branch("cluTdiff",   &cluTdiff_,     "cluTdiff[ncluIter]/F");	
 	_idiag->Branch("cluTRdiff",  &cluTRdiff_,    "cluTRdiff[ncluIter]/F");	
 
 	_idiag->Branch("nhitClu",    &nhitClu_,      "nhitClu/I");

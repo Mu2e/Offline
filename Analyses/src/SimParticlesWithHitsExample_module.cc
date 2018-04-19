@@ -94,10 +94,10 @@ namespace mu2e {
       for ( size_t j=0; j<infos.size(); ++j){
         StrawHitMCInfo const& info = infos.at(j);
         StrawHit const& hit      = info.hit();
-        Straw const& straw       = tracker.getStraw(hit.strawIndex());
+        Straw const& straw       = tracker.getStraw(hit.strawId());
         cout << "     Straw Hit: "
              << info.index()             << " "
-             << hit.strawIndex().asInt() << " "
+             << hit.strawId().asUint16() << " "
              << hit.time()               << " "
              << info.isShared()          << " "
              << straw.getMidPoint().z()  << " "

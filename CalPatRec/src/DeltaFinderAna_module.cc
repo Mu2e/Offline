@@ -601,7 +601,7 @@ namespace mu2e {
       }
       mc->fListOfHits.push_back(sh);
 
-      StrawIndex   shid  = sh->strawIndex();
+      StrawId   shid  = sh->strawId();
       const Straw& straw = _tracker->getStraw(shid);
       int station = straw.id().getStation();
       if (station < mc->fFirstStation) mc->fFirstStation = station;

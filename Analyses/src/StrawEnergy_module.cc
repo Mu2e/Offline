@@ -155,7 +155,7 @@ namespace mu2e {
 	_mcptime = 0.0;
       }
 // Get the straw information:
-      const Straw& straw = tracker.getStraw( hit.strawIndex() );
+      const Straw& straw = tracker.getStraw( hit.strawId() );
       _plane = straw.id().getPlane();
       _panel = straw.id().getPanel();
       _layer = straw.id().getLayer();

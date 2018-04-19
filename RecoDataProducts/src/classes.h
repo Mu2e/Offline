@@ -26,7 +26,6 @@
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "RecoDataProducts/inc/ExtMonUCITofHitCollection.hh"
-#include "RecoDataProducts/inc/SubEventCollection.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/HelixVal.hh"
 #include "RecoDataProducts/inc/RobustHelix.hh"

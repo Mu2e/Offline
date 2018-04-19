@@ -1140,11 +1140,10 @@ namespace mu2e {
 	if (_debug > 10) {
 	  printf("[CalHelixFinderAlg::doLinearFitPhiZ:LOOP] %08x %2i %6i %3i %12.5f %12.5f %10.5f %10.3f %10.3f %10.3f %10.5f %10.5f %5.3f\n",
 		 *((int*) &hit->_flag), Helix._hitsUsed[index],
-		 hit->_strawhit->strawIndex().asInt(), i,
+		 hit->strawId().asUint16(), i,
 		 z, phi, dphi,xdphi,zlast,dz,
 		 dfdz, Helix._srphi.dfdz(), Helix._srphi.chi2DofLine());
 	}
-
 	if (Helix._hitsUsed[index] != 1)                     continue;
 
 	if ( (DoCleanUp == 1) && (xdphi > _maxXDPhi) ) {
@@ -1423,6 +1422,7 @@ namespace mu2e {
 	  if (nhitsPerPanel == 0)                                                            continue;
 	  if (p==SeedIndex.Panel) nhitsPerPanel = SeedIndex.PanelHitIndex;  
 
+<<<<<<< HEAD
 	  for (int  i=nhitsPerPanel-1;i>=0; --i){   
 	    hit      = &panelz->fHitData.at(i);
 	    z        = panelz->z;//pos.z();
@@ -1434,6 +1434,11 @@ namespace mu2e {
 		   *((int*) &hit->_flag), Helix._hitsUsed[index],
 		   hit->_strawhit->strawIndex().asInt(),  z, hit->_phi, deltaPhi);
 	  }
+=======
+	  printf("[CalHelixFinderAlg::doLinearFitPhiZ:END2] %08x %2i %6i %12.5f %12.5f %12.5f\n",
+		 *((int*) &_xyzp[i]._flag), idVec[i] < 0 ? 0 : idVec[i],
+		 _xyzp[i]._strawhit->strawId().asUint16(),  z, phi_corrected[i], deltaPhi);
+>>>>>>> triggerDev
 	}
       }
     }
@@ -1442,7 +1447,72 @@ namespace mu2e {
       Helix._hitsUsed = hitsUsed;    
     }
 
+<<<<<<< HEAD
     return success;
+=======
+
+  void  CalHelixFinderAlg::fillHitLayer(CalHelixFinderData& Helix) {
+    
+// //--------------------------------------------------------------------------------
+// // fill some geometrical info
+// //--------------------------------------------------------------------------------
+//     for (int ist=0; ist<_tracker->nStations(); ist++) {
+//       const Station* st = &_tracker->getStation(ist);
+// 
+//       for (int ipl=0; ipl<st->nPlanes(); ipl++) {
+// 	const Plane* pln = &st->getPlane(ipl);
+// 	for (int ipn=0; ipn<pln->nPanels(); ipn++) {
+// 	  const Panel* panel = &pln->getPanel(ipn);
+// 	  for (int il=0; il<panel->nLayers(); il++) {
+// 	    LayerZ_t* lz = &_hitLayer[il];
+// 	    lz->fHitData.clear();
+// 	    lz->fPanel = panel;
+// //-----------------------------------------------------------------------------
+// // panel caches phi of its center and the z
+// //-----------------------------------------------------------------------------
+// 	    lz->wx  = panel->straw0Direction().x();
+// 	    lz->wy  = panel->straw0Direction().y();
+// 	    lz->phi = panel->straw0MidPoint().phi();
+// 	    lz->z   = (panel->getLayer(0).straw0MidPoint().z()+panel->getLayer(1).straw0MidPoint().z())/2.;
+// 	  }
+// 	}	
+//       }
+//     }
+// 
+// 
+//     const vector<StrawHitIndex>& shIndices = Helix._timeCluster->hits();
+// 
+//     int size = Helix._timeCluster->nhits();
+// //--------------------------------------------------------------------------------
+//     if (Helix.shpos() != 0) {
+//       int loc;
+//       StrawHitFlag flag;
+//       for (int i=0; i<size; ++i) {
+// 	loc                = shIndices[i];	 // index in shcol of i-th timecluster hit
+// 	flag               = Helix.shfcol()->at(loc);
+// 	int good_hit = flag.hasAllProperties(_hsel  );
+// 	int bkg_hit  = flag.hasAnyProperty  (_bkgsel);
+// 	int used_hit = flag.hasAnyProperty  (StrawHitFlag::calosel);
+// 
+// 	if (good_hit && (! bkg_hit) && (! used_hit)) {
+// 
+// 	  const StrawHit*         sh    = &Helix.shcol()->at(loc);
+// 	  const Straw*            straw = &_tracker->getStraw(sh->strawId());
+// 	  const StrawHitPosition* shp   = &Helix.shpos()->at(loc);
+//       
+// 	  if (sh->energyDep() > _maxElectronHitEnergy)         continue;
+// 
+// 	  int       layerId  = straw->id().getLayer();
+// 	  float     sigw     = shp->posRes(StrawHitPosition::wire);
+// 	  
+// 	  LayerZ_t* lz       = &_hitLayer[layerId];
+// 
+// 	  lz->fHitData.push_back(HitData_t(sh, shp, straw, sigw));
+// 	}	
+//       }
+//     }
+//     
+>>>>>>> triggerDev
   }
 
 //-----------------------------------------------------------------------------
@@ -1482,7 +1552,7 @@ namespace mu2e {
 	if (good_hit && (! bkg_hit) && (! used_hit)) {
 
 	  const StrawHit& sh          = Helix.shcol()->at(loc);
-	  const Straw& straw          = _tracker->getStraw(sh.strawIndex());
+	  const Straw& straw          = _tracker->getStraw(sh.strawId());
 	  const StrawHitPosition& shp = Helix.shpos()->at(loc);
 
 	  if (sh.energyDep() > _maxElectronHitEnergy)         continue;
@@ -1726,6 +1796,7 @@ namespace mu2e {
 	     Helix._sxy.x0(),Helix._sxy.y0(),Helix._sxy.radius(),Helix._sxy.chi2DofCircle(),
 	     Helix._fz0, Helix._dfdz , Helix._srphi.chi2DofLine());
 
+<<<<<<< HEAD
       PanelZ_t*      panelz(0);
       CalHelixPoint* hit(0);
 
@@ -1742,6 +1813,17 @@ namespace mu2e {
 		 hit->x(), hit->y(), hit->z(), dr
 		 );//FIXME!
 	}
+=======
+      int np = _xyzp.size();
+      for (int i=0; i<np; i++) {
+	dx = _xyzp[i]._pos.x() - Helix._sxy.x0();
+	dy = _xyzp[i]._pos.y() - Helix._sxy.y0();
+	dr = sqrt(dx*dx+dy*dy) - Helix._sxy.radius();
+	printf("[%s] %08x %6i %3i %6i %12.5f %12.5f %12.5f %10.3f\n",banner,
+	       *((int*) &_xyzp[i]._flag),  _indicesTrkCandidate[i], i, _xyzp[i]._strawhit->strawId().asUint16(),
+	       _xyzp[i]._pos.x(), _xyzp[i]._pos.y(), _xyzp[i]._pos.z(), dr
+	       );
+>>>>>>> triggerDev
       }
     }
   }
@@ -1789,6 +1871,7 @@ namespace mu2e {
 	  }
 	}
 
+<<<<<<< HEAD
 	double dist = hit->_drFromPred;//_distTrkCandidate[i];
 	double dz   = hit->_dzFromSeed;//_dzTrkCandidate  [i];
 
@@ -1828,6 +1911,17 @@ namespace mu2e {
 	  printf("[CalHelixFinderAlg::filterUsingPatternRecognition] %5i %5i %4i %4s  %8.3f %8.3f %9.3f %8.3f %8.3f\n",
 		 i,hit->_strawhit->strawIndex().asInt(),is_outlier,type.data(),shPos->x(),shPos->y(),shPos->z(),dist,dz);
 	}
+=======
+      if (_debug > 10) {
+	Hep3Vector* shPos = &_xyzp[i]._pos;
+	int is_outlier    = _xyzp[i].isOutlier();
+	string type;
+	if      (i == Helix._seedIndex) type = "seed";
+	else if (i == Helix._candIndex) type = "cand";
+
+	printf("[CalHelixFinderAlg::filterUsingPatternRecognition] %5i %5i %4i %4s  %8.3f %8.3f %9.3f %8.3f %8.3f\n",
+	       i,_xyzp[i]._strawhit->strawId().asUint16(),is_outlier,type.data(),shPos->x(),shPos->y(),shPos->z(),dist,dz);
+>>>>>>> triggerDev
       }
     }
     if (_debug > 5) {
@@ -2693,9 +2787,15 @@ namespace mu2e {
       if (_debug > 5) {
 	printf("[CalHelixFinderAlg::%s:PT2] x0 = %8.3f y0 = %8.3f radius = %8.3f  chi2 = %6.3f chi2Maxxy = %6.3f index point added = %i straw-id = %6i hitChi2 = %6.3f x = %8.3f y = %8.3f z = %9.3f\n",
 	       banner,
+<<<<<<< HEAD
 	       Helix._sxy.x0(), Helix._sxy.y0(), Helix._sxy.radius(), Helix._sxy.chi2DofCircle(), _chi2xyMax, ibest.Panel,
 	       hit->_strawhit->strawIndex().asInt(), chi2_min,
 	       x, y, panelz->z);//FIXME!
+=======
+	       Helix._sxy.x0(), Helix._sxy.y0(), Helix._sxy.radius(), Helix._sxy.chi2DofCircle(), _chi2xyMax, ibest,
+	       _xyzp[ibest]._strawhit->strawId().asUint16(), chi2_min,
+	       x, y, _xyzp[ibest]._pos.z());
+>>>>>>> triggerDev
       }
 					// mark point as active
       Helix._hitsUsed[index] = 1;
@@ -3762,9 +3862,14 @@ void CalHelixFinderAlg::plotXY(int ISet) {
     
 	const StrawHit& sh          = Helix.shcol()->at(loc);
 
+<<<<<<< HEAD
 	printf("[CalHelixFinderAlg::printXYZP] %5i %5i %5i   %08x   %2i %9.3f %9.3f %9.3f \n",
 	       i, loc,  sh.strawIndex().asInt(), *((int*) &pt->_flag), pt->use(), pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
       }
+=======
+      printf("[CalHelixFinderAlg::printXYZP] %5i %5i %5i   %08x   %2i %9.3f %9.3f %9.3f \n",
+	     i, loc,  sh.strawId().asUint16(), *((int*) &pt->_flag), pt->use(), pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
+>>>>>>> triggerDev
     }
   }
 //-----------------------------------------------------------------------------

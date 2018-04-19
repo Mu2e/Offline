@@ -15,18 +15,29 @@
 
 namespace mu2e {
   class StrawHit;
+  class StrawDrift;
+  class StrawId;
   class StrawResponse : virtual public ConditionsEntity {
     public:
       // construct from parameters
       explicit StrawResponse(fhicl::ParameterSet const& pset);
       virtual ~StrawResponse();
       bool wireDistance(StrawHit const& strawhit, float shlen, float& wdist, float& wderr) const;
-      float driftError(float DOCA) const;  // time domain error
       bool useDriftError() const { return _usederr; } 
+      bool useNonLinearDrift() const { return _usenonlindrift; }
+      double Mint0doca() const { return _mint0doca;}
+
+      float halfPropV(StrawId strawId, float kedep) const;
+
+      double driftDistanceToTime(StrawId strawId, double ddist, double phi) const;
+      double driftTimeToDistance(StrawId strawId, double dtime, double phi) const;
+      double driftInstantSpeed(StrawId strawId, double ddist, double phi) const;
+      double driftDistanceError(StrawId strawId, double ddist, double phi, float DOCA) const;
+      double driftDistanceOffset(StrawId strawId, double ddist, double phi, float DOCA) const;
+
       void print(std::ostream& os) const;
     private:
 // helper functions
-      float halfPropV(float kedep) const;
       float wpRes(float kedep, float wdist) const;
       static float PieceLine(std::vector<float> const& xvals, std::vector<float> const& yvals, float xval);
 
@@ -44,6 +55,19 @@ namespace mu2e {
       float _wbuf; // buffer at the edge of the straws, in terms of sigma
       float _slfac; // factor of straw length to set 'missing cluster' hits
       float _errfac; // error inflation for 'missing cluster' hits
+
+      StrawDrift *_strawDrift;
+      std::string _driftFile;
+      float _wirevoltage;
+      int _phiBins;
+      int _dIntegrationBins;
+      bool _usenonlindrift;
+      double _lindriftvel;
+      double _rres_min;
+      double _rres_max;
+      double _rres_rad;
+      double _mint0doca;  // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
+
   };
 }
 #endif

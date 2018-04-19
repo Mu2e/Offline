@@ -119,28 +119,6 @@ TTSflagBkgHits : {
   @table::TTflagBkgHits
   ComboHitCollection : TTSmakePH
 }
-# Legacy: don't use these in any new sequences!
-MakeStrawHitPositions : {
-  module_type             : MakeStrawHitPositions
-  StrawHitCollectionLabel : "makeSH"
-  StrawHitFlagCollectionLabel : "FSHPreStereo"
-}
-
-FlagStrawHits  : {
-  module_type : FlagStrawHits
-  maximumEnergy : 0.0035
-  UseCaloCluster           : false
-  UseCaloClusterXYPosition : false
-  CaloClusterMinE          : 50.
-  CaloClusterMinSize       : 2
-  CaloClusterMinDt         : -40
-  CaloClusterMaxDt         : 40
-  pitchAngle               : 0.67   # mean pitch for CE
-  beta                     : 1.
-  dtOffset                 : @local::TrackCaloMatching.DtOffset
-}
-
-
 # combine together
 TrkHitReco : {
     producers : { 
@@ -155,9 +133,6 @@ TrkHitReco : {
 	TTmakePH            : { @table::TTmakePH            }
 	TTmakeSTH            : { @table::TTmakeSTH            }
 	TTflagBkgHits		  : { @table::TTflagBkgHits            }
-	#legacy: don't use these!
-	makeSHP  : { @table::MakeStrawHitPositions}
-	FlagStrawHits : { @table::FlagStrawHits}
     }
 # sequences
 # production sequence to prepare hits for tracking

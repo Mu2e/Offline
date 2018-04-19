@@ -1,0 +1,54 @@
+//
+// TrackerConditions/data/E2v.tbl is the starting point
+// for creating the distance-to-time and time-to-distance
+// LUTs, which are used by StrawPhysics and StrawResponce, respectively.
+//
+// The data were entered by hand and come from
+// T. Zhao et al, 1993, NIM A 340 485-490
+//Right now, this table assumes Ar:CO2 80:20.
+// One could add c for different mixtures in this file
+//
+//Jason Bono
+
+
+
+
+
+//Efield Speed (80:20)
+//kV/cm  cm/us
+        
+//0.070   0.21 // remove low field
+//0.140   0.46 // remove low field 
+//0.210   0.71 // remove low field
+//0.280   0.97 // remove low field 
+//0.350   1.26 //removed low field 
+0.420   1.57
+0.490   1.90
+0.559   2.26
+0.629   2.65
+0.699   3.05
+0.769   3.47
+0.839   3.84
+0.909   4.25
+0.979   4.58
+1.049   4.91
+1.119   5.15
+1.189   5.36
+1.259   5.56
+1.329   5.68
+1.399   5.77
+1.573   5.92
+1.748   5.98
+1.923   6.02
+2.098   6.02
+2.448   6.09
+2.797   6.19
+3.147   6.35
+3.497   6.48
+3.846   6.64
+4.196   6.72
+4.545   6.83
+4.895   6.87
+5.245   6.89
+5.735   6.85
+500   6.85     //This last point is not from data. It assumes saturation near the wire. "near" the wire is < 0.3 mm, assuming ~1400 V
