@@ -15,8 +15,6 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusters.hh"
@@ -54,8 +52,6 @@ namespace mu2e
     double      _maxTimeDifference;
     std::string _crvCoincidenceCheckModuleLabel;  //module label of the CrvCoincidenceCheck module
                                                   //it is possible to have more than one instance of the CrvCoincidenceCheck module
-    std::string _crvWaveformsModuleLabel;  //module label of the CrvWaveform module. 
-                                           //this is optional. only needed, if MC information is required
     double      _timeWindowStart;
     double      _timeWindowEnd;
     double      _deadTimeWindowStartMargin;
@@ -99,7 +95,6 @@ namespace mu2e
     _maxDistance(pset.get<double>("maxDistance")),
     _maxTimeDifference(pset.get<double>("maxTimeDifference")),
     _crvCoincidenceCheckModuleLabel(pset.get<std::string>("crvCoincidenceCheckModuleLabel")),
-    _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel","")),
     _timeWindowStart(pset.get<double>("timeWindowStart")),
     _timeWindowEnd(pset.get<double>("timeWindowEnd")),
     _deadTimeWindowStartMargin(pset.get<double>("deadTimeWindowStartMargin")),
@@ -136,9 +131,6 @@ namespace mu2e
     event.getByLabel(_crvCoincidenceCheckModuleLabel,"",crvCoincidenceCheckResult);
 
     if(crvCoincidenceCheckResult.product()==NULL) return;
-
-    art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
-    if(_crvWaveformsModuleLabel!="") event.getByLabel(_crvWaveformsModuleLabel,"",crvDigiMCCollection); //this is an optional part for MC information
 
     //loop through all coincidence combinations
     //extract all the hits of all coincidence combinations
@@ -191,8 +183,8 @@ namespace mu2e
         while(ht!=posCluster.end())
         {
           double startTime=ht->_time;
-          std::vector<CrvCoincidenceClusters::PulseInfo> pulses;
-          pulses.emplace_back(ht->_crvRecoPulse,art::Ptr<SimParticle>(),NAN);
+          std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses;
+          crvRecoPulses.push_back(ht->_crvRecoPulse);
 
           double endTime=ht->_time;
           int PEs=ht->_crvRecoPulse->GetPEs();
@@ -202,7 +194,7 @@ namespace mu2e
           while(++ht!=posCluster.end())
           {
             if(ht->_time-startTime>_maxTimeDifference) break;
-            pulses.emplace_back(ht->_crvRecoPulse,art::Ptr<SimParticle>(),NAN);
+            crvRecoPulses.push_back(ht->_crvRecoPulse);
 
             endTime=ht->_time;
             if(_usingPEsPulseHeight) PEs+=ht->_crvRecoPulse->GetPEsPulseHeight();
@@ -212,72 +204,10 @@ namespace mu2e
           //filled one full position&time cluster
 
           //average counter position
-          avgCounterPos/=pulses.size();
-
-          //get MC information, if available
-          bool hasMCInfo=false;
-          art::Ptr<SimParticle> simParticle;
-          double totalEnergyDeposited = 0;
-          double earliestHitTime = NAN;
-          CLHEP::Hep3Vector earliestHitPos;
-          if(crvDigiMCCollection.isValid())
-          {
-            hasMCInfo=true;
-            //loop through all CrvRecoPulses to find all all CrvDigiMCs belongin to this cluster 
-            std::map<art::Ptr<SimParticle>, int> simParticleMap;  //counting all simParticles
-            for(size_t i=0; i<pulses.size(); i++)
-            {
-              const std::vector<size_t> &waveformIndices = pulses[i]._crvRecoPulse->GetWaveformIndices();
-              for(size_t j=0; j<waveformIndices.size(); j++)
-              {
-                size_t waveformIndex = waveformIndices[j];
-                const CrvDigiMC &digi = crvDigiMCCollection->at(waveformIndex);
-
-                //get the deposited energy for this CrvDigiMC
-                double energyDeposited = digi.GetEnergyDeposited();
-                pulses[i]._energyDeposited = energyDeposited;
-                totalEnergyDeposited+=energyDeposited;
-
-                //get the SimParticle responsible for this CrvDigiMC
-                const art::Ptr<SimParticle> simParticle = digi.GetSimParticle();
-                pulses[i]._simParticle = simParticle;
-                //there is a special case in which there is no simParticle:
-                //a reco pulse based on two consecutive single waveforms, 
-                //where the second waveform is either caused by noise, or just the tail end of the first waveform
-                if(simParticle.isNonnull()) simParticleMap[simParticle]++;
-
-                //get the StepPointMCs responsible for this CrvDigiMC
-                const std::vector<art::Ptr<StepPointMC> > &stepPoints = digi.GetStepPoints();
-                for(size_t k=0; k<stepPoints.size(); k++)
-                {
-                  if(stepPoints[k].isNull()) continue;
-                  double t=stepPoints[k]->time();
-                  if(t<earliestHitTime || isnan(earliestHitTime))
-                  {
-                    earliestHitTime=t;
-                    earliestHitPos=stepPoints[k]->position();
-                  }
-                }
-              }
-            }
-
-            //finding the most likely simParticles
-            std::map<art::Ptr<SimParticle>,int >::iterator simParticleIter;
-            int simParticleCount=0;
-            for(simParticleIter=simParticleMap.begin(); simParticleIter!=simParticleMap.end(); simParticleIter++)
-            {
-              if(simParticleIter->second>simParticleCount)
-              {
-                simParticleCount=simParticleIter->second;
-                simParticle=simParticleIter->first;
-              }
-            }
-
-          }//MC information
+          avgCounterPos/=crvRecoPulses.size();
 
           //insert the cluster information into the vector of the crv coincidence clusters
-          crvCoincidenceClusters->GetClusters().emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, hasMCInfo, 
-                                                             pulses, simParticle, totalEnergyDeposited, earliestHitTime, earliestHitPos);
+          crvCoincidenceClusters->GetClusters().emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, crvRecoPulses);
 
           if(_verboseLevel>0)
           {

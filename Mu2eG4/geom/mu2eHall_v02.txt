@@ -136,7 +136,7 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Mu2eG4/geom/bldg/floorN_v02.txt"
 #include "Mu2eG4/geom/bldg/floorPassage.txt"
 #include "Mu2eG4/geom/bldg/floorRemote_v02.txt"
-#include "Mu2eG4/geom/bldg/floorSd.txt"
+#include "Mu2eG4/geom/bldg/floorSd_v02.txt"
 #include "Mu2eG4/geom/bldg/floorSu.txt"
 #include "Mu2eG4/geom/bldg/foundationExtMon_v02.txt"
 #include "Mu2eG4/geom/bldg/foundationExtMonPSarea1.txt"
