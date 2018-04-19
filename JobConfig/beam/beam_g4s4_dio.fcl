@@ -22,9 +22,6 @@ physics.producers.generate.physics: {
     spectrumResolution: 0.1 // MeV
 }
 
-// The 20-station tracker
-services.GeometryService.inputFile: "Mu2eG4/geom/geom_common_cd3_s4p2_backgroundSim.txt"
-
 services.TFileService.fileName: "nts.owner.beam-g4s4-dio.version.sequencer.root"
 outputs.detectorOutput.fileName: "sim.owner.beam-g4s4-detdio.version.sequencer.art"
 outputs.crvOutput.fileName: "sim.owner.beam-g4s4-crvdio.version.sequencer.art"

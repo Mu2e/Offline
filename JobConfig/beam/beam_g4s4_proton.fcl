@@ -21,9 +21,6 @@ physics.producers.generate.physics: {
     nbins: 1000
 }
 
-// The 20-station tracker
-services.GeometryService.inputFile: "Mu2eG4/geom/geom_common_cd3_s4p2_backgroundSim.txt"
-
 services.TFileService.fileName: "nts.owner.beam-g4s4-proton.version.sequencer.root"
 outputs.detectorOutput.fileName: "sim.owner.beam-g4s4-detproton.version.sequencer.art"
 outputs.crvOutput.fileName: "sim.owner.beam-g4s4-crvproton.version.sequencer.art"
