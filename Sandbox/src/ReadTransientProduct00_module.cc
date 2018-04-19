@@ -72,14 +72,14 @@ namespace mu2e {
     for ( size_t i=0; i<prod.size(); ++i ){
       StrawHit const& s0 = hits.at(i);
       StrawHit const& s1 = prod.at(i).hit();
-      //if ( s0.strawIndex() != s1.strawIndex() ) {
+      //if ( s0.strawId() != s1.strawId() ) {
       if ( &s0 != &s1 ) {
         ++nbad;
         cout << "Event: "
              << event.id()
              << " Straw: "
-             << s0.strawIndex() << " "
-             << s1.strawIndex() << " "
+             << s0.strawId() << " "
+             << s1.strawId() << " "
              << endl;
       }
 

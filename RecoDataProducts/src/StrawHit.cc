@@ -25,7 +25,7 @@ namespace mu2e {
   void StrawHit::print( ostream& ost, bool doEndl ) const {
 
     ost << "traw Hit:"
-        << " idx: "      << _strawIndex
+        << " idx: "      << _strawId
         << " cal time "     << _time[TrkTypes::cal]
         << " HV time "     << _time[TrkTypes::hv]
         << " cal TOT "     << _tot[TrkTypes::cal]

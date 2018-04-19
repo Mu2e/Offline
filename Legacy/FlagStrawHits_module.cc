@@ -160,7 +160,7 @@ namespace mu2e {
    // select and sort hits by panel
     for (size_t ish=0;ish<nsh;++ish){
       StrawHit const& sh = _shcol->at(ish);
-      const Straw& straw = tracker.getStraw( sh.strawIndex() );
+      const Straw& straw = tracker.getStraw( sh.strawId() );
       size_t iplane = straw.id().getPlane();
       size_t ipnl = straw.id().getPanel();
       size_t global_panel = ipnl + iplane*npanels;
@@ -174,16 +174,15 @@ namespace mu2e {
       // loop over hits in this panel
       for (size_t ish : hits_by_panel[ipanel]){
         StrawHit const& sh = _shcol->at(ish);
-        const Straw& straw = tracker.getStraw( sh.strawIndex() );
         if (sh.energyDep() >= _ctE){
           for (size_t jsh : hits_by_panel[ipanel]){
             if (ish == jsh)
               continue;
             StrawHit const& sh2 = _shcol->at(jsh);
             if (sh2.time()-sh.time() > _ctMinT && sh2.time()-sh.time() < _ctMaxT){
-              if (straw.isSamePreamp(sh2.strawIndex()))
+              if (sh.strawId().samePreamp(sh2.strawId()))
                 is_ct_straw_preamp[jsh] = true;
-              if (straw.isNearestNeighbour(sh2.strawIndex()))
+              if (sh.strawId().nearestNeighbor(sh2.strawId()))
                 is_ct_straw_neighbor[jsh] = true;
             }
           } // end loop over possible neighbors
@@ -274,7 +273,7 @@ namespace mu2e {
 	for(size_t istr=0; istr<nsh;++istr) {
 	  hit    = &_shcol->at(istr);
 	  time   = hit->time();
-	  straw  = &tt.getStraw(hit->strawIndex());
+	  straw  = &tt.getStraw(hit->strawId());
 	  zstraw = straw->getMidPoint().z();
 	  //-----------------------------------------------------------------------------
 	  // estimate time-of-flight and calculate residual between the predicted and the hit times

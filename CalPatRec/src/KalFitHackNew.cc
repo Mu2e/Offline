@@ -357,7 +357,7 @@ namespace mu2e {
       for (int i=0; i<nadd; i++) {
         size_t istraw = KFRes.missingHits[i].index;
         const StrawHit& strawhit(KFRes.shcol->at(istraw));
-        const Straw& straw = _tracker->getStraw(strawhit.strawIndex());
+        const Straw& straw = _tracker->getStraw(strawhit.strawId());
 //-----------------------------------------------------------------------------
 // estimate  initial flightlength
 //-----------------------------------------------------------------------------
@@ -684,7 +684,9 @@ namespace mu2e {
 // Now test if the Kalman rep hits these straws
     if(_debugLevel > 2) std::cout << "Found " << matstraws.size() << " unique possible straws " << " out of " << nadded << std::endl;
     for(auto strawflt : matstraws){
-      const DetStrawElem* strawelem = detmodel.strawElem(strawflt._index);
+    // hack
+      Straw const& straw = tracker.getStraw(strawflt._index);
+      const DetStrawElem* strawelem = detmodel.strawElem(straw.id());
       DetIntersection strawinter;
       strawinter.delem = strawelem;
       strawinter.pathlen = strawflt._flt;
@@ -740,7 +742,7 @@ namespace mu2e {
     for (unsigned iind=0; iind<nind; iind++) {
       size_t istraw = KRes.strawHitIndices()->at(iind);             //[iind];
       const StrawHit& strawhit(KRes.shcol->at(istraw));
-      const Straw& straw = _tracker->getStraw(strawhit.strawIndex());
+      const Straw& straw = _tracker->getStraw(strawhit.strawId());
       double fltlen      = hel->zFlight(straw.getMidPoint().z());
     // estimate arrival time at the wire
       hitt0._t0          = KRes.t0._t0 + (fltlen-flt0)/vflt;
@@ -1140,7 +1142,7 @@ namespace mu2e {
 
 	size_t istraw = KRes.strawHitIndices()->at(iind);
 	const StrawHit& strawhit(KRes.shcol->at(istraw));
-	const Straw& straw = _tracker->getStraw(strawhit.strawIndex());
+	const Straw& straw = _tracker->getStraw(strawhit.strawId());
 //-----------------------------------------------------------------------------
 // compute the flightlength to this hit from z=0 (can be negative)
 // and use this to estimate the time for the track to reach this hit from z=0

@@ -40,7 +40,6 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
 
 using namespace std;
@@ -169,7 +168,6 @@ namespace mu2e {
     ++ncalls;
 
     // Handle to the conditions service
-    ConditionsHandle<TrackerCalibrations> trackerCalibrations("ignored");
 
     /*
     // Print the content of current event
@@ -282,7 +280,7 @@ namespace mu2e {
     _hNHits->Fill(hits.size());
     _hNHits1->Fill(hits.size());
 
-    std::map<StrawIndex,int> nhperwire;
+    std::map<StrawId,int> nhperwire;
 
     if ( _diagLevel > 2 ) {
       cout << "ReadStrawHit: Total number of straw hits = " << hits.size() << endl;
@@ -301,7 +299,7 @@ namespace mu2e {
       _hHitDeltaTime->Fill(hit.dt());
       _hHitEnergy->Fill(hit.energyDep()*1000.0);
 
-      StrawIndex si = hit.strawIndex();
+      StrawId si = hit.strawId();
 
       // Use data from G4 hits
       _hNG4Steps->Fill(mcptr.size());
@@ -311,19 +309,11 @@ namespace mu2e {
         //        _hG4StepRelTimes->Fill(fabs(mchit.time()-hit.time()));
         _hG4StepRelTimes->Fill((mchit.time()-hit.time()));
         // step time rel to the formed hit time; FIXME fabs should not be needed
-        if (mchit.strawIndex()!=si) {
-          // FIXME: it is an approximation; We plot the "crosstalk
-          // edep" which is in principle calculated using amplitudes
-          // we may also need to store the crosstalk value in a "truth" object
-          _hG4StepEdep->Fill(mchit.eDep()*1000.0*
-                             trackerCalibrations->CrossTalk(si,mchit.strawIndex()));
-        } else {
-          _hG4StepEdep->Fill(mchit.eDep()*1000.0);
-        }
+	_hG4StepEdep->Fill(mchit.eDep()*1000.0);
 
       }
 
-      const  unsigned id = si.asUint();
+      const  unsigned id = si.asUint16();
       Straw str = tracker.getStraw(si);
       StrawId sid = str.id();
       int lid = sid.getLayer();
@@ -392,12 +382,11 @@ namespace mu2e {
       _ntup->Fill(nt);
 
       // Calculate number of hits per wire
-      ++nhperwire[hit.strawIndex()];
+      ++nhperwire[hit.strawId()];
 
       if ( int(evt.id().event()) < _maxFullPrint ) {
         cout << "ReadStrawHit: "
              << evt.id().event()      << " #"
-             << si                    << " "
              << sid                   << " "
              << hit.time()            << " "
              << hit.dt()              << " "
@@ -455,7 +444,7 @@ namespace mu2e {
 
     }
 
-    for( std::map<StrawIndex,int>::iterator it=nhperwire.begin(); it!= nhperwire.end(); ++it ) {
+    for( std::map<StrawId,int>::iterator it=nhperwire.begin(); it!= nhperwire.end(); ++it ) {
       _hNHitsPerWire->Fill(it->second);
     }
 

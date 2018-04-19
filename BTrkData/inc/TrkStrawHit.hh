@@ -42,7 +42,7 @@ namespace mu2e
     virtual void setAmbig(int newambig);
     void setAmbigUpdate(bool update) { _ambigupdate = update; }
     StrawHitIndex index() const { return _index; } // index into StrawHit vector
-    double hitRMS() const { return _t2d._rdrifterr;}
+    double hitRMS() const { return _rdrifterr;}
 // strawhit specific interface
     const StrawHit& strawHit() const { return _strawhit; }
     const Straw& straw() const { return _straw; }
@@ -51,9 +51,10 @@ namespace mu2e
     double driftTime(StrawEnd end) const; // drift time for a specific end
     double driftTime() const; // drift time for the current end strategy
 
-    double driftRadius() const { return _t2d._rdrift;}
-    double driftRadiusErr() const { return _t2d._rdrifterr;}
-    double driftVelocity() const { return _t2d._vdrift; }
+    double driftPhi() const { return _phi;}
+    double driftRadius() const { return _rdrift;}
+    double driftRadiusErr() const { return _rdrifterr;}
+    double driftVelocity() const { return _vdriftinst; }
     double timeDiffDist() const { return _tddist; }
     double timeDiffDistErr() const { return _tddist_err; }
     const CLHEP::Hep3Vector& wirePosition() const { return _wpos; }
@@ -67,11 +68,11 @@ namespace mu2e
 // error to penalize mis-assigned ambiguity
     double penaltyErr() const { return _penerr; }
 // error ON RDrift and residual coming from hit t0 error
-    double t0Err() const { return hitT0()._t0err*_t2d._vdrift; }
+    double t0Err() const { return hitT0()._t0err*_vdriftinst; }
 // total error
     double totalErr() const { return _toterr; }
 // intrinsic hit error (mm)
-    virtual double hitErr() const { return _t2d._rdrifterr; }
+    virtual double hitErr() const { return _rdrifterr; }
   // test the consistincy of this hit with 'physical' limts, with a given # of sigma
     virtual bool isPhysical(double maxchi) const;
     
@@ -102,9 +103,12 @@ namespace mu2e
     int               _iamb;
     enduse _enduse; // which ends are used in the drift measurement
     bool              _ambigupdate;
-    T2D               _t2d; // current values of t2d
+    double            _rdrift;
+    double            _rdrifterr;
     double            _tddist;
     double            _tddist_err;
+    double            _phi;
+    double            _vdriftinst;
     double            _maxdriftpull;
     double            _mint0doca;	    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
   };

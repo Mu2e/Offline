@@ -301,9 +301,8 @@ namespace mu2e {
       tntpArray[idx++] = hit.energyDep(); //leaf 5
 
       //Get hit straw
-      StrawIndex si = hit.strawIndex();
-      Straw str = tracker.getStraw(si);
-      StrawId sid = str.id();
+      StrawId sid = hit.strawId();
+      Straw str = tracker.getStraw(sid);
       // LayerId lid = sid.getLayerId();
       // PlaneId did = sid.getPlaneId();
       // PanelId secid = sid.getPanelId();

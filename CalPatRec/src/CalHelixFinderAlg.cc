@@ -1140,11 +1140,10 @@ namespace mu2e {
 	if (_debug > 10) {
 	  printf("[CalHelixFinderAlg::doLinearFitPhiZ:LOOP] %08x %2i %6i %3i %12.5f %12.5f %10.5f %10.3f %10.3f %10.3f %10.5f %10.5f %5.3f\n",
 		 *((int*) &hit->_flag), Helix._hitsUsed[index],
-		 hit->_strawhit->strawIndex().asInt(), i,
+		 hit->_strawhit->strawId().asUint16(), i,
 		 z, phi, dphi,xdphi,zlast,dz,
 		 dfdz, Helix._srphi.dfdz(), Helix._srphi.chi2DofLine());
 	}
-
 	if (Helix._hitsUsed[index] != 1)                     continue;
 
 	if ( (DoCleanUp == 1) && (xdphi > _maxXDPhi) ) {
@@ -1432,7 +1431,7 @@ namespace mu2e {
 	    int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
 	    printf("[CalHelixFinderAlg::doLinearFitPhiZ:END2] %08x %2i %6i %12.5f %12.5f %12.5f\n",
 		   *((int*) &hit->_flag), Helix._hitsUsed[index],
-		   hit->_strawhit->strawIndex().asInt(),  z, hit->_phi, deltaPhi);
+		   hit->_strawhit->strawId().asUint16(),  z, hit->_phi, deltaPhi);
 	  }
 	}
       }
@@ -1444,6 +1443,68 @@ namespace mu2e {
 
     return success;
   }
+
+//  void  CalHelixFinderAlg::fillHitLayer(CalHelixFinderData& Helix) {
+    
+// //--------------------------------------------------------------------------------
+// // fill some geometrical info
+// //--------------------------------------------------------------------------------
+//     for (int ist=0; ist<_tracker->nStations(); ist++) {
+//       const Station* st = &_tracker->getStation(ist);
+// 
+//       for (int ipl=0; ipl<st->nPlanes(); ipl++) {
+// 	const Plane* pln = &st->getPlane(ipl);
+// 	for (int ipn=0; ipn<pln->nPanels(); ipn++) {
+// 	  const Panel* panel = &pln->getPanel(ipn);
+// 	  for (int il=0; il<panel->nLayers(); il++) {
+// 	    LayerZ_t* lz = &_hitLayer[il];
+// 	    lz->fHitData.clear();
+// 	    lz->fPanel = panel;
+// //-----------------------------------------------------------------------------
+// // panel caches phi of its center and the z
+// //-----------------------------------------------------------------------------
+// 	    lz->wx  = panel->straw0Direction().x();
+// 	    lz->wy  = panel->straw0Direction().y();
+// 	    lz->phi = panel->straw0MidPoint().phi();
+// 	    lz->z   = (panel->getLayer(0).straw0MidPoint().z()+panel->getLayer(1).straw0MidPoint().z())/2.;
+// 	  }
+// 	}	
+//       }
+//     }
+// 
+// 
+//     const vector<StrawHitIndex>& shIndices = Helix._timeCluster->hits();
+// 
+//     int size = Helix._timeCluster->nhits();
+// //--------------------------------------------------------------------------------
+//     if (Helix.shpos() != 0) {
+//       int loc;
+//       StrawHitFlag flag;
+//       for (int i=0; i<size; ++i) {
+// 	loc                = shIndices[i];	 // index in shcol of i-th timecluster hit
+// 	flag               = Helix.shfcol()->at(loc);
+// 	int good_hit = flag.hasAllProperties(_hsel  );
+// 	int bkg_hit  = flag.hasAnyProperty  (_bkgsel);
+// 	int used_hit = flag.hasAnyProperty  (StrawHitFlag::calosel);
+// 
+// 	if (good_hit && (! bkg_hit) && (! used_hit)) {
+// 
+// 	  const StrawHit*         sh    = &Helix.shcol()->at(loc);
+// 	  const Straw*            straw = &_tracker->getStraw(sh->strawId());
+// 	  const StrawHitPosition* shp   = &Helix.shpos()->at(loc);
+//       
+// 	  if (sh->energyDep() > _maxElectronHitEnergy)         continue;
+// 
+// 	  int       layerId  = straw->id().getLayer();
+// 	  float     sigw     = shp->posRes(StrawHitPosition::wire);
+// 	  
+// 	  LayerZ_t* lz       = &_hitLayer[layerId];
+// 
+// 	  lz->fHitData.push_back(HitData_t(sh, shp, straw, sigw));
+// 	}	
+//       }
+//     }
+//     
 
 //-----------------------------------------------------------------------------
 // 12-09-2013 gianipez modified this procedure to avoid the doubling of the
@@ -1482,7 +1543,7 @@ namespace mu2e {
 	if (good_hit && (! bkg_hit) && (! used_hit)) {
 
 	  const StrawHit& sh          = Helix.shcol()->at(loc);
-	  const Straw& straw          = _tracker->getStraw(sh.strawIndex());
+	  const Straw& straw          = _tracker->getStraw(sh.strawId());
 	  const StrawHitPosition& shp = Helix.shpos()->at(loc);
 
 	  if (sh.energyDep() > _maxElectronHitEnergy)         continue;
@@ -1738,7 +1799,7 @@ namespace mu2e {
 	  dy = hit->y() - Helix._sxy.y0();
 	  dr = sqrt(dx*dx+dy*dy) - Helix._sxy.radius();
 	  printf("[%s] %08x %6i %3i %6i %12.5f %12.5f %12.5f %10.3f\n",banner,
-		 *((int*) &hit->_flag),  int(hit->_ind), i, hit->_strawhit->strawIndex().asInt(),
+		 *((int*) &hit->_flag),  int(hit->_ind), i, hit->_strawhit->strawId().asUint16(),
 		 hit->x(), hit->y(), hit->z(), dr
 		 );//FIXME!
 	}
@@ -1826,7 +1887,7 @@ namespace mu2e {
 	  else if ((p == Helix._candIndex.Panel) && (i == Helix._candIndex.PanelHitIndex)) type = "cand";
 
 	  printf("[CalHelixFinderAlg::filterUsingPatternRecognition] %5i %5i %4i %4s  %8.3f %8.3f %9.3f %8.3f %8.3f\n",
-		 i,hit->_strawhit->strawIndex().asInt(),is_outlier,type.data(),shPos->x(),shPos->y(),shPos->z(),dist,dz);
+		 i,hit->_strawhit->strawId().asUint16(),is_outlier,type.data(),shPos->x(),shPos->y(),shPos->z(),dist,dz);
 	}
       }
     }
@@ -2694,7 +2755,7 @@ namespace mu2e {
 	printf("[CalHelixFinderAlg::%s:PT2] x0 = %8.3f y0 = %8.3f radius = %8.3f  chi2 = %6.3f chi2Maxxy = %6.3f index point added = %i straw-id = %6i hitChi2 = %6.3f x = %8.3f y = %8.3f z = %9.3f\n",
 	       banner,
 	       Helix._sxy.x0(), Helix._sxy.y0(), Helix._sxy.radius(), Helix._sxy.chi2DofCircle(), _chi2xyMax, ibest.Panel,
-	       hit->_strawhit->strawIndex().asInt(), chi2_min,
+	       hit->_strawhit->strawId().asUint16(), chi2_min,
 	       x, y, panelz->z);//FIXME!
       }
 					// mark point as active
@@ -3763,7 +3824,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 	const StrawHit& sh          = Helix.shcol()->at(loc);
 
 	printf("[CalHelixFinderAlg::printXYZP] %5i %5i %5i   %08x   %2i %9.3f %9.3f %9.3f \n",
-	       i, loc,  sh.strawIndex().asInt(), *((int*) &pt->_flag), pt->use(), pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
+	       i, loc,  sh.strawId().asUint16(), *((int*) &pt->_flag), pt->use(), pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
       }
     }
   }
