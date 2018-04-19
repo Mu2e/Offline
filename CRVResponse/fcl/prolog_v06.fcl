@@ -136,6 +136,13 @@ BEGIN_PROLOG
       deadTimeWindowStartMargin      : 0    //ns
       deadTimeWindowEndMargin        : 125  //ns
     }
+    CrvCoincidenceClusterSummarizer:
+    {
+      module_type                            : CrvCoincidenceClusterSummarizer
+      crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
+      crvWaveformsModuleLabel                : "CrvWaveforms"
+    }
+
 
 CrvResponsePackage : 
 {
@@ -148,8 +155,9 @@ CrvResponsePackage :
      CrvRecoPulses               : @local::CrvRecoPulses
      CrvCoincidence              : @local::CrvCoincidence
      CrvCoincidenceClusterFinder : @local::CrvCoincidenceClusterFinder
+     CrvCoincidenceClusterSummarizer : @local::CrvCoincidenceClusterSummarizer
    }
-   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
+   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
 }
 
 CrvDAQPackage : 

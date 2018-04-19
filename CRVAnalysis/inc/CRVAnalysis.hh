@@ -2,7 +2,7 @@
 
 #include "CRVAnalysis/inc/CrvHitInfoReco.hh"
 #include "CRVAnalysis/inc/CrvHitInfoMC.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceClusters.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceClustersSummary.hh"
 #include "art/Framework/Principal/Event.h"
 
 namespace mu2e
@@ -13,7 +13,7 @@ namespace mu2e
 
     CRVAnalysis() {}
 
-    static void FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterFinderModuleLabel,
+    static void FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterSummarizerModuleLabel,
                                           const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo);
 
   };
