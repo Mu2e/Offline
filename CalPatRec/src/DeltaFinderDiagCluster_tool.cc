@@ -472,10 +472,10 @@ namespace mu2e {
       mc_mom = _mcUtils->getStartMom(sim);
     }
 
-    const mu2e::Straw* straw = &_data->tracker->getStraw(sh->strawIndex());
+    const mu2e::Straw* straw = &_data->tracker->getStraw(sh->strawId());
     
     printf("%5i ",loc);
-    printf("%5i" ,sh->strawIndex().asInt());
+    printf("%5i" ,sh->strawId().asUint16());
 	
     printf("  %2i:%2i %1i %1i %2i   %8.3f %7.3f  %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
 	   straw->id().getStation(),
