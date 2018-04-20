@@ -369,7 +369,7 @@ int crs.FEBBoxesAtSide1C3  = 1; //20
 int crs.FEBBoxesAtSide1C4  = 1; //21
 
 string         crs.FEBMaterialName     = "ElectronicsFEB";
-double         crs.FEBDistanceToModule =  33.3;        //between surface of 4th scintillator layer and center of 1st FEB
+double         crs.FEBDistanceToModule =  50;        //between surface of 4th scintillator layer and center of 1st FEB
 double         crs.FEBDistanceToEdge   = 240.0;
 double         crs.FEBDistanceBetween2FEBsW  = 397.9;  //between two FEBs sitting next to each other
 double         crs.FEBDistanceBetween2FEBsT  =  47.7;  //between two FEBs sitting on top of each other 
