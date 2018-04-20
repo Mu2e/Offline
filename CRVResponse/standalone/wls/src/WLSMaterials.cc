@@ -400,7 +400,7 @@ void WLSMaterials::CreateMaterials()
   MPTPolystyrene->AddProperty("ABSLENGTH",PhotonEnergy17,AbsPS,nEntries17);
   MPTPolystyrene->AddProperty("FASTCOMPONENT",PhotonEnergy91, ScintilFast,nEntries91); 
   MPTPolystyrene->AddProperty("SLOWCOMPONENT",PhotonEnergy91, ScintilFast,nEntries91);  //assumed to be delayed flourescence, not used
-  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",50000./MeV); //to match the testbeam number of PEs
+  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",47000./MeV); //to match the testbeam number of PEs
   MPTPolystyrene->AddConstProperty("RESOLUTIONSCALE",1.0);
   MPTPolystyrene->AddConstProperty("FASTTIMECONSTANT", 3.*ns);    //includes WLS components in the scintillator
   MPTPolystyrene->AddConstProperty("SLOWTIMECONSTANT", 100.*ns);  //unknown, not used

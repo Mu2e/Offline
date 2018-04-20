@@ -2,7 +2,6 @@
 
 #include "CRVAnalysis/inc/CrvHitInfoReco.hh"
 #include "CRVAnalysis/inc/CrvHitInfoMC.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceClustersSummary.hh"
 #include "art/Framework/Principal/Event.h"
 
 namespace mu2e
