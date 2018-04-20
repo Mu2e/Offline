@@ -15,9 +15,11 @@
 
 using namespace std;
 namespace mu2e {
-  StrawDrift::StrawDrift(std::string filename, float wirevoltage, int phiBins, int dIntegrationBins, float Bz) :
-    _phiBins(phiBins)
+  void StrawDrift::Initialize(std::string filename, float wirevoltage, int phiBins, int dIntegrationBins, float Bz)
   {
+    _initialized = true;
+
+    _phiBins = phiBins;
     //open the file (fixme)
     ifstream myfile(filename);
     if ( !myfile ) {

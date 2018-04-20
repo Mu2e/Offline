@@ -27,6 +27,7 @@
 using namespace std;
 namespace mu2e {
   StrawPhysics::StrawPhysics(fhicl::ParameterSet const& pset) :
+    _strawDrift(new StrawDrift()),
   _meanpath(pset.get<double>("MeanFreePath",0.357)), // mm, average distance between ionizations for a MIP in STP Ar (Blum etal, table 1.1)
   _eKin(pset.get<double>("IonizedElectronKE",0.0)), // kinetic energy of electron (MeV)
   _Qe(pset.get<double>("ElectronCharge",1.6e-7)), // e, pC
@@ -44,14 +45,7 @@ namespace mu2e {
   _nonlindrift(pset.get<bool>("UseNonLinearDrift",false)) //JB: switch to turn on/off non linear drift for diagnosis
   {
     
-    //JB: get the B-field
-    GeomHandle<BFieldManager> bfmgr;
-    GeomHandle<DetectorSystem> det;
-    CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
-    CLHEP::Hep3Vector b0 = bfmgr->getBField(vpoint_mu2e);
-    float Bz = b0.z();
-    this->strawDrift = new StrawDrift(_driftFile, _wirevoltage, _phiBins, _dIntegrationBins, Bz);
-    
+   
     
     // integrate the number of ionizations
     double ptot(0.0);
@@ -90,6 +84,17 @@ namespace mu2e {
   
   
   StrawPhysics::~StrawPhysics() {}
+
+  void StrawPhysics::initializeStrawDrift() const
+  {
+    //JB: get the B-field
+    GeomHandle<BFieldManager> bfmgr;
+    GeomHandle<DetectorSystem> det;
+    CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
+    CLHEP::Hep3Vector b0 = bfmgr->getBField(vpoint_mu2e);
+    float Bz = b0.z();
+    _strawDrift->Initialize(_driftFile, _wirevoltage, _phiBins, _dIntegrationBins, Bz);
+  }
   
   
   // model gain fluctuations for a cluster using the Polya function.  This depends on the # of electrons
@@ -114,10 +119,11 @@ namespace mu2e {
   
   
   //JB: get drift time
-  double StrawPhysics::driftDistanceToTime(double ddist, double phi) const {
-    double lorentzTime = this->strawDrift->D2T(ddist,phi);
+  double StrawPhysics::driftDistanceToTime(double ddist, double phi) const{
     if(_nonlindrift){
-      return lorentzTime; //return t based on the physics of the cluster drift
+      if (!_strawDrift->isInitialized())
+        initializeStrawDrift(); 
+      return _strawDrift->D2T(ddist,phi);
     }
     else{
       return ddist/0.0625; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
@@ -126,9 +132,11 @@ namespace mu2e {
   
   
   //JB: a debuging function
-  double StrawPhysics::testStrawDrift(double ddist, double phi) const {
-    double lorentzTime = this->strawDrift->D2T(ddist,phi);
-    double lorentzDist = this->strawDrift->T2D(lorentzTime,phi);
+  double StrawPhysics::testStrawDrift(double ddist, double phi){
+    if (!_strawDrift->isInitialized())
+      initializeStrawDrift(); 
+    double lorentzTime = _strawDrift->D2T(ddist,phi);
+    double lorentzDist = _strawDrift->T2D(lorentzTime,phi);
     // cout <<"ddist - lorentzDist = "<<ddist - lorentzDist<<"\n";
     return ddist - lorentzDist;
   }

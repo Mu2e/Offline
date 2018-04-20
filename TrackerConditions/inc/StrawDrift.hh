@@ -13,8 +13,10 @@
 namespace mu2e {
   class StrawDrift {
   public:
-    StrawDrift(std::string filename, float wirevoltage, int phiBins, int dIntegrationBins, float Bz);
+    StrawDrift() : _initialized(false){};
     ~StrawDrift(){};
+  
+    void Initialize(std::string filename, float wirevoltage, int phiBins, int dIntegrationBins, float Bz);
 
     struct point { //filled by the field/velocity file read in
       float eField;
@@ -39,9 +41,13 @@ namespace mu2e {
     double GetEffectiveSpeed(double dist, double phi); //grabs the lorentz corrected radial component of avg speed
     double D2T(double dist, double phi);
     double T2D(double time, double phi);
+
+    bool isInitialized(){return _initialized;};
     
   private:
     double ConstrainAngle(double phi);
+
+    bool _initialized;
     
     // 2-D array in distance and phi 
     std::vector<D2Tinfo> D2Tinfos;

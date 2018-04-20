@@ -40,7 +40,7 @@ namespace mu2e {
     double strawGain() const { return _gasgain; } // nominal gain
     double clusterGain(CLHEP::RandGaussQ& rgauss, CLHEP::RandFlat& rflat, unsigned nele) const;
     double driftDistanceToTime(double ddist, double phi) const;  // single cluster!
-    double testStrawDrift(double ddist, double phi) const;
+    double testStrawDrift(double ddist, double phi);
     double driftTimeSpread(double tdrift) const; // single electron VARIANCE
     double propagationTime(double wdist) const;
     double meanFreePath() const { return _meanpath; }
@@ -52,7 +52,9 @@ namespace mu2e {
     double meanElectronCount() const { return _NAverage; }
     void print(std::ostream& os) const;
   private:
-    StrawDrift *strawDrift;
+    void initializeStrawDrift() const;
+
+    StrawDrift *_strawDrift;
     std::vector<double> _EIonize; // cumulative energy to create N ionization electrons (MeV)
     double _meanpath; // mean free path (mm)
     double _eKin; // average kinetic energy of ioniztion electrons (MeV)

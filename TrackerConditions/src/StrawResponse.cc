@@ -20,6 +20,7 @@
 using namespace std;
 namespace mu2e {
   StrawResponse::StrawResponse(fhicl::ParameterSet const& pset) :
+    _strawDrift(new StrawDrift()),
     _edep(pset.get<vector<float> >("EDep",
 	  vector<float>{0.214044 , 0.311385 , 0.405932 , 0.503041 , 0.601217 , 0.700171 , 0.799435 , 0.898859 , 0.998941 , 1.09876 , 1.19853 , 1.29892 , 1.39884 , 1.49879 , 1.59901 , 1.69917 , 1.799 , 1.8992 , 1.99935 , 2.09929 , 2.19977 , 2.29964 , 2.39963 , 2.49954 , 2.59964 , 2.70024 , 2.79984 , 2.89971 , 3.00015 , 3.10025 , 3.20018 , 3.3004 , 3.40047 , 3.50056 , 3.60085 , 3.70057 , 3.80023 , 3.89995 , 3.99972 , 4.1001 , 4.19994 , 4.29969 , 4.39939 , 4.49958 , 4.59949 , 4.70012 , 4.79972 , 4.89955 , 5.00006 , 5.09999 , 5.19956 , 5.29984 , 5.39941 , 5.49948 , 5.59953 , 5.69931 , 5.79903 , 5.89868 , 5.9986 , 6.09881 , 6.19851 , 6.29715 , 6.39709 , 6.49732 , 6.5966 , 6.69613 , 6.79413 , 7.11646 })), //KeV
     _halfvp(pset.get<vector<float> >("HalfPropVelocity",
@@ -45,15 +46,20 @@ namespace mu2e {
     _rres_rad(pset.get<double>("DriftRadiusResolutionRadius",-1)), //mm
     _mint0doca(pset.get<double>("minT0DOCA", -0.2)) //FIXME should be moved to a reconstruction configuration 
     {
-          GeomHandle<BFieldManager> bfmgr;
-          GeomHandle<DetectorSystem> det;
-          CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
-          CLHEP::Hep3Vector b0 = bfmgr->getBField(vpoint_mu2e);
-          float Bz = b0.z();
-          _strawDrift = new StrawDrift(_driftFile, _wirevoltage, _phiBins, _dIntegrationBins, Bz);
     }
 
   StrawResponse::~StrawResponse(){}
+
+  void StrawResponse::initializeStrawDrift() const
+  {
+    GeomHandle<BFieldManager> bfmgr;
+    GeomHandle<DetectorSystem> det;
+    CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
+    CLHEP::Hep3Vector b0 = bfmgr->getBField(vpoint_mu2e);
+    float Bz = b0.z();
+    _strawDrift->Initialize(_driftFile, _wirevoltage, _phiBins, _dIntegrationBins, Bz);
+  }
+
 
   // simple line interpolation, this should be a utility function, FIXME!
   float StrawResponse::PieceLine(std::vector<float> const& xvals, std::vector<float> const& yvals, float xval){
@@ -90,6 +96,8 @@ namespace mu2e {
 
   double StrawResponse::driftDistanceToTime(StrawId strawId, double ddist, double phi) const {
     if(_usenonlindrift){
+      if (!_strawDrift->isInitialized())
+        initializeStrawDrift();
       return _strawDrift->D2T(ddist,phi);
     }
     else{
@@ -99,6 +107,8 @@ namespace mu2e {
 
   double StrawResponse::driftTimeToDistance(StrawId strawId, double dtime, double phi) const {
     if(_usenonlindrift){
+      if (!_strawDrift->isInitialized())
+        initializeStrawDrift();
       return _strawDrift->T2D(dtime,phi);
     }
     else{
@@ -108,6 +118,8 @@ namespace mu2e {
 
   double StrawResponse::driftInstantSpeed(StrawId strawId, double doca, double phi) const {
     if(_usenonlindrift){
+      if (!_strawDrift->isInitialized())
+        initializeStrawDrift();
       return _strawDrift->GetInstantSpeedFromD(doca);
     }else{
       return _lindriftvel;

@@ -40,6 +40,9 @@ namespace mu2e {
 // helper functions
       float wpRes(float kedep, float wdist) const;
       static float PieceLine(std::vector<float> const& xvals, std::vector<float> const& yvals, float xval);
+      void initializeStrawDrift() const;
+
+      StrawDrift *_strawDrift;
 
       // parametric data for calibration functions
       // TD reconstruction uses 1/2 the propagation velocity and depends on the
@@ -56,7 +59,6 @@ namespace mu2e {
       float _slfac; // factor of straw length to set 'missing cluster' hits
       float _errfac; // error inflation for 'missing cluster' hits
 
-      StrawDrift *_strawDrift;
       std::string _driftFile;
       float _wirevoltage;
       int _phiBins;
