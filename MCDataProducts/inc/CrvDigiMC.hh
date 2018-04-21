@@ -22,12 +22,11 @@ namespace mu2e
 
     CrvDigiMC() {}
     CrvDigiMC(const std::array<double,NSamples> &voltages, const std::vector<art::Ptr<StepPointMC> > &steps, 
-              art::Ptr<SimParticle> simParticle, double energyDeposited, double startTime, 
+              art::Ptr<SimParticle> simParticle, double startTime, 
               mu2e::CRSScintillatorBarIndex scintillatorBarIndex, int SiPMNumber) :
                           _voltages(voltages), 
                           _steps(steps),
                           _simParticle(simParticle),
-                          _energyDeposited(energyDeposited),
                           _startTime(startTime),
                           _scintillatorBarIndex(scintillatorBarIndex),
                           _SiPMNumber(SiPMNumber) {}
@@ -35,7 +34,6 @@ namespace mu2e
     const std::array<double,NSamples>         &GetVoltages() const        {return _voltages;}
     const std::vector<art::Ptr<StepPointMC> > &GetStepPoints() const      {return _steps;}
     const art::Ptr<SimParticle>               &GetSimParticle() const     {return _simParticle;}
-    const double                              &GetEnergyDeposited() const {return _energyDeposited;}
     const double                              &GetStartTime() const       {return _startTime;}
 
     mu2e::CRSScintillatorBarIndex GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
@@ -46,7 +44,6 @@ namespace mu2e
     std::array<double,NSamples>         _voltages;
     std::vector<art::Ptr<StepPointMC> > _steps;        //step points responsible for this waveform
     art::Ptr<SimParticle>               _simParticle;  //most likely sim particle responsible for this waveform
-    double                              _energyDeposited;  //from all step points responsibe for this waveform
     double                              _startTime;
 
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;

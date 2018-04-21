@@ -135,8 +135,8 @@ namespace mu2e {
     const double mcTrajCurrentCut = mcTrajectoryMinDistanceCut(prept->GetPhysicalVolume());
     // In some cases we know to accept the point even without computing the distance
     bool computeMCTrajDistance = (!_trajectory.empty()) && (mcTrajCurrentCut > 0.);
-    if(!computeMCTrajDistance || ((prept->GetPosition() -  _trajectory.back().vect()).mag() >= mcTrajCurrentCut)) {
-      _trajectory.emplace_back ( prept->GetPosition(), prept->GetGlobalTime() );
+    if(!computeMCTrajDistance || (((prept->GetPosition() - _mu2eOrigin) -  _trajectory.back().vect()).mag() >= mcTrajCurrentCut)) {
+      _trajectory.emplace_back ( prept->GetPosition() - _mu2eOrigin, prept->GetGlobalTime() );
     }
 
     // Get kinetic energy at the begin of the step

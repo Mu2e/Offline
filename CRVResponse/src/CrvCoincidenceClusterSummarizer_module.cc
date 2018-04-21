@@ -18,8 +18,8 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceClusters.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceClustersSummary.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceClusterSummaryCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -52,13 +52,20 @@ namespace mu2e
                                                           //it is possible to have more than one instance of the CrvCoincidenceClusterFinder module
     std::string _crvWaveformsModuleLabel;  //module label of the CrvWaveform module. 
                                            //this is optional. only needed, if MC information is required
+    void CollectStepPoints(std::set<art::Ptr<StepPointMC> > &steps, 
+                           const art::Handle<CrvDigiMCCollection> &digis, 
+                           size_t waveformIndex);
+    void GetSummary(const std::set<art::Ptr<StepPointMC> > &steps, 
+                    double &energyDeposited, double &earliestHitTime,
+                    CLHEP::Hep3Vector &earliestHitPos,
+                    art::Ptr<SimParticle> &mostLikelySimParticle);
   };
 
   CrvCoincidenceClusterSummarizer::CrvCoincidenceClusterSummarizer(fhicl::ParameterSet const& pset) :
     _crvCoincidenceClusterFinderModuleLabel(pset.get<std::string>("crvCoincidenceClusterFinderModuleLabel")),
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel",""))
   {
-    produces<CrvCoincidenceClustersSummary>();
+    produces<CrvCoincidenceClusterSummaryCollection>();
   }
 
   void CrvCoincidenceClusterSummarizer::beginJob()
@@ -75,25 +82,24 @@ namespace mu2e
 
   void CrvCoincidenceClusterSummarizer::produce(art::Event& event) 
   {
-    std::unique_ptr<CrvCoincidenceClustersSummary> crvCoincidenceClustersSummary(new CrvCoincidenceClustersSummary);
+    std::unique_ptr<CrvCoincidenceClusterSummaryCollection> crvCoincidenceClusterSummaryCollection(new CrvCoincidenceClusterSummaryCollection);
 
-    art::Handle<CrvCoincidenceClusters> crvCoincidenceClusters;
-    event.getByLabel(_crvCoincidenceClusterFinderModuleLabel,"",crvCoincidenceClusters);
+    art::Handle<CrvCoincidenceClusterCollection> crvCoincidenceClusterCollection;
+    event.getByLabel(_crvCoincidenceClusterFinderModuleLabel,"",crvCoincidenceClusterCollection);
 
-    if(crvCoincidenceClusters.product()==NULL) return;
+    if(crvCoincidenceClusterCollection.product()==NULL) return;
 
     art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
     if(_crvWaveformsModuleLabel!="") event.getByLabel(_crvWaveformsModuleLabel,"",crvDigiMCCollection); //this is an optional part for MC information
 
-    const std::vector<CrvCoincidenceClusters::Cluster> &clusters = crvCoincidenceClusters->GetClusters();
-    std::vector<CrvCoincidenceClusters::Cluster>::const_iterator iter;
-    for(iter=clusters.begin(); iter!=clusters.end(); iter++)
+    CrvCoincidenceClusterCollection::const_iterator iter;
+    for(iter=crvCoincidenceClusterCollection->begin(); iter!=crvCoincidenceClusterCollection->end(); iter++)
     {
-      int    crvSectorType            = iter->_crvSectorType;
-      CLHEP::Hep3Vector avgCounterPos = iter->_avgCounterPos;
-      double startTime                = iter->_startTime;
-      double endTime                  = iter->_endTime;
-      int    PEs                      = iter->_PEs;
+      int    crvSectorType            = iter->GetCrvSectorType();
+      CLHEP::Hep3Vector avgCounterPos = iter->GetAvgCounterPos();
+      double startTime                = iter->GetStartTime();
+      double endTime                  = iter->GetEndTime();
+      int    PEs                      = iter->GetPEs();
       bool   hasMCInfo                = (crvDigiMCCollection.isValid()?true:false); //MC
       double totalEnergyDeposited     = 0;         //MC
       double earliestHitTime          = NAN;       //MC
@@ -101,11 +107,11 @@ namespace mu2e
       CLHEP::Hep3Vector     earliestHitPos;        //MC
 
       //loop through all reco pulses and try to find the MC information
-      std::vector<CrvCoincidenceClustersSummary::PulseInfo> pulses; //collection all pulses (incl. reco and MC info)
+      std::vector<CrvCoincidenceClusterSummary::PulseInfo> pulses; //collection all pulses (incl. reco and MC info)
       std::map<art::Ptr<SimParticle>, int> simParticleMap;  //counting all simParticles
-      std::set<size_t> allWaveformIndices;  //collecting all waveform indices for total energy calculation
+      std::set<art::Ptr<StepPointMC> > stepsAllPulses;  //collecting all step points for total energy calculation
                                             //use a set to avoid double counts, e.g. for two pulses coming from same digi
-      const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses = iter->_crvRecoPulses;
+      const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses = iter->GetCrvRecoPulses();
       for(size_t i=0; i<crvRecoPulses.size(); i++)
       {
         const art::Ptr<CrvRecoPulse> crvRecoPulse = crvRecoPulses[i];
@@ -115,76 +121,78 @@ namespace mu2e
         //get MC information, if available
         if(hasMCInfo)
         {
+          std::set<art::Ptr<StepPointMC> > stepsThisPulse;
           const std::vector<size_t> &waveformIndices = crvRecoPulse->GetWaveformIndices();
-          double maxEnergyDeposited = 0;
-          for(size_t j=0; j<waveformIndices.size(); j++)
+          for(size_t j=0; j<waveformIndices.size(); j++) 
           {
             size_t waveformIndex = waveformIndices[j];
-            allWaveformIndices.insert(waveformIndex);
-
-            const CrvDigiMC &digi = crvDigiMCCollection->at(waveformIndex);
-
-            //get the SimParticle responsible for the current pulse from this CrvDigiMC,
-            //if it has makes the biggest contribution with respect to the deposited energy
-            if(digi.GetEnergyDeposited()>maxEnergyDeposited)
-            {
-              maxEnergyDeposited = digi.GetEnergyDeposited();
-              simParticle = digi.GetSimParticle();
-            }
-
-            //add the deposited energy for the current pulse from this CrvDigiMC
-            energyDeposited += digi.GetEnergyDeposited();
+            CollectStepPoints(stepsThisPulse, crvDigiMCCollection, waveformIndex);
+            CollectStepPoints(stepsAllPulses, crvDigiMCCollection, waveformIndex);
           }
+
+          double earliestHitTimeThisPulse; //not used here
+          CLHEP::Hep3Vector earliestHitPosThisPulse; //not used here
+          GetSummary(stepsThisPulse, energyDeposited, earliestHitTimeThisPulse, earliestHitPosThisPulse, simParticle);
         }
 
         pulses.emplace_back(crvRecoPulse,simParticle,energyDeposited);
       }//loop over reco pulses
 
-      //looping through all crvDigiMCs (if available)
-      for(std::set<size_t>::const_iterator i=allWaveformIndices.begin(); i!=allWaveformIndices.end(); i++)
-      {
-        size_t waveformIndex = *i;
-        const CrvDigiMC &digi = crvDigiMCCollection->at(waveformIndex);
-
-        //add the deposited energy for the current CrvDigiMC
-        totalEnergyDeposited += digi.GetEnergyDeposited();
-
-        //put the SimParticle of this CrvDigiMC into the collection of SimParticles
-        simParticleMap[digi.GetSimParticle()]++;
-          
-        //get the StepPointMCs responsible for this CrvDigiMC
-        const std::vector<art::Ptr<StepPointMC> > &stepPoints = digi.GetStepPoints();
-        for(size_t k=0; k<stepPoints.size(); k++)
-        {
-          if(stepPoints[k].isNull()) continue;
-          double t=stepPoints[k]->time();
-          if(t<earliestHitTime || isnan(earliestHitTime))
-          {
-            earliestHitTime=t;
-            earliestHitPos=stepPoints[k]->position();
-          }
-        }
-      }//loop over crvDigiMCs
-
-      //finding the most likely simParticles
-      std::map<art::Ptr<SimParticle>,int >::iterator simParticleIter;
-      int simParticleCount=0;
-      for(simParticleIter=simParticleMap.begin(); simParticleIter!=simParticleMap.end(); simParticleIter++)
-      {
-        if(simParticleIter->second>simParticleCount)
-        {
-          simParticleCount=simParticleIter->second;
-          mostLikelySimParticle=simParticleIter->first;
-        }
-      }//loop over sim particle map
+      GetSummary(stepsAllPulses, totalEnergyDeposited, earliestHitTime, earliestHitPos, mostLikelySimParticle);
 
       //insert the cluster information into the vector of the crv coincidence clusters
-      crvCoincidenceClustersSummary->GetClusters().emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, hasMCInfo, 
-                                                                pulses, mostLikelySimParticle, totalEnergyDeposited, earliestHitTime, earliestHitPos);
+      crvCoincidenceClusterSummaryCollection->emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, hasMCInfo, 
+                                                           pulses, mostLikelySimParticle, totalEnergyDeposited, earliestHitTime, earliestHitPos);
     }//loop over all clusters
 
-    event.put(std::move(crvCoincidenceClustersSummary));
+    event.put(std::move(crvCoincidenceClusterSummaryCollection));
   } // end produce
+
+  void CrvCoincidenceClusterSummarizer::CollectStepPoints(std::set<art::Ptr<StepPointMC> > &steps, 
+                                                          const art::Handle<CrvDigiMCCollection> &digis, 
+                                                          size_t waveformIndex)
+  {
+    const CrvDigiMC &digi = digis->at(waveformIndex);
+    const std::vector<art::Ptr<StepPointMC> > &stepPoints = digi.GetStepPoints();
+    for(size_t k=0; k<stepPoints.size(); k++)
+    {
+      if(stepPoints[k].isNonnull()) steps.insert(stepPoints[k]);
+    }
+  }
+
+  void CrvCoincidenceClusterSummarizer::GetSummary(const std::set<art::Ptr<StepPointMC> > &steps, 
+                                                   double &energyDeposited, double &earliestHitTime,
+                                                   CLHEP::Hep3Vector &earliestHitPos,
+                                                   art::Ptr<SimParticle> &mostLikelySimParticle)
+  {
+    energyDeposited=0;
+    earliestHitTime=NAN;
+    
+    std::map<art::Ptr<SimParticle>,double> simParticleMap;
+    std::set<art::Ptr<StepPointMC> >::const_iterator i;
+    for(i=steps.begin(); i!=steps.end(); i++)
+    {
+      const StepPointMC &step = **i;
+      energyDeposited+=step.totalEDep();
+      simParticleMap[step.simParticle()]+=step.totalEDep();
+      if(isnan(earliestHitTime) || earliestHitTime>step.time())
+      {
+        earliestHitTime=step.time();
+        earliestHitPos=step.position();
+      }
+    }
+
+    std::map<art::Ptr<SimParticle>,double>::iterator simParticleIter;
+    double simParticleDepEnergy=0;
+    for(simParticleIter=simParticleMap.begin(); simParticleIter!=simParticleMap.end(); simParticleIter++)
+    {
+      if(simParticleIter->second>simParticleDepEnergy)
+      {
+        simParticleDepEnergy=simParticleIter->second;
+        mostLikelySimParticle=simParticleIter->first;
+      }
+    }
+  }
 
 } // end namespace mu2e
 

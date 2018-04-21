@@ -17,7 +17,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -128,7 +128,7 @@ namespace mu2e
     _timeWindowEnd(pset.get<double>("timeWindowEnd")),
     _muonsOnly(pset.get<bool>("muonsOnly",false))
   {
-    produces<CrvCoincidenceCheckResult>();
+    produces<CrvCoincidenceCollection>();
     _totalEvents=0;
     _totalEventsCoincidence=0;
     if(_muonsOnly)
@@ -196,7 +196,7 @@ namespace mu2e
 
   void CrvCoincidenceCheck::produce(art::Event& event) 
   {
-    std::unique_ptr<CrvCoincidenceCheckResult> crvCoincidenceCheckResult(new CrvCoincidenceCheckResult);
+    std::unique_ptr<CrvCoincidenceCollection> crvCoincidenceCollection(new CrvCoincidenceCollection);
 
     GeomHandle<CosmicRayShield> CRS;
 
@@ -363,10 +363,8 @@ namespace mu2e
           if(coincidenceFound)
           {
             std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses{layer0Iter->_crvRecoPulse,layer1Iter->_crvRecoPulse,layer2Iter->_crvRecoPulse,layer3Iter->_crvRecoPulse};
-            CrvCoincidenceCheckResult::CoincidenceCombination combination;
-            combination._crvRecoPulses=crvRecoPulses;
-            combination._sectorType=iterHitMap->first;
-            crvCoincidenceCheckResult->GetCoincidenceCombinations().push_back(combination);
+            int sectorType=iterHitMap->first;
+            crvCoincidenceCollection->emplace_back(crvRecoPulses, sectorType);
           }
         }
       } // four layer coincidences
@@ -426,10 +424,8 @@ namespace mu2e
           if(coincidenceFound)
           {
             std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses{layer1Iter->_crvRecoPulse,layer2Iter->_crvRecoPulse,layer3Iter->_crvRecoPulse};
-            CrvCoincidenceCheckResult::CoincidenceCombination combination;
-            combination._crvRecoPulses=crvRecoPulses;
-            combination._sectorType=iterHitMap->first;
-            crvCoincidenceCheckResult->GetCoincidenceCombinations().push_back(combination);
+            int sectorType=iterHitMap->first;
+            crvCoincidenceCollection->emplace_back(crvRecoPulses, sectorType);
           }
         }
       }  //three layer coincidences
@@ -475,10 +471,8 @@ namespace mu2e
             if(coincidenceFound)
             {
               std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses{i1->_crvRecoPulse,i2->_crvRecoPulse,i3->_crvRecoPulse};
-              CrvCoincidenceCheckResult::CoincidenceCombination combination;
-              combination._crvRecoPulses=crvRecoPulses;
-              combination._sectorType=iterHitMap->first;
-              crvCoincidenceCheckResult->GetCoincidenceCombinations().push_back(combination);
+              int sectorType=iterHitMap->first;
+              crvCoincidenceCollection->emplace_back(crvRecoPulses, sectorType);
             }
           }
         }
@@ -487,16 +481,16 @@ namespace mu2e
     }
 
     _totalEvents++;
-    if(crvCoincidenceCheckResult->CoincidenceFound()) _totalEventsCoincidence++;
+    if(crvCoincidenceCollection->size()>0) _totalEventsCoincidence++;
     _moduleLabel = *this->currentContext()->moduleLabel();
 
     if(_verboseLevel>0)
     {
       std::cout<<_moduleLabel<<"   run "<<event.id().run()<<"  subrun "<<event.id().subRun()<<"  event "<<event.id().event()<<"    ";
-      std::cout<<(crvCoincidenceCheckResult->CoincidenceFound()?"Coincidence satisfied":"No coincidence found")<<std::endl;
+      std::cout<<(crvCoincidenceCollection->size()>0?"Coincidence satisfied":"No coincidence found")<<std::endl;
     }
 
-    event.put(std::move(crvCoincidenceCheckResult));
+    event.put(std::move(crvCoincidenceCollection));
 
   } // end produce
 

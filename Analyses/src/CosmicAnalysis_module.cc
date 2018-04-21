@@ -25,7 +25,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
