@@ -48,7 +48,7 @@ namespace mu2e {
       ProtonIntensityModel _model;
       double _nmean; // mean number of protons/microbunch hitting the target
       double _width; // fractional full width of the flat distribution
-      double _sig, _mu, _off; // lognormal parameters
+      double _sig, _mean; // lognormal parameters
       int _diag; // level of diag histograms
       int _printLevel; // level of diagnostic printout
       double _flimits[2]; // cache of the limits for the flat distribution
@@ -65,12 +65,11 @@ namespace mu2e {
     _model(static_cast<ProtonIntensityModel>(pset.get<int>("IntensityModel",flat))),
     _nmean(pset.get<double>("MeanNumberOfProtonsPerMicrobunch")),
     _width(pset.get<double>("FullRelativeWidth",0.5)),
-    _off(pset.get<double>("Lognormal_offset",0.0)),
     _diag(pset.get<int>("DiagLevel",0)),
     _printLevel(pset.get<int>("PrintLevel",0)),
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
     _randflat(_engine),
-    _lognd(pset.get<double>("Lognormal_mu",0.02),pset.get<double>("Lognormal_sigma",0.391)),
+    _lognd(pset.get<double>("Lognormal_mean",-0.1005),pset.get<double>("Lognormal_sigma",0.3814)),
     _urbg(_engine)
   {
   // setup limits
@@ -86,7 +85,7 @@ namespace mu2e {
 	<< " and " << _flimits[1] << std::endl;
       else if(_model == lognorm)
 	std::cout << "Generating proton bunches with lognormal intensity sigma =  " << _lognd.s()
-	<< " mu = " << _lognd.m() << " offset = " << _off << std::endl;
+	<< " mean = " << _lognd.m() << std::endl;
       else
         throw cet::exception("SIM")<<"mu2e::ProtonBunchIntensitySimulator: unknown proton bunch intensity model " << _model << std::endl;
     }
@@ -113,7 +112,7 @@ namespace mu2e {
 	fintensity = _randflat.fire(_flimits[0],_flimits[1]);
 	break;
       case lognorm:
-	fintensity = _nmean*(_off + _lognd(_urbg));
+	fintensity = _nmean*_lognd(_urbg);
 	break;
     }
     // convert to nearest ingeger
