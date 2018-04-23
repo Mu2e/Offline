@@ -170,6 +170,7 @@ namespace mu2e {
     _shfcol  = 0;
     _shpcol  = 0;
     _sdcol   = 0;
+    _chcol   = 0;
 
     if (_fetchCaloDigis) {
       auto cdH = evt.getValidHandle<CaloDigiCollection>(_cdTag);

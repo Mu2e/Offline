@@ -125,12 +125,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   bool CalTimePeakFinder::findData(const art::Event& evt) {
 
-    auto shcolH = evt.getValidHandle<mu2e::ComboHitCollection>(_shLabel);
-    if (shcolH.product() != 0){
-      _data.shcol = shcolH.product();
+    auto chcolH = evt.getValidHandle<mu2e::ComboHitCollection>(_shLabel);
+    if (chcolH.product() != 0){
+      _data.chcol = chcolH.product();
     }
     else {
-      _data.shcol  = 0;
+      _data.chcol  = 0;
       printf(" >>> ERROR in CalTimePeakFinder::findData: ComboHitCollection with label=%s not found.\n",
              _shLabel.data());
     }
@@ -144,7 +144,7 @@ namespace mu2e {
              _ccmLabel.data());
     }
 
-    return (_data.shcol != 0) && (_data.ccCollection != 0);
+    return (_data.chcol != 0) && (_data.ccCollection != 0);
   }
 
 //-----------------------------------------------------------------------------
@@ -194,7 +194,7 @@ namespace mu2e {
 
     //    const char* oname = "CalTimePeakFinder::findTimePeaks";
 
-    int                 ncl, nsh;
+    int                 ncl, nch;
     double              time, dt, tof, zstraw, cl_time;//, stime;
     double              xcl, ycl, zcl/*, dz_cl*/;
     const CaloCluster*  cl;
@@ -212,11 +212,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // Loop over calorimeter clusters
 //-----------------------------------------------------------------------------
-    nsh   = _data.shcol->size();
+    nch   = _data.chcol->size();
     ncl   = _data.ccCollection->size();
     
     for (int ic=0; ic<ncl; ic++) {
       cl      = &_data.ccCollection->at(ic);
+      int   nsh(0);
 
       if ( cl->energyDep() >= _minClusterEnergy) {
 
@@ -240,9 +241,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // record hits in time with each peak, and accept them if they have a minimum # of hits
 //-----------------------------------------------------------------------------
-          for(int istr=0; istr<nsh;++istr) {
+          for(int istr=0; istr<nch;++istr) {
 
-            hit    = &_data.shcol->at(istr);
+            hit    = &_data.chcol->at(istr);
             time   = hit->time();
             zstraw = hit->pos().z();
 //-----------------------------------------------------------------------------
@@ -265,6 +266,7 @@ namespace mu2e {
 	      //-----------------------------------------------------------------------------
 	      if (fabs(dphi) <= pi/2.) {
 		tpeak._strawHitIdxs.push_back( StrawHitIndex(istr) );
+		nsh += hit->nStrawHits();
 		//-----------------------------------------------------------------------------
 		// print diagnostics on rejected hits
 		//-----------------------------------------------------------------------------
@@ -275,7 +277,9 @@ namespace mu2e {
 	    }
 	  }
 
-          if (int(tpeak.nhits()) >= _data.minNHits) {
+          // if (int(tpeak.nhits()) >= _data.minNHits) {
+          if (nsh >= _data.minNHits) {
+	    tpeak._nsh              = nsh;
 	    tpeak._t0               = TrkT0(cl_time, 0.1); //dummy value for errT0
 	    tpeak._pos              = tpos;
 	    tpeak._caloCluster      = art::Ptr<mu2e::CaloCluster>(_ccH, ic);

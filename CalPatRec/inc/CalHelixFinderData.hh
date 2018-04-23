@@ -147,8 +147,14 @@ namespace mu2e {
     SeedInfo_t                        _seedIndex;
     SeedInfo_t                        _candIndex;
 
-    int                               _nPoints;      // n(hits)
-    int                               _nFiltPoints;
+    int                               _nStrawHits;      
+    int                               _nComboHits;    
+
+    int                               _nXYSh;
+    int                               _nZPhiSh;
+  
+    int                               _nFiltPoints;     //ComboHits from the TimeCluster + DeltaFinder filtering 
+    int                               _nFiltStrawHits;  //StrawHits from the TimeCluster + DeltaFinder filtering 
 
     double                            _helixChi2;
 
@@ -164,7 +170,7 @@ namespace mu2e {
 // circle parameters; the z center is ignored.
 //-----------------------------------------------------------------------------
     ::LsqSums4         _sxy;
-    ::LsqSums4         _srphi;
+    ::LsqSums4         _szphi;
 
     XYZVec             _center;
     double             _radius;
@@ -173,10 +179,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // 2015-02-06 P.Murat: fit with non-equal weights - XY-only
 //-----------------------------------------------------------------------------
-    ::LsqSums4         _sxyw;
-    XYZVec             _cw;
-    double             _rw;
-    double             _chi2w;
+    // ::LsqSums4         _sxyw;
+    // XYZVec             _cw;
+    // double             _rw;
+    // double             _chi2w;
 //-----------------------------------------------------------------------------
 // Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)), 
 // fz0 is the phi value of the particle where it goes through z=0
@@ -208,7 +214,7 @@ namespace mu2e {
     const StrawHitFlagCollection*     shfcol() { return _shfcol; }
 
     bool          fitIsValid        () { return _sxy.qn() > 0; }
-    bool          weightedFitIsValid() { return _sxyw.qn() > 0; }
+    bool          weightedFitIsValid() { return _sxy.qn() > 0; }
     int           maxIndex          () { return kMaxResidIndex; }
     HelixTraj*    helix             () { return _helix;        }
 
@@ -219,11 +225,6 @@ namespace mu2e {
     void          print(const char* Title);
     void          clearTempVariables();
     void          clearResults();
-
-    void          markHelixPoints        ();
-
-    void          setTestHelixPoints     ();
-    void          resetTestHelixPoints   ();
 
   };
 

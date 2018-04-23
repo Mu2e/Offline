@@ -311,7 +311,7 @@ namespace mu2e {
 	    _data.p[loc]       = _data.pT[loc]/std::cos( std::atan(helix_seed.helix().lambda()/_data.radius[loc]));
 	
 	    _data.chi2XY[loc]   = _hfResult._sxy.chi2DofCircle();
-	    _data.chi2ZPhi[loc] = _hfResult._srphi.chi2DofLine();
+	    _data.chi2ZPhi[loc] = _hfResult._szphi.chi2DofLine();
 	    
 	    _data.nseeds[0]++;
 	    _data.good[loc] = 0;
@@ -324,6 +324,7 @@ namespace mu2e {
 	    _data.dr           [loc] = _hfResult._diag.dr;
 	    _data.shmeanr      [loc] = _hfResult._diag.straw_mean_radius;
 	    _data.chi2d_helix  [loc] = _hfResult._diag.chi2d_helix;
+	    if (_hfResult._diag.chi2d_helix>3) printf("[%s] : chi2Helix = %10.3f event number %8i\n", oname,_hfResult._diag.chi2d_helix,_iev);
 //-----------------------------------------------------------------------------
 // info of the track candidate after the first loop with findtrack on CalHelixFinderAlg::doPatternRecognition
 //-----------------------------------------------------------------------------
@@ -497,7 +498,8 @@ namespace mu2e {
       if (bkg_hit)                              continue;
       if ( (sh.time() < minT) || (sh.time() > maxT) )  continue;
 
-      ++ngoodhits;
+      // ++ngoodhits;
+      ngoodhits += sh.nStrawHits();
     }
     
     return ngoodhits;

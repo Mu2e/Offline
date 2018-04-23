@@ -33,7 +33,7 @@ BEGIN_PROLOG
 # new format
 #------------------------------------------------------------------------------
 CalPatRec : {
-    minNComboHits : 7
+    minNStrawHits : 10
     chi2HitCut    : 25
     chi2hel3DMax  : 9
 }
@@ -81,7 +81,7 @@ CalPatRec : { @table::CalPatRec
 	maxElectronHitEnergy                    : 0.005           # 5 KeV, in MeV
 	minimumTime                             : 500.    #ns
 	maximumTime                             : 2000.   #ns
-	minNHit                                 : @local::CalPatRec.minNComboHits       # minimal number of hits on found helix
+	minNHit                                 : @local::CalPatRec.minNStrawHits       # minimal number of hits on found helix
 	hitChi2Max                              : @local::CalPatRec.chi2HitCut
 	mostProbableDfDz                        : 0.00475
 #	minNActiveStationPairs                  : 10
@@ -605,9 +605,9 @@ CalPatRec : { @table::CalPatRec
 	    StrawHitCollectionLabel                     : makePH
 	    StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
 	    caloClusterModuleLabel                      : CaloClusterFromProtoCluster
-	    HitSelectionBits                            : [] # ["EnergySelection","TimeSelection"]
-	    BackgroundSelectionBits                     : [] # ["Background"]
-	    MinNHits                                    : @local::CalPatRec.minNComboHits  
+	    HitSelectionBits                            : [] 
+	    BackgroundSelectionBits                     : [] 
+	    MinNHits                                    : @local::CalPatRec.minNStrawHits  
 	    DtMin                                       : -30.   # value before 2017-11-17 was -40. ns
 	    DtMax                                       :  20.   # value before 2017-11-17 was 40. 
 	    minClusterEnergy                            : 50.    # MeV
@@ -629,7 +629,7 @@ CalPatRec : { @table::CalPatRec
 	    StrawHitCollectionLabel                     : makePH
 	    StrawHitFlagCollectionLabel                 : "DeltaFinder:ComboHits"
 	    TimeClusterCollectionLabel                  : CalTimePeakFinder
-	    minNHitsTimeCluster                         : @local::CalPatRec.minNComboHits  
+	    minNHitsTimeCluster                         : @local::CalPatRec.minNStrawHits  
 	    fitparticle                                 : @local::Particle.eminus
 	    fitdirection                                : @local::FitDir.downstream
 
