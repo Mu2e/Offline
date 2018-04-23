@@ -462,12 +462,10 @@ namespace mu2e
                  if (dist2ik < mind2 ||  dist2jk < mind2 || dist2ik > maxd2 || dist2jk > maxd2) continue;
 		 // Heron's formula
 		 float area2 = (dist2ij*dist2jk + dist2ik*dist2jk + dist2ij*dist2ik) - 0.5*(dist2ij*dist2ij + dist2jk*dist2jk + dist2ik*dist2ik);
-
+	         if(area2 < _minarea2)continue;
                  // this effectively measures the slope difference
 	         float delta = (wpos[kp].x() - wpos[jp].x())*(wpos[jp].y() - wpos[ip].y()) -
 		                (wpos[jp].x() - wpos[ip].x())*(wpos[kp].y() - wpos[jp].y());
-//	         if (fabs(delta) < _mindelta) continue;
-	         if(area2 < _minarea2)continue;
 
                  float rk2 = wpos[kp].Mag2();
 
