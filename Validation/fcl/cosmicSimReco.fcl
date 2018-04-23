@@ -68,6 +68,16 @@ physics.producers.g4run.Mu2eG4CommonCut : @local::SpeedUpCosmics
 # only simulate CRV
 physics.producers.g4run.SDConfig.enableSD : [ CRV ]
 
+# this is necessary because the standard fcl will 
+# collect all StepPoints with instance CRV.  This will 
+# pick up both the g4run collection and the filtered collection,
+# so select only the latter
+physics.producers.CrvPhotons.g4ModuleLabels : ["cosmicFilter"]
+
+# turn off very verbose
+physics.producers.CrvCoincidence.verboseLevel : 0
+physics.producers.CrvCoincidenceClusterFinder.verboseLevel : 0
+
 # print summaries
 services.scheduler.wantSummary: true
 services.TimeTracker.printSummary: true

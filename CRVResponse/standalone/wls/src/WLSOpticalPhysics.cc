@@ -117,6 +117,7 @@ void WLSOpticalPhysics::ConstructProcess()
   G4EmSaturation* emSaturation = G4LossTableManager::Instance()->EmSaturation();
   theScintProcess->AddSaturation(emSaturation);
 
+//  auto aParticleIterator=GetParticleIterator();  //FIXME: needed for GEANT v10_4
   aParticleIterator->reset();
   while ( (*aParticleIterator)() ){
 
