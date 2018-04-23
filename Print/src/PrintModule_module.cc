@@ -21,6 +21,10 @@
 #include "Print/inc/CaloRecoDigiPrinter.hh"
 #include "Print/inc/CaloCrystalHitPrinter.hh"
 #include "Print/inc/CaloClusterPrinter.hh"
+#include "Print/inc/CrvDigiPrinter.hh"
+#include "Print/inc/CrvDigiMCPrinter.hh"
+#include "Print/inc/CrvRecoPulsePrinter.hh"
+#include "Print/inc/CrvCoincidenceClusterPrinter.hh"
 #include "Print/inc/StrawDigiPrinter.hh"
 #include "Print/inc/StrawDigiMCPrinter.hh"
 #include "Print/inc/StrawHitPrinter.hh"
@@ -74,6 +78,10 @@ mu2e::PrintModule::PrintModule(fhicl::ParameterSet const& pset ):
   _printers.push_back( new CaloRecoDigiPrinter(pset) );
   _printers.push_back( new CaloCrystalHitPrinter(pset) );
   _printers.push_back( new CaloClusterPrinter(pset) );
+  _printers.push_back( new CrvDigiPrinter(pset) );
+  _printers.push_back( new CrvDigiMCPrinter(pset) );
+  _printers.push_back( new CrvRecoPulsePrinter(pset) );
+  _printers.push_back( new CrvCoincidenceClusterPrinter(pset) );
   _printers.push_back( new StrawDigiPrinter(pset) );
   _printers.push_back( new StrawDigiMCPrinter(pset) );
   _printers.push_back( new StrawHitPrinter(pset) );

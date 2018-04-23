@@ -79,6 +79,23 @@ physics :{
 	#inputTags : [ "CaloClusterFromProtoCluster" ] # select instances
       }
 
+      CrvDigiPrinter : {
+        verbose: 0
+	#inputTags : [ "CrvDigi" ]
+      }
+      CrvDigiMCPrinter : {
+        verbose: 0
+	#inputTags : [ "CrvWaveforms" ]
+      }
+      CrvRecoPulsePrinter : {
+        verbose: 1
+	#inputTags : [ "CrvRecoPulses" ]
+      }
+      CrvCoincidenceClusterPrinter : {
+        verbose: 1    # 0,1,2
+	#inputTags : [ "CrvCoincidenceClusterFinder" ]
+      }
+
       StrawDigiPrinter : {
         verbose: 1   # 0, 1
 	#inputTags : [ "MakeSD" ] # select instances

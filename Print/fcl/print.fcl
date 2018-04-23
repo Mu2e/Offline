@@ -58,6 +58,19 @@ physics :{
         eCut :  10.0
       }
 
+      CrvDigiPrinter : {
+        verbose: 0
+      }
+      CrvDigiMCPrinter : {
+        verbose: 0
+      }
+      CrvRecoPulsePrinter : {
+        verbose: 1
+      }
+      CrvCoincidenceClusterPrinter : {
+        verbose: 1
+      }
+
       StrawDigiPrinter : {
         verbose: 0
       }
