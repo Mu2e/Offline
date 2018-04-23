@@ -88,6 +88,8 @@
  <class name="mu2e::VisibleGenElTrack"/>
  <class name="mu2e::VisibleGenElTrackCollection" persistent="false"/>
  <class name="mu2e::StepFilterMode"/>
+ <class name="mu2e::MCTrajectoryPoint"/>
+ <class name="std::vector<mu2e::MCTrajectoryPoint>"/>
  <class name="mu2e::MCTrajectory"/>
  <class name="std::pair<art::Ptr<mu2e::SimParticle>, mu2e::MCTrajectory>"/>
  <class name="std::map<art::Ptr<mu2e::SimParticle>, mu2e::MCTrajectory>"/>

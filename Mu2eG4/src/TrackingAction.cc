@@ -453,7 +453,7 @@ namespace mu2e {
 
     key_type kid(_spHelper->particleKeyFromG4TrackID(trk->GetTrackID()));
 
-    std::vector<CLHEP::HepLorentzVector> const& trajectory = _steppingAction->trajectory();
+    const auto& trajectory = _steppingAction->trajectory();
     if ( int(trajectory.size()) < _mcTrajectoryMinSteps ) return;
 
     // Find the particle in the map.
@@ -491,8 +491,7 @@ namespace mu2e {
 
     // So far the trajectory holds the starting point of each step.
     // Add the end point of the last step.
-    traj.points().emplace_back( trk->GetPosition()-_mu2eOrigin, trk->GetGlobalTime() );
-
+    traj.points().emplace_back( trk->GetPosition()-_mu2eOrigin, trk->GetGlobalTime(), trk->GetKineticEnergy() );
   }
 
 } // end namespace mu2e

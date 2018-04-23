@@ -12,11 +12,11 @@
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/MCTrajectoryPoint.hh"
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
 
 // G4 includes
 #include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/LorentzVector.h"
 #include "G4UserSteppingAction.hh"
 #include "G4TrackStatus.hh"
 #include "G4ThreeVector.hh"
@@ -62,13 +62,13 @@ namespace mu2e {
     // G4 has initialized itself.
     void finishConstruction();
 
-    std::vector<CLHEP::HepLorentzVector> const&  trajectory();
+    std::vector<MCTrajectoryPoint> const&  trajectory();
 
     // Give away ownership of the trajectory information ( to the data product ).
     // This is called from TrackingAction::addTrajectory which is called from
     // TrackingAction::PostUserTrackingAction.  The result is that the
     // _trajectory data member is empty.
-    void swapTrajectory( std::vector<CLHEP::HepLorentzVector>& trajectory);
+    void swapTrajectory( std::vector<MCTrajectoryPoint>& trajectory);
 
     // A helper function to manage the printout.
     static void printit( G4String const& s,
@@ -101,8 +101,8 @@ namespace mu2e {
     const Mu2eG4TrajectoryControl* trajectoryControl_;
     typedef std::map<const G4VPhysicalVolume*, double> VolumeCutMap;
     VolumeCutMap mcTrajectoryVolumePtDistances_;
-    // Store point and time at each G4Step; cleared at beginOfTrack time.
-    std::vector<CLHEP::HepLorentzVector> _trajectory;
+    // Store trajectory parameters at each G4Step; cleared at beginOfTrack time.
+    std::vector<MCTrajectoryPoint> _trajectory;
 
     // Lists of events and tracks for which to enable debug printout.
     EventNumberList _debugEventList;

@@ -1365,9 +1365,8 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
     {
       if(traj_iter->first->id()==id) 
       {
-        const std::vector<CLHEP::HepLorentzVector> &points = traj_iter->second.points();
-        std::vector<CLHEP::HepLorentzVector>::const_iterator point_iter;
-        for(point_iter=points.begin(); point_iter!=points.end(); point_iter++)
+        const auto& points = traj_iter->second.points();
+        for(auto point_iter=points.begin(); point_iter!=points.end(); ++point_iter)
         {
           track->addTrajectoryPoint(point_iter->x()-_detSysOrigin.x(),
                                     point_iter->y()-_detSysOrigin.y(),

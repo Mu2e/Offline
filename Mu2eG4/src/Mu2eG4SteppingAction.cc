@@ -135,8 +135,11 @@ namespace mu2e {
     const double mcTrajCurrentCut = mcTrajectoryMinDistanceCut(prept->GetPhysicalVolume());
     // In some cases we know to accept the point even without computing the distance
     bool computeMCTrajDistance = (!_trajectory.empty()) && (mcTrajCurrentCut > 0.);
-    if(!computeMCTrajDistance || (((prept->GetPosition() - _mu2eOrigin) -  _trajectory.back().vect()).mag() >= mcTrajCurrentCut)) {
-      _trajectory.emplace_back ( prept->GetPosition() - _mu2eOrigin, prept->GetGlobalTime() );
+    if(!computeMCTrajDistance || (((prept->GetPosition() - _mu2eOrigin) -  _trajectory.back().pos()).mag() >= mcTrajCurrentCut)) {
+      _trajectory.emplace_back ( prept->GetPosition() - _mu2eOrigin,
+                                 prept->GetGlobalTime(),
+                                 prept->GetKineticEnergy()
+                                 );
     }
 
     // Get kinetic energy at the begin of the step
@@ -291,11 +294,11 @@ namespace mu2e {
     return true;
   }
 
-  std::vector<CLHEP::HepLorentzVector> const& Mu2eG4SteppingAction::trajectory() {
+  std::vector<MCTrajectoryPoint> const& Mu2eG4SteppingAction::trajectory() {
     return _trajectory;
   }
 
-  void  Mu2eG4SteppingAction::swapTrajectory(std::vector<CLHEP::HepLorentzVector>& trajectory) {
+  void  Mu2eG4SteppingAction::swapTrajectory(std::vector<MCTrajectoryPoint>& trajectory) {
     std::swap( trajectory, _trajectory);
   }
 
