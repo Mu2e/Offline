@@ -285,22 +285,22 @@ namespace mu2e {
  
       const auto xyPair          = random2dPair.fire( energy );
       const auto elecPosiVectors = MuonCaptureSpectrum::getElecPosiVectors( energy, xyPair.first, xyPair.second ); 
-      CLHEP::HepLorentzVector fakeElectron( 105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+ massE*massE));
-      CLHEP::HepLorentzVector fakePositron(-105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+ massE*massE));
+      //      CLHEP::HepLorentzVector fakeElectron( 105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+ massE*massE));
+      //CLHEP::HepLorentzVector fakePositron(-105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+ massE*massE));
       output->emplace_back( PDGCode::e_minus, 
 			    GenId::radiativeMuonCaptureInternal, 
 			    pos,
-			    //			    elecPosiVectors.first, 
-			    fakeElectron, 
-			    800. );
-      //			    stop.t );
+			    elecPosiVectors.first, 
+			    //fakeElectron, 
+			    //800. );
+      			    stop.t );
       output->emplace_back( PDGCode::e_plus, 
 			    GenId::radiativeMuonCaptureInternal, 
 			    pos,
-			    //			    elecPosiVectors.second, 
-			    fakePositron, 
-			    800.);
-      //			    stop.t );
+			    elecPosiVectors.second, 
+			    //fakePositron, 
+			    //800.);
+      			    stop.t );
 
       event.put(std::move(output));
 
