@@ -792,6 +792,9 @@ namespace mu2e {
     
     void StrawDigisFromStepPointMCs::createDigi(WFXP const& xpair, SWFP const& waveform,
                                                 StrawIndex index, StrawDigiCollection* digis){
+      // convert the index to a StarwId first! FIXME!!!
+      const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
+      StrawId sid = tracker.getStrawId(index);
       // storage for MC match can be more than 1 StepPointMCs
       set<art::Ptr<StepPointMC>> mcmatch;
       // initialize the float variables that we later digitize
@@ -819,6 +822,8 @@ namespace mu2e {
         // sample ADC
         waveform[iend].sampleADCWaveform(adctimes,wf[iend]);
       }
+      // uncalibrate
+      _strawele->uncalibrateTimes(xtimes,sid);
       // add ends and add noise
       ADCVoltages wfsum; wfsum.reserve(adctimes.size());
       for(unsigned isamp=0;isamp<adctimes.size();++isamp){
@@ -830,9 +835,6 @@ namespace mu2e {
       TrkTypes::TDCValues tdc;
       _strawele->digitizeTimes(xtimes,tdc);
       // create the digi from this
-      // convert the index to a StarwId first! FIXME!!!
-      const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
-      StrawId sid = tracker.getStrawId(index);
       digis->push_back(StrawDigi(sid,tdc,tot,adc));
     }
     

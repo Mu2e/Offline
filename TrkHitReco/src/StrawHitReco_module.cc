@@ -189,7 +189,7 @@ namespace mu2e {
 	StrawHitFlag flag;
 	// start by reconstructing the times
 	TDCTimes times;
-	strawele->tdcTimes(digi.TDC(),times);
+        srep->calibrateTimes(digi.TDC(),times,digi.strawId());
 	// take the earliest of the 2 end times
 	float time = std::min(times[0],times[1]);
 	if (time < _minT || time > _maxT ){

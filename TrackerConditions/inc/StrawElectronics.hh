@@ -17,6 +17,7 @@
 #include <utility>
 
 // Mu2e includes
+#include "DataProducts/inc/StrawId.hh"
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 #include "TrackerConditions/inc/Types.hh"
 #include "fhiclcpp/ParameterSet.h"
@@ -57,6 +58,7 @@ namespace mu2e {
       uint16_t tdcResponse(double time) const; // TDC response to a given time
       void digitizeWaveform(TrkTypes::ADCVoltages const& wf,TrkTypes::ADCWaveform& adc) const; // digitize an array of voltages at the ADC
       void digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc) const;
+      void uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const; // convert time from beam t0 to tracker channel t0
       bool combineEnds(double t1, double t2) const; // are times from 2 ends combined into a single digi?
   // interpretation of digital data
       void tdcTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes& times) const;
@@ -90,6 +92,7 @@ namespace mu2e {
       double peakMinusPedestalEnergyScale() const { return _pmpEnergyScale; }
       double normalization(TrkTypes::Path ipath) const { return 1.;} //FIXME
       double fallTime(TrkTypes::Path ipath) const { return 22.;} //FIXME
+      double clusterLookbackTime() const { return _clusterLookbackTime;}
 
       void calculateResponse(std::vector<double> &poles, std::vector<double> &zeros, std::vector<double> &input, std::vector<double> &response, double dVdI);
       double truncationTime(TrkTypes::Path ipath) const { return _ttrunc[ipath];}
@@ -120,6 +123,7 @@ namespace mu2e {
       double _TOTLSB; // least-significant bit of TOT (nsecs)
       uint16_t _maxTOT; // maximum TOT value
       double _clockStart, _clockJitter; // time TDC clock starts, and its error (common to both ends!!)
+      // clockstart is the time offset between "microbunch time" t0 (beam) and TDC t0
       double _flashStart, _flashEnd; // flash blanking period (no digitizations during this time!!!)
       double _pmpEnergyScale; // fudge factor for peak minus pedestal energy method
   // helper functions
@@ -147,6 +151,12 @@ namespace mu2e {
       std::vector<double> _preampToAdc2Response;
       
       std::vector<WireDistancePoint> _wPoints;
+
+      double _clusterLookbackTime;
+
+      std::vector<double> _timeOffsetPanel;
+      std::vector<double> _timeOffsetStrawHV;
+      std::vector<double> _timeOffsetStrawCal;
 
   };
 }

@@ -44,8 +44,13 @@ namespace mu2e {
     _rres_min(pset.get<double>("MinDriftRadiusResolution",0.2)), //mm
     _rres_max(pset.get<double>("MaxDriftRadiusResolution",0.2)), //mm
     _rres_rad(pset.get<double>("DriftRadiusResolutionRadius",-1)), //mm
-    _mint0doca(pset.get<double>("minT0DOCA", -0.2)) //FIXME should be moved to a reconstruction configuration 
+    _mint0doca(pset.get<double>("minT0DOCA", -0.2)), //FIXME should be moved to a reconstruction configuration 
+    _timeOffsetBeam(pset.get<double>("TimeOffsetBeam",10)),
+    _timeOffsetPanel(pset.get<vector<double> >("TimeOffsetPanel",vector<double>(240,0))),
+    _timeOffsetStrawHV(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0))),
+    _timeOffsetStrawCal(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0)))
     {
+      _strawele = ConditionsHandle<StrawElectronics>("ignored");
     }
 
   StrawResponse::~StrawResponse(){}
@@ -179,5 +184,12 @@ namespace mu2e {
     }
     return tdres;
   }
+
+  void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes &times, const StrawId &id) const {
+    
+    times[TrkTypes::hv] = tdc[TrkTypes::hv]*_strawele->tdcLSB() +  _timeOffsetBeam + _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.getStraw()];
+    times[TrkTypes::cal] = tdc[TrkTypes::hv]*_strawele->tdcLSB() + _timeOffsetBeam + _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.getStraw()];
+  }
+ 
  
 }

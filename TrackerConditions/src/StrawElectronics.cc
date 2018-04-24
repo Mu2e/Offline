@@ -61,10 +61,14 @@ namespace mu2e {
     _preampToAdc2Poles(pset.get<vector<double> >("PreampToAdc2Poles",vector<double>{4.6, 6.24})),
     _preampToAdc2Zeros(pset.get<vector<double> >("PreampToAdc2Zeros",vector<double>{})),
     _wireDistances(pset.get<vector<double> >("WireDistances",vector<double>{0.0,1200.0})),
-    _currentMeans(pset.get<vector<double> >("CurrentMeans",vector<double>{5.0,6.29})),
+    _currentMeans(pset.get<vector<double> >("CurrentMeans",vector<double>{0.0,1.29})),
     _currentNormalizations(pset.get<vector<double> >("CurrentNormalizations",vector<double>{1.0,1.0})),
     _currentSigmas(pset.get<vector<double> >("CurrentSigmas",vector<double>{2.2,3.0})),
-    _currentT0s(pset.get<vector<double> >("CurrentT0s",vector<double>{4.7, 8.2}))
+    _currentT0s(pset.get<vector<double> >("CurrentT0s",vector<double>{4.7, 8.2})),
+    _clusterLookbackTime(pset.get<double>("ClusterLookbackTime",5.0)),
+    _timeOffsetPanel(pset.get<vector<double> >("TimeOffsetPanel",vector<double>(240,0))),
+    _timeOffsetStrawHV(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0))),
+    _timeOffsetStrawCal(pset.get<vector<double> >("TimeOffsetStrawCal",vector<double>(96,0)))
  {
    _ttrunc[thresh] = (_responseBins/2)/_sampleRate;
    _ttrunc[adc] = (_responseBins/2)/_sampleRate;
@@ -312,12 +316,11 @@ void StrawElectronics::digitizeWaveform(ADCVoltages const& wf, ADCWaveform& adc)
     return (unsigned)abs(clockTicks1-clockTicks2) < _maxtsep;
   }
 
-  void StrawElectronics::tdcTimes(TDCValues const& tdc, TDCTimes& times) const {
-    for(size_t itime=0;itime<2;++itime)
-    // add back the time when the clock started
-      times[itime] = tdc[itime]*_TDCLSB+_clockStart;
+  void StrawElectronics::uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const {
+    times[TrkTypes::hv] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.getStraw()];
+    times[TrkTypes::cal] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.getStraw()];
   }
-  
+
   double StrawElectronics::adcVoltage(uint16_t adcval) const {
     return (adcval-_ADCped)*_ADCLSB;
   }

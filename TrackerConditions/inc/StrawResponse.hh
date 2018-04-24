@@ -10,6 +10,9 @@
 #include <iostream>
 #include <vector>
 // Mu2e includes
+#include "TrackerConditions/inc/Types.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "TrackerConditions/inc/StrawElectronics.hh"
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -34,6 +37,8 @@ namespace mu2e {
       double driftInstantSpeed(StrawId strawId, double ddist, double phi) const;
       double driftDistanceError(StrawId strawId, double ddist, double phi, float DOCA) const;
       double driftDistanceOffset(StrawId strawId, double ddist, double phi, float DOCA) const;
+
+      void calibrateTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes &times, const StrawId &id) const;
 
       void print(std::ostream& os) const;
     private:
@@ -69,6 +74,13 @@ namespace mu2e {
       double _rres_max;
       double _rres_rad;
       double _mint0doca;  // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
+
+      double _timeOffsetBeam;
+      std::vector<double> _timeOffsetPanel;
+      std::vector<double> _timeOffsetStrawHV;
+      std::vector<double> _timeOffsetStrawCal;
+      
+      ConditionsHandle<StrawElectronics> _strawele;
 
   };
 }
