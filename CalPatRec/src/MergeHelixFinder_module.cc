@@ -336,12 +336,12 @@ namespace mu2e {
     
     if (tpr_h.isValid()) { 
       list_of_helices_tpr = (mu2e::HelixSeedCollection*) &(*tpr_h);
-      ntpr              = list_of_helices_tpr->size();
+      ntpr                = list_of_helices_tpr->size();
     }
 
     if (cpr_h.isValid()) {
       list_of_helices_cpr = (mu2e::HelixSeedCollection*) &(*cpr_h);
-      ncpr              = list_of_helices_cpr->size();
+      ncpr                = list_of_helices_cpr->size();
     }
 
     for (int i=0; i<max_ntrk; i++) {
@@ -356,15 +356,15 @@ namespace mu2e {
     HelixHitCollection        tlist, clist;
     int                       nat, nac, natc;
     const mu2e::HelixHit     *hitt, *hitc;
-    double                    tpr_chi2xy(0), tpr_chi2phiz(0), tpr_chi2(0);
-    double                    cpr_chi2xy(0), cpr_chi2phiz(0), cpr_chi2(0);
+    // double                    tpr_chi2xy(0), tpr_chi2phiz(0), tpr_chi2(0);
+    // double                    cpr_chi2xy(0), cpr_chi2phiz(0), cpr_chi2(0);
 
     for (int i1=0; i1<ntpr; i1++) {
       helix_tpr    = &list_of_helices_tpr->at(i1);
       //      tpr_mom      = helix_momentum(helix_tpr);
-      tpr_chi2xy   = helix_chi2xy  (helix_tpr);
-      tpr_chi2phiz = helix_chi2phiz(helix_tpr);
-      tpr_chi2     = tpr_chi2xy + tpr_chi2phiz;
+      // tpr_chi2xy   = helix_chi2xy  (helix_tpr);
+      // tpr_chi2phiz = helix_chi2phiz(helix_tpr);
+      // tpr_chi2     = tpr_chi2xy + tpr_chi2phiz;
       mask         = 1 << AlgorithmID::TrkPatRecBit;
       tlist        = helix_tpr->hits();
       nat          = tlist.size();
@@ -372,9 +372,9 @@ namespace mu2e {
 
       for (int i2=0; i2<ncpr; i2++) {
 	helix_cpr    = &list_of_helices_cpr->at(i2);
-	cpr_chi2xy   = helix_chi2xy  (helix_tpr);
-	cpr_chi2phiz = helix_chi2phiz(helix_tpr);
-	cpr_chi2     = cpr_chi2xy + cpr_chi2phiz;
+	// cpr_chi2xy   = helix_chi2xy  (helix_tpr);
+	// cpr_chi2phiz = helix_chi2phiz(helix_tpr);
+	// cpr_chi2     = cpr_chi2xy + cpr_chi2phiz;
 	//	cpr_mom      = helix_momentum(helix_cpr);
 	clist        = helix_cpr->hits();
 	nac          = clist.size();
@@ -404,46 +404,52 @@ namespace mu2e {
 
 	  mask = mask | (1 << AlgorithmID::CalPatRecBit);
 
-	  if ((tpr_chi2 < _minTprChi2) && (cpr_chi2 < _minCprChi2)) {
 //-----------------------------------------------------------------------------
-// both tracks are "good", choose the one with best chi2
+// tracks sahre more than 50% of their hits, in this case take the one from CPR
 //-----------------------------------------------------------------------------
-	    if (tpr_chi2 >= cpr_chi2) {
-	      helixPtrs->push_back(*helix_cpr);
-	      best    = AlgorithmID::CalPatRecBit;
-	    }
-	    else {
-	      helixPtrs->push_back(*helix_tpr);
-	      best    = AlgorithmID::TrkPatRecBit;
-	    }
-	  }
-	  else if (tpr_chi2 < _minTprChi2) {
-//-----------------------------------------------------------------------------
-// only TrkHelixFinder track is "good", choose it
-//-----------------------------------------------------------------------------
-	    helixPtrs->push_back(*helix_tpr);
-	    best    = AlgorithmID::TrkPatRecBit; 
-	  }
-	  else if (cpr_chi2 < _minCprChi2) {
-//-----------------------------------------------------------------------------
-// only CalHelixFinder track is "good", choose it
-//-----------------------------------------------------------------------------
-	    helixPtrs->push_back(*helix_cpr);
-	    best    = AlgorithmID::CalPatRecBit; 
-	  }
-	  else {
-//-----------------------------------------------------------------------------
-// neither track will be selected for analysis, make a choice anyway
-//-----------------------------------------------------------------------------
-	    if (tpr_chi2 < cpr_chi2) {
-	      helixPtrs->push_back(*helix_tpr);
-	      best    = AlgorithmID::TrkPatRecBit; 
-	    }
-	    else {
-	      helixPtrs->push_back(*helix_cpr);
-	      best    = AlgorithmID::CalPatRecBit; 
-	    }
-	  }
+	  helixPtrs->push_back(*helix_cpr);
+	  best    = AlgorithmID::CalPatRecBit;
+
+// 	  if ((tpr_chi2 < _minTprChi2) && (cpr_chi2 < _minCprChi2)) {
+// //-----------------------------------------------------------------------------
+// // both tracks are "good", choose the one with best chi2
+// //-----------------------------------------------------------------------------
+// 	    if (tpr_chi2 >= cpr_chi2) {
+// 	      helixPtrs->push_back(*helix_cpr);
+// 	      best    = AlgorithmID::CalPatRecBit;
+// 	    }
+// 	    else {
+// 	      helixPtrs->push_back(*helix_tpr);
+// 	      best    = AlgorithmID::TrkPatRecBit;
+// 	    }
+// 	  }
+// 	  else if (tpr_chi2 < _minTprChi2) {
+// //-----------------------------------------------------------------------------
+// // only TrkHelixFinder track is "good", choose it
+// //-----------------------------------------------------------------------------
+// 	    helixPtrs->push_back(*helix_tpr);
+// 	    best    = AlgorithmID::TrkPatRecBit; 
+// 	  }
+// 	  else if (cpr_chi2 < _minCprChi2) {
+// //-----------------------------------------------------------------------------
+// // only CalHelixFinder track is "good", choose it
+// //-----------------------------------------------------------------------------
+// 	    helixPtrs->push_back(*helix_cpr);
+// 	    best    = AlgorithmID::CalPatRecBit; 
+// 	  }
+// 	  else {
+// //-----------------------------------------------------------------------------
+// // neither track will be selected for analysis, make a choice anyway
+// //-----------------------------------------------------------------------------
+// 	    if (tpr_chi2 < cpr_chi2) {
+// 	      helixPtrs->push_back(*helix_tpr);
+// 	      best    = AlgorithmID::TrkPatRecBit; 
+// 	    }
+// 	    else {
+// 	      helixPtrs->push_back(*helix_cpr);
+// 	      best    = AlgorithmID::CalPatRecBit; 
+// 	    }
+// 	  }
 
 	  tpr_flag[i1] = 0;
 	  cpr_flag[i2] = 0;

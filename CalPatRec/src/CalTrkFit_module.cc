@@ -330,6 +330,7 @@ namespace mu2e {
     _fitter.setNIter(0);
 					// event printout
     _data.eventNumber = event.event();
+    _iev              = event.id().event();
 
     if ((_debugLevel > 0) && (_data.eventNumber%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 //-----------------------------------------------------------------------------
@@ -395,7 +396,7 @@ namespace mu2e {
       }
       
       if (kseg == kalSeed->segments().end()) {
-	printf("[CalTrkFit::filter] Helix segment range doesn't cover flt0 = %10.3f\n",flt0) ;
+	printf("[CalTrkFit::filter] event numebr %i Helix segment range doesn't cover flt0 = %10.3f\n", _iev, flt0) ;
 
 	for (auto iseg= kalSeed->segments().begin(); iseg != kalSeed->segments().end(); ++iseg) {
 	  printf("[CalTrkFit::filter] segment fmin, fmax: %10.3f %10.f \n",iseg->fmin(),iseg->fmax());
@@ -408,10 +409,10 @@ namespace mu2e {
       _result.hitIndices->clear();
 
       for (auto ihit=kalSeed->hits().begin(); ihit!=kalSeed->hits().end(); ihit++) {
-	if (ihit->flag().hasAllProperties(StrawHitFlag::active)) {
+	// if (ihit->flag().hasAllProperties(StrawHitFlag::active)) {
 	StrawHitIndex hi = ihit->index();
 	_result.hitIndices->push_back(hi);
-	}
+	// }
       }
 
       _result.caloCluster = kalSeed->caloCluster().get();

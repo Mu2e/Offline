@@ -93,7 +93,7 @@ namespace mu2e
       HepSymMatrix _hcovar; // cache of parameter error covariance matrix
       // cache of event objects
       const StrawHitCollection* _shcol;
-      const StrawHitFlagCollection* _shfcol;
+      // const StrawHitFlagCollection* _shfcol;
       const HelixSeedCollection * _hscol;
       // ouptut collections
       // Kalman fitter.  This will be configured for a least-squares fit (no material or BField corrections).
@@ -307,17 +307,17 @@ namespace mu2e
   // find the input data objects 
   bool KalSeedFit::findData(const art::Event& evt){
     _shcol = 0;
-    _shfcol = 0;
+    // _shfcol = 0;
     _hscol = 0;
 
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol = shH.product();
-    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
-    _shfcol = shfH.product();
+    // auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+    // _shfcol = shfH.product();
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     _hscol = hsH.product();
 
-    return _shcol != 0 && _shfcol != 0 && _hscol != 0;
+    return _shcol != 0 && /*_shfcol != 0 &&*/ _hscol != 0;
   }
 
   void KalSeedFit::filterOutliers(TrkDef& mydef){

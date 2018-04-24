@@ -10,10 +10,11 @@ namespace fhicl {
 };
 
 #include "RecoDataProducts/inc/StereoHit.hh"
-#include "RecoDataProducts/inc/StrawHitPosition.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
+// #include "RecoDataProducts/inc/StrawHitPosition.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
+// #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
+// #include "RecoDataProducts/inc/XYZVec.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 
@@ -46,9 +47,9 @@ namespace mu2e {
     };
     
     struct HitData_t {
-      const StrawHit*         fHit;
-      const StrawHitPosition* fPos;
-      const Straw*            fStraw;
+      const ComboHit*         fHit;
+      // const StrawHitPosition* fPos;
+      // const Straw*            fStraw;
       int                     fSeedNumber;
       int                     fNSecondHits;
       int                     fDeltaIndex;
@@ -57,16 +58,16 @@ namespace mu2e {
       float                   fRMid;
       float                   fDr;	// work variable
 
-      HitData_t(const StrawHit* Hit, const StrawHitPosition* Pos, const Straw* aStraw, float SigW) {
+      HitData_t(const ComboHit* Hit, /*const StrawHitPosition* Pos, const Straw* aStraw,*/ float SigW) {
 	fHit         = Hit; 
-	fPos         = Pos; 
-	fStraw       = aStraw; 
+	// fPos         = Pos; 
+	// fStraw       = aStraw; 
 	fChi2Min     = 1.1e10; 
 	fSigW        = SigW; 
 	fSeedNumber  = -1; 
 	fNSecondHits = -1;
 	fDeltaIndex  = -1;
-	fRMid        = fStraw->getMidPoint().perp();
+	fRMid        = sqrt(fHit->centerPos().Mag2());//FIXME! crosscheck  fStraw->getMidPoint().perp();
 	fDr          = 1.1e10;
       }
 
@@ -74,8 +75,8 @@ namespace mu2e {
     };
 
     struct PanelZ_t {
-      int                              fNHits  [2]; // guess, total number of hits per layer
-      std::vector<HitData_t>           fHitData[2];
+      int                              fNHits  ; // guess, total number of ComboHits
+      std::vector<HitData_t>           fHitData;
       const Panel*                     fPanel;      // backward pointer to the tracker panel
       double                           wx;          // direction cosines of the wires, assumed to be all the same
       double                           wy;
@@ -137,7 +138,7 @@ namespace mu2e {
       int                            fNHitsTot;         // total number of hits
       int                            fNHitsCE;
       const HitData_t*               fHitData[2];       // stereo hit seeding the seed search
-      const StrawHitPosition*        fPos[2];
+      // const StrawHitPosition*        fPos[2];
       float                          fChi21;             // chi2's of the two initial hits
       float                          fChi22;
       PanelZ_t*                      panelz   [kNFaces];
@@ -248,7 +249,7 @@ namespace mu2e {
       int                           stationUsed[kNStations];
       int                           nseeds;
       int                           nseeds_per_station[kNStations];
-      const StrawHitCollection*     shcol;
+      const ComboHitCollection*     chcol;
       const StrawHitFlagCollection* shfcol;
       const TimeClusterCollection*  tpeakcol;
       int                           debugLevel;	     // printout level
