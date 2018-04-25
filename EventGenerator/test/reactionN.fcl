@@ -1,10 +1,10 @@
-// Test PrimaryProtonGunN.
+// Test StoppedParticleReactionGunN.
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 
-process_name: protonGunN
+process_name: reactionN
 
 source: {
     module_type: EmptyEvent
@@ -15,7 +15,7 @@ services: {
   message               : @local::default_message
   TFileService          : { fileName : "g4test_03.root" }
   RandomNumberGenerator : { }
-  GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt"            }
+
   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
   SeedService            : @local::automaticSeeds
 
@@ -23,21 +23,19 @@ services: {
 
 physics: {
   producers: {
-    protonGunN: {
-      @table::EventGenerator.producers.PrimaryProtonGunN
-      inputfile : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
+    reactionN: {
+      @table::EventGenerator.producers.StoppedParticleReactionGunN
       stashSize : 4
-      printConfig : true
     }
   }
   analyzers : {
-    protonGunNCheck : {
-      module_type : PrintConversionN
-      gensTag     : "protonGunN"
+    reactionNCheck : {
+      module_type : PrintReactionN
+      gensTag     : "reactionN"
     }
   }
-  trig : [ protonGunN ]
-  end  : [ protonGunNCheck ]
+  trig : [ reactionN ]
+  end  : [ reactionNCheck ]
 }
 
 services.SeedService.baseSeed         :  0

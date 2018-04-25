@@ -84,6 +84,13 @@ StoppedParticleReactionGun: {
     }
 }
 
+StoppedParticleReactionGunN: {
+    @table::StoppedParticleReactionGun
+    module_type    : StoppedParticleReactionGunN
+    stashSize      : @nil
+}
+
+
 StoppedMuonXRayGammaRayGun: {
     module_type    : StoppedMuonXRayGammaRayGun
     muonStops      : @local::mu2e.tgtMuonStops
@@ -102,10 +109,11 @@ randomsaver: {
 #------------------------------------------------------------------------------
 EventGenerator : {
     producers : {
-	StoppedMuonConversionGun   : { @table::StoppedMuonConversionGun   }
-	StoppedMuonConversionGunN  : { @table::StoppedMuonConversionGunN  }
-	StoppedParticleReactionGun : { @table::StoppedParticleReactionGun }
-        PrimaryProtonGunN          : { @table::PrimaryProtonGunN          }
+	StoppedMuonConversionGun    : { @table::StoppedMuonConversionGun    }
+	StoppedMuonConversionGunN   : { @table::StoppedMuonConversionGunN   }
+	StoppedParticleReactionGun  : { @table::StoppedParticleReactionGun  }
+        StoppedParticleReactionGunN : { @table::StoppedParticleReactionGunN }
+        PrimaryProtonGunN           : { @table::PrimaryProtonGunN           }
     }
 }
 
