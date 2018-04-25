@@ -4,18 +4,54 @@ echo "********************************************************************"
 echo "*    Did you copy the updated version of wls to wlsProduction?    *"
 echo "********************************************************************"
 
-for length in "900" "2300" "3000" "4500" "5000" "5600" "6000" "6001" "6600" "6900" "7100" "7600" 
+for length in "900" "1045" "1244.4" "1600" "2370" "3040" "3200" "4550" "5000" "5700" "6000" "6900" 
 do
-  mkdir /pnfs/mu2e/scratch/outstage/ehrlich/tables_4.0_out/$length
+  declare -a reflectors=("0")
+  if [ $length == "900" ]; then
+    reflectors[0]="-1"
+    reflectors[1]="1"
+  fi
+  if [ $length == "1045" ]; then
+    reflectors[0]="-1"
+  fi
+  if [ $length == "1244.4" ]; then
+    reflectors[0]="-1"
+  fi
+  if [ $length == "1600" ]; then
+    reflectors[0]="-1"
+  fi
+  if [ $length == "2370" ]; then
+    reflectors[0]="-1"
+    reflectors[1]="1"
+  fi
+  if [ $length == "5000" ]; then
+    reflectors[0]="-1"
+  fi
+  if [ $length == "6000" ]; then
+    reflectors[1]="1"
+  fi
+  if [ $length == "6900" ]; then
+    reflectors[0]="1"
+  fi
 
-  jobsub_submit \
-  -N $((550*4)) \
-  -e LENGTH=$length \
-  --memory=500MB \
-  --disk=50MB \
-  --expected-lifetime=24h \
-  --resource-provides usage_model=OPPORTUNISTIC,DEDICATED \
-  --group=mu2e \
-  -f dropbox:///mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/wlsProduction \
-  file:///mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/wls.doProduction
+  for reflector in "${reflectors[@]}"
+  do
+
+    mkdir /pnfs/mu2e/scratch/outstage/ehrlich/tables_4.1_out/$length'_'$reflector
+
+    jobsub_submit \
+    -N $((550*4)) \
+    -e LENGTH=$length \
+    -e REFLECTOR=$reflector \
+    --memory=500MB \
+    --disk=50MB \
+    --expected-lifetime=30h \
+    --resource-provides usage_model=OPPORTUNISTIC,DEDICATED \
+    --group=mu2e \
+    -f dropbox:///mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/wlsProduction \
+    -f dropbox:///mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v3.txt \
+    -f dropbox:///mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/visibleEnergyAdjustment.txt \
+    file:///mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/wls.doProduction
+
+  done
 done

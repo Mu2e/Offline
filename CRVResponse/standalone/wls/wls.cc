@@ -105,7 +105,8 @@ int main(int argc, char** argv)
   int minBin=0;
   int maxBin=-1;
   int n=1000;
-  int lengthOption=-1;
+  double lengthOption=0;
+  int    reflectorOption=0;
   std::string lookupFilename="";
 
   bool verbose = findArgs(argc, argv, "-v");
@@ -128,44 +129,26 @@ int main(int argc, char** argv)
     std::cout<<"                  1  cerenkov in scintillator"<<std::endl;
     std::cout<<"                  2  cerenkov in fiber 0"<<std::endl;
     std::cout<<"                  3  cerenkov in fiber 1"<<std::endl;
-    std::cout<<"-l length option  Length of the scintillator counter:"<<std::endl;
-    std::cout<<"                  7600  7600 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  7350  7350 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  7100  7100 mm (reflector at postiive side)"<<std::endl;
-    std::cout<<"                  6900  6600 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  6600  6600 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  6001  6000 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  6000  6000 mm"<<std::endl;
-    std::cout<<"                  5600  5600 mm"<<std::endl;
-    std::cout<<"                  5000  5000 mm (reflector at negative side)"<<std::endl;
-    std::cout<<"                  4500  4500 mm"<<std::endl;
-    std::cout<<"                  3000  3000 mm"<<std::endl;
-    std::cout<<"                  2300  2300 mm"<<std::endl;
-    std::cout<<"                   900   900 mm"<<std::endl;
+    std::cout<<"-l length option  Length of the scintillator counter in mm"<<std::endl;
+    std::cout<<"-R reflector option"<<std::endl;
+    std::cout<<"                  0  no reflector (default)"<<std::endl;
+    std::cout<<"                 -1  reflector at negative side"<<std::endl;
+    std::cout<<"                  1  reflector at postiive side"<<std::endl;
     std::cout<<"-m minbin         Minimum bin in lookup table (default is 0)."<<std::endl;
     std::cout<<"-M maxbin         Maximum bin in lookup table (default is"<<std::endl;
     std::cout<<"                  the maximum number of bins for this simulation type)."<<std::endl;
     std::cout<<"-n photons        Number of photons to simulate for each bin (default 1000)."<<std::endl;
     std::cout<<std::endl;
     std::cout<<"Options for running the simulation:"<<std::endl;
-    std::cout<<"-l length option  Length of the scintillator counter:"<<std::endl;
-    std::cout<<"                  7600  7600 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  7350  7350 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  7100  7100 mm (reflector at postiive side)"<<std::endl;
-    std::cout<<"                  6900  6600 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  6600  6600 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  6001  6000 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  6000  6000 mm"<<std::endl;
-    std::cout<<"                  5600  5600 mm"<<std::endl;
-    std::cout<<"                  5000  5000 mm (reflector at negative side)"<<std::endl;
-    std::cout<<"                  4500  4500 mm"<<std::endl;
-    std::cout<<"                  3000  3000 mm"<<std::endl;
-    std::cout<<"                  2300  2300 mm"<<std::endl;
-    std::cout<<"                   900   900 mm"<<std::endl;
+    std::cout<<"-l length option  Length of the scintillator counter in mm"<<std::endl;
+    std::cout<<"-R reflector option"<<std::endl;
+    std::cout<<"                  0  no reflector (default)"<<std::endl;
+    std::cout<<"                 -1  reflector at negative side"<<std::endl;
+    std::cout<<"                  1  reflector at postiive side"<<std::endl;
     std::cout<<"-n events    Number of events to simulate (default 1000)."<<std::endl;
     std::cout<<"-r seed      seed for random number generator (default: 0)."<<std::endl;
-    std::cout<<"-y pos       y coordinate of starting point (default: 0 = center between fibers)."<<std::endl;
-    std::cout<<"-z pos       z coordinate of starting point (default: 1000 = 1m away from left side of counter)."<<std::endl;
+    std::cout<<"-y pos       y coordinate of starting point in mm (default: 0 = center between fibers)."<<std::endl;
+    std::cout<<"-z pos       z coordinate of starting point in mm (default: 1000 = 1m away from left side of counter)."<<std::endl;
     std::cout<<std::endl;
     std::cout<<"Options for running the simulation with lookup table:"<<std::endl;
     std::cout<<"-f filename  File with lookup table used for running a simulation"<<std::endl;
@@ -227,27 +210,7 @@ int main(int argc, char** argv)
     std::cout<<"Use -h for help"<<std::endl;
     return -1;
   }
-  else
-  {
-    if(lengthOption!=900 && 
-       lengthOption!=2300 &&
-       lengthOption!=3000 &&
-       lengthOption!=4500 &&
-       lengthOption!=5000 &&
-       lengthOption!=5600 &&
-       lengthOption!=6000 &&
-       lengthOption!=6001 &&
-       lengthOption!=6600 &&
-       lengthOption!=6900 &&
-       lengthOption!=7100 &&
-       lengthOption!=7350 &&
-       lengthOption!=7600)
-    {
-      std::cout<<"Invalid option for scintillator counter length"<<std::endl;
-      std::cout<<"Use -h for help"<<std::endl;
-      return -1;
-    }
-  }
+  findArgs(argc, argv, "-R", reflectorOption);
 
   double posY=0;
   double posZ=1000;
@@ -266,7 +229,7 @@ int main(int argc, char** argv)
   G4RunManager *runManager = new G4RunManager;
 
   WLSMaterials::GetInstance();
-  runManager->SetUserInitialization(new WLSDetectorConstruction(lengthOption));
+  runManager->SetUserInitialization(new WLSDetectorConstruction(lengthOption, reflectorOption));
   runManager->SetUserInitialization(new WLSPhysicsList(physName));
 
   WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose, posY, posZ);   

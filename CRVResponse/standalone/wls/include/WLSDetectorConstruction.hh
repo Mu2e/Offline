@@ -24,7 +24,7 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
 
   public:
 
-    WLSDetectorConstruction(int lengthOption);
+    WLSDetectorConstruction(double lengthOption, int reflectorOption);
     ~WLSDetectorConstruction();
 
     G4VPhysicalVolume* Construct();
@@ -58,7 +58,6 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
 
     static WLSDetectorConstruction*  _fgInstance;  
 
-    int  _lengthOption;
     bool _checkOverlaps;
 
     WLSMaterials* _materials;

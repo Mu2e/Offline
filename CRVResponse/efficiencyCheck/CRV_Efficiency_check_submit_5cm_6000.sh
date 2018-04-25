@@ -6,11 +6,11 @@
 #Run the joblist script from workspace/Offline
 
 i=0
-name=CRV_Efficiency_check_5cm_6000_C4
+name=CRV_Efficiency_check_5cm_6000
 layerOffset=42
-moduleGap="4.0"
-gapSmall="0.2"
-gapLarge="1.0"
+moduleGap="3.0"
+gapSmall="0.1"
+gapLarge="0.5"
 joblist=CRVResponse/efficiencyCheck/jobs.sh
 #  for moduleGap in {"4.5","6.5"}
 #  do
