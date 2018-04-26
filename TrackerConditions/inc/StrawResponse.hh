@@ -13,6 +13,7 @@
 #include "TrackerConditions/inc/Types.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
+#include "TrackerConditions/inc/StrawPhysics.hh"
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -29,6 +30,7 @@ namespace mu2e {
       bool useDriftError() const { return _usederr; } 
       bool useNonLinearDrift() const { return _usenonlindrift; }
       double Mint0doca() const { return _mint0doca;}
+      double strawGain() const { return _gasGain;}
 
       float halfPropV(StrawId strawId, float kedep) const;
 
@@ -75,12 +77,15 @@ namespace mu2e {
       double _rres_rad;
       double _mint0doca;  // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
 
+      double _gasGain;
+
       double _timeOffsetBeam;
       std::vector<double> _timeOffsetPanel;
       std::vector<double> _timeOffsetStrawHV;
       std::vector<double> _timeOffsetStrawCal;
       
       ConditionsHandle<StrawElectronics> _strawele;
+      ConditionsHandle<StrawPhysics> _strawphys;
 
   };
 }

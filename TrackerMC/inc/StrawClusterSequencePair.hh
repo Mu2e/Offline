@@ -15,13 +15,13 @@ namespace mu2e {
       public:
 	typedef StrawCluster StrawClusterPair[2];
 	StrawClusterSequencePair();
-	StrawClusterSequencePair(StrawIndex index);
+	StrawClusterSequencePair(StrawId sid);
 	StrawClusterSequencePair(StrawClusterSequencePair const& other);
 	StrawClusterSequencePair& operator =(StrawClusterSequencePair const& other);
 	StrawClusterSequence& clustSequence(StrawEnd end) { return _scseq[end._end]; } 
 	StrawClusterSequence const& clustSequence(StrawEnd end) const { return _scseq[end._end]; } 
 	void insert(StrawClusterPair const& hpair);
-	StrawIndex strawIndex() const { return _scseq[0].strawIndex(); }
+	StrawId strawId() const { return _scseq[0].strawId(); }
       private:
 	StrawClusterSequence _scseq[2];
     };

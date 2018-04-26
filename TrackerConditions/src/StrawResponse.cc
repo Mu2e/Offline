@@ -45,12 +45,16 @@ namespace mu2e {
     _rres_max(pset.get<double>("MaxDriftRadiusResolution",0.2)), //mm
     _rres_rad(pset.get<double>("DriftRadiusResolutionRadius",-1)), //mm
     _mint0doca(pset.get<double>("minT0DOCA", -0.2)), //FIXME should be moved to a reconstruction configuration 
-    _timeOffsetBeam(pset.get<double>("TimeOffsetBeam",10)),
     _timeOffsetPanel(pset.get<vector<double> >("TimeOffsetPanel",vector<double>(240,0))),
     _timeOffsetStrawHV(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0))),
     _timeOffsetStrawCal(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0)))
     {
       _strawele = ConditionsHandle<StrawElectronics>("ignored");
+      _strawphys = ConditionsHandle<StrawPhysics>("ignored");
+
+      _timeOffsetBeam = pset.get<double>("TimeOffsetBeam",_strawele->clockStart());
+      _gasGain = pset.get<double>("GasGain",_strawphys->strawGain());
+
     }
 
   StrawResponse::~StrawResponse(){}

@@ -27,7 +27,8 @@ namespace mu2e {
     _tdeadAnalog(pset.get<double>("DeadTimeAnalog",100.0)), // nsec dead after threshold crossing (pulse baseline restoration time)
     _tdeadDigital(pset.get<double>("DeadTimeDigital",100.0)), // nsec dead after threshold crossing (electronics processing time)
     _vsat(pset.get<double>("SaturationVoltage",90.0)), // mVolt
-    _vthresh(pset.get<double>("DiscriminatorThreshold",12.0)), //mVolt, post amplification
+    _vthresh(pset.get<vector<double> >("DiscriminatorThreshold",
+          vector<double>(96,pset.get<double>("DefaultDiscriminatorThreshold",12.0)))), //mVolt, post amplification
     _snoise(pset.get<double>("StrawNoise",2.8)), // mvolt
     _analognoise{pset.get<double>("thresholdAnalogNoise",0.95), //mVolt
       pset.get<double>("adcAnalogNoise",3.0)},

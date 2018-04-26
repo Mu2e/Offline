@@ -18,11 +18,11 @@ namespace mu2e {
   using namespace TrkTypes;
   namespace TrackerMC {
     StrawWaveform::StrawWaveform(StrawClusterSequence const& hseq, ConditionsHandle<StrawElectronics> const& strawele, XTalk const& xtalk) :
-      _cseq(hseq), _strawele(strawele), _xtalk(xtalk)
+      _cseq(hseq), _strawele(strawele), _xtalk(xtalk), _sid(hseq.strawId())
     {}
 
     StrawWaveform::StrawWaveform(StrawWaveform const& other) : _cseq(other._cseq),
-    _strawele(other._strawele), _xtalk(other._xtalk)
+    _strawele(other._strawele), _xtalk(other._xtalk), _sid(other._sid)
     {}
 
     bool StrawWaveform::crossesThreshold(double threshold,WFX& wfx) const {

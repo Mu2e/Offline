@@ -134,11 +134,11 @@ namespace mu2e {
   void StrawHitReco::beginRun(art::Run& run)
   {    
       ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
-      ConditionsHandle<StrawPhysics> strawphys = ConditionsHandle<StrawPhysics>("ignored");
+      ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
 // set cache for peak-ped calculation (default)
       _npre = strawele->nADCPreSamples();
       _invnpre = 1.0/(float)_npre;
-      _invgain = strawele->adcLSB()*strawele->peakMinusPedestalEnergyScale()/strawphys->strawGain();
+      _invgain = strawele->adcLSB()*strawele->peakMinusPedestalEnergyScale()/srep->strawGain();
  
       // this must be done here because strawele is not accessible at startup and pfit references it
       if (_fittype == TrkHitReco::FitType::combopeakfit)
@@ -216,7 +216,7 @@ namespace mu2e {
 	} else {
 	  TrkHitReco::PeakFitParams params;
 	  _pfit->process(digi.adcWaveform(),params);
-	  energy = strawphys->ionizationEnergy(params._charge/strawphys->strawGain());
+	  energy = strawphys->ionizationEnergy(params._charge/srep->strawGain());
 	  if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
 	    << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
 	}
