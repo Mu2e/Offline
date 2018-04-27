@@ -284,6 +284,7 @@ void WLSPhysicsList::AddStepMax()
 {
   // Step limitation seen as a process
 
+//  auto theParticleIterator=GetParticleIterator();  //FIXME: needed for GEANT v10_4
   theParticleIterator->reset();
   while ((*theParticleIterator)()){
       G4ParticleDefinition* particle = theParticleIterator->value();

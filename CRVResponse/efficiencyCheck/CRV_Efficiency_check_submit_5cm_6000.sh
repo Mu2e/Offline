@@ -8,9 +8,9 @@
 i=0
 name=CRV_Efficiency_check_5cm_6000
 layerOffset=42
-moduleGap="5.5"
-gapSmall="0.5"
-gapLarge="1.0"
+moduleGap="3.0"
+gapSmall="0.1"
+gapLarge="0.5"
 joblist=CRVResponse/efficiencyCheck/jobs.sh
 #  for moduleGap in {"4.5","6.5"}
 #  do
@@ -24,17 +24,17 @@ joblist=CRVResponse/efficiencyCheck/jobs.sh
         photonYield=`echo "47000.0*$PEYield/68.0" | bc -l`
         dz=`echo "800.0+$moduleGap+7*$gapLarge+8*$gapSmall" | bc -l`
 
-        genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig_5cm_6000'_'$i.txt
+        genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig'_'$name'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/genconfig_5cm_6000.txt\"" >| $genconfigfile
         echo "double cosmicFromTH2.dz = $dz;" >> $genconfigfile
 
-        geomfile=CRVResponse/efficiencyCheck/submit/geom_5cm_6000'_'$i.txt
+        geomfile=CRVResponse/efficiencyCheck/submit/geom'_'$name'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/geom_5cm_6000.txt\"" >| $geomfile
         echo "double crs.gapBetweenModules = $moduleGap;" >> $geomfile
         echo "double crs.gapSmall          = $gapSmall;" >> $geomfile
         echo "double crs.gapLarge          = $gapLarge;" >> $geomfile
         echo "double crs.layerOffset       = $layerOffset;" >> $geomfile
-#        echo "vector<double> crs.offsetDirectionTest = {0, 0, 1};" >> $geomfile
+#        echo "vector<double> crs.offsetDirectionTest = {0, 0, 1};" >> $geomfile   #reverse layer offset
 
         fclfile=CRVResponse/efficiencyCheck/submit/$name'_'$i.fcl
         echo "#include \"CRVResponse/efficiencyCheck/CRV_Efficiency_check_5cm_6000.fcl\"" >| $fclfile
@@ -47,7 +47,7 @@ joblist=CRVResponse/efficiencyCheck/jobs.sh
         rm -rf 000
         mv fcls.$name.$i.tar.gz /pnfs/mu2e/scratch/outstage/ehrlich/fcls/.
         clustername=$name'_'moduleGap$moduleGap'_'gapLarge$gapLarge'_'gapSmall$gapSmall'_'layerOffset$layerOffset'_'PEYieldYield$PEYield
-        echo "mu2eprodsys --code=\$CODELOCATION --fcllist=/pnfs/mu2e/scratch/outstage/ehrlich/fcls/fcls.$name.$i.tar.gz --clustername=$clustername --dsconf=$i --wfproject=$name" >> $joblist
+        echo "mu2eprodsys --expected-lifetime=4h --code=\$CODELOCATION --fcllist=/pnfs/mu2e/scratch/outstage/ehrlich/fcls/fcls.$name.$i.tar.gz --clustername=$clustername --dsconf=$i --wfproject=$name" >> $joblist
 
       done
 #    done

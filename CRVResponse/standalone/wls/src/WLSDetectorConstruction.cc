@@ -35,11 +35,10 @@
 
 WLSDetectorConstruction* WLSDetectorConstruction::_fgInstance = NULL;
 
-WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
+WLSDetectorConstruction::WLSDetectorConstruction(double lengthOption, int reflectorOption)
 {
   _fgInstance = this;
 
-  _lengthOption = lengthOption;
   _checkOverlaps = true;
 
   _materials = NULL;
@@ -49,8 +48,9 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
   _mppcReflectivity = 0.30;  
 
   _reflectorPolish = 1.;
-  _reflectorReflectivity = 0.90;  //reflector
-//  _reflectorReflectivity = 0.10;  //black tape
+  _reflectorReflectivity = 0.80;  //reflector for lookup tables
+//  _reflectorReflectivity = 0.90;  //reflector at test beam
+//  _reflectorReflectivity = 0.10;  //black tape at test beam
 
   _extrusionPolish = 0.3;
 
@@ -60,8 +60,9 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
 
   _holePolish = 0.;
  
-  _barWidth         = 5.*cm;
-  _barThickness     = 2.*cm;
+  _barLength        = lengthOption*mm;
+  _barWidth         = 51.3*mm;
+  _barThickness     = 19.8*mm;
   _fiberSeparation  = 2.6*cm;
   _holeRadiusX      = 2.00*mm;
   _holeRadiusY      = 1.00*mm;
@@ -74,13 +75,6 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
   _sipmRadius       = 0.70*mm;
   _airGap           = 0.0*mm;
 
-/*
-//FIXME
-_barWidth         = 4.94*cm;
-_coatingThickness = 0.3*mm;
-_extrusionCornerRadius = 3.00*mm;
-*/
-
 #ifdef FIBERTEST
 #pragma message "USING FIBERTEST"
   _mppcReflectivity       = 0.0;
@@ -89,115 +83,24 @@ _extrusionCornerRadius = 3.00*mm;
   _airGap              = 0.0*mm;
 #endif
 
-  _reflectorAtPositiveSide = false;
-  _reflectorAtNegativeSide = false;
+  _reflectorAtPositiveSide = (reflectorOption==1?true:false);
+  _reflectorAtNegativeSide = (reflectorOption==-1?true:false);
 
-  double xbinsTmp[17] = {-10.0, -8.5, -5.5, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 5.5, 8.5, 10.0};
-  double ybinsTmp[40] = {-25.0, -24.5, -24.0, -23.5, -20.5, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -8.5, -5.5, -2.0, 2.0, 5.5, 8.5, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.5, 23.5, 24.0, 24.5, 25.0};
+  double xbinsTmp[17] = {-9.9, -8.5, -5.5, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 5.5, 8.5, 9.9};
+  double ybinsTmp[40] = {-25.65, -25.2, -24.7, -23.5, -20.5, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -8.5, -5.5, -2.0, 2.0, 5.5, 8.5, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.5, 23.5, 24.7, 25.2, 25.65};
 
   for(int i=0; i<17; i++) _xbins.push_back(xbinsTmp[i]*mm); //16 bins
   for(int i=0; i<40; i++) _ybins.push_back(ybinsTmp[i]*mm); //39 bins
 
-  switch(_lengthOption)
-  {
-    case 7600: _barLength        = 760.*cm;
-            //100 bins
-            for(int i=0; i<6; i++)   _zbins.push_back(-3800.0*mm+10.0*mm*i);       // -3800 ... -3750
-            for(int i=6; i<16; i++)  _zbins.push_back(-3750.0*mm+25.0*mm*(i-5));   // -3725 ... -3500
-            for(int i=16; i<85; i++) _zbins.push_back(-3500.0*mm+100.0*mm*(i-15)); // -3400 ...  3400
-            for(int i=85; i<95; i++) _zbins.push_back(3475.0*mm+25.0*mm*(i-84));   //  3500 ...  3725
-            for(int i=95; i<101; i++) _zbins.push_back(3740.0*mm+10.0*mm*(i-94));  //  3750 ...  3800
-            _reflectorAtPositiveSide = true;
-            break;
-    case 7100: _barLength        = 710.*cm;
-            //95 bins
-            for(int i=0; i<6; i++)   _zbins.push_back(-3550.0*mm+10.0*mm*i);       // -3550 ... -3500
-            for(int i=6; i<16; i++)  _zbins.push_back(-3500.0*mm+25.0*mm*(i-5));   // -3475 ... -3250
-            for(int i=16; i<80; i++) _zbins.push_back(-3250.0*mm+100.0*mm*(i-15)); // -3150 ...  3150
-            for(int i=80; i<90; i++) _zbins.push_back(3225.0*mm+25.0*mm*(i-79));   //  3250 ...  3475
-            for(int i=90; i<96; i++) _zbins.push_back(3490.0*mm+10.0*mm*(i-89));   //  3500 ...  3550
-            _reflectorAtPositiveSide = true;
-            break;
-    case 6900: _barLength        = 690.*cm;
-            //93 bins
-            for(int i=0; i<6; i++)   _zbins.push_back(-3450.0*mm+10.0*mm*i);       // -3450 ... -3400
-            for(int i=6; i<16; i++)  _zbins.push_back(-3400.0*mm+25.0*mm*(i-5));   // -3375 ... -3150
-            for(int i=16; i<78; i++) _zbins.push_back(-3150.0*mm+100.0*mm*(i-15)); // -3050 ...  3050
-            for(int i=78; i<88; i++) _zbins.push_back(3125.0*mm+25.0*mm*(i-77));   //  3150 ...  3375
-            for(int i=88; i<94; i++) _zbins.push_back(3390.0*mm+10.0*mm*(i-87));   //  3400 ...  3450
-            _reflectorAtPositiveSide = true;
-            break;
-    case 6600: _barLength        = 660.*cm;
-            //90 bins
-            for(int i=0; i<6; i++)   _zbins.push_back(-3300.0*mm+10.0*mm*i);       // -3300 ... -3250
-            for(int i=6; i<16; i++)  _zbins.push_back(-3250.0*mm+25.0*mm*(i-5));   // -3225 ... -3000
-            for(int i=16; i<75; i++) _zbins.push_back(-3000.0*mm+100.0*mm*(i-15)); // -2900 ...  2900
-            for(int i=75; i<85; i++) _zbins.push_back(2975.0*mm+25.0*mm*(i-74));   //  3000 ...  3225
-            for(int i=85; i<91; i++) _zbins.push_back(3240.0*mm+10.0*mm*(i-84));   //  3250 ...  3300
-            _reflectorAtPositiveSide = true;
-            break;
-    case 6001:
-            _reflectorAtPositiveSide = true;
-    case 6000: _barLength        = 600.*cm;
-            //84 bins
-            for(int i=0; i<6; i++)   _zbins.push_back(-3000.0*mm+10.0*mm*i);       // -3000 ... -2950
-            for(int i=6; i<16; i++)  _zbins.push_back(-2950.0*mm+25.0*mm*(i-5));   // -2925 ... -2700
-            for(int i=16; i<69; i++) _zbins.push_back(-2700.0*mm+100.0*mm*(i-15)); // -2600 ...  2600
-            for(int i=69; i<79; i++) _zbins.push_back(2675.0*mm+25.0*mm*(i-68));   //  2700 ...  2925
-            for(int i=79; i<85; i++) _zbins.push_back(2940.0*mm+10.0*mm*(i-78));   //  2950 ...  3000
-            break;
-    case 5600: _barLength        = 560.*cm;
-            //80 bins
-            for(int i=0; i<6; i++)   _zbins.push_back(-2800.0*mm+10.0*mm*i);       // -2800 ... -2750
-            for(int i=6; i<16; i++)  _zbins.push_back(-2750.0*mm+25.0*mm*(i-5));   // -2725 ... -2500
-            for(int i=16; i<65; i++) _zbins.push_back(-2500.0*mm+100.0*mm*(i-15)); // -2400 ...  2400
-            for(int i=65; i<75; i++) _zbins.push_back(2475.0*mm+25.0*mm*(i-64));   //  2500 ...  2725
-            for(int i=75; i<81; i++) _zbins.push_back(2740.0*mm+10.0*mm*(i-74));   //  2750 ...  2800
-            break;
-    case 5000: _barLength        = 500.*cm;
-            //74 bins
-            for(int i=0; i<6; i++)   _zbins.push_back(-2500.0*mm+10.0*mm*i);       // -2500 ... -2450
-            for(int i=6; i<16; i++)  _zbins.push_back(-2450.0*mm+25.0*mm*(i-5));   // -2425 ... -2200
-            for(int i=16; i<59; i++) _zbins.push_back(-2200.0*mm+100.0*mm*(i-15)); // -2100 ...  2100
-            for(int i=59; i<69; i++) _zbins.push_back(2175.0*mm+25.0*mm*(i-58));   //  2200 ...  2425
-            for(int i=69; i<75; i++) _zbins.push_back(2440.0*mm+10.0*mm*(i-68));   //  2450 ...  2500
-            _reflectorAtNegativeSide = true;
-            break;
-    case 4500: _barLength        = 450.*cm;
-            //69 bins
-            for(int i=0; i<6; i++)   _zbins.push_back(-2250.0*mm+10.0*mm*i);       // -2250 ... -2200
-            for(int i=6; i<16; i++)  _zbins.push_back(-2200.0*mm+25.0*mm*(i-5));   // -2175 ... -1950
-            for(int i=16; i<54; i++) _zbins.push_back(-1950.0*mm+100.0*mm*(i-15)); // -1850 ...  1850
-            for(int i=54; i<64; i++) _zbins.push_back(1925.0*mm+25.0*mm*(i-53));   //  1950 ...  2175
-            for(int i=64; i<70; i++) _zbins.push_back(2190.0*mm+10.0*mm*(i-63));   //  2200 ...  2250
-            break;
-    case 3001:
-            _reflectorAtNegativeSide = true;
-    case 3000: _barLength        = 300.*cm;  //test beam
-            //54 bins
-            for(int i=0; i<6; i++)   _zbins.push_back(-1500.0*mm+10.0*mm*i);       // -1500 ... -1450
-            for(int i=6; i<16; i++)  _zbins.push_back(-1450.0*mm+25.0*mm*(i-5));   // -1425 ... -1200
-            for(int i=16; i<39; i++) _zbins.push_back(-1200.0*mm+100.0*mm*(i-15)); // -1100 ...  1100
-            for(int i=39; i<49; i++) _zbins.push_back(1175.0*mm+25.0*mm*(i-38));   //  1200 ...  1425
-            for(int i=49; i<55; i++) _zbins.push_back(1440.0*mm+10.0*mm*(i-48));   //  1450 ...  1500
-            break;
-    case 2300: _barLength        = 230.*cm;
-            //47 bins
-            for(int i=0; i<6; i++)   _zbins.push_back(-1150.0*mm+10.0*mm*i);       // -1150 ... -1100
-            for(int i=6; i<16; i++)  _zbins.push_back(-1100.0*mm+25.0*mm*(i-5));   // -1075 ...  -850
-            for(int i=16; i<32; i++) _zbins.push_back(-850.0*mm+100.0*mm*(i-15));  //  -750 ...   750
-            for(int i=32; i<42; i++) _zbins.push_back(825.0*mm+25.0*mm*(i-31));    //   850 ...  1075
-            for(int i=42; i<48; i++) _zbins.push_back(1090.0*mm+10.0*mm*(i-41));   //  1100 ...  1150
-            break;
-    case 900: _barLength        = 90.*cm;
-            //33 bins
-            for(int i=0; i<6; i++)   _zbins.push_back(-450.0*mm+10.0*mm*i);        //  -450 ...  -400
-            for(int i=6; i<16; i++)  _zbins.push_back(-400.0*mm+25.0*mm*(i-5));    //  -375 ...  -150
-            for(int i=16; i<18; i++) _zbins.push_back(-150.0*mm+100.0*mm*(i-15));  //   -50 ...    50
-            for(int i=18; i<28; i++) _zbins.push_back(125.0*mm+25.0*mm*(i-17));    //   150 ...   375
-            for(int i=28; i<34; i++) _zbins.push_back(390.0*mm+10.0*mm*(i-27));    //   400 ...   450
-            break;
-  }
+  double halfLength = _barLength/2.0;
+  int    nBinsMainSection = lrint((_barLength-600.0)/100.0);
+  double binWidthMainSection = 0;
+  if(nBinsMainSection>0) binWidthMainSection = (_barLength-600.0)/nBinsMainSection;
+  for(int i=0; i<=5;  i++)               _zbins.push_back(-halfLength*mm+                        10.0*mm*i);
+  for(int i=1; i<=10; i++)               _zbins.push_back(-halfLength*mm+ 50.0*mm+               25.0*mm*i);
+  for(int i=1; i<=nBinsMainSection; i++) _zbins.push_back(-halfLength*mm+300.0*mm+binWidthMainSection*mm*i);
+  for(int i=1; i<=10; i++)               _zbins.push_back( halfLength*mm-300.0*mm+               25.0*mm*i);
+  for(int i=1; i<=5;  i++)               _zbins.push_back( halfLength*mm- 50.0*mm+               10.0*mm*i);
 
   for(int i=0; i<5; i++)  _betabins.push_back(0.62+0.38*i/4.0); //4 bins
 

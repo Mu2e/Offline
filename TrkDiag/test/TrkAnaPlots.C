@@ -142,7 +142,7 @@ void MomResp(TTree* ta, double tqcut, double nmu) {
   momresp->Sumw2();
   TCut final = reco+goodfit;
   ta->Project("momresp","dem.mom-demmcgen.mom","evtinfo.evtwt"*final);
-  //momresp->Scale(1.0/nmu);
+  momresp->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
   cout << "Integral = " << integral << " mean = " << momresp->GetMean() << " rms = " << momresp->GetRMS() << endl;
@@ -157,7 +157,7 @@ void MomResp(TTree* ta, double tqcut, double nmu) {
   momresp->Fit("dscb","LRQ");
   momresp->Fit("dscb","LRM");
 }
-void MomRes(TTree* ta, double tqcut) {
+void MomRes(TTree* ta, double tqcut,double nmu) {
 // cuts
   TCut reco("dem.status>0");
   char ctext[80];
@@ -193,8 +193,9 @@ void MomRes(TTree* ta, double tqcut) {
   momres->Sumw2();
   TCut final = reco+goodfit+physics;
   ta->Project("momres","dem.mom-demmcent.mom","evtinfo.evtwt"*final);
+  momres->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
-  double integral = momres->GetEntries()*momres->GetBinWidth(1);
+  double integral = momres->GetEntries()*momres->GetBinWidth(1)/nmu;
   cout << "Integral = " << integral << " mean = " << momres->GetMean() << " rms = " << momres->GetRMS() << endl;
   dscb->SetParameters(3*integral,momres->GetMean()+0.07,0.3*momres->GetRMS(),0.9,3.5,1.5,6.0);
 
@@ -214,6 +215,8 @@ void MomRes(TTree* ta, double tqcut) {
   snprintf(line,80,"t0>%5.1f nsec",t0min);
   rtext->AddText(line);
   sprintf(line,"%s",goodfit.GetTitle());
+  rtext->AddText(line);
+  sprintf(line,"%s",rmomloose.GetTitle());
   rtext->AddText(line);
   sprintf(line,"%5.0f Tracks",momres->GetEntries());
   rtext->AddText(line);
@@ -349,5 +352,4 @@ void hitres(TTree* ta) {
   hresst->Draw("h");
   hresall->Fit("gaus","","sames");
 }
-
 

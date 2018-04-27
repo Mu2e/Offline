@@ -65,12 +65,12 @@ double          crs.scintillatorBarLengthD3      =  2300; //23
 
 double          crs.scintillatorBarThickness     =  20;
 double          crs.scintillatorBarWidth         =  49.5;
-double          crs.layerOffset                  =  10;   //mm
-double          crs.gapLarge                     =   2;   //mm
-double          crs.gapSmall                     =   1;   //mm
-double          crs.gapBetweenModules            =   5;   //mm
-vector<double>  crs.gapBetweenLayers             =   {9.525, 12.7, 9.525}; //mm
-double          crs.aluminumSheetThickness       =  1.29; //mm
+double          crs.layerOffset                  =  10;  //mm
+double          crs.gapLarge                     =  2 ;  //mm
+double          crs.gapSmall                     =  1;   //mm
+double          crs.gapBetweenModules            =  5;   //mm
+vector<double>  crs.gapBetweenLayers             =  {9.525, 9.525, 9.525}; //mm
+double          crs.aluminumSheetThickness       =  3.175; //mm
 double          crs.strongBackThickness          =  12.7; //mm
 
 int             crs.nModulesR1                   =  18;  //0
@@ -138,7 +138,7 @@ vector<double>  crs.firstCounterT3        =  {-3904.0,   2600.6,   1948.15}; //1
 vector<double>  crs.firstCounterT4        =  {-3904.0,   2600.6,   5224.15}; //12
 vector<double>  crs.firstCounterT5        =  {-3904.0,   2600.6,  15052.15}; //13
 vector<double>  crs.firstCounterT6        =  {-3904.0,   2600.6,  15463.15}; //14
-vector<double>  crs.firstCounterT7        =  {-1104.0,   2900.6,    300.0};  //15
+vector<double>  crs.firstCounterT7        =  {-1104.0,   2900.6,    300.0};  //15 
 vector<double>  crs.firstCounterT8        =  { -285.0,   2900.6,    300.0};  //16
 vector<double>  crs.firstCounterD1        =  {-3904.0,   2910.75, 18771.0};  //17  //raised by 20cm compared to default file
 vector<double>  crs.firstCounterU         =  {-3267.8,   3051.25, -2296.8};  //18  //raised compared to default file

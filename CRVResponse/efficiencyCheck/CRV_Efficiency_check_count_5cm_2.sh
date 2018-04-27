@@ -1,9 +1,8 @@
-moduleGap="4.5"
-name=CRV_Efficiency_check_5cm_6000
+name=CRV_Efficiency_check_5cm_6000_e
 layerOffset=42
-moduleGap="5.5"
-gapSmall="0.5"
-gapLarge="1.0"
+moduleGap="3.0"
+gapSmall="0.1"
+gapLarge="2.0"
 
 timeWindow=10
 sides=2

@@ -24,17 +24,19 @@ namespace mu2e
 MVATools::MVATools(fhicl::ParameterSet const& pset) : 
   mvaWgtsFile_(), 
   wgts_(), 
+  x_(), 
+  y_(),
+  fv_(), 
+  layerToNeurons_(), 
+  synapsessPerLayer_(),
   voffset_(), 
   vscale_(), 
   title_(), 
   label_(),
   activeType_(aType::null),
+  activationTypeString_("none"),
   oldMVA_(false),
-  isNorm_(false), 
-  layerToNeurons_(), 
-  synapsessPerLayer_(), 
-  x_(), 
-  y_()
+  isNorm_(false)
 {
    ConfigFileLookupPolicy configFile;
    std::string weights = pset.get<std::string>("MVAWeights");
@@ -156,7 +158,8 @@ void MVATools::getOpts(xercesc::DOMDocument* xmlDoc)
 	   std::string val(value);
 	   if (val.find("tanh") != std::string::npos) activeType_ = aType::tanh;  
 	   if (val.find("sigmoid") != std::string::npos) activeType_ = aType::sigmoid;  
-	   if (val.find("ReLU") != std::string::npos) activeType_ = aType::relu;  	   
+	   if (val.find("ReLU") != std::string::npos) activeType_ = aType::relu;
+           activationTypeString_ = val;  	   
 	}      
         if (label.find("VarTransform") != std::string::npos)
 	{
@@ -296,6 +299,9 @@ void MVATools::getWgts(xercesc::DOMDocument* xmlDoc)
     for (unsigned i=0;i<layerToNeurons_[1];++i) x_.push_back(1);
     for (unsigned i=0;i<=maxSynapses;++i) y_.push_back(0);
     
+    for (unsigned i=0;i<layerToNeurons_[1]-1;++i) fv_.push_back(0);
+    
+    
     XMLString::release(&ATT_INDEX);
     XMLString::release(&ATT_NSYNAPSES);    
 }
@@ -305,8 +311,11 @@ void MVATools::getWgts(xercesc::DOMDocument* xmlDoc)
 
 float MVATools::evalMVA(const std::vector<double >& v) const 
 {
-   std::vector<float> fv(v.begin(), v.end());
-   return evalMVA(fv);
+   if (v.size() != layerToNeurons_[1]-1) 
+     throw cet::exception("RECO")<<"mu2e::MVATools: mismatch input dimension and network architecture" << std::endl;
+   
+   for (size_t i=0;i<v.size();++i)  fv_[i] = static_cast<float>(v[i]);   
+   return evalMVA(fv_);
 }
 
 float MVATools::evalMVA(const std::vector<float>& v) const 
@@ -332,7 +341,8 @@ float MVATools::evalMVA(const std::vector<float>& v) const
         y_[j] = activation(y_[j]);
         ++idxWeight;
       }      
-      x_ = y_;
+            
+      x_.swap(y_); //faster than assignment
       x_[synapsessPerLayer_[k]] = 1.0; //add bias neuron
     }   
     
@@ -341,7 +351,7 @@ float MVATools::evalMVA(const std::vector<float>& v) const
     for (unsigned i=0;i<wgts_[idxWeight].size();++i) y += wgts_[idxWeight][i]*x_[i];
 
     if (oldMVA_) return y;
-    return  1.0/(1.0+exp(-y));
+    return  1.0/(1.0+expf(-y));
 }
 
 
@@ -352,14 +362,14 @@ float MVATools::activation(float arg) const
    if (activeType_== aType::tanh)
    {
      if (oldMVA_) return std::tanh(arg);
-     if (arg > 4.97) return 1;
-     if (arg < -4.97) return -1;
+     if (arg > 4.97) return 1.0;
+     if (arg < -4.97) return -1.0;
      float arg2 = arg * arg;
      float a = arg * (135135.0f + arg2 * (17325.0f + arg2 * (378.0f + arg2)));
      float b = 135135.0f + arg2 * (62370.0f + arg2 * (3150.0f + arg2 * 28.0f));
      return a/b;
    }
-   if (activeType_== aType::sigmoid) return 1.0/(1.0+exp(-arg));
+   if (activeType_== aType::sigmoid) return 1.0/(1.0+expf(-arg));
    if (activeType_== aType::relu) return std::max(0.0f,arg);
    
    return -999.0;
@@ -368,7 +378,42 @@ float MVATools::activation(float arg) const
 
 void MVATools::showMVA() const 
 {
-   std::cout<<"Nothing yet"<<std::endl;
+    std::cout << "MVA weights from file:" <<     mvaWgtsFile_ << std::endl;;
+    std::cout << "MVA NLayers: " << synapsessPerLayer_.size() << std::endl;;
+    std::cout << "MVA NVars: " << title_.size() << std::endl;;
+    std::cout << "MVA Activation type: " << activationTypeString_ << std::endl;;
+
+    std::cout.setf(std::ios::scientific);
+    std::cout.precision(7);
+
+    const std::string stars1(12,'*');
+    const std::string label1 = " MVA Normalization ";
+    std::cout << stars1 << label1 << stars1 << std::endl;;
+    for (size_t i = 0; i <label_.size(); ++i)
+      std::cout << "Var " << i << label_[i] << " " << title_[i] << ": min=" << voffset_[i] << " max=" << 2.0/vscale_[i]+voffset_[i] << std::endl;;
+    
+    const std::string morestars1(24+label1.size(),'*');
+    std::cout << morestars1 << std::endl;;
+
+    const std::string stars2(23,'*');
+    unsigned idxWeight(0);
+    const std::string label2 = " MVA Weights ";
+    std::cout << stars2 << label2 << stars2 << std::endl;
+    
+    for (unsigned k=0;k<synapsessPerLayer_.size();++k)
+    {          
+      std::cout<<" Layer : "<<k<<std::endl;
+      for (unsigned j=0;j<synapsessPerLayer_[k];++j)
+      {
+	std::cout<<"Synapses 1.."<<wgts_[idxWeight].size()<<" of current layer to synapse "<<j<<" of next layer"<<std::endl;
+        for (unsigned i=0;i<wgts_[idxWeight].size();++i) std::cout <<wgts_[idxWeight][i]<<" ";
+        std::cout<<std::endl;
+        ++idxWeight;
+      }      
+    }   
+    
+    const std::string morestars2(46+label2.size(),'*');
+    std::cout << morestars2 << std::endl;
 }
 
 

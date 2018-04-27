@@ -194,8 +194,8 @@ double ttrackerSupport.electronics.key.phiExtraRotation = 15.;   // degrees; del
 
 // Debug control for TTracker; uncomment to make only a selected panel.
 // it is not about drawing, but about the construction itself
-int    ttracker.plnDraw  =   2;
-int    ttracker.pnlDraw  =   2;
+int    ttracker.plnDraw  =   -1;
+int    ttracker.pnlDraw  =   -1;
 //
 bool   ttracker.drawAxes = false;
 //

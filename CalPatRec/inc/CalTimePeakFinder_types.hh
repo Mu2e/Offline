@@ -37,10 +37,10 @@ namespace mu2e {
       const art::Event*               _event;
       const TimeCluster*              _timeCluster;
       const CaloClusterCollection*    ccCollection;
-      const StrawHitCollection*       shcol;
-      const StrawHitPositionCollection*       shpcol;
-      const StrawHitFlagCollection*   shfcol;
-      CalTimePeakCollection*          _tpeaks;      // cache of time peaks
+      const ComboHitCollection*       chcol;
+      // const StrawHitPositionCollection*       shpcol;
+      // const StrawHitFlagCollection*   shfcol;
+      //      CalTimePeakCollection*          _tpeaks;      // cache of time peaks
       TimeClusterCollection*          _outseeds;
       int                             minNHits;
       double                          minClusterEnergy;

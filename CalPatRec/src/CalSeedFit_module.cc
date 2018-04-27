@@ -565,7 +565,7 @@ namespace mu2e {
     for (int i=0; i<n; ++i) {
       hit_index = tchits.at(i);
       sh        = &KRes.shcol->at(hit_index);
-      straw     = &_tracker->getStraw(sh->strawIndex());
+      straw     = &_tracker->getStraw(sh->strawId());
 
       const CLHEP::Hep3Vector& wpos = straw->getMidPoint();
       const CLHEP::Hep3Vector& wdir = straw->getDirection();

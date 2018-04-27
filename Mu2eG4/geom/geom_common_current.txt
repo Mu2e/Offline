@@ -47,8 +47,8 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/TransportSolenoid_v03.txt"
 
 // External Shielding
-#include "Mu2eG4/geom/ExtShieldUpstream_v04.txt"
-#include "Mu2eG4/geom/ExtShieldDownstream_v04.txt"
+#include "Mu2eG4/geom/ExtShieldUpstream_v05.txt"
+#include "Mu2eG4/geom/ExtShieldDownstream_v05.txt"
 #include "Mu2eG4/geom/Saddle_v02.txt"
 #include "Mu2eG4/geom/Pipe_v03.txt"
 #include "Mu2eG4/geom/ElectronicRack_v01.txt"
@@ -61,8 +61,7 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 
 //#include "Mu2eG4/geom/MSTM_v01.txt" // muon stopping target monitor (deprecated)
 //#include "Mu2eG4/geom/STM_v01.txt" // (muon) stopping target monitor
-//#include "Mu2eG4/geom/STM_v02.txt" // (muon) stopping target monitor
-#include "Mu2eG4/geom/STM_v03.txt" // (muon) stopping target monitor (change in stm.shield.pipe.halfLength due to new crv geometry (v07)
+#include "Mu2eG4/geom/STM_v02.txt" // (muon) stopping target monitor
 
 // Proton Absorber
 #include "Mu2eG4/geom/protonAbsorber_cylindrical_v02.txt"
@@ -79,8 +78,7 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/calorimeter_CsI.txt"
 
 //CRV counters
-//#include "Mu2eG4/geom/crv_counters_v03.txt"
-#include "Mu2eG4/geom/crv_counters_v07.txt"
+#include "Mu2eG4/geom/crv_counters_v03.txt"
 
 //-------------------------------------------
 // Magnetic field

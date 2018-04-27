@@ -28,7 +28,7 @@ int mu2e::ValStrawHit::fill(const mu2e::StrawHitCollection & coll,
   _hN->Fill(coll.size()); 
   _hN2->Fill(coll.size()); 
   for(auto sp : coll) {
-    Straw const& straw = tracker.getStraw( sp.strawIndex() );
+    Straw const& straw = tracker.getStraw( sp.strawId() );
     StrawId const& id = straw.id();
     _ht->Fill(sp.time());
     _hdt->Fill(sp.dt());

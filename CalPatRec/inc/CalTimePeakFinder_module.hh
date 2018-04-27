@@ -24,7 +24,7 @@ namespace art {
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/HelixVal.hh"
 
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 // #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -48,7 +48,7 @@ namespace art {
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
-#include "CalPatRec/inc/CalTimePeak.hh"
+// #include "CalPatRec/inc/CalTimePeak.hh"
 #include "CalPatRec/inc/CalTimePeakFinder_types.hh"
 
 // Mu2e
@@ -94,7 +94,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     std::string      _shLabel ; // MakeStrawHit label (makeSH)
     std::string      _shfLabel;
-    std::string      _shpLabel;
+    // std::string      _shpLabel;
     std::string      _ccmLabel; // caloClusterModuleLabel
 
     StrawHitFlag     _hsel;
@@ -150,12 +150,12 @@ namespace mu2e {
 // helper functions
 //-----------------------------------------------------------------------------
     bool findData         (const art::Event& e);
-    void findTimePeaks    (CalTimePeakCollection* TimePeakColl,
+    void findTimePeaks    (//CalTimePeakCollection* TimePeakColl,
 			   TimeClusterCollection& OutSeeds);
 
-    void initTimeCluster  (TimeCluster &TrackSeed   , 
-			   CalTimePeak &TPeak       ,
-			   int         &ClusterIndex);
+    // void initTimeCluster  (TimeCluster &TrackSeed   , 
+    // 			   CalTimePeak &TPeak       ,
+    // 			   int         &ClusterIndex);
   };
 }
 #endif

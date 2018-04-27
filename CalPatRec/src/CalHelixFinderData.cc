@@ -27,25 +27,31 @@ namespace mu2e {
     _goodhits       = Data._goodhits;
     _tpart          = Data._tpart;
     _fdir           = Data._fdir;
-    _shcol          = Data._shcol;
-    _shpos          = Data._shpos;
+    _chcol          = Data._chcol;
+    // _shpos          = Data._shpos;
     _shfcol         = Data._shfcol;
     _fit            = Data._fit;
     _sxy            = Data._sxy;
-    _srphi          = Data._srphi;
+    _szphi          = Data._szphi;
     _center         = Data._center;
     _radius         = Data._radius;
     _chi2           = Data._chi2;
-    _sxyw           = Data._sxyw;
-    _cw             = Data._cw;
-    _rw             = Data._rw;
-    _chi2w          = Data._chi2w;
+    // _sxyw           = Data._sxyw;
+    // _cw             = Data._cw;
+    // _rw             = Data._rw;
+    // _chi2w          = Data._chi2w;
     _dfdz           = Data._dfdz;
     _fz0            = Data._fz0;
     _diag           = Data._diag;
     
-    _nPoints        = Data._nPoints;
+
+    _nXYSh          = Data._nXYSh;
+    _nZPhiSh        = Data._nZPhiSh;
+    _nStrawHits     = Data._nStrawHits;
+    _nComboHits     = Data._nComboHits;
     _nFiltPoints    = Data._nFiltPoints;
+    _nFiltStrawHits = Data._nFiltStrawHits;
+
     _helixChi2      = Data._helixChi2;
 
     _seedIndex      = Data._seedIndex;
@@ -89,53 +95,6 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// set the Helix points as tested according to the last check made
-//-----------------------------------------------------------------------------
-  void CalHelixFinderData::setTestHelixPoints(){
-    // PanelZ_t*   panel(0);
-    // for (int p=0; p<kNTotalPanels; ++p){
-    //   panel  = &_oTracker[p];
-    //   int nhits = panel->fHitData.size();
-    //   for (int i=0; i<nhits; ++i){
-    // 	panel->fHitData.at(i)._tested = panel->fHitData.at(i)._used;
-    //   }
-    // }
-  }
-//-----------------------------------------------------------------------------
-// set the Helix points as used according to the last test made
-//-----------------------------------------------------------------------------
-  void CalHelixFinderData::markHelixPoints(){
-    // PanelZ_t*   panel(0);
-    // int         counter(0);
-    // for (int p=0; p<kNTotalPanels; ++p){
-    //   panel  = &_oTracker[p];
-    //   int nhits = panel->fHitData.size();
-    //   for (int i=0; i<nhits; ++i){
-    // 	panel->fHitData.at(i)._used       = panel->fHitData.at(i)._tested;
-    // 	panel->fHitData.at(i)._dzFromSeed = panel->fHitData.at(i)._testDzFromSeed;
-    // 	panel->fHitData.at(i)._drFromPred = panel->fHitData.at(i)._testDrFromPred;
-    // 	if (panel->fHitData.at(i)._used == 1) ++counter;
-    //   }
-    // }
-    // //update the value of the number of good points associated with the helix candidate
-    // _nPoints = counter;
-  }
-//-----------------------------------------------------------------------------
-// reset the "tested" flag of the Helix points
-//-----------------------------------------------------------------------------
-  void CalHelixFinderData::resetTestHelixPoints(){
-    // PanelZ_t*   panel(0);
-    // for (int p=0; p<kNTotalPanels; ++p){
-    //   panel  = &_oTracker[p];
-    //   int nhits = panel->fHitData.size();
-    //   for (int i=0; i<nhits; ++i){
-    // 	panel->fHitData.at(i)._tested     = 0;
-    // 	panel->fHitData.at(i)._dzFromSeed = 0;
-    // 	panel->fHitData.at(i)._drFromPred = 0;
-    //   }
-    // }
-  }
-//-----------------------------------------------------------------------------
 // don't clear the diagnostics part.
 //-----------------------------------------------------------------------------
   void CalHelixFinderData::clearTempVariables() {
@@ -148,19 +107,26 @@ namespace mu2e {
     _fit.setFailure(1,"failure");
     
     _sxy.clear();
-    _srphi.clear();
+    _szphi.clear();
     _chi2   = -1.;
     _radius = -1.;
     
-    _sxyw.clear();
-    _rw   = -1.;
-    _chi2w = -1.;
+    // _sxyw.clear();
+    // _rw   = -1.;
+    // _chi2w = -1.;
       
     _dfdz = -1.e6;
     _fz0  = -1.e6;
 
-    _nFiltPoints = 0;
-    _nPoints     = 0;
+    _nFiltPoints    = 0;
+    _nFiltStrawHits = 0;
+
+    _nXYSh       = 0;
+    _nZPhiSh     = 0;
+
+    _nStrawHits  = 0;
+    _nComboHits  = 0;
+
     _helixChi2   = 1e10;
 
     _seedIndex   = SeedInfo_t(-1,-1);
@@ -186,18 +152,24 @@ namespace mu2e {
     _fit.setFailure(1,"failure");
     
     _sxy.clear();
-    _srphi.clear();
+    _szphi.clear();
     _chi2   = -1.;
     _radius = -1.;
     
-    _sxyw.clear();
-    _rw   = -1.;
-    _chi2w = -1.;
+    // _sxyw.clear();
+    // _rw   = -1.;
+    // _chi2w = -1.;
       
     _dfdz = -1.e6;
     _fz0  = -1.e6;
 
-    _nPoints     = 0;
+
+    _nXYSh       = 0;
+    _nZPhiSh     = 0;
+
+    _nStrawHits  = 0;
+    _nComboHits  = 0;
+
     _helixChi2   = 1e10;
 
     _seedIndex   = SeedInfo_t(-1,-1);
@@ -217,13 +189,13 @@ namespace mu2e {
 
     printf(" center, radius, chi2: %8.3f %8.3f %8.3f %10.2f\n", _center.x(),_center.y(),_radius,_chi2);
 
-    printf(" _sxyw(N, X0, Y0, R, chi2: %3.0f %8.3f %8.3f %8.3f %10.2f)\n",
-	   _sxyw.qn(),_sxyw.x0(),_sxyw.y0(),_sxyw.radius(),_sxyw.chi2DofCircle());
+    // printf(" _sxyw(N, X0, Y0, R, chi2: %3.0f %8.3f %8.3f %8.3f %10.2f)\n",
+    // 	   _sxyw.qn(),_sxyw.x0(),_sxyw.y0(),_sxyw.radius(),_sxyw.chi2DofCircle());
 
-    printf(" cw, rw, chi2w: %8.3f %8.3f %8.3f %10.2f\n", _cw.x(),_cw.y(),_rw,_chi2w);
+    // printf(" cw, rw, chi2w: %8.3f %8.3f %8.3f %10.2f\n", _cw.x(),_cw.y(),_rw,_chi2w);
 
-    printf(" _srphi(phi0, df/dz, chi2: %3.0f %8.3f %10.5f %10.2f\n",
-	   _sxyw.qn(),_srphi.phi0(),_srphi.dfdz(),_srphi.chi2DofLine());
+    printf(" _szphi(phi0, df/dz, chi2: %3.0f %8.3f %10.5f %10.2f\n",
+	   _sxy.qn(),_szphi.phi0(),_szphi.dfdz(),_szphi.chi2DofLine());
 
     printf(" _dfdz, _fz0, : %10.4f %10.4f\n", _dfdz,_fz0);
 

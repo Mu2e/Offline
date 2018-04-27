@@ -11,7 +11,7 @@
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 
@@ -40,7 +40,7 @@ namespace mu2e {
     double                     _tmin;        // lower bound of the timing window
     double                     _tmax;        // upper bound of the timing window
 
-    const StrawHitCollection*      _shcol;  // cached pointer to the StrawHit collection
+    const ComboHitCollection*      _shcol;  // cached pointer to the StrawHit collection
     const StrawHitFlagCollection*  _shfcol; // cached pointer to the StrawHitFlag collection
 //-----------------------------------------------------------------------------
 // functions

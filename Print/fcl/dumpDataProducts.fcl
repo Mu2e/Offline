@@ -1,12 +1,6 @@
+#
 # Print information about all data products in a file.
 #
-# Also see fileDumper.fcl, which illustrates a more powerful tool.
-#
-# $Id: dumpDataProducts.fcl,v 1.4 2014/01/07 21:20:33 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2014/01/07 21:20:33 $
-#
-# Original author Rob Kutschke
 
 #include "fcl/minimalMessageService.fcl"
 
@@ -17,15 +11,14 @@ process_name : DumpDataProducts
 source :
 {
   module_type : RootInput
-  fileNames : ["/prj/mu2e/users/kutschke/beamlineData_01.root"]
+  fileNames : @nil
   maxEvents : 1
 }
 
 services :
 {
-  message : @local::mf_debugging
-
-} # close of services block
+  message : @local::default_message
+}
 
 physics :
 {
@@ -42,13 +35,18 @@ physics :
 
 }
 
-  outputs:
+outputs:
+{
+  # Print info about all data products in the file.
+  dump:
   {
-    # Print info about all data products in the file.
-    dump:
-    {
-      module_type   : DataProductDump
-      # temporary patch for crash until art 2_10 or 2_11
-      wantResolvedOnly: true
-    }
+    module_type   : DataProductDump
+    # temporary patch for crash until art 2_10 or 2_11
+    wantResolvedOnly: true
   }
+}
+
+# turn off summary prints
+services.message.destinations.log.categories.ArtSummary.limit : 0
+services.message.destinations.statistics.stats : @local::mf_null
+

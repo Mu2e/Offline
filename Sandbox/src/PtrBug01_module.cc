@@ -271,7 +271,7 @@ namespace mu2e {
       StrawHit const& straw(straws[i]);
       PtrStepPointMCVector const& steps(stepPtrs[i]);
       cout << "Straw: "
-           << straw.strawIndex() << " "
+           << straw.strawId() << " "
            << straw.energyDep()*1000.<< " " // keV
            << steps.size()
            << endl;

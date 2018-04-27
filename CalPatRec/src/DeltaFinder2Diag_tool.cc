@@ -686,9 +686,7 @@ namespace mu2e {
 	    //-----------------------------------------------------------------------------
 	    mc->fListOfHits.push_back(hd);
 	      
-	    StrawIndex   shid  = sh->strawIndex();
-	    const Straw& straw = _data->tracker->getStraw(shid);
-	    int station        = straw.id().getStation();
+	    int station        = sh->strawId().getStation();
 
 	    if (station < mc->fFirstStation) mc->fFirstStation = station;
 	    if (station > mc->fLastStation ) mc->fLastStation  = station;
@@ -911,8 +909,8 @@ namespace mu2e {
 
 	    printf("seed %2i:%03i %5i %2i ",st,ps,seed->fGood,seed->fType);
 	    if (seed->fType != 0) {
-	      printf("(%5i:%9i)",seed->fHitData[0]->fHit->strawIndex().asInt(),seed->fPreSeedMcPart[0]->fID);
-	      printf("(%5i:%9i)",seed->fHitData[1]->fHit->strawIndex().asInt(),seed->fPreSeedMcPart[1]->fID);
+	      printf("(%5i:%9i)",seed->fHitData[0]->fHit->strawId().asUint16(),seed->fPreSeedMcPart[0]->fID);
+	      printf("(%5i:%9i)",seed->fHitData[1]->fHit->strawId().asUint16(),seed->fPreSeedMcPart[1]->fID);
 	    }
 	    else {
 	      printf("(%5i:%9i)",-1,-1);
@@ -939,7 +937,7 @@ namespace mu2e {
 		McPart_t* mcp = seed->fMcPart[face][ih];
 		int mcid = mcp->fID;
 		if ((nprinted == 0) && (first_line == 0)) printf("%21s","");
-		printf("(%5i:%9i)",hit->strawIndex().asInt(),mcid);
+		printf("(%5i:%9i)",hit->strawId().asUint16(),mcid);
 		nprinted++;
 		if (nprinted == 5) {
 		  printf("\n");
@@ -996,8 +994,8 @@ namespace mu2e {
 		int f1 = ds->fType % 10;
 
 		printf(" (%5i:%9i, %5i:%9i)",
-		       ds->hitlist[f0][0]->fHit->strawIndex().asInt(),ds->fMcPart[f0][0]->fID,
-		       ds->hitlist[f1][0]->fHit->strawIndex().asInt(),ds->fMcPart[f1][0]->fID
+		       ds->hitlist[f0][0]->fHit->strawId().asUint16(),ds->fMcPart[f0][0]->fID,
+		       ds->hitlist[f1][0]->fHit->strawId().asUint16(),ds->fMcPart[f1][0]->fID
 		       );
 	      }
 	      else {
@@ -1097,10 +1095,10 @@ namespace mu2e {
       mc_mom = _mcUtils->getStartMom(sim);
     }
 
-    const mu2e::Straw* straw = &_data->tracker->getStraw(sh->strawIndex());
+    const mu2e::Straw* straw = &_data->tracker->getStraw(sh->strawId());
     
     printf("%5i ",loc);
-    printf("%5i" ,sh->strawIndex().asInt());
+    printf("%5i" ,sh->strawId().asUint16());
 	
     printf("  %2i:%2i %1i %1i %2i   %8.3f %7.3f  %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
 	   straw->id().getStation(),
@@ -1183,10 +1181,10 @@ namespace mu2e {
       mc_mom = _mcUtils->getStartMom(sim);
     }
 
-    const mu2e::Straw* straw = &_data->tracker->getStraw(Sh->strawIndex());
+    const mu2e::Straw* straw = &_data->tracker->getStraw(Sh->strawId());
     
     printf("%5i ",loc);
-    printf("%5i" ,Sh->strawIndex().asInt());
+    printf("%5i" ,Sh->strawId().asUint16());
 	
     printf("  %5i  %5i   %5i   %5i   %8.3f   %8.3f   %9.6f   %10i   %10i  %8.3f %5i %5i\n",
 	   straw->id().getPlane(),

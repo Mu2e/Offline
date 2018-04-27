@@ -16,8 +16,8 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceClusters.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceCollection.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -102,7 +102,7 @@ namespace mu2e
     _totalDeadTime(0),
     _totalTime(0)
   {
-    produces<CrvCoincidenceClusters>();
+    produces<CrvCoincidenceClusterCollection>();
   }
 
   void CrvCoincidenceClusterFinder::beginJob()
@@ -123,14 +123,14 @@ namespace mu2e
   {
     _totalTime += _timeWindowEnd - _timeWindowStart;
 
-    std::unique_ptr<CrvCoincidenceClusters> crvCoincidenceClusters(new CrvCoincidenceClusters);
+    std::unique_ptr<CrvCoincidenceClusterCollection> crvCoincidenceClusterCollection(new CrvCoincidenceClusterCollection);
 
     GeomHandle<CosmicRayShield> CRS;
 
-    art::Handle<CrvCoincidenceCheckResult> crvCoincidenceCheckResult;
-    event.getByLabel(_crvCoincidenceCheckModuleLabel,"",crvCoincidenceCheckResult);
+    art::Handle<CrvCoincidenceCollection> crvCoincidenceCollection;
+    event.getByLabel(_crvCoincidenceCheckModuleLabel,"",crvCoincidenceCollection);
 
-    if(crvCoincidenceCheckResult.product()==NULL) return;
+    if(crvCoincidenceCollection.product()==NULL) return;
 
     //loop through all coincidence combinations
     //extract all the hits of all coincidence combinations
@@ -138,12 +138,11 @@ namespace mu2e
     //and put them into a (pos ordered) set
     std::map<int, std::set<ClusterHit,PosCompare> > sectorTypeMap;
 
-    const std::vector<CrvCoincidenceCheckResult::CoincidenceCombination> &coincidenceCombinationsAll = crvCoincidenceCheckResult->GetCoincidenceCombinations();
-    std::vector<CrvCoincidenceCheckResult::CoincidenceCombination>::const_iterator iter;
-    for(iter=coincidenceCombinationsAll.begin(); iter!=coincidenceCombinationsAll.end(); iter++)
+    CrvCoincidenceCollection::const_iterator iter;
+    for(iter=crvCoincidenceCollection->begin(); iter!=crvCoincidenceCollection->end(); iter++)
     {
-      int crvSectorType = iter->_sectorType;
-      const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses = iter->_crvRecoPulses;
+      int crvSectorType = iter->GetCrvSectorType();
+      const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses = iter->GetCrvRecoPulses();
       for(size_t i=0; i<crvRecoPulses.size(); i++)
       {
         const art::Ptr<CrvRecoPulse> crvRecoPulse = crvRecoPulses[i];
@@ -207,7 +206,7 @@ namespace mu2e
           avgCounterPos/=crvRecoPulses.size();
 
           //insert the cluster information into the vector of the crv coincidence clusters
-          crvCoincidenceClusters->GetClusters().emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, crvRecoPulses);
+          crvCoincidenceClusterCollection->emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, crvRecoPulses);
 
           if(_verboseLevel>0)
           {
@@ -231,7 +230,7 @@ namespace mu2e
       }//loop over all hits in sector
     }//loop over all sector types
 
-    event.put(std::move(crvCoincidenceClusters));
+    event.put(std::move(crvCoincidenceClusterCollection));
   } // end produce
 
 } // end namespace mu2e

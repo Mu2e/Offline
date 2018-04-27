@@ -21,10 +21,13 @@ namespace mu2e {
       std::string          shLabel;
       fhicl::ParameterSet* timeOffsets;
 
-      enum  { kMaxSeeds = 100 };
+      enum  { kMaxSeeds = 100, kMaxHits = 200 };
       
       int     nTimePeaks;               // number of time peaks (input)
       int     nseeds   [        2]; // 0:all, 1:nhits > nhitsMin; assume nseeds <= 100
+      int     ntclhits [kMaxSeeds];
+      double  hitDzSeed[kMaxSeeds][kMaxHits];
+      double  hitDrPred[kMaxSeeds][kMaxHits];
       int     nhits    [kMaxSeeds];
       int     good     [kMaxSeeds];
       double  radius   [kMaxSeeds];
@@ -48,6 +51,8 @@ namespace mu2e {
 
     struct Hist_t {
       TH1F*  nTimePeaks;
+      TH1F*  ntclhits[2];
+      TH2F*  drVsDzSeed[2];
       TH1F*  nhits;           // number of hits on a helix  
       TH1F*  nseeds  [2];
       TH1F*  radius  [2];   

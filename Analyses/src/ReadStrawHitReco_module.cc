@@ -124,7 +124,7 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
   _hNHits1->Fill(hits.size());
 
   // Counter for number of hits on each wire.
-  std::map<StrawIndex,int> nhperwire;
+  std::map<StrawId,int> nhperwire;
 
   for ( StrawHit const& hit : hits ) {
 
@@ -132,11 +132,10 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
     _hHitDeltaTime->Fill(hit.dt());
     _hHitEnergy->Fill(hit.energyDep()*1000.0);
 
-    StrawIndex si = hit.strawIndex();
+    StrawId sid = hit.strawId();
 
-    unsigned const id      = si.asUint();
-    Straw const& str       = tracker.getStraw(si);
-    StrawId const& sid     = str.id();
+    unsigned const id      = sid.asUint16();
+    Straw const& str       = tracker.getStraw(sid);
     unsigned const lno     = sid.getLayer();
     unsigned const plno    = sid.getPlane();
     unsigned const pnno     = sid.getPanel();
@@ -183,12 +182,11 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
     _ntup->Fill(nt);
 
     // Calculate number of hits per wire
-    ++nhperwire[hit.strawIndex()];
+    ++nhperwire[hit.strawId()];
 
     if ( (int(evt.id().event()) < _maxFullPrint) && (_diagLevel > 3) ) {
       cout << "ReadStrawHitReco: "
            << evt.id().event()      << " #"
-           << si                    << " "
            << sid                   << " "
            << hit.time()            << " "
            << hit.dt()              << " "
@@ -198,7 +196,7 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
 
   } // end loop over hits.
 
-  for( std::map<StrawIndex,int>::iterator it=nhperwire.begin(); it!= nhperwire.end(); ++it ) {
+  for( std::map<StrawId,int>::iterator it=nhperwire.begin(); it!= nhperwire.end(); ++it ) {
     _hNHitsPerWire->Fill(it->second);
   }
 

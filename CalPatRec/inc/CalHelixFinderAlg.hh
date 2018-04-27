@@ -78,7 +78,7 @@ namespace mu2e {
     int                  _diag;
     int                  _debug;
     int                  _debug2;
-    int                  _smartTag;     //flag used to test addiotional layer of rejection after the search for the "best triplet"
+    // int                  _smartTag;     //flag used to test addiotional layer of rejection after the search for the "best triplet"
     StrawHitFlag         _hsel;         // good hit selection
     StrawHitFlag         _bkgsel;       // background hit selection
     double               _maxElectronHitEnergy;
@@ -86,7 +86,7 @@ namespace mu2e {
                                         // 2014-03-10 Gianipez and P. Murat: limit
                                         // the dfdz value in the pattern-recognition stage
     double               _mpDfDz;
-    int                  _minNSt;       // minimum number of active stations found in the ::findDfDZ(...) function
+    // int                  _minNSt;       // minimum number of active stations found in the ::findDfDZ(...) function
     double               _dzOverHelPitchCut; //cut on the ratio between the Dz and the predicted helix-pitch used in ::findDfDz(...)
     double               _maxDfDz;
     double               _minDfDz;
@@ -94,7 +94,7 @@ namespace mu2e {
     double               _weightXY;     // scale factor for makeing the xy-chi2 with a mean close to 1
     double               _weightZPhi;
     double               _weight3D;
-    double               _ew;           // error along the wire (mm)
+    // double               _ew;           // error along the wire (mm)
     double               _maxXDPhi;     // max normalized hit residual in phi (findRZ)
     double               _maxPanelToHelixDPhi;  // max dphi between the helix prediction and a given tracker plane
 
@@ -106,14 +106,14 @@ namespace mu2e {
 					// position used in the patter recognition procedure
     double               _distPatRec;
 
-    double               _rhomin;
-    double               _rhomax;        // crude cuts on tranvservse radius for stereo hits
+    // double               _rhomin;
+    // double               _rhomax;        // crude cuts on tranvservse radius for stereo hits
     double               _mindist;       // minimum distance between points used in circle initialization
-    double               _maxdist;       // maximum distance in hits
+    // double               _maxdist;       // maximum distance in hits
     double               _pmin, _pmax;   // range of total momentum
     double               _tdmin, _tdmax; // range of abs(tan(dip)
-    double               _rcmin,_rcmax;  // maximum transverse radius of circle
-    double               _sfactor;       // stereo hit error factor
+    // double               _rcmin,_rcmax;  // maximum transverse radius of circle
+    // double               _sfactor;       // stereo hit error factor
     bool                 _xyweights;
     bool                 _zweights;      // weight points by estimated errors
     bool                 _filter;        // filter hits
@@ -128,7 +128,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------//
 // store the paramters value of the most reliable track candidate
 //-----------------------------------------------------------------------------//
-    int       _nHitsMaxPerLayer;
+    int       _nHitsMaxPerPanel;
 
                                          // thresholds for the worst hit chi2, total XY and ZPhi fit chi2's
     double    _hitChi2Max;
@@ -164,25 +164,26 @@ namespace mu2e {
     double calculateWeight     (const CalHelixPoint&  Hit,
 				// const CLHEP::Hep3Vector& HitPos, 
 				// const CLHEP::Hep3Vector& StrawDir, 
-				const CLHEP::Hep3Vector& HelCenter, 
+				const XYZVec& HelCenter, 
 				double                   Radius);
 
-    double calculatePhiWeight  (const CLHEP::Hep3Vector& HitPos   , 
-				const CLHEP::Hep3Vector& StrawDir , 
-				const CLHEP::Hep3Vector& HelCenter, 
+    double calculatePhiWeight  (const CalHelixPoint&  Hit,
+				// const XYZVec& HitPos   , 
+				// const XYZVec& StrawDir , 
+				const XYZVec& HelCenter, 
 				double                   Radius   , 
 				int                      Print    , 
 				const char*              Banner=NULL);
 
     //calculates the residual along the radial direction of the helix-circle
-    double calculateRadialDist (const CLHEP::Hep3Vector& HitPos, 
-				const CLHEP::Hep3Vector& HelCenter, 
+    double calculateRadialDist (const XYZVec& HitPos, 
+				const XYZVec& HelCenter, 
 				double                   Radius);
 
-    void   calculateTrackParameters(const CLHEP::Hep3Vector& p1, 
-				    const CLHEP::Hep3Vector& p2,
-                                    const CLHEP::Hep3Vector& p3,
-				    CLHEP::Hep3Vector&       Center, 
+    void   calculateTrackParameters(const XYZVec& p1, 
+				    const XYZVec& p2,
+                                    const XYZVec& p3,
+				    XYZVec&       Center, 
 				    double&                  Radius,
                                     double&                  Phi0, 
 				    double&                  TanLambda);
@@ -194,31 +195,30 @@ namespace mu2e {
 
    // returns the index of the hit which provides the highest contribute to the chi2
     void   cleanUpWeightedCircleFit(CalHelixFinderData& Helix,
-				    ::LsqSums4&         TrkSxy,
 				    SeedInfo_t          SeedIndex,
 				    SeedInfo_t&         Iworst);
 
-    bool   doLinearFitPhiZ     (CalHelixFinderData& Helix, 
-				SeedInfo_t          SeedIndex, 
-				int                 InitTestHelixPoints=0,
-				int                 UseInteligentWeight=0, 
-				int                 DoCleanUp =1);
+    bool   doLinearFitPhiZ          (CalHelixFinderData& Helix, 
+				     SeedInfo_t          SeedIndex, 
+				     int                 UseInteligentWeight=0, 
+				     int                 DoCleanUp =1);
 
    //perfoms the weighted circle fit, update the helix parameters (HelicCenter, Radius) and
     // fills the vector Weights which holds the calculated weights of the hits
-    void   doWeightedCircleFit (CalHelixFinderData& Helix,
-				::LsqSums4&        TrkSxy, 
-				SeedInfo_t         SeedIndex,
-				// int*               IdVec,
-                                CLHEP::Hep3Vector& HelCenter, 
-				double&            Radius, 
-				// double*            Weights,
-                                int                Print=0, 
-				const char*        Banner=NULL);
-
-    void doPatternRecognition(CalHelixFinderData& mytrk);
+    void   doWeightedCircleFit     (CalHelixFinderData& Helix,
+				    SeedInfo_t          SeedIndex,
+				    XYZVec&             HelCenter, 
+				    double&             Radius, 
+				    int                 Print=0, 
+				    const char*         Banner=NULL);
+    
+    void  doPatternRecognition(CalHelixFinderData& mytrk);
+    
+    
+    //performs the search of the best triplet
+    void  searchBestTriplet   (CalHelixFinderData& Helix, CalHelixFinderData& TmpHelix, int UseMPVdfdz=0);
   
-    void defineHelixParams(CalHelixFinderData& Helix) const;
+    void  defineHelixParams   (CalHelixFinderData& Helix) const;
 
     // TH1F* hDist() {return _hDist;}
 
@@ -235,7 +235,6 @@ namespace mu2e {
     int  findDfDz_2                   (CalHelixFinderData& Helix, SeedInfo_t SeedIndex, int  Diag_flag=0);
     void findTrack                    (SeedInfo_t&         SeedIndex,
 			               CalHelixFinderData& Helix,
-			               bool                UseDefaultDfDz = false,
 			               int                 UseMPVdfdz     = 0);
     
     // float ApproxAtan                  (float z);
@@ -257,7 +256,6 @@ namespace mu2e {
 
     int    refineHelixParameters(CalHelixFinderData& Helix,
 				 SeedInfo_t          SeedIndex,
-				 int                 InitTestHelixPoints=0,
 				 const char*         Banner=NULL,
 				 int                 Print=0);
 
@@ -267,7 +265,7 @@ namespace mu2e {
     void   rescueHits           (CalHelixFinderData&  Helix, SeedInfo_t SeedIndex   ,
 				 int UsePhiResiduals = 0);
 
-    void   resolve2PiAmbiguity  (CalHelixFinderData& Helix,const CLHEP::Hep3Vector& Center, double DfDz, double Phi0);
+    void   resolve2PiAmbiguity  (CalHelixFinderData& Helix,const XYZVec& Center, double DfDz, double Phi0);
 
     void   resetTrackParamters  ();
 //-----------------------------------------------------------------------------
@@ -280,7 +278,7 @@ namespace mu2e {
     void   searchWorstHitWeightedCircleFit(CalHelixFinderData& Helix,
 					   SeedInfo_t          SeedIndex,
                                            // int*               IdVec,
-                                           const CLHEP::Hep3Vector& HelCenter,
+                                           const XYZVec& HelCenter,
                                            double&             Radius,
                                            // double*            Weights,
                                            SeedInfo_t&         Iworst ,

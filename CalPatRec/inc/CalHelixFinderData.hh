@@ -13,7 +13,7 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
 #include <array>
@@ -147,16 +147,22 @@ namespace mu2e {
     SeedInfo_t                        _seedIndex;
     SeedInfo_t                        _candIndex;
 
-    int                               _nPoints;      // n(hits)
-    int                               _nFiltPoints;
+    int                               _nStrawHits;      
+    int                               _nComboHits;    
+
+    int                               _nXYSh;
+    int                               _nZPhiSh;
+  
+    int                               _nFiltPoints;     //ComboHits from the TimeCluster + DeltaFinder filtering 
+    int                               _nFiltStrawHits;  //StrawHits from the TimeCluster + DeltaFinder filtering 
 
     double                            _helixChi2;
 
     TrkParticle                       _tpart;
     TrkFitDirection                   _fdir;
 
-    const StrawHitCollection*         _shcol;
-    const StrawHitPositionCollection* _shpos;
+    const ComboHitCollection*         _chcol;
+    // const StrawHitPositionCollection* _shpos;
     const StrawHitFlagCollection*     _shfcol;
     
     TrkErrCode                        _fit;	    // fit status code from last fit
@@ -164,19 +170,19 @@ namespace mu2e {
 // circle parameters; the z center is ignored.
 //-----------------------------------------------------------------------------
     ::LsqSums4         _sxy;
-    ::LsqSums4         _srphi;
+    ::LsqSums4         _szphi;
 
-    CLHEP::Hep3Vector  _center;
+    XYZVec             _center;
     double             _radius;
 
     double             _chi2;
 //-----------------------------------------------------------------------------
 // 2015-02-06 P.Murat: fit with non-equal weights - XY-only
 //-----------------------------------------------------------------------------
-    ::LsqSums4         _sxyw;
-    CLHEP::Hep3Vector  _cw;
-    double             _rw;
-    double             _chi2w;
+    // ::LsqSums4         _sxyw;
+    // XYZVec             _cw;
+    // double             _rw;
+    // double             _chi2w;
 //-----------------------------------------------------------------------------
 // Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)), 
 // fz0 is the phi value of the particle where it goes through z=0
@@ -203,12 +209,12 @@ namespace mu2e {
 
     // CalHelixFinderData& operator =(CalHelixFinderData const& other);
 
-    const StrawHitCollection*         shcol () { return _shcol ; }
-    const StrawHitPositionCollection* shpos () { return _shpos ; }
+    const ComboHitCollection*         chcol () { return _chcol ; }
+    // const StrawHitPositionCollection* shpos () { return _shpos ; }
     const StrawHitFlagCollection*     shfcol() { return _shfcol; }
 
     bool          fitIsValid        () { return _sxy.qn() > 0; }
-    bool          weightedFitIsValid() { return _sxyw.qn() > 0; }
+    bool          weightedFitIsValid() { return _sxy.qn() > 0; }
     int           maxIndex          () { return kMaxResidIndex; }
     HelixTraj*    helix             () { return _helix;        }
 
@@ -219,11 +225,6 @@ namespace mu2e {
     void          print(const char* Title);
     void          clearTempVariables();
     void          clearResults();
-
-    void          markHelixPoints        ();
-
-    void          setTestHelixPoints     ();
-    void          resetTestHelixPoints   ();
 
   };
 

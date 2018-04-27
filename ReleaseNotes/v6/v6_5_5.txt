@@ -1,0 +1,24 @@
+
+           Release notes for Mu2e Offline software, v6_5_5
+
+4) ehrlich, April 20, 2018
+   more changes to the CRV data classes  
+
+3) oksuzian, Apr 20, 2018
+   Addition of fcl file for beam stage2 processing JobConfig/beam/beam_g4s2_crv.fcl
+   Changes to shieliding: addition on passive absorbers and borated poly
+
+2) brownd, Apr 19, 2018
+   Merge triggerDev.  This includes minor changes to the track-only trigger.
+   Migrate StrawHit to use StrawId instead of StrawIndex; this changes the
+   persistent form of StrawHit and required substantial changes to downstream
+   reconstruction and diagnostic code.  StepPointMC is now the only major 
+   code that uses StrawIndex.
+   Add a 'Legacy' package to store code that is no longer used or built but might be
+   useful in the future.
+
+1) rbonvent, jbono Apr 19, 2018
+   Added nonlinear drift velocity implemented in StrawDrift object, including phi dependent lorentz effects.
+   Can be enable in simulation and in track reconstruction separately.  Default is off (linear drift).
+
+

@@ -4,6 +4,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceClusterSummaryCollection.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 
@@ -12,32 +13,31 @@ namespace mu2e
   void CRVAnalysis::FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterSummarizerModuleLabel,
                                               const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo)
   {
-    art::Handle<CrvCoincidenceClustersSummary> crvCoincidenceClustersSummary;
-    event.getByLabel(crvCoincidenceClusterSummarizerModuleLabel,"",crvCoincidenceClustersSummary);
+    art::Handle<CrvCoincidenceClusterSummaryCollection> crvCoincidenceClusterSummaryCollection;
+    event.getByLabel(crvCoincidenceClusterSummarizerModuleLabel,"",crvCoincidenceClusterSummaryCollection);
 
-    if(crvCoincidenceClustersSummary.product()==NULL) return;
+    if(crvCoincidenceClusterSummaryCollection.product()==NULL) return;
 
-    const std::vector<CrvCoincidenceClustersSummary::Cluster> &clusters = crvCoincidenceClustersSummary->GetClusters();
-    std::vector<CrvCoincidenceClustersSummary::Cluster>::const_iterator iter;
-    for(iter=clusters.begin(); iter!=clusters.end(); iter++)
+    std::vector<CrvCoincidenceClusterSummary>::const_iterator iter;
+    for(iter=crvCoincidenceClusterSummaryCollection->begin(); iter!=crvCoincidenceClusterSummaryCollection->end(); iter++)
     {
-      const CrvCoincidenceClustersSummary::Cluster &cluster = *iter;
+      const CrvCoincidenceClusterSummary &cluster = *iter;
 
       //fill the Reco collection
-      recoInfo.emplace_back(cluster._crvSectorType, cluster._avgCounterPos, cluster._startTime, cluster._endTime, cluster._PEs, 
-                            cluster._pulses.size());
+      recoInfo.emplace_back(cluster.GetCrvSectorType(), cluster.GetAvgCounterPos(), cluster.GetStartTime(), cluster.GetEndTime(), cluster.GetPEs(), 
+                            cluster.GetPulses().size());
 
       //fill the MC collection
-      if(cluster._hasMCInfo)
+      if(cluster.HasMCInfo())
       {
-        const art::Ptr<SimParticle> &simParticle = cluster._mostLikelySimParticle;
+        const art::Ptr<SimParticle> &simParticle = cluster.GetMostLikelySimParticle();
         MCInfo.emplace_back(true, 
                             simParticle->pdgId(), 
                             simParticle->genParticle()->pdgId(),
                             simParticle->genParticle()->generatorId().id(),
-                            cluster._earliestHitPos,
-                            cluster._earliestHitTime,
-                            cluster._totalEnergyDeposited);
+                            cluster.GetEarliestHitPos(),
+                            cluster.GetEarliestHitTime(),
+                            cluster.GetTotalEnergyDeposited());
       }
       else MCInfo.emplace_back();
     }//loop through all clusters

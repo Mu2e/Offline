@@ -312,7 +312,9 @@ int WLSPrimaryGeneratorAction::GenerateCerenkovPhotonsInFiber(G4Event *anEvent, 
 //pick random photon energy, which leads to random rIndex, which leads to random angle
 //could be simplified, since all RIndeces are equal
 
-    double photonEnergy,cosTheta,sin2Theta;
+    double photonEnergy=0;
+    double cosTheta=0;
+    double sin2Theta=0;
     do   
     {
       photonEnergy = _cerenkovEnergyMinFiber + dEnergy*G4UniformRand(); 

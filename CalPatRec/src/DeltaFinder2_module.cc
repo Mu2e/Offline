@@ -306,8 +306,7 @@ namespace mu2e {
     for (int h=0; h<nhits; ++h) {
       const StrawHit*         sh  = &(*_shcol)[h];
       const StrawHitPosition* shp = &_shpcol->at(h);
-      StrawIndex si               = sh->strawIndex();
-      const Straw* straw          = &_tracker->getStraw(si);
+      const Straw* straw          = &_tracker->getStraw(sh->strawId());
 
       if (sh->energyDep() > _maxElectronHitEnergy)         continue;
       if ( (sh->time() < _minT) || (sh->time() > _maxT) )  continue;
