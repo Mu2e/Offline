@@ -48,8 +48,7 @@ WLSDetectorConstruction::WLSDetectorConstruction(double lengthOption, int reflec
   _mppcReflectivity = 0.30;  
 
   _reflectorPolish = 1.;
-  _reflectorReflectivity = 0.80;  //reflector for lookup tables
-//  _reflectorReflectivity = 0.90;  //reflector at test beam
+  _reflectorReflectivity = 0.90;  //reflector at test beam
 //  _reflectorReflectivity = 0.10;  //black tape at test beam
 
   _extrusionPolish = 0.3;

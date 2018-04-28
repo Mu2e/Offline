@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for length in "900" "1045" "1244.4" "1600" "2370" "3040" "3200" "4550" "5000" "5700" "6000" "6900" 
+for length in "900" "1045" "1244.4" "1344.4" "1600" "1700" "2370" "3040" "3200" "4550" "5000" "5700" "6000" "6900" 
 do
   declare -a reflectors=("0")
   if [ $length == "900" ]; then
@@ -13,7 +13,13 @@ do
   if [ $length == "1244.4" ]; then
     reflectors[0]="-1"
   fi
+  if [ $length == "1344.4" ]; then
+    reflectors[0]="-1"
+  fi
   if [ $length == "1600" ]; then
+    reflectors[0]="-1"
+  fi
+  if [ $length == "1700" ]; then
     reflectors[0]="-1"
   fi
   if [ $length == "2370" ]; then
