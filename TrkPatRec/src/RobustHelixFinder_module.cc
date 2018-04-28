@@ -33,6 +33,13 @@
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/RobustHelixFit.hh"
 
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "art/Utilities/make_tool.h"
+
+#include "TrkPatRec/inc/RobustHelixFinder_types.hh"
+#include "TrkReco/inc/RobustHelixFinderData.hh"
+
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
@@ -76,7 +83,7 @@ namespace {
     //HelixHitMVA() : _pars(9,0.0),_dtrans(_pars[0]),_dwire(_pars[1]),_chisq(_pars[2]),_dt(_pars[3]),
     // _drho(_pars[4]),_dphi(_pars[5]),_rwdot(_pars[6]),_hrho(_pars[7]),_hhrho(_pars[8]){}
     HelixHitMVA() : _pars(7,0.0),_pars2(2,0.0),_dtrans(_pars[0]),_dwire(_pars[1]),_chisq(_pars[2]),_dt(_pars[3]),
-     _drho(_pars[4]),_dphi(_pars[5]),_rwdot(_pars[6]),_hrho(_pars[0]),_hhrho(_pars2[1]) {}
+		    _drho(_pars[4]),_dphi(_pars[5]),_rwdot(_pars[6]),_hrho(_pars[0]),_hhrho(_pars2[1]) {}
   };
 
 }
@@ -130,18 +137,23 @@ namespace mu2e {
     StrawHitFlag      _outlier;
     bool              _updateStereo;
     
-    
+    std::unique_ptr<ModuleHistToolBase>   _hmanager;
+    RobustHelixFinderTypes::Data_t        _data;
+    RobustHelixFinderData                 _hfResult;
+
+
     void     findHelices(ComboHitCollection& chcol, const TimeClusterCollection& tccol);    
-    void     prefilterHits(HelixSeed& hseed); 
-    unsigned filterCircleHits(HelixSeed& hseed); 
-    bool     filterHits(HelixSeed& hseed);
-    void     fillMVA(HelixSeed& hseed); 
-    bool     filterHitsMVA(HelixSeed& hseed);
-    void     updateT0(HelixSeed& hseed);
-    bool     updateStereo(HelixSeed& hseed);
-    unsigned hitCount(HelixSeed const& hseed);
-    void     fitHelix(HelixSeed& hseed);
-    void     refitHelix(HelixSeed& hseed);
+    void     prefilterHits(RobustHelixFinderData& helixData); 
+    unsigned filterCircleHits(RobustHelixFinderData& helixData); 
+    bool     filterHits(RobustHelixFinderData& helixData);
+    void     fillMVA(RobustHelixFinderData& helixData); 
+    bool     filterHitsMVA(RobustHelixFinderData& helixData);
+    void     updateT0(RobustHelixFinderData& helixData);
+    bool     updateStereo(RobustHelixFinderData& helixData);
+    unsigned hitCount(RobustHelixFinderData const& hseed);
+    void     fitHelix(RobustHelixFinderData& helixData);
+    void     refitHelix(RobustHelixFinderData& helixData);
+    void     fillPluginDiag(RobustHelixFinderData& helixData, int helCounter);
 
   };
 
@@ -184,26 +196,33 @@ namespace mu2e {
       Helicity hel(hv);
       _hels.push_back(hel);
       produces<HelixSeedCollection>(Helicity::name(hel));
+
+      _data.result    = &_hfit;
+
+      if (_diag != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
+      else            _hmanager = std::make_unique<ModuleHistToolBase>();
     }
   }
 
   RobustHelixFinder::~RobustHelixFinder(){}
 
   void RobustHelixFinder::beginJob() {
+
     _stmva.initMVA();
     _nsmva.initMVA();
     if (_debug > 0)
-    {
-      std::cout << "RobustHeilxFinder Stereo Hit MVA parameters: " << std::endl;
-      _stmva.showMVA();
-      std::cout << "RobustHeilxFinder Non-Stereo Hit MVA parameters: " << std::endl;
-      _nsmva.showMVA();
-    }
+      {
+	std::cout << "RobustHeilxFinder Stereo Hit MVA parameters: " << std::endl;
+	_stmva.showMVA();
+	std::cout << "RobustHeilxFinder Non-Stereo Hit MVA parameters: " << std::endl;
+	_nsmva.showMVA();
+      }
 
     if (_diag > 0){
       art::ServiceHandle<art::TFileService> tfs;
       _niter = tfs->make<TH1F>( "niter" , "Number of Fit Iteraions",201,-0.5,200.5);
       _nitermva = tfs->make<TH1F>( "nitermva" , "Number of MVA Fit Iteraions",201,-0.5,200.5);
+      _hmanager->bookHistograms(tfs);
     }
   }
 
@@ -219,123 +238,144 @@ namespace mu2e {
 
     // create output: seperate by helicity
     std::map<Helicity,unique_ptr<HelixSeedCollection>> helcols;
-    for( auto const& hel : _hels) 
+    int counter(0);
+    for( auto const& hel : _hels) {
       helcols[hel] = unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
+      //      _data.helices[counter] = helcols[hel].get();
+      _data.nseeds [counter] = 0;
+      ++counter;
+    }
+    
+    _data.event       = &event;
+    _data.result      = &_hfit;
+    _data.nTimePeaks  = tccol.size();
 
     // create initial helicies from time clusters: to begin, don't specificy helicity
     for (size_t index=0;index< tccol.size();++index) {
       const auto& tclust = tccol[index];
       HelixSeed hseed;
-      hseed._hhits.setParent(chcol.parent());;
-      hseed._t0 = tclust._t0;
-      hseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
-// copy combo hits
+      _hfResult._hseed       = &hseed;
+      _hfResult._timeCluster = &tclust;
+
+      _hfResult._hseed->_hhits.setParent(chcol.parent());
+      _hfResult._hseed->_t0          = tclust._t0;
+      _hfResult._hseed->_timeCluster = art::Ptr<TimeCluster>(tcH,index);
+      // copy combo hits
       for (const auto& ind : tclust._strawHitIdxs) {
 	ComboHit const& ch = chcol[ind];
 	if(ch.flag().hasAnyProperty(_hsel) && !ch.flag().hasAnyProperty(_hbkg)) {
 	  ComboHit hhit(ch);
 	  hhit._flag.clear(StrawHitFlag::resolvedphi);
-	  hseed._hhits.push_back(hhit);        
+	  _hfResult._hseed->_hhits.push_back(hhit);        
 	}
       }
       // filter hits and test
-      if (_prefilter) prefilterHits(hseed);
-      if (hitCount(hseed) >= _minnhit){
-	hseed._status.merge(TrkFitFlag::hitsOK);
+      if (_prefilter) prefilterHits(_hfResult);
+      if (hitCount(_hfResult) >= _minnhit){
+	_hfResult._hseed->_status.merge(TrkFitFlag::hitsOK);
 	// initial circle fit
-	_hfit.fitCircle(hseed);
-	if (hseed._status.hasAnyProperty(TrkFitFlag::circleOK)) {
+	_hfit.fitCircle(_hfResult);
+	if (_hfResult._hseed->_status.hasAnyProperty(TrkFitFlag::circleOK)) {
 	  // loop over helicities. 
+	  int     helCounter(0);
 	  for(auto const& hel : _hels ) {
-	  // tentatively put a copy with the specified helicity in the appropriate output vector
-	    hseed._helix._helicity = hel;
+	    // tentatively put a copy with the specified helicity in the appropriate output vector
+	    _hfResult._hseed->_helix._helicity = hel;
 	    HelixSeedCollection* hcol = helcols[hel].get();
-	    hcol->push_back(hseed);
-	  // attempt complete fit 
-	    fitHelix(hcol->back());
+	    hcol->push_back(*_hfResult._hseed);
+	    // attempt complete fit 
+	    RobustHelixFinderData tmpResult;
+	    tmpResult._hseed = &(hcol->back());
+	    fitHelix(tmpResult);
 	    // test fit status; if not successful, pop it off
 	    if (!hcol->back().status().hasAllProperties(_saveflag))
 	      hcol->pop_back();
+	    else   if (_diag > 0) {
+	      fillPluginDiag(tmpResult, helCounter);
+	    }
+	    ++helCounter;
 	  }
 	}	
       }	
     }
     // put final collections into event 
+    if (_diag > 0) _hmanager->fillHistograms(&_data);
+
     for(auto const& hel : _hels ) {
       event.put(std::move(helcols[hel]),Helicity::name(hel));
     }
   }
 
-  void RobustHelixFinder::fillMVA(HelixSeed& hseed)
+  void RobustHelixFinder::fillMVA(RobustHelixFinderData& helixData)
   {
-    RobustHelix& helix = hseed._helix;
+    RobustHelix& helix = helixData._hseed->_helix;
 
     static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
-    for(auto& hhit : hseed._hhits)
-    {
-
-      const XYZVec& wdir = hhit.wdir();
-      XYZVec wtdir = zaxis.Cross(wdir); // transverse direction to the wire
-      XYZVec cvec = PerpVector(hhit.pos() - helix.center(),Geom::ZDir());// direction from the circle center to the hit
-      XYZVec cdir = cvec.Unit();        // direction from the circle center to the hit
-      XYZVec cperp = zaxis.Cross(cdir); // direction perp to the radius
-
-      XYZVec hpos = hhit.pos();      // this sets the z position to the hit z
-      helix.position(hpos);                     // this computes the helix expectation at that z
-      XYZVec dh = hhit.pos() - hpos; // this is the vector between them
-
-      _vmva._dtrans = fabs(dh.Dot(wtdir));              // transverse projection
-      _vmva._dwire = fabs(dh.Dot(wdir));               // projection along wire direction
-      _vmva._drho = fabs(sqrtf(cvec.mag2()) - helix.radius()); // radius difference
-      _vmva._dphi = fabs(hhit.helixPhi() - helix.circleAzimuth(hhit.pos().z())); // azimuth difference WRT circle center
-      _vmva._hhrho = sqrtf(cvec.mag2());            // hit transverse radius WRT circle center
-      _vmva._hrho = sqrtf(hpos.Perp2());            // hit detector transverse radius
-      _vmva._rwdot = fabs(wdir.Dot(cdir));  // compare directions of radius and wire
-
-      // compute the total resolution including hit and helix parameters first along the wire
-      float wres2 = std::pow(hhit.posRes(StrawHitPosition::wire),(int)2) +
-	std::pow(_cradres*cdir.Dot(wdir),(int)2) +
-	std::pow(_cperpres*cperp.Dot(wdir),(int)2);
-
-      // transverse to the wires
-      float wtres2 = std::pow(hhit.posRes(StrawHitPosition::trans),(int)2) +
-	std::pow(_cradres*cdir.Dot(wtdir),(int)2) +
-	std::pow(_cperpres*cperp.Dot(wtdir),(int)2);
-
-      _vmva._chisq = sqrtf( _vmva._dwire*_vmva._dwire/wres2 + _vmva._dtrans*_vmva._dtrans/wtres2 );          
-      _vmva._dt = hhit.time() - hseed._t0.t0();
-
-      if (hhit._flag.hasAnyProperty(StrawHitFlag::stereo))
+    for(auto& hhit : helixData._hseed->_hhits)
       {
-	hhit._qual = _stmva.evalMVA(_vmva._pars);
-      } else {
-	hhit._qual = _nsmva.evalMVA(_vmva._pars);
+
+	const XYZVec& wdir = hhit.wdir();
+	XYZVec wtdir = zaxis.Cross(wdir); // transverse direction to the wire
+	XYZVec cvec = PerpVector(hhit.pos() - helix.center(),Geom::ZDir());// direction from the circle center to the hit
+	XYZVec cdir = cvec.Unit();        // direction from the circle center to the hit
+	XYZVec cperp = zaxis.Cross(cdir); // direction perp to the radius
+
+	XYZVec hpos = hhit.pos();      // this sets the z position to the hit z
+	helix.position(hpos);                     // this computes the helix expectation at that z
+	XYZVec dh = hhit.pos() - hpos; // this is the vector between them
+
+	_vmva._dtrans = fabs(dh.Dot(wtdir));              // transverse projection
+	_vmva._dwire = fabs(dh.Dot(wdir));               // projection along wire direction
+	_vmva._drho = fabs(sqrtf(cvec.mag2()) - helix.radius()); // radius difference
+	_vmva._dphi = fabs(hhit.helixPhi() - helix.circleAzimuth(hhit.pos().z())); // azimuth difference WRT circle center
+	_vmva._hhrho = sqrtf(cvec.mag2());            // hit transverse radius WRT circle center
+	_vmva._hrho = sqrtf(hpos.Perp2());            // hit detector transverse radius
+	_vmva._rwdot = fabs(wdir.Dot(cdir));  // compare directions of radius and wire
+
+	// compute the total resolution including hit and helix parameters first along the wire
+	float wres2 = std::pow(hhit.posRes(StrawHitPosition::wire),(int)2) +
+	  std::pow(_cradres*cdir.Dot(wdir),(int)2) +
+	  std::pow(_cperpres*cperp.Dot(wdir),(int)2);
+
+	// transverse to the wires
+	float wtres2 = std::pow(hhit.posRes(StrawHitPosition::trans),(int)2) +
+	  std::pow(_cradres*cdir.Dot(wtdir),(int)2) +
+	  std::pow(_cperpres*cperp.Dot(wtdir),(int)2);
+
+	_vmva._chisq = sqrtf( _vmva._dwire*_vmva._dwire/wres2 + _vmva._dtrans*_vmva._dtrans/wtres2 );          
+	_vmva._dt = hhit.time() - helixData._hseed->_t0.t0();
+
+	if (hhit._flag.hasAnyProperty(StrawHitFlag::stereo))
+	  {
+	    hhit._qual = _stmva.evalMVA(_vmva._pars);
+	  } else {
+	  hhit._qual = _nsmva.evalMVA(_vmva._pars);
+	}
       }
-    }
   }
 
-  bool RobustHelixFinder::filterHitsMVA(HelixSeed& hseed)
+  bool RobustHelixFinder::filterHitsMVA(RobustHelixFinderData& helixData)
   {  
     bool changed(false);
-    for (auto& hhit : hseed._hhits)
-    {
-      bool oldout = hhit._flag.hasAnyProperty(_outlier);
+    for (auto& hhit : helixData._hseed->_hhits)
+      {
+	bool oldout = hhit._flag.hasAnyProperty(_outlier);
 
-      if (hhit._qual < _minmva ) hhit._flag.merge(_outlier);
-      else                        hhit._flag.clear(_outlier);
+	if (hhit._qual < _minmva ) hhit._flag.merge(_outlier);
+	else                        hhit._flag.clear(_outlier);
 
-      changed |= oldout != hhit._flag.hasAnyProperty(_outlier);
-    }
+	changed |= oldout != hhit._flag.hasAnyProperty(_outlier);
+      }
     return changed;
   }
 
-  unsigned  RobustHelixFinder::filterCircleHits(HelixSeed& hseed)
+  unsigned  RobustHelixFinder::filterCircleHits(RobustHelixFinderData& helixData)
   {
     unsigned changed(0);
     static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
-    RobustHelix& helix = hseed._helix;
+    RobustHelix& helix = helixData._hseed->_helix;
 
-    for(auto& hhit : hseed._hhits) {
+    for(auto& hhit : helixData._hseed->_hhits) {
       bool oldout = hhit._flag.hasAnyProperty(_outlier);
       hhit._flag.clear(_outlier);
 
@@ -374,125 +414,125 @@ namespace mu2e {
 
 
   // 3d selection on top of radial selection
-  bool RobustHelixFinder::filterHits(HelixSeed& hseed)
+  bool RobustHelixFinder::filterHits(RobustHelixFinderData& helixData)
   {
-    RobustHelix& helix = hseed._helix;
-    ComboHitCollection& hhits = hseed._hhits;
+    RobustHelix& helix = helixData._hseed->_helix;
+    ComboHitCollection& hhits = helixData._hseed->_hhits;
     bool changed(false);
     static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
 
     // loop over hits
     for(auto& hhit : hhits)
-    {     
-      if (hhit._flag.hasAnyProperty(_outlier)) continue;
+      {     
+	if (hhit._flag.hasAnyProperty(_outlier)) continue;
 
-      float hphi = hhit.pos().phi();
-      float dphi = fabs(Angles::deltaPhi(hphi,helix.fcent()));
+	float hphi = hhit.pos().phi();
+	float dphi = fabs(Angles::deltaPhi(hphi,helix.fcent()));
 
-      const XYZVec& wdir = hhit.wdir();
-      XYZVec wtdir = zaxis.Cross(wdir);   // transverse direction to the wire
-      XYZVec cvec = PerpVector(hhit.pos() - helix.center(),Geom::ZDir()); // direction from the circle center to the hit
-      XYZVec cdir = cvec.Unit();          // direction from the circle center to the hit
-      XYZVec cperp = zaxis.Cross(cdir);   // direction perp to the radius
+	const XYZVec& wdir = hhit.wdir();
+	XYZVec wtdir = zaxis.Cross(wdir);   // transverse direction to the wire
+	XYZVec cvec = PerpVector(hhit.pos() - helix.center(),Geom::ZDir()); // direction from the circle center to the hit
+	XYZVec cdir = cvec.Unit();          // direction from the circle center to the hit
+	XYZVec cperp = zaxis.Cross(cdir);   // direction perp to the radius
 
-      XYZVec hpos = hhit.pos(); // this sets the z position to the hit z
-      helix.position(hpos);                // this computes the helix expectation at that z
-      XYZVec dh = hhit.pos() - hpos;   // this is the vector between them
-      float dtrans = fabs(dh.Dot(wtdir)); // transverse projection
-      float dwire = fabs(dh.Dot(wdir));   // projection along wire direction
+	XYZVec hpos = hhit.pos(); // this sets the z position to the hit z
+	helix.position(hpos);                // this computes the helix expectation at that z
+	XYZVec dh = hhit.pos() - hpos;   // this is the vector between them
+	float dtrans = fabs(dh.Dot(wtdir)); // transverse projection
+	float dwire = fabs(dh.Dot(wdir));   // projection along wire direction
 
-      // compute the total resolution including hit and helix parameters first along the wire
-      float wres2 = std::pow(hhit.posRes(StrawHitPosition::wire),(int)2) +
-	std::pow(_cradres*cdir.Dot(wdir),(int)2) +
-	std::pow(_cperpres*cperp.Dot(wdir),(int)2);
-      // transverse to the wires
-      float wtres2 = std::pow(hhit.posRes(StrawHitPosition::trans),(int)2) +
-	std::pow(_cradres*cdir.Dot(wtdir),(int)2) +
-	std::pow(_cperpres*cperp.Dot(wtdir),(int)2);
+	// compute the total resolution including hit and helix parameters first along the wire
+	float wres2 = std::pow(hhit.posRes(StrawHitPosition::wire),(int)2) +
+	  std::pow(_cradres*cdir.Dot(wdir),(int)2) +
+	  std::pow(_cperpres*cperp.Dot(wdir),(int)2);
+	// transverse to the wires
+	float wtres2 = std::pow(hhit.posRes(StrawHitPosition::trans),(int)2) +
+	  std::pow(_cradres*cdir.Dot(wtdir),(int)2) +
+	  std::pow(_cperpres*cperp.Dot(wtdir),(int)2);
 
-      float chisq = dwire*dwire/wres2 + dtrans*dtrans/wtres2;
+	float chisq = dwire*dwire/wres2 + dtrans*dtrans/wtres2;
 
-      if( dphi > _maxphisep || fabs(dwire) > _maxdwire || fabs(dtrans) > _maxdtrans || chisq > _maxchisq) 
-      {
-	hhit._flag.merge(_outlier);
-	changed = true;
+	if( dphi > _maxphisep || fabs(dwire) > _maxdwire || fabs(dtrans) > _maxdtrans || chisq > _maxchisq) 
+	  {
+	    hhit._flag.merge(_outlier);
+	    changed = true;
+	  }
       }
-    }
     return changed;
   }
 
-  void RobustHelixFinder::prefilterHits(HelixSeed& hseed)
+  void RobustHelixFinder::prefilterHits(RobustHelixFinderData& helixData)
   {
-    ComboHitCollection& hhits = hseed._hhits;
+    ComboHitCollection& hhits = helixData._hseed->_hhits;
 
     bool changed(true);
     size_t nhit = hhits.size();
     while (changed && nhit > 0)
-    {
-      nhit = 0;
-      changed = false;
-      accumulator_set<float, stats<tag::median(with_p_square_quantile) > > accx;
-      accumulator_set<float, stats<tag::median(with_p_square_quantile) > > accy;
-      for (const auto& hhit : hhits ) 
       {
-	if (hhit._flag.hasAnyProperty(_outlier)) continue;
-	accx(hhit._pos.x());
-	accy(hhit._pos.y());
-	++nhit;
-      }
+	nhit = 0;
+	changed = false;
+	accumulator_set<float, stats<tag::median(with_p_square_quantile) > > accx;
+	accumulator_set<float, stats<tag::median(with_p_square_quantile) > > accy;
+	for (const auto& hhit : hhits ) 
+	  {
+	    if (hhit._flag.hasAnyProperty(_outlier)) continue;
+	    accx(hhit._pos.x());
+	    accy(hhit._pos.y());
+	    ++nhit;
+	  }
 
-      float mx = extract_result<tag::median>(accx);
-      float my = extract_result<tag::median>(accy);
-      float mphi = atan2f(my,mx);
+	float mx = extract_result<tag::median>(accx);
+	float my = extract_result<tag::median>(accy);
+	float mphi = atan2f(my,mx);
 
-      float maxdphi{0.0};
-      auto worsthit = hhits.end();
-      for(auto ihit = hhits.begin(); ihit != hhits.end(); ++ihit)
-      {
-	if (ihit->_flag.hasAnyProperty(_outlier)) continue;
-	float phi  = ihit->pos().phi();
-	float dphi = fabs(Angles::deltaPhi(phi,mphi));
-	if(dphi > maxdphi)
-	{
-	  maxdphi = dphi;
-	  worsthit = ihit;
-	}
-      }
+	float maxdphi{0.0};
+	auto worsthit = hhits.end();
+	for(auto ihit = hhits.begin(); ihit != hhits.end(); ++ihit)
+	  {
+	    if (ihit->_flag.hasAnyProperty(_outlier)) continue;
+	    float phi  = ihit->pos().phi();
+	    float dphi = fabs(Angles::deltaPhi(phi,mphi));
+	    if(dphi > maxdphi)
+	      {
+		maxdphi = dphi;
+		worsthit = ihit;
+	      }
+	  }
 
-      if (maxdphi > _maxphisep)
-      {
-	worsthit->_flag.merge(_outlier);
-	changed = true;
+	if (maxdphi > _maxphisep)
+	  {
+	    worsthit->_flag.merge(_outlier);
+	    changed = true;
+	  }
       }
-    }
   }
 
-  void RobustHelixFinder::updateT0(HelixSeed& hseed)
+  void RobustHelixFinder::updateT0(RobustHelixFinderData& helixData)
   {
-    const auto& hhits = hseed.hits();
+    const auto& hhits = helixData._hseed->hits();
     accumulator_set<float, stats<tag::weighted_variance(lazy)>, float > terr;
     for (const auto& hhit : hhits) 
-    {
-      if (hhit._flag.hasAnyProperty(_outlier)) continue;
-      float wt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
-      terr(_ttcalc.comboHitTime(hhit),weight=wt);
-    }
+      {
+	if (hhit._flag.hasAnyProperty(_outlier)) continue;
+	float wt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
+	terr(_ttcalc.comboHitTime(hhit),weight=wt);
+      }
 
-    if (hseed.caloCluster().isNonnull())
-    {
-      float time = _ttcalc.caloClusterTime(*hseed.caloCluster());
-      float wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(hseed.caloCluster()->diskId()),2);
-      terr(time,weight=wt);
-    }
+    if (helixData._hseed->caloCluster().isNonnull())
+      {
+	float time = _ttcalc.caloClusterTime(*helixData._hseed->caloCluster());
+	float wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(helixData._hseed->caloCluster()->diskId()),2);
+	terr(time,weight=wt);
+      }
 
     if (sum_of_weights(terr) > 0.0)
-    {
-      hseed._t0._t0 = extract_result<tag::weighted_mean>(terr) + _t0shift; // ad-hoc correction FIXME!!
-      hseed._t0._t0err = sqrtf(std::max(float(0.0),extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
-    }
+      {
+	helixData._hseed->_t0._t0 = extract_result<tag::weighted_mean>(terr) + _t0shift; // ad-hoc correction FIXME!!
+	helixData._hseed->_t0._t0err = sqrtf(std::max(float(0.0),extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
+      }
   }
 
-  void RobustHelixFinder::fitHelix(HelixSeed& hseed){
+  void RobustHelixFinder::fitHelix(RobustHelixFinderData& helixData){
     // iteratively fit the helix including filtering
     unsigned niter(0);
     unsigned nitermva(0);
@@ -500,33 +540,33 @@ namespace mu2e {
 
     do {
       unsigned xyniter(0);
-      unsigned xychanged = filterCircleHits(hseed);
-      while (hseed._status.hasAllProperties(TrkFitFlag::circleOK) && xyniter < _maxniter && xychanged) {
-	_hfit.fitCircle(hseed);
-	xychanged = filterCircleHits(hseed);
+      unsigned xychanged = filterCircleHits(helixData);
+      while (helixData._hseed->_status.hasAllProperties(TrkFitFlag::circleOK) && xyniter < _maxniter && xychanged) {
+	_hfit.fitCircle(helixData);
+	xychanged = filterCircleHits(helixData);
 	++xyniter;
       } 
       // then fit phi-Z
-      if (hseed._status.hasAnyProperty(TrkFitFlag::circleOK)) {
+      if (helixData._hseed->_status.hasAnyProperty(TrkFitFlag::circleOK)) {
 	if (xyniter < _maxniter)
-	  hseed._status.merge(TrkFitFlag::circleConverged);
+	  helixData._hseed->_status.merge(TrkFitFlag::circleConverged);
 	else
-	  hseed._status.clear(TrkFitFlag::circleConverged);
+	  helixData._hseed->_status.clear(TrkFitFlag::circleConverged);
 
 	// solve for the longitudinal parameters
 	unsigned fzniter(0);
 	bool fzchanged(false);
 	do {
-	  _hfit.fitFZ(hseed);
-	  fzchanged = filterHits(hseed);
+	  _hfit.fitFZ(helixData);
+	  fzchanged = filterHits(helixData);
 	  ++fzniter;
-	} while (hseed._status.hasAllProperties(TrkFitFlag::phizOK)  && fzniter < _maxniter && fzchanged);
+	} while (helixData._hseed->_status.hasAllProperties(TrkFitFlag::phizOK)  && fzniter < _maxniter && fzchanged);
 
-	if (hseed._status.hasAnyProperty(TrkFitFlag::phizOK)) {
+	if (helixData._hseed->_status.hasAnyProperty(TrkFitFlag::phizOK)) {
 	  if (fzniter < _maxniter)
-	    hseed._status.merge(TrkFitFlag::phizConverged);
+	    helixData._hseed->_status.merge(TrkFitFlag::phizConverged);
 	  else
-	    hseed._status.clear(TrkFitFlag::phizConverged);
+	    helixData._hseed->_status.clear(TrkFitFlag::phizConverged);
 	}
       }
       ++niter;
@@ -534,71 +574,101 @@ namespace mu2e {
       // update the stereo hit positions; this checks how much the positions changed
       // do this only in non trigger mode
 
-      if (_updateStereo && _hfit.goodHelix(hseed.helix())) changed = updateStereo(hseed);      
-    } while (_hfit.goodHelix(hseed.helix()) && niter < _maxniter && changed);
+      if (_updateStereo && _hfit.goodHelix(helixData._hseed->helix())) changed = updateStereo(helixData);      
+    } while (_hfit.goodHelix(helixData._hseed->helix()) && niter < _maxniter && changed);
 
 
-    if (_hfit.goodHelix(hseed.helix())) {
-      hseed._status.merge(TrkFitFlag::helixOK);
-      updateT0(hseed);
-      if (niter < _maxniter) hseed._status.merge(TrkFitFlag::helixConverged);
+    if (_hfit.goodHelix(helixData._hseed->helix())) {
+      helixData._hseed->_status.merge(TrkFitFlag::helixOK);
+      updateT0(helixData);
+      if (niter < _maxniter) helixData._hseed->_status.merge(TrkFitFlag::helixConverged);
 
       if (_usemva) {
 	bool changed = true;
-	while (hseed._status.hasAllProperties(TrkFitFlag::helixOK)  && nitermva < _maxniter && changed) {
-	  fillMVA(hseed);
-	  changed = filterHitsMVA(hseed);
+	while (helixData._hseed->_status.hasAllProperties(TrkFitFlag::helixOK)  && nitermva < _maxniter && changed) {
+	  fillMVA(helixData);
+	  changed = filterHitsMVA(helixData);
 	  if (!changed) break;
-	  refitHelix(hseed);
+	  refitHelix(helixData);
 	  // update t0 each iteration as that's used in the MVA
-	  updateT0(hseed);
+	  updateT0(helixData);
 	  ++nitermva;
 	}
 	if (nitermva < _maxniter)
-	  hseed._status.merge(TrkFitFlag::helixConverged);
+	  helixData._hseed->_status.merge(TrkFitFlag::helixConverged);
 	else
-	  hseed._status.clear(TrkFitFlag::helixConverged);
+	  helixData._hseed->_status.clear(TrkFitFlag::helixConverged);
       }
     }
     if (_diag > 0){
       _niter->Fill(niter);
       _nitermva->Fill(nitermva);
-      if (!_usemva) fillMVA(hseed);
+      if (!_usemva) fillMVA(helixData);
     }
   }
 
-  void RobustHelixFinder::refitHelix(HelixSeed& hseed) {
+  void RobustHelixFinder::refitHelix(RobustHelixFinderData& helixData) {
     // reset the fit status flags, in case this is called iteratively
-    hseed._status.clear(TrkFitFlag::helixOK);      
-    _hfit.fitCircle(hseed);
-    if (hseed._status.hasAnyProperty(TrkFitFlag::circleOK)) {
-      _hfit.fitFZ(hseed);
-      if (_hfit.goodHelix(hseed._helix)) hseed._status.merge(TrkFitFlag::helixOK);
+    helixData._hseed->_status.clear(TrkFitFlag::helixOK);      
+    _hfit.fitCircle(helixData);
+    if (helixData._hseed->_status.hasAnyProperty(TrkFitFlag::circleOK)) {
+      _hfit.fitFZ(helixData);
+      if (_hfit.goodHelix(helixData._hseed->_helix)) helixData._hseed->_status.merge(TrkFitFlag::helixOK);
     }
   }
 
-  unsigned RobustHelixFinder::hitCount(const HelixSeed& hseed) {
-    return std::count_if(hseed._hhits.begin(),hseed._hhits.end(),
-	[&](const ComboHit& hhit){return !hhit.flag().hasAnyProperty(_outlier);});
+  unsigned RobustHelixFinder::hitCount(const RobustHelixFinderData& helixData) {
+    return std::count_if(helixData._hseed->_hhits.begin(),helixData._hseed->_hhits.end(),
+			 [&](const ComboHit& hhit){return !hhit.flag().hasAnyProperty(_outlier);});
   }
 
 
-  bool RobustHelixFinder::updateStereo(HelixSeed& hseed) {
+  bool RobustHelixFinder::updateStereo(RobustHelixFinderData& helixData) {
     static StrawHitFlag stereo(StrawHitFlag::stereo);
     bool retval(false);
-      // loop over the stereo hits in the helix and update their positions given the local helix direction
-      for(auto& ch : hseed._hhits){
-	if(ch.flag().hasAllProperties(stereo) && ch.nCombo() >=2) {
-// local helix direction at the average z of this hit
-	  XYZVec hdir;
-	  hseed.helix().direction(ch.pos().z(),hdir);
-// needs re-implementing with ComboHits FIXME!	  
-//	XYZVec pos1, pos2;
-//	sthit.position(shcol,tracker,pos1,pos2,hdir);
+    // loop over the stereo hits in the helix and update their positions given the local helix direction
+    for(auto& ch : helixData._hseed->_hhits){
+      if(ch.flag().hasAllProperties(stereo) && ch.nCombo() >=2) {
+	// local helix direction at the average z of this hit
+	XYZVec hdir;
+	helixData._hseed->helix().direction(ch.pos().z(),hdir);
+	// needs re-implementing with ComboHits FIXME!	  
+	//	XYZVec pos1, pos2;
+	//	sthit.position(shcol,tracker,pos1,pos2,hdir);
       }
     }
     return retval;
   }
+
+
+  void RobustHelixFinder::fillPluginDiag(RobustHelixFinderData& helixData, int helCounter) {
+    //--------------------------------------------------------------------------------    
+    // fill diagnostic information
+    //--------------------------------------------------------------------------------
+    double          mm2MeV = 3./10.;  // approximately , at B=1T
+	  
+    int loc = _data.nseeds[helCounter];
+    if (loc < _data.maxSeeds()) {
+      int nhits          = helixData._hseed->_hhits.size();
+      _data.ntclhits[helCounter][loc] = _hfResult._timeCluster->hits().size();
+      _data.nhits   [helCounter][loc] = nhits;
+      _data.radius  [helCounter][loc] = helixData._hseed->helix().radius();
+      _data.pT      [helCounter][loc] = mm2MeV*_data.radius[helCounter][loc];
+      _data.p       [helCounter][loc] = _data.pT[helCounter][loc]/std::cos( std::atan(helixData._hseed->helix().lambda()/_data.radius[helCounter][loc]));
+	
+      // _data.chi2XY[loc]   = _hfResult._sxy.chi2DofCircle();
+      // _data.chi2ZPhi[loc] = _hfResult._szphi.chi2DofLine();
+	    
+      _data.nseeds[helCounter]++;
+	    
+      _data.dr           [helCounter][loc] = _hfResult._diag.dr;
+      _data.chi2d_helix  [helCounter][loc] = _hfResult._diag.chi2d_helix;
+    }   else {
+      printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());
+    }
+  }
+  
+
 
 }
 using mu2e::RobustHelixFinder;
