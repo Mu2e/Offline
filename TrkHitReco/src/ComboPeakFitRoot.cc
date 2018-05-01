@@ -11,8 +11,8 @@ namespace mu2e {
 
   namespace TrkHitReco {
 
-  ComboPeakFitRoot::ComboPeakFitRoot(const StrawElectronics& strawele, const fhicl::ParameterSet& pset) : 
-      PeakFitRoot(strawele, pset) 
+  ComboPeakFitRoot::ComboPeakFitRoot(const StrawResponse& srep, const fhicl::ParameterSet& pset) : 
+      PeakFitRoot(srep, pset) 
   {}
 
 
@@ -41,21 +41,21 @@ namespace mu2e {
     if (hasEarlyCharge(initialGuess))
     {
         _peakfit.fitModelTF1()->ReleaseParameter(PeakFitParams::earlyCharge);
-        _peakfit.fitModelTF1()->SetParameter(PeakFitParams::earlyCharge, initialGuess[0]._peakHeight - (double) _strawele.ADCPedestal()); // Are units correct???
+        _peakfit.fitModelTF1()->SetParameter(PeakFitParams::earlyCharge, initialGuess[0]._peakHeight - (double) _srep.ADCPedestal()); // Are units correct???
         ++locPrimaryPeak;
     }
     // If there should be a floating pedestal
     if(_config.hasOption(FitConfig::floatPedestal))
     {
         _peakfit.fitModelTF1()->ReleaseParameter(PeakFitParams::pedestal);
-        _peakfit.fitModelTF1()->SetParameter(PeakFitParams::earlyCharge, _strawele.ADCPedestal() ); // Are units correct???
+        _peakfit.fitModelTF1()->SetParameter(PeakFitParams::earlyCharge, _srep.ADCPedestal() ); // Are units correct???
     }
     if (hasLateCharge(initialGuess))
     {
         // Make sure that width is defaulted to being a free parameteri
         _peakfit.fitModelTF1()->FixParameter(PeakFitParams::width, 0.0);
         _peakfit.fitModelTF1()->ReleaseParameter(PeakFitParams::lateCharge);
-        _peakfit.fitModelTF1()->SetParameter(PeakFitParams::lateCharge, initialGuess[locPrimaryPeak+1]._peakHeight - _strawele.ADCPedestal()); // Are units correct???
+        _peakfit.fitModelTF1()->SetParameter(PeakFitParams::lateCharge, initialGuess[locPrimaryPeak+1]._peakHeight - _srep.ADCPedestal()); // Are units correct???
         _peakfit.fitModelTF1()->SetParameter(PeakFitParams::lateShift, initialGuess[locPrimaryPeak+1]._peakTime); // Is this shifted correctly
     }
         // debug
@@ -90,7 +90,7 @@ namespace mu2e {
     bool ComboPeakFitRoot::hasEarlyCharge(const peakResultVector &initialGuess) const
     {
         // Is this stable??
-        return initialGuess[0]._peakTime < (_strawele.nADCPreSamples()*_strawele.adcPeriod());
+        return initialGuess[0]._peakTime < (_srep.nADCPreSamples()*_srep.adcPeriod());
     }
 
     bool ComboPeakFitRoot::hasLateCharge(const peakResultVector &initialGuess) const
@@ -99,7 +99,7 @@ namespace mu2e {
         int nPeaks = 0; // number of peaks excluding those which appear in the presample data
         for (auto peak : initialGuess)
         {
-            if (peak._peakTime >= (_strawele.nADCPreSamples()*_strawele.adcPeriod())) ++nPeaks;
+            if (peak._peakTime >= (_srep.nADCPreSamples()*_srep.adcPeriod())) ++nPeaks;
         }
         return nPeaks>1;
     }
@@ -136,7 +136,7 @@ namespace mu2e {
 
       for (int i = 0; i < numSamplesPerHit; ++i)
       {
-         PeakFitFunction func(_strawele);
+         PeakFitFunction func(_srep);
          func.init(_config);
          // FIXME : THIS NEEDS TO GET THE FUNCTION EARLYPEAK FROM PEAK FIT FUNCTION
          subtractedValues[i] = adcValues[i] - func.earlyPeak(measurementTimes[i], earlyPeakCharge);
@@ -170,9 +170,9 @@ namespace mu2e {
         while (jentry < numSamplesPerHit)
         {
           adcValue = adcValues[jentry];
-          descending |= ((adcPrev-adcValue) > (TMath::Sqrt2()*_strawele.analogNoise(TrkTypes::adc)/_strawele.adcLSB()*sigma));
+          descending |= ((adcPrev-adcValue) > (TMath::Sqrt2()*_srep.analogNoise(TrkTypes::adc)/_srep.adcLSB()*sigma));
 
-          if (descending && (adcValue-adcPrev > (TMath::Sqrt2()*_strawele.analogNoise(TrkTypes::adc)/_strawele.adcLSB()*sigma)))
+          if (descending && (adcValue-adcPrev > (TMath::Sqrt2()*_srep.analogNoise(TrkTypes::adc)/_srep.adcLSB()*sigma)))
           {
             break;
           }
@@ -188,7 +188,7 @@ namespace mu2e {
             ++jentry;
           }
         }
-        peakResult peakData(tMax, adcMax - _strawele.ADCPedestal());
+        peakResult peakData(tMax, adcMax - _srep.ADCPedestal());
         initialGuess.push_back(peakData);
         ++ientry;
       }

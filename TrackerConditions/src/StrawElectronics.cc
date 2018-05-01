@@ -48,7 +48,6 @@ namespace mu2e {
     _clockJitter(pset.get<double>("clockJitter",0.2)), // nsec
     _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
     _flashEnd(pset.get<double>("FlashEnd",500.0)), // nsec
-    _pmpEnergyScale(pset.get<double>("peakMinusPedestalEnergyScale",0.0042)), // fudge factor for peak minus pedestal energy method
 
     _responseBins(pset.get<int>("ResponseBins",10000)),
     _sampleRate(pset.get<double>("SampleRate",10.0)), // ghz

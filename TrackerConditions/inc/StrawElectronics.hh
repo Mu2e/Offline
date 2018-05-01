@@ -89,7 +89,6 @@ namespace mu2e {
       double clockJitter() const { return _clockJitter; }
       double currentToVoltage(TrkTypes::Path ipath) const { return _dVdI[ipath]; }
       double maxLinearResponse(TrkTypes::Path ipath,double distance,double charge=1.0) const;
-      double peakMinusPedestalEnergyScale() const { return _pmpEnergyScale; }
       double normalization(TrkTypes::Path ipath) const { return 1.;} //FIXME
       double fallTime(TrkTypes::Path ipath) const { return 22.;} //FIXME
       double clusterLookbackTime() const { return _clusterLookbackTime;}
@@ -125,7 +124,6 @@ namespace mu2e {
       double _clockStart, _clockJitter; // time TDC clock starts, and its error (common to both ends!!)
       // clockstart is the time offset between "microbunch time" t0 (beam) and TDC t0
       double _flashStart, _flashEnd; // flash blanking period (no digitizations during this time!!!)
-      double _pmpEnergyScale; // fudge factor for peak minus pedestal energy method
   // helper functions
       static inline double mypow(double,unsigned);
 

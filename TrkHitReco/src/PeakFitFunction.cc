@@ -7,8 +7,8 @@ namespace mu2e {
 
   namespace TrkHitReco {
 
-    PeakFitFunction::PeakFitFunction(const StrawElectronics& strawele) : 
-      _strawele(strawele), _fitConfig(), _tf1(0)
+    PeakFitFunction::PeakFitFunction(const StrawResponse& srep) : 
+      _srep(srep), _fitConfig(), _tf1(0)
     {}
     PeakFitFunction::~PeakFitFunction() { delete _tf1; }
     
@@ -101,10 +101,10 @@ namespace mu2e {
 	_tf1->FixParameter(PeakFitParams::earlyCharge,0.0);
       //no floating pedestal: fix the value to what strawelectronics says
       if(!_fitConfig.hasOption(FitConfig::floatPedestal))
-	_tf1->FixParameter(PeakFitParams::pedestal,_strawele.ADCPedestal());
+	_tf1->FixParameter(PeakFitParams::pedestal,_srep.ADCPedestal());
       // no floating width: fix the value to what strawelectronics says
       if(!_fitConfig.hasOption(FitConfig::floatWidth))
-	_tf1->FixParameter(PeakFitParams::width,_strawele.fallTime(TrkTypes::adc));
+	_tf1->FixParameter(PeakFitParams::width,_srep.fallTime(TrkTypes::adc));
       // no late peak: fix the charge and shift and disable those parameters
       if(!_fitConfig.hasOption(FitConfig::latePeak)){
 	_tf1->FixParameter(PeakFitParams::lateShift,0.0);
@@ -123,9 +123,9 @@ namespace mu2e {
       // limit the width to be > 0
       _tf1->SetParLimits(PeakFitParams::width,0.0,30.0);
       // limit the pedestal to +- 5 sigma noise
-      double pednoise =_strawele.analogNoise(TrkTypes::adc)/_strawele.adcLSB();
-      double pedmin = std::max(0.0,_strawele.ADCPedestal()-5.0*pednoise);
-      double pedmax = _strawele.ADCPedestal()+5.0*pednoise;
+      double pednoise =_srep.analogNoise(TrkTypes::adc)/_srep.adcLSB();
+      double pedmin = std::max(0.0,_srep.ADCPedestal()-5.0*pednoise);
+      double pedmax = _srep.ADCPedestal()+5.0*pednoise;
       _tf1->SetParLimits(PeakFitParams::pedestal,pedmin,pedmax);
     }
 
@@ -133,7 +133,7 @@ namespace mu2e {
     // need to check/fix the normalization, FIXME!!!
     Float_t PeakFitFunction::earlyPeak(const Double_t time, const Double_t charge) const
     {
-      return charge * exp(-time / _strawele.fallTime(TrkTypes::adc));
+      return charge * exp(-time / _srep.fallTime(TrkTypes::adc));
     }
 
     // Normalized CR-RC network response to a current delta function
@@ -142,9 +142,9 @@ namespace mu2e {
        Float_t returnValue = 0.0;
        if (time > 0.0)
        {
-	 static const double norm = _strawele.currentToVoltage(TrkTypes::adc)*
-	 pow(_strawele.fallTime(TrkTypes::adc),-2)/StrawElectronics::_pC_per_uA_ns;
-	 returnValue = time*norm*exp(-time/_strawele.fallTime(TrkTypes::adc));
+	 static const double norm = _srep.currentToVoltage(TrkTypes::adc)*
+	 pow(_srep.fallTime(TrkTypes::adc),-2)/StrawElectronics::_pC_per_uA_ns;
+	 returnValue = time*norm*exp(-time/_srep.fallTime(TrkTypes::adc));
        }
        return returnValue;
     }
@@ -154,7 +154,7 @@ namespace mu2e {
     // need to fix the normalization FIXME!!!
     Float_t PeakFitFunction::convolvedSinglePeak(const Double_t time, const Double_t sigma) const
     {
-        static const double norm = _strawele.currentToVoltage(TrkTypes::adc)/StrawElectronics::_pC_per_uA_ns;
+        static const double norm = _srep.currentToVoltage(TrkTypes::adc)/StrawElectronics::_pC_per_uA_ns;
         Float_t returnValue = 0.0;
 
         if (sigma <= 0.0)
@@ -163,9 +163,9 @@ namespace mu2e {
         }
         else
         {
-	  const Float_t a = std::max((time + sigma) / _strawele.fallTime(TrkTypes::adc),0.0);
+	  const Float_t a = std::max((time + sigma) / _srep.fallTime(TrkTypes::adc),0.0);
 	  // Assuming that shaping time is pggositive and thus b is negative (if t - sigma is)
-	  const Float_t b = std::max((time - sigma) / _strawele.fallTime(TrkTypes::adc),0.0);
+	  const Float_t b = std::max((time - sigma) / _srep.fallTime(TrkTypes::adc),0.0);
 	  returnValue =  norm*(-exp(-a)*(1+a) + exp(-b)*(1+b)) / (2.0 * sigma);
 	  // this value doesn't have the correct absolute normalization, FIXME!!!!
         }
@@ -177,10 +177,10 @@ namespace mu2e {
     //  model the truncation.  We first have to translate from ADC units to voltage, then back (!)
     void PeakFitFunction::truncateResponse(Float_t& rval) const 
     {
-      double mv = _strawele.adcLSB()*(rval-_strawele.ADCPedestal());
-      double saturatedmv = _strawele.saturatedResponse(mv);
-      double saturatedadc = saturatedmv/_strawele.adcLSB() + _strawele.ADCPedestal();
-      static const double maxadc(_strawele.maxADC());
+      double mv = _srep.adcLSB()*(rval-_srep.ADCPedestal());
+      double saturatedmv = _srep.saturatedResponse(mv);
+      double saturatedadc = saturatedmv/_srep.adcLSB() + _srep.ADCPedestal();
+      static const double maxadc(_srep.maxADC());
       rval = std::max(std::min(saturatedadc,maxadc),(double)0.0);
     }
   }

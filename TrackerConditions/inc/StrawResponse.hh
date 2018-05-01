@@ -40,9 +40,26 @@ namespace mu2e {
       double driftDistanceError(StrawId strawId, double ddist, double phi, float DOCA) const;
       double driftDistanceOffset(StrawId strawId, double ddist, double phi, float DOCA) const;
 
+      double peakMinusPedestalEnergyScale() const { return _pmpEnergyScale; }
+      double analogNoise(TrkTypes::Path ipath) const { return _analognoise[ipath]; }  // incoherent noise
+      double fallTime(TrkTypes::Path ipath) const { return 22.;} //FIXME
+      double currentToVoltage(TrkTypes::Path ipath) const { return _dVdI[ipath]; }
+      double saturatedResponse(double vlin) const;
+      double ADCPedestal() const { return _ADCped; };
+
       void calibrateTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes &times, const StrawId &id) const;
 
       void print(std::ostream& os) const;
+
+      // StrawElectronics functions we are allowed to use
+      inline size_t nADCPreSamples() const { return _strawele->nADCPreSamples(); }
+      inline double adcLSB() const { return _strawele->adcLSB(); }
+      inline double totLSB() const { return _strawele->totLSB(); }
+      inline double adcPeriod() const { return _strawele->adcPeriod(); }
+      inline uint16_t maxADC() const { return _strawele->maxADC(); }
+      // StrawPhysics functions we are allowed to use
+      inline double ionizationEnergy(double q) const { return _strawphys->ionizationEnergy(q); }
+
     private:
 // helper functions
       float wpRes(float kedep, float wdist) const;
@@ -78,6 +95,11 @@ namespace mu2e {
       double _mint0doca;  // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
 
       double _gasGain;
+      double _pmpEnergyScale;
+      double _analognoise[TrkTypes::npaths]; //noise (mVolt) from the straw itself
+      double _dVdI[TrkTypes::npaths]; // scale factor between charge and voltage (milliVolts/picoCoulombs)
+      double _vsat;
+      double _ADCped;
 
       double _timeOffsetBeam;
       std::vector<double> _timeOffsetPanel;
