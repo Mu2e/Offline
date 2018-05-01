@@ -36,7 +36,7 @@
 #include "CalPatRec/inc/DeltaFinder_types.hh"
 
 // #include "CalPatRec/inc/LsqSums2.hh"
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 
 #include <algorithm>
@@ -118,7 +118,8 @@ namespace mu2e {
     DeltaFinderTypes::Data_t            _data;              // all data used
     int                                 _testOrderPrinted;
 
-    double                              _stationToCaloTOF[2][20];
+    float                               _stationToCaloTOF[2][20];
+    float                               _faceTOF[80];
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -244,6 +245,8 @@ namespace mu2e {
       disk_z[i] = tpos.z();
     }
 
+    float     z_tracker_center(0.);
+
     for (int ist=0; ist<_tracker->nStations(); ist++) {
       const Station* st = &_tracker->getStation(ist);
 
@@ -279,6 +282,8 @@ namespace mu2e {
 	    pz->wy  = panel->straw0Direction().y();
 	    pz->phi = panel->straw0MidPoint().phi();
 	    pz->z   = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+	    int  uniqueFaceId = ipl*mu2e::StrawId::_nfaces + of;
+	    _faceTOF[uniqueFaceId] = (z_tracker_center - pz->z)/sin(_pitchAngle)/CLHEP::c_light;
 	  }
 	}	
       }
@@ -341,12 +346,14 @@ namespace mu2e {
 
 	for (int i=0; i<nTPeaks; ++i){
 	  cl    = _tpeakcol->at(i).caloCluster().get();
+	  double    dt(0);
 	  if (cl == NULL) {
-	    printf(">>> DeltaFinder::orderHits() no CaloCluster found within the time peak %i\n", i);
-	    continue;
+	    int  uniqueFaceId = co.Plane*mu2e::StrawId::_nfaces + of;
+	    dt = _tpeakcol->at(i).t0().t0() - (hitTime + _faceTOF[uniqueFaceId]);
+	  }else {
+	    iDisk = cl->diskId();
+	    dt = cl->time() - (hitTime + _stationToCaloTOF[iDisk][os]);
 	  }
-	  iDisk = cl->diskId();
-	  double    dt = cl->time() - (hitTime + _stationToCaloTOF[iDisk][os]);
 	  if ( (dt < _maxCaloDt) && (dt > _minCaloDt) ) {
 	    intime = true;
 	    break;

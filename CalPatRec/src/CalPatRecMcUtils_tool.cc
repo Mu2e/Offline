@@ -27,7 +27,7 @@
 
 #include "TrackerGeom/inc/Straw.hh"
 
-#include "CalPatRec/inc/McUtilsToolBase.hh"
+#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
 
 namespace mu2e {
 

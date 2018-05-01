@@ -104,6 +104,7 @@ namespace mu2e
     //function used to evaluate the hit weight used in the XY fit
     float evalWeightXY(const ComboHit& Hit, XYVec& Center);
 
+    int _diag;
     int _debug;
     CircleFit _cinit, _cfit; // type of circle fit
     StrawHitFlag _useflag, _dontuseflag;

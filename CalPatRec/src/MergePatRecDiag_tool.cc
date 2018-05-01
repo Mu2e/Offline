@@ -17,8 +17,8 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
-#include "CalPatRec/inc/McUtilsToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
 
 using namespace std;
 

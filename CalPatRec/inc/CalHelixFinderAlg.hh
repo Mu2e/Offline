@@ -18,8 +18,8 @@
 //root
 //#include "TString.h"
 
-#include "CalPatRec/inc/LsqSums2.hh"
-#include "CalPatRec/inc/LsqSums4.hh"
+#include "Mu2eUtilities/inc/LsqSums2.hh"
+#include "Mu2eUtilities/inc/LsqSums4.hh"
 #include "CalPatRec/inc/CalTimePeak.hh"
 #include "CalPatRec/inc/CalHelixPoint.hh"
 #include "CalPatRec/inc/CalHelixFinderData.hh"

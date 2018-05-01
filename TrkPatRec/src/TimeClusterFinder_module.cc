@@ -110,6 +110,10 @@ namespace mu2e {
       MVATools          _peakMVA; // MVA for peak cleaning
       TimePeakMVA       _pmva; // input variables to TMVA for peak cleaning
       TrkTimeCalculator _ttcalc;
+      float             _maxElectronHitEnergy; // 
+      float             _minT;
+      float             _maxT;
+ 
       int               _deltaNbins; 
 
       typedef std::pair<Float_t,int> BinContent;
@@ -153,8 +157,11 @@ namespace mu2e {
     _ccwt              (pset.get<float>(  "CaloClusterWeight",10.0)), 
     _maxover           (pset.get<float>(  "MaxOverlap",0.3)),         // Maximum hit overlap to consider clusters as different
     _peakMVA           (pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet())),
-    _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet()))
-    {    
+    _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
+    _maxElectronHitEnergy  (pset.get<float>        ("maxElectronHitEnergy"         )),
+    _minT                  (pset.get<double>       ("minimumTime"                  )), // nsec
+    _maxT                  (pset.get<double>       ("maximumTime"                  )) // nsec
+   {    
       unsigned nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
       _timespec = TH1F("timespec","time spectrum",nbins,_tmin,_tmax);
       _deltaNbins = int(_maxdt/_tbin)-1;
@@ -192,8 +199,8 @@ namespace mu2e {
     if(_testflag){
       auto shfH = event.getValidHandle<StrawHitFlagCollection>(_shfTag);
       _shfcol = shfH.product();
-      if(_shfcol->size() != _chcol->size())
-	throw cet::exception("RECO")<<"TimeClusterFinder: inconsistent flag collection length " << endl;
+      // if(_shfcol->size() != _chcol->size())
+      // 	throw cet::exception("RECO")<<"TimeClusterFinder: inconsistent flag collection length " << endl;
     }
 
     std::unique_ptr<TimeClusterCollection> tccol(new TimeClusterCollection);
@@ -236,6 +243,8 @@ namespace mu2e {
       for(size_t istr=0; istr<_chcol->size(); ++istr) {
 	if ((!_testflag) || goodHit((*_shfcol)[istr])) {
 	  ComboHit const& ch =(*_chcol)[istr];
+ 	// bool condition = (ch.energyDep() <= _maxElectronHitEnergy)  && ( (ch.time() >= _minT) || (ch.time() <= _maxT) );
+	//s if (condition){
 	  float time = _ttcalc.comboHitTime(ch);
 	  if (fabs(time-tctime) < _maxdt){
 	    tc._strawHitIdxs.push_back(StrawHitIndex(istr));
@@ -287,6 +296,8 @@ namespace mu2e {
     for (unsigned istr=0; istr<_chcol->size();++istr) {
       if (_testflag && !goodHit((*_shfcol)[istr])) continue;
       ComboHit const& ch = (*_chcol)[istr];
+      // if (ch.energyDep() > _maxElectronHitEnergy)         continue;
+      // if ( (ch.time() < _minT) || (ch.time() > _maxT) )  continue;
       float time = _ttcalc.comboHitTime((*_chcol)[istr]);
       _timespec.Fill(time,ch.nStrawHits());
     }
@@ -346,6 +357,8 @@ namespace mu2e {
     for(auto ish :tc._strawHitIdxs) { 
       if (_testflag && !goodHit((*_shfcol)[ish])) continue;
       ComboHit const& ch = (*_chcol)[ish];
+      // if (ch.energyDep() > _maxElectronHitEnergy)         continue;
+      // if ( (ch.time() < _minT) || (ch.time() > _maxT) )  continue;
       unsigned nsh = ch.nStrawHits();
       tc._nsh += nsh;
       const XYZVec& pos = ch.pos();

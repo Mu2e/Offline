@@ -14,7 +14,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "CalPatRec/inc/CalHelixFinder_types.hh"
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"

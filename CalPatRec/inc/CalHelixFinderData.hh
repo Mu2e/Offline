@@ -3,7 +3,7 @@
 #define CalHelixFinderData_HH
 
 #include "TObject.h"
-#include "CalPatRec/inc/LsqSums4.hh"
+#include "Mu2eUtilities/inc/LsqSums4.hh"
 #include "CalPatRec/inc/CalHelixPoint.hh"
 
 #include "BTrk/TrkBase/TrkErrCode.hh"

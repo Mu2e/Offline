@@ -29,7 +29,7 @@ namespace mu2e {
     _fdir           = Data._fdir;
     _chcol          = Data._chcol;
     // _shpos          = Data._shpos;
-    _shfcol         = Data._shfcol;
+    _chfcol         = Data._chfcol;
     _fit            = Data._fit;
     // _sxy            = Data._sxy;
     // _szphi          = Data._szphi;

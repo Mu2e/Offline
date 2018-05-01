@@ -34,7 +34,7 @@
 #include "TrkReco/inc/RobustHelixFit.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 
 #include "TrkPatRec/inc/RobustHelixFinder_types.hh"
@@ -121,6 +121,7 @@ namespace mu2e {
 
     art::InputTag			_ccTag;
     art::InputTag			_chTag;
+    art::InputTag			_chfTag;
     art::InputTag			_tcTag;
 
     StrawHitFlag  _hsel, _hbkg;
@@ -180,6 +181,7 @@ namespace mu2e {
     _minmva      (pset.get<float> ("MinMVA",0.1)), // min MVA output to define an outlier
     _ccTag	 (pset.get<art::InputTag>("CaloClusterCollection","CaloClusterFast")),
     _chTag	 (pset.get<art::InputTag>("ComboHitCollection")),
+    _chfTag	 (pset.get<art::InputTag>("ComboHitFlagCollection")),
     _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection")),
     _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector<string>{"TimeDivision"})),
     _hbkg        (pset.get<std::vector<std::string> >("HitBackgroundBits",std::vector<std::string>{"Background"})),
@@ -197,11 +199,12 @@ namespace mu2e {
       _hels.push_back(hel);
       produces<HelixSeedCollection>(Helicity::name(hel));
 
-      _data.result    = &_hfit;
-
       if (_diag != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
       else            _hmanager = std::make_unique<ModuleHistToolBase>();
     }
+
+    _data.result    = &_hfit;
+
   }
 
   RobustHelixFinder::~RobustHelixFinder(){}
@@ -236,6 +239,15 @@ namespace mu2e {
       throw cet::exception("RECO")<<"RobustHelixFinder: No ComboHit collection found for tag" <<  _chTag << endl;
     const ComboHitCollection& chcol(*chH);
 
+    auto chfH = event.getValidHandle<StrawHitFlagCollection>(_chfTag);
+    
+    const StrawHitFlagCollection*       _chfcol = chfH.product();
+    // if(!event.getByLabel(_chfTag, chfH)){
+    //   _chfcol= chfH.product();
+    // }else {
+    //   throw cet::exception("RECO")<<"RobustHelixFinder: No StrawHitFlag collection found for tag" <<  _chfTag << endl;
+    // }
+
     // create output: seperate by helicity
     std::map<Helicity,unique_ptr<HelixSeedCollection>> helcols;
     int counter(0);
@@ -256,14 +268,16 @@ namespace mu2e {
       HelixSeed hseed;
       _hfResult._hseed       = &hseed;
       _hfResult._timeCluster = &tclust;
-
+      _hfResult._chfcol      = _chfcol;
       _hfResult._hseed->_hhits.setParent(chcol.parent());
       _hfResult._hseed->_t0          = tclust._t0;
       _hfResult._hseed->_timeCluster = art::Ptr<TimeCluster>(tcH,index);
       // copy combo hits
+      //      const   StrawHitFlag*   flag(0);
       for (const auto& ind : tclust._strawHitIdxs) {
 	ComboHit const& ch = chcol[ind];
-	if(ch.flag().hasAnyProperty(_hsel) && !ch.flag().hasAnyProperty(_hbkg)) {
+	// flag = &_chfcol->at(ind);
+	if(ch.flag().hasAnyProperty(_hsel) && !ch.flag().hasAnyProperty(_hbkg)  /* && !flag->hasAnyProperty(StrawHitFlag::bkg)*/) {
 	  ComboHit hhit(ch);
 	  hhit._flag.clear(StrawHitFlag::resolvedphi);
 	  _hfResult._hseed->_hhits.push_back(hhit);        
@@ -274,6 +288,7 @@ namespace mu2e {
       if (hitCount(_hfResult) >= _minnhit){
 	_hfResult._hseed->_status.merge(TrkFitFlag::hitsOK);
 	// initial circle fit
+	if (_diag) _hfResult._diag.circleFitCounter = 0;
 	_hfit.fitCircle(_hfResult);
 	if (_hfResult._hseed->_status.hasAnyProperty(TrkFitFlag::circleOK)) {
 	  // loop over helicities. 
@@ -286,6 +301,9 @@ namespace mu2e {
 	    // attempt complete fit 
 	    RobustHelixFinderData tmpResult;
 	    tmpResult._hseed = &(hcol->back());
+	    if (_diag > 0) {
+	      tmpResult._diag = _hfResult._diag;
+	    }	      
 	    fitHelix(tmpResult);
 	    // test fit status; if not successful, pop it off
 	    if (!hcol->back().status().hasAllProperties(_saveflag))
@@ -650,18 +668,27 @@ namespace mu2e {
     int loc = _data.nseeds[helCounter];
     if (loc < _data.maxSeeds()) {
       int nhits          = helixData._hseed->_hhits.size();
-      _data.ntclhits[helCounter][loc] = _hfResult._timeCluster->hits().size();
-      _data.nhits   [helCounter][loc] = nhits;
-      _data.radius  [helCounter][loc] = helixData._hseed->helix().radius();
-      _data.pT      [helCounter][loc] = mm2MeV*_data.radius[helCounter][loc];
-      _data.p       [helCounter][loc] = _data.pT[helCounter][loc]/std::cos( std::atan(helixData._hseed->helix().lambda()/_data.radius[helCounter][loc]));
+      _data.ntclhits    [helCounter][loc] = _hfResult._timeCluster->hits().size();
+      _data.nhits       [helCounter][loc] = nhits;
+
+      _data.ntriplet0   [helCounter][loc] = _hfResult._diag.ntriple_0;
+      _data.ntriplet1   [helCounter][loc] = _hfResult._diag.ntriple_1;
+      _data.ntriplet2   [helCounter][loc] = _hfResult._diag.ntriple_2;
+
+
+      _data.r0          [helCounter][loc] = _hfResult._diag.radius_0;
+      _data.lambda0     [helCounter][loc] = _hfResult._diag.lambda_0;
+      _data.lambda1     [helCounter][loc] = _hfResult._diag.lambda_1;
+      _data.radius      [helCounter][loc] = helixData._hseed->helix().radius();
+      _data.pT          [helCounter][loc] = mm2MeV*_data.radius[helCounter][loc];
+      _data.p           [helCounter][loc] = _data.pT[helCounter][loc]/std::cos( std::atan(helixData._hseed->helix().lambda()/_data.radius[helCounter][loc]));
 	
       // _data.chi2XY[loc]   = _hfResult._sxy.chi2DofCircle();
       // _data.chi2ZPhi[loc] = _hfResult._szphi.chi2DofLine();
 	    
       _data.nseeds[helCounter]++;
 	    
-      _data.dr           [helCounter][loc] = _hfResult._diag.dr;
+      _data.dr           [helCounter][loc] = _hfResult._diag.radius_2 - _hfResult._diag.radius_1;
       _data.chi2d_helix  [helCounter][loc] = _hfResult._diag.chi2d_helix;
     }   else {
       printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());

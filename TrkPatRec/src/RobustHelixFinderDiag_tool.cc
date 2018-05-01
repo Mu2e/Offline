@@ -1,7 +1,8 @@
-//
+#ifndef __TrkPatRec_RobustHelixFinderDiag_hh__
+#define __TrkPatRec_RobustHelixFinderDiag_hh__
 
 #include "TrkPatRec/inc/RobustHelixFinder_types.hh"
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "TrkReco/inc/RobustHelixFit.hh"
 
 #include "BTrk/KalmanTrack/KalHit.hh"
@@ -31,11 +32,18 @@ namespace mu2e {
     struct Hist_t {
       TH1F*  nTimePeaks;
       TH1F*  ntclhits[2];
-      TH1F*  nhits;           // number of hits on a helix  
+      TH1F*  nhits   [2];           // number of hits on a helix  
       TH1F*  nseeds  [2];
+      TH1F*  ntripl0 ;
+      TH1F*  ntripl1 [2];
+      TH1F*  lambda0 [2];
+      TH1F*  lambda1 [2];
+
+      TH1F*  r1      ;
       TH1F*  radius  [2];   
       TH1F*  chi2XY  [2];
       TH1F*  chi2ZPhi[2];
+
       TH1F*  pT      [2];
       TH1F*  p       [2];
       TH1F*  dr[2];
@@ -44,7 +52,7 @@ namespace mu2e {
 
   protected:
     int                              _mcTruth;
-    std::unique_ptr<McUtilsToolBase> _mcUtils;
+    //    std::unique_ptr<McUtilsToolBase> _mcUtils;
     std::string                      _shDigiLabel;
     Hist_t                           _hist;            // owned
     Data_t*                          _data;            // cached
@@ -81,7 +89,20 @@ namespace mu2e {
     _hist.nseeds[1]     = Tfs->make<TH1F>("nseeds1"  , "number of track candidates: nhits > 15;"    , 21, -0.5, 20.5);
     _hist.ntclhits[0]   = Tfs->make<TH1F>("ntclhits0" , "number of hits on a time peak - no delta"  , 101, -0.5, 100.5);
     _hist.ntclhits[1]   = Tfs->make<TH1F>("ntclhits1" , "number of hits on a time peak - no delta: nhits > 15"  , 101, -0.5, 100.5);
-    _hist.nhits         = Tfs->make<TH1F>("nhits"    , "number of hits on a track candidate"       , 101, -0.5, 100.5);
+    _hist.nhits[0]       = Tfs->make<TH1F>("nhitsNeg"    , "number of hits on a track candidate"       , 101, -0.5, 100.5);
+    _hist.nhits[1]       = Tfs->make<TH1F>("nhitsPos"    , "number of hits on a track candidate"       , 101, -0.5, 100.5);
+    _hist.ntripl0       = Tfs->make<TH1F>("ntripl0"    , "number of triplets fit Circle"           , 201, -0.5, 200.5);
+
+    _hist.lambda0[0]    = Tfs->make<TH1F>("lambda0Neg"    , "initFZ, Neg "   , 201, 99.5, 200.5);
+    _hist.lambda0[1]    = Tfs->make<TH1F>("lambda0Pos"    , "initFZ, Pos "   , 201, 99.5, 200.5);
+    _hist.lambda1[0]    = Tfs->make<TH1F>("lambda1Neg"    , "fitFZ, Neg "    , 201, 99.5, 200.5);
+    _hist.lambda1[1]    = Tfs->make<TH1F>("lambda1Pos"    , "fitFZ, Pos "    , 201, 99.5, 200.5);
+
+    _hist.ntripl1[0]    = Tfs->make<TH1F>("ntripl1Neg"    , "number of triplets fit Helix, Neg "   , 201, -0.5, 200.5);
+    _hist.ntripl1[1]    = Tfs->make<TH1F>("ntripl1Pos"    , "number of triplets fit Helix, Pos "   , 201, -0.5, 200.5);
+
+    _hist.r1            = Tfs->make<TH1F>("r1"       , "helix radius fitCircle; r [mm]"            , 401, -0.5, 400.5);
+
     _hist.radius[0]     = Tfs->make<TH1F>("radius0"  , "helix radius; r [mm]"                      , 401, -0.5, 400.5);
     _hist.radius[1]     = Tfs->make<TH1F>("radius1"  , "helix radius nhits > 15; r [mm]"           , 401, -0.5, 400.5);
     _hist.pT [0]        = Tfs->make<TH1F>("pT0"      , "transverse momentum; pT [MeV/c]"           , 400, -0.5, 200.5);
@@ -94,15 +115,15 @@ namespace mu2e {
     _hist.chi2ZPhi[1]   = Tfs->make<TH1F>("chi2ZPhi1", "normalized chi2-ZPhi: nhits>15"            , 200, 0., 20.);
     _hist.dr  [0]       = Tfs->make<TH1F>("dr0"      , "dr; r - r_{no-target} [mm]"                , 800, -200, 200);
     _hist.dr  [1]       = Tfs->make<TH1F>("dr1"      , "dr: nhits>15; r - r_{no-target} [mm]"      , 800, -200, 200);
-    _hist.shmeanr  [0]  = Tfs->make<TH1F>("shmeanr0" , "straw hit mean radius; r_{sh} [mm]"          , 1800, 0, 900);
-    _hist.shmeanr  [1]  = Tfs->make<TH1F>("shmeanr1" , "straw hit mean radius: nhits>15; r_{sh} [mm]", 1800, 0, 900);
+    // _hist.shmeanr  [0]  = Tfs->make<TH1F>("shmeanr0" , "straw hit mean radius; r_{sh} [mm]"          , 1800, 0, 900);
+    // _hist.shmeanr  [1]  = Tfs->make<TH1F>("shmeanr1" , "straw hit mean radius: nhits>15; r_{sh} [mm]", 1800, 0, 900);
     _hist.chi2d_helix[0]= Tfs->make<TH1F>("chi2dhel0" , "global chi2d; #chi^{2}/ndof"                   , 100, 0, 10); 
     _hist.chi2d_helix[1]= Tfs->make<TH1F>("chi2dhel1" , "global chi2d: nhits>15; #chi^{2}/ndof"         , 100, 0, 10); 
 
     return 0;
   }
 
-xs
+
 //-----------------------------------------------------------------------------
 // Mode is not used
 //-----------------------------------------------------------------------------
@@ -116,13 +137,24 @@ xs
     
     _hist.nTimePeaks->Fill(_data->nTimePeaks);
 
+    int   nhelicities(2);
+
     for (int k=0; k<nhelicities; ++k){
       _hist.nseeds[k]->Fill(_data->nseeds[k]);
       _hist.nseeds[k]->Fill(_data->nseeds[k]);
 
       for (int i=0; i<_data->nseeds[k]; i++) {
 	_hist.ntclhits   [k]->Fill(_data->ntclhits[k][i]   );
+	if (k==1){
+	  _hist.ntripl0 ->Fill(_data->ntriplet0[k][i]      );
+	  _hist.r1      ->Fill(_data->ntriplet0[k][i]      );    
+	}
 	_hist.nhits      [k]->Fill(_data->nhits[k][i]      );
+
+	_hist.lambda0    [k]->Fill(_data->lambda0[k][i]    );
+	_hist.lambda1    [k]->Fill(_data->lambda1[k][i]    );
+
+	_hist.ntripl1    [k]->Fill(_data->ntriplet1[k][i]  );
 	_hist.p          [k]->Fill(_data->p[k][i]          );
 	_hist.pT         [k]->Fill(_data->pT[k][i]         );
 	_hist.radius     [k]->Fill(_data->radius[k][i]     );
@@ -137,6 +169,8 @@ xs
     return 0;
   }
 
-  DEFINE_ART_CLASS_TOOL(RobustHelixFinderDiag)
-
 }
+
+DEFINE_ART_CLASS_TOOL(mu2e::RobustHelixFinderDiag)
+
+#endif

@@ -46,7 +46,7 @@
 
 // CalPatRec
 // #include "CalPatRec/inc/TrkDefHack.hh"
-#include "CalPatRec/inc/LsqSums4.hh"
+#include "Mu2eUtilities/inc/LsqSums4.hh"
 #include "CalPatRec/inc/ObjectDumpUtils.hh"
 
 #include "CalPatRec/inc/AlgorithmIDCollection.hh"

@@ -34,7 +34,7 @@
 #include "RecoDataProducts/inc/Doublet.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 
-#include "CalPatRec/inc/McUtilsToolBase.hh"
+#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
 
 //ROOT
 

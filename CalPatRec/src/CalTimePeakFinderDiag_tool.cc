@@ -14,8 +14,8 @@
 #include "BTrkData/inc/TrkStrawHit.hh"
 
 #include "CalPatRec/inc/CalTimePeakFinder_types.hh"
-#include "CalPatRec/inc/McUtilsToolBase.hh"
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "CalPatRec/inc/KalFitResultNew.hh"
 
 #include "TTrackerGeom/inc/TTracker.hh"

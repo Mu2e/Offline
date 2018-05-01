@@ -43,6 +43,7 @@ namespace mu2e
   typedef std::pair<float,float> WVal;
 
   RobustHelixFit::RobustHelixFit(fhicl::ParameterSet const& pset) :
+    _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
     _cinit(static_cast<CircleFit>(pset.get<int>("CircleInitType",median))),
     _cfit(static_cast<CircleFit>(pset.get<int>("CircleFitType",median))),
@@ -326,6 +327,10 @@ namespace mu2e
 	retval = true;
       }
 
+    if (_diag){
+      helixData._diag.lambda_0 = rhel._lambda;
+    }
+
     return retval;
   }
 
@@ -396,6 +401,10 @@ namespace mu2e
       }
 
     if (goodFZ(rhel)) helixData._hseed->_status.merge(TrkFitFlag::phizOK);
+    
+    if (_diag){
+      helixData._diag.lambda_1 = rhel._lambda;
+    }
   }
 
 
@@ -459,7 +468,7 @@ namespace mu2e
 		if (dist2ik < mind2 ||  dist2jk < mind2 || dist2ik > maxd2 || dist2jk > maxd2) continue;
 		// Heron's formula
 		float area2 = (dist2ij*dist2jk + dist2ik*dist2jk + dist2ij*dist2ik) - 0.5*(dist2ij*dist2ij + dist2jk*dist2jk + dist2ik*dist2ik);
-		if(area2 < _minarea2)continue;
+		if(area2 < _minarea2)              continue;
 		// this effectively measures the slope difference
 		float delta = (wpos[kp].x() - wpos[jp].x())*(wpos[jp].y() - wpos[ip].y()) -
 		  (wpos[jp].x() - wpos[ip].x())*(wpos[kp].y() - wpos[jp].y());
@@ -504,14 +513,14 @@ namespace mu2e
 
     // median calculation needs a reasonable number of points to function
     if (ntriple > _ntripleMin)
-      {
-        float centx = extract_result<tag::weighted_median>(accx);
+      {        
+	float centx = extract_result<tag::weighted_median>(accx);
         float centy = extract_result<tag::weighted_median>(accy);
 	XYVec center(centx,centy);
 	if(!_tripler) {
 	  if(!_errrwt) {		//FIXME! INSPECT THE USE OF LSQSUM!
 	    for(auto const& wp : wpos ) {
-	      float rho = sqrtf((wp - center).Mag2());
+ 	      float rho = sqrtf((wp - center).Mag2());
 	      accr(rho,weight = wp.weight()); 
 	    }
 	  } else {
@@ -520,14 +529,8 @@ namespace mu2e
 	      if (use(hhit) ){
 		// compute the projection to the radius
 		XYVec rvec = (XYVec(hhit.pos().x(),hhit.pos().y())-center);
-		evalWeightXY(hhit,center);
-		// XYVec rdir = rvec.unit();
-		// float wdot = rdir.Dot(XYVec(hhit.wdir().x(),hhit.wdir().y()));
-		// float wdot2 = wdot*wdot;
-		// float tdot2 = 1.0 - wdot2;
-		// float err2 = wdot2*hhit.wireErr2() + tdot2*hhit.transErr2();
-		// float wt = 1.0/sqrtf(err2); // or 1/err2?
-		float rho = sqrtf(rvec.Mag2());
+		float wt   = evalWeightXY(hhit,center);
+		float rho  = sqrtf(rvec.Mag2());
 		// if (rho*wt > _xyHitCut)         continue;//FIXME! need an histogram to implement this cut
 		accr(rho,weight=wt);
 	      }
@@ -541,11 +544,42 @@ namespace mu2e
         rhel._fcent = polyAtan2(center.y(), center.x());//center.Phi();
         rhel._radius = rho;
 
+	//refine the circle fit
+	// 	if (_refineXYFit){
+	// 	  ::LsqSums4 sxy;
+	// 	  float      x,y,wt, resid;
+	// 	  for (const auto& hhit : hhits) {
+	// 	    if (!use(hhit) )   continue;
+	// 	    x     = hhit.pos().x();
+	// 	    y     = hhit.pos().y();
+	// 	    resid =  
+	// 	    sxy.addPoint(
+	// 	  }
+
+	// 	}
+
+
+	// 	//check the number of strawHits associated with the track
+	// 	if (nStrawHits < _minnhit) return;
+
         if (goodCircle(rhel)) helixData._hseed->_status.merge(TrkFitFlag::circleOK);
       }
   
+    if (_diag){
+      if ( helixData._diag.circleFitCounter == 0){
+	helixData._diag.ntriple_0 = ntriple;
+	helixData._diag.radius_0  = rhel._radius;
+      } else{
+	helixData._diag.ntriple_1 = ntriple;
+	helixData._diag.radius_1  = rhel._radius;
+      } // else if ( helixData._hseed->helix()._helicity == Helicity::poshel) {
+      // 	helixData._diag.ntriple_2 = ntriple;
+      // 	helixData._diag.radius_2  = rhel._radius;
+      // }
+      ++helixData._diag.circleFitCounter;
+    }
   }
-
+  
 
 
   void RobustHelixFit::findAGE(RobustHelixFinderData const& helixData, XYZVec const& center,float& rmed, float& age)

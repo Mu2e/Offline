@@ -19,6 +19,10 @@ TimeClusterFinder : {
   ComboHitCollection : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   TestFlag : true
+
+    maxElectronHitEnergy          : 0.0035                # means: use all hits
+    minimumTime                   : 500.                  # ns
+    maximumTime                   : 1750.                 # ns
 }
 # stereo version
 STimeClusterFinder : {
@@ -27,11 +31,17 @@ STimeClusterFinder : {
   StrawHitFlagCollection :"SflagBkgHits:ComboHits"
 }
 RobustHelixFinder : {
-   module_type		: RobustHelixFinder
-   ComboHitCollection : "makePH"
-   TimeClusterCollection : "TimeClusterFinder"
-   HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
-   HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
+    module_type		: RobustHelixFinder
+    ComboHitCollection     : "makePH"
+    #   ComboHitFlagCollection : "FlagBkgHits:ComboHits"
+    TimeClusterCollection  : "TimeClusterFinder"
+    HelixStereoHitMVA      : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
+    HelixNonStereoHitMVA   : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
+
+    diagPlugin : { tool_type                    : "RobustHelixFinderDiag"
+	mcTruth                                 : 0
+    }
+    
 }
 SRobustHelixFinder : {
   @table::RobustHelixFinder

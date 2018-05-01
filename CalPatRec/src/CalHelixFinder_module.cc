@@ -33,7 +33,7 @@
 
 #include "CalPatRec/inc/CalHelixFinderData.hh"
 
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 #include "Mu2eUtilities/inc/polyAtan2.hh"
 

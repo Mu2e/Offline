@@ -3,7 +3,7 @@
 #define RobustHelixFinderData_HH
 
 #include "TObject.h"
-// #include "CalPatRec/inc/LsqSums4.hh"
+#include "Mu2eUtilities/inc/LsqSums4.hh"
 // #include "CalPatRec/inc/CalHelixPoint.hh"
 
 #include "BTrk/TrkBase/TrkErrCode.hh"
@@ -98,44 +98,29 @@ namespace mu2e {
     enum { kMaxResidIndex = 500 };
     
     struct Diag_t {
-      int       loopId_4;    // fData[4]
-      double    radius_5;    // fData[5]
-      double    phi0_6;
-      double    chi2_circle;
-      double    z0_6;
-      double    rdfdz_7;
-      double    dfdz_8;
-      int       n_rescued_points_9;    // fData[9]
-      double    dz_10;
-      int       n_active_11;           // fData[11]
-      double    chi2_dof_circle_12;
-      double    chi2_dof_line_13;
-      double    radius_14;
-      double    chi2_dof_circle_15;
-      int       n_rescued_points_16;    // fData[16]
-      double    dfdzres_17;
-      double    dfdzres_18;
-      double    dfdzres_19;
-      double    dr_20;
-      double    dr_21;
-      double    dphi0res_22;
-      double    dphi0res_23;
-      double    dphi0res_24;
-
-      int       nStationPairs;
       
-      double    dfdz;
-      double    dfdz_scaled;
-      double    chi2_line;
-      int       n_active;
       double    resid[kMaxResidIndex];
       double    dist [kMaxResidIndex];
       double    dz   [kMaxResidIndex];
-
+      
+      int       circleFitCounter;
+      
       double    dr;
-      double    straw_mean_radius;
       double    chi2d_helix;
+      
+      double    chi2dXY;
 
+      int       ntriple_0;    //number of triplets used in the first call of RobustHelix::fitCircle
+      double    radius_0;     //radius resulting from the first call of RobustHelix::fitCircle
+  
+      int       ntriple_1;    //number of triplets used in the first call of RobustHelix::fitCircle
+      double    radius_1;     //radius resulting from the first call of RobustHelix::fitCircle
+      
+      int       ntriple_2;
+      double    radius_2;
+
+      double    lambda_0;
+      double    lambda_1;
     };
     
     const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices
@@ -166,14 +151,14 @@ namespace mu2e {
 
     const ComboHitCollection*         _chcol;
     // const StrawHitPositionCollection* _shpos;
-    const StrawHitFlagCollection*     _shfcol;
+    const StrawHitFlagCollection*     _chfcol;
     
     TrkErrCode                        _fit;	    // fit status code from last fit
 //-----------------------------------------------------------------------------
 // circle parameters; the z center is ignored.
 //-----------------------------------------------------------------------------
-    // ::LsqSums4         _sxy;
-    // ::LsqSums4         _szphi;
+    ::LsqSums4         _sxy;
+    ::LsqSums4         _szphi;
 
     XYZVec             _center;
     double             _radius;
@@ -207,7 +192,7 @@ namespace mu2e {
 
     const ComboHitCollection*         chcol () { return _chcol ; }
     // const StrawHitPositionCollection* shpos () { return _shpos ; }
-    const StrawHitFlagCollection*     shfcol() { return _shfcol; }
+    const StrawHitFlagCollection*     chfcol() { return _chfcol; }
 
     // bool          fitIsValid        () { return _sxy.qn() > 0; }
     // bool          weightedFitIsValid() { return _sxy.qn() > 0; }
