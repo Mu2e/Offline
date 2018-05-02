@@ -33,7 +33,7 @@ STimeClusterFinder : {
 RobustHelixFinder : {
     module_type		: RobustHelixFinder
     ComboHitCollection     : "makePH"
-    #   ComboHitFlagCollection : "FlagBkgHits:ComboHits"
+    ComboHitFlagCollection : "FlagBkgHits:ComboHits"
     TimeClusterCollection  : "TimeClusterFinder"
     HelixStereoHitMVA      : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
     HelixNonStereoHitMVA   : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }

@@ -36,10 +36,18 @@ namespace mu2e {
       TH1F*  nseeds  [2];
       TH1F*  ntripl0 ;
       TH1F*  ntripl1 [2];
+      TH1F*  xyniter [2];
+      TH1F*  fzniter [2];
+      TH1F*  niter   [2];
+ 
+      TH1F*  nXYSh   [2];
+      TH1F*  nZPhiSh [2];
+
+
       TH1F*  lambda0 [2];
       TH1F*  lambda1 [2];
 
-      TH1F*  r1      ;
+      TH1F*  rinit   [2];
       TH1F*  radius  [2];   
       TH1F*  chi2XY  [2];
       TH1F*  chi2ZPhi[2];
@@ -87,21 +95,37 @@ namespace mu2e {
     _hist.nTimePeaks    = Tfs->make<TH1F>("ntpeaks"  , "number of time peaks"                      , 11, -0.5, 10.5);
     _hist.nseeds[0]     = Tfs->make<TH1F>("nseeds0"  , "number of track candidates: all events"    , 21, -0.5, 20.5);
     _hist.nseeds[1]     = Tfs->make<TH1F>("nseeds1"  , "number of track candidates: nhits > 15;"    , 21, -0.5, 20.5);
-    _hist.ntclhits[0]   = Tfs->make<TH1F>("ntclhits0" , "number of hits on a time peak - no delta"  , 101, -0.5, 100.5);
-    _hist.ntclhits[1]   = Tfs->make<TH1F>("ntclhits1" , "number of hits on a time peak - no delta: nhits > 15"  , 101, -0.5, 100.5);
-    _hist.nhits[0]       = Tfs->make<TH1F>("nhitsNeg"    , "number of hits on a track candidate"       , 101, -0.5, 100.5);
-    _hist.nhits[1]       = Tfs->make<TH1F>("nhitsPos"    , "number of hits on a track candidate"       , 101, -0.5, 100.5);
-    _hist.ntripl0       = Tfs->make<TH1F>("ntripl0"    , "number of triplets fit Circle"           , 201, -0.5, 200.5);
+    _hist.ntclhits[0]   = Tfs->make<TH1F>("ntclhits0" , "number of hits on a time peak - no delta"  , 201, -0.5, 200.5);
+    _hist.ntclhits[1]   = Tfs->make<TH1F>("ntclhits1" , "number of hits on a time peak - no delta: nhits > 15"  , 201, -0.5, 200.5);
+    _hist.nhits[0]       = Tfs->make<TH1F>("nhitsNeg"    , "number of hits on a track candidate"       , 401, -0.5, 800.5);
+    _hist.nhits[1]       = Tfs->make<TH1F>("nhitsPos"    , "number of hits on a track candidate"       , 401, -0.5, 800.5);
+    _hist.ntripl0       = Tfs->make<TH1F>("ntripl0"    , "number of triplets fit Circle"           , 401, -0.5, 800.5);
 
-    _hist.lambda0[0]    = Tfs->make<TH1F>("lambda0Neg"    , "initFZ, Neg "   , 201, 99.5, 200.5);
-    _hist.lambda0[1]    = Tfs->make<TH1F>("lambda0Pos"    , "initFZ, Pos "   , 201, 99.5, 200.5);
-    _hist.lambda1[0]    = Tfs->make<TH1F>("lambda1Neg"    , "fitFZ, Neg "    , 201, 99.5, 200.5);
-    _hist.lambda1[1]    = Tfs->make<TH1F>("lambda1Pos"    , "fitFZ, Pos "    , 201, 99.5, 200.5);
+    _hist.lambda0[0]    = Tfs->make<TH1F>("lambda0Neg"    , "initFZ, Neg;#lambda [mm/rad] "   , 401, -0.5, 400.5);
+    _hist.lambda0[1]    = Tfs->make<TH1F>("lambda0Pos"    , "initFZ, Pos;#lambda [mm/rad] "   , 401, -0.5, 400.5);
+    _hist.lambda1[0]    = Tfs->make<TH1F>("lambda1Neg"    , "fitFZ, Neg;#lambda [mm/rad] "    , 401, -0.5, 400.5);
+    _hist.lambda1[1]    = Tfs->make<TH1F>("lambda1Pos"    , "fitFZ, Pos;#lambda [mm/rad]"     , 401, -0.5, 400.5);
 
-    _hist.ntripl1[0]    = Tfs->make<TH1F>("ntripl1Neg"    , "number of triplets fit Helix, Neg "   , 201, -0.5, 200.5);
-    _hist.ntripl1[1]    = Tfs->make<TH1F>("ntripl1Pos"    , "number of triplets fit Helix, Pos "   , 201, -0.5, 200.5);
+    _hist.ntripl1[0]    = Tfs->make<TH1F>("ntripl1Neg"    , "number of triplets fit Helix, Neg "   , 401, -0.5, 800.5);
+    _hist.ntripl1[1]    = Tfs->make<TH1F>("ntripl1Pos"    , "number of triplets fit Helix, Pos "   , 401, -0.5, 800.5);
 
-    _hist.r1            = Tfs->make<TH1F>("r1"       , "helix radius fitCircle; r [mm]"            , 401, -0.5, 400.5);
+    _hist.xyniter[0]    = Tfs->make<TH1F>("xyniterNeg"   , "number of iterations XY fit, Neg "   , 401, -0.5, 800.5);
+    _hist.xyniter[1]    = Tfs->make<TH1F>("xyniterPos"   , "number of iterations XY fit, Pos "   , 401, -0.5, 800.5);
+
+    _hist.fzniter[0]    = Tfs->make<TH1F>("fzniterNeg"   , "number of iterations z#phi fit, Neg "   , 401, -0.5, 800.5);
+    _hist.fzniter[1]    = Tfs->make<TH1F>("fzniterPos"   , "number of iterations z#phi fit, Pos "   , 401, -0.5, 800.5);
+
+    _hist.niter  [0]    = Tfs->make<TH1F>("niterNeg"     , "number of iterations helix fit, Neg "   , 401, -0.5, 800.5);
+    _hist.niter  [1]    = Tfs->make<TH1F>("niterPos"     , "number of iterations helix fit, Pos "   , 401, -0.5, 800.5);
+
+    _hist.nXYSh  [0]    = Tfs->make<TH1F>("nXYShNeg"     , "number of strawHits from the circle fit, Neg "   , 201, -0.5, 200.5);
+    _hist.nZPhiSh[0]    = Tfs->make<TH1F>("nZPhiShNeg"   , "number of strawHits from the z#phi fit, Neg "   , 201, -0.5, 200.5);
+    _hist.nXYSh  [1]    = Tfs->make<TH1F>("nXYShPos"     , "number of strawHits from the circle fit, Pos "   , 201, -0.5, 200.5);
+    _hist.nZPhiSh[1]    = Tfs->make<TH1F>("nZPhiShPos"   , "number of strawHits from the z#phi fit, Pos "   , 201, -0.5, 200.5);
+
+    _hist.rinit  [0]    = Tfs->make<TH1F>("rinitNeg"       , "helix radius fitCircle, Neg; r [mm]"      , 401, -0.5, 400.5);
+
+    _hist.rinit  [1]    = Tfs->make<TH1F>("rinitPos"       , "helix radius fitCircle, Pos; r [mm]"      , 401, -0.5, 400.5);
 
     _hist.radius[0]     = Tfs->make<TH1F>("radius0"  , "helix radius; r [mm]"                      , 401, -0.5, 400.5);
     _hist.radius[1]     = Tfs->make<TH1F>("radius1"  , "helix radius nhits > 15; r [mm]"           , 401, -0.5, 400.5);
@@ -147,14 +171,20 @@ namespace mu2e {
 	_hist.ntclhits   [k]->Fill(_data->ntclhits[k][i]   );
 	if (k==1){
 	  _hist.ntripl0 ->Fill(_data->ntriplet0[k][i]      );
-	  _hist.r1      ->Fill(_data->ntriplet0[k][i]      );    
 	}
 	_hist.nhits      [k]->Fill(_data->nhits[k][i]      );
+	_hist.rinit      [k]->Fill(_data->rinit[k][i]      );    
 
-	_hist.lambda0    [k]->Fill(_data->lambda0[k][i]    );
-	_hist.lambda1    [k]->Fill(_data->lambda1[k][i]    );
+	_hist.lambda0    [k]->Fill(fabs(_data->lambda0[k][i]));
+	_hist.lambda1    [k]->Fill(fabs(_data->lambda1[k][i]));
 
 	_hist.ntripl1    [k]->Fill(_data->ntriplet1[k][i]  );
+	_hist.xyniter    [k]->Fill(_data->xyniter[k][i]    );
+	_hist.fzniter    [k]->Fill(_data->fzniter[k][i]    );
+
+	_hist.nXYSh      [k]->Fill(_data->nXYSh[k][i]      );
+	_hist.nZPhiSh    [k]->Fill(_data->nZPhiSh[k][i]   );
+
 	_hist.p          [k]->Fill(_data->p[k][i]          );
 	_hist.pT         [k]->Fill(_data->pT[k][i]         );
 	_hist.radius     [k]->Fill(_data->radius[k][i]     );

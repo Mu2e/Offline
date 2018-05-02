@@ -9,6 +9,7 @@
 //
 
 #include "art/Framework/Principal/Event.h"
+#include "GeometryService/inc/GeomHandle.hh"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -95,6 +96,7 @@ namespace mu2e {
     explicit RobustHelixFinder(fhicl::ParameterSet const&);
     virtual ~RobustHelixFinder();
     virtual void beginJob();
+    virtual void beginRun(art::Run&   run   );
     virtual void produce(art::Event& event );
 
   private:
@@ -151,7 +153,8 @@ namespace mu2e {
     bool     filterHitsMVA(RobustHelixFinderData& helixData);
     void     updateT0(RobustHelixFinderData& helixData);
     bool     updateStereo(RobustHelixFinderData& helixData);
-    unsigned hitCount(RobustHelixFinderData const& hseed);
+    unsigned hitCount(RobustHelixFinderData const& helixData);
+    void     fillFaceOrderedHits(RobustHelixFinderData& helixData);
     void     fitHelix(RobustHelixFinderData& helixData);
     void     refitHelix(RobustHelixFinderData& helixData);
     void     fillPluginDiag(RobustHelixFinderData& helixData, int helCounter);
@@ -209,6 +212,76 @@ namespace mu2e {
 
   RobustHelixFinder::~RobustHelixFinder(){}
 
+//-----------------------------------------------------------------------------
+  void RobustHelixFinder::beginRun(art::Run& ) {
+    mu2e::GeomHandle<mu2e::TTracker> th;
+    const TTracker* tracker = th.get();
+
+    // mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    // _calorimeter = ch.get();
+    // 					// calibrations
+
+    // mu2e::ConditionsHandle<TrackerCalibrations> tcal("ignored");
+    // _trackerCalib = tcal.operator ->();
+
+    // _hfinder.setTracker    (_tracker);
+    // _hfinder.setCalorimeter(_calorimeter);
+
+    mu2e::RobustHelixFinderData::ChannelID cx, co;
+
+    for (int ist=0; ist<tracker->nStations(); ist++) {
+      const Station* st = &tracker->getStation(ist);
+      
+      for (int ipl=0; ipl<st->nPlanes(); ipl++) {
+	const Plane* pln = &st->getPlane(ipl);
+	for (int ipn=0; ipn<pln->nPanels(); ipn++) {
+	  const Panel* panel = &pln->getPanel(ipn);
+	  int face;
+	  if (panel->id().getPanel() % 2 == 0) face = 0;
+	  else                                 face = 1;
+	  cx.Station = ist;
+	  cx.Plane   = ipl;
+	  cx.Face    = face;
+	  cx.Panel   = ipn;
+	  //	    cx.Layer   = il;
+	  _hfResult.orderID (&cx, &co);
+	  int os = co.Station; 
+	  int of = co.Face;
+	  // int op = co.Panel;
+
+	  int       stationId = os;
+	  int       faceId    = of + stationId*RobustHelixFinderData::kNFaces;
+	  // int       panelId   = op + faceId*CalHelixFinderData::kNPanelsPerFace;
+	  RobustHelixFinderData::FaceZ_t*  fz        = &_hfResult._oTracker[faceId];
+
+	  //-----------------------------------------------------------------------------
+	  // face caches the z coordinate
+	  //-----------------------------------------------------------------------------
+	  fz->z      = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+	  fz->fNHits = 0;
+	}	
+      }
+    }
+
+    if (_debug > 10){
+      printf("//-------------------------//\n");
+      printf("//     Face      Z        //\n");
+      printf("//-------------------------//\n");
+
+      RobustHelixFinderData::FaceZ_t* facez(0);
+    
+      for (int p=0; p<RobustHelixFinderData::kNTotalPanels; ++p){
+	facez = &_hfResult._oTracker[p];
+	double z = facez->z;
+	printf("//  %5i     %10.3f //\n", p, z);
+      }
+      printf("//----------------------------------//\n");
+
+    }
+    
+  }
+//--------------------------------------------------------------------------------
+
   void RobustHelixFinder::beginJob() {
 
     _stmva.initMVA();
@@ -262,6 +335,8 @@ namespace mu2e {
     _data.result      = &_hfit;
     _data.nTimePeaks  = tccol.size();
 
+    _hfResult._chcol  = &chcol;
+
     // create initial helicies from time clusters: to begin, don't specificy helicity
     for (size_t index=0;index< tccol.size();++index) {
       const auto& tclust = tccol[index];
@@ -273,16 +348,8 @@ namespace mu2e {
       _hfResult._hseed->_t0          = tclust._t0;
       _hfResult._hseed->_timeCluster = art::Ptr<TimeCluster>(tcH,index);
       // copy combo hits
-      //      const   StrawHitFlag*   flag(0);
-      for (const auto& ind : tclust._strawHitIdxs) {
-	ComboHit const& ch = chcol[ind];
-	// flag = &_chfcol->at(ind);
-	if(ch.flag().hasAnyProperty(_hsel) && !ch.flag().hasAnyProperty(_hbkg)  /* && !flag->hasAnyProperty(StrawHitFlag::bkg)*/) {
-	  ComboHit hhit(ch);
-	  hhit._flag.clear(StrawHitFlag::resolvedphi);
-	  _hfResult._hseed->_hhits.push_back(hhit);        
-	}
-      }
+      fillFaceOrderedHits(_hfResult);
+
       // filter hits and test
       if (_prefilter) prefilterHits(_hfResult);
       if (hitCount(_hfResult) >= _minnhit){
@@ -302,7 +369,8 @@ namespace mu2e {
 	    RobustHelixFinderData tmpResult;
 	    tmpResult._hseed = &(hcol->back());
 	    if (_diag > 0) {
-	      tmpResult._diag = _hfResult._diag;
+	      tmpResult._timeCluster  = &tclust;
+	      tmpResult._diag         = _hfResult._diag;
 	    }	      
 	    fitHelix(tmpResult);
 	    // test fit status; if not successful, pop it off
@@ -390,6 +458,7 @@ namespace mu2e {
   unsigned  RobustHelixFinder::filterCircleHits(RobustHelixFinderData& helixData)
   {
     unsigned changed(0);
+    int      nGoodSH(0);
     static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
     RobustHelix& helix = helixData._hseed->_helix;
 
@@ -425,8 +494,15 @@ namespace mu2e {
 	if(!oldout) ++changed;
 	continue;
       }
-      if (oldout) ++changed;
+      if (oldout) {
+	++changed;
+      }else {
+	nGoodSH += hhit.nStrawHits();
+      }
     }
+    
+    helixData._nXYSh = nGoodSH;
+    
     return changed;
   }
 
@@ -438,6 +514,7 @@ namespace mu2e {
     ComboHitCollection& hhits = helixData._hseed->_hhits;
     bool changed(false);
     static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
+    int      nGoodSH(0);
 
     // loop over hits
     for(auto& hhit : hhits)
@@ -474,8 +551,14 @@ namespace mu2e {
 	  {
 	    hhit._flag.merge(_outlier);
 	    changed = true;
+	  }else 
+	  {
+	    nGoodSH += hhit.nStrawHits();
 	  }
       }
+    
+    helixData._nZPhiSh = nGoodSH;
+    
     return changed;
   }
 
@@ -550,6 +633,66 @@ namespace mu2e {
       }
   }
 
+  //------------------------------------------------------------------------------------------
+  void     RobustHelixFinder::fillFaceOrderedHits(RobustHelixFinderData& HelixData){
+  
+    const vector<StrawHitIndex>& shIndices = HelixData._timeCluster->hits();
+    mu2e::RobustHelixFinderData::ChannelID cx, co;
+
+    int     size  = shIndices.size();
+    int     nFiltComboHits(0), nFiltStrawHits(0);
+    // int nTotalStations = _tracker->nStations();
+    //--------------------------------------------------------------------------------
+    // if (HelixData.shpos() != 0) {
+    int loc;
+    StrawHitFlag flag;
+    for (int i=0; i<size; ++i) {
+      loc = shIndices[i];
+      const ComboHit ch  = _hfResult._chcol->at(loc);
+
+      if(ch.flag().hasAnyProperty(_hsel) && !ch.flag().hasAnyProperty(_hbkg)  /* && !flag->hasAnyProperty(StrawHitFlag::bkg)*/) {
+	ComboHit hhit(ch);
+	hhit._flag.clear(StrawHitFlag::resolvedphi);
+	_hfResult._hseed->_hhits.push_back(hhit);        
+
+	cx.Station                 = ch.sid().station();//straw.id().getStation();
+	cx.Plane                   = ch.sid().plane() % 2;//straw.id().getPlane() % 2;
+	cx.Face                    = ch.sid().face();
+	cx.Panel                   = ch.sid().panel();//straw.id().getPanel();
+
+	// get Z-ordered location
+	HelixData.orderID(&cx, &co);
+     
+	int os       = co.Station; 
+	int of       = co.Face;
+	// int op       = co.Panel;
+
+	int       stationId = os;
+	int       faceId    = of + stationId*RobustHelixFinderData::kNFaces;
+	// int       panelId   = op + faceId*RobustHelixDataFinderData::kNPanelsPerFace;
+	RobustHelixFinderData::FaceZ_t* fz        = &HelixData._oTracker[faceId];
+
+	if ((os < 0) || (os >= RobustHelixFinderData::kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
+	if ((of < 0) || (of >= RobustHelixFinderData::kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
+	//	if ((op < 0) || (op >= RobustHelixFinderData::kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
+
+	// pz->fHitData.push_back(RobustHelixDataPoint(loc,sh,shp,straw,flag));
+	fz->fHitData.push_back(&hhit);
+	fz->fNHits  = fz->fNHits + 1;
+	if (fz->fNHits > RobustHelixFinderData::kNMaxHitsPerFace) printf("[RobustHelixDataFinderAlg::fillFaceOrderedHits] number of hits with the panel exceed the limit: NHits =  %i MaxNHits = %i\n", fz->fNHits, RobustHelixFinderData::kNMaxHitsPerFace);
+	++nFiltComboHits;
+	nFiltStrawHits += ch.nStrawHits();
+      }
+    }
+    // }
+    
+    HelixData._nFiltComboHits = nFiltComboHits;  //ComboHit counter
+    HelixData._nFiltStrawHits = nFiltStrawHits;  //StrawHit counter
+    
+  }
+  //------------------------------------------------------------------------------------------
+
+
   void RobustHelixFinder::fitHelix(RobustHelixFinderData& helixData){
     // iteratively fit the helix including filtering
     unsigned niter(0);
@@ -564,6 +707,9 @@ namespace mu2e {
 	xychanged = filterCircleHits(helixData);
 	++xyniter;
       } 
+   
+      if (_diag) helixData._diag.xyniter = xyniter;
+
       // then fit phi-Z
       if (helixData._hseed->_status.hasAnyProperty(TrkFitFlag::circleOK)) {
 	if (xyniter < _maxniter)
@@ -580,6 +726,8 @@ namespace mu2e {
 	  ++fzniter;
 	} while (helixData._hseed->_status.hasAllProperties(TrkFitFlag::phizOK)  && fzniter < _maxniter && fzchanged);
 
+	if (_diag) helixData._diag.fzniter = fzniter;
+
 	if (helixData._hseed->_status.hasAnyProperty(TrkFitFlag::phizOK)) {
 	  if (fzniter < _maxniter)
 	    helixData._hseed->_status.merge(TrkFitFlag::phizConverged);
@@ -595,6 +743,7 @@ namespace mu2e {
       if (_updateStereo && _hfit.goodHelix(helixData._hseed->helix())) changed = updateStereo(helixData);      
     } while (_hfit.goodHelix(helixData._hseed->helix()) && niter < _maxniter && changed);
 
+    if (_diag) helixData._diag.niter = niter;
 
     if (_hfit.goodHelix(helixData._hseed->helix())) {
       helixData._hseed->_status.merge(TrkFitFlag::helixOK);
@@ -668,28 +817,34 @@ namespace mu2e {
     int loc = _data.nseeds[helCounter];
     if (loc < _data.maxSeeds()) {
       int nhits          = helixData._hseed->_hhits.size();
-      _data.ntclhits    [helCounter][loc] = _hfResult._timeCluster->hits().size();
+      _data.ntclhits    [helCounter][loc] = helixData._timeCluster->hits().size();
       _data.nhits       [helCounter][loc] = nhits;
 
-      _data.ntriplet0   [helCounter][loc] = _hfResult._diag.ntriple_0;
-      _data.ntriplet1   [helCounter][loc] = _hfResult._diag.ntriple_1;
-      _data.ntriplet2   [helCounter][loc] = _hfResult._diag.ntriple_2;
+      _data.ntriplet0   [helCounter][loc] = helixData._diag.ntriple_0;
+      _data.ntriplet1   [helCounter][loc] = helixData._diag.ntriple_1;
+      _data.ntriplet2   [helCounter][loc] = helixData._diag.ntriple_2;
 
+      _data.xyniter     [helCounter][loc] = helixData._diag.xyniter;
+      _data.fzniter     [helCounter][loc] = helixData._diag.fzniter;
+      _data.niter       [helCounter][loc] = helixData._diag.niter;
+      
+      _data.nXYSh       [helCounter][loc] = helixData._nXYSh;
+      _data.nZPhiSh     [helCounter][loc] = helixData._nZPhiSh;
 
-      _data.r0          [helCounter][loc] = _hfResult._diag.radius_0;
-      _data.lambda0     [helCounter][loc] = _hfResult._diag.lambda_0;
-      _data.lambda1     [helCounter][loc] = _hfResult._diag.lambda_1;
+      _data.rinit       [helCounter][loc] = helixData._diag.radius_0;
+      _data.lambda0     [helCounter][loc] = helixData._diag.lambda_0;
+      _data.lambda1     [helCounter][loc] = helixData._diag.lambda_1;
       _data.radius      [helCounter][loc] = helixData._hseed->helix().radius();
       _data.pT          [helCounter][loc] = mm2MeV*_data.radius[helCounter][loc];
       _data.p           [helCounter][loc] = _data.pT[helCounter][loc]/std::cos( std::atan(helixData._hseed->helix().lambda()/_data.radius[helCounter][loc]));
 	
-      // _data.chi2XY[loc]   = _hfResult._sxy.chi2DofCircle();
-      // _data.chi2ZPhi[loc] = _hfResult._szphi.chi2DofLine();
+      // _data.chi2XY[loc]   = helixData._sxy.chi2DofCircle();
+      // _data.chi2ZPhi[loc] = helixData._szphi.chi2DofLine();
 	    
       _data.nseeds[helCounter]++;
 	    
-      _data.dr           [helCounter][loc] = _hfResult._diag.radius_2 - _hfResult._diag.radius_1;
-      _data.chi2d_helix  [helCounter][loc] = _hfResult._diag.chi2d_helix;
+      _data.dr           [helCounter][loc] = helixData._diag.radius_2 - helixData._diag.radius_1;
+      _data.chi2d_helix  [helCounter][loc] = helixData._diag.chi2d_helix;
     }   else {
       printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());
     }
