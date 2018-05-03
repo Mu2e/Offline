@@ -40,7 +40,8 @@ namespace mu2e {
       double driftDistanceError(StrawId strawId, double ddist, double phi, float DOCA) const;
       double driftDistanceOffset(StrawId strawId, double ddist, double phi, float DOCA) const;
 
-      double peakMinusPedestalEnergyScale() const { return _pmpEnergyScale; }
+      double peakMinusPedestalEnergyScale() const { return _pmpEnergyScaleAvg; }
+      double peakMinusPedestalEnergyScale(StrawId sid) const { return _pmpEnergyScale[sid.getStraw()]; }
       double analogNoise(TrkTypes::Path ipath) const { return _analognoise[ipath]; }  // incoherent noise
       double fallTime(TrkTypes::Path ipath) const { return 22.;} //FIXME
       double currentToVoltage(TrkTypes::Path ipath) const { return _dVdI[ipath]; }
@@ -95,7 +96,8 @@ namespace mu2e {
       double _mint0doca;  // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
 
       double _gasGain;
-      double _pmpEnergyScale;
+      std::vector<double> _pmpEnergyScale;
+      double _pmpEnergyScaleAvg;
       double _analognoise[TrkTypes::npaths]; //noise (mVolt) from the straw itself
       double _dVdI[TrkTypes::npaths]; // scale factor between charge and voltage (milliVolts/picoCoulombs)
       double _vsat;

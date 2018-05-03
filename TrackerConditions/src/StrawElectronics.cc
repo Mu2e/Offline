@@ -22,19 +22,18 @@ namespace mu2e {
   double StrawElectronics::_pC_per_uA_ns(1000.0); // unit conversion from pC/ns to microAmp.
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdI{pset.get<double>("thresholddVdI",8.1e6),
-      pset.get<double>("adcdVdI",2.11e4) }, // mVolt/uAmps (transimpedance gain)
+    _dVdI{pset.get<vector<double> >("thresholddVdI",vector<double>(96,pset.get<double>("DefaultThresholddVdI",8.1e6))),
+      pset.get<vector<double> >("adcdVdI",vector<double>(96,pset.get<double>("DefaultAdcdVdI",2.11e4)))}, // mVolt/uAmps (transimpedance gain)
     _tdeadAnalog(pset.get<double>("DeadTimeAnalog",100.0)), // nsec dead after threshold crossing (pulse baseline restoration time)
     _tdeadDigital(pset.get<double>("DeadTimeDigital",100.0)), // nsec dead after threshold crossing (electronics processing time)
     _vsat(pset.get<double>("SaturationVoltage",90.0)), // mVolt
     _vthresh(pset.get<vector<double> >("DiscriminatorThreshold",
-          vector<double>(96,pset.get<double>("DefaultDiscriminatorThreshold",12.0)))), //mVolt, post amplification
+          vector<double>(192,pset.get<double>("DefaultDiscriminatorThreshold",12.0)))), //mVolt, post amplification
     _snoise(pset.get<double>("StrawNoise",2.8)), // mvolt
     _analognoise{pset.get<double>("thresholdAnalogNoise",0.95), //mVolt
       pset.get<double>("adcAnalogNoise",3.0)},
     _ADCLSB(pset.get<double>("ADCLSB",0.3662)), //mVolt
     _maxADC(pset.get<int>("maxADC",4095)),
-    _ADCped(pset.get<unsigned>("ADCPedestal",1393)),
     _nADC(pset.get<unsigned>("nADC",16)),
     _nADCpre(pset.get<unsigned>("nADCPresamples",4)),
     _ADCPeriod(pset.get<double>("ADCPeriod",20.0)), // nsec
@@ -70,6 +69,12 @@ namespace mu2e {
     _timeOffsetStrawHV(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0))),
     _timeOffsetStrawCal(pset.get<vector<double> >("TimeOffsetStrawCal",vector<double>(96,0)))
  {
+
+   _ADCped.resize(96,0);
+   for (int i=0;i<96;i++){
+     double avgThresh = (_vthresh[i*2+0] + _vthresh[i*2+1])/2.;
+     _ADCped[i] = (uint16_t) ((_maxADC+1)/2. - avgThresh/_ADCLSB * 20);
+   }
    _ttrunc[thresh] = (_responseBins/2)/_sampleRate;
    _ttrunc[adc] = (_responseBins/2)/_sampleRate;
    
@@ -77,7 +82,7 @@ namespace mu2e {
     _currentImpulse = std::vector<double>(_responseBins,0);
     _currentImpulse[_responseBins/2] = 1;
     _preampToAdc2Response = std::vector<double>(_responseBins,0);
-    calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_currentImpulse,_preampToAdc2Response,1);
+    calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_currentImpulse,_preampToAdc2Response);
 
     for (size_t ai=0;ai<_wireDistances.size();ai++){
       _wPoints.push_back(WireDistancePoint(_wireDistances[ai],_currentMeans[ai],_currentNormalizations[ai],_currentSigmas[ai],_currentT0s[ai]));
@@ -105,9 +110,9 @@ namespace mu2e {
       _wPoints[ai]._preampResponse = std::vector<double>(_responseBins,0);
       _wPoints[ai]._adcResponse = std::vector<double>(_responseBins,0);
       _wPoints[ai]._preampToAdc1Response = std::vector<double>(_responseBins,0);
-      calculateResponse(_preampPoles,_preampZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._preampResponse,_dVdI[thresh]);
-      calculateResponse(_adcPoles,_adcZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._adcResponse,_dVdI[adc]);
-      calculateResponse(_preampToAdc1Poles,_preampToAdc1Zeros,_wPoints[ai]._currentPulse,_wPoints[ai]._preampToAdc1Response,1);
+      calculateResponse(_preampPoles,_preampZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._preampResponse);
+      calculateResponse(_adcPoles,_adcZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._adcResponse);
+      calculateResponse(_preampToAdc1Poles,_preampToAdc1Zeros,_wPoints[ai]._currentPulse,_wPoints[ai]._preampToAdc1Response);
 
       // now set other parameters
       _wPoints[ai]._tmax[thresh] = 0;
@@ -136,7 +141,7 @@ namespace mu2e {
 
     // normalize preampToAdc2Response to match adcResponse
     std::vector<double> preampToAdc2test(_responseBins,0);
-    calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_wPoints[0]._preampToAdc1Response,preampToAdc2test,1);
+    calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_wPoints[0]._preampToAdc1Response,preampToAdc2test);
     double preampToAdc2Max = 0;
     for (int i=0;i<_responseBins;i++){
       if (preampToAdc2test[i] > preampToAdc2Max)
@@ -150,7 +155,7 @@ namespace mu2e {
 
   StrawElectronics::~StrawElectronics() {}
 
-  void StrawElectronics::calculateResponse(std::vector<double> &poles, std::vector<double> &zeros, std::vector<double> &input, std::vector<double> &response, double dVdI) {
+  void StrawElectronics::calculateResponse(std::vector<double> &poles, std::vector<double> &zeros, std::vector<double> &input, std::vector<double> &response) {
     std::vector<double> za;
     std::vector<double> pa;
     for (size_t i=0;i<poles.size();i++){
@@ -194,10 +199,10 @@ namespace mu2e {
     }
 
     for (int i=0;i<_responseBins;i++)
-      response[i] *= dVdI / gain_160;
+      response[i] *= 1 / gain_160;
   }
 
-  double StrawElectronics::linearResponse(Path ipath, double time, double charge, double distance, bool forsaturation) const {
+  double StrawElectronics::linearResponse(StrawId sid, Path ipath, double time, double charge, double distance, bool forsaturation) const {
     int index = time*_sampleRate + _responseBins/2.;
     if ( index >= _responseBins)
       index = _responseBins-1;
@@ -223,16 +228,16 @@ namespace mu2e {
       p0 = _wPoints[distIndex]._adcResponse[index];
       p1 = _wPoints[distIndex + 1]._adcResponse[index];
     }
-    return charge * ( p0 * distFrac + p1 * (1 - distFrac));
+    return charge * ( p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][sid.getStraw()];
   }
 
-  double StrawElectronics::adcImpulseResponse(double time, double charge) const {
+  double StrawElectronics::adcImpulseResponse(StrawId sid, double time, double charge) const {
     int index = time*_sampleRate + _responseBins/2.;
     if ( index >= _responseBins)
       index = _responseBins-1;
     if (index < 0)
       index = 0;
-    return charge * _preampToAdc2Response[index] * _saturationSampleFactor;
+    return charge * _preampToAdc2Response[index] * _saturationSampleFactor * _dVdI[adc][sid.getStraw()]/_dVdI[thresh][sid.getStraw()];
   }
  
   double StrawElectronics::saturatedResponse(double vlin) const {
@@ -256,7 +261,7 @@ namespace mu2e {
     return p0 * distFrac + p1 * (1 - distFrac);
   }
 
-  double StrawElectronics::maxLinearResponse(TrkTypes::Path ipath,double distance,double charge) const {
+  double StrawElectronics::maxLinearResponse(StrawId sid, TrkTypes::Path ipath,double distance,double charge) const {
     int  distIndex = 0;
     for (size_t i=1;i<_wPoints.size()-1;i++){
       if (distance < _wPoints[i]._distance)
@@ -267,11 +272,11 @@ namespace mu2e {
     double p0 = _wPoints[distIndex]._linmax[ipath];
     double p1 = _wPoints[distIndex + 1]._linmax[ipath];
  
-    return charge * (p0 * distFrac + p1 * (1 - distFrac));
+    return charge * (p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][sid.getStraw()];
   }
 
-  uint16_t StrawElectronics::adcResponse(double mvolts) const {
-    return min(static_cast<uint16_t>(max(static_cast<int>(floor(mvolts/_ADCLSB)+_ADCped),0)),_maxADC);
+  uint16_t StrawElectronics::adcResponse(StrawId sid, double mvolts) const {
+    return min(static_cast<uint16_t>(max(static_cast<int>(floor(mvolts/_ADCLSB)+_ADCped[sid.getStraw()]),0)),_maxADC);
   }
 
   uint16_t StrawElectronics::tdcResponse(double time) const {
@@ -280,7 +285,7 @@ namespace mu2e {
   }
 
   
-void StrawElectronics::digitizeWaveform(ADCVoltages const& wf, ADCWaveform& adc) const{
+void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCWaveform& adc) const{
     if(wf.size() != adc.size())
       throw cet::exception("SIM") 
 	<< "mu2e::StrawElectronics: wrong number of voltages to digitize" 
@@ -289,8 +294,9 @@ void StrawElectronics::digitizeWaveform(ADCVoltages const& wf, ADCWaveform& adc)
 //    adc.reserve(_nADC);
 //    for(auto iwf=wf.begin();iwf!=wf.end();++iwf)
 //      adc.push_back(adcResponse(*iwf));
-      for(size_t iadc=0;iadc<adc.size();++iadc)
-      adc.at(iadc) = adcResponse(wf[iadc]);
+      for(size_t iadc=0;iadc<adc.size();++iadc){
+      adc.at(iadc) = adcResponse(sid, wf[iadc]);
+      }
   }
 
   void StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdc) const {
@@ -321,13 +327,13 @@ void StrawElectronics::digitizeWaveform(ADCVoltages const& wf, ADCWaveform& adc)
     times[TrkTypes::cal] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.getStraw()];
   }
 
-  double StrawElectronics::adcVoltage(uint16_t adcval) const {
-    return (adcval-_ADCped)*_ADCLSB;
+  double StrawElectronics::adcVoltage(StrawId sid, uint16_t adcval) const {
+    return (adcval-_ADCped[sid.getStraw()])*_ADCLSB;
   }
 
-  double StrawElectronics::adcCurrent(uint16_t adcval) const {
+  double StrawElectronics::adcCurrent(StrawId sid, uint16_t adcval) const {
   // this includes the effects from normalization of the pulse shape
-    return adcVoltage(adcval)/_dVdI[adc];
+    return adcVoltage(sid,adcval)/_dVdI[adc][sid.getStraw()];
   }
 
   double StrawElectronics::mypow(double val,unsigned n) {

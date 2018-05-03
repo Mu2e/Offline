@@ -76,7 +76,8 @@ namespace mu2e {
        StrawIdMask _mask; 
        StrawEnd _end[2]; // helper
        float _invnpre; // cache
-       float _invgain; // cache
+       float _invgainAvg; // cache
+       float _invgain[96]; // cache
        unsigned _npre; //cache
 
        art::InputTag _sdtag, _cctag;
@@ -85,12 +86,13 @@ namespace mu2e {
        // diagnostic
        TH1F* _maxiter;
        // helper function
-       float peakMinusPed(TrkTypes::ADCWaveform const& adcData) const;
+       float peakMinusPedAvg(TrkTypes::ADCWaveform const& adcData) const;
+       float peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const;
  
  };
 
   StrawHitReco::StrawHitReco(fhicl::ParameterSet const& pset) :
-      _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminusped)),
+      _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminuspedavg)),
       _usecc(pset.get<bool>(         "UseCalorimeter",false)),     
       _clusterDt(pset.get<float>(   "clusterDt",100)),
       _maxE(pset.get<float>(        "maximumEnergy",0.0035)), // MeV
@@ -135,7 +137,11 @@ namespace mu2e {
 // set cache for peak-ped calculation (default)
       _npre = srep->nADCPreSamples();
       _invnpre = 1.0/(float)_npre;
-      _invgain = srep->adcLSB()*srep->peakMinusPedestalEnergyScale()/srep->strawGain();
+      _invgainAvg = srep->adcLSB()*srep->peakMinusPedestalEnergyScale()/srep->strawGain();
+      for (int i=0;i<96;i++){
+        StrawId dummyId(0,0,i);
+        _invgain[i] = srep->adcLSB()*srep->peakMinusPedestalEnergyScale(dummyId)/srep->strawGain();
+      }
  
       // this must be done here because srep is not accessible at startup and pfit references it
       if (_fittype == TrkHitReco::FitType::combopeakfit)
@@ -205,8 +211,11 @@ namespace mu2e {
 
 	//extract energy from waveform
 	float energy(0.0);
-	if (_fittype == TrkHitReco::FitType::peakminusped){
-	  float charge = peakMinusPed(digi.adcWaveform());
+	if (_fittype == TrkHitReco::FitType::peakminuspedavg){
+	  float charge = peakMinusPedAvg(digi.adcWaveform());
+	  energy = srep->ionizationEnergy(charge);
+        } else if (_fittype == TrkHitReco::FitType::peakminusped){
+	  float charge = peakMinusPed(digi.strawId(),digi.adcWaveform());
 	  energy = srep->ionizationEnergy(charge);
 	} else {
 	  TrkHitReco::PeakFitParams params;
@@ -287,7 +296,7 @@ namespace mu2e {
       event.put(std::move(chCol));
   }
 
-  float StrawHitReco::peakMinusPed(TrkTypes::ADCWaveform const& adcData) const {
+  float StrawHitReco::peakMinusPedAvg(TrkTypes::ADCWaveform const& adcData) const {
     auto wfstart = adcData.begin() + _npre;
     float pedestal = std::accumulate(adcData.begin(), wfstart, 0)*_invnpre;
 //    auto maxIter = std::max_element(wfstart,adcData.end());
@@ -296,8 +305,22 @@ namespace mu2e {
       ++maxIter;
     float peak = *maxIter;
     if(_diagLevel > 0)_maxiter->Fill(std::distance(wfstart,maxIter));
-    return (peak-pedestal)*_invgain;
+    return (peak-pedestal)*_invgainAvg;
   }
+
+  float StrawHitReco::peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const {
+    auto wfstart = adcData.begin() + _npre;
+    float pedestal = std::accumulate(adcData.begin(), wfstart, 0)*_invnpre;
+//    auto maxIter = std::max_element(wfstart,adcData.end());
+    auto maxIter = wfstart;
+    while(maxIter != adcData.end() && *(maxIter+1) > *maxIter)
+      ++maxIter;
+    float peak = *maxIter;
+    if(_diagLevel > 0)_maxiter->Fill(std::distance(wfstart,maxIter));
+    return (peak-pedestal)*_invgain[id.getStraw()];
+  }
+
+
 
 }
 

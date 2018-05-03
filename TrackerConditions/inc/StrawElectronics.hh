@@ -47,23 +47,23 @@ namespace mu2e {
       virtual ~StrawElectronics();
       // linear response to a charge pulse.  This does NOT include saturation effects,
       // since those are cumulative and cannot be computed for individual charges
-      double linearResponse(TrkTypes::Path ipath, double time,double charge,double distance,bool forsaturation=false) const; // mvolts per pCoulomb
-      double adcImpulseResponse(double time, double charge) const;
+      double linearResponse(StrawId sid, TrkTypes::Path ipath, double time,double charge,double distance,bool forsaturation=false) const; // mvolts per pCoulomb
+      double adcImpulseResponse(StrawId sid, double time, double charge) const;
       // Given a (linear) total voltage, compute the saturated voltage
       double saturatedResponse(double lineearresponse) const;
       // relative time when linear response is maximal
       double maxResponseTime(TrkTypes::Path ipath,double distance) const;
   // digization
-      uint16_t adcResponse(double mvolts) const; // ADC response to analog inputs
+      uint16_t adcResponse(StrawId id, double mvolts) const; // ADC response to analog inputs
       uint16_t tdcResponse(double time) const; // TDC response to a given time
-      void digitizeWaveform(TrkTypes::ADCVoltages const& wf,TrkTypes::ADCWaveform& adc) const; // digitize an array of voltages at the ADC
+      void digitizeWaveform(StrawId id, TrkTypes::ADCVoltages const& wf,TrkTypes::ADCWaveform& adc) const; // digitize an array of voltages at the ADC
       void digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc) const;
       void uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const; // convert time from beam t0 to tracker channel t0
       bool combineEnds(double t1, double t2) const; // are times from 2 ends combined into a single digi?
   // interpretation of digital data
       void tdcTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes& times) const;
-      double adcVoltage(uint16_t adcval) const; // mVolts
-      double adcCurrent(uint16_t adcval) const; // microAmps
+      double adcVoltage(StrawId sid, uint16_t adcval) const; // mVolts
+      double adcCurrent(StrawId sid, uint16_t adcval) const; // microAmps
 // accessors
       double adcLSB() const { return _ADCLSB; } //LSB in mvolts
       double tdcLSB() const { return _TDCLSB; } //LSB in nseconds
@@ -71,7 +71,7 @@ namespace mu2e {
       uint16_t maxADC() const { return _maxADC; }
       uint16_t maxTDC() const { return _maxTDC; }
       uint16_t maxTOT() const { return _maxTOT; }
-      uint16_t ADCPedestal() const { return _ADCped; };
+      uint16_t ADCPedestal(StrawId sid) const { return _ADCped[sid.getStraw()]; };
       size_t nADCSamples() const { return _nADC; }
       size_t nADCPreSamples() const { return _nADCpre; }
       double adcPeriod() const { return _ADCPeriod; } // period of ADC clock in nsec
@@ -80,26 +80,26 @@ namespace mu2e {
       double flashEnd() const { return _flashEnd; } // time flash blanking ends
       void adcTimes(double time, TrkTypes::ADCTimes& adctimes) const; // given crossing time, fill sampling times of ADC CHECK THIS IS CORRECT IN DRAC FIXME!
       double saturationVoltage() const { return _vsat; }
-      double threshold(StrawId const &sid) const { return _vthresh[sid.getStraw()]; }
+      double threshold(StrawId const &sid, TrkTypes::End iend) const { return _vthresh[sid.getStraw()*2 + iend]; }
       double analogNoise(TrkTypes::Path ipath) const { return _analognoise[ipath]; }  // incoherent noise
       double strawNoise() const { return _snoise;} // coherent part of threshold circuit noise
       double deadTimeAnalog() const { return _tdeadAnalog; }
       double deadTimeDigital() const { return _tdeadDigital; }
       double clockStart() const { return _clockStart; }
       double clockJitter() const { return _clockJitter; }
-      double currentToVoltage(TrkTypes::Path ipath) const { return _dVdI[ipath]; }
-      double maxLinearResponse(TrkTypes::Path ipath,double distance,double charge=1.0) const;
+      double currentToVoltage(StrawId sid, TrkTypes::Path ipath) const { return _dVdI[ipath][sid.getStraw()]; }
+      double maxLinearResponse(StrawId sid, TrkTypes::Path ipath,double distance,double charge=1.0) const;
       double normalization(TrkTypes::Path ipath) const { return 1.;} //FIXME
       double fallTime(TrkTypes::Path ipath) const { return 22.;} //FIXME
       double clusterLookbackTime() const { return _clusterLookbackTime;}
 
-      void calculateResponse(std::vector<double> &poles, std::vector<double> &zeros, std::vector<double> &input, std::vector<double> &response, double dVdI);
       double truncationTime(TrkTypes::Path ipath) const { return _ttrunc[ipath];}
       double saturationTimeStep() const { return _saturationSampleFactor/_sampleRate;}
       static double _pC_per_uA_ns; // unit conversion from pC/ns to microAmp
     private:
+      void calculateResponse(std::vector<double> &poles, std::vector<double> &zeros, std::vector<double> &input, std::vector<double> &response);
     // generic waveform parameters
-      double _dVdI[TrkTypes::npaths]; // scale factor between charge and voltage (milliVolts/picoCoulombs)
+      std::vector<double> _dVdI[TrkTypes::npaths]; // scale factor between charge and voltage (milliVolts/picoCoulombs)
       double _ttrunc[TrkTypes::npaths]; // time to truncate signal to 0
 // threshold path parameters
       double _tdeadAnalog; // electronics dead time
@@ -111,7 +111,7 @@ namespace mu2e {
       double _analognoise[TrkTypes::npaths]; //noise (mVolt) from the straw itself
       double _ADCLSB; // least-significant bit of ADC (mVolts)
       uint16_t _maxADC; // maximum ADC value
-      uint16_t _ADCped; // ADC pedestal (reading for 0 volts)
+      std::vector<uint16_t> _ADCped; // ADC pedestal (reading for 0 volts)
       size_t _nADC,_nADCpre; // Number of ADC samples, presamples
       double _ADCPeriod; // ADC period in nsec
       double _ADCOffset; // Offset of 1st ADC sample WRT threshold crossing (nsec)

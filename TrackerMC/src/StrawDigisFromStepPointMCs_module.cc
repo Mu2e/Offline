@@ -697,10 +697,10 @@ namespace mu2e {
       //randomize the threshold to account for electronics noise; this includes parts that are coherent
       // for both ends (coming from the straw itself)
       // Keep track of crossings on each end to keep them in sequence
-      double threshbase = _randgauss.fire(_strawele->threshold(swfp[0].strawId()),_strawele->strawNoise()); // common part of the thresold
+      double strawnoise = _randgauss.fire(0,_strawele->strawNoise());
       // add specifics for each end
-      double thresh[2] = {_randgauss.fire(threshbase,_strawele->analogNoise(TrkTypes::thresh)),
-        _randgauss.fire(threshbase,_strawele->analogNoise(TrkTypes::thresh))};
+      double thresh[2] = {_randgauss.fire(_strawele->threshold(swfp[0].strawId(),static_cast<TrkTypes::End>(0))+strawnoise,_strawele->analogNoise(TrkTypes::thresh)),
+        _randgauss.fire(_strawele->threshold(swfp[0].strawId(),static_cast<TrkTypes::End>(1))+strawnoise,_strawele->analogNoise(TrkTypes::thresh))};
       // Initialize search when the electronics becomes enabled:
       WFXP wfx = {WFX(swfp[0],_strawele->flashEnd()),WFX(swfp[1],_strawele->flashEnd())};
       // search for coherent crossings on both ends
@@ -717,14 +717,14 @@ namespace mu2e {
           xings.push_back(wfx);
           // search for next crossing:
           // update threshold for straw noise
-          threshbase = _randgauss.fire(_strawele->threshold(swfp[0].strawId()),_strawele->strawNoise());
+          strawnoise = _randgauss.fire(0,_strawele->strawNoise());
           for(unsigned iend=0;iend<2;++iend){
             // insure a minimum time buffer between crossings
             wfx[iend]._time += _strawele->deadTimeAnalog();
             // skip to the next clust
             ++(wfx[iend]._iclust);
             // update threshold for incoherent noise
-            thresh[iend] = _randgauss.fire(threshbase,_strawele->analogNoise(TrkTypes::thresh));
+            thresh[iend] = _randgauss.fire(_strawele->threshold(swfp[0].strawId(),static_cast<TrkTypes::End>(iend)),_strawele->analogNoise(TrkTypes::thresh));
             // find next crossing
             crosses[iend] = swfp[iend].crossesThreshold(thresh[iend],wfx[iend]);
           }
@@ -827,7 +827,7 @@ namespace mu2e {
       }
       // digitize
       TrkTypes::ADCWaveform adc;
-      _strawele->digitizeWaveform(wfsum,adc);
+      _strawele->digitizeWaveform(sid,wfsum,adc);
       TrkTypes::TDCValues tdc;
       _strawele->digitizeTimes(xtimes,tdc);
       // create the digi from this

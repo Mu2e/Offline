@@ -145,7 +145,7 @@ namespace mu2e {
 
     double StrawWaveform::maxLinearResponse(ClusterList::const_iterator const& iclust) const {
       // ignore saturation effects
-      double linresp = _strawele->maxLinearResponse(TrkTypes::thresh,iclust->charge());
+      double linresp = _strawele->maxLinearResponse(_sid,TrkTypes::thresh,iclust->charge());
       linresp *= (_xtalk._preamp + _xtalk._postamp);
       return linresp;
     }
@@ -157,7 +157,7 @@ namespace mu2e {
       auto iclust = hlist.begin();
       while(iclust != hlist.end() && iclust->time()-_strawele->clusterLookbackTime() < time){
 	// compute the linear straw electronics response to this charge.  This is pre-saturation 
-	linresp += _strawele->linearResponse(ipath,time-iclust->time(),iclust->charge(),iclust->wireDistance());
+	linresp += _strawele->linearResponse(_sid,ipath,time-iclust->time(),iclust->charge(),iclust->wireDistance());
 	// move to next clust
 	++iclust;
       }
@@ -211,7 +211,7 @@ namespace mu2e {
           double response = 0;
           auto jclust = iclust;
           while(jclust != _cseq.clustList().end() && jclust->time()-_strawele->clusterLookbackTime() < time){
-            response += _strawele->linearResponse(TrkTypes::thresh,time-jclust->time(),jclust->charge(),jclust->wireDistance(),true);
+            response += _strawele->linearResponse(_sid,TrkTypes::thresh,time-jclust->time(),jclust->charge(),jclust->wireDistance(),true);
             ++jclust;
           }
           // now saturate it
@@ -219,7 +219,7 @@ namespace mu2e {
           // then calculate the impulse response at each of the adctimes and add it to that
           for (size_t j=0;j<times.size();j++){
             // this function includes multiplication by number of steps in saturationTimeStep
-            volts[j] += _strawele->adcImpulseResponse(times[j]-time,sat_response);
+            volts[j] += _strawele->adcImpulseResponse(_sid,times[j]-time,sat_response);
           }
         }
       }else{
