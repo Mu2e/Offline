@@ -7,7 +7,7 @@
 process_name : print
 
 services : {
-   message : @local::mf_production
+   message : @local::mf_interactive
    GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }  
    ConditionsService :{ conditionsfile : "Mu2eG4/test/conditions_01.txt" } 
    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
@@ -19,6 +19,9 @@ physics :{
     printModule : {
       module_type : PrintModule
 
+      StatusG4Printer : {
+        verbose : 0
+      }
       GenParticlePrinter : {
         verbose: 1  # only 1 necessary
 	#inputTags : [ "mothersFilter" ] # select instances
@@ -74,6 +77,23 @@ physics :{
         verbose: 1   # 0, 1
         eCut : -10.0          # cut on hits
 	#inputTags : [ "CaloClusterFromProtoCluster" ] # select instances
+      }
+
+      CrvDigiPrinter : {
+        verbose: 0
+	#inputTags : [ "CrvDigi" ]
+      }
+      CrvDigiMCPrinter : {
+        verbose: 0
+	#inputTags : [ "CrvWaveforms" ]
+      }
+      CrvRecoPulsePrinter : {
+        verbose: 1
+	#inputTags : [ "CrvRecoPulses" ]
+      }
+      CrvCoincidenceClusterPrinter : {
+        verbose: 1    # 0,1,2
+	#inputTags : [ "CrvCoincidenceClusterFinder" ]
       }
 
       StrawDigiPrinter : {
@@ -154,3 +174,5 @@ outputs: {
   }
 }
 
+services.message.destinations.log.categories.ArtSummary.limit : 0
+services.message.destinations.statistics.stats : @local::mf_null

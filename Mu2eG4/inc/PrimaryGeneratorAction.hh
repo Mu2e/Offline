@@ -56,12 +56,6 @@ namespace mu2e {
       // This is the interface specified by G4.
       void GeneratePrimaries(G4Event*);
 
-      //This remains here for the Study Module
-      void setEventData_forStudy(const GenParticleCollection *gens,
-                                 const HitHandles& hitInputs,
-                                 SimParticlePrimaryHelper *parentMapping);
- 
-      
   private:
 
       explicit PrimaryGeneratorAction(bool fillHistograms,

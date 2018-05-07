@@ -57,10 +57,17 @@ simulation : {
       mod : {
 	 @table::Mu2eG4.producers
       }
-      seq : [ g4run ]
+      flt : {
+	 g4status: {
+            module_type: FilterStatusG4
+            input: "g4run"
+	 }
+      }
+      seq : [ g4run, g4status ]
    }
 }
 simulation.default.mod.g4run.TrajectoryControl: @local::mu2eg4NoTrajectories
+simulation.default.mod.g4run.ResourceLimits.maxSimParticleCollectionSize: 100000
 
 timeSimulation : {
    beam: {

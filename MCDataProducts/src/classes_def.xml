@@ -258,13 +258,9 @@
  <class name="std::vector<mu2e::CrvSiPMCharges::CrvSingleCharge>" />
 
  <class name="mu2e::CrvDigiMC" />
- <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigiMC>" />
- <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigiMC>" />
+ <class name="std::vector<mu2e::CrvDigiMC>" />
  <class name="mu2e::CrvDigiMCCollection" />
  <class name="art::Wrapper<mu2e::CrvDigiMCCollection>" />
-
- <class name="mu2e::CrvDigiMC::CrvSingleWaveform" />
- <class name="std::vector<mu2e::CrvDigiMC::CrvSingleWaveform>" />
 
  <class name="mu2e::ProtonBunchIntensity" />
  <class name="art::Wrapper<mu2e::ProtonBunchIntensity>"/>

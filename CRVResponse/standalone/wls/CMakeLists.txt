@@ -23,7 +23,7 @@ include(${Geant4_USE_FILE})
 #----------------------------------------------------------------------------
 # Find ROOT (required package)
 #
-find_package(ROOT QUIET)
+find_package(ROOT REQUIRED)
 if(NOT ROOT_FOUND)
   message(STATUS "ROOT package not found.")  
   return()
@@ -35,6 +35,7 @@ endif()
 include_directories(${PROJECT_SOURCE_DIR}/include 
                     ${PROJECT_SOURCE_DIR}/../../inc
                     ${Geant4_INCLUDE_DIR}
+#                    ${ROOT_INCLUDE_DIRS})
                     ${ROOT_INCLUDE_DIR})
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc
                   ${PROJECT_SOURCE_DIR}/../../src/MakeCrvPhotons.cc

@@ -28,6 +28,7 @@ CaloClusterFast :
     timeCorrection        : 20.0
     adcToEnergy           : 0.0461333
     diagLevel             : 0
+    includeCrystalHits    : false
 }
 
 

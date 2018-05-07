@@ -93,7 +93,7 @@ namespace mu2e
       HepSymMatrix _hcovar; // cache of parameter error covariance matrix
       // cache of event objects
       const StrawHitCollection* _shcol;
-      const StrawHitFlagCollection* _shfcol;
+      // const StrawHitFlagCollection* _shfcol;
       const HelixSeedCollection * _hscol;
       // ouptut collections
       // Kalman fitter.  This will be configured for a least-squares fit (no material or BField corrections).
@@ -211,7 +211,7 @@ namespace mu2e
 	for (int i=0; i< nsh; ++i){
 	  size_t          istraw   = seeddef.strawHitIndices().at(i);
 	  const StrawHit& strawhit(_shcol->at(istraw));
-	  const Straw&    straw    = _tracker->getStraw(strawhit.strawIndex());	  
+	  const Straw&    straw    = _tracker->getStraw(strawhit.strawId());	  
 	  double          fltlen   = htraj->zFlight(straw.getMidPoint().z());
 	  double          propTime = (fltlen-flt0)/vflt;
 
@@ -307,17 +307,17 @@ namespace mu2e
   // find the input data objects 
   bool KalSeedFit::findData(const art::Event& evt){
     _shcol = 0;
-    _shfcol = 0;
+    // _shfcol = 0;
     _hscol = 0;
 
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol = shH.product();
-    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
-    _shfcol = shfH.product();
+    // auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+    // _shfcol = shfH.product();
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     _hscol = hsH.product();
 
-    return _shcol != 0 && _shfcol != 0 && _hscol != 0;
+    return _shcol != 0 && /*_shfcol != 0 &&*/ _hscol != 0;
   }
 
   void KalSeedFit::filterOutliers(TrkDef& mydef){
@@ -333,7 +333,7 @@ namespace mu2e
     vector<StrawHitIndex> goodhits;
     for(unsigned ihit=0;ihit<indices.size();++ihit){
       StrawHit const& sh = _shcol->at(indices[ihit]);
-      Straw const& straw = tracker.getStraw(sh.strawIndex());
+      Straw const& straw = tracker.getStraw(sh.strawId());
       CLHEP::Hep3Vector hpos = straw.getMidPoint();
       CLHEP::Hep3Vector hdir = straw.getDirection();
       // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
@@ -396,7 +396,7 @@ namespace mu2e
     for (int i=0; i<n; ++i) {
       hit_index = tchits.at(i);
       sh        = &Shcol->at(hit_index);
-      straw     = &_tracker->getStraw(sh->strawIndex());
+      straw     = &_tracker->getStraw(sh->strawId());
 
       const CLHEP::Hep3Vector& wpos = straw->getMidPoint();
       const CLHEP::Hep3Vector& wdir = straw->getDirection();

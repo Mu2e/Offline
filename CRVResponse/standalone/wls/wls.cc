@@ -15,10 +15,10 @@
 #include "WLSRunAction.hh"
 #include "WLSEventAction.hh"
 #include "WLSSteppingAction.hh"
-#include "WLSStackingAction.hh"
 
-#include "G4VisExecutive.hh"
-#include "G4UIExecutive.hh"
+#include "G4StepLimiterPhysics.hh"
+#include "G4TransportationManager.hh"
+#include "G4GDMLParser.hh"
 
 #include "CLHEP/Random/Randomize.h"
 #include "MakeCrvPhotons.hh"
@@ -45,13 +45,9 @@ bool findArgs(int argc, char** argv, const char* c, std::string &value)
     {
       if(i+1<argc)
       {
-        if(argv[i+1][0]!='-')
-        {
-          value=argv[i+1];
-          return true;
-        } 
+        value=argv[i+1];
+        return true;
       }
-      std::cout<<"The argument "<<c<<" requires a value"<<std::endl;
       return false; 
     }
   }
@@ -65,13 +61,9 @@ bool findArgs(int argc, char** argv, const char* c, int &value)
     {
       if(i+1<argc)
       {
-        if(argv[i+1][0]!='-')
-        {
-          value=atoi(argv[i+1]);
-          return true;
-        } 
+        value=atoi(argv[i+1]);
+        return true;
       }
-      std::cout<<"The argument "<<c<<" requires a value"<<std::endl;
       return false; 
     }
   }
@@ -85,13 +77,9 @@ bool findArgs(int argc, char** argv, const char* c, double &value)
     {
       if(i+1<argc)
       {
-        if(argv[i+1][0]!='-')
-        {
-          value=atof(argv[i+1]);
-          return true;
-        } 
+        value=atof(argv[i+1]);
+        return true;
       }
-      std::cout<<"The argument "<<c<<" requires a value"<<std::endl;
       return false; 
     }
   }
@@ -112,12 +100,13 @@ void DrawHistograms(const std::string &lookupFilename)
 
 int main(int argc, char** argv) 
 {
-  int mode=-2;
+  WLSSteppingAction::simulationMode mode=WLSSteppingAction::Undefined;
   int simType=-1;
   int minBin=0;
   int maxBin=-1;
   int n=1000;
-  int lengthOption=-1;
+  double lengthOption=0;
+  int    reflectorOption=0;
   std::string lookupFilename="";
 
   bool verbose = findArgs(argc, argv, "-v");
@@ -140,42 +129,26 @@ int main(int argc, char** argv)
     std::cout<<"                  1  cerenkov in scintillator"<<std::endl;
     std::cout<<"                  2  cerenkov in fiber 0"<<std::endl;
     std::cout<<"                  3  cerenkov in fiber 1"<<std::endl;
-    std::cout<<"-l length option  Length of the scintillator counter:"<<std::endl;
-    std::cout<<"                  7600  7600 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  7350  7350 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  7100  7100 mm (reflector at postiive side)"<<std::endl;
-    std::cout<<"                  6600  6600 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  6001  6000 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  6000  6000 mm"<<std::endl;
-    std::cout<<"                  5600  5600 mm"<<std::endl;
-    std::cout<<"                  5000  5000 mm (reflector at negative side)"<<std::endl;
-    std::cout<<"                  4500  4500 mm"<<std::endl;
-    std::cout<<"                  3000  3000 mm"<<std::endl;
-    std::cout<<"                  2300  2300 mm"<<std::endl;
-    std::cout<<"                   900   900 mm"<<std::endl;
+    std::cout<<"-l length option  Length of the scintillator counter in mm"<<std::endl;
+    std::cout<<"-R reflector option"<<std::endl;
+    std::cout<<"                  0  no reflector (default)"<<std::endl;
+    std::cout<<"                 -1  reflector at negative side"<<std::endl;
+    std::cout<<"                  1  reflector at postiive side"<<std::endl;
     std::cout<<"-m minbin         Minimum bin in lookup table (default is 0)."<<std::endl;
     std::cout<<"-M maxbin         Maximum bin in lookup table (default is"<<std::endl;
     std::cout<<"                  the maximum number of bins for this simulation type)."<<std::endl;
     std::cout<<"-n photons        Number of photons to simulate for each bin (default 1000)."<<std::endl;
     std::cout<<std::endl;
     std::cout<<"Options for running the simulation:"<<std::endl;
-    std::cout<<"-l length option  Length of the scintillator counter:"<<std::endl;
-    std::cout<<"                  7600  7600 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  7350  7350 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  7100  7100 mm (reflector at postiive side)"<<std::endl;
-    std::cout<<"                  6600  6600 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  6001  6000 mm (reflector at positive side)"<<std::endl;
-    std::cout<<"                  6000  6000 mm"<<std::endl;
-    std::cout<<"                  5600  5600 mm"<<std::endl;
-    std::cout<<"                  5000  5000 mm (reflector at negative side)"<<std::endl;
-    std::cout<<"                  4500  4500 mm"<<std::endl;
-    std::cout<<"                  3000  3000 mm"<<std::endl;
-    std::cout<<"                  2300  2300 mm"<<std::endl;
-    std::cout<<"                   900   900 mm"<<std::endl;
+    std::cout<<"-l length option  Length of the scintillator counter in mm"<<std::endl;
+    std::cout<<"-R reflector option"<<std::endl;
+    std::cout<<"                  0  no reflector (default)"<<std::endl;
+    std::cout<<"                 -1  reflector at negative side"<<std::endl;
+    std::cout<<"                  1  reflector at postiive side"<<std::endl;
     std::cout<<"-n events    Number of events to simulate (default 1000)."<<std::endl;
     std::cout<<"-r seed      seed for random number generator (default: 0)."<<std::endl;
-    std::cout<<"-y pos       y coordinate of starting point (default: 0 = center between fibers)."<<std::endl;
-    std::cout<<"-z pos       z coordinate of starting point (default: 1000 = 1m away from left side of counter)."<<std::endl;
+    std::cout<<"-y pos       y coordinate of starting point in mm (default: 0 = center between fibers)."<<std::endl;
+    std::cout<<"-z pos       z coordinate of starting point in mm (default: 1000 = 1m away from left side of counter)."<<std::endl;
     std::cout<<std::endl;
     std::cout<<"Options for running the simulation with lookup table:"<<std::endl;
     std::cout<<"-f filename  File with lookup table used for running a simulation"<<std::endl;
@@ -209,11 +182,11 @@ int main(int argc, char** argv)
     return 0;
   }
 
-  if(findArgs(argc, argv, "-c")) mode=-1;
-  if(findArgs(argc, argv, "-s")) mode=0;
-  if(findArgs(argc, argv, "-S")) mode=1;
+  if(findArgs(argc, argv, "-c")) mode=WLSSteppingAction::CreateLookupTables;
+  if(findArgs(argc, argv, "-s")) mode=WLSSteppingAction::UseGeantOnly;
+  if(findArgs(argc, argv, "-S")) mode=WLSSteppingAction::UseGeantAndLookupTables;
 
-  if(mode==-1)
+  if(mode==WLSSteppingAction::CreateLookupTables)
   {
     if(!findArgs(argc, argv, "-t", simType))
     {
@@ -226,7 +199,7 @@ int main(int argc, char** argv)
     findArgs(argc, argv, "-n", n);
   }
 
-  if(mode==0 || mode==1)
+  if(mode==WLSSteppingAction::UseGeantOnly || mode==WLSSteppingAction::UseGeantAndLookupTables)
   {
     findArgs(argc, argv, "-n", n);
   }
@@ -237,26 +210,7 @@ int main(int argc, char** argv)
     std::cout<<"Use -h for help"<<std::endl;
     return -1;
   }
-  else
-  {
-    if(lengthOption!=900 && 
-       lengthOption!=2300 &&
-       lengthOption!=3000 &&
-       lengthOption!=4500 &&
-       lengthOption!=5000 &&
-       lengthOption!=5600 &&
-       lengthOption!=6000 &&
-       lengthOption!=6001 &&
-       lengthOption!=6600 &&
-       lengthOption!=7100 &&
-       lengthOption!=7350 &&
-       lengthOption!=7600)
-    {
-      std::cout<<"Invalid option for scintillator counter length"<<std::endl;
-      std::cout<<"Use -h for help"<<std::endl;
-      return -1;
-    }
-  }
+  findArgs(argc, argv, "-R", reflectorOption);
 
   double posY=0;
   double posZ=1000;
@@ -275,42 +229,32 @@ int main(int argc, char** argv)
   G4RunManager *runManager = new G4RunManager;
 
   WLSMaterials::GetInstance();
-  runManager->SetUserInitialization(new WLSDetectorConstruction(lengthOption));
+  runManager->SetUserInitialization(new WLSDetectorConstruction(lengthOption, reflectorOption));
   runManager->SetUserInitialization(new WLSPhysicsList(physName));
 
-  WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose, posY, posZ);   //n,simType,minBin not needed in modes 0,1
-                                                                                                                         //posY, posZ has no effect in mode -1
+  WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose, posY, posZ);   
+                                                                       //n,simType,minBin not needed in modes UseGeantOnly, and UseGeantAndLookupTables
+                                                                       //posY, posZ has no effect in mode CreateLookupTables
   WLSRunAction* runAction = new WLSRunAction();
-  std::string singlePEWaveformFilename="/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v2.txt";
-  std::string visibleEnergyAdjustmentFilename="/mu2e/app/users/ehrlich/work_08302015/Offline/CRVResponse/standalone/wls-build/visibleEnergyAdjustment.txt";
+  std::string singlePEWaveformFilename="singlePEWaveform_v3.txt";
+  std::string visibleEnergyAdjustmentFilename="visibleEnergyAdjustment.txt";
   WLSEventAction* eventAction = new WLSEventAction(mode, singlePEWaveformFilename, n, simType, minBin, verbose); 
-  WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename, visibleEnergyAdjustmentFilename);  //filename not needed in modes -1,0
+  WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename, visibleEnergyAdjustmentFilename);  
+                                                                       //lookupFilename not needed in modes CreateLookupTables, and UseGeantOnly
 
   runManager->SetUserAction(generator);
   runManager->SetUserAction(runAction);
   runManager->SetUserAction(eventAction);
   runManager->SetUserAction(steppingAction);
-  runManager->SetUserAction(new WLSStackingAction);
-
-#if 0 
-  G4VisManager *visManager = new G4VisExecutive();
-  G4UImanager *UImanager = G4UImanager::GetUIpointer();
-  G4UIExecutive *ui = new G4UIExecutive(1,argv);
-
-  visManager->Initialize();
-  UImanager->ApplyCommand("/run/initialize");
-  UImanager->ApplyCommand("/control/execute vis.mac");
-  UImanager->ApplyCommand("/run/beamOn");
-
-  ui->SessionStart();
-
-  delete ui;
-  delete visManager;
-
-#else
-
   runManager->Initialize();
-  if(mode==-1)
+
+/*
+  G4GDMLParser parser;
+  parser.SetRegionExport(true);
+  parser.Write("out.gdml", G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->GetWorldVolume()->GetLogicalVolume());
+*/
+
+  if(mode==WLSSteppingAction::CreateLookupTables)
   {
     const std::vector<double> &xBins     = WLSDetectorConstruction::Instance()->GetXBins();
     const std::vector<double> &yBins     = WLSDetectorConstruction::Instance()->GetYBins();
@@ -368,11 +312,10 @@ int main(int argc, char** argv)
       lookupfile.close();
     }
   }
-  else if(mode==0 || mode==1)
+  else if(mode==WLSSteppingAction::UseGeantOnly || mode==WLSSteppingAction::UseGeantAndLookupTables)
   {
     runManager->BeamOn(n);
   }
-#endif
 
   delete runManager;
 

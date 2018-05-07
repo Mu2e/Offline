@@ -11,7 +11,7 @@ namespace mu2e
   struct CrvHitInfoReco   //information about a cluster of CRV coincidence triplets
   {
     Int_t               _crvSectorType;   //CRV sector type
-    Float_t             _x, _y, _z;       //average position
+    Float_t             _x, _y, _z;       //average position of counters
     Float_t             _timeWindowStart; //first hit time
     Float_t             _timeWindowEnd;   //last hit time
     Int_t               _PEs;                   //total number of PEs for this cluster

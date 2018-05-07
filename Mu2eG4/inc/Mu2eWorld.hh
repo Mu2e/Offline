@@ -81,6 +81,7 @@ namespace mu2e {
       virtual void constructSDandField() override;
 
   private:
+<<<<<<< HEAD
       
       typedef std::list<G4LogicalVolume*> LVList;
       typedef std::map<G4VSensitiveDetector*, LVList> DetList;
@@ -119,11 +120,17 @@ namespace mu2e {
       bool writeGDML_;
       std::string gdmlFileName_;
       std::string g4stepperName_;
+      double g4epsilonMin_;
+      double g4epsilonMax_;
+      double g4DeltaOneStep_;
+      double g4DeltaIntersection_;
+      double g4DeltaChord_;
       double bfieldMaxStep_;
       bool limitStepInAllVolumes_;
       
       //returned from constructPS
       G4LogicalVolume* psVacuumLogical_;
+
   };
 
 } // end namespace mu2e

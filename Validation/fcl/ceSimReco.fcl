@@ -38,6 +38,7 @@ physics : {
       @table::reco.pid.mod
     }
    filters: {
+      @table::simulation.default.flt
       @table::reco.ctrk.flt
    }
 

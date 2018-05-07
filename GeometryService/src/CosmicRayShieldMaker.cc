@@ -248,7 +248,7 @@ namespace mu2e
           {          
             double FEBcoordinate0 = layer._position[thicknessDirection] + _layerDirection[isector][thicknessDirection]*(0.5*_counterThickness+_FEBDistanceToModule);
             if(FEBlayer==1) FEBcoordinate0 += _layerDirection[isector][thicknessDirection]*_FEBDistanceBetween2FEBsT;
-            double FEBcoordinate1_1FEB = layer._position[widthDirection] - _offsetDirection[isector][widthDirection]*1.5*_offset; //centered if only 1 FEB
+            double FEBcoordinate1_1FEB = layer._position[widthDirection]; //centered if only 1 FEB
             double FEBcoordinate1_2FEBs_0 = FEBcoordinate1_1FEB - 0.5*_FEBDistanceBetween2FEBsW;
             double FEBcoordinate1_2FEBs_1 = FEBcoordinate1_1FEB + 0.5*_FEBDistanceBetween2FEBsW;
             double FEBcoordinate2_side0 = layer._position[lengthDirection] - layer._halfLengths[lengthDirection] + _FEBDistanceToEdge; 

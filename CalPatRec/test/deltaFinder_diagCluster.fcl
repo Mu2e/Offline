@@ -1,0 +1,19 @@
+# -*- mode:tcl -*-
+
+#include "CalPatRec/test/deltaFinder_test.fcl"
+
+physics.producers.DeltaFinder.diagLevel            : 1
+physics.producers.DeltaFinder.debugLevel           : 1
+physics.producers.DeltaFinder.diagPlugin           : { @table::CalPatRec.deltaFinderDiagClusterPlugin 
+    printHitClusters       : 0
+    maxChi2W               : 3.
+}
+
+services.TFileService.fileName                     : "deltaFinder_diagCluster.root"
+
+physics.trigger_paths : [ p4 ]
+
+# physics.producers.MakeStrawHitPositions.printHits  : 1
+
+# for time profiling
+physics.producers.PrefetchData.mcDiag  : false

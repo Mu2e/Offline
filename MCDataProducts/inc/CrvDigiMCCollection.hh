@@ -9,15 +9,13 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "MCDataProducts/inc/CrvDigiMC.hh"
 
-#include <map>
-#include <set>
+#include <vector>
 
 namespace mu2e 
 {
-  typedef std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvDigiMC> CrvDigiMCCollection;
+  typedef std::vector<mu2e::CrvDigiMC> CrvDigiMCCollection;
 }
 
 #endif /* MCDataProducts_CrvDigiMCCollection_hh */

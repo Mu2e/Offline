@@ -1,0 +1,30 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name : TestPBI
+source :
+{
+  module_type : EmptyEvent
+}
+
+services : @local::Services.Sim
+message : @local::default_message
+
+physics : {
+  producers : {
+    PBIS : {
+      module_type : ProtonBunchIntensitySimulator
+      MeanNumberOfProtonsPerMicrobunch : 3.9e7
+#      Lognormal_mu : -0.10015
+#      Lognormal_sigma : 0.3814
+      IntensityModel : 2
+      DiagLevel : 1
+      PrintLevel : 1
+    }
+  }
+}
+
+physics.PBIPath : [ PBIS ]
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+#

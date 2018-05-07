@@ -9,6 +9,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "Print/inc/ProductPrinter.hh"
+#include "Print/inc/StatusG4Printer.hh"
 #include "Print/inc/GenParticlePrinter.hh"
 #include "Print/inc/SimParticlePrinter.hh"
 #include "Print/inc/SimParticlePtrPrinter.hh"
@@ -20,6 +21,10 @@
 #include "Print/inc/CaloRecoDigiPrinter.hh"
 #include "Print/inc/CaloCrystalHitPrinter.hh"
 #include "Print/inc/CaloClusterPrinter.hh"
+#include "Print/inc/CrvDigiPrinter.hh"
+#include "Print/inc/CrvDigiMCPrinter.hh"
+#include "Print/inc/CrvRecoPulsePrinter.hh"
+#include "Print/inc/CrvCoincidenceClusterPrinter.hh"
 #include "Print/inc/StrawDigiPrinter.hh"
 #include "Print/inc/StrawDigiMCPrinter.hh"
 #include "Print/inc/StrawHitPrinter.hh"
@@ -61,6 +66,7 @@ mu2e::PrintModule::PrintModule(fhicl::ParameterSet const& pset ):
   art::EDAnalyzer(pset) {
   //std::cout << "start main pset\n"<< pset.to_string() << "\n end main pset"<< std::endl;
 
+  _printers.push_back( new StatusG4Printer(pset) );
   _printers.push_back( new GenParticlePrinter(pset) );
   _printers.push_back( new SimParticlePrinter(pset) );
   _printers.push_back( new SimParticlePtrPrinter(pset) );
@@ -72,6 +78,10 @@ mu2e::PrintModule::PrintModule(fhicl::ParameterSet const& pset ):
   _printers.push_back( new CaloRecoDigiPrinter(pset) );
   _printers.push_back( new CaloCrystalHitPrinter(pset) );
   _printers.push_back( new CaloClusterPrinter(pset) );
+  _printers.push_back( new CrvDigiPrinter(pset) );
+  _printers.push_back( new CrvDigiMCPrinter(pset) );
+  _printers.push_back( new CrvRecoPulsePrinter(pset) );
+  _printers.push_back( new CrvCoincidenceClusterPrinter(pset) );
   _printers.push_back( new StrawDigiPrinter(pset) );
   _printers.push_back( new StrawDigiMCPrinter(pset) );
   _printers.push_back( new StrawHitPrinter(pset) );

@@ -51,7 +51,8 @@ string ifb.endwindow.material   = "G4_MYLAR";
 double ifb.endwindow.z          = 3277.; // had been at 3182.
 double ifb.endwindow.rIn        = 0.;
 double ifb.endwindow.rOut       = 97.;
-//double ifb.endwindow.halfLength = 0.125;//Mylar window with r=97 should have halflength of 0.125 mm (0.25mm thickness)
+//CRV requires 1 cm of plastic plug in IFB.
+//STM group should adjust the geometry to a thinner (0.25mm) Mylar vacuum window with an additional (10 mm thickness) poly plug.
 double ifb.endwindow.halfLength = 5.0;//Mylar window with r=97 should have halflength of 0.125 mm (0.25mm thickness)
 
 // This tells emacs to view this file in c++ mode.

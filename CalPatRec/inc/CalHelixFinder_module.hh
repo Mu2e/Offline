@@ -40,6 +40,7 @@
 
 #include "CalPatRec/inc/CalHelixFinder_types.hh"
 #include "CalPatRec/inc/CalHelixFinderAlg.hh"
+#include "CalPatRec/inc/CalHelixFinderData.hh"
 
 // Mu2e
 #include "ConditionsService/inc/TrackerCalibrations.hh"
@@ -93,7 +94,7 @@ namespace mu2e {
 // event object labels
 //-----------------------------------------------------------------------------
     std::string                           _shLabel ; // MakeStrawHit label (makeSH)
-    std::string                           _shpLabel;
+    // std::string                           _shpLabel;
     std::string                           _shfLabel;
     std::string                           _timeclLabel;
     
@@ -104,18 +105,19 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // cache of event objects
 //-----------------------------------------------------------------------------
-    art::Handle<StrawHitCollection>       _strawhitsH;
+    art::Handle<ComboHitCollection>       _strawhitsH;
     art::Handle<TimeClusterCollection>    _timeclcolH;
 
     fhicl::ParameterSet*                  _timeOffsets;
 
-    const StrawHitCollection*             _shcol;
+    const ComboHitCollection*             _chcol;
     const StrawHitFlagCollection*         _shfcol;
-    const StrawHitPositionCollection*     _shpcol;
+    // const StrawHitPositionCollection*     _shpcol;
     const TimeClusterCollection*          _timeclcol;
 
     HelixTraj*                            _helTraj;
     CalHelixFinderAlg                     _hfinder;	
+    CalHelixFinderData                    _hfResult;
 
     const TTracker*                       _tracker     ; // straw tracker geometry
     const TrackerCalibrations*            _trackerCalib; // 
@@ -150,8 +152,8 @@ namespace mu2e {
     int  initHelixFinderData(CalHelixFinderData&                Data,
 			     const TrkParticle&                 TPart,
 			     const TrkFitDirection&             FDir,
-			     const StrawHitCollection*          StrawCollection ,
-			     const StrawHitPositionCollection*  ShPosCollection , 
+			     const ComboHitCollection*          ComboCollection ,
+			     // const StrawHitPositionCollection*  ShPosCollection , 
 			     const StrawHitFlagCollection*      ShFlagCollection);
     
     int  goodHitsTimeCluster(const TimeCluster* TimeCluster);

@@ -70,8 +70,8 @@
 
 #include "DecayMuonsWithSpin.hh"
 
-template<class T, class Config> TShielding_MU2E01<T,Config>::TShielding_MU2E01(Config const & config,
-                                                                               G4int verbose, G4String LEN_model ):  T()
+template<class T> TShielding_MU2E01<T>::TShielding_MU2E01(const fhicl::ParameterSet& config,
+                                                          G4int verbose, G4String LEN_model ):  T()
 {
   // default cut value  (1.0mm) 
   // defaultCutValue = 1.0*CLHEP::mm;
@@ -164,11 +164,11 @@ G4cout << LEN_model << G4endl;
   }
 }
 
-template<class T, class Config> TShielding_MU2E01<T,Config>::~TShielding_MU2E01()
+template<class T> TShielding_MU2E01<T>::~TShielding_MU2E01()
 {
 }
 
-template<class T, class Config> void TShielding_MU2E01<T,Config>::SetCuts()
+template<class T> void TShielding_MU2E01<T>::SetCuts()
 {
   if (this->verboseLevel >1){
     G4cout << "Shielding_MU2E01::SetCuts:";

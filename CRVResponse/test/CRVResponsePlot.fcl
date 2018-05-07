@@ -52,7 +52,8 @@ physics :
   an : [protonTimeMap, muonTimeMap, @sequence::CrvResponsePackage.CrvResponseSequence]
   out: [CrvPlot]
 
-  end_paths: [an, out]
+  trigger_paths: [an]
+  end_paths:     [out]
 }
 
 physics.producers.CrvPhotons.startTime         : 0.0 

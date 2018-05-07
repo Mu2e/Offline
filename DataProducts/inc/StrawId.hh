@@ -28,7 +28,9 @@ namespace mu2e {
     public:
       constexpr static uint16_t _layermsk = 0x1; // mask for layer field
       constexpr static uint16_t _strawmsk = 0x7F; // mask for straw field
+      constexpr static uint16_t _preampmsk = 0x7E; // mask for preamp
       constexpr static uint16_t _panelmsk = 0x380; // mask for panel field
+      constexpr static uint16_t _preampsft = 1; // shift for preamp field
       constexpr static uint16_t _panelsft = 7; // shift for panel field
       constexpr static uint16_t _facemsk = 0x80; // mask for face field
       constexpr static uint16_t _facesft = 7; // shift for face field
@@ -131,12 +133,30 @@ namespace mu2e {
 	return (_sid & _strawmsk);
       }
 
+      uint16_t preamp() const{
+	return (_sid & _preampmsk) >> _preampsft;
+      }
+
       uint16_t layer() const{
 	return (_sid & _layermsk);
       }
 
       uint16_t station() const{
 	return (_sid & _stationmsk) >> _stationsft;
+      }
+
+      // logical comparators
+
+      bool samePreamp(StrawId other){
+	return plane() == other.plane() &&
+	      panel() == other.panel() &&
+	      preamp() == other.preamp();
+      }
+
+      bool nearestNeighbor(StrawId other){
+	return plane() == other.plane() &&
+	      panel() == other.panel() &&
+	      abs(straw()-other.straw())<2;
       }
 
       // operators

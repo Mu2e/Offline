@@ -15,9 +15,6 @@ class G4VUserPhysicsList;
 
 namespace mu2e{
 
-  class SimpleConfig;
-
-  void setMinimumRangeCut( SimpleConfig const& config, G4VUserPhysicsList* mPL );
   void setMinimumRangeCut(const fhicl::ParameterSet& pset, G4VUserPhysicsList* mPL);
 
 }  // end namespace mu2e

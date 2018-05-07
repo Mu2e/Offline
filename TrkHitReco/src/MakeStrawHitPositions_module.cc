@@ -109,7 +109,7 @@ namespace mu2e {
     double x,y,z;
     Tracker const& tracker = getTrackerOrThrow();
 
-    Straw const& straw = tracker.getStraw(Hit.strawIndex());
+    Straw const& straw = tracker.getStraw(Hit.strawId());
     x = Pos.pos().x();
     y = Pos.pos().y();
     z = Pos.pos().z();
@@ -125,7 +125,7 @@ namespace mu2e {
 
     printf("%5.3f %5.3f %5.3f %5i  %5i  %5i   %5i   %5i   0x%s %8.3f   %8.3f   %9.6f\n",
 	   x,y,z,
-	   Hit.strawIndex().asInt(),
+	   Hit.strawId().asUint16(),
 	   straw.id().getPlane(),
 	   straw.id().getPanel(),
 	   straw.id().getLayer(),
@@ -163,7 +163,7 @@ namespace mu2e {
 
     for(size_t ish=0;ish<nsh;++ish){
       StrawHit const& hit = strawhits->at(ish);
-      Straw const& straw = tracker.getStraw(hit.strawIndex());
+      Straw const& straw = tracker.getStraw(hit.strawId());
 // get distance along wire from the straw center and it's estimated error
       float dw, dwerr;
       bool td = srep->wireDistance(hit,straw.getHalfLength(),dw,dwerr);

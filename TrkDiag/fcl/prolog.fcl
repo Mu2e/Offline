@@ -198,9 +198,11 @@ BEGIN_PROLOG
       SHD : @local::SHD
       HD : @local::HD
       TRD : @local::TRD
+      RKF : @local::ReadKalFits
       TTCHD : @local::TTTCD
       TTTCD : @local::TTTCD
       TTHD : @local::TTHD
+      BD : @local::BD
     }
   }
 

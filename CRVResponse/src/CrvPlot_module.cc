@@ -11,6 +11,7 @@
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/CrvParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -18,7 +19,7 @@
 #include "MCDataProducts/inc/CrvPhotonsCollection.hh"
 #include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Principal/Event.h"
@@ -60,6 +61,7 @@ namespace mu2e
     double      _recoPulsePedestal;
 
     double      _microBunchPeriod;
+    double      _digitizationPeriod;
 
     std::vector<TCanvas*>  _canvas;
     int                    _icanvas;
@@ -91,6 +93,9 @@ namespace mu2e
   {
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     _microBunchPeriod = accPar->deBuncherPeriod;
+
+    mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
+    _digitizationPeriod  = crvPar->digitizationPeriod;
   }
 
   void CrvPlot::analyze(const art::Event& event) 
@@ -107,16 +112,14 @@ namespace mu2e
     art::Handle<CrvDigiCollection> crvDigiCollection;
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
 
-    art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
-    event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
+    art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
+    event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
 
     GeomHandle<CosmicRayShield> CRS;
     const CRSScintillatorBarIndex barIndex(_crvBarIndex);
 
     CrvPhotonsCollection::const_iterator         photons        = crvPhotonsCollection->find(barIndex);
     CrvSiPMChargesCollection::const_iterator     siPMCharges    = crvSiPMChargesCollection->find(barIndex);
-    CrvDigiCollection::const_iterator            digi           = crvDigiCollection->find(barIndex);
-    CrvRecoPulsesCollection::const_iterator      recoPulses     = crvRecoPulsesCollection->find(barIndex);
 
     gStyle->SetOptStat(0);
     int runID = event.id().run();
@@ -199,76 +202,77 @@ namespace mu2e
       histSiPMResponse->Draw("same");
 
 //waveforms
-      std::vector<double> ADCs;
-      std::vector<double> times;
       double scale=NAN;
-      if(digi!=crvDigiCollection->end())
+      for(size_t digiIndex=0; digiIndex<crvDigiCollection->size(); digiIndex++)
       {
-        double digitizationPrecision = digi->second.GetDigitizationPrecision(); //ns
-        const std::vector<CrvDigi::CrvSingleWaveform> &singleWaveforms = digi->second.GetSingleWaveforms(SiPM);
-        for(size_t i=0; i<singleWaveforms.size(); i++)
+        const CrvDigi &crvDigi = crvDigiCollection->at(digiIndex);
+        if(crvDigi.GetScintillatorBarIndex()==barIndex && crvDigi.GetSiPMNumber()==SiPM) 
         {
-          for(size_t j=0; j<singleWaveforms[i]._ADCs.size(); j++)
+          std::vector<double> ADCs;
+          std::vector<double> times;
+          for(size_t j=0; j<crvDigi.GetADCs().size(); j++)
           {    
-            ADCs.push_back(singleWaveforms[i]._ADCs[j]);
-            times.push_back((singleWaveforms[i]._startTDC+j)*digitizationPrecision); 
+            ADCs.push_back(crvDigi.GetADCs()[j]);
+            times.push_back((crvDigi.GetStartTDC()+j)*_digitizationPeriod); 
           }
-        }
 
-        size_t n = ADCs.size();
+          size_t n = ADCs.size();
 
-        if(n>0)
-        {
-          double maxADC=*std::max_element(ADCs.begin(),ADCs.end());
-          scale = histMax/maxADC;
+          if(n>0)
+          {
+            double maxADC=*std::max_element(ADCs.begin(),ADCs.end());
+            scale = histMax/maxADC;
 
-          for(size_t i=0; i<n; i++) ADCs[i]*=scale;
-          TGraph *graphW=new TGraph(n,times.data(),ADCs.data());
-          graphVector.push_back(graphW);
-          graphW->SetTitle("");
-          graphW->SetMarkerStyle(20);
-          graphW->SetMarkerSize(1.5);
-          graphW->SetMarkerColor(kRed);
-          graphW->Draw("sameP");
+            for(size_t i=0; i<n; i++) ADCs[i]*=scale;
+            TGraph *graphW=new TGraph(n,times.data(),ADCs.data());
+            graphVector.push_back(graphW);
+            graphW->SetTitle("");
+            graphW->SetMarkerStyle(20);
+            graphW->SetMarkerSize(1.5);
+            graphW->SetMarkerColor(kRed);
+            graphW->Draw("sameP");
+          }
         }
       }
 
 //fit
-      if(recoPulses!=crvRecoPulsesCollection->end() && !isnan(scale))
+      if(!isnan(scale))
       {
-        const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector = recoPulses->second.GetRecoPulses(SiPM);
-        for(unsigned int i = 0; i<pulseVector.size(); i++) 
+        for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++)
         {
-          const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector[i];
-          double fitParam0 = pulse._pulseHeight*2.718;
-          double fitParam1 = pulse._pulseTime;
-          double fitParam2 = pulse._pulseWidth/1.283;
-
-          double tF1=fitParam1 - 2.0*fitParam2;
-          double tF2=fitParam1 + 8.0*fitParam2;
-          int nF=(tF2-tF1)/1.0 + 1;
-          double *tF = new double[nF];
-          double *vF = new double[nF];
-          for(int iF=0; iF<nF; iF++)
+          const CrvRecoPulse &crvRecoPulse = crvRecoPulseCollection->at(recoPulseIndex);
+          if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==SiPM) 
           {
-            tF[iF] = tF1 + iF*1.0;
-            vF[iF] = fitParam0*TMath::Exp(-(tF[iF]-fitParam1)/fitParam2-TMath::Exp(-(tF[iF]-fitParam1)/fitParam2));
-            vF[iF]+=_recoPulsePedestal;
-            vF[iF]*=scale;
-            if(isnan(vF[iF])) nF=0;
-          }
-          if(nF>0)
-          {
-            TGraph *graphF=new TGraph(nF,tF,vF);
-            graphVector.push_back(graphF);
-            graphF->SetTitle("");
-            graphF->SetLineWidth(2);
-            graphF->SetLineColor(kGreen);
-            graphF->Draw("same");
-          }
+            double fitParam0 = crvRecoPulse.GetPulseHeight()*2.718;
+            double fitParam1 = crvRecoPulse.GetPulseTime();
+            double fitParam2 = crvRecoPulse.GetPulseWidth()/1.283;
 
-          delete[] tF;
-          delete[] vF;
+            double tF1=fitParam1 - 2.0*fitParam2;
+            double tF2=fitParam1 + 8.0*fitParam2;
+            int nF=(tF2-tF1)/1.0 + 1;
+            double *tF = new double[nF];
+            double *vF = new double[nF];
+            for(int iF=0; iF<nF; iF++)
+            {
+              tF[iF] = tF1 + iF*1.0;
+              vF[iF] = fitParam0*TMath::Exp(-(tF[iF]-fitParam1)/fitParam2-TMath::Exp(-(tF[iF]-fitParam1)/fitParam2));
+              vF[iF]+=_recoPulsePedestal;
+              vF[iF]*=scale;
+              if(isnan(vF[iF])) nF=0;
+            }
+            if(nF>0)
+            {
+              TGraph *graphF=new TGraph(nF,tF,vF);
+              graphVector.push_back(graphF);
+              graphF->SetTitle("");
+              graphF->SetLineWidth(2);
+              graphF->SetLineColor(kGreen);
+              graphF->Draw("same");
+            }
+
+            delete[] tF;
+            delete[] vF;
+          }
         }
       }
 

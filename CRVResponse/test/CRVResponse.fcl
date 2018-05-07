@@ -35,7 +35,8 @@ physics :
 #  out: [Output]
   out: []
 
-  end_paths: [an, out]
+  trigger_paths: [an]
+  end_paths:     [out]
 }
 
 outputs: 

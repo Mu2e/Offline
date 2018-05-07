@@ -1,4 +1,10 @@
 # -*- mode:tcl -*-
+#
+# use murat/scripts/submit_mu2e_job
+# when submitting, may want to define TRIGGER_PATH, for example: "-r TRIGGER_PATH=p16"
+# variables which need defaults:
+# -----------------------------
+# :DEFAULT: TRIGGER_PATH=p6
 #------------------------------------------------------------------------------
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
@@ -60,10 +66,12 @@ physics: {
 	@table::producers
 
 	DeltaFinder: { @table::producers.DeltaFinder
+#	DeltaFinder: { @table::producers.DeltaFinder2
 	    diagLevel                     : 0
 	    debugLevel                    : 0
 	    useTimePeaks                  : 0
 	    diagPlugin : { @table::producers.DeltaFinder.diagPlugin
+#	    diagPlugin : { @table::producers.DeltaFinder2.diagPlugin
 		mcDiag                    : true
 		printElectrons            : 1
 		printElectronsMinMom      : 0.

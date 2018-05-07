@@ -15,9 +15,9 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceClusters.hh"
+#include "RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceCollection.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -47,9 +47,9 @@ namespace mu2e
 
     private:
     int         _verboseLevel;
+    bool        _usingPEsPulseHeight;
     double      _maxDistance;
     double      _maxTimeDifference;
-    std::string _crvRecoPulseModuleLabel; 
     std::string _crvCoincidenceCheckModuleLabel;  //module label of the CrvCoincidenceCheck module
                                                   //it is possible to have more than one instance of the CrvCoincidenceCheck module
     double      _timeWindowStart;
@@ -59,26 +59,31 @@ namespace mu2e
     double      _totalDeadTime;
     double      _totalTime;
 
-    struct PosOrderedHit : public CrvCoincidenceClusters::Hit
+    struct ClusterHit
     {
-      PosOrderedHit(double time, int PEs, mu2e::CRSScintillatorBarIndex counter, int SiPM, double pos): Hit(time, PEs, counter, SiPM, pos) {}
-      bool operator<(const PosOrderedHit &rhs) const 
+      art::Ptr<CrvRecoPulse> _crvRecoPulse; 
+      double _pos;
+      double _time;
+      CLHEP::Hep3Vector _counterPosition;
+      ClusterHit(const art::Ptr<CrvRecoPulse> crvRecoPulse, double pos, double time, const CLHEP::Hep3Vector &counterPosition) 
+            : _crvRecoPulse(crvRecoPulse), _pos(pos), _time(time), _counterPosition(counterPosition) {}
+    };
+
+    struct PosCompare
+    {
+      bool operator() (const ClusterHit &lhs, const ClusterHit &rhs) const 
       {                                                //identical hits will be removed, 
-        if(_pos!=rhs._pos) return _pos < rhs._pos;     //but allow for hits with the same pos but on different counters/SiPMs/times
-        if(_counter!=rhs._counter) return _counter < rhs._counter;
-        if(_SiPM!=rhs._SiPM) return _SiPM < rhs._SiPM;
-        return _time < rhs._time;
+        if(lhs._pos!=rhs._pos) return lhs._pos < rhs._pos; 
+        return lhs._crvRecoPulse < rhs._crvRecoPulse;
       }
     };
 
-    struct TimeOrderedHit : public CrvCoincidenceClusters::Hit
+    struct TimeCompare
     {
-      TimeOrderedHit(double time, int PEs, mu2e::CRSScintillatorBarIndex counter, int SiPM, double pos): Hit(time, PEs, counter, SiPM, pos) {}
-      bool operator<(const TimeOrderedHit &rhs) const  
+      bool operator() (const ClusterHit &lhs, const ClusterHit &rhs) const 
       {                                                //identical hits will be removed, 
-        if(_time!=rhs._time) return _time < rhs._time; //but allow for hits with the same time but on different counters/SiPMs
-        if(_counter!=rhs._counter) return _counter < rhs._counter;
-        return _SiPM < rhs._SiPM;
+        if(lhs._time!=rhs._time) return lhs._time < rhs._time; 
+        return lhs._crvRecoPulse < rhs._crvRecoPulse;
       }
     };
 
@@ -86,6 +91,7 @@ namespace mu2e
 
   CrvCoincidenceClusterFinder::CrvCoincidenceClusterFinder(fhicl::ParameterSet const& pset) :
     _verboseLevel(pset.get<int>("verboseLevel")),
+    _usingPEsPulseHeight(pset.get<bool>("usingPEsPulseHeight")),
     _maxDistance(pset.get<double>("maxDistance")),
     _maxTimeDifference(pset.get<double>("maxTimeDifference")),
     _crvCoincidenceCheckModuleLabel(pset.get<std::string>("crvCoincidenceCheckModuleLabel")),
@@ -96,7 +102,7 @@ namespace mu2e
     _totalDeadTime(0),
     _totalTime(0)
   {
-    produces<CrvCoincidenceClusters>();
+    produces<CrvCoincidenceClusterCollection>();
   }
 
   void CrvCoincidenceClusterFinder::beginJob()
@@ -117,96 +123,90 @@ namespace mu2e
   {
     _totalTime += _timeWindowEnd - _timeWindowStart;
 
-    std::unique_ptr<CrvCoincidenceClusters> crvCoincidenceClusters(new CrvCoincidenceClusters);
+    std::unique_ptr<CrvCoincidenceClusterCollection> crvCoincidenceClusterCollection(new CrvCoincidenceClusterCollection);
 
     GeomHandle<CosmicRayShield> CRS;
 
-    std::string crvCoincidenceInstanceName="";
-    art::Handle<CrvCoincidenceCheckResult> crvCoincidenceCheckResult;
-    event.getByLabel(_crvCoincidenceCheckModuleLabel,crvCoincidenceInstanceName,crvCoincidenceCheckResult);
+    art::Handle<CrvCoincidenceCollection> crvCoincidenceCollection;
+    event.getByLabel(_crvCoincidenceCheckModuleLabel,"",crvCoincidenceCollection);
 
-    if(crvCoincidenceCheckResult.product()==NULL) return;
+    if(crvCoincidenceCollection.product()==NULL) return;
 
     //loop through all coincidence combinations
     //extract all the hits of all coincidence combinations
     //distribute them into the crv sector types
     //and put them into a (pos ordered) set
-    std::map<int, std::set<PosOrderedHit> > sectorTypeMap;
+    std::map<int, std::set<ClusterHit,PosCompare> > sectorTypeMap;
 
-    const std::vector<CrvCoincidenceCheckResult::CoincidenceCombination> &coincidenceCombinationsAll = crvCoincidenceCheckResult->GetCoincidenceCombinations();
-    std::vector<CrvCoincidenceCheckResult::CoincidenceCombination>::const_iterator iter;
-    for(iter=coincidenceCombinationsAll.begin(); iter!=coincidenceCombinationsAll.end(); iter++)
+    CrvCoincidenceCollection::const_iterator iter;
+    for(iter=crvCoincidenceCollection->begin(); iter!=crvCoincidenceCollection->end(); iter++)
     {
-      for(int i=0; i<3; i++)
+      int crvSectorType = iter->GetCrvSectorType();
+      const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses = iter->GetCrvRecoPulses();
+      for(size_t i=0; i<crvRecoPulses.size(); i++)
       {
-        const mu2e::CRSScintillatorBarIndex &crvBarIndex = iter->_counters[i]; 
+        const art::Ptr<CrvRecoPulse> crvRecoPulse = crvRecoPulses[i];
+ 
+        const mu2e::CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse->GetScintillatorBarIndex(); 
         const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndex);
-        int crvSectorNumber = crvCounter.id().getShieldNumber();
-        int crvSectorType = CRS->getCRSScintillatorShield(crvSectorNumber).getSectorType();
-        // 0: R
-        // 1: L
-        // 2: T
-        // 3: D
-        // 4: U
-        // 5,6,7: C1,C2,C3
-
         int widthDirection=crvCounter.getBarDetail().getWidthDirection();
         double pos=crvCounter.getPosition()[widthDirection];
 
-        sectorTypeMap[crvSectorType].emplace(iter->_time[i], iter->_PEs[i], iter->_counters[i], iter->_SiPMs[i], pos);
+        sectorTypeMap[crvSectorType].emplace(crvRecoPulse, pos, crvRecoPulse->GetPulseTime(), crvCounter.getPosition());
       }
     }
 
     //loop through all crv sectors types
-    std::map<int, std::set<PosOrderedHit> >::const_iterator sectorTypeMapIter;
+    std::map<int, std::set<ClusterHit,PosCompare> >::const_iterator sectorTypeMapIter;
     for(sectorTypeMapIter=sectorTypeMap.begin(); sectorTypeMapIter!=sectorTypeMap.end(); sectorTypeMapIter++)
     {
       int crvSectorType = sectorTypeMapIter->first;
-      const std::set<PosOrderedHit> &crvHits = sectorTypeMapIter->second; 
+      const std::set<ClusterHit,PosCompare> &posOrderedHits = sectorTypeMapIter->second; 
 
       //loop through the vector of (position ordered) crv hits for this particular crv sector type
-      std::set<PosOrderedHit>::const_iterator h=crvHits.begin();
-      while(h!=crvHits.end())
+      std::set<ClusterHit,PosCompare>::const_iterator hp=posOrderedHits.begin();
+      while(hp!=posOrderedHits.end())
       {
-        double endPos=h->_pos;
-        std::set<TimeOrderedHit> posCluster;
-        posCluster.emplace(h->_time,h->_PEs,h->_counter,h->_SiPM,h->_pos);
-        while(++h!=crvHits.end())
+        double startPos=hp->_pos;
+        std::set<ClusterHit,TimeCompare> posCluster;  //time ordered hits of this position cluster
+        posCluster.insert(*hp);
+        while(++hp!=posOrderedHits.end())
         {
-          if(h->_pos-endPos>_maxDistance) break;
-          endPos=h->_pos;
-          posCluster.emplace(h->_time,h->_PEs,h->_counter,h->_SiPM,h->_pos);
+          if(hp->_pos-startPos>_maxDistance) break;
+          posCluster.insert(*hp);
         }
         //filled one full position cluster
 
-        //loop through the vector of (time ordered) crv hits for this cluster
-        std::set<TimeOrderedHit>::const_iterator hh=posCluster.begin();
-        while(hh!=posCluster.end())
+        //loop through the vector of (time ordered) crv hits for this position cluster
+        std::set<ClusterHit,TimeCompare>::const_iterator ht=posCluster.begin();
+        while(ht!=posCluster.end())
         {
-          double startTime=hh->_time;
-          double endTime=hh->_time;
-          std::vector<const CrvCoincidenceClusters::Hit*> posTimeCluster;
-          posTimeCluster.push_back(&(*hh));
+          double startTime=ht->_time;
+          std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses;
+          crvRecoPulses.push_back(ht->_crvRecoPulse);
 
-          int PEs=hh->_PEs;
-          CLHEP::Hep3Vector avgPos=CRS->getBar(hh->_counter).getPosition();
+          double endTime=ht->_time;
+          int PEs=ht->_crvRecoPulse->GetPEs();
+          if(_usingPEsPulseHeight) PEs=ht->_crvRecoPulse->GetPEsPulseHeight();
+          CLHEP::Hep3Vector avgCounterPos=ht->_counterPosition;
 
-          while(++hh!=posCluster.end())
+          while(++ht!=posCluster.end())
           {
-            if(hh->_time-endTime>_maxTimeDifference) break;
-            endTime=hh->_time;
-            posTimeCluster.push_back(&(*hh));
+            if(ht->_time-startTime>_maxTimeDifference) break;
+            crvRecoPulses.push_back(ht->_crvRecoPulse);
 
-            PEs+=hh->_PEs;
-            avgPos+=CRS->getBar(hh->_counter).getPosition();
+            endTime=ht->_time;
+            if(_usingPEsPulseHeight) PEs+=ht->_crvRecoPulse->GetPEsPulseHeight();
+            else PEs+=ht->_crvRecoPulse->GetPEs();
+            avgCounterPos+=ht->_counterPosition;
           }
           //filled one full position&time cluster
 
-          //average position
-          avgPos/=posTimeCluster.size();
+          //average counter position
+          avgCounterPos/=crvRecoPulses.size();
 
           //insert the cluster information into the vector of the crv coincidence clusters
-          crvCoincidenceClusters->GetClusters().emplace_back(crvSectorType, avgPos, startTime, endTime, PEs, posTimeCluster);
+          crvCoincidenceClusterCollection->emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, crvRecoPulses);
 
           if(_verboseLevel>0)
           {
@@ -230,7 +230,7 @@ namespace mu2e
       }//loop over all hits in sector
     }//loop over all sector types
 
-    event.put(std::move(crvCoincidenceClusters));
+    event.put(std::move(crvCoincidenceClusterCollection));
   } // end produce
 
 } // end namespace mu2e

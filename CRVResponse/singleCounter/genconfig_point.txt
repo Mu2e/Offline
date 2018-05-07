@@ -13,7 +13,21 @@ double particleGun.tmin  =  800.0;
 double particleGun.tmax  =  800.0;
 
 // position
-vector<double> particleGun.point = {-4404., 2610.6, 10200.0}; //counter is centered at x=-3904 
+//vector<double> particleGun.point = {-3154., 2610.6, 10200.0}; //x=2250 
+//vector<double> particleGun.point = {-3404., 2610.6, 10200.0}; //x=2000 
+//vector<double> particleGun.point = {-3654., 2610.6, 10200.0}; //x=1750 
+//vector<double> particleGun.point = {-3904., 2610.6, 10200.0}; //x=1500 
+//vector<double> particleGun.point = {-4154., 2610.6, 10200.0}; //x=1250 
+vector<double> particleGun.point = {-4404., 2610.6, 10200.0}; //x=1000 
+//vector<double> particleGun.point = {-4654., 2610.6, 10200.0}; //x=750 
+//vector<double> particleGun.point = {-4904., 2610.6, 10200.0}; //x=500 
+//vector<double> particleGun.point = {-5104., 2610.6, 10200.0}; //x=300 
+//vector<double> particleGun.point = {-5204., 2610.6, 10200.0}; //x=200 
+//vector<double> particleGun.point = {-5304., 2610.6, 10200.0}; //x=100 
+//vector<double> particleGun.point = {-5354., 2610.6, 10200.0}; //x=50 
+//vector<double> particleGun.point = {-5384., 2610.6, 10200.0}; //x=20 
+//vector<double> particleGun.point = {-5394., 2610.6, 10200.0}; //x=10 
+//vector<double> particleGun.point = {-5399., 2610.6, 10200.0}; //x=5
 
 vector<double> particleGun.halfLength = { 0., 0., 0. };
 
@@ -22,8 +36,8 @@ double particleGun.pmin = 120.0e3;
 double particleGun.pmax = 120.0e3;
 
 // Particle Id
-int particleGun.id = 13;    //muon
-// int particleGun.id = 2212;  //proton
+// int particleGun.id = 13;    //muon
+int particleGun.id = 2212;  //proton
 
 // Mean particle.
 double particleGun.mean =  -1; //only one particle per event

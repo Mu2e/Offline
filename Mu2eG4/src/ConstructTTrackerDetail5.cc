@@ -1061,13 +1061,14 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
 
     // I am not sure if I am allowed to have two coincident zplanes so slightly
     // slope the edges of the channel.
-    double eps=0.1;
+    double eps=0.001;
+    double tol = 1.66;
 
     z[0]    = -ring.tubsParams().zHalfLength();
-    z[1]    = chanDown.position().z()  - chanDown.tubsParams().zHalfLength() - eps;
-    z[2]    = chanDown.position().z() - chanDown.tubsParams().zHalfLength();
-    z[3]    = chanDown.position().z() + chanDown.tubsParams().zHalfLength();
-    z[4]    = chanDown.position().z() + chanDown.tubsParams().zHalfLength() + eps;
+    z[1]    = chanDown.position().z()  - chanDown.tubsParams().zHalfLength() - eps + tol/2.0;
+    z[2]    = chanDown.position().z() - chanDown.tubsParams().zHalfLength() + tol/2.0;
+    z[3]    = chanDown.position().z() + chanDown.tubsParams().zHalfLength() + tol;
+    z[4]    = chanDown.position().z() + chanDown.tubsParams().zHalfLength() + eps + tol;
     z[5]    = ring.tubsParams().zHalfLength();
 
     rIn[0]  = ring.tubsParams().innerRadius();

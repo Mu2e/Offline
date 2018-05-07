@@ -24,6 +24,7 @@ mu2eg4DefaultPhysics: {
     captureDModel: ""
 
     // current G4 stepper choices in Mu2eWorld.cc are shown below
+    // G4DormandPrince745 Geant4 10.4+
     // G4ClassicalRK4
     // G4ClassicalRK4WSpin
     // G4ImplicitEuler
@@ -33,7 +34,17 @@ mu2eg4DefaultPhysics: {
     // G4HelixImplicitEuler
     // G4HelixSimpleRunge
     stepper : "G4ClassicalRK4"
-    bfieldMaxStep: 20. // mm
+    // the following parameters control intagration and have a cumulative effect on the final precision
+    // limits on the relative position errors
+    // epsilonMin Can be 1.0e-5 to 1.0e-10  Minimum & value for smallest steps
+    // epsilonMax Can be 1.0e-3 to 1.0e-8   Maximum & value for largest steps
+    epsilonMin        : 5.0e-5
+    epsilonMax        : 1.0e-3
+    // the following values are in mm
+    deltaOneStep      : 5.0e-2 // position error acceptable in an integration (not physics) step
+    deltaIntersection : 5.0e-2 // maximum inaccuracy of a single boundary crossing
+    deltaChord : 5.0e-2 // maximum "miss distance" between chord and a mid point of an integration step
+    bfieldMaxStep: 20. // mm;  value used in step limmiter, has impact on tracking accuracy as well
     limitStepInAllVolumes: false
 }
 #----------------

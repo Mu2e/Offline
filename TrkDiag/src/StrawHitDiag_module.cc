@@ -77,7 +77,7 @@ namespace mu2e
       Float_t _mcoe, _mcpoe, _mcom, _mcpom;
       Float_t _mcshlen,_mcshd, _mcsphi, _mcplen;
       Float_t _mcedep, _mcetrig;
-      Float_t _mcct[2];
+      Float_t _mcct[2], _mccphi[2], _mccd[2];
       Float_t _pdist,_pperp,_pmom;
       Float_t _mcsptime,_mcwt[2];
       Float_t _mcptime;
@@ -182,6 +182,8 @@ namespace mu2e
       _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
       _shdiag->Branch("mcshd",&_mcshd,"mcshd/F");
       _shdiag->Branch("mcsphi",&_mcsphi,"mcsphi/F");
+      _shdiag->Branch("mccphi",&_mccphi,"mccphical/F:,mccphihv/F");
+      _shdiag->Branch("mccd",&_mccd,"mccdcal/F:,mccdhv/F");
       _shdiag->Branch("mcplen",&_mcplen,"mcplen/F");
       _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
       _shdiag->Branch("mcetrig",&_mcetrig,"mcetrig/F");
@@ -264,6 +266,8 @@ namespace mu2e
       _mcshlen = -1;
       _mcshd = -1;
       _mcsphi = 0.0;
+      _mccphi[0] = _mccphi[1] = 0.0;
+      _mccd[0] = _mccd[1] = -1;
       _mcplen = -1;
       _mcpproc=-1;
       _mcptime=0.0;
@@ -294,6 +298,11 @@ namespace mu2e
 	for(size_t iend=0;iend<2; ++iend){
 	  _mcwt[iend] = mcdigi.wireEndTime(_end[iend]);
 	  _mcct[iend] = mcdigi.clusterPosition(_end[iend]).t();
+          Hep3Vector cpos = mcdigi.clusterPosition(_end[iend]).vect();
+          Hep3Vector cdir = (cpos-straw.getMidPoint());
+          cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));
+          _mccphi[iend] = cdir.theta();
+          _mccd[iend] = min(cdir.perp(straw.getDirection()),straw.getDetail().innerRadius());
 	}
         _mcshp = spmcp->position();
         _mcop = det->toDetector(osp.startPosition());
@@ -301,7 +310,7 @@ namespace mu2e
         _mcom = osp.startMomentum().vect().mag();
         _mcshlen = (spmcp->position()-straw.getMidPoint()).dot(straw.getDirection());
 	Hep3Vector mdir = spmcp->momentum().unit();
-	Hep3Vector tdir = straw.getDirection().cross(mdir);
+	Hep3Vector tdir = (straw.getDirection().cross(mdir)).unit();
         _mcshd = (spmcp->position()-straw.getMidPoint()).dot(tdir);
 	double scos = mdir.dot(straw.getDirection());
         _mcplen = 2.0*sqrt( (rstraw*rstraw -_mcshd*_mcshd)/(1.0-scos*scos) );
@@ -333,7 +342,7 @@ namespace mu2e
             _mcgpos = det->toDetector(sp->genParticle()->position());
           }
         }
-        _mcxtalk = spmcp->strawIndex() != sh.strawIndex();
+//        _mcxtalk = spmcp->strawIndex() != sh.strawIndex();
       }
       _shwres = _chcol->at(istr).posRes(ComboHit::wire);
       _shtres = _chcol->at(istr).posRes(ComboHit::trans);

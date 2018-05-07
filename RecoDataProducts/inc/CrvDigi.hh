@@ -8,7 +8,8 @@
 // Contact person Ralf Ehrlich
 //
 
-#include <vector>
+#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include <array>
 
 namespace mu2e 
 {
@@ -16,30 +17,26 @@ namespace mu2e
   {
     public:
 
+    static constexpr size_t NSamples = 8; //FIXME: this is also a parameter in CrvDigiMC
+
     CrvDigi() {}
 
-    struct CrvSingleWaveform
-    {
-      std::vector<unsigned int> _ADCs;
-      unsigned int              _startTDC;
-    };
+    CrvDigi(const std::array<unsigned int, NSamples> &ADCs, unsigned int startTDC, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, int SiPMNumber) :
+            _ADCs(ADCs), _startTDC(startTDC), _scintillatorBarIndex(scintillatorBarIndex), _SiPMNumber(SiPMNumber) {}
 
-    std::vector<CrvSingleWaveform> &GetSingleWaveforms(int fiberNumber, int side);
-    std::vector<CrvSingleWaveform> &GetSingleWaveforms(int SiPMNumber);
+    const std::array<unsigned int, NSamples> &GetADCs() const     {return _ADCs;}
+    unsigned int                              GetStartTDC() const {return _startTDC;}
 
-    const std::vector<CrvSingleWaveform> &GetSingleWaveforms(int fiberNumber, int side) const;
-    const std::vector<CrvSingleWaveform> &GetSingleWaveforms(int SiPMNumber) const;
-
-    double GetDigitizationPrecision() const; 
-    void SetDigitizationPrecision(double precision);
+    mu2e::CRSScintillatorBarIndex GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
+    int                           GetSiPMNumber() const           {return _SiPMNumber;}
 
     private:
 
-    static int  FindSiPMNumber(int fiberNumber, int side);
-    static void CheckSiPMNumber(int SiPMNumber);
+    std::array<unsigned int, NSamples> _ADCs;
+    unsigned int                       _startTDC;
 
-    std::vector<CrvSingleWaveform> _waveforms[4];
-    double _digitizationPrecision;
+    mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
+    int                            _SiPMNumber; 
   };
 }
 

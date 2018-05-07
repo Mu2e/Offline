@@ -9,7 +9,6 @@ Based on Paul Rubinov's C# code
 #include <iostream>
 #include <algorithm>
 
-
 //to get standalone version: compile with
 //g++ MakeCrvSiPMCharges.cc -std=c++11 -I../inc -I$CLHEP_INCLUDE_DIR -L$CLHEP_LIB_DIR -lCLHEP -DSiPMChargesStandalone
 
@@ -78,14 +77,14 @@ double MakeCrvSiPMCharges::GenerateAvalanche(Pixel &pixel, const std::pair<int,i
     if(_randFlat.fire() < _probabilities._trapType0Prob/_avalancheProbFullyChargedPixel)
     {
       //create new Type0 trap (fast)
-      double traptime = -_probabilities._trapType0Lifetime * log(_randFlat.fire());
+      double traptime = -_probabilities._trapType0Lifetime * log10(_randFlat.fire());
       _scheduledCharges.emplace(pixelId,time + traptime,photonIndex,darkNoise); 
     }
 
     if(_randFlat.fire() < _probabilities._trapType1Prob/_avalancheProbFullyChargedPixel)
     {
       //create new Type1 trap (slow)
-      double traptime = -_probabilities._trapType1Lifetime * log(_randFlat.fire());
+      double traptime = -_probabilities._trapType1Lifetime * log10(_randFlat.fire());
       _scheduledCharges.emplace(pixelId,time + traptime,photonIndex,darkNoise); 
     }
 

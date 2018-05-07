@@ -7,7 +7,7 @@
 process_name : print
 
 services : {
-   message : @local::mf_production
+   message : @local::mf_interactive
    GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }  
    ConditionsService :{ conditionsfile : "Mu2eG4/test/conditions_01.txt" } 
    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
@@ -18,6 +18,13 @@ physics :{
 
     printModule : {
       module_type : PrintModule
+
+      StatusG4Printer : {
+        verbose : 0
+      }
+      GenParticlePrinter : {
+        verbose : 1
+      }
 
       SimParticlePrinter : {
         pCut : 10.0
@@ -49,6 +56,19 @@ physics :{
       }
       CaloClusterPrinter : {
         eCut :  10.0
+      }
+
+      CrvDigiPrinter : {
+        verbose: 0
+      }
+      CrvDigiMCPrinter : {
+        verbose: 0
+      }
+      CrvRecoPulsePrinter : {
+        verbose: 1
+      }
+      CrvCoincidenceClusterPrinter : {
+        verbose: 1
       }
 
       StrawDigiPrinter : {
@@ -115,6 +135,5 @@ outputs: {
   }
 }
 
-services.message.destinations.log.categories.ArtReport.reportEvery : 1
-services.message.destinations.log.categories.ArtReport.limit : -1
-services.message.destinations.log.categories.ArtReport.timespan : 0
+services.message.destinations.log.categories.ArtSummary.limit : 0
+services.message.destinations.statistics.stats : @local::mf_null

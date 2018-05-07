@@ -9,6 +9,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
+#include "Validation/inc/ValStatusG4.hh"
 #include "Validation/inc/ValGenParticle.hh"
 #include "Validation/inc/ValSimParticle.hh"
 #include "Validation/inc/ValStepPointMC.hh"
@@ -17,6 +18,10 @@
 #include "Validation/inc/ValCaloDigi.hh"
 #include "Validation/inc/ValCaloRecoDigi.hh"
 #include "Validation/inc/ValCaloCluster.hh"
+#include "Validation/inc/ValCrvDigi.hh"
+#include "Validation/inc/ValCrvDigiMC.hh"
+#include "Validation/inc/ValCrvRecoPulse.hh"
+#include "Validation/inc/ValCrvCoincidenceCluster.hh"
 #include "Validation/inc/ValStrawDigi.hh"
 #include "Validation/inc/ValStrawDigiMC.hh"
 #include "Validation/inc/ValStrawHit.hh"
@@ -50,6 +55,7 @@ namespace mu2e {
     // validation of product XYZ.  They are in vectors, since we usually
     // have several instances of a product and we make histograms 
     // for each instance.
+    std::vector<std::shared_ptr<ValStatusG4>>          _stat;
     std::vector<std::shared_ptr<ValGenParticle>>       _genp;
     std::vector<std::shared_ptr<ValSimParticle>>       _simp;
     std::vector<std::shared_ptr<ValStepPointMC>>       _spmc;
@@ -58,6 +64,10 @@ namespace mu2e {
     std::vector<std::shared_ptr<ValCaloDigi>>          _cald;
     std::vector<std::shared_ptr<ValCaloRecoDigi>>      _calr;
     std::vector<std::shared_ptr<ValCaloCluster>>       _ccls;
+    std::vector<std::shared_ptr<ValCrvDigi>>           _cvdg;
+    std::vector<std::shared_ptr<ValCrvDigiMC>>         _cmdg;
+    std::vector<std::shared_ptr<ValCrvRecoPulse>>      _cvrp;
+    std::vector<std::shared_ptr<ValCrvCoincidenceCluster>> _cvcc;
     std::vector<std::shared_ptr<ValStrawDigi>>         _stdg;
     std::vector<std::shared_ptr<ValStrawDigiMC>>       _stdm;
     std::vector<std::shared_ptr<ValStrawHit>>          _stwh;
@@ -97,6 +107,7 @@ void mu2e::Validation::beginJob(){
 }
 
 void mu2e::Validation::analyze(art::Event const& event){
+  analyzeProduct<StatusG4,ValStatusG4>                        (_stat,event);
   analyzeProduct<GenParticleCollection,ValGenParticle>        (_genp,event);
   analyzeProduct<SimParticleCollection,ValSimParticle>        (_simp,event);
   analyzeProduct<SimParticleTimeMap,ValSimParticleTimeMap>    (_sptm,event);
@@ -106,6 +117,10 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<CaloDigiCollection,ValCaloDigi>              (_cald,event);
   analyzeProduct<CaloRecoDigiCollection,ValCaloRecoDigi>      (_calr,event);
   analyzeProduct<CaloClusterCollection,ValCaloCluster>        (_ccls,event);
+  analyzeProduct<CrvDigiCollection,ValCrvDigi>                (_cvdg,event);
+  analyzeProduct<CrvDigiMCCollection,ValCrvDigiMC>            (_cmdg,event);
+  analyzeProduct<CrvRecoPulseCollection,ValCrvRecoPulse>      (_cvrp,event);
+  analyzeProduct<CrvCoincidenceClusterCollection,ValCrvCoincidenceCluster>      (_cvcc,event);
   analyzeProduct<StrawDigiCollection,ValStrawDigi>            (_stdg,event);
   analyzeProduct<StrawDigiMCCollection,ValStrawDigiMC>        (_stdm,event);
   analyzeProduct<StrawHitCollection,ValStrawHit>              (_stwh,event);

@@ -50,10 +50,10 @@ namespace {
   // should switch to float FIXME!
   struct TimePeakMVA
   {
-    vector<Double_t> _pars;
-    Double_t& _dt;
-    Double_t& _dphi;
-    Double_t& _rho;
+    vector<Float_t> _pars;
+    Float_t& _dt;
+    Float_t& _dphi;
+    Float_t& _rho;
     // should add number of hits in the cluster FIXME!!!
     TimePeakMVA() : _pars(3,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]) {}
   };
@@ -142,7 +142,7 @@ namespace mu2e {
     _minpeakmva        (pset.get<float>(  "MinTimePeakMVA",0.2)),
     _maxpeakdt         (pset.get<float>(  "MaxTimePeakDeltat",25.0)),
     _maxdPhi           (pset.get<float>(  "MaxdPhi",1.5)),
-    _tmin              (pset.get<float>(  "tmin",500.0)),
+    _tmin              (pset.get<float>(  "tmin",450.0)),
     _tmax              (pset.get<float>(  "tmax",1700.0)),
     _tbin              (pset.get<float>(  "tbin",15.0)),
     _ymin              (pset.get<float>(  "ymin",5.0)),

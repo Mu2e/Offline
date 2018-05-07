@@ -86,9 +86,7 @@ namespace mu2e {
 
   PrimaryGeneratorAction::PrimaryGeneratorAction()
     : PrimaryGeneratorAction(true, 0, nullptr, perEvtObjManager)
-    //: PrimaryGeneratorAction(true)
   {}
-    //NEED TO FIX THIS FOR STUDY MODULE!
 
   PrimaryGeneratorAction::PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
                                                  GenEventBroker *gen_eventbroker,
@@ -124,10 +122,6 @@ void PrimaryGeneratorAction::setEventData()
         }
         
         hitInputs_ = genEventBroker_->getHitHandles();
-        
-        //TO DO!!!!!!!!!!!!!!!! CHECK THREAD SAFTEY OF getproductID() call
-        //might not be thread safe, because PID is using a lookup table
-        //which can be modified by puts
         
         perEvtObjManager->createSimParticleHelpers(genEventBroker_->getproductID(),
                                                    genEventBroker_->getartEvent(),
@@ -232,7 +226,7 @@ void PrimaryGeneratorAction::addG4Particle(G4Event *event,
     // Create a new vertex
     G4PrimaryVertex* vertex = new G4PrimaryVertex(pos, time);
 
-    if ( verbosityLevel_ > 0) {
+    if ( verbosityLevel_ > 1) {
       cout << __func__ << " pdgId   : " <<pdgId << endl;
     }
 
@@ -319,18 +313,6 @@ void PrimaryGeneratorAction::addG4Particle(G4Event *event,
     // Add the vertex to the event.
     event->AddPrimaryVertex( vertex );
     }
-    
-    
-void PrimaryGeneratorAction::setEventData_forStudy(const GenParticleCollection* gens,
-                                                   const HitHandles& hitInputs,
-                                                   SimParticlePrimaryHelper *parentMapping)
-    {
-        genParticles_ = gens;
-        hitInputs_ = &hitInputs;
-        parentMapping_ = parentMapping;
-        
-    }
-
 
 
 } // end namespace mu2e

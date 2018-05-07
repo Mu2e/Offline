@@ -20,7 +20,6 @@
 #include "G4SystemOfUnits.hh"
 #include <sstream>
 
-////#include <TH3D.h>
 #include <TNtuple.h>
 
 #include "G4LossTableManager.hh"
@@ -31,13 +30,15 @@
 
 WLSSteppingAction* WLSSteppingAction::_fgInstance = NULL;
 
-WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName, const std::string &visibleEnergyAdjustmentFileName) : 
-                                                                       _mode(mode), _engine(0), _randFlat(_engine), _randGaussQ(_engine), _randPoissonQ(_engine)
+WLSSteppingAction::WLSSteppingAction(simulationMode mode, const std::string &lookupFileName, const std::string &visibleEnergyAdjustmentFileName) : 
+                                                         _mode(mode), _engine(0), _randFlat(_engine), _randGaussQ(_engine), _randPoissonQ(_engine)
+                                                                                 //lookupFileName and visibleEnergyAdjustmentFileName
+                                                                                 //only used for simulationMode::UseGeantAndLookupTables
 {
   _fgInstance = this;
 
   //load lookup tables
-  if(_mode==1)
+  if(_mode==UseGeantAndLookupTables)
   {
     _crvPhotons = std::unique_ptr<mu2eCrv::MakeCrvPhotons>(new mu2eCrv::MakeCrvPhotons(_randFlat, _randGaussQ, _randPoissonQ));
     _crvPhotons->LoadLookupTable(lookupFileName);
@@ -56,7 +57,7 @@ WLSSteppingAction::~WLSSteppingAction()
 
 void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
 {
-  G4OpBoundaryProcessStatus theStatus = Undefined;
+  G4OpBoundaryProcessStatus theStatus = G4OpBoundaryProcessStatus::Undefined;
 
   G4ProcessManager* OpManager = G4OpticalPhoton::OpticalPhoton()->GetProcessManager();
 
@@ -73,13 +74,73 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
      }
   }
 
-  if(theStatus==Detection)
+  //create a list of fiber photons and their parents to find the number of re-emissions
+  if(theStep->GetTrack()->GetCreatorProcess()!=NULL)
   {
-     G4VPhysicalVolume* thePostPV = theStep->GetPostStepPoint()->GetPhysicalVolume();
-     if(thePostPV)
-     {
+    if(theStep->GetTrack()->GetCreatorProcess()->GetProcessName()=="OpWLS")
+    {
+      int trackID=theStep->GetTrack()->GetTrackID();
+      int parentID=theStep->GetTrack()->GetParentID();
+      _wlsTrackParents[trackID]=parentID;
+    }
+  }
+
+
+  G4VPhysicalVolume* thePostPV = theStep->GetPostStepPoint()->GetPhysicalVolume();
+  if(thePostPV)
+  {
+/*
+    double trueStepLength=theStep->GetStepLength();
+    double stepLength=(theStep->GetPreStepPoint()->GetPosition()-theStep->GetPostStepPoint()->GetPosition()).mag();
+    double diff=(trueStepLength-stepLength)/stepLength;
+    if(diff>0.01)
+    {
+      std::cout<<"-----------  "<<trueStepLength<<"   "<<stepLength<<"     "<<diff<<"   ";
+      std::cout<<"             "<<G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDepositionAtAStep(theStep)<<"   ";
+      std::cout<<theStep->GetTrack()->GetParticleDefinition()->GetParticleName()<<std::endl;
+    }
+*/
+/*
+    if(theStep->GetTrack()->GetParticleDefinition()->GetPDGEncoding()!=0)
+    {
+      std::cout<<theStep->GetTrack()->GetTrackID()<<"  "<<theStep->GetTrack()->GetParentID()<<"   ";
+      std::cout<<theStep->GetTrack()->GetParticleDefinition()->GetParticleName()<<"   ";
+      std::cout<<theStep->GetTrack()->GetTrackLength()<<"   "<<theStep->GetTrack()->GetTotalEnergy()<<"   ";
+      std::cout<<theStep->GetPreStepPoint()->GetPosition()<<"   ";
+      std::cout<<theStep->GetPostStepPoint()->GetPosition()<<"   ";
+      std::cout<<std::endl;
+    }
+*/
+/*
+    std::cout<<theStep->GetPreStepPoint()->GetStepStatus()<<"   ";
+    std::cout<<theStep->GetPostStepPoint()->GetStepStatus()<<"   ";
+    if(theStep->GetTrack()->GetCreatorProcess()!=NULL)
+    {
+      std::cout<<theStep->GetTrack()->GetCreatorProcess()->GetProcessName()<<"      ";
+    }
+    else std::cout<<"---       ";
+    if(theStep->GetPreStepPoint()->GetProcessDefinedStep())
+    {
+      std::cout<<theStep->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessName()<<"   ";
+      std::cout<<theStep->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessType()<<"   ";
+      std::cout<<theStep->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessSubType()<<"      ";
+    }
+    else std::cout<<"---       ";
+    if(theStep->GetPostStepPoint()->GetProcessDefinedStep())
+    {
+      std::cout<<theStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName()<<"   ";
+      std::cout<<theStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessType()<<"   ";
+      std::cout<<theStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessSubType()<<"   "<<std::endl;
+    }
+    else std::cout<<"---    "<<std::endl;
+*/
+
+    if(theStatus==Detection)
+    {
          if(thePostPV->GetName()=="PhotonDet")
          {
+//std::cout<<"DETECTION  "<<thePostPV->GetCopyNo()<<std::endl;
+           //a photon reached a SiPM
            _ntuple->Fill((float)(thePostPV->GetCopyNo()),
                                  theStep->GetTrack()->GetTotalEnergy(),
                                  theStep->GetTrack()->GetTrackLength(),
@@ -87,44 +148,30 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
                                  theStep->GetPostStepPoint()->GetPosition().x(),
                                  theStep->GetPostStepPoint()->GetPosition().y(), //WLS fiber test
                                  theStep->GetPostStepPoint()->GetGlobalTime(),
-                                 theStep->GetPostStepPoint()->GetMomentum().dot(CLHEP::Hep3Vector(0.0,0.0,1.0)));
-           _arrivalTimes[0][thePostPV->GetCopyNo()].push_back(theStep->GetPostStepPoint()->GetGlobalTime());
-           if(_mode==-1)
-           {
-             int numberOfFiberEmissions=0;
-             int trackID = theStep->GetTrack()->GetTrackID();
-             while(1)
-             {
-                std::map<int,int>::const_iterator wlsIter=_wlsTracks.find(trackID);
-                if(wlsIter!=_wlsTracks.end())
-                {
-                  numberOfFiberEmissions++;
-                  trackID=wlsIter->second;  //parent ID
-                }
-                else break;
-             }
-             _fiberEmissions[thePostPV->GetCopyNo()].push_back(numberOfFiberEmissions);
-           }
-         }
-     }
-  }
+                                 theStep->GetPostStepPoint()->GetMomentum().unit().dot(CLHEP::Hep3Vector(0.0,0.0,1.0)));
 
-  //creating a list of fiber photons and their parents to find the number of re-emissions, while lookup tables are created
-  if(_mode==-1)
-  {
-     if(theStep->GetTrack()->GetCreatorProcess()!=NULL)
-     {
-       if(theStep->GetTrack()->GetCreatorProcess()->GetProcessName()=="OpWLS")
-       {
-         int trackID=theStep->GetTrack()->GetTrackID();
-         int parentID=theStep->GetTrack()->GetParentID();
-         _wlsTracks[trackID]=parentID;
-       }
-     }
+           //run through the list of parent photons to find the number of re-emissions
+           int numberOfFiberEmissions=0;
+           int trackID = theStep->GetTrack()->GetTrackID();
+           while(1)
+           {
+             std::map<int,int>::const_iterator wlsIter=_wlsTrackParents.find(trackID);
+             if(wlsIter!=_wlsTrackParents.end())
+             {
+               numberOfFiberEmissions++;
+               trackID=wlsIter->second;  //parent ID
+             }
+             else break;
+           }
+           _fiberEmissions[thePostPV->GetCopyNo()].push_back(numberOfFiberEmissions);
+
+           _arrivalTimes[thePostPV->GetCopyNo()].push_back(theStep->GetPostStepPoint()->GetGlobalTime());
+         }
+    }
   }
 
   //if a lookup table is used
-  if(_mode==1)
+  if(_mode==UseGeantAndLookupTables)
   {
     const G4ThreeVector &p1 = theStep->GetPreStepPoint()->GetPosition();
     const G4ThreeVector &p2 = theStep->GetPostStepPoint()->GetPosition();
@@ -175,7 +222,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
       for(int SiPM=0; SiPM<4; SiPM++)
       {
         std::vector<double> times=_crvPhotons->GetArrivalTimes(SiPM);
-        _arrivalTimes[1][SiPM].insert(_arrivalTimes[1][SiPM].end(),times.begin(),times.end());
+        _arrivalTimesFromLookupTables[SiPM].insert(_arrivalTimesFromLookupTables[SiPM].end(),times.begin(),times.end());
       }
     }
   }
@@ -184,9 +231,14 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
 
 }
 
-const std::vector<double> &WLSSteppingAction::GetArrivalTimes(int i, int SiPM)
+const std::vector<double> &WLSSteppingAction::GetArrivalTimes(int SiPM)
 {
-  return _arrivalTimes[i][SiPM];
+  return _arrivalTimes[SiPM];
+}
+
+const std::vector<double> &WLSSteppingAction::GetArrivalTimesFromLookupTables(int SiPM)
+{
+  return _arrivalTimesFromLookupTables[SiPM];
 }
 
 const std::vector<int> &WLSSteppingAction::GetFiberEmissions(int SiPM)
@@ -196,19 +248,17 @@ const std::vector<int> &WLSSteppingAction::GetFiberEmissions(int SiPM)
 
 void WLSSteppingAction::Reset()
 {
-  for(int i=0; i<2; i++)
   for(int SiPM=0; SiPM<4; SiPM++)
   {
-    _arrivalTimes[i][SiPM].clear();
-    _arrivalTimes[i][SiPM].reserve(10000);
-    if(i==0) 
-    {
-     _fiberEmissions[SiPM].clear();
-     _fiberEmissions[SiPM].reserve(10000);
-    }
+    _arrivalTimes[SiPM].clear();
+    _arrivalTimes[SiPM].reserve(10000);
+    _arrivalTimesFromLookupTables[SiPM].clear();
+    _arrivalTimesFromLookupTables[SiPM].reserve(10000);
+    _fiberEmissions[SiPM].clear();
+    _fiberEmissions[SiPM].reserve(10000);
   }
 
-  _wlsTracks.clear();
+  _wlsTrackParents.clear();
 }
 
 void WLSSteppingAction::ShowVisibleEnergyTable(const G4Step *theStep)

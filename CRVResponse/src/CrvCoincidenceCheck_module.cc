@@ -16,9 +16,8 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
-#include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
+#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -47,13 +46,14 @@ namespace mu2e
     void endJob();
 
     private:
-    int         _verboseLevel;
-    std::string _crvWaveformsModuleLabel;
-    std::string _crvRecoPulsesModuleLabel;
+    int                      _verboseLevel;
+    std::string              _crvRecoPulsesModuleLabel;
     std::vector<std::string> _CRVSectors;
     std::vector<int>         _PEthresholds;
     std::vector<double>      _adjacentPulseTimeDifferences;
     std::vector<double>      _maxTimeDifferences;
+    std::vector<bool>        _useFourLayers;
+    bool        _usingPEsPulseHeight;
     double      _maxSlope;
     double      _maxSlopeDifference;
     bool        _acceptThreeAdjacentCounters;
@@ -71,64 +71,64 @@ namespace mu2e
     bool        _muonsOnly;  
     double      _muonMinTime, _muonMaxTime;
     std::string _genParticleModuleLabel;
-    bool        _useFourLayers;
 
     struct CrvHit
     {
+      art::Ptr<CrvRecoPulse>        _crvRecoPulse;
       double                        _time;
       int                           _PEs;
-      mu2e::CRSScintillatorBarIndex _barIndex;
       int                           _layer, _counter;
-      int                           _SiPM;
       double                        _x, _y;
       int                           _PEthreshold;
       double                        _adjacentPulseTimeDifference;
       double                        _maxTimeDifference;
-      CrvHit(double time, int PEs, mu2e::CRSScintillatorBarIndex barIndex, int layer, int counter, int SiPM, double x, double y, 
-                                                          int PEthreshold, double adjacentPulseTimeDifference, double maxTimeDifference):
-                                                          _time(time), _PEs(PEs), _barIndex(barIndex), 
-                                                          _layer(layer), _counter(counter), _SiPM(SiPM), _x(x), _y(y),
+      bool                          _useFourLayers;
+      CrvHit(const art::Ptr<CrvRecoPulse> &crvRecoPulse, double time, int PEs, int layer, int counter, double x, double y, 
+                                                          int PEthreshold, double adjacentPulseTimeDifference, double maxTimeDifference, bool useFourLayers):
+                                                          _crvRecoPulse(crvRecoPulse), _time(time), _PEs(PEs), _layer(layer), _counter(counter), _x(x), _y(y),
                                                           _PEthreshold(PEthreshold), _adjacentPulseTimeDifference(adjacentPulseTimeDifference), 
-                                                          _maxTimeDifference(maxTimeDifference) {}
+                                                          _maxTimeDifference(maxTimeDifference), _useFourLayers(useFourLayers) {}
       void Print(int sectorType) const
       {
-        std::cout<<"sectorType: "<<sectorType<<"   layer: "<<_layer<<"   counter: "<<_counter<<"  SiPM: "<<_SiPM<<"      ";
-        std::cout<<"  PEs: "<<_PEs<<"   time: "<<_time<<"   x: "<<_x<<"   y: "<<_y<<"         "<<_barIndex<<std::endl;
+        std::cout<<"sectorType: "<<sectorType<<"   layer: "<<_layer<<"   counter: "<<_counter<<"  SiPM: "<<_crvRecoPulse->GetSiPMNumber()<<"      ";
+        std::cout<<"  PEs: "<<_PEs<<"   time: "<<_time<<"   x: "<<_x<<"   y: "<<_y<<"         "<<_crvRecoPulse->GetScintillatorBarIndex()<<std::endl;
       }
     };
 
-    void AddCoincidence(std::unique_ptr<CrvCoincidenceCheckResult> &crvCoincidenceCheckResult, int sectorType, const CrvHit &h1, const CrvHit &h2, const CrvHit &h3);
-
     struct sectorCoincidenceProperties
     {
-      int precedingCounters;
-      int nCountersPerModule;
-      int sectorType;
+      int  precedingCounters;
+      int  nCountersPerModule;
+      int  sectorType;
       bool sipmsAtSide0;
       bool sipmsAtSide1;
-      int widthDirection, thicknessDirection;
+      int  widthDirection, thicknessDirection;
       std::string name;
+      int         PEthreshold;
+      double      adjacentPulseTimeDifference;
+      double      maxTimeDifference;
+      bool        useFourLayers;
     };
     std::map<int,sectorCoincidenceProperties> _sectorMap;
   };
 
   CrvCoincidenceCheck::CrvCoincidenceCheck(fhicl::ParameterSet const& pset) :
     _verboseLevel(pset.get<int>("verboseLevel")),
-    _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel","")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _CRVSectors(pset.get<std::vector<std::string> >("CRVSectors")),
     _PEthresholds(pset.get<std::vector<int> >("PEthresholds")),
     _adjacentPulseTimeDifferences(pset.get<std::vector<double> >("adjacentPulseTimeDifferences")),
     _maxTimeDifferences(pset.get<std::vector<double> >("maxTimeDifferences")),
+    _useFourLayers(pset.get<std::vector<bool> >("useFourLayers")),
+    _usingPEsPulseHeight(pset.get<bool>("usingPEsPulseHeight")),
     _maxSlope(pset.get<double>("maxSlope")),
     _maxSlopeDifference(pset.get<double>("maxSlopeDifference")),
     _acceptThreeAdjacentCounters(pset.get<bool>("acceptThreeAdjacentCounters")),
     _timeWindowStart(pset.get<double>("timeWindowStart")),
     _timeWindowEnd(pset.get<double>("timeWindowEnd")),
-    _muonsOnly(pset.get<bool>("muonsOnly",false)),
-    _useFourLayers(pset.get<bool>("useFourLayers",false))
+    _muonsOnly(pset.get<bool>("muonsOnly",false))
   {
-    produces<CrvCoincidenceCheckResult>();
+    produces<CrvCoincidenceCollection>();
     _totalEvents=0;
     _totalEventsCoincidence=0;
     if(_muonsOnly)
@@ -179,21 +179,29 @@ namespace mu2e
       s.widthDirection=sectors[i].getCRSScintillatorBarDetail().getWidthDirection();
       s.thicknessDirection=sectors[i].getCRSScintillatorBarDetail().getThicknessDirection();
 
+      std::string sectorName = s.name.substr(4); //removes the "CRV_" part
+      std::vector<std::string>::iterator userPropertyIter=std::find(_CRVSectors.begin(), _CRVSectors.end(), sectorName);
+      if(userPropertyIter==_CRVSectors.end()) 
+        throw std::logic_error("CrvCoincidenceFinder: The geometry has a CRV sector for which no coincidence properties were defined in the fcl file.");
+      int userPropertyPosition = std::distance(_CRVSectors.begin(),userPropertyIter);  //that's the position of the vector in the fcl file which sets PE thresholds, time differences, etc.
+
+      s.PEthreshold = _PEthresholds[userPropertyPosition];
+      s.adjacentPulseTimeDifference = _adjacentPulseTimeDifferences[userPropertyPosition];
+      s.maxTimeDifference = _maxTimeDifferences[userPropertyPosition];
+      s.useFourLayers = _useFourLayers[userPropertyPosition];
+
       _sectorMap[i]=s;
     }
   }
 
   void CrvCoincidenceCheck::produce(art::Event& event) 
   {
-    std::unique_ptr<CrvCoincidenceCheckResult> crvCoincidenceCheckResult(new CrvCoincidenceCheckResult);
+    std::unique_ptr<CrvCoincidenceCollection> crvCoincidenceCollection(new CrvCoincidenceCollection);
 
     GeomHandle<CosmicRayShield> CRS;
 
-    art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
-    if(!_crvWaveformsModuleLabel.empty()) event.getByLabel(_crvWaveformsModuleLabel,"",crvDigiMCCollection);
-
-    art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
-    event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
+    art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
+    event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
 
     //collect crvHits
     std::map<int, std::vector<CrvHit> > crvHits;    //hits are separated by sector type (like CRV-T, CRV-R, ...)
@@ -202,11 +210,12 @@ namespace mu2e
                                                     //(sector types start at 1)
 
     //loop over reco pulse collection (=loop over counters)
-    for(CrvRecoPulsesCollection::const_iterator iter=crvRecoPulsesCollection->begin(); 
-        iter!=crvRecoPulsesCollection->end(); iter++)
+    for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++) 
     {
+      const art::Ptr<CrvRecoPulse> crvRecoPulse(crvRecoPulseCollection, recoPulseIndex);
+
       //get information about the counter
-      const CRSScintillatorBarIndex &barIndex = iter->first;
+      const CRSScintillatorBarIndex &barIndex = crvRecoPulse->GetScintillatorBarIndex();
       const CRSScintillatorBar &CRSbar = CRS->getBar(barIndex);
       const CRSScintillatorBarId &barId = CRSbar.id();
       int sectorNumber=barId.getShieldNumber();
@@ -219,87 +228,43 @@ namespace mu2e
       if(sIter==_sectorMap.end()) throw std::logic_error("CrvCoincidenceFinder: Found a CRV hit at a CRV sector without properties.");
       const sectorCoincidenceProperties &sector = sIter->second;
 
-      //find the sector specific "user properties" for this hit (as defined in the fcl file)
-      std::string sectorName = sector.name.substr(4); //removes the "CRV_" part
-      std::vector<std::string>::iterator userPropertyIter=std::find(_CRVSectors.begin(), _CRVSectors.end(), sectorName);
-      if(userPropertyIter==_CRVSectors.end()) continue; //found a CRV hit at a CRV sector which has no user properties in the fcl file, 
-                                                        //which propably means that the user doesn't want to check for coincidences in this sector
-      int    userPropertyPosition = std::distance(_CRVSectors.begin(),userPropertyIter);  //that's the position of the vector in the fcl file which sets PE thresholds, time differences, etc.
-      int    PEthreshold = _PEthresholds[userPropertyPosition];
-      double adjacentPulseTimeDifference = _adjacentPulseTimeDifferences[userPropertyPosition];
-      double maxTimeDifference = _maxTimeDifferences[userPropertyPosition];
-
       int counterNumber = sector.precedingCounters + sector.nCountersPerModule*moduleNumber + barNumber;
 
       double x=CRSbar.getPosition()[sector.widthDirection];
       double y=CRSbar.getPosition()[sector.thicknessDirection];
 
-      //get DigiMC
-      CrvDigiMCCollection::const_iterator digiMCIter;
-      if(crvDigiMCCollection.isValid()) digiMCIter=crvDigiMCCollection->find(barIndex);
+      //get the reco pulses information
+      int SiPM = crvRecoPulse->GetSiPMNumber();
 
-      //get the reco pulses for this counter
-      const CrvRecoPulses &crvRecoPulses = iter->second;
-      for(int SiPM=0; SiPM<4; SiPM++)
+      //ignore SiPMs on counter sides which don't have SiPMs according to the geometry file
+      int counterSide=SiPM%2;
+      if(counterSide==0 && !sector.sipmsAtSide0) continue;
+      if(counterSide==1 && !sector.sipmsAtSide1) continue;
+
+      //find the hit mapkey (positive numbers for side 1, negative numbers for side 0)
+      int sectorType=sector.sectorType;
+      if(counterSide==0) sectorType*=-1;
+
+      double time=crvRecoPulse->GetPulseTime();
+      int    PEs =crvRecoPulse->GetPEs();
+      if(_usingPEsPulseHeight) PEs=crvRecoPulse->GetPEsPulseHeight();
+
+      if(_verboseLevel>4)
       {
-        //ignore SiPMs on counter sides which don't have SiPMs according to the geometry file
-        int counterSide=SiPM%2;
-        if(counterSide==0 && !sector.sipmsAtSide0) continue;
-        if(counterSide==1 && !sector.sipmsAtSide1) continue;
+        std::cout<<"sector: "<<sectorNumber<<"  module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  counter: "<<counterNumber<<"  SiPM: "<<SiPM<<"      ";
+        std::cout<<"  PEs: "<<PEs<<"   time: "<<time<<"   x: "<<x<<"   y: "<<y<<"       bar: "<<barNumber<<std::endl;
+      }
 
-        //find the hit mapkey (positive numbers for side 1, negative numbers for side 0)
-        int sectorType=sector.sectorType;
-        if(counterSide==0) sectorType*=-1;
-
-        //get the reco pulses for one SiPM
-        const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector = crvRecoPulses.GetRecoPulses(SiPM);
-        for(unsigned int i = 0; i<pulseVector.size(); i++) 
-        {
-          //get one reco pulse
-          const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector[i];
-          int PEs=pulse._PEs;
-          double time=pulse._pulseTime;
-
-/*
-          if(crvDigiMCCollection.isValid())
-          {
-            if(digiMCIter!=crvDigiMCCollection->end())
-            {
-              size_t singleWaveformIndex=pulse._singleWaveformIndex; 
-              const CrvDigiMC::CrvSingleWaveform &singleWaveform = digiMCIter->second.GetSingleWaveforms(SiPM)[singleWaveformIndex];
-              if(singleWaveform._simparticle) std::cout<<singleWaveform._simparticle->id()<<"   "<<singleWaveform._simparticle->pdgId()<<std::endl;
-            }
-          }
-*/
-
-          if(_verboseLevel>4)
-          {
-            std::cout<<"sector: "<<sectorNumber<<"  module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  counter: "<<counterNumber<<"  SiPM: "<<SiPM<<"      ";
-            std::cout<<"  PEs: "<<PEs<<"   time: "<<time<<"   x: "<<x<<"   y: "<<y<<"       bar: "<<barNumber<<std::endl;
-          }
-
-          //check whether this reco pulses is within the time window
-          //(don't check the PE threshold yet, since a hit which doesn't reach the threshold can be combined with a hit of an adjacent counter)
-          if(time>=_timeWindowStart && time<=_timeWindowEnd)
-          {
-            //get the right set of hits based on the hitmap key, and insert a new hit
-            crvHits[sectorType].emplace_back(time,PEs,barIndex,layerNumber,counterNumber,SiPM, x,y, PEthreshold, adjacentPulseTimeDifference, maxTimeDifference);
-            if(_verboseLevel==4) crvHits[sectorType].back().Print(sectorType);
-          }
-
-/*
-          //allow coincidences between consecutive microbunches (if the time window extends over the microbunch end) - not needed, since the microbunches are separated by blind times of at least 500ns
-          time+=_microBunchPeriod;
-          if(time>=_timeWindowStart && time<=_timeWindowEnd)
-          {
-            //get the right set of hits based on the hitmap key, and insert a new hit
-            crvHits[sectorType].emplace_back(time,PEs,barIndex,layerNumber,counterNumber,SiPM, x,y, PEthreshold, adjacentPulseTimeDifference, maxTimeDifference);
-            if(_verboseLevel==4) crvHits[sectorType].back().Print(sectorType);
-          }
-*/
-        }
+      //check whether this reco pulses is within the time window
+      //(don't check the PE threshold yet, since a hit which doesn't reach the threshold can be combined with a hit of an adjacent counter)
+      if(crvRecoPulse->GetPulseTime()>=_timeWindowStart && crvRecoPulse->GetPulseTime()<=_timeWindowEnd)
+      {
+        //get the right set of hits based on the hitmap key, and insert a new hit
+        crvHits[sectorType].emplace_back(crvRecoPulse, time, PEs, layerNumber, counterNumber, x,y, 
+                                         sector.PEthreshold, sector.adjacentPulseTimeDifference, sector.maxTimeDifference, sector.useFourLayers);
+        if(_verboseLevel==4) crvHits[sectorType].back().Print(sectorType);
       }//loop over SiPM
-    }//loop over reco pulse collection (=loop over counters)
+    }//loop over reco pulse collection
 
 
     //find coincidences for each sector type and side (=hitmap key)
@@ -348,7 +313,6 @@ namespace mu2e
         else {if(PEs_thisCounter+PEs_adjacentCounter2>=PEthreshold) crvHitsFiltered[layer].push_back(*iterHit);}
       }
 
-      if(_useFourLayers)
       {
       //find coincidences using 4 hits in 4 layers
         const std::vector<CrvHit> &layer0Hits=crvHitsFiltered[0];
@@ -384,9 +348,9 @@ namespace mu2e
             if(fabs(slope[d])>_maxSlope) coincidenceFound=false;   //not more than maxSlope allowed for coincidence;
           }
 
-          if(fabs(slope[0]-slope[1])>_maxSlopeDifference) coincidenceFound=false;   //slope most not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
-          if(fabs(slope[0]-slope[2])>_maxSlopeDifference) coincidenceFound=false;   //slope most not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
-          if(fabs(slope[1]-slope[2])>_maxSlopeDifference) coincidenceFound=false;   //slope most not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
+          if(fabs(slope[0]-slope[1])>_maxSlopeDifference) coincidenceFound=false;   //slope must not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
+          if(fabs(slope[0]-slope[2])>_maxSlopeDifference) coincidenceFound=false;   //slope must not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
+          if(fabs(slope[1]-slope[2])>_maxSlopeDifference) coincidenceFound=false;   //slope must not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
 
           if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens within e.g. 20ns and 120ns
           {
@@ -396,13 +360,16 @@ namespace mu2e
             if(timeMax>genTime+_muonMaxTime || timeMin<genTime+_muonMinTime) coincidenceFound=false;
           }
 
-          if(coincidenceFound) AddCoincidence(crvCoincidenceCheckResult,iterHitMap->first,*layer1Iter,*layer2Iter,*layer3Iter);  //FIXME: store only 3 out of 4 hits for the time being
+          if(coincidenceFound)
+          {
+            std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses{layer0Iter->_crvRecoPulse,layer1Iter->_crvRecoPulse,layer2Iter->_crvRecoPulse,layer3Iter->_crvRecoPulse};
+            int sectorType=iterHitMap->first;
+            crvCoincidenceCollection->emplace_back(crvRecoPulses, sectorType);
+          }
         }
-      } //_useFourLayers
-      else
-      { //not _useFourLayers
+      } // four layer coincidences
 
-      //find coincidences using 3 hits in 3 layers
+      //find coincidences using 3 hits in 3 layers (ignored, if all three hits have a useFourLayers flag)
       for(int layer1=0; layer1<4; layer1++) 
       for(int layer2=layer1+1; layer2<4; layer2++) 
       for(int layer3=layer2+1; layer3<4; layer3++) 
@@ -419,6 +386,8 @@ namespace mu2e
         for(layer2Iter=layer2Hits.begin(); layer2Iter!=layer2Hits.end(); layer2Iter++)
         for(layer3Iter=layer3Hits.begin(); layer3Iter!=layer3Hits.end(); layer3Iter++)
         {
+          if(layer1Iter->_useFourLayers && layer2Iter->_useFourLayers && layer3Iter->_useFourLayers) continue; //all hits require a four layer coincidence
+
           double maxTimeDifferences[3]={layer1Iter->_maxTimeDifference,layer2Iter->_maxTimeDifference,layer3Iter->_maxTimeDifference};
           double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+3); 
 
@@ -442,7 +411,7 @@ namespace mu2e
 
           if(fabs(slope[0])>_maxSlope) break;  //no need to check any triplets containing the current pair of layer1 and layer2
 
-          if(fabs(slope[0]-slope[1])>_maxSlopeDifference) coincidenceFound=false;   //slope most not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
+          if(fabs(slope[0]-slope[1])>_maxSlopeDifference) coincidenceFound=false;   //slope must not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
 
           if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens within e.g. 20ns and 120ns
           {
@@ -452,9 +421,14 @@ namespace mu2e
             if(timeMax>genTime+_muonMaxTime || timeMin<genTime+_muonMinTime) coincidenceFound=false;
           }
 
-          if(coincidenceFound) AddCoincidence(crvCoincidenceCheckResult,iterHitMap->first,*layer1Iter,*layer2Iter,*layer3Iter);
+          if(coincidenceFound)
+          {
+            std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses{layer1Iter->_crvRecoPulse,layer2Iter->_crvRecoPulse,layer3Iter->_crvRecoPulse};
+            int sectorType=iterHitMap->first;
+            crvCoincidenceCollection->emplace_back(crvRecoPulses, sectorType);
+          }
         }
-      }
+      }  //three layer coincidences
 
 
       //find coincidences using 3 hits in adjacent counters in one layer
@@ -494,44 +468,31 @@ namespace mu2e
               if(timeMax>genTime+_muonMaxTime || timeMin<genTime+_muonMinTime) coincidenceFound=false;
             }
 
-            if(coincidenceFound) AddCoincidence(crvCoincidenceCheckResult,iterHitMap->first,*i1,*i2,*i3);
+            if(coincidenceFound)
+            {
+              std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses{i1->_crvRecoPulse,i2->_crvRecoPulse,i3->_crvRecoPulse};
+              int sectorType=iterHitMap->first;
+              crvCoincidenceCollection->emplace_back(crvRecoPulses, sectorType);
+            }
           }
         }
-      }
-
-      } //not _useFourLayers
+      } //accept three adjacent counters
 
     }
 
     _totalEvents++;
-    if(crvCoincidenceCheckResult->CoincidenceFound()) _totalEventsCoincidence++;
+    if(crvCoincidenceCollection->size()>0) _totalEventsCoincidence++;
     _moduleLabel = *this->currentContext()->moduleLabel();
 
     if(_verboseLevel>0)
     {
       std::cout<<_moduleLabel<<"   run "<<event.id().run()<<"  subrun "<<event.id().subRun()<<"  event "<<event.id().event()<<"    ";
-      std::cout<<(crvCoincidenceCheckResult->CoincidenceFound()?"Coincidence satisfied":"No coincidence found")<<std::endl;
+      std::cout<<(crvCoincidenceCollection->size()>0?"Coincidence satisfied":"No coincidence found")<<std::endl;
     }
 
-    event.put(std::move(crvCoincidenceCheckResult));
+    event.put(std::move(crvCoincidenceCollection));
 
   } // end produce
-
-
-  void CrvCoincidenceCheck::AddCoincidence(std::unique_ptr<CrvCoincidenceCheckResult> &crvCoincidenceCheckResult, int sectorType, const CrvHit &h1, const CrvHit &h2, const CrvHit &h3)
-  {
-    std::vector<const CrvHit*> hits{&h1,&h2,&h3};
-    CrvCoincidenceCheckResult::CoincidenceCombination combination;
-    for(int k=0; k<3; k++) 
-    {
-      combination._time[k] = hits[k]->_time;
-      combination._PEs[k]  = hits[k]->_PEs;
-      combination._counters[k] = hits[k]->_barIndex;
-      combination._SiPMs[k] = hits[k]->_SiPM;
-      if(_verboseLevel>2) hits[k]->Print(sectorType);
-    }
-    crvCoincidenceCheckResult->GetCoincidenceCombinations().push_back(combination);
-  }
 
 } // end namespace mu2e
 
