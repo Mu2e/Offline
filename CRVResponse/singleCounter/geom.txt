@@ -14,8 +14,8 @@ vector<string> crs.sectorNames = {"Test"};
 // double          crs.scintillatorBarLengthTest    =  4500;
 double          crs.scintillatorBarLengthTest    =  3000;
 
-double          crs.scintillatorBarThickness     =  20;   //mm
-double          crs.scintillatorBarWidth         =  50;   //mm
+double          crs.scintillatorBarThickness     =  19.8; //mm
+double          crs.scintillatorBarWidth         =  51.3; //mm
 vector<double>  crs.gapBetweenLayers             =   {};  //mm
 
 int             crs.nModulesTest                 =   1;

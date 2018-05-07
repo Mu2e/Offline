@@ -28,8 +28,8 @@ BEGIN_PROLOG
                                    "CRVConditions/v4_1/LookupTable_5700_0",  //D4
                                    "CRVConditions/v4_1/LookupTable_900_1",   //C1
                                    "CRVConditions/v4_1/LookupTable_900_-1",  //C2
-                                   "CRVConditions/v4_1/LookupTable_1700_-1", //C3
-                                   "CRVConditions/v4_1/LookupTable_1344.4_-1"]  //C4
+                                   "CRVConditions/v4_1/LookupTable_2100_-1", //C3
+                                   "CRVConditions/v4_1/LookupTable_1550_-1"] //C4
       scintillationYield                : 47000 //for 68 PE/SiPM @ 1 m away from SiPM (Test beam June 2017)
                                                 //using the pulse height calibration, this value gives 45 PE/SiPM @ 1 m away from SiPM
       scintillationYieldVariation       : 0.2   //gaussian distribution with sigma equal to 20% of the mean

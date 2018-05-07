@@ -51,8 +51,8 @@ double          crs.scintillatorBarLengthD3      =  2370; //16
 double          crs.scintillatorBarLengthD4      =  5700; //17
 double          crs.scintillatorBarLengthC1      =   900; //18
 double          crs.scintillatorBarLengthC2      =   900; //19
-double          crs.scintillatorBarLengthC3      =  1700; //20
-double          crs.scintillatorBarLengthC4      =  1344.4; //21
+double          crs.scintillatorBarLengthC3      =  2100; //20
+double          crs.scintillatorBarLengthC4      =  1550; //21
 
 double          crs.scintillatorBarThickness     =  19.8; //mm
 double          crs.scintillatorBarWidth         =  51.3; //mm
@@ -107,8 +107,8 @@ int             crs.nCountersPerModuleD3         =   16;  //16
 int             crs.nCountersPerModuleD4         =   16;  //17
 int             crs.nCountersPerModuleC1         =   16;  //18
 int             crs.nCountersPerModuleC2         =   16;  //19
-int             crs.nCountersPerModuleC3         =   20;  //20  special module width!
-int             crs.nCountersPerModuleC4         =   12;  //21  special module width!
+int             crs.nCountersPerModuleC3         =   22;  //20  special module width!
+int             crs.nCountersPerModuleC4         =   10;  //21  special module width!
 
 vector<double>  crs.firstCounterR1        =  {-6441.28,   275.53,  -2125.45}; //0 //in mu2e coordinates
 vector<double>  crs.firstCounterR2        =  {-6441.28,  2028.03,  12778.55}; //1
@@ -128,10 +128,10 @@ vector<double>  crs.firstCounterD1        =  {-3904.0,   2935.35,  18665.76}; //
 vector<double>  crs.firstCounterD2        =  {-5569.0,    451.35,  18665.76}; //15
 vector<double>  crs.firstCounterD3        =  {-2239.0,    451.35,  18665.76}; //16
 vector<double>  crs.firstCounterD4        =  {-3904.0,   -376.65,  18665.76}; //17
-vector<double>  crs.firstCounterC1        =  {-6591.07,  1779.88,  12427.80}; //18
+vector<double>  crs.firstCounterC1        =  {-6591.07,  1779.88,  12428.40}; //18
 vector<double>  crs.firstCounterC2        =  {-6591.07,  1779.88,  13683.40}; //19
-vector<double>  crs.firstCounterC3        =  {-7120.21,  2481.55,  13726.80}; //20
-vector<double>  crs.firstCounterC4        =  {-7120.21,  1447.15,  13904.60}; //21
+vector<double>  crs.firstCounterC3        =  {-7120.21,  2584.75,  13733.40}; //20
+vector<double>  crs.firstCounterC4        =  {-7120.21,  1447.15,  14008.40}; //21
 
 string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
 string          crs.absorberMaterialName         = "G4_Al";
