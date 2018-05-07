@@ -18,7 +18,7 @@ opts_build() {
 }
 # a list of allowed values, the first one is the default
 opts_g4vis() {
-    echo ogl qt none
+    echo none ogl qt
 }
 # a list of allowed values, the first one is the default
 opts_trigger(){
