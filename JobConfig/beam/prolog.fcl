@@ -37,7 +37,7 @@ mu2e.physics.producers.g4run.commonBase: {
    MultiStageParameters: @nil
 
    SDConfig: {
-      enableSD: [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]
+      enableSD: [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector, protonabsorber ]
       TimeVD: { times: [] }
       preSimulatedHits: @nil
    }
@@ -93,7 +93,7 @@ mu2e.filters.g4s4Defs: {
       module_type: FilterG4Out
       noInstanceName: true
       mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
-      extraHitInputs: [ "g4run:virtualdetector" ]
+      extraHitInputs: [ "g4run:virtualdetector", "g4run:protonabsorber" ]
       numSimParticleCollections: 1
       vetoDaughters: []
    }
