@@ -21,6 +21,7 @@
 #include "CalorimeterGeom/inc/Crystal.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
+#include "G4Helper/inc/G4Helper.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
@@ -211,6 +212,9 @@ namespace mu2e {
   //  
   G4LogicalVolume* caloBuildFrontPlate(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk)
   { 
+       G4Helper& _helper = *(art::ServiceHandle<G4Helper>());
+       AntiLeakRegistry& reg = _helper.antiLeakRegistry();
+       
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
        geomOptions->loadEntry( config, "calorimeterPipe", "calorimeter.pipe" );
 
@@ -272,6 +276,7 @@ namespace mu2e {
        double angMax = CLHEP::pi/2.0-std::asin((pipeInitSeparation+pipeTotalSep)/FPOuterRadius)-0.1;
        G4RotationMatrix* rotFPPipe = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
        rotFPPipe->rotateY(CLHEP::pi);
+       reg.add(rotFPPipe);
        
        G4Torus*         coolFP     = new G4Torus("caloCoolFP",FPCoolPipeRadius-FPCoolPipeThickness, FPCoolPipeRadius, FPCoolPipeTorRadius, angMax, CLHEP::twopi-2.0*angMax);
        G4LogicalVolume* coolFPLog  = caloBuildLogical(coolFP, pipeMaterial, "caloCoolFPLog",isPipeVisible,G4Color::Red(),isPipeSolid,0);
@@ -286,6 +291,9 @@ namespace mu2e {
        rotPipe2->rotateZ(1.5*CLHEP::pi);
        G4RotationMatrix* rotPipeFlat = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
        rotPipeFlat->rotateX(CLHEP::pi/2.0);
+       reg.add(rotPipe1);
+       reg.add(rotPipe2);
+       reg.add(rotPipeFlat);
 
        for (int ipipe=0; ipipe<nPipes; ++ipipe)
        {
@@ -325,6 +333,9 @@ namespace mu2e {
   //construct central part of the disk with crystals
   G4LogicalVolume* caloBuildDisk(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk)
   {
+       G4Helper& _helper = *(art::ServiceHandle<G4Helper>());
+       AntiLeakRegistry & reg = _helper.antiLeakRegistry();
+       
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
        geomOptions->loadEntry( config, "calorimeterCase", "calorimeter.case" );
        geomOptions->loadEntry( config, "calorimeterCrystal", "calorimeter.crystal" );
@@ -427,7 +438,8 @@ namespace mu2e {
        G4Torus* coolPipe            = new G4Torus("caloPipe",FPCoolPipeRadius-FPCoolPipeThickness, FPCoolPipeRadius, diskOuterRingOut+FPCoolPipeRadius,0,1.2*CLHEP::pi);
        G4LogicalVolume* coolPipeLog = caloBuildLogical(coolPipe, coolPipeMaterial, "caloCoolFPLog",isDiskVisible,G4Color::Red(),isDiskSolid,0);
        G4RotationMatrix* rotPipe    = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY); rotPipe->rotateZ(0.1*CLHEP::pi);
-
+       reg.add(rotPipe);
+       
        pv = new G4PVPlacement(rotPipe,G4ThreeVector(0.0,0.0,coolPipeZpos),  coolPipeLog, "caloCoolDisk1PV", fullCrystalDiskLog, false, 0, false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                
        pv = new G4PVPlacement(rotPipe,G4ThreeVector(0.0,0.0,-coolPipeZpos), coolPipeLog, "caloCoolDisk2PV", fullCrystalDiskLog, false, 0, false);
@@ -513,6 +525,9 @@ namespace mu2e {
   // build full backplate - yes this was annoying
   G4LogicalVolume* caloBuildBackPlate(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk)
   {            
+       G4Helper& _helper = *(art::ServiceHandle<G4Helper>());
+       AntiLeakRegistry& reg = _helper.antiLeakRegistry();
+
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
        geomOptions->loadEntry( config, "calorimeterRO", "calorimeter.readout" );
 
@@ -745,7 +760,7 @@ namespace mu2e {
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
        pv = new G4PVPlacement(rotY,G4ThreeVector(0,0, BPFEEDZ- BPPipeRadiusHigh),BPPipe4Log,"caloBPPipe4PV",backPlateFEELog,false,0,false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
-       
+       reg.add(rotY);
 
 
        //----------------------
@@ -886,6 +901,9 @@ namespace mu2e {
   // build full FEB
   G4LogicalVolume* caloBuildFEB(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal)
   {                  
+       G4Helper& _helper = *(art::ServiceHandle<G4Helper>());
+       AntiLeakRegistry& reg = _helper.antiLeakRegistry();
+       
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
        geomOptions->loadEntry( config, "calorimeterCrate", "calorimeter.crate" );
 
@@ -915,6 +933,7 @@ namespace mu2e {
        G4LogicalVolume* calorimeterFEBLog  = caloBuildLogical(calorimeterFEB, vacuumMaterial, "caloFEBLog",0,G4Color::Black(),0,0);   
   
        G4RotationMatrix rotCrate = G4RotationMatrix();
+       reg.add(rotCrate);
        G4double phiCrate(0);       
        for (G4int icrt=0;icrt < nCrates;++icrt)
        {		   
@@ -958,6 +977,8 @@ namespace mu2e {
 	     G4RotationMatrix ccrRot = G4RotationMatrix();
 	     CLHEP::Hep3Vector calCableRunLoc(0.0,0.0,0.0);
 	     G4Transform3D ccrCoord = G4Transform3D(ccrRot,calCableRunLoc);
+             reg.add(ccrRot);
+             
 
 	     pv = new G4PVPlacement(ccrCoord,ccrTubLog,"caloCableRunCalTub_PV",calorimeterFEBLog, false, 0, false);
 	     doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
@@ -986,7 +1007,8 @@ namespace mu2e {
 	     CLHEP::Hep3Vector trkCableRunLoc(0.0,0.0,0.0);
 	     G4RotationMatrix ccrRot = G4RotationMatrix();
 	     G4Transform3D ccrCoord = G4Transform3D(ccrRot,trkCableRunLoc);
-
+             reg.add(ccrRot);
+             
 	     pv = new G4PVPlacement(ccrCoord,ccr1TubLog,"TrkCableRun1InCalFeb",calorimeterFEBLog,false, 0, false);
 	     doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 
