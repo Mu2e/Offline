@@ -51,18 +51,18 @@ double          crs.scintillatorBarLengthD3      =  2370; //16
 double          crs.scintillatorBarLengthD4      =  5700; //17
 double          crs.scintillatorBarLengthC1      =   900; //18
 double          crs.scintillatorBarLengthC2      =   900; //19
-double          crs.scintillatorBarLengthC3      =  1600; //20
-double          crs.scintillatorBarLengthC4      =  1244.4; //21
+double          crs.scintillatorBarLengthC3      =  2100; //20
+double          crs.scintillatorBarLengthC4      =  1550; //21
 
 double          crs.scintillatorBarThickness     =  19.8; //mm
 double          crs.scintillatorBarWidth         =  51.3; //mm
 double          crs.layerOffset                  =  42;   //mm
-double          crs.gapLarge                     =   0.6; //mm
-double          crs.gapSmall                     =   0.0; //mm
-double          crs.gapBetweenModules            =   3.0; //mm
+double          crs.gapLarge                     =   0.5; //mm
+double          crs.gapSmall                     =   0.0875; //mm
+double          crs.gapBetweenModules            =   3.0;    //mm
 vector<double>  crs.gapBetweenLayers             =   {9.525, 9.525, 9.525}; //mm
-double          crs.aluminumSheetThickness       =   1.0; //mm
-double          crs.strongBackThickness          =  12.7; //mm
+double          crs.aluminumSheetThickness       =   3.175;  //mm
+double          crs.strongBackThickness          =  12.7;    //mm
 
 int             crs.nModulesR1                   =  18;  //0
 int             crs.nModulesR2                   =   1;  //1
@@ -107,12 +107,12 @@ int             crs.nCountersPerModuleD3         =   16;  //16
 int             crs.nCountersPerModuleD4         =   16;  //17
 int             crs.nCountersPerModuleC1         =   16;  //18
 int             crs.nCountersPerModuleC2         =   16;  //19
-int             crs.nCountersPerModuleC3         =   18;  //20  special module width!
-int             crs.nCountersPerModuleC4         =   14;  //21  special module width!
+int             crs.nCountersPerModuleC3         =   22;  //20  special module width!
+int             crs.nCountersPerModuleC4         =   10;  //21  special module width!
 
 vector<double>  crs.firstCounterR1        =  {-6441.28,   275.53,  -2125.45}; //0 //in mu2e coordinates
 vector<double>  crs.firstCounterR2        =  {-6441.28,  2028.03,  12778.55}; //1
-vector<double>  crs.firstCounterR3        =  {-6441.28,  -429.47,  12778.55}; //2
+vector<double>  crs.firstCounterR3        =  {-6441.28,  -479.47,  12778.55}; //2
 vector<double>  crs.firstCounterR4        =  {-6441.28,   275.53,  13606.55}; //3
 vector<double>  crs.firstCounterR5        =  {-6441.28,   950.53,  15262.55}; //4
 vector<double>  crs.firstCounterL1        =  {-1366.72,   275.53,   2842.55}; //5
@@ -128,10 +128,10 @@ vector<double>  crs.firstCounterD1        =  {-3904.0,   2935.35,  18665.76}; //
 vector<double>  crs.firstCounterD2        =  {-5569.0,    451.35,  18665.76}; //15
 vector<double>  crs.firstCounterD3        =  {-2239.0,    451.35,  18665.76}; //16
 vector<double>  crs.firstCounterD4        =  {-3904.0,   -376.65,  18665.76}; //17
-vector<double>  crs.firstCounterC1        =  {-6591.07,  1746.68,  12426.80}; //18
-vector<double>  crs.firstCounterC2        =  {-6591.07,  1746.68,  13682.40}; //19
-vector<double>  crs.firstCounterC3        =  {-7120.21,  2378.82,  13676.80}; //20
-vector<double>  crs.firstCounterC4        =  {-7120.21,  1447.62,  13854.60}; //21
+vector<double>  crs.firstCounterC1        =  {-6591.07,  1779.88,  12428.40}; //18
+vector<double>  crs.firstCounterC2        =  {-6591.07,  1779.88,  13683.40}; //19
+vector<double>  crs.firstCounterC3        =  {-7120.21,  2584.75,  13733.40}; //20
+vector<double>  crs.firstCounterC4        =  {-7120.21,  1447.15,  14008.40}; //21
 
 string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
 string          crs.absorberMaterialName         = "G4_Al";
@@ -247,7 +247,7 @@ bool crs.sipmsAtSide0D3  = false; //16 //no SiPMs at beam pipe
 bool crs.sipmsAtSide0D4  = true;  //17
 bool crs.sipmsAtSide0C1  = true;  //18
 bool crs.sipmsAtSide0C2  = false; //19 //CRV-Cryo-Inner (downstream) (no SiPMs at -z side)
-bool crs.sipmsAtSide0C3  = true;  //21
+bool crs.sipmsAtSide0C3  = false; //21 //CRV-Cryo-Outer (top) (no SiPMs at -z side)
 bool crs.sipmsAtSide0C4  = false; //22 //CRV-Cryo-Outer (bottom) (no SiPMs at -z side)
 
 // side 1 is the positive side of the counter, i.e. the +x side of a CRV-T counter, or the +y side of a CRV-R counter

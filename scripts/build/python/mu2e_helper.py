@@ -62,7 +62,10 @@ class mu2e_helper:
     def rootmap_file(self):
         return "lib/libmu2e_"+self.libstub + "_dict.rootmap"
     def pcm_file(self):
-        return "lib/libmu2e_"+self.libstub + "_dict_rdict.pcm"
+        if self.classdef : # dictionary is in the main lib
+            return "lib/libmu2e_"+self.libstub + "_rdict.pcm"
+        else :  # dictionary is in its own lib
+            return "lib/libmu2e_"+self.libstub + "_dict_rdict.pcm"
 
     #
     #   Build a list of plugins to be built.
