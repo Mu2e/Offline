@@ -241,8 +241,8 @@ namespace mu2e {
 
        const Calorimeter& cal  = *(GeomHandle<Calorimeter>());
        int    nROs             = cal.caloInfo().nROPerCrystal();
-       double cryhalflength    = cal.caloInfo().crystalHalfLength();
-       double refractiveIndex  = cal.caloInfo().refractiveIndex();
+       double cryhalflength    = cal.caloInfo().getDouble("crystalZLength")/2.0;
+       double refractiveIndex  = cal.caloInfo().getDouble("refractiveIndex");
        double lightSpeed       = 300; // mm/ns
 
 
@@ -272,7 +272,7 @@ namespace mu2e {
            art::Ptr<CaloShowerStep> stepPtr = art::Ptr<CaloShowerStep>(caloShowerStepMCCollHandle,idx);
 
            int    crystalID = step.volumeId();
-	   int    ROIDBase  = cal.ROBaseByCrystal(crystalID);
+	   int    ROIDBase  = cal.caloInfo().ROBaseByCrystal(crystalID);
            int    pdgId     = step.simParticle()->pdgId();
            double edep_corr = step.energyMC();
            double posZ      = step.position().z();

@@ -84,10 +84,10 @@ namespace mu2e {
 
     _detSys          = &*GeomHandle<DetectorSystem>();
     _cal             = &*GeomHandle<DiskCalorimeter>();
-    _nPipes          = _cal->caloInfo().nPipes();
-    _pipeRadius      = _cal->caloInfo().pipeRadius();
-    _pipeTorRadius   = _cal->caloInfo().pipeTorRadius();
-    _randomRad       = _cal->caloInfo().pipeTorRadius();
+    _nPipes          = _cal->caloInfo().getInt("nPipes");
+    _pipeRadius      = _cal->caloInfo().getDouble("pipeRadius");
+    _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
+    _randomRad       = _cal->caloInfo().getVDouble("pipeTorRadius");
     _zPipeCenter     = _cal->disk(0).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(0).geomInfo().size().z()/2.0-_pipeRadius);
     
     

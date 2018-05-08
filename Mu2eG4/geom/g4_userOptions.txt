@@ -5,7 +5,7 @@ string GDMLFileName     = "mu2e.gdml";
 //-----------------------
 // Physics lists
 //-----------------------
-string g4.physicsListName = "Shielding_MU2E01";
+string g4.physicsListName = "Minimal";
 double g4.minRangeCut     = 0.01;  // mm
 
 bool   g4.printPhysicsProcessSummary = false;

@@ -493,7 +493,7 @@ namespace mu2e {
       amp= (float) _EPEAKs.at(cry_index);
       //
       _EcalTrigDigi.cryId= cryID;
-      crystalPos = cal.crystal(cryID).localPositionFF();
+      crystalPos = cal.crystal(cryID).localPosition();
       _EcalTrigDigi.x=crystalPos.x();
       _EcalTrigDigi.y=crystalPos.y();
       _EcalTrigDigi.phi = atan2(_EcalTrigDigi.y,_EcalTrigDigi.x);

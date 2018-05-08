@@ -35,7 +35,7 @@ namespace mu2e {
 
     G4bool CaloCrystalSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
     {
-	G4double edep = aStep->GetTotalEnergyDeposit();
+        G4double edep = aStep->GetTotalEnergyDeposit();
 	if (edep < 1e-6) return false;
 
 
@@ -51,16 +51,17 @@ namespace mu2e {
 
 	const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
 
-	G4int copyNo = touchableHandle->GetCopyNumber(2);  // Make sure to get the right copy number level here
+	G4int copyNo = touchableHandle->GetCopyNumber(1);  // Make sure to get the right copy number level here
 
 	G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
 	G4ThreeVector posWorld           = aStep->GetPreStepPoint()->GetPosition();
 	G4ThreeVector posLocal           = toLocal.TransformPoint(posWorld);
 
 
-	//for diagnosis purposes only when playing with the geometry, uncomment next two line
-	//for (int i=0;i<9;++i) std::cout<<"Cry Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "<<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(posWorld)
-	//                               <<"  "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
+	// diagnosis purposes only when playing with the geometry, uncomment next two line
+	//for (int i=0;i<=touchableHandle->GetHistoryDepth();++i) std::cout<<"Cry Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)
+        //<<"   "<<touchableHandle->GetHistory()->GetTransform(touchableHandle->GetHistoryDepth()-i).TransformPoint(posWorld)
+	//<<"  "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
 
 
 	_collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),

@@ -472,7 +472,7 @@ namespace mu2e
 		   kseed.caloCluster()->diskId(), kseed.caloCluster()->cog3Vector())); 
       
       Hep3Vector const& clusterAxis = Hep3Vector(0, 0, 1);//FIX ME!
-      double      crystalHalfLength = ch->caloInfo().crystalHalfLength();
+      double      crystalHalfLength = ch->caloInfo().getDouble("crystalZLength")/2.0;
       tch = new TrkCaloHit(*kseed.caloCluster().get(), cog, crystalHalfLength, clusterAxis, ht0, fltlen, _calHitW, _dtoffset);
     }
   }
@@ -978,7 +978,7 @@ namespace mu2e
       retval = 0.0;
     } else if(ex == calo) {
       GeomHandle<Calorimeter> cg;
-      return cg->caloInfo().envelopeZ1();
+      return cg->caloInfo().getDouble("envelopeZ1");
     }
     return retval;
   }

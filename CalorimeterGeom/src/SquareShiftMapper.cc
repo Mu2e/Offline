@@ -2,6 +2,9 @@
 // Square position map generator:
 //   tesselate a plane with squares, every row shifted horizontaly by 0.5 square size, starting from the center of the plane
 //
+//  original author : Bertrand Echenard (Caltech)
+//
+//
 // Use basis vector, l and k, defined as
 // l = up right
 // k = down right
@@ -37,8 +40,8 @@
 //
 
 #include "CalorimeterGeom/inc/SquareShiftMapper.hh"
-
 #include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 #include <iostream>
 #include <map>
@@ -66,10 +69,11 @@ namespace mu2e {
 
 
 
+      //--------------------------------------------------------------------------------
       CLHEP::Hep2Vector SquareShiftMapper::xyFromIndex(int thisIndex) const
       {
           SquShiftLK thisLK = lk(thisIndex);
-	  return CLHEP::Hep2Vector( (thisLK.l_+thisLK.k_)/2.0, (thisLK.l_-thisLK.k_) );
+          return CLHEP::Hep2Vector( (thisLK.l_+thisLK.k_)/2.0, (thisLK.l_-thisLK.k_) );
       }
 
       int SquareShiftMapper::indexFromXY(double x0, double y0) const
@@ -94,17 +98,38 @@ namespace mu2e {
 
 
 
-      std::vector<int> SquareShiftMapper::neighbors(int thisIndex, unsigned int level)  const
+      //--------------------------------------------------------------------------------
+      int SquareShiftMapper::indexFromRowCol(int nRow, int nCol) const
+      {
+	  int k = nRow/2-nRow + nCol;
+          int l = nRow/2 + nCol;
+
+	  SquShiftLK lk(l,k);
+	  return index(lk);
+      }
+
+
+      //--------------------------------------------------------------------------------
+      bool SquareShiftMapper::isInsideCrystal(double x, double y, const CLHEP::Hep3Vector& pos, 
+                                              const CLHEP::Hep3Vector& size) const 
+      {
+          return (std::abs(x-pos.x()) < 0.5*size.x()) && (std::abs(y-pos.y()) < 0.5*size.y());                 
+      } 
+ 
+
+
+      //--------------------------------------------------------------------------------
+      std::vector<int> SquareShiftMapper::neighbors(int thisIndex, int level)  const
       {
 	  std::vector<int> thisNeighbour;
-	  thisNeighbour.reserve(100);
+	  thisNeighbour.reserve(12);
 
 	  SquShiftLK init = lk(thisIndex);
 	  SquShiftLK lk(init.l_, init.k_ - level);
 
-	  for (unsigned int i=0;i<step_.size();++i)
+	  for (size_t i=0;i<step_.size();++i)
 	  {
-	      for (unsigned int iseg=0;iseg<level;++iseg)
+	      for (int iseg=0;iseg<level;++iseg)
 	      {
 		 lk.add(step_[i]);
 		 thisNeighbour.push_back( index(lk) );
@@ -114,6 +139,7 @@ namespace mu2e {
       }
 
 
+      //--------------------------------------------------------------------------------
       SquShiftLK SquareShiftMapper::lk(int thisIndex) const
       {
 	 if (thisIndex==0) return SquShiftLK(0,0);
@@ -135,7 +161,8 @@ namespace mu2e {
       }
 
 
-      int SquareShiftMapper::index(SquShiftLK const &thisLK) const
+      //--------------------------------------------------------------------------------
+      int SquareShiftMapper::index(const SquShiftLK& thisLK) const
       {
 	 if (thisLK.l_==0 && thisLK.k_==0) return 0;
 
@@ -153,7 +180,8 @@ namespace mu2e {
       }
 
 
-      int SquareShiftMapper::ring(const SquShiftLK &thisLK) const
+      //--------------------------------------------------------------------------------
+      int SquareShiftMapper::ring(const SquShiftLK& thisLK) const
       {
 	  if (thisLK.l_*thisLK.k_>0) return std::max(std::abs(thisLK.l_),std::abs(thisLK.k_));
 	  return std::abs(thisLK.l_-thisLK.k_);

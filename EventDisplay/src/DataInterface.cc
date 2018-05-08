@@ -373,8 +373,8 @@ void DataInterface::fillGeometry()
   if(geom->hasElement<mu2e::DiskCalorimeter>())
   {
     mu2e::GeomHandle<mu2e::DiskCalorimeter> calo;
-    double rmax = calo->caloInfo().crystalHalfTrans();
-    double crystalHalflength = calo->caloInfo().crystalHalfLength();
+    double rmax = calo->caloInfo().getDouble("crystalXYLength")/2.0;
+    double crystalHalflength = calo->caloInfo().getDouble("crystalZLength")/2.0;
 
 
     int crystalIdOffset=0;
@@ -1082,7 +1082,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       if(geoservice->hasElement<mu2e::DiskCalorimeter>())
       {
         mu2e::GeomHandle<mu2e::DiskCalorimeter> diskCalo;
-        crystalid=diskCalo->crystalByRO(roid);
+        crystalid=diskCalo->caloInfo().crystalByRO(roid);
       }
       double time = calohit.time();
       double energy = calohit.energyDep();
