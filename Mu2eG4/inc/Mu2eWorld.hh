@@ -81,7 +81,6 @@ namespace mu2e {
       virtual void constructSDandField() override;
 
   private:
-<<<<<<< HEAD
       
       typedef std::list<G4LogicalVolume*> LVList;
       typedef std::map<G4VSensitiveDetector*, LVList> DetList;
