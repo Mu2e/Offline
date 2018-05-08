@@ -14,7 +14,6 @@ double building.foundation.N.yHalfThickness           = 533.4;
 
 vector<double> building.foundation.N.xPositions = {
   0,   // A
-  -3022.6,   // B
   -6042.02,   // C
   -12022.1,   // D
   -12393,   // E
@@ -38,7 +37,6 @@ vector<double> building.foundation.N.xPositions = {
 
 vector<double> building.foundation.N.yPositions = {
   -2387.6,   // A
-  -2387.6,   // B
   -2387.6,   // C
   -3836.55,   // D
   -2306.04,   // E

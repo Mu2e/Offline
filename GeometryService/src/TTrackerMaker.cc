@@ -8,6 +8,9 @@
 #include "CLHEP/Vector/RotationY.h"
 #include "CLHEP/Vector/RotationZ.h"
 #include "CLHEP/Units/SystemOfUnits.h"
+#include "Alignment/inc/AlignmentMap.hh"
+#include "Alignment/inc/AlignmentObj.hh"
+#include "Alignment/inc/AlignmentService.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "GeometryService/inc/TTrackerMaker.hh"
@@ -20,6 +23,8 @@
 #include <iostream>
 #include <unordered_map>
 #include <bitset>
+#include <string>
+#include <sstream>
 
 using cet::square;
 using cet::diff_of_squares;
@@ -33,6 +38,11 @@ namespace mu2e {
   // from arguments.
   TTrackerMaker::TTrackerMaker( SimpleConfig const& config){
     parseConfig(config);
+
+    // Determine if Alignment is being used and set up
+    myAlignMap = NULL;
+    if( useAlignment) myAlignMap = art::ServiceHandle<AlignmentService>()->alignmentMap();
+
     buildIt( );
 
     // print straw layout for debbugging pourposes
@@ -134,6 +144,7 @@ namespace mu2e {
 
   void TTrackerMaker::parseConfig( const SimpleConfig& config ){
 
+    useAlignment        = config.getBool("hasAlignment",false);
     _verbosityLevel     = config.getInt("ttracker.verbosityLevel",0);
     _ttVersion          = config.getInt("TTrackerVersion",3);
 
@@ -630,11 +641,23 @@ namespace mu2e {
 
   void TTrackerMaker::makePlane( StrawId planeId ){
 
-//std::cout << "->->-> makePlane\n";
+    //std::cout << "->->-> makePlane\n";
     int ipln = planeId.getPlane();
 
     double planeDeltaZ = choosePlaneSpacing(ipln);
-    CLHEP::Hep3Vector origin( 0., 0., _z0+planeDeltaZ);
+    
+    // Handle Alignment
+    std::ostringstream tmpName;
+    tmpName << "ttPlane" << ipln;
+    std::string tmpNameS(tmpName.str());
+    AlignmentObj tmpObj;
+    if ( NULL != myAlignMap ) tmpObj = myAlignMap->find(tmpNameS);
+    CLHEP::Hep3Vector alignTranslate(0,0,0);
+    if ( tmpObj.isValid() ) {
+      alignTranslate = tmpObj.displacement();
+    }
+
+    CLHEP::Hep3Vector origin( alignTranslate.x(), alignTranslate.y(), _z0+planeDeltaZ+alignTranslate.z());
 
     auto& planes = _tt->_planes;
 
@@ -840,6 +863,8 @@ namespace mu2e {
         }
       }
     }
+
+    // Alignment of angle of full plane
 
     panel._boxRzAngle = panelRotation( panel.id().getPanel(),plane.id().getPlane() ); //  is it really used? needed?
 

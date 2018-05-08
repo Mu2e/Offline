@@ -77,7 +77,7 @@ namespace mu2e {
     dump->_backSteelHalfSize.resize(3);
     dump->_backSteelHalfSize[0] = dump->_frontSteelHalfSize[0];
     dump->_backSteelHalfSize[1] = dump->_frontSteelHalfSize[1];
-    dump->_backSteelHalfSize[2] = additionalSteel[2]/2.0 - dump->_frontSteelHalfSize[2];
+    dump->_backSteelHalfSize[2] = additionalSteel[2]/2.0 - dump->_frontSteelHalfSize[2]-0.5;
     dump->_coreAirHalfSize.resize(3);
     dump->_coreAirHalfSize[0] = dump->_coreHalfSize[0] + coreAirGap;
     dump->_coreAirHalfSize[1] = dump->_coreHalfSize[1] + coreAirGap/2.0;

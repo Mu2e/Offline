@@ -1,4 +1,4 @@
-// Andrei Gaponenko, 2012
+ // Andrei Gaponenko, 2012
 
 #include "Mu2eG4/inc/constructPSEnclosure.hh"
 
@@ -112,11 +112,14 @@ namespace mu2e {
 
     for(unsigned i=0; i<pse->nWindows(); ++i) {
 
+      CLHEP::Hep3Vector windOff(0,0,pse->windows()[i].halfLength());
+
       // Hole in the endPlate for the window
       const CLHEP::Hep3Vector vacCenter =
         pse->windows()[i].originInMu2e() +
-        CLHEP::Hep3Vector(0,0, pse->endPlate().halfLength() + pse->windows()[i].halfLength()) + extraOffset
-        ;
+        CLHEP::Hep3Vector(0,0, pse->endPlate().halfLength())   + extraOffset
+	+ windOff;
+			  
 
       const TubsParams vacTubs(pse->windows()[i].innerRadius(),
                                pse->windows()[i].outerRadius(),
@@ -143,6 +146,7 @@ namespace mu2e {
       // The window itself
       std::ostringstream wname;
       wname<<"PSEnclosureWindow"<<i;
+
       nestTubs(wname.str(),
                pse->windows()[i].getTubsParams(),
                findMaterialOrThrow(pse->windows()[i].materialName()),

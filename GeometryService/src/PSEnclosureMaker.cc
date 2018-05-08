@@ -51,7 +51,7 @@ namespace mu2e {
     if ( vers > 1 ) {
       const double shellODEast = c.getDouble("PSEnclosure.shell.outerDiameterEast")*CLHEP::mm;
       const double shellODWest = c.getDouble("PSEnclosure.shell.outerDiameterWest")*CLHEP::mm;
-      const double shellLength = totalLength;
+      const double shellLength = totalLength - endPlateThickness;
 
       const CLHEP::Hep3Vector shellOriginInMu2e(psEndRefPoint + CLHEP::Hep3Vector(0,0, -0.5*shellLength));
 

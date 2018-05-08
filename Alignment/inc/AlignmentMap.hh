@@ -20,7 +20,7 @@ namespace mu2e {
     ~AlignmentMap(){}
 
     void make(const SimpleConfig&  _config );
-    AlignmentObj find(std::string& handle) ;
+    AlignmentObj find(std::string& handle);
 
     void addAlignment( std::string& handle, AlignmentObj& as );
 
