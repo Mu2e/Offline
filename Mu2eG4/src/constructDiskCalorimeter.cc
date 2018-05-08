@@ -966,6 +966,10 @@ namespace mu2e {
         {
              double crRin  = config.getDouble("ds.CableRunCal.Rin")*CLHEP::mm;
 	     double crRout = config.getDouble("ds.CableRunCal.Rout")*CLHEP::mm;
+	     if ( config.getInt("ds.CableRun.version",1) > 1 ) {
+	       crRin = config.getDouble("ds.CableRunCal.UpRin")*CLHEP::mm;
+	       crRout = config.getDouble("ds.CableRunCal.UpRout")*CLHEP::mm;
+	     }
 	     double phi0   = config.getDouble("ds.CableRunCal.phi0")*CLHEP::degree;
 	     double dPhi   = config.getDouble("ds.CableRunCal.dPhi")*CLHEP::degree;
 
