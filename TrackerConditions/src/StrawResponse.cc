@@ -205,7 +205,7 @@ namespace mu2e {
   void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes &times, const StrawId &id) const {
     
     times[TrkTypes::hv] = tdc[TrkTypes::hv]*_strawele->tdcLSB() +  _timeOffsetBeam + _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.getStraw()];
-    times[TrkTypes::cal] = tdc[TrkTypes::hv]*_strawele->tdcLSB() + _timeOffsetBeam + _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.getStraw()];
+    times[TrkTypes::cal] = tdc[TrkTypes::cal]*_strawele->tdcLSB() + _timeOffsetBeam + _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.getStraw()];
   }
  
 

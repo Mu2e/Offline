@@ -44,8 +44,8 @@ namespace mu2e {
 	  while(wfx._iclust != _cseq.clustList().end() ){
 	    // First, get the starting voltage
 	    wfx._vstart = sampleWaveform(TrkTypes::thresh,wfx._iclust->time()-_strawele->clusterLookbackTime());
-	    // check if this clust could cross threshold
-	    if(wfx._vstart + maxLinearResponse(wfx._iclust) > threshold){
+	    //// check if this clust could cross threshold
+	    //if(wfx._vstart + maxLinearResponse(wfx._iclust) > threshold){
 	      // check the actual response 
 	      double maxtime = wfx._iclust->time()+_strawele->maxResponseTime(TrkTypes::thresh,wfx._iclust->wireDistance());
 	      double maxresp = sampleWaveform(TrkTypes::thresh,maxtime);
@@ -56,7 +56,7 @@ namespace mu2e {
 		retval = true;
 		break;
 	      }
-	    }
+            //}
 	    // advance to next clust
 	    ++(wfx._iclust);
 	  }
@@ -145,7 +145,7 @@ namespace mu2e {
 
     double StrawWaveform::maxLinearResponse(ClusterList::const_iterator const& iclust) const {
       // ignore saturation effects
-      double linresp = _strawele->maxLinearResponse(_sid,TrkTypes::thresh,iclust->charge());
+      double linresp = _strawele->maxLinearResponse(_sid,TrkTypes::thresh,iclust->wireDistance(),iclust->charge());
       linresp *= (_xtalk._preamp + _xtalk._postamp);
       return linresp;
     }

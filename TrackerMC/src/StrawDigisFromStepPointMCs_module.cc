@@ -168,13 +168,13 @@ namespace mu2e {
       Int_t _sdplane, _sdpanel, _sdlayer, _sdstraw;
       Int_t _ncludd[2], _iclust[2];
       Int_t _nstep;
-      Float_t _ectime[2], _cdist[2];
-      Float_t _xtime[2], _tctime[2], _charge[2], _ddist[2];
+      Float_t _ectime[2], _ecddist[2], _ecdtime[2], _ecptime[2];
+      Float_t _xtime[2], _tctime[2], _charge[2], _ddist[2], _dtime[2], _ptime[2];
       Float_t _wdist[2], _vstart[2], _vcross[2];
       Float_t _phi[2]; //JB
       Float_t _mctime, _mcenergy, _mctrigenergy, _mcthreshenergy;
       Int_t _mcthreshpdg, _mcthreshproc, _mcnstep;
-      Float_t _mcdca;
+      Float_t _mcdca, _mcdcaphi, _mcdcadtime;
       Int_t _dmcpdg, _dmcproc, _dmcgen;
       Float_t _dmcmom;
       Bool_t _xtalk;
@@ -314,13 +314,17 @@ namespace mu2e {
           _sddiag->Branch("xtime",&_xtime,"xtimecal/F:xtimehv/F");
           _sddiag->Branch("tctime",&_tctime,"tctimecal/F:tctimehv/F");
           _sddiag->Branch("ectime",&_ectime,"ectimecal/F:ectimehv/F");
+          _sddiag->Branch("ecdtime",&_ecdtime,"ecdtimecal/F:ecdtimehv/F");
+          _sddiag->Branch("ecptime",&_ecptime,"ecptimecal/F:ecptimehv/F");
           _sddiag->Branch("charge",&_charge,"chargecal/F:chargehv/F");
           _sddiag->Branch("wdist",&_wdist,"wdistcal/F:wdisthv/F");
           _sddiag->Branch("phi",&_phi,"phical/F:phihv/F");//JB
-          _sddiag->Branch("cdist",&_cdist,"cdistcal/F:cdisthv/F");
+          _sddiag->Branch("ecddist",&_ecddist,"ecddistcal/F:ecddisthv/F");
           _sddiag->Branch("vstart",&_vstart,"vstartcal/F:vstarthv/F");
           _sddiag->Branch("vcross",&_vcross,"vcrosscal/F:vcrosshv/F");
           _sddiag->Branch("ddist",&_ddist,"ddistcal/F:ddisthv/F");
+          _sddiag->Branch("dtime",&_dtime,"dtimecal/F:dtimehv/F");
+          _sddiag->Branch("ptime",&_ptime,"ptimecal/F:ptimehv/F");
           _sddiag->Branch("nclust",&_ncludd,"nclustcal/I:nclusthv/I");
           _sddiag->Branch("iclust",&_iclust,"iclustcal/I:iclusthv/I");
           _sddiag->Branch("tdc",&_tdc,"tdccal/I:tdchv/I");
@@ -334,6 +338,8 @@ namespace mu2e {
           _sddiag->Branch("mcthreshproc",&_mcthreshproc,"mcthreshproc/I");
           _sddiag->Branch("mcnstep",&_mcnstep,"mcnstep/I");
           _sddiag->Branch("mcdca",&_mcdca,"mcdca/F");
+          _sddiag->Branch("mcdcaphi",&_mcdcaphi,"mcdcaphi/F");
+          _sddiag->Branch("mcdcadtime",&_mcdcadtime,"mcdcadtime/F");
           _sddiag->Branch("mcpdg",&_dmcpdg,"mcpdg/I");
           _sddiag->Branch("mcproc",&_dmcproc,"mcproc/I");
           _sddiag->Branch("mcgen",&_dmcgen,"mcgen/I");
@@ -542,7 +548,7 @@ namespace mu2e {
             double gtime = tstep + wireq._time + weq._time;
             double ctime = microbunchTime(gtime);
             // create the clust
-            StrawCluster clust(StrawCluster::primary,sid,end,ctime,weq._charge,wireq._dd,wireq._phi,weq._wdist,
+            StrawCluster clust(StrawCluster::primary,sid,end,ctime,weq._charge,wireq._dd,wireq._phi,weq._wdist,wireq._time,weq._time,
                                spmcptr,CLHEP::HepLorentzVector(iclu->_pos,mbtime)); //JB: + wireq._phi
             
             // add the clusts to the appropriate sequence.
@@ -995,6 +1001,8 @@ namespace mu2e {
         _tctime[iend] = xpair[iend]._iclust->time();
         _charge[iend] = xpair[iend]._iclust->charge();
         _ddist[iend] = xpair[iend]._iclust->driftDistance();
+        _dtime[iend] = xpair[iend]._iclust->driftTime();
+        _ptime[iend] = xpair[iend]._iclust->propTime();
         _phi[iend] = xpair[iend]._iclust->phi(); //JB
         _wdist[iend] = xpair[iend]._iclust->wireDistance();
         _vstart[iend] = xpair[iend]._vstart;
@@ -1011,7 +1019,9 @@ namespace mu2e {
         }
         if(iclu != clist.end() ){
           _ectime[iend] = iclu->time();
-          _cdist[iend] = iclu->driftDistance();
+          _ecddist[iend] = iclu->driftDistance();
+          _ecdtime[iend] = iclu->driftTime();
+          _ecptime[iend] = iclu->propTime();
           // count how many clusters till we get to the trigger cluster
           size_t iclust(0);
           while( iclu != clist.end() && iclu != ctrig){
@@ -1041,6 +1051,12 @@ namespace mu2e {
 	TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
 	    spmc->position(), spmc->momentum().unit() );
 	_mcdca = pca.dca();
+
+        Hep3Vector mccdir = (pca.point2()-straw.getMidPoint());
+        mccdir -= straw.getDirection()*(mccdir.dot(straw.getDirection()));
+        _mcdcaphi = mccdir.theta();
+        _mcdcadtime = _strawphys->driftDistanceToTime(_mcdca,_mcdcaphi); //JB: this is now from the lorentz corrected r-component of the drift
+
         if(!spmc->simParticle().isNull()){
           _dmcpdg = spmc->simParticle()->pdgId();
           _dmcproc = spmc->simParticle()->creationCode();

@@ -45,6 +45,8 @@ namespace mu2e {
                    double ddist,
                    double phi, //JB: added
                    double wiredist,
+                   double drifttime,
+                   double proptime,
                    art::Ptr<StepPointMC> const& stepmc,
                    CLHEP::HepLorentzVector const& cpos);
       
@@ -59,6 +61,8 @@ namespace mu2e {
       double   driftDistance() const { return _ddist; }
       double   phi() const { return _phi; } //JB: added
       double   wireDistance() const { return _wdist; }
+      double   driftTime() const { return _drifttime; }
+      double   propTime() const { return _proptime; }
       art::Ptr<StepPointMC> const&  stepPointMC() const { return _stepMC; }
       CLHEP::HepLorentzVector const& clusterPosition() const { return _cpos; }
       // Print contents of the object.
@@ -72,6 +76,8 @@ namespace mu2e {
       double	_ddist;		  // drift distance charge traveled to the wire
       double _phi;    //JB: angle between E and B at ionization event
       double	_wdist;		  // distance along the wire the charge has traveled, used to calculate dispersion
+      double _drifttime;
+      double _proptime;
       art::Ptr<StepPointMC>  _stepMC;	  // Ptr into StepPointMC collection
       CLHEP::HepLorentzVector _cpos; // position and time of the cluster that created this clust
     };
