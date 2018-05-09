@@ -1,7 +1,7 @@
 // Crystal calorimeter - all length in mm, angles in degres
 
 double calorimeter.caloMotherRadiusIn           = 330;   
-double calorimeter.caloMotherRadiusOut          = 720; // 856;   
+double calorimeter.caloMotherRadiusOut          = 719;//720; 
 double calorimeter.caloMotherZ0                 = 11842;   
 double calorimeter.caloMotherZ1                 = 13220;   
 double calorimeter.vdThickness                  = 0.02;   
@@ -125,4 +125,4 @@ bool calorimeter.crateVisible                 = false;
 bool calorimeter.crateBoardVisible            = false;
 
 int  calorimeter.verbosityLevel               = 1;
-bool calorimeter.doSurfaceCheck               = false;
+bool calorimeter.doSurfaceCheck               = true;
