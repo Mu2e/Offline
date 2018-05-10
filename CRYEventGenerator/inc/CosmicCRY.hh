@@ -45,6 +45,7 @@ namespace mu2e {
     TH1D *_hPtot;
     TH1D *_hPyOverPtot;
     TH1D *_hTime;
+    TH1D *_hLiveTime;
     TH1D *_hNegMuKE;
     TH1D *_hPosMuKE;
     TH2D *_hPtypeKE;
