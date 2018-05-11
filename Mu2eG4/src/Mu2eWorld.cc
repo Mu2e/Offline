@@ -685,6 +685,7 @@ namespace mu2e {
       
       
 /************************** VirtualDetector **************************/
+    //done
     if(sdHelper_->enabled(StepInstanceName::virtualdetector)) {
         
         Mu2eSensitiveDetector* vdSD =
@@ -692,75 +693,75 @@ namespace mu2e {
         SDman->AddNewDetector(vdSD);
         
         constructVirtualDetectorSDs(_config, vdSD);
+    }//if virtualdetector
         
 
-        if (activeWr_Wl_SD_) {
-          
-          //done
-            if (sdHelper_->enabled(StepInstanceName::trackerSWires)) {
-                TrackerWireSD *ttwsSD =
-                    new TrackerWireSD(SensitiveDetectorName::TrackerSWires(), _config);
-                SDman->AddNewDetector(ttwsSD);
+/************************** trackerSWires **************************/
+    //done
+    if (sdHelper_->enabled(StepInstanceName::trackerSWires)) {
+        
+        TrackerWireSD *ttwsSD =
+            new TrackerWireSD(SensitiveDetectorName::TrackerSWires(), _config);
+        SDman->AddNewDetector(ttwsSD);
             
-                //trackerSWires need to be fixed if virtual detector is fixed
-                for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+        //trackerSWires need to be fixed if virtual detector is fixed
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
                 
-                    G4String LVname = (*pos)->GetName();
+            G4String LVname = (*pos)->GetName();
                 
-                    //from ConstructTTrackerTDR
-                    if (LVname.find("TTrackerStrawWire_") != std::string::npos) {
-                        store->GetVolume(LVname)->SetSensitiveDetector(ttwsSD);
-                    }
-                
-                    //from ConstructTTrackerTDR
-                    if (LVname.find("TTrackerWireCore_") != std::string::npos) {
-                        store->GetVolume(LVname)->SetSensitiveDetector(ttwsSD);
-                    }
-                
-                //from ConstructTTrackerTDR
-                    if (LVname.find("TTrackerWirePlate_") != std::string::npos) {
-                        store->GetVolume(LVname)->SetSensitiveDetector(ttwsSD);
-                    }
-                }//for
-            }//if trackerSWires
-          
-          //done
-            if (sdHelper_->enabled(StepInstanceName::trackerWalls)) {
-                TrackerWireSD *ttwlSD =
-                    new TrackerWireSD( SensitiveDetectorName::TrackerWalls(), _config );
-                SDman->AddNewDetector(ttwlSD);
-                
-                //trackerWalls need to be fixed if virtual detector is fixed
-                for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
-                
-                    G4String LVname = (*pos)->GetName();
-                
-                    //from ConstructTTrackerTDR and constructTTrackerv3
-                    if (LVname.find("TTrackerStrawWall_") != std::string::npos) {
-                        store->GetVolume(LVname)->SetSensitiveDetector(ttwlSD);
-                    }
-                
-                    //from ConstructTTrackerTDR
-                    if (LVname.find("TTrackerStrawWallOuterMetal_") != std::string::npos) {
-                        store->GetVolume(LVname)->SetSensitiveDetector(ttwlSD);
-                    }
-                
-                    //from ConstructTTrackerTDR
-                    if (LVname.find("TTrackerStrawWallInnerMetal1_") != std::string::npos) {
-                        store->GetVolume(LVname)->SetSensitiveDetector(ttwlSD);
-                    }
-                
-                    //from ConstructTTrackerTDR
-                    if (LVname.find("TTrackerStrawWallInnerMetal2_") != std::string::npos) {
-                        store->GetVolume(LVname)->SetSensitiveDetector(ttwlSD);
-                    }
-                }//for
+            //from ConstructTTrackerTDR
+            if (LVname.find("TTrackerStrawWire_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwsSD);
             }
-          
-        }//if activeWr_Wl_SD_
-
-    }//if virtualdetector enabled
-
+                
+            //from ConstructTTrackerTDR
+            if (LVname.find("TTrackerWireCore_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwsSD);
+            }
+                
+            //from ConstructTTrackerTDR
+            if (LVname.find("TTrackerWirePlate_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwsSD);
+            }
+            }//for
+    }//if trackerSWires
+  
+      
+/************************** trackerWalls **************************/
+    //done
+    if (sdHelper_->enabled(StepInstanceName::trackerWalls)) {
+        
+        TrackerWireSD *ttwlSD =
+            new TrackerWireSD( SensitiveDetectorName::TrackerWalls(), _config );
+        SDman->AddNewDetector(ttwlSD);
+                
+        //trackerWalls need to be fixed if virtual detector is fixed
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+                
+            G4String LVname = (*pos)->GetName();
+                
+            //from ConstructTTrackerTDR and constructTTrackerv3
+            if (LVname.find("TTrackerStrawWall_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwlSD);
+            }
+                
+            //from ConstructTTrackerTDR
+            if (LVname.find("TTrackerStrawWallOuterMetal_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwlSD);
+            }
+                
+            //from ConstructTTrackerTDR
+            if (LVname.find("TTrackerStrawWallInnerMetal1_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwlSD);
+            }
+                
+            //from ConstructTTrackerTDR
+            if (LVname.find("TTrackerStrawWallInnerMetal2_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwlSD);
+            }
+        }//for
+    }//if trackerWalls
+      
       
 /************************** CALORIMETER **************************/
       // _geom is member data of Mu2eG4Universe, from which this inherits (GeoService const&)
@@ -842,7 +843,6 @@ namespace mu2e {
                 store->GetVolume(LVname)->SetSensitiveDetector(emSD);
             }
         }//for
-        
     }
 
       
