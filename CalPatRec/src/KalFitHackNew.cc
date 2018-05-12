@@ -845,7 +845,7 @@ namespace mu2e {
     ihit = 0;
     for (int it=0; it<nhits; ++it) {
       hit   = static_cast<TrkStrawHit*> (KRes.krep->hitVector().at(it));
-      sh    = &hit->strawHit();
+      sh    = &hit->comboHit();
       straw = &hit->straw();
 
       hit->hitPosition(pos);

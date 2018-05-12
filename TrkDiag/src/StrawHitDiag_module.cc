@@ -98,7 +98,7 @@ namespace mu2e
     _shfTag(pset.get<string>("StrawHitFlagCollection")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
-    _end{TrkTypes::cal,TrkTypes::hv}
+    _end{StrawEnd::cal,StrawEnd::hv}
   {}
 
   StrawHitDiag::~StrawHitDiag(){}
@@ -216,7 +216,7 @@ namespace mu2e
       ComboHit const& ch = _chcol->at(istr);
       StrawHitFlag shf = ch.flag();
       if(_useshfcol) shf.merge(_shfcol->at(istr));
-      const Straw& straw = tracker.getStraw( ch.sid() );
+      const Straw& straw = tracker.getStraw( ch.strawId() );
       _plane = straw.id().getPlane();
       _panel = straw.id().getPanel();
       _layer = straw.id().getLayer();
@@ -288,7 +288,7 @@ namespace mu2e
         _mcnsteps = mcdigi.stepPointMCs().size();
         // compute energy sum
         _mcedep = mcdigi.energySum();
-        _mcetrig = mcdigi.triggerEnergySum(TrkTypes::cal);
+        _mcetrig = mcdigi.triggerEnergySum(StrawEnd::cal);
         _mcpdg = osp.pdgId();
         _mcproc = osp.creationCode();
         _mcgen = -1;

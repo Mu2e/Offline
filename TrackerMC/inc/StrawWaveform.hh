@@ -20,7 +20,7 @@
 
 // Mu2e includes
 #include "DataProducts/inc/StrawIndex.hh"
-#include "TrackerConditions/inc/StrawEnd.hh"
+#include "DataProducts/inc/StrawEnd.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/Types.hh"
@@ -53,7 +53,7 @@ namespace mu2e {
 	// is both input (determines starting point) and output
 	bool crossesThreshold(double threshold,WFX& wfx) const;
 	// sample the waveform at a given time, no saturation included.  Return value is in units of volts 
-	double sampleWaveform(TrkTypes::Path ipath,double time) const;
+	double sampleWaveform(StrawElectronics::Path ipath,double time) const;
 	// sample the waveform at a series of points allowing saturation to occur after preamp stage
         // FIXME no cross talk yet
 	void sampleADCWaveform(TrkTypes::ADCTimes const& times,TrkTypes::ADCVoltages& volts) const;

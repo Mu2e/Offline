@@ -170,9 +170,9 @@ namespace mu2e {
         while (jentry < numSamplesPerHit)
         {
           adcValue = adcValues[jentry];
-          descending |= ((adcPrev-adcValue) > (TMath::Sqrt2()*_strawele.analogNoise(TrkTypes::adc)/_strawele.adcLSB()*sigma));
+          descending |= ((adcPrev-adcValue) > (TMath::Sqrt2()*_strawele.analogNoise(StrawElectronics::adc)/_strawele.adcLSB()*sigma));
 
-          if (descending && (adcValue-adcPrev > (TMath::Sqrt2()*_strawele.analogNoise(TrkTypes::adc)/_strawele.adcLSB()*sigma)))
+          if (descending && (adcValue-adcPrev > (TMath::Sqrt2()*_strawele.analogNoise(StrawElectronics::adc)/_strawele.adcLSB()*sigma)))
           {
             break;
           }

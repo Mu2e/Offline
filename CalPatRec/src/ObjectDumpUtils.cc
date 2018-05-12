@@ -287,7 +287,7 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
 
       hit = (mu2e::TrkStrawHit*) (*it);
 
-      const mu2e::StrawHit* sh = &hit->strawHit();
+      const mu2e::StrawHit* sh = &hit->comboHit();
       mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
 
       hit->hitPosition(pos);

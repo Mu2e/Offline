@@ -6,6 +6,7 @@
 
 <lcgdict>
  <class name="mu2e::StrawIndex"/>
+ <class name="mu2e::StrawEnd"/>
  <class name="mu2e::StrawId"/>
  <class name="mu2e::StrawIdMask"/>
  <class name="mu2e::LayerId"/>

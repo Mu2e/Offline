@@ -106,7 +106,7 @@ namespace mu2e {
       _flagXT(pset.get<bool>(      "FlagCrossTalk",false)),
       _printLevel(pset.get<int>(     "printLevel",0)),
       _diagLevel(pset.get<int>(      "diagLevel",0)),
-      _end{TrkTypes::cal,TrkTypes::hv}, // this should be in a general place, FIXME!
+      _end{StrawEnd::cal,StrawEnd::hv}, // this should be in a general place, FIXME!
       _sdtag  (pset.get<art::InputTag>("StrawDigiCollection","makeSD")),
       _cctag  (pset.get<art::InputTag>("caloClusterModuleLabel","CaloClusterFast")),
       _peakfit(pset.get<fhicl::ParameterSet>("PeakFitter",fhicl::ParameterSet()))

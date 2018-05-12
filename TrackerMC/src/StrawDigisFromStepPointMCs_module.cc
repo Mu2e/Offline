@@ -135,7 +135,7 @@ namespace mu2e {
       ConditionsHandle<StrawPhysics> _strawphys;
       ConditionsHandle<StrawElectronics> _strawele;
       SimParticleTimeOffset _toff;
-      TrkTypes::Path _diagpath; // electronics path for waveform diagnostics
+      StrawElectronics::Path _diagpath; // electronics path for waveform diagnostics
       // Random number distributions
       art::RandomNumberGenerator::base_engine_t& _engine;
       CLHEP::RandGaussQ _randgauss;
@@ -238,7 +238,7 @@ namespace mu2e {
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _steptimebuf(pset.get<double>("StepPointMCTimeBuffer",100.0)), // nsec
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
-    _diagpath(static_cast<TrkTypes::Path>(pset.get<int>("WaveformDiagPath",TrkTypes::thresh))),
+    _diagpath(static_cast<StrawElectronics::Path>(pset.get<int>("WaveformDiagPath",StrawElectronics::thresh))),
     // Random number distributions
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
     _randgauss( _engine ),
@@ -398,7 +398,7 @@ namespace mu2e {
         if(_addXtalk) {
           // only apply if the charge is above a threshold
           double totalCharge = 0;
-          for(auto ih=hsp.clustSequence(TrkTypes::cal).clustList().begin();ih!= hsp.clustSequence(TrkTypes::cal).clustList().end();++ih){
+          for(auto ih=hsp.clustSequence(StrawEnd::cal).clustList().begin();ih!= hsp.clustSequence(StrawEnd::cal).clustList().end();++ih){
             totalCharge += ih->charge();
           }
           if( totalCharge > _ctMinCharge){
@@ -426,8 +426,8 @@ namespace mu2e {
                                                  StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
                                                  PtrStepPointMCVectorCollection* mcptrs ) {
       // instantiate waveforms for both ends of this straw
-      SWFP waveforms  ={ StrawWaveform(hsp.clustSequence(TrkTypes::cal),_strawele,xtalk),
-        StrawWaveform(hsp.clustSequence(TrkTypes::hv),_strawele,xtalk) };
+      SWFP waveforms  ={ StrawWaveform(hsp.clustSequence(StrawEnd::cal),_strawele,xtalk),
+        StrawWaveform(hsp.clustSequence(StrawEnd::hv),_strawele,xtalk) };
       // find the threshold crossing points for these waveforms
       WFXPList xings;
       // find the threshold crossings
@@ -533,7 +533,7 @@ namespace mu2e {
           driftCluster(straw,*iclu,wireq);
           // propagate this charge to each end of the wire
           for(size_t iend=0;iend<2;++iend){
-            StrawEnd end(static_cast<TrkTypes::End>(iend));
+            StrawEnd end(static_cast<StrawEnd::End>(iend));
             // compute the longitudinal propagation effects
             WireEndCharge weq;
             propagateCharge(straw,wireq,end,weq);
@@ -672,7 +672,7 @@ namespace mu2e {
       // compute distance to the appropriate end
       double wlen = straw.getDetail().halfLength(); // use the full length, not the active length
       // NB: the following assumes the straw direction points in increasing azimuth.  FIXME!
-      if(end == TrkTypes::hv)
+      if(end == StrawEnd::hv)
         weq._wdist = wlen - wireq._wpos;
       else
         weq._wdist = wlen + wireq._wpos;
@@ -698,8 +698,8 @@ namespace mu2e {
       // Keep track of crossings on each end to keep them in sequence
       double threshbase = _randgauss.fire(_strawele->threshold(),_strawele->strawNoise()); // common part of the thresold
       // add specifics for each end
-      double thresh[2] = {_randgauss.fire(threshbase,_strawele->analogNoise(TrkTypes::thresh)),
-        _randgauss.fire(threshbase,_strawele->analogNoise(TrkTypes::thresh))};
+      double thresh[2] = {_randgauss.fire(threshbase,_strawele->analogNoise(StrawElectronics::thresh)),
+        _randgauss.fire(threshbase,_strawele->analogNoise(StrawElectronics::thresh))};
       // Initialize search when the electronics becomes enabled:
       WFXP wfx = {WFX(swfp[0],_strawele->flashEnd()),WFX(swfp[1],_strawele->flashEnd())};
       // search for coherent crossings on both ends
@@ -723,7 +723,7 @@ namespace mu2e {
             // skip to the next clust
             ++(wfx[iend]._iclust);
             // update threshold for incoherent noise
-            thresh[iend] = _randgauss.fire(threshbase,_strawele->analogNoise(TrkTypes::thresh));
+            thresh[iend] = _randgauss.fire(threshbase,_strawele->analogNoise(StrawElectronics::thresh));
             // find next crossing
             crosses[iend] = swfp[iend].crossesThreshold(thresh[iend],wfx[iend]);
           }
@@ -813,7 +813,7 @@ namespace mu2e {
         // record MC match if it isn't already recorded
         mcmatch.insert(wfx._iclust->stepPointMC());
         // randomize threshold using the incoherent noise
-        double threshold = _randgauss.fire(wfx._vcross,_strawele->analogNoise(TrkTypes::thresh));
+        double threshold = _randgauss.fire(wfx._vcross,_strawele->analogNoise(StrawElectronics::thresh));
         // find TOT
         tot[iend] = waveform[iend].digitizeTOT(threshold,wfx._time + dt);
         // sample ADC
@@ -822,7 +822,7 @@ namespace mu2e {
       // add ends and add noise
       ADCVoltages wfsum; wfsum.reserve(adctimes.size());
       for(unsigned isamp=0;isamp<adctimes.size();++isamp){
-        wfsum.push_back(wf[0][isamp]+wf[1][isamp]+_randgauss.fire(0.0,_strawele->analogNoise(TrkTypes::adc)));
+        wfsum.push_back(wf[0][isamp]+wf[1][isamp]+_randgauss.fire(0.0,_strawele->analogNoise(StrawElectronics::adc)));
       }
       // digitize
       TrkTypes::ADCWaveform adc;
@@ -1052,12 +1052,12 @@ namespace mu2e {
         }
       }
       _mcenergy = mcdigi.energySum();
-      _mctrigenergy = mcdigi.triggerEnergySum(TrkTypes::cal);
+      _mctrigenergy = mcdigi.triggerEnergySum(StrawEnd::cal);
       // sum the energy from the explicit trigger particle, and find it's releationship
       _mcthreshenergy = 0.0;
       _mcnstep = mcdigi.stepPointMCs().size();
-      art::Ptr<StepPointMC> threshpart = mcdigi.stepPointMC(TrkTypes::cal);
-      if(threshpart.isNull()) threshpart = mcdigi.stepPointMC(TrkTypes::hv);
+      art::Ptr<StepPointMC> threshpart = mcdigi.stepPointMC(StrawEnd::cal);
+      if(threshpart.isNull()) threshpart = mcdigi.stepPointMC(StrawEnd::hv);
       for(auto imcs = mcdigi.stepPointMCs().begin(); imcs!= mcdigi.stepPointMCs().end(); ++ imcs){
         // if the SimParticle for this step is the same as the one which fired the discrim, add the energy
         if( (*imcs)->simParticle() == threshpart->simParticle() )

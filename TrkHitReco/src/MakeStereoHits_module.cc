@@ -154,7 +154,7 @@ namespace mu2e {
       ComboHit const& ch = (*_chcol)[ihit];
       // select hits based on flag
       if( (!_testflag) ||( ch.flag().hasAllProperties(_shsel) && (!ch.flag().hasAnyProperty(_shmask))) ){
-	phits[ch.sid().uniquePanel()].push_back(ihit);
+	phits[ch.strawId().uniquePanel()].push_back(ihit);
       }
     }
     if(_debug > 2){
@@ -176,11 +176,11 @@ namespace mu2e {
       combohit._qual = 0.0;
       combohit._pos = XYZVec(0.0,0.0,0.0);
       // loop over the panels which overlap this hit's panel
-      for (auto sid : _panelOverlap[ch1.sid().uniquePanel()]) {
+      for (auto sid : _panelOverlap[ch1.strawId().uniquePanel()]) {
       // loop over hits in the overlapping panel
 	for (auto jhit : phits[sid.uniquePanel()]) {
 	  const ComboHit& ch2 = (*_chcol)[jhit];
-	  if(_debug > 3) cout << " comparing hits " << ch1.sid().uniquePanel() << " and " << ch2.sid().uniquePanel();
+	  if(_debug > 3) cout << " comparing hits " << ch1.strawId().uniquePanel() << " and " << ch2.strawId().uniquePanel();
 	  if (!used[jhit] ){
 	    float dt = fabs(ch1.time()-ch2.time());
 	    if(_debug > 3) cout << " dt = " << dt;

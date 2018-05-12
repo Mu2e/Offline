@@ -97,7 +97,7 @@ namespace mu2e {
 	    adcDataTemp[i] = (Double_t) adcData[i];
 	    measurementTimes[i] = (Double_t) i * _strawele.adcPeriod(); // should deal with global time offset FIXME!!
 	    measurementTimesErrors[i] = 0.0; //_strawele.adcPeriod();
-	    adcDataErrors[i] = 1.0*_strawele.analogNoise(TrkTypes::adc)/_strawele.adcLSB(); // should be able to scale the error FIXME!!
+	    adcDataErrors[i] = 1.0*_strawele.analogNoise(StrawElectronics::adc)/_strawele.adcLSB(); // should be able to scale the error FIXME!!
         }
         fitData = TGraphErrors(adcData.size(),measurementTimes,adcDataTemp,measurementTimesErrors,adcDataErrors);
      }

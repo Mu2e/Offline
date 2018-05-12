@@ -12,7 +12,7 @@
 using namespace std;
 namespace mu2e {
   namespace TrackerMC {
-    StrawCluster::StrawCluster() : _type(unknown), _strawIndex(0), _end(TrkTypes::cal), _time(0.0), _charge(0.0), _ddist(0.0),_phi(0.0),  _wdist(0.0)
+    StrawCluster::StrawCluster() : _type(unknown), _strawIndex(0), _end(StrawEnd::cal), _time(0.0), _charge(0.0), _ddist(0.0),_phi(0.0),  _wdist(0.0)
     {}//JB: added phi
     
     StrawCluster::StrawCluster(ClusterType type,StrawIndex sindex,

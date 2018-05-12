@@ -644,7 +644,7 @@ namespace mu2e {
 	    break;
 	  }
 					// check proximity in Z
-          Straw const&  trk_straw = _data.tracker->getStraw(tsh->strawHit().strawId());
+          Straw const&  trk_straw = _data.tracker->getStraw(tsh->comboHit().strawId());
           double        ztrk      = trk_straw.getMidPoint().z();
 
 	  double dz  = ztrk-zhit;

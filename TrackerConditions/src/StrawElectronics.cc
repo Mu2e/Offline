@@ -238,7 +238,7 @@ namespace mu2e {
       return _vsat;
   }
 
-  double StrawElectronics::maxResponseTime(TrkTypes::Path ipath,double distance) const {
+  double StrawElectronics::maxResponseTime(Path ipath,double distance) const {
     int  distIndex = 0;
     for (size_t i=1;i<_wPoints.size()-1;i++){
       if (distance < _wPoints[i]._distance)
@@ -252,7 +252,7 @@ namespace mu2e {
     return p0 * distFrac + p1 * (1 - distFrac);
   }
 
-  double StrawElectronics::maxLinearResponse(TrkTypes::Path ipath,double distance,double charge) const {
+  double StrawElectronics::maxLinearResponse(Path ipath,double distance,double charge) const {
     int  distIndex = 0;
     for (size_t i=1;i<_wPoints.size()-1;i++){
       if (distance < _wPoints[i]._distance)

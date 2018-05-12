@@ -930,7 +930,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
             double time = strawHit->time(); 
             double hitT0 = strawHit->hitT0()._t0; //this is the time the hit "arrived at the straw"
                                               //don't know what the other times are
-            double strawtime = strawHit->strawHit().time();
+            double strawtime = strawHit->comboHit().time();
             double driftRadius = strawHit->driftRadius();
             const HepPoint &p=strawHit->hitTraj()->position(strawHit->hitLen());
             double theta = strawHit->straw().getDirection().theta();

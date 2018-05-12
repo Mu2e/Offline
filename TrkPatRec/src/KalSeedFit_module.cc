@@ -28,8 +28,8 @@
 #include "TrkReco/inc/TrkUtilities.hh"
 // data
 #include "DataProducts/inc/Helicity.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
@@ -75,7 +75,6 @@ namespace mu2e
       bool _saveall;
       // event object tags
       art::InputTag _shTag;
-      art::InputTag _shfTag;
       art::InputTag _hsTag;
       TrkFitFlag _seedflag; // helix fit flag
   unsigned _minnhits; // minimum # of hits
@@ -92,8 +91,7 @@ namespace mu2e
       double _amsign; // cached sign of angular momentum WRT the z axis 
       HepSymMatrix _hcovar; // cache of parameter error covariance matrix
       // cache of event objects
-      const StrawHitCollection* _shcol;
-      // const StrawHitFlagCollection* _shfcol;
+      const ComboHitCollection* _chcol;
       const HelixSeedCollection * _hscol;
       // ouptut collections
       // Kalman fitter.  This will be configured for a least-squares fit (no material or BField corrections).
@@ -103,15 +101,14 @@ namespace mu2e
       // helper functions
       bool findData(const art::Event& e);
       void filterOutliers(TrkDef& trkdef);
-      void findMissingHits(KalRep* Krep, const HelixSeed*   Hseed, const StrawHitCollection* Shcol, std::vector<StrawHitIndex> &MissingHits);
+      void findMissingHits(KalRep* Krep, const HelixSeed*   Hseed, const ComboHitCollection* chcol, std::vector<StrawHitIndex> &MissingHits);
   };
 
   KalSeedFit::KalSeedFit(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
     _saveall(pset.get<bool>("saveall",false)),
-    _shTag(pset.get<art::InputTag>("StrawHitCollection")),
-    _shfTag(pset.get<art::InputTag>("StrawHitFlagCollection")),
+    _shTag(pset.get<art::InputTag>("ComboHitCollection")),
     _hsTag(pset.get<art::InputTag>("SeedCollection")),
     _seedflag(pset.get<vector<string> >("HelixFitFlag",vector<string>{"HelixOK"})),
     _minnhits(pset.get<unsigned>("MinNHits",10)),
@@ -210,7 +207,7 @@ namespace mu2e
 	int nsh = seeddef.strawHitIndices().size();//tclust._strawHitIdxs.size();
 	for (int i=0; i< nsh; ++i){
 	  size_t          istraw   = seeddef.strawHitIndices().at(i);
-	  const StrawHit& strawhit(_shcol->at(istraw));
+	  const ComboHit& strawhit(_chcol->at(istraw));
 	  const Straw&    straw    = _tracker->getStraw(strawhit.strawId());	  
 	  double          fltlen   = htraj->zFlight(straw.getMidPoint().z());
 	  double          propTime = (fltlen-flt0)/vflt;
@@ -238,7 +235,7 @@ namespace mu2e
 
 	// now, fit the seed helix from the filtered hits
 	KalRep *krep(0);
-	_kfit.makeTrack(_shcol, kf, krep);
+	_kfit.makeTrack(_chcol, kf, krep);
 	
 	if(_debug > 1){
 	  if(krep == 0)
@@ -250,10 +247,10 @@ namespace mu2e
 	  if (_rescueHits) { 
 	    int nrescued = 0;
 	    std::vector<StrawHitIndex> missingHits;
-	    findMissingHits(krep, &hseed, _shcol, missingHits);
+	    findMissingHits(krep, &hseed, _chcol, missingHits);
 	    nrescued = missingHits.size();
 	    if (nrescued > 0) {
-	      _kfit.addHits(krep, _shcol, missingHits, _maxAddChi);
+	      _kfit.addHits(krep, _chcol, missingHits, _maxAddChi);
 	    }
 	  }
 
@@ -306,18 +303,15 @@ namespace mu2e
 
   // find the input data objects 
   bool KalSeedFit::findData(const art::Event& evt){
-    _shcol = 0;
-    // _shfcol = 0;
+    _chcol = 0;
     _hscol = 0;
 
-    auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
-    _shcol = shH.product();
-    // auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
-    // _shfcol = shfH.product();
+    auto shH = evt.getValidHandle<ComboHitCollection>(_shTag);
+    _chcol = shH.product();
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     _hscol = hsH.product();
 
-    return _shcol != 0 && /*_shfcol != 0 &&*/ _hscol != 0;
+    return _chcol != 0 && _hscol != 0;
   }
 
   void KalSeedFit::filterOutliers(TrkDef& mydef){
@@ -332,7 +326,7 @@ namespace mu2e
     const vector<StrawHitIndex>& indices = mydef.strawHitIndices();
     vector<StrawHitIndex> goodhits;
     for(unsigned ihit=0;ihit<indices.size();++ihit){
-      StrawHit const& sh = _shcol->at(indices[ihit]);
+      ComboHit const& sh = _chcol->at(indices[ihit]);
       Straw const& straw = tracker.getStraw(sh.strawId());
       CLHEP::Hep3Vector hpos = straw.getMidPoint();
       CLHEP::Hep3Vector hdir = straw.getDirection();
@@ -360,13 +354,13 @@ namespace mu2e
 // look at all hits included into the corresponding time cluster
 // first reactivate already associated hits
 //-----------------------------------------------------------------------------
-  void KalSeedFit::findMissingHits(KalRep* Krep, const HelixSeed*   Hseed, const StrawHitCollection* Shcol, std::vector<StrawHitIndex> &MissingHits) {
+  void KalSeedFit::findMissingHits(KalRep* Krep, const HelixSeed*   Hseed, const ComboHitCollection* chcol, std::vector<StrawHitIndex> &MissingHits) {
 
     const char* oname = "KalSeedFit::findMissingHits";
 
     mu2e::TrkStrawHit*       hit;
     int                      hit_index;
-    const StrawHit*          sh;
+    const ComboHit*          sh;
     const Straw*             straw;
 
     Hep3Vector               tdir;
@@ -395,7 +389,7 @@ namespace mu2e
     int n = tchits.size();
     for (int i=0; i<n; ++i) {
       hit_index = tchits.at(i);
-      sh        = &Shcol->at(hit_index);
+      sh        = &chcol->at(hit_index);
       straw     = &_tracker->getStraw(sh->strawId());
 
       const CLHEP::Hep3Vector& wpos = straw->getMidPoint();

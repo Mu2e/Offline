@@ -30,7 +30,6 @@
 
 #include "TTree.h"
 #include "Math/VectorUtil.h"
-#include "TrackerConditions/inc/StrawEnd.hh"
 
 using namespace boost::accumulators;
 using namespace ROOT::Math::VectorUtil;

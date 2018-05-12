@@ -206,7 +206,7 @@ namespace mu2e
         std::vector<StrawDigiIndex> dids;
         _chcol->fillStrawDigiIndices(event,ich,dids);
         StrawDigiMC const& mcdigi = _mcdigis->at(dids[0]);// taking 1st digi: is there a better idea??
-        StrawEnd itdc(TrkTypes::cal);
+        StrawEnd itdc(StrawEnd::cal);
         art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);     
         art::Ptr<SimParticle> const& spp = spmcp->simParticle();
         _hitPdg[_nhits] = spp->pdgId();
@@ -373,7 +373,7 @@ namespace mu2e
 
 
   void BkgDiag::findPrimary(std::vector<uint16_t>const& dids, art::Ptr<SimParticle>& pptr,double& pmom, std::vector<int>& icontrib) const { 
-    static StrawEnd itdc(TrkTypes::cal);
+    static StrawEnd itdc(StrawEnd::cal);
     // find the unique simparticles which produced these hits
     std::set<art::Ptr<SimParticle> > pp;
     for(auto id : dids) {
@@ -480,7 +480,7 @@ namespace mu2e
 
   void BkgDiag::fillStrawHitInfoMC(StrawDigiMC const& mcdigi, art::Ptr<SimParticle>const& pptr, StrawHitInfo& shinfo) const {
     // use TDC channel 0 to define the MC match
-    StrawEnd itdc(TrkTypes::cal);
+    StrawEnd itdc(StrawEnd::cal);
     art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
     art::Ptr<SimParticle> const& spp = spmcp->simParticle();
     shinfo._mct0 = _toff.timeWithOffsetsApplied(*spmcp);
@@ -534,7 +534,7 @@ namespace mu2e
     // info depending on stereo hits
       shinfo._chisq = ch.qual();
     shinfo._edep = ch.energyDep();
-    StrawId const& sid = ch.sid();
+    StrawId const& sid = ch.strawId();
     shinfo._plane = sid.plane();
     shinfo._panel = sid.panel();
     shinfo._layer = sid.layer();

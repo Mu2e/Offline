@@ -86,9 +86,9 @@ namespace mu2e
       if(event.getByLabel(_mcdigislabel,mcdigisHandle)){
 	const StrawDigiMCCollection* mcdigis = mcdigisHandle.product();
 	for(auto imcdigi = mcdigis->begin(); imcdigi != mcdigis->end(); ++imcdigi){
-	  if( imcdigi->wireEndTime(TrkTypes::cal) > _minCETime ) {
-	    if(imcdigi->stepPointMC(TrkTypes::cal)->simParticle()->genParticle().isNonnull() &&
-		imcdigi->stepPointMC(TrkTypes::cal)->simParticle()->genParticle()->generatorId().id() == GenId::conversionGun) ++ncehits;
+	  if( imcdigi->wireEndTime(StrawEnd::cal) > _minCETime ) {
+	    if(imcdigi->stepPointMC(StrawEnd::cal)->simParticle()->genParticle().isNonnull() &&
+		imcdigi->stepPointMC(StrawEnd::cal)->simParticle()->genParticle()->generatorId().id() == GenId::conversionGun) ++ncehits;
 	  }
 	}
       }

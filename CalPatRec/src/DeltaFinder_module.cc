@@ -318,11 +318,11 @@ namespace mu2e {
       // double shlen = straw->getDetail().activeHalfLength();
       //      if (fabs(tddist) >= shlen + _tdbuff)                 continue;
 
-      cx.Station                 = sh->sid().station();  //straw->id().getStation();
-      cx.Plane                   = sh->sid().plane() % 2;//straw->id().getPlane() % 2;
+      cx.Station                 = sh->strawId().station();  //straw->id().getStation();
+      cx.Plane                   = sh->strawId().plane() % 2;//straw->id().getPlane() % 2;
       cx.Face                    = -1;
-      cx.Panel                   = sh->sid().panel();    //straw->id().getPanel();
-      cx.Layer                   = sh->sid().layer();    //straw->id().getLayer();
+      cx.Panel                   = sh->strawId().panel();    //straw->id().getPanel();
+      cx.Layer                   = sh->strawId().layer();    //straw->id().getLayer();
 
 					      // get Z-ordered location
       orderID(&cx, &co);

@@ -15,7 +15,7 @@ using namespace std;
 
 namespace mu2e {
   namespace TrackerMC {
-    StrawClusterSequence::StrawClusterSequence() : _strawIndex(0), _end(TrkTypes::cal)
+    StrawClusterSequence::StrawClusterSequence() : _strawIndex(0), _end(StrawEnd::cal)
     {}
 
     StrawClusterSequence::StrawClusterSequence(StrawCluster const& clust) :
