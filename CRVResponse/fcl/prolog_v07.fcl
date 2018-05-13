@@ -1,5 +1,4 @@
-//use with Mu2eG4/geom/crv_counters_v07.txt
-//ATTENTION: the lookup tables and coincidence settings are currently wrong. they will be fixed ASAP.
+//use with Mu2eG4/geom/crv_counters_v07.txt (e.g. CRVResponse/test/CRVResponse_v07.fcl)
 
 BEGIN_PROLOG
 
@@ -9,28 +8,28 @@ BEGIN_PROLOG
       g4ModuleLabels            : ["*"]
       processNames              : ["*"]
       CRVSectors                : ["R1","R2","R3","R4","R5","L1","L2","T1","T2","T3","T4","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
-      lookupTableFileNames      : ["CRVConditions/v4_0/LookupTable_4500", //R1
-                                   "CRVConditions/v4_0/LookupTable_900",  //R2
-                                   "CRVConditions/v4_0/LookupTable_3000", //R3
-                                   "CRVConditions/v4_0/LookupTable_4500", //R4
-                                   "CRVConditions/v4_0/LookupTable_4500", //R5
-                                   "CRVConditions/v4_0/LookupTable_4500", //L1
-                                   "CRVConditions/v4_0/LookupTable_4500", //L2
-                                   "CRVConditions/v4_0/LookupTable_6001", //T1
-                                   "CRVConditions/v4_0/LookupTable_6001", //T2
-                                   "CRVConditions/v4_0/LookupTable_6000", //T3
-                                   "CRVConditions/v4_0/LookupTable_6000", //T4
-                                   "CRVConditions/v4_0/LookupTable_5000", //E1
-                                   "CRVConditions/v4_0/LookupTable_5000", //E2
-                                   "CRVConditions/v4_0/LookupTable_6900", //U
-                                   "CRVConditions/v4_0/LookupTable_6000", //D1
-                                   "CRVConditions/v4_0/LookupTable_2300", //D2
-                                   "CRVConditions/v4_0/LookupTable_2300", //D3
-                                   "CRVConditions/v4_0/LookupTable_6000", //D4
-                                   "CRVConditions/v4_0/LookupTable_900",  //C1
-                                   "CRVConditions/v4_0/LookupTable_900",  //C2
-                                   "CRVConditions/v4_0/LookupTable_900",  //C3
-                                   "CRVConditions/v4_0/LookupTable_900"]  //C4
+      lookupTableFileNames      : ["CRVConditions/v4_1/LookupTable_4550_0",  //R1
+                                   "CRVConditions/v4_1/LookupTable_1045_-1", //R2
+                                   "CRVConditions/v4_1/LookupTable_3040_0",  //R3
+                                   "CRVConditions/v4_1/LookupTable_4550_0",  //R4
+                                   "CRVConditions/v4_1/LookupTable_3200_0",  //R5
+                                   "CRVConditions/v4_1/LookupTable_4550_0",  //L1
+                                   "CRVConditions/v4_1/LookupTable_3200_0",  //L2
+                                   "CRVConditions/v4_1/LookupTable_6000_1",  //T1
+                                   "CRVConditions/v4_1/LookupTable_6000_1",  //T2
+                                   "CRVConditions/v4_1/LookupTable_6000_0",  //T3
+                                   "CRVConditions/v4_1/LookupTable_6000_0",  //T4
+                                   "CRVConditions/v4_1/LookupTable_5000_-1", //E1
+                                   "CRVConditions/v4_1/LookupTable_5000_-1", //E2
+                                   "CRVConditions/v4_1/LookupTable_6900_1",  //U
+                                   "CRVConditions/v4_1/LookupTable_5700_0",  //D1
+                                   "CRVConditions/v4_1/LookupTable_2370_1",  //D2
+                                   "CRVConditions/v4_1/LookupTable_2370_-1", //D3
+                                   "CRVConditions/v4_1/LookupTable_5700_0",  //D4
+                                   "CRVConditions/v4_1/LookupTable_900_1",   //C1
+                                   "CRVConditions/v4_1/LookupTable_900_-1",  //C2
+                                   "CRVConditions/v4_1/LookupTable_2100_-1", //C3
+                                   "CRVConditions/v4_1/LookupTable_1550_-1"] //C4
       scintillationYield                : 47000 //for 68 PE/SiPM @ 1 m away from SiPM (Test beam June 2017)
                                                 //using the pulse height calibration, this value gives 45 PE/SiPM @ 1 m away from SiPM
       scintillationYieldVariation       : 0.2   //gaussian distribution with sigma equal to 20% of the mean
@@ -107,10 +106,10 @@ BEGIN_PROLOG
       verboseLevel                  : 1
       crvRecoPulsesModuleLabel      : "CrvRecoPulses"
       CRVSectors                    : ["R1","R2","R3","R4","R5","L1","L2","T1","T2","T3","T4","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
-      PEthresholds                  : [ 20 , 20 , 20 , 20 , 20 , 20 , 20 , 26 , 18 , 16 , 16 , 26 , 40 , 40 , 40 , 40 , 40 , 18 , 18 , 18 , 18 , 18 ]
+      PEthresholds                  : [ 26 , 26 , 26 , 26 , 26 , 26 , 26 , 36 , 22 , 18 , 20 , 36 , 36 , 28 , 36 , 36 , 36 , 36 , 26 , 26 , 26 , 26 ]
       adjacentPulseTimeDifferences  : [  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 , 10 ,  5 ,  5 , 10 , 10 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ] //ns
       maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 20 , 10 , 10 , 20 , 20 , 20 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
-      useFourLayers                 : [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false] 
+      useFourLayers                 : [false,false,false,false,false,false,false,true,true,false,false,true,true,true,false,false,false,false,false,false,false,false] 
       usingPEsPulseHeight           : false  //using the PEs which were calculated using the pulse height
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
       maxSlopeDifference            : 2.0    //

@@ -18,7 +18,7 @@
 #include <iostream>
 
 // Mu2e includes
-#include "DataProducts/inc/StrawIndex.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawEnd.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 // toolkit includes
@@ -34,17 +34,19 @@ namespace mu2e {
       StrawCluster();
       StrawCluster(const StrawCluster&);
       // x-talk constructor
-      explicit StrawCluster(const StrawCluster& primary, StrawIndex const& index, double xfactor);
+      explicit StrawCluster(const StrawCluster& primary, StrawId const& sid, double xfactor);
       // ghost constructor
       explicit StrawCluster(const StrawCluster& primary, double deltat);
       StrawCluster(ClusterType type,
-                   StrawIndex sindex,
+                   StrawId sid,
                    StrawEnd end,
                    double time,
                    double charge,
                    double ddist,
                    double phi, //JB: added
                    double wiredist,
+                   double drifttime,
+                   double proptime,
                    art::Ptr<StepPointMC> const& stepmc,
                    CLHEP::HepLorentzVector const& cpos);
       
@@ -52,26 +54,30 @@ namespace mu2e {
       
       // Accessors
       ClusterType type() const { return _type; }
-      StrawIndex strawIndex() const { return _strawIndex; }
+      StrawId strawId() const { return _strawId; }
       StrawEnd strawEnd() const { return _end; }
       double   time()       const { return _time;}
       double   charge()  const { return _charge; }
       double   driftDistance() const { return _ddist; }
       double   phi() const { return _phi; } //JB: added
       double   wireDistance() const { return _wdist; }
+      double   driftTime() const { return _drifttime; }
+      double   propTime() const { return _proptime; }
       art::Ptr<StepPointMC> const&  stepPointMC() const { return _stepMC; }
       CLHEP::HepLorentzVector const& clusterPosition() const { return _cpos; }
       // Print contents of the object.
       void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
     private:
       ClusterType _type; // type of clust
-      StrawIndex  _strawIndex;      // Straw index
+      StrawId  _strawId;      // Straw id
       StrawEnd	_end;		  // which end of the straw
       double     _time;            // microbunch time at the wire end, in ns
       double     _charge;          // charge at the wire end, in units of pC
       double	_ddist;		  // drift distance charge traveled to the wire
       double _phi;    //JB: angle between E and B at ionization event
       double	_wdist;		  // distance along the wire the charge has traveled, used to calculate dispersion
+      double _drifttime;
+      double _proptime;
       art::Ptr<StepPointMC>  _stepMC;	  // Ptr into StepPointMC collection
       CLHEP::HepLorentzVector _cpos; // position and time of the cluster that created this clust
     };

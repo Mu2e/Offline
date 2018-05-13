@@ -129,11 +129,9 @@ KFF : {
 TTKSF : {
   module_type                 : KalSeedFit
   StrawHitCollection	      : "TTmakeSH"
-  StrawHitFlagCollection      : "TTflagBkgHits:StrawHits"
   SeedCollection	      : "TThelixFinder:Positive"
   KalFit		      : @local::KFSeed
   ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
-#  ParameterErrors	      : [1.0,1.0,1.0,1.0,1.0]
   MaxAddDoca                  : 7.    # mm
   MaxAddChi                   : 5.    # normalized unit
   rescueHits                  : 0     # turned off 
@@ -142,7 +140,6 @@ TTKSF : {
 TTKFF : {
   module_type                 : KalFinalFit
   StrawHitCollection	      : "TTmakeSH"
-  StrawHitFlagCollection      : "TTflagBkgHits:StrawHits"
   SeedCollection	      : "TTkalSeedFit"
   KalFit		      : @local::KFFinal
   GoodKallSeedFitBits	      : ["SeedOK"]

@@ -14,8 +14,8 @@
 namespace mu2e {
   namespace TrackerMC {
     StrawClusterSequencePair::StrawClusterSequencePair() {}
-    StrawClusterSequencePair::StrawClusterSequencePair(StrawIndex index) : 
-      _scseq{StrawClusterSequence(index,StrawEnd::cal),StrawClusterSequence(index,StrawEnd::hv)}
+    StrawClusterSequencePair::StrawClusterSequencePair(StrawId sid) : 
+      _scseq{StrawClusterSequence(sid,StrawEnd::cal),StrawClusterSequence(sid,StrawEnd::hv)}
     {}
 
     StrawClusterSequencePair::StrawClusterSequencePair(StrawClusterSequencePair const& other)
@@ -35,7 +35,7 @@ namespace mu2e {
     void StrawClusterSequencePair::insert(StrawClusterPair const& hpair) {
       if(hpair[StrawEnd::cal].strawEnd() != StrawEnd::cal || 
 	  hpair[StrawEnd::hv].strawEnd() != StrawEnd::hv ||
-	  hpair[0].strawIndex() != hpair[1].strawIndex())	
+	  hpair[0].strawId() != hpair[1].strawId())	
 
 	throw cet::exception("SIM") 
 	  << "mu2e::StrawClusterSequence: tried to add inconsistent clust pair to sequence";

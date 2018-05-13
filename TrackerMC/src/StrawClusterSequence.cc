@@ -15,25 +15,25 @@ using namespace std;
 
 namespace mu2e {
   namespace TrackerMC {
-    StrawClusterSequence::StrawClusterSequence() : _strawIndex(0), _end(StrawEnd::cal)
+    StrawClusterSequence::StrawClusterSequence() : _strawId(0), _end(StrawEnd::cal)
     {}
 
     StrawClusterSequence::StrawClusterSequence(StrawCluster const& clust) :
-      _strawIndex(clust.strawIndex()), _end(clust.strawEnd())
+      _strawId(clust.strawId()), _end(clust.strawEnd())
     {
       insert(clust);
     }
 
-    StrawClusterSequence::StrawClusterSequence(StrawIndex const& index, StrawEnd end) :
-      _strawIndex(index), _end(end)
+    StrawClusterSequence::StrawClusterSequence(StrawId const& sid, StrawEnd end) :
+      _strawId(sid), _end(end)
     {}
 
     StrawClusterSequence::StrawClusterSequence(StrawClusterSequence const& other) : 
-      _strawIndex(other._strawIndex), _end(other._end), _clist(other._clist) {}
+      _strawId(other._strawId), _end(other._end), _clist(other._clist) {}
 
     StrawClusterSequence& StrawClusterSequence::operator =(StrawClusterSequence const& other) {
       if(&other != this){
-	_strawIndex = other._strawIndex;
+	_strawId = other._strawId;
 	_end = other._end;
 	_clist = other._clist;
       }
@@ -49,7 +49,7 @@ namespace mu2e {
 	return retval;
       }
       // make sure the straw and end are the same
-      if(!_clist.empty() && (clust.strawIndex() != strawIndex() 
+      if(!_clist.empty() && (clust.strawId() != strawId() 
 	    || clust.strawEnd() != strawEnd())){
 	throw cet::exception("SIM") 
 	  << "mu2e::StrawClusterSequence: tried to add clust from a different straw/end to a sequence" 
@@ -58,7 +58,7 @@ namespace mu2e {
       }
       if(_clist.empty()){
 	_clist.push_front(clust);
-	_strawIndex = clust.strawIndex();
+	_strawId = clust.strawId();
 	_end = clust.strawEnd();
 	retval = _clist.begin();
       } else {

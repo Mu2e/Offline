@@ -28,8 +28,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "TrackerConditions/inc/StrawElectronics.hh"
-#include "TrackerConditions/inc/StrawPhysics.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
 
 #include "TrkHitReco/inc/PeakFit.hh"
@@ -78,7 +76,8 @@ namespace mu2e {
        StrawIdMask _mask; 
        StrawEnd _end[2]; // helper
        float _invnpre; // cache
-       float _invgain; // cache
+       float _invgainAvg; // cache
+       float _invgain[96]; // cache
        unsigned _npre; //cache
 
        art::InputTag _sdtag, _cctag;
@@ -87,12 +86,13 @@ namespace mu2e {
        // diagnostic
        TH1F* _maxiter;
        // helper function
-       float peakMinusPed(TrkTypes::ADCWaveform const& adcData) const;
+       float peakMinusPedAvg(TrkTypes::ADCWaveform const& adcData) const;
+       float peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const;
  
  };
 
   StrawHitReco::StrawHitReco(fhicl::ParameterSet const& pset) :
-      _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminusped)),
+      _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminuspedavg)),
       _usecc(pset.get<bool>(         "UseCalorimeter",false)),     
       _clusterDt(pset.get<float>(   "clusterDt",100)),
       _maxE(pset.get<float>(        "maximumEnergy",0.0035)), // MeV
@@ -133,18 +133,21 @@ namespace mu2e {
 
   void StrawHitReco::beginRun(art::Run& run)
   {    
-      ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
-      ConditionsHandle<StrawPhysics> strawphys = ConditionsHandle<StrawPhysics>("ignored");
+      ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
 // set cache for peak-ped calculation (default)
-      _npre = strawele->nADCPreSamples();
+      _npre = srep->nADCPreSamples();
       _invnpre = 1.0/(float)_npre;
-      _invgain = strawele->adcLSB()*strawele->peakMinusPedestalEnergyScale()/strawphys->strawGain();
+      _invgainAvg = srep->adcLSB()*srep->peakMinusPedestalEnergyScale()/srep->strawGain();
+      for (int i=0;i<96;i++){
+        StrawId dummyId(0,0,i);
+        _invgain[i] = srep->adcLSB()*srep->peakMinusPedestalEnergyScale(dummyId)/srep->strawGain();
+      }
  
-      // this must be done here because strawele is not accessible at startup and pfit references it
+      // this must be done here because srep is not accessible at startup and pfit references it
       if (_fittype == TrkHitReco::FitType::combopeakfit)
-	 _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::ComboPeakFitRoot(*strawele,_peakfit) );
+	 _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::ComboPeakFitRoot(*srep,_peakfit) );
       else if (_fittype == TrkHitReco::FitType::peakfit)
-	 _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFitRoot(*strawele,_peakfit) );
+	 _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFitRoot(*srep,_peakfit) );
       if (_printLevel > 0) std::cout << "In StrawHitReco begin Run " << std::endl;
   }
 
@@ -158,8 +161,6 @@ namespace mu2e {
       size_t nplanes = tt.nPlanes();
       size_t npanels = tt.getPlane(0).nPanels();
       
-      ConditionsHandle<StrawElectronics> strawele = ConditionsHandle<StrawElectronics>("ignored");
-      ConditionsHandle<StrawPhysics> strawphys = ConditionsHandle<StrawPhysics>("ignored");
       ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
       auto sdH = event.getValidHandle<StrawDigiCollection>(_sdtag);
       const StrawDigiCollection& sdcol(*sdH);
@@ -189,7 +190,7 @@ namespace mu2e {
 	StrawHitFlag flag;
 	// start by reconstructing the times
 	TDCTimes times;
-	strawele->tdcTimes(digi.TDC(),times);
+        srep->calibrateTimes(digi.TDC(),times,digi.strawId());
 	// take the earliest of the 2 end times
 	float time = std::min(times[0],times[1]);
 	if (time < _minT || time > _maxT ){
@@ -210,13 +211,16 @@ namespace mu2e {
 
 	//extract energy from waveform
 	float energy(0.0);
-	if (_fittype == TrkHitReco::FitType::peakminusped){
-	  float charge = peakMinusPed(digi.adcWaveform());
-	  energy = strawphys->ionizationEnergy(charge);
+	if (_fittype == TrkHitReco::FitType::peakminuspedavg){
+	  float charge = peakMinusPedAvg(digi.adcWaveform());
+	  energy = srep->ionizationEnergy(charge);
+        } else if (_fittype == TrkHitReco::FitType::peakminusped){
+	  float charge = peakMinusPed(digi.strawId(),digi.adcWaveform());
+	  energy = srep->ionizationEnergy(charge);
 	} else {
 	  TrkHitReco::PeakFitParams params;
 	  _pfit->process(digi.adcWaveform(),params);
-	  energy = strawphys->ionizationEnergy(params._charge/strawphys->strawGain());
+	  energy = srep->ionizationEnergy(params._charge/srep->strawGain());
 	  if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
 	    << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
 	}
@@ -228,7 +232,7 @@ namespace mu2e {
 	// time-over-threshold
 	TOTTimes tots{0.0,0.0};
 	for(size_t iend=0;iend<2;++iend){
-	  tots[iend] = digi.TOT(_end[iend])*strawele->totLSB();
+	  tots[iend] = digi.TOT(_end[iend])*srep->totLSB();
 	}
 	//create straw hit; this is currently required by the wireDistance function FIXME!
 	StrawHit hit(digi.strawId(),times,tots,energy);
@@ -292,7 +296,7 @@ namespace mu2e {
       event.put(std::move(chCol));
   }
 
-  float StrawHitReco::peakMinusPed(TrkTypes::ADCWaveform const& adcData) const {
+  float StrawHitReco::peakMinusPedAvg(TrkTypes::ADCWaveform const& adcData) const {
     auto wfstart = adcData.begin() + _npre;
     float pedestal = std::accumulate(adcData.begin(), wfstart, 0)*_invnpre;
 //    auto maxIter = std::max_element(wfstart,adcData.end());
@@ -301,8 +305,22 @@ namespace mu2e {
       ++maxIter;
     float peak = *maxIter;
     if(_diagLevel > 0)_maxiter->Fill(std::distance(wfstart,maxIter));
-    return (peak-pedestal)*_invgain;
+    return (peak-pedestal)*_invgainAvg;
   }
+
+  float StrawHitReco::peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const {
+    auto wfstart = adcData.begin() + _npre;
+    float pedestal = std::accumulate(adcData.begin(), wfstart, 0)*_invnpre;
+//    auto maxIter = std::max_element(wfstart,adcData.end());
+    auto maxIter = wfstart;
+    while(maxIter != adcData.end() && *(maxIter+1) > *maxIter)
+      ++maxIter;
+    float peak = *maxIter;
+    if(_diagLevel > 0)_maxiter->Fill(std::distance(wfstart,maxIter));
+    return (peak-pedestal)*_invgain[id.getStraw()];
+  }
+
+
 
 }
 

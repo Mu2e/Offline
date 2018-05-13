@@ -19,8 +19,8 @@
 #include <utility>
 
 // Mu2e includes
-#include "DataProducts/inc/StrawIndex.hh"
 #include "DataProducts/inc/StrawEnd.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/Types.hh"
@@ -30,12 +30,12 @@ namespace mu2e {
   namespace TrackerMC {
     // struct to represent cross-talk.
     struct XTalk {
-      XTalk(StrawIndex const& sid) : _source(sid), _dest(sid), _preamp(0.0), _postamp(1.0)  {} // self x-talk constructor
-      XTalk(StrawIndex const& source, StrawIndex const& dest,double preamp, double postamp) :
+      XTalk(StrawId const& sid) : _source(sid), _dest(sid), _preamp(0.0), _postamp(1.0)  {} // self x-talk constructor
+      XTalk(StrawId const& source, StrawId const& dest,double preamp, double postamp) :
 	_source(source), _dest(dest), _preamp(preamp), _postamp(postamp) {} // true x-talk constructor
       bool self() const { return _dest==_source; }
-      StrawIndex _source; // index of the straw which is the source of the x-talk
-      StrawIndex _dest; // index of the straw in which x-talk is observed
+      StrawId _source; // index of the straw which is the source of the x-talk
+      StrawId _dest; // index of the straw in which x-talk is observed
       double _preamp; // scaling before amplification
       double _postamp; // scaling after amplificiation
     };
@@ -63,11 +63,13 @@ namespace mu2e {
 	ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }
 	XTalk const& xtalk() const { return _xtalk; }
 	StrawEnd strawEnd() const { return _cseq.strawEnd(); }
+        StrawId const &strawId() const { return _sid;}
       private:
 	// clust sequence used in this waveform
 	StrawClusterSequence const& _cseq;
 	ConditionsHandle<StrawElectronics> const& _strawele; // straw response object
 	XTalk _xtalk; // X-talk applied to all voltages
+        StrawId const& _sid;
 	// helper functions
 	void returnCrossing(double threshold, WFX& wfx) const;
 	bool roughCrossing(double threshold, WFX& wfx) const;

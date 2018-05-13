@@ -74,7 +74,7 @@ SflagBkgHits : {
 TTmakeSH : {
   module_type : StrawHitReco
   FilterHits : true
-  WriteStrawHitCollection : true
+  WriteStrawHitCollection : false
 }
 # combine hits in a panel
 TTmakePH : {
