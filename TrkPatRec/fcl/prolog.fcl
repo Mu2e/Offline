@@ -128,7 +128,7 @@ KFF : {
 # same for trigger
 TTKSF : {
   module_type                 : KalSeedFit
-  StrawHitCollection	      : "TTmakeSH"
+  ComboHitCollection	      : "TTmakeSH"
   SeedCollection	      : "TThelixFinder:Positive"
   KalFit		      : @local::KFSeed
   ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
@@ -139,7 +139,7 @@ TTKSF : {
 # Final Kalman fit, including material and magnetic inhomogeneity effects
 TTKFF : {
   module_type                 : KalFinalFit
-  StrawHitCollection	      : "TTmakeSH"
+  ComboHitCollection	      : "TTmakeSH"
   SeedCollection	      : "TTkalSeedFit"
   KalFit		      : @local::KFFinal
   GoodKallSeedFitBits	      : ["SeedOK"]
