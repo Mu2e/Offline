@@ -65,7 +65,7 @@ physics :
 physics.producers.CrvPhotons.g4ModuleLabels           : []   #emtpy so that the module doesn't expect any StepPointMCs
 physics.producers.CrvPhotons.processNames             : []   #the module needs to be present so that an empty PhotonsCollection is produced
 physics.producers.CrvPhotons.CRVSectors               : ["Test"]
-physics.producers.CrvPhotons.lookupTableFileNames     : ["CRVConditions/v4_0/LookupTable_3000"]
+physics.producers.CrvPhotons.lookupTableFileNames     : ["CRVConditions/v4_1/LookupTable_6000"]
 physics.producers.CrvSiPMCharges.deadSiPMProbability  : 0.0
 physics.producers.CrvWaveforms.minVoltage             : -10.0
 physics.producers.CrvRecoPulses.minPEs                : 0

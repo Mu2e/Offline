@@ -83,6 +83,7 @@ namespace mu2e
       , _hPtot(NULL)
       , _hPyOverPtot(NULL)
       , _hTime(NULL)
+      , _hLiveTime(NULL)
       , _hNegMuKE(NULL)
       , _hPosMuKE(NULL)
       , _hPtypeKE(NULL)
@@ -163,6 +164,7 @@ namespace mu2e
             _hPyOverPtot = tfdir.make<TH1D>("PyOverPtot", "Py/Ptot", 200, -20., 20.);
             _hTime = tfdir.make<TH1D>("Time", "Timing of secondary particles",
                 1000, -1.E-3, 1E0);
+            _hLiveTime = tfdir.make<TH1D>("Livetime", "Live time", 1000, -1.E-3, 1E0);
             _hNegMuKE = tfdir.make<TH1D>("NegMuKE", "Momenta of #mu^-", 4000, 0., 2E6);
             _hPosMuKE = tfdir.make<TH1D>("PosMuKE", "Momenta of #mu^+", 4000, 0., 2E6);
             _hNSecondaries = tfdir.make<TH1D>("nSecondaries", "Number of secondaries",
@@ -316,6 +318,7 @@ namespace mu2e
 
         _hPtot->Fill(totalP);
         _hTime->Fill(secondary->t() - _t0);
+        _hLiveTime->Fill(secondary->t());
         _hPyOverPtot->Fill(secondary->w());
         switch (secondary->PDGid()) {
           case 13: // mu-

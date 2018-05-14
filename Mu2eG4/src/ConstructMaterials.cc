@@ -1293,6 +1293,80 @@ namespace mu2e {
       stWallEq->AddMaterial(strwMet2, 1.25e-2 );
     }
 
+    // various densities of Al and Be to permit staging of pbar window studies without changing geometry
+    // between stages
+    mat = uniqueMaterialOrThrow( "G4_Be_Quarter");
+    {
+      G4int nel;
+      G4Material* G4_Be_Quarter = new G4Material(mat.name, 0.25*1.85*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Be  = getElementOrThrow("Be");
+      G4_Be_Quarter->AddElement(Be, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Be_Half");
+    {
+      G4int nel;
+      G4Material*  G4_Be_Half = new G4Material(mat.name, 0.50*1.85*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Be  = getElementOrThrow("Be");
+      G4_Be_Half->AddElement(Be, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Be_Standard");
+    {
+      G4int nel;
+      G4Material*  G4_Be_Standard = new G4Material(mat.name, 1.0*1.85*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Be  = getElementOrThrow("Be");
+      G4_Be_Standard->AddElement(Be, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Be_Double");
+    {
+      G4int nel;
+      G4Material*  G4_Be_Double = new G4Material(mat.name, 2.0*1.85*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Be  = getElementOrThrow("Be");
+      G4_Be_Double->AddElement(Be, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Be_Triple");
+    {
+      G4int nel;
+      G4Material*  G4_Be_Triple = new G4Material(mat.name, 3.0*1.85*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Be  = getElementOrThrow("Be");
+      G4_Be_Triple->AddElement(Be, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Al_Quarter");
+    {
+      G4int nel;
+      G4Material*  G4_Al_Quarter = new G4Material(mat.name, 0.25*2.70*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Al  = getElementOrThrow("Al");
+      G4_Al_Quarter->AddElement(Al, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Al_Half");
+    { 
+      G4int nel; 
+      G4Material*  G4_Al_Half = new G4Material(mat.name, 0.50*2.70*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Al  = getElementOrThrow("Al");
+      G4_Al_Half->AddElement(Al, 100.0*CLHEP::perCent );
+
+    }
+    mat = uniqueMaterialOrThrow( "G4_Al_Standard");
+    {
+      G4int nel;
+      G4Material*  G4_Al_Standard = new G4Material("G4_Al_Standard", 1.0*2.70*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Al  = getElementOrThrow("Al");
+      G4_Al_Standard->AddElement(Al, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Al_Double");
+    {
+      G4int nel;
+      G4Material*  G4_Al_Double = new G4Material(mat.name, 2.0*2.70*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Al  = getElementOrThrow("Al");
+      G4_Al_Double->AddElement(Al, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Al_Triple");
+    {
+      G4int nel;
+      G4Material*  G4_Al_Triple = new G4Material(mat.name, 3.0*2.70*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Al  = getElementOrThrow("Al");
+      G4_Al_Triple->AddElement(Al, 100.0*CLHEP::perCent );
+    }
+
 
     // Completed constructMu2eMaterials2(), second function for
     // building all Mu2e materials.

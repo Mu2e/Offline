@@ -65,6 +65,7 @@ namespace mu2e {
        TrkHitReco::FitType _fittype; // peak Fitter
        bool   _usecc;                   // use calorimeter cluster filtering
        float _clusterDt;               // maximum hit-calo lcuster time difference
+       float _minE;             // energy range (MeV)
        float _maxE;             // energy range (MeV)
        float _ctE;                     // minimum charge to flag neighbors as cross talk
        float _ctMinT;                  // time relative to proton hit to flag cross talk (ns)
@@ -95,6 +96,7 @@ namespace mu2e {
       _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminusped)),
       _usecc(pset.get<bool>(         "UseCalorimeter",false)),     
       _clusterDt(pset.get<float>(   "clusterDt",100)),
+      _minE(pset.get<float>(        "minimumEnergy",0.0)), // MeV
       _maxE(pset.get<float>(        "maximumEnergy",0.0035)), // MeV
       _ctE(pset.get<float>(         "crossTalkEnergy",0.007)), // MeV
       _ctMinT(pset.get<float>(      "crossTalkMinimumTime",-1)), // nsec
@@ -222,6 +224,8 @@ namespace mu2e {
 	}
 
 	if( energy > _maxE){
+	  if(_filter) continue;
+	} else if (energy < _minE){
 	  if(_filter) continue;
 	} else
 	  flag.merge(StrawHitFlag::energysel);
