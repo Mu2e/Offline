@@ -36,6 +36,14 @@ namespace mu2e {
     double hubDistDS() const      { return _hubDistDS;    }
     double hubAngleUS() const     { return _hubAngleUS;   }
     double hubAngleDS() const     { return _hubAngleDS;   }
+    double hubOverhangUS() const  { return _hubOverhangUS;}
+    double hubOverhangDS() const  { return _hubOverhangDS;}
+    double hubLenUS() const       { return _hubLenUS;     }
+    double hubLenDS() const       { return _hubLenDS;     }
+
+    void   setHubLenUS(double& aLen ) { _hubLenUS = aLen; }
+    void   setHubLenDS(double& aLen ) { _hubLenDS = aLen; }
+
 
     // in mu2e coordinates
     const CLHEP::Hep3Vector& position() const { return _prodTargetPosition; }
@@ -68,7 +76,8 @@ namespace mu2e {
 		     double rotY, const CLHEP::Hep3Vector& position, 
 		     double finHeight, double finThickness, 
 		     double hubDistUS, double hubDistDS,
-		     double hubAngleUS, double hubAngleDS );
+		     double hubAngleUS, double hubAngleDS,
+		     double hubOverhangUS, double hubOverhangDS );
 
     CLHEP::HepRotation _protonBeamRotation;
 
@@ -96,6 +105,10 @@ namespace mu2e {
     double _hubDistDS;
     double _hubAngleUS;
     double _hubAngleDS;
+    double _hubOverhangUS;
+    double _hubOverhangDS;
+    double _hubLenUS;
+    double _hubLenDS;
 
     // Needed for persistency
     template<class T> friend class art::Wrapper;

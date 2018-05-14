@@ -15,6 +15,7 @@
 #include "TrackerGeom/inc/Panel.hh"
 #include "TrackerGeom/inc/Plane.hh"
 #include "TTrackerGeom/inc/Station.hh"
+#include "Alignment/inc/AlignmentMap.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -270,6 +271,10 @@ namespace mu2e {
     // straw construction counters when using the std::array
     int _strawTrckrConstrCount; // first straw will be at 0
     int _strawPanelConstrCount; // first straw will be at 0
+
+    // For use with alignment - is this being aligned?
+    bool useAlignment;
+    AlignmentMap* myAlignMap;
 
   };
 

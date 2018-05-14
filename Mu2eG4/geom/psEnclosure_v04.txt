@@ -1,0 +1,45 @@
+// The configuration to be used with the as-built design, reflected
+// in docdb 8047.  The PSEnclosureShell is part F10031354 in TeamCenter
+
+// Original author Andrei Gaponenko
+// Latest updates by David Norvil Brown (Lou), Dec 2017.
+
+int PSEnclosure.version   = 2;  
+
+double PSEnclosure.length = 958.9; // mm
+double PSEnclosure.shell.outerDiameterEast = 1526.6; // mm
+double PSEnclosure.shell.outerDiameterWest = 2217.7; // mm
+double PSEnclosure.shell.thickness = 9.53; // mm
+double PSEnclosure.endPlate.thickness = 6.35; // mm
+double PSEnclosure.v2.extraZOffset = -101.4; // mm
+
+string PSEnclosure.shell.materialName  = "StainlessSteel316L";
+
+int  PSEnclosure.nWindows = 2;
+
+// Primary beam window
+string PSEnclosure.window1.materialName = "G4_Ti";
+double PSEnclosure.window1.thickness = 2.84;
+double PSEnclosure.window1.r =  200;
+double PSEnclosure.window1.x = -674.4; // relative to PS center
+double PSEnclosure.window1.y =  102.24; // relative to PS center
+
+// ExtMonFNAL window
+string PSEnclosure.window2.materialName = "G4_Ti";
+double PSEnclosure.window2.thickness = 2.84;
+double PSEnclosure.window2.r =  100;
+double PSEnclosure.window2.x = -602.8; // relative to PS center
+double PSEnclosure.window2.y =  465; // relative to PS center
+
+bool  PSEnclosure.visible = true;
+bool  PSEnclosure.solid = false;
+
+bool  PSEnclosure.vacuum.visible = true;
+bool  PSEnclosure.vacuum.solid = false;
+
+int   PSEnclosure.verbosityLevel = 0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

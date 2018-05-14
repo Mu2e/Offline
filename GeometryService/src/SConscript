@@ -12,6 +12,7 @@ Import('mu2e_helper')
 helper=mu2e_helper(env)
 
 mainlib = helper.make_mainlib ( [
+    'mu2e_Alignment',
     'mu2e_BeamlineGeom',
     'mu2e_CalorimeterGeom',
     'mu2e_ProtonBeamDumpGeom',
@@ -52,6 +53,7 @@ mainlib = helper.make_mainlib ( [
 
 helper.make_plugins( [
     mainlib,
+    'mu2e_Alignment',
     'mu2e_ExtinctionMonitorFNAL_Geometry',
     'mu2e_CalorimeterGeom',
     'mu2e_ProtonBeamDumpGeom',

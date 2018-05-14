@@ -198,6 +198,11 @@ namespace mu2e {
 
     // Loop over all the tubes and fill the vectors used to build them
     for ( int it = 0; it < nType; it++ ) {
+      tmpVecRin.clear();
+      tmpVecRout.clear();
+      tmpVecMat.clear();
+      tmpVecuOff.clear();
+      tmpVecvOff.clear();
       for ( int ipipet = 0; ipipet < nComponentsOfType[it]; ipipet++ ) {
 	// holder variable
 	double tmpDub = 0.0;

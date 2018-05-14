@@ -40,7 +40,7 @@ namespace mu2e {
 	if ( where1 != std::string::npos ) {  // good...
 	  // check for second .
 	  where2 = aVar.find(".",where1+1);
-	  if ( where2 == std::string::npos ) { //good...
+	  if ( where2 != std::string::npos ) { 
 	    // *** NOTE:  Original specification called for an iov 
 	    // specification on each line.  No longer, so this part out ***
 	    // // See if there is third
@@ -49,13 +49,13 @@ namespace mu2e {
 	    //   throw cet::exception("ALIGN") <<
 	    // 	"Badly configured Alignment specification: " << aVar << "\n";
 	    // } 
-	    //	  } else { // bad - no second dot
+	    //	  } else { // bad - second dot
 	    throw cet::exception("ALIGN") <<
-	      "Badly configured Alignment specification: " << aVar << "\n";
+	      "Badly configured Alignment specification (two dots): " << aVar << "\n";
 	  }
 	}  else { // bad - no first dot
 	  throw cet::exception("ALIGN") <<
-	    "Badly configured Alignment specification: " << aVar << "\n";
+	    "Badly configured Alignment specification (no dots): " << aVar << "\n";
 	}  
 	std::string detec = aVar.substr(0,where1);
 	alignDets.push_back(detec);
@@ -107,7 +107,9 @@ namespace mu2e {
     addAlignment(prevDet,*tmpAlignObj);
   } // end of make function
 
-  AlignmentObj AlignmentMap::find( std::string& handle)  {
+
+
+  AlignmentObj AlignmentMap::find(std::string& handle)  {
     //    std::cout << "The handle is: " << handle << std::endl;
     auto search = _map.find(handle);
     if ( search != _map.end() ) {

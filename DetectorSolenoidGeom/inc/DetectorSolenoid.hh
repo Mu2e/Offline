@@ -119,6 +119,12 @@ namespace mu2e {
       return _BBlockCenters2; }
     std::vector<CLHEP::Hep3Vector> BBlockCenters3() const {
       return _BBlockCenters3; }
+    // Couplers between the bearing blocks
+    double widthCoupler()  const  { return _widthCoupler; }
+    double heightCoupler() const  { return _heightCoupler; }
+    double yCenterCoupler() const { return _yCenterCoupler; }
+    int    couplerScheme() const  { return _couplerScheme; }
+    // 0 = couplers both rails, 1 = north rail only, 2 = south only
 
     // MBS Spherical Support outline
     bool hasMBSS() const { return _hasMBSS; }
@@ -264,6 +270,14 @@ namespace mu2e {
     double                             _lengthBBlock3;
     std::vector<CLHEP::Hep3Vector>     _BBlockCenters2;
     std::vector<CLHEP::Hep3Vector>     _BBlockCenters3;
+    // Couplers between bearing blocks
+    double                             _widthCoupler;
+    double                             _heightCoupler;
+    double                             _yCenterCoupler;
+    int                                _couplerScheme;  
+    // 0 = couplers along both rails,
+    // 1 = couplers along north rails only,
+    // 2 = couplers along south rail only
 
     // MBS spherical support structure
     bool                _hasMBSS;

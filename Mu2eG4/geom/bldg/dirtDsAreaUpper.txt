@@ -47,6 +47,10 @@ vector<double> dirt.dsArea.upper.yPositions = {
   -50000   // h9_to_S
 };
 
+int dirt.dsArea.upper.Notch.numberOfNotches  = 1;
+vector<double> dirt.dsArea.upper.Notch.halfDims.1 = {76.2,127.,3350};
+vector<double> dirt.dsArea.upper.Notch.position.1 = {18000.,-12801.6,0.};
+string dirt.dsArea.upper.Notch.orientation.1 = "500";
 // Local Variables:
 // mode:c++
 // End:

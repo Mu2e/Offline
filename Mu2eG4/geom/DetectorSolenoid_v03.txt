@@ -148,6 +148,15 @@ vector<double> ds.zCentersBBlock = { 4789, 4789, 5850,5850, 6100, 6100, 6350, 63
 
 				     //9397, 9397, 10953, 10953, 
 // Temporarily discard Bearing blocks under tracker
+// ***
+// couplers run between bearing blocks.  Need width and height of coupler bar,
+// plus vertical location relative to center of bearing blocks.
+double ds.widthCoupler        = 25.0; //mm
+double ds.heightCoupler       = 20.0; // mm
+double ds.yCenterCoupler      = 10.0; // mm
+int    ds.couplerScheme       = 1; // 0 = along both rails, 1 = along north
+// rail only (current default), 2 = along south rail only
+
 
 // Spherical support for the upstream end of the MBS.  (DNB, April 2017)
 bool ds.hasMBSSupport = true;
@@ -195,7 +204,7 @@ string    ds.servicePipeMat        = "G4_Al";
 string    ds.servicePipeFillMat    = "G4_WATER";
 double    ds.servicePipeZC         = 14000.0; // Z-coord of pipe cent - a guess
 double    ds.servicePipeYC         = -820.0; // Y-coord guess
-vector<double> ds.servicePipeXCs   = {200.0,140.0,-140.0,-200.0};// relative to
+vector<double> ds.servicePipeXCs   = {300,200.0,140.0,-140.0,-200.0,-300};// relative to
                                                                  // axis of DS
 
 // Vacuum volumes inside DS

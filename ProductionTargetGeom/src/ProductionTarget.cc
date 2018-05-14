@@ -6,7 +6,8 @@ namespace mu2e {
 				     double rotY, const CLHEP::Hep3Vector& position,
 				     double finHt = 0, double finThick = 0,
 				     double hubDisU = 0, double hubDisD = 0,
-				     double hubAngU = 0, double hubAngD = 0)
+				     double hubAngU = 0, double hubAngD = 0,
+				     double huboverU = 0, double huboverD = 0)
     : _protonBeamRotation(CLHEP::HepRotation::IDENTITY)
     , _prodTargetPosition(position)
     , _version(version)
@@ -19,6 +20,8 @@ namespace mu2e {
     , _hubDistDS(hubDisD)
     , _hubAngleUS(hubAngU)
     , _hubAngleDS(hubAngD)
+    , _hubOverhangUS(huboverU)
+    , _hubOverhangDS(huboverD)
   {
     _protonBeamRotation.rotateX(rotX).rotateY(rotY);
     _protonBeamInverseRotation = _protonBeamRotation.inverse();

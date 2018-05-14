@@ -1,4 +1,4 @@
-// Andrei Gaponenko, 2012
+ // Andrei Gaponenko, 2012
 
 #include "Mu2eG4/inc/constructPSEnclosure.hh"
 
@@ -8,9 +8,11 @@
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeomPrimitives/inc/Tube.hh"
+#include "GeomPrimitives/inc/Cone.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/nestCons.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "G4Helper/inc/G4Helper.hh"
@@ -27,27 +29,55 @@ namespace mu2e {
     GeomHandle<PSVacuum> psv;
 
     const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
+    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false) 
+      || config.getBool("ps.doSurfaceCheck",false);
     const bool placePV             = true;
     const int  verbosityLevel      = config.getInt("PSEnclosure.verbosityLevel",0);
+    CLHEP::Hep3Vector extraOffset(0.,0.,pse->getExtraOffset());
 
     //----------------------------------------------------------------
     std::string sName = "PSEnclosureShell";
-    nestTubs(sName,
-             pse->shell().getTubsParams(),
-             findMaterialOrThrow(pse->shell().materialName()),
-             0,
-             pse->shell().originInMu2e() - parent.centerInMu2e(),
-             parent,
-             0,
-             config.getBool("PSEnclosure.visible"),
-             G4Colour::Blue(),
-             config.getBool("PSEnclosure.solid"),
-             forceAuxEdgeVisible,
-             placePV,
-             doSurfaceCheck
-             );
+    if ( pse->version() > 1 ) {
+      double consParams[7] = { pse->shellCone().innerRadius1(),
+			       pse->shellCone().outerRadius1(),
+			       pse->shellCone().innerRadius2(),
+			       pse->shellCone().outerRadius2(),
+			       pse->shellCone().halfLength(),
+			       pse->shellCone().phi0(),
+			       pse->shellCone().deltaPhi() };
+      nestCons( sName,
+		consParams,
+		findMaterialOrThrow(pse->shellCone().materialName()),
+		0,
+		pse->shellCone().originInMu2e() - parent.centerInMu2e()
+		+ extraOffset,
+		parent,
+		0,
+	       config.getBool("PSEnclosure.visible"),
+	       G4Colour::Blue(),
+	       config.getBool("PSEnclosure.solid"),
+	       forceAuxEdgeVisible,
+	       placePV,
+	       doSurfaceCheck
+	       );
+		
 
+    } else {
+      nestTubs(sName,
+	       pse->shell().getTubsParams(),
+	       findMaterialOrThrow(pse->shell().materialName()),
+	       0,
+	       pse->shell().originInMu2e() - parent.centerInMu2e(),
+	       parent,
+	       0,
+	       config.getBool("PSEnclosure.visible"),
+	       G4Colour::Blue(),
+	       config.getBool("PSEnclosure.solid"),
+	       forceAuxEdgeVisible,
+	       placePV,
+	       doSurfaceCheck
+	       );
+    }
 
     // get the mass of the Shell
     G4Helper* _helper = &(*art::ServiceHandle<G4Helper>());
@@ -61,7 +91,7 @@ namespace mu2e {
                                          pse->endPlate().getTubsParams(),
                                          findMaterialOrThrow(pse->endPlate().materialName()),
                                          0,
-                                         pse->endPlate().originInMu2e() - parent.centerInMu2e(),
+                                         pse->endPlate().originInMu2e() - parent.centerInMu2e() + extraOffset,
                                          parent,
                                          0,
                                          config.getBool("PSEnclosure.visible"),
@@ -82,11 +112,14 @@ namespace mu2e {
 
     for(unsigned i=0; i<pse->nWindows(); ++i) {
 
+      CLHEP::Hep3Vector windOff(0,0,pse->windows()[i].halfLength());
+
       // Hole in the endPlate for the window
       const CLHEP::Hep3Vector vacCenter =
         pse->windows()[i].originInMu2e() +
-        CLHEP::Hep3Vector(0,0, pse->endPlate().halfLength() + pse->windows()[i].halfLength())
-        ;
+        CLHEP::Hep3Vector(0,0, pse->endPlate().halfLength())   + extraOffset
+	+ windOff;
+			  
 
       const TubsParams vacTubs(pse->windows()[i].innerRadius(),
                                pse->windows()[i].outerRadius(),
@@ -113,11 +146,12 @@ namespace mu2e {
       // The window itself
       std::ostringstream wname;
       wname<<"PSEnclosureWindow"<<i;
+
       nestTubs(wname.str(),
                pse->windows()[i].getTubsParams(),
                findMaterialOrThrow(pse->windows()[i].materialName()),
                0,
-               pse->windows()[i].originInMu2e() - parent.centerInMu2e(),
+               pse->windows()[i].originInMu2e() - parent.centerInMu2e() + extraOffset,
                parent,
                0,
                config.getBool("PSEnclosure.visible"),
