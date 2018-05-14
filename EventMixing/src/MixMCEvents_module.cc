@@ -53,7 +53,7 @@
 //      art/Persistency/Common/CollectionUtilities.h
 //
 //    The first of these is in art test suite available at:
-//      https://cdcvs.fnal.gov/redmine/projects/art/repository/revisions/master/show/test/Integration
+//      https://cdcvs.fnal.gov/redmine/projects/art/repository/entry/art/test/Integration
 //
 //    The other two are available at $ART_INC or in the code browser:
 //      https://cdcvs.fnal.gov/redmine/projects/art/repository/revisions/master/show/art
