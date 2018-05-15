@@ -40,3 +40,5 @@ double cosmicCRY.subboxLength = 300.; // meter
 // Local Variables:
 // mode:c++
 // End:
+// Similar stuff for vim
+// vim: ft=cpp
