@@ -66,61 +66,6 @@ mu2e.physics.producers.g4run.muons.MultiStageParameters:  {}
 mu2e.physics.producers.g4run.muons.SDConfig.preSimulatedHits: []
 
 #================================================================
-mu2e.producers.compressPVDefs:{
-   compressPVDetector: {
-      module_type: CompressPhysicalVolumes
-      volumesInput: "g4run"
-      hitInputs: []
-      particleInputs: [ "detectorFilter" ]
-   }
-   compressPVCRV: {
-      module_type: CompressPhysicalVolumes
-      volumesInput: "g4run"
-      hitInputs: []
-      particleInputs: [ "crvFilter" ]
-   }
-   compressPVFull: {
-      module_type: CompressPhysicalVolumes
-      volumesInput: "g4run"
-      hitInputs: []
-      particleInputs: [ "g4run" ]
-   }
-}
-
-#================================================================
-mu2e.filters.g4s4Defs: {
-   detectorFilter: {
-      module_type: FilterG4Out
-      noInstanceName: true
-      mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
-      extraHitInputs: [ "g4run:virtualdetector", "g4run:protonabsorber" ]
-      numSimParticleCollections: 1
-      vetoDaughters: []
-   }
-
-   crvFilter: {
-      module_type: FilterG4Out
-      noInstanceName: true
-      mainHitInputs: [ "g4run:CRV"]
-      extraHitInputs: [ "g4run:virtualdetector" ]
-      numSimParticleCollections: 1
-      vetoDaughters: []
-   }
-}
-
-mu2e.filters.g4StatusDefs: {
-   g4status: {
-      module_type: FilterStatusG4
-      input: "g4run"
-   }
-   g4consistent: {
-      module_type: FilterStatusG4
-      input: "g4run"
-      maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
-   }
-}
-
-#================================================================
 mu2e.outputs.g4s4Defs: {
    detectorOutput: {
       module_type: RootOutput
@@ -130,6 +75,8 @@ mu2e.outputs.g4s4Defs: {
          "keep mu2e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
          "keep *_detectorFilter_*_*",
+         "keep *_CaloShowerCrystalSteps_*_*",
+         "keep *_CaloShowerROSteps_*_*",
          "keep *_compressPVDetector_*_*"
       ]
       fileName: @nil
@@ -164,19 +111,73 @@ mu2e.outputs.g4s4Defs: {
 }
 
 #================================================================
-crvPathCommon: [ g4run, g4consistent, crvFilter, compressPVCRV ]
-detPathCommon: [ g4run, g4consistent, detectorFilter, compressPVDetector ]
-g4StatusPathCommon:  [ g4run, "!g4status", compressPVFull ]
-
 mu2e.physics.g4s4CommonBase: {
    producers: {
       g4run: @nil
-      @table::mu2e.producers.compressPVDefs
+
+      CaloShowerStepFromStepPt: @local::CaloShowerStepFromStepPt
+
+      CaloShowerCrystalSteps: {
+	 module_type: CaloShowerUpdater
+	 showerInput: "CaloShowerStepFromStepPt:calorimeter"
+	 newSimParticles: "detectorFilter"
+      }
+
+      CaloShowerROSteps: {
+	 module_type: CaloShowerUpdater
+	 showerInput: "CaloShowerStepFromStepPt:calorimeterRO"
+	 newSimParticles: "detectorFilter"
+      }
+
+      compressPVDetector: {
+	 module_type: CompressPhysicalVolumes
+	 volumesInput: "g4run"
+	 hitInputs: []
+	 particleInputs: [ "detectorFilter" ]
+      }
+      compressPVCRV: {
+	 module_type: CompressPhysicalVolumes
+	 volumesInput: "g4run"
+	 hitInputs: []
+	 particleInputs: [ "crvFilter" ]
+      }
+      compressPVFull: {
+	 module_type: CompressPhysicalVolumes
+	 volumesInput: "g4run"
+	 hitInputs: []
+	 particleInputs: [ "g4run" ]
+      }
    }
 
    filters: {
-      @table::mu2e.filters.g4s4Defs
-      @table::mu2e.filters.g4StatusDefs
+      detectorFilter: {
+	 module_type: FilterG4Out
+	 noInstanceName: true
+	 mainHitInputs: [ "g4run:tracker" ]
+	 mainSPPtrInputs: [ "CaloShowerStepFromStepPt" ]
+	 extraHitInputs: [ "g4run:virtualdetector", "g4run:protonabsorber" ]
+	 numSimParticleCollections: 1
+	 vetoDaughters: []
+      }
+
+      crvFilter: {
+	 module_type: FilterG4Out
+	 noInstanceName: true
+	 mainHitInputs: [ "g4run:CRV"]
+	 extraHitInputs: [ "g4run:virtualdetector" ]
+	 numSimParticleCollections: 1
+	 vetoDaughters: []
+      }
+
+      g4status: {
+	 module_type: FilterStatusG4
+	 input: "g4run"
+      }
+      g4consistent: {
+	 module_type: FilterStatusG4
+	 input: "g4run"
+	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+      }
    }
 
    analyzers: { genCountLogger: { module_type: GenEventCountReader } }
@@ -190,6 +191,10 @@ mu2e.physics.g4s4CommonBase: {
    gcl: [genCountLogger]
    end_paths: [out, gcl]
 }
+
+crvPathCommon: [ g4run, g4consistent, crvFilter, compressPVCRV ]
+detPathCommon: [ g4run, g4consistent, CaloShowerStepFromStepPt, detectorFilter, CaloShowerCrystalSteps, CaloShowerROSteps, compressPVDetector ]
+g4StatusPathCommon:  [ g4run, "!g4status", compressPVFull ]
 
 #----------------------------------------------------------------
 mu2e.physics.g4s4Flash: @local::mu2e.physics.g4s4CommonBase
