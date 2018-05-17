@@ -129,7 +129,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // cache of event objects
 //-----------------------------------------------------------------------------
-    const StrawHitCollection*             _shcol;
+    const ComboHitCollection*             _shcol;
     const StrawHitFlagCollection*         _shfcol;
     const StrawHitPositionCollection*     _shpcol;
 
@@ -277,7 +277,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   bool CalTrkFit::findData(const art::Event& evt) {
 
-    art::Handle<mu2e::StrawHitCollection> strawhitsH;
+    art::Handle<mu2e::ComboHitCollection> strawhitsH;
     if (evt.getByLabel(_shLabel,strawhitsH)) {
       _shcol = strawhitsH.product();
     }
@@ -287,15 +287,15 @@ namespace mu2e {
              _shLabel.data());
     }
 
-    art::Handle<mu2e::StrawHitPositionCollection> shposH;
-    if (evt.getByLabel(_shpLabel,shposH)) {
-      _shpcol = shposH.product();
-    }
-    else {
-      _shpcol = 0;
-      printf(" >>> ERROR in CalTrkFit::findData: StrawHitPositionCollection with label=%s not found.\n",
-             _shpLabel.data());
-    }
+    // art::Handle<mu2e::StrawHitPositionCollection> shposH;
+    // if (evt.getByLabel(_shpLabel,shposH)) {
+    //   _shpcol = shposH.product();
+    // }
+    // else {
+    //   _shpcol = 0;
+    //   printf(" >>> ERROR in CalTrkFit::findData: StrawHitPositionCollection with label=%s not found.\n",
+    //          _shpLabel.data());
+    // }
 
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
     if (evt.getByLabel(_shfLabel,shflagH)) {
@@ -356,7 +356,7 @@ namespace mu2e {
     _result.fitType     = 1;               // final fit
     _result.event       = &event ;
     _result.shcol       = _shcol ;
-    _result.shpos       = _shpcol;
+    //    _result.shpos       = _shpcol;
     _result.shfcol      = _shfcol;
     _result.tpart       = _tpart ;
     _result.fdir        = _fdir  ;
@@ -615,7 +615,7 @@ namespace mu2e {
 //----------------------------------------------------------------------
 // 2015-02-11 change the selection bit for searching for missed hits
 //----------------------------------------------------------------------
-      StrawHit const& sh    = _shcol->at(istr);
+      ComboHit const& sh    = _shcol->at(istr);
 //-----------------------------------------------------------------------------
 // I think, we want to check the radial bit: if it is set, than at least one of
 // the two measured times is wrong...
@@ -681,9 +681,9 @@ namespace mu2e {
 
           TrkPoca     hitpoca(krep->pieceTraj(),fltlen,htraj,0.0);
 
-	  double      rdrift, hit_error(0.2);
+	  double      rdrift;//, hit_error(0.2);
 
-	  TrkStrawHit hit(sh,straw,istr,hitt0,hflt,hit_error,10.,1.,_maxadddoca);
+	  TrkStrawHit hit(sh,straw,istr,hitt0,hflt,10.,1.);
 	  
 	  ConditionsHandle<TrackerCalibrations> tcal("ignored");
 
@@ -720,7 +720,7 @@ namespace mu2e {
 	if (_debugLevel > 0) {
 	  printf("[%s] rejected hit: i, index, flag, dt: %5i %5i %s %10.3f\n",
 		 oname,istr,sh.strawId().asUint16(),
-		 KRes.shfcol->at(istr).hex().data(),sh.dt());
+		 KRes.shfcol->at(istr).hex().data(),0./*sh.dt()*/);//FIXME!
 	}
       }
     }

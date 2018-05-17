@@ -17,7 +17,7 @@
 
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/PanelAmbigResolver.hh"
-#include "TrkReco/inc/PocaAmbigResolver.hh"
+// #include "TrkReco/inc/PocaAmbigResolver.hh"
 #include "TrkReco/inc/HitAmbigResolver.hh"
 #include "TrkReco/inc/FixedAmbigResolver.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
@@ -222,9 +222,9 @@ namespace mu2e {
       case kPanelAmbig:
         ar = new PanelAmbig::PanelAmbigResolver(pset,err,i);
         break;
-      case kPocaAmbig:
-        ar = new PocaAmbigResolver(pset,err);
-        break;
+      // case kPocaAmbig:
+      //   ar = new PocaAmbigResolver(pset,err);
+      //   break;
       case kDoubletAmbig: // 4
         ar = new DoubletAmbigResolver(*_darPset,err,i,final);
         break;
@@ -327,8 +327,8 @@ namespace mu2e {
                                         // there must be a valid Kalman fit to add hits to
     int  activity(0);
 					// last iteration
-    int    iteration = _hiterr.size();
-    double hit_error = _hiterr[iteration-1];
+    //    int    iteration = _hiterr.size();
+    //    double hit_error = _hiterr[iteration-1];//NOT USED ANYMORE TO INITILIZE THE TRKSTRAWHIT
 
     KalRep* krep = KFRes.krep;
 
@@ -356,7 +356,7 @@ namespace mu2e {
       int nadd = KFRes.missingHits.size();
       for (int i=0; i<nadd; i++) {
         size_t istraw = KFRes.missingHits[i].index;
-        const StrawHit& strawhit(KFRes.shcol->at(istraw));
+        const ComboHit& strawhit(KFRes.shcol->at(istraw));
         const Straw& straw = _tracker->getStraw(strawhit.strawId());
 //-----------------------------------------------------------------------------
 // estimate  initial flightlength
@@ -382,7 +382,7 @@ namespace mu2e {
                                         // update the time in the TrkT0 object and create a new
                                         // hit object.  Assume we're at the last iteration over added error
         hitt0._t0 += tflt;
-        trkhit     = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,hit_error,_maxdriftpull,1.,_mint0doca);
+        trkhit     = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,_maxdriftpull,1.);
         assert(trkhit != 0);
                                         // 3 means "Added by addHits"
         trkhit->setFlag(3);
@@ -741,13 +741,13 @@ namespace mu2e {
 
     for (unsigned iind=0; iind<nind; iind++) {
       size_t istraw = KRes.strawHitIndices()->at(iind);             //[iind];
-      const StrawHit& strawhit(KRes.shcol->at(istraw));
+      const ComboHit& strawhit(KRes.shcol->at(istraw));
       const Straw& straw = _tracker->getStraw(strawhit.strawId());
       double fltlen      = hel->zFlight(straw.getMidPoint().z());
     // estimate arrival time at the wire
       hitt0._t0          = KRes.t0._t0 + (fltlen-flt0)/vflt;
       // create the hit object.  Start with the 1st additional error for anealing
-      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fltlen,_hiterr.front(),_maxdriftpull,1.,_mint0doca);
+      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fltlen,_maxdriftpull,1.);
       assert(trkhit != 0);
 					// set hit flag and the initial ambiguity to null
       trkhit->setFlag(0);
@@ -836,7 +836,7 @@ namespace mu2e {
 
     mu2e::TrkStrawHit     *hit;
     Hep3Vector            pos;
-    const mu2e::StrawHit  *sh;
+    const mu2e::ComboHit  *sh;
     const mu2e::Straw     *straw;
     int                   ihit;
     double                len;
@@ -864,7 +864,7 @@ namespace mu2e {
              len,
              //      hit->hitRms(),
              plen.x(),plen.y(),plen.z(),
-             sh->time(), sh->dt()
+             sh->time(), 0.//sh->dt()//FIXME!
              );
 
       printf(" %2i %2i %2i %2i",
@@ -1141,7 +1141,7 @@ namespace mu2e {
       for (int iind=0; iind<nind; iind++) {
 
 	size_t istraw = KRes.strawHitIndices()->at(iind);
-	const StrawHit& strawhit(KRes.shcol->at(istraw));
+	const ComboHit& strawhit(KRes.shcol->at(istraw));
 	const Straw& straw = _tracker->getStraw(strawhit.strawId());
 //-----------------------------------------------------------------------------
 // compute the flightlength to this hit from z=0 (can be negative)
