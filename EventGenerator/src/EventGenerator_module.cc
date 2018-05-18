@@ -35,23 +35,13 @@
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 
 // Particular generators that this code knows about.
-#include "EventGenerator/inc/ConversionGun.hh"
-#include "EventGenerator/inc/StoppedMuonGun.hh"
 #include "EventGenerator/inc/CosmicDYB.hh"
 #include "EventGenerator/inc/CosmicFromTH2.hh"
-#include "EventGenerator/inc/DecayInOrbitGun.hh"
-#include "EventGenerator/inc/EjectedNeutronGun.hh"
-#include "EventGenerator/inc/EjectedProtonGun.hh"
-#include "EventGenerator/inc/EjectedPhotonGun.hh"
 #include "EventGenerator/inc/FromG4BLFile.hh"
-#include "EventGenerator/inc/NuclearCaptureGun.hh"
 #include "EventGenerator/inc/ParticleGun.hh"
-#include "EventGenerator/inc/PiCapture.hh"
 #include "EventGenerator/inc/PiEplusNuGun.hh"
 #include "EventGenerator/inc/PrimaryProtonGun.hh"
 #include "EventGenerator/inc/ExtMonFNALGun.hh"
-#include "EventGenerator/inc/BremElectronGun.hh"
-#include "EventGenerator/inc/MuonicXRayGun.hh"
 #include "EventGenerator/inc/CaloCalibGun.hh"
 #include "SeedService/inc/SeedService.hh"
 
@@ -177,43 +167,23 @@ namespace mu2e {
     _generators.clear();
 
     // Which generators will we run?
-    bool doConv                 = config.getBool( "conversionGun.do",    false );
     bool doParticleGun          = config.getBool( "particleGun.do",      false );
     bool doCosmicDYB            = config.getBool( "cosmicDYB.do",        false );
     bool doCosmicFromTH2        = config.getBool( "cosmicFromTH2.do",    false );
-    bool doPiCapture            = config.getBool( "picapture.do",        false );
-    bool doEjectedProton        = config.getBool( "ejectedProtonGun.do", false );
-    bool doEjectedNeutron       = config.getBool( "ejectedNeutronGun.do",false );
-    bool doEjectedPhoton        = config.getBool( "ejectedPhotonGun.do", false );
-    bool doDIO                  = config.getBool( "decayinorbitGun.do",  false );
     bool doPiEplusNu            = config.getBool( "piEplusNuGun.do",     false );
     bool doPrimaryProtonGun     = config.getBool( "primaryProtonGun.do", false );
     bool doFromG4BLFile         = config.getBool( "fromG4BLFile.do",     false );
-    bool doNuclearCapture       = config.getBool( "nuclearCaptureGun.do",false );
     bool doExtMonFNALGun        = config.getBool( "extMonFNALGun.do",    false );
-    bool doStoppedMuonGun       = config.getBool( "stoppedMuonGun.do",   false );
-    bool doBremElectronGun      = config.getBool( "bremElectronGun.do",  false );
-    bool doMuonicXRayGun        = config.getBool( "muonicXRayGun.do",    false );
     bool doCaloCalibGun         = config.getBool( "caloCalibGun.do",     false );
 
     // Instantiate generators for this run.
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );
-    if ( doConv)                 _generators.push_back( GeneratorBasePtr( new ConversionGun(    run, config)) );
     if ( doCosmicDYB)            _generators.push_back( GeneratorBasePtr( new CosmicDYB(        run, config)) );
     if ( doCosmicFromTH2)        _generators.push_back( GeneratorBasePtr( new CosmicFromTH2(    run, config)) );
-    if ( doPiCapture)            _generators.push_back( GeneratorBasePtr( new PiCapture(        run, config)) );
-    if ( doDIO)                  _generators.push_back( GeneratorBasePtr( new DecayInOrbitGun(  run, config)) );
-    if ( doEjectedProton)        _generators.push_back( GeneratorBasePtr( new EjectedProtonGun( run, config)) );
-    if ( doEjectedNeutron)       _generators.push_back( GeneratorBasePtr( new EjectedNeutronGun(run, config)) );
-    if ( doEjectedPhoton)        _generators.push_back( GeneratorBasePtr( new EjectedPhotonGun (run, config)) );
     if ( doPiEplusNu)            _generators.push_back( GeneratorBasePtr( new PiEplusNuGun(     run, config)) );
     if ( doPrimaryProtonGun)     _generators.push_back( GeneratorBasePtr( new PrimaryProtonGun( run, config)) );
     if ( doFromG4BLFile)         _generators.push_back( GeneratorBasePtr( new FromG4BLFile(     run, config)) );
-    if ( doNuclearCapture)       _generators.push_back( GeneratorBasePtr( new NuclearCaptureGun(run, config)) );
     if ( doExtMonFNALGun)        _generators.push_back( GeneratorBasePtr( new ExtMonFNALGun(    run, config)) );
-    if ( doStoppedMuonGun)       _generators.push_back( GeneratorBasePtr( new StoppedMuonGun(   run, config)) );
-    if ( doBremElectronGun)      _generators.push_back( GeneratorBasePtr( new BremElectronGun(  run, config)) );
-    if ( doMuonicXRayGun)        _generators.push_back( GeneratorBasePtr( new MuonicXRayGun(    run, config)) );
     if ( doCaloCalibGun)         _generators.push_back( GeneratorBasePtr( new CaloCalibGun(     run, config)) );
 
     if ( _generators.size() == 0 ){
