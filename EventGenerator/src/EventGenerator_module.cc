@@ -39,9 +39,7 @@
 #include "EventGenerator/inc/CosmicFromTH2.hh"
 #include "EventGenerator/inc/FromG4BLFile.hh"
 #include "EventGenerator/inc/ParticleGun.hh"
-#include "EventGenerator/inc/PiEplusNuGun.hh"
 #include "EventGenerator/inc/PrimaryProtonGun.hh"
-#include "EventGenerator/inc/ExtMonFNALGun.hh"
 #include "EventGenerator/inc/CaloCalibGun.hh"
 #include "SeedService/inc/SeedService.hh"
 
@@ -170,20 +168,16 @@ namespace mu2e {
     bool doParticleGun          = config.getBool( "particleGun.do",      false );
     bool doCosmicDYB            = config.getBool( "cosmicDYB.do",        false );
     bool doCosmicFromTH2        = config.getBool( "cosmicFromTH2.do",    false );
-    bool doPiEplusNu            = config.getBool( "piEplusNuGun.do",     false );
     bool doPrimaryProtonGun     = config.getBool( "primaryProtonGun.do", false );
     bool doFromG4BLFile         = config.getBool( "fromG4BLFile.do",     false );
-    bool doExtMonFNALGun        = config.getBool( "extMonFNALGun.do",    false );
     bool doCaloCalibGun         = config.getBool( "caloCalibGun.do",     false );
 
     // Instantiate generators for this run.
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );
     if ( doCosmicDYB)            _generators.push_back( GeneratorBasePtr( new CosmicDYB(        run, config)) );
     if ( doCosmicFromTH2)        _generators.push_back( GeneratorBasePtr( new CosmicFromTH2(    run, config)) );
-    if ( doPiEplusNu)            _generators.push_back( GeneratorBasePtr( new PiEplusNuGun(     run, config)) );
     if ( doPrimaryProtonGun)     _generators.push_back( GeneratorBasePtr( new PrimaryProtonGun( run, config)) );
     if ( doFromG4BLFile)         _generators.push_back( GeneratorBasePtr( new FromG4BLFile(     run, config)) );
-    if ( doExtMonFNALGun)        _generators.push_back( GeneratorBasePtr( new ExtMonFNALGun(    run, config)) );
     if ( doCaloCalibGun)         _generators.push_back( GeneratorBasePtr( new CaloCalibGun(     run, config)) );
 
     if ( _generators.size() == 0 ){
