@@ -39,7 +39,7 @@ namespace mu2e {
     _wirevoltage(pset.get<double>("WireVoltage",1400)),
     _phiBins(pset.get<int>("DriftPhiBins",20)),
     _dIntegrationBins(pset.get<int>("DriftIntegrationBins",50)),
-    _usenonlindrift(pset.get<bool>("UseNonLinearDrift",false)),
+    _usenonlindrift(pset.get<bool>("UseNonLinearDrift",true)),
     _lindriftvel(pset.get<double>("LinearDriftVelocity",0.0625)), // mm/ns, only used if nonlindrift==0
     _rres_min(pset.get<double>("MinDriftRadiusResolution",0.2)), //mm
     _rres_max(pset.get<double>("MaxDriftRadiusResolution",0.2)), //mm
