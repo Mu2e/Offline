@@ -40,7 +40,6 @@
 #include "EventGenerator/inc/FromG4BLFile.hh"
 #include "EventGenerator/inc/ParticleGun.hh"
 #include "EventGenerator/inc/PrimaryProtonGun.hh"
-#include "EventGenerator/inc/ExtMonFNALGun.hh"
 #include "EventGenerator/inc/CaloCalibGun.hh"
 #include "SeedService/inc/SeedService.hh"
 
@@ -171,7 +170,6 @@ namespace mu2e {
     bool doCosmicFromTH2        = config.getBool( "cosmicFromTH2.do",    false );
     bool doPrimaryProtonGun     = config.getBool( "primaryProtonGun.do", false );
     bool doFromG4BLFile         = config.getBool( "fromG4BLFile.do",     false );
-    bool doExtMonFNALGun        = config.getBool( "extMonFNALGun.do",    false );
     bool doCaloCalibGun         = config.getBool( "caloCalibGun.do",     false );
 
     // Instantiate generators for this run.
@@ -180,7 +178,6 @@ namespace mu2e {
     if ( doCosmicFromTH2)        _generators.push_back( GeneratorBasePtr( new CosmicFromTH2(    run, config)) );
     if ( doPrimaryProtonGun)     _generators.push_back( GeneratorBasePtr( new PrimaryProtonGun( run, config)) );
     if ( doFromG4BLFile)         _generators.push_back( GeneratorBasePtr( new FromG4BLFile(     run, config)) );
-    if ( doExtMonFNALGun)        _generators.push_back( GeneratorBasePtr( new ExtMonFNALGun(    run, config)) );
     if ( doCaloCalibGun)         _generators.push_back( GeneratorBasePtr( new CaloCalibGun(     run, config)) );
 
     if ( _generators.size() == 0 ){
