@@ -193,10 +193,6 @@ namespace mu2e {
   {
       if ( diagLevel_ > 0) std::cout << "[CaloShowerStepROFromShowerStep::produce] begin" << std::endl;
       
-      art::ServiceHandle<GeometryService> geom;    
-      if (!geom->hasElement<Calorimeter>()) return;
-
-
       //update condition cache
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       mbtime_ = accPar->deBuncherPeriod;

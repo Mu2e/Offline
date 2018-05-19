@@ -250,10 +250,6 @@ namespace mu2e {
         
         if ( diagLevel_ > 0) std::cout << "[CaloShowerStepFromStepPt::produce] begin" << std::endl;
 
-        // Check that calorimeter geometry description exists
-        art::ServiceHandle<GeometryService> geom;    
-        if( !(geom->hasElement<Calorimeter>()) ) return;
-
         // A container to hold the output hits.
         std::unique_ptr<CaloShowerStepCollection> caloShowerStepMCs(new CaloShowerStepCollection);
         std::unique_ptr<CaloShowerStepCollection> caloROShowerStepMCs(new CaloShowerStepCollection);
