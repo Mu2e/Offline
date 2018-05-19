@@ -179,8 +179,7 @@ namespace mu2e {
          TH2F*                   hPECorr_;
          TH1F*                   hPECorr2_;
 
-
-         void   makeReadoutHits(const art::Handle<CaloShowerStepCollection>&, CaloShowerStepROCollection&, CaloShowerSimCollection&);
+         void   makeReadoutHits(const art::ValidHandle<CaloShowerStepCollection>&, CaloShowerStepROCollection&, CaloShowerSimCollection&);
          double LRUCorrection(int crystalID, double normalizedPosZ, double edepInit, const ConditionsHandle<CalorimeterCalibrations>&);
          double BirksCorrection(int particleCode, double edepInit, const ConditionsHandle<CalorimeterCalibrations>&);
          double photoStatisticsCorrection(int crystalID, double edepInit, double NpePerMeV);
@@ -221,12 +220,8 @@ namespace mu2e {
       // A container to hold the output hits.
       std::unique_ptr<CaloShowerSimCollection> caloShowerSims(new CaloShowerSimCollection);
 
-
-      //Get handles to caloStepMC collection
-      art::Handle<CaloShowerStepCollection> caloShowerStepMCHandle;
-      event.getByLabel(caloShowerStepMCModuleLabel_, caloShowerMCName_,   caloShowerStepMCHandle);
-
-
+      art::InputTag inc(caloShowerStepMCModuleLabel_, caloShowerMCName_);
+      auto caloShowerStepMCHandle = event.getValidHandle<CaloShowerStepCollection>(inc);
       makeReadoutHits(caloShowerStepMCHandle, *caloShowerStepROs, *caloShowerSims);
 
       // Add the output hit collection to the event
@@ -244,7 +239,7 @@ namespace mu2e {
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------
-  void CaloShowerStepROFromShowerStep::makeReadoutHits(const art::Handle<CaloShowerStepCollection>& caloShowerStepMCCollHandle,
+  void CaloShowerStepROFromShowerStep::makeReadoutHits(const art::ValidHandle<CaloShowerStepCollection>& caloShowerStepMCCollHandle,
                                                        CaloShowerStepROCollection& caloShowerStepROs, CaloShowerSimCollection& caloShowerSims)
   {
 
@@ -256,7 +251,6 @@ namespace mu2e {
        double cryhalflength    = cal.caloInfo().getDouble("crystalZLength")/2.0;
        double refractiveIndex  = cal.caloInfo().getDouble("refractiveIndex");
        double lightSpeed       = 300; // mm/ns
-
 
        const CaloShowerStepCollection& caloShowerSteps(*caloShowerStepMCCollHandle);
        const CaloShowerStep*           caloShowerStepMCBase = &caloShowerSteps.front();
