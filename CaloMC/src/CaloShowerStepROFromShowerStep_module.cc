@@ -108,32 +108,48 @@ namespace mu2e {
 
     public:
 
-        explicit CaloShowerStepROFromShowerStep(fhicl::ParameterSet const& pset) :
+    using Name=fhicl::Name;
+    using Comment=fhicl::Comment;
 
-          caloShowerStepMCModuleLabel_(pset.get<std::string>("caloShowerStepMCModuleLabel")),
-          caloShowerMCName_           (pset.get<std::string>("caloShowerMCName")),
-          toff_                       (pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
-          blindTime_                  (pset.get<double>     ("blindTime")),
-          caloLRUCorrection_          (pset.get<bool>       ("caloLRUCorrection")),
-          caloBirksCorrection_        (pset.get<bool>       ("caloBirksCorrection")),
-          caloPEStatCorrection_       (pset.get<bool>       ("caloPEStatCorrection")),
-          addTravelTime_              (pset.get<bool>       ("addTravelTime")),
-          diagLevel_                  (pset.get<int>        ("diagLevel",0)),
-          messageCategory_            ("CaloShowerStepROFromShowerStep"),
-          engine_                     ( createEngine(art::ServiceHandle<SeedService>()->getSeed()) ),
-          randPoisson_                (engine_),
-          randGauss_                  (engine_),
-          randExpo_                   (engine_)
-        {
-             produces<CaloShowerStepROCollection>();
-             produces<CaloShowerSimCollection>();
-        }
+    struct Config {
+      fhicl::Atom<std::string> caloShowerStepMCModuleLabel{ Name("caloShowerStepMCModuleLabel") };
+      fhicl::Atom<std::string> caloShowerMCName{ Name("caloShowerMCName") };
 
-        virtual ~CaloShowerStepROFromShowerStep() {}
-        virtual void beginJob();
-        void produce( art::Event& e);
+      fhicl::Table<SimParticleTimeOffset::Config> timeOffsets{ Name("TimeOffsets"), Comment("Time maps to apply to sim particles before digitization.") };
 
+      fhicl::Atom<double> blindTime{ Name("blindTime"), Comment("Time cut on digis? Or something related to that.") };
+      fhicl::Atom<bool>   caloLRUCorrection{ Name("caloLRUCorrection") };
+      fhicl::Atom<bool>   caloBirksCorrection{ Name("caloBirksCorrection") };
+      fhicl::Atom<bool>   caloPEStatCorrection{ Name("caloPEStatCorrection") };
+      fhicl::Atom<bool>   addTravelTime{ Name("addTravelTime") };
+      fhicl::Atom<int>    diagLevel{ Name("diagLevel") };
+    };
 
+    using Parameters = art::EDProducer::Table<Config>;
+
+    explicit CaloShowerStepROFromShowerStep(const Parameters& config) :
+
+      caloShowerStepMCModuleLabel_(config().caloShowerStepMCModuleLabel()),
+      caloShowerMCName_           (config().caloShowerMCName()),
+      toff_                       (config().timeOffsets()),
+      blindTime_                  (config().blindTime()),
+      caloLRUCorrection_          (config().caloLRUCorrection()),
+      caloBirksCorrection_        (config().caloBirksCorrection()),
+      caloPEStatCorrection_       (config().caloPEStatCorrection()),
+      addTravelTime_              (config().addTravelTime()),
+      diagLevel_                  (config().diagLevel()),
+      messageCategory_            ("CaloShowerStepROFromShowerStep"),
+      engine_                     ( createEngine(art::ServiceHandle<SeedService>()->getSeed()) ),
+      randPoisson_                (engine_),
+      randGauss_                  (engine_),
+      randExpo_                   (engine_)
+    {
+      produces<CaloShowerStepROCollection>();
+      produces<CaloShowerSimCollection>();
+    }
+
+    virtual void beginJob() override;
+    void produce( art::Event& e) override;
 
      private:
 
