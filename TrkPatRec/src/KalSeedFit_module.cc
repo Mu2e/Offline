@@ -77,7 +77,7 @@ namespace mu2e
       art::InputTag _shTag;
       art::InputTag _hsTag;
       TrkFitFlag _seedflag; // helix fit flag
-  unsigned _minnhits; // minimum # of hits
+      unsigned _minnhits; // minimum # of hits
       double _maxdoca;      // outlier cut
       bool _foutliers; // filter hits far from the helix
       bool _fhoutliers; // filter hits found flagged as outliers in the helix fit
