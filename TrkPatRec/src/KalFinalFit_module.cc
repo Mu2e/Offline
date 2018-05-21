@@ -70,6 +70,7 @@ namespace mu2e
       vector<double> _zsave;
       // event object tags
       art::InputTag _shTag;
+      art::InputTag _shfTag;
       art::InputTag _ksTag; 
       // flags
       StrawHitFlag _addsel;
@@ -84,12 +85,13 @@ namespace mu2e
       std::unique_ptr<MVATools> _trkqualmva;
       // event objects
       const ComboHitCollection* _chcol;
+      const StrawHitFlagCollection* _shfcol;
       const KalSeedCollection * _kscol;
       // Kalman fitter
       KalFit _kfit;
       // helper functions
       bool findData(const art::Event& e);
-      void findMissingHits(KalRep* krep, vector<StrawHitIndex>& indices);
+      void findMissingHits(KalRep* krep,StrawHitFlagCollection const& shfcol, vector<StrawHitIndex>& indices);
       void fillTrkQual(KalSeed const& kseed, TrkQual& trkqual);
 
       // flow diagnostic
@@ -102,6 +104,7 @@ namespace mu2e
     _addhits(pset.get<bool>("addhits",true)),
     _zsave(pset.get<vector<double> >("ZSavePositions",vector<double>{-1522.0,0.0,1522.0})), // front, middle and back of the tracker
     _shTag(pset.get<art::InputTag>("ComboHitCollection")),
+    _shfTag(pset.get<art::InputTag>("StrawHitFlagCollection","none")),
     _ksTag(pset.get<art::InputTag>("SeedCollection")),
     _addsel(pset.get<vector<string> >("AddHitSelectionBits",vector<string>{} )),
     _addbkg(pset.get<vector<string> >("AddHitBackgroundBits",vector<string>{})),
@@ -144,9 +147,12 @@ namespace mu2e
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection()); 
     // lookup productID for payload saver
     art::ProductID kalRepsID(getProductID<KalRepCollection>());
-    // copy over hit flags
+    // copy and merge hit flags
+    size_t index(0);
     for(auto const& ch : *_chcol) {
-      shfcol->push_back(ch.flag());
+      StrawHitFlag flag(ch.flag());
+      if(_shfcol != 0) flag.merge(_shfcol->at(index++));
+      shfcol->push_back(flag);
     }
     // loop over the seed fits.  I need an index loop here to build the Ptr
     for(size_t ikseed=0; ikseed < _kscol->size(); ++ikseed) {
@@ -179,7 +185,7 @@ namespace mu2e
 	    // first, add back the hits on this track
 	  _kfit.unweedHits(krep,_maxaddchi);
 	  vector<StrawHitIndex> misshits;
-	  findMissingHits(krep,misshits);
+	  findMissingHits(krep,*shfcol,misshits);
 	  if(misshits.size() > 0){
 	    _kfit.addHits(krep,_chcol,misshits,_maxaddchi);
 	  }
@@ -268,11 +274,19 @@ namespace mu2e
     _chcol = shH.product();
     auto ksH = evt.getValidHandle<KalSeedCollection>(_ksTag);
     _kscol = ksH.product();
+    if(_shfTag.label() != "none"){
+      auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+      _shfcol = shfH.product();
+      if(_shfcol->size() != _chcol->size())
+	throw cet::exception("RECO")<<"mu2e::KalFinalFit: inconsistent input collections"<< endl;
+    } else {
+      _shfcol = 0;
+    }
 
     return _chcol != 0 && _kscol != 0;
   }
 
-  void KalFinalFit::findMissingHits(KalRep* krep,vector<StrawHitIndex>& misshits) {
+  void KalFinalFit::findMissingHits(KalRep* krep,StrawHitFlagCollection const& shfcol, vector<StrawHitIndex>& misshits) {
     const Tracker& tracker = getTrackerOrThrow();
     //  Trajectory info
     Hep3Vector tdir;
@@ -282,7 +296,7 @@ namespace mu2e
     TrkStrawHitVector tshv;
     convert(krep->hitVector(),tshv);
     for(unsigned istr=0; istr<nstrs;++istr){
-      if(_chcol->at(istr).flag().hasAllProperties(_addsel)&& !_chcol->at(istr).flag().hasAnyProperty(_addbkg)){
+      if(shfcol[istr].hasAllProperties(_addsel)&& !shfcol[istr].hasAnyProperty(_addbkg)){
 	ComboHit const& sh = _chcol->at(istr);
 	if(fabs(_chcol->at(istr).time()-krep->t0()._t0) < _maxdtmiss) {
 	  // make sure we haven't already used this hit
