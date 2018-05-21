@@ -17,6 +17,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
+#include "GeneralUtilities/inc/TwoLinePCA.hh"
 // services
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
@@ -463,7 +464,9 @@ namespace mu2e
     double dperp = mcperp.dot(mcsep);
     tshinfomc._dist = fabs(dperp);
     tshinfomc._ambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
-    tshinfomc._len = mcsep.dot(straw.getDirection());
+    // use 2-line POCA here 
+    TwoLinePCA pca(spmcp->position(),dir,straw.getMidPoint(),straw.getDirection());
+    tshinfomc._len = pca.s2();
     tshinfomc._xtalk = false; // FIXME! 
 //    tshinfomc._xtalk = spmcp->strawIndex() != mcdigi.strawIndex();
   }
