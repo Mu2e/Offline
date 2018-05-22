@@ -27,7 +27,8 @@ namespace mu2e {
       fhicl::Atom<std::string> newSimParticles{ fhicl::Name("newSimParticles") };
     };
 
-    explicit CaloShowerUpdater(const art::EDProducer::Table<Config>& config)
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit CaloShowerUpdater(const Parameters& config)
       : showerInput_(config().showerInput())
       , newSimParticles_(config().newSimParticles())
     {

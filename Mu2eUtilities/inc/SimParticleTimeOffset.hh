@@ -9,6 +9,10 @@
 #include <vector>
 #include <string>
 
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/ParameterSet.h" // for legacy interface
+
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
@@ -22,7 +26,17 @@ namespace mu2e {
 
   class SimParticleTimeOffset {
   public:
-    SimParticleTimeOffset(const fhicl::ParameterSet& pset);
+
+    struct Config {
+      fhicl::Sequence<art::InputTag> inputs{
+        fhicl::Name("inputs"),
+          fhicl::Comment("List of SimParticleTimeMap collection tags to use."),
+          std::vector<art::InputTag>()
+          };
+    };
+
+    explicit SimParticleTimeOffset(const Config& conf);
+    explicit SimParticleTimeOffset(const fhicl::ParameterSet& pset); // legacy
 
     void updateMap(const art::Event& evt);
 
