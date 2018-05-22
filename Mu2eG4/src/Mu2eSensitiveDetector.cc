@@ -81,24 +81,25 @@ namespace mu2e {
     }
 
       
-//  REMOVED BY LG ON 8/30/17 TO SIMPLIFY THINGS
-      //put back in on Jan 9th, 2018, but causing occasional seg fault
-      //taking it out
-
+// this little section of code containing 'if ( _debugList.inList() )'
+// was occasionally causing seg faults in MT mode
+// this issue seems to have been fixed
+// but I have taken it out to reduce output 05/18
+      
 /*    if ( _debugList.inList() )  {
             G4cout<<"edep "<<aStep->GetTotalEnergyDeposit()
                   <<" nidep "<<aStep->GetNonIonizingEnergyDeposit()
                   <<" step "<<aStep->GetStepLength()<<G4endl;
             G4cout<<"Step vol name "<<aStep->GetTrack()->GetVolume()->GetName()<<G4endl;
     }
- */
+*/
       
     // Which process caused this step to end?
     ProcessCode endCode(_processInfo->
                 findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
       
-    // Add the hit to the framework collection.
-    // The point's coordinates are saved in the mu2e coordinate system.
+      // Add the hit to the framework collection.
+      // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
       push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                             aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),

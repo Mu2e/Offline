@@ -488,6 +488,14 @@ void Mu2eG4::beginSubRun(art::SubRun& sr) {
 // Create one G4 event and copy its output to the art::event.
 void Mu2eG4::produce(art::Event& event) {
     
+    
+    //std::cout << "RANDOM NUMBER STATUS IS: " << G4RunManager::GetRunManager()->GetRandomNumberStore() << std::endl;
+    //G4RunManager::GetRunManager()->SetRandomNumberStore(true);
+    //std::cout << "RANDOM NUMBER STATUS IS: " << G4RunManager::GetRunManager()->GetRandomNumberStore() << std::endl;
+    //G4RunManager::GetRunManager()->rndmSaveThisRun();//THIS DIDN'T WORK
+
+    
+    
     //confirm that IF we are running in MT mode we do not have inputs from previous simulation stages
     //otherwsie, throw an exception
     if (_use_G4MT) {

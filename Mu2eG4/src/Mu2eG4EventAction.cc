@@ -22,7 +22,8 @@
 #include "Mu2eG4/inc/EventStash.hh"
 
 
-#include "G4RunManagerKernel.hh"
+//#include "G4RunManagerKernel.hh"
+#include "G4RunManager.hh"
 #include "G4SDManager.hh"
 
 
@@ -95,6 +96,14 @@ Mu2eG4EventAction::~Mu2eG4EventAction()
 
 void Mu2eG4EventAction::BeginOfEventAction(const G4Event *evt)
     {
+        
+        //std::cout << "From EventAction, RANDOM NUMBER STATUS IS: " << G4RunManager::GetRunManager()->GetRandomNumberStore() << std::endl;
+        //both of these flags have to be set in order to print out the random numbers for each event
+        //G4RunManager::GetRunManager()->SetRandomNumberStore(true);
+        //G4RunManager::GetRunManager()->SetRandomNumberStorePerEvent(true);
+        //G4RunManager::GetRunManager()->SetRandomNumberStoreDir("RANDOM_STORE");
+        //std::cout << "From EventAction, RANDOM NUMBER STATUS IS: " << G4RunManager::GetRunManager()->GetRandomNumberStore() << std::endl;
+
         setEventData();
         
         _spHelper = perEvtObjManager->getSimParticleHelper();
@@ -165,6 +174,9 @@ void Mu2eG4EventAction::BeginOfEventAction(const G4Event *evt)
     
 void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
     {
+        
+        //G4RunManager::GetRunManager()->rndmSaveThisEvent();
+        
         // Run self consistency checks if enabled.
         _trackingAction->endEvent(*simParticles);
         

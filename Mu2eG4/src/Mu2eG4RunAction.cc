@@ -17,6 +17,7 @@
 
 //G4 includes
 #include "G4Threading.hh"
+#include "G4RunManager.hh"
 
 //Mu2e includes
 #include "GeometryService/inc/GeometryService.hh"
@@ -71,6 +72,14 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
                 
                 //make this done only once per job/run according to ncalls in Mu2eG4_module?
                 _steppingAction->finishConstruction();//once per thread
+            
+                
+                G4RunManager::GetRunManager()->SetRandomNumberStore(true);
+                G4RunManager::GetRunManager()->SetRandomNumberStorePerEvent(true);
+                G4RunManager::GetRunManager()->SetRandomNumberStoreDir("RANDOM_STORE");
+                
+                
+                
             }//if !Master
             
         }//MT mode
@@ -92,6 +101,13 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
             
             //make this done only once per job/run according to ncalls in Mu2eG4_module?
             _steppingAction->finishConstruction();//once per thread
+            
+            
+            G4RunManager::GetRunManager()->SetRandomNumberStore(true);
+            G4RunManager::GetRunManager()->SetRandomNumberStorePerEvent(true);
+            G4RunManager::GetRunManager()->SetRandomNumberStoreDir("RANDOM_STORE");
+            
+            
             
         }//sequential mode
         
