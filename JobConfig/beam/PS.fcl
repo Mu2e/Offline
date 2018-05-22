@@ -85,7 +85,7 @@ END_PROLOG
 
 #================================================================
 # Give this job a name.
-process_name :  beamg4s1
+process_name :  PS
 
 source : {
    module_type : EmptyEvent
@@ -95,7 +95,7 @@ source : {
 services : {
 
    message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.beam-g4s1.version.sequencer.root" }
+   TFileService          : { fileName : "nts.owner.PS.version.sequencer.root" }
    RandomNumberGenerator : { }
 
    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
@@ -271,7 +271,7 @@ outputs: {
          "keep *_muonBeamFilter_*_*",
          "keep *_compressPVmuonBeam_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s1-mubeam.version.sequencer.art"
+      fileName    : "sim.owner.PS-mubeam.version.sequencer.art"
    }
 
    dsout : {
@@ -284,7 +284,7 @@ outputs: {
          "keep *_dsRegionFilter_*_*",
          "keep *_compressPVdsRegion_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s1-dsregion.version.sequencer.art"
+      fileName    : "sim.owner.PS-dsregion.version.sequencer.art"
    }
 
    extmonbeamout : {
@@ -297,7 +297,7 @@ outputs: {
          "keep *_extmonBeamFilter_*_*",
          "keep *_compressPVextmonBeam_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s1-extmonbeam.version.sequencer.art"
+      fileName    : "sim.owner.PS-extmonbeam.version.sequencer.art"
    }
 
    extmonregionout : {
@@ -310,7 +310,7 @@ outputs: {
          "keep *_extmonRegionFilter_*_*",
          "keep *_compressPVextmonRegion_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s1-extmonregion.version.sequencer.art"
+      fileName    : "sim.owner.PS-extmonregion.version.sequencer.art"
    }
 
    truncatedEvtsOutput : {
@@ -324,7 +324,7 @@ outputs: {
          "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
          "keep *_compressPVFull_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s1-truncated.version.sequencer.art"
+      fileName    : "sim.owner.PS-truncated.version.sequencer.art"
    }
 
 }

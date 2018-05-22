@@ -8,7 +8,7 @@
 #include "Mu2eG4/fcl/prolog.fcl"
 
 # Give this job a name.
-process_name :  beamg4s2crv
+process_name :  TSCRV
 
 source : {
    module_type : RootInput
@@ -57,19 +57,7 @@ physics : {
 	    TimeVD: { times: [] }
          }	 
 
-         Mu2eG4StackingOnlyCut: {
-	    // do not stack neutrinos and soft gammas. no point to re-check this in stepping.
-	    type: union
-	    pars: [
-	       {
-	          type: pdgId pars: [ 12, -12, 14, -14, 16, -16]
-	       },
-	       {
-		  type: intersection
-		  pars: [ { type: kineticEnergy cut: 0.001 }, { type: pdgId pars: [ 22 ] }]
-	       }
-	    ]
-	 }
+	 Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
 
          Mu2eG4SteppingOnlyCut: {}
 
@@ -144,8 +132,8 @@ outputs: {
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
-         "keep *_crvFilter_*_beamg4s2crv",
-         "keep *_compressPVCRV_*_beamg4s2crv"
+         "keep *_crvFilter_*_TSCRV",
+         "keep *_compressPVCRV_*_TSCRV"
       ]
       fileName    : "sim.owner.beam-g4s2-crv.version.sequencer.art"
    }
@@ -168,11 +156,3 @@ outputs: {
 
 //physics.producers.g4run.physics.minRangeCut : 1. // mm
 
-// Limit the amount of "Begin processing the ... record" messages
-services.message.destinations.log.categories.ArtReport.reportEvery : 1
-services.message.destinations.log.categories.ArtReport.limit : 1
-services.message.destinations.log.categories.ArtReport.timespan : 300
-
-// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
-services.SeedService.maxUniqueEngines :  20

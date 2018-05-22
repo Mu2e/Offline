@@ -4,14 +4,14 @@
 #include "fcl/standardServices.fcl"
 
 # Give this job a name.
-process_name : beamg4s3
+process_name : DS
 
 source : { module_type : RootInput }
 
 services : {
 
    message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.beam-g4s3.version.sequencer.root" }
+   TFileService          : { fileName : "nts.owner.DS.version.sequencer.root" }
    RandomNumberGenerator : { }
 
    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
@@ -229,7 +229,7 @@ outputs: {
          "keep *_mothersFilter_*_*",
          "keep *_compressPVMothers_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s3-mothers.version.sequencer.art"
+      fileName    : "sim.owner.DS-beam.version.sequencer.art"
    }
 
    crvOutput : {
@@ -242,7 +242,7 @@ outputs: {
          "keep *_crvFilter_*_*",
          "keep *_compressPVCRV_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s3-crv.version.sequencer.art"
+      fileName    : "sim.owner.DS-crv.version.sequencer.art"
    }
 
    tgtStopOutput : {
@@ -255,7 +255,7 @@ outputs: {
          "keep *_tgtStopFilter_*_*",
          "keep *_compressPVTGTStops_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s3-tgtstops.version.sequencer.art"
+      fileName    : "sim.owner.DS-TGTstops.version.sequencer.art"
    }
 
    ootStopOutput : {
@@ -268,7 +268,7 @@ outputs: {
          "keep *_ootStopFilter_*_*",
          "keep *_compressPVOOTStops_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s3-ootstops.version.sequencer.art"
+      fileName    : "sim.owner.DS-OOTstops.version.sequencer.art"
    }
 
    truncatedEvtsOutput : {
@@ -282,7 +282,7 @@ outputs: {
          "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_*_*_*",
          "keep *_compressPVFull_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s3-truncated.version.sequencer.art"
+      fileName    : "sim.owner.DS-truncated.version.sequencer.art"
    }
 }
 

@@ -6,7 +6,7 @@
 #include "Mu2eG4/fcl/prolog.fcl"
 
 # Give this job a name.
-process_name :  beamg4s2
+process_name :  TS
 
 source : {
    module_type : RootInput
@@ -15,7 +15,7 @@ source : {
 services : {
 
    message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.beam-g4s2.version.sequencer.root" }
+   TFileService          : { fileName : "nts.owner.TS.version.sequencer.root" }
    RandomNumberGenerator : { }
 
    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
@@ -146,10 +146,10 @@ outputs: {
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
-         "keep *_muonBeamFilter_*_beamg4s2",
-         "keep *_compressPVmuonBeam_*_beamg4s2"
+         "keep *_muonBeamFilter_*_TS",
+         "keep *_compressPVmuonBeam_*_TS"
       ]
-      fileName    : "sim.owner.beam-g4s2-mubeam.version.sequencer.art"
+      fileName    : "sim.owner.TS-mubeam.version.sequencer.art"
    }
 
    crvout : {
@@ -159,10 +159,10 @@ outputs: {
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
-         "keep *_crvFilter_*_beamg4s2",
-         "keep *_compressPVCRV_*_beamg4s2"
+         "keep *_crvFilter_*_TS",
+         "keep *_compressPVCRV_*_TS"
       ]
-      fileName    : "sim.owner.beam-g4s2-crv.version.sequencer.art"
+      fileName    : "sim.owner.TS-crv.version.sequencer.art"
    }
 
   truncatedEvtsOutput : {
@@ -176,18 +176,10 @@ outputs: {
          "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
          "keep *_compressPVFull_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s2-truncated.version.sequencer.art"
+      fileName    : "sim.owner.TS-truncated.version.sequencer.art"
    }
 
 }
 
 physics.producers.g4run.physics.minRangeCut : 1. // mm
 
-// Limit the amount of "Begin processing the ... record" messages
-services.message.destinations.log.categories.ArtReport.reportEvery : 1
-services.message.destinations.log.categories.ArtReport.limit : 1
-services.message.destinations.log.categories.ArtReport.timespan : 300
-
-// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
-services.SeedService.maxUniqueEngines :  20
