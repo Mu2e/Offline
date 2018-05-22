@@ -1,7 +1,10 @@
 // Original author Jason Bono
 //Feb 2018
 
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "TrackerConditions/inc/StrawDrift.hh"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib_except/exception.h"
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -21,10 +24,12 @@ namespace mu2e {
 
     _phiBins = phiBins;
     //open the file (fixme)
-    ifstream myfile(filename);
+   ConfigFileLookupPolicy configFile;
+   std::string fullFilename = configFile(filename);
+    ifstream myfile(fullFilename);
     if ( !myfile ) {
-      //throw cet::exception("FILE");
-      cout << "Unable to open particle data file:" << "\n";
+      throw cet::exception("FILE")
+       << "Unable to open straw drift speed data file:" << "\n";
     }
 
     std::vector<double> dataEField;
