@@ -28,10 +28,10 @@ namespace mu2e {
   public:
 
     struct Config {
-      fhicl::Sequence<std::string> inputs{
+      fhicl::Sequence<art::InputTag> inputs{
         fhicl::Name("inputs"),
           fhicl::Comment("List of SimParticleTimeMap collection tags to use."),
-          std::vector<std::string>()
+          std::vector<art::InputTag>()
           };
     };
 
