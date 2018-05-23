@@ -36,28 +36,28 @@ int mu2e::ValStrawDigiMC::fill(const mu2e::StrawDigiMCCollection & coll,
     for(auto const& ap: sd.stepPointMCs()) {
       if(!ap.isAvailable()) ptrOK = false;
     }
-    auto const& a0 = sd.stepPointMC(TrkTypes::cal);
-    auto const& a1 = sd.stepPointMC(TrkTypes::hv);
+    auto const& a0 = sd.stepPointMC(StrawEnd::cal);
+    auto const& a1 = sd.stepPointMC(StrawEnd::hv);
     
     if(!(a0.isAvailable() && a1.isAvailable()) ) ptrOK = false;
 
     double ns = 0.0;
-    if(sd.stepPointMC(TrkTypes::cal).isAvailable()) ns++;
-    if(sd.stepPointMC(TrkTypes::hv).isAvailable()) ns++;
+    if(sd.stepPointMC(StrawEnd::cal).isAvailable()) ns++;
+    if(sd.stepPointMC(StrawEnd::hv).isAvailable()) ns++;
     _hgStep->Fill(ns);
     
     if(ptrOK) {
-        _htime0->Fill(sd.wireEndTime(TrkTypes::cal));
-      _htime1->Fill(sd.wireEndTime(TrkTypes::hv));
-      _hdrift->Fill(sd.driftDistance(TrkTypes::cal));
-      _hdrift->Fill(sd.driftDistance(TrkTypes::hv));
-      _hdriftM->Fill(sd.distanceToMid(TrkTypes::cal));
-      _hdriftM->Fill(sd.distanceToMid(TrkTypes::hv));
+        _htime0->Fill(sd.wireEndTime(StrawEnd::cal));
+      _htime1->Fill(sd.wireEndTime(StrawEnd::hv));
+      _hdrift->Fill(sd.driftDistance(StrawEnd::cal));
+      _hdrift->Fill(sd.driftDistance(StrawEnd::hv));
+      _hdriftM->Fill(sd.distanceToMid(StrawEnd::cal));
+      _hdriftM->Fill(sd.distanceToMid(StrawEnd::hv));
       _hener->Fill(sd.energySum());
-      _henerT->Fill(sd.triggerEnergySum(TrkTypes::cal));
-      _henerT->Fill(sd.triggerEnergySum(TrkTypes::hv));
-      if(sd.isCrossTalk(TrkTypes::cal)) _hcross->Fill(0.0);
-      if(sd.isCrossTalk(TrkTypes::hv) ) _hcross->Fill(1.0);
+      _henerT->Fill(sd.triggerEnergySum(StrawEnd::cal));
+      _henerT->Fill(sd.triggerEnergySum(StrawEnd::hv));
+      if(sd.isCrossTalk(StrawEnd::cal)) _hcross->Fill(0.0);
+      if(sd.isCrossTalk(StrawEnd::hv) ) _hcross->Fill(1.0);
       _hSI->Fill(sd.strawId().asUint16()); // <40960
     }
   }

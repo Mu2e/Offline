@@ -28,7 +28,7 @@ int mu2e::ValComboHit::fill(const mu2e::ComboHitCollection & coll,
   _hN->Fill(coll.size()); 
   _hN2->Fill(coll.size());
   for(auto co : coll) {
-    _hsid->Fill(co.sid().asUint16());
+    _hsid->Fill(co.strawId().asUint16());
     _hNcmb->Fill(co.nCombo());
     _hNstr->Fill(co.nStrawHits());
     _pos.fill(co.posCLHEP());

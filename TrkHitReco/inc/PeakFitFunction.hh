@@ -4,7 +4,7 @@
 // Class holding functions which describe the ideal waveforms.  These are used to construct fits.
 
 #include "TrkHitReco/inc/PeakFitParams.hh"
-#include "TrackerConditions/inc/StrawElectronics.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 #include <functional>
 #include "Rtypes.h"
 #include "Math/ParamFunctor.h"
@@ -44,7 +44,7 @@ namespace mu2e {
       public:
 
         // construct the model from the Straw conditions, the fit configuration
-        PeakFitFunction(const StrawElectronics& strawele); 
+        PeakFitFunction(const StrawResponse& srep); 
         ~PeakFitFunction();
 
         //initialize the object once config is done
@@ -76,7 +76,7 @@ namespace mu2e {
         typedef std::function<Double_t(Double_t,PeakFitParams const&)> FitFunction;
         typedef std::function<Double_t(Double_t *,Double_t *)> FitFunctionRoot;
 
-        const StrawElectronics& _strawele;      
+        const StrawResponse& _srep;      
         FitConfig _fitConfig;  
         TF1* _tf1;  
 

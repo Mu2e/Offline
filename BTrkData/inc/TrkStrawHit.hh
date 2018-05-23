@@ -11,7 +11,7 @@
 #include "BTrk/TrkBase/TrkHit.hh"
 #include "BTrk/TrkBase/TrkT0.hh"
 // Mu2e
-#include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
@@ -29,34 +29,28 @@ namespace mu2e
   class TrkStrawHit : public TrkHit {
   public:
   // enum for hit flags
-    enum enduse { cal=TrkTypes::cal, hv = TrkTypes::hv, earliest, both};
-    TrkStrawHit(const StrawHit& strawhit, const Straw& straw,StrawHitIndex index,
-		const TrkT0& trkt0, double fltlen, double exterr, double maxdriftpull, 
-		double timeWeight, double mint0doca);
+    TrkStrawHit(const ComboHit& strawhit, const Straw& straw,StrawHitIndex index,
+		const TrkT0& trkt0, double fltlen, double maxdriftpull, 
+		double timeWeight);
     virtual ~TrkStrawHit();
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
     int ambig() const { return _iamb; }
-    enduse driftEnd() const { return _enduse; }
-//    virtual void invert();
     virtual void setAmbig(int newambig);
-    void setAmbigUpdate(bool update) { _ambigupdate = update; }
     StrawHitIndex index() const { return _index; } // index into StrawHit vector
     double hitRMS() const { return _rdrifterr;}
 // strawhit specific interface
-    const StrawHit& strawHit() const { return _strawhit; }
+    const ComboHit& comboHit() const { return _combohit; }
     const Straw& straw() const { return _straw; }
-    virtual double time() const { return _strawhit.time(); }
-// the following function is DEPRECATED as the underlying function is now end specific
-    double driftTime(StrawEnd end) const; // drift time for a specific end
+    virtual double time() const { return _combohit.time(); }
+    StrawEnd const& driftEnd() const { return _combohit.driftEnd(); }
     double driftTime() const; // drift time for the current end strategy
-
     double driftPhi() const { return _phi;}
     double driftRadius() const { return _rdrift;}
     double driftRadiusErr() const { return _rdrifterr;}
     double driftVelocity() const { return _vdriftinst; }
-    double timeDiffDist() const { return _tddist; }
-    double timeDiffDistErr() const { return _tddist_err; }
+    double timeDiffDist() const { return _combohit.wireDist(); }
+    double timeDiffDistErr() const { return _combohit.wireRes(); }
     const CLHEP::Hep3Vector& wirePosition() const { return _wpos; }
     void hitPosition(CLHEP::Hep3Vector& hpos) const;
     virtual bool signalPropagationTime(double &propTime, double&Doca, 
@@ -64,7 +58,7 @@ namespace mu2e
 			       CLHEP::Hep3Vector trajDirection);//propagation time
     virtual void trackT0Time(double &htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
 
-    double signalTime(StrawEnd end=TrkTypes::cal) const { return _stime[end]; } // time for signal to reach the end of the wire
+    double signalTime() const { return _stime; } // time for signal to reach the end of the wire
 // error to penalize mis-assigned ambiguity
     double penaltyErr() const { return _penerr; }
 // error ON RDrift and residual coming from hit t0 error
@@ -76,9 +70,6 @@ namespace mu2e
   // test the consistincy of this hit with 'physical' limts, with a given # of sigma
     virtual bool isPhysical(double maxchi) const;
     
-// logical operators to allow searching for StrawHits
-    bool operator == (StrawHit const& sh) const { return _strawhit == sh; }
-    bool operator != (StrawHit const& sh) const { return !operator==(sh); }
     virtual void print(std::ostream& ) const;
 
     //**************************************************
@@ -92,25 +83,21 @@ namespace mu2e
     virtual void updateDrift();
     virtual void updateSignalTime();
   //private:
-    const StrawHit&   _strawhit;
+    const ComboHit&   _combohit;
     const Straw&      _straw;
     StrawHitIndex     _index;
     TrkLineTraj*      _hittraj;
     CLHEP::Hep3Vector _wpos;
     CLHEP::Hep3Vector _wpos_err;
-    double _stime[2]; // time for the signal to get from the POCA to each wire end
     double            _penerr,_toterr;
     int               _iamb;
-    enduse _enduse; // which ends are used in the drift measurement
-    bool              _ambigupdate;
     double            _rdrift;
     double            _rdrifterr;
-    double            _tddist;
-    double            _tddist_err;
     double            _phi;
     double            _vdriftinst;
+    double            _vprop; // effective signal propagation velocity
+    double	      _stime; // signal propagation time
     double            _maxdriftpull;
-    double            _mint0doca;	    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
   };
 
 // binary functor to sort TrkStrawHits by StrawHit index
@@ -120,9 +107,9 @@ namespace mu2e
  
 // unary functor to select TrkStrawHit from a given hit
   struct FindTrkStrawHit {
-    FindTrkStrawHit(StrawHit const& strawhit) : _strawhit(strawhit) {}
-    bool operator () (TrkStrawHit* const& tsh ) { return tsh->strawHit() == _strawhit; }
-    StrawHit const& _strawhit;
+    FindTrkStrawHit(ComboHit const& strawhit) : _combohit(strawhit) {}
+    bool operator () (TrkStrawHit* const& tsh ) { return &tsh->comboHit() == &_combohit; }
+    ComboHit const& _combohit;
   };
 // define TrkStrawHitVector, to allow explicit conversion and construction
   typedef std::vector<TrkStrawHit*> TrkStrawHitVector;

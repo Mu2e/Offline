@@ -400,7 +400,7 @@ namespace mu2e {
 	CLHEP::Hep3Vector hpos;
 	Hit->hitPosition(hpos);
 	printf(" %2i %5i %2i %2i %2i %2i %8.3f %8.3f %9.3f, %2i %2i %8.3f %8.3f\n",
-	       -1, Hit->strawHit().strawId().asUint16(), 
+	       -1, Hit->comboHit().strawId().asUint16(), 
 	       straw.id().getPlane(),
 	       straw.id().getPanel(),
 	       straw.id().getLayer(),
@@ -418,7 +418,6 @@ namespace mu2e {
       Hit->setAmbig(0);
     }
 
-    Hit->setAmbigUpdate(false);
 
   }
 
@@ -757,7 +756,6 @@ namespace mu2e {
     
     for (int i=0; i<2; i++) {
       hit[i] = HitDoublet->fHit[r.index[i]];
-      hit[i]->setAmbigUpdate(false);
 //-----------------------------------------------------------------------------
 // update the straw hit info inside the doublet, however don't rush 
 // to resolve the hit sign ambiguities, do it only when completely sure
@@ -1222,11 +1220,9 @@ namespace mu2e {
 
 	    if (ih == jbest) {
 	      hit->setAmbig(_sign[bd.fIBest][0]);
-	      hit->setAmbigUpdate(false);
 	    }
 	    else if (ih == kbest) {
 	      hit->setAmbig(_sign[bd.fIBest][1]);
-	      hit->setAmbigUpdate(false);
 	    }
 	    else {
 //-----------------------------------------------------------------------------
@@ -1255,21 +1251,18 @@ namespace mu2e {
 
 	      if ( fabs(rdrift) > _minDriftDoublet){
 		hit->setAmbig(doublet->fStrawAmbig[ih]);
-		hit->setAmbigUpdate(false);
 	      }
 	      else {
 		if (_Final == 0) {
 		  hit->setAmbig(0);
 		  //		  hit->setTemperature(rdrift/hit->driftVelocity());
 		  hit->setPenalty(fabs(rdrift));
-		  hit->setAmbigUpdate(false);
 		}
 		else {
 //-----------------------------------------------------------------------------
 // final decision
 //-----------------------------------------------------------------------------
 		  hit->setAmbig(doublet->fStrawAmbig[ih]);
-		  hit->setAmbigUpdate(false);
 		}
 	      }
 	    }

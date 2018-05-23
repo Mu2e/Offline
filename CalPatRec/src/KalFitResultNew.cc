@@ -19,7 +19,7 @@ namespace mu2e {
     tpart       = TrkParticle::e_minus;        // 11
     fdir        = TrkFitDirection::downstream; // = 0
     shcol       = 0;
-    shpos       = 0;
+    // shpos       = 0;
     shfcol      = 0;
     krep        = 0;
     fit         = TrkErrCode::fail;

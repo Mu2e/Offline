@@ -6,7 +6,7 @@
 //
 #include "TrkHitReco/inc/PeakFit.hh"
 #include "TrkHitReco/inc/PeakFitFunction.hh"
-#include "TrackerConditions/inc/StrawElectronics.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 #include <string>
 
 class TGraphErrors;
@@ -21,7 +21,7 @@ namespace mu2e {
     {
       public:
 	
-	PeakFitRoot(const StrawElectronics& strawele, const fhicl::ParameterSet& pset);
+	PeakFitRoot(const StrawResponse& srep, const fhicl::ParameterSet& pset);
  	virtual ~PeakFitRoot(){}
 
 

@@ -180,8 +180,8 @@ namespace mu2e {
 
     // save SimParticles from tracker StrawDigiMC
     for(auto const& sd : *trkDMC) { // loop over StrawDigiMC
-      SPsave.insert(sd.stepPointMC(TrkTypes::cal)->simParticle().key());
-      SPsave.insert(sd.stepPointMC(TrkTypes::hv )->simParticle().key());
+      SPsave.insert(sd.stepPointMC(StrawEnd::cal)->simParticle().key());
+      SPsave.insert(sd.stepPointMC(StrawEnd::hv )->simParticle().key());
       for(auto const& s: sd.stepPointMCs()) {
 	SPsave.insert(s->simParticle().key());
       }
@@ -315,8 +315,8 @@ namespace mu2e {
     art::Ptr<StepPointMC> stepMC[2];
     std::vector<art::Ptr<StepPointMC> > stepMCs;
     for(auto d: *trkDMC) {
-      stepMC[TrkTypes::cal] = SPMCmap[d.stepPointMC(TrkTypes::cal)];
-      stepMC[TrkTypes::hv ] = SPMCmap[d.stepPointMC(TrkTypes::hv )];
+      stepMC[StrawEnd::cal] = SPMCmap[d.stepPointMC(StrawEnd::cal)];
+      stepMC[StrawEnd::hv ] = SPMCmap[d.stepPointMC(StrawEnd::hv )];
       stepMCs.clear();
       for(auto i:d.stepPointMCs()) stepMCs.push_back(SPMCmap[i]);
       outDMC.push_back( mu2e::StrawDigiMC(d, stepMC, stepMCs) );

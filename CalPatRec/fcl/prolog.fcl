@@ -511,7 +511,7 @@ CalPatRec : { @table::CalPatRec
 	CalSeedFit : { module_type:KalSeedFit   
 	    debugLevel                                  : 0
 	    printFrequency                              : 100
-	    StrawHitCollection                          : makeSH			 
+	    ComboHitCollection                          : makeSH			 
 	    StrawHitFlagCollection                      : "DeltaFinder:StrawHits"
 	    SeedCollection                              : CalHelixFinder
 	    MinNHits                                    : 10

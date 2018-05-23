@@ -187,4 +187,23 @@ namespace mu2e {
     }
     return retval; 
   }
+
+  void ComboHit::print( std::ostream& ost, bool doEndl) const {
+    ost << " ComboHit:"
+        << " id"      << _sid
+        << " time "     << _time
+	<< " position " << _pos
+	<< " end " << _tend
+	<< " flag " << _flag
+        << " eDep "     << _edep
+	<< " ncombo " << _ncombo
+	<< " nStrawHit " << _nsh;
+
+    if ( doEndl ){
+      ost << std::endl;
+    }
+
+
+  }
 }
+

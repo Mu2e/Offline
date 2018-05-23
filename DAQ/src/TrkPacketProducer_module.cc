@@ -174,10 +174,10 @@ namespace mu2e {
       trkhit curHit;
       curHit.evt = eventNum;
       curHit.strawIdx = SD.strawId().asUint16();      
-      curHit.recoDigiT0 = SD.TDC(TrkTypes::cal);
-      curHit.recoDigiT1 = SD.TDC(TrkTypes::hv);
-      curHit.recoDigiToT1 = SD.TOT(TrkTypes::cal);
-      curHit.recoDigiToT2 = SD.TOT(TrkTypes::hv);
+      curHit.recoDigiT0 = SD.TDC(StrawEnd::cal);
+      curHit.recoDigiT1 = SD.TDC(StrawEnd::hv);
+      curHit.recoDigiToT1 = SD.TOT(StrawEnd::cal);
+      curHit.recoDigiToT2 = SD.TOT(StrawEnd::hv);
       curHit.recoDigiSamples = theWaveform.size();
       for(size_t j = 0; j<theWaveform.size(); j++) {
 	curHit.waveform.push_back(theWaveform[j]);
