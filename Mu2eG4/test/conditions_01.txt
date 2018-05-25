@@ -14,8 +14,8 @@ double acceleratorParams.deBuncherPeriod   = 1695. ; // ns
 double acceleratorParams.intrinsicExt      = 1.64e-5; // S. Werkema, docdb-4044-v1
 double acceleratorParams.limitingHalfWidth = 125.  ; // ns, "" 
 
-string acceleratorParams.potPulse  = "ConditionsService/data/potTimingDistribution_avg.txt";
-string acceleratorParams.acDipole  = "ConditionsService/data/acDipoleTransmissionFunction.txt";
+string acceleratorParams.potPulse  = "ConditionsService/data/potTimingDistribution_20160511.txt";
+string acceleratorParams.acDipole  = "ConditionsService/data/acDipoleTransmissionFunction_20160511.txt";
 
 double MinDriftRadiusResolution = 0.2; // mm
 double MaxDriftRadiusResolution = 0.2; // mm

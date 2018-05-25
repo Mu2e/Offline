@@ -7,7 +7,7 @@
 
 #include "JobConfig/beam/prolog.fcl"
 
-process_name: beamg4s4dio
+process_name: dio
 
 source: { module_type : EmptyEvent }
 services: { @table::mu2e.services.simServices }
@@ -22,7 +22,7 @@ physics.producers.generate.physics: {
     spectrumResolution: 0.1 // MeV
 }
 
-services.TFileService.fileName: "nts.owner.beam-g4s4-dio.version.sequencer.root"
-outputs.detectorOutput.fileName: "sim.owner.beam-g4s4-detdio.version.sequencer.art"
-outputs.crvOutput.fileName: "sim.owner.beam-g4s4-crvdio.version.sequencer.art"
-outputs.truncatedEvtsOutput.fileName: "sim.owner.beam-g4s4-dio-truncated.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.dio.version.sequencer.root"
+outputs.detectorOutput.fileName: "sim.owner.dio-TrkCal.version.sequencer.art"
+outputs.crvOutput.fileName: "sim.owner.dio-CRV.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName: "sim.owner.dio-truncated.version.sequencer.art"

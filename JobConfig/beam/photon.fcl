@@ -7,7 +7,7 @@
 
 #include "JobConfig/beam/prolog.fcl"
 
-process_name: beamg4s4photon
+process_name: photon
 
 source: { module_type : EmptyEvent }
 services: { @table::mu2e.services.simServices }
@@ -22,7 +22,7 @@ physics.producers.generate.physics: {
     ehi: 7.0  // MeV
 }
 
-services.TFileService.fileName: "nts.owner.beam-g4s4-photon.version.sequencer.root"
-outputs.detectorOutput.fileName: "sim.owner.beam-g4s4-detphoton.version.sequencer.art"
-outputs.crvOutput.fileName: "sim.owner.beam-g4s4-crvphoton.version.sequencer.art"
-outputs.truncatedEvtsOutput.fileName: "sim.owner.beam-g4s4-photon-truncated.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.photon.version.sequencer.root"
+outputs.detectorOutput.fileName: "sim.owner.photon-TrkCal.version.sequencer.art"
+outputs.crvOutput.fileName: "sim.owner.photon-CRV.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName: "sim.owner.photon-truncated.version.sequencer.art"

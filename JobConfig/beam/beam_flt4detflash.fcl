@@ -10,7 +10,7 @@ END_PROLOG
 
 
 # Give this job a name.
-process_name : beamflt4detflash
+process_name : flash-cut
 
 source : {
    module_type : RootInput
@@ -18,7 +18,7 @@ source : {
 }
 
 services : {
-    TFileService          : { fileName : "nts.owner.beam-flt4detflash.version.sequencer.root" }
+    TFileService          : { fileName : "nts.owner.flash-cut.version.sequencer.root" }
     message               : @local::default_message
 }
 
@@ -74,30 +74,30 @@ physics : {
 
         hitTimesTrackerIn: {
             module_type: ExtremeHitTimes
-	    inputs: [ "detectorFilter:tracker:beamg4s4flash" ]
+	    inputs: [ "detectorFilter:tracker:flash" ]
         }
         hitTimesTrackerOut: {
             module_type: ExtremeHitTimes
-	    inputs: [ "detectorFilter:tracker:beamflt4detflash" ]
+	    inputs: [ "detectorFilter:tracker:flash-cut" ]
         }
 
         hitTimesCaloIn: {
             module_type: ExtremeHitTimes
-	    inputs: [ "detectorFilter:calorimeter:beamg4s4flash",  "detectorFilter:calorimeterRO:beamg4s4flash" ]
+	    inputs: [ "detectorFilter:calorimeter:flash",  "detectorFilter:calorimeterRO:flash" ]
         }
         hitTimesCaloOut: {
             module_type: ExtremeHitTimes
-	    inputs: [ "detectorFilter:calorimeter:beamflt4detflash",  "detectorFilter:calorimeterRO:beamflt4detflash" ]
+	    inputs: [ "detectorFilter:calorimeter:flash-cut",  "detectorFilter:calorimeterRO:flash-cut" ]
         }
 
 	// tracker or calo
         hitTimesTOCIn: {
             module_type: ExtremeHitTimes
-	    inputs: [ "detectorFilter:tracker:beamg4s4flash", "detectorFilter:calorimeter:beamg4s4flash",  "detectorFilter:calorimeterRO:beamg4s4flash" ]
+	    inputs: [ "detectorFilter:tracker:flash", "detectorFilter:calorimeter:flash",  "detectorFilter:calorimeterRO:flash" ]
         }
         hitTimesTOCOut: {
             module_type: ExtremeHitTimes
-	    inputs: [ "detectorFilter:tracker:beamflt4detflash", "detectorFilter:calorimeter:beamflt4detflash",  "detectorFilter:calorimeterRO:beamflt4detflash" ]
+	    inputs: [ "detectorFilter:tracker:flash-cut", "detectorFilter:calorimeter:flash-cut",  "detectorFilter:calorimeterRO:flash-cut" ]
         }
     }
 
@@ -118,10 +118,10 @@ outputs: {
                             "keep mu2e::GenParticles_*_*_*",
                             "keep mu2e::GenEventCount_*_*_*",
                             "keep mu2e::StatusG4_*_*_*",
-                            "keep *_detectorFilter_*_beamflt4detflash",
-                            "keep *_compressPVDetector_*_beamflt4detflash"
+                            "keep *_detectorFilter_*_flash-cut",
+                            "keep *_compressPVDetector_*_flash-cut"
                           ]
-        fileName: "sim.owner.beam-flt4detflash.version.sequencer.art"
+        fileName: "sim.owner.flash-cut.version.sequencer.art"
     }
 
 }

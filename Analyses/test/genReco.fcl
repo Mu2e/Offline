@@ -99,6 +99,7 @@ paths : {
 			  ]
 }
 
+
 END_PROLOG
 
 process_name : AllPatRecReco
@@ -228,6 +229,10 @@ physics : {
 #------------------------------------------------------------------------------
 # print per event timing for ::event entry points
 # services.Timing: { }
+
+# Temporarily use Andy's muon stops.  These will be replaced soon with MDC2018 output
+physics.producers.generate.muonStops.inputFiles : ["mergedMuonStops/tgtstops_tgthole-r21-5mm_three-extra-disks_all-files.root" ]
+
 # print
 services.scheduler.wantSummary: true
 

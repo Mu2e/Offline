@@ -7,7 +7,7 @@
 
 #include "JobConfig/beam/prolog.fcl"
 
-process_name: beamg4s4neutron
+process_name: neutron
 
 source: { module_type : EmptyEvent }
 services: { @table::mu2e.services.simServices }
@@ -21,7 +21,7 @@ physics.producers.generate.physics: {
     spectrumVariable: kineticEnergy
 }
 
-services.TFileService.fileName: "nts.owner.beam-g4s4-neutron.version.sequencer.root"
-outputs.detectorOutput.fileName: "sim.owner.beam-g4s4-detneutron.version.sequencer.art"
-outputs.crvOutput.fileName: "sim.owner.beam-g4s4-crvneutron.version.sequencer.art"
-outputs.truncatedEvtsOutput.fileName: "sim.owner.beam-g4s4-neutron-truncated.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.neutron.version.sequencer.root"
+outputs.detectorOutput.fileName: "sim.owner.neutron-TrkCal.version.sequencer.art"
+outputs.crvOutput.fileName: "sim.owner.neutron-CRV.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName: "sim.owner.neutron-truncated.version.sequencer.art"

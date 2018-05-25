@@ -19,22 +19,20 @@ muonStops : {
 #   no suffix: default, which will be time dependent.
 merged_tgtStops_tdr : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
 merged_tgtStops_cd3 : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-tgtstops.v533_v543_v563b.001002_00000000.root" ]
-merged_tgtStops     : @local::merged_tgtStops_cd3
 
 merged_ootStops_tdr : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
 merged_ootStops_cd3 : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-ootstops.v533_v543_v563b.001002_00000000.root" ]
-merged_ootStops     : @local::merged_ootStops_cd3
 
 # CD3 stopped muon configs.
 mu2e.tgtMuonStops: {
-    inputFiles            : @local::merged_tgtStops
+    inputFiles            : @nil
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
     branchName            : "stops"
     verbosityLevel        : 0
 }
 mu2e.ootMuonStops: {
-    inputFiles            : @local::merged_ootStops_cd3
+    inputFiles            : @nil
     averageNumRecordsToUse: 500000
     treeName              : "outOfTargetDumper/stops"
     branchName            : "stops"
