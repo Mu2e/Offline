@@ -46,10 +46,8 @@ namespace mu2e {
     // A default c'tor is required for ROOT.
     SimParticle():
       _id(),
-      _parentId(0),
       _parentSim(),
       _pdgId(),
-      _genIndex(-1),
       _genParticle(),
       _startPosition(),
       _startMomentum(),
@@ -85,10 +83,8 @@ namespace mu2e {
                  ProcessCode                    acreationCode,
                  double                         aweight=1.):
       _id(aid),
-      _parentId(0),
       _parentSim(aparentSim),
       _pdgId(apdgId),
-      _genIndex(-1),
       _genParticle(agenParticle),
       _startPosition(aposition),
       _startMomentum(amomentum),
@@ -136,7 +132,6 @@ namespace mu2e {
 
     void addDaughter( art::Ptr<SimParticle> const& p ){
       _daughterSims.push_back(p);
-      _daughterIds.push_back( key_type(p.key()) );
     }
 
     // Some Accessors/Modifier pairs.
@@ -169,7 +164,7 @@ namespace mu2e {
     // Where was this particle created: in the event generator or in G4?
     bool isSecondary()   const { return _parentSim.isNonnull(); }
     bool isPrimary()     const { return _genParticle.isNonnull(); }
-    bool selfParent()	 const { return _parentSim.isNonnull() && _creationCode == ProcessCode::mu2ePrimary; }
+    bool selfParent()    const { return _parentSim.isNonnull() && _creationCode == ProcessCode::mu2ePrimary; }
 
     // Some synonyms for the previous two accessors.
     bool hasParent()     const { return _parentSim.isNonnull(); }
@@ -196,9 +191,12 @@ namespace mu2e {
     double       preLastStepKineticEnergy() const { return _preLastStepKE; }
     int          nSteps()  const { return _nSteps;        }
 
-    // SimParticle indices of daughters of this track.
-    std::vector<key_type>               const& daughterIds() const { return _daughterIds;}
+    // SimParticle daughters of this track.
     std::vector<art::Ptr<SimParticle> > const& daughters()   const { return _daughterSims; }
+
+    // SimParticle indices of daughters of this track.
+    // DO NOT USE - this is an expensive (at run time) crutch for legacy code.
+    std::vector<key_type>                      daughterIds() const;
 
     // Weight
     double weight() const { return  _weight;}
@@ -211,11 +209,6 @@ namespace mu2e {
       _daughterSims.clear();
       _daughterSims.reserve(ptr.size());
       _daughterSims.insert( _daughterSims.begin(), ptr.begin(), ptr.end() );
-      _daughterIds.clear();
-      _daughterIds.reserve(ptr.size());
-      for ( std::size_t i=0; i != ptr.size(); ++i){
-        _daughterIds.push_back( key_type( ptr[i].key() ) );
-      }
     }
 
     // Two older accessors that will soon be removed from the interface.
@@ -235,15 +228,11 @@ namespace mu2e {
     // G4 ID number of this track and of its parent.
     // See notes 1 and 2.
     key_type _id;
-    key_type _parentId;                  // Obsolete and not used.  Will be deleted at a convenient time.
     art::Ptr<SimParticle> _parentSim;
 
     // PDG particle ID code.  See note 1.
     PDGCode::type _pdgId;
 
-    // Index into the container of generated tracks;
-    // -1 if there is no corresponding generated track.
-    int                    _genIndex;      // Obsolete and not used.  Will be deleted at a convenient time.
     art::Ptr<GenParticle>  _genParticle;
 
     // Information at the start of the track.
@@ -267,7 +256,6 @@ namespace mu2e {
     int                     _nSteps;
 
     // SimParticle IDs of daughters of this track.
-    std::vector<key_type>  _daughterIds;
     std::vector<art::Ptr<SimParticle> > _daughterSims;
 
     // Weight
