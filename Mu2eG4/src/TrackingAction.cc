@@ -377,9 +377,7 @@ namespace mu2e {
                                                          trk->GetProperTime(),
                                                          _physVolHelper->index(trk),
                                                          trk->GetTrackStatus(),
-                                                         creationCode,
-                                                         trk->GetWeight()
-                                                         )));
+                                                         creationCode)));
 
     // If this track has a parent, tell the parent about this track.
     if ( parentPtr.isNonnull() ){

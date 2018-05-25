@@ -66,7 +66,6 @@ namespace mu2e {
       _preLastStepKE(-1),
       _nSteps(0),
       _daughterSims(),
-      _weight(0.),
       _endDefined(false){
     }
 
@@ -80,8 +79,7 @@ namespace mu2e {
                  double                         astartProperTime,
                  unsigned                       astartVolumeIndex,
                  unsigned                       astartG4Status,
-                 ProcessCode                    acreationCode,
-                 double                         aweight=1.):
+                 ProcessCode                    acreationCode):
       _id(aid),
       _parentSim(aparentSim),
       _pdgId(apdgId),
@@ -103,7 +101,6 @@ namespace mu2e {
       _preLastStepKE(-1),
       _nSteps(0),
       _daughterSims(),
-      _weight(aweight),
       _endDefined(false)
     {}
 
@@ -198,9 +195,6 @@ namespace mu2e {
     // DO NOT USE - this is an expensive (at run time) crutch for legacy code.
     std::vector<key_type>                      daughterIds() const;
 
-    // Weight
-    double weight() const { return  _weight;}
-
     // Is the second half defined?
     bool endDefined() const { return _endDefined;}
 
@@ -257,9 +251,6 @@ namespace mu2e {
 
     // SimParticle IDs of daughters of this track.
     std::vector<art::Ptr<SimParticle> > _daughterSims;
-
-    // Weight
-    double _weight;
 
     // Is the second half defined?
     bool _endDefined;
