@@ -19,7 +19,6 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "DataProducts/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/SimParticleAncestors.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 #include "TH1F.h"
 #include "TNtuple.h"
