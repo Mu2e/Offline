@@ -56,7 +56,7 @@ namespace mu2e {
     auto ireco = event.getValidHandle<TrackSummaryRecoMap>(recoMapInput_);
     auto imc = event.getValidHandle<StrawDigiMCCollection>(strawHitDigiMCInput_);
 
-    StrawEnd end(TrkTypes::cal);
+    StrawEnd end(StrawEnd::cal);
 
     typedef std::map<art::Ptr<SimParticle>, unsigned> PerParticleCount;
     PerParticleCount nPrincipal;

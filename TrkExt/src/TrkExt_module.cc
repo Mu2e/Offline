@@ -45,7 +45,7 @@ using namespace CLHEP;
 #include "BTrk/TrkBase/TrkParticle.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVector.hh"
@@ -579,18 +579,18 @@ namespace mu2e {
       if (!trkStrawHit) continue;
 
       // read assoc. StrawHit
-      const StrawHit& strawHit = trkStrawHit->strawHit();
+      const ComboHit& comobHit = trkStrawHit->comboHit();
 
-      // read StrawHitCollection
-      art::Handle<StrawHitCollection> shcHandle;
+      // read ComboHitCollection
+      art::Handle<ComboHitCollection> shcHandle;
       event.getByLabel(_makerModuleLabel, shcHandle);
-      StrawHitCollection const & shc = *shcHandle;
+      ComboHitCollection const & shc = *shcHandle;
 
-      // find the same StrawHit entry from StrawHitCollection
+      // find the same StrawHit entry from ComboHitCollection
       int hitid = -1;
       for (i = 0 ; i <shc.size() ; ++i) {
-        StrawHit  const& sh(shc.at(i));
-        if (sh == strawHit) {
+        ComboHit  const& sh(shc.at(i));
+        if (&sh == &comobHit) {
           hitid = int(i);
           break;
         }

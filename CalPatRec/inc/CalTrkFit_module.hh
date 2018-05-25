@@ -138,7 +138,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     const StrawHitCollection*             _shcol;
     const StrawHitFlagCollection*         _shfcol;
-    const StrawHitPositionCollection*     _shpcol;
+    // const StrawHitPositionCollection*     _shpcol;
 
     const KalSeedCollection*              _trkseeds;
 

@@ -31,7 +31,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "RecoDataProducts/inc/TrkExtTraj.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVector.hh"
@@ -426,21 +426,21 @@ namespace mu2e
         cerr << "TrkExtDiag warning : no trkstrawHit" <<endl;
         continue;
       }
-      const StrawHit& strawHit = trkstrawHit->strawHit();
+      const ComboHit& comboHit = trkstrawHit->comboHit();
 
-      art::Handle<StrawHitCollection> shcHandle;
+      art::Handle<ComboHitCollection> shcHandle;
       evt.getByLabel(_makerModuleLabel, shcHandle);
       if (!(shcHandle.isValid())) {
         cerr << "TrkExtDiag warning : shcHandle invalid" << endl;
         continue;
       }
 
-      StrawHitCollection const & shc = *shcHandle;
+      ComboHitCollection const& shc = *shcHandle;
       int hitid = -1;
 
       for (i = 0 ; i <shc.size() ; ++i) {
-        StrawHit  const& sh(shc.at(i));
-        if (sh == strawHit) {
+        ComboHit  const& sh(shc.at(i));
+        if (&sh == &comboHit) {
           hitid = int(i);
           break;
         }

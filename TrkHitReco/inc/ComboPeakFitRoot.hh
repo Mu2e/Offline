@@ -16,7 +16,7 @@ namespace mu2e {
     class ComboPeakFitRoot : public PeakFitRoot  {
       public:
 
-       ComboPeakFitRoot(const StrawElectronics& strawele, const fhicl::ParameterSet& pset);
+       ComboPeakFitRoot(const StrawResponse& srep, const fhicl::ParameterSet& pset);
        virtual ~ComboPeakFitRoot(){}
 
        // extract peak information from adc waveform data.  1 waveform generates 1 peak fit.

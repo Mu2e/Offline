@@ -44,8 +44,30 @@ namespace mu2e {
     _rres_min(pset.get<double>("MinDriftRadiusResolution",0.2)), //mm
     _rres_max(pset.get<double>("MaxDriftRadiusResolution",0.2)), //mm
     _rres_rad(pset.get<double>("DriftRadiusResolutionRadius",-1)), //mm
-    _mint0doca(pset.get<double>("minT0DOCA", -0.2)) //FIXME should be moved to a reconstruction configuration 
+    _mint0doca(pset.get<double>("minT0DOCA", -0.2)), //FIXME should be moved to a reconstruction configuration 
+    _pmpEnergyScale(pset.get<vector<double> >("peakMinusPedestalEnergyScale",vector<double>(96,0.0042))), // fudge factor for peak minus pedestal energy method
+    _timeOffsetPanel(pset.get<vector<double> >("TimeOffsetPanel",vector<double>(240,0))),
+    _timeOffsetStrawHV(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0))),
+    _timeOffsetStrawCal(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0)))
     {
+      _strawele = ConditionsHandle<StrawElectronics>("ignored");
+      _strawphys = ConditionsHandle<StrawPhysics>("ignored");
+
+      _timeOffsetBeam = pset.get<double>("TimeOffsetBeam",_strawele->clockStart());
+      _gasGain = pset.get<double>("GasGain",_strawphys->strawGain());
+      _analognoise[StrawElectronics::thresh] = pset.get<double>("thresholdAnalogNoise",_strawele->analogNoise(StrawElectronics::thresh));
+      _analognoise[StrawElectronics::adc] = pset.get<double>("adcAnalogNoise",_strawele->analogNoise(StrawElectronics::adc));
+      _dVdI[StrawElectronics::thresh] = pset.get<double>("thresholddVdI",_strawele->currentToVoltage(StrawId(0,0,0),StrawElectronics::thresh));
+      _dVdI[StrawElectronics::adc] = pset.get<double>("adcdVdI",_strawele->currentToVoltage(StrawId(0,0,0),StrawElectronics::adc));
+      _vsat = pset.get<double>("SaturationVoltage",_strawele->saturationVoltage()); // mVolt
+      _ADCped = pset.get<unsigned>("ADCPedestal",_strawele->ADCPedestal(StrawId(0,0,0)));
+
+
+    _pmpEnergyScaleAvg = 0;
+      for (size_t i=0;i<_pmpEnergyScale.size();i++)
+        _pmpEnergyScaleAvg += _pmpEnergyScale[i];
+      _pmpEnergyScaleAvg /= (double) _pmpEnergyScale.size();
+
     }
 
   StrawResponse::~StrawResponse(){}
@@ -178,6 +200,20 @@ namespace mu2e {
       tdres += (wlen-_central)*wslope;
     }
     return tdres;
+  }
+
+  void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes &times, const StrawId &id) const {
+    
+    times[StrawEnd::hv] = tdc[StrawEnd::hv]*_strawele->tdcLSB() +  _timeOffsetBeam + _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.getStraw()];
+    times[StrawEnd::cal] = tdc[StrawEnd::cal]*_strawele->tdcLSB() + _timeOffsetBeam + _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.getStraw()];
+  }
+ 
+
+  double StrawResponse::saturatedResponse(double vlin) const {
+    if (vlin < _vsat)
+      return vlin;
+    else
+      return _vsat;
   }
  
 }

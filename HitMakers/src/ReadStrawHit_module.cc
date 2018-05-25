@@ -321,7 +321,7 @@ namespace mu2e {
       int secid = sid.getPanel();
 
       double fracDist = 0.0;
-      StrawEnd itdc(TrkTypes::cal);
+      StrawEnd itdc(StrawEnd::cal);
 
       if (gblSHMCresult) {
         fracDist = SHtruth->distanceToMid()/str.getHalfLength();

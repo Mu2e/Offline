@@ -1099,7 +1099,7 @@ namespace mu2e {
     int            n_ele_trk, n_muo_trk, ele_unique[max_ntrk], muo_unique[max_ntrk];
     int            found, ele_nhits, muo_nhits, ncommon;
 
-    const mu2e::StrawHit               *esh, *msh;
+    const mu2e::ComboHit               *esh, *msh;
     //    mu2e::DoubletAmbigResolver::Data_t r;
 
     vector<double>         gaspaths;
@@ -1196,7 +1196,7 @@ namespace mu2e {
           const DetStrawElem* strawelem = detmodel.strawElem(hit->straw());
           path = 2.*strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
           gaspaths.push_back(path);
-          edeps.push_back(hit->strawHit().energyDep());
+          edeps.push_back(hit->comboHit().energyDep());
         }
       }
 //-----------------------------------------------------------------------------
@@ -1225,7 +1225,7 @@ namespace mu2e {
             for(auto itm=muo_hots.begin(); itm<muo_hots.end(); itm++) {
               mhit = (const mu2e::TrkStrawHit*) (*itm);
               if (mhit->isActive()) {
-                if (&ehit->strawHit() == &mhit->strawHit()) {
+                if (&ehit->comboHit() == &mhit->comboHit()) {
                   ncommon += 1;
                   break;
                 }
@@ -1250,7 +1250,7 @@ namespace mu2e {
           for (auto ihot=muo_hots.begin(); ihot != muo_hots.end(); ++ihot) {
             TrkStrawHit* hit = (mu2e::TrkStrawHit*) (*ihot);
             if (hit->isActive()) {
-              msh = &hit->strawHit();
+              msh = &hit->comboHit();
 //-----------------------------------------------------------------------------
 // check if 'hit' is unique for the muon track
 //-----------------------------------------------------------------------------
@@ -1258,7 +1258,7 @@ namespace mu2e {
               for (auto ehot=ele_hots.begin(); ehot != ele_hots.end(); ++ehot) {
                 ehit = (mu2e::TrkStrawHit*) (*ehot);
                 if (ehit->isActive()) {
-                  esh  = &ehit->strawHit();
+                  esh  = &ehit->comboHit();
                   if (esh == msh) {
                     found = 1;
                     break;
@@ -1274,7 +1274,7 @@ namespace mu2e {
                 const DetStrawElem* strawelem = detmodel.strawElem(hit->straw());
                 path = 2.*strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
                 gaspaths.push_back(path);
-                edeps.push_back(hit->strawHit().energyDep());
+                edeps.push_back(hit->comboHit().energyDep());
               }
             }
           }
@@ -1413,7 +1413,7 @@ namespace mu2e {
             const DetStrawElem* strawelem = detmodel.strawElem(hit->straw());
             path = 2.*strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
             gaspaths.push_back(path);
-            edeps.push_back(hit->strawHit().energyDep());
+            edeps.push_back(hit->comboHit().energyDep());
           }
         }
 

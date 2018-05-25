@@ -75,13 +75,13 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
   }
   if(eOK) {
     energy = obj.energySum();
-    tenergy0 = obj.triggerEnergySum(TrkTypes::cal);
-    tenergy1 = obj.triggerEnergySum(TrkTypes::hv);
+    tenergy0 = obj.triggerEnergySum(StrawEnd::cal);
+    tenergy1 = obj.triggerEnergySum(StrawEnd::hv);
   }
 
   // now check if the basic StepPointMC's are also available
-  auto const& a0 = obj.stepPointMC(TrkTypes::cal);
-  auto const& a1 = obj.stepPointMC(TrkTypes::hv);
+  auto const& a0 = obj.stepPointMC(StrawEnd::cal);
+  auto const& a1 = obj.stepPointMC(StrawEnd::hv);
 
   if(!(a0.isAvailable() && a1.isAvailable()) ) {
     // give up at this point since basically no accessors work
@@ -93,16 +93,16 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
     os << " " << std::setw(5) << obj.strawId().asUint16()
        << " " 
        << " " << std::setw(8) << std::setprecision(2) 
-           << obj.wireEndTime(TrkTypes::cal)
+           << obj.wireEndTime(StrawEnd::cal)
        << " " << std::setw(8) << std::setprecision(2) 
-           << obj.wireEndTime(TrkTypes::hv)
+           << obj.wireEndTime(StrawEnd::hv)
        << " " << std::setw(8) << std::setprecision(4) 
-           << obj.driftDistance(TrkTypes::cal)
+           << obj.driftDistance(StrawEnd::cal)
        << " " << std::setw(8) << std::setprecision(4) 
-           << obj.driftDistance(TrkTypes::hv)
+           << obj.driftDistance(StrawEnd::hv)
        << " " << std::setw(8) << std::setprecision(4) << energy
-       << " " << std::setw(6) << obj.isCrossTalk(TrkTypes::cal)
-       << " " << std::setw(6) << obj.isCrossTalk(TrkTypes::hv)
+       << " " << std::setw(6) << obj.isCrossTalk(StrawEnd::cal)
+       << " " << std::setw(6) << obj.isCrossTalk(StrawEnd::hv)
        << " " ;
     os << std::endl;
   } else if (verbose()==2) {
@@ -110,30 +110,30 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
     os << " index :" << std::setw(5) << obj.strawId().asUint16()
        << " " 
        << " time0: " << std::setw(8) << std::setprecision(2) 
-                  << obj.wireEndTime(TrkTypes::cal)
+                  << obj.wireEndTime(StrawEnd::cal)
        << " time1: " << std::setw(8) << std::setprecision(2) 
-                  << obj.wireEndTime(TrkTypes::hv)
+                  << obj.wireEndTime(StrawEnd::hv)
        << " drift0: " << std::setw(8) << std::setprecision(4) 
-                  << obj.driftDistance(TrkTypes::cal)
+                  << obj.driftDistance(StrawEnd::cal)
        << " drift1:" << std::setw(8) << std::setprecision(4) 
-                  << obj.driftDistance(TrkTypes::hv)
+                  << obj.driftDistance(StrawEnd::hv)
        << " " ;
     os << std::endl;
     os << " driftMid0: " << std::setw(10) << std::setprecision(4) 
-                  << obj.distanceToMid(TrkTypes::cal)
+                  << obj.distanceToMid(StrawEnd::cal)
        << " driftMid1:" << std::setw(10) << std::setprecision(4) 
-                  << obj.distanceToMid(TrkTypes::hv)
+                  << obj.distanceToMid(StrawEnd::hv)
        << " energy: " << std::setw(8) << std::setprecision(4) << energy;
     os << std::endl;
     os << " trigEnergy0: " << std::setw(8) << std::setprecision(4) 
               << tenergy0
        << " trigEnergy1: " << std::setw(8) << std::setprecision(4) 
               << tenergy1
-       << " cross0: " << std::setw(2) << obj.isCrossTalk(TrkTypes::cal)
-       << " cross1: " << std::setw(2) << obj.isCrossTalk(TrkTypes::hv)
+       << " cross0: " << std::setw(2) << obj.isCrossTalk(StrawEnd::cal)
+       << " cross1: " << std::setw(2) << obj.isCrossTalk(StrawEnd::hv)
        << " " ;
     os << std::endl;
-    CLHEP::HepLorentzVector const& v0 = obj.clusterPosition(TrkTypes::cal);
+    CLHEP::HepLorentzVector const& v0 = obj.clusterPosition(StrawEnd::cal);
     os << " position0: " 
        << std::setw(10) << std::setprecision(4) << v0.x()
        << std::setw(10) << std::setprecision(4) << v0.y()
@@ -141,7 +141,7 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
        << std::setw(10) << std::setprecision(4) << v0.t()
        << " " ;
     os << std::endl;
-    CLHEP::HepLorentzVector const& v1 = obj.clusterPosition(TrkTypes::hv);
+    CLHEP::HepLorentzVector const& v1 = obj.clusterPosition(StrawEnd::hv);
     os << " position1: " 
        << std::setw(10) << std::setprecision(4) << v1.x()
        << std::setw(10) << std::setprecision(4) << v1.y()

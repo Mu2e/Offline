@@ -8,7 +8,6 @@
 //
 #include "TrkReco/inc/KalFit.hh"
 #include "TrkReco/inc/PanelAmbigResolver.hh"
-#include "TrkReco/inc/PocaAmbigResolver.hh"
 #include "TrkReco/inc/HitAmbigResolver.hh"
 #include "TrkReco/inc/FixedAmbigResolver.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
@@ -29,7 +28,7 @@
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 // data
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 // tracker
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TrackerGeom/inc/Tracker.hh"
@@ -105,7 +104,6 @@ namespace mu2e
     _updatet0(pset.get<bool>("updateT0",true)),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
-    _mint0doca(pset.get<double>("minT0DOCA",-0.2)),
     _t0nsig(pset.get<double>("t0window",2.5)),
     _dtoffset(pset.get<double>("dtOffset")),
     _strHitW(pset.get<double>("strawHitT0Weight")),
@@ -181,9 +179,6 @@ namespace mu2e
       case panelambig:
         ar = new PanelAmbig::PanelAmbigResolver(panelPset,_herr[iter],iter);
         break;
-      case pocaambig:
-        ar = new PocaAmbigResolver(pocaPset,_herr[iter]);
-        break;
       case doubletambig: // 4
         ar = new DoubletAmbigResolver(doubletPset,_herr[iter],iter,Final);
         break;
@@ -207,7 +202,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // create the track (KalRep) from a track seed
 //-----------------------------------------------------------------------------
-  void KalFit::makeTrack(const StrawHitCollection* shcol, KalSeed const& kseed, KalRep*& krep) {
+  void KalFit::makeTrack(const ComboHitCollection* shcol, KalSeed const& kseed, KalRep*& krep) {
 // test if fitable
     if(fitable(kseed)){
       // find the segment at the 0 flight
@@ -276,7 +271,7 @@ namespace mu2e
     }
   }
 
-  void KalFit::addHits(KalRep* krep,const StrawHitCollection* shcol, std::vector<StrawHitIndex> indices, double maxchi) {
+  void KalFit::addHits(KalRep* krep,const ComboHitCollection* shcol, std::vector<StrawHitIndex> indices, double maxchi) {
     //2017-05-02: Gianipez. In this function inten
   // fetcth the DetectorModel
    Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
@@ -291,7 +286,7 @@ namespace mu2e
       const TrkDifPieceTraj* reftraj = krep->referenceTraj();
       for(unsigned iind=0;iind<indices.size(); ++iind){
         size_t istraw = indices[iind];
-        const StrawHit& strawhit(shcol->at(istraw));
+        const ComboHit& strawhit(shcol->at(istraw));
         const Straw& straw = tracker.getStraw(strawhit.strawId());
 // estimate  initial flightlength
         double hflt(0.0);
@@ -308,16 +303,19 @@ namespace mu2e
         double beta = krep->particleType().beta(mom);
         double tflt = (hflt-nearhit->fltLen())/(beta*CLHEP::c_light);
 // update the time in the TrkT0 object
-        hitt0._t0 += tflt;
+        hitt0._t0 += tflt;  // FIXME!!! assumes beta=1
 // create the hit object.  Assume we're at the last iteration over added error
-        TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,_herr.back(),
-					      _maxpull,_strHitW, _mint0doca);
+        TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,
+					      _maxpull,_strHitW );
         assert(trkhit != 0);
-// allow the hit to update its own ambiguity for now: eventually we should get the resolver to do this, FIXME!!!
-        trkhit->setAmbigUpdate(true);
+	trkhit->setTemperature(_herr.back()); // give this hit the final annealing temperature
         trkhit->setFlag(TrkHit::addedHit);
 // must be initialy active for KalRep to process correctly
         trkhit->setActivity(true);
+// set the hit ambiguity.  This is a preliminary value before using the official ambig resolver
+	TrkPoca poca(krep->traj(),hflt,*trkhit->hitTraj(),0.0);
+	int newamb = poca.doca() > 0 ? 1 : -1;
+	trkhit->setAmbig(newamb);
 // add the hit to the track
         krep->addHit(trkhit);
 // check the raw residual: This call works because the HOT isn't yet processed as part of the fit.
@@ -325,8 +323,6 @@ namespace mu2e
 //if it's outside limits, deactivate the HOT
         if(chi > maxchi || (!trkhit->isPhysical(maxchi)))
           trkhit->setActivity(false);
-// now that we've got the residual, we can turn of auto-ambiguity resolution
-        trkhit->setAmbigUpdate(false);
    // find the DetElem associated this straw
         const DetStrawElem* strawelem = detmodel.strawElem(trkhit->straw());
 // see if this KalRep already has a KalMaterial with this element: if not, add it
@@ -434,17 +430,17 @@ namespace mu2e
   }
 
   void
-  KalFit::makeTrkStrawHits(const StrawHitCollection* shcol, HelixTraj const& htraj,
+  KalFit::makeTrkStrawHits(const ComboHitCollection* shcol, HelixTraj const& htraj,
 			   std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv ) {
     const Tracker& tracker = getTrackerOrThrow();
     // compute particle velocity to 
     for(auto ths : hseeds ){
       // create a TrkStrawHit from this seed.
       size_t index = ths.index();
-      const StrawHit& strawhit(shcol->at(index));
+      const ComboHit& strawhit(shcol->at(index));
       const Straw& straw = tracker.getStraw(strawhit.strawId());
       TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,ths.index(),ths.t0(),ths.trkLen(),
-					    _herr.front(),_maxpull,_strHitW,_mint0doca);
+					    _maxpull,_strHitW);
       assert(trkhit != 0);
       // set the initial ambiguity
       trkhit->setAmbig(ths.ambig());
@@ -767,10 +763,6 @@ namespace mu2e
     //FIXME!!!!
     return 0;
   }
-
-// const StrawHitCollection* shcol,TrkParticle const& part,
-// 		 TrkT0& t0,std::vector<StrawHitIndex> const& hits,
-// 		 HelixTraj const& htraj   ) {
 
   void
   KalFit::initT0(KalRep*krep) {

@@ -106,7 +106,7 @@ namespace mu2e {
       ComboHit const& ch = (*_chcol)[ish];
           // select hits based on flag
       if((!_testflag) || (ch.flag().hasAllProperties(_shsel) && (!ch.flag().hasAnyProperty(_shmask))) ){
-	panels[ch.sid().uniquePanel()].push_back(ish);
+	panels[ch.strawId().uniquePanel()].push_back(ish);
       }
     }
     // loop over panels
@@ -126,7 +126,7 @@ namespace mu2e {
 	    if(!used[jhit]){
 	      ComboHit const& hit2 = (*_chcol)[phits[jhit]];
 	      // require straws be near each other
-	      int ds = abs( (int)hit1.sid().straw()-(int)hit2.sid().straw());
+	      int ds = abs( (int)hit1.strawId().straw()-(int)hit2.strawId().straw());
 	      if(ds > 0 && ds <= _maxds ){
 		// require times be consistent
 		float dt = fabs(hit1.time() - hit2.time());

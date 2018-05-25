@@ -346,7 +346,7 @@ int findlowhist(float d){
            const DetStrawElem* strawelem = detmodel.strawElem(hit->straw());
            gaspaths.push_back(2. * strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction( hit->fltLen() )));
 
-           edeps.push_back(hit->strawHit().energyDep());
+           edeps.push_back(hit->comboHit().energyDep());
 
          }
        }

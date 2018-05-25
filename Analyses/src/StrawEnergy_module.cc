@@ -127,7 +127,7 @@ namespace mu2e {
 // find MC truth information
       StrawDigiMC const& mcdigi = mcdigis->at(ihit);
       // use TDC channel 0 to define the MC match
-      StrawEnd itdc(TrkTypes::cal);
+      StrawEnd itdc(StrawEnd::cal);
       art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       _mcpdg = spp->pdgId();
