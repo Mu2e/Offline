@@ -160,10 +160,10 @@ namespace mu2e {
       // assume that tabulated are the bin centers
       res.initialize(loadTable<2>( ConfigFileLookupPolicy()( psphys.get<std::string>("spectrumFileName"))) );
       *elow = res.getAbscissa(0);
-      *ehi  = res.getAbscissa(res.getNbins()-1);
+      *ehi  = res.getAbscissa(res.getNbins()-1) + res.getBinWidth();
       if(psphys.get<bool>("BinCenter", false)){
 	*elow -= res.getBinWidth()/2;
-	*ehi  += res.getBinWidth()/2;
+	*ehi  -= res.getBinWidth()/2;
       }
       if(*elow < 0.0) throw cet::exception("BADCONFIG")
         << "StoppedParticleReactionGun: negative energy endpoint "<< *elow <<"\n";
