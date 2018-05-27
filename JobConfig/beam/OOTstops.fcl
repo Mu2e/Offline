@@ -3,13 +3,13 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
 
-process_name :  nts3ootstops
+process_name :  DSOOTstops
 
 source : { module_type : RootInput }
 
 services : {
    message: @local::default_message
-   TFileService: { fileName: "nts.owner.beam-nts3-ootstops.version.sequencer.root" }
+   TFileService: { fileName: "nts.owner.DS-OOTstops.version.sequencer.root" }
 }
 
 physics: {
