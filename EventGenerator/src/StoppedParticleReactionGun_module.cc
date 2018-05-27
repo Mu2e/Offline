@@ -159,8 +159,14 @@ namespace mu2e {
     else if (spectrumShape == "tabulated") {
       // assume that tabulated are the bin centers
       res.initialize(loadTable<2>( ConfigFileLookupPolicy()( psphys.get<std::string>("spectrumFileName"))) );
-      *elow = res.getAbscissa(0)-res.getBinWidth()/2;
-      *ehi  = res.getAbscissa(res.getNbins()-1)+res.getBinWidth()/2;
+      *elow = res.getAbscissa(0);
+      *ehi  = res.getAbscissa(res.getNbins()-1);
+      if(psphys.get<bool>("BinCenter", false)){
+	*elow -= res.getBinWidth()/2;
+	*ehi  += res.getBinWidth()/2;
+      }
+      if(*elow < 0.0) throw cet::exception("BADCONFIG")
+        << "StoppedParticleReactionGun: negative energy endpoint "<< *elow <<"\n";
     }
     else {
       throw cet::exception("BADCONFIG")
@@ -197,6 +203,8 @@ namespace mu2e {
   //================================================================
   double StoppedParticleReactionGun::generateEnergy() {
     double res = elow_ + (ehi_ - elow_)*randSpectrum_.fire();
+    if(res < 0.0)
+       throw cet::exception("BADE")<<"StoppedParticleReactionGun: negative energy "<< res <<"\n";
     switch(spectrumVariable_) {
     case TOTAL_ENERGY: break;
     case KINETIC_ENERY: res += mass_; break;
