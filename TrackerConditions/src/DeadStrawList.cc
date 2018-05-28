@@ -185,9 +185,9 @@ namespace mu2e {
 
   }
 
-  bool DeadStrawList::isDead ( StrawIndex ind,double hitpos) const {
+  bool DeadStrawList::isDead ( StrawId id,double hitpos) const {
     bool retval(false);
-    auto ifnd = _deadstraws.find(DeadStrawRange(ind));
+    auto ifnd = _deadstraws.find(DeadStrawRange(id));
     if(ifnd != _deadstraws.end()){
       if(ifnd->_range > 0)
 	retval = fabs(hitpos) < ifnd->_range;
@@ -201,7 +201,7 @@ namespace mu2e {
     TTracker const& tracker(*GeomHandle<TTracker>());
 
     for( auto idead: _deadstraws) {
-      out << "Straw " << tracker.getStraw(idead._strawind).id() 
+      out << "Straw " << tracker.getStraw(idead._strawId).id()
       << " is dead for distances < " << idead._range << endl;
     }
 
