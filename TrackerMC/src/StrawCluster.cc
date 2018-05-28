@@ -1,8 +1,6 @@
 //
 // StrawCluster
-// $Id: StrawCluster.cc,v 1.5 2014/03/25 22:14:39 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/03/25 22:14:39 $
+//
 // Original author David Brown, LBNL
 //
 // mu2e includes
@@ -14,7 +12,6 @@ namespace mu2e {
   namespace TrackerMC {
     StrawCluster::StrawCluster() : _type(unknown), _strawId(0), _end(StrawEnd::cal), _time(0.0), _charge(0.0), _ddist(0.0),_phi(0.0),  _wdist(0.0), _drifttime(0.0), _proptime(0.0)
     {}//JB: added phi
-    
     StrawCluster::StrawCluster(ClusterType type,StrawId sid,
                                StrawEnd end,
                                double time,
@@ -28,12 +25,12 @@ namespace mu2e {
                                CLHEP::HepLorentzVector const& cpos) : _type(type), _strawId(sid), _end(end), _time(time),
     _charge(charge), _ddist(ddist), _phi(phi),_wdist(wdist), _drifttime(drifttime), _proptime(proptime), _stepMC(stepmc), _cpos(cpos)
     {}//JB: added phi
-    
+
     StrawCluster::StrawCluster(const StrawCluster& other) :
     _type(other._type), _strawId(other._strawId), _end(other._end),
     _time(other._time), _charge(other._charge), _ddist(other._ddist), _phi(other._phi), _wdist(other._wdist), _drifttime(other._drifttime), _proptime(other._proptime), _stepMC(other._stepMC), _cpos(other._cpos)
     {}
-    
+
     // delegating constructors in C++11!
     StrawCluster::StrawCluster(const StrawCluster& primary, StrawId const& id, double xfactor) :
     StrawCluster(primary) {
@@ -41,11 +38,11 @@ namespace mu2e {
       _strawId = id;
       _charge *= xfactor;
     }
-    
+
     StrawCluster::StrawCluster(const StrawCluster& primary, double deltat) : StrawCluster(primary) {
       _time += deltat;
     }
-    
+
     StrawCluster& StrawCluster::operator=(StrawCluster const& other ) {
       if(&other != this){
         _type = other._type;
@@ -63,7 +60,7 @@ namespace mu2e {
       }
       return *this;
     }
-    
+
     void StrawCluster::print(std::ostream& ost, bool doEndl) const {
       ost << "StrawCluster of type " << _type
       << " for straw id " << _strawId
@@ -78,4 +75,3 @@ namespace mu2e {
     }
   }
 }
-

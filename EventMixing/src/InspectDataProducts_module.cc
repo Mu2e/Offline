@@ -238,7 +238,7 @@ namespace mu2e {
       GenId genId = ( sim.fromGenerator() ) ? sim.genParticle()->generatorId() : GenId();
 
       cout << instanceName                     << ": "
-           << hit.strawIndex()                 << " "
+           << hit.strawId()                    << " "
            << hit.time()                       << " "
            << hit.ionizingEdep()/CLHEP::keV    << " "
            << hit.stepLength()                 << " | "

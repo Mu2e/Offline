@@ -2,10 +2,6 @@
 // module to convert G4 steps into straw digis.
 // It also builds the truth match
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.39 2014/08/29 19:49:23 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/08/29 19:49:23 $
-//
 // Original author David Brown, LBNL
 //
 // framework
@@ -70,28 +66,27 @@ using CLHEP::Hep3Vector;
 namespace mu2e {
   namespace TrackerMC {
     using namespace TrkTypes;
-    
+
     struct WireCharge { // charge at the wire after drift
       double _charge; // charge at the wire, in units of pC
       double _time; // relative time at the wire, relative to ionzation time (ns)
       double _dd;  // transverse distance drifted to the wrie
       double _phi; //JB: angle between E and B at ionization event
       double _wpos; // position long the wire, WRT the wire center, signed by the wire direction
-      
+
     };
-    
+
     struct WireEndCharge { // charge at one end of the wire after propagation
       double _charge; // charge at the wire, in units of pC
       double _time; // time at the wire end, relative to the time the charge reached the wire (ns)
       double _wdist; // propagation distance from the point of collection to the end
     };
-    
-    
-    
+
+
+
     class StrawDigisFromStepPointMCs : public art::EDProducer {
-      
+
     public:
-      
       typedef map<StrawId,StrawClusterSequencePair> StrawClusterMap;  // clusts by straw
       typedef vector<art::Ptr<StepPointMC> > StrawSPMCPV; // vector of associated StepPointMCs for a single straw/particle
       // work with pairs of waveforms, one for each straw end
@@ -99,16 +94,16 @@ namespace mu2e {
       typedef std::array<WFX,2> WFXP;
       typedef list<WFXP> WFXPList;
       typedef WFXPList::const_iterator WFXPI;
-      
+
       explicit StrawDigisFromStepPointMCs(fhicl::ParameterSet const& pset);
       // Accept compiler written d'tor.
-      
+
       virtual void beginJob();
       virtual void beginRun( art::Run& run );
       virtual void produce( art::Event& e);
-      
+
     private:
-      
+
       // Diagnostics level.
       int _debug, _diag, _printLevel;
       unsigned _maxhist;
@@ -119,7 +114,7 @@ namespace mu2e {
       int _maxFullPrint;
       // Name of the tracker StepPoint collection
       string _trackerStepPoints;
-      
+
       // Parameters
       bool   _addXtalk; // should we add cross talk hits?
       double _ctMinCharge; // minimum charge to add cross talk (for performance issues)
@@ -184,7 +179,7 @@ namespace mu2e {
       Float_t _steplen, _stepE, _qsum, _esum, _eesum, _qe, _partP;
       Int_t _nclusd, _netot, _partPDG;
       vector<IonCluster> _clusters;
-      
+
       //    vector<TGraph*> _waveforms;
       vector<TH1F*> _waveforms;
       //  helper functions
@@ -214,7 +209,7 @@ namespace mu2e {
       void waveformDiag(SWFP const& wf, WFXPList const& xings);
       void digiDiag(SWFP const& wf, WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi);
     };
-    
+
     StrawDigisFromStepPointMCs::StrawDigisFromStepPointMCs(fhicl::ParameterSet const& pset) :
     // diagnostic parameters
     _debug(pset.get<int>("debugLevel",0)),
@@ -258,11 +253,11 @@ namespace mu2e {
       produces<PtrStepPointMCVectorCollection>();
       produces<StrawDigiMCCollection>();
     }
-    
+
     void StrawDigisFromStepPointMCs::beginJob(){
-      
+
       if(_diag > 0){
-        
+
         art::ServiceHandle<art::TFileService> tfs;
         _sdiag =tfs->make<TTree>("sdiag","Step diagnostics");
         _sdiag->Branch("steplen",&_steplen,"steplen/F");
@@ -276,7 +271,7 @@ namespace mu2e {
         _sdiag->Branch("netot",&_netot,"netot/I");
         _sdiag->Branch("partPDG",&_partPDG,"partPDG/I");
         _sdiag->Branch("clusters",&_clusters);
-        
+
         _swdiag =tfs->make<TTree>("swdiag","StrawWaveform diagnostics");
         _swdiag->Branch("plane",&_swplane,"plane/I");
         _swdiag->Branch("panel",&_swpanel,"panel/I");
@@ -302,8 +297,8 @@ namespace mu2e {
         _swdiag->Branch("xddist",&_xddist,"xdcal/F:xdhv/F");
         _swdiag->Branch("xwdist",&_xwdist,"xwdcal/F:xwdhv/F");
         _swdiag->Branch("xpdist",&_xpdist,"xpdcal/F:xpdhv/F");
-        
-        
+
+
         if(_diag > 1){
           _sddiag =tfs->make<TTree>("sddiag","StrawDigi diagnostics");
           _sddiag->Branch("plane",&_sdplane,"plane/I");
@@ -345,11 +340,11 @@ namespace mu2e {
           _sddiag->Branch("mcgen",&_dmcgen,"mcgen/I");
           _sddiag->Branch("mcmom",&_dmcmom,"mcmom/F");
           _sddiag->Branch("xtalk",&_xtalk,"xtalk/B");
-          
+
         }
       }
     }
-    
+
     void StrawDigisFromStepPointMCs::beginRun( art::Run& run ){
       // set dead straws as listed
       _strawStatus.reset(_deadStraws);
@@ -370,7 +365,7 @@ namespace mu2e {
         _strawphys->print(cout);
       }
     }
-    
+
     void StrawDigisFromStepPointMCs::produce(art::Event& event) {
       if ( _printLevel > 1 ) cout << "StrawDigisFromStepPointMCs: produce() begin; event " << event.id().event() << endl;
       static int ncalls(0);
@@ -426,7 +421,7 @@ namespace mu2e {
       // Done with the first event; disable some messages.
       _firstEvent = false;
     } // end produce
-    
+
     void StrawDigisFromStepPointMCs::createDigis(StrawClusterSequencePair const& hsp,
                                                  XTalk const& xtalk,
                                                  StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
@@ -451,7 +446,7 @@ namespace mu2e {
         if(_diag > 2 )waveformHist(waveforms,xings);
       }
     }
-    
+
     void StrawDigisFromStepPointMCs::fillClusterMap(art::Event const& event, StrawClusterMap & hmap){
       // get conditions
       const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
@@ -480,9 +475,8 @@ namespace mu2e {
         StepPointMCCollection const& steps(*handle);
         // Loop over the StepPointMCs in this collection
         for (size_t ispmc =0; ispmc<steps.size();++ispmc){
-          // find straw id
-          StrawIndex const & strawind = steps[ispmc].strawIndex();
-	  StrawId sid = tracker.getStrawId(strawind); // FIXME!
+          // find straw index
+          StrawId const & sid = steps[ispmc].strawId();
           // Skip dead straws, and straws that don't exist
           if(tracker.strawExists(sid)) {
             // lookup straw here, to avoid having to find the tracker for every step
@@ -490,7 +484,7 @@ namespace mu2e {
             // Skip steps that occur in the deadened region near the end of each wire,
             // or in dead regions of the straw
             double wpos = fabs((steps[ispmc].position()-straw.getMidPoint()).dot(straw.getDirection()));
-            
+
             if(wpos <  straw.getDetail().activeHalfLength() &&
                _strawStatus.isAlive(strawind,wpos) &&
                steps[ispmc].ionizingEdep() > _minstepE){
@@ -503,7 +497,7 @@ namespace mu2e {
         }
       }
     }
-    
+
     void StrawDigisFromStepPointMCs::addStep(art::Ptr<StepPointMC> const& spmcptr,
                                              Straw const& straw,
                                              StrawClusterSequencePair& shsp) {
@@ -550,7 +544,7 @@ namespace mu2e {
             // create the clust
             StrawCluster clust(StrawCluster::primary,sid,end,ctime,weq._charge,wireq._dd,wireq._phi,weq._wdist,wireq._time,weq._time,
                                spmcptr,CLHEP::HepLorentzVector(iclu->_pos,mbtime)); //JB: + wireq._phi
-            
+
             // add the clusts to the appropriate sequence.
             shsp.clustSequence(end).insert(clust);
             // if required, add a 'ghost' copy of this clust
@@ -559,7 +553,7 @@ namespace mu2e {
         }
       }
     }
-    
+
     void StrawDigisFromStepPointMCs::divideStep(StepPointMC const& step, vector<IonCluster>& clusters) {
       // get particle charge
       double charge(0.0);
@@ -567,10 +561,10 @@ namespace mu2e {
       if(pdt->particle(step.simParticle()->pdgId()).isValid()){
         charge = pdt->particle(step.simParticle()->pdgId()).ref().charge();
       }
-      
+
       // get tracker information
       const Tracker& tracker = getTrackerOrThrow(); //JB
-      const Straw& straw = tracker.getStraw(step.strawIndex());//JB
+      const Straw& straw = tracker.getStraw(step.strawId());//JB
       // if the step length is small compared to the mean free path, or this is an
       // uncharged particle, put all the energy in a single cluster
       if (charge == 0.0 || step.stepLength() < _strawphys->meanFreePath()){
@@ -578,7 +572,7 @@ namespace mu2e {
         double fne = cen/_strawphys->meanElectronEnergy();
         unsigned ne = std::max( static_cast<unsigned>(_randP(fne)),(unsigned)1);
         double qc = _strawphys->ionizationCharge(ne);
-        
+
         Hep3Vector cdir = (step.position()-straw.getMidPoint());//JB
         cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));//JB
         double phi = cdir.theta(); //JB
@@ -653,7 +647,7 @@ namespace mu2e {
         _sdiag->Fill();
       }
     }
-    
+
     void StrawDigisFromStepPointMCs::driftCluster(Straw const& straw,
                                                   IonCluster const& cluster, WireCharge& wireq) {
       // Compute the vector from the cluster to the wire
@@ -671,9 +665,9 @@ namespace mu2e {
       wireq._dd = dd;
       // position along wire
       wireq._wpos = cpos.dot(straw.getDirection());
-      
+
     }
-    
+
     void StrawDigisFromStepPointMCs::propagateCharge(Straw const& straw,
                                                      WireCharge const& wireq, StrawEnd end, WireEndCharge& weq) {
       // compute distance to the appropriate end
@@ -687,18 +681,18 @@ namespace mu2e {
       weq._charge = 0.5*wireq._charge;
       weq._time = _strawphys->propagationTime(weq._wdist);
     }
-    
+
     double StrawDigisFromStepPointMCs::microbunchTime(double globaltime) const {
       // fold time relative to MB frequency
       return fmod(globaltime,_mbtime);
     }
-    
+
     void StrawDigisFromStepPointMCs::addGhosts(StrawCluster const& clust,StrawClusterSequence& shs) {
       // add enough buffer to cover both the flash blanking and the ADC waveform
       if(clust.time() < _strawele->flashStart()+_mbbuffer)
         shs.insert(StrawCluster(clust,_mbtime));
     }
-    
+
     void StrawDigisFromStepPointMCs::findThresholdCrossings( SWFP const& swfp, WFXPList& xings){
       //randomize the threshold to account for electronics noise; this includes parts that are coherent
       // for both ends (coming from the straw itself)
@@ -743,7 +737,7 @@ namespace mu2e {
         }
       }
     }
-    
+
     void StrawDigisFromStepPointMCs::fillDigis(WFXPList const& xings, SWFP const& wf,
 	StrawId sid,
 	StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
@@ -794,7 +788,7 @@ namespace mu2e {
 	if(_diag > 1)digiDiag(wf,xpair,digis->back(),mcdigis->back());
       }
     }
-    
+
     void StrawDigisFromStepPointMCs::createDigi(WFXP const& xpair, SWFP const& waveform,
                                                 StrawId sid, StrawDigiCollection* digis){
       // storage for MC match can be more than 1 StepPointMCs
@@ -839,7 +833,7 @@ namespace mu2e {
       // create the digi from this
       digis->push_back(StrawDigi(sid,tdc,tot,adc));
     }
-    
+
     // find straws which couple to the given one, and record them and their couplings in XTalk objects.
     // For now, this is just a fixed number for adjacent straws,
     // the couplings and straw identities should eventually come from a database, FIXME!!!
@@ -858,7 +852,7 @@ namespace mu2e {
         xtalk.push_back(XTalk(selfid,*isid,0,_postampxtalk));
       }
     }
-    
+
     // functions that need implementing:: FIXME!!!!!!
     void StrawDigisFromStepPointMCs::addNoise(StrawClusterMap& hmap){
       // create random noise clusts and add them to the sequences of random straws.
@@ -908,7 +902,7 @@ namespace mu2e {
         }
       }
     }
-    
+
     void StrawDigisFromStepPointMCs::waveformDiag(SWFP const& wfs, WFXPList const& xings) {
       const Tracker& tracker = getTrackerOrThrow();
       const Straw& straw = tracker.getStraw( wfs[0].clusts().strawId() );
@@ -957,7 +951,7 @@ namespace mu2e {
           _tmin[iend] = _mbtime+_mbbuffer;
           _tmax[iend] = -100.0;
         }
-        
+
         _hqsum[iend] = 0.0;
         _vmax[iend] = _tvmax[iend] = 0.0;
         _wmcpdg[iend] = _wmcproc[iend] = 0;
@@ -987,7 +981,7 @@ namespace mu2e {
       }
       _swdiag->Fill();
     }
-    
+
     void StrawDigisFromStepPointMCs::digiDiag(SWFP const& wfs, WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi) {
       const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
       const Straw& straw = tracker.getStraw( digi.strawId() );
@@ -995,7 +989,7 @@ namespace mu2e {
       _sdpanel = straw.id().getPanel();
       _sdlayer = straw.id().getLayer();
       _sdstraw = straw.id().getStraw();
-      
+
       for(size_t iend=0;iend<2;++iend){
         _xtime[iend] = xpair[iend]._time;
         _tctime[iend] = xpair[iend]._iclust->time();
@@ -1079,16 +1073,15 @@ namespace mu2e {
       }
       _mcthreshpdg = threshpart->simParticle()->pdgId();
       _mcthreshproc = threshpart->simParticle()->creationCode();
-	
-      StrawId mcsid = tracker.getStrawId(spmc->strawIndex());
-      _xtalk = digi.strawId() != mcsid; 
+
+      _xtalk = digi.strawId() != spmc->strawId();
       // fill the tree entry
       _sddiag->Fill();
     }//End of digiDiag
-    
-    
-    
-    
+
+
+
+
     void StrawDigisFromStepPointMCs::fillClusterPositions(Straw const& straw, StepPointMC const& step, std::vector<Hep3Vector>& cpos) {
       // basic info
       double charge(0.0);
@@ -1166,7 +1159,7 @@ namespace mu2e {
         }
       }
     }
-    
+
     void StrawDigisFromStepPointMCs::fillClusterMinion(StepPointMC const& step, std::vector<unsigned>& ne, std::vector<double>& cen) {
       // Loop until we've assigned energy + electrons to every cluster
       unsigned mc(0);
@@ -1208,17 +1201,16 @@ namespace mu2e {
         ns = static_cast<unsigned>(floor((etot-esum)/_strawphys->ionizationEnergy((unsigned)1)));
       } while(ns > 0);
     }
-    
+
     void StrawDigisFromStepPointMCs::fillClusterNe(std::vector<unsigned>& me) {
       for(size_t ie=0;ie < me.size(); ++ie){
         me[ie] = _strawphys->nePerIon(_randflat.fire());
       }
       if(_sort)std::sort(me.begin(),me.end());
     }
-    
+
   } // end namespace trackermc
 } // end namespace mu2e
 
 using mu2e::TrackerMC::StrawDigisFromStepPointMCs;
 DEFINE_ART_MODULE(StrawDigisFromStepPointMCs);
-

@@ -3,10 +3,6 @@
 //
 // StrawClusterSequence is a time-ordered sequence of StrawClusters
 //
-// $Id: StrawClusterSequence.hh,v 1.1 2013/12/07 19:51:42 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/12/07 19:51:42 $
-//
 // Original author David Brown, LBNL
 //
 
@@ -42,5 +38,3 @@ namespace mu2e {
   }
 }
 #endif
-
-

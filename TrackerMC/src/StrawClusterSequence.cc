@@ -1,10 +1,6 @@
 //
 // StrawClusterSequence is a time-ordered sequence of StrawClusters
 //
-// $Id: StrawClusterSequence.cc,v 1.2 2013/12/10 01:32:51 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/12/10 01:32:51 $
-//
 // Original author David Brown, LBNL
 //
 // mu2e includes
@@ -28,7 +24,7 @@ namespace mu2e {
       _strawId(sid), _end(end)
     {}
 
-    StrawClusterSequence::StrawClusterSequence(StrawClusterSequence const& other) : 
+    StrawClusterSequence::StrawClusterSequence(StrawClusterSequence const& other) :
       _strawId(other._strawId), _end(other._end), _clist(other._clist) {}
 
     StrawClusterSequence& StrawClusterSequence::operator =(StrawClusterSequence const& other) {
@@ -43,16 +39,16 @@ namespace mu2e {
     ClusterList::iterator StrawClusterSequence::insert(StrawCluster const& clust) {
       ClusterList::iterator retval = _clist.end();
       if(clust.type() == StrawCluster::unknown){
-	throw cet::exception("SIM") 
-	  << "mu2e::StrawClusterSequence: tried to add unknown clust type" 
+	throw cet::exception("SIM")
+	  << "mu2e::StrawClusterSequence: tried to add unknown clust type"
 	  << endl;
 	return retval;
       }
       // make sure the straw and end are the same
-      if(!_clist.empty() && (clust.strawId() != strawId() 
+      if(!_clist.empty() && (clust.strawId() != strawId()
 	    || clust.strawEnd() != strawEnd())){
-	throw cet::exception("SIM") 
-	  << "mu2e::StrawClusterSequence: tried to add clust from a different straw/end to a sequence" 
+	throw cet::exception("SIM")
+	  << "mu2e::StrawClusterSequence: tried to add clust from a different straw/end to a sequence"
 	  << endl;
 	return retval;
       }
@@ -72,4 +68,3 @@ namespace mu2e {
     }
   }
 }
-

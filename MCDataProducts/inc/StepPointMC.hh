@@ -84,6 +84,7 @@
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawIndex.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
@@ -172,6 +173,7 @@ namespace mu2e {
     // This only makes sense for StepPointMCs from the tracker collection.
     // It's the user's job to know if this is a reasonable thing to do.
     StrawIndex strawIndex() const { return static_cast<StrawIndex>(_volumeId); }
+    StrawId    strawId()    const { return static_cast<StrawId>(_volumeId); }
 
     // Return the volumeId as a VirtualDetectorId.
     // This only makes sense for StepPointMCs from the virtual detector collection.

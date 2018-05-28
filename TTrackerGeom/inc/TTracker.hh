@@ -78,7 +78,7 @@ namespace mu2e {
     std::string const& envelopeMaterial() const { return _envelopeMaterial; }
 
     // Check for legal identifiers. (for what decays to StrawId)
-    bool isLegal(const StrawId& strid) const{
+    bool isLegal(const StrawId strid) const{
        return strid.valid();
     }
 
@@ -113,7 +113,7 @@ namespace mu2e {
     }
 
     //    const std::deque<Straw>& getAllStraws() const {return _allStraws;}
-    const std::array<Straw,TTracker::_nttstraws>& getAllStraws() const 
+    const std::array<Straw,TTracker::_nttstraws>& getAllStraws() const
     {return _allStraws2;}
 
     const std::vector<StrawDetail>& getStrawDetails() const{
@@ -156,7 +156,7 @@ namespace mu2e {
 
     // =============== NewTracker Accessors Start ==============
 
-    const Straw& getStraw( const StrawId& id) const{
+    const Straw& getStraw( const StrawId id) const{
       return *(_allStraws2_p.at(id.asUint16()));
     }
 
@@ -165,7 +165,7 @@ namespace mu2e {
       return _allStraws2.at(i.asInt());
     }
 
-    const Plane& getPlane( const StrawId& id ) const{
+    const Plane& getPlane( const StrawId id ) const{
       return _planes.at(id.getPlane());
     }
 
@@ -173,7 +173,7 @@ namespace mu2e {
       return _planes.at(n);
     }
 
-    const Panel& getPanel ( const StrawId& id ) const{
+    const Panel& getPanel ( const StrawId id ) const{
       return _planes.at(id.getPlane()).getPanel(id);
     }
 
@@ -187,7 +187,7 @@ namespace mu2e {
     }
 
     // tmp function to be deprecated
-    const StrawIndex getStrawIndex(  const StrawId& id ) const{
+    const StrawIndex getStrawIndex(  const StrawId id ) const{
       return strawExists(id) ?
         (_allStraws2_p.at(id.asUint16()))->index() :
         StrawIndex(StrawIndex::NO_STRAW);
