@@ -13,6 +13,7 @@ helper=mu2e_helper(env);
 
 # Libraries need
 common = [ 'mu2e_SeedService_SeedService_service',
+           'mu2e_DataProducts',
            'mu2e_MCDataProducts',
            'mu2e_RecoDataProducts',
            'mu2e_ConfigTools',
@@ -120,6 +121,7 @@ helper.make_plugins( [ mainlib,
                        'mu2e_Sandbox_XBarService_service',
                        'mu2e_Sandbox_Bug01Service_service',
                        'mu2e_SeedService_SeedService_service',
+                       'mu2e_DataProducts',
                        'mu2e_MCDataProducts',
                        'mu2e_RecoDataProducts',
                        'mu2e_ConfigTools',
@@ -148,6 +150,7 @@ helper.make_plugins( [ mainlib,
                      )
 
 helper.make_dict_and_map( [ mainlib,
+                           'mu2e_DataProducts',
                            'mu2e_GeneralUtilities',
                            'art_Persistency_Common',
                            'art_Utilities',
