@@ -475,7 +475,7 @@ namespace mu2e {
         StepPointMCCollection const& steps(*handle);
         // Loop over the StepPointMCs in this collection
         for (size_t ispmc =0; ispmc<steps.size();++ispmc){
-          // find straw index
+          // find straw id
           StrawId const & sid = steps[ispmc].strawId();
           // Skip dead straws, and straws that don't exist
           if(tracker.strawExists(sid)) {
@@ -486,7 +486,7 @@ namespace mu2e {
             double wpos = fabs((steps[ispmc].position()-straw.getMidPoint()).dot(straw.getDirection()));
 
             if(wpos <  straw.getDetail().activeHalfLength() &&
-               _strawStatus.isAlive(strawind,wpos) &&
+               _strawStatus.isAlive(sid,wpos) &&
                steps[ispmc].ionizingEdep() > _minstepE){
               // create ptr to MC truth, used for references
               art::Ptr<StepPointMC> spmcptr(handle,ispmc);
