@@ -42,7 +42,7 @@ namespace mu2e {
       sstr >> straw;
       return StrawId(plane,panel,straw);
     }
-  }
+  } // end anonymous namespace
 
   StrawId::StrawId(std::string const& asstring) {
     *this = strawIdFromString(asstring);
@@ -94,5 +94,12 @@ namespace mu2e {
     return retval;
   }
 
-}
+  std::ostream& operator<<(std::ostream& ost,
+                           const StrawId& s ){
+    ost << s.plane() << "_"
+        << s.panel() << "_"
+        << s.straw();
+    return ost;
+  }
 
+} // end namespace mu2e
