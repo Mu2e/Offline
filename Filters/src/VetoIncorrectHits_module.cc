@@ -77,8 +77,8 @@ namespace mu2e {
   };
 
   //================================================================
-  VetoIncorrectHits::VetoIncorrectHits(fhicl::ParameterSet const& pset) 
-    : 
+  VetoIncorrectHits::VetoIncorrectHits(fhicl::ParameterSet const& pset)
+    :
     // Run time parameters
     diagLevel_(pset.get<int>("diagLevel")),
     maxFullPrint_(pset.get<int>("maxFullPrint")),
@@ -171,7 +171,7 @@ namespace mu2e {
       }
 
       if ( ( std::abs(hitLocalN.x()) - 1. > crvHitPositionTolerance_ ) ||
-           ( std::abs(hitLocalN.y()) - 1. > crvHitPositionTolerance_ ) || 
+           ( std::abs(hitLocalN.y()) - 1. > crvHitPositionTolerance_ ) ||
            ( std::abs(hitLocalN.z()) - 1. > crvHitPositionTolerance_ )
            ) {
 
@@ -187,7 +187,7 @@ namespace mu2e {
            << "; relative differences: "
            << std::abs(hitLocalN.x()) - 1. << ", "
            << std::abs(hitLocalN.y()) - 1. << ", "
-           << std::abs(hitLocalN.z()) - 1. 
+           << std::abs(hitLocalN.z()) - 1.
            << "; tolerance : "
            << crvHitPositionTolerance_
            << std::endl;
@@ -243,7 +243,7 @@ namespace mu2e {
       const CLHEP::Hep3Vector& mom = hit.momentum();
 
       // Get the straw information:
-      const Straw&   straw = tracker.getStraw( hit.strawIndex() );
+      const Straw&   straw = tracker.getStraw( hit.strawId() );
       const CLHEP::Hep3Vector& mid   = straw.getMidPoint();
       const CLHEP::Hep3Vector& w     = straw.getDirection();
 
@@ -261,7 +261,7 @@ namespace mu2e {
       double normS = s/straw.getHalfLength();
 
       if ( diagLevel_ > 1 &&  nProcessed_< maxFullPrint_ ){
-        // mf::LogInfo("GEOM") << "VetoIncorrectHits::doTTracker"
+
         std::cout << "VetoIncorrectHits::doTTracker"
                   << " Event " << event.id().event() << " as " << nProcessed_
                   << " normalized reference point - 1 : "
@@ -275,7 +275,7 @@ namespace mu2e {
       }
 
       if ( ( normPointMag - 1. > strawHitPositionTolerance_ ) ||
-           ( std::abs(normS) - 1. > strawHitPositionTolerance_ ) 
+           ( std::abs(normS) - 1. > strawHitPositionTolerance_ )
            ) {
 
         passed = false;
@@ -311,7 +311,7 @@ namespace mu2e {
       passed && ++passedHitsMap_[trackerStepPoints_];
 
     } // end loop over hits.
-    
+
     passed && ++passedEventsMap_[trackerStepPoints_];
 
     return passed;
@@ -322,26 +322,26 @@ namespace mu2e {
   void VetoIncorrectHits::endJob() {
 
     std::ostringstream os;
-    os << "VetoIncorrectHits_module " 
-       << std::setw(20) 
+    os << "VetoIncorrectHits_module "
+       << std::setw(20)
        << "summary:  processed  :"
        << " "
-       << std::setw(20) 
+       << std::setw(20)
        << nProcessed_ << " events" << std::endl;
 
     //    std::cout << " VetoIncorrectHits::endJob size of the map " << statMap_.size() << std::endl;
 
     for(const auto &i : passedEventsMap_) {
-      os << "VetoIncorrectHits_module " 
-         << std::setw(20) << i.first << " : " 
+      os << "VetoIncorrectHits_module "
+         << std::setw(20) << i.first << " : "
          << std::setw(20) << i.second
          << " events passed  " << std::endl
-         << "VetoIncorrectHits_module " 
-         << std::setw(20) << i.first << " : " 
+         << "VetoIncorrectHits_module "
+         << std::setw(20) << i.first << " : "
          << std::setw(20) << seenHitsMap_[i.first]
          << " hits processed " << std::endl
-         << "VetoIncorrectHits_module " 
-          << std::setw(20) << i.first << " : " 
+         << "VetoIncorrectHits_module "
+          << std::setw(20) << i.first << " : "
          << std::setw(20) << passedHitsMap_[i.first]
          << " hits passed    " << std::endl;
     }
