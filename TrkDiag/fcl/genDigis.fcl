@@ -1,0 +1,134 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this example shows how to configure a job to
+#
+# - generate conversion electron events
+# - run simulation+reconstruction chain
+# - run particle ID
+#
+# local submission:
+#
+#  mu2e -c Analyses/test/genDigis.fcl -n 1000 >| results/2014-12-19-Analyses_test_genDigis.log 2>&1 &
+#------------------------------------------------------------------------------
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+#include "CaloCluster/fcl/prolog.fcl"
+#include "Analyses/fcl/prolog.fcl"
+
+#------------------------------------------------------------------------------
+# define module sequences 
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+
+generatorSeq  : [ generate, g4run ]
+
+make_digis   : [ @sequence::CommonDigiSim.DigiSim, @sequence::CaloDigiMC.DigiSim, @sequence::TrackerMC.DigiSim ]
+    
+END_PROLOG
+
+process_name : genDigis
+#------------------------------------------------------------------------------
+# define input module
+#------------------------------------------------------------------------------
+source : {
+    module_type : EmptyEvent
+}
+#------------------------------------------------------------------------------
+# define output module
+#------------------------------------------------------------------------------
+outputs: {
+    detectorOutput : {
+        module_type : RootOutput
+#        SelectEvents: [p1]
+        outputCommands:   [ "keep *_*_*_*",
+                            "drop mu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
+                          ]
+        fileName    : "genDigis.art"
+    }
+}
+#------------------------------------------------------------------------------
+# services  section
+#------------------------------------------------------------------------------
+services : {
+
+    message               : @local::default_message
+    TFileService          : { fileName : "genDigis.hist" }
+    RandomNumberGenerator : { }
+
+    # Mu2e services
+    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+    G4Helper               : { }
+    BTrkHelper             : @local::BTrkHelperDefault
+    SeedService            : { @table::automaticSeeds
+       baseSeed            :  0
+       maxUniqueEngines    :  20
+    }
+#   AlignmentService	  : { inputFile      : "MT_MDC2018.txt"	
+#			      printConfig : true
+#			      configStatsVerbosity : 10
+#			      messageOnReplacement : true
+#			    }
+}
+#------------------------------------------------------------------------------
+# specify modules
+#------------------------------------------------------------------------------
+physics : {
+    producers: {
+	@table::EventGenerator.producers
+	generate             : { @table::StoppedParticleReactionGun }
+#------------------------------------------------------------------------------
+# G4, hit makers, calorimeter, track reconstruction, and PID
+#------------------------------------------------------------------------------
+	@table::Mu2eG4.producers
+        @table::EventMixing.producers 
+	@table::CommonDigiSim.producers
+	@table::CaloDigiMC.producers
+        @table::CaloDigiMC.producersMC
+	@table::TrackerMC.producers
+    }
+
+    filters: {
+#------------------------------------------------------------------------------
+# Andrej's filter
+# Reject events with no hits from signal-like tracks in the detectors.
+# The filter does not look at the background hits from mixed events.
+#------------------------------------------------------------------------------
+	FilterStepPointMomentum: {
+            module_type    : FilterStepPointMomentum
+            inputs         : [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
+            cutMomentumMin : 10. # MeV/c
+        }
+    }
+#------------------------------------------------------------------------------
+# analyzers:
+#------------------------------------------------------------------------------
+    analyzers: {
+   }
+
+#------------------------------------------------------------------------------
+# paths:
+#------------------------------------------------------------------------------
+
+    genDigisTriggerPath  : [@sequence::generatorSeq, @sequence::make_digis ]
+    genDigisEndPath : [ detectorOutput ]
+}
+#------------------------------------------------------------------------------
+# redefinitions
+#------------------------------------------------------------------------------
+# 1. only for interactive submission
+#------------------------------------------------------------------------------
+# print per event timing for ::event entry points
+# services.Timing: { }
+
+# Temporarily use Andy's muon stops.  These will be replaced soon with MDC2018 output
+physics.producers.generate.muonStops.inputFiles : ["mergedMuonStops/tgtstops_tgthole-r21-5mm_three-extra-disks_all-files.root" ]
+
+# print
+services.scheduler.wantSummary: true
+
+
