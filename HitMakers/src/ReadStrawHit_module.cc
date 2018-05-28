@@ -280,8 +280,8 @@ namespace mu2e {
 
       // Use MC truth data
       _hDriftTime->Fill(0.0);
-      _hDriftDistance->Fill(SDtruth.driftDistance(TrkTypes::cal));
-      _hDistanceToMid->Fill(SDtruth.distanceToMid(TrkTypes::cal));
+      _hDriftDistance->Fill(SDtruth.driftDistance(StrawEnd::cal));
+      _hDistanceToMid->Fill(SDtruth.distanceToMid(StrawEnd::cal));
       _hFractionalDistanceToMid->Fill(fracDist);
 
       const CLHEP::Hep3Vector smidp  = str.getMidPoint();
@@ -311,8 +311,8 @@ namespace mu2e {
       nt[12] = hit.dt();
       nt[13] = hit.energyDep();
       nt[14] = 0.0;
-      nt[15] = SDtruth.driftDistance(TrkTypes::cal);
-      nt[16] = SDtruth.distanceToMid(TrkTypes::cal);
+      nt[15] = SDtruth.driftDistance(StrawEnd::cal);
+      nt[16] = SDtruth.distanceToMid(StrawEnd::cal);
       nt[17] = id;
       nt[18] = pos.getX();
       nt[19] = pos.getY();
@@ -331,7 +331,7 @@ namespace mu2e {
              << hit.time()            << " "
              << hit.dt()              << " "
              << hit.energyDep()       << " "
-             << ( SDtruth.distanceToMid(TrkTypes::cal) ) << " |";
+             << ( SDtruth.distanceToMid(StrawEnd::cal) ) << " |";
         for ( size_t j=0; j<mcptr.size(); ++j ) {
           StepPointMC const& mchit = *mcptr.at(j);
           cout << " " << mchit.ionizingEdep();
