@@ -1,10 +1,6 @@
 //
 // An EDAnalyzer module that reads back the hits created by the calorimeter and produces an ntuple
 //
-// $Id: PbarAnalysis2_module.cc,v 1.4 2014/08/01 20:57:44 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:44 $
-//
 // Original author Bertrand Echenard
 //
 
@@ -45,7 +41,6 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 // data
@@ -155,12 +150,12 @@ namespace mu2e {
     std::string _trackerStepPoints;
     std::string _trackerHitsModuleLabel;
     std::string _trackerHitsInstanceLabel;
- 
+
     std::string _shLabel;
-    std::string _shpLabel; 
+    std::string _shpLabel;
     std::string _shfLabel;
     std::string _bkfLabel;
- 
+
     const StrawHitCollection*         _shcol;
     const StrawHitFlagCollection*     _shfcol;
     const StrawHitFlagCollection*     _bkfcol;
@@ -189,7 +184,7 @@ namespace mu2e {
 
        TH1F *_hcryE,*_hcryT,*_hcryX,*_hcryY,*_hcryZ;
        TH1F *_hcluE,*_hcluT,*_hcluX,*_hcluY,*_hcluZ,*_hcluE1Et,*_hcluE1E9,*_hcluE1E25;
-       
+
        TH2F *_hxy;
 
 
@@ -233,7 +228,7 @@ namespace mu2e {
     float _bestCluster[8192];
     float _bestChi2[8192];
     int _nTrackClusterMatches;
-       
+
     float _xStart;
     float _yStart;
     float _zStart;
@@ -414,7 +409,7 @@ namespace mu2e {
        _Ntup->Branch("hitEnergy",            &_hitEnergy,            "hitEnergy[nGoodHits]/F");
        _Ntup->Branch("hitZ",                 &_hitZ,                 "hitZ[nGoodHits]/F");
        _Ntup->Branch("hitIsDelta",           &_hitIsDelta,           "hitIsDelta[nGoodHits]/I");
-   
+
        _Ntup->Branch("pxPbar",                &_pxStart,               "pxPbar/F");
        _Ntup->Branch("pyPbar",                &_pyStart,               "pyPbar/F");
        _Ntup->Branch("pzPbar",                &_pzStart,               "pzPbar/F");
@@ -461,7 +456,7 @@ namespace mu2e {
 
       ++_nProcess;
       if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from PbarAnalysis2 =  "<<_nProcess <<std::endl;
-      
+
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       double _mbtime = accPar->deBuncherPeriod;
       _toff.updateMap(event);
@@ -553,7 +548,7 @@ namespace mu2e {
 	      _pzStart = p.startMomentum().z();
 	      _endGlobalTime = p.endGlobalTime();
 	    }
-	  
+
 	    if (_diagLevel > 2 && p.id().asInt() == 1000001 && p.pdgId() == -2212){
 	      std::cout<<" id = "<<p.id()
 		       <<", parent="<<p.parentId()
@@ -567,7 +562,7 @@ namespace mu2e {
 		       <<", creationCode = "<<p.creationCode()
 		       <<", stoppingCode = "<<p.stoppingCode()
 		       <<", startG4Status = "<<p.startG4Status()
-		       <<", endG4Status = "<<p.endG4Status() 
+		       <<", endG4Status = "<<p.endG4Status()
 		       <<", _endGlobalTime = " << p.endGlobalTime() << std::endl;
 	    }
 	  }
@@ -585,13 +580,13 @@ namespace mu2e {
     if (haveGenPart){
      for (auto iGen : genParticles ) {
 	if (_diagLevel > 0){
-	  std::cout << "  in gen particles: particle id " << iGen.pdgId() << " particle momentum " << iGen.momentum() 
-		    << " position " << iGen.position() 
+	  std::cout << "  in gen particles: particle id " << iGen.pdgId() << " particle momentum " << iGen.momentum()
+		    << " position " << iGen.position()
 		    << "generator id " << iGen.generatorId()<< std::endl;
 	}
- 
+
  	//
-	// if reading from file, the gen particle has the incoming pbar info. Use the fake z to distinguish.  
+	// if reading from file, the gen particle has the incoming pbar info. Use the fake z to distinguish.
 	if (iGen.pdgId() == -2212 && !_writeVertexFile && iGen.position().z() > 1000. ){
 	  _xStart = iGen.position().x();
 	  _yStart = iGen.position().y();
@@ -620,7 +615,7 @@ namespace mu2e {
 	//
 	// protons are a delta fcn at t=0 now.  Can spread these later in later stage job
 	// huh?  how can this ever worked, pdgid was zero. also why is genid = 38?  4/13/2018  was checking pdgcode pdg code for proton??
-	if (iGen.pdgId() == 0){   
+	if (iGen.pdgId() == 0){
 	  initialProtonFourMomentum = iGen.momentum();
 	  _pxIncomingProton = iGen.momentum().x();
 	  _pyIncomingProton = iGen.momentum().y();
@@ -629,29 +624,29 @@ namespace mu2e {
 	    std::cout << "initial beam proton momentum = " << _pxIncomingProton << " " << _pyIncomingProton << " " << _pzIncomingProton << std::endl;
 	  }
 	}
-	
+
       }
- 
+
      if (_writeVertexFile){
        _pbarVertexOut <<  _xStart << " "
-		      <<  _yStart << " " 
-		      <<  _zStart << " " 
-		      << _pxStart << " " 
-		      << _pyStart << " " 
-		      << _pzStart << " " 
-		      << _endGlobalTime << " " 
-		      << _pxInitialAntiProton << " " 
-		      << _pyInitialAntiProton << " " 
-		      << _pzInitialAntiProton << " "  
-		      << _pxIncomingProton << " " 
-		      << _pyIncomingProton << " " 
-		      << _pzIncomingProton << std::endl; 
+		      <<  _yStart << " "
+		      <<  _zStart << " "
+		      << _pxStart << " "
+		      << _pyStart << " "
+		      << _pzStart << " "
+		      << _endGlobalTime << " "
+		      << _pxInitialAntiProton << " "
+		      << _pyInitialAntiProton << " "
+		      << _pzInitialAntiProton << " "
+		      << _pxIncomingProton << " "
+		      << _pyIncomingProton << " "
+		      << _pzIncomingProton << std::endl;
      }
     }
- 
-  
-  
-  
+
+
+
+
 
        //--------------------------  Do generated particles --------------------------------
 
@@ -660,7 +655,7 @@ namespace mu2e {
        _run = event.run();
 
        if (_diagLevel == 3){std::cout << "processing event in calo_example " << _nProcess << " run and event  = " << _run << " " << _evt << std::endl;}
-  
+
 
 
        if (_doGenerated)
@@ -669,7 +664,7 @@ namespace mu2e {
            art::Handle<GenParticleCollection> gensHandle;
            event.getByLabel(_generatorModuleLabel, gensHandle);
            GenParticleCollection const& genParticles(*gensHandle);
-	   
+
 	   _nGen = genParticles.size();
 
 	   if (_diagLevel > 2){
@@ -688,17 +683,17 @@ namespace mu2e {
                _genStartZ[i]  = gen->position().z();
                _genStartT[i]  = gen->time();
 	       if (_diagLevel > 2){
-		 std::cout << "pdgId = " << gen->pdgId() << " " 
+		 std::cout << "pdgId = " << gen->pdgId() << " "
 			   << "generator Id = " << gen->generatorId().id() << "\n "
-			   << "momentum     = " << gen->momentum() << "\n " 
+			   << "momentum     = " << gen->momentum() << "\n "
 			   << "position     = " << gen->position() << "\n "
-			   << "time         = " << gen->time() 
+			   << "time         = " << gen->time()
 			   << std::endl;
 	       }
 	   }
        } else {_nGen=0;}
 
-  
+
        //--------------------------  Do calorimeter hits --------------------------------
 
        _nHits = _nSim = 0;
@@ -709,7 +704,7 @@ namespace mu2e {
            const CaloCrystalHit &hit     = caloCrystalHits.at(ic);
 	   int diskId                    = cal.crystal(hit.id()).diskId();
            CLHEP::Hep3Vector crystalPos  = cal.crystal(hit.id()).localPosition();  //in disk FF frame
- 
+
            CrystalContentMC contentMC(cal, caloHitTruth, hit);
 
            _cryEtot             += hit.energyDep();
@@ -726,20 +721,20 @@ namespace mu2e {
            _crySimLen[_nCluster] = contentMC.simContentMap().size();
 
            for (const auto& contentMap : contentMC.simContentMap() )
-	   {	       
+	   {
 	       art::Ptr<SimParticle> sim = contentMap.first;
 	       CaloContentSim       data = contentMap.second;
-               
+
 	       auto parent(sim);
-               while ( parent->hasParent()) parent = parent->parent();               
-               
+               while ( parent->hasParent()) parent = parent->parent();
+
 	       _motId[_nSim]      = sim->id().asInt();
                _motPdgId[_nSim]   = sim->pdgId();
                _motmom[_nSim]     = data.mom();
                _motcrCode[_nSim]  = sim->creationCode();
        	       _motTime[_nSim]    = data.time();
-               _motEdep[_nSim]    = data.edep();	                      
-	       
+               _motEdep[_nSim]    = data.edep();
+
 	       _motStartX[_nSim]  = parent->startPosition().x();
 	       _motStartY[_nSim]  = parent->startPosition().y();
 	       _motStartZ[_nSim]  = parent->startPosition().z();
@@ -756,11 +751,11 @@ namespace mu2e {
 	   _hxy->Fill(crystalPos.x(),crystalPos.y(),hit.energyDep());
            ++_nHits;
        }
-  
+
 
        // do tracks, old school
       //--------------------------  Do tracks  --------------------------------
-       
+
        _nTrk = 0;
 
        //       std::cout << "size of trks collection = " << trksPtrColl.size() << std::endl;
@@ -807,13 +802,13 @@ namespace mu2e {
           ++_nTrk;
 
        }
-  
-        
+
+
 
 
        //--------------------------  Do tracks  --------------------------------
-       // we just want the cluster that matches the track. 
-       // For information about the track at the entrance of the calorimeter, look at the 
+       // we just want the cluster that matches the track.
+       // For information about the track at the entrance of the calorimeter, look at the
        // Analysis/src/ReadTrackCaloMatching_module.cc mdoule
 
        //giani promises this index goes with the track index
@@ -821,7 +816,7 @@ namespace mu2e {
        if (_diagLevel > 0)     {std::cout << "size of match collection = " << trackClusterMatches.size() << std::endl;}
        _nTrackClusterMatches = trackClusterMatches.size();
        for (unsigned int i=0;i< trackClusterMatches.size(); ++i)
-       {         
+       {
 	 //KalRepPtr const& tkrPtr = trksPtrColl.at(i);
 	 _bestCluster[i] = findBestCluster(trackClusterMatches,i,_maxChi2Match);
 	 _bestChi2   [i] = findBestChi2   (trackClusterMatches,i,_maxChi2Match);
@@ -834,7 +829,7 @@ namespace mu2e {
        _cluList.clear();
        for (CaloClusterCollection::const_iterator clusterIt = caloClusters.begin(); clusterIt != caloClusters.end(); ++clusterIt)
        {
-       
+
            ClusterContentMC contentMC(cal, caloClusterTruth, *clusterIt);
 
            std::vector<int> _list;
@@ -863,7 +858,7 @@ namespace mu2e {
            _cluSimLen[_nCluster] = contentMC.simContentMap().size();
 
            for (const auto& contentMap : contentMC.simContentMap() )
-	   {	       
+	   {
 	       art::Ptr<SimParticle> sim = contentMap.first;
 	       CaloContentSim       data = contentMap.second;
 
@@ -874,15 +869,15 @@ namespace mu2e {
                int genPdg=-1;
                if (smother->genParticle()) genPdg = smother->genParticle()->pdgId();
 
-              
+
 	       double simMom(-1);
 	       CLHEP::Hep3Vector simPos(0,0,0);
 	       auto vdMapEntry = vdMap.find(sim);
 	       if (vdMapEntry != vdMap.end())
 	       {
 	          simMom = vdMapEntry->second->momentum().mag();
-		  CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(clusterIt->diskId(), vdMapEntry->second->position());		  
-	       } 
+		  CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(clusterIt->diskId(), vdMapEntry->second->position());
+	       }
 
                _clusimId[_nCluSim]     = sim->id().asInt();
                _clusimPdgId[_nCluSim]  = sim->pdgId();
@@ -895,10 +890,10 @@ namespace mu2e {
                _clusimMom2[_nCluSim]   = simMom;
                _clusimPosX[_nCluSim]   = simPos.x(); // in disk FF frame
                _clusimPosY[_nCluSim]   = simPos.y();
-               _clusimPosZ[_nCluSim]   = simPos.z();  
+               _clusimPosZ[_nCluSim]   = simPos.z();
                _clusimStartX[_nCluSim] = sim->startPosition().x(); // in disk FF frame
                _clusimStartY[_nCluSim] = sim->startPosition().y();
-               _clusimStartZ[_nCluSim] = sim->startPosition().z();  
+               _clusimStartZ[_nCluSim] = sim->startPosition().z();
 
                ++_nCluSim;
             }
@@ -908,11 +903,11 @@ namespace mu2e {
            _hcluX->Fill(clusterIt->cog3Vector().x());
            _hcluY->Fill(clusterIt->cog3Vector().y());
            _hcluZ->Fill(clusterIt->cog3Vector().z());
-	   
-	  
+
+
            ++_nCluster;
        }
-  
+
 
 
 
@@ -925,7 +920,7 @@ namespace mu2e {
            for (auto iter=vdhits->begin(), ie=vdhits->end(); iter!=ie; ++iter)
              {
                const StepPointMC& hit = *iter;
-               
+
                if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
 
                double hitTimeUnfolded = _toff.timeWithOffsetsApplied(hit);
@@ -944,9 +939,9 @@ namespace mu2e {
                _vdMomZ[_nVd]  = hit.momentum().z();
                _vdenIdx[_nVd] = hit.simParticle()->generatorIndex();
                ++_nVd;
-             }             
+             }
          }
-  
+
 
 
        //--------------------------  Do tracker hits  --------------------------------
@@ -1019,7 +1014,7 @@ namespace mu2e {
 	    //	    } else{_hitIsDelta[_nGoodHits] = 0;}
 	    //if (deltaRay){std::cout << "found a delta" << std::endl;}
 	    //std::cout << "time, energy,z " << _shcol->at(ithHit).time() << " " << _shcol->at(ithHit).energyDep() << " " <<
-	    //		      _shpcol->at(ithHit).pos().z() 
+	    //		      _shpcol->at(ithHit).pos().z()
 	    //           << std::endl;
 	    ++_nGoodHits;
 	  }
@@ -1027,9 +1022,9 @@ namespace mu2e {
 
     //std::cout << " number of good hits = " << _nGoodHits << std::endl;
 
-  
 
- 
+
+
         _Ntup->Fill();
   }
 
@@ -1046,9 +1041,9 @@ namespace mu2e {
 	     std::cout << " chi2Best, chi2, cluBest = " << chi2Best << " " << trkClusterMatch.chi2()  << " " << cluBest << std::endl;
 	     std::cout << " and the du,dv = " << trkClusterMatch.du() << " " << trkClusterMatch.dv() << std::endl;
 	   }
-           chi2Best= trkClusterMatch.chi2(); 
+           chi2Best= trkClusterMatch.chi2();
 	   cluBest = trkClusterMatch.icl();
-	 } 
+	 }
       }
       if (_diagLevel>0){std::cout << "best chi2 = " << chi2Best <<std::endl;}
 
@@ -1069,9 +1064,9 @@ namespace mu2e {
 	     std::cout << " chi2Best, chi2, cluBest = " << chi2Best << " " << trkClusterMatch.chi2()  << " " << cluBest << std::endl;
 	     std::cout << " and the du,dv = " << trkClusterMatch.du() << " " << trkClusterMatch.dv() << std::endl;
 	   }
-           chi2Best= trkClusterMatch.chi2(); 
+           chi2Best= trkClusterMatch.chi2();
 	   cluBest = trkClusterMatch.icl();
-	 } 
+	 }
       }
       if (_diagLevel>0){std::cout << "best chi2 = " << chi2Best <<std::endl;}
 
@@ -1085,9 +1080,9 @@ namespace mu2e {
       {
 	 if (trkClusterMatch.icl()==cluId && trkClusterMatch.chi2() < chi2Best)
 	 {
-           chi2Best= trkClusterMatch.chi2(); 
+           chi2Best= trkClusterMatch.chi2();
 	   trkBest = trkClusterMatch.iex();
-	 } 
+	 }
       }
       return trkBest;
    }
@@ -1096,4 +1091,3 @@ namespace mu2e {
 }
 
 DEFINE_ART_MODULE(mu2e::PbarAnalysis2);
-

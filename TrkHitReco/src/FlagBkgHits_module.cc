@@ -1,6 +1,3 @@
-// $Id: FlagBkgHits_module.cc, without diagnostics $
-// $Author: brownd & mpettee $ 
-// $Date: 2016/11/30 $
 //
 
 #include "art/Framework/Principal/Event.h"
@@ -12,7 +9,6 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -41,7 +37,7 @@
 #include <boost/accumulators/statistics/variance.hpp>
 #include <boost/accumulators/statistics/min.hpp>
 #include <boost/accumulators/statistics/max.hpp>
-#include <boost/accumulators/statistics/weighted_variance.hpp> 
+#include <boost/accumulators/statistics/weighted_variance.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -57,7 +53,7 @@
 using namespace boost::accumulators;
 using namespace ROOT::Math::VectorUtil;
 
-namespace mu2e 
+namespace mu2e
 {
 
   class FlagBkgHits : public art::EDProducer
@@ -67,7 +63,7 @@ namespace mu2e
       explicit FlagBkgHits(fhicl::ParameterSet const&);
       virtual ~FlagBkgHits();
       virtual void beginJob();
-      virtual void produce(art::Event& event ); 
+      virtual void produce(art::Event& event );
 
     private:
 
@@ -90,7 +86,7 @@ namespace mu2e
       MVATools     _bkgMVA;
 
 
-      void classifyClusters(BkgClusterCollection& clusters,BkgQualCollection& cquals) const; 
+      void classifyClusters(BkgClusterCollection& clusters,BkgQualCollection& cquals) const;
       void fillBkgQual(const BkgCluster& cluster,BkgQual& cqual) const;
       void countHits(const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo) const;
       void countPlanes(const BkgCluster& cluster,BkgQual& cqual) const;
@@ -103,7 +99,7 @@ namespace mu2e
     _shtag(pset.get<art::InputTag>(             "StrawHitCollection")),
     _filter(pset.get<bool>(                     "FilterOutput")),
     _flagch(pset.get<bool>(                     "FlagComboHits")),
-    _flagsh(pset.get<bool>(                     "FlagStrawHits")), 
+    _flagsh(pset.get<bool>(                     "FlagStrawHits")),
     _minnhits(pset.get<unsigned>(               "MinActiveHits",3)),
     _minnstereo(pset.get<unsigned>(             "MinStereoHits",0)),
     _minnp(pset.get<unsigned>(                  "MinNPlanes",2)),
@@ -118,7 +114,7 @@ namespace mu2e
     if (_flagch) produces<StrawHitFlagCollection>("ComboHits");
     if (_flagsh) produces<StrawHitFlagCollection>("StrawHits");
     if (_filter) produces<ComboHitCollection>();
-    if (_savebkg) 
+    if (_savebkg)
     {
        produces<BkgClusterCollection>();
        produces<BkgQualCollection>();
@@ -137,7 +133,7 @@ namespace mu2e
 	  throw cet::exception("RECO")<< "Unknown clusterer" << ctype << std::endl;
     }
 
-    float cperr = pset.get<float>("ClusterPositionError",10.0); 
+    float cperr = pset.get<float>("ClusterPositionError",10.0);
     _cperr2 = cperr*cperr;
       // stop the default TMVA::Reader print
       TMVA::gConfig().SetSilent(true);
@@ -160,7 +156,7 @@ namespace mu2e
 
       auto chH = event.getValidHandle<ComboHitCollection>(_chtag);
       _chcol = chH.product();
-      unsigned nch = _chcol->size(); 
+      unsigned nch = _chcol->size();
  // the primary output is either a deep copy of selected inputs or a flag collection on those
  // intermediate results: keep these on the heap unless requested for diagnostics later
      BkgClusterCollection bkgccol;
@@ -173,7 +169,7 @@ namespace mu2e
      _clusterer->findClusters(bkgccol,*_chcol);
 
      // evaluate results and put in the data products
-     for (auto& cluster : bkgccol) {  
+     for (auto& cluster : bkgccol) {
        BkgQual cqual;
        fillBkgQual(cluster,cqual);
        StrawHitFlag flag(StrawHitFlag::bkgclust);
@@ -323,17 +319,17 @@ namespace mu2e
   }
 
 
-  void FlagBkgHits::countPlanes(const BkgCluster& cluster, BkgQual& cqual ) const 
+  void FlagBkgHits::countPlanes(const BkgCluster& cluster, BkgQual& cqual ) const
   {
     std::array<int,StrawId::_nplanes> hitplanes{0};
-    for (const auto& chit : cluster.hits()) 
+    for (const auto& chit : cluster.hits())
     {
       if (!chit.flag().hasAllProperties(StrawHitFlag::active)) continue;
       const ComboHit& ch = (*_chcol)[chit.index()];
       hitplanes[ch.strawId().plane()] += ch.nStrawHits();
     }
 
-    unsigned ipmin(0),ipmax(StrawId::_nplanes-1); 
+    unsigned ipmin(0),ipmax(StrawId::_nplanes-1);
     while (hitplanes[ipmin]==0) ++ipmin;
     while (hitplanes[ipmax]==0) --ipmax;
 
@@ -345,13 +341,13 @@ namespace mu2e
       nphits += hitplanes[ip];
     }
 
-    cqual[BkgQual::np] = np; 
-    cqual[BkgQual::npexp] = npexp; 
-    cqual[BkgQual::npfrac] = static_cast<float>(np)/static_cast<float>(npexp); 
+    cqual[BkgQual::np] = np;
+    cqual[BkgQual::npexp] = npexp;
+    cqual[BkgQual::npfrac] = static_cast<float>(np)/static_cast<float>(npexp);
     cqual[BkgQual::nphits] = static_cast<float>(nphits)/static_cast<float>(np);
   }
 
-  void FlagBkgHits::countHits(const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo) const 
+  void FlagBkgHits::countHits(const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo) const
   {
     nactive = nstereo = 0;
     for (const auto& chit : cluster.hits()) {

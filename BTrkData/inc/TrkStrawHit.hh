@@ -14,7 +14,6 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "TrackerGeom/inc/Straw.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 // c++
@@ -30,7 +29,7 @@ namespace mu2e
   public:
   // enum for hit flags
     TrkStrawHit(const ComboHit& strawhit, const Straw& straw,StrawHitIndex index,
-		const TrkT0& trkt0, double fltlen, double maxdriftpull, 
+		const TrkT0& trkt0, double fltlen, double maxdriftpull,
 		double timeWeight);
     virtual ~TrkStrawHit();
 //  implementation of TrkHit interface
@@ -53,8 +52,8 @@ namespace mu2e
     double timeDiffDistErr() const { return _combohit.wireRes(); }
     const CLHEP::Hep3Vector& wirePosition() const { return _wpos; }
     void hitPosition(CLHEP::Hep3Vector& hpos) const;
-    virtual bool signalPropagationTime(double &propTime, double&Doca, 
-			       double resid, double &residErr, 
+    virtual bool signalPropagationTime(double &propTime, double&Doca,
+			       double resid, double &residErr,
 			       CLHEP::Hep3Vector trajDirection);//propagation time
     virtual void trackT0Time(double &htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
 
@@ -69,7 +68,6 @@ namespace mu2e
     virtual double hitErr() const { return _rdrifterr; }
   // test the consistincy of this hit with 'physical' limts, with a given # of sigma
     virtual bool isPhysical(double maxchi) const;
-    
     virtual void print(std::ostream& ) const;
 
     //**************************************************
@@ -77,7 +75,7 @@ namespace mu2e
     //**************************************************
     // set the penalty error: this is set when we can't resolve the ambiguity
     void setPenalty(double penerr) { _penerr = penerr; }
-    
+
   protected:
     virtual TrkErrCode updateMeasurement(const TrkDifTraj* traj);
     virtual void updateDrift();
@@ -104,7 +102,7 @@ namespace mu2e
   struct indexcomp : public std::binary_function<TrkStrawHit,TrkStrawHit, bool> {
     bool operator()(const TrkStrawHit* x,const TrkStrawHit* y) { return x->index() < y->index(); }
   };
- 
+
 // unary functor to select TrkStrawHit from a given hit
   struct FindTrkStrawHit {
     FindTrkStrawHit(ComboHit const& strawhit) : _combohit(strawhit) {}

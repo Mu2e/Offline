@@ -1,10 +1,5 @@
 //
 //
-//
-// $Id: ReadExtrapol_module.cc,v 1.18 2014/08/20 14:23:09 murat Exp $
-// $Author: murat $
-// $Date: 2014/08/20 14:23:09 $
-//
 // Original author G. Pezzullo
 //
 
@@ -42,7 +37,6 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 // data
@@ -83,12 +77,12 @@
 using namespace std;
 
 namespace mu2e {
-  
+
 
   class ReadTrkExtrapolMVA : public art::EDAnalyzer {
 
      public:
-     
+
 	 explicit ReadTrkExtrapolMVA(fhicl::ParameterSet const& pset):
 	   art::EDAnalyzer(pset),
 	   _diagLevel(pset.get<int>("diagLevel",0)),
@@ -120,8 +114,8 @@ namespace mu2e {
 
 
   void ReadTrkExtrapolMVA::beginJob( ) {
- 
- 
+
+
       art::ServiceHandle<art::TFileService> tfs;
       _Ntup  = tfs->make<TTree>("trkExt", "Extrapolated track info");
 
@@ -151,7 +145,7 @@ namespace mu2e {
         art::Handle<TrkCaloIntersectCollection>  trjExtrapolHandle;
         event.getByLabel(_trkExtrapolModuleLabel, trjExtrapolHandle);
         TrkCaloIntersectCollection const& trkExtrapols(*trjExtrapolHandle);
-    
+
         _evt   = event.id().event();
         _ntrks = trkExtrapols.size();
 
@@ -161,17 +155,17 @@ namespace mu2e {
 	    double pathLength       = extrapol.pathLengthEntrance();
 	    _caloSec[it]            = extrapol.diskId();
 	    _trkTime[it]            = extrapol.trk()->arrivalTime(pathLength);
-	    _trkPathLenghtIn[it]    = extrapol.pathLengthEntrance(); 
-	    _trkPathLenghtInErr[it] = extrapol.pathLenghtEntranceErr(); 
+	    _trkPathLenghtIn[it]    = extrapol.pathLengthEntrance();
+	    _trkPathLenghtInErr[it] = extrapol.pathLenghtEntranceErr();
 	    _trkPathLenghtOut[it]   = extrapol.pathLengthExit();
 	    _trkMom[it]             = extrapol.trk()->momentum(pathLength).mag();
 	    _trkMomX[it]            = extrapol.trk()->momentum(pathLength).x();
 	    _trkMomY[it]            = extrapol.trk()->momentum(pathLength).y();
 	    _trkMomZ[it]            = extrapol.trk()->momentum(pathLength).z();
-	    _trkPosX[it]            = extrapol.trk()->position(pathLength).x(); 
-	    _trkPosY[it]            = extrapol.trk()->position(pathLength).y(); 
-	    _trkPosZ[it]            = extrapol.trk()->position(pathLength).z(); 
-	
+	    _trkPosX[it]            = extrapol.trk()->position(pathLength).x();
+	    _trkPosY[it]            = extrapol.trk()->position(pathLength).y();
+	    _trkPosZ[it]            = extrapol.trk()->position(pathLength).z();
+
 	    ++it;
 	}
 

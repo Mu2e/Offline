@@ -1,10 +1,6 @@
 //
 // This module transforms StrawDigi objects into StrawHit objects
 //
-// $Id: StrawHitReco_module.cc,v 1.12 2014/03/25 22:14:39 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2014/03/25 22:14:39 $
-//
 // Original author David Brown, LBNL
 // Merged with flag and position creation B. Echenard, CalTech
 //
@@ -21,9 +17,7 @@
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "ConditionsBase/inc/TrackerCalibrationStructs.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -44,16 +38,16 @@
 
 #include <memory>
 
- 
+
 
 namespace mu2e {
   using namespace TrkTypes;
 
-  class StrawHitReco : public art::EDProducer 
+  class StrawHitReco : public art::EDProducer
   {
      public:
        explicit StrawHitReco(fhicl::ParameterSet const& pset);
-       virtual ~StrawHitReco(); 
+       virtual ~StrawHitReco();
        virtual void produce( art::Event& e);
        virtual void beginRun( art::Run& run );
        virtual void beginJob();
@@ -69,12 +63,12 @@ namespace mu2e {
        float _ctMinT;                  // time relative to proton hit to flag cross talk (ns)
        float _ctMaxT;                  // time relative to proton hit to flag cross talk (ns)
        float _minT, _maxT;             // time range
-       bool   _filter;                // filter the output, or just flag 
+       bool   _filter;                // filter the output, or just flag
        bool  _writesh;		      // write straw hits or not
        bool _flagXT; // flag cross-talk
        int    _printLevel;
        int    _diagLevel;
-       StrawIdMask _mask; 
+       StrawIdMask _mask;
        StrawEnd _end[2]; // helper
        float _invnpre; // cache
        float _invgainAvg; // cache
@@ -89,12 +83,12 @@ namespace mu2e {
        // helper function
        float peakMinusPedAvg(TrkTypes::ADCWaveform const& adcData) const;
        float peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const;
- 
+
  };
 
   StrawHitReco::StrawHitReco(fhicl::ParameterSet const& pset) :
       _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminuspedavg)),
-      _usecc(pset.get<bool>(         "UseCalorimeter",false)),     
+      _usecc(pset.get<bool>(         "UseCalorimeter",false)),
       _clusterDt(pset.get<float>(   "clusterDt",100)),
       _minE(pset.get<float>(        "minimumEnergy",0.0)), // MeV
       _maxE(pset.get<float>(        "maximumEnergy",0.0035)), // MeV
@@ -134,7 +128,7 @@ namespace mu2e {
   }
 
   void StrawHitReco::beginRun(art::Run& run)
-  {    
+  {
       ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
 // set cache for peak-ped calculation (default)
       _npre = srep->nADCPreSamples();
@@ -144,7 +138,7 @@ namespace mu2e {
         StrawId dummyId(0,0,i);
         _invgain[i] = srep->adcLSB()*srep->peakMinusPedestalEnergyScale(dummyId)/srep->strawGain();
       }
- 
+
       // this must be done here because srep is not accessible at startup and pfit references it
       if (_fittype == TrkHitReco::FitType::combopeakfit)
 	 _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::ComboPeakFitRoot(*srep,_peakfit) );
@@ -155,18 +149,17 @@ namespace mu2e {
 
   //------------------------------------------------------------------------------------------
   void StrawHitReco::produce(art::Event& event)
-  {        
+  {
       if (_printLevel > 0) std::cout << "In StrawHitReco produce " << std::endl;
 
       const Tracker& tracker = getTrackerOrThrow();
       const TTracker& tt(*GeomHandle<TTracker>());
       size_t nplanes = tt.nPlanes();
       size_t npanels = tt.getPlane(0).nPanels();
-      
       ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
       auto sdH = event.getValidHandle<StrawDigiCollection>(_sdtag);
       const StrawDigiCollection& sdcol(*sdH);
-      
+
       const CaloClusterCollection* caloClusters(0);
       if(_usecc){
 	auto ccH = event.getValidHandle<CaloClusterCollection>(_cctag);
@@ -179,13 +172,13 @@ namespace mu2e {
 	shCol->reserve(sdcol.size());
       }
       std::unique_ptr<ComboHitCollection> chCol(new ComboHitCollection());
-      chCol->reserve(sdcol.size());      
+      chCol->reserve(sdcol.size());
 
-      std::vector<std::vector<size_t> > hits_by_panel(nplanes*npanels,std::vector<size_t>());    
+      std::vector<std::vector<size_t> > hits_by_panel(nplanes*npanels,std::vector<size_t>());
       std::vector<size_t> largeHits, largeHitPanels;
       largeHits.reserve(sdcol.size());
       largeHitPanels.reserve(sdcol.size());
-      
+
       for (size_t isd=0;isd<sdcol.size();++isd)
       {
 	const StrawDigi& digi = sdcol[isd];
@@ -203,7 +196,7 @@ namespace mu2e {
 	//calorimeter filtering
 	if (_usecc && caloClusters) {
 	  bool outsideCaloTime(true);
-	  for (const auto& cluster : *caloClusters) 
+	  for (const auto& cluster : *caloClusters)
 	    if (std::abs(time-cluster.time())<_clusterDt) {outsideCaloTime=false; break;}
 	  if (outsideCaloTime){
 	    if(_filter)continue;
@@ -265,13 +258,13 @@ namespace mu2e {
 	// set flags
 	ch._mask = _mask;
 	ch._flag = flag;
-	if (td) ch._flag.merge(StrawHitFlag::tdiv); 
+	if (td) ch._flag.merge(StrawHitFlag::tdiv);
 	if(!_filter && _flagXT){
 	  //buffer large hit for cross-talk analysis
 	  size_t iplane       = straw.id().getPlane();
 	  size_t ipnl         = straw.id().getPanel();
 	  size_t global_panel = ipnl + iplane*npanels;
-	  hits_by_panel[global_panel].push_back(shCol->size());          
+	  hits_by_panel[global_panel].push_back(shCol->size());
 	  if (energy >= _ctE) {largeHits.push_back(shCol->size()); largeHitPanels.push_back(global_panel);}
 	}
 
@@ -285,13 +278,13 @@ namespace mu2e {
 	  const StrawHit& sh = (*shCol)[largeHits[ilarge]];
 	  for (size_t jsh : hits_by_panel[largeHitPanels[ilarge]])
 	  {
-	    if (jsh==largeHits[ilarge]) continue;              
-	    const StrawHit& sh2 = (*shCol)[jsh]; 
+	    if (jsh==largeHits[ilarge]) continue;
+	    const StrawHit& sh2 = (*shCol)[jsh];
 	    if (sh2.time()-sh.time() > _ctMinT && sh2.time()-sh.time() < _ctMaxT)
 	    {
 	      if (sh.strawId().samePreamp(sh2.strawId())) (*chCol)[jsh]._flag.merge(StrawHitFlag::elecxtalk);
 	      if (sh.strawId().nearestNeighbor(sh2.strawId())) (*chCol)[jsh]._flag.merge(StrawHitFlag::strawxtalk);
-	    }           
+	    }
 	  }
 	}
       }
@@ -331,4 +324,3 @@ namespace mu2e {
 
 using mu2e::StrawHitReco;
 DEFINE_ART_MODULE(StrawHitReco);
-
