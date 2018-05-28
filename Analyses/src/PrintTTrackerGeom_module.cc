@@ -36,7 +36,7 @@ namespace mu2e {
 
   PrintTTrackerGeom::PrintTTrackerGeom(fhicl::ParameterSet const& pset ):
     EDAnalyzer(pset),
-    _diagLevel(pset.get<int>("diagLevel,0")){
+    _diagLevel(pset.get<int>("diagLevel",0)){
   }
 
   void PrintTTrackerGeom::analyze(const art::Event& ){}
