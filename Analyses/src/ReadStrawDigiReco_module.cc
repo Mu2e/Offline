@@ -144,8 +144,10 @@ void mu2e::ReadStrawDigiReco::analyze(art::Event const& evt) {
       cout << "ReadStrawDigiReco: "
            << evt.id().event()        << " "
            << digi.strawId()          << " "
-           << digi.TDC(TrkTypes::cal) << " "
-           << digi.TDC(TrkTypes::hv)  << " "
+           << digi.TDC(StrawEnd::cal) << " "
+           << digi.TDC(StrawEnd::hv)  << " "
+           << digi.TOT(StrawEnd::cal) << " "
+           << digi.TOT(StrawEnd::hv)  << " "
            << sum << " "
            << maxadc
            << endl;
