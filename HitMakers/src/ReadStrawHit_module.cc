@@ -32,11 +32,9 @@
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -140,7 +138,6 @@ namespace mu2e {
     _hHitTime      = tfs->make<TH1F>( "hHitTime",      "Hit Time (ns)", 200, 0.,  2000. );
     _hHitTime1     = tfs->make<TH1F>( "hHitTime1",     "Hit Time (ns)", 200, 0., 20000. );
     _hHitDeltaTime = tfs->make<TH1F>( "hHitDeltaTime", "Hit Delta Time (ns)", 80, -20.0, 20. );
-    //    _hHitAmplitude = tfs->make<TH1F>( "hHitAmplitude", "Hit Amplitudes (uV)",  100, 0., 100. );
     _hHitEnergy    = tfs->make<TH1F>( "hHitEnergy",    "Hit Energy (keV)", 100, 0., 100. );
     _hNHits        = tfs->make<TH1F>( "hNHits",        "Number of straw hits", 500, 0.,  500. );
     _hNHits1       = tfs->make<TH1F>( "hNHits1",       "Number of straw hits", 200, 0., 4000. );
@@ -167,22 +164,8 @@ namespace mu2e {
     static int ncalls(0);
     ++ncalls;
 
-    // Handle to the conditions service
-
-    /*
-    // Print the content of current event
-    std::vector<art::Provenance const*> edata;
-    evt.getAllProvenance(edata);
-    cout << __func__ << " Event info: "
-    << evt.id().event() <<  " "
-    << " found " << edata.size() << " objects "
-    << endl;
-    for( size_t i=0; i<edata.size(); i++ ) cout << *(edata[i]) << endl;
-    */
-
     // Geometry info for the Tracker.
-    // Throw exception if not successful.
-    const Tracker& tracker = getTrackerOrThrow();
+    const TTracker& tracker = *GeomHandle<TTracker>();
 
     // Get the persistent data about the StrawHits.
 
@@ -198,8 +181,6 @@ namespace mu2e {
           int did = sid.getPlane();
           int secid = sid.getPanel();
 
-          // cout <<  __func__ << " index: "  << i << " Layer: "<< lid.getLayer()<< " Plane: "<< did <<"  Panel:  "<<secid.getPanel()<<endl;
-          // cout<<str.getHalfLength()<<endl;
           const CLHEP::Hep3Vector vec3j = str.getMidPoint();
           const CLHEP::Hep3Vector vec3j1 = str.getDirection();
           /*
@@ -231,52 +212,29 @@ namespace mu2e {
           _detntup->Fill(detnt);
         }
     }
-    bool gblSHresult;
 
-    art::Handle<StrawHitCollection> pdataHandle;
-    gblSHresult = evt.getByLabel(_recoModuleLabel,pdataHandle);
+    auto const& hits = *evt.getValidHandle<StrawHitCollection>(_recoModuleLabel);
     ( _diagLevel > 0 ) &&
-      std::cout
+      std::cout << "ReadStrawHit: "
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
-      << " StrawHitCollection             _recoModuleLabel: " << _recoModuleLabel << ", "
-      << ", " << gblSHresult << std::endl;
+      << "ReadStrawHit: StrawHitCollection             _recoModuleLabel: " << _recoModuleLabel << endl;
 
-    if (!gblSHresult) throw cet::exception("DATA") << " Missing data";
-
-    StrawHitCollection const& hits = *pdataHandle;
-
-    art::Handle<StrawDigiMCCollection>     truthDigiMCHandle;
-    bool gblSDMCresult = evt.getByLabel(_simModuleLabel,truthDigiMCHandle);
-    ( _diagLevel > 0 ) && 
-      std::cout 
+    auto const& hits_SDtruth = *evt.getValidHandle<StrawDigiMCCollection>(_simModuleLabel);
+    ( _diagLevel > 0 ) &&
+      std::cout << "ReadStrawHit: "
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
-      << " StrawDigiMCCollection      _simModuleLabel: " << _simModuleLabel << ", StrawDigiMC"
-      << ", " << gblSDMCresult << std::endl;
-
-    StrawDigiMCCollection const& hits_SDtruth = gblSDMCresult ?
-      *truthDigiMCHandle : StrawDigiMCCollection();
-
-    if (!gblSDMCresult) throw cet::exception("DATA") << " Missing data";
-    // StrawHitMCTruth is no longer produced, this module needs updating FIXME!!!
-    bool gblSHMCresult(false);
-    StrawHitMCTruth* SHtruth(0);
+      << " ReadStrawHit: StrawDigiMCCollection      _simModuleLabel: " << _simModuleLabel << endl;
 
     // Get the persistent data about pointers to StepPointMCs
-    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
-    bool gblMCVresult = evt.getByLabel(_simModuleLabel,mcptrHandle);
-
+    auto const& hits_mcptr= *evt.getValidHandle<PtrStepPointMCVectorCollection>(_simModuleLabel);
     ( _diagLevel > 0 ) &&
-      std::cout
+      std::cout << "ReadStrawHit: "
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
-      << " PtrStepPointMCVectorCollection _simModuleLabel: " << _simModuleLabel << ", StrawHitMCPtr"
-      << ", " << gblMCVresult << std::endl;
+      << " ReadStrawHit: PtrStepPointMCVectorCollection _simModuleLabel: " << _simModuleLabel << endl;
 
-    if (!gblMCVresult) throw cet::exception("DATA") << " Missing data";
-
-    PtrStepPointMCVectorCollection const& hits_mcptr = *mcptrHandle;
+    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
 
     // Fill histograms
-
     _hNHits->Fill(hits.size());
     _hNHits1->Fill(hits.size());
 
@@ -290,7 +248,7 @@ namespace mu2e {
 
       // Access data
       StrawHit             const& hit(hits.at(i));
-      StrawDigiMC          const& SDtruth = gblSDMCresult ? hits_SDtruth.at(i) : StrawDigiMC() ;
+      StrawDigiMC          const& SDtruth = hits_SDtruth.at(i);
       PtrStepPointMCVector const& mcptr(hits_mcptr.at(i));
 
       // Use data from hits
@@ -299,55 +257,37 @@ namespace mu2e {
       _hHitDeltaTime->Fill(hit.dt());
       _hHitEnergy->Fill(hit.energyDep()*1000.0);
 
-      StrawId si = hit.strawId();
+      StrawId sid = hit.strawId();
 
       // Use data from G4 hits
       _hNG4Steps->Fill(mcptr.size());
       for( size_t j=0; j<mcptr.size(); ++j ) {
         StepPointMC const& mchit = *mcptr.at(j);
         _hG4StepLength->Fill(mchit.stepLength());
-        //        _hG4StepRelTimes->Fill(fabs(mchit.time()-hit.time()));
-        _hG4StepRelTimes->Fill((mchit.time()-hit.time()));
-        // step time rel to the formed hit time; FIXME fabs should not be needed
-	_hG4StepEdep->Fill(mchit.eDep()*1000.0);
 
+        // Fixme: correct for proton time map and muon time map.
+        //_hG4StepRelTimes->Fill((mchit.time()-hit.time()));
+	_hG4StepEdep->Fill(mchit.eDep()*1000.0);
       }
 
-      const  unsigned id = si.asUint16();
-      Straw str = tracker.getStraw(si);
-      StrawId sid = str.id();
+      const  unsigned id = sid.asUint16();
+      Straw str = tracker.getStraw(sid);
       int lid = sid.getLayer();
       int did = sid.getPlane();
       int secid = sid.getPanel();
 
-      double fracDist = 0.0;
-      StrawEnd itdc(StrawEnd::cal);
-
-      if (gblSHMCresult) {
-        fracDist = SHtruth->distanceToMid()/str.getHalfLength();
-      } else {
-	fracDist = SDtruth.distanceToMid(itdc)/str.getHalfLength();
-      }
+      double fracDist = SDtruth.distanceToMid(StrawEnd::cal)/str.getHalfLength();
 
       // Use MC truth data
-
-      if (gblSHMCresult) {
-        _hDriftTime->Fill(SHtruth->driftTime());
-        _hDriftDistance->Fill(SHtruth->driftDistance());
-        _hDistanceToMid->Fill(SHtruth->distanceToMid());
-        _hFractionalDistanceToMid->Fill(fracDist);
-      } else {
-        _hDriftTime->Fill(0.0);
-        _hDriftDistance->Fill(SDtruth.driftDistance(itdc));
-        _hDistanceToMid->Fill(SDtruth.distanceToMid(itdc));
-        _hFractionalDistanceToMid->Fill(fracDist);
-      }
+      _hDriftTime->Fill(0.0);
+      _hDriftDistance->Fill(SDtruth.driftDistance(TrkTypes::cal));
+      _hDistanceToMid->Fill(SDtruth.distanceToMid(TrkTypes::cal));
+      _hFractionalDistanceToMid->Fill(fracDist);
 
       const CLHEP::Hep3Vector smidp  = str.getMidPoint();
       const CLHEP::Hep3Vector sdir   = str.getDirection();
 
       // calculate the hit position
-      ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
       float dw, dwerr;
       srep->wireDistance(hit,str.getHalfLength(),dw,dwerr);
       CLHEP::Hep3Vector pos = str.getMidPoint()+dw*str.getDirection();
@@ -370,9 +310,9 @@ namespace mu2e {
       nt[11] = hit.time();
       nt[12] = hit.dt();
       nt[13] = hit.energyDep();
-      nt[14] = gblSHMCresult ? SHtruth->driftTime() : 0.0;
-      nt[15] = gblSHMCresult ? SHtruth->driftDistance() : SDtruth.driftDistance(itdc);
-      nt[16] = gblSHMCresult ? SHtruth->distanceToMid() : SDtruth.distanceToMid(itdc);
+      nt[14] = 0.0;
+      nt[15] = SDtruth.driftDistance(TrkTypes::cal);
+      nt[16] = SDtruth.distanceToMid(TrkTypes::cal);
       nt[17] = id;
       nt[18] = pos.getX();
       nt[19] = pos.getY();
@@ -391,8 +331,7 @@ namespace mu2e {
              << hit.time()            << " "
              << hit.dt()              << " "
              << hit.energyDep()       << " "
-             << ( gblSHMCresult ? SHtruth->driftTime() : 0.0 ) << " "
-             << ( gblSHMCresult ? SHtruth->driftDistance() : SDtruth.distanceToMid(itdc) ) << " |";
+             << ( SDtruth.distanceToMid(TrkTypes::cal) ) << " |";
         for ( size_t j=0; j<mcptr.size(); ++j ) {
           StepPointMC const& mchit = *mcptr.at(j);
           cout << " " << mchit.ionizingEdep();
