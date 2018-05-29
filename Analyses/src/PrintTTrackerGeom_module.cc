@@ -56,7 +56,6 @@ namespace mu2e {
         cout << "panel: "
              << pnl.id()      << " "
              << sid           << " "
-             << straw.index() << " : "
              << z             << " "
              << phi1
              << endl;
@@ -72,7 +71,6 @@ namespace mu2e {
 
       cout << "Straw1: "
            << n++ << "  "
-           << straw.index().asInt() << " "
            << straw.id().asUint16() << " "
            << straw.id() << "  |  "
            << straw.getMidPoint() << " "
@@ -92,9 +90,6 @@ namespace mu2e {
                << sid  << "  | ";
           for ( auto nid : straw.nearestNeighboursById() ){
             cout << " " << nid;
-          }
-          for ( auto idx : straw.nearestNeighboursByIndex() ){
-            cout << " " << tracker.getStraw(idx).id();
           }
           cout << " "
                << straw.getMidPoint() << " "
