@@ -20,7 +20,7 @@
 
 #include "Mu2eUtilities/inc/LsqSums2.hh"
 #include "Mu2eUtilities/inc/LsqSums4.hh"
-#include "CalPatRec/inc/CalTimePeak.hh"
+// #include "CalPatRec/inc/CalTimePeak.hh"
 #include "CalPatRec/inc/CalHelixPoint.hh"
 #include "CalPatRec/inc/CalHelixFinderData.hh"
 
@@ -45,7 +45,7 @@ namespace mu2e {
     const TTracker*            _tracker;
     const Calorimeter*         _calorimeter;
 
-    const CalTimePeak*         fTimePeak;
+    //    const CalTimePeak*         fTimePeak;
     const TimeCluster*         fTimeCluster; //needed for debugging
     
     double                     fCaloTime;
@@ -228,7 +228,7 @@ namespace mu2e {
     // void filterDist                   (CalHelixFinderData& Helix);
     void filterUsingPatternRecognition(CalHelixFinderData& Helix);
     bool findHelix                    (CalHelixFinderData& Helix);
-    bool findHelix                    (CalHelixFinderData& Helix, const CalTimePeak* TimePeak);
+    // bool findHelix                    (CalHelixFinderData& Helix, const CalTimePeak* TimePeak);
     bool findHelix                    (CalHelixFinderData& Helix, const TimeCluster* TimePeak );
     int  findDfDz                     (CalHelixFinderData& Helix, SeedInfo_t SeedIndex, int  Diag_flag=0);
     int  findDfDz_1                   (CalHelixFinderData& Helix, SeedInfo_t SeedIndex, int  Diag_flag=0);

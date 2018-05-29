@@ -34,7 +34,7 @@ namespace mu2e {
   class StepPointMC;
   class GenParticle;
   class SimParticle;
-  class CalTimePeak;
+  //  class CalTimePeak;
   class TrackSeed;
   class TrackClusterMatch;
   class TrkStrawHit;

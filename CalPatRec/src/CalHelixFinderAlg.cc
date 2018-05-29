@@ -25,6 +25,7 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -254,39 +255,39 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  bool CalHelixFinderAlg::findHelix(CalHelixFinderData& Helix, const CalTimePeak* TimePeak) {
+//   bool CalHelixFinderAlg::findHelix(CalHelixFinderData& Helix, const CalTimePeak* TimePeak) {
 
-    fTimePeak = TimePeak;
-					// fill the calorimeter cluster info
-    fCaloTime = TimePeak->ClusterT0();
-    fCaloX    = TimePeak->ClusterX();
-    fCaloY    = TimePeak->ClusterY();
-    fCaloZ    = TimePeak->ClusterZ();
-//-----------------------------------------------------------------------------
-//  compute the allowed radial range for this fit
-//-----------------------------------------------------------------------------
-    double pb = fabs((CLHEP::c_light*1e-3)/(bz()*Helix._tpart.charge()));
-    _rmin = _pmin/(pb*sqrt(1.0+_tdmax*_tdmax));
-    _rmax = _pmax/(pb*sqrt(1.0+_tdmin*_tdmin));
-//-----------------------------------------------------------------------------
-//  particle charge, field, and direction affect the pitch range
-//-----------------------------------------------------------------------------
-    _dfdzsign = copysign(1.0,-Helix._tpart.charge()*Helix._fdir.dzdt()*bz());
+//     fTimePeak = TimePeak;
+// 					// fill the calorimeter cluster info
+//     fCaloTime = TimePeak->ClusterT0();
+//     fCaloX    = TimePeak->ClusterX();
+//     fCaloY    = TimePeak->ClusterY();
+//     fCaloZ    = TimePeak->ClusterZ();
+// //-----------------------------------------------------------------------------
+// //  compute the allowed radial range for this fit
+// //-----------------------------------------------------------------------------
+//     double pb = fabs((CLHEP::c_light*1e-3)/(bz()*Helix._tpart.charge()));
+//     _rmin = _pmin/(pb*sqrt(1.0+_tdmax*_tdmax));
+//     _rmax = _pmax/(pb*sqrt(1.0+_tdmin*_tdmin));
+// //-----------------------------------------------------------------------------
+// //  particle charge, field, and direction affect the pitch range
+// //-----------------------------------------------------------------------------
+//     _dfdzsign = copysign(1.0,-Helix._tpart.charge()*Helix._fdir.dzdt()*bz());
 
-    if(_dfdzsign > 0.0){
-      _smin = 1.0/(_rmax*_tdmax);
-      _smax = 1.0/(_rmin*_tdmin);
-    } else {
-      _smax = -1.0/(_rmax*_tdmax);
-      _smin = -1.0/(_rmin*_tdmin);
-    }
-//-----------------------------------------------------------------------------
-// call down
-//-----------------------------------------------------------------------------
-    bool retval = findHelix(Helix);
+//     if(_dfdzsign > 0.0){
+//       _smin = 1.0/(_rmax*_tdmax);
+//       _smax = 1.0/(_rmin*_tdmin);
+//     } else {
+//       _smax = -1.0/(_rmax*_tdmax);
+//       _smin = -1.0/(_rmin*_tdmin);
+//     }
+// //-----------------------------------------------------------------------------
+// // call down
+// //-----------------------------------------------------------------------------
+//     bool retval = findHelix(Helix);
 
-    return retval;
-  }
+//     return retval;
+//   }
 
 //-----------------------------------------------------------------------------
 // called internally; in the diagnostics mode save several states of _xyzp

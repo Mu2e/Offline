@@ -445,7 +445,7 @@ namespace mu2e {
     for (int i=0; i<nhits; ++i){
       const StrawHitIndex     loc    = HfResult._goodhits[i];
       const ComboHit*         hit    = &(_chcol->at(loc));
-      // const StrawHitPosition& shpos  = _shpcol->at(loc);
+
       double                  hit_z  = hit->pos().z();
       if ( i==0 ) z_start = hit_z;
       
@@ -455,7 +455,7 @@ namespace mu2e {
 
       ComboHit                hhit(*hit);//,loc,shphi);
       hhit._hphi = shphi;
-      hhit._flag.clear(StrawHitFlag::resolvedphi);
+      hhit._flag.merge(StrawHitFlag::resolvedphi);
 					
       hhit._flag.merge(_shfcol->at(loc)); // merge in other flags, hit Quality no yet assigned
       HelSeed._hhits.push_back(hhit);

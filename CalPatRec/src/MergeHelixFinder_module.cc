@@ -49,7 +49,7 @@
 #include "Mu2eUtilities/inc/LsqSums4.hh"
 #include "CalPatRec/inc/ObjectDumpUtils.hh"
 
-#include "CalPatRec/inc/AlgorithmIDCollection.hh"
+#include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
 // Xerces XML Parser
 #include <xercesc/dom/DOM.hpp>
 

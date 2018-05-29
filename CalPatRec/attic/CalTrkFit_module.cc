@@ -46,7 +46,7 @@
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 
-#include "CalPatRec/inc/AlgorithmIDCollection.hh"
+#include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
 #include "CalPatRec/inc/KalFitHackNew.hh"
 #include "CalPatRec/inc/CalTrkFit_types.hh"
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"

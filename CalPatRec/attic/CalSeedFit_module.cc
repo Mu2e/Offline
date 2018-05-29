@@ -5,7 +5,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "fhiclcpp/ParameterSet.h"
 
-#include "CalPatRec/inc/AlgorithmIDCollection.hh"
+#include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
 
 // framework
 #include "art/Framework/Core/EDFilter.h"

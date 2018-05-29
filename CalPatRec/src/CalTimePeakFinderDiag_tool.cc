@@ -16,7 +16,7 @@
 #include "CalPatRec/inc/CalTimePeakFinder_types.hh"
 #include "Mu2eUtilities/inc/McUtilsToolBase.hh"
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "CalPatRec/inc/KalFitResultNew.hh"
+// #include "CalPatRec/inc/KalFitResultNew.hh"
 
 #include "TTrackerGeom/inc/TTracker.hh"
 

@@ -1,9 +1,9 @@
 //
 // Simple accessor to Kalman fit
 //
-// $Id: KalFitResultNew.hh,v 1.4 2012/12/05 21:14:14 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2012/12/05 21:14:14 $
+// $Id: $
+// $Author: $ 
+// $Date:  $
 //
 #ifndef KalFitResultNew_HH
 #define KalFitResultNew_HH

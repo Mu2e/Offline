@@ -44,7 +44,7 @@
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "TrackCaloMatching/inc/TrackClusterMatch.hh"
 
-#include "CalPatRec/inc/CalTimePeak.hh"
+// #include "CalPatRec/inc/CalTimePeak.hh"
 
 
 //BaBar includes
@@ -182,7 +182,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
 //-----------------------------------------------------------------------------
 void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const char* Prefix) {
 
-  string opt = Opt;
+  std::string opt = Opt;
   
   if ((opt == "") || (opt == "banner")) {
     printf("-----------------------------------------------------------------------------------------------");
