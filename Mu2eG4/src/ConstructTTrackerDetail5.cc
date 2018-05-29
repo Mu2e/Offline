@@ -393,7 +393,7 @@ mu2e::ConstructTTrackerDetail5::constructMainSupports(){
 
 // **********************************************************
 // Construct all stations and place them in the mother volume.
-// We do not yet represent stations as G4 objects.  Each station 
+// We do not yet represent stations as G4 objects.  Each station
 // is representated in G4 as two independent planes.
 // **********************************************************
 void
@@ -403,7 +403,7 @@ mu2e::ConstructTTrackerDetail5::constructPlanes(){
   int plnDraw(_config.getInt("ttracker.plnDraw",-1));
 
   // Build logical volume heirarchy for a single panel.  <==
-  // Historically this only considered a panel as the location of straws 
+  // Historically this only considered a panel as the location of straws
   // - not the manifold, electronics, base ring, etc, collectively known
   // as the "supports" (not to be confused with the "main supports").
   // We are changing that with v5.  Now we make a panel in software
@@ -414,10 +414,10 @@ mu2e::ConstructTTrackerDetail5::constructPlanes(){
   VolumeInfo baseEBKey       = prepareEBKey(true);   // key itself
   VolumeInfo baseEBKeyShield = prepareEBKey(false);  // key shield
 
-  // Build logical volume heirarchy for all elements of the support 
+  // Build logical volume heirarchy for all elements of the support
   // structure that live inside each plane envelope.  <==
-  // Here is where the support material for each plane has historically been 
-  // built. 
+  // Here is where the support material for each plane has historically been
+  // built.
 
   TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
   bool planeEnvelopeVisible      = _config.getBool("ttracker.planeEnvelopeVisible",false);
@@ -431,7 +431,7 @@ mu2e::ConstructTTrackerDetail5::constructPlanes(){
 
     if ( plnDraw > -1 && ipln > plnDraw ) continue;
 
-    if (_verbosityLevel > 0 ) { 
+    if (_verbosityLevel > 0 ) {
       cout << "Debugging pln: " << ipln << " plnDraw: " << plnDraw << endl;
       cout << __func__ << " working on plane:   " << ipln << endl;
     }
@@ -439,7 +439,7 @@ mu2e::ConstructTTrackerDetail5::constructPlanes(){
     const Plane& plane = _ttracker.getPlane(ipln);
 
     if (!plane.exists()) continue;
-    if (_verbosityLevel > 0 ) { 
+    if (_verbosityLevel > 0 ) {
       cout << __func__ << " existing   plane:   " << ipln << endl;
     }
 
@@ -447,7 +447,7 @@ mu2e::ConstructTTrackerDetail5::constructPlanes(){
     // plnPosition - is in the coordinate system of the Tracker mother volume.
     CLHEP::Hep3Vector plnPosition = plane.origin() + _offset;
 
-    if ( _verbosityLevel > 1 ){ 
+    if ( _verbosityLevel > 1 ){
       cout << "Debugging -plane.rotation(): " << -plane.rotation() << " " << endl;
       cout << "Debugging plane.origin():    " << plane.origin() << " " << endl;
       cout << "Debugging position in mother: " << plnPosition << endl;
@@ -479,7 +479,7 @@ mu2e::ConstructTTrackerDetail5::constructPlanes(){
     }
 
 
-    addPanelsAndEBKeys( baseStrawPanel, ipln, plnInfo, 
+    addPanelsAndEBKeys( baseStrawPanel, ipln, plnInfo,
 			baseEBKey, baseEBKeyShield,
                         _motherInfo, dPhiPanel );
 
@@ -540,11 +540,11 @@ namespace mu2e {
 // ************************
 
 mu2e::VolumeInfo
-mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane, 
-					     const int& iPanel, 
-					     VolumeInfo& thePlane, 
-					     VolumeInfo& strawPanel,	
-					     CLHEP::Hep3Vector& pnlPosition, 
+mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
+					     const int& iPanel,
+					     VolumeInfo& thePlane,
+					     VolumeInfo& strawPanel,
+					     CLHEP::Hep3Vector& pnlPosition,
 					     G4RotationMatrix* rot ){
 
   // Detail 5 version will take panels very seriously.
@@ -610,11 +610,11 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
   G4Material* envelopeMaterial = findMaterialOrThrow(_ttracker.envelopeMaterial());
 
   // *****************
-  // Here we make the envelope for everything in one panel, including 
+  // Here we make the envelope for everything in one panel, including
   // the "panel supports."  (Not "Main supports").
   // *****************
   //  ostringstream pnlName;
-  //  pnlName << "Panel_" << std::setfill('0') << std::setw(2) << iPlane << "_" 
+  //  pnlName << "Panel_" << std::setfill('0') << std::setw(2) << iPlane << "_"
   //	  << std::setw(1) << iPanel;
 
   // *****************************************
@@ -652,7 +652,7 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
   // Now put in the straw panel already prepared
   // ***************************************
 
-  CLHEP::Hep3Vector spOffset(0., 0., 0. ); 
+  CLHEP::Hep3Vector spOffset(0., 0., 0. );
   G4VPhysicalVolume* physVol = new G4PVPlacement( 0, spOffset,
 						  strawPanel.logical,
 						  strawPanel.name,
@@ -671,7 +671,7 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
 // *******************
 
 
-mu2e::VolumeInfo 
+mu2e::VolumeInfo
 mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
 
  // ************************
@@ -685,7 +685,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   //  TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
   SupportStructure const& sup     = _ttracker.getSupportStructure();
 
-  // Straw Panels are identical other than placement - so get required 
+  // Straw Panels are identical other than placement - so get required
   // properties from plane 0, panel 0.
   Plane const& plane(_ttracker.getPlane(PlaneId(0,0,0)));
   Panel const& panel(_ttracker.getPanel(PanelId(0,0,0)));
@@ -703,7 +703,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   bool partialStraws         = _config.getBool("ttracker.partialStraws",false);
 
   // Azimuth of the centerline of a the panel enveleope: panelCenterPhi
-  // Upon construction and before placement, the panel envelope 
+  // Upon construction and before placement, the panel envelope
   // occupies [0,phiMax].
   double panelCenterPhi = panelHalfAzimuth();
 
@@ -766,11 +766,11 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
                                   );
 
   // The rotation matrix that will place the straw inside the panel envelope.
-  // For straws on the upstream side of the support, the sign of the 
-  // X rotation was chosen to put the z axis of the straw volume to be 
+  // For straws on the upstream side of the support, the sign of the
+  // X rotation was chosen to put the z axis of the straw volume to be
   // positive when going clockwise; this is the same convention used
-  // within the TTracker class.  For straws on the downstream side of 
-  // the support, the z axis of the straw volume is positive when going 
+  // within the TTracker class.  For straws on the downstream side of
+  // the support, the z axis of the straw volume is positive when going
   // counter-clockwise.  This won't be important since we never work
   // in the straw-local coordinates within G4.
 
@@ -859,7 +859,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
       CLHEP::Hep3Vector mid = r*unit;
       mid.setZ(side*(pos.z() - zPanel - zCorrection));
 
-      int copyNo=straw.index().asInt();
+      int copyNo=straw.id().asUint16();
       bool edgeVisible(true);
 
       // The enclosing volume for the straw is made of gas.  The walls and the wire will be placed inside.
@@ -995,7 +995,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   // We have now placed all the straws in the panel.
 
 
-						 
+
   // ***************************************
    // Now we put in the so-called support structure.
   // A lot of this code is taken from the original preparePlaneSupports
@@ -1015,17 +1015,17 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   std::vector<VHelper> vols;
   vols.reserve(6);
 
-  vols.push_back( VHelper(sup.centerPlate(),         lightBlue,           "",  
+  vols.push_back( VHelper(sup.centerPlate(),         lightBlue,           "",
 			  supportVisible ));
-  vols.push_back( VHelper(sup.outerRingDownstream(), G4Colour::Green(),   "",  
+  vols.push_back( VHelper(sup.outerRingDownstream(), G4Colour::Green(),   "",
 			  supportVisible ));
-  vols.push_back( VHelper(sup.coverDownstream(),     G4Colour::Cyan(),    "", 
+  vols.push_back( VHelper(sup.coverDownstream(),     G4Colour::Cyan(),    "",
 			  supportVisible ));
-  vols.push_back( VHelper(sup.gasDownstream(),       G4Colour::Magenta(), "", 
+  vols.push_back( VHelper(sup.gasDownstream(),       G4Colour::Magenta(), "",
 			  supportVisible ));
-  vols.push_back( VHelper(sup.g10Downstream(),         G4Colour::Blue(),   
+  vols.push_back( VHelper(sup.g10Downstream(),         G4Colour::Blue(),
 			  sup.gasDownstream().name(),   supportVisible ));
-  vols.push_back( VHelper(sup.cuDownstream(),          G4Colour::Yellow(),  
+  vols.push_back( VHelper(sup.cuDownstream(),          G4Colour::Yellow(),
 			  sup.gasDownstream().name(),   supportVisible ));
 
 
@@ -1034,15 +1034,15 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
     PlacedTubs const& part = vol.part;
 
     if ( _verbosityLevel > 0 ) {
-      cout << "Building panel support element " << part.name() 
-	   << ", with params: " << part.tubsParams() 
+      cout << "Building panel support element " << part.name()
+	   << ", with params: " << part.tubsParams()
 	   << ", at position:  " << part.position() << endl;
     }
 
 
     if ( vol.motherName.empty() ){
 
-      // These volumes are top level volumes of the support structure 
+      // These volumes are top level volumes of the support structure
       // and will be placed inside each panel envelope.
       ostringstream aName;
       aName << part.name();
@@ -1063,12 +1063,12 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
 
     } else{
 
-      // These volumes are lower level volumes and are placed, at this time, 
+      // These volumes are lower level volumes and are placed, at this time,
       // inside their parents.
       ostringstream aName;
       aName << part.name();
 
-      G4LogicalVolume* motherLogical = findMotherLogical( vols, 
+      G4LogicalVolume* motherLogical = findMotherLogical( vols,
 							  vol.motherName);
 
       vol.info = nestTubs( aName.str(),
@@ -1201,12 +1201,12 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
 				       );
 
     // Rib 1
-    TubsParams rib1Params ( ring.outerRadius(), 
-			    sup.outerRingDownstream().tubsParams().innerRadius(), 
+    TubsParams rib1Params ( ring.outerRadius(),
+			    sup.outerRingDownstream().tubsParams().innerRadius(),
 			    sup.coverDownstream().tubsParams().zHalfLength(),
 			    maxPhi1-sup.ribHalfAngle(),
 			    2*sup.ribHalfAngle());
-    CLHEP::Hep3Vector ribPosition(0.,0.,sup.coverDownstream().position().z() + 
+    CLHEP::Hep3Vector ribPosition(0.,0.,sup.coverDownstream().position().z() +
 				  2.0 * sup.coverDownstream().tubsParams().zHalfLength());
     VolumeInfo theRib1 = nestTubs( "Rib1",
 				   rib1Params,
@@ -1225,8 +1225,8 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
 
 
     // Rib 2
-    TubsParams rib2Params ( ring.outerRadius(), 
-			    sup.outerRingDownstream().tubsParams().innerRadius(), 
+    TubsParams rib2Params ( ring.outerRadius(),
+			    sup.outerRingDownstream().tubsParams().innerRadius(),
 			    sup.coverDownstream().tubsParams().zHalfLength(),
 			    maxPhi1+sup.panelPhiRibs() -sup.ribHalfAngle(),
 			    2*sup.ribHalfAngle());
@@ -1520,7 +1520,7 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
            << endl;
     }
 
-    VolumeInfo placedPan = preparePanel( ipln, ipnl, plane, 
+    VolumeInfo placedPan = preparePanel( ipln, ipnl, plane,
 					 baseStrawPanel,
 					 panelPosition, rotation );
     // ostringstream disPanelName;
@@ -1679,7 +1679,7 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
 
   }
 
-} // end of addPanelsAndEBKeys 
+} // end of addPanelsAndEBKeys
 // ***************************
 
 

@@ -38,9 +38,9 @@ namespace mu2e {
     // Out-of-class functions to deal with the parameter set work.
     // Kept out-of-class to hide implementation from the header.
     void addDeadPlanes( TTracker const& tracker,
-                         fhicl::ParameterSet const& pset,
-                         set<DeadStrawRange>& dead,
-                         bool verbosity ){
+                        fhicl::ParameterSet const& pset,
+                        set<DeadStrawRange>& dead,
+                        bool verbosity ){
 
       vector<int> devs = pset.get<vector<int> >( "deadPlanes", vector<int>() );
 
@@ -55,9 +55,9 @@ namespace mu2e {
     }
 
     void addDeadPanels( TTracker const& tracker,
-                         fhicl::ParameterSet const& pset,
-                         set<DeadStrawRange>& dead,
-                         bool verbosity  ){
+                        fhicl::ParameterSet const& pset,
+                        set<DeadStrawRange>& dead,
+                        bool verbosity  ){
 
       vector<string> secs = pset.get<vector<string> >( "deadPanels", vector<string>() );
       vector<PanelId> secIds;
@@ -124,23 +124,23 @@ namespace mu2e {
     }
 
     void addPartlyDeadStraws( TTracker const& tracker,
-                        fhicl::ParameterSet const& pset,
-                        set<DeadStrawRange>& dead,
-                        bool verbosity  ){
+                              fhicl::ParameterSet const& pset,
+                              set<DeadStrawRange>& dead,
+                              bool verbosity  ){
 
       vector<string> dstraws = pset.get<vector<string> >( "PartlyDeadStraws", vector<string>() );
 
       for ( auto dstring : dstraws){
-// split the string into a StrawId (underscore delimited) and the FP range
+        // split the string into a StrawId (underscore delimited) and the FP range
 	std::istringstream dstrings(dstring);
 	double range(0.0);
 	std::string sidname;
 	dstrings >> sidname >> range;
 	// check
 	if(range == 0.0)
-        throw cet::exception("CONFIG")
-          << "DeadStrawList: expected StrawId and range but got "
-	  << dstring << endl;
+          throw cet::exception("CONFIG")
+            << "DeadStrawList: expected StrawId and range but got "
+            << dstring << endl;
 	StrawId sid(sidname);
         Straw const& straw = tracker.getStraw(sid);
         dead.insert(DeadStrawRange(straw,range));
@@ -175,14 +175,9 @@ namespace mu2e {
     }
 
     if(_verbosity > 1) {
-      const auto & allstraws = tracker.getAllStraws();
-      // for(const auto & straw: tracker.getAllStraws())
-      for (size_t i = 0; i<tracker.nStraws(); ++i) {
-        const Straw & straw = allstraws[i];
-	std::cout << "Straw Index " << straw.index() << " Id " << straw.id() << endl;
-      }
+      for(const auto & straw: tracker.getAllStraws())
+	std::cout << "Straw Id " << straw.id() << endl;
     }
-
   }
 
   bool DeadStrawList::isDead ( StrawId id,double hitpos) const {
@@ -190,9 +185,9 @@ namespace mu2e {
     auto ifnd = _deadstraws.find(DeadStrawRange(id));
     if(ifnd != _deadstraws.end()){
       if(ifnd->_range > 0)
-	retval = fabs(hitpos) < ifnd->_range;
+        retval = fabs(hitpos) < ifnd->_range;
       else
-	retval = fabs(hitpos) > -ifnd->_range;
+        retval = fabs(hitpos) > -ifnd->_range;
     }
     return retval;
   }
@@ -202,7 +197,7 @@ namespace mu2e {
 
     for( auto idead: _deadstraws) {
       out << "Straw " << tracker.getStraw(idead._strawId).id()
-      << " is dead for distances < " << idead._range << endl;
+          << " is dead for distances < " << idead._range << endl;
     }
 
   }

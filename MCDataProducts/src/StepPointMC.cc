@@ -6,10 +6,6 @@
 // to record for purposes of debugging fitters.  We may need a different
 // class to hold the corresponding information for calorimeters.
 //
-// $Id: StepPointMC.cc,v 1.4 2013/09/06 16:14:00 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/09/06 16:14:00 $
-//
 // Original author Rob Kutschke
 
 // Mu2e includes

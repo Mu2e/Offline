@@ -198,7 +198,7 @@ namespace mu2e {
             endl;
           */
           // Fill the ntuple.
-          detnt[0]  = str.index().asInt();
+          detnt[0]  = str.id().asUint16();
           detnt[1]  = lid;
           detnt[2]  = did;
           detnt[3]  = secid;

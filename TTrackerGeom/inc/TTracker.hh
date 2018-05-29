@@ -32,9 +32,6 @@
 
 #include "TTrackerGeom/inc/Station.hh"
 
-#include "DataProducts/inc/StrawIndex.hh"
-
-
 namespace mu2e {
 
   class TTracker: public Tracker{
@@ -112,7 +109,6 @@ namespace mu2e {
       return _stations.at(id);
     }
 
-    //    const std::deque<Straw>& getAllStraws() const {return _allStraws;}
     const std::array<Straw,TTracker::_nttstraws>& getAllStraws() const
     {return _allStraws2;}
 
@@ -149,20 +145,10 @@ namespace mu2e {
       return _mother;
     }
 
-    // presence info for each straw.
-    bool strawExists(StrawIndex const index) const {
-      return _strawExists2.at(((_allStraws2.at(index.asInt())).id()).asUint16());
-    }
-
     // =============== NewTracker Accessors Start ==============
 
     const Straw& getStraw( const StrawId id) const{
       return *(_allStraws2_p.at(id.asUint16()));
-    }
-
-    const Straw& getStraw( StrawIndex i ) const{
-      // shold be correct by construction
-      return _allStraws2.at(i.asInt());
     }
 
     const Plane& getPlane( const StrawId id ) const{
@@ -180,17 +166,6 @@ namespace mu2e {
     bool strawExists( StrawId const id) const{
       // return _allStraws2_p.at(id.asUint16()) != nullptr;
       return _strawExists2.at(id.asUint16());
-    }
-
-    const StrawId getStrawId( StrawIndex i ) const{
-      return (_allStraws2.at(i.asInt())).id();
-    }
-
-    // tmp function to be deprecated
-    const StrawIndex getStrawIndex(  const StrawId id ) const{
-      return strawExists(id) ?
-        (_allStraws2_p.at(id.asUint16()))->index() :
-        StrawIndex(StrawIndex::NO_STRAW);
     }
 
     // =============== NewTracker Accessors End   ==============

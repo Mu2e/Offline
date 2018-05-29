@@ -73,7 +73,7 @@ namespace mu2e {
         const StrawDigiMC& dmc = imc->at(hit->index());
         if(hit->straw().id() != dmc.strawId()) {
           throw cet::exception("BADINPUTS")<<"TrackSummaryTruthMaker: mismatched input data: "
-                                           <<"straw index="<<hit->straw().index()
+                                           <<"straw id="<<hit->straw().id()
                                            <<" != StrawDigiMC index="<<dmc.strawId()
                                            <<"\n";
         }

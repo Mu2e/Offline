@@ -83,8 +83,6 @@ namespace mu2e {
 
       for ( const Straw& straw : _tt->getAllStraws() ){
 
-        size_t istr= straw.index().asInt();
-
         int cpln = straw.id().getPlane();
         int cpnl = straw.id().getPanel();
         int clay = straw.id().getLayer();
@@ -101,7 +99,7 @@ namespace mu2e {
         size_t ipnlf = nStrawsPerPanel*cpnl + nStrawsPerPlane*cpln;
 
         cout << __func__ << " Straw "
-             << fixed << setw(6) << istr << " "
+             << fixed << " "
              << " plnfloor " << setw(6) << ipnlf << " "
              << straw.id() << " "
              << " mid point " << straw.getMidPoint()
@@ -743,7 +741,6 @@ namespace mu2e {
           cout << __func__ << " Printing Layer _straws info: " << lid
                << setw(3) << is
                << " " << straw.id()
-               << " " << straw.index()
                << endl;
         }
 
@@ -992,7 +989,6 @@ namespace mu2e {
 
         allStraws2.at(strawCountReCounted) =
           Straw( lsid,
-                 StrawIndex(strawCountReCounted),
                  offset,
                  &_tt->_strawDetails.at(iman*2+ilay%2),
                  iman*2+ilay%2,
@@ -1212,7 +1208,6 @@ namespace mu2e {
       if (_verbosityLevel>2) {
         cout << __func__ << " "
              << straw.id() << ", index "
-             << straw.index()
              << " Straw " << straw.id().getStraw()
              << " plane: "
              << _tt->getPlane(straw.id()).id()
@@ -1234,7 +1229,7 @@ namespace mu2e {
         cout << __func__ << " layer " << layer
              << " of panel "  << straw.id().getPanelId()
              << " has " << nStrawLayer << " straws" << endl;
-        cout << __func__ << " Analyzed straw: " << straw.id() << '\t' << straw.index() << endl;
+        cout << __func__ << " Analyzed straw: " << straw.id() << endl;
       }
 
       // add the "same layer" n-2 neighbours straw (if exist)
@@ -1246,9 +1241,8 @@ namespace mu2e {
         straw._nearestById.push_back( nsId );
         if ( _verbosityLevel>2 ) {
           const Straw& temp = _tt->getStraw( nsId );
-          cout << __func__ << setw(34) << " Neighbour left straw: " << temp.id() << '\t' << temp.index() << endl;
+          cout << __func__ << setw(34) << " Neighbour left straw: " << temp.id()  << endl;
         }
-        straw._nearestByIndex.push_back( _tt->getStraw(nsId).index() );
       }
 
       // add the "same layer" n+2 neighbours straw (if exist)
@@ -1259,9 +1253,8 @@ namespace mu2e {
         straw._nearestById.push_back( nsId );
         if ( _verbosityLevel>2 ) {
           const Straw& temp = _tt->getStraw( nsId );
-          cout << __func__ << setw(34) << " Neighbour right straw: " << temp.id() << '\t' << temp.index() << endl;
+          cout << __func__ << setw(34) << " Neighbour right straw: " << temp.id() << endl;
         }
-        straw._nearestByIndex.push_back( _tt->getStraw(nsId).index() );
       }
 
       // add the "opposite layer" n neighbours straw (if more than 1 layer)
@@ -1283,11 +1276,9 @@ namespace mu2e {
         if ( straw.id().getStraw() % 2 == 0){
           const StrawId nsId( straw.id().asUint16() + 1 );
           straw._preampById.push_back( nsId );
-          straw._preampByIndex.push_back( _tt->getStraw(nsId).index());
         }else{
           const StrawId nsId( straw.id().asUint16() - 1 );
           straw._preampById.push_back( nsId );
-          straw._preampByIndex.push_back( _tt->getStraw(nsId).index());
         }
 
         // add neighbors
@@ -1295,40 +1286,36 @@ namespace mu2e {
         if (layer==0 && straw.id().getStraw()<2*nStrawLayer) {
           const StrawId nsId( straw.id().asUint16() + 1 );
           straw._nearestById.push_back( nsId );
-          straw._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
             cout << __func__ << setw(34) << " Neighbour opposite up straw: "
-                 << straw._nearestById.back() << '\t' <<  straw._nearestByIndex.back() << endl;
+                 << straw._nearestById.back() << endl;
           }
         }
 
         if (layer==1 && straw.id().getStraw()<2*nStrawLayer-1) {
           const StrawId nsId( straw.id().asUint16() + 1 );
           straw._nearestById.push_back( nsId );
-          straw._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
             cout << __func__ << setw(34) << " Neighbour opposite up straw: "
-                 << straw._nearestById.back() << '\t' <<  straw._nearestByIndex.back() << endl;
+                 << straw._nearestById.back() << endl;
           }
         }
 
         if (layer==0 && straw.id().getStraw()>0) {
           const StrawId nsId( straw.id().asUint16() - 1 );
           straw._nearestById.push_back( nsId );
-          straw._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
             cout << __func__ << setw(34) << " Neighbour opposite down straw: "
-                 << straw._nearestById.back() << '\t' <<  straw._nearestByIndex.back() << endl;
+                 << straw._nearestById.back() << endl;
           }
         }
 
         if (layer==1 && straw.id().getStraw()>0) { // layer 1 straw 1 is ok
           const StrawId nsId( straw.id().asUint16() - 1 );
           straw._nearestById.push_back( nsId );
-          straw._nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
             cout << __func__ << setw(34) << " Neighbour opposite down straw: "
-                 << straw._nearestById.back() << '\t' <<  straw._nearestByIndex.back() << endl;
+                 << straw._nearestById.back() << endl;
           }
         }
 
@@ -1912,12 +1899,10 @@ namespace mu2e {
         const Straw& straw(**ist);
         uint16_t sn = straw.id().getStraw();
         if ( sn%2 != ilay ) continue;
-        int idx             = straw.index().asInt(); // straw index
 
         if (_verbosityLevel>2) {
-          cout << __func__ << " recomputing: ist, idx "
-               << ++uist << ", "
-               << idx
+          cout << __func__ << " recomputing: ist "
+               << ++uist << " "
                << " Straw " << straw._id.getStraw()
                << " id: "
                << straw._id
@@ -1974,9 +1959,8 @@ namespace mu2e {
         }
 
         if (_verbosityLevel>2) {
-          cout << __func__ << " after recomputing: ist, idx "
-               << uist << ", "
-               << idx
+          cout << __func__ << " after recomputing: ist "
+               << uist << " "
                << " Straw " << straw._id.getStraw()
                << " id: "
                << straw._id

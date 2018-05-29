@@ -20,7 +20,7 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e {
   DetStrawElem::DetStrawElem(DetStrawType* stype,const Straw* straw) :
-    DetElem(stype,"TrackerStraw",straw->index().asInt()),_straw(straw), _wtraj(0), _stype(stype){
+    DetElem(stype,"TrackerStraw",straw->id().asUint16()),_straw(straw), _wtraj(0), _stype(stype){
 // the traj should be a propoerty of the straw, FIXME!!!
     Hep3Vector const& wiredir = _straw->getDirection();
     Hep3Vector const& mid = _straw->getMidPoint();
@@ -67,7 +67,7 @@ namespace mu2e {
   }
 
 // compute the material effects of traversing the straw.  This includes
-// the straw gas and walls (and eventually wire, FIXME!!) 
+// the straw gas and walls (and eventually wire, FIXME!!)
   void DetStrawElem::materialInfo(const DetIntersection& dinter,
       double momentum,
       TrkParticle const& tpart,
@@ -78,15 +78,15 @@ namespace mu2e {
 // compute the path through the straw wall and gas (and eventually test for wire intersections!)
     CLHEP::Hep3Vector tdir = dinter.trajet->direction(dinter.pathlen);
     double gaspath = gasPath(dinter.dist,tdir);
-    double wallpath = wallPath(dinter.dist,tdir); 
+    double wallpath = wallPath(dinter.dist,tdir);
 // compute the material info for these materials using the base class function
     double gasdeflectRMS, gaspfracRMS,gaspfrac;
     DetElem::materialInfo(*_stype->gasMaterial(),2*gaspath,momentum,tpart,gasdeflectRMS,gaspfracRMS,gaspfrac,dedxdir);
     double walldeflectRMS, wallpfracRMS,wallpfrac;
     DetElem::materialInfo(*_stype->wallMaterial(),2*wallpath,momentum,tpart,walldeflectRMS,wallpfracRMS,wallpfrac,dedxdir);
   // combine these to give the aggregate effect
-    deflectRMS = sqrt(gasdeflectRMS*gasdeflectRMS + walldeflectRMS*walldeflectRMS); 
-    pfracRMS = sqrt(gaspfracRMS*gaspfracRMS + wallpfracRMS*wallpfracRMS); 
+    deflectRMS = sqrt(gasdeflectRMS*gasdeflectRMS + walldeflectRMS*walldeflectRMS);
+    pfracRMS = sqrt(gaspfracRMS*gaspfracRMS + wallpfracRMS*wallpfracRMS);
     pfrac = gaspfrac + wallpfrac;
   }
 
@@ -130,4 +130,3 @@ namespace mu2e {
     return wallpath;
   }
 }
-

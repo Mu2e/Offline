@@ -35,7 +35,6 @@ namespace mu2e {
                                       StrawId::_nstraws;
 
     virtual const Straw& getStraw ( const StrawId strid ) const=0;
-    virtual const Straw& getStraw ( StrawIndex i ) const=0;
     virtual const std::array<Straw,_nttstraws>& getAllStraws() const=0;
     virtual const std::vector<StrawDetail>& getStrawDetails() const=0;
     virtual uint16_t nPlanes() const=0;

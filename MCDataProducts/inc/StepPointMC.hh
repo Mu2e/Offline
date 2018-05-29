@@ -85,7 +85,6 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawIndex.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -169,10 +168,9 @@ namespace mu2e {
     // Kept for backwards compatibility.
     double eDep() const { return _totalEnergyDeposit;    }
 
-    // Return the volumeId as a StrawIndex.
+    // Return the volumeId as a StrawId.
     // This only makes sense for StepPointMCs from the tracker collection.
     // It's the user's job to know if this is a reasonable thing to do.
-    StrawIndex strawIndex() const { return static_cast<StrawIndex>(_volumeId); }
     StrawId    strawId()    const { return static_cast<StrawId>(_volumeId); }
 
     // Return the volumeId as a VirtualDetectorId.
