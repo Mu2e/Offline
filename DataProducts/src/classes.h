@@ -3,7 +3,6 @@
 //
 
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
-#include "DataProducts/inc/StrawIndex.hh"
 #include "DataProducts/inc/StrawEnd.hh"
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawIdMask.hh"
