@@ -54,11 +54,9 @@
 
 // Mu2e BaBar
 #include "BTrk/BaBar/BaBar.hh"
-// #include "BTrk/BaBar/BbrStringUtils.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
-// #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
@@ -174,21 +172,6 @@ namespace mu2e {
     void findMissingHits  (KalFitResultNew&  KRes);
   };
 
-
-//-----------------------------------------------------------------------------
-// comparison functor for sorting by Z(wire)
-//-----------------------------------------------------------------------------
-  struct straw_zcomp : public binary_function<StrawHitIndex,StrawHitIndex,bool> {
-    bool operator()(StrawHitIndex const& h1, StrawHitIndex const& h2) {
-
-      GeomHandle<TTracker> handle;
-      const TTracker* t = handle.get();
-      const Straw* s1 = &t->getStraw(StrawIndex(h1));
-      const Straw* s2 = &t->getStraw(StrawIndex(h2));
-
-      return s1->getMidPoint().z() < s2->getMidPoint().z();
-    }
-  }; // a semicolumn here is required
 
   //-----------------------------------------------------------------------------
   // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl

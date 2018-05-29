@@ -43,21 +43,6 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e {
 //-----------------------------------------------------------------------------
-// comparison functor for sorting by Z(wire)
-//-----------------------------------------------------------------------------
-  struct straw_zcomp : public binary_function<StrawHitIndex,StrawHitIndex,bool> {
-    bool operator()(StrawHitIndex const& h1, StrawHitIndex const& h2) {
-
-      mu2e::GeomHandle<mu2e::TTracker> handle;
-      const TTracker* t = handle.get();
-      const Straw* s1 = &t->getStraw(StrawIndex(h1));
-      const Straw* s2 = &t->getStraw(StrawIndex(h2));
-
-      return s1->getMidPoint().z() < s2->getMidPoint().z();
-    }
-  }; // a semicolumn here is required
-
-//-----------------------------------------------------------------------------
 // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
 //-----------------------------------------------------------------------------
   CalTimePeakFinder::CalTimePeakFinder(fhicl::ParameterSet const& pset) :

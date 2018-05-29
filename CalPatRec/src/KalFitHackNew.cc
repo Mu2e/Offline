@@ -85,10 +85,10 @@ namespace mu2e {
 
 // struct for finding materials
   struct StrawFlight {
-    StrawIndex _index;  // straw being tested
-    double _flt; // flight where trajectory comes near this straw
+    StrawId _id;  // straw being tested
+    double  _flt; // flight where trajectory comes near this straw
 // construct from pair
-    StrawFlight(StrawIndex strawind, double flt) : _index(strawind), _flt(flt) {}
+    StrawFlight(StrawId id, double flt) : _id(id), _flt(flt) {}
   };
 
 // comparison operators understand that the same straw could be hit twice, so the flight lengths need
@@ -96,8 +96,8 @@ namespace mu2e {
   struct StrawFlightComp : public binary_function<StrawFlight, StrawFlight, bool> {
     double _maxdiff; // maximum flight difference; below this, consider 2 intersections 'the same'
     StrawFlightComp(double maxdiff) : _maxdiff(maxdiff) {}
-    bool operator () (StrawFlight const& a, StrawFlight const& b) { return a._index < b._index ||
-    ( a._index == b._index && a._flt < b._flt && fabs(a._flt-b._flt)>=_maxdiff);}
+    bool operator () (StrawFlight const& a, StrawFlight const& b) { return a._id < b._id ||
+    ( a._id == b._id && a._flt < b._flt && fabs(a._flt-b._flt)>=_maxdiff);}
   };
 
 // construct from a parameter set
@@ -674,7 +674,7 @@ namespace mu2e {
             int istraw = (int)rint(nstraws*(prho-s0.perp())/(sn.perp()-s0.perp()));
             // take a few straws around this
             for(int is = max(0,istraw-3); is<min(nstraws,istraw+3); ++is){
-              matstraws.insert(StrawFlight(panel.getStraw(is).index(),flt));
+              matstraws.insert(StrawFlight(panel.getStraw(is).id(),flt));
               ++nadded;
             }
           }
@@ -685,7 +685,7 @@ namespace mu2e {
     if(_debugLevel > 2) std::cout << "Found " << matstraws.size() << " unique possible straws " << " out of " << nadded << std::endl;
     for(auto strawflt : matstraws){
     // hack
-      Straw const& straw = tracker.getStraw(strawflt._index);
+      Straw const& straw = tracker.getStraw(strawflt._id);
       const DetStrawElem* strawelem = detmodel.strawElem(straw.id());
       DetIntersection strawinter;
       strawinter.delem = strawelem;
@@ -701,7 +701,7 @@ namespace mu2e {
         for(auto kmat : kmats ){
           const DetStrawElem* kelem = dynamic_cast<const DetStrawElem*>(kmat->detIntersection().delem);
           if(kelem != 0){
-            StrawFlight ksflt(kelem->straw()->index(),kmat->globalLength());
+            StrawFlight ksflt(kelem->straw()->id(),kmat->globalLength());
             if(_debugLevel>2)std::cout << " comparing flights " << kmat->globalLength() << " and " << strawflt._flt << std::endl;
             if(!strawcomp.operator()(strawflt,ksflt)){
               if(_debugLevel>2)std::cout << "operator returned false!!" << std::endl;
