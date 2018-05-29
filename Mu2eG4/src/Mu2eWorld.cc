@@ -80,7 +80,6 @@
 #include "BeamlineGeom/inc/TransportSolenoid.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "Mu2eG4/inc/constructTTracker.hh"
-#include "Mu2eG4/inc/constructDummyTracker.hh"
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
 #include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
 #include "Mu2eG4/inc/constructDiskCalorimeter.hh"
@@ -301,21 +300,17 @@ namespace mu2e {
     if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
     VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo(theDS3);
 
-    // z Position of the center of the DS solenoid parts, given in the Mu2e coordinate system.
-    double z0DSdown = detSolDownstreamVacInfo.centerInMu2e().z();
-
     // Construct one of the trackers.
     VolumeInfo trackerInfo;
 
     if ( _config.getBool("hasTTracker",false) ) {
-      int ver = _config.getInt("TTrackerVersion",3);
-      if ( ver == 3 ){
-        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, _config, *sdHelper_);
-      } else if ( ver == 5 ) {
-	trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config, *sdHelper_);
+      if ( _config.getInt("TTrackerVersion",3)  != 5 ){
+        throw cet::exception("GEOM")
+          << "Current code only supports TTrackerVersion = 5\n"
+          << "Requested version: "
+          << _config.getInt("TTrackerVersion",3);
       }
-    } else {
-      trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, _config );
+      trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config, *sdHelper_);
     }
 
     if ( _verbosityLevel > 0) {
@@ -669,7 +664,7 @@ namespace mu2e {
           new CaloReadoutCardSD(      SensitiveDetectorName::CaloReadoutCard(),     _config);
         SDman->AddNewDetector(crCardSD);
       }
-      
+
       if(sdHelper_->enabled(StepInstanceName::calorimeterCrate)) {
         CaloCrateSD* cCrateSD  =
           new CaloCrateSD(      SensitiveDetectorName::CaloCrate(),     _config);
