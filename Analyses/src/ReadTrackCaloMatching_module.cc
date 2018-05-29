@@ -42,7 +42,6 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 // data
@@ -85,7 +84,7 @@
 using namespace std;
 
 namespace mu2e {
-  
+
   static int ncalls(0);
 
   class ReadTrackCaloMatching : public art::EDAnalyzer {
@@ -162,7 +161,7 @@ namespace mu2e {
 
       _Ntup->Branch("evt"    , &_evt ,   "evt/F");
       _Ntup->Branch("ntrks"  , &_ntrks , "ntrks/I");
-    
+
       _Ntup->Branch("xtrk", _xtrk, "xtrk[ntrks]/F");
       _Ntup->Branch("ytrk", &_ytrk, "ytrk[ntrks]/F");
       _Ntup->Branch("ztrk", &_ztrk, "ztrk[ntrks]/F");
@@ -208,7 +207,7 @@ namespace mu2e {
     _ntrks = coll->size();
 
     for(int i=0; i<_ntrks; ++i){
-      
+
       obj     = &coll->at(i);
 
       _xtrk[i]   = obj->xtrk();
@@ -229,8 +228,8 @@ namespace mu2e {
       _chi2_time[i]   = obj->chi2_time();
       _int_depth[i]   = obj->int_depth();
       _ds[i]      = obj->ds();
-    
-      
+
+
     }
 
     _Ntup->Fill();
