@@ -11,7 +11,6 @@
 #include "CLHEP/Vector/ThreeVector.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include <algorithm>
 
 #include "TrkReco/inc/TrkUtilities.hh"
@@ -21,7 +20,7 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e
 {
-  TrkCaloHit::TrkCaloHit(const CaloCluster& caloCluster, Hep3Vector &caloClusterPos, 
+  TrkCaloHit::TrkCaloHit(const CaloCluster& caloCluster, Hep3Vector &caloClusterPos,
 			 double crystalHalfLength, Hep3Vector const& clusterAxis,
 			 const HitT0& hitt0,double fltlen, double timeWeight, double dtoffset) :
     _caloCluster(caloCluster),
@@ -35,10 +34,10 @@ namespace mu2e
 			       clusterAxis, -crystalHalfLength, crystalHalfLength);
     setHitLen(crystalHalfLength);
     setFltLen(fltlen);
-// compute initial hit t0 
+// compute initial hit t0
     setHitT0(hitt0);
     setActivity(true);
-    
+
     sett0Weight(timeWeight);
 //    std::cout << "creating TrkCaloHit " << this << std::endl;
   }
@@ -86,19 +85,19 @@ namespace mu2e
   }
 
 
-  bool 
+  bool
   TrkCaloHit::signalPropagationTime(double &propTime, double&Doca,
 				    double resid    , double &residErr,
 				    CLHEP::Hep3Vector trajDirection){
-    
-    propTime = 0;//FIX ME! 
+
+    propTime = 0;//FIX ME!
     residErr = 0.5;//FIX ME!
     return true;
   }
-  
+
   void
   TrkCaloHit::trackT0Time(double& htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt){
-    // compute the flightlength to this hit from z=0 
+    // compute the flightlength to this hit from z=0
     CLHEP::Hep3Vector hpos;
     hitPosition(hpos);
     double hflt  = ptraj->zFlight(hpos.z()) - t0flt;
@@ -107,7 +106,7 @@ namespace mu2e
 
   bool
   TrkCaloHit::isPhysical(double maxchi) const {
-    return true;//FIXME! 
+    return true;//FIXME!
   }
 
   void TrkCaloHit::print(std::ostream& o) const {
