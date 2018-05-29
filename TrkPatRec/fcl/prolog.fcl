@@ -89,6 +89,7 @@ KFSeed : {
   dtOffset                        : @local::TrackCaloMatching.DtOffset
   strawHitT0Weight                : 1
   caloHitT0Weight                 : 10
+  mcTruth                         : 0
 }
 
 # Kalman fit configuration for the final track fit.  This also runs the simulated annealing
@@ -112,7 +113,57 @@ KFFinal : {
   dtOffset                    : @local::TrackCaloMatching.DtOffset
   strawHitT0Weight            : 1
   caloHitT0Weight             : 10
+  mcTruth                         : 0
 }
+
+# Kalman fit configuration for the cprmode
+CprKFFinal : {
+    debugLevel                              : 0
+    minnstraws                              : 15
+    MaximumMaterialFlightDifference         : 1000 # mm separation in flightlength
+    materialCorrection                      : true
+    weedhits                                : [ true , true , true , true, true , true , true , true, true ]
+    maxhitchi                               : 5. # 3.5
+    maxPull                                 : 10.
+    maxweed                                 : 10
+    mingap				    : 1.0
+    ambiguityStrategy    		    : [ 4    , 4    , 4    , 4   , 4    , 4    , 4    , 4   , 4    ]
+    AddMaterial		                    : [ false, false, false, true, false, false, false, true, true ]
+    hiterr 		                    : [ 80.  , 24.  , 8.   , 4.  , 2.   , 0.8  , 0.0  , 0.0 , 0.0  ]
+    t0Tolerance				    : [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
+    # not used t0ErrorFactor                           : 1.2                # scale ?
+    minT0DOCA                               : -0.2               # 
+    t0window                                : 2.5
+    dtOffset                                : @local::TrackCaloMatching.DtOffset
+    # did Dave mean that? 
+    updateT0			            : true
+    updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
+    DivergeFlt                              : 1000.
+    #------------------------------------------------------------------------------
+    #  KalContext parameters  (there are more to define ! )
+    #------------------------------------------------------------------------------
+    MinNDOF                                 : 10 # this means 15 hits min
+    #------------------------------------------------------------------------------
+    # ambiguity resolver parameters
+    #------------------------------------------------------------------------------
+    FixedAmbigResolver                      : {}
+    HitAmbigResolver                        : {}
+    PocaAmbigResolver                       : {}
+    PanelAmbigResolver                      : {}
+    #------------------------------------------------------------------------------
+    # doublet-based ambiguity resolver parameters
+    #------------------------------------------------------------------------------
+    DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
+    fieldCorrection			    : true
+#    scaleErrDoublet                         : 5.
+#    minDriftDoublet                         : 0.3
+#    deltaDriftDoublet                       : 0.3
+#    maxDoubletChi2                          : 9
+#   sigmaSlope                              : 0.025
+    mcTruth                                 : 1
+    mcUtils                                 : { tool_type : "TrkPatRecMcUtils" }
+}
+
 
 # Seed fit; this is really a least-squares fit, but uses the Kalman infrastructure
 KSF : {

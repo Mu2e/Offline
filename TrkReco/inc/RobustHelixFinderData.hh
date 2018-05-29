@@ -26,59 +26,6 @@ namespace mu2e {
   class TimeCluster;
   class Panel;
 
-  // struct ChannelID {
-  //   int Station;
-  //   int Plane; 
-  //   int Face; 
-  //   int Panel; 
-  //   //      int Layer;
-  // };
-
-  // // struct HitFlag_t {
-  // //   int                              fUsed[100];
-  // // };
-    
-  
-  // struct PanelZ_t {
-  //   int                              fNHits;      // guess, total number of hits per panel
-  //   std::vector<CalHelixPoint>       fHitData;
-  //   const Panel*                     fPanel;      // backward pointer to the tracker panel
-  //   double                           wx;          // direction cosines of the wires, assumed to be all the same
-  //   double                           wy;      
-  //   double                           phi;         // phi angle of the wire
-  //   double                           z;           // 
-
-  //   PanelZ_t    (){
-  //     fNHits  = 0;
-  //     fPanel  = NULL;
-  //   }
-
-  //   PanelZ_t    (const PanelZ_t&Copy){
-  //     fNHits = Copy.fNHits;  
-  //     fPanel = Copy.fPanel;  
-  //     wx     = Copy.wx;      
-  //     wy     = Copy.wy;      
-  //     phi    = Copy.phi;     
-  //     z      = Copy.z;       
-  //     int nhits = Copy.fHitData.size();
-  //     for (int i=0; i<nhits; ++i){
-  // 	fHitData.push_back(CalHelixPoint(Copy.fHitData.at(i)));
-  //     }
-  //   }
-  // }; 
-
-  struct SeedInfo_t {
-    int  Panel;	 
-    int  PanelHitIndex;
-    SeedInfo_t(){
-      Panel         = -1;	 
-      PanelHitIndex = -1;
-    }
-    SeedInfo_t(int P, int H){
-      Panel         = P;	 
-      PanelHitIndex = H;
-    }
-  };
   //---------------------------------------------------------------------------
   // output struct
   //-----------------------------------------------------------------------------
@@ -91,12 +38,60 @@ namespace mu2e {
       kNTotalFaces    = 80,
       kNTotalPanels   = 240,
       kNMaxHitsPerPanel= 20,
+      kNMaxHitsPerFace = 200,
       kNFaces         =  4,
       kNPanelsPerFace =  3
     };
     
     enum { kMaxResidIndex = 500 };
     
+    struct ChannelID {
+      int Station;
+      int Plane; 
+      int Face; 
+      int Panel; 
+      //      int Layer;
+    };
+
+    
+    struct HitInfo_t {
+      int    face;	 
+      int    faceHitIndex;
+      float  weightXY;
+      float  weightZPhi;
+      HitInfo_t(){
+	face          = -1;	 
+	faceHitIndex  = -1;
+	weightXY      = 0.;
+	weightZPhi    = 0.;
+      }
+      HitInfo_t(int F, int H, float WXY=0., float WZPhi=0.){
+	face          = F;	 
+	faceHitIndex  = H;
+	weightXY      = WXY;
+	weightZPhi    = WZPhi;
+      }
+    };
+  
+    struct FaceZ_t {
+      int                              fNHits;      // guess, total number of hits per panel
+      std::vector<ComboHit>            fHitData;
+      double                           z;           // 
+      
+      FaceZ_t    (){
+	fNHits  = 0;
+      }
+
+      FaceZ_t    (const FaceZ_t&Copy){
+	fNHits = Copy.fNHits;  
+	z      = Copy.z;       
+	int nhits = Copy.fHitData.size();
+	for (int i=0; i<nhits; ++i){
+	  fHitData.push_back(Copy.fHitData.at(i));
+	}
+      }
+    }; 
+
     struct Diag_t {
       
       double    resid[kMaxResidIndex];
@@ -104,7 +99,8 @@ namespace mu2e {
       double    dz   [kMaxResidIndex];
       
       int       circleFitCounter;
-      
+      int       nrescuedhits;
+
       double    dr;
       double    chi2d_helix;
       
@@ -113,6 +109,24 @@ namespace mu2e {
       int       ntriple_0;    //number of triplets used in the first call of RobustHelix::fitCircle
       double    radius_0;     //radius resulting from the first call of RobustHelix::fitCircle
   
+      int       nshsxy_0;
+      double    rsxy_0;
+      double    chi2dsxy_0;
+
+      int       nshsxy_1;
+      double    rsxy_1;
+      double    chi2dsxy_1;
+
+ 
+      int       nshszphi;
+      double    lambdaszphi;
+      double    chi2dszphi;
+
+      int       nshszphi_1;
+      double    lambdaszphi_1;
+      double    chi2dszphi_1;
+
+
       int       ntriple_1;    //number of triplets used in the first call of RobustHelix::fitCircle
       double    radius_1;     //radius resulting from the first call of RobustHelix::fitCircle
       
@@ -121,19 +135,24 @@ namespace mu2e {
 
       double    lambda_0;
       double    lambda_1;
+
+      int       xyniter;
+      int       fzniter;
+      int       niter;
+
     };
     
     const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices
     art::Ptr<TimeCluster>             _timeClusterPtr;
 
-    HelixTraj*                        _helix;
+    //    HelixTraj*                        _helix;
 
-    HelixSeed*                        _hseed;
+    HelixSeed                         _hseed;
 
     std::vector<StrawHitIndex>        _goodhits;
 
-    SeedInfo_t                        _seedIndex;
-    SeedInfo_t                        _candIndex;
+    // SeedInfo_t                        _seedIndex;
+    // SeedInfo_t                        _candIndex;
 
     int                               _nStrawHits;      
     int                               _nComboHits;    
@@ -141,7 +160,7 @@ namespace mu2e {
     int                               _nXYSh;
     int                               _nZPhiSh;
   
-    int                               _nFiltPoints;     //ComboHits from the TimeCluster + DeltaFinder filtering 
+    int                               _nFiltComboHits;  //ComboHits from the TimeCluster + DeltaFinder filtering 
     int                               _nFiltStrawHits;  //StrawHits from the TimeCluster + DeltaFinder filtering 
 
     double                            _helixChi2;
@@ -178,15 +197,15 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // structure used to organize thei strawHits for the pattern recognition
 //-----------------------------------------------------------------------------
-    // PanelZ_t                                           _oTracker[kNTotalPanels];
-    std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
+    FaceZ_t                                             _oTracker[kNTotalFaces];
+    // std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
     RobustHelixFinderData();
     ~RobustHelixFinderData();
 
-    RobustHelixFinderData(const RobustHelixFinderData& Data);
+    // RobustHelixFinderData(const RobustHelixFinderData& Data);
 
     // RobustHelixFinderData& operator =(RobustHelixFinderData const& other);
 
@@ -197,11 +216,11 @@ namespace mu2e {
     // bool          fitIsValid        () { return _sxy.qn() > 0; }
     // bool          weightedFitIsValid() { return _sxy.qn() > 0; }
     int           maxIndex          () { return kMaxResidIndex; }
-    HelixTraj*    helix             () { return _helix;        }
+    // HelixTraj*    helix             () { return _helix;        }
 
     int           nGoodHits         () { return _goodhits.size(); }
 
-    // void          orderID           (ChannelID* X, ChannelID* O);
+    void          orderID           (ChannelID* X, ChannelID* O);
 
     void          print(const char* Title);
     void          clearTempVariables();

@@ -16,7 +16,7 @@
 #include "TH1F.h"
 #include "Math/VectorUtil.h"
 #include "Math/Vector2D.h"
-
+#include "Mu2eUtilities/inc/LsqSums4.hh"
 #include "TrkReco/inc/RobustHelixFinderData.hh"
 
 using namespace ROOT::Math::VectorUtil;
@@ -73,10 +73,24 @@ namespace mu2e
     bool initCircle(RobustHelixFinderData& helixData);
     void fitCircle(RobustHelixFinderData& helixData);
     bool initFZ(RobustHelixFinderData& helixData);
+    bool initFZ_2(RobustHelixFinderData& helixData);
     void fitFZ(RobustHelixFinderData& helixData);
+    void fitFZ_2(RobustHelixFinderData& helixData);
     bool goodHelix(RobustHelix const& rhel);
+    bool goodHelixChi2(RobustHelixFinderData& helixData);
     Helicity const& helicity() const { return _helicity; }
 
+    bool goodCircle(RobustHelix const& rhel);
+    bool goodFZ(RobustHelix const& rhel);
+    bool goodZPhiFit(LsqSums4& lsqsum);
+
+    //function used to evaluate the hit weight used in the XY fit
+    float evalWeightXY  (const ComboHit& Hit, XYVec& Center);
+    float evalWeightZPhi(const ComboHit& Hit, XYVec& Center, float Radius);
+
+    //function to perfrom the XY and ZPhi fit using the Lsqsum4 class
+    void  refineFitXY  (RobustHelixFinderData& helixData);
+    void  refineFitZPhi(RobustHelixFinderData& helixData);
   private:
 
     void fitHelix(RobustHelixFinderData& helixData);
@@ -85,10 +99,6 @@ namespace mu2e
     void fitCircleMean(RobustHelixFinderData& helixData);
     void findAGE(RobustHelixFinderData  const& helixData, XYZVec const& center,float& rmed, float& age);
     void fillSums(RobustHelixFinderData const& helixData, XYZVec const& center,float rmed,AGESums& sums);
-
-    bool goodCircle(RobustHelix const& rhel);
-    bool goodFZ(RobustHelix const& rhel);
-
     void forceTargetInter(XYZVec& center, float& radius);
 
     bool use(ComboHit const&) const;
@@ -101,15 +111,19 @@ namespace mu2e
     float hitWeight(ComboHit const& hhit) const;
     bool goodLambda(Helicity const& h, float lambda) const;
 
-    //function used to evaluate the hit weight used in the XY fit
-    float evalWeightXY(const ComboHit& Hit, XYVec& Center);
+   
 
     int _diag;
     int _debug;
     CircleFit _cinit, _cfit; // type of circle fit
     StrawHitFlag _useflag, _dontuseflag;
+    int      _minnsh;  // minimum # of StrawHits
     unsigned _minnhit; // minimum # of hits to work with
+    float _minxyresid; // minimum distance used in the circle fit to be clusterized. units are mm
+    int   _refineXYFit, _refineZPhiFit; //flag for using the reduced chi2 fit
+    float _chi2xymax, _chi2zphimax; //maximum chi2 allowed for the XY and ZPhi fit respectively
     float _lambda0,_lstep,_minlambda; // parameters for AGE center determination
+    float _mindfdz, _maxdfdz;//paramters use for findDfDz function
     unsigned _nphibins; // # of bins in histogram for phi at z intercept
     float _phifactor; // range factr for phi z intercept histogram 
     unsigned _minnphi; // minimum # of entries in max bin of phi intercept histogram 
@@ -118,6 +132,7 @@ namespace mu2e
     float _mindphi, _maxdphi; // phi separation of points for pitch estimate
     float _mindist; // minimum distance between points used in circle initialization
     float _maxdist; // maximum distance in hits
+    float _maxXDPhi;//maximum normalized residual for a hit in the z-phi fit
     float _rmin,_rmax; // circle radius range
     float _rcmin,_rcmax; // circle centerradius range
     //      float _mindelta; // minimum slope difference to use a triple in circle center initialization

@@ -13,86 +13,41 @@ namespace mu2e {
 // RobustHelixFinderData
 //-----------------------------------------------------------------------------
   RobustHelixFinderData::RobustHelixFinderData() {
-    _helix = NULL;
+    // _helix = NULL;
+    // _hseed = NULL;
   }
 
-//-----------------------------------------------------------------------------
-  RobustHelixFinderData::RobustHelixFinderData(const RobustHelixFinderData& Data) {
-    _timeCluster    = Data._timeCluster;
-    _timeClusterPtr = Data._timeClusterPtr;
-					// the only pointer owned 
-    if (Data._helix) _helix = Data._helix->clone();
-    else             _helix = NULL;
 
-    _goodhits       = Data._goodhits;
-    _tpart          = Data._tpart;
-    _fdir           = Data._fdir;
-    _chcol          = Data._chcol;
-    // _shpos          = Data._shpos;
-    _chfcol         = Data._chfcol;
-    _fit            = Data._fit;
-    // _sxy            = Data._sxy;
-    // _szphi          = Data._szphi;
-    _center         = Data._center;
-    _radius         = Data._radius;
-    _chi2           = Data._chi2;
-    // _sxyw           = Data._sxyw;
-    // _cw             = Data._cw;
-    // _rw             = Data._rw;
-    // _chi2w          = Data._chi2w;
-    _dfdz           = Data._dfdz;
-    _fz0            = Data._fz0;
-    _diag           = Data._diag;
-    
-
-    _nXYSh          = Data._nXYSh;
-    _nZPhiSh        = Data._nZPhiSh;
-    _nStrawHits     = Data._nStrawHits;
-    _nComboHits     = Data._nComboHits;
-    _nFiltPoints    = Data._nFiltPoints;
-    _nFiltStrawHits = Data._nFiltStrawHits;
-
-    _helixChi2      = Data._helixChi2;
-
-    _seedIndex      = Data._seedIndex;
-    _candIndex      = Data._candIndex;
-
-    //copy the info relative to the  panels
-    // for (int p=0; p<kNTotalPanels; ++p){
-    //   _oTracker[p] = Data._oTracker[p];//PanelZ_t(Data._oTracker[p]);
-    // }    
-    
-    _hitsUsed       = Data._hitsUsed;
-  }
 
 //-----------------------------------------------------------------------------
   RobustHelixFinderData::~RobustHelixFinderData() {
-    if (_helix) delete _helix;
+    // if (_helix) delete _helix;
+    // if (_hseed) delete _hseed;
   }
 
 //-----------------------------------------------------------------------------
-  // void RobustHelixFinderData::orderID(ChannelID* X, ChannelID* O) {
-  //   if (X->Panel % 2 == 0) X->Face = 0;
-  //   else                   X->Face = 1; // define original face
+  void RobustHelixFinderData::orderID(RobustHelixFinderData::ChannelID* X, RobustHelixFinderData::ChannelID* O) {
+    if (X->Panel % 2 == 0) X->Face = 0;
+    else                   X->Face = 1; // define original face
     
-  //   O->Station = X->Station; // stations already ordered
-  //   O->Plane   = X->Plane;   // planes already ordered, but not necessary for ordered construct
+    O->Station = X->Station; // stations already ordered
+    O->Plane   = X->Plane;   // planes already ordered, but not necessary for ordered construct
 
-  //   if (X->Station % 2 == 0) {
-  //     if (X->Plane == 0) O->Face = 1 - X->Face;
-  //     else               O->Face = X->Face + 2;
-  //   }
-  //   else {
-  //     if (X->Plane == 0) O->Face = X->Face;
-  //     else               O->Face = 3 - X->Face; // order face
-  //   }
+    if (X->Station % 2 == 0) {
+      if (X->Plane == 0) O->Face = 1 - X->Face;
+      else               O->Face = X->Face + 2;
+    }
+    else {
+      if (X->Plane == 0) O->Face = X->Face;
+      else               O->Face = 3 - X->Face; // order face
+    }
     
-  //   O->Panel = int(X->Panel/2);                // order panel
+    O->Panel = int(X->Panel/2);                // order panel
 
-  //   // int n = X->Station + X->Plane + X->Face;   // pattern has no intrinsic meaning, just works
-  //   // if (n % 2 == 0) O->Layer = 1 - X->Layer;
-  //   // else            O->Layer = X->Layer;       // order layer    
-  // }
+    // int n = X->Station + X->Plane + X->Face;   // pattern has no intrinsic meaning, just works
+    // if (n % 2 == 0) O->Layer = 1 - X->Layer;
+    // else            O->Layer = X->Layer;       // order layer    
+  }
 
 //-----------------------------------------------------------------------------
 // don't clear the diagnostics part.
@@ -102,12 +57,18 @@ namespace mu2e {
     _timeCluster    = NULL;
     _timeClusterPtr = art::Ptr<TimeCluster>();
 
+    // _helix          = NULL;
+    // _hseed          = NULL;
+
     _goodhits.clear();
-    
+
+    _nStrawHits = 0;
+    _nComboHits = 0;
+
     _fit.setFailure(1,"failure");
     
-    // _sxy.clear();
-    // _szphi.clear();
+    _sxy.clear();
+    _szphi.clear();
     _chi2   = -1.;
     _radius = -1.;
     
@@ -118,7 +79,7 @@ namespace mu2e {
     _dfdz = -1.e6;
     _fz0  = -1.e6;
 
-    _nFiltPoints    = 0;
+    _nFiltComboHits = 0;
     _nFiltStrawHits = 0;
 
     _nXYSh       = 0;
@@ -127,19 +88,22 @@ namespace mu2e {
     _nStrawHits  = 0;
     _nComboHits  = 0;
 
+    _nFiltComboHits = 0;
+    _nFiltStrawHits = 0;
+
     _helixChi2   = 1e10;
 
-    _seedIndex   = SeedInfo_t(-1,-1);
-    _candIndex   = SeedInfo_t(-1,-1);
+    // _seedIndex   = SeedInfo_t(-1,-1);
+    // _candIndex   = SeedInfo_t(-1,-1);
 
     //clear the panel-based structure
-    // for (int p=0; p<kNTotalPanels; ++p) {
-    //   PanelZ_t* panelz = &_oTracker[p];
-    //   panelz->fNHits = 0;
-    //   panelz->fHitData.clear() ;
-    // }
+    for (int f=0; f<kNTotalFaces; ++f) {
+      FaceZ_t* facez = &_oTracker[f];
+      facez->fNHits = 0;
+      facez->fHitData.clear() ;
+    }
 
-    _hitsUsed =  {0};
+    // _hitsUsed =  {0};
   }
 
 //-----------------------------------------------------------------------------
@@ -151,8 +115,8 @@ namespace mu2e {
     
     _fit.setFailure(1,"failure");
     
-    // _sxy.clear();
-    // _szphi.clear();
+    _sxy.clear();
+    _szphi.clear();
     _chi2   = -1.;
     _radius = -1.;
     
@@ -172,11 +136,11 @@ namespace mu2e {
 
     _helixChi2   = 1e10;
 
-    _seedIndex   = SeedInfo_t(-1,-1);
-    _candIndex   = SeedInfo_t(-1,-1);
+    // _seedIndex   = SeedInfo_t(-1,-1);
+    // _candIndex   = SeedInfo_t(-1,-1);
     
-    _hitsUsed    = {0};
-  }
+    // _hitsUsed    = {0};
+ }
 
 
 //-----------------------------------------------------------------------------

@@ -40,8 +40,21 @@ namespace mu2e {
       int     xyniter  [kMaxHelicities][kMaxSeeds];
       int     fzniter  [kMaxHelicities][kMaxSeeds];
       int     niter    [kMaxHelicities][kMaxSeeds];
+      int     nrescuedhits[kMaxHelicities][kMaxSeeds];
       int     nXYSh    [kMaxHelicities][kMaxSeeds];
       int     nZPhiSh  [kMaxHelicities][kMaxSeeds];
+
+      int     nshsxy_0    [kMaxHelicities][kMaxSeeds];
+      double  rsxy_0      [kMaxHelicities][kMaxSeeds];
+      double  chi2dsxy_0  [kMaxHelicities][kMaxSeeds];
+                  
+      int     nshsxy_1    [kMaxHelicities][kMaxSeeds];
+      double  rsxy_1      [kMaxHelicities][kMaxSeeds];
+      double  chi2dsxy_1  [kMaxHelicities][kMaxSeeds];
+                  
+      int     nshszphi_1  [kMaxHelicities][kMaxSeeds];
+      double  lambdaszphi_1[kMaxHelicities][kMaxSeeds];
+      double  chi2dszphi_1[kMaxHelicities][kMaxSeeds];
 
       double  rinit    [kMaxHelicities][kMaxSeeds];
       double  radius   [kMaxHelicities][kMaxSeeds];

@@ -11,26 +11,35 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Utilities/make_tool.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "GeometryService/inc/GeomHandle.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "GeometryService/inc/GeometryService.hh"
 // utiliites
 #include "GeneralUtilities/inc/Angles.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 // data
 #include "DataProducts/inc/Helicity.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "TrkReco/inc/KalFitData.hh"
+#include "TrkPatRec/inc/KalFinalFit_types.hh"
+#include "TrkReco/inc/DoubletAmbigResolver.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/TrkBase/TrkHelixUtils.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 // Mu2e BaBar
@@ -55,51 +64,66 @@ using CLHEP::HepVector;
 
 namespace mu2e 
 {
+  using namespace KalFinalFitTypes;
+
   class KalFinalFit : public art::EDProducer
   {
-    public:
-      explicit KalFinalFit(fhicl::ParameterSet const&);
-      virtual ~KalFinalFit();
-      virtual void produce(art::Event& event ); 
-    private:
-      unsigned _iev;
-      // configuration parameters
-      int _debug;
-      int _printfreq;
-      bool _saveall,_addhits; 
-      vector<double> _zsave;
-      // event object tags
-      art::InputTag _shTag;
-      art::InputTag _shfTag;
-      art::InputTag _ksTag; 
-      // flags
-      StrawHitFlag _addsel;
-      StrawHitFlag _addbkg;
-      TrkFitFlag _goodseed;
-      double _maxdtmiss;
-      // outlier cuts
-      double _maxadddoca, _maxaddchi;
-      TrkParticle _tpart; // particle type being searched for
-      TrkFitDirection _fdir;  // fit direction in search
-      // trkqual calculation
-      std::unique_ptr<MVATools> _trkqualmva;
-      // event objects
-      const StrawHitCollection* _shcol;
-      const StrawHitFlagCollection* _shfcol;
-      const KalSeedCollection * _kscol;
-      // Kalman fitter
-      KalFit _kfit;
-      // helper functions
-      bool findData(const art::Event& e);
-      void findMissingHits(KalRep* krep, vector<StrawHitIndex>& indices);
-      void fillTrkQual(KalSeed const& kseed, TrkQual& trkqual);
+  public:
+    explicit KalFinalFit(fhicl::ParameterSet const&);
+    virtual ~KalFinalFit();
+    void beginRun(art::Run& aRun);
+    virtual void produce(art::Event& event ); 
+  private:
+    unsigned _iev;
+    // configuration parameters
+    int _debug;
+    int _diag;
+    int _printfreq;
+    int _cprmode;
+    bool _saveall,_addhits; 
+    vector<double> _zsave;
+    // event object tags
+    art::InputTag _shTag;
+    art::InputTag _shfTag;
+    art::InputTag _ksTag; 
+    // flags
+    StrawHitFlag _addsel;
+    StrawHitFlag _addbkg;
+    TrkFitFlag _goodseed;
+    double _maxdtmiss;
+    // outlier cuts
+    double _maxadddoca, _maxaddchi;
+    TrkParticle _tpart; // particle type being searched for
+    TrkFitDirection _fdir;  // fit direction in search
+    // trkqual calculation
+    std::unique_ptr<MVATools> _trkqualmva;
+    // event objects
+    const StrawHitCollection* _shcol;
+    const StrawHitFlagCollection* _shfcol;
+    const KalSeedCollection * _kscol;
+    // Kalman fitter
+    KalFit _kfit;
+    KalFitData _result;
 
-      // flow diagnostic
+    // diagnostic
+    Data_t                                _data;
+    std::unique_ptr<ModuleHistToolBase>   _hmanager;
+
+    // helper functions
+    bool findData(const art::Event& e);
+    void findMissingHits(KalFitData&kalData);
+    void findMissingHits_cpr(KalFitData&kalData);
+
+    void fillTrkQual(KalSeed const& kseed, TrkQual& trkqual);
+
+    // flow diagnostic
   };
 
   KalFinalFit::KalFinalFit(fhicl::ParameterSet const& pset) :
     _debug(pset.get<int>("debugLevel",0)),
+    _diag(pset.get<int>("diagLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
+    _cprmode(pset.get<int>("cprmode",0)),
     _saveall(pset.get<bool>("saveall",false)),
     _addhits(pset.get<bool>("addhits",true)),
     _zsave(pset.get<vector<double> >("ZSavePositions",vector<double>{-1522.0,0.0,1522.0})), // front, middle and back of the tracker
@@ -114,7 +138,8 @@ namespace mu2e
     _maxaddchi(pset.get<double>("MaxAddChi",4.0)),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet()))
+    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
+    _result()
   {
     fhicl::ParameterSet mvapset = pset.get<fhicl::ParameterSet>("TrkQualMVA",fhicl::ParameterSet());
     mvapset.put<string>("MVAWeights",pset.get<string>("TrkQualWeights","TrkDiag/test/TrkQual.weights.xml"));
@@ -124,12 +149,46 @@ namespace mu2e
 
     produces<KalRepCollection>();
     produces<KalRepPtrCollection>();
+    produces<AlgorithmIDCollection>();
     produces<StrawHitFlagCollection>();
     produces<KalSeedCollection>();
     produces<TrkQualCollection>();
+//-----------------------------------------------------------------------------
+// provide for interactive disanostics
+//-----------------------------------------------------------------------------
+    _data.result    = &_result;
+    
+    if (_diag != 0) {
+      _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
+      fhicl::ParameterSet ps1 = pset.get<fhicl::ParameterSet>("Fitter.DoubletAmbigResolver");
+      _data.dar               = new DoubletAmbigResolver(ps1,0,0,0);
+      _data.listOfDoublets    = new std::vector<Doublet>;
+    }
+    else {
+      _hmanager = std::make_unique<ModuleHistToolBase>();
+      _data.dar            = NULL;
+      _data.listOfDoublets = NULL;
+    }
+ }
+
+  KalFinalFit::~KalFinalFit(){
+    if (_data.dar) {
+      delete _data.listOfDoublets;
+      delete _data.dar;
+    }
+  }
+//-----------------------------------------------------------------------------
+  void KalFinalFit::beginRun(art::Run& ) {
+    mu2e::GeomHandle<mu2e::TTracker> th;
+    _data.tracker     = th.get();
+
+    mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    _data.calorimeter = ch.get();
+    
+    _kfit.setCalorimeter (_data.calorimeter);
+    _kfit.setTracker     (_data.tracker);
   }
 
-  KalFinalFit::~KalFinalFit(){}
 
   void KalFinalFit::produce(art::Event& event ) {
     // event printout
@@ -139,9 +198,10 @@ namespace mu2e
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::KalFinalFit: data missing or incomplete"<< endl;
     }
-   // create output
+    // create output
     unique_ptr<KalRepCollection>    krcol(new KalRepCollection );
     unique_ptr<KalRepPtrCollection> krPtrcol(new KalRepPtrCollection );
+    unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection   );
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
     unique_ptr<TrkQualCollection> tqcol(new TrkQualCollection());
     
@@ -149,10 +209,29 @@ namespace mu2e
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(*_shfcol));
     // lookup productID for payload saver
     art::ProductID kalRepsID(getProductID<KalRepCollection>());
+ 
+    if (_diag){
+      _data.event  = &event;
+      _data.eventNumber = event.event();
+      _data.result = &_result;
+      _data.tracks = krcol.get();
+    }
+
+    _result.fitType     = 0;
+    _result.event       = &event ;
+    _result.shcol       = _shcol ;
+    _result.shfcol      = _shfcol ;
+    _result.tpart       = _tpart ;
+    _result.fdir        = _fdir  ;
+
     // loop over the seed fits.  I need an index loop here to build the Ptr
     for(size_t ikseed=0; ikseed < _kscol->size(); ++ikseed) {
-      const auto& kseed = _kscol->at(ikseed);
-    // only process fits which meet the requirements
+      KalSeed const& kseed(_kscol->at(ikseed));
+      _result.kalSeed = & kseed;
+
+      if (kseed.caloCluster()) _result.caloCluster = kseed.caloCluster().get();
+
+      // only process fits which meet the requirements
       if(kseed.status().hasAllProperties(_goodseed)) {
 	// check the seed has the same basic parameters as this module expects
 	if(kseed.particle() != _tpart || kseed.fitDirection() != _fdir ) {
@@ -163,46 +242,90 @@ namespace mu2e
 	  throw cet::exception("RECO")<<"mu2e::KalFinalFit: no segments"<< endl;
 	}
 	// build a Kalman rep around this seed
-	KalRep *krep(0);
-	_kfit.makeTrack(_shcol,kseed,krep);
+	//fill the KalFitData variable
+	// _result.kalSeed = &kseed;
+
+	// _kfit.makeTrack(_shcol,kseed,krep);
+	_result.init();
+	_kfit.makeTrack(_result);
+
+	// KalRep *krep = _result.stealTrack();
+
 	if(_debug > 1){
-	  if(krep == 0)
+	  if(_result.krep == 0)
 	    cout << "No Final fit produced " << endl;
 	  else{
-	    cout << "Seed Fit HelixTraj parameters " << krep->seedTrajectory()->parameters()->parameter()
-	      << " covariance " << krep->seedTrajectory()->parameters()->covariance()
-	      << " NDOF = " << krep->nDof()
-	      << " Final Fit status " << krep->fitStatus()  << endl;
+	    cout << "Seed Fit HelixTraj parameters " << _result.krep->seedTrajectory()->parameters()->parameter()
+	      << " covariance " << _result.krep->seedTrajectory()->parameters()->covariance()
+	      << " NDOF = " << _result.krep->nDof()
+	      << " Final Fit status " << _result.krep->fitStatus()  << endl;
 	  }
 	}
 	// if successfull, try to add missing hits
-	if(_addhits && krep != 0 && krep->fitStatus().success()){
+	if(_addhits && _result.krep != 0 && _result.krep->fitStatus().success()){
 	    // first, add back the hits on this track
-	  _kfit.unweedHits(krep,_maxaddchi);
-	  vector<StrawHitIndex> misshits;
-	  findMissingHits(krep,misshits);
-	  if(misshits.size() > 0){
-	    _kfit.addHits(krep,_shcol,misshits,_maxaddchi);
+	  _result.nunweediter = 0;
+	  _kfit.unweedHits(_result,_maxaddchi);
+	  if (_debug > 0) _kfit.printHits(_result,"CalTrkFit::produce after unweedHits");
+
+	  if (_cprmode){
+	    findMissingHits_cpr(_result);
+	  }else {
+	    findMissingHits(_result);
+	  }
+
+	  if(_result.missingHits.size() > 0){
+	    _kfit.addHits(_result,_maxaddchi);
+	  }else if (_cprmode){
+	    int last_iteration  = -1;
+	    _kfit.fitIteration(_result,last_iteration);
 	  }
 	  if(_debug > 1)
-	    cout << "AddHits Fit result " << krep->fitStatus()
-	    << " NDOF = " << krep->nDof() << endl;
+	    cout << "AddHits Fit result " << _result.krep->fitStatus()
+	    << " NDOF = " << _result.krep->nDof() << endl;
+	  
+//-----------------------------------------------------------------------------
+// and weed hits again to insure that addHits doesn't add junk
+//-----------------------------------------------------------------------------
+	  int last_iteration  = -1;
+	  if (_cprmode) _kfit.weedHits(_result,last_iteration);
 	}
 	// put successful fits into the event
-	if(krep != 0 && (krep->fitStatus().success() || _saveall)){
+	if(_result.krep != 0 && (_result.krep->fitStatus().success() || _saveall)){
+//-----------------------------------------------------------------------------
+// now evaluate the T0 and its error using the straw hits
+//-----------------------------------------------------------------------------
+	  if (_cprmode)	_kfit.updateT0(_result);
+
 	  // warning about 'fit current': this is not an error
-	  if(!krep->fitCurrent()){
+	  if(!_result.krep->fitCurrent()){
 	    cout << "Fit not current! " << endl;
 	  }
 	  // flg all hits as belonging to this track
 	  // // this is probably obsolete, FIXME!
 	  if(ikseed<StrawHitFlag::_maxTrkId){
-	    for(auto ihit=krep->hitVector().begin();ihit != krep->hitVector().end();++ihit){
+	    for(auto ihit=_result.krep->hitVector().begin();ihit != _result.krep->hitVector().end();++ihit){
 	      if((*ihit)->isActive())shfcol->at(static_cast<TrkStrawHit*>(*ihit)->index()).merge(StrawHitFlag::trackBit(ikseed));
 	    }
 	  }
+	  
+	  
 	  // save successful kalman fits in the event
+	  KalRep *krep = _result.stealTrack();
 	  krcol->push_back(krep);
+
+	  // save the alorithm bit
+	  int best(1),mask(1);
+	  if (_cprmode==0) {
+	    best = AlgorithmID::TrkPatRecBit;
+	    mask = 1 << AlgorithmID::TrkPatRecBit;
+	  } else if (_cprmode==1) {
+	    best = AlgorithmID::CalPatRecBit;
+	    mask = 1 << AlgorithmID::CalPatRecBit;
+	  }
+	  algs->push_back(AlgorithmID(best,mask));
+
+
 	  int index = krcol->size()-1;
 	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	  // convert successful fits into 'seeds' for persistence
@@ -244,16 +367,22 @@ namespace mu2e
 	  TrkQual trkqual;
 	  fillTrkQual(fseed,trkqual);
 	  tqcol->push_back(trkqual);
-	} else // fit failure
-	  delete krep;
+	} else {// fit failure
+	  _result.deleteTrack();
+	  //	  delete krep;
+	}
       }
     }
+
+    if (_diag > 0) _hmanager->fillHistograms(&_data);
+
     // put the output products into the event
     event.put(move(krcol));
     event.put(move(krPtrcol));
     event.put(move(kscol));
     event.put(move(shfcol));
     event.put(move(tqcol));
+    event.put(move(algs));
   }
 
   // find the input data objects 
@@ -271,8 +400,169 @@ namespace mu2e
 
     return _shcol != 0 && _shfcol != 0 && _kscol != 0;
   }
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+  void KalFinalFit::findMissingHits_cpr(KalFitData& KRes) {
 
-  void KalFinalFit::findMissingHits(KalRep* krep,vector<StrawHitIndex>& misshits) {
+    const char* oname = "KalFinalFit::findMissingHits_cpr";
+
+    Hep3Vector tdir;
+    HepPoint   tpos;
+    double     dt;
+
+    KalRep* krep =  KRes.krep;
+
+    krep->pieceTraj().getInfo(0.0,tpos,tdir);
+
+    const TrkDifPieceTraj* reftraj = krep->referenceTraj();
+
+    if (_debug > 0) printf("[%s]      shId    sec     panel       doca        drift     dr added\n",oname);
+
+    KRes.missingHits.clear();
+    //    KRes.doca.clear();
+
+    MissingHit_t mh;
+
+    int nstrs = KRes.shcol->size();
+    for (int istr=0; istr<nstrs; ++istr) {
+      mh.index = istr;
+//----------------------------------------------------------------------
+// 2015-02-11 change the selection bit for searching for missed hits
+//----------------------------------------------------------------------
+      StrawHit const& sh    = _shcol->at(istr);
+//-----------------------------------------------------------------------------
+// I think, we want to check the radial bit: if it is set, than at least one of
+// the two measured times is wrong...
+//-----------------------------------------------------------------------------
+      //      int radius_ok = _shfcol->at(istr).hasAllProperties(StrawHitFlag::radsel);
+      dt        = _shcol->at(istr).time()-KRes.krep->t0()._t0;
+
+      //      if (radius_ok && (fabs(dt) < _maxdtmiss)) {
+      if (fabs(dt) < _maxdtmiss) {
+					// make sure we haven't already used this hit
+
+	TrkStrawHit  *tsh, *closest(NULL);
+	bool found = false;
+
+	Straw const&      straw = _data.tracker->getStraw(sh.strawId());
+	CLHEP::Hep3Vector hpos  = straw.getMidPoint();
+
+	double            dz_max(1.e12) ; // closest_z(1.e12);
+	double            zhit = hpos.z();
+
+	for (std::vector<TrkHit*>::iterator it=krep->hitVector().begin(); it!=krep->hitVector().end(); it++) {
+	  tsh = static_cast<TrkStrawHit*> (*it);
+	  int tsh_index = tsh->index();
+	  if (tsh_index == istr) {
+	    found = true;
+	    break;
+	  }
+					// check proximity in Z
+          Straw const&  trk_straw = _data.tracker->getStraw(tsh->strawHit().strawId());
+          double        ztrk      = trk_straw.getMidPoint().z();
+
+	  double dz  = ztrk-zhit;
+	  if (fabs(dz) < fabs(dz_max)) {
+	    closest   = tsh;
+	    dz_max    = dz;
+	  }
+	}
+
+        if (! found) {
+					// estimate trajectory length to hit 
+	  double hflt = 0;
+	  TrkHelixUtils::findZFltlen(*reftraj,zhit,hflt);
+
+          // good in-time hit.  Compute DOCA of the wire to the trajectory
+	  // also estimate the drift time if this hit were on the track to get hte hit radius
+
+	  TrkT0 hitt0 = closest->hitT0();
+
+	  double s    = closest->fltLen();
+	  double mom  = krep->momentum(s).mag();
+	  double beta = krep->particleType().beta(mom);
+
+	  double tflt = (hflt-s)/(beta*CLHEP::c_light);
+	  hitt0._t0  += tflt;
+
+          CLHEP::Hep3Vector hdir  = straw.getDirection();
+          // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
+          HepPoint          spt(hpos.x(),hpos.y(),hpos.z());
+          TrkLineTraj       htraj(spt,hdir,-20,20);
+          // estimate flightlength along track.  This assumes a constant BField!!!
+
+          double      fltlen = (hpos.z()-tpos.z())/tdir.z();
+
+          TrkPoca     hitpoca(krep->pieceTraj(),fltlen,htraj,0.0);
+
+	  double      rdrift, hit_error(0.2);
+
+	  TrkStrawHit hit(sh,straw,istr,hitt0,hflt,hit_error,10.,1.,_maxadddoca);
+	  
+	  ConditionsHandle<TrackerCalibrations> tcal("ignored");
+
+	  double tdrift=hit.time()-hit.hitT0()._t0;
+
+	  T2D t2d;
+
+	  tcal->TimeToDistance(straw.index(),tdrift,tdir,t2d);
+
+	  rdrift = t2d._rdrift;
+	  mh.doca   = hitpoca.doca();
+	  if (mh.doca > 0) mh.dr = mh.doca-rdrift;
+	  else             mh.dr = mh.doca+rdrift;
+//-----------------------------------------------------------------------------
+// flag hits with small residuals
+//-----------------------------------------------------------------------------
+	  int added (0);
+          if (fabs(mh.dr) < _maxadddoca) {
+            KRes.missingHits.push_back(mh);
+	    //            KRes.doca.push_back(doca);
+	    added = 1;
+          }
+
+          if (_debug > 0) {
+            printf("[CalTrkFit::findMissingHits] %8i  %6i  %8i  %10.3f %10.3f %10.3f   %3i\n",
+                   straw.index().asInt(),
+                   straw.id().getPlane(),
+                   straw.id().getPanel(),
+                   mh.doca, rdrift, mh.dr,added);
+          }
+        }
+      }
+      else {
+	if (_debug > 0) {
+	  printf("[%s] rejected hit: i, index, flag, dt: %5i %5i %s %10.3f\n",
+		 oname,istr,sh.strawId().asUint16(),
+		 KRes.shfcol->at(istr).hex().data(),sh.dt());
+	}
+      }
+    }
+    //-----------------------------------------------------------------------------
+    // sort hits in accending |dr|, such that the first hit has the smallest |dr|
+    //-----------------------------------------------------------------------------
+    int nmiss = KRes.missingHits.size();
+    for (int i1=0; i1<nmiss-1; i1++) {
+      MissingHit_t* h1 = &KRes.missingHits[i1];
+      for (int i2=i1+1; i2<nmiss; i2++) {
+	MissingHit_t* h2 = &KRes.missingHits[i2];
+	if (fabs(h1->dr) > fabs(h2->dr)) {
+					// swap hits
+	  MissingHit_t tmp = *h1;
+	  *h1 = *h2;
+	  *h2 = tmp;
+	}
+      }
+    }
+  }
+
+  void KalFinalFit::findMissingHits(KalFitData&kalData) {
+    KalRep* krep = kalData.krep;
+
+    //clear the array
+    kalData.missingHits.clear();
+
     const Tracker& tracker = getTrackerOrThrow();
     //  Trajectory info
     Hep3Vector tdir;
@@ -302,9 +592,14 @@ namespace mu2e
 	    Hep3Vector tpos(tp.x(),tp.y(),tp.z()); // ugly conversion FIXME!
 	    double hitlen = hdir.dot(tpos - hpos);
 	    TrkPoca hitpoca(krep->pieceTraj(),fltlen,htraj,hitlen);
+	    
 	    // flag hits with small residuals
 	    if(fabs(hitpoca.doca()) < _maxadddoca){
-	      misshits.push_back(istr);
+	      MissingHit_t m;
+	      m.index = istr;
+	      m.doca  = hitpoca.doca();
+	      // m.dr = ??;
+	      kalData.missingHits.push_back(m);
 	    }
 	  }
 	}

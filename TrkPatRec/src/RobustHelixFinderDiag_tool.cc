@@ -39,9 +39,22 @@ namespace mu2e {
       TH1F*  xyniter [2];
       TH1F*  fzniter [2];
       TH1F*  niter   [2];
- 
+      TH1F*  nrescuedhits[2];
+
       TH1F*  nXYSh   [2];
       TH1F*  nZPhiSh [2];
+
+      TH1F*  nshsxy_0    [2];
+      TH1F*  rsxy_0      [2];
+      TH1F*  chi2dsxy_0  [2];
+            
+      TH1F*   nshsxy_1    [2];
+      TH1F*   rsxy_1      [2];
+      TH1F*   chi2dsxy_1  [2];
+            
+      TH1F*   nshszphi_1   [2];
+      TH1F*   lambdaszphi_1[2];
+      TH1F*   chi2dszphi_1 [2];
 
 
       TH1F*  lambda0 [2];
@@ -118,10 +131,41 @@ namespace mu2e {
     _hist.niter  [0]    = Tfs->make<TH1F>("niterNeg"     , "number of iterations helix fit, Neg "   , 401, -0.5, 800.5);
     _hist.niter  [1]    = Tfs->make<TH1F>("niterPos"     , "number of iterations helix fit, Pos "   , 401, -0.5, 800.5);
 
+    _hist.nrescuedhits  [0]    = Tfs->make<TH1F>("nrescuedhitsNeg"     , "number of rescued hits, Neg "   , 801, -0.5, 800.5);
+    _hist.nrescuedhits  [1]    = Tfs->make<TH1F>("nrescuedhitsyPos"    , "number of rescued hits, Pos "   , 801, -0.5, 800.5);
+
     _hist.nXYSh  [0]    = Tfs->make<TH1F>("nXYShNeg"     , "number of strawHits from the circle fit, Neg "   , 201, -0.5, 200.5);
     _hist.nZPhiSh[0]    = Tfs->make<TH1F>("nZPhiShNeg"   , "number of strawHits from the z#phi fit, Neg "   , 201, -0.5, 200.5);
     _hist.nXYSh  [1]    = Tfs->make<TH1F>("nXYShPos"     , "number of strawHits from the circle fit, Pos "   , 201, -0.5, 200.5);
     _hist.nZPhiSh[1]    = Tfs->make<TH1F>("nZPhiShPos"   , "number of strawHits from the z#phi fit, Pos "   , 201, -0.5, 200.5);
+
+    _hist.nshsxy_0     [0]   = Tfs->make<TH1F>("nshsxy_0Neg"   , "number of strawHits from the xy fit, Neg "   , 201, -0.5, 200.5);
+    _hist.nshsxy_0     [1]   = Tfs->make<TH1F>("nshsxy_0Pos"   , "number of strawHits from the xy fit, Pos "   , 201, -0.5, 200.5);
+                           
+    _hist.rsxy_0       [0]   = Tfs->make<TH1F>("rsxy_0Neg"     , "radius from the xy fit, Neg "   , 301, 99.5, 400.5);
+    _hist.rsxy_0       [1]   = Tfs->make<TH1F>("rsxy_0Pos"     , "radius  from the xy fit, Pos "   , 301, 99.5, 400.5);
+    _hist.chi2dsxy_0   [0]   = Tfs->make<TH1F>("chi2dsxy_0Neg", "#chi^{2}/ndof from the xy fit, Neg "   , 2001, -0.05, 200.05);
+    _hist.chi2dsxy_0   [1]   = Tfs->make<TH1F>("chi2dsxy_0Pos", "#chi^{2}/ndof from the xy fit, Pos "   , 2001, -0.05, 200.05);
+                           
+    _hist.nshsxy_1     [0]   = Tfs->make<TH1F>("nshsxy_1Neg"   , "number of strawHits from the xy fit, Neg "   , 201, -0.5, 200.5);
+    _hist.nshsxy_1     [1]   = Tfs->make<TH1F>("nshsxy_1Pos"   , "number of strawHits from the xy fit, Pos "   , 201, -0.5, 200.5);
+                           
+    _hist.rsxy_1       [0]   = Tfs->make<TH1F>("rsxy_1Neg"     , "number of strawHits from the xy fit, Neg "   , 301, 99.5, 400.5);
+    _hist.rsxy_1       [1]   = Tfs->make<TH1F>("rsxy_1Pos"     , "number of strawHits from the xy fit, Pos "   , 301, 99.5, 400.5);
+    _hist.chi2dsxy_1   [0]   = Tfs->make<TH1F>("chi2dsxy_1Neg", "#chi^{2}/ndof from the xy fit, Neg "   , 201, -0.05, 20.05);
+    _hist.chi2dsxy_1   [1]   = Tfs->make<TH1F>("chi2dsxy_1Pos", "#chi^{2}/ndof from the xy fit, Pos "   , 201, -0.5, 20.5);
+                           
+    _hist.nshszphi_1   [0] = Tfs->make<TH1F>("nshszphi_1Neg"   , "number of strawHits from the zphi fit, Neg "   , 201, -0.5, 200.5);
+    _hist.nshszphi_1   [1] = Tfs->make<TH1F>("nshszphi_1Pos"   , "number of strawHits from the zphi fit, Pos "   , 201, -0.5, 200.5);
+                           
+    _hist.lambdaszphi_1[0] = Tfs->make<TH1F>("lambdaszphi_1Neg", "#lambda from the zphi fit, Neg "   , 301, 99.5, 400.5);
+    _hist.lambdaszphi_1[1] = Tfs->make<TH1F>("lambdaszphi_1Pos", "#lambda from the zphi fit, Pos "   , 301, 99.5, 400.5);
+    _hist.chi2dszphi_1 [0] = Tfs->make<TH1F>("chi2dszphi_1Neg", "#chi^{2}/ndof from the zphi fit, Neg "   , 201, -0.5, 20.5);
+    _hist.chi2dszphi_1 [1] = Tfs->make<TH1F>("chi2dszphi_1Pos", "#chi^{2}/ndof from the zphi fit, Pos "   , 201, -0.5, 20.5);
+
+  
+
+
 
     _hist.rinit  [0]    = Tfs->make<TH1F>("rinitNeg"       , "helix radius fitCircle, Neg; r [mm]"      , 401, -0.5, 400.5);
 
@@ -175,6 +219,8 @@ namespace mu2e {
 	_hist.nhits      [k]->Fill(_data->nhits[k][i]      );
 	_hist.rinit      [k]->Fill(_data->rinit[k][i]      );    
 
+	_hist.nrescuedhits[k]->Fill(_data->nrescuedhits[k][i]);    
+
 	_hist.lambda0    [k]->Fill(fabs(_data->lambda0[k][i]));
 	_hist.lambda1    [k]->Fill(fabs(_data->lambda1[k][i]));
 
@@ -192,7 +238,22 @@ namespace mu2e {
 	_hist.chi2ZPhi   [k]->Fill(_data->chi2ZPhi[k][i]   );
 	_hist.dr         [k]->Fill(_data->dr[k][i]         );
 	_hist.chi2d_helix[k]->Fill(_data->chi2d_helix[k][i]);
-      
+
+	_hist.nshsxy_0     [k] ->Fill(_data->nshsxy_0[k][i]     );
+                       
+	_hist.rsxy_0       [k] ->Fill(_data->rsxy_0[k][i]       );
+	_hist.chi2dsxy_0   [k] ->Fill(_data->chi2dsxy_0[k][i]   );
+
+	_hist.nshsxy_1     [k] ->Fill(_data->nshsxy_1[k][i]     );
+                     
+	_hist.rsxy_1       [k] ->Fill(_data->rsxy_1[k][i]       );
+	_hist.chi2dsxy_1   [k] ->Fill(_data->chi2dsxy_1[k][i]   );
+                       
+	_hist.nshszphi_1   [k] ->Fill(_data->nshszphi_1[k][i]   );
+                       
+	_hist.lambdaszphi_1[k] ->Fill(_data->lambdaszphi_1[k][i]);
+	_hist.chi2dszphi_1 [k] ->Fill(_data->chi2dszphi_1[k][i] );
+
       }
     }
 
