@@ -42,45 +42,37 @@ namespace mu2e {
 
   //----------------------------------------------------------------
   Mu2eProductMixer::Mu2eProductMixer(const Config& conf, art::MixHelper& helper) {
-    std::cout<<"Mu2eProductMixer ctr begin"<<std::endl;
 
     for(const auto& e: conf.genParticleMixer().mixingMap()) {
-      std::cout<<"will mix GenParticles "<<e.inTag<<"  =====>  "<<e.resolvedInstanceName()<<std::endl;
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixGenParticles, *this);
     }
 
     for(const auto& e: conf.simParticleMixer().mixingMap()) {
-      std::cout<<"will mix SimParticles "<<e.inTag<<"  =====>  "<<e.resolvedInstanceName()<<std::endl;
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixSimParticles, *this);
     }
 
     for(const auto& e: conf.stepPointMCMixer().mixingMap()) {
-      std::cout<<"will mix StepPointMCs "<<e.inTag<<"  =====>  "<<e.resolvedInstanceName()<<std::endl;
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixStepPointMCs, *this);
     }
 
     for(const auto& e: conf.caloShowerStepMixer().mixingMap()) {
-      std::cout<<"will mix CaloShowerSteps "<<e.inTag<<"  =====>  "<<e.resolvedInstanceName()<<std::endl;
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCaloShowerSteps, *this);
     }
 
     for(const auto& e: conf.extMonSimHitMixer().mixingMap()) {
-      std::cout<<"will mix ExtMonSimHits "<<e.inTag<<"  =====>  "<<e.resolvedInstanceName()<<std::endl;
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixExtMonSimHits, *this);
     }
 
     for(const auto& e: conf.protonBunchIntensityMixer().mixingMap()) {
-      std::cout<<"will mix ProtonBunchIntensity "<<e.inTag<<"  =====>  "<<e.resolvedInstanceName()<<std::endl;
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixProtonBunchIntensity, *this);
     }
 
-    std::cout<<"Mu2eProductMixer ctr end"<<std::endl;
   }
 
   //----------------------------------------------------------------
@@ -88,15 +80,7 @@ namespace mu2e {
                                          GenParticleCollection& out,
                                          art::PtrRemapper const& remap)
   {
-    std::cout<<"Mu2eProductMixer::mixGenParticles() BEGIN\n";
-
     art::flattenCollections(in, out, genOffsets_);
-
-    std::cout<<"genOffsets = ";
-    std::copy(genOffsets_.begin(), genOffsets_.end(), std::ostream_iterator<unsigned>(std::cout, " "));
-    std::cout<<std::endl;
-
-    std::cout<<"Mu2eProductMixer::mixGenParticles() END\n";
     return true;
   }
 
@@ -105,7 +89,6 @@ namespace mu2e {
                                          SimParticleCollection& out,
                                          art::PtrRemapper const& remap)
   {
-    // Flatten the input collections; does not update Ptrs.
     art::flattenCollections(in, out, simOffsets_ );
 
     // Update the Ptrs inside each SimParticle
