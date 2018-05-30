@@ -49,7 +49,8 @@ namespace mu2e {
       fhicl::Sequence<fhicl::TupleAs<Entry(art::InputTag,std::string)> >
       mixingMap { fhicl::Name("mixingMap"),
           fhicl::Comment("A sequence of InputTag to outputInstanceName"
-                         " mappings for collections to be mixed.")
+                         " mappings for collections to be mixed."),
+          std::vector<Entry>()
           };
     };
 
