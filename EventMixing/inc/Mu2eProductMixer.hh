@@ -30,6 +30,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStepCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 
 //================================================================
 namespace mu2e {
@@ -59,6 +60,7 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> stepPointMCMixer { fhicl::Name("stepPointMCMixer") };
       fhicl::Table<CollectionMixerConfig> caloShowerStepMixer { fhicl::Name("caloShowerStepMixer") };
       fhicl::Table<CollectionMixerConfig> extMonSimHitMixer { fhicl::Name("extMonSimHitMixer") };
+      fhicl::Table<CollectionMixerConfig> protonBunchIntensityMixer { fhicl::Name("protonBunchIntensityMixer") };
     };
 
     Mu2eProductMixer(const Config& conf, art::MixHelper& helper);
@@ -85,6 +87,9 @@ namespace mu2e {
                           ExtMonFNALSimHitCollection& out,
                           art::PtrRemapper const& remap);
 
+    bool mixProtonBunchIntensity(std::vector<mu2e::ProtonBunchIntensity const*> const &in,
+                                 mu2e::ProtonBunchIntensity& out,
+                                 art::PtrRemapper const& remap);
 
     //----------------
     // If elements of a collection can be pointed to by other

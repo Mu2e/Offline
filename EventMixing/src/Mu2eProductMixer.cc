@@ -69,6 +69,12 @@ namespace mu2e {
         (e.inTag, e.outInstance, &Mu2eProductMixer::mixExtMonSimHits, *this);
     }
 
+    for(const auto& e: conf.protonBunchIntensityMixer().mixingMap()) {
+      std::cout<<"will mix ProtonBunchIntensity "<<e.inTag<<"  =====>  "<<e.outInstance<<std::endl;
+      helper.declareMixOp
+        (e.inTag, e.outInstance, &Mu2eProductMixer::mixProtonBunchIntensity, *this);
+    }
+
     std::cout<<"Mu2eProductMixer ctr end"<<std::endl;
   }
 
@@ -182,6 +188,18 @@ namespace mu2e {
       auto ie = getInputEventIndex(i, stepOffsets);
       auto& step = out[i];
       step.setSimParticle( remap(step.simParticle(), simOffsets_[ie]) );
+    }
+
+    return true;
+  }
+
+  //----------------------------------------------------------------
+  bool Mu2eProductMixer::mixProtonBunchIntensity(std::vector<ProtonBunchIntensity const*> const& in,
+                                                 ProtonBunchIntensity& out,
+                                                 art::PtrRemapper const& remap)
+  {
+    for(const auto& x: in) {
+      out.add(*x);
     }
 
     return true;
