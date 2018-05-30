@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
-// Class:       CondenseMCTrkCollections
+// Class:       CompressMCTrkCollections
 // Plugin Type: producer (art v2_06_02)
-// File:        CondenseMCTrkCollections_module.cc
+// File:        CompressMCTrkCollections_module.cc
 //
 // Creates a new MCTrkBag with new MC collections that have been reduced
 // in size based on a given StrawHitFlag bit (by default onkalseed).
@@ -42,7 +42,7 @@
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
 
 namespace mu2e {
-  class CondenseMCTrkCollections;
+  class CompressMCTrkCollections;
 
   class SimParticleSelector {
   public:
@@ -71,17 +71,17 @@ namespace mu2e {
 }
 
 
-class mu2e::CondenseMCTrkCollections : public art::EDProducer {
+class mu2e::CompressMCTrkCollections : public art::EDProducer {
 public:
-  explicit CondenseMCTrkCollections(fhicl::ParameterSet const & pset);
+  explicit CompressMCTrkCollections(fhicl::ParameterSet const & pset);
   // The compiler-generated destructor is fine for non-base
   // classes without bare pointers or other resource use.
 
   // Plugins should not be copied or assigned.
-  CondenseMCTrkCollections(CondenseMCTrkCollections const &) = delete;
-  CondenseMCTrkCollections(CondenseMCTrkCollections &&) = delete;
-  CondenseMCTrkCollections & operator = (CondenseMCTrkCollections const &) = delete;
-  CondenseMCTrkCollections & operator = (CondenseMCTrkCollections &&) = delete;
+  CompressMCTrkCollections(CompressMCTrkCollections const &) = delete;
+  CompressMCTrkCollections(CompressMCTrkCollections &&) = delete;
+  CompressMCTrkCollections & operator = (CompressMCTrkCollections const &) = delete;
+  CompressMCTrkCollections & operator = (CompressMCTrkCollections &&) = delete;
 
   // Required functions.
   void produce(art::Event & event) override;
@@ -139,7 +139,7 @@ private:
 };
 
 
-mu2e::CondenseMCTrkCollections::CondenseMCTrkCollections(fhicl::ParameterSet const & pset)
+mu2e::CompressMCTrkCollections::CompressMCTrkCollections(fhicl::ParameterSet const & pset)
   : _wantedHitFlag(pset.get<std::string>("wantedHitFlag")),
     _trkBagTag(pset.get<art::InputTag>("trkBagTag")),
     _recoTrkBagTag(pset.get<art::InputTag>("recoTrkBagTag")),
@@ -163,7 +163,7 @@ mu2e::CondenseMCTrkCollections::CondenseMCTrkCollections(fhicl::ParameterSet con
   }
 }
 
-void mu2e::CondenseMCTrkCollections::produce(art::Event & event)
+void mu2e::CompressMCTrkCollections::produce(art::Event & event)
 {
   // Implementation of required member function here.
 
@@ -180,7 +180,7 @@ void mu2e::CondenseMCTrkCollections::produce(art::Event & event)
 
   recoTrkBag.getHandle(event, _strawHitFlagsHandle);
   if (!_strawHitFlagsHandle.isValid()) {
-    throw cet::exception("CondenseMCTrkCollections") << "Couldn't find StrawHitFlagCollection in ProductBag\n";
+    throw cet::exception("CompressMCTrkCollections") << "Couldn't find StrawHitFlagCollection in ProductBag\n";
   }
 
 
@@ -189,7 +189,7 @@ void mu2e::CondenseMCTrkCollections::produce(art::Event & event)
 
   trkBag.getHandle(event, _strawDigiMCsHandle);
   if (!_strawDigiMCsHandle.isValid()) {
-    throw cet::exception("CondenseMCTrkCollections") << "Couldn't find StrawDigiMCCollection in ProductBag\n";
+    throw cet::exception("CompressMCTrkCollections") << "Couldn't find StrawDigiMCCollection in ProductBag\n";
   }
 
 
@@ -218,7 +218,7 @@ void mu2e::CondenseMCTrkCollections::produce(art::Event & event)
     event.getByLabel(*i_tag, i_timeMapHandle);
 
     if (!i_timeMapHandle.isValid()) {
-      throw cet::exception("CondenseMCTrkCollections") << "Couldn't find SimParticleTimeMap " << *i_tag << " in event\n";
+      throw cet::exception("CompressMCTrkCollections") << "Couldn't find SimParticleTimeMap " << *i_tag << " in event\n";
     }
     _oldTimeMaps.push_back(*i_timeMapHandle);
   }
@@ -308,7 +308,7 @@ void mu2e::CondenseMCTrkCollections::produce(art::Event & event)
   }	
 }
 
-void mu2e::CondenseMCTrkCollections::addStrawHitMCProducts(StrawHitIndex hit_index) {
+void mu2e::CompressMCTrkCollections::addStrawHitMCProducts(StrawHitIndex hit_index) {
 
   // Need a deep copy of StrawDigiMC
   const mu2e::StrawDigiMC& old_straw_digi_mc = _strawDigiMCsHandle->at(hit_index);
@@ -319,7 +319,7 @@ void mu2e::CondenseMCTrkCollections::addStrawHitMCProducts(StrawHitIndex hit_ind
   ++_hitCounter;
 }
 
-void mu2e::CondenseMCTrkCollections::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_digi_mc) {
+void mu2e::CompressMCTrkCollections::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_digi_mc) {
 
   // Need to update the Ptrs for the StepPointMCs
   art::Ptr<StepPointMC> newTriggerStepPtr[2];
@@ -343,7 +343,7 @@ void mu2e::CondenseMCTrkCollections::copyStrawDigiMC(const mu2e::StrawDigiMC& ol
   _newStrawDigiMCs->push_back(new_straw_digi_mc);
 }
 
-art::Ptr<mu2e::StepPointMC> mu2e::CondenseMCTrkCollections::copyStepPointMC(const mu2e::StepPointMC& old_step) {
+art::Ptr<mu2e::StepPointMC> mu2e::CompressMCTrkCollections::copyStepPointMC(const mu2e::StepPointMC& old_step) {
 
   _simParticlesToKeep[old_step.simParticle().id()].push_back(old_step.simParticle()->id());
   art::Ptr<SimParticle> newSimPtr(_newSimParticlesPID[old_step.simParticle().id()], old_step.simParticle()->id().asUint(), _newSimParticleGetter[old_step.simParticle().id()]);
@@ -369,4 +369,4 @@ art::Ptr<mu2e::StepPointMC> mu2e::CondenseMCTrkCollections::copyStepPointMC(cons
 
 
 
-DEFINE_ART_MODULE(mu2e::CondenseMCTrkCollections)
+DEFINE_ART_MODULE(mu2e::CompressMCTrkCollections)

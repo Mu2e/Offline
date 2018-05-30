@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
-// Class:       CondenseRecoTrkCollections
+// Class:       CompressRecoTrkCollections
 // Plugin Type: prodicer (art v2_06_02)
-// File:        CondenseRecoTrkCollections_module.cc
+// File:        CompressRecoTrkCollections_module.cc
 //
 // Creates a new RecoTrkBag with new Reco collections that have been reduced
 // in size based on a given StrawHitFlag bit (by default onkalseed).
@@ -40,21 +40,21 @@
 #include "RecoDataProducts/inc/TrkQual.hh"
 
 namespace mu2e {
-  class CondenseRecoTrkCollections;
+  class CompressRecoTrkCollections;
 }
 
 
-class mu2e::CondenseRecoTrkCollections : public art::EDProducer {
+class mu2e::CompressRecoTrkCollections : public art::EDProducer {
 public:
-  explicit CondenseRecoTrkCollections(fhicl::ParameterSet const & pset);
+  explicit CompressRecoTrkCollections(fhicl::ParameterSet const & pset);
   // The compiler-generated destructor is fine for non-base
   // classes without bare pointers or other resource use.
 
   // Plugins should not be copied or assigned.
-  CondenseRecoTrkCollections(CondenseRecoTrkCollections const &) = delete;
-  CondenseRecoTrkCollections(CondenseRecoTrkCollections &&) = delete;
-  CondenseRecoTrkCollections & operator = (CondenseRecoTrkCollections const &) = delete;
-  CondenseRecoTrkCollections & operator = (CondenseRecoTrkCollections &&) = delete;
+  CompressRecoTrkCollections(CompressRecoTrkCollections const &) = delete;
+  CompressRecoTrkCollections(CompressRecoTrkCollections &&) = delete;
+  CompressRecoTrkCollections & operator = (CompressRecoTrkCollections const &) = delete;
+  CompressRecoTrkCollections & operator = (CompressRecoTrkCollections &&) = delete;
 
   // Required functions.
   void produce(art::Event & event) override;
@@ -93,7 +93,7 @@ private:
 };
 
 
-mu2e::CondenseRecoTrkCollections::CondenseRecoTrkCollections(fhicl::ParameterSet const & pset)
+mu2e::CompressRecoTrkCollections::CompressRecoTrkCollections(fhicl::ParameterSet const & pset)
   : _wantedHitFlag(pset.get<std::string>("wantedHitFlag")),
     _trkBagTag(pset.get<art::InputTag>("trkBagTag"))
 {
@@ -106,7 +106,7 @@ mu2e::CondenseRecoTrkCollections::CondenseRecoTrkCollections(fhicl::ParameterSet
   produces<KalSeedCollection>();
 }
 
-void mu2e::CondenseRecoTrkCollections::produce(art::Event & event)
+void mu2e::CompressRecoTrkCollections::produce(art::Event & event)
 {
   // Implementation of required member function here.
 
@@ -124,32 +124,32 @@ void mu2e::CondenseRecoTrkCollections::produce(art::Event & event)
   
   trkBag.getHandle(event, _strawHitFlagsHandle);
   if (!_strawHitFlagsHandle.isValid()) {
-    throw cet::exception("CondenseRecoTrkCollections") << "Couldn't find StrawHitFlagCollection in ProductBag\n";
+    throw cet::exception("CompressRecoTrkCollections") << "Couldn't find StrawHitFlagCollection in ProductBag\n";
   }
 
   trkBag.getHandle(event, _strawHitsHandle);
   if (!_strawHitsHandle.isValid()) {
-    throw cet::exception("CondenseRecoTrkCollections") << "Couldn't find StrawHitCollection in ProductBag\n";
+    throw cet::exception("CompressRecoTrkCollections") << "Couldn't find StrawHitCollection in ProductBag\n";
   }
     
   trkBag.getHandle(event, _strawDigisHandle);
   if (!_strawDigisHandle.isValid()) {
-    throw cet::exception("CondenseRecoTrkCollections") << "Couldn't find StrawDigiCollection in ProductBag\n";
+    throw cet::exception("CompressRecoTrkCollections") << "Couldn't find StrawDigiCollection in ProductBag\n";
   }
   
   trkBag.getHandle(event, _strawHitPositionsHandle);
   if (!_strawHitPositionsHandle.isValid()) {
-    throw cet::exception("CondenseRecoTrkCollections") << "Couldn't find StrawHitPositionCollection in ProductBag\n";
+    throw cet::exception("CompressRecoTrkCollections") << "Couldn't find StrawHitPositionCollection in ProductBag\n";
   }
   
   trkBag.getHandle(event, _kalFinalFitsHandle);
   if (!_kalFinalFitsHandle.isValid()) {
-    throw cet::exception("CondenseRecoTrkCollections") << "Couldn't find KalSeedCollection in ProductBag\n";
+    throw cet::exception("CompressRecoTrkCollections") << "Couldn't find KalSeedCollection in ProductBag\n";
   }
   
   trkBag.getHandle(event, _trkQualsHandle);
   if (!_trkQualsHandle.isValid()) {
-    throw cet::exception("CondenseRecoTrkCollections") << "Couldn't find TrkQualCollection in ProductBag\n";
+    throw cet::exception("CompressRecoTrkCollections") << "Couldn't find TrkQualCollection in ProductBag\n";
   }
 
 
@@ -179,7 +179,7 @@ void mu2e::CondenseRecoTrkCollections::produce(art::Event & event)
 	_oldToNewStrawHitIndexMap.at(old_hit.index());
       }
       catch (const std::out_of_range& oor) {
-	throw cet::exception("CondenseRecoTrkCollections") << old_hit.index() << " does not exist in _oldToNewStrawHitIndexMap.\n";
+	throw cet::exception("CompressRecoTrkCollections") << old_hit.index() << " does not exist in _oldToNewStrawHitIndexMap.\n";
       }
     }
     
@@ -196,7 +196,7 @@ void mu2e::CondenseRecoTrkCollections::produce(art::Event & event)
   event.put(std::move(_newKalFinalFits));
 }
 
-void mu2e::CondenseRecoTrkCollections::addStrawHitRecoProducts(StrawHitIndex hit_index) {
+void mu2e::CompressRecoTrkCollections::addStrawHitRecoProducts(StrawHitIndex hit_index) {
 
   //  std::cout << "Will copy out StrawHit with index = " << hit_index << std::endl;
   if (_oldToNewStrawHitIndexMap.find(hit_index) == _oldToNewStrawHitIndexMap.end()) { // only add the straw hit if it's not been seen yet
@@ -223,4 +223,4 @@ void mu2e::CondenseRecoTrkCollections::addStrawHitRecoProducts(StrawHitIndex hit
   }
 }
 
-DEFINE_ART_MODULE(mu2e::CondenseRecoTrkCollections)
+DEFINE_ART_MODULE(mu2e::CompressRecoTrkCollections)
