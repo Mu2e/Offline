@@ -18,8 +18,7 @@
 // conditions
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -54,11 +53,9 @@
 
 // Mu2e BaBar
 #include "BTrk/BaBar/BaBar.hh"
-// #include "BTrk/BaBar/BbrStringUtils.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
-// #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
@@ -143,9 +140,6 @@ namespace mu2e {
     int                                   _nindex;
     int                                   _nrescued;    // by the seed fit
 
-    const TrackerCalibrations*            _trackerCalib;
-
-    //    TFolder*                              _folder;
     int                                   _eventid;
 //-----------------------------------------------------------------------------
 // diagnostics histograms
@@ -174,21 +168,6 @@ namespace mu2e {
     void findMissingHits  (KalFitResultNew&  KRes);
   };
 
-
-//-----------------------------------------------------------------------------
-// comparison functor for sorting by Z(wire)
-//-----------------------------------------------------------------------------
-  struct straw_zcomp : public binary_function<StrawHitIndex,StrawHitIndex,bool> {
-    bool operator()(StrawHitIndex const& h1, StrawHitIndex const& h2) {
-
-      GeomHandle<TTracker> handle;
-      const TTracker* t = handle.get();
-      const Straw* s1 = &t->getStraw(StrawIndex(h1));
-      const Straw* s2 = &t->getStraw(StrawIndex(h2));
-
-      return s1->getMidPoint().z() < s2->getMidPoint().z();
-    }
-  }; // a semicolumn here is required
 
   //-----------------------------------------------------------------------------
   // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
@@ -262,11 +241,8 @@ namespace mu2e {
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     _data.calorimeter = ch.get();
 
-    mu2e::ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    _trackerCalib = tcal.operator ->();
 
     _fitter.setTracker(_data.tracker);
-    _fitter.setTrackerCalib(_trackerCalib);
     _fitter.setCalorimeter (_data.calorimeter);
 
     return true;
@@ -609,6 +585,8 @@ namespace mu2e {
 
     MissingHit_t mh;
 
+    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
+    
     int nstrs = KRes.shcol->size();
     for (int istr=0; istr<nstrs; ++istr) {
       mh.index = istr;
@@ -685,15 +663,11 @@ namespace mu2e {
 
 	  TrkStrawHit hit(sh,straw,istr,hitt0,hflt,10.,1.);
 	  
-	  ConditionsHandle<TrackerCalibrations> tcal("ignored");
-
 	  double tdrift=hit.time()-hit.hitT0()._t0;
 
-	  T2D t2d;
+	  double phi(0);
+	  rdrift = srep->driftTimeToDistance(straw.id(),tdrift,phi);
 
-	  tcal->TimeToDistance(straw.index(),tdrift,tdir,t2d);
-
-	  rdrift = t2d._rdrift;
 	  mh.doca   = hitpoca.doca();
 	  if (mh.doca > 0) mh.dr = mh.doca-rdrift;
 	  else             mh.dr = mh.doca+rdrift;

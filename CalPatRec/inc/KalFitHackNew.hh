@@ -98,7 +98,6 @@ namespace mu2e {
     int                         _annealingStep;
 
     const mu2e::Tracker*             _tracker;     // straw tracker geometry
-    const mu2e::TrackerCalibrations* _tcal;
     const mu2e::Calorimeter*         _calorimeter;
 
     int                              _mcTruth;
@@ -125,7 +124,6 @@ namespace mu2e {
     void setNIter        (int N   ) { _nIter        = N  ; }
 
     void setTracker      (const Tracker*             Tracker) { _tracker     = Tracker; }
-    void setTrackerCalib (const TrackerCalibrations* TCal   ) { _tcal        = TCal;    }
 
     void setCalorimeter  (const Calorimeter*         Cal    ) { _calorimeter = Cal;     }
 //-----------------------------------------------------------------------------

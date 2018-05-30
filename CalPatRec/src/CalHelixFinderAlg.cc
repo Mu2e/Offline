@@ -16,7 +16,6 @@
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "CalPatRec/inc/CalHelixFinderAlg.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
@@ -1547,8 +1546,6 @@ namespace mu2e {
       if (good_hit && (! bkg_hit) && (! used_hit)) {
 
 	const ComboHit& ch          = Helix.chcol()->at(loc);
-	// const Straw& straw          = _tracker->getStraw(ch.strawIndex());
-	// const StrawHitPosition& shp = Helix.shpos()->at(loc);
 
 	if (ch.energyDep() > _maxElectronHitEnergy)         continue;
 
