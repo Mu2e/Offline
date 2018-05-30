@@ -464,8 +464,7 @@ namespace mu2e
     // use 2-line POCA here
     TwoLinePCA pca(spmcp->position(),dir,straw.getMidPoint(),straw.getDirection());
     tshinfomc._len = pca.s2();
-    tshinfomc._xtalk = false; // FIXME!
-    //tshinfomc._xtalk = spmcp->strawId() != mcdigi.strawId();
+    tshinfomc._xtalk = spmcp->strawId() != mcdigi.strawId();
   }
 
   void KalDiag::fillTrkInfoMC(art::Ptr<SimParticle> const&  spp,const KalRep* krep,

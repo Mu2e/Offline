@@ -341,7 +341,7 @@ namespace mu2e
             _mcgpos = det->toDetector(sp->genParticle()->position());
           }
         }
-        //_mcxtalk = spmcp->strawId() != sh.strawId();
+        _mcxtalk = spmcp->strawId() != sh.strawId();
       }
       _shwres = _chcol->at(istr).posRes(ComboHit::wire);
       _shtres = _chcol->at(istr).posRes(ComboHit::trans);
