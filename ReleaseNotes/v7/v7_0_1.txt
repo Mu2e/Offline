@@ -2,4 +2,10 @@
 	   This new series includes breaking changes for MDC2018
 
 
+1) May 30, 2018 kutschke
+    - Removed StrawIndex
+    - Lots of follow-on changes
+    - See ./removeStrawIndex.txt for details
+
+
 
