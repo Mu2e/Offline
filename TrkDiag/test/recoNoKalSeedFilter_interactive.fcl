@@ -10,11 +10,11 @@ BEGIN_PROLOG
 bgHitFiles: ["/pnfs/mu2e/tape/phy-sim/sim/mu2e/cd3-detmix-cut/v566b/art/cc/1c/sim.mu2e.cd3-detmix-cut.v566b.000004_00000000.art"]
 END_PROLOG
 
-#include "Projects/edmonds-trkqual-updates/fcl/recoNoKalSeedFilter.fcl"
+#include "TrkDiag/test/recoNoKalSeedFilter.fcl"
 
 # the following location should point to somewhere on /mu2e/data
-outputs.KalSeedOutput.fileName : "data_dump/kalseeds-nofilter.art"
-services.TFileService.fileName : "data_dump/kalseeds-nofilter.root"
+outputs.DigiOutput.fileName : "out/kalseeds-nofilter-new.art"
+services.TFileService.fileName : "out/kalseeds-nofilter-new.root"
 
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20

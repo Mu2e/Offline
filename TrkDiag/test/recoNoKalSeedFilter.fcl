@@ -8,6 +8,7 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
 
 process_name : recoAndKalSeedFilter
 
@@ -26,23 +27,24 @@ physics : {
   }
 
   producers : {
-      @table::EventMixing.producers
-      @table::Tracking.producers
+      @table::TrkAna.producers
   }
 
   analyzers : {
+    @table::TrkAna.analyzers
     genCountLogger: { module_type: GenEventCountReader }
   }
 
-  TriggerPath : [ @sequence::EventMixing.CD3Mixers, @sequence::EventMixing.TimeMaps, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM ]
+  TriggerPath : [ @sequence::TrkAna.SimAndRecoMixSequence ]
+  EndPath : [ @sequence::TrkAna.EndSequence ]
 }
 
 outputs : {
-  KalSeedOutput : {
+  DigiOutput : {
      module_type: RootOutput
      SelectEvents : [ TriggerPath ]
      outputCommands: [ "drop *_*_*_*", 
-     		       "keep mu2e::GenEventCount_*_*_*",
+    		       "keep mu2e::GenEventCount_*_*_*",
 		       @sequence::Tracking.Output.Digis,
 		       @sequence::Tracking.Output.Hits,
 		       @sequence::Tracking.Output.Tracks,
@@ -59,7 +61,7 @@ outputs : {
   }
 }
 
-physics.out : [ genCountLogger, KalSeedOutput ]
+physics.out : [ genCountLogger, DigiOutput ]
 physics.end_paths : [ out ]
 
 #include "EventMixing/fcl/epilog.fcl"
