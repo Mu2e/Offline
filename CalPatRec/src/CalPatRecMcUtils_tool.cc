@@ -39,18 +39,18 @@ namespace mu2e {
 
   public:
 
-    virtual double mcDoca(const art::Event* Event     , 
-			  const char*       MCCollName, 
+    virtual double mcDoca(const art::Event* Event     ,
+			  const char*       MCCollName,
 			  const Straw*      Straw     ) override ;
 
-    virtual int    nGenHits(const art::Event*         Event         , 
+    virtual int    nGenHits(const art::Event*         Event         ,
 			    fhicl::ParameterSet*      TimeOffsets   ,
-			    const char*               MCDigiCollName, 
+			    const char*               MCDigiCollName,
 			    const StrawHitCollection* Shcol         ) override;
 
     virtual const PtrStepPointMCVectorCollection* getListOfMcStrawHits(const art::Event* Event,
 								       const art::InputTag& Tag) override;
-    
+
     virtual const SimParticle* getSimParticle(const PtrStepPointMCVectorCollection* List, int IHit) override;
 
     int   getID      (const SimParticle* Sim) override;
@@ -91,7 +91,7 @@ namespace mu2e {
       last_event = iev;
     }
 
-    if (listOfMCStrawHits) { 
+    if (listOfMCStrawHits) {
       int nstraws = listOfMCStrawHits->size();
 
       const mu2e::StepPointMC* step(0);
@@ -100,7 +100,7 @@ namespace mu2e {
 	const mu2e::PtrStepPointMCVector&  mcptr(listOfMCStrawHits->at(i));
 	step = &(*mcptr.at(0));
 	int volume_id = step->volumeId();
-	if (volume_id == Straw->index().asInt()) {
+	if (volume_id == Straw->id().asUint16()) {
 //-----------------------------------------------------------------------------
 // step found - use the first one in the straw
 //-----------------------------------------------------------------------------
@@ -111,15 +111,15 @@ namespace mu2e {
       if (step) {
 	const CLHEP::Hep3Vector* v1 = &Straw->getMidPoint();
 	HepPoint p1(v1->x(),v1->y(),v1->z());
-	
+
 	const CLHEP::Hep3Vector* v2 = &step->position();
 	HepPoint    p2(v2->x(),v2->y(),v2->z());
-	
+
 	TrkLineTraj trstraw(p1,Straw->getDirection()  ,0.,0.);
 	TrkLineTraj trstep (p2,step->momentum().unit(),0.,0.);
-	
+
 	TrkPoca poca(trstep, 0., trstraw, 0.);
-	
+
 	mcdoca = poca.doca();
       }
     }
@@ -132,7 +132,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   int CalPatRecMcUtils::nGenHits(const art::Event*         Event         ,
 				 fhicl::ParameterSet*      TimeOffsets   ,
-				 const char*               MCDigiCollName, 
+				 const char*               MCDigiCollName,
 				 const StrawHitCollection* Shcol         ) {
 
     static int     last_event(-1);
@@ -176,15 +176,15 @@ namespace mu2e {
     for (int i=0; i<nhits; i++) {
       mu2e::PtrStepPointMCVector const& mcptr(listOfMCStrawHits->at(i));
       const mu2e::StepPointMC* step = mcptr[0].get();
-      
+
       int gen_index(-1), sim_id(-1);
 
       if (step) {
 	art::Ptr<mu2e::SimParticle> const& simptr = step->simParticle();
-	
+
 	if (simptr->fromGenerator()) gen_index = simptr->genParticle()->generatorId().id();
 	else                         gen_index = -1;
-	
+
 	sim_id        = simptr->id().asInt();
       }
 

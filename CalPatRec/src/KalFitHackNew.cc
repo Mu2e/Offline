@@ -201,9 +201,9 @@ namespace mu2e {
         <<"mu2e::KalFitHackNew: inconsistent _weedhits size" << endl;
     }
     if (_hiterr.size() != _addmaterial.size()) {
-      throw cet::exception("RECO") 
+      throw cet::exception("RECO")
 	<< "mu2e::KalFit: inconsistent ambiguity resolution AddMaterial" << endl;
-    } 
+    }
     AmbigResolver* ar;
     double         err;
     int            n, final(0);
@@ -231,7 +231,7 @@ namespace mu2e {
       _ambigresolver.push_back(ar);
     }
 //-----------------------------------------------------------------------------
-// 2016-01-27 P.Murat: for DoubletAmbigResolver need one more instance with 
+// 2016-01-27 P.Murat: for DoubletAmbigResolver need one more instance with
 // 'final' set to 1 - now need to figure how to use it
 // assume that KalFitHackNew is using the DoubletAmbigResolver only
 //-----------------------------------------------------------------------------
@@ -241,7 +241,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // print routine
 //-----------------------------------------------------------------------------
-    _mcTruth = pset.get <int >("mcTruth"); 
+    _mcTruth = pset.get <int >("mcTruth");
 
     if (_mcTruth != 0) {
       fhicl::ParameterSet ps = pset.get<fhicl::ParameterSet>("mcUtils");
@@ -275,7 +275,7 @@ namespace mu2e {
 
     initT0(Result);
 //-----------------------------------------------------------------------------
-// knowing t0, create the BaBar hit list, and fill. 
+// knowing t0, create the BaBar hit list, and fill.
 // The BaBar list takes ownership
 // This will go away when we cleanup the BaBar hit storage, FIXME!!!
 // Find the wall and gas material description objects for these hits
@@ -316,7 +316,7 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// addHits is called _only_once_ from CalPatRec_module::produce after 
+// addHits is called _only_once_ from CalPatRec_module::produce after
 // the last iteration
 //-----------------------------------------------------------------------------
   void KalFitHackNew::addHits(KalFitResultNew& KFRes, double MaxChi) {
@@ -364,7 +364,7 @@ namespace mu2e {
         TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
 //-----------------------------------------------------------------------------
 // find the bounding sites near this hit, and extrapolate to get the hit t0
-// hits are supposed to be sorted 
+// hits are supposed to be sorted
 //-----------------------------------------------------------------------------
         std::sort(hits.begin(),hits.end(),fltlencomp(KFRes.fdir.fitDirection()));
         findBoundingHits(hits,hflt,ilow,ihigh);
@@ -427,7 +427,7 @@ namespace mu2e {
 
         if (debug_addhits > 0) {
           printf("%s %5i %3i  %6i  %6i  %6i  %10.3f  %10.3f %10.3f  %10.3f \n",oname,
-                 straw.index().asInt(),
+                 straw.id().asUint16(),
                  activity,
                  straw.id().getPlane(),
                  straw.id().getPanel(),
@@ -460,14 +460,14 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-// Dave's "annealing" procedure: refit the track 'KRes' multiple times 
+// Dave's "annealing" procedure: refit the track 'KRes' multiple times
 //                               gradually reducing the external hit errors
 //
-// assume this is not the final fit, 
+// assume this is not the final fit,
 // the final fit will be performed later, after the hit pickup
 //
 // final=1 in fitIteration means 'make decision about the hit drift directions no matter what'
-//      =0                 means 'reduce external hit error down to zero only for hits which 
+//      =0                 means 'reduce external hit error down to zero only for hits which
 //                                drift direction is well defined'
 //-----------------------------------------------------------------------------
   void KalFitHackNew::fitTrack(KalFitResultNew& KRes) {
@@ -509,7 +509,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------------
 // 2015 -02 -17 G. Pezzullo: loop over the hits and assign a smaller external error
 // for the doublets
-// 2015-04-03: IHErr = -1: special value, invoke last iteration .. 
+// 2015-04-03: IHErr = -1: special value, invoke last iteration ..
 // 2016-05-08 P.Murat: there are Niter+1 ambig resolvers, so last iteration = _hiterr.size()-1
 //-----------------------------------------------------------------------------------
     if (Iteration == -1) Iteration = _hiterr.size()-1;
@@ -693,7 +693,7 @@ namespace mu2e {
 // If the rep already has a material site for this element, skip it
         std::vector<const KalMaterial*> kmats;
         KRep->findMaterialSites(strawelem,kmats);
-        if(_debugLevel > 2) std::cout << "found intersection with straw " << strawelem->straw()->index() << " with "
+        if(_debugLevel > 2) std::cout << "found intersection with straw " << strawelem->straw()->id() << " with "
         << kmats.size() << " materials " << std::endl;
 // test material isn't on the track
         bool hasmat(false);
@@ -729,7 +729,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void KalFitHackNew::makeHits(KalFitResultNew& KRes, TrkHitVector& ListOfHits) {
 
-    TrkT0 hitt0; 
+    TrkT0 hitt0;
 
     const HelixTraj* hel = KRes.helixTraj;
     double     flt0 = hel->zFlight(0.0);
@@ -857,7 +857,7 @@ namespace mu2e {
       ihit += 1;
       printf("%3i %5i 0x%08x %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
              ihit,
-             straw->index().asInt(),
+             straw->id().asUint16(),
              hit->hitFlag(),
              hit->isActive(),
              len,
@@ -1101,9 +1101,9 @@ namespace mu2e {
   }
 
 //----------------------------------------------------------------------------
-// if a calorimeter cluster is present, estimate T0 using the cluster time and 
+// if a calorimeter cluster is present, estimate T0 using the cluster time and
 // the existing parameterization of the trajectory
-// in case there is no cluster, estimate T0 using the hit times and the trajectory 
+// in case there is no cluster, estimate T0 using the hit times and the trajectory
 // parameterization and assuming that the drift time is defined by R(straw)/2
 //-----------------------------------------------------------------------------
   void KalFitHackNew::initT0(KalFitResultNew& KRes) {
@@ -1122,7 +1122,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // calculate the path length of the particle from the middle of the Tracker to the
 // calorimeter, cl->Z() is calculated wrt the tracker center
-// _dtoffset : global time offset between the tracker and the calorimeter, 
+// _dtoffset : global time offset between the tracker and the calorimeter,
 //             think of an average cable delay
 //-----------------------------------------------------------------------------
       Hep3Vector gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
@@ -1138,7 +1138,6 @@ namespace mu2e {
       int nind = KRes.strawHitIndices()->size();
       std::vector<double> times(nind);
 					// for crude estimates, we only need 1 d2t function
-      D2T d2t;
       for (int iind=0; iind<nind; iind++) {
 
 	size_t istraw = KRes.strawHitIndices()->at(iind);
@@ -1153,7 +1152,7 @@ namespace mu2e {
 
 	// estimate signal propagation time on the wire assuming the middle (average)
 	//	double vwire = _tcal->SignalVelocity(straw.index());
-	
+
 	double vwire = srep->halfPropV(strawhit.strawId(),strawhit.energyDep())*2.;
 
 	double teprop = straw.getHalfLength()/vwire;
@@ -1318,7 +1317,7 @@ namespace mu2e {
             if (nused > 1) {
               t0._t0    = extract_result<tag::weighted_mean>(wmean);
               t0._t0err = sqrt(extract_result<tag::weighted_variance>(wmean)/nused);
-            } 
+            }
 	    else {
               break;
             }
@@ -1395,5 +1394,3 @@ namespace mu2e {
   }
 
 }
-
-
