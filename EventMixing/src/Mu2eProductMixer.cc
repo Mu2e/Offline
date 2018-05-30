@@ -15,6 +15,11 @@
 namespace mu2e {
 
   //----------------------------------------------------------------
+  std::string Mu2eProductMixer::CollectionMixerConfig::Entry::resolvedInstanceName() const {
+    return outInstance == ':' ? inTag.instance() :  outInstance;
+  }
+
+  //----------------------------------------------------------------
   namespace {
 
     // newEntryIndex is an address in the output (flattened)
@@ -40,39 +45,39 @@ namespace mu2e {
     std::cout<<"Mu2eProductMixer ctr begin"<<std::endl;
 
     for(const auto& e: conf.genParticleMixer().mixingMap()) {
-      std::cout<<"will mix GenParticles "<<e.inTag<<"  =====>  "<<e.outInstance<<std::endl;
+      std::cout<<"will mix GenParticles "<<e.inTag<<"  =====>  "<<e.resolvedInstanceName()<<std::endl;
       helper.declareMixOp
-        (e.inTag, e.outInstance, &Mu2eProductMixer::mixGenParticles, *this);
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixGenParticles, *this);
     }
 
     for(const auto& e: conf.simParticleMixer().mixingMap()) {
-      std::cout<<"will mix SimParticles "<<e.inTag<<"  =====>  "<<e.outInstance<<std::endl;
+      std::cout<<"will mix SimParticles "<<e.inTag<<"  =====>  "<<e.resolvedInstanceName()<<std::endl;
       helper.declareMixOp
-        (e.inTag, e.outInstance, &Mu2eProductMixer::mixSimParticles, *this);
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixSimParticles, *this);
     }
 
     for(const auto& e: conf.stepPointMCMixer().mixingMap()) {
-      std::cout<<"will mix StepPointMCs "<<e.inTag<<"  =====>  "<<e.outInstance<<std::endl;
+      std::cout<<"will mix StepPointMCs "<<e.inTag<<"  =====>  "<<e.resolvedInstanceName()<<std::endl;
       helper.declareMixOp
-        (e.inTag, e.outInstance, &Mu2eProductMixer::mixStepPointMCs, *this);
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixStepPointMCs, *this);
     }
 
     for(const auto& e: conf.caloShowerStepMixer().mixingMap()) {
-      std::cout<<"will mix CaloShowerSteps "<<e.inTag<<"  =====>  "<<e.outInstance<<std::endl;
+      std::cout<<"will mix CaloShowerSteps "<<e.inTag<<"  =====>  "<<e.resolvedInstanceName()<<std::endl;
       helper.declareMixOp
-        (e.inTag, e.outInstance, &Mu2eProductMixer::mixCaloShowerSteps, *this);
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCaloShowerSteps, *this);
     }
 
     for(const auto& e: conf.extMonSimHitMixer().mixingMap()) {
-      std::cout<<"will mix ExtMonSimHits "<<e.inTag<<"  =====>  "<<e.outInstance<<std::endl;
+      std::cout<<"will mix ExtMonSimHits "<<e.inTag<<"  =====>  "<<e.resolvedInstanceName()<<std::endl;
       helper.declareMixOp
-        (e.inTag, e.outInstance, &Mu2eProductMixer::mixExtMonSimHits, *this);
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixExtMonSimHits, *this);
     }
 
     for(const auto& e: conf.protonBunchIntensityMixer().mixingMap()) {
-      std::cout<<"will mix ProtonBunchIntensity "<<e.inTag<<"  =====>  "<<e.outInstance<<std::endl;
+      std::cout<<"will mix ProtonBunchIntensity "<<e.inTag<<"  =====>  "<<e.resolvedInstanceName()<<std::endl;
       helper.declareMixOp
-        (e.inTag, e.outInstance, &Mu2eProductMixer::mixProtonBunchIntensity, *this);
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixProtonBunchIntensity, *this);
     }
 
     std::cout<<"Mu2eProductMixer ctr end"<<std::endl;

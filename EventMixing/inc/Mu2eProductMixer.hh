@@ -43,6 +43,11 @@ namespace mu2e {
       struct Entry {
         art::InputTag inTag;
         std::string outInstance;
+
+        // Some outInstance inputs should not be treated literally,
+        // this function is responsible for interpreting them.
+        std::string resolvedInstanceName() const;
+
         Entry(const art::InputTag& i, const std::string& o): inTag(i), outInstance(o) {}
       };
 
