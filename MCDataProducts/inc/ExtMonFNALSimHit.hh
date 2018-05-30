@@ -68,6 +68,9 @@ namespace mu2e {
     const CLHEP::Hep3Vector& localEndPosition() const { return endPosition_;  }
     double                   endTime() const { return endTime_;  }
 
+    // needed for event mixing
+    void setSimParticle(const art::Ptr<SimParticle>& p);
+
   private:
     ExtMonFNALModuleId    moduleId_;
 

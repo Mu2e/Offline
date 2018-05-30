@@ -190,6 +190,7 @@ namespace mu2e {
 
     // SimParticle daughters of this track.
     std::vector<art::Ptr<SimParticle> > const& daughters()   const { return _daughterSims; }
+    std::vector<art::Ptr<SimParticle> >&       daughters()         { return _daughterSims; }
 
     // SimParticle indices of daughters of this track.
     // DO NOT USE - this is an expensive (at run time) crutch for legacy code.
