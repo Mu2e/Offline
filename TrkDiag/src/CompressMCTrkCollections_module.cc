@@ -28,11 +28,7 @@
 
 #include <memory>
 
-#include "DataProducts/inc/ProductBag.hh"
-
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -97,21 +93,16 @@ private:
   std::string _wantedHitFlag;
 
   // art tags for the input collections
-  art::InputTag _trkBagTag;
-  art::InputTag _recoTrkBagTag;
-
+  art::InputTag _comboHitTag;
+  art::InputTag _strawDigiMCTag;
   std::vector<art::InputTag> _simParticleTags;
   art::InputTag _extraStepPointMCTag;
   std::vector<int> _extraStepPointMCVolIDs;
-
   std::vector<art::InputTag> _timeMapTags;
 
   // handles to the old collections
-  art::Handle<ProductBag> _oldTrkBagHandle;
-  art::Handle<ProductBag> _oldRecoTrkBagHandle;
-  art::Handle<StrawHitFlagCollection> _strawHitFlagsHandle;
+  art::Handle<ComboHitCollection> _comboHitsHandle;
   art::Handle<StrawDigiMCCollection> _strawDigiMCsHandle;
-  art::Handle<KalSeedCollection> _kalFinalFitsHandle;
   std::vector<SimParticleTimeMap> _oldTimeMaps;
 
   // unique_ptrs to the new output collections
@@ -141,8 +132,8 @@ private:
 
 mu2e::CompressMCTrkCollections::CompressMCTrkCollections(fhicl::ParameterSet const & pset)
   : _wantedHitFlag(pset.get<std::string>("wantedHitFlag")),
-    _trkBagTag(pset.get<art::InputTag>("trkBagTag")),
-    _recoTrkBagTag(pset.get<art::InputTag>("recoTrkBagTag")),
+    _comboHitTag(pset.get<art::InputTag>("comboHitTag")),
+    _strawDigiMCTag(pset.get<art::InputTag>("strawDigiMCTag")),
     _simParticleTags(pset.get<std::vector<art::InputTag> >("simParticleTags")),
     _extraStepPointMCTag(pset.get<art::InputTag>("extraStepPointMCTag", "")),
     _extraStepPointMCVolIDs(pset.get<std::vector<int> >("extraStepPointMCVolIDs")),
@@ -166,7 +157,6 @@ mu2e::CompressMCTrkCollections::CompressMCTrkCollections(fhicl::ParameterSet con
 void mu2e::CompressMCTrkCollections::produce(art::Event & event)
 {
   // Implementation of required member function here.
-
   _newStrawDigiMCs = std::unique_ptr<StrawDigiMCCollection>(new StrawDigiMCCollection);  
   _newStepPointMCs = std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection);
   _newStepPointMCsPID = getProductID<StepPointMCCollection>();
@@ -175,23 +165,7 @@ void mu2e::CompressMCTrkCollections::produce(art::Event & event)
   _hitCounter = 0;
   _oldToNewStrawHitIndexMap.clear();
 
-  event.getByLabel(_recoTrkBagTag, _oldRecoTrkBagHandle);
-  const auto& recoTrkBag = *_oldRecoTrkBagHandle;
-
-  recoTrkBag.getHandle(event, _strawHitFlagsHandle);
-  if (!_strawHitFlagsHandle.isValid()) {
-    throw cet::exception("CompressMCTrkCollections") << "Couldn't find StrawHitFlagCollection in ProductBag\n";
-  }
-
-
-  event.getByLabel(_trkBagTag, _oldTrkBagHandle);
-  const auto& trkBag = *_oldTrkBagHandle;
-
-  trkBag.getHandle(event, _strawDigiMCsHandle);
-  if (!_strawDigiMCsHandle.isValid()) {
-    throw cet::exception("CompressMCTrkCollections") << "Couldn't find StrawDigiMCCollection in ProductBag\n";
-  }
-
+  event.getByLabel(_strawDigiMCTag, _strawDigiMCsHandle);
 
   // Create all the new collections, ProductIDs and product getters for the SimParticles and GenParticles
   // There is one for each background frame plus one for the primary event
@@ -230,19 +204,22 @@ void mu2e::CompressMCTrkCollections::produce(art::Event & event)
 
   
 
-  // Loop through the straw hit flag collection
-
-  const auto& strawHitFlags(*_strawHitFlagsHandle);
-  for (unsigned int i_straw_hit = 0; i_straw_hit < strawHitFlags.size(); ++i_straw_hit) {
-    const mu2e::StrawHitFlag& strawHitFlag = strawHitFlags.at(i_straw_hit);
+  // Loop through the combo hits
+  event.getByLabel(_comboHitTag, _comboHitsHandle);
+  const auto& comboHits = *_comboHitsHandle;
+  for (unsigned int i_straw_hit = 0; i_straw_hit < comboHits.size(); ++i_straw_hit) {
+    const mu2e::StrawHitFlag& strawHitFlag = comboHits.at(i_straw_hit).flag();
+    StrawHitIndex hit_index = i_straw_hit;
     
     // write out the StrawHits that have the StrawHitFlags we want
-    mu2e::StrawHitFlag wanted(_wantedHitFlag);
-    wanted.merge(StrawHitFlag::onkalseed); // need to have all the hits that are on a KalSeed track (but not necessarily active)
-    
-    if (strawHitFlag.hasAllProperties(wanted)) {
-      StrawHitIndex hit_index = i_straw_hit;
+    if (_wantedHitFlag == "") {
       addStrawHitMCProducts(hit_index);
+    }
+    else {
+      mu2e::StrawHitFlag wanted(_wantedHitFlag);
+      if (strawHitFlag.hasAllProperties(wanted)) {
+	addStrawHitMCProducts(hit_index);
+      }
     }
   }
   
@@ -322,10 +299,10 @@ void mu2e::CompressMCTrkCollections::addStrawHitMCProducts(StrawHitIndex hit_ind
 void mu2e::CompressMCTrkCollections::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_digi_mc) {
 
   // Need to update the Ptrs for the StepPointMCs
-  art::Ptr<StepPointMC> newTriggerStepPtr[2];
-  for(int i_end=0;i_end<TrkTypes::nends;++i_end){
-    TrkTypes::End end = static_cast<TrkTypes::End>(i_end);
-    
+  art::Ptr<StepPointMC> newTriggerStepPtr[StrawEnd::nends];
+  for(int i_end=0;i_end<StrawEnd::nends;++i_end){
+    StrawEnd::End end = static_cast<StrawEnd::End>(i_end);
+
     const art::Ptr<StepPointMC>& old_step_point = old_straw_digi_mc.stepPointMC(end);
     if (old_step_point.isAvailable()) {
       newTriggerStepPtr[i_end] = copyStepPointMC( *old_step_point );

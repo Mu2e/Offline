@@ -1,0 +1,5 @@
+#include "TrkDiag/test/recoFromDigis.fcl"
+
+physics.producers.makeSH.StrawDigiCollection : "compressRecoTrk"
+
+physics.analyzers.TrkAna.KalDiag.TimeOffsets.inputs : [ "compressMCTrk:protonTimeMap", "compressMCTrk:muonTimeMap" ]

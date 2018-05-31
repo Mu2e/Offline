@@ -1,0 +1,78 @@
+# simAndRecoDigiCompressed.fcl
+#
+# FCL configuration file to create and compress digi files
+#
+# A. Edmonds April 2017
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : simAndRecoDigiCompressed
+
+source : {
+  module_type : RootInput
+}
+
+services : { @table::Services.SimAndReco 
+
+	     TFileService : { fileName : "nts.DSOWNER.compressed-digis.DSCONF.SEQ.root" }
+}
+
+physics : {
+  filters : {
+      @table::EventMixing.filters
+  }
+
+  producers : {
+      @table::TrkAna.producers
+
+      compressMCTrk : {
+          module_type : CompressMCTrkCollections
+	  wantedHitFlag : ""
+	  comboHitTag : "makeSH"
+	  strawDigiMCTag : "makeSD"
+	  simParticleTags : [ "detectorFilter", "protonMixer", "deuteronMixer", "photonMixer", "neutronMixer", "ootMixer", "dioMixer", "flashMixer" ]
+	  extraStepPointMCTag : "detectorFilter:virtualdetector"
+	  extraStepPointMCVolIDs : [ 13, 14 ] # TT_FrontHollow, TT_FrontPA
+	  timeMapTags : [ "protonTimeMap", "muonTimeMap" ]
+      }
+
+      compressRecoTrk : {
+          module_type : CompressRecoTrkCollections
+	  wantedHitFlag : ""
+	  comboHitTag : "makeSH"
+	  strawDigiTag : "makeSD"
+      }
+  }
+
+  analyzers : {
+    @table::TrkAna.analyzers
+    genCountLogger: { module_type: GenEventCountReader }
+  }
+
+  TriggerPath : [ @sequence::EventMixing.CD3Mixers, @sequence::TrkAna.SimSequence, @sequence::TrkHitReco.PrepareHits, compressMCTrk, compressRecoTrk ]
+  EndPath : [ genCountLogger ]
+}
+
+outputs : {
+  DigiOutput : {
+     module_type: RootOutput
+     SelectEvents : [ TriggerPath ]
+     outputCommands: [ "drop *_*_*_*", 
+     		       "keep mu2e::GenEventCount_*_*_*",
+     		       "keep *_compressMCTrk_*_*",
+     		       "keep *_compressRecoTrk_*_*",
+		       "keep mu2e::EventWeight_*_*_*",
+		       "keep *_CaloDigiFromShower_*_*"
+		     ]
+
+     fileName : "sim.DSOWNER.compressed-digis.DSCONF.SEQ.art"
+  }
+}
+
+physics.out : [ genCountLogger, DigiOutput ]
+physics.end_paths : [ out ]
+
+#include "EventMixing/fcl/epilog.fcl"

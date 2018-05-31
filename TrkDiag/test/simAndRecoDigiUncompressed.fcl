@@ -1,7 +1,6 @@
-# recoAndKalSeedFilter.fcl
+# simAndRecoDigiUncompressed.fcl
 #
-# FCL configuration file to run the reconstruction chain and 
-# read out persistent tracks (KalSeeds) that have been filtered down
+# FCL configuration file to create uncompressed digi files
 #
 # A. Edmonds April 2017
 
@@ -10,7 +9,7 @@
 #include "fcl/standardServices.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 
-process_name : recoAndKalSeedFilter
+process_name : simAndRecoDigiUncompressed
 
 source : {
   module_type : RootInput
@@ -18,7 +17,7 @@ source : {
 
 services : { @table::Services.SimAndReco 
 
-	     TFileService : { fileName : "nts.DSOWNER.trk-kalseeds.DSCONF.SEQ.root" }
+	     TFileService : { fileName : "nts.DSOWNER.uncompressed-digis.DSCONF.SEQ.root" }
 }
 
 physics : {
@@ -35,8 +34,8 @@ physics : {
     genCountLogger: { module_type: GenEventCountReader }
   }
 
-  TriggerPath : [ @sequence::TrkAna.SimAndRecoMixSequence ]
-  EndPath : [ @sequence::TrkAna.EndSequence ]
+  TriggerPath : [ @sequence::EventMixing.CD3Mixers, @sequence::TrkAna.SimSequence, @sequence::TrkHitReco.PrepareHits ]
+  EndPath : [ genCountLogger ]
 }
 
 outputs : {
@@ -54,10 +53,13 @@ outputs : {
 		       "keep mu2e::StepPointMCs_*_tracker_*",
 		       "keep mu2e::StepPointMCs_*_virtualdetector_*",
 		       "keep mu2e::SimParticlemv_*_*_*",
-		       "keep mu2e::EventWeight_*_*_*"
+		       "keep mu2e::EventWeight_*_*_*",
+		       "keep *_protonTimeMap_*_*",
+		       "keep *_muonTimeMap_*_*",
+		       "keep *_CaloDigiFromShower_*_*"
 		     ]
 
-     fileName : "sim.DSOWNER.trk-kalseeds.DSCONF.SEQ.art"
+     fileName : "sim.DSOWNER.uncompressed-digis.DSCONF.SEQ.art"
   }
 }
 

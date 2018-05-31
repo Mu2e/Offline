@@ -3,13 +3,12 @@
 // Plugin Type: prodicer (art v2_06_02)
 // File:        CompressRecoTrkCollections_module.cc
 //
-// Creates a new RecoTrkBag with new Reco collections that have been reduced
-// in size based on a given StrawHitFlag bit (by default onkalseed).
+// Creates new Reco collections that have been reduced
+// in size based on a given StrawHitFlag bit.
 //
 // If you want to filter on another StrawHitFlag bit (e.g. you want to store 
 // hits near to track hits), then create a new module that will create a
-// new StrawHitFlagCollection and the new StrawHitFlag bit. Then you can create a new
-// PRecoTrkBag with the new StrawHitFlagCollection and StrawHitFlag bit to this module.
+// new StrawHitFlagCollection and the new StrawHitFlag bit.
 //
 //
 // Generated at Wed Apr 12 16:10:46 2017 by Andrew Edmonds using cetskelgen
@@ -28,16 +27,11 @@
 
 #include <memory>
 
-#include "DataProducts/inc/ProductBag.hh"
-
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPosition.hh"
 
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/TrkQual.hh"
+//#include "RecoDataProducts/inc/KalSeed.hh"
 
 namespace mu2e {
   class CompressRecoTrkCollections;
@@ -68,25 +62,21 @@ private:
   std::string _wantedHitFlag;
 
   // art tags for the input collections
-  art::InputTag _trkBagTag;
+  art::InputTag _comboHitTag;
+  art::InputTag _strawDigiTag;
 
   // handles to the old collections
-  art::Handle<StrawHitFlagCollection> _strawHitFlagsHandle;
-  art::Handle<StrawHitCollection> _strawHitsHandle;
+  art::Handle<ComboHitCollection> _comboHitsHandle;
   art::Handle<StrawDigiCollection> _strawDigisHandle;
-  art::Handle<StrawHitPositionCollection> _strawHitPositionsHandle;
 
-  art::Handle<KalSeedCollection> _kalFinalFitsHandle;
-  art::Handle<TrkQualCollection> _trkQualsHandle;
-  art::Handle<ProductBag> _trkBagHandle;
+  //  art::Handle<KalSeedCollection> _kalFinalFitsHandle;
+  //  art::Handle<TrkQualCollection> _trkQualsHandle;
 
   // unique_ptrs to the new output collections
-  std::unique_ptr<StrawHitFlagCollection> _newStrawHitFlags;
-  std::unique_ptr<StrawHitCollection> _newStrawHits;
+  std::unique_ptr<ComboHitCollection> _newComboHits;
   std::unique_ptr<StrawDigiCollection> _newStrawDigis;
-  std::unique_ptr<StrawHitPositionCollection> _newStrawHitPositions;
 
-  std::unique_ptr<KalSeedCollection> _newKalFinalFits;
+  //  std::unique_ptr<KalSeedCollection> _newKalFinalFits;
 
   std::map<StrawHitIndex, StrawHitIndex> _oldToNewStrawHitIndexMap;
   int _hitCounter; // keep track of how many straw hit objects we've added to each output collections
@@ -95,82 +85,49 @@ private:
 
 mu2e::CompressRecoTrkCollections::CompressRecoTrkCollections(fhicl::ParameterSet const & pset)
   : _wantedHitFlag(pset.get<std::string>("wantedHitFlag")),
-    _trkBagTag(pset.get<art::InputTag>("trkBagTag"))
+    _comboHitTag(pset.get<art::InputTag>("comboHitTag")),
+    _strawDigiTag(pset.get<art::InputTag>("strawDigiTag"))
 {
   // Call appropriate produces<>() functions here.
-  produces<StrawHitFlagCollection>();
-  produces<StrawHitCollection>();
+  produces<ComboHitCollection>();
   produces<StrawDigiCollection>();
-  produces<StrawHitPositionCollection>();
   
-  produces<KalSeedCollection>();
+  //  produces<KalSeedCollection>();
 }
 
 void mu2e::CompressRecoTrkCollections::produce(art::Event & event)
 {
   // Implementation of required member function here.
 
-  _newStrawHitFlags = std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection);
-  _newStrawHits = std::unique_ptr<StrawHitCollection>(new StrawHitCollection);
+  _newComboHits = std::unique_ptr<ComboHitCollection>(new ComboHitCollection);
   _newStrawDigis = std::unique_ptr<StrawDigiCollection>(new StrawDigiCollection);
-  _newStrawHitPositions = std::unique_ptr<StrawHitPositionCollection>(new StrawHitPositionCollection);
-  _newKalFinalFits = std::unique_ptr<KalSeedCollection>(new KalSeedCollection);
+  //  _newKalFinalFits = std::unique_ptr<KalSeedCollection>(new KalSeedCollection);
 
   _hitCounter = 0;
   _oldToNewStrawHitIndexMap.clear();
 
-  event.getByLabel(_trkBagTag, _trkBagHandle);
-  const auto& trkBag = *_trkBagHandle;
-  
-  trkBag.getHandle(event, _strawHitFlagsHandle);
-  if (!_strawHitFlagsHandle.isValid()) {
-    throw cet::exception("CompressRecoTrkCollections") << "Couldn't find StrawHitFlagCollection in ProductBag\n";
-  }
-
-  trkBag.getHandle(event, _strawHitsHandle);
-  if (!_strawHitsHandle.isValid()) {
-    throw cet::exception("CompressRecoTrkCollections") << "Couldn't find StrawHitCollection in ProductBag\n";
-  }
-    
-  trkBag.getHandle(event, _strawDigisHandle);
-  if (!_strawDigisHandle.isValid()) {
-    throw cet::exception("CompressRecoTrkCollections") << "Couldn't find StrawDigiCollection in ProductBag\n";
-  }
-  
-  trkBag.getHandle(event, _strawHitPositionsHandle);
-  if (!_strawHitPositionsHandle.isValid()) {
-    throw cet::exception("CompressRecoTrkCollections") << "Couldn't find StrawHitPositionCollection in ProductBag\n";
-  }
-  
-  trkBag.getHandle(event, _kalFinalFitsHandle);
-  if (!_kalFinalFitsHandle.isValid()) {
-    throw cet::exception("CompressRecoTrkCollections") << "Couldn't find KalSeedCollection in ProductBag\n";
-  }
-  
-  trkBag.getHandle(event, _trkQualsHandle);
-  if (!_trkQualsHandle.isValid()) {
-    throw cet::exception("CompressRecoTrkCollections") << "Couldn't find TrkQualCollection in ProductBag\n";
-  }
-
+  event.getByLabel(_strawDigiTag, _strawDigisHandle);
 
   // Loop through the straw hit flag collection
-  const auto& strawHitFlags(*_strawHitFlagsHandle);
-  for (unsigned int i_straw_hit = 0; i_straw_hit < strawHitFlags.size(); ++i_straw_hit) {
-    const mu2e::StrawHitFlag& strawHitFlag = strawHitFlags.at(i_straw_hit);
-    //      std::cout << i_straw_hit << ": " << strawHitFlag.stringRep() << std::endl;
+  event.getByLabel(_comboHitTag, _comboHitsHandle);
+  const auto& comboHits(*_comboHitsHandle);
+  for (unsigned int i_straw_hit = 0; i_straw_hit < comboHits.size(); ++i_straw_hit) {
+    const mu2e::StrawHitFlag& strawHitFlag = comboHits.at(i_straw_hit).flag();
+    StrawHitIndex hit_index = i_straw_hit;
     
     // write out the StrawHits that have the StrawHitFlags we want
-    mu2e::StrawHitFlag wanted(_wantedHitFlag);
-    wanted.merge(StrawHitFlag::onkalseed); // need to have all the hits that are on a KalSeed track (but not necessarily active)
-    
-    if (strawHitFlag.hasAllProperties(wanted)) {
-      StrawHitIndex hit_index = i_straw_hit;
-      //      std::cout << i_straw_hit << ": " << strawHitFlag.stringRep() << std::endl;
+    if (_wantedHitFlag == "") {
       addStrawHitRecoProducts(hit_index);
+    }
+    else {
+      mu2e::StrawHitFlag wanted(_wantedHitFlag);
+      if (strawHitFlag.hasAllProperties(wanted)) {
+	addStrawHitRecoProducts(hit_index);
+      }
     }
   }
   
-  const auto& kalFinalFits(*_kalFinalFitsHandle);
+  /*  const auto& kalFinalFits(*_kalFinalFitsHandle);
   for (const auto& kalFinalFit : kalFinalFits) {
     
     // Want to check that we have all the hits associated with the KalSeed
@@ -186,14 +143,13 @@ void mu2e::CompressRecoTrkCollections::produce(art::Event & event)
     KalSeed kal_final_fit(kalFinalFit, _oldToNewStrawHitIndexMap); // copy over the old KalSeed
     _newKalFinalFits->push_back(kal_final_fit);
   }
+  */
 
   // Put everything into the event
-  event.put(std::move(_newStrawHitFlags));
-  event.put(std::move(_newStrawHits));
+  event.put(std::move(_newComboHits));
   event.put(std::move(_newStrawDigis));
-  event.put(std::move(_newStrawHitPositions));
 
-  event.put(std::move(_newKalFinalFits));
+  //  event.put(std::move(_newKalFinalFits));
 }
 
 void mu2e::CompressRecoTrkCollections::addStrawHitRecoProducts(StrawHitIndex hit_index) {
@@ -201,17 +157,14 @@ void mu2e::CompressRecoTrkCollections::addStrawHitRecoProducts(StrawHitIndex hit
   //  std::cout << "Will copy out StrawHit with index = " << hit_index << std::endl;
   if (_oldToNewStrawHitIndexMap.find(hit_index) == _oldToNewStrawHitIndexMap.end()) { // only add the straw hit if it's not been seen yet
 
-    mu2e::StrawHitFlag straw_hit_flag = _strawHitFlagsHandle->at(hit_index);
-    _newStrawHitFlags->push_back(straw_hit_flag);
+    //    mu2e::StrawHitFlag straw_hit_flag = _strawHitFlagsHandle->at(hit_index);
+    //    _newStrawHitFlags->push_back(straw_hit_flag);
   
-    mu2e::StrawHit straw_hit = _strawHitsHandle->at(hit_index);
-    _newStrawHits->push_back(straw_hit);
+    mu2e::ComboHit combo_hit = _comboHitsHandle->at(hit_index);
+    _newComboHits->push_back(combo_hit);
   
     mu2e::StrawDigi straw_digi = _strawDigisHandle->at(hit_index);
     _newStrawDigis->push_back(straw_digi);
-
-    mu2e::StrawHitPosition straw_hit_position = _strawHitPositionsHandle->at(hit_index);
-    _newStrawHitPositions->push_back(straw_hit_position);
 
     // Update the map
     _oldToNewStrawHitIndexMap[hit_index] = _hitCounter;
