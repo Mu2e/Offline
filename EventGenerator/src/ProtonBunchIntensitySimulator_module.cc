@@ -22,21 +22,12 @@
 #include "CLHEP/Random/RandFlat.h"
 // data products produced by this module
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Mu2eUtilities/inc/artURBG.hh"
+
 #include <iostream>
 #include <random>
 
 namespace mu2e {
-// wrapper around art engine that satisfies C++ URBG standard
-  class artURBG {
-    public:
-      artURBG(art::RandomNumberGenerator::base_engine_t& engine) : _engine(engine) {}
-      typedef unsigned int result_type;
-      result_type min() { return 0; }
-      result_type max() { return UINT_MAX; }
-      result_type operator() () { return _engine.operator unsigned int(); }
-    private:
-      art::RandomNumberGenerator::base_engine_t& _engine; // CLHEP ENGINE
-  };
 
   class ProtonBunchIntensitySimulator : public art::EDProducer {
     public:
