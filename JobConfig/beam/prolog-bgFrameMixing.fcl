@@ -63,12 +63,13 @@ BackgroundFrameMixing: {
 	 protonBunchIntensity: {
             module_type: ProtonBunchIntensitySimulator
             #
-            # the following numbers represent the current understanding of the primary proton beam
-            # intensity and its fluctuations, having a flat distribution
+            # Use the log-normal model of Proton Beam Inensity fluctuations
             #
-            IntensityModel: 1
+            IntensityModel: 2
+	    # IHEP data fit
+	    Lognormal_mu : -0.10015
+	    Lognormal_sigma : 0.3814
             MeanNumberOfProtonsPerMicrobunch: 3.9e7
-            FullRelativeWidth: 1.0
 	 }
       }
 
