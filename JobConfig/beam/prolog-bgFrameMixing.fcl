@@ -1,0 +1,110 @@
+#include "fcl/minimalMessageService.fcl"
+
+BEGIN_PROLOG
+
+#----------------------------------------------------------------
+mixerTemplateCommon: {
+   module_type         : MixBackgroundFrames
+   fileNames           : @nil
+   readMode            : randomNoReplace
+   wrapFiles           : true
+
+   mu2e: {
+      protonBunchIntensityTag: "protonBunchIntensity"
+      meanEventsPerProton: @nil
+      products: @nil
+   }
+}
+
+#----------------------------------------------------------------
+mixerTemplateTrkCal: @local::mixerTemplateCommon
+mixerTemplateTrkCal.mu2e.products: {
+   genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+   simParticleMixer: { mixingMap: [ [ "detectorFilter", "" ] ] }
+   stepPointMCMixer: { mixingMap:
+      [
+	 [ "detectorFilter:tracker", ":" ],
+	 [ "detectorFilter:virtualdetector", ":" ],
+	 [ "detectorFilter:protonabsorber", ":" ]
+      ]
+   }
+   caloShowerStepMixer: { mixingMap:
+      [
+	 [ "CaloShowerCrystalSteps", "calorimeter" ],
+	 [ "CaloShowerROSteps", "calorimeterRO" ]
+      ]
+   }
+}
+#----------------------------------------------------------------
+mixerTemplateCRV: @local::mixerTemplateCommon
+mixerTemplateCRV.mu2e.products: {
+   # FIXME: what do we need to mix for CRV?
+}
+
+#----------------------------------------------------------------
+
+BackgroundFrameMixing: {
+
+   source : { module_type : EmptyEvent maxEvents :  @nil }
+
+   services: {
+      message: @local::default_message
+      RandomNumberGenerator: { }
+      SeedService: {
+	 policy            : "autoIncrement"
+	 baseSeed          : 0  # defined for interactive tests here, overridden by generate_fcl for real jobs
+	 maxUniqueEngines  : 20
+      }
+   }
+
+   physics: {
+      producers: {
+	 genCounter: { module_type: GenEventCounter }
+	 protonBunchIntensity: {
+            module_type: ProtonBunchIntensitySimulator
+            #
+            # the following numbers represent the current understanding of the primary proton beam
+            # intensity and its fluctuations, having a flat distribution
+            #
+            IntensityModel: 1
+            MeanNumberOfProtonsPerMicrobunch: 3.9e7
+            FullRelativeWidth: 1.0
+	 }
+      }
+
+      filters: {
+	 flashMixerTrkCal    : @local::mixerTemplateTrkCal
+	 ootMixerTrkCal      : @local::mixerTemplateTrkCal
+	 neutronMixerTrkCal  : @local::mixerTemplateTrkCal
+	 dioMixerTrkCal      : @local::mixerTemplateTrkCal
+	 photonMixerTrkCal   : @local::mixerTemplateTrkCal
+	 protonMixerTrkCal   : @local::mixerTemplateTrkCal
+	 deuteronMixerTrkCal : @local::mixerTemplateTrkCal
+      }
+
+      analyzers: {
+	 genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
+      }
+
+      # trigger path
+      p1: [ genCounter, protonBunchIntensity,
+	 flashMixerTrkCal,
+	 ootMixerTrkCal, neutronMixerTrkCal, dioMixerTrkCal,
+	 photonMixerTrkCal, protonMixerTrkCal, deuteronMixerTrkCal
+	 # FIXME: add CRV mixers here
+      ]
+      e1: [genCountLogger, fullOutput]
+
+      trigger_paths  : [p1]
+      end_paths      : [e1]
+   }
+
+   outputs: {
+      fullOutput : {
+	 module_type : RootOutput
+	 fileName    : @nil
+      }
+   }
+}
+
+END_PROLOG
