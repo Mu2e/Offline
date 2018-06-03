@@ -3,8 +3,8 @@
 // Plugin Type: producer (art v2_06_02)
 // File:        CompressMCTrkCollections_module.cc
 //
-// Creates a new MCTrkBag with new MC collections that have been reduced
-// in size based on a given StrawHitFlag bit (by default onkalseed).
+// Creates a new MC collections that have been reduced
+// in size based on a given StrawHitFlag bit
 //
 // If you want to filter on another StrawHitFlag bit (e.g. you want to store 
 // hits near to track hits), then create a new module that will create a

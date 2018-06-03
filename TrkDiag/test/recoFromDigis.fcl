@@ -26,9 +26,10 @@ physics : {
 
   analyzers : {
     @table::TrkAna.analyzers
+    @table::TrkDiag.analyzers
     genCountLogger: { module_type: GenEventCountReader }
   }
 
   TriggerPath : [ @sequence::TrkAna.RecoSequence ]
-  EndPath : [ genCountLogger, @sequence::TrkAna.EndSequence ]
+  EndPath : [ genCountLogger, @sequence::TrkAna.EndSequence, SHD ]
 }

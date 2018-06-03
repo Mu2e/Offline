@@ -3,3 +3,8 @@
 physics.producers.makeSH.StrawDigiCollection : "compressRecoTrk"
 
 physics.analyzers.TrkAna.KalDiag.TimeOffsets.inputs : [ "compressMCTrk:protonTimeMap", "compressMCTrk:muonTimeMap" ]
+physics.analyzers.SHD.UseStrawHitFlagCollection : false
+#physics.analyzers.SHD.StrawHitCollection : "makeSH"
+#physics.analyzers.SHD.ComboHitCollection : "makeSH"
+physics.analyzers.SHD.StrawDigiMCCollection : "compressMCTrk"
+physics.analyzers.SHD.TimeOffsets.inputs : [ "compressMCTrk:protonTimeMap", "compressMCTrk:muonTimeMap" ]
