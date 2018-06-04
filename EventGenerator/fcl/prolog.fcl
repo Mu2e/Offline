@@ -29,12 +29,19 @@ mu2e.tgtMuonStops: {
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
     branchName            : "stops"
-    verbosityLevel        : 0
+    verbositylevel        : 0
 }
 mu2e.ootMuonStops: {
     inputFiles            : @nil
     averageNumRecordsToUse: 500000
     treeName              : "outOfTargetDumper/stops"
+    branchName            : "stops"
+    verbosityLevel        : 0
+}
+mu2e.IPAMuonStops: {
+    inputFiles            : @nil
+    averageNumRecordsToUse: 1000000
+    treeName              : "IPAstops/stops"
     branchName            : "stops"
     verbosityLevel        : 0
 }

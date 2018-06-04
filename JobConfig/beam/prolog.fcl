@@ -169,6 +169,16 @@ mu2e.physics.g4s4CommonBase: {
 	 vetoDaughters: []
       }
 
+      TrkStepFilter : {
+	module_type : MinimumHits
+	mode : "trackerOnly"
+	MinNStraws : 10
+	MinPartMom : 40.0  # MeV/c
+	PDGCodes : [11,-11, 13, -13] 
+	generatorModuleLabel : "generate"
+	g4ModuleLabel : "g4run"
+      }
+
       g4status: {
 	 module_type: FilterStatusG4
 	 input: "g4run"
@@ -221,6 +231,7 @@ mu2e.physics.g4s4Muons.producers.genCounter: {
 mu2e.physics.g4s4Muons.crvPath: [ generate, genCounter,  @sequence::crvPathCommon ]
 mu2e.physics.g4s4Muons.detPath: [ generate, genCounter,  @sequence::detPathCommon ]
 mu2e.physics.g4s4Muons.g4StatusPath:  [ generate, genCounter, @sequence::g4StatusPathCommon ]
+mu2e.physics.Signal.detPath : [ generate, genCounter,  g4run, g4consistent, CaloShowerStepFromStepPt, TrkStepFilter, detectorFilter, CaloShowerCrystalSteps, CaloShowerROSteps, compressPVDetector ]
 
 #================================================================
 
