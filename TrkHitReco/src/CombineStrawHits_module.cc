@@ -52,6 +52,7 @@ namespace mu2e {
     StrawHitFlag _shsel; // flag selection
     StrawHitFlag _shmask; // flag anti-selection
     float _maxdt; // maximum time separation between hits
+    bool _useTOT; // use tot to estimate drift time
     float _maxwdchi; // maximum wire distance separation chi
     float _werr2; // intrinsic error on wire distance squared
     float _terr; // intrinsic error transverse to wire (per straw)
@@ -68,7 +69,8 @@ namespace mu2e {
     _testrad(pset.get<bool>("TestRadius")),
     _shsel(pset.get<vector<string> >("StrawHitSelectionBits",vector<string>{"EnergySelection","TimeSelection"} )),
     _shmask(pset.get<vector<string> >("StrawHitMaskBits",vector<string>{} )),
-    _maxdt(pset.get<float>("MaxDt",40.0)), // nsec
+    _maxdt(pset.get<float>("MaxDt",40.0)), // nsec 
+    _useTOT(pset.get<bool>("UseTOT",false)), // use TOT corrected time
     _maxwdchi(pset.get<float>("MaxWireDistDiffPull",4.0)), //units of resolution sigma
     _terr(pset.get<float>("TransError",8.0)), //mm
     _maxds(pset.get<int>("MaxDS",3)) // how far away 2 straws can be, in 0-95 numbering (including layers!!)
@@ -131,7 +133,11 @@ namespace mu2e {
               int ds = abs( (int)hit1.strawId().straw()-(int)hit2.strawId().straw());
               if(ds > 0 && ds <= _maxds ){
                 // require times be consistent
-                float dt = fabs(hit1.time() - hit2.time());
+                float dt;
+                if (_useTOT)
+		  dt = fabs(hit1.correctedTime() - hit2.correctedTime());
+                else
+                  dt = fabs(hit1.time() - hit2.time());
                 if(dt < _maxdt){
                   // compute the chi of the differnce in wire positions
                   float wderr = sqrtf(hit1.wireErr2() + hit2.wireErr2());
@@ -172,6 +178,8 @@ namespace mu2e {
     combohit._flag.merge(StrawHitFlag::panelcombo);
     accumulator_set<float, stats<tag::mean> > eacc;
     accumulator_set<float, stats<tag::mean> > tacc;
+    accumulator_set<float, stats<tag::mean> > dtacc;
+    accumulator_set<float, stats<tag::mean> > placc;
     accumulator_set<float, stats<tag::weighted_variance(lazy)>, float> wacc;
     accumulator_set<float, stats<tag::mean> > werracc;
     XYZVec midpos;
@@ -187,6 +195,8 @@ namespace mu2e {
       combohit._flag.merge(ch.flag());
       eacc(ch.energyDep());
       tacc(ch.time());// time is an unweighted average
+      dtacc(ch.driftTime());
+      placc(ch.pathLength());
       float wt = 1.0/(ch.wireErr2());
       wacc(ch.wireDist(),weight=wt); // wire position is weighted
       werracc(ch.wireRes());
@@ -197,6 +207,8 @@ namespace mu2e {
       throw cet::exception("RECO")<<"mu2e::CombineStrawHits: inconsistent count "<< endl;
     if(_debug > 2)std::cout << std::endl;
     combohit._time = extract_result<tag::mean>(tacc);
+    combohit._dtime = extract_result<tag::mean>(dtacc);
+    combohit._pathlength = extract_result<tag::mean>(placc);
     combohit._edep = extract_result<tag::mean>(eacc);
     combohit._wdist = extract_result<tag::weighted_mean>(wacc);
     midpos /= combohit._nsh;

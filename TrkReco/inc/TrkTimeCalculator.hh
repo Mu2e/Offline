@@ -40,7 +40,7 @@ namespace mu2e
       // sophisticated z correction
       void updateT0(HelixSeed& hs, StrawHitCollection const& shcol);
       // access the offsets
-      double strawHitTimeOffset(double hitz) const; // z position in the tracker frame!!!
+      double timeOfFlightTimeOffset(double hitz) const; // z position in the tracker frame!!!
       double strawHitTimeErr() const { return _shErr; }
       double caloClusterTimeOffset(int diskId) const; // depends on which 
       double caloClusterTimeErr(int diskId) const; // depends on which 
@@ -55,7 +55,8 @@ namespace mu2e
       int _debug;
 //      StrawHitFlag _useflag, _dontuseflag;// flags for which hits to use
       TrkFitDirection _fdir; // fit direction.  This is used to make z-dependent time shifts
-      double _shOffset;  // average time offset for straw hits
+      double _avgDriftTime;  // average time offset for straw hits
+      bool _useTOTdrift;
       double _shSlope; // dv/dv_z for straw hits
       double _shBeta;  // beta of the particle-hypothesis used
       double _shErr;

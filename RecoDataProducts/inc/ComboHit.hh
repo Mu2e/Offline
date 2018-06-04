@@ -45,6 +45,10 @@ namespace mu2e {
     Float_t phi() const { return _pos.phi();}
     Float_t helixPhi() const { return _hphi;}
     Float_t time() const { return _time; }
+    Float_t driftTime() const { return _dtime; }
+    Float_t correctedTime() const { return _time - _dtime; }
+    Float_t specificIonization() const { return _edep/_pathlength; }
+    Float_t pathLength() const { return _pathlength; }
     Float_t qual() const { return _qual; }
     StrawHitFlag const& flag() const { return _flag; }
     StrawEnd const& driftEnd() const { return _tend; } // which end was used for time
@@ -68,6 +72,8 @@ namespace mu2e {
     Float_t _wres, _tres; // resolution along and transverse to the 'wire' direction
     Float_t _wdist; // distance from wire center along this direction (agregate)
     Float_t _time, _edep, _qual; // derived StrawHit (agregate) info
+    Float_t _dtime; // drift time estimate
+    Float_t _pathlength; // path length estimate
     Float_t _hphi; // azimuth relative to a helix center
     uint16_t _ncombo; // number of associated input objects
     uint16_t _nsh; // number of underlying straw hits

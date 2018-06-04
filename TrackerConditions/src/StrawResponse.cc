@@ -45,6 +45,12 @@ namespace mu2e {
     _rres_max(pset.get<double>("MaxDriftRadiusResolution",0.2)), //mm
     _rres_rad(pset.get<double>("DriftRadiusResolutionRadius",-1)), //mm
     _mint0doca(pset.get<double>("minT0DOCA", -0.2)), //FIXME should be moved to a reconstruction configuration 
+    _TOTIntercept(pset.get<double>("TOTIntersept",46.4716)),
+    _TOTSlope(pset.get<double>("TOTSlope",-0.831775)),
+    _TOTmin(pset.get<double>("TOTMin",12)),
+    _TOTmax(pset.get<double>("TOTMax",45)),
+    _t0shift(pset.get<double>("t0shift",4.0)), //FIXME should be average slewing?
+
     _pmpEnergyScale(pset.get<vector<double> >("peakMinusPedestalEnergyScale",vector<double>(96,0.0042))), // fudge factor for peak minus pedestal energy method
     _timeOffsetPanel(pset.get<vector<double> >("TimeOffsetPanel",vector<double>(240,0))),
     _timeOffsetStrawHV(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0))),
@@ -215,5 +221,27 @@ namespace mu2e {
     else
       return _vsat;
   }
- 
+
+  double StrawResponse::driftTime(StrawHit const& strawhit) const {
+    double closeToT = strawhit.TOT(StrawEnd::cal);
+    if (strawhit.time(StrawEnd::hv) < strawhit.time(StrawEnd::cal)){
+      closeToT = strawhit.TOT(StrawEnd::hv);
+    }
+    double drifttime;
+    if (closeToT < _TOTmin)
+      drifttime = 30.;
+    else if (closeToT > _TOTmax)
+      drifttime = 10.;
+    else
+      drifttime = _TOTSlope*closeToT + _TOTIntercept;
+    return drifttime;
+  }
+
+  double StrawResponse::pathLength(StrawHit const& strawhit, double theta) const {
+    double dtime = driftTime(strawhit);
+    double ddist = min(driftTimeToDistance(strawhit.strawId(), dtime, 0),2.5);
+    double perp_dist = sqrt(pow(2.5,2)-pow(ddist,2));
+    return perp_dist / sin(theta);
+  }
+     
 }

@@ -249,6 +249,8 @@ namespace mu2e {
         ch._time = time;
         ch._edep = energy;
         ch._sid = straw.id();
+        ch._dtime = srep->driftTime(hit);
+        ch._pathlength = srep->pathLength(hit,0); //FIXME default angle
         ch.addIndex(isd); // reference the digi; this allows MC truth matching to work
         // crude initial estimate of the transverse error
         static const float invsqrt12 = 1.0/sqrt(12.0);
