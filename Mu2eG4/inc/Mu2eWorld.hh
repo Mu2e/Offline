@@ -111,6 +111,8 @@ namespace mu2e {
     double g4DeltaOneStep_;
     double g4DeltaIntersection_;
     double g4DeltaChord_;
+    double g4StepMinimum_;
+    int    g4MaxIntSteps_;
     double bfieldMaxStep_;
     bool limitStepInAllVolumes_;
   };

@@ -94,9 +94,30 @@ namespace mu2e{
           }
 
           pair<map_type::iterator,bool> result = _allProcesses.insert(
-                 std::make_pair(proc->GetProcessName(),ProcInfo(name,code) ));
+                 std::make_pair(name,ProcInfo(name,code) ));
           jj = result.first;
 
+        }
+        // we will artificially attach "FieldPropagator" to all particles
+        // fixme : do it only for charged particles; factorize the code
+
+        G4String const pname = G4String("FieldPropagator");
+        jj = _allProcesses.find(pname);
+        // If not already in the map, then create it.
+        if ( jj == _allProcesses.end() ){
+          _longestName = (pname.size() > _longestName) ? pname.size() : _longestName;
+
+          ProcessCode code = ProcessCode::findByName(pname);
+          if ( code.id() == ProcessCode::unknown ){
+            ++nUnknownProcesses;
+            cout << "Physics process named: " << pname
+                 << " is not known to the ProcessCode enum."
+                 << endl;
+          }
+
+          pair<map_type::iterator,bool> result = _allProcesses.insert(
+                 std::make_pair(pname,ProcInfo(pname,code) ));
+          jj = result.first;
         }
 
         // Add a particle to the
@@ -120,7 +141,7 @@ namespace mu2e{
            << endl;
     }
 
-    pair<map_type::iterator,bool> result = 
+    pair<map_type::iterator,bool> result =
       _allProcesses.insert(std::make_pair(pname,ProcInfo(pname,pcode)));
     map_type::iterator resultFirst = result.first;
 

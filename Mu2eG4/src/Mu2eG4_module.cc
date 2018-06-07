@@ -405,6 +405,8 @@ namespace mu2e {
     G4RunManagerKernel const * rmk = G4RunManagerKernel::GetRunManagerKernel();
     G4TrackingManager* tm  = rmk->GetTrackingManager();
     tm->SetVerboseLevel(_tmvlevel);
+    G4SteppingManager* sm  = tm->GetSteppingManager();
+    sm->SetVerboseLevel(_tmvlevel);
 
     _UI = G4UImanager::GetUIpointer();
 
@@ -549,13 +551,17 @@ namespace mu2e {
     float cpuTime  = _timer->GetSystemElapsed()+_timer->GetUserElapsed();
 
     int status(0);
-    if (  _steppingAction->nKilledStepLimit() > 0 ) status =  1;
-    if (  _trackingAction->overflowSimParticles() ) status = 10;
+    if ( _steppingAction->nKilledStepLimit() > 0 || 
+         _trackingAction->nKilledByFieldPropagator() > 0 ) {
+      status =  1;
+    }
+    if ( _trackingAction->overflowSimParticles() ) status = 10;
 
     unique_ptr<StatusG4> g4stat(new StatusG4( status,
                                               _trackingAction->nG4Tracks(),
                                               _trackingAction->overflowSimParticles(),
                                               _steppingAction->nKilledStepLimit(),
+                                              _trackingAction->nKilledByFieldPropagator(),
                                               cpuTime,
                                               _timer->GetRealElapsed() )
                                 );

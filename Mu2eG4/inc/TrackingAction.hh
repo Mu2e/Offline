@@ -86,6 +86,7 @@ namespace mu2e {
     // Accessors for status information.
     unsigned        nG4Tracks() const { return _currentSize;}
     bool overflowSimParticles() const { return _overflowSimParticles; }
+    unsigned nKilledByFieldPropagator() const { return _nKilledByFieldPropagator; }
 
   private:
 
@@ -120,7 +121,8 @@ namespace mu2e {
     double _mcTrajectoryMomentumCut;
     double _saveTrajectoryMomentumCut;
     int    _mcTrajectoryMinSteps;
-
+    unsigned _nKilledByFieldPropagator;
+    
     // Non-owning pointer to stepping action; lifetime of pointee is one run.
     Mu2eG4SteppingAction * _steppingAction;
 

@@ -71,6 +71,7 @@ namespace mu2e {
     _mcTrajectoryMomentumCut(trajectoryControl.mcTrajectoryMomentumCut()),
     _saveTrajectoryMomentumCut(trajectoryControl.saveTrajectoryMomentumCut()),
     _mcTrajectoryMinSteps(trajectoryControl.mcTrajectoryMinSteps()),
+    _nKilledByFieldPropagator(0),
     _steppingAction(steppingAction),
     _processInfo(0),
     _printTrackTiming(pset.get<bool>("debug.printTrackTiming")),
@@ -219,6 +220,7 @@ namespace mu2e {
                                    ) {
     _currentSize          = 0;
     _overflowSimParticles = false;
+    _nKilledByFieldPropagator = 0;
     _spHelper             = &spHelper;
     _primaryHelper        = &primaryHelper;
     _trajectories         = &trajectories;
@@ -397,6 +399,8 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) return;
 
+    G4int trackingVerbosityLevel = fpTrackingManager->GetVerboseLevel();
+
     key_type kid(_spHelper->particleKeyFromG4TrackID(trk->GetTrackID()));
 
     // Find the particle in the map.
@@ -410,20 +414,14 @@ namespace mu2e {
 
     // Reason why tracking stopped, decay, range out, etc.
     G4String pname  = Mu2eG4UserHelpers::findTrackStoppingProcessName(trk);
+
+    if (pname == "Transportation" &&
+      Mu2eG4UserHelpers::isTrackKilledByFieldPropagator(trk, trackingVerbosityLevel)) {
+      pname = G4String("FieldPropagator");
+      ++_nKilledByFieldPropagator;
+    }
+
     ProcessCode stoppingCode(_processInfo->findAndCount(pname));
-
-    // G4cout << __func__ 
-    // 	   << " stopping process pname is " << pname << G4endl;
-
-    // if ( pname == "muMinusCaptureAtRest") {
-
-    //   G4VUserTrackInformation* tui = trk->GetUserInformation();
-    //   if (tui) {
-    // 	G4cout << __func__ 
-    // 	       << " the track is labeled as " << tui->GetType() << G4endl;
-    //   }
-
-    // }
 
     //Get kinetic energy at the begin of the last step
     double preLastStepKE = Mu2eG4UserHelpers::getPreLastStepKE(trk);
@@ -443,6 +441,15 @@ namespace mu2e {
                           nSteps
                           );
 
+    if (trackingVerbosityLevel > 0 ) {
+      G4cout << __func__
+             << " particle stopped by " << stoppingCode << ", " << pname
+             << G4endl;
+      G4cout << __func__
+             << " step length " << trk->GetStepLength()
+             << ", track length " << trk->GetTrackLength()
+             << G4endl;
+    }
   }
 
   // If the track passes the cuts needed to store the trajectory object, then store

@@ -110,6 +110,8 @@
 #include "G4ExactHelixStepper.hh"
 #include "G4ChordFinder.hh"
 #include "G4TransportationManager.hh"
+#include "G4PropagatorInField.hh"
+#include "G4MagIntegratorDriver.hh"
 #include "G4UserLimits.hh"
 #include "G4ClassicalRK4.hh"
 #include "G4ImplicitEuler.hh"
@@ -120,6 +122,7 @@
 #include "G4HelixSimpleRunge.hh"
 #if G4VERSION>4103
 #include "G4DormandPrince745.hh"
+#include "G4BogackiShampine23.hh"
 #endif
 #include "G4GDMLParser.hh"
 
@@ -162,6 +165,8 @@ namespace mu2e {
     , g4DeltaOneStep_(pset.get<double>("physics.deltaOneStep")*CLHEP::mm)
     , g4DeltaIntersection_(pset.get<double>("physics.deltaIntersection")*CLHEP::mm)
     , g4DeltaChord_(pset.get<double>("physics.deltaChord")*CLHEP::mm)
+    , g4StepMinimum_(pset.get<double>("physics.stepMinimum")*CLHEP::mm)
+    , g4MaxIntSteps_(pset.get<int>("physics.maxIntSteps"))
     , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep")*CLHEP::mm)
     , limitStepInAllVolumes_(pset.get<bool>("physics.limitStepInAllVolumes"))
   {
@@ -414,16 +419,21 @@ namespace mu2e {
 #if G4VERSION>4103
     } else if ( g4stepperName_  == "G4DormandPrince745" ) {
       _stepper = new G4DormandPrince745(_rhs);
+    } else if ( g4stepperName_  == "G4BogackiShampine23" ) {
+      _stepper = new G4BogackiShampine23(_rhs);
 #endif
     } else {
       _stepper = new G4SimpleRunge(_rhs);
       if ( _verbosityLevel > 0 ) cout << "Using default G4SimpleRunge stepper" << endl;
     }
-    G4ChordFinder * _chordFinder = new G4ChordFinder(_field,1.0e-2*CLHEP::mm,_stepper);
+    G4ChordFinder * _chordFinder = new G4ChordFinder(_field,g4StepMinimum_,_stepper);
     G4FieldManager * _manager = new G4FieldManager(_field,_chordFinder,true);
 
     // G4TransportationManager takes ownership of _manager
-    G4TransportationManager::GetTransportationManager()->SetFieldManager(_manager);
+
+    G4TransportationManager* transporationMgr =
+      G4TransportationManager::GetTransportationManager();
+    transporationMgr->SetFieldManager(_manager);
 
     // Define uniform field region in the detector solenoid, if neccessary
     if (bfconf->dsFieldForm() == BFieldConfig::dsModelUniform  ){
@@ -465,6 +475,10 @@ namespace mu2e {
     _manager->SetDeltaIntersection(g4DeltaIntersection_);
     _chordFinder->SetDeltaChord(g4DeltaChord_);
 
+    G4PropagatorInField* _propInField = transporationMgr->GetPropagatorInField();
+    _propInField->SetMaxLoopCount(g4MaxIntSteps_);
+
+
     if ( _verbosityLevel > 0 ) {
       cout << __func__ << " Stepper precision parameters: " << endl;
       cout << __func__ << " g4epsilonMin        " << _manager->GetMinimumEpsilonStep() << endl;
@@ -472,6 +486,10 @@ namespace mu2e {
       cout << __func__ << " g4DeltaOneStep      " << _manager->GetDeltaOneStep() << endl;
       cout << __func__ << " g4DeltaIntersection " << _manager->GetDeltaIntersection() << endl;
       cout << __func__ << " g4DeltaChord        " << _chordFinder->GetDeltaChord() << endl;
+      cout << __func__ << " g4StepMinimum       "
+           << dynamic_cast<G4MagInt_Driver*>(_chordFinder->GetIntegrationDriver())->GetHmin() << endl;
+      // the above assumes G4ChordFinder is instantiated in the way it is done above with the 3 parameters
+      cout << __func__ << " g4MaxIntStep        " << _propInField->GetMaxLoopCount() << endl;
     }
 
   } // end Mu2eWorld::constructBFieldAndManagers
@@ -485,7 +503,7 @@ namespace mu2e {
       art::ServiceHandle<mu2e::G4Helper>()->locateVolInfo(expression);
     for ( auto v : vols ){
       v->logical->SetUserLimits( stepLimit );
-      if(_verbosityLevel > 1)  {
+      if(_verbosityLevel > 0)  {
         std::cout<<"Activated step limit for volume "<<v->logical->GetName() <<std::endl;
       }
     }
@@ -525,7 +543,7 @@ namespace mu2e {
     // limits.  For now that is not necessary.
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     G4UserLimits* stepLimit = reg.add( G4UserLimits(bfieldMaxStep_) );
-    if(_verbosityLevel > 1) {
+    if(_verbosityLevel > 0) {
       std::cout<<"Using step limit = "<<bfieldMaxStep_/CLHEP::mm<<" mm"<<std::endl;
     }
 
