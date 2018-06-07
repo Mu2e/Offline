@@ -46,6 +46,7 @@ namespace mu2e {
     // A default c'tor is required for ROOT.
     SimParticle():
       _id(),
+      _stageOffset(),
       _parentSim(),
       _pdgId(),
       _genParticle(),
@@ -70,6 +71,7 @@ namespace mu2e {
     }
 
     SimParticle( key_type                       aid,
+                 unsigned                       stageOffset,
                  art::Ptr<SimParticle> const&   aparentSim,
                  PDGCode::type                  apdgId,
                  art::Ptr<GenParticle> const&   agenParticle,
@@ -81,6 +83,7 @@ namespace mu2e {
                  unsigned                       astartG4Status,
                  ProcessCode                    acreationCode):
       _id(aid),
+      _stageOffset(stageOffset),
       _parentSim(aparentSim),
       _pdgId(apdgId),
       _genParticle(agenParticle),
@@ -137,6 +140,8 @@ namespace mu2e {
     // Key of this track within the SimParticleCollection.  See notes 1 and 2.
     key_type  id() const {return _id;}
     key_type& id()       { return _id;}
+
+    unsigned stageOffset() const { return _stageOffset; }
 
     // The parent of this track; may be null.
     art::Ptr<SimParticle> const& parent() const { return _parentSim; }
@@ -223,6 +228,12 @@ namespace mu2e {
     // G4 ID number of this track and of its parent.
     // See notes 1 and 2.
     key_type _id;
+
+    // The offset between G4 track number and _id above, which
+    // uniquely identifies the Mu2eG4 simulation stage that produced
+    // this particle
+    unsigned _stageOffset;
+
     art::Ptr<SimParticle> _parentSim;
 
     // PDG particle ID code.  See note 1.

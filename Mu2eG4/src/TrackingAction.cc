@@ -59,6 +59,7 @@ namespace mu2e {
 
   TrackingAction::TrackingAction(const fhicl::ParameterSet& pset,
                                  Mu2eG4SteppingAction * steppingAction,
+                                 unsigned stageOffset,
                                  const Mu2eG4TrajectoryControl& trajectoryControl,
                                  const Mu2eG4ResourceLimits& lim):
     _debugList(pset.get<std::vector<int> >("debug.trackingActionEventList", std::vector<int>())),
@@ -73,6 +74,7 @@ namespace mu2e {
     _mcTrajectoryMinSteps(trajectoryControl.mcTrajectoryMinSteps()),
     _nKilledByFieldPropagator(0),
     _steppingAction(steppingAction),
+    _stageOffset(stageOffset),
     _processInfo(0),
     _printTrackTiming(pset.get<bool>("debug.printTrackTiming")),
     _spHelper(),
@@ -370,6 +372,7 @@ namespace mu2e {
     }
 
     _transientMap.insert(std::make_pair(kid,SimParticle( kid,
+                                                         _stageOffset,
                                                          parentPtr,
                                                          ppdgId,
                                                          genPtr,

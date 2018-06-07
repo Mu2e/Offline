@@ -396,7 +396,7 @@ namespace mu2e {
     _stackingAction = new Mu2eG4StackingAction(pset_, *stackingCuts_, *commonCuts_);
     _runManager->SetUserAction(_stackingAction);
 
-    _trackingAction = new TrackingAction(pset_, _steppingAction, trajectoryControl_, mu2elimits_);
+    _trackingAction = new TrackingAction(pset_, _steppingAction, multiStagePars_.simParticleNumberOffset(), trajectoryControl_, mu2elimits_);
     _runManager->SetUserAction(_trackingAction);
 
     // setting tracking/stepping verbosity level; tracking manager
