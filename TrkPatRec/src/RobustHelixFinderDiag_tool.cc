@@ -44,6 +44,9 @@ namespace mu2e {
       TH1F*  nXYSh   [2];
       TH1F*  nZPhiSh [2];
 
+      TH1F*  nfz0counter[2];
+      TH1F*  nfz0counter_0[2];
+
       TH1F*  nshsxy_0    [2];
       TH1F*  rsxy_0      [2];
       TH1F*  chi2dsxy_0  [2];
@@ -139,6 +142,11 @@ namespace mu2e {
     _hist.nXYSh  [1]    = Tfs->make<TH1F>("nXYShPos"     , "number of strawHits from the circle fit, Pos "   , 201, -0.5, 200.5);
     _hist.nZPhiSh[1]    = Tfs->make<TH1F>("nZPhiShPos"   , "number of strawHits from the z#phi fit, Pos "   , 201, -0.5, 200.5);
 
+    _hist.nfz0counter  [0]    = Tfs->make<TH1F>("nfz0counter_Neg"   , "counts used in initFZ for fz0 eval, Neg "   , 201, -0.5, 200.5);
+    _hist.nfz0counter  [1]    = Tfs->make<TH1F>("nfz0counter_Pos"   , "counts used in initFZ for fz0 eval, Pos "   , 201, -0.5, 200.5);
+
+    _hist.nfz0counter_0  [0]    = Tfs->make<TH1F>("nfz0counter0_Neg"   , "counts used in initFZ for fz0 eval, nsh #geq 15, Neg "   , 201, -0.5, 200.5);
+    _hist.nfz0counter_0  [1]    = Tfs->make<TH1F>("nfz0counter0_Pos"   , "counts used in initFZ for fz0 eval, nsh #geq 15, Pos "   , 201, -0.5, 200.5);
     _hist.nshsxy_0     [0]   = Tfs->make<TH1F>("nshsxy_0Neg"   , "number of strawHits from the xy fit, Neg "   , 201, -0.5, 200.5);
     _hist.nshsxy_0     [1]   = Tfs->make<TH1F>("nshsxy_0Pos"   , "number of strawHits from the xy fit, Pos "   , 201, -0.5, 200.5);
                            
@@ -228,8 +236,12 @@ namespace mu2e {
 	_hist.xyniter    [k]->Fill(_data->xyniter[k][i]    );
 	_hist.fzniter    [k]->Fill(_data->fzniter[k][i]    );
 
-	_hist.nXYSh      [k]->Fill(_data->nXYSh[k][i]      );
+	_hist.nXYSh      [k]->Fill(_data->nXYSh[k][i]      );       
 	_hist.nZPhiSh    [k]->Fill(_data->nZPhiSh[k][i]   );
+
+	if (_data->nXYSh[k][i] >= 15){
+	  _hist.nfz0counter_0  [k]->Fill(_data->nfz0counter[k][i]);
+	}
 
 	_hist.p          [k]->Fill(_data->p[k][i]          );
 	_hist.pT         [k]->Fill(_data->pT[k][i]         );
@@ -238,6 +250,8 @@ namespace mu2e {
 	_hist.chi2ZPhi   [k]->Fill(_data->chi2ZPhi[k][i]   );
 	_hist.dr         [k]->Fill(_data->dr[k][i]         );
 	_hist.chi2d_helix[k]->Fill(_data->chi2d_helix[k][i]);
+
+	_hist.nfz0counter  [k]->Fill(_data->nfz0counter[k][i]);
 
 	_hist.nshsxy_0     [k] ->Fill(_data->nshsxy_0[k][i]     );
                        

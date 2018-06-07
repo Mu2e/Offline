@@ -51,7 +51,7 @@ namespace mu2e
     _minnsh(pset.get<unsigned>("minNStrawHits",10)),
     _minnhit(pset.get<unsigned>("minNHit",5)),
     _minxyresid(pset.get<float>("minXYResid",5.)),
-    _refineXYFit(pset.get<int>("refineXYFit",1)),
+    _refineXYFit(pset.get<int>("refineXYFit",0)),
     _refineZPhiFit(pset.get<int>("refineZPhiFit",0)),
     _chi2xymax(pset.get<float>("chi2xymax",5.)),
     _chi2zphimax(pset.get<float>("chi2zphimax",5.)),
@@ -62,7 +62,7 @@ namespace mu2e
     _maxdfdz(pset.get<float>("maxDfDz",0.01)),
     _nphibins(pset.get<unsigned>("NPhiHistBins",25)),
     _phifactor(pset.get<float>("PhiHistRangeFactor",1.2)),
-    _minnphi(pset.get<unsigned>("MinNPhi",5)),
+    _minnphi(pset.get<unsigned>("MinNPhi",2)),//5)),//FIXME!
     _maxniter(pset.get<unsigned>("maxniter",100)),
     _minzsep(pset.get<float>("minzsep",100.0)),
     _maxzsep(pset.get<float>("maxzsep",500.0)),
@@ -319,7 +319,7 @@ namespace mu2e
 
 	    float dz = facezF2->z - facezF1->z;
 	    if (dz < _minzsep || dz > _maxzsep)          continue;
-	    float dphi = hitP2->_hphi - hitP1->_hphi;
+	    float dphi = deltaPhi(hitP1->_hphi, hitP2->_hphi);
 	    if (dphi*int(rhel.helicity()._value) < 0 || fabs(dphi) < _mindphi || fabs(dphi) > _maxdphi) continue;
 
 	    float lambda = dz/dphi;
@@ -357,11 +357,11 @@ namespace mu2e
 	hitP1 = &facezF1->fHitData.at(ip);
 	if (!use(*hitP1) )                          continue;   
 	
-	float phiex = rhel.circleAzimuth(facezF1->z);
+	float phiex = rhel.circleAzimuth(hitP1->pos().z());
 	float dphi  = deltaPhi(phiex,hit->helixPhi());
 	_hphi.Fill(dphi);
-	_hphi.Fill(dphi-CLHEP::twopi);
-	_hphi.Fill(dphi+CLHEP::twopi);
+	//	_hphi.Fill(dphi-CLHEP::twopi);//the function deltaPhi() returns always a value in the range [-pi,pi], so there is no need to add/subtruct 2Pi for the phi0 calculation
+	//	_hphi.Fill(dphi+CLHEP::twopi);
       }
     }
 
@@ -375,6 +375,10 @@ namespace mu2e
 	count += _hphi.GetBinContent(ibin);
 	fz0   += _hphi.GetBinContent(ibin)*_hphi.GetBinCenter(ibin);
       }
+    
+    if (_diag){
+      HelixData._diag.nfz0counter = count;
+    }
 
     if(count > _minnphi)
       {

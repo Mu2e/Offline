@@ -13,7 +13,6 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -107,8 +106,6 @@ namespace mu2e {
 
     const TTracker*                     _tracker;
     const DiskCalorimeter*              _calorimeter;
-
-    const TrackerCalibrations*          _trackerCalibrations;
 
     float                               _tdbuff; // following Dave - time division buffer
     
@@ -223,9 +220,6 @@ namespace mu2e {
     _tracker      = ttHandle.get();
     _data.tracker = _tracker;
     
-    mu2e::ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    _trackerCalibrations = tcal.operator ->();
-
     mu2e::GeomHandle<mu2e::DiskCalorimeter> ch;
     _calorimeter = ch.get();
 

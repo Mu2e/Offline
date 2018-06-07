@@ -444,14 +444,16 @@ namespace mu2e {
 	hit = &facez->fHitData.at(i);
 	// if (hit->_flag.hasAnyProperty(_outlier))     continue;//FIX ME! 
 	
-	double                  hit_z  = hit->pos().z();
+	double   hit_z  = hit->pos().z();
 	if ( isFirst ){ 
 	  z_start = hit_z;
 	  isFirst = false;
 	}
       
-	double                  shphi  = XYZVec(hit->pos() - rhel.center()).phi();
-	int                     nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
+	double   dx     = (hit->pos().x() - rhel.center().y());
+	double   dy     = (hit->pos().y() - rhel.center().y());
+	double   shphi  = polyAtan2(dy,dx);//XYZVec(hit->pos() - rhel.center()).phi();
+	int      nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
 	shphi = shphi + double(nLoops)*2.*M_PI;
 
 	ComboHit                hhit(*hit);
@@ -1078,9 +1080,11 @@ namespace mu2e {
 	  hit->_flag.merge(_outlier);
 	  if(!oldout) ++changed;
 	  continue;
-	}else {
-	  nGoodSH += hit->nStrawHits();
 	}
+	
+	if (oldout) ++changed;
+	
+	nGoodSH += hit->nStrawHits();
       }//end loop over the hits within a face
     }//end loop over the faces
     
@@ -1326,6 +1330,8 @@ namespace mu2e {
       _data.niter       [helCounter][loc] = helixData._diag.niter;
       _data.nrescuedhits[helCounter][loc] = helixData._diag.nrescuedhits;
    
+      _data.nfz0counter [helCounter][loc] = helixData._diag.nfz0counter;
+
       _data.nshsxy_0    [helCounter][loc] = helixData._diag.nshsxy_0;
       _data.rsxy_0      [helCounter][loc] = helixData._diag.rsxy_0;
       _data.chi2dsxy_0  [helCounter][loc] = helixData._diag.chi2dsxy_0;

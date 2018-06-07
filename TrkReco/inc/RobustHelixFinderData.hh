@@ -117,7 +117,8 @@ namespace mu2e {
       double    rsxy_1;
       double    chi2dsxy_1;
 
- 
+      int       nfz0counter;
+
       int       nshszphi;
       double    lambdaszphi;
       double    chi2dszphi;

@@ -51,6 +51,8 @@ namespace mu2e {
       int     nshsxy_1    [kMaxHelicities][kMaxSeeds];
       double  rsxy_1      [kMaxHelicities][kMaxSeeds];
       double  chi2dsxy_1  [kMaxHelicities][kMaxSeeds];
+      
+      int     nfz0counter [kMaxHelicities][kMaxSeeds];
                   
       int     nshszphi_1  [kMaxHelicities][kMaxSeeds];
       double  lambdaszphi_1[kMaxHelicities][kMaxSeeds];

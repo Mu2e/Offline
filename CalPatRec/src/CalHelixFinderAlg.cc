@@ -16,7 +16,6 @@
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "CalPatRec/inc/CalHelixFinderAlg.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
