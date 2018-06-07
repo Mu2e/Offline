@@ -1,0 +1,155 @@
+// Re-sample particles entering the DS, propagate them, and write out tracker hits
+// and compressed  calorimeter showers.  That is, we start with the same inputs
+// as regular beam stage 3, but our outputs correspond to stage 4.
+//
+// Andrei Gaponenko, 2018
+
+#include "JobConfig/beam/prolog.fcl"
+
+process_name: dsflash
+
+source: { module_type : EmptyEvent }
+services: { @table::mu2e.services.simServices }
+physics: { @table::mu2e.physics.g4s4Flash }
+outputs: { @table::mu2e.outputs.g4s4Defs }
+
+//----------------------------------------------------------------
+// Mofidy the CD3-like flash s4 setup for the resampling.
+
+// Take out truncated and CRV streams
+physics.trigger_paths: [ detPath ]
+physics.out: [ detectorOutput ]
+
+// We should run genCounter for all EmptyEvent jobs.
+physics.producers.genCounter: {module_type: GenEventCounter }
+
+// Bring in info from the previous stage
+physics.filters.flashResample: {
+   module_type: ResamplingMixer
+   fileNames: @nil
+   readMode: "randomNoReplace"
+   wrapFiles: true
+   mu2e: {
+      products: {
+	 genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+	 simParticleMixer: { mixingMap: [ [ "muonBeamFilter", "" ] ] }
+	 stepPointMCMixer: { mixingMap: [
+	       [ "muonBeamFilter:virtualdetector", ":" ],
+	       [ "muonBeamFilter:DSVacuum", ":" ]
+	    ] }
+      }
+   }
+}
+
+// Point Mu2eG4 to the pre-simulated data
+physics.producers.g4run.MultiStageParameters: {
+   simParticleNumberOffset: 300000
+   genInputHits:  [ "flashResample:DSVacuum" ]
+   inputSimParticles: "flashResample"
+   inputMCTrajectories: ""
+   inputPhysVolumeMultiInfo: "" # earlier info dropped
+}
+physics.producers.g4run.SDConfig.preSimulatedHits:  ["flashResample:virtualdetector"]
+
+
+//----------------------------------------------------------------
+// stopped muon daughter vetoing
+
+physics.producers.stoppedMuonFinder: {
+   module_type: "StoppedParticlesFinder"
+   particleInput: "g4run"
+   particleOffsetThreshold: 300000
+   particleTypes: [ 13 ]
+   physVolInfoInput: "g4run"
+   stoppingMaterial: "StoppingTarget_Al"
+   verbosityLevel: 1
+}
+
+physics.producers.stoppedMuonDaughters: {
+   module_type: SimParticleDaughterSelector
+   particleInput: "stoppedMuonFinder"
+   // EMCascade should not be vetoed because we do not re-simulate it
+   processes: [ "DIO", "NuclearCapture" ]
+}
+
+physics.producers.outOfTargetMuonFinder : {
+   module_type : StoppedParticlesFinder
+   particleInput : "g4run"
+   physVolInfoInput : "g4run"
+   vetoedMaterials : [ "StoppingTarget_Al" ]
+   particleTypes : [ 13 ] // mu-
+   particleOffsetThreshold: 300000
+   verbosityLevel: 1
+}
+
+physics.producers.outOfTargetMuonDaughters: {
+   module_type: SimParticleDaughterSelector
+   particleInput: "outOfTargetMuonFinder"
+   // We do re-simulate EMCascade for out of target stops
+   processes: [ "DIO", "NuclearCapture", "EMCascade" ]
+}
+
+physics.filters.flashPrefilter: {
+   module_type: FilterG4Out
+   noInstanceName : true
+   mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO" ]
+   extraHitInputs: [ "g4run:virtualdetector", "g4run:protonabsorber" ]
+   numSimParticleCollections: 1
+   vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ]
+}
+
+//----------------------------------------------------------------
+// Fix shower compressor config
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput: g4run
+physics.producers.CaloShowerStepFromStepPt.usePhysVolInfo: true
+physics.producers.CaloShowerStepFromStepPt.calorimeterStepPoints: "flashPrefilter:calorimeter"
+physics.producers.CaloShowerStepFromStepPt.calorimeterROStepPoints: "flashPrefilter:calorimeterRO"
+// The module needs to stop using getMany() and accept InputTags for configuration.
+// Until it is fixed, we have to use a hacked version.
+physics.producers.CaloShowerStepFromStepPt.module_type: CaloShowerStepFromStepPtHACKED
+
+
+//----------------------------------------------------------------
+// The final filter
+physics.filters.detectorFilter: {
+   module_type: "FilterG4Out"
+   noInstanceName: true
+   numSimParticleCollections: 1
+   mainHitInputs: [
+      "flashPrefilter:tracker"
+   ]
+   mainSPPtrInputs: [
+      "CaloShowerStepFromStepPt"
+   ]
+   extraHitInputs: [
+      "flashPrefilter:virtualdetector",
+      "flashPrefilter:protonabsorber"
+   ]
+}
+
+// Add genCounter and flashResample to the trigger path.
+physics.detPath: [ "genCounter", "flashResample", 
+   //need to remove compressPVDetector//  @sequence::physics.detPath
+   "g4run",
+   "g4consistent",
+   // Need to veto stopped muon daughters 
+   "stoppedMuonFinder",
+   "stoppedMuonDaughters",
+   "outOfTargetMuonFinder",
+   "outOfTargetMuonDaughters",
+
+   "flashPrefilter", # removes stopped muon daughters, filters out stuff not hitting tracker or calo
+
+   "CaloShowerStepFromStepPt",
+   "detectorFilter", # filters out particles in calo showers
+
+   "CaloShowerCrystalSteps",
+   "CaloShowerROSteps"
+]
+
+// Set output file names
+services.TFileService.fileName: "nts.owner.DS-flash.version.sequencer.root"
+outputs.detectorOutput.fileName: "sim.owner.DS-flash-TrkCal.version.sequencer.art"
+
+// Test:
+physics.filters.flashResample.fileNames: [ "/mu2e/data/users/gandr/20180524.cache/sim.mu2e.cd3-beam-g4s2-mubeam.0728a.001002_00000000.art" ]
