@@ -152,4 +152,4 @@ services.TFileService.fileName: "nts.owner.DS-flash.version.sequencer.root"
 outputs.detectorOutput.fileName: "sim.owner.DS-flash-TrkCal.version.sequencer.art"
 
 // Test:
-physics.filters.flashResample.fileNames: [ "/mu2e/data/users/gandr/20180524.cache/sim.mu2e.cd3-beam-g4s2-mubeam.0728a.001002_00000000.art" ]
+// physics.filters.flashResample.fileNames: [ "/mu2e/data/users/gandr/20180524.cache/sim.mu2e.cd3-beam-g4s2-mubeam.0728a.001002_00000000.art" ]
