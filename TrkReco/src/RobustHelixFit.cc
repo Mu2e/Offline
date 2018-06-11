@@ -79,7 +79,7 @@ namespace mu2e
 //    _mindelta(pset.get<float>("minDelta",500.0)),
     _lmin(pset.get<float>("minAbsLambda",130.0)),
     _lmax(pset.get<float>("maxAbsLambda",320.0)),
-    _targetcon(pset.get<bool>("targeconsistent",true)),
+    _targetcon(pset.get<bool>("targetconsistent",true)),
     _targetinter(pset.get<bool>("targetintersect",false)),
     _tripler(pset.get<bool>("TripleRadius",false)),
     _errrwt(pset.get<bool>("HitErrorWeight",false)),
