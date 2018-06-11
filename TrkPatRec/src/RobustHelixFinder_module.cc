@@ -17,6 +17,7 @@
 #include "GeneralUtilities/inc/Angles.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
 
+#include "DataProducts/inc/Helicity.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
@@ -121,7 +122,7 @@ namespace mu2e {
     MVATools _stmva, _nsmva;
     HelixHitMVA _vmva; // input variables to TMVA for filtering hits
 
-    TH1F* _niter, *_nitermva;
+    TH1F* _niter, *_niterxy, *_niterfz, *_nitermva;
 
     RobustHelixFit   _hfit;
     std::vector<Helicity> _hels; // helicity values to fit 
@@ -177,7 +178,7 @@ namespace mu2e {
     _ttcalc      (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
     _t0shift     (pset.get<float>("T0Shift",4.0)),
     _outlier     (StrawHitFlag::outlier),
-    _updateStereo    (pset.get<bool>("UpdateStereo",true))
+    _updateStereo    (pset.get<bool>("UpdateStereo",false))
   {
     std::vector<int> helvals = pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel});
     for(auto hv : helvals) {
@@ -203,6 +204,8 @@ namespace mu2e {
     if (_diag > 0){
       art::ServiceHandle<art::TFileService> tfs;
       _niter = tfs->make<TH1F>( "niter" , "Number of Fit Iteraions",201,-0.5,200.5);
+      _niterxy = tfs->make<TH1F>( "niterxy" , "Number of XY Fit Iteraions",201,-0.5,200.5);
+      _niterfz = tfs->make<TH1F>( "niterfz" , "Number of FZ Fit Iteraions",201,-0.5,200.5);
       _nitermva = tfs->make<TH1F>( "nitermva" , "Number of MVA Fit Iteraions",201,-0.5,200.5);
     }
   }
@@ -496,45 +499,46 @@ namespace mu2e {
     // iteratively fit the helix including filtering
     unsigned niter(0);
     unsigned nitermva(0);
-    bool changed(true);
-
+    bool changed(true), xychanged(true), fzchanged(true);
+    unsigned niterxy(0), niterfz(0);
     do {
-      unsigned xyniter(0);
-      unsigned xychanged = filterCircleHits(hseed);
-      while (hseed._status.hasAllProperties(TrkFitFlag::circleOK) && xyniter < _maxniter && xychanged) {
+      niterxy = 0;
+      xychanged = filterCircleHits(hseed) > 0;
+      while (hseed._status.hasAllProperties(TrkFitFlag::circleOK) && niterxy < _maxniter && xychanged) {
 	_hfit.fitCircle(hseed);
-	xychanged = filterCircleHits(hseed);
-	++xyniter;
+	xychanged = filterCircleHits(hseed) > 0;
+	++niterxy;
       } 
       // then fit phi-Z
       if (hseed._status.hasAnyProperty(TrkFitFlag::circleOK)) {
-	if (xyniter < _maxniter)
+	if (niterxy < _maxniter)
 	  hseed._status.merge(TrkFitFlag::circleConverged);
 	else
 	  hseed._status.clear(TrkFitFlag::circleConverged);
 
 	// solve for the longitudinal parameters
-	unsigned fzniter(0);
-	bool fzchanged(false);
+	niterfz = 0;
+	fzchanged = false;
 	do {
 	  _hfit.fitFZ(hseed);
 	  fzchanged = filterHits(hseed);
-	  ++fzniter;
-	} while (hseed._status.hasAllProperties(TrkFitFlag::phizOK)  && fzniter < _maxniter && fzchanged);
+	  ++niterfz;
+	} while (hseed._status.hasAllProperties(TrkFitFlag::phizOK)  && niterfz < _maxniter && fzchanged);
 
 	if (hseed._status.hasAnyProperty(TrkFitFlag::phizOK)) {
-	  if (fzniter < _maxniter)
+	  if (niterfz < _maxniter)
 	    hseed._status.merge(TrkFitFlag::phizConverged);
 	  else
 	    hseed._status.clear(TrkFitFlag::phizConverged);
 	}
       }
       ++niter;
+      changed = fzchanged || xychanged;
 
       // update the stereo hit positions; this checks how much the positions changed
       // do this only in non trigger mode
-
-      if (_updateStereo && _hfit.goodHelix(hseed.helix())) changed = updateStereo(hseed);      
+      if (_updateStereo && _hfit.goodHelix(hseed.helix()))
+	changed |= updateStereo(hseed);
     } while (_hfit.goodHelix(hseed.helix()) && niter < _maxniter && changed);
 
 
@@ -562,6 +566,8 @@ namespace mu2e {
     }
     if (_diag > 0){
       _niter->Fill(niter);
+      _niterfz->Fill(niterfz);
+      _niterxy->Fill(niterxy);
       _nitermva->Fill(nitermva);
       if (!_usemva) fillMVA(hseed);
     }
