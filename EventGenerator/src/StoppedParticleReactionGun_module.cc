@@ -59,6 +59,8 @@ namespace mu2e {
                                              double *elow,
                                              double *ehi);
 
+    GenId genId_;
+
     int verbosityLevel_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
@@ -83,6 +85,7 @@ namespace mu2e {
     , elow_()
     , ehi_()
     , spectrum_(parseSpectrumShape(psphys_, pdgId_, &elow_, &ehi_))
+    , genId_(GenId::findByName(psphys_.get<std::string>("genId", "StoppedParticleReactionGun")))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
@@ -91,10 +94,20 @@ namespace mu2e {
   {
     produces<mu2e::GenParticleCollection>();
 
+    if(genId_ == GenId::enum_type::unknown) {
+      throw cet::exception("BADCONFIG")<<"StoppedParticleReactionGun: unknown genId "
+                                       <<psphys_.get<std::string>("genId", "StoppedParticleReactionGun")
+                                       <<"\n";
+    }
+
     if(verbosityLevel_ > 0) {
       std::cout<<"StoppedParticleReactionGun: using = "
                <<stops_.numRecords()
                <<" stopped particles"
+               <<std::endl;
+
+      std::cout<<"StoppedParticleReactionGun: using GenId = "
+               <<genId_
                <<std::endl;
 
       std::cout<<"StoppedParticleReactionGun: producing particle "
@@ -192,7 +205,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector fourmom(p3, energy);
 
     output->emplace_back(pdgId_,
-                         GenId::StoppedParticleReactionGun,
+                         genId_,
                          pos,
                          fourmom,
                          stop.t);
