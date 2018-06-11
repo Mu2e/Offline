@@ -1136,6 +1136,7 @@ namespace mu2e {
 	    helixData._hseed._status.clear(TrkFitFlag::phizConverged);
 	}
       }
+      //here is where we should check for the hits within the face to searchfor missing/best ones
       ++niter;
 
       // update the stereo hit positions; this checks how much the positions changed

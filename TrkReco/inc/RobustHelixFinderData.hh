@@ -75,9 +75,9 @@ namespace mu2e {
   
     struct FaceZ_t {
       int                              fNHits;      // guess, total number of hits per panel
-      std::vector<ComboHit>            fHitData;
+      std::vector<ComboHit>            fHitData;    //FIXME! this needs to be changed to a reference
       double                           z;           // 
-      
+      //add something that points to the best hit (int, iterator,...)
       FaceZ_t    (){
 	fNHits  = 0;
       }
