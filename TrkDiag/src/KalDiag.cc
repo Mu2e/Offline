@@ -187,7 +187,8 @@ namespace mu2e
     KalDiag::fillTrkInfo(const KalRep* krep,TrkInfo& trkinfo) const {
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<DetectorSystem> det;
-    if(krep != 0 && krep->fitCurrent()){
+//    if(krep != 0 && krep->fitCurrent()){
+    if(krep != 0 ){
       trkinfo._status = krep->fitStatus().success();
       trkinfo._pdg = krep->particleType().particleType();
       trkinfo._t0 = krep->t0().t0();
