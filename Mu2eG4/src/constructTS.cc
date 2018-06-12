@@ -1521,7 +1521,7 @@ namespace mu2e {
 			"PbarAbs"
 			);
 	}
-      else 
+      else if ( pbarWindow.shape() != "disk" )
 	{
 	  throw cet::exception("GEOM")<<
 	    " Incorrect pbar window geometry requested! \n " ;

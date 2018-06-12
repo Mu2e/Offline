@@ -174,9 +174,9 @@ namespace mu2e {
       double rToFin = tgt->rOut()+tgt->finHeight()/2.0+0.1;
 
       double xMove = finZoff * sin(tgt->productionTargetRotation().theta());
-      CLHEP::Hep3Vector finOffset1(xMove,rToFin,finZoff);
-      CLHEP::Hep3Vector finOffset2(rToFin*cos(-M_PI/6.0)+xMove+0.15,rToFin*sin(-M_PI/6.0),finZoff-1.0);
-      CLHEP::Hep3Vector finOffset3(rToFin*cos(-5.0*M_PI/6.0)+xMove,rToFin*sin(-5.0*M_PI/6.0),finZoff);
+      CLHEP::Hep3Vector finOffset1(xMove,-rToFin,finZoff);
+      CLHEP::Hep3Vector finOffset2(rToFin*cos(M_PI/6.0)+xMove,rToFin*sin(M_PI/6.0),finZoff-1.0);
+      CLHEP::Hep3Vector finOffset3(-rToFin*cos(M_PI/6.0)+xMove-0.1,rToFin*sin(M_PI/6.0)+0.02,finZoff+0.2);
       CLHEP::HepRotation* rotFinBase = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
       rotFinBase->rotateX(90.0*CLHEP::degree);
       rotFinBase->rotateZ(90.0*CLHEP::degree);
@@ -184,8 +184,9 @@ namespace mu2e {
       CLHEP::HepRotation* rotFin1 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
       CLHEP::HepRotation* rotFin2 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
       CLHEP::HepRotation* rotFin3 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-      rotFin2->rotateX(2.0*M_PI/3.0);
-      rotFin3->rotateX(4.0*M_PI/3.0);
+      rotFin1->rotateX(M_PI);
+      rotFin2->rotateX(M_PI/3.0);
+      rotFin3->rotateX(5.0*M_PI/3.0);
       VolumeInfo fin1Vol("ProductionTargetFin1",
 			 _loclCenter,
 			 prodTargetMotherInfo.centerInWorld);

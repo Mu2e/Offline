@@ -41,7 +41,10 @@ namespace mu2e {
 
     // Determine if Alignment is being used and set up
     myAlignMap = NULL;
-    if( useAlignment) myAlignMap = art::ServiceHandle<AlignmentService>()->alignmentMap();
+    if( useAlignment) {
+      std::cout << "Using Alignment" << std::endl;
+      myAlignMap = art::ServiceHandle<AlignmentService>()->alignmentMap();
+    }
 
     buildIt( );
 
