@@ -81,7 +81,7 @@ mu2e::ComboHitPrinter::Print(const mu2e::ComboHit& obj, int ind, std::ostream& o
   } else if(verbose()==2) {
 
     os
-      << "  StrawId: " << std::setw(5) << obj.sid().asUint16()
+      << "  StrawId: " << std::setw(5) << obj.strawId().asUint16()
       << "   StrawHitFlag: ";
     for(auto sn: obj.flag().bitNames()) { 
       if(obj.flag().hasAnyProperty(StrawHitFlag(sn.first))) 

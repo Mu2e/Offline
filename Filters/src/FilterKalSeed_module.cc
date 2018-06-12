@@ -105,9 +105,9 @@ private:
   void copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_digi_mc) {
 
     // Get information from the old StrawDigiMC
-    double wetime[2] = {old_straw_digi_mc.wireEndTime(TrkTypes::cal), old_straw_digi_mc.wireEndTime(TrkTypes::hv)};
-    CLHEP::HepLorentzVector cpos[2] = {old_straw_digi_mc.clusterPosition(TrkTypes::cal), old_straw_digi_mc.clusterPosition(TrkTypes::hv)};
-    art::Ptr<StepPointMC> stepMC[2] = {old_straw_digi_mc.stepPointMC(TrkTypes::cal), old_straw_digi_mc.stepPointMC(TrkTypes::hv)};
+    double wetime[2] = {old_straw_digi_mc.wireEndTime(StrawEnd::cal), old_straw_digi_mc.wireEndTime(StrawEnd::hv)};
+    CLHEP::HepLorentzVector cpos[2] = {old_straw_digi_mc.clusterPosition(StrawEnd::cal), old_straw_digi_mc.clusterPosition(StrawEnd::hv)};
+    art::Ptr<StepPointMC> stepMC[2] = {old_straw_digi_mc.stepPointMC(StrawEnd::cal), old_straw_digi_mc.stepPointMC(StrawEnd::hv)};
 
     art::Ptr<StepPointMC> newStepMCPtrs[2];
     for (int i_tdc = 0; i_tdc<2; ++i_tdc) {

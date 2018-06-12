@@ -43,8 +43,6 @@
 #include "CalPatRec/inc/CalHelixFinderData.hh"
 
 // Mu2e
-#include "ConditionsService/inc/TrackerCalibrations.hh"
-
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 
@@ -120,7 +118,6 @@ namespace mu2e {
     CalHelixFinderData                    _hfResult;
 
     const TTracker*                       _tracker     ; // straw tracker geometry
-    const TrackerCalibrations*            _trackerCalib; // 
     const Calorimeter*                    _calorimeter ; // cached pointer to the calorimeter geometry
 //-----------------------------------------------------------------------------
 // diagnostics 

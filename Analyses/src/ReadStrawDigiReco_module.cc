@@ -124,8 +124,8 @@ void mu2e::ReadStrawDigiReco::analyze(art::Event const& evt) {
     // Calculate number of digis per wire
     ++nhperwire[index];
 
-    auto t0 = digi.TDC(TrkTypes::cal);
-    auto t1 = digi.TDC(TrkTypes::hv);
+    auto t0 = digi.TDC(StrawEnd::cal);
+    auto t1 = digi.TDC(StrawEnd::hv);
     auto const& adcs = digi.adcWaveform();
 
     _hDigiTime0 ->Fill(t0);

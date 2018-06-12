@@ -64,7 +64,6 @@ namespace art {
 
 // Mu2e
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -138,7 +137,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     const StrawHitCollection*             _shcol;
     const StrawHitFlagCollection*         _shfcol;
-    const StrawHitPositionCollection*     _shpcol;
+    // const StrawHitPositionCollection*     _shpcol;
 
     const KalSeedCollection*              _trkseeds;
 
@@ -150,9 +149,6 @@ namespace mu2e {
     int                                   _nindex;
     int                                   _nrescued;    // by the seed fit
 
-    const TrackerCalibrations*            _trackerCalib;
-
-    TFolder*                              _folder;
     int                                   _eventid;
 //-----------------------------------------------------------------------------
 // diagnostics histograms

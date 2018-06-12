@@ -330,7 +330,7 @@ namespace mu2e
     {
       if (!chit.flag().hasAllProperties(StrawHitFlag::active)) continue;
       const ComboHit& ch = (*_chcol)[chit.index()];
-      hitplanes[ch.sid().plane()] += ch.nStrawHits();
+      hitplanes[ch.strawId().plane()] += ch.nStrawHits();
     }
 
     unsigned ipmin(0),ipmax(StrawId::_nplanes-1); 

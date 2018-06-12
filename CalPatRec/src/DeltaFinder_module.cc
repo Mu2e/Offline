@@ -13,7 +13,6 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -110,8 +109,6 @@ namespace mu2e {
 
     const TTracker*                     _tracker;
     const DiskCalorimeter*              _calorimeter;
-
-    const TrackerCalibrations*          _trackerCalibrations;
 
     float                               _tdbuff; // following Dave - time division buffer
     
@@ -228,9 +225,6 @@ namespace mu2e {
     _tracker      = ttHandle.get();
     _data.tracker = _tracker;
     
-    mu2e::ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    _trackerCalibrations = tcal.operator ->();
-
     mu2e::GeomHandle<mu2e::DiskCalorimeter> ch;
     _calorimeter = ch.get();
 
@@ -318,11 +312,11 @@ namespace mu2e {
       // double shlen = straw->getDetail().activeHalfLength();
       //      if (fabs(tddist) >= shlen + _tdbuff)                 continue;
 
-      cx.Station                 = sh->sid().station();  //straw->id().getStation();
-      cx.Plane                   = sh->sid().plane() % 2;//straw->id().getPlane() % 2;
+      cx.Station                 = sh->strawId().station();  //straw->id().getStation();
+      cx.Plane                   = sh->strawId().plane() % 2;//straw->id().getPlane() % 2;
       cx.Face                    = -1;
-      cx.Panel                   = sh->sid().panel();    //straw->id().getPanel();
-      cx.Layer                   = sh->sid().layer();    //straw->id().getLayer();
+      cx.Panel                   = sh->strawId().panel();    //straw->id().getPanel();
+      cx.Layer                   = sh->strawId().layer();    //straw->id().getLayer();
 
 					      // get Z-ordered location
       orderID(&cx, &co);

@@ -43,8 +43,6 @@ namespace mu2e {
     TrkStrawHitVector tshv;
     convert(krep->hitVector(),tshv);
     for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
-// don't allow the hit to auto-update its ambiguity
-      (*itsh)->setAmbigUpdate(false);
 // get the drift radius
       double rdrift = (*itsh)->driftRadius();
       if(rdrift <= _mindrift){

@@ -16,7 +16,7 @@
 #endif/*__GCCXML__*/
 
 // data
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -41,7 +41,7 @@ namespace mu2e
   {
   public:
 // define different ambiguity resolution strategies
-    enum ambigStrategy {fixedambig=0,pocaambig=1,hitambig=2,panelambig=3,doubletambig=4};
+    enum ambigStrategy {fixedambig=0,hitambig=2,panelambig=3,doubletambig=4};
 // different locations to which the track may be extended
     enum extent {noextension=-1,target=0,ipa=1,tracker=2,calo=3};
 // parameter set should be passed in on construction
@@ -51,11 +51,11 @@ namespace mu2e
 
     virtual ~KalFit();
 // // create a fit object from a track definition
-//     void makeTrack(const StrawHitCollection* shcol, TrkDef& tdef, KalRep*& kres);
+//     void makeTrack(const ComboHitCollection* shcol, TrkDef& tdef, KalRep*& kres);
 // create a fit object from  a track seed, 
-    void makeTrack(const StrawHitCollection* shcol, KalSeed const& kseed, KalRep*& kres);
+    void makeTrack(const ComboHitCollection* shcol, KalSeed const& kseed, KalRep*& kres);
 // add a set of hits to an existing fit
-    void addHits(KalRep* kres,const StrawHitCollection* shcol, std::vector<StrawHitIndex> indices, double maxchi);
+    void addHits(KalRep* kres,const ComboHitCollection* shcol, std::vector<StrawHitIndex> indices, double maxchi);
 // add materials to a track
     bool unweedHits(KalRep* kres, double maxchi);
 // KalContext interface
@@ -93,7 +93,7 @@ namespace mu2e
     bool fitable(KalSeed const& kseed);
     void initT0(KalRep* krep);
     
-    void makeTrkStrawHits  (const StrawHitCollection* shcol, HelixTraj const& htraj,
+    void makeTrkStrawHits  (const ComboHitCollection* shcol, HelixTraj const& htraj,
 			    std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv );
     void makeTrkCaloHit    (KalSeed const& kseed, TrkCaloHit *&tch);
     void makeMaterials     (TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);

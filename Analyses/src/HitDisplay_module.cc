@@ -80,6 +80,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
@@ -181,9 +182,9 @@ namespace mu2e {
     moduleLabel_              (pset.get<std::string>("module_label"                )),
     generatorModuleLabel_     (pset.get<std::string>("generatorModuleLabel"        )),
     g4ModuleLabel_            (pset.get<std::string>("g4ModuleLabel"               )),
-    fStrawHitMaker            (pset.get<std::string>("strawHitMakerModuleLabel"    )),
-    fStrawHitPosMaker         (pset.get<std::string>("strawHitPosMakerModuleLabel" )),
-    fStrawHitFlagMaker        (pset.get<std::string>("strawHitFlagMakerModuleLabel")),
+    fStrawHitMaker            (pset.get<std::string>("comboHitMakerModuleLabel"    )),
+    fStrawHitPosMaker         (pset.get<std::string>("comboHitPosMakerModuleLabel" )),
+    fStrawHitFlagMaker        (pset.get<std::string>("comboHitFlagMakerModuleLabel")),
     trackerStepPoints_        (pset.get<std::string>("trackerStepPoints"           )),
     minEnergyDep_             (pset.get<double>     ("minEnergyDep",0              )),
     timeWindow_               (pset.get<double>     ("timeWindow"  ,1.e6           )),
@@ -280,7 +281,7 @@ namespace mu2e {
 
   	  const TrkStrawHit* hit = (*ihit);
 
-	  const StrawHit* sh = &hit->strawHit();
+	  const ComboHit* sh = &hit->comboHit();
 	  Straw*   straw = (Straw*) &hit->straw();
 
 	  double len = hit->fltLen();
@@ -294,7 +295,7 @@ namespace mu2e {
 		 len,
 		 hit->hitRms(),
 		 plen.x(),plen.y(),plen.z(),
-		 sh->time(), sh->dt()
+		 sh->time(), sh->wireDist()
 		 );
 
 	  Hep3Vector pos;

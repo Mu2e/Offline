@@ -1,5 +1,6 @@
 
 #include "Validation/inc/ValStrawDigi.hh"
+#include "DataProducts/inc/StrawEnd.hh"
 
 int mu2e::ValStrawDigi::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
@@ -22,7 +23,7 @@ int mu2e::ValStrawDigi::fill(const mu2e::StrawDigiCollection & coll,
   _hN->Fill(coll.size()); 
   _hN2->Fill(coll.size()); 
   for(auto sd : coll) {
-    for (size_t ie=0; ie<TrkTypes::nends; ie++) {  // for the two straw ends
+    for (size_t ie=0; ie<StrawEnd::nends; ie++) {  // for the two straw ends
       _htdc->Fill(sd.TDC()[ie]);
     }
     for(auto const& a : sd.adcWaveform()) _hadc->Fill(a); // ADC values (ints)

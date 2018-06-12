@@ -690,10 +690,10 @@ namespace mu2e {
 	    //-----------------------------------------------------------------------------
 	    mc->fListOfHits.push_back(hd);
 	      
-	      // StrawId   shid  = sh->sid();
+	      // StrawId   shid  = sh->strawId();
 	      // const Straw& straw = _data->tracker->getStraw(shid);
 	      // int station        = straw.id().getStation();
-	    int station        = sh->sid().station();
+	    int station        = sh->strawId().station();
 
 	    if (station < mc->fFirstStation) mc->fFirstStation = station;
 	    if (station > mc->fLastStation ) mc->fLastStation  = station;
@@ -919,8 +919,8 @@ namespace mu2e {
 
 	    printf("seed %2i:%03i %5i %2i ",st,ps,seed->fGood,seed->fType);
 	    if (seed->fType != 0) {
-	      printf("(%5i:%9i)",seed->fHitData[0]->fHit->sid().straw()/*strawIndex().asInt()*/,seed->fPreSeedMcPart[0]->fID);//FIXME!
-	      printf("(%5i:%9i)",seed->fHitData[1]->fHit->sid().straw()/*strawIndex().asInt()*/,seed->fPreSeedMcPart[1]->fID);//FIXME!
+	      printf("(%5i:%9i)",seed->fHitData[0]->fHit->strawId().straw()/*strawIndex().asInt()*/,seed->fPreSeedMcPart[0]->fID);//FIXME!
+	      printf("(%5i:%9i)",seed->fHitData[1]->fHit->strawId().straw()/*strawIndex().asInt()*/,seed->fPreSeedMcPart[1]->fID);//FIXME!
 	    }
 	    else {
 	      printf("(%5i:%9i)",-1,-1);
@@ -947,7 +947,7 @@ namespace mu2e {
 		McPart_t* mcp = seed->fMcPart[face][ih];
 		int mcid = mcp->fID;
 		if ((nprinted == 0) && (first_line == 0)) printf("%21s","");
-		printf("(%5i:%9i)",hit->sid().straw()/*strawIndex().asInt()*/,mcid);
+		printf("(%5i:%9i)",hit->strawId().straw()/*strawIndex().asInt()*/,mcid);
 		nprinted++;
 		if (nprinted == 5) {
 		  printf("\n");
@@ -1004,8 +1004,8 @@ namespace mu2e {
 		int f1 = ds->fType % 10;
 
 		printf(" (%5i:%9i, %5i:%9i)",
-		       ds->hitlist[f0][0]->fHit->sid().straw()/*strawIndex().asInt()*/,ds->fMcPart[f0][0]->fID,
-		       ds->hitlist[f1][0]->fHit->sid().straw()/*strawIndex().asInt()*/,ds->fMcPart[f1][0]->fID
+		       ds->hitlist[f0][0]->fHit->strawId().straw()/*strawIndex().asInt()*/,ds->fMcPart[f0][0]->fID,
+		       ds->hitlist[f1][0]->fHit->strawId().straw()/*strawIndex().asInt()*/,ds->fMcPart[f1][0]->fID
 		       );//FIXME!
 	      }
 	      else {
@@ -1108,14 +1108,14 @@ namespace mu2e {
     // const mu2e::Straw* straw = &_data->tracker->getStraw(sh->strawIndex());
     
     printf("%5i ",loc);
-    printf("%5i" ,sh->sid().straw()/*strawIndex().asInt()*/);
+    printf("%5i" ,sh->strawId().straw()/*strawIndex().asInt()*/);
 	
     printf("  %2i:%2i %1i %1i %2i   %8.3f %7.3f  %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
-	   sh->sid().station(),//straw->id().getStation(),
-	   sh->sid().plane(),  //straw->id().getPlane(),
-	   sh->sid().panel(),  //straw->id().getPanel(),
-	   sh->sid().layer(),  //straw->id().getLayer(),
-	   sh->sid().straw(),  //straw->id().getStraw(),
+	   sh->strawId().station(),//straw->id().getStation(),
+	   sh->strawId().plane(),  //straw->id().getPlane(),
+	   sh->strawId().panel(),  //straw->id().getPanel(),
+	   sh->strawId().layer(),  //straw->id().getLayer(),
+	   sh->strawId().straw(),  //straw->id().getStraw(),
 	   sh->time(),
 	   -1.,//sh->dt(),//FIXME!
 	   sh->energyDep(),
@@ -1195,13 +1195,13 @@ namespace mu2e {
     // const mu2e::Straw* straw = &_data->tracker->getStraw(Sh->strawIndex());
     
     printf("%5i ",loc);
-    printf("%5i" ,Sh->sid().straw());//FIXME! Sh->strawIndex().asInt());
+    printf("%5i" ,Sh->strawId().straw());//FIXME! Sh->strawIndex().asInt());
 	
     printf("  %5i  %5i   %5i   %5i   %8.3f   %8.3f   %9.6f   %10i   %10i  %8.3f %5i %5i\n",
-	   Sh->sid().plane(),  //straw->id().getPlane(),
-	   Sh->sid().panel(),  //straw->id().getPanel(),
-	   Sh->sid().layer(),  //straw->id().getLayer(),
-	   Sh->sid().straw(),  //straw->id().getStraw(),
+	   Sh->strawId().plane(),  //straw->id().getPlane(),
+	   Sh->strawId().panel(),  //straw->id().getPanel(),
+	   Sh->strawId().layer(),  //straw->id().getLayer(),
+	   Sh->strawId().straw(),  //straw->id().getStraw(),
 	   Sh->time(),
 	   -1.,                //Sh->dt(),//FIXME!
 	   Sh->energyDep(),

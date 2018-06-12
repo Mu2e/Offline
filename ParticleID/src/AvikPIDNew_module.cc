@@ -951,7 +951,7 @@ namespace mu2e {
           const DetStrawElem* strawelem = detmodel.strawElem(hit->straw());
           path = 2.*strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
           gaspaths.push_back(path);
-          edeps.push_back(hit->strawHit().energyDep());
+          edeps.push_back(hit->comboHit().energyDep());
         }
       }
 

@@ -3,7 +3,7 @@
 //  Virtual class providing structure for extracting charge from ADC waveforms
 
 #include "TrkHitReco/inc/PeakFitParams.hh"
-#include "TrackerConditions/inc/StrawElectronics.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 namespace mu2e {
@@ -11,7 +11,7 @@ namespace mu2e {
   namespace TrkHitReco {
 	
     
-    enum FitType {peakminusped=1,combopeakfit=2,peakfit=3};
+    enum FitType {peakminuspedavg=1,peakminusped=2,combopeakfit=3,peakfit=4};
 
     class PeakFit {
        
@@ -27,13 +27,13 @@ namespace mu2e {
 	// Initialize values to be used as parameters in fit
 	void initializeFit(TrkTypes::ADCWaveform const& adcData, PeakFitParams & fit) const;
 
-	PeakFit(const StrawElectronics& strawele, const fhicl::ParameterSet& pset);
+	PeakFit(const StrawResponse& srep, const fhicl::ParameterSet& pset);
 	virtual ~PeakFit(){}
 
 
       protected:
       
-	const StrawElectronics& _strawele;
+	const StrawResponse& _srep;
 	TrkHitReco::FitType  _fittype; 
 
 	
