@@ -1,0 +1,35 @@
+# Original author KLGenser
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+
+# Give this job a name.  
+process_name : SimParticleAnalyzer
+
+services : {
+   message : @local::mf_production
+   GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }  
+   ConditionsService :{ conditionsfile : "Mu2eG4/test/conditions_01.txt" } 
+   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+}
+
+physics :
+{
+  analyzers:
+  {
+
+    simParticles:
+    {
+      module_type            : SimParticleAnalyzer 
+      g4ModuleLabel          : g4run
+      maxPrint               : 10
+      verbosityLevel         : -1
+    }
+
+  } 
+
+  e1 : [simParticles]
+
+  end_paths      : [e1]
+
+}
