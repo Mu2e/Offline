@@ -19,16 +19,23 @@ process_name: detmixfull
 
 outputs.fullOutput.fileName: "sim.owner.detmix-full.version.sequencer.art"
 
-# Set mean values for the number of events to mix for each process.
-# These are relative to a single proton on target.
-# See docdb-6273.  These are the pass 2 numbers (s4 with Offline v5_6_6)
+# MDC2018 values 
+# TrkCal
+physics.filters.flashMixerTrkCal.mu2e.meanEventsPerProton    : 9.75E-04 # low stats FIXME!
+physics.filters.ootMixerTrkCal.mu2e.meanEventsPerProton      : 2.4185E-05
+physics.filters.neutronMixerTrkCal.mu2e.meanEventsPerProton  : 1.8790E-05
+physics.filters.dioMixerTrkCal.mu2e.meanEventsPerProton      : 3.8434E-06
+physics.filters.photonMixerTrkCal.mu2e.meanEventsPerProton   : 8.6966E-06
+physics.filters.protonMixerTrkCal.mu2e.meanEventsPerProton   : 7.4322E-07
+physics.filters.deuteronMixerTrkCal.mu2e.meanEventsPerProton : 1.6261E-07
+# CRV
+physics.filters.ootMixerCRV.mu2e.meanEventsPerProton	  : 4.5379E-06
+physics.filters.neutronMixerCRV.mu2e.meanEventsPerProton  : 3.6173E-07
+physics.filters.dioMixerCRV.mu2e.meanEventsPerProton      : 3.2816E-07
+physics.filters.photonMixerCRV.mu2e.meanEventsPerProton   : 1.3449E-07
+physics.filters.PSMixerCRV.mu2e.meanEventsPerProton	  : 9.5035E-05
+physics.filters.TSMixerCRV.mu2e.meanEventsPerProton	  : 2.4368E-06
+physics.filters.DSMixerCRV.mu2e.meanEventsPerProton	  : 2.8126E-04
+# fix
+physics.filters.flashMixerTrkCal.mu2e.products.genParticleMixer: { mixingMap: [ [ "flashResample", "" ] ] }
 
-# FIXME: the numbers should be updated for MDC2018
-
-physics.filters.flashMixerTrkCal.mu2e.meanEventsPerProton    : 1.89e-3
-physics.filters.ootMixerTrkCal.mu2e.meanEventsPerProton      : 4.70e-5
-physics.filters.neutronMixerTrkCal.mu2e.meanEventsPerProton  : 2.36e-5
-physics.filters.dioMixerTrkCal.mu2e.meanEventsPerProton      : 8.37e-6
-physics.filters.photonMixerTrkCal.mu2e.meanEventsPerProton   : 9.50e-6
-physics.filters.protonMixerTrkCal.mu2e.meanEventsPerProton   : 8.05e-7
-physics.filters.deuteronMixerTrkCal.mu2e.meanEventsPerProton : 1.74e-7

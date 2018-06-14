@@ -38,7 +38,13 @@ mixerTemplateTrkCal.mu2e.products: {
 #----------------------------------------------------------------
 mixerTemplateCRV: @local::mixerTemplateCommon
 mixerTemplateCRV.mu2e.products: {
-   # FIXME: what do we need to mix for CRV?
+   genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+   simParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
+   stepPointMCMixer: { mixingMap:
+      [
+	 [ "crvFilter:CRV", ":" ]
+      ]
+   }
 }
 
 #----------------------------------------------------------------
@@ -74,6 +80,7 @@ BackgroundFrameMixing: {
       }
 
       filters: {
+	# TrkCal
 	 flashMixerTrkCal    : @local::mixerTemplateTrkCal
 	 ootMixerTrkCal      : @local::mixerTemplateTrkCal
 	 neutronMixerTrkCal  : @local::mixerTemplateTrkCal
@@ -81,6 +88,14 @@ BackgroundFrameMixing: {
 	 photonMixerTrkCal   : @local::mixerTemplateTrkCal
 	 protonMixerTrkCal   : @local::mixerTemplateTrkCal
 	 deuteronMixerTrkCal : @local::mixerTemplateTrkCal
+	 # CRV
+	 PSMixerCRV	     : @local::mixerTemplateCRV 
+	 TSMixerCRV	     : @local::mixerTemplateCRV 
+	 DSMixerCRV	     : @local::mixerTemplateCRV
+	 ootMixerCRV	     : @local::mixerTemplateCRV 
+	 neutronMixerCRV     : @local::mixerTemplateCRV 
+	 dioMixerCRV	     : @local::mixerTemplateCRV 
+	 photonMixerCRV	     : @local::mixerTemplateCRV 
       }
 
       analyzers: {
@@ -91,8 +106,9 @@ BackgroundFrameMixing: {
       p1: [ genCounter, protonBunchIntensity,
 	 flashMixerTrkCal,
 	 ootMixerTrkCal, neutronMixerTrkCal, dioMixerTrkCal,
-	 photonMixerTrkCal, protonMixerTrkCal, deuteronMixerTrkCal
-	 # FIXME: add CRV mixers here
+	 photonMixerTrkCal, protonMixerTrkCal, deuteronMixerTrkCal,
+	 PSMixerCRV, TSMixerCRV, DSMixerCRV,
+	 ootMixerCRV, neutronMixerCRV, dioMixerCRV, photonMixerCRV
       ]
       e1: [genCountLogger, fullOutput]
 
