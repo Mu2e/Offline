@@ -4,3 +4,8 @@
 	   This release is NOT ready for digi making
 
 
+1) June 13, 2018 genser
+
+   - added SimParticleAnalyzer_module
+	Analyses/fcl/simParticleAnalyzer.fcl
+	Analyses/src/SimParticleAnalyzer_module.cc
