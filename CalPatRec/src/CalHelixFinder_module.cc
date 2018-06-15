@@ -421,13 +421,17 @@ namespace mu2e {
     // printf("[CalHelixFinder::initHelixSeed] Index      X          Y         Z          PHI\n");
       
     double     z_start(0);
+    bool       isFirst(true);
     HelSeed._hhits.setParent(_chcol->parent());
     for (int i=0; i<nhits; ++i){
       const StrawHitIndex     loc    = HfResult._goodhits[i];
       const ComboHit*         hit    = &(_chcol->at(loc));
       // const StrawHitPosition& shpos  = _shpcol->at(loc);
       double                  hit_z  = hit->pos().z();
-      if ( i==0 ) z_start = hit_z;
+      if (isFirst){
+	z_start = hit_z;
+	isFirst = false;
+      }
       
       double                  shphi  = XYZVec(hit->pos() - HelSeed._helix.center()).phi();
       int                     nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
@@ -435,7 +439,7 @@ namespace mu2e {
 
       ComboHit                hhit(*hit);//,loc,shphi);
       hhit._hphi = shphi;
-      hhit._flag.clear(StrawHitFlag::resolvedphi);
+      hhit._flag.merge(StrawHitFlag::resolvedphi);
 					
       hhit._flag.merge(_shfcol->at(loc)); // merge in other flags, hit Quality no yet assigned
       HelSeed._hhits.push_back(hhit);
