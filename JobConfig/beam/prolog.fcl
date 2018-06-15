@@ -87,7 +87,7 @@ mu2e.outputs.g4s4Defs: {
       SelectEvents: [crvPath]
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
-         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu3e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
          "keep *_crvFilter_*_*",
          "keep *_compressPVCRV_*_*"

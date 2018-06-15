@@ -36,6 +36,9 @@ physics.filters.photonMixerCRV.mu2e.meanEventsPerProton   : 1.3449E-07
 physics.filters.PSMixerCRV.mu2e.meanEventsPerProton	  : 9.5035E-05
 physics.filters.TSMixerCRV.mu2e.meanEventsPerProton	  : 2.4368E-06
 physics.filters.DSMixerCRV.mu2e.meanEventsPerProton	  : 2.8126E-04
-# fix
+# fixes
 physics.filters.flashMixerTrkCal.mu2e.products.genParticleMixer: { mixingMap: [ [ "flashResample", "" ] ] }
+physics.filters.PSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
+physics.filters.TSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
+physics.filters.DSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
 

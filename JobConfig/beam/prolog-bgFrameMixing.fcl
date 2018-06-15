@@ -46,7 +46,6 @@ mixerTemplateCRV.mu2e.products: {
       ]
    }
 }
-
 #----------------------------------------------------------------
 
 BackgroundFrameMixing: {

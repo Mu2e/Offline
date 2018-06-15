@@ -1,0 +1,36 @@
+// Re-sample CRV data.  This dumps subrun headers from CD3
+// while doing concatenation for MDC2018
+#include "JobConfig/beam/prolog.fcl"
+process_name: CRVcat
+
+physics.producers.genCounter: {module_type: GenEventCounter }
+physics.filters.crvFilter: {
+   module_type: ResamplingMixer
+   fileNames: @nil
+   readMode: "randomNoReplace"
+   wrapFiles: true
+   mu2e: {
+      products: {
+	 genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+	 simParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
+	 stepPointMCMixer: { mixingMap: [ [ "crvFilter:CRV", ":" ] ] }
+      }
+   }
+}
+
+
+source: { module_type : EmptyEvent }
+services: { @table::mu2e.services.simServices }
+outputs: { @table::mu2e.outputs.g4s4Defs }
+
+physics.out: [ crvOutput ]
+
+physics.crvPath: [ crvFilter ]
+
+outputs.crvOutput.outputCommands:   [ "drop *_*_*_*",
+				      "keep *_crvFilter_*_*" ]
+
+// Set output file names
+services.TFileService.fileName: "nts.owner.CRV-cat.version.sequencer.root"
+outputs.crvOutput.fileName: "sim.owner.CRV-cat.version.sequencer.art"
+
