@@ -28,8 +28,13 @@ physics : {
     @table::TrkAna.analyzers
     @table::TrkDiag.analyzers
     genCountLogger: { module_type: GenEventCountReader }
+
+    Validation : {
+      module_type : Validation
+      validation_level : 1
+    }
   }
 
   TriggerPath : [ @sequence::TrkAna.RecoSequence ]
-  EndPath : [ genCountLogger, @sequence::TrkAna.EndSequence, SHD ]
+  EndPath : [ genCountLogger, @sequence::TrkAna.EndSequence, SHD, Validation ]
 }

@@ -52,7 +52,7 @@ namespace mu2e {
       return m_keys.find(key) != m_keys.end();
     }
 
-    std::set<cet::map_vector_key>& keys() {
+    const std::set<cet::map_vector_key>& keys() const {
       return m_keys;
     }
 
@@ -96,8 +96,7 @@ private:
   art::InputTag _comboHitTag;
   art::InputTag _strawDigiMCTag;
   std::vector<art::InputTag> _simParticleTags;
-  art::InputTag _extraStepPointMCTag;
-  std::vector<int> _extraStepPointMCVolIDs;
+  std::vector<art::InputTag> _extraStepPointMCTags;
   std::vector<art::InputTag> _timeMapTags;
 
   // handles to the old collections
@@ -135,8 +134,7 @@ mu2e::CompressMCTrkCollections::CompressMCTrkCollections(fhicl::ParameterSet con
     _comboHitTag(pset.get<art::InputTag>("comboHitTag")),
     _strawDigiMCTag(pset.get<art::InputTag>("strawDigiMCTag")),
     _simParticleTags(pset.get<std::vector<art::InputTag> >("simParticleTags")),
-    _extraStepPointMCTag(pset.get<art::InputTag>("extraStepPointMCTag", "")),
-    _extraStepPointMCVolIDs(pset.get<std::vector<int> >("extraStepPointMCVolIDs")),
+    _extraStepPointMCTags(pset.get<std::vector<art::InputTag> >("extraStepPointMCTags")),
     _timeMapTags(pset.get<std::vector<art::InputTag> >("timeMapTags"))
 {
   // Call appropriate produces<>() functions here.
@@ -207,13 +205,14 @@ void mu2e::CompressMCTrkCollections::produce(art::Event & event)
   // Loop through the combo hits
   event.getByLabel(_comboHitTag, _comboHitsHandle);
   const auto& comboHits = *_comboHitsHandle;
+
   for (unsigned int i_straw_hit = 0; i_straw_hit < comboHits.size(); ++i_straw_hit) {
     const mu2e::StrawHitFlag& strawHitFlag = comboHits.at(i_straw_hit).flag();
     StrawHitIndex hit_index = i_straw_hit;
     
     // write out the StrawHits that have the StrawHitFlags we want
     if (_wantedHitFlag == "") {
-      addStrawHitMCProducts(hit_index);
+	addStrawHitMCProducts(hit_index);
     }
     else {
       mu2e::StrawHitFlag wanted(_wantedHitFlag);
@@ -224,12 +223,20 @@ void mu2e::CompressMCTrkCollections::produce(art::Event & event)
   }
   
   // Get the hits from the virtualdetector
-  if (_extraStepPointMCTag != "") {
-    const auto& stepPointMCs = event.getValidHandle<StepPointMCCollection>(_extraStepPointMCTag);
-    for (const auto& volID : _extraStepPointMCVolIDs) {
-      for (const auto& stepPointMC : *stepPointMCs) {
-	if (stepPointMC.volumeId() == static_cast<mu2e::VirtualDetectorId>(volID)) {
-	  copyStepPointMC(stepPointMC);
+  for (std::vector<art::InputTag>::const_iterator i_tag = _extraStepPointMCTags.begin(); i_tag != _extraStepPointMCTags.end(); ++i_tag) {
+    const auto& stepPointMCs = event.getValidHandle<StepPointMCCollection>(*i_tag);
+    for (const auto& stepPointMC : *stepPointMCs) {
+      for (const auto& simPartsToKeep : _simParticlesToKeep) {
+	const art::ProductID& oldProdID = simPartsToKeep.first;
+	if (stepPointMC.simParticle().id() != oldProdID) {
+	  continue;
+	}
+	const SimParticleSelector& simParticles = simPartsToKeep.second;
+	const std::set<cet::map_vector_key>& alreadyKeptKeys = simParticles.keys();
+	for (const auto& alreadyKeptKey : alreadyKeptKeys) {
+	  if (stepPointMC.simParticle()->id() == alreadyKeptKey) {
+	    copyStepPointMC(stepPointMC);
+	  }
 	}
       }
     }

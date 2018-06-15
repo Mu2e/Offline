@@ -34,8 +34,11 @@ physics : {
     genCountLogger: { module_type: GenEventCountReader }
   }
 
-  TriggerPath : [ @sequence::EventMixing.CD3Mixers, @sequence::TrkAna.SimSequence, @sequence::TrkHitReco.PrepareHits ]
-  EndPath : [ genCountLogger ]
+  TriggerPath : [ @sequence::EventMixing.CD3Mixers, 
+  	      	  @sequence::TrkAna.SimSequence, 
+		  @sequence::TrkHitReco.PrepareHits ]
+
+  EndPath : [ genCountLogger, DigiOutput ]
 }
 
 outputs : {

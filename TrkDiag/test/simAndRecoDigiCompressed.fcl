@@ -34,8 +34,7 @@ physics : {
 	  comboHitTag : "makeSH"
 	  strawDigiMCTag : "makeSD"
 	  simParticleTags : [ "detectorFilter", "protonMixer", "deuteronMixer", "photonMixer", "neutronMixer", "ootMixer", "dioMixer", "flashMixer" ]
-	  extraStepPointMCTag : "detectorFilter:virtualdetector"
-	  extraStepPointMCVolIDs : [ 13, 14 ] # TT_FrontHollow, TT_FrontPA
+	  extraStepPointMCTags : [ "detectorFilter:virtualdetector" ]
 	  timeMapTags : [ "protonTimeMap", "muonTimeMap" ]
       }
 
@@ -52,7 +51,11 @@ physics : {
     genCountLogger: { module_type: GenEventCountReader }
   }
 
-  TriggerPath : [ @sequence::EventMixing.CD3Mixers, @sequence::TrkAna.SimSequence, @sequence::TrkHitReco.PrepareHits, compressMCTrk, compressRecoTrk ]
+  TriggerPath : [ @sequence::EventMixing.CD3Mixers, 
+  	      	  @sequence::TrkAna.SimSequence, 
+		  @sequence::TrkHitReco.PrepareHits, 
+		  compressMCTrk, 
+		  compressRecoTrk ]
   EndPath : [ genCountLogger ]
 }
 
