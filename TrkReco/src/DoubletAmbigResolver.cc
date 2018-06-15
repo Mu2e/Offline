@@ -418,7 +418,7 @@ namespace mu2e {
       Hit->setAmbig(0);
     }
 
-    Hit->setAmbigUpdate(false);
+    //    Hit->setAmbigUpdate(false);//DEBUG GIANIPEZ
 
   }
 
@@ -757,7 +757,7 @@ namespace mu2e {
     
     for (int i=0; i<2; i++) {
       hit[i] = HitDoublet->fHit[r.index[i]];
-      hit[i]->setAmbigUpdate(false);
+      //      hit[i]->setAmbigUpdate(false);//DEBUG GIANIPEZ
 //-----------------------------------------------------------------------------
 // update the straw hit info inside the doublet, however don't rush 
 // to resolve the hit sign ambiguities, do it only when completely sure
@@ -1222,11 +1222,11 @@ namespace mu2e {
 
 	    if (ih == jbest) {
 	      hit->setAmbig(_sign[bd.fIBest][0]);
-	      hit->setAmbigUpdate(false);
+	      //	      hit->setAmbigUpdate(false);
 	    }
 	    else if (ih == kbest) {
 	      hit->setAmbig(_sign[bd.fIBest][1]);
-	      hit->setAmbigUpdate(false);
+	      //	      hit->setAmbigUpdate(false);
 	    }
 	    else {
 //-----------------------------------------------------------------------------
@@ -1255,21 +1255,21 @@ namespace mu2e {
 
 	      if ( fabs(rdrift) > _minDriftDoublet){
 		hit->setAmbig(doublet->fStrawAmbig[ih]);
-		hit->setAmbigUpdate(false);
+		//		hit->setAmbigUpdate(false);//GIANIPEZ DEBUG
 	      }
 	      else {
 		if (_Final == 0) {
 		  hit->setAmbig(0);
 		  //		  hit->setTemperature(rdrift/hit->driftVelocity());
 		  hit->setPenalty(fabs(rdrift));
-		  hit->setAmbigUpdate(false);
+		  //		  hit->setAmbigUpdate(false);// GIANIPEZ DEBUG
 		}
 		else {
 //-----------------------------------------------------------------------------
 // final decision
 //-----------------------------------------------------------------------------
 		  hit->setAmbig(doublet->fStrawAmbig[ih]);
-		  hit->setAmbigUpdate(false);
+		  //		  hit->setAmbigUpdate(false);// gianipez DEBUG
 		}
 	      }
 	    }

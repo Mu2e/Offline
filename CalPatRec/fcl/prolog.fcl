@@ -267,11 +267,11 @@ CalPatRec : { @table::CalPatRec
 	maxhitchi                               : 5. # 3.5
 	maxPull                                 : 10.
 	maxweed                                 : 10
-	mingap				    : 1.0
-	ambiguityStrategy    		    : [ 4    , 4    , 4    , 4   , 4    , 4    , 4    , 4   , 4    ]
-	AddMaterial		                    : [ false, false, false, true, false, false, false, true, true ]
-	hiterr 		                    : [ 80.  , 24.  , 8.   , 4.  , 2.   , 0.8  , 0.0  , 0.0 , 0.0  ]
-	t0Tolerance				    : [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
+	mingap				        : 1.0
+	ambiguityStrategy    		        : [ 4    , 4    , 4    , 4   , 4    , 4    , 4    , 4   , 4    ]
+	AddMaterial		                : [ false, false, false, true, false, false, false, true, true ]
+	hiterr 		                        : [ 80.  , 24.  , 8.   , 4.  , 2.   , 0.8  , 0.0  , 0.0 , 0.0  ]
+	t0Tolerance			        : [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
 	# not used t0ErrorFactor                           : 1.2                # scale ?
 	minT0DOCA                               : -0.2               # 
 	t0window                                : 2.5

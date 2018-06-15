@@ -2,7 +2,6 @@
 #ifndef RobustHelixFinderData_HH
 #define RobustHelixFinderData_HH
 
-#include "TObject.h"
 #include "Mu2eUtilities/inc/LsqSums4.hh"
 // #include "CalPatRec/inc/CalHelixPoint.hh"
 
@@ -29,7 +28,7 @@ namespace mu2e {
   //---------------------------------------------------------------------------
   // output struct
   //-----------------------------------------------------------------------------
-  class RobustHelixFinderData : public TObject {
+  class RobustHelixFinderData {
   public:
    
 

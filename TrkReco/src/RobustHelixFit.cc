@@ -368,7 +368,7 @@ namespace mu2e
 
     // take the average of the maximum bin +- 1
     int imax = _hphi.GetMaximumBin();
-    if ( (imax <1) || (imax>_nphibins)) ###put excpetion throw
+    // if ( (imax <1) || (imax>_nphibins)) ###put excpetion throw
     float count(0.0);
     float fz0(0.0);
     for (int ibin=std::max((int)0,imax-1); ibin <= std::min((int)imax+1,(int)_nphibins); ++ibin)

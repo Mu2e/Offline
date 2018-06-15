@@ -175,7 +175,7 @@ namespace mu2e
 // construct the explicit ambiguity resolvers, 1 instance per iteration
     size_t niter = _ambigstrategy.size();
     for(size_t iter=0; iter<niter; ++iter) {
-      int Final = iter==niter-1 ? 1 : 0;
+      int Final(0);//      int Final = iter==niter-1 ? 1 : 0;
       AmbigResolver* ar(0);
       switch (_ambigstrategy[iter]) {
       case fixedambig:
@@ -201,6 +201,13 @@ namespace mu2e
       else
         throw cet::exception("RECO")<<"mu2e::KalFit: unknown ambiguity resolver " << _ambigstrategy[iter] << " for iteration " << iter << endl;
     }
+
+    // //DEBUG GIANIPEZ
+    // if (_ambigstrategy[niter-1] == doubletambig) {
+    //   int Final(0);
+    //   AmbigResolver* ar = new DoubletAmbigResolver(doubletPset,_herr[niter-1],niter,Final);
+    //   _ambigresolver.push_back(ar);
+    // }
     
 //-----------------------------------------------------------------------------
 // print routine
@@ -408,7 +415,8 @@ namespace mu2e
     for (auto itsh=thv->begin();itsh!=thv->end(); ++itsh){
       (*itsh)->setTemperature(_herr[iter]);
     }
-    // update t0, and propagate it to the hits
+ 
+   // update t0, and propagate it to the hits
     double oldt0 = kalData.krep->t0()._t0;
     unsigned niter(0);
     bool changed(true);
@@ -480,7 +488,7 @@ namespace mu2e
       const StrawHit& strawhit(kalData.shcol->at(index));
       const Straw& straw = _tracker->getStraw(strawhit.strawId());
       TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,ths.index(),ths.t0(),ths.trkLen(),
-					    _herr.front(),_maxpull,_strHitW,_mint0doca);
+					    _herr.front(),_maxpull,_strHitW,_mint0doca);//FIXME! testing 2018-06-13
       assert(trkhit != 0);
       // set the initial ambiguity
       trkhit->setAmbig(ths.ambig());
@@ -971,15 +979,9 @@ namespace mu2e
   void
   KalFit::initT0(KalFitData&kalData) {
     TrkT0 t0;
-    using namespace boost::accumulators;
-    // make an array of all the hit times, correcting for propagation delay
-    unsigned nind = kalData.krep->hitVector().size();
-    std::vector<double> times;
-    std::vector<double> timesweight;
-    times.reserve(nind);
-    timesweight.reserve(nind);
+    const CaloCluster* cl = kalData.caloCluster;
+    double          t0flt = kalData.krep->referenceTraj()->zFlight(0);//htraj.zFlight(0.0);
     // get flight distance of z=0
-    double t0flt = kalData.krep->referenceTraj()->zFlight(0);//htraj.zFlight(0.0);
     // estimate the momentum at that point using the helix parameters.  This is
     // assumed constant for this crude estimate
     double loclen;
@@ -988,27 +990,55 @@ namespace mu2e
     double mom = TrkMomCalculator::vecMom(*htraj,bField(),t0flt).mag();
     // compute the particle velocity
     double vflt = kalData.krep->particleType().beta(mom)*CLHEP::c_light;
-    // use the reference trajectory, as that's what all the existing hits do
-    const TrkDifPieceTraj* reftraj = (kalData.krep->referenceTraj());
-    // loop over hits
-    double      htime(0);    
-    for(auto ith=kalData.krep->hitVector().begin(); ith!=kalData.krep->hitVector().end(); ++ith){
-      (*ith)->trackT0Time(htime, t0flt, reftraj, vflt);
-      times.push_back(htime);
-      timesweight.push_back((*ith)->t0Weight());
-    }
 
-    // find the median time
-    accumulator_set<double,stats<tag::weighted_variance >,double >         wmean;
-    //fill the accumulator using the weights
-    int nhits(times.size());
-    for (int i=0; i<nhits; ++i){
-      wmean(times.at(i), weight=timesweight.at(i));
+    if (cl) {
+//-----------------------------------------------------------------------------
+// calculate the path length of the particle from the middle of the Tracker to the
+// calorimeter, cl->Z() is calculated wrt the tracker center
+// _dtoffset : global time offset between the tracker and the calorimeter, 
+//             think of an average cable delay
+//-----------------------------------------------------------------------------
+      const HelixTraj* hel  = kalData.helixTraj;
+      Hep3Vector       gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
+      Hep3Vector       tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+      double           path = tpos.z()/hel->sinDip();
+
+      t0._t0    =  cl->time() + _dtoffset - path/vflt;
+      t0._t0err = 1;
+      //set the new T0
+      kalData.krep->setT0(t0, t0flt);
     }
-    t0._t0    = extract_result<tag::weighted_mean>(wmean);
-    t0._t0err = sqrt(extract_result<tag::weighted_variance>(wmean)/nhits);
-    //set the new T0
-    kalData.krep->setT0(t0, t0flt);
+    else {
+      using namespace boost::accumulators;
+      // make an array of all the hit times, correcting for propagation delay
+      unsigned nind = kalData.krep->hitVector().size();
+      std::vector<double> times;
+      std::vector<double> timesweight;
+      times.reserve(nind);
+      timesweight.reserve(nind);
+
+      // use the reference trajectory, as that's what all the existing hits do
+      const TrkDifPieceTraj* reftraj = (kalData.krep->referenceTraj());
+      // loop over hits
+      double      htime(0);    
+      for(auto ith=kalData.krep->hitVector().begin(); ith!=kalData.krep->hitVector().end(); ++ith){
+	(*ith)->trackT0Time(htime, t0flt, reftraj, vflt);
+	times.push_back(htime);
+	timesweight.push_back((*ith)->t0Weight());
+      }
+
+      // find the median time
+      accumulator_set<double,stats<tag::weighted_variance >,double >         wmean;
+      //fill the accumulator using the weights
+      int nhits(times.size());
+      for (int i=0; i<nhits; ++i){
+	wmean(times.at(i), weight=timesweight.at(i));
+      }
+      t0._t0    = extract_result<tag::weighted_mean>(wmean);
+      t0._t0err = sqrt(extract_result<tag::weighted_variance>(wmean)/nhits);
+      //set the new T0
+      kalData.krep->setT0(t0, t0flt);
+    }
   }
 
   void
