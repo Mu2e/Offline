@@ -488,6 +488,15 @@ namespace mu2e {
 // update external hit errors.  This isn't strictly necessary on the 1st iteration.
 //-----------------------------------------------------------------------------
   void KalFitHackNew::fitIteration(KalFitResultNew& KRes, int Iteration) {
+//-----------------------------------------------------------------------------------
+// 2015 -02 -17 G. Pezzullo: loop over the hits and assign a smaller external error
+// for the doublets
+// 2015-04-03: IHErr = -1: special value, invoke last iteration .. 
+// 2016-05-08 P.Murat: there are Niter+1 ambig resolvers, so last iteration = _hiterr.size()-1
+//-----------------------------------------------------------------------------------
+    if (Iteration == -1) Iteration = _hiterr.size()-1;
+
+    _annealingStep     = Iteration;
 
     // update the external hit errors.  This isn't strictly necessary on the 1st iteration.
     TrkHitVector* thv   = &(KRes.krep->hitVector());
@@ -506,15 +515,7 @@ namespace mu2e {
       printf("[KalFitHackNew::fitIteration] BEGIN Iteration:%i \n", Iteration);
       printf("------------------------------------------------------------------------------------------\n");
     }
-//-----------------------------------------------------------------------------------
-// 2015 -02 -17 G. Pezzullo: loop over the hits and assign a smaller external error
-// for the doublets
-// 2015-04-03: IHErr = -1: special value, invoke last iteration .. 
-// 2016-05-08 P.Murat: there are Niter+1 ambig resolvers, so last iteration = _hiterr.size()-1
-//-----------------------------------------------------------------------------------
-    if (Iteration == -1) Iteration = _hiterr.size()-1;
 
-    _annealingStep     = Iteration;
 //--------------------------------------------------------------------------------
 // 2015-02-19 G.Pezzu: re-search multiplets using updated fit results
 // 2015-03-25 P.Murat: *TODO* I don't think this call is needed, the one in the
