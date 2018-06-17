@@ -80,7 +80,7 @@ physics: {
       ootMixerCRV, neutronMixerCRV, dioMixerCRV, photonMixerCRV,
       @sequence::EventMixing.TimeMaps,
       @sequence::TrackerMC.DigiSim,
-	 @sequence::CaloDigiMC.DigiSim,
+      @sequence::CaloDigiMC.DigiSim,
       @sequence::CrvDAQPackage.CrvResponseSequence
    ]
    e1: [genCountLogger, fullOutput]
