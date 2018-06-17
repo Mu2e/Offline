@@ -10,24 +10,17 @@
 #  Dave Brown (LBNL), 20 May 2015
 #  Andrei Gaponenko,   3 Nov 2015
 #
-
 #include "JobConfig/beam/prolog-bgFrameMixing.fcl"
+#include "TrackerMC/fcl/prolog.fcl"
+#include "EventMixing/fcl/prolog.fcl"
+#include "CaloMC/fcl/prolog.fcl"
+#include "CRVResponse/fcl/prolog_v07.fcl"
+#include "fcl/standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#
+process_name: digimixfull
 
-process_name: detmixfull
-
-#----------------------------------------------------------------
-
-source : { module_type : EmptyEvent maxEvents :  @nil }
-
-services: {
-   message: @local::default_message
-   RandomNumberGenerator: { }
-   SeedService: {
-      policy            : "autoIncrement"
-      baseSeed          : 0  # defined for interactive tests here, overridden by generate_fcl for real jobs
-      maxUniqueEngines  : 20
-   }
-}
+services : @local::Services.Sim
 
 physics: {
    producers: {
@@ -43,6 +36,13 @@ physics: {
          Lognormal_sigma : 0.3814
          MeanNumberOfProtonsPerMicrobunch: 3.9e7
       }
+
+     @table::TrackerMC.producers
+     @table::CaloDigiMC.producers
+     @table::CrvDAQPackage.producers
+     protonTimeMap: { module_type : GenerateProtonTimes }
+     muonTimeMap: { module_type : GenerateMuonLife }
+
    }
 
    filters: {
@@ -62,6 +62,7 @@ physics: {
       neutronMixerCRV     : @local::mixerTemplateCRV 
       dioMixerCRV	     : @local::mixerTemplateCRV 
       photonMixerCRV	     : @local::mixerTemplateCRV 
+      #
    }
 
    analyzers: {
@@ -69,17 +70,21 @@ physics: {
    }
 
    # trigger path
-   p1: [ genCounter, protonBunchIntensity,
+   p1: [ 
+      #genCounter,
+      protonBunchIntensity,
       flashMixerTrkCal,
       ootMixerTrkCal, neutronMixerTrkCal, dioMixerTrkCal,
       photonMixerTrkCal, protonMixerTrkCal, deuteronMixerTrkCal,
       PSMixerCRV, TSMixerCRV, DSMixerCRV,
-      ootMixerCRV, neutronMixerCRV, dioMixerCRV, photonMixerCRV
+      ootMixerCRV, neutronMixerCRV, dioMixerCRV, photonMixerCRV,
+      @sequence::EventMixing.TimeMaps,
+      @sequence::TrackerMC.DigiSim,
+	 @sequence::CaloDigiMC.DigiSim,
+      @sequence::CrvDAQPackage.CrvResponseSequence
    ]
    e1: [genCountLogger, fullOutput]
 
-   trigger_paths  : [p1]
-   end_paths      : [e1]
 }
 
 outputs: {
@@ -88,9 +93,6 @@ outputs: {
       fileName    : @nil
    }
 }
-
-outputs.fullOutput.fileName: "sim.owner.detmix-full.version.sequencer.art"
-
 # MDC2018 values 
 # TrkCal
 physics.filters.flashMixerTrkCal.mu2e.meanEventsPerProton    : 9.75E-04 # low stats FIXME!
@@ -113,4 +115,7 @@ physics.filters.flashMixerTrkCal.mu2e.products.genParticleMixer: { mixingMap: [ 
 physics.filters.PSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
 physics.filters.TSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
 physics.filters.DSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
+
+outputs.fullOutput.fileName: "sim.owner.detmix-full.version.sequencer.art"
+
 

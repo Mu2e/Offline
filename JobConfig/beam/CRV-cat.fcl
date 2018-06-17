@@ -32,5 +32,4 @@ outputs.crvOutput.outputCommands:   [ "drop *_*_*_*",
 
 // Set output file names
 services.TFileService.fileName: "nts.owner.CRV-cat.version.sequencer.root"
-outputs.crvOutput.fileName: "sim.owner.CRV-cat.version.sequencer.art"
 

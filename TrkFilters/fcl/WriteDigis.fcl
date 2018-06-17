@@ -29,13 +29,14 @@ physics :
     @table::TrkHitReco.producers
     @table::Tracking.TrkTrigger.producers
     @table::CaloDigiMC.producers
+    protonTimeMap: { module_type : GenerateProtonTimes }
+    muonTimeMap: { module_type : GenerateMuonLife }
   }
   filters : {
     @table::EventMixing.filters
   }
 }
 #define output module
-# NB: Calorimeter digis currently have a provenance (?) problem and cannot be written out
 outputs: {
   WriteDigis : {
     module_type: RootOutput
