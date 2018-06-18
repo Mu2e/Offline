@@ -158,7 +158,7 @@ namespace mu2e {
       *ehi = psphys.get<double>("ehi");
       res.initialize<SimpleSpectrum>(*elow, *ehi, *ehi-*elow, SimpleSpectrum::Spectrum::Flat );
     }
-    else if (spectrumShape == "conversion") {
+    else if (spectrumShape == "eendpoint") {
       // A simple kludge: ignore the random distribution by setting elow=ehi=eConversion
       res.initialize<SimpleSpectrum>(0., 1., 1., SimpleSpectrum::Spectrum::Flat );
       *elow = *ehi = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy();

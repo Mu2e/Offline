@@ -55,26 +55,21 @@ generate: {
 }
 
 StoppedMuonConversionGun: {
-    module_type    : StoppedMuonConversionGun
-    czmin          : -1.0
-    czmax          :  1.0
+    module_type    : StoppedParticleReactionGun
+    genId : conversionGun 
+    physics: {
+      pdgId : 11
+      spectrumShape: conversion
+      spectrumVariable: totalEnergy
+    }
     muonStops      : @local::mu2e.tgtMuonStops
     // Also phimin and phimax defaulting to [0,2pi]
 }
 
 StoppedParticleReactionGun: {
     module_type    : StoppedParticleReactionGun
-    czmin          : -1.0
-    czmax          :  1.0
     muonStops      : @local::mu2e.tgtMuonStops
     verbosityLevel : 0
-    physics        : {
-	pdgId            : 11
-	spectrumVariable : "totalEnergy"
-	spectrumShape    : "flat"
-	elow             : 105.0012
-	ehi              : 105.0014
-    }
 }
 
 StoppedMuonXRayGammaRayGun: {
@@ -97,16 +92,6 @@ EventGenerator : {
     producers : {
 	StoppedMuonConversionGun   : { @table::StoppedMuonConversionGun   }
 	StoppedParticleReactionGun : { @table::StoppedParticleReactionGun }
-
-  	egun : { @table::StoppedParticleReactionGun # p(e)=105 MeV/c
-	    physics : {
-		pdgId            :  11
-		elow             : 104.97175
-		ehi              : 104.97176
-		spectrumVariable : "momentum"
-		spectrumShape    : "flat"
-	    }
-	}
 
   	egun005 : { @table::StoppedParticleReactionGun # p(e)=5 MeV/c
 	    physics : {
@@ -133,8 +118,6 @@ EventGenerator : {
   	ceLeadingLog : { @table::StoppedParticleReactionGun # CE + rad corr
 	    physics : {
 		pdgId            :  11
-		elow             :   0
-		ehi              : 105
 		spectrumVariable : "totalEnergy"
 		spectrumShape    : "tabulated"
 		spectrumFileName : "ConditionsService/data/szafron_mu2e_7615.tbl"
@@ -158,8 +141,6 @@ EventGenerator : {
   	dioallo : { @table::StoppedParticleReactionGun # DIO Al LO 
 	    physics : {
 		pdgId            :  11
-		elow             : 0.511
-		ehi              : 105.0015
 		spectrumVariable : "totalEnergy"
 		spectrumShape    : "tabulated"
 		spectrumFileName : "ConditionsService/data/czarnecki_Al.tbl"
@@ -172,8 +153,6 @@ EventGenerator : {
   	dioalll : { @table::StoppedParticleReactionGun # DIO Al leading log 
 	    physics : {
 		pdgId            :  11
-		elow             : 105.0010
-		ehi              : 105.0015
 		spectrumVariable : "totalEnergy"
 		spectrumShape    : "tabulated"
 		spectrumFileName : "ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
