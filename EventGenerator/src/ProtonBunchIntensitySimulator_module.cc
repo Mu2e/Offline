@@ -40,6 +40,7 @@ namespace mu2e {
       double _nmean; // mean number of protons/microbunch hitting the target
       double _width; // fractional full width of the flat distribution
       double _sig, _mu, _lnmean; // lognormal parameters
+      double _maxrel; // maximum relative intensity
       int _diag; // level of diag histograms
       int _printLevel; // level of diagnostic printout
       double _flimits[2]; // cache of the limits for the flat distribution
@@ -56,6 +57,7 @@ namespace mu2e {
     _model(static_cast<ProtonIntensityModel>(pset.get<int>("IntensityModel",flat))),
     _nmean(pset.get<double>("MeanNumberOfProtonsPerMicrobunch")),
     _width(pset.get<double>("FullRelativeWidth",0.5)),
+    _maxrel(pset.get<double>("MaximumRelativeIntensity",4.0)),
     _diag(pset.get<int>("DiagLevel",0)),
     _printLevel(pset.get<int>("PrintLevel",0)),
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
@@ -105,7 +107,7 @@ namespace mu2e {
 	fintensity = _randflat.fire(_flimits[0],_flimits[1]);
 	break;
       case lognorm:
-	fintensity = _nmean*_lognd(_urbg)/_lnmean;
+	fintensity = _nmean*std::min(_maxrel,_lognd(_urbg))/_lnmean;
 	break;
     }
     // convert to nearest ingeger
