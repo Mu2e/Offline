@@ -1,16 +1,11 @@
 ////////////////////////////////////////////////////////////////////////
-// Class:       CompressMCTrkCollections
+// Class:       CompressDigiMCs
 // Plugin Type: producer (art v2_06_02)
-// File:        CompressMCTrkCollections_module.cc
+// File:        CompressDigiMCs_module.cc
 //
-// Creates a new MC collections that have been reduced
-// in size based on a given StrawHitFlag bit
-//
-// If you want to filter on another StrawHitFlag bit (e.g. you want to store 
-// hits near to track hits), then create a new module that will create a
-// new StrawHitFlagCollection and the new StrawHitFlag bit. Then you can pass
-// the new StrawHitFlagCollection and StrawHitFlag bit to this module.
-//
+// Creates new StrawDigiMC and CrvDigiMC collections after creating new
+// StepPointMC, SimParticle, GenParticle and SimParticleTimeMaps with all 
+// unnecessary MC objects removed
 //
 // Generated at Wed Apr 12 16:10:46 2017 by Andrew Edmonds using cetskelgen
 // from cetlib version v2_02_00.
@@ -28,9 +23,9 @@
 
 #include <memory>
 
-#include "RecoDataProducts/inc/ComboHit.hh"
-
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
+
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
@@ -38,7 +33,7 @@
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
 
 namespace mu2e {
-  class CompressMCTrkCollections;
+  class CompressDigiMCs;
 
   class SimParticleSelector {
   public:
@@ -67,53 +62,48 @@ namespace mu2e {
 }
 
 
-class mu2e::CompressMCTrkCollections : public art::EDProducer {
+class mu2e::CompressDigiMCs : public art::EDProducer {
 public:
-  explicit CompressMCTrkCollections(fhicl::ParameterSet const & pset);
+  explicit CompressDigiMCs(fhicl::ParameterSet const & pset);
   // The compiler-generated destructor is fine for non-base
   // classes without bare pointers or other resource use.
 
   // Plugins should not be copied or assigned.
-  CompressMCTrkCollections(CompressMCTrkCollections const &) = delete;
-  CompressMCTrkCollections(CompressMCTrkCollections &&) = delete;
-  CompressMCTrkCollections & operator = (CompressMCTrkCollections const &) = delete;
-  CompressMCTrkCollections & operator = (CompressMCTrkCollections &&) = delete;
+  CompressDigiMCs(CompressDigiMCs const &) = delete;
+  CompressDigiMCs(CompressDigiMCs &&) = delete;
+  CompressDigiMCs & operator = (CompressDigiMCs const &) = delete;
+  CompressDigiMCs & operator = (CompressDigiMCs &&) = delete;
 
   // Required functions.
   void produce(art::Event & event) override;
 
   // Other functions
-  void addStrawHitMCProducts(StrawHitIndex index);
   void copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_digi_mc);
+  void copyCrvDigiMC(const mu2e::CrvDigiMC& old_crv_digi_mc);
   art::Ptr<StepPointMC> copyStepPointMC(const mu2e::StepPointMC& old_step);
 
 private:
 
-  // the straw hit flag that the new straw hit products need to have (see RecoDataProducts/src/StrawHitFlag.cc for the options)
-  std::string _wantedHitFlag;
-
   // art tags for the input collections
-  art::InputTag _comboHitTag;
   art::InputTag _strawDigiMCTag;
+  art::InputTag _crvDigiMCTag;
+
   std::vector<art::InputTag> _simParticleTags;
   std::vector<art::InputTag> _extraStepPointMCTags;
   std::vector<art::InputTag> _timeMapTags;
 
   // handles to the old collections
-  art::Handle<ComboHitCollection> _comboHitsHandle;
   art::Handle<StrawDigiMCCollection> _strawDigiMCsHandle;
+  art::Handle<CrvDigiMCCollection> _crvDigiMCsHandle;
   std::vector<SimParticleTimeMap> _oldTimeMaps;
 
   // unique_ptrs to the new output collections
   std::unique_ptr<StrawDigiMCCollection> _newStrawDigiMCs;
+  std::unique_ptr<CrvDigiMCCollection> _newCrvDigiMCs;
   std::unique_ptr<StepPointMCCollection> _newStepPointMCs;
   std::map<art::ProductID, std::unique_ptr<SimParticleCollection> > _newSimParticles;
   std::map<art::ProductID, std::unique_ptr<GenParticleCollection> > _newGenParticles;
   std::vector<std::unique_ptr<SimParticleTimeMap> > _newSimParticleTimeMaps;
-
-  // keep track of the hits we are filtering
-  std::map<StrawHitIndex, StrawHitIndex> _oldToNewStrawHitIndexMap;
-  int _hitCounter;
 
   // for StepPointMCs, SimParticles and GenParticles we also need reference their new locations with art::Ptrs and so need their ProductIDs and Getters
   art::ProductID _newStepPointMCsPID;
@@ -129,16 +119,16 @@ private:
 };
 
 
-mu2e::CompressMCTrkCollections::CompressMCTrkCollections(fhicl::ParameterSet const & pset)
-  : _wantedHitFlag(pset.get<std::string>("wantedHitFlag")),
-    _comboHitTag(pset.get<art::InputTag>("comboHitTag")),
-    _strawDigiMCTag(pset.get<art::InputTag>("strawDigiMCTag")),
+mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
+  : _strawDigiMCTag(pset.get<art::InputTag>("strawDigiMCTag")),
+    _crvDigiMCTag(pset.get<art::InputTag>("crvDigiMCTag")),
     _simParticleTags(pset.get<std::vector<art::InputTag> >("simParticleTags")),
     _extraStepPointMCTags(pset.get<std::vector<art::InputTag> >("extraStepPointMCTags")),
     _timeMapTags(pset.get<std::vector<art::InputTag> >("timeMapTags"))
 {
   // Call appropriate produces<>() functions here.
   produces<StrawDigiMCCollection>();
+  produces<CrvDigiMCCollection>();
 
   produces<StepPointMCCollection>();
 
@@ -152,18 +142,14 @@ mu2e::CompressMCTrkCollections::CompressMCTrkCollections(fhicl::ParameterSet con
   }
 }
 
-void mu2e::CompressMCTrkCollections::produce(art::Event & event)
+void mu2e::CompressDigiMCs::produce(art::Event & event)
 {
   // Implementation of required member function here.
   _newStrawDigiMCs = std::unique_ptr<StrawDigiMCCollection>(new StrawDigiMCCollection);  
+  _newCrvDigiMCs = std::unique_ptr<CrvDigiMCCollection>(new CrvDigiMCCollection);  
   _newStepPointMCs = std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection);
   _newStepPointMCsPID = getProductID<StepPointMCCollection>();
   _newStepPointMCGetter = event.productGetter(_newStepPointMCsPID);
-
-  _hitCounter = 0;
-  _oldToNewStrawHitIndexMap.clear();
-
-  event.getByLabel(_strawDigiMCTag, _strawDigiMCsHandle);
 
   // Create all the new collections, ProductIDs and product getters for the SimParticles and GenParticles
   // There is one for each background frame plus one for the primary event
@@ -190,7 +176,7 @@ void mu2e::CompressMCTrkCollections::produce(art::Event & event)
     event.getByLabel(*i_tag, i_timeMapHandle);
 
     if (!i_timeMapHandle.isValid()) {
-      throw cet::exception("CompressMCTrkCollections") << "Couldn't find SimParticleTimeMap " << *i_tag << " in event\n";
+      throw cet::exception("CompressDigiMCs") << "Couldn't find SimParticleTimeMap " << *i_tag << " in event\n";
     }
     _oldTimeMaps.push_back(*i_timeMapHandle);
   }
@@ -201,25 +187,16 @@ void mu2e::CompressMCTrkCollections::produce(art::Event & event)
   }
 
   
+  event.getByLabel(_strawDigiMCTag, _strawDigiMCsHandle);
+  const auto& strawDigiMCs = *_strawDigiMCsHandle;
+  for (const auto& i_strawDigiMC : strawDigiMCs) {
+    copyStrawDigiMC(i_strawDigiMC);
+  }
 
-  // Loop through the combo hits
-  event.getByLabel(_comboHitTag, _comboHitsHandle);
-  const auto& comboHits = *_comboHitsHandle;
-
-  for (unsigned int i_straw_hit = 0; i_straw_hit < comboHits.size(); ++i_straw_hit) {
-    const mu2e::StrawHitFlag& strawHitFlag = comboHits.at(i_straw_hit).flag();
-    StrawHitIndex hit_index = i_straw_hit;
-    
-    // write out the StrawHits that have the StrawHitFlags we want
-    if (_wantedHitFlag == "") {
-	addStrawHitMCProducts(hit_index);
-    }
-    else {
-      mu2e::StrawHitFlag wanted(_wantedHitFlag);
-      if (strawHitFlag.hasAllProperties(wanted)) {
-	addStrawHitMCProducts(hit_index);
-      }
-    }
+  event.getByLabel(_crvDigiMCTag, _crvDigiMCsHandle);
+  const auto& crvDigiMCs = *_crvDigiMCsHandle;
+  for (const auto& i_crvDigiMC : crvDigiMCs) {
+    copyCrvDigiMC(i_crvDigiMC);
   }
   
   // Get the hits from the virtualdetector
@@ -278,6 +255,7 @@ void mu2e::CompressMCTrkCollections::produce(art::Event & event)
   // Now add everything to the event
   event.put(std::move(_newStepPointMCs));  
   event.put(std::move(_newStrawDigiMCs));
+  event.put(std::move(_newCrvDigiMCs));
 
   for (std::vector<art::InputTag>::const_iterator i_tag = _simParticleTags.begin(); i_tag != _simParticleTags.end(); ++i_tag) {
     const auto& oldSimParticles = event.getValidHandle<SimParticleCollection>(*i_tag);
@@ -292,18 +270,7 @@ void mu2e::CompressMCTrkCollections::produce(art::Event & event)
   }	
 }
 
-void mu2e::CompressMCTrkCollections::addStrawHitMCProducts(StrawHitIndex hit_index) {
-
-  // Need a deep copy of StrawDigiMC
-  const mu2e::StrawDigiMC& old_straw_digi_mc = _strawDigiMCsHandle->at(hit_index);
-  copyStrawDigiMC(old_straw_digi_mc);
-
-  // Update the map
-  _oldToNewStrawHitIndexMap[hit_index] = _hitCounter;
-  ++_hitCounter;
-}
-
-void mu2e::CompressMCTrkCollections::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_digi_mc) {
+void mu2e::CompressDigiMCs::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_digi_mc) {
 
   // Need to update the Ptrs for the StepPointMCs
   art::Ptr<StepPointMC> newTriggerStepPtr[StrawEnd::nends];
@@ -327,7 +294,28 @@ void mu2e::CompressMCTrkCollections::copyStrawDigiMC(const mu2e::StrawDigiMC& ol
   _newStrawDigiMCs->push_back(new_straw_digi_mc);
 }
 
-art::Ptr<mu2e::StepPointMC> mu2e::CompressMCTrkCollections::copyStepPointMC(const mu2e::StepPointMC& old_step) {
+void mu2e::CompressDigiMCs::copyCrvDigiMC(const mu2e::CrvDigiMC& old_crv_digi_mc) {
+
+  // Need to update the Ptrs for the StepPointMCs
+  std::vector<art::Ptr<StepPointMC> > newStepPtrs;
+  for (const auto& i_step_mc : old_crv_digi_mc.GetStepPoints()) {
+    if (i_step_mc.isAvailable()) {
+      newStepPtrs.push_back(copyStepPointMC(*i_step_mc));
+    }
+  }
+  
+  art::Ptr<SimParticle> oldSimPtr = old_crv_digi_mc.GetSimParticle();
+  art::Ptr<SimParticle> newSimPtr(_newSimParticlesPID[oldSimPtr.id()], oldSimPtr->id().asUint(), _newSimParticleGetter[oldSimPtr.id()]);
+  
+
+  CrvDigiMC new_crv_digi_mc(old_crv_digi_mc.GetVoltages(), newStepPtrs, 
+			    newSimPtr, old_crv_digi_mc.GetStartTime(), 
+			    old_crv_digi_mc.GetScintillatorBarIndex(), old_crv_digi_mc.GetSiPMNumber());
+
+  _newCrvDigiMCs->push_back(new_crv_digi_mc);
+}
+
+art::Ptr<mu2e::StepPointMC> mu2e::CompressDigiMCs::copyStepPointMC(const mu2e::StepPointMC& old_step) {
 
   _simParticlesToKeep[old_step.simParticle().id()].push_back(old_step.simParticle()->id());
   art::Ptr<SimParticle> newSimPtr(_newSimParticlesPID[old_step.simParticle().id()], old_step.simParticle()->id().asUint(), _newSimParticleGetter[old_step.simParticle().id()]);
@@ -353,4 +341,4 @@ art::Ptr<mu2e::StepPointMC> mu2e::CompressMCTrkCollections::copyStepPointMC(cons
 
 
 
-DEFINE_ART_MODULE(mu2e::CompressMCTrkCollections)
+DEFINE_ART_MODULE(mu2e::CompressDigiMCs)
