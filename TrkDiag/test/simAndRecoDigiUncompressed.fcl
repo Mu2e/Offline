@@ -1,15 +1,15 @@
-# recoAndKalSeedFilter.fcl
+# simAndRecoDigiUncompressed.fcl
 #
-# FCL configuration file to run the reconstruction chain and 
-# read out persistent tracks (KalSeeds) that have been filtered down
+# FCL configuration file to create uncompressed digi files
 #
 # A. Edmonds April 2017
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
 
-process_name : recoAndKalSeedFilter
+process_name : simAndRecoDigiUncompressed
 
 source : {
   module_type : RootInput
@@ -17,7 +17,7 @@ source : {
 
 services : { @table::Services.SimAndReco 
 
-	     TFileService : { fileName : "nts.DSOWNER.trk-kalseeds.DSCONF.SEQ.root" }
+	     TFileService : { fileName : "nts.DSOWNER.uncompressed-digis.DSCONF.SEQ.root" }
 }
 
 physics : {
@@ -26,23 +26,27 @@ physics : {
   }
 
   producers : {
-      @table::EventMixing.producers
-      @table::Tracking.producers
+      @table::TrkAna.producers
   }
 
   analyzers : {
+    @table::TrkAna.analyzers
     genCountLogger: { module_type: GenEventCountReader }
   }
 
-  TriggerPath : [ @sequence::EventMixing.CD3Mixers, @sequence::EventMixing.TimeMaps, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDeM ]
+  TriggerPath : [ @sequence::EventMixing.CD3Mixers, 
+  	      	  @sequence::TrkAna.SimSequence, 
+		  @sequence::TrkHitReco.PrepareHits ]
+
+  EndPath : [ genCountLogger, DigiOutput ]
 }
 
 outputs : {
-  KalSeedOutput : {
+  DigiOutput : {
      module_type: RootOutput
      SelectEvents : [ TriggerPath ]
      outputCommands: [ "drop *_*_*_*", 
-     		       "keep mu2e::GenEventCount_*_*_*",
+    		       "keep mu2e::GenEventCount_*_*_*",
 		       @sequence::Tracking.Output.Digis,
 		       @sequence::Tracking.Output.Hits,
 		       @sequence::Tracking.Output.Tracks,
@@ -52,14 +56,17 @@ outputs : {
 		       "keep mu2e::StepPointMCs_*_tracker_*",
 		       "keep mu2e::StepPointMCs_*_virtualdetector_*",
 		       "keep mu2e::SimParticlemv_*_*_*",
-		       "keep mu2e::EventWeight_*_*_*"
+		       "keep mu2e::EventWeight_*_*_*",
+		       "keep *_protonTimeMap_*_*",
+		       "keep *_muonTimeMap_*_*",
+		       "keep *_CaloDigiFromShower_*_*"
 		     ]
 
-     fileName : "sim.DSOWNER.trk-kalseeds.DSCONF.SEQ.art"
+     fileName : "sim.DSOWNER.uncompressed-digis.DSCONF.SEQ.art"
   }
 }
 
-physics.out : [ genCountLogger, KalSeedOutput ]
+physics.out : [ genCountLogger, DigiOutput ]
 physics.end_paths : [ out ]
 
 #include "EventMixing/fcl/epilog.fcl"

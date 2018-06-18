@@ -1,0 +1,87 @@
+# simAndRecoDigiCompressedInTime.fcl
+#
+# FCL configuration file to create and compress digi files
+# based on strwa hits that are in time with the primary particle
+#
+# A. Edmonds April 2017
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : simAndRecoDigiCompressedInTime
+
+source : {
+  module_type : RootInput
+}
+
+services : { @table::Services.SimAndReco 
+
+	     TFileService : { fileName : "nts.DSOWNER.compressed-digis-in-time.DSCONF.SEQ.root" }
+}
+
+physics : {
+  filters : {
+      @table::EventMixing.filters
+  }
+
+  producers : {
+      @table::TrkAna.producers
+
+      flagInTimeHits : {
+          module_type : FlagInTimeHits
+	  comboHitTag : "makeSH"
+	  simParticleTag : "detectorFilter"
+	  timeWindow : 50
+	  TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
+
+      compressMCTrk : {
+          module_type : CompressMCTrkCollections
+	  wantedHitFlag : "InTime"
+	  comboHitTag : "flagInTimeHits"
+	  strawDigiMCTag : "makeSD"
+	  simParticleTags : [ "detectorFilter", "protonMixer", "deuteronMixer", "photonMixer", "neutronMixer", "ootMixer", "dioMixer", "flashMixer" ]
+	  extraStepPointMCTag : "detectorFilter:virtualdetector"
+	  extraStepPointMCVolIDs : [ 13, 14 ] # TT_FrontHollow, TT_FrontPA
+	  timeMapTags : [ "protonTimeMap", "muonTimeMap" ]
+      }
+
+      compressRecoTrk : {
+          module_type : CompressRecoTrkCollections
+	  wantedHitFlag : "InTime"
+	  comboHitTag : "flagInTimeHits"
+	  strawDigiTag : "makeSD"
+      }
+  }
+
+  analyzers : {
+    @table::TrkAna.analyzers
+    genCountLogger: { module_type: GenEventCountReader }
+  }
+
+  TriggerPath : [ @sequence::EventMixing.CD3Mixers, @sequence::TrkAna.SimSequence, @sequence::TrkHitReco.PrepareHits, flagInTimeHits, compressMCTrk, compressRecoTrk ]
+  EndPath : [ genCountLogger ]
+}
+
+outputs : {
+  DigiOutput : {
+     module_type: RootOutput
+     SelectEvents : [ TriggerPath ]
+     outputCommands: [ "drop *_*_*_*", 
+     		       "keep mu2e::GenEventCount_*_*_*",
+     		       "keep *_compressMCTrk_*_*",
+     		       "keep *_compressRecoTrk_*_*",
+		       "keep mu2e::EventWeight_*_*_*",
+		       "keep *_CaloDigiFromShower_*_*"
+		     ]
+
+     fileName : "sim.DSOWNER.compressed-digis-in-time.DSCONF.SEQ.art"
+  }
+}
+
+physics.out : [ genCountLogger, DigiOutput ]
+physics.end_paths : [ out ]
+
+#include "EventMixing/fcl/epilog.fcl"
