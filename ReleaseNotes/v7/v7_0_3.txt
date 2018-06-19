@@ -3,6 +3,10 @@
 	   This release is intended for background pre-mixing
 	   This release is NOT ready for digi making
 
+2) June 19, 2018 kutschke
+   - Cleaned up things that do not belong in RecoDataProducts
+       - files, unnecessary link list items, commented out includes
+         that generate false positives on scans for illegal includes
 
 1) June 13, 2018 genser
 
