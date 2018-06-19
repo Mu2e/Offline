@@ -1,6 +1,7 @@
 // Re-sample CRV data.  This dumps subrun headers from CD3
 // while doing concatenation for MDC2018
-#include "JobConfig/beam/prolog.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
 process_name: CRVcat
 
 physics.producers.genCounter: {module_type: GenEventCounter }
@@ -18,18 +19,17 @@ physics.filters.crvFilter: {
    }
 }
 
-
 source: { module_type : EmptyEvent }
-services: { @table::mu2e.services.simServices }
-outputs: { @table::mu2e.outputs.g4s4Defs }
-
-physics.out: [ crvOutput ]
-
+services : @local::Services.Sim
+outputs.crvOutput : {
+  module_type: RootOutput
+  SelectEvents: [crvPath]
+  fileName: @nil
+  outputCommands:   [ "drop *_*_*_*",
+  "keep *_crvFilter_*_*" ]
+}
 physics.crvPath: [ crvFilter ]
-
-outputs.crvOutput.outputCommands:   [ "drop *_*_*_*",
-				      "keep *_crvFilter_*_*" ]
-
-// Set output file names
-services.TFileService.fileName: "nts.owner.CRV-cat.version.sequencer.root"
+physics.out: [ crvOutput ]
+# must use end_paths or generate_fcl won't see the output module 
+physics.end_paths : [out]
 
