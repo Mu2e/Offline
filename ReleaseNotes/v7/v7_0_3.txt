@@ -3,6 +3,12 @@
 	   This release is intended for background pre-mixing
 	   This release is NOT ready for digi making
 
+3) June 19, 2018 brownd
+    - updated production scripts for CRV-concatenation, digi-mixing and simple primary generation
+    - cleanup and consoidation of conversion electron generators
+    - Limit the proton intensity fluctuations
+    - Add a filter on TrkDigiMC
+
 2) June 19, 2018 kutschke
    - Cleaned up things that do not belong in RecoDataProducts
        - files, unnecessary link list items, commented out includes
