@@ -69,6 +69,11 @@ StoppedMuonConversionGun: {
 StoppedParticleReactionGun: {
     module_type    : StoppedParticleReactionGun
     muonStops      : @local::mu2e.tgtMuonStops
+    physics: {
+      pdgId : 11
+      spectrumShape: CeEndpoint
+      spectrumVariable: totalEnergy
+    }
     verbosityLevel : 0
 }
 
