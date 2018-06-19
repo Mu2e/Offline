@@ -1,28 +1,74 @@
-// Start with particles hitting the detector mother volumes and
-// write out StepPoints in the detectors.
+// flat range of e- near the DIO endpoint
 //
-// Zoom on the DIO tail by generating electrons flat in energy.
-//
-// Andrei Gaponenko, 2015
 
+#include "TrackerMC/fcl/prolog.fcl"
+#include "EventMixing/fcl/prolog.fcl"
+#include "CaloMC/fcl/prolog.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+#include "CRVResponse/fcl/prolog_v07.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
 #include "JobConfig/beam/prolog.fcl"
 
-process_name: beamg4s4flate
+process_name: flate
 
 source: { module_type : EmptyEvent }
-services: { @table::mu2e.services.simServices }
-physics: { @table::mu2e.physics.g4s4Muons }
-outputs: { @table::mu2e.outputs.g4s4Defs }
-
-physics.producers.generate.physics: {
-    pdgId : 11
-    spectrumShape: flat
-    spectrumVariable: totalEnergy
-    elow: 95.0 // MeV
-    ehi: 105.0  // MeV
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : {
+      module_type: StoppedParticleReactionGun
+      verbosityLevel : 1
+      genId : conversionGun 
+      muonStops: @local::mu2e.tgtMuonStops
+      physics: {
+	pdgId : 11
+	spectrumShape: flat
+	spectrumVariable: totalEnergy
+	elow: 85.0 // MeV
+	ehi: 105.0  // MeV
+      }
+    }
+    g4run : @local::mu2e.physics.producers.g4run.muons
+    genCounter: { module_type: GenEventCounter }
+    @table::TrackerMC.producers
+    @table::CaloDigiMC.producers
+    protonTimeMap: { module_type : GenerateProtonTimes }
+    muonTimeMap: { module_type : GenerateMuonLife }
+  }
+  filters: {
+    TrkDigiFilter : {
+      module_type : StrawDigiMCFilter
+      MinNDigis : 10
+      MinParticleMom : 95.0
+      particleTypes : [11]
+    }
+  }
+  analyzers: {
+    genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
+  }
+  flatePath : [ generate, genCounter, g4run,
+    protonTimeMap, muonTimeMap,
+    @sequence::TrackerMC.DigiSim,
+    TrkDigiFilter,
+    @sequence::CaloDigiMC.DigiSim
+  ]
+}
+outputs: {
+   flateOutput : {
+     module_type : RootOutput
+     SelectEvents : [ flatePath ]
+     fileName    : @nil
+  }
 }
 
-services.TFileService.fileName: "nts.owner.beam-g4s4-flate.version.sequencer.root"
-outputs.detectorOutput.fileName: "sim.owner.beam-g4s4-detflate.version.sequencer.art"
-outputs.crvOutput.fileName: "sim.owner.beam-g4s4-crvflate.version.sequencer.art"
-outputs.truncatedEvtsOutput.fileName: "sim.owner.beam-g4s4-flate-truncated.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.flate.version.sequencer.root"
+outputs.flateOutput.fileName: "sim.owner.flate.version.sequencer.art"
+physics.out : [ flateOutput ]
+physics.end_paths : [ out ] # needed for generate_fcl
+# the following are overwritten by generate_fcl
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+
+

@@ -64,5 +64,7 @@ outputs: {
 services.TFileService.fileName: "nts.owner.CeEndpoint.version.sequencer.root"
 outputs.CeEndpointOutput.fileName: "sim.owner.CeEndpoint.version.sequencer.art"
 physics.out : [ CeEndpointOutput ]
+physics.end_paths : [ out ] # needed for generate_fcl
+# the following are overwritten by generate_fcl
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
