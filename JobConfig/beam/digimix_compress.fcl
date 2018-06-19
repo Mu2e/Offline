@@ -1,16 +1,8 @@
-#  Mix individual process single-event background frames into a single pre-mixed frame,
-#  including the effects of primary proton bunch intensity variations.
 #
-#  "detmix": this config is for mixing hits in the main detectors
-#            (tracker and calorimeter), as opposed to mixing CRV or
-#            ExtMon hits.
+#  Digi mixing with compress
+#  Andrew Edmonds June 2018
 #
-#  "full": This file should be used with unfiltered beam flash events.
-#
-#  Dave Brown (LBNL), 20 May 2015
-#  Andrei Gaponenko,   3 Nov 2015
-#
-#include "JobConfig/beam/digimix_full.fcl"
+#include "JobConfig/beam/digimix.fcl"
 
 process_name: digimixcompress
 
@@ -33,8 +25,5 @@ physics.producers.compressDigiMCs : { module_type : CompressDigiMCs
 
    # trigger path
 physics.p1: [ @sequence::physics.p1, compressDigiMCs]
-physics.e1: [genCountLogger, fullOutput]
-
-outputs.fullOutput.fileName: "sim.owner.detmix-compress.version.sequencer.art"
-
+outputs.Output.fileName: "sim.owner.digimix-compress.version.sequencer.art"
 

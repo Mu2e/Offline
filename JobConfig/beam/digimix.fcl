@@ -1,14 +1,8 @@
-#  Mix individual process single-event background frames into a single pre-mixed frame,
-#  including the effects of primary proton bunch intensity variations.
 #
-#  "detmix": this config is for mixing hits in the main detectors
-#            (tracker and calorimeter), as opposed to mixing CRV or
-#            ExtMon hits.
-#
-#  "full": This file should be used with unfiltered beam flash events.
-#
-#  Dave Brown (LBNL), 20 May 2015
+#  Mix backgrounds and produce digis.  This assumes a primary input file, to run pure backgrounds override source to be
+#  EmptyEvent.
 #  Andrei Gaponenko,   3 Nov 2015
+#  Dave Brown (LBNL) june 2018
 #
 #include "JobConfig/beam/prolog-bgFrameMixing.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
@@ -18,9 +12,18 @@
 #include "fcl/standardServices.fcl"
 #include "fcl/minimalMessageService.fcl"
 #
-process_name: digimixfull
+process_name: digimix
 
 services : @local::Services.Sim
+
+source : {
+  module_type : RootInput
+  inputCommands : [ "drop *",
+  "keep *_generate_*_*",
+  "keep *_genCounter_*_*",
+  "keep *_g4run_*_*",
+  "keep *_TrkDigiFilter_*_*" ]
+}
 
 physics: {
    producers: {
@@ -59,7 +62,7 @@ physics: {
       TSMixerCRV	     : @local::mixerTemplateCRV 
       DSMixerCRV	     : @local::mixerTemplateCRV
       ootMixerCRV	     : @local::mixerTemplateCRV 
-      neutronMixerCRV     : @local::mixerTemplateCRV 
+      neutronMixerCRV        : @local::mixerTemplateCRV 
       dioMixerCRV	     : @local::mixerTemplateCRV 
       photonMixerCRV	     : @local::mixerTemplateCRV 
       #
@@ -83,12 +86,12 @@ physics: {
       @sequence::CaloDigiMC.DigiSim,
       @sequence::CrvDAQPackage.CrvResponseSequence
    ]
-   e1: [genCountLogger, fullOutput]
+   e1: [genCountLogger, Output]
 
 }
 
 outputs: {
-   fullOutput : {
+   Output : {
       module_type : RootOutput
       fileName    : @nil
    }
@@ -116,6 +119,6 @@ physics.filters.PSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crv
 physics.filters.TSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
 physics.filters.DSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
 
-outputs.fullOutput.fileName: "sim.owner.detmix-full.version.sequencer.art"
+outputs.Output.fileName: "sim.owner.digimix.version.sequencer.art"
 
 
