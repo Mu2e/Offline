@@ -1,4 +1,4 @@
-// mono-energetic e- near the eendpoint peak
+// mono-energetic e- at the Al Ce endpoint
 //
 
 #include "TrackerMC/fcl/prolog.fcl"
@@ -11,7 +11,7 @@
 #include "fcl/standardServices.fcl"
 #include "JobConfig/beam/prolog.fcl"
 
-process_name: eendpoint
+process_name: CeEndpoint
 
 source: { module_type : EmptyEvent }
 services: @local::Services.Sim
@@ -24,7 +24,7 @@ physics : {
       muonStops: @local::mu2e.tgtMuonStops
       physics: {
         pdgId : 11
-        spectrumShape: conversion
+        spectrumShape: CeEndpoint
         spectrumVariable: totalEnergy
       }
     }
@@ -46,7 +46,7 @@ physics : {
   analyzers: {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
   }
-  eendpointPath : [ generate, genCounter, g4run,
+  CeEndpointPath : [ generate, genCounter, g4run,
     protonTimeMap, muonTimeMap,
     @sequence::TrackerMC.DigiSim,
     TrkDigiFilter,
@@ -54,15 +54,15 @@ physics : {
   ]
 }
 outputs: {
-   eendpointOutput : {
+   CeEndpointOutput : {
      module_type : RootOutput
-     SelectEvents : [ eendpointPath ]
+     SelectEvents : [ CeEndpointPath ]
      fileName    : @nil
   }
 }
 
-services.TFileService.fileName: "nts.owner.eendpoint.version.sequencer.root"
-outputs.eendpointOutput.fileName: "sim.owner.eendpoint.version.sequencer.art"
-physics.out : [ eendpointOutput ]
+services.TFileService.fileName: "nts.owner.CeEndpoint.version.sequencer.root"
+outputs.CeEndpointOutput.fileName: "sim.owner.CeEndpoint.version.sequencer.art"
+physics.out : [ CeEndpointOutput ]
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20

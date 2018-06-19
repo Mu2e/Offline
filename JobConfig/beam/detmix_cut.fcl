@@ -18,7 +18,7 @@ process_name: detmixcut
 
 @table::BackgroundFrameMixing
 
-outputs.fullOutput.fileName: "sim.owner.detmix-cut.version.sequencer.art"
+outputs.fullOutput.fileName: "mix.owner.detmix-cut.version.sequencer.art"
 
 #================================================================
 # Set mean values for the number of events to mix for each process.

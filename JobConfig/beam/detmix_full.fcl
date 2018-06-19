@@ -89,7 +89,7 @@ outputs: {
    }
 }
 
-outputs.fullOutput.fileName: "sim.owner.detmix-full.version.sequencer.art"
+outputs.fullOutput.fileName: "mix.owner.detmix-full.version.sequencer.art"
 
 # MDC2018 values 
 # TrkCal

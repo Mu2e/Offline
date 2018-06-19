@@ -59,7 +59,7 @@ StoppedMuonConversionGun: {
     genId : conversionGun 
     physics: {
       pdgId : 11
-      spectrumShape: conversion
+      spectrumShape: CeEndpoint
       spectrumVariable: totalEnergy
     }
     muonStops      : @local::mu2e.tgtMuonStops

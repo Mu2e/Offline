@@ -119,6 +119,6 @@ physics.filters.PSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crv
 physics.filters.TSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
 physics.filters.DSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
 
-outputs.Output.fileName: "sim.owner.digimix.version.sequencer.art"
+outputs.Output.fileName: "mix.owner.digimix.version.sequencer.art"
 
 

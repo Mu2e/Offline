@@ -25,5 +25,4 @@ physics.producers.compressDigiMCs : { module_type : CompressDigiMCs
 
    # trigger path
 physics.p1: [ @sequence::physics.p1, compressDigiMCs]
-outputs.Output.fileName: "sim.owner.digimix-compress.version.sequencer.art"
-
+outputs.Output.fileName: "mix.owner.digimix-compress.version.sequencer.art"
