@@ -113,6 +113,7 @@ namespace mu2e {
   };
 
   FromAsciiMomentumAndPosition::FromAsciiMomentumAndPosition(Parameters const& config):
+    EDProducer{config},
     //
     // Information from config file.
     particlePdgId_{config().particlePdgId()},

@@ -67,6 +67,7 @@ helper.make_plugins( [ mainlib,
                        'boost_filesystem',
                        'boost_system',
                        'pthread'
+                       'hep_concurrency',
                        ] )
 
 # this tells emacs to view this file in python mode.

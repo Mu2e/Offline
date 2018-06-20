@@ -45,6 +45,7 @@ namespace mu2e {
   };
 
   CryEventGenerator::CryEventGenerator(fhicl::ParameterSet const& pSet) :
+    EDProducer{pSet},
     inputfile(pSet.get<std::string>("inputFile",
           "CRYEventGenerator/config/defaultCRYconfig.txt")),
     seed_( art::ServiceHandle<SeedService>()->getSeed() ),

@@ -77,6 +77,7 @@ namespace mu2e {
   };
 
   G4BeamlineGenerator::G4BeamlineGenerator(fhicl::ParameterSet const& pSet):
+    EDProducer{pSet},
     _configfile(           pSet.get<std::string>("inputfile",            "generatorconfig.txt")),
     _allowReplacement(     pSet.get<bool>       ("allowReplacement",     true)),
     _messageOnReplacement( pSet.get<bool>       ("messageOnReplacement", true)),

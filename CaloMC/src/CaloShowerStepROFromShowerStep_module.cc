@@ -122,6 +122,7 @@ namespace mu2e {
     using Parameters = art::EDProducer::Table<Config>;
 
     explicit CaloShowerStepROFromShowerStep(const Parameters& config) :
+      EDProducer{config},
       toff_                       (config().timeOffsets()),
       blindTime_                  (config().blindTime()),
       caloLRUCorrection_          (config().caloLRUCorrection()),

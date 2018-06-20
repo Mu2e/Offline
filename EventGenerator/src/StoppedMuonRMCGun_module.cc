@@ -82,7 +82,7 @@ namespace mu2e {
 
     double me_;                        // electron mass
     double mmu_;
- 
+
     double fractionSpectrum_;
     double omcNormalization_;
     double internalNormalization{0.};
@@ -116,7 +116,8 @@ namespace mu2e {
 
 //================================================================
   StoppedMuonRMCGun::StoppedMuonRMCGun(const fhicl::ParameterSet& pset)
-    : psphys_             (pset.get<fhicl::ParameterSet>("physics"))
+    : EDProducer{pset}
+    , psphys_             (pset.get<fhicl::ParameterSet>("physics"))
     , rhoInternal_        (psphys_.get<double>("rhoInternal"))
     , spectrum_           (BinnedSpectrum(psphys_))
     , verbosityLevel_     (pset.get<int>("verbosityLevel", 0))
@@ -132,7 +133,7 @@ namespace mu2e {
   {
     produces<mu2e::GenParticleCollection>();
     produces<mu2e::EventWeight>();
-    
+
     fractionSpectrum_ = 0.;
     omcNormalization_ = 0.;
 
@@ -189,9 +190,9 @@ namespace mu2e {
       if (kMaxUserSet) kMaxUser = psphys.get<double>("kMaxUser");
 
       double rmcFrac     = psphys.get<double>("rmcFrac");
- 
+
       if (physicsVerbosityLevel_ > 0 && !blind) {
-	std::cout << "kMaxUserSet and kMaxUser = " << kMaxUserSet << " " << kMaxUser << std::endl;
+        std::cout << "kMaxUserSet and kMaxUser = " << kMaxUserSet << " " << kMaxUser << std::endl;
       }
 
       //
@@ -201,38 +202,38 @@ namespace mu2e {
       const double recoilEnergyFit {0.220};
       const double deltaMassFit    {3.121};
       const double kMaxMax         {mmu_ - bindingEnergyFit - recoilEnergyFit - deltaMassFit};
- 
+
       double kMax;
       if (kMaxUserSet) kMax = kMaxUser;
       else             kMax = kMaxMax;
- 
+
       if ( spectrum_.getXMin() > kMax ) {
-	//
-	// if I told you what kMax was you could unblind kMax.  Therefore I will set it to something very low and tell you.
-	std::cout << " StoppedMuonGun elow is too high " << spectrum_.getXMin() << " resetting to 0 MeV" << std::endl;
+        //
+        // if I told you what kMax was you could unblind kMax.  Therefore I will set it to something very low and tell you.
+        std::cout << " StoppedMuonGun elow is too high " << spectrum_.getXMin() << " resetting to 0 MeV" << std::endl;
       }
-      
+
       double lowestEnergy = spectrum_.getXMin();
       double upperEnergy  = spectrum_.getXMax();
 
       if (spectrum_.getXMax() > kMax) upperEnergy = kMax;
       // papers measure R(photon>57) = 1.43e-05. Hardwire that.
       const double rGammaEnergy = 57.; // this is what was measured, won't change unless someone does it again. Measurements are e>57.
- 
+
 
       if (spectrum_.getXMin() < rGammaEnergy){
-	lowestEnergy = rGammaEnergy;
-	std::cout << "inside " << __func__ << " resetting lower energy to physical limit from " << spectrum_.getXMin() << " to " << rGammaEnergy << std::endl;
+        lowestEnergy = rGammaEnergy;
+        std::cout << "inside " << __func__ << " resetting lower energy to physical limit from " << spectrum_.getXMin() << " to " << rGammaEnergy << std::endl;
       }
       if (spectrum_.getXMax() > kMax) {
-	upperEnergy = kMax;
-	std::cout << "inside " << __func__ << " resetting upper energy to physical limit from " << spectrum_.getXMax() << " to " << kMax << std::endl;
+        upperEnergy = kMax;
+        std::cout << "inside " << __func__ << " resetting upper energy to physical limit from " << spectrum_.getXMax() << " to " << kMax << std::endl;
       }
 
       double xLower = lowestEnergy/kMax;
       double xUpper = upperEnergy/kMax;
-      const double xGammaEnergy = rGammaEnergy/kMax; 
-    
+      const double xGammaEnergy = rGammaEnergy/kMax;
+
       //
       // closure approximation is R(photon>57 MeV) = ( e^2/pi)*(kMax/muonMass)^2*(1 - (N-Z)/(N+Z))* integral from 57/kmax to 1 of (1 -2x + 2x^2)x(1-x)^2 dx
       // and the Bergsbusch et al paper docdb 1192 says for Al this is measured to be 1.43 times 10^-5. Now the integral above varies with kmax.  I am going to pin the
@@ -244,10 +245,10 @@ namespace mu2e {
       internalNormalization = rhoInternal_*fractionOfSpectrum*rmcFrac;
 
       if (physicsVerbosityLevel_ > 0){
-	std::cout << "lowestEnergy, upperEnergy, xLower, xUpper, xGammaEnergy, kMax, rmcFrac, externalNormalization, internalNormalization" << "\n" <<
-	  lowestEnergy<< " " << upperEnergy<< " " << xLower<< " " << xUpper<< " " << xGammaEnergy<< " " 
-		  << kMax<< " " << rmcFrac<< " " << externalNormalization<< " " << internalNormalization  << std::endl;
-	std::cout << "fraction of spectrum = " << fractionOfSpectrum << std::endl;
+        std::cout << "lowestEnergy, upperEnergy, xLower, xUpper, xGammaEnergy, kMax, rmcFrac, externalNormalization, internalNormalization" << "\n" <<
+          lowestEnergy<< " " << upperEnergy<< " " << xLower<< " " << xUpper<< " " << xGammaEnergy<< " "
+                  << kMax<< " " << rmcFrac<< " " << externalNormalization<< " " << internalNormalization  << std::endl;
+        std::cout << "fraction of spectrum = " << fractionOfSpectrum << std::endl;
       }
     }
   }
@@ -269,56 +270,56 @@ namespace mu2e {
     // next step is to get muon lifetime in the code together with the capture fraction 5/29/2018
 
     if (doHistograms_){
-	_htZero->Fill(stop.t);
+        _htZero->Fill(stop.t);
     }
     double energy = generateEnergy();
 
     double weight{0.};
     // two things can now happen with this photon.  It can proceed and possibly convert, or it can internally convert.
-    // the probability of internal conversion is given by rho = 0.0069 (assume same as for RPC).  Throw a flat 
+    // the probability of internal conversion is given by rho = 0.0069 (assume same as for RPC).  Throw a flat
 
     if (randFlat_.fire() > rhoInternal_) {
       CLHEP::HepLorentzVector photon(randUnitSphereExt_.fire(energy),energy);
-      output->emplace_back( PDGCode::gamma, 
-			    GenId::ExternalRMC, 
-			    pos,
-			    photon,
-			    stop.t );
+      output->emplace_back( PDGCode::gamma,
+                            GenId::ExternalRMC,
+                            pos,
+                            photon,
+                            stop.t );
 
       event.put(std::move(output));
-      std::unique_ptr<EventWeight> pw(new EventWeight(externalNormalization)); 
+      std::unique_ptr<EventWeight> pw(new EventWeight(externalNormalization));
       event.put(std::move(pw));
- 
+
       weight = externalNormalization;
       if ( doHistograms_ ) {
-	_hmomentum->Fill(energy);
-	_hCosz->Fill(photon.cosTheta());
-	_hWeight->Fill(weight);
+        _hmomentum->Fill(energy);
+        _hCosz->Fill(photon.cosTheta());
+        _hWeight->Fill(weight);
       }
-    } 
+    }
     else {    // internal conversions
 
       CLHEP::HepLorentzVector mome, momp;
 
-      muonCaptureSpectrum_.getElecPosiVectors(energy,mome,momp); 
+      muonCaptureSpectrum_.getElecPosiVectors(energy,mome,momp);
 
       // CLHEP::HepLorentzVector fakeElectron( 105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+me_*me_));
       // CLHEP::HepLorentzVector fakePositron(-105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+me_*me_));
 
-      output->emplace_back( PDGCode::e_minus, 
-			    GenId::InternalRMC, 
-			    pos,
-			    mome, 
-			    //fakeElectron, 
-			    //			    800. );
-      			    stop.t );
-      output->emplace_back( PDGCode::e_plus, 
-			    GenId::InternalRMC, 
-			    pos,
-			    momp,
-			    //fakePositron, 
-			    //			    800.);
-      			    stop.t );
+      output->emplace_back( PDGCode::e_minus,
+                            GenId::InternalRMC,
+                            pos,
+                            mome,
+                            //fakeElectron,
+                            //			    800. );
+                            stop.t );
+      output->emplace_back( PDGCode::e_plus,
+                            GenId::InternalRMC,
+                            pos,
+                            momp,
+                            //fakePositron,
+                            //			    800.);
+                            stop.t );
 
       event.put(std::move(output));
 
@@ -327,28 +328,28 @@ namespace mu2e {
       event.put(std::move(pw));
 
       if (verbosityLevel_ > 0) {
-	std::cout << "original photon energy = " << energy << " and electron mass = " << me_ <<  std::endl;
-	std::cout << "RMC electron/positron energies = " << mome.e() << " " << momp.e() << std::endl;
-	std::cout << "and the full 4-vector: " << mome << " " << momp << std::endl;
-	std::cout << "stop time = " << stop.t << std::endl;
-	std::cout << " event weight = " << fractionSpectrum_ << " " << rhoInternal_ << " " << internalNormalization << std::endl;
+        std::cout << "original photon energy = " << energy << " and electron mass = " << me_ <<  std::endl;
+        std::cout << "RMC electron/positron energies = " << mome.e() << " " << momp.e() << std::endl;
+        std::cout << "and the full 4-vector: " << mome << " " << momp << std::endl;
+        std::cout << "stop time = " << stop.t << std::endl;
+        std::cout << " event weight = " << fractionSpectrum_ << " " << rhoInternal_ << " " << internalNormalization << std::endl;
       }
       weight = internalNormalization;
       if ( doHistograms_ ) {
-	_hWeight->Fill(weight);
-	_hmomentum->Fill(energy);
-	_hEnergyElectron->Fill(mome.e());
-	_hEnergyPositron->Fill(momp.e());
+        _hWeight->Fill(weight);
+        _hmomentum->Fill(energy);
+        _hEnergyElectron->Fill(mome.e());
+        _hEnergyPositron->Fill(momp.e());
 
-	double mee = (mome+momp).m();
-	_hMee->Fill(mee);
-	_hMeeVsE->Fill(energy,mee);
-	_hMeeOverE->Fill(mee/energy);
+        double mee = (mome+momp).m();
+        _hMee->Fill(mee);
+        _hMeeVsE->Fill(energy,mee);
+        _hMeeOverE->Fill(mee/energy);
 
-	CLHEP::Hep3Vector p = mome.vect()+momp.vect();
-	double y = (mome.e()-momp.e())/p.mag();
+        CLHEP::Hep3Vector p = mome.vect()+momp.vect();
+        double y = (mome.e()-momp.e())/p.mag();
 
-	_hy->Fill(y);
+        _hy->Fill(y);
       }
     }
   }

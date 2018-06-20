@@ -145,6 +145,7 @@ helper.make_plugins( [ mainlib,
                        'boost_filesystem',
                        'boost_system',
                        'tbb',
+                       'hep_concurrency'
                      ],
                      services,
                      )

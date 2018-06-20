@@ -124,7 +124,8 @@ namespace mu2e {
 
     //================================================================
     ExtMonFNALRoomGenerator::ExtMonFNALRoomGenerator(const fhicl::ParameterSet& pset)
-      : verbosityLevel_(pset.get<int>("verbosityLevel"))
+      : EDProducer{pset}
+      , verbosityLevel_(pset.get<int>("verbosityLevel"))
       , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
       , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
       , inputFiles_(pset.get<std::vector<std::string> >("inputFiles"))
@@ -268,10 +269,10 @@ namespace mu2e {
       std::unique_ptr<MARSInfoCollection> info(new MARSInfoCollection());
       std::unique_ptr<GenParticleMARSAssns> assns(new GenParticleMARSAssns());
 
-      const art::ProductID particlesPID = getProductID<GenParticleCollection>();
+      const art::ProductID particlesPID = event.getProductID<GenParticleCollection>();
       const art::EDProductGetter *particlesGetter = event.productGetter(particlesPID);
 
-      const art::ProductID marsPID = getProductID<MARSInfoCollection>();
+      const art::ProductID marsPID = event.getProductID<MARSInfoCollection>();
       const art::EDProductGetter *marsGetter = event.productGetter(marsPID);
 
       typedef std::set<MARSInfo, CmpProtonId> UniqProtons;

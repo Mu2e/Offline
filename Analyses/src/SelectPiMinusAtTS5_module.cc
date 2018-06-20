@@ -173,7 +173,7 @@ namespace mu2e {
     // The case when parents are stored is supported by compressSimParticleCollection()
     // otherwise we need to prepare the output SimParticleCollection by hand
     std::unique_ptr<SimParticleCollection> outparts(new SimParticleCollection());
-    art::ProductID newProductId(getProductID<SimParticleCollection>());
+    art::ProductID newProductId(event.getProductID<SimParticleCollection>());
     const art::EDProductGetter *newProductGetter(event.productGetter(newProductId));
     if(!_storeParents) {
 
@@ -198,7 +198,7 @@ namespace mu2e {
 
         SimParticle& particle(outparts->getOrThrow(key));
 
-	if (particle.pdgId() != PDGCode::pi_minus) continue;
+        if (particle.pdgId() != PDGCode::pi_minus) continue;
 
 
         // Zero internal pointers: intermediate particles are not preserved to reduce data size
@@ -231,7 +231,7 @@ namespace mu2e {
 
           const art::Ptr<SimParticle>& particle = i->simParticle();
 
-	if (particle->pdgId() != PDGCode::pi_minus) continue;
+        if (particle->pdgId() != PDGCode::pi_minus) continue;
 
           if(!particle.get()) {
             throw cet::exception("MISSINGINFO")

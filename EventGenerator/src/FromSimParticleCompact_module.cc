@@ -1,4 +1,4 @@
-// Continue with compact sim particles (a Root Tree) from previous jobs 
+// Continue with compact sim particles (a Root Tree) from previous jobs
 //
 // Zhengyun You, 2013-12-01
 
@@ -105,7 +105,8 @@ namespace mu2e {
 
   //================================================================
   FromSimParticleCompact::FromSimParticleCompact(const fhicl::ParameterSet& pset)
-    : inputFiles_(pset.get<std::vector<std::string> >("inputFiles"))
+    : EDProducer{pset}
+    , inputFiles_(pset.get<std::vector<std::string> >("inputFiles"))
     , treeName_(pset.get<std::string>("treeName"))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , rotateTarget_(pset.get<bool>("rotateTarget", false))

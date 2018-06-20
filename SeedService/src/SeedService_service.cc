@@ -21,7 +21,8 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "canvas/Persistency/Provenance/ModuleDescription.h"
+#include "art/Persistency/Provenance/ModuleContext.h"
+#include "art/Persistency/Provenance/ModuleDescription.h"
 #include "canvas/Persistency/Provenance/EventID.h"
 
 // Supporting library include files
@@ -296,15 +297,15 @@ namespace mu2e {
     state_.set( SeedServiceHelper::ArtState::inConstructor, md.moduleLabel() );
   }
 
-  void SeedService::postModuleConstruction( art::ModuleDescription const& md){
+  void SeedService::postModuleConstruction( art::ModuleDescription const&){
     state_.clear();
   }
 
-  void SeedService::preModuleBeginRun ( art::ModuleDescription const& md){
-    state_.set( SeedServiceHelper::ArtState::inBeginRun, md.moduleLabel() );
+  void SeedService::preModuleBeginRun ( art::ModuleContext const& mc){
+    state_.set( SeedServiceHelper::ArtState::inBeginRun, mc.moduleLabel() );
   }
 
-  void SeedService::postModuleBeginRun( art::ModuleDescription const& md){
+  void SeedService::postModuleBeginRun( art::ModuleContext const&){
     state_.clear();
   }
 

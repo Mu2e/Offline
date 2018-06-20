@@ -214,7 +214,7 @@ namespace mu2e
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection());
     // lookup productID for payload saver
-    art::ProductID kalRepsID(getProductID<KalRepCollection>());
+    art::ProductID kalRepsID(event.getProductID<KalRepCollection>());
     // copy and merge hit flags
     size_t index(0);
     for(auto const& ch : *_chcol) {

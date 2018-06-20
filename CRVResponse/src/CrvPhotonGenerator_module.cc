@@ -84,6 +84,7 @@ namespace mu2e
   };
 
   CrvPhotonGenerator::CrvPhotonGenerator(fhicl::ParameterSet const& pset) :
+    EDProducer{pset},
     _g4ModuleLabels(pset.get<std::vector<std::string> >("g4ModuleLabels")),
     _processNames(pset.get<std::vector<std::string> >("processNames")),
     _lookupTableFileNames(pset.get<std::vector<std::string> >("lookupTableFileNames")),

@@ -46,7 +46,8 @@ namespace mu2e {
   };
   //================================================================
   InFlightParticleSampler::InFlightParticleSampler(const fhicl::ParameterSet& pset)
-    : particles_(createEngine(art::ServiceHandle<SeedService>()->getSeed()),
+    : EDProducer{pset}
+    , particles_(createEngine(art::ServiceHandle<SeedService>()->getSeed()),
                  pset.get<fhicl::ParameterSet>("particles"))
 
     , pdt_(&*GlobalConstantsHandle<ParticleDataTable>())

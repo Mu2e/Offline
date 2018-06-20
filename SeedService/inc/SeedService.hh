@@ -99,6 +99,7 @@
 #include "SeedService/inc/EngineId.hh"
 
 // From art and its tool chain.
+#include "art/Framework/Core/detail/EngineCreator.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -110,6 +111,7 @@
 // Forward declarations
 namespace art {
   class ActivityRegistry;
+  class ModuleContext;
   class ModuleDescription;
   class Run;
   class SubRun;
@@ -129,7 +131,8 @@ namespace mu2e {
   class SeedService {
   public:
 
-    typedef art::RandomNumberGenerator::seed_t seed_t;
+    //    typedef art::RandomNumberGenerator::seed_t seed_t;
+    using seed_t = long int;
 
     enum Policy {
 #define X(x) x,
@@ -160,8 +163,8 @@ namespace mu2e {
     // Call backs that will be called by art.
     void preModuleConstruction (art::ModuleDescription const& md);
     void postModuleConstruction(art::ModuleDescription const& md);
-    void preModuleBeginRun     (art::ModuleDescription const& md);
-    void postModuleBeginRun    (art::ModuleDescription const& md);
+    void preModuleBeginRun     (art::ModuleContext const& md);
+    void postModuleBeginRun    (art::ModuleContext const& md);
     void postEndJob();
 
     // Control the level of information messages.

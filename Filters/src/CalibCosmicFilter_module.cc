@@ -3,16 +3,16 @@
 // after updating the Simparticle and StepPointMC art::Ptr's.
 //   The algorithm assumes there are only unique Simparticle
 // numbers (keys), even if there are multiple collections.
-// This is the case for production-style multi-stage jobs, 
+// This is the case for production-style multi-stage jobs,
 // but you can make a mess where this is not true.
 //   The main input, determining what should be saved is based on
 // three collections:
 //   strawDigiMCs, caloShowerSteps, and CRV StepPointMC's
 // this is a natural choice for calibration cosmics, but not
 // very general.
-//   The rest of input is the SimParticle and StepPointMC collection 
-// tags of the collections to read, repoint the Ptr's, and write.  
-// Only certain products are implemented, since each product 
+//   The rest of input is the SimParticle and StepPointMC collection
+// tags of the collections to read, repoint the Ptr's, and write.
+// Only certain products are implemented, since each product
 // requires custom code.
 //   Optionally, you can filter based on the inputs.
 //
@@ -98,7 +98,7 @@ namespace mu2e {
 
     _trkDMCtag = art::InputTag(pset.get<std::string>("strawDigiMCs","MakeSD"));
     _calCSStag = art::InputTag(pset.get<std::string>("caloShowerSteps",
-					     "CaloShowerStepFromStepPt"));
+                                             "CaloShowerStepFromStepPt"));
     _crvSPMCtag = art::InputTag(pset.get<std::string>("crvSteps",""));
     _crvDMCtag = art::InputTag(pset.get<std::string>("crvDigiMCs",""));
     // will need to re-write these collections
@@ -109,9 +109,9 @@ namespace mu2e {
     }
 
     // new filtered SimParticle collection
-    produces<mu2e::SimParticleCollection>(""); 
-    
-    VS slist; 
+    produces<mu2e::SimParticleCollection>("");
+
+    VS slist;
 
     // lists of StepPointMC collections to copy and re-point
     slist = pset.get<VS>("copyHits",VS());
@@ -121,7 +121,7 @@ namespace mu2e {
 
     if (slist.size() != _copySPMCnames.size()) {
       throw cet::exception("BADCONFIG") << "the number of collections"
-		<< " in copyHits and copyHitsNames must be the same\n";
+                << " in copyHits and copyHitsNames must be the same\n";
     }
 
     // lists of MCTrajectory collections to copy and re-point
@@ -132,7 +132,7 @@ namespace mu2e {
 
     if (slist.size() != _copyTrajNames.size()) {
       throw cet::exception("BADCONFIG") << "the number of collections"
-		<< " in copyTrajs and copyTrajsNames must be the same\n";
+                << " in copyTrajs and copyTrajsNames must be the same\n";
     }
 
     // filter requirements
@@ -150,17 +150,17 @@ namespace mu2e {
 
     bool passed = false;
 
-    auto trkDMC = 
+    auto trkDMC =
       event.getValidHandle<StrawDigiMCCollection>(_trkDMCtag);
-    auto calCSS  = 
+    auto calCSS  =
       event.getValidHandle<CaloShowerStepCollection>(_calCSStag);
-    auto simPh  = 
+    auto simPh  =
       event.getValidHandle<SimParticleCollection>("g4run");
     auto const& simP = *simPh;
 
     // compute filtering result
     if(trkDMC->size()>=_minTrkDigis) passed = true;
-    
+
     double energy = 0;
     for(auto const& s: *calCSS) energy += s.energyMC();
     if(energy>=_minCalEnergy) passed = true;
@@ -179,19 +179,19 @@ namespace mu2e {
       ncrvDMC = crvDMC->size();
     }
 
-    if(_verbose>3) { std::cout 
-	<< "CalibCosmicFilter results of filtering:"  << std::endl
-	<< "    trk hits: " << std::setw(4) << trkDMC->size() 
-	<< " cut:" << std::setw(4) << _minTrkDigis  << std::endl
-	<< "    cal energy: " 
-	<< std::setw(9) << std::setprecision(3) << energy 
-	<< "  cut:" 
-	<< std::setw(9) << std::setprecision(3) << _minCalEnergy  << std::endl
-	<< "    crv steps: " << std::setw(4) << ncrvSPMC 
-	<< " cut:" << std::setw(4) << _minCrvSteps  << std::endl
-	<< "    crv digis: " << std::setw(4) << ncrvDMC 
-	<< " cut:" << std::setw(4) << _minCrvDigis << std::endl
-	<< "    passed: " << passed << std::endl;
+    if(_verbose>3) { std::cout
+        << "CalibCosmicFilter results of filtering:"  << std::endl
+        << "    trk hits: " << std::setw(4) << trkDMC->size()
+        << " cut:" << std::setw(4) << _minTrkDigis  << std::endl
+        << "    cal energy: "
+        << std::setw(9) << std::setprecision(3) << energy
+        << "  cut:"
+        << std::setw(9) << std::setprecision(3) << _minCalEnergy  << std::endl
+        << "    crv steps: " << std::setw(4) << ncrvSPMC
+        << " cut:" << std::setw(4) << _minCrvSteps  << std::endl
+        << "    crv digis: " << std::setw(4) << ncrvDMC
+        << " cut:" << std::setw(4) << _minCrvDigis << std::endl
+        << "    passed: " << passed << std::endl;
     }
 
     //************* make the list of saved SimParticles
@@ -202,36 +202,36 @@ namespace mu2e {
       SPsave.insert(sd.stepPointMC(StrawEnd::cal)->simParticle().key());
       SPsave.insert(sd.stepPointMC(StrawEnd::hv )->simParticle().key());
       for(auto const& s: sd.stepPointMCs()) {
-	SPsave.insert(s->simParticle().key());
+        SPsave.insert(s->simParticle().key());
       }
     }
-    if(_verbose>5) std::cout 
-	    << "CalibCosmicFilter SimParticles saved after tracker " 
+    if(_verbose>5) std::cout
+            << "CalibCosmicFilter SimParticles saved after tracker "
             << SPsave.size() << std::endl;
 
     // save the SimParticles pointed to by the CaloShowerSteps
     for(auto const& s: *calCSS) SPsave.insert(s.simParticle().key());
-    if(_verbose>5) std::cout 
-	    << "CalibCosmicFilter SimParticles saved after cal " 
+    if(_verbose>5) std::cout
+            << "CalibCosmicFilter SimParticles saved after cal "
             << SPsave.size() << std::endl;
 
     // save SimParticles for CRV
     if(_crvDMCtag!="") {
       auto crvDMC = event.getValidHandle<CrvDigiMCCollection>(_crvDMCtag);
       for(auto const& cd : *crvDMC) {
-	// CrvDigiMC SimParticle may be null
-	if(cd.GetSimParticle().isAvailable()) {
-	  SPsave.insert(cd.GetSimParticle().key());
-	}
-	for(auto const& s: cd.GetStepPoints()) {
-	  // CrvDigiMC SPMC may be null
-	  if(s.isAvailable()) {
-	    SPsave.insert(s->simParticle().key());
-	  }
-	}
+        // CrvDigiMC SimParticle may be null
+        if(cd.GetSimParticle().isAvailable()) {
+          SPsave.insert(cd.GetSimParticle().key());
+        }
+        for(auto const& s: cd.GetStepPoints()) {
+          // CrvDigiMC SPMC may be null
+          if(s.isAvailable()) {
+            SPsave.insert(s->simParticle().key());
+          }
+        }
       }
-      if(_verbose>5) std::cout 
-         << "CalibCosmicFilter SimParticles saved after CrvDigis " 
+      if(_verbose>5) std::cout
+         << "CalibCosmicFilter SimParticles saved after CrvDigis "
          << SPsave.size() << std::endl;
     }
 
@@ -239,22 +239,22 @@ namespace mu2e {
     for(auto const& tag: _copySPMC) { // loop over string of input tags
       auto h = event.getValidHandle<mu2e::StepPointMCCollection>(tag);
       for(auto const& i : *h) { // loop over the SPMC
-	SPsave.insert(i.simParticle().key());
+        SPsave.insert(i.simParticle().key());
       }
     }
-    if(_verbose>5) std::cout 
-	    << "CalibCosmicFilter SimParticles saved after copyHits " 
+    if(_verbose>5) std::cout
+            << "CalibCosmicFilter SimParticles saved after copyHits "
             << SPsave.size() << std::endl;
 
     // save the SimParticles pointed to by MCTrajectory
     for(auto const& tag: _copyTraj) { // loop over string of input tags
       auto h = event.getValidHandle<mu2e::MCTrajectoryCollection>(tag);
       for(auto const& i : *h) { // loop over the SPMC
-	SPsave.insert(i.first.key());
+        SPsave.insert(i.first.key());
       }
     }
-    if(_verbose>5) std::cout 
-	    << "CalibCosmicFilter SimParticles saved after trajHits " 
+    if(_verbose>5) std::cout
+            << "CalibCosmicFilter SimParticles saved after trajHits "
             << SPsave.size() << std::endl;
 
     // save parents of saved SimParticles
@@ -262,19 +262,19 @@ namespace mu2e {
     for(const auto& iid : tempSave) {
       auto ptr = simP.find(cet::map_vector_key(iid))->second.parent();
       while(ptr.isNonnull()) {
-	SPsave.insert(ptr.key());
-	ptr = ptr->parent();
+        SPsave.insert(ptr.key());
+        ptr = ptr->parent();
       }
     }
-    if(_verbose>5) std::cout 
-	    << "CalibCosmicFilter SimParticles saved after parents " 
+    if(_verbose>5) std::cout
+            << "CalibCosmicFilter SimParticles saved after parents "
             << SPsave.size() << std::endl;
 
     //**********  write filtered output collection of SimParticles
 
     // these are needed to set the art::Ptrs
     // create map of old SimP to new SimP
-    auto SPpid = getProductID<SimParticleCollection>("");
+    auto SPpid = event.getProductID<SimParticleCollection>("");
     auto SPpg  = event.productGetter(SPpid);
     // make a set of new SimParticle art pointers for use later
     // save in a map that converts a key to an art::Ptr
@@ -285,15 +285,15 @@ namespace mu2e {
     // add that null goes to null for CRV
     SPPtrmap[-1] = art::Ptr<SimParticle>();
 
-    std::unique_ptr<mu2e::SimParticleCollection> 
+    std::unique_ptr<mu2e::SimParticleCollection>
                        outSPp(new mu2e::SimParticleCollection());
     auto& outSP = *outSPp;
 
-    ParticleSelector sel(SPsave);    
+    ParticleSelector sel(SPsave);
     compressSimParticleCollection(SPpid, SPpg, simP, sel, outSP);
 
-    if(_verbose>5) std::cout 
-	    << "CalibCosmicFilter SimParticles written " 
+    if(_verbose>5) std::cout
+            << "CalibCosmicFilter SimParticles written "
             << outSP.size() << std::endl;
 
     // write out the new SimParticle collection
@@ -306,54 +306,54 @@ namespace mu2e {
     std::map<art::Ptr<StepPointMC>,art::Ptr<StepPointMC>> SPMCmap;
 
     for(std::size_t i=0; i<_copySPMC.size(); i++) { // loop input tags
-      auto pid = getProductID<StepPointMCCollection>(_copySPMCnames[i]);
+      auto pid = event.getProductID<StepPointMCCollection>(_copySPMCnames[i]);
       auto pg  = event.productGetter(pid);
 
-      std::unique_ptr<mu2e::StepPointMCCollection> 
-	                  outSPMCp(new mu2e::StepPointMCCollection());
+      std::unique_ptr<mu2e::StepPointMCCollection>
+                          outSPMCp(new mu2e::StepPointMCCollection());
       auto h = event.getValidHandle<mu2e::StepPointMCCollection>(_copySPMC[i]);
       size_t j = 0;
       for(auto const& hit : *h) { // loop over the SPMC
-	outSPMCp->emplace_back(hit); // copy hit
-	outSPMCp->back().simParticle() = 
-	  SPPtrmap[hit.simParticle().key()]; // update Ptr
-	// save Ptr translation
-	SPMCmap[art::Ptr<StepPointMC>(h,j)] = art::Ptr<StepPointMC>(pid,j,pg); 
-	j++;
+        outSPMCp->emplace_back(hit); // copy hit
+        outSPMCp->back().simParticle() =
+          SPPtrmap[hit.simParticle().key()]; // update Ptr
+        // save Ptr translation
+        SPMCmap[art::Ptr<StepPointMC>(h,j)] = art::Ptr<StepPointMC>(pid,j,pg);
+        j++;
       }
       // add a null goes to null for CRV
       SPMCmap[art::Ptr<StepPointMC>()] = art::Ptr<StepPointMC>();
 
-      if(_verbose>5) std::cout 
-		       << "CalibCosmicFilter StepPointMCs written "
-		       << _copySPMCnames[i] << " " 
-		       << outSPMCp->size() << std::endl;
+      if(_verbose>5) std::cout
+                       << "CalibCosmicFilter StepPointMCs written "
+                       << _copySPMCnames[i] << " "
+                       << outSPMCp->size() << std::endl;
 
       event.put(std::move(outSPMCp), _copySPMCnames[i]);
     }
 
     //re-write MCTrajectory collections
     for(std::size_t i=0; i<_copyTraj.size(); i++) { // loop over input tags
-      std::unique_ptr<mu2e::MCTrajectoryCollection> 
-	                  outTrajp(new mu2e::MCTrajectoryCollection());
+      std::unique_ptr<mu2e::MCTrajectoryCollection>
+                          outTrajp(new mu2e::MCTrajectoryCollection());
       auto& outTraj = *outTrajp;
       auto h = event.getValidHandle<mu2e::MCTrajectoryCollection>(_copyTraj[i]);
       for(auto const& trp : *h) { // loop over the SPMC
-	// trajectory coll is a map of art ptr and traj
-	outTraj[ SPPtrmap[trp.first.key()] ] = trp.second;
-	outTraj[ SPPtrmap[trp.first.key()] ].sim() = SPPtrmap[trp.first.key()];
+        // trajectory coll is a map of art ptr and traj
+        outTraj[ SPPtrmap[trp.first.key()] ] = trp.second;
+        outTraj[ SPPtrmap[trp.first.key()] ].sim() = SPPtrmap[trp.first.key()];
       }
 
-      if(_verbose>5) std::cout 
-		       << "CalibCosmicFilter MCTrajectory written "
-		       << _copyTrajNames[i] << " " 
-		       << outTrajp->size() << std::endl;
+      if(_verbose>5) std::cout
+                       << "CalibCosmicFilter MCTrajectory written "
+                       << _copyTrajNames[i] << " "
+                       << outTrajp->size() << std::endl;
 
       event.put(std::move(outTrajp), _copyTrajNames[i]);
     }
 
     //re-write StrawDigiMC collection
-    std::unique_ptr<mu2e::StrawDigiMCCollection> 
+    std::unique_ptr<mu2e::StrawDigiMCCollection>
       outDMCp(new mu2e::StrawDigiMCCollection());
     auto& outDMC = *outDMCp;
     art::Ptr<StepPointMC> stepMC[2];
@@ -366,16 +366,16 @@ namespace mu2e {
       outDMC.push_back( mu2e::StrawDigiMC(d, stepMC, stepMCs) );
     } // loop over digis
 
-    if(_verbose>5) std::cout 
-		     << "CalibCosmicFilter StrawDigiMC written "
-		     << _trkDMCtag.instance() << " " 
-		     << outDMCp->size() << std::endl;
+    if(_verbose>5) std::cout
+                     << "CalibCosmicFilter StrawDigiMC written "
+                     << _trkDMCtag.instance() << " "
+                     << outDMCp->size() << std::endl;
 
     event.put(std::move(outDMCp), _trkDMCtag.instance());
 
 
     //re-write CaloShowerStep collection - already have handle to old
-    std::unique_ptr<mu2e::CaloShowerStepCollection> 
+    std::unique_ptr<mu2e::CaloShowerStepCollection>
       outCSSp(new mu2e::CaloShowerStepCollection());
     auto& outCSS = *outCSSp;
     for(auto c: *calCSS) {
@@ -383,34 +383,34 @@ namespace mu2e {
       outCSS.back().setSimParticle(SPPtrmap[c.simParticle().key()]);
     } // loop over steps
 
-    if(_verbose>5) std::cout 
-		     << "CalibCosmicFilter CaloShowerStep written "
-		     << _calCSStag.instance() << " " 
-		     << outCSSp->size() << std::endl;
+    if(_verbose>5) std::cout
+                     << "CalibCosmicFilter CaloShowerStep written "
+                     << _calCSStag.instance() << " "
+                     << outCSSp->size() << std::endl;
 
     event.put(std::move(outCSSp), _calCSStag.instance());
 
 
     //re-write CrvDigiMC collection
     if(_crvDMCtag!="") {
-      std::unique_ptr<mu2e::CrvDigiMCCollection> 
-	outCrvDMCp(new mu2e::CrvDigiMCCollection());
+      std::unique_ptr<mu2e::CrvDigiMCCollection>
+        outCrvDMCp(new mu2e::CrvDigiMCCollection());
       auto& outCrvDMC = *outCrvDMCp;
-      
+
       auto crvDMC = event.getValidHandle<CrvDigiMCCollection>(_crvDMCtag);
       for(auto d: *crvDMC) {
-	stepMCs.clear();
-	for(auto i:d.GetStepPoints()) stepMCs.push_back(SPMCmap[i]);
-	outCrvDMC.push_back( mu2e::CrvDigiMC(
-	     d.GetVoltages(),stepMCs,SPPtrmap[d.GetSimParticle().key()],
-	     d.GetStartTime(),d.GetScintillatorBarIndex(),d.GetSiPMNumber()) );
+        stepMCs.clear();
+        for(auto i:d.GetStepPoints()) stepMCs.push_back(SPMCmap[i]);
+        outCrvDMC.push_back( mu2e::CrvDigiMC(
+             d.GetVoltages(),stepMCs,SPPtrmap[d.GetSimParticle().key()],
+             d.GetStartTime(),d.GetScintillatorBarIndex(),d.GetSiPMNumber()) );
       } // loop over digis
-      
-      if(_verbose>5) std::cout 
-		       << "CalibCosmicFilter CrvDigiMC written "
-		       << _crvDMCtag.instance() << " " 
-		       << outCrvDMCp->size() << std::endl;
-      
+
+      if(_verbose>5) std::cout
+                       << "CalibCosmicFilter CrvDigiMC written "
+                       << _crvDMCtag.instance() << " "
+                       << outCrvDMCp->size() << std::endl;
+
       event.put(std::move(outCrvDMCp), _crvDMCtag.instance());
     }
 

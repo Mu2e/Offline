@@ -20,17 +20,18 @@
 #include "art/Framework/IO/Sources/Source.h"
 #include "art/Framework/Core/InputSourceMacros.h"
 #include "art/Framework/IO/Sources/SourceHelper.h"
+#include "art/Framework/Principal/RunPrincipal.h"
+#include "art/Framework/Principal/SubRunPrincipal.h"
+#include "art/Framework/Principal/EventPrincipal.h"
+#include "art/Framework/IO/Sources/put_product_in_principal.h"
+#include "art/Utilities/Globals.h" // FIXME-KJK: should not be necessary to use this
 #include "canvas/Persistency/Provenance/Timestamp.h"
 #include "canvas/Persistency/Provenance/RunID.h"
 #include "canvas/Persistency/Provenance/SubRunID.h"
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "canvas/Persistency/Provenance/BranchType.h"
-#include "art/Framework/Principal/RunPrincipal.h"
-#include "art/Framework/Principal/SubRunPrincipal.h"
-#include "art/Framework/Principal/EventPrincipal.h"
-#include "art/Framework/IO/Sources/put_product_in_principal.h"
-#include "art/Framework/Principal/get_ProductDescription.h"
 #include "canvas/Persistency/Provenance/ProductID.h"
+#include "canvas/Persistency/Provenance/canonicalProductName.h"
 
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -69,17 +70,8 @@ namespace mu2e {
 
       unsigned currentEventNumber_;
 
-      //----------------------------------------------------------------
-      template <typename PROD, art::BranchType B>
-      art::ProductID
-      getProductID() const {
-        return
-          art::get_ProductDescription<PROD>(B,
-                                            myModuleLabel_,
-                                            ""/*emtpy instance name*/
-                                            )
-	  .productID();
-      }
+      art::ProductID particlesPID_;
+      art::ProductID marsInfoPID_;
 
     public:
 
@@ -108,13 +100,28 @@ namespace mu2e {
       , currentSubRunNumber_(-1U)
       , currentEventNumber_(0)
     {
-      rh.reconstitutes<mu2e::GenParticleCollection,art::InEvent>(myModuleLabel_);
-      rh.reconstitutes<mu2e::MARSInfoCollection,art::InEvent>(myModuleLabel_);
+      if(!art::RunID(runNumber_).isValid()) {
+        throw cet::exception("BADCONFIG", " FromEMFMARSFileWeighted: ")
+          << " fhicl::ParameterSet specifies an invalid runNumber = "<<runNumber_<<"\n";
+      }
+
+      auto const& gpcTypeLabel = rh.reconstitutes<mu2e::GenParticleCollection,art::InEvent>(myModuleLabel_);
+      auto const& marsTypeLabel = rh.reconstitutes<mu2e::MARSInfoCollection,art::InEvent>(myModuleLabel_);
       rh.reconstitutes<mu2e::GenParticleMARSAssns,art::InEvent>(myModuleLabel_);
 
-      if(!art::RunID(runNumber_).isValid()) {
-        throw cet::exception("BADCONFIG")<<" FromEMFMARSFileWeighted:  fhicl::ParameterSet specifies an invalid runNumber = "<<runNumber_<<"\n";
-      }
+      auto get_ProductID = [](auto const& typeLabel, auto const& processName) {
+        if (!typeLabel.hasEmulatedModule()) {
+          throw cet::exception("BADCONFIG", " FromEMFMARSFileWeighted: ")
+          << " Must provided emulated module name for reconstituted product.\n";
+        }
+        auto const canonical_product_name = art::canonicalProductName(typeLabel.friendlyClassName(),
+                                                                      typeLabel.emulatedModule(),
+                                                                      typeLabel.productInstanceName(),
+                                                                      processName);
+        return art::ProductID{canonical_product_name};
+      };
+      particlesPID_ = get_ProductID(gpcTypeLabel, art::Globals::instance()->processName());
+      marsInfoPID_ = get_ProductID(marsTypeLabel, art::Globals::instance()->processName());
     }
 
     //----------------------------------------------------------------
@@ -195,25 +202,22 @@ namespace mu2e {
 
         outE = pm_.makeEventPrincipal(runNumber_, currentSubRunNumber_, ++currentEventNumber_, ts, false);
 
-        art::ProductID particlesPID = getProductID<GenParticleCollection,art::InEvent>();
-        const art::EDProductGetter* particlesGetter = outE->productGetter(particlesPID);
-
-        art::ProductID infoPID = getProductID<MARSInfoCollection,art::InEvent>();
-        const art::EDProductGetter* infoGetter = outE->productGetter(infoPID);
+        const art::EDProductGetter* particlesGetter = outE->productGetter(particlesPID_);
+        const art::EDProductGetter* infoGetter = outE->productGetter(marsInfoPID_);
 
         const unsigned nj = currentLine_.protonNumber;
         particles->push_back(cnv_.marsToMu2eParticle(currentLine_));
         info->push_back(MARSInfo(currentLine_.weight, currentLine_.protonNumber, currentSubRunNumber_, runNumber_));
-        assns->addSingle(art::Ptr<GenParticle>(particlesPID, particles->size()-1, particlesGetter),
-                         art::Ptr<MARSInfo>(infoPID, info->size()-1, infoGetter)
+        assns->addSingle(art::Ptr<GenParticle>(particlesPID_, particles->size()-1, particlesGetter),
+                         art::Ptr<MARSInfo>(marsInfoPID_, info->size()-1, infoGetter)
                          );
 
         while(readMARSLine(currentFile_, currentLine_)) {
           if(currentLine_.protonNumber == nj) {
             particles->push_back(cnv_.marsToMu2eParticle(currentLine_));
             info->push_back(MARSInfo(currentLine_.weight, currentLine_.protonNumber, currentSubRunNumber_, runNumber_));
-            assns->addSingle(art::Ptr<GenParticle>(particlesPID, particles->size()-1, particlesGetter),
-                             art::Ptr<MARSInfo>(infoPID, info->size()-1, infoGetter)
+            assns->addSingle(art::Ptr<GenParticle>(particlesPID_, particles->size()-1, particlesGetter),
+                             art::Ptr<MARSInfo>(marsInfoPID_, info->size()-1, infoGetter)
                              );
           }
           else {

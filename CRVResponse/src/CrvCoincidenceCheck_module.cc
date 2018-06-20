@@ -482,7 +482,7 @@ namespace mu2e
 
     _totalEvents++;
     if(crvCoincidenceCollection->size()>0) _totalEventsCoincidence++;
-    _moduleLabel = *currentContext()->moduleLabel();
+    _moduleLabel = moduleDescription().moduleLabel();
 
     if(_verboseLevel>0)
     {

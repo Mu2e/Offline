@@ -63,6 +63,7 @@ namespace mu2e {
   };
 
   FromSimParticleStartPoint::FromSimParticleStartPoint(fhicl::ParameterSet const& pset):
+    EDProducer{pset},
     _inModuleLabel(pset.get<std::string>("inputG4ModuleLabel","g4run")),
     _inPdgId(pset.get<Vpdg>("inputPdgIds", {})),
     _inVolumes(pset.get<Vstring>("inputVolumes", {})),
@@ -142,7 +143,7 @@ namespace mu2e {
 
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     std::unique_ptr<GenSimParticleLink> history(new GenSimParticleLink);
-    art::ProductID gpc_pid = (getProductID<GenParticleCollection>());
+    art::ProductID gpc_pid = (event.getProductID<GenParticleCollection>());
 
     if (_firstevent) {
 

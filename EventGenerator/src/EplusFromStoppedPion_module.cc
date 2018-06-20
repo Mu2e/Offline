@@ -92,7 +92,7 @@ namespace mu2e {
   };
 
   EplusFromStoppedPion::EplusFromStoppedPion(fhicl::ParameterSet const& pset):
-
+    EDProducer{pset},
     // Run time arguments from the pset.
     inputModuleLabel_(pset.get<string>("inputModuleLabel")),
 
