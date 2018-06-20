@@ -12,7 +12,7 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/DetectorModel/DetIntersection.hh"
 #include "BTrk/BbrGeom/TrkLineTraj.hh"
-#include "cetlib/coded_exception.h"
+#include "cetlib_except/coded_exception.h"
 #include <assert.h>
 #include <iostream>
 

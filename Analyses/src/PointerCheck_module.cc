@@ -16,7 +16,7 @@
 #include <algorithm>
 
 #include "fhiclcpp/ParameterSet.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "canvas/Persistency/Common/Ptr.h"
