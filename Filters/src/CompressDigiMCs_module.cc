@@ -31,6 +31,7 @@
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
+#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 
 namespace mu2e {
   class CompressDigiMCs;
@@ -91,11 +92,13 @@ private:
   std::vector<art::InputTag> _simParticleTags;
   std::vector<art::InputTag> _extraStepPointMCTags;
   std::vector<art::InputTag> _timeMapTags;
+  art::InputTag _primarySimPtrsTag;
 
   // handles to the old collections
   art::Handle<StrawDigiMCCollection> _strawDigiMCsHandle;
   art::Handle<CrvDigiMCCollection> _crvDigiMCsHandle;
   std::vector<SimParticleTimeMap> _oldTimeMaps;
+  art::Handle<SimParticlePtrCollection> _primarySimPtrsHandle;
 
   // unique_ptrs to the new output collections
   std::unique_ptr<StrawDigiMCCollection> _newStrawDigiMCs;
@@ -104,6 +107,7 @@ private:
   std::map<art::ProductID, std::unique_ptr<SimParticleCollection> > _newSimParticles;
   std::map<art::ProductID, std::unique_ptr<GenParticleCollection> > _newGenParticles;
   std::vector<std::unique_ptr<SimParticleTimeMap> > _newSimParticleTimeMaps;
+  std::unique_ptr<SimParticlePtrCollection> _newPrimarySimPtrs;
 
   // for StepPointMCs, SimParticles and GenParticles we also need reference their new locations with art::Ptrs and so need their ProductIDs and Getters
   art::ProductID _newStepPointMCsPID;
@@ -124,7 +128,8 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
     _crvDigiMCTag(pset.get<art::InputTag>("crvDigiMCTag")),
     _simParticleTags(pset.get<std::vector<art::InputTag> >("simParticleTags")),
     _extraStepPointMCTags(pset.get<std::vector<art::InputTag> >("extraStepPointMCTags")),
-    _timeMapTags(pset.get<std::vector<art::InputTag> >("timeMapTags"))
+    _timeMapTags(pset.get<std::vector<art::InputTag> >("timeMapTags")),
+    _primarySimPtrsTag(pset.get<art::InputTag>("primarySimPtrsTag"))
 {
   // Call appropriate produces<>() functions here.
   produces<StrawDigiMCCollection>();
@@ -140,6 +145,8 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
   for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
     produces<SimParticleTimeMap>( (*i_tag).label() );
   }
+
+  produces<SimParticlePtrCollection>();
 }
 
 void mu2e::CompressDigiMCs::produce(art::Event & event)
@@ -186,7 +193,11 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     _newSimParticleTimeMaps.push_back(std::unique_ptr<SimParticleTimeMap>(new SimParticleTimeMap));
   }
 
-  
+  event.getByLabel(_primarySimPtrsTag, _primarySimPtrsHandle);
+  const auto& primarySimPtrs = *_primarySimPtrsHandle;
+  _newPrimarySimPtrs = std::unique_ptr<SimParticlePtrCollection>(new SimParticlePtrCollection);  
+
+
   event.getByLabel(_strawDigiMCTag, _strawDigiMCsHandle);
   const auto& strawDigiMCs = *_strawDigiMCsHandle;
   for (const auto& i_strawDigiMC : strawDigiMCs) {
@@ -249,6 +260,13 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
 	  i_newTimeMap[newSimPtr] = it->second;
 	}
       }
+
+      // Update the PrimarySimPtrs
+      for (const auto& i_primarySimPtr : primarySimPtrs) {
+	if (i_primarySimPtr == oldSimPtr) {
+	  _newPrimarySimPtrs->push_back(newSimPtr);
+	}
+      }
     }
   }
 
@@ -267,7 +285,8 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
     size_t i_element = i_tag - _timeMapTags.begin();
     event.put(std::move(_newSimParticleTimeMaps.at(i_element)), (*i_tag).label());
-  }	
+  }
+  event.put(std::move(_newPrimarySimPtrs));
 }
 
 void mu2e::CompressDigiMCs::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_digi_mc) {
@@ -303,11 +322,15 @@ void mu2e::CompressDigiMCs::copyCrvDigiMC(const mu2e::CrvDigiMC& old_crv_digi_mc
       newStepPtrs.push_back(copyStepPointMC(*i_step_mc));
     }
   }
-  
-  art::Ptr<SimParticle> oldSimPtr = old_crv_digi_mc.GetSimParticle();
-  art::Ptr<SimParticle> newSimPtr(_newSimParticlesPID[oldSimPtr.id()], oldSimPtr->id().asUint(), _newSimParticleGetter[oldSimPtr.id()]);
-  
 
+  art::Ptr<SimParticle> oldSimPtr = old_crv_digi_mc.GetSimParticle();
+  art::Ptr<SimParticle> newSimPtr;
+  if (oldSimPtr.isNonnull()) { // if the old CrvDigiMC doesn't have a null ptr for the SimParticle...
+    newSimPtr = art::Ptr<SimParticle>(_newSimParticlesPID[oldSimPtr.id()], oldSimPtr->id().asUint(), _newSimParticleGetter[oldSimPtr.id()]);
+  }
+  else {
+    newSimPtr = art::Ptr<SimParticle>();
+  }
   CrvDigiMC new_crv_digi_mc(old_crv_digi_mc.GetVoltages(), newStepPtrs, 
 			    newSimPtr, old_crv_digi_mc.GetStartTime(), 
 			    old_crv_digi_mc.GetScintillatorBarIndex(), old_crv_digi_mc.GetSiPMNumber());
