@@ -76,6 +76,7 @@ namespace mu2e
 
   KalDiag::KalDiag(fhicl::ParameterSet const& pset) :
     _mcstepslabel(pset.get<string>("MCStepsLabel")),
+    _mcstepsinstance(pset.get<string>("MCStepsInstance")),
     _simpartslabel(pset.get<string>("SimParticleLabel")),
     _simpartsinstance(pset.get<string>("SimParticleInstance")),
     _mcdigislabel(pset.get<string>("StrawDigiMCLabel")),
@@ -599,7 +600,7 @@ namespace mu2e
     if(_fillmc){
       // Get the persistent data about the StepPointMCs, from the tracker and the virtual detectors
       art::Handle<StepPointMCCollection> mcVDstepsHandle;
-      if(evt.getByLabel(_mcstepslabel,"virtualdetector",mcVDstepsHandle))
+      if(evt.getByLabel(_mcstepslabel,_mcstepsinstance,mcVDstepsHandle))
 	_mcdata._mcvdsteps = mcVDstepsHandle.product();
       if(evt.getByLabel(_simpartslabel,_simpartsinstance,_mcdata._simparthandle))
 	_mcdata._simparts = _mcdata._simparthandle.product();

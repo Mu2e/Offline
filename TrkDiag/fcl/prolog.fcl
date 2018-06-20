@@ -17,6 +17,7 @@ BEGIN_PROLOG
 # If running KalDiag directly on G4 use KalDiagDirect
   KalDiagDirect			  : @local::KalDiag
   KalDiagDirect.MCStepsLabel        : g4run
+  KalDiagDirect.MCStepsInstance     : "virtualdetector"
   KalDiagDirect.SimParticleLabel    : g4run
   KalDiagDirect.SimParticleInstance : "" 
 
