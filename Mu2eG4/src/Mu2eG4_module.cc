@@ -95,24 +95,27 @@
 
 using namespace std;
 
+namespace {
+  art::InputTag const invalid_tag{};
+}
+
 namespace mu2e {
 
   class Mu2eG4 : public art::EDProducer {
-
   public:
     Mu2eG4(fhicl::ParameterSet const& pSet);
     // Accept compiler supplied d'tor
 
-    virtual void produce(art::Event& e) override;
-
-    virtual void endJob() override;
-
-    virtual void beginRun(art::Run &r) override;
-    virtual void endRun(art::Run &) override;
-
-    virtual void beginSubRun(art::SubRun &sr) override;
-
   private:
+    void produce(art::Event& e) override;
+
+    void endJob() override;
+
+    void beginRun(art::Run &r) override;
+    void endRun(art::Run &) override;
+
+    void beginSubRun(art::SubRun &sr) override;
+
     fhicl::ParameterSet pset_;
     Mu2eG4ResourceLimits mu2elimits_;
     Mu2eG4TrajectoryControl trajectoryControl_;
@@ -212,9 +215,9 @@ namespace mu2e {
     _steppingAction(nullptr),
     _stackingAction(nullptr),
 
-    stackingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", fhicl::ParameterSet()), mu2elimits_)),
-    steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", fhicl::ParameterSet()), mu2elimits_)),
-    commonCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4CommonCut", fhicl::ParameterSet()), mu2elimits_)),
+    stackingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", {}), mu2elimits_)),
+    steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", {}), mu2elimits_)),
+    commonCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4CommonCut", {}), mu2elimits_)),
 
     _session(nullptr),
     _UI(nullptr),
@@ -233,7 +236,7 @@ namespace mu2e {
     _processInfo(),
     _printPhysicsProcessSummary(pSet.get<bool>("debug.printPhysicsProcessSummary",false)),
     _simParticlePrinter(pSet.get<fhicl::ParameterSet>("SimParticlePrinter", SimParticleCollectionPrinter::defaultPSet())),
-    _sensitiveDetectorHelper(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
+    _sensitiveDetectorHelper(pSet.get<fhicl::ParameterSet>("SDConfig", {})),
     _extMonFNALPixelSD(),
     _tvdOutputName(StepInstanceName::timeVD),
     timeVDtimes_(pSet.get<std::vector<double> >("SDConfig.TimeVD.times")),
@@ -243,7 +246,7 @@ namespace mu2e {
     _userElapsed(0.),
     standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector())
   {
-    if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
+    if(_generatorModuleLabel == invalid_tag && multiStagePars_.genInputHits().empty()) {
       throw cet::exception("CONFIG")
         << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
     }
@@ -269,10 +272,27 @@ namespace mu2e {
     steppingCuts_->declareProducts(this);
     commonCuts_->declareProducts(this);
 
+    // Declare which products this module will read.
+    auto const& inputPhysVolTag = multiStagePars_.inputPhysVolumeMultiInfo();
+    if (inputPhysVolTag != invalid_tag) {
+      consumes<PhysicalVolumeInfoMultiCollection, art::InSubRun>(inputPhysVolTag);
+    }
+    auto const& inputSimParticlesTag = multiStagePars_.inputSimParticles();
+    if (inputSimParticlesTag != invalid_tag) {
+      consumes<SimParticleCollection>(inputSimParticlesTag);
+    }
+    auto const& inputMCTrajectoryTag = multiStagePars_.inputMCTrajectories();
+    if (inputMCTrajectoryTag != invalid_tag) {
+      consumes<MCTrajectoryCollection>(inputMCTrajectoryTag);
+    }
+    if (_generatorModuleLabel != invalid_tag) {
+      consumes<GenParticleCollection>(_generatorModuleLabel);
+    }
+    for (auto const& tag : multiStagePars_.genInputHits()) {
+      consumes<StepPointMCCollection>(tag);
+    }
+
     produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
-    // if(!standardMu2eDetector_) {
-    //   produces<PhysicalVolumeInfoMultiCollection>("");
-    // }
 
     // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
     createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
@@ -361,19 +381,19 @@ namespace mu2e {
 
     if (standardMu2eDetector_) {
 
-      allMu2e = 
+      allMu2e =
         (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &_sensitiveDetectorHelper),
                                    std::make_unique<ConstructMaterials>(pset_)));
 
     } else {
 
-      allMu2e = 
+      allMu2e =
         (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(pset_, &_sensitiveDetectorHelper),
                                         std::make_unique<ConstructMaterials>(pset_)));
     }
 
     preG4InitializeTasks(pset_.get<fhicl::ParameterSet>("physics"));
- 
+
     _runManager->SetVerboseLevel(_rmvlevel);
 
     _runManager->SetUserInitialization(allMu2e);
@@ -439,7 +459,7 @@ namespace mu2e {
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
 
-      _visManager = std::unique_ptr<G4VisManager>(new G4VisExecutive());
+      _visManager = std::make_unique<G4VisManager>();
       _visManager->Initialize();
 
       ConfigFileLookupPolicy visPath;
@@ -455,30 +475,31 @@ namespace mu2e {
   } // end G4::initializeG4
 
 
-  void Mu2eG4::beginSubRun(art::SubRun& sr) {
-    unique_ptr<PhysicalVolumeInfoMultiCollection> mvi(new PhysicalVolumeInfoMultiCollection());
+  void Mu2eG4::beginSubRun(art::SubRun& sr)
+  {
+    using Collection_t = PhysicalVolumeInfoMultiCollection;
+    auto mvi = std::make_unique<Collection_t>();
 
-    if(multiStagePars_.inputPhysVolumeMultiInfo()  != art::InputTag()) {
+    if(multiStagePars_.inputPhysVolumeMultiInfo() != invalid_tag) {
       // Copy over data from the previous simulation stages
-      art::Handle<PhysicalVolumeInfoMultiCollection> ih;
-      sr.getByLabel(multiStagePars_.inputPhysVolumeMultiInfo(), ih);
+      auto const& ih = sr.getValidHandle<Collection_t>(multiStagePars_.inputPhysVolumeMultiInfo());
       mvi->reserve(1 + ih->size());
       mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
     }
 
     // Append info for the current stage
-    mvi->emplace_back(std::make_pair(multiStagePars_.simParticleNumberOffset(), _physVolHelper.persistentSingleStageInfo()));
+    mvi->emplace_back(multiStagePars_.simParticleNumberOffset(), _physVolHelper.persistentSingleStageInfo());
 
     sr.put(std::move(mvi));
   }
 
 
   // Create one G4 event and copy its output to the art::event.
-  void Mu2eG4::produce(art::Event& event) {
-
+  void Mu2eG4::produce(art::Event& event)
+  {
     // Handle to the generated particles; need when building art::Ptr to a GenParticle.
     art::Handle<GenParticleCollection> gensHandle;
-    if(!(_generatorModuleLabel == art::InputTag())) {
+    if(_generatorModuleLabel != invalid_tag) {
       event.getByLabel(_generatorModuleLabel, gensHandle);
     }
 
@@ -489,7 +510,7 @@ namespace mu2e {
     }
 
     art::Handle<SimParticleCollection> inputSimHandle;
-    if(art::InputTag() != multiStagePars_.inputSimParticles()) {
+    if(multiStagePars_.inputSimParticles() != invalid_tag) {
       event.getByLabel(multiStagePars_.inputSimParticles(), inputSimHandle);
       if(!inputSimHandle.isValid()) {
         throw cet::exception("CONFIG")
@@ -498,7 +519,7 @@ namespace mu2e {
     }
 
     art::Handle<MCTrajectoryCollection> inputMCTrajectoryHandle;
-    if(art::InputTag() != multiStagePars_.inputMCTrajectories()) {
+    if(multiStagePars_.inputMCTrajectories() != invalid_tag) {
       event.getByLabel(multiStagePars_.inputMCTrajectories(), inputMCTrajectoryHandle);
       if(!inputMCTrajectoryHandle.isValid()) {
         throw cet::exception("CONFIG")
@@ -512,13 +533,13 @@ namespace mu2e {
     SimParticlePrimaryHelper parentHelper(event, simPartId, gensHandle);
 
     // Create empty data products.
-    unique_ptr<SimParticleCollection>      simParticles(      new SimParticleCollection);
-    unique_ptr<StepPointMCCollection>      tvdHits(           new StepPointMCCollection);
-    unique_ptr<MCTrajectoryCollection>     mcTrajectories(    new MCTrajectoryCollection);
-    unique_ptr<SimParticleRemapping>       simsRemap(         new SimParticleRemapping);
-    unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(    new ExtMonFNALSimHitCollection);    
+    auto simParticles   = std::make_unique<SimParticleCollection>();
+    auto tvdHits        = std::make_unique<StepPointMCCollection>();
+    auto mcTrajectories = std::make_unique<MCTrajectoryCollection>();
+    auto simsRemap      = std::make_unique<SimParticleRemapping>();
+    auto extMonFNALHits = std::make_unique<ExtMonFNALSimHitCollection>();
     // products for the g4study
-    unique_ptr<StepPointMCCollection>      steppingPoints(    new StepPointMCCollection);
+    auto steppingPoints = std::make_unique<StepPointMCCollection>();
 
     _sensitiveDetectorHelper.createProducts(event, spHelper);
 
@@ -551,20 +572,19 @@ namespace mu2e {
     float cpuTime  = _timer->GetSystemElapsed()+_timer->GetUserElapsed();
 
     int status(0);
-    if ( _steppingAction->nKilledStepLimit() > 0 || 
+    if ( _steppingAction->nKilledStepLimit() > 0 ||
          _trackingAction->nKilledByFieldPropagator() > 0 ) {
       status =  1;
     }
     if ( _trackingAction->overflowSimParticles() ) status = 10;
 
-    unique_ptr<StatusG4> g4stat(new StatusG4( status,
-                                              _trackingAction->nG4Tracks(),
-                                              _trackingAction->overflowSimParticles(),
-                                              _steppingAction->nKilledStepLimit(),
-                                              _trackingAction->nKilledByFieldPropagator(),
-                                              cpuTime,
-                                              _timer->GetRealElapsed() )
-                                );
+    auto g4stat = std::make_unique<StatusG4>(status,
+                                             _trackingAction->nG4Tracks(),
+                                             _trackingAction->overflowSimParticles(),
+                                             _steppingAction->nKilledStepLimit(),
+                                             _trackingAction->nKilledByFieldPropagator(),
+                                             cpuTime,
+                                             _timer->GetRealElapsed());
 
     _simParticlePrinter.print(std::cout, *simParticles);
 
@@ -625,8 +645,7 @@ namespace mu2e {
 
             // we add a command here and initialize it
             // (/vis/sceneHandler has to exist prior to this)
-            Mu2eVisCommandSceneHandlerDrawEvent* drEv =
-              new Mu2eVisCommandSceneHandlerDrawEvent();
+            auto* drEv = new Mu2eVisCommandSceneHandlerDrawEvent();
             _visManager->RegisterMessenger(drEv); // assumes ownership;
             // drEv->SetVisManager(_visManager.get());
             // vis manager pointer is static member of the drEv base
@@ -856,5 +875,4 @@ namespace mu2e {
 
 } // End of namespace mu2e
 
-using mu2e::Mu2eG4;
-DEFINE_ART_MODULE(Mu2eG4);
+DEFINE_ART_MODULE(mu2e::Mu2eG4);

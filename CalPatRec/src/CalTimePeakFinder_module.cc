@@ -48,7 +48,7 @@ namespace mu2e {
     _diagLevel       (pset.get<int>            ("diagLevel"                      )),
     _debugLevel      (pset.get<int>            ("debugLevel"                     )),
     _printfreq       (pset.get<int>            ("printFrequency"                 )),
-    _useAsFilter     (pset.get<int>            ("useAsFilter"                    )),    
+    _useAsFilter     (pset.get<int>            ("useAsFilter"                    )),
     _shLabel         (pset.get<string>         ("StrawHitCollectionLabel"        )),
     _shfLabel        (pset.get<string>         ("StrawHitFlagCollectionLabel"    )),
     _ccmLabel        (pset.get<string>         ("caloClusterModuleLabel"         )),
@@ -63,6 +63,8 @@ namespace mu2e {
     _pitchAngle      (pset.get<double>         ("pitchAngle"                     )),
     _dtoffset        (pset.get<double>         ("dtOffset"                       ))
   {
+    consumes<ComboHitCollection>(_shLabel);
+    consumes<CaloClusterCollection>(_ccmLabel);
     produces<TimeClusterCollection>();
     // produces<CalTimePeakCollection>();
 
@@ -96,7 +98,7 @@ namespace mu2e {
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     _calorimeter = ch.get();
-    
+
     return true;
   }
 
@@ -105,7 +107,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   bool CalTimePeakFinder::findData(const art::Event& evt) {
 
-    auto chcolH = evt.getValidHandle<mu2e::ComboHitCollection>(_shLabel);
+    auto chcolH = evt.getValidHandle<ComboHitCollection>(_shLabel);
     if (chcolH.product() != 0){
       _data.chcol = chcolH.product();
     }
@@ -140,7 +142,7 @@ namespace mu2e {
     _data._event = &event;
 
     unique_ptr<TimeClusterCollection>  outseeds(new TimeClusterCollection);
-    
+
     _data._outseeds = outseeds.get();
 
     bool ok = findData(event);
@@ -160,7 +162,7 @@ namespace mu2e {
     if (_useAsFilter == 0) return true;
 
     int nseeds = outseeds->size();
-    return (nseeds > 0) ; 
+    return (nseeds > 0) ;
   }
 //-----------------------------------------------------------------------------
 //
@@ -194,7 +196,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     nch   = _data.chcol->size();
     ncl   = _data.ccCollection->size();
-    
+
     for (int ic=0; ic<ncl; ic++) {
       cl      = &_data.ccCollection->at(ic);
       int   nsh(0);
@@ -214,10 +216,10 @@ namespace mu2e {
           xcl     = tpos.x();
           ycl     = tpos.y();
           zcl     = tpos.z();
-	  mphi    = polyAtan2(ycl, xcl);
+          mphi    = polyAtan2(ycl, xcl);
 
           // create time peak
-	  TimeCluster tpeak;
+          TimeCluster tpeak;
 //-----------------------------------------------------------------------------
 // record hits in time with each peak, and accept them if they have a minimum # of hits
 //-----------------------------------------------------------------------------
@@ -235,35 +237,35 @@ namespace mu2e {
 //--------------------------------------------------------------------------------
 // check the angular distance from the calorimeter cluster
 //--------------------------------------------------------------------------------
-	    if ((dt < _maxdt) && (dt >= _mindt)){
-	      double dphi = polyAtan2(hit->pos().y(), hit->pos().x()) - mphi;//phi() - mphi;
-	    
-	      if (dphi >  pi) dphi -= twopi;
-	      if (dphi < -pi) dphi += twopi;
+            if ((dt < _maxdt) && (dt >= _mindt)){
+              double dphi = polyAtan2(hit->pos().y(), hit->pos().x()) - mphi;//phi() - mphi;
 
-	      //-----------------------------------------------------------------------------
-	      // fill some diag histograms
-	      //-----------------------------------------------------------------------------
-	      if (fabs(dphi) <= pi/2.) {
-		tpeak._strawHitIdxs.push_back( StrawHitIndex(istr) );
-		nsh += hit->nStrawHits();
-		//-----------------------------------------------------------------------------
-		// print diagnostics on rejected hits
-		//-----------------------------------------------------------------------------
-		// printf("[%s] rejected hit: index: %5i flag: %10s  time:  %8.3f   dt: %8.3f energy: %8.5f\n",
-		//        oname, istr, flag.hex().data(), hit->time(), hit->dt(), hit->energyDep());
-		// }
-	      }
-	    }
-	  }
+              if (dphi >  pi) dphi -= twopi;
+              if (dphi < -pi) dphi += twopi;
+
+              //-----------------------------------------------------------------------------
+              // fill some diag histograms
+              //-----------------------------------------------------------------------------
+              if (fabs(dphi) <= pi/2.) {
+                tpeak._strawHitIdxs.push_back( StrawHitIndex(istr) );
+                nsh += hit->nStrawHits();
+                //-----------------------------------------------------------------------------
+                // print diagnostics on rejected hits
+                //-----------------------------------------------------------------------------
+                // printf("[%s] rejected hit: index: %5i flag: %10s  time:  %8.3f   dt: %8.3f energy: %8.5f\n",
+                //        oname, istr, flag.hex().data(), hit->time(), hit->dt(), hit->energyDep());
+                // }
+              }
+            }
+          }
 
           // if (int(tpeak.nhits()) >= _data.minNHits) {
           if (nsh >= _data.minNHits) {
-	    tpeak._nsh              = nsh;
-	    tpeak._t0               = TrkT0(cl_time, 0.1); //dummy value for errT0
-	    tpeak._pos              = tpos;
-	    tpeak._caloCluster      = art::Ptr<mu2e::CaloCluster>(_ccH, ic);
-	    OutSeeds.push_back(tpeak);
+            tpeak._nsh              = nsh;
+            tpeak._t0               = TrkT0(cl_time, 0.1); //dummy value for errT0
+            tpeak._pos              = tpos;
+            tpeak._caloCluster      = art::Ptr<mu2e::CaloCluster>(_ccH, ic);
+            OutSeeds.push_back(tpeak);
           }
         }
       }

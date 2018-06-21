@@ -98,11 +98,11 @@ namespace mu2e {
       explicit StrawDigisFromStepPointMCs(fhicl::ParameterSet const& pset);
       // Accept compiler written d'tor.
 
-      virtual void beginJob();
-      virtual void beginRun( art::Run& run );
-      virtual void produce( art::Event& e);
-
     private:
+
+      void beginJob() override;
+      void beginRun(art::Run& run) override;
+      void produce(art::Event& e) override;
 
       // Diagnostics level.
       int _debug, _diag, _printLevel;
@@ -232,7 +232,7 @@ namespace mu2e {
     _minstepE(pset.get<double>("minstepE",2.0e-6)), // minimum step energy depostion to turn into a straw signal (MeV)
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _steptimebuf(pset.get<double>("StepPointMCTimeBuffer",100.0)), // nsec
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
+    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", {})),
     _diagpath(static_cast<StrawElectronics::Path>(pset.get<int>("WaveformDiagPath",StrawElectronics::thresh))),
     // Random number distributions
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
@@ -245,9 +245,17 @@ namespace mu2e {
     _ptfac(pset.get<double>("PtFactor", 2.0)), // factor for defining curling in a straw
     _maxnclu(pset.get<unsigned>("MaxNClusters", 10)), // max # of clusters for low-PT steps
     _sort(pset.get<bool>("SortClusterEnergy",false)), //
-    _deadStraws(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet())),
-    _strawStatus(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet()))
+    _deadStraws(pset.get<fhicl::ParameterSet>("deadStrawList", {})),
+    _strawStatus(pset.get<fhicl::ParameterSet>("deadStrawList", {}))
     {
+      // Tell the framework what we consume.
+      consumesMany<StepPointMCCollection>();
+      // Since SimParticleTimeOffset calls getValidHandle, we have to
+      // declare the consumes statements here.
+      auto const& toffInputs = pset.get<std::vector<std::string>>("TimeOffsets.inputs", {});
+      for (auto const& tag : toffInputs) {
+        consumes<SimParticleTimeMap>(tag);
+      }
       // Tell the framework what we make.
       produces<StrawDigiCollection>();
       produces<PtrStepPointMCVectorCollection>();

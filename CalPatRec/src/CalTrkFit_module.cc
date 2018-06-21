@@ -194,6 +194,10 @@ namespace mu2e {
     _fitter          (pset.get<fhicl::ParameterSet>   ("Fitter",fhicl::ParameterSet())),
     _result          ()
   {
+    consumes<ComboHitCollection>(_shLabel);
+    consumes<StrawHitFlagCollection>(_shfLabel);
+    consumes<KalSeedCollection>(_trkseedLabel);
+
     produces<KalRepCollection       >();
     produces<KalRepPtrCollection    >();
     produces<AlgorithmIDCollection  >();

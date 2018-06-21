@@ -55,6 +55,7 @@ namespace mu2e {
     , mean_(getMean(pset))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
   {
+    consumesMany<SimParticleCollection>();
     produces<SimParticleTimeMap>();
     if(verbosityLevel_ > 0) {
       std::cout<<"GenerateMuonLife initialized with meanLife = "<<mean_<<std::endl;

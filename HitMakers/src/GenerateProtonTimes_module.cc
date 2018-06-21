@@ -58,6 +58,7 @@ namespace mu2e {
     , protonPset_( pset.get<fhicl::ParameterSet>("randPDFparameters", fhicl::ParameterSet() ) )
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0)) 
   {
+    consumesMany<SimParticleCollection>();
     produces<SimParticleTimeMap>();
 
     typedef std::vector<std::string> VS;
