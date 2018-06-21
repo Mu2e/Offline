@@ -13,7 +13,8 @@ services : {
    message               : @local::default_message
    RandomNumberGenerator : { }
 
-   GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"            }
+//   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"            }
+   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"            }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
    G4Helper               : { }

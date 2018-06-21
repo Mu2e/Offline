@@ -659,6 +659,10 @@ namespace mu2e {
     if ( pbarWindow._nStrips > 0 ) {
       c.getVectorDouble("pbarwedge.stripHeights",pbarWindow._stripHeights,pbarWindow._nStrips);
     }
+      // for version 4 (variable thickness strips)
+      if (pbarWindow._nStrips > 0) {
+	c.getVectorDouble("pbarwedge.stripThicknesses",pbarWindow._stripThicknesses,pbarWindow._nStrips);
+    }
   }
 
 } // namespace mu2e
