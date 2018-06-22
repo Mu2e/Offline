@@ -153,12 +153,7 @@ namespace mu2e {
     static const double massE = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::e_minus).ref().mass().value();
 
     // Uses energy above as photon energy.
-
-    // FIXME-KJK: This is bad, really bad--the energy is generate
-    // per-event, but the random-number engine is instantiated only
-    // once, due to its static nature.
-    static Random2Dpair<PionCaptureSpectrum> random2dPair{eng_, 2*massE, energy, -1., 1.};
-
+    Random2Dpair<PionCaptureSpectrum> random2dPair{eng_, 2*massE, energy, -1., 1.};
     const auto xyPair          = random2dPair.fire(energy);
     const auto elecPosiVectors = PionCaptureSpectrum::getElecPosiVectors(randomUnitSphere_,
                                                                          randomFlat_,
@@ -170,7 +165,6 @@ namespace mu2e {
     auto output = std::make_unique<GenParticleCollection>();
     output->emplace_back(PDGCode::e_minus, GenId::internalRPC, pos, elecPosiVectors.first , stop.t);
     output->emplace_back(PDGCode::e_plus , GenId::internalRPC, pos, elecPosiVectors.second, stop.t);
-
     event.put(move(output));
 
     // Calculate survival probability
