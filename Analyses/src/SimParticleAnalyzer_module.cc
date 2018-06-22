@@ -99,13 +99,6 @@ namespace mu2e {
     art::Handle<SimParticleCollection> simPCH;
     event.getByLabel(_g4ModuleLabel, simPCH);
 
-    if ( !simPCH.isValid() ) {
-      if (_verbosityLevel > -1) {
-        cerr << "No SimParticleCollection.  Skipping this event: " << event.id() << endl;
-      }
-      return;
-    }
-
     const SimParticleCollection& simPC = *simPCH;
 
     if (_verbosityLevel >0) {
