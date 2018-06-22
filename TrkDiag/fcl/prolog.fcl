@@ -4,41 +4,9 @@
 #include "CaloCluster/fcl/prolog.fcl"
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
+#include "TrkDiag/fcl/KalDiag.fcl"
 
 BEGIN_PROLOG
-
-# Note that KalDiag must be configured differently depending on whether you are
-# reading data generated inline, or are reading data output through Read
-  KalDiag : {
-    StrawDigiMCLabel   : makeSD
-    TimeOffsets       :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-  }
-
-# If running KalDiag directly on G4 use KalDiagDirect
-  KalDiagDirect			  : @local::KalDiag
-  KalDiagDirect.MCStepsLabel        : g4run
-  KalDiagDirect.MCStepsInstance     : "virtualdetector"
-  KalDiagDirect.SimParticleLabel    : g4run
-  KalDiagDirect.SimParticleInstance : "" 
-
-# Production samples use Read, which requires the following setup
-  KalDiagRead			  : @local::KalDiag
-  KalDiagRead.MCStepsLabel        : detectorFilter
-  KalDiagRead.SimParticleLabel    : detectorFilter
-
-# TDR samples gave an instance name to the sim particle collection, CD3 and beyond won't
-  KalDiagReadTDR : @local::KalDiagRead
-  KalDiagReadTDR.SimParticleInstance : "s0"
-
-# CD3 beam data have no instance labels
-  KalDiagReadCD3 : @local::KalDiagRead
-  KalDiagReadCD3.SimParticleInstance : ""
-# MDC config: no detectorFilter
-  KalDiagReadMDC : @local::KalDiagDirect
-# CD3 Cosmic data have different filter module labels
-  KalDiagReadCD3Cosmics			  : @local::KalDiagReadCD3
-  KalDiagReadCD3Cosmics.MCStepsLabel        : cosmicFilter
-  KalDiagReadCD3Cosmics.SimParticleLabel    : cosmicFilter
 
 # prolog which should be elsewhere, FIXME
   pidPathBins: [ 0., 50., 100., 150., 200., 250., 300., 1.e12 ]

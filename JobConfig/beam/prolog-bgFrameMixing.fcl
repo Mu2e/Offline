@@ -6,7 +6,8 @@ BEGIN_PROLOG
 mixerTemplateCommon: {
    module_type         : MixBackgroundFrames
    fileNames           : @nil
-   readMode            : randomNoReplace
+#   readMode            : randomNoReplace
+   readMode            : randomLimReplace
    wrapFiles           : true
 
    mu2e: {
