@@ -1767,7 +1767,10 @@ namespace mu2e {
 
 	  //
 	  // the thickness of the steps, if variable
-	  std::vector<double> stepThickStrip = pbarWindow.stripThicknesses();
+	  std::vector<double> stepThickStrip;
+	  if (pbarAbsTS3Version==4) {
+	    stepThickStrip = pbarWindow.stripThicknesses();
+	  }
 
 	  // Sanity check.  There is no way we should get to this point
 	  // and have a stepLength vector with the wrong number of 
