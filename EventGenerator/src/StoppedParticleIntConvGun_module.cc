@@ -48,24 +48,50 @@
 #include "TFile.h"
 #include "TH1F.h"
 
+using namespace std::string_literals;
+
+
 namespace mu2e {
+
+  namespace {
+    auto parseSpectrumShape(const fhicl::ParameterSet& psphys,
+                            double* elow,
+                            double* ehi)
+    {
+      BinnedSpectrum res;
+      auto const spectrumShape = psphys.get<std::string>("spectrumShape");
+      if (spectrumShape == "Bistirlich"s) {
+        *elow = psphys.get<double>("elow");
+        *ehi = psphys.get<double>("ehi");
+        res.initialize<PionCaptureSpectrum>(*elow, *ehi, psphys.get<double>("spectrumResolution"));
+      }
+      else if (spectrumShape == "flat"s) {
+        *elow = psphys.get<double>("elow");
+        *ehi = psphys.get<double>("ehi");
+        res.initialize<SimpleSpectrum>(*elow, *ehi, *ehi-*elow, SimpleSpectrum::Spectrum::Flat);
+      }
+      else {
+        throw cet::exception("BADCONFIG")
+          << "StoppedParticlePionGun: unknown spectrum shape "<<spectrumShape<<"\n";
+      }
+      return res;
+    }
+  }
 
   //================================================================
   class StoppedParticleIntConvGun : public art::EDProducer {
     fhicl::ParameterSet psphys_;
 
-    double elow_; // BinnedSpectrum does not store emin and emax reliably
-    double ehi_;
-    BinnedSpectrum spectrum_;
-    static BinnedSpectrum parseSpectrumShape(const fhicl::ParameterSet& psphys,
-                                             double *elow,
-                                             double *ehi);
-
+    double elow_{}; // BinnedSpectrum does not store emin and emax reliably
+    double ehi_{};
+    // Spectrum must be constructed after elow_ and ehi_.
+    BinnedSpectrum const spectrum_;
     int verbosityLevel_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandGeneral randSpectrum_;
     RandomUnitSphere randomUnitSphere_;
+    CLHEP::RandFlat randomFlat_;
 
     RootTreeSampler<IO::StoppedParticleTauNormF> stops_;
 
@@ -73,120 +99,95 @@ namespace mu2e {
 
     double generateEnergy();
 
-    TH1F* _hmomentum;
-    TH1F* _hElecMom ;
-    TH1F* _hPosiMom ;
-    
+    TH1F* _hmomentum{nullptr};
+    TH1F* _hElecMom{nullptr};
+    TH1F* _hPosiMom{nullptr};
+
+    void produce(art::Event& event) override;
+
   public:
     explicit StoppedParticleIntConvGun(const fhicl::ParameterSet& pset);
-    virtual void produce(art::Event& event);
   };
 
   //================================================================
   StoppedParticleIntConvGun::StoppedParticleIntConvGun(const fhicl::ParameterSet& pset)
-    : psphys_(pset.get<fhicl::ParameterSet>("physics"))
-    , elow_()
-    , ehi_()
-    , spectrum_(parseSpectrumShape(psphys_, &elow_, &ehi_))
-    , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
-    , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+    : psphys_{pset.get<fhicl::ParameterSet>("physics")}
+    , spectrum_{parseSpectrumShape(psphys_, &elow_, &ehi_)}
+    , verbosityLevel_{pset.get<int>("verbosityLevel", 0)}
+    , eng_{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
-    , randomUnitSphere_(eng_)
-    , stops_(eng_, pset.get<fhicl::ParameterSet>("pionStops"))
-    , doHistograms_( pset.get<bool>("doHistograms",true) )
+    , randomUnitSphere_{eng_}
+    , randomFlat_{eng_}
+    , stops_{eng_, pset.get<fhicl::ParameterSet>("pionStops")}
+    , doHistograms_{pset.get<bool>("doHistograms", true)}
   {
-    produces<mu2e::GenParticleCollection>();
-    produces<mu2e::EventWeight>();
+    produces<GenParticleCollection>();
+    produces<EventWeight>();
 
-    if(verbosityLevel_ > 0) {
-      std::cout<<"StoppedParticleIntConvGun: using = "
-               <<stops_.numRecords()
-               <<" stopped particles"
-               <<std::endl;
-
-      std::cout<<"StoppedParticleIntConvGun: producing electron-positron pair " << std::endl;
+    if (verbosityLevel_ > 0) {
+      std::cout << "StoppedParticleIntConvGun: using = "
+                << stops_.numRecords()
+                << " stopped particles\n"
+                << "StoppedParticleIntConvGun: producing electron-positron pair " << std::endl;
     }
 
-    if ( doHistograms_ ) {
+    if (doHistograms_) {
       art::ServiceHandle<art::TFileService> tfs;
-      art::TFileDirectory tfdir = tfs->mkdir( "StoppedParticleIntConvGun" );
+      art::TFileDirectory tfdir = tfs->mkdir("StoppedParticleIntConvGun");
 
-      _hmomentum = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum"  , 100,  40.,  140.  );
-      _hElecMom  = tfdir.make<TH1F>( "hElecMom" , "Produced electron momentum", 140,  0. ,  140.  );
-      _hPosiMom  = tfdir.make<TH1F>( "hPosiMom" , "Produced positron momentum", 140,  0. ,  140.  );
-
+      _hmomentum = tfdir.make<TH1F>("hmomentum", "Produced photon momentum"  , 100,  40., 140.);
+      _hElecMom  = tfdir.make<TH1F>("hElecMom" , "Produced electron momentum", 140,  0. , 140.);
+      _hPosiMom  = tfdir.make<TH1F>("hPosiMom" , "Produced positron momentum", 140,  0. , 140.);
     }
-
   }
 
   //================================================================
-  BinnedSpectrum
-  StoppedParticleIntConvGun::parseSpectrumShape(const fhicl::ParameterSet& psphys,
-                                                 double *elow,
-                                                 double *ehi)
+  void StoppedParticleIntConvGun::produce(art::Event& event)
   {
-    BinnedSpectrum res;
-
-    const std::string spectrumShape(psphys.get<std::string>("spectrumShape"));
-    if (spectrumShape == "Bistirlich") {
-      *elow = psphys.get<double>("elow");
-      *ehi = psphys.get<double>("ehi");
-      res.initialize<PionCaptureSpectrum>( *elow, *ehi, psphys.get<double>("spectrumResolution") );
-    }
-    else if (spectrumShape == "flat") {
-      *elow = psphys.get<double>("elow");
-      *ehi = psphys.get<double>("ehi");
-      res.initialize<SimpleSpectrum>(*elow, *ehi, *ehi-*elow, SimpleSpectrum::Spectrum::Flat );
-    }
-    else {
-      throw cet::exception("BADCONFIG")
-        << "StoppedParticlePionGun: unknown spectrum shape "<<spectrumShape<<"\n";
-    }
-
-    return res;
-  }
-
-  //================================================================
-  void StoppedParticleIntConvGun::produce(art::Event& event) {
-
-    std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
-
     const auto& stop = stops_.fire();
 
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
     const double energy = generateEnergy();
 
-    // Need mass of electron
     static const double massE = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::e_minus).ref().mass().value();
 
-    // Uses energy above as photon energy, assuming distribution created by 
-    static Random2Dpair< PionCaptureSpectrum > random2dPair( eng_, 2*massE, energy, -1., 1. );
-        
-    const auto xyPair          = random2dPair.fire( energy );
-    const auto elecPosiVectors = PionCaptureSpectrum::getElecPosiVectors( energy, xyPair.first, xyPair.second ); 
-       
-    // Add particles to list
-    output->emplace_back( PDGCode::e_minus, GenId::internalRPC, pos, elecPosiVectors.first , stop.t );
-    output->emplace_back( PDGCode::e_plus , GenId::internalRPC, pos, elecPosiVectors.second, stop.t );
+    // Uses energy above as photon energy.
 
-    event.put(std::move(output));
+    // FIXME-KJK: This is bad, really bad--the energy is generate
+    // per-event, but the random-number engine is instantiated only
+    // once, due to its static nature.
+    static Random2Dpair<PionCaptureSpectrum> random2dPair{eng_, 2*massE, energy, -1., 1.};
+
+    const auto xyPair          = random2dPair.fire(energy);
+    const auto elecPosiVectors = PionCaptureSpectrum::getElecPosiVectors(randomUnitSphere_,
+                                                                         randomFlat_,
+                                                                         energy,
+                                                                         xyPair.first,
+                                                                         xyPair.second);
+
+    // Add particles to list
+    auto output = std::make_unique<GenParticleCollection>();
+    output->emplace_back(PDGCode::e_minus, GenId::internalRPC, pos, elecPosiVectors.first , stop.t);
+    output->emplace_back(PDGCode::e_plus , GenId::internalRPC, pos, elecPosiVectors.second, stop.t);
+
+    event.put(move(output));
 
     // Calculate survival probability
     const double weight = exp(-stop.tauNormalized);
-    std::unique_ptr<EventWeight> pw(new EventWeight(weight));
-    event.put(std::move(pw));
+    event.put(std::make_unique<EventWeight>(weight));
 
-    if ( doHistograms_ ) {
-      _hmomentum->Fill( energy );
-      _hElecMom ->Fill( elecPosiVectors.first .vect().mag() );
-      _hPosiMom ->Fill( elecPosiVectors.second.vect().mag() );
+    if (doHistograms_) {
+      _hmomentum->Fill(energy);
+      _hElecMom ->Fill(elecPosiVectors.first .vect().mag());
+      _hPosiMom ->Fill(elecPosiVectors.second.vect().mag());
     }
 
   }
 
   //================================================================
-  double StoppedParticleIntConvGun::generateEnergy() {
+  double StoppedParticleIntConvGun::generateEnergy()
+  {
     return elow_ + (ehi_ - elow_)*randSpectrum_.fire();
   }
 

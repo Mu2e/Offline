@@ -15,8 +15,8 @@
 namespace mu2e {
 
   //================================================================
-  ExtMonFNALGun::ExtMonFNALGun(const fhicl::ParameterSet& pset)
-    : m_gun(
+  ExtMonFNALGun::ExtMonFNALGun(CLHEP::HepRandomEngine& engine, const fhicl::ParameterSet& pset)
+    : m_gun(engine,
             pset.get<double>("multiplicity"),
             PDGCode::type(pset.get<int>("pdgId")),
 

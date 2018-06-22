@@ -78,7 +78,7 @@ namespace mu2e {
     bool kMaxUserSet_;
     double kMaxUser_;
     bool doHistograms_;
- 
+
     static double fractionSpectrum ;
     static double omcNormalization;
 
@@ -139,7 +139,7 @@ namespace mu2e {
   }
 
   //================================================================
-  BinnedSpectrum 
+  BinnedSpectrum
   StoppedMuonRMCGun::parseSpectrumShape(const fhicl::ParameterSet& psphys,
                                                  double *elow,
                                                  double *ehi)
@@ -155,16 +155,16 @@ namespace mu2e {
       bool kMaxUserSet = psphys.get<bool>("kMaxUserSet");
       double kMaxUser = psphys.get<double>("kMaxUser");
       double rmcFrac =  psphys.get<double>("rmcFrac");
- 
+
 
     // in this case just stop
       if (*elow >= *ehi){
-	// this is wrong
-	throw cet::exception("RANGE") << "energy range in Muon Capture Spectrum is wrong " << *elow << " " << *ehi << std::endl;
+        // this is wrong
+        throw cet::exception("RANGE") << "energy range in Muon Capture Spectrum is wrong " << *elow << " " << *ehi << std::endl;
       }
 
       if (physicsVerbosityLevel_ > 0 && !blind){
-	std::cout << "kMaxUserSet and kMaxUser = " << kMaxUserSet << " " << kMaxUser << std::endl;
+        std::cout << "kMaxUserSet and kMaxUser = " << kMaxUserSet << " " << kMaxUser << std::endl;
       }
       //
       // this will allow me to select a region of the RMC spectrum and weight for the fraction of the spectrum
@@ -173,59 +173,59 @@ namespace mu2e {
       const double recoilEnergyFit{0.220};
       const double deltaMassFit{3.121};
       const double kMaxMax{muonMassFit - bindingEnergyFit - recoilEnergyFit - deltaMassFit};
- 
+
       double kMax;
       if (kMaxUserSet){
-	kMax = kMaxUser;
-      } 
+        kMax = kMaxUser;
+      }
       else {
-	kMax = kMaxMax;
-      } 
- 
+        kMax = kMaxMax;
+      }
+
       if (  *elow > kMax ) {
-	//
-	// if I told you what kMax was you could unblind kMax.  Therefore I will set it to something very low and tell you.
-	std::cout << " StoppedMuonGun elow is too high " << *elow << " resetting to 0 MeV" << std::endl;
+        //
+        // if I told you what kMax was you could unblind kMax.  Therefore I will set it to something very low and tell you.
+        std::cout << " StoppedMuonGun elow is too high " << *elow << " resetting to 0 MeV" << std::endl;
 
       }
 
       res.initialize<MuonCaptureSpectrum>( *elow, *ehi, psphys.get<double>("spectrumResolution"),
-					   kMaxUserSet, kMaxUser, kMaxMax);
- 
- 
- 
+                                           kMaxUserSet, kMaxUser, kMaxMax);
+
+
+
 
       double lowestEnergy{*elow};
       double upperEnergy{*ehi};
 
       if (*ehi > kMax) {
-	upperEnergy = kMax;
+        upperEnergy = kMax;
       }
 
- 
+
       double xLower = lowestEnergy/kMax;
       double xUpper = upperEnergy/kMax;
-    
+
       //
-      // integral of closure appoximation is 1/20 over [0,1].  this gives me the fraction of the spectrum we use, 
+      // integral of closure appoximation is 1/20 over [0,1].  this gives me the fraction of the spectrum we use,
       // should weight overall rate by this
 
-      fractionSpectrum = (20.) *  ( pow(xUpper,2)/2. - (4./3.)*pow(xUpper,3) + (7./4.)*pow(xUpper,4) - (6./5.)*pow(xUpper,5) 
-			   + (1./3.)*pow(xUpper,6) )
-	-  
-	( pow(xLower,2)/2. - (4./3.)*pow(xLower,3) + (7./4.)*pow(xLower,4) - (6./5.)*pow(xLower,5) 
-	  + (1./3.)*pow(xLower,6) );
+      fractionSpectrum = (20.) *  ( pow(xUpper,2)/2. - (4./3.)*pow(xUpper,3) + (7./4.)*pow(xUpper,4) - (6./5.)*pow(xUpper,5)
+                           + (1./3.)*pow(xUpper,6) )
+        -
+        ( pow(xLower,2)/2. - (4./3.)*pow(xLower,3) + (7./4.)*pow(xLower,4) - (6./5.)*pow(xLower,5)
+          + (1./3.)*pow(xLower,6) );
 
       //
       // this is a DIFFERENT normalization.  Docdb 4378 and Armstrong et al tell us the rate about 57 MeV normalized to all
       // ordinary muon captures is 1.43 +-0.12 x 10^{-5}.  See the mathematica notebook in doc-db 16979.  Made configurable.
 
       omcNormalization = (rmcFrac)/(1/20. - 11432149083/pow(kMax,6) + (3610152342/5.)/pow(kMax,5) - (73892007/4.)/pow(kMax,4) + 246924/pow(kMax,3) - (3249/2.)/pow(kMax,2));
- 
+
       if (physicsVerbosityLevel_ > 0){
-	std::cout << "fraction of spectrum = " << fractionSpectrum << std::endl;
-	std::cout << "rmc fraction         = " << rmcFrac << std::endl;
-	std::cout << "omc normalization    = " << omcNormalization << std::endl;
+        std::cout << "fraction of spectrum = " << fractionSpectrum << std::endl;
+        std::cout << "rmc fraction         = " << rmcFrac << std::endl;
+        std::cout << "omc normalization    = " << omcNormalization << std::endl;
       }
 
     }
@@ -255,14 +255,14 @@ namespace mu2e {
 
     double weight{0.};
     // two things can now happen with this photon.  It can proceed and possibly convert, or it can internally convert.
-    // the probability of internal conversion is given by rho = 0.0069 (assume same as for RPC).  Throw a flat 
+    // the probability of internal conversion is given by rho = 0.0069 (assume same as for RPC).  Throw a flat
 
     if (randFlat_.fire() > rhoInternal_) {
-      output->emplace_back( PDGCode::gamma, 
-			    GenId::radiativeMuonCapture, 
-			    pos,
-			    CLHEP::HepLorentzVector( randomUnitSphere_.fire(energy), energy), 
-			    stop.t );
+      output->emplace_back( PDGCode::gamma,
+                            GenId::radiativeMuonCapture,
+                            pos,
+                            CLHEP::HepLorentzVector( randomUnitSphere_.fire(energy), energy),
+                            stop.t );
 
       event.put(std::move(output));
 
@@ -273,34 +273,33 @@ namespace mu2e {
       weight = weightExternal;
       if ( doHistograms_ ) {
 
-	_hmomentum->Fill(energy);
+        _hmomentum->Fill(energy);
       }
     } else {    // internal conversions
 
-      //Need mass of electron
+      // Need mass of electron
       static const double massE = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::e_minus).ref().mass().value();
 
-      // Uses energy above as photon energy, assuming distribution created by 
-      static Random2Dpair< MuonCaptureSpectrum > random2dPair( eng_, 2*massE, energy, -1., 1. );
- 
+      // Uses energy above as photon energy, assuming distribution created by
+      // FIXME-KJK: the function-local statics should be excised.
+      static Random2Dpair<MuonCaptureSpectrum> random2dPair{eng_, 2*massE, energy, -1., 1.};
+
       const auto xyPair          = random2dPair.fire( energy );
-      const auto elecPosiVectors = MuonCaptureSpectrum::getElecPosiVectors( energy, xyPair.first, xyPair.second ); 
-      //      CLHEP::HepLorentzVector fakeElectron( 105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+ massE*massE));
-      //CLHEP::HepLorentzVector fakePositron(-105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+ massE*massE));
-      output->emplace_back( PDGCode::e_minus, 
-			    GenId::radiativeMuonCaptureInternal, 
-			    pos,
-			    elecPosiVectors.first, 
-			    //fakeElectron, 
-			    //800. );
-      			    stop.t );
-      output->emplace_back( PDGCode::e_plus, 
-			    GenId::radiativeMuonCaptureInternal, 
-			    pos,
-			    elecPosiVectors.second, 
-			    //fakePositron, 
-			    //800.);
-      			    stop.t );
+      const auto elecPosiVectors = MuonCaptureSpectrum::getElecPosiVectors(randomUnitSphere_,
+                                                                           randFlat_,
+                                                                           energy,
+                                                                           xyPair.first,
+                                                                           xyPair.second);
+      output->emplace_back( PDGCode::e_minus,
+                            GenId::radiativeMuonCaptureInternal,
+                            pos,
+                            elecPosiVectors.first,
+                            stop.t );
+      output->emplace_back( PDGCode::e_plus,
+                            GenId::radiativeMuonCaptureInternal,
+                            pos,
+                            elecPosiVectors.second,
+                            stop.t );
 
       event.put(std::move(output));
 
@@ -310,18 +309,18 @@ namespace mu2e {
       weight = weightInternal;
       event.put(std::move(pw));
       if (verbosityLevel_ > 0) {
-	std::cout << "original photon energy = " << energy << " and electron mass = " << massE <<  std::endl;
-	std::cout << "RMC electron/positron energies = " << elecPosiVectors.first.e() << " " << elecPosiVectors.second.e() << std::endl;
-	std::cout << "and the full 4-vector: " << elecPosiVectors.first << " " << elecPosiVectors.second << std::endl;
-	std::cout << "stop time = " << stop.t << std::endl;
-	std::cout << " event weight = " << fractionSpectrum << " " << rhoInternal_ << " " << weightInternal << std::endl;
+        std::cout << "original photon energy = " << energy << " and electron mass = " << massE <<  std::endl;
+        std::cout << "RMC electron/positron energies = " << elecPosiVectors.first.e() << " " << elecPosiVectors.second.e() << std::endl;
+        std::cout << "and the full 4-vector: " << elecPosiVectors.first << " " << elecPosiVectors.second << std::endl;
+        std::cout << "stop time = " << stop.t << std::endl;
+        std::cout << " event weight = " << fractionSpectrum << " " << rhoInternal_ << " " << weightInternal << std::endl;
       }
 
       if ( doHistograms_ ) {
-	_hWeight->Fill(weight);
-	_hmomentum->Fill(energy);
-	_hEnergyElectron->Fill(elecPosiVectors.first.e());
-	_hEnergyPositron->Fill(elecPosiVectors.second.e());
+        _hWeight->Fill(weight);
+        _hmomentum->Fill(energy);
+        _hEnergyElectron->Fill(elecPosiVectors.first.e());
+        _hEnergyPositron->Fill(elecPosiVectors.second.e());
 
       }
     }

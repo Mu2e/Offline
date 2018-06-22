@@ -1,4 +1,3 @@
-
 /*
 
   A plug_in for running a variety of event generators.
@@ -94,6 +93,8 @@ namespace mu2e {
     // when that product will actually be produced.
     bool _produceG4blInfo;
 
+    CLHEP::HepRandomEngine& _engine;
+
     // A collection of all of the generators that we will run.
     typedef  boost::shared_ptr<GeneratorBase> GeneratorBasePtr;
     std::vector<GeneratorBasePtr> _generators;
@@ -114,15 +115,14 @@ namespace mu2e {
     _messageOnDefault(     pSet.get<bool>       ("messageOnDefault",      false)),
     _configStatsVerbosity( pSet.get<int>        ("configStatsVerbosity",  0)),
     _printConfig(          pSet.get<bool>       ("printConfig",           false)),
-    _produceG4blInfo(checkForG4blFile()){
-
+    _produceG4blInfo(checkForG4blFile()),
+    // A common random engine for the generators to use.
+    _engine{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
+  {
     produces<GenParticleCollection>();
     if ( _produceG4blInfo  ){
       produces<G4BeamlineInfoCollection>();
     }
-
-    // A common random engine for the generators to use.
-    createEngine( art::ServiceHandle<SeedService>()->getSeed() );
   }
 
   // Only some of the event generators produce G4BeamlineInfo.
@@ -173,12 +173,12 @@ namespace mu2e {
     bool doCaloCalibGun         = config.getBool( "caloCalibGun.do",     false );
 
     // Instantiate generators for this run.
-    if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );
-    if ( doCosmicDYB)            _generators.push_back( GeneratorBasePtr( new CosmicDYB(        run, config)) );
-    if ( doCosmicFromTH2)        _generators.push_back( GeneratorBasePtr( new CosmicFromTH2(    run, config)) );
-    if ( doPrimaryProtonGun)     _generators.push_back( GeneratorBasePtr( new PrimaryProtonGun( run, config)) );
-    if ( doFromG4BLFile)         _generators.push_back( GeneratorBasePtr( new FromG4BLFile(     run, config)) );
-    if ( doCaloCalibGun)         _generators.push_back( GeneratorBasePtr( new CaloCalibGun(     run, config)) );
+    if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(     _engine,  run, config)) );
+    if ( doCosmicDYB)            _generators.push_back( GeneratorBasePtr( new CosmicDYB(       _engine,  run, config)) );
+    if ( doCosmicFromTH2)        _generators.push_back( GeneratorBasePtr( new CosmicFromTH2(   _engine,  run, config)) );
+    if ( doPrimaryProtonGun)     _generators.push_back( GeneratorBasePtr( new PrimaryProtonGun(_engine,  run, config)) );
+    if ( doFromG4BLFile)         _generators.push_back( GeneratorBasePtr( new FromG4BLFile(    _engine,  run, config)) );
+    if ( doCaloCalibGun)         _generators.push_back( GeneratorBasePtr( new CaloCalibGun(    _engine,  run, config)) );
 
     if ( _generators.size() == 0 ){
       mf::LogWarning("CONTROL")

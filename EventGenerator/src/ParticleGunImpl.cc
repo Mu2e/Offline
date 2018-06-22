@@ -33,6 +33,7 @@ using namespace std;
 namespace mu2e {
 
   ParticleGunImpl::ParticleGunImpl(
+      CLHEP::HepRandomEngine& engine,
       double meanMultiplicity,
       PDGCode::type pdgId,
       double pmin,
@@ -56,9 +57,7 @@ namespace mu2e {
       bool doNtuples,
 
       int verbosityLevel)
-    : GeneratorBase()
-
-    , _mean(meanMultiplicity)
+    : _mean(meanMultiplicity)
     , _pdgId(pdgId)
 
     , _pmin(pmin)
@@ -82,11 +81,11 @@ namespace mu2e {
     , _useDetectorCoordinateSystem(useDetectorCoordinateSystem)
 
     // Random number distributions; getEngine() comes from base class.
-    , _randFlat( getEngine() )
-    , _randPoissonQ( getEngine(), std::abs(_mean) )
-    , _randGaussQ( getEngine() )
-    , _randExponential ( getEngine() )
-    , _randomUnitSphere( getEngine(), angles)
+    , _randFlat( engine )
+    , _randPoissonQ( engine, std::abs(_mean) )
+    , _randGaussQ( engine )
+    , _randExponential ( engine )
+    , _randomUnitSphere( engine, angles)
 
     // Histogram pointers
     , _hMultiplicity(0)
@@ -106,6 +105,7 @@ namespace mu2e {
 
   // Old style constructor. Kept for backward compatibility.
   ParticleGunImpl::ParticleGunImpl(
+      CLHEP::HepRandomEngine& engine,
       double meanMultiplicity,
       PDGCode::type pdgId,
       double pmin,
@@ -121,9 +121,7 @@ namespace mu2e {
       const std::string& histoDir,
 
       int verbosityLevel)
-    : GeneratorBase()
-
-    , _mean(meanMultiplicity)
+    : _mean(meanMultiplicity)
     , _pdgId(pdgId)
 
     , _pmin(pmin)
@@ -145,12 +143,12 @@ namespace mu2e {
     , _histoDir (histoDir)
     , _useDetectorCoordinateSystem (false)
 
-    // Random number distributions; getEngine() comes from base class.
-    , _randFlat( getEngine() )
-    , _randPoissonQ( getEngine(), std::abs(_mean) )
-    , _randGaussQ( getEngine() )
-    , _randExponential ( getEngine() )
-    , _randomUnitSphere( getEngine(), angles)
+    // Random number distributions
+    , _randFlat( engine )
+    , _randPoissonQ( engine, std::abs(_mean) )
+    , _randGaussQ( engine )
+    , _randExponential ( engine )
+    , _randomUnitSphere( engine, angles)
 
     // Histogram pointers
     , _hMultiplicity(0)
@@ -232,8 +230,8 @@ namespace mu2e {
     _dy2 = _halfLength.y() * _halfLength.y();
     _dz2 = _halfLength.z() * _halfLength.z();
     if (    ( _sourceShape == sphere  &&  (_dx2 <=0 || _dy2<=0 || _dz2 <=0) )
-         || ( _sourceShape == cylinder_x  &&  (_dy2 <=0 || _dz2<=0 ) )   
-         || ( _sourceShape == cylinder_y  &&  (_dx2 <=0 || _dz2<=0 ) )   
+         || ( _sourceShape == cylinder_x  &&  (_dy2 <=0 || _dz2<=0 ) )
+         || ( _sourceShape == cylinder_y  &&  (_dx2 <=0 || _dz2<=0 ) )
          || ( _sourceShape == cylinder_z  &&  (_dx2 <=0 || _dy2<=0 ) )   ) {
 
       throw cet::exception("RANGE")
@@ -367,7 +365,7 @@ namespace mu2e {
     }
     else if (_momentumMode == histogram) {
       if (_momentumParameters.size() < 3) {
-	throw cet::exception("RANGE")
+        throw cet::exception("RANGE")
           << "ParticleGun require 3 parameters and have read "
           << _momentumParameters.size()
           << " parameters for momentumMode = "
@@ -380,12 +378,12 @@ namespace mu2e {
       // the rest are bin contents: normalize them and integrate
       double bint(0.0);
       for(size_t ibin=2;ibin<_momentumParameters.size();++ibin){
-	bint += _momentumParameters[ibin];
+        bint += _momentumParameters[ibin];
       }
       double psum(0.0);
       for(size_t ibin=2;ibin<_momentumParameters.size();++ibin){
-	histogramBins.push_back(psum + _momentumParameters[ibin]/bint);
-	psum = histogramBins.back();
+        histogramBins.push_back(psum + _momentumParameters[ibin]/bint);
+        psum = histogramBins.back();
       }
     }
 
@@ -432,9 +430,9 @@ namespace mu2e {
         }
         else {}
         ++iteration;
-      } while (!passed && 
-                   ( (_throwOnIterationLimit && iteration < _iterationLimit) || (!_throwOnIterationLimit ) ) 
-              ); 
+      } while (!passed &&
+                   ( (_throwOnIterationLimit && iteration < _iterationLimit) || (!_throwOnIterationLimit ) )
+              );
 
       if (iteration >= _iterationLimit) {
         if (_throwOnIterationLimit) {
@@ -471,9 +469,9 @@ namespace mu2e {
           p = getExponentialMomentum() ;
           break;
 
-	case histogram :
-	  p = getHistogramMomentum();
-	  break;
+        case histogram :
+          p = getHistogramMomentum();
+          break;
 
         default: // Generate flat dist for all unknown momentumMode ?
           p = getFlatMomentum();
@@ -534,10 +532,10 @@ namespace mu2e {
     do {
       p = _randGaussQ.fire(_momentumParameters[0], std::abs(_momentumParameters[1]));
       ++iteration;
-    } while (  (p < _pmin || p > _pmax) && 
-                   ( (_throwOnIterationLimit && iteration < _iterationLimit) || (!_throwOnIterationLimit ) ) 
-            ); 
-        
+    } while (  (p < _pmin || p > _pmax) &&
+                   ( (_throwOnIterationLimit && iteration < _iterationLimit) || (!_throwOnIterationLimit ) )
+            );
+
     if (iteration >= _iterationLimit) {
       if (_throwOnIterationLimit) {
         throw cet::exception("RANGE")
@@ -564,10 +562,10 @@ namespace mu2e {
       iindex = int(findex);
       randval = _randFlat.fire();
       ++iteration;
-    } while (randval > _momentumParameters[iindex] && 
-                   ( (_throwOnIterationLimit && iteration < _iterationLimit) || (!_throwOnIterationLimit ) ) 
-            ); 
-        
+    } while (randval > _momentumParameters[iindex] &&
+                   ( (_throwOnIterationLimit && iteration < _iterationLimit) || (!_throwOnIterationLimit ) )
+            );
+
     if (iteration >= _iterationLimit) {
       if (_throwOnIterationLimit) {
         throw cet::exception("RANGE")
@@ -589,9 +587,9 @@ namespace mu2e {
     do {
       p = _pmin + _randExponential.fire(_momentumParameters[0]);
       ++iteration;
-    } while ((p < _pmin || p > _pmax) && 
-                   ( (_throwOnIterationLimit && iteration < _iterationLimit) || (!_throwOnIterationLimit ) ) 
-            ); 
+    } while ((p < _pmin || p > _pmax) &&
+                   ( (_throwOnIterationLimit && iteration < _iterationLimit) || (!_throwOnIterationLimit ) )
+            );
 
     if (iteration >= _iterationLimit) {
       if (_throwOnIterationLimit) {
@@ -614,6 +612,6 @@ namespace mu2e {
       ++ibin;
     }
     return histogramRange[0] + (histogramRange[1]-histogramRange[0])*(ibin+0.5)/float(histogramBins.size());
- } 
+ }
 
 } // namespace mu2e

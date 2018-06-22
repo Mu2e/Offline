@@ -116,11 +116,11 @@ namespace mu2e {
                <<std::endl;
 
       std::cout <<"StoppedParticleReactionGun: spectrum shape = "
-	  <<psphys_.get<std::string>("spectrumShape") << std::endl;
+          <<psphys_.get<std::string>("spectrumShape") << std::endl;
       if (psphys_.get<std::string>("spectrumShape")  == "tabulated")
-	  std::cout << " Spectrum file = "
-	  << psphys_.get<std::string>("spectrumFileName")
-	  << std::endl;
+          std::cout << " Spectrum file = "
+          << psphys_.get<std::string>("spectrumFileName")
+          << std::endl;
     }
     if(verbosityLevel_ > 1){
       std::cout <<"StoppedParticleReactionGun: spectrum: " << std::endl;
@@ -175,8 +175,8 @@ namespace mu2e {
       *elow = res.getAbscissa(0);
       *ehi  = res.getAbscissa(res.getNbins()-1) + res.getBinWidth();
       if(psphys.get<bool>("BinCenter", false)){
-	*elow -= res.getBinWidth()/2;
-	*ehi  -= res.getBinWidth()/2;
+        *elow -= res.getBinWidth()/2;
+        *ehi  -= res.getBinWidth()/2;
       }
       if(*elow < 0.0) throw cet::exception("BADCONFIG")
         << "StoppedParticleReactionGun: negative energy endpoint "<< *elow <<"\n";

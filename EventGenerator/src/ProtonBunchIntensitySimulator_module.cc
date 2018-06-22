@@ -74,13 +74,13 @@ namespace mu2e {
     produces<mu2e::ProtonBunchIntensity>();
     if(_printLevel > 0){
       if(_model == constant)
-	std::cout << "Generating proton bunches of constant intensity = " << _nmean << std::endl;
+        std::cout << "Generating proton bunches of constant intensity = " << _nmean << std::endl;
       else if(_model == flat)
-	std::cout << "Generating proton bunches with flat intensity between " << _flimits[0] 
-	<< " and " << _flimits[1] << std::endl;
+        std::cout << "Generating proton bunches with flat intensity between " << _flimits[0]
+        << " and " << _flimits[1] << std::endl;
       else if(_model == lognorm)
-	std::cout << "Generating proton bunches with lognormal intensity sigma =  " << _lognd.s()
-	<< " mu: = " << _lognd.m() << " mean = " << _lnmean << std::endl;
+        std::cout << "Generating proton bunches with lognormal intensity sigma =  " << _lognd.s()
+        << " mu: = " << _lognd.m() << " mean = " << _lnmean << std::endl;
       else
         throw cet::exception("SIM")<<"mu2e::ProtonBunchIntensitySimulator: unknown proton bunch intensity model " << _model << std::endl;
     }
@@ -101,21 +101,21 @@ namespace mu2e {
     double fintensity;
     switch(_model) {
       case constant : default:
-	fintensity = _nmean;
-	break;
+        fintensity = _nmean;
+        break;
       case flat:
-	fintensity = _randflat.fire(_flimits[0],_flimits[1]);
-	break;
+        fintensity = _randflat.fire(_flimits[0],_flimits[1]);
+        break;
       case lognorm:
-	fintensity = _nmean*std::min(_maxrel,_lognd(_urbg))/_lnmean;
-	break;
+        fintensity = _nmean*std::min(_maxrel,_lognd(_urbg))/_lnmean;
+        break;
     }
     // convert to nearest ingeger
     unsigned intensity = static_cast<unsigned>(rint(fintensity));
     // create proton intensity object and put it into the event
     std::unique_ptr<mu2e::ProtonBunchIntensity> pbi ( new ProtonBunchIntensity(intensity, _nmean) );
     if(_printLevel > 1){
-      std::cout << "Generating " << pbi->intensity() << " protons in this microbunch, from a mean of " 
+      std::cout << "Generating " << pbi->intensity() << " protons in this microbunch, from a mean of "
       << pbi->meanIntensity() << std::endl;
     }
     // optional diagnostics
@@ -128,4 +128,3 @@ namespace mu2e {
 }
 
 DEFINE_ART_MODULE(mu2e::ProtonBunchIntensitySimulator);
-

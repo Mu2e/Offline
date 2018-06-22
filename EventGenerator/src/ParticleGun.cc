@@ -25,9 +25,8 @@ namespace mu2e {
   // Conversion energy for Al.  Should come from conditions.
   static const double pEndPoint = 104.96 * CLHEP::MeV;
 
-  ParticleGun::ParticleGun(art::Run const&, const SimpleConfig& config)
-    : GeneratorBase()
-    , m_gun(
+  ParticleGun::ParticleGun(CLHEP::HepRandomEngine& engine, art::Run const&, const SimpleConfig& config)
+    : m_gun(engine,
             config.getDouble("particleGun.mean",-1.),
             static_cast<PDGCode::type>(config.getInt("particleGun.id",  PDGCode::mu_minus)),
 

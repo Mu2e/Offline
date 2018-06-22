@@ -22,9 +22,9 @@ using namespace CLHEP;
 
 using namespace std;
 
-namespace mu2e 
+namespace mu2e
 {
-  class SeedFilter : public art::EDFilter 
+  class SeedFilter : public art::EDFilter
   {
     public:
       explicit SeedFilter(fhicl::ParameterSet const& pset);
@@ -70,30 +70,30 @@ namespace mu2e
       // I should not be calculating NDOF here, this should be in an adapter, FIXME!!
       unsigned nactive(0);
       for(auto const& ish : ks.hits())
-	if(ish.flag().hasAllProperties(StrawHitFlag::active))++nactive;
+        if(ish.flag().hasAllProperties(StrawHitFlag::active))++nactive;
       float ndof = max(1.0,nactive - 5.0);
     // get the first segment
       KalSegment const& fseg = ks.segments().front();
       if(_debug > 2){
-	cout << *currentContext()->moduleLabel() << "status = " << ks.status() << " nactive = " << nactive << " mom = " << fseg.mom() << " chisq/dof = " << ks.chisquared()/ndof << endl;
+        cout << *currentContext()->moduleLabel() << "status = " << ks.status() << " nactive = " << nactive << " mom = " << fseg.mom() << " chisq/dof = " << ks.chisquared()/ndof << endl;
       }
       if( ks.status().hasAllProperties(_goods) &&
-	  (!_hascc || ks.caloCluster().isNonnull()) &&
-	  nactive >= _minnhits &&
-	  fseg.mom() > _minmom && fseg.mom() < _maxmom && fseg.momerr() < _maxmomerr &&
-	  ks.chisquared()/ndof < _maxchi2dof) {
-	retval = true;
-	++_npass;
-	// Fill the trigger info object
-	triginfo->_triggerBits.merge(TriggerFlag::track);
-	// associate to the helix which triggers.  Note there may be other helices which also pass the filter
-	// but filtering is by event!
-	size_t index = std::distance(kscol->begin(),iks);
-	triginfo->_track = art::Ptr<KalSeed>(ksH,index);
-	if(_debug > 1){
-	  cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
-	}
-	break;
+          (!_hascc || ks.caloCluster().isNonnull()) &&
+          nactive >= _minnhits &&
+          fseg.mom() > _minmom && fseg.mom() < _maxmom && fseg.momerr() < _maxmomerr &&
+          ks.chisquared()/ndof < _maxchi2dof) {
+        retval = true;
+        ++_npass;
+        // Fill the trigger info object
+        triginfo->_triggerBits.merge(TriggerFlag::track);
+        // associate to the helix which triggers.  Note there may be other helices which also pass the filter
+        // but filtering is by event!
+        size_t index = std::distance(kscol->begin(),iks);
+        triginfo->_track = art::Ptr<KalSeed>(ksH,index);
+        if(_debug > 1){
+          cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
+        }
+        break;
       }
     }
     evt.put(std::move(triginfo));

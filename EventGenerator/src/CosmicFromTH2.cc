@@ -49,17 +49,17 @@ using CLHEP::HepLorentzVector;
 using CLHEP::RandFlat;
 using CLHEP::GeV;
 
-namespace mu2e 
+namespace mu2e
 {
 
-  CosmicFromTH2::CosmicFromTH2( art::Run& run, const SimpleConfig& config )  : GeneratorBase()
-  , _energy(config.getDouble("cosmicFromTH2.energy"))
-  , _time(config.getDouble("cosmicFromTH2.time"))
-  , _cosmicReferencePointInMu2e (config.getHep3Vector("cosmicFromTH2.cosmicReferencePointInMu2e"))
-  , _dx(config.getDouble("cosmicFromTH2.dx"))
-  , _dy(config.getDouble("cosmicFromTH2.dy"))
-  , _dz(config.getDouble("cosmicFromTH2.dz"))
-  , _randFlat( getEngine() )
+  CosmicFromTH2::CosmicFromTH2(CLHEP::HepRandomEngine& engine, art::Run& run, const SimpleConfig& config)
+    : _energy(config.getDouble("cosmicFromTH2.energy"))
+    , _time(config.getDouble("cosmicFromTH2.time"))
+    , _cosmicReferencePointInMu2e (config.getHep3Vector("cosmicFromTH2.cosmicReferencePointInMu2e"))
+    , _dx(config.getDouble("cosmicFromTH2.dx"))
+    , _dy(config.getDouble("cosmicFromTH2.dy"))
+    , _dz(config.getDouble("cosmicFromTH2.dz"))
+    , _randFlat{engine}
   {
     GlobalConstantsHandle<ParticleDataTable> pdt;
     const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus).ref();
@@ -97,12 +97,11 @@ namespace mu2e
     setRm48Distribution(_randFlat);
 
     // initialize random number generator used by ROOT (for the TH2::GetRandom2 function)
-//    gRandom->SetSeed(art::ServiceHandle<SeedService>()->getSeed());
-    gRandom->SetSeed(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine().getSeed());
+    gRandom->SetSeed(engine.getSeed());
   }  // CosmicDYB()
 
-  CosmicFromTH2::~CosmicFromTH2() 
-  { 
+  CosmicFromTH2::~CosmicFromTH2()
+  {
     _file->Close();
   }
 
@@ -113,7 +112,7 @@ namespace mu2e
       GeomHandle<WorldG4>  worldGeom;
 
       _createdProductionPlane=true;
-    
+
       const Hep3Vector halfLengths(_dx,_dy,_dz);
 
       std::cout<<"center of production plane in Mu2e coordinated = "<<_cosmicReferencePointInMu2e<<std::endl;
@@ -124,7 +123,7 @@ namespace mu2e
                <<worldGeom->halfLengths()[1]<<", "
                <<worldGeom->halfLengths()[2]<<")"<<std::endl;
 
-      if(!worldGeom->inWorld(_cosmicReferencePointInMu2e+halfLengths) || 
+      if(!worldGeom->inWorld(_cosmicReferencePointInMu2e+halfLengths) ||
          !worldGeom->inWorld(_cosmicReferencePointInMu2e-halfLengths))
       {
         throw cet::exception("GEOM")<<"Cosmic ray production plane is outside of the world volume! Increase the world margins or change production plane\n";

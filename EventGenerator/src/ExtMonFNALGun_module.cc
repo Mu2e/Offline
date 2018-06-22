@@ -29,18 +29,19 @@ namespace mu2e {
       // ExtMonFNALGun has a non-movable member ParticleGunImpl, thus hold them by pointers
       typedef std::vector<std::unique_ptr<mu2e::ExtMonFNALGun> > PGuns;
       PGuns guns_;
+      CLHEP::HepRandomEngine& engine_;
 
+      void produce(art::Event& event) override;
+      void beginRun(art::Run& run) override;
     public:
       explicit ExtMonFNALGun(fhicl::ParameterSet const& pset);
-      virtual void produce(art::Event& event);
-      virtual void beginRun(art::Run& run);
     };
 
     ExtMonFNALGun::ExtMonFNALGun(fhicl::ParameterSet const& pset)
       : pset_(pset)
+      , engine_{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
     {
       produces<GenParticleCollection>();
-      createEngine( art::ServiceHandle<SeedService>()->getSeed() );
     }
 
     void ExtMonFNALGun::beginRun(art::Run&) {
@@ -49,7 +50,7 @@ namespace mu2e {
 
       guns_.reserve(vgp.size());
       for(unsigned i=0; i<vgp.size(); ++i) {
-        guns_.emplace_back(new mu2e::ExtMonFNALGun(vgp[i]));
+        guns_.emplace_back(new mu2e::ExtMonFNALGun{engine_, vgp[i]});
       }
     }
 

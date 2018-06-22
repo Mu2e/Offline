@@ -23,24 +23,18 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
-  
+
   struct RandomUnitSphereParams {
     double czmin;
     double czmax;
     double phimin;
     double phimax;
-    RandomUnitSphereParams(double ci, double ca, double pi, double pa) 
+    RandomUnitSphereParams(double ci, double ca, double pi, double pa)
       : czmin(ci), czmax(ca), phimin(pi), phimax(pa) {}
   };
-  
+
   class RandomUnitSphere {
-
   public:
-
-    explicit RandomUnitSphere( double czmin=-1.,
-                               double czmax=1.,
-                               double phimin=0.,
-                               double phimax=CLHEP::twopi);
 
     explicit RandomUnitSphere( CLHEP::HepRandomEngine& engine,
                                double czmin=-1.,
@@ -51,7 +45,7 @@ namespace mu2e {
     explicit RandomUnitSphere( CLHEP::HepRandomEngine& engine, const RandomUnitSphereParams& par);
 
     // I have inspected RandFlat source and assert that its destructor does not throw
-    ~RandomUnitSphere() noexcept {}
+    ~RandomUnitSphere() noexcept = default;
 
     CLHEP::Hep3Vector fire();
 
@@ -95,7 +89,6 @@ namespace mu2e {
 
     // The underlying uniform random number distribution.
     CLHEP::RandFlat _randFlat;
-
   };
 
 }

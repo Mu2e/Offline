@@ -32,7 +32,7 @@ namespace mu2e {
   class ExtMonFNALGun {
 
   public:
-    explicit ExtMonFNALGun(const fhicl::ParameterSet& pset);
+    explicit ExtMonFNALGun(CLHEP::HepRandomEngine& engine, const fhicl::ParameterSet& pset);
 
     // adds generated particles to the collection
     virtual void generate(GenParticleCollection& out);

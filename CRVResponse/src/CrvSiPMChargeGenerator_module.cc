@@ -4,7 +4,7 @@
 // $Id: $
 // $Author: ehrlich $
 // $Date: 2014/08/07 01:33:40 $
-// 
+//
 // Original Author: Ralf Ehrlich
 
 #include "CRVResponse/inc/MakeCrvSiPMCharges.hh"
@@ -36,17 +36,15 @@
 
 #include <TMath.h>
 
-namespace mu2e 
+namespace mu2e
 {
-  class CrvSiPMChargeGenerator : public art::EDProducer 
+  class CrvSiPMChargeGenerator : public art::EDProducer
   {
 
     public:
     explicit CrvSiPMChargeGenerator(fhicl::ParameterSet const& pset);
     void produce(art::Event& e);
-    void beginJob();
     void beginRun(art::Run &run);
-    void endJob();
 
     private:
     std::string _crvPhotonsModuleLabel;
@@ -65,6 +63,7 @@ namespace mu2e
 
     boost::shared_ptr<mu2eCrv::MakeCrvSiPMCharges> _makeCrvSiPMCharges;
 
+    CLHEP::HepRandomEngine& _engine;
     CLHEP::RandFlat     _randFlat;
     CLHEP::RandPoissonQ _randPoissonQ;
   };
@@ -80,8 +79,9 @@ namespace mu2e
     _capacitance(pset.get<double>("capacitance")),                   //8.84e-14F (per pixel)
     _blindTime(pset.get<double>("blindTime")),                       //500ns
     _inactivePixels(pset.get<std::vector<std::pair<int,int> > >("inactivePixels")),      //{18,18},....,{21,21}
-    _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
-    _randPoissonQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
+    _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
+    _randFlat{_engine},
+    _randPoissonQ{_engine}
   {
     produces<CrvSiPMChargesCollection>();
     _probabilities._avalancheProbParam1 = pset.get<double>("AvalancheProbParam1");  //0.65
@@ -94,24 +94,16 @@ namespace mu2e
     _probabilities._crossTalkProb = pset.get<double>("CrossTalkProb");              //0.05
   }
 
-  void CrvSiPMChargeGenerator::beginJob()
-  {
-  }
-
   void CrvSiPMChargeGenerator::beginRun(art::Run &run)
   {
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     _microBunchPeriod = accPar->deBuncherPeriod;
     _makeCrvSiPMCharges = boost::shared_ptr<mu2eCrv::MakeCrvSiPMCharges>(new mu2eCrv::MakeCrvSiPMCharges(_randFlat, _randPoissonQ));
-    _makeCrvSiPMCharges->SetSiPMConstants(_nPixelsX, _nPixelsY, _nPixelsRFiber, _overvoltage, _blindTime, _microBunchPeriod, 
+    _makeCrvSiPMCharges->SetSiPMConstants(_nPixelsX, _nPixelsY, _nPixelsRFiber, _overvoltage, _blindTime, _microBunchPeriod,
                                             _timeConstant, _capacitance, _probabilities, _inactivePixels);
   }
 
-  void CrvSiPMChargeGenerator::endJob()
-  {
-  }
-
-  void CrvSiPMChargeGenerator::produce(art::Event& event) 
+  void CrvSiPMChargeGenerator::produce(art::Event& event)
   {
     std::unique_ptr<CrvSiPMChargesCollection> crvSiPMChargesCollection(new CrvSiPMChargesCollection);
 
@@ -120,18 +112,18 @@ namespace mu2e
 
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
-    std::vector<std::shared_ptr<CRSScintillatorBar> >::const_iterator iter; 
+    std::vector<std::shared_ptr<CRSScintillatorBar> >::const_iterator iter;
     for(iter=counters.begin(); iter!=counters.end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
-      CrvPhotonsCollection::const_iterator crvPhotons=crvPhotonsCollection->find(barIndex); 
+      CrvPhotonsCollection::const_iterator crvPhotons=crvPhotonsCollection->find(barIndex);
 
       CrvSiPMCharges &crvSiPMCharges = (*crvSiPMChargesCollection)[barIndex];
 
-      for(int SiPM=0; SiPM<4; SiPM++) 
+      for(int SiPM=0; SiPM<4; SiPM++)
       {
 
-        if(!(*iter)->getBarDetail().hasCMB(SiPM%2)) continue;  //no SiPM charges at non-existing SiPMs 
+        if(!(*iter)->getBarDetail().hasCMB(SiPM%2)) continue;  //no SiPM charges at non-existing SiPMs
                                                                //SiPM%2 returns the side of the CRV counter
                                                                //0 ... negative side
                                                                //1 ... positive side
@@ -145,7 +137,7 @@ namespace mu2e
           for(size_t iphoton=0; iphoton<photonTimes.size(); iphoton++)
           {
             double time = photonTimes[iphoton]._time;
-            time = fmod(time,_microBunchPeriod); 
+            time = fmod(time,_microBunchPeriod);
             if(time>_blindTime) photonTimesAdjusted.push_back(std::pair<double,size_t>(time,iphoton)); //wrapped time
             //no ghost hits, since the SiPMs are off during the blind time (which is longer than the "ghost time")
           }
@@ -166,7 +158,7 @@ namespace mu2e
           double chargeInPEs=responseIter->_chargeInPEs;
           int photonIndex=responseIter->_photonIndex;
           bool darkNoise=responseIter->_darkNoise;
-          if(!darkNoise) 
+          if(!darkNoise)
           {
             const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->second.GetPhotons(SiPM);
             chargesOneSiPM.emplace_back(time, charge, chargeInPEs,photonTimes[photonIndex]._step);
@@ -186,7 +178,7 @@ namespace mu2e
       //    -if the crvSiPMCharges didn't stay empty, create a new map entry in crvSiPMChargesCollection and fill its content with
       //     the new crvSiPMCharges  <---- too time consuming, therefore use option (1)
 
-      if(crvSiPMCharges.IsEmpty()) crvSiPMChargesCollection->erase(barIndex);  
+      if(crvSiPMCharges.IsEmpty()) crvSiPMChargesCollection->erase(barIndex);
     }
 
     event.put(std::move(crvSiPMChargesCollection));

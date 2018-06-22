@@ -4,7 +4,7 @@
 // $Id: $
 // $Author: ehrlich $
 // $Date: 2014/08/07 01:33:40 $
-// 
+//
 // Original Author: Ralf Ehrlich
 
 #include "CRVResponse/inc/MakeCrvWaveforms.hh"
@@ -36,16 +36,14 @@
 
 #include <TMath.h>
 
-namespace mu2e 
+namespace mu2e
 {
-  class CrvWaveformsGenerator : public art::EDProducer 
+  class CrvWaveformsGenerator : public art::EDProducer
   {
 
     public:
     explicit CrvWaveformsGenerator(fhicl::ParameterSet const& pset);
     void produce(art::Event& e);
-    void beginJob();
-    void endJob();
     void beginRun(art::Run &run);
 
     private:
@@ -59,9 +57,10 @@ namespace mu2e
     double                              _minVoltage;
     double                              _noise;
 
+    CLHEP::HepRandomEngine&             _engine;
     CLHEP::RandFlat                     _randFlat;
     CLHEP::RandGaussQ                   _randGaussQ;
-    
+
     std::vector<double> _timeShiftFEBsSide0, _timeShiftFEBsSide1;
 
     bool SingleWaveformStart(std::vector<double> &fullWaveform, size_t i);
@@ -73,8 +72,9 @@ namespace mu2e
     _FEBtimeSpread(pset.get<double>("FEBtimeSpread")),         //2.0 ns (due to cable lengths differences, etc.)
     _minVoltage(pset.get<double>("minVoltage")),               //0.022V (corresponds to 3.5PE)
     _noise(pset.get<double>("noise")),
-    _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
-    _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
+    _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
+    _randFlat{_engine},
+    _randGaussQ{_engine}
   {
     double singlePEWaveformPrecision(pset.get<double>("singlePEWaveformPrecision"));    //1.0 ns
     double singlePEWaveformStretchFactor(pset.get<double>("singlePEWaveformStretchFactor"));    //1.047
@@ -83,17 +83,9 @@ namespace mu2e
     ConfigFileLookupPolicy configFile;
     _singlePEWaveformFileName = configFile(_singlePEWaveformFileName);
     _makeCrvWaveforms = boost::shared_ptr<mu2eCrv::MakeCrvWaveforms>(new mu2eCrv::MakeCrvWaveforms());
-    _makeCrvWaveforms->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformPrecision, singlePEWaveformStretchFactor, 
+    _makeCrvWaveforms->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformPrecision, singlePEWaveformStretchFactor,
                                             singlePEWaveformMaxTime, singlePEReferenceCharge);
     produces<CrvDigiMCCollection>();
-  }
-
-  void CrvWaveformsGenerator::beginJob()
-  {
-  }
-
-  void CrvWaveformsGenerator::endJob()
-  {
   }
 
   void CrvWaveformsGenerator::beginRun(art::Run &run)
@@ -102,7 +94,7 @@ namespace mu2e
     _digitizationPeriod  = crvPar->digitizationPeriod;
   }
 
-  void CrvWaveformsGenerator::produce(art::Event& event) 
+  void CrvWaveformsGenerator::produce(art::Event& event)
   {
     std::unique_ptr<CrvDigiMCCollection> crvDigiMCCollection(new CrvDigiMCCollection);
 
@@ -116,19 +108,19 @@ namespace mu2e
     _timeShiftFEBsSide1.clear();
     unsigned int nCounters = CRS->getAllCRSScintillatorBars().size();
     unsigned int nFEBs = ceil(nCounters/32.0);
-    for(unsigned int i=0; i<nFEBs; i++)    
+    for(unsigned int i=0; i<nFEBs; i++)
     {
       _timeShiftFEBsSide0.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
       _timeShiftFEBsSide1.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
     }
 
-    for(CrvSiPMChargesCollection::const_iterator iter=crvSiPMChargesCollection->begin(); 
+    for(CrvSiPMChargesCollection::const_iterator iter=crvSiPMChargesCollection->begin();
         iter!=crvSiPMChargesCollection->end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = iter->first;
       const CrvSiPMCharges &siPMCharges = iter->second;
 
-      unsigned int FEB=barIndex.asUint()/32.0; //assume that the counters are ordered in the correct way, 
+      unsigned int FEB=barIndex.asUint()/32.0; //assume that the counters are ordered in the correct way,
                                                //i.e. that all counters beloning to the same FEB are grouped together
 
       for(int SiPM=0; SiPM<4; SiPM++)
@@ -142,8 +134,8 @@ namespace mu2e
 
         firstSiPMChargeTime += timeShiftFEB;  //Ok, since all SiPMCharge times of this SiPM will be shifted by the same timeShiftFEB
 
-        double startTime = floor(firstSiPMChargeTime / _digitizationPeriod) * _digitizationPeriod;  //start time of the waveform 
-                                                                                                    //in multiples of the 
+        double startTime = floor(firstSiPMChargeTime / _digitizationPeriod) * _digitizationPeriod;  //start time of the waveform
+                                                                                                    //in multiples of the
                                                                                                     //digitization period (12.58ns)
 
         startTime -= samplingPointShift;  //random shift of start time (same shift for all FEBs of this event)
@@ -153,7 +145,7 @@ namespace mu2e
         for(size_t i=0; i<timesAndCharges.size(); i++)
         {
           times.push_back(timesAndCharges[i]._time + timeShiftFEB);
-          charges.push_back(timesAndCharges[i]._charge); 
+          charges.push_back(timesAndCharges[i]._charge);
         }
 
         //first create the full waveform
@@ -162,7 +154,7 @@ namespace mu2e
         _makeCrvWaveforms->AddElectronicNoise(fullWaveform, _noise, _randGaussQ);
 
         //break the waveform apart into short pieces (CrvDigiMC::NSamples)
-        //and apply the zero suppression, i.e. set all waveform digi points to zero which are below the minimum voltage, 
+        //and apply the zero suppression, i.e. set all waveform digi points to zero which are below the minimum voltage,
         //if the neighboring digi points are also below the minimum voltage
         for(size_t i=0; i<fullWaveform.size(); i++)
         {
@@ -197,7 +189,7 @@ namespace mu2e
             for(stepIter=steps.begin(); stepIter!=steps.end(); stepIter++) stepVector.push_back(*stepIter);
 
             //find the most likely SimParticle
-            //if no SimParticle was recorded for this single waveform, then it was caused either by noise hits (if the threshold is low enough), 
+            //if no SimParticle was recorded for this single waveform, then it was caused either by noise hits (if the threshold is low enough),
             //or is the tail end of the peak. in that case, _simparticle will be null (set by the default constructor of art::Ptr)
             art::Ptr<SimParticle> simParticle;
             std::map<art::Ptr<SimParticle>,int >::iterator simparticleIter;

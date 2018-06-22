@@ -151,10 +151,10 @@ namespace mu2e {
 
     const double energy = generateEnergy();
 
-    output->emplace_back( PDGCode::gamma, 
-                          GenId::pionCapture, 
-                          pos, 
-                          CLHEP::HepLorentzVector( randomUnitSphere_.fire(energy), energy), 
+    output->emplace_back( PDGCode::gamma,
+                          GenId::pionCapture,
+                          pos,
+                          CLHEP::HepLorentzVector( randomUnitSphere_.fire(energy), energy),
                           stop.t );
 
     event.put(std::move(output));

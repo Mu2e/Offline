@@ -74,7 +74,7 @@ using namespace std;
 
 namespace mu2e {
 
-  FromG4BLFile::FromG4BLFile( art::Run const& , const SimpleConfig& config ):
+  FromG4BLFile::FromG4BLFile(CLHEP::HepRandomEngine& engine, art::Run const&, SimpleConfig const& config):
 
     // Base class.
     GeneratorBase(true),
@@ -94,7 +94,7 @@ namespace mu2e {
     _duplicate(config.getBool("fromG4BLFile.duplicateParticles",false)),
 
     // Random number distributions; getEngine() comes from base class.
-    _randPoissonQ( getEngine(), std::abs(_mean) ),
+    _randPoissonQ(engine, std::abs(_mean)),
 
     // Open the input file.
     //_inputFile(_inputFileName.c_str()),
@@ -274,8 +274,8 @@ namespace mu2e {
 
       // Add particle to the output collection.
       for( int k=0; k<n; ++k ) {
-	genParts.push_back( GenParticle( pdgId, GenId::fromG4BLFile, pos, p4, t) );
-	if( !_duplicate ) break;
+        genParts.push_back( GenParticle( pdgId, GenId::fromG4BLFile, pos, p4, t) );
+        if( !_duplicate ) break;
       }
 
       // Add extra information to the output collection.
@@ -298,8 +298,8 @@ namespace mu2e {
         _hZ0->Fill( z );
         _hT0->Fill( t );
 
-	// Ntuple buffer.
-	float nt[_ntup->GetNvar()];
+        // Ntuple buffer.
+        float nt[_ntup->GetNvar()];
 
         nt[0]  = x;
         nt[1]  = y;
