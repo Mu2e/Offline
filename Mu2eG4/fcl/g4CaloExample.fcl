@@ -34,7 +34,7 @@ physics: {
 
     producers: {
         
-        generate: @local::StoppedMuonConversionGun
+        generate: @local::CeEndpointGun
         g4run : @local::g4run
 
         protonTimeMap        : { module_type : GenerateProtonTimes }

@@ -54,7 +54,8 @@ generate: {
     messageOnReplacement : true
 }
 
-StoppedMuonConversionGun: {
+
+CeEndpointGun: {
     module_type    : StoppedParticleReactionGun
     genId : conversionGun 
     physics: {
@@ -63,18 +64,11 @@ StoppedMuonConversionGun: {
       spectrumVariable: totalEnergy
     }
     muonStops      : @local::mu2e.tgtMuonStops
-    // Also phimin and phimax defaulting to [0,2pi]
 }
 
+
 StoppedParticleReactionGun: {
-    module_type    : StoppedParticleReactionGun
-    muonStops      : @local::mu2e.tgtMuonStops
-    physics: {
-      pdgId : 11
-      spectrumShape: CeEndpoint
-      spectrumVariable: totalEnergy
-    }
-    verbosityLevel : 0
+  @table::CeEndpointGun 
 }
 
 StoppedMuonXRayGammaRayGun: {
@@ -82,6 +76,17 @@ StoppedMuonXRayGammaRayGun: {
     muonStops      : @local::mu2e.tgtMuonStops
     verbosityLevel : 0
     physics        : { }
+}
+
+PBISim: {
+  module_type: ProtonBunchIntensitySimulator
+  # Use the log-normal model of Proton Beam Inensity fluctuations
+  IntensityModel: 2
+  # IHEP data fit
+  Lognormal_mu : -0.10015
+  Lognormal_sigma : 0.3814
+  MeanNumberOfProtonsPerMicrobunch: 3.9e7
+  MaximumRelativeIntensity : 3.0 # limit the size of the fluctutaions
 }
 
 # Save state of random numbers at the start of each event
@@ -95,7 +100,7 @@ randomsaver: {
 #------------------------------------------------------------------------------
 EventGenerator : {
     producers : {
-	StoppedMuonConversionGun   : { @table::StoppedMuonConversionGun   }
+	CeEndpointGun   : { @table::CeEndpointGun   }
 	StoppedParticleReactionGun : { @table::StoppedParticleReactionGun }
 
   	egun005 : { @table::StoppedParticleReactionGun # p(e)=5 MeV/c
@@ -175,6 +180,7 @@ EventGenerator : {
 		spectrumShape    : "flat"
 	    }
 	}
+      protonBunchIntensity : @local::PBISim
     }
 }
 

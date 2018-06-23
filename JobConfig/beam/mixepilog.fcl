@@ -1,0 +1,27 @@
+#
+#  Specific values for mixers: currently set for MDC2018 production
+#
+# TrkCal
+#
+physics.filters.flashMixerTrkCal.mu2e.meanEventsPerProton    : 9.75E-04 # low stats FIXME!
+physics.filters.ootMixerTrkCal.mu2e.meanEventsPerProton      : 2.4185E-05
+physics.filters.neutronMixerTrkCal.mu2e.meanEventsPerProton  : 1.8790E-05
+physics.filters.dioMixerTrkCal.mu2e.meanEventsPerProton      : 3.8434E-06
+physics.filters.photonMixerTrkCal.mu2e.meanEventsPerProton   : 8.6966E-06
+physics.filters.protonMixerTrkCal.mu2e.meanEventsPerProton   : 7.4322E-07
+physics.filters.deuteronMixerTrkCal.mu2e.meanEventsPerProton : 1.6261E-07
+# CRV
+physics.filters.ootMixerCRV.mu2e.meanEventsPerProton	  : 4.5379E-06
+physics.filters.neutronMixerCRV.mu2e.meanEventsPerProton  : 3.6173E-07
+physics.filters.dioMixerCRV.mu2e.meanEventsPerProton      : 3.2816E-07
+physics.filters.photonMixerCRV.mu2e.meanEventsPerProton   : 1.3449E-07
+physics.filters.PSMixerCRV.mu2e.meanEventsPerProton	  : 9.5035E-05
+physics.filters.TSMixerCRV.mu2e.meanEventsPerProton	  : 2.4368E-06
+physics.filters.DSMixerCRV.mu2e.meanEventsPerProton	  : 2.8126E-04
+# fixes
+physics.filters.flashMixerTrkCal.mu2e.products.genParticleMixer: { mixingMap: [ [ "flashResample", "" ] ] }
+physics.filters.PSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
+physics.filters.TSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
+physics.filters.DSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
+# mustops
+physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]

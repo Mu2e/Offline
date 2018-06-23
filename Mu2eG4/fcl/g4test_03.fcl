@@ -41,7 +41,7 @@ physics : {
   producers: {
 
     # Generate the event.
-    generate: @local::StoppedMuonConversionGun
+    generate: @local::CeEndpointGun
 
     # Run G4 and add its output to the event.
     g4run : @local::g4run

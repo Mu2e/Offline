@@ -1,4 +1,15 @@
 #include "fcl/minimalMessageService.fcl"
+#include "TrackerMC/fcl/prolog.fcl"
+#include "EventMixing/fcl/prolog.fcl"
+#include "CaloMC/fcl/prolog.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+#include "CRVResponse/fcl/prolog_v07.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "JobConfig/beam/prolog.fcl"
+#include "HitMakers/fcl/prolog.fcl"
+
 
 BEGIN_PROLOG
 
@@ -6,6 +17,10 @@ BEGIN_PROLOG
 mixerTemplateCommon: {
    module_type         : MixBackgroundFrames
    fileNames           : @nil
+#     sequential -- read the secondary events in order
+#     randomReplace -- random with replacement
+#     randomLimReplace -- events unique within a primary event
+#     randomNoReplace -- events guaranteed to be used once only.
 #   readMode            : randomNoReplace
    readMode            : randomLimReplace
    wrapFiles           : true
@@ -47,4 +62,67 @@ mixerTemplateCRV.mu2e.products: {
       ]
    }
 }
+
+MDC2018Mixers : {
+  filters : {
+    # TrkCal
+    flashMixerTrkCal    : @local::mixerTemplateTrkCal
+    ootMixerTrkCal      : @local::mixerTemplateTrkCal
+    neutronMixerTrkCal  : @local::mixerTemplateTrkCal
+    dioMixerTrkCal      : @local::mixerTemplateTrkCal
+    photonMixerTrkCal   : @local::mixerTemplateTrkCal
+    protonMixerTrkCal   : @local::mixerTemplateTrkCal
+    deuteronMixerTrkCal : @local::mixerTemplateTrkCal
+    # CRV
+    PSMixerCRV	     : @local::mixerTemplateCRV 
+    TSMixerCRV	     : @local::mixerTemplateCRV 
+    DSMixerCRV	     : @local::mixerTemplateCRV
+    ootMixerCRV	     : @local::mixerTemplateCRV 
+    neutronMixerCRV  : @local::mixerTemplateCRV 
+    dioMixerCRV	     : @local::mixerTemplateCRV 
+    photonMixerCRV   : @local::mixerTemplateCRV 
+    #
+
+  }
+  sequence : [
+    flashMixerTrkCal,
+    ootMixerTrkCal, neutronMixerTrkCal, dioMixerTrkCal,
+    photonMixerTrkCal, protonMixerTrkCal, deuteronMixerTrkCal,
+    PSMixerCRV, TSMixerCRV, DSMixerCRV,
+    ootMixerCRV, neutronMixerCRV, dioMixerCRV, photonMixerCRV]
+}
+DigiCompress : {
+  module_type : CompressDigiMCs
+  strawDigiMCTag : "makeSD"
+  crvDigiMCTag : "CrvWaveforms"
+  simParticleTags : [ "g4run", 
+      "PSMixerCRV", "TSMixerCRV", "DSMixerCRV", 
+      "neutronMixerTrkCal", "neutronMixerCRV",
+      "ootMixerTrkCal", "ootMixerCRV",
+      "dioMixerTrkCal", "dioMixerCRV",
+      "photonMixerTrkCal", "photonMixerCRV",
+      "protonMixerTrkCal",
+      "deuteronMixerTrkCal",
+      "flashMixerTrkCal" ]
+  extraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
+  timeMapTags : [ "protonTimeMap", "muonTimeMap" ]
+  primarySimPtrsTag : "TrkDigiFilter"
+}
+DigiCompressOutputCommands : [ "drop *_*_*_*",
+    "keep *_compressDigiMCs_*_*",
+    "keep mu2e::StrawDigis_*_*_*",
+    "keep mu2e::CaloDigis_*_*_*",
+    "keep mu2e::CaloShowerSteps_*_*_*",
+    "keep mu2e::CaloShowerStepROs_*_*_*",
+    "keep mu2e::SimParticleart::Ptrs_CaloShowerStepFromStepPt_*_*",
+    "keep mu2e::CaloShowerSims_*_*_*",
+    "keep mu2e::CrvDigis_*_*_*",
+    "keep mu2e::CRSScintillatorBarIndexmu2e::CrvPhotonsstd::map_CrvPhotons_*_*",
+    "keep mu2e::CRSScintillatorBarIndexmu2e::CrvSiPMChargesstd::map_CrvSiPMCharges_*_*",
+    "keep mu2e::StatusG4_*_*_*",
+    "keep mu2e::ProtonBunchIntensity_*_*_*",
+    "keep art::TriggerResults_*_*_*" ]
+# drop the pre-filter straw digis
+#     "drop *_makeSDPreFilter_*_*" ]
+
 END_PROLOG

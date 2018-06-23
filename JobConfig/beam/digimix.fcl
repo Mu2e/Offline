@@ -7,6 +7,7 @@
 #include "JobConfig/beam/prolog-bgFrameMixing.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "EventMixing/fcl/prolog.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog_v07.fcl"
 #include "fcl/standardServices.fcl"
@@ -27,19 +28,8 @@ source : {
 
 physics: {
    producers: {
-      genCounter: { module_type: GenEventCounter }
-      protonBunchIntensity: {
-         module_type: ProtonBunchIntensitySimulator
-         #
-         # Use the log-normal model of Proton Beam Inensity fluctuations
-         #
-         IntensityModel: 2
-         # IHEP data fit
-         Lognormal_mu : -0.10015
-         Lognormal_sigma : 0.3814
-         MeanNumberOfProtonsPerMicrobunch: 3.9e7
-      }
-
+     genCounter: { module_type: GenEventCounter }
+     @table::EventGenerator.producers
      @table::TrackerMC.producers
      @table::CaloDigiMC.producers
      @table::CrvDAQPackage.producers
@@ -74,7 +64,6 @@ physics: {
 
    # trigger path
    p1: [ 
-      #genCounter,
       protonBunchIntensity,
       flashMixerTrkCal,
       ootMixerTrkCal, neutronMixerTrkCal, dioMixerTrkCal,
