@@ -52,7 +52,6 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 
 using namespace std; 
 using CLHEP::Hep3Vector;
@@ -185,7 +184,6 @@ namespace mu2e {
     const StrawHitPositionCollection*           _shpcol;
     const StrawHitFlagCollection*               _shfcol;
     const StrawDigiMCCollection*                _mcdigis;
-    const mu2e::PtrStepPointMCVectorCollection* _hits_mcptrStraw;
 
     const TTracker*                             _tracker;
     int                                         _eventNum;
@@ -587,8 +585,18 @@ namespace mu2e {
       const StrawHit*     sh  = &_shcol->at(i);
       const StrawHitFlag* shf = &_shfcol->at(i);
 
-      mu2e::PtrStepPointMCVector const& mcptr(_hits_mcptrStraw->at(i));
-      const mu2e::SimParticle* sim  = mcptr[0]->simParticle().get();
+      const mu2e::StrawDigiMC* mcdigi = &_mcdigis->at(i);
+
+      const mu2e::StepPointMC   *stmc;
+      if (mcdigi->wireEndTime(mu2e::TrkTypes::cal) < mcdigi->wireEndTime(mu2e::TrkTypes::hv)) {
+	stmc = mcdigi->stepPointMC(mu2e::TrkTypes::cal).get();
+      }
+      else {
+	stmc = mcdigi->stepPointMC(mu2e::TrkTypes::hv ).get();
+      }
+
+      const mu2e::SimParticle* sim = &(*stmc->simParticle());
+
 //-----------------------------------------------------------------------------
 // search if this particle has already been registered
 //-----------------------------------------------------------------------------
@@ -635,20 +643,6 @@ namespace mu2e {
       if (flagged_as_delta) fNHitsDeltaReco++;
     }
 
-    // printf(" DeltaFinderAna::initMcDiag delta_nhits_tot = %5i, fNHitsDeltaReco = %5i\n",
-    // 	   delta_nhits_tot,fNHitsDeltaReco);
-
-    // if (_debugLevel > 10) {
-    //   printf(" N(MC particles with hits in the tracker: %5i\n",nmc);
-    //   printf("    i     SimID        PdgID  NHits FirstSt LastSt\n");
-    //   for (int i=0; i<nmc; i++) {
-    // 	McPart_t* mc = _list_of_mc_particles.at(i);
-    // 	printf(" %4i  %10li %10i  %5i %5i %5i\n",
-    // 	       i,mc->fSim->id().asInt(),mc->fSim->pdgId(),
-    // 	       mc->NHits(),
-    // 	       mc->fFirstStation,mc->fLastStation);
-    //   }
-    // }
     return 0;
   }
 
@@ -716,9 +710,6 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 
     auto mcdH = Evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
     _mcdigis  = mcdH.product();
-
-    auto mcptrHandleStraw = Evt.getValidHandle<PtrStepPointMCVectorCollection>(_mcdigisTag);
-    _hits_mcptrStraw = mcptrHandleStraw.product();
 
     return (_shcol != 0) && (_nsh > 0) && (_shfcol != 0) && (_mcdigis != 0) ;     
   }

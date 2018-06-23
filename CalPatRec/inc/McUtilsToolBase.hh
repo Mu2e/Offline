@@ -10,8 +10,8 @@
 namespace mu2e {
 
   class Straw;
-#ifndef MCDataProducts_PtrStepPointMCVector_hh
-  class PtrStepPointMCVectorCollection;
+#ifndef MCDataProducts_StrawDigiMCCollection_hh
+  class StrawDigiMCCollection;
 #endif
   class SimParticle;
   
@@ -32,10 +32,10 @@ namespace mu2e {
 			    const char*               MCDigiCollName, 
 			    const StrawHitCollection* Shcol         );
 
-    virtual const PtrStepPointMCVectorCollection* getListOfMcStrawHits(const art::Event* Event,
-								       const art::InputTag& Tag);
+    virtual const StrawDigiMCCollection* getListOfMcStrawHits(const art::Event* Event,
+							      const art::InputTag& Tag);
 
-    virtual const SimParticle* getSimParticle(const PtrStepPointMCVectorCollection* List, int IHit);
+    virtual const SimParticle* getSimParticle(const StrawDigiMCCollection* List, int IHit);
 
     virtual int   getID      (const SimParticle* Sim) { return -1;  }
     virtual int   getPdgID   (const SimParticle* Sim) { return -1;  }

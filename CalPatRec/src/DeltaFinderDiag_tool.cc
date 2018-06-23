@@ -26,7 +26,7 @@ namespace mu2e {
   using namespace DeltaFinderTypes;
 
   class SimParticle;
-  class PtrStepPointMCVectorCollection;
+  class StrawDigiMCCollection;
   
   class DeltaFinderDiag: public ModuleHistToolBase {
 
@@ -109,7 +109,7 @@ namespace mu2e {
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
 
     int                                   _eventNumber;
-    const PtrStepPointMCVectorCollection* _listOfMcStrawHits;
+    const StrawDigiMCCollection*          _listOfMcStrawHits;
     int                                   _nDeltaHitsTot;
     int                                   _nDeltaHitsReco;
     

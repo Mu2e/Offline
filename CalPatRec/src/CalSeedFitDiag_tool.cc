@@ -66,8 +66,6 @@ namespace mu2e {
     Hist_t                           _hist;            // owned
     Data_t*                          _data;            // cached
 
-    //    const        mu2e::PtrStepPointMCVectorCollection* _listOfMCStrawHits;
-
   public:
 
     CalSeedFitDiag(const fhicl::ParameterSet& PSet);

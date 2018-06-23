@@ -10,7 +10,6 @@
 
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 // tracker
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
