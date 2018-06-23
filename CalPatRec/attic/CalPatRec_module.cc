@@ -460,14 +460,6 @@ namespace mu2e {
       _chmccol = 0;
     }
 
-    //Get stepPointMC for crystal readout hits
-    art::Handle<PtrStepPointMCVectorCollection> mccaloptrHandle;
-    if (evt.getByLabel(_crmLabel,_chmccpLabel,mccaloptrHandle)){
-      _listOfMCCrystals = mccaloptrHandle.product();
-    }else {
-      _listOfMCCrystals = 0;
-    }
-
     //Get simParticles and stepPointMC summary for crystal readout hits
     art::Handle<CaloHitSimPartMCCollection> caloHitSimMCHandle;
     if (evt.getByLabel(_crmLabel, caloHitSimMCHandle)){
@@ -476,8 +468,7 @@ namespace mu2e {
       _chsmccol = 0;
     }
 
-    if ((_chcol != 0) && (_chmccol != 0) && (_listOfMCCrystals != 0) && (_chsmccol != 0)){
-      //      _caloHitNavigator = new CaloHitMCNavigator(*_chcol, *_chmccol, *_listOfMCCrystals, *_chsmccol);
+    if ((_chcol != 0) && (_chmccol != 0) && (_chsmccol != 0)){
       _caloHitNavigator = new CaloHitMCNavigator(*_chcol, *_chmccol, *_chsmccol);
     }else {
       _caloHitNavigator = 0;

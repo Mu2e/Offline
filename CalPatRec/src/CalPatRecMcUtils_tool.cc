@@ -16,7 +16,9 @@
 
 #include "CLHEP/Matrix/Vector.h"
 
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMC.hh"
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
@@ -48,10 +50,10 @@ namespace mu2e {
 			    const char*               MCDigiCollName, 
 			    const StrawHitCollection* Shcol         ) override;
 
-    virtual const PtrStepPointMCVectorCollection* getListOfMcStrawHits(const art::Event* Event,
-								       const art::InputTag& Tag) override;
+    virtual const StrawDigiMCCollection* getListOfMcStrawHits(const art::Event* Event,
+							      const art::InputTag& Tag) override;
     
-    virtual const SimParticle* getSimParticle(const PtrStepPointMCVectorCollection* List, int IHit) override;
+    virtual const SimParticle* getSimParticle(const StrawDigiMCCollection* List, int IHit) override;
 
     int   getID      (const SimParticle* Sim) override;
     int   getPdgID   (const SimParticle* Sim) override;
@@ -76,17 +78,18 @@ namespace mu2e {
     static int    last_event(-1);
     //    static int    first_call( 1);
 
-    static const PtrStepPointMCVectorCollection*  listOfMCStrawHits(NULL);
+    static const StrawDigiMCCollection*  listOfMCStrawHits(NULL);
+    
 
     double mcdoca(-99.0);
 
     int iev = Event->event();
 
     if (iev != last_event) {
-      art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
-      Event->getByLabel(MCCollName,mcptrHandle);
-      if (mcptrHandle.isValid()) listOfMCStrawHits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
-      else                       listOfMCStrawHits = NULL;
+      art::Handle<mu2e::StrawDigiMCCollection> mcdigiH;
+      Event->getByLabel(MCCollName,mcdigiH);
+      if (mcdigiH.isValid()) listOfMCStrawHits = (mu2e::StrawDigiMCCollection*) mcdigiH.product();
+      else                   listOfMCStrawHits = NULL;
 
       last_event = iev;
     }
@@ -97,8 +100,15 @@ namespace mu2e {
       const mu2e::StepPointMC* step(0);
 
       for (int i=0; i<nstraws; i++) {
-	const mu2e::PtrStepPointMCVector&  mcptr(listOfMCStrawHits->at(i));
-	step = &(*mcptr.at(0));
+	const mu2e::StrawDigiMC*  mcdigi = &listOfMCStrawHits->at(i);
+
+	if (mcdigi->wireEndTime(mu2e::TrkTypes::cal) < mcdigi->wireEndTime(mu2e::TrkTypes::hv)) {
+	  step = mcdigi->stepPointMC(mu2e::TrkTypes::cal).get();
+	}
+	else {
+	  step = mcdigi->stepPointMC(mu2e::TrkTypes::hv ).get();
+	}
+
 	int volume_id = step->volumeId();
 	if (volume_id == Straw->index().asInt()) {
 //-----------------------------------------------------------------------------
@@ -139,8 +149,8 @@ namespace mu2e {
     static int     first_call(1);
     static double  mbtime;
 
-    static SimParticleTimeOffset*                 timeOffsets(NULL);
-    static const PtrStepPointMCVectorCollection*  listOfMCStrawHits(NULL);
+    static SimParticleTimeOffset*        timeOffsets(NULL);
+    static const StrawDigiMCCollection*  listOfMCStrawHits(NULL);
 
     double  time_threshold(500.);
     int     n_gen_hits(  0 );
@@ -158,10 +168,10 @@ namespace mu2e {
     int iev = Event->event();
 
     if (iev != last_event) {
-      art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
-      Event->getByLabel(MCDigiCollName,mcptrHandle);
-      if (mcptrHandle.isValid()) listOfMCStrawHits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
-      else                       listOfMCStrawHits = NULL;
+      art::Handle<mu2e::StrawDigiMCCollection> mcdigiH;
+      Event->getByLabel(MCDigiCollName,mcdigiH);
+      if (mcdigiH.isValid()) listOfMCStrawHits = (mu2e::StrawDigiMCCollection*) mcdigiH.product();
+      else                   listOfMCStrawHits = NULL;
 
       timeOffsets->updateMap(*Event);
 
@@ -174,9 +184,17 @@ namespace mu2e {
 
     int nhits = Shcol->size();
     for (int i=0; i<nhits; i++) {
-      mu2e::PtrStepPointMCVector const& mcptr(listOfMCStrawHits->at(i));
-      const mu2e::StepPointMC* step = mcptr[0].get();
-      
+
+      const mu2e::StrawDigiMC* mcdigi = &listOfMCStrawHits->at(i);
+
+      const mu2e::StepPointMC   *step;
+      if (mcdigi->wireEndTime(mu2e::TrkTypes::cal) < mcdigi->wireEndTime(mu2e::TrkTypes::hv)) {
+	step = mcdigi->stepPointMC(mu2e::TrkTypes::cal).get();
+      }
+      else {
+	step = mcdigi->stepPointMC(mu2e::TrkTypes::hv ).get();
+      }
+
       int gen_index(-1), sim_id(-1);
 
       if (step) {
@@ -207,16 +225,26 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  const PtrStepPointMCVectorCollection* CalPatRecMcUtils::getListOfMcStrawHits(const art::Event* Event,const art::InputTag& Tag) {
-    auto handle = Event->getValidHandle<PtrStepPointMCVectorCollection>(Tag);
-    const PtrStepPointMCVectorCollection* coll = handle.product();
+  const StrawDigiMCCollection* CalPatRecMcUtils::getListOfMcStrawHits(const art::Event* Event,const art::InputTag& Tag) {
+    auto handle = Event->getValidHandle<StrawDigiMCCollection>(Tag);
+    const StrawDigiMCCollection* coll = handle.product();
     return coll;
   }
 
 //-----------------------------------------------------------------------------
-  const SimParticle* CalPatRecMcUtils::getSimParticle(const PtrStepPointMCVectorCollection* List, int IHit) {
-    const PtrStepPointMCVector* mcptr = & List->at(IHit);
-    const SimParticle* sim = mcptr->at(0)->simParticle().get();
+  const SimParticle* CalPatRecMcUtils::getSimParticle(const StrawDigiMCCollection* List, int IHit) {
+    const mu2e::StrawDigiMC* mcdigi = &List->at(IHit);
+
+    const mu2e::StepPointMC   *step;
+    if (mcdigi->wireEndTime(mu2e::TrkTypes::cal) < mcdigi->wireEndTime(mu2e::TrkTypes::hv)) {
+      step = mcdigi->stepPointMC(mu2e::TrkTypes::cal).get();
+    }
+    else {
+      step = mcdigi->stepPointMC(mu2e::TrkTypes::hv ).get();
+    }
+
+    const mu2e::SimParticle* sim = &(*step->simParticle());
+
     return sim;
   }
 
