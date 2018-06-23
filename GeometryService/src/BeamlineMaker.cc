@@ -660,7 +660,7 @@ namespace mu2e {
       c.getVectorDouble("pbarwedge.stripHeights",pbarWindow._stripHeights,pbarWindow._nStrips);
     }
       // for version 4 (variable thickness strips)
-      if (pbarWindow._nStrips > 0) {
+      if (pbarWindow._nStrips > 0 && pbarWindow._version == 4) {
 	c.getVectorDouble("pbarwedge.stripThicknesses",pbarWindow._stripThicknesses,pbarWindow._nStrips);
     }
   }
