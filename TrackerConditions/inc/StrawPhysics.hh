@@ -77,6 +77,7 @@ namespace mu2e {
     int _phiBins;
     int _dIntegrationBins;
     bool _nonlindrift;
+    double _bz;
   };
 }
 #endif

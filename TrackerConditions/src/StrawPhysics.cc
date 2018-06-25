@@ -42,7 +42,8 @@ namespace mu2e {
   _wirevoltage(pset.get<double>("WireVoltage",1400)), //JB: set the default sense wire to 1400 V
   _phiBins(pset.get<int>("DriftPhiBins",20)),
   _dIntegrationBins(pset.get<int>("DriftIntegrationBins",50)),
-  _nonlindrift(pset.get<bool>("UseNonLinearDrift",true)) //JB: switch to turn on/off non linear drift for diagnosis
+  _nonlindrift(pset.get<bool>("UseNonLinearDrift",true)), //JB: switch to turn on/off non linear drift for diagnosis
+  _bz(pset.get<double>("BFieldOverride",-1.0))
   {
     
    
@@ -93,6 +94,8 @@ namespace mu2e {
     CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
     CLHEP::Hep3Vector b0 = bfmgr->getBField(vpoint_mu2e);
     float Bz = b0.z();
+    if (_bz >= 0)
+      Bz = _bz;
     _strawDrift->Initialize(_driftFile, _wirevoltage, _phiBins, _dIntegrationBins, Bz);
   }
   
