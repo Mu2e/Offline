@@ -6,7 +6,6 @@
 #include "TrkDiag/fcl/TrkAnaDigis.fcl"
 
 process_name : TrkAna
-
 physics.analyzers.TrkAna.KalDiag.StrawDigiMCLabel : "compressDigiMCs"
 physics.analyzers.TrkAna.KalDiag.MCStepsLabel : "compressDigiMCs"
 physics.analyzers.TrkAna.KalDiag.MCStepsInstance : ""

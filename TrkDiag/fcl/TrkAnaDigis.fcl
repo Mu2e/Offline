@@ -18,7 +18,7 @@ source :
   module_type : RootInput
 }
 
-services : @local::Services.SimAndReco
+services : @local::Services.Reco
 #services.AlignmentService	  : { inputFile      : "MT_MDC2018.txt"	
 #				      printConfig : true
 #				      configStatsVerbosity : 10
@@ -30,16 +30,10 @@ physics :
   producers : @local::TrkAna.producers
   analyzers : @local::TrkAna.analyzers
 }
+#physics.analyzers.TrkAna.AnalyzeCRV : true
 
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.RecoSequence ]
 physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence ]
 
 # You can add detailed (hit) information to the TTree by setting diagLevel to 2
-physics.analyzers.TrkAna.diagLevel : 1
-#
-# the following are needed for interactive running
-services.SeedService.baseSeed         :  773651
-services.SeedService.maxUniqueEngines :  20
-
-# patch Calo
-physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : compressPVDetector
+physics.analyzers.TrkAna.diagLevel : 2
