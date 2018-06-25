@@ -1,4 +1,4 @@
-#include "CRVResponse/fcl/prolog.fcl"
+#include "CRVResponse/fcl/prolog_v07.fcl"
 #include "CaloMC/fcl/prolog.fcl"
 #include "CaloReco/fcl/prolog.fcl"
 #include "CaloCluster/fcl/prolog.fcl"

@@ -27,7 +27,7 @@ physics.producers.genCounter: {module_type: GenEventCounter }
 physics.filters.flashResample: {
    module_type: ResamplingMixer
    fileNames: @nil
-   readMode: "randomNoReplace"
+   readMode: "sequential"
    wrapFiles: true
    mu2e: {
       products: {
