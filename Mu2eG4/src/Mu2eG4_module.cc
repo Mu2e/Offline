@@ -122,7 +122,6 @@ private:
         
         std::unique_ptr<G4RunManager> _runManager;
         
-        const G4int numberOfEventsToBeProcessed;
         const bool _use_G4MT;
         const G4int _nThreads;
         
@@ -206,7 +205,6 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     trajectoryControl_(pSet.get<fhicl::ParameterSet>("TrajectoryControl")),
     multiStagePars_(pSet.get<fhicl::ParameterSet>("MultiStageParameters")),
     
-    numberOfEventsToBeProcessed(pSet.get<int>("numberOfEventsToProcess",0)),
     _use_G4MT(pSet.get<bool>("runinMTMode",false)),
     _nThreads(pSet.get<int>("numberOfThreads",1)),
     
@@ -488,14 +486,6 @@ void Mu2eG4::beginSubRun(art::SubRun& sr) {
 // Create one G4 event and copy its output to the art::event.
 void Mu2eG4::produce(art::Event& event) {
     
-    
-    //std::cout << "RANDOM NUMBER STATUS IS: " << G4RunManager::GetRunManager()->GetRandomNumberStore() << std::endl;
-    //G4RunManager::GetRunManager()->SetRandomNumberStore(true);
-    //std::cout << "RANDOM NUMBER STATUS IS: " << G4RunManager::GetRunManager()->GetRandomNumberStore() << std::endl;
-    //G4RunManager::GetRunManager()->rndmSaveThisRun();//THIS DIDN'T WORK
-
-    
-    
     //confirm that IF we are running in MT mode we do not have inputs from previous simulation stages
     //otherwsie, throw an exception
     if (_use_G4MT) {
@@ -534,13 +524,18 @@ void Mu2eG4::produce(art::Event& event) {
         }
    
         _genEventBroker.loadEvent(genInputHits, simPartId, &event, _generatorModuleLabel, &_StashForEventData, simProductGetter);
+        //getStashSize() can only be called after loadEvent is called
     
-
         if (_use_G4MT)//in MT mode, stash size is given by the size of input GenParticleCollection
         {
-            //getStashSize() can only be called after loadEvent is called
-            //_StashForEventData.initializeStash(_genEventBroker.getStashSize());
-            _StashForEventData.initializeStash(numberOfEventsToBeProcessed);
+            
+            if (_genEventBroker.getStashSize() == 0) {
+
+                throw cet::exception("CONFIG")
+                << "Error: You are trying to run in MT mode with a stash size of '0'.  This is an invalid configuration!\n";
+            }
+            
+            _StashForEventData.initializeStash(_genEventBroker.getStashSize());
         }
         else//in sequential mode, the stash size is 1
         {
@@ -548,8 +543,8 @@ void Mu2eG4::produce(art::Event& event) {
         }
         
         // Run G4 for this event and access the completed event.
-        BeamOnDoOneArtEvent( event.id().event(), numberOfEventsToBeProcessed );
-        
+        BeamOnDoOneArtEvent( event.id().event(), _genEventBroker.getStashSize() );
+
         _genEventBroker.setEventPtrToZero();
 
         
@@ -713,9 +708,27 @@ void Mu2eG4::BeamOnBeginRun( unsigned int runNumber){
         _systemElapsed = 0.;
         _userElapsed   = 0.;
     
-        //this would have been set by BeamOn
-        //needed for RunInitialization(), called by Run::SetNumberofEventToBeProcessed
-        _runManager->SetNumberOfEventsToBeProcessed(numberOfEventsToBeProcessed);
+        //NOTE: the data member G4RunManager::numberOfEventToBeProcessed would have been set from within the G4 call to BeamOn()
+        //BEFORE the call the ConstructScoringWorlds() with this call:
+        //_runManager->SetNumberOfEventsToBeProcessed(numberOfEventsToBeProcessed);
+        //Since we have deconstructed the BeamOn() function, we must set this data member ourselves.
+        //In the pre-MT version of this code, this call was made here, immediately before the call _runManager->ConstructScoringWorlds();
+        //It has been moved, because at 'BeginRun' time, the value of this variable cannot be known without using a FHiCL parameter.
+        //It was decided not to define it though a FHiCL parameter, but rather within the code.
+        //
+        //In SEQUENTIAL mode, this variable doesn't seem to serve any purpose other than to be used in the call
+        //currentRun->SetNumberOfEventToBeProcessed(numberOfEventToBeProcessed); in G4RunManager::RunInitialization().
+        //Furthermore, at least up through G4 v10.4.02 the data member G4Run::numberOfEventToBeProcessed is only informative.
+        //It is not needed anywhere in the G4 code.  So, it is OK to not set this variable at this point.
+        //
+        //For MT mode, G4MTRunManager::numberOfEventToBeProcessed is used to distribute events to the threads, among other things,
+        //and must have the value of EITHER the size of the GenParticle Stash when using single-threaded art,
+        //OR the total number of events to be simulated when using multithreaded art.
+        //It must be set before the call to G4MTRunManager::InitializeEventLoop.
+        //We can get the size of the GenParticle Stash from WITHIN the code with the call to _genEventBroker.getStashSize(),
+        //but this cannot be called until after _genEventBroker.loadEvent() is called.
+        //So, we get this variable from the GenParticle Stash after the call to _genEventBroker.loadEvent().  We initialize the
+        //EventStash to the correct size using it, and we pass it into G4 in the call BeamOnDoOneArtEvent().
     
         _runManager->ConstructScoringWorlds();
         _runManager->RunInitialization();
@@ -733,6 +746,8 @@ void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber, G4int num_events, const char*
             
             //NOTE: G4MTRunManager::WaitForEndEventLoopWorkers() is a protected function in G4 code, so we MUST have our own MTRunManager
             //in order to access this function
+            
+            dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->SetNumberOfEventsToBeProcessed(num_events);
             dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->InitializeEventLoop(num_events,macroFile,n_select);
             dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4WaitForEndEventLoopWorkers();
             //dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4TerminateWorkers();//DID NOT WORK BEFORE
