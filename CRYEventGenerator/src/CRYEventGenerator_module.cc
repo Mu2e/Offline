@@ -39,16 +39,16 @@ namespace mu2e {
     private:
       CosmicCRY *cryGen;
       std::string inputfile;
+      int seed_;
+      art::RandomNumberGenerator::base_engine_t&     engine_;
   };
 
   CryEventGenerator::CryEventGenerator(fhicl::ParameterSet const& pSet) :
     inputfile(pSet.get<std::string>("inputFile",
-          "CRYEventGenerator/config/defaultCRYconfig.txt"))
+          "CRYEventGenerator/config/defaultCRYconfig.txt")),
+    seed_( art::ServiceHandle<SeedService>()->getSeed() ),
+    engine_(createEngine(seed_))
   {
-    // createEngine(art::ServiceHandle<SeedService>()->getSeed());
-    
-    // use G4Engine to correctly get seed from fcl file
-    createEngine(art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
     produces<GenParticleCollection>();
   }
 
