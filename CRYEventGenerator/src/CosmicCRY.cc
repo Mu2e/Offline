@@ -122,8 +122,6 @@ namespace mu2e
         , _geomInfoObtained(false)
 
         {
-          mf::LogInfo log("CosmicCRY");
-
           _cryDataPath = std::string(std::getenv("CRYDATAPATH"));
           if( _cryDataPath.length() == 0) 
           {
