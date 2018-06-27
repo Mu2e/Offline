@@ -128,7 +128,7 @@ namespace mu2e
           if( _cryDataPath.length() == 0) 
           {
             mf::LogError("CosmicCRY") << "no variable CRYDATAPATH set. Exit now.";
-            exit(0);
+            throw cet::exception("Rethrow") << "This job cannot continue without a valid CRYDATAPATH.";
           }
 
           createSetupString();
