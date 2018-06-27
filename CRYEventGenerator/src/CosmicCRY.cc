@@ -40,13 +40,11 @@
 #include "TTree.h"
 
 // From CLHEP
-#include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;
-using CLHEP::RandFlat;
 using CLHEP::GeV;
 
 namespace mu2e 
