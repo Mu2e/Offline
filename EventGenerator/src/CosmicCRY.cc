@@ -33,7 +33,7 @@
 
 #include "CRYGenerator.h"
 #include "CRYSetup.h"
-#include "CRYEventGenerator/inc/CosmicCRY.hh"
+#include "EventGenerator/inc/CosmicCRY.hh"
 // ROOT includes
 #include "TH1D.h"
 #include "TH2D.h"

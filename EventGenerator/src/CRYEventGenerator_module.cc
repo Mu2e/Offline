@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-#include "CRYEventGenerator/inc/CosmicCRY.hh"
+#include "EventGenerator/inc/CosmicCRY.hh"
 
 namespace mu2e {
 
