@@ -53,7 +53,7 @@ namespace mu2e {
   }
 
   void CryEventGenerator::beginRun( art::Run &run){
-    cryGen = new CosmicCRY(run, SimpleConfig(inputfile));
+    cryGen = new CosmicCRY(run, SimpleConfig(inputfile), engine_);
   }
 
   void CryEventGenerator::produce(art::Event& evt) {

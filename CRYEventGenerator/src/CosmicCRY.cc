@@ -41,7 +41,6 @@
 
 // From CLHEP
 #include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandPoisson.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -70,7 +69,8 @@ namespace mu2e
   template<class T> double RNGWrapper<T>::rng(void) { return (m_obj->*m_func)(); }
 
 
-  CosmicCRY::CosmicCRY( art::Run& run, const SimpleConfig& config )
+  CosmicCRY::CosmicCRY( art::Run& run,
+      const SimpleConfig& config, CLHEP::HepRandomEngine & engine )
     : _verbose(config.getInt("cosmicCRY.verbose", 0) )
       , _doHistograms(config.getBool("cosmicCRY.doHistograms", true) )
       , _saveTree(config.getBool("cosmicCRY.saveTree", false) )
@@ -136,12 +136,13 @@ namespace mu2e
           createSetupString();
           _crySetup = new CRYSetup(_setupString, _cryDataPath);
 
-          RNGWrapper<CLHEP::HepRandomEngine>::set(CLHEP::HepRandom::getTheEngine(),
+          RNGWrapper<CLHEP::HepRandomEngine>::set(
+              &engine,
               &CLHEP::HepRandomEngine::flat);
           _crySetup->setRandomFunction(RNGWrapper<CLHEP::HepRandomEngine>::rng);
 
           if (_verbose > 1) 
-            CLHEP::HepRandom::getTheEngine()->showStatus();
+            engine.showStatus();
 
           _cryGen = std::make_shared<CRYGenerator>(_crySetup);
 

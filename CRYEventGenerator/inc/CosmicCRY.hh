@@ -5,9 +5,10 @@
 
 #include <vector>
 
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandPoissonQ.h"
-#include "CLHEP/Vector/TwoVector.h"
+// #include "CLHEP/Random/RandFlat.h"
+// #include "CLHEP/Random/RandPoissonQ.h"
+// #include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Random/RandEngine.h"
 
 class TH1D;
 class TH2D;
@@ -27,7 +28,8 @@ namespace mu2e {
   class CosmicCRY{
 
   public:
-    CosmicCRY( art::Run& run, const SimpleConfig& config );
+    CosmicCRY(art::Run& run, const SimpleConfig& config,
+        CLHEP::HepRandomEngine& engine);
     virtual ~CosmicCRY();
 
     virtual void generate( GenParticleCollection&  );
