@@ -41,7 +41,7 @@ namespace mu2e {
     double clusterGain(CLHEP::RandGaussQ& rgauss, CLHEP::RandFlat& rflat, unsigned nele) const;
     double driftDistanceToTime(double ddist, double phi) const;  // single cluster!
     double testStrawDrift(double ddist, double phi);
-    double driftTimeSpread(double tdrift) const; // single electron VARIANCE
+    double driftTimeSpread(double ddist) const; // single electron sigma
     double propagationTime(double wdist) const;
     double meanFreePath() const { return _meanpath; }
     double ionizationEnergy(unsigned nele=1) const;
@@ -71,7 +71,7 @@ namespace mu2e {
     double _EAverage; // Average energy of a single ionization electron (MeV)
     // parameters describing cluster DtoT
     std::vector<double> _cdpoly;
-    double _dtvar; // variance depencence on drift time
+    std::vector<double> _dtvar; // variance depencence on drift time
     std::string _driftFile;
     float _wirevoltage; //JB
     int _phiBins;

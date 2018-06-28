@@ -583,13 +583,14 @@ namespace mu2e {
         double cen = step.ionizingEdep();
         double fne = cen/_strawphys->meanElectronEnergy();
         unsigned ne = std::max( static_cast<unsigned>(_randP(fne)),(unsigned)1);
-        double qc = _strawphys->ionizationCharge(ne);
 
         Hep3Vector cdir = (step.position()-straw.getMidPoint());//JB
         cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));//JB
         double phi = cdir.theta(); //JB
-        IonCluster cluster(step.position(),phi,qc,cen,ne); //JB + phi
-        clusters.push_back(cluster);
+        for (size_t i=0;i<ne;i++){
+          IonCluster cluster(step.position(),phi,_strawphys->ionizationCharge((unsigned)1),cen/(float)ne,1); //JB + phi
+          clusters.push_back(cluster);
+        }
       }
       else {
         // use beta-gamma to decide if this is a min-ion particle or not
@@ -630,13 +631,14 @@ namespace mu2e {
         }
         // create the cluster objects
         for(unsigned ic=0;ic<nc;++ic){
-          double qc = _strawphys->ionizationCharge(ne[ic]);
           // compute phi for this cluster
           Hep3Vector cdir = (cpos[ic]-straw.getMidPoint());
           cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));
           double phi = cdir.theta(); //JB: point1 and point2 are the DCA on/to the track/wire. theta takes the angle to the z-axis
-          IonCluster cluster(cpos[ic],phi,qc,cen[ic],ne[ic]);
-          clusters.push_back(cluster);
+          for (size_t i=0;i<ne[ic];i++){
+            IonCluster cluster(cpos[ic],phi,_strawphys->ionizationCharge((unsigned)1),cen[ic]/(float)ne[ic],1);
+            clusters.push_back(cluster);
+          }
           //cout <<"phi1b = "<<phi<<"\n";
         }
       }
@@ -673,8 +675,7 @@ namespace mu2e {
       // compute drift time for this cluster
       double dt = _strawphys->driftDistanceToTime(dd,cluster._phi); //JB: this is now from the lorentz corrected r-component of the drift
       wireq._phi = cluster._phi; //JB
-      double dtsig = sqrt(_strawphys->driftTimeSpread(dt)/cluster._ne);// cluster time is averaged over electrons
-      wireq._time = _randgauss.fire(dt,dtsig);
+      wireq._time = _randgauss.fire(dt,_strawphys->driftTimeSpread(dd));
       wireq._dd = dd;
       // position along wire
       wireq._wpos = cpos.dot(straw.getDirection());

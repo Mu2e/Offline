@@ -37,7 +37,7 @@ namespace mu2e {
   _nggauss(pset.get<unsigned>("NGainGauss",30)), // number of electrons/cluster to switch to a Gaussian model of the gain fluctuations
   _vprop(pset.get<double>("PropagationVelocity",299.0)), //mm/nsec
   _cdpoly(pset.get<vector<double> >("ClusterDriftPolynomial",vector<double>{0.0,16.0})), // linear term has units nanoseconds/mm
-  _dtvar(pset.get<double>("DriftTimeVariance",0.22)), // Drift time variance linear dependence on drift time (ns)
+  _dtvar(pset.get<vector<double> >("DriftTimeVariance",vector<double>{0.2,0.5})), // Drift time variance linear dependence on drift time (ns)
   _driftFile(pset.get<string>("DriftFile","TrackerConditions/data/E2v.tbl")), //JB: DriftFile is a handle for the fcl file to change this default
   _wirevoltage(pset.get<double>("WireVoltage",1400)), //JB: set the default sense wire to 1400 V
   _phiBins(pset.get<int>("DriftPhiBins",20)),
@@ -145,8 +145,8 @@ namespace mu2e {
   }
   
   
-  double StrawPhysics::driftTimeSpread(double dtime) const {
-    return dtime*_dtvar;
+  double StrawPhysics::driftTimeSpread(double ddist) const {
+    return _dtvar[0] + ddist*_dtvar[1];
   }
   
   
