@@ -272,18 +272,13 @@ namespace mu2e
     else
       _setupString.append("returnKaons 0 ");
 
-    char tmpStr[256];
-    sprintf(tmpStr, "date %d-%d-%d ", _month, _day, _year);
-    _setupString.append(tmpStr);
+    std::ostringstream oss;
+    oss << "date " << _month << "-" << _day << "-" << _year << " ";
+    oss << "latitude " << _latitude << " ";
+    oss << "altitude " << _altitude << " ";
+    oss << "subboxLength " << _subboxLength << " ";
 
-    sprintf(tmpStr, "latitude %f ", _latitude);
-    _setupString.append(tmpStr);
-
-    sprintf(tmpStr, "altitude %d ", _altitude);
-    _setupString.append(tmpStr);
-
-    sprintf(tmpStr, "subboxLength %f ", _subboxLength);
-    _setupString.append(tmpStr);
+    _setupString.append(oss.str());
   }
 
   void CosmicCRY::calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir)
