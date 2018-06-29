@@ -34,10 +34,6 @@
 #include "CRYGenerator.h"
 #include "CRYSetup.h"
 #include "EventGenerator/inc/CosmicCRY.hh"
-// ROOT includes
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TTree.h"
 
 // From CLHEP
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -70,33 +66,6 @@ namespace mu2e
   CosmicCRY::CosmicCRY( art::Run& run,
       const SimpleConfig& config, CLHEP::HepRandomEngine & engine )
     : _verbose(config.getInt("cosmicCRY.verbose", 0) )
-      , _doHistograms(config.getBool("cosmicCRY.doHistograms", true) )
-      , _saveTree(config.getBool("cosmicCRY.saveTree", false) )
-      , _hXZ(NULL)
-      , _hY(NULL)
-      // , _hPlane(NULL)
-      , _hE(NULL)
-      , _hTheta(NULL)
-      , _hPhi(NULL)
-      , _hPtot(NULL)
-      , _hPyOverPtot(NULL)
-      , _hTime(NULL)
-      , _hLiveTime(NULL)
-      , _hNegMuKE(NULL)
-      , _hPosMuKE(NULL)
-      , _hPtypeKE(NULL)
-      , _hNSecondaries(NULL)
-      , _hSecondPtotVsPrimKE(NULL)
-      , _hShowerRadiusVsPrimKE(NULL)
-      , _hNSecondariesVsPrimKE(NULL)
-
-      , _muEMin    ( config.getDouble("cosmicCRY.muEMin") )   //in MeV
-        , _muEMax    ( config.getDouble("cosmicCRY.muEMax") )   //in MeV
-        , _muCosThMin( config.getDouble("cosmicCRY.muCosThMin") )
-        , _muCosThMax( config.getDouble("cosmicCRY.muCosThMax") )
-        , _muPhiMin(0)
-        , _muPhiMax(2.0*M_PI)
-
         , _returnMuons( config.getBool("cosmicCRY.returnMuons", true))
         , _returnNeutrons( config.getBool("cosmicCRY.returnNeutrons", true))
         , _returnProtons( config.getBool("cosmicCRY.returnProtons", true))
@@ -141,55 +110,6 @@ namespace mu2e
             engine.showStatus();
 
           _cryGen = std::make_shared<CRYGenerator>(_crySetup);
-
-          // Histograming
-          if (_doHistograms) {
-            art::ServiceHandle<art::TFileService> tfs;
-            art::TFileDirectory tfdir = tfs->mkdir("CosmicCRY");
-            _hXZ = tfdir.make<TH2D>("XZ", "XZ", 
-                400, -2.0e5,  2.0e5, 400, -2.0e5, 2.0e5 );
-            _hY = tfdir.make<TH1D>("Y", "Y", 100, -1.0e3, 1.0e3 );
-
-            // _hPlane = tfdir.make<TH1D>("Plane", "Plane", 5, 0, 5);
-            _hE = tfdir.make<TH1D>("E", "E", 4000, 0, _muEMax);
-            _hTheta = tfdir.make<TH1D>("Theta", "Theta",
-                200, -M_PI - 0.5, M_PI + 0.5);
-            _hPhi = tfdir.make<TH1D>("Phi", "Phi",
-                200, -M_PI - 0.5, M_PI + 0.5);
-
-            _hPtot = tfdir.make<TH1D>("Ptot", "Total momentum", 500, 0., 2E6);
-            _hPyOverPtot = tfdir.make<TH1D>("PyOverPtot", "Py/Ptot", 200, -20., 20.);
-            _hTime = tfdir.make<TH1D>("Time", "Timing of secondary particles",
-                1000, -1.E-3, 1E0);
-            _hLiveTime = tfdir.make<TH1D>("Livetime", "Live time", 1000, -1.E-3, 1E0);
-            _hNegMuKE = tfdir.make<TH1D>("NegMuKE", "Momenta of #mu^-", 4000, 0., 2E6);
-            _hPosMuKE = tfdir.make<TH1D>("PosMuKE", "Momenta of #mu^+", 4000, 0., 2E6);
-            _hNSecondaries = tfdir.make<TH1D>("nSecondaries", "Number of secondaries",
-                1000, 0, 1000);
-
-            _hPtypeKE = tfdir.make<TH2D>("PtypeKE", "Particle type vs energy",
-                2000, 0., 2E6, 7, 0, 7);
-            _hPtypeKE->GetYaxis()->SetBinLabel(1, "mu");
-            _hPtypeKE->GetYaxis()->SetBinLabel(2, "gamma");
-            _hPtypeKE->GetYaxis()->SetBinLabel(3, "electron");
-            _hPtypeKE->GetYaxis()->SetBinLabel(4, "neutron");
-            _hPtypeKE->GetYaxis()->SetBinLabel(5, "proton");
-            _hPtypeKE->GetYaxis()->SetBinLabel(6, "pion");
-            _hPtypeKE->GetYaxis()->SetBinLabel(7, "kaon");
-
-            _hSecondPtotVsPrimKE = tfdir.make<TH2D>("SecondPtotVsPrimKE",
-                "Total momenta of secondaries vs Primary KE", 
-                1000, 1E3, 1E8, 2000, 0., 2E6);
-            _hShowerRadiusVsPrimKE = tfdir.make<TH2D>("primeKEvsShowerRadius", 
-                "Primary KE vs shower radius", 1000, 1E3, 1E8, 300, 0., 300E3*1.42);
-            _hNSecondariesVsPrimKE = tfdir.make<TH2D>("primeKEvsNSecondaries",
-                "Primary KE vs number of secondaries", 1000, 1E3, 1E8, 200, 0., 200);
-          }
-
-          // And tree
-          if (_saveTree) {
-            makeTrees();
-          }
         }
 
 
@@ -238,21 +158,7 @@ namespace mu2e
     std::vector<CRYParticle*> *secondaries = new std::vector<CRYParticle*>;
     _cryGen->genEvent(secondaries);
 
-    _pdgId0 = _cryGen->primaryParticle()->PDGid();
-    _ke0 = _cryGen->primaryParticle()->ke(); // MeV
-    _nSecondaries = secondaries->size();
-    _t0 = _cryGen->timeSimulated();
-
-    if (_doHistograms) {
-      _hNSecondaries->Fill(secondaries->size());
-      _hNSecondariesVsPrimKE->Fill(_ke0, _nSecondaries);
-    }
-    if (_saveTree) {
-      _tCryPrimary->Fill();
-    }
-
     double secondPtot = 0.;
-    std::vector<CLHEP::Hep2Vector> secondXZ;
 
     for (unsigned j=0; j<secondaries->size(); j++) {
       CRYParticle* secondary = (*secondaries)[j];
@@ -267,12 +173,6 @@ namespace mu2e
 
       secondPtot += totalP;
 
-      // Moving the CRY particle around: find all intersections with Mu2e
-      // envelope, then set the position at the *first* intersection
-
-      secondXZ.push_back(
-          CLHEP::Hep2Vector(secondary->x() * 1000, secondary->y() * 1000));
-
       // Change coordinate system since y points upward, z points along
       // the beam line; which make cry(xyz) -> mu2e(zxy), uvw -> mu2e(zxy)
       CLHEP::Hep3Vector position(
@@ -283,6 +183,8 @@ namespace mu2e
           totalP*secondary->u(), totalE);
 
       if (_projectToEnvelope) {
+      // Moving the CRY particle around: find all intersections with Mu2e
+      // envelope, then set the position at the *first* intersection
         _envIntersections.clear();
         calIntersections(position, mom4.vect());
 
@@ -298,106 +200,14 @@ namespace mu2e
 
           position = _envIntersections.at(idx);
           genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
-                GenId::cosmicCRY, position, mom4, secondary->t() - _t0));
+                GenId::cosmicCRY, position, mom4,
+                secondary->t() - _cryGen->timeSimulated()));
         }
       }
       else
         genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
-              GenId::cosmicCRY, position, mom4, secondary->t() - _t0));
-
-      if (_doHistograms) {
-        if (!_projectToEnvelope || _envIntersections.size() > 0) {
-          _hXZ->Fill(position.x(), position.z());
-          _hY->Fill(position.y());
-          _hE->Fill(secondary->ke());
-          // _hPlane->Fill(position.y());
-          // Keep the original uvw order to have correct theta and phi.
-          CLHEP::Hep3Vector momDir(secondary->u(), secondary->v(), secondary->w());
-          _hTheta->Fill(momDir.theta());
-          _hPhi->Fill(momDir.phi());
-
-          _hPtot->Fill(totalP);
-          _hTime->Fill(secondary->t() - _t0);
-          _hLiveTime->Fill(secondary->t());
-          _hPyOverPtot->Fill(secondary->w());
-          switch (secondary->PDGid()) {
-            case 13: // mu-
-              _hNegMuKE->Fill(secondary->ke());
-              _hPtypeKE->Fill(secondary->ke(), 0);
-              break;
-            case -13: // mu+
-              _hPosMuKE->Fill(secondary->ke());
-              _hPtypeKE->Fill(secondary->ke(), 0);
-              break;
-            case 22: // photon
-              _hPtypeKE->Fill(secondary->ke(), 1);
-              break;
-            case -11: // e-
-              _hPtypeKE->Fill(secondary->ke(), 2);
-              break;
-            case 11: // e+
-              _hPtypeKE->Fill(secondary->ke(), 2);
-              break;
-            case 2112: // neutron
-              _hPtypeKE->Fill(secondary->ke(), 3);
-              break;
-            case -2112: // neutron
-              _hPtypeKE->Fill(secondary->ke(), 3);
-              break;
-            case 2212: // proton
-              _hPtypeKE->Fill(secondary->ke(), 4);
-              break;
-            case -2212: // proton
-              _hPtypeKE->Fill(secondary->ke(), 4);
-              break;
-            case 111: // pi0
-              _hPtypeKE->Fill(secondary->ke(), 5);
-              break;
-            case 211: // pi+
-              _hPtypeKE->Fill(secondary->ke(), 5);
-              break;
-            case -211: // pi-
-              _hPtypeKE->Fill(secondary->ke(), 5);
-              break;
-            case 130: // k0 L
-              _hPtypeKE->Fill(secondary->ke(), 6);
-              break;
-            case 310: // k0 S
-              _hPtypeKE->Fill(secondary->ke(), 6);
-              break;
-            case 311: // k0
-              _hPtypeKE->Fill(secondary->ke(), 6);
-              break;
-            case 321: // k+
-              _hPtypeKE->Fill(secondary->ke(), 6);
-              break;
-            case -321: // k-
-              _hPtypeKE->Fill(secondary->ke(), 6);
-              break;
-            default:
-              _hPtypeKE->Fill(secondary->ke(), -1);
-              break;
-          }
-        }
-      }
-
-      if (_saveTree && j < _maxNSecondaries) {
-        _pdgId1[j] = secondary->PDGid();
-        _x1[j] = position.x();
-        _y1[j] = position.y();
-        _z1[j] = position.z();
-        _t1[j] = secondary->t();
-        _ke1[j] = secondary->ke();
-        _px1[j] = totalP * secondary->v();
-        _py1[j] = totalP * secondary->w();
-        _pz1[j] = totalP * secondary->u();
-        _ptot1[j] = totalP;
-
-        // Keep the original uvw order to have correct theta and phi.
-        CLHEP::Hep3Vector momDir(secondary->u(), secondary->v(), secondary->w()); 
-        _theta1[j] = momDir.theta();
-        _phi1[j] = momDir.phi();
-      }
+              GenId::cosmicCRY, position, mom4,
+              secondary->t() - _cryGen->timeSimulated()));
 
       if (_verbose > 1) {
         std::cout << "Secondary " << j 
@@ -422,45 +232,7 @@ namespace mu2e
       delete secondary;
     }
 
-    if (_doHistograms) {
-      _hSecondPtotVsPrimKE->Fill(_ke0, secondPtot);
-      _hShowerRadiusVsPrimKE->Fill(_ke0, calMEC(secondXZ));
-    }
-    if (_saveTree) {
-      _tCrySecondaries->Fill();
-    }
-
     delete secondaries;
-  }
-
-  void CosmicCRY::makeTrees()
-  {
-    art::ServiceHandle<art::TFileService> tfs;
-    art::TFileDirectory tfdir = tfs->mkdir("CosmicCRY");
-
-    _tCryPrimary = tfdir.make<TTree>("cryPrimaryTree", "cryPrimaryTree");
-    _tCryPrimary->Branch("evtId", &_evtId0);
-    _tCryPrimary->Branch("pdgId", &_pdgId0);
-    _tCryPrimary->Branch("ke", &_ke0);
-    _tCryPrimary->Branch("nSecondaries", &_nSecondaries);
-
-    _tCrySecondaries = tfdir.make<TTree>("crySecondariesTree",
-        "crySecondariesTree");
-    _tCrySecondaries->Branch("evtId", &_evtId0);
-    _tCrySecondaries->Branch("ke0", &_ke0);
-    _tCrySecondaries->Branch("nSecondaries", &_nSecondaries);
-    _tCrySecondaries->Branch("pdgId", _pdgId1, "pdgId[nSecondaries]/I");
-    _tCrySecondaries->Branch("x", _x1, "x[nSecondaries]/D");
-    _tCrySecondaries->Branch("y", _y1, "y[nSecondaries]/D");
-    _tCrySecondaries->Branch("z", _z1, "z[nSecondaries]/D");
-    _tCrySecondaries->Branch("t", _t1, "t[nSecondaries]/D");
-    _tCrySecondaries->Branch("ke", _ke1, "ke[nSecondaries]/D");
-    _tCrySecondaries->Branch("px", _px1, "px[nSecondaries]/D");
-    _tCrySecondaries->Branch("py", _py1, "py[nSecondaries]/D");
-    _tCrySecondaries->Branch("pz", _pz1, "pz[nSecondaries]/D");
-    _tCrySecondaries->Branch("ptot", _ptot1, "ptot[nSecondaries]/D");
-    _tCrySecondaries->Branch("theta", _theta1, "theta[nSecondaries]/D");
-    _tCrySecondaries->Branch("phi", _phi1, "phi[nSecondaries]/D");
   }
 
   void CosmicCRY::createSetupString()
@@ -512,31 +284,6 @@ namespace mu2e
 
     sprintf(tmpStr, "subboxLength %f ", _subboxLength);
     _setupString.append(tmpStr);
-  }
-
-  double CosmicCRY::calMEC(std::vector<CLHEP::Hep2Vector> points)
-  {
-    double radius = 0.;
-    unsigned int nPoints = points.size();
-
-    if (nPoints <= 2)  {
-      radius = 0.;
-    }
-    else
-    {
-      CLHEP::Hep2Vector center(-150E3, -150E3);
-      double maxDistance = 0.;
-
-      for (unsigned int i = 0; i < nPoints; ++i) {
-        CLHEP::Hep2Vector diff = points.at(i) - center;
-        if (diff.mag() > maxDistance) {
-          maxDistance = diff.mag();
-        }
-      }
-
-      radius = maxDistance;
-    }
-    return radius;
   }
 
   void CosmicCRY::calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir)

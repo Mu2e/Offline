@@ -7,11 +7,6 @@
 
 #include "CLHEP/Random/RandEngine.h"
 
-class TH1D;
-class TH2D;
-class TH1I;
-class TTree;
-
 namespace art{
   class Run;
 }
@@ -32,37 +27,7 @@ namespace mu2e {
     virtual void generate( GenParticleCollection&  );
 
   private:
-
     int  _verbose;
-    bool _doHistograms;
-    bool _saveTree;
-    TH2D *_hXZ;
-    TH1D *_hY;
-    TH1D *_hE;
-    TH1D *_hTheta;
-    TH1D *_hPhi;
-    TH1D *_hPtot;
-    TH1D *_hPyOverPtot;
-    TH1D *_hTime;
-    TH1D *_hLiveTime;
-    TH1D *_hNegMuKE;
-    TH1D *_hPosMuKE;
-    TH2D *_hPtypeKE;
-    TH1D *_hNSecondaries;
-    TH2D *_hSecondPtotVsPrimKE;
-    TH2D *_hShowerRadiusVsPrimKE;
-    TH2D *_hNSecondariesVsPrimKE;
-
-    TTree *_tCryPrimary;
-    TTree *_tCrySecondaries;
-
-    double _muEMin;   // min and max values of muon energy (MeV)
-    double _muEMax;
-    double _muCosThMin; // min and max zenith angles
-    double _muCosThMax;
-    double _muPhiMin;
-    double _muPhiMax;
-
     // CRY output options
     bool _returnMuons;
     bool _returnNeutrons;
@@ -110,29 +75,7 @@ namespace mu2e {
     void calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir);
     bool pointInBox(double x, double y, double x0, double y0, double x1, double z1);
 
-    int _evtId0;
-    int _pdgId0;
-    double _ke0;
-    double _t0;
-    int _nSecondaries;
-
-    static const int _maxNSecondaries = 300;
-    int _pdgId1[_maxNSecondaries];
-    double _x1[_maxNSecondaries];
-    double _y1[_maxNSecondaries];
-    double _z1[_maxNSecondaries];
-    double _t1[_maxNSecondaries];
-    double _ke1[_maxNSecondaries];
-    double _px1[_maxNSecondaries];
-    double _py1[_maxNSecondaries];
-    double _pz1[_maxNSecondaries];
-    double _ptot1[_maxNSecondaries];
-    double _theta1[_maxNSecondaries];
-    double _phi1[_maxNSecondaries];
-
-    void makeTrees();
     void createSetupString();
-    double calMEC(std::vector<CLHEP::Hep2Vector> points); // minimum enclosing circle
   };  // CosmicCRY
 
 }
