@@ -26,7 +26,7 @@ cryParticles : [ 11, -11,
              130, 321, -321, 310,
              2212, 2112, -2112, -2212 ]
 
-process_name : cryNoMuCutoff10MeV
+process_name : cryTest
 
 source : {
   module_type : EmptyEvent
@@ -87,10 +87,10 @@ physics : {
 
     randomsaver : @local::randomsaver
 
-    genCounter: 
-    {
+    genCounter: {
       module_type: GenEventCounter
     }
+
 
   }
 
@@ -99,11 +99,14 @@ physics : {
     genCountLogger: { 
          module_type: GenEventCountReader 
     }
+    cryGenPlots: { 
+         module_type: CRYGenPlots 
+    }
   }
 
   trigFilter: [cryGen, genCounter, g4run, randomsaver]
   e1 : [outfile]
-  ana : [genCountLogger]
+  ana : [genCountLogger, cryGenPlots]
 
   trigger_paths  : [trigFilter]
   end_paths : [e1, ana]
