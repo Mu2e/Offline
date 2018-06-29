@@ -41,7 +41,6 @@
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;
-using CLHEP::GeV;
 
 namespace mu2e 
 {
@@ -82,7 +81,7 @@ namespace mu2e
         , _subboxLength( config.getDouble("cosmicCRY.subboxLength", 100.))
 
         , _setupString("")
-        , _refY0(config.getDouble("cosmicCRY.refY0", 10000.))
+        , _refY0(config.getDouble("cosmicCRY.refY0", 20000.))
         , _refPointChoice(config.getString("cosmicCRY.refPoint", "UNDEFINED"))
         , _directionChoice(config.getString("cosmicCRY.directionChoice", "ALL"))
         , _cosmicReferencePointInMu2e()
@@ -110,6 +109,9 @@ namespace mu2e
             engine.showStatus();
 
           _cryGen = std::make_shared<CRYGenerator>(_crySetup);
+
+          _GeV2MeV = CLHEP::GeV / CLHEP::MeV;
+          _m2mm = CLHEP::m / CLHEP::mm;
         }
 
 
@@ -175,11 +177,11 @@ namespace mu2e
 
       // Change coordinate system since y points upward, z points along
       // the beam line; which make cry(xyz) -> mu2e(zxy), uvw -> mu2e(zxy)
-      CLHEP::Hep3Vector position(
-          secondary->y() * 1000 + _cosmicReferencePointInMu2e.x(),
-          secondary->z() * 1000 + _cosmicReferencePointInMu2e.y(),
-          secondary->x() * 1000 + _cosmicReferencePointInMu2e.z()); // to mm
-      CLHEP::HepLorentzVector mom4(totalP*secondary->v(), totalP*secondary->w(),
+      Hep3Vector position(
+          secondary->y() * _m2mm + _cosmicReferencePointInMu2e.x(),
+          secondary->z() * _m2mm + _cosmicReferencePointInMu2e.y(),
+          secondary->x() * _m2mm + _cosmicReferencePointInMu2e.z());
+      HepLorentzVector mom4(totalP*secondary->v(), totalP*secondary->w(),
           totalP*secondary->u(), totalE);
 
       if (_projectToEnvelope) {
@@ -281,7 +283,7 @@ namespace mu2e
     _setupString.append(oss.str());
   }
 
-  void CosmicCRY::calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir)
+  void CosmicCRY::calIntersections(Hep3Vector orig, Hep3Vector dir)
   {
     // roof: _envYmax, _envXmin, _envXmax, _envZmin, _envZmax
     // skip projection if the particle goes parallely to the plane
@@ -290,7 +292,7 @@ namespace mu2e
       double x1 = dir.x() * t + orig.x();
       double z1 = dir.z() * t + orig.z();
       if (pointInBox(x1, z1, _envXmin, _envZmin, _envXmax, _envZmax)) {
-        _envIntersections.push_back(CLHEP::Hep3Vector(x1, _envYmax, z1));
+        _envIntersections.push_back(Hep3Vector(x1, _envYmax, z1));
       }
     }
 
@@ -300,7 +302,7 @@ namespace mu2e
       double x1 = dir.x() * t + orig.x();
       double y1 = dir.y() * t + orig.y();
       if (pointInBox(x1, y1, _envXmin, _envYmin, _envXmax, _envYmax)) {
-        _envIntersections.push_back(CLHEP::Hep3Vector(x1, y1, _envZmin));
+        _envIntersections.push_back(Hep3Vector(x1, y1, _envZmin));
       }
     }
 
@@ -310,7 +312,7 @@ namespace mu2e
       double x1 = dir.x() * t + orig.x();
       double y1 = dir.y() * t + orig.y();
       if (pointInBox(x1, y1, _envXmin, _envYmin, _envXmax, _envYmax)) {
-        _envIntersections.push_back(CLHEP::Hep3Vector(x1, y1, _envZmax));
+        _envIntersections.push_back(Hep3Vector(x1, y1, _envZmax));
       }
     }
 
@@ -320,7 +322,7 @@ namespace mu2e
       double z1 = dir.z() * t + orig.z();
       double y1 = dir.y() * t + orig.y();
       if (pointInBox(z1, y1, _envZmin, _envYmin, _envZmax, _envYmax)) {
-        _envIntersections.push_back(CLHEP::Hep3Vector(_envXmin, y1, z1));
+        _envIntersections.push_back(Hep3Vector(_envXmin, y1, z1));
       }
     }
 
@@ -330,7 +332,7 @@ namespace mu2e
       double z1 = dir.z() * t + orig.z();
       double y1 = dir.y() * t + orig.y();
       if (pointInBox(z1, y1, _envZmin, _envYmin, _envZmax, _envYmax)) {
-        _envIntersections.push_back(CLHEP::Hep3Vector(_envXmax, y1, z1));
+        _envIntersections.push_back(Hep3Vector(_envXmax, y1, z1));
       }
     }
 

@@ -71,6 +71,9 @@ namespace mu2e {
     double _envZmin;
     double _envZmax;
 
+    double _GeV2MeV;
+    double _m2mm;
+
     std::vector<CLHEP::Hep3Vector> _envIntersections;
     void calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir);
     bool pointInBox(double x, double y, double x0, double y0, double x1, double z1);
