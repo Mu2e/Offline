@@ -65,15 +65,15 @@ namespace mu2e
   CosmicCRY::CosmicCRY( art::Run& run,
       const SimpleConfig& config, CLHEP::HepRandomEngine & engine )
     : _verbose(config.getInt("cosmicCRY.verbose", 0) )
-        , _returnMuons( config.getBool("cosmicCRY.returnMuons", true))
-        , _returnNeutrons( config.getBool("cosmicCRY.returnNeutrons", true))
-        , _returnProtons( config.getBool("cosmicCRY.returnProtons", true))
-        , _returnGammas( config.getBool("cosmicCRY.returnGammas", true))
-        , _returnElectrons( config.getBool("cosmicCRY.returnElectrons", true))
-        , _returnPions( config.getBool("cosmicCRY.returnPions", true))
-        , _returnKaons( config.getBool("cosmicCRY.returnKaons", true))
+      , _returnMuons( config.getBool("cosmicCRY.returnMuons", true))
+      , _returnNeutrons( config.getBool("cosmicCRY.returnNeutrons", true))
+      , _returnProtons( config.getBool("cosmicCRY.returnProtons", true))
+      , _returnGammas( config.getBool("cosmicCRY.returnGammas", true))
+      , _returnElectrons( config.getBool("cosmicCRY.returnElectrons", true))
+      , _returnPions( config.getBool("cosmicCRY.returnPions", true))
+      , _returnKaons( config.getBool("cosmicCRY.returnKaons", true))
 
-        , _month(config.getInt("cosmicCRY.month", 6))
+      , _month(config.getInt("cosmicCRY.month", 6))
         , _day(config.getInt("cosmicCRY.day", 21))
         , _year(config.getInt("cosmicCRY.year", 2020))
         , _latitude( config.getDouble("cosmicCRY.latitude", 41.8))
@@ -108,14 +108,12 @@ namespace mu2e
           if (_verbose > 1) 
             engine.showStatus();
 
-          _cryGen = std::make_shared<CRYGenerator>(_crySetup);
+          _cryGen = std::make_unique<CRYGenerator>(_crySetup);
 
           _GeV2MeV = CLHEP::GeV / CLHEP::MeV;
           _m2mm = CLHEP::m / CLHEP::mm;
         }
 
-
-  CosmicCRY::~CosmicCRY() { }
 
   void CosmicCRY::generate( GenParticleCollection& genParts )
   {
@@ -151,7 +149,7 @@ namespace mu2e
       }
       else if (_refPointChoice == "UNDEFINED") 
         _cosmicReferencePointInMu2e = Hep3Vector(0., _refY0, 0.);
-      
+
       _geomInfoObtained = true;
     }
 
@@ -180,13 +178,13 @@ namespace mu2e
       Hep3Vector position(
           secondary->y() * _m2mm + _cosmicReferencePointInMu2e.x(),
           secondary->z() * _m2mm + _cosmicReferencePointInMu2e.y(),
-          secondary->x() * _m2mm + _cosmicReferencePointInMu2e.z());
+          secondary->x() * _m2mm + _cosmicReferencePointInMu2e.z()); // to mm
       HepLorentzVector mom4(totalP*secondary->v(), totalP*secondary->w(),
           totalP*secondary->u(), totalE);
 
       if (_projectToEnvelope) {
-      // Moving the CRY particle around: find all intersections with Mu2e
-      // envelope, then set the position at the *first* intersection
+        // Moving the CRY particle around: find all intersections with Mu2e
+        // envelope, then set the position at the *first* intersection
         _envIntersections.clear();
         calIntersections(position, mom4.vect());
 
