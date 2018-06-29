@@ -5,9 +5,6 @@
 
 #include <vector>
 
-// #include "CLHEP/Random/RandFlat.h"
-// #include "CLHEP/Random/RandPoissonQ.h"
-// #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Random/RandEngine.h"
 
 class TH1D;

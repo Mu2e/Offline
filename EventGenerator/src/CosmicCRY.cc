@@ -205,12 +205,14 @@ namespace mu2e
       GeomHandle<ExtMonFNAL::ExtMon> extMonFNAL;
       GeomHandle<DetectorSystem> detsys;
 
-      _envXmin = env->xmin();
-      _envXmax = env->xmax();
-      _envYmin = env->ymin();
-      _envYmax = env->ymax();
-      _envZmin = env->zmin();
-      _envZmax = env->zmax();
+      // slightly smaller box to avoid rounding error problem if any
+      double deltaX = 1; // mm
+      _envXmin = env->xmin() + deltaX;
+      _envXmax = env->xmax() - deltaX;
+      _envYmin = env->ymin() + deltaX;
+      _envYmax = env->ymax() - deltaX;
+      _envZmin = env->zmin() + deltaX;
+      _envZmax = env->zmax() - deltaX;
 
       if (_refPointChoice == "TRACKER") 
         _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(),
@@ -282,98 +284,100 @@ namespace mu2e
 
       if (_projectToEnvelope) {
         _envIntersections.clear();
-        calIntersections(position, CLHEP::Hep3Vector(secondary->v(),
-              secondary->w(), secondary->u()));
-      }
+        calIntersections(position, mom4.vect());
 
-      if (_envIntersections.size() > 0) {
-        int idx = 0;
-        double highestY = _envIntersections.at(idx).y();
-        for (unsigned i = 0; i < _envIntersections.size(); ++i) {
-          if (_envIntersections.at(i).y() > highestY) {
-            idx = i;
-            highestY = _envIntersections.at(idx).y();
+        if (_envIntersections.size() > 0) {
+          int idx = 0;
+          double highestY = _envIntersections.at(idx).y();
+          for (unsigned i = 0; i < _envIntersections.size(); ++i) {
+            if (_envIntersections.at(i).y() > highestY) {
+              idx = i;
+              highestY = _envIntersections.at(idx).y();
+            }
           }
-        }
 
-        genParts.push_back(
-            GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
-              GenId::cosmicCRY,
-              _envIntersections.at(idx),
-              mom4, secondary->t() - _t0));
+          position = _envIntersections.at(idx);
+          genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
+                GenId::cosmicCRY, position, mom4, secondary->t() - _t0));
+        }
       }
+      else
+        genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
+              GenId::cosmicCRY, position, mom4, secondary->t() - _t0));
 
       if (_doHistograms) {
-        _hXZ->Fill(position.x(), position.z());
-        _hY->Fill(position.y());
-        _hE->Fill(secondary->ke());
-        // _hPlane->Fill(position.y());
-        // Keep the original uvw order to have correct theta and phi.
-        CLHEP::Hep3Vector momDir(secondary->u(), secondary->v(), secondary->w());
-        _hTheta->Fill(momDir.theta());
-        _hPhi->Fill(momDir.phi());
+        if (!_projectToEnvelope || _envIntersections.size() > 0) {
+          _hXZ->Fill(position.x(), position.z());
+          _hY->Fill(position.y());
+          _hE->Fill(secondary->ke());
+          // _hPlane->Fill(position.y());
+          // Keep the original uvw order to have correct theta and phi.
+          CLHEP::Hep3Vector momDir(secondary->u(), secondary->v(), secondary->w());
+          _hTheta->Fill(momDir.theta());
+          _hPhi->Fill(momDir.phi());
 
-        _hPtot->Fill(totalP);
-        _hTime->Fill(secondary->t() - _t0);
-        _hLiveTime->Fill(secondary->t());
-        _hPyOverPtot->Fill(secondary->w());
-        switch (secondary->PDGid()) {
-          case 13: // mu-
-            _hNegMuKE->Fill(secondary->ke());
-            _hPtypeKE->Fill(secondary->ke(), 0);
-            break;
-          case -13: // mu+
-            _hPosMuKE->Fill(secondary->ke());
-            _hPtypeKE->Fill(secondary->ke(), 0);
-            break;
-          case 22: // photon
-            _hPtypeKE->Fill(secondary->ke(), 1);
-            break;
-          case -11: // e-
-            _hPtypeKE->Fill(secondary->ke(), 2);
-            break;
-          case 11: // e+
-            _hPtypeKE->Fill(secondary->ke(), 2);
-            break;
-          case 2112: // neutron
-            _hPtypeKE->Fill(secondary->ke(), 3);
-            break;
-          case -2112: // neutron
-            _hPtypeKE->Fill(secondary->ke(), 3);
-            break;
-          case 2212: // proton
-            _hPtypeKE->Fill(secondary->ke(), 4);
-            break;
-          case -2212: // proton
-            _hPtypeKE->Fill(secondary->ke(), 4);
-            break;
-          case 111: // pi0
-            _hPtypeKE->Fill(secondary->ke(), 5);
-            break;
-          case 211: // pi+
-            _hPtypeKE->Fill(secondary->ke(), 5);
-            break;
-          case -211: // pi-
-            _hPtypeKE->Fill(secondary->ke(), 5);
-            break;
-          case 130: // k0 L
-            _hPtypeKE->Fill(secondary->ke(), 6);
-            break;
-          case 310: // k0 S
-            _hPtypeKE->Fill(secondary->ke(), 6);
-            break;
-          case 311: // k0
-            _hPtypeKE->Fill(secondary->ke(), 6);
-            break;
-          case 321: // k+
-            _hPtypeKE->Fill(secondary->ke(), 6);
-            break;
-          case -321: // k-
-            _hPtypeKE->Fill(secondary->ke(), 6);
-            break;
-          default:
-            _hPtypeKE->Fill(secondary->ke(), -1);
-            break;
+          _hPtot->Fill(totalP);
+          _hTime->Fill(secondary->t() - _t0);
+          _hLiveTime->Fill(secondary->t());
+          _hPyOverPtot->Fill(secondary->w());
+          switch (secondary->PDGid()) {
+            case 13: // mu-
+              _hNegMuKE->Fill(secondary->ke());
+              _hPtypeKE->Fill(secondary->ke(), 0);
+              break;
+            case -13: // mu+
+              _hPosMuKE->Fill(secondary->ke());
+              _hPtypeKE->Fill(secondary->ke(), 0);
+              break;
+            case 22: // photon
+              _hPtypeKE->Fill(secondary->ke(), 1);
+              break;
+            case -11: // e-
+              _hPtypeKE->Fill(secondary->ke(), 2);
+              break;
+            case 11: // e+
+              _hPtypeKE->Fill(secondary->ke(), 2);
+              break;
+            case 2112: // neutron
+              _hPtypeKE->Fill(secondary->ke(), 3);
+              break;
+            case -2112: // neutron
+              _hPtypeKE->Fill(secondary->ke(), 3);
+              break;
+            case 2212: // proton
+              _hPtypeKE->Fill(secondary->ke(), 4);
+              break;
+            case -2212: // proton
+              _hPtypeKE->Fill(secondary->ke(), 4);
+              break;
+            case 111: // pi0
+              _hPtypeKE->Fill(secondary->ke(), 5);
+              break;
+            case 211: // pi+
+              _hPtypeKE->Fill(secondary->ke(), 5);
+              break;
+            case -211: // pi-
+              _hPtypeKE->Fill(secondary->ke(), 5);
+              break;
+            case 130: // k0 L
+              _hPtypeKE->Fill(secondary->ke(), 6);
+              break;
+            case 310: // k0 S
+              _hPtypeKE->Fill(secondary->ke(), 6);
+              break;
+            case 311: // k0
+              _hPtypeKE->Fill(secondary->ke(), 6);
+              break;
+            case 321: // k+
+              _hPtypeKE->Fill(secondary->ke(), 6);
+              break;
+            case -321: // k-
+              _hPtypeKE->Fill(secondary->ke(), 6);
+              break;
+            default:
+              _hPtypeKE->Fill(secondary->ke(), -1);
+              break;
+          }
         }
       }
 
@@ -543,7 +547,7 @@ namespace mu2e
       double t = (_envYmax - orig.y()) / dir.y();
       double x1 = dir.x() * t + orig.x();
       double z1 = dir.z() * t + orig.z();
-      if (pointInBox(x1, z1, _envXmin, _envXmax, _envZmin, _envZmax)) {
+      if (pointInBox(x1, z1, _envXmin, _envZmin, _envXmax, _envZmax)) {
         _envIntersections.push_back(CLHEP::Hep3Vector(x1, _envYmax, z1));
       }
     }
@@ -587,6 +591,7 @@ namespace mu2e
         _envIntersections.push_back(CLHEP::Hep3Vector(_envXmax, y1, z1));
       }
     }
+
   }
 
   bool CosmicCRY::pointInBox(double x, double y, double x0, double y0,
