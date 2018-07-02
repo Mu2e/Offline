@@ -1,12 +1,11 @@
 #include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "EventMixing/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
 #include "EventGenerator/fcl/prolog.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog_v07.fcl"
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
 #include "JobConfig/beam/prolog.fcl"
 #include "HitMakers/fcl/prolog.fcl"
 

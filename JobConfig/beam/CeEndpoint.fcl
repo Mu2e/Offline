@@ -17,17 +17,7 @@ source: { module_type : EmptyEvent }
 services: @local::Services.Sim
 physics : { 
   producers : {
-    generate : {
-      module_type: StoppedParticleReactionGun
-      verbosityLevel : 1
-      genId : conversionGun 
-      muonStops: @local::mu2e.tgtMuonStops
-      physics: {
-        pdgId : 11
-        spectrumShape: CeEndpoint
-        spectrumVariable: totalEnergy
-      }
-    }
+    generate : @local::CeEndpointGun
     g4run : @local::mu2e.physics.producers.g4run.muons
     genCounter: { module_type: GenEventCounter }
     @table::TrackerMC.producers

@@ -20,7 +20,6 @@ physics : {
     muonTimeMapPreFilter: { module_type : GenerateMuonLife }
     makeSDPreFilter:{
       @table::makeSD
-#      TimeOffsets.inputs : [ "protonTimeMapPreFilter", "muonTimeMapPreFilter" ]
       TimeOffsets : {
 	inputs : [ "protonTimeMapPreFilter", "muonTimeMapPreFilter" ]
       }
