@@ -126,6 +126,7 @@ namespace mu2e {
       double _mbtime; // period of 1 microbunch
       double _mbbuffer; // buffer on that for ghost clusts (for waveform)
       double _steptimebuf; // buffer for MC step point times
+      double _flashmid; // middle of the flash blanking period
       // models of straw response to stimuli
       ConditionsHandle<StrawPhysics> _strawphys;
       ConditionsHandle<StrawElectronics> _strawele;
@@ -176,7 +177,7 @@ namespace mu2e {
       vector<unsigned> _adc;
       Int_t _tdc[2], _tot[2];
       TTree* _sdiag;
-      Float_t _steplen, _stepE, _qsum, _esum, _eesum, _qe, _partP;
+      Float_t _steplen, _stepE, _qsum, _esum, _eesum, _qe, _partP, _steptime;
       Int_t _nclusd, _netot, _partPDG;
       vector<IonCluster> _clusters;
 
@@ -275,6 +276,7 @@ namespace mu2e {
         _sdiag->Branch("esum",&_esum,"esum/F");
         _sdiag->Branch("eesum",&_eesum,"eesum/F");
         _sdiag->Branch("qe",&_qe,"qe/F");
+        _sdiag->Branch("steptime",&_steptime,"steptime/F");
         _sdiag->Branch("nclust",&_nclusd,"nclust/I");
         _sdiag->Branch("netot",&_netot,"netot/I");
         _sdiag->Branch("partPDG",&_partPDG,"partPDG/I");
@@ -384,6 +386,7 @@ namespace mu2e {
       _toff.updateMap(event);
       _strawele = ConditionsHandle<StrawElectronics>("ignored");
       _strawphys = ConditionsHandle<StrawPhysics>("ignored");
+      _flashmid = 0.5*(_strawele->flashStart() + _strawele->flashEnd());
       const Tracker& tracker = getTrackerOrThrow();
       // make the microbunch buffer long enough to get the full waveform
       _mbbuffer = (_strawele->nADCSamples() - _strawele->nADCPreSamples())*_strawele->adcPeriod();
@@ -534,8 +537,9 @@ namespace mu2e {
       double tstep = _toff.timeWithOffsetsApplied(step);
       // test if this microbunch is worth simulating
       double mbtime = microbunchTime(tstep);
-      if( mbtime > _strawele->flashEnd()-_steptimebuf
-         || mbtime <  _strawele->flashStart() ) {
+      if( mbtime > _strawele->flashEnd() - _steptimebuf
+         || mbtime <  _mbtime + _strawele->flashStart() + _steptimebuf
+) {
         // drift these clusters to the wire, and record the charge at the wire
         for(auto iclu = _clusters.begin(); iclu != _clusters.end(); ++iclu){
           WireCharge wireq;
@@ -640,6 +644,7 @@ namespace mu2e {
       if(_diag > 0){
         _steplen = step.stepLength();
         _stepE = step.ionizingEdep();
+	_steptime = microbunchTime(_toff.timeWithOffsetsApplied(step));
         _partP = step.momentum().mag();
         _partPDG = step.simParticle()->pdgId();
         _nclusd = (int)clusters.size();
@@ -692,7 +697,10 @@ namespace mu2e {
 
     double StrawDigisFromStepPointMCs::microbunchTime(double globaltime) const {
       // fold time relative to MB frequency
-      return fmod(globaltime,_mbtime);
+      double mbtime = fmod(globaltime,_mbtime);
+      // keep the microbunch time contiguous
+      if(mbtime < _flashmid ) mbtime += _mbtime;
+      return mbtime;
     }
 
     void StrawDigisFromStepPointMCs::addGhosts(StrawCluster const& clust,StrawClusterSequence& shs) {
@@ -924,7 +932,7 @@ namespace mu2e {
         set<art::Ptr<StepPointMC> > steps;
         set<art::Ptr<SimParticle> > parts;
         _nxing[iend] = 0;
-        _txing[iend] = -100.0;
+        _txing[iend] = _mbtime + _strawele->flashStart() + _mbbuffer;
         _xddist[iend] = _xwdist[iend] = _xpdist[iend] = -1.0;
         for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
           ++_nxing[iend];
