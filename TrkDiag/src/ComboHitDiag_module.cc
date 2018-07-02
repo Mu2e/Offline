@@ -149,7 +149,7 @@ namespace mu2e
       // general information
       _nsh = ch.nStrawHits();
       _nch = ch.nCombo();
-      _strawid = ch.sid().asUint16();
+      _strawid = ch.strawId().asUint16();
       _pos = ch.pos();
       _wdir = ch.wdir();
       _wdist = ch.wireDist();
@@ -196,8 +196,8 @@ namespace mu2e
 	  chi._dperp = sqrt(dpos.mag2() - chi._dwire*chi._dwire);
 	  chi._dtime = comp.time()- ch.time(); 
 	  chi._dedep = comp.energyDep() - ch.energyDep();
-	  chi._ds = comp.sid().straw() - compis.front()->sid().straw();
-	  chi._dp = comp.sid().panel() - compis.front()->sid().panel();
+	  chi._ds = comp.strawId().straw() - compis.front()->strawId().straw();
+	  chi._dp = comp.strawId().panel() - compis.front()->strawId().panel();
 	  chi._nch = comp.nCombo();
 	  chi._nsh = comp.nStrawHits();
 	  _chinfo.push_back(chi);
@@ -213,7 +213,7 @@ namespace mu2e
 	  throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit" << std::endl;
 	// use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
 	StrawDigiMC const& mcd1 = _mcdigis->at(shids[0]);
-	art::Ptr<StepPointMC> const& spmcp = mcd1.stepPointMC(TrkTypes::cal);
+	art::Ptr<StepPointMC> const& spmcp = mcd1.stepPointMC(StrawEnd::cal);
 	art::Ptr<SimParticle> spp = spmcp->simParticle();
 	_mctime = _toff.timeWithOffsetsApplied(*spmcp);
 	_mcpdg = spp->pdgId();

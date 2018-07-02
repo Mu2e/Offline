@@ -16,7 +16,6 @@
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "CalPatRec/inc/CalHelixFinderAlg.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
@@ -797,7 +796,7 @@ namespace mu2e {
 	int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
 	if (Helix._hitsUsed[index] != 1 )                         continue;
 
-	int ist = hit->sid().station();//_straw->id().getStation();                   // station number
+	int ist = hit->strawId().station();//_straw->id().getStation();                   // station number
 	phi     = polyAtan2(hit->y()-center->y(),hit->x()-center->x()); // atan2 returns its result in [-pi,pi], convert to [0,2pi]
 	if (phi < 0) phi += 2*M_PI;
 	zVec  [ist] += hit->z();
@@ -1107,9 +1106,9 @@ namespace mu2e {
 
 	dx2      = (pos.x() - helCenter.x());
 	dy2      = (pos.y() - helCenter.y());
-	phi      = polyAtan2(dy2, dx2);//CLHEP::Hep3Vector(pos - helCenter).phi();//center).phi();
-	if (phi < 0) phi = phi + 2*M_PI;//      = TVector2::Phi_0_2pi(phi);
-	dz       = z - zlast;
+	phi      = polyAtan2(dy2, dx2);
+	if (phi < 0) phi = phi + 2*M_PI;
+	dz       = z - zlast;                   //it is used only to decide if in the end we can ipdate the values of dfdz and phi0
                                     
 	phi_ref = z*dfdz + phi0;		// predicted value of phi
 	dphi    = phi_ref - phi;		// signed residual
@@ -1141,7 +1140,7 @@ namespace mu2e {
 	if (_debug > 10) {
 	  printf("[CalHelixFinderAlg::doLinearFitPhiZ:LOOP] %08x %2i %6i %3i %12.5f %12.5f %10.5f %10.3f %10.3f %10.3f %10.5f %10.5f %5.3f\n",
 		 *((int*) &hit->_flag), Helix._hitsUsed[index],
-		 hit->sid().straw()/*_strawhit->strawIndex().asInt()*/, i,
+		 hit->strawId().straw()/*_strawhit->strawIndex().asInt()*/, i,
 		 z, phi, dphi,xdphi,zlast,dz,
 		 dfdz, Helix._szphi.dfdz(), Helix._szphi.chi2DofLine());
 	}
@@ -1155,7 +1154,7 @@ namespace mu2e {
 
 	double delta_min(0);
 	int    index_min(-1);
-	// int    layer_id(hit->sid().layer());//_straw->id().getLayer());
+	// int    layer_id(hit->strawId().layer());//_straw->id().getLayer());
 	for (int k=0; k<_nHitsMaxPerPanel; ++k){
 	  double delta = xdphi - panelHitChi2[k];
 	  if (delta < delta_min){
@@ -1185,8 +1184,8 @@ namespace mu2e {
       panel_xdphi = panel_xdphi/counter_panel_hits;
 
       if (count == 1) {//FIXME! investigate if it is needed or not
-	zlast = z;
-	dz    = 0.;
+      	zlast = z;
+      	dz    = 0.;
       }
 	
 	
@@ -1194,11 +1193,11 @@ namespace mu2e {
 	   // (xdphi < 2.)){
 	   (panel_xdphi < 2.)){
 	if ( (fabs(dfdz - Helix._szphi.dfdz()) < 8.e-4) ){//  || //require that the new value of dfdz is
-	  //close to the starting one. update dfdz only if:
+	                                                         //close to the starting one. update dfdz only if:
 	  if ( (Helix._szphi.dfdz() > 0.) && //{                    // 1. the points browsed are more the half
 	       (dz >=_mindist ) ){
-	    phi0  = Helix._szphi.phi0();                     // 2. and require dfdz to be positivie! scattered hits or
 	    dfdz  = Helix._szphi.dfdz();                     //    delta hits could have moved dfdz to negative value!
+	    phi0  = Helix._szphi.phi0();// + z*dfdz;                     // 2. and require dfdz to be positivie! scattered hits or
 	    zlast = z;
 	  }
 	}
@@ -1435,7 +1434,7 @@ namespace mu2e {
 	    int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
 	    printf("[CalHelixFinderAlg::doLinearFitPhiZ:END2] %08x %2i %6i %12.5f %12.5f %12.5f\n",
 		   *((int*) &hit->_flag), Helix._hitsUsed[index],
-		   hit->sid().straw()/*_strawhit->strawIndex().asInt()*/,  z, hit->_hphi, deltaPhi);
+		   hit->strawId().straw()/*_strawhit->strawIndex().asInt()*/,  z, hit->_hphi, deltaPhi);
 	  }
 	}
       }
@@ -1547,8 +1546,6 @@ namespace mu2e {
       if (good_hit && (! bkg_hit) && (! used_hit)) {
 
 	const ComboHit& ch          = Helix.chcol()->at(loc);
-	// const Straw& straw          = _tracker->getStraw(ch.strawIndex());
-	// const StrawHitPosition& shp = Helix.shpos()->at(loc);
 
 	if (ch.energyDep() > _maxElectronHitEnergy)         continue;
 
@@ -1563,10 +1560,10 @@ namespace mu2e {
 	  if (fabs(dphi) > pi/2)                            continue;
 	}
 
-	cx.Station                 = ch.sid().station();//straw.id().getStation();
-	cx.Plane                   = ch.sid().plane() % 2;//straw.id().getPlane() % 2;
-	cx.Face                    = ch.sid().face();
-	cx.Panel                   = ch.sid().panel();//straw.id().getPanel();
+	cx.Station                 = ch.strawId().station();//straw.id().getStation();
+	cx.Plane                   = ch.strawId().plane() % 2;//straw.id().getPlane() % 2;
+	cx.Face                    = ch.strawId().face();
+	cx.Panel                   = ch.strawId().panel();//straw.id().getPanel();
 
 	// get Z-ordered location
 	Helix.orderID(&cx, &co);
@@ -1701,7 +1698,7 @@ namespace mu2e {
 	if (dist <= max_dist) {
 	  double delta_min(0);
 	  int    index_min(-1);
-	  // int    layer_id(hit->sid().layer());
+	  // int    layer_id(hit->strawId().layer());
 	  for (int k=0; k<_nHitsMaxPerPanel; ++k){
 	    double delta = dist - panelHitChi2[k];
 	    if (delta < delta_min){
@@ -1808,7 +1805,7 @@ namespace mu2e {
 	  dy = hit->y() - Helix._sxy.y0();
 	  dr = sqrt(dx*dx+dy*dy) - Helix._sxy.radius();
 	  printf("[%s] %08x %6i %3i %6i %12.5f %12.5f %12.5f %10.3f\n",banner,
-		 *((int*) &hit->_flag),  int(hit->index()), i, hit->sid().straw(),
+		 *((int*) &hit->_flag),  int(hit->index()), i, hit->strawId().straw(),
 		 hit->x(), hit->y(), hit->z(), dr
 		 );//FIXME!
 	}
@@ -1895,7 +1892,7 @@ namespace mu2e {
 	  else if ((p == Helix._candIndex.Panel) && (i == Helix._candIndex.PanelHitIndex)) type = "cand";
 
 	  printf("[CalHelixFinderAlg::filterUsingPatternRecognition] %5i %5i %4i %4s  %8.3f %8.3f %9.3f %8.3f %8.3f\n",
-		 i,hit->sid().straw(),is_outlier,type.data(),shPos->x(),shPos->y(),shPos->z(),dist,dz);
+		 i,hit->strawId().straw(),is_outlier,type.data(),shPos->x(),shPos->y(),shPos->z(),dist,dz);
 	}
       }
     }
@@ -2724,7 +2721,7 @@ namespace mu2e {
       
       panelz = &Helix._oTracker[ibest.Panel];
       hit    = &panelz->fHitData.at(ibest.PanelHitIndex);
-      // int    layer_id = hit->sid().layer();//_straw->id().getLayer();
+      // int    layer_id = hit->strawId().layer();//_straw->id().getLayer();
       int    index    = ibest.Panel*CalHelixFinderData::kNMaxHitsPerPanel + ibest.PanelHitIndex;
       
       // now check two condition we want to skip:
@@ -2735,7 +2732,7 @@ namespace mu2e {
                                      goto NEXT_ITERATION;
       }
       if ( (_nHitsMaxPerPanel == 1) && (idSamePanel>=0) ){
-	// int    pre_layer_id = panelz->fHitData.at(idSamePanel).sid().layer();//_straw->id().getLayer();
+	// int    pre_layer_id = panelz->fHitData.at(idSamePanel).strawId().layer();//_straw->id().getLayer();
 	// if (pre_layer_id  == layer_id) {
 	Helix._hitsUsed[index] = 10;
                                      goto NEXT_ITERATION;
@@ -2760,7 +2757,7 @@ namespace mu2e {
 	printf("[CalHelixFinderAlg::%s:PT2] x0 = %8.3f y0 = %8.3f radius = %8.3f  chi2 = %6.3f chi2Maxxy = %6.3f index point added = %i straw-id = %6i hitChi2 = %6.3f x = %8.3f y = %8.3f z = %9.3f\n",
 	       banner,
 	       Helix._sxy.x0(), Helix._sxy.y0(), Helix._sxy.radius(), Helix._sxy.chi2DofCircle(), _chi2xyMax, ibest.Panel,
-	       hit->sid().straw()/*_strawhit->strawIndex().asInt()*/, chi2_min,
+	       hit->strawId().straw()/*_strawhit->strawIndex().asInt()*/, chi2_min,
 	       x, y, panelz->z);//FIXME!
       }
 					// mark point as active
@@ -3007,7 +3004,7 @@ namespace mu2e {
 	if (dist <= dxy_max) {
 	  double delta_min(0);
 	  int    index_min(-1);
-	  // int    layer_id(hit->sid().layer());//_straw->id().getLayer());
+	  // int    layer_id(hit->strawId().layer());//_straw->id().getLayer());
 	  for (int k=0; k<_nHitsMaxPerPanel; ++k){
 	    double delta = dist - panelHitChi2[k];
 	    if (delta < delta_min){
@@ -3840,7 +3837,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 	// const StrawHit& sh          = Helix.chcol()->at(loc);
 
 	printf("[CalHelixFinderAlg::printXYZP] %5i %5i %5i   %08x   %2i %9.3f %9.3f %9.3f \n",
-	       i, loc,  pt->sid().straw()/*sh.strawIndex().asInt()*/, *((int*) &pt->_flag), pt->use(), pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
+	       i, loc,  pt->strawId().straw()/*sh.strawIndex().asInt()*/, *((int*) &pt->_flag), pt->use(), pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
       }
     }
   }

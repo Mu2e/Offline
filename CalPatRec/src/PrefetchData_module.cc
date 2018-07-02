@@ -9,7 +9,6 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 // root 
@@ -25,7 +24,6 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawDigi.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-// #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
@@ -35,9 +33,6 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
 #include "DataProducts/inc/threevec.hh"
-//#include "alaha/inc/ArpansThing.hh"
-//#include "alaha/inc/PrefetchData.hh"
-// #include "alaha/inc/DeltaSeed.hh"
 #include <algorithm>
 #include <cmath>
 #include "CLHEP/Vector/ThreeVector.h"

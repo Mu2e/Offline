@@ -74,7 +74,7 @@ SflagBkgHits : {
 TTmakeSH : {
   module_type : StrawHitReco
   FilterHits : true
-  WriteStrawHitCollection : true
+  WriteStrawHitCollection : false
 }
 # combine hits in a panel
 TTmakePH : {
@@ -107,8 +107,8 @@ TTflagBkgHits : {
   # use TNTClusterer
   Clusterer : 2
   FilterOutput : true
-  FlagComboHits : false
-  FlagStrawHits : true #false??
+  FlagComboHits : true
+  FlagStrawHits : false 
   ComboHitCollection : "TTmakePH"
   BkgMVA : {
     MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml"

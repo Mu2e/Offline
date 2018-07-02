@@ -18,7 +18,6 @@
 // conditions
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -47,21 +46,6 @@ using CLHEP::HepVector;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
-//-----------------------------------------------------------------------------
-// comparison functor for sorting by Z(wire)
-//-----------------------------------------------------------------------------
-  struct straw_zcomp : public binary_function<StrawHitIndex,StrawHitIndex,bool> {
-    bool operator()(StrawHitIndex const& h1, StrawHitIndex const& h2) {
-
-      mu2e::GeomHandle<mu2e::TTracker> handle;
-      const TTracker* t = handle.get();
-      const Straw* s1 = &t->getStraw(StrawIndex(h1));
-      const Straw* s2 = &t->getStraw(StrawIndex(h2));
-
-      return s1->getMidPoint().z() < s2->getMidPoint().z();
-    }
-  }; // a semicolumn here is required
-
 //-----------------------------------------------------------------------------
 // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
 //-----------------------------------------------------------------------------
@@ -117,10 +101,6 @@ namespace mu2e {
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     _calorimeter = ch.get();
-					// calibrations
-
-    mu2e::ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    _trackerCalib = tcal.operator ->();
 
     _hfinder.setTracker    (_tracker);
     _hfinder.setCalorimeter(_calorimeter);
@@ -440,22 +420,38 @@ namespace mu2e {
     // 	   helixRadius, center.x(), center.y(), dfdz, nhits, HfResult._sxyw.chi2DofCircle(), HfResult._srphi.chi2DofLine());
     // printf("[CalHelixFinder::initHelixSeed] Index      X          Y         Z          PHI\n");
       
-    double     z_start(0);
+    // double     z_start(0);
+    // bool       isFirst(true);
     HelSeed._hhits.setParent(_chcol->parent());
     for (int i=0; i<nhits; ++i){
-      const StrawHitIndex     loc    = HfResult._goodhits[i];
-      const ComboHit*         hit    = &(_chcol->at(loc));
+      const StrawHitIndex     loc     = HfResult._goodhits[i];
+      const ComboHit*         hit     = &(_chcol->at(loc));
       // const StrawHitPosition& shpos  = _shpcol->at(loc);
-      double                  hit_z  = hit->pos().z();
-      if ( i==0 ) z_start = hit_z;
+      double                  hit_z   = hit->pos().z();
+      double                  phi_ref = HelSeed.helix().circleAzimuth(hit_z);
+      // if (isFirst){
+      // 	z_start = hit_z;
+      // 	isFirst = false;
+      // }
       
       double                  shphi  = XYZVec(hit->pos() - HelSeed._helix.center()).phi();
-      int                     nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
-      shphi = shphi + double(nLoops)*2.*M_PI;
+      double                  dphi   = phi_ref - shphi;
+      // resolve 2PI ambiguity
+      while (dphi > M_PI) {
+	shphi += 2*M_PI;
+	dphi = phi_ref - shphi;
+      }
+      while (dphi < -M_PI) {
+	shphi -= 2*M_PI;
+	dphi = phi_ref - shphi;
+      }
+      
+      // int                     nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
+      // shphi = shphi + double(nLoops)*2.*M_PI;
 
       ComboHit                hhit(*hit);//,loc,shphi);
       hhit._hphi = shphi;
-      hhit._flag.clear(StrawHitFlag::resolvedphi);
+      hhit._flag.merge(StrawHitFlag::resolvedphi);
 					
       hhit._flag.merge(_shfcol->at(loc)); // merge in other flags, hit Quality no yet assigned
       HelSeed._hhits.push_back(hhit);

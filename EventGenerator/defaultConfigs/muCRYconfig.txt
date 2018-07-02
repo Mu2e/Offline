@@ -18,12 +18,12 @@ bool cosmicCRY.saveTree = false;
 
 // Enable all particles by default
 bool cosmicCRY.returnMuons = true;
-bool cosmicCRY.returnNeutrons = true;
-bool cosmicCRY.returnProtons = true;
-bool cosmicCRY.returnGammas = true;
-bool cosmicCRY.returnElectrons = true;
-bool cosmicCRY.returnPions = true;
-bool cosmicCRY.returnKaons = true;
+bool cosmicCRY.returnNeutrons = false;
+bool cosmicCRY.returnProtons = false;
+bool cosmicCRY.returnGammas = false;
+bool cosmicCRY.returnElectrons = false;
+bool cosmicCRY.returnPions = false;
+bool cosmicCRY.returnKaons = false;
 
 
 // Date

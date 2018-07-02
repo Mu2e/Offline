@@ -88,6 +88,7 @@ namespace mu2e {
     TH1F* _hEnergyElectron;
     TH1F* _hEnergyPositron;
     TH1F* _hWeight;
+    TH1F* _htZero;
 
   public:
     explicit StoppedMuonRMCGun(const fhicl::ParameterSet& pset);
@@ -133,6 +134,7 @@ namespace mu2e {
       _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum, RMC", 70,  0.,  140.  );
       _hEnergyElectron     = tfdir.make<TH1F>( "hEnergyElectron", "Produced electron energy, RMC Internal", 70,  0.,  140.  );
       _hEnergyPositron     = tfdir.make<TH1F>( "hEnergyPositron", "Produced electron energy, RMC Internal", 70,  0.,  140.  );
+      _htZero              = tfdir.make<TH1F>( "htZero", "Stopped Muon time", 100,0.,2000.);
       _hWeight             = tfdir.make<TH1F>( "hWeight",         "Event Weight ", 100,0.,1.);
     }
 
@@ -251,6 +253,11 @@ namespace mu2e {
 
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
+    // next step is to get muon lifetime in the code together with the capture fraction 5/29/2018
+
+    if (doHistograms_){
+	_htZero->Fill(stop.t);
+    }
     const double energy = generateEnergy();
 
     double weight{0.};
@@ -286,20 +293,20 @@ namespace mu2e {
       const auto xyPair          = random2dPair.fire( energy );
       const auto elecPosiVectors = MuonCaptureSpectrum::getElecPosiVectors( energy, xyPair.first, xyPair.second ); 
       //      CLHEP::HepLorentzVector fakeElectron( 105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+ massE*massE));
-      //CLHEP::HepLorentzVector fakePositron(-105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+ massE*massE));
+      //      CLHEP::HepLorentzVector fakePositron(-105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+ massE*massE));
       output->emplace_back( PDGCode::e_minus, 
 			    GenId::radiativeMuonCaptureInternal, 
 			    pos,
 			    elecPosiVectors.first, 
 			    //fakeElectron, 
-			    //800. );
+			    //			    800. );
       			    stop.t );
       output->emplace_back( PDGCode::e_plus, 
 			    GenId::radiativeMuonCaptureInternal, 
 			    pos,
 			    elecPosiVectors.second, 
 			    //fakePositron, 
-			    //800.);
+			    //			    800.);
       			    stop.t );
 
       event.put(std::move(output));

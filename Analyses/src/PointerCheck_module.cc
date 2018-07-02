@@ -412,8 +412,8 @@ namespace mu2e {
       n++;
       // assemble all the pointer in the object
       ptrs = d.stepPointMCs();
-      ptrs.push_back(d.stepPointMC(TrkTypes::cal));
-      ptrs.push_back(d.stepPointMC(TrkTypes::hv ));
+      ptrs.push_back(d.stepPointMC(StrawEnd::cal));
+      ptrs.push_back(d.stepPointMC(StrawEnd::hv ));
       // check them
       for(auto const& p: ptrs) {
 	np++;

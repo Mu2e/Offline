@@ -13,6 +13,8 @@
 #include "TBox.h"
 #include "TMath.h"
 #include "TProfile.h"
+#include "TFitResult.h"
+#include "TFitResultPtr.h"
 #include "TDirectory.h"
 #include "Math/Math.h"
 #include "THStack.h"
@@ -106,7 +108,7 @@ void Draw(TTree* ta) {
   leg->Draw();
 }
 
-void MomResp(TTree* ta, double tqcut, double nmu) {
+void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
 // cuts
   TCut reco("dem.status>0");
   char ctext[80];
@@ -156,8 +158,9 @@ void MomResp(TTree* ta, double tqcut, double nmu) {
   momresp->SetMinimum(0.5);
   momresp->Fit("dscb","LRQ");
   momresp->Fit("dscb","LRM");
+  if(strcmp(file,"")!=0)rcan->SaveAs(file);
 }
-void MomRes(TTree* ta, double tqcut,double nmu) {
+void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
 // cuts
   TCut reco("dem.status>0");
   char ctext[80];
@@ -197,11 +200,22 @@ void MomRes(TTree* ta, double tqcut,double nmu) {
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momres->GetEntries()*momres->GetBinWidth(1)/nmu;
   cout << "Integral = " << integral << " mean = " << momres->GetMean() << " rms = " << momres->GetRMS() << endl;
-  dscb->SetParameters(3*integral,momres->GetMean()+0.07,0.3*momres->GetRMS(),0.9,3.5,1.5,6.0);
+  dscb->SetParameters(2*integral,0.0,0.15,1.0,4.5,1.2,10.0);
 
-  momres->SetMinimum(0.5);
-  momres->Fit("dscb","LRQ");
-  momres->Fit("dscb","LRM");
+//  momres->SetMinimum(0.5);
+  momres->Fit("dscb","RQ");
+  momres->Fit("dscb","RMQ");
+  TFitResultPtr fitres = momres->Fit("dscb","SRE");
+  cout << "Core Sigma = " << dscb->GetParameter(2) << " +- " << dscb->GetParError(2) << endl;
+  cout << "High Side Power = " << dscb->GetParameter(6) << " +- " << dscb->GetParError(6) << endl;
+
+  // count outliers
+  int outbin = momres->FindBin(1.1);
+  double outint = momres->Integral(outbin,momres->GetNbinsX());
+  double totint = momres->Integral();
+  double outrat = outint/totint;
+  cout <<"Outlier integral = " << outint  << " total integral = " << totint << " Outlier fraction = " << outrat << endl;
+
 
   TLine* zero = new TLine(0.0,0.0,0.0,momres->GetBinContent(momres->GetMaximumBin()));
   zero->SetLineStyle(2);
@@ -221,10 +235,11 @@ void MomRes(TTree* ta, double tqcut,double nmu) {
   sprintf(line,"%5.0f Tracks",momres->GetEntries());
   rtext->AddText(line);
   rtext->Draw();
+  if(strcmp(file,"")!=0)rcan->SaveAs(file);
 
 }
 
-void Acc(TTree* ta, int ngen) {
+void Acc(TTree* ta, int ngen,const char* file="") {
   unsigned nbins(8);
   double bmax = nbins-0.5;
 
@@ -309,6 +324,7 @@ void Acc(TTree* ta, int ngen) {
   tp = (TPad*)acan->cd(2);
   tp->SetBottomMargin(0.15);
   racc->Draw("histtext0");
+  if(strcmp(file,"")!=0)acan->SaveAs(file);
 }
 
 void hitres(TTree* ta) {
@@ -351,5 +367,34 @@ void hitres(TTree* ta) {
   rescan->cd(2);
   hresst->Draw("h");
   hresall->Fit("gaus","","sames");
+}
+
+void wpull(TTree* ta) {
+  TH1F* swp = new TH1F("swp","Final Fit Wire Position Pull",100,-25,25);
+  TH1F* uwp = new TH1F("uwp","Final Fit Wire Position Pull",100,-25,25);
+  TH1F* rwp = new TH1F("rwp","Final Fit Wire Position Pull",100,-25,25);
+  swp->SetLineColor(kGreen);
+  uwp->SetLineColor(kRed);
+  rwp->SetLineColor(kBlue);
+  ta->Project("swp","(demtsh._wdist-demtsh._hlen)/demtsh._werr","dem.status>0&&demtsh._active&&demtshmc._rel==0");
+  ta->Project("uwp","(demtsh._wdist-demtsh._hlen)/demtsh._werr","dem.status>0&&demtsh._active&&demtshmc._rel<0");
+  ta->Project("rwp","(demtsh._wdist-demtsh._hlen)/demtsh._werr","dem.status>0&&demtsh._active&&demtshmc._rel>0");
+  TCanvas* wpcan = new TCanvas("wpcan","wpcan",800,800);
+  wpcan->Divide(2,2);
+  wpcan->cd(1);
+  gPad->SetLogy();
+  swp->Fit("gaus");
+  wpcan->cd(2);
+  uwp->Draw();
+  wpcan->cd(3);
+  gPad->SetLogy();
+  rwp->Fit("gaus");
+  TLegend* wleg = new TLegend(0.5,0.5,0.9,0.9);
+  wleg->AddEntry(swp,"Primary Hit","L");
+  wleg->AddEntry(uwp,"Unrelated Hit","L");
+  wleg->AddEntry(rwp,"Related Hit","L");
+  wpcan->cd(4);
+  wleg->Draw();
+
 }
 

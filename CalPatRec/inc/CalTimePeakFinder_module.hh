@@ -25,7 +25,6 @@ namespace art {
 #include "RecoDataProducts/inc/HelixVal.hh"
 
 #include "RecoDataProducts/inc/ComboHit.hh"
-// #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
@@ -52,7 +51,6 @@ namespace art {
 #include "CalPatRec/inc/CalTimePeakFinder_types.hh"
 
 // Mu2e
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -125,8 +123,6 @@ namespace mu2e {
 
     const TTracker*                       _tracker;     // straw tracker geometry
     const Calorimeter*                    _calorimeter; // cached pointer to the calorimeter geometry
-
-    const TrackerCalibrations*            _trackerCalib;
 
     const CaloCluster*                     cl;
 //-----------------------------------------------------------------------------

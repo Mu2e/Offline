@@ -274,7 +274,7 @@ namespace mu2e {
 	  unsigned nhshared(0);
 	  for(const TrkStrawHit* ihit: ihits){
 	    for(const TrkStrawHit* jhit: jhits){
-	      if(ihit->isActive() && jhit->isActive() && ihit->strawHit() == jhit->strawHit())
+	      if(ihit->isActive() && jhit->isActive() && &ihit->comboHit() == &jhit->comboHit())
 		++nhshared;
 	    }
 	  }

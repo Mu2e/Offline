@@ -106,10 +106,10 @@ BEGIN_PROLOG
       verboseLevel                  : 1
       crvRecoPulsesModuleLabel      : "CrvRecoPulses"
       CRVSectors                    : ["R1","R2","R3","R4","R5","L1","L2","T1","T2","T3","T4","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
-      PEthresholds                  : [ 20 , 20 , 20 , 20 , 20 , 20 , 20 , 26 , 18 , 16 , 16 , 26 , 40 , 40 , 40 , 40 , 40 , 18 , 18 , 18 , 18 , 18 ]
+      PEthresholds                  : [ 26 , 26 , 26 , 26 , 26 , 26 , 26 , 36 , 22 , 18 , 20 , 36 , 36 , 28 , 36 , 36 , 36 , 36 , 26 , 26 , 26 , 26 ]
       adjacentPulseTimeDifferences  : [  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 , 10 ,  5 ,  5 , 10 , 10 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ] //ns
       maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 20 , 10 , 10 , 20 , 20 , 20 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
-      useFourLayers                 : [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false] 
+      useFourLayers                 : [false,false,false,false,false,false,false,true,true,false,false,true,true,true,false,false,false,false,false,false,false,false] 
       usingPEsPulseHeight           : false  //using the PEs which were calculated using the pulse height
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
       maxSlopeDifference            : 2.0    //

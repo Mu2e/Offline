@@ -47,6 +47,9 @@ namespace mu2e {
     double    stripThickness()    const  { return _stripThickness;}
     std::vector<double> heights() const  { return _stripHeights;}
 
+    // and this one for version 4, which gives variable thickness
+    std::vector<double> stripThicknesses() const { return _stripThicknesses;}
+
   private:
 
     std::string _shape;
@@ -69,6 +72,7 @@ namespace mu2e {
     double _width;
     double _stripThickness;
     std::vector<double> _stripHeights;
+    std::vector<double> _stripThicknesses;
 
 
 };

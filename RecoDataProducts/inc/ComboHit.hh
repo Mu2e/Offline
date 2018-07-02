@@ -7,6 +7,7 @@
 // Original author David Brown Dec 2017
 //
 // Mu2e includes
+#include "DataProducts/inc/StrawEnd.hh"
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawIdMask.hh"
 #include "RecoDataProducts/inc/XYZVec.hh"
@@ -46,7 +47,8 @@ namespace mu2e {
     Float_t time() const { return _time; }
     Float_t qual() const { return _qual; }
     StrawHitFlag const& flag() const { return _flag; }
-    StrawId const& sid() const { return _sid; }
+    StrawEnd const& driftEnd() const { return _tend; } // which end was used for time
+    StrawId const& strawId() const { return _sid; }
     Float_t wireRes() const { return _wres; }
     Float_t transRes() const { return _tres; }
     Float_t transErr2() const { return _tres*_tres; }
@@ -59,11 +61,12 @@ namespace mu2e {
     uint16_t index(uint16_t ish=0) const;
     bool addIndex(uint16_t shi); // append an index to the
     PIArray const& indexArray() const { return _pind; }
+    void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
     //
     XYZVec _pos; // position of this hit
     XYZVec _wdir; // 'direction' of this hit, used to define error elipsoid axis
     Float_t _wres, _tres; // resolution along and transverse to the 'wire' direction
-    Float_t _wdist; // distance from wire center along this direction
+    Float_t _wdist; // distance from wire center along this direction (agregate)
     Float_t _time, _edep, _qual; // derived StrawHit (agregate) info
     Float_t _hphi; // azimuth relative to a helix center
     uint16_t _ncombo; // number of associated input objects
@@ -72,6 +75,7 @@ namespace mu2e {
     StrawHitFlag _flag; // flag condition of this hit (agregate)
     StrawId _sid; // straw identifier; some fields may not be complete, use in conjunction with mask
     StrawIdMask _mask; // mask for valid StrawId fields
+    StrawEnd _tend; // end used to define time measruement
   };
 //  typedef std::vector<mu2e::ComboHit> ComboHitCollection;
   class ComboHitCollection : public std::vector<mu2e::ComboHit> {
@@ -103,6 +107,11 @@ namespace mu2e {
       art::ProductID _parent;
       bool _sorted; // record if this collection was sorted
   };
+  inline std::ostream& operator<<( std::ostream& ost,
+                                   ComboHit const& hit){
+    hit.print(ost,false);
+    return ost;
+  }
 }
 #endif
 

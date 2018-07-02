@@ -12,12 +12,12 @@ namespace mu2e {
 
     int stepPoint(art::Ptr<StepPointMC>& sp, StrawDigiMC const& mcdigi) {
       int retval(-1);
-      if(mcdigi.wireEndTime(TrkTypes::cal) < mcdigi.wireEndTime(TrkTypes::hv)) {
-	sp = mcdigi.stepPointMC(TrkTypes::cal);
-	retval = TrkTypes::cal;
+      if(mcdigi.wireEndTime(StrawEnd::cal) < mcdigi.wireEndTime(StrawEnd::hv)) {
+	sp = mcdigi.stepPointMC(StrawEnd::cal);
+	retval = StrawEnd::cal;
       } else {
-	sp = mcdigi.stepPointMC(TrkTypes::hv);
-	retval = TrkTypes::hv;
+	sp = mcdigi.stepPointMC(StrawEnd::hv);
+	retval = StrawEnd::hv;
       };
       return retval;
     }
@@ -75,9 +75,9 @@ namespace mu2e {
 
     unsigned simParticle(art::Ptr<SimParticle>& spp, StrawDigiMC const& mcdigi) {
       unsigned retval(0);
-      if( mcdigi.stepPointMC(TrkTypes::cal)->simParticle() ==
-	  mcdigi.stepPointMC(TrkTypes::hv)->simParticle() ) {
-	spp = mcdigi.stepPointMC(TrkTypes::cal)->simParticle();
+      if( mcdigi.stepPointMC(StrawEnd::cal)->simParticle() ==
+	  mcdigi.stepPointMC(StrawEnd::hv)->simParticle() ) {
+	spp = mcdigi.stepPointMC(StrawEnd::cal)->simParticle();
 	retval = 2;
       }
       return retval;

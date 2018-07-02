@@ -9,8 +9,8 @@ namespace mu2e {
   
   namespace TrkHitReco {
 
-    PeakFitRoot::PeakFitRoot(const StrawElectronics& strawele, const fhicl::ParameterSet& pset) : 
-        PeakFit(strawele,pset),
+    PeakFitRoot::PeakFitRoot(const StrawResponse& srep, const fhicl::ParameterSet& pset) : 
+        PeakFit(srep,pset),
         _truncateADC(pset.get<bool>(      "TruncateADC",true)), 
         _floatPedestal(pset.get<bool>(    "FloatPedestal",true)), 
         _floatWidth(pset.get<bool>(       "FloatWidth",true)), 
@@ -19,7 +19,7 @@ namespace mu2e {
         _fitoptions(pset.get<std::string>("fitOption","QNSEX0B")),
         _maxFitIter(pset.get<unsigned>(   "MaxFitIterations",1)),
         _debug(pset.get<int>(             "debugLevel",0)),
-        _peakfit(strawele),
+        _peakfit(srep),
         _config(_maxFitIter, _debug)
     {   
         if (_floatWidth)    _config.setOption(TrkHitReco::FitConfig::floatWidth);
@@ -95,9 +95,9 @@ namespace mu2e {
         for (size_t i = 0; i < adcData.size(); ++i)
         {
 	    adcDataTemp[i] = (Double_t) adcData[i];
-	    measurementTimes[i] = (Double_t) i * _strawele.adcPeriod(); // should deal with global time offset FIXME!!
-	    measurementTimesErrors[i] = 0.0; //_strawele.adcPeriod();
-	    adcDataErrors[i] = 1.0*_strawele.analogNoise(TrkTypes::adc)/_strawele.adcLSB(); // should be able to scale the error FIXME!!
+	    measurementTimes[i] = (Double_t) i * _srep.adcPeriod(); // should deal with global time offset FIXME!!
+	    measurementTimesErrors[i] = 0.0; //_srep.adcPeriod();
+	    adcDataErrors[i] = 1.0*_srep.analogNoise(StrawElectronics::adc)/_srep.adcLSB(); // should be able to scale the error FIXME!!
         }
         fitData = TGraphErrors(adcData.size(),measurementTimes,adcDataTemp,measurementTimesErrors,adcDataErrors);
      }

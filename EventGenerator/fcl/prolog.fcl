@@ -114,6 +114,100 @@ EventGenerator : {
 	StoppedParticleReactionGun  : { @table::StoppedParticleReactionGun  }
         StoppedParticleReactionGunN : { @table::StoppedParticleReactionGunN }
         PrimaryProtonGunN           : { @table::PrimaryProtonGunN           }
+
+  	egun : { @table::StoppedParticleReactionGun # p(e)=105 MeV/c
+	    physics : {
+		pdgId            :  11
+		elow             : 104.97175
+		ehi              : 104.97176
+		spectrumVariable : "momentum"
+		spectrumShape    : "flat"
+	    }
+	}
+
+  	egun005 : { @table::StoppedParticleReactionGun # p(e)=5 MeV/c
+	    physics : {
+		pdgId            :  11
+		elow             : 4.9999
+		ehi              : 5.0001
+		spectrumVariable : "momentum"
+		spectrumShape    : "flat"
+	    }
+	}
+
+  	egun95105 : { @table::StoppedParticleReactionGun # p(e)=95-105 MeV/c
+	    physics : {
+		pdgId            :  11
+		elow             :  95
+		ehi              : 105
+		spectrumVariable : "momentum"
+		spectrumShape    : "flat"
+	    }
+	}
+#------------------------------------------------------------------------------
+# CE on Al - leading logs approximation, spectrum from mu2e-7615 by R.Czafron
+#------------------------------------------------------------------------------
+  	ceLeadingLog : { @table::StoppedParticleReactionGun # CE + rad corr
+	    physics : {
+		pdgId            :  11
+		elow             :   0
+		ehi              : 105
+		spectrumVariable : "totalEnergy"
+		spectrumShape    : "tabulated"
+		spectrumFileName : "ConditionsService/data/szafron_mu2e_7615.tbl"
+	    }
+	}
+#------------------------------------------------------------------------------
+# CE on Al - leading logs approximation, spectrum from mu2e-7615 by R.Czafron
+#------------------------------------------------------------------------------
+  	mgun : { @table::StoppedParticleReactionGun # p(mu)=105 MeV/c
+	    physics : {
+		pdgId            :  13
+		elow             : 104.97175
+		ehi              : 104.97176
+		spectrumVariable : "momentum"
+		spectrumShape    : "flat"
+	    }
+	}
+#------------------------------------------------------------------------------
+# DIO electrons, Al, leading order spectrum
+#------------------------------------------------------------------------------
+  	dioallo : { @table::StoppedParticleReactionGun # DIO Al LO 
+	    physics : {
+		pdgId            :  11
+		elow             : 0.511
+		ehi              : 105.0015
+		spectrumVariable : "totalEnergy"
+		spectrumShape    : "tabulated"
+		spectrumFileName : "ConditionsService/data/czarnecki_Al.tbl"
+	    }
+	}
+#------------------------------------------------------------------------------
+# DIO electrons, Al, leading order spectrum
+# 'tabulated' option ignores elow and ehi
+#------------------------------------------------------------------------------
+  	dioalll : { @table::StoppedParticleReactionGun # DIO Al leading log 
+	    physics : {
+		pdgId            :  11
+		elow             : 105.0010
+		ehi              : 105.0015
+		spectrumVariable : "totalEnergy"
+		spectrumShape    : "tabulated"
+		spectrumFileName : "ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
+	    }
+	}
+#------------------------------------------------------------------------------
+# 100 MeV/c protons
+#------------------------------------------------------------------------------
+  	pgun : { @table::StoppedParticleReactionGun # p(proton)=100 MeV/c
+	    physics : {
+		pdgId            : 2212
+		elow             :  99.99
+		ehi              : 100.01
+		spectrumVariable : "momentum"
+		spectrumShape    : "flat"
+	    }
+	}
     }
 }
 

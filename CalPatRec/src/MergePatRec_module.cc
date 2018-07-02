@@ -427,7 +427,7 @@ namespace mu2e {
 	    for(auto itc=clist.begin(); itc<clist.end(); itc++) {
 	      hitc = static_cast<const mu2e::TrkStrawHit*> (*itc);
 	      if (hitc->isActive()) {
-		if (&hitt->strawHit() == &hitc->strawHit()) {
+		if (&hitt->comboHit() == &hitc->comboHit()) {
 		  natc += 1;
 		  break;
 		}

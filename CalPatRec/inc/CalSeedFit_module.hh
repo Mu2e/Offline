@@ -54,7 +54,6 @@ namespace art {
 
 // Mu2e
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "DataProducts/inc/Helicity.hh"
 
 //CLHEP
@@ -142,7 +141,6 @@ namespace mu2e {
     KalFitResultNew                       _result; // seed fit result
 
     const TTracker*                       _tracker;     // straw tracker
-    const TrackerCalibrations*            _trackerCalib;
     const Calorimeter*                    _calorimeter; // cached pointer to the calorimeter
 
     TFolder*                              _folder;

@@ -18,8 +18,7 @@
 // conditions
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -54,11 +53,9 @@
 
 // Mu2e BaBar
 #include "BTrk/BaBar/BaBar.hh"
-// #include "BTrk/BaBar/BbrStringUtils.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
-// #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
@@ -129,7 +126,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // cache of event objects
 //-----------------------------------------------------------------------------
-    const StrawHitCollection*             _shcol;
+    const ComboHitCollection*             _shcol;
     const StrawHitFlagCollection*         _shfcol;
     const StrawHitPositionCollection*     _shpcol;
 
@@ -143,9 +140,6 @@ namespace mu2e {
     int                                   _nindex;
     int                                   _nrescued;    // by the seed fit
 
-    const TrackerCalibrations*            _trackerCalib;
-
-    //    TFolder*                              _folder;
     int                                   _eventid;
 //-----------------------------------------------------------------------------
 // diagnostics histograms
@@ -174,21 +168,6 @@ namespace mu2e {
     void findMissingHits  (KalFitResultNew&  KRes);
   };
 
-
-//-----------------------------------------------------------------------------
-// comparison functor for sorting by Z(wire)
-//-----------------------------------------------------------------------------
-  struct straw_zcomp : public binary_function<StrawHitIndex,StrawHitIndex,bool> {
-    bool operator()(StrawHitIndex const& h1, StrawHitIndex const& h2) {
-
-      GeomHandle<TTracker> handle;
-      const TTracker* t = handle.get();
-      const Straw* s1 = &t->getStraw(StrawIndex(h1));
-      const Straw* s2 = &t->getStraw(StrawIndex(h2));
-
-      return s1->getMidPoint().z() < s2->getMidPoint().z();
-    }
-  }; // a semicolumn here is required
 
   //-----------------------------------------------------------------------------
   // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
@@ -262,11 +241,8 @@ namespace mu2e {
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     _data.calorimeter = ch.get();
 
-    mu2e::ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    _trackerCalib = tcal.operator ->();
 
     _fitter.setTracker(_data.tracker);
-    _fitter.setTrackerCalib(_trackerCalib);
     _fitter.setCalorimeter (_data.calorimeter);
 
     return true;
@@ -277,7 +253,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   bool CalTrkFit::findData(const art::Event& evt) {
 
-    art::Handle<mu2e::StrawHitCollection> strawhitsH;
+    art::Handle<mu2e::ComboHitCollection> strawhitsH;
     if (evt.getByLabel(_shLabel,strawhitsH)) {
       _shcol = strawhitsH.product();
     }
@@ -287,15 +263,15 @@ namespace mu2e {
              _shLabel.data());
     }
 
-    art::Handle<mu2e::StrawHitPositionCollection> shposH;
-    if (evt.getByLabel(_shpLabel,shposH)) {
-      _shpcol = shposH.product();
-    }
-    else {
-      _shpcol = 0;
-      printf(" >>> ERROR in CalTrkFit::findData: StrawHitPositionCollection with label=%s not found.\n",
-             _shpLabel.data());
-    }
+    // art::Handle<mu2e::StrawHitPositionCollection> shposH;
+    // if (evt.getByLabel(_shpLabel,shposH)) {
+    //   _shpcol = shposH.product();
+    // }
+    // else {
+    //   _shpcol = 0;
+    //   printf(" >>> ERROR in CalTrkFit::findData: StrawHitPositionCollection with label=%s not found.\n",
+    //          _shpLabel.data());
+    // }
 
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
     if (evt.getByLabel(_shfLabel,shflagH)) {
@@ -356,7 +332,7 @@ namespace mu2e {
     _result.fitType     = 1;               // final fit
     _result.event       = &event ;
     _result.shcol       = _shcol ;
-    _result.shpos       = _shpcol;
+    //    _result.shpos       = _shpcol;
     _result.shfcol      = _shfcol;
     _result.tpart       = _tpart ;
     _result.fdir        = _fdir  ;
@@ -609,13 +585,15 @@ namespace mu2e {
 
     MissingHit_t mh;
 
+    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
+    
     int nstrs = KRes.shcol->size();
     for (int istr=0; istr<nstrs; ++istr) {
       mh.index = istr;
 //----------------------------------------------------------------------
 // 2015-02-11 change the selection bit for searching for missed hits
 //----------------------------------------------------------------------
-      StrawHit const& sh    = _shcol->at(istr);
+      ComboHit const& sh    = _shcol->at(istr);
 //-----------------------------------------------------------------------------
 // I think, we want to check the radial bit: if it is set, than at least one of
 // the two measured times is wrong...
@@ -644,7 +622,7 @@ namespace mu2e {
 	    break;
 	  }
 					// check proximity in Z
-          Straw const&  trk_straw = _data.tracker->getStraw(tsh->strawHit().strawId());
+          Straw const&  trk_straw = _data.tracker->getStraw(tsh->comboHit().strawId());
           double        ztrk      = trk_straw.getMidPoint().z();
 
 	  double dz  = ztrk-zhit;
@@ -681,19 +659,15 @@ namespace mu2e {
 
           TrkPoca     hitpoca(krep->pieceTraj(),fltlen,htraj,0.0);
 
-	  double      rdrift, hit_error(0.2);
+	  double      rdrift;//, hit_error(0.2);
 
-	  TrkStrawHit hit(sh,straw,istr,hitt0,hflt,hit_error,10.,1.,_maxadddoca);
+	  TrkStrawHit hit(sh,straw,istr,hitt0,hflt,10.,1.);
 	  
-	  ConditionsHandle<TrackerCalibrations> tcal("ignored");
-
 	  double tdrift=hit.time()-hit.hitT0()._t0;
 
-	  T2D t2d;
+	  double phi(0);
+	  rdrift = srep->driftTimeToDistance(straw.id(),tdrift,phi);
 
-	  tcal->TimeToDistance(straw.index(),tdrift,tdir,t2d);
-
-	  rdrift = t2d._rdrift;
 	  mh.doca   = hitpoca.doca();
 	  if (mh.doca > 0) mh.dr = mh.doca-rdrift;
 	  else             mh.dr = mh.doca+rdrift;
@@ -720,7 +694,7 @@ namespace mu2e {
 	if (_debugLevel > 0) {
 	  printf("[%s] rejected hit: i, index, flag, dt: %5i %5i %s %10.3f\n",
 		 oname,istr,sh.strawId().asUint16(),
-		 KRes.shfcol->at(istr).hex().data(),sh.dt());
+		 KRes.shfcol->at(istr).hex().data(),0./*sh.dt()*/);//FIXME!
 	}
       }
     }
