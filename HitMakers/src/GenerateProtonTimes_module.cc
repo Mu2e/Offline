@@ -49,6 +49,8 @@ namespace mu2e {
     std::unique_ptr<ProtonPulseRandPDF>  protonPulse_;
 
     std::string listStream( const GenIdSet& vsList );
+    bool readmap_;
+    art::ProductToken<SimParticleTimeMap> const inmap_; // optional input map
 
   };
 
@@ -56,7 +58,9 @@ namespace mu2e {
   GenerateProtonTimes::GenerateProtonTimes(fhicl::ParameterSet const& pset)
     : engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()) )
     , protonPset_( pset.get<fhicl::ParameterSet>("randPDFparameters", fhicl::ParameterSet() ) )
-    , verbosityLevel_(pset.get<int>("verbosityLevel", 0)) 
+    , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
+    , readmap_(pset.get<bool>("ReadMap",false))
+    , inmap_{mayConsume<SimParticleTimeMap>(pset.get<art::InputTag>("InputTimeMap","null"))}
   {
     consumesMany<SimParticleCollection>();
     produces<SimParticleTimeMap>();
@@ -109,41 +113,53 @@ namespace mu2e {
 
   //================================================================
   void GenerateProtonTimes::produce(art::Event& event) {
-    std::unique_ptr<SimParticleTimeMap> res(new SimParticleTimeMap);
+  // optionally copy over input map
+    SimParticleTimeMap* map(0);
+    if(readmap_){
+      auto inmap = event.getValidHandle(inmap_);
+      map = new SimParticleTimeMap(*inmap.product());
+    } else
+      map = new SimParticleTimeMap;
+
+    std::unique_ptr<SimParticleTimeMap> res(map);
 
     std::vector<art::Handle<SimParticleCollection> > colls;
     event.getManyByType(colls);
+  
 
     // Generate and record offsets for all primaries
     for(const auto& ih : colls) {
       for(const auto& iter : *ih) {
         if(iter.second.isPrimary()) {
-          art::Ptr<SimParticle> part(ih, iter.first.asUint());
-          const auto genId = part->genParticle()->generatorId();
+	  art::Ptr<SimParticle> part(ih, iter.first.asUint());
+	  // don't re-simulate if particle is already present.  This can happen if there is an input map
+	  if(res->find(part) == res->end()){
+	    const auto genId = part->genParticle()->generatorId();
 
-          const bool apply= applyToGenIds_.empty() ?
-            // do all particles, except the explicitly vetoed ones
-            (ignoredGenIds_.find(genId.id()) == ignoredGenIds_.end())
-            // do just explicitly listed GenIds
-            : (applyToGenIds_.find(genId.id()) != applyToGenIds_.end());
+	    const bool apply= applyToGenIds_.empty() ?
+	      // do all particles, except the explicitly vetoed ones
+	      (ignoredGenIds_.find(genId.id()) == ignoredGenIds_.end())
+	      // do just explicitly listed GenIds
+	      : (applyToGenIds_.find(genId.id()) != applyToGenIds_.end());
 
-          (*res)[part] = apply ? protonPulse_->fire() : 0.;
-        }
+	    (*res)[part] = apply ? protonPulse_->fire() : 0.;
+	  }
+	}
       }
     }
 
     if(verbosityLevel_ > 10) {
       std::cout<<"GenerateProtonTimes dump begin"<<std::endl;
       for(const auto& i : *res) {
-        SimParticleCollectionPrinter::print(std::cout, *i.first);
-        std::cout<<" => "<<i.second<<std::endl;
+	SimParticleCollectionPrinter::print(std::cout, *i.first);
+	std::cout<<" => "<<i.second<<std::endl;
       }
       std::cout<<"GenerateProtonTimes dump end"<<std::endl;
     }
 
     event.put(std::move(res));
   } // end GenerateProtonTimes::produce.
-  
+
   //================================================================
   std::string GenerateProtonTimes::listStream( const GenIdSet& vsList ) {
     std::ostringstream osList;
@@ -152,7 +168,7 @@ namespace mu2e {
     }
     return osList.str();
   } 
-  
+
   //================================================================
 } // end namespace mu2e
 

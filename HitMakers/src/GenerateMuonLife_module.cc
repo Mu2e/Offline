@@ -45,6 +45,8 @@ namespace mu2e {
     CLHEP::RandExponential  rexp_;
     double mean_;
     int  verbosityLevel_;
+    bool readmap_;
+    art::ProductToken<SimParticleTimeMap> const inmap_; // optional input map
 
     static double getMean(const  fhicl::ParameterSet& pset);
   };
@@ -54,6 +56,8 @@ namespace mu2e {
     : rexp_(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
     , mean_(getMean(pset))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
+    , readmap_(pset.get<bool>("ReadMap",false))
+    , inmap_{mayConsume<SimParticleTimeMap>(pset.get<art::InputTag>("InputTimeMap","null"))}
   {
     consumesMany<SimParticleCollection>();
     produces<SimParticleTimeMap>();
@@ -75,7 +79,15 @@ namespace mu2e {
 
   //================================================================
   void GenerateMuonLife::produce(art::Event& event) {
-    std::unique_ptr<SimParticleTimeMap> res(new SimParticleTimeMap);
+  // optionally copy over input map
+    SimParticleTimeMap* map(0);
+    if(readmap_){
+      auto inmap = event.getValidHandle(inmap_);
+      map = new SimParticleTimeMap(*inmap.product());
+    } else
+      map = new SimParticleTimeMap;
+
+    std::unique_ptr<SimParticleTimeMap> res(map);
 
     std::vector<art::Handle<SimParticleCollection> > colls;
     event.getManyByType(colls);
@@ -85,26 +97,29 @@ namespace mu2e {
       for(const auto& iter : *ih) {
         if(iter.second.isPrimary()) {
           art::Ptr<SimParticle> part(ih, iter.first.asUint());
-          if(part->genParticle()->generatorId() == GenId::StoppedParticleReactionGun
-             || part->genParticle()->generatorId() == GenId::conversionGun
-             || part->genParticle()->generatorId() == GenId::dioTail
-             )
-            {
-              (*res)[part] = rexp_.fire(mean_);
-            }
-          else
-            {
-              (*res)[part] = 0;
-            }
-        }
+	  // don't re-simulate if particle is already present.  This can happen if there is an input map
+	  if(res->find(part) == res->end()){
+	    if(part->genParticle()->generatorId() == GenId::StoppedParticleReactionGun
+		|| part->genParticle()->generatorId() == GenId::conversionGun
+		|| part->genParticle()->generatorId() == GenId::dioTail
+	      )
+	    {
+	      (*res)[part] = rexp_.fire(mean_);
+	    }
+	    else
+	    {
+	      (*res)[part] = 0;
+	    }
+	  }
+	}
       }
     }
 
     if(verbosityLevel_ > 10) {
       std::cout<<"GenerateMuonLife dump begin"<<std::endl;
       for(const auto& i : *res) {
-        SimParticleCollectionPrinter::print(std::cout, *i.first);
-        std::cout<<" => "<<i.second<<std::endl;
+	SimParticleCollectionPrinter::print(std::cout, *i.first);
+	std::cout<<" => "<<i.second<<std::endl;
       }
       std::cout<<"GenerateMuonLife dump end"<<std::endl;
     }
