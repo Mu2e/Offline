@@ -48,6 +48,10 @@ namespace mu2e {
                   ),
           1u
           };
+      Atom<int> debugLevel { Name("debugLevel"),
+          Comment("control the level of debug output"),
+          0u
+          };
     };
 
     // The following hack will hopefully go away after
@@ -77,6 +81,7 @@ namespace mu2e {
     Mu2eProductMixer spm_;
     art::InputTag pbiTag_;
     const double meanEventsPerProton_;
+    const int debugLevel_;
     artURBG urbg_;
 
     ProtonBunchIntensity pbi_;
@@ -106,12 +111,14 @@ namespace mu2e {
     : spm_{ retrieveConfiguration("mu2e", pset).products(), helper }
     , pbiTag_{ retrieveConfiguration("mu2e", pset).protonBunchIntensityTag() }
     , meanEventsPerProton_{ retrieveConfiguration("mu2e", pset).meanEventsPerProton() }
+    , debugLevel_{ retrieveConfiguration("mu2e", pset).debugLevel() }
     , urbg_{ createArtEngine() }
   {}
 
   //================================================================
   void MixBackgroundFramesDetail::startEvent(const art::Event& event) {
     pbi_ = *event.getValidHandle<ProtonBunchIntensity>(pbiTag_);
+    if(debugLevel_ > 0)std::cout << " Starting event mixing, Intensity = " << pbi_.intensity() << std::endl;
   }
 
   //================================================================
@@ -119,6 +126,7 @@ namespace mu2e {
     double mean = meanEventsPerProton_ * pbi_.intensity();
     std::poisson_distribution<size_t> poisson(mean);
     auto res = poisson(urbg_);
+    if(debugLevel_ > 0)std::cout << " Mixing " << res  << " Secondaries " << std::endl;
     return res;
   }
 

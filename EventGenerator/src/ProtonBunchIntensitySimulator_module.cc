@@ -39,7 +39,7 @@ namespace mu2e {
       ProtonIntensityModel _model;
       double _nmean; // mean number of protons/microbunch hitting the target
       double _width; // fractional full width of the flat distribution
-      double _sig, _mu, _lnmean; // lognormal parameters
+      double _lnmean; // lognormal parameters
       double _maxrel; // maximum relative intensity
       int _diag; // level of diag histograms
       int _printLevel; // level of diagnostic printout
@@ -69,7 +69,7 @@ namespace mu2e {
     _flimits[0] = _nmean*(1.0 - 0.5*_width);
     _flimits[1] = _nmean*(1.0 + 0.5*_width);
   // calculate lognormal mean
-  _lnmean = exp(_mu + 0.5*_sig*_sig);
+    _lnmean = exp(_lognd.m() + 0.5*_lognd.s()*_lognd.s());
   // setup random generator
     produces<mu2e::ProtonBunchIntensity>();
     if(_printLevel > 0){
@@ -80,7 +80,7 @@ namespace mu2e {
         << " and " << _flimits[1] << std::endl;
       else if(_model == lognorm)
         std::cout << "Generating proton bunches with lognormal intensity sigma =  " << _lognd.s()
-        << " mu: = " << _lognd.m() << " mean = " << _lnmean << std::endl;
+        << " mu = " << _lognd.m() << " mean = " << _lnmean << std::endl;
       else
         throw cet::exception("SIM")<<"mu2e::ProtonBunchIntensitySimulator: unknown proton bunch intensity model " << _model << std::endl;
     }
