@@ -64,8 +64,13 @@ outputs: {
      outputCommands : @local::DigiCompressOutputCommands
   }
 }
+# input maps (when using inline generation)
+physics.producers.protonTimeMap.ReadMap : true
+physics.producers.protonTimeMap.InputTimeMap : "protonTimeMapPreFilter"
+physics.producers.muonTimeMap.ReadMap : true
+physics.producers.muonTimeMap.InputTimeMap : "muonTimeMapPreFilter"
+
 # MDC2018 values 
-# TrkCal
 #include "JobConfig/beam/mixepilog.fcl"
 services.TFileService.fileName: "nts.owner.CeEndpoint-mix.version.sequencer.root"
 outputs.CeEndpointOutput.fileName: "sim.owner.CeEndpoint-mix.version.sequencer.art"
