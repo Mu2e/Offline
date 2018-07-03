@@ -15,9 +15,10 @@ using namespace std;
 
 // compactify codes
 Int_t myorigin(Int_t part, Int_t gen) {
-  enum mp{ beamproton=0, proton=1, photon=2, neutron=3, electron=4, ootmuon=5, other=6};
+  enum mp{ beamproton=0, proton=1, photon=2, neutron=3, electron=4, ootmuon=5, deuteron=6, other=7};
   if(part==2212&&gen==16)return beamproton;
   if(part==2212&&gen==28)return proton;
+  if(part==1000010020&&gen==28)return deuteron;
   if(part==22) return photon;
   if(part==11)return electron;
   if(part==2112)return neutron;
@@ -27,8 +28,9 @@ Int_t myorigin(Int_t part, Int_t gen) {
 
 
 Int_t mypart(Int_t part) {
-  enum mp{ proton=0, electron=1, photon=2, neutron=3, positron=4, muon=5, other=6};
+  enum mp{ proton=0, electron=1, photon=2, neutron=3, positron=4, muon=5, deuteron=6, other=7};
   if(part==2212)return proton;
+  if(part==1000010020)return deuteron;
   if(part==11)return electron;
   if(part==22) return photon;
   if(part==-11)return positron;
@@ -76,6 +78,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
   TCut pconv("mcpdg==11&&mcgen<0&&mcproc==11");
   TCut compt("mcpdg==11&&mcgen<0&&mcproc==12");
   TCut proton("mcpdg==2212");
+  TCut deuteron("mcpdg==1000010020");
   TCut hadron("mcpdg>2000");
   TCut photon("mcpdg==22");
   TCut neutron("mcpdg==2112");
@@ -86,6 +89,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
   TCut opart=!(conv||oele||proton);
 
   TCut pproton("mcppdg==2212");
+  TCut pdeuteron("mcppdg==1000010020");
   TCut pneuton("mcppdg==2112");
   TCut pele("mcppdg==11");
   TCut ppos("mcppdg===11");
@@ -97,6 +101,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
   TCut norigin("mcgpdg==2112");
   TCut porigin("mcgpdg==22");
   TCut stpprotonorigin("mcgpdg==2212&&mcgid==28");
+  TCut stpdeuteronorigin("mcgpdg==1000010020&&mcgid==28");
   TCut pprotonorigin("mcgpdg==2212&&mcgid==16");
 
   TCut hitsel("esel&&rsel&&tsel&&(!bkg)");
@@ -428,7 +433,8 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     TH1F* dtime = new TH1F("dtime","DIO Reco Hit Time",150,250,1750);
     TH1F* gtime = new TH1F("gtime","Photon Reco Hit Time",150,250,1750);
     TH1F* pptime = new TH1F("pptime","Primary Proton Reco Hit Time",150,250,1750);
-    TH1F* stptime = new TH1F("stptime","Stopping Target Proton Reco Hit Time",150,250,1750);
+    TH1F* stptime = new TH1F("stptime","Muon Daughter Proton Reco Hit Time",150,250,1750);
+    TH1F* stdtime = new TH1F("stdtime","Muon Daughter Detueron Reco Hit Time",150,250,1750);
     TH1F* ntime = new TH1F("ntime","Neutron Reco Hit Time",150,250,1750);
     TH1F* mtime = new TH1F("mtime","OOT Muon Reco Hit Time",150,250,1750);
     TH1F* cetime = new TH1F("cetime","CE Reco Hit Time",150,250,1750);
@@ -436,6 +442,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     gtime->SetFillColor(kBlack);
     pptime->SetFillColor(kBlue);
     stptime->SetFillColor(kGreen);
+    stdtime->SetFillColor(kMagenta);
     ntime->SetFillColor(kCyan);
     mtime->SetFillColor(kYellow);
     cetime->SetFillColor(kRed);
@@ -453,6 +460,9 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     hits->Project("gtime","time",porigin+timecut);
     gtime->Scale(scale);
     origin->Add(gtime);
+    hits->Project("stdtime","time",stpdeuteronorigin+timecut);
+    stdtime->Scale(scale);
+    origin->Add(stdtime);
     hits->Project("stptime","time",stpprotonorigin+timecut);
     stptime->Scale(scale);
     origin->Add(stptime);
@@ -471,6 +481,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
       << " Photon inegral = " << gtime->Integral()
       << " Neutron inegral = " << ntime->Integral()
       << " OOT muon inegral = " << mtime->Integral()
+      << " ST Deuteron inegral = " << stdtime->Integral()
       << " CE inegral = " << cetime->Integral()
       << " total = " << total << endl;
 
@@ -490,6 +501,8 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     tleg->AddEntry(mtime,title,"F");
     snprintf(title,50,"DIO, #int=%4.0f",dtime->Integral()*10.0);
     tleg->AddEntry(dtime,title,"F");
+    snprintf(title,50,"Deuteron, #int=%4.0f",stdtime->Integral()*10.0);
+    tleg->AddEntry(stdtime,title,"F");
     snprintf(title,50,"CE, #int=%4.0f",cetime->Integral()*10.0);
     tleg->AddEntry(cetime,title,"F");
     snprintf(title,50,"Total #int=%4.0f",total*10.0);
