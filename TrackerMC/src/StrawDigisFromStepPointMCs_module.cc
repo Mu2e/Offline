@@ -825,7 +825,9 @@ namespace mu2e {
       for(size_t iend = 0;iend<2; ++iend){
         WFX const& wfx = xpair[iend];
         // record the crossing time for this end, including clock jitter  These already include noise effects
-        xtimes[iend] = wfx._time+dt;
+        // add noise for TDC on each side
+        double tdc_jitter = _randgauss.fire(0.0,_strawele->TDCResolution());
+        xtimes[iend] = wfx._time+dt+tdc_jitter;
         // record MC match if it isn't already recorded
         mcmatch.insert(wfx._iclust->stepPointMC());
         // randomize threshold using the incoherent noise

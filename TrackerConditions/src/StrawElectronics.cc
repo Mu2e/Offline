@@ -22,7 +22,7 @@ namespace mu2e {
   double StrawElectronics::_pC_per_uA_ns(1000.0); // unit conversion from pC/ns to microAmp.
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdI{pset.get<vector<double> >("thresholddVdI",vector<double>(96,pset.get<double>("DefaultThresholddVdI",8.1e6))),
+    _dVdI{pset.get<vector<double> >("thresholddVdI",vector<double>(96,pset.get<double>("DefaultThresholddVdI",1.1e7))),
       pset.get<vector<double> >("adcdVdI",vector<double>(96,pset.get<double>("DefaultAdcdVdI",2.11e4)))}, // mVolt/uAmps (transimpedance gain)
     _tdeadAnalog(pset.get<double>("DeadTimeAnalog",100.0)), // nsec dead after threshold crossing (pulse baseline restoration time)
     _tdeadDigital(pset.get<double>("DeadTimeDigital",100.0)), // nsec dead after threshold crossing (electronics processing time)
@@ -43,6 +43,7 @@ namespace mu2e {
     _maxTDC(pset.get<unsigned>("maxTDC",65535)), // 16 bits
     _TOTLSB(pset.get<double>("TOTLSB",4.0)), //ns
     _maxTOT(pset.get<unsigned>("maxTOT",15)),
+    _tdcResolution(pset.get<double>("TDCResolution",0.1)), // ns
     _clockStart(pset.get<double>("clockStart",10.0)), // nsec
     _clockJitter(pset.get<double>("clockJitter",0.2)), // nsec
     _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
@@ -281,7 +282,8 @@ namespace mu2e {
 
   uint16_t StrawElectronics::tdcResponse(double time) const {
     // Offset to when the TDC clock starts
-    return min(static_cast<uint16_t>(max(static_cast<int>(floor((time-_clockStart)/_TDCLSB)),0)),_maxTDC);
+    double time_from_mb = fmod(time-_clockStart,1695); 
+    return min(static_cast<uint16_t>(max(static_cast<int>(floor((time_from_mb)/_TDCLSB)),0)),_maxTDC);
   }
 
   

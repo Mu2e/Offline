@@ -72,6 +72,7 @@ namespace mu2e {
       double strawNoise() const { return _snoise;} // coherent part of threshold circuit noise
       double deadTimeAnalog() const { return _tdeadAnalog; }
       double deadTimeDigital() const { return _tdeadDigital; }
+      double TDCResolution() const { return _tdcResolution; }
       double clockStart() const { return _clockStart; }
       double clockJitter() const { return _clockJitter; }
 
@@ -109,6 +110,7 @@ namespace mu2e {
       uint16_t _maxTDC; // maximum TDC value
       double _TOTLSB; // least-significant bit of TOT (nsecs)
       uint16_t _maxTOT; // maximum TOT value
+      double _tdcResolution; // tdc resolution (electronics effects only) (nsecs)
       double _clockStart, _clockJitter; // time TDC clock starts, and its error (common to both ends!!)
       // clockstart is the time offset between "microbunch time" t0 (beam) and TDC t0
       double _flashStart, _flashEnd; // flash blanking period (no digitizations during this time!!!)
