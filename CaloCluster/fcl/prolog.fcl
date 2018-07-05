@@ -13,8 +13,8 @@ END_PROLOG
 
 BEGIN_PROLOG
 
-CaloTrig : {    
-    module_type           : CaloTrig
+CaloTrigger : {    
+    module_type           : CaloTrigger
     caloDigiModuleLabel   : CaloDigiFromShower
     digiSampling          : @local::HitMakerDigiSampling
     blindTime             : @local::HitMakerBlindTime   
