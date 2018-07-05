@@ -97,6 +97,7 @@
  <class name="std::vector<art::Ptr<mu2e::CaloCluster> >"/>
  <class name="art::Ptr<mu2e::CaloTrigSeed>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloTrigSeed> >"/>
+ <class name="art::Ptr<mu2e::CaloRecoDigi>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloRecoDigi> >"/>
 
  <class name="art::Ptr<mu2e::ExtMonUCITofHit>"/>
