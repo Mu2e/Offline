@@ -24,8 +24,6 @@
 
 #include <memory>
 
-#include "TH1.h"
-
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 
@@ -123,9 +121,6 @@ private:
 
   // record the SimParticles that we are keeping so we can use compressSimParticleCollection to do all the work for us
   std::map<art::ProductID, SimParticleSelector> _simParticlesToKeep;
-
-  int _diagLevel;
-  TH1F* _stepTimes;
 };
 
 
@@ -135,8 +130,7 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
     _simParticleTags(pset.get<std::vector<art::InputTag> >("simParticleTags")),
     _extraStepPointMCTags(pset.get<std::vector<art::InputTag> >("extraStepPointMCTags")),
     _timeMapTags(pset.get<std::vector<art::InputTag> >("timeMapTags")),
-    _primarySimPtrsTag(pset.get<art::InputTag>("primarySimPtrsTag")),
-    _diagLevel(pset.get<int>("diagLevel", 0))
+    _primarySimPtrsTag(pset.get<art::InputTag>("primarySimPtrsTag"))
 {
   // Call appropriate produces<>() functions here.
   produces<StrawDigiMCCollection>();
@@ -154,12 +148,6 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
   }
 
   produces<SimParticlePtrCollection>();
-
-  if (_diagLevel > 0) {
-    art::ServiceHandle<art::TFileService> tfs;
-    _stepTimes = tfs->make<TH1F>("_stepTimes", "", 170,0,1700);
-    _stepTimes->SetXTitle("Step Time [ns]");
-  }
 }
 
 void mu2e::CompressDigiMCs::produce(art::Event & event)
@@ -370,10 +358,6 @@ art::Ptr<mu2e::StepPointMC> mu2e::CompressDigiMCs::copyStepPointMC(const mu2e::S
   StepPointMC new_step(old_step);
   new_step.simParticle() = newSimPtr;
 
-  if(_diagLevel>0) {
-    _stepTimes->Fill(old_step.time());
-  }
-  
   _newStepPointMCs->push_back(new_step);
   
   return art::Ptr<StepPointMC>(_newStepPointMCsPID, _newStepPointMCs->size()-1, _newStepPointMCGetter);
