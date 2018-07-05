@@ -6,6 +6,10 @@
 
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
+// The framework code above depends on CLHEP but does not include the header
+// so that we have to.
+#include "CLHEP/Random/RandomEngine.h"
+
 namespace mu2e {
 
   class artURBG {
