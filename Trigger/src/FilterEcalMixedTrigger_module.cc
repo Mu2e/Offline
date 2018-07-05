@@ -26,11 +26,12 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloTrigSeedCollection.hh"
 
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
 
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -51,15 +52,6 @@
 //using namespace std;
 
 namespace mu2e {
-
-  struct EcalTrigDigi{
-    int cryId;
-    float x;
-    float y;
-    float phi;
-    float tpeak;
-    float amp;
-  };
 
   struct ecalPeak{
     int disk;
@@ -99,23 +91,13 @@ namespace mu2e {
     int _diagLevel;
 
     std::string _MVAMethodLabel;
-    std::string _g4ModuleLabel;
-    std::string _virtualDetectorLabel;
-    std::string _caloDigiModuleLabel;
+    std::string _caloTrigSeedModuleLabel;
     std::string _ecalweightsfile;
     std::string _mixedweightsfile;
     art::InputTag _shTag;   
-    art::InputTag _shpTag;
+    
+    float _TOFF; // time offset to align fast clustering with tracker
 
-    SimParticleTimeOffset _toff;  // time offset smearing
-
-    float                      _ADC2MeV;
-    float                      _PEAK2E;
-    float                      _DIGITHRESHOLD;
-    float                      _T0MIN;
-    float                      _PEAKmin;
-    float                      _DTmax;
-    float                      _wcry;
     float                      _MVArpivot;
     float                      _ecalMVAhighcut0;
     float                      _ecalMVApivotcut0;
@@ -132,6 +114,11 @@ namespace mu2e {
     int                        _downscale500_factor;
     int                        _step;
     int                        _nProcessed;
+
+    int nch; // number of combo hits
+    const ComboHit*     comboHit;
+    const ComboHitCollection* _chcol;
+
 
     std::string _MVAmethod;
     static const int nECALDISKs=2;
@@ -157,40 +144,7 @@ namespace mu2e {
     float _meanr,_sigmar;
     float _sigmadphi;
     float _fevt,_fdiskpeak; // needed by TMVA reader
-
-    // Virtual hits
-    float ptvd,rvd,xcvd,ycvd,pvd,sthvd,cthvd,dphidzvd,betazvd;
-
-    // Calo Digi unpacking
-    std::vector < int > _DigiIds;
-    std::vector < double > _DigiT0s;
-    std::vector < std::vector < int > > _DigiWaves;
-  
-    // Calo Digi processing
-    std::vector <int> _cryIDs;
-    std::vector <double> _TPEAKs;
-    std::vector <double> _EPEAKs;
-    int digi_index;
-    int cryID;
-    float tnow,tmin;
-
-    // Energy ordered calo digi map
-    std::multimap<float,EcalTrigDigi> _DigiMapE[nECALDISKs];
-    EcalTrigDigi _EcalTrigDigi;
-    int cry_index;
-    float amp;
     int disk;
-
-    // Good shower peaks finding
-    std::vector <ecalPeak> _peaklist;
-    float xpeak,ypeak;
-    std::multimap<float,EcalTrigDigi> _Ring1MapE;
-    std::multimap<float,EcalTrigDigi> _Ring2MapE;
-    float x,y;
-    float dist;
-    float _ecalMVA;
-    float ecalMVAcut;
-    ecalPeak peak;
   
     // Straw hits unpacking
     std::vector < float > _StrawTimes;
@@ -198,6 +152,14 @@ namespace mu2e {
     std::vector < float > _StrawXs;
     std::vector < float > _StrawYs;
     std::vector < float > _StrawZs;
+
+    // Peak variables
+    // Good shower peaks finding
+    std::vector <ecalPeak> _peaklist;
+    float xpeak,ypeak;
+    float _ecalMVA;
+    float ecalMVAcut;
+    ecalPeak peak;
 
     // Straw hit analysis
     float zpeak;
@@ -227,6 +189,7 @@ namespace mu2e {
     int dadzbin;  
     int ndadzmax,dadzbinmax;
     float dalphadzbest;
+    float dist;
     float rfirst;
     // circle center
     static const int _nXBINs= 28;
@@ -274,28 +237,18 @@ namespace mu2e {
     _diagLevel(pset.get<int>("diagLevel",0)),
 
     _MVAMethodLabel(pset.get<std::string>("MVAMethod","BDT")), 
-    _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
-    _virtualDetectorLabel(pset.get<std::string>("virtualDetectorName")),
-    _caloDigiModuleLabel      (pset.get<std::string>("caloDigiModuleLabel","CaloDigiFromShower")), 
+    _caloTrigSeedModuleLabel(pset.get<std::string>("caloTrigSeedModuleLabel")), 
     _ecalweightsfile               (pset.get<std::string>("ecalweightsfile")),
     _mixedweightsfile               (pset.get<std::string>("mixedweightsfile")),
-    _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makeSH")),
-    _shpTag(pset.get<art::InputTag>("StrawHitPositionCollectionTag","MakeStrawHitPositions")),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
-    _ADC2MeV                   (pset.get<float>("ADC2MeV",0.0076)),
-    _PEAK2E                    (pset.get<float>("PEAK2E",6.04)),
-    _DIGITHRESHOLD             (pset.get<float>("DigiThreshold",1.)),
-    _T0MIN                     (pset.get<float>("T0min",500.)),
-    _PEAKmin                   (pset.get<float>("PEAKmin",20.)),
-    _DTmax                     (pset.get<float>("DTmax",6.)),
-    _wcry                      (pset.get<float>("wcry",34.3)),
+    _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makePH")),
+    _TOFF (pset.get<float>("TimeOFFSET",22.5)),
     _MVArpivot                 (pset.get<float>("MVArpivot",445.)),
-    _ecalMVAhighcut0                (pset.get<float>("ecalMVAhighcut0",0.5)),
-    _ecalMVApivotcut0               (pset.get<float>("ecalMVApivotcut0",0.2)),
-    _ecalMVAlowcut0                 (pset.get<float>("ecalMVAlowcut0",0.2)),
-    _ecalMVAhighcut1                (pset.get<float>("ecalMVAhighcut1",0.5)),
-    _ecalMVApivotcut1               (pset.get<float>("ecalMVApivotcut1",0.2)),
-    _ecalMVAlowcut1                 (pset.get<float>("ecalMVAlowcut1",0.2)),
+    _ecalMVAhighcut0                (pset.get<float>("ecalMVAhighcut0",-0.3)),
+    _ecalMVApivotcut0               (pset.get<float>("ecalMVApivotcut0",0.3)),
+    _ecalMVAlowcut0                 (pset.get<float>("ecalMVAlowcut0",-0.3)),
+    _ecalMVAhighcut1                (pset.get<float>("ecalMVAhighcut1",-0.3)),
+    _ecalMVApivotcut1               (pset.get<float>("ecalMVApivotcut1",-0.3)),
+    _ecalMVAlowcut1                 (pset.get<float>("ecalMVAlowcut1",-0.3)),
     _mixedMVAhighcut0                (pset.get<float>("mixedMVAhighcut0",0.5)),
     _mixedMVApivotcut0               (pset.get<float>("mixedMVApivotcut0",0.2)),
     _mixedMVAlowcut0                 (pset.get<float>("mixedMVAlowcut0",0.2)),
@@ -377,262 +330,100 @@ namespace mu2e {
     ++_nProcessed;
     if (_nProcessed%10==0 && _diagLevel > 0) std::cout<<"Processing event from FilterEcalStrawHitTrigger =  "<<_nProcessed <<std::endl;
 
+
     //Handle to the calorimeter
     art::ServiceHandle<GeometryService> geom;
     if( ! geom->hasElement<Calorimeter>() ) return false;
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
-    // Microbunch time
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
-    double _mbtime = accPar->deBuncherPeriod;
-    _toff.updateMap(event);
-    //--------------------------  Virtual hits --------------------------------  
-    if (_diagLevel > 1){
-      art::Handle<StepPointMCCollection> vdhits;
-      event.getByLabel(_g4ModuleLabel,_virtualDetectorLabel,vdhits);
-      
-      if (vdhits.isValid()){
-	for (auto iter=vdhits->begin(), ie=vdhits->end(); iter!=ie; ++iter){
-	  // the virtual hit has the same structure of the Step Point
-	  const StepPointMC& hit = *iter;
-	  // HITS in CALORIMETER VIRTUAL DETECTORS               
-	  if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
-	  
-	  double hitTimeUnfolded = _toff.timeWithOffsetsApplied(hit);
-	  double hitTime         = fmod(hitTimeUnfolded,_mbtime);
-	  
-	  CLHEP::Hep3Vector VDPos = cal.geomUtil().mu2eToTracker(hit.position());
-	  
-	  
-	  if (hit.simParticle()->pdgId()==11 &&  hit.momentum().mag()>90.){
-	    std::cout << "*** EVENT " << event.id().event() << " CE VIRTUAL HIT FOUND: x=" << VDPos.x() << " y=" << VDPos.y() << " z=" << VDPos.z() << " t=" << hitTime;
-	      
-	    ptvd=sqrt(hit.momentum().x()*hit.momentum().x()+hit.momentum().y()*hit.momentum().y());
-	    rvd= ptvd/0.3;
-	    xcvd=VDPos.x()-rvd*hit.momentum().y()/ptvd;
-	    ycvd=VDPos.y()+rvd*hit.momentum().x()/ptvd;
-	    pvd=sqrt(hit.momentum().x()*hit.momentum().x()+hit.momentum().y()*hit.momentum().y()+hit.momentum().z()*hit.momentum().z());
-	    sthvd=ptvd/pvd;
-	    cthvd=sqrt(1-sthvd*sthvd);
-	    dphidzvd=sthvd/cthvd/rvd;
-	    betazvd=cthvd;
-	    std::cout<< " r=" << rvd << " xc=" << xcvd << " yc=" << ycvd << " dphidz=" << dphidzvd << " betaz=" << betazvd << std::endl; 
-	
-	    break;
-	  }
-	}
-      }   
-    }
-    //--------------------------  Unpack Calo Digis  --------------------------------    
-    //art::Handle<CaloDigiCollection> caloDigisHandle;
-    //event.getByLabel(_caloDigiModuleLabel, caloDigisHandle);
-    auto caloDigiFlag = event.getValidHandle<mu2e::CaloDigiCollection>(_caloDigiModuleLabel);
-    if ( caloDigiFlag.product() == 0){
-      //if (! caloDigisHandle.isValid() ){
-      std::cout << "FILTERECALMVATRIGGER: CaloDigiHandle NOT VALID" << std::endl;
-      return false;
-    }
-    const CaloDigiCollection& caloDigis = *caloDigiFlag.product();
-    //const CaloDigiCollection& caloDigis(*caloDigisHandle);
-    _DigiIds.clear();
-    _DigiT0s.clear();
-    _DigiWaves.clear();
-    for (const auto& caloDigi : caloDigis){
-      _DigiIds.push_back(caloDigi.roId());
-      _DigiT0s.push_back(caloDigi.t0());
-      _DigiWaves.push_back(caloDigi.waveform());
-    }
-
-
-    //******************************************************************************
-    // Process Calo Digi
- 
-    CLHEP::Hep3Vector  crystalPos(0);
-    _cryIDs.clear();
-    _TPEAKs.clear();
-    _EPEAKs.clear();
-    digi_index=0;
-    for (std::vector<std::vector<int> >::iterator it=_DigiWaves.begin(); it!=_DigiWaves.end(); ++it){
-      if (_DigiIds.at(digi_index)%2==1){
-	digi_index++;
-	continue; // consider only even sensors
-      }
-      cryID=_DigiIds.at(digi_index)/2;
-      tmin=(float) _DigiT0s.at(digi_index);
-      for (unsigned int i=2;i<it->size()-2;++i){
-	if ( it->at(i)*_ADC2MeV*_PEAK2E > _DIGITHRESHOLD){
-	  tnow=tmin+(i+0.5)*5.; // 5 ns tick 
-	  if ( tnow > _T0MIN - _DTmax) {
-	    if ( it->at(i) > it->at(i-1) &&
-		 it->at(i) > it->at(i-2) &&
-		 it->at(i) > it->at(i+1) &&
-		 it->at(i) > it->at(i+2)){
-	      _cryIDs.push_back(cryID); 
-	      _TPEAKs.push_back((double)tnow);
-	      _EPEAKs.push_back((double)it->at(i)*_ADC2MeV*_PEAK2E);
-	    }
-	  }
-	}
-      }
-      digi_index++;
-    }
-  
+    // ------------------------- Unpack Calo Trig Seeds -------------------------------
+    art::Handle<CaloTrigSeedCollection> caloTrigSeedsHandle;
+    event.getByLabel(_caloTrigSeedModuleLabel, caloTrigSeedsHandle);
+    CaloTrigSeedCollection const& caloTrigSeeds(*caloTrigSeedsHandle);
     if (_step==1) return false;
-    // Iterate on reconstructed digi
-    for (int idisk=0;idisk<nECALDISKs;idisk++){
-      _DigiMapE[idisk].clear();
-    }
-    cry_index=0;
-    for (std::vector<int>::iterator it=_cryIDs.begin(); it!=_cryIDs.end(); ++it){
-      _tpeak= _TPEAKs.at(cry_index);
-      if (_tpeak<_T0MIN){
-	cry_index++;
-	continue;
-      }
-      cryID=*it;
-      amp= (float) _EPEAKs.at(cry_index);
-      //
-      _EcalTrigDigi.cryId= cryID;
-      crystalPos = cal.crystal(cryID).localPositionFF();
-      _EcalTrigDigi.x=crystalPos.x();
-      _EcalTrigDigi.y=crystalPos.y();
-      _EcalTrigDigi.phi = atan2(_EcalTrigDigi.y,_EcalTrigDigi.x);
-      _EcalTrigDigi.tpeak = _tpeak; 
-      _EcalTrigDigi.amp = amp; 
-      disk = cal.crystal(cryID).diskId();
-      _DigiMapE[disk].insert(std::make_pair(amp,_EcalTrigDigi));
-      cry_index++;
-    }
-    if (_step==2) return false;
-
-
-    //******************************************************************************
     // Find Good shower peaks
     _peaklist.clear();
-    // Loop on disks
-    for (int idisk=0;idisk<nECALDISKs;idisk++){
-      // Loop on digi map for this disk (amp decreasing ordered)
-      for (std::multimap<float,EcalTrigDigi>::reverse_iterator rit=_DigiMapE[idisk].rbegin(); rit!=_DigiMapE[idisk].rend(); ++rit){
-	if ( rit->second.amp < _PEAKmin) break; // peak amplitude threshold
-	xpeak=rit->second.x;
-	ypeak=rit->second.y;
-	_rpeak=sqrt(xpeak*xpeak+ypeak*ypeak);
-	_tpeak=rit->second.tpeak;
-	_Epeak=rit->first;
-	// Search crystals in close rings
-	_Ring1MapE.clear();
-	_Ring2MapE.clear();
-	for (std::multimap<float,EcalTrigDigi>::reverse_iterator rit2=_DigiMapE[idisk].rbegin(); rit2!=_DigiMapE[idisk].rend(); ++rit2){
-	  //
-	  x=rit2->second.x;
-	  y=rit2->second.y;
-	  //
-	  dist=sqrt((x-xpeak)*(x-xpeak)+(y-ypeak)*(y-ypeak));
-	  if (dist>2.5*_wcry) continue; // too far
-	  if (dist<0.5*_wcry) continue; // same as peak
-	  //
-	  if (abs(rit2->second.tpeak-_tpeak)>_DTmax) continue; // too early or too late
-	  if (dist<1.5*_wcry) _Ring1MapE.insert(std::make_pair(rit2->second.amp,rit2->second));
-	  else _Ring2MapE.insert(std::make_pair(rit2->second.amp,rit2->second));
-	}
-	if (_Ring1MapE.size()>0){
-	  std::multimap<float,EcalTrigDigi>::reverse_iterator ring1it=_Ring1MapE.rbegin();
-	  _E10=ring1it->first;
-	  if (_Ring1MapE.size()>1){
-	    std::advance(ring1it,1);
-	    _E11=ring1it->first;
-	  }
-	  else _E11=0.;
-	}
-	else{
-	  _E10=0.;
-	  _E11=0.;
-	}
-	if (_Ring2MapE.size()>0){
-	  _E20=_Ring2MapE.rbegin()->first; 
-	}
-	else _E20=0.;
-	_ecalMVA= ecalreader->EvaluateMVA(_MVAmethod);
-	if (_rpeak>_MVArpivot){
-	  ecalMVAcut=_ecalMVAlowcut[idisk];
-	}
-	else{
-	  ecalMVAcut=_ecalMVAcutA[idisk]+_ecalMVAcutB[idisk]*_rpeak;
-	}
-	if (_diagLevel > 0){
-	  std::cout<<"EVENT " << event.id().event() << " DISK " << idisk << " Epeak=" << _Epeak << " tpeak=" << _tpeak << " E10=" << _E10 << " E11=" << _E11 << " E20=" << _E20 << " ecalMVA=" << _ecalMVA << " rpeak=" << _rpeak ;
-	  if (_rpeak>_MVArpivot){
-	    std::cout << " cut at " << _ecalMVAlowcut[idisk] << std::endl;
-	  }
-	  else{
-	    ecalMVAcut=_ecalMVAcutA[idisk]+_ecalMVAcutB[idisk]*_rpeak;
-	    std::cout << " cut at " << ecalMVAcut <<  std::endl;
-	  }
-	}
-	if (_rpeak>_MVArpivot){
-	  if (_ecalMVA<_ecalMVAlowcut[idisk]) continue;
-	}
-	else{
-	  ecalMVAcut=_ecalMVAcutA[idisk]+_ecalMVAcutB[idisk]*_rpeak;
-	  if (_ecalMVA<ecalMVAcut) continue;
-	}
-	// good peak
-	peak.disk=idisk;
-	peak.x=xpeak;
-	peak.y=ypeak;
-	peak.t=_tpeak;
-	peak.ene=_Epeak;
-	peak.E10=_E10;
-	peak.E11=_E11;
-	peak.E20=_E20;
-	_peaklist.push_back(peak);
+
+    for (CaloTrigSeedCollection::const_iterator seedIt = caloTrigSeeds.begin(); seedIt != caloTrigSeeds.end(); ++seedIt){
+      disk= cal.crystal(seedIt->crystalid()).diskId();
+      _fdiskpeak   = (float) disk;
+      _Epeak   = seedIt->epeak();
+      _tpeak   = seedIt->tpeak()+_TOFF;
+      _rpeak   = seedIt->rpeak();
+      _E10   = seedIt->ring1max();
+      _E11   = seedIt->ring1max2();
+      _E20   = seedIt->ring2max();
+      //
+      _ecalMVA= ecalreader->EvaluateMVA(_MVAmethod);
+      if (_rpeak>_MVArpivot){
+	ecalMVAcut=_ecalMVAlowcut[disk];
       }
+      else{
+	ecalMVAcut=_ecalMVAcutA[disk]+_ecalMVAcutB[disk]*_rpeak;
+      }
+      if (_diagLevel > 0){
+	std::cout<<"EVENT " << event.id().event() << " DISK " << disk << " Epeak=" << _Epeak << " tpeak=" << _tpeak << " E10=" << _E10 << " E11=" << _E11 << " E20=" << _E20 << " ecalMVA=" << _ecalMVA << " rpeak=" << _rpeak ;
+	if (_rpeak>_MVArpivot){
+	  std::cout << " cut at " << _ecalMVAlowcut[disk] << std::endl;
+	}
+	else{
+	    ecalMVAcut=_ecalMVAcutA[disk]+_ecalMVAcutB[disk]*_rpeak;
+	    std::cout << " cut at " << ecalMVAcut <<  std::endl;
+	}
+      }
+      if (_rpeak>_MVArpivot){
+	if (_ecalMVA<_ecalMVAlowcut[disk]) continue;
+      }
+      else{
+	ecalMVAcut=_ecalMVAcutA[disk]+_ecalMVAcutB[disk]*_rpeak;
+	if (_ecalMVA<ecalMVAcut) continue;
+      }
+      // good peak
+      peak.disk=disk;
+      xpeak= cal.crystal(seedIt->crystalid()).localPositionFF().x();
+      ypeak= cal.crystal(seedIt->crystalid()).localPositionFF().y();
+      peak.x=xpeak;
+      peak.y=ypeak;
+      peak.t=_tpeak;
+      peak.ene=_Epeak;
+      peak.E10=_E10;
+      peak.E11=_E11;
+      peak.E20=_E20;
+      _peaklist.push_back(peak);
     }
+  
     if (_peaklist.size()<1) return false;
+    
+    if (_step==2) return false;
 
 
     // ------------------------- Unpack Straw Hits -------------------------------
     // (from ReadStrawHit_module.cc
 
-    /*
-      art::Handle<StrawHitCollection> shHandle;
-      event.getByLabel(_shTag,shHandle);
-      art::Handle<mu2e::StrawHitPositionCollection> shpHandle;
-      event.getByLabel(_shpTag,shpHandle);
-      if (! (shHandle.isValid() && shpHandle.isValid())){
-      if (! shHandle.isValid()) std::cout << "FILTERECALMVATRIGGER: StrawHit Handle NOT VALID" << std::endl;
-      if (! shpHandle.isValid()) std::cout << "FILTERECALMVATRIGGER: StrawHitPos Handle NOT VALID" << std::endl;
-      return false;
-      }
-      const StrawHitCollection& strawHits(*shHandle);
-      const StrawHitPositionCollection& strawHitPositions(*shpHandle);
-    */
-    auto strawHitFlag = event.getValidHandle<mu2e::StrawHitCollection>(_shTag);
-    auto strawHitPosFlag = event.getValidHandle<mu2e::StrawHitPositionCollection>(_shpTag);
-    if (strawHitFlag.product() == 0 || strawHitPosFlag.product() == 0 ){
-      if (strawHitFlag.product() == 0) std::cout << "FILTERECALMVATRIGGER: StrawHit Handle NOT VALID" << std::endl;
-      if (strawHitPosFlag.product() == 0) std::cout << "FILTERECALMVATRIGGER: StrawHitPos Handle NOT VALID" << std::endl;
-      return false;
-    }
-    const StrawHitCollection& strawHits = *strawHitFlag.product();
-    const StrawHitPositionCollection& strawHitPositions = *strawHitPosFlag.product();
-    _StrawTimes.clear();
-    _StrawEnes.clear();
-    _StrawXs.clear();
-    _StrawYs.clear();
-    _StrawZs.clear();
-    if ( strawHits.size()==strawHitPositions.size()){
-      for (const auto& strawHit : strawHits){
-	_StrawTimes.push_back(strawHit.time());
-	_StrawEnes.push_back(strawHit.energyDep());
-      }
-      for (const auto& strawHitPosition : strawHitPositions){
-	_StrawXs.push_back(strawHitPosition.pos().x());
-	_StrawYs.push_back(strawHitPosition.pos().y());
-	_StrawZs.push_back(strawHitPosition.pos().z());
+    auto chcolH = event.getValidHandle<mu2e::ComboHitCollection>(_shTag);
+    if (chcolH.product() != 0){
+      _chcol= chcolH.product();
+      _StrawTimes.clear();
+      _StrawEnes.clear();
+      _StrawXs.clear();
+      _StrawYs.clear();
+      _StrawZs.clear();
+      nch=_chcol->size();
+      for(int istr=0; istr<nch;++istr) {
+	comboHit=&_chcol->at(istr);
+	_StrawTimes.push_back(comboHit->time());
+	_StrawEnes.push_back(comboHit->energyDep());
+	_StrawXs.push_back(comboHit->pos().x());
+	_StrawYs.push_back(comboHit->pos().y());
+	_StrawZs.push_back(comboHit->pos().z());
       }
     }
-      
+    else{
+      std::cout << "myntuple: ComboHitCollection Handle NOT VALID" << std::endl;
+      return false;
+    }
+    
+    if (_step==3) return false;
     //-------------------------- STRAW HIT ANALYSIS --------------------------------
   
     // Loop on good shower peaks
@@ -653,10 +444,11 @@ namespace mu2e {
 	DAPAR0=-11.4;
 	DAPAR1=0.0048;
       }
+      
+      xpeak= peak.x;
+      ypeak= peak.y;
       //
       // Find circle centers close to peak 
-      xpeak=peak.x;
-      ypeak=peak.y;
       _rpeak=sqrt(xpeak*xpeak+ypeak*ypeak);
       BC= (R2SQ-R1SQ+_rpeak*_rpeak)/2./_rpeak;
       h= sqrt(R2SQ-BC*BC);
@@ -674,10 +466,10 @@ namespace mu2e {
       // peak time
       _tpeak=peak.t;
       // recover peak variables needed for MVA calulation
-      _Epeak=peak.ene;
-      _E10=peak.E10;
-      _E11=peak.E11;
-      _E20=peak.E20;
+      _Epeak = peak.ene;
+      _E10   = peak.E10;
+      _E11   = peak.E11;
+      _E20   = peak.E20;
       // Straw Hits time and position selection
       _shitlist.clear();
       straw_index=0;
@@ -703,7 +495,7 @@ namespace mu2e {
 	    if (dalpha>0) dalpha-=6.2832;
 	    n2pi=(int)((dalpha-DAPAR0-DAPAR1*zstraw)/6.2832+1.5);
 	    dalpha-=6.2832*(float)(n2pi-1);
-	      //
+	    //
 	    dz=zstraw-zpeak;
 	    dalphadz=dalpha/dz;
 	    dadzbin=(int)((dalphadz-0.003)/0.0001);
@@ -922,7 +714,7 @@ namespace mu2e {
       _fndphi0=(float) ndphicpeak;
       _fndphi1=(float) ndphicmed;
       //
-      if (_step>3){
+      if (_step>4){
 	_mixedMVA= mixedreader->EvaluateMVA(_MVAmethod);
 	if (_diagLevel > 0){
 	  std::cout<<"EVENT " << event.id().event() << " DISK " << peak.disk << " Epeak=" << _Epeak << " tpeak=" << _tpeak << " E10=" << _E10 << " E11=" << _E11 << " E20=" << _E20 << " meanz=" << _meanz << " sigmaz=" << _sigmaz << " meanr=" << _meanr << " sigmar=" << _sigmar << " sigmadphi=" << _sigmadphi << " ndphicpeak=" << ndphicpeak << " ndphicmed=" << ndphicmed << " mixedMVA=" << _mixedMVA << " rpeak=" << _rpeak;
