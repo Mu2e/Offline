@@ -83,7 +83,6 @@ namespace mu2e {
     int DNTBINs_;
     unsigned     window_;
        
-    std::deque<int> deque_;
     std::vector<std::list<FastHit>> hitList_;
     std::vector<FastHit*> seeds_;
     std::vector<CaloTrigSeed> trigseeds_;
@@ -161,7 +160,8 @@ namespace mu2e {
       auto tail = waveform.begin();
       unsigned countdown(window_ - 1);
       unsigned nCount(0);
-      deque_.clear();
+  
+      std::deque<int> deque_;
       for (; it != waveform.end(); ++it){		
 	while (!deque_.empty() && *it > deque_.back()) deque_.pop_back();
 	deque_.push_back(*it);
