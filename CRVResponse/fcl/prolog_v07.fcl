@@ -58,7 +58,7 @@ BEGIN_PROLOG
       overvoltage                  : 2.1        //V
       timeConstant                 : 13.3       //ns  according to an Hamamatsu example with R_q=150kOhm --> tau=R_q*C=13.3ns
       capacitance                  : 8.84e-14   //F   capacitance of one pixel according to specs
-      blindTime                    : 500.0      //ns
+      blindTime                    : 400.0      //ns
 
       AvalancheProbParam1          : 0.607      // = p1
       AvalancheProbParam2          : 2.7        // = p2
