@@ -221,7 +221,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
  
       for(int SiPM=0; SiPM<4; SiPM++)
       {
-        std::vector<double> times=_crvPhotons->GetArrivalTimes(SiPM);
+        const std::vector<double> &times=_crvPhotons->GetArrivalTimes(SiPM);
         _arrivalTimesFromLookupTables[SiPM].insert(_arrivalTimesFromLookupTables[SiPM].end(),times.begin(),times.end());
       }
     }

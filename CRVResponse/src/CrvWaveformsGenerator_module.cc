@@ -58,11 +58,13 @@ namespace mu2e
     double                              _FEBtimeSpread;
     double                              _minVoltage;
     double                              _noise;
+    double                              _singlePEWaveformMaxTime;
 
     CLHEP::RandFlat                     _randFlat;
     CLHEP::RandGaussQ                   _randGaussQ;
     
     std::vector<double> _timeShiftFEBsSide0, _timeShiftFEBsSide1;
+
 
     bool SingleWaveformStart(std::vector<double> &fullWaveform, size_t i);
   };
@@ -73,18 +75,18 @@ namespace mu2e
     _FEBtimeSpread(pset.get<double>("FEBtimeSpread")),         //2.0 ns (due to cable lengths differences, etc.)
     _minVoltage(pset.get<double>("minVoltage")),               //0.022V (corresponds to 3.5PE)
     _noise(pset.get<double>("noise")),
+    _singlePEWaveformMaxTime(pset.get<double>("singlePEWaveformMaxTime")),        //100ns
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
     double singlePEWaveformPrecision(pset.get<double>("singlePEWaveformPrecision"));    //1.0 ns
     double singlePEWaveformStretchFactor(pset.get<double>("singlePEWaveformStretchFactor"));    //1.047
-    double singlePEWaveformMaxTime(pset.get<double>("singlePEWaveformMaxTime"));        //200
     double singlePEReferenceCharge(pset.get<double>("singlePEReferenceCharge")); //1.8564e-13 C (the charge which was used to generate the above 1PE waveform)
     ConfigFileLookupPolicy configFile;
     _singlePEWaveformFileName = configFile(_singlePEWaveformFileName);
     _makeCrvWaveforms = boost::shared_ptr<mu2eCrv::MakeCrvWaveforms>(new mu2eCrv::MakeCrvWaveforms());
     _makeCrvWaveforms->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformPrecision, singlePEWaveformStretchFactor, 
-                                            singlePEWaveformMaxTime, singlePEReferenceCharge);
+                                            _singlePEWaveformMaxTime, singlePEReferenceCharge);
     produces<CrvDigiMCCollection>();
   }
 
@@ -184,7 +186,8 @@ namespace mu2e
             std::map<art::Ptr<SimParticle>, int> simparticles;
             for(size_t j=0; j<timesAndCharges.size(); j++)
             {
-              if(timesAndCharges[j]._time>=digiStartTime-50.0 && timesAndCharges[j]._time<=digiStartTime+50.0)  //FIXME
+              if(timesAndCharges[j]._time>=digiStartTime-_singlePEWaveformMaxTime && 
+                 timesAndCharges[j]._time<=digiStartTime+CrvDigiMC::NSamples*_digitizationPeriod)
               {
                 steps.insert(timesAndCharges[j]._step);
                 if(timesAndCharges[j]._step.isNonnull()) simparticles[timesAndCharges[j]._step->simParticle()]++;
