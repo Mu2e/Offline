@@ -19,6 +19,7 @@
 // Mu2e includes
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawEnd.hh"
+#include "TrackerConditions/inc/Types.hh"
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 #include "TrackerConditions/inc/Types.hh"
 #include "fhiclcpp/ParameterSet.h"
@@ -41,10 +42,10 @@ namespace mu2e {
       // relative time when linear response is maximal
       double maxResponseTime(Path ipath,double distance) const;
   // digization
-      uint16_t adcResponse(StrawId id, double mvolts) const; // ADC response to analog inputs
-      uint16_t tdcResponse(double time) const; // TDC response to a given time
+      TrkTypes::ADCValue adcResponse(StrawId id, double mvolts) const; // ADC response to analog inputs
+      TrkTypes::TDCValue tdcResponse(double time) const; // TDC response to a given time
       void digitizeWaveform(StrawId id, TrkTypes::ADCVoltages const& wf,TrkTypes::ADCWaveform& adc) const; // digitize an array of voltages at the ADC
-      void digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc) const;
+      bool digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc) const;
       void uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const; // convert time from beam t0 to tracker channel t0
       bool combineEnds(double t1, double t2) const; // are times from 2 ends combined into a single digi?
   // interpretation of digital data
@@ -99,7 +100,7 @@ namespace mu2e {
       double _snoise; // straw noise at threshold
       double _analognoise[npaths]; //noise (mVolt) from the straw itself
       double _ADCLSB; // least-significant bit of ADC (mVolts)
-      uint16_t _maxADC; // maximum ADC value
+      TrkTypes::ADCValue _maxADC; // maximum ADC value
       std::vector<uint16_t> _ADCped; // ADC pedestal (reading for 0 volts)
       size_t _nADC,_nADCpre; // Number of ADC samples, presamples
       double _ADCPeriod; // ADC period in nsec
@@ -107,13 +108,14 @@ namespace mu2e {
       unsigned _maxtsep; // maximum # of ADC clock ticks between straw end threshold crossings to form a digi
       unsigned _TCoince; // maxing threshold xing pair time separation to create a digi, in number of ADC clock cycles
       double _TDCLSB; // least-significant bit of TDC (nsecs)
-      uint16_t _maxTDC; // maximum TDC value
+      TrkTypes::TDCValue _maxTDC; // maximum TDC value
       double _TOTLSB; // least-significant bit of TOT (nsecs)
-      uint16_t _maxTOT; // maximum TOT value
+      TrkTypes::TOTValue _maxTOT; // maximum TOT value
       double _tdcResolution; // tdc resolution (electronics effects only) (nsecs)
       double _clockStart, _clockJitter; // time TDC clock starts, and its error (common to both ends!!)
       // clockstart is the time offset between "microbunch time" t0 (beam) and TDC t0
       double _flashStart, _flashEnd; // flash blanking period (no digitizations during this time!!!)
+      TrkTypes::TDCValue _flashStartTDC, _flashEndTDC; // TDC values corresponding to the above
   // helper functions
       static inline double mypow(double,unsigned);
 

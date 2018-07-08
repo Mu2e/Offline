@@ -28,8 +28,8 @@ namespace mu2e {
 	ClusterList const& clustList() const { return _clist; }
 	// insert a new clust, in time order.
 	ClusterList::iterator insert(StrawCluster const& clust);
-	StrawId strawId() const { return _strawId; }
-	StrawEnd strawEnd() const { return _end; }
+	StrawId const& strawId() const { return _strawId; }
+	StrawEnd const& strawEnd() const { return _end; }
       private:
 	StrawId _strawId;
 	StrawEnd _end;

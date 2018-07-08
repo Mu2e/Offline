@@ -46,9 +46,8 @@ namespace mu2e {
     _tdcResolution(pset.get<double>("TDCResolution",0.1)), // ns
     _clockStart(pset.get<double>("clockStart",10.0)), // nsec
     _clockJitter(pset.get<double>("clockJitter",0.2)), // nsec
-    _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
+    _flashStart(pset.get<double>("FlashStart",1695.0)), //nsec
     _flashEnd(pset.get<double>("FlashEnd",500.0)), // nsec
-
     _responseBins(pset.get<int>("ResponseBins",10000)),
     _sampleRate(pset.get<double>("SampleRate",10.0)), // ghz
     _saturationSampleFactor(pset.get<int>("SaturationSampleFactor",50)),
@@ -69,47 +68,48 @@ namespace mu2e {
     _timeOffsetPanel(pset.get<vector<double> >("TimeOffsetPanel",vector<double>(240,0))),
     _timeOffsetStrawHV(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0))),
     _timeOffsetStrawCal(pset.get<vector<double> >("TimeOffsetStrawCal",vector<double>(96,0)))
- {
-
-   _ADCped.resize(96,0);
-   for (int i=0;i<96;i++){
-     double avgThresh = (_vthresh[i*2+0] + _vthresh[i*2+1])/2.;
-     _ADCped[i] = (uint16_t) ((_maxADC+1)/2. - avgThresh/_ADCLSB * 20);
-   }
-   _ttrunc[thresh] = (_responseBins/2)/_sampleRate;
-   _ttrunc[adc] = (_responseBins/2)/_sampleRate;
-   
-   // precompute ion drift current pulses
-    _currentImpulse = std::vector<double>(_responseBins,0);
-    _currentImpulse[_responseBins/2] = 1;
-    _preampToAdc2Response = std::vector<double>(_responseBins,0);
-    calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_currentImpulse,_preampToAdc2Response);
-
-    for (size_t ai=0;ai<_wireDistances.size();ai++){
-      _wPoints.push_back(WireDistancePoint(_wireDistances[ai],_currentMeans[ai],_currentNormalizations[ai],_currentSigmas[ai],_currentT0s[ai]));
-      _wPoints[ai]._currentPulse = std::vector<double>(_responseBins,0);
-      double integral = 0;
-      for (int i=0;i<_responseBins;i++){
-        double t_gaus = (i-_responseBins/2)/_sampleRate;
-        double val_gaus = 1/sqrt(TMath::TwoPi()*_wPoints[ai]._sigma*_wPoints[ai]._sigma)*exp(-((t_gaus-_wPoints[ai]._mean)*(t_gaus-_wPoints[ai]._mean))/(2*_wPoints[ai]._sigma*_wPoints[ai]._sigma));
-        for (int j=0;j<_responseBins-i;j++){
-          double t_tail = j/_sampleRate;
-          double val = val_gaus / (t_tail + _wPoints[ai]._t0);
-          _wPoints[ai]._currentPulse[i+j] += val;
-          integral += val;
-        }
+    {
+      _flashStartTDC = tdcResponse(_flashStart);
+      _flashEndTDC = tdcResponse(_flashEnd);
+      _ADCped.resize(96,0);
+      for (int i=0;i<96;i++){
+	double avgThresh = (_vthresh[i*2+0] + _vthresh[i*2+1])/2.;
+	_ADCped[i] = (ADCValue) ((_maxADC+1)/2. - avgThresh/_ADCLSB * 20);
       }
-      for (int i=0;i<_responseBins;i++){
-        // correct for sampleRate so that calculateResponse peak is independent of it
-        // this combined with pC_per_uA_ns is the unit transform from pC to uA
-        _wPoints[ai]._currentPulse[i] /= _sampleRate * _pC_per_uA_ns;
-        _wPoints[ai]._currentPulse[i] /= 4.615; // normalization for 1/(t+t0)
-        _wPoints[ai]._currentPulse[i] *= _wPoints[ai]._normalization;
-      }
+      _ttrunc[thresh] = (_responseBins/2)/_sampleRate;
+      _ttrunc[adc] = (_responseBins/2)/_sampleRate;
 
-      // calculate parameters for transfer function
-      _wPoints[ai]._preampResponse = std::vector<double>(_responseBins,0);
-      _wPoints[ai]._adcResponse = std::vector<double>(_responseBins,0);
+      // precompute ion drift current pulses
+      _currentImpulse = std::vector<double>(_responseBins,0);
+      _currentImpulse[_responseBins/2] = 1;
+      _preampToAdc2Response = std::vector<double>(_responseBins,0);
+      calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_currentImpulse,_preampToAdc2Response);
+
+      for (size_t ai=0;ai<_wireDistances.size();ai++){
+	_wPoints.push_back(WireDistancePoint(_wireDistances[ai],_currentMeans[ai],_currentNormalizations[ai],_currentSigmas[ai],_currentT0s[ai]));
+	_wPoints[ai]._currentPulse = std::vector<double>(_responseBins,0);
+	double integral = 0;
+	for (int i=0;i<_responseBins;i++){
+	  double t_gaus = (i-_responseBins/2)/_sampleRate;
+	  double val_gaus = 1/sqrt(TMath::TwoPi()*_wPoints[ai]._sigma*_wPoints[ai]._sigma)*exp(-((t_gaus-_wPoints[ai]._mean)*(t_gaus-_wPoints[ai]._mean))/(2*_wPoints[ai]._sigma*_wPoints[ai]._sigma));
+	  for (int j=0;j<_responseBins-i;j++){
+	    double t_tail = j/_sampleRate;
+	    double val = val_gaus / (t_tail + _wPoints[ai]._t0);
+	    _wPoints[ai]._currentPulse[i+j] += val;
+	    integral += val;
+	  }
+	}
+	for (int i=0;i<_responseBins;i++){
+	  // correct for sampleRate so that calculateResponse peak is independent of it
+	  // this combined with pC_per_uA_ns is the unit transform from pC to uA
+	  _wPoints[ai]._currentPulse[i] /= _sampleRate * _pC_per_uA_ns;
+	  _wPoints[ai]._currentPulse[i] /= 4.615; // normalization for 1/(t+t0)
+	  _wPoints[ai]._currentPulse[i] *= _wPoints[ai]._normalization;
+	}
+
+	// calculate parameters for transfer function
+	_wPoints[ai]._preampResponse = std::vector<double>(_responseBins,0);
+	_wPoints[ai]._adcResponse = std::vector<double>(_responseBins,0);
       _wPoints[ai]._preampToAdc1Response = std::vector<double>(_responseBins,0);
       calculateResponse(_preampPoles,_preampZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._preampResponse);
       calculateResponse(_adcPoles,_adcZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._adcResponse);
@@ -276,14 +276,14 @@ namespace mu2e {
     return charge * (p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][sid.getStraw()];
   }
 
-  uint16_t StrawElectronics::adcResponse(StrawId sid, double mvolts) const {
-    return min(static_cast<uint16_t>(max(static_cast<int>(floor(mvolts/_ADCLSB)+_ADCped[sid.getStraw()]),0)),_maxADC);
+  ADCValue StrawElectronics::adcResponse(StrawId sid, double mvolts) const {
+    return min(static_cast<ADCValue>(max(static_cast<int>(floor(mvolts/_ADCLSB)+_ADCped[sid.getStraw()]),0)),_maxADC);
   }
 
-  uint16_t StrawElectronics::tdcResponse(double time) const {
+  TDCValue StrawElectronics::tdcResponse(double time) const {
     // Offset to when the TDC clock starts
-    double time_from_mb = fmod(time-_clockStart,1695); 
-    return min(static_cast<uint16_t>(max(static_cast<int>(floor((time_from_mb)/_TDCLSB)),0)),_maxTDC);
+    double time_from_mb = time-_clockStart;
+    return min(static_cast<TDCValue>(max(static_cast<int>(floor((time_from_mb)/_TDCLSB)),0)),_maxTDC);
   }
 
   
@@ -301,9 +301,17 @@ void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCW
       }
   }
 
-  void StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdc) const {
+  bool StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdcs) const {
     for(size_t itime=0;itime<2;++itime)
-      tdc[itime] = tdcResponse(times[itime]);
+      tdcs[itime] = tdcResponse(times[itime]);
+// test these times against the flash blanking.  not sure if we should require
+// one or both to be valid FIXME!.
+// The test should be done module the TDC clock not the exact TDC FIXME!
+    bool notflash(true);
+    for(auto tdc : tdcs){
+      notflash &= tdc > _flashEndTDC && tdc < _flashStartTDC;
+    }
+    return notflash;
   }
 
   void StrawElectronics::adcTimes(double time, ADCTimes& adctimes) const {
@@ -319,8 +327,8 @@ void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCW
   
   bool StrawElectronics::combineEnds(double t1, double t2) const {
     // currently two clock ticks are allowed for coincidence time
-    int clockTicks1 = static_cast<int>(floor(t1-_clockStart)/_ADCPeriod);
-    int clockTicks2 = static_cast<int>(floor(t2-_clockStart)/_ADCPeriod);
+    int clockTicks1 = static_cast<int>(floor((t1-_clockStart)/_ADCPeriod));
+    int clockTicks2 = static_cast<int>(floor((t2-_clockStart)/_ADCPeriod));
     return (unsigned)abs(clockTicks1-clockTicks2) < _maxtsep;
   }
 
@@ -329,11 +337,11 @@ void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCW
     times[StrawEnd::cal] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.getStraw()];
   }
 
-  double StrawElectronics::adcVoltage(StrawId sid, uint16_t adcval) const {
+  double StrawElectronics::adcVoltage(StrawId sid, ADCValue adcval) const {
     return (adcval-_ADCped[sid.getStraw()])*_ADCLSB;
   }
 
-  double StrawElectronics::adcCurrent(StrawId sid, uint16_t adcval) const {
+  double StrawElectronics::adcCurrent(StrawId sid, ADCValue adcval) const {
   // this includes the effects from normalization of the pulse shape
     return adcVoltage(sid,adcval)/_dVdI[adc][sid.getStraw()];
   }

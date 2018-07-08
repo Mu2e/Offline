@@ -58,8 +58,8 @@ namespace mu2e {
 	StrawClusterSequence const& clusts() const { return _cseq; }
 	ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }
 	XTalk const& xtalk() const { return _xtalk; }
-	StrawEnd strawEnd() const { return _cseq.strawEnd(); }
-        StrawId const strawId() const { return _cseq.strawId();}
+	StrawEnd const& strawEnd() const { return _cseq.strawEnd(); }
+        StrawId const& strawId() const { return _sid; }
       private:
 	// clust sequence used in this waveform
 	StrawClusterSequence const& _cseq;
