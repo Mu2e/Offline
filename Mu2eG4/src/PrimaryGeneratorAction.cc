@@ -72,7 +72,7 @@ namespace mu2e {
     genEventBroker_(gen_eventbroker),
     perEvtObjManager(per_evtobjmanager)
   {
-      
+
       if(fill) {
           art::ServiceHandle<art::TFileService> tfs;
           _totalMultiplicity = tfs->make<TH1D>( "totalMultiplicity", "Total multiplicity of primary particles", 20, 0, 20);
@@ -98,38 +98,40 @@ namespace mu2e {
                            per_evtobjmanager)
     {}
 
-    
+
 //load in per-art-event data from GenEventBroker and per-G4-event data from EventObjectManager
 void PrimaryGeneratorAction::setEventData()
     {
-        
+
         if (G4Threading::IsWorkerThread())//if this is being called by a worker thread, we are in MT mode
         {
             //get the instance of the GenParticleCollection that we need for this event
             GenEventBroker::GenParticleCollectionInstance genCollectionInstance = genEventBroker_->getNextGenPartCollectionInstance();
-            
+
             //store the instance number currently being used
             perEvtObjManager->storeEventInstanceNumber(genCollectionInstance.instanceNumber);
-            
+
             //here's the ptr to the GPC
             genParticles_ = genCollectionInstance.genCollection;
 
         }
         else//we are in sequential mode
         {
-            genParticles_ = genEventBroker_->getGenParticleHandle().product();
+            genParticles_ = genEventBroker_->getGenParticleHandle().isValid() ?
+                            genEventBroker_->getGenParticleHandle().product() :
+                            nullptr;
             perEvtObjManager->storeEventInstanceNumber(0);
         }
-        
+
         hitInputs_ = genEventBroker_->getHitHandles();
-        
+
         perEvtObjManager->createSimParticleHelpers(genEventBroker_->getproductID(),
                                                    genEventBroker_->getartEvent(),
                                                    &(genEventBroker_->getGenParticleHandle()),
                                                    genEventBroker_->getSimProductGetter());
-        
+
         parentMapping_ = perEvtObjManager->getSimParticlePrimaryHelper();
-        
+
     }
 
 
@@ -137,12 +139,10 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     {
         //load the GenParticleCollection etc for the event
         setEventData();
-
         // For debugging.
         //testTrack(anEvent);
 
         fromEvent(anEvent);
-
     }
 
   // Copy generated particles from the event into G4.
@@ -160,7 +160,7 @@ void PrimaryGeneratorAction::fromEvent(G4Event* event)
         G4ThreeVector const mu2eOrigin =
         (!_config.getBool("mu2e.standardDetector",true) || !(geom->isStandardMu2eDetector()))
         ?  G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
-        
+
         // For each generated particle, add it to the event.
         if(genParticles_) {
             for (unsigned i=0; i < genParticles_->size(); ++i) {
@@ -172,12 +172,12 @@ void PrimaryGeneratorAction::fromEvent(G4Event* event)
                               genpart.time(),
                               genpart.properTime(),
                               genpart.momentum());
-                
+
                 parentMapping_->addEntryFromGenParticle(i);
             }
         }
-        
-        
+
+
         // a test
         // int ovl = verbosityLevel_;
         // verbosityLevel_ = 2;
@@ -190,10 +190,10 @@ void PrimaryGeneratorAction::fromEvent(G4Event* event)
         //               G4ThreeVector());
         // verbosityLevel_ = ovl;
 
- 
+
         // Also create particles from the input hits
         for(const auto& hitcoll : *hitInputs_) {
-            
+
             for(const auto& hit : *hitcoll) {
                 addG4Particle(event,
                               hit.simParticle()->pdgId(),
@@ -202,12 +202,12 @@ void PrimaryGeneratorAction::fromEvent(G4Event* event)
                               hit.time(),
                               hit.properTime(),
                               hit.momentum());
-                
+
                 parentMapping_->addEntryFromStepPointMC(hit.simParticle()->id());
-                
+
             }
         }
-        
+
         // Fill multiplicity histogram.
         if(_totalMultiplicity){
             _totalMultiplicity->Fill(parentMapping_->numPrimaries());
