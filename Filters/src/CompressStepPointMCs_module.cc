@@ -37,6 +37,9 @@
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
+
 namespace mu2e {
   class CompressStepPointMCs;
 
@@ -133,6 +136,8 @@ private:
   double _stepTime;
   double _stepEdep;
   int _filtered;
+
+  double _mbtime; // period of 1 microbunch
 };
 
 
@@ -201,6 +206,8 @@ void mu2e::CompressStepPointMCs::produce(art::Event & event)
     _newSimParticleTimeMaps.push_back(std::unique_ptr<SimParticleTimeMap>(new SimParticleTimeMap));
   }
 
+  ConditionsHandle<AcceleratorParams> accPar("ignored");
+  _mbtime = accPar->deBuncherPeriod;
   _toff.updateMap(event);
 
   _newStepPointMCs.clear();
@@ -213,7 +220,10 @@ void mu2e::CompressStepPointMCs::produce(art::Event & event)
     const auto& stepPointMCs = *_stepPointMCsHandle;
     for (const auto& i_stepPointMC : stepPointMCs) {
       double i_edep = i_stepPointMC.totalEDep();
-      double i_time = _toff.timeWithOffsetsApplied(i_stepPointMC);
+      double i_time = std::fmod(_toff.timeWithOffsetsApplied(i_stepPointMC), _mbtime);
+      while (i_time < 0) {
+	i_time += _mbtime;
+      }
       
       if (_diagLevel > 0) {
 	_eventid = event.id().event();
