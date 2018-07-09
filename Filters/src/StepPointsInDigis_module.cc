@@ -31,6 +31,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "MCDataProducts/inc/GenId.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 namespace mu2e {
   class StepPointsInDigis;
@@ -69,9 +70,15 @@ private:
 
   int _diagLevel;
   TTree* _steps;
-  double _stepX, _stepY, _stepZ, _stepRawTime, _stepEDep;
+  double _stepX, _stepY, _stepZ, _stepRawTime, _stepOffsettedTime, _stepEDep;
   unsigned _stepGenId;
   unsigned _stepProductId;
+
+  TTree* _digis;
+  double _digiTime;
+  unsigned _digiProductId;
+
+  SimParticleTimeOffset _toff;
 };
 
 
@@ -79,7 +86,8 @@ mu2e::StepPointsInDigis::StepPointsInDigis(fhicl::ParameterSet const & pset)
   : art::EDAnalyzer(pset),
     _strawDigiMCTag(pset.get<art::InputTag>("strawDigiMCTag")),
     _crvDigiMCTag(pset.get<art::InputTag>("crvDigiMCTag")),
-    _diagLevel(pset.get<int>("diagLevel", 0))
+    _diagLevel(pset.get<int>("diagLevel", 0)),
+    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
 {
   // Call appropriate produces<>() functions here.
   art::ServiceHandle<art::TFileService> tfs;
@@ -88,14 +96,23 @@ mu2e::StepPointsInDigis::StepPointsInDigis(fhicl::ParameterSet const & pset)
   _steps->Branch("y", &_stepY);
   _steps->Branch("z", &_stepZ);
   _steps->Branch("raw_time", &_stepRawTime);
+  _steps->Branch("offsetted_time", &_stepOffsettedTime);
   _steps->Branch("edep", &_stepEDep);
   _steps->Branch("genId", &_stepGenId);
   _steps->Branch("productId", &_stepProductId);
+
+  _digis = tfs->make<TTree>("_digis", "Digis");
+  _digis->Branch("time", &_digiTime);
+  _digis->Branch("productId", &_digiProductId);
+  _digis->Branch("step_raw_time", &_stepRawTime);
+  _digis->Branch("step_offsetted_time", &_stepOffsettedTime);
 }
 
 void mu2e::StepPointsInDigis::analyze(art::Event const& event)
 {
   // Implementation of required member function here.
+  _toff.updateMap(event);
+
   event.getByLabel(_strawDigiMCTag, _strawDigiMCsHandle);
   const auto& strawDigiMCs = *_strawDigiMCsHandle;
   for (const auto& i_strawDigiMC : strawDigiMCs) {
@@ -114,6 +131,10 @@ void mu2e::StepPointsInDigis::analyze(art::Event const& event)
 	fillTree(*i_step_mc);
       }
     }
+
+    _digiProductId = _stepProductId;
+    _digiTime = i_strawDigiMC.wireEndTime(StrawEnd::cal);
+    _digis->Fill();
   }
 
   event.getByLabel(_crvDigiMCTag, _crvDigiMCsHandle);
@@ -134,6 +155,7 @@ void mu2e::StepPointsInDigis::fillTree(const mu2e::StepPointMC& old_step) {
   _stepY = old_step.position().y();
   _stepZ = old_step.position().z();
   _stepRawTime = old_step.time();
+  _stepOffsettedTime = _toff.timeWithOffsetsApplied(old_step);
   _stepEDep = old_step.totalEDep();
   art::Ptr<SimParticle> simPtr = old_step.simParticle();
   while (simPtr->isSecondary()) {
