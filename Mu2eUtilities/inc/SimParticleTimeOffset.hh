@@ -37,6 +37,7 @@ namespace mu2e {
 
     explicit SimParticleTimeOffset(const Config& conf);
     explicit SimParticleTimeOffset(const fhicl::ParameterSet& pset); // legacy
+    explicit SimParticleTimeOffset(const std::vector<art::InputTag>& tags);
 
     void updateMap(const art::Event& evt);
 

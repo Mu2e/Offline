@@ -27,6 +27,12 @@ namespace mu2e {
     }
   }
 
+  SimParticleTimeOffset::SimParticleTimeOffset(const std::vector<art::InputTag>& tags) {
+    for(const auto& i_tag : tags) {
+      inputs_.emplace_back(i_tag);
+    }
+  }
+
   void SimParticleTimeOffset::updateMap(const art::Event& evt) {
     offsets_.clear();
     for(const auto& tag: inputs_) {
