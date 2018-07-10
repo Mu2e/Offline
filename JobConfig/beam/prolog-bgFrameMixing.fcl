@@ -61,6 +61,21 @@ mixerTemplateCRV.mu2e.products: {
       ]
    }
 }
+# flash cut configuration
+CRVCut : { module_type : CompressStepPointMCs
+	 			    stepPointMCTags : [ "crvFilter:CRV" ]
+				    caloShowerStepTags : [ ]
+				    simParticleTag : "crvFilter"
+				    minTime : 350
+				    maxTime : 1695
+				    minEdep : 10.0e-6
+				    maxEdep : 1.0e6
+				    timeMapTags : @nil
+				    diagLevel : 0
+     				  }
+
+# multiple proton maps for mixing cut files in MDC2018
+protonTimeMaps : ["protonTimeMap", "flashProtonTimeMap", "PSCRVProtonTimeMap", "DSCRVProtonTimeMap"]
 
 MDC2018Mixers : {
   filters : {
