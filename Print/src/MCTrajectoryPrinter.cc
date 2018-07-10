@@ -122,7 +122,7 @@ mu2e::MCTrajectoryPrinter::PrintHeader(const std::string& tag, std::ostream& os)
 void 
 mu2e::MCTrajectoryPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
-  os << "ind   parent  npoint       first Point            firstT             firstEk            last Point           lastT           lastEk\n";
+  os << "ind   parent  npoint       first Point            firstT     firstEk            last Point           lastT    lastEk\n";
 }
 
 void 
