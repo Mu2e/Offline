@@ -26,6 +26,12 @@ physics : {
          mean: 39.e6
 	 halfWidth: 0.1
       }
+      pbiln: {
+         module_type: ProtonBunchIntensityLogNormal
+         mean: 3.9e7
+	 sigma: 0.3814
+	 cutoff: 7.8e7
+      }
    }
 
    analyzers: {
@@ -33,12 +39,16 @@ physics : {
 	 module_type: ProtonBunchIntensityAnalyzer
 	 input: pbiflat
       }
+      hln: {
+	 module_type: ProtonBunchIntensityAnalyzer
+	 input: pbiln
+      }
    }
 
-   t1: [ pbiflat ]
+   t1: [ pbiflat, pbiln ]
    trigger_paths: [t1]
 
-   a1: [ hflat ]
+   a1: [ hflat, hln ]
    end_paths: [ a1 ]
 }
 

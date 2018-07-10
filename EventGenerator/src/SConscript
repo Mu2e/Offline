@@ -46,7 +46,8 @@ mainlib = helper.make_mainlib ( [
         'HepPDT',
         'HepPID',
         rootlibs,
-        'boost_system'
+        'boost_system',
+        'gsl',
         ], [],[]
         )
 
@@ -85,6 +86,7 @@ helper.make_plugins( [ mainlib,
                        rootlibs,
                        'boost_filesystem',
                        'boost_system',
+                       'gsl',
                      ] )
 
 # This tells emacs to view this file in python mode.
