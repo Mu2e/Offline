@@ -51,7 +51,8 @@ physics : {
     @sequence::MDC2018Mixers.sequence,
     @sequence::CommonDigiSim.DigiSim,
     @sequence::TrackerMC.DigiSim,
-    @sequence::CaloDigiMC.DigiSim,
+#    @sequence::CaloDigiMC.DigiSim,
+    CaloDigiFromShower,
     @sequence::CrvDAQPackage.CrvResponseSequence,
     compressDigiMCs
   ]
@@ -69,7 +70,10 @@ physics.producers.protonTimeMap.ReadMap : true
 physics.producers.protonTimeMap.InputTimeMap : "protonTimeMapPreFilter"
 physics.producers.muonTimeMap.ReadMap : true
 physics.producers.muonTimeMap.InputTimeMap : "muonTimeMapPreFilter"
-
+# update time maps for cut mixins.  Multiple time maps for protons comes from flash cutting
+physics.producers.CrvPhotons.timeOffsets.inputs : [ @sequence::protonTimeMaps, "muonTimeMap"]
+physics.producers.makeSD.TimeOffsets.inputs : [ @sequence::protonTimeMaps, "muonTimeMap" ]
+# what to do about calorimeter?  They don't use time offset maps?  If so, where???
 # MDC2018 values 
 #include "JobConfig/beam/mixepilog.fcl"
 services.TFileService.fileName: "nts.owner.CeEndpoint-mix.version.sequencer.root"
