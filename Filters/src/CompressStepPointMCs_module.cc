@@ -136,6 +136,14 @@ private:
   double _stepTime;
   double _stepEdep;
   int _filtered;
+  int _nSimGenerations;
+
+  TTree* _filterDiagCalo;
+  int _eventidCalo;
+  double _stepTimeCalo;
+  double _stepEdepCalo;
+  int _filteredCalo;
+  int _nSimGenerationsCalo;
 
   double _mbtime; // period of 1 microbunch
 };
@@ -174,6 +182,14 @@ mu2e::CompressStepPointMCs::CompressStepPointMCs(fhicl::ParameterSet const & pse
     _filterDiag->Branch("time", &_stepTime);
     _filterDiag->Branch("edep", &_stepEdep);
     _filterDiag->Branch("filtered", &_filtered);
+    _filterDiag->Branch("nSimGenerations", &_nSimGenerations);
+
+    _filterDiagCalo = tfs->make<TTree>("_fdiagCalo", "Filter Diag");
+    _filterDiagCalo->Branch("eventid", &_eventidCalo);
+    _filterDiagCalo->Branch("time", &_stepTimeCalo);
+    _filterDiagCalo->Branch("edep", &_stepEdepCalo);
+    _filterDiagCalo->Branch("filtered", &_filteredCalo);
+    _filterDiagCalo->Branch("nSimGenerations", &_nSimGenerationsCalo);
   }
 }
 
@@ -256,7 +272,34 @@ void mu2e::CompressStepPointMCs::produce(art::Event & event)
     event.getByLabel(i_caloStepTag, _caloShowerStepsHandle);
     const auto& caloShowerSteps = *_caloShowerStepsHandle;
     for (const auto& i_caloShowerStep : caloShowerSteps) {
-      copyCaloShowerStep(i_caloShowerStep);
+
+      double i_edep = i_caloShowerStep.energyMC();
+      double i_time = std::fmod(i_caloShowerStep.timeStepMC(), _mbtime);
+      while (i_time < 0) {
+	i_time += _mbtime;
+      }
+
+
+      if (_diagLevel > 0) {
+	_eventidCalo = event.id().event();
+	_stepTimeCalo = i_time;
+	_stepEdepCalo = i_edep;
+	_filteredCalo = 0;
+      }
+
+      if ( (i_edep > _minEdep && i_edep < _maxEdep) &&
+	   (i_time > _minTime && i_time < _maxTime) ) {
+	
+	if (_diagLevel > 0) {
+	  _filteredCalo = 1;
+	}
+	copyCaloShowerStep(i_caloShowerStep);
+      }
+
+      if (_diagLevel > 0) {
+	_filterDiagCalo->Fill();
+      }
+
     }
   }
 
@@ -318,12 +361,14 @@ art::Ptr<mu2e::StepPointMC> mu2e::CompressStepPointMCs::copyStepPointMC(const mu
   // Also need to add all the parents (and change their genParticles) too
   art::Ptr<SimParticle> childPtr = old_step.simParticle();
   art::Ptr<SimParticle> parentPtr = childPtr->parent();
-  
+
+  _nSimGenerations = 1;
   while (parentPtr) {
     _simParticlesToKeep.push_back(parentPtr->id());
 
     childPtr = parentPtr;
     parentPtr = parentPtr->parent();
+    ++_nSimGenerations;
   }
   
   StepPointMC new_step(old_step);
@@ -347,12 +392,14 @@ art::Ptr<mu2e::CaloShowerStep> mu2e::CompressStepPointMCs::copyCaloShowerStep(co
     // Also need to add all the parents (and change their genParticles) too
     art::Ptr<SimParticle> childPtr = old_step.simParticle();
     art::Ptr<SimParticle> parentPtr = childPtr->parent();
-  
+
+    _nSimGenerationsCalo = 1;  
     while (parentPtr) {
       _simParticlesToKeep.push_back(parentPtr->id());
       
       childPtr = parentPtr;
       parentPtr = parentPtr->parent();
+      ++_nSimGenerationsCalo;
     }
     
     CaloShowerStep new_step(old_step.volumeId(), newSimPtr, old_step.nCompress(), old_step.timeStepMC(), old_step.energyMC(), old_step.momentumIn(), old_step.positionIn(), old_step.position(), old_step.covPosition());
