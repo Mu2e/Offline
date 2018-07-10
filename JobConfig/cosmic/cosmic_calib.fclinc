@@ -11,6 +11,9 @@
 #include "fcl/standardServices.fcl"
 #include "Validation/fcl/prolog.fcl"
 
+#!!!! special temporary insert
+#include "CRVResponse/fcl/prolog_v07.fcl"
+
 BEGIN_PROLOG
 
 // cut EM showers far from the detector, tracker in inserted position
@@ -149,7 +152,7 @@ physics :
       # trk and cal digis
       @table::TrackerMC.producers
       @table::CaloDigiMC.producers
-
+      @table::CrvDAQPackage.producers
       compressPV : 
       {
          module_type: CompressPhysicalVolumes
@@ -172,15 +175,17 @@ physics :
 	 strawDigiMCs : "makeSD"
 	 caloShowerSteps : "CaloShowerStepFromStepPt:calorimeter"
 	 crvSteps : "g4run:CRV"
+	 crvDigiMCs : "CrvWaveforms"
 	 # the filter cuts, these are OR'ed
 	 minTrkDigis : 10 # digi count
 	 minCalEnergy : 5.0 # MeV
 	 minCrvSteps : 1 # StepPointMC count
+	 minCrvDigis : 1 # digi count
 	 # re-write and save these StepPointMCs 
 	 copyHits : [ "g4run:tracker", "g4run:CRV", "g4run:virtualdetector" ]
 	 # with these instance names
 	 copyHitsNames : ["tracker", "crv", "virtualdetector"]
-	 # re-write and save these StepPointMCs 
+	 # re-write and save these Trajectories 
 	 copyTrajs : [ "g4run" ]
 	 # with these instance names
 	 copyTrajsNames : [ "" ]
@@ -229,9 +234,15 @@ physics :
       }
    }
 
+   trigFilterNoCrv : [generate, genCounter, g4run, 
+      g4status, g4consistent,  makeSD,
+      @sequence::CaloDigiMC.DigiSim, 
+      calibCosmicFilter, compressPV]
    trigFilter     : [generate, genCounter, g4run, 
       g4status, g4consistent,  makeSD,
-      @sequence::CaloDigiMC.DigiSim, calibCosmicFilter, compressPV]
+      @sequence::CaloDigiMC.DigiSim, 
+      @sequence::CrvDAQPackage.CrvResponseSequence, 
+      calibCosmicFilter, compressPV]
    trigger_paths  : [trigFilter]
 
    outputs: [filteredOutput]
@@ -256,7 +267,8 @@ outputs:
          "keep *_compressPV_*_calibCosmicExt",
          "keep mu2e::StrawDigis_*_*_*",
          "keep mu2e::*_calibCosmicFilter_*_*",
-         "keep mu2e::CaloDigis_*_*_*"
+         "keep mu2e::CaloDigis_*_*_*",
+         "keep mu2e::CrvDigis_*_*_*"
       ]
    }
 }
@@ -267,6 +279,7 @@ physics.producers.g4run.physics.minRangeCut : 0.01 // mm
 # don't bother with time collections
 physics.producers.makeSD.TimeOffsets : {}
 physics.producers.CaloShowerStepROFromShowerStep.TimeOffsets : {}
+physics.producers.CrvPhotons.timeOffsets : {}
 
 // turn on Calo compression for muons
 physics.producers.CaloShowerStepFromStepPt.compressMuons : true

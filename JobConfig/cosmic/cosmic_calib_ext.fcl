@@ -6,11 +6,6 @@
 # StepPointMC's for CRV.
 #
 #
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
-#include "Mu2eG4/fcl/prolog.fcl"
-
 # this defines the calibration cosmic job
 #include "JobConfig/cosmic/cosmic_calib.fclinc"
 # and is customized for detector extended position in this file
@@ -27,8 +22,18 @@ physics.producers.generate.inputfile : "JobConfig/cosmic/genconfig_cosmic_calib_
 # sim through the detectors, stop in dirt
 physics.producers.g4run.Mu2eG4CommonCut : @local::CommonCutExt
 
+# garage geom turns off CRV, so take it out of processing
+physics.trigger_paths : [trigFilterNoCrv]
+outputs.filteredOutput.SelectEvents : [trigFilterNoCrv]
+physics.analyzers.validation.SelectEvents : [trigFilterNoCrv]
+physics.filters.calibCosmicFilter.crvSteps : ""
+physics.filters.calibCosmicFilter.crvDigiMCs : ""
+physics.filters.calibCosmicFilter.copyHits : [ "g4run:tracker", "g4run:virtualdetector" ]
+physics.filters.calibCosmicFilter.copyHitsNames : ["tracker", "virtualdetector"]
+
 # filter on tracker and cal, not CRV hits
 physics.filters.calibCosmicFilter.minCrvSteps  : 1000000
+physics.filters.calibCosmicFilter.minCrvDigis  : 1000000
 
 services.TFileService.fileName  : "nts.owner.cosmic_calib_ext.version.sequencer.root"
 outputs.filteredOutput.fileName : "sim.owner.cosmic_calib_ext.version.sequencer.art"

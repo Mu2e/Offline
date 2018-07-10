@@ -42,6 +42,7 @@
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStepCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStepROCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
 
 
@@ -73,6 +74,7 @@ namespace mu2e {
     art::InputTag _trkDMCtag; // the tracker StrawDigiMC collection
     art::InputTag _calCSStag;  // the CaloShowerStep coll
     art::InputTag _crvSPMCtag;  // the CaloShowerStep coll
+    art::InputTag _crvDMCtag;  // the CaloShowerStep coll
     InputTags _copySPMC; // StepPointMCs to repoint
     VS _copySPMCnames; // output names
     InputTags _copyTraj; // Trajectories to repoint
@@ -86,6 +88,7 @@ namespace mu2e {
     std::size_t _minTrkDigis;
     double _minCalEnergy;
     std::size_t _minCrvSteps;
+    std::size_t _minCrvDigis;
     int _verbose;
   };
 
@@ -96,10 +99,14 @@ namespace mu2e {
     _trkDMCtag = art::InputTag(pset.get<std::string>("strawDigiMCs","MakeSD"));
     _calCSStag = art::InputTag(pset.get<std::string>("caloShowerSteps",
 					     "CaloShowerStepFromStepPt"));
-    _crvSPMCtag = art::InputTag(pset.get<std::string>("crvSteps","g4run"));
+    _crvSPMCtag = art::InputTag(pset.get<std::string>("crvSteps",""));
+    _crvDMCtag = art::InputTag(pset.get<std::string>("crvDigiMCs",""));
     // will need to re-write these collections
     produces<mu2e::StrawDigiMCCollection>(_trkDMCtag.instance());
     produces<mu2e::CaloShowerStepCollection>(_calCSStag.instance());
+    if(_crvDMCtag!="") {
+      produces<mu2e::CrvDigiMCCollection>(_crvDMCtag.instance());
+    }
 
     // new filtered SimParticle collection
     produces<mu2e::SimParticleCollection>(""); 
@@ -132,6 +139,7 @@ namespace mu2e {
     _minTrkDigis = pset.get<int>("minTrkDigis",0);
     _minCalEnergy = pset.get<int>("minCalEnergy",-1.0);
     _minCrvSteps = pset.get<int>("minCrvSteps",0);
+    _minCrvDigis = pset.get<int>("minCrvDigis",0);
 
     _verbose = pset.get<int>("verbose",0);
 
@@ -143,11 +151,9 @@ namespace mu2e {
     bool passed = false;
 
     auto trkDMC = 
-      event.getValidHandle<mu2e::StrawDigiMCCollection>(_trkDMCtag);
+      event.getValidHandle<StrawDigiMCCollection>(_trkDMCtag);
     auto calCSS  = 
       event.getValidHandle<CaloShowerStepCollection>(_calCSStag);
-    auto crvSPMC = 
-      event.getValidHandle<mu2e::StepPointMCCollection>(_crvSPMCtag);
     auto simPh  = 
       event.getValidHandle<SimParticleCollection>("g4run");
     auto const& simP = *simPh;
@@ -159,21 +165,34 @@ namespace mu2e {
     for(auto const& s: *calCSS) energy += s.energyMC();
     if(energy>=_minCalEnergy) passed = true;
 
-    if(crvSPMC->size()>=_minCrvSteps) passed = true;
+    int ncrvSPMC = 0;
+    if(_crvSPMCtag!="") {
+      auto crvSPMC = event.getValidHandle<StepPointMCCollection>(_crvSPMCtag);
+      if(crvSPMC->size()>=_minCrvSteps) passed = true;
+      ncrvSPMC = crvSPMC->size();
+    }
 
+    int ncrvDMC = 0;
+    if(_crvDMCtag!="") {
+      auto crvDMC = event.getValidHandle<CrvDigiMCCollection>(_crvDMCtag);
+      if(crvDMC->size()>=_minCrvDigis) passed = true;
+      ncrvDMC = crvDMC->size();
+    }
 
-    if(_verbose>3) std::cout 
-	    << "CalibCosmicFilter results of filtering " 
-	    << "  trk hits: " << std::setw(4) << trkDMC->size() 
-	    << " cut:" << std::setw(4) << _minTrkDigis
-	    << "  cal energy: " 
-	    << std::setw(9) << std::setprecision(3) << energy 
-	    << "  cut:" 
-	    << std::setw(9) << std::setprecision(3) << _minCalEnergy
-	    << "  crv steps: " << std::setw(4) << crvSPMC->size() 
-	    << " cut:" << std::setw(4) << _minCrvSteps
-            << "  passed: " << passed << std::endl;
-
+    if(_verbose>3) { std::cout 
+	<< "CalibCosmicFilter results of filtering:"  << std::endl
+	<< "    trk hits: " << std::setw(4) << trkDMC->size() 
+	<< " cut:" << std::setw(4) << _minTrkDigis  << std::endl
+	<< "    cal energy: " 
+	<< std::setw(9) << std::setprecision(3) << energy 
+	<< "  cut:" 
+	<< std::setw(9) << std::setprecision(3) << _minCalEnergy  << std::endl
+	<< "    crv steps: " << std::setw(4) << ncrvSPMC 
+	<< " cut:" << std::setw(4) << _minCrvSteps  << std::endl
+	<< "    crv digis: " << std::setw(4) << ncrvDMC 
+	<< " cut:" << std::setw(4) << _minCrvDigis << std::endl
+	<< "    passed: " << passed << std::endl;
+    }
 
     //************* make the list of saved SimParticles
     SPset SPsave;  // std::set of SP keys
@@ -195,6 +214,26 @@ namespace mu2e {
     if(_verbose>5) std::cout 
 	    << "CalibCosmicFilter SimParticles saved after cal " 
             << SPsave.size() << std::endl;
+
+    // save SimParticles for CRV
+    if(_crvDMCtag!="") {
+      auto crvDMC = event.getValidHandle<CrvDigiMCCollection>(_crvDMCtag);
+      for(auto const& cd : *crvDMC) {
+	// CrvDigiMC SimParticle may be null
+	if(cd.GetSimParticle().isAvailable()) {
+	  SPsave.insert(cd.GetSimParticle().key());
+	}
+	for(auto const& s: cd.GetStepPoints()) {
+	  // CrvDigiMC SPMC may be null
+	  if(s.isAvailable()) {
+	    SPsave.insert(s->simParticle().key());
+	  }
+	}
+      }
+      if(_verbose>5) std::cout 
+         << "CalibCosmicFilter SimParticles saved after CrvDigis " 
+         << SPsave.size() << std::endl;
+    }
 
     // save the SimParticles pointed to by SPMcs
     for(auto const& tag: _copySPMC) { // loop over string of input tags
@@ -234,6 +273,7 @@ namespace mu2e {
     //**********  write filtered output collection of SimParticles
 
     // these are needed to set the art::Ptrs
+    // create map of old SimP to new SimP
     auto SPpid = getProductID<SimParticleCollection>("");
     auto SPpg  = event.productGetter(SPpid);
     // make a set of new SimParticle art pointers for use later
@@ -242,6 +282,8 @@ namespace mu2e {
     for(auto const& i : SPsave) { // list of saved SimParticle keys
       SPPtrmap[i] = art::Ptr<SimParticle>(SPpid,i,SPpg);
     }
+    // add that null goes to null for CRV
+    SPPtrmap[-1] = art::Ptr<SimParticle>();
 
     std::unique_ptr<mu2e::SimParticleCollection> 
                        outSPp(new mu2e::SimParticleCollection());
@@ -279,6 +321,8 @@ namespace mu2e {
 	SPMCmap[art::Ptr<StepPointMC>(h,j)] = art::Ptr<StepPointMC>(pid,j,pg); 
 	j++;
       }
+      // add a null goes to null for CRV
+      SPMCmap[art::Ptr<StepPointMC>()] = art::Ptr<StepPointMC>();
 
       if(_verbose>5) std::cout 
 		       << "CalibCosmicFilter StepPointMCs written "
@@ -346,6 +390,29 @@ namespace mu2e {
 
     event.put(std::move(outCSSp), _calCSStag.instance());
 
+
+    //re-write CrvDigiMC collection
+    if(_crvDMCtag!="") {
+      std::unique_ptr<mu2e::CrvDigiMCCollection> 
+	outCrvDMCp(new mu2e::CrvDigiMCCollection());
+      auto& outCrvDMC = *outCrvDMCp;
+      
+      auto crvDMC = event.getValidHandle<CrvDigiMCCollection>(_crvDMCtag);
+      for(auto d: *crvDMC) {
+	stepMCs.clear();
+	for(auto i:d.GetStepPoints()) stepMCs.push_back(SPMCmap[i]);
+	outCrvDMC.push_back( mu2e::CrvDigiMC(
+	     d.GetVoltages(),stepMCs,SPPtrmap[d.GetSimParticle().key()],
+	     d.GetStartTime(),d.GetScintillatorBarIndex(),d.GetSiPMNumber()) );
+      } // loop over digis
+      
+      if(_verbose>5) std::cout 
+		       << "CalibCosmicFilter CrvDigiMC written "
+		       << _crvDMCtag.instance() << " " 
+		       << outCrvDMCp->size() << std::endl;
+      
+      event.put(std::move(outCrvDMCp), _crvDMCtag.instance());
+    }
 
     return passed;
 
