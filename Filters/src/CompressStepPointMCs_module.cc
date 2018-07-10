@@ -67,6 +67,17 @@ namespace mu2e {
     std::set<cet::map_vector_key> m_keys;
     
   };
+
+  struct StepDiagInfo {
+    Int_t _eventid;
+    Float_t _stepRawTime;
+    Float_t _stepTime;
+    Float_t _stepEdep;
+    Int_t _filtered;
+    Int_t _nSimGenerations;
+
+    static std::string leafNames() { return "eventid/I:raw_time/F:time/F:edep/F:filtered/I:nSimGenerations/I"; }
+  };
 }
 
 
@@ -132,18 +143,9 @@ private:
 
   int _diagLevel;
   TTree* _filterDiag;
-  int _eventid;
-  double _stepTime;
-  double _stepEdep;
-  int _filtered;
-  int _nSimGenerations;
-
+  StepDiagInfo _stepDiag;
   TTree* _filterDiagCalo;
-  int _eventidCalo;
-  double _stepTimeCalo;
-  double _stepEdepCalo;
-  int _filteredCalo;
-  int _nSimGenerationsCalo;
+  StepDiagInfo _caloStepDiag;
 
   double _mbtime; // period of 1 microbunch
 };
@@ -178,18 +180,10 @@ mu2e::CompressStepPointMCs::CompressStepPointMCs(fhicl::ParameterSet const & pse
   if (_diagLevel > 0) {
     art::ServiceHandle<art::TFileService> tfs;
     _filterDiag = tfs->make<TTree>("_fdiag", "Filter Diag");
-    _filterDiag->Branch("eventid", &_eventid);
-    _filterDiag->Branch("time", &_stepTime);
-    _filterDiag->Branch("edep", &_stepEdep);
-    _filterDiag->Branch("filtered", &_filtered);
-    _filterDiag->Branch("nSimGenerations", &_nSimGenerations);
+    _filterDiag->Branch("step", &_stepDiag, StepDiagInfo::leafNames().c_str());
 
     _filterDiagCalo = tfs->make<TTree>("_fdiagCalo", "Filter Diag");
-    _filterDiagCalo->Branch("eventid", &_eventidCalo);
-    _filterDiagCalo->Branch("time", &_stepTimeCalo);
-    _filterDiagCalo->Branch("edep", &_stepEdepCalo);
-    _filterDiagCalo->Branch("filtered", &_filteredCalo);
-    _filterDiagCalo->Branch("nSimGenerations", &_nSimGenerationsCalo);
+    _filterDiagCalo->Branch("calo_step", &_caloStepDiag, StepDiagInfo::leafNames().c_str());
   }
 }
 
@@ -242,17 +236,18 @@ void mu2e::CompressStepPointMCs::produce(art::Event & event)
       }
       
       if (_diagLevel > 0) {
-	_eventid = event.id().event();
-	_stepTime = i_time;
-	_stepEdep = i_edep;
-	_filtered = 0;
+	_stepDiag._eventid = event.id().event();
+	_stepDiag._stepRawTime = i_stepPointMC.time();
+	_stepDiag._stepTime = i_time;
+	_stepDiag._stepEdep = i_edep;
+	_stepDiag._filtered = 0;
       }
       
       if ( (i_edep > _minEdep && i_edep < _maxEdep) &&
 	   (i_time > _minTime && i_time < _maxTime) ) {
 	
 	if (_diagLevel > 0) {
-	  _filtered = 1;
+	  _stepDiag._filtered = 1;
 	}
 	copyStepPointMC(i_stepPointMC);
       }
@@ -274,24 +269,32 @@ void mu2e::CompressStepPointMCs::produce(art::Event & event)
     for (const auto& i_caloShowerStep : caloShowerSteps) {
 
       double i_edep = i_caloShowerStep.energyMC();
-      double i_time = std::fmod(i_caloShowerStep.timeStepMC(), _mbtime);
+      double i_time;
+      if (i_caloShowerStep.simParticle().get()) { // see note below in copyCaloShowerStep
+	i_time = std::fmod(i_caloShowerStep.timeStepMC()+_toff.totalTimeOffset(i_caloShowerStep.simParticle()), _mbtime);
+      }
+      else {
+	continue;
+      }
+      
       while (i_time < 0) {
 	i_time += _mbtime;
       }
 
 
       if (_diagLevel > 0) {
-	_eventidCalo = event.id().event();
-	_stepTimeCalo = i_time;
-	_stepEdepCalo = i_edep;
-	_filteredCalo = 0;
+	_caloStepDiag._eventid = event.id().event();
+	_caloStepDiag._stepRawTime = i_caloShowerStep.timeStepMC();
+	_caloStepDiag._stepTime = i_time;
+	_caloStepDiag._stepEdep = i_edep;
+	_caloStepDiag._filtered = 0;
       }
 
       if ( (i_edep > _minEdep && i_edep < _maxEdep) &&
 	   (i_time > _minTime && i_time < _maxTime) ) {
 	
 	if (_diagLevel > 0) {
-	  _filteredCalo = 1;
+	  _caloStepDiag._filtered = 1;
 	}
 	copyCaloShowerStep(i_caloShowerStep);
       }
@@ -362,13 +365,13 @@ art::Ptr<mu2e::StepPointMC> mu2e::CompressStepPointMCs::copyStepPointMC(const mu
   art::Ptr<SimParticle> childPtr = old_step.simParticle();
   art::Ptr<SimParticle> parentPtr = childPtr->parent();
 
-  _nSimGenerations = 1;
+  _stepDiag._nSimGenerations = 1;
   while (parentPtr) {
     _simParticlesToKeep.push_back(parentPtr->id());
 
     childPtr = parentPtr;
     parentPtr = parentPtr->parent();
-    ++_nSimGenerations;
+    ++_stepDiag._nSimGenerations;
   }
   
   StepPointMC new_step(old_step);
@@ -393,13 +396,13 @@ art::Ptr<mu2e::CaloShowerStep> mu2e::CompressStepPointMCs::copyCaloShowerStep(co
     art::Ptr<SimParticle> childPtr = old_step.simParticle();
     art::Ptr<SimParticle> parentPtr = childPtr->parent();
 
-    _nSimGenerationsCalo = 1;  
+    _caloStepDiag._nSimGenerations = 1;  
     while (parentPtr) {
       _simParticlesToKeep.push_back(parentPtr->id());
       
       childPtr = parentPtr;
       parentPtr = parentPtr->parent();
-      ++_nSimGenerationsCalo;
+      ++_caloStepDiag._nSimGenerations;
     }
     
     CaloShowerStep new_step(old_step.volumeId(), newSimPtr, old_step.nCompress(), old_step.timeStepMC(), old_step.energyMC(), old_step.momentumIn(), old_step.positionIn(), old_step.position(), old_step.covPosition());
