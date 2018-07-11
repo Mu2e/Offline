@@ -13,7 +13,7 @@ source : {
    readParameterSets: false
 }
 
-physics.producers.flashProtonTimeMap : { module_type : GenerateProtonTimes }
+physics.producers.protonTimeMap : { module_type : GenerateProtonTimes }
 
 services : @local::mu2e.services.simServices 
 # note we are implicitly dropping virtual detector and IPA StepPoints
@@ -25,13 +25,14 @@ physics.producers.flashMixerTrkCalCut : { module_type : CompressStepPointMCs
 				    	  maxTime : 1705
 				    	  minEdep : -10.0 # no cut on energy for tracker
 				    	  maxEdep : 1.0e9
-				    	  timeMapTags : [ "flashProtonTimeMap" ]
+				    	  timeMapTags : [ "protonTimeMap" ]
+					  AllHitsPlanes : [34,35] # don't filter hits from outer straws in these planes
 				    	  diagLevel : 0
      				  	}
 
 physics.analyzers.genCountLogger: { module_type: GenEventCountReader }
 
-physics.triggerpath: [ flashProtonTimeMap, flashMixerTrkCalCut]
+physics.triggerpath: [ protonTimeMap, flashMixerTrkCalCut]
 physics.endpath : [ flashMixerTrkCalCutOutput, genCountLogger ]
 
 

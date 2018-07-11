@@ -45,8 +45,7 @@ namespace mu2e {
     CLHEP::RandExponential  rexp_;
     double mean_;
     int  verbosityLevel_;
-    bool readmap_;
-    art::ProductToken<SimParticleTimeMap> const inmap_; // optional input map
+    std::vector<art::ProductToken<SimParticleTimeMap>> inmaps_; // optional input maps
 
     static double getMean(const  fhicl::ParameterSet& pset);
   };
@@ -56,9 +55,11 @@ namespace mu2e {
     : rexp_(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
     , mean_(getMean(pset))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
-    , readmap_(pset.get<bool>("ReadMap",false))
-    , inmap_{mayConsume<SimParticleTimeMap>(pset.get<art::InputTag>("InputTimeMap","null"))}
-  {
+    {
+    std::vector<art::InputTag> inmaps = pset.get<std::vector<art::InputTag> >("InputTimeMaps",std::vector<art::InputTag>());
+    for(auto const& tag : inmaps ){
+      inmaps_.push_back(consumes<SimParticleTimeMap>(tag));
+    }
     consumesMany<SimParticleCollection>();
     produces<SimParticleTimeMap>();
     if(verbosityLevel_ > 0) {
@@ -79,15 +80,13 @@ namespace mu2e {
 
   //================================================================
   void GenerateMuonLife::produce(art::Event& event) {
-  // optionally copy over input map
-    SimParticleTimeMap* map(0);
-    if(readmap_){
-      auto inmap = event.getValidHandle(inmap_);
-      map = new SimParticleTimeMap(*inmap.product());
-    } else
-      map = new SimParticleTimeMap;
+    std::unique_ptr<SimParticleTimeMap> res(new SimParticleTimeMap);
+    // copy over input maps (if any)
+    for(auto const& token : inmaps_) {
+      auto inmap = event.getValidHandle(token);
+      res->insert(inmap->begin(),inmap->end());
+    }
 
-    std::unique_ptr<SimParticleTimeMap> res(map);
 
     std::vector<art::Handle<SimParticleCollection> > colls;
     event.getManyByType(colls);

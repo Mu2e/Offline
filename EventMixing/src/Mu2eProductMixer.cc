@@ -73,6 +73,11 @@ namespace mu2e {
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixProtonBunchIntensity, *this);
     }
 
+    for(const auto& e: conf.protonTimeMapMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixProtonTimeMap, *this);
+    }
+
   }
 
   //----------------------------------------------------------------
@@ -189,6 +194,19 @@ namespace mu2e {
     for(const auto& x: in) {
       out.add(*x);
     }
+
+    return true;
+  }
+
+  bool Mu2eProductMixer::mixProtonTimeMap(std::vector<SimParticleTimeMap const*> const& in,
+                                                 SimParticleTimeMap& out,
+                                                 art::PtrRemapper const& remap)
+  {
+//    for(SimParticleTimeMap::size_type i=0; i<out.size(); ++i) {
+//      auto ie = getInputEventIndex(i, stepOffsets);
+//      auto& step = out[i];
+//      step.first = remap(step.first, simOffsets_[ie]);
+//    }
 
     return true;
   }

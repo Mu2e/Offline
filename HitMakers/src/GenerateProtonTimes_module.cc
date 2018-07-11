@@ -49,8 +49,7 @@ namespace mu2e {
     std::unique_ptr<ProtonPulseRandPDF>  protonPulse_;
 
     std::string listStream( const GenIdSet& vsList );
-    bool readmap_;
-    art::ProductToken<SimParticleTimeMap> const inmap_; // optional input map
+    std::vector<art::ProductToken<SimParticleTimeMap> > inmaps_; // optional input maps
 
   };
 
@@ -59,9 +58,11 @@ namespace mu2e {
     : engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()) )
     , protonPset_( pset.get<fhicl::ParameterSet>("randPDFparameters", fhicl::ParameterSet() ) )
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
-    , readmap_(pset.get<bool>("ReadMap",false))
-    , inmap_{mayConsume<SimParticleTimeMap>(pset.get<art::InputTag>("InputTimeMap","null"))}
   {
+    std::vector<art::InputTag> inmaps = pset.get<std::vector<art::InputTag> >("InputTimeMaps",std::vector<art::InputTag>());
+    for(auto const& tag : inmaps ){
+      inmaps_.push_back(consumes<SimParticleTimeMap>(tag));
+    }
     consumesMany<SimParticleCollection>();
     produces<SimParticleTimeMap>();
 
@@ -113,24 +114,21 @@ namespace mu2e {
 
   //================================================================
   void GenerateProtonTimes::produce(art::Event& event) {
-  // optionally copy over input map
-    SimParticleTimeMap* map(0);
-    if(readmap_){
-      auto inmap = event.getValidHandle(inmap_);
-      map = new SimParticleTimeMap(*inmap.product());
-    } else
-      map = new SimParticleTimeMap;
-
-    std::unique_ptr<SimParticleTimeMap> res(map);
+    std::unique_ptr<SimParticleTimeMap> res(new SimParticleTimeMap);
+    // copy over input maps (if any)
+    for(auto const& token : inmaps_) {
+      auto inmap = event.getValidHandle(token);
+      res->insert(inmap->begin(),inmap->end());
+    }
 
     std::vector<art::Handle<SimParticleCollection> > colls;
     event.getManyByType(colls);
-  
+
 
     // Generate and record offsets for all primaries
     for(const auto& ih : colls) {
       for(const auto& iter : *ih) {
-        if(iter.second.isPrimary()) {
+	if(iter.second.isPrimary()) {
 	  art::Ptr<SimParticle> part(ih, iter.first.asUint());
 	  // don't re-simulate if particle is already present.  This can happen if there is an input map
 	  if(res->find(part) == res->end()){

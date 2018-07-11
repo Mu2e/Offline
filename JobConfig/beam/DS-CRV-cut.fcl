@@ -15,10 +15,9 @@ source : {
   readParameterSets: false
 }
 
-physics.producers.DSCRVProtonTimeMap : { module_type : GenerateProtonTimes }
+physics.producers.protonTimeMap : { module_type : GenerateProtonTimes }
 
 physics.producers.DSMixerCRVCut : @local::CRVCut
-physics.producers.DSMixerCRVCut.timeMapTags : [ "DSCRVProtonTimeMap" ]
 
 outputs.DSMixerCRVCutOutput.module_type : RootOutput
 outputs.DSMixerCRVCutOutput.outputCommands : [ "drop *_*_*_*",
@@ -28,7 +27,7 @@ outputs.DSMixerCRVCutOutput.outputCommands : [ "drop *_*_*_*",
 outputs.DSMixerCRVCutOutput.fileName : "sim.owner.DS-CRV-cut.version.sequencer.art"
 
 # trigger path
-physics.p1: [ DSCRVProtonTimeMap, DSMixerCRVCut ]
+physics.p1: [ protonTimeMap, DSMixerCRVCut ]
 physics.e1 : [ DSMixerCRVCutOutput ]
 
 services.SeedService.baseSeed         :  773651

@@ -31,6 +31,7 @@
 #include "MCDataProducts/inc/CaloShowerStepCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "MCDataProducts/inc/SimParticleTimeMap.hh"
 
 //================================================================
 namespace mu2e {
@@ -67,6 +68,7 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> caloShowerStepMixer { fhicl::Name("caloShowerStepMixer") };
       fhicl::Table<CollectionMixerConfig> extMonSimHitMixer { fhicl::Name("extMonSimHitMixer") };
       fhicl::Table<CollectionMixerConfig> protonBunchIntensityMixer { fhicl::Name("protonBunchIntensityMixer") };
+      fhicl::Table<CollectionMixerConfig> protonTimeMapMixer { fhicl::Name("protonTimeMapMixer") };
     };
 
     Mu2eProductMixer(const Config& conf, art::MixHelper& helper);
@@ -96,6 +98,10 @@ namespace mu2e {
     bool mixProtonBunchIntensity(std::vector<mu2e::ProtonBunchIntensity const*> const &in,
                                  mu2e::ProtonBunchIntensity& out,
                                  art::PtrRemapper const& remap);
+
+    bool mixProtonTimeMap(std::vector<mu2e::SimParticleTimeMap const*> const &in,
+			    	mu2e::SimParticleTimeMap& out,
+				art::PtrRemapper const& remap);
 
     //----------------
     // If elements of a collection can be pointed to by other

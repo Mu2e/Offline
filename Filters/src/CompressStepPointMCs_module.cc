@@ -140,6 +140,8 @@ private:
   double _maxTime;
   double _minEdep;
   double _maxEdep;
+  uint16_t _allStraw; // minimum straw # to keep all hits
+  std::vector<uint16_t> _allPlanes; // planes in which to keep all hits
 
   int _diagLevel;
   TTree* _filterDiag;
@@ -148,6 +150,8 @@ private:
   StepDiagInfo _caloStepDiag;
 
   double _mbtime; // period of 1 microbunch
+
+
 };
 
 
@@ -161,6 +165,8 @@ mu2e::CompressStepPointMCs::CompressStepPointMCs(fhicl::ParameterSet const & pse
     _maxTime(pset.get<double>("maxTime")),
     _minEdep(pset.get<double>("minEdep")),
     _maxEdep(pset.get<double>("maxEdep")),
+    _allStraw(pset.get<uint16_t>("AllHitsStraw",90)), 
+    _allPlanes(pset.get<std::vector<uint16_t>>("AllHitsPlanes",std::vector<uint16_t>{})), // planes to read all hits
     _diagLevel(pset.get<int>("diagLevel"))
 {
   // Call appropriate produces<>() functions here.
@@ -242,10 +248,16 @@ void mu2e::CompressStepPointMCs::produce(art::Event & event)
 	_stepDiag._stepEdep = i_edep;
 	_stepDiag._filtered = 0;
       }
-      
-      if ( (i_edep > _minEdep && i_edep < _maxEdep) &&
-	   (i_time > _minTime && i_time < _maxTime) ) {
-	
+     
+     // check if we are keeping all hits for this straw
+      StrawId sid = i_stepPointMC.strawId();
+      bool keepall = sid.straw() >= _allStraw &&
+	std::find(_allPlanes.begin(),_allPlanes.end(),sid.plane()) != _allPlanes.end();
+
+      if ( keepall || 
+	  ((i_edep > _minEdep && i_edep < _maxEdep) &&
+	   (i_time > _minTime && i_time < _maxTime) ) )  {
+
 	if (_diagLevel > 0) {
 	  _stepDiag._filtered = 1;
 	}

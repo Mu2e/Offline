@@ -70,13 +70,11 @@ CRVCut : { module_type : CompressStepPointMCs
 				    maxTime : 1695
 				    minEdep : 10.0e-6
 				    maxEdep : 1.0e6
-				    timeMapTags : @nil
+				    timeMapTags : [ "protonTimeMap" ]
 				    diagLevel : 0
      				  }
 
-# multiple proton maps for mixing cut files in MDC2018
-protonTimeMaps : ["protonTimeMap", "flashProtonTimeMap", "PSCRVProtonTimeMap", "DSCRVProtonTimeMap"]
-
+# multiple proton maps for mixing cut files in MDC2018protonTimeMaps : ["protonTimeMap", "ProtonTimeMap", "PSCRVProtonTimeMap", "DSCRVProtonTimeMap"]
 MDC2018Mixers : {
   filters : {
     # TrkCal
@@ -98,7 +96,9 @@ MDC2018Mixers : {
     #
 
   }
-  sequence : [
+  protonTimeMaps : [ "flashMixerTrkCal:protonTimeMap", "PSMixerCRV:protonTimeMap", "DSMixerCRV:protonTimeMap"]
+
+sequence : [
     flashMixerTrkCal,
     ootMixerTrkCal, neutronMixerTrkCal, dioMixerTrkCal,
     photonMixerTrkCal, protonMixerTrkCal, deuteronMixerTrkCal,
