@@ -13,7 +13,7 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
@@ -81,7 +81,7 @@ namespace mu2e {
 }
 
 
-class mu2e::CompressStepPointMCs : public art::EDProducer {
+class mu2e::CompressStepPointMCs : public art::EDFilter {
 public:
   explicit CompressStepPointMCs(fhicl::ParameterSet const & pset);
   // The compiler-generated destructor is fine for non-base
@@ -94,9 +94,10 @@ public:
   CompressStepPointMCs & operator = (CompressStepPointMCs &&) = delete;
 
   // Required functions.
-  void produce(art::Event & event) override;
+  bool filter(art::Event & event) override;
 
   // Other functions
+  virtual void endJob() override;
   art::Ptr<StepPointMC> copyStepPointMC(const mu2e::StepPointMC& old_step);
   art::Ptr<CaloShowerStep> copyCaloShowerStep(const mu2e::CaloShowerStep& old_step);
 
@@ -151,7 +152,8 @@ private:
 
   double _mbtime; // period of 1 microbunch
 
-
+  unsigned _numInputEvents;
+  unsigned _numOutputEvents;
 };
 
 
@@ -167,7 +169,8 @@ mu2e::CompressStepPointMCs::CompressStepPointMCs(fhicl::ParameterSet const & pse
     _maxEdep(pset.get<double>("maxEdep")),
     _allStraw(pset.get<uint16_t>("AllHitsStraw",90)), 
     _allPlanes(pset.get<std::vector<uint16_t>>("AllHitsPlanes",std::vector<uint16_t>{})), // planes to read all hits
-    _diagLevel(pset.get<int>("diagLevel"))
+    _diagLevel(pset.get<int>("diagLevel")),
+    _numInputEvents(0), _numOutputEvents(0)
 {
   // Call appropriate produces<>() functions here.
   for (std::vector<art::InputTag>::const_iterator i_tag = _stepPointMCTags.begin(); i_tag != _stepPointMCTags.end(); ++i_tag) {
@@ -193,9 +196,10 @@ mu2e::CompressStepPointMCs::CompressStepPointMCs(fhicl::ParameterSet const & pse
   }
 }
 
-void mu2e::CompressStepPointMCs::produce(art::Event & event)
+bool mu2e::CompressStepPointMCs::filter(art::Event & event)
 {
   // Implementation of required member function here.
+  bool passed = false;
   _simParticlesToKeep.clear();
     
   _newSimParticles = std::unique_ptr<SimParticleCollection>(new SimParticleCollection);
@@ -325,6 +329,7 @@ void mu2e::CompressStepPointMCs::produce(art::Event & event)
   compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles, 
 				_simParticlesToKeep, *_newSimParticles);
 
+  passed = !_newSimParticles->empty();
   for(auto& i : *_newSimParticles) {
       
     mu2e::SimParticle& newsim = i.second;
@@ -366,6 +371,10 @@ void mu2e::CompressStepPointMCs::produce(art::Event & event)
     size_t i_element = i_tag - _timeMapTags.begin();
     event.put(std::move(_newSimParticleTimeMaps.at(i_element)), (*i_tag).label());
   }
+
+  ++_numInputEvents;
+  if (passed) { ++_numOutputEvents; }
+  return passed;
 }
 
 art::Ptr<mu2e::StepPointMC> mu2e::CompressStepPointMCs::copyStepPointMC(const mu2e::StepPointMC& old_step) {
@@ -428,6 +437,11 @@ art::Ptr<mu2e::CaloShowerStep> mu2e::CompressStepPointMCs::copyCaloShowerStep(co
   }
 }
 
+void mu2e::CompressStepPointMCs::endJob() {
+
+  mf::LogInfo("Summary")
+    << "CompressStepPointMCs_module stats: passed = " << _numOutputEvents << " / " << _numInputEvents;
+}
 
 
 DEFINE_ART_MODULE(mu2e::CompressStepPointMCs)

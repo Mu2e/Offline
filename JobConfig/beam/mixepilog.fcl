@@ -25,6 +25,7 @@ physics.filters.TSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crv
 physics.filters.DSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
 # mustops
 physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+
 # patches for cut inputs
 physics.filters.flashMixerTrkCal.mu2e.products.genParticleMixer: { mixingMap: [ [ "flashMixerTrkCalCut", "" ] ] }
 physics.filters.flashMixerTrkCal.mu2e.products.simParticleMixer: { mixingMap: [ [ "flashMixerTrkCalCut", "" ] ] }
@@ -56,4 +57,3 @@ physics.filters.PSMixerCRV.mu2e.products.stepPointMCMixer: { mixingMap: [ [ "PSM
 physics.producers.makeSD.AllHitsPlanes : [34,35]
 services.ConditionsService.StrawElectronics.FlashStart : 1705
 services.ConditionsService.StrawElectronics.clockStart : 0.0
-

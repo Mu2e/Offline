@@ -17,9 +17,11 @@ source : {
 
 physics.producers.protonTimeMap : { module_type : GenerateProtonTimes }
 
-physics.producers.PSMixerCRVCut : @local::CRVCut
+physics.filters.PSMixerCRVCut : @local::CRVCut
+physics.filters.PSMixerCRVCut.timeMapTags : [ "protonTimeMap" ]
 
 outputs.PSMixerCRVCutOutput.module_type : RootOutput
+outputs.PSMixerCRVCutOutput.SelectEvents : [ p1 ]
 outputs.PSMixerCRVCutOutput.outputCommands : [ "drop *_*_*_*",
 			      	  		     "keep *_PSMixerCRVCut_*_*",
 				  		     "keep *_genCounter_*_*"

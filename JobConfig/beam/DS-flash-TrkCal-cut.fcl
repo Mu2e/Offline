@@ -17,7 +17,7 @@ physics.producers.protonTimeMap : { module_type : GenerateProtonTimes }
 
 services : @local::mu2e.services.simServices 
 # note we are implicitly dropping virtual detector and IPA StepPoints
-physics.producers.flashMixerTrkCalCut : { module_type : CompressStepPointMCs
+physics.filters.flashMixerTrkCalCut : { module_type : CompressStepPointMCs
 	 			      	  stepPointMCTags : [ "detectorFilter:tracker" ]
 				    	  caloShowerStepTags : [ "CaloShowerCrystalSteps", "CaloShowerROSteps" ]
 				    	  simParticleTag : "detectorFilter"
@@ -37,6 +37,7 @@ physics.endpath : [ flashMixerTrkCalCutOutput, genCountLogger ]
 
 
 outputs.flashMixerTrkCalCutOutput.module_type : RootOutput
+outputs.flashMixerTrkCalCutOutput.SelectEvents : [ triggerpath ]
 outputs.flashMixerTrkCalCutOutput.outputCommands : [ "drop *_*_*_*",
 			      	  		     "keep *_flashMixerTrkCalCut_*_*",
 				  		     "keep *_genCounter_*_*"
