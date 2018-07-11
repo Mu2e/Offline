@@ -11,9 +11,6 @@
 #include "fcl/standardServices.fcl"
 #include "Validation/fcl/prolog.fcl"
 
-#!!!! special temporary insert
-#include "CRVResponse/fcl/prolog_v07.fcl"
-
 BEGIN_PROLOG
 
 // cut EM showers far from the detector, tracker in inserted position
