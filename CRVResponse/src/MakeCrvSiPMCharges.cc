@@ -198,8 +198,7 @@ void MakeCrvSiPMCharges::Simulate(const std::vector<std::pair<double,size_t> > &
 
     if(IsInactivePixelId(pixelId)) continue;
 
-    time = fmod(time,_microBunchPeriod); //this is relevant for afterpulses
-    if(time<_blindTime) continue; 
+    if(time>_microBunchPeriod) continue; //this is relevant for afterpulses
 
     //find pixel with pixelId, create a fully charged pixel if it doesn't exist
     std::map<std::pair<int,int>,Pixel>::iterator p = _pixels.find(pixelId);
