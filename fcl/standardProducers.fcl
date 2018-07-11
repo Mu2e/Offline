@@ -26,6 +26,7 @@ END_PROLOG
 #include "EventMixing/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
 #include "CaloReco/fcl/prolog.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
 
 // FIXME: this is included for time map defs that should be moved into digitization
 #include "HitMakers/fcl/prolog.fcl"
