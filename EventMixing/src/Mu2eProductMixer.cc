@@ -202,11 +202,15 @@ namespace mu2e {
                                                  SimParticleTimeMap& out,
                                                  art::PtrRemapper const& remap)
   {
-//    for(SimParticleTimeMap::size_type i=0; i<out.size(); ++i) {
-//      auto ie = getInputEventIndex(i, stepOffsets);
-//      auto& step = out[i];
-//      step.first = remap(step.first, simOffsets_[ie]);
-//    }
+   for(size_t incount = 0; incount < in.size(); ++incount) {
+      auto const& timemap = *in[incount]; 
+      //std::cout << "Mixing time map " << incount << " size " << timemap.size() << std::endl;
+      for(auto & imap : timemap) {
+	auto newptr = remap(imap.first, simOffsets_[incount]);
+	out[newptr] = imap.second;
+	// do I need to go down the chain?  I think not
+      }
+    }
 
     return true;
   }

@@ -1241,7 +1241,7 @@ namespace mu2e {
     bool StrawDigisFromStepPointMCs::readAll(StrawId const& sid) const {
 
       return sid.straw() >= _allStraw &&
-	std::find(_allPlanes.begin(),_allPlanes.end(),sid.plane()) != _allPlanes.end();
+	(std::find(_allPlanes.begin(),_allPlanes.end(),sid.plane()) != _allPlanes.end());
     }
 
   } // end namespace trackermc

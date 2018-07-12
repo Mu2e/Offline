@@ -256,7 +256,7 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
      // check if we are keeping all hits for this straw
       StrawId sid = i_stepPointMC.strawId();
       bool keepall = sid.straw() >= _allStraw &&
-	std::find(_allPlanes.begin(),_allPlanes.end(),sid.plane()) != _allPlanes.end();
+	(std::find(_allPlanes.begin(),_allPlanes.end(),sid.plane()) != _allPlanes.end());
 
       if ( keepall || 
 	  ((i_edep > _minEdep && i_edep < _maxEdep) &&
@@ -265,6 +265,8 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
 	if (_diagLevel > 0) {
 	  _stepDiag._filtered = 1;
 	}
+	if(_diagLevel > 1 && keepall)
+	  std::cout << " Keeping hit in straw " << sid << " time " << i_time << std::endl;
 	copyStepPointMC(i_stepPointMC);
       }
       

@@ -26,6 +26,7 @@ physics.filters.flashMixerTrkCalCut : { module_type : CompressStepPointMCs
 				    	  minEdep : -10.0 # no cut on energy for tracker
 				    	  maxEdep : 1.0e9
 				    	  timeMapTags : [ "protonTimeMap" ]
+					  AllHitsStraw : 90
 					  AllHitsPlanes : [34,35] # don't filter hits from outer straws in these planes
 				    	  diagLevel : 0
      				  	}

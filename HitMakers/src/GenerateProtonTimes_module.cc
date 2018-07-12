@@ -141,6 +141,8 @@ namespace mu2e {
 	      : (applyToGenIds_.find(genId.id()) != applyToGenIds_.end());
 
 	    (*res)[part] = apply ? protonPulse_->fire() : 0.;
+	  } else if(verbosityLevel_ > 2) {
+	    std::cout << "Found existing particle in map" << std::endl;
 	  }
 	}
       }

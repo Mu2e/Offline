@@ -3,7 +3,7 @@
 #
 # TrkCal
 #
-physics.filters.flashMixerTrkCal.mu2e.meanEventsPerProton    : 9.75E-04 # low stats FIXME!
+physics.filters.flashMixerTrkCal.mu2e.meanEventsPerProton    : 1.51E-05 # low stats FIXME!
 physics.filters.ootMixerTrkCal.mu2e.meanEventsPerProton      : 2.4185E-05
 physics.filters.neutronMixerTrkCal.mu2e.meanEventsPerProton  : 1.8790E-05
 physics.filters.dioMixerTrkCal.mu2e.meanEventsPerProton      : 3.8434E-06
