@@ -15,9 +15,9 @@ physics.filters.ootMixerCRV.mu2e.meanEventsPerProton	  : 4.5379E-06
 physics.filters.neutronMixerCRV.mu2e.meanEventsPerProton  : 3.6173E-07
 physics.filters.dioMixerCRV.mu2e.meanEventsPerProton      : 3.2816E-07
 physics.filters.photonMixerCRV.mu2e.meanEventsPerProton   : 1.3449E-07
-physics.filters.PSMixerCRV.mu2e.meanEventsPerProton	  : 9.5035E-05
+physics.filters.PSMixerCRV.mu2e.meanEventsPerProton	  : 4.22E-05 # low stats FIXM!
 physics.filters.TSMixerCRV.mu2e.meanEventsPerProton	  : 2.4368E-06
-physics.filters.DSMixerCRV.mu2e.meanEventsPerProton	  : 2.8126E-04
+physics.filters.DSMixerCRV.mu2e.meanEventsPerProton	  : 1.41E-6 # low stats FIXME!
 # fixes
 physics.filters.flashMixerTrkCal.mu2e.products.genParticleMixer: { mixingMap: [ [ "flashResample", "" ] ] }
 physics.filters.PSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
