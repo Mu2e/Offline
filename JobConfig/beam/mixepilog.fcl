@@ -15,7 +15,7 @@ physics.filters.ootMixerCRV.mu2e.meanEventsPerProton	  : 4.5379E-06
 physics.filters.neutronMixerCRV.mu2e.meanEventsPerProton  : 3.6173E-07
 physics.filters.dioMixerCRV.mu2e.meanEventsPerProton      : 3.2816E-07
 physics.filters.photonMixerCRV.mu2e.meanEventsPerProton   : 1.3449E-07
-physics.filters.PSMixerCRV.mu2e.meanEventsPerProton	  : 4.22E-05 # low stats FIXM!
+physics.filters.PSMixerCRV.mu2e.meanEventsPerProton	  : 4.22E-05 # low stats FIXME!
 physics.filters.TSMixerCRV.mu2e.meanEventsPerProton	  : 2.4368E-06
 physics.filters.DSMixerCRV.mu2e.meanEventsPerProton	  : 1.41E-6 # low stats FIXME!
 # fixes
@@ -58,3 +58,14 @@ physics.producers.makeSD.AllHitsPlanes : [34,35]
 services.ConditionsService.StrawElectronics.FlashStart : 1705
 services.ConditionsService.StrawElectronics.clockStart : 0.0
 physics.producers.protonBunchIntensity.PrintLevel : 2
+
+# must explicitly list all the mixers!
+physics.producers.CaloShowerStepROFromShowerStep.caloCrystalShowerInputs     : [ "CaloShowerStepFromStepPt:calorimeter",
+  "flashMixerTrkCal:CaloShowerCrystalSteps",
+  "ootMixerTrkCal:calorimeter", 
+  "neutronMixerTrkCal:calorimeter",
+  "dioMixerTrkCal:calorimeter",
+  "photonMixerTrkCal:calorimeter",
+  "protonMixerTrkCal:calorimeter",
+  "deuteronMixerTrkCal:calorimeter"]
+

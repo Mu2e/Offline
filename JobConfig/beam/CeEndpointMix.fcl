@@ -64,14 +64,10 @@ outputs: {
      outputCommands : @local::DigiCompressOutputCommands
   }
 }
-# input maps
+# input maps; these get used first, new times are only generated for particles not already referenced
 physics.producers.protonTimeMap.InputTimeMaps : [ "protonTimeMapPreFilter", @sequence::MDC2018Mixers.protonTimeMaps ]
 physics.producers.muonTimeMap.InputTimeMaps : [ "muonTimeMapPreFilter" ]
-# update time maps for cut mixins.  Multiple time maps for protons comes from flash cutting
-physics.producers.CrvPhotons.timeOffsets.inputs : [ "protonTimeMap", "muonTimeMap"]
-physics.producers.makeSD.TimeOffsets.inputs : [ "protonTimeMap", "muonTimeMap" ]
-# what to do about calorimeter?  They don't use time offset maps?  If so, where???
-# MDC2018 values 
+# MDC2018 mixing 
 #include "JobConfig/beam/mixepilog.fcl"
 services.TFileService.fileName: "nts.owner.CeEndpoint-mix.version.sequencer.root"
 outputs.CeEndpointOutput.fileName: "sim.owner.CeEndpoint-mix.version.sequencer.art"

@@ -518,32 +518,32 @@ namespace mu2e {
                                              StrawClusterSequencePair& shsp) {
       StepPointMC const& step = *spmcptr;
       StrawId sid = straw.id();
-      // Subdivide the StepPointMC into ionization clusters
-      _clusters.clear();
-      divideStep(step,_clusters);
-      // check
-      if(_debug > 1){
-        double ec(0.0);
-        double ee(0.0);
-        double eq(0.0);
-        for (auto const& cluster : _clusters) {
-          ec += cluster._eion;
-          ee += _strawphys->ionizationEnergy(cluster._ne);
-          eq += _strawphys->ionizationEnergy(cluster._charge);
-        }
-        cout << "step with ionization edep = " << step.ionizingEdep()
-        << " creates " << _clusters.size()
-        << " clusters with total cluster energy = " << ec
-        << " electron count energy = " << ee
-        << " charge energy = " << eq << endl;
-      }
-      // get time offset for this step
+     // get time offset for this step
       double tstep = _toff.timeWithOffsetsApplied(step);
       // test if this step point is roughly in the digitization window 
       double mbtime = microbunchTime(tstep);
       if( (mbtime > _strawele->flashEnd() - _steptimebuf
 	    && mbtime <  _strawele->flashStart())
 	  || readAll(sid)) {
+	// Subdivide the StepPointMC into ionization clusters
+	_clusters.clear();
+	divideStep(step,_clusters);
+	// check
+	if(_debug > 1){
+	  double ec(0.0);
+	  double ee(0.0);
+	  double eq(0.0);
+	  for (auto const& cluster : _clusters) {
+	    ec += cluster._eion;
+	    ee += _strawphys->ionizationEnergy(cluster._ne);
+	    eq += _strawphys->ionizationEnergy(cluster._charge);
+	  }
+	  cout << "step with ionization edep = " << step.ionizingEdep()
+	    << " creates " << _clusters.size()
+	    << " clusters with total cluster energy = " << ec
+	    << " electron count energy = " << ee
+	    << " charge energy = " << eq << endl;
+	}
 	// drift these clusters to the wire, and record the charge at the wire
 	for(auto iclu = _clusters.begin(); iclu != _clusters.end(); ++iclu){
 	  WireCharge wireq;
@@ -712,6 +712,7 @@ namespace mu2e {
       // add enough buffer to cover both the flash blanking and the ADC waveform
       if(clust.time() < _strawele->flashStart() - _mbtime + _mbbuffer)
         shs.insert(StrawCluster(clust,_mbtime));
+      if(clust.time() > _mbtime - _mbbuffer) shs.insert(StrawCluster(clust,-_mbtime));
     }
 
     void StrawDigisFromStepPointMCs::findThresholdCrossings( SWFP const& swfp, WFXPList& xings){

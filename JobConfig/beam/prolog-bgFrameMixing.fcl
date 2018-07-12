@@ -74,7 +74,6 @@ CRVCut : { module_type : CompressStepPointMCs
 				    diagLevel : 0
      				  }
 
-# multiple proton maps for mixing cut files in MDC2018protonTimeMaps : ["protonTimeMap", "ProtonTimeMap", "PSCRVProtonTimeMap", "DSCRVProtonTimeMap"]
 MDC2018Mixers : {
   filters : {
     # TrkCal
@@ -94,30 +93,23 @@ MDC2018Mixers : {
     dioMixerCRV	     : @local::mixerTemplateCRV 
     photonMixerCRV   : @local::mixerTemplateCRV 
     #
-
   }
+  # time maps for cut mix inputs
   protonTimeMaps : [ "flashMixerTrkCal:protonTimeMap", "PSMixerCRV:protonTimeMap", "DSMixerCRV:protonTimeMap"]
 
-sequence : [
-    flashMixerTrkCal,
+  TrkCalSequence : [ flashMixerTrkCal,
     ootMixerTrkCal, neutronMixerTrkCal, dioMixerTrkCal,
-    photonMixerTrkCal, protonMixerTrkCal, deuteronMixerTrkCal,
-    PSMixerCRV, TSMixerCRV, DSMixerCRV,
-    ootMixerCRV, neutronMixerCRV, dioMixerCRV, photonMixerCRV]
+    photonMixerTrkCal, protonMixerTrkCal, deuteronMixerTrkCal ]
+  CRVSequence : [ PSMixerCRV, TSMixerCRV, DSMixerCRV,
+    ootMixerCRV, neutronMixerCRV, dioMixerCRV, photonMixerCRV ]
 }
+MDC2018Mixers.sequence : [@sequence::MDC2018Mixers.TrkCalSequence, @sequence::MDC2018Mixers.CRVSequence]
+
 DigiCompress : {
   module_type : CompressDigiMCs
   strawDigiMCTag : "makeSD"
   crvDigiMCTag : "CrvWaveforms"
-  simParticleTags : [ "g4run", 
-      "PSMixerCRV", "TSMixerCRV", "DSMixerCRV", 
-      "neutronMixerTrkCal", "neutronMixerCRV",
-      "ootMixerTrkCal", "ootMixerCRV",
-      "dioMixerTrkCal", "dioMixerCRV",
-      "photonMixerTrkCal", "photonMixerCRV",
-      "protonMixerTrkCal",
-      "deuteronMixerTrkCal",
-      "flashMixerTrkCal" ]
+  simParticleTags : [ "g4run", @sequence::MDC2018Mixers.sequence ]
   extraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
   timeMapTags : [ "protonTimeMap", "muonTimeMap" ]
   primarySimPtrsTag : "TrkDigiFilter"
