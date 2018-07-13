@@ -32,5 +32,8 @@ outputs.DSMixerCRVCutOutput.fileName : "sim.owner.DS-CRV-cut.version.sequencer.a
 physics.p1: [ protonTimeMap, DSMixerCRVCut ]
 physics.e1 : [ DSMixerCRVCutOutput ]
 
+physics.trigger_paths : [ p1 ]
+physics.end_paths : [ e1 ]
+
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  30

@@ -36,6 +36,8 @@ physics.analyzers.genCountLogger: { module_type: GenEventCountReader }
 physics.triggerpath: [ protonTimeMap, flashMixerTrkCalCut]
 physics.endpath : [ flashMixerTrkCalCutOutput, genCountLogger ]
 
+physics.trigger_paths : [ triggerpath ]
+physics.end_paths : [ endpath ]
 
 outputs.flashMixerTrkCalCutOutput.module_type : RootOutput
 outputs.flashMixerTrkCalCutOutput.SelectEvents : [ triggerpath ]
