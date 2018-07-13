@@ -231,8 +231,7 @@ physics : {
 # services.Timing: { }
 
 # Temporarily use Andy's muon stops.  These will be replaced soon with MDC2018 output
-physics.producers.generate.muonStops.inputFiles : ["mergedMuonStops/tgtstops_tgthole-r21-5mm_three-extra-disks_all-files.root" ]
-
+physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
 # print
 services.scheduler.wantSummary: true
 
