@@ -725,7 +725,7 @@ namespace mu2e {
         _randgauss.fire(_strawele->threshold(swfp[0].strawId(),static_cast<StrawEnd::End>(1))+strawnoise,_strawele->analogNoise(StrawElectronics::thresh))};
       // Initialize search when the electronics becomes enabled:
       double tstart =_strawele->flashEnd();
-      if(readAll(swfp[0].strawId()))tstart = -_mbbuffer;
+      if(readAll(swfp[0].strawId()))tstart = 0.0;
       WFXP wfx = {WFX(swfp[0],tstart),WFX(swfp[1],tstart)};
       // search for coherent crossings on both ends
       bool crosses[2];
