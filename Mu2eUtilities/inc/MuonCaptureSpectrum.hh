@@ -10,17 +10,12 @@
 // C++ includes
 #include <utility>
 
-namespace CLHEP {
-  class RandFlat;
-}
-
 namespace mu2e {
 
-  class RandomUnitSphere;
-
   class MuonCaptureSpectrum {
-  public:
 
+  public:
+    
     enum enum_type    { Flat  , RMC      };
     enum enum_type_2D { Flat2D, KrollWadaJoseph };
 
@@ -30,23 +25,20 @@ namespace mu2e {
     MuonCaptureSpectrum(const bool kMaxUserSet, const double kMaxUser, const double kMaxMax) : _kMaxUserSet( kMaxUserSet), _kMaxUser( kMaxUser), _kMaxMax ( kMaxMax) {}
 
     double getWeight   ( const double E ) const;
-    double get2DWeight ( const double x, const double y, const double E ) const;
+    double get2DWeight ( const double x, const double y, const double E ) const; 
     double get2DMax    ( const double E ) const;
 
 
-
+ 
     void   setSpectrum   ( enum_type    spectrum   ) { _spectrum   = spectrum;   }
     void   setSpectrum2D ( enum_type_2D spectrum2D ) { _spectrum2D = spectrum2D; }
 
 
     static double getFlat( const double e, const double x = 0., const double y = 0.);
     static double getRMCSpectrum( const double e , const bool kMaxUserSet, const double kMaxUser, const double kMaxMax);
-    static std::pair<CLHEP::HepLorentzVector,CLHEP::HepLorentzVector>
-    getElecPosiVectors(RandomUnitSphere& randomUnitSphere,
-                       CLHEP::RandFlat& randFlat,
-                       const double energy,
-                       const double x,
-                       const double y );
+    static std::pair<CLHEP::HepLorentzVector,CLHEP::HepLorentzVector> getElecPosiVectors( const double energy,
+                                                                                          const double x,
+                                                                                          const double y );
 
     double getKrollWadaJosephSpectrum( const double e, const double x, const double y ) const;
 
@@ -64,3 +56,4 @@ namespace mu2e {
 } // end of namespace mu2e
 
 #endif /* Mu2eUtilities_MuonCaptureSpectrum_hh */
+
