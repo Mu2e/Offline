@@ -33,8 +33,8 @@ namespace mu2e
         const art::Ptr<SimParticle> &simParticle = cluster.GetMostLikelySimParticle();
         MCInfo.emplace_back(true, 
                             simParticle->pdgId(), 
-                            simParticle->genParticle()->pdgId(),
-                            simParticle->genParticle()->generatorId().id(),
+0, //                            simParticle->genParticle()->pdgId(),
+0, //                            simParticle->genParticle()->generatorId().id(),
                             cluster.GetEarliestHitPos(),
                             cluster.GetEarliestHitTime(),
                             cluster.GetTotalEnergyDeposited());

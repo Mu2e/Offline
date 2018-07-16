@@ -30,7 +30,7 @@ physics :
   producers : @local::TrkAna.producers
   analyzers : @local::TrkAna.analyzers
 }
-#physics.analyzers.TrkAna.AnalyzeCRV : true
+physics.analyzers.TrkAna.AnalyzeCRV : true
 
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.RecoSequence ]
 physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence ]

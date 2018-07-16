@@ -139,7 +139,7 @@ BEGIN_PROLOG
     KalDiag : @local::KalDiagReadMDC # configure KalDiag to read MDC2018 data
     # change this if reading cosmic data or generating inline
     TrkCaloDiag : @local::TrkCaloDiag
-    CrvCoincidenceModuleLabel : "CrvCoincidence"
+    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterSummarizer"
     # note that these weights will only be applied if the module which
     # produces them is run
     beamWeightTag : protonBunchSummarizer
