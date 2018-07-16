@@ -119,6 +119,12 @@ private:
         void BeamOnBeginRun( unsigned int runNumber);
         void BeamOnDoOneArtEvent( int eventNumber, G4int, const char* macroFile=0, G4int n_select=-1 );
         void BeamOnEndRun();
+        
+        //we need this for MT mode before art-MT is available
+        //it fixes the bookkeeping on the art::Ptrs which was messed up by the introduction of the GenParticleStash
+        void ReseatPtrsAndMoveDataToArtEvent( art::Event& evt, art::EDProductGetter const* sim_prod_getter );
+        
+        void DoVisualizationFromMacro();
 
         std::unique_ptr<G4RunManager> _runManager;
 
@@ -501,10 +507,6 @@ void Mu2eG4::produce(art::Event& event) {
 
     //event_counter++;
 
-    art::Handle<GenParticleCollection> gensHandle;
-    if(!(_generatorModuleLabel == art::InputTag())) {
-        event.getByLabel(_generatorModuleLabel, gensHandle);
-    }
 
     // ProductID and ProductGetter for the SimParticleCollection.
     art::ProductID simPartId(getProductID<SimParticleCollection>());
@@ -550,100 +552,39 @@ void Mu2eG4::produce(art::Event& event) {
 
     }//end if stash is empty, simulate events
 
+    //now move the data into the art::Event
     event.put(std::move(_StashForEventData.getG4Status(stashInstanceToStore)));
-
-
+    
     //testing stuff ********************************
-//    std::cout << "in produce, printing the Stash Sim Particle info " << std::endl;
-//    _StashForEventData.printInfo(stashInstanceToStore);
+    //    std::cout << "in produce, printing the Stash Sim Particle info " << std::endl;
+    //    _StashForEventData.printInfo(stashInstanceToStore);
 
 
-    //***** BEGIN HACK to reseat the SimPart Ptr, Parent Ptr, and Daughter Ptrs to point at the right place in the current art::Event
-
-    std::unique_ptr<SimParticleCollection> tempSims = std::move(_StashForEventData.getSimPartCollection(stashInstanceToStore));
-
-    for ( SimParticleCollection::iterator i=tempSims->begin(); i!=tempSims->end(); ++i )
+    if (_use_G4MT)
     {
-        SimParticle& sim = i->second;
-
-        if ( _use_G4MT && sim.isPrimary() && gensHandle.isValid() ){
-            art::Ptr<GenParticle> reseat(gensHandle, sim.genParticle().key());
-            sim.genParticle() = reseat;
-        }
-
-        sim.parent() = art::Ptr<SimParticle>(sim.parent().id(),
-                                             sim.parent().key(),
-                                             simProductGetter );
-
-        //the following is copied from MixMCEvents_module.cc
-        std::vector<art::Ptr<SimParticle> > const& daughters = sim.daughters();
-
-        if ( !daughters.empty() ) {
-            std::vector<art::Ptr<SimParticle> > newDaughters;
-            newDaughters.reserve(daughters.size());
-
-            for ( size_t i=0; i != daughters.size(); ++i){
-                art::Ptr<SimParticle> const& dau = art::Ptr<SimParticle>(daughters[i].id(), daughters[i].key(),
-                                                                         simProductGetter );
-                newDaughters.push_back( dau );
-            }
-
-            sim.setDaughterPtrs( newDaughters );
-        }
-
-    }//for (SimParticleCollection::iterator...
-    //***** END HACK to reseat SimPart Ptrs
-
-    event.put(std::move(tempSims));
-
-    if(!timeVDtimes_.empty()) {
-        std::unique_ptr<StepPointMCCollection> tempTVD = std::move(_StashForEventData.getTVDHits(stashInstanceToStore));
-
-        for ( StepPointMCCollection::iterator i=tempTVD->begin(); i!=tempTVD->end(); ++i ){
-            StepPointMC& step = *i;
-
-            if ( step.simParticle().isNonnull() ){
-                step.simParticle() = art::Ptr<SimParticle>(step.simParticle().id(),
-                                                           step.simParticle().key(),
-                                                           simProductGetter );
-            }
-        }
-        event.put(std::move(tempTVD),_StashForEventData.getTVDName(stashInstanceToStore));
-    }// if !timeVDtimes_.empty()
-
-    if(trajectoryControl_.produce()) {
-        //get the MCTrajCollection from the Stash and create a new one to put stuff into
-        std::unique_ptr<MCTrajectoryCollection> tempTrajs = std::move(_StashForEventData.getMCTrajCollection(stashInstanceToStore));
-        std::unique_ptr<MCTrajectoryCollection> outTrajectory(new MCTrajectoryCollection());
-
-        for ( MCTrajectoryCollection::iterator i=tempTrajs->begin(); i!=tempTrajs->end(); ++i ){
-            art::Ptr<SimParticle> newParticle(i->second.sim().id(), i->second.sim().key(), simProductGetter );
-            (*outTrajectory)[newParticle] = i->second;
-            (*outTrajectory)[newParticle].sim() = newParticle;
-        }
-
-        event.put(std::move(outTrajectory));
-
-    }// if trajectoryControl
-
-    //DO I NEED TO RESEAT THE SimParticles in the Remap?  maybe no, becasue these are only produced in sequential mode where the stash isn't used
-    if(multiStagePars_.multiStage()) {
-        event.put(std::move(_StashForEventData.getSimParticleRemap(stashInstanceToStore)));
+        ReseatPtrsAndMoveDataToArtEvent(event, simProductGetter);
     }
-
-    if(SensitiveDetectorHelpers[0].extMonPixelsEnabled()) {
-        std::unique_ptr<ExtMonFNALSimHitCollection> tempExtMonHits = std::move((_StashForEventData.getExtMonFNALSimHitCollection(stashInstanceToStore)));
-
-        for ( ExtMonFNALSimHitCollection::iterator i=tempExtMonHits->begin(); i!=tempExtMonHits->end(); ++i ){
-            ExtMonFNALSimHit& hit = *i;
-
-            if ( hit.simParticle().isNonnull() ){
-                hit.simParticle() = art::Ptr<SimParticle>(hit.simParticle().id(), hit.simParticle().key(), simProductGetter );
-            }
+    else//in sequential mode, there isn't any need to reseat the ptrs, since there is no GenParticleCollections object
+    {
+        
+        event.put(std::move(_StashForEventData.getSimPartCollection(stashInstanceToStore)));
+        
+        if(!timeVDtimes_.empty()) {
+            event.put(std::move(_StashForEventData.getTVDHits(stashInstanceToStore)),_StashForEventData.getTVDName(stashInstanceToStore));
         }
-        event.put(std::move(tempExtMonHits));
-    }//if extMonPixelsEnabled
-
+        
+        if(trajectoryControl_.produce()) {
+            event.put(std::move(_StashForEventData.getMCTrajCollection(stashInstanceToStore)));
+        }
+        
+        if(multiStagePars_.multiStage()) {
+            event.put(std::move(_StashForEventData.getSimParticleRemap(stashInstanceToStore)));
+        }
+        
+        if(SensitiveDetectorHelpers[0].extMonPixelsEnabled()) {
+            event.put(std::move(_StashForEventData.getExtMonFNALSimHitCollection(stashInstanceToStore)));
+        }
+    }//sequential
 
     _StashForEventData.putSensitiveDetectorData(stashInstanceToStore, event, simProductGetter);
     _StashForEventData.putCutsData(stashInstanceToStore, event, simProductGetter);
@@ -732,7 +673,7 @@ void Mu2eG4::BeamOnBeginRun( unsigned int runNumber){
         _runManager->ConstructScoringWorlds();
         _runManager->RunInitialization();
 
-}
+}//BeamOnBeginRun
 
 
 // Do the "per event" part of DoEventLoop.
@@ -768,99 +709,12 @@ void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber, G4int num_events, const char*
 
             // Pause to see graphics.
             if ( !_visMacro.empty() ){
-
-                // Prompt to continue and wait for reply.
-                cout << "Enter a character to go to the next event" << endl;
-                cout << "q quits, s enters G4 interactive session, g enters a GUI session (if available)"
-                << endl;
-                cout << "Once in G4 interactive session to quit it type \"exit\" or use File menu"
-                << endl;
-
-                string userinput;
-                cin >> userinput;
-                G4cout << userinput << G4endl;
-
-                // Check if user is requesting an early termination of the event loop.
-                if ( !userinput.empty() ){
-                    // Check only the first character; >> skips whitespace by default
-                    char c = tolower( userinput[0] );
-                    if ( c == 'q' ){
-                        throw cet::exception("CONTROL")
-                        << "Early end of event loop requested inside G4, \n";
-                    } else if ( c == 's' || c == 'g' || c == 'v' ){
-                        // v is for backward compatibility
-                        G4int argc=1;
-                        // Cast away const-ness; required by the G4 interface ...
-                        char* dummy = (char *)"dummy";
-                        char** argv = &dummy;
-                        G4UIExecutive* UIE = ( c == 's' || c == 'v' ) ?
-                        new G4UIExecutive(argc, argv,"tcsh") :
-                        new G4UIExecutive(argc, argv);
-
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
-
-                        if (UIE->IsGUI()) {
-
-                            // we add a command here and initialize it
-                            // (/vis/sceneHandler has to exist prior to this)
-                            Mu2eVisCommandSceneHandlerDrawEvent* drEv =
-                            new Mu2eVisCommandSceneHandlerDrawEvent();
-                            _visManager->RegisterMessenger(drEv); // assumes ownership;
-                            // drEv->SetVisManager(_visManager.get());
-                            // vis manager pointer is static member of the drEv base
-                            // class so the above is not needed
-
-                            if ( !_visGUIMacro.empty() ){
-                                G4String command("/control/execute ");
-                                ConfigFileLookupPolicy visPath;
-                                command += visPath(_visGUIMacro);
-                                _UI->ApplyCommand( command );
-
-                                cout << "In GUI interactive session use the \"Start Here\" menu "
-                                << "followed by the Viewer commands or redisplaying event"
-                                << endl;
-
-                            } else {
-                                cout << __func__ << " WARNING: visGUIMacro empty, may need to be defined in fcl" << endl;
-                            }
-
-                        } // end UIE->IsGUI()
-#endif
-                        UIE->SessionStart();
-                        delete UIE;
-
-                        //If current scene is scene-0 and if scene-handler-0 has viewer-0 we
-                        //will select it if not current to deal with a case which may occur
-                        //e.g. in a simultaneous use of OGL & Qt
-
-                        // basically _UI->ApplyCommand("/vis/viewer/select viewer-0"); // to have tracks drawn
-
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
-                        G4String viewerToLookFor("viewer-0");
-                        G4VViewer* pViewer = _visManager->GetViewer(viewerToLookFor);
-                        if (pViewer) {
-                            if (pViewer != _visManager->GetCurrentViewer()) {
-                                _visManager->SetCurrentViewer(pViewer);
-                            }
-                        }
-                        // G4VGraphicsSystem* gsys = _visManager->GetCurrentGraphicsSystem();
-                        // if (gsys) {
-                        //   cout << __func__ << " current GraphicsSystem Name " << gsys->GetName() <<  endl;
-                        // }
-#endif
-                    } // end c == 'q'
-
-                } // end !userinput.empty()
-
-            }   // end !_visMacro.empty()
-
-
-
+                DoVisualizationFromMacro();
+            }
             _runManager->TerminateOneEvent();
-
         }//end if
 
-}
+}//BeamOnDoOneArtEvent
 
 
 // Do the "end of run" parts of DoEventLoop and BeamOn.
@@ -881,10 +735,193 @@ void Mu2eG4::BeamOnEndRun(){
         << "s Sys="   << _systemElapsed
         << "s" << G4endl;
     }
+}//BeamOnEndRun
+    
+void Mu2eG4::ReseatPtrsAndMoveDataToArtEvent(art::Event& evt, art::EDProductGetter const* sim_prod_getter){
+    
+    art::Handle<GenParticleCollection> gensHandle;
+    if(!(_generatorModuleLabel == art::InputTag())) {
+        evt.getByLabel(_generatorModuleLabel, gensHandle);
+    }
+    
+    //put the SimParticleCollection into the event
+    std::unique_ptr<SimParticleCollection> tempSims = std::move(_StashForEventData.getSimPartCollection(stashInstanceToStore));
+    
+    for ( SimParticleCollection::iterator i=tempSims->begin(); i!=tempSims->end(); ++i )
+    {
+        SimParticle& sim = i->second;
+        
+        if ( _use_G4MT && sim.isPrimary() && gensHandle.isValid() ){
+            art::Ptr<GenParticle> reseat(gensHandle, sim.genParticle().key());
+            sim.genParticle() = reseat;
+        }
+        
+        sim.parent() = art::Ptr<SimParticle>(sim.parent().id(),
+                                             sim.parent().key(),
+                                             sim_prod_getter );
+        
+        std::vector<art::Ptr<SimParticle> > const& daughters = sim.daughters();
+        
+        if ( !daughters.empty() ) {
+            std::vector<art::Ptr<SimParticle> > newDaughters;
+            newDaughters.reserve(daughters.size());
+            
+            for ( size_t i=0; i != daughters.size(); ++i){
+                art::Ptr<SimParticle> const& dau = art::Ptr<SimParticle>(daughters[i].id(), daughters[i].key(),
+                                                                         sim_prod_getter );
+                newDaughters.push_back( dau );
+            }
+            sim.setDaughterPtrs( newDaughters );
+        }
+        
+    }//for (SimParticleCollection::iterator...
+    
+    evt.put(std::move(tempSims));
 
-}
+    
+    if(!timeVDtimes_.empty()) {
+        std::unique_ptr<StepPointMCCollection> tempTVD = std::move(_StashForEventData.getTVDHits(stashInstanceToStore));
+        
+        for ( StepPointMCCollection::iterator i=tempTVD->begin(); i!=tempTVD->end(); ++i ){
+            StepPointMC& step = *i;
+            
+            if ( step.simParticle().isNonnull() ){
+                step.simParticle() = art::Ptr<SimParticle>(step.simParticle().id(),
+                                                           step.simParticle().key(),
+                                                           sim_prod_getter );
+            }
+        }
+        evt.put(std::move(tempTVD),_StashForEventData.getTVDName(stashInstanceToStore));
+    }// if !timeVDtimes_.empty()
+    
+    
+    if(trajectoryControl_.produce()) {
+        //get the MCTrajCollection from the Stash and create a new one to put stuff into
+        std::unique_ptr<MCTrajectoryCollection> tempTrajs = std::move(_StashForEventData.getMCTrajCollection(stashInstanceToStore));
+        std::unique_ptr<MCTrajectoryCollection> outTrajectory(new MCTrajectoryCollection());
+        
+        for ( MCTrajectoryCollection::iterator i=tempTrajs->begin(); i!=tempTrajs->end(); ++i ){
+            art::Ptr<SimParticle> newParticle(i->second.sim().id(), i->second.sim().key(), sim_prod_getter );
+            (*outTrajectory)[newParticle] = i->second;
+            (*outTrajectory)[newParticle].sim() = newParticle;
+        }
+        evt.put(std::move(outTrajectory));
+    }// if trajectoryControl
+    
+    
+    //I am including this here for symmetry.  These are not produced in MT mode.
+    //DO I NEED TO RESEAT THE SimParticles in the Remap?  No, becasue these are only produced in sequential mode
+    //where the stash operates on a one-event-in, one-event-out basis
+    if(multiStagePars_.multiStage()) {
+        evt.put(std::move(_StashForEventData.getSimParticleRemap(stashInstanceToStore)));
+    }
+    
+    
+    if(SensitiveDetectorHelpers[0].extMonPixelsEnabled()) {
+        std::unique_ptr<ExtMonFNALSimHitCollection> tempExtMonHits = std::move(_StashForEventData.getExtMonFNALSimHitCollection(stashInstanceToStore));
+        
+        for ( ExtMonFNALSimHitCollection::iterator i=tempExtMonHits->begin(); i!=tempExtMonHits->end(); ++i ){
+            ExtMonFNALSimHit& hit = *i;
+            
+            if ( hit.simParticle().isNonnull() ){
+                hit.simParticle() = art::Ptr<SimParticle>(hit.simParticle().id(), hit.simParticle().key(), sim_prod_getter );
+            }
+        }
+        evt.put(std::move(tempExtMonHits));
+    }//if extMonPixelsEnabled
+    
+}//ReseatPtrsAndMoveDataToArtEvent
+    
+void Mu2eG4::DoVisualizationFromMacro(){
+    
+    // Prompt to continue and wait for reply.
+    cout << "Enter a character to go to the next event" << endl;
+    cout << "q quits, s enters G4 interactive session, g enters a GUI session (if available)"
+    << endl;
+    cout << "Once in G4 interactive session, to quit it type \"exit\" or use File menu"
+    << endl;
+    
+    string userinput;
+    cin >> userinput;
+    G4cout << userinput << G4endl;
+    
+    // Check if user is requesting an early termination of the event loop.
+    if ( !userinput.empty() ){
+        // Check only the first character; >> skips whitespace by default
+        char c = tolower( userinput[0] );
+        if ( c == 'q' ){
+            throw cet::exception("CONTROL")
+            << "Early end of event loop requested inside G4, \n";
+        } else if ( c == 's' || c == 'g' || c == 'v' ){
+            // v is for backward compatibility
+            G4int argc=1;
+            // Cast away const-ness; required by the G4 interface ...
+            char* dummy = (char *)"dummy";
+            char** argv = &dummy;
+            G4UIExecutive* UIE = ( c == 's' || c == 'v' ) ?
+            new G4UIExecutive(argc, argv,"tcsh") :
+            new G4UIExecutive(argc, argv);
+            
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
+            
+            if (UIE->IsGUI()) {
+                
+                // we add a command here and initialize it
+                // (/vis/sceneHandler has to exist prior to this)
+                Mu2eVisCommandSceneHandlerDrawEvent* drEv =
+                new Mu2eVisCommandSceneHandlerDrawEvent();
+                _visManager->RegisterMessenger(drEv); // assumes ownership;
+                // drEv->SetVisManager(_visManager.get());
+                // vis manager pointer is static member of the drEv base
+                // class so the above is not needed
+                
+                if ( !_visGUIMacro.empty() ){
+                    G4String command("/control/execute ");
+                    ConfigFileLookupPolicy visPath;
+                    command += visPath(_visGUIMacro);
+                    _UI->ApplyCommand( command );
+                    
+                    cout << "In GUI interactive session use the \"Start Here\" menu "
+                    << "followed by the Viewer commands or redisplaying event"
+                    << endl;
+                    
+                } else {
+                    cout << __func__ << " WARNING: visGUIMacro empty, may need to be defined in fcl" << endl;
+                }
+                
+            } // end UIE->IsGUI()
+#endif
+            UIE->SessionStart();
+            delete UIE;
+            
+            //If current scene is scene-0 and if scene-handler-0 has viewer-0 we
+            //will select it if not current to deal with a case which may occur
+            //e.g. in a simultaneous use of OGL & Qt
+            
+            // basically _UI->ApplyCommand("/vis/viewer/select viewer-0"); // to have tracks drawn
+            
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
+            G4String viewerToLookFor("viewer-0");
+            G4VViewer* pViewer = _visManager->GetViewer(viewerToLookFor);
+            if (pViewer) {
+                if (pViewer != _visManager->GetCurrentViewer()) {
+                    _visManager->SetCurrentViewer(pViewer);
+                }
+            }
+            // G4VGraphicsSystem* gsys = _visManager->GetCurrentGraphicsSystem();
+            // if (gsys) {
+            //   cout << __func__ << " current GraphicsSystem Name " << gsys->GetName() <<  endl;
+            // }
+#endif
+        } // end c == 'q'
+        
+    } // end !userinput.empty()
+    
+}//DoVisualizationFromMacro
+    
 
 } // End of namespace mu2e
+
 
 using mu2e::Mu2eG4;
 DEFINE_ART_MODULE(Mu2eG4);

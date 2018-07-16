@@ -77,24 +77,16 @@ void GenEventBroker::loadEvent(HitHandles const& gen_input_hits,
         if ( usingG4MT && !( genCollectionsHandle.isValid() && gensHandle.isValid() ) )
         {
             throw cet::exception("CONFIG")
-            << "Error in GenEventBroker::loadEvent. There is no GenParticleCollection!\n";
+            << "Error in GenEventBroker::loadEvent. You are trying to run in MT mode and there is no GenParticleCollection(s)!\n";
         }
-
-        if (!usingG4MT) {//sequential mode
+        
+        if (usingG4MT) {//MT mode
+            eventStashSize = genCollectionsHandle.product()->size();
+        }
+        else//sequential mode
+        {
             eventStashSize = 1;
         }
-        else//MT mode
-        {
-            if (genCollectionsHandle.isValid())
-            {
-                eventStashSize = genCollectionsHandle.product()->size();
-            }
-            else
-            {
-                throw cet::exception("CONFIG")
-                << "Error in GenEventBroker::loadEvent. There is no GenParticleCollections product!\n";
-            }
-        }//MT mode
      }
 
 
