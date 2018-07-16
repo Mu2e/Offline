@@ -4,14 +4,6 @@
 #------------------------------------------------------------------------------
 
 BEGIN_PROLOG
-  HitMakerBlindTime      : 500. # ns
-  HitMakerDigiSampling   : 5    # ns
-END_PROLOG
-
-
-
-
-BEGIN_PROLOG
 
 EcalTriggerPreselect : {
     diagLevel              : 0
