@@ -204,9 +204,9 @@ BEGIN_PROLOG
     }
   
     # separate out the sime and reco parts of the sequence
-    SimSequence	: [ @sequence::CommonDigiSim.DigiSim,
-		    @sequence::TrackerMC.DigiSim,
-		    @sequence::CaloDigiMC.DigiSim ]
+#    SimSequence	: [ @sequence::CommonDigiSim.DigiSim,
+#		    @sequence::TrackerMC.DigiSim,
+#		    @sequence::CaloDigiMC.DigiSim ]
 # CRVDigiSequence 
     RecoSequence : [ @sequence::CaloReco.Reco,
 	             @sequence::CaloCluster.Reco, 
@@ -222,8 +222,8 @@ BEGIN_PROLOG
 
   }
   # aggregate these for convenience
-  TrkAna.SimAndRecoSequence : [ @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
-  TrkAna.SimAndRecoMixSequence : [ @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
+#  TrkAna.SimAndRecoSequence : [ @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
+#  TrkAna.SimAndRecoMixSequence : [ @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
 
 
 END_PROLOG

@@ -29,6 +29,7 @@
 #include "TrkHitReco/inc/PeakFitFunction.hh"
 #include "TrkHitReco/inc/ComboPeakFitRoot.hh"
 
+#include "DataProducts/inc/EventWindowMarker.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/StrawDigi.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
@@ -76,6 +77,7 @@ namespace mu2e {
 
        art::ProductToken<StrawDigiCollection> const _sdtoken;
        art::ProductToken<CaloClusterCollection> const _cctoken;
+       art::InputTag _ewMarkerTag; // name of the module that makes eventwindowmarkers
        fhicl::ParameterSet _peakfit;  // peak fit (charge reconstruction) parameters
        std::unique_ptr<TrkHitReco::PeakFit> _pfit; // peak fitting algorithm
        // diagnostic
@@ -105,8 +107,10 @@ namespace mu2e {
       _end{StrawEnd::cal,StrawEnd::hv}, // this should be in a general place, FIXME!
       _sdtoken{consumes<StrawDigiCollection>(pset.get<art::InputTag>("StrawDigiCollection","makeSD"))},
       _cctoken{mayConsume<CaloClusterCollection>(pset.get<art::InputTag>("caloClusterModuleLabel","CaloClusterFast"))},
+      _ewMarkerTag(pset.get<art::InputTag>("EventWindowMarkerLabel")),
       _peakfit(pset.get<fhicl::ParameterSet>("PeakFitter", {}))
   {
+      consumes<EventWindowMarker>(_ewMarkerTag);
       produces<ComboHitCollection>();
       if(_writesh)produces<StrawHitCollection>();
       // each hit is a unique straw
@@ -163,6 +167,13 @@ namespace mu2e {
         auto ccH = event.getValidHandle(_cctoken);
         caloClusters = ccH.product();
       }
+      
+      double ewmOffset = 0;
+      art::Handle<EventWindowMarker> ewMarkerHandle;
+      if (event.getByLabel(_ewMarkerTag, ewMarkerHandle)){
+        const EventWindowMarker& ewMarker(*ewMarkerHandle);
+        ewmOffset = ewMarker.timeOffset();
+      }
 
       std::unique_ptr<StrawHitCollection> shCol;
       if(_writesh){
@@ -185,7 +196,7 @@ namespace mu2e {
         TDCTimes times;
         srep->calibrateTimes(digi.TDC(),times,digi.strawId());
         // take the earliest of the 2 end times
-        float time = std::min(times[0],times[1]);
+        float time = std::min(times[0],times[1]) + ewmOffset;
         if (time < _minT || time > _maxT ){
           if(_filter)continue;
         } else

@@ -14,6 +14,7 @@
 #include "DataProducts/inc/ExtMonFNALChipId.hh"
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"
 #include "DataProducts/inc/IndexMap.hh"
+#include "DataProducts/inc/EventWindowMarker.hh"
 
 #include "canvas/Persistency/Common/Wrapper.h"
 #include "cetlib/map_vector.h"

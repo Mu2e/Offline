@@ -43,8 +43,8 @@ namespace mu2e {
     _TOTLSB(pset.get<double>("TOTLSB",4.0)), //ns
     _maxTOT(pset.get<unsigned>("maxTOT",15)),
     _tdcResolution(pset.get<double>("TDCResolution",0.1)), // ns
-    _clockStart(pset.get<double>("clockStart",10.0)), // nsec
-    _clockJitter(pset.get<double>("clockJitter",0.2)), // nsec
+    _electronicsTimeDelay(pset.get<double>("ElectronicsTimeDelay",0.0)), // nsec
+    _ewMarkerROCJitter(pset.get<double>("EventWindowMarkerROCJitter",0.5)), // ps (jitter per panel per microbuncH)
     _flashStart(pset.get<double>("FlashStart",1695.0)), //nsec
     _flashEnd(pset.get<double>("FlashEnd",500.0)), // nsec
     _responseBins(pset.get<int>("ResponseBins",10000)),
@@ -68,8 +68,8 @@ namespace mu2e {
     _timeOffsetStrawHV(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0))),
     _timeOffsetStrawCal(pset.get<vector<double> >("TimeOffsetStrawCal",vector<double>(96,0)))
     {
-      _flashStartTDC = tdcResponse(_flashStart);
-      _flashEndTDC = tdcResponse(_flashEnd);
+      _flashStartTDC = tdcResponse(_flashStart-_electronicsTimeDelay); // we dont want the timeDelay in here that tdcResponse adds
+      _flashEndTDC = tdcResponse(_flashEnd-_electronicsTimeDelay); 
       _ADCped.resize(96,0);
       for (int i=0;i<96;i++){
 	double avgThresh = (_vthresh[i*2+0] + _vthresh[i*2+1])/2.;
@@ -280,9 +280,10 @@ namespace mu2e {
   }
 
   TDCValue StrawElectronics::tdcResponse(double time) const {
-    // Offset to when the TDC clock starts
-    double time_from_mb = time-_clockStart;
-    return min(static_cast<TDCValue>(max(static_cast<int>(floor((time_from_mb)/_TDCLSB)),0)),_maxTDC);
+    // here time should already be relative to event window marker arrival at ROC.
+    // we add electronics absolute delay before TDC actually digitizeds
+    double time_from_ewm = time+_electronicsTimeDelay;
+    return min(static_cast<TDCValue>(max(static_cast<int>(floor((time_from_ewm)/_TDCLSB)),0)),_maxTDC);
   }
 
   
@@ -323,8 +324,8 @@ namespace mu2e {
   
   bool StrawElectronics::combineEnds(double t1, double t2) const {
     // currently two clock ticks are allowed for coincidence time
-    int clockTicks1 = static_cast<int>(floor((t1-_clockStart)/_ADCPeriod));
-    int clockTicks2 = static_cast<int>(floor((t2-_clockStart)/_ADCPeriod));
+    int clockTicks1 = static_cast<int>(floor((t1)/_ADCPeriod));
+    int clockTicks2 = static_cast<int>(floor((t2)/_ADCPeriod));
     return (unsigned)abs(clockTicks1-clockTicks2) < _maxtsep;
   }
 

@@ -35,6 +35,7 @@
 #include "TrackerConditions/inc/DeadStrawList.hh"
 #include "TrackerConditions/inc/Types.hh"
 // data
+#include "DataProducts/inc/EventWindowMarker.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -122,6 +123,7 @@ namespace mu2e {
       double _bgcut; // cut dividing 'min-ion' particles from highly-ionizing
       double _minstepE; // minimum step energy to simulate
       string _g4ModuleLabel;  // Nameg of the module that made these hits.
+      art::InputTag _ewMarkerTag; // name of the module that makes eventwindowmarkers
       double _mbtime; // period of 1 microbunch
       double _mbbuffer; // buffer on that for ghost clusts (for waveform)
       double _adcbuffer; // time buffer for ADC 
@@ -181,6 +183,8 @@ namespace mu2e {
       Float_t _steplen, _stepE, _qsum, _esum, _eesum, _qe, _partP, _steptime;
       Int_t _nclusd, _netot, _partPDG;
       vector<IonCluster> _clusters;
+      Float_t _ewMarkerOffset;
+      vector<Float_t> _ewMarkerROCdt;
 
       //    vector<TGraph*> _waveforms;
       vector<TH1F*> _waveforms;
@@ -234,6 +238,7 @@ namespace mu2e {
     _bgcut(pset.get<double>("BetaGammaCut",0.5)), // treat particles with beta-gamma above this as minimum-ionizing
     _minstepE(pset.get<double>("minstepE",2.0e-6)), // minimum step energy depostion to turn into a straw signal (MeV)
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+    _ewMarkerTag(pset.get<art::InputTag>("EventWindowMarkerLabel","EWMProducer")),
     _steptimebuf(pset.get<double>("StepPointMCTimeBuffer",100.0)), // nsec
     _allStraw(pset.get<uint16_t>("AllHitsStraw",90)), 
     _allPlanes(pset.get<std::vector<uint16_t>>("AllHitsPlanes",std::vector<uint16_t>{})), // planes to read all hits
@@ -255,6 +260,7 @@ namespace mu2e {
     {
       // Tell the framework what we consume.
       consumesMany<StepPointMCCollection>();
+      consumes<EventWindowMarker>(_ewMarkerTag);
       // Since SimParticleTimeOffset calls getValidHandle, we have to
       // declare the consumes statements here.
       auto const& toffInputs = pset.get<std::vector<std::string>>("TimeOffsets.inputs", {});
@@ -394,6 +400,14 @@ namespace mu2e {
       _toff.updateMap(event);
       _strawele = ConditionsHandle<StrawElectronics>("ignored");
       _strawphys = ConditionsHandle<StrawPhysics>("ignored");
+      art::Handle<EventWindowMarker> ewMarkerHandle;
+      event.getByLabel(_ewMarkerTag, ewMarkerHandle);
+      const EventWindowMarker& ewMarker(*ewMarkerHandle);
+      _ewMarkerOffset = ewMarker.timeOffset();
+      // calculate event window marker jitter for this microbunch for each panel
+      for (size_t i=0;i<240;i++){
+        _ewMarkerROCdt.push_back(_randgauss.fire(0,_strawele->eventWindowMarkerROCJitter()));
+      }
       const Tracker& tracker = getTrackerOrThrow();
       // make the microbunch buffer long enough to get the full waveform
       _mbbuffer = (_strawele->nADCSamples() - _strawele->nADCPreSamples())*_strawele->adcPeriod();
@@ -560,6 +574,7 @@ namespace mu2e {
             propagateCharge(straw,wireq,end,weq);
             // compute the total time, modulo the microbunch
             double gtime = tstep + wireq._time + weq._time;
+            // convert from 
             double ctime = microbunchTime(gtime);
             // create the clust
             StrawCluster clust(StrawCluster::primary,sid,end,ctime,weq._charge,wireq._dd,wireq._phi,weq._wdist,wireq._time,weq._time,
@@ -705,8 +720,9 @@ namespace mu2e {
     }
 
     double StrawDigisFromStepPointMCs::microbunchTime(double globaltime) const {
+      // converts time from proton beam time (StepPointMC time) to event window marker time 
       // fold time relative to MB frequency
-      double mbtime = fmod(globaltime,_mbtime);
+      double mbtime = fmod(globaltime - _ewMarkerOffset,_mbtime);
       // keep the microbunch time contiguous
       if(mbtime < _strawele->flashStart()-_mbtime ) mbtime += _mbtime;
       return mbtime;
@@ -833,8 +849,8 @@ namespace mu2e {
       _strawele->adcTimes(xpair[0]._time,adctimes);
       //  sums voltages from both waveforms for ADC
       ADCVoltages wf[2];
-      // smear (coherently) both times for the TDC clock jitter
-      double dt = _randgauss.fire(0.0,_strawele->clockJitter());
+      // add the jitter in the EventWindowMarker time for this Panel (constant for a whole microbunch, same for both sides)
+      double dt = _ewMarkerROCdt[sid.getPanel()];
       // loop over the associated crossings
       for(size_t iend = 0;iend<2; ++iend){
         WFX const& wfx = xpair[iend];
