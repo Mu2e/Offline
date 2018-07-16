@@ -185,7 +185,7 @@ namespace mu2e {
       if (diagLevel_ > 1) std::cout << "Seed val=" << seed->val_ << " cryId=" << seed->crId_ << std::endl;
       if (seed->val_ < 1) continue; 
       int      cluEnergy(0);
-      int idpeak= seed->crId_;
+      unsigned int idpeak= (unsigned int) seed->crId_;
       float epeak=seed->val_*adcToEnergy_;
       float xpeak= cal->crystal(seed->crId_).localPositionFF().x();
       float ypeak= cal->crystal(seed->crId_).localPositionFF().y();
