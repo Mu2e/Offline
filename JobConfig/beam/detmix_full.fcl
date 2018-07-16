@@ -32,17 +32,7 @@ services: {
 physics: {
    producers: {
       genCounter: { module_type: GenEventCounter }
-      protonBunchIntensity: {
-         module_type: ProtonBunchIntensitySimulator
-         #
-         # Use the log-normal model of Proton Beam Inensity fluctuations
-         #
-         IntensityModel: 2
-         # IHEP data fit
-         Lognormal_mu : -0.10015
-         Lognormal_sigma : 0.3814
-         MeanNumberOfProtonsPerMicrobunch: 3.9e7
-      }
+      protonBunchIntensity: @local::PBISim
    }
 
    filters: {

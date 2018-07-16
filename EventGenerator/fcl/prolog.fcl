@@ -79,14 +79,10 @@ StoppedMuonXRayGammaRayGun: {
 }
 
 PBISim: {
-  module_type: ProtonBunchIntensitySimulator
-  # Use the log-normal model of Proton Beam Inensity fluctuations
-  IntensityModel: 2
-  # IHEP data fit
-  Lognormal_mu : -0.10015
-  Lognormal_sigma : 0.3814
-  MeanNumberOfProtonsPerMicrobunch: 3.9e7
-  MaximumRelativeIntensity : 3.0 # limit the size of the fluctutaions
+    module_type: ProtonBunchIntensityLogNormal
+    sigma: 0.3814
+    extendedMean: 3.9e7 // mean of the uncut distribution
+    cutMax: 11.7e7  // cut the tail at 3 times the mean
 }
 
 # Save state of random numbers at the start of each event
