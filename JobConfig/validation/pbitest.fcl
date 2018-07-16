@@ -28,9 +28,9 @@ physics : {
       }
       pbiln: {
          module_type: ProtonBunchIntensityLogNormal
-         mean: 3.9e7
+         extendedMean: 3.9e7
 	 sigma: 0.3814
-	 cutoff: 7.8e7
+	 cutMax: 7.8e7
       }
    }
 

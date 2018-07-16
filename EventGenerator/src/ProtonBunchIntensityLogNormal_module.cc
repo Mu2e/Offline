@@ -32,9 +32,10 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<double> mean{Name("mean"), Comment("Mean number of protons per microbunch") };
+      fhicl::Atom<double> extendedMean{Name("extendedMean"), Comment("Mean number of protons per microbunch for distribution without cuts") };
       fhicl::Atom<double> sigma{Name("sigma"), Comment("sigma of the lognormal distribution")};
-      fhicl::Atom<double> cutoff{Name("cutoff"), Comment("The high tail of the distribution will be truncated at the cutoff.")};
+      fhicl::Atom<double> cutMin{Name("cutMin"), Comment("The min number of protons to generate."), 0.};
+      fhicl::Atom<double> cutMax{Name("cutMax"), Comment("The high tail of the distribution will be truncated at cutMax.")};
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -46,34 +47,62 @@ namespace mu2e {
     artURBG urbg_;
     std::lognormal_distribution<double> lognd_;
     double mean_;
-    double cutoff_;
+    double cutMin_;
+    double cutMax_;
 
-    static double solveForMu(double mean, double sigma, double cutoff);
-    static double muMapping(double mean, double mu, double sigma, double cutoff);
+    static double solveForMu(double mean, double sigma);
   };
 
   ProtonBunchIntensityLogNormal::ProtonBunchIntensityLogNormal(const Parameters& conf)
     : urbg_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
-    , lognd_(solveForMu(conf().mean(), conf().sigma(), conf().cutoff()),
+    , lognd_(solveForMu(conf().extendedMean(), conf().sigma()),
              conf().sigma())
-    , mean_(conf().mean())
-    , cutoff_(conf().cutoff())
+    , mean_(conf().extendedMean())
+    , cutMin_(conf().cutMin())
+    , cutMax_(conf().cutMax())
   {
     produces<mu2e::ProtonBunchIntensity>();
+
+    if(cutMin_ < 0.) {
+      throw cet::exception("BADCONFIG")<<"ProtonBunchIntensityLogNormal: illegal cutMin = "
+                                       <<cutMin_<<" < 0.\n";
+    }
+
+    if(cutMax_ <= cutMin_) {
+      throw cet::exception("BADCONFIG")<<"ProtonBunchIntensityLogNormal: illegal cutMax = "
+                                       <<cutMax_<<" <= cutMin = "<<cutMin_<<"\n";
+    }
+
+    // Compute generation efficiency
+    const double mu = lognd_.m();
+    const double sigma = lognd_.s();
+    auto logNormalCDF = [mu, sigma](double x) {
+      return 0.5*erfc( - (log(x) - mu)/(sigma*sqrt(2.)) );
+    };
+
+    const double bc1 =  (0. < cutMin_) ? logNormalCDF(cutMin_) : 0.;
+    const double bc2 = logNormalCDF(cutMax_);
+    const double acceptance = bc2 - bc1;
+
+    if(acceptance < 1.e-6) {
+      throw cet::exception("BADCONFIG")<<"ProtonBunchIntensityLogNormal: the requested settings"
+                                       <<" result in a very low generation efficiency = "<<acceptance
+                                       <<".  Write a better algorithm for the task."<<"\n";
+    }
   }
 
   void ProtonBunchIntensityLogNormal::produce(art::Event& event) {
-    double res=0.;
-
-    while( (res = lognd_(urbg_)) > cutoff_) {}
+    double res=cutMax_; // force to enter the loop
+    while( (res < cutMin_) || (cutMax_ <= res) ) {
+        res = lognd_(urbg_);
+    }
 
     // convert to nearest ingeger and write out
     event.put(std::make_unique<ProtonBunchIntensity>(unsigned(rint(res)), mean_));
   }
 
   //================================================================
-  double ProtonBunchIntensityLogNormal::solveForMu(double mean, double sigma, double cutoff) {
-
+  double ProtonBunchIntensityLogNormal::solveForMu(double mean, double sigma) {
     if(mean <= 0.) {
       throw cet::exception("BADCONFIG")<<"ProtonBunchIntensityLogNormal: illegal mean = "
                                        <<mean<<" <= 0.\n";
@@ -84,54 +113,11 @@ namespace mu2e {
     }
 
     const double sigma2 = std::pow(sigma,2);
+
+    // log-normal mu that gives distribution with the requested mean (before the cuts!)
     double mu0 = log(mean) - 0.5*sigma2;
 
-    // standard deviation of a non-truncated distribution (mu0,sigma)
-    double sd0 = exp(mu0 +sigma2/2.)*sqrt(exp(sigma2) - 1.);
-
-    // Our approach to solve for mu to get the requested mean works
-    // for a cutoff reasonably far from the center of the distribution.
-    if(cutoff < mean + sd0) {
-      throw cet::exception("BADCONFIG")<<"ProtonBunchIntensityLogNormal: cutoff = "<<cutoff
-                                       <<" is not above the bulk of the distribution:"
-                                       <<" mean + one standard deviation ~= "<<mean + sd0
-                                       <<"\n";
-    }
-
-    // We write the transcendental equation for mu as
-    //
-    //    mu = F(mean,mu,sigma,cutoff)
-    //
-    // F() here happens to be a contraction mapping, at least in the
-    // range of parameters we care about.  The root can be found as
-    // the stationary point of the mapping.
-
-    const double precision = 1.e-9;
-    double mu = mu0;
-    for(int i=0; i<20; ++i) {
-      const double tmp = muMapping(mean, mu, sigma, cutoff);
-      const double delta = tmp-mu;
-      mu = tmp;
-      if(std::abs(delta) < precision) {
-        return mu;
-      }
-    }
-
-    throw cet::exception("DEBUG")<<"ProtonBunchIntensityLogNormal(): solver for mu did not converge.\n";
-  }
-
-  namespace {
-    // CDF of the standard normal distribution
-    double Phi(double x) {
-      return 0.5*erfc(-x/sqrt(2.));
-    }
-  }
-
-  double ProtonBunchIntensityLogNormal::muMapping(double mean, double mu, double sigma, double cutoff) {
-    const double sigma2 = std::pow(sigma,2);
-    const double argd = (log(cutoff) - mu)/sigma;
-    const double res = log(mean) - sigma2/2. + log(Phi(argd)/Phi(argd - sigma));
-    return res;
+    return mu0;
   }
 
 }
