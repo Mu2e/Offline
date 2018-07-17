@@ -78,13 +78,6 @@ timeSimulation : {
    }
 }
 
-protonBunch : {
-   mod : {
-      protonBunchSummarizer: { module_type : ProtonBunchIntensitySummarizer }
-   }
-   seq : [ protonBunchSummarizer]
-}
-
 digis : {
    straw : { 
       mod : {
