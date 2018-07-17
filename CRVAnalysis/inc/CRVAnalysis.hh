@@ -2,6 +2,7 @@
 
 #include "CRVAnalysis/inc/CrvHitInfoReco.hh"
 #include "CRVAnalysis/inc/CrvHitInfoMC.hh"
+#include "MCDataProducts/inc/SimParticle.hh"
 #include "art/Framework/Principal/Event.h"
 
 namespace mu2e
@@ -15,6 +16,11 @@ namespace mu2e
     static void FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterSummarizerModuleLabel,
                                           const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo);
 
+    private:
+    static const art::Ptr<SimParticle> &FindPrimaryParticle(const art::Ptr<SimParticle> &simParticle) 
+    {
+      return simParticle->hasParent() ? FindPrimaryParticle(simParticle->parent()) : simParticle;
+    }
   };
 
 }
