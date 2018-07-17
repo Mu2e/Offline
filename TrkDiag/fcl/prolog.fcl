@@ -42,8 +42,8 @@ BEGIN_PROLOG
     eventWeightModules : [ ]
   }
   ReadKalFitsMix : @local::ReadKalFits
-  ReadKalFitsMix.eventWeightModules : [ protonBunchIntensity  ]
-  ReadKalFitsMix.beamWeightModule : protonBunchIntensity
+  ReadKalFitsMix.eventWeightModules : [ protonBunchSummarizer  ]
+  ReadKalFitsMix.beamWeightModule : protonBunchSummarizer
 # Diagnostic modules    
   BD : {
 	module_type : BkgDiag
@@ -139,7 +139,7 @@ BEGIN_PROLOG
     KalDiag : @local::KalDiagReadMDC # configure KalDiag to read MDC2018 data
     # change this if reading cosmic data or generating inline
     TrkCaloDiag : @local::TrkCaloDiag
-    CrvCoincidenceModuleLabel : "CrvCoincidence"
+    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterSummarizer"
     # note that these weights will only be applied if the module which
     # produces them is run
     BeamIntensity : "protonBunchIntensity"
@@ -181,11 +181,8 @@ BEGIN_PROLOG
 # aggregate the prolog to produce the stanard analysis chain
   TrkAna : {
 
-    filters : {
-      @table::EventMixing.filters
-    }
     producers : {
-      @table::EventMixing.producers
+      @table::CommonDigiSim.producers
       @table::TrackerMC.producers
       @table::TrkHitReco.producers
       @table::Tracking.producers
@@ -207,7 +204,7 @@ BEGIN_PROLOG
     }
   
     # separate out the sime and reco parts of the sequence
-    SimSequence	: [ @sequence::EventMixing.TimeMaps,
+    SimSequence	: [ @sequence::CommonDigiSim.DigiSim,
 		    @sequence::TrackerMC.DigiSim,
 		    @sequence::CaloDigiMC.DigiSim ]
 # CRVDigiSequence 
@@ -218,16 +215,15 @@ BEGIN_PROLOG
 		     @sequence::Tracking.TPRDeM,
 		     @sequence::Tracking.TPRUeM,
 		     @sequence::Tracking.TPRDmuM,
-		     @sequence::TrackCaloMatching.matching_dem_TRF]
-#		     CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
+		     @sequence::TrackCaloMatching.matching_dem_TRF,
+		     CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
 #    EndSequence : [ TrkAna, genCountLogger ]
     EndSequence : [ TrkAna ]
 
   }
   # aggregate these for convenience
   TrkAna.SimAndRecoSequence : [ @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
-  TrkAna.SimAndRecoMixSequence : [ @sequence::EventMixing.CD3Mixers,
-                                   @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
+  TrkAna.SimAndRecoMixSequence : [ @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
 
 
 END_PROLOG

@@ -9,7 +9,7 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
-#include "TrkDiag/fcl/prolog_CRV.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
 
 process_name : TrkAna
 
