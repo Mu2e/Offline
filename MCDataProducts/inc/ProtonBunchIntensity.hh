@@ -10,7 +10,7 @@
 namespace mu2e {
   class ProtonBunchIntensity {
     public:
-      ProtonBunchIntensity(unsigned intensity=0) : _intensity(intensity) {}
+      explicit ProtonBunchIntensity(unsigned intensity=0) : _intensity(intensity) {}
       unsigned intensity() const { return _intensity; }
       bool operator == (ProtonBunchIntensity const& other ) const {
 	return _intensity == other.intensity(); }
