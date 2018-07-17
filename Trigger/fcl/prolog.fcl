@@ -29,14 +29,14 @@ FilterEcalMVATrigger:	{
     caloTrigSeedModuleLabel     : CaloTrigger
     weightsfile            : "Trigger/data/ce_bkg_ecal_20_BDT.weights.xml"
     TimeOFFSET             : 22.5
-    MVAhighcut0             : 0.2
+    MVAhighcut0             : 0.1
     MVArpivot0              : 445 # mm
-    MVApivotcut0            : 0.4
-    MVAlowcut0              : 0.4
-    MVAhighcut1             : 0.2
+    MVApivotcut0            : 0.1
+    MVAlowcut0              : 0.0
+    MVAhighcut1             : 0.1
     MVArpivot1              : 445 # mm
-    MVApivotcut1            : 0.4
-    MVAlowcut1              : 0.4
+    MVApivotcut1            : 0.1
+    MVAlowcut1              : 0.0
     downscale500factor	       : 1
 }
 
