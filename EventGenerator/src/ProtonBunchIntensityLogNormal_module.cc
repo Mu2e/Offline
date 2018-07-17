@@ -32,7 +32,7 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<unsigned> extendedMean{Name("extendedMean"), Comment("Mean number of protons per microbunch for distribution without cuts") };
+      fhicl::Atom<double> extendedMean{Name("extendedMean"), Comment("Mean number of protons per microbunch for distribution without cuts") };
       fhicl::Atom<double> sigma{Name("sigma"), Comment("sigma of the lognormal distribution")};
       fhicl::Atom<double> cutMin{Name("cutMin"), Comment("The min number of protons to generate."), 0.};
       fhicl::Atom<double> cutMax{Name("cutMax"), Comment("The high tail of the distribution will be truncated at cutMax.")};
@@ -47,7 +47,7 @@ namespace mu2e {
   private:
     artURBG urbg_;
     std::lognormal_distribution<double> lognd_;
-    unsigned mean_;
+    double mean_;
     double cutMin_;
     double cutMax_;
 
@@ -105,7 +105,7 @@ namespace mu2e {
 
   //================================================================
   void ProtonBunchIntensityLogNormal::beginSubRun(art::SubRun & subrun ) {
-    subrun.put(std::make_unique<ProtonBunchIntensity>(mean_),"MeanIntensity");
+    subrun.put(std::make_unique<ProtonBunchIntensity>(unsigned(rint(mean_))),"MeanIntensity");
   }
 
   //================================================================
