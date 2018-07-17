@@ -32,7 +32,7 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<double> extendedMean{Name("extendedMean"), Comment("Mean number of protons per microbunch for distribution without cuts") };
+      fhicl::Atom<unsigned> extendedMean{Name("extendedMean"), Comment("Mean number of protons per microbunch for distribution without cuts") };
       fhicl::Atom<double> sigma{Name("sigma"), Comment("sigma of the lognormal distribution")};
       fhicl::Atom<double> cutMin{Name("cutMin"), Comment("The min number of protons to generate."), 0.};
       fhicl::Atom<double> cutMax{Name("cutMax"), Comment("The high tail of the distribution will be truncated at cutMax.")};
@@ -42,11 +42,12 @@ namespace mu2e {
 
     explicit ProtonBunchIntensityLogNormal(const Parameters& conf);
     void produce(art::Event& evt) override;
+    void beginSubRun(art::SubRun & subrun ) override;
 
   private:
     artURBG urbg_;
     std::lognormal_distribution<double> lognd_;
-    double mean_;
+    unsigned mean_;
     double cutMin_;
     double cutMax_;
 
@@ -62,6 +63,7 @@ namespace mu2e {
     , cutMax_(conf().cutMax())
   {
     produces<mu2e::ProtonBunchIntensity>();
+    produces<mu2e::ProtonBunchIntensity,art::InSubRun>("MeanIntensity");
 
     if(cutMin_ < 0.) {
       throw cet::exception("BADCONFIG")<<"ProtonBunchIntensityLogNormal: illegal cutMin = "
@@ -98,7 +100,12 @@ namespace mu2e {
     }
 
     // convert to nearest ingeger and write out
-    event.put(std::make_unique<ProtonBunchIntensity>(unsigned(rint(res)), mean_));
+    event.put(std::make_unique<ProtonBunchIntensity>(unsigned(rint(res))));
+  }
+
+  //================================================================
+  void ProtonBunchIntensityLogNormal::beginSubRun(art::SubRun & subrun ) {
+    subrun.put(std::make_unique<ProtonBunchIntensity>(mean_),"MeanIntensity");
   }
 
   //================================================================

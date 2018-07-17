@@ -123,7 +123,7 @@ namespace mu2e {
     _generatorModuleLabel(pset.get<std::string>("generatorModule", "generate")),
     _genWtModule( pset.get<art::InputTag>("generatorWeightModule",art::InputTag()) ),
     _beamWtModule( pset.get<art::InputTag>("beamWeightModule",art::InputTag()) ),
-    _PBIModule( pset.get<art::InputTag>("ProtonBunchIntensityModule",art::InputTag("ProtonBunchIntensitySummarizer")) ),
+    _PBIModule( pset.get<art::InputTag>("ProtonBunchIntensityModule",art::InputTag("protonBunchIntensity")) ),
     _evtWtModules( pset.get<std::vector<art::InputTag>>("eventWeightModules",std::vector<art::InputTag>() ) ),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),

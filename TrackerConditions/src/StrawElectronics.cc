@@ -34,8 +34,7 @@ namespace mu2e {
       pset.get<double>("adcAnalogNoise",3.0)},
     _ADCLSB(pset.get<double>("ADCLSB",0.3662)), //mVolt
     _maxADC(pset.get<int>("maxADC",4095)),
-    _nADC(pset.get<unsigned>("nADC",16)),
-    _nADCpre(pset.get<unsigned>("nADCPresamples",4)),
+    _nADCpre(pset.get<unsigned>("nADCPresamples",5)),
     _ADCPeriod(pset.get<double>("ADCPeriod",20.0)), // nsec
     _ADCOffset(pset.get<double>("ADCOffset",2.0)), // nsec
     _maxtsep(pset.get<unsigned>("MaxThreshTimeSeparation",2)), // ADC clock ticks
@@ -287,26 +286,23 @@ namespace mu2e {
   }
 
   
-void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCWaveform& adc) const{
-    if(wf.size() != adc.size())
+  void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCWaveform& adc) const{
+    if(wf.size() != adc.size()){
       throw cet::exception("SIM") 
 	<< "mu2e::StrawElectronics: wrong number of voltages to digitize" 
 	<< endl;
-//    adc.clear();
-//    adc.reserve(_nADC);
-//    for(auto iwf=wf.begin();iwf!=wf.end();++iwf)
-//      adc.push_back(adcResponse(*iwf));
-      for(size_t iadc=0;iadc<adc.size();++iadc){
+    }
+    for(size_t iadc=0;iadc<adc.size();++iadc){
       adc.at(iadc) = adcResponse(sid, wf[iadc]);
-      }
+    }
   }
 
   bool StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdcs) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
-// test these times against the flash blanking.  not sure if we should require
-// one or both to be valid FIXME!.
-// The test should be done module the TDC clock not the exact TDC FIXME!
+    // test these times against the flash blanking.  not sure if we should require
+    // one or both to be valid FIXME!.
+    // The test should be done module the TDC clock not the exact TDC FIXME!
     bool notflash(true);
     for(auto tdc : tdcs){
       notflash &= tdc > _flashEndTDC && tdc < _flashStartTDC;
@@ -317,10 +313,10 @@ void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCW
   void StrawElectronics::adcTimes(double time, ADCTimes& adctimes) const {
 // clock has a fixed phase; Assume we digitize with a fixed delay relative to the leading edge
     adctimes.clear();
-    adctimes.reserve(_nADC);
+    adctimes.reserve(TrkTypes::NADC);
 // find the phase immediately proceeding this time.  Subtract presamples
     size_t phase = std::max((int)0,int(ceil(time/_ADCPeriod))-(int)_nADCpre);
-    for(unsigned itime=0;itime<_nADC;++itime){
+    for(unsigned itime=0;itime<TrkTypes::NADC;++itime){
       adctimes.push_back((phase+itime)*_ADCPeriod+_ADCOffset);
     }
   }

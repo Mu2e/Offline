@@ -60,7 +60,7 @@ namespace mu2e {
       uint16_t maxTDC() const { return _maxTDC; }
       uint16_t maxTOT() const { return _maxTOT; }
       uint16_t ADCPedestal(StrawId sid) const { return _ADCped[sid.getStraw()]; };
-      size_t nADCSamples() const { return _nADC; }
+      size_t nADCSamples() const { return TrkTypes::NADC; }
       size_t nADCPreSamples() const { return _nADCpre; }
       double adcPeriod() const { return _ADCPeriod; } // period of ADC clock in nsec
       double adcOffset() const { return _ADCOffset; } // offset WRT clock edge for digitization
@@ -102,7 +102,7 @@ namespace mu2e {
       double _ADCLSB; // least-significant bit of ADC (mVolts)
       TrkTypes::ADCValue _maxADC; // maximum ADC value
       std::vector<uint16_t> _ADCped; // ADC pedestal (reading for 0 volts)
-      size_t _nADC,_nADCpre; // Number of ADC samples, presamples
+      size_t _nADCpre; // Number of ADC presamples
       double _ADCPeriod; // ADC period in nsec
       double _ADCOffset; // Offset of 1st ADC sample WRT threshold crossing (nsec)
       unsigned _maxtsep; // maximum # of ADC clock ticks between straw end threshold crossings to form a digi

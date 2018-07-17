@@ -29,7 +29,7 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<double> mean{Name("mean"), Comment("Mean number of protons per microbunch") };
+      fhicl::Atom<unsigned> mean{Name("mean"), Comment("Mean number of protons per microbunch") };
       fhicl::Atom<double> halfWidth{Name("halfWidth"), Comment("Fractional half width of the flat distribution, 0 <= halfWidth <= 1.")};
     };
 
@@ -37,11 +37,12 @@ namespace mu2e {
 
     explicit ProtonBunchIntensityFlat(const Parameters& conf);
     void produce(art::Event& evt) override;
+    void beginSubRun(art::SubRun & subrun ) override;
 
   private:
     artURBG urbg_;
     std::uniform_real_distribution<double> flat_;
-    double mean_;
+    unsigned mean_;
   };
 
   ProtonBunchIntensityFlat::ProtonBunchIntensityFlat(const Parameters& conf)
@@ -50,6 +51,7 @@ namespace mu2e {
     , mean_(conf().mean())
   {
     produces<mu2e::ProtonBunchIntensity>();
+    produces<mu2e::ProtonBunchIntensity,art::InSubRun>("MeanIntensity");
 
     if(conf().halfWidth() < 0.) {
       throw cet::exception("BADCONFIG")<<"ProtonBunchIntensityFlat: illegal halfWidth = "
@@ -66,8 +68,13 @@ namespace mu2e {
     double res = mean_ * (1. + flat_(urbg_));
 
     // convert to nearest ingeger and write out
-    event.put(std::make_unique<ProtonBunchIntensity>(unsigned(rint(res)), mean_));
+    event.put(std::make_unique<ProtonBunchIntensity>(unsigned(rint(res))));
   }
+  
+  void ProtonBunchIntensityFlat::beginSubRun(art::SubRun & subrun ) {
+    subrun.put(std::make_unique<ProtonBunchIntensity>(mean_),"MeanIntensity");
+  }
+
 }
 
 DEFINE_ART_MODULE(mu2e::ProtonBunchIntensityFlat);

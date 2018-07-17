@@ -60,7 +60,6 @@ physics.filters.PSMixerCRV.mu2e.products.stepPointMCMixer: { mixingMap: [ [ "PSM
 physics.producers.makeSD.AllHitsPlanes : [34,35]
 services.ConditionsService.StrawElectronics.FlashStart : 1705
 services.ConditionsService.StrawElectronics.clockStart : 0.0
-physics.producers.protonBunchIntensity.PrintLevel : 2
 
 # must explicitly list all the mixers!
 physics.producers.CaloShowerStepROFromShowerStep.caloCrystalShowerInputs     : [ "CaloShowerStepFromStepPt:calorimeter",

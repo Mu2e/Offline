@@ -33,6 +33,8 @@
  <class name="mu2e::ComboHitCollection"/>
  <class name="mu2e::HelixHit"/>
  <class name="mu2e::HelixHitCollection"/>
+ <class name="mu2e::StrawDigiFlag"/>
+ <class name="mu2e::StrawDigiFlagDetail"/>
  <class name="mu2e::StrawHitFlag"/>
  <class name="mu2e::StrawHitFlagDetail"/>
  <class name="mu2e::StrawHitFlagCollection"/>

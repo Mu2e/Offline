@@ -10,7 +10,7 @@
 namespace mu2e {
   namespace TrkTypes {
     // 2 ends of the straw readout
-    static constexpr size_t NADC = 16; // number of ADC samples including presamples
+    static constexpr size_t NADC = 15; // number of ADC samples including presamples
     static constexpr size_t NENDS = 2; // number of straw ends
     // typedefs used for tracker data structures 
     typedef uint16_t TDCValue;
