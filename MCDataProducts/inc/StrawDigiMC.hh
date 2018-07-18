@@ -60,6 +60,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector _cpos[2]; // Positions of the clusters responsible
     // for the TDC firings on each end (can be the same)
     double _wetime[2]; // times at the wire ends of the signals which fired the TDC.  This needs double precision as neutrons can take seconds (!) to generate signals
+    // in ns from event window marker
 
     art::Ptr<StepPointMC> _stepMC[2];	  // Ptr into StepPointMC collection of step which
     // triggered the TDC

@@ -6,6 +6,7 @@ makeSH : {
   module_type : StrawHitReco
   FilterHits : false
   WriteStrawHitCollection : true
+  EventWindowMarkerLabel : "EWMProducer"
 }
 # combine hits in a panel
 makePH : {

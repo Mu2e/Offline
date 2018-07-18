@@ -67,7 +67,7 @@ namespace mu2e {
       ClusterType _type; // type of clust
       StrawId  _strawId;      // Straw id
       StrawEnd	_end;		  // which end of the straw
-      double     _time;            // microbunch time at the wire end, in ns
+      double     _time;            // microbunch time at the wire end, in ns since EventWindowMarker
       double     _charge;          // charge at the wire end, in units of pC
       double	_ddist;		  // drift distance charge traveled to the wire
       double _phi;    //JB: angle between E and B at ionization event

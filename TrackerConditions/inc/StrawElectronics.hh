@@ -43,9 +43,9 @@ namespace mu2e {
       double maxResponseTime(Path ipath,double distance) const;
   // digization
       TrkTypes::ADCValue adcResponse(StrawId id, double mvolts) const; // ADC response to analog inputs
-      TrkTypes::TDCValue tdcResponse(double time) const; // TDC response to a given time
+      TrkTypes::TDCValue tdcResponse(double time) const; // TDC response to a signal input to electronics at a given time (in ns since eventWindowMarker)
       void digitizeWaveform(StrawId id, TrkTypes::ADCVoltages const& wf,TrkTypes::ADCWaveform& adc) const; // digitize an array of voltages at the ADC
-      bool digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc) const;
+      bool digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc) const; // times in ns since eventWindowMarker
       void uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const; // convert time from beam t0 to tracker channel t0
       bool combineEnds(double t1, double t2) const; // are times from 2 ends combined into a single digi?
   // interpretation of digital data
@@ -74,8 +74,8 @@ namespace mu2e {
       double deadTimeAnalog() const { return _tdeadAnalog; }
       double deadTimeDigital() const { return _tdeadDigital; }
       double TDCResolution() const { return _tdcResolution; }
-      double clockStart() const { return _clockStart; }
-      double clockJitter() const { return _clockJitter; }
+      double electronicsTimeDelay() const { return _electronicsTimeDelay; }
+      double eventWindowMarkerROCJitter() const { return _ewMarkerROCJitter; }
 
       double currentToVoltage(StrawId sid, Path ipath) const { return _dVdI[ipath][sid.getStraw()]; }
       double maxLinearResponse(StrawId sid, Path ipath,double distance,double charge=1.0) const;
@@ -112,10 +112,12 @@ namespace mu2e {
       double _TOTLSB; // least-significant bit of TOT (nsecs)
       TrkTypes::TOTValue _maxTOT; // maximum TOT value
       double _tdcResolution; // tdc resolution (electronics effects only) (nsecs)
-      double _clockStart, _clockJitter; // time TDC clock starts, and its error (common to both ends!!)
-      // clockstart is the time offset between "microbunch time" t0 (beam) and TDC t0
-      double _flashStart, _flashEnd; // flash blanking period (no digitizations during this time!!!)
-      TrkTypes::TDCValue _flashStartTDC, _flashEndTDC; // TDC values corresponding to the above
+      double _electronicsTimeDelay; // Absolute time delay in electronics due to firmware signal propagation etc (ns)
+      double _ewMarkerROCJitter; // jitter of ewMarker per ROC (ns)
+      // electronicsTimeDelay is the time offset between a hit arriving at the electronics and the time that is digitized
+      double _flashStart, _flashEnd, _flashClockSpeed; // flash blanking period (no digitizations during this time!!!) (ns from eventWindowMarker arrival, what will actually be set)
+      TrkTypes::TDCValue _flashStartTDC, _flashEndTDC; // TDC values corresponding to the above. Note ignores electronicsTimeDelay since this is not a digitized signal
+      // but an actual TDC value that will be compared against
   // helper functions
       static inline double mypow(double,unsigned);
 

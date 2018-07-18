@@ -59,7 +59,7 @@ namespace mu2e {
       _strawele = ConditionsHandle<StrawElectronics>("ignored");
       _strawphys = ConditionsHandle<StrawPhysics>("ignored");
 
-      _timeOffsetBeam = pset.get<double>("TimeOffsetBeam",_strawele->clockStart());
+      _electronicsTimeDelay = pset.get<double>("ElectronicsTimeDelay",_strawele->electronicsTimeDelay());
       _gasGain = pset.get<double>("GasGain",_strawphys->strawGain());
       _analognoise[StrawElectronics::thresh] = pset.get<double>("thresholdAnalogNoise",_strawele->analogNoise(StrawElectronics::thresh));
       _analognoise[StrawElectronics::adc] = pset.get<double>("adcAnalogNoise",_strawele->analogNoise(StrawElectronics::adc));
@@ -209,9 +209,8 @@ namespace mu2e {
   }
 
   void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes &times, const StrawId &id) const {
-    
-    times[StrawEnd::hv] = tdc[StrawEnd::hv]*_strawele->tdcLSB() +  _timeOffsetBeam + _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.getStraw()];
-    times[StrawEnd::cal] = tdc[StrawEnd::cal]*_strawele->tdcLSB() + _timeOffsetBeam + _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.getStraw()];
+    times[StrawEnd::hv] = tdc[StrawEnd::hv]*_strawele->tdcLSB() - _electronicsTimeDelay + _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.getStraw()];
+    times[StrawEnd::cal] = tdc[StrawEnd::cal]*_strawele->tdcLSB() - _electronicsTimeDelay + _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.getStraw()];
   }
  
 
