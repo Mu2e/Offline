@@ -372,6 +372,7 @@ namespace mu2e {
 	_bdir = Hep3Vector(0.0,0.0,1.0);
 	_ptmin = -1.0;
       } else {
+	_bdir = b0.unit();
 	//compute the transverse momentum for which a particle will curl up in a straw
 	const Tracker& tracker = getTrackerOrThrow();
 	const Straw& straw = tracker.getStraw(StrawId(0,0,0));
