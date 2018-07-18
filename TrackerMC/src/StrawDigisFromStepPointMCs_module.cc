@@ -367,13 +367,17 @@ namespace mu2e {
       GeomHandle<DetectorSystem> det;
       Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
       Hep3Vector b0 = bfmgr->getBField(vpoint_mu2e);
-      if ( b0.mag() < 1.0e-4 ) b0.set(0.,0.,1.);
-      _bdir = b0.unit();
-      // compute the transverse momentum for which a particle will curl up in a straw
-      const Tracker& tracker = getTrackerOrThrow();
-      const Straw& straw = tracker.getStraw(StrawId(0,0,0));
-      double rstraw = straw.getRadius();
-      _ptmin = _ptfac*BField::mmTeslaToMeVc*b0.mag()*rstraw;
+      // if the field is too small, don't perform any curvature-based analysis
+      if ( b0.mag() < 1.0e-4 ){
+	_bdir = Hep3Vector(0.0,0.0,1.0);
+	_ptmin = -1.0;
+      } else {
+	//compute the transverse momentum for which a particle will curl up in a straw
+	const Tracker& tracker = getTrackerOrThrow();
+	const Straw& straw = tracker.getStraw(StrawId(0,0,0));
+	double rstraw = straw.getRadius();
+	_ptmin = _ptfac*BField::mmTeslaToMeVc*b0.mag()*rstraw;
+      }
       if ( _printLevel > 0 ) {
         _strawphys = ConditionsHandle<StrawPhysics>("ignored");
         _strawphys->print(cout);
@@ -1119,21 +1123,26 @@ namespace mu2e {
       if(pdt->particle(step.simParticle()->pdgId()).isValid()){
         charge = pdt->particle(step.simParticle()->pdgId()).ref().charge();
       }
-      double r2 = straw.getDetail().innerRadius()*straw.getDetail().innerRadius();
+      static const double r2 = straw.getDetail().innerRadius()*straw.getDetail().innerRadius();
       // decide how we step; straight or helix, depending on the Pt
       Hep3Vector const& mom = step.momentum();
       Hep3Vector mdir = mom.unit();
       // approximate pt
       double apt = step.momentum().perpPart(_bdir).mag();
       if( apt > _ptmin) { // use linear approximation
-        // make sure this linear approximation doesn't extend past the physical straw
+       	double slen = step.stepLength();
+	// make sure this linear approximation doesn't extend past the physical straw
         Hep3Vector dperp = (step.position() -straw.getMidPoint()).perpPart(straw.getDirection());
         Hep3Vector mperp = mdir.perpPart(straw.getDirection());
-        double dm = dperp.dot(mperp);
+	double dm = dperp.dot(mperp);
         double m2 = mperp.mag2();
         double dp2 = dperp.mag2();
-        double smax = (-dm + sqrt(dm*dm - m2*(dp2 - r2)))/m2;
-        double slen = std::min(smax,step.stepLength());
+	double sarg = dm*dm - m2*(dp2 - r2);
+	// some glancing cases fail the linear math
+	if(sarg > 0.0 && m2 > 0.0){
+	  double smax = (-dm + sqrt(sarg))/m2;
+	  double slen = std::min(smax,slen);
+	}
         // generate a vector of random lengths
         for(unsigned ic=0;ic < cpos.size();++ic){
           // generate a random cluster position
@@ -1146,7 +1155,6 @@ namespace mu2e {
         // find the local field vector at this step
         Hep3Vector vpoint_mu2e = det->toMu2e(step.position());
         Hep3Vector bf = bfmgr->getBField(vpoint_mu2e);
-        if ( bf.mag() < 1.0e-4 ) bf.set(0.,0.,1.);
         // compute transverse radius of particle
         double rcurl = fabs(charge*(mom.perpPart(bf).mag())/BField::mmTeslaToMeVc*bf.mag());
         // basis using local Bfield direction
