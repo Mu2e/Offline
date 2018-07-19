@@ -28,7 +28,7 @@ namespace mu2e {
   using namespace DeltaFinder2Types;
 
   class SimParticle;
-  class PtrStepPointMCVectorCollection;
+  class StrawDigiMCCollection;
   
   class DeltaFinderDiagCluster: public ModuleHistToolBase {
 
@@ -86,7 +86,7 @@ namespace mu2e {
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
 
     int                                   _eventNumber;
-    const PtrStepPointMCVectorCollection* _listOfMcStrawHits;
+    const StrawDigiMCCollection*          _listOfMcStrawHits;
     
     std::vector<McPart_t*>                _list_of_mc_particles; // list_of_particles with hits in the tracker
     std::vector<McPart_t*>                _list_of_mc_part_hit ; // for each StrawHit, pointer to its McPart 

@@ -104,7 +104,9 @@ namespace mu2e {
       ProbDist();
       ProbDist(TH1F* Hist);
       ProbDist(const char* Fn);
-
+      
+      ~ProbDist();
+      
       double prob(double X);
       int    readHistogram(const char* Fn, TH1F** Hist);
     };
@@ -358,97 +360,97 @@ namespace mu2e {
 // pmva[3]: momentum error in the first point
 // for consistency, use helical parameterization in the first point
 //-----------------------------------------------------------------------------
-        CLHEP::Hep3Vector momdir = fitmom.unit();
-        BbrVectorErr      momerr = krep_cpr->momentumErr(entlen);
+	CLHEP::Hep3Vector momdir = fitmom.unit();
+	BbrVectorErr      momerr = krep_cpr->momentumErr(entlen);
+	
+	CLHEP::HepVector momvec(3);
+	for (int i=0; i<3; i++) momvec[i] = momdir[i];
+	
+	pmva[ 3] = sqrt(momerr.covMatrix().similarity(momvec));
+	pmva[ 4] = krep_cpr->t0().t0Err();
 
-        CLHEP::HepVector momvec(3);
-        for (int i=0; i<3; i++) momvec[i] = momdir[i];
+	Hep3Vector tfront = ds->toDetector(vdet->getGlobal(mu2e::VirtualDetectorId::TT_FrontPA));
+	double     zfront = tfront.z();
+	double     sz0    = s_at_given_z(krep_cpr,zfront);
 
-        pmva[ 3] = sqrt(momerr.covMatrix().similarity(momvec));
-        pmva[ 4] = krep_cpr->t0().t0Err();
+	HelixParams helx  = krep_cpr->helix(sz0);
 
-        Hep3Vector tfront = ds->toDetector(vdet->getGlobal(mu2e::VirtualDetectorId::TT_FrontPA));
-        double     zfront = tfront.z();
-        double     sz0    = s_at_given_z(krep_cpr,zfront);
+	pmva[ 5] = helx.d0();
+	pmva[ 6] = helx.d0()+2/helx.omega();
 
-        HelixParams helx  = krep_cpr->helix(sz0);
+					// calculate number of doublets 
 
-        pmva[ 5] = helx.d0();
-        pmva[ 6] = helx.d0()+2/helx.omega();
-
-                                        // calculate number of doublets
-
-        vector<mu2e::Doublet> list_of_doublets;
-        _dar->findDoublets(krep_cpr,&list_of_doublets);
+	vector<mu2e::Doublet> list_of_doublets;
+	_dar->findDoublets(krep_cpr,&list_of_doublets);
 //-----------------------------------------------------------------------------
 // counting only 2+ hit doublets
 //-----------------------------------------------------------------------------
-        mu2e::Doublet*                     d;
+	mu2e::Doublet*                     d;
+	
+	int   nd_tot(0), nd_os(0), nd_ss(0), ns;
 
-        int   nd_tot(0), nd_os(0), nd_ss(0), ns;
+	int nad(0);                     // number of doublets with at least one hit active
+	
+	int nd = list_of_doublets.size();
+	for (int i=0; i<nd; i++) {
+	  d  = (mu2e::Doublet*) &list_of_doublets.at(i);
+	  ns = d->fNStrawHits;
+	  
+	  if (ns > 1) { 
+	    nd_tot += 1;
+	    if (d->isSameSign()) nd_ss += 1;
+	    else                 nd_os += 1;
 
-        int nad(0);                     // number of doublets with at least one hit active
+	    int active = 1;
+	    for (int is=0; is<ns; is++) {
+	      if (!d->fHit[is]->isActive()) {
+		active = 0;
+		break;
+	      }
+	    }
+	    
+	    if (active == 1) {
+	      nad += 1;
+	    }
+	  }
+	}
+	
+	pmva[ 7] = nad/na;
+	pmva[ 8] = cpr_trkinfo._nnullambig/na;
+	pmva[ 9] = cpr_trkinfo._nmatactive/na;
 
-        int nd = list_of_doublets.size();
-        for (int i=0; i<nd; i++) {
-          d  = (mu2e::Doublet*) &list_of_doublets.at(i);
-          ns = d->fNStrawHits;
-
-          if (ns > 1) {
-            nd_tot += 1;
-            if (d->isSameSign()) nd_ss += 1;
-            else                 nd_os += 1;
-
-            int active = 1;
-            for (int is=0; is<ns; is++) {
-              if (!d->fHit[is]->isActive()) {
-                active = 0;
-                break;
-              }
-            }
-
-            if (active == 1) {
-              nad += 1;
-            }
-          }
-        }
-
-        pmva[ 7] = nad/na;
-        pmva[ 8] = cpr_trkinfo._nnullambig/na;
-        pmva[ 9] = cpr_trkinfo._nmatactive/na;
-
-        cpr_qual = _calPatRecQualMVA->evalMVA(pmva);
+	cpr_qual = _calPatRecQualMVA->evalMVA(pmva);
 //-----------------------------------------------------------------------------
 // primitive check if this is the same track - require delta(p) less than 5 MeV/c
 // ultimately - check the number of common hits
 //-----------------------------------------------------------------------------
-        for(auto itt=tlist.begin(); itt<tlist.end(); itt++) {
-          hitt = static_cast<const mu2e::TrkStrawHit*> (*itt);
-          if (hitt->isActive()) {
-            for(auto itc=clist.begin(); itc<clist.end(); itc++) {
-              hitc = static_cast<const mu2e::TrkStrawHit*> (*itc);
-              if (hitc->isActive()) {
-                if (&hitt->comboHit() == &hitc->comboHit()) {
-                  natc += 1;
-                  break;
-                }
-              }
-            }
-          }
-        }
+	for(auto itt=tlist.begin(); itt<tlist.end(); itt++) {
+	  hitt = static_cast<const mu2e::TrkStrawHit*> (*itt);
+	  if (hitt->isActive()) {
+	    for(auto itc=clist.begin(); itc<clist.end(); itc++) {
+	      hitc = static_cast<const mu2e::TrkStrawHit*> (*itc);
+	      if (hitc->isActive()) {
+		if (&hitt->comboHit() == &hitc->comboHit()) {
+		  natc += 1;
+		  break;
+		}
+	      }
+	    }
+	  }
+	}
 //-----------------------------------------------------------------------------
 // if > 50% of all hits are common, consider cpr and tpr to be the same
-// logic of the choice:
+// logic of the choice: 
 // 1. take the track which has more active hits
-// 2. if two tracks have the same number of active hits, choose the one with
+// 2. if two tracks have the same number of active hits, choose the one with 
 //    "higher probability"
 //-----------------------------------------------------------------------------
-        if (natc > (nac+nat)/4.) {
+	if (natc > (nac+nat)/4.) {
 
-          mask = mask | (1 << AlgorithmID::CalPatRecBit);
+	  mask = mask | (1 << AlgorithmID::CalPatRecBit);
 
-          double tpr_prob = _trkPatRecProb->prob(tpr_qual);
-          double cpr_prob = _calPatRecProb->prob(cpr_qual);
+	  double tpr_prob = _trkPatRecProb->prob(tpr_qual);
+	  double cpr_prob = _calPatRecProb->prob(cpr_qual);
 
           if ((tpr_trkinfo._trkqual > _minTprQual) && (cpr_qual > _minCprQual)) {
 //-----------------------------------------------------------------------------
@@ -566,13 +568,13 @@ namespace mu2e {
 // determine, approximately, 'sz0' - flight length corresponding to the
 // virtual detector at the tracker entrance
 //-----------------------------------------------------------------------------
-        double  h1_fltlen, hn_fltlen, entlen;
+	double  h1_fltlen, hn_fltlen, entlen;
+	
+	h1_fltlen      = krep_cpr->firstHit()->kalHit()->hit()->fltLen();
+	hn_fltlen      = krep_cpr->lastHit ()->kalHit()->hit()->fltLen();
+	entlen         = std::min(h1_fltlen,hn_fltlen);
 
-        h1_fltlen      = krep_cpr->firstHit()->kalHit()->hit()->fltLen();
-        hn_fltlen      = krep_cpr->lastHit ()->kalHit()->hit()->fltLen();
-        entlen         = std::min(h1_fltlen,hn_fltlen);
-
-        CLHEP::Hep3Vector fitmom = krep_cpr->momentum(entlen);
+	CLHEP::Hep3Vector fitmom = krep_cpr->momentum(entlen);
 //-----------------------------------------------------------------------------
 // pmva[3]: momentum error in the first point
 // for consistency, use helical parameterization in the first point
