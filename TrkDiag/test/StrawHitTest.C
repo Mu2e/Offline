@@ -103,6 +103,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
   TCut stpprotonorigin("mcgpdg==2212&&mcgid==28");
   TCut stpdeuteronorigin("mcgpdg==1000010020&&mcgid==28");
   TCut pprotonorigin("mcgpdg==2212&&mcgid==16");
+  TCut flashstraw("plane>33&&straw>=90");
 
   TCut hitsel("esel&&rsel&&tsel&&(!bkg)");
 
@@ -672,6 +673,16 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     hits->Project("tdres","shlen-mcshlen","mcgen==2");
     TCanvas* tdcan = new TCanvas("tdcan","tdcan",600,600);
     tdres->Fit("gaus");
+  } else if(spage == "flash") {
+    TH1F* tfhit = new TH1F("tfhit","Flash Hit Time",500,0.0,250.0);
+    TH1F* tfmc = new TH1F("tfmc","Flash Hit Time",500,0.0,250.0);
+    hits->Project("tfhit","tcal",pprotonorigin+flashstraw);
+    hits->Project("tfmc","mcsptime",pprotonorigin+flashstraw);
+    tfhit->SetLineColor(kRed);
+    tfmc->SetLineColor(kBlue);
+    TCanvas* fcan = new TCanvas("fcan","fcan",600,600);
+    fcan->cd(0);
+    tfhit->Draw();
+    tfmc->Draw("same");
   }
-
 }
