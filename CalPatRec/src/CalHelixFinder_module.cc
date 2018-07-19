@@ -423,42 +423,25 @@ namespace mu2e {
     //     helixRadius, center.x(), center.y(), dfdz, nhits, HfResult._sxyw.chi2DofCircle(), HfResult._srphi.chi2DofLine());
     // printf("[CalHelixFinder::initHelixSeed] Index      X          Y         Z          PHI\n");
 
-    // double     z_start(0);
-    // bool       isFirst(true);
+    double     z_start(0);
     HelSeed._hhits.setParent(_chcol->parent());
     for (int i=0; i<nhits; ++i){
-      const StrawHitIndex     loc     = HfResult._goodhits[i];
-      const ComboHit*         hit     = &(_chcol->at(loc));
-      // const StrawHitPosition& shpos  = _shpcol->at(loc);
+      const StrawHitIndex     loc    = HfResult._goodhits[i];
+      const ComboHit*         hit    = &(_chcol->at(loc));
+      double                  hit_z  = hit->pos().z();
+      if ( i==0 ) z_start = hit_z;
 
-      double                  hit_z   = hit->pos().z();
-      double                  phi_ref = HelSeed.helix().circleAzimuth(hit_z);
-      // if (isFirst){
-      // 	z_start = hit_z;
-      // 	isFirst = false;
-      // }
-      
       double                  shphi  = XYZVec(hit->pos() - HelSeed._helix.center()).phi();
-      double                  dphi   = phi_ref - shphi;
-      // resolve 2PI ambiguity
-      while (dphi > M_PI) {
-	shphi += 2*M_PI;
-	dphi = phi_ref - shphi;
-      }
-      while (dphi < -M_PI) {
-	shphi -= 2*M_PI;
-	dphi = phi_ref - shphi;
-      }
-      
-      // int                     nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
-      // shphi = shphi + double(nLoops)*2.*M_PI;
+      int                     nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
+      shphi = shphi + double(nLoops)*2.*M_PI;
 
-      ComboHit                hhit(*hit);//,loc,shphi);
+      ComboHit  hhit(*hit);
+
       hhit._hphi = shphi;
 
-      hhit._flag.merge(StrawHitFlag::resolvedphi);
-					
+      hhit._flag.clear(StrawHitFlag::resolvedphi);
       hhit._flag.merge(_shfcol->at(loc)); // merge in other flags, hit Quality no yet assigned
+
       HelSeed._hhits.push_back(hhit);
     }
   }
