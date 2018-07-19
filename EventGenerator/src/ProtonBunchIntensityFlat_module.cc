@@ -29,7 +29,7 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<unsigned> mean{Name("mean"), Comment("Mean number of protons per microbunch") };
+      fhicl::Atom<double> mean{Name("mean"), Comment("Mean number of protons per microbunch") };
       fhicl::Atom<double> halfWidth{Name("halfWidth"), Comment("Fractional half width of the flat distribution, 0 <= halfWidth <= 1.")};
     };
 
@@ -42,7 +42,7 @@ namespace mu2e {
   private:
     artURBG urbg_;
     std::uniform_real_distribution<double> flat_;
-    unsigned mean_;
+    double mean_;
   };
 
   ProtonBunchIntensityFlat::ProtonBunchIntensityFlat(const Parameters& conf)
@@ -72,7 +72,7 @@ namespace mu2e {
   }
   
   void ProtonBunchIntensityFlat::beginSubRun(art::SubRun & subrun ) {
-    subrun.put(std::make_unique<ProtonBunchIntensity>(mean_),"MeanIntensity");
+    subrun.put(std::make_unique<ProtonBunchIntensity>(unsigned(rint(mean_))),"MeanIntensity");
   }
 
 }

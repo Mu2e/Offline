@@ -9,9 +9,10 @@ CommonDigiSim: {
     producers: {
 	protonTimeMap: { module_type : GenerateProtonTimes }
 	muonTimeMap: { module_type : GenerateMuonLife }
+        EWMProducer : { module_type : EventWindowMarkerProducer }
     }
 
-    DigiSim : [ protonTimeMap, muonTimeMap ]
+    DigiSim : [ protonTimeMap, muonTimeMap, EWMProducer ]
 }
 
 #------------------------------------------------------------------------------

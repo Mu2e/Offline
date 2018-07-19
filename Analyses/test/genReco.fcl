@@ -154,7 +154,6 @@ physics : {
 # G4, hit makers, calorimeter, track reconstruction, and PID
 #------------------------------------------------------------------------------
 	@table::Mu2eG4.producers
-        @table::EventMixing.producers 
 	@table::CommonDigiSim.producers
 	@table::CaloDigiMC.producers
         @table::CaloReco.producers

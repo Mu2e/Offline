@@ -49,6 +49,8 @@ namespace mu2e {
       double ADCPedestal() const { return _ADCped; };
       double t0shift() const { return _t0shift; }
 
+      // converts times from TDC times to time relative to Event Window
+      // removes channel to channel delays and overall electronics time delay
       void calibrateTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes &times, const StrawId &id) const;
 
       double driftTime(StrawHit const& strawhit) const;
@@ -110,7 +112,7 @@ namespace mu2e {
       double _ADCped;
 
 
-      double _timeOffsetBeam;
+      double _electronicsTimeDelay;
       std::vector<double> _timeOffsetPanel;
       std::vector<double> _timeOffsetStrawHV;
       std::vector<double> _timeOffsetStrawCal;

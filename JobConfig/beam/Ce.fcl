@@ -6,7 +6,7 @@
 #include "CaloMC/fcl/prolog.fcl"
 #include "EventGenerator/fcl/prolog.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
-#include "CRVResponse/fcl/prolog_v07.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
 #include "JobConfig/beam/prolog.fcl"

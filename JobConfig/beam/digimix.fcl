@@ -9,7 +9,7 @@
 #include "EventMixing/fcl/prolog.fcl"
 #include "EventGenerator/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
-#include "CRVResponse/fcl/prolog_v07.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
 #include "fcl/standardServices.fcl"
 #include "fcl/minimalMessageService.fcl"
 #

@@ -6,7 +6,7 @@
 #include "CaloMC/fcl/prolog.fcl"
 #include "EventGenerator/fcl/prolog.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
-#include "CRVResponse/fcl/prolog_v07.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
 #include "JobConfig/beam/prolog.fcl"
@@ -20,10 +20,9 @@ physics : {
     generate : @local::CeEndpointGun
     g4run : @local::mu2e.physics.producers.g4run.muons
     genCounter: { module_type: GenEventCounter }
+    @table::CommonDigiSim.producers
     @table::TrackerMC.producers
     @table::CaloDigiMC.producers
-    protonTimeMap: { module_type : GenerateProtonTimes }
-    muonTimeMap: { module_type : GenerateMuonLife }
   }
   filters: {
     TrkDigiFilter : {
@@ -37,7 +36,7 @@ physics : {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
   }
   CeEndpointPath : [ generate, genCounter, g4run,
-    protonTimeMap, muonTimeMap,
+    @sequence::CommonDigiSim.DigiSim,
     @sequence::TrackerMC.DigiSim,
     TrkDigiFilter,
     @sequence::CaloDigiMC.DigiSim
