@@ -46,18 +46,14 @@ physics : {
   producers: {
 
     # Generate the event.
-#    generate: @local::StoppedMuonConversionGun
 
     generate: {
-      @table::EventGenerator.producers.StoppedMuonConversionGunN
+      @table::EventGenerator.producers.StoppedParticleReactionGunN
       stashSize : @local::stashSize
     }
 
-
     # Run G4 and add its output to the event.
-#    g4run : @local::g4run
 
-    # Run G4 and add its output to the event.
     g4run : {
       @table::g4run
       numberOfEventsToProcess : @local::stashSize       # THIS MUST BE EQUAL TO stashSize!
@@ -65,9 +61,9 @@ physics : {
       numberOfThreads : 2
     }
 
+    # Work needed to setup the digi makers.
+    @table::CommonDigiSim.producers
 
-    protonTimeMap        : { module_type : GenerateProtonTimes }
-    muonTimeMap          : { module_type : GenerateMuonLife }
 
     # Form StrawHits (SH).
     makeSD               : @local::makeSD
@@ -110,7 +106,7 @@ physics : {
 
   }
 
-  p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,
+  p1 : [generate, g4run, @sequence::CommonDigiSim.DigiSim, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,
          @sequence::CaloReco.Reco,randomsaver ]
   e1 : [readGens, checkhits, readStrawHits, outfile]
 
@@ -136,6 +132,8 @@ services.SeedService.maxUniqueEngines :  20
 physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
 # physics.producers.g4run.BirksConsts : { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV }
 
+# mu stops
+physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
 
 
 // Enable diagnsotic printout for pedagogical purposes.
