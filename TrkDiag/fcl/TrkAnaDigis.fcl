@@ -13,17 +13,9 @@
 
 process_name : TrkAna
 
-source :
-{
-  module_type : RootInput
-}
+source : { module_type : RootInput }
 
 services : @local::Services.Reco
-#services.AlignmentService	  : { inputFile      : "MT_MDC2018.txt"	
-#				      printConfig : true
-#				      configStatsVerbosity : 10
-#				      messageOnReplacement : true
-#				    }
 
 physics :
 {
