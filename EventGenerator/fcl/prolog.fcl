@@ -67,9 +67,24 @@ CeEndpointGun: {
 }
 
 
+PrimaryProtonGunN: {
+module_type          : PrimaryProtonGunN
+inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
+stashSize     : @nil
+}
+
+
 StoppedParticleReactionGun: {
   @table::CeEndpointGun 
 }
+
+
+StoppedParticleReactionGunN: {
+    @table::StoppedParticleReactionGun
+    module_type    : StoppedParticleReactionGunN
+    stashSize      : @nil
+}
+
 
 StoppedMuonXRayGammaRayGun: {
     module_type    : StoppedMuonXRayGammaRayGun
@@ -98,6 +113,8 @@ EventGenerator : {
     producers : {
 	CeEndpointGun   : { @table::CeEndpointGun   }
 	StoppedParticleReactionGun : { @table::StoppedParticleReactionGun }
+        StoppedParticleReactionGunN : { @table::StoppedParticleReactionGunN }
+        PrimaryProtonGunN           : { @table::PrimaryProtonGunN           }
 
   	egun005 : { @table::StoppedParticleReactionGun # p(e)=5 MeV/c
 	    physics : {

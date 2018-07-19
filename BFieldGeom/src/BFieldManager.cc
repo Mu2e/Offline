@@ -27,6 +27,7 @@ namespace mu2e {
         return getBFieldWithStatus(point, cm_, result);
     }
 
+
     // Get field at an arbitrary point. This code figures out which map to use
     // and looks up the field in that map.
     bool BFieldManager::getBFieldWithStatus(const CLHEP::Hep3Vector& point,
@@ -42,6 +43,7 @@ namespace mu2e {
 
         return (m != 0);
     }
+
 
     std::shared_ptr<BFGridMap> BFieldManager::addBFGridMap(MapContainerType* mapContainer,
                                                            const std::string& key,

@@ -49,6 +49,7 @@
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
 
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -93,6 +94,8 @@ namespace mu2e {
   private:
 
     int _diagLevel;
+    std::string _g4ModuleLabel;
+    std::string _virtualDetectorLabel;
     std::string _caloDigiModuleLabel;
     art::InputTag _shTag;   
     art::InputTag _shpTag;
@@ -106,10 +109,13 @@ namespace mu2e {
     TrkParticle _tpart;
     TrkFitDirection _fdir;
     SimParticleTimeOffset _toff;  // time offset smearing
+    int nch; // number of combo hits
+    const ComboHit*     comboHit;
+    const ComboHitCollection* _chcol;
     const TrkQualCollection* _tqcol;
+    int _virtualhit_good;
     int _trk_good;
     int _match_good;
-    int _trackt0_good;
     float _D0MIN;
     float _D0MAX;
     float _RMAXMIN;
@@ -119,6 +125,7 @@ namespace mu2e {
     float _TANDIPMIN;
     float _TANDIPMAX;
     float _MVAMIN;
+    float _VDPID;
     float _PMIN;
     float _PMATCHMIN;
     float _ECLUMIN;
@@ -131,14 +138,14 @@ namespace mu2e {
     int   _nCluster;
     float _cluEnergys[16384];
     float _cluene;
-
   };
 
   EcalTriggerPreselect::EcalTriggerPreselect(fhicl::ParameterSet const& pset):
     _diagLevel(pset.get<int>("diagLevel",0)),
+    _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
+    _virtualDetectorLabel(pset.get<std::string>("virtualDetectorName","virtualdetector")),
     _caloDigiModuleLabel      (pset.get<std::string>("caloDigiModuleLabel","CaloDigiFromShower")), 
-    _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makeSH")),
-    _shpTag(pset.get<art::InputTag>("StrawHitPositionCollectionTag","makeSH")),
+    _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makePH")),
     _trkPatRecModuleLabel(pset.get<std::string>("trkPatRecModuleLabel")),
     _tqTag(pset.get<art::InputTag>("TrkQualTag","KFFDeM")),
     _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")), 
@@ -146,23 +153,24 @@ namespace mu2e {
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
+    _virtualhit_good(pset.get<int>("virtualhit",1)),
     _trk_good(pset.get<int>("trkgood",1)),
     _match_good(pset.get<int>("matchgood",1)),
-    _trackt0_good(pset.get<int>("t0good",1)),
     _D0MIN                    (pset.get<float>("D0MIN",-80.)),
     _D0MAX                    (pset.get<float>("D0MAX",105.)),
     _RMAXMIN                  (pset.get<float>("RMAXMIN",450.)),
     _RMAXMAX                  (pset.get<float>("RMAXMAX",680.)),
-    _T0MIN                    (pset.get<float>("T0MIN",500.)),
+    _T0MIN                    (pset.get<float>("T0MIN",700.)),
     _T0MAX                    (pset.get<float>("T0MAX",1720.)),
     _TANDIPMIN                (pset.get<float>("TANDIPMIN",0.57735)),
     _TANDIPMAX                (pset.get<float>("TANDIPMAX",1.)),
     _MVAMIN                   (pset.get<float>("MVAMIN",0.4)),
+    _VDPID                    (pset.get<int>("VDPID",11)),
     _PMIN                     (pset.get<float>("PMIN",90.)),
     _PMATCHMIN                (pset.get<float>("PMATCHMIN",100.)),
     _ECLUMIN                  (pset.get<float>("ECLUMIN",10.)),
-    _DTMIN                    (pset.get<float>("DTMIN",-5.)),
-    _DTMAX                    (pset.get<float>("DTMAX",8.)),
+    _DTMIN                    (pset.get<float>("DTMIN",-12.)),
+    _DTMAX                    (pset.get<float>("DTMAX",0.)),
     _CHI2MATCHMIN             (pset.get<float>("CHI2MATCHMIN",100.)),
     _nProcessed(0){
   }
@@ -185,6 +193,7 @@ namespace mu2e {
 
     //load the timeoffset
     ConditionsHandle<AcceleratorParams> accPar("ignored");
+    double _mbtime = accPar->deBuncherPeriod;
     _toff.updateMap(event);
 
 
@@ -204,27 +213,25 @@ namespace mu2e {
 
     // ------------------------- Prefetch Straw Hits and Straw Hit Positions -------------------------------
    
-    auto strawHitFlag = event.getValidHandle<mu2e::StrawHitCollection>(_shTag);
-    auto strawHitPosFlag = event.getValidHandle<mu2e::StrawHitPositionCollection>(_shpTag);
-    if (strawHitFlag.product() == 0 || strawHitPosFlag.product() == 0 ){
-      if (strawHitFlag.product() == 0) std::cout << "FILTERECALMVATRIGGER: StrawHit Handle NOT VALID" << std::endl;
-      if (strawHitPosFlag.product() == 0) std::cout << "FILTERECALMVATRIGGER: StrawHitPos Handle NOT VALID" << std::endl;
+    auto chcolH = event.getValidHandle<mu2e::ComboHitCollection>(_shTag);
+
+    if (chcolH.product() != 0){
+      _chcol= chcolH.product();
+      nch=_chcol->size();
+      for(int istr=0; istr<nch;++istr) {
+	comboHit=&_chcol->at(istr);
+      }
+    }
+    else{
+      std::cout << "EcalTriggerPreselect: ComboHitCollection Handle NOT VALID" << std::endl;
       return false;
     }
-    const StrawHitCollection& strawHits = *strawHitFlag.product();
-    const StrawHitPositionCollection& strawHitPositions = *strawHitPosFlag.product();
-    float time,x;
-    if ( strawHits.size()==strawHitPositions.size()){
-      for (const auto& strawHit : strawHits){
-	time=strawHit.time();
-	if (time>0.) continue;
-      }
-      for (const auto& strawHitPosition : strawHitPositions){
-	x=strawHitPosition.pos().x();
-	if (x>0.) continue;
-      }
-    }
+    if (_diagLevel > 1) std::cout << "Combo Hits Number: "  <<  nch <<endl;
     //------------------------------------------------------------------------------------
+    // Handle ECAL virtual hits
+    art::Handle<StepPointMCCollection> vdhits;
+    event.getByLabel(_g4ModuleLabel,_virtualDetectorLabel,vdhits);
+        
     // Handle tracks
     art::Handle<KalRepPtrCollection> trksHandle;
     event.getByLabel(_trkPatRecModuleLabel, trksHandle);
@@ -245,51 +252,80 @@ namespace mu2e {
       ++_nCluster;
     }
 
+    // Check virtual hits
+
+    bool virtualhit_good=false; 
+    if (_virtualhit_good ){
+      if (vdhits.isValid()){
+	for (auto iter=vdhits->begin(), ie=vdhits->end(); iter!=ie; ++iter){
+	  // the virtual hit has the same structure of the Step Point
+	  const StepPointMC& hit = *iter;
+	  // HITS in CALORIMETER VIRTUAL DETECTORS               
+	  if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
+	
+	  double hitTimeUnfolded = _toff.timeWithOffsetsApplied(hit);
+	  double hitTime         = fmod(hitTimeUnfolded,_mbtime);
+
+	  if (hit.simParticle()->pdgId()==_VDPID && hitTime>(double) _T0MIN ){
+	    virtualhit_good=true;
+	    break;
+	  }
+	}
+      }
+      if (! virtualhit_good ) return false;
+    }
+
     // Check on track cluster matching
     art::Handle<TrackClusterMatchCollection>  trackClusterHandle;
     event.getByLabel(_trackClusterMatchModuleLabel, trackClusterHandle);
     TrackClusterMatchCollection const& trackClusterMatches(*trackClusterHandle);
        
     bool trk_good=false; 
-    for ( size_t itrk=0; itrk< trks.size(); ++itrk ){
-      KalRep const* trk = trks.at(itrk).get();
-      CLHEP::Hep3Vector mom = trk->momentum(0);
-      if ( (trk->helix(0).d0()                    > _D0MIN       ) &&
-	   (trk->helix(0).d0()                    < _D0MAX       ) &&
-	   (trk->helix(0).d0()+2./trk->helix(0).omega() > _RMAXMIN ) &&
-	   (trk->helix(0).d0()+2./trk->helix(0).omega() < _RMAXMAX ) &&
-	   (trk->t0().t0()                        > _T0MIN ) &&
-	   (trk->t0().t0()                        < _T0MAX ) &&
-	   (trk->helix(0).tanDip()                > _TANDIPMIN   ) &&
-	   (trk->helix(0).tanDip()                < _TANDIPMAX   ) &&
-	   (_tqcol->at(itrk).MVAOutput()          > _MVAMIN ) &&
-	   (mom.mag()                             > _PMIN   )){
-	trk_good=true;
+    if (_trk_good ){
+      for ( size_t itrk=0; itrk< trks.size(); ++itrk ){
+	KalRep const* trk = trks.at(itrk).get();
+	CLHEP::Hep3Vector mom = trk->momentum(0);
+	if ( (trk->helix(0).d0()                    > _D0MIN       ) &&
+	     (trk->helix(0).d0()                    < _D0MAX       ) &&
+	     (trk->helix(0).d0()+2./trk->helix(0).omega() > _RMAXMIN ) &&
+	     (trk->helix(0).d0()+2./trk->helix(0).omega() < _RMAXMAX ) &&
+	     (trk->t0().t0()                        > _T0MIN ) &&
+	     (trk->t0().t0()                        < _T0MAX ) &&
+	     (trk->helix(0).tanDip()                > _TANDIPMIN   ) &&
+	     (trk->helix(0).tanDip()                < _TANDIPMAX   ) &&
+	     (_tqcol->at(itrk).MVAOutput()          > _MVAMIN ) &&
+	     (mom.mag()                             > _PMIN   )){
+	  trk_good=true;
+	}
       }
+      if (_diagLevel > 0) std::cout << "Tracks Number: "  <<  trks.size() << " good?" << trk_good << endl;
+      if ( ! trk_good ) return false;
     }
-    if (_trk_good && ! trk_good ) return false;
 
     bool match_good=false;  
-    for (TrackClusterMatchCollection::const_iterator matchIt = trackClusterMatches.begin(); matchIt != trackClusterMatches.end(); ++matchIt){
-      // good matching
-      if (matchIt->iex()<(int)trks.size() && matchIt->iex()>=0 ){
-	KalRep const* trk = trks.at(matchIt->iex()).get();
-	CLHEP::Hep3Vector mom = trk->momentum(0);
-	if (matchIt->icl()<_nCluster && matchIt->icl()>=0 ){
-	  _cluene= _cluEnergys[matchIt->icl()];
-	  if (mom.mag()>_PMATCHMIN &&
-	      _cluene>_ECLUMIN &&
-	      matchIt->dt()>_DTMIN &&  matchIt->dt()<_DTMAX &&
-	      matchIt->chi2()<_CHI2MATCHMIN &&
-	      _tqcol->at(matchIt->iex()).MVAOutput()>_MVAMIN){
-	  match_good=true;
-	  break;
+    if (_match_good ){
+      for (TrackClusterMatchCollection::const_iterator matchIt = trackClusterMatches.begin(); matchIt != trackClusterMatches.end(); ++matchIt){
+	// good matching
+	if (matchIt->iex()<(int)trks.size() && matchIt->iex()>=0 ){
+	  KalRep const* trk = trks.at(matchIt->iex()).get();
+	  CLHEP::Hep3Vector mom = trk->momentum(0);
+	  if (matchIt->icl()<_nCluster && matchIt->icl()>=0 ){
+	    _cluene= _cluEnergys[matchIt->icl()];
+	    if (_diagLevel > 0) std::cout << "Cluster energy=" << _cluene << " p=" << mom.mag() << " matchIt->dt()=" << matchIt->dt() << " _tqcol=" <<_tqcol->at(matchIt->iex()).MVAOutput() <<  endl;
+	    if (mom.mag()>_PMATCHMIN &&
+		_cluene>_ECLUMIN &&
+		matchIt->dt()>_DTMIN &&  matchIt->dt()<_DTMAX &&
+		matchIt->chi2()<_CHI2MATCHMIN &&
+		_tqcol->at(matchIt->iex()).MVAOutput()>_MVAMIN){
+	      match_good=true;
+	      break;
+	    }
 	  }
 	}
       }
+      if (_diagLevel > 0) std::cout << "Matches Number: "  << trackClusterMatches.size() << " good?" << match_good << endl;
+      if (! match_good ) return false;
     }
-    if (_match_good && ! match_good ) return false;
-
     return true;
       
   }

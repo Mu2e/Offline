@@ -36,8 +36,6 @@
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestPolyhedra.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/HelicalProtonAbsorber.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
@@ -62,18 +60,12 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructProtonAbsorber( const SimpleConfig& _config,
-                                const SensitiveDetectorHelper& sdHelper
-                                ){
+  void constructProtonAbsorber( const SimpleConfig& _config ){
 
     if( !_config.getBool("hasProtonAbsorber", true) ) return;
     
     int  const verbosityLevel           = _config.getInt("protonabsorber.verbosityLevel", 0);
-    
-    G4VSensitiveDetector *paSD = (sdHelper.enabled(StepInstanceName::protonabsorber)) ?
-      G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector (SensitiveDetectorName::ProtonAbsorber()) : nullptr;
-    
+      
     // Access to the G4HelperService.
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
     
@@ -111,7 +103,7 @@ namespace mu2e {
       outerPhis[1] = _config.getDouble("protonabsorber.phiOuter_1");
       outerPhis[2] = _config.getDouble("protonabsorber.phiOuter_2");
       
-      bool addSD   = _config.getBool("protonabsorber.saveStepPnts",false);
+      //bool addSD   = _config.getBool("protonabsorber.saveStepPnts",false);
       
       HelicalProtonAbsorber* hpabs = 
         new HelicalProtonAbsorber( ds2HalfLen-helPabsLength,
@@ -119,7 +111,7 @@ namespace mu2e {
                                    innerRadii, outerRadii, innerPhis, outerPhis,
                                    helPabsThickness, /*numOfTurns,*/
                                    _config.getInt("protonabsorber.NumOfVanes"), 
-                                   pabsMaterial, parent1Info.logical, (addSD) ? paSD : 0x0 );
+                                   pabsMaterial, parent1Info.logical );
       
       if ( _config.getBool("g4.doSurfaceCheck",false) || _config.getBool("protonAbsorber.doSurfaceCheck",false) ) {
         checkForOverlaps( hpabs->GetPhys(), _config, verbosityLevel>0);
@@ -249,7 +241,7 @@ namespace mu2e {
                                             placePV,
                                             doSurfaceCheck
                                             );
-      if(paSD) protonabs1Info.logical->SetSensitiveDetector (paSD);
+        
 
       if ( verbosityLevel > 0) {
         double pzhl   = static_cast<G4Cons*>(protonabs1Info.solid)->GetZHalfLength();
@@ -279,7 +271,7 @@ namespace mu2e {
                                             placePV,
                                             doSurfaceCheck
                                             );
-      if(paSD) protonabs2Info.logical->SetSensitiveDetector (paSD);
+        
       if ( verbosityLevel > 0) {
         double pzhl   = static_cast<G4Cons*>(protonabs2Info.solid)->GetZHalfLength();
         double pabs2Z = protonabs2Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
@@ -369,8 +361,8 @@ namespace mu2e {
                                               placePV,
                                               doSurfaceCheck
                                               );
-        if(paSD) protonabs1Info.logical->SetSensitiveDetector (paSD);
-  
+          
+ 
         if ( verbosityLevel > 0) {
           double pzhl   = static_cast<G4Cons*>(protonabs1Info.solid)->GetZHalfLength();
           double pabs1Z = protonabs1Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
@@ -410,10 +402,8 @@ namespace mu2e {
                                               placePV,
                                               doSurfaceCheck
                                               );
-        if(paSD) protonabs2Info.logical->SetSensitiveDetector (paSD);
-  
-  
-  
+          
+          
         if ( verbosityLevel > 0) {
           double pzhl   = static_cast<G4Cons*>(protonabs2Info.solid)->GetZHalfLength();
           double pabs2Z = protonabs2Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
@@ -485,7 +475,6 @@ namespace mu2e {
 						placePV,
 						doSurfaceCheck
 						);
-	  if(paSD) protonabs3Info.logical->SetSensitiveDetector (paSD);
 	} else {
 	  // This is an implementation as a polyhedron - like a barrel of
 	  // slats.  We also put slots in it for stopping target support
@@ -564,8 +553,6 @@ namespace mu2e {
 			 forceAuxEdgeVisible,
 			 placePV,
 			 doSurfaceCheck);
-
-	  if(paSD) protonabs3Info.logical->SetSensitiveDetector (paSD);
 	}
 
    //      mf::LogInfo log("GEOM");
@@ -630,7 +617,6 @@ namespace mu2e {
 				     placePV,
 				     doSurfaceCheck
 				     );
-	  if(paSD) protonabs4Info.logical->SetSensitiveDetector (paSD);
 	} else {
 	  std::vector<double> zs = { -pabs4len/2.0, pabs4len/2.0 };
 	  std::vector<double> rins = { pabs4rIn0, pabs4rIn1 };
@@ -657,9 +643,7 @@ namespace mu2e {
 					  placePV,
 					  doSurfaceCheck
 					  );
-	  if(paSD) protonabs4Info.logical->SetSensitiveDetector (paSD);
 	}
-
 
 
         if ( verbosityLevel > 0) {

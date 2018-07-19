@@ -13,6 +13,23 @@ END_PROLOG
 
 BEGIN_PROLOG
 
+CaloTrigger : {    
+    module_type           : CaloTrigger
+    caloDigiModuleLabel   : CaloDigiFromShower
+    digiSampling          : @local::HitMakerDigiSampling
+    blindTime             : @local::HitMakerBlindTime   
+    endTimeBuffer         : 80                          
+    windowPeak            : 2
+    minAmplitude          : 20
+    extendSecond          : false
+    minSeedAmplitude      : 433
+    minEnergy             : 50
+    timeCorrection        : 20.0
+    adcToEnergy           : 0.0461333
+    diagLevel             : 0
+}
+
+
 CaloClusterFast :
 { 
     module_type           : CaloClusterFast

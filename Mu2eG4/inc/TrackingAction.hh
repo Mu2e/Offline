@@ -64,7 +64,7 @@ namespace mu2e {
     void beginEvent( const art::Handle<SimParticleCollection>& inputSims,
                      const art::Handle<MCTrajectoryCollection>& inputMCTraj,
                      const SimParticleHelper& spHelper,
-                     const SimParticlePrimaryHelper& primaryHelperm,
+                     const SimParticlePrimaryHelper& primaryHelper,
                      MCTrajectoryCollection& mcTrajectories,
                      SimParticleRemapping& simsRemap
                      );
@@ -77,12 +77,9 @@ namespace mu2e {
     void saveSimParticleEnd  (const G4Track* trk);
 
     // Receive persistent volume information and save it for the duration of the run.
-    void beginRun( const PhysicalVolumeHelper& physVolHelper,
-                   PhysicsProcessInfo& processInfo,
+    void beginRun( const PhysicalVolumeHelper* physVolHelper,
+                   PhysicsProcessInfo* processInfo,
                    CLHEP::Hep3Vector const& mu2eOrigin );
-
-    // Clean up at end of run.
-    void endRun() {}
 
     // Accessors for status information.
     unsigned        nG4Tracks() const { return _currentSize;}
@@ -145,7 +142,7 @@ namespace mu2e {
     // If the track passes, the min hits cut and the momentum cut, add the
     // trajectory information to the output data product.
     void swapTrajectory( const G4Track* trk );
-
+      
   };
 
 } // end namespace mu2e

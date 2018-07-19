@@ -26,8 +26,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "Mu2eG4/inc/constructDiskCalorimeter.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
@@ -66,8 +64,7 @@
 
 namespace mu2e {
 
-  VolumeInfo constructDiskCalorimeter(const VolumeInfo&  mother, const SimpleConfig& config,
-                                      SensitiveDetectorHelper const& sdHelper)
+  VolumeInfo constructDiskCalorimeter(const VolumeInfo&  mother, const SimpleConfig& config)
   {
 
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
@@ -83,7 +80,6 @@ namespace mu2e {
        G4Material* vacuumMaterial  = materialFinder.get("calorimeter.vacuumMaterial");
 
        G4PVPlacement* pv;
-
 
     //--------------------------------------
     // Construct calorimeter mother volume
@@ -407,10 +403,6 @@ namespace mu2e {
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,wrapperDZ-crystalFrameDZ),crystalFrameLog,"caloCrysFrame2PV",wrapperLog,false,0,false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 
-       G4VSensitiveDetector* ccSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal());
-       if (ccSD) crystalLog->SetSensitiveDetector(ccSD);
-
-
        //------------------------------------------------------------
        // Build disk inner ring, case ring (containing crystals) and outer ring
        G4Tubs* fullCrystalDisk  = new G4Tubs("calofullCrystalDisk", diskInnerRingIn, diskOuterRailOut, diskCaseDZLength,      0,CLHEP::twopi);       
@@ -581,7 +573,7 @@ namespace mu2e {
        std::vector<double> stepsOutY = cal.caloInfo().getVDouble("stepsOutsideY");
        int nstepsInX                 = int(stepsInX.size());
        int nstepsOutX                = int(stepsOutX.size());
- 
+
 
        G4VPhysicalVolume* pv;
 
@@ -602,11 +594,6 @@ namespace mu2e {
        pv = new G4PVPlacement(0,G4ThreeVector(-RODX, 0, -holeDZ+RODZ), crystalROLog,"caloROPV_1", holeBackLog, true,1,false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 
-       // add sensitive detector    
-       G4VSensitiveDetector* crSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadout());
-       if (crSD) crystalROLog->SetSensitiveDetector(crSD);
-
-
        //----------------------
        // Build FEE in copper box
        //----
@@ -626,11 +613,6 @@ namespace mu2e {
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
        pv = new G4PVPlacement(0,G4ThreeVector(-RODX, 0, -dFEEsize), FEECardLog,"caloFEECardPV_1", FEEBoxInLog, true,1,false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
-
-       // add sensitive detector    
-       G4VSensitiveDetector* crCardSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadoutCard());
-       if (crCardSD) FEECardLog->SetSensitiveDetector(crCardSD);
-
 
        //----------------------
        // Build backplate and readouts in the holes
@@ -888,9 +870,6 @@ namespace mu2e {
 	   std::ostringstream boardPV; boardPV<<"ccrateBoardPV_" <<ibrd;
 	   pv = new G4PVPlacement(0,G4ThreeVector(0.0,(ibrd+1)*deltaY-crateBoxInDY,0), boardCrateLog, boardPV.str(), crateBoxInLog, false, ibrd,false);
 	   doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
-	   
-           G4VSensitiveDetector* crCrate = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrate());
-	   if (crCrate) activeStripBoardLog->SetSensitiveDetector(crCrate);	   
        }
       
       return crateFullBoxLog;
