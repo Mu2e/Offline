@@ -128,7 +128,7 @@ namespace mu2e {
       double _mbbuffer; // buffer on that for ghost clusts (for waveform)
       double _adcbuffer; // time buffer for ADC 
       double _steptimebuf; // buffer for MC step point times
-      double _tdcbuf; // buffer for pre-digitization time testing
+      double _tdcbuf; // buffer for TDC jitter
       uint16_t _allStraw; // minimum straw # to read all hits
       std::vector<uint16_t> _allPlanes; // planes in which to read all hits
       // models of straw response to stimuli
@@ -747,23 +747,25 @@ namespace mu2e {
       double thresh[2] = {_randgauss.fire(_strawele->threshold(swfp[0].strawId(),static_cast<StrawEnd::End>(0))+strawnoise,_strawele->analogNoise(StrawElectronics::thresh)),
         _randgauss.fire(_strawele->threshold(swfp[0].strawId(),static_cast<StrawEnd::End>(1))+strawnoise,_strawele->analogNoise(StrawElectronics::thresh))};
       // Initialize search when the electronics becomes enabled:
-      double tstart =_strawele->flashEnd();
+      double tstart =_strawele->flashEnd() - 10.0; // this buffer should be a parameter FIXME!
       // for reading all hits, make sure we start looking for clusters at the minimum possible cluster time
-      if(readAll(swfp[0].strawId()))tstart = -2*_strawele->clusterLookbackTime();
+      // this accounts for deadtime effects from previous microbunches
+      if(readAll(swfp[0].strawId()))tstart = -_strawele->deadTimeAnalog();
       WFXP wfx = {WFX(swfp[0],tstart),WFX(swfp[1],tstart)};
       // search for coherent crossings on both ends
       bool crosses[2];
       for(size_t iend=0;iend<2;++iend){
         crosses[iend] = swfp[iend].crossesThreshold(thresh[iend],wfx[iend]);
       }
-      // loop until we hit the end of the waveforms.  Require both in time.
-      while( crosses[0] && crosses[1] 
-	&& wfx[0]._time < _strawele->flashStart() + _tdcbuf
-	&& wfx[1]._time < _strawele->flashStart()  + _tdcbuf ) {
+      // loop until we hit the end of the waveforms.  Require both in time.  Buffer to account for eventual TDC jitter
+      // this is a loose pre-selection, final selection is done at digitization
+      while( crosses[0] && crosses[1] && std::max(wfx[0]._time,wfx[1]._time) 
+	  < _strawele->flashStart() + _strawele->electronicsTimeDelay() + _tdcbuf){
         // see if the crossings match
         if(_strawele->combineEnds(wfx[0]._time,wfx[1]._time)){
           // put the pair of crossings in the crosing list
-          xings.push_back(wfx);
+	  // make sure the time is positive in case this was a hit from the 'previous' microbunch
+          if(std::min(wfx[0]._time,wfx[1]._time) > 0.0 )xings.push_back(wfx);
           // search for next crossing:
           // update threshold for straw noise
           strawnoise = _randgauss.fire(0,_strawele->strawNoise());
@@ -875,7 +877,12 @@ namespace mu2e {
       }
       // digitize, and make final test.  This call includes the clock error WRT the proton pulse
       TrkTypes::TDCValues tdcs;
-      bool digitize = _strawele->digitizeTimes(xtimes,tdcs) || readAll(sid);
+      bool digitize;
+      if(readAll(sid))
+	digitize = _strawele->digitizeAllTimes(xtimes,_mbtime,tdcs);
+      else
+	digitize = _strawele->digitizeTimes(xtimes,tdcs);
+	
       if(digitize){
 	TrkTypes::ADCWaveform adc;
 	_strawele->digitizeWaveform(sid,wfsum,adc);
