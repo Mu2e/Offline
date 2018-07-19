@@ -44,7 +44,7 @@ physics : {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
   }
   CeEndpointPath : [ generate, genCounter, g4run,
-    protonTimeMapPreFilter, muonTimeMapPreFilter,
+    protonTimeMapPreFilter, muonTimeMapPreFilter, EWMProducer,
     makeSDPreFilter,
     TrkDigiFilter,
     protonBunchIntensity,

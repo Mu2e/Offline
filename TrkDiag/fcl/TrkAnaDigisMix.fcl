@@ -23,8 +23,19 @@ physics :
   analyzers : @local::TrkAna.analyzers
 }
 
-physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloRecoSequence ]
+physics.analyzers.TrkAna.AnalyzeCRV : true
+
+physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloCrvRecoSequence ]
 physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence ]
 
 # You can add detailed (hit) information to the TTree by setting diagLevel to 2
 physics.analyzers.TrkAna.diagLevel : 1
+# update labels to read mixing output from MDC2018
+physics.analyzers.TrkAna.KalDiag.StrawDigiMCLabel : "compressDigiMCs"
+physics.analyzers.TrkAna.KalDiag.MCStepsLabel : "compressDigiMCs"
+physics.analyzers.TrkAna.KalDiag.MCStepsInstance : ""
+physics.analyzers.TrkAna.KalDiag.SimParticleLabel : "compressDigiMCs"
+physics.analyzers.TrkAna.KalDiag.SimParticleInstance : "g4run"
+physics.analyzers.TrkAna.KalDiag.TimeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+physics.producers.CrvCoincidenceClusterSummarizer.crvWaveformsModuleLabel : "compressDigiMCs"
+

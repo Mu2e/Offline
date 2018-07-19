@@ -128,6 +128,7 @@ namespace mu2e {
       double _mbbuffer; // buffer on that for ghost clusts (for waveform)
       double _adcbuffer; // time buffer for ADC 
       double _steptimebuf; // buffer for MC step point times
+      double _tdcbuf; // buffer for TDC jitter
       uint16_t _allStraw; // minimum straw # to read all hits
       std::vector<uint16_t> _allPlanes; // planes in which to read all hits
       // models of straw response to stimuli
@@ -240,6 +241,7 @@ namespace mu2e {
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _ewMarkerTag(pset.get<art::InputTag>("EventWindowMarkerLabel","EWMProducer")),
     _steptimebuf(pset.get<double>("StepPointMCTimeBuffer",100.0)), // nsec
+    _tdcbuf(pset.get<double>("TDCTimeBuffer",2.0)), // nsec
     _allStraw(pset.get<uint16_t>("AllHitsStraw",90)), 
     _allPlanes(pset.get<std::vector<uint16_t>>("AllHitsPlanes",std::vector<uint16_t>{})), // planes to read all hits
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", {})),
@@ -745,22 +747,25 @@ namespace mu2e {
       double thresh[2] = {_randgauss.fire(_strawele->threshold(swfp[0].strawId(),static_cast<StrawEnd::End>(0))+strawnoise,_strawele->analogNoise(StrawElectronics::thresh)),
         _randgauss.fire(_strawele->threshold(swfp[0].strawId(),static_cast<StrawEnd::End>(1))+strawnoise,_strawele->analogNoise(StrawElectronics::thresh))};
       // Initialize search when the electronics becomes enabled:
-      double tstart =_strawele->flashEnd();
-      if(readAll(swfp[0].strawId()))tstart = 0.0;
+      double tstart =_strawele->flashEnd() - 10.0; // this buffer should be a parameter FIXME!
+      // for reading all hits, make sure we start looking for clusters at the minimum possible cluster time
+      // this accounts for deadtime effects from previous microbunches
+      if(readAll(swfp[0].strawId()))tstart = -_strawele->deadTimeAnalog();
       WFXP wfx = {WFX(swfp[0],tstart),WFX(swfp[1],tstart)};
       // search for coherent crossings on both ends
       bool crosses[2];
       for(size_t iend=0;iend<2;++iend){
         crosses[iend] = swfp[iend].crossesThreshold(thresh[iend],wfx[iend]);
       }
-      // loop until we hit the end of the waveforms.  Require both in time? FIXME!
-      while( crosses[0] && crosses[1] 
-	&& wfx[0]._time < _strawele->flashStart() 
-	&& wfx[1]._time < _strawele->flashStart() ) {
+      // loop until we hit the end of the waveforms.  Require both in time.  Buffer to account for eventual TDC jitter
+      // this is a loose pre-selection, final selection is done at digitization
+      while( crosses[0] && crosses[1] && std::max(wfx[0]._time,wfx[1]._time) 
+	  < _strawele->flashStart() + _strawele->electronicsTimeDelay() + _tdcbuf){
         // see if the crossings match
         if(_strawele->combineEnds(wfx[0]._time,wfx[1]._time)){
           // put the pair of crossings in the crosing list
-          xings.push_back(wfx);
+	  // make sure the time is positive in case this was a hit from the 'previous' microbunch
+          if(std::min(wfx[0]._time,wfx[1]._time) > 0.0 )xings.push_back(wfx);
           // search for next crossing:
           // update threshold for straw noise
           strawnoise = _randgauss.fire(0,_strawele->strawNoise());
@@ -807,12 +812,9 @@ namespace mu2e {
 	    stepMC[iend] = sc.stepPointMC();
 	  }
 	  // choose the minimum time from either end, as the ADC sums both
-	  // what happens if both are negative?  Why are any negative?
-	  // what about time offsets?  MB wrapping? FIXME!
 	  double ptime = 1.0e10;
 	  for (size_t iend=0;iend<2;++iend){
-	    if (wetime[iend] > 0)
-	      ptime = std::min(ptime,wetime[iend]);
+	    ptime = std::min(ptime,wetime[iend]);
 	  }
 	  // subtract a small buffer
 	  ptime -= _adcbuffer; 
@@ -873,9 +875,14 @@ namespace mu2e {
       for(unsigned isamp=0;isamp<adctimes.size();++isamp){
         wfsum.push_back(wf[0][isamp]+wf[1][isamp]+_randgauss.fire(0.0,_strawele->analogNoise(StrawElectronics::adc)));
       }
-      // digitize, and make final test.  This call should include the clock error WRT the proton pulse FIXME!
+      // digitize, and make final test.  This call includes the clock error WRT the proton pulse
       TrkTypes::TDCValues tdcs;
-      bool digitize = _strawele->digitizeTimes(xtimes,tdcs) || readAll(sid);
+      bool digitize;
+      if(readAll(sid))
+	digitize = _strawele->digitizeAllTimes(xtimes,_mbtime,tdcs);
+      else
+	digitize = _strawele->digitizeTimes(xtimes,tdcs);
+	
       if(digitize){
 	TrkTypes::ADCWaveform adc;
 	_strawele->digitizeWaveform(sid,wfsum,adc);
@@ -905,6 +912,7 @@ namespace mu2e {
     }
 
     // functions that need implementing:: FIXME!!!!!!
+    // Could also fold in beam-off random trigger hits from real data
     void StrawDigisFromStepPointMCs::addNoise(StrawClusterMap& hmap){
       // create random noise clusts and add them to the sequences of random straws.
     }
