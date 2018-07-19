@@ -110,7 +110,7 @@ namespace mu2e {
 	}
 
 	int volume_id = step->volumeId();
-	if (volume_id == Straw->index().asInt()) {
+	if (volume_id == Straw->id().asUint16()) {
 //-----------------------------------------------------------------------------
 // step found - use the first one in the straw
 //-----------------------------------------------------------------------------
@@ -121,15 +121,15 @@ namespace mu2e {
       if (step) {
 	const CLHEP::Hep3Vector* v1 = &Straw->getMidPoint();
 	HepPoint p1(v1->x(),v1->y(),v1->z());
-	
+
 	const CLHEP::Hep3Vector* v2 = &step->position();
 	HepPoint    p2(v2->x(),v2->y(),v2->z());
-	
+
 	TrkLineTraj trstraw(p1,Straw->getDirection()  ,0.,0.);
 	TrkLineTraj trstep (p2,step->momentum().unit(),0.,0.);
-	
+
 	TrkPoca poca(trstep, 0., trstraw, 0.);
-	
+
 	mcdoca = poca.doca();
       }
     }
@@ -142,15 +142,15 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   int CalPatRecMcUtils::nGenHits(const art::Event*         Event         ,
 				 fhicl::ParameterSet*      TimeOffsets   ,
-				 const char*               MCDigiCollName, 
+				 const char*               MCDigiCollName,
 				 const StrawHitCollection* Shcol         ) {
 
     static int     last_event(-1);
     static int     first_call(1);
     static double  mbtime;
 
-    static SimParticleTimeOffset*        timeOffsets(NULL);
-    static const StrawDigiMCCollection*  listOfMCStrawHits(NULL);
+    static SimParticleTimeOffset*                 timeOffsets(NULL);
+    static const PtrStepPointMCVectorCollection*  listOfMCStrawHits(NULL);
 
     double  time_threshold(500.);
     int     n_gen_hits(  0 );
@@ -168,10 +168,10 @@ namespace mu2e {
     int iev = Event->event();
 
     if (iev != last_event) {
-      art::Handle<mu2e::StrawDigiMCCollection> mcdigiH;
-      Event->getByLabel(MCDigiCollName,mcdigiH);
-      if (mcdigiH.isValid()) listOfMCStrawHits = (mu2e::StrawDigiMCCollection*) mcdigiH.product();
-      else                   listOfMCStrawHits = NULL;
+      art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
+      Event->getByLabel(MCDigiCollName,mcptrHandle);
+      if (mcptrHandle.isValid()) listOfMCStrawHits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
+      else                       listOfMCStrawHits = NULL;
 
       timeOffsets->updateMap(*Event);
 
@@ -199,10 +199,10 @@ namespace mu2e {
 
       if (step) {
 	art::Ptr<mu2e::SimParticle> const& simptr = step->simParticle();
-	
+
 	if (simptr->fromGenerator()) gen_index = simptr->genParticle()->generatorId().id();
 	else                         gen_index = -1;
-	
+
 	sim_id        = simptr->id().asInt();
       }
 
