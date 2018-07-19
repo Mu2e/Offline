@@ -109,49 +109,49 @@ namespace mu2e {
 	// calculate parameters for transfer function
 	_wPoints[ai]._preampResponse = std::vector<double>(_responseBins,0);
 	_wPoints[ai]._adcResponse = std::vector<double>(_responseBins,0);
-      _wPoints[ai]._preampToAdc1Response = std::vector<double>(_responseBins,0);
-      calculateResponse(_preampPoles,_preampZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._preampResponse);
-      calculateResponse(_adcPoles,_adcZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._adcResponse);
-      calculateResponse(_preampToAdc1Poles,_preampToAdc1Zeros,_wPoints[ai]._currentPulse,_wPoints[ai]._preampToAdc1Response);
+	_wPoints[ai]._preampToAdc1Response = std::vector<double>(_responseBins,0);
+	calculateResponse(_preampPoles,_preampZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._preampResponse);
+	calculateResponse(_adcPoles,_adcZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._adcResponse);
+	calculateResponse(_preampToAdc1Poles,_preampToAdc1Zeros,_wPoints[ai]._currentPulse,_wPoints[ai]._preampToAdc1Response);
 
-      // now set other parameters
-      _wPoints[ai]._tmax[thresh] = 0;
-      _wPoints[ai]._linmax[thresh] = 0;
-      _wPoints[ai]._tmax[adc] = 0;
-      _wPoints[ai]._linmax[adc] = 0;
-      double preampToAdc1Max = 0;
-      for (int i=0;i<_responseBins;i++){
-        if (_wPoints[ai]._preampResponse[i] > _wPoints[ai]._linmax[thresh]){
-          _wPoints[ai]._linmax[thresh] = _wPoints[ai]._preampResponse[i];
-          _wPoints[ai]._tmax[thresh] = (-_responseBins/2 + i)/_sampleRate;
-        }
-        if (_wPoints[ai]._adcResponse[i] > _wPoints[ai]._linmax[adc]){
-          _wPoints[ai]._linmax[adc] = _wPoints[ai]._adcResponse[i];
-          _wPoints[ai]._tmax[adc] = (-_responseBins/2 + i)/_sampleRate;
-        }
-        if (_wPoints[ai]._preampToAdc1Response[i] > preampToAdc1Max)
-          preampToAdc1Max = _wPoints[ai]._preampToAdc1Response[i];
-      }
-      
-      // normalize preampToAdc1Response to match preampResponse
-      for (int i=0;i<_responseBins;i++){
-        _wPoints[ai]._preampToAdc1Response[i] *= _wPoints[ai]._linmax[thresh]/preampToAdc1Max;
-      }
-    }
+	// now set other parameters
+	_wPoints[ai]._tmax[thresh] = 0;
+	_wPoints[ai]._linmax[thresh] = 0;
+	_wPoints[ai]._tmax[adc] = 0;
+	_wPoints[ai]._linmax[adc] = 0;
+	double preampToAdc1Max = 0;
+	for (int i=0;i<_responseBins;i++){
+	  if (_wPoints[ai]._preampResponse[i] > _wPoints[ai]._linmax[thresh]){
+	    _wPoints[ai]._linmax[thresh] = _wPoints[ai]._preampResponse[i];
+	    _wPoints[ai]._tmax[thresh] = (-_responseBins/2 + i)/_sampleRate;
+	  }
+	  if (_wPoints[ai]._adcResponse[i] > _wPoints[ai]._linmax[adc]){
+	    _wPoints[ai]._linmax[adc] = _wPoints[ai]._adcResponse[i];
+	    _wPoints[ai]._tmax[adc] = (-_responseBins/2 + i)/_sampleRate;
+	  }
+	  if (_wPoints[ai]._preampToAdc1Response[i] > preampToAdc1Max)
+	    preampToAdc1Max = _wPoints[ai]._preampToAdc1Response[i];
+	}
 
-    // normalize preampToAdc2Response to match adcResponse
-    std::vector<double> preampToAdc2test(_responseBins,0);
-    calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_wPoints[0]._preampToAdc1Response,preampToAdc2test);
-    double preampToAdc2Max = 0;
-    for (int i=0;i<_responseBins;i++){
-      if (preampToAdc2test[i] > preampToAdc2Max)
-        preampToAdc2Max = preampToAdc2test[i];
+	// normalize preampToAdc1Response to match preampResponse
+	for (int i=0;i<_responseBins;i++){
+	  _wPoints[ai]._preampToAdc1Response[i] *= _wPoints[ai]._linmax[thresh]/preampToAdc1Max;
+	}
+      }
+
+      // normalize preampToAdc2Response to match adcResponse
+      std::vector<double> preampToAdc2test(_responseBins,0);
+      calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_wPoints[0]._preampToAdc1Response,preampToAdc2test);
+      double preampToAdc2Max = 0;
+      for (int i=0;i<_responseBins;i++){
+	if (preampToAdc2test[i] > preampToAdc2Max)
+	  preampToAdc2Max = preampToAdc2test[i];
+      }
+      for (int i=0;i<_responseBins;i++){
+	_preampToAdc2Response[i] *= _wPoints[0]._linmax[adc]/preampToAdc2Max;
+	preampToAdc2test[i] *= _wPoints[0]._linmax[adc]/preampToAdc2Max;
+      }
     }
-    for (int i=0;i<_responseBins;i++){
-      _preampToAdc2Response[i] *= _wPoints[0]._linmax[adc]/preampToAdc2Max;
-      preampToAdc2test[i] *= _wPoints[0]._linmax[adc]/preampToAdc2Max;
-    }
- }
 
   StrawElectronics::~StrawElectronics() {}
 
@@ -160,11 +160,11 @@ namespace mu2e {
     std::vector<double> pa;
     for (size_t i=0;i<poles.size();i++){
       if (poles[i] != 0)
-        pa.push_back(poles[i]*-1*TMath::TwoPi());
+	pa.push_back(poles[i]*-1*TMath::TwoPi());
     }
     for (size_t i=0;i<zeros.size();i++){
       if (zeros[i] != 0)
-        za.push_back(zeros[i]*-1*TMath::TwoPi());
+	za.push_back(zeros[i]*-1*TMath::TwoPi());
     }
     std::vector<double> a(za.size()+1,0);
     std::vector<double> b(pa.size()+1,0);
@@ -301,10 +301,11 @@ namespace mu2e {
   bool StrawElectronics::digitizeAllTimes(TDCTimes const& times,double mbtime, TDCValues& tdcs) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
-    // test these times against time wrapping
+    // test these times against time wrapping.  This calculation should be done at construction or init,
+    // FIXME!
     bool notwrap(true);
     for(auto tdc : tdcs){
-      notwrap &= tdc > _flashStartTDC - mbtime && tdc < _flashStartTDC;
+      notwrap &= tdc > tdcResponse(_flashStart - mbtime) && tdc < _flashStartTDC;
     }
     return notwrap;
   }
