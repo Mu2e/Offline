@@ -46,14 +46,14 @@ physics : {
     # Run G4 and add its output to the event.
     g4run : @local::g4run
 
-    protonTimeMap        : { module_type : GenerateProtonTimes }
-    muonTimeMap          : { module_type : GenerateMuonLife }
+    # Work needed to setup the digi makers.
+    @table::CommonDigiSim.producers
 
     # Form StrawHits (SH).
     makeSD               : @local::makeSD
     makeSH               : @local::makeSH
 
-    # Calorimeter sequence    
+    # Calorimeter sequence
     @table::CaloDigiMC.producers
     @table::CaloReco.producers
 
@@ -90,7 +90,7 @@ physics : {
 
   }
 
-  p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,
+  p1 : [generate, g4run, @sequence::CommonDigiSim.DigiSim, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,
          @sequence::CaloReco.Reco,randomsaver ]
   e1 : [readGens, checkhits, readStrawHits, outfile]
 
@@ -127,3 +127,5 @@ physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
 #physics.producers.g4run.physics.turnOffRadioactiveDecay: true
 #physics.producers.g4run.physics.addProcesses : [ "GammaToMuPair", "AnnihiToMuPair", "ee2hadr" ]
 #physics.producers.g4run.physics.captureDModel: "muMinusNuclearCapture"
+
+
