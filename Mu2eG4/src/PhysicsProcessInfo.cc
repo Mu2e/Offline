@@ -41,16 +41,15 @@ namespace mu2e{
     _allProcesses(),
     _longestName(0){
   }
-
+    
   void PhysicsProcessInfo::beginRun(){
-
+      
     _allProcesses.clear();
 
     // Number of processes that are not known to the ProcessCode enum.
     int nUnknownProcesses(0);
 
     // Get an iterator over existing particles. See note 1.
-
     G4ParticleTable* ptable = G4ParticleTable::GetParticleTable();
     G4ParticleTable::G4PTblDicIterator* iter = ptable->GetIterator();
     iter->reset();
@@ -167,12 +166,16 @@ namespace mu2e{
   } // PhysicsProcessInfo::beginRun
 
   void PhysicsProcessInfo::endRun(){
-    printSummary(cout);
+      
+      //NEED TO PUT IN SOME PRINT SUMMARY FOR SEQUENTIAL MODE OR A SINGLE SUMMARRY IN MT
+      //MODE.  RIGHT NOW WE GET ONE SUMMARY FOR EACH TRHEAD.
+      //printSummary(cout);
     // printAll(cout);
   }
 
   // This can possibly be sped up considerably by checking frequently occuring names first.
   ProcessCode PhysicsProcessInfo::findAndCount( G4String const& name ){
+      
     map_type::iterator i = _allProcesses.find(name);
     if ( i == _allProcesses.end() ){
       throw cet::exception("RANGE")

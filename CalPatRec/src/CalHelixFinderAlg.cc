@@ -1106,9 +1106,9 @@ namespace mu2e {
 
 	dx2      = (pos.x() - helCenter.x());
 	dy2      = (pos.y() - helCenter.y());
-	phi      = polyAtan2(dy2, dx2);//CLHEP::Hep3Vector(pos - helCenter).phi();//center).phi();
-	if (phi < 0) phi = phi + 2*M_PI;//      = TVector2::Phi_0_2pi(phi);
-	dz       = z - zlast;
+	phi      = polyAtan2(dy2, dx2);
+	if (phi < 0) phi = phi + 2*M_PI;
+	dz       = z - zlast;                   //it is used only to decide if in the end we can ipdate the values of dfdz and phi0
                                     
 	phi_ref = z*dfdz + phi0;		// predicted value of phi
 	dphi    = phi_ref - phi;		// signed residual
@@ -1184,8 +1184,8 @@ namespace mu2e {
       panel_xdphi = panel_xdphi/counter_panel_hits;
 
       if (count == 1) {//FIXME! investigate if it is needed or not
-	zlast = z;
-	dz    = 0.;
+      	zlast = z;
+      	dz    = 0.;
       }
 	
 	
@@ -1193,11 +1193,11 @@ namespace mu2e {
 	   // (xdphi < 2.)){
 	   (panel_xdphi < 2.)){
 	if ( (fabs(dfdz - Helix._szphi.dfdz()) < 8.e-4) ){//  || //require that the new value of dfdz is
-	  //close to the starting one. update dfdz only if:
+	                                                         //close to the starting one. update dfdz only if:
 	  if ( (Helix._szphi.dfdz() > 0.) && //{                    // 1. the points browsed are more the half
 	       (dz >=_mindist ) ){
-	    phi0  = Helix._szphi.phi0();                     // 2. and require dfdz to be positivie! scattered hits or
 	    dfdz  = Helix._szphi.dfdz();                     //    delta hits could have moved dfdz to negative value!
+	    phi0  = Helix._szphi.phi0();// + z*dfdz;                     // 2. and require dfdz to be positivie! scattered hits or
 	    zlast = z;
 	  }
 	}

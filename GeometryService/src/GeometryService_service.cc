@@ -278,13 +278,14 @@ namespace mu2e {
     if(_config->getBool("hasVirtualDetector",false)){
       addDetector(VirtualDetectorMaker::make(*_config));
     }
-
+      
     if(_config->getBool("hasBFieldManager",false)){
-      std::unique_ptr<BFieldConfig> bfc(BFieldConfigMaker(*_config, beamline).getBFieldConfig());
+      std::unique_ptr<BFieldConfig> bfc( BFieldConfigMaker(*_config, beamline).getBFieldConfig() );
       BFieldManagerMaker bfmgr(*bfc);
       addDetector(std::move(bfc));
       addDetector(bfmgr.getBFieldManager());
     }
+ 
 
     if(_config->getBool("hasProtonAbsorber",false) && !_config->getBool("protonabsorber.isHelical", false) ){
       MECOStyleProtonAbsorberMaker mecopam( *_config, ds, target);

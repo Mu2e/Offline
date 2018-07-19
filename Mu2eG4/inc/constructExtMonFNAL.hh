@@ -15,14 +15,12 @@ namespace mu2e {
 
   class SimpleConfig;
   class ExtMonFNALMagnet;
-  class SensitiveDetectorHelper;
 
   void constructExtMonFNAL(const VolumeInfo& collimator1Parent,
                            const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
                            const VolumeInfo& mainParent,
                            const CLHEP::HepRotation& mainParentRotationInMu2e,
-                           const SimpleConfig& config,
-                           const SensitiveDetectorHelper& sdHelper);
+                           const SimpleConfig& config);
 
   void constructExtMonFNALBuilding(const VolumeInfo& collimator1Parent,
                                    const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
@@ -44,7 +42,6 @@ namespace mu2e {
                                  const ExtMonFNALPlaneStack& stack,
                                  const std::string& volNameSuffix,
                                  const SimpleConfig& config,
-                                 const SensitiveDetectorHelper& sdHelper,
                                  bool const forceAuxEdgeVisible,
                                  bool const doSurfaceCheck,
                                  bool const placePV
@@ -57,7 +54,6 @@ namespace mu2e {
                                   const ExtMonFNALPlaneStack& stack,
                                   const std::string& volNameSuffix,
                                   const SimpleConfig& config,
-                                  const SensitiveDetectorHelper& sdHelper,
                                   bool const forceAuxEdgeVisible,
                                   bool const doSurfaceCheck,
                                   bool const placePV

@@ -11,13 +11,11 @@ class G4LogicalVolume;
 
 namespace mu2e{
 
-  class VOlumeInfo;
+  class VolumeInfo;
   class SimpleConfig;
-  class SensitiveDetectorHelper;
 
   VolumeInfo constructTTrackerv5( VolumeInfo const& parent,
-				  SimpleConfig const& config,
-                                  SensitiveDetectorHelper const& sdHelper );
+                                 SimpleConfig const& config );
 
 }  // end namespace mu2e
 
