@@ -33,6 +33,7 @@ BEGIN_PROLOG
     caloMatchingRoot : "TrackCaloMatchingTRF"
   }
 
+  CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
 #Generic ReadKalFits config.  These only work for CD3
   ReadKalFits : {
     module_type: ReadKalFits
@@ -203,27 +204,27 @@ BEGIN_PROLOG
       TrkAna: @local::TrackAnalysis
     }
   
-    # separate out the sime and reco parts of the sequence
-#    SimSequence	: [ @sequence::CommonDigiSim.DigiSim,
-#		    @sequence::TrackerMC.DigiSim,
-#		    @sequence::CaloDigiMC.DigiSim ]
-# CRVDigiSequence 
-    RecoSequence : [ @sequence::CaloReco.Reco,
-	             @sequence::CaloCluster.Reco, 
-		     @sequence::TrkHitReco.PrepareHits,
+    # Reco sequences starting from digis; these belong elsewhere FIXME!
+    TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
 		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,
 		     @sequence::Tracking.TPRUeM,
-		     @sequence::Tracking.TPRDmuM,
-		     @sequence::TrackCaloMatching.matching_dem_TRF,
-		     CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
-#    EndSequence : [ TrkAna, genCountLogger ]
+		     @sequence::Tracking.TPRDmuM ]
+    CaloRecoSequence : [ @sequence::CaloReco.Reco,
+			 @sequence::CaloCluster.Reco ]
+
+    CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
+
+    #nb: matching only done for dem, should be for other particles FIXME!
+#
     EndSequence : [ TrkAna ]
 
   }
   # aggregate these for convenience
-#  TrkAna.SimAndRecoSequence : [ @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
-#  TrkAna.SimAndRecoMixSequence : [ @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
-
+TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.TrkRecoSequence,
+			    @sequence::TrkAna.CaloRecoSequence,
+		            @sequence::TrackCaloMatching.matching_dem_TRF ]
+TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
+				 @sequence::TrkAna.CrvRecoSequence ]
 
 END_PROLOG
