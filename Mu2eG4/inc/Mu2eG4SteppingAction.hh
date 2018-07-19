@@ -36,12 +36,13 @@ namespace mu2e {
   class Mu2eG4ResourceLimits;
   class Mu2eG4TrajectoryControl;
 
-  class Mu2eG4SteppingAction : public G4UserSteppingAction {
+  class Mu2eG4SteppingAction : public G4UserSteppingAction
+  {
 
   public:
     Mu2eG4SteppingAction(const fhicl::ParameterSet& pset,
                          const std::vector<double>& timeVDtimes,
-                         IMu2eG4Cut &steppingCuts,
+                         IMu2eG4Cut& steppingCuts,
                          IMu2eG4Cut& commonCuts,
                          const Mu2eG4TrajectoryControl& tc,
                          const Mu2eG4ResourceLimits& mu2elimits);
@@ -56,7 +57,7 @@ namespace mu2e {
     int nKilledStepLimit() const { return numKilledTracks_; }
 
     // Called by G4_plugin.
-    void beginRun(PhysicsProcessInfo&, CLHEP::Hep3Vector const& mu2eOrigin );
+    void beginRun(PhysicsProcessInfo*, CLHEP::Hep3Vector const& mu2eOrigin );
 
     // Called by G4_plugin: the final phase of the c'tor cannot be completed until after
     // G4 has initialized itself.
@@ -82,8 +83,8 @@ namespace mu2e {
     fhicl::ParameterSet pset_;
 
     // owned by Mu2eG4 module.
-    IMu2eG4Cut *steppingCuts_;
-    IMu2eG4Cut *commonCuts_;
+    IMu2eG4Cut* steppingCuts_;
+    IMu2eG4Cut* commonCuts_;
 
     const Mu2eG4ResourceLimits *mu2elimits_;
 

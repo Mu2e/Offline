@@ -2,7 +2,7 @@
 #ifndef CalHelixFinderData_HH
 #define CalHelixFinderData_HH
 
-#include "TObject.h"
+//#include "TObject.h"
 #include "CalPatRec/inc/LsqSums4.hh"
 #include "CalPatRec/inc/CalHelixPoint.hh"
 
@@ -81,7 +81,7 @@ namespace mu2e {
   //---------------------------------------------------------------------------
   // output struct
   //-----------------------------------------------------------------------------
-  class CalHelixFinderData : public TObject {
+  class CalHelixFinderData  {
   public:
    
 

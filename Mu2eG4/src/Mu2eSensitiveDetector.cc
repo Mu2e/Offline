@@ -27,6 +27,7 @@
 #include "G4RunManager.hh"
 #include "G4Step.hh"
 #include "G4ios.hh"
+#include "G4Threading.hh"
 
 using namespace std;
 
@@ -58,13 +59,10 @@ namespace mu2e {
       config.getVectorInt(key,list);
       _debugList.add(list);
     }
-
   }
 
   void Mu2eSensitiveDetector::Initialize(G4HCofThisEvent* HCE){
-
-    _currentSize=0;
-
+      _currentSize=0;
   }
 
 
@@ -82,20 +80,26 @@ namespace mu2e {
       return false;
     }
 
-    if ( _debugList.inList() )  {
+      
+// this little section of code containing 'if ( _debugList.inList() )'
+// was occasionally causing seg faults in MT mode
+// this issue seems to have been fixed
+// but I have taken it out to reduce output 05/18
+      
+/*    if ( _debugList.inList() )  {
             G4cout<<"edep "<<aStep->GetTotalEnergyDeposit()
                   <<" nidep "<<aStep->GetNonIonizingEnergyDeposit()
                   <<" step "<<aStep->GetStepLength()<<G4endl;
             G4cout<<"Step vol name "<<aStep->GetTrack()->GetVolume()->GetName()<<G4endl;
     }
-
-
+*/
+      
     // Which process caused this step to end?
     ProcessCode endCode(_processInfo->
-                        findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
-
-    // Add the hit to the framework collection.
-    // The point's coordinates are saved in the mu2e coordinate system.
+                findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
+      
+      // Add the hit to the framework collection.
+      // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
       push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                             aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
@@ -108,10 +112,9 @@ namespace mu2e {
                             aStep->GetStepLength(),
                             endCode
                             ));
+      return true;
 
-    return true;
-
-  }
+  }//ProcessHits
 
 
   void Mu2eSensitiveDetector::EndOfEvent(G4HCofThisEvent*){
@@ -140,7 +143,7 @@ namespace mu2e {
       for (G4int i=0;i<NbHits;i++) (*_collection)[i].print(G4cout, true, false);
     }
 
-  }
+  }//EndOfEvent
 
 
   void Mu2eSensitiveDetector::beforeG4Event(StepPointMCCollection& outputHits,
@@ -149,9 +152,9 @@ namespace mu2e {
     _collection  = &outputHits;
     _processInfo = &processInfo;
     _spHelper    = &spHelper;
-
+      
     return;
 
-  }
+  }//beforeG4Event
 
 } //namespace mu2e

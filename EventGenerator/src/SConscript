@@ -11,6 +11,9 @@ Import('mu2e_helper')
 
 helper=mu2e_helper(env);
 
+cryinc = os.environ['CRYHOME'] + '/src'
+crylib = os.environ['CRY_LIB']
+
 rootlibs  = env['ROOTLIBS']
 
 mainlib = helper.make_mainlib ( [
@@ -38,6 +41,7 @@ mainlib = helper.make_mainlib ( [
         'art_Framework_Core',
         'art_Utilities',
         'canvas',
+        'CRY',
         'fhiclcpp',
         'MF_MessageLogger',
         'cetlib',
@@ -48,7 +52,7 @@ mainlib = helper.make_mainlib ( [
         rootlibs,
         'boost_system',
         'gsl',
-        ], [],[]
+        ], [],['-I' + cryinc, '-L' + crylib]
         )
 
 helper.make_plugins( [ mainlib,
@@ -87,7 +91,9 @@ helper.make_plugins( [ mainlib,
                        'boost_filesystem',
                        'boost_system',
                        'gsl',
-                     ] )
+                       'CRY',
+                     ],
+                    [], ['-I' + cryinc], ['-L' + crylib])
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

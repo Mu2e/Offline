@@ -21,6 +21,9 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
+
+#include "G4Threading.hh"
+
 using CLHEP::Hep3Vector;
 using namespace std;
 
@@ -41,7 +44,7 @@ namespace mu2e {
     point -= _mapOrigin;
 
     // Look up BField and reformat to required return format.
-    const CLHEP::Hep3Vector bf = _map->getBField(point);
+    const CLHEP::Hep3Vector bf = _map->getBField(point, _cm);
     Bfield[0] = bf.x()*CLHEP::tesla;
     Bfield[1] = bf.y()*CLHEP::tesla;
     Bfield[2] = bf.z()*CLHEP::tesla;
@@ -65,6 +68,11 @@ namespace mu2e {
 
     // Throws if the map is not found.
     _map = &*bfMgr;
+
+    _cm = bfMgr->cacheManager();
+      
+      //std::cout << " from Thread #" << G4Threading::G4GetThreadId()
+      //<< ", address of CacheManager is " << &_cm << std::endl;
   }
 
 } // end namespace mu2e

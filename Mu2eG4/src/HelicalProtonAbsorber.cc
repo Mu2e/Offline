@@ -60,7 +60,7 @@ namespace mu2e {
 
 HelicalProtonAbsorber::HelicalProtonAbsorber(double z_start, double length_i, double *inner_radii,
                 double *outer_radii, double *inner_phis, double *outer_phis, double thickness_i,
-                /*double num_of_turns_i,*/ int vane_num_i, G4Material* plastic, G4LogicalVolume* world, G4VSensitiveDetector *paSD)
+                /*double num_of_turns_i,*/ int vane_num_i, G4Material* plastic, G4LogicalVolume* world)
 {
         //TEST = 400*CLHEP::mm;
 
@@ -122,16 +122,6 @@ HelicalProtonAbsorber::HelicalProtonAbsorber(double z_start, double length_i, do
         pabs_logic = new G4LogicalVolume(pabs_solid, material, "helical_pabs_log");
         pabs_phys = new G4PVPlacement(0,position,pabs_logic,"helical_pabs_phys", World, false, 0);
         pabs_logic->SetVisAttributes(G4VisAttributes::Invisible);
-
-        if (paSD!=0x0) {
-                pabs_logic->SetSensitiveDetector(paSD);
-
-        }
-//        //specifying sensitive detectors.
-//        myPAbsSD = new PAbsSD("pabs");
-//        G4SDManager* SDMan = G4SDManager::GetSDMpointer();
-//        SDMan->AddNewDetector(myPAbsSD);
-//        pabs_logic->SetSensitiveDetector(myPAbsSD);
 }
 
 HelicalProtonAbsorber::~HelicalProtonAbsorber()
@@ -161,12 +151,6 @@ HelicalProtonAbsorber::~HelicalProtonAbsorber()
 
         pabs_logic = new G4LogicalVolume(pabs_solid, material, "helical_pabs_log");
         pabs_phys = new G4PVPlacement(0,G4ThreeVector(0,0,z_var),pabs_logic,"helical_pabs_phys", World, false, 0);
-
-
-//        //myPAbsSD = new PAbsSD("pabs");
-//        G4SDManager* SDMan = G4SDManager::GetSDMpointer();
-//        //SDMan->AddNewDetector(myPAbsSD);
-//        pabs_logic->SetSensitiveDetector(myPAbsSD);
 
 //        // Notify the G4RunManager that the geometry has been rebuilt.
 //        G4RunManager::GetRunManager()->GeometryHasBeenModified();

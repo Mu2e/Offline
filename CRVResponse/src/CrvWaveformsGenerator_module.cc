@@ -75,6 +75,7 @@ namespace mu2e
     _FEBtimeSpread(pset.get<double>("FEBtimeSpread")),         //2.0 ns (due to cable lengths differences, etc.)
     _minVoltage(pset.get<double>("minVoltage")),               //0.022V (corresponds to 3.5PE)
     _noise(pset.get<double>("noise")),
+
     _singlePEWaveformMaxTime(pset.get<double>("singlePEWaveformMaxTime")),        //100ns
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat{_engine},

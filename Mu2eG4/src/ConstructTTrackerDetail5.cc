@@ -17,8 +17,6 @@
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 
 #include "G4Colour.hh"
@@ -38,8 +36,7 @@
 using namespace std;
 
 mu2e::ConstructTTrackerDetail5::ConstructTTrackerDetail5( VolumeInfo   const& ds3Vac,
-                                                          SimpleConfig const& config,
-                                                          SensitiveDetectorHelper const& sdHelper ):
+                                                          SimpleConfig const& config ):
   // References to arguments
   _ds3Vac(ds3Vac),
   _config(config),
@@ -47,7 +44,6 @@ mu2e::ConstructTTrackerDetail5::ConstructTTrackerDetail5( VolumeInfo   const& ds
   // Assorted tools
   _helper(*art::ServiceHandle<G4Helper>()),
   _reg(_helper.antiLeakRegistry()),
-  sdHelper_(sdHelper),
 
   _ttracker(*GeomHandle<TTracker>()),
 
@@ -799,26 +795,6 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   // A unit vector in the direction from the origin to the wire center within the panel envelope.
   CLHEP::Hep3Vector unit( cos(panelCenterPhi), sin(panelCenterPhi), 0.);
 
-  // Sensitive detector object for the straw gas.
-  G4VSensitiveDetector *strawSD = sdHelper_.enabled(StepInstanceName::tracker) ?
-    G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::TrackerGas()) :
-    nullptr;
-  if ( strawSD == nullptr ){
-    cout << __func__
-         << " Warning: there is no sensitive detector object for the straw gas.  Continuing ..."
-         << endl;
-  }
-
-  // Sensitive detector object for the straw sense wires.
-  G4VSensitiveDetector *senseWireSD = sdHelper_.enabled(StepInstanceName::trackerSWires) ?
-    G4SDManager::GetSDMpointer()->
-    FindSensitiveDetector(SensitiveDetectorName::TrackerSWires()) : nullptr;
-
-  // Sensitive detector object for the straw walls.
-  G4VSensitiveDetector *strawWallSD = sdHelper_.enabled(StepInstanceName::trackerWalls) ?
-    G4SDManager::GetSDMpointer()->
-    FindSensitiveDetector(SensitiveDetectorName::TrackerWalls()) : nullptr;
-
   // Place the straws into the panel envelope.
   for (const auto straw_p : panel.getStrawPointers() ) {
       Straw const&       straw(*straw_p);
@@ -877,10 +853,6 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
                                        place,
                                        _doSurfaceCheck
                                        );
-
-      if (strawSD) {
-        strawVol.logical->SetSensitiveDetector(strawSD);
-      }
 
       // Wall has 4 layers; the three metal layers sit inside the plastic layer.
       // The plastic layer sits inside the gas.
@@ -975,18 +947,6 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
                                          place,
                                          _doSurfaceCheck
                                          );
-
-      if (senseWireSD) {
-        wireVol.logical->SetSensitiveDetector(senseWireSD);
-        platingVol.logical->SetSensitiveDetector(senseWireSD);
-      }
-
-      if (strawWallSD) {
-        wallVol.logical->SetSensitiveDetector(strawWallSD);
-        outerMetalVol.logical->SetSensitiveDetector(strawWallSD);
-        innerMetal1Vol.logical->SetSensitiveDetector(strawWallSD);
-        innerMetal2Vol.logical->SetSensitiveDetector(strawWallSD);
-      }
 
   } // end loop over straws within a panel
 
@@ -1323,17 +1283,6 @@ mu2e::ConstructTTrackerDetail5::prepareEBKey(bool keyItself){
          << keyParams.phiMax()/M_PI*180.
          << endl;
 
-  }
-
-  // Make it sensitive here
-  if (keyItself) {
-    if(sdHelper_.enabled(StepInstanceName::panelEBKey)) {
-      G4VSensitiveDetector* EBKeySD = G4SDManager::GetSDMpointer()->
-        FindSensitiveDetector(SensitiveDetectorName::panelEBKey());
-      if (EBKeySD) {
-        key0Info.logical->SetSensitiveDetector(EBKeySD);
-      }
-    }
   }
 
   return key0Info;

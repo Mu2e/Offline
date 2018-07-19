@@ -24,6 +24,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 #include "DataProducts/inc/PDGCode.hh"
+#include "Mu2eG4/inc/EventStash.hh"
 
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
@@ -40,7 +41,7 @@ namespace mu2e {
       virtual void declareProducts(art::EDProducer *parent) override;
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
-      virtual void put(art::Event& event) override;
+      virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) override;
 
     protected:
       explicit IOHelper(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& mu2elimits)
@@ -84,12 +85,15 @@ namespace mu2e {
       }
     }
 
-    void IOHelper::put(art::Event& evt) {
-      if(steppingOutput_) {
-        evt.put(std::move(steppingOutput_), steppingOutputName_);
-      }
+    //NEW for MT
+    void IOHelper::insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data){
+        if(steppingOutput_) {
+            stash_for_event_data->insertCutsStepPointMC(g4event_identifier, std::move(steppingOutput_),
+                                                         steppingOutputName_);
+        }
     }
-
+      
+        
     void IOHelper::finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) {
       mu2eOrigin_ = mu2eOriginInWorld;
     }
@@ -142,7 +146,7 @@ namespace mu2e {
       // Sequences need a different implementation
       virtual void declareProducts(art::EDProducer *parent) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
-      virtual void put(art::Event& event) override;
+      virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) override;
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
 
       explicit Union(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim);
@@ -204,13 +208,15 @@ namespace mu2e {
         cut->beginEvent(evt, spHelper);
       }
     }
-
-    void Union::put(art::Event& evt) {
-      IOHelper::put(evt);
-      for(auto& cut: cuts_) {
-        cut->put(evt);
+      
+      //NEW for MT!
+    void Union::insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data){
+          IOHelper::insertCutsDataIntoStash(g4event_identifier, stash_for_event_data);
+          for(auto& cut: cuts_) {
+              cut->insertCutsDataIntoStash(g4event_identifier, stash_for_event_data);
+          }
       }
-    }
+
 
     //================================================================
     class Intersection: virtual public IMu2eG4Cut,
@@ -223,7 +229,7 @@ namespace mu2e {
       // Sequences need a different implementation
       virtual void declareProducts(art::EDProducer *parent) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
-      virtual void put(art::Event& event) override;
+      virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) override;
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
 
       explicit Intersection(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim);
@@ -286,13 +292,15 @@ namespace mu2e {
         cut->beginEvent(evt, spHelper);
       }
     }
-
-    void Intersection::put(art::Event& evt) {
-      IOHelper::put(evt);
-      for(auto& cut: cuts_) {
-        cut->put(evt);
-      }
+      
+    //NEW for MT!
+    void Intersection::insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data){
+        IOHelper::insertCutsDataIntoStash(g4event_identifier, stash_for_event_data);
+        for(auto& cut: cuts_) {
+            cut->insertCutsDataIntoStash(g4event_identifier, stash_for_event_data);
+        }
     }
+
 
     //================================================================
     class PlaneHelper {
