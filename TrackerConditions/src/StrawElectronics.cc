@@ -68,8 +68,8 @@ namespace mu2e {
     _timeOffsetStrawHV(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0))),
     _timeOffsetStrawCal(pset.get<vector<double> >("TimeOffsetStrawCal",vector<double>(96,0)))
     {
-      _flashStartTDC = tdcResponse(_flashStart-_electronicsTimeDelay); // we dont want the timeDelay in here that tdcResponse adds
-      _flashEndTDC = tdcResponse(_flashEnd-_electronicsTimeDelay); 
+      _flashStartTDC = tdcResponse(_flashStart); // tdcResponse takes care of offsets, etc.
+      _flashEndTDC = tdcResponse(_flashEnd); 
       _ADCped.resize(96,0);
       for (int i=0;i<96;i++){
 	double avgThresh = (_vthresh[i*2+0] + _vthresh[i*2+1])/2.;
@@ -298,12 +298,21 @@ namespace mu2e {
     }
   }
 
+  bool StrawElectronics::digitizeAllTimes(TDCTimes const& times,double mbtime, TDCValues& tdcs) const {
+    for(size_t itime=0;itime<2;++itime)
+      tdcs[itime] = tdcResponse(times[itime]);
+    // test these times against time wrapping
+    bool notwrap(true);
+    for(auto tdc : tdcs){
+      notwrap &= tdc > _flashStartTDC - mbtime && tdc < _flashStartTDC;
+    }
+    return notwrap;
+  }
+
   bool StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdcs) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
-    // test these times against the flash blanking.  not sure if we should require
-    // one or both to be valid FIXME!.
-    // The test should be done module the TDC clock not the exact TDC FIXME!
+    // test bothe these times against the flash blanking. 
     bool notflash(true);
     for(auto tdc : tdcs){
       notflash &= tdc > _flashEndTDC && tdc < _flashStartTDC;
