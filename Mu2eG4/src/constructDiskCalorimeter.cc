@@ -15,8 +15,6 @@
 //  5. Calibration pipes go in front
 
 #include "Mu2eG4/inc/constructDiskCalorimeter.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -55,8 +53,7 @@
 
 namespace mu2e {
 
-  VolumeInfo constructDiskCalorimeter( const VolumeInfo&  mother, const SimpleConfig& config,
-                                       SensitiveDetectorHelper const& sdHelper)
+  VolumeInfo constructDiskCalorimeter( const VolumeInfo&  mother, const SimpleConfig& config )
   {
 
 
@@ -288,16 +285,6 @@ namespace mu2e {
 	pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,wrapThickness),CrystalLog,"CrysPV",WrapLog,false,0,false);
 	doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 
-
-	// --add sensitive detector    
-	//
-	G4VSensitiveDetector* ccSD = (sdHelper.enabled(StepInstanceName::calorimeter)) ?
-          G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal()) :
-          nullptr;
-	if (ccSD) CrystalLog->SetSensitiveDetector(ccSD);
-
-
-
     //------------------------------------------------------------
     // Define and build electronics box with readout + electronics    
        
@@ -368,21 +355,6 @@ namespace mu2e {
 	doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 	pv = new G4PVPlacement(0,G4ThreeVector(-R0disp, 0, 2*ROHalfThickness+ROElecHalfZ), ROElectronicsLog,"ROElectroPV_1", ROBoxInLog, true,1,false);
 	doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
-
-
-	// --add sensitive detector    
-	//
-	G4VSensitiveDetector* crSD = (sdHelper.enabled(StepInstanceName::calorimeterRO)) ?
-          G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadout()) :
-          nullptr;
-	if (crSD) ROLog->SetSensitiveDetector(crSD);
-	
-	G4VSensitiveDetector* crCardSD = (sdHelper.enabled(StepInstanceName::calorimeterROCard)) ?
-          G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadoutCard()) :
-          nullptr;
-	if (crCardSD) ROElectronicsLog->SetSensitiveDetector(crCardSD);
-       
-       
 
     //---------------------------------------------------------------
     // Define final crystal + R0box unit here
@@ -622,11 +594,6 @@ namespace mu2e {
 	       for (G4int ibrd=0;ibrd < nBoards;++ibrd)
 		 {
 		   std::ostringstream boardPV; boardPV<<"boardPV_" <<ibrd;
-
-		   G4VSensitiveDetector* crCrate = (sdHelper.enabled(StepInstanceName::calorimeterCrate)) ?
-                     G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrate()) :
-                     nullptr;
-		   if (crCrate) activeStripBoardLog->SetSensitiveDetector(crCrate);
 
 		   pv = new G4PVPlacement(0,G4ThreeVector(0.0,boardPosY,boardPosZ), boardCrateLog, boardPV.str(), crateBoxLog, true, ibrd,false);
 		   doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);

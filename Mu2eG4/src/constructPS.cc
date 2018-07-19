@@ -28,8 +28,6 @@
 #include "Mu2eG4/inc/constructTargetPS.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 
@@ -42,6 +40,7 @@
 #include "G4Color.hh"
 #include "G4Polycone.hh"
 #include "G4SDManager.hh"
+#include "G4LogicalVolume.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
@@ -49,10 +48,7 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructPS( const VolumeInfo& parent,
-                    const SimpleConfig& _config,
-                    const SensitiveDetectorHelper& sdHelper
-                    ) {
+  G4LogicalVolume* constructPS(VolumeInfo const & parent, SimpleConfig const & _config) {
     
     ProductionSolenoid const & psgh = *(GeomHandle<ProductionSolenoid>());
 
@@ -70,8 +66,6 @@ namespace mu2e {
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( _config, "PS", "PS" );
-
-    bool psVacuumSensitive = _config.getBool("PS.Vacuum.Sensitive", false);
 
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
 
@@ -309,13 +303,6 @@ namespace mu2e {
 					  "PS"
                                           );
 
-    if(psVacuumSensitive) {
-      G4VSensitiveDetector* psVacuumSD = (sdHelper.enabled(StepInstanceName::PSVacuum)) ?
-        G4SDManager::GetSDMpointer()->
-        FindSensitiveDetector(SensitiveDetectorName::PSVacuum()) : nullptr;
-      if(psVacuumSD) psVacuumInfo.logical->SetSensitiveDetector(psVacuumSD);
-    }
-
 //    // Build the production target.
 //    GeomHandle<ProductionTarget> tgt;
 //    TubsParams prodTargetParams( 0., tgt->rOut(), tgt->halfLength());
@@ -339,6 +326,9 @@ namespace mu2e {
     if(art::ServiceHandle<GeometryService>()->hasElement<PSShield>()) {
       constructPSShield(psVacuumInfo, _config);
     }
+      
+      
+      return psVacuumInfo.logical;
 
   } // end Mu2eWorld::constructPS
 }

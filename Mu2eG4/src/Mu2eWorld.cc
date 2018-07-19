@@ -21,6 +21,7 @@
 
 // C++ includes
 #include <iostream>
+#include <string>
 #include <vector>
 
 // Framework includes
@@ -43,6 +44,7 @@
 #include "Mu2eG4/inc/constructTSdA.hh"
 #include "Mu2eG4/inc/constructMBS.hh"
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
+#include "Mu2eG4/inc/constructVirtualDetectorSDs.hh"
 #include "Mu2eG4/inc/constructVisualizationRegions.hh"
 #include "Mu2eG4/inc/constructDS.hh"
 #include "Mu2eG4/inc/constructMSTM.hh"
@@ -70,7 +72,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -89,6 +90,7 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 // G4 includes
+#include "G4Threading.hh"
 #include "G4SDManager.hh"
 #include "G4GeometryManager.hh"
 #include "G4PhysicalVolumeStore.hh"
@@ -125,7 +127,6 @@
 #include "G4GDMLParser.hh"
 
 #include "Mu2eG4/inc/Mu2eGlobalField.hh"
-#include "Mu2eG4/inc/FieldMgr.hh"
 
 #include "boost/regex.hpp"
 
@@ -170,53 +171,64 @@ namespace mu2e {
   }
 
 
-  // This is the callback called by G4 via G4VPhysicalVolume* WorldMaker::Construct()
+    // This is the callback called by G4 via G4VPhysicalVolume* WorldMaker::Construct()
   G4VPhysicalVolume * Mu2eWorld::construct(){
-    // Construct all of the Mu2e world, hall, detectors, beamline ...
-    return constructWorld();
+      
+        // Construct all of the Mu2e world, hall, detectors, beamline ...
+        return constructWorld();
   }
+    
+    // This is the callback called by G4 via void WorldMaker::ConstructSDandField()
+  void Mu2eWorld::constructSDandField(){
+      
+      sdHelper_->instantiateLVSDs(_config);
+      instantiateSensitiveDetectors();
+      constructBFieldAndManagers();
+      
+  }
+    
 
   // Construct all of the Mu2e world, hall, detectors, beamline ...
   G4VPhysicalVolume * Mu2eWorld::constructWorld(){
+      
+      // If you play with the order of these calls, you may break things.
+      GeomHandle<WorldG4> worldGeom;
+      G4ThreeVector tmpTrackercenter = GeomHandle<DetectorSystem>()->getOrigin();
 
-    // If you play with the order of these calls, you may break things.
-    GeomHandle<WorldG4> worldGeom;
-    G4ThreeVector tmpTrackercenter = GeomHandle<DetectorSystem>()->getOrigin();
+      if (activeWr_Wl_SD_) {
+          TrackerWireSD::setMu2eDetCenterInWorld( tmpTrackercenter );
+      }
+      
+      VolumeInfo worldVInfo = constructWorldVolume(_config);
 
-    if (activeWr_Wl_SD_) {
-      TrackerWireSD::setMu2eDetCenterInWorld( tmpTrackercenter );
-    }
+      if ( _verbosityLevel > 0) {
+          cout << __func__ << " worldVInfo.centerInParent : " <<  worldVInfo.centerInParent << endl;
+          cout << __func__ << " worldVInfo.centerInWorld  : " <<  worldVInfo.centerInWorld  << endl;
+      }
 
-    instantiateSensitiveDetectors();
+      VolumeInfo hallInfo  = constructHall(worldVInfo, _config);
 
-    VolumeInfo worldVInfo = constructWorldVolume(_config);
-
-    if ( _verbosityLevel > 0) {
-      cout << __func__ << " worldVInfo.centerInParent : " <<  worldVInfo.centerInParent << endl;
-      cout << __func__ << " worldVInfo.centerInWorld  : " <<  worldVInfo.centerInWorld  << endl;
-    }
-
-    VolumeInfo hallInfo  = constructHall(worldVInfo, _config);
-
-    if ( _verbosityLevel > 0) {
-      cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << endl;
-      cout << __func__ << " hallInfo.centerInWorld    : " <<  hallInfo.centerInWorld  << endl;
-      cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << endl;
-    }
-
-    constructProtonBeamDump(hallInfo, _config, *sdHelper_);
-
-    constructDS(hallInfo, _config, *sdHelper_);
-    constructPS(hallInfo, _config, *sdHelper_);
-    constructPSEnclosure(hallInfo, _config);
-    constructTS(hallInfo, _config);
-
-    VolumeInfo trackerInfo = constructTracker();
-    VolumeInfo targetInfo  = constructTarget();
-
-    constructProtonAbsorber(_config, *sdHelper_);
-
-    VolumeInfo calorimeterInfo    = constructCal();
+      if ( _verbosityLevel > 0) {
+          cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << endl;
+          cout << __func__ << " hallInfo.centerInWorld    : " <<  hallInfo.centerInWorld  << endl;
+          cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << endl;
+      }
+      
+      constructProtonBeamDump(hallInfo, _config);
+      constructDS(hallInfo, _config);
+      
+      //Here's a test case for a another way of making SDs active.
+      //Instead of being a void function, it returns a G4LogicalVolume*,
+      //which I made a member function of this class.  Then, I access this member function
+      //in constructSDandField() call to instantiateSensitiveDetectors in order to set the SensitiveDetectors
+      psVacuumLogical_ = constructPS(hallInfo, _config);
+      
+      constructPSEnclosure(hallInfo, _config);
+      constructTS(hallInfo, _config);
+      VolumeInfo trackerInfo = constructTracker();
+      VolumeInfo targetInfo  = constructTarget();
+      constructProtonAbsorber(_config);
+      VolumeInfo calorimeterInfo = constructCal();
 
     if (pset_.has_key("physics.minRangeCut2")) {
       // creating a region to be able to asign special cut and EM options
@@ -237,62 +249,61 @@ namespace mu2e {
 
     // Check for stale names
 
-    if ( _config.getBool("hasExternalShielding",false) ) {
-      constructExternalShielding(hallInfo, _config);
-    }
+      if ( _config.getBool("hasExternalShielding",false) ) {
+          constructExternalShielding(hallInfo, _config);
+      }
 
-    // This is for saddles holding up cryostats
-    constructSaddles(hallInfo, _config);
+      // This is for saddles holding up cryostats
+      constructSaddles(hallInfo, _config);
 
-    // This is for pipes, cable runs, Electronics racks, etc.
-    constructServicesGeom(hallInfo, _config);
+      // This is for pipes, cable runs, Electronics racks, etc.
+      constructServicesGeom(hallInfo, _config);
 
-    if ( _config.getBool("hasTSdA",false) ) {
-      constructTSdA(_config);
-    }
+      if ( _config.getBool("hasTSdA",false) ) {
+          constructTSdA(_config);
+      }
 
-    if ( _config.getBool("hasMBS",false) ) {
-      constructMBS(_config);
-    }
+      if ( _config.getBool("hasMBS",false) ) {
+          constructMBS(_config);
+      }
 
-    if ( _config.getBool("mstm.build", false) ) {
-      constructMSTM(hallInfo, _config, *sdHelper_);
-    }
+      if ( _config.getBool("mstm.build", false) ) {
+          constructMSTM(hallInfo, _config);
+      }
 
-    if ( _config.getBool("hasSTM",false) ) {
-      constructSTM(_config, *sdHelper_);
-    }
+      if ( _config.getBool("hasSTM",false) ) {
+          constructSTM(_config);
+      }
+      
+      // _geom is member data of Mu2eG4Universe, from which this inherits
+      // it is a ref to a const GeometryService object
+      if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
+          GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
+          constructCRV(hallInfo,_config);
+      }
+ 
+      constructVirtualDetectors(_config); // beware of the placement order of this function
 
-    if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
+      constructVisualizationRegions(worldVInfo, _config);
 
-      GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
-      constructCRV(hallInfo,_config,*sdHelper_);
-    }
+      if ( _verbosityLevel > 0) {
+          mf::LogInfo log("GEOM");
+          log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";
+      }
 
-    constructVirtualDetectors(_config, *sdHelper_); // beware of the placement order of this function
+      constructStepLimiters();
 
-    constructVisualizationRegions(worldVInfo, _config);
+      // Write out mu2e geometry into a gdml file.
+      if (writeGDML_) {
+          G4GDMLParser parser;
+          parser.Write(gdmlFileName_, worldVInfo.logical);
+      }
 
-    sdHelper_->instantiateLVSDs(_config);
+      return worldVInfo.physical;
+    
+  }//Mu2eWorld::constructWorld()
 
-    if ( _verbosityLevel > 0) {
-      mf::LogInfo log("GEOM");
-      log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";
-    }
-
-    // Create magnetic fields and managers only after all volumes have been defined.
-    constructBFieldAndManagers();
-    constructStepLimiters();
-
-    // Write out mu2e geometry into a gdml file.
-    if (writeGDML_) {
-      G4GDMLParser parser;
-      parser.Write(gdmlFileName_, worldVInfo.logical);
-    }
-
-    return worldVInfo.physical;
-  }
-
+    
   // Choose the selected tracker and build it.
   VolumeInfo Mu2eWorld::constructTracker(){
 
@@ -310,9 +321,9 @@ namespace mu2e {
     if ( _config.getBool("hasTTracker",false) ) {
       int ver = _config.getInt("TTrackerVersion",3);
       if ( ver == 3 ){
-        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, _config, *sdHelper_);
+        trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, _config);
       } else if ( ver == 5 ) {
-	trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config, *sdHelper_);
+	trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config);
       }
     } else {
       trackerInfo = constructDummyTracker( detSolDownstreamVacInfo.logical, z0DSdown, _config );
@@ -326,8 +337,9 @@ namespace mu2e {
 
     return trackerInfo;
 
-  } // end Mu2eWorld::constructTracker
+  }//Mu2eWorld::constructTracker
 
+    
   // Either build the stopping target or a placeholder.
   // This should be call constrcutStoppingTarget but the name is already taken.
   VolumeInfo Mu2eWorld::constructTarget(){
@@ -344,7 +356,7 @@ namespace mu2e {
     VolumeInfo targetInfo = ( _config.getBool("hasTarget",false) ) ?
 
       constructStoppingTarget( detSolUpstreamVacInfo,
-                               _config, *sdHelper_ )
+                               _config )
       :
 
       constructDummyStoppingTarget( detSolUpstreamVacInfo,
@@ -353,11 +365,11 @@ namespace mu2e {
 
   } // end Mu2eWorld::constructTarget
 
+    
   // Construct the magnetic field managers and attach them to
   // the relevant volumes or to the world
-
   void Mu2eWorld::constructBFieldAndManagers(){
-
+    
     GeomHandle<WorldG4> worldGeom;
 
     // Get some information needed further
@@ -372,20 +384,23 @@ namespace mu2e {
     G4ThreeVector beamZ0( ds2Z0.x(), ds2Z0.y(), ds2Z0.z()+ds2HL );
 
     // Decide on the G4 Stepper
-    GeomHandle<BFieldConfig> bfconf;
-    bool needDSUniform = (bfconf->dsFieldForm() == BFieldConfig::dsModelSplit || bfconf->dsFieldForm() == BFieldConfig::dsModelUniform );
+    
+      
+      GeomHandle<BFieldConfig> bfConfig;
+      
+    bool needDSUniform = (bfConfig->dsFieldForm() == BFieldConfig::dsModelSplit || bfConfig->dsFieldForm() == BFieldConfig::dsModelUniform );
     bool needDSGradient = false;
 
     // Create field manager for the uniform DS field.
     if (needDSUniform) {
 
-      _dsUniform = FieldMgr::forUniformField( bfconf->getDSUniformValue()*CLHEP::tesla, worldGeom->mu2eOriginInWorld() );
+      _dsUniform = FieldMgr::forUniformField( bfConfig->getDSUniformValue()*CLHEP::tesla, worldGeom->mu2eOriginInWorld() );
 
       // Create field manager for the gradient field in DS3
-      if(bfconf->dsFieldForm() == BFieldConfig::dsModelSplit) {
+      if(bfConfig->dsFieldForm() == BFieldConfig::dsModelSplit) {
         needDSGradient = true;
-        _dsGradient = FieldMgr::forGradientField( bfconf->getDSUniformValue().z()*CLHEP::tesla,
-                                                  bfconf->getDSGradientValue().z()*CLHEP::tesla/CLHEP::m,
+        _dsGradient = FieldMgr::forGradientField( bfConfig->getDSUniformValue().z()*CLHEP::tesla,
+                                                  bfConfig->getDSGradientValue().z()*CLHEP::tesla/CLHEP::m,
                                                   beamZ0 );
       }
     }
@@ -431,11 +446,11 @@ namespace mu2e {
     G4TransportationManager::GetTransportationManager()->SetFieldManager(_manager);
 
     // Define uniform field region in the detector solenoid, if neccessary
-    if (bfconf->dsFieldForm() == BFieldConfig::dsModelUniform  ){
+    if (bfConfig->dsFieldForm() == BFieldConfig::dsModelUniform  ){
       ds2Vacuum->SetFieldManager( _dsUniform->manager(), true);
       if ( _verbosityLevel > 0 ) cout << "Use uniform field in DS2" << endl;
     }
-    if (bfconf->dsFieldForm() == BFieldConfig::dsModelUniform || bfconf->dsFieldForm() == BFieldConfig::dsModelSplit){
+    if (bfConfig->dsFieldForm() == BFieldConfig::dsModelUniform || bfConfig->dsFieldForm() == BFieldConfig::dsModelSplit){
       if( needDSGradient ) {
         ds3Vacuum->SetFieldManager( _dsGradient->manager(), true);
       if ( _verbosityLevel > 0 ) cout << "Use gradient field in DS3" << endl;
@@ -598,133 +613,400 @@ namespace mu2e {
     // Construct one of the calorimeters.
     VolumeInfo calorimeterInfo;
     if ( _config.getBool("hasDiskCalorimeter",false) ) {
-      calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config, *sdHelper_ );
+      calorimeterInfo = constructDiskCalorimeter( detSolDownstreamVacInfo,_config );
     }
 
     return calorimeterInfo;
 
-  } // end Mu2eWorld::constructCal
-
+  }//Mu2eWorld::constructCal
 
 
   // A place holder for now.
   void Mu2eWorld::constructMagnetYoke(){
-  } // end Mu2eWorld::constructMagnetYoke
+  }//Mu2eWorld::constructMagnetYoke
 
+    
   // instantiateSensitiveDetectors
-
   void Mu2eWorld::instantiateSensitiveDetectors(){
 
-    art::ServiceHandle<GeometryService> geom;
+      //art::ServiceHandle<GeometryService> geom;//I don't see this being used!
+      G4SDManager* SDman = G4SDManager::GetSDMpointer();
+      
+      //get the LVStore singleton
+      G4LogicalVolumeStore* store = G4LogicalVolumeStore::GetInstance();
+      
+      // G4 takes ownership and will delete the detectors at the job end
 
-    G4SDManager* SDman      = G4SDManager::GetSDMpointer();
-
-    // G4 takes ownership and will delete the detectors at the job end
-
+      
+/************************** Tracker **************************/
+      //done
     if(sdHelper_->enabled(StepInstanceName::tracker)) {
-      StrawSD* strawSD      =
-        new StrawSD(                SensitiveDetectorName::TrackerGas(),  _config);
-      SDman->AddNewDetector(strawSD);
-    }
+        
+        StrawSD* strawSD =
+        new StrawSD( SensitiveDetectorName::TrackerGas(), _config );
+        SDman->AddNewDetector(strawSD);
+        
+        //loop over all of the LV names and find the ones we need
+        //set the SensitiveDetectors for these
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            
+            //from ConstructTTrackerTDR and constructTTrackerv3
+            if (LVname.find("TTrackerStrawGas_") != std::string::npos) {
+                //if ((*pos)->GetName().find(basename) != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(strawSD);
+            }
+        }//for
+     }//if tracker
 
+      
+/************************** TTrackerDS **************************/
+     //done
     if(sdHelper_->enabled(StepInstanceName::ttrackerDS)) {
-      TTrackerPlaneSupportSD* ttdsSD =
-        new TTrackerPlaneSupportSD(SensitiveDetectorName::TTrackerPlaneSupport(), _config);
-      SDman->AddNewDetector(ttdsSD);
-    }
-
+        
+        TTrackerPlaneSupportSD* ttdsSD =
+        new TTrackerPlaneSupportSD( SensitiveDetectorName::TTrackerPlaneSupport(), _config );
+        SDman->AddNewDetector(ttdsSD);
+        
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            
+            //from constructTTrackerv3
+            if (LVname.find("TTrackerPlaneSupport_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttdsSD);
+            }
+            
+            //from constructTTrackerv3Detailed
+            if (LVname.find("TTrackerSupportElecCu") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttdsSD);
+            }
+        }//for
+    }//if ttrackerDS
+      
+      
+/************************** VirtualDetector **************************/
+    //done
     if(sdHelper_->enabled(StepInstanceName::virtualdetector)) {
-      Mu2eSensitiveDetector* vdSD =
-        new Mu2eSensitiveDetector(    SensitiveDetectorName::VirtualDetector(), _config);
-      SDman->AddNewDetector(vdSD);
+        
+        Mu2eSensitiveDetector* vdSD =
+            new Mu2eSensitiveDetector( SensitiveDetectorName::VirtualDetector(), _config );
+        SDman->AddNewDetector(vdSD);
+        
+        constructVirtualDetectorSDs(_config, vdSD);
+    }//if virtualdetector
+        
 
-      if (activeWr_Wl_SD_) {
-        if (sdHelper_->enabled(StepInstanceName::trackerSWires)) {
-          TrackerWireSD *ttwsSD = new TrackerWireSD(SensitiveDetectorName::TrackerSWires(),  _config);
-          SDman->AddNewDetector(ttwsSD);
-        }
-        if (sdHelper_->enabled(StepInstanceName::trackerWalls)) {
-          TrackerWireSD *ttwlSD = new TrackerWireSD(SensitiveDetectorName::TrackerWalls(),  _config);
-          SDman->AddNewDetector(ttwlSD);
-        }
-      }
-
-    }
-
-    if (   const_cast<GeometryService&>(_geom).hasElement<Calorimeter>() ) {
+/************************** trackerSWires **************************/
+    //done
+    if (sdHelper_->enabled(StepInstanceName::trackerSWires)) {
+        
+        TrackerWireSD *ttwsSD =
+            new TrackerWireSD(SensitiveDetectorName::TrackerSWires(), _config);
+        SDman->AddNewDetector(ttwsSD);
+            
+        //trackerSWires need to be fixed if virtual detector is fixed
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+                
+            G4String LVname = (*pos)->GetName();
+                
+            //from ConstructTTrackerTDR
+            if (LVname.find("TTrackerStrawWire_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwsSD);
+            }
+                
+            //from ConstructTTrackerTDR
+            if (LVname.find("TTrackerWireCore_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwsSD);
+            }
+                
+            //from ConstructTTrackerTDR
+            if (LVname.find("TTrackerWirePlate_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwsSD);
+            }
+            }//for
+    }//if trackerSWires
+  
+      
+/************************** trackerWalls **************************/
+    //done
+    if (sdHelper_->enabled(StepInstanceName::trackerWalls)) {
+        
+        TrackerWireSD *ttwlSD =
+            new TrackerWireSD( SensitiveDetectorName::TrackerWalls(), _config );
+        SDman->AddNewDetector(ttwlSD);
+                
+        //trackerWalls need to be fixed if virtual detector is fixed
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+                
+            G4String LVname = (*pos)->GetName();
+                
+            //from ConstructTTrackerTDR and constructTTrackerv3
+            if (LVname.find("TTrackerStrawWall_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwlSD);
+            }
+                
+            //from ConstructTTrackerTDR
+            if (LVname.find("TTrackerStrawWallOuterMetal_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwlSD);
+            }
+                
+            //from ConstructTTrackerTDR
+            if (LVname.find("TTrackerStrawWallInnerMetal1_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwlSD);
+            }
+                
+            //from ConstructTTrackerTDR
+            if (LVname.find("TTrackerStrawWallInnerMetal2_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(ttwlSD);
+            }
+        }//for
+    }//if trackerWalls
+      
+      
+/************************** CALORIMETER **************************/
+      // _geom is member data of Mu2eG4Universe, from which this inherits (GeoService const&)
+      //done
+    if ( const_cast<GeometryService&>(_geom).hasElement<Calorimeter>() ) {
+        
       if(sdHelper_->enabled(StepInstanceName::calorimeter)) {
-        CaloCrystalSD* ccSD     =
-          new CaloCrystalSD(          SensitiveDetectorName::CaloCrystal(),     _config);
-        SDman->AddNewDetector(ccSD);
-      }
+          CaloCrystalSD* ccSD =
+            new CaloCrystalSD( SensitiveDetectorName::CaloCrystal(), _config );
+          SDman->AddNewDetector(ccSD);
+          
+          for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+              G4String LVname = (*pos)->GetName();
+              
+              if (LVname.find("CrystalLog") != std::string::npos) {
+                  store->GetVolume(LVname)->SetSensitiveDetector(ccSD);
+              }
+          }//for
+      }//if calorimeter
 
       if(sdHelper_->enabled(StepInstanceName::calorimeterRO)) {
-        CaloReadoutSD* crSD     =
-          new CaloReadoutSD(          SensitiveDetectorName::CaloReadout(),     _config);
-        SDman->AddNewDetector(crSD);
-      }
+          CaloReadoutSD* crSD =
+            new CaloReadoutSD( SensitiveDetectorName::CaloReadout(), _config );
+          SDman->AddNewDetector(crSD);
+          
+          for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+              G4String LVname = (*pos)->GetName();
+              
+              if (LVname.find("CrystalROLog") != std::string::npos) {
+                  store->GetVolume(LVname)->SetSensitiveDetector(crSD);
+              }
+          }//for
+      }//if calorimeterRO
 
       if(sdHelper_->enabled(StepInstanceName::calorimeterROCard)) {
-        CaloReadoutCardSD* crCardSD  =
-          new CaloReadoutCardSD(      SensitiveDetectorName::CaloReadoutCard(),     _config);
-        SDman->AddNewDetector(crCardSD);
-      }
+          CaloReadoutCardSD* crCardSD =
+            new CaloReadoutCardSD( SensitiveDetectorName::CaloReadoutCard(), _config );
+          SDman->AddNewDetector(crCardSD);
+          
+          for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+              G4String LVname = (*pos)->GetName();
+              
+              if (LVname.find("ElectronicsROLog") != std::string::npos) {
+                  store->GetVolume(LVname)->SetSensitiveDetector(crCardSD);
+              }
+          }//for
+      }//if calorimeterROCard
       
       if(sdHelper_->enabled(StepInstanceName::calorimeterCrate)) {
-        CaloCrateSD* cCrateSD  =
-          new CaloCrateSD(      SensitiveDetectorName::CaloCrate(),     _config);
-        SDman->AddNewDetector(cCrateSD);
-      }
+          CaloCrateSD* cCrateSD =
+            new CaloCrateSD( SensitiveDetectorName::CaloCrate(), _config );
+          SDman->AddNewDetector(cCrateSD);
+          
+          for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+              G4String LVname = (*pos)->GetName();
+              
+              if (LVname.find("activeStripBoardLog") != std::string::npos) {
+                  store->GetVolume(LVname)->SetSensitiveDetector(cCrateSD);
+              }
+          }//for
+      }//if calorimeterCrate
 
-    }
+    }//if calorimeter
 
+      
+/************************** ExtMonFNALPixelSD **************************/
     if(true) { // this SD does not derive from Mu2eSensitiveDetector as it does not produce StepPointMCCollection
-      GeomHandle<mu2e::ExtMonFNAL::ExtMon> extmon;
-      SDman->AddNewDetector(new ExtMonFNALPixelSD(_config, *extmon));
+        GeomHandle<mu2e::ExtMonFNAL::ExtMon> extmon;
+        //SDman->AddNewDetector(new ExtMonFNALPixelSD(_config, *extmon));
+        
+        ExtMonFNALPixelSD* emSD = new ExtMonFNALPixelSD(_config, *extmon);
+        SDman->AddNewDetector(emSD);
+        
+        //from constructExtMonFNALModules
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            
+            if (LVname.find("EMFModule") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(emSD);
+            }
+        }//for
     }
 
+      
+/************************** StoppingTarget **************************/
+    //done
     if(sdHelper_->enabled(StepInstanceName::stoppingtarget)) {
-      Mu2eSensitiveDetector* stSD =
-        new Mu2eSensitiveDetector(    SensitiveDetectorName::StoppingTarget(),  _config);
-      SDman->AddNewDetector(stSD);
-    }
-
+        
+        Mu2eSensitiveDetector* stSD =
+            new Mu2eSensitiveDetector( SensitiveDetectorName::StoppingTarget(), _config );
+        SDman->AddNewDetector(stSD);
+        
+        //loop over all of the LV names to find ones we need
+        //set the SensitiveDetectors for these
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+           
+            if (LVname.find("Foil_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(stSD);
+            }
+            
+            if (LVname.find("FoilSupportStructure_") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(stSD);
+            }
+        }//for
+    }//if stoppingtarget
+      
+      
+/************************** CRV **************************/
+    //done
     if(sdHelper_->enabled(StepInstanceName::CRV)) {
-      Mu2eSensitiveDetector* sbSD =
-        new Mu2eSensitiveDetector(    SensitiveDetectorName::CRSScintillatorBar(), _config);
-      SDman->AddNewDetector(sbSD);
-    }
+        
+        Mu2eSensitiveDetector* sbSD =
+            new Mu2eSensitiveDetector( SensitiveDetectorName::CRSScintillatorBar(), _config );
+        SDman->AddNewDetector(sbSD);
+        
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            
+            //we need names like CRV_R1, but not CRSCMB_CRV_R1 and not CRV_Support_TS
+            if ((LVname.find("CRV_") != std::string::npos)
+                && (LVname.find("CRV_Support") == std::string::npos)
+                && (LVname.find("CRSCMB_CRV") == std::string::npos)) {
+                    store->GetVolume(LVname)->SetSensitiveDetector(sbSD);
+            }
+        }//for
+    }//if CRV
 
+      
+/************************** ProtonAbsorber **************************/
     if(sdHelper_->enabled(StepInstanceName::protonabsorber)) {
-      Mu2eSensitiveDetector* paSD =
-        new Mu2eSensitiveDetector(    SensitiveDetectorName::ProtonAbsorber(),  _config);
-      SDman->AddNewDetector(paSD);
-    }
+        Mu2eSensitiveDetector* paSD =
+            new Mu2eSensitiveDetector( SensitiveDetectorName::ProtonAbsorber(),  _config );
+        SDman->AddNewDetector(paSD);
+        
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            
+            //from constructProtonAbsorber, will pick up protonabs{1,2,3,4}
+            if (LVname.find("protonabs") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(paSD);
+            }
+            
+            //from HelicalProtonAbsorber
+            if (LVname.find("helical_pabs_log") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(paSD);
+            }
+            
+            
+        }//for
+    }//if protonabsorber
 
+      
+/************************** PSVacuum **************************/
+      //done
     if(sdHelper_->enabled(StepInstanceName::PSVacuum)) {
-      Mu2eSensitiveDetector* psVacuumSD =
-        new Mu2eSensitiveDetector(    SensitiveDetectorName::PSVacuum(),  _config);
-      SDman->AddNewDetector(psVacuumSD);
+        
+        Mu2eSensitiveDetector* psVacuumSD =
+            new Mu2eSensitiveDetector( SensitiveDetectorName::PSVacuum(), _config );
+        SDman->AddNewDetector(psVacuumSD);
+        
+        if( _config.getBool("PS.Vacuum.Sensitive", false) ) {
+            psVacuumLogical_->SetSensitiveDetector(psVacuumSD);
+        }
     }
-
+ 
+      
+/************************** STMDet **************************/
+    //done
     if(sdHelper_->enabled(StepInstanceName::STMDet)) {
-      Mu2eSensitiveDetector* STMDetSD =
-        new Mu2eSensitiveDetector(    SensitiveDetectorName::STMDet(),  _config);
-      SDman->AddNewDetector(STMDetSD);
-    }
+        Mu2eSensitiveDetector* STMDetSD =
+        new Mu2eSensitiveDetector( SensitiveDetectorName::STMDet(), _config );
+        SDman->AddNewDetector(STMDetSD);
+        
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            
+            //from constructMSTM
+            if (LVname.find("mstmCrystal") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(STMDetSD);
+            }
+            
+            //from constructSTM, will pick up stmDet1 and stmDet2
+            if (LVname.find("stmDet") != std::string::npos) {
+                store->GetVolume(LVname)->SetSensitiveDetector(STMDetSD);
+            }
+        }//for
+    }//if STMDet
 
+      
+/************************** panelEBKey **************************/
     if(sdHelper_->enabled(StepInstanceName::panelEBKey)) {
-      Mu2eSensitiveDetector* EBKeySD =
-        new Mu2eSensitiveDetector(    SensitiveDetectorName::panelEBKey(),  _config);
-      SDman->AddNewDetector(EBKeySD);
-    }
+        Mu2eSensitiveDetector* EBKeySD =
+        new Mu2eSensitiveDetector( SensitiveDetectorName::panelEBKey(), _config );
+        SDman->AddNewDetector(EBKeySD);
+        
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++) {
+            G4String LVname = (*pos)->GetName();
+        
+            //we need the PanelEBKey, but NOT the PanelEBKeyShield
+            if ((LVname.find("PanelEBKey") != std::string::npos) &&
+                (LVname.find("PanelEBKeyShield") == std::string::npos)) {
+                store->GetVolume(LVname)->SetSensitiveDetector(EBKeySD);
+            }
+        }//for
+    }//if panelEBKey
+ 
+      
+/************************** DSCableRun **************************/
+      //if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) )
+      if(sdHelper_->enabled(StepInstanceName::DSCableRun)) {
+          Mu2eSensitiveDetector* cableRunSD =
+          new Mu2eSensitiveDetector( SensitiveDetectorName::DSCableRun(), _config );
+          SDman->AddNewDetector(cableRunSD);
+          
+          //NOTE: THIS 'if' test seems redundant to me, but I am just copying the format from constructDS.cc
+          if ( _config.getBool("ds.CableRun.sensitive",false) ) {
+              for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++) {
+                  G4String LVname = (*pos)->GetName();
+              
+                  //will pick up names like CalCableRun, CalCableRunUpGap1, CalCableRunUpGap2, calCableRunFall
+                  //but not CalCableRunLogInCalFeb, CalCableRunInCalFeb
+                  if ( (LVname.find("alCableRun") != std::string::npos) &&
+                       (LVname.find("CalCableRunLog") == std::string::npos) &&
+                       (LVname.find("CalCableRunIn") == std::string::npos) )
+                  {
+                      store->GetVolume(LVname)->SetSensitiveDetector(cableRunSD);
+                  }
+              
+                  //will pick up names like TrkCableRun1, TrkCableRun2, TrkCableRunGap1, TrkCableRunGap1a, TrkCableRunGap2, TrkCableRunGap2a
+                  //but not TrkCableRun1LogInCalFeb, TrkCableRun2LogInCalFeb, TrkCableRun1InCalFeb, TrkCableRun2InCalFeb
+                  if ( (LVname.find("TrkCableRun") != std::string::npos) &&
+                       (LVname.find("TrkCableRun1Log") == std::string::npos) &&
+                       (LVname.find("TrkCableRun2Log") == std::string::npos) &&
+                       (LVname.find("TrkCableRun1In") == std::string::npos) &&
+                       (LVname.find("TrkCableRun2In") == std::string::npos) )
+                  {
+                      store->GetVolume(LVname)->SetSensitiveDetector(cableRunSD);
+                  }
+              }//for
+          }//if ds.CableRun.sensitive
+      }//if DSCableRun
 
-    if(sdHelper_->enabled(StepInstanceName::DSCableRun)) {
-      Mu2eSensitiveDetector* cableRunSD =
-        new Mu2eSensitiveDetector(    SensitiveDetectorName::DSCableRun(),  _config);
-      SDman->AddNewDetector(cableRunSD);
-    }
+  }//instantiateSensitiveDetectors
 
-  } // instantiateSensitiveDetectors
+
 
 } // end namespace mu2e

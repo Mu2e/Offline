@@ -17,19 +17,15 @@ namespace mu2e{
 
   class VOlumeInfo;
   class SimpleConfig;
-  class SensitiveDetectorHelper;
 
   VolumeInfo constructTTrackerv3( VolumeInfo const& parent,
-                                  SimpleConfig const& config,
-                                  SensitiveDetectorHelper const& sdHelper);
+                                  SimpleConfig const& config );
 
   VolumeInfo constructTTrackerv3Detailed( VolumeInfo const& parent,
-                                          SimpleConfig const& config,
-                                          SensitiveDetectorHelper const& sdHelper );
+                                          SimpleConfig const& config );
 
   VolumeInfo constructTTrackerv5( VolumeInfo const& parent,
-				  SimpleConfig const& config,
-                                  SensitiveDetectorHelper const& sdHelper );
+                                 SimpleConfig const& config );
 
 }  // end namespace mu2e
 

@@ -77,16 +77,15 @@ namespace mu2e {
     _spHelper(),
     _primaryHelper()
   {}
-
-  // Receive information that has a lifetime of a run.
-  void TrackingAction::beginRun( const PhysicalVolumeHelper& physVolHelper,
-                                 PhysicsProcessInfo& processInfo,
-                                 CLHEP::Hep3Vector const& mu2eOrigin ){
-    _physVolHelper = &physVolHelper;
-    _processInfo   = &processInfo;
+    
+// Receive information that has a lifetime of a run.
+void TrackingAction::beginRun(const PhysicalVolumeHelper* physVolHelper,
+                              PhysicsProcessInfo* processInfo,
+                              CLHEP::Hep3Vector const& mu2eOrigin ){
+    _physVolHelper = physVolHelper;
+    _processInfo = processInfo;
     _mu2eOrigin    =  mu2eOrigin;
-
-  }
+}
 
   void TrackingAction::PreUserTrackingAction(const G4Track* trk){
 
@@ -168,8 +167,10 @@ namespace mu2e {
 
     // saveSimParticle must be called before controlTrajectorySaving.
     // but after attaching the  user track information
+    
     saveSimParticleStart(trk);
-    Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize, 
+      
+    Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize,
                                                _saveTrajectoryMomentumCut);
 
     _steppingAction->BeginOfTrack();
@@ -181,9 +182,10 @@ namespace mu2e {
     _timer.reset();
     _timer.start();
 
-  }
+}
+    
 
-  void TrackingAction::PostUserTrackingAction(const G4Track* trk){
+void TrackingAction::PostUserTrackingAction(const G4Track* trk){
 
     // This is safe even if it was never started.
     _timer.stop();
@@ -203,26 +205,29 @@ namespace mu2e {
     Mu2eG4UserHelpers::printTrackInfo( trk, "End Track:       ", _transientMap,
                                        _timer, _mu2eOrigin, true, _printTrackTiming);
 
-  }
+}
 
-  namespace { // to use compressSimParticleCollection
+    
+namespace { // to use compressSimParticleCollection
     struct KeepAll {
       bool operator[](cet::map_vector_key ) const { return true; }
     };
-  }
-  void TrackingAction::beginEvent( const art::Handle<SimParticleCollection>& inputSimHandle,
-                                   const art::Handle<MCTrajectoryCollection>& inputTraj,
-                                   const SimParticleHelper& spHelper,
-                                   const SimParticlePrimaryHelper& primaryHelper,
-                                   MCTrajectoryCollection&  trajectories,
-                                   SimParticleRemapping& simsRemap
-                                   ) {
+}
+    
+    
+void TrackingAction::beginEvent(const art::Handle<SimParticleCollection>& inputSimHandle,
+                                const art::Handle<MCTrajectoryCollection>& inputTraj,
+                                const SimParticleHelper& spHelper,
+                                const SimParticlePrimaryHelper& primaryHelper,
+                                MCTrajectoryCollection&  trajectories,
+                                SimParticleRemapping& simsRemap) {
+      
     _currentSize          = 0;
     _overflowSimParticles = false;
     _spHelper             = &spHelper;
     _primaryHelper        = &primaryHelper;
     _trajectories         = &trajectories;
-
+      
     if(inputSimHandle.isValid()) {
       // We do not compress anything here, but use the call to reseat the pointers
       // while copying the inputs to _transientMap.
@@ -241,7 +246,7 @@ namespace mu2e {
         simsRemap[oldSim] = newSim;
       }
     }
-
+      
     if(inputTraj.isValid()) {
       // Read trajectories from the previous simulation step,  reseat the pointers.
       for(const auto& i : *inputTraj) {
@@ -258,19 +263,23 @@ namespace mu2e {
         newTraj.points() = tr.points();
       }
     }
-  }
+    
+}//beginEvent
 
-  void TrackingAction::endEvent(SimParticleCollection& persistentSims ){
+    
+void TrackingAction::endEvent(SimParticleCollection& persistentSims ){
+    
     Mu2eG4UserHelpers::checkCrossReferences(true,true,_transientMap);
     persistentSims.insert( _transientMap.begin(), _transientMap.end() );
     _transientMap.clear();
-
+      
     if ( !_debugList.inList() ) return;
-  }
+}
 
-  // Save start of track info.
-  void TrackingAction::saveSimParticleStart(const G4Track* trk){
-
+    
+// Save start of track info.
+void TrackingAction::saveSimParticleStart(const G4Track* trk){
+      
     G4int trackingVerbosityLevel = fpTrackingManager->GetVerboseLevel();
 
     _currentSize += 1;
@@ -283,13 +292,14 @@ namespace mu2e {
       }
       return;
     }
-
+      
     const key_type kid = _spHelper->particleKeyFromG4TrackID(trk->GetTrackID());
+      
     const int parentId = trk->GetParentID();
-
+      
     art::Ptr<GenParticle> genPtr;
     art::Ptr<SimParticle> parentPtr;
-
+      
     if(parentId == 0) { // primary
       genPtr = _primaryHelper->genParticlePtr(trk->GetTrackID());
       parentPtr = _primaryHelper->simParticlePrimaryPtr(trk->GetTrackID());
@@ -301,6 +311,7 @@ namespace mu2e {
     // Find the physics process that created this track.
     ProcessCode creationCode = Mu2eG4UserHelpers::findCreationCode(trk);
     // we shall replace creationCode with muCapCode from UserTrackInformation if needed/present
+      
     if (creationCode==ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
 
       if ( trackingVerbosityLevel > 0 ) {
@@ -327,6 +338,7 @@ namespace mu2e {
 	creationCode=utic;
       }
     }
+      
     if ( trackingVerbosityLevel > 0 ) {
       G4cout << __func__ 
              << " saving particle as created by " << creationCode.name()
@@ -366,7 +378,7 @@ namespace mu2e {
       }
 
     }
-
+    
     _transientMap.insert(std::make_pair(kid,SimParticle( kid,
                                                          parentPtr,
                                                          ppdgId,
@@ -392,10 +404,11 @@ namespace mu2e {
       }
       i->second.addDaughter(_spHelper->particlePtr(trk));
     }
-  }
+}//saveSimParticleStart
 
-  // Append end of track information to the existing SimParticle.
-  void TrackingAction::saveSimParticleEnd(const G4Track* trk){
+    
+// Append end of track information to the existing SimParticle.
+void TrackingAction::saveSimParticleEnd(const G4Track* trk){
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) return;
 
@@ -413,19 +426,6 @@ namespace mu2e {
     // Reason why tracking stopped, decay, range out, etc.
     G4String pname  = Mu2eG4UserHelpers::findTrackStoppingProcessName(trk);
     ProcessCode stoppingCode(_processInfo->findAndCount(pname));
-
-    // G4cout << __func__ 
-    // 	   << " stopping process pname is " << pname << G4endl;
-
-    // if ( pname == "muMinusCaptureAtRest") {
-
-    //   G4VUserTrackInformation* tui = trk->GetUserInformation();
-    //   if (tui) {
-    // 	G4cout << __func__ 
-    // 	       << " the track is labeled as " << tui->GetType() << G4endl;
-    //   }
-
-    // }
 
     //Get kinetic energy at the begin of the last step
     double preLastStepKE = Mu2eG4UserHelpers::getPreLastStepKE(trk);
@@ -445,11 +445,12 @@ namespace mu2e {
                           nSteps
                           );
 
-  }
+}//saveSimParticleEnd
 
-  // If the track passes the cuts needed to store the trajectory object, then store
-  // it in the output data product.  For efficiency, the store uses a swap.
-  void TrackingAction::swapTrajectory(const G4Track* trk){
+    
+// If the track passes the cuts needed to store the trajectory object, then store
+// it in the output data product.  For efficiency, the store uses a swap.
+void TrackingAction::swapTrajectory(const G4Track* trk){
 
     key_type kid(_spHelper->particleKeyFromG4TrackID(trk->GetTrackID()));
 
@@ -493,6 +494,6 @@ namespace mu2e {
     // Add the end point of the last step.
     traj.points().emplace_back( trk->GetPosition()-_mu2eOrigin, trk->GetGlobalTime() );
 
-  }
+}//swapTrajectory
 
 } // end namespace mu2e

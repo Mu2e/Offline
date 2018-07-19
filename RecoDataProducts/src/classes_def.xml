@@ -28,6 +28,8 @@
  <class name="mu2e::CaloProtoClusterCollection"/>
  <class name="mu2e::CaloCluster"/>
  <class name="mu2e::CaloClusterCollection"/>
+ <class name="mu2e::CaloTrigSeed"/>
+ <class name="mu2e::CaloTrigSeedCollection"/>
  <class name="mu2e::ComboHit"/>
  <class name="std::vector<mu2e::ComboHit>"/>
  <class name="mu2e::ComboHitCollection"/>
@@ -93,6 +95,8 @@
  <class name="std::vector<art::Ptr<mu2e::CaloProtoCluster> >"/>
  <class name="art::Ptr<mu2e::CaloCluster>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloCluster> >"/>
+ <class name="art::Ptr<mu2e::CaloTrigSeed>"/>
+ <class name="std::vector<art::Ptr<mu2e::CaloTrigSeed> >"/>
  <class name="art::Ptr<mu2e::CaloRecoDigi>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloRecoDigi> >"/>
 
@@ -143,6 +147,7 @@
  <class name="art::Wrapper<mu2e::CaloCrystalHitCollection>"/>
  <class name="art::Wrapper<mu2e::CaloProtoClusterCollection>"/>
  <class name="art::Wrapper<mu2e::CaloClusterCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloTrigSeedCollection>"/>
  <class name="art::Wrapper<mu2e::ComboHitCollection>"/>
  <class name="art::Wrapper<mu2e::StrawHitFlagCollection>"/>
  <class name="art::Wrapper<mu2e::StrawClusterCollection>"/>

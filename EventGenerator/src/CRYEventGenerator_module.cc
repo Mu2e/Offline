@@ -17,16 +17,14 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-// Other external includes.
-#include <boost/shared_ptr.hpp>
-
 // C++ includes.
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
+#include <memory>
 
-#include "CRYEventGenerator/inc/CosmicCRY.hh"
+#include "EventGenerator/inc/CosmicCRY.hh"
 
 namespace mu2e {
 
@@ -37,23 +35,23 @@ namespace mu2e {
       virtual void produce (art::Event& e);
       virtual void beginRun(art::Run&   r);
     private:
-      CosmicCRY *cryGen;
+      std::unique_ptr<CosmicCRY> cryGen;
       std::string inputfile;
+      int seed_;
+      art::RandomNumberGenerator::base_engine_t&     engine_;
   };
 
   CryEventGenerator::CryEventGenerator(fhicl::ParameterSet const& pSet) :
     inputfile(pSet.get<std::string>("inputFile",
-          "CRYEventGenerator/config/defaultCRYconfig.txt"))
+          "CRYEventGenerator/config/defaultCRYconfig.txt")),
+    seed_( art::ServiceHandle<SeedService>()->getSeed() ),
+    engine_(createEngine(seed_))
   {
-    // createEngine(art::ServiceHandle<SeedService>()->getSeed());
-    
-    // use G4Engine to correctly get seed from fcl file
-    createEngine(art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
     produces<GenParticleCollection>();
   }
 
   void CryEventGenerator::beginRun( art::Run &run){
-    cryGen = new CosmicCRY(run, SimpleConfig(inputfile));
+    cryGen = std::make_unique<CosmicCRY>(run, SimpleConfig(inputfile), engine_);
   }
 
   void CryEventGenerator::produce(art::Event& evt) {

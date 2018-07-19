@@ -26,8 +26,6 @@
 #include "Mu2eG4/inc/nestExtrudedSolid.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 
 // G4 includes
 #include "G4ThreeVector.hh"
@@ -37,7 +35,6 @@
 #include "G4Polycone.hh"
 #include "G4Tubs.hh"
 #include "G4SubtractionSolid.hh"
-#include "G4VSensitiveDetector.hh"
 #include "G4SDManager.hh"
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -48,8 +45,7 @@ using namespace std;
 namespace mu2e {
 
   void constructDS( const VolumeInfo& parent,
-                    const SimpleConfig& _config,
-                    const SensitiveDetectorHelper& sdHelper
+                    const SimpleConfig& _config
                     ){
     MaterialFinder materialFinder(_config);
 
@@ -622,7 +618,7 @@ namespace mu2e {
      // End of MBS spherical shielding, begin cable runs for Cal and Tracker
      // Each is modeled as a thin wedge of a ring
 
-     bool cableRunSensitive = _config.getBool("ds.CableRun.sensitive",false);
+     //bool cableRunSensitive = _config.getBool("ds.CableRun.sensitive",false);
 
      if ( ds->hasCableRunCal() ) {
 
@@ -646,11 +642,6 @@ namespace mu2e {
 				      "DS"
 				      );
 
-       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
-	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
-	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
-	 if(cableRunSD) ccrTemp.logical->SetSensitiveDetector(cableRunSD);
-       }
 
        if ( ds->cableRunVersion() > 1 ) {
 
@@ -674,13 +665,6 @@ namespace mu2e {
 					   "DS"
 					   );
 
-       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
-	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
-	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
-	 if(cableRunSD) ccrTempUG1.logical->SetSensitiveDetector(cableRunSD);
-       }
-
-
 	 TubsParams  upCalCableRunParm2( ds->upRInCableRunCal(), 
 					 ds->upROutCableRunCal(), 
 					 ds->upHL2CableRunCal(),
@@ -699,12 +683,6 @@ namespace mu2e {
 					  G4Color::Magenta(),
 					  "DS"
 					  );
-
-       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
-	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
-	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
-	 if(cableRunSD) ccrTmpUG2.logical->SetSensitiveDetector(cableRunSD);
-       }
 
 	 // And last but not least the connector between the top of the Cal
 	 // and the top of the MBS
@@ -725,13 +703,6 @@ namespace mu2e {
 					     0,
 					     G4Colour::Magenta(),
 					     "DS" );
-
-       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
-	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
-	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
-	 if(cableRunSD) ccrTmpF.logical->SetSensitiveDetector(cableRunSD);
-       }
-
 
        } // end of if ( CableRunVersion > 1 )
      } // end of if ( ds->hasCableRunCal() )
@@ -757,12 +728,6 @@ namespace mu2e {
 				      "DS"
 				      );
 
-       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
-	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
-	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
-	 if(cableRunSD) tcrTmp1.logical->SetSensitiveDetector(cableRunSD);
-       }
-
        // Now the second one
        TubsParams  trkCableRun2Params ( ds->rInCableRunTrk(), 
 					ds->rOutCableRunTrk(), 
@@ -782,12 +747,6 @@ namespace mu2e {
 				    G4Color::Magenta(),
 				    "DS"
 				    );
-
-       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
-	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
-	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
-	 if(cableRunSD) tcrTmp2.logical->SetSensitiveDetector(cableRunSD);
-       }
 
        if ( ds->cableRunVersion() > 1 ) {
 	 // Now the part between the Calorimeter Disks
@@ -810,12 +769,6 @@ namespace mu2e {
 				       "DS"
 				       );
 
-       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
-	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
-	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
-	 if(cableRunSD) tcrTmpG1.logical->SetSensitiveDetector(cableRunSD);
-       }
-
 	 TubsParams  upTrkCableRunParm1a( ds->rInCableRunTrk(), 
 					  ds->rOutCableRunTrk(), 
 					  ds->upHL1CableRunCal(),
@@ -834,13 +787,6 @@ namespace mu2e {
 					G4Color::Magenta(),
 					"DS"
 					);
-
-       if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
-	 G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
-	   FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
-	 if(cableRunSD) tcrTmpG1a.logical->SetSensitiveDetector(cableRunSD);
-       }
-
 
 	 TubsParams  upTrkCableRunParm2( ds->rInCableRunTrk(), 
 					 ds->rOutCableRunTrk(), 
@@ -861,13 +807,6 @@ namespace mu2e {
 				       "DS"
 				       );
 
-	 if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
-	   G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
-	     FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
-	   if(cableRunSD) tcrTmpG2.logical->SetSensitiveDetector(cableRunSD);
-	 }
-
-
 	 TubsParams  upTrkCableRunParm2a( ds->rInCableRunTrk(), 
 					  ds->rOutCableRunTrk(), 
 					  ds->upHL2CableRunCal(),
@@ -886,13 +825,6 @@ namespace mu2e {
 					 G4Color::Magenta(),
 					 "DS"
 					 );
-
-	 if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) ) {
-	   G4VSensitiveDetector* cableRunSD = G4SDManager::GetSDMpointer()->
-	     FindSensitiveDetector(SensitiveDetectorName::DSCableRun());
-	   if(cableRunSD) tcrTmpG2a.logical->SetSensitiveDetector(cableRunSD);
-	 }
-
 
        } // end of adding gap runs for trk cable runs
      } // end of if ( ds->hasCableRunTrk() )

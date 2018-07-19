@@ -3,9 +3,13 @@
 #include "BFieldGeom/inc/BFCacheManager.hh"
 
 namespace mu2e {
-    BFCacheManager::BFCacheManager() : innerForLastInner(0), innerForLastOuter(0), counter(0) {
-        outerCache.insert(
-            std::make_pair<std::shared_ptr<const BFMap>>(0, CacheElement(0, MapList())));
+
+    BFCacheManager::BFCacheManager():
+    innerForLastInner(0),
+    innerForLastOuter(0),
+    counter(0)
+    {
+        outerCache.insert( std::make_pair<std::shared_ptr<const BFMap>>(0, CacheElement(0, MapList())) );
         CacheType::const_iterator p = outerCache.find(0);
         assert(p != outerCache.end());
         innerForLastOuter = &p->second;

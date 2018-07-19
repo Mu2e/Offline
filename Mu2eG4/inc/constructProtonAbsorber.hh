@@ -13,11 +13,8 @@
 namespace mu2e {
 
   class SimpleConfig;
-  class SensitiveDetectorHelper;
 
-  void constructProtonAbsorber(const SimpleConfig& _config,
-                               const SensitiveDetectorHelper& sdHelper
-                               );
+  void constructProtonAbsorber(const SimpleConfig& _config);
 
 }
 

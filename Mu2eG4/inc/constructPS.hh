@@ -10,16 +10,17 @@
 // Original author KLG
 //
 
+//Mu2e includes
+#include "G4Helper/inc/VolumeInfo.hh"
+
+class G4LogicalVolume;
+
 namespace mu2e {
 
   class VolumeInfo;
   class SimpleConfig;
-  class SensitiveDetectorHelper;
 
-  void constructPS( const VolumeInfo& parent,
-                    const SimpleConfig& _config,
-                    const SensitiveDetectorHelper& sdHelper
-                    );
+  G4LogicalVolume* constructPS(VolumeInfo const & parent, SimpleConfig const & _config);
 
 }
 

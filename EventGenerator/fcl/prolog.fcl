@@ -57,6 +57,18 @@ StoppedMuonConversionGun: {
     // Also phimin and phimax defaulting to [0,2pi]
 }
 
+StoppedMuonConversionGunN: {
+    @table::StoppedMuonConversionGun
+    module_type    : StoppedMuonConversionGunN
+    stashSize      : @nil
+}
+
+PrimaryProtonGunN: {
+module_type          : PrimaryProtonGunN
+inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
+stashSize     : @nil
+}
+
 StoppedParticleReactionGun: {
     module_type    : StoppedParticleReactionGun
     czmin          : -1.0
@@ -71,6 +83,13 @@ StoppedParticleReactionGun: {
 	ehi              : 105.0014
     }
 }
+
+StoppedParticleReactionGunN: {
+    @table::StoppedParticleReactionGun
+    module_type    : StoppedParticleReactionGunN
+    stashSize      : @nil
+}
+
 
 StoppedMuonXRayGammaRayGun: {
     module_type    : StoppedMuonXRayGammaRayGun
@@ -90,8 +109,11 @@ randomsaver: {
 #------------------------------------------------------------------------------
 EventGenerator : {
     producers : {
-	StoppedMuonConversionGun   : { @table::StoppedMuonConversionGun   }
-	StoppedParticleReactionGun : { @table::StoppedParticleReactionGun }
+	StoppedMuonConversionGun    : { @table::StoppedMuonConversionGun    }
+	StoppedMuonConversionGunN   : { @table::StoppedMuonConversionGunN   }
+	StoppedParticleReactionGun  : { @table::StoppedParticleReactionGun  }
+        StoppedParticleReactionGunN : { @table::StoppedParticleReactionGunN }
+        PrimaryProtonGunN           : { @table::PrimaryProtonGunN           }
 
   	egun : { @table::StoppedParticleReactionGun # p(e)=105 MeV/c
 	    physics : {

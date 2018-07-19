@@ -20,7 +20,6 @@ namespace mu2e {
 
   class SimpleConfig;
   class G4Helper;
-  class SensitiveDetectorHelper;
   class AntiLeakRegistry;
   class TTracker;
 
@@ -28,8 +27,7 @@ namespace mu2e {
 
   public:
     ConstructTTrackerTDR( VolumeInfo   const& ds3Vac,
-                          SimpleConfig const& config,
-                          SensitiveDetectorHelper const& sdHelper );
+                          SimpleConfig const& config );
 
     VolumeInfo motherInfo() { return _motherInfo; }
 
@@ -85,7 +83,6 @@ namespace mu2e {
 
     G4Helper&          _helper;
     AntiLeakRegistry & _reg;
-    SensitiveDetectorHelper const& sdHelper_;
 
     TTracker const& _ttracker;
 

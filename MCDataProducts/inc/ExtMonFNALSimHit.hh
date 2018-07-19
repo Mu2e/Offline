@@ -55,6 +55,7 @@ namespace mu2e {
     const ExtMonFNALModuleId& moduleId() const { return moduleId_; }
 
     const art::Ptr<SimParticle>& simParticle() const { return particle_; }
+    art::Ptr<SimParticle>&       simParticle()       { return particle_; }
 
     double totalEnergyDeposit()        const { return totalEnergyDeposit_; }
     double nonIonizingEnergyDeposit()  const { return nonIonizingEnergyDeposit_; }
