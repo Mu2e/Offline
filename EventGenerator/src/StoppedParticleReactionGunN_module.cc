@@ -66,7 +66,9 @@ namespace mu2e {
                                              PDGCode::type pdgId,
                                              double *elow,
                                              double *ehi);
-
+    
+    GenId genId_;
+      
     int verbosityLevel_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
@@ -97,6 +99,7 @@ namespace mu2e {
     , elow_()
     , ehi_()
     , spectrum_(parseSpectrumShape(psphys_, pdgId_, &elow_, &ehi_))
+    , genId_(GenId::findByName(psphys_.get<std::string>("genId", "StoppedParticleReactionGun")))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
@@ -108,7 +111,12 @@ namespace mu2e {
   {
     produces<mu2e::GenParticleCollection>();
     produces<mu2e::GenParticleCollections>();
-
+      
+    if(genId_ == GenId::enum_type::unknown) {
+          throw cet::exception("BADCONFIG")<<"StoppedParticleReactionGun: unknown genId "
+          <<psphys_.get<std::string>("genId", "StoppedParticleReactionGun")
+          <<"\n";
+    }
 
     if(verbosityLevel_ > 0) {
       std::cout<<"StoppedParticleReactionGunN: using = "
@@ -116,6 +124,10 @@ namespace mu2e {
                <<" stopped particles"
                <<std::endl;
 
+      std::cout<<"StoppedParticleReactionGun: using GenId = "
+               <<genId_
+               <<std::endl;
+        
       std::cout<<"StoppedParticleReactionGunN: producing particle "
                <<pdgId_
                <<", mass = "<<mass_
@@ -164,7 +176,7 @@ namespace mu2e {
       *ehi = psphys.get<double>("ehi");
       res.initialize<SimpleSpectrum>(*elow, *ehi, *ehi-*elow, SimpleSpectrum::Spectrum::Flat );
     }
-    else if (spectrumShape == "conversion") {
+    else if (spectrumShape == "CeEndpoint") {
       // A simple kludge: ignore the random distribution by setting elow=ehi=eConversion
       res.initialize<SimpleSpectrum>(0., 1., 1., SimpleSpectrum::Spectrum::Flat );
       *elow = *ehi = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy();
@@ -176,10 +188,16 @@ namespace mu2e {
       res.initialize<EjectedProtonSpectrum>(*elow, *ehi, spectrumRes);
     }
     else if (spectrumShape == "tabulated") {
-      // assume that tabulated are the bin centers
-      res.initialize(loadTable<2>( ConfigFileLookupPolicy()( psphys.get<std::string>("spectrumFileName"))) );
-      *elow = res.getAbscissa(0)-res.getBinWidth()/2;
-      *ehi  = res.getAbscissa(res.getNbins()-1)+res.getBinWidth()/2;
+        // assume that tabulated are the bin centers
+        res.initialize(loadTable<2>( ConfigFileLookupPolicy()( psphys.get<std::string>("spectrumFileName"))) );
+        *elow = res.getAbscissa(0);
+        *ehi  = res.getAbscissa(res.getNbins()-1) + res.getBinWidth();
+        if(psphys.get<bool>("BinCenter", false)){
+            *elow -= res.getBinWidth()/2;
+            *ehi  -= res.getBinWidth()/2;
+        }
+        if(*elow < 0.0) throw cet::exception("BADCONFIG")
+            << "StoppedParticleReactionGun: negative energy endpoint "<< *elow <<"\n";
     }
     else {
       throw cet::exception("BADCONFIG")
@@ -232,7 +250,7 @@ namespace mu2e {
         CLHEP::HepLorentzVector fourmom(p3, energy);
         
         stash_[i].emplace_back(pdgId_,
-                               GenId::StoppedParticleReactionGun,
+                               genId_,
                                pos,
                                fourmom,
                                stop.t);
@@ -243,6 +261,8 @@ namespace mu2e {
   //================================================================
   double StoppedParticleReactionGunN::generateEnergy() {
     double res = elow_ + (ehi_ - elow_)*randSpectrum_.fire();
+    if(res < 0.0)
+        throw cet::exception("BADE")<<"StoppedParticleReactionGun: negative energy "<< res <<"\n";
     switch(spectrumVariable_) {
     case TOTAL_ENERGY: break;
     case KINETIC_ENERY: res += mass_; break;
