@@ -1,0 +1,13 @@
+# flat range of eminus near the DIO endpoint
+#include "JobConfig/beam/flatE.fcl"
+process_name: flateminus
+physics.producers.generate.genId : dioTail
+physics.producers.generate.physics.pdgId : 11
+physics.producers.generate.physics.elow : 85.0 // Mev
+physics.producers.generate.physics.ehi : 105.0 // Mev
+physics.filters.TrkDigiFilter.MinParticleMom : 75.0
+physics.filters.TrkDigiFilter.particleTypes : [11]
+services.TFileService.fileName: "nts.owner.flateminus.version.sequencer.root"
+outputs.flatEOutput.fileName: "sim.owner.flateminus.version.sequencer.art"
+
+

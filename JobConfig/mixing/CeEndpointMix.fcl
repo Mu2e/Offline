@@ -1,0 +1,46 @@
+#
+# mono-energetic e- at the Al Ce endpoint with background mixing
+#
+#  Dave Brown (LBNL) june 2018
+#
+#include "JobConfig/mixing/prolog.fcl"
+process_name: CeEndpointMix
+
+source: { module_type : EmptyEvent }
+
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : @local::CeEndpointGun
+    @table::Mixing.producers
+  }
+  filters: {
+    @table::Mixing.filters
+   }
+  analyzers: {
+    @table::Mixing.analyzers
+  }
+  TriggerPath : [
+    @sequence::Mixing.CreatePrimarySequence, 
+    @sequence::Mixing.MixSequence
+  ]
+}
+outputs: {
+  MixOutput : @local::Mixing.MixOutput
+}
+
+# customize this job
+physics.filters.TrkDigiFilter.particleTypes : [ 11 ]
+physics.filters.TrkDigiFilter.MinParticleMom : 75.0
+
+# input maps; these get used first, new times are only generated for particles not already referenced
+physics.producers.protonTimeMap.InputTimeMaps : [ "protonTimeMapPreFilter", @sequence::Mixing.protonTimeMaps ]
+physics.producers.muonTimeMap.InputTimeMaps : [ "muonTimeMapPreFilter" ]
+#
+# final configuration
+#
+#include "JobConfig/mixing/epilog.fcl"
+services.TFileService.fileName: "nts.owner.CeEndpoint-mix.version.sequencer.root"
+outputs.MixOutput.fileName: "sim.owner.CeEndpoint-mix.version.sequencer.art"
+physics.EndPath : [ genCountLogger, MixOutput ]
+physics.end_paths : [ EndPath ] # needed for generate_fcl
