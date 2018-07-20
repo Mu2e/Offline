@@ -30,13 +30,6 @@ namespace art {
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 
-// #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-// #include "MCDataProducts/inc/StrawHitMCTruth.hh"
-// #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-// #include "MCDataProducts/inc/StepPointMCCollection.hh"
-// #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
-// #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
-
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
@@ -129,8 +122,6 @@ namespace mu2e {
     const StrawHitFlagCollection*         _shfcol;
     const StrawHitPositionCollection*     _shpcol;
     int                                   _nhits;  // N hits in _shcol
-
-    const PtrStepPointMCVectorCollection* _listOfMCStrawHits;
 
     const HelixSeedCollection*            _helixSeeds;
 

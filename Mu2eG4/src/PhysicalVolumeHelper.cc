@@ -89,7 +89,7 @@ namespace mu2e {
 
   // Build _persistentInfo and _volumeMap from G4PhysicalVolumeStore.
   void PhysicalVolumeHelper::beginRun(){
-
+      
     _volumeMap.clear();
     _persistentInfo.clear();
     _pSingleStage.clear();
