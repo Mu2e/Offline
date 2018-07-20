@@ -102,11 +102,11 @@ namespace mu2e {
       for (int i=0; i<nstraws; i++) {
 	const mu2e::StrawDigiMC*  mcdigi = &listOfMCStrawHits->at(i);
 
-	if (mcdigi->wireEndTime(mu2e::TrkTypes::cal) < mcdigi->wireEndTime(mu2e::TrkTypes::hv)) {
-	  step = mcdigi->stepPointMC(mu2e::TrkTypes::cal).get();
+	if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
+	  step = mcdigi->stepPointMC(mu2e::StrawEnd::cal).get();
 	}
 	else {
-	  step = mcdigi->stepPointMC(mu2e::TrkTypes::hv ).get();
+	  step = mcdigi->stepPointMC(mu2e::StrawEnd::hv ).get();
 	}
 
 	int volume_id = step->volumeId();
@@ -150,7 +150,7 @@ namespace mu2e {
     static double  mbtime;
 
     static SimParticleTimeOffset*                 timeOffsets(NULL);
-    static const PtrStepPointMCVectorCollection*  listOfMCStrawHits(NULL);
+    static const StrawDigiMCCollection*  listOfMCStrawHits(NULL);
 
     double  time_threshold(500.);
     int     n_gen_hits(  0 );
@@ -168,9 +168,9 @@ namespace mu2e {
     int iev = Event->event();
 
     if (iev != last_event) {
-      art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
+      art::Handle<mu2e::StrawDigiMCCollection> mcptrHandle;
       Event->getByLabel(MCDigiCollName,mcptrHandle);
-      if (mcptrHandle.isValid()) listOfMCStrawHits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
+      if (mcptrHandle.isValid()) listOfMCStrawHits = (mu2e::StrawDigiMCCollection*) mcptrHandle.product();
       else                       listOfMCStrawHits = NULL;
 
       timeOffsets->updateMap(*Event);
@@ -188,11 +188,11 @@ namespace mu2e {
       const mu2e::StrawDigiMC* mcdigi = &listOfMCStrawHits->at(i);
 
       const mu2e::StepPointMC   *step;
-      if (mcdigi->wireEndTime(mu2e::TrkTypes::cal) < mcdigi->wireEndTime(mu2e::TrkTypes::hv)) {
-	step = mcdigi->stepPointMC(mu2e::TrkTypes::cal).get();
+      if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
+	step = mcdigi->stepPointMC(mu2e::StrawEnd::cal).get();
       }
       else {
-	step = mcdigi->stepPointMC(mu2e::TrkTypes::hv ).get();
+	step = mcdigi->stepPointMC(mu2e::StrawEnd::hv ).get();
       }
 
       int gen_index(-1), sim_id(-1);
@@ -236,11 +236,11 @@ namespace mu2e {
     const mu2e::StrawDigiMC* mcdigi = &List->at(IHit);
 
     const mu2e::StepPointMC   *step;
-    if (mcdigi->wireEndTime(mu2e::TrkTypes::cal) < mcdigi->wireEndTime(mu2e::TrkTypes::hv)) {
-      step = mcdigi->stepPointMC(mu2e::TrkTypes::cal).get();
+    if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
+      step = mcdigi->stepPointMC(mu2e::StrawEnd::cal).get();
     }
     else {
-      step = mcdigi->stepPointMC(mu2e::TrkTypes::hv ).get();
+      step = mcdigi->stepPointMC(mu2e::StrawEnd::hv ).get();
     }
 
     const mu2e::SimParticle* sim = &(*step->simParticle());

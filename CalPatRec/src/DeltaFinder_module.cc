@@ -625,7 +625,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // create the collection of StrawHitFlag for the StrawHitCollection
 //-----------------------------------------------------------------------------
-    auto shH = Event.getValidHandle<StrawHitCollection>(_shTag);
+    auto shH = Event.getValidHandle<StrawHitCollection>(_shToken);
     const StrawHitCollection* shcol  = shH.product();
     // first, copy over the original flags
     unsigned nsh = shcol->size();

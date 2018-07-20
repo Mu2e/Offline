@@ -586,11 +586,11 @@ namespace mu2e {
       const mu2e::StrawDigiMC* mcdigi = &_mcdigis->at(i);
 
       const mu2e::StepPointMC   *stmc;
-      if (mcdigi->wireEndTime(mu2e::TrkTypes::cal) < mcdigi->wireEndTime(mu2e::TrkTypes::hv)) {
-	stmc = mcdigi->stepPointMC(mu2e::TrkTypes::cal).get();
+      if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
+	stmc = mcdigi->stepPointMC(mu2e::StrawEnd::cal).get();
       }
       else {
-	stmc = mcdigi->stepPointMC(mu2e::TrkTypes::hv ).get();
+	stmc = mcdigi->stepPointMC(mu2e::StrawEnd::hv ).get();
       }
 
       const mu2e::SimParticle* sim = &(*stmc->simParticle());
