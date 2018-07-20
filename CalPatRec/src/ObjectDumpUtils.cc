@@ -58,7 +58,7 @@
 namespace mu2e {
 
   const SimParticleTimeOffset           *ObjectDumpUtils::_TimeOffsets(NULL);
-  const PtrStepPointMCVectorCollection  *ObjectDumpUtils::_ListOfMCStrawHits(NULL);
+  const StrawDigiMCCollection           *ObjectDumpUtils::_ListOfMCStrawHits(NULL);
   std::string                            ObjectDumpUtils::_FlagBgrHitsModuleLabel;
 
 // //______________________________________________________________________________
@@ -69,7 +69,7 @@ namespace mu2e {
 //   std::vector<std::string> VS;
 //   VS.push_back(std::string("protonTimeMap"));
 //   VS.push_back(std::string("muonTimeMap"));
-
+  
 //   fhicl::ParameterSet  pset;
 //   pset.put("inputs", VS);
 //   fgTimeOffsets = new mu2e::SimParticleTimeOffset(pset);
@@ -305,8 +305,17 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
       const mu2e::StepPointMC* step(0);
 
       for (int i=0; i<nstraws; i++) {
-	mu2e::PtrStepPointMCVector  const& mcptr(_ListOfMCStrawHits->at(i));
-	step = &(*mcptr.at(0));
+
+	const mu2e::StrawDigiMC* mcdigi = &_ListOfMCStrawHits->at(i);
+
+	const mu2e::StepPointMC   *step;
+	if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
+	  step = mcdigi->stepPointMC(mu2e::StrawEnd::cal).get();
+	}
+	else {
+	  step = mcdigi->stepPointMC(mu2e::StrawEnd::hv ).get();
+	}
+
 	vol_id = step->volumeId();
  	if (vol_id == straw->id().asUint16()) {
  					// step found - use the first one in the straw
@@ -402,15 +411,15 @@ void ObjectDumpUtils::printKalRepCollection(const art::Event* Event        ,
 					    const KalRepPtrCollection* Coll,
 					    int               PrintHits    ) {
 
-  art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
+  art::Handle<mu2e::StrawDigiMCCollection> mcdigiH;
 
-  Event->getByLabel("makeSH","",mcptrHandle);
-  if (mcptrHandle.isValid()) {
-    _ListOfMCStrawHits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
+  Event->getByLabel("makeSD","",mcdigiH);
+  if (mcdigiH.isValid()) {
+    _ListOfMCStrawHits = (mu2e::StrawDigiMCCollection*) mcdigiH.product();
   }
   else {
     _ListOfMCStrawHits = NULL;
-    printf(">>> ERROR in ObjectDumpUtils::printKalRepCollection: failed to locate StepPointMCCollection makeSH:StrawHitMCPtr\n");
+    printf(">>> ERROR in ObjectDumpUtils::printKalRepCollection: failed to locate StrawDigiMCCollection by makeSD\n");
   }
 
   int ntrk = Coll->size();

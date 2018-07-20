@@ -31,8 +31,6 @@ namespace art {
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 
-
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -59,8 +57,6 @@ namespace art {
 #include "CalPatRec/inc/KalFitHackNew.hh"
 #include "CalPatRec/inc/CalTrkFit_types.hh"
 #include "CalPatRec/inc/ModuleHistToolBase.hh"
-
-//#include "CalPatRec/inc/THackData.hh"
 
 // Mu2e
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"

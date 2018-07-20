@@ -28,7 +28,7 @@ physics : {
     TrkDigiFilter : {
       module_type : StrawDigiMCFilter
       MinNDigis : 10
-      MinParticleMom : 95.0
+      MinParticleMom : 75.0
       particleTypes : [11]
     }
   }
