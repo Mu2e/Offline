@@ -1,3 +1,17 @@
            Release notes for Mu2e Offline software, v7_0_5
            This new series includes breaking changes for MDC2018
 
+2) July 19, 2018 kutschke
+   EventGenerator/fcl/prolog.fcl
+     Commented out the definition of PrimaryProtonGunN
+     in the table EventGenerator.producers that defines the full set of
+     generators.  The corresponding library is not present in this commit so it
+     generates an error at job startup when running EventGenerator/fcl/prolog.fcl.
+
+1) July 18, 2018 kutschke
+   Mu2eG4/fcl/g4test_03.fcl
+     - Remove the individual configuration of proton time map and muon time map.
+       Instead use the definitions in the prolog CommonDigiSim.  This now
+       brings in the EventWindowMarker module; it's absence was the cause of the
+       original error.
+
