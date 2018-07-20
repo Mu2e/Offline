@@ -114,7 +114,7 @@ EventGenerator : {
 	CeEndpointGun   : { @table::CeEndpointGun   }
 	StoppedParticleReactionGun : { @table::StoppedParticleReactionGun }
         StoppedParticleReactionGunN : { @table::StoppedParticleReactionGunN }
-#        PrimaryProtonGunN           : { @table::PrimaryProtonGunN           }  # FIXME: Uncomment when this module exists
+        PrimaryProtonGunN           : { @table::PrimaryProtonGunN           }
 
   	egun005 : { @table::StoppedParticleReactionGun # p(e)=5 MeV/c
 	    physics : {
