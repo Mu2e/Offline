@@ -109,7 +109,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     std::string         _shLabel ;      // MakeStrawHit label (makeSH)
     std::string         _shDigiLabel;
-    std::string         _shpLabel;
     std::string         _shfLabel;
     std::string         _trkseedLabel;
     std::string         _tpeaksLabel;
@@ -180,7 +179,6 @@ namespace mu2e {
 						vector<double>{-1522.0,0.0,1522.0}   )), // front, middle and back of the tracker
     _shLabel         (pset.get<string>             ("StrawHitCollectionLabel"        )),
     _shDigiLabel     (pset.get<string>             ("StrawDigiCollectionLabel"       )),
-    _shpLabel        (pset.get<string>             ("StrawHitPositionCollectionLabel")),
     _shfLabel        (pset.get<string>             ("StrawHitFlagCollectionLabel"    )),
     _trkseedLabel    (pset.get<string>             ("TrackSeedModuleLabel"           )),
     _maxdtmiss       (pset.get<double>             ("MaxDtMiss"                      )),
