@@ -88,3 +88,6 @@ services.SeedService.maxUniqueEngines :  20
 # use the geometry on the head
 services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"
 
+# explicit muon stop input file
+physics.producers.generate.muonStops.inputFiles : [
+"mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
