@@ -35,8 +35,7 @@ physics : {
     generate : @local::generate
     g4run :  @local::g4run
 
-    protonTimeMap        : { module_type : GenerateProtonTimes }
-    muonTimeMap          : { module_type : GenerateMuonLife }
+    @table::CommonDigiSim.producers
 
     makeSD               : @local::makeSD
     makeSH               : @local::makeSH
@@ -78,7 +77,7 @@ physics : {
 
   }
 
-  p1 : [generate , g4run , protonTimeMap, muonTimeMap, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim, @sequence::CaloReco.Reco,randomsaver ]
+  p1 : [generate , g4run, @sequence::CommonDigiSim.DigiSim, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim, @sequence::CaloReco.Reco,randomsaver ]
   e1 : [checkhits, checksdd, readvd, outfile]
 
   trigger_paths  : [p1]
