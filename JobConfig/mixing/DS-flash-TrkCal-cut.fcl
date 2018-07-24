@@ -2,7 +2,7 @@
 #  Testing prefilter tree
 #  Andrew Edmonds June 2018
 #
-#include "JobConfig/beam/prolog-bgFrameMixing.fcl"
+#include "JobConfig/mixing/prolog.fcl"
 #include "fcl/standardServices.fcl"
 #include "fcl/minimalMessageService.fcl"
 

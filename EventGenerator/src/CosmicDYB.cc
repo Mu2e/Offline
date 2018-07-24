@@ -87,7 +87,6 @@ namespace mu2e
     // Time range (in ns) over which to generate events.
   , _dt ( 0.0 )
 
-    // Random number distributions; getEngine comes from the base class.
     , _randFlat{engine}
     , _randPoissonQ{engine, std::abs(_mean)}
 

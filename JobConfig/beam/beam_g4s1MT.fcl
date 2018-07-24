@@ -137,7 +137,6 @@ physics : {
 
       g4run : {
          module_type: Mu2eG4
-         numberOfEventsToProcess : @local::stashSize  # THIS MUST BE EQUAL TO stashSize!
          runinMTMode : true
          numberOfThreads : 5
 

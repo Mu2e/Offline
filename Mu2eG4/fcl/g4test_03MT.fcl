@@ -56,7 +56,6 @@ physics : {
 
     g4run : {
       @table::g4run
-      numberOfEventsToProcess : @local::stashSize       # THIS MUST BE EQUAL TO stashSize!
       runinMTMode : true
       numberOfThreads : 2
     }

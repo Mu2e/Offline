@@ -1,5 +1,4 @@
 #include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 
 BEGIN_PROLOG

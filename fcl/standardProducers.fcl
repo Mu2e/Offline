@@ -28,9 +28,7 @@ END_PROLOG
 #include "CaloReco/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 #include "Trigger/fcl/prolog.fcl"
-
-// FIXME: this is included for time map defs that should be moved into digitization
-#include "HitMakers/fcl/prolog.fcl"
+#include "CommonMC/fcl/prolog.fcl"
 
 
 BEGIN_PROLOG

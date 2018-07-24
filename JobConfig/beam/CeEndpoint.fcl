@@ -1,12 +1,12 @@
-// mono-energetic e- at the Al Ce endpoint
-//
-
+# mono-energetic e- at the Al Ce endpoint without background mixing
+#
+# original author: Dave Brown, LBNL
+#
 #include "TrackerMC/fcl/prolog.fcl"
-#include "EventMixing/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
 #include "EventGenerator/fcl/prolog.fcl"
+#include "CommonMC/fcl/prolog.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
-#include "CRVResponse/fcl/prolog.fcl"
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
 #include "JobConfig/beam/prolog.fcl"
@@ -28,7 +28,7 @@ physics : {
     TrkDigiFilter : {
       module_type : StrawDigiMCFilter
       MinNDigis : 10
-      MinParticleMom : 95.0
+      MinParticleMom : 75.0
       particleTypes : [11]
     }
   }

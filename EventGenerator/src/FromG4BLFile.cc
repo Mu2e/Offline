@@ -93,7 +93,6 @@ namespace mu2e {
     _nPartToSkip(config.getInt("fromG4BLFile.particlesToSkip",0)),
     _duplicate(config.getBool("fromG4BLFile.duplicateParticles",false)),
 
-    // Random number distributions; getEngine() comes from base class.
     _randPoissonQ(engine, std::abs(_mean)),
 
     // Open the input file.

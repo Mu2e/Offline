@@ -288,7 +288,7 @@ namespace mu2e {
       static const double massE = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::e_minus).ref().mass().value();
 
       // Uses energy above as photon energy, assuming distribution created by 
-      static Random2Dpair< MuonCaptureSpectrum > random2dPair( eng_, 2*massE, energy, -1., 1. );
+      Random2Dpair< MuonCaptureSpectrum > random2dPair( eng_, 2*massE, energy, -1., 1. );
  
       const auto xyPair          = random2dPair.fire( energy );
       const auto elecPosiVectors = MuonCaptureSpectrum::getElecPosiVectors( energy, xyPair.first, xyPair.second ); 

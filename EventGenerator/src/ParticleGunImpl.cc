@@ -80,7 +80,6 @@ namespace mu2e {
     , _histoDir(histoDir)
     , _useDetectorCoordinateSystem(useDetectorCoordinateSystem)
 
-    // Random number distributions; getEngine() comes from base class.
     , _randFlat( engine )
     , _randPoissonQ( engine, std::abs(_mean) )
     , _randGaussQ( engine )
