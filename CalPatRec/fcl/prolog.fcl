@@ -647,7 +647,6 @@ CalPatRec : { @table::CalPatRec
 	    addhits                                     : true
 	    StrawHitCollectionLabel                     : makeSH
 	    StrawDigiCollectionLabel                    : makeSD
-	    StrawHitPositionCollectionLabel             : makeSH	 
 	    StrawHitFlagCollectionLabel                 : "DeltaFinder:StrawHits"
 	    TrackSeedModuleLabel                        : CalSeedFit
 	    MaxDtMiss                                   : 55.

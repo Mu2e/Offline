@@ -31,7 +31,6 @@
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -110,7 +109,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     std::string         _shLabel ;      // MakeStrawHit label (makeSH)
     std::string         _shDigiLabel;
-    std::string         _shpLabel;
     std::string         _shfLabel;
     std::string         _trkseedLabel;
     std::string         _tpeaksLabel;
@@ -128,7 +126,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     const ComboHitCollection*             _shcol;
     const StrawHitFlagCollection*         _shfcol;
-    const StrawHitPositionCollection*     _shpcol;
 
     const KalSeedCollection*              _trkseeds;
 
@@ -182,7 +179,6 @@ namespace mu2e {
 						vector<double>{-1522.0,0.0,1522.0}   )), // front, middle and back of the tracker
     _shLabel         (pset.get<string>             ("StrawHitCollectionLabel"        )),
     _shDigiLabel     (pset.get<string>             ("StrawDigiCollectionLabel"       )),
-    _shpLabel        (pset.get<string>             ("StrawHitPositionCollectionLabel")),
     _shfLabel        (pset.get<string>             ("StrawHitFlagCollectionLabel"    )),
     _trkseedLabel    (pset.get<string>             ("TrackSeedModuleLabel"           )),
     _maxdtmiss       (pset.get<double>             ("MaxDtMiss"                      )),
@@ -267,16 +263,6 @@ namespace mu2e {
              _shLabel.data());
     }
 
-    // art::Handle<mu2e::StrawHitPositionCollection> shposH;
-    // if (evt.getByLabel(_shpLabel,shposH)) {
-    //   _shpcol = shposH.product();
-    // }
-    // else {
-    //   _shpcol = 0;
-    //   printf(" >>> ERROR in CalTrkFit::findData: StrawHitPositionCollection with label=%s not found.\n",
-    //          _shpLabel.data());
-    // }
-
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
     if (evt.getByLabel(_shfLabel,shflagH)) {
       _shfcol = shflagH.product();
@@ -293,7 +279,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // done
 //-----------------------------------------------------------------------------
-    return (_shcol != 0) && (_shfcol != 0) && (_shpcol != 0) && (_trkseeds != 0);
+    return (_shcol != 0) && (_shfcol != 0) && (_trkseeds != 0);
   }
 
 //-----------------------------------------------------------------------------
@@ -336,7 +322,6 @@ namespace mu2e {
     _result.fitType     = 1;               // final fit
     _result.event       = &event ;
     _result.shcol       = _shcol ;
-    //    _result.shpos       = _shpcol;
     _result.shfcol      = _shfcol;
     _result.tpart       = _tpart ;
     _result.fdir        = _fdir  ;
