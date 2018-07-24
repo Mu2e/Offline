@@ -124,5 +124,5 @@ bool calorimeter.pipeSolid                    = false;
 bool calorimeter.crateVisible                 = false;
 bool calorimeter.crateBoardVisible            = false;
 
-int  calorimeter.verbosityLevel               = 1;
+int  calorimeter.verbosityLevel               = 0;
 bool calorimeter.doSurfaceCheck               = false;
