@@ -104,7 +104,6 @@ randomsaver: {
 #------------------------------------------------------------------------------
 EventGenerator : {
     producers : {
-	egun   : { @table::CeEndpointGun   }
 	CeEndpointGun   : { @table::CeEndpointGun   }
 	StoppedParticleReactionGun : { @table::StoppedParticleReactionGun }
         StoppedParticleReactionGunN : { @table::StoppedParticleReactionGunN }
@@ -121,11 +120,21 @@ EventGenerator : {
 	    }
 	}
 #------------------------------------------------------------------------------
-# CE on Al - leading logs approximation, spectrum from mu2e-7615 by R.Czafron
+# generic electron and muon guns, default momentum is that of the CE on Al
 #------------------------------------------------------------------------------
-  	mgun : { @table::StoppedParticleReactionGun # p(mu)=105 MeV/c
+  	egun : { @table::StoppedParticleReactionGun 
 	    physics : {
-		pdgId            :  13
+		pdgId            : 11
+		elow             : 104.97175
+		ehi              : 104.97176
+		spectrumVariable : "momentum"
+		spectrumShape    : "flat"
+	    }
+	}
+
+  	mgun : { @table::StoppedParticleReactionGun 
+	    physics : {
+		pdgId            : 13
 		elow             : 104.97175
 		ehi              : 104.97176
 		spectrumVariable : "momentum"
