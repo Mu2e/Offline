@@ -61,7 +61,7 @@ physics : {
     }
 
     # Work needed to setup the digi makers.
-    @table::CommonDigiSim.producers
+    @table::CommonMC.producers
 
 
     # Form StrawHits (SH).
@@ -105,7 +105,7 @@ physics : {
 
   }
 
-  p1 : [generate, g4run, @sequence::CommonDigiSim.DigiSim, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,
+  p1 : [generate, g4run, @sequence::CommonMC.DigiSim, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,
          @sequence::CaloReco.Reco,randomsaver ]
   e1 : [readGens, checkhits, readStrawHits, outfile]
 

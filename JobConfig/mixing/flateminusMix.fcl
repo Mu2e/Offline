@@ -4,7 +4,7 @@
 #  Dave Brown (LBNL) june 2018
 #
 #include "JobConfig/mixing/prolog.fcl"
-process_name: CeEndpointMix
+process_name: flateminusMix
 
 source: { module_type : EmptyEvent }
 
@@ -44,10 +44,6 @@ outputs: {
 # customize this job
 physics.filters.TrkDigiFilter.particleTypes : [ 11 ]
 physics.filters.TrkDigiFilter.MinParticleMom : 75.0
-
-# input maps; these get used first, new times are only generated for particles not already referenced
-physics.producers.protonTimeMap.InputTimeMaps : [ "protonTimeMapPreFilter", @sequence::Mixing.protonTimeMaps ]
-physics.producers.muonTimeMap.InputTimeMaps : [ "muonTimeMapPreFilter" ]
 #
 # final configuration
 #

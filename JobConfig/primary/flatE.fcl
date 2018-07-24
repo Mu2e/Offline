@@ -25,7 +25,7 @@ physics : {
     }
     g4run : @local::mu2e.physics.producers.g4run.muons
     genCounter: { module_type: GenEventCounter }
-    @table::CommonDigiSim.producers
+    @table::CommonMC.producers
     @table::TrackerMC.producers
     @table::CaloDigiMC.producers
   }
@@ -39,7 +39,7 @@ physics : {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
   }
   flatEPath : [ generate, genCounter, g4run,
-    @sequence::CommonDigiSim.DigiSim,
+    @sequence::CommonMC.DigiSim,
     @sequence::TrackerMC.DigiSim,
     TrkDigiFilter,
     @sequence::CaloDigiMC.DigiSim

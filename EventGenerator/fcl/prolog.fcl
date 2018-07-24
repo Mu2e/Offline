@@ -93,13 +93,6 @@ StoppedMuonXRayGammaRayGun: {
     physics        : { }
 }
 
-PBISim: {
-    module_type: ProtonBunchIntensityLogNormal
-    sigma: 0.3814
-    extendedMean: 3.9e7 // mean of the uncut distribution
-    cutMax: 11.7e7  // cut the tail at 3 times the mean
-}
-
 # Save state of random numbers at the start of each event
 # the module is defined in art/Framework/Modules
 
@@ -111,30 +104,11 @@ randomsaver: {
 #------------------------------------------------------------------------------
 EventGenerator : {
     producers : {
+	egun   : { @table::CeEndpointGun   }
 	CeEndpointGun   : { @table::CeEndpointGun   }
 	StoppedParticleReactionGun : { @table::StoppedParticleReactionGun }
         StoppedParticleReactionGunN : { @table::StoppedParticleReactionGunN }
         PrimaryProtonGunN           : { @table::PrimaryProtonGunN           }
-
-  	egun005 : { @table::StoppedParticleReactionGun # p(e)=5 MeV/c
-	    physics : {
-		pdgId            :  11
-		elow             : 4.9999
-		ehi              : 5.0001
-		spectrumVariable : "momentum"
-		spectrumShape    : "flat"
-	    }
-	}
-
-  	egun95105 : { @table::StoppedParticleReactionGun # p(e)=95-105 MeV/c
-	    physics : {
-		pdgId            :  11
-		elow             :  95
-		ehi              : 105
-		spectrumVariable : "momentum"
-		spectrumShape    : "flat"
-	    }
-	}
 #------------------------------------------------------------------------------
 # CE on Al - leading logs approximation, spectrum from mu2e-7615 by R.Czafron
 #------------------------------------------------------------------------------
@@ -193,7 +167,6 @@ EventGenerator : {
 		spectrumShape    : "flat"
 	    }
 	}
-      protonBunchIntensity : @local::PBISim
     }
 }
 

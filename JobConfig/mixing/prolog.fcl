@@ -1,15 +1,11 @@
 # common parts used in all mixing jobs
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "TrackerMC/fcl/prolog.fcl"
-#include "EventMixing/fcl/prolog.fcl"
-#include "CaloMC/fcl/prolog.fcl"
-#include "EventGenerator/fcl/prolog.fcl"
-#include "Mu2eG4/fcl/prolog.fcl"
-#include "CRVResponse/fcl/prolog.fcl"
-#include "CommonMC/fcl/prolog.fcl"
 #include "JobConfig/beam/prolog.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
+#include "CommonMC/fcl/prolog.fcl"
+#include "TrackerMC/fcl/prolog.fcl"
+#include "CaloMC/fcl/prolog.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
@@ -74,7 +70,7 @@ CRVCut : { module_type : CompressStepPointMCs
 				    timeMapTags : [ "protonTimeMap" ]
 				    diagLevel : 0
      				  }
-
+# start by keeing the output of primary production (if present)
 DigiCompressOutputCommands : [ "drop *_*_*_*",
     "keep *_compressDigiMCs_*_*",
     "keep mu2e::StrawDigis_*_*_*",
@@ -90,41 +86,41 @@ DigiCompressOutputCommands : [ "drop *_*_*_*",
     "keep mu2e::ProtonBunchIntensity_*_*_*",
     "keep art::TriggerResults_*_*_*",
     "keep *_genCounter_*_*" ]
-# drop the pre-filter straw digis
-#     "drop *_makeSDPreFilter_*_*" ]
 
 # mixing configuration
 Mixing : {
   producers : {
     g4run : @local::mu2e.physics.producers.g4run.muons
     genCounter: { module_type: GenEventCounter }
-    @table::EventGenerator.producers
-    # dedicated digi maker for filter
-    protonTimeMapPreFilter: { module_type : GenerateProtonTimes }
-    muonTimeMapPreFilter: { module_type : GenerateMuonLife }
-    makeSDPreFilter:{
-      @table::makeSD
-      TimeOffsets : {
-	inputs : [ "protonTimeMapPreFilter", "muonTimeMapPreFilter" ]
-      }
+    @table::CommonMC.producers
+    @table::TrackerMC.producers
+    @table::CaloDigiMC.producers
+    @table::CrvDAQPackage.producers
+    # proton bunch intensity
+    protonBunchIntensity: {
+      module_type: ProtonBunchIntensityLogNormal
+      sigma: 0.3814
+      extendedMean: 3.9e7 // mean of the uncut distribution
+      cutMax: 11.7e7  // cut the tail at 3 times the mean
     }
-    # digi compression
+   # tracker digis for primary selection
+    makeSDPrimary : {
+      module_type : StrawDigisFromStepPointMCs
+      TimeOffsets   : { inputs : [ @sequence::CommonMC.TimeMapsPrimary ] }
+    }
+   # digi compression
     compressDigiMCs : {
       module_type : CompressDigiMCs
       strawDigiMCTag : "makeSD"
       crvDigiMCTag : "CrvWaveforms"
       simParticleTags : @nil 
       extraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
-      timeMapTags : [ "protonTimeMap", "muonTimeMap" ]
-      primarySimPtrsTag : "TrkDigiFilter"
+      timeMapTags : [ @sequence::CommonMC.TimeMaps ]
+      primarySimPtrsTag : "DigiFilter"
     }
-    @table::CommonDigiSim.producers
-    @table::TrackerMC.producers
-    @table::CaloDigiMC.producers
-    @table::CrvDAQPackage.producers
   }
   filters : {
-    # TrkCal
+    # TrkCal mixing
     flashMixerTrkCal    : @local::mixerTemplateTrkCal
     ootMixerTrkCal      : @local::mixerTemplateTrkCal
     neutronMixerTrkCal  : @local::mixerTemplateTrkCal
@@ -132,7 +128,7 @@ Mixing : {
     photonMixerTrkCal   : @local::mixerTemplateTrkCal
     protonMixerTrkCal   : @local::mixerTemplateTrkCal
     deuteronMixerTrkCal : @local::mixerTemplateTrkCal
-    # CRV
+    # CRV mixing
     PSMixerCRV	     : @local::mixerTemplateCRV 
     TSMixerCRV	     : @local::mixerTemplateCRV 
     DSMixerCRV	     : @local::mixerTemplateCRV
@@ -140,11 +136,10 @@ Mixing : {
     neutronMixerCRV  : @local::mixerTemplateCRV 
     dioMixerCRV	     : @local::mixerTemplateCRV 
     photonMixerCRV   : @local::mixerTemplateCRV 
-    # digi filtering for signal selection.
-    TrkDigiFilter : {
+# digi filtering for Primary selection.
+    DigiFilter : {
       module_type : StrawDigiMCFilter
-      MinNDigis : 10
-      StrawDigiMCCollection : "makeSDPreFilter"
+      StrawDigiMCCollection : "makeSDPrimary"
     }
   }
   analyzers : {
@@ -153,13 +148,13 @@ Mixing : {
       makeHistograms: false
     }
   }
-  MixOutput : {
+  Output : {
      module_type : RootOutput
      SelectEvents : [ TriggerPath ]
      fileName    : @nil
      outputCommands : @local::DigiCompressOutputCommands
   }
-  # time maps for cut mix inputs.  All are needed
+  # input time maps from cut mix inputs.  All are needed
   protonTimeMaps : [ "flashMixerTrkCal:protonTimeMap", "PSMixerCRV:protonTimeMap", "DSMixerCRV:protonTimeMap"]
   # sequences
   TrkCalMixSequence : [ flashMixerTrkCal,
@@ -168,9 +163,8 @@ Mixing : {
   CRVMixSequence : [ PSMixerCRV, TSMixerCRV, DSMixerCRV,
     ootMixerCRV, neutronMixerCRV, dioMixerCRV, photonMixerCRV ]
   CreatePrimarySequence : [ generate, genCounter, g4run,
-    protonTimeMapPreFilter, muonTimeMapPreFilter, EWMProducer,
-    makeSDPreFilter,
-    TrkDigiFilter ]
+    @sequence::CommonMC.PrimaryDigiSim,
+    makeSDPrimary, DigiFilter ]
 }
 Mixing.producers.compressDigiMCs.simParticleTags : [ "g4run", @sequence::Mixing.TrkCalMixSequence,
 @sequence::Mixing.CRVMixSequence]
@@ -178,7 +172,7 @@ Mixing.producers.compressDigiMCs.simParticleTags : [ "g4run", @sequence::Mixing.
 Mixing.MixSequence : [ protonBunchIntensity,
     @sequence::Mixing.TrkCalMixSequence,
     @sequence::Mixing.CRVMixSequence,
-    @sequence::CommonDigiSim.DigiSim,
+    @sequence::CommonMC.DigiSim,
     @sequence::TrackerMC.DigiSim,
     @sequence::CaloDigiMC.DigiSim,
     @sequence::CrvDAQPackage.CrvResponseSequence,

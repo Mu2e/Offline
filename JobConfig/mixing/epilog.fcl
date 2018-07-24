@@ -47,6 +47,11 @@ physics.filters.flashMixerTrkCal.mu2e.products.caloShowerStepMixer: { mixingMap:
       ]
    }
 
+# input maps from prirmaries and flash. these get used first, new times are only generated for particles not already referenced
+physics.producers.protonTimeMap.InputTimeMaps : [ "protonTimeMapPrimary", @sequence::Mixing.protonTimeMaps ]
+physics.producers.muonTimeMap.InputTimeMaps : [ "muonTimeMapPrimary" ]
+
+#
 physics.filters.DSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "DSMixerCRVCut", "" ] ] }
 physics.filters.DSMixerCRV.mu2e.products.simParticleMixer: { mixingMap: [ [ "DSMixerCRVCut", "" ] ] }
 physics.filters.DSMixerCRV.mu2e.products.protonTimeMapMixer: { mixingMap: [ [ "DSMixerCRVCut:protonTimeMap", ":" ] ] }

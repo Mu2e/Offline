@@ -1,5 +1,8 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
+#include "CaloMC/fcl/prolog.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 

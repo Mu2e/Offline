@@ -26,21 +26,18 @@ physics : {
   ]
 }
 outputs: {
-  MixOutput : @local::Mixing.MixOutput
+  Output : @local::Mixing.Output
 }
 
-# customize this job
-physics.filters.TrkDigiFilter.particleTypes : [ 11 ]
-physics.filters.TrkDigiFilter.MinParticleMom : 75.0
-
-# input maps; these get used first, new times are only generated for particles not already referenced
-physics.producers.protonTimeMap.InputTimeMaps : [ "protonTimeMapPreFilter", @sequence::Mixing.protonTimeMaps ]
-physics.producers.muonTimeMap.InputTimeMaps : [ "muonTimeMapPreFilter" ]
+# customize the filter
+physics.filters.DigiFilter.particleTypes : [ 11 ]
+physics.filters.DigiFilter.MinNDigis : 10
+physics.filters.DigiFilter.MinParticleMom : 75.0
 #
 # final configuration
 #
 #include "JobConfig/mixing/epilog.fcl"
 services.TFileService.fileName: "nts.owner.CeEndpoint-mix.version.sequencer.root"
-outputs.MixOutput.fileName: "sim.owner.CeEndpoint-mix.version.sequencer.art"
-physics.EndPath : [ genCountLogger, MixOutput ]
+outputs.Output.fileName: "sim.owner.CeEndpoint-mix.version.sequencer.art"
+physics.EndPath : [ genCountLogger, Output ]
 physics.end_paths : [ EndPath ] # needed for generate_fcl

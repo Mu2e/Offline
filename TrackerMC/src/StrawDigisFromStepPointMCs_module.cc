@@ -122,7 +122,6 @@ namespace mu2e {
       double _preampxtalk, _postampxtalk; // x-talk parameters; these should come from conditions, FIXME!!
       double _bgcut; // cut dividing 'min-ion' particles from highly-ionizing
       double _minstepE; // minimum step energy to simulate
-      string _g4ModuleLabel;  // Nameg of the module that made these hits.
       art::InputTag _ewMarkerTag; // name of the module that makes eventwindowmarkers
       double _mbtime; // period of 1 microbunch
       double _mbbuffer; // buffer on that for ghost clusts (for waveform)
@@ -238,7 +237,6 @@ namespace mu2e {
     _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.02)), // dimensionless relative coupling
     _bgcut(pset.get<double>("BetaGammaCut",0.5)), // treat particles with beta-gamma above this as minimum-ionizing
     _minstepE(pset.get<double>("minstepE",2.0e-6)), // minimum step energy depostion to turn into a straw signal (MeV)
-    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _ewMarkerTag(pset.get<art::InputTag>("EventWindowMarkerLabel","EWMProducer")),
     _steptimebuf(pset.get<double>("StepPointMCTimeBuffer",100.0)), // nsec
     _tdcbuf(pset.get<double>("TDCTimeBuffer",2.0)), // nsec

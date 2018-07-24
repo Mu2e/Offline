@@ -183,11 +183,8 @@ BEGIN_PROLOG
   TrkAna : {
 
     producers : {
-      @table::CommonDigiSim.producers
-      @table::TrackerMC.producers
       @table::TrkHitReco.producers
       @table::Tracking.producers
-      @table::CaloDigiMC.producers
       @table::CaloReco.producers
       @table::CaloCluster.producers
       @table::TrackCaloMatching.producers
