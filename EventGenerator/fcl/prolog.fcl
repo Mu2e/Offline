@@ -14,14 +14,22 @@ muonStops : {
 }
 
 # Files containing the positions and times of stopped muons in target (tgt) and out of target (oot).
-#   tdr - 17 target configuration
-#   cd3 - 34 target configuration
-#   no suffix: default, which will be time dependent.
-merged_tgtStops_tdr : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
-merged_tgtStops_cd3 : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-tgtstops.v533_v543_v563b.001002_00000000.root" ]
+#   tdr       - 17 target configuration
+#   cd3       - 34 target configuration, produced by Andy Edmonds in 2017.
+#   mdc2018_x - 34 target configuration, produced during MDC2018.  There may be several versions.
+merged_tgtStops_tdr       : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+merged_tgtStops_cd3       : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-tgtstops.v533_v543_v563b.001002_00000000.root" ]
+merged_tgtStops_mdc2018_1 : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
 
-merged_ootStops_tdr : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
-merged_ootStops_cd3 : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-ootstops.v533_v543_v563b.001002_00000000.root" ]
+merged_ootStops_tdr       : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+merged_ootStops_cd3       : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-ootstops.v533_v543_v563b.001002_00000000.root" ]
+merged_ootStops_mdc2018_1 : [ "mergedMuonStops/nts.mu2e.DS-OOTstops.MDC2018a.001002_00000000.root" ]
+
+merged_ipaStops_mdc2018_1 : [ "mergedMuonStops/nts.mu2e.DS-IPAstops.MDC2018a.001002_00000000.root" ]
+
+merged_tgtStops_mdc2018 : @local::merged_tgtStops_mdc2018_1
+merged_ootStops_mdc2018 : @local::merged_ootStops_mdc2018_1
+merged_ipaStops_mdc2018 : @local::merged_ipaStops_mdc2018_1
 
 # CD3 stopped muon configs.
 mu2e.tgtMuonStops: {
