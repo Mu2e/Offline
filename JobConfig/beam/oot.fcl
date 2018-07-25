@@ -1,0 +1,28 @@
+// Start with particles hitting the detector mother volumes and
+// write out StepPoints in the detectors.
+//
+// Decay and capture products from out of target muon stops.
+//
+// Andrei Gaponenko, 2015
+
+#include "JobConfig/beam/prolog.fcl"
+
+process_name: oot
+
+source: { module_type : EmptyEvent }
+services: { @table::mu2e.services.simServices }
+physics: { @table::mu2e.physics.g4s4Muons }
+outputs: { @table::mu2e.outputs.g4s4Defs }
+
+physics.producers.generate: {
+    module_type: StoppedParticleG4Gun
+    verbosityLevel : 1
+    pdgId: 13 // mu-
+    muonStops : @local::mu2e.ootMuonStops
+}
+
+services.TFileService.fileName: "nts.owner.oot.version.sequencer.root"
+outputs.detectorOutput.fileName: "sim.owner.oot-TrkCal.version.sequencer.art"
+outputs.crvOutput.fileName: "sim.owner.oot-CRV.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName: "sim.owner.oot-truncated.version.sequencer.art"
+

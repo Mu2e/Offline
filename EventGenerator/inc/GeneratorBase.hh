@@ -24,27 +24,20 @@
 namespace mu2e {
 
   class GeneratorBase{
-
   public:
-    GeneratorBase( bool isFromG4bl=false ) : _isFromG4bl(isFromG4bl) {
-    }
-    virtual ~GeneratorBase(){
-    }
+    explicit GeneratorBase(bool const isFromG4bl = false)
+      : _isFromG4bl{isFromG4bl}
+    {}
 
+    virtual ~GeneratorBase() = default;
     virtual void generate( GenParticleCollection&  ) = 0;
 
     bool isFromG4bl() { return _isFromG4bl; }
 
   protected:
-
-    // A helper function to access the random number engine associated with this module.
-    static art::RandomNumberGenerator::base_engine_t&
-    getEngine( const art::RandomNumberGenerator::label_t& engine_label = "" );
     bool _isFromG4bl;
-
-};
+  };
 
 } // end namespace mu2e,
 
 #endif /* EventGenerator_GeneratorBase_hh */
-

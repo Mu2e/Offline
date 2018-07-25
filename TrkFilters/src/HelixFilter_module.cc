@@ -22,9 +22,9 @@ using namespace CLHEP;
 
 using namespace std;
 
-namespace mu2e 
+namespace mu2e
 {
-  class HelixFilter : public art::EDFilter 
+  class HelixFilter : public art::EDFilter
   {
     public:
       explicit HelixFilter(fhicl::ParameterSet const& pset);
@@ -69,24 +69,24 @@ namespace mu2e
     // compute the helix momentum.  Note this is in units of mm!!!
       float hmom = hs.helix().momentum();
       if(_debug > 2){
-	cout << *currentContext()->moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << endl;
+        cout << *currentContext()->moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << endl;
       }
       if( hs.status().hasAllProperties(_goodh) &&
-	  (!_hascc || hs.caloCluster().isNonnull()) &&
-	  hs.hits().size() >= _minnhits &&
-	  hmom > _minmom && hmom < _maxmom) {
-	retval = true;
-	++_npass;
-	// Fill the trigger info object
-	triginfo->_triggerBits.merge(TriggerFlag::helix);
-	// associate to the helix which triggers.  Note there may be other helices which also pass the filter
-	// but filtering is by event!
-	size_t index = std::distance(hscol->begin(),ihs);
-	triginfo->_helix = art::Ptr<HelixSeed>(hsH,index);
-	if(_debug > 1){
-	  cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
-	}
-	break;
+          (!_hascc || hs.caloCluster().isNonnull()) &&
+          hs.hits().size() >= _minnhits &&
+          hmom > _minmom && hmom < _maxmom) {
+        retval = true;
+        ++_npass;
+        // Fill the trigger info object
+        triginfo->_triggerBits.merge(TriggerFlag::helix);
+        // associate to the helix which triggers.  Note there may be other helices which also pass the filter
+        // but filtering is by event!
+        size_t index = std::distance(hscol->begin(),ihs);
+        triginfo->_helix = art::Ptr<HelixSeed>(hsH,index);
+        if(_debug > 1){
+          cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
+        }
+        break;
       }
     }
     evt.put(std::move(triginfo));

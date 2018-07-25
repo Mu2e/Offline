@@ -11,6 +11,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "G4Step.hh"
+#include "G4Threading.hh"
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
@@ -57,12 +58,12 @@ namespace mu2e {
 
     _spHelper()
   {
-    if(!tvd_time_.empty()) {
-      cout << "Time virtual detector is enabled. Particles are recorded at";
-      for( unsigned int i=0; i<tvd_time_.size(); ++i ) cout << " " << tvd_time_[i];
-      cout << " ns" << endl;
+    if( (!tvd_time_.empty()) && (G4Threading::G4GetThreadId() <= 0) ) {
+        cout << "Time virtual detector is enabled. Particles are recorded at";
+        for( unsigned int i=0; i<tvd_time_.size(); ++i ) cout << " " << tvd_time_[i];
+            cout << " ns" << endl;
     }
-  }
+  }//end ctor
 
   // A helper function to manage the printout.
   void Mu2eG4SteppingAction::printit( G4String const& s,
@@ -72,41 +73,44 @@ namespace mu2e {
                                       double localTime,
                                       double globalTime ){
 
-    // It is easier to line up printout in columns with printf than with cout.
-    printf ( "%-8s %4d %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %13.4f %13.4f\n",
-             s.data(), id,
-             pos.x(), pos.y(), pos.z(),
-             mom.x(), mom.y(), mom.z(),
-             mom.mag(),
-             localTime, globalTime);
-  }
+      // It is easier to line up printout in columns with printf than with cout.
+      printf ( "%-8s %4d %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %13.4f %13.4f\n",
+              s.data(), id,
+              pos.x(), pos.y(), pos.z(),
+              mom.x(), mom.y(), mom.z(),
+              mom.mag(),
+              localTime, globalTime);
+ }
 
-  void Mu2eG4SteppingAction::beginRun(PhysicsProcessInfo& processInfo,
+  void Mu2eG4SteppingAction::beginRun(PhysicsProcessInfo* processInfo,
                                       CLHEP::Hep3Vector const& mu2eOrigin ){
-    _processInfo    = &processInfo;
+      
+    _processInfo    = processInfo;
     _mu2eOrigin     =  mu2eOrigin;
   }
 
   void Mu2eG4SteppingAction::finishConstruction() {
+      
     // We have to wait until G4 geometry is constructed
     // to get phys volume pointers that are used in the
     // volume to cut value map.
-    for(const auto& spec: trajectoryControl_->perVolumeMinDistance()) {
-      auto vol = getPhysicalVolumeOrThrow(spec.first);
-      mcTrajectoryVolumePtDistances_[vol] = spec.second;
-    }
+      for(const auto& spec: trajectoryControl_->perVolumeMinDistance()) {
+          auto vol = getPhysicalVolumeOrThrow(spec.first);
+          mcTrajectoryVolumePtDistances_[vol] = spec.second;
+      }
   }
-
+    
   void Mu2eG4SteppingAction::BeginOfTrack() {
-    numTrackSteps_ = 0;
-    const auto oldSize = _trajectory.size();
-    _trajectory.clear();
-    _trajectory.reserve(oldSize + oldSize/8);
+      numTrackSteps_ = 0;
+      const auto oldSize = _trajectory.size();
+      _trajectory.clear();
+      _trajectory.reserve(oldSize + oldSize/8);
   }
 
   void Mu2eG4SteppingAction::EndOfTrack() {
   }
 
+    
   void Mu2eG4SteppingAction::BeginOfEvent(StepPointMCCollection& outputHits,
                                           const SimParticleHelper& spHelper) {
     numKilledTracks_ = 0;
@@ -115,167 +119,170 @@ namespace mu2e {
     _spHelper    = &spHelper;
   }
 
+    
   void Mu2eG4SteppingAction::UserSteppingAction(const G4Step* step){
 
-    numTrackSteps_++;
-
-    G4Track* track = step->GetTrack();
-
-    // Pre and post stepping points.
-    G4StepPoint const* prept  = step->GetPreStepPoint();
-    G4StepPoint const* postpt = step->GetPostStepPoint();
-
-    /// FIXME: Optimization: if the current track (not step!) has
-    /// initial momentum below the "g4.mcTrajectoryMomentumCut"
-    /// threshold, we can skip adding trajectory points completely.
-    /// NB: there is also "g4.saveTrajectoryMomentumCut".
-    /// Do we need to look at both of them?
-    //
-    // Determine whether we add the current step to MCTrajectory
-    const double mcTrajCurrentCut = mcTrajectoryMinDistanceCut(prept->GetPhysicalVolume());
-    // In some cases we know to accept the point even without computing the distance
-    bool computeMCTrajDistance = (!_trajectory.empty()) && (mcTrajCurrentCut > 0.);
-    if(!computeMCTrajDistance || (((prept->GetPosition() - _mu2eOrigin) -  _trajectory.back().vect()).mag() >= mcTrajCurrentCut)) {
-      _trajectory.emplace_back ( prept->GetPosition() - _mu2eOrigin, prept->GetGlobalTime() );
-    }
-
-    // Get kinetic energy at the begin of the step
-    const double preStepEK = prept->GetKineticEnergy();
-
-    G4VUserTrackInformation* info = track->GetUserInformation();
-    UserTrackInformation* tinfo   = static_cast<UserTrackInformation*>(info);
-
-    tinfo->setStepInfo(preStepEK, numTrackSteps_);
-
-    // Save hits in time virtual detector
-    for( unsigned int i=0; i<tvd_time_.size(); ++i ) {
-      if( prept->GetGlobalTime()<=tvd_time_[i] && postpt->GetGlobalTime()>tvd_time_[i] ) {
-        addTimeVDHit(step,i+1);
+      numTrackSteps_++;
+      
+      G4Track* track = step->GetTrack();
+      
+      // Pre and post stepping points.
+      G4StepPoint const* prept  = step->GetPreStepPoint();
+      G4StepPoint const* postpt = step->GetPostStepPoint();
+      
+      /// FIXME: Optimization: if the current track (not step!) has
+      /// initial momentum below the "g4.mcTrajectoryMomentumCut"
+      /// threshold, we can skip adding trajectory points completely.
+      /// NB: there is also "g4.saveTrajectoryMomentumCut".
+      /// Do we need to look at both of them?
+      //
+      // Determine whether we add the current step to MCTrajectory
+      const double mcTrajCurrentCut = mcTrajectoryMinDistanceCut(prept->GetPhysicalVolume());
+      // In some cases we know to accept the point even without computing the distance
+      bool computeMCTrajDistance = (!_trajectory.empty()) && (mcTrajCurrentCut > 0.);
+      if(!computeMCTrajDistance || (((prept->GetPosition() - _mu2eOrigin) -  _trajectory.back().pos()).mag() >= mcTrajCurrentCut)) {
+          _trajectory.emplace_back ( prept->GetPosition() - _mu2eOrigin,
+                                    prept->GetGlobalTime(),
+                                    prept->GetKineticEnergy()
+                                    );
       }
-    }
-
-    if(steppingCuts_->steppingActionCut(step)) {
-      killTrack(track, ProcessCode::mu2eKillerVolume, fStopAndKill);
-    } else if(commonCuts_->steppingActionCut(step)) {
-      killTrack(track, ProcessCode::mu2eKillerVolume, fStopAndKill);
-    } else if(killTooManySteps(track)) {
-      killTrack( track, ProcessCode::mu2eMaxSteps, fStopAndKill);
-    }
-
-    //----------------------------------------------------------------
-    // Do we want to do make debug printout for this event?
-    if ( !_debugEventList.inList() ) return;
-
-    // Get information about this track.
-    G4int id = track->GetTrackID();
-
-    // If no tracks are listed, then printout for all tracks.
-    // If some tracks are listed, then printout only for those tracks.
-    if ( _debugTrackList.size() > 0 ){
-      if ( !_debugTrackList.inList(id) ) return;
-    }
-
-    // Momentum at the the pre point.
-    G4ThreeVector const& mom = prept->GetMomentum();
-
-    // On the last step on a track the post step point does not have an
-    // associated physical volume. So we need to protect against that.
-    G4String preVolume, postVolume;
-    G4int preCopy(-1), postCopy(-1);
-
-    // Get the names if they are defined.
-    if ( prept->GetPhysicalVolume() ){
-      preVolume = prept->GetPhysicalVolume()->GetName();
-      preCopy   = prept->GetPhysicalVolume()->GetCopyNo();
-    }
-
-    if ( postpt->GetPhysicalVolume() ){
-      postVolume = postpt->GetPhysicalVolume()->GetName();
-      postCopy   = postpt->GetPhysicalVolume()->GetCopyNo();
-    }
-
-    // Status report.
-    printf ( "Step number: %d\n", numTrackSteps_ );
-
-    printit ( "Pre: ", id,
-              prept->GetPosition(),
-              prept->GetMomentum(),
-              prept->GetLocalTime(),
-              prept->GetGlobalTime()
-              );
-
-    printit ( "Step:", id,
-              track->GetPosition(),
-              track->GetMomentum(),
-              track->GetLocalTime(),
-              track->GetGlobalTime()
-              );
-
-    printit ( "Post: ", id,
-              postpt->GetPosition(),
-              postpt->GetMomentum(),
-              postpt->GetLocalTime(),
-              postpt->GetGlobalTime()
-              );
-    fflush(stdout);
-
-    cout << "Pre  Volume and copy: " << preVolume  << " " << preCopy  << endl;
-    cout << "Post Volume and copy: " << postVolume << " " << postCopy << endl;
-
-    printf ( "\n");
-    fflush(stdout);
-
+      
+      // Get kinetic energy at the begin of the step
+      const double preStepEK = prept->GetKineticEnergy();
+      
+      G4VUserTrackInformation* info = track->GetUserInformation();
+      UserTrackInformation* tinfo   = static_cast<UserTrackInformation*>(info);
+      
+      tinfo->setStepInfo(preStepEK, numTrackSteps_);
+      
+      // Save hits in time virtual detector
+      for( unsigned int i=0; i<tvd_time_.size(); ++i ) {
+          if( prept->GetGlobalTime()<=tvd_time_[i] && postpt->GetGlobalTime()>tvd_time_[i] ) {
+              addTimeVDHit(step,i+1);
+          }
+      }
+      
+      if(steppingCuts_->steppingActionCut(step)) {
+          killTrack(track, ProcessCode::mu2eKillerVolume, fStopAndKill);
+      } else if(commonCuts_->steppingActionCut(step)) {
+          killTrack(track, ProcessCode::mu2eKillerVolume, fStopAndKill);
+      } else if(killTooManySteps(track)) {
+          killTrack( track, ProcessCode::mu2eMaxSteps, fStopAndKill);
+      }
+      
+      //----------------------------------------------------------------
+      // Do we want to do make debug printout for this event?
+      if ( !_debugEventList.inList() ) return;
+      
+      // Get information about this track.
+      G4int id = track->GetTrackID();
+      
+      // If no tracks are listed, then printout for all tracks.
+      // If some tracks are listed, then printout only for those tracks.
+      if ( _debugTrackList.size() > 0 ){
+          if ( !_debugTrackList.inList(id) ) return;
+      }
+      
+      // Momentum at the the pre point.
+      G4ThreeVector const& mom = prept->GetMomentum();
+      
+      // On the last step on a track the post step point does not have an
+      // associated physical volume. So we need to protect against that.
+      G4String preVolume, postVolume;
+      G4int preCopy(-1), postCopy(-1);
+      
+      // Get the names if they are defined.
+      if ( prept->GetPhysicalVolume() ){
+          preVolume = prept->GetPhysicalVolume()->GetName();
+          preCopy   = prept->GetPhysicalVolume()->GetCopyNo();
+      }
+      
+      if ( postpt->GetPhysicalVolume() ){
+          postVolume = postpt->GetPhysicalVolume()->GetName();
+          postCopy   = postpt->GetPhysicalVolume()->GetCopyNo();
+      }
+      
+      // Status report.
+      printf ( "Step number: %d\n", numTrackSteps_ );
+      
+      printit ( "Pre: ", id,
+               prept->GetPosition(),
+               prept->GetMomentum(),
+               prept->GetLocalTime(),
+               prept->GetGlobalTime()
+               );
+      
+      printit ( "Step:", id,
+               track->GetPosition(),
+               track->GetMomentum(),
+               track->GetLocalTime(),
+               track->GetGlobalTime()
+               );
+      
+      printit ( "Post: ", id,
+               postpt->GetPosition(),
+               postpt->GetMomentum(),
+               postpt->GetLocalTime(),
+               postpt->GetGlobalTime()
+               );
+      fflush(stdout);
+      
+      cout << "Pre  Volume and copy: " << preVolume  << " " << preCopy  << endl;
+      cout << "Post Volume and copy: " << postVolume << " " << postCopy << endl;
+      
+      printf ( "\n");
+      fflush(stdout);
+  
   } // end Mu2eG4SteppingAction
 
 
   // Kill tracks that take too many steps.
   bool Mu2eG4SteppingAction::killTooManySteps( const G4Track* track ){
-
-    if(numTrackSteps_ <= mu2elimits_->maxStepsPerTrack()) {
-      return false;
-    }
-
-    if ( stepLimitKillerVerbose_ ) {
-      cout << "Mu2eG4SteppingAction: kill particle pdg="
-           << track->GetDefinition()->GetPDGEncoding()
-           << " due to large number of steps." << endl;
-    }
-
-    ++numKilledTracks_;
-    return true;
+      if(numTrackSteps_ <= mu2elimits_->maxStepsPerTrack()) {
+          return false;
+      }
+      
+      if ( stepLimitKillerVerbose_ ) {
+          cout << "Mu2eG4SteppingAction: kill particle pdg="
+               << track->GetDefinition()->GetPDGEncoding()
+               << " due to large number of steps." << endl;
+      }
+      
+      ++numKilledTracks_;
+      return true;
   }
 
   // Record why the track is to be killed, then kill it.
   void Mu2eG4SteppingAction::killTrack( G4Track* track, ProcessCode::enum_type code, G4TrackStatus status ){
-
-    // Get user track informaton object from the track.
-    G4VUserTrackInformation* info = track->GetUserInformation();
-    UserTrackInformation* tinfo   = static_cast<UserTrackInformation*>(info);
-
-    // Record why the track was killed.
-    tinfo->setProcessCode(ProcessCode(code));
-
-    // Kill the track
-    track->SetTrackStatus(status);
+      
+      // Get user track informaton object from the track.
+      G4VUserTrackInformation* info = track->GetUserInformation();
+      UserTrackInformation* tinfo   = static_cast<UserTrackInformation*>(info);
+      
+      // Record why the track was killed.
+      tinfo->setProcessCode(ProcessCode(code));
+      
+      // Kill the track
+      track->SetTrackStatus(status);
   }
 
   G4bool Mu2eG4SteppingAction::addTimeVDHit(const G4Step* aStep, int id){
 
-    if(tvd_collection_->size() >= mu2elimits_->maxStepPointCollectionSize()) {
-      if(!tvd_warning_printed_) {
-        tvd_warning_printed_ = true;
-        mf::LogWarning("G4") << "Maximum number of entries reached in time virtual detector: "
-                             << tvd_collection_->size() << endl;
+      if(tvd_collection_->size() >= mu2elimits_->maxStepPointCollectionSize()) {
+          if(!tvd_warning_printed_) {
+              tvd_warning_printed_ = true;
+              mf::LogWarning("G4") << "Maximum number of entries reached in time virtual detector: "
+              << tvd_collection_->size() << endl;
+          }
+          return false;
       }
-      return false;
-    }
-
-    // Which process caused this step to end?
-    ProcessCode endCode(_processInfo->
-                        findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
-
-    // The point's coordinates are saved in the mu2e coordinate system.
-    tvd_collection_->
+      
+      // Which process caused this step to end?
+      ProcessCode endCode(_processInfo->
+                          findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
+      
+      // The point's coordinates are saved in the mu2e coordinate system.
+      tvd_collection_->
       push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                             id,
                             0,
@@ -287,21 +294,23 @@ namespace mu2e {
                             aStep->GetStepLength(),
                             endCode
                             ));
-
-    return true;
+      return true;
   }
 
-  std::vector<CLHEP::HepLorentzVector> const& Mu2eG4SteppingAction::trajectory() {
-    return _trajectory;
+
+  std::vector<MCTrajectoryPoint> const& Mu2eG4SteppingAction::trajectory() {
+      return _trajectory;
   }
 
-  void  Mu2eG4SteppingAction::swapTrajectory(std::vector<CLHEP::HepLorentzVector>& trajectory) {
-    std::swap( trajectory, _trajectory);
+
+  void  Mu2eG4SteppingAction::swapTrajectory(std::vector<MCTrajectoryPoint>& trajectory) {
+      std::swap( trajectory, _trajectory);
   }
 
   double Mu2eG4SteppingAction::mcTrajectoryMinDistanceCut(const G4VPhysicalVolume* vol) const {
-    const auto it = mcTrajectoryVolumePtDistances_.find(vol);
-    return (it != mcTrajectoryVolumePtDistances_.end()) ? it->second : trajectoryControl_->defaultMinPointDistance();
+      
+      const auto it = mcTrajectoryVolumePtDistances_.find(vol);
+      return (it != mcTrajectoryVolumePtDistances_.end()) ? it->second : trajectoryControl_->defaultMinPointDistance();
   }
 
 } // end namespace mu2e

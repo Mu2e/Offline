@@ -31,8 +31,7 @@ CaloShowerStepFromStepPt  :
 CaloShowerStepROFromShowerStep : 
 {
     module_type                 : CaloShowerStepROFromShowerStep
-    caloShowerStepMCModuleLabel : CaloShowerStepFromStepPt
-    caloShowerMCName            : calorimeter
+    caloCrystalShowerInputs     : [ "CaloShowerStepFromStepPt:calorimeter" ]
     TimeOffsets                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
     blindTime                   : @local::HitMakerBlindTime
     caloLRUCorrection           : true

@@ -99,6 +99,7 @@ paths : {
 			  ]
 }
 
+
 END_PROLOG
 
 process_name : AllPatRecReco
@@ -153,7 +154,6 @@ physics : {
 # G4, hit makers, calorimeter, track reconstruction, and PID
 #------------------------------------------------------------------------------
 	@table::Mu2eG4.producers
-        @table::EventMixing.producers 
 	@table::CommonDigiSim.producers
 	@table::CaloDigiMC.producers
         @table::CaloReco.producers
@@ -228,6 +228,9 @@ physics : {
 #------------------------------------------------------------------------------
 # print per event timing for ::event entry points
 # services.Timing: { }
+
+# Temporarily use Andy's muon stops.  These will be replaced soon with MDC2018 output
+physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
 # print
 services.scheduler.wantSummary: true
 

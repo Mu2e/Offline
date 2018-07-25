@@ -18,9 +18,9 @@
 
 using namespace std;
 
-namespace mu2e 
+namespace mu2e
 {
-  class TimeClusterFilter : public art::EDFilter 
+  class TimeClusterFilter : public art::EDFilter
   {
     public:
       explicit TimeClusterFilter(fhicl::ParameterSet const& pset);
@@ -61,23 +61,23 @@ namespace mu2e
     for(auto itc = tccol->begin();itc != tccol->end(); ++itc) {
       auto const& tc = *itc;
       if(_debug > 2){
-	cout << *currentContext()->moduleLabel() << " nhits = " << tc.hits().size() << " t0 = " << tc.t0().t0() << endl;
+        cout << *currentContext()->moduleLabel() << " nhits = " << tc.hits().size() << " t0 = " << tc.t0().t0() << endl;
       }
       if( (!_hascc || tc.caloCluster().isNonnull()) &&
-	  tc.hits().size() >= _minnhits &&
-	  tc.t0().t0() > _mintime && tc.t0().t0() < _maxtime) {
-	retval = true;
-	++_npass;
-	// Fill the trigger info object
-	triginfo->_triggerBits.merge(TriggerFlag::hitCluster);
-	// associate to the hit cluster which triggers.  Note there may be other hit clusters which also pass the filter
-	// but filtering is by event!
-	size_t index = std::distance(tccol->begin(),itc);
-	triginfo->_hitCluster = art::Ptr<TimeCluster>(tcH,index);
-	if(_debug > 1){
-	  cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
-	}
-	break;
+          tc.hits().size() >= _minnhits &&
+          tc.t0().t0() > _mintime && tc.t0().t0() < _maxtime) {
+        retval = true;
+        ++_npass;
+        // Fill the trigger info object
+        triginfo->_triggerBits.merge(TriggerFlag::hitCluster);
+        // associate to the hit cluster which triggers.  Note there may be other hit clusters which also pass the filter
+        // but filtering is by event!
+        size_t index = std::distance(tccol->begin(),itc);
+        triginfo->_hitCluster = art::Ptr<TimeCluster>(tcH,index);
+        if(_debug > 1){
+          cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
+        }
+        break;
       }
     }
     evt.put(std::move(triginfo));

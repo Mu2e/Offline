@@ -19,6 +19,7 @@
 // Mu2e includes
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawEnd.hh"
+#include "TrackerConditions/inc/Types.hh"
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 #include "TrackerConditions/inc/Types.hh"
 #include "fhiclcpp/ParameterSet.h"
@@ -41,10 +42,11 @@ namespace mu2e {
       // relative time when linear response is maximal
       double maxResponseTime(Path ipath,double distance) const;
   // digization
-      uint16_t adcResponse(StrawId id, double mvolts) const; // ADC response to analog inputs
-      uint16_t tdcResponse(double time) const; // TDC response to a given time
+      TrkTypes::ADCValue adcResponse(StrawId id, double mvolts) const; // ADC response to analog inputs
+      TrkTypes::TDCValue tdcResponse(double time) const; // TDC response to a signal input to electronics at a given time (in ns since eventWindowMarker)
       void digitizeWaveform(StrawId id, TrkTypes::ADCVoltages const& wf,TrkTypes::ADCWaveform& adc) const; // digitize an array of voltages at the ADC
-      void digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc) const;
+      bool digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc) const; // times in ns since eventWindowMarker
+      bool digitizeAllTimes(TrkTypes::TDCTimes const& times,double mbtime, TrkTypes::TDCValues& tdcs) const; // for straws which are being read regardless of flash blanking
       void uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const; // convert time from beam t0 to tracker channel t0
       bool combineEnds(double t1, double t2) const; // are times from 2 ends combined into a single digi?
   // interpretation of digital data
@@ -59,7 +61,7 @@ namespace mu2e {
       uint16_t maxTDC() const { return _maxTDC; }
       uint16_t maxTOT() const { return _maxTOT; }
       uint16_t ADCPedestal(StrawId sid) const { return _ADCped[sid.getStraw()]; };
-      size_t nADCSamples() const { return _nADC; }
+      size_t nADCSamples() const { return TrkTypes::NADC; }
       size_t nADCPreSamples() const { return _nADCpre; }
       double adcPeriod() const { return _ADCPeriod; } // period of ADC clock in nsec
       double adcOffset() const { return _ADCOffset; } // offset WRT clock edge for digitization
@@ -72,8 +74,9 @@ namespace mu2e {
       double strawNoise() const { return _snoise;} // coherent part of threshold circuit noise
       double deadTimeAnalog() const { return _tdeadAnalog; }
       double deadTimeDigital() const { return _tdeadDigital; }
-      double clockStart() const { return _clockStart; }
-      double clockJitter() const { return _clockJitter; }
+      double TDCResolution() const { return _tdcResolution; }
+      double electronicsTimeDelay() const { return _electronicsTimeDelay; }
+      double eventWindowMarkerROCJitter() const { return _ewMarkerROCJitter; }
 
       double currentToVoltage(StrawId sid, Path ipath) const { return _dVdI[ipath][sid.getStraw()]; }
       double maxLinearResponse(StrawId sid, Path ipath,double distance,double charge=1.0) const;
@@ -98,20 +101,24 @@ namespace mu2e {
       double _snoise; // straw noise at threshold
       double _analognoise[npaths]; //noise (mVolt) from the straw itself
       double _ADCLSB; // least-significant bit of ADC (mVolts)
-      uint16_t _maxADC; // maximum ADC value
+      TrkTypes::ADCValue _maxADC; // maximum ADC value
       std::vector<uint16_t> _ADCped; // ADC pedestal (reading for 0 volts)
-      size_t _nADC,_nADCpre; // Number of ADC samples, presamples
+      size_t _nADCpre; // Number of ADC presamples
       double _ADCPeriod; // ADC period in nsec
       double _ADCOffset; // Offset of 1st ADC sample WRT threshold crossing (nsec)
       unsigned _maxtsep; // maximum # of ADC clock ticks between straw end threshold crossings to form a digi
       unsigned _TCoince; // maxing threshold xing pair time separation to create a digi, in number of ADC clock cycles
       double _TDCLSB; // least-significant bit of TDC (nsecs)
-      uint16_t _maxTDC; // maximum TDC value
+      TrkTypes::TDCValue _maxTDC; // maximum TDC value
       double _TOTLSB; // least-significant bit of TOT (nsecs)
-      uint16_t _maxTOT; // maximum TOT value
-      double _clockStart, _clockJitter; // time TDC clock starts, and its error (common to both ends!!)
-      // clockstart is the time offset between "microbunch time" t0 (beam) and TDC t0
-      double _flashStart, _flashEnd; // flash blanking period (no digitizations during this time!!!)
+      TrkTypes::TOTValue _maxTOT; // maximum TOT value
+      double _tdcResolution; // tdc resolution (electronics effects only) (nsecs)
+      double _electronicsTimeDelay; // Absolute time delay in electronics due to firmware signal propagation etc (ns)
+      double _ewMarkerROCJitter; // jitter of ewMarker per ROC (ns)
+      // electronicsTimeDelay is the time offset between a hit arriving at the electronics and the time that is digitized
+      double _flashStart, _flashEnd, _flashClockSpeed; // flash blanking period (no digitizations during this time!!!) (ns from eventWindowMarker arrival, what will actually be set)
+      TrkTypes::TDCValue _flashStartTDC, _flashEndTDC; // TDC values corresponding to the above. Note ignores electronicsTimeDelay since this is not a digitized signal
+      // but an actual TDC value that will be compared against
   // helper functions
       static inline double mypow(double,unsigned);
 

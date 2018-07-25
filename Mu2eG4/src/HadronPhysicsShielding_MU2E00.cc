@@ -27,18 +27,19 @@
 //
 //---------------------------------------------------------------------------
 //
-// ClassName:   
+// ClassName:
 //
 // Author: 2010 Tatsumi Koi, Gunter Folger
 //   created from HadronPhysicsFTFP_BERT
 //
 // Modified:
 // 30 06 2013 K.Genser Mu2e version with BERT FTPF transition between 9.5 and 9.9 GeV
-//                     
+//
 //----------------------------------------------------------------------------
 //
 #include <iomanip>
 
+#include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "HadronPhysicsShielding_MU2E00.hh"
@@ -95,7 +96,7 @@ HadronPhysicsShielding_MU2E00::HadronPhysicsShielding_MU2E00( G4int )
 {}
 
 HadronPhysicsShielding_MU2E00::HadronPhysicsShielding_MU2E00(const G4String& name, G4bool quasiElastic)
-    :  G4VPhysicsConstructor(name) 
+    :  G4VPhysicsConstructor(name)
     , theNeutrons(0)
     , theLENeutron(0)
     , theBertiniNeutron(0)
@@ -144,7 +145,7 @@ void HadronPhysicsShielding_MU2E00::CreateModels()
   theNeutrons->RegisterMe(theLEPNeutron=new G4LEPNeutronBuilder);
   theLEPNeutron->SetMinEnergy(minNonHPNeutronEnergy);
   theLEPNeutron->SetMinInelasticEnergy(0.0*eV);   // no inelastic from LEP
-  theLEPNeutron->SetMaxInelasticEnergy(0.0*eV);  
+  theLEPNeutron->SetMaxInelasticEnergy(0.0*eV);
   //theNeutrons->RegisterMe(theHPNeutron=new G4NeutronHPBuilder);
 #endif
     if ( useLEND != true )
@@ -167,7 +168,7 @@ void HadronPhysicsShielding_MU2E00::CreateModels()
   thePiK->RegisterMe(theFTFPPiK);
   thePiK->RegisterMe(theBertiniPiK=new G4BertiniPiKBuilder);
   theBertiniPiK->SetMaxEnergy(maxBertiniEnergy);
-  
+
 #if G4VERSION<4099
   theMiscCHIPS=new G4MiscCHIPSBuilder;
 #endif
@@ -181,15 +182,15 @@ HadronPhysicsShielding_MU2E00::~HadronPhysicsShielding_MU2E00()
   delete theFTFPNeutron;
   //delete theHPNeutron;
   delete theLENeutron;
-    
+
   delete thePiK;
   delete theBertiniPiK;
   delete theFTFPPiK;
-    
+
   delete thePro;
   delete theBertiniPro;
-  delete theFTFPPro;    
-    
+  delete theFTFPPro;
+
 #if G4VERSION<4099
   delete theMiscCHIPS;
 #endif
@@ -208,7 +209,7 @@ void HadronPhysicsShielding_MU2E00::ConstructParticle()
   pBaryonConstructor.ConstructParticle();
 
   G4ShortLivedConstructor pShortLivedConstructor;
-  pShortLivedConstructor.ConstructParticle();  
+  pShortLivedConstructor.ConstructParticle();
 }
 
 #include "G4ProcessManager.hh"
@@ -216,10 +217,10 @@ void HadronPhysicsShielding_MU2E00::ConstructProcess()
 {
   CreateModels();
 
-  //BGGxsNeutron=new  G4BGGNucleonInelasticXS(G4Neutron::Neutron()); 
+  //BGGxsNeutron=new  G4BGGNucleonInelasticXS(G4Neutron::Neutron());
   thePro->Build();
   theNeutrons->Build();
-    
+
 //  BGGxsNeutron=new  G4NeutronHPBGGNucleonInelasticXS(G4Neutron::Neutron());
 //  FindInelasticProcess(G4Neutron::Neutron())->AddDataSet(BGGxsNeutron);
 //
@@ -228,15 +229,15 @@ void HadronPhysicsShielding_MU2E00::ConstructProcess()
   NeutronHPJENDLHEInelastic=new G4NeutronHPJENDLHEInelasticData;
   G4PhysListUtil::FindInelasticProcess(G4Neutron::Neutron())->AddDataSet(NeutronHPJENDLHEInelastic);
   G4PhysListUtil::FindInelasticProcess(G4Neutron::Neutron())->AddDataSet(new G4NeutronHPInelasticData);
-    
+
 //  BGGxsProton=new G4BGGNucleonInelasticXS(G4Proton::Proton());
 //  G4PhysListUtil::FindInelasticProcess(G4Proton::Proton())->AddDataSet(BGGxsProton);
 
   thePiK->Build();
   // use CHIPS cross sections also for Kaons
-  
+
   G4CrossSectionDataSetRegistry* registry = G4CrossSectionDataSetRegistry::Instance();
-    
+
   G4PhysListUtil::FindInelasticProcess(G4KaonMinus::KaonMinus())->AddDataSet(registry->GetCrossSectionDataSet(G4ChipsKaonMinusInelasticXS::Default_Name()));
   G4PhysListUtil::FindInelasticProcess(G4KaonPlus::KaonPlus())->AddDataSet(registry->GetCrossSectionDataSet(G4ChipsKaonPlusInelasticXS::Default_Name()));
   G4PhysListUtil::FindInelasticProcess(G4KaonZeroShort::KaonZeroShort())->AddDataSet(registry->GetCrossSectionDataSet(G4ChipsKaonZeroInelasticXS::Default_Name()));

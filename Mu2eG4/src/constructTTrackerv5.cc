@@ -33,7 +33,6 @@
 // Mu2e includes
 #include "G4Helper/inc/G4Helper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/constructTTracker.hh"
 #include "Mu2eG4/inc/ConstructTTrackerDetail5.hh"
@@ -61,14 +60,13 @@ using namespace std;
 namespace mu2e{
 
   VolumeInfo constructTTrackerv5( VolumeInfo const& ds3Vac,
-                                  SimpleConfig const& config,
-                                  SensitiveDetectorHelper const& sdHelper ){
+                                  SimpleConfig const& config ){
 
     // Master geometry for the TTracker.
     //    TTracker const & ttracker = *(GeomHandle<TTracker>());
 
     // The more detailed version has its own function.
-    ConstructTTrackerDetail5 tt(ds3Vac, config, sdHelper);
+    ConstructTTrackerDetail5 tt(ds3Vac, config);
     return tt.motherInfo();
     // Temporary until I can do more...
 

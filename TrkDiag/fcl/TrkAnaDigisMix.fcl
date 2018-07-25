@@ -1,0 +1,41 @@
+#
+#  This script runs the TrackAnalsys module to create a prototype track-based analysis TTree.  For example:
+#  > mu2e --config TrkDiag/test/TrkAna.fcl --source-list (your files) --TFile TrkAna.root --nevts=100
+# will process 100 events from (your files).  Note that background mixing requires different scripts
+# for interactive and grid processing
+#
+# David Brown (LBNL) 13 July 2016
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : TrkAna
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : @local::TrkAna.producers
+  analyzers : @local::TrkAna.analyzers
+}
+
+physics.analyzers.TrkAna.AnalyzeCRV : true
+
+physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloCrvRecoSequence ]
+physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence ]
+
+# You can add detailed (hit) information to the TTree by setting diagLevel to 2
+physics.analyzers.TrkAna.diagLevel : 1
+# update labels to read mixing output from MDC2018
+physics.analyzers.TrkAna.KalDiag.StrawDigiMCLabel : "compressDigiMCs"
+physics.analyzers.TrkAna.KalDiag.MCStepsLabel : "compressDigiMCs"
+physics.analyzers.TrkAna.KalDiag.MCStepsInstance : ""
+physics.analyzers.TrkAna.KalDiag.SimParticleLabel : "compressDigiMCs"
+physics.analyzers.TrkAna.KalDiag.SimParticleInstance : "g4run"
+physics.analyzers.TrkAna.KalDiag.TimeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+physics.producers.CrvCoincidenceClusterSummarizer.crvWaveformsModuleLabel : "compressDigiMCs"
+

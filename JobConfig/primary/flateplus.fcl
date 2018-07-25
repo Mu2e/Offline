@@ -1,0 +1,11 @@
+# flat range of eplus near the DIO endpoint
+#include "JobConfig/beam/flatE.fcl"
+process_name: flateplus
+physics.producers.generate.genId : radiativeMuonCapture
+physics.producers.generate.physics.pdgId : -11
+physics.producers.generate.physics.elow : 80.0 // MeV
+physics.producers.generate.physics.ehi : 100.0 // MeV
+physics.filters.TrkDigiFilter.MinParticleMom : 70.0
+physics.filters.TrkDigiFilter.particleTypes : [-11]
+services.TFileService.fileName: "nts.owner.flateplus.version.sequencer.root"
+outputs.flatEOutput.fileName: "sim.owner.flateplus.version.sequencer.art"

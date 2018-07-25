@@ -28,7 +28,6 @@
 
 // Root includes
 #include "TH1F.h"
-#include "TNtuple.h"
 
 // Other includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -55,17 +54,16 @@ namespace mu2e {
     // Which data product collections do we want to look at.
     StepFilterMode mode_;
 
-    int nminsteps_;
+    int minnstraws_;
+    double minpmom_;
+    std::vector<PDGCode::type> pdgs_;
 
+    int diag_, debug_;
     // Module label of the g4 module that made the generated particles
     std::string generatorModuleLabel_;
 
     // Module label of the module that made the StepPointMCCollections.
     std::string g4ModuleLabel_;
-
-    // Module labels of the modules that made the collection of reco hits.
-    std::string strawHitMakerLabel_;
-    std::string crystalHitMakerLabel_;
 
     // Instance names of the StepPointMCCollections.
     std::string trackerStepPoints_;
@@ -77,36 +75,36 @@ namespace mu2e {
     std::string extMonUCITofStepPoints_;
 
     // Histogram pointers.
-    TH1F* hNstrawHits_;
-    TH1F* hNcrystalHits_;
-    TH1F* hEDep_;
-    TH1F* hEDepWide_;
-    TH1F* hEDepStep_;
-    TNtuple* ntup_;
+    TH1F* hNstraws_;
 
     // Tools to fill other histograms.
-    DiagnosticsG4              diagnostics_;
+    DiagnosticsG4              g4Summary_;
     GeneratorSummaryHistograms genSummary_;
 
     // Number of events that pass the filter.
     int nPassed_;
 
     // Returns true if the event fails the filter.
-    bool doesEventPass( StepPointMCCollection const& trkSteps,
+    bool doesEventPass( unsigned nstraws, 
                         StepPointMCCollection const& calSteps,
                         StepPointMCCollection const& calROSteps,
                         StepPointMCCollection const& crvROSteps
                         );
 
+    // count the number of unique straws hit in this event
+    unsigned countStraws(StepPointMCCollection const& trkSteps);
+
+
   };
 
   MinimumHits::MinimumHits(fhicl::ParameterSet const& pset):
     mode_(StepFilterMode(pset.get<string>("mode"))),
-    nminsteps_(pset.get<int>("hitsmin",0)),
+    minnstraws_(pset.get<int>("MinNStraws")),
+    minpmom_(pset.get<double>("MinPartMom")),
+    diag_(pset.get<int>("diagLevel",0)),
+    debug_(pset.get<int>("debugLevel",0)),
     generatorModuleLabel_(pset.get<string>("generatorModuleLabel")),
     g4ModuleLabel_(pset.get<string>("g4ModuleLabel")),
-    strawHitMakerLabel_(pset.get<string>("strawHitMakerLabel")),
-    crystalHitMakerLabel_(pset.get<string>("crystalHitMakerLabel")),
     trackerStepPoints_(pset.get<string>("trackerStepPoints","tracker")),
     caloStepPoints_(pset.get<string>("caloStepPoints","calorimeter")),
     caloROStepPoints_(pset.get<string>("caloROStepPoints","calorimeterRO")),
@@ -114,19 +112,17 @@ namespace mu2e {
     crvStepPoints_(pset.get<string>("CRVStepPoints","CRV")),
     vDetStepPoints_(pset.get<string>("vDetStepPoints","virtualdetector")),
     extMonUCITofStepPoints_(pset.get<string>("extMonUCITofStepPoints","ExtMonUCITof")),
-    hNstrawHits_(0),
-    hNcrystalHits_(0),
-    hEDep_(0),
-    hEDepWide_(0),
-    hEDepStep_(0),
-    ntup_(0),
-    diagnostics_(),
-    genSummary_(),
+    hNstraws_(0),
     nPassed_(0){
 
-    mf::LogInfo("CONFIG")
-      << "MinimumHits_module will run in the mode: " << mode_  << "\n";
-  }
+      auto pdgs = pset.get<std::vector<int>>("PDGCodes");
+      for(auto pdg : pdgs )
+	pdgs_.push_back(PDGCode::type(pdg));
+
+
+      mf::LogInfo("CONFIG")
+	<< "MinimumHits_module will run in the mode: " << mode_  << "\n";
+    }
 
   bool MinimumHits::beginRun(art::Run& ){
 
@@ -135,33 +131,26 @@ namespace mu2e {
 
     if ( nRuns >= 2 ){
       if ( nRuns == 2 ){
-        mf::LogInfo("CONFIG")
-          << "MinimumHits_module ignores any geometry changes at run boundaries.  Hope that's OK.\n";
+	mf::LogInfo("CONFIG")
+	  << "MinimumHits_module ignores any geometry changes at run boundaries.  Hope that's OK.\n";
       }
       return 1;
     }
 
     // Book histograms; must wait until beginRun because some histogram
     // limits are set using the GeometryService.
-    diagnostics_.book("G4Summary");
-    genSummary_.book("GeneratorSummary");
-
-    art::ServiceHandle<art::TFileService> tfs;
-    art::TFileDirectory tfdir = tfs->mkdir( "HitSummary" );
-
-    hNstrawHits_   = tfdir.make<TH1F>( "hNstrawHits",   "Number of Straw Hits",    200, 1., 201.  );
-    hNcrystalHits_ = tfdir.make<TH1F>( "hNcrystalHits", "Number of Crystal Hits",   50, 1.,  51.  );
-    hEDep_         = tfdir.make<TH1F>( "hEDep",     "Energy deposition, Straw",   100, 0.,  10.  );
-    hEDepWide_     = tfdir.make<TH1F>( "hEDepWide", "Energy deposition, Straw",   100, 0.,  1000. );
-    hEDepStep_     = tfdir.make<TH1F>( "hEDepStep", "Energy deposition, Step",   100, 0.,  20.  );
-
-    ntup_ = tfdir.make<TNtuple>( "ntup", "Event Summary", "x:y:z:r:p:pt:cz:ntrkSteps:nCaloSteps:nstraws:nxstals");
+    if(diag_ > 0){
+      g4Summary_.book("G4Summary");
+      genSummary_.book("GeneratorSummary");
+      art::ServiceHandle<art::TFileService> tfs;
+      hNstraws_   = tfs->make<TH1F>( "hNstraws",   "Number of Straws",    200, 1., 201.  );
+    }
 
     return true;
   }
 
   // Returns true if the event fails the filter
-  bool MinimumHits::doesEventPass( StepPointMCCollection const& trkSteps,
+  bool MinimumHits::doesEventPass( unsigned nstraws, 
                                    StepPointMCCollection const& calSteps,
                                    StepPointMCCollection const& calROSteps,
                                    StepPointMCCollection const& crvSteps
@@ -170,35 +159,35 @@ namespace mu2e {
 
     switch(mode_) {
 
-    case StepFilterMode::anyDetector      :
-      fail=trkSteps.empty()&&
-        calSteps.empty()&&
-        calROSteps.empty()&&
-        crvSteps.empty();
-      break;
+      case StepFilterMode::anyDetector      :
+	fail=nstraws<(size_t)minnstraws_+1 &&
+	  calSteps.empty()&&
+	  calROSteps.empty()&&
+	  crvSteps.empty();
+	break;
 
-    case StepFilterMode::trackerOnly      :
-      fail=trkSteps.size()<(size_t)nminsteps_+1;
-      break;
+      case StepFilterMode::trackerOnly      :
+	fail=nstraws<(size_t)minnstraws_+1;
+	break;
 
-    case StepFilterMode::calorimeterOnly  :
-      fail=calSteps.empty()&&
-        calROSteps.empty();
-      break;
+      case StepFilterMode::calorimeterOnly  :
+	fail=calSteps.empty()&&
+	  calROSteps.empty();
+	break;
 
-    case StepFilterMode::CRVOnly      :
-      fail=crvSteps.empty();
-      break;
+      case StepFilterMode::CRVOnly      :
+	fail=crvSteps.empty();
+	break;
 
-    case StepFilterMode::trackerOrCalorimeter:
-      fail=trkSteps.empty()&&
-        calSteps.empty()&&
-        calROSteps.empty();
-      break;
+      case StepFilterMode::trackerOrCalorimeter:
+	fail=nstraws<(size_t)minnstraws_+1 &&
+	  calSteps.empty()&&
+	  calROSteps.empty();
+	break;
 
-    default:
-      throw cet::exception("CONFIG")
-        << "MinimumHits module has been given a mode it does not know about.\n";
+      default:
+	throw cet::exception("CONFIG")
+	  << "MinimumHits module has been given a mode it does not know about.\n";
     }
 
     return !fail;
@@ -206,19 +195,19 @@ namespace mu2e {
 
 
   bool
-  MinimumHits::filter(art::Event& event) {
+    MinimumHits::filter(art::Event& event) {
 
-    art::Handle<StatusG4> g4StatusHandle;
-    event.getByLabel( g4ModuleLabel_, g4StatusHandle);
-    StatusG4 const& g4Status = *g4StatusHandle;
+      art::Handle<StatusG4> g4StatusHandle;
+      event.getByLabel( g4ModuleLabel_, g4StatusHandle);
+      StatusG4 const& g4Status = *g4StatusHandle;
 
-    // Accept only events with good status from G4.
-    if ( g4Status.status() > 1 ) {
+      // Accept only events with good status from G4.
+      if ( g4Status.status() > 1 ) {
 
-      // Diagnostics for rejected events.
-      diagnostics_.fillStatus( g4Status);
-      return false;
-    }
+	// Diagnostics for rejected events.
+	g4Summary_.fillStatus( g4Status);
+	return false;
+      }
 
     // Get enough information to make the filter decision.
     art::Handle<StepPointMCCollection> trackerStepsHandle;
@@ -237,111 +226,69 @@ namespace mu2e {
     event.getByLabel(g4ModuleLabel_, crvStepPoints_, crvStepsHandle);
     StepPointMCCollection const& crvSteps(*crvStepsHandle);
 
+    // count the straws
+    unsigned nstraws = countStraws(trackerSteps);
     // Make filter decision
-    bool pass = doesEventPass( trackerSteps, caloSteps, caloROSteps, crvSteps );
+    bool pass = doesEventPass( nstraws, caloSteps, caloROSteps, crvSteps );
 
+    if(debug_ > 0)
+      std::cout << " Event has " << nstraws << " straws and status " << pass << std::endl;
     if ( !pass ){
       return false;
     }
 
-    // Get the remaining data products from the event.
-    art::Handle<GenParticleCollection> gensHandle;
-    event.getByLabel( generatorModuleLabel_, gensHandle);
-    GenParticleCollection const& gens(*gensHandle);
+    if(diag_ > 0){
+      // Get the remaining data products from the event.
+      art::Handle<GenParticleCollection> gensHandle;
+      event.getByLabel( generatorModuleLabel_, gensHandle);
+      GenParticleCollection const& gens(*gensHandle);
 
-    art::Handle<SimParticleCollection> simsHandle;
-    event.getByLabel(g4ModuleLabel_,simsHandle);
-    SimParticleCollection const& sims(*simsHandle);
+      art::Handle<SimParticleCollection> simsHandle;
+      event.getByLabel(g4ModuleLabel_,simsHandle);
+      SimParticleCollection const& sims(*simsHandle);
 
-    art::Handle<StepPointMCCollection> foilStepsHandle;
-    event.getByLabel(g4ModuleLabel_, foilStepPoints_, foilStepsHandle);
-    StepPointMCCollection const& foilSteps(*foilStepsHandle);
+      art::Handle<StepPointMCCollection> foilStepsHandle;
+      event.getByLabel(g4ModuleLabel_, foilStepPoints_, foilStepsHandle);
+      StepPointMCCollection const& foilSteps(*foilStepsHandle);
 
-    art::Handle<StepPointMCCollection> vDetStepsHandle;
-    event.getByLabel(g4ModuleLabel_, vDetStepPoints_, vDetStepsHandle);
-    StepPointMCCollection const& vDetSteps(*vDetStepsHandle);
+      art::Handle<StepPointMCCollection> vDetStepsHandle;
+      event.getByLabel(g4ModuleLabel_, vDetStepPoints_, vDetStepsHandle);
+      StepPointMCCollection const& vDetSteps(*vDetStepsHandle);
 
-    art::Handle<StepPointMCCollection> extMonUCITofStepsHandle;
-    event.getByLabel(g4ModuleLabel_, extMonUCITofStepPoints_, extMonUCITofStepsHandle);
-    StepPointMCCollection const& extMonUCITofSteps(*extMonUCITofStepsHandle);
+      art::Handle<StepPointMCCollection> extMonUCITofStepsHandle;
+      event.getByLabel(g4ModuleLabel_, extMonUCITofStepPoints_, extMonUCITofStepsHandle);
+      StepPointMCCollection const& extMonUCITofSteps(*extMonUCITofStepsHandle);
 
-    art::Handle<PointTrajectoryCollection> trajectoriesHandle;
-    event.getByLabel(g4ModuleLabel_,trajectoriesHandle);
-    PointTrajectoryCollection const& trajectories(*trajectoriesHandle);
+      art::Handle<PointTrajectoryCollection> trajectoriesHandle;
+      event.getByLabel(g4ModuleLabel_,trajectoriesHandle);
+      PointTrajectoryCollection const& trajectories(*trajectoriesHandle);
 
-    art::Handle<StrawHitCollection> strawHitsHandle;
-    event.getByLabel(strawHitMakerLabel_, strawHitsHandle);
-    StrawHitCollection const& strawHits(*strawHitsHandle);
+      art::Handle<PhysicalVolumeInfoCollection> volsHandle;
+      event.getRun().getByLabel(g4ModuleLabel_,volsHandle);
+      PhysicalVolumeInfoCollection const& vols(*volsHandle);
 
-    art::Handle<CaloCrystalHitCollection> crystalHitsHandle;
-    event.getByLabel(crystalHitMakerLabel_, crystalHitsHandle);
-    CaloCrystalHitCollection const& crystalHits(*crystalHitsHandle);
+      // Fill histograms for the events that pass the filter.
+      g4Summary_.fill( g4Status,
+	  sims,
+	  trackerSteps,
+	  caloSteps,
+	  caloROSteps,
+	  crvSteps,
+	  foilSteps,
+	  vDetSteps,
+	  extMonUCITofSteps,
+	  trajectories,
+	  vols);
 
-    art::Handle<PhysicalVolumeInfoCollection> volsHandle;
-    event.getRun().getByLabel(g4ModuleLabel_,volsHandle);
-    PhysicalVolumeInfoCollection const& vols(*volsHandle);
+      genSummary_.fill( gens );
 
-    // Fill histograms for the events that pass the filter.
-    diagnostics_.fill( g4Status,
-                       sims,
-                       trackerSteps,
-                       caloSteps,
-                       caloROSteps,
-                       crvSteps,
-                       foilSteps,
-                       vDetSteps,
-                       extMonUCITofSteps,
-                       trajectories,
-                       vols);
-
-    genSummary_.fill( gens );
-
-    hNstrawHits_  ->Fill( strawHits.size() );
-    hNcrystalHits_->Fill( crystalHits.size() );
-
-    for ( size_t i=0; i< strawHits.size(); ++i ){
-      StrawHit const& s = strawHits.at(i);
-      hEDep_->Fill( s.energyDep()*1000. );
-      hEDepWide_->Fill( s.energyDep()*1000. );
-    }
-
-    for ( size_t i=0; i< trackerSteps.size(); ++i ){
-      StepPointMC const& s = trackerSteps.at(i);
-      hEDepStep_->Fill( s.eDep()*1000. );
-    }
-
-    // Properties of generated particles, correlated with step point counts.
-    float nt[ntup_->GetNvar()];
-    nt[7]  = trackerSteps.size();
-    nt[8]  = caloSteps.size() + caloROSteps.size();
-    nt[9]  = strawHits.size();
-    nt[10] = crystalHits.size();
-    for ( GenParticleCollection::const_iterator i=gens.begin(), e=gens.end();
-          i != e; ++i ){
-
-      GenParticle const& gen(*i);
-
-      CLHEP::Hep3Vector const&       pos(gen.position());
-      CLHEP::Hep3Vector const&       p(gen.momentum().vect());
-
-      double r(pos.perp());
-      double cz = p.cosTheta();
-
-      nt[0] = pos.x();
-      nt[1] = pos.y();
-      nt[2] = pos.z();
-      nt[3] = r;
-      nt[4] = p.mag();
-      nt[5] = p.perp();
-      nt[6] = cz;
-      ntup_->Fill(nt);
+      hNstraws_  ->Fill( nstraws );
 
     }
-
     nPassed_++;
     return true;
 
-  } // end of ::analyze.
+  } 
 
   void MinimumHits::endJob() {
     mf::LogInfo("Summary")
@@ -349,6 +296,17 @@ namespace mu2e {
       << nPassed_
       << "\n";
   }
+
+  unsigned MinimumHits::countStraws(StepPointMCCollection const& trkSteps) {
+    std::set<StrawId> ids;
+    for (auto const& step : trkSteps) {
+      auto ifnd = std::find(pdgs_.begin(),pdgs_.end(),step.simParticle()->pdgId());
+      if(ifnd != pdgs_.end() && step.momentum().mag() > minpmom_)
+	ids.insert(step.strawId());
+    }
+    return ids.size();
+  }
+
 
 }
 

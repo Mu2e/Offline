@@ -1116,6 +1116,12 @@ namespace mu2e {
       CarbonFiber->AddMaterial(CFibers, fiberFrac );
       CarbonFiber->AddMaterial(CFresin, (1.0-fiberFrac) );
     }
+ 
+    mat = uniqueMaterialOrThrow("PET_P100");
+      G4Material* PET_P100 = new G4Material( mat.name, 0.11*CLHEP::g/CLHEP::cm3, 3);
+      PET_P100->AddElement( getElementOrThrow("C"), 10);
+      PET_P100->AddElement( getElementOrThrow("H"),  8);
+      PET_P100->AddElement( getElementOrThrow("O"),  4);
 
     mat = uniqueMaterialOrThrow( "Lyso_01");  /// Alessandra
     {
@@ -1138,6 +1144,11 @@ namespace mu2e {
       Lyso_01->AddMaterial( Lyso_00, 99.85*CLHEP::perCent ); 
       Lyso_01->AddElement( Ce, 0.15*CLHEP::perCent );    
     }   
+
+    mat = uniqueMaterialOrThrow( "CuW1090");
+     G4Material* CuW1090 = new G4Material(mat.name, 17.3*CLHEP::g/CLHEP::cm3, 2);
+     CuW1090->AddMaterial( findMaterialOrThrow("G4_W"),0.90); 
+     CuW1090->AddMaterial( findMaterialOrThrow("G4_Cu"),0.10); 
 
 
     mat = uniqueMaterialOrThrow("CorrugatedPolypropylene");
@@ -1174,6 +1185,15 @@ namespace mu2e {
       Electronics2->AddMaterial(findMaterialOrThrow("G10_FR4"), 0.26);
       Electronics2->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.74);
     }
+    
+    mat = uniqueMaterialOrThrow( "AluminumHoneycomb");
+    {
+      //Honeycomb used to fill the source-panel and the inner step margins of the calorimeter
+      G4double density;
+      G4int nel;
+      G4Material *AluminumHoneycomb = new G4Material(mat.name, density = 0.03*CLHEP::g/CLHEP::cm3, nel=1);
+      AluminumHoneycomb->AddMaterial(findMaterialOrThrow("G4_Al"), 100.0*CLHEP::perCent);
+     }
 
     mat = uniqueMaterialOrThrow( "PolypropyleneFoam");
     {

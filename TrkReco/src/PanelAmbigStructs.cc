@@ -9,7 +9,7 @@
 //
 #include "TrkReco/inc/PanelAmbigStructs.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
-#include "cetlib/coded_exception.h"
+#include "cetlib_except/coded_exception.h"
 #include <iostream>
 #include <algorithm>
 

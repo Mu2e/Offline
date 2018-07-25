@@ -1,10 +1,4 @@
 //
-//
-//
-// $Id: ReadExtrapol_module.cc,v 1.18 2014/08/20 14:23:09 murat Exp $
-// $Author: murat $
-// $Date: 2014/08/20 14:23:09 $
-//
 // Original author G. Pezzullo
 //
 
@@ -42,7 +36,6 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 // data
@@ -83,7 +76,7 @@
 using namespace std;
 
 namespace mu2e {
-  
+
   static int ncalls(0);
 
   class ReadTrkExtrapol : public art::EDAnalyzer {
@@ -121,17 +114,17 @@ namespace mu2e {
     Float_t _caloSec[100],
       _trkId[100],
       _trkTime[100],
-      _trkTimeErr[100], 
-      _trkPathLenghtIn[100], 
-      _trkPathLenghtInErr[100], 
+      _trkTimeErr[100],
+      _trkPathLenghtIn[100],
+      _trkPathLenghtInErr[100],
       _trkPathLenghtOut[100],
       _trkPathLenghtOutErr[100],
       _trkMom[100],
-      _trkMomX[100], 
+      _trkMomX[100],
       _trkMomY[100],
-      _trkMomZ[100], 
-      _trkPosX[100], 
-      _trkPosY[100], 
+      _trkMomZ[100],
+      _trkPosX[100],
+      _trkPosY[100],
       _trkPosZ[100];
 
   };
@@ -172,7 +165,7 @@ namespace mu2e {
       _Ntup->Branch("trkPosX", &_trkPosX, "trkPosX[ntrks]/F");
       _Ntup->Branch("trkPosY", &_trkPosY, "trkPosY[ntrks]/F");
       _Ntup->Branch("trkPosZ", &_trkPosZ, "trkPosZ[ntrks]/F");
-      
+
     }
 
 
@@ -187,7 +180,7 @@ namespace mu2e {
     evt.getByLabel(_trkToCaloExtrapolModuleLabel, handle);
     const TrkToCaloExtrapolCollection* coll;
     const TrkToCaloExtrapol *trkExt;
- 
+
     if (handle.isValid()) {
       coll = handle.product();
     } else {
@@ -195,7 +188,7 @@ namespace mu2e {
       printf(". BAIL OUT. \n");
       return;
     }
-    
+
     _evt   = evt.id().event();
     _ntrks = coll->size();
 
@@ -203,24 +196,24 @@ namespace mu2e {
       trkExt = &coll->at(i);
 //       KalRepPtr const& trkPtr = trkExt->trk();
 //       const KalRep* trk = trkPtr.get();
-      
+
       _caloSec[i]    = trkExt->diskId();
       _trkId[i]      = trkExt->trackNumber();
       _trkTime[i]    = trkExt->time();
-      _trkTimeErr[i] = trkExt->timeErr(); 
+      _trkTimeErr[i] = trkExt->timeErr();
 
-      _trkPathLenghtIn[i] = trkExt->pathLengthEntrance(); 
-      _trkPathLenghtInErr[i] = trkExt->pathLenghtEntranceErr(); 
+      _trkPathLenghtIn[i] = trkExt->pathLengthEntrance();
+      _trkPathLenghtInErr[i] = trkExt->pathLenghtEntranceErr();
       _trkPathLenghtOut[i] = trkExt->pathLengthExit();
       _trkPathLenghtOutErr[i] = trkExt->pathLenghtEntranceErr();
       _trkMom[i] = trkExt->momentum().mag();
-      _trkMomX[i] = trkExt->momentum().x(); 
+      _trkMomX[i] = trkExt->momentum().x();
       _trkMomY[i] = trkExt->momentum().y();
-      _trkMomZ[i] = trkExt->momentum().z(); 
-      _trkPosX[i] = trkExt->entrancePosition().x(); 
-      _trkPosY[i] = trkExt->entrancePosition().y(); 
-      _trkPosZ[i] = trkExt->entrancePosition().z(); 
-      
+      _trkMomZ[i] = trkExt->momentum().z();
+      _trkPosX[i] = trkExt->entrancePosition().x();
+      _trkPosY[i] = trkExt->entrancePosition().y();
+      _trkPosZ[i] = trkExt->entrancePosition().z();
+
     }
 
     _Ntup->Fill();

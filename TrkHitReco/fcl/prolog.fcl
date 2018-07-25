@@ -6,6 +6,7 @@ makeSH : {
   module_type : StrawHitReco
   FilterHits : false
   WriteStrawHitCollection : true
+  EventWindowMarkerLabel : "EWMProducer"
 }
 # combine hits in a panel
 makePH : {
@@ -18,7 +19,7 @@ makePH : {
 makeSTH : {
   module_type : MakeStereoHits
   TestFlag : true
-  MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
+  MVATool : { MVAWeights : "TrkHitReco/test/StereoMVA.weights.xml" }
   ComboHitCollection : "makePH"
 }
 # flag hits from low-energy electrons (Compton electrons, delta rays, ...)

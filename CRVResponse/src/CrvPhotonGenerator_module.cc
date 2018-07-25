@@ -4,7 +4,7 @@
 // $Id: $
 // $Author: ehrlich $
 // $Date: 2014/08/07 01:33:40 $
-// 
+//
 // Original Author: Ralf Ehrlich
 
 #include "CRVResponse/inc/MakeCrvPhotons.hh"
@@ -41,16 +41,14 @@
 #include <TMath.h>
 
 
-namespace mu2e 
+namespace mu2e
 {
-  class CrvPhotonGenerator : public art::EDProducer 
+  class CrvPhotonGenerator : public art::EDProducer
   {
 
     public:
     explicit CrvPhotonGenerator(fhicl::ParameterSet const& pset);
     void produce(art::Event& e);
-    void beginJob();
-    void endJob();
     void beginRun(art::Run& r);
 
     private:
@@ -81,6 +79,7 @@ namespace mu2e
 
     SimParticleTimeOffset _timeOffsets;
 
+    CLHEP::HepRandomEngine& _engine;
     CLHEP::RandFlat       _randFlat;
     CLHEP::RandGaussQ     _randGaussQ;
     CLHEP::RandPoissonQ   _randPoissonQ;
@@ -104,9 +103,10 @@ namespace mu2e
     _startTime(pset.get<double>("startTime")),               //0.0 ns
     _visibleEnergyAdjustmentFileName(pset.get<std::string>("visibleEnergyAdjustmentFileName")),
     _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets", fhicl::ParameterSet())),
-    _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
-    _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine()),
-    _randPoissonQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
+    _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
+    _randFlat(_engine),
+    _randGaussQ(_engine),
+    _randPoissonQ(_engine)
   {
     if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (g4ModuleLabels/processNames)");
 
@@ -118,25 +118,17 @@ namespace mu2e
     produces<CrvPhotonsCollection>();
   }
 
-  void CrvPhotonGenerator::beginJob()
-  {
-  }
-
-  void CrvPhotonGenerator::endJob()
-  {
-  }
-
   void CrvPhotonGenerator::beginRun(art::Run& rr)
   {
     GeomHandle<CosmicRayShield> CRS;
     std::vector<CRSScintillatorShield> const &shields = CRS->getCRSScintillatorShields();
     if(shields.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between the geometry and the specified lookup table CRVSectors");
 
-    for(size_t i=0; i<shields.size(); i++) 
+    for(size_t i=0; i<shields.size(); i++)
     {
-      if(shields[i].getCRSScintillatorBarDetail().getMaterialName()!="G4_POLYSTYRENE") 
+      if(shields[i].getCRSScintillatorBarDetail().getMaterialName()!="G4_POLYSTYRENE")
         throw std::logic_error("ERROR: scintillator material is not the expected G4_POLYSTYRENE which is used in the look-up tables");
-      if(shields[i].getName().substr(4)!=_lookupTableCRVSectors[i]) throw std::logic_error("ERROR: mismatch between the geometry and the specified lookup table CRVSectors"); 
+      if(shields[i].getName().substr(4)!=_lookupTableCRVSectors[i]) throw std::logic_error("ERROR: mismatch between the geometry and the specified lookup table CRVSectors");
                             //substr(4) removes the "CRV_" part of the sector name
 
       bool tableLoaded=false;
@@ -166,7 +158,7 @@ namespace mu2e
     }
   }
 
-  void CrvPhotonGenerator::produce(art::Event& event) 
+  void CrvPhotonGenerator::produce(art::Event& event)
   {
     _timeOffsets.updateMap(event);
 
@@ -182,7 +174,7 @@ namespace mu2e
     {
       if(_g4ModuleLabels[j]!="" && _g4ModuleLabels[j]!="*")
         selector = std::unique_ptr<art::Selector>(new art::Selector(art::ProductInstanceNameSelector("CRV") &&
-                                                                    art::ModuleLabelSelector(_g4ModuleLabels[j]) && 
+                                                                    art::ModuleLabelSelector(_g4ModuleLabels[j]) &&
                                                                     art::ProcessNameSelector(_processNames[j])));
       else
         selector = std::unique_ptr<art::Selector>(new art::Selector(art::ProductInstanceNameSelector("CRV") &&
@@ -197,7 +189,7 @@ namespace mu2e
         {
           StepPointMC const& step(CRVSteps->at(istep));
 
-          double t1 = _timeOffsets.timeWithOffsetsApplied(step); 
+          double t1 = _timeOffsets.timeWithOffsetsApplied(step);
           if(t1<_startTime) continue;   //Ignore this StepPoint to reduce computation time.
 
           const CLHEP::Hep3Vector &p1 = step.position();
@@ -208,19 +200,19 @@ namespace mu2e
           GlobalConstantsHandle<ParticleDataTable> particleDataTable;
           int PDGcode = step.simParticle()->pdgId();
           ParticleDataTable::maybe_ref particle = particleDataTable->particle(PDGcode);
-          if(!particle) 
+          if(!particle)
           {
             std::cerr<<"Error in CrvPhotonGenerator: Found a PDG code which is not in the GEANT particle table: ";
             std::cerr<<PDGcode<<std::endl;
             continue;
           }
           double mass = particle.ref().mass();  //MeV/c^2
-          double charge = particle.ref().charge(); //in units of elementary charges 
+          double charge = particle.ref().charge(); //in units of elementary charges
 
           double momentum1 = step.momentum().mag(); //MeV/c
           double energy1 = sqrt(momentum1*momentum1 + mass*mass); //MeV
 //FIXME: does not take the energy of daughter particles into account
-          double energy2 = energy1 - energyDepositedTotal; //MeV  
+          double energy2 = energy1 - energyDepositedTotal; //MeV
           if(energy2<mass) energy2=mass;
 
           double gamma1 = energy1 / mass;
@@ -249,7 +241,7 @@ namespace mu2e
           const CRSScintillatorBarId &barId = CRSbar.id();
           int CRVSectorNumber=barId.getShieldNumber();
           boost::shared_ptr<mu2eCrv::MakeCrvPhotons> &photonMaker=_makeCrvPhotons.at(CRVSectorNumber);
-          photonMaker->MakePhotons(p1Local, p2Local, t1, t2,  
+          photonMaker->MakePhotons(p1Local, p2Local, t1, t2,
                                         PDGcode, beta, charge,
                                         energyDepositedTotal,
                                         energyDepositedNonIonizing,

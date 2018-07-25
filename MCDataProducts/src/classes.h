@@ -37,6 +37,7 @@
 #include "MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollections.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfo.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
@@ -73,5 +74,6 @@
 #include "MCDataProducts/inc/SimParticleTrackerHitSummaryCollection.hh"
 #include "MCDataProducts/inc/SimParticleTrackerHitSummaryAssns.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
+
 
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"

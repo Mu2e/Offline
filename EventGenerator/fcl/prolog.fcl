@@ -19,24 +19,29 @@ muonStops : {
 #   no suffix: default, which will be time dependent.
 merged_tgtStops_tdr : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
 merged_tgtStops_cd3 : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-tgtstops.v533_v543_v563b.001002_00000000.root" ]
-merged_tgtStops     : @local::merged_tgtStops_cd3
 
 merged_ootStops_tdr : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
 merged_ootStops_cd3 : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-ootstops.v533_v543_v563b.001002_00000000.root" ]
-merged_ootStops     : @local::merged_ootStops_cd3
 
 # CD3 stopped muon configs.
 mu2e.tgtMuonStops: {
-    inputFiles            : @local::merged_tgtStops
+    inputFiles            : @nil
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
     branchName            : "stops"
-    verbosityLevel        : 0
+    verbositylevel        : 0
 }
 mu2e.ootMuonStops: {
-    inputFiles            : @local::merged_ootStops_cd3
+    inputFiles            : @nil
     averageNumRecordsToUse: 500000
     treeName              : "outOfTargetDumper/stops"
+    branchName            : "stops"
+    verbosityLevel        : 0
+}
+mu2e.IPAMuonStops: {
+    inputFiles            : @nil
+    averageNumRecordsToUse: 1000000
+    treeName              : "IPAstops/stops"
     branchName            : "stops"
     verbosityLevel        : 0
 }
@@ -49,28 +54,37 @@ generate: {
     messageOnReplacement : true
 }
 
-StoppedMuonConversionGun: {
-    module_type    : StoppedMuonConversionGun
-    czmin          : -1.0
-    czmax          :  1.0
+
+CeEndpointGun: {
+    module_type    : StoppedParticleReactionGun
+    physics: {
+      genId : conversionGun 
+      pdgId : 11
+      spectrumShape: CeEndpoint
+      spectrumVariable: totalEnergy
+    }
     muonStops      : @local::mu2e.tgtMuonStops
-    // Also phimin and phimax defaulting to [0,2pi]
 }
 
-StoppedParticleReactionGun: {
-    module_type    : StoppedParticleReactionGun
-    czmin          : -1.0
-    czmax          :  1.0
-    muonStops      : @local::mu2e.tgtMuonStops
-    verbosityLevel : 0
-    physics        : {
-	pdgId            : 11
-	spectrumVariable : "totalEnergy"
-	spectrumShape    : "flat"
-	elow             : 105.0012
-	ehi              : 105.0014
-    }
+
+PrimaryProtonGunN: {
+module_type          : PrimaryProtonGunN
+inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
+stashSize     : @nil
 }
+
+
+StoppedParticleReactionGun: {
+  @table::CeEndpointGun 
+}
+
+
+StoppedParticleReactionGunN: {
+    @table::StoppedParticleReactionGun
+    module_type    : StoppedParticleReactionGunN
+    stashSize      : @nil
+}
+
 
 StoppedMuonXRayGammaRayGun: {
     module_type    : StoppedMuonXRayGammaRayGun
@@ -90,46 +104,17 @@ randomsaver: {
 #------------------------------------------------------------------------------
 EventGenerator : {
     producers : {
-	StoppedMuonConversionGun   : { @table::StoppedMuonConversionGun   }
+	egun   : { @table::CeEndpointGun   }
+	CeEndpointGun   : { @table::CeEndpointGun   }
 	StoppedParticleReactionGun : { @table::StoppedParticleReactionGun }
-
-  	egun : { @table::StoppedParticleReactionGun # p(e)=105 MeV/c
-	    physics : {
-		pdgId            :  11
-		elow             : 104.97175
-		ehi              : 104.97176
-		spectrumVariable : "momentum"
-		spectrumShape    : "flat"
-	    }
-	}
-
-  	egun005 : { @table::StoppedParticleReactionGun # p(e)=5 MeV/c
-	    physics : {
-		pdgId            :  11
-		elow             : 4.9999
-		ehi              : 5.0001
-		spectrumVariable : "momentum"
-		spectrumShape    : "flat"
-	    }
-	}
-
-  	egun95105 : { @table::StoppedParticleReactionGun # p(e)=95-105 MeV/c
-	    physics : {
-		pdgId            :  11
-		elow             :  95
-		ehi              : 105
-		spectrumVariable : "momentum"
-		spectrumShape    : "flat"
-	    }
-	}
+        StoppedParticleReactionGunN : { @table::StoppedParticleReactionGunN }
+        PrimaryProtonGunN           : { @table::PrimaryProtonGunN           }
 #------------------------------------------------------------------------------
 # CE on Al - leading logs approximation, spectrum from mu2e-7615 by R.Czafron
 #------------------------------------------------------------------------------
   	ceLeadingLog : { @table::StoppedParticleReactionGun # CE + rad corr
 	    physics : {
 		pdgId            :  11
-		elow             :   0
-		ehi              : 105
 		spectrumVariable : "totalEnergy"
 		spectrumShape    : "tabulated"
 		spectrumFileName : "ConditionsService/data/szafron_mu2e_7615.tbl"
@@ -153,8 +138,6 @@ EventGenerator : {
   	dioallo : { @table::StoppedParticleReactionGun # DIO Al LO 
 	    physics : {
 		pdgId            :  11
-		elow             : 0.511
-		ehi              : 105.0015
 		spectrumVariable : "totalEnergy"
 		spectrumShape    : "tabulated"
 		spectrumFileName : "ConditionsService/data/czarnecki_Al.tbl"
@@ -167,8 +150,6 @@ EventGenerator : {
   	dioalll : { @table::StoppedParticleReactionGun # DIO Al leading log 
 	    physics : {
 		pdgId            :  11
-		elow             : 105.0010
-		ehi              : 105.0015
 		spectrumVariable : "totalEnergy"
 		spectrumShape    : "tabulated"
 		spectrumFileName : "ConditionsService/data/czarnecki_szafron_Al_2016.tbl"

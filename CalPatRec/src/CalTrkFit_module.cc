@@ -31,7 +31,6 @@
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -88,7 +87,7 @@ using CLHEP::Hep3Vector;
 namespace mu2e {
 
   using namespace CalTrkFitTypes;
-  
+
   class Calorimeter;
   class TTracker;
 
@@ -99,18 +98,17 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     unsigned            _iev;
 	    	  	  		// configuration parameters
-    int                 _diagLevel; 
+    int                 _diagLevel;
     int                 _debugLevel;
     int                 _printfreq;
     int                 _useAsFilter;   // allows to use the module as a produer or as a filter
-    bool                _addhits; 
+    bool                _addhits;
     std::vector<double> _zsave;
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
     std::string         _shLabel ;      // MakeStrawHit label (makeSH)
     std::string         _shDigiLabel;
-    std::string         _shpLabel;
     std::string         _shfLabel;
     std::string         _trkseedLabel;
     std::string         _tpeaksLabel;
@@ -120,7 +118,7 @@ namespace mu2e {
     double              _maxadddoca;
     double              _maxaddchi;
     TrkFitFlag          _goodseed;
-    
+
     TrkParticle         _tpart;	        // particle type being searched for
     TrkFitDirection     _fdir;		// fit direction in search
 //-----------------------------------------------------------------------------
@@ -128,7 +126,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     const ComboHitCollection*             _shcol;
     const StrawHitFlagCollection*         _shfcol;
-    const StrawHitPositionCollection*     _shpcol;
 
     const KalSeedCollection*              _trkseeds;
 
@@ -156,10 +153,10 @@ namespace mu2e {
     enum fitType {helixFit=0,seedFit,kalFit};
     explicit CalTrkFit(const fhicl::ParameterSet& PSet);
     virtual ~CalTrkFit();
-    
+
     virtual void beginJob();
     virtual bool beginRun(art::Run&);
-    virtual bool filter (art::Event& event ); 
+    virtual bool filter (art::Event& event );
     virtual void endJob();
 //-----------------------------------------------------------------------------
 // helper functions
@@ -176,13 +173,12 @@ namespace mu2e {
     _diagLevel       (pset.get<int>                ("diagLevel"                      )),
     _debugLevel      (pset.get<int>                ("debugLevel"                     )),
     _printfreq       (pset.get<int>                ("printFrequency"                 )),
-    _useAsFilter     (pset.get<int>                ("useAsFilter"                    )),    
+    _useAsFilter     (pset.get<int>                ("useAsFilter"                    )),
     _addhits         (pset.get<bool>               ("addhits"                        )),
     _zsave           (pset.get<vector<double> >("ZSavePositions",
 						vector<double>{-1522.0,0.0,1522.0}   )), // front, middle and back of the tracker
     _shLabel         (pset.get<string>             ("StrawHitCollectionLabel"        )),
     _shDigiLabel     (pset.get<string>             ("StrawDigiCollectionLabel"       )),
-    _shpLabel        (pset.get<string>             ("StrawHitPositionCollectionLabel")),
     _shfLabel        (pset.get<string>             ("StrawHitFlagCollectionLabel"    )),
     _trkseedLabel    (pset.get<string>             ("TrackSeedModuleLabel"           )),
     _maxdtmiss       (pset.get<double>             ("MaxDtMiss"                      )),
@@ -194,6 +190,10 @@ namespace mu2e {
     _fitter          (pset.get<fhicl::ParameterSet>   ("Fitter",fhicl::ParameterSet())),
     _result          ()
   {
+    consumes<ComboHitCollection>(_shLabel);
+    consumes<StrawHitFlagCollection>(_shfLabel);
+    consumes<KalSeedCollection>(_trkseedLabel);
+
     produces<KalRepCollection       >();
     produces<KalRepPtrCollection    >();
     produces<AlgorithmIDCollection  >();
@@ -263,16 +263,6 @@ namespace mu2e {
              _shLabel.data());
     }
 
-    // art::Handle<mu2e::StrawHitPositionCollection> shposH;
-    // if (evt.getByLabel(_shpLabel,shposH)) {
-    //   _shpcol = shposH.product();
-    // }
-    // else {
-    //   _shpcol = 0;
-    //   printf(" >>> ERROR in CalTrkFit::findData: StrawHitPositionCollection with label=%s not found.\n",
-    //          _shpLabel.data());
-    // }
-
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
     if (evt.getByLabel(_shfLabel,shflagH)) {
       _shfcol = shflagH.product();
@@ -289,7 +279,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // done
 //-----------------------------------------------------------------------------
-    return (_shcol != 0) && (_shfcol != 0) && (_shpcol != 0) && (_trkseeds != 0);
+    return (_shcol != 0) && (_shfcol != 0) && (_trkseeds != 0);
   }
 
 //-----------------------------------------------------------------------------
@@ -324,7 +314,7 @@ namespace mu2e {
     _data.result  = &_result;
     _data.kscol   = kscol.get();
     _data.tracks  = tracks.get();
-    
+
     if (! findData(event)) goto END;
 
     shfcol.reset(new StrawHitFlagCollection(*_shfcol));
@@ -332,7 +322,6 @@ namespace mu2e {
     _result.fitType     = 1;               // final fit
     _result.event       = &event ;
     _result.shcol       = _shcol ;
-    //    _result.shpos       = _shpcol;
     _result.shfcol      = _shfcol;
     _result.tpart       = _tpart ;
     _result.fdir        = _fdir  ;
@@ -341,7 +330,7 @@ namespace mu2e {
 // loop over track "seeds" found by CalSeedFit
 //-----------------------------------------------------------------------------
     nseeds = _trkseeds->size();
-    
+
     for (int iseed=0; iseed<nseeds; iseed++) {
       kalSeed = &_trkseeds->at(iseed);
       int n_seed_hits = kalSeed->hits().size();
@@ -370,7 +359,7 @@ namespace mu2e {
 	  break;
 	}
       }
-      
+
       if (kseg == kalSeed->segments().end()) {
 	printf("[CalTrkFit::filter] event numebr %i Helix segment range doesn't cover flt0 = %10.3f\n", _iev, flt0) ;
 
@@ -431,7 +420,7 @@ namespace mu2e {
 	  _result.nunweediter = 0;
 	  _fitter.unweedHits(_result,_maxaddchi);
 	  if (_debugLevel > 0) _fitter.printHits(_result,"CalTrkFit::produce after unweedHits");
-	      
+
 	  findMissingHits(_result);
 //-----------------------------------------------------------------------------
 // if new hits have been added, add them and refit the track.
@@ -586,7 +575,7 @@ namespace mu2e {
     MissingHit_t mh;
 
     ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
-    
+
     int nstrs = KRes.shcol->size();
     for (int istr=0; istr<nstrs; ++istr) {
       mh.index = istr;
@@ -633,7 +622,7 @@ namespace mu2e {
 	}
 
         if (! found) {
-					// estimate trajectory length to hit 
+					// estimate trajectory length to hit
 	  double hflt = 0;
 	  TrkHelixUtils::findZFltlen(*reftraj,zhit,hflt);
 
@@ -662,7 +651,7 @@ namespace mu2e {
 	  double      rdrift;//, hit_error(0.2);
 
 	  TrkStrawHit hit(sh,straw,istr,hitt0,hflt,10.,1.);
-	  
+
 	  double tdrift=hit.time()-hit.hitT0()._t0;
 
 	  double phi(0);
@@ -683,7 +672,7 @@ namespace mu2e {
 
           if (_debugLevel > 0) {
             printf("[CalTrkFit::findMissingHits] %8i  %6i  %8i  %10.3f %10.3f %10.3f   %3i\n",
-                   straw.index().asInt(),
+                   straw.id().asUint16(),
                    straw.id().getPlane(),
                    straw.id().getPanel(),
                    mh.doca, rdrift, mh.dr,added);
@@ -715,7 +704,7 @@ namespace mu2e {
       }
     }
   }
-  
+
 }
 using mu2e::CalTrkFit;
 DEFINE_ART_MODULE(CalTrkFit);

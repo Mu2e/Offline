@@ -161,7 +161,11 @@ namespace mu2e {
     const double pPositron = std::sqrt( cet::diff_of_squares( ePositron, m ) );
         
     // Produce electron momentum
-    static RandomUnitSphere randomUnitSphere;
+    static RandomUnitSphere randomUnitSphere( art::ServiceHandle<art::RandomNumberGenerator>()->getEngine(), 
+					      -1.,
+					       1.,
+					       0.,
+					       CLHEP::twopi);
     const CLHEP::Hep3Vector p3electron = randomUnitSphere.fire( pElectron );
 
     // Get positron momentum

@@ -47,8 +47,14 @@ namespace mu2e {
       double currentToVoltage(StrawElectronics::Path ipath) const { return _dVdI[ipath]; }
       double saturatedResponse(double vlin) const;
       double ADCPedestal() const { return _ADCped; };
+      double t0shift() const { return _t0shift; }
 
+      // converts times from TDC times to time relative to Event Window
+      // removes channel to channel delays and overall electronics time delay
       void calibrateTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes &times, const StrawId &id) const;
+
+      double driftTime(StrawHit const& strawhit) const;
+      double pathLength(StrawHit const& strawhit, double theta) const;
 
       void print(std::ostream& os) const;
 
@@ -95,6 +101,8 @@ namespace mu2e {
       double _rres_rad;
       double _mint0doca;  // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
 
+      double _TOTIntercept, _TOTSlope, _TOTmin, _TOTmax;
+      double _t0shift;
       double _gasGain;
       std::vector<double> _pmpEnergyScale;
       double _pmpEnergyScaleAvg;
@@ -103,7 +111,8 @@ namespace mu2e {
       double _vsat;
       double _ADCped;
 
-      double _timeOffsetBeam;
+
+      double _electronicsTimeDelay;
       std::vector<double> _timeOffsetPanel;
       std::vector<double> _timeOffsetStrawHV;
       std::vector<double> _timeOffsetStrawCal;

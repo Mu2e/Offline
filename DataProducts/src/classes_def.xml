@@ -5,7 +5,6 @@
 
 
 <lcgdict>
- <class name="mu2e::StrawIndex"/>
  <class name="mu2e::StrawEnd"/>
  <class name="mu2e::StrawId"/>
  <class name="mu2e::StrawIdMask"/>
@@ -32,4 +31,7 @@
  <class name="boost::array<unsigned char,20>"/>
  <class name="mu2e::IndexMap"/>
  <class name="art::Wrapper<mu2e::IndexMap>"/>
+
+ <class name="mu2e::EventWindowMarker" />
+ <class name="art::Wrapper<mu2e::EventWindowMarker>"/>
 </lcgdict>

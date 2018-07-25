@@ -19,7 +19,7 @@ namespace art {
 
 class KalRep;
 
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
@@ -44,7 +44,7 @@ namespace mu2e {
   protected:
 
     static std::string                            _FlagBgrHitsModuleLabel;
-    static const  PtrStepPointMCVectorCollection* _ListOfMCStrawHits;
+    static const  StrawDigiMCCollection*          _ListOfMCStrawHits;
     static const  SimParticleTimeOffset*          _TimeOffsets;
 
   public:

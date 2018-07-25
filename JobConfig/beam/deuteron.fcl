@@ -1,0 +1,27 @@
+// Start with particles hitting the detector mother volumes and
+// write out StepPoints in the detectors.
+//
+// Ejected deuterons from muon capture.
+//
+// Andrei Gaponenko, 2015
+
+#include "JobConfig/beam/prolog.fcl"
+
+process_name: deuteron
+
+source: { module_type : EmptyEvent }
+services: { @table::mu2e.services.simServices }
+physics: { @table::mu2e.physics.g4s4Muons }
+outputs: { @table::mu2e.outputs.g4s4Defs }
+
+physics.producers.generate.physics: {
+    pdgId : 1000010020 # deuteron
+    spectrumShape: ejectedProtons # same spectrum for protons and deuterons, as in the MECO note
+    spectrumVariable: kineticEnergy
+    nbins: 1000
+}
+
+services.TFileService.fileName: "nts.owner.deuteron.version.sequencer.root"
+outputs.detectorOutput.fileName: "sim.owner.deuteron-TrkCal.version.sequencer.art"
+outputs.crvOutput.fileName: "sim.owner.deuteron-CRV.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName: "sim.owner.deuteron-truncated.version.sequencer.art"

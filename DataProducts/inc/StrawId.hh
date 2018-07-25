@@ -5,7 +5,7 @@
 // Original author Rob Kutschke
 // Re-implemented as integer bitfields by Dave Brown (LBNL)
 //
-#include <ostream>
+#include <iosfwd>
 #include <string>
 #include <math.h>
 
@@ -42,9 +42,14 @@ namespace mu2e {
       constexpr static uint16_t _nstraws = 96; // number of straws per panel
       constexpr static uint16_t _nlayers = 2; // number of layers per panel ; do we need it, see below
       constexpr static uint16_t _npanels = 6; // number of panels per plane
-      constexpr static uint16_t _nfaces = 2; // number of faces in a plane 
-      constexpr static uint16_t _nplanes = 40; // number of planes (36 or 40 for cd3)
+      constexpr static uint16_t _nfaces = 2; // number of faces in a plane
+      constexpr static uint16_t _nplanes = 36; // number of planes
       constexpr static uint16_t _nupanels = _npanels * _nplanes; // number of unique panels
+
+      // One more than the largest legal StrawId; not a fully functional end iterator.
+      constexpr static uint16_t _end = ((StrawId::_nplanes -1) << StrawId::_planesft) +
+                                       ((StrawId::_npanels -1) << StrawId::_panelsft) +
+                                       StrawId::_nstraws;
 
       // test values
       static bool validStraw(uint16_t istraw) { return istraw < _nstraws; }
@@ -106,7 +111,7 @@ namespace mu2e {
       }
 
       uint16_t getStation() const{
-	return station(); 
+	return station();
       }
 
       uint16_t plane() const{
@@ -128,7 +133,7 @@ namespace mu2e {
       uint16_t uniquePanel() const{
 	return plane()*_npanels + panel();
       }
-      
+
       uint16_t straw() const{
 	return (_sid & _strawmsk);
       }
@@ -176,14 +181,6 @@ namespace mu2e {
         return ( _sid > rhs._sid);
       }
 
-      friend std::ostream& operator<<(std::ostream& ost,
-                                      const StrawId& s ){
-	ost << s.plane() << "_"
-            << s.panel() << "_"
-            << s.straw();
-        return ost;
-      }
-
       // helpers
 
       bool samePlane( StrawId const& sid) const{
@@ -206,8 +203,10 @@ namespace mu2e {
       void setPlane(uint16_t iplane);
 
   };
-  inline std::ostream& operator<<(std::ostream& ost,
-                                  const StrawId& s );
+
+  // printout
+  std::ostream& operator<<(std::ostream& ost,
+                           const StrawId& s );
 
 }
 #endif /* TrackerGeom_StrawId_hh */

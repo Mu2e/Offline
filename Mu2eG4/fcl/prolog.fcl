@@ -36,14 +36,16 @@ mu2eg4DefaultPhysics: {
     stepper : "G4ClassicalRK4"
     // the following parameters control intagration and have a cumulative effect on the final precision
     // limits on the relative position errors
-    // epsilonMin Can be 1.0e-5 to 1.0e-10  Minimum & value for smallest steps
-    // epsilonMax Can be 1.0e-3 to 1.0e-8   Maximum & value for largest steps
+    // epsilonMin Can be 1.0e-5 to 1.0e-10  Minimum & value for largest steps
+    // epsilonMax Can be 1.0e-3 to 1.0e-8   Maximum & value for smallest steps
     epsilonMin        : 5.0e-5
     epsilonMax        : 1.0e-3
     // the following values are in mm
     deltaOneStep      : 5.0e-2 // position error acceptable in an integration (not physics) step
     deltaIntersection : 5.0e-2 // maximum inaccuracy of a single boundary crossing
     deltaChord : 5.0e-2 // maximum "miss distance" between chord and a mid point of an integration step
+    stepMinimum       : 1.0e-2 // mm minimum size of the integration step
+    maxIntSteps       : 1000 // maximum of internal integration steps per physical step
     bfieldMaxStep: 20. // mm;  value used in step limmiter, has impact on tracking accuracy as well
     limitStepInAllVolumes: false
 }
@@ -136,9 +138,9 @@ mu2eg4runDefaultSingleStage: {
 	enableAllSDs : false  # this would activate all SDs listed in StepInstanceName enum
 	# activate minimal set of sensitive detectors used by everybody
 	enableSD : [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]
-        # in the including fcl file set e.g. physics.producers.g4run.SDConfig.enableSD : @erase 
+        # in the including fcl file set e.g. physics.producers.g4run.SDConfig.enableSD : @erase
         # whan setting enableAllSDs : true
-	TimeVD: { times: [] } 
+	TimeVD: { times: [] }
     }
 
     debug:  @local::mu2eg4DefaultDebug

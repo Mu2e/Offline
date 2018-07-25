@@ -20,12 +20,17 @@
 // C++ includes
 #include <utility>
 
+namespace CLHEP {
+  class RandFlat;
+}
+
 namespace mu2e {
 
-  class PionCaptureSpectrum {
+  class RandomUnitSphere;
 
+  class PionCaptureSpectrum {
   public:
-    
+
     enum enum_type    { Flat  , Bistirlich      };
     enum enum_type_2D { Flat2D, KrollWadaJoseph };
 
@@ -33,7 +38,7 @@ namespace mu2e {
     ~PionCaptureSpectrum(){}
 
     double getWeight   ( const double E ) const;
-    double get2DWeight ( const double x, const double y, const double E ) const; 
+    double get2DWeight ( const double x, const double y, const double E ) const;
     double get2DMax    ( const double E ) const;
 
     void   setSpectrum   ( enum_type    spectrum   ) { _spectrum   = spectrum;   }
@@ -41,10 +46,13 @@ namespace mu2e {
 
     static double getFlat( const double e, const double x = 0., const double y = 0.);
     static double getBistirlichSpectrum( const double e );
-    static std::pair<CLHEP::HepLorentzVector,CLHEP::HepLorentzVector> getElecPosiVectors( const double energy,
-                                                                                          const double x,
-                                                                                          const double y );
-                                                                                        
+    static std::pair<CLHEP::HepLorentzVector,CLHEP::HepLorentzVector>
+    getElecPosiVectors(RandomUnitSphere& randomUnitSphere,
+                       CLHEP::RandFlat& randFlat,
+                       const double energy,
+                       const double x,
+                       const double y);
+
     double getKrollWadaJosephSpectrum( const double e, const double x, const double y ) const;
 
   private:
@@ -57,4 +65,3 @@ namespace mu2e {
 } // end of namespace mu2e
 
 #endif /* Mu2eUtilities_PionCaptureSpectrum_hh */
-

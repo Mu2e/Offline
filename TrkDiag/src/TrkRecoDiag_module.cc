@@ -75,9 +75,6 @@ namespace mu2e {
       int _mcgen, _mcproc, _mcpdg; // targets for MC match
       TrkFitFlag _goodkf, _goodks, _goodhs; // define a good track
      // event object tags
-      art::InputTag _shTag;
-      art::InputTag _shpTag;
-      art::InputTag _shfTag;
       art::InputTag _hsTag;
       art::InputTag _ksTag;
       art::InputTag _kfTag;
@@ -87,9 +84,6 @@ namespace mu2e {
       art::InputTag _vdmcstepsTag;
       art::InputTag _beamWtModule;
       // cache of event objects
-      const StrawHitCollection* _shcol;
-      const StrawHitPositionCollection* _shpcol;
-      const StrawHitFlagCollection* _shfcol;
       const HelixSeedCollection* _hscol;
       const KalSeedCollection* _kscol;
       const KalSeedCollection* _kfcol;
@@ -158,9 +152,6 @@ namespace mu2e {
     _goodkf(pset.get<vector<string> >("GoodKalFinalFlag",vector<string>{"KalmanOK"})),
     _goodks(pset.get<vector<string> >("GoodKalSeedFlag",vector<string>{"SeedOK"})),
     _goodhs(pset.get<vector<string> >("GoodHelixFlag",vector<string>{"HelixOK"})),
-    _shTag(pset.get<art::InputTag>("StrawHitCollection","makeSH")),
-    _shpTag(pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
-    _shfTag(pset.get<art::InputTag>("StrawHitFlagCollection","FlagBkgHits")),
     _hsTag(pset.get<art::InputTag>("HelixSeedCollection","HelixFinder:Positive")),
     _ksTag(pset.get<art::InputTag>("KalSeedFitCollection","KSFDeM")),
     _kfTag(pset.get<art::InputTag>("KalFinalFitCollection","KFFDeM")),
@@ -332,9 +323,6 @@ namespace mu2e {
   }
 
   bool TrkRecoDiag::findData(const art::Event& evt){
-    _shcol = 0;
-    _shpcol = 0;
-    _shfcol = 0;
     _tccol = 0;
     _hscol = 0;
     _kscol = 0;
@@ -342,12 +330,6 @@ namespace mu2e {
     _mcdigis = 0;
     _vdmcsteps = 0;
     // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
-    auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
-    _shcol = shH.product();
-    auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
-    _shpcol = shpH.product();
-    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
-    _shfcol = shfH.product();
     auto tcH = evt.getValidHandle<TimeClusterCollection>(_tcTag);
     _tccol = tcH.product();
     auto tqH = evt.getValidHandle<TrkQualCollection>(_tqTag);
@@ -369,7 +351,7 @@ namespace mu2e {
       }
     }
 
-    return _shcol != 0 && _shpcol != 0 && _shfcol != 0 && _hscol != 0 && _kscol!= 0 && _kfcol != 0 && _tccol != 0 && _tqcol != 0
+    return _hscol != 0 && _kscol!= 0 && _kfcol != 0 && _tccol != 0 && _tqcol != 0
       && ((_mcdigis != 0 && (_vdmcsteps != 0 || _mcgen < 0) ) || !_mcdiag);
   }
 

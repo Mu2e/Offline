@@ -10,7 +10,7 @@
 // Original author: Gianni Onorato
 //
 
-#include<vector> 
+#include<vector>
 
 // Mu2e includes
 #include "MCDataProducts/inc/GenParticle.hh"
@@ -26,26 +26,26 @@ namespace mu2e {
 
   public:
 
-    PiCaptureEffects(double probInternalConversion, double elow, double ehi, int nbins);
-
-    ~PiCaptureEffects();
+    PiCaptureEffects(CLHEP::HepRandomEngine& engine,
+                     double probInternalConversion,
+                     double elow, double ehi, int nbins);
 
     void defineOutput();
 
-    double internalFraction();
+    double internalFraction() const;
 
-    bool doPhoton();
+    bool doPhoton() const;
 
-    bool doElectron();
+    bool doElectron() const;
 
-    bool doPositron();
+    bool doPositron() const;
 
-    GenParticle outputGamma(CLHEP::Hep3Vector pos, double time);  
+    GenParticle outputGamma(CLHEP::Hep3Vector pos, double time);
 
     GenParticle outputElec(CLHEP::Hep3Vector pos, double time);
 
     GenParticle outputPosit(CLHEP::Hep3Vector pos, double time);
-    
+
   private:
 
     double _probInternalConversion;
@@ -67,18 +67,18 @@ namespace mu2e {
     double _positMom;
 
     // Photon energy spectrum as a continuous function.
-    double energySpectrum(const double x);
-    
+    double energySpectrum(const double x) const;
+
     // Compute a binned representation of the photon energy spectrum.
-    std::vector<double> binnedEnergySpectrum();
+    std::vector<double> binnedEnergySpectrum() const;
 
     // Photon energy spectrum as a continuous function.
-    double internalFractionalSpectrum(const double x);
+    double internalFractionalSpectrum(const double x) const;
 
     // Compute a binned representation of the photon energy spectrum.
     // This runs from 0 to 1; we'll take the photon energy and multiply.
-    std::vector<double> internalFractionalBinnedSpectrum();
- 
+    std::vector<double> internalFractionalBinnedSpectrum() const;
+
   };
 }
 

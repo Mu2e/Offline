@@ -66,7 +66,7 @@ namespace mu2e {
     virtual void analyze(const art::Event& e) override;
 
   private:
- 
+
     typedef std::vector< art::Handle<StepPointMCCollection> > HandleVector;
 
     // Start: run time parameters
@@ -94,7 +94,7 @@ namespace mu2e {
 
     // Module which made the CaloCrystalHits
     std::string _caloCrystalModuleLabel;
-        
+
     // Name of the stopping target StepPoint collection
     std::string _targetStepPoints;
 
@@ -272,22 +272,22 @@ namespace mu2e {
     _hStepLength = tfs->make<TH1F>( "hStepLength",  "G4 Step Length in Sensitive Detector; (mm)",
                                     100, 0., 10. );
 
-    _hCaStepEdep =   tfs->make<TH1F>("hCaStepEdep",  "Total energy deposition from StepPt in each crystal", 
+    _hCaStepEdep =   tfs->make<TH1F>("hCaStepEdep",  "Total energy deposition from StepPt in each crystal",
                                      2000, 0., 2000. );
-    _hCaStepNum    = tfs->make<TH1F>("hCaStepNum",   "Total number of StepPt in each crystal", 
+    _hCaStepNum    = tfs->make<TH1F>("hCaStepNum",   "Total number of StepPt in each crystal",
                                      2000, 0., 2000. );
-    _hCaCrystalXY  = tfs->make<TH2F>("hCaCrystalXY", "calorimeter stepPt position in crystal frame", 
+    _hCaCrystalXY  = tfs->make<TH2F>("hCaCrystalXY", "calorimeter stepPt position in crystal frame",
                                      100,-50.,50.,  100,-50.,50. );
 
-    _hCaShowerEdep = tfs->make<TH1F>("hCaShowerEdep",  "Total energy deposition from StepPt in each crystal", 
+    _hCaShowerEdep = tfs->make<TH1F>("hCaShowerEdep",  "Total energy deposition from StepPt in each crystal",
                                      2000, 0., 2000. );
-    _hCaShowerNum  = tfs->make<TH1F>("hCaShowerNum",   "Total number of StepPt in each crystal", 
+    _hCaShowerNum  = tfs->make<TH1F>("hCaShowerNum",   "Total number of StepPt in each crystal",
                                      2000, 0., 2000. );
-    _hCaTime       = tfs->make<TH1F>("hCaTime",   "Calorimeter hit time", 
+    _hCaTime       = tfs->make<TH1F>("hCaTime",   "Calorimeter hit time",
                                      2000, 0., 2000. );
-    _hCaEdep       = tfs->make<TH1F>("hCaEdep",      "Total energy deposition in calorimeter", 
+    _hCaEdep       = tfs->make<TH1F>("hCaEdep",      "Total energy deposition in calorimeter",
                                      200, 0., 200. );
-    _hCaNcrystal   = tfs->make<TH1F>("hCaNcrystal",    "Number of crystals hit",  
+    _hCaNcrystal   = tfs->make<TH1F>("hCaNcrystal",    "Number of crystals hit",
                                      2000,  0., 2000. );
 
     // Stopping target histograms
@@ -361,7 +361,6 @@ namespace mu2e {
       doTTracker(event);
     }
 
-
     if (geom->hasElement<Calorimeter>() )doCalorimeter(event);
 
     doStoppingTarget(event);
@@ -374,7 +373,7 @@ namespace mu2e {
     doPointTrajectories( event );
 
   }
-  
+
   void ReadBack::doCalorimeter(const art::Event& event)
   {
 
@@ -406,7 +405,7 @@ namespace mu2e {
      map<int,double> stepPtMap;
      map<int,int>    stepPtMap2;
      for ( HandleVector::const_iterator i=crystalStepsHandles.begin(), e=crystalStepsHandles.end(); i != e; ++i )
-     {     
+     {
           const art::Handle<StepPointMCCollection>& handle(*i);
           const StepPointMCCollection& steps(*handle);
 
@@ -414,14 +413,14 @@ namespace mu2e {
 	  {
 	      stepPtMap[step.volumeId()] += step.totalEDep();
 	      ++stepPtMap2[step.volumeId()];
-	      
-	      
+
+
               CLHEP::Hep3Vector hitPos  = cal.geomUtil().mu2eToCrystal(step.volumeId(),step.position());
 	      _hCaCrystalXY->Fill(hitPos.x(),hitPos.y());
 
-              if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ) 
+              if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
         	cout << "Readback: Calo StepPointMC (" << step.volumeId() << "," << step.totalEDep() << ")";
-	  }   
+	  }
      }
 
      for (const auto& iter : stepPtMap) _hCaStepEdep->Fill(iter.first,iter.second);
@@ -440,7 +439,7 @@ namespace mu2e {
          for (const auto& step : showerSim.caloShowerSteps()) showerMap2[showerSim.crystalId()] += step->nCompress();
          _hCaTime->Fill(showerSim.time());
 
-         if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ) 
+         if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
 	   std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalId()<<" eDep = "<<showerSim.energy()
 	            <<" time = "<<showerSim.time()<<std::endl;
      }
@@ -462,7 +461,7 @@ namespace mu2e {
          totalEdep += hit.energyDep();
          hit_crystals.insert(hit.id());
 
-	 if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ) 
+	 if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
 	   cout<<"Readback: caloHit id = "<<hit.id()<<" "<<"energy = "<<hit.energyDep()<<" time= "<<hit.time()<<endl;
      }
 
@@ -549,7 +548,7 @@ namespace mu2e {
       const CLHEP::Hep3Vector& mom = hit.momentum();
 
       // Get the straw information:
-      const Straw&      straw = tracker.getStraw( hit.strawIndex() );
+      const Straw&      straw = tracker.getStraw( hit.strawId() );
       const CLHEP::Hep3Vector& mid   = straw.getMidPoint();
       const CLHEP::Hep3Vector& w     = straw.getDirection();
 
@@ -691,8 +690,8 @@ namespace mu2e {
              << " hit: "
              << event.id().event() << " "
              << i                  <<  " "
-             << trackId      << "   "
-             << hit.volumeId()     << " "
+             << trackId               << "   "
+             << straw.id().asUint16() << " "
              << straw.id()         << " | "
              << pca.dca()          << " "
              << pos                << " "
@@ -765,17 +764,9 @@ namespace mu2e {
                                     art::Handle<StepPointMCCollection>& hits ){
 
     int count(0);
-    vector<StrawIndex> const& nearest = straw.nearestNeighboursByIndex();
-    for ( vector<int>::size_type ihit = 0;
-          ihit<nearest.size(); ++ihit ){
-
-      StrawIndex idx = nearest[ihit];
-
-      for( StepPointMCCollection::const_iterator
-             i = hits->begin(),
-             e = hits->end(); i!=e ; ++i ) {
-        const StepPointMC& hit = *i;
-        if ( hit.strawIndex() == idx ){
+    for ( auto id : straw.nearestNeighboursById() ){
+      for ( auto const& step : *hits ){
+        if ( step.strawId() == id ){
           ++count;
           break;
         }

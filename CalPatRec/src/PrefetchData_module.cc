@@ -40,7 +40,6 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "GeneralUtilities/inc/TwoLinePCA.hh"
 using namespace std; 
 using CLHEP::Hep3Vector;
@@ -96,7 +95,6 @@ namespace mu2e {
     const StrawHitFlagCollection*               _shfcol;
     const StrawHitPositionCollection*           _shpcol;
     const StrawDigiCollection*                  _sdcol;
-    //    const mu2e::PtrStepPointMCVectorCollection* _hits_mcptrStraw;
     int                                         _eventNum;
   };
 
@@ -196,11 +194,6 @@ namespace mu2e {
     //   _sthcol = sthH.product();
     // }
 
-    // if (_fetchStrawDigis) {
-    //   auto mcptrHandleStraw = evt.getValidHandle<PtrStepPointMCVectorCollection>(_sdTag);
-    //   _hits_mcptrStraw = mcptrHandleStraw.product();
-    // }
-
     
     if (_fetchStrawDigis) {
       auto sdH = evt.getValidHandle<StrawDigiCollection>(_sdTag);
@@ -233,15 +226,6 @@ namespace mu2e {
 	// const StrawHitFlag& shf     = _shfcol->at(ish);
 
  	fake_access(sh, /*shf,*/ shp);
-
-	// if (_hits_mcptrStraw) {
-	//   mu2e::PtrStepPointMCVector const& mcptr(_hits_mcptrStraw->at(ish));
-	//   int nsteps = mcptr.size();
-	//   for (int is=0;  is<nsteps; is++) {
-	//     const StepPointMC* step = mcptr.at(is).get();
-	//     fake_access(step);
-	//   }
-	// }
       }
     }
 

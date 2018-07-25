@@ -54,12 +54,11 @@ namespace mu2e {
 	 ProcessCode endCode(_processInfo->findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
 	 const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
-	 int idro = touchableHandle->GetCopyNumber(0);  
+	 int idro = touchableHandle->GetCopyNumber(1);  
 
 	 //uncomment for diagnosis purposes only when playing with the geometry
-	 //for (int i=0;i<3;++i) std::cout<<"Crate Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "
-	 //                               <<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(aStep->GetPreStepPoint()->GetPosition())
-	 // 			 	  <<"   "<<idro<<"   "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
+ 	 //for (int i=0;i<=touchableHandle->GetHistoryDepth();++i) std::cout<<"Calo Crate Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)
+	 //<<"  "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
 
 	 _collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                 	    idro,

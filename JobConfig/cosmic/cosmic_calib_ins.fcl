@@ -6,11 +6,6 @@
 # StepPointMC's for CRV.
 #
 #
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
-#include "Mu2eG4/fcl/prolog.fcl"
-
 # this defines the calibration cosmic job
 #include "JobConfig/cosmic/cosmic_calib.fclinc"
 # and is customized for detector position in this file
@@ -29,6 +24,7 @@ physics.producers.g4run.Mu2eG4CommonCut : @local::CommonCutCrv
 
 # filter on tracker and cal, not CRV hits
 physics.filters.calibCosmicFilter.minCrvSteps  : 1000000
+physics.filters.calibCosmicFilter.minCrvDigis  : 1000000
 
 services.TFileService.fileName  : "nts.owner.cosmic_calib_ins.version.sequencer.root"
 outputs.filteredOutput.fileName : "sim.owner.cosmic_calib_ins.version.sequencer.art"

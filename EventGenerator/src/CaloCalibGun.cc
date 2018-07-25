@@ -46,10 +46,7 @@ using namespace std;
 
 namespace mu2e {
 
-  CaloCalibGun::CaloCalibGun( art::Run& run, const SimpleConfig& config ):
-
-    // Base class.
-    GeneratorBase(),
+  CaloCalibGun::CaloCalibGun(CLHEP::HepRandomEngine& engine, art::Run& run, const SimpleConfig& config):
 
     // Configurable parameters
     _mean(config.getDouble("caloCalibGun.mean",1.)),
@@ -58,9 +55,9 @@ namespace mu2e {
     _cosmax(config.getDouble("caloCalibGun.cosmax",  1.)),
     _phimin(config.getDouble("caloCalibGun.phimin", 0. )),
     _phimax(config.getDouble("caloCalibGun.phimax", CLHEP::twopi )),
-    _randFlat( getEngine() ),
-    _randPoissonQ( getEngine(), std::abs(_mean) ),
-    _randomUnitSphere ( getEngine(), _cosmin, _cosmax, 0, CLHEP::twopi  ),
+    _randFlat{engine},
+    _randPoissonQ{engine, std::abs(_mean)},
+    _randomUnitSphere{engine, _cosmin, _cosmax, 0, CLHEP::twopi},
     _detSys(),
     _doHistograms(config.getBool("caloCalibGun.doHistograms",true)),
 
@@ -84,16 +81,16 @@ namespace mu2e {
 
     _detSys          = &*GeomHandle<DetectorSystem>();
     _cal             = &*GeomHandle<DiskCalorimeter>();
-    _nPipes          = _cal->caloInfo().nPipes();
-    _pipeRadius      = _cal->caloInfo().pipeRadius();
-    _pipeTorRadius   = _cal->caloInfo().pipeTorRadius();
-    _randomRad       = _cal->caloInfo().pipeTorRadius();
+    _nPipes          = _cal->caloInfo().getInt("nPipes");
+    _pipeRadius      = _cal->caloInfo().getDouble("pipeRadius");
+    _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
+    _randomRad       = _cal->caloInfo().getVDouble("pipeTorRadius");
     _zPipeCenter     = _cal->disk(0).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(0).geomInfo().size().z()/2.0-_pipeRadius);
-    
-    
 
 
-    // we normalize to the volume of the pipe (proportional to 2*pi*R if they have all the same radius) to draw a 
+
+
+    // we normalize to the volume of the pipe (proportional to 2*pi*R if they have all the same radius) to draw a
     // random number from which to generate the photons
     double sumR(0);
     std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {sumR+=d; d = sumR; });
@@ -115,7 +112,7 @@ namespace mu2e {
 
 
     if (_mean < 0) throw cet::exception("RANGE") << "CaloCalibGun.mean must be non-negative "<< '\n';
-    
+
   }
 
 
@@ -130,31 +127,31 @@ namespace mu2e {
 
 
   void CaloCalibGun::generate( GenParticleCollection& genParts ){
-  
-  
+
+
       //int nGen = _randPoissonQ.fire();
       int nGen = _mean;
       for (int ig=0; ig<nGen; ++ig) {
 
         //Pick position
-	double rtest = _randFlat.fire();
-	int idx = int( std::lower_bound(_randomRad.begin(), _randomRad.end(), rtest) - _randomRad.begin());
-	double rad = _pipeTorRadius[idx];
-	double phi = _randFlat.fire()*(_phimax-_phimin)+_phimin;
-		        
-	CLHEP::Hep3Vector pos(rad*cos(phi),rad*sin(phi),0);
-	pos +=_zPipeCenter;
-	
-	
+        double rtest = _randFlat.fire();
+        int idx = int( std::lower_bound(_randomRad.begin(), _randomRad.end(), rtest) - _randomRad.begin());
+        double rad = _pipeTorRadius[idx];
+        double phi = _randFlat.fire()*(_phimax-_phimin)+_phimin;
 
-	//pick time
+        CLHEP::Hep3Vector pos(rad*cos(phi),rad*sin(phi),0);
+        pos +=_zPipeCenter;
+
+
+
+        //pick time
         double time = _tmin + _randFlat.fire() * ( _tmax - _tmin );
 
         //Pick energy and momentum vector
         //double e = _elow + _flatmomentum.fire() * ( _ehi - _elow );
-	double energy =_energy;
+        double energy =_energy;
         CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_energy);
-	while (p3.cosTheta()<0) p3 = _randomUnitSphere.fire(_energy);
+        while (p3.cosTheta()<0) p3 = _randomUnitSphere.fire(_energy);
 
         //Set Four-momentum
         CLHEP::HepLorentzVector mom(0,0,0,0);
@@ -174,11 +171,11 @@ namespace mu2e {
           _hphi  ->Fill(phi);
           _hrad  ->Fill(rad);
           _hz    ->Fill(pos.z());
-	  _hxy   ->Fill(rad*cos(phi),rad*sin(phi));
-	}
-      } 
+          _hxy   ->Fill(rad*cos(phi),rad*sin(phi));
+        }
+      }
 
 
-  } 
+  }
 
-} 
+}

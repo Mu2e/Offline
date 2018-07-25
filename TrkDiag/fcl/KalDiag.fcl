@@ -1,28 +1,46 @@
-# this file needs to be integrated into TrkDiag/fcl/prolog.fcl, but it requires removing diagnostics from the production modules FIXME!
 BEGIN_PROLOG
 # Note that KalDiag must be configured differently depending on whether you are
-# reading data generated inline, or are reading data output through Read
+# reading data generated inline, or are reading data (in various ways)
   KalDiag : {
-    StrawDigiMCLabel     : makeSD
-    TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+    StrawDigiMCLabel   : makeSD
+    TimeOffsets       :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
   }
+
 # If running KalDiag directly on G4 use KalDiagDirect
-  KalDiagDirect			  : @local::KalDiag
-  KalDiagDirect.MCStepsLabel        : g4run
-  KalDiagDirect.SimParticleLabel    : g4run
-  KalDiagDirect.SimParticleInstance : "" 
+  KalDiagDirect			  : {
+    @table::KalDiag
+    MCStepsLabel        : g4run
+    MCStepsInstance     : "virtualdetector"
+    SimParticleLabel    : g4run
+    SimParticleInstance : ""
+  }
+
 # Production samples use Read, which requires the following setup
-  KalDiagRead			  : @local::KalDiag
-  KalDiagRead.MCStepsLabel        : detectorFilter
-  KalDiagRead.SimParticleLabel    : detectorFilter
+  KalDiagRead			  : {
+    @table::KalDiag
+    MCStepsLabel        : detectorFilter
+    SimParticleLabel    : detectorFilter
+  }
+
 # TDR samples gave an instance name to the sim particle collection, CD3 and beyond won't
-  KalDiagReadTDR : @local::KalDiagRead
-  KalDiagReadTDR.SimParticleInstance : "s0"
+  KalDiagReadTDR : {
+    @table::KalDiagRead
+    SimParticleInstance : "s0"
+  }
+
 # CD3 beam data have no instance labels
-  KalDiagReadCD3 : @local::KalDiagRead
-  KalDiagReadCD3.SimParticleInstance : ""
+  KalDiagReadCD3 : {
+    @table::KalDiagRead
+    SimParticleInstance : ""
+  }
 # CD3 Cosmic data have different filter module labels
-  KalDiagReadCD3Cosmics			  : @local::KalDiagReadCD3
-  KalDiagReadCD3Cosmics.MCStepsLabel        : cosmicFilter
-  KalDiagReadCD3Cosmics.SimParticleLabel    : cosmicFilter
+  KalDiagReadCD3Cosmics	: {
+    @table::KalDiagReadCD3
+    MCStepsLabel        : cosmicFilter
+    SimParticleLabel    : cosmicFilter
+  }
+# MDC config: no detectorFilter
+  KalDiagReadMDC : {
+    @table::KalDiagDirect
+  }
 END_PROLOG

@@ -3,10 +3,6 @@
 //
 // StrawClusterSequence is a time-ordered sequence of StrawClusters
 //
-// $Id: StrawClusterSequence.hh,v 1.1 2013/12/07 19:51:42 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/12/07 19:51:42 $
-//
 // Original author David Brown, LBNL
 //
 
@@ -32,8 +28,8 @@ namespace mu2e {
 	ClusterList const& clustList() const { return _clist; }
 	// insert a new clust, in time order.
 	ClusterList::iterator insert(StrawCluster const& clust);
-	StrawId strawId() const { return _strawId; }
-	StrawEnd strawEnd() const { return _end; }
+	StrawId const& strawId() const { return _strawId; }
+	StrawEnd const& strawEnd() const { return _end; }
       private:
 	StrawId _strawId;
 	StrawEnd _end;
@@ -42,5 +38,3 @@ namespace mu2e {
   }
 }
 #endif
-
-

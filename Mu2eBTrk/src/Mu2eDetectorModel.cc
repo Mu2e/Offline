@@ -9,7 +9,7 @@
 #include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 #include "BTrk/DetectorModel/DetMaterial.hh"
 #include "BTrk/MatEnv/MatDBInfo.hh"
-#include "cetlib/coded_exception.h"
+#include "cetlib_except/coded_exception.h"
 #include "TTrackerGeom/inc/TTracker.hh"
 
 using namespace std;

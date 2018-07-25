@@ -13,11 +13,8 @@
 namespace mu2e {
 
   class SimpleConfig;
-  class SensitiveDetectorHelper;
 
-  void constructVirtualDetectors( const SimpleConfig& _config,
-                                  const SensitiveDetectorHelper& sdHelper
-                                  );
+  void constructVirtualDetectors( const SimpleConfig& _config );
 
 }
 

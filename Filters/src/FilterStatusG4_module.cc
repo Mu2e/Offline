@@ -21,7 +21,7 @@ namespace mu2e {
 
   //================================================================
   class FilterStatusG4 : public art::EDFilter {
-    art::InputTag input_;
+    art::ProductToken<StatusG4> const token_;
     int maxAcceptedStatus_;
     typedef std::map<int,int> StatMap;
     StatMap stats_;
@@ -33,13 +33,13 @@ namespace mu2e {
 
   //================================================================
   FilterStatusG4::FilterStatusG4(const fhicl::ParameterSet& pset)
-    : input_(pset.get<std::string>("input"))
+    : token_{consumes<StatusG4>(pset.get<std::string>("input"))}
     , maxAcceptedStatus_(pset.get<int>("maxAcceptedStatus", 0))
   {}
 
   //================================================================
   bool FilterStatusG4::filter(art::Event& event) {
-    auto ih = event.getValidHandle<StatusG4>(input_);
+    auto ih = event.getValidHandle(token_);
     ++stats_[ih->status()];
     return (ih->status() <= maxAcceptedStatus_);
   }

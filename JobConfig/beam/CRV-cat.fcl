@@ -1,0 +1,35 @@
+// Re-sample CRV data.  This dumps subrun headers from CD3
+// while doing concatenation for MDC2018
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+process_name: CRVcat
+
+physics.producers.genCounter: {module_type: GenEventCounter }
+physics.filters.crvFilter: {
+   module_type: ResamplingMixer
+   fileNames: @nil
+   readMode: "sequential"
+   wrapFiles: true
+   mu2e: {
+      products: {
+	 genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+	 simParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
+	 stepPointMCMixer: { mixingMap: [ [ "crvFilter:CRV", ":" ] ] }
+      }
+   }
+}
+
+source: { module_type : EmptyEvent }
+services : @local::Services.Sim
+outputs.crvOutput : {
+  module_type: RootOutput
+  SelectEvents: [crvPath]
+  fileName: @nil
+  outputCommands:   [ "drop *_*_*_*",
+  "keep *_crvFilter_*_*" ]
+}
+physics.crvPath: [ crvFilter ]
+physics.out: [ crvOutput ]
+# must use end_paths or generate_fcl won't see the output module 
+physics.end_paths : [out]
+

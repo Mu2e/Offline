@@ -19,7 +19,7 @@
 #include "TrackerConditions/inc/StrawResponse.hh"
 
 #include "TrkReco/inc/TrkUtilities.hh"
-#include "cetlib/coded_exception.h"
+#include "cetlib_except/coded_exception.h"
 #include <algorithm>
 
 using namespace std;

@@ -6,8 +6,6 @@
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "DataProducts/inc/PDGCode.hh"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
-
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "cetlib_except/exception.h"
 
@@ -17,36 +15,8 @@
 namespace mu2e {
 
   //================================================================
-  ExtMonFNALGun::ExtMonFNALGun(art::Run const&, const SimpleConfig& config)
-    : GeneratorBase()
-    , m_gun(
-            config.getDouble("extMonFNALGun.multiplicity",-1.),
-            static_cast<PDGCode::type>(config.getInt("extMonFNALGun.pdgId")),
-
-            config.getDouble("extMonFNALGun.pmin", GeomHandle<ExtMonFNALBuilding>()->filterMagnet().nominalMomentum()),
-            config.getDouble("extMonFNALGun.pmax", GeomHandle<ExtMonFNALBuilding>()->filterMagnet().nominalMomentum()),
-
-            RandomUnitSphereParams(-1., -cos(config.getDouble("extMonFNALGun.coneAngle")),
-                                   0., 2*M_PI),
-
-            config.getDouble("extMonFNALGun.tmin", 0.),
-            config.getDouble("extMonFNALGun.tmax", 0.),
-
-            config.getHep3Vector("extMonFNALGun.offset", CLHEP::Hep3Vector(0.,0.,0.)),
-            config.getHep3Vector("extMonFNALGun.halfSize", CLHEP::Hep3Vector(0.,0.,0.)),
-
-            (config.getBool("extMonFNALGun.doHistograms", true) ? "ExtMonFNALGun" : ""),
-
-            config.getInt("extMonFNALGun.verbosityLevel",0)
-            )
-  {
-    initGeom(config.getString("extMonFNALGun.reference"));
-  }
-
-  //================================================================
-  ExtMonFNALGun::ExtMonFNALGun(const fhicl::ParameterSet& pset)
-    : GeneratorBase()
-    , m_gun(
+  ExtMonFNALGun::ExtMonFNALGun(CLHEP::HepRandomEngine& engine, const fhicl::ParameterSet& pset)
+    : m_gun(engine,
             pset.get<double>("multiplicity"),
             PDGCode::type(pset.get<int>("pdgId")),
 

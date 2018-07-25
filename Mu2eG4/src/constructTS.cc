@@ -1407,6 +1407,8 @@ namespace mu2e {
     // - The wedge has a rectangular projection in the y-z plane.  
     //   It is made of a series of rectangular sheets forming a 
     //   "stairstep" structure.
+    // ******* In Version 4, do the same as version 3 except allow the steps to have different
+    //   thicknesses.  This will allow us to implement the geometry of doc-db 17519 p. 34
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "PbarAbs", "pbar" );
@@ -1427,10 +1429,12 @@ namespace mu2e {
     int pbarAbsTS3Version = pbarWindow.version();
     int const verbosityLevel = config.getInt("pbar.verbosityLevel", 0);
 
+    std::cout << "pbarWindow.shape() = " << pbarWindow.shape() << std::endl;
 
     if ( pbarAbsTS3Version == 1 ) {
       // -- vacuum wall
 
+      std::cout << "inside version 1 " << std::endl;
       if (verbosityLevel > 0) std::cout << "TS3 pbar windows HalfLength : " << pbarWindow.halfLength() << std::endl; 
         
       if ( pbarWindow.shape() == "wedge" ||
@@ -1450,7 +1454,10 @@ namespace mu2e {
       
       }
         
-      if( pbarWindow.shape() == "wedge" ) 
+      //      if( pbarWindow.shape() == "wedge" ) 
+      if ( pbarWindow.shape() != "disk")
+	{
+	  if( pbarWindow.shape() == "wedge")
 	{
 	  // -- pbar wedge        
 	  double pbarWedge_y0  = pbarWindow.getY0();
@@ -1524,7 +1531,8 @@ namespace mu2e {
       else if ( pbarWindow.shape() != "disk" )
 	{
 	  throw cet::exception("GEOM")<<
-	    " Incorrect pbar window geometry requested! \n " ;
+		" Incorrect pbar window geometry requested! \n << pbarWindow.shape() = in version 1" << pbarWindow.shape() <<"\n";
+	    }
 	}
     }  // end of if ( pbarAbsTS3Version == 1 )
     else if ( pbarAbsTS3Version == 2 ) {
@@ -1532,6 +1540,8 @@ namespace mu2e {
       // First, build the subtraction shape to represent the hole in the 
       // support.  Based on code in Collimator build function
       // Get collimators
+
+      std::cout << "inside version 2" << std::endl;
       TransportSolenoid const& ts = bl.getTS();
       CollimatorTS3 const& coll31  = ts.getColl31();
       // First, construct hole; make it slightly longer than the support
@@ -1578,7 +1588,6 @@ namespace mu2e {
       // -- vacuum wall
 
       if (verbosityLevel > 0) std::cout << "TS3 pbar windows HalfLength : " << pbarWindow.halfLength() << std::endl; 
-        
       if ( pbarWindow.shape() == "wedge" ||
 	   pbarWindow.shape() == "disk" ) {
 
@@ -1665,7 +1674,11 @@ namespace mu2e {
 			"PbarAbs"
 			);
 	} //end of if ( pbarWindow.shape == wedge )
-    }  else if ( pbarAbsTS3Version == 3 ) {
+    }  else if ( pbarAbsTS3Version == 3 || pbarAbsTS3Version == 4) {
+
+      if ( verbosityLevel > 2) {
+	std::cout << __func__ <<"inside version " << pbarAbsTS3Version << std::endl;
+      }
       // =============== Now Version 3 of pbarAbs in TS3! ==============
       // Get collimators
       TransportSolenoid const& ts = bl.getTS();
@@ -1706,6 +1719,7 @@ namespace mu2e {
 
       if (verbosityLevel > 0) std::cout << "TS3 pbar window thickness : " << pbarWindow.halfLength()*2. << std::endl; 
 
+	std::cout << " inside wedge or disk" << std::endl;
 
 	pbarDiskInfo.solid = new G4Tubs("PbarAbs_disk",
 					  0.0 ,pbarWindow.diskRadius(),
@@ -1751,6 +1765,13 @@ namespace mu2e {
 	  // steps if you look at it as steps.
 	  std::vector<double> stepLength = pbarWindow.heights();
 
+	  //
+	  // the thickness of the steps, if variable
+	  std::vector<double> stepThickStrip;
+	  if (pbarAbsTS3Version==4) {
+	    stepThickStrip = pbarWindow.stripThicknesses();
+	  }
+
 	  // Sanity check.  There is no way we should get to this point
 	  // and have a stepLength vector with the wrong number of 
 	  // steps, so just check...
@@ -1759,6 +1780,14 @@ namespace mu2e {
 	    throw cet::exception("GEOM")<<
 	      " The size of the PbarWedge stripHeight vector, " 
 					<< stepLength.size() <<
+	      "\n Does not match the expected number of strips, "
+					<< nSteps << "\n" ;
+	  }
+
+	  if ( pbarAbsTS3Version == 4 && (unsigned int) nSteps != stepThickStrip.size() ) {
+	    throw cet::exception("GEOM")<<
+	      " The size of the PbarWedge stripThickness vector, " 
+					<< stepThickStrip.size() <<
 	      "\n Does not match the expected number of strips, "
 					<< nSteps << "\n" ;
 	  }
@@ -1778,12 +1807,27 @@ namespace mu2e {
 	  G4TwoVector tmpVertex(0,0);
 	  stairOutline.push_back(tmpVertex);
 	  double xCoord = 0.0;
+	  if (verbosityLevel > 2){
+	    std::cout << __func__ << "stepThck = " << stepThck << std::endl;
+	  }
 	  // Now loop over steps
 	  for ( int iStep = 0; iStep < nSteps; iStep++ ) {
+	    if ( verbosityLevel > 2) {
+	      std::cout << "istep, stair outline 1: " << iStep << " " << xCoord << " " << stepLength[iStep] << std::endl;
+	    }
 	    stairOutline.push_back(G4TwoVector(xCoord,-stepLength[iStep]));
+	      
+	    if (pbarAbsTS3Version == 3){
 	    xCoord += stepThck;
+	    } else  if (pbarAbsTS3Version == 4) {
+	      xCoord += stepThickStrip[iStep];
+	    }
+	    if ( verbosityLevel > 2) {
+	      std::cout << "istep, stair outline 2: " << iStep << " " << xCoord << " " << stepLength[iStep] << std::endl;
+	    }
 	    stairOutline.push_back(G4TwoVector(xCoord,-stepLength[iStep]));
 	  }
+      
 	  G4TwoVector tmpVertex2(xCoord,0);
 	  stairOutline.push_back(tmpVertex2);
 
@@ -1798,7 +1842,9 @@ namespace mu2e {
 	  G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
 	  pbarWedgeRot->rotateY(90.0*CLHEP::degree);
 	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_y1,pbarWedge_offsetZ);
-	  
+	  if (verbosityLevel > 2){
+	    std::cout << "pbarWedgeTrans = " << pbarWedgeTrans << std::endl;
+	  }
 	  pbarWedgeInfo.solid = stairCase;
 	  
 	  finishNesting(pbarWedgeInfo,
@@ -1813,7 +1859,8 @@ namespace mu2e {
 	} //end of if ( pbarWindow.shape == wedge )
     }  else {
 	throw cet::exception("GEOM")<<
-	  " Incorrect pbar window geometry requested! \n " ;
+	" Incorrect pbar window geometry requested! \n " << " pbarWindow.shape() = " << pbarWindow.shape() << std::endl;   
+ 
     } // end of else for pbarAbsTS3Version == ... 
 
 
@@ -2146,8 +2193,8 @@ namespace mu2e {
       }
 
       CLHEP::Hep3Vector pbarTS1OutPos = coll1.getLocal();
-//      CLHEP::Hep3Vector TS1VacuumPos = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT)->getGlobal()-_hallOriginInMu2e;
-//      pbarTS1OutPos.setZ( pbarTS1Outz - TS1VacuumPos.z() );
+      //      CLHEP::Hep3Vector TS1VacuumPos = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT)->getGlobal()-_hallOriginInMu2e;
+      //      pbarTS1OutPos.setZ( pbarTS1Outz - TS1VacuumPos.z() );
       pbarTS1OutPos.setZ( pbarTS1OutPos.z() + (pbarTS1OutPosz-(-4044)) - coll1.halfLength() );
 
       nestTubs( "PbarAbsTS1Out",

@@ -27,6 +27,7 @@ physics :{
          #skipStrawDigiMC     : []
          #skipCaloDigiMC      : []
          #skipCaloShowerStep  : []
+         #skipCrvDigiMC       : []
     }
 
   }  # analyzers

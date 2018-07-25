@@ -26,7 +26,7 @@ namespace mu2e {
     }
   }
 
-  ComboHit::ComboHit() : _wres(-1.0),_tres(-1.0), _wdist(0.), _time(0.0), _edep(0.0), _qual(0.0), _hphi(0.0), _ncombo(0), _nsh(0), _pind{0} {}
+  ComboHit::ComboHit() : _wres(-1.0),_tres(-1.0), _wdist(0.), _time(0.0), _edep(0.0), _qual(0.0), _dtime(0.0), _pathlength(0.0), _hphi(0.0), _ncombo(0), _nsh(0), _pind{0} {}
 
   ComboHit::ComboHit(ComboHit const& shp, StrawDigiIndex hi, double phi) : ComboHit(shp)
   {
@@ -192,6 +192,8 @@ namespace mu2e {
     ost << " ComboHit:"
         << " id"      << _sid
         << " time "     << _time
+        << " drift time " << _dtime
+        << " path length " << _pathlength
 	<< " position " << _pos
 	<< " end " << _tend
 	<< " flag " << _flag

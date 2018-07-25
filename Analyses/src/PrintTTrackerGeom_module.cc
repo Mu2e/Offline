@@ -1,13 +1,8 @@
 //
 // Print the information about the TTracker
 //
-// $Id: PrintTTrackerGeom_module.cc,v 1.1 2013/12/20 20:05:12 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/12/20 20:05:12 $
-//
 // Original author Rob Kutschke
 //
-
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
@@ -35,11 +30,13 @@ namespace mu2e {
     void beginRun ( const art::Run& r) override;
 
   private:
+    int _diagLevel;
 
   };
 
   PrintTTrackerGeom::PrintTTrackerGeom(fhicl::ParameterSet const& pset ):
-    EDAnalyzer(pset){
+    EDAnalyzer(pset),
+    _diagLevel(pset.get<int>("diagLevel",0)){
   }
 
   void PrintTTrackerGeom::analyze(const art::Event& ){}
@@ -49,9 +46,7 @@ namespace mu2e {
     TTracker const& tracker(*GeomHandle<TTracker>());
 
     cout << "Tracker: " << tracker.nPlanes() << endl;
-    // for ( auto const& pln : tracker.getPlanes() ){
-    for ( size_t i=0; i!= tracker.nPlanes(); ++i){
-      const auto& pln = tracker.getPlane(i);
+    for ( auto const& pln : tracker.getPlanes() ){
       for ( auto const& pnl : pln.getPanels() ){
         StrawId sid( pnl.id() ); // first straw id is equal to its panel id
         Straw const& straw = pnl.getStraw(sid);
@@ -61,12 +56,49 @@ namespace mu2e {
         cout << "panel: "
              << pnl.id()      << " "
              << sid           << " "
-             << straw.index() << " : "
              << z             << " "
              << phi1
              << endl;
       }
     }
+
+    if ( _diagLevel == 0 ) return;
+
+    auto const& straws = tracker.getAllStraws();
+    cout << "Straws: " << straws.size() << "  " << StrawId::_end << endl;
+    size_t n(0);
+    for ( Straw const& straw : straws ){
+
+      cout << "Straw1: "
+           << n++ << "  "
+           << straw.id().asUint16() << " "
+           << straw.id() << "  |  "
+           << straw.getMidPoint() << " "
+           << straw.direction()
+           << endl;
+    }
+
+    n=0;
+    for ( uint16_t ipln=0; ipln < StrawId::_nplanes ; ++ipln ){
+      for ( uint16_t ipan=0; ipan < StrawId::_npanels ; ++ipan ){
+        for ( uint16_t istr=0; istr < StrawId::_nstraws; ++istr ){
+          StrawId sid( ipln, ipan, istr);
+          Straw const& straw = tracker.getStraw( sid );
+          cout << "Straw2: "
+               << n++ << " "
+               << sid.asUint16() << " "
+               << sid  << "  | ";
+          for ( auto nid : straw.nearestNeighboursById() ){
+            cout << " " << nid;
+          }
+          cout << " "
+               << straw.getMidPoint() << " "
+               << straw.direction()
+               << endl;
+        }
+      }
+    }
+    cout << "Counted Straws: " << n << endl;
 
   }
 

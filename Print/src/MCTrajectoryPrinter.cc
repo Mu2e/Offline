@@ -64,7 +64,7 @@ mu2e::MCTrajectoryPrinter::Print(const mu2e::MCTrajectory& obj, int ind, std::os
   if(verbose()<1) return;
 
   int pkey = obj.simid();
-  std::vector<CLHEP::HepLorentzVector> const& points = obj.points();
+  const auto& points = obj.points();
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;
@@ -72,22 +72,24 @@ mu2e::MCTrajectoryPrinter::Print(const mu2e::MCTrajectory& obj, int ind, std::os
   if(verbose()==1) {
 
 
-    const CLHEP::HepLorentzVector& v0 = points.front();
-    const CLHEP::HepLorentzVector& v1 = points.back();
+    const auto& v0 = points.front();
+    const auto& v1 = points.back();
 
     os 
       << " " << std::setw(8) << pkey
       << " " << std::setw(4) << points.size()
       << "  "
-      << " " << std::setw(8) << std::setprecision(1) << v0.px()
-      << " " << std::setw(8) << std::setprecision(1) << v0.py()
-      << " " << std::setw(8) << std::setprecision(1) << v0.pz()
+      << " " << std::setw(8) << std::setprecision(1) << v0.x()
+      << " " << std::setw(8) << std::setprecision(1) << v0.y()
+      << " " << std::setw(8) << std::setprecision(1) << v0.z()
       << " " << std::setw(9) << std::setprecision(1) << v0.t()
+      << " " << std::setw(9) << std::setprecision(1) << v0.kineticEnergy()
       << "  "
-      << " " << std::setw(8) << std::setprecision(1) << v1.px()
-      << " " << std::setw(8) << std::setprecision(1) << v1.py()
-      << " " << std::setw(8) << std::setprecision(1) << v1.pz()
+      << " " << std::setw(8) << std::setprecision(1) << v1.x()
+      << " " << std::setw(8) << std::setprecision(1) << v1.y()
+      << " " << std::setw(8) << std::setprecision(1) << v1.z()
       << " " << std::setw(9) << std::setprecision(1) << v1.t()
+      << " " << std::setw(9) << std::setprecision(1) << v1.kineticEnergy()
       << std::endl;
 
   } else {
@@ -99,10 +101,12 @@ mu2e::MCTrajectoryPrinter::Print(const mu2e::MCTrajectory& obj, int ind, std::os
     for(auto const& pp : points ) {
       os
 	<< "  " << std::setw(4) << i++ 
-	<< " " << std::setw(8) << std::setprecision(1) << pp.px()
-	<< " " << std::setw(8) << std::setprecision(1) << pp.py()
-	<< " " << std::setw(8) << std::setprecision(1) << pp.pz()
-	<< " " << std::setw(9) << std::setprecision(1) << pp.t() << std::endl;
+	<< " " << std::setw(8) << std::setprecision(1) << pp.x()
+	<< " " << std::setw(8) << std::setprecision(1) << pp.y()
+	<< " " << std::setw(8) << std::setprecision(1) << pp.z()
+	<< " " << std::setw(9) << std::setprecision(1) << pp.t()
+	<< " " << std::setw(9) << std::setprecision(1) << pp.kineticEnergy()
+        << std::endl;
     }
 
   } // end if verbose
@@ -118,7 +122,7 @@ mu2e::MCTrajectoryPrinter::PrintHeader(const std::string& tag, std::ostream& os)
 void 
 mu2e::MCTrajectoryPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
-  os << "ind   parent  npoint       first Point            firstT             last Point           lastT\n";
+  os << "ind   parent  npoint       first Point            firstT     firstEk            last Point           lastT    lastEk\n";
 }
 
 void 

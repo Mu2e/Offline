@@ -25,27 +25,24 @@ using namespace std;
 
 namespace mu2e {
 
-  PiCaptureEffects::PiCaptureEffects(double probInternalConversion, double elow, double ehi, int nbins):
+  PiCaptureEffects::PiCaptureEffects(CLHEP::HepRandomEngine& engine,
+                                     double const probInternalConversion,
+                                     double const elow,
+                                     double const ehi,
+                                     int const nbins):
     _probInternalConversion(probInternalConversion),
     _elow(elow),
     _ehi(ehi),
     _nbins (nbins),
-    _randomUnitSphere( art::ServiceHandle<art::RandomNumberGenerator>()->getEngine()),
-    _randFlat( art::ServiceHandle<art::RandomNumberGenerator>()->getEngine()),
-    _spectrum( art::ServiceHandle<art::RandomNumberGenerator>()->getEngine(), &(binnedEnergySpectrum()[0]),_nbins),
-    _internalFractionalSpectrum( art::ServiceHandle<art::RandomNumberGenerator>()->getEngine(), &(internalFractionalBinnedSpectrum()[0]),_nbins)
-
+    _randomUnitSphere{engine},
+    _randFlat{engine},
+    _spectrum{engine, &(binnedEnergySpectrum()[0]), _nbins},
+    _internalFractionalSpectrum{engine, &(internalFractionalBinnedSpectrum()[0]), _nbins}
   {
-
     GlobalConstantsHandle<ParticleDataTable> pdt;
     // pick up particle mass
     const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
     _electMass = e_data.mass().value();
-
-  }
-
-  PiCaptureEffects::~PiCaptureEffects()
-  {
   }
 
   void PiCaptureEffects::defineOutput() {
@@ -61,19 +58,19 @@ namespace mu2e {
   }
 
 
-  double PiCaptureEffects::internalFraction() {
+  double PiCaptureEffects::internalFraction() const {
     return _fract;
   }
 
-  bool PiCaptureEffects::doPhoton() {
+  bool PiCaptureEffects::doPhoton() const {
     return _doPhoton;
   }
 
-  bool PiCaptureEffects::doElectron() {
+  bool PiCaptureEffects::doElectron() const {
     return (_elecMom > 0 && !_doPhoton);
   }
 
-  bool PiCaptureEffects::doPositron() {
+  bool PiCaptureEffects::doPositron() const {
     return (_positMom > 0 && !_doPhoton);
   }
 
@@ -118,22 +115,22 @@ namespace mu2e {
 
 
   // Photon energy spectrum as a continuous function.
-  double PiCaptureEffects::energySpectrum(const double x)
+  double PiCaptureEffects::energySpectrum(const double x) const
   {
     // Parameters from doc 665-v2
-    static const double emax  = 138.2;
-    static const double alpha =   2.691;
-    static const double gamma =   1.051;
-    static const double tau   =   8.043;
-    static const double c0    =   2.741;
-    static const double c1    =  -0.005;
+    constexpr double emax  = 138.2;
+    constexpr double alpha =   2.691;
+    constexpr double gamma =   1.051;
+    constexpr double tau   =   8.043;
+    constexpr double c0    =   2.741;
+    constexpr double c1    =  -0.005;
 
     return pow(emax-x,alpha) * exp(-(emax-gamma*x)/tau) * (c0 + c1*x);
 
   } // PiCaptureEffects::energySpectrum
 
   // Compute a binned representation of the photon energy spectrum.
-  std::vector<double> PiCaptureEffects::binnedEnergySpectrum(){
+  std::vector<double> PiCaptureEffects::binnedEnergySpectrum() const{
 
     // Sanity check.
     if (_nbins <= 0) {
@@ -161,7 +158,7 @@ namespace mu2e {
 
 
   // Photon energy spectrum as a continuous function.
-  double PiCaptureEffects::internalFractionalSpectrum(const double x)
+  double PiCaptureEffects::internalFractionalSpectrum(const double x) const
   {
     // the usual distribution for positron/electron fraction, normalized to unity
     return (9./7.)*(1. - (4/3)*x*(1 - x));
@@ -169,7 +166,7 @@ namespace mu2e {
 
   // Compute a binned representation of the photon energy spectrum.
   // This runs from 0 to 1; we'll take the photon energy and multiply.
-  std::vector<double> PiCaptureEffects::internalFractionalBinnedSpectrum(){
+  std::vector<double> PiCaptureEffects::internalFractionalBinnedSpectrum() const {
 
     // Sanity check.
     if (_nbins <= 0) {

@@ -34,7 +34,7 @@ namespace mu2e {
   class CosmicDYB: public GeneratorBase {
 
   public:
-    CosmicDYB( art::Run& run, const SimpleConfig& config );
+    CosmicDYB(CLHEP::HepRandomEngine& engine, art::Run& run, const SimpleConfig& config);
     virtual ~CosmicDYB();
 
     virtual void generate( GenParticleCollection&  );

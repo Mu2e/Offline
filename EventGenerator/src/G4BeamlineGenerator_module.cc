@@ -1,4 +1,3 @@
-
 /*
 
   A plug_in for running G4Beamline-based event generator.
@@ -70,6 +69,7 @@ namespace mu2e {
     // A collection of all of the generators that we will run.
     typedef  boost::shared_ptr<FromG4BLFile> GeneratorBasePtr;
     GeneratorBasePtr _generator;
+    CLHEP::HepRandomEngine& _engine;
 
     // Check that configuration is internally consistent.
     void checkConfig( const SimpleConfig&  config);
@@ -82,13 +82,12 @@ namespace mu2e {
     _messageOnReplacement( pSet.get<bool>       ("messageOnReplacement", true)),
     _messageOnDefault(     pSet.get<bool>       ("messageOnDefault",      false)),
     _configStatsVerbosity( pSet.get<int>        ("configStatsVerbosity",  0)),
-    _printConfig(          pSet.get<bool>       ("printConfig",           false)){
-
+    _printConfig(          pSet.get<bool>       ("printConfig",           false)),
+    // Provide a common engine for the generators to use via the service
+    _engine{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
+  {
     produces<GenParticleCollection>();
     produces<G4BeamlineInfoCollection>();
-
-    // Provide a common engine for the generators to use via the service
-    createEngine( art::ServiceHandle<SeedService>()->getSeed() );
   }
 
 
@@ -115,7 +114,7 @@ namespace mu2e {
     }
 
     // Instantiate generators for this run.
-    _generator = GeneratorBasePtr(new FromG4BLFile(run, config));
+    _generator = GeneratorBasePtr(new FromG4BLFile{_engine, run, config});
 
     config.printAllSummaries( cout, _configStatsVerbosity, "G4blGen: ");
   }

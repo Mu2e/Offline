@@ -1,4 +1,4 @@
-// This generator places particle of a given pdg ID at points sampled from 
+// This generator places particle of a given pdg ID at points sampled from
 // an input ROOT tree.  The particles are produced at rest.
 //
 // One can not replace this generator with a special case of

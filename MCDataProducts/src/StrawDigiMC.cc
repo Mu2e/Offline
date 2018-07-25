@@ -24,7 +24,7 @@ namespace mu2e {
   {}
 
   StrawDigiMC::StrawDigiMC(StrawId sid, double wetime[2],
-      CLHEP::HepLorentzVector cpos[2], 
+      CLHEP::HepLorentzVector cpos[2],
       art::Ptr<StepPointMC> stepMC[2], vector<art::Ptr<StepPointMC> > const& stepMCs) :
     _strawid(sid), _stepMCs(stepMCs)
   {
@@ -59,7 +59,7 @@ namespace mu2e {
     if(!_stepMC[strawend].isNull()){
       const Tracker& tracker = getTrackerOrThrow();
       // use the MC true sid, not the straws sid (digi could be from x-talk)
-      Straw const& straw = tracker.getStraw(_stepMC[strawend]->strawIndex());
+      Straw const& straw = tracker.getStraw(_stepMC[strawend]->strawId());
       retval = (_cpos[strawend] - straw.getMidPoint()).perp(straw.getDirection());
     }
     return retval;
@@ -69,7 +69,7 @@ namespace mu2e {
     double retval = -100.0;
     if(!_stepMC[strawend].isNull()){
       const Tracker& tracker = getTrackerOrThrow();
-      Straw const& straw = tracker.getStraw(_stepMC[strawend]->strawIndex());
+      Straw const& straw = tracker.getStraw(_stepMC[strawend]->strawId());
       retval =  (_cpos[strawend] - straw.getMidPoint()).dot(straw.getDirection());
     }
     return retval;
@@ -78,8 +78,7 @@ namespace mu2e {
   bool StrawDigiMC::isCrossTalk(StrawEnd strawend) const {
     bool retval(false);
     if(!_stepMC[strawend].isNull()){
-    // this is currently broken till we replace starwIndex with strawId FIXME!!
-      //retval = _strawid == _stepMC[strawend]->strawIndex();
+      retval = _strawid == _stepMC[strawend]->strawId();
     }
     return retval;
   }

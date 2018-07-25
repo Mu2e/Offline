@@ -5,10 +5,6 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.hh,v 1.11 2014/03/04 00:29:17 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/03/04 00:29:17 $
-//
 // Original author David Brown, LBNL
 //
 
@@ -44,7 +40,7 @@ namespace mu2e {
     class StrawWaveform{
       public:
 	// construct from a clust sequence and response object.  Scale affects the voltage
-	StrawWaveform(StrawClusterSequence const& hseqq, ConditionsHandle<StrawElectronics> const& sresponse,XTalk const& xtalk); 
+	StrawWaveform(StrawClusterSequence const& hseqq, ConditionsHandle<StrawElectronics> const& sresponse,XTalk const& xtalk);
 	// disallow copy and assignment
 	StrawWaveform() = delete; // don't allow default constructor, references can't be assigned empty
 	StrawWaveform(StrawWaveform const& other);
@@ -52,7 +48,7 @@ namespace mu2e {
 	// find the next point the waveform crosses threhold.  Waveform crossing
 	// is both input (determines starting point) and output
 	bool crossesThreshold(double threshold,WFX& wfx) const;
-	// sample the waveform at a given time, no saturation included.  Return value is in units of volts 
+	// sample the waveform at a given time, no saturation included.  Return value is in units of volts
 	double sampleWaveform(StrawElectronics::Path ipath,double time) const;
 	// sample the waveform at a series of points allowing saturation to occur after preamp stage
         // FIXME no cross talk yet
@@ -62,8 +58,8 @@ namespace mu2e {
 	StrawClusterSequence const& clusts() const { return _cseq; }
 	ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }
 	XTalk const& xtalk() const { return _xtalk; }
-	StrawEnd strawEnd() const { return _cseq.strawEnd(); }
-        StrawId const &strawId() const { return _sid;}
+	StrawEnd const& strawEnd() const { return _cseq.strawEnd(); }
+        StrawId const& strawId() const { return _sid; }
       private:
 	// clust sequence used in this waveform
 	StrawClusterSequence const& _cseq;
@@ -91,4 +87,3 @@ namespace mu2e {
   }
 }
 #endif
-

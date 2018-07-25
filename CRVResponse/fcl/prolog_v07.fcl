@@ -58,7 +58,7 @@ BEGIN_PROLOG
       overvoltage                  : 2.1        //V
       timeConstant                 : 13.3       //ns  according to an Hamamatsu example with R_q=150kOhm --> tau=R_q*C=13.3ns
       capacitance                  : 8.84e-14   //F   capacitance of one pixel according to specs
-      blindTime                    : 500.0      //ns
+      blindTime                    : 400.0      //ns
 
       AvalancheProbParam1          : 0.607      // = p1
       AvalancheProbParam2          : 2.7        // = p2
@@ -103,7 +103,7 @@ BEGIN_PROLOG
     CrvCoincidence:
     {
       module_type                   : CrvCoincidenceCheck
-      verboseLevel                  : 1
+      verboseLevel                  : 0
       crvRecoPulsesModuleLabel      : "CrvRecoPulses"
       CRVSectors                    : ["R1","R2","R3","R4","R5","L1","L2","T1","T2","T3","T4","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
       PEthresholds                  : [ 26 , 26 , 26 , 26 , 26 , 26 , 26 , 36 , 22 , 18 , 20 , 36 , 36 , 28 , 36 , 36 , 36 , 36 , 26 , 26 , 26 , 26 ]
@@ -123,7 +123,7 @@ BEGIN_PROLOG
     CrvCoincidenceClusterFinder:
     {
       module_type                    : CrvCoincidenceClusterFinder
-      verboseLevel                   : 1
+      verboseLevel                   : 0
       usingPEsPulseHeight            : false  //using the PEs which were calculated using the pulse height
       maxDistance                    : 1000 //mm
       maxTimeDifference              : 100  //ns

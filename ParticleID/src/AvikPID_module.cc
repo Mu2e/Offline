@@ -441,7 +441,7 @@ namespace mu2e {
       ele_planeall[k]=straw->id().getPlane();
       ele_layall[k]=straw->id().getLayer();
       ele_Nall[k]=straw->id().getStraw();
-      ele_strawall[k]= straw->index().asInt();
+      ele_strawall[k]= straw->id().asUint16();
       ele_iamball[k]= hit->ambig();
       hit->hitPosition(pos);
       ele_resgood[k] = hit->resid(hitres,hiterr,1);
@@ -533,7 +533,7 @@ namespace mu2e {
       muo_planeall[k]  = straw->id().getPlane();
       muo_layall[k]  = straw->id().getLayer();
       muo_Nall[k]    = straw->id().getStraw();
-      muo_strawall[k]= straw->index().asInt();
+      muo_strawall[k]= straw->id().asUint16();
       muo_iamball[k] = hit->ambig();
       hit->hitPosition(pos);
       muo_resgood[k] = hit->resid(hitres,hiterr,1);
@@ -744,7 +744,7 @@ namespace mu2e {
     if (_debugLevel > 0) {
       printf( "res_ele_sum  is:  %8.4f res_muo_sum  is: %8.4f res_ele_sum2 is:  %8.4f res_muo_sum2 is: %8.4f\n",
 	      res_ele_sum ,res_muo_sum, res_ele_sum2,res_muo_sum2);
-      printf("logratio  is: %8.4f logratio2 is: %8.4f logratio3 is: %8.4f\n", 
+      printf("logratio  is: %8.4f logratio2 is: %8.4f logratio3 is: %8.4f\n",
 	     logratio, logratio2, logratio3);
     }
   }
@@ -1246,7 +1246,7 @@ namespace mu2e {
 // list of muon doublets
 //-----------------------------------------------------------------------------
           _dar->findDoublets  (muo_Trk,&muo_listOfDoublets);
-	
+
           for (auto ihot=muo_hots.begin(); ihot != muo_hots.end(); ++ihot) {
             TrkStrawHit* hit = (mu2e::TrkStrawHit*) (*ihot);
             if (hit->isActive()) {

@@ -17,8 +17,6 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 
@@ -48,7 +46,7 @@ namespace mu2e {
     art::InputTag _digisTag;
 
     // Some diagnostic histograms.
-    TH1F* _hStrawIndex      = nullptr;
+    TH1F* _hStrawId         = nullptr;
     TH1F* _hDigiTime0       = nullptr;
     TH1F* _hDigiTime1       = nullptr;
     TH1F* _hDigiDeltaTime   = nullptr;
@@ -84,9 +82,9 @@ void mu2e::ReadStrawDigiReco::beginJob(){
 
   art::ServiceHandle<art::TFileService> tfs;
 
-  _hStrawIndex     = tfs->make<TH1F>( "StrawIndex",    "StrawIndex",                      240,   0.,   24000. );
-  _hDigiTime0        = tfs->make<TH1F>( "DigiTime0",      "Digi TDC end 0",               264,   0.,  264000. );
-  _hDigiTime1        = tfs->make<TH1F>( "DigiTime1",      "Digi TDC end 1",               264,   0.,  264000. );
+  _hStrawId         = tfs->make<TH1F>( "StrawId",    "StrawId",                          180,   0.,   36000. );
+  _hDigiTime0       = tfs->make<TH1F>( "DigiTime0",      "Digi TDC end 0",               264,   0.,  264000. );
+  _hDigiTime1       = tfs->make<TH1F>( "DigiTime1",      "Digi TDC end 1",               264,   0.,  264000. );
   _hDigiDeltaTime   = tfs->make<TH1F>( "DigiDeltaTime",   "Digi Delta Time (ns)",         264, -264000., 264000. );
   _hDigiDeltaTimeDetail = tfs->make<TH1F>( "DigiDeltaTimeDetail",  "Digi Delta Time (ns)",   220, -100., 10000. );
   _hNADC            = tfs->make<TH1F>( "NADC",  "Number of Counts in Waveform",       100,  0., 100. );
@@ -112,17 +110,15 @@ void mu2e::ReadStrawDigiReco::analyze(art::Event const& evt) {
   }
 
   // Counter for number of digis on each wire.
-  std::map<StrawIndex,int> nhperwire;
-  const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
+  std::map<StrawId,int> nhperwire;
 
   for ( StrawDigi const& digi : digis ) {
+    StrawId id = digi.strawId();
 
-    StrawIndex index = tracker.getStrawIndex(digi.strawId());
-
-    _hStrawIndex->Fill(index.asInt());
+    _hStrawId->Fill(id.asUint16());
 
     // Calculate number of digis per wire
-    ++nhperwire[index];
+    ++nhperwire[id];
 
     auto t0 = digi.TDC(StrawEnd::cal);
     auto t1 = digi.TDC(StrawEnd::hv);
@@ -144,23 +140,24 @@ void mu2e::ReadStrawDigiReco::analyze(art::Event const& evt) {
     _hMeanADC->Fill(mean);
     _hMaxADC->Fill(maxadc);
 
-    /*
     if ( (int(evt.id().event()) < _maxFullPrint) && (_diagLevel > 3) ) {
       cout << "ReadStrawDigiReco: "
-           << evt.id().event()      << " #"
-           << si                    << " "
-           << sid                   << " "
-           << digi.time()            << " "
-           << digi.dt()              << " "
-           << digi.energyDep()
+           << evt.id().event()        << " "
+           << digi.strawId()          << " "
+           << digi.TDC(StrawEnd::cal) << " "
+           << digi.TDC(StrawEnd::hv)  << " "
+           << digi.TOT(StrawEnd::cal) << " "
+           << digi.TOT(StrawEnd::hv)  << " "
+           << sum << " "
+           << maxadc
            << endl;
     }
-    */
 
   } // end loop over digis.
 
-  for( std::map<StrawIndex,int>::iterator it=nhperwire.begin(); it!= nhperwire.end(); ++it ) {
-    _hNDigisPerWire->Fill(it->second);
+  //for( std::map<StrawId,int>::iterator it=nhperwire.begin(); it!= nhperwire.end(); ++it ) {
+  for ( auto const& i : nhperwire){
+    _hNDigisPerWire->Fill(i.second);
   }
 
 } // end of ::analyze.

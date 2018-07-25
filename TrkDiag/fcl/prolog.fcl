@@ -4,39 +4,9 @@
 #include "CaloCluster/fcl/prolog.fcl"
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
+#include "TrkDiag/fcl/KalDiag.fcl"
 
 BEGIN_PROLOG
-
-# Note that KalDiag must be configured differently depending on whether you are
-# reading data generated inline, or are reading data output through Read
-  KalDiag : {
-    StrawDigiMCLabel   : makeSD
-    TimeOffsets       :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-  }
-
-# If running KalDiag directly on G4 use KalDiagDirect
-  KalDiagDirect			  : @local::KalDiag
-  KalDiagDirect.MCStepsLabel        : g4run
-  KalDiagDirect.SimParticleLabel    : g4run
-  KalDiagDirect.SimParticleInstance : "" 
-
-# Production samples use Read, which requires the following setup
-  KalDiagRead			  : @local::KalDiag
-  KalDiagRead.MCStepsLabel        : detectorFilter
-  KalDiagRead.SimParticleLabel    : detectorFilter
-
-# TDR samples gave an instance name to the sim particle collection, CD3 and beyond won't
-  KalDiagReadTDR : @local::KalDiagRead
-  KalDiagReadTDR.SimParticleInstance : "s0"
-
-# CD3 beam data have no instance labels
-  KalDiagReadCD3 : @local::KalDiagRead
-  KalDiagReadCD3.SimParticleInstance : ""
-
-# CD3 Cosmic data have different filter module labels
-  KalDiagReadCD3Cosmics			  : @local::KalDiagReadCD3
-  KalDiagReadCD3Cosmics.MCStepsLabel        : cosmicFilter
-  KalDiagReadCD3Cosmics.SimParticleLabel    : cosmicFilter
 
 # prolog which should be elsewhere, FIXME
   pidPathBins: [ 0., 50., 100., 150., 200., 250., 300., 1.e12 ]
@@ -63,6 +33,7 @@ BEGIN_PROLOG
     caloMatchingRoot : "TrackCaloMatchingTRF"
   }
 
+  CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
 #Generic ReadKalFits config.  These only work for CD3
   ReadKalFits : {
     module_type: ReadKalFits
@@ -162,17 +133,19 @@ BEGIN_PROLOG
 # Prototype track analysis config.
   TrackAnalysis : {
     module_type : TrackAnalysis
-    DownstreameMinusTrackTag : "KFFDeM"
-    UpstreameMinusTrackTag : "KFFUeM"
-    DownstreammuMinusTrackTag : "KFFDmuM"
-    KalDiag : @local::KalDiagReadCD3 # configure KalDiag to read CD3 Beam Sim Particles
+    DownstreameMinusTrack : "KFFDeM"
+    UpstreameMinusTrack : "KFFUeM"
+    DownstreammuMinusTrack : "KFFDmuM"
+#    KalDiag : @local::KalDiagReadCD3 # configure KalDiag to read CD3 Beam Sim Particles
+    KalDiag : @local::KalDiagReadMDC # configure KalDiag to read MDC2018 data
     # change this if reading cosmic data or generating inline
     TrkCaloDiag : @local::TrkCaloDiag
-    CrvCoincidenceModuleLabel : "CrvCoincidence"
+    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterSummarizer"
     # note that these weights will only be applied if the module which
     # produces them is run
-    beamWeightTag : protonBunchSummarizer
-    generatorWeightTag : DIOWeight
+    BeamIntensity : "protonBunchIntensity"
+    MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
+    generatorWeight : "DIOWeight"
   }
 
 # TrkCaloIntersection by default looks for merged tracks; repoint to the tracker-found tracks
@@ -209,19 +182,13 @@ BEGIN_PROLOG
 # aggregate the prolog to produce the stanard analysis chain
   TrkAna : {
 
-    filters : {
-      @table::EventMixing.filters
-    }
     producers : {
-      @table::EventMixing.producers
-      @table::TrackerMC.producers
       @table::TrkHitReco.producers
       @table::Tracking.producers
-      @table::CaloDigiMC.producers
       @table::CaloReco.producers
       @table::CaloCluster.producers
       @table::TrackCaloMatching.producers
-#      @table::CrvResponsePackage.producers
+      @table::CrvResponsePackage.producers
   # DIO weighting for flat spectrum electrons
       DIOWeight: {
 	module_type: DecayInOrbitWeight
@@ -234,27 +201,27 @@ BEGIN_PROLOG
       TrkAna: @local::TrackAnalysis
     }
   
-    # separate out the sime and reco parts of the sequence
-    SimSequence	: [ @sequence::EventMixing.TimeMaps,
-		    @sequence::TrackerMC.DigiSim,
-		    @sequence::CaloDigiMC.DigiSim ]
-    RecoSequence : [ @sequence::CaloReco.Reco,
-	             @sequence::CaloCluster.Reco, 
-		     @sequence::TrkHitReco.PrepareHits,
+    # Reco sequences starting from digis; these belong elsewhere FIXME!
+    TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
 		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,
 		     @sequence::Tracking.TPRUeM,
-		     @sequence::Tracking.TPRDmuM,
-		     @sequence::TrackCaloMatching.matching_dem_TRF ]
-# temporarily remove due to art 2_9 compatibility issues FIXME!
-#    EndSequence : [ TrkAna, genCountLogger ]
+		     @sequence::Tracking.TPRDmuM ]
+    CaloRecoSequence : [ @sequence::CaloReco.Reco,
+			 @sequence::CaloCluster.Reco ]
+
+    CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
+
+    #nb: matching only done for dem, should be for other particles FIXME!
+#
     EndSequence : [ TrkAna ]
 
   }
   # aggregate these for convenience
-  TrkAna.SimAndRecoSequence : [ @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
-  TrkAna.SimAndRecoMixSequence : [ @sequence::EventMixing.CD3Mixers,
-                                   @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
-
+TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.TrkRecoSequence,
+			    @sequence::TrkAna.CaloRecoSequence,
+		            @sequence::TrackCaloMatching.matching_dem_TRF ]
+TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
+				 @sequence::TrkAna.CrvRecoSequence ]
 
 END_PROLOG

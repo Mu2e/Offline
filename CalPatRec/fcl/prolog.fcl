@@ -1,6 +1,4 @@
 # -*- mode: tcl -*-
-# this file depends on analysis through KalDiag and so needs the following
-# This depedency is deprecated and should be removed FIXME!!
 #include "TrkDiag/fcl/KalDiag.fcl"
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
@@ -649,7 +647,6 @@ CalPatRec : { @table::CalPatRec
 	    addhits                                     : true
 	    StrawHitCollectionLabel                     : makeSH
 	    StrawDigiCollectionLabel                    : makeSD
-	    StrawHitPositionCollectionLabel             : makeSH	 
 	    StrawHitFlagCollectionLabel                 : "DeltaFinder:StrawHits"
 	    TrackSeedModuleLabel                        : CalSeedFit
 	    MaxDtMiss                                   : 55.

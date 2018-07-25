@@ -14,11 +14,9 @@ namespace mu2e {
 
   class VolumeInfo;
   class SimpleConfig;
-  class SensitiveDetectorHelper;
 
   void constructDS(const VolumeInfo& parent,
-                   const SimpleConfig& config,
-                   const SensitiveDetectorHelper& sdHelper
+                   const SimpleConfig& config
                    );
 
 }

@@ -3,7 +3,7 @@
 // from its production vertex.
 //
 // Author Zhengyun You
-// 
+//
 //
 
 #include <iostream>
@@ -40,30 +40,18 @@ namespace mu2e {
   typedef vector<int> Vpdg;
   typedef vector<string> Vstring;
 
-    // In art v1_00_06 the ValidHandle::id() method needed by an
-    // art::Ptr constructor was missing.  A workaround:
-    template<class PROD> struct MyHandle : public art::ValidHandle<PROD> {
-      MyHandle(const art::ValidHandle<PROD>& h) : art::ValidHandle<PROD>(h) {}
-      art::ProductID id( ) const { return this->provenance()->productID(); }
-    };
-    template<class PROD> MyHandle<PROD> makeMyHandle(const art::ValidHandle<PROD>& h) {
-      return MyHandle<PROD>(h);
-    }
-
   class FromSimParticleStartPoint : public art::EDProducer {
   public:
     explicit FromSimParticleStartPoint(fhicl::ParameterSet const& pset);
-    void produce(art::Event& event);
-    void setNtuplaInfo(art::Event& event, GenParticle& gen,TNtuple*& ntup);
-    virtual void beginJob();
 
   private:
+    void produce(art::Event& event) override;
+    void setNtuplaInfo(art::Event& event, GenParticle& gen,TNtuple*& ntup);
+
     string _inModuleLabel;
     Vpdg _inPdgId;
     Vstring _inVolumes;
-    string _inProcessCodeDrop;
     ProcessCode _inProcessCodeToLook;
-    string _outGenId;
     GenId _outGenIdToCreate;
     bool _doHistograms;
     int _diagLevel;
@@ -76,47 +64,38 @@ namespace mu2e {
 
   FromSimParticleStartPoint::FromSimParticleStartPoint(fhicl::ParameterSet const& pset):
     _inModuleLabel(pset.get<std::string>("inputG4ModuleLabel","g4run")),
-    _inPdgId(pset.get<Vpdg>("inputPdgIds", Vpdg())),
-    _inVolumes(pset.get<Vstring>("inputVolumes", Vstring())),
-    _inProcessCodeDrop(pset.get<string>("inputProcessCodeDrop")),
-    _outGenId(pset.get<string>("outputGenId")),
+    _inPdgId(pset.get<Vpdg>("inputPdgIds", {})),
+    _inVolumes(pset.get<Vstring>("inputVolumes", {})),
+    _inProcessCodeToLook{ProcessCode::findByName(pset.get<string>("inputProcessCodeDrop"))},
+    _outGenIdToCreate{GenId::findByName(pset.get<string>("outputGenId"))},
     _doHistograms(pset.get<bool>("doHistograms",true)),
     _diagLevel(pset.get<int>("diagLevel", -1)),
     _firstevent(true)
   {
     produces<GenParticleCollection>();
     produces<GenSimParticleLink>();
-    _inProcessCodeToLook = ProcessCode::findByName(_inProcessCodeDrop);
-    _outGenIdToCreate    = GenId::findByName(_outGenId);
 
     if ( _doHistograms ){
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir( "FromSPStartPoint" );
-      
+
       _ntup = tfs->make<TNtuple>("fromspsp","Generator information",
                                  "evt:E:x:y:z:p:costh:phi:t:pdgId:GenId");
     }
-
-    createEngine( art::ServiceHandle<SeedService>()->getSeed() );    
   }
-
-  void FromSimParticleStartPoint::beginJob() {
-   
-  }
-
 
   void FromSimParticleStartPoint::setNtuplaInfo(art::Event& event, GenParticle& gen,TNtuple*& ntup) {
 
     float nt[11];
     nt[0] = event.id().event();
     nt[1] = gen.momentum().e();
-    nt[2] = gen.position().x();     
-    nt[3] = gen.position().y();     
-    nt[4] = gen.position().z();     
+    nt[2] = gen.position().x();
+    nt[3] = gen.position().y();
+    nt[4] = gen.position().z();
     nt[5] = gen.momentum().vect().mag();
     nt[6] = gen.momentum().cosTheta();
     nt[7] = gen.momentum().phi();
-    nt[8] = gen.time();    
+    nt[8] = gen.time();
     nt[9] = gen.pdgId();
     nt[10] = gen.generatorId().id();
 
@@ -127,20 +106,20 @@ namespace mu2e {
 
       if (_inVolumes.size() == 0) return;
       art::Handle<PhysicalVolumeInfoCollection> volsHandle;
-      event.getRun().getByLabel(_inModuleLabel,volsHandle);    
+      event.getRun().getByLabel(_inModuleLabel,volsHandle);
       PhysicalVolumeInfoCollection const& vols(*volsHandle);
 
-      
+
       for (size_t i=0; i<vols.size(); ++i) {
         PhysicalVolumeInfo const& theVol = vols.at(i);
-     
+
         for (size_t j=0; j<_inVolumes.size(); ++j) {
           if (theVol.name().compare(0,_inVolumes[j].size(),_inVolumes[j]) == 0) {
             _selVolumes.push_back(i);
           }
         }
       }
-     
+
       if (_diagLevel>-1) {
         cout << "Searching for all ";
         for (size_t i = 0; i < _inPdgId.size(); ++i ) {
@@ -210,8 +189,8 @@ namespace mu2e {
           findvolume = true;
         }
         else {
-        
-          for (vector<unsigned>::iterator volumeFinder = _selVolumes.begin(); 
+
+          for (vector<unsigned>::iterator volumeFinder = _selVolumes.begin();
             volumeFinder != _selVolumes.end(); ++volumeFinder) {
             if ( *volumeFinder == aParticle.endVolumeIndex()) {
               findvolume = true;
@@ -224,20 +203,20 @@ namespace mu2e {
         if (findvolume) {
 
           if (_diagLevel>-1) {
-            cout << "find particle " << aParticle.pdgId(); 
+            cout << "find particle " << aParticle.pdgId();
             cout << " in the selected volume " << endl;
           }
           if (_inProcessCodeToLook != aParticle.creationCode() ) {
-            
+
             if (_diagLevel>-1) cout << "keep with creation code " << aParticle.creationCode().name() << endl;
 
             PDGCode::type pdgId = aParticle.pdgId();
             CLHEP::Hep3Vector pos = aParticle.startPosition();
             CLHEP::HepLorentzVector mom = aParticle.startMomentum();
             double time = aParticle.startGlobalTime();
-            
+
             if (_diagLevel>-1) cout << "creating particle" << pdgId << endl;
-		
+
             GenParticle outGen(pdgId, GenId::fromSimParticleStartPoint, pos, mom, time);
 
             output->push_back(outGen);
@@ -248,7 +227,7 @@ namespace mu2e {
 
             if (_doHistograms) {
               setNtuplaInfo(event, output->back(),_ntup);
-	    }
+            }
           }
           else {
 
@@ -257,10 +236,10 @@ namespace mu2e {
         }
       } // if (pdgFinder != _inPdgId.end())
     } // for
-    
+
     event.put(std::move(output));
     event.put(std::move(history));
-    
+
   }
 
 } // namespace mu2e

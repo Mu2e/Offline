@@ -41,7 +41,7 @@ namespace mu2e {
     double           czmax_;
     double           phimin_;
     double           phimax_;
-    double	     emin_; // minimum electron energy
+    double           emin_; // minimum electron energy
     RandomUnitSphere randomUnitSphere_;
     RootTreeSampler<IO::StoppedParticleF> stops_;
     CLHEP::RandFlat flat_;
@@ -67,7 +67,7 @@ namespace mu2e {
     , czmax_           (pset.get<double>("czmax" ,  1.0))
     , phimin_          (pset.get<double>("phimin",  0. ))
     , phimax_          (pset.get<double>("phimax", CLHEP::twopi ))
-    , emin_	       (pset.get<double>("emin", 10.0))
+    , emin_            (pset.get<double>("emin", 10.0))
     , randomUnitSphere_(eng_,czmin_,czmax_,phimin_,phimax_)
     , stops_           (eng_, pset.get<fhicl::ParameterSet>("muonStops"))
     , flat_        (eng_)
