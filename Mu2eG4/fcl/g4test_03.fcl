@@ -117,7 +117,7 @@ physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimet
 # physics.producers.g4run.BirksConsts : { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV }
 
 # mu stops
-physics.producers.generate.muonStops.inputFiles : @local::merged_tgtStops_mdc2018
+physics.producers.generate.muonStops.inputFiles : @local::mergedMuon_tgtStops_mdc2018
 
 // Enable diagnsotic printout for pedagogical purposes.
 physics.producers.makeSH.diagLevel : 0
