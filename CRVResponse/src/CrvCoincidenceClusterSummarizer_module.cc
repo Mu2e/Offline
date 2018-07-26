@@ -20,6 +20,7 @@
 #include "RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusterSummaryCollection.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -52,6 +53,7 @@ namespace mu2e
                                                           //it is possible to have more than one instance of the CrvCoincidenceClusterFinder module
     std::string _crvWaveformsModuleLabel;  //module label of the CrvWaveform module. 
                                            //this is optional. only needed, if MC information is required
+    SimParticleTimeOffset _timeOffsets;
     void CollectStepPoints(std::set<art::Ptr<StepPointMC> > &steps, 
                            const art::Handle<CrvDigiMCCollection> &digis, 
                            size_t waveformIndex);
@@ -63,7 +65,8 @@ namespace mu2e
 
   CrvCoincidenceClusterSummarizer::CrvCoincidenceClusterSummarizer(fhicl::ParameterSet const& pset) :
     _crvCoincidenceClusterFinderModuleLabel(pset.get<std::string>("crvCoincidenceClusterFinderModuleLabel")),
-    _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel",""))
+    _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel","")),
+    _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets"))
   {
     produces<CrvCoincidenceClusterSummaryCollection>();
   }
@@ -82,6 +85,8 @@ namespace mu2e
 
   void CrvCoincidenceClusterSummarizer::produce(art::Event& event) 
   {
+    _timeOffsets.updateMap(event);
+
     std::unique_ptr<CrvCoincidenceClusterSummaryCollection> crvCoincidenceClusterSummaryCollection(new CrvCoincidenceClusterSummaryCollection);
 
     art::Handle<CrvCoincidenceClusterCollection> crvCoincidenceClusterCollection;
@@ -166,8 +171,6 @@ namespace mu2e
                                                    art::Ptr<SimParticle> &mostLikelySimParticle)
   {
     energyDeposited=0;
-    earliestHitTime=NAN;
-    
     std::map<art::Ptr<SimParticle>,double> simParticleMap;
     std::set<art::Ptr<StepPointMC> >::const_iterator i;
     for(i=steps.begin(); i!=steps.end(); i++)
@@ -175,11 +178,6 @@ namespace mu2e
       const StepPointMC &step = **i;
       energyDeposited+=step.totalEDep();
       simParticleMap[step.simParticle()]+=step.totalEDep();
-      if(isnan(earliestHitTime) || earliestHitTime>step.time())
-      {
-        earliestHitTime=step.time();
-        earliestHitPos=step.position();
-      }
     }
 
     std::map<art::Ptr<SimParticle>,double>::iterator simParticleIter;
@@ -190,6 +188,25 @@ namespace mu2e
       {
         simParticleDepEnergy=simParticleIter->second;
         mostLikelySimParticle=simParticleIter->first;
+      }
+    }
+
+    //time folding is not applied here, but was used to create the digis, ...
+    //so we need to avoid that some step points from a different micro bunch 
+    //could be accidentally found to be the step point with the earliest hit time.
+    //therefore, only step points of the most likely sim particle will be considered.
+    earliestHitTime=NAN;
+    for(i=steps.begin(); i!=steps.end(); i++)
+    {
+      const StepPointMC &step = **i;
+      if(step.simParticle()==mostLikelySimParticle)
+      {
+        double t = _timeOffsets.timeWithOffsetsApplied(step);
+        if(isnan(earliestHitTime) || earliestHitTime>t)
+        {
+          earliestHitTime=t;
+          earliestHitPos=step.position();
+        }
       }
     }
   }

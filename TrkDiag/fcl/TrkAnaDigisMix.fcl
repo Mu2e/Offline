@@ -38,4 +38,5 @@ physics.analyzers.TrkAna.KalDiag.SimParticleLabel : "compressDigiMCs"
 physics.analyzers.TrkAna.KalDiag.SimParticleInstance : "g4run"
 physics.analyzers.TrkAna.KalDiag.TimeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
 physics.producers.CrvCoincidenceClusterSummarizer.crvWaveformsModuleLabel : "compressDigiMCs"
+physics.producers.CrvCoincidenceClusterSummarizer.timeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
 
