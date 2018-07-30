@@ -254,37 +254,46 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   bool CalHelixFinderAlg::findHelix(CalHelixFinderData& Helix, const CalTimePeak* TimePeak) {
+    return false;
+//     fTimePeak = TimePeak;
+// 					// fill the calorimeter cluster info
+//     fCaloTime = TimePeak->ClusterT0();
+//     fCaloX    = TimePeak->ClusterX();
+//     fCaloY    = TimePeak->ClusterY();
+//     fCaloZ    = TimePeak->ClusterZ();
+// //-----------------------------------------------------------------------------
+// //  compute the allowed radial range for this fit
+// //-----------------------------------------------------------------------------
+//     double pb = fabs((CLHEP::c_light*1e-3)/(bz()*Helix._tpart.charge()));
+//     _rmin = _pmin/(pb*sqrt(1.0+_tdmax*_tdmax));
+//     _rmax = _pmax/(pb*sqrt(1.0+_tdmin*_tdmin));
+// //-----------------------------------------------------------------------------
+// //  particle charge, field, and direction affect the pitch range
+// //-----------------------------------------------------------------------------
+//     _dfdzsign = copysign(1.0,-Helix._tpart.charge()*Helix._fdir.dzdt()*bz()); 
+//     //Correct sign of the most probable value to account for helicity
+//     _mpDfDz = _mpDfDz*_dfdzsign;
+//     //correc the limits of dfdz we accept
+//     // if (_dfdzsign < 0){
+//     //   double tmpMax = _maxDfDz;
+//     //   _maxDfDz = -_minDfDz;
+//     //   _minDfDz = -tmpMax;
+//     // }
 
-    fTimePeak = TimePeak;
-					// fill the calorimeter cluster info
-    fCaloTime = TimePeak->ClusterT0();
-    fCaloX    = TimePeak->ClusterX();
-    fCaloY    = TimePeak->ClusterY();
-    fCaloZ    = TimePeak->ClusterZ();
-//-----------------------------------------------------------------------------
-//  compute the allowed radial range for this fit
-//-----------------------------------------------------------------------------
-    double pb = fabs((CLHEP::c_light*1e-3)/(bz()*Helix._tpart.charge()));
-    _rmin = _pmin/(pb*sqrt(1.0+_tdmax*_tdmax));
-    _rmax = _pmax/(pb*sqrt(1.0+_tdmin*_tdmin));
-//-----------------------------------------------------------------------------
-//  particle charge, field, and direction affect the pitch range
-//-----------------------------------------------------------------------------
-    _dfdzsign = copysign(1.0,-Helix._tpart.charge()*Helix._fdir.dzdt()*bz());
 
-    if(_dfdzsign > 0.0){
-      _smin = 1.0/(_rmax*_tdmax);
-      _smax = 1.0/(_rmin*_tdmin);
-    } else {
-      _smax = -1.0/(_rmax*_tdmax);
-      _smin = -1.0/(_rmin*_tdmin);
-    }
-//-----------------------------------------------------------------------------
-// call down
-//-----------------------------------------------------------------------------
-    bool retval = findHelix(Helix);
+//     if(_dfdzsign > 0.0){
+//       _smin = 1.0/(_rmax*_tdmax);
+//       _smax = 1.0/(_rmin*_tdmin);
+//     } else {
+//       _smax = -1.0/(_rmax*_tdmax);
+//       _smin = -1.0/(_rmin*_tdmin);
+//     }
+// //-----------------------------------------------------------------------------
+// // call down
+// //-----------------------------------------------------------------------------
+//     bool retval = findHelix(Helix);
 
-    return retval;
+//     return retval;
   }
 
 //-----------------------------------------------------------------------------
@@ -844,7 +853,7 @@ namespace mu2e {
 
 	dphi = phiVec[j]-phi_ref;
 	dz   = zVec[j] - z_ref;
-	double dphidz = dphi/dz;
+	double dphidz =dphi/dz*_dfdzsign; //HERE
 	
 	weight = nhits[i] + nhits[j];
 //-----------------------------------------------------------------------------
@@ -929,8 +938,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // Part 2: perform a more accurate estimate - straight line fit
 //-----------------------------------------------------------------------------
-    if (nstations_with_hits < 2) _hdfdz = _mpDfDz;
-    else                         _hdfdz = xmp;
+    if (nstations_with_hits < 2) _hdfdz = _mpDfDz;                                 
+    else                         _hdfdz = xmp*_dfdzsign;
 //-----------------------------------------------------------------------------
 // last step - determine phi0 = phi(z=0)
 //-----------------------------------------------------------------------------
@@ -1362,7 +1371,7 @@ namespace mu2e {
       success = true;
     }
     //----------------------------------------------------------------------//
-    if (Helix._szphi.dfdz() < 0.) { // *FIXME* : negative helicity handling
+   if ((Helix._szphi.dfdz()*_dfdzsign) < 0.) { // *FIXME* : negative helicity handling  //Used to be (Helix._szPhiSh >= 0.) //HERE
       success = false;
     }
     else if (success) {                               // update helix results
@@ -2896,14 +2905,14 @@ namespace mu2e {
     
     calculateTrackParameters(p1,p2,p3,center,radius,phi0,dfdz);
     
-    double     tollMax = 2.*M_PI/dfdz;
+    double     tollMax = fabs(2.*M_PI/dfdz);
 //------------------------------------------------------------------------------
 // helix parameters, in particular, phi0, are defined at Z=p2.z()
 // 2014-11-05 gianipez set dfdz equal to the most probable value for CE 
 //------------------------------------------------------------------------------
     if (UseMPVDfDz ==1 ) {
-      dfdz    = _hdfdz;			// _mpDfDz;
-      tollMax = 2.*M_PI/dfdz;
+      dfdz    = _hdfdz;			// _mpDfDz; 
+      tollMax = fabs(2.*M_PI/dfdz);
     }
 
     SeedInfo_t lastIndex(-1,-1);
@@ -2950,6 +2959,13 @@ namespace mu2e {
       // dfdz = tanLambda/radius; phi0 is the last found hit phi
       //-----------------------------------------------------------------------------
       deltaZ = panelz->z - lastPanel->z;
+
+      // we need to limit the extrapolation distance between the last hit clustered and the next
+      // in order to avoid mis-reconstruction in the wrong helicity hypothesis.
+      // In case the deltaZ limit is exceeded we can stop the search
+      double     zExtrapLimit = 1./2.*fabs(2.*M_PI/dfdz); //HEREHEREHERE
+      if (deltaZ > zExtrapLimit)                                     break;
+      
       phi    = phi0 + deltaZ*dfdz;
       //evaluate the helix prediction using the z coordinate of the panel
       hePos.SetXYZ(center.x()+radius*cos(phi),center.y()+radius*sin(phi),panelz->z);
@@ -3110,7 +3126,7 @@ namespace mu2e {
 	//-----------------------------------------------------------------------------
 	// what to do if dfdz is negative? - the case of negative helicity is not covered yet
 	//-----------------------------------------------------------------------------
-	if ((dfdz > _maxDfDz) || (dfdz < _minDfDz)) {
+	if ((fabs(dfdz) > _maxDfDz) || (fabs(dfdz) < _minDfDz)) {
 	  //-----------------------------------------------------------------------------
 	  // 2014-11-05 dPhi/Dz doesn't make sense, back to ground zero: 
 	  // gianipez set dfdz equal to the most probable value for CE, 
@@ -3403,7 +3419,7 @@ namespace mu2e {
 // close to the expected 
 //-----------------------------------------------------------------------------
     double dphi32 = polyAtan2(dy3,dx3) - Phi0;
-    if (dphi32 < 0.) dphi32 += 2.*M_PI;
+    if (dphi32*_dfdzsign < 0.) dphi32 += 2.*M_PI;
 
     //    double exp_dphi = _mpDfDz*dz32;
 
@@ -3427,7 +3443,7 @@ namespace mu2e {
     }
 
     //check id DfDz is within the range 
-    if ( (DfDz23 < _minDfDz) || (DfDz23 > _maxDfDz)) DfDz23 = _mpDfDz;
+    if ( (fabs(DfDz23) < _minDfDz) || (fabs(DfDz23) > _maxDfDz)) DfDz23 = _mpDfDz;
 
     if (_debug > 5) {
 //-----------------------------------------------------------------------------

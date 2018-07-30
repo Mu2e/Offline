@@ -3,9 +3,6 @@
 
 #include <vector>
 
-class TH1F;
-class TH2F;
-
 namespace art {
   class Event;
 };
@@ -23,13 +20,9 @@ namespace fhicl {
 namespace mu2e {
 
   class KalFitResultNew;
-  //  class CaloCluster;
-  
-#ifndef __CalPatRec_CalTimePeak_hh__
-  class CalTimePeakCollection;
-#endif
   
   namespace CalTimePeakFinderTypes {
+    enum { kMaxTimePeaks = 100 };
 //-----------------------------------------------------------------------------
 // data structure shared by CalTimePeakFinder with its plugins
 //-----------------------------------------------------------------------------
@@ -38,12 +31,11 @@ namespace mu2e {
       const TimeCluster*              _timeCluster;
       const CaloClusterCollection*    ccCollection;
       const ComboHitCollection*       chcol;
-      // const StrawHitPositionCollection*       shpcol;
-      // const StrawHitFlagCollection*   shfcol;
-      //      CalTimePeakCollection*          _tpeaks;      // cache of time peaks
-      TimeClusterCollection*          _outseeds;
+      TimeClusterCollection*          _tcColl;       // 'tcColl': time cluster collection
       int                             minNHits;
       double                          minClusterEnergy;
+      int                             ntc;
+      std::vector<float>              dtvec;   // distance from prediction, assume < 100 time peaks
     };
   }
 }

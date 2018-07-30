@@ -14,6 +14,7 @@
 
 // Now the specific items for version 2 of the Production Target
 int targetPS_version           = 2;
+double targetPS_nFins          = 3;
 double targetPS_finHeight      = 5.0; // mm  Parameter "A"
 double targetPS_finThickness   = 1.0; // mm  Parameter "B"
 double targetPS_hubDistanceUS  = 0.0; // mm  Parameter "C"  (Upstream)

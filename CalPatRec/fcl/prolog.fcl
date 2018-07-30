@@ -1,4 +1,6 @@
 # -*- mode: tcl -*-
+# this file depends on analysis through KalDiag and so needs the following
+# This depedency is deprecated and should be removed FIXME!!
 #include "TrkDiag/fcl/KalDiag.fcl"
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
@@ -581,9 +583,16 @@ CalPatRec : { @table::CalPatRec
 
 	MergePatRecCpr : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFit    }
 	MergePatRecTpr : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: none         }
+
+	MergePatRecCprDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFitDem }
+	MergePatRecTprDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: none         }
+
+	MergePatRecCprDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFitDep }
+	MergePatRecTprDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: none         }
+
 	MergePatRecDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: CalTrkFitDem }
 	MergePatRecDmm : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuM calPatRecModuleLabel: CalTrkFitDmm }
-	MergePatRecDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: none }
+	MergePatRecDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: CalTrkFitDep }
 	MergePatRecDmp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuP calPatRecModuleLabel: none         }
 	MergePatRecUem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUeM  calPatRecModuleLabel: none         }
 	MergePatRecUmm : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUmuM calPatRecModuleLabel: none         }
@@ -600,14 +609,14 @@ CalPatRec : { @table::CalPatRec
 	    debugLevel                                  : 0
 	    printFrequency                              : 100
 	    useAsFilter                                 : 0
-	    StrawHitCollectionLabel                     : makePH
+	    StrawHitCollectionLabel                     : makePH            # CalTimePeakFinder uses ComboHits
 	    StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
 	    caloClusterModuleLabel                      : CaloClusterFromProtoCluster
 	    HitSelectionBits                            : [] 
 	    BackgroundSelectionBits                     : [] 
 	    MinNHits                                    : @local::CalPatRec.minNStrawHits  
 	    DtMin                                       : -30.   # value before 2017-11-17 was -40. ns
-	    DtMax                                       :  20.   # value before 2017-11-17 was 40. 
+	    DtMax                                       :  30.   # 2018-07-29 P.M.: DtMax=20ns was cutting out a few percent of hits
 	    minClusterEnergy                            : 50.    # MeV
 	    minClusterSize                              : 2      # number of crystals
 	    minClusterTime                              : 500.   # ns
@@ -672,7 +681,7 @@ CalPatRec: { @table::CalPatRec
     producers : { @table::CalPatRec.producers
 	
 	CalSeedFitDem                  : { @table::CalPatRec.producers.CalSeedFit        
-	    SeedCollection          : CalHelixFinderDem
+	    SeedCollection             : CalHelixFinderDem
 	}
 	CalSeedFitDmm                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.muminus
@@ -680,54 +689,37 @@ CalPatRec: { @table::CalPatRec
 	}
 	CalSeedFitDep                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.eplus  
-	    SeedCollection          : CalHelixFinderDep
+	    SeedCollection             : CalHelixFinderDep
 	}
 	CalSeedFitDmp                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.muplus
-	    SeedCollection          : CalHelixFinderDmp
+	    SeedCollection             : CalHelixFinderDmp
 	}
     }
     
     filters : { @table::CalPatRec.filters
-# 	CalTimePeakFinderDem           : { @table::CalPatRec.filters.CalTimePeakFinder }
-# 	CalTimePeakFinderDmm           : { @table::CalPatRec.filters.CalTimePeakFinder fitparticle: @local::Particle.muminus }
-# 	CalTimePeakFinderDep           : { @table::CalPatRec.filters.CalTimePeakFinder fitparticle: @local::Particle.eplus   }
-# 	CalTimePeakFinderDmp           : { @table::CalPatRec.filters.CalTimePeakFinder fitparticle: @local::Particle.muplus  } 
-# 
-	CalHelixFinderDem              : { @table::CalPatRec.filters.CalHelixFinder    
-	    TimeClusterCollectionLabel : CalTimePeakFinder
-	}
-	CalHelixFinderDmm              : { @table::CalPatRec.filters.CalHelixFinder 
-	    fitparticle                : @local::Particle.muminus 
-	    TimeClusterCollectionLabel : CalTimePeakFinder
-	}
-	CalHelixFinderDep              : { @table::CalPatRec.filters.CalHelixFinder 
-	    fitparticle                : @local::Particle.eplus
-	    TimeClusterCollectionLabel : CalTimePeakFinder
-	}
-	CalHelixFinderDmp              : { @table::CalPatRec.filters.CalHelixFinder 
-	    fitparticle                : @local::Particle.muplus 
-	    TimeClusterCollectionLabel : CalTimePeakFinder
+
+	CalHelixFinderDem              : { @table::CalPatRec.filters.CalHelixFinder                                       }
+	CalHelixFinderDmm              : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.muminus }
+	CalHelixFinderDep              : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eplus   }
+	CalHelixFinderDmp              : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.muplus  }
+
+	CalTrkFitDem                   : { @table::CalPatRec.filters.CalTrkFit  
+	    TrackSeedModuleLabel       : CalSeedFitDem	
 	}
 
-	CalTrkFitDem                   : { @table::CalPatRec.filters.CalTrkFit         
-	    TrackSeedModuleLabel       : CalSeedFitDem
-	    CalTimePeakModuleLabel     : CalTimePeakFinder
-	}
 	CalTrkFitDmm                   : { @table::CalPatRec.filters.CalTrkFit 
 	    fitparticle                : @local::Particle.muminus 
 	    TrackSeedModuleLabel       : CalSeedFitDmm
-	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
+
 	CalTrkFitDep                   : { @table::CalPatRec.filters.CalTrkFit 
 	    fitparticle                : @local::Particle.eplus  
 	    TrackSeedModuleLabel       : CalSeedFitDep
-	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
 	CalTrkFitDmp                   : { @table::CalPatRec.filters.CalTrkFit 
 	    fitparticle                : @local::Particle.muplus 
 	    TrackSeedModuleLabel       : CalSeedFitDmp
-	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
    }
 }

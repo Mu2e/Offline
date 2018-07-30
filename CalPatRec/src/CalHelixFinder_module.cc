@@ -399,8 +399,8 @@ namespace mu2e {
     HelSeed._helix._fcent    = center.phi();
     HelSeed._helix._radius   = helixRadius;
     HelSeed._helix._lambda   = 1./dfdz;
-    HelSeed._helix._fz0      = -z0*dfdz + phi0 - M_PI/2.;
-    HelSeed._helix._helicity = Helicity::poshel;
+    HelSeed._helix._fz0      = -z0*dfdz*_hfinder._dfdzsign + phi0 - M_PI/2.;
+    HelSeed._helix._helicity = _hfinder._dfdzsign > 0 ? Helicity::poshel : Helicity::neghel;
 
                                         //now evaluate the helix T0 using the calorimeter cluster
     double   mm2MeV        = 3/10.;//FIX ME!

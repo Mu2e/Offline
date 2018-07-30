@@ -26,12 +26,13 @@ namespace mu2e {
                                               )
                             + c.getHep3Vector("productionTarget.offset", CLHEP::Hep3Vector(0,0,0)),
                             
-			    c.getDouble("targetPS_finHeight",0.0),
-			    c.getDouble("targetPS_finThickness",0.0),
+			    c.getInt   ("targetPS_nFins"    ,    0  ),
+			    c.getDouble("targetPS_finHeight",    0.0),
+			    c.getDouble("targetPS_finThickness", 0.0),
 			    c.getDouble("targetPS_hubDistanceUS",0.0),
 			    c.getDouble("targetPS_hubDistanceDS",0.0),
-			    c.getDouble("targetPS_hubAngleUS",0.0),
-			    c.getDouble("targetPS_hubAngleDS",0.0),
+			    c.getDouble("targetPS_hubAngleUS"   ,0.0),
+			    c.getDouble("targetPS_hubAngleDS"   ,0.0),
 			    c.getDouble("targetPS_hubOverhangUS",0.0),
 			    c.getDouble("targetPS_hubOverhangDS",0.0) ) );
 
@@ -45,10 +46,10 @@ namespace mu2e {
     double spokeAnchordist = c.getDouble("targetPS_Spoke_anchordist");
     double spokeAngleStep = 360.0/((double) nSpokeperside);
 
-    double Hub_thickness = c.getDouble("targetPS_Hub_thickness",0.0);
-    double Hub_hang_Length = c.getDouble("targetPS_Hub_hang_Length",0.0);
+    double Hub_thickness       = c.getDouble("targetPS_Hub_thickness",0.0);
+    double Hub_hang_Length     = c.getDouble("targetPS_Hub_hang_Length",0.0);
     double Hub_overhang_Length = c.getDouble("targetPS_Hub_overhang_Length",0.0);
-    double Hub_overhang_angle = c.getDouble("targetPS_Hub_overhang_angle",0.0);
+    double Hub_overhang_angle  = c.getDouble("targetPS_Hub_overhang_angle",0.0);
 
     if (version > 1) {
       Hub_overhang_Length = tgtPS->hubOverhangDS();

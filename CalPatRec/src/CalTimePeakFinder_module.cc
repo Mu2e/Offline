@@ -73,9 +73,11 @@ namespace mu2e {
     if (_diagLevel  != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
     else                  _hmanager = std::make_unique<ModuleHistToolBase>();
 
+    _sinPitch              = sin(_pitchAngle);
+
     _data.minClusterEnergy =  _minClusterEnergy;
     _data.minNHits         =  _minNHits;
-    _sinPitch              = sin(_pitchAngle);
+    _data.ntc              = 0;
   }
 
 //-----------------------------------------------------------------------------
@@ -141,28 +143,34 @@ namespace mu2e {
 
     _data._event = &event;
 
-    unique_ptr<TimeClusterCollection>  outseeds(new TimeClusterCollection);
+    unique_ptr<TimeClusterCollection>  tcColl(new TimeClusterCollection);
 
-    _data._outseeds = outseeds.get();
+    _data._tcColl = tcColl.get();
 
     bool ok = findData(event);
 
-    if (ok) findTimePeaks(*_data._outseeds);
+    if (ok) findTimePeaks(*_data._tcColl);
     else    printf("%s ERROR: No straw hits found in event %i\n",oname,_iev);
 
-    // diagnostics, if requested
-    if (_diagLevel > 0) _hmanager->fillHistograms(&_data);
+    int ntc = tcColl->size();
+
+    if (_diagLevel > 0) {
 //-----------------------------------------------------------------------------
-// put reconstructed tracks into the event record
+// diagnostics followed by memory cleanup
 //-----------------------------------------------------------------------------
-    event.put(std::move(outseeds));
+      _hmanager->fillHistograms(&_data);
+      _data.dtvec.clear();
+    }
+//-----------------------------------------------------------------------------
+// put reconstructed time peaks into the event record
+//-----------------------------------------------------------------------------
+    event.put(std::move(tcColl));
 //-----------------------------------------------------------------------------
 // filtering, if requested
 //-----------------------------------------------------------------------------
     if (_useAsFilter == 0) return true;
 
-    int nseeds = outseeds->size();
-    return (nseeds > 0) ;
+    return (ntc > 0) ;
   }
 //-----------------------------------------------------------------------------
 //
@@ -172,7 +180,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  void CalTimePeakFinder::findTimePeaks(TimeClusterCollection& OutSeeds) {
+  void CalTimePeakFinder::findTimePeaks(TimeClusterCollection& TimeClusterColl) {
 
     //    const char* oname = "CalTimePeakFinder::findTimePeaks";
 
@@ -183,6 +191,7 @@ namespace mu2e {
     const ComboHit*     hit;
     // const Straw*        straw;
     Hep3Vector          gpos, tpos;
+    vector<float>       dtvec;
 
     //    using namespace boost::accumulators;
     static const double pi(M_PI);
@@ -243,30 +252,37 @@ namespace mu2e {
               if (dphi >  pi) dphi -= twopi;
               if (dphi < -pi) dphi += twopi;
 
-              //-----------------------------------------------------------------------------
-              // fill some diag histograms
-              //-----------------------------------------------------------------------------
               if (fabs(dphi) <= pi/2.) {
                 tpeak._strawHitIdxs.push_back( StrawHitIndex(istr) );
                 nsh += hit->nStrawHits();
-                //-----------------------------------------------------------------------------
-                // print diagnostics on rejected hits
-                //-----------------------------------------------------------------------------
-                // printf("[%s] rejected hit: index: %5i flag: %10s  time:  %8.3f   dt: %8.3f energy: %8.5f\n",
-                //        oname, istr, flag.hex().data(), hit->time(), hit->dt(), hit->energyDep());
-                // }
+
+		if (_diagLevel > 0) {
+//-----------------------------------------------------------------------------
+// accumulate diag data
+//-----------------------------------------------------------------------------
+		  dtvec.push_back(dt);
+		}
               }
             }
           }
 
-          // if (int(tpeak.nhits()) >= _data.minNHits) {
           if (nsh >= _data.minNHits) {
             tpeak._nsh              = nsh;
             tpeak._t0               = TrkT0(cl_time, 0.1); //dummy value for errT0
             tpeak._pos              = tpos;
             tpeak._caloCluster      = art::Ptr<mu2e::CaloCluster>(_ccH, ic);
-            OutSeeds.push_back(tpeak);
+            TimeClusterColl.push_back(tpeak);
+	    _data.ntc              += 1;
+
+	    if (_diagLevel > 0) {
+	      int nh = dtvec.size();
+	      for (int i=0; i<nh; i++) {
+		_data.dtvec.push_back(dtvec[i]);
+	      }
+	    }
           }
+
+	  if (_diagLevel > 0) dtvec.clear();
         }
       }
     }
