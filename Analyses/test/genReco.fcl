@@ -25,7 +25,7 @@ BEGIN_PROLOG
 
 generatorSeq  : [ generate, g4run ]
 
-make_digis   : [ @sequence::CommonDigiSim.DigiSim, @sequence::CaloDigiMC.DigiSim, @sequence::TrackerMC.DigiSim ]
+make_digis   : [ @sequence::CommonMC.DigiSim, @sequence::CaloDigiMC.DigiSim, @sequence::TrackerMC.DigiSim ]
 
 # calorimeter cluster reconstruction
 calRecoSeq    : [ @sequence::CaloReco.Reco,@sequence::CaloDigiMC.TruthMatch,@sequence::CaloCluster.Reco,@sequence::CaloCluster.TruthMatch ]
@@ -154,7 +154,7 @@ physics : {
 # G4, hit makers, calorimeter, track reconstruction, and PID
 #------------------------------------------------------------------------------
 	@table::Mu2eG4.producers
-	@table::CommonDigiSim.producers
+	@table::CommonMC.producers
 	@table::CaloDigiMC.producers
         @table::CaloReco.producers
         @table::CaloDigiMC.producersMC
