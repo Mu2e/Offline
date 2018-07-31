@@ -97,10 +97,13 @@ namespace mu2e {
     // _candIndex   = SeedInfo_t(-1,-1);
 
     //clear the panel-based structure
-    for (int f=0; f<kNTotalFaces; ++f) {
+    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f) {
       FaceZ_t* facez = &_oTracker[f];
-      facez->fNHits = 0;
-      facez->fHitData.clear() ;
+      for (int p=0; p<FaceZ_t::kNPanels; ++p){
+	PanelZ_t* panelz  = &facez->panelZs[p];   
+	panelz->fNHits = 0;
+	panelz->fHitData.clear() ;
+      }
     }
 
     // _hitsUsed =  {0};

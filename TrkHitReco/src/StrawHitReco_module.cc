@@ -241,10 +241,12 @@ namespace mu2e {
 	  shCol->push_back(std::move(hit));
 	}
 	// create combo hit
+	static const XYZVec _zdir(0.0,0.0,1.0);
 	ComboHit ch;
 	ch._nsh = 1; // 'combo' of 1 hit
 	ch._pos = pos;
 	ch._wdir = straw.getDirection();
+	ch._sdir = _zdir.Cross(ch._wdir);
 	ch._wdist = dw;
 	ch._wres = dwerr;
 	ch._time = time;

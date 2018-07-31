@@ -16,6 +16,8 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 
+#include "TrkReco/inc/TrkFaceData.hh"
+
 #include <array>
 
 class HelixTraj;
@@ -23,24 +25,14 @@ class HelixTraj;
 namespace mu2e {
 
   class TimeCluster;
-  class Panel;
+  class FaceZ_t;
+  //  class Panel;
 
   //---------------------------------------------------------------------------
   // output struct
   //-----------------------------------------------------------------------------
   class RobustHelixFinderData {
   public:
-   
-
-    enum {
-      kNStations      = 20,
-      kNTotalFaces    = 80,
-      kNTotalPanels   = 240,
-      kNMaxHitsPerPanel= 20,
-      kNMaxHitsPerFace = 200,
-      kNFaces         =  4,
-      kNPanelsPerFace =  3
-    };
     
     enum { kMaxResidIndex = 500 };
     
@@ -51,45 +43,6 @@ namespace mu2e {
       int Panel; 
       //      int Layer;
     };
-
-    
-    struct HitInfo_t {
-      int    face;	 
-      int    faceHitIndex;
-      float  weightXY;
-      float  weightZPhi;
-      HitInfo_t(){
-	face          = -1;	 
-	faceHitIndex  = -1;
-	weightXY      = 0.;
-	weightZPhi    = 0.;
-      }
-      HitInfo_t(int F, int H, float WXY=0., float WZPhi=0.){
-	face          = F;	 
-	faceHitIndex  = H;
-	weightXY      = WXY;
-	weightZPhi    = WZPhi;
-      }
-    };
-  
-    struct FaceZ_t {
-      int                              fNHits;      // guess, total number of hits per panel
-      std::vector<ComboHit>            fHitData;    //FIXME! this needs to be changed to a reference
-      double                           z;           // 
-      //add something that points to the best hit (int, iterator,...)
-      FaceZ_t    (){
-	fNHits  = 0;
-      }
-
-      FaceZ_t    (const FaceZ_t&Copy){
-	fNHits = Copy.fNHits;  
-	z      = Copy.z;       
-	int nhits = Copy.fHitData.size();
-	for (int i=0; i<nhits; ++i){
-	  fHitData.push_back(Copy.fHitData.at(i));
-	}
-      }
-    }; 
 
     struct Diag_t {
       
@@ -197,7 +150,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // structure used to organize thei strawHits for the pattern recognition
 //-----------------------------------------------------------------------------
-    FaceZ_t                                             _oTracker[kNTotalFaces];
+    std::array<FaceZ_t,FaceZ_t::kNTotalFaces>            _oTracker;
     // std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
 //-----------------------------------------------------------------------------
 // functions

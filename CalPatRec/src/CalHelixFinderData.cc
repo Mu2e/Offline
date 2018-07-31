@@ -58,10 +58,11 @@ namespace mu2e {
     _candIndex      = Data._candIndex;
 
     //copy the info relative to the  panels
-    for (int p=0; p<kNTotalPanels; ++p){
-      _oTracker[p] = Data._oTracker[p];//PanelZ_t(Data._oTracker[p]);
-    }    
-    
+    // for (int p=0; p<kNTotalPanels; ++p){
+    //   _oTracker[p] = Data._oTracker[p];//PanelZ_t(Data._oTracker[p]);
+    // }    
+    _oTracker       = Data._oTracker;
+
     _hitsUsed       = Data._hitsUsed;
   }
 
@@ -129,14 +130,21 @@ namespace mu2e {
 
     _helixChi2   = 1e10;
 
-    _seedIndex   = SeedInfo_t(-1,-1);
-    _candIndex   = SeedInfo_t(-1,-1);
+    // _seedIndex   = SeedInfo_t(-1,-1);
+    // _candIndex   = SeedInfo_t(-1,-1);
+    _seedIndex   = HitInfo_t();//SeedInfo_t(-1,-1);
+    _candIndex   = HitInfo_t();//SeedInfo_t(-1,-1);
 
     //clear the panel-based structure
-    for (int p=0; p<kNTotalPanels; ++p) {
-      PanelZ_t* panelz = &_oTracker[p];
-      panelz->fNHits = 0;
-      panelz->fHitData.clear() ;
+    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f) {
+      FaceZ_t*  facez  = &_oTracker[f];
+      facez->bestFaceHit = HitInfo_t();
+
+      for (int p=0; p<FaceZ_t::kNPanels; ++p) {
+	PanelZ_t* panelz = &facez->panelZs[p];
+	panelz->fNHits   = 0;
+	panelz->fHitData.clear();
+      }
     }
 
     _hitsUsed =  {0};
@@ -172,8 +180,11 @@ namespace mu2e {
 
     _helixChi2   = 1e10;
 
-    _seedIndex   = SeedInfo_t(-1,-1);
-    _candIndex   = SeedInfo_t(-1,-1);
+    // _seedIndex   = SeedInfo_t(-1,-1);
+    // _candIndex   = SeedInfo_t(-1,-1);
+    
+    _seedIndex   = HitInfo_t();
+    _candIndex   = HitInfo_t();
     
     _hitsUsed    = {0};
   }

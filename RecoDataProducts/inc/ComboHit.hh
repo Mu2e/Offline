@@ -62,10 +62,13 @@ namespace mu2e {
     //
     XYZVec _pos; // position of this hit
     XYZVec _wdir; // 'direction' of this hit, used to define error elipsoid axis
+    XYZVec _sdir;           // straw radial direction, perp to Z and wire direction
     Float_t _wres, _tres; // resolution along and transverse to the 'wire' direction
     Float_t _wdist; // distance from wire center along this direction
     Float_t _time, _edep, _qual; // derived StrawHit (agregate) info
     Float_t _hphi; // azimuth relative to a helix center
+    Float_t _xyWeight;       // weight used to perform the x-y circle fit
+    Float_t _zphiWeight;     // weight used to perfom the z-phi linear fit
     uint16_t _ncombo; // number of associated input objects
     uint16_t _nsh; // number of underlying straw hits
     PIArray _pind; // Indices back to parent objects

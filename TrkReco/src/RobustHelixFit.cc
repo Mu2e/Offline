@@ -10,6 +10,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
+#include "TTrackerGeom/inc/TTracker.hh"
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
@@ -270,69 +271,82 @@ namespace mu2e
     static TrkFitFlag circleOK(TrkFitFlag::circleOK);
     static TrkFitFlag helixOK(TrkFitFlag::helixOK);
 
-    RobustHelixFinderData::FaceZ_t*      facez;
+    FaceZ_t*     facez(0);
+    PanelZ_t*    panelz(0);
     int          nhitsFace(0);
     ComboHit*    hit(0);
 
-    for (int f=0; f<RobustHelixFinderData::kNTotalFaces; ++f){
+    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
       facez     = &HelixData._oTracker[f];
-      nhitsFace = facez->fNHits;
+ 
+      for (int p=0; p<FaceZ_t::kNPanels; ++p){
+	panelz    = &facez->panelZs[p]; 
+	nhitsFace = panelz->fNHits;
 
-      if (nhitsFace == 0)                          continue;
+	if (nhitsFace == 0)                          continue;
 
-      for (int ip=0; ip<nhitsFace; ++ip){
-	hit = &facez->fHitData.at(ip);
-	initPhi(*hit,rhel); 
-      }
+	for (int ip=0; ip<nhitsFace; ++ip){
+	  hit = &panelz->fHitData.at(ip);
+	  initPhi(*hit,rhel); 
+	}
+      }//end panels loop
     }
 
     // make initial estimate of dfdz using 'nearby' pairs.  This insures they are on the same loop
     accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accf;
     
     ComboHit*      hitP1(0), *hitP2(0);
-    RobustHelixFinderData::FaceZ_t*       facezF1(0), *facezF2(0);
-    int            nhitsFaceF1(0),nhitsFaceF2(0);
+    FaceZ_t*       facezF1(0), *facezF2(0);
+    PanelZ_t*      panelz1(0), *panelz2(0);
+    int            nhitsPanelF1(0),nhitsPanelF2(0);
     
-    for (int f1=0; f1<RobustHelixFinderData::kNTotalFaces-1; ++f1){
+    for (int f1=0; f1<FaceZ_t::kNTotalFaces-1; ++f1){
       facezF1     = &HelixData._oTracker[f1];
-      nhitsFaceF1 = facezF1->fNHits;
+  
+      for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
+	panelz1     = &facezF1->panelZs[p1];   
+	nhitsPanelF1 = panelz1->fNHits;
 
-      if (nhitsFaceF1 == 0)                          continue;
+	if (nhitsPanelF1 == 0)                          continue;
 
-      for (int ip=0; ip<nhitsFaceF1; ++ip){
-	hitP1 = &facezF1->fHitData.at(ip);
+	for (int ip=0; ip<nhitsPanelF1; ++ip){
+	  hitP1 = &panelz1->fHitData.at(ip);
 	
-	// if (hitP1->_flag.hasAnyProperty(_dontuseflag))   continue;
-	if (!use(*hitP1))   continue;
+	  // if (hitP1->_flag.hasAnyProperty(_dontuseflag))   continue;
+	  if (!use(*hitP1))   continue;
 	    
-	for (int f2=f1+1; f2<RobustHelixFinderData::kNTotalFaces; ++f2){
-	  facezF2     = &HelixData._oTracker[f2];
-	  nhitsFaceF2 = facezF2->fNHits;
+	  for (int f2=f1+1; f2<FaceZ_t::kNTotalFaces; ++f2){
+	    facezF2     = &HelixData._oTracker[f2];
+	    for (int p2=0; p2<FaceZ_t::kNPanels; ++p2){
+	      panelz2     = &facezF2->panelZs[p2];   
+	      nhitsPanelF2 = panelz2->fNHits;
 
-	  if (nhitsFaceF2 == 0)                          continue;
+	      if (nhitsPanelF2 == 0)                          continue;
 
-	  for (int jp=0; jp<nhitsFaceF2; ++jp){
-	    hitP2 = &facezF2->fHitData.at(jp);
+	      for (int jp=0; jp<nhitsPanelF2; ++jp){
+		hitP2 = &panelz2->fHitData.at(jp);
 	
-	    // if (hitP2->_flag.hasAnyProperty(_dontuseflag))   continue;
-	    if (!use(*hitP2))   continue;
+		// if (hitP2->_flag.hasAnyProperty(_dontuseflag))   continue;
+		if (!use(*hitP2))   continue;
 
-	    float dz = facezF2->z - facezF1->z;
-	    if (dz < _minzsep || dz > _maxzsep)          continue;
-	    float dphi = deltaPhi(hitP1->_hphi, hitP2->_hphi);
-	    if (dphi*int(rhel.helicity()._value) < 0 || fabs(dphi) < _mindphi || fabs(dphi) > _maxdphi) continue;
+		float dz = facezF2->z - facezF1->z;
+		if (dz < _minzsep || dz > _maxzsep)          continue;
+		float dphi = deltaPhi(hitP1->_hphi, hitP2->_hphi);
+		if (dphi*int(rhel.helicity()._value) < 0 || fabs(dphi) < _mindphi || fabs(dphi) > _maxdphi) continue;
 
-	    float lambda = dz/dphi;
-	    if(goodLambda(rhel.helicity(),lambda)){
-	      float wt = sqrtf(hitP1->nStrawHits()*hitP2->nStrawHits());
-	      //		float wt = (*ihit)->nStrawHits() + (*jhit)->nStrawHits();
-	      accf(lambda, weight=wt);
-	    }
+		float lambda = dz/dphi;
+		if(goodLambda(rhel.helicity(),lambda)){
+		  float wt = sqrtf(hitP1->nStrawHits()*hitP2->nStrawHits());
+		  //		float wt = (*ihit)->nStrawHits() + (*jhit)->nStrawHits();
+		  accf(lambda, weight=wt);
+		}
 		
-	  }//end loop over the hits on face f2
-	}//end secondloop over faces 
-      }//end loop over hits on face f1
-    }//end first loop over faces
+	      }//end loop over the hits on face f2
+	    }//end loop over panels in F2
+	  }//end secondloop over faces 
+	}//end loop over hits on face P1
+      }//end loop over panels in F1
+    }//end first loop over faces F1
 
     if(boost::accumulators::extract::count(accf) < _minnhit) return retval;
 
@@ -348,22 +362,25 @@ namespace mu2e
     // find phi at z intercept.  Use a histogram technique since phi looping
     // hasn't been resolved yet, and to avoid inefficiency at the phi wrapping edge
     _hphi.Reset();
-    for (int f=0; f<RobustHelixFinderData::kNTotalFaces; ++f){
+    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
       facezF1     = &HelixData._oTracker[f];
-      nhitsFaceF1 = facezF1->fNHits;
-      if (nhitsFaceF1 == 0)                          continue;
+      for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
+	panelz1     = &facezF1->panelZs[p1];   
+	nhitsPanelF1 = panelz1->fNHits;
+	if (nhitsPanelF1 == 0)                          continue;
       
-      for (int ip=0; ip<nhitsFaceF1; ++ip){
-	hitP1 = &facezF1->fHitData.at(ip);
-	if (!use(*hitP1) )                          continue;   
+	for (int ip=0; ip<nhitsPanelF1; ++ip){
+	  hitP1 = &panelz1->fHitData.at(ip);
+	  if (!use(*hitP1) )                          continue;   
 	
-	float phiex = rhel.circleAzimuth(hitP1->pos().z());
-	float dphi  = deltaPhi(phiex,hit->helixPhi());
-	_hphi.Fill(dphi);
-	_hphi.Fill(dphi-CLHEP::twopi);//the function deltaPhi() returns always a value in the range [-pi,pi], so there is no need to add/subtruct 2Pi for the phi0 calculation
-	_hphi.Fill(dphi+CLHEP::twopi);
-      }
-    }
+	  float phiex = rhel.circleAzimuth(hitP1->pos().z());
+	  float dphi  = deltaPhi(phiex,hit->helixPhi());
+	  _hphi.Fill(dphi);
+	  _hphi.Fill(dphi-CLHEP::twopi);
+	  _hphi.Fill(dphi+CLHEP::twopi);
+	}//end loop over the hits within a panel
+      }//end loop over the panels
+    }//end loop over the faces
 
 
     // take the average of the maximum bin +- 1
@@ -386,16 +403,19 @@ namespace mu2e
 	fz0 /= count;
 	rhel._fz0 = deltaPhi(0.0,fz0);
 	//	for (auto& hhit : hhits) resolvePhi(hhit,rhel);
-	for (int f=0; f<RobustHelixFinderData::kNTotalFaces; ++f){
+	for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
 	  facezF1     = &HelixData._oTracker[f];
-	  nhitsFaceF1 = facezF1->fNHits;
-	  if (nhitsFaceF1 == 0)                          continue;
+	  for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
+	    panelz1     = &facezF1->panelZs[p1];   
+	    nhitsPanelF1 = panelz1->fNHits;
+	    if (nhitsPanelF1 == 0)                          continue;
       
-	  for (int ip=0; ip<nhitsFaceF1; ++ip){
-	    hitP1 = &facezF1->fHitData.at(ip);
-	    // if (!use(*hitP1) )                          continue;   
-	    resolvePhi(*hitP1,rhel);
-	  }
+	    for (int ip=0; ip<nhitsPanelF1; ++ip){
+	      hitP1 = &panelz1->fHitData.at(ip);
+	      // if (!use(*hitP1) )                          continue;   
+	      resolvePhi(*hitP1,rhel);
+	    }
+	  }//end loop pver tha panels
 	}
 	
 	retval = true;
@@ -430,7 +450,7 @@ namespace mu2e
     int       nstations, nhits[30], nstations_with_hits(0);
     float     phiVec[30], zVec[30], weight(0);
     
-    nstations = RobustHelixFinderData::kNStations;
+    nstations = _tracker->nStations();//RobustHelixFinderData::kNStations;
 
     for (int i=0; i<nstations; i++) {
       phiVec[i] = 0;
@@ -443,40 +463,44 @@ namespace mu2e
     //-----------------------------------------------------------------------------
     // Step 1: for each station with track candidate hits, calculate average phi per station
     //-----------------------------------------------------------------------------
-    RobustHelixFinderData::FaceZ_t* facez(0);
-
-    for (int f1=0; f1<RobustHelixFinderData::kNTotalFaces; ++f1){
+    FaceZ_t*   facez(0);
+    PanelZ_t*  panelz(0);
+    
+    for (int f1=0; f1<FaceZ_t::kNTotalFaces; ++f1){
       facez = &HelixData._oTracker[f1];
-      int  nhitsFaceF1  = facez->fNHits;
-      if (nhitsFaceF1 == 0)                                     continue;
+      for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
+	panelz  = &facez->panelZs[p1];   
+	int  nhitsPanelF1  = panelz->fNHits;
+	if (nhitsPanelF1 == 0)                                     continue;
 
-      for (int i=0; i<nhitsFaceF1; ++i){   
-	ComboHit* hit = &facez->fHitData.at(i);
+	for (int i=0; i<nhitsPanelF1; ++i){   
+	  ComboHit* hit = &panelz->fHitData.at(i);
 
-	// if (hit->_flag.hasAnyProperty(_dontuseflag))                  continue;
-	if (!use(*hit))   continue;
+	  // if (hit->_flag.hasAnyProperty(_dontuseflag))                  continue;
+	  if (!use(*hit))   continue;
 
 
-	int ist = hit->sid().station();//_straw->id().getStation();                   // station number
-	phi     = polyAtan2(hit->pos().y() - center.y(),hit->pos().x() - center.x()); // atan2 returns its result in [-pi,pi], convert to [0,2pi]
-	if (phi < 0) phi += 2*M_PI;
-	zVec  [ist] += hit->pos().z();
-	//-----------------------------------------------------------------------------
-	// make sure there all hits within the station get close values of phi, although a 
-	// common 2pi ambiguity is still unresolved
-	//-----------------------------------------------------------------------------
-	if (nhits[ist] == 0) {
-	  phiVec[ist] = phi;
-	  nstations_with_hits += 1;
-	}
-	else {
-	  while (phi-phiVec[ist] >  M_PI) phi -= 2*M_PI;
-	  while (phi-phiVec[ist] < -M_PI) phi += 2*M_PI;
+	  int ist = hit->sid().station();//_straw->id().getStation();                   // station number
+	  phi     = polyAtan2(hit->pos().y() - center.y(),hit->pos().x() - center.x()); // atan2 returns its result in [-pi,pi], convert to [0,2pi]
+	  if (phi < 0) phi += 2*M_PI;
+	  zVec  [ist] += hit->pos().z();
+	  //-----------------------------------------------------------------------------
+	  // make sure there all hits within the station get close values of phi, although a 
+	  // common 2pi ambiguity is still unresolved
+	  //-----------------------------------------------------------------------------
+	  if (nhits[ist] == 0) {
+	    phiVec[ist] = phi;
+	    nstations_with_hits += 1;
+	  }
+	  else {
+	    while (phi-phiVec[ist] >  M_PI) phi -= 2*M_PI;
+	    while (phi-phiVec[ist] < -M_PI) phi += 2*M_PI;
 	
-	  phiVec[ist] = (phiVec[ist]*nhits[ist]+phi)/(nhits[ist]+1);
+	    phiVec[ist] = (phiVec[ist]*nhits[ist]+phi)/(nhits[ist]+1);
+	  }
+	  nhits [ist] += 1;
 	}
-	nhits [ist] += 1;
-      }
+      }//end loop over the panels
     }
 
     for (int i=0; i<nstations; i++) {
@@ -644,17 +668,21 @@ namespace mu2e
       printf("[RobustHelixFinder::initFZ_2] END: hdfdz = %9.5f hphi0 = %9.6f ", hdfdz, hphi0);
     }
 
-    for (int f=0; f<RobustHelixFinderData::kNTotalFaces; ++f){
+    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
       facez     = &HelixData._oTracker[f];
-      int nhitsFaceF1 = facez->fNHits;
-      if (nhitsFaceF1 == 0)                          continue;
+      for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
+	panelz  = &facez->panelZs[p1];   
+
+	int nhitsPanelF1 = panelz->fNHits;
+	if (nhitsPanelF1 == 0)                          continue;
       
-      for (int ip=0; ip<nhitsFaceF1; ++ip){
-	ComboHit* hit = &facez->fHitData.at(ip);
-	// if (!use(*hitP1) )                          continue;   
-	resolvePhi(*hit,rhel);
-      }
-    }
+	for (int ip=0; ip<nhitsPanelF1; ++ip){
+	  ComboHit* hit = &panelz->fHitData.at(ip);
+	  // if (!use(*hitP1) )                          continue;   
+	  resolvePhi(*hit,rhel);
+	}
+      }//end loop pver the panels
+    }//end loop over the faces
 
     return goodFZ(rhel);
   }
@@ -683,47 +711,55 @@ namespace mu2e
 	accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accf;
 
 	ComboHit*      hitP1(0), *hitP2(0);
-	RobustHelixFinderData::FaceZ_t*       facezF1(0), *facezF2(0);
-	int            nhitsFaceF1(0),nhitsFaceF2(0);
+	FaceZ_t*       facezF1(0), *facezF2(0);
+	PanelZ_t*      panelz1(0), *panelz2(0);
+	int            nhitsPanelF1(0),nhitsPanelF2(0);
     
-	for (int f1=0; f1<RobustHelixFinderData::kNTotalFaces-1; ++f1){
+	for (int f1=0; f1<FaceZ_t::kNTotalFaces-1; ++f1){
 	  facezF1     = &HelixData._oTracker[f1];
-	  nhitsFaceF1 = facezF1->fNHits;
+	  for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
+	    panelz1  = &facezF1->panelZs[p1];   
+
+	    nhitsPanelF1 = panelz1->fNHits;
 	  
-	  if (nhitsFaceF1 == 0)                             continue;
+	    if (nhitsPanelF1 == 0)                             continue;
 
-	  for (int ip=0; ip<nhitsFaceF1; ++ip){
-	    hitP1 = &facezF1->fHitData.at(ip);
+	    for (int ip=0; ip<nhitsPanelF1; ++ip){
+	      hitP1 = &panelz1->fHitData.at(ip);
 	
-	    // if (hitP1->_flag.hasAnyProperty(_dontuseflag))   continue;
-	    if (!use(*hitP1))                               continue;
+	      // if (hitP1->_flag.hasAnyProperty(_dontuseflag))   continue;
+	      if (!use(*hitP1))                               continue;
 	    
-	    for (int f2=f1+1; f2<RobustHelixFinderData::kNTotalFaces; ++f2){
-	      facezF2     = &HelixData._oTracker[f2];
-	      nhitsFaceF2 = facezF2->fNHits;
+	      for (int f2=f1+1; f2<FaceZ_t::kNTotalFaces; ++f2){
+		facezF2     = &HelixData._oTracker[f2];
+		for (int p2=0; p2<FaceZ_t::kNPanels; ++p2){
+		panelz2     = &facezF2->panelZs[p2];   
+	 	nhitsPanelF2 = panelz2->fNHits;
 
-	      if (nhitsFaceF2 == 0)                         continue;
+		if (nhitsPanelF2 == 0)                         continue;
 
-	      for (int jp=0; jp<nhitsFaceF2; ++jp){
-		hitP2 = &facezF2->fHitData.at(jp);
+		for (int jp=0; jp<nhitsPanelF2; ++jp){
+		  hitP2 = &panelz2->fHitData.at(jp);
 	
-		// if (hitP2->_flag.hasAnyProperty(_dontuseflag))   continue;
-		if (!use(*hitP2))                           continue;
+		  // if (hitP2->_flag.hasAnyProperty(_dontuseflag))   continue;
+		  if (!use(*hitP2))                           continue;
 		
-		float dz   = facezF2->z - facezF1->z;
-		float dphi = hitP2->helixPhi()- hitP1->helixPhi(); 
-		if (dz < _minzsep || fabs(dphi) < _mindphi) continue;
+		  float dz   = facezF2->z - facezF1->z;
+		  float dphi = hitP2->helixPhi()- hitP1->helixPhi(); 
+		  if (dz < _minzsep || fabs(dphi) < _mindphi) continue;
 
-		float lambda = dz/dphi;
-		if (goodLambda(rhel.helicity(),lambda)){
-		  float wt = sqrtf(hitP1->nStrawHits()*hitP2->nStrawHits());
-		  //		    float wt = (*ihit)->nStrawHits() + (*jhit)->nStrawHits();
-		  accf(lambda, weight=wt);
-		}
+		  float lambda = dz/dphi;
+		  if (goodLambda(rhel.helicity(),lambda)){
+		    float wt = sqrtf(hitP1->nStrawHits()*hitP2->nStrawHits());
+		    //		    float wt = (*ihit)->nStrawHits() + (*jhit)->nStrawHits();
+		    accf(lambda, weight=wt);
+		  }
 		
-	      }//end loop over the hits on face f2
-	    }//end secondloop over faces 
-	  }//end loop over hits on face f1
+		}//end loop over the hits on panel p2
+	      }//end loop over the panels on F2
+	      }//end secondloop over faces 
+	    }//end loop over hits on panel p1
+	  }//end loop over the panels on F1
 	}//end first loop over faces
 
 	rhel._lambda = extract_result<tag::weighted_median>(accf);
@@ -732,23 +768,26 @@ namespace mu2e
 	accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > acci;
 
 
-	for (int f1=0; f1<RobustHelixFinderData::kNTotalFaces; ++f1){
+	for (int f1=0; f1<FaceZ_t::kNTotalFaces; ++f1){
 	  facezF1     = &HelixData._oTracker[f1];
-	  nhitsFaceF1 = facezF1->fNHits;
+	  for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
+	    panelz1  = &facezF1->panelZs[p1];   
+	    nhitsPanelF1 = panelz1->fNHits;
 
-	  if (nhitsFaceF1 == 0)                          continue;
+	    if (nhitsPanelF1 == 0)                          continue;
 
-	  for (int ip=0; ip<nhitsFaceF1; ++ip){
-	    hitP1 = &facezF1->fHitData.at(ip);
+	    for (int ip=0; ip<nhitsPanelF1; ++ip){
+	      hitP1 = &panelz1->fHitData.at(ip);
 	
-	    // if (hitP1->_flag.hasAnyProperty(_dontuseflag))   continue;
-	    if (!use(*hitP1))   continue;
+	      // if (hitP1->_flag.hasAnyProperty(_dontuseflag))   continue;
+	      if (!use(*hitP1))   continue;
 
-	    float phiex = rhel.circleAzimuth(hitP1->_pos.z());
-	    float dphi  = deltaPhi(phiex,hitP1->helixPhi());
-	    float wt    = hitP1->nStrawHits();
-	    acci(dphi,weight = wt);// accumulate the difference WRT the current intercept
-	  }//end loop over hits on face f1
+	      float phiex = rhel.circleAzimuth(hitP1->_pos.z());
+	      float dphi  = deltaPhi(phiex,hitP1->helixPhi());
+	      float wt    = hitP1->nStrawHits();
+	      acci(dphi,weight = wt);// accumulate the difference WRT the current intercept
+	    }//end loop over hits on face f1
+	  }//end loop over the panels on face
 	}//end first loop over faces
 
 	// enforce convention on azimuth phase
@@ -757,17 +796,21 @@ namespace mu2e
 
 	// resolve the hit loops again
 
-	for (int f1=0; f1<RobustHelixFinderData::kNTotalFaces; ++f1){
+	for (int f1=0; f1<FaceZ_t::kNTotalFaces; ++f1){
 	  facezF1     = &HelixData._oTracker[f1];
-	  nhitsFaceF1 = facezF1->fNHits;
+	  for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
+	    panelz1  = &facezF1->panelZs[p1];   
 
-	  if (nhitsFaceF1 == 0)                          continue;
+	    nhitsPanelF1 = panelz1->fNHits;
 
-	  for (int ip=0; ip<nhitsFaceF1; ++ip){
-	    hitP1 = &facezF1->fHitData.at(ip);
+	    if (nhitsPanelF1 == 0)                          continue;
+
+	    for (int ip=0; ip<nhitsPanelF1; ++ip){
+	      hitP1 = &panelz1->fHitData.at(ip);
 	    
-	    changed |= resolvePhi(*hitP1,rhel);
-	  }//end loop over hits on face f1
+	      changed |= resolvePhi(*hitP1,rhel);
+	    }//end loop over hits on face f1
+	  }//end loop over panels
 	}//end first loop over faces
 
 	++niter;
@@ -832,66 +875,76 @@ namespace mu2e
     float        phi0   = rhel._fz0;
 
     ComboHit*      hitP1(0);
-    RobustHelixFinderData::FaceZ_t*       facezP1(0);
+    FaceZ_t*       facezP1(0);
+    PanelZ_t*      panelz1(0);
     int            nhitsFace1(0);
 
-    for (int f=0; f<RobustHelixFinderData::kNTotalFaces; ++f){
+    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
       facezP1    = &HelixData._oTracker[f];
-      nhitsFace1 = facezP1->fNHits;
-      if (nhitsFace1 == 0)                          continue;
-      z          = facezP1->z;
 
-      int    indexBestHit(-1);
-      float  xdphi(1e10),wtBestHit(0), xdphiBestHit(_maxXDPhi);
-      for (int ip=0; ip<nhitsFace1; ++ip){
-	hitP1 = &facezP1->fHitData.at(ip);
+      HitInfo_t    indexBestHit;
 
-	//set by default as outlier. Only the best hit will be used
-	phi = hitP1->helixPhi();
-	if (phi < 0) phi = phi + 2*M_PI;//      = TVector2::Phi_0_2pi(phi);
-	//	dz  = z - zlast;
+      for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
+	panelz1  = &facezP1->panelZs[p1];   
+
+	nhitsFace1 = panelz1->fNHits;
+	if (nhitsFace1 == 0)                          continue;
+	z          = facezP1->z;
+
+	float  xdphi(1e10), xdphiBestHit(_maxXDPhi);
+	for (int ip=0; ip<nhitsFace1; ++ip){
+	  hitP1 = &panelz1->fHitData.at(ip);
+
+	  //set by default as outlier. Only the best hit will be used
+	  phi = hitP1->helixPhi();
+	  if (phi < 0) phi = phi + 2*M_PI;//      = TVector2::Phi_0_2pi(phi);
+	  //	dz  = z - zlast;
 	
-	phi_ref = z*dfdz + phi0;		// predicted value of phi
-	dphi    = phi_ref - phi;		// signed residual
-	// resolve 2PI ambiguity
-	while (dphi > M_PI) {
-	  phi += 2*M_PI;
-	  dphi = phi_ref - phi;
-	}
-	while (dphi < -M_PI) {
-	  phi -= 2*M_PI;
-	  dphi = phi_ref - phi;
-	}
+	  phi_ref = z*dfdz + phi0;		// predicted value of phi
+	  dphi    = phi_ref - phi;		// signed residual
+	  // resolve 2PI ambiguity
+	  while (dphi > M_PI) {
+	    phi += 2*M_PI;
+	    dphi = phi_ref - phi;
+	  }
+	  while (dphi < -M_PI) {
+	    phi -= 2*M_PI;
+	    dphi = phi_ref - phi;
+	  }
 
-	// store the corrected value of phi
-	hitP1->_hphi = phi;
+	  // store the corrected value of phi
+	  hitP1->_hphi = phi;
 
-	if (!use(*hitP1) )                          continue;
+	  if (!use(*hitP1) )                          continue;
 
-	dphi        = fabs(dphi);
-	wt          = evalWeightZPhi(*hitP1,center,radius);
-	xdphi       = dphi*sqrtf(wt);
+	  dphi        = fabs(dphi);
+	  wt          = evalWeightZPhi(*hitP1,center,radius);
+	  xdphi       = dphi*sqrtf(wt);
 
 
-	//remove points with large residuals
-	if (xdphi <= xdphiBestHit){
-	  indexBestHit = ip;
-	  xdphiBestHit = xdphi;      
-	  wtBestHit    = wt;
-	}
+	  //remove points with large residuals
+	  if (xdphi <= xdphiBestHit){
+	    indexBestHit.face          = f;
+	    indexBestHit.panel         = p1;
+	    indexBestHit.panelHitIndex = ip;
+	    xdphiBestHit = xdphi;      
+	    hitP1->_zphiWeight         = wt;
+	  }
 	
-	hitP1->_flag.merge(StrawHitFlag::outlier);
-      }//end loop over the hits in a Face
+	  hitP1->_flag.merge(StrawHitFlag::outlier);
+	}//end loop over the hits in a Face
+      }//end loop over the panels
 	    
       //now add the best hit if found!
-      if (indexBestHit>=0) {
-	hitP1 = &facezP1->fHitData.at(indexBestHit);
+      if (indexBestHit.face>=0) {
+	panelz1  = &facezP1->panelZs[indexBestHit.panel];
+	hitP1    = &panelz1->fHitData.at(indexBestHit.panelHitIndex);
 
 	//remove the outlier flag
 	hitP1->_flag.clear(StrawHitFlag::outlier);
 
 	//include the point
-	szphi.addPoint(z,hitP1->_hphi,wtBestHit);
+	szphi.addPoint(z,hitP1->_hphi,hitP1->_zphiWeight);
 
 	//increase the StrwaHit counter
 	nZPHISh += hitP1->nStrawHits();
@@ -940,97 +993,110 @@ namespace mu2e
     accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accx, accy, accr;
 
     // loop over all triples
-    unsigned ntriple(0);
+    unsigned      ntriple(0);
  
-    ComboHit*  hitP1(0), *hitP2(0), *hitP3(0);
-    int        nhitsFace1(0), nhitsFace2(0),  nhitsFace3(0);
-    RobustHelixFinderData::FaceZ_t*      facezP1, *facezP2, *facezP3;
+    ComboHit*     hitP1(0), *hitP2(0), *hitP3(0);
+    int           nhitsPanelF1(0), nhitsPanelF2(0),  nhitsPanelF3(0);
+    FaceZ_t*      facezP1, *facezP2, *facezP3;
+    PanelZ_t*     panelz1(0), *panelz2(0), *panelz3(0);
     
-    for (int f1=0; f1<RobustHelixFinderData::kNTotalFaces-2; ++f1){
+    for (int f1=0; f1<FaceZ_t::kNTotalFaces-2; ++f1){
       facezP1    = &HelixData._oTracker[f1];
-      nhitsFace1 = facezP1->fNHits;
-      if (nhitsFace1 == 0)                          continue;
+      for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
+	panelz1  = &facezP1->panelZs[p1];   
+	nhitsPanelF1 = panelz1->fNHits;
+	if (nhitsPanelF1 == 0)                          continue;
       
-      for (int ip=0; ip<nhitsFace1; ++ip){
-	hitP1 = &facezP1->fHitData.at(ip);
-	if (!use(*hitP1) )                          continue;
-	float ri2 = (hitP1->pos().x()*hitP1->pos().x() + hitP1->pos().y()*hitP1->pos().y());
+	for (int ip=0; ip<nhitsPanelF1; ++ip){
+	  hitP1 = &panelz1->fHitData.at(ip);
+	  if (!use(*hitP1) )                          continue;
+	  float ri2 = (hitP1->pos().x()*hitP1->pos().x() + hitP1->pos().y()*hitP1->pos().y());
 
-	for (int f2=f1+1; f2<RobustHelixFinderData::kNTotalFaces-1; ++f2){
-	  facezP2    = &HelixData._oTracker[f2];
-	  nhitsFace2 = facezP2->fNHits;
-	  if (nhitsFace2 == 0)                      continue;
+	  for (int f2=f1+1; f2<FaceZ_t::kNTotalFaces-1; ++f2){
+	    facezP2    = &HelixData._oTracker[f2];
+	    for (int p2=0; p2<FaceZ_t::kNPanels; ++p2){
+	      panelz2  = &facezP2->panelZs[p2];   
+
+	      nhitsPanelF2 = panelz2->fNHits;
+	      if (nhitsPanelF2 == 0)                      continue;
       
-	  for (int jp=0; jp<nhitsFace2; ++jp){
-	    hitP2 = &facezP2->fHitData.at(jp);
-	    if (!use(*hitP2) )                      continue;
-	    float dist2ij = pow(hitP1->pos().x()-hitP2->pos().x(), 2) + pow(hitP1->pos().y() - hitP2->pos().y(), 2);
-	    if (dist2ij < mind2 || dist2ij > maxd2) continue;	  
+	      for (int jp=0; jp<nhitsPanelF2; ++jp){
+		hitP2 = &panelz2->fHitData.at(jp);
+		if (!use(*hitP2) )                      continue;
+		float dist2ij = pow(hitP1->pos().x()-hitP2->pos().x(), 2) + pow(hitP1->pos().y() - hitP2->pos().y(), 2);
+		if (dist2ij < mind2 || dist2ij > maxd2) continue;	  
 
-	    float rj2 = (hitP2->pos().x()*hitP2->pos().x() + hitP2->pos().y()*hitP2->pos().y());
+		float rj2 = (hitP2->pos().x()*hitP2->pos().x() + hitP2->pos().y()*hitP2->pos().y());
 
-	    for (int f3=f2+1; f3<RobustHelixFinderData::kNTotalFaces; ++f3){
-	      facezP3    = &HelixData._oTracker[f3];
-	      nhitsFace3 = facezP3->fNHits;
-	      if (nhitsFace3 == 0)                  continue;
+		for (int f3=f2+1; f3<FaceZ_t::kNTotalFaces; ++f3){
+		  facezP3    = &HelixData._oTracker[f3];
+		  for (int p3=0; p3<FaceZ_t::kNPanels; ++p3){
+		    panelz3    = &facezP3->panelZs[p3];   
+		    nhitsPanelF3 = panelz3->fNHits;
+		    if (nhitsPanelF3 == 0)                  continue;
       
-	      for (int kp=0; kp<nhitsFace3; ++kp){
-		hitP3 = &facezP3->fHitData.at(kp);
-		if (!use(*hitP3) )                  continue;
+		    for (int kp=0; kp<nhitsPanelF3; ++kp){
+		      hitP3 = &panelz3->fHitData.at(kp);
+		      if (!use(*hitP3) )                  continue;
 	 
-		float dist2ik = pow(hitP1->pos().x()-hitP3->pos().x(), 2) + pow(hitP1->pos().y() - hitP3->pos().y(), 2);
-		float dist2jk = pow(hitP2->pos().x()-hitP3->pos().x(), 2) + pow(hitP2->pos().y() - hitP3->pos().y(), 2);
-		if (dist2ik < mind2 || dist2jk < mind2 ||
-		    dist2ik > maxd2 || dist2jk > maxd2)   continue;
+		      float dist2ik = pow(hitP1->pos().x()-hitP3->pos().x(), 2) + pow(hitP1->pos().y() - hitP3->pos().y(), 2);
+		      float dist2jk = pow(hitP2->pos().x()-hitP3->pos().x(), 2) + pow(hitP2->pos().y() - hitP3->pos().y(), 2);
+		      if (dist2ik < mind2 || dist2jk < mind2 ||
+			  dist2ik > maxd2 || dist2jk > maxd2)   continue;
 
-		// Heron's formula
-		float area2 = (dist2ij*dist2jk + dist2ik*dist2jk + dist2ij*dist2ik) - 0.5*(dist2ij*dist2ij + dist2jk*dist2jk + dist2ik*dist2ik);
-		if(area2 < _minarea2)              continue;
-		// this effectively measures the slope difference
-		float delta = (hitP3->pos().x() - hitP2->pos().x())*(hitP2->pos().y() - hitP1->pos().y()) -
-		  (hitP2->pos().x() - hitP1->pos().x())*(hitP3->pos().y() - hitP2->pos().y());
+		      // Heron's formula
+		      float area2 = (dist2ij*dist2jk + dist2ik*dist2jk + dist2ij*dist2ik) - 0.5*(dist2ij*dist2ij + dist2jk*dist2jk + dist2ik*dist2ik);
+		      if(area2 < _minarea2)              continue;
+		      // this effectively measures the slope difference
+		      float delta = (hitP3->pos().x() - hitP2->pos().x())*(hitP2->pos().y() - hitP1->pos().y()) -
+			(hitP2->pos().x() - hitP1->pos().x())*(hitP3->pos().y() - hitP2->pos().y());
 
-		float rk2 = (hitP3->pos().x()*hitP3->pos().x() + hitP3->pos().y()*hitP3->pos().y());//wpos[kp].Mag2();
+		      float rk2 = (hitP3->pos().x()*hitP3->pos().x() + hitP3->pos().y()*hitP3->pos().y());
 
-		// find circle center for this triple
-		float cx =  0.5* (
-				  (hitP3->pos().y() - hitP2->pos().y())*ri2 +
-				  (hitP1->pos().y() - hitP3->pos().y())*rj2 +
-				  (hitP2->pos().y() - hitP1->pos().y())*rk2 ) / delta;
-		float cy = -0.5* (
-				  (hitP3->pos().x() - hitP2->pos().x())*ri2 +
-				  (hitP1->pos().x() - hitP3->pos().x())*rj2 +
-				  (hitP2->pos().x() - hitP1->pos().x())*rk2 ) / delta;
-		XYVec cent(cx,cy);
-		float rho = sqrtf(pow(hitP1->pos().x() - cent.x(),2) + pow(hitP1->pos().y() - cent.y(),2));//(hitP1->pos()-cent).Mag2());
-		float rc = sqrtf(cent.Mag2());
-		float rmin = fabs(rc-rho);
-		float rmax = rc+rho;
+		      // find circle center for this triple
+		      float cx =  0.5* (
+					(hitP3->pos().y() - hitP2->pos().y())*ri2 +
+					(hitP1->pos().y() - hitP3->pos().y())*rj2 +
+					(hitP2->pos().y() - hitP1->pos().y())*rk2 ) / delta;
+		      float cy = -0.5* (
+					(hitP3->pos().x() - hitP2->pos().x())*ri2 +
+					(hitP1->pos().x() - hitP3->pos().x())*rj2 +
+					(hitP2->pos().x() - hitP1->pos().x())*rk2 ) / delta;
+		      XYVec cent(cx,cy);
+		      float rho = sqrtf(pow(hitP1->pos().x() - cent.x(),2) + pow(hitP1->pos().y() - cent.y(),2));//(hitP1->pos()-cent).Mag2());
+		      float rc = sqrtf(cent.Mag2());
+		      float rmin = fabs(rc-rho);
+		      float rmax = rc+rho;
 
-		// test circle parameters for this triple: should be inside the tracker,
-		// optionally consistent with the target
-		if (rc > _rcmin && rc < _rcmax &&
-		    rho > _rmin && rho < _rmax && rmax < _trackerradius && 
-		    ( !_targetcon || rmin < _targetradius) )
-		  {
-		    ++ntriple;
+		      // test circle parameters for this triple: should be inside the tracker,
+		      // optionally consistent with the target
+		      if (rc > _rcmin && rc < _rcmax &&
+			  rho > _rmin && rho < _rmax && rmax < _trackerradius && 
+			  ( !_targetcon || rmin < _targetradius) )
+			{
+			  ++ntriple;
 
-		    float wt = cbrtf(hitP1->nStrawHits()*hitP2->nStrawHits()*hitP3->nStrawHits());
-		    //		    float wt = hitP1->pos().weight() + hitP2->pos().weight() + hitP2->pos().weight();
-		    //		    wt *= sqrtf(area2);
-		    accx(cx,weight = wt);
-		    accy(cy,weight = wt);
-		    if(_tripler) accr(rho,weight = wt);
-		    if (ntriple>_ntripleMax) {ip=nhitsFace1;jp=nhitsFace2;kp=nhitsFace3;f1=RobustHelixFinderData::kNTotalFaces-2; f2=RobustHelixFinderData::kNTotalFaces-1; f3=RobustHelixFinderData::kNTotalFaces;}
-		  }
+			  float wt = cbrtf(hitP1->nStrawHits()*hitP2->nStrawHits()*hitP3->nStrawHits());
+			  accx(cx,weight = wt);
+			  accy(cy,weight = wt);
+			  if(_tripler) accr(rho,weight = wt);
+			  if (ntriple>_ntripleMax) {
+			    ip=nhitsPanelF1           ; jp=nhitsPanelF2           ; kp=nhitsPanelF3;
+			    p1=FaceZ_t::kNPanels      ; p2=FaceZ_t::kNPanels      ; p3=FaceZ_t::kNPanels;
+			    f1=FaceZ_t::kNTotalFaces-2; f2=FaceZ_t::kNTotalFaces-1; f3=FaceZ_t::kNTotalFaces;
+			  }
+			}
 
-	      }//end loop over the hits in the Face f3
-	    }//end loop for f3 Faces
+		    }//end loop over the hits in the panel P3
+		  }//end loop over panels on F3
+		}//end loop for f3 Faces
 
-	  }//end loop over the hits in the Face f2
-	}//end loop for f2 Faces
+	      }//end loop over the hits in the panel p2
+	    }//end loop over panels on F2
+	  }//end loop for f2 Faces
 	
-      }//end loop over the hits in the Face f1
+	}//end loop over the hits in the Face f1
+      }//end loop over panels on f1
     }//end loop for f1 Faces
 
    
@@ -1044,35 +1110,41 @@ namespace mu2e
 	XYVec center(centx,centy);
 	if(!_tripler) {
 	  if(!_errrwt) {		//FIXME! INSPECT THE USE OF LSQSUM!
-	    for (int f=0; f<RobustHelixFinderData::kNTotalFaces; ++f){
+	    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
 	      facezP1    = &HelixData._oTracker[f];
-	      nhitsFace1 = facezP1->fNHits;
-	      if (nhitsFace1 == 0)                          continue;
+	      for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
+		panelz1  = &facezP1->panelZs[p1];   
+		nhitsPanelF1 = panelz1->fNHits;
+		if (nhitsPanelF1 == 0)                          continue;
       
-	      for (int ip=0; ip<nhitsFace1; ++ip){
-		hitP1 = &facezP1->fHitData.at(ip);
-		if (!use(*hitP1) )                          continue;	  
-		float rho = sqrtf(pow(hitP1->pos().x() - centx,2) + pow(hitP1->pos().y() - centy,2));//(wp - center).Mag2());
-		accr(rho,weight = hitP1->nStrawHits()); 
-	      }
+		for (int ip=0; ip<nhitsPanelF1; ++ip){
+		  hitP1 = &panelz1->fHitData.at(ip);
+		  if (!use(*hitP1) )                          continue;	  
+		  float rho = sqrtf(pow(hitP1->pos().x() - centx,2) + pow(hitP1->pos().y() - centy,2));//(wp - center).Mag2());
+		  accr(rho,weight = hitP1->nStrawHits()); 
+		}
+	      }//end loop over the panels
 	    }
 	  } else {
 	    // set weight according to the errors
-	    for (int f=0; f<RobustHelixFinderData::kNTotalFaces; ++f){
+	    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
 	      facezP1    = &HelixData._oTracker[f];
-	      nhitsFace1 = facezP1->fNHits;
-	      if (nhitsFace1 == 0)                          continue;
+	      for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
+		panelz1  = &facezP1->panelZs[p1];   
+		nhitsPanelF1 = panelz1->fNHits;
+		if (nhitsPanelF1 == 0)                          continue;
       
-	      for (int ip=0; ip<nhitsFace1; ++ip){
-		hitP1 = &facezP1->fHitData.at(ip);
-		if (!use(*hitP1) )                          continue;
-		// compute the projection to the radius
-		XYVec rvec = (XYVec(hitP1->pos().x(),hitP1->pos().y())-center);
-		float wt   = evalWeightXY(*hitP1,center);
-		float rho  = sqrtf(rvec.Mag2());
-		// if (rho*wt > _xyHitCut)         continue;//FIXME! need an histogram to implement this cut
-		accr(rho,weight=wt);
-	      }
+		for (int ip=0; ip<nhitsPanelF1; ++ip){
+		  hitP1 = &panelz1->fHitData.at(ip);
+		  if (!use(*hitP1) )                          continue;
+		  // compute the projection to the radius
+		  XYVec rvec = (XYVec(hitP1->pos().x(),hitP1->pos().y())-center);
+		  float wt   = evalWeightXY(*hitP1,center);
+		  float rho  = sqrtf(rvec.Mag2());
+		  // if (rho*wt > _xyHitCut)         continue;//FIXME! need an histogram to implement this cut
+		  accr(rho,weight=wt);
+		}
+	      }//end loop over the panels
 	    }
 
 	    if ( _usecc && HelixData._hseed.caloCluster().isNonnull()){
@@ -1115,46 +1187,54 @@ namespace mu2e
     int        minNReducedChi2Points(5);//FIXME!
     int        nXYSh(0);
 
-    RobustHelixFinderData::FaceZ_t*      facezP1;
-    ComboHit*                            hitP1(0);
-    int                                  nhitsFace1(0);
+    FaceZ_t*      facezP1(0);
+    PanelZ_t*     panelz1(0);
+    ComboHit*     hitP1(0);
+    int           nhitsPanelF1(0);
 
     //get the radius
     RobustHelix& rhel  = HelixData._hseed._helix;
     float        rho   = rhel.radius();
     XYVec        center(XYVec(rhel.centerx(), rhel.centery()));
 
-    for (int f=0; f<RobustHelixFinderData::kNTotalFaces; ++f){
+    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
       facezP1    = &HelixData._oTracker[f];
-      nhitsFace1 = facezP1->fNHits;
-      if (nhitsFace1 == 0)                          continue;
-	    
-      int    indexBestComboHit(-1); 
-      float    wtBestHit(0);
-      float  minResid(_minxyresid);
+      HitInfo_t  indexBestComboHit;
+      float      minResid(_minxyresid);
 
-      for (int ip=0; ip<nhitsFace1; ++ip){
-	hitP1 = &facezP1->fHitData.at(ip);
-	if (!use(*hitP1) )                          continue;
+      for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
+	panelz1  = &facezP1->panelZs[p1];   
 
-	//set by default as outlier. Only the best hit will be used
-	// hitP1->_flag.merge(StrawHitFlag::outlier);//FIXME!
-
-	XYVec rvec = (XYVec(hitP1->pos().x(),hitP1->pos().y())-center);
-	wt         = evalWeightXY(*hitP1, center);
-	resid      = fabs(sqrtf(rvec.Mag2()) - rho)*sqrtf(wt);
-	if (resid < minResid) {
-	  indexBestComboHit = ip;
-	  minResid          = resid;
-	  wtBestHit         = wt;
-	}
+	nhitsPanelF1 = panelz1->fNHits;
+	if (nhitsPanelF1 == 0)                          continue;
 	
-	hitP1->_flag.merge(StrawHitFlag::outlier);
-      }//end loop over the hits in a Face
+	for (int ip=0; ip<nhitsPanelF1; ++ip){
+	  hitP1 = &panelz1->fHitData.at(ip);
+	  if (!use(*hitP1) )                          continue;
+
+	  //set by default as outlier. Only the best hit will be used
+	  // hitP1->_flag.merge(StrawHitFlag::outlier);//FIXME!
+
+	  XYVec rvec = (XYVec(hitP1->pos().x(),hitP1->pos().y())-center);
+	  wt         = evalWeightXY(*hitP1, center);
+	  resid      = fabs(sqrtf(rvec.Mag2()) - rho)*sqrtf(wt);
+	  if (resid < minResid) {
+	    indexBestComboHit.face          = f;
+	    indexBestComboHit.panel         = p1;
+	    indexBestComboHit.panelHitIndex = ip;
+	    
+	    minResid          = resid;
+	    hitP1->_xyWeight  = wt;
+	  }
+	
+	  hitP1->_flag.merge(StrawHitFlag::outlier);
+	}//end loop over the hits in a Face
+      }//end loop over panels
 	    
       //now add the best hit if found!
-      if (indexBestComboHit>=0) {
-	hitP1 = &facezP1->fHitData.at(indexBestComboHit);
+      if (indexBestComboHit.face >=0 ) {
+	panelz1  = &facezP1->panelZs[indexBestComboHit.panel];   
+	hitP1    = &panelz1->fHitData.at(indexBestComboHit.panelHitIndex);
 
 	//remove the outlier flag
 	hitP1->_flag.clear(StrawHitFlag::outlier);//FIXME!
@@ -1164,7 +1244,7 @@ namespace mu2e
 	// wt = evalWeightXY(*hitP1, center);
 
 	//include the point
-	sxy.addPoint(hitP1->pos().x(),hitP1->pos().y(),wtBestHit);
+	sxy.addPoint(hitP1->pos().x(),hitP1->pos().y(),hitP1->_xyWeight);
 
 	//increase the StrwaHit counter
 	nXYSh += hitP1->nStrawHits();
@@ -1227,9 +1307,9 @@ namespace mu2e
     // optionally add calo cluster
     if(_usecc && HelixData._hseed.caloCluster().isNonnull())
       {
-	mu2e::GeomHandle<mu2e::Calorimeter> ch;
-	const Calorimeter* calo = ch.get();
-	XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(HelixData._hseed.caloCluster()->diskId(),HelixData._hseed.caloCluster()->cog3Vector())));
+	// mu2e::GeomHandle<mu2e::Calorimeter> ch;
+	// const Calorimeter* calo = ch.get();
+	XYZVec cog = Geom::toXYZVec(_calorimeter->geomUtil().mu2eToTracker(_calorimeter->geomUtil().diskFFToMu2e(HelixData._hseed.caloCluster()->diskId(),HelixData._hseed.caloCluster()->cog3Vector())));
 	float rad = sqrtf(XYZVec(cog - center).perp2());
 	radii.push_back(make_pair(rad,_ccwt));
       }

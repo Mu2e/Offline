@@ -42,6 +42,10 @@ namespace {
 
 namespace mu2e 
 {
+
+  class Calorimeter;
+  class TTracker;
+
   // simple struct to keep track of azimuth/radius projection
   struct FZ 
   {
@@ -91,6 +95,14 @@ namespace mu2e
     //function to perfrom the XY and ZPhi fit using the Lsqsum4 class
     void  refineFitXY  (RobustHelixFinderData& helixData);
     void  refineFitZPhi(RobustHelixFinderData& helixData);
+
+    void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
+    void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
+
+    const TTracker*            _tracker;
+    const Calorimeter*         _calorimeter;
+
+
   private:
 
     void fitHelix(RobustHelixFinderData& helixData);

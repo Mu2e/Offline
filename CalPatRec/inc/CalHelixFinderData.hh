@@ -3,7 +3,6 @@
 #define CalHelixFinderData_HH
 
 #include "Mu2eUtilities/inc/LsqSums4.hh"
-#include "CalPatRec/inc/CalHelixPoint.hh"
 
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
@@ -15,6 +14,8 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
+#include "TrkReco/inc/TrkFaceData.hh"
+
 #include <array>
 
 class HelixTraj;
@@ -22,7 +23,7 @@ class HelixTraj;
 namespace mu2e {
 
   class TimeCluster;
-  class Panel;
+  //  class Panel;
 
   struct ChannelID {
     int Station;
@@ -32,51 +33,6 @@ namespace mu2e {
     //      int Layer;
   };
 
-  // struct HitFlag_t {
-  //   int                              fUsed[100];
-  // };
-    
-  
-  struct PanelZ_t {
-    int                              fNHits;      // guess, total number of hits per panel
-    std::vector<CalHelixPoint>       fHitData;
-    const Panel*                     fPanel;      // backward pointer to the tracker panel
-    double                           wx;          // direction cosines of the wires, assumed to be all the same
-    double                           wy;      
-    double                           phi;         // phi angle of the wire
-    double                           z;           // 
-
-    PanelZ_t    (){
-      fNHits  = 0;
-      fPanel  = NULL;
-    }
-
-    PanelZ_t    (const PanelZ_t&Copy){
-      fNHits = Copy.fNHits;  
-      fPanel = Copy.fPanel;  
-      wx     = Copy.wx;      
-      wy     = Copy.wy;      
-      phi    = Copy.phi;     
-      z      = Copy.z;       
-      int nhits = Copy.fHitData.size();
-      for (int i=0; i<nhits; ++i){
-	fHitData.push_back(CalHelixPoint(Copy.fHitData.at(i)));
-      }
-    }
-  }; 
-
-  struct SeedInfo_t {
-    int  Panel;	 
-    int  PanelHitIndex;
-    SeedInfo_t(){
-      Panel         = -1;	 
-      PanelHitIndex = -1;
-    }
-    SeedInfo_t(int P, int H){
-      Panel         = P;	 
-      PanelHitIndex = H;
-    }
-  };
   //---------------------------------------------------------------------------
   // output struct
   //-----------------------------------------------------------------------------
@@ -84,14 +40,14 @@ namespace mu2e {
   public:
    
 
-    enum {
-      kNStations      = 20,
-      kNTotalFaces    = 80,
-      kNTotalPanels   = 240,
-      kNMaxHitsPerPanel= 20,
-      kNFaces         =  4,
-      kNPanelsPerFace =  3
-    };
+    // enum {
+    //   // kNStations      = 20,
+    //   // kNTotalFaces    = 80,
+    //   // kNTotalPanels   = 240,
+    //   kNMaxHitsPerPanel= 20
+    //   // kNFaces         =  4,
+    //   // kNPanelsPerFace =  3
+    // };
     
     enum { kMaxResidIndex = 500 };
     
@@ -141,10 +97,10 @@ namespace mu2e {
 
     HelixTraj*                        _helix;
 
-    std::vector<StrawHitIndex>        _goodhits;
+    std::vector<HitInfo_t>           _goodhits;
 
-    SeedInfo_t                        _seedIndex;
-    SeedInfo_t                        _candIndex;
+    HitInfo_t                        _seedIndex;
+    HitInfo_t                        _candIndex;
 
     int                               _nStrawHits;      
     int                               _nComboHits;    
@@ -196,8 +152,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // structure used to organize thei strawHits for the pattern recognition
 //-----------------------------------------------------------------------------
-    PanelZ_t                                           _oTracker[kNTotalPanels];
-    std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
+//    PanelZ_t                                           _oTracker[kNTotalPanels];
+//    std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
+    std::array<FaceZ_t,FaceZ_t::kNTotalFaces>             _oTracker;
+    std::array<int,StrawId::_nupanels*PanelZ_t::kNMaxPanelHits>  _hitsUsed;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------

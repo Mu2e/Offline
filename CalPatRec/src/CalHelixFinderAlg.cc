@@ -70,8 +70,8 @@ namespace mu2e {
 //   };
 
   // comparison functor for sorting by z
-  struct zcomp : public std::binary_function<CalHelixPoint,CalHelixPoint,bool> {
-    bool operator()(CalHelixPoint const& p1, CalHelixPoint const& p2) { return p1._pos.z() < p2._pos.z(); }
+  struct zcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
+    bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
 
 //-----------------------------------------------------------------------------
@@ -187,7 +187,7 @@ namespace mu2e {
     std::vector<std::string> bitnames;
     bitnames.push_back("Outlier");
     bitnames.push_back("OtherBackground");
-    CalHelixPoint::_useflag = StrawHitFlag(bitnames);
+    //mu2e::ComboHit::_useflag = StrawHitFlag(bitnames);
   }
 
 
@@ -254,41 +254,6 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-//   bool CalHelixFinderAlg::findHelix(CalHelixFinderData& Helix, const CalTimePeak* TimePeak) {
-
-//     fTimePeak = TimePeak;
-// 					// fill the calorimeter cluster info
-//     fCaloTime = TimePeak->ClusterT0();
-//     fCaloX    = TimePeak->ClusterX();
-//     fCaloY    = TimePeak->ClusterY();
-//     fCaloZ    = TimePeak->ClusterZ();
-// //-----------------------------------------------------------------------------
-// //  compute the allowed radial range for this fit
-// //-----------------------------------------------------------------------------
-//     double pb = fabs((CLHEP::c_light*1e-3)/(bz()*Helix._tpart.charge()));
-//     _rmin = _pmin/(pb*sqrt(1.0+_tdmax*_tdmax));
-//     _rmax = _pmax/(pb*sqrt(1.0+_tdmin*_tdmin));
-// //-----------------------------------------------------------------------------
-// //  particle charge, field, and direction affect the pitch range
-// //-----------------------------------------------------------------------------
-//     _dfdzsign = copysign(1.0,-Helix._tpart.charge()*Helix._fdir.dzdt()*bz());
-
-//     if(_dfdzsign > 0.0){
-//       _smin = 1.0/(_rmax*_tdmax);
-//       _smax = 1.0/(_rmin*_tdmin);
-//     } else {
-//       _smax = -1.0/(_rmax*_tdmax);
-//       _smin = -1.0/(_rmin*_tdmin);
-//     }
-// //-----------------------------------------------------------------------------
-// // call down
-// //-----------------------------------------------------------------------------
-//     bool retval = findHelix(Helix);
-
-//     return retval;
-//   }
-
-//-----------------------------------------------------------------------------
 // called internally; in the diagnostics mode save several states of _xyzp
 //-----------------------------------------------------------------------------
   bool CalHelixFinderAlg::findHelix(CalHelixFinderData& Helix) {
@@ -334,22 +299,24 @@ namespace mu2e {
       Helix._fit = TrkErrCode(TrkErrCode::fail,4); // phi-z reconstruction failure
     }
     else {
-//-----------------------------------------------------------------------------
-// success, form output
-//-----------------------------------------------------------------------------
+      //-----------------------------------------------------------------------------
+      // success, form output
+      //-----------------------------------------------------------------------------
       Helix._goodhits.clear();
 
       PanelZ_t*      panelz(0);
-      CalHelixPoint* hit(0);
+      FaceZ_t*       facez(0);
 
-      for (int p=0; p<CalHelixFinderData::kNTotalPanels; ++p){
-	panelz = &Helix._oTracker[p];
-	int  nhits          = panelz->fNHits;
-	for (int i=0; i<nhits; ++i){   
-	  hit = &panelz->fHitData.at(i);
-	  int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	  if (Helix._hitsUsed[index] != 1)                continue;
-	  Helix._goodhits.push_back(hit->index());
+      for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+	facez     = &Helix._oTracker[f];
+	for (int p=0; p<FaceZ_t::kNPanels; ++p){
+	  panelz = &facez->panelZs[p];
+	  int  nhits = panelz->fNHits;
+	  for (int i=0; i<nhits; ++i){   
+	    int index = facez->evalUniqueHitIndex(f,p,i);
+	    if (Helix._hitsUsed[index] != 1)                continue;
+	    Helix._goodhits.push_back(HitInfo_t(f,p,i));
+	  }
 	}
       }
 
@@ -362,7 +329,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   int CalHelixFinderAlg::findDfDz(CalHelixFinderData& Helix, 
-				  SeedInfo_t          SeedIndex,
+				  HitInfo_t          SeedIndex,
  				  // int *IndexVec, 
 				  int                 Diag_flag) {
     //    return findDfDz_1(Helix, SeedIndex, IndexVec, Diag_flag);
@@ -372,7 +339,7 @@ namespace mu2e {
 //----------------------------------------------------------------------------------------
 // 2015-01-13  calculate track DphiDz using histogrammed distribution of the dfdz residuals
 //----------------------------------------------------------------------------------------
-  int CalHelixFinderAlg::findDfDz_1(CalHelixFinderData& Helix, SeedInfo_t SeedIndex, int  Diag_flag) {
+  int CalHelixFinderAlg::findDfDz_1(CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag) {
 
 //     double phi, phi_ref(-1e10), z, z_ref, dphi, dz, dzOverHelPitch;
 
@@ -417,7 +384,7 @@ namespace mu2e {
 //     //-----------------------------------------------------------------------------
 //     // Part 1: use only contiguous parts of the trajectory
 //     //-----------------------------------------------------------------------------
-//     for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
+//     for (int p=SeedIndex.Panel; p<FaceZ_t::kNTotalPanels; ++p){
 //       panelz = &Helix._oTracker[p];
 //       int  nhitsPerPanel  = panelz->fNHits;
 //       int  seedPanelIndex(0);
@@ -425,8 +392,8 @@ namespace mu2e {
 //       if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;  
 
 //       for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
-// 	CalHelixPoint* hit = &panelz->fHitData.at(i);
-// 	int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
+// 	mu2e::ComboHit* hit = &panelz->fHitData.at(i);
+// 	int index = p*FaceZ_t::kNMaxHitsPerPanel + i;
 // 	if (Helix._hitsUsed[index] != 1)                     continue;
 
 // 	int ist = hit->_straw->id().getStation();                   // station number
@@ -738,7 +705,7 @@ namespace mu2e {
 //----------------------------------------------------------------------------------------
 // 2015-01-13  calculate track DphiDz using histogrammed distribution of the dfdz residuals
 //----------------------------------------------------------------------------------------
-  int CalHelixFinderAlg::findDfDz_2(CalHelixFinderData& Helix, SeedInfo_t SeedIndex, int  Diag_flag) {
+  int CalHelixFinderAlg::findDfDz_2(CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag) {
 
     double phi, phi_ref(-1e10), z_ref, dphi, dz;
 
@@ -783,41 +750,49 @@ namespace mu2e {
     // Step 1: for each station with track candidate hits, calculate average phi per station
     //-----------------------------------------------------------------------------
     PanelZ_t* panelz(0);
+    FaceZ_t*  facez(0);
 
-    for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-      panelz = &Helix._oTracker[p];
-      int  nhitsPerPanel  = panelz->fNHits;
-      int  seedPanelIndex(0);
-      if (nhitsPerPanel == 0)                                      continue;
-      if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;  
+    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+      facez     = &Helix._oTracker[f];
 
-      for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
-	CalHelixPoint* hit = &panelz->fHitData.at(i);
+      int  firstPanel(0);
+      if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
 
-	int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	if (Helix._hitsUsed[index] != 1 )                         continue;
+      for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	panelz = &facez->panelZs[p];
+	int  nhitsPerPanel  = panelz->fNHits;
+	int  seedPanelIndex(0);
+	if (nhitsPerPanel == 0)                                      continue;
+	if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;  
 
-	int ist = hit->sid().station();//_straw->id().getStation();                   // station number
-	phi     = polyAtan2(hit->y()-center->y(),hit->x()-center->x()); // atan2 returns its result in [-pi,pi], convert to [0,2pi]
-	if (phi < 0) phi += 2*M_PI;
-	zVec  [ist] += hit->z();
-	//-----------------------------------------------------------------------------
-	// make sure there all hits within the station get close values of phi, although a 
-	// common 2pi ambiguity is still unresolved
-	//-----------------------------------------------------------------------------
-	if (nhits[ist] == 0) {
-	  phiVec[ist] = phi;
-	  nstations_with_hits += 1;
-	}
-	else {
-	  while (phi-phiVec[ist] >  M_PI) phi -= 2*M_PI;
-	  while (phi-phiVec[ist] < -M_PI) phi += 2*M_PI;
+	for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
+	  mu2e::ComboHit* hit = &panelz->fHitData.at(i);
+
+	  int index =  facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	  if (Helix._hitsUsed[index] != 1 )                         continue;
+
+	  int ist = hit->sid().station();//_straw->id().getStation();                   // station number
+	  phi     = polyAtan2(hit->pos().y()-center->y(),hit->pos().x()-center->x()); // atan2 returns its result in [-pi,pi], convert to [0,2pi]
+	  if (phi < 0) phi += 2*M_PI;
+	  zVec  [ist] += hit->pos().z();
+	  //-----------------------------------------------------------------------------
+	  // make sure there all hits within the station get close values of phi, although a 
+	  // common 2pi ambiguity is still unresolved
+	  //-----------------------------------------------------------------------------
+	  if (nhits[ist] == 0) {
+	    phiVec[ist] = phi;
+	    nstations_with_hits += 1;
+	  }
+	  else {
+	    while (phi-phiVec[ist] >  M_PI) phi -= 2*M_PI;
+	    while (phi-phiVec[ist] < -M_PI) phi += 2*M_PI;
 	
-	  phiVec[ist] = (phiVec[ist]*nhits[ist]+phi)/(nhits[ist]+1);
+	    phiVec[ist] = (phiVec[ist]*nhits[ist]+phi)/(nhits[ist]+1);
+	  }
+	  nhits [ist] += 1;
 	}
-	nhits [ist] += 1;
-      }
-    }
+      }//end panels loop
+    }//end face loop
 
     for (int i=0; i<nstations; i++) {
       if (nhits[i] > 0) {
@@ -991,7 +966,7 @@ namespace mu2e {
 //
 //-----------------------------------------------------------------------------
   bool CalHelixFinderAlg::doLinearFitPhiZ(CalHelixFinderData& Helix    ,
-					  SeedInfo_t          SeedIndex,
+					  HitInfo_t          SeedIndex,
 					  int                 UseInteligentWeight,
 					  int                 DoCleanUp           ) {
 
@@ -1007,7 +982,8 @@ namespace mu2e {
     double            radius    = Helix._radius;
     XYZVec            pos;
     PanelZ_t*         panelz(0);
-    CalHelixPoint*    hit(0);
+    FaceZ_t*          facez(0);
+    mu2e::ComboHit*    hit(0);
 //-----------------------------------------------------------------------------
 // gianipez: procedure for aligning the phi vector
 //-----------------------------------------------------------------------------
@@ -1015,7 +991,7 @@ namespace mu2e {
     int              count(0), indexWorst;
     double           chi2, chi2min, deltaPhi, dphi_max(0), phi_ref, weightWorst(0);
 
-    SeedInfo_t       iworst(-1,-1);
+    HitInfo_t       iworst;//(-1,-1);
 
     if (Helix._sxy.qn() > 0) {
       helCenter = XYZVec( Helix._sxy.x0(), Helix._sxy.y0(), 0);
@@ -1079,110 +1055,101 @@ namespace mu2e {
     }
 
     // int            nLayers(2);
-    float          panelHitChi2 [_nHitsMaxPerPanel] = {1e10};
-    int            panelHitIndex[_nHitsMaxPerPanel] = {-1};
+    //    int            panelHitIndex[_nHitsMaxPerPanel] = {-1};
 
     zlast = 0;
 
-    for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-      panelz = &Helix._oTracker[p];
-      z      = panelz->z;
-      int       nhits  = panelz->fNHits;
-      int       seedPanelIndex(0);
-      if (nhits == 0)                                                                    continue;
-      if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;  
+    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+      facez     = &Helix._oTracker[f];
+      z         = facez->z;
+
+      int  firstPanel(0);
+      if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
 
       // reset the chi2 values calulated in the previous panel
-      // for (int l=0; l<nLayers; ++l){
-      for (int g=0; g<_nHitsMaxPerPanel; ++g){
-	panelHitChi2 [g] = 1e10;
-	panelHitIndex[g] = -1;
-      }
-      // }
+      HitInfo_t      goodFaceHit;
+      float          faceHitChi2(1e10);
+      
+      for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	panelz = &facez->panelZs[p];//Helix._oTracker[p];
+	int       nhits  = panelz->fNHits;
+	int       seedPanelIndex(0);
+	if (nhits == 0)                                                                    continue;
+	if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;  
 
-      for (int i=seedPanelIndex; i<nhits; ++i){
-	CalHelixPoint* hit = &panelz->fHitData.at(i);
-	pos      = hit->_pos;
-	strawDir = hit->_sdir;
+	for (int i=seedPanelIndex; i<nhits; ++i){
+	  mu2e::ComboHit* hit = &panelz->fHitData.at(i);
+	  pos      = hit->_pos;
+	  strawDir = hit->_sdir;
 
-	dx2      = (pos.x() - helCenter.x());
-	dy2      = (pos.y() - helCenter.y());
-	phi      = polyAtan2(dy2, dx2);//CLHEP::Hep3Vector(pos - helCenter).phi();//center).phi();
-	if (phi < 0) phi = phi + 2*M_PI;//      = TVector2::Phi_0_2pi(phi);
-	dz       = z - zlast;
+	  dx2      = (pos.x() - helCenter.x());
+	  dy2      = (pos.y() - helCenter.y());
+	  phi      = polyAtan2(dy2, dx2);//CLHEP::Hep3Vector(pos - helCenter).phi();//center).phi();
+	  if (phi < 0) phi = phi + 2*M_PI;//      = TVector2::Phi_0_2pi(phi);
+	  dz       = z - zlast;
                                     
-	phi_ref = z*dfdz + phi0;		// predicted value of phi
-	dphi    = phi_ref - phi;		// signed residual
-	// resolve 2PI ambiguity
-	while (dphi > M_PI) {
-	  phi += 2*M_PI;
-	  dphi = phi_ref - phi;
-	}
-	while (dphi < -M_PI) {
-	  phi -= 2*M_PI;
-	  dphi = phi_ref - phi;
-	}
-	// store the corrected value of phi
-	// phi_corrected[i] = phi;
-	// _phiCorrected[i] = phi;
-	hit->_hphi = phi;
-	dphi      = fabs(dphi);
-	err       = _sigmaPhi;
+	  phi_ref = z*dfdz + phi0;		// predicted value of phi
+	  dphi    = phi_ref - phi;		// signed residual
+	  // resolve 2PI ambiguity
+	  while (dphi > M_PI) {
+	    phi += 2*M_PI;
+	    dphi = phi_ref - phi;
+	  }
+	  while (dphi < -M_PI) {
+	    phi -= 2*M_PI;
+	    dphi = phi_ref - phi;
+	  }
+	  // store the corrected value of phi
+	  // phi_corrected[i] = phi;
+	  // _phiCorrected[i] = phi;
+	  hit->_hphi = phi;
+	  dphi       = fabs(dphi);
+	  err        = _sigmaPhi;
 
-	if (UseInteligentWeight == 1){
-	  weight           = calculatePhiWeight(*hit,/*pos, strawDir, */ helCenter, radius, 0, banner);
-	  err              = 1./sqrt(weight);
-	}
-	hit->_zphiWeight = weight;
+	  if (UseInteligentWeight == 1){
+	    weight           = calculatePhiWeight(*hit,/*pos, strawDir, */ helCenter, radius, 0, banner);
+	    err              = 1./sqrt(weight);
+	  }
+	  hit->_zphiWeight = weight;
 
-	xdphi = dphi/err;
+	  xdphi = dphi/err;
 
-	int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	if (_debug > 10) {
-	  printf("[CalHelixFinderAlg::doLinearFitPhiZ:LOOP] %08x %2i %6i %3i %12.5f %12.5f %10.5f %10.3f %10.3f %10.3f %10.5f %10.5f %5.3f\n",
-		 *((int*) &hit->_flag), Helix._hitsUsed[index],
-		 hit->sid().straw()/*_strawhit->strawIndex().asInt()*/, i,
-		 z, phi, dphi,xdphi,zlast,dz,
-		 dfdz, Helix._szphi.dfdz(), Helix._szphi.chi2DofLine());
-	}
-	if (Helix._hitsUsed[index] != 1)                     continue;
+	  int index =  facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	  if (_debug > 10) {
+	    printf("[CalHelixFinderAlg::doLinearFitPhiZ:LOOP] %08x %2i %6i %3i %12.5f %12.5f %10.5f %10.3f %10.3f %10.3f %10.5f %10.5f %5.3f\n",
+		   *((int*) &hit->_flag), Helix._hitsUsed[index],
+		   hit->sid().straw()/*_strawhit->strawIndex().asInt()*/, i,
+		   z, phi, dphi,xdphi,zlast,dz,
+		   dfdz, Helix._szphi.dfdz(), Helix._szphi.chi2DofLine());
+	  }
+	  if (Helix._hitsUsed[index] != 1)                     continue;
 
-	if ( (DoCleanUp == 1) && (xdphi > _maxXDPhi) ) {
-	  Helix._hitsUsed[index] = 0;
-	  ++nPointsRemoved;
-	  continue;
-	}
+	  if ( (DoCleanUp == 1) && (xdphi > _maxXDPhi) ) {
+	    Helix._hitsUsed[index] = 0;
+	    ++nPointsRemoved;
+	    continue;
+	  }
 
-	double delta_min(0);
-	int    index_min(-1);
-	// int    layer_id(hit->sid().layer());//_straw->id().getLayer());
-	for (int k=0; k<_nHitsMaxPerPanel; ++k){
-	  double delta = xdphi - panelHitChi2[k];
-	  if (delta < delta_min){
-	    delta_min = delta;
-	    index_min = k;
+	  
+	  if (xdphi < faceHitChi2){
+	    faceHitChi2               = xdphi;
+	    goodFaceHit.face          = f;
+	    goodFaceHit.panel         = p;
+	    goodFaceHit.panelHitIndex = i;
 	  }
 	}
-	if (index_min>=0) {
-	  panelHitIndex[index_min] = i;
-	  panelHitChi2 [index_min] = xdphi;
-	}
-      }
+	
+      }//end panels loop
 
       //loop over the nHitsMaxPerPanel hits closest to the helix prediction
-      double  panel_xdphi(0);
-      double  counter_panel_hits(0);
-      for (int t=0; t<_nHitsMaxPerPanel; ++t){
-	if (panelHitIndex[t] < 0)                          continue;
-	hit                = &panelz->fHitData.at(panelHitIndex[t]);
-	panel_xdphi        = panel_xdphi + panelHitChi2[t];
-	counter_panel_hits = counter_panel_hits + 1;
+      if (goodFaceHit.face < 0)                          continue;
+      panelz             = &facez->panelZs[goodFaceHit.panel];
+      hit                = &panelz->fHitData[goodFaceHit.panelHitIndex];
 
-	Helix._szphi.addPoint(z,hit->_hphi,hit->_zphiWeight);
-	Helix._nZPhiSh    += hit->nStrawHits();
-	++count;
-      }
-      panel_xdphi = panel_xdphi/counter_panel_hits;
+      Helix._szphi.addPoint(z,hit->_hphi,hit->_zphiWeight);
+      Helix._nZPhiSh    += hit->nStrawHits();
+
+      ++count;
 
       if (count == 1) {//FIXME! investigate if it is needed or not
 	zlast = z;
@@ -1192,7 +1159,7 @@ namespace mu2e {
 	
       if ( (count>=5) &&      //FIXME! should we count and/or the number of panels?
 	   // (xdphi < 2.)){
-	   (panel_xdphi < 2.)){
+	   (faceHitChi2 < 2.)){
 	if ( (fabs(dfdz - Helix._szphi.dfdz()) < 8.e-4) ){//  || //require that the new value of dfdz is
 	  //close to the starting one. update dfdz only if:
 	  if ( (Helix._szphi.dfdz() > 0.) && //{                    // 1. the points browsed are more the half
@@ -1203,8 +1170,9 @@ namespace mu2e {
 	  }
 	}
       }
-	
-    }
+
+
+    }//end face loop
     _phiCorrectedDefined = 1;
 
     if (_debug > 5) {
@@ -1218,53 +1186,62 @@ namespace mu2e {
       if ( Helix._szphi.chi2DofLine() > _chi2zphiMax) {
       NEXT_ITERATION:;
 	//reset the coordinates of the worst hit
-	iworst.Panel         = -1;
-	iworst.PanelHitIndex = -1;
+	iworst.face          = -1;
+	iworst.panel         = -1;
+	iworst.panelHitIndex = -1;
 
 	indexWorst  = -1;
 	chi2min     = 1e10;
 	weightWorst = -1;
 
-	for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-	  panelz = &Helix._oTracker[p];
-	  z      = panelz->z;
-	  int       nhits  = panelz->fNHits;
-	  int       seedPanelIndex(0);
-	  if (nhits == 0)                                        continue;
-	  if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;  
+	for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+	  facez     = &Helix._oTracker[f];
+	  z         = facez->z;
+	  int  firstPanel(0);
+	  if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
+	  for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	    panelz = &facez->panelZs[p];//Helix._oTracker[p];
+	    int       nhits  = panelz->fNHits;
+	    int       seedPanelIndex(0);
+	    if (nhits == 0)                                        continue;
+	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;  
 
-	  for (int i=seedPanelIndex; i<nhits; ++i){
-	    CalHelixPoint* hit = &panelz->fHitData.at(i);
-	    int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	    if (Helix._hitsUsed[index] != 1)                     continue; 
+	    for (int i=seedPanelIndex; i<nhits; ++i){
+	      mu2e::ComboHit* hit = &panelz->fHitData.at(i);
+	      int index =  facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	      if (Helix._hitsUsed[index] != 1)                     continue; 
 
-	    szphi.init(Helix._szphi);
+	      szphi.init(Helix._szphi);
 
-	    phi      = hit->_hphi;
+	      phi      = hit->_hphi;
 
-	    if (UseInteligentWeight == 1){
-	      weight = hit->_zphiWeight;
-	    }
+	      if (UseInteligentWeight == 1){
+		weight = hit->_zphiWeight;
+	      }
 
-	    szphi.removePoint(z, phi, weight);
-	    chi2 = szphi.chi2DofLine();
-	    //printf("[CalHelixFinderAlg::doLinearFitPhiZ] chi2 = %5.3e chi2min = %5.3e\n", chi2, chi2min);
-	    if (chi2 < chi2min) {
-	      iworst.Panel         = p;
-	      iworst.PanelHitIndex = i;
+	      szphi.removePoint(z, phi, weight);
+	      chi2 = szphi.chi2DofLine();
+	      //printf("[CalHelixFinderAlg::doLinearFitPhiZ] chi2 = %5.3e chi2min = %5.3e\n", chi2, chi2min);
+	      if (chi2 < chi2min) {
+		iworst.face          = f;
+		iworst.panel         = p;
+		iworst.panelHitIndex = i;
 
-	      chi2min              = chi2;
-	      weightWorst          = weight;
+		chi2min              = chi2;
+		weightWorst          = weight;
+	      }
 	    }
 	  }
-	}
-	if ((iworst.Panel >= 0) && (Helix._nZPhiSh > _minNHits)) {
-	  panelz  = &Helix._oTracker[iworst.Panel];
-	  hit     = &panelz->fHitData.at(iworst.PanelHitIndex);
-	  int index = iworst.Panel*CalHelixFinderData::kNMaxHitsPerPanel + iworst.PanelHitIndex;
+	}//end face loop
+
+	if ((iworst.panel >= 0) && (Helix._nZPhiSh > _minNHits)) {
+	  facez   = &Helix._oTracker[iworst.face];
+	  panelz  = &facez->panelZs [iworst.panel];
+	  hit     = &panelz->fHitData.at(iworst.panelHitIndex);
+	  int index =  facez->evalUniqueHitIndex(iworst);//iworst.Panel*FaceZ_t::kNMaxHitsPerPanel + iworst.PanelHitIndex;//FIXME!
 	  Helix._hitsUsed[index] = 0;
 
-	  z   = panelz->z;
+	  z   = facez->z;
 	  phi = hit->_hphi;
 
 	  Helix._szphi.removePoint(z, phi, hit->_zphiWeight);
@@ -1279,55 +1256,63 @@ namespace mu2e {
       CHECK_RESIDUALS:;
 	dphi_max    = _maxXDPhi;
 	//reset the coordinates of the worst hit
-	iworst.Panel         = -1;
-	iworst.PanelHitIndex = -1;
+	iworst.face          = -1;
+	iworst.panel         = -1;
+	iworst.panelHitIndex = -1;
 
 	weightWorst = -1;
 
-	for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-	  panelz = &Helix._oTracker[p];
-	  z      = panelz->z;
-	  int       nhits  = panelz->fNHits;
-	  int       seedPanelIndex(0);
-	  if (nhits == 0)                                        continue;
-	  if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;  
+	for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+	  facez     = &Helix._oTracker[f];
+	  z         = facez->z;
+	  int  firstPanel(0);
+	  if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
+	  for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	    panelz = &facez->panelZs[p];
+	    int       nhits  = panelz->fNHits;
+	    int       seedPanelIndex(0);
+	    if (nhits == 0)                                        continue;
+	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;  
 
-	  for (int i=seedPanelIndex; i<nhits; ++i){
-	    CalHelixPoint* hit = &panelz->fHitData.at(i);
-	    int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	    if (Helix._hitsUsed[index] != 1)                     continue;
+	    for (int i=seedPanelIndex; i<nhits; ++i){
+	      mu2e::ComboHit* hit = &panelz->fHitData.at(i);
+	      int index = facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	      if (Helix._hitsUsed[index] != 1)                     continue;
 
-	    pos      = hit->_pos;
-	    strawDir = hit->_sdir;
-	    phi      = z*Helix._szphi.dfdz() + Helix._szphi.phi0();
-	    dphi     = fabs(hit->_hphi - phi);
-	    err      = _sigmaPhi;
+	      pos      = hit->_pos;
+	      strawDir = hit->_sdir;
+	      phi      = z*Helix._szphi.dfdz() + Helix._szphi.phi0();
+	      dphi     = fabs(hit->_hphi - phi);
+	      err      = _sigmaPhi;
 
-	    if (UseInteligentWeight == 1){
-	      weight = calculatePhiWeight(*hit, /*pos, strawDir, */ helCenter, radius, 0, banner);//hit->_zphiWeight;//
-	      err    = 1./sqrt(weight);
-	    }
+	      if (UseInteligentWeight == 1){
+		weight = calculatePhiWeight(*hit, /*pos, strawDir, */ helCenter, radius, 0, banner);//hit->_zphiWeight;//
+		err    = 1./sqrt(weight);
+	      }
 
-	    xdphi = dphi/err;
+	      xdphi = dphi/err;
 
-	    if ( xdphi > dphi_max) {
-	      iworst.Panel         = p;
-	      iworst.PanelHitIndex = i;
+	      if ( xdphi > dphi_max) {
+		iworst.face          = f;
+		iworst.panel         = p;
+		iworst.panelHitIndex = i;
 
-	      dphi_max             = xdphi;
-	      weightWorst          = weight;
+		dphi_max             = xdphi;
+		weightWorst          = weight;
+	      }
 	    }
 	  }
 	}
 	//remove the point
-	if(iworst.Panel>=0 && Helix._nZPhiSh > _minNHits){
-	  panelz  = &Helix._oTracker[iworst.Panel];
-	  hit     = &panelz->fHitData.at(iworst.PanelHitIndex);
+	if(iworst.panel>=0 && Helix._nZPhiSh > _minNHits){
+	  facez   = &Helix._oTracker[iworst.face];
+	  panelz  = &facez->panelZs[iworst.panel];
+	  hit     = &panelz->fHitData.at(iworst.panelHitIndex);
 
-	  int index = iworst.Panel*CalHelixFinderData::kNMaxHitsPerPanel + iworst.PanelHitIndex;
+	  int index =  facez->evalUniqueHitIndex(iworst);//iworst.Panel*FaceZ_t::kNMaxHitsPerPanel + iworst.PanelHitIndex;
 	  Helix._hitsUsed[index] = 0;
 
-	  z           = panelz->z;
+	  z           = facez->z;
 	  phi         = hit->_hphi;
 	  weightWorst = hit->_zphiWeight;
 
@@ -1344,7 +1329,7 @@ namespace mu2e {
 	if(Helix._nZPhiSh <= _minNHits) chi2min = Helix._szphi.chi2DofLine();
 	
 	if ( (chi2min >= _chi2zphiMax) ||
-	     (iworst.Panel>=0 )) {
+	     (iworst.panel>=0 )) {
 
 	  //--------------------------------------------------------------------------------
 	  // 2016-04-27 gianipez: why should I not check the chi2 f I have 10 hits?
@@ -1371,7 +1356,7 @@ namespace mu2e {
       Helix._dfdz = Helix._szphi.dfdz();
     }
     
-    if ((SeedIndex.Panel == 0) && (SeedIndex.PanelHitIndex == 0) && (_diag > 0)) {
+    if ((SeedIndex.face == 0 ) && (SeedIndex.panel == 0) && (SeedIndex.panelHitIndex == 0) && (_diag > 0)) {
 //-----------------------------------------------------------------------------
 // diagnostics
 //-----------------------------------------------------------------------------
@@ -1383,33 +1368,38 @@ namespace mu2e {
       if (success) {
 	int h=0;
 
-	for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-	  panelz = &Helix._oTracker[p];
-	  int  nhitsPerPanel  = panelz->fNHits;
-	  int  seedPanelIndex(0);
-	  if (nhitsPerPanel == 0)                                                            continue;
-	  if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;  
+	for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+	  facez     = &Helix._oTracker[f];
+	  int  firstPanel(0);
+	  if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
+	  z        = facez->z;//pos.z();
+	  for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	    panelz = &facez->panelZs[p];
+	    int  nhitsPerPanel  = panelz->fNHits;
+	    int  seedPanelIndex(0);
+	    if (nhitsPerPanel == 0)                                                            continue;
+	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;  
 
-	  for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
-	    hit = &panelz->fHitData.at(i);
-	    int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	    if (Helix._hitsUsed[index] != 1)                      continue; 
-	    z        = panelz->z;//pos.z();
-	    phi      = z* Helix._dfdz + Helix._fz0;
-	    deltaPhi = hit->_hphi - phi;
+	    for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
+	      hit = &panelz->fHitData.at(i);
+	      int index =  facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	      if (Helix._hitsUsed[index] != 1)                      continue; 
+	      phi      = z* Helix._dfdz + Helix._fz0;
+	      deltaPhi = hit->_hphi - phi;
 
-	    if (h < Helix.maxIndex()) {
-	      Helix._diag.resid[h] = deltaPhi;
-	      ++h;
-	    }
-	    else {
-	      printf (" ERROR: too many hits. Ignore \n");
+	      if (h < Helix.maxIndex()) {
+		Helix._diag.resid[h] = deltaPhi;
+		++h;
+	      }
+	      else {
+		printf (" ERROR: too many hits. Ignore \n");
+	      }
 	    }
 	  }
-	}
-      }
+	}//end loop over the panels
+      }//end loop pver the faces
     }
-
+    
     if (_debug > 5) {
 
       printf("[CalHelixFinderAlg::doLinearFitPhiZ:END] retval = %d Helix: phi_0 = %5.3f dfdz = %5.5f chi2N = %5.3f szphi: phi_0 = %5.3f dfdz = %5.5f\n",
@@ -1418,26 +1408,32 @@ namespace mu2e {
       if (_debug > 10) {
 	printf("[CalHelixFinderAlg::doLinearFitPhiZ:END2]    flag   A   shID       z             phi      phi-dfdz*z-phi0\n");
 
-	int lastPanel = SeedIndex.Panel;
+	int lastFace  = SeedIndex.face;
 
-	for (int p=CalHelixFinderData::kNTotalPanels-1; p>=lastPanel;  --p){
-	  panelz = &Helix._oTracker[p];
-	  int  nhitsPerPanel  = panelz->fNHits;
-	  if (nhitsPerPanel == 0)                                                            continue;
-	  if (p==SeedIndex.Panel) nhitsPerPanel = SeedIndex.PanelHitIndex;  
+	for (int f=FaceZ_t::kNTotalFaces-1; f>= lastFace; --f){
+	  facez     = &Helix._oTracker[f];
+	  z         = facez->z;//pos.z();
+	  int    lastPanel(0);
+	  if (f == SeedIndex.face) lastPanel = SeedIndex.panel;
 
-	  for (int  i=nhitsPerPanel-1;i>=0; --i){   
-	    hit      = &panelz->fHitData.at(i);
-	    z        = panelz->z;//pos.z();
-	    phi      = z* Helix._dfdz + Helix._fz0;
-	    deltaPhi = hit->_hphi - phi;
+	  for (int p=FaceZ_t::kNPanels-1; p>=lastPanel;  --p){
+	    panelz = &facez->panelZs[p];
+	    int  nhitsPerPanel  = panelz->fNHits;
+	    if (nhitsPerPanel == 0)                                                            continue;
+	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) nhitsPerPanel = SeedIndex.panelHitIndex;  
 
-	    int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	    printf("[CalHelixFinderAlg::doLinearFitPhiZ:END2] %08x %2i %6i %12.5f %12.5f %12.5f\n",
-		   *((int*) &hit->_flag), Helix._hitsUsed[index],
-		   hit->sid().straw()/*_strawhit->strawIndex().asInt()*/,  z, hit->_hphi, deltaPhi);
-	  }
-	}
+	    for (int  i=nhitsPerPanel-1;i>=0; --i){   
+	      hit      = &panelz->fHitData.at(i);
+	      phi      = z* Helix._dfdz + Helix._fz0;
+	      deltaPhi = hit->_hphi - phi;
+
+	      int index =  facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	      printf("[CalHelixFinderAlg::doLinearFitPhiZ:END2] %08x %2i %6i %12.5f %12.5f %12.5f\n",
+		     *((int*) &hit->_flag), Helix._hitsUsed[index],
+		     hit->sid().straw()/*_strawhit->strawIndex().asInt()*/,  z, hit->_hphi, deltaPhi);
+	    }
+	  }//end panel loop
+	}//end face loop
       }
     }
 
@@ -1546,7 +1542,7 @@ namespace mu2e {
 
       if (good_hit && (! bkg_hit) && (! used_hit)) {
 
-	const ComboHit& ch          = Helix.chcol()->at(loc);
+	const mu2e::ComboHit& ch          = Helix.chcol()->at(loc);
 	// const Straw& straw          = _tracker->getStraw(ch.strawIndex());
 	// const StrawHitPosition& shp = Helix.shpos()->at(loc);
 
@@ -1573,28 +1569,30 @@ namespace mu2e {
      
 	int os       = co.Station; 
 	int of       = co.Face;
+	//FIXME!!! COMPARE OF WITH ch.sid().uniqueFace()
 	int op       = co.Panel;
 
 	int       stationId = os;
-	int       faceId    = of + stationId*CalHelixFinderData::kNFaces;
-	int       panelId   = op + faceId*CalHelixFinderData::kNPanelsPerFace;
-	PanelZ_t* pz        = &Helix._oTracker[panelId];
+	int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;//FaceZ_t::kNFaces;
+	//	int       panelId   = op + faceId*FaceZ_t::kNPanels;//PerFace;
+	FaceZ_t*  fz        = &Helix._oTracker[faceId];
+	PanelZ_t* pz        = &fz->panelZs[op];
+	
+	//	if ((os < 0) || (os >= FaceZ_t::kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
+	if ((of < 0) || (of >  StrawId::_nfaces*FaceZ_t::kNPlanesPerStation  )) printf(" >>> ERROR: wrong face    number: %i\n",of);
+	if ((op < 0) || (op >= FaceZ_t::kNPanels )) printf(" >>> ERROR: wrong panel   number: %i\n",op);
 
-	if ((os < 0) || (os >= CalHelixFinderData::kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
-	if ((of < 0) || (of >= CalHelixFinderData::kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
-	if ((op < 0) || (op >= CalHelixFinderData::kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
-
-	// pz->fHitData.push_back(CalHelixPoint(loc,sh,shp,straw,flag));
-	pz->fHitData.push_back(CalHelixPoint(loc,ch,flag));
+	// pz->fHitData.push_back(mu2e::ComboHit(loc,sh,shp,straw,flag));
+	pz->fHitData.push_back(mu2e::ComboHit(ch));//loc,ch,flag);
 	pz->fNHits  = pz->fNHits + 1;
-	if (pz->fNHits > CalHelixFinderData::kNMaxHitsPerPanel) printf("[CalHelixFinderAlg::fillXYZP] number of hits with the panel exceed the limit: NHits =  %i MaxNHits = %i\n", pz->fNHits, CalHelixFinderData::kNMaxHitsPerPanel);
+	if (pz->fNHits > PanelZ_t::kNMaxPanelHits) printf("[CalHelixFinderAlg::fillXYZP] number of hits with the panel exceed the limit: NHits =  %i MaxNHits = %i\n", pz->fNHits, PanelZ_t::kNMaxPanelHits);
 	++nFiltPoints;
 	nFiltStrawHits += ch.nStrawHits();
       }
     }
     // }
     
-    Helix._nFiltPoints    = nFiltPoints;     //ComboHit counter
+    Helix._nFiltPoints    = nFiltPoints;     //mu2e::ComboHit counter
     Helix._nFiltStrawHits = nFiltStrawHits;  //StrawHit counter
 
     if (_debug > 0) printXYZP(Helix);
@@ -1609,12 +1607,14 @@ namespace mu2e {
 // prediction in order to check if they are good or outliers
 //----------------------------------------------------------------------------
   void CalHelixFinderAlg::rescueHitsBeforeSeed(CalHelixFinderData& Helix){
-    PanelZ_t*   panelz = &Helix._oTracker[Helix._seedIndex.Panel];
+    FaceZ_t*    facez  = &Helix._oTracker[Helix._seedIndex.face];
+    PanelZ_t*   panelz = &facez->panelZs[Helix._seedIndex.panel];
 
     double      weight(-1), radius, phi0, dfdz, x0, y0;
     dfdz        = Helix._dfdz;
     //    phi0        = Helix._fz0 + dfdz*(_xyzp[Helix._seedIndex]._pos.z());
-    phi0        = Helix._fz0 + dfdz*(panelz->z);
+    //    phi0        = Helix._fz0 + dfdz*(panelz->z);
+    phi0        = Helix._fz0 + dfdz*(facez->z);
     x0          = Helix._center.x();
     y0          = Helix._center.y();
     radius      = Helix._radius;
@@ -1632,8 +1632,8 @@ namespace mu2e {
     if (_debug > 0) {
       printf("[%s:BEGIN] x0 = %5.3f y0 = %5.3f radius = %5.3f phi0 = %5.5f dfdz = %5.6f chi2 = %5.3f \n", banner,
 	     x0, y0, radius, phi0, dfdz , Helix._sxy.chi2DofCircle());
-      printf("[%s] SeedIndex = %i N-points = %5.3f\n",  banner, Helix._seedIndex.Panel, Helix._sxy.qn()-1);//FIXME!
-      if (Helix._seedIndex.Panel >= 0) {//FIXME!
+      printf("[%s] SeedIndex = %i N-points = %5.3f\n",  banner, Helix._seedIndex.panel, Helix._sxy.qn()-1);//FIXME!
+      if (Helix._seedIndex.panel >= 0) {//FIXME!
 	printf("[%s] index      Z        xi      yi       xp       yp       X0        Y0         R        dfdZ  dXY(pred) dXY(seed) dZ(seed)     wt\n",banner);
 	printf("[%s]-------------------------------------------------------------------------------------------------------------------------------\n",banner);
       }
@@ -1641,131 +1641,130 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // given a helix candidate, move upstream and pick up points with Z < _xyzp[fSeedIndex].z
 //-----------------------------------------------------------------------------
-    PanelZ_t*      seedPanelz = &Helix._oTracker[Helix._seedIndex.Panel];
-    PanelZ_t*      lastPanelz = &Helix._oTracker[Helix._seedIndex.Panel];
-    CalHelixPoint* hit(0);
-    // int            nLayers(2);
-    float          panelHitChi2 [_nHitsMaxPerPanel] = {1e10};
-    int            panelHitIndex[_nHitsMaxPerPanel] = {-1};
+    // PanelZ_t*      seedPanelz = &Helix._oTracker[Helix._seedIndex.Panel];
+    // PanelZ_t*      lastPanelz = &Helix._oTracker[Helix._seedIndex.Panel];
+    //    FaceZ_t*       seedFacez = &Helix._oTracker[Helix._seedIndex.face];
+    FaceZ_t*       lastFacez = &Helix._oTracker[Helix._seedIndex.face];
+    mu2e::ComboHit* hit(0);
 
-    for (int p=Helix._seedIndex.Panel; p>=0;  --p){
-      panelz = &Helix._oTracker[p];
-      int  nhitsPerPanel  = panelz->fNHits;
+    // float          panelHitChi2 [_nHitsMaxPerPanel] = {1e10};
+    // int            panelHitIndex[_nHitsMaxPerPanel] = {-1};
+    int   firstFace = Helix._seedIndex.face;
+    if (firstFace<0) firstFace = 0;
+    for (int f=firstFace; f>=0;  --f){
+      facez     = &Helix._oTracker[f];
+      //      HitInfo_t goodPanelHit;
+      //      double    panelHitChi2(1e10);
+      //      double         delta_min(0);
+      float          faceHitChi2(1e10);
+      HitInfo_t      goodFaceHit;
 
-      if (nhitsPerPanel == 0)                                              continue;
-      if (p==Helix._seedIndex.Panel) nhitsPerPanel = Helix._seedIndex.PanelHitIndex;//the seedHit is already clusterized!      
+      int       panelIndex(FaceZ_t::kNPanels-1);
+
+      //      if (f == Helix._seedIndex.face)   panelIndex = Helix._seedIndex.panel;//not needed because we need to search the best hit within the face!
 
       //-----------------------------------------------------------------------------
       // dfdz = tanLambda/radius; phi0 is the last found hit phi
       //-----------------------------------------------------------------------------
-      deltaZ    = panelz->z - lastPanelz->z;
+      deltaZ    = facez->z - lastFacez->z;
       phi       = phi0 + (deltaZ)*dfdz;     
       //evaluate the helix prediction using the z coordinate of the panel
       hePos     = XYZVec(x0 + radius*std::cos(phi),
-			  y0 + radius*std::sin(phi),
-			  panelz->z);
+			 y0 + radius*std::sin(phi),
+			 facez->z);
       //check the Panel-phi wrt to the DS center
-      // double  hePosPhi = TVector2::Phi_0_2pi(polyAtan2(hePos.y(), hePos.x()));
       double  hePosPhi = polyAtan2(hePos.y(), hePos.x());
       if (hePosPhi < 0) hePosPhi = hePosPhi + 2*M_PI;
-      double  deltaPhi = hePosPhi - panelz->phi;
-      if ( deltaPhi > M_PI ) deltaPhi -= 2*M_PI;
-      if ( deltaPhi < -M_PI) deltaPhi += 2*M_PI;
-      if ( fabs(deltaPhi) > _maxPanelToHelixDPhi)                             continue;
-	
-      // reset the chi2 values calulated in the previous panel
-      // for (int l=0; l<nLayers; ++l){
-      for (int g=0; g<_nHitsMaxPerPanel; ++g){
-	panelHitChi2 [g] = 1e10;
-	panelHitIndex[g] = -1;
-      }
-      // }
+
+      for (int p=panelIndex; p>=0;  --p){
+	panelz = &facez->panelZs[p];
+	int  nhitsPerPanel  = panelz->fNHits;
+
+	if (nhitsPerPanel == 0)                                              continue;
+	if ( (f==Helix._seedIndex.face) && (p==Helix._seedIndex.panel) ) nhitsPerPanel = Helix._seedIndex.panelHitIndex;//the seedHit is already clusterized!      
+
+
+	double  deltaPhi = hePosPhi - panelz->phi;
+	if ( deltaPhi > M_PI ) deltaPhi -= 2*M_PI;
+	if ( deltaPhi < -M_PI) deltaPhi += 2*M_PI;
+	if ( fabs(deltaPhi) > _maxPanelToHelixDPhi)                             continue;
   
-      for (int  i=nhitsPerPanel-1;i>=0; --i){   
-	hit       = &panelz->fHitData.at(i);
-	shPos     = hit->_pos;
-	strawDir  = hit->_sdir;
+	for (int  i=nhitsPerPanel-1;i>=0; --i){   
+	  hit       = &panelz->fHitData.at(i);
+	  shPos     = hit->_pos;
+	  strawDir  = hit->_sdir;
 
-	dx        = hePos.x() - shPos.x();
-	dy        = hePos.y() - shPos.y();
-	dist2     = dx*dx + dy*dy;
-	dist      = std::sqrt(dist2);
+	  dx        = hePos.x() - shPos.x();
+	  dy        = hePos.y() - shPos.y();
+	  dist2     = dx*dx + dy*dy;
+	  dist      = std::sqrt(dist2);
 
-	if (_debug > 10) {
-	  printf("[%s:LOOP] %5i %9.3f %8.3f %8.3f %8.3f %8.3f %9.3f %9.3f %9.3f %8.5f %8.3f %8.3f %8.3f %8.3f",
-		 banner,i,shPos.z(),shPos.x(),shPos.y(),hePos.x(),hePos.y(),
-		 x0,y0,radius,dfdz,dist,distXY,deltaZ,weight);
-	}
+	  if (_debug > 10) {
+	    printf("[%s:LOOP] %5i %9.3f %8.3f %8.3f %8.3f %8.3f %9.3f %9.3f %9.3f %8.5f %8.3f %8.3f %8.3f %8.3f",
+		   banner,i,shPos.z(),shPos.x(),shPos.y(),hePos.x(),hePos.y(),
+		   x0,y0,radius,dfdz,dist,distXY,deltaZ,weight);
+	  }
 
-	max_dist = _distPatRec + _dfdzErr*fabs(deltaZ);
-	if (dist <= max_dist) {
-	  double delta_min(0);
-	  int    index_min(-1);
-	  // int    layer_id(hit->sid().layer());
-	  for (int k=0; k<_nHitsMaxPerPanel; ++k){
-	    double delta = dist - panelHitChi2[k];
-	    if (delta < delta_min){
-	      delta_min = delta;
-	      index_min = k;
+	  max_dist = _distPatRec + _dfdzErr*fabs(deltaZ);
+	  if (dist <= max_dist) {
+	    if (dist < faceHitChi2){
+	      goodFaceHit.face          = f;
+	      goodFaceHit.panel         = p;
+	      goodFaceHit.panelHitIndex = i;
+	      faceHitChi2               = dist;
+	    }
+	  }else {
+	    if (_debug > 10) {
+	      printf(" missed\n");
 	    }
 	  }
-	  if (index_min>=0) {
-	    panelHitIndex[index_min] = i;
-	    panelHitChi2 [index_min] = dist;
-	  }
-	}else {
-	  if (_debug > 10) {
-	    printf(" missed\n");
-	  }
-	}
-      }//end loop pver the hits within the panel
+	}//end loop pver the hits within the panel
+      }//end loop over the panels within a face
+      
+      if (goodFaceHit.panel < 0)                    continue;
+      //get the best hit found
+      panelz     = &facez ->panelZs[goodFaceHit.panel];
+      hit        = &panelz->fHitData[goodFaceHit.panelHitIndex];
+      
+      lastFacez  = &Helix._oTracker[f];
 
-      //loop over the nHitsMaxPerPanel hits closest to the helix prediction
-      for (int t=0; t<_nHitsMaxPerPanel; ++t){
-	int hitIndex = panelHitIndex[t];
-	if (hitIndex < 0)                        continue;
-	hit        = &panelz->fHitData.at(hitIndex);
-	  
-	lastPanelz = &Helix._oTracker[p];
+      // add point to the helixfithack result objet
+      weight     = calculateWeight(*hit, helCenter, radius);
+      Helix._sxy.addPoint(hit->pos().x(),hit->pos().y(),weight);
+      Helix._nXYSh += hit->nStrawHits();
 
-	// add point to the helixfithack result objet
-	weight     = calculateWeight(*hit, helCenter, radius);
-	Helix._sxy.addPoint(hit->x(),hit->y(),weight);
-	Helix._nXYSh += hit->nStrawHits();
+      // update helix parameters
+      x0      = Helix._sxy.x0();
+      y0      = Helix._sxy.y0();
+      radius  = Helix._sxy.radius();
 
-	// update helix parameters
-	x0      = Helix._sxy.x0();
-	y0      = Helix._sxy.y0();
-	radius  = Helix._sxy.radius();
+      helCenter.SetX(x0);
+      helCenter.SetY(y0);
+      double dx  = (hit->pos().x() - helCenter.x());
+      double dy  = (hit->pos().y() - helCenter.y());
+      phi0       =  polyAtan2(dy,dx);
 
-	helCenter.SetX(x0);
-	helCenter.SetY(y0);
-	double dx  = (hit->x() - helCenter.x());
-	double dy  = (hit->y() - helCenter.y());
-	phi0       =  polyAtan2(dy,dx);
+      //update hit info
+      hit->_xyWeight   = weight;
+      int index =  facez->evalUniqueHitIndex(goodFaceHit);//p*FaceZ_t::kNMaxHitsPerPanel + hitIndex;//FIXME!!
+      Helix._hitsUsed[index] = 1;
 
-	//update hit info
-	hit->_xyWeight   = weight;
-	int index = p*CalHelixFinderData::kNMaxHitsPerPanel + hitIndex;
-	Helix._hitsUsed[index] = 1;
+      hit->_hphi        = phi0;
+      //      double dzFromSeed = facez->z - seedFacez->z;         // expected to be negative
+      // hit->_dzFromSeed  = dzFromSeed;
+      // hit->_drFromPred  = faceHitChi2;//[t];  
 
-	hit->_hphi        = phi0;
-	hit->_dzFromSeed = deltaZ;
-	hit->_drFromPred = panelHitChi2[t];
-	double dzFromSeed = panelz->z - seedPanelz->z;         // expected to be negative
-	hit->_dzFromSeed = dzFromSeed;
-	hit->_drFromPred = panelHitChi2[t];  
+      rescuedStrawHits += hit->nStrawHits();
+      ++rescuedPoints;
 
-	rescuedStrawHits += hit->nStrawHits();
-	++rescuedPoints;
-
-	if (_debug > 0) {
-	  printf("rescued %08x %2i %12.5f %12.5f %12.5f\n",
-		 *((int*) &hit->_flag), Helix._hitsUsed[index],
-		 hit->x(), hit->y(), hit->z());
-	}
+      if (_debug > 0) {
+	printf("rescued %08x %2i %12.5f %12.5f %12.5f\n",
+	       *((int*) &hit->_flag), Helix._hitsUsed[index],
+	       hit->pos().x(), hit->pos().y(), hit->pos().z());
       }
-    }
+      
+    }//end loop over the faces
+
     //-----------------------------------------------------------------------------
     // update Helix info
     //-----------------------------------------------------------------------------
@@ -1778,7 +1777,7 @@ namespace mu2e {
       printf("[%s:END] x0 = %5.3f y0 = %5.3f radius = %5.3f phi0 = %5.3f dfdz = %5.6f chi2 = %5.3f",
 	     banner,
 	     x0, y0, radius,  Helix._fz0, dfdz , Helix._sxy.chi2DofCircle());
-      printf(" SeedIndex: %i N(rescued points): %i\n",Helix._seedIndex.Panel,rescuedPoints);//FIXME!
+      printf(" SeedIndex: %i N(rescued points): %i\n",Helix._seedIndex.panel,rescuedPoints);//FIXME!
     }
 
     if (_diag) Helix._diag.n_rescued_points_16 = rescuedPoints;
@@ -1796,23 +1795,27 @@ namespace mu2e {
 	     Helix._sxy.x0(),Helix._sxy.y0(),Helix._sxy.radius(),Helix._sxy.chi2DofCircle(),
 	     Helix._fz0, Helix._dfdz , Helix._szphi.chi2DofLine());
 
-      PanelZ_t*      panelz(0);
-      CalHelixPoint* hit(0);
+      FaceZ_t*        facez(0);
+      PanelZ_t*       panelz(0);
+      mu2e::ComboHit* hit(0);
 
-      for (int p=0; p<CalHelixFinderData::kNTotalPanels; ++p){
-	panelz = &Helix._oTracker[p];
-	int  nhits          = panelz->fNHits;
-	for (int i=0; i<nhits; ++i){   
-	  hit = &panelz->fHitData.at(i);
-	  dx = hit->x() - Helix._sxy.x0();
-	  dy = hit->y() - Helix._sxy.y0();
-	  dr = sqrt(dx*dx+dy*dy) - Helix._sxy.radius();
-	  printf("[%s] %08x %6i %3i %6i %12.5f %12.5f %12.5f %10.3f\n",banner,
-		 *((int*) &hit->_flag),  int(hit->index()), i, hit->sid().straw(),
-		 hit->x(), hit->y(), hit->z(), dr
-		 );//FIXME!
-	}
-      }
+      for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+	facez     = &Helix._oTracker[f];
+	for (int p=0; p<FaceZ_t::kNPanels; ++p){
+	  panelz =  &facez->panelZs[p];//&Helix._oTracker[p];
+	  int  nhits          = panelz->fNHits;
+	  for (int i=0; i<nhits; ++i){   
+	    hit = &panelz->fHitData.at(i);
+	    dx = hit->pos().x() - Helix._sxy.x0();
+	    dy = hit->pos().y() - Helix._sxy.y0();
+	    dr = sqrt(dx*dx+dy*dy) - Helix._sxy.radius();
+	    printf("[%s] %08x %6i %3i %6i %12.5f %12.5f %12.5f %10.3f\n",banner,
+		   *((int*) &hit->_flag),  int(hit->index()), i, hit->sid().straw(),
+		   hit->pos().x(), hit->pos().y(), hit->pos().z(), dr
+		   );//FIXME!
+	  }
+	}//end loop over the panels within the face
+      }//end loop opver the faces
     }
   }
 
@@ -1823,7 +1826,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void CalHelixFinderAlg::filterUsingPatternRecognition(CalHelixFinderData& Helix) {
 
-    if (Helix._seedIndex.Panel < 0) return;
+    if (Helix._seedIndex.panel < 0) return;
 
     int            nActive(0), nActive_hel(0);
     int            nSh = Helix._nFiltStrawHits;
@@ -1834,68 +1837,71 @@ namespace mu2e {
     XYZVec         hel_pred(0., 0., 0.);
 
     PanelZ_t*      panelz(0);
-    CalHelixPoint* hit(0); bool isFirst(true);
+    FaceZ_t*       facez(0);
 
-    for (int p=0; p<CalHelixFinderData::kNTotalPanels; ++p){
-      panelz = &Helix._oTracker[p];
-      int  nhits     = panelz->fNHits;
-      if (nhits == 0)             continue;
+    mu2e::ComboHit* hit(0); bool isFirst(true);
+
+    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+      facez     = &Helix._oTracker[f];
+      for (int p=0; p<FaceZ_t::kNPanels; ++p){
+	panelz = &facez->panelZs[p];// &Helix._oTracker[p];
+	int  nhits     = panelz->fNHits;
+	if (nhits == 0)             continue;
 	
-      for (int i=0; i<nhits; ++i){   
-	hit = &panelz->fHitData.at(i);
-	if (_debug > 0) {
-	  if (isFirst) {
-	    isFirst = false;
-	    printf("[CalHelixFinderAlg::filterUsingPatternRecognition]  filterUsingPatternRecognition() will set asOutlier the following hits using helix parameters\n");
-	    printf("[CalHelixFinderAlg::filterUsingPatternRecognition] X0 = %5.3f Y0 = %5.3f r = %5.3f chi2N = %5.5f phi0 = %5.5f dfdz = %5.5f chi2N = %5.5f straw-hits = %i\n",
-		   Helix._sxy.x0(), Helix._sxy.y0(), Helix._radius, Helix._sxy.chi2DofCircle(),
-		   Helix._szphi.phi0(), Helix._szphi.dfdz(), Helix._szphi.chi2DofLine(),
-		   Helix._nStrawHits);//goodPointsTrkCandidate );// +1 for counting also the seeding hit
-	    printf("[CalHelixFinderAlg::filterUsingPatternRecognition] index  shID type           X        Y         Z        dist      Dz\n");
-	    printf("[CalHelixFinderAlg::filterUsingPatternRecognition] -------------------------------------------------------------------\n");
+	for (int i=0; i<nhits; ++i){   
+	  hit = &panelz->fHitData.at(i);
+	  if (_debug > 0) {
+	    if (isFirst) {
+	      isFirst = false;
+	      printf("[CalHelixFinderAlg::filterUsingPatternRecognition]  filterUsingPatternRecognition() will set asOutlier the following hits using helix parameters\n");
+	      printf("[CalHelixFinderAlg::filterUsingPatternRecognition] X0 = %5.3f Y0 = %5.3f r = %5.3f chi2N = %5.5f phi0 = %5.5f dfdz = %5.5f chi2N = %5.5f straw-hits = %i\n",
+		     Helix._sxy.x0(), Helix._sxy.y0(), Helix._radius, Helix._sxy.chi2DofCircle(),
+		     Helix._szphi.phi0(), Helix._szphi.dfdz(), Helix._szphi.chi2DofLine(),
+		     Helix._nStrawHits);//goodPointsTrkCandidate );// +1 for counting also the seeding hit
+	      printf("[CalHelixFinderAlg::filterUsingPatternRecognition] index  shID type           X        Y         Z        dist      Dz\n");
+	      printf("[CalHelixFinderAlg::filterUsingPatternRecognition] -------------------------------------------------------------------\n");
+	    }
 	  }
-	}
 
-	double dist = hit->_drFromPred;
-	double dz   = hit->_dzFromSeed;
-
-	int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	if (Helix._hitsUsed[index] != 1)        hit->setOutlier(); // *FIXME* ? ? do we want to call this an outlier ?
-	else  {
-	  // ++nActive;
-	  nActive          += hit->nStrawHits();
-	  double  x         = hit->x();
-	  double  y         = hit->y();
-	  double  z         = panelz->z;
-	  double  phi_pred  = fz0 + z/lambda;
-	  double  x_pred    = x_center + radius*cos(phi_pred);
-	  double  y_pred    = y_center + radius*sin(phi_pred);
-	  hel_pred.SetX(x_pred);
-	  hel_pred.SetY(y_pred);
-	  double  weight    = calculateWeight(*hit, hel_pred, radius)*_weight3D;
-	  double  x_resid2  = (x - x_pred)*(x - x_pred);
-	  double  y_resid2  = (y - y_pred)*(y - y_pred);
-	  double  hitResi2  = (x_resid2 + y_resid2)*weight;
-	  if (hitResi2 > _chi2hel3DMax) {
-	    hit->setOutlier();  // *FIXME* ? ? do we want to call this an outlier ?
-	  } else {
-	    // ++nActive_hel;
-	    nActive_hel      += hit->nStrawHits();
-	    chi2_global_helix = chi2_global_helix + hitResi2;
-	    straw_mean_radius = straw_mean_radius + sqrt(x*x + y*y)*weight;
-	    total_weight      = total_weight + weight;	
+	  int index = facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;//FIXME!!!
+	  if (Helix._hitsUsed[index] != 1)        hit->_flag.merge(StrawHitFlag::outlier); // *FIXME* ? ? do we want to call this an outlier ?
+	  else  {
+	    // ++nActive;
+	    nActive          += hit->nStrawHits();
+	    double  x         = hit->pos().x();
+	    double  y         = hit->pos().y();
+	    double  z         = facez->z;//panelz->z;
+	    double  phi_pred  = fz0 + z/lambda;
+	    double  x_pred    = x_center + radius*cos(phi_pred);
+	    double  y_pred    = y_center + radius*sin(phi_pred);
+	    hel_pred.SetX(x_pred);
+	    hel_pred.SetY(y_pred);
+	    double  weight    = calculateWeight(*hit, hel_pred, radius)*_weight3D;
+	    double  x_resid2  = (x - x_pred)*(x - x_pred);
+	    double  y_resid2  = (y - y_pred)*(y - y_pred);
+	    double  hitResi2  = (x_resid2 + y_resid2)*weight;
+	    if (hitResi2 > _chi2hel3DMax) {
+	      hit->_flag.merge(StrawHitFlag::outlier);  // *FIXME* ? ? do we want to call this an outlier ?
+	    } else {
+	      // ++nActive_hel;
+	      nActive_hel      += hit->nStrawHits();
+	      chi2_global_helix = chi2_global_helix + hitResi2;
+	      straw_mean_radius = straw_mean_radius + sqrt(x*x + y*y)*weight;
+	      total_weight      = total_weight + weight;	
+	    }
 	  }
-	}
 
-	if (_debug > 10) {
-	  XYZVec*     shPos = &hit->_pos;
-	  int         is_outlier    = hit->isOutlier();
-	  string      type;
-	  if      ((p == Helix._seedIndex.Panel) && (i == Helix._seedIndex.PanelHitIndex)) type = "seed";
-	  else if ((p == Helix._candIndex.Panel) && (i == Helix._candIndex.PanelHitIndex)) type = "cand";
-
-	  printf("[CalHelixFinderAlg::filterUsingPatternRecognition] %5i %5i %4i %4s  %8.3f %8.3f %9.3f %8.3f %8.3f\n",
-		 i,hit->sid().straw(),is_outlier,type.data(),shPos->x(),shPos->y(),shPos->z(),dist,dz);
+	  if (_debug > 10) {
+	    XYZVec*     shPos = &hit->_pos;
+	    int         is_outlier    = hit->_flag.hasAllProperties(StrawHitFlag::outlier);
+	    string      type;
+	    if      ((f == Helix._seedIndex.face) && (p == Helix._seedIndex.panel) && (i == Helix._seedIndex.panelHitIndex)) type = "seed";
+	    else if ((f == Helix._seedIndex.face) && (p == Helix._candIndex.panel) && (i == Helix._candIndex.panelHitIndex)) type = "cand";
+	    double dist(0);// = hit->_drFromPred;
+	    double dz  (0);// = hit->_dzFromSeed;//FIXME!
+	    printf("[CalHelixFinderAlg::filterUsingPatternRecognition] %5i %5i %4i %4s  %8.3f %8.3f %9.3f %8.3f %8.3f\n",
+		   i,hit->sid().straw(),is_outlier,type.data(),shPos->x(),shPos->y(),shPos->z(),dist,dz);
+	  }
 	}
       }
     }
@@ -1928,33 +1934,38 @@ namespace mu2e {
     int       nSh = Helix._nFiltStrawHits;
     int       nHitsTested(0);
 
-    PanelZ_t* panelz;
+    FaceZ_t*  facez(0);
+    PanelZ_t* panelz(0);
     
-    for (int p=0; p<CalHelixFinderData::kNTotalPanels; ++p){
-      panelz = &Helix._oTracker[p];
-      int       nhits  = panelz->fNHits;
-      for (int i=0; i<nhits; ++i){   
-	if (Helix._nStrawHits > (nSh - nHitsTested))   continue;	  
-	if ((nSh - nHitsTested) < _minNHits     )   continue;	  
-	//clear the info of the tmp object used to test the triplet
-	TmpHelix.clearResults();
+    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+      facez     = &Helix._oTracker[f];
+      for (int p=0; p<FaceZ_t::kNPanels; ++p){
+	panelz = &facez->panelZs[p];//&Helix._oTracker[p];
+	int       nhits  = panelz->fNHits;
+	for (int i=0; i<nhits; ++i){   
+	  if (Helix._nStrawHits > (nSh - nHitsTested))   continue;	  
+	  if ((nSh - nHitsTested) < _minNHits     )   continue;	  
+	  //clear the info of the tmp object used to test the triplet
+	  TmpHelix.clearResults();
 
-	SeedInfo_t          seed(p,i);
-	findTrack(seed,TmpHelix,UseMPVdfdz);
-	// ++nHitsTested;
-	nHitsTested += panelz->fHitData.at(i).nStrawHits();
+	  //	  SeedInfo_t          seed(p,i);
+	  HitInfo_t          seed(f,p,i);
+	  findTrack(seed,TmpHelix,UseMPVdfdz);
+	  // ++nHitsTested;
+	  nHitsTested += panelz->fHitData.at(i).nStrawHits();
 
-	//compare tripletHelix with bestTripletHelix
-	if (( TmpHelix._nStrawHits >  Helix._nStrawHits) ||
-	    ((TmpHelix._nStrawHits == Helix._nStrawHits) && (Helix._helixChi2 < Helix._helixChi2))) {
-	  Helix = TmpHelix;
-	}
-	if (_debug > 5) {
-	  printf("[CalHelixFinderAlg::doPatternRecognition]: calling findTrack(i=%i,Helix,useDefaltDfDz=FALSE,useMPVdfdz=%i)",i,UseMPVdfdz);
-	  printf(" : np=%3i _goodPointsTrkCandidate=%3i\n",nSh,Helix._nStrawHits);
-	}
-      }
-    }
+	  //compare tripletHelix with bestTripletHelix
+	  if (( TmpHelix._nStrawHits >  Helix._nStrawHits) ||
+	      ((TmpHelix._nStrawHits == Helix._nStrawHits) && (Helix._helixChi2 < Helix._helixChi2))) {
+	    Helix = TmpHelix;
+	  }
+	  if (_debug > 5) {
+	    printf("[CalHelixFinderAlg::doPatternRecognition]: calling findTrack(i=%i,Helix,useDefaltDfDz=FALSE,useMPVdfdz=%i)",i,UseMPVdfdz);
+	    printf(" : np=%3i _goodPointsTrkCandidate=%3i\n",nSh,Helix._nStrawHits);
+	  }
+	}//end loop over the hits on the panel
+      }//end panels loop
+    }//end faces loop
     
   }
 
@@ -1995,7 +2006,7 @@ namespace mu2e {
     int  rs, usePhiResid;
 
 
-    if ((Helix._seedIndex.Panel < 0) || (Helix._nXYSh < _minNHits) ) goto  PATTERN_RECOGNITION_END;
+    if ((Helix._seedIndex.panel < 0) || (Helix._nXYSh < _minNHits) ) goto  PATTERN_RECOGNITION_END;
 
     // 2015-01-17 G. Pezzullo: rescue points with z-coordinate less than the seed hit
     if (_debug != 0) {
@@ -2003,7 +2014,7 @@ namespace mu2e {
       printInfo(Helix);
     }
 
-    rc = doLinearFitPhiZ(Helix, SeedInfo_t(0,0), useIntelligentWeight);
+    rc = doLinearFitPhiZ(Helix, HitInfo_t(0,0,0), useIntelligentWeight);
 
     //2017-10-05 Gianipez added the following line to make some tests
     if (Helix._szphi.qn() == 0.)                                 goto  PATTERN_RECOGNITION_END;
@@ -2021,7 +2032,7 @@ namespace mu2e {
 //--------------------------------------------------------------------------------
     strcpy(banner,"refineHelixParameters");
 
-    refineHelixParameters(Helix, SeedInfo_t(0,0), banner, _debug);
+    refineHelixParameters(Helix, HitInfo_t(0,0,0), banner, _debug);
 
      if (_debug != 0)  printInfo(Helix);
 //---------------------------------------------------------------------------------------
@@ -2030,9 +2041,9 @@ namespace mu2e {
     if ((Helix._nZPhiSh < _minNHits) || (!rc)) usePhiResid = 0;
     else                                       usePhiResid = 1;
 
-    rescueHits(Helix, SeedInfo_t(0,0), usePhiResid);
+    rescueHits(Helix, HitInfo_t(0,0,0), usePhiResid);
     
-    if ((Helix._nXYSh - 1) != Helix._nZPhiSh) rc = doLinearFitPhiZ(Helix, SeedInfo_t(0,0), useIntelligentWeight);//the factor "-1" takes into account that the XY fit includes the target center
+    if ((Helix._nXYSh - 1) != Helix._nZPhiSh) rc = doLinearFitPhiZ(Helix, HitInfo_t(0,0,0), useIntelligentWeight);//the factor "-1" takes into account that the XY fit includes the target center
 
     if (_debug != 0)  printInfo(Helix);
 //--------------------------------------------------------------------------------------------------------------
@@ -2042,7 +2053,7 @@ namespace mu2e {
 // re-evaluate the df/dz and phi0 including rescued hits and new XY parameters
 //--------------------------------------------------------------------------------------------------------------
     if (Helix._nZPhiSh < _minNHits || (!rc)){
-      rs = findDfDz(Helix, SeedInfo_t(0,0));
+      rs = findDfDz(Helix, HitInfo_t(0,0,0));
       
       if (rs == 1) {			// update Helix Z-phi part
 	Helix._dfdz = _hdfdz;
@@ -2050,16 +2061,16 @@ namespace mu2e {
       }
     }
 
-    rc = doLinearFitPhiZ(Helix, SeedInfo_t(0,0), useIntelligentWeight);
+    rc = doLinearFitPhiZ(Helix, HitInfo_t(0,0,0), useIntelligentWeight);
 
     if (rc) {
       usePhiResid = 1;
-      rescueHits(Helix, SeedInfo_t(0,0), usePhiResid);
-      if ((Helix._nXYSh - 1) != Helix._nZPhiSh) rc = doLinearFitPhiZ(Helix, SeedInfo_t(0,0), useIntelligentWeight);  //the factor "-1" takes into account that the XY fit includes the target center
+      rescueHits(Helix, HitInfo_t(0,0,0), usePhiResid);
+      if ((Helix._nXYSh - 1) != Helix._nZPhiSh) rc = doLinearFitPhiZ(Helix, HitInfo_t(0,0,0), useIntelligentWeight);  //the factor "-1" takes into account that the XY fit includes the target center
 
       if (_debug != 0)  printInfo(Helix);
       strcpy(banner,"refineHelixParameters-after-doLinearFitPhiZ");
-      refineHelixParameters(Helix,SeedInfo_t(0,0),banner,_debug);
+      refineHelixParameters(Helix,HitInfo_t(0,0,0),banner,_debug);
       if (_debug != 0)  printInfo(Helix);
     }
 //-----------------------------------------------------------------------------
@@ -2093,7 +2104,7 @@ namespace mu2e {
 // a straw man attempt to account for significantly different resolutions 
 // along the wire and in the drift direction
 //--------------------------------------------------------------------------------
-  double  CalHelixFinderAlg::calculateWeight(const CalHelixPoint& Hit,
+  double  CalHelixFinderAlg::calculateWeight(const mu2e::ComboHit& Hit,
 					     // const Hep3Vector& HitPos   ,
 					     // const Hep3Vector& StrawDir ,
 					     const XYZVec&        HelCenter,
@@ -2101,12 +2112,12 @@ namespace mu2e {
 
     // double    rs(2.5);   // straw radius, mm
     double    transErr = 5./sqrt(12.);
-    //scale the error based on the number of the strawHits that are within teh ComboHit
+    //scale the error based on the number of the strawHits that are within teh mu2e::ComboHit
     if (Hit.nStrawHits() > 1) transErr *= 1.5;
     double    transErr2 = transErr*transErr;
 
-    double x   = Hit.x();
-    double y   = Hit.y();
+    double x   = Hit.pos().x();
+    double y   = Hit.pos().y();
     double dx  = x-HelCenter.x();
     double dy  = y-HelCenter.y();
     double dxn = dx*Hit._sdir.x()+dy*Hit._sdir.y();
@@ -2126,7 +2137,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  double  CalHelixFinderAlg::calculatePhiWeight(const CalHelixPoint& Hit,
+  double  CalHelixFinderAlg::calculatePhiWeight(const mu2e::ComboHit& Hit,
 						// const XYZVec&  HitPos   ,
 						// const XYZVec&  StrawDir ,
 						const XYZVec&  HelCenter,
@@ -2135,12 +2146,12 @@ namespace mu2e {
 						const char*        Banner   ) {
     // double    rs(2.5);  // straw radius, mm
     double    transErr = 5./sqrt(12.);
-    //scale the error based on the number of the strawHits that are within teh ComboHit
+    //scale the error based on the number of the strawHits that are within teh mu2e::ComboHit
     if (Hit.nStrawHits() > 1) transErr *= 1.5;
     double    transErr2 = transErr*transErr;
 
-    double x  = Hit.x();
-    double y  = Hit.y();
+    double x  = Hit.pos().x();
+    double y  = Hit.pos().y();
     double dx = x-HelCenter.x();
     double dy = y-HelCenter.y();
 
@@ -2179,7 +2190,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void   CalHelixFinderAlg::doWeightedCircleFit (CalHelixFinderData& Helix,
-						 SeedInfo_t          SeedIndex,
+						 HitInfo_t          SeedIndex,
 						 XYZVec&             HelCenter,
 						 double&             Radius   ,
 						 int                 Print    ,
@@ -2211,32 +2222,40 @@ namespace mu2e {
     }
 
     PanelZ_t*      panelz(0);
-    CalHelixPoint* hit   (0);
+    FaceZ_t*       facez(0);
 
-    for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-      panelz = &Helix._oTracker[p];
-      int  nhits          = panelz->fNHits;
-      int  seedPanelIndex(0);
-      if (nhits == 0)                                                                       continue;
-      if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;
+    mu2e::ComboHit* hit   (0);
+
+    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+      facez     = &Helix._oTracker[f];
+      int  firstPanel(0);
+      if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
+
+      for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	panelz = &facez->panelZs[p];//&Helix._oTracker[p];
+	int  nhits          = panelz->fNHits;
+	int  seedPanelIndex(0);
+	if (nhits == 0)                                                                    continue;
+	if ( (f==SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;
 	
-      for (int i=seedPanelIndex; i<nhits; ++i){   
-	hit = &panelz->fHitData.at(i);
-	int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	if (Helix._hitsUsed[index] != 1)                     continue;
+	for (int i=seedPanelIndex; i<nhits; ++i){   
+	  hit = &panelz->fHitData.at(i);
+	  int index = facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	  if (Helix._hitsUsed[index] != 1)                     continue;
 
-	wt             = calculateWeight(*hit,HelCenter,Radius);
-	hit->_xyWeight = wt;
+	  wt             = calculateWeight(*hit,HelCenter,Radius);
+	  hit->_xyWeight = wt;
 
-	Helix._sxy.addPoint(hit->_pos.x(),hit->_pos.y(),wt);
-	Helix._nXYSh      += hit->nStrawHits();
-	Helix._nComboHits += 1;
+	  Helix._sxy.addPoint(hit->_pos.x(),hit->_pos.y(),wt);
+	  Helix._nXYSh      += hit->nStrawHits();
+	  Helix._nComboHits += 1;
     
-	if (_debug > 10) {
-	  printf("[CalHelixFinderAlg::doWeightedCircleFit:LOOP] %4i %10.3f %10.3f %10.3f %10.3e %10.4f %10.4f\n",
-		 (int)hit->index(), hit->_pos.x(), hit->_pos.y(), hit->_pos.z(), wt, hit->_sdir.x(), hit->_sdir.y());
+	  if (_debug > 10) {
+	    printf("[CalHelixFinderAlg::doWeightedCircleFit:LOOP] %4i %10.3f %10.3f %10.3f %10.3e %10.4f %10.4f\n",
+		   (int)hit->index(), hit->_pos.x(), hit->_pos.y(), hit->_pos.z(), wt, hit->_sdir.x(), hit->_sdir.y());
+	  }
 	}
-      }
+      }//end panels loop
     }
 					// update helix info
     Radius  = Helix._sxy.radius();
@@ -2254,51 +2273,60 @@ namespace mu2e {
 // this is a rather "primitive" definition of the worst hit, should do for now
 //-----------------------------------------------------------------------------
   void    CalHelixFinderAlg::searchWorstHitWeightedCircleFit(CalHelixFinderData& Helix,
-							     SeedInfo_t          SeedIndex,
+							     HitInfo_t          SeedIndex,
 							     const XYZVec&       HelCenter,
 							     double&             Radius,
-							     SeedInfo_t&         Iworst,
+							     HitInfo_t&         Iworst,
 							     double&             HitChi2Worst)
   {
     HitChi2Worst         = _hitChi2Max;
-    Iworst.Panel         = -1;
-    Iworst.PanelHitIndex = -1;
+    Iworst.face          = -1;
+    Iworst.panel         = -1;
+    Iworst.panelHitIndex = -1;
 
     double     dr, hitChi2;
   
-    CalHelixPoint* hit(0);
-    PanelZ_t*      panelz(0);
-    PanelZ_t*      seedPanelz = &Helix._oTracker[Helix._seedIndex.Panel];
+    mu2e::ComboHit* hit(0);
+    FaceZ_t*        facez(0);
+    PanelZ_t*       panelz(0);
+    //    FaceZ_t*       seedFacez = &Helix._oTracker[Helix._seedIndex.face];
 
-    for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-      panelz = &Helix._oTracker[p];
-      int  nhitsPerPanel  = panelz->fNHits;
-      int  seedPanelIndex(0);
-      if (nhitsPerPanel == 0)                                                            continue;
-      if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;  
 
-      for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
-	hit = &panelz->fHitData.at(i);
-	int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	if (Helix._hitsUsed[index] != 1)                    continue;
+    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces;  ++f){
+      facez     = &Helix._oTracker[f]; 
+      int  firstPanel(0);
+      if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
+      for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	panelz = &facez->panelZs[p];//Helix._oTracker[p];
+	int  nhitsPerPanel  = panelz->fNHits;
+	int  seedPanelIndex(0);
+	if (nhitsPerPanel == 0)                                                            continue;
+	if ((f==SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;  
 
-	dr      = calculateRadialDist(hit->_pos,HelCenter,Radius);
-	hitChi2 = dr*dr*hit->_xyWeight;
+	for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
+	  hit = &panelz->fHitData.at(i);
+	  int index = facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	  if (Helix._hitsUsed[index] != 1)                    continue;
 
-	// store info out the radial residual
-	if ((SeedIndex.Panel == 0) && (SeedIndex.PanelHitIndex == 0)) {
-	  hit->_drFromPred  = fabs(dr);//hitChi2;
-	  double dzFromSeed = panelz->z - seedPanelz->z;              // expected to be positive (non-negative)
-	  hit->_dzFromSeed  = dzFromSeed;
+	  dr      = calculateRadialDist(hit->_pos,HelCenter,Radius);
+	  hitChi2 = dr*dr*hit->_xyWeight;
+
+	  // store info out the radial residual
+	  if ((SeedIndex.face == 0) && (SeedIndex.panel == 0) && (SeedIndex.panelHitIndex == 0)) {
+	    // hit->_drFromPred  = fabs(dr);//hitChi2;
+	    // double dzFromSeed = facez->z - seedFacez->z;              // expected to be positive (non-negative)
+	    //	    hit->_dzFromSeed  = dzFromSeed;//FIXME!
+	  }
+
+	  if (hitChi2 > HitChi2Worst) {
+	    HitChi2Worst         = hitChi2;
+	    Iworst.face          = f;
+	    Iworst.panel         = p;
+	    Iworst.panelHitIndex = i;
+	  }
 	}
-
-	if (hitChi2 > HitChi2Worst) {
-	  HitChi2Worst         = hitChi2;
-	  Iworst.Panel         = p;
-	  Iworst.PanelHitIndex = i;
-	}
-      }
-    }
+      }//end panels loop
+    }//end faces loop
   }
 
 //--------------------------------------------------------------------------------
@@ -2306,54 +2334,63 @@ namespace mu2e {
 // returns the index of the hit which provides the highest contribute to the chi2
 //--------------------------------------------------------------------------------
   void    CalHelixFinderAlg::cleanUpWeightedCircleFit(CalHelixFinderData& Helix,
-						      SeedInfo_t          SeedIndex,
-						      SeedInfo_t&         IWorst)
+						      HitInfo_t          SeedIndex,
+						      HitInfo_t&         IWorst)
   {
     LsqSums4   sxy;
     double     chi2, chi2_min (-1.), x, y;
 
     //reset the coordinates of the worst hit found previousl
-    IWorst.Panel         = -1;
-    IWorst.PanelHitIndex = -1;
+    IWorst.face          = -1;
+    IWorst.panel         = -1;
+    IWorst.panelHitIndex = -1;
 
-    CalHelixPoint* hit(0);
-    PanelZ_t*      panelz(0);
+    mu2e::ComboHit* hit(0);
+    PanelZ_t*       panelz(0);
+    FaceZ_t*        facez(0);
  
-    for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-      panelz = &Helix._oTracker[p];
-      int  nhitsPerPanel  = panelz->fNHits;
-      int  seedPanelIndex(0);
-      if (nhitsPerPanel == 0)                                                             continue;
-      if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;  
+    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+      facez     = &Helix._oTracker[f];
+      int  firstPanel(0);
+      if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
 
-      for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
-	hit = &panelz->fHitData.at(i);
-	int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	if (Helix._hitsUsed[index] != 1)                    continue;
+      for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	panelz = &facez->panelZs[p];//&Helix._oTracker[p];
+	int  nhitsPerPanel  = panelz->fNHits;
+	int  seedPanelIndex(0);
+	if (nhitsPerPanel == 0)                                                             continue;
+	if ( (f==SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;  
 
-	sxy.init(Helix._sxy);
+	for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
+	  hit = &panelz->fHitData.at(i);
+	  int index = facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	  if (Helix._hitsUsed[index] != 1)                    continue;
 
-	x  = hit->_pos.x();
-	y  = hit->_pos.y();
+	  sxy.init(Helix._sxy);
 
-	sxy.removePoint(x, y, hit->_xyWeight);
+	  x  = hit->_pos.x();
+	  y  = hit->_pos.y();
 
-	chi2  = sxy.chi2DofCircle();
+	  sxy.removePoint(x, y, hit->_xyWeight);
 
-	if ((chi2 < chi2_min) || ( (i == SeedIndex.PanelHitIndex) && (p == SeedIndex.Panel))) {
-	  chi2_min             = chi2;
-	  IWorst.Panel         = p;
-	  IWorst.PanelHitIndex = i;	    
+	  chi2  = sxy.chi2DofCircle();
+
+	  if ((chi2 < chi2_min) || ( (i == SeedIndex.panelHitIndex) && (p == SeedIndex.panel) && (f == SeedIndex.face)) ) {
+	    chi2_min             = chi2;
+	    IWorst.face          = f;
+	    IWorst.panel         = p;
+	    IWorst.panelHitIndex = i;	    
+	  }
 	}
-      }
-    }
+      }//end panels loop
+    }//end faces loop
   }
 
 //-----------------------------------------------------------------------------
 // use hits only, at this point the cluster is no longer needed 
 //-----------------------------------------------------------------------------
   int CalHelixFinderAlg::refineHelixParameters(CalHelixFinderData& Trk,
-					       SeedInfo_t          SeedIndex,
+					       HitInfo_t          SeedIndex,
 					       const char*         Banner,
 					       int                 Print  ) {
     auto           hitsUsed = Trk._hitsUsed;
@@ -2363,13 +2400,15 @@ namespace mu2e {
     // ::LsqSums4     sxyw;
     int            pointsRemoved(0);
 
-    SeedInfo_t     iworst(-1, -1);
+    HitInfo_t     iworst;//(-1, -1);
     double         wtWorst;
     double         chi2, chi2_min;
 
-    XYZVec         hitPos, strawDir, helCenter, helCenter_start;
-    CalHelixPoint* hit(0);
-    PanelZ_t*      panelz(0);
+    XYZVec          hitPos, strawDir, helCenter, helCenter_start;
+    mu2e::ComboHit* hit(0);
+    FaceZ_t*        facez(0);
+    PanelZ_t*       panelz(0);
+    
     int            hitUsedIndex(-1);
 
     int            rc(0);               // success-oriented initialization :)
@@ -2403,7 +2442,7 @@ namespace mu2e {
 
     if (_debug > 5) {
       printf("[CalHelixFinderAlg::refineHelixParameters] npt = %3.0f x0 = %8.3f y0 = %8.3f radius = %8.3f chi2 = %8.3f iworst=%3i chi2Worst = %8.3f\n",
-	     Trk._sxy.qn(),Trk._sxy.x0(),Trk._sxy.y0(),Trk._sxy.radius(),Trk._sxy.chi2DofCircle(),iworst.Panel,hitChi2Worst);
+	     Trk._sxy.qn(),Trk._sxy.x0(),Trk._sxy.y0(),Trk._sxy.radius(),Trk._sxy.chi2DofCircle(),iworst.panel,hitChi2Worst);
     }
 
     if ((chi2 <= _chi2xyMax) && (hitChi2Worst <= _hitChi2Max)) goto F_END;
@@ -2415,9 +2454,10 @@ namespace mu2e {
 
     cleanUpWeightedCircleFit(Trk,SeedIndex,iworst);
 
-    if (iworst.Panel >= 0) {
-      panelz  = &Trk._oTracker[iworst.Panel];
-      hit     = &panelz->fHitData.at(iworst.PanelHitIndex);
+    if (iworst.panel >= 0) {
+      facez   = &Trk._oTracker[iworst.face];
+      panelz  = &facez->panelZs[iworst.panel];//&Trk._oTracker[iworst.Panel];
+      hit     = &panelz->fHitData.at(iworst.panelHitIndex);
       x       = hit->_pos.x();
       y       = hit->_pos.y();
       wtWorst = hit->_xyWeight;//weights[iworst];
@@ -2427,7 +2467,7 @@ namespace mu2e {
       Trk._sxy.removePoint(x, y, wtWorst);
       Trk._nXYSh -=hit->nStrawHits();
 
-      hitUsedIndex = iworst.Panel*CalHelixFinderData::kNMaxHitsPerPanel + iworst.PanelHitIndex;
+      hitUsedIndex = facez->evalUniqueHitIndex(iworst);//iworst.Panel*FaceZ_t::kNMaxHitsPerPanel + iworst.PanelHitIndex;
       Trk._hitsUsed[hitUsedIndex] = 0;
 
       // Trk._nPoints -= 1;
@@ -2437,7 +2477,7 @@ namespace mu2e {
 
       if (_debug > 5) {
 	printf("[CalHelixFinderAlg::refineHelixParameters]  x0 = %8.3f y0 = %8.3f radius = %8.3f  chi2 = %5.5f chi2Maxxy = %5.5f index point removed = %i\n",
-	       Trk._sxy.x0(), Trk._sxy.y0(), Trk._sxy.radius(), Trk._sxy.chi2DofCircle(), _chi2xyMax, iworst.Panel);//FIXME!
+	       Trk._sxy.x0(), Trk._sxy.y0(), Trk._sxy.radius(), Trk._sxy.chi2DofCircle(), _chi2xyMax, iworst.panel);//FIXME!
       }
 					// update helix parameters and refit
       r  = Trk._sxy.radius();
@@ -2457,9 +2497,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // if a hit contributes chi2 > _hitCHi2Max, remove it and go back looking for the next such hit
 //-----------------------------------------------------------------------------
-    if (iworst.Panel >= 0) {
-      panelz  = &Trk._oTracker[iworst.Panel];
-      hit     = &panelz->fHitData.at(iworst.PanelHitIndex);
+    if (iworst.panel >= 0) {
+      facez   = &Trk._oTracker[iworst.face];
+      panelz  = &facez->panelZs[iworst.panel];//panelz  = &Trk._oTracker[iworst.Panel];
+      hit     = &panelz->fHitData.at(iworst.panelHitIndex);
       x       = hit->_pos.x();
       y       = hit->_pos.y();
       wtWorst = hit->_xyWeight;
@@ -2468,7 +2509,7 @@ namespace mu2e {
       Trk._sxy.removePoint(x, y, wtWorst);
       Trk._nXYSh -=hit->nStrawHits();
 
-      hitUsedIndex = iworst.Panel*CalHelixFinderData::kNMaxHitsPerPanel + iworst.PanelHitIndex;
+      hitUsedIndex = facez->evalUniqueHitIndex(iworst);//iworst.Panel*FaceZ_t::kNMaxHitsPerPanel + iworst.PanelHitIndex;
       Trk._hitsUsed[hitUsedIndex] = 0;
 
       // Trk._nPoints -= 1;
@@ -2478,7 +2519,7 @@ namespace mu2e {
 
       if (_debug > 5) {
 	printf("[CalHelixFinderAlg::refineHelixParameters:REMOVE] iworst=%3i (x0,y0,R) = (%8.3f, %8.3f, %8.3f) chi2 = %8.3f chi2Maxxy = %8.3f\n",
-	       iworst.Panel, Trk._sxy.x0(), Trk._sxy.y0(), Trk._sxy.radius(), Trk._sxy.chi2DofCircle(), _chi2xyMax);//FIXME!
+	       iworst.panel, Trk._sxy.x0(), Trk._sxy.y0(), Trk._sxy.radius(), Trk._sxy.chi2DofCircle(), _chi2xyMax);//FIXME!
       }
 					// update helix info
       r  = Trk._sxy.radius();
@@ -2491,7 +2532,7 @@ namespace mu2e {
                                                             goto CHECK_RESIDUALS;
     }
 
-    if ((chi2_min >= _chi2xyMax) && (iworst.Panel >= 0)) {
+    if ((chi2_min >= _chi2xyMax) && (iworst.panel >= 0)) {
 //-----------------------------------------------------------------------------
 // still bad chi2, repeat the cleanup cycle
 //-----------------------------------------------------------------------------
@@ -2541,7 +2582,7 @@ namespace mu2e {
 // small radial residual, so this function is devoted for rescueing these
 //-----------------------------------------------------------------------------
   void CalHelixFinderAlg::rescueHits(CalHelixFinderData& Helix          ,
-				     SeedInfo_t          SeedIndex      ,
+				     HitInfo_t          SeedIndex      ,
 				     int                 UsePhiResiduals) {
 
     const char  banner[] = "rescueHits";
@@ -2554,15 +2595,18 @@ namespace mu2e {
     
     ::LsqSums4  sxy;
     int         n_added_points(0);
-    SeedInfo_t  ibest(-1,-1);
+    HitInfo_t   ibest;//(-1,-1);
     double      wtBest, phiwtBest;
     double      chi2, chi2_min, dr, hitChi2, drChi2;
 
     double      x_pred(0), y_pred(0), weight_hel(0), x_resid2(0), y_resid2(0);
- 
+
+    FaceZ_t*       facez(0);
     PanelZ_t*      panelz(0);
-    PanelZ_t*      seedPanelz = &Helix._oTracker[Helix._seedIndex.Panel];
-    CalHelixPoint* hit(0);
+    
+    //    PanelZ_t*      seedPanelz = &Helix._oTracker[Helix._seedIndex.Panel];
+    //    FaceZ_t*        seedFacez = &Helix._oTracker[Helix._seedIndex.face];
+    mu2e::ComboHit* hit(0);
 
    //set  dfdz and phi0
     dfdz = Helix._dfdz;
@@ -2610,147 +2654,153 @@ namespace mu2e {
     }
     dphiChi2    = 0.;
 
-    ibest.Panel         = -1;
-    ibest.PanelHitIndex = -1;
+    ibest.face          = -1;
+    ibest.panel         = -1;
+    ibest.panelHitIndex = -1;
     
     wtBest      = -1;
     phiwtBest   = -1;
 
-    for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-      panelz = &Helix._oTracker[p];
-      int  nhits          = panelz->fNHits;
-      int  seedPanelIndex(0);
-      if (nhits == 0)                                       continue;
-      if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;
+    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+      facez     = &Helix._oTracker[f];
+      int  firstPanel(0);
+      if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
+      for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	panelz = &facez->panelZs[p];//Helix._oTracker[p];
+	int  nhits          = panelz->fNHits;
+	int  seedPanelIndex(0);
+	if (nhits == 0)                                       continue;
+	if ((f==SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;
 
-      for (int i=seedPanelIndex; i<nhits; ++i){   
-	hit = &panelz->fHitData.at(i);
-	int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	if (Helix._hitsUsed[index] >= 1)                    continue;
+	for (int i=seedPanelIndex; i<nhits; ++i){   
+	  hit = &panelz->fHitData.at(i);
+	  int index = facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	  if (Helix._hitsUsed[index] >= 1)                    continue;
 
-	hitPos    = hit->_pos;
-	strawDir  = hit->_sdir;
+	  hitPos    = hit->_pos;
+	  strawDir  = hit->_sdir;
 
-	dr = calculateRadialDist(hitPos,helCenter,r);
-	wt = calculateWeight    (*hit,helCenter,r);
+	  dr = calculateRadialDist(hitPos,helCenter,r);
+	  wt = calculateWeight    (*hit,helCenter,r);
 
-	drChi2  = (dr*dr)*wt;
+	  drChi2  = (dr*dr)*wt;
 	  
-	if ((UsePhiResiduals == 1) && (_phiCorrectedDefined)) {
-	  phi_pred = panelz->z*dfdz + phi0;//hitPos.z()*dfdz + phi0;
-	  dphi     = phi_pred - hit->_hphi;//_phiCorrected[i];
-	  phiwt    = calculatePhiWeight(*hit,/*hitPos, strawDir,*/ helCenter, r, 0, banner);
-	  dphiChi2 = dphi*dphi*phiwt;
-	  // calculate distance from predicted point
-	  x         = hitPos.x();
-	  y         = hitPos.y();
-	  x_pred    = helCenter.x() + r*cos(phi_pred);
-	  y_pred    = helCenter.y() + r*sin(phi_pred);
-	  hel_pred.SetX(x_pred);
-	  hel_pred.SetY(y_pred);
-	  weight_hel = calculateWeight(*hit, hel_pred, r)*_weight3D;
-	  x_resid2  = (x - x_pred)*(x - x_pred);
-	  y_resid2  = (y - y_pred)*(y - y_pred);
-	  hitChi2   = (x_resid2 + y_resid2)*weight_hel;
-	} 
-	else {
-	  hitChi2  = drChi2;
-	}
-
-	if (_debug > 10) {
-	  printf("[CalHelixFinderAlg::%s:LOOP] sigmaphi2 = %10.3f drChi2 = %5.3f dphiChi2 = %5.3f chi2 = %5.3f wt = %8.3f\n",
-		 banner, 1./phiwt, drChi2, dphiChi2, hitChi2,wt);
-	}
-	//-----------------------------------------------------------------------------
-	// require chi2 < _hitChi2Max, identify the closest point
-	//-----------------------------------------------------------------------------
-	if ( (hitChi2 < chi2_min) && (drChi2 < _hitChi2Max) && (dphiChi2 < _hitChi2Max)) {
-	  //-----------------------------------------------------------------------------
-	  // check if XY-chi2 and ZPhi-chi2 are less than chi2xyMax and chi2zphiMax
-	  //-----------------------------------------------------------------------------
-	  x = hitPos.x();
-	  y = hitPos.y();
-	  Helix._sxy.addPoint  (x, y, wt);
-	  Helix._szphi.addPoint(panelz->z, hit->_hphi, phiwt);
-
-	  //update the number of strawHits
-	  int     nHitSh = hit->nStrawHits();
-	  Helix._nXYSh   += nHitSh;
-	  Helix._nZPhiSh += nHitSh;
-
-	  //update hit info
-	  hit->_xyWeight   = wt;
-	  hit->_zphiWeight = phiwt;
-
-	  if (Helix._sxy.chi2DofCircle() < _chi2xyMax){
-	    if (UsePhiResiduals == 1){
-	      if (Helix._szphi.chi2DofLine() < _chi2zphiMax){
-		chi2_min    = hitChi2;
-
-		ibest.Panel         = p;
-		ibest.PanelHitIndex = i;
-
-		wtBest      = wt;
-		phiwtBest   = phiwt;
-	      }
-	    }else {
-	      chi2_min    = hitChi2;
-
-	      ibest.Panel         = p;
-	      ibest.PanelHitIndex = i;
-
-	      wtBest      = wt;
-	    }
+	  if ((UsePhiResiduals == 1) && (_phiCorrectedDefined)) {
+	    phi_pred = facez->z*dfdz + phi0;//hitPos.z()*dfdz + phi0;
+	    dphi     = phi_pred - hit->_hphi;//_phiCorrected[i];
+	    phiwt    = calculatePhiWeight(*hit,/*hitPos, strawDir,*/ helCenter, r, 0, banner);
+	    dphiChi2 = dphi*dphi*phiwt;
+	    // calculate distance from predicted point
+	    x         = hitPos.x();
+	    y         = hitPos.y();
+	    x_pred    = helCenter.x() + r*cos(phi_pred);
+	    y_pred    = helCenter.y() + r*sin(phi_pred);
+	    hel_pred.SetX(x_pred);
+	    hel_pred.SetY(y_pred);
+	    weight_hel = calculateWeight(*hit, hel_pred, r)*_weight3D;
+	    x_resid2  = (x - x_pred)*(x - x_pred);
+	    y_resid2  = (y - y_pred)*(y - y_pred);
+	    hitChi2   = (x_resid2 + y_resid2)*weight_hel;
+	  } 
+	  else {
+	    hitChi2  = drChi2;
 	  }
 
-	  Helix._sxy.removePoint  (x, y, wt);
-	  Helix._szphi.removePoint(panelz->z, hit->_hphi, phiwt);
+	  if (_debug > 10) {
+	    printf("[CalHelixFinderAlg::%s:LOOP] sigmaphi2 = %10.3f drChi2 = %5.3f dphiChi2 = %5.3f chi2 = %5.3f wt = %8.3f\n",
+		   banner, 1./phiwt, drChi2, dphiChi2, hitChi2,wt);
+	  }
+	  //-----------------------------------------------------------------------------
+	  // require chi2 < _hitChi2Max, identify the closest point
+	  //-----------------------------------------------------------------------------
+	  if ( (hitChi2 < chi2_min) && (drChi2 < _hitChi2Max) && (dphiChi2 < _hitChi2Max)) {
+	    //-----------------------------------------------------------------------------
+	    // check if XY-chi2 and ZPhi-chi2 are less than chi2xyMax and chi2zphiMax
+	    //-----------------------------------------------------------------------------
+	    x = hitPos.x();
+	    y = hitPos.y();
+	    Helix._sxy.addPoint  (x, y, wt);
+	    Helix._szphi.addPoint(facez->z, hit->_hphi, phiwt);
 
+	    //update the number of strawHits
+	    int     nHitSh = hit->nStrawHits();
+	    Helix._nXYSh   += nHitSh;
+	    Helix._nZPhiSh += nHitSh;
+
+	    //update hit info
+	    hit->_xyWeight   = wt;
+	    hit->_zphiWeight = phiwt;
+
+	    if (Helix._sxy.chi2DofCircle() < _chi2xyMax){
+	      if (UsePhiResiduals == 1){
+		if (Helix._szphi.chi2DofLine() < _chi2zphiMax){
+		  chi2_min    = hitChi2;
+
+		  ibest.face          = f;
+		  ibest.panel         = p;
+		  ibest.panelHitIndex = i;
+
+		  wtBest      = wt;
+		  phiwtBest   = phiwt;
+		}
+	      }else {
+		chi2_min    = hitChi2;
+
+		ibest.face          = f;
+		ibest.panel         = p;
+		ibest.panelHitIndex = i;
+
+		wtBest      = wt;
+	      }
+	    }
+
+	    Helix._sxy.removePoint  (x, y, wt);
+	    Helix._szphi.removePoint(facez->z, hit->_hphi, phiwt);
+
+	  }
 	}
-      }
-    }
+      }//end panels loop
+    }//ends faces loop
 
-    if (ibest.Panel >= 0){
+    if (ibest.panel >= 0){
       
       //evaluate the number of hits already in use in the same panel
       int    nHitsUsed(0), idSamePanel(-1);//, nLayers(2);
-      for (int l=0; l<CalHelixFinderData::kNMaxHitsPerPanel; ++l){
-	int   id = ibest.Panel*CalHelixFinderData::kNMaxHitsPerPanel + l;
+      //      for (int l=0; l<FaceZ_t::kNMaxHitsPerPanel; ++l){
+      for (int l=0; l<PanelZ_t::kNMaxPanelHits; ++l){
+	int   id = facez->evalUniqueHitIndex(ibest.face,ibest.panel,l);//ibest.Panel*FaceZ_t::kNMaxHitsPerPanel + l;
 	if (Helix._hitsUsed[id] == 1) {
 	  ++nHitsUsed;
 	  idSamePanel = l;
 	}
       }
-      
-      panelz = &Helix._oTracker[ibest.Panel];
-      hit    = &panelz->fHitData.at(ibest.PanelHitIndex);
-      // int    layer_id = hit->sid().layer();//_straw->id().getLayer();
-      int    index    = ibest.Panel*CalHelixFinderData::kNMaxHitsPerPanel + ibest.PanelHitIndex;
+      facez  = &Helix._oTracker[ibest.face];
+      panelz = &facez->panelZs[ibest.panel];//&Helix._oTracker[ibest.Panel];
+      hit    = &panelz->fHitData.at(ibest.panelHitIndex);
+      int    index    = facez->evalUniqueHitIndex(ibest);//ibest.Panel*FaceZ_t::kNMaxHitsPerPanel + ibest.PanelHitIndex;
       
       // now check two condition we want to skip:
       //  1) the hit we want to add belongs to a panel where we already reached the maximum number of hits allowed
       //  2) the hit belongs to the same layer where  we already reached the maximum number of hits allowed
-      if (nHitsUsed >= _nHitsMaxPerPanel) {
+      if (nHitsUsed >= 1){//_nHitsMaxPerPanel) {//we don't want more than 1 ComboHit per Face
 	Helix._hitsUsed[index] = 10;
                                      goto NEXT_ITERATION;
       }
-      if ( (_nHitsMaxPerPanel == 1) && (idSamePanel>=0) ){
-	// int    pre_layer_id = panelz->fHitData.at(idSamePanel).sid().layer();//_straw->id().getLayer();
-	// if (pre_layer_id  == layer_id) {
+      //      if ( (_nHitsMaxPerPanel == 1) && (idSamePanel>=0) ){
+      if ( idSamePanel>=0 ){
 	Helix._hitsUsed[index] = 10;
                                      goto NEXT_ITERATION;
-	// }
       }
 
-      x      = hit->x();
-      y      = hit->y();
+      x      = hit->pos().x();
+      y      = hit->pos().y();
                                        //add point from the track
       Helix._sxy.addPoint(x, y, wtBest);
       int    nHitSh = hit->nStrawHits();
       Helix._nXYSh += nHitSh;
 
       if (UsePhiResiduals == 1){
-      	Helix._szphi.addPoint(panelz->z, hit->_hphi, phiwtBest);
+      	Helix._szphi.addPoint(facez->z, hit->_hphi, phiwtBest);
 	Helix._nZPhiSh += nHitSh;
 	dfdz  = Helix._szphi.dfdz(); 
 	phi0  = Helix._szphi.phi0();
@@ -2759,9 +2809,9 @@ namespace mu2e {
       if (_debug > 5) {
 	printf("[CalHelixFinderAlg::%s:PT2] x0 = %8.3f y0 = %8.3f radius = %8.3f  chi2 = %6.3f chi2Maxxy = %6.3f index point added = %i straw-id = %6i hitChi2 = %6.3f x = %8.3f y = %8.3f z = %9.3f\n",
 	       banner,
-	       Helix._sxy.x0(), Helix._sxy.y0(), Helix._sxy.radius(), Helix._sxy.chi2DofCircle(), _chi2xyMax, ibest.Panel,
+	       Helix._sxy.x0(), Helix._sxy.y0(), Helix._sxy.radius(), Helix._sxy.chi2DofCircle(), _chi2xyMax, ibest.panel,
 	       hit->sid().straw()/*_strawhit->strawIndex().asInt()*/, chi2_min,
-	       x, y, panelz->z);//FIXME!
+	       x, y, facez->z);//FIXME!
       }
 					// mark point as active
       Helix._hitsUsed[index] = 1;
@@ -2779,31 +2829,36 @@ namespace mu2e {
 //----------------------------------------------------------------------
 //now update information about the radial residual of the hits
 //----------------------------------------------------------------------
-    for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-      panelz = &Helix._oTracker[p];
-      int  nhits          = panelz->fNHits;
-      int  seedPanelIndex(0);
-      if (nhits == 0)                                                                    continue;
-      if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;
+    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+      facez     = &Helix._oTracker[f];
+      int firstPanel = 0;
+      if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
+      for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	panelz = &facez->panelZs[p];//&Helix._oTracker[p];
+	int  nhits          = panelz->fNHits;
+	int  seedPanelIndex(0);
+	if (nhits == 0)                                                                    continue;
+	if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;
 
-      for (int i=seedPanelIndex; i<nhits; ++i){   
-	int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	if (Helix._hitsUsed[index] != 1)               continue;
+	for (int i=seedPanelIndex; i<nhits; ++i){   
+	  int index = facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	  if (Helix._hitsUsed[index] != 1)               continue;
 
-	hit     = &panelz->fHitData.at(i);
-	wt      = hit->_xyWeight;
-	e2      = 1./wt;
-	hitPos  = hit->_pos;
-	dr      = calculateRadialDist(hitPos,helCenter,r);
-	hitChi2 = dr*dr/e2;
-	// store residual
-	if ( (SeedIndex.Panel == 0) && (SeedIndex.PanelHitIndex == 0)){
-	  hit->_drFromPred = fabs(dr);
-	  double dzFromSeed = panelz->z - seedPanelz->z;              // expected to be positive (non-negative)
-	  hit->_dzFromSeed  = dzFromSeed;
+	  hit     = &panelz->fHitData.at(i);
+	  wt      = hit->_xyWeight;
+	  e2      = 1./wt;
+	  hitPos  = hit->_pos;
+	  dr      = calculateRadialDist(hitPos,helCenter,r);
+	  hitChi2 = dr*dr/e2;
+	  // store residual
+	  if ( (SeedIndex.face == 0) && (SeedIndex.panel == 0) && (SeedIndex.panelHitIndex == 0)){
+	    // hit->_drFromPred = fabs(dr);
+	    // double dzFromSeed = facez->z - seedFacez->z;//seedPanelz->z;              // expected to be positive (non-negative)
+	    // hit->_dzFromSeed  = dzFromSeed;//FIXME!
+	  }
 	}
-      }
-    }
+      }//end panels loop
+    }//end faces loop
 //-----------------------------------------------------------------------------
 // update circle parameters
 //-----------------------------------------------------------------------------
@@ -2817,7 +2872,7 @@ namespace mu2e {
       printf("[CalHelixFinderAlg::%s:END] N(added) = %i chi2 = %5.5f\n",banner,n_added_points,Helix._chi2);
     }
 
-    if ((SeedIndex.Panel == 0) && (SeedIndex.PanelHitIndex == 0)){
+    if ((SeedIndex.face == 0) && (SeedIndex.panel == 0) && (SeedIndex.panelHitIndex == 0)){
       Helix._diag.n_rescued_points_16 = n_added_points;
     }
   }
@@ -2825,7 +2880,7 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-  void CalHelixFinderAlg::findTrack(SeedInfo_t&         SeedIndex     ,
+  void CalHelixFinderAlg::findTrack(HitInfo_t&          SeedIndex     ,
 				    CalHelixFinderData& Helix         ,
 				    int                 UseMPVDfDz    ) {
 //-----------------------------------------------------------------------------
@@ -2848,14 +2903,16 @@ namespace mu2e {
 //--------------------------------------------------------------------------------
 // reset the temporary flags used to test the helix-search using the given triplet
 //--------------------------------------------------------------------------------
-                                                 //mark the seedHit as used
-    PanelZ_t*      seedPanelz = &Helix._oTracker[SeedIndex.Panel];
-    CalHelixPoint* seedHit    = &seedPanelz->fHitData.at(SeedIndex.PanelHitIndex);
+    //mark the seedHit as used
+    FaceZ_t*        seedFacez  = &Helix._oTracker[SeedIndex.face];
+    PanelZ_t*       seedPanelz = &seedFacez->panelZs[SeedIndex.panel];
+    mu2e::ComboHit* seedHit    = &seedPanelz->fHitData.at(SeedIndex.panelHitIndex);
 
     //mark the seed-hit as used
-    int            index      = SeedIndex.Panel*CalHelixFinderData::kNMaxHitsPerPanel + SeedIndex.PanelHitIndex;
+    int            index      = seedFacez->evalUniqueHitIndex(SeedIndex);//SeedIndex.Panel*FaceZ_t::kNMaxHitsPerPanel + SeedIndex.PanelHitIndex;
     Helix._hitsUsed[index] = 1;
 
+    FaceZ_t*       facez(0);
     PanelZ_t*      panelz(0);
 
 //---------------------------------------------------------------------
@@ -2887,11 +2944,14 @@ namespace mu2e {
 // The z coordinate of the target center is set to 0 because in the formula
 // inside calculateTrackParameters(...) the z coordinate is not used
 //-----------------------------------------------------------------------------
-    //CalHelixPoint* lastHit = seedHit;
-    PanelZ_t*      lastPanel = &Helix._oTracker[SeedIndex.Panel];
+    //mu2e::ComboHit* lastHit = seedHit;
+    FaceZ_t*       lastFace  = &Helix._oTracker[SeedIndex.face];
+    //    PanelZ_t*      lastPanel = &Helix._oTracker[SeedIndex.Panel];
 
-    float          panelHitChi2 [_nHitsMaxPerPanel] = {1e10};
-    int            panelHitIndex[_nHitsMaxPerPanel] = {-1};
+    // float          panelHitChi2 [_nHitsMaxPerPanel] = {1e10};
+    // int            panelHitIndex[_nHitsMaxPerPanel] = {-1};
+    float          faceHitChi2  = 1e10;
+    //    int            faceHitIndex = -1;
 
     XYZVec p1(0.,0.,0.);	       // target, z(ST) = 5971. - 10200. is not used
     XYZVec p2(seedHit->_pos);          // seed hit
@@ -2909,7 +2969,7 @@ namespace mu2e {
       tollMax = 2.*M_PI/dfdz;
     }
 
-    SeedInfo_t lastIndex(-1,-1);
+    HitInfo_t lastIndex;//(-1,-1);
 
     ::LsqSums4 sxy;
     ::LsqSums4 szphi;
@@ -2925,166 +2985,185 @@ namespace mu2e {
 
     double    z_phi0 = p2.z();
 
-    CalHelixPoint* hit(0);
+    mu2e::ComboHit* hit(0);
 
-    for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-      panelz = &Helix._oTracker[p];
-      int  nhits          = panelz->fNHits;
-      int  seedPanelIndex(0);
-      if (nhits == 0)                                                                        continue;
-	
-      if( _debug > 10){
-	if( p==SeedIndex.Panel ) {
-	  printf("[%s:LOOP]  findTrack() starts with helix parameters derived from these points \n",name.data());
-	  printf("[%s:LOOP]   point  type      X         Y         Z       xyzp-index \n", name.data());
-	  printf("[%s:LOOP] ----------------------------------------------------------\n", name.data());
-	  printf("[%s:LOOP] seeding        %9.3f %9.3f %9.3f %5i\n",name.data(),p2.x(),p2.y(),p2.z(),SeedIndex.Panel );
-	  printf("[%s:LOOP] candidate      %9.3f %9.3f %9.3f %5i\n",name.data(),p1.x(),p1.y(),p1.z(),lastIndex.Panel );
-	  printf("[%s:LOOP] emc cluster    %9.3f %9.3f %9.3f %5i\n",name.data(),p3.x(),p3.y(),p3.z(),             -1);
-	  printf("[%s:LOOP]----------------------------------------------------------------------------------------------------------------------------------------\n",name.data());
-	  printf("[%s:LOOP]  P     Z        xi       yi       xp       yp    dXYpred  dXYseed   dZseed    X0       Y0        R        phi      dfdz    chi2    \n",name.data());
-	  printf("[%s:LOOP]----------------------------------------------------------------------------------------------------------------------------------------\n",name.data());
-	}
-      }
-	
-      if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex + 1;  
+    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces;  ++f){
+      facez     = &Helix._oTracker[f]; 
+      int  firstPanel(0);
+      if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
 
       //-----------------------------------------------------------------------------
       // dfdz = tanLambda/radius; phi0 is the last found hit phi
       //-----------------------------------------------------------------------------
-      deltaZ = panelz->z - lastPanel->z;
+      deltaZ = facez->z - lastFace->z;
       phi    = phi0 + deltaZ*dfdz;
       //evaluate the helix prediction using the z coordinate of the panel
-      hePos.SetXYZ(center.x()+radius*cos(phi),center.y()+radius*sin(phi),panelz->z);
+      hePos.SetXYZ(center.x()+radius*cos(phi),center.y()+radius*sin(phi),facez->z);//panelz->z);
 
       //check the Panel-phi wrt to the DS center
-      // double  hePosPhi = TVector2::Phi_0_2pi(polyAtan2(hePos.y(), hePos.x()));
       double  hePosPhi = polyAtan2(hePos.y(), hePos.x());
       if (hePosPhi < 0) hePosPhi = hePosPhi + 2*M_PI;
-      double  deltaPhi = hePosPhi - panelz->phi;
-      if ( deltaPhi > M_PI ) deltaPhi -= 2*M_PI;
-      if ( deltaPhi < -M_PI) deltaPhi += 2*M_PI;
-      if ( fabs(deltaPhi) > _maxPanelToHelixDPhi)                    continue;
+      
+      HitInfo_t      goodFaceHit, tripletHit;
 
-      int  goodPoint(-1);               // index of the strawhit candidate for dfdz and helix parameters recalculation
+      faceHitChi2  = 1e10;
+
+      for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	panelz = &facez->panelZs[p];//Helix._oTracker[p];
+	int  nhits          = panelz->fNHits;
+	int  seedPanelIndex(0);
+	if (nhits == 0)                                                                        continue;
 	
-      // reset the chi2 values calulated in the previous panel
-      // for (int l=0; l<nLayers; ++l){
-      for (int g=0; g<_nHitsMaxPerPanel; ++g){
-	panelHitChi2 [g] = 1e10;
-	panelHitIndex[g] = -1;
-      }
-      // }
-      if (nhits > CalHelixFinderData::kNMaxHitsPerPanel) printf("[CalHelixFinderAlg::findTrack]ERROR!! more than 10 hits within the same panel!!!");
-      for (int i=seedPanelIndex; i<nhits; ++i){   
-	hit = &panelz->fHitData.at(i);
-
-	hit->_dzFromSeed = 0;
-	hit->_drFromPred = 0;
-
-	shPos  = hit->_pos;
-
-	// residuals in XY
-	dx              = hePos.x() - hit->x();
-	dy              = hePos.y() - hit->y();
-	dist2           = dx*dx + dy*dy;
-	dist            = std::sqrt(dist2);
-	   
 	if( _debug > 10){
-	  // dist betw the straw hit and the seed hit in the transverse plane
-	  double dx  = std::fabs(seedHit->x() - hit->x());
-	  double dy  = std::fabs(seedHit->y() - hit->y());
-	  double dxy = std::sqrt(dx*dx+dy*dy);
-	  double chi2   = sxy.chi2DofCircle();
-
-	  printf("[%s:LOOP] %3i %9.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.5f %8.5f %8.3f\n",
-		 name.data(),p,hit->z(),hit->x(),hit->y(),hePos.x(),hePos.y(),dist,dxy,deltaZ,center.x(),center.y(),radius,phi,dfdz,chi2) ;
+	  if( (f == SeedIndex.face) && (p==SeedIndex.panel) ) {
+	    printf("[%s:LOOP]  findTrack() starts with helix parameters derived from these points \n",name.data());
+	    printf("[%s:LOOP]   point  type      X         Y         Z       xyzp-index \n", name.data());
+	    printf("[%s:LOOP] ----------------------------------------------------------\n", name.data());
+	    printf("[%s:LOOP] seeding        %9.3f %9.3f %9.3f %5i\n",name.data(),p2.x(),p2.y(),p2.z(),SeedIndex.panel );
+	    printf("[%s:LOOP] candidate      %9.3f %9.3f %9.3f %5i\n",name.data(),p1.x(),p1.y(),p1.z(),lastIndex.panel );
+	    printf("[%s:LOOP] emc cluster    %9.3f %9.3f %9.3f %5i\n",name.data(),p3.x(),p3.y(),p3.z(),             -1);
+	    printf("[%s:LOOP]----------------------------------------------------------------------------------------------------------------------------------------\n",name.data());
+	    printf("[%s:LOOP]  P     Z        xi       yi       xp       yp    dXYpred  dXYseed   dZseed    X0       Y0        R        phi      dfdz    chi2    \n",name.data());
+	    printf("[%s:LOOP]----------------------------------------------------------------------------------------------------------------------------------------\n",name.data());
+	  }
 	}
-	//-----------------------------------------------------------------------------
-	// dxy_max: running search window accounts for the finite extrapolation accuracy
-	//-----------------------------------------------------------------------------
-	double dxy_max = _distPatRec + _dfdzErr*deltaZ;
-	if (dist <= dxy_max) {
-	  double delta_min(0);
-	  int    index_min(-1);
-	  // int    layer_id(hit->sid().layer());//_straw->id().getLayer());
-	  for (int k=0; k<_nHitsMaxPerPanel; ++k){
-	    double delta = dist - panelHitChi2[k];
-	    if (delta < delta_min){
-	      delta_min = delta;
-	      index_min = k;
+	
+	if ((f == SeedIndex.face) && (p==SeedIndex.panel)) seedPanelIndex = SeedIndex.panelHitIndex + 1;  
+
+	double  deltaPhi = hePosPhi - panelz->phi;
+	if ( deltaPhi > M_PI ) deltaPhi -= 2*M_PI;
+	if ( deltaPhi < -M_PI) deltaPhi += 2*M_PI;
+	if ( fabs(deltaPhi) > _maxPanelToHelixDPhi)                    continue;
+
+	//	int  goodPoint(-1);               // index of the strawhit candidate for dfdz and helix parameters recalculation
+	
+	// reset the chi2 values calulated in the previous panel
+	// for (int g=0; g<_nHitsMaxPerPanel; ++g){
+	//   panelHitChi2 [g] = 1e10;
+	//   panelHitIndex[g] = -1;
+	// }
+	
+	
+	
+	if (nhits > PanelZ_t::kNMaxPanelHits) printf("[CalHelixFinderAlg::findTrack]ERROR!! more than 10 hits within the same panel!!!");
+	for (int i=seedPanelIndex; i<nhits; ++i){   
+	  hit = &panelz->fHitData.at(i);
+
+	  // hit->_dzFromSeed = 0;
+	  // hit->_drFromPred = 0;
+
+	  shPos  = hit->_pos;
+
+	  // residuals in XY
+	  dx              = hePos.x() - hit->pos().x();
+	  dy              = hePos.y() - hit->pos().y();
+	  dist2           = dx*dx + dy*dy;
+	  dist            = std::sqrt(dist2);
+	   
+	  if( _debug > 10){
+	    // dist betw the straw hit and the seed hit in the transverse plane
+	    double dx  = std::fabs(seedHit->pos().x() - hit->pos().x());
+	    double dy  = std::fabs(seedHit->pos().y() - hit->pos().y());
+	    double dxy = std::sqrt(dx*dx+dy*dy);
+	    double chi2   = sxy.chi2DofCircle();
+
+	    printf("[%s:LOOP] %3i %9.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.5f %8.5f %8.3f\n",
+		   name.data(),p,hit->pos().z(),hit->pos().x(),hit->pos().y(),hePos.x(),hePos.y(),dist,dxy,deltaZ,center.x(),center.y(),radius,phi,dfdz,chi2) ;
+	  }
+	  //-----------------------------------------------------------------------------
+	  // dxy_max: running search window accounts for the finite extrapolation accuracy
+	  //-----------------------------------------------------------------------------
+	  double dxy_max = _distPatRec + _dfdzErr*deltaZ;
+	  if (dist <= dxy_max) {
+	    // double delta_min(0);
+	    // int    index_min(-1);
+	    // for (int k=0; k<_nHitsMaxPerPanel; ++k){
+	    //   double delta = dist - panelHitChi2[k];
+	    //   if (delta < delta_min){
+	    // 	delta_min = delta;
+	    // 	index_min = k;
+	    //   }
+	    // }
+	    if (dist < faceHitChi2){
+	      faceHitChi2               = dist;
+	      //set the coordiante of the hit
+	      goodFaceHit.face          = f;
+	      goodFaceHit.panel         = p;
+	      goodFaceHit.panelHitIndex = i;
 	    }
-	  }
-	  if (index_min>=0) {
-	    panelHitIndex[index_min] = i;
-	    panelHitChi2 [index_min] = dist;
+	    
+	    // if (index_min>=0) {
+	    //   panelHitIndex[index_min] = i;
+	    //   panelHitChi2 [index_min] = dist;
+	    // }
 	  }
 	}
-      }
 
-      double dist_min(1e10);
-      //loop over the nHitsMaxPerPanel hits closest to the helix prediction
-      // for (int l=0; l<nLayers; ++l){
-      for (int t=0; t<_nHitsMaxPerPanel; ++t){
-	int hitIndex = panelHitIndex[t];
-	if (hitIndex < 0)                        continue;
-
-	hit = &panelz->fHitData.at(hitIndex);
-
-	//mark the hit as used
-	index = p*CalHelixFinderData::kNMaxHitsPerPanel + hitIndex;
-	Helix._hitsUsed[index] = 1;
-	// NPoints++;
-	++NComboHits;
-	NPoints += hit->nStrawHits();
-
-	//-----------------------------------------------------------------------------
-	// Mode = 0: helix parameters evaluated using stopping_target+fitst_hit(seed)+cluster
-	//           dphi/dz is fixed and so far set to the most proable value for CE
-	//-----------------------------------------------------------------------------
-	sxy.addPoint(hit->x(),hit->y(),weight);
-	if (Mode == 1) {
-	  // dfdz has already been evaluated, update XY part of the helix
-	  center.SetX(sxy.x0());
-	  center.SetY(sxy.y0());
-	  radius = sxy.radius();
-	}
-
-	phi0      = polyAtan2(hit->y()-center.y(),hit->x()-center.x());  // *DOUBLE_CHECK*
-	z_phi0    = panelz->z;//hitz;			             // *DOUBLE_CHECK*
-	lastPanel = &Helix._oTracker[p];
+	
 	  
-	if      ( Mode == 0 ) ++mode0GoodPoints;
-	else if ((Mode == 1) && (panelHitIndex[t]<= lastIndex.PanelHitIndex)) ++mode1GoodPoints;//FIXME!
+      }//end panels loop
 
-	double dzFromSeed = panelz->z - seedPanelz->z;              // expected to be positive (non-negative)
-	hit->_dzFromSeed = dzFromSeed;
-	hit->_drFromPred = panelHitChi2[t];  
+      //check if a hit close to the predixction was found
+      if (goodFaceHit.face < 0)                 continue;
 
-	if ((panelHitChi2[t] < dist_min) && (dzFromSeed > tollMin) && (dzFromSeed < tollMax)) {       // FIXME! should we use the panel-z?
-	  //-----------------------------------------------------------------------------
-	  // goodPoint - index of the first hit separated in Z from the seed by > 10 cm
-	  // after such found, the target center is removed and the circle parameters 
-	  // recalculated using the cluster, the seed hit and the 'goodPoint' hit
-	  // an additional requirement is that at the recalculation time there are 3 or more 
-	  // hits found in total 
-	  //-----------------------------------------------------------------------------
-	  if (removeTarget) {
-	    goodPoint = panelHitIndex[t];//i;
-	    dist_min  = panelHitChi2 [t];
-	  }
+      facez     = &Helix._oTracker[goodFaceHit.face]; 
+      panelz    = &facez->panelZs[goodFaceHit.panel];
+      hit       = &panelz->fHitData[goodFaceHit.panelHitIndex];
+
+      //mark the hit as used
+      index = facez->evalUniqueHitIndex(goodFaceHit);
+      Helix._hitsUsed[index] = 1;
+      // NPoints++;
+      ++NComboHits;
+      NPoints += hit->nStrawHits();
+
+      //-----------------------------------------------------------------------------
+      // Mode = 0: helix parameters evaluated using stopping_target+fitst_hit(seed)+cluster
+      //           dphi/dz is fixed and so far set to the most proable value for CE
+      //-----------------------------------------------------------------------------
+      sxy.addPoint(hit->pos().x(),hit->pos().y(),weight);
+      if (Mode == 1) {
+	// dfdz has already been evaluated, update XY part of the helix
+	center.SetX(sxy.x0());
+	center.SetY(sxy.y0());
+	radius = sxy.radius();
+      }
+
+      phi0      = polyAtan2(hit->pos().y()-center.y(),hit->pos().x()-center.x());  // *DOUBLE_CHECK*
+      z_phi0    = facez->z;//hitz;			             // *DOUBLE_CHECK*
+      lastFace  = &Helix._oTracker[goodFaceHit.face];
+	  
+      if      ( Mode == 0 ) ++mode0GoodPoints;
+      //      else if ((Mode == 1) && (panelHitIndex[t]<= lastIndex.PanelHitIndex)) ++mode1GoodPoints;//FIXME!
+
+      double dzFromSeed = facez->z - seedFacez->z;//panelz->z - seedPanelz->z;              // expected to be positive (non-negative)
+      // hit->_dzFromSeed = dzFromSeed;
+      // hit->_drFromPred = faceHitChi2;//panelHitChi2[t];  
+
+      if (/*(panelHitChi2[t] < dist_min) &&*/ (dzFromSeed > tollMin) && (dzFromSeed < tollMax)) {    
+	//-----------------------------------------------------------------------------
+	// goodPoint - index of the first hit separated in Z from the seed by > 10 cm
+	// after such found, the target center is removed and the circle parameters 
+	// recalculated using the cluster, the seed hit and the 'goodPoint' hit
+	// an additional requirement is that at the recalculation time there are 3 or more 
+	// hits found in total 
+	//-----------------------------------------------------------------------------
+	if (removeTarget) {
+	  //	    goodPoint = panelHitIndex[t];
+	  tripletHit = goodFaceHit;
+	  //	  dist_min   = faceHitChi2;//panelHitChi2 [t];
 	}
       }
-      // }
 
-      if ((goodPoint >= 0) && (NComboHits >= 2) && (UseMPVDfDz == 0)) {
+
+      if ((tripletHit.face >= 0) && (NComboHits >= 2) && (UseMPVDfDz == 0)) {
 	//-----------------------------------------------------------------------------
 	// the first point separated from the seed one by more than 10 cm has been found
 	// recalculate helix parameters: for XY part use accumulated sxy sums
 	// replace stopping target with the hit
 	//-----------------------------------------------------------------------------
 	//	sxy.removePoint(0.,0.,wtarget);
-	hit = &panelz->fHitData.at(goodPoint);
+	//	hit = &panelz->fHitData.at(goodPoint);
 	p1  = hit->_pos;
 
 	center.SetX(sxy.x0());
@@ -3094,7 +3173,7 @@ namespace mu2e {
 	// now calculate more accuratelly the value of dfdz using just the two strawhit positions
 	// change in the circle parameterization changes the phi0 value
 	//-----------------------------------------------------------------------------
-	phi0 = polyAtan2(hit->y()-center.y(),hit->x()-center.x());
+	phi0 = polyAtan2(hit->pos().y()-center.y(),hit->pos().x()-center.x());
 
 	if (UseMPVDfDz == 0) {
 	  // calculateDphiDz_2(Helix,SeedIndex,NPoints,center.x(),center.y(),dfdz);
@@ -3107,8 +3186,8 @@ namespace mu2e {
 	if (_debug > 10) {
 	  printf("[%s:DEF2]  P      Z       X        Y   type\n", name.data());
 	  printf("[%s:DEF2] ----------------------------------------------------\n", name.data());
-	  printf("[%s:DEF2] %3i %9.3f %8.3f %8.3f seed \n", name.data(),SeedIndex.Panel,seedHit->z(),seedHit->x(),seedHit->y());//FIXME!
-	  printf("[%s:DEF2] %3i %9.3f %8.3f %8.3f seed \n", name.data(), p,hit->z()    ,hit->x()    ,hit->y()    );
+	  printf("[%s:DEF2] %3i %9.3f %8.3f %8.3f seed \n", name.data(),SeedIndex.panel,seedHit->pos().z(),seedHit->pos().x(),seedHit->pos().y());//FIXME!
+	  printf("[%s:DEF2] %3i %9.3f %8.3f %8.3f seed \n", name.data(), tripletHit.panel,hit->pos().z()    ,hit->pos().x()    ,hit->pos().y()    );
 	}
 	//-----------------------------------------------------------------------------
 	// what to do if dfdz is negative? - the case of negative helicity is not covered yet
@@ -3128,14 +3207,15 @@ namespace mu2e {
 	  //-----------------------------------------------------------------------------
 	  removeTarget = false;
 	  Mode         = 1;
-
-	  lastIndex.Panel         = p; 
-	  lastIndex.PanelHitIndex = goodPoint;
-	  //	  goodPoint    = -1;
+	  
+	  lastIndex    = tripletHit;
+	  // lastIndex.face          = f;
+	  // lastIndex.panel         = p; 
+	  // lastIndex.panelHitIndex = goodPoint;
 	}
       }
-	  
-    }
+
+    }//end face loop
 
     if (NPoints < _minNHits) return;
     //-----------------------------------------------------------------------------
@@ -3212,21 +3292,26 @@ namespace mu2e {
       NComboHits = 0;
 
       //FIXME! implement a function
-      for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-	panelz = &Helix._oTracker[p];
-	int  nhitsPerPanel  = panelz->fNHits;
-	int  seedPanelIndex(0);
-	if (nhitsPerPanel == 0)                                 continue;
-	if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;  
+      for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces;  ++f){
+	facez     = &Helix._oTracker[f]; 
+	int  firstPanel(0);
+	if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
+	for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	  panelz = &facez->panelZs[p];//Helix._oTracker[p];
+	  int  nhitsPerPanel  = panelz->fNHits;
+	  int  seedPanelIndex(0);
+	  if (nhitsPerPanel == 0)                                 continue;
+	  if ( (f==SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;  
 
-	for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
-	  hit   = &panelz->fHitData.at(i);
-	  index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	  if (Helix._hitsUsed[index] > 0 )  {
-	    ++NComboHits;
-	    NPoints += hit->nStrawHits();
+	  for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
+	    hit   = &panelz->fHitData.at(i);
+	    index = facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	    if (Helix._hitsUsed[index] > 0 )  {
+	      ++NComboHits;
+	      NPoints += hit->nStrawHits();
+	    }
 	  }
-	}
+	}//endl panels loop
       }
     }
     else {
@@ -3237,8 +3322,8 @@ namespace mu2e {
     if (_debug > 10) {
       printf("[%s] strawhit type     X        Y        Z     index     \n", name.data());
       printf("[%s] ----------------------------------------------------\n", name.data());
-      printf("[%s]    seeding   %9.3f %9.3f %9.3f   %i  \n", name.data(),p2.x(), p2.y(), p2.z(), SeedIndex.Panel);//FIXME!
-      printf("[%s]   candidate  %9.3f %9.3f %9.3f   %i  \n", name.data(),p1.x(), p1.y(), p1.z(), lastIndex.Panel);//FIXME!
+      printf("[%s]    seeding   %9.3f %9.3f %9.3f   %i  \n", name.data(),p2.x(), p2.y(), p2.z(), SeedIndex.panel);//FIXME!
+      printf("[%s]   candidate  %9.3f %9.3f %9.3f   %i  \n", name.data(),p1.x(), p1.y(), p1.z(), lastIndex.panel);//FIXME!
       printf("[%s]  emc cluster %9.3f %9.3f %9.3f       \n", name.data(),p3.x(), p3.y(), p3.z());
       printf("[%s] NPoints = %i x0 = %5.3f y0 = %5.3f radius = %5.3f phi0 = %5.6fdfdz = %5.6f chi2 = %5.3f \n", 
 	     name.data(),NPoints,Helix._sxy.x0(), Helix._sxy.y0(), radius_end, phi0_end, dfdz_end , Helix._sxy.chi2DofCircle());
@@ -3254,7 +3339,7 @@ namespace mu2e {
 
     if (_debug > 5) {
       printf("[%s:END] SeedIndex-Panel:%3i Mode= %i UseMPVDfDz:%1i NPoints= %3i Chi2=%5.3f dfdz= %5.5f \n",
-	     name.data(),SeedIndex.Panel,Mode,UseMPVDfDz,NPoints,Chi2,dfdz_end);//FIXME!
+	     name.data(),SeedIndex.panel,Mode,UseMPVDfDz,NPoints,Chi2,dfdz_end);//FIXME!
     }
 
     // can execution really come here with Mode == 0 ? - YES! not sure, why
@@ -3311,29 +3396,34 @@ namespace mu2e {
       Helix._diag.dphi0res_24 = dphi0Res[2];
 
       int j=0;
-      for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-	panelz = &Helix._oTracker[p];
-	int  nhitsPerPanel  = panelz->fNHits;
-	int  seedPanelIndex(0);
-	if (nhitsPerPanel == 0)                                                            continue;
-	if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;  
+      for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces;  ++f){
+	facez     = &Helix._oTracker[f]; 
+	int  firstPanel(0);
+	if (f == SeedIndex.face) firstPanel = SeedIndex.panel;   
+	for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	  panelz = &facez->panelZs[p];//Helix._oTracker[p];
+	  int  nhitsPerPanel  = panelz->fNHits;
+	  int  seedPanelIndex(0);
+	  if (nhitsPerPanel == 0)                          continue;
+	  if ( (f==SeedIndex.face) && (p==SeedIndex.panel)) seedPanelIndex = SeedIndex.panelHitIndex;  
 
-	for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
-	  hit = &panelz->fHitData.at(i);
-	  // if (hit->_used != 1)              continue;
-	  int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	  if (Helix._hitsUsed[index] != 1)               continue; 
+	  for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
+	    hit = &panelz->fHitData.at(i);
 
-	  if (j < Helix.maxIndex()) {
-	    Helix._diag.dist[j] = hit->_drFromPred;
-	    Helix._diag.dz  [j] = hit->_dzFromSeed;
-	    ++j;
-	  }
-	  else {
-	    printf("ERROR in CalHelixFinderAlg::findTrack : index out limits. IGNORE; \n");
-	  }
-	}
-      }
+	    int index = facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	    if (Helix._hitsUsed[index] != 1)               continue; 
+
+	    if (j < Helix.maxIndex()) {
+	      // Helix._diag.dist[j] = hit->_drFromPred;
+	      // Helix._diag.dz  [j] = hit->_dzFromSeed;
+	      ++j;
+	    }
+	    else {
+	      printf("ERROR in CalHelixFinderAlg::findTrack : index out limits. IGNORE; \n");
+	    }
+	  }//end loop over the hits within a panel
+	}//end panel loop
+      }//end face loop
     }
 
   }
@@ -3479,13 +3569,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // assume particle makes less than a full turn
 //-----------------------------------------------------------------------------
-  void  CalHelixFinderAlg::calculateDphiDz_2(CalHelixFinderData& Helix, SeedInfo_t SeedIndex, 
+  void  CalHelixFinderAlg::calculateDphiDz_2(CalHelixFinderData& Helix, HitInfo_t SeedIndex, 
 					     int NHits, double X0, double Y0, double& DphiDz) {
     LsqSums2       sphiz;
 
     double         phi(0), phi0(0);//, phiCl(0);
     
-    CalHelixPoint* hit(0);
+    ComboHit*      hit(0);
+    FaceZ_t*       facez(0);
     PanelZ_t*      panelz(0);
     XYZVec*        pos(0);
     
@@ -3493,32 +3584,40 @@ namespace mu2e {
 
     bool           isFirst(true);
 
-    for (int p=SeedIndex.Panel; p<CalHelixFinderData::kNTotalPanels; ++p){
-      if (counter > NHits  )                               break;
-      panelz = &Helix._oTracker[p];
-      int  nhitsPerPanel  = panelz->fNHits;
-      int  seedPanelIndex(0);
-      if (nhitsPerPanel == 0)                           continue;
-      if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;  
+    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces;  ++f){
+      facez     = &Helix._oTracker[f]; 
+      int  firstPanel(0);
+      if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
+      for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
+	if (counter > NHits  )                               break;
+	panelz = &facez->panelZs[p];//Helix._oTracker[p];
+	int  nhitsPerPanel  = panelz->fNHits;
+	int  seedPanelIndex(0);
+	if (nhitsPerPanel == 0)                           continue;
+	if ( (f==SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;  
 
-      for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
-	hit = &panelz->fHitData.at(i);
-	int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-	if (Helix._hitsUsed[index] != 1)                     continue;
+	for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
+	  hit = &panelz->fHitData.at(i);
+	  int index = facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
+	  if (Helix._hitsUsed[index] != 1)                     continue;
 
-	pos = &(hit->_pos);
-	phi = polyAtan2(pos->y()-Y0,pos->x()-X0);
-	if (isFirst) { phi0 = phi; isFirst = false;}
+	  pos = &(hit->_pos);
+	  phi = polyAtan2(pos->y()-Y0,pos->x()-X0);
+	  if (isFirst) { 
+	    phi0 = phi;
+	    isFirst = false;
+	  }
 
-	if (phi-phi0 >  M_PI) phi -= 2*M_PI;
-	if (phi-phi0 < -M_PI) phi += 2*M_PI;
+	  if (phi-phi0 >  M_PI) phi -= 2*M_PI;
+	  if (phi-phi0 < -M_PI) phi += 2*M_PI;
 
-	sphiz.addPoint(pos->z(),phi);
-	++counter;
+	  sphiz.addPoint(pos->z(),phi);
+	  ++counter;
 
-	if (_debug > 10) printf("[CalHelixFinderAlg::calculateDphiDz_2:LOOP] panel,id,phi,z=%3i %3i %8.5f %9.3f\n",p,i,pos->z(),phi);
-      }
-    }
+	  if (_debug > 10) printf("[CalHelixFinderAlg::calculateDphiDz_2:LOOP] panel,id,phi,z=%3i %3i %8.5f %9.3f\n",p,i,pos->z(),phi);
+	}
+      }//end panel loop
+    }//end face loop
 //-----------------------------------------------------------------------------
 // define straight line phi = phi0+dPhi/Dz*z , where phi0 = phi(z=0)
 //-----------------------------------------------------------------------------
@@ -3533,11 +3632,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 void CalHelixFinderAlg::plotXY(int ISet) {
 
-  std::vector<mu2e::CalHelixPoint>* xyzp;
+  std::vector<mu2e::ComboHit>* xyzp={0};
   CalHelixFinderData*          helx;
 
   if ((ISet >=0 ) && (ISet < 6)) {
-    xyzp   = &_results[ISet]._xyzp;
+    //    xyzp   = &_results[ISet]._xyzp;//FIXME!
     helx   = &_results[ISet]._helix;
   }
   else {
@@ -3549,7 +3648,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 
   printf("nhits = %10i\n",nhits);
 
-  mu2e::CalHelixPoint*    hit;
+  mu2e::ComboHit*    hit;
   XYZVec* pos;
 
   double x[1000], y[1000];//, z[1000];
@@ -3569,7 +3668,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 	   i,(int) hit->index(),
 	   pos->x(),pos->y(),pos->z(),
 	   flag[i],
-	   hit->isOutlier());
+	   hit->_flag.hasAllProperties(StrawHitFlag::outlier));
   }
 
   char name_xy[200];
@@ -3598,7 +3697,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
     hit = &xyzp->at(i);
     m   = new TMarker(x[i],y[i],2);
 
-    if (hit->isOutlier()) color = kBlack;
+    if (hit->_flag.hasAllProperties(StrawHitFlag::outlier)) color = kBlack;
     else                  color = kRed;
 
     m->SetMarkerSize(0.7);
@@ -3673,11 +3772,11 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 //-----------------------------------------------------------------------------
 // retrieve the data points for storing in TGraphs
 //-----------------------------------------------------------------------------
-    std::vector<mu2e::CalHelixPoint>* xyzp;
+    std::vector<mu2e::ComboHit>* xyzp = {0};
     CalHelixFinderData*          helx;
 
     if ((ISet >=0 ) && (ISet < 6)) {
-      xyzp   = &_results[ISet]._xyzp;
+      //      xyzp   = &_results[ISet]._xyzp;
       helx   = &_results[ISet]._helix;
     }
     else {
@@ -3689,7 +3788,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 
     printf("nhits = %10i\n",nhits);
 
-    mu2e::CalHelixPoint* hit;
+    mu2e::ComboHit* hit;
 
     XYZVec* pos;
 
@@ -3713,7 +3812,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
       printf("i: %3i ind: %5i x: %10.3f y: %10.3f z: %10.3f phi: %10.3f phi1: %10.3f 0x%08x %5i\n",
 	     i,(int) hit->index(),
 	     pos->x(),pos->y(),pos->z(),phi[i],phi1[i],
-	     flag[i], hit->isOutlier());
+	     flag[i], hit->_flag.hasAllProperties(StrawHitFlag::outlier));
     }
 
 //-----------------------------------------------------------------------------
@@ -3753,7 +3852,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 
       m   = new TMarker(z[i],phib,2);
 
-      if (hit->isOutlier()) color = kBlack;
+      if (hit->_flag.hasAllProperties(StrawHitFlag::outlier)) color = kBlack;
       else                  color = kRed;
 
       m->SetMarkerColor(color);
@@ -3788,7 +3887,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
       dphi = TVector2::Phi_mpi_pi(phib-pred);
       m    = new TMarker(z[i],dphi,2);
 
-      if (hit->isOutlier()) color = kBlack;
+      if (hit->_flag.hasAllProperties(StrawHitFlag::outlier)) color = kBlack;
       else                  color = kRed;
 
       m->SetMarkerSize(0.7);
@@ -3825,22 +3924,26 @@ void CalHelixFinderAlg::plotXY(int ISet) {
     
     const vector<StrawHitIndex>& shIndices = Helix._timeCluster->hits();
 
+    FaceZ_t*  facez(0);
     PanelZ_t* panelz(0);
     
-    for (int p=0; p<CalHelixFinderData::kNTotalPanels; ++p){
-      panelz = &Helix._oTracker[p];
-      int  nhitsPerPanel  = panelz->fNHits;
+    for (int f=0; f<FaceZ_t::kNTotalFaces;  ++f){
+      facez     = &Helix._oTracker[f]; 
+      for (int p=0; p<FaceZ_t::kNPanels; ++p){
+	panelz = &facez->panelZs[p];//Helix._oTracker[p];
+	int  nhitsPerPanel  = panelz->fNHits;
 
 
-      for (int i=0; i<nhitsPerPanel; ++i){   
-	CalHelixPoint* pt = &panelz->fHitData.at(i);
+	for (int i=0; i<nhitsPerPanel; ++i){   
+	  mu2e::ComboHit* pt = &panelz->fHitData.at(i);
 
-	int loc    = shIndices[i];	 // index in chcol of i-th timecluster hit
+	  int loc    = shIndices[i];	 // index in chcol of i-th timecluster hit
     
-	// const StrawHit& sh          = Helix.chcol()->at(loc);
+	  // const StrawHit& sh          = Helix.chcol()->at(loc);
 
-	printf("[CalHelixFinderAlg::printXYZP] %5i %5i %5i   %08x   %2i %9.3f %9.3f %9.3f \n",
-	       i, loc,  pt->sid().straw()/*sh.strawIndex().asInt()*/, *((int*) &pt->_flag), pt->use(), pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
+	  printf("[CalHelixFinderAlg::printXYZP] %5i %5i %5i   %08x   %2i %9.3f %9.3f %9.3f \n",
+		 i, loc,  pt->sid().straw()/*sh.strawIndex().asInt()*/, *((int*) &pt->_flag), 0/*pt->use()FIXME!*/, pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
+	}
       }
     }
   }
@@ -3852,38 +3955,42 @@ void CalHelixFinderAlg::plotXY(int ISet) {
     const XYZVec*  pos;
     double         z, phi, phi_ref, dphi, dx, dy;
 
-    PanelZ_t*      panelz(0);
-    CalHelixPoint* hit(0);
+    FaceZ_t*        facez(0);
+    PanelZ_t*       panelz(0);
+    mu2e::ComboHit* hit(0);
 
-    for (int p=0; p<CalHelixFinderData::kNTotalPanels; ++p){
-      panelz = &Helix._oTracker[p];
-      int  nhits          = panelz->fNHits;
-      for (int i=0; i<nhits; ++i){   
-	hit = &panelz->fHitData.at(i);
-	pos = &hit->_pos;
-	z   = pos->z();
+    for (int f=0; f<FaceZ_t::kNTotalFaces;  ++f){
+      facez     = &Helix._oTracker[f]; 
+      for (int p=0; p<FaceZ_t::kNPanels; ++p){
+	panelz = &facez->panelZs[p];//Helix._oTracker[p];
+	int  nhits          = panelz->fNHits;
+	for (int i=0; i<nhits; ++i){   
+	  hit = &panelz->fHitData.at(i);
+	  pos = &hit->_pos;
+	  z   = pos->z();
 
-	dx  = (pos->x() - Center.x());
-	dy  = (pos->y() - Center.y());
-	phi = polyAtan2(dy, dx);
-	if (phi < 0) phi = phi + 2*M_PI;//phi = TVector2::Phi_0_2pi(phi);
-	// predicted value of phi
-	phi_ref = z*DfDz + Phi0;
-	// signed residual
-	dphi    = phi_ref - phi;
-	// resolve the 2PI ambiguity
-	while (dphi > M_PI) {
-	  phi += 2*M_PI;
-	  dphi = phi_ref - phi;
+	  dx  = (pos->x() - Center.x());
+	  dy  = (pos->y() - Center.y());
+	  phi = polyAtan2(dy, dx);
+	  if (phi < 0) phi = phi + 2*M_PI;//phi = TVector2::Phi_0_2pi(phi);
+	  // predicted value of phi
+	  phi_ref = z*DfDz + Phi0;
+	  // signed residual
+	  dphi    = phi_ref - phi;
+	  // resolve the 2PI ambiguity
+	  while (dphi > M_PI) {
+	    phi += 2*M_PI;
+	    dphi = phi_ref - phi;
+	  }
+	  while (dphi < -M_PI) {
+	    phi -= 2*M_PI;
+	    dphi = phi_ref - phi;
+	  }
+	  // store the corrected value of phi
+	  // _phiCorrected[i] = phi;
 	}
-	while (dphi < -M_PI) {
-	  phi -= 2*M_PI;
-	  dphi = phi_ref - phi;
-	}
-	// store the corrected value of phi
-	// _phiCorrected[i] = phi;
-      }
 			
+      }
     }
 		// don't know
     _phiCorrectedDefined = 0;

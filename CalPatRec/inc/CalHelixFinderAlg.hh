@@ -13,6 +13,8 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
+
 // BaBar
 #include "BTrk/TrkBase/TrkErrCode.hh"
 //root
@@ -21,7 +23,7 @@
 #include "Mu2eUtilities/inc/LsqSums2.hh"
 #include "Mu2eUtilities/inc/LsqSums4.hh"
 // #include "CalPatRec/inc/CalTimePeak.hh"
-#include "CalPatRec/inc/CalHelixPoint.hh"
+//#include "CalPatRec/inc/CalHelixPoint.hh"
 #include "CalPatRec/inc/CalHelixFinderData.hh"
 
 class TH1F;
@@ -67,7 +69,7 @@ namespace mu2e {
 // each XYZPHack point has an 'outlier' flag telling if it belongs to the track
 //-----------------------------------------------------------------------------
     struct SaveResults_t {
-      std::vector<CalHelixPoint> _xyzp;    // points with used flags
+      //      std::vector<CalHelixPoint> _xyzp;    // points with used flags
       CalHelixFinderData         _helix;   // helix, found at this stage
     };
 
@@ -158,16 +160,16 @@ namespace mu2e {
     double bz() const;
 
     void   calculateDfDz    (double phi0, double phi1, double z0,  double z1, double &dfdz);
-    void   calculateDphiDz_2(CalHelixFinderData& Helix,SeedInfo_t HitIndex, int NHits, double X0, double Y0, double& DphiDz);
+    void   calculateDphiDz_2(CalHelixFinderData& Helix,HitInfo_t HitIndex, int NHits, double X0, double Y0, double& DphiDz);
 
     //projects the straw hit error along the radial direction of the circle-helix
-    double calculateWeight     (const CalHelixPoint&  Hit,
+    double calculateWeight     (const mu2e::ComboHit&  Hit,
 				// const CLHEP::Hep3Vector& HitPos, 
 				// const CLHEP::Hep3Vector& StrawDir, 
 				const XYZVec& HelCenter, 
 				double                   Radius);
 
-    double calculatePhiWeight  (const CalHelixPoint&  Hit,
+    double calculatePhiWeight  (const ComboHit&  Hit,
 				// const XYZVec& HitPos   , 
 				// const XYZVec& StrawDir , 
 				const XYZVec& HelCenter, 
@@ -195,18 +197,18 @@ namespace mu2e {
 
    // returns the index of the hit which provides the highest contribute to the chi2
     void   cleanUpWeightedCircleFit(CalHelixFinderData& Helix,
-				    SeedInfo_t          SeedIndex,
-				    SeedInfo_t&         Iworst);
+				    HitInfo_t          SeedIndex,
+				    HitInfo_t&         Iworst);
 
     bool   doLinearFitPhiZ          (CalHelixFinderData& Helix, 
-				     SeedInfo_t          SeedIndex, 
+				     HitInfo_t          SeedIndex, 
 				     int                 UseInteligentWeight=0, 
 				     int                 DoCleanUp =1);
 
    //perfoms the weighted circle fit, update the helix parameters (HelicCenter, Radius) and
     // fills the vector Weights which holds the calculated weights of the hits
     void   doWeightedCircleFit     (CalHelixFinderData& Helix,
-				    SeedInfo_t          SeedIndex,
+				    HitInfo_t          SeedIndex,
 				    XYZVec&             HelCenter, 
 				    double&             Radius, 
 				    int                 Print=0, 
@@ -230,10 +232,10 @@ namespace mu2e {
     bool findHelix                    (CalHelixFinderData& Helix);
     // bool findHelix                    (CalHelixFinderData& Helix, const CalTimePeak* TimePeak);
     bool findHelix                    (CalHelixFinderData& Helix, const TimeCluster* TimePeak );
-    int  findDfDz                     (CalHelixFinderData& Helix, SeedInfo_t SeedIndex, int  Diag_flag=0);
-    int  findDfDz_1                   (CalHelixFinderData& Helix, SeedInfo_t SeedIndex, int  Diag_flag=0);
-    int  findDfDz_2                   (CalHelixFinderData& Helix, SeedInfo_t SeedIndex, int  Diag_flag=0);
-    void findTrack                    (SeedInfo_t&         SeedIndex,
+    int  findDfDz                     (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
+    int  findDfDz_1                   (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
+    int  findDfDz_2                   (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
+    void findTrack                    (HitInfo_t&         SeedIndex,
 			               CalHelixFinderData& Helix,
 			               int                 UseMPVdfdz     = 0);
     
@@ -255,14 +257,14 @@ namespace mu2e {
     void   printXYZP            (CalHelixFinderData& Helix);
 
     int    refineHelixParameters(CalHelixFinderData& Helix,
-				 SeedInfo_t          SeedIndex,
+				 HitInfo_t          SeedIndex,
 				 const char*         Banner=NULL,
 				 int                 Print=0);
 
                                         // 12-10-2013 Gianipez: new pattern recognition functions
     void   rescueHitsBeforeSeed (CalHelixFinderData&  Helix);
 
-    void   rescueHits           (CalHelixFinderData&  Helix, SeedInfo_t SeedIndex   ,
+    void   rescueHits           (CalHelixFinderData&  Helix, HitInfo_t SeedIndex   ,
 				 int UsePhiResiduals = 0);
 
     void   resolve2PiAmbiguity  (CalHelixFinderData& Helix,const XYZVec& Center, double DfDz, double Phi0);
@@ -276,12 +278,12 @@ namespace mu2e {
     // void   fillHelixDiag                  (CalHelixFinderData&         Helix);
 
     void   searchWorstHitWeightedCircleFit(CalHelixFinderData& Helix,
-					   SeedInfo_t          SeedIndex,
+					   HitInfo_t          SeedIndex,
                                            // int*               IdVec,
                                            const XYZVec& HelCenter,
                                            double&             Radius,
                                            // double*            Weights,
-                                           SeedInfo_t&         Iworst ,
+                                           HitInfo_t&         Iworst ,
                                            double&             HitChi2Worst);
 
   };
