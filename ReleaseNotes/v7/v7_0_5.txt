@@ -1,6 +1,9 @@
            Release notes for Mu2e Offline software, v7_0_5
            This new series includes breaking changes for MDC2018
 
+6) July 31, 2018 genser
+   Corrected _visManager in Mu2eG4/src/Mu2eG4_module.cc which changed during MT merge
+
 5) July 20, 2018 brownd
     Consolidate and cleanup fcl in prepreation for primary particle and mixing production
     Rename HitMakers to CommonMC as that is now its purpose
